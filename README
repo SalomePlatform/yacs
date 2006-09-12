@@ -1,3 +1,6 @@
+YACS is for dYnamic pArallel Coupling System
+============================================
+
 IMPROVEMENTS :
 
 - OutGate::isAlreadyInList : use std::find
