@@ -1,0 +1,11 @@
+
+SUFFIXES =
+
+# --------------------------------------------
+# *.i --> *wrap.cxx
+# --------------------------------------------
+
+SUFFIXES += .i WRAP.cxx
+
+.iWRAP.cxx :
+	$(SWIG) $(SWIG_PYTHON_OPT) $(SWIG_PYTHON_INCLUDES) -o $@ $<

@@ -1,0 +1,4 @@
+IMPROVEMENTS :
+
+- OutGate::isAlreadyInList : use std::find
+- Bloc::checkNoCyclePassingThrough : first loop iter1=currentNodesToTest.erase(iter1) as last argument
