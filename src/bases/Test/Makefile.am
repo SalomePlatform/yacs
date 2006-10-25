@@ -3,16 +3,18 @@ include $(top_srcdir)/adm/unix/make_begin.am
 
 AM_CXXFLAGS = $(THREAD_DEF) -I$(srcdir)/..
 
-check_PROGRAMS = test1
+check_PROGRAMS = TestBases
 
-test1_SOURCES = test1.cxx
+TestBases_SOURCES = \
+	TestBases.cxx \
+	basesTest.cxx
 
-test1_LDADD = ../libYACSBases.la
+TestBases_LDADD = ../libYACSBases.la
 
-test1_LDFLAGS = $(CPPUNIT_LIBS) -pthread -ldl
+TestBases_LDFLAGS = $(CPPUNIT_LIBS) -pthread -ldl
 
-test1_CXXFLAGS = $(THREAD_DEF) $(CPPUNIT_INCLUDES) -I$(srcdir)/..
+TestBases_CXXFLAGS = $(THREAD_DEF) $(CPPUNIT_INCLUDES) -I$(srcdir)/..
 
-TESTS = test1
+TESTS = TestBases
 
 include $(top_srcdir)/adm/unix/make_end.am

@@ -1,12 +1,12 @@
 #ifndef __NODE_HXX__
 #define __NODE_HXX__
 
-#include "define.hxx"
 #include "InGate.hxx"
 #include "OutGate.hxx"
 #include "Exception.hxx"
+#include "define.hxx"
 
-#include <list>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -33,11 +33,12 @@ namespace YACS
       std::string _name;
       ComposedNode *_father;
       YACS::StatesForNode _state;
-      std::list<InputPort *> _listOfInputPort;
-      std::list<OutputPort *> _listOfOutputPort;
-      std::list<InputDataStreamPort *> _listOfInputDataStreamPort;
-      std::list<OutputDataStreamPort *> _listOfOutputDataStreamPort;
+      std::set<InputPort *> _setOfInputPort;
+      std::set<OutputPort *> _setOfOutputPort;
+      std::set<InputDataStreamPort *> _setOfInputDataStreamPort;
+      std::set<OutputDataStreamPort *> _setOfOutputDataStreamPort;
       static const char SEP_CHAR_IN_PORT='?';
+      std::string _implementation;
     private:
       //for graphs algorithms
       mutable YACS::Colour _colour;
@@ -49,21 +50,24 @@ namespace YACS
       InGate *getInGate() { return &_inGate; }
       OutGate *getOutGate() { return &_outGate; }
       const std::string& getName() const { return _name; }
-      std::list<Node *> getOutNodes() const;
+      std::set<Node *> getOutNodes() const;
       virtual void exUpdateState();
       virtual void getReadyTasks(std::vector<Task *>& tasks) = 0;
-      virtual std::list<ElementaryNode *> getRecursiveConstituents() = 0;
+      virtual std::set<ElementaryNode *> getRecursiveConstituents() = 0;
       virtual int getNumberOfInputPorts() const;
       virtual int getNumberOfOutputPorts() const;
-      virtual std::list<InputPort *> getListOfInputPort() const { return _listOfInputPort; }
-      virtual std::list<OutputPort *> getListOfOutputPort() const { return _listOfOutputPort; }
+      virtual std::set<InputPort *> getSetOfInputPort() const { return _setOfInputPort; }
+      virtual std::set<OutputPort *> getSetOfOutputPort() const { return _setOfOutputPort; }
       virtual InputPort *getInputPort(const std::string& name) const throw(Exception);
       virtual OutputPort *getOutputPort(const std::string& name) const throw(Exception);
-      virtual std::list<InputDataStreamPort *> getListOfInputDataStreamPort() const { return _listOfInputDataStreamPort; }
-      virtual std::list<OutputDataStreamPort *> getListOfOutputDataStreamPort() const { return _listOfOutputDataStreamPort; }
+      virtual const std::string getInputPortName(const InputPort *) throw (Exception) =0;
+      virtual const std::string getOutputPortName(const OutputPort *) throw (Exception) =0;
+      virtual std::set<InputDataStreamPort *> getSetOfInputDataStreamPort() const { return _setOfInputDataStreamPort; }
+      virtual std::set<OutputDataStreamPort *> getSetOfOutputDataStreamPort() const { return _setOfOutputDataStreamPort; }
       virtual InputDataStreamPort *getInputDataStreamPort(const std::string& name) const throw(Exception);
       virtual OutputDataStreamPort *getOutputDataStreamPort(const std::string& name) const throw(Exception);
-      std::list<ComposedNode *> getAllAscendanceOf(ComposedNode *levelToStop = 0);
+      std::set<ComposedNode *> getAllAscendanceOf(ComposedNode *levelToStop = 0);
+      std::string getImplementation();
     protected:
       bool areAllInputPortsValid() const;
       virtual ComposedNode *getRootNode() throw(Exception);
@@ -71,21 +75,27 @@ namespace YACS
       static void checkValidityOfPortName(const std::string& name) throw(Exception);
       static ComposedNode *checkHavingCommonFather(Node *node1, Node *node2) throw(Exception);
       template<class PORT>
-      PORT *getPort(const std::string& name, const std::list<PORT *>& listOfPorts) const throw(Exception);
+      PORT *getPort(const std::string& name, const std::set<PORT *>& setOfPorts) const throw(Exception);
       template<class PORT, class ENUMTYPE>
-      PORT *edAddPort(const std::string& portName, std::list<PORT *>& listOfPorts, ENUMTYPE type) throw(Exception);
+      PORT *edAddPort(const std::string& portName, std::set<PORT *>& setOfPorts, ENUMTYPE type) throw(Exception);
+      template<class PORT, class ENUMTYPE>
+      bool edCheckAddPort(const std::string& portName, std::set<PORT *>& setOfPorts, ENUMTYPE type) throw(Exception);
       template<class PORT>
-      static void edRemovePortTypedFromList(PORT *port, std::list<PORT *>& listOfPorts) throw(Exception);
+      static void edRemovePortTypedFromSet(PORT *port, std::set<PORT *>& setOfPorts) throw(Exception);
       template<class PORT>
-      static bool isPortNameAlreadyExist(const std::string& portName, const std::list<PORT *>& listOfPorts);
+      static bool isPortNameAlreadyExist(const std::string& portName, const std::set<PORT *>& setOfPorts);
     private:
       void initForDFS() const;
     };
 
+    /**
+     * protected: get a port in a set given it's name
+     */
+
     template<class PORT>
-    PORT *Node::getPort(const std::string& name, const std::list<PORT *>& listOfPorts) const throw(Exception)
+    PORT *Node::getPort(const std::string& name, const std::set<PORT *>& setOfPorts) const throw(Exception)
     {
-      for(typename std::list<PORT *>::const_iterator iter=listOfPorts.begin();iter!=listOfPorts.end();iter++)
+      for(typename std::set<PORT *>::const_iterator iter=setOfPorts.begin();iter!=setOfPorts.end();iter++)
 	{
 	  if((*iter)->getName()==name)
 	    return *iter;
@@ -96,32 +106,61 @@ namespace YACS
       throw Exception(what);
     }
 
+    /**
+     * protected: add a port given it's name and type, in a given set of ports
+     * WHY TEMPLATE PARAMETER ENUMTYPE?
+     */
+
     template<class PORT, class ENUMTYPE>
-    PORT *Node::edAddPort(const std::string& portName, std::list<PORT *>& listOfPorts, ENUMTYPE type) throw(Exception)
+    PORT *Node::edAddPort(const std::string& portName, std::set<PORT *>& setOfPorts, ENUMTYPE type) throw(Exception)
     {
       checkValidityOfPortName(portName);
-      if(isPortNameAlreadyExist<PORT>(portName, listOfPorts))
+      if(isPortNameAlreadyExist<PORT>(portName, setOfPorts))
 	{
 	  std::string what="Port of type "; what+=PORT::NAME; what += " with name : "; what+=portName; what+=" already exists";
 	  throw Exception(what);
 	}
       PORT *ret=new PORT(portName,this,type);
-      listOfPorts.push_back(ret);
+      //      PORT *ret= getRuntime()->createInputPort(portName, _implementation, type);
+      setOfPorts.insert(ret);
       return ret;
     }
 
-    template<class PORT>
-    void Node::edRemovePortTypedFromList(PORT *port, std::list<PORT *>& listOfPorts) throw(Exception)
+    template<class PORT, class ENUMTYPE>
+    bool Node::edCheckAddPort(const std::string& portName, std::set<PORT *>& setOfPorts, ENUMTYPE type) throw(Exception)
     {
-      if(!isPortNameAlreadyExist<PORT>(port->getName(), listOfPorts))
-	throw Exception("Port is not part of the list : unable to remove it");
-      listOfPorts.remove(port);
+      checkValidityOfPortName(portName);
+      if(isPortNameAlreadyExist<PORT>(portName, setOfPorts))
+	{
+	  std::string what="Port of type "; what+=PORT::NAME; what += " with name : "; what+=portName; what+=" already exists";
+	  throw Exception(what);
+	}
+//       PORT *ret=new PORT(portName,this,type);
+//       PORT *ret= getRuntime()->createOutputPort(portName, _implementation, type);
+//       setOfPorts.insert(ret);
+      return true;
     }
 
+    /**
+     * protected: remove a port from a given set
+     */
+
     template<class PORT>
-    bool Node::isPortNameAlreadyExist(const std::string& portName, const std::list<PORT *>& listOfPorts)
+    void Node::edRemovePortTypedFromSet(PORT *port, std::set<PORT *>& setOfPorts) throw(Exception)
     {
-      for(typename std::list<PORT *>::const_iterator iter=listOfPorts.begin();iter!=listOfPorts.end();iter++)
+      if(!isPortNameAlreadyExist<PORT>(port->getName(), setOfPorts))
+	throw Exception("Port is not part of the set : unable to remove it");
+      setOfPorts.erase(port);
+    }
+
+    /**
+     * protected: checks existence of a port, given it's name, in a set
+     */
+
+    template<class PORT>
+    bool Node::isPortNameAlreadyExist(const std::string& portName, const std::set<PORT *>& setOfPorts)
+    {
+      for(typename std::set<PORT *>::const_iterator iter=setOfPorts.begin();iter!=setOfPorts.end();iter++)
 	{
 	  if((*iter)->getName()==portName)
 	    return true;

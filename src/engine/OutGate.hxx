@@ -4,18 +4,20 @@
 #include "Port.hxx"
 #include "Exception.hxx"
 
-#include <list>
+#include <set>
 
 namespace YACS
 {
   namespace ENGINE
   {
     class InGate;
+    class ElementaryNode;
     
     class OutGate : public Port
     {
+      friend class ElementaryNode;
     protected:
-      std::list<InGate *> _listOfInGate;
+      std::set<InGate *> _setOfInGate;
     public:
       static const char NAME[];
     public:
@@ -23,11 +25,12 @@ namespace YACS
       std::string getNameOfTypeOfCurrentInstance() const;
       void exNotifyDone();
       bool edAddInGate(InGate *inGate);
-      std::list<InGate *> edListInGate() const;
+      std::set<InGate *> edSetInGate() const;
       void edRemoveInGate(InGate *inGate) throw(Exception);
       int getNbOfInGatesConnected() const;
     protected:
-      bool isAlreadyInList(InGate *inGate) const;
+      void edRemoveInGateOneWay(InGate *inGate);
+      bool isAlreadyInSet(InGate *inGate) const;
     };
   }
 }

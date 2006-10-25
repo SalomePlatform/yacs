@@ -2,6 +2,7 @@
 #include "Node.hxx"
 
 using namespace YACS::ENGINE;
+using namespace std;
 
 const char InGate::NAME[]="InGate";
 
@@ -9,7 +10,7 @@ InGate::InGate(Node *node):Port(node),_nbPrecursor(0),_nbPrecursorDone(0),_colou
 {
 }
 
-std::string InGate::getNameOfTypeOfCurrentInstance() const
+string InGate::getNameOfTypeOfCurrentInstance() const
 {
   return NAME;
 }

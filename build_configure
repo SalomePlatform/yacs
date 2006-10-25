@@ -45,7 +45,8 @@ cd ${CONF_DIR}
 # -- configure.in construction
 rm -f configure.in
 touch configure.in
-echo "AC_INIT(src)" >> configure.in
+#echo "AC_INIT(src)" >> configure.in
+echo "AC_INIT(YACS,0.1)" >> configure.in
 echo "RELEASE=$VERSION" >> configure.in
 echo "PROJECT=$PROJECT" >> configure.in
 cat configure.in.base >> configure.in

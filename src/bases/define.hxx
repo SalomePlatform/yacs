@@ -11,20 +11,20 @@ namespace YACS
       Black = 12
     } Colour;
 
-  typedef enum
-    {
-      Double = 41,
-      Int = 42,
-      String = 44,
-      Bool = 45,
-      //CorbaRef = 46,
-      None = 49
-    } DynType;
+//   typedef enum
+//     {
+//       Double = 41,
+//       Int = 42,
+//       String = 44,
+//       Bool = 45,
+//       //CorbaRef = 46,
+//       None = 49
+//     } DynType;
 
-  typedef enum
-    {
-      SDouble = 71
-    } StreamType;
+//   typedef enum
+//     {
+//       SDouble = 71
+//     } StreamType;
 
   typedef enum
     {

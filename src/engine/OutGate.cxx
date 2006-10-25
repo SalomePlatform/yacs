@@ -10,41 +10,41 @@ OutGate::OutGate(Node *node):Port(node)
 {
 }
 
-std::string OutGate::getNameOfTypeOfCurrentInstance() const
+string OutGate::getNameOfTypeOfCurrentInstance() const
 {
   return NAME;
 }
 
 void OutGate::exNotifyDone()
 {
-  for(list<InGate *>::iterator iter=_listOfInGate.begin();iter!=_listOfInGate.end();iter++)
+  for(set<InGate *>::iterator iter=_setOfInGate.begin();iter!=_setOfInGate.end();iter++)
     (*iter)->exNotifyFromPrecursor();
 }
 
 bool OutGate::edAddInGate(InGate *inGate)
 {
-  if(!isAlreadyInList(inGate))
+  if(!isAlreadyInSet(inGate))
     {
       inGate->edAppendPrecursor();
-      _listOfInGate.push_back(inGate);
+      _setOfInGate.insert(inGate);
       return true;
     }
   else
     return false;
 }
 
-std::list<InGate *> OutGate::edListInGate() const
+set<InGate *> OutGate::edSetInGate() const
 {
-  return _listOfInGate;
+  return _setOfInGate;
 }
 
 void OutGate::edRemoveInGate(InGate *inGate) throw(Exception)
 {
   bool found=false;
-  for(list<InGate *>::iterator iter=_listOfInGate.begin();iter!=_listOfInGate.end() && !found;iter++)
+  for(set<InGate *>::iterator iter=_setOfInGate.begin();iter!=_setOfInGate.end() && !found;iter++)
     if((*iter)==inGate)
       {
-	_listOfInGate.erase(iter);
+	_setOfInGate.erase(iter);
 	inGate->edRemovePrecursor();
 	found=true;
       }
@@ -52,10 +52,23 @@ void OutGate::edRemoveInGate(InGate *inGate) throw(Exception)
     throw Exception("InGate not already connected to OutGate");
 }
 
-bool OutGate::isAlreadyInList(InGate *inGate) const
+//Idem OutGate::edRemoveInGateOneWay except that no exception thrown if CF not exists
+void OutGate::edRemoveInGateOneWay(InGate *inGate)
+{
+  bool found=false;
+  for(set<InGate *>::iterator iter=_setOfInGate.begin();iter!=_setOfInGate.end() && !found;iter++)
+    if((*iter)==inGate)
+      {
+	_setOfInGate.erase(iter);
+	inGate->edRemovePrecursor();
+	found=true;
+      }
+}
+
+bool OutGate::isAlreadyInSet(InGate *inGate) const
 {
   bool ret=false;
-  for(list<InGate *>::const_iterator iter=_listOfInGate.begin();iter!=_listOfInGate.end() && !ret;iter++)
+  for(set<InGate *>::const_iterator iter=_setOfInGate.begin();iter!=_setOfInGate.end() && !ret;iter++)
     if((*iter)==inGate)
       ret=true;
   return ret;
@@ -63,5 +76,5 @@ bool OutGate::isAlreadyInList(InGate *inGate) const
 
 int OutGate::getNbOfInGatesConnected() const
 {
-  return _listOfInGate.size();
+  return _setOfInGate.size();
 }

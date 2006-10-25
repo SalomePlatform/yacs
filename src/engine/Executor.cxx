@@ -5,6 +5,7 @@
 #include <iostream>
 
 using namespace YACS::ENGINE;
+using namespace std;
 
 using YACS::BASES::Mutex;
 using YACS::BASES::Thread;
@@ -16,7 +17,7 @@ Executor::Executor():_nbOfConcurrentThreads(0)//,_cond(PTHREAD_COND_INITIALIZER)
 
 Executor::~Executor()
 {
-  for(std::list<Thread *>::iterator iter=_groupOfAllThreadsCreated.begin();iter!=_groupOfAllThreadsCreated.end();iter++)
+  for(list<Thread *>::iterator iter=_groupOfAllThreadsCreated.begin();iter!=_groupOfAllThreadsCreated.end();iter++)
     delete *iter;
 }
 
@@ -26,8 +27,8 @@ void Executor::RunW(Scheduler *graph)
   bool isMore;
   int i=0;
   graph->init();
-  std::vector<Task *> tasks;
-  std::vector<Task *>::iterator iter;
+  vector<Task *> tasks;
+  vector<Task *>::iterator iter;
   bool toContinue=true;
   wakeUp();
   while(toContinue)
@@ -55,7 +56,7 @@ void Executor::launchTask(Task *task)
   void **args=new void *[3];
   _mutexForNbOfConcurrentThreads.lock();
   _groupOfAllThreadsCreated.push_back(0);
-  std::list<Thread *>::iterator iter=_groupOfAllThreadsCreated.end();
+  list<Thread *>::iterator iter=_groupOfAllThreadsCreated.end();
   iter--;
   _mutexForNbOfConcurrentThreads.unlock();
   args[0]=(void *)task;

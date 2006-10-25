@@ -6,8 +6,9 @@
 #include "OutputDataStreamPort.hxx"
 
 using namespace YACS::ENGINE;
+using namespace std;
 
-Node::Node(const std::string& name):_name(name),_inGate(this),_outGate(this),_father(0),_colour(YACS::White),_state(YACS::INITED)
+Node::Node(const string& name):_name(name),_inGate(this),_outGate(this),_father(0),_colour(YACS::White),_state(YACS::INITED)
 {
 }
 
@@ -15,12 +16,16 @@ Node::~Node()
 {
 }
 
+/**
+ *  initialisation of all input and output ports and gates, for execution
+ */
+
 void Node::init()
 {
   _inGate.exReset();
-  for(std::list<OutputPort *>::iterator iter=_listOfOutputPort.begin();iter!=_listOfOutputPort.end();iter++)
+  for(set<OutputPort *>::iterator iter=_setOfOutputPort.begin();iter!=_setOfOutputPort.end();iter++)
     (*iter)->exInit();
-  for(std::list<InputPort *>::iterator iter2=_listOfInputPort.begin();iter2!=_listOfInputPort.end();iter2++)
+  for(set<InputPort *>::iterator iter2=_setOfInputPort.begin();iter2!=_setOfInputPort.end();iter2++)
     (*iter2)->exInit();
   if(_inGate.exIsReady())
     _state=YACS::TOACTIVATE;
@@ -28,19 +33,24 @@ void Node::init()
     _state=YACS::INITED;
 }
 
-std::list<Node *> Node::getOutNodes() const
+/**
+ *  get the set of all nodes connected to the outGate
+ */
+
+set<Node *> Node::getOutNodes() const
 {
-  std::list<Node *> ret;
-  std::list<InGate *> inGates=_outGate.edListInGate();
-  for(std::list<InGate *>::iterator iter=inGates.begin();iter!=inGates.end();iter++)
-    ret.push_back((*iter)->getNode());
+  set<Node *> ret;
+  set<InGate *> inGates=_outGate.edSetInGate();
+  for(set<InGate *>::iterator iter=inGates.begin();iter!=inGates.end();iter++)
+    ret.insert((*iter)->getNode());
   return ret;
 }
 
 /**
- * @ note : Update the '_state' attribute.
+ * @note : Update the '_state' attribute.
  *          Typically called by 'this->_inGate' when 'this->_inGate' is ready.
  */
+
 void Node::exUpdateState()
 {
   if(_inGate.exIsReady())
@@ -48,7 +58,7 @@ void Node::exUpdateState()
       _state=YACS::TOACTIVATE;
     else
       {
-	std::string what("Node::exUpdateState : Invalid graph given : Node with name \"");
+	string what("Node::exUpdateState : Invalid graph given : Node with name \"");
 	what+=_name; what+="\" ready to run whereas some inputports are not set correctly\nCheck coherence DF/CF";
 	throw Exception(what);
       }
@@ -56,47 +66,75 @@ void Node::exUpdateState()
 
 int Node::getNumberOfInputPorts() const
 {
-  return _listOfInputPort.size();
+  return _setOfInputPort.size();
 }
 
 int Node::getNumberOfOutputPorts() const
 {
-  return _listOfOutputPort.size();
+  return _setOfOutputPort.size();
 }
 
-InputPort *Node::getInputPort(const std::string& name) const throw(Exception)
+InputPort *Node::getInputPort(const string& name) const throw(Exception)
 {
-  return getPort<InputPort>(name,_listOfInputPort);
+  return getPort<InputPort>(name,_setOfInputPort);
 }
 
-OutputPort *Node::getOutputPort(const std::string& name) const throw(Exception)
+OutputPort *Node::getOutputPort(const string& name) const throw(Exception)
 {
-  return getPort<OutputPort>(name,_listOfOutputPort);
+  return getPort<OutputPort>(name,_setOfOutputPort);
 }
 
-InputDataStreamPort *Node::getInputDataStreamPort(const std::string& name) const throw(Exception)
+InputDataStreamPort *Node::getInputDataStreamPort(const string& name) const throw(Exception)
 {
-  return getPort<InputDataStreamPort>(name,_listOfInputDataStreamPort);
+  return getPort<InputDataStreamPort>(name,_setOfInputDataStreamPort);
 }
 
-OutputDataStreamPort *Node::getOutputDataStreamPort(const std::string& name) const throw(Exception)
+OutputDataStreamPort *Node::getOutputDataStreamPort(const string& name) const throw(Exception)
 {
-  return getPort<OutputDataStreamPort>(name,_listOfOutputDataStreamPort);
+  return getPort<OutputDataStreamPort>(name,_setOfOutputDataStreamPort);
 }
 
-std::list<ComposedNode *> Node::getAllAscendanceOf(ComposedNode *levelToStop)
+
+/**
+ * gets a set of the composed nodes that constitute the ascendancy of this node, starting from root
+ * or from a particular ancestor
+ * @param  levelToStop   composed node which is the oldest ancestor required
+ * @return               ascendancy, direct father first in set.
+ */
+
+set<ComposedNode *> Node::getAllAscendanceOf(ComposedNode *levelToStop)
 {
-  std::list<ComposedNode *> ret;
+  set<ComposedNode *> ret;
   for(ComposedNode *iter=_father;iter!=levelToStop && iter!=0; iter=iter->_father)
-      ret.push_back(iter);
+      ret.insert(iter);
   return ret;
 }
+
+/**
+ *  @return Implementation of node: C++, Python, CORBA...
+ *  _implementation is set by a derived class in a Runtime
+ *  it normally applies only to elementaryNodes and it is used by Ports to select Data Converters.
+ *  Potential problem with Ports attached to composed Nodes...
+ */
+
+string Node::getImplementation()
+{
+  return _implementation;
+}
+
+/**
+ * checks if all input ports contains a valid data. Used at execution to change the state of the node
+ * for activation.
+ */
 
 bool Node::areAllInputPortsValid() const
 {
   bool ret=true;
-  for(std::list<InputPort *>::const_iterator iter=_listOfInputPort.begin();iter!=_listOfInputPort.end();iter++)
-    ret=!(*iter)->exGet().empty();
+  for(set<InputPort *>::const_iterator iter=_setOfInputPort.begin();iter!=_setOfInputPort.end();iter++)
+    {
+      ret=!(*iter)->isEmpty();
+      if (!ret) break;
+    }
   return ret;
 }
 
@@ -110,18 +148,23 @@ ComposedNode *Node::getRootNode() throw(Exception)
   return iter;
 }
 
-void Node::checkValidityOfPortName(const std::string& name) throw(Exception)
+/**
+ * checks validity of ports name, that must not contain a particular character '?'
+ * USAGE NOT CLEAR, not used so far, when are those characters set ?
+ */
+
+void Node::checkValidityOfPortName(const string& name) throw(Exception)
 {
-  if(name.find(SEP_CHAR_IN_PORT, 0 )!=std::string::npos)
+  if(name.find(SEP_CHAR_IN_PORT, 0 )!=string::npos)
     {
-      std::string what("Port name "); what+=name; what+="not valid because it contains character "; what+=SEP_CHAR_IN_PORT;
+      string what("Port name "); what+=name; what+="not valid because it contains character "; what+=SEP_CHAR_IN_PORT;
       throw Exception(what);
     }
 }
 
 /**
- * @ note : Check that 'node1' and 'node2' have exactly the same father
- * @ exception : If 'node1' and 'node2' have NOT exactly the same father
+ * @note : Check that 'node1' and 'node2' have exactly the same father
+ * @exception : If 'node1' and 'node2' have NOT exactly the same father
  */
 ComposedNode *Node::checkHavingCommonFather(Node *node1, Node *node2) throw(Exception)
 {
@@ -133,10 +176,15 @@ ComposedNode *Node::checkHavingCommonFather(Node *node1, Node *node2) throw(Exce
   throw Exception("check failed : nodes have not the same father");
 }
 
+/**
+ * set color for inGates : display
+ * USAGE NOT CLEAR, not used so far
+ */
+
 void Node::initForDFS() const
 {
   _colour=YACS::White;
-  std::list<InGate *> inGates=_outGate.edListInGate();
-  for(std::list<InGate *>::iterator iter=inGates.begin();iter!=inGates.end();iter++)
+  set<InGate *> inGates=_outGate.edSetInGate();
+  for(set<InGate *>::iterator iter=inGates.begin();iter!=inGates.end();iter++)
     (*iter)->initForDFS();
 }

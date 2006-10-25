@@ -5,7 +5,16 @@ SUFFIXES =
 # *.i --> *wrap.cxx
 # --------------------------------------------
 
-SUFFIXES += .i WRAP.cxx
+SUFFIXES += .i WRAP.cxx .idl .hh SK.cc _idl.py
 
 .iWRAP.cxx :
 	$(SWIG) $(SWIG_PYTHON_OPT) $(SWIG_PYTHON_INCLUDES) -o $@ $<
+
+.idlSK.cc:
+	$(OMNIORB_IDL) $(OMNIORB_IDLCXXFLAGS) -bcxx $<
+
+.idl.hh:
+	$(OMNIORB_IDL) $(OMNIORB_IDLCXXFLAGS) -bcxx $<
+
+.idl_idl.py:
+	$(OMNIORB_IDL)  -bpython $<

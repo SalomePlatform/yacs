@@ -1,2 +1,2 @@
 
-SUBDIRS = bases basicData engine
+SUBDIRS = bases engine runtime

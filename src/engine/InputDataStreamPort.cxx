@@ -1,16 +1,17 @@
 #include "InputDataStreamPort.hxx"
 
 using namespace YACS::ENGINE;
+using namespace std;
 
 const char InputDataStreamPort::NAME[]="InputDataStreamPort";
 
-InputDataStreamPort::InputDataStreamPort(const std::string& name, Node *node, StreamType type):DataStreamPort(name,node,type),
+InputDataStreamPort::InputDataStreamPort(const string& name, Node *node, TypeCode* type):DataStreamPort(name,node,type),
 											       InPort(node),
 											       Port(node)
 {
 }
 
-std::string InputDataStreamPort::getNameOfTypeOfCurrentInstance() const
+string InputDataStreamPort::getNameOfTypeOfCurrentInstance() const
 {
   return NAME;
 }

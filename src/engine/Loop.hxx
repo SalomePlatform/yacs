@@ -17,7 +17,7 @@ namespace YACS
       int _nbOfTimeUsed;
       Loop *_loopArtificiallyBuiltMe;
     private:
-      DFToDSForLoop(Loop *loop, const std::string& name, YACS::DynType type);
+      DFToDSForLoop(Loop *loop, const std::string& name, TypeCode* type);
       void loopHasOneMoreRef() { _nbOfTimeUsed++; }
       bool loopHasOneLessRef() { return --_nbOfTimeUsed==0; }
       InputPort *getInputPort(const std::string& name) const throw(Exception);
@@ -35,7 +35,7 @@ namespace YACS
       int _nbOfTimeUsed;
       Loop *_loopArtificiallyBuiltMe;
     private:
-      DSToDFForLoop(Loop *loop, const std::string& name, YACS::StreamType type);
+      DSToDFForLoop(Loop *loop, const std::string& name, TypeCode* type);
       void loopHasOneMoreRef() { _nbOfTimeUsed++; }
       bool loopHasOneLessRef() { return --_nbOfTimeUsed==0; }
       OutputPort *getOutputPort(const std::string& name) const throw(Exception);
@@ -50,27 +50,27 @@ namespace YACS
     {
     protected:
       Node *_node;
-      std::list<InputPort *> _listOfExtraInputPort;
-      std::list<DSToDFForLoop> _inputsTraducer;
-      std::list<DFToDSForLoop> _outputsTraducer;
+      std::set<InputPort *> _setOfExtraInputPort;
+      std::set<DSToDFForLoop *> _inputsTraducer;
+      std::set<DFToDSForLoop *> _outputsTraducer;
     public:
       Loop(const std::string& name);
       ~Loop();
       void edSetNode(Node *node);
-      void edAddExtraInputPort(const std::string& inputPortName, YACS::DynType type) throw(Exception);
+      void edAddExtraInputPort(const std::string& inputPortName, TypeCode* type) throw(Exception);
       void edRemoveExtraInputPort(InputPort *inputPort);
       bool isRepeatedUnpredictablySeveralTimes() const { return true; }
-      static YACS::StreamType MappingDF2DS(YACS::DynType type) throw(Exception);
-      static YACS::DynType MappingDS2DF(YACS::StreamType type) throw(Exception);
+      static TypeCode* MappingDF2DS(TypeCode* type) throw(Exception);
+      static TypeCode* MappingDS2DF(TypeCode* type) throw(Exception);
     protected:
-      InPort *buildDelegateOf(InPort *port, const std::list<ComposedNode *>& pointsOfView);
-      OutPort *buildDelegateOf(OutPort *port, const std::list<ComposedNode *>& pointsOfView);
-      InPort *getDelegateOf(InPort *port, const std::list<ComposedNode *>& pointsOfView) throw(Exception);
-      OutPort *getDelegateOf(OutPort *port, const std::list<ComposedNode *>& pointsOfView) throw(Exception);
-      InPort *releaseDelegateOf(InPort *port, const std::list<ComposedNode *>& pointsOfView) throw(Exception);
-      OutPort *releaseDelegateOf(OutPort *port, const std::list<ComposedNode *>& pointsOfView) throw(Exception);
+      InPort *buildDelegateOf(InPort *port, const std::set<ComposedNode *>& pointsOfView);
+      OutPort *buildDelegateOf(OutPort *port, const std::set<ComposedNode *>& pointsOfView);
+      InPort *getDelegateOf(InPort *port, const std::set<ComposedNode *>& pointsOfView) throw(Exception);
+      OutPort *getDelegateOf(OutPort *port, const std::set<ComposedNode *>& pointsOfView) throw(Exception);
+      InPort *releaseDelegateOf(InPort *port, const std::set<ComposedNode *>& pointsOfView) throw(Exception);
+      OutPort *releaseDelegateOf(OutPort *port, const std::set<ComposedNode *>& pointsOfView) throw(Exception);
       void checkNoCyclePassingThrough(Node *node) throw(Exception);
-      static bool isNecessaryToBuildSpecificDelegateDF2DS(const std::list<ComposedNode *>& pointsOfView);
+      static bool isNecessaryToBuildSpecificDelegateDF2DS(const std::set<ComposedNode *>& pointsOfView);
     };
   }
 }

@@ -4,17 +4,21 @@
 #include "ElementaryNode.hxx"
 
 #include <set>
+#include <string>
 
 using namespace YACS::ENGINE;
+using namespace std;
 
-ComposedNode::ComposedNode(const std::string& name):Node(name)
+ComposedNode::ComposedNode(const string& name):Node(name)
 {
 }
 
 /**
- *
- * @ note : Runtime called method. Overloads the Scheduler::notifyFrom abstract method. Typically Called in Executor (in a parallel thread or not) by the Task 'task'
- *          to inform the scheduler that an event coded 'event' (in Executor static const var) happened. Contrary to updateStateFrom several level may exist between 'sender' and 'this'.
+ * A COMMENTER DAVANTAGE
+ * @note : Runtime called method. Overloads the Scheduler::notifyFrom abstract method.
+ * Typically Called in Executor (in a parallel thread or not) by the Task 'task'
+ * to inform the scheduler that an event coded 'event' (in Executor static const var) happened.
+ * Contrary to updateStateFrom several level may exist between 'sender' and 'this'.
  *
  */
 void ComposedNode::notifyFrom(const Task *sender, //* I : task emitting event
@@ -36,41 +40,56 @@ void ComposedNode::notifyFrom(const Task *sender, //* I : task emitting event
 }
 
 /**
- * @ note : Add a dataflow link.
- *          Precondition : 'start' AND 'end' are in/outputPort contained in a node in descendance of 'this'.
- * @ exception : incompatibility between input and output (type), or 'start'/'end' is/are NOT in/outputPort
- *               contained in a node in descendance of 'this', or a mutilple link to an input not supporting it.
- * @ return : true if a new link has been created, false otherwise.
+ *  Add a dataflow link.
+ *  Precondition : 'start' AND 'end' are in/outputPort contained in a node in descendance of 'this'.
+ * @exception incompatibility between input and output (type), or 'start'/'end' is/are NOT in/outputPort
+ *            contained in a node in descendance of 'this', or a multiple link to an input not supporting it.
+ * @return    true if a new link has been created, false otherwise.
  */
+
 bool ComposedNode::edAddLink(OutputPort *start, InputPort *end) throw(Exception)
 {
   ComposedNode* lwstCmnAnctr=getLowestCommonAncestor(start->getNode(),end->getNode());
-  std::list<ComposedNode *> allAscendanceOfNodeStart=start->getNode()->getAllAscendanceOf(lwstCmnAnctr);
-  std::list<ComposedNode *> allAscendanceOfNodeEnd=end->getNode()->getAllAscendanceOf(lwstCmnAnctr);
+  set<ComposedNode *> allAscendanceOfNodeStart=start->getNode()->getAllAscendanceOf(lwstCmnAnctr);
+  set<ComposedNode *> allAscendanceOfNodeEnd=end->getNode()->getAllAscendanceOf(lwstCmnAnctr);
   checkInMyDescendance(lwstCmnAnctr);
   ComposedNode *iterS=start->getNode()->_father;
+
   OutPort *currentPortO=start;
   while(iterS!=lwstCmnAnctr)
     {
-      currentPortO=iterS->buildDelegateOf(currentPortO, allAscendanceOfNodeEnd);
+      currentPortO=iterS->buildDelegateOf(currentPortO, allAscendanceOfNodeStart);
       iterS=iterS->_father;
     }
   iterS=end->getNode()->_father;
+
   InPort *currentPortI=end;
   while(iterS!=lwstCmnAnctr)
     {
       currentPortI=iterS->buildDelegateOf(currentPortI, allAscendanceOfNodeEnd);
       iterS=iterS->_father;
     }
-  return currentPortO->addInPort(currentPortI);
+
+  bool linkDone = currentPortO->addInPort(currentPortI);
+  if (linkDone)
+    {
+      ComposedNode *iter=end->getNode()->_father;
+      while(iter)
+	{
+	  iter->unpublishInputPort(end);
+	  iter=iter->_father;
+	}
+    }
+
+  return linkDone;
 }
 
 /**
- * @ note : Add a controlflow link.
+ * @note : Add a controlflow link.
  *          Precondition : 'start' AND 'end' are in/outGate contained in a node in DIRECT descendance of 'this'.
- * @ exception : If a cycle has been detected, or incompatibility between input and output, or 'start'/'end' is/are NOT in/outputPort
+ * @exception : If a cycle has been detected, or incompatibility between input and output, or 'start'/'end' is/are NOT in/outputPort
  *               contained in a node in descendance of 'this', or a mutilple link to an input not supporting it.
- * @ return : true if a new link has been created, false otherwise. 
+ * @return : true if a new link has been created, false otherwise. 
  */
 bool ComposedNode::edAddLink(OutGate *start, InGate *end) throw(Exception)
 {
@@ -101,17 +120,21 @@ bool ComposedNode::edAddCFLink(Node *nodeS, Node *nodeE) throw(Exception)
 }
 
 /**
- * @ note : Remove a dataflow link.
- *          Precondition : 'start' AND 'end' are in/outputPort contained in a node in descendance of 'this'.
- * @ exception : The specified link does not exist. The content of Exception is different in accordance with the link from 'start' to 'end' implies DF/DS gateway.
+ * Remove a dataflow link.
+ * Precondition : 'start' AND 'end' are in/outputPort contained in a node in descendance of 'this'.
+ * @exception The specified link does not exist.
+ *            The content of Exception is different in accordance with the link from 'start' to 'end' implies DF/DS gateway.
  */
+
 void ComposedNode::edRemoveLink(OutputPort *start, InputPort *end) throw(Exception)
 {
   ComposedNode* lwstCmnAnctr=getLowestCommonAncestor(start->getNode(),end->getNode());
   checkInMyDescendance(lwstCmnAnctr);
-  std::list<ComposedNode *> allAscendanceOfNodeStart=start->getNode()->getAllAscendanceOf(lwstCmnAnctr);
-  std::list<ComposedNode *> allAscendanceOfNodeEnd=end->getNode()->getAllAscendanceOf(lwstCmnAnctr);
-  //Part of test if the link from 'start' to 'end' really exist particulary all eventually intermediate ports created
+  set<ComposedNode *> allAscendanceOfNodeStart=start->getNode()->getAllAscendanceOf(lwstCmnAnctr);
+  set<ComposedNode *> allAscendanceOfNodeEnd=end->getNode()->getAllAscendanceOf(lwstCmnAnctr);
+
+  // --- Part of test if the link from 'start' to 'end' really exist particulary all eventually intermediate ports created
+
   ComposedNode *iterS=start->getNode()->_father;
   OutPort *currentPortO=start;
   while(iterS!=lwstCmnAnctr)
@@ -119,6 +142,7 @@ void ComposedNode::edRemoveLink(OutputPort *start, InputPort *end) throw(Excepti
       currentPortO=iterS->getDelegateOf(currentPortO, allAscendanceOfNodeEnd);
       iterS=iterS->_father;
     }
+
   iterS=end->getNode()->_father;
   InPort *currentPortI=end;
   while(iterS!=lwstCmnAnctr)
@@ -126,9 +150,13 @@ void ComposedNode::edRemoveLink(OutputPort *start, InputPort *end) throw(Excepti
       currentPortI=iterS->getDelegateOf(currentPortI, allAscendanceOfNodeStart);
       iterS=iterS->_father;
     }
-  //End of test for evt intermediate ports created
+
+  // --- End of test for evt intermediate ports created
+
   currentPortO->removeInPort(currentPortI);
-  //Performing deletion of intermediate ports
+
+  // --- Performing deletion of intermediate ports
+
   iterS=start->getNode()->_father;
   currentPortO=start; currentPortI=end;
   while(iterS!=lwstCmnAnctr)
@@ -136,11 +164,21 @@ void ComposedNode::edRemoveLink(OutputPort *start, InputPort *end) throw(Excepti
       currentPortO=iterS->releaseDelegateOf(currentPortO, allAscendanceOfNodeEnd);
       iterS=iterS->_father;
     }
+
   iterS=end->getNode()->_father;
   while(iterS!=lwstCmnAnctr)
     {
       currentPortI=iterS->releaseDelegateOf(currentPortI, allAscendanceOfNodeStart);
       iterS=iterS->_father;
+    }
+
+  // --- publish inputPort in ancestors
+
+  ComposedNode *iter=end->getNode()->_father;
+  while(iter)
+    {
+      iter->publishInputPort(end);
+      iter=iter->_father;
     }
 }
 
@@ -155,13 +193,19 @@ void ComposedNode::edRemoveLink(OutGate *start, InGate *end) throw(Exception)
 void ComposedNode::publishOutputPort(OutputPort *port) throw(Exception)
 {
   checkInMyDescendance(port->getNode());
-  _listOfOutputPort.push_back(port);
+  _setOfOutputPort.insert(port);
 }
 
 void ComposedNode::publishInputPort(InputPort *port)
 {
-  _listOfInputPort.push_back(port);
+  _setOfInputPort.insert(port);
 }
+
+void ComposedNode::unpublishInputPort(InputPort *port)
+{
+  _setOfInputPort.erase(port);
+}
+
 
 ComposedNode *ComposedNode::getRootNode() throw(Exception)
 {
@@ -171,19 +215,19 @@ ComposedNode *ComposedNode::getRootNode() throw(Exception)
 }
 
 /**
- * @ note : perform the disconnection of all links under the scope of 'this' connected to an input (dataflow or datastream) of node 'node'.
+ * @note : perform the disconnection of all links under the scope of 'this' connected to an input (dataflow or datastream) of node 'node'.
  *          This method is quite heavy because the links are stored in one direction.
  */
 void ComposedNode::disconnectAllLinksConnectedTo(Node *node)
 {
-  std::list<ElementaryNode *> listOfAllNodes=getRecursiveConstituents();
-  for(std::list<ElementaryNode *>::iterator iter=listOfAllNodes.begin();iter!=listOfAllNodes.end();iter++)
+  set<ElementaryNode *> setOfAllNodes=getRecursiveConstituents();
+  for(set<ElementaryNode *>::iterator iter=setOfAllNodes.begin();iter!=setOfAllNodes.end();iter++)
     (*iter)->disconnectAllLinksConnectedTo(node);
 }
 
 /**
- * @ note : Check that 'nodeToTest' is in descendance of 'this' OR equal to 'this'
- * @ exception : If 'nodeToTest' is NOT in descendance of 'this' AND not equal to 'this'
+ * @note : Check that 'nodeToTest' is in descendance of 'this' OR equal to 'this'
+ * @exception : If 'nodeToTest' is NOT in descendance of 'this' AND not equal to 'this'
  */
 void ComposedNode::checkInMyDescendance(Node *nodeToTest) const throw(Exception)
 {
@@ -200,11 +244,11 @@ void ComposedNode::checkInMyDescendance(Node *nodeToTest) const throw(Exception)
 }
 
 /**
- *
- * @ note : Retrieves the lowest common ancestor of 'node1' AND 'node2'. If 'node1' AND 'node2' are equals and are instance of ComposedNode 
+ * 
+ * @note : Retrieves the lowest common ancestor of 'node1' AND 'node2'. If 'node1' AND 'node2' are equals and are instance of ComposedNode 
  *          the father of 'node1' is returned.
- * @ exception : 'node1' and 'node2' does not share the same genealogy.
- * @ return : The lowest common ancestor if it exists.
+ * @exception : 'node1' and 'node2' does not share the same genealogy.
+ * @return : The lowest common ancestor if it exists.
  *
  */
 ComposedNode *ComposedNode::getLowestCommonAncestor(Node *node1, Node *node2) throw(Exception)
@@ -213,7 +257,7 @@ ComposedNode *ComposedNode::getLowestCommonAncestor(Node *node1, Node *node2) th
   if(node1==0 || node2==0)
     throw Exception(what);
   ComposedNode *temp=node1->_father;
-  std::set<ComposedNode *> s;
+  set<ComposedNode *> s;
   while(temp)
     {
       s.insert(temp);
@@ -221,7 +265,7 @@ ComposedNode *ComposedNode::getLowestCommonAncestor(Node *node1, Node *node2) th
     }
   //
   temp=node2->_father;
-  std::set<ComposedNode *>::iterator iter=s.find(temp);
+  set<ComposedNode *>::iterator iter=s.find(temp);
   while(temp && iter==s.end())
     {
       iter=s.find(temp);
@@ -233,10 +277,41 @@ ComposedNode *ComposedNode::getLowestCommonAncestor(Node *node1, Node *node2) th
 }
 
 /**
+ * get the input port name used by the current node, reursively built with children names.
+ */
+
+const string ComposedNode::getInputPortName(const InputPort * inputPort) throw (Exception)
+{
+  Node *node = inputPort->getNode();
+  string portName = inputPort->getName();
+  string nodeName = node->getName();
+
+  set<ComposedNode *> nodePortAncestors = node->getAllAscendanceOf();
+
+  if ( nodePortAncestors.find(this) == nodePortAncestors.end() ) 
+    {
+      string what("InputPort "); what+= portName; what+=" does not belong to node "; what += nodeName;
+      throw Exception(what);
+    }
+
+  Node *father = node;
+  while (father != this)
+    {
+      portName = father->getName() + '.' + portName;
+      father = father->_father;
+    }
+  return portName;
+}
+
+const string ComposedNode::getOutputPortName(const OutputPort *outputPort) throw (Exception)
+{
+}
+
+/**
  *
- * @ note : Runtime called method. Perform, the state updating, from the son node 'node' emitting the event 'event' (among Executor static const var).
+ * @note : Runtime called method. Perform, the state updating, from the son node 'node' emitting the event 'event' (among Executor static const var).
  *          WARNING Precondition : this == node->_father
- * @ return : The event (among Executor static const var) destinated to this->_father node to perform eventually up level update.
+ * @return : The event (among Executor static const var) destinated to this->_father node to perform eventually up level update.
  *
  */
 YACS::Event ComposedNode::updateStateFrom(Node *node,        //* I : node emitting event
@@ -257,32 +332,32 @@ YACS::Event ComposedNode::updateStateFrom(Node *node,        //* I : node emitti
     }
 }
 
-InPort *ComposedNode::buildDelegateOf(InPort *port, const std::list<ComposedNode *>& pointsOfView)
+InPort *ComposedNode::buildDelegateOf(InPort *port, const set<ComposedNode *>& pointsOfView)
 {
   return port;
 }
 
-OutPort *ComposedNode::buildDelegateOf(OutPort *port, const std::list<ComposedNode *>& pointsOfView)
+OutPort *ComposedNode::buildDelegateOf(OutPort *port, const set<ComposedNode *>& pointsOfView)
 {
   return port;
 }
 
-InPort *ComposedNode::getDelegateOf(InPort *port, const std::list<ComposedNode *>& pointsOfView) throw(Exception)
+InPort *ComposedNode::getDelegateOf(InPort *port, const set<ComposedNode *>& pointsOfView) throw(Exception)
 {
   return port;
 }
 
-OutPort *ComposedNode::getDelegateOf(OutPort *port, const std::list<ComposedNode *>& pointsOfView) throw(Exception)
+OutPort *ComposedNode::getDelegateOf(OutPort *port, const set<ComposedNode *>& pointsOfView) throw(Exception)
 {
   return port;
 }
 
-InPort *ComposedNode::releaseDelegateOf(InPort *port, const std::list<ComposedNode *>& pointsOfView) throw(Exception)
+InPort *ComposedNode::releaseDelegateOf(InPort *port, const set<ComposedNode *>& pointsOfView) throw(Exception)
 {
   return port;
 }
 
-OutPort *ComposedNode::releaseDelegateOf(OutPort *port, const std::list<ComposedNode *>& pointsOfView) throw(Exception)
+OutPort *ComposedNode::releaseDelegateOf(OutPort *port, const set<ComposedNode *>& pointsOfView) throw(Exception)
 {
   return port;
 }

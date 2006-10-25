@@ -1,82 +1,110 @@
 #include "OutputPort.hxx"
 #include "InputPort.hxx"
+#include "Runtime.hxx"
+
+#include <sstream>
+#include <iostream>
 
 using namespace YACS::ENGINE;
 using namespace std;
 
 const char OutputPort::NAME[]="OutputPort";
 
-OutputPort::OutputPort(const std::string& name, Node *node, DynType type):DataFlowPort(name,node,type),OutPort(node),Port(node)
+OutputPort::OutputPort(const string& name, Node *node, TypeCode* type):DataFlowPort(name,node,type),OutPort(node),Port(node)
 {
 }
 
-std::string OutputPort::getNameOfTypeOfCurrentInstance() const
+string OutputPort::getNameOfTypeOfCurrentInstance() const
 {
   return NAME;
 }
 
-Data OutputPort::foGet() const
-{
-  return _data;
-}
-
 void OutputPort::exInit()
 {
-  _data.exInit();
+//   _data.exInit();
 }
 
-void OutputPort::exPut(Data data) throw(ConversionException)
+
+void OutputPort::put(const void *data) throw(ConversionException)
 {
-  _data=data;
-  for(list<InputPort *>::iterator iter=_listOfInputPort.begin();iter!=_listOfInputPort.end();iter++)
-    (*iter)->exAccept(data);
-}
+//   _data = (void *)data;
+  cerr << _name << endl;
+  cerr << _impl << endl;
+  stringstream msg;
+  msg << "Not implemented (" << __FILE__ << ":" << __LINE__ << ")";
+  throw Exception(msg.str());
+ }
+
+
+/**
+ * check if output type is an input type and if a data converter exists before link
+ */
 
 bool OutputPort::edAddInputPort(InputPort *inputPort) throw(ConversionException)
 {
-  if(!Data::areStaticallyCompatible(edGetType(),inputPort->edGetType()))
-    throw ConversionException(Data::edGetTypeInPrintableForm(edGetType()),Data::edGetTypeInPrintableForm(inputPort->edGetType()));
-  if(!isAlreadyInList(inputPort))
+  InputPort *pwrap = getRuntime()->adapt(inputPort->getImpl(),
+					     inputPort,
+					     this->getImpl(),
+					     this->type());
+
+  if(!isAlreadyInSet(pwrap))
     {
-      _listOfInputPort.push_back(inputPort);
+      _setOfInputPort.insert(pwrap);
       inputPort->edNotifyReferenced();
       return true;
     }
   else
-    return false;
+    {
+      if ( dynamic_cast<ProxyPort*> (pwrap) )
+	{
+	  cerr << "ProxyPort destruction, while creating the same link twice..." << endl;
+	  delete pwrap;
+	}
+      return false;
+    }
 }
 
-list<InputPort *> OutputPort::edListInputPort()
+set<InputPort *> OutputPort::edSetInputPort()
 {
-  return _listOfInputPort;
+  return _setOfInputPort;
 }
 
 void OutputPort::edRemoveInputPort(InputPort *inputPort) throw(Exception)
 {
-  if(isAlreadyInList(inputPort))
-    _listOfInputPort.remove(inputPort);
+  if(isAlreadyInSet(inputPort))
+    _setOfInputPort.erase(inputPort);
   else
     throw Exception("OutputPort::edRemoveInputPort : link does not exist, unable to remove it");
+}
+
+//Idem OutputPort::edRemoveInputPort but without any check.
+void OutputPort::edRemoveInputPortOneWay(InputPort *inputPort)
+{
+  _setOfInputPort.erase(inputPort);
 }
 
 OutputPort::~OutputPort()
 {
 }
 
-bool OutputPort::isAlreadyInList(InputPort *inputPort) const
+bool OutputPort::isAlreadyInSet(InputPort *inputPort) const
 {
   bool ret=false;
-  for(list<InputPort *>::const_iterator iter=_listOfInputPort.begin();iter!=_listOfInputPort.end() && !ret;iter++)
+  for(set<InputPort *>::const_iterator iter=_setOfInputPort.begin();iter!=_setOfInputPort.end() && !ret;iter++)
     if((*iter)==inputPort)
       ret=true;
   return ret;
 }
 
+/**
+ * check compatibility of port class ( an inputPort) before trying to create the link
+ */
+
 bool OutputPort::addInPort(InPort *inPort) throw(Exception)
 {
   if(inPort->getNameOfTypeOfCurrentInstance()!=InputPort::NAME)
     {
-      std::string what="not compatible type of port requested during building of link FROM ";
+      string what="not compatible type of port requested during building of link FROM ";
       what+=NAME; what+=" TO "; what+=inPort->getNameOfTypeOfCurrentInstance();
       throw Exception(what);
     }
@@ -87,7 +115,7 @@ void OutputPort::removeInPort(InPort *inPort) throw(Exception)
 {
   if(inPort->getNameOfTypeOfCurrentInstance()!=InputPort::NAME)
     {
-      std::string what="not compatible type of port requested during destruction of for link FROM ";
+      string what="not compatible type of port requested during destruction of for link FROM ";
       what+=NAME; what+=" TO "; what+=inPort->getNameOfTypeOfCurrentInstance();
       throw Exception(what);
     }
@@ -96,5 +124,5 @@ void OutputPort::removeInPort(InPort *inPort) throw(Exception)
 
 bool OutputPort::isLinked()
 {
-  return _listOfInputPort.empty();
+  return _setOfInputPort.empty();
 }

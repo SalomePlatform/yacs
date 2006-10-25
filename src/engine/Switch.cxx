@@ -1,8 +1,9 @@
 #include "Switch.hxx"
 
 using namespace YACS::ENGINE;
+using namespace std;
 
-Switch::Switch(const std::string& name):ComposedNode(name)
+Switch::Switch(const string& name):ComposedNode(name)
 {
 }
 

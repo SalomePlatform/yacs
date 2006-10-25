@@ -1,37 +1,46 @@
 #include "OutputDataStreamPort.hxx"
 #include "InputDataStreamPort.hxx"
-#include "TypeCheckerDataStream.hxx"
+//#include "TypeCheckerDataStream.hxx"
 
 using namespace YACS::ENGINE;
+using namespace std;
 
 const char OutputDataStreamPort::NAME[]="OutputDataStreamPort";
 
-OutputDataStreamPort::OutputDataStreamPort(const std::string& name, Node *node, StreamType type):DataStreamPort(name,node,type),OutPort(node),Port(node)
+OutputDataStreamPort::OutputDataStreamPort(const string& name, Node *node, TypeCode* type):DataStreamPort(name,node,type),OutPort(node),Port(node)
 {
 }
 
-std::string OutputDataStreamPort::getNameOfTypeOfCurrentInstance() const
+string OutputDataStreamPort::getNameOfTypeOfCurrentInstance() const
 {
   return NAME;
 }
 
 bool OutputDataStreamPort::edAddInputDataStreamPort(InputDataStreamPort *port) throw(ConversionException)
 {
-  if(!TypeCheckerDataStream::areStaticallyCompatible(edGetType(),port->edGetType()))
-    throw ConversionException(TypeCheckerDataStream::edGetTypeInPrintableForm(edGetType()),TypeCheckerDataStream::edGetTypeInPrintableForm(port->edGetType()));
-  if(!isAlreadyInList(port))
+//   if(!TypeCheckerDataStream::areStaticallyCompatible(edGetType(),port->edGetType()))
+//     throw ConversionException(TypeCheckerDataStream::edGetTypeInPrintableForm(edGetType()),TypeCheckerDataStream::edGetTypeInPrintableForm(port->    throw ConversionException(TypeCheckerDataStream::edGetTypeInPrintableForm(edGetType()),TypeCheckerDataStream::edGetTypeInPrintableForm(port->edGetType()));
+  if(!isAlreadyInSet(port))
     {
-      _listOfInputDataStreamPort.push_back(port);
+      _setOfInputDataStreamPort.insert(port);
       return true;
     }
   else
     return false;
 }
 
-void OutputDataStreamPort::edRemoveInputDataStreamPort(InputDataStreamPort *inputPort)
+void OutputDataStreamPort::edRemoveInputDataStreamPort(InputDataStreamPort *inputPort) throw(Exception)
 {
-  if(isAlreadyInList(inputPort))
-    _listOfInputDataStreamPort.remove(inputPort);
+  if(isAlreadyInSet(inputPort))
+    _setOfInputDataStreamPort.erase(inputPort);
+//   else
+//     throw Exception("OutputDataStreamPort::edRemoveInputDataStreamPort : link does not exist, unable to remove it");
+}
+
+//Idem OutputDataStreamPort::edRemoveInputDataStreamPort but no exception thrown if inputPort is not known
+void OutputDataStreamPort::edRemoveInputDataStreamPortOneWay(InputDataStreamPort *inputPort)
+{
+  _setOfInputDataStreamPort.erase(inputPort);
 }
 
 bool OutputDataStreamPort::addInPort(InPort *inPort) throw(Exception)
@@ -44,13 +53,13 @@ void OutputDataStreamPort::removeInPort(InPort *inPort) throw(Exception)
 
 bool OutputDataStreamPort::isLinked()
 {
-  return _listOfInputDataStreamPort.empty();
+  return _setOfInputDataStreamPort.empty();
 }
 
-bool OutputDataStreamPort::isAlreadyInList(InputDataStreamPort *inputPort) const
+bool OutputDataStreamPort::isAlreadyInSet(InputDataStreamPort *inputPort) const
 {
   bool ret=false;
-  for(std::list<InputDataStreamPort *>::const_iterator iter=_listOfInputDataStreamPort.begin();iter!=_listOfInputDataStreamPort.end();iter++)
+  for(set<InputDataStreamPort *>::const_iterator iter=_setOfInputDataStreamPort.begin();iter!=_setOfInputDataStreamPort.end();iter++)
     if((*iter)==inputPort)
       ret=true;
   return ret;

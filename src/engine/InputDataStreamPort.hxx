@@ -13,7 +13,7 @@ namespace YACS
     public:
       static const char NAME[];
     public:
-      InputDataStreamPort(const std::string& name, Node *node, StreamType type);
+      InputDataStreamPort(const std::string& name, Node *node, TypeCode* type);
       std::string getNameOfTypeOfCurrentInstance() const;
     };
   }

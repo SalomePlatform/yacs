@@ -10,7 +10,7 @@ namespace YACS
     class Bloc : public ComposedNode
     {
     protected:
-      std::list<Node *> _listOfNode;//OWNERSHIP OF ALL NODES
+      std::set<Node *> _setOfNode;//OWNERSHIP OF ALL NODES
     public:
       Bloc(const std::string& name);
       ~Bloc();
@@ -19,11 +19,11 @@ namespace YACS
       int getNumberOfCFLinks() const;
       std::vector<Task *> getNextTasks(bool& isMore);
       void getReadyTasks(std::vector<Task *>& tasks);
-      std::list<ElementaryNode *> getRecursiveConstituents();
+      std::set<ElementaryNode *> getRecursiveConstituents();
       void exUpdateState();
       bool edAddChild(Node *node) throw(Exception);
       void edRemoveChild(Node *node) throw(Exception);
-      std::list<Node *> getChildren() { return _listOfNode; }
+      std::set<Node *> getChildren() { return _setOfNode; }
       void selectRunnableTasks(std::vector<Task *>& tasks);
     protected:
       bool areAllSubNodesFinished() const;

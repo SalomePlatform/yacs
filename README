@@ -1,6 +1,26 @@
 YACS is for dYnamic pArallel Coupling System
 ============================================
 
+TODOlist, questions
+-------------------
+
+Les noms de noeuds devraient avoir une portée relative au bloc qui les contient,
+et pouvoir être identifiés au sein d'une hiérarchie de bloc par un nom
+construit de la même façon que pour les ports:
+"bloc1.bloc2.noeud3"
+
+Dans quels cas faut-il créer des ports de données sur des noeuds composés ?
+(Switch, boucle...).
+La création est elle faite automatiquement au niveau de l'engine ?
+
+Fonction de vérification de la compétude d'un graphe à l'édition:
+- tous les ports de donnée entrants doivent être initialisés ou connectés.
+- inventaire des ports de donnée entrants non initialisés et non connectés.
+- faut-il vérifier quelque chose pour les gates ?
+
+
+
+
 IMPROVEMENTS :
 
 - OutGate::isAlreadyInList : use std::find

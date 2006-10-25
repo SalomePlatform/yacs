@@ -2,7 +2,6 @@
 #define __DATAFLOWPORT_HXX__
 
 #include "Port.hxx"
-#include "Data.hxx"
 
 #include <string>
 
@@ -13,16 +12,17 @@ namespace YACS
     class DataFlowPort : public virtual Port
     {
     protected:
-      Data _data;
+      void* _data;
       std::string _name;
     public:
       static const char NAME[];
     protected:
-      DataFlowPort(const std::string& name, Node *node, DynType type);
+      DataFlowPort(const std::string& name, Node *node, TypeCode* type);
     public:
       std::string getNameOfTypeOfCurrentInstance() const;
-      DynType edGetType() const;
-      virtual void edSetType(DynType type);
+      TypeCode* edGetType() const;
+      virtual TypeCode * type();
+      virtual void edSetType(TypeCode* type);
       std::string getName() const { return _name; }
     };
   }

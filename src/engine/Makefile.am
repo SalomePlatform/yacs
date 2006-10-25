@@ -6,6 +6,8 @@ SUBDIRS = Test
 lib_LTLIBRARIES = libYACSEngine.la
 
 libYACSEngine_la_SOURCES =         \
+	TypeCode.cxx               \
+	ConversionException.cxx    \
 	Port.cxx InGate.cxx        \
 	OutGate.cxx                \
 	DataFlowPort.cxx           \
@@ -22,6 +24,7 @@ libYACSEngine_la_SOURCES =         \
 	Bloc.cxx                   \
 	Loop.cxx                   \
 	Switch.cxx                 \
+	Runtime.cxx                \
 	Scheduler.hxx              \
 	Task.hxx                   \
 	Executor.cxx               \
@@ -30,11 +33,9 @@ libYACSEngine_la_SOURCES =         \
 EXTRA_libYACSEngine_la_SOURCES =  \
 	$(__dummy__)
 
-libYACSEngine_la_LIBADD = ../bases/libYACSBases.la \
-                          ../basicData/libYACSBasicData.la 
+libYACSEngine_la_LIBADD = ../bases/libYACSBases.la 
 
 AM_CXXFLAGS = $(THREAD_DEF)  \
-              -I$(srcdir)/../bases \
-              -I$(srcdir)/../basicData
+              -I$(srcdir)/../bases
 
 include $(top_srcdir)/adm/unix/make_end.am
