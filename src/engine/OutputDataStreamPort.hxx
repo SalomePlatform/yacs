@@ -22,17 +22,20 @@ namespace YACS
     public:
       static const char NAME[];
     public:
+      OutputDataStreamPort(const OutputDataStreamPort& other, Node *newHelder);
       OutputDataStreamPort(const std::string& name, Node *node, TypeCode* type);
-      std::string getNameOfTypeOfCurrentInstance() const;
-      bool edAddInputDataStreamPort(InputDataStreamPort *port) throw(ConversionException);
-      void edRemoveInputDataStreamPort(InputDataStreamPort *inputPort) throw(Exception);
-      bool addInPort(InPort *inPort) throw(Exception);
-      void removeInPort(InPort *inPort) throw(Exception);
-      bool isLinked();
-    protected:
-      void edRemoveInputDataStreamPortOneWay(InputDataStreamPort *inputPort);
+      virtual ~OutputDataStreamPort();
+      virtual OutputDataStreamPort *clone(Node *newHelder) const;
+      std::set<InPort *> edSetInPort() const;
+      bool isAlreadyLinkedWith(InPort *with) const;
+      virtual std::string getNameOfTypeOfCurrentInstance() const;
+      virtual bool addInPort(InPort *inPort) throw(Exception);
+      virtual bool edAddInputDataStreamPort(InputDataStreamPort *port) throw(ConversionException);
+      int edRemoveInputDataStreamPort(InputDataStreamPort *inPort, bool forward) throw(Exception);
+      void edRemoveAllLinksLinkedWithMe() throw(Exception);
+      int removeInPort(InPort *inPort, bool forward) throw(Exception);
     private:
-      bool isAlreadyInSet(InputDataStreamPort *inputPort) const;
+      bool isAlreadyInSet(InputDataStreamPort *inPort) const;
     };
   }
 }

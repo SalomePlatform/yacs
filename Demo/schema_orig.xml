@@ -1,0 +1,79 @@
+<proc>
+<forloop name="b1" nsteps="2">
+ <bloc name="b">
+  <inline name="node1" >
+    <function name="f"> 
+      <code>a=1</code> 
+      <code>def f(p1):</code> 
+      <code>   global a</code> 
+      <code>   a=a+1</code> 
+      <code>   print a</code> 
+      <code>   return p1</code> 
+    </function>
+    <inport name="p1" type="int"/>
+    <outport name="p1" type="int"/>
+  </inline>
+  <inline name="node2" >
+    <function name="f"> 
+      <code>def f(p1):</code> 
+      <code>   return p1</code> 
+    </function>
+    <inport name="p1" type="int"/>
+    <outport name="p1" type="int"/>
+  </inline>
+  <service name="node3" >
+    <kind>xmlsh</kind>
+    <ref>./xmlrpcprog.py</ref>
+    <method>echo</method>
+    <inport name="p1" type="int"/>
+    <outport name="p1" type="int"/>
+  </service>
+  <inline name="node4" >
+    <function name="f"> 
+      <code>def f(p1):</code> 
+      <code>   return p1</code> 
+    </function>
+    <inport name="p1" type="int"/>
+    <outport name="p1" type="int"/>
+  </inline>
+  <service name="node5" >
+    <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+    <method>echoLong</method>
+    <inport name="p1" type="int"/>
+    <outport name="p1" type="int"/>
+  </service>
+
+  <!--control -->
+  <control> <fromnode>node1</fromnode> <tonode>node2</tonode> </control>
+  <control> <fromnode>node1</fromnode> <tonode>node3</tonode> </control>
+  <control> <fromnode>node3</fromnode> <tonode>node4</tonode> </control>
+  <control> <fromnode>node4</fromnode> <tonode>node5</tonode> </control>
+  <!-- datalinks -->
+  <datalink> <fromnode>node1</fromnode><fromport>p1</fromport>
+               <tonode>node3</tonode> <toport>p1</toport> </datalink>
+  <datalink> <fromnode>node1</fromnode><fromport>p1</fromport>
+               <tonode>node2</tonode> <toport>p1</toport> </datalink>
+  <datalink> <fromnode>node3</fromnode><fromport>p1</fromport>
+               <tonode>node4</tonode> <toport>p1</toport> </datalink>
+  <datalink> <fromnode>node4</fromnode><fromport>p1</fromport>
+               <tonode>node5</tonode> <toport>p1</toport> </datalink>
+  <!-- parameters -->
+  <parameter> <tonode>node1</tonode> <toport>p1</toport>
+    <value><int>32356</int> </value>
+  </parameter>
+ </bloc>
+</forloop>
+<inline name="node4" >
+  <function name="f"> 
+      <code>def f(p1):</code> 
+      <code>   print p1</code> 
+      <code>   return p1</code> 
+  </function>
+  <inport name="p1" type="int"/>
+  <outport name="p1" type="int"/>
+</inline>
+<control> <fromnode>b1</fromnode> <tonode>node4</tonode> </control>
+<datalink> <fromnode>b1.b.node5</fromnode><fromport>p1</fromport>
+           <tonode>node4</tonode> <toport>p1</toport> </datalink>
+</proc>
+

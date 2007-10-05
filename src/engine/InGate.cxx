@@ -6,7 +6,11 @@ using namespace std;
 
 const char InGate::NAME[]="InGate";
 
-InGate::InGate(Node *node):Port(node),_nbPrecursor(0),_nbPrecursorDone(0),_colour(YACS::White)
+InGate::InGate(Node *node):Port(node)
+{
+}
+
+InGate::~InGate()
 {
 }
 
@@ -15,34 +19,85 @@ string InGate::getNameOfTypeOfCurrentInstance() const
   return NAME;
 }
 
-void InGate::exNotifyFromPrecursor()
+void InGate::edDisconnectAllLinksToMe()
 {
-  _nbPrecursorDone++;
-  if(exIsReady() && _node)
+  for(map<OutGate *, bool >::iterator iter=_backLinks.begin();iter!=_backLinks.end();iter++)
+    ((*iter).first)->edRemoveInGate(this,false);
+  _backLinks.clear();
+}
+
+//! Notify this port that an upstream node connected by a control flow link is finished
+/*!
+ *  Calls the node's gate method : Node::exUpdateState
+ *
+ *  Called by OutGate::exNotifyDone
+ */
+void InGate::exNotifyFromPrecursor(OutGate *from)
+{
+  map< OutGate *, bool >::iterator iter=_backLinks.find(from);
+  (*iter).second=true;
+  if(exIsReady())
     _node->exUpdateState();
 }
 
-void InGate::edAppendPrecursor()
+//! Notify this port that an upstream node connected by a control flow link has failed
+/*!
+ *
+ */
+void InGate::exNotifyFailed()
 {
-  _nbPrecursor++;
+  if(_node) _node->exFailedState();
 }
 
-void InGate::edRemovePrecursor()
+//! Notify this port that an upstream node connected by a control flow link has been disabled
+/*!
+ *
+ */
+void InGate::exNotifyDisabled()
 {
-  _nbPrecursor--;
+  if(_node)
+    _node->exDisabledState();
 }
 
-void InGate::edSet(int nbOfPrecursors)
+void InGate::edAppendPrecursor(OutGate *from)
 {
-  _nbPrecursor=nbOfPrecursors;
+  _backLinks[from]=false;
+}
+
+void InGate::edRemovePrecursor(OutGate *from)
+{
+  _backLinks.erase(from);
+}
+
+int InGate::getNumberOfBackLinks() const
+{
+  return _backLinks.size();
 }
 
 void InGate::exReset()
 {
-  _nbPrecursorDone=0;
+  for(map<OutGate *, bool >::iterator iter=_backLinks.begin();iter!=_backLinks.end();iter++)
+    (*iter).second=false;
 }
 
 bool InGate::exIsReady() const
 {
-  return _nbPrecursor==_nbPrecursorDone;
+  bool isReady=true;
+  for(map<OutGate *, bool >::const_iterator iter=_backLinks.begin();iter!=_backLinks.end() && isReady;iter++)
+    isReady=(*iter).second;
+  return isReady;
+}
+
+std::list<OutGate *> InGate::getBackLinks()
+{
+  list<OutGate *> listo;
+  for(map<OutGate *, bool >::iterator iter=_backLinks.begin();iter!=_backLinks.end();iter++)
+    listo.push_back(iter->first);
+  return listo;  
+}
+
+void InGate::setPrecursorDone(OutGate *from)
+{
+  map< OutGate *, bool >::iterator iter=_backLinks.find(from);
+  (*iter).second=true;  
 }

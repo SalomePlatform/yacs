@@ -1,0 +1,38 @@
+<proc>
+    <!--one loop with 3 steps initialized by a Python node -->
+    <!--types -->
+    <!--nodes -->
+    <inline name="n" >
+        <script>
+            <code>nstep=3</code>
+        </script>
+        <outport name="nstep" type="int"/>
+    </inline>
+    <forloop name="b1" >
+      <inline name="node2" >
+        <function name="f">
+            <code>a=0</code>
+            <code>def f(p1):</code>
+            <code>  global a</code>
+            <code>  p1= p1+10.</code>
+            <code>  print a</code>
+            <code>  a=a+p1</code>
+            <code>  print a</code>
+            <code>  return p1</code>
+        </function>
+        <inport name="p1" type="double"/>
+        <outport name="p1" type="double"/>
+      </inline>
+    </forloop>
+    <!--control links -->
+    <control> <fromnode>n</fromnode> <tonode>b1</tonode> </control>
+    <!--data links -->
+    <datalink> <fromnode>n</fromnode><fromport>nstep</fromport>
+               <tonode>b1</tonode> <toport>nsteps</toport> </datalink>
+    <!--parameters -->
+    <parameter>
+        <tonode>b1.node2</tonode> <toport>p1</toport>
+        <value><double>23</double> </value>
+    </parameter>
+
+</proc>

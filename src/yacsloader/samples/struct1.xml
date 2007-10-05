@@ -1,0 +1,226 @@
+<proc>
+    <!--types -->
+    <sequence name="dblevec" content="double"/>
+    <objref name="o1" />
+    <struct name="eo/S1" >
+      <member name="x" type="double"/>
+      <member name="y" type="int"/>
+      <member name="s" type="string"/>
+      <member name="b" type="bool"/>
+      <member name="vd" type="dblevec"/>
+    </struct>
+
+    <struct name="eo/S2" >
+      <member name="s" type="eo/S1"/>
+    </struct>
+
+    <!--nodes -->
+    <inline name="node0" >
+      <script>
+        <code>p1=[25.3]*10</code>
+        <code>s={'x':1,'y':2,'s':"coucou",'b':1,'vd':[1.,2.,3.]}</code>
+        <code>s1={'s':s}</code>
+        <code>t1=[25.3]*10</code>
+      </script>
+      <outport name="p1" type="dblevec"/>
+      <outport name="s1" type="eo/S2"/>
+      <outport name="t1" type="dblevec"/>
+    </inline>
+
+    <service name="corba0" >
+      <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+      <method>echoStruct</method>
+      <inport name="s1" type="eo/S2"/>
+      <outport name="s1" type="eo/S2"/>
+    </service>
+
+    <service name="xml0" >
+      <kind>xmlsh</kind>
+      <ref>./xmlrun.sh</ref>
+      <method>echo</method>
+      <inport name="p1" type="eo/S2"/>
+      <outport name="p1" type="eo/S2"/>
+    </service>
+
+    <inline name="pyth3" >
+      <script>
+        <code>print s1</code>
+      </script>
+      <inport name="s1" type="eo/S2"/>
+    </inline>
+
+    <inline name="pyth9" >
+      <script>
+        <code>print s1</code>
+      </script>
+      <inport name="s1" type="eo/S2"/>
+    </inline>
+
+    <service name="corba1" >
+      <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+      <method>echoDouble</method>
+      <inport name="p1" type="double"/>
+      <outport name="p1" type="double"/>
+    </service>
+
+    <service name="corba5" >
+      <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+      <method>echoDoubleVec</method>
+      <inport name="p1" type="dblevec"/>
+      <outport name="p1" type="dblevec"/>
+    </service>
+
+    <inline name="pyth2" >
+      <script>
+        <code>print s1</code>
+      </script>
+      <inport name="s1" type="eo/S2"/>
+    </inline>
+
+    <inline name="pyth0" >
+      <script>
+        <code>print s1</code>
+        <code>print t1</code>
+      </script>
+      <inport name="p1" type="double"/>
+      <inport name="s1" type="eo/S2"/>
+      <inport name="t1" type="dblevec"/>
+      <outport name="p1" type="double"/>
+    </inline>
+
+    <inline name="pyth1" >
+      <script>
+      </script>
+      <inport name="p1" type="double"/>
+      <outport name="p1" type="double"/>
+    </inline>
+
+    <foreach name="foreach2" nbranch="3" type="double" >
+      <inline name="pyth4" >
+        <script/>
+        <inport name="p1" type="double"/>
+        <outport name="p1" type="double"/>
+      </inline>
+    </foreach>
+
+    <inline name="pyth6" >
+      <script>
+        <code>print p1</code>
+      </script>
+      <inport name="p1" type="dblevec"/>
+      <outport name="p1" type="dblevec"/>
+    </inline>
+
+    <foreach name="foreach4" nbranch="3" type="double" >
+      <inline name="nodefor4" >
+        <script/>
+        <inport name="p1" type="double"/>
+        <outport name="p1" type="double"/>
+      </inline>
+    </foreach>
+
+    <!--parameters -->
+    <parameter>
+        <tonode>pyth0</tonode> <toport>p1</toport>
+        <value><double>1</double> </value>
+    </parameter>
+    <parameter>
+        <tonode>pyth6</tonode> <toport>p1</toport>
+        <value> <array> <data>
+            <value><double>1</double> </value>
+            <value><double>0</double> </value>
+        </data> </array> </value>
+    </parameter>
+    <parameter>
+        <tonode>foreach4</tonode> <toport>SmplsCollection</toport>
+        <value> <array> <data>
+            <value><double>1</double> </value>
+            <value><double>0</double> </value>
+        </data> </array> </value>
+    </parameter>
+
+    <parameter>
+        <tonode>pyth9</tonode> <toport>s1</toport>
+        <value><struct>
+          <member>
+            <name>s</name>
+            <value><struct>
+              <member>
+                <name>b</name>
+                <value><boolean>1</boolean></value>
+              </member>
+              <member>
+                <name>s</name>
+                <value><string>"coucou"</string></value>
+              </member>
+              <member>
+              <name>vd</name>
+                <value><array><data>
+                  <value><double>1</double> </value>
+                  <value><double>0</double> </value>
+                </data></array></value>
+              </member>
+              <member>
+                <name>x</name>
+                <value><double>10</double></value>
+              </member>
+              <member>
+                <name>y</name>
+                <value><int>2</int></value>
+              </member>
+            </struct></value>
+          </member>
+        </struct></value>
+    </parameter>
+
+    <!--datalinks -->
+    <datalink>
+      <fromnode>node0</fromnode><fromport>t1</fromport>
+      <tonode>corba5</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+      <fromnode>node0</fromnode><fromport>s1</fromport>
+      <tonode>corba0</tonode> <toport>s1</toport>
+    </datalink>
+    <datalink>
+      <fromnode>corba0</fromnode><fromport>s1</fromport>
+      <tonode>pyth2</tonode> <toport>s1</toport>
+    </datalink>
+    <datalink>
+      <fromnode>corba0</fromnode><fromport>s1</fromport>
+      <tonode>xml0</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+      <fromnode>xml0</fromnode><fromport>p1</fromport>
+      <tonode>pyth3</tonode> <toport>s1</toport>
+    </datalink>
+    <datalink>
+      <fromnode>node0</fromnode><fromport>t1</fromport>
+      <tonode>pyth0</tonode> <toport>t1</toport>
+    </datalink>
+    <datalink>
+      <fromnode>node0</fromnode><fromport>s1</fromport>
+      <tonode>pyth0</tonode> <toport>s1</toport>
+    </datalink>
+    <datalink>
+      <fromnode>pyth0</fromnode><fromport>p1</fromport>
+      <tonode>pyth1</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+      <fromnode>pyth0</fromnode><fromport>p1</fromport>
+      <tonode>corba1</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+      <fromnode>node0</fromnode><fromport>p1</fromport>
+      <tonode>foreach2</tonode> <toport>SmplsCollection</toport>
+    </datalink>
+    <datalink>
+      <fromnode>foreach2</fromnode><fromport>SmplPrt</fromport>
+      <tonode>foreach2.pyth4</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+      <fromnode>foreach4</fromnode><fromport>SmplPrt</fromport>
+      <tonode>foreach4.nodefor4</tonode> <toport>p1</toport>
+    </datalink>
+
+</proc>

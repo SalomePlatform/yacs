@@ -2,22 +2,44 @@
 #ifndef _PYTHONNODE_HXX_
 #define _PYTHONNODE_HXX_
 
-#include "ElementaryNode.hxx"
+#include "InlineNode.hxx"
+#include <Python.h>
 
 namespace YACS
 {
   namespace ENGINE
   {
-    
-    class PythonNode: public ElementaryNode 
+    class PythonNode : public InlineNode 
     {
-    public:
-      PythonNode(const std::string& name);
-      virtual void execute();
-      virtual void set_script(const std::string& script);
-
     protected:
-      std::string _script;
+      Node *simpleClone(ComposedNode *father, bool editionOnly) const;
+    public:
+      PythonNode(const PythonNode& other, ComposedNode *father);
+      PythonNode(const std::string& name);
+      virtual ~PythonNode();
+      virtual void execute();
+      virtual void load();
+      PythonNode* cloneNode(const std::string& name);
+      static const char KIND[];
+      static const char IMPL_NAME[];
+    protected:
+      PyObject* _context;
+    };
+
+    class PyFuncNode : public InlineFuncNode 
+    {
+    protected:
+      Node *simpleClone(ComposedNode *father, bool editionOnly) const;
+    public:
+      PyFuncNode(const PyFuncNode& other, ComposedNode *father);
+      PyFuncNode(const std::string& name);
+      virtual ~PyFuncNode();
+      virtual void execute();
+      virtual void load();
+      PyFuncNode* cloneNode(const std::string& name);
+    protected:
+      PyObject* _context;
+      PyObject* _pyfunc;
     };
   }
 }

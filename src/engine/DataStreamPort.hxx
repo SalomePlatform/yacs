@@ -1,28 +1,32 @@
 #ifndef __DATASTREAMPORT_HXX__
 #define __DATASTREAMPORT_HXX__
 
-#include "Port.hxx"
+#include "DataPort.hxx"
 #include "TypeCode.hxx"
 
 #include <string>
+#include <map>
 
 namespace YACS
 {
   namespace ENGINE
   {
-    class DataStreamPort : public virtual Port
+    class DataStreamPort : public virtual DataPort
     {
-    protected:
-      std::string _name;
-      TypeCode* _edType;
     public:
       static const char NAME[];
     protected:
+      DataStreamPort(const DataStreamPort& other, Node *newHelder);
       DataStreamPort(const std::string& name, Node *node, TypeCode* type);
+      std::map<std::string,std::string> _propertyMap;
     public:
       std::string getNameOfTypeOfCurrentInstance() const;
-      std::string getName() const { return _name; }
-      TypeCode* edGetType() const { return _edType; }
+      bool isDifferentTypeOf(const DataPort *other) const;
+      virtual void setProperty(const std::string& name,const std::string& value);
+      virtual std::string getProperty(const std::string& name);
+      std::map<std::string,std::string> getPropertyMap() const { return _propertyMap; }
+      virtual void initPortProperties();
+      virtual ~DataStreamPort();
     };
   }
 }

@@ -22,23 +22,17 @@ namespace YACS
     {
     public:
       virtual ~Port();
-
       Node *getNode() const { return _node; }
-      std::string getImpl() const {return _impl; }
-
       virtual std::string getNameOfTypeOfCurrentInstance() const;
-      //      virtual TypeCode * type();
-
-      static const char NAME[];
-
+      int getNumId() const { return _id; }
     protected:
       Port(Node *node);
-
+      Port(const Port& other, Node *newHelder);
+    protected:
       Node        *_node;
-      std::string  _impl;
-      TypeCode    *_type;
-      int          id_;
-      static int   total_;
+      int          _id;
+      static int   _total;
+      static const char NAME[];
     };
   }
 }

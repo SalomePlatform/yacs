@@ -15,6 +15,8 @@ namespace YACS
       ThreadPT(ThreadJob funcPtr, void *stack);
       bool operator==(const ThreadPT& other);
       void join();
+      static void detach();
+      static void exit(void *what);
       static void sleep(unsigned long usec);
     private:
       pthread_t _threadId;

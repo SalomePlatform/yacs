@@ -1,0 +1,51 @@
+<proc>
+
+    <!-- types -->
+    <objref name="CALCIUM_integer"/>
+    <objref name="CALCIUM_real"/>
+    <!-- inline -->
+    <inline name="node0" >
+      <script>
+        <code>n=20</code>
+      </script>
+      <outport name="n" type="int"/>
+    </inline>
+    <!-- service -->
+      <service name="node3" >
+        <component>DSCCODC</component>
+        <method>trun</method>
+        <inport name="niter" type="int"/>
+        <instream name="ETP_RE" type="CALCIUM_real"/>
+        <outstream name="STP_RE" type="CALCIUM_real"/>
+      </service>
+      <service name="node4" >
+        <component>DSCCODD</component>
+        <method>trun</method>
+        <inport name="niter" type="int"/>
+        <instream name="ETP_RE" type="CALCIUM_real"/>
+        <outstream name="STP_RE" type="CALCIUM_real"/>
+      </service>
+      <stream>
+        <fromnode>node4</fromnode> <fromport>STP_RE</fromport>
+        <tonode>node3</tonode> <toport>ETP_RE</toport>
+      </stream>
+      <stream>
+        <fromnode>node3</fromnode> <fromport>STP_RE</fromport>
+        <tonode>node4</tonode> <toport>ETP_RE</toport>
+      </stream>
+    <!--control -->
+    <control> <fromnode>node0</fromnode> <tonode>node3</tonode> </control>
+    <control> <fromnode>node0</fromnode> <tonode>node4</tonode> </control>
+    <!--datalinks -->
+    <datalink> 
+      <fromnode>node0</fromnode><fromport>n</fromport>
+      <tonode>node3</tonode> <toport>niter</toport> 
+    </datalink>
+    <datalink> 
+      <fromnode>node0</fromnode><fromport>n</fromport>
+      <tonode>node4</tonode> <toport>niter</toport> 
+    </datalink>
+    <!--parameters -->
+
+    <!--stream -->
+</proc>

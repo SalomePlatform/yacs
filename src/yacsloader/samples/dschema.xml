@@ -1,0 +1,48 @@
+<proc>
+
+    <!-- types -->
+    <!-- inline -->
+    <!-- service -->
+
+    <service name="node1" >
+        <component>PYHELLO</component>
+        <method>makeBanner</method>
+        <inport name="p1" type="string"/>
+        <outport name="p1" type="string"/>
+    </service>
+
+    <service name="node3" >
+        <component>PYHELLO</component>
+        <method>makeBanner</method>
+        <inport name="p1" type="string"/>
+        <outport name="p1" type="string"/>
+    </service>
+
+    <service name="node2" >
+        <node>node1</node>
+        <method>makeBanner</method>
+        <inport name="p1" type="string"/>
+        <outport name="p1" type="string"/>
+    </service>
+
+    <!--control -->
+    <control> <fromnode>node1</fromnode> <tonode>node2</tonode> </control>
+    <control> <fromnode>node1</fromnode> <tonode>node3</tonode> </control>
+
+    <!--datalinks -->
+    <datalink> 
+        <fromnode>node1</fromnode><fromport>p1</fromport>
+        <tonode>node2</tonode> <toport>p1</toport> 
+    </datalink>
+    <datalink> 
+        <fromnode>node1</fromnode><fromport>p1</fromport>
+        <tonode>node3</tonode> <toport>p1</toport> 
+    </datalink>
+
+    <!--parameters -->
+    <parameter>
+        <tonode>node1</tonode> <toport>p1</toport>
+        <value><string>coucou</string></value>
+    </parameter>
+
+</proc>

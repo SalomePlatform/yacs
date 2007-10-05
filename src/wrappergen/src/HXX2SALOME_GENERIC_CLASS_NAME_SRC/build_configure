@@ -1,0 +1,63 @@
+#! /bin/sh
+
+# --
+#
+PROJECT="HXX2SALOME_GENERIC_CLASS_NAMEComponent"
+
+# --
+# set VERSION from CVS_TAG_NAME
+
+CVS_TAG_NAME='$Name$'
+VERSION=${CVS_TAG_NAME}
+VERSION=`echo ${VERSION/'$Name:'/}`
+VERSION=`echo ${VERSION/'$'/}`
+if test X$VERSION = X ; then
+    VERSION=`date +"%F"`   # -%H-%M
+else
+    VERSION=`echo $VERSION | sed -e "s/V_//g"`
+    VERSION=`echo $VERSION | sed -e "s/_/./g"`
+fi
+
+# --
+ORIG_DIR=`pwd`
+run() {
+    local logfile=$ORIG_DIR/build_configure.log
+    printf "%-50s" "$1 ... "
+    echo $* > $logfile
+    eval $* >> $logfile 2>&1
+    if test $? != 0 ; then
+        echo "[FAILED]"
+        echo "see file build_configure.log ..."
+        exit 1
+    fi
+    echo "[  OK  ]"
+}
+
+# --
+# -- goto build_configure dir
+CONF_DIR=`echo $0 | sed -e "s,[^/]*$,,;s,/$,,;s,^$,.,"`
+cd ${CONF_DIR}
+CONF_DIR=`pwd`
+
+# --
+# -- list all Makefile.am in Makefile.am.list
+./rfind . Makefile.am > Makefile.am.list
+
+# --
+# -- configure.in construction
+rm -f configure.in
+touch configure.in
+echo "AC_INIT($PROJECT, $VERSION)" >> configure.in
+echo "RELEASE=$VERSION" >> configure.in
+echo "PROJECT=$PROJECT" >> configure.in
+sed -e "s?\${KERNEL_ROOT_DIR}?${KERNEL_ROOT_DIR}?" configure.in.base >> configure.in
+echo "AC_OUTPUT([ \\" >> configure.in
+sed -e 's,\.am, \\,' -e 's,\.\/,,' Makefile.am.list >> configure.in
+echo "	adm_local/unix/SALOMEconfig.h \\" >> configure.in
+echo  "])" >> configure.in
+
+# --
+run "libtoolize"
+run "aclocal" "-I ${CONF_DIR}/adm_local/unix/config_files" "--verbose >& x" 
+run "autoconf"
+run "automake" "--add-missing" "--copy"

@@ -1,0 +1,83 @@
+#### YACS module root icon ####
+msgid "YACS_MODULE_ICON"
+msgstr "ModuleYacs.png"
+
+#### Icons for YACS module menus and toolbars ####
+
+msgid "ICON_ADD_DATAFLOW_IN_STUDY"
+msgstr "add_in_study.png"
+
+msgid "ICON_ADD_NODE"
+msgstr "add_node.png"
+
+msgid "ICON_CHANGE_INFORMATIONS"
+msgstr "change_informations.png"
+
+msgid "ICON_CONTROL_VIEW"
+msgstr "control_view.png"
+
+msgid "ICON_EXPORT_DATAFLOW"
+msgstr "export_dataflow.png"
+
+msgid "ICON_FILTERNEXTSTEPS"
+msgstr "filter_next_steps.png"
+
+msgid "ICON_FILTER_NOTIFICATION"
+msgstr "filter_notification.png"
+
+msgid "ICON_FULL_VIEW"
+msgstr "full_view.png"
+
+msgid "ICON_IMPORT_DATAFLOW"
+msgstr "import_dataflow.png"
+
+msgid "ICON_IMPORT_SUPERV_DATAFLOW"
+msgstr "import_superv_dataflow.png"
+
+msgid "ICON_INSERT_FILE"
+msgstr "insert_file.png"
+
+msgid "ICON_KILL_DATAFLOW"
+msgstr "kill.png"
+
+msgid "ICON_BREAKPOINT_DATAFLOW"
+msgstr "mode_breakpoint.png"
+
+msgid "ICON_CONTINUE_DATAFLOW"
+msgstr "mode_continue.png"
+
+msgid "ICON_MODIFY_DATAFLOW"
+msgstr "modify_dataflow.png"
+
+msgid "ICON_MODIFY_SUPERV_DATAFLOW"
+msgstr "modify_superv_dataflow.png"
+
+msgid "ICON_NEW_DATAFLOW"
+msgstr "new_dataflow.png"
+
+msgid "ICON_REBUILD_LINKS"
+msgstr "rebuild_links.png"
+
+msgid "ICON_RELOAD_DATAFLOW"
+msgstr "reload.png"
+
+msgid "ICON_REMOTE_RUN_DATAFLOW"
+msgstr "remote_run.png"
+
+msgid "ICON_RUN_DATAFLOW"
+msgstr "run.png"
+
+msgid "ICON_SAVEDATAFLOWSTATE"
+msgstr "save_dataflow_state.png"
+
+msgid "ICON_STEPBYSTEP_DATAFLOW"
+msgstr "step_by_step.png"
+
+msgid "ICON_SUSPEND_RESUME_DATAFLOW"
+msgstr "suspend_resume.png"
+
+msgid "ICON_TABLE_VIEW"
+msgstr "table_view.png"
+
+msgid "ICON_TOGGLESTOPONERROR"
+msgstr "toggle_stop_on_error.png"

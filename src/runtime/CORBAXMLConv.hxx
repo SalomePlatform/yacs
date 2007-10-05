@@ -9,7 +9,7 @@ namespace YACS
 {
   namespace ENGINE
   {
-    // Ports adaptateurs Corba->Xml pour les différents types
+    // Adaptator Ports Corba->Xml for several types
 
     class CorbaXml : public ProxyPort
     {

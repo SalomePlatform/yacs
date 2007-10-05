@@ -1,0 +1,325 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"PO-Revision-Date: 2007-03-12 16:44+0300\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+
+#### YACSGui module menus and toolbars ####
+
+msgid "MEN_FILE"
+msgstr "File"
+
+msgid "TOOLBAR_DATAFLOW"
+msgstr "Dataflow"
+
+msgid "TOOLBAR_EXECUTION"
+msgstr "Execution"
+
+msgid "TOOLBAR_EXECUTIONMODE"
+msgstr "Execution Mode"
+
+msgid "MEN_NEW_DATAFLOW"
+msgstr "New dataflow"
+
+msgid "TOP_NEW_DATAFLOW"
+msgstr "New dataflow"
+
+msgid "STB_NEW_DATAFLOW"
+msgstr "Create new dataflow"
+
+msgid "MEN_MODIFY_DATAFLOW"
+msgstr "Modify dataflow"
+
+msgid "TOP_MODIFY_DATAFLOW"
+msgstr "Modify dataflow"
+
+msgid "STB_MODIFY_DATAFLOW"
+msgstr "Modify dataflow"
+
+msgid "MEN_IMPORT_DATAFLOW"
+msgstr "Import dataflow"
+
+msgid "TOP_IMPORT_DATAFLOW"
+msgstr "Import dataflow"
+
+msgid "STB_IMPORT_DATAFLOW"
+msgstr "Import dataflow"
+
+msgid "MEN_MODIFY_SUPERV_DATAFLOW"
+msgstr "Modify SUPERV dataflow"
+
+msgid "TOP_MODIFY_SUPERV_DATAFLOW"
+msgstr "Modify SUPERV dataflow"
+
+msgid "STB_MODIFY_SUPERV_DATAFLOW"
+msgstr "Modify SUPERV dataflow"
+
+msgid "MEN_IMPORT_SUPERV_DATAFLOW"
+msgstr "Import SUPERV dataflow"
+
+msgid "TOP_IMPORT_SUPERV_DATAFLOW"
+msgstr "Import SUPERV dataflow"
+
+msgid "STB_IMPORT_SUPERV_DATAFLOW"
+msgstr "Import SUPERV dataflow"
+
+msgid "MEN_EXPORT_DATAFLOW"
+msgstr "Export dataflow"
+
+msgid "TOP_EXPORT_DATAFLOW"
+msgstr "Export dataflow"
+
+msgid "STB_EXPORT_DATAFLOW"
+msgstr "Export dataflow"
+
+msgid "MEN_SUPERVISOR"
+msgstr "Supervisor"
+
+msgid "MEN_RELOAD_DATAFLOW"
+msgstr "Reload"
+
+msgid "TOP_RELOAD_DATAFLOW"
+msgstr "Reload"
+
+msgid "STB_RELOAD_DATAFLOW"
+msgstr "Reload dataflow"
+
+msgid "MEN_REBUILD_LINKS"
+msgstr "Rebuild links"
+
+msgid "TOP_REBUILD_LINKS"
+msgstr "Rebuild links"
+
+msgid "STB_REBUILD_LINKS"
+msgstr "Rebuild dataflow links"
+
+msgid "MEN_ADD_NODE"
+msgstr "Add Node to Dataflow"
+
+msgid "TOP_ADD_NODE"
+msgstr "Add Node to Dataflow"
+
+msgid "STB_ADD_NODE"
+msgstr "Add Node to Dataflow"
+
+msgid "MEN_INSERT_FILE"
+msgstr "Insert File"
+
+msgid "TOP_INSERT_FILE"
+msgstr "Insert File"
+
+msgid "STB_INSERT_FILE"
+msgstr "Insert File"
+
+msgid "MEN_RUN_DATAFLOW"
+msgstr "Local Run"
+
+msgid "TOP_RUN_DATAFLOW"
+msgstr "Local Run"
+
+msgid "STB_RUN_DATAFLOW"
+msgstr "Local Run of Dataflow without control"
+
+msgid "MEN_REMOTE_RUN_DATAFLOW"
+msgstr "Remote Run - Direct"
+
+msgid "TOP_REMOTE_RUN_DATAFLOW"
+msgstr "Remote Run - Direct"
+
+msgid "STB_REMOTE_RUN_DATAFLOW"
+msgstr "Remote Run of Dataflow without control"
+
+msgid "MEN_KILL_DATAFLOW"
+msgstr "Stop Dataflow"
+
+msgid "TOP_KILL_DATAFLOW"
+msgstr "Stop Dataflow"
+
+msgid "STB_KILL_DATAFLOW"
+msgstr "Stop Dataflow as soon as possible..."
+
+msgid "MEN_STEPBYSTEP_DATAFLOW"
+msgstr "Step by Step Mode"
+
+msgid "TOP_STEPBYSTEP_DATAFLOW"
+msgstr "Step by Step Exec Mode"
+
+msgid "STB_STEPBYSTEP_DATAFLOW"
+msgstr "Step by Step Execution Mode"
+
+msgid "MEN_CONTINUE_DATAFLOW"
+msgstr "continue Mode"
+
+msgid "TOP_CONTINUE_DATAFLOW"
+msgstr "continue Mode"
+
+msgid "STB_CONTINUE_DATAFLOW"
+msgstr "continue Mode"
+
+msgid "MEN_BREAKPOINT_DATAFLOW"
+msgstr "breakpoint Mode"
+
+msgid "TOP_BREAKPOINT_DATAFLOW"
+msgstr "breakpoint Mode"
+
+msgid "STB_BREAKPOINT_DATAFLOW"
+msgstr "breakpoint Mode"
+
+msgid "MEN_FILTERNEXTSTEPS"
+msgstr "Filter Next Steps"
+
+msgid "TOP_FILTERNEXTSTEPS"
+msgstr "Filter Next Steps"
+
+msgid "STB_FILTERNEXTSTEPS"
+msgstr "Filter Next Steps"
+
+msgid "MEN_SAVEDATAFLOWSTATE"
+msgstr "Save Dataflow state"
+
+msgid "TOP_SAVEDATAFLOWSTATE"
+msgstr "Save Dataflow state"
+
+msgid "STB_SAVEDATAFLOWSTATE"
+msgstr "Save Dataflow state"
+
+msgid "MEN_TOGGLESTOPONERROR"
+msgstr "Toggle stop on error"
+
+msgid "TOP_TOGGLESTOPONERROR"
+msgstr "Toggle stop on error"
+
+msgid "STB_TOGGLESTOPONERROR"
+msgstr "Toggle stop on error"
+
+msgid "MEN_SUSPEND_RESUME_DATAFLOW"
+msgstr "Remote Run - Control"
+
+msgid "TOP_SUSPEND_RESUME_DATAFLOW"
+msgstr "Remote Run - Control"
+
+msgid "STB_SUSPEND_RESUME_DATAFLOW"
+msgstr "Remote Run of Dataflow with execution control"
+
+msgid "MEN_FILTER_NOTIFICATION"
+msgstr "Filter Notification ..."
+
+msgid "TOP_FILTER_NOTIFICATION"
+msgstr "Filter Notification ..."
+
+msgid "STB_FILTER_NOTIFICATION"
+msgstr "Filter Notification ..."
+
+msgid "MEN_ADD_DATAFLOW_IN_STUDY"
+msgstr "Add In Study"
+
+msgid "TOP_ADD_DATAFLOW_IN_STUDY"
+msgstr "Add Dataflow In Study"
+
+msgid "STB_ADD_DATAFLOW_IN_STUDY"
+msgstr "Add Dataflow In Study"
+
+msgid "MEN_CHANGE_INFORMATIONS"
+msgstr "Change Informations ..."
+
+msgid "TOP_CHANGE_INFORMATIONS"
+msgstr "Change Informations ..."
+
+msgid "STB_CHANGE_INFORMATIONS"
+msgstr "Change Informations ..."
+
+msgid "MEN_FULL_VIEW"
+msgstr "Full View"
+
+msgid "TOP_FULL_VIEW"
+msgstr "Full View"
+
+msgid "STB_FULL_VIEW"
+msgstr "Full View"
+
+msgid "MEN_CONTROL_VIEW"
+msgstr "Control View"
+
+msgid "TOP_CONTROL_VIEW"
+msgstr "Control View"
+
+msgid "STB_CONTROL_VIEW"
+msgstr "Control View"
+
+msgid "MEN_TABLE_VIEW"
+msgstr "Table View"
+
+msgid "TOP_TABLE_VIEW"
+msgstr "Table View"
+
+msgid "STB_TABLE_VIEW"
+msgstr "Table View"
+
+
+#### YACSGui module dialog titles ####
+
+msgid "TLT_MODIFY_DATAFLOW"
+msgstr "Modify Dataflow"
+
+msgid "TLT_IMPORT_DATAFLOW"
+msgstr "Import Dataflow"
+
+msgid "TLT_MODIFY_SUPERV_DATAFLOW"
+msgstr "Modify SUPERV Dataflow"
+
+msgid "TLT_IMPORT_SUPERV_DATAFLOW"
+msgstr "Import SUPERV Dataflow"
+
+msgid "TLT_EXPORT_DATAFLOW"
+msgstr "Export Dataflow"
+
+#### YACSGui module message boxes ####
+
+msgid "ERROR"
+msgstr "Error"
+
+msgid "WARNING"
+msgstr "Warning"
+
+msgid "BUT_OK"
+msgstr "Ok"
+
+msgid "MSG_NO_DATAFLOW_SELECTED"
+msgstr "No dataflow has been selected."
+
+msgid "MSG_IMPORT_FILE_ERROR"
+msgstr "The file is incorrect."
+
+msgid "MSG_DATAFLOW_NOT_EDITABLE"
+msgstr "Current dataflow is not editable."
+
+msgid "MSG_NO_DATAFLOW_LOADED"
+msgstr "No dataflow for execution is selected."
+
+msgid "MSG_NO_DATAFLOW_TO_RUN"
+msgstr "No dataflow for execution is selected."
+
+msgid "MSG_NO_DATAFLOW_TO_KILL"
+msgstr "No dataflow to kill is selected."
+
+msgid "MSG_NO_DATAFLOW_TO_SUSPEND_RESUME"
+msgstr "No dataflow to suspend/resume is selected."
+
+msgid "MSG_NO_DATAFLOW_TO_SUSPEND_RESUME"
+msgstr "No dataflow to suspend/resume is selected."
+
+msgid "MSG_DATAFLOW_IS_NOT_RUNNING"
+msgstr "The dataflow is not running."
+
+
+

@@ -1,51 +1,84 @@
 
+#include "TypeConversions.hxx"
 #include "XMLCORBAConv.hxx"
 #include "CORBAXMLConv.hxx"
-#include "TypeConversions.hxx"
 
 #include <libxml/parser.h>
 #include <iostream>
+#include <sstream>
+
+//#define _DEVDEBUG_
+#include "YacsTrace.hxx"
 
 using namespace YACS::ENGINE;
 using namespace std;
 
 XmlCorba::XmlCorba(InputCorbaPort* p)
-  : ProxyPort(p), Port(p->getNode())
+  : ProxyPort(p), DataPort(p->getName(), p->getNode(), p->edGetType()), Port(p->getNode())
 {
-  cerr << "proxy port from XML to CORBA" << endl;
 }
 
 void XmlCorba::put(const void *data) throw(ConversionException)
 {
-  cerr << " XmlCorba::put(const void *data)" << endl;
+  DEBTRACE((const char *)data);
   put((const char *)data);
 }
 
-//!Convertit la valeur XML (char *) recue en CORBA::Any et la transmet au proxy port
+//!Convert a XML (char *) to CORBA::Any  and push it in the proxy port
  /*!
   *   \param data : Xml::char *
   */
-
 void XmlCorba::put(const char *data) throw(ConversionException)
 {
-  cerr << "XmlCorba::put " << data << endl;
+  DEBTRACE(data);
   xmlDocPtr doc;
   xmlNodePtr cur;
   CORBA::Any *a;
   
   doc = xmlParseMemory(data, strlen(data));
+  if (doc == NULL ) 
+    {
+      stringstream msg;
+      msg << "Problem in conversion: XML Document not parsed successfully ";
+      msg << " (" << __FILE__ << ":" << __LINE__ << ")";
+      throw ConversionException(msg.str());
+    }
   cur = xmlDocGetRootElement(doc);
+  if (cur == NULL) 
+    {
+      xmlFreeDoc(doc);
+      stringstream msg;
+      msg << "Problem in conversion: empty XML Document";
+      msg << " (" << __FILE__ << ":" << __LINE__ << ")";
+      throw ConversionException(msg.str());
+    }
   while (cur != NULL)
     {
       if ((!xmlStrcmp(cur->name, (const xmlChar *)"value")))
-	{
-	  a=convertCorbaXml(type(),doc,cur);
-	  break;
-	}
+        {
+          try
+            {
+              a=convertXmlCorba(edGetType(),doc,cur);
+            }
+          catch(ConversionException)
+            {
+              throw;
+            }
+          catch(...)
+            {
+              stringstream msg;
+              msg << "Problem in conversion: kind= " << edGetType()->kind() ;
+              msg << " (" << __FILE__ << ":" << __LINE__ << ")";
+              throw ConversionException(msg.str());
+            }
+          break;
+        }
       cur = cur->next;
     }
   xmlFreeDoc(doc);
-  xmlCleanupParser();
+  //xmlCleanupParser();
   _port->put(a);
-  cerr << "Fin XmlCorba" << endl;
+  _port->setStringRef(data);
+  //delete Any that has been allocated by convertXmlCorba
+  delete a;
 }

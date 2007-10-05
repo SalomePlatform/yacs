@@ -1,26 +1,65 @@
-
 #ifndef _CORBANODE_HXX_
 #define _CORBANODE_HXX_
 
-#include "ElementaryNode.hxx"
+#include "ServiceNode.hxx"
+#include "yacsconfig.h"
+#ifdef DSC_PORTS
+#include "DSC_Engines.hh"
+#endif
+#include <omniORB4/CORBA.h>
+#include <list>
 
 namespace YACS
 {
   namespace ENGINE
   {
-    
-    class CORBANode: public ENGINE::ElementaryNode 
+/*! \brief Class for CORBA Service Node
+ *
+ * \ingroup Nodes
+ *
+ * \see InputCorbaPort
+ * \see OutputCorbaPort
+ */
+    class CORBANode : public ServiceNode 
     {
+    protected:
+      Node *simpleClone(ComposedNode *father, bool editionOnly) const;
     public:
+      CORBANode(const CORBANode& other,ComposedNode *father);
       CORBANode(const std::string& name);
       virtual void execute();
-      virtual void set_ref(const std::string& ref);
-      virtual void set_method(const std::string& method);
-    protected:
-      std::string _ref;
-      std::string _method;
+      virtual ServiceNode* createNode(const std::string& name);
+      virtual std::string getKind() const;
+      static const char KIND[];
+    public:
+      static const char IMPL_NAME[];
+    };
 
+/*! \brief Class for Salome component Service Node
+ *
+ * \ingroup Nodes
+ *
+ * \see InputCorbaPort
+ * \see OutputCorbaPort
+ */
+    class SalomeNode : public ServiceNode 
+    {
     protected:
+      Node *simpleClone(ComposedNode *father, bool editionOnly) const;
+    public:
+      SalomeNode(const SalomeNode& other,ComposedNode *father);
+      SalomeNode(const std::string& name);
+      virtual ~SalomeNode();
+      virtual void execute();
+      virtual ServiceNode* createNode(const std::string& name);
+      virtual std::string getKind() const;
+      static const char KIND[];
+#ifdef DSC_PORTS
+      virtual void initService();
+      virtual void connectService();
+      virtual void disconnectService();
+      std::list<Engines::ConnectionManager::connectionId> ids;
+#endif
     };
   }
 }

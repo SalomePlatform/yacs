@@ -11,23 +11,9 @@ namespace YACS
       Black = 12
     } Colour;
 
-//   typedef enum
-//     {
-//       Double = 41,
-//       Int = 42,
-//       String = 44,
-//       Bool = 45,
-//       //CorbaRef = 46,
-//       None = 49
-//     } DynType;
-
-//   typedef enum
-//     {
-//       SDouble = 71
-//     } StreamType;
-
   typedef enum
     {
+      UNDEFINED    = -1,
       INITED       = 100,
       TOLOAD       = 101,
       LOADED       = 102,
@@ -38,7 +24,11 @@ namespace YACS
       SUSPENDED    = 107,
       LOADFAILED   = 108,
       EXECFAILED   = 109,
-      PAUSE        = 110
+      PAUSE        = 110,
+      INTERNALERR  = 666,
+      DISABLED     = 777,
+      FAILED       = 888,
+      ERROR        = 999
     } StatesForNode;
 
   typedef enum
@@ -48,6 +38,23 @@ namespace YACS
       FINISH       = 202,
       ABORT        = 203
     } Event;
-}
 
+  typedef enum
+    {
+      NOTYETINITIALIZED = 300,
+      INITIALISED       = 301,
+      RUNNING           = 302,
+      WAITINGTASKS      = 303,
+      PAUSED            = 304,
+      FINISHED          = 305,
+      STOPPED           = 306
+    } ExecutorState;
+
+  typedef enum
+    {
+      CONTINUE        = 0,
+      STEPBYSTEP      = 1,
+      STOPBEFORENODES = 2
+    } ExecutionMode;
+}
 #endif

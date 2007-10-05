@@ -1,0 +1,345 @@
+<!DOCTYPE SuperGraph>
+<supergraph>
+ <dataflow>
+  <info-list>
+   <node>
+    <component-name>?</component-name>
+    <interface-name>?</interface-name>
+    <node-name>GraphLoop1</node-name>
+    <kind>1</kind>
+    <coupled-node>?</coupled-node>
+    <service>
+     <service-name>GraphLoop1</service-name>
+     <inParameter-list>
+      <inParameter>
+       <inParameter-type>long</inParameter-type>
+       <inParameter-name>Init__Index</inParameter-name>
+      </inParameter>
+      <inParameter>
+       <inParameter-type>long</inParameter-type>
+       <inParameter-name>Init__Min</inParameter-name>
+      </inParameter>
+      <inParameter>
+       <inParameter-type>long</inParameter-type>
+       <inParameter-name>Init__Max</inParameter-name>
+      </inParameter>
+      <inParameter>
+       <inParameter-type>long</inParameter-type>
+       <inParameter-name>Init__Incr</inParameter-name>
+      </inParameter>
+     </inParameter-list>
+     <outParameter-list>
+      <outParameter>
+       <outParameter-type>long</outParameter-type>
+       <outParameter-name>EndInit__Index</outParameter-name>
+      </outParameter>
+      <outParameter>
+       <outParameter-type>long</outParameter-type>
+       <outParameter-name>EndInit__Min</outParameter-name>
+      </outParameter>
+      <outParameter>
+       <outParameter-type>long</outParameter-type>
+       <outParameter-name>EndInit__Max</outParameter-name>
+      </outParameter>
+      <outParameter>
+       <outParameter-type>long</outParameter-type>
+       <outParameter-name>EndInit__Incr</outParameter-name>
+      </outParameter>
+     </outParameter-list>
+    </service>
+    <DataStream-list/>
+    <PyFunction-list/>
+    <creation-date>24/3/2003 - 14:44:35</creation-date>
+    <lastmodification-date>22/2/2007 - 19:25:43</lastmodification-date>
+    <editor-release>1.04</editor-release>
+    <author>?</author>
+    <container>?</container>
+    <comment>?</comment>
+    <x-position>0</x-position>
+    <y-position>0</y-position>
+   </node>
+  </info-list>
+  <node-list>
+   <node>
+    <component-name>?</component-name>
+    <interface-name>?</interface-name>
+    <node-name>Init</node-name>
+    <kind>4</kind>
+    <coupled-node>EndInit</coupled-node>
+    <service>
+     <service-name>Init</service-name>
+     <inParameter-list>
+      <inParameter>
+       <inParameter-type>long</inParameter-type>
+       <inParameter-name>Index</inParameter-name>
+      </inParameter>
+      <inParameter>
+       <inParameter-type>long</inParameter-type>
+       <inParameter-name>Min</inParameter-name>
+      </inParameter>
+      <inParameter>
+       <inParameter-type>long</inParameter-type>
+       <inParameter-name>Max</inParameter-name>
+      </inParameter>
+      <inParameter>
+       <inParameter-type>long</inParameter-type>
+       <inParameter-name>Incr</inParameter-name>
+      </inParameter>
+     </inParameter-list>
+     <outParameter-list>
+      <outParameter>
+       <outParameter-type>long</outParameter-type>
+       <outParameter-name>Index</outParameter-name>
+      </outParameter>
+      <outParameter>
+       <outParameter-type>long</outParameter-type>
+       <outParameter-name>Min</outParameter-name>
+      </outParameter>
+      <outParameter>
+       <outParameter-type>long</outParameter-type>
+       <outParameter-name>Max</outParameter-name>
+      </outParameter>
+      <outParameter>
+       <outParameter-type>long</outParameter-type>
+       <outParameter-name>Incr</outParameter-name>
+      </outParameter>
+     </outParameter-list>
+    </service>
+    <DataStream-list/>
+    <PyFunction-list>
+     <PyFunction>
+      <FuncName>Init</FuncName>
+      <PyFunc><![CDATA[def Init(Index,Min,Max,Incr) :   ]]></PyFunc>
+      <PyFunc><![CDATA[    if Min <= Max :   ]]></PyFunc>
+      <PyFunc><![CDATA[        Index = Min   ]]></PyFunc>
+      <PyFunc><![CDATA[    else :   ]]></PyFunc>
+      <PyFunc><![CDATA[        Index = Max   ]]></PyFunc>
+      <PyFunc><![CDATA[    return Index,Min,Max,Incr   ]]></PyFunc>
+     </PyFunction>
+     <PyFunction>
+      <FuncName>More</FuncName>
+      <PyFunc><![CDATA[import time ]]></PyFunc>
+      <PyFunc><![CDATA[def More(Index,Min,Max,Incr) :   ]]></PyFunc>
+      <PyFunc><![CDATA[    time.sleep(2) ]]></PyFunc>
+      <PyFunc><![CDATA[    if Index < Max :   ]]></PyFunc>
+      <PyFunc><![CDATA[        DoLoop = 1   ]]></PyFunc>
+      <PyFunc><![CDATA[    else :   ]]></PyFunc>
+      <PyFunc><![CDATA[        DoLoop = 0   ]]></PyFunc>
+      <PyFunc><![CDATA[    return DoLoop,Index,Min,Max,Incr   ]]></PyFunc>
+     </PyFunction>
+     <PyFunction>
+      <FuncName>Next</FuncName>
+      <PyFunc><![CDATA[def Next(Index,Min,Max,Incr) :   ]]></PyFunc>
+      <PyFunc><![CDATA[    Index = Index + Incr   ]]></PyFunc>
+      <PyFunc><![CDATA[    return Index,Min,Max,Incr  ]]></PyFunc>
+     </PyFunction>
+    </PyFunction-list>
+    <creation-date>22/2/2007 - 16:4:22</creation-date>
+    <lastmodification-date>22/2/2007 - 16:4:22</lastmodification-date>
+    <editor-release>1.04</editor-release>
+    <author>?</author>
+    <container>?</container>
+    <comment>Compute Node</comment>
+    <x-position>17</x-position>
+    <y-position>257</y-position>
+   </node>
+   <node>
+    <component-name>?</component-name>
+    <interface-name>?</interface-name>
+    <node-name>EndInit</node-name>
+    <kind>5</kind>
+    <coupled-node>Init</coupled-node>
+    <service>
+     <service-name>EndInit</service-name>
+     <inParameter-list>
+      <inParameter>
+       <inParameter-type>long</inParameter-type>
+       <inParameter-name>Index</inParameter-name>
+      </inParameter>
+      <inParameter>
+       <inParameter-type>long</inParameter-type>
+       <inParameter-name>Min</inParameter-name>
+      </inParameter>
+      <inParameter>
+       <inParameter-type>long</inParameter-type>
+       <inParameter-name>Max</inParameter-name>
+      </inParameter>
+      <inParameter>
+       <inParameter-type>long</inParameter-type>
+       <inParameter-name>Incr</inParameter-name>
+      </inParameter>
+     </inParameter-list>
+     <outParameter-list>
+      <outParameter>
+       <outParameter-type>long</outParameter-type>
+       <outParameter-name>Index</outParameter-name>
+      </outParameter>
+      <outParameter>
+       <outParameter-type>long</outParameter-type>
+       <outParameter-name>Min</outParameter-name>
+      </outParameter>
+      <outParameter>
+       <outParameter-type>long</outParameter-type>
+       <outParameter-name>Max</outParameter-name>
+      </outParameter>
+      <outParameter>
+       <outParameter-type>long</outParameter-type>
+       <outParameter-name>Incr</outParameter-name>
+      </outParameter>
+     </outParameter-list>
+    </service>
+    <DataStream-list/>
+    <PyFunction-list>
+     <PyFunction>
+      <FuncName>?</FuncName>
+      <PyFunc><![CDATA[?]]></PyFunc>
+     </PyFunction>
+    </PyFunction-list>
+    <creation-date>22/2/2007 - 16:4:22</creation-date>
+    <lastmodification-date>22/2/2007 - 16:4:22</lastmodification-date>
+    <editor-release>1.04</editor-release>
+    <author>?</author>
+    <container>?</container>
+    <comment>Compute Node</comment>
+    <x-position>555</x-position>
+    <y-position>255</y-position>
+   </node>
+   <node>
+    <component-name>?</component-name>
+    <interface-name>?</interface-name>
+    <node-name>f</node-name>
+    <kind>3</kind>
+    <coupled-node>?</coupled-node>
+    <service>
+     <service-name>f</service-name>
+     <inParameter-list>
+      <inParameter>
+       <inParameter-type>long</inParameter-type>
+       <inParameter-name>f</inParameter-name>
+      </inParameter>
+     </inParameter-list>
+     <outParameter-list>
+      <outParameter>
+       <outParameter-type>long</outParameter-type>
+       <outParameter-name>f</outParameter-name>
+      </outParameter>
+     </outParameter-list>
+    </service>
+    <DataStream-list/>
+    <PyFunction-list>
+     <PyFunction>
+      <FuncName>f</FuncName>
+      <PyFunc><![CDATA[def f(x): ]]></PyFunc>
+      <PyFunc><![CDATA[    return x+1 ]]></PyFunc>
+     </PyFunction>
+    </PyFunction-list>
+    <creation-date>22/2/2007 - 19:24:3</creation-date>
+    <lastmodification-date>22/2/2007 - 19:24:3</lastmodification-date>
+    <editor-release>3.0</editor-release>
+    <author>?</author>
+    <container>?</container>
+    <comment>Compute Node</comment>
+    <x-position>273</x-position>
+    <y-position>272</y-position>
+   </node>
+  </node-list>
+  <link-list>
+   <link>
+    <fromnode-name>Init</fromnode-name>
+    <fromserviceparameter-name>DoLoop</fromserviceparameter-name>
+    <tonode-name>EndInit</tonode-name>
+    <toserviceparameter-name>DoLoop</toserviceparameter-name>
+    <coord-list/>
+   </link>
+   <link>
+    <fromnode-name>Init</fromnode-name>
+    <fromserviceparameter-name>Index</fromserviceparameter-name>
+    <tonode-name>f</tonode-name>
+    <toserviceparameter-name>f</toserviceparameter-name>
+    <coord-list/>
+   </link>
+   <link>
+    <fromnode-name>Init</fromnode-name>
+    <fromserviceparameter-name>Min</fromserviceparameter-name>
+    <tonode-name>EndInit</tonode-name>
+    <toserviceparameter-name>Min</toserviceparameter-name>
+    <coord-list/>
+   </link>
+   <link>
+    <fromnode-name>Init</fromnode-name>
+    <fromserviceparameter-name>Max</fromserviceparameter-name>
+    <tonode-name>EndInit</tonode-name>
+    <toserviceparameter-name>Max</toserviceparameter-name>
+    <coord-list/>
+   </link>
+   <link>
+    <fromnode-name>Init</fromnode-name>
+    <fromserviceparameter-name>Incr</fromserviceparameter-name>
+    <tonode-name>EndInit</tonode-name>
+    <toserviceparameter-name>Incr</toserviceparameter-name>
+    <coord-list/>
+   </link>
+   <link>
+    <fromnode-name>EndInit</fromnode-name>
+    <fromserviceparameter-name>DoLoop</fromserviceparameter-name>
+    <tonode-name>Init</tonode-name>
+    <toserviceparameter-name>DoLoop</toserviceparameter-name>
+    <coord-list/>
+   </link>
+   <link>
+    <fromnode-name>f</fromnode-name>
+    <fromserviceparameter-name>f</fromserviceparameter-name>
+    <tonode-name>EndInit</tonode-name>
+    <toserviceparameter-name>Index</toserviceparameter-name>
+    <coord-list/>
+   </link>
+  </link-list>
+  <data-list>
+   <data>
+    <fromnode-name>GraphLoop1</fromnode-name>
+    <fromserviceparameter-name>Init__Index</fromserviceparameter-name>
+    <tonode-name>Init</tonode-name>
+    <toserviceparameter-name>Index</toserviceparameter-name>
+    <data-value>
+     <value-type>3</value-type>
+     <value>0</value>
+    </data-value>
+    <coord-list/>
+   </data>
+   <data>
+    <fromnode-name>GraphLoop1</fromnode-name>
+    <fromserviceparameter-name>Init__Min</fromserviceparameter-name>
+    <tonode-name>Init</tonode-name>
+    <toserviceparameter-name>Min</toserviceparameter-name>
+    <data-value>
+     <value-type>3</value-type>
+     <value>5</value>
+    </data-value>
+    <coord-list/>
+   </data>
+   <data>
+    <fromnode-name>GraphLoop1</fromnode-name>
+    <fromserviceparameter-name>Init__Max</fromserviceparameter-name>
+    <tonode-name>Init</tonode-name>
+    <toserviceparameter-name>Max</toserviceparameter-name>
+    <data-value>
+     <value-type>3</value-type>
+     <value>10</value>
+    </data-value>
+    <coord-list/>
+   </data>
+   <data>
+    <fromnode-name>GraphLoop1</fromnode-name>
+    <fromserviceparameter-name>Init__Incr</fromserviceparameter-name>
+    <tonode-name>Init</tonode-name>
+    <toserviceparameter-name>Incr</toserviceparameter-name>
+    <data-value>
+     <value-type>3</value-type>
+     <value>1</value>
+    </data-value>
+    <coord-list/>
+   </data>
+  </data-list>
+ </dataflow>
+</supergraph>
+

@@ -1,0 +1,17 @@
+
+import glob
+
+## environnement
+Import('env')
+
+lenv = env.Copy(
+    CPPPATH=['/opt/hpmpi/include', '#'],
+)
+
+## target
+def shared(lfile) :
+    return [lenv.SharedObject(f) for f in lfile]
+
+src = glob.glob('*.cxx')
+lib = lenv.Library('dist', shared(src))
+

@@ -1,0 +1,278 @@
+<proc>
+    <!--types -->
+    <sequence name="boolvec" content="bool"/>
+
+    <!--nodes -->
+    <inline name="node0" >
+      <script>
+        <code>p1=[True]*10</code>
+      </script>
+      <outport name="p1" type="boolvec"/>
+    </inline>
+
+    <inline name="pyth0" >
+      <script>
+      </script>
+      <inport name="p1" type="bool"/>
+      <outport name="p1" type="bool"/>
+    </inline>
+    <inline name="pyth1" >
+      <script>
+      </script>
+      <inport name="p1" type="bool"/>
+      <outport name="p1" type="bool"/>
+    </inline>
+    <inline name="pyth2" >
+      <script/>
+      <inport name="p1" type="bool"/>
+      <outport name="p1" type="bool"/>
+    </inline>
+    <inline name="pyth3" >
+      <script/>
+      <inport name="p1" type="bool"/>
+      <outport name="p1" type="bool"/>
+    </inline>
+
+    <service name="xml0" >
+      <kind>xmlsh</kind>
+      <ref>./xmlrun.sh</ref>
+      <method>echo</method>
+      <inport name="p1" type="bool"/>
+      <outport name="p1" type="bool"/>
+    </service>
+
+    <service name="xml1" >
+      <kind>xmlsh</kind>
+      <ref>./xmlrun.sh</ref>
+      <method>echo</method>
+      <inport name="p1" type="bool"/>
+      <inport name="p2" type="bool"/>
+      <inport name="p3" type="bool"/>
+      <outport name="p1" type="bool"/>
+      <outport name="p2" type="bool"/>
+      <outport name="p3" type="bool"/>
+    </service>
+
+    <service name="corba0" >
+      <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+      <method>echoBoolean</method>
+      <inport name="p1" type="bool"/>
+      <outport name="p1" type="bool"/>
+    </service>
+    <service name="corba1" >
+      <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+      <method>echoBoolean</method>
+      <inport name="p1" type="bool"/>
+      <outport name="p1" type="bool"/>
+    </service>
+    <service name="corba2" >
+      <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+      <method>echoBoolean</method>
+      <inport name="p1" type="bool"/>
+      <outport name="p1" type="bool"/>
+    </service>
+    <service name="corba3" >
+      <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+      <method>echoBoolean</method>
+      <inport name="p1" type="bool"/>
+      <outport name="p1" type="bool"/>
+    </service>
+
+    <foreach name="foreach1" nbranch="3" type="bool" >
+      <service name="corba4" >
+        <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+        <method>echoBoolean</method>
+        <inport name="p1" type="bool"/>
+        <outport name="p1" type="bool"/>
+      </service>
+    </foreach>
+    <foreach name="foreach2" nbranch="3" type="bool" >
+      <inline name="pyth4" >
+        <script/>
+        <inport name="p1" type="bool"/>
+        <outport name="p1" type="bool"/>
+      </inline>
+    </foreach>
+    <foreach name="foreach3" nbranch="3" type="bool" >
+      <service name="xml4" >
+        <kind>xmlsh</kind>
+        <ref>./xmlrun.sh</ref>
+        <method>echo</method>
+        <inport name="p1" type="bool"/>
+        <outport name="p1" type="bool"/>
+      </service>
+    </foreach>
+
+    <inline name="pyth5" >
+      <script>
+        <code>print p1</code>
+      </script>
+      <inport name="p1" type="boolvec"/>
+      <outport name="p1" type="boolvec"/>
+    </inline>
+    <service name="xml5" >
+      <kind>xmlsh</kind>
+      <ref>./xmlrun.sh</ref>
+      <method>echo</method>
+      <inport name="p1" type="boolvec"/>
+      <outport name="p1" type="boolvec"/>
+    </service>
+    <service name="corba5" >
+      <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+      <method>echoBoolVec</method>
+      <inport name="p1" type="boolvec"/>
+      <outport name="p1" type="boolvec"/>
+    </service>
+
+    <inline name="pyth6" >
+      <script>
+        <code>print p1</code>
+      </script>
+      <inport name="p1" type="boolvec"/>
+      <outport name="p1" type="boolvec"/>
+    </inline>
+    <service name="xml6" >
+      <kind>xmlsh</kind>
+      <ref>./xmlrun.sh</ref>
+      <method>echo</method>
+      <inport name="p1" type="boolvec"/>
+      <outport name="p1" type="boolvec"/>
+    </service>
+    <service name="corba6" >
+      <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+      <method>echoBoolVec</method>
+      <inport name="p1" type="boolvec"/>
+      <outport name="p1" type="boolvec"/>
+    </service>
+
+    <foreach name="foreach4" nbranch="3" type="bool" >
+      <inline name="nodefor4" >
+        <script/>
+        <inport name="p1" type="bool"/>
+        <outport name="p1" type="bool"/>
+      </inline>
+    </foreach>
+
+    <!--parameters -->
+    <parameter>
+        <tonode>pyth0</tonode> <toport>p1</toport>
+        <value><boolean>1</boolean> </value>
+    </parameter>
+    <parameter>
+        <tonode>xml0</tonode> <toport>p1</toport>
+        <value><boolean>1</boolean> </value>
+    </parameter>
+    <parameter>
+        <tonode>corba0</tonode> <toport>p1</toport>
+        <value><boolean>1</boolean> </value>
+    </parameter>
+    <parameter>
+        <tonode>pyth6</tonode> <toport>p1</toport>
+        <value> <array> <data>
+            <value><boolean>1</boolean> </value>
+            <value><boolean>0</boolean> </value>
+        </data> </array> </value>
+    </parameter>
+    <parameter>
+        <tonode>xml6</tonode> <toport>p1</toport>
+        <value> <array> <data>
+            <value><boolean>1</boolean> </value>
+            <value><boolean>0</boolean> </value>
+        </data> </array> </value>
+    </parameter>
+    <parameter>
+        <tonode>corba6</tonode> <toport>p1</toport>
+        <value> <array> <data>
+            <value><boolean>1</boolean> </value>
+            <value><boolean>0</boolean> </value>
+        </data> </array> </value>
+    </parameter>
+    <parameter>
+        <tonode>foreach4</tonode> <toport>SmplsCollection</toport>
+        <value> <array> <data>
+            <value><boolean>1</boolean> </value>
+            <value><boolean>0</boolean> </value>
+        </data> </array> </value>
+    </parameter>
+
+    <!--datalinks -->
+    <datalink>
+      <fromnode>pyth0</fromnode><fromport>p1</fromport>
+      <tonode>pyth1</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+      <fromnode>corba0</fromnode><fromport>p1</fromport>
+      <tonode>corba1</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+      <fromnode>xml0</fromnode><fromport>p1</fromport>
+      <tonode>xml1</tonode> <toport>p1</toport>
+    </datalink>
+
+    <datalink>
+      <fromnode>xml0</fromnode><fromport>p1</fromport>
+      <tonode>pyth2</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+      <fromnode>pyth0</fromnode><fromport>p1</fromport>
+      <tonode>xml1</tonode> <toport>p2</toport>
+    </datalink>
+    <datalink>
+      <fromnode>corba0</fromnode><fromport>p1</fromport>
+      <tonode>xml1</tonode> <toport>p3</toport>
+    </datalink>
+    <datalink>
+      <fromnode>pyth0</fromnode><fromport>p1</fromport>
+      <tonode>corba2</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+      <fromnode>corba1</fromnode><fromport>p1</fromport>
+      <tonode>pyth3</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+      <fromnode>xml1</fromnode><fromport>p1</fromport>
+      <tonode>corba3</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+      <fromnode>node0</fromnode><fromport>p1</fromport>
+      <tonode>foreach1</tonode> <toport>SmplsCollection</toport>
+    </datalink>
+    <datalink>
+      <fromnode>foreach1</fromnode><fromport>SmplPrt</fromport>
+      <tonode>foreach1.corba4</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+      <fromnode>node0</fromnode><fromport>p1</fromport>
+      <tonode>foreach2</tonode> <toport>SmplsCollection</toport>
+    </datalink>
+    <datalink>
+      <fromnode>foreach2</fromnode><fromport>SmplPrt</fromport>
+      <tonode>foreach2.pyth4</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+      <fromnode>node0</fromnode><fromport>p1</fromport>
+      <tonode>foreach3</tonode> <toport>SmplsCollection</toport>
+    </datalink>
+    <datalink>
+      <fromnode>foreach3</fromnode><fromport>SmplPrt</fromport>
+      <tonode>foreach3.xml4</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+      <fromnode>foreach3.xml4</fromnode><fromport>p1</fromport>
+      <tonode>pyth5</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+      <fromnode>foreach1.corba4</fromnode><fromport>p1</fromport>
+      <tonode>xml5</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+      <fromnode>foreach2.pyth4</fromnode><fromport>p1</fromport>
+      <tonode>corba5</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+      <fromnode>foreach4</fromnode><fromport>SmplPrt</fromport>
+      <tonode>foreach4.nodefor4</tonode> <toport>p1</toport>
+    </datalink>
+
+
+</proc>

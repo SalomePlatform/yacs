@@ -1,0 +1,60 @@
+<proc>
+    <type name="double" kind="double"/>
+    <sequence name="dblevec" content="double"/>
+    <sequence name="dblevecvec" content="dblevec"/>
+    <objref name="geom" />
+    <objref name="sgeom" >
+        <base>geom</base>
+    </objref>
+    <sequence name="geomvec" content="geom"/>
+    <sequence name="sgeomvec" content="sgeom"/>
+    <sequence name="sgeomvecvec" content="sgeomvec"/>
+
+    <inline name="node1" >
+            <script><code></code></script>
+        <outport name="p1" type="int"/>
+    </inline>
+    <inline name="node2" >
+            <script><code></code></script>
+        <inport name="p1" type="int"/>
+    </inline>
+    <bloc name="b1" >
+        <inline name="n1" > <script><code></code></script> </inline>
+        <inline name="n4">
+            <script><code></code></script>
+            <inport name="p1" type="int"/>
+            <inport name="p2" type="double"/>
+            <inport name="p3" type="int"/>
+            <inport name="p4" type="int"/>
+            <outport name="p1" type="int"/>
+        </inline>
+        <inline name="n5" > <script><code></code></script> </inline>
+        <inline name="n6" > <script><code></code></script> </inline>
+        <bloc name="b1">
+            <inline name="no1">
+            <script><code></code></script>
+               <outport name="p1" type="int"/>
+            </inline>
+            <inline name="no2">
+            <script><code></code></script>
+               <inport name="p1" type="int"/>
+            </inline>
+            <bloc name="bb1">
+               <inline name="bbno1" > <script><code></code></script> </inline>
+            </bloc>
+            <datalink>
+                <fromnode>no1</fromnode>
+                <tonode>no2</tonode>
+                <fromport>p1</fromport>
+                <toport>p1</toport>
+            </datalink>
+        </bloc>
+    </bloc>
+    <control> <fromnode>node1</fromnode> <tonode>node2</tonode> </control>
+    <datalink>
+        <fromnode>node1</fromnode>
+        <tonode>node2</tonode>
+        <fromport>p1</fromport>
+        <toport>p1</toport>
+    </datalink>
+</proc>

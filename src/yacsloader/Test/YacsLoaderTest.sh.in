@@ -1,0 +1,74 @@
+#!/bin/bash
+
+if test -f @KERNEL_ROOT_DIR@/bin/salome/appli_gen.py ; then
+
+  # --- create a SALOME Application environment
+
+  @KERNEL_ROOT_DIR@/bin/salome/appli_gen.py
+  sed -i s/\"yes\"/\"no\"/ SalomeApp.xml
+  sed -i s/\,study\,cppContainer\,registry\,moduleCatalog// SalomeApp.xml
+  sed -i s/pyContainer/pyContainer\,study\,cppContainer\,registry\,moduleCatalog/ SalomeApp.xml
+
+cat > CatalogResources.xml << EOF
+<!DOCTYPE ResourcesCatalog>
+<resources>
+  <machine protocol="ssh" nbOfNodes="1" mode="interactif" OS="LINUX" CPUFreqMHz="2800"
+    userName="$USER" memInMB="1500" nbOfProcPerNode="2" alias="$HOSTNAME" hostname="$HOSTNAME" />
+</resources>
+EOF
+
+  # ---------------------------------------------------------------------------
+  # --- first set of test in C++
+
+  # --- launch in background a SALOME session (servers)
+
+  ln -fs @top_srcdir@/src/yacsloader/samples .
+  ./runAppli > log1 2>&1
+
+  # --- wait a little to let the background process define
+  #     the CORBA naming service port and host
+
+  sleep 5
+
+  # --- execute the test script in SALOME session environment
+
+  chmod +x @builddir@/YacsLoaderInSessionTest.sh
+  ./runSession @builddir@/YacsLoaderInSessionTest.sh
+  ret1=$?
+
+  # ---------------------------------------------------------------------------
+  # --- second set of tests: Python scripts
+
+  chmod +x @builddir@/YacsLoaderInSessionTest2.sh
+  ./runSession @builddir@/YacsLoaderInSessionTest2.sh
+  ret2=$?
+
+  # ---------------------------------------------------------------------------
+
+  kill -9 `cat "/tmp/YACSTEST_PidEcho"`
+  ./runSession killSalome.py
+
+  echo "exec status YacsLoaderInSessionTest.sh "  $ret1
+  echo "exec status YacsLoaderInSessionTest2.sh " $ret2
+  let ret=$ret1+$ret2
+
+  # --- delete all the SALOME Application environment
+  
+  ./bin/salome/appli_clean.sh
+
+else
+
+  ln -fs @top_srcdir@/src/yacsloader/samples .
+  chmod +x @builddir@/YacsLoaderInSessionTest.sh
+  @builddir@/YacsLoaderInSessionTest.sh
+  ret=$?
+  echo "exec status YacsLoaderInSessionTest.sh " $ret
+
+fi
+
+if [ $ret -ne 0 ]
+then cat /tmp/${USER}/UnitTestsResult
+else echo "Results are in /tmp/${USER}/UnitTestsResult"
+fi
+
+exit $ret

@@ -1,0 +1,65 @@
+<proc>
+    <!-- a for each loop with 3 branches with a service node corba -->
+    <!--types -->
+    <sequence name="strvec" content="string"/>
+
+    <!--containers -->
+    <container name="A"> </container>
+
+    <!--nodes -->
+    <inline name="node0" >
+      <script>
+        <code>p1=["chris%d" % i for i in range(10)]</code>
+      </script>
+      <outport name="p1" type="strvec"/>
+    </inline>
+
+    <foreach name="b1" nbranch="3" type="string" >
+      <sinline name="node2" >
+        <function name="f">
+          <code>import salome</code>
+          <code>salome.salome_init()</code>
+          <code>import PYHELLO_ORB</code>
+          <code>print __container__from__YACS__</code>
+          <code>machine,container=__container__from__YACS__.split('/')</code>
+          <code>param={}</code>
+          <code>param['hostname']=machine</code>
+          <code>param['container_name']=container</code>
+          <code>compo=salome.lcc.LoadComponent(param, "PYHELLO")</code>
+          <code>def f(p1):</code>
+          <code>  print compo.makeBanner(p1)</code>
+          <code>  print p1</code>
+          <code>  return p1</code>
+        </function>
+        <load container="A"/>
+        <inport name="p1" type="string"/>
+        <outport name="p1" type="string"/>
+      </sinline>
+    </foreach>
+    <inline name="node1" >
+      <script>
+        <code>print p1</code>
+      </script>
+      <inport name="p1" type="strvec"/>
+    </inline>
+
+
+    <!--control -->
+    <control> <fromnode>node0</fromnode> <tonode>b1</tonode> </control>
+
+    <!--datalink -->
+    <datalink>
+      <fromnode>node0</fromnode><fromport>p1</fromport>
+      <tonode>b1</tonode> <toport>SmplsCollection</toport>
+    </datalink>
+    <datalink>
+      <fromnode>b1</fromnode><fromport>SmplPrt</fromport>
+      <tonode>b1.node2</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+      <fromnode>b1.node2</fromnode><fromport>p1</fromport>
+      <tonode>node1</tonode> <toport>p1</toport>
+    </datalink>
+
+
+</proc>

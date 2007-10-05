@@ -18,10 +18,52 @@ Fonction de vérification de la compétude d'un graphe à l'édition:
 - inventaire des ports de donnée entrants non initialisés et non connectés.
 - faut-il vérifier quelque chose pour les gates ?
 
-
+Regles d'ecriture C++ à definir :
+ - pas de clause using namespace dans les .hxx
+ - prefixer les attributs de classe par _
+ - indentation style gnu
+ - utilisation des namespace dans les cxx
+   - nom complets dans les declarations (identité avec .hxx pour doxygen)
 
 
 IMPROVEMENTS :
 
-- OutGate::isAlreadyInList : use std::find
-- Bloc::checkNoCyclePassingThrough : first loop iter1=currentNodesToTest.erase(iter1) as last argument
+- keep namespace YACS::ENGINE only for engine.
+- test Loop::init : initialization of InputPort of Node inside the
+  Loop overwrite by an in-link
+- bug CC : loop in bloc initialized with 0 and overloaded by previous
+   node.
+- several outputports of a switch case linked to a same inputport
+- Add some tests on link update when ForLoop or WhileLoop node is removed
+- No backlinks authorized in ForEachLoop
+- ComposedNode::edAddLink : perform getAllRepresentants before on
+start port. catch exception to cleanly destroy all delegates
+eventually done before 
+- Call init after clone of internal node in ForEach.
+- getDeploymentTree during running. idem for edGetDirectDescendants
+for DynParaLoop. 
+- check that restoreInit should not been called in InputPort copy
+ constructor. A test with ForEachLoop should be performed with edInit
+ value inside.
+- throw OutputPort::exInit. Apparently useless.
+- CollectorSwOutPort managing several OutPorts per branch.
+- Switch inter branches forbidden ; check.
+
+CHECKLIST:
+
+- methode load non bloquante.
+- revoir getQualifiedName dans Node pour eviter dynamic_cast vers switch
+
+- test foreach4.xml problemes sporadiques (CC) sur conversions de doubles
+
+- ecriture graphe XML :
+  - ajout attribut _isComponentMethod initialisé a true pour noeuds SALOME
+    est-ce utile ?
+  - <node>/<component> dans bschema, cschema, dschema...
+  - calcium*.xml
+  - foreach1.xml: <foreach>, datalink manquant, en trop
+  - refcnt1.xml: <forloop>, <parameter> en trop
+  - stream1.xml: <outstream>, <instream>...
+  - ordre ecriture types
+  - verifier schema, schema2, fschema, oschema, pschema...
+

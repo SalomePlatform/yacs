@@ -1,2 +1,32 @@
+##
+# Here any commonly used variables can be defined
+##
+
+# Standard directory for installation
+salomeincludedir   = $(includedir)/@PACKAGE@
+libdir             = $(prefix)/lib@LIB_LOCATION_SUFFIX@/@PACKAGE@
+bindir             = $(prefix)/bin/@PACKAGE@
+salomescriptdir    = $(bindir)
+
+# Directory for installing idl files
+salomeidldir       = $(prefix)/idl/@PACKAGE@
+
+# Directory for installing resource files
+salomeresdir       = $(prefix)/share/@PACKAGE@/resources/@MODULE_NAME@
+
+# Directories for installing admin files
+admlocaldir       = $(prefix)/adm_local
+admlocalunixdir     = $(admlocaldir)/unix
+admlocalm4dir        = $(admlocaldir)/unix/config_files
+
+# Shared modules installation directory
+sharedpkgpythondir =$(pkgpythondir)/shared_modules
+
+# Documentation directory
+docdir             = $(datadir)/doc/@PACKAGE@
 
 EXTRA_DIST = $(wildcard $(srcdir)/*.hxx) $(wildcard $(srcdir)/*.h)
+
+# Gui specific makefile variable (not needed for base, engine, runtime parts)
+# To improve
+include $(top_srcdir)/adm/unix/make_gui_begin.am

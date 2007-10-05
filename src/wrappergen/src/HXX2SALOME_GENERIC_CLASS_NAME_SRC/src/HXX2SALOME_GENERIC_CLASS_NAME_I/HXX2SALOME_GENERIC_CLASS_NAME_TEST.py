@@ -1,0 +1,7 @@
+mport salome
+import HXX2SALOME_GENERIC_CLASS_NAME_ORB
+myHXX2SALOME_GENERIC_CLASS_NAME = salome.lcc.FindOrLoadComponent("FactoryServer", "HXX2SALOME_GENERIC_CLASS_NAME")
+#
+#
+print "Hello HXX2SALOME_GENERIC_CLASS_NAME"
+# Test here some of HXX2SALOME_GENERIC_CLASS_NAME methods ...

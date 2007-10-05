@@ -1,5 +1,5 @@
 
-AC_DEFUN([CHECK_OMNIORB],[
+AC_DEFUN([AC_CHECK_OMNIORB],[
 AC_REQUIRE([AC_PROG_CC])dnl
 AC_REQUIRE([AC_PROG_CXX])dnl
 AC_REQUIRE([AC_PROG_CPP])dnl
@@ -56,35 +56,25 @@ then
   OMNIORB_INCLUDES="-I$OMNIORB_ROOT/include -I$OMNIORB_ROOT/include/omniORB${OMNIORB_VERSION} -I$OMNIORB_ROOT/include/COS"
   AC_SUBST(OMNIORB_INCLUDES)
 
+  # ENABLE_PTHREADS
+
   OMNIORB_CXXFLAGS="-DOMNIORB_VERSION=$OMNIORB_VERSION"
   case $build_cpu in
     sparc*)
-      AC_DEFINE(__sparc__)
       OMNIORB_CXXFLAGS="$OMNIORB_CXXFLAGS -D__sparc__"
       ;;
    *86*)
-      AC_DEFINE(__x86__)
       OMNIORB_CXXFLAGS="$OMNIORB_CXXFLAGS -D__x86__"
       ;;
   esac
   case $build_os in
-    osf*)
-      AC_DEFINE(__osf1__)
-      __OSVERSION__=5
-      AC_DEFINE(__OSVERSION__)
-      OMNIORB_CXXFLAGS="$OMNIORB_CXXFLAGS -D__osf1__"
-      ;;
     solaris*)
-      AC_DEFINE(__sunos__)
       __OSVERSION__=5
-      AC_DEFINE(__OSVERSION__)
       OMNIORB_CXXFLAGS="$OMNIORB_CXXFLAGS -D__sunos__"
       ;;
    linux*)
-      AC_DEFINE(__linux__)
       __OSVERSION__=2
-      AC_DEFINE(__OSVERSION__)
-      OMNIORB_CXXFLAGS="$OMNIORB_CXXFLAGS -D__linux__"
+      OMNIORB_CXXFLAGS="$OMNIORB_CXXFLAGS -D__linux__ -D_REENTRANT"
       ;;
   esac
   AC_SUBST(OMNIORB_CXXFLAGS)
@@ -95,7 +85,7 @@ then
   AC_LANG_CPLUSPLUS
   AC_CHECK_HEADER(CORBA.h,omniORB_ok="yes",omniORB_ok="no")
 
-  CPPFLAGS=$CPPFLAGS_old
+dnl  CPPFLAGS=$CPPFLAGS_old
 
 fi
 
@@ -185,11 +175,8 @@ fi
 if test "x$omniORB_ok" = "xyes" 
 then
 
-  OMNIORB_IDLCXXFLAGS="-nf -I${OMNIORB_ROOT}/idl"
-  OMNIORB_IDLPYFLAGS_1='-bpythonbe -p ${top_srcdir}/salome_adm/unix'
-  OMNIORB_IDLPYFLAGS_2=" -I${OMNIORB_ROOT}/idl"
-  OMNIORB_IDLPYFLAGS=${OMNIORB_IDLPYFLAGS_1}${OMNIORB_IDLPYFLAGS_2}
-
+  OMNIORB_IDLCXXFLAGS="-nf -I$OMNIORB_ROOT/idl"
+  OMNIORB_IDLPYFLAGS="-bpython -I$OMNIORB_ROOT/idl"
   AC_SUBST(OMNIORB_IDLCXXFLAGS)
   AC_SUBST(OMNIORB_IDLPYFLAGS)
 
@@ -212,15 +199,15 @@ then
   AC_SUBST(OMNIORB_IDL_TIE_H)
   AC_SUBST(OMNIORB_IDL_TIE_CXX)
   
-  AC_DEFINE(OMNIORB)
+  AC_DEFINE(OMNIORB,,[Presence de omniORB])
 
   CORBA_HAVE_POA=1
-  AC_DEFINE(CORBA_HAVE_POA)
+  AC_DEFINE(CORBA_HAVE_POA,,[POA presence])
 
   CORBA_ORB_INIT_HAVE_3_ARGS=1
-  AC_DEFINE(CORBA_ORB_INIT_HAVE_3_ARGS)
+  AC_DEFINE(CORBA_ORB_INIT_HAVE_3_ARGS,,[?])
   CORBA_ORB_INIT_THIRD_ARG='"omniORB"'
-  AC_DEFINE(CORBA_ORB_INIT_THIRD_ARG, "omniORB")
+  AC_DEFINE(CORBA_ORB_INIT_THIRD_ARG, "omniORB", [?])
 
 fi
 
@@ -243,71 +230,10 @@ dnl AC_LANG_RESTORE
 AC_MSG_RESULT(for omniORBpy: $omniORBpy_ok)
 AC_MSG_RESULT(for omniORB: $omniORB_ok)
 
-# Save cache
-AC_CACHE_SAVE
-
-dnl AC_LANG_CPLUSPLUS
-
-CXXFLAGS_old=$CXXFLAGS
-CXXFLAGS="$CXXFLAGS $OMNIORB_CXXFLAGS $OMNIORB_INCLUDES"
-LIBS_old=$LIBS
-LIBS="$LIBS $OMNIORB_LDFLAGS $OMNIORB_LIBS"
-AC_MSG_CHECKING(whether we have double and CORBA::Double compatibility)
-AC_TRY_RUN(
-#include <stdlib.h>
-#include <CORBA.h>
-int main ()
-{
-  CORBA::Double *a=new CORBA::Double(2.5);
-  double c=2.5;
-  double *b;
-  b=(double *)a;
-
-  if( (c==*b) && (sizeof(double)==sizeof(CORBA::Double)) ){
-    delete a;
-    exit(0);
-  }
-  else{
-    delete a;
-    exit(1);
-  }
-}
-,DOUBLECOMP="yes",DOUBLECOMP="no")
-if test "$DOUBLECOMP" = yes; then
-  OMNIORB_CXXFLAGS="$OMNIORB_CXXFLAGS -DCOMP_CORBA_DOUBLE"
-  AC_MSG_RESULT(yes)
-else
-  AC_MSG_RESULT(no)
-fi
-AC_MSG_CHECKING(whether we have int and CORBA::Long compatibility)
-AC_TRY_RUN(
-#include <stdlib.h>
-#include <CORBA.h>
-int main ()
-{
-  CORBA::Long *a=new CORBA::Long(2);
-  int c=2;
-  int *b;
-  b=(int *)a;
-
-  if( (c==*b) && (sizeof(int)==sizeof(CORBA::Long)) )
-    exit(0);
-  else
-    exit(1);
-}
-,LONGCOMP="yes",LONGCOMP="no")
-if test "$LONGCOMP" = yes; then
-  OMNIORB_CXXFLAGS="$OMNIORB_CXXFLAGS -DCOMP_CORBA_LONG"
-  AC_MSG_RESULT(yes)
-else
-  AC_MSG_RESULT(no)
-fi
-CXXFLAGS=$CXXFLAGS_old
-LIBS=$LIBS_old
-
-AC_LANG_RESTORE
-
-AC_SUBST(OMNIORB_CXXFLAGS)
+IDL=${OMNIORB_IDL}
+IDLGENFLAGS="-bcxx "
+AC_SUBST(IDL)	
+AC_SUBST(IDLGENFLAGS)	
 
 ])dnl
 dnl

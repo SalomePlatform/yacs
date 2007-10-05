@@ -1,0 +1,457 @@
+#! /bin/bash
+#
+#
+BE_QUIET=0
+# salome2 environment file (.bash or .sh) - can also be specified with -e option
+ENVIRON_FILE=
+# if present, hxx2salome will try to compile new module, by sourcing ENVIRON_FILE file, and executing
+# build_configure, configure, make & make install
+# remark : hxx2salome has to be lanched with clean PATH, LD_LIBRARY_PATH & PYTHONPATH variables!
+#
+# options you want to pass to configure
+CONFIGURE_OPTION=
+#
+# which wrappers to generate
+declare -a GEN
+
+iCPP=0
+iCORBA=1
+iPython=2
+
+GEN[${iCPP}]="no"
+GEN[${iCORBA}]="no"
+GEN[${iPython}]="no"
+
+
+#
+usage()
+{
+    echo -e "\n  Usage :\n"
+    echo -e "  Set HXX2SALOME_ROOT_DIR variable"
+    echo -e "  ${HXX2SALOME_ROOT_DIR}/hxx2salome [options] "
+    echo -e "             cppComponent_root_dir cppComponent.hxx"
+    echo -e "             libcppComponent.so salomeComponentRoot\n"
+    echo -e "     - cppComponent_root_dir : install directory (absolute path)"
+    echo -e "                               of the c++ component\n"
+    echo -e "     - cppComponent.hxx      : header of the component"
+    echo -e "     - libcppComponent.so    : library\n"
+    echo -e "       (cppComponent.hxx and libcppComponent.so have to be found"
+    echo -e "        in cppComponent_root_dir)\n"
+    echo -e "     - salomeComponentRoot   : directory of the source/build/install"
+    echo -e "                               of the Salome component\n"
+    echo -e "  Options :"
+    echo -e "    -h                    : this help"
+    echo
+    echo -e "    -q                    : be quiet"
+    echo
+    echo -e "    -x Lang               : generate a wrapper to use the component"
+    echo -e "                            from language Lang where Lang can be "
+    echo -e "                            any of CORBA,C++,python"
+    echo -e "                            (several -x options can be specified)"
+    echo -e "                            default : generate all wrappers"
+    echo
+
+    echo -e "    -e environment_script : to specify the name of a environment file"
+    echo -e "                            that will be updated with new necessary commands"
+    echo -e "                            (this file is also used for sourcing environment"
+    echo -e "                            before compilation if it has sh or bash syntax,"
+    echo -e "                            if the syntax is csh, it is not sourced and for"
+    echo -e "                            compiling (-c option) environment must be set up"
+    echo -e "                            before)"
+    echo
+    echo -e "    -s script_extension   : to use if your environment file name doesn't"
+    echo -e "                            have extension"
+    echo
+    echo -e "    -g                    : to create a gui part in your component"
+    echo -e "                            building tree"
+    echo
+    echo -e "    -c                    : to compile after generation"
+    echo -e "                            (use this option only if you don't have"
+    echo -e "                            dependencies in your header or libraries"
+    echo -e "                            if it is the case, you'll have to adapt"
+    echo -e "                            your Makefile.am" 
+    echo
+    echo -e "    -l                    : to launch salome "
+    exit
+}
+#
+welcome()
+{
+    echo -e "\n\n"
+    echo  "----------------------------------------------------------------------------"
+    echo
+    echo  "                              hxx2salome"
+    echo
+    echo  "     Automatic generation of a Salome2 component from a C++ component"
+    echo 
+    echo  "----------------------------------------------------------------------------"
+    echo 
+    echo 
+    echo 
+}
+
+if [ "x$HXX2SALOME_ROOT_DIR" == "x" ] 
+then
+    usage
+fi
+
+source ${HXX2SALOME_ROOT_DIR}/hxx2salome_check
+source ${HXX2SALOME_ROOT_DIR}/hxx2salome_corba
+source ${HXX2SALOME_ROOT_DIR}/hxx2salome_cpp
+
+
+# retrieve python test file ending up with _test.py
+get_python_test_file()
+{
+    cd ${CPP_ROOT_DIR}
+    for file in `find . -name "*_test.py"`
+    do
+       cp $file ${tmp_dir}/${CLASS_NAME}_SRC/src/${CLASS_NAME}
+       python_test_file=${python_test_file}" "`basename $file`
+    done
+    if [ ${BE_QUIET} -lt 1 ] ; then
+        echo -e "\nList of exported python file test : $python_test_file \n"
+    fi
+    cd -
+}
+
+create_component_tree()
+{
+    INSTALL_DIR=${salomeComponentRoot}/${CLASS_NAME}
+
+    export NEW_COMPONENT_SRC_DIR=${INSTALL_DIR}/${CLASS_NAME}_SRC
+    export NEW_COMPONENT_BUILD_DIR=${INSTALL_DIR}/${CLASS_NAME}_BUILD
+    export NEW_COMPONENT_ROOT_DIR=${INSTALL_DIR}/${CLASS_NAME}_INSTALL
+
+    \rm -rf ${NEW_COMPONENT_SRC_DIR}
+    mkdir -p ${NEW_COMPONENT_SRC_DIR}
+}
+
+
+get_info_makefile()
+{
+    makefile_lib="-L\${${CLASS_NAME}CPP_ROOT_DIR}${lib_dir#${CPP_ROOT_DIR}} -l${lib_file}"
+    makefile_include="-I\${${CLASS_NAME}CPP_ROOT_DIR}${hxx_dir#${CPP_ROOT_DIR}}"
+    
+    if [ ${BE_QUIET} -lt 1 ] ; then
+       echo -e "\nlinking option : $makefile_lib"
+       echo -e "include option : $makefile_include"
+    fi
+}
+
+
+generate_module_source()
+{
+
+#
+# go in temporary directory to work on code generation
+    cd ${tmp_dir}
+#
+#
+# -------------------------  parse hxx file : generic part  ---------------------------------------
+#
+    cat ${hxx_file} | \
+    awk -f ${gene_dir}/parse01.awk | \
+    awk -f ${gene_dir}/parse1.awk  | \
+    awk -f ${gene_dir}/parse2.awk  \
+         > temp
+    sed -e "/${CLASS_NAME}/d" < temp > ${CLASS_NAME}_public_functions
+    
+    if [ ${BE_QUIET} -lt 1 ] ; then
+       echo -e "\n-> Extract public functions\n"
+    fi
+    if [ ! -s ${CLASS_NAME}_public_functions ]
+    then
+    echo -e "\nError:"
+    echo -e "  Sorry - No compatible function was found!"
+    echo -e "  Please check your header file\n"
+    exit
+    fi
+
+    echo -e "\n\n-> Compatibility      function\n"
+    cat ${CLASS_NAME}_public_functions | \
+    awk -v class_name=${CLASS_NAME} -f ${gene_dir}/parse30.awk
+
+    \rm -f hxx2salome_journal && touch hxx2salome_journal
+
+    if [ ${BE_QUIET} -lt 1 ] ; then
+       echo -e "\n-> Duplicate template module" | tee ../hxx2salome_journal
+    fi
+    cp -rf ${gene_dir}/HXX2SALOME_GENERIC_CLASS_NAME_SRC ${CLASS_NAME}_SRC
+    cp -f ${gene_dir}/compile_HXX2SALOME_GENERIC_CLASS_NAME.sh compile_${CLASS_NAME}.sh
+    ${gene_dir}/renameSalomeModule -i HXX2SALOME_GENERIC_CLASS_NAME \
+    ${CLASS_NAME} ${CLASS_NAME}_SRC >> ../hxx2salome_journal
+
+    GEN=( `validate_generation_choices ${GEN[${iCPP}]} ${GEN[${iCORBA}]} ${GEN[${iPython}]}` )
+    echo "-> Wrappers generation : " C++ : ${GEN[${iCPP}]}  CORBA : ${GEN[${iCORBA}]}  Python : ${GEN[${iPython}]}
+    
+    if [ "x${GEN[${iCORBA}]}" == "xyes" ] ; then
+        generate_corba_module_source
+    else
+        clean_corba_module_source
+    fi
+
+    if [ "x${GEN[${iCPP}]}" == "xyes" ] ; then
+        generate_cpp_module_source
+    else
+         clean_cpp_module_source
+    fi
+}
+
+compile()
+{
+    echo "----------------- Configure -------------------"
+    
+    echo "----------------- Compile ---------------------"
+    make 
+    if [ $? -eq 0 ]
+    then
+    # compilation succeeded : we make install
+    echo
+    echo "----------------- Install ---------------------"
+    make install
+    else
+        exit 1
+    fi
+}
+
+update_environment()
+{
+    if [ -z ${ENVIRON_FILE} ]
+    then
+    ENVIRON_FILE="${NEW_COMPONENT_SRC_DIR}/env_${CLASS_NAME}.${SHELL_EXT}"
+    fi
+
+    if [ ${BE_QUIET} -lt 1 ] ; then
+       echo -e "\nEnvironment file : " $ENVIRON_FILE
+    fi
+    if [ -e ${ENVIRON_FILE} ]
+    then
+    cp ${ENVIRON_FILE} ${ENVIRON_FILE}.old
+    fi
+    touch ${ENVIRON_FILE}
+
+    if [ "${SHELL_EXT}" == "csh" ]
+    then
+    grep -q " ${CLASS_NAME}_SRC_DIR" ${ENVIRON_FILE}
+    res=$?
+    if [ $res == 1 ]
+    then
+        echo -e "###\n#------ ${CLASS_NAME}-Src ------" >>  ${ENVIRON_FILE}
+        echo -e "setenv ${CLASS_NAME}_BASE ${INSTALL_DIR}" >> ${ENVIRON_FILE}
+        echo -e "setenv ${CLASS_NAME}_SRC_DIR \${${CLASS_NAME}_BASE}/${CLASS_NAME}_SRC\n" >> ${ENVIRON_FILE}
+    fi
+    
+    grep -q " ${CLASS_NAME}_ROOT_DIR" ${ENVIRON_FILE}
+    res=$?
+    if [ $res == 1 ]
+    then
+        echo -e "###\n#------ ${CLASS_NAME}-Bin ------" >>  ${ENVIRON_FILE}
+        echo -e "setenv ${CLASS_NAME}_ROOT_DIR \${${CLASS_NAME}_BASE}/${CLASS_NAME}_INSTALL" >> ${ENVIRON_FILE}
+        echo -e "setenv ${CLASS_NAME}CPP_ROOT_DIR ${CPP_ROOT_DIR}" >> ${ENVIRON_FILE}
+        echo -e "setenv LD_LIBRARY_PATH \${${CLASS_NAME}CPP_ROOT_DIR}${lib_dir#${CPP_ROOT_DIR}}:\${LD_LIBRARY_PATH}" >> ${ENVIRON_FILE}
+    fi
+    fi
+    if [ "${SHELL_EXT}" == "sh" ]
+    then
+    grep -q " ${CLASS_NAME}_SRC_DIR=" ${ENVIRON_FILE}
+    res=$?
+    if [ $res == 1 ]
+    then
+        echo -e "###\n#------ ${CLASS_NAME}-Src ------" >>  ${ENVIRON_FILE}
+        echo -e "export ${CLASS_NAME}_BASE=${INSTALL_DIR}" >> ${ENVIRON_FILE}
+        echo -e "export ${CLASS_NAME}_SRC_DIR=\${${CLASS_NAME}_BASE}/${CLASS_NAME}_SRC\n" >> ${ENVIRON_FILE}
+    fi
+    
+    grep -q " ${CLASS_NAME}_ROOT_DIR=" ${ENVIRON_FILE}
+    res=$?
+    if [ $res == 1 ]
+    then
+        echo -e "###\n#------ ${CLASS_NAME}-Bin ------" >>  ${ENVIRON_FILE}
+        echo -e "export ${CLASS_NAME}_ROOT_DIR=\${${CLASS_NAME}_BASE}/${CLASS_NAME}_INSTALL" >> ${ENVIRON_FILE}
+        echo -e "export ${CLASS_NAME}CPP_ROOT_DIR=${CPP_ROOT_DIR}" >> ${ENVIRON_FILE}
+        echo -e "export LD_LIBRARY_PATH=\${${CLASS_NAME}CPP_ROOT_DIR}${lib_dir#${CPP_ROOT_DIR}}:\${LD_LIBRARY_PATH}" \
+        >> ${ENVIRON_FILE}
+    fi
+    
+    fi
+}
+
+copy_component_source()
+{
+    mv ${tmp_dir}/${CLASS_NAME}_SRC/* ${NEW_COMPONENT_SRC_DIR}
+    mkdir -p ${NEW_COMPONENT_BUILD_DIR}
+    mkdir -p ${NEW_COMPONENT_ROOT_DIR}
+}
+
+good_bye()
+{
+    
+    if [ ${BE_QUIET} -gt 0 ] ; then
+       return
+    fi
+    echo -e "\n\nModule was created in ${NEW_COMPONENT_SRC_DIR}"
+}
+
+
+#
+#
+# ------------------------------------------------------------------------
+# --------------------------- MAIN PROGRAM -------------------------------
+# ------------------------------------------------------------------------
+#
+CPP_ROOT_DIR=
+NEW_COMPONENT_ROOT_DIR=
+NEW_COMPONENT_SRC_DIR=
+NEW_COMPONENT_BUILD_DIR=
+SHELL_EXT=sh
+do_compile=0
+do_launch=0
+
+make_gui=0
+
+#
+welcome # print some welcome info
+#
+while getopts "qcs:e:h:lgx:" Option
+do
+   case $Option in
+     h) usage
+        exit;;
+     q) BE_QUIET=$[ ${BE_QUIET}+1 ] ;;
+     e) ENVIRON_FILE=$OPTARG;;
+     s) case $OPTARG in
+        bash) SHELL_EXT=sh;;
+        csh)  SHELL_EXT=csh;;      
+        *)    SHELL_EXT=sh;;
+    esac;;
+     g) make_gui=1;;
+     c) do_compile=1;;
+     l) do_launch=1;;
+     x) case $OPTARG in
+            CORBA) GEN[$iCORBA]="yes" ;;
+            python) GEN[$iPython]="yes" ;;
+            C++) GEN[${iCPP}]="yes";;
+            *)   ;;
+        esac;;
+     *) echo "Unimplemented option chosen : $Option."
+        usage
+        exit;;   # DEFAULT
+   esac
+done
+
+shift $(($OPTIND - 1))
+
+# default behaviour is to generate all wrappers
+#
+if [ "x${GEN[${iCPP}]}${GEN[${iCORBA}]}${GEN[${iPython}]}" == "xnonono" ] ;  then
+    for i in ${iCPP} ${iCORBA} ${iPython}
+      do
+      GEN[$i]="yes"
+    done
+fi
+echo "-> Wrappers generation : " C++ : ${GEN[${iCPP}]}  CORBA : ${GEN[${iCORBA}]}  Python : ${GEN[${iPython}]}
+echo
+echo
+
+# check number of other arguments
+#
+if [ $# -ne 4 ]
+then
+   echo -e "\nBad number of arguments\n\n"
+   usage
+   exit
+fi
+
+check_arguments $1 $2 $3 $4
+# 
+# if there is a sh compatible environment file, source it
+if [[ -n ${ENVIRON_FILE} && -f ${ENVIRON_FILE} ]]
+then
+   # analyse extension of environment file
+   case ${ENVIRON_FILE##*\.} in 
+       bash) SHELL_EXT=sh;;
+       ksh)  SHELL_EXT=sh;;
+       csh)  SHELL_EXT=csh;;
+       sh)   SHELL_EXT=sh;;
+   esac
+fi
+
+# Environment policy :
+#   - an existing sh file was specified : we source environment file
+#   - else (no file or csh syntax)      : we don't source environment file, and do compile 
+#                                         only if KERNEL_ROOT_DIR and MED_ROOT_DIR are defined
+if [ "${SHELL_EXT}" == "sh" ] && [ ${ENVIRON_FILE} ] && [ -f ${ENVIRON_FILE} ]
+then
+   echo -e "\n    Environment file with sh syntax specified => we source ${ENVIRON_FILE}"
+   source ${ENVIRON_FILE}
+fi
+
+#
+if [ ${HXX2SALOME_ROOT_DIR} ] && [ -d ${HXX2SALOME_ROOT_DIR} ]
+then
+    gene_dir=${HXX2SALOME_ROOT_DIR}
+else
+    gene_dir=`pwd` # case where hxx2salome was launched from HXX2SALOME directory
+fi
+OLD_DIR=`pwd`
+cd $gene_dir
+gene_dir=`pwd`
+cd $OLD_DIR
+
+if [ ${BE_QUIET} -lt 1 ] ; then
+   echo "    hxx2salome directory : $gene_dir"
+fi
+if [ ! -f ${gene_dir}/parse1.awk -o ! -f ${gene_dir}/parse2.awk ] # check if script are found
+then
+    echo -e "\nError : Variable HXX2SALOME_ROOT_DIR shoud be set, or hxx2salome should be launched localy from bin directory"
+    usage
+fi
+#
+# get class name
+#
+CLASS_NAME=`awk '$1 == "class" && $0 !~ /;/ {print $2}' ${hxx_file}|awk -F: '{print $1}'`
+echo "    Name of class :" $CLASS_NAME
+if [ ! $CLASS_NAME ]
+then
+    echo -e "\nError:\n  Sorry - No class definition was found!\n  Please check your header file\n"
+    exit
+fi
+
+#
+# create temporary working directory
+#
+tmp_dir="/tmp/${USER}/${CLASS_NAME}"
+if [ -d ${tmp_dir} ]
+then
+    rm -rf ${tmp_dir}/*
+else
+    mkdir -p ${tmp_dir}
+fi
+
+#
+# ---------------------  Generation of module source from template ------------------------------------------
+#
+get_info_makefile
+generate_module_source
+
+#
+# ---------------------- Installation of new module sources  ------------------------------------------------
+#
+create_component_tree
+
+#
+# ---------------------- Modification of Salome environment file  -------------------------------------------
+#
+update_environment
+export `echo ${CLASS_NAME}`_ROOT_DIR=${NEW_COMPONENT_ROOT_DIR}  # to avoid resource env for compiling and launching salome
+export `echo ${CLASS_NAME}`CPP_ROOT_DIR=${CPP_ROOT_DIR}  # idem
+#
+# ---------------------- Copy the generated source from temp dir  -------------------------------------------
+#
+copy_component_source
+
+good_bye
+
+
+echo -e "\nGeneration done\n"

@@ -5,47 +5,59 @@
 #include <Python.h>
 #include <omniORB4/CORBA.h>
 #include <libxml/parser.h>
-
-#include "TypeCode.hxx"
+#include "Any.hxx"
 
 namespace YACS
 {
   namespace ENGINE
   {
 
-    typedef CORBA::TypeCode_ptr (*getCorbaTCFn)(TypeCode *);
-    CORBA::TypeCode_ptr getCorbaTC(TypeCode *t);
+    typedef enum
+      {
+        CORBAImpl    = 1,
+        PYTHONImpl   = 2,
+        NEUTRALImpl  = 3,
+        XMLImpl      = 4,
+        CPPImpl      = 5,
+      } ImplType;
 
-    typedef CORBA::Any* (*convertCorbaPyObjectFn)(TypeCode *,PyObject* );
-    CORBA::Any *convertCorbaPyObject(TypeCode *t,PyObject *ob);
+    class TypeCode;
 
-    typedef int (*isAdaptableCorbaPyObjectFn)(TypeCode *,TypeCode* );
-    int isAdaptableCorbaPyObject(TypeCode* t1,TypeCode* t2);
+    CORBA::TypeCode_ptr getCorbaTC(const TypeCode *t);
 
-    typedef int (*isAdaptableXmlCorbaFn)(TypeCode *,TypeCode* );
-    int isAdaptableXmlCorba(TypeCode *t1,TypeCode *t2);
+    int isAdaptableCorbaPyObject(const TypeCode * t1, const TypeCode * t2);
+    int isAdaptableCorbaNeutral(const TypeCode * t1, const TypeCode * t2);
+    int isAdaptableCorbaCorba(const TypeCode * t1, const TypeCode * t2);
 
-    typedef int (*isAdaptableCorbaCorbaFn)(TypeCode *,TypeCode* );
-    int isAdaptableCorbaCorba(TypeCode* t1,TypeCode* t2);
+    int isAdaptableNeutralCorba(const TypeCode * t1, const TypeCode * t2);
+    int isAdaptableNeutralNeutral(const TypeCode * t1, const TypeCode * t2);
+    int isAdaptableNeutralXml(const TypeCode * t1, const TypeCode * t2);
+    int isAdaptableNeutralPyObject(const TypeCode * t1, const TypeCode * t2);
 
-    typedef int (*isAdaptablePyObjectPyObjectFn)(TypeCode *,TypeCode* );
-    int isAdaptablePyObjectPyObject(TypeCode* t1,TypeCode* t2);
+    int isAdaptablePyObjectPyObject(const TypeCode * t1, const TypeCode * t2);
+    int isAdaptablePyObjectCorba(const TypeCode * t1, const TypeCode * t2);
+    int isAdaptablePyObjectNeutral(const TypeCode * t1, const TypeCode * t2);
 
-    typedef int (*isAdaptablePyObjectCorbaFn)(TypeCode *,TypeCode* );
-    int isAdaptablePyObjectCorba(TypeCode* t1,TypeCode* t2);
+    int isAdaptableXmlNeutral(const TypeCode *t1,const TypeCode *t2);
+    int isAdaptableXmlCorba(const TypeCode *t1, const TypeCode *t2);
 
-    typedef PyObject* (*convertPyObjectCorbaFn)(TypeCode *,CORBA::Any* );
-    PyObject *convertPyObjectCorba(TypeCode* t,CORBA::Any* ob);
+    PyObject *convertCorbaPyObject(const TypeCode * t,CORBA::Any* ob);
+    CORBA::Any *convertCorbaCorba(const TypeCode * t,CORBA::Any* ob);
+    YACS::ENGINE::Any *convertCorbaNeutral(const TypeCode *t,CORBA::Any* ob);
+    std::string convertCorbaXml(const TypeCode * t,CORBA::Any* ob);
 
-    typedef char* (*convertXmlCorbaFn)(TypeCode *,CORBA::Any* );
-    char *convertXmlCorba(TypeCode* t,CORBA::Any* ob);
+    CORBA::Any *convertPyObjectCorba(const TypeCode *t,PyObject *ob);
+    std::string convertPyObjectXml(const TypeCode * t,PyObject* ob);
+    YACS::ENGINE::Any *convertPyObjectNeutral(const TypeCode *t,PyObject* ob);
 
-    typedef CORBA::Any* (*convertCorbaCorbaFn)(TypeCode *,CORBA::Any* );
-    CORBA::Any *convertCorbaCorba(TypeCode* t,CORBA::Any* ob);
+    PyObject *convertXmlPyObject(const TypeCode * t,xmlDocPtr doc,xmlNodePtr cur );
+    CORBA::Any *convertXmlCorba(const TypeCode * t,xmlDocPtr doc,xmlNodePtr cur );
+    YACS::ENGINE::Any *convertXmlNeutral(const TypeCode * t,xmlDocPtr doc,xmlNodePtr cur );
 
-    typedef CORBA::Any* (*convertCorbaXmlFn)(TypeCode *,xmlDocPtr doc,xmlNodePtr cur);
-    CORBA::Any *convertCorbaXml(TypeCode* t,xmlDocPtr doc,xmlNodePtr cur );
-
+    PyObject *convertNeutralPyObject(const TypeCode * t,YACS::ENGINE::Any* ob);
+    std::string convertNeutralXml(const TypeCode * t,YACS::ENGINE::Any* ob);
+    CORBA::Any *convertNeutralCorba(const TypeCode *t,YACS::ENGINE::Any *ob);
+    YACS::ENGINE::Any *convertNeutralNeutral(const TypeCode *t, YACS::ENGINE::Any* ob);
   }
 
 }

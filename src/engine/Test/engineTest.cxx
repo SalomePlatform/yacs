@@ -5,7 +5,10 @@
 #include "ElementaryNode.hxx"
 #include "Loop.hxx"
 #include "Switch.hxx"
-#include "Runtime.hxx"
+#include "VisitorSaveState.hxx"
+
+#include "SharedPtr.hxx"
+#include "RuntimeForEngineTest.hxx"
 
 #include "engineTest.hxx"
 
@@ -15,18 +18,12 @@
 #include <list>
 #include <vector>
 
+//#define _DEVDEBUG_
+#include "YacsTrace.hxx"
+
 using namespace YACS::ENGINE;
 using namespace YACS;
 using namespace std;
-
-#define _DEVDEBUG_
-#ifdef _DEVDEBUG_
-#define MYDEBTRACE {std::cerr << __FILE__ << " [" << __LINE__ << "] : ";}
-#define DEBTRACE(msg) {MYDEBTRACE; std::cerr<<msg<<std::endl<<std::flush;}
-#else
-#define MYDEBTRACE
-#define DEBTRACE(msg)
-#endif
 
 map<string, Node*> EngineTest::_nodeMap; 
 map<string, ComposedNode*> EngineTest::_compoMap;
@@ -46,15 +43,402 @@ void EngineTest::tearDown()
 {
 }
 
+void EngineTest::cleanUp()
+{
+  map<string, ComposedNode*>::iterator iter2,iter3;
+  for(map<string, Node*>::iterator iter=_nodeMap.begin();iter!=_nodeMap.end();iter++)
+    if((*iter).second->getFather()==0)
+      delete (*iter).second;
+}
+
 void EngineTest::checkGetRuntime()
 {
   CPPUNIT_ASSERT_THROW(Runtime *myrun = getRuntime(), YACS::Exception); 
-  Runtime::setRuntime();
+  RuntimeForEngineTest::setRuntime();
   Runtime *myrun1 = getRuntime();
   CPPUNIT_ASSERT(myrun1);
   Runtime *myrun2 = getRuntime();
   CPPUNIT_ASSERT_EQUAL(myrun1, myrun2);
   }
+
+void toto2(void *t)
+{
+  delete [] (char *)t;
+}
+
+void toto3(void *t)
+{
+  delete [] (int *)t;
+}
+
+void EngineTest::checkAny1()
+{
+  char *toto=new char[10];
+  strcpy(toto,"lkjlkj");
+  Any *tmp=AtomAny::New(toto,toto2);//no copy here
+  CPPUNIT_ASSERT( tmp->getStringValue() == "lkjlkj");
+  CPPUNIT_ASSERT( tmp->getStringValue() == "lkjlkj");
+  tmp->incrRef();
+  CPPUNIT_ASSERT( tmp->getStringValue() == "lkjlkj");
+  CPPUNIT_ASSERT( tmp->getStringValue() == "lkjlkj");
+  tmp->decrRef();
+  CPPUNIT_ASSERT( tmp->getStringValue() == "lkjlkj");
+  CPPUNIT_ASSERT( tmp->getStringValue() == "lkjlkj");
+  tmp->decrRef();
+  tmp=AtomAny::New("coucou",0);
+  CPPUNIT_ASSERT( tmp->getStringValue() == "coucou");
+  CPPUNIT_ASSERT( tmp->getStringValue() == "coucou");
+  tmp->decrRef();
+  tmp=AtomAny::New(string("abcdef"));
+  CPPUNIT_ASSERT( tmp->getStringValue() == "abcdef");
+  CPPUNIT_ASSERT( tmp->getStringValue() == "abcdef");
+  tmp->decrRef();
+  tmp=AtomAny::New("ghijk");
+  CPPUNIT_ASSERT( tmp->getStringValue() == "ghijk");
+  CPPUNIT_ASSERT( tmp->getStringValue() == "ghijk");
+  tmp->decrRef();
+  tmp=AtomAny::New((char *)"ghijk");
+  CPPUNIT_ASSERT( tmp->getStringValue() == "ghijk");
+  CPPUNIT_ASSERT( tmp->getStringValue() == "ghijk");
+  tmp->decrRef();
+}
+
+class A7
+{
+private:
+  double _d;
+  int _cnt;
+public:
+  A7(double toto):_d(toto),_cnt(1) { }
+  static A7 *New(double toto) { return new A7(toto); }
+  double getToto() const { return _d; }
+  void setToto(double val) { _d=val; }
+  void incrRef() { _cnt++; }
+  void decrRef();
+private:
+  ~A7() { }
+};
+
+void A7::decrRef()
+{
+  if(--_cnt==0)
+    delete this;
+}
+
+
+void checkSharedPtrFct2(const A7& a)
+{
+  a.getToto(); 
+}
+
+void checkSharedPtrFct1(const SharedPtr<A7>& a)
+{
+  checkSharedPtrFct2(a);
+}
+
+
+void EngineTest::checkSharedPtr()
+{
+  SharedPtr<A7> titi=A7::New(5.);
+  SharedPtr<A7> toto=A7::New(5.1);
+  SharedPtr<A7> tutu(toto);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(5.,titi->getToto(),1e-12);
+  titi->setToto(7.1);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(7.1,titi->getToto(),1e-12);
+  checkSharedPtrFct2(titi);
+  checkSharedPtrFct2(toto);
+  titi=toto;
+  checkSharedPtrFct2(titi);
+  checkSharedPtrFct2(tutu);
+}
+
+void EngineTest::checkAny2()
+{
+  double tabStack[8]={1.2, 3.4, 5.6, 7.8, 9.0, 2.3, 4.5, 6.7};
+  double *tabHeap=new double[8];
+  memcpy(tabHeap,tabStack,8*sizeof(double));
+  SequenceAnyPtr tmp(SequenceAny::New(tabStack,8,0));
+  CPPUNIT_ASSERT_EQUAL(8,(int)tmp->size());
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(5.6,(*tmp)[2]->getDoubleValue(),1e-12);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(6.7,(*tmp)[7]->getDoubleValue(),1e-12); 
+  AtomAnyPtr tmp2(AtomAny::New(8.9));
+  tmp->pushBack(tmp2);
+  CPPUNIT_ASSERT_EQUAL(9,(int)tmp->size());
+  tmp2=AtomAny::New(10.2);
+  tmp->pushBack(tmp2);
+  CPPUNIT_ASSERT_EQUAL(10,(int)tmp->size());
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(8.9,(*tmp)[8]->getDoubleValue(),1e-12);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(10.2,(*tmp)[9]->getDoubleValue(),1e-12); 
+  tmp->popBack();
+  CPPUNIT_ASSERT_EQUAL(9,(int)tmp->size());
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(8.9,(*tmp)[8]->getDoubleValue(),1e-12);
+  tmp2=AtomAny::New(10.3);
+  tmp->pushBack(tmp2);
+  CPPUNIT_ASSERT_EQUAL(10,(int)tmp->size());
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(8.9,(*tmp)[8]->getDoubleValue(),1e-12);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(10.3,(*tmp)[9]->getDoubleValue(),1e-12); 
+  tmp=SequenceAny::New(tabHeap,8,toto2);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(5.6,(*tmp)[2]->getDoubleValue(),1e-12);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(6.7,(*tmp)[7]->getDoubleValue(),1e-12);
+  tmp2=AtomAny::New(8.5);
+  tmp->pushBack(tmp2);
+  tmp2=AtomAny::New(10.27);
+  tmp->pushBack(tmp2);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(8.5,(*tmp)[8]->getDoubleValue(),1e-12);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(10.27,(*tmp)[9]->getDoubleValue(),1e-12);
+  CPPUNIT_ASSERT_EQUAL(10,(int)tmp->size()); 
+  tmp->popBack();
+  CPPUNIT_ASSERT_EQUAL(9,(int)tmp->size());
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(8.5,(*tmp)[8]->getDoubleValue(),1e-12);
+  tmp2=AtomAny::New(10.445);
+  tmp->pushBack(tmp2);
+  CPPUNIT_ASSERT_EQUAL(10,(int)tmp->size());
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(8.5,(*tmp)[8]->getDoubleValue(),1e-12);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(10.445,(*tmp)[9]->getDoubleValue(),1e-12);
+  // Idem but for int
+  int tabStackI[8]={1, 3, 5, 7, 9, 2, 4, 6};
+  int *tabHeapI=new int[8];
+  memcpy(tabHeapI,tabStackI,8*sizeof(int));
+  tmp=SequenceAny::New(tabStackI,8,0);
+  CPPUNIT_ASSERT_EQUAL(5,(*tmp)[2]->getIntValue());
+  CPPUNIT_ASSERT_EQUAL(6,(*tmp)[7]->getIntValue());
+  tmp2=AtomAny::New(8);
+  tmp->pushBack(tmp2);
+  tmp2=AtomAny::New(25);
+  tmp->pushBack(tmp2);
+  CPPUNIT_ASSERT_EQUAL(5,(*tmp)[2]->getIntValue());
+  CPPUNIT_ASSERT_EQUAL(6,(*tmp)[7]->getIntValue());
+  CPPUNIT_ASSERT_EQUAL(8,(*tmp)[8]->getIntValue());
+  CPPUNIT_ASSERT_EQUAL(25,(*tmp)[9]->getIntValue());
+  //Same with no copy constructor
+  tmp=SequenceAny::New(tabHeapI,8,toto3);
+  CPPUNIT_ASSERT_EQUAL(5,(*tmp)[2]->getIntValue());
+  CPPUNIT_ASSERT_EQUAL(6,(*tmp)[7]->getIntValue());
+  tmp2=AtomAny::New(8);
+  tmp->pushBack(tmp2);
+  tmp2=AtomAny::New(27);
+  tmp->pushBack(tmp2);
+  CPPUNIT_ASSERT_EQUAL(5,(*tmp)[2]->getIntValue());
+  CPPUNIT_ASSERT_EQUAL(6,(*tmp)[7]->getIntValue());
+  CPPUNIT_ASSERT_EQUAL(8,(*tmp)[8]->getIntValue());
+  CPPUNIT_ASSERT_EQUAL(27,(*tmp)[9]->getIntValue());
+  CPPUNIT_ASSERT_EQUAL(10,(int)tmp->size()); 
+  tmp->popBack();
+  CPPUNIT_ASSERT_EQUAL(9,(int)tmp->size());
+  CPPUNIT_ASSERT_EQUAL(8,(*tmp)[8]->getIntValue());
+  tmp2=AtomAny::New(202);
+  tmp->pushBack(tmp2);
+  CPPUNIT_ASSERT_EQUAL(10,(int)tmp->size());
+  CPPUNIT_ASSERT_EQUAL(8,(*tmp)[8]->getIntValue());
+  CPPUNIT_ASSERT_EQUAL(202,(*tmp)[9]->getIntValue());
+  try
+    {
+      double d=(*tmp)[2]->getDoubleValue();
+      CPPUNIT_ASSERT(0);
+    }
+  catch(Exception& e)
+    {
+      CPPUNIT_ASSERT(std::string(e.what())=="Value is not a Double");
+    }
+  SequenceAnyPtr tmp3=SequenceAny::New(tmp->getType());
+  try
+    {
+      tmp3->pushBack(tmp2);
+      CPPUNIT_ASSERT(0);
+    }
+  catch(Exception& e)
+    {
+      CPPUNIT_ASSERT(std::string(e.what())=="Invalid runtime of YACS::Any struct : having Int and you want Sequence");
+    }
+  CPPUNIT_ASSERT_EQUAL(0,(int)tmp3->size());
+  CPPUNIT_ASSERT_EQUAL(202,(*tmp)[9]->getIntValue());
+  tmp3->pushBack(tmp);
+  CPPUNIT_ASSERT_EQUAL(1,(int)tmp3->size());
+  CPPUNIT_ASSERT_EQUAL(202,(*tmp3)[0][9]->getIntValue());
+  tmp=SequenceAny::New(tabStackI,8,0);
+  tmp3->pushBack(tmp);
+  CPPUNIT_ASSERT_EQUAL(2,(int)tmp3->size());
+  CPPUNIT_ASSERT_EQUAL(202,(*tmp3)[0][9]->getIntValue());
+  CPPUNIT_ASSERT_EQUAL(7,(*tmp3)[1][3]->getIntValue());
+  tmp3->pushBack(tmp);
+  tmp3->pushBack(tmp);
+  CPPUNIT_ASSERT_EQUAL(4,(int)tmp3->size());
+  CPPUNIT_ASSERT_EQUAL(202,(*tmp3)[0][9]->getIntValue());
+  CPPUNIT_ASSERT_EQUAL(7,(*tmp3)[1][3]->getIntValue());
+  CPPUNIT_ASSERT_EQUAL(7,(*tmp3)[3][3]->getIntValue());
+  tmp2=AtomAny::New(89);
+  tmp->pushBack(tmp2);
+  CPPUNIT_ASSERT_EQUAL(4,(int)tmp3->size());
+  CPPUNIT_ASSERT_EQUAL(9,(int)tmp->size());
+  CPPUNIT_ASSERT_EQUAL(202,(*tmp3)[0][9]->getIntValue());
+  CPPUNIT_ASSERT_EQUAL(89,(*tmp3)[1][8]->getIntValue());
+  CPPUNIT_ASSERT_EQUAL(89,(*tmp3)[2][8]->getIntValue());
+  CPPUNIT_ASSERT_EQUAL(89,(*tmp3)[3][8]->getIntValue());
+  tmp3->popBack();
+  CPPUNIT_ASSERT_EQUAL(3,(int)tmp3->size());
+  CPPUNIT_ASSERT_EQUAL(9,(int)tmp->size());
+  CPPUNIT_ASSERT_EQUAL(202,(*tmp3)[0][9]->getIntValue());
+  CPPUNIT_ASSERT_EQUAL(89,(*tmp3)[1][8]->getIntValue());
+  CPPUNIT_ASSERT_EQUAL(89,(*tmp3)[2][8]->getIntValue());
+  SequenceAnyPtr tmp4=(SequenceAny *)tmp3->clone();
+  CPPUNIT_ASSERT_EQUAL(3,(int)tmp4->size());
+  CPPUNIT_ASSERT_EQUAL(202,(*tmp4)[0][9]->getIntValue());
+  CPPUNIT_ASSERT_EQUAL(89,(*tmp4)[1][8]->getIntValue());
+  CPPUNIT_ASSERT_EQUAL(89,(*tmp4)[2][8]->getIntValue());
+  tmp4->popBack();
+  CPPUNIT_ASSERT_EQUAL(2,(int)tmp4->size());
+  CPPUNIT_ASSERT_EQUAL(3,(int)tmp3->size());
+  CPPUNIT_ASSERT_EQUAL(202,(*tmp3)[0][9]->getIntValue());
+  CPPUNIT_ASSERT_EQUAL(202,(*tmp4)[0][9]->getIntValue());
+  CPPUNIT_ASSERT_EQUAL(89,(*tmp3)[1][8]->getIntValue());
+  CPPUNIT_ASSERT_EQUAL(89,(*tmp4)[1][8]->getIntValue());
+  tmp->popBack();
+  tmp2=AtomAny::New(107);
+  tmp->pushBack(tmp2);
+  CPPUNIT_ASSERT_EQUAL(2,(int)tmp4->size());
+  CPPUNIT_ASSERT_EQUAL(3,(int)tmp3->size());
+  CPPUNIT_ASSERT_EQUAL(202,(*tmp3)[0][9]->getIntValue());
+  CPPUNIT_ASSERT_EQUAL(202,(*tmp4)[0][9]->getIntValue());
+  CPPUNIT_ASSERT_EQUAL(107,(*tmp3)[1][8]->getIntValue());//These 2 lines to show that deepCpy has been done
+  CPPUNIT_ASSERT_EQUAL(89,(*tmp4)[1][8]->getIntValue());
+}
+
+void EngineTest::checkAny3()
+{
+  vector<string> vec;
+  vec.push_back("tata00000"); vec.push_back("toto"); vec.push_back("tutu");
+  SequenceAnyPtr tmp(SequenceAny::New(vec));
+  CPPUNIT_ASSERT_EQUAL(3,(int)tmp->size());
+  CPPUNIT_ASSERT((*tmp)[0]->getStringValue()=="tata00000");
+  CPPUNIT_ASSERT((*tmp)[1]->getStringValue()=="toto");
+  CPPUNIT_ASSERT((*tmp)[2]->getStringValue()=="tutu");
+  tmp->pushBack(AtomAnyPtr(AtomAny::New("abcdefgh")));
+  CPPUNIT_ASSERT_EQUAL(4,(int)tmp->size());
+  CPPUNIT_ASSERT((*tmp)[0]->getStringValue()=="tata00000");
+  CPPUNIT_ASSERT((*tmp)[1]->getStringValue()=="toto");
+  CPPUNIT_ASSERT((*tmp)[2]->getStringValue()=="tutu");
+  CPPUNIT_ASSERT((*tmp)[3]->getStringValue()=="abcdefgh");
+  tmp->popBack();
+  CPPUNIT_ASSERT_EQUAL(3,(int)tmp->size());
+  CPPUNIT_ASSERT((*tmp)[0]->getStringValue()=="tata00000");
+  CPPUNIT_ASSERT((*tmp)[1]->getStringValue()=="toto");
+  CPPUNIT_ASSERT((*tmp)[2]->getStringValue()=="tutu");
+  tmp->popBack();
+  CPPUNIT_ASSERT_EQUAL(2,(int)tmp->size());
+  CPPUNIT_ASSERT((*tmp)[0]->getStringValue()=="tata00000");
+  CPPUNIT_ASSERT((*tmp)[1]->getStringValue()=="toto");
+  tmp->popBack();
+  CPPUNIT_ASSERT_EQUAL(1,(int)tmp->size());
+  CPPUNIT_ASSERT((*tmp)[0]->getStringValue()=="tata00000");
+  tmp->popBack();
+  CPPUNIT_ASSERT_EQUAL(0,(int)tmp->size());
+  //
+  vector<bool> vec2;
+  tmp=SequenceAny::New(vec2);
+  CPPUNIT_ASSERT_EQUAL(0,(int)tmp->size());
+  vec2.push_back(true); vec2.push_back(false); vec2.push_back(true); vec2.push_back(true); vec2.push_back(true);
+  tmp=SequenceAny::New(vec2);
+  CPPUNIT_ASSERT_EQUAL(5,(int)tmp->size());
+  CPPUNIT_ASSERT((*tmp)[0]->getBoolValue() && !(*tmp)[1]->getBoolValue() && (*tmp)[2]->getBoolValue() && (*tmp)[3]->getBoolValue() && (*tmp)[4]->getBoolValue());
+  //in perspective of SequenceAny of bool were optimized as std::vector<bool> does.
+  tmp->pushBack(AtomAnyPtr(AtomAny::New(false))); tmp->pushBack(AtomAnyPtr(AtomAny::New(true))); tmp->pushBack(AtomAnyPtr(AtomAny::New(false)));
+  tmp->pushBack(AtomAnyPtr(AtomAny::New(true)));
+  CPPUNIT_ASSERT_EQUAL(9,(int)tmp->size());
+  CPPUNIT_ASSERT((*tmp)[0]->getBoolValue() && !(*tmp)[1]->getBoolValue() && (*tmp)[2]->getBoolValue() && (*tmp)[3]->getBoolValue() && (*tmp)[4]->getBoolValue());
+  CPPUNIT_ASSERT(!(*tmp)[5]->getBoolValue() && (*tmp)[6]->getBoolValue() && !(*tmp)[7]->getBoolValue() && (*tmp)[8]->getBoolValue());
+  //
+  vector<int> vec3;
+  vec3.push_back(2); vec3.push_back(5); vec3.push_back(7); vec3.push_back(1); vec3.push_back(66); vec3.push_back(26);
+  tmp=SequenceAny::New(vec3);
+  CPPUNIT_ASSERT_EQUAL(6,(int)tmp->size());
+  CPPUNIT_ASSERT_EQUAL(26,(*tmp)[5]->getIntValue());
+  tmp->popBack();
+  CPPUNIT_ASSERT_EQUAL(5,(int)tmp->size());
+  //
+  vector<double> vec4;
+  vec4.push_back(2.78); vec4.push_back(3.14); vec4.push_back(0.07);
+  tmp=SequenceAny::New(vec4);
+  CPPUNIT_ASSERT_EQUAL(3,(int)tmp->size());
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(0.07,(*tmp)[2]->getDoubleValue(),1e-12);
+  tmp->popBack();
+  CPPUNIT_ASSERT_EQUAL(2,(int)tmp->size());
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(3.14,(*tmp)[1]->getDoubleValue(),1e-12);
+}
+
+void EngineTest::checkAny4()
+{
+  SequenceAnyPtr tmp(SequenceAny::New(Runtime::_tc_int,8));
+  tmp=SequenceAny::New(Runtime::_tc_int,4);
+  tmp=SequenceAny::New(Runtime::_tc_int);
+  tmp=SequenceAny::New(Runtime::_tc_int,7);
+  AnyPtr tmp2=AtomAny::New(107);
+  tmp->setEltAtRank(3,tmp2);
+  CPPUNIT_ASSERT_EQUAL(107,(*tmp)[3]->getIntValue());
+  tmp=SequenceAny::New(Runtime::_tc_string,2);
+  tmp2=AtomAny::New("titi",0);
+  tmp->setEltAtRank(1,tmp2);
+  CPPUNIT_ASSERT((*tmp)[1]->getStringValue()=="titi");
+  vector<double> vec4;
+  vec4.push_back(2.78); vec4.push_back(3.14); vec4.push_back(0.07);
+  tmp2=SequenceAny::New(vec4);
+  tmp=SequenceAny::New(tmp2->getType(),3);
+  tmp->setEltAtRank(0,tmp2);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(3.14,(*tmp)[0][1]->getDoubleValue(),1e-12);
+  CPPUNIT_ASSERT_EQUAL(3,(int)tmp->size());
+  tmp->clear();
+  CPPUNIT_ASSERT_EQUAL(0,(int)tmp->size());
+  tmp->pushBack(tmp2);
+  tmp->pushBack(tmp2);
+  CPPUNIT_ASSERT_EQUAL(2,(int)tmp->size());
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(3.14,(*tmp)[1][1]->getDoubleValue(),1e-12);
+}
+
+/*!
+ * Testing Any::operator ==
+ */
+void EngineTest::checkAny5()
+{
+  //AtomAny
+  AnyPtr tmp1=AtomAny::New(107);
+  AnyPtr tmp2=AtomAny::New(107);
+  CPPUNIT_ASSERT( *tmp1==*tmp2 );
+  tmp1=AtomAny::New(106);
+  CPPUNIT_ASSERT( ! (*tmp1==*tmp2) );
+  CPPUNIT_ASSERT( ! (*tmp2==*tmp1) );
+  tmp1=AtomAny::New("toto");
+  CPPUNIT_ASSERT( ! (*tmp1==*tmp2) );
+  tmp2=AtomAny::New("tot");
+  CPPUNIT_ASSERT( ! (*tmp1==*tmp2) );
+  tmp2=AtomAny::New("toto");
+  CPPUNIT_ASSERT( (*tmp1==*tmp2) );
+  tmp1=AtomAny::New("mmmmmlll");
+  tmp2=tmp1->clone();
+  CPPUNIT_ASSERT( (*tmp1==*tmp2) );
+  //SequenceAny
+  vector<string> vec;
+  vec.push_back("tata00000"); vec.push_back("toto"); vec.push_back("tutu");
+  SequenceAnyPtr tmp3=(SequenceAny::New(vec));
+  CPPUNIT_ASSERT_EQUAL(3,(int)tmp3->size());
+  CPPUNIT_ASSERT((*tmp3)[0]->getStringValue()=="tata00000");
+  CPPUNIT_ASSERT((*tmp3)[1]->getStringValue()=="toto");
+  CPPUNIT_ASSERT((*tmp3)[2]->getStringValue()=="tutu");
+  AnyPtr tmp4=tmp3->clone();
+  CPPUNIT_ASSERT( (*tmp3==*tmp4) );
+  tmp3->popBack();
+  CPPUNIT_ASSERT( !(*tmp3==*tmp4) );
+  tmp1=AtomAny::New("tutu");
+  tmp3->pushBack(tmp1);
+  CPPUNIT_ASSERT( (*tmp3==*tmp4) );
+   tmp3->pushBack(tmp1);
+  CPPUNIT_ASSERT( !(*tmp3==*tmp4) );
+  tmp3->popBack();
+  CPPUNIT_ASSERT( *tmp3==*tmp4 );
+  tmp3->popBack();
+  CPPUNIT_ASSERT( !(*tmp3==*tmp4) );
+  tmp1=AtomAny::New("tutug");
+  tmp3->pushBack(tmp1);
+  CPPUNIT_ASSERT( !(*tmp3==*tmp4) );
+}
 
 void EngineTest::checkInGateOutGate()
 {
@@ -104,9 +488,9 @@ void EngineTest::checkNodePortNumber()
 
   DEBTRACE(" --- check number of ports after ports creation" );
 //   DEBTRACE("     node1->getNumberOfInputPorts(): "
-// 	   << node1->getNumberOfInputPorts());
+//         << node1->getNumberOfInputPorts());
 //   DEBTRACE("     node1->getNumberOfOutputPorts(): "
-// 	   << node1->getNumberOfOutputPorts());
+//         << node1->getNumberOfOutputPorts());
   CPPUNIT_ASSERT(node1->getNumberOfInputPorts() == 4);
   CPPUNIT_ASSERT(node1->getNumberOfOutputPorts() == 3);
 }
@@ -135,7 +519,7 @@ void EngineTest::checkDuplicatePortName()
   ElementaryNode* node1 = (ElementaryNode*) _nodeMap["Node1"];
   DEBTRACE(" --- check duplicated name throws exception" );
   CPPUNIT_ASSERT_THROW(InputPort *in5=node1->edAddInputPort("ii2",_tc_int),
-		       YACS::Exception); 
+                       YACS::Exception); 
 }
 
 void EngineTest::checkRemovePort()
@@ -153,7 +537,7 @@ void EngineTest::checkRemovePort()
   DEBTRACE(" --- check remove wrong port throws exception" )
   {
     CPPUNIT_ASSERT_THROW(node1->edRemovePort(node1->getInputPort("ib1")),
- 			 YACS::Exception);
+                         YACS::Exception);
   }
 }
 
@@ -207,8 +591,9 @@ void EngineTest::checkAddingTwiceSameNodeInTwoBlocs()
   bloc2->edAddChild(_nodeMap["Node_3"]);
 
   CPPUNIT_ASSERT_THROW(bloc2->edAddChild(_nodeMap["Node_1"]),
- 		       YACS::Exception);
+                       YACS::Exception);
 }
+
 
 void EngineTest::checkRecursiveBlocs_NumberOfNodes()
 {
@@ -228,7 +613,7 @@ void EngineTest::checkRecursiveBlocs_NumberOfNodes()
     CPPUNIT_ASSERT(setelem.size() == 4);
     for (set<ElementaryNode*>::iterator it=setelem.begin(); it!=setelem.end(); it++)
       {
-	DEBTRACE("     elem name = " << (*it)->getName());
+        DEBTRACE("     elem name = " << (*it)->getName());
       }
   }
 }
@@ -242,15 +627,15 @@ void EngineTest::checkRecursiveBlocs_NumberOfPorts()
   DEBTRACE("     number of input ports: " << bloc3->getNumberOfInputPorts());
   DEBTRACE("     number of output ports: " << bloc3->getNumberOfOutputPorts());
   {
-    set<InputPort *> inset = bloc3->getSetOfInputPort();
-    set<OutputPort *> outset = bloc3->getSetOfOutputPort();
-    for (set<InputPort *>::iterator it=inset.begin(); it!=inset.end(); it++)
+    list<InputPort *> inset = bloc3->getSetOfInputPort();
+    list<OutputPort *> outset = bloc3->getSetOfOutputPort();
+    for (list<InputPort *>::iterator it=inset.begin(); it!=inset.end(); it++)
       {
-	DEBTRACE("     input port name = " << bloc3->getInputPortName(*it));
+        DEBTRACE("     input port name = " << bloc3->getInPortName(*it));
       }
-    for (set<OutputPort *>::iterator it=outset.begin(); it!=outset.end(); it++)
+    for (list<OutputPort *>::iterator it=outset.begin(); it!=outset.end(); it++)
       {
-	DEBTRACE("     output port name = " << (*it)->getName());
+        DEBTRACE("     output port name = " << bloc3->getOutPortName(*it));
       }
   }
 }
@@ -261,14 +646,71 @@ void EngineTest::checkPortNameInBloc()
   DEBTRACE(" --- recursive blocs, check port names" );
   
   InputPort *inport = _nodeMap["Node_1"]->getInputPort("id1");
-  CPPUNIT_ASSERT(_nodeMap["bloc3"]->getInputPortName(inport) == "bloc1.Node_1.id1");
+  CPPUNIT_ASSERT(_nodeMap["bloc3"]->getInPortName(inport) == "bloc1.Node_1.id1");
+  CPPUNIT_ASSERT(((Bloc*)_nodeMap["bloc3"])->getChildName(_nodeMap["Node_1"]) == "bloc1.Node_1");
 }
 
 void EngineTest::checkGetNameOfPortNotInBloc()
 {
   InputPort *inport = _nodeMap["Node_5"]->getInputPort("id1");
-  CPPUNIT_ASSERT_THROW(string name = _nodeMap["bloc3"]->getInputPortName(inport),
-		       YACS::Exception);
+  CPPUNIT_ASSERT_THROW(string name = _nodeMap["bloc3"]->getInPortName(inport),
+                       YACS::Exception);
+}
+
+void EngineTest::checkRemoveNode()
+{
+  DEBTRACE(" --- bloc and port inventory must be OK after bloc remove" );
+
+  Bloc* bloc = new Bloc("blocR");
+  _nodeMap["blocR"] = bloc;
+  _compoMap["blocR"] = bloc;
+  bloc->edAddChild(_nodeMap["Node_5"]);
+  bloc->edAddChild(_nodeMap["Node_6"]);
+  bloc->edAddChild(_nodeMap["Node_7"]);
+
+  {
+    set<ElementaryNode *> setelem = _nodeMap["blocR"]->getRecursiveConstituents();
+    CPPUNIT_ASSERT(setelem.size() == 3);
+
+    for (set<ElementaryNode*>::iterator it=setelem.begin(); it!=setelem.end(); it++)
+      {
+        DEBTRACE("     elem name = " << (*it)->getName());
+      }
+  }
+
+  ((Bloc *)_nodeMap["blocR"])->edRemoveChild(_nodeMap["Node_6"]);
+
+  {
+    set<ElementaryNode *> setelem = _nodeMap["blocR"]->getRecursiveConstituents();
+    CPPUNIT_ASSERT(setelem.size() == 2);
+    for (set<ElementaryNode*>::iterator it=setelem.begin(); it!=setelem.end(); it++)
+      {
+        DEBTRACE("     elem name         = " << (*it)->getName());
+        DEBTRACE("     elem name in Bloc = " << ((Bloc *)_nodeMap["blocR"])->getChildName(*it));
+      }
+  }
+
+  {
+    list<InputPort *> inset = _nodeMap["blocR"]->getSetOfInputPort();
+    list<OutputPort *> outset = _nodeMap["blocR"]->getSetOfOutputPort();
+    CPPUNIT_ASSERT(inset.size() == 8);
+    CPPUNIT_ASSERT(outset.size() == 6);
+    for (list<InputPort *>::iterator it=inset.begin(); it!=inset.end(); it++)
+      {
+        DEBTRACE("     input port name for blocR  = " << _nodeMap["blocR"]->getInPortName(*it));
+      }
+    for (list<OutputPort *>::iterator it=outset.begin(); it!=outset.end(); it++)
+      {
+        DEBTRACE("     output port name for blocR  = " << _nodeMap["blocR"]->getOutPortName(*it));
+      }
+  }
+
+  ((Bloc *)_nodeMap["blocR"])->edRemoveChild(_nodeMap["Node_5"]);
+  ((Bloc *)_nodeMap["blocR"])->edRemoveChild(_nodeMap["Node_7"]);
+  {
+    set<ElementaryNode *> setelem = _nodeMap["blocR"]->getRecursiveConstituents();
+    CPPUNIT_ASSERT(setelem.size() == 0);
+  }
 }
 
 void EngineTest::RecursiveBlocs_multipleRecursion()
@@ -318,21 +760,66 @@ void EngineTest::RecursiveBlocs_multipleRecursion()
     CPPUNIT_ASSERT(setelem.size() == 9);
     for (set<ElementaryNode*>::iterator it=setelem.begin(); it!=setelem.end(); it++)
       {
-	DEBTRACE("     elem name = " << (*it)->getName());
+        DEBTRACE("     elem name = " << (*it)->getName());
       }
   }
 
   {
-    set<InputPort *> inset = _nodeMap["bloc7"]->getSetOfInputPort();
-    set<OutputPort *> outset = _nodeMap["bloc7"]->getSetOfOutputPort();
-    for (set<InputPort *>::iterator it=inset.begin(); it!=inset.end(); it++)
+    list<InputPort *> inset = _nodeMap["bloc7"]->getSetOfInputPort();
+    list<OutputPort *> outset = _nodeMap["bloc7"]->getSetOfOutputPort();
+    for (list<InputPort *>::iterator it=inset.begin(); it!=inset.end(); it++)
       {
-	DEBTRACE("     input port name for bloc7  = " << _nodeMap["bloc7"]->getInputPortName(*it));
-	DEBTRACE("     input port name for graphe = " << _nodeMap["graphe"]->getInputPortName(*it));
+        DEBTRACE("     input port name for bloc7  = " << _nodeMap["bloc7"]->getInPortName(*it));
+        DEBTRACE("     input port name for graphe = " << _nodeMap["graphe"]->getInPortName(*it));
       }
-    for (set<OutputPort *>::iterator it=outset.begin(); it!=outset.end(); it++)
+    for (list<OutputPort *>::iterator it=outset.begin(); it!=outset.end(); it++)
       {
-	DEBTRACE("     output port name = " << (*it)->getName());
+        DEBTRACE("     output port name for bloc7  = " << _nodeMap["bloc7"]->getOutPortName(*it));
+        DEBTRACE("     output port name for graphe = " << _nodeMap["graphe"]->getOutPortName(*it));
       }
+    YACS::ENGINE::VisitorSaveState vst(_compoMap["graphe"]);
+    vst.openFileDump("dumpState.xml");
+    _compoMap["graphe"]->accept(&vst);
+    vst.closeFileDump();
   }
+}
+
+void EngineTest::RecursiveBlocs_removeNodes()
+{
+//   {
+//     set<Node *> setNodes = ((Bloc*)_nodeMap["graphe"])->getChildren();
+//     for (set<Node*>::iterator it=setNodes.begin(); it!=setNodes.end(); it++)
+//       {
+//      DEBTRACE("     child name = " << (*it)->getName());
+//       }
+//   }
+
+  {
+    set<Node *> setNode = ((Bloc*)_nodeMap["graphe"])->getAllRecursiveConstituents();
+    CPPUNIT_ASSERT(setNode.size() == 16);
+    list<InputPort *> inset = _nodeMap["bloc7"]->getSetOfInputPort();
+    list<OutputPort *> outset = _nodeMap["bloc7"]->getSetOfOutputPort();
+    DEBTRACE("     input port number in graph:  " <<inset.size());
+    DEBTRACE("     output port number in graph: " <<outset.size());
+    CPPUNIT_ASSERT(inset.size() == 32);
+    CPPUNIT_ASSERT(outset.size() == 24);
+  }
+
+  ((Bloc *)_nodeMap["bloc7"])->edRemoveChild(_nodeMap["bloc6"]);
+
+  {
+    set<Node *> setNode = ((Bloc*)_nodeMap["graphe"])->getAllRecursiveConstituents();
+    CPPUNIT_ASSERT(setNode.size() == 9);
+    for (set<Node*>::iterator it=setNode.begin(); it!=setNode.end(); it++)
+      {
+        DEBTRACE("     elem name = " << ((Bloc *)_nodeMap["graphe"])->getChildName(*it));
+      }
+    list<InputPort *> inset = _nodeMap["bloc7"]->getSetOfInputPort();
+    list<OutputPort *> outset = _nodeMap["bloc7"]->getSetOfOutputPort();
+    DEBTRACE("     input port number in graph:  " <<inset.size());
+    DEBTRACE("     output port number in graph: " <<outset.size());
+    CPPUNIT_ASSERT(inset.size() == 16);
+    CPPUNIT_ASSERT(outset.size() == 12);
+  }
+
 }

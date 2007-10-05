@@ -1,0 +1,8 @@
+#!/bin/sh
+
+export KERNEL_ROOT_DIR=@KERNEL_ROOT_DIR@
+export PYHXX2SALOME_GENERIC_CLASS_NAME_ROOT_DIR=@prefix@
+
+python -i $HXX2SALOME_GENERIC_CLASS_NAME_ROOT_DIR/bin/salome/runSalome.py --modules=HXX2SALOME_GENERIC_CLASS_NAME --xterm --containers=cpp,python --killall
+
+

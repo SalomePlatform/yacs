@@ -1,77 +1,188 @@
 
-#include "CORBAPorts.hxx"
+//#define REFCNT
+#ifdef REFCNT
+#define private public
+#define protected public
+#include <omniORB4/CORBA.h>
+#include <omniORB4/internal/typecode.h>
+#endif
+
 #include "RuntimeSALOME.hxx"
 #include "TypeConversions.hxx"
+#include "CORBAPorts.hxx"
+#include "ServiceNode.hxx"
+#include "ComponentInstance.hxx"
 
 #include <iostream>
 #include <sstream>
 
+//#define _DEVDEBUG_
+#include "YacsTrace.hxx"
 
 using namespace YACS::ENGINE;
 using namespace std;
 
 
-InputCorbaPort::InputCorbaPort(const string& name,
-			       Node *node,
-			       TypeCode * type)
-  : InputPort(name, node, type), Port(node)
+InputCorbaPort::InputCorbaPort(const std::string& name,
+                               Node *node,
+                               TypeCode * type)
+  : InputPort(name, node, type), DataPort(name, node, type), Port(node), _initData(0)
 {
-  _impl="CORBA";
   _orb = getSALOMERuntime()->getOrb();
+}
+
+InputCorbaPort::InputCorbaPort(const InputCorbaPort& other, Node *newHelder):InputPort(other,newHelder),DataPort(other,newHelder),Port(other,newHelder),
+                                                                             _initData(0)
+{
+  _orb = getSALOMERuntime()->getOrb();
+  if(other._initData)
+    {
+      _initData=new CORBA::Any;
+      *_initData=*(other._initData);
+    }
+  _data=other._data;
+}
+
+InputCorbaPort::~InputCorbaPort()
+{
+  delete _initData;
+}
+
+bool InputCorbaPort::edIsManuallyInitialized() const
+{
+  return _initData!=0;
+}
+
+void InputCorbaPort::edRemoveManInit()
+{
+  delete _initData;
+  _initData=0;
+  InputPort::edRemoveManInit();
 }
 
 void InputCorbaPort::put(const void *data) throw (ConversionException)
 {
   put((CORBA::Any *)data);
-  _empty = false;
 }
 
-void InputCorbaPort::put(CORBA::Any *data) throw (ConversionException)
+void display(CORBA::Any* data)
 {
-  cerr << "InputCorbaPort::put" << endl;
-  // cerr << "addr data: " << data << endl;
-  // cerr << "addr data.value(): " << data->value() << endl;
-  switch(type()->kind())
+  CORBA::TypeCode_var tc=data->type();
+  switch(tc->kind())
     {
-    case Double:
+    case CORBA::tk_double:
       CORBA::Double d;
       *data >>= d;
-      cerr << "Double: " << d << endl;
+      DEBTRACE( "Double: " << d );
       break;
-    case Int:
+    case CORBA::tk_long:
       CORBA::Long l;
       *data >>= l;
-      cerr << "Int: " << l << endl;
-      break;
-    case Sequence:
+      DEBTRACE( "Int: " << l );
       break;
     default:
       break;
     }
-  // on fait une copie du any (protection contre la destruction du any source)
-  // la gestion des destructions est correctement faite par omniorb
+}
+
+void InputCorbaPort::put(CORBA::Any *data) throw (ConversionException)
+{
+#ifdef REFCNT
+  DEBTRACE("refcount CORBA : " << ((omni::TypeCode_base*)data->pd_tc.in())->pd_ref_count);
+#endif
+#ifdef _DEVDEBUG_
+  display(data);
+#endif
+  // make a copy of the any (protect against deletion of any source)
   _data=*data;
-  // cerr << "addr _data: " << &_data << endl;
-  // cerr << "addr _data.value(): " << _data.value() << endl;
+#ifdef REFCNT
+  DEBTRACE("refcount CORBA : " << ((omni::TypeCode_base*)_data.pd_tc.in())->pd_ref_count);
+#endif
+}
+
+InputPort *InputCorbaPort::clone(Node *newHelder) const
+{
+  return new InputCorbaPort(*this,newHelder);
+}
+
+void *InputCorbaPort::get() const throw(Exception)
+{
+  return (void *)&_data;
+}
+
+bool InputCorbaPort::isEmpty()
+{
+  CORBA::TypeCode_var tc=_data.type();
+  return tc->equivalent(CORBA::_tc_null);
 }
 
 CORBA::Any * InputCorbaPort::getAny()
 {
-  // cerr << "_data: " << &_data << endl;
-  // cerr << "_data.value(): " << _data.value() << endl;
-  // cerr << "_data.NP_pd(): " << _data.NP_pd() << endl;
-  // --- on retourne un pointeur sur le any interne
+  // --- return a pointer to internal any
   return &_data;
 }
 
-
-OutputCorbaPort::OutputCorbaPort(const string& name,
-				 Node *node,
-				 TypeCode * type)
-  : OutputPort(name, node, type), Port(node)
+//! Save the current data value for further reinitialization of the port
+/*!
+ *
+ */
+void InputCorbaPort::exSaveInit()
 {
-  _impl="CORBA";
+  if(_initData)
+    delete _initData;
+  _initData=new CORBA::Any;
+  *_initData=_data;
+}
+
+//! Restore the saved data value to current data value
+/*!
+ * If no data has been saved (_initData == 0) don't restore
+ */
+void InputCorbaPort::exRestoreInit()
+{
+  if(!_initData)return;
+  put(_initData);
+}
+
+std::string InputCorbaPort::dump()
+{
+  CORBA::TypeCode_var tc=_data.type();
+  if (tc->equivalent(CORBA::_tc_null))
+    return "<value>nil</value>";
+  if (edGetType()->kind() != YACS::ENGINE::Objref)
+    return convertCorbaXml(edGetType(), &_data);
+  if (! _stringRef.empty())
+    return _stringRef;
+  else 
+    return convertCorbaXml(edGetType(), &_data);
+//     {
+//       stringstream msg;
+//       msg << "Cannot retreive init string reference string for port " << _name
+//           << " on node " << _node->getName();
+//       throw Exception(msg.str());      
+//     }
+}
+
+OutputCorbaPort::OutputCorbaPort(const std::string& name,
+                                 Node *node,
+                                 TypeCode * type)
+  : OutputPort(name, node, type), DataPort(name, node, type), Port(node)
+{
   _orb = getSALOMERuntime()->getOrb();
+}
+
+OutputCorbaPort::OutputCorbaPort(const OutputCorbaPort& other, Node *newHelder):OutputPort(other,newHelder),DataPort(other,newHelder),Port(other,newHelder)
+{
+  _orb = getSALOMERuntime()->getOrb();
+}
+
+OutputCorbaPort::~OutputCorbaPort()
+{
+  DEBTRACE(getName());
+#ifdef REFCNT
+  DEBTRACE("refcount CORBA : " << ((omni::TypeCode_base*)_data.pd_tc.in())->pd_ref_count);
+  DEBTRACE("refcount CORBA tc_double: " << ((omni::TypeCode_base*)CORBA::_tc_double)->pd_ref_count);
+#endif
 }
 
 void OutputCorbaPort::put(const void *data) throw (ConversionException)
@@ -81,34 +192,41 @@ void OutputCorbaPort::put(const void *data) throw (ConversionException)
 
 void OutputCorbaPort::put(CORBA::Any *data) throw (ConversionException)
 {
-  cerr << "OutputCorbaPort::put" << endl;
-  // cerr << "addr data: " << data << endl;
   InputPort *p;
-  // on fait une copie du any source
-  // (protection contre la destruction de la source)
+#ifdef REFCNT
+  DEBTRACE("refcount CORBA : " << ((omni::TypeCode_base*)data->pd_tc.in())->pd_ref_count);
+#endif
+#ifdef REFCNT
+  DEBTRACE("refcount CORBA : " << ((omni::TypeCode_base*)_data.pd_tc.in())->pd_ref_count);
+#endif
   _data=*data;
-  set<InputPort *>::iterator iter;
-  for(iter=_setOfInputPort.begin(); iter!=_setOfInputPort.end(); iter++)
-    {
-      p=*iter;
-      // on pousse le pointeur mais put fait normalement une copie
-      p->put(&_data);
-    }
+#ifdef REFCNT
+  DEBTRACE("refcount CORBA : " << ((omni::TypeCode_base*)_data.pd_tc.in())->pd_ref_count);
+#endif
+  OutputPort::put(data);
+#ifdef REFCNT
+  DEBTRACE("refcount CORBA : " << ((omni::TypeCode_base*)data->pd_tc.in())->pd_ref_count);
+#endif
+#ifdef REFCNT
+  DEBTRACE("refcount CORBA : " << ((omni::TypeCode_base*)_data.pd_tc.in())->pd_ref_count);
+#endif
+}
+
+OutputPort *OutputCorbaPort::clone(Node *newHelder) const
+{
+  return new OutputCorbaPort(*this,newHelder);
 }
 
 CORBA::Any * OutputCorbaPort::getAny()
 {
-  // cerr << "_data: " << &_data << endl;
-  // cerr << "_data.value(): " << _data.value() << endl;
-  // cerr << "_data.NP_pd(): " << _data.NP_pd() << endl;
-  // on retourne un pointeur sur le any interne
+  // return a pointer to the internal any
   return &_data;
 }
 
 CORBA::Any * OutputCorbaPort::getAnyOut() 
 {
   CORBA::Any* a=&_data;
-  DynType kind=type()->kind();
+  DynType kind=edGetType()->kind();
 
   if(kind == Int)
     {
@@ -124,19 +242,32 @@ CORBA::Any * OutputCorbaPort::getAnyOut()
       }
     else if(kind == Objref)
       {
-        a->replace(CORBA::_tc_Object, (void*) 0);
+        //a->replace(CORBA::_tc_Object, (void*) 0);
+        CORBA::TypeCode_var t;
+        t = getCorbaTC(edGetType());
+        a->replace(t, (void*) 0);
       }
     else if(kind == Sequence)
       {
         CORBA::TypeCode_var t;
-        t = getCorbaTC(type());
+        t = getCorbaTC(edGetType());
         a->replace(t, (void*) 0);
-       }
+      }
+    else if(kind == Struct)
+      {
+        CORBA::TypeCode_var t;
+        t = getCorbaTC(edGetType());
+#ifdef REFCNT
+  DEBTRACE("refcount CORBA : " << ((omni::TypeCode_base*)t.in())->pd_ref_count);
+#endif
+        a->replace(t, (void*) 0);
+#ifdef REFCNT
+  DEBTRACE("refcount CORBA : " << ((omni::TypeCode_base*)t.in())->pd_ref_count);
+#endif
+      }
     else if(kind == Bool)
       {
-        stringstream msg;
-        msg << "Cannot set Any Out for Bool" << __FILE__ << ":" << __LINE__;
-        throw Exception(msg.str());
+        a->replace(CORBA::_tc_boolean, (void*) 0);
       }
     else if(kind == None)
       {
@@ -148,13 +279,25 @@ CORBA::Any * OutputCorbaPort::getAnyOut()
       {
         stringstream msg;
         msg << "Cannot set Any Out for unknown type" << __FILE__
-	    << ":" << __LINE__;
+            << ":" << __LINE__;
         throw Exception(msg.str());
       }
     
-  // on retourne un pointeur sur le any interne reinitialisé
-  // cerr << "getAnyOut::_data: " << a << endl;
+  // return a pointer to internal any reinitialized
+  DEBTRACE( "getAnyOut::_data: " << a );
+#ifdef REFCNT
+  DEBTRACE("refcount CORBA : " << ((omni::TypeCode_base*)a->pd_tc.in())->pd_ref_count);
+#endif
   return a;
+}
+
+std::string OutputCorbaPort::dump()
+{
+  CORBA::TypeCode_var tc=_data.type();
+  if (tc->equivalent(CORBA::_tc_null))
+    return "<value>nil</value>";
+  string xmldump = convertCorbaXml(edGetType(), &_data);
+  return xmldump;
 }
 
 ostream& YACS::ENGINE::operator<<(ostream& os, const OutputCorbaPort& p)

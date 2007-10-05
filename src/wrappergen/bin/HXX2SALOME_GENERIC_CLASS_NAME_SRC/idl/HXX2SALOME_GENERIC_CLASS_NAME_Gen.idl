@@ -1,0 +1,20 @@
+#ifndef __HXX2SALOME_GENERIC_CLASS_NAME_GEN_hxx2salome__
+#define __HXX2SALOME_GENERIC_CLASS_NAME_GEN_hxx2salome__
+
+#include "SALOME_Component.idl"
+#include "SALOME_Exception.idl"
+#include "MED.idl"
+// this include is not protected and already present in MED.idl #include "SALOME_Comm.idl"
+
+module HXX2SALOME_GENERIC_CLASS_NAME_ORB
+{
+  /*! \brief Interface of the %HXX2SALOME_GENERIC_CLASS_NAME component
+   */
+  interface HXX2SALOME_GENERIC_CLASS_NAME_Gen : Engines::Component, SALOME::MultiCommClass
+  {
+HXX2SALOME_IDL_CODE
+  };
+};
+
+#endif
+

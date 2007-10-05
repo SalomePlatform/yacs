@@ -1,0 +1,90 @@
+#ifndef __ECHO_IDL__
+#define __ECHO_IDL__
+
+module eo{
+  enum ExceptionType
+  {
+    COMM,             /*!< Communication problem */
+    BAD_PARAM,        /*!< Bad User parameters */
+    INTERNAL_ERROR    /*!< Application level problem, irrecoverable */
+  };
+
+  struct ExceptionStruct
+  {
+    ExceptionType type; /*!<Type of the exception.*/
+    string        text; /*!<Message which is shown when the exception is raised.*/
+    string        sourceFile; /*!<The source file where the exception is raised.*/
+    unsigned long lineNumber; /*!<Line number where the exception is raised.*/
+  };
+
+  exception SALOME_Exception
+  {
+    ExceptionStruct details; /*!<Structure of the exception.*/
+  };
+
+  typedef sequence<double> DoubleVec ;
+  typedef sequence<long> IntVec;
+  typedef sequence<string> StrVec;
+  typedef sequence<boolean> BoolVec;
+  typedef sequence<Object> ObjectVec;
+  typedef sequence<DoubleVec> DoubleVecVec;
+  typedef sequence<ObjectVec> ObjectVecVec;
+
+  interface Obj
+  {
+    long echoLong(in long i);
+  };
+  interface C:Obj
+  {
+  };
+  interface D
+  {
+    long echoLong2(in long i);
+  };
+  interface E:C,D
+  {
+  };
+
+  typedef sequence<Obj> ObjVec ;
+  struct S1
+  {
+    double x;
+    long y;
+    string s;
+    boolean b;
+    DoubleVec vd;
+  };
+  struct S2
+  {
+    S1 s;
+  };
+
+  interface Echo
+  {
+    string echoString(in string mesg);
+    boolean echoBoolean(in boolean b);
+    long echoLong(in long i) raises (SALOME_Exception);
+    void echoDouble(in double i,out double j) ;
+    void echoDoubleVec(in DoubleVec i,out DoubleVec j) ;
+    void echoDoubleVecVec(in DoubleVecVec i,out DoubleVecVec j) ;
+    void echoIntVec(in IntVec i,out IntVec j) ;
+    void echoStrVec(in StrVec i,out StrVec j) ;
+    void echoBoolVec(in BoolVec i,out BoolVec j) ;
+    void echoObj2(in Obj i,out Obj j) ;
+    void echoD(in D i,out D j) ;
+    void echoC(in C i,out C j) ;
+    void echoObjectVec(in ObjectVec i,out ObjectVec j) ;
+    void echoObjectVecVec(in ObjectVecVec i,out ObjectVecVec j) ;
+    Obj echoObj(in long i,in Obj o,in long k,out Obj p);
+    void createObj(in long i,out Obj p);
+    void createC(out C p);
+    void echoAll(in double d,in long l,in string m,in Obj o,out double dd,out long ll,out string s,out Obj p);
+    void sleepLong(in double time1,out double time2) ;
+    S2 echoStruct(in S2 s);
+  };
+  interface SubEcho:Echo
+  {
+  };
+};
+
+#endif 

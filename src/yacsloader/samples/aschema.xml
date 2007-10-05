@@ -1,0 +1,447 @@
+<proc>
+    <property name="toto" value="dddd" />
+    <property name="session" value="corbaname::localhost:2810" />
+    <type name="double" kind="double"/>
+    <type name="int" kind="int"/>
+    <sequence name="dblevec" content="double"/>
+    <sequence name="dblevecvec" content="dblevec"/>
+    <objref name="Echo" id="IDL:eo/Echo:1.0"/>
+    <objref name="Obj" id="IDL:eo/Obj:1.0"/>
+    <sequence name="objvec" content="Obj"/>
+    <objref name="eo/C" >
+        <base>Obj</base>
+    </objref>
+
+    <objref name="geom" id="IDL:eo/Obj:1.0"/>
+    <objref name="mesh" id="IDL:eo/Obj:1.0"/>
+    <objref name="sgeom" id="IDL:eo/Obj:1.0">
+        <base>geom</base>
+    </objref>
+    <sequence name="geomvec" content="geom"/>
+    <sequence name="sgeomvec" content="sgeom"/>
+    <sequence name="sgeomvecvec" content="sgeomvec"/>
+    <objref name="ugeom" id="IDL:eo/Obj:1.0">
+        <base>geom</base>
+        <base>mesh</base>
+    </objref>
+    <objref name="GEOM/GEOM_Object" id="IDL:GEOM/GEOM_Object:1.0"/>
+    <objref name="VISU/VISU_Gen" id="IDL:VISU/VISU_Gen:1.0"/>
+    <objref name="VISU/Result" id="IDL:VISU/Result:1.0"/>
+    <objref name="VISU/ScalarMap" id="IDL:VISU/ScalarMap:1.0"/>
+
+    <inline name="node14" >
+        <script> <code></code> </script>
+        <inport name="p1" type="dblevecvec"/>
+        <outport name="p1" type="dblevecvec"/>
+    </inline>
+
+    <inline name="node98" >
+        <script>
+            <code>print p1</code>
+        </script>
+        <inport name="p1" type="objvec"/>
+    </inline>
+    <inline name="node1" state="disabled">
+        <script>
+            <code>print p1</code>
+        </script>
+        <inport name="p1" type="int"/>
+    </inline>
+    <inline name="node11" >
+        <script>
+            <code>print p1</code>
+        </script>
+        <inport name="p1" type="string"/>
+    </inline>
+    <inline name="node12" >
+        <script>
+            <code>print p1</code>
+            <code>print "coucou"</code>
+        </script>
+        <inport name="p1" type="dblevec"/>
+    </inline>
+    <inline name="node13" >
+        <script>
+            <code><![CDATA[print p1]]></code>
+            <code><![CDATA[print "coucou"]]> </code>
+            <code><![CDATA[a=1/0]]> </code>
+        </script>
+        <inport name="p1" type="dblevecvec"/>
+        <outport name="p1" type="dblevecvec"/>
+    </inline>
+    <inline name="node2" >
+        <script>
+        <code>p1= 10.</code>
+        </script>
+        <outport name="p1" type="double"/>
+    </inline>
+    <inline name="node3" >
+        <function name="f">
+            <code>def f(p1):</code>
+            <code>  p1= p1+10.</code>
+            <code>  return p1</code>
+        </function>
+        <inport name="p1" type="double"/>
+        <outport name="p1" type="double"/>
+    </inline>
+    <inline name="node31" >
+        <script>
+        <code>import time;time.sleep(0.1);p1= p1+10.</code>
+        </script>
+        <inport name="p1" type="double"/>
+        <outport name="p1" type="double"/>
+    </inline>
+    <inline name="node32" >
+        <script>
+        <code>import time;time.sleep(0.1);p1= p1+10.</code>
+        </script>
+        <inport name="p1" type="double"/>
+        <outport name="p1" type="double"/>
+    </inline>
+    <inline name="node33" >
+        <script>
+           <code>import eo</code>
+           <code>obj=obj._narrow(eo.Echo)</code>
+           <code>print p1</code>
+           <code>print obj</code>
+           <code>p2=obj.echoC(p1)</code>
+           <code>print p2</code>
+        </script>
+        <inport name="p1" type="eo/C"/>
+        <inport name="obj" type="Echo"/>
+        <outport name="p2" type="eo/C"/>
+    </inline>
+    <inline name="node34" >
+        <script>
+        <code>print p1;p2=p1</code>
+        </script>
+        <inport name="p1" type="eo/C"/>
+        <outport name="p2" type="eo/C"/>
+    </inline>
+    <inline name="node35" >
+        <script>
+        <code>print p1;p2=p1</code>
+        </script>
+        <inport name="p1" type="eo/C"/>
+        <outport name="p2" type="eo/C"/>
+    </inline>
+    <!-- services -->
+    <service name="node99" >
+        <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+        <method>echoObjectVec</method>
+        <inport name="p1" type="objvec"/>
+        <outport name="p1" type="objvec"/>
+    </service>
+    <service name="node97" >
+        <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+        <method>echoC</method>
+        <inport name="p1" type="eo/C"/>
+        <outport name="p1" type="eo/C"/>
+    </service>
+    <service name="node4" >
+        <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+        <method>echoDouble</method>
+        <inport name="p1" type="double"/>
+        <outport name="p1" type="double"/>
+    </service>
+    <service name="node41" >
+        <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+        <method>echoDoubleVec</method>
+        <inport name="p1" type="dblevec"/>
+        <outport name="p1" type="dblevec"/>
+    </service>
+    <service name="node42" >
+        <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+        <method>echoDoubleVecVec</method>
+        <inport name="p1" type="dblevecvec"/>
+        <outport name="p1" type="dblevecvec"/>
+    </service>
+    <service name="node43" >
+        <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+        <method>echoErrorLong</method>
+        <inport name="p1" type="int"/>
+        <outport name="p1" type="int"/>
+    </service>
+    <service name="node44" >
+        <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+        <method>echoString</method>
+        <inport name="p1" type="string"/>
+        <outport name="p1" type="string"/>
+    </service>
+    <service name="node45" >
+        <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+        <method>echoC</method>
+        <inport name="p1" type="eo/C"/>
+        <outport name="p1" type="eo/C"/>
+    </service>
+    <service name="node46" >
+        <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+        <method>echoObj2</method>
+        <inport name="p1" type="Obj"/>
+        <outport name="p1" type="Obj"/>
+    </service>
+    <service name="node47" >
+        <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+        <method>echoC</method>
+        <inport name="p1" type="eo/C"/>
+        <outport name="p1" type="eo/C"/>
+    </service>
+    <service name="node48" >
+        <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+        <method>echoObj2</method>
+        <inport name="p1" type="Obj"/>
+        <outport name="p1" type="Obj"/>
+    </service>
+    <service name="node5" >
+        <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+        <method>echoDouble</method>
+        <inport name="p1" type="double"/>
+        <outport name="p1" type="double"/>
+    </service>
+    <service name="node61" >
+        <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+        <method>echoDouble</method>
+        <inport name="p1" type="double"/>
+        <outport name="p1" type="double"/>
+    </service>
+    <service name="node62" >
+        <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+        <method>echoDouble</method>
+        <inport name="p1" type="double"/>
+        <outport name="p1" type="double"/>
+    </service>
+    <service name="node63" >
+        <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+        <method>echoDouble</method>
+        <inport name="p1" type="double"/>
+        <outport name="p1" type="double"/>
+    </service>
+    <bloc name="c1" state="disabled">
+        <service name="n2" >
+            <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+            <method>echoDouble</method>
+            <inport name="p1" type="double"/>
+            <outport name="p1" type="double"/>
+        </service>
+        <bloc name="c1" >
+            <service name="n2" >
+                <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+                <method>echoDouble</method>
+                <inport name="p1" type="double"/>
+                <outport name="p1" type="double"/>
+            </service>
+        </bloc>
+        <control> <fromnode>c1</fromnode> <tonode>n2</tonode> </control>
+        <datalink> <fromnode>c1.n2</fromnode><fromport>p1</fromport>
+                   <tonode>n2</tonode> <toport>p1</toport> </datalink>
+    </bloc>
+
+    <bloc name="c0" >
+        <service name="n1" >
+            <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+            <method>echoDouble</method>
+            <inport name="p1" type="double"/>
+            <outport name="p1" type="double"/>
+        </service>
+        <service name="n2" >
+            <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+            <method>echoErrorDouble</method>
+            <inport name="p1" type="double"/>
+            <outport name="p1" type="double"/>
+        </service>
+        <bloc name="c1" >
+            <service name="n1" >
+                <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+                <method>echoDouble</method>
+                <inport name="p1" type="double"/>
+                <outport name="p1" type="double"/>
+            </service>
+        </bloc>
+        <control> <fromnode>c1</fromnode> <tonode>n1</tonode> </control>
+        <control> <fromnode>n1</fromnode> <tonode>n2</tonode> </control>
+        <datalink> <fromnode>c1.n1</fromnode><fromport>p1</fromport>
+                   <tonode>n1</tonode> <toport>p1</toport> </datalink>
+        <datalink> <fromnode>n1</fromnode><fromport>p1</fromport>
+                   <tonode>n2</tonode> <toport>p1</toport> </datalink>
+    </bloc>
+
+    <control> <fromnode>node99</fromnode> <tonode>node98</tonode> </control>
+    <control> <fromnode>node1</fromnode> <tonode>node11</tonode> </control>
+    <control> <fromnode>node11</fromnode> <tonode>node12</tonode> </control>
+    <control> <fromnode>node2</fromnode> <tonode>node3</tonode> </control>
+    <control> <fromnode>node2</fromnode> <tonode>node31</tonode> </control>
+    <control> <fromnode>node2</fromnode> <tonode>node32</tonode> </control>
+    <control> <fromnode>node32</fromnode> <tonode>node33</tonode> </control>
+    <control> <fromnode>node33</fromnode> <tonode>node34</tonode> </control>
+    <control> <fromnode>node34</fromnode> <tonode>node35</tonode> </control>
+    <control> <fromnode>node3</fromnode> <tonode>node4</tonode> </control>
+    <control> <fromnode>node4</fromnode> <tonode>c0</tonode> </control>
+    <control> <fromnode>node4</fromnode> <tonode>c1</tonode> </control>
+    <control> <fromnode>node41</fromnode> <tonode>node42</tonode> </control>
+    <control> <fromnode>c0</fromnode> <tonode>node5</tonode> </control>
+    <control> <fromnode>node5</fromnode> <tonode>node61</tonode> </control>
+    <control> <fromnode>node5</fromnode> <tonode>node62</tonode> </control>
+    <control> <fromnode>c1</fromnode> <tonode>node63</tonode> </control>
+    <control> <fromnode>node13</fromnode> <tonode>node14</tonode> </control>
+    <control> <fromnode>node4</fromnode> <tonode>node14</tonode> </control>
+    <control> <fromnode>node35</fromnode> <tonode>node14</tonode> </control>
+    <control> <fromnode>node46</fromnode> <tonode>node47</tonode> </control>
+    <control> <fromnode>node47</fromnode> <tonode>node48</tonode> </control>
+    <control> <fromnode>node43</fromnode> <tonode>node44</tonode> </control>
+    <control> <fromnode>node44</fromnode> <tonode>node45</tonode> </control>
+    <!-- datalinks -->
+    <datalink> <fromnode>node99</fromnode><fromport>p1</fromport>
+               <tonode>node98</tonode> <toport>p1</toport> </datalink>
+    <datalink> <fromnode>node4</fromnode><fromport>p1</fromport>
+               <tonode>c1.c1.n2</tonode> <toport>p1</toport> </datalink>
+    <datalink> <fromnode>node4</fromnode><fromport>p1</fromport>
+               <tonode>c0.c1.n1</tonode> <toport>p1</toport> </datalink>
+    <datalink>
+        <fromnode>node13</fromnode> <fromport>p1</fromport> 
+        <tonode>node14</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+        <fromnode>node2</fromnode> <fromport>p1</fromport> 
+        <tonode>node3</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+        <fromnode>node2</fromnode> <fromport>p1</fromport> 
+        <tonode>node31</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+        <fromnode>node2</fromnode> <fromport>p1</fromport> 
+        <tonode>node32</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+        <fromnode>node33</fromnode> <fromport>p2</fromport> 
+        <tonode>node34</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+        <fromnode>node34</fromnode> <fromport>p2</fromport> 
+        <tonode>node35</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+        <fromnode>node3</fromnode> <fromport>p1</fromport>
+        <tonode>node4</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+        <fromnode>c0.n1</fromnode><fromport>p1</fromport>
+        <tonode>node5</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+        <fromnode>node5</fromnode><fromport>p1</fromport>
+        <tonode>node61</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+        <fromnode>node5</fromnode><fromport>p1</fromport>
+        <tonode>node62</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+        <fromnode>c1.n2</fromnode><fromport>p1</fromport>
+        <tonode>node63</tonode> <toport>p1</toport>
+    </datalink>
+    <!--parameters -->
+    <parameter>
+        <tonode>node99</tonode> <toport>p1</toport>
+        <value> <array> <data>
+            <value><objref>corbaname:rir:#test.my_context/Obj.Object</objref></value>
+            <value><objref>corbaname:rir:#test.my_context/Obj.Object</objref></value>
+        </data> </array> </value>
+    </parameter>
+    <parameter>
+        <tonode>node33</tonode> <toport>obj</toport>
+        <value><objref>corbaname:rir:#test.my_context/Echo.Object</objref></value>
+    </parameter>
+    <parameter>
+        <tonode>node33</tonode> <toport>p1</toport>
+        <value><objref>corbaname:rir:#test.my_context/C.Object</objref></value>
+    </parameter>
+    <parameter>
+        <tonode>node45</tonode> <toport>p1</toport>
+        <value><objref>corbaname:rir:#test.my_context/C.Object</objref></value>
+    </parameter>
+    <parameter>
+        <tonode>node46</tonode> <toport>p1</toport>
+        <value><objref>corbaname:rir:#test.my_context/Obj.Object</objref></value>
+    </parameter>
+    <parameter>
+        <tonode>node47</tonode> <toport>p1</toport>
+        <value><objref>corbaname:rir:#test.my_context/C.Object</objref></value>
+    </parameter>
+    <parameter>
+        <tonode>node48</tonode> <toport>p1</toport>
+        <value><objref>corbaname:rir:#test.my_context/C.Object</objref></value>
+    </parameter>
+    <parameter>
+        <tonode>node97</tonode> <toport>p1</toport>
+        <value><objref>corbaname:rir:#test.my_context/C.Object</objref></value>
+    </parameter>
+    <parameter>
+        <tonode>node1</tonode> <toport>p1</toport>
+        <value><int>23</int></value>
+    </parameter>
+    <parameter>
+        <tonode>node11</tonode> <toport>p1</toport>
+        <value><string>coucou</string></value>
+    </parameter>
+    <parameter>
+        <tonode>node4</tonode> <toport>p1</toport>
+        <value><int>23</int></value>
+    </parameter>
+    <parameter>
+        <tonode>node44</tonode> <toport>p1</toport>
+        <value><string>chris</string></value>
+    </parameter>
+    <parameter>
+        <tonode>node43</tonode> <toport>p1</toport>
+        <value><int>23</int></value>
+    </parameter>
+    <parameter>
+        <tonode>node3</tonode> <toport>p1</toport>
+        <value><int>23</int></value>
+    </parameter>
+    <parameter>
+        <tonode>node61</tonode> <toport>p1</toport>
+        <value><double>23</double> </value>
+    </parameter>
+    <parameter>
+        <tonode>node12</tonode> <toport>p1</toport>
+        <value> <array> <data>
+            <value><double>23</double> </value>
+            <value><double>45</double> </value>
+        </data> </array> </value>
+    </parameter>
+    <parameter>
+        <tonode>node41</tonode> <toport>p1</toport>
+        <value> <array> <data>
+            <value><double>23</double> </value>
+            <value><double>45</double> </value>
+        </data> </array> </value>
+    </parameter>
+    <parameter>
+        <tonode>node13</tonode> <toport>p1</toport>
+        <value> <array> <data>
+            <value> <array> <data>
+                <value><double>23.45</double> </value>
+                <value><int>66</int></value>
+            </data> </array> </value>
+            <value> <array> <data>
+                <value><double>3.142</double> </value>
+                <value><int>55</int></value>
+            </data> </array> </value>
+        </data> </array> </value>
+    </parameter>
+    <parameter>
+        <tonode>node42</tonode> <toport>p1</toport>
+        <value> <array> <data>
+            <value> <array> <data>
+                <value><double>23.45</double> </value>
+                <value><int>66</int></value>
+            </data> </array> </value>
+            <value> <array> <data>
+                <value><double>3.142</double> </value>
+                <value><int>55</int></value>
+            </data> </array> </value>
+        </data> </array> </value>
+    </parameter>
+</proc>

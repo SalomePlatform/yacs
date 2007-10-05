@@ -1,0 +1,32 @@
+<proc>
+
+    <!-- types -->
+    <objref name="BASIC_short"/>
+    <!-- inline -->
+    <!-- service -->
+
+    <service name="node1" >
+        <component>COMPONENT_B</component>
+        <method>S2</method>
+        <outstream name="S2_data_uses_port" type="BASIC_short"/>
+    </service>
+
+    <service name="node2" >
+        <component>COMPONENT_C</component>
+        <method>S3</method>
+        <instream name="S3_data_provides_port" type="BASIC_short"/>
+    </service>
+
+    <!--control -->
+
+    <!--datalinks -->
+
+    <!--parameters -->
+
+    <!--stream -->
+    <stream>
+        <fromnode>node1</fromnode> <fromport>S2_data_uses_port</fromport>
+        <tonode>node2</tonode> <toport>S3_data_provides_port</toport>
+    </stream>
+
+</proc>

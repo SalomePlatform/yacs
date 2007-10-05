@@ -2,52 +2,87 @@
 #define __CORBAPYTHONCONV_HXX__
 
 #include <omniORB4/CORBA.h>
-
-#include "PythonPorts.hxx"
+#include "InputPort.hxx"
+#include "ConversionException.hxx"
 
 namespace YACS
 {
   namespace ENGINE
   {
+    class InputPyPort;
 
-    // --- convertisseurs Corba->Python pour les différents types
-
+/*! \brief Class for conversion from CORBA Output port to Python Input port
+ *
+ * \ingroup AdaptorPorts
+ *
+ */
     class CorbaPyDouble : public ProxyPort
     {
     public:
-      CorbaPyDouble(InputPyPort* p)
-	: ProxyPort(p), Port(p->getNode()) {}
+      CorbaPyDouble(InputPyPort* p);
       virtual void put(const void *data) throw(ConversionException);
       void put(CORBA::Any *data) throw(ConversionException);
     };
 
+/*! \brief Class for conversion from CORBA Output port to Python Input port
+ *
+ * \ingroup AdaptorPorts
+ *
+ */
     class CorbaPyInt : public ProxyPort
     {
     public:
-      CorbaPyInt(InputPyPort* p)
-	: ProxyPort(p), Port(p->getNode()) {}
+      CorbaPyInt(InputPyPort* p);
       virtual void put(const void *data) throw(ConversionException);
       void put(CORBA::Any *data) throw(ConversionException);
     };
 
+/*! \brief Class for conversion from CORBA Output port to Python Input port
+ *
+ * \ingroup AdaptorPorts
+ *
+ */
     class CorbaPyString : public ProxyPort
     {
     public:
-      CorbaPyString(InputPyPort* p)
-	: ProxyPort(p), Port(p->getNode()) {}
+      CorbaPyString(InputPyPort* p);
       virtual void put(const void *data) throw(ConversionException);
       void put(CORBA::Any *data) throw(ConversionException);
     };
 
+/*! \brief Class for conversion from CORBA Output port to Python Input port
+ *
+ * Convert boolean data
+ *
+ * \ingroup AdaptorPorts
+ *
+ */
+    class CorbaPyBool : public ProxyPort
+    {
+    public:
+      CorbaPyBool(InputPyPort* p);
+      virtual void put(const void *data) throw(ConversionException);
+      void put(CORBA::Any *data) throw(ConversionException);
+    };
+
+/*! \brief Class for conversion from CORBA Output port to Python Input port
+ *
+ * \ingroup AdaptorPorts
+ *
+ */
     class CorbaPyObjref : public ProxyPort
     {
     public:
-      CorbaPyObjref(InputPyPort* p)
-	: ProxyPort(p), Port(p->getNode()) {}
+      CorbaPyObjref(InputPyPort* p);
       virtual void put(const void *data) throw(ConversionException);
       void put(CORBA::Any *data) throw(ConversionException);
     };
 
+/*! \brief Class for conversion from CORBA Output port to Python Input port
+ *
+ * \ingroup AdaptorPorts
+ *
+ */
     class CorbaPySequence : public ProxyPort
     {
     public:
@@ -56,6 +91,19 @@ namespace YACS
       void put(CORBA::Any *data) throw(ConversionException);
     protected:
       DynamicAny::DynAnyFactory_ptr _dynfactory;
+    };
+
+/*! \brief Class for conversion of struct objects from CORBA Output port to Python Input port
+ *
+ * \ingroup AdaptorPorts
+ *
+ */
+    class CorbaPyStruct : public ProxyPort
+    {
+    public:
+      CorbaPyStruct(InputPyPort* p);
+      virtual void put(const void *data) throw(ConversionException);
+      void put(CORBA::Any *data) throw(ConversionException);
     };
 
   }

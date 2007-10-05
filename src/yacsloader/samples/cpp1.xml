@@ -1,0 +1,206 @@
+<proc>
+    <!--types -->
+    <sequence name="dblevec" content="double"/>
+
+    <!--nodes -->
+    <inline name="node0" >
+      <script>
+        <code>p1=[25.3]*10</code>
+      </script>
+      <outport name="p1" type="dblevec"/>
+    </inline>
+
+    <inline name="pyth0" >
+      <script>
+      </script>
+      <inport name="p1" type="double"/>
+      <outport name="p1" type="double"/>
+    </inline>
+
+    <service name="cpp1" >
+      <kind>Cpp</kind>
+      <component>TestComponent</component>
+      <method>f</method>
+      <inport name="p1" type="double"/>
+      <outport name="p1" type="double"/>
+    </service>
+
+    <service name="cpp2" >
+      <kind>Cpp</kind>
+      <component>TestComponent</component>
+      <method>f</method>
+      <inport name="p1" type="double"/>
+      <outport name="p1" type="double"/>
+    </service>
+
+    <service name="cpp3" >
+      <kind>Cpp</kind>
+      <component>TestComponent</component>
+      <method>f</method>
+      <inport name="p1" type="double"/>
+      <outport name="p1" type="double"/>
+    </service>
+
+    <inline name="pyth1" >
+      <script>
+        <code>print p1</code>
+      </script>
+      <inport name="p1" type="double"/>
+      <outport name="p1" type="double"/>
+    </inline>
+
+    <inline name="pyth2" >
+      <script>
+        <code>print p1</code>
+      </script>
+      <inport name="p1" type="double"/>
+      <outport name="p1" type="double"/>
+    </inline>
+    <inline name="pyth3" >
+      <script>
+        <code>print p1</code>
+      </script>
+      <inport name="p1" type="double"/>
+      <outport name="p1" type="double"/>
+    </inline>
+    <inline name="pyth4" >
+      <script>
+        <code>print p1</code>
+      </script>
+      <inport name="p1" type="double"/>
+      <outport name="p1" type="double"/>
+    </inline>
+    <service name="xml0" >
+      <kind>xmlsh</kind>
+      <ref>./xmlrun.sh</ref>
+      <method>echo</method>
+      <inport name="p1" type="double"/>
+      <outport name="p1" type="double"/>
+    </service>
+    <service name="xml1" >
+      <kind>xmlsh</kind>
+      <ref>./xmlrun.sh</ref>
+      <method>echo</method>
+      <inport name="p1" type="double"/>
+      <outport name="p1" type="double"/>
+    </service>
+
+    <service name="corba0" >
+      <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+      <method>echoDouble</method>
+      <inport name="p1" type="double"/>
+      <outport name="p1" type="double"/>
+    </service>
+    <service name="cpp4" >
+      <kind>Cpp</kind>
+      <component>TestComponent</component>
+      <method>f</method>
+      <inport name="p1" type="double"/>
+      <outport name="p1" type="double"/>
+    </service>
+    <service name="cpp5" >
+      <kind>Cpp</kind>
+      <component>TestComponent</component>
+      <method>f</method>
+      <inport name="p1" type="double"/>
+      <outport name="p1" type="double"/>
+    </service>
+
+    <service name="corba1" >
+      <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+      <method>echoDouble</method>
+      <inport name="p1" type="double"/>
+      <outport name="p1" type="double"/>
+    </service>
+
+    <foreach name="foreach1" nbranch="3" type="double" >
+      <service name="cpp4" >
+        <kind>Cpp</kind>
+        <component>TestComponent</component>
+        <method>f</method>
+        <inport name="p1" type="double"/>
+        <outport name="p1" type="double"/>
+      </service>
+    </foreach>
+    <inline name="pyth5" >
+      <script>
+        <code>print p1</code>
+      </script>
+      <inport name="p1" type="dblevec"/>
+      <outport name="p1" type="dblevec"/>
+    </inline>
+
+    <!--parameters -->
+    <parameter>
+        <tonode>pyth0</tonode> <toport>p1</toport>
+        <value><double>1</double> </value>
+    </parameter>
+    <parameter>
+        <tonode>cpp3</tonode> <toport>p1</toport>
+        <value><double>1</double> </value>
+    </parameter>
+
+    <!--datalinks -->
+    <datalink>
+      <fromnode>pyth0</fromnode><fromport>p1</fromport>
+      <tonode>cpp1</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+      <fromnode>pyth0</fromnode><fromport>p1</fromport>
+      <tonode>cpp2</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+      <fromnode>cpp1</fromnode><fromport>p1</fromport>
+      <tonode>pyth1</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+      <fromnode>cpp1</fromnode><fromport>p1</fromport>
+      <tonode>pyth3</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+      <fromnode>cpp2</fromnode><fromport>p1</fromport>
+      <tonode>pyth2</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+      <fromnode>cpp2</fromnode><fromport>p1</fromport>
+      <tonode>pyth4</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+      <fromnode>cpp3</fromnode><fromport>p1</fromport>
+      <tonode>xml0</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+      <fromnode>cpp3</fromnode><fromport>p1</fromport>
+      <tonode>xml1</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+      <fromnode>cpp3</fromnode><fromport>p1</fromport>
+      <tonode>corba0</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+      <fromnode>corba0</fromnode><fromport>p1</fromport>
+      <tonode>cpp4</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+      <fromnode>cpp4</fromnode><fromport>p1</fromport>
+      <tonode>corba1</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+      <fromnode>cpp4</fromnode><fromport>p1</fromport>
+      <tonode>cpp5</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+      <fromnode>node0</fromnode><fromport>p1</fromport>
+      <tonode>foreach1</tonode> <toport>SmplsCollection</toport>
+    </datalink>
+    <datalink>
+      <fromnode>foreach1</fromnode><fromport>SmplPrt</fromport>
+      <tonode>foreach1.cpp4</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+      <fromnode>foreach1.cpp4</fromnode><fromport>p1</fromport>
+      <tonode>pyth5</tonode> <toport>p1</toport>
+    </datalink>
+
+
+</proc>

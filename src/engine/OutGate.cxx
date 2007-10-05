@@ -15,40 +15,84 @@ string OutGate::getNameOfTypeOfCurrentInstance() const
   return NAME;
 }
 
+void OutGate::exReset()
+{
+  for(map<InGate *, bool>::iterator iter=_setOfInGate.begin();iter!=_setOfInGate.end();iter++)
+    (*iter).second=false;
+}
+
+//! Notify this port that its node is finished
+/*!
+ *  Calls (notify) all the connected ingates : InGate::exNotifyFromPrecursor
+ *
+ *  Called by Bloc::updateStateOnFinishedEventFrom
+ */
+
 void OutGate::exNotifyDone()
 {
-  for(set<InGate *>::iterator iter=_setOfInGate.begin();iter!=_setOfInGate.end();iter++)
-    (*iter)->exNotifyFromPrecursor();
+  for(map<InGate *, bool>::iterator iter=_setOfInGate.begin();iter!=_setOfInGate.end();iter++)
+    (*iter).first->exNotifyFromPrecursor(this);
+}
+
+//! Notify this port that its node has failed
+/*!
+ *
+ */
+void OutGate::exNotifyFailed()
+{
+  for(map<InGate *, bool>::iterator iter=_setOfInGate.begin();iter!=_setOfInGate.end();iter++)
+    (*iter).first->exNotifyFailed();
+}
+
+//! Notify this port that its node has been disabled
+/*!
+ *
+ */
+void OutGate::exNotifyDisabled()
+{
+  for(map<InGate *, bool>::iterator iter=_setOfInGate.begin();iter!=_setOfInGate.end();iter++)
+    (*iter).first->exNotifyDisabled();
+}
+
+void OutGate::edDisconnectAllLinksFromMe()
+{
+  for(map<InGate *, bool>::iterator iter=_setOfInGate.begin();iter!=_setOfInGate.end();iter++)
+    (*iter).first->edRemovePrecursor(this);
+  _setOfInGate.clear();
 }
 
 bool OutGate::edAddInGate(InGate *inGate)
 {
   if(!isAlreadyInSet(inGate))
     {
-      inGate->edAppendPrecursor();
-      _setOfInGate.insert(inGate);
+      inGate->edAppendPrecursor(this);
+      _setOfInGate[inGate]=false;
       return true;
     }
   else
     return false;
 }
 
-set<InGate *> OutGate::edSetInGate() const
+std::set<InGate *> OutGate::edSetInGate() const
 {
-  return _setOfInGate;
+  set<InGate *> ret;
+  for(map<InGate *, bool>::const_iterator iter=_setOfInGate.begin();iter!=_setOfInGate.end();iter++)
+    ret.insert((*iter).first);
+  return ret;
 }
 
-void OutGate::edRemoveInGate(InGate *inGate) throw(Exception)
+void OutGate::edRemoveInGate(InGate *inGate, bool coherenceWithInGate) throw(Exception)
 {
-  bool found=false;
-  for(set<InGate *>::iterator iter=_setOfInGate.begin();iter!=_setOfInGate.end() && !found;iter++)
-    if((*iter)==inGate)
+  map<InGate *, bool>::iterator iter;
+  for(iter=_setOfInGate.begin();iter!=_setOfInGate.end();iter++)
+    if((*iter).first==inGate)
       {
-	_setOfInGate.erase(iter);
-	inGate->edRemovePrecursor();
-	found=true;
+        _setOfInGate.erase(iter);
+        if(coherenceWithInGate)
+          inGate->edRemovePrecursor(this);
+        break;
       }
-  if(!found)
+  if(iter==_setOfInGate.end())
     throw Exception("InGate not already connected to OutGate");
 }
 
@@ -56,22 +100,18 @@ void OutGate::edRemoveInGate(InGate *inGate) throw(Exception)
 void OutGate::edRemoveInGateOneWay(InGate *inGate)
 {
   bool found=false;
-  for(set<InGate *>::iterator iter=_setOfInGate.begin();iter!=_setOfInGate.end() && !found;iter++)
-    if((*iter)==inGate)
+  for(map<InGate *, bool>::iterator iter=_setOfInGate.begin();iter!=_setOfInGate.end() && !found;iter++)
+    if((*iter).first==inGate)
       {
-	_setOfInGate.erase(iter);
-	inGate->edRemovePrecursor();
-	found=true;
+        _setOfInGate.erase(iter);
+        inGate->edRemovePrecursor(this);
+        found=true;
       }
 }
 
 bool OutGate::isAlreadyInSet(InGate *inGate) const
 {
-  bool ret=false;
-  for(set<InGate *>::const_iterator iter=_setOfInGate.begin();iter!=_setOfInGate.end() && !ret;iter++)
-    if((*iter)==inGate)
-      ret=true;
-  return ret;
+  return _setOfInGate.find(inGate)!=_setOfInGate.end();
 }
 
 int OutGate::getNbOfInGatesConnected() const

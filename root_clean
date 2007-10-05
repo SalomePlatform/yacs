@@ -12,9 +12,11 @@ TO_CLEAN=${TO_CLEAN}' configure'
 TO_CLEAN=${TO_CLEAN}' configure.in'
 TO_CLEAN=${TO_CLEAN}' missing'
 TO_CLEAN=${TO_CLEAN}' install-sh'
+TO_CLEAN=${TO_CLEAN}' ltmain.sh'
 TO_CLEAN=${TO_CLEAN}' config.guess'
 TO_CLEAN=${TO_CLEAN}' config.sub'
 TO_CLEAN=${TO_CLEAN}' depcomp'
+TO_CLEAN=${TO_CLEAN}' yacs_config.h.in'
 
 rm -rf $TO_CLEAN > /dev/null
 

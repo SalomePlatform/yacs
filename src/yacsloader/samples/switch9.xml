@@ -1,0 +1,85 @@
+<proc>
+    <!--types -->
+    <!--nodes -->
+    <inline name="n" >
+        <script>
+            <code>select=3</code>
+        </script>
+        <outport name="select" type="int"/>
+    </inline>
+    <inline name="n2" >
+        <script>
+            <code>print p1</code>
+        </script>
+        <inport name="p1" type="double"/>
+        <outport name="p1" type="double"/>
+    </inline>
+    <switch name="b1">
+      <case id="1">
+        <inline name="n2" >
+          <script><code>print p1</code></script>
+          <inport name="p1" type="double"/>
+          <outport name="p1" type="double"/>
+        </inline>
+      </case>
+      <case id="3">
+        <switch name="b" select="1">
+          <case id="1">
+            <inline name="n2" >
+              <script>
+                  <code>print p1</code>
+                  <code>p1=p1+20</code>
+                  <code><![CDATA[condition=p1 < 40.]]> </code>
+              </script>
+              <inport name="p1" type="double"/>
+              <outport name="p1" type="double"/>
+              <outport name="condition" type="bool"/>
+            </inline>
+          </case>
+          <default>
+            <inline name="n2" >
+              <script>
+                  <code>p1=20.</code>
+                  <code><![CDATA[condition=p1 < 40.]]> </code>
+              </script>
+              <outport name="p1" type="double"/>
+              <outport name="condition" type="bool"/>
+            </inline>
+          </default>
+        </switch>
+      </case>
+      <default>
+        <inline name="n2" >
+          <script><code>print p1</code></script>
+          <inport name="p1" type="double"/>
+          <outport name="p1" type="double"/>
+        </inline>
+      </default>
+    </switch>
+    <!--control links -->
+    <control> <fromnode>n</fromnode> <tonode>b1</tonode> </control>
+    <control> <fromnode>b1</fromnode> <tonode>n2</tonode> </control>
+    <!--data links -->
+    <datalink> <fromnode>n</fromnode><fromport>select</fromport>
+               <tonode>b1</tonode> <toport>select</toport> </datalink>
+    <datalink> <fromnode>b1.p1_n2</fromnode><fromport>p1</fromport>
+               <tonode>n2</tonode> <toport>p1</toport> </datalink>
+    <datalink> <fromnode>b1.p3_b.p1_n2</fromnode><fromport>p1</fromport>
+               <tonode>n2</tonode> <toport>p1</toport> </datalink>
+    <datalink> <fromnode>b1.default_n2</fromnode><fromport>p1</fromport>
+               <tonode>n2</tonode> <toport>p1</toport> </datalink>
+    <!--parameters -->
+    <parameter>
+        <tonode>b1.p1_n2</tonode> <toport>p1</toport>
+        <value><double>23</double> </value>
+    </parameter>
+    <parameter>
+        <tonode>b1.p3_b.p1_n2</tonode> <toport>p1</toport>
+        <value><double>54</double> </value>
+    </parameter>
+    <parameter>
+        <tonode>b1.default_n2</tonode> <toport>p1</toport>
+        <value><double>67</double> </value>
+    </parameter>
+
+</proc>

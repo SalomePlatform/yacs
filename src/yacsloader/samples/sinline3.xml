@@ -1,0 +1,33 @@
+<proc>
+    <!--types -->
+    <container name="A"> </container>
+    <!--nodes -->
+  <forloop name="b1" nsteps="5">
+    <sinline name="node1" >
+      <function name="f">
+        <code>import salome</code>
+        <code>salome.salome_init()</code>
+        <code>import PYHELLO_ORB</code>
+        <code>print __container__from__YACS__</code>
+        <code>machine,container=__container__from__YACS__.split('/')</code>
+        <code>param={}</code>
+        <code>param['hostname']=machine</code>
+        <code>param['container_name']=container</code>
+        <code>compo=salome.lcc.LoadComponent(param, "PYHELLO")</code>
+        <code>def f(p1):</code>
+        <code>  print compo.makeBanner(p1)</code>
+        <code>  print p1</code>
+      </function>
+      <load container="A"/>
+      <inport name="p1" type="string"/>
+    </sinline>
+  </forloop>
+
+
+    <!--parameters -->
+    <parameter>
+        <tonode>b1.node1</tonode> <toport>p1</toport>
+        <value><string>chris</string> </value>
+    </parameter>
+
+</proc>

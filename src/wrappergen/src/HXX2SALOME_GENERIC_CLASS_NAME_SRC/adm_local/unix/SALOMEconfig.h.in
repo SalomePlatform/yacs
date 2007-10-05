@@ -1,0 +1,36 @@
+#ifndef SALOME_CONFIG_H
+#define SALOME_CONFIG_H
+
+#define DEBUG
+
+#define QUOTE(x)  #x
+#define CORBA_CLIENT_HEADER(x)  QUOTE(x@IDL_CLN_H@)
+#define CORBA_SERVER_HEADER(x)  QUOTE(x@IDL_SRV_H@)
+
+#ifndef @MACHINE@
+  #define @MACHINE@
+#endif
+
+
+/* A path to a rcp-like command */
+#define RCP "@RCP@"
+
+/* A path to a rm-like command */
+#define RM "@RM@"
+
+/* A path to a cp-like command */
+#define CP "@CP@"
+
+/* A path to a rsh-like command */
+#define RSH "@RSH@"
+
+/* A path to a scp-like command */
+#define SCP "@SCP@"
+
+/* A path to a sh-like command */
+#define SH "@SH@"
+
+/* A path to a ssh-like command */
+#define SSH "@SSH@"
+
+#endif

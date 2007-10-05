@@ -1,0 +1,69 @@
+<proc>
+    <!-- a double for each loop with 3 branches with a service node corba -->
+    <!--types -->
+    <sequence name="intvec" content="int"/>
+    <sequence name="intvecvec" content="intvec"/>
+
+    <!--nodes -->
+    <inline name="node0" >
+      <script>
+        <code>p1=[i for i in range(10)]</code>
+        <code>p1=[p1,p1,p1]</code>
+      </script>
+      <outport name="p1" type="intvecvec"/>
+    </inline>
+
+    <foreach name="b1" nbranch="3" type="intvec" >
+    <foreach name="b2" nbranch="3" type="int" >
+      <service name="node2" >
+        <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+        <method>echoLong</method>
+        <inport name="p1" type="int"/>
+        <outport name="p1" type="int"/>
+      </service>
+    </foreach>
+    </foreach>
+
+    <inline name="node1" >
+      <script>
+        <code>print p1</code>
+      </script>
+      <inport name="p1" type="intvecvec"/>
+      <outport name="p1" type="intvecvec"/>
+    </inline>
+    <inline name="node3" >
+      <script>
+        <code>print p1</code>
+      </script>
+      <inport name="p1" type="intvecvec"/>
+    </inline>
+
+    <!--control -->
+    <control> <fromnode>node0</fromnode> <tonode>b1</tonode> </control>
+    <control> <fromnode>b1</fromnode> <tonode>node1</tonode> </control>
+
+    <!--datalink -->
+    <datalink>
+      <fromnode>node0</fromnode><fromport>p1</fromport>
+      <tonode>b1</tonode> <toport>SmplsCollection</toport>
+    </datalink>
+    <datalink>
+      <fromnode>b1</fromnode><fromport>SmplPrt</fromport>
+      <tonode>b1.b2</tonode> <toport>SmplsCollection</toport>
+    </datalink>
+    <datalink>
+      <fromnode>b1.b2</fromnode><fromport>SmplPrt</fromport>
+      <tonode>b1.b2.node2</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+      <fromnode>b1.b2.node2</fromnode><fromport>p1</fromport>
+      <tonode>node1</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+      <fromnode>node1</fromnode><fromport>p1</fromport>
+      <tonode>node3</tonode> <toport>p1</toport>
+    </datalink>
+
+    <!--parameters -->
+
+</proc>

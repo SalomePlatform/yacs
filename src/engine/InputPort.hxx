@@ -1,11 +1,10 @@
 #ifndef __INPUTPORT_HXX__
 #define __INPUTPORT_HXX__
 
-//#include <Python.h>
-//#include <omniORB4/CORBA.h>
-
-#include "TypeCode.hxx"
+#include "Any.hxx"
 #include "InPort.hxx"
+#include "Runtime.hxx"
+#include "TypeCode.hxx"
 #include "DataFlowPort.hxx"
 #include "ConversionException.hxx"
 
@@ -15,47 +14,93 @@ namespace YACS
 {
   namespace ENGINE
   {
-
-    class Runtime;
-
+    class OutPort;
+/*! \brief Base class for Input Ports
+ *
+ * \ingroup Ports
+ *
+ */
     class InputPort : public DataFlowPort, public InPort
     {
       friend class Runtime; // for port creation
+      friend class OutPort;
     public:
-      ~InputPort();
+      static const char NAME[];
+    public:
+      virtual ~InputPort();
 
       std::string getNameOfTypeOfCurrentInstance() const;
+      //! returns the final physical port behind 'this'.
+      virtual InputPort *getPublicRepresentant() { return this; }
+      virtual bool isIntermediate() const { return false; }
+      virtual bool edIsManuallyInitialized() const;
+      //!soon deprecated
+      bool edIsInitialized() const;
 
-      void edNotifyReferenced();
-      void edInit(const void *data) throw(ConversionException);
+      template<class T>
+      void edInit(T value);
+      void edInit(Any *value);
+      void edInit(const std::string& impl,const void* value);
+      virtual void edRemoveManInit();
+      void checkBasicConsistency() const throw(Exception);
+      virtual void exInit(bool start);
+      virtual void exSaveInit() = 0;
+      virtual void exRestoreInit() = 0;
+      virtual InputPort *clone(Node *newHelder) const = 0;
+      virtual bool isEmpty();
 
-      void exInit();
-      bool isEmpty();
-
-      virtual void put(const void *data) throw(ConversionException);
-
-      static const char NAME[];
-
+      virtual void *get() const throw(Exception) = 0;
+      virtual void put(const void *data) throw(ConversionException) = 0;
+      virtual std::string dump();
+      virtual void setStringRef(std::string strRef);
     protected:
+      InputPort(const InputPort& other, Node *newHelder);
       InputPort(const std::string& name, Node *node, TypeCode* type);
-      bool _empty;
-      bool _manuallySet;
+    protected:
+      Any *_initValue;
+      std::string _stringRef;
     };
 
-
+/*! \brief Base class for Proxy Input Ports
+ *
+ * \ingroup Ports
+ *
+ */
     class ProxyPort : public InputPort
     {
     public:
-      ProxyPort(InputPort* p)
-	: InputPort("Convertor", p->getNode(), p->type()),
-	  Port( p->getNode())
-      { _port = p; }
+      ProxyPort(InputPort* p);
+      ~ProxyPort();
+      
+      void edRemoveAllLinksLinkedWithMe() throw(Exception);
+      InputPort *clone(Node *newHelder) const;
+      void edNotifyReferencedBy(OutPort *fromPort);
+      void edNotifyDereferencedBy(OutPort *fromPort);
+      std::set<OutPort *> edSetOutPort() const;
+      InputPort *getPublicRepresentant();
+      void *get() const throw(Exception);
+      virtual void put(const void *data) throw(ConversionException) ;
+      int edGetNumberOfLinks() const;
+      bool isIntermediate() const { return true; }
+      void exRestoreInit();
+      void exSaveInit();
+      void getAllRepresentants(std::set<InPort *>& repr) const;
     protected:
       InputPort* _port;
     };
 
-
-
+    template<class T>
+    void InputPort::edInit(T value)
+    { 
+      InputPort *manuallySet=getRuntime()->adapt(this,
+                                                 Runtime::RUNTIME_ENGINE_INTERACTION_IMPL_NAME,_type);
+      Any* any=AtomAny::New(value);
+      manuallySet->put((const void *) any);
+      if(manuallySet!=this)
+        delete manuallySet;
+      any->decrRef();
+      exSaveInit();
+    }
   }
 }
 

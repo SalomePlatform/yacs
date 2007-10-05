@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# --- script to execute in SALOME environment (use runSession)
+
+# --- launch unit tests
+
+export ROOT_SAMPLES=@ROOT_SRCDIR@/src/yacsloader/samples
+
+export PYTHONPATH=..:../.libs:${PYTHONPATH}
+export PYTHONPATH=../../runtime:../../runtime/.libs:${PYTHONPATH}
+export PYTHONPATH=../../engine:../../engine/.libs:${PYTHONPATH}
+
+python  @srcdir@/testExec.py
+ret0=$?
+
+python  @srcdir@/testResume.py
+ret1=$?
+
+python  @srcdir@/testLoader.py
+ret2=$?
+
+python  @srcdir@/testEdit.py
+ret3=$?
+
+python  @srcdir@/testSave.py
+ret4=$?
+
+let ret=$ret0+$ret1+$ret2+$ret3+$ret4
+
+# --- return unit tests status
+
+exit $ret

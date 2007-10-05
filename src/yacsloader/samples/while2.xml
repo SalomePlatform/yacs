@@ -1,0 +1,47 @@
+<proc>
+    <!-- a Python node in a bloc in a while loop
+         3 steps are expected
+    -->
+    <!--types -->
+    <!--nodes -->
+    <inline name="n" >
+        <script>
+            <code>condition=1==1</code>
+        </script>
+        <outport name="condition" type="bool"/>
+    </inline>
+    <while name="b1" >
+      <bloc name="b">
+        <inline name="node2" >
+          <function name="f">
+            <code><![CDATA[a=0]]> </code>
+            <code><![CDATA[def f(p1):]]> </code>
+            <code><![CDATA[  global a]]> </code>
+            <code><![CDATA[  p1= p1+10.]]> </code>
+            <code><![CDATA[  print a]]> </code>
+            <code><![CDATA[  a=a+p1]]> </code>
+            <code><![CDATA[  print "a:",a]]> </code>
+            <code><![CDATA[  condition=p1 < 50.]]> </code>
+            <code><![CDATA[  return p1,condition]]> </code>
+          </function>
+          <inport name="p1" type="double"/>
+          <outport name="p1" type="double"/>
+          <outport name="condition" type="bool"/>
+        </inline>
+      </bloc>
+    <datalink> <fromnode>b.node2</fromnode><fromport>condition</fromport>
+               <tonode>b1</tonode> <toport>condition</toport> </datalink>
+    <datalink> <fromnode>b.node2</fromnode><fromport>p1</fromport>
+               <tonode>b.node2</tonode> <toport>p1</toport> </datalink>
+    </while>
+    <!--control links -->
+    <!--data links -->
+    <datalink> <fromnode>n</fromnode><fromport>condition</fromport>
+               <tonode>b1</tonode> <toport>condition</toport> </datalink>
+    <!--parameters -->
+    <parameter>
+        <tonode>b1.b.node2</tonode> <toport>p1</toport>
+        <value><double>23</double> </value>
+    </parameter>
+
+</proc>

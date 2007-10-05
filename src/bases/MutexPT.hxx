@@ -7,6 +7,8 @@ namespace YACS
 {
   namespace BASES
   {
+    class ConditionPT;
+
     class MutexPT
     {
     public:
@@ -14,10 +16,23 @@ namespace YACS
       ~MutexPT();
       void lock();
       void unlock();
+      friend class ConditionPT;
     private:
       pthread_mutex_t _mutexDesc;
       pthread_mutexattr_t _options;
 
+    };
+
+    class ConditionPT
+    {
+    public:
+      ConditionPT();
+      ~ConditionPT();
+      void notify_one();
+      void notify_all();
+      void wait(MutexPT& mutex);
+    private:
+      pthread_cond_t _cond;
     };
   }
 }

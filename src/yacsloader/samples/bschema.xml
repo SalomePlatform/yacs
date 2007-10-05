@@ -1,0 +1,33 @@
+<proc>
+
+    <!-- types -->
+    <!-- inline -->
+    <!-- service -->
+    <service name="node1" >
+        <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+        <method>echoDouble</method>
+        <inport name="p1" type="double"/>
+        <outport name="p1" type="double"/>
+    </service>
+
+    <service name="node2" >
+        <node>node1</node>
+        <method>echoString</method>
+        <inport name="p1" type="string"/>
+        <outport name="p1" type="string"/>
+    </service>
+
+    <!--control -->
+    <control> <fromnode>node1</fromnode> <tonode>node2</tonode> </control>
+
+    <!--parameters -->
+    <parameter>
+        <tonode>node1</tonode> <toport>p1</toport>
+        <value><double>23.</double></value>
+    </parameter>
+    <parameter>
+        <tonode>node2</tonode> <toport>p1</toport>
+        <value><string>coucou</string></value>
+    </parameter>
+
+</proc>

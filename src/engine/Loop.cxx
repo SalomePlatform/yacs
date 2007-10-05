@@ -4,34 +4,108 @@
 #include "InputDataStreamPort.hxx"
 #include "OutputDataStreamPort.hxx"
 #include "Runtime.hxx"
-
-//#include "TypeCheckerDataStream.hxx"
+#include "Visitor.hxx"
+#include <cassert>
+#include <iostream>
 
 using namespace YACS::ENGINE;
 using namespace std;
 
-DFToDSForLoop::DFToDSForLoop(Loop *loop, const string& name, TypeCode* type):ElementaryNode(""),_nbOfTimeUsed(1)
+InputPort4DF2DS::InputPort4DF2DS(DFToDSForLoop *node, TypeCode* type):
+  InputPort("", node, type),
+  DataPort("", node, type),
+  Port(node),_data(0)
+{
+}
+
+void InputPort4DF2DS::getAllRepresentants(std::set<InPort *>& repr) const
+{
+  set<InPort *> s=_node->getOutputDataStreamPort("")->edSetInPort();
+  repr.insert(s.begin(),s.end());
+}
+
+void *InputPort4DF2DS::get() const throw(Exception)
+{
+  if(!_data)
+    {
+      std::string what="InputPort4DF2DS::get : no value currently in input whith name \""; what+=_name; what+="\"";
+      throw Exception(what);
+    }
+  return (void *)_data;
+}
+
+void InputPort4DF2DS::exRestoreInit()
+{
+  if(!_initValue)
+    return;
+  if(_data)
+    _data->decrRef();
+  _data=_initValue;
+  _data->incrRef();
+}
+
+void InputPort4DF2DS::exSaveInit()
+{
+  if(_initValue)
+    _initValue->decrRef();
+  _initValue=_data;
+  _initValue->incrRef();
+}
+
+void InputPort4DF2DS::put(const void *data) throw(ConversionException)
+{
+  put((Any *)data);
+}
+
+InputPort *InputPort4DF2DS::clone(Node *newHelder) const
+{
+  throw Exception("InputPort4DF2DS::clone : internal error");
+}
+
+void InputPort4DF2DS::put(Any *data)
+{
+  if(_data)
+    _data->decrRef();
+  _data=data;
+  _data->incrRef();
+}
+
+InputPort4DF2DS::~InputPort4DF2DS()
+{
+  if(_data)
+    _data->decrRef();
+}
+
+DFToDSForLoop::DFToDSForLoop(Loop *loop, const std::string& name, TypeCode* type):ElementaryNode(""),_nbOfTimeUsed(1)
 {
   _name="DF2DS For "; _name+=loop->getName(); _name+=" representing port "; _name+=name;
   _father=loop;
-//   _setOfInputPort.insert(new InputPort("",this,type)); // probleme si constructeur protege, a voir
-  _setOfOutputDataStreamPort.insert(new OutputDataStreamPort("",this,Loop::MappingDF2DS(type)));
+  _setOfInputPort.push_back(new InputPort4DF2DS(this,type));
+  _setOfOutputDataStreamPort.push_back(new OutputDataStreamPort("",this,Loop::MappingDF2DS(type)));
 }
 
 DFToDSForLoop::~DFToDSForLoop()
 {
 }
 
-InputPort *DFToDSForLoop::getInputPort(const string& name) const throw(Exception)
+void DFToDSForLoop::getReadyTasks(std::vector<Task *>& tasks)
 {
-  set<InputPort *>::iterator it =_setOfInputPort.begin();
+}
+
+InputPort *DFToDSForLoop::getInputPort(const std::string& name) const throw(Exception)
+{
+  list<InputPort *>::const_iterator it =_setOfInputPort.begin();
   return (*it);
 }
 
-OutputDataStreamPort *DFToDSForLoop::getOutputDataStreamPort(const string& name) const throw(Exception)
+OutputDataStreamPort *DFToDSForLoop::getOutputDataStreamPort(const std::string& name) const throw(Exception)
 {
-  set<OutputDataStreamPort *> ::iterator it =_setOfOutputDataStreamPort.begin();
+  list<OutputDataStreamPort *>::const_iterator it =_setOfOutputDataStreamPort.begin();
   return (*it);
+}
+
+void DFToDSForLoop::load()
+{
 }
 
 void DFToDSForLoop::execute()
@@ -39,28 +113,98 @@ void DFToDSForLoop::execute()
   //TO IMPLEMENT
 }
 
-DSToDFForLoop::DSToDFForLoop(Loop *loop, const string& name, TypeCode* type):ElementaryNode(""),_nbOfTimeUsed(1)
+Node *DFToDSForLoop::simpleClone(ComposedNode *father, bool editionOnly) const
+{
+  throw Exception("DFToDSForLoop::simpleClone : Internal error");
+}
+
+OutputPort4DS2DF::OutputPort4DS2DF(DSToDFForLoop *node, TypeCode *type):
+  OutputPort("", node, type),
+  DataPort("", node, type),
+  Port(node),_data(0)
+{
+}
+
+void OutputPort4DS2DF::getAllRepresented(std::set<OutPort *>& represented) const
+{
+  set<OutPort *> setO=_node->getInputDataStreamPort("")->edSetOutPort();
+  for(set<OutPort *>::iterator iter=setO.begin();iter!=setO.end();iter++)
+    (*iter)->getAllRepresented(represented);
+}
+
+void OutputPort4DS2DF::put(const void *data) throw(ConversionException)
+{
+  put((Any *)data);
+  OutputPort::put(data);
+}
+
+OutputPort *OutputPort4DS2DF::clone(Node *newHelder) const
+{
+  throw Exception("OutputPort4DS2DF::clone : Internal error");
+}
+
+void OutputPort4DS2DF::put(Any *data)
+{
+  if(_data)
+    _data->decrRef();
+  _data=data;
+  _data->incrRef();
+}
+
+OutputPort4DS2DF::~OutputPort4DS2DF()
+{
+  if(_data)
+    _data->decrRef();
+}
+
+InputDataStreamPort4DS2DF::InputDataStreamPort4DS2DF(DSToDFForLoop *node, TypeCode* type):
+  InputDataStreamPort("", node, type),
+  DataPort("", node, type),
+  Port(node)
+{
+}
+
+void InputDataStreamPort4DS2DF::getAllRepresentants(std::set<InPort *>& repr) const
+{
+  set<InPort *> s=_node->getOutputPort("")->edSetInPort();
+  repr.insert(s.begin(),s.end());
+}
+
+DSToDFForLoop::DSToDFForLoop(Loop *loop, const std::string& name, TypeCode* type):ElementaryNode(""),_nbOfTimeUsed(1)
 {
   _name="DS2DF For "; _name+=loop->getName(); _name+=" representing port "; _name+=name;
   _father=loop;
-  //  _setOfOutputPort.insert(new OutputPort("",this,Loop::MappingDS2DF(type))); // probleme si constructeur protege, a voir
-  _setOfInputDataStreamPort.insert(new InputDataStreamPort("",this,type));
+  _setOfOutputPort.push_back(new OutputPort4DS2DF(this,type));
+  _setOfInputDataStreamPort.push_back(new InputDataStreamPort4DS2DF(this,type));
+}
+
+Node *DSToDFForLoop::simpleClone(ComposedNode *father, bool editionOnly) const
+{
+  throw Exception("DSToDFForLoop::simpleClone : Internal error");
 }
 
 DSToDFForLoop::~DSToDFForLoop()
 {
 }
 
-OutputPort *DSToDFForLoop::getOutputPort(const string& name) const throw(Exception)
+void DSToDFForLoop::getReadyTasks(std::vector<Task *>& tasks)
 {
-  set<OutputPort *>::iterator it = _setOfOutputPort.begin();
+}
+
+OutputPort *DSToDFForLoop::getOutputPort(const std::string& name) const throw(Exception)
+{
+  list<OutputPort *>::const_iterator it = _setOfOutputPort.begin();
   return (*it);
 }
 
-InputDataStreamPort *DSToDFForLoop::getInputDataStreamPort(const string& name) const throw(Exception)
+InputDataStreamPort *DSToDFForLoop::getInputDataStreamPort(const std::string& name) const throw(Exception)
 {
-  set<InputDataStreamPort *>::iterator it = _setOfInputDataStreamPort.begin();
+  list<InputDataStreamPort *>::const_iterator it = _setOfInputDataStreamPort.begin();
   return (*it);
+}
+
+void DSToDFForLoop::load()
+{
 }
 
 void DSToDFForLoop::execute()
@@ -68,70 +212,194 @@ void DSToDFForLoop::execute()
   //TO IMPLEMENT
 }
 
-Loop::Loop(const string& name):ComposedNode(name),_node(0)
+FakeNodeForLoop::FakeNodeForLoop(Loop *loop, bool normalFinish, bool internalError):ElementaryNode("thisIsAFakeNode"),
+                                                                                    _loop(loop),
+                                                                                    _normalFinish(normalFinish),
+                                                                                    _internalError(internalError)
+{
+  setState(YACS::TOACTIVATE);
+  _father=_loop->getFather();
+}
+
+FakeNodeForLoop::FakeNodeForLoop(const FakeNodeForLoop& other):ElementaryNode(other),_loop(0),
+                                                               _normalFinish(false),_internalError(true)
+{
+}
+
+Node *FakeNodeForLoop::simpleClone(ComposedNode *father, bool editionOnly) const
+{
+  return new FakeNodeForLoop(*this);
+}
+
+void FakeNodeForLoop::exForwardFailed()
+{
+  _loop->exForwardFailed();
+  FakeNodeForLoop *normallyThis=_loop->_nodeForNullTurnOfLoops;
+  _loop->_nodeForNullTurnOfLoops=0;
+  delete normallyThis;
+}
+
+void FakeNodeForLoop::exForwardFinished()
+{ 
+  _loop->exForwardFinished();
+  FakeNodeForLoop *normallyThis=_loop->_nodeForNullTurnOfLoops;
+  _loop->_nodeForNullTurnOfLoops=0;
+  delete normallyThis;
+}
+
+void FakeNodeForLoop::execute()
+{
+  if(!_normalFinish)
+    throw Exception("");//only to trigger ABORT on Executor
+}
+
+void FakeNodeForLoop::aborted()
+{
+  if(_internalError)
+    _loop->setState(YACS::INTERNALERR);
+  else
+    _loop->setState(YACS::ERROR);
+}
+
+void FakeNodeForLoop::finished()
+{
+  _loop->setState(YACS::DONE);
+}
+
+Loop::Loop(const Loop& other, ComposedNode *father, bool editionOnly):StaticDefinedComposedNode(other,father),_nbOfTurns(0),_nodeForNullTurnOfLoops(0)
+{
+  if(other._node)
+    _node=other._node->simpleClone(this,editionOnly);
+}
+
+Loop::Loop(const std::string& name):StaticDefinedComposedNode(name),_node(0),_nbOfTurns(0),_nodeForNullTurnOfLoops(0)
 {
 }
 
 Loop::~Loop()
 {
   delete _node;
+  delete _nodeForNullTurnOfLoops;
+  for(set<DSToDFForLoop *>::iterator iter1=_inputsTraducer.begin();iter1!=_inputsTraducer.end();iter1++)
+    delete (*iter1);
+  for(set<DFToDSForLoop *>::iterator iter2=_outputsTraducer.begin();iter2!=_outputsTraducer.end();iter2++)
+    delete (*iter2);
 }
 
-void Loop::edSetNode(Node *node)
+void Loop::init(bool start)
 {
-  delete _node;
-  _node=node;
+  StaticDefinedComposedNode::init(start);
+  _nbOfTurns=0;
+  if(_node)
+    _node->init(start); // if start is true, refresh the internal node
+  else
+    throw Exception("Loop::initLoop : no nodes specifies to be repeated ");
+  delete _nodeForNullTurnOfLoops;
+  _nodeForNullTurnOfLoops=0;
 }
 
-void Loop::edAddExtraInputPort(const string& inputPortName, TypeCode* type) throw(Exception)
+Node *Loop::edSetNode(Node *node)
 {
-  InputPort *ret = 0;
-  if (edCheckAddPort<InputPort, TypeCode*>(inputPortName,_setOfInputPort,type))
+  if(_node==node)
+    return 0;
+  if(node)
     {
-      //InputPort *ret=edAddPort<InputPort, TypeCode*>(inputPortName,_setOfInputPort,type);
-      ret = getRuntime()->createInputPort(inputPortName, _implementation, this, type);
-      _setOfExtraInputPort.insert(ret);
+      if(node->_father)
+        {
+          string what = "Loop::edSetNode: node "; what += node->getName(); what += " is not orphan ! "; 
+          throw Exception(what);
+        }
     }
-      //edAddPort<InputPort,TypeCode*>(inputPortName,_setOfExtraInputPort,type);
+  StaticDefinedComposedNode::edRemoveChild(_node);
+  Node *ret=_node;
+  _node=node;
+  _node->_father=this;
+  return ret;
 }
 
-void Loop::edRemoveExtraInputPort(InputPort *inputPort)
+Node *Loop::edRemoveNode()
 {
-  edRemovePortTypedFromSet<InputPort>(inputPort,_setOfExtraInputPort);
+  StaticDefinedComposedNode::edRemoveChild(_node);
+  Node *ret=_node;
+  _node=0;
+  return ret;
+}
+
+//! Collect all the child nodes that are ready
+/*!
+ * \param tasks : vector of tasks to collect ready nodes
+ */
+void Loop::getReadyTasks(std::vector<Task *>& tasks)
+{
+  if(!_node)
+    return;
+  /*
+   * To change the way ComposedNode state is handled, uncomment the following line
+   * see Bloc::getReadyTasks
+   */
+  if(_state==YACS::TOACTIVATE) setState(YACS::ACTIVATED);
+  if(_state==YACS::TOACTIVATE || _state==YACS::ACTIVATED)
+    if(_nodeForNullTurnOfLoops)
+      _nodeForNullTurnOfLoops->getReadyTasks(tasks);
+    else
+      {
+        _node->getReadyTasks(tasks);
+        for(set<DSToDFForLoop *>::iterator iter1=_inputsTraducer.begin();iter1!=_inputsTraducer.end();iter1++)
+          (*iter1)->getReadyTasks(tasks);
+        for(set<DFToDSForLoop *>::iterator iter2=_outputsTraducer.begin();iter2!=_outputsTraducer.end();iter2++)
+          (*iter2)->getReadyTasks(tasks);
+      }
+}
+
+void Loop::edRemoveChild(Node *node) throw(Exception)
+{
+  StaticDefinedComposedNode::edRemoveChild(node);
+  if(_node==node)
+    _node=0;
+}
+
+void Loop::selectRunnableTasks(std::vector<Task *>& tasks)
+{
+}
+
+std::set<Node *> Loop::edGetDirectDescendants() const
+{
+  set<Node *> ret;
+  if(_node)
+    ret.insert(_node);
+  return ret;
+}
+
+void Loop::checkConsistency(ComposedNode *pointOfView) const throw(Exception)
+{
+}
+
+Node *Loop::getChildByShortName(const std::string& name) const throw(Exception)
+{
+  if(name==_node->getName())
+    return _node;
+  string what("node "); what+= name ; what+=" is not a child of loop node "; what += getName();
+  throw Exception(what);
 }
 
 TypeCode* Loop::MappingDF2DS(TypeCode* type) throw(Exception)
 {
-//   switch(type)
-//     {
-//       case Double:
-// 	return SDouble;
-//     }
-  string what("Loop::MappingDF2DS : unable to perform DataFlow to DataStream traduction for dataflow type ");
-  //what+=Data::edGetTypeInPrintableForm(type);
-  throw Exception(what);
+  return type;
 }
 
 TypeCode* Loop::MappingDS2DF(TypeCode* type) throw(Exception)
 {
-//   switch(type)
-//     {
-//       case SDouble:
-// 	return Double;
-//     }
-  string what("Loop::MappingDS2DF : unable to perform DataStream to DataFlow traduction for datastream type ");
-  //what+=TypeCheckerDataStream::edGetTypeInPrintableForm(type);
-  throw Exception(what);
+  return type;
 }
 
-InPort *Loop::buildDelegateOf(InPort *port, const set<ComposedNode *>& pointsOfView)
+void Loop::buildDelegateOf(InPort * & port, OutPort *initialStart, const std::set<ComposedNode *>& pointsOfView)
 {
   string typeOfPortInstance=port->getNameOfTypeOfCurrentInstance();
-  if(typeOfPortInstance!=InputPort::NAME)
-    return port;
-  else
-    if(!isNecessaryToBuildSpecificDelegateDF2DS(pointsOfView))
-      return port;
+  if(typeOfPortInstance!=InputPort::NAME or
+     (typeOfPortInstance == InputPort::NAME and 
+      initialStart->getNameOfTypeOfCurrentInstance()== OutputPort::NAME and 
+      !isNecessaryToBuildSpecificDelegateDF2DS(pointsOfView)) )
+    return ;
   InputPort *portCasted=(InputPort *)port;
   set<DSToDFForLoop*>::iterator iter;
   //Determinig if a DSToDFForLoop node has already been created for delegation of 'port'
@@ -140,52 +408,55 @@ InPort *Loop::buildDelegateOf(InPort *port, const set<ComposedNode *>& pointsOfV
       break;
   if(iter==_inputsTraducer.end())
     {//first time that 'port' is delegated on higher level
-      _inputsTraducer.insert(new DSToDFForLoop(this,portCasted->getName(),Loop::MappingDF2DS(portCasted->edGetType())));
-      iter=_inputsTraducer.end(); iter--;
-      (*iter)->getOutputPort("")->edAddInputPort(portCasted);
-      //WARNING control flow has to be added
-      (*iter)->getOutGate()->edAddInGate(portCasted->getNode()->getInGate());//WARNING HERE MAYBE HAS TO BE IMPROVED - SEPARATE COUNTERS
+      pair<set<DSToDFForLoop*>::iterator, bool> iter2=_inputsTraducer.insert(new DSToDFForLoop(this,portCasted->getName(),Loop::MappingDF2DS(portCasted->edGetType())));
+      iter=iter2.first;
+      (*iter)->getOutputPort("")->addInPort(portCasted);
     }
   else
     (*iter)->loopHasOneMoreRef();
-  return (*iter)->getInputDataStreamPort("");
+  port=(*iter)->getInputDataStreamPort("");
 }
 
-OutPort *Loop::buildDelegateOf(OutPort *port, const set<ComposedNode *>& pointsOfView)
+void Loop::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::set<ComposedNode *>& pointsOfView)
 {
-  string typeOfPortInstance=port->getNameOfTypeOfCurrentInstance();
-  if(typeOfPortInstance!=OutputPort::NAME)
-    return port;
-  else
-    if(!isNecessaryToBuildSpecificDelegateDF2DS(pointsOfView))
-      return port;
-  OutputPort *portCasted=(OutputPort *)port;
+  string typeOfPortInstance=(port.first)->getNameOfTypeOfCurrentInstance();
+  if(typeOfPortInstance!=OutputPort::NAME or
+    ( typeOfPortInstance == OutputPort::NAME and 
+      finalTarget->getNameOfTypeOfCurrentInstance()== InputPort::NAME and 
+      !isNecessaryToBuildSpecificDelegateDF2DS(pointsOfView)) )
+    return ;
+  OutPort *portCasted=port.first;
   set<DFToDSForLoop*>::iterator iter;
   //Determinig if a DFToDSForLoop node has already been created for delegation of 'port'
   for(iter=_outputsTraducer.begin();iter!=_outputsTraducer.end();iter++)
-    if(portCasted->isAlreadyInSet((*iter)->getInputPort("")))
+    if(portCasted->isAlreadyLinkedWith((*iter)->getInputPort("")))
       break;
+  DFToDSForLoop *kl;
   if(iter==_outputsTraducer.end())
     {//first time that 'port' is delegated on higher level
-      _outputsTraducer.insert(new DFToDSForLoop(this,portCasted->getName(),portCasted->edGetType()));
-      iter=_outputsTraducer.end(); iter--;
-      portCasted->edAddInputPort((*iter)->getInputPort(""));
-      //WARNING control flow has to be added
-      portCasted->getNode()->getOutGate()->edAddInGate((*iter)->getInGate());//WARNING HERE MAYBE HAS TO BE IMPROVED - SEPARATE COUNTERS
+      //_outputsTraducer.insert(new DFToDSForLoop(this,portCasted->getName(),portCasted->edGetType()));
+      kl=new DFToDSForLoop(this,portCasted->getName(),portCasted->edGetType());
+      pair<set<DFToDSForLoop*>::iterator, bool> iter2=_outputsTraducer.insert(kl);
+      iter=iter2.first;
+      portCasted->addInPort((*iter)->getInputPort(""));
     }
   else
-    (*iter)->loopHasOneMoreRef();
-  return (*iter)->getOutputDataStreamPort("");
+    {
+      kl=*iter;
+      kl->loopHasOneMoreRef();
+    }
+  edAddLink(isInMyDescendance((port.first)->getNode())->getOutGate(),kl->getInGate());
+  port.first=(*iter)->getOutputDataStreamPort("");
 }
 
-InPort *Loop::getDelegateOf(InPort *port, const set<ComposedNode *>& pointsOfView) throw(Exception)
+void Loop::getDelegateOf(InPort * & port, OutPort *initialStart, const std::set<ComposedNode *>& pointsOfView) throw(Exception)
 {
   string typeOfPortInstance=port->getNameOfTypeOfCurrentInstance();
-  if(typeOfPortInstance!=InputPort::NAME)
-    return port;
-  else
-    if(!isNecessaryToBuildSpecificDelegateDF2DS(pointsOfView))
-      return port;
+  if(typeOfPortInstance!=InputPort::NAME or
+     (typeOfPortInstance == InputPort::NAME and 
+      initialStart->getNameOfTypeOfCurrentInstance()== OutputPort::NAME and 
+      !isNecessaryToBuildSpecificDelegateDF2DS(pointsOfView)) )
+    return ;
   InputPort *portCasted=(InputPort *)port;
   set<DSToDFForLoop*>::iterator iter;
   for(iter=_inputsTraducer.begin();iter!=_inputsTraducer.end();iter++)
@@ -193,43 +464,44 @@ InPort *Loop::getDelegateOf(InPort *port, const set<ComposedNode *>& pointsOfVie
       break;
   if(iter==_inputsTraducer.end())
     {
-      string what("Loop::getDelegateOf Port with name "); what+=portCasted->getName(); what+=" not exported by loop "; what+=_name; 
+      string what("Loop::getDelegateOf : Port with name "); what+=portCasted->getName(); what+=" not exported by loop "; what+=_name; 
       throw Exception(what);
     }
   else
-    return (*iter)->getInputDataStreamPort("");
+    port=(*iter)->getInputDataStreamPort("");
 }
 
-OutPort *Loop::getDelegateOf(OutPort *port, const set<ComposedNode *>& pointsOfView) throw(Exception)
+void Loop::getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, 
+                         const std::set<ComposedNode *>& pointsOfView) throw(Exception)
 {
-  string typeOfPortInstance=port->getNameOfTypeOfCurrentInstance();
-  if(typeOfPortInstance!=OutputPort::NAME)
-    return port;
-  else
-    if(!isNecessaryToBuildSpecificDelegateDF2DS(pointsOfView))
-      return port;
-  OutputPort *portCasted=(OutputPort *)port;
+  string typeOfPortInstance=(port.first)->getNameOfTypeOfCurrentInstance();
+  if(typeOfPortInstance!=OutputPort::NAME or
+    ( typeOfPortInstance == OutputPort::NAME and 
+      finalTarget->getNameOfTypeOfCurrentInstance()== InputPort::NAME and 
+      !isNecessaryToBuildSpecificDelegateDF2DS(pointsOfView)) )
+    return ;
+  OutPort *portCasted=port.first;
   set<DFToDSForLoop*>::iterator iter;
   for(iter=_outputsTraducer.begin();iter!=_outputsTraducer.end();iter++)
-    if(portCasted->isAlreadyInSet((*iter)->getInputPort("")))
+    if(portCasted->isAlreadyLinkedWith((*iter)->getInputPort("")))
       break;
   if(iter==_outputsTraducer.end())
     {
-      string what("Loop::getDelegateOf Port with name "); what+=portCasted->getName(); what+=" not exported by loop "; what+=_name; 
+      string what("Loop::getDelegateOf : Port with name "); what+=portCasted->getName(); what+=" not exported by loop "; what+=_name; 
       throw Exception(what);
     }
   else
-    return (*iter)->getOutputDataStreamPort("");
+    port.first=(*iter)->getOutputDataStreamPort("");
 }
 
-InPort *Loop::releaseDelegateOf(InPort *port, const set<ComposedNode *>& pointsOfView) throw(Exception)
+void Loop::releaseDelegateOf(InPort * & port, OutPort *initialStart, const std::set<ComposedNode *>& pointsOfView) throw(Exception)
 {
   string typeOfPortInstance=port->getNameOfTypeOfCurrentInstance();
-  if(typeOfPortInstance!=InputPort::NAME)
-    return port;
-  else
-    if(!isNecessaryToBuildSpecificDelegateDF2DS(pointsOfView))
-      return port;
+  if(typeOfPortInstance!=InputPort::NAME or
+    ( typeOfPortInstance == InputPort::NAME and 
+      initialStart->getNameOfTypeOfCurrentInstance()== OutputPort::NAME and 
+      !isNecessaryToBuildSpecificDelegateDF2DS(pointsOfView)) )
+    return ;
   InputPort *portCasted=(InputPort *)port;
   set<DSToDFForLoop*>::iterator iter;
   for(iter=_inputsTraducer.begin();iter!=_inputsTraducer.end();iter++)
@@ -242,55 +514,94 @@ InPort *Loop::releaseDelegateOf(InPort *port, const set<ComposedNode *>& pointsO
     }
   else
     {
-      InPort *ret=(*iter)->getInputDataStreamPort("");
+      port=(*iter)->getInputDataStreamPort("");
       if((*iter)->loopHasOneLessRef())
-	_inputsTraducer.erase(iter);
-      return ret;
+        {
+          (*iter)->getOutputPort("")->removeInPort(portCasted,false);
+          delete (*iter);
+          _inputsTraducer.erase(iter);
+        }
     }
 }
 
-OutPort *Loop::releaseDelegateOf(OutPort *port, const set<ComposedNode *>& pointsOfView) throw(Exception)
+void Loop::releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::set<ComposedNode *>& pointsOfView) throw(Exception)
 {
-    string typeOfPortInstance=port->getNameOfTypeOfCurrentInstance();
-  if(typeOfPortInstance!=OutputPort::NAME)
-    return port;
-  else
-    if(!isNecessaryToBuildSpecificDelegateDF2DS(pointsOfView))
-      return port;
-  OutputPort *portCasted=(OutputPort *)port;
+  if(portDwn==portUp)
+    return ;
   set<DFToDSForLoop*>::iterator iter;
   for(iter=_outputsTraducer.begin();iter!=_outputsTraducer.end();iter++)
-    if(portCasted->isAlreadyInSet((*iter)->getInputPort("")))
+    if((*iter)->getOutputDataStreamPort("")==portUp)
       break;
-  if(iter==_outputsTraducer.end())
+  if((*iter)->loopHasOneLessRef())
     {
-      string what("Loop::releaseDelegateOf Port with name "); what+=portCasted->getName(); what+=" not exported by loop "; what+=_name; 
-      throw Exception(what);
-    }
-  else
-    {
-      OutPort *ret=(*iter)->getOutputDataStreamPort("");
-      if((*iter)->loopHasOneLessRef())
-	_outputsTraducer.erase(iter);
-      return ret;
+      portDwn->removeInPort((*iter)->getInputPort(""),false);
+      delete (*iter);
+      _outputsTraducer.erase(iter);
     }
 }
 
 void Loop::checkNoCyclePassingThrough(Node *node) throw(Exception)
 {
-  throw Exception("Loop::checkNoCyclePassingThrough : Internal error occured");
+  //throw Exception("Loop::checkNoCyclePassingThrough : Internal error occured");
 }
 
-/**
- * @note : States if a DF port must be considered on an upper level in hierarchy as a DS port or not from 'pointsOfView' observers.
- * @return : 
+/*!
+ * \note : States if a DF port must be considered on an upper level in hierarchy as a DS port or not from 'pointsOfView' observers.
+ * \return : 
  *            - True : a traduction DF->DS has to be done
  *            - False : no traduction needed
  */
-bool Loop::isNecessaryToBuildSpecificDelegateDF2DS(const set<ComposedNode *>& pointsOfView)
+bool Loop::isNecessaryToBuildSpecificDelegateDF2DS(const std::set<ComposedNode *>& pointsOfView)
 {
   bool ret=false;
   for(set<ComposedNode *>::const_iterator iter=pointsOfView.begin();iter!=pointsOfView.end() && !ret;iter++)
     ret=(*iter)->isRepeatedUnpredictablySeveralTimes();
   return ret;
+}
+
+//! Connect an OutPort to an InPort and add control link if necessary
+/*!
+ * Connect the ports with a data link (edAddLink) 
+ * In a Loop don't add control flow link : use this only to add data back links
+ *
+ * \param start : the OutPort to connect
+ * \param end : the InPort to connect
+ * \return  true if a new link has been created, false otherwise.
+ */
+bool Loop::edAddDFLink(OutPort *start, InPort *end) throw(Exception)
+{
+  return edAddLink(start,end);
+}
+
+//! Dump the node state to a stream
+/*!
+ * \param os : the output stream
+ */
+void Loop::writeDot(std::ostream &os)
+{
+  os << "  subgraph cluster_" << getId() << "  {\n" ;
+  //only one node in a loop
+  _node->writeDot(os);
+  os << getId() << " -> " << _node->getId() << ";\n";
+  os << "}\n" ;
+  os << getId() << "[fillcolor=\"" ;
+  YACS::StatesForNode state=getEffectiveState();
+  os << getColorState(state);
+  os << "\" label=\"" << "Loop:" ;
+  os << getQualifiedName() <<"\"];\n";
+}
+
+
+void Loop::accept(Visitor *visitor)
+{
+  visitor->visitLoop(this);
+}
+
+/*!
+ *  For use only when loading a previously saved execution
+ */
+
+void YACS::ENGINE::NbDoneLoader(Loop* node, int val)
+{
+  node->_nbOfTurns = val;
 }

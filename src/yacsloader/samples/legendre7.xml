@@ -1,0 +1,124 @@
+<proc>
+    <!-- types -->
+
+    <!-- inline -->
+
+    <inline name="init" >
+       <script>
+          <code>x=0.5</code>
+          <code>nsteps=3</code>
+       </script>
+       <outport name="x" type="double"/>
+       <outport name="nsteps" type="int"/>
+    </inline>
+
+    <inline name="poly_7" >
+       <script>
+          <code>Pn=(429*x**7 -693*x**5+315*x**3 -35*x)/16</code>
+          <code>print "reference P7=",Pn</code>
+       </script>
+       <inport name="x" type="double"/>
+       <outport name="Pn" type="double"/>
+    </inline>
+
+
+
+    <!-- service -->
+
+    <bloc name="Legendre" >
+
+      <inline name="iter_0" >
+         <script>
+            <code>Pn=1</code>
+            <code>n=1</code>
+         </script>
+         <outport name="Pn" type="double"/>
+         <outport name="n" type="int"/>
+      </inline>
+
+      <inline name="iter_1" >
+         <script>
+            <code>Pn=x</code>
+            <code>n=2</code>
+         </script>
+         <inport name="x" type="double"/>
+         <outport name="Pn" type="double"/>
+         <outport name="n" type="int"/>
+      </inline>
+
+      <forloop name="loopIter" >
+
+        <bloc name="deuxIter" >
+
+          <inline name="iter1" >
+             <script>
+                <code>Pn = ((2*n-1)*x*Pnm1 -(n-1)*Pnm2)/n</code>
+                <code>print "n=",n," Pn=",Pn</code>
+                <code>n=n+1</code>
+             </script>
+             <inport name="Pnm1" type="double"/>
+             <inport name="Pnm2" type="double"/>
+             <inport name="x" type="double"/>
+             <inport name="n" type="int"/>
+             <outport name="Pn" type="double"/>
+             <outport name="n" type="int"/>
+          </inline>
+
+          <node name="iter2" type="iter1"/>
+
+          <control> <fromnode>iter1</fromnode> <tonode>iter2</tonode> </control>
+
+          <datalink> <fromnode>iter1</fromnode><fromport>Pn</fromport>
+                      <tonode>iter2</tonode><toport>Pnm1</toport> </datalink>
+          <datalink> <fromnode>iter1</fromnode><fromport>n</fromport>
+                      <tonode>iter2</tonode><toport>n</toport> </datalink>
+
+        </bloc>
+        <datalink> <fromnode>deuxIter.iter1</fromnode><fromport>Pn</fromport>
+                    <tonode>deuxIter.iter1</tonode><toport>Pnm2</toport> </datalink>
+        <datalink> <fromnode>deuxIter.iter2</fromnode><fromport>Pn</fromport>
+                    <tonode>deuxIter.iter2</tonode><toport>Pnm2</toport> </datalink>
+        <datalink> <fromnode>deuxIter.iter2</fromnode><fromport>n</fromport>
+                    <tonode>deuxIter.iter1</tonode><toport>n</toport> </datalink>
+        <datalink> <fromnode>deuxIter.iter2</fromnode><fromport>Pn</fromport>
+                    <tonode>deuxIter.iter1</tonode><toport>Pnm1</toport> </datalink>
+
+      </forloop>
+
+      <control> <fromnode>iter_0</fromnode> <tonode>iter_1</tonode> </control>
+      <control> <fromnode>iter_1</fromnode> <tonode>loopIter</tonode> </control>
+
+      <datalink> <fromnode>iter_1</fromnode><fromport>n</fromport>
+                  <tonode>loopIter.deuxIter.iter1</tonode><toport>n</toport> </datalink>
+      <datalink> <fromnode>iter_0</fromnode><fromport>Pn</fromport>
+                  <tonode>loopIter.deuxIter</tonode><toport>iter1.Pnm2</toport> </datalink>
+      <datalink> <fromnode>iter_1</fromnode><fromport>Pn</fromport>
+                  <tonode>loopIter</tonode><toport>deuxIter.iter1.Pnm1</toport> </datalink>
+      <datalink> <fromnode>iter_1</fromnode><fromport>Pn</fromport>
+                  <tonode>loopIter</tonode><toport>deuxIter.iter2.Pnm2</toport> </datalink>
+
+    </bloc>
+
+    <!--control links -->
+
+    <control> <fromnode>init</fromnode> <tonode>poly_7</tonode> </control>
+    <control> <fromnode>init</fromnode> <tonode>Legendre</tonode> </control>
+    <control> <fromnode>Legendre</fromnode> <tonode>poly_7</tonode> </control>
+
+    <!--data links -->
+    <datalink> <fromnode>init</fromnode><fromport>x</fromport>
+                  <tonode>poly_7</tonode><toport>x</toport> </datalink>
+
+    <datalink> <fromnode>init</fromnode><fromport>nsteps</fromport>
+                <tonode>Legendre.loopIter</tonode><toport>nsteps</toport> </datalink>
+
+    <datalink> <fromnode>init</fromnode><fromport>x</fromport>
+                  <tonode>Legendre.iter_1</tonode><toport>x</toport> </datalink>
+    <datalink> <fromnode>init</fromnode><fromport>x</fromport>
+                <tonode>Legendre.loopIter.deuxIter.iter1</tonode><toport>x</toport> </datalink>
+    <datalink> <fromnode>init</fromnode><fromport>x</fromport>
+                <tonode>Legendre.loopIter.deuxIter.iter2</tonode><toport>x</toport> </datalink>
+
+    <!--parameters -->
+
+</proc>

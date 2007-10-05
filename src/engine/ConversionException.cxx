@@ -10,3 +10,7 @@ ConversionException::ConversionException(const std::string& what):Exception(TYPE
   _what=TYPEOFEXCEPTION;
   _what+=what;
 }
+
+ConversionException::~ConversionException() throw ()
+{
+}

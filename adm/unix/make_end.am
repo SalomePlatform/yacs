@@ -8,7 +8,7 @@ SUFFIXES =
 SUFFIXES += .i WRAP.cxx .idl .hh SK.cc _idl.py
 
 .iWRAP.cxx :
-	$(SWIG) $(SWIG_PYTHON_OPT) $(SWIG_PYTHON_INCLUDES) -o $@ $<
+	$(SWIG) $(SWIG_PYTHON_OPT) $(SWIG_PYTHON_INCLUDES) $(MYSWIG_FLAGS) -o $@ $<
 
 .idlSK.cc:
 	$(OMNIORB_IDL) $(OMNIORB_IDLCXXFLAGS) -bcxx $<
@@ -17,4 +17,62 @@ SUFFIXES += .i WRAP.cxx .idl .hh SK.cc _idl.py
 	$(OMNIORB_IDL) $(OMNIORB_IDLCXXFLAGS) -bcxx $<
 
 .idl_idl.py:
-	$(OMNIORB_IDL)  -bpython $<
+	$(OMNIORB_IDL) -bpython $(IDLPYFLAGS) $<
+
+# --------------------------------------------
+# *.h --> *_moc.cxx
+# --------------------------------------------
+
+SUFFIXES += .h _moc.cxx
+
+.h_moc.cxx :
+	$(MOC) -o $@ $<
+
+clean-local-h2Moc :
+	rm -f *_moc.cxx
+
+# --------------------------------------------
+# *.ui --> *.h
+# --------------------------------------------
+
+SUFFIXES += .ui .h
+
+.ui.h :
+	$(UIC) -o $@ $<
+
+clean-local-ui2h :
+	for Header in $(patsubst %.ui,%.h,$(wildcard *.ui)) ; do \
+		rm -f $$Header ; \
+	done ;
+
+# --------------------------------------------
+# *.ui --> *.cxx
+# --------------------------------------------
+
+SUFFIXES += .ui .cxx
+
+.ui.cxx :
+	$(UIC) -o $@ -impl $(patsubst %.cxx,%.h,$@) $<
+
+clean-local-ui2cxx :
+	for Impl in $(patsubst %.ui,%.cxx,$(wildcard *.ui)) ; do \
+		rm -f $$Impl ; \
+	done ;
+
+# --------------------------------------------
+# *.po --> *.qm
+# --------------------------------------------
+
+SUFFIXES += .po .qm
+
+.po.qm :
+	subdir=`dirname $@` ; \
+	if ! test -d $$subdir; then \
+		mkdir -p $$subdir ; \
+	fi ; \
+	$(MSG2QM) $< $@
+
+clean-local-po2qm :
+	rm -f *.qm
+
+clean-local : clean-local-h2Moc clean-local-po2qm clean-local-ui2cxx clean-local-ui2h

@@ -1,21 +1,23 @@
 
-#include "CORBAXMLConv.hxx"
 #include "TypeConversions.hxx"
+#include "CORBAXMLConv.hxx"
 
 #include <iostream>
+
+//#define _DEVDEBUG_
+#include "YacsTrace.hxx"
 
 using namespace YACS::ENGINE;
 using namespace std;
 
 CorbaXml::CorbaXml(InputXmlPort* p)
-  : ProxyPort(p), Port(p->getNode())
+  : ProxyPort(p), DataPort(p->getName(), p->getNode(), p->edGetType()), Port(p->getNode())
 {
-  cerr << "proxy port from CORBA to XML" << endl;
 }
 
-//!Convertit un Any convertible en Xml::char *
+//!Convert a CORBA::Any that is convertible to Xml::char * and send it to proxy port
 /*!
- *   \param data : CORBA::Any object
+ *   \param data : CORBA::Any object as a void * pointer
  */
 
 void CorbaXml::put(const void *data) throw(ConversionException)
@@ -23,15 +25,13 @@ void CorbaXml::put(const void *data) throw(ConversionException)
   put((CORBA::Any *)data);
 }
 
+//!Convert a CORBA::Any that is convertible to Xml::char * and send it to proxy port
+/*!
+ *   \param data : CORBA::Any object
+ */
 void CorbaXml::put(CORBA::Any *data) throw(ConversionException)
 {
-  //conversion du Any data en any attendu (de type type())
-
-  cerr << "CorbaXml::put" << endl;
-  char *a = convertXmlCorba(type(),data);
-  cerr << a << endl;
-  cerr << _port->getName() << endl;
-  cerr << _port->getImpl() << endl;
-  _port->put((const char*)a);
-  cerr << "Fin CorbaXml::put" << endl;
+  DEBTRACE("CorbaXml::put" );
+  std::string sss = convertCorbaXml(edGetType(),data);
+  ((InputXmlPort*)_port)->put((const char*)sss.c_str());
 }

@@ -1,0 +1,11 @@
+<document>
+  <section name="HXX2SALOME_GENERIC_CLASS_NAME">
+    <!-- Major module parameters -->
+    <parameter name="name" value="HXX2SALOME_GENERIC_CLASS_NAME"/>
+    <parameter name="icon" value="HXX2SALOME_GENERIC_CLASS_NAME.png"/>
+  </section>
+  <section name="resources">
+    <!-- Module resources -->
+    <parameter name="HXX2SALOME_GENERIC_CLASS_NAME" value="${HXX2SALOME_GENERIC_CLASS_NAME_ROOT_DIR}/share/salome/resources"/>
+  </section>
+</document>

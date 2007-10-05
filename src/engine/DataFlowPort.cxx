@@ -5,9 +5,16 @@ using namespace std;
 
 const char DataFlowPort::NAME[]="DataFlowPort";
 
-DataFlowPort::DataFlowPort(const string& name, Node *node, TypeCode* type):Port(node),_name(name)
+DataFlowPort::DataFlowPort(const DataFlowPort& other, Node *newHelder):DataPort(other,newHelder),Port(other,newHelder)
 {
-  _type = type;
+}
+
+DataFlowPort::DataFlowPort(const std::string& name, Node *node, TypeCode* type):DataPort(name,node,type),Port(node)
+{
+}
+
+DataFlowPort::~DataFlowPort()
+{
 }
 
 string DataFlowPort::getNameOfTypeOfCurrentInstance() const
@@ -15,18 +22,7 @@ string DataFlowPort::getNameOfTypeOfCurrentInstance() const
   return NAME;
 }
 
-TypeCode* DataFlowPort::edGetType() const
+bool DataFlowPort::isDifferentTypeOf(const DataPort *other) const
 {
-  return _type;
+  return (dynamic_cast<const DataFlowPort *>(other))==0;
 }
-
-TypeCode * DataFlowPort::type()
-{
-  return _type;
-}
-
-void DataFlowPort::edSetType(TypeCode* type)
-{
-  _type = type;
-}
-

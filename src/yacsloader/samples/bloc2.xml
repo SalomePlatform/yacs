@@ -1,0 +1,80 @@
+<proc>
+
+    <!-- types -->
+    <!-- inline -->
+    <!-- service -->
+
+    <inline name="node1" >
+                <function name="f">
+                    <code>def f():</code>
+                    <code>  return "coucou node1" </code>
+                </function>
+                <outport name="p1" type="string"/>
+    </inline>
+    <inline name="node2" >
+                <function name="f">
+                    <code>def f():</code>
+                    <code>  return "coucou node2" </code>
+                </function>
+                <outport name="p1" type="string"/>
+    </inline>
+    <bloc name="b1" >
+        <inline name="node1" >
+                <function name="f">
+                    <code>def f():</code>
+                    <code>  return "coucou b1.node1" </code>
+                </function>
+                <outport name="p1" type="string"/>
+        </inline>
+        <inline name="node2" >
+                <function name="f">
+                    <code>def f():</code>
+                    <code>  return "coucou b1.node2" </code>
+                </function>
+                <outport name="p1" type="string"/>
+        </inline>
+        <bloc name="b2" >
+            <inline name="node1" >
+                <function name="f">
+                    <code>def f(p1):</code>
+                    <code>  print p1;p1=2*p1 </code>
+                    <code>  print "coucou b1.b2.node1" </code>
+                    <code>  return p1 </code>
+                </function>
+                <inport name="p1" type="string"/>
+                <outport name="p1" type="string"/>
+            </inline>
+            <inline name="node2" >
+                <function name="f">
+                    <code>def f():</code>
+                    <code>  return "coucou b1.b2.node2" </code>
+                </function>
+                <outport name="p1" type="string"/>
+            </inline>
+            <forloop name="loop1" nsteps="3">
+               <inline name="node1" >
+                 <function name="f">
+                    <code>def f():</code>
+                    <code>  return "coucou b1.b2.loop1.node1" </code>
+                 </function>
+                 <outport name="p1" type="string"/>
+               </inline>
+            </forloop>
+            <control> <fromnode>loop1</fromnode> <tonode>node2</tonode> </control>
+        </bloc>
+        <control> <fromnode>node1</fromnode> <tonode>b2</tonode> </control>
+        <control> <fromnode>b2</fromnode> <tonode>node2</tonode> </control>
+    </bloc>
+
+    <!--control -->
+    <control> <fromnode>b1</fromnode> <tonode>node2</tonode> </control>
+
+    <!--datalinks -->
+
+    <!--parameters -->
+    <parameter>
+        <tonode>b1.b2.node1</tonode> <toport>p1</toport>
+        <value><string>coucou</string></value>
+    </parameter>
+
+</proc>

@@ -1,0 +1,12 @@
+<document>
+  <section name="YACSGui">
+    <!-- Major module parameters -->
+    <parameter name="name" value="YACS"/>
+    <parameter name="icon" value="ModuleYacs.png"/>
+  </section>
+  <section name="resources">
+    <!-- Module resources -->
+    <parameter name="YACSPrs" value="${YACSGui_ROOT_DIR}/share/salome/resources/yacsgui"/>
+    <parameter name="YACSGui" value="${YACSGui_ROOT_DIR}/share/salome/resources/yacsgui"/>
+  </section>
+</document>

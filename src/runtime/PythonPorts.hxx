@@ -11,25 +11,58 @@ namespace YACS
 {
   namespace ENGINE
   {
+    class InterpreterUnlocker 
+    {
+    public:
+      InterpreterUnlocker() {
+          gstate_ = PyGILState_Ensure();
+      }
+      ~InterpreterUnlocker() {
+          PyGILState_Release(gstate_);
+      }
+    private:
+      PyGILState_STATE gstate_;
+    };
 
+/*! \brief Class for Python Ports
+ *
+ * \ingroup Ports
+ *
+ * \see PythonNode
+ */
     class InputPyPort : public InputPort
     {
     public:
       InputPyPort(const std::string& name, Node * node, TypeCode * type);
+      InputPyPort(const InputPyPort& other, Node *newHelder);
+      ~InputPyPort();
+      bool edIsManuallyInitialized() const;
+      void edRemoveManInit();
       virtual void put(const void *data) throw(ConversionException);
       void put(PyObject *data) throw(ConversionException);
+      InputPort *clone(Node *newHelder) const;
       virtual PyObject * getPyObj() const;
+      void *get() const throw(Exception);
+      virtual bool isEmpty();
+      virtual void exSaveInit();
+      virtual void exRestoreInit();
+      virtual std::string dump();
     protected:
       PyObject* _data;
+      PyObject* _initData;
     };
 
     class OutputPyPort : public OutputPort
     {
     public:
       OutputPyPort(const std::string& name, Node * node, TypeCode * type);
+      OutputPyPort(const OutputPyPort& other, Node *newHelder);
+      ~OutputPyPort();
       virtual void put(const void *data) throw(ConversionException);
       void put(PyObject *data) throw(ConversionException);
+      OutputPort *clone(Node *newHelder) const;
       virtual PyObject * get() const;
+      virtual std::string dump();
     protected:
       PyObject* _data;
     };

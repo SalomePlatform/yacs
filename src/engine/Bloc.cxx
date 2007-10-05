@@ -1,10 +1,36 @@
 #include "Bloc.hxx"
+#include "LinkInfo.hxx"
+#include "InputPort.hxx"
+#include "OutputPort.hxx"
 #include "ElementaryNode.hxx"
+#include "Visitor.hxx"
+
+#include <iostream>
 
 using namespace YACS::ENGINE;
 using namespace std;
 
-Bloc::Bloc(const string& name):ComposedNode(name)
+Bloc::Bloc(const Bloc& other, ComposedNode *father, bool editionOnly):StaticDefinedComposedNode(other,father),_fwLinks(0),_bwLinks(0)
+{
+  for(set<Node *>::const_iterator iter=other._setOfNode.begin();iter!=other._setOfNode.end();iter++)
+    _setOfNode.insert((*iter)->simpleClone(this,editionOnly));
+  //CF Linking
+  vector< pair<OutGate *, InGate *> > cfLinksToReproduce=other.getSetOfInternalCFLinks();
+  vector< pair<OutGate *, InGate *> >::iterator iter1=cfLinksToReproduce.begin();
+  for(;iter1!=cfLinksToReproduce.end();iter1++)
+    edAddCFLink(getChildByName(other.getChildName((*iter1).first->getNode())),getChildByName(other.getChildName((*iter1).second->getNode())));
+  //Data + DataStream linking
+  vector< pair<OutPort *, InPort *> > linksToReproduce=other.getSetOfInternalLinks();
+  vector< pair<OutPort *, InPort *> >::iterator iter2=linksToReproduce.begin();
+  for(;iter2!=linksToReproduce.end();iter2++)
+    edAddLink(getOutPort(other.getPortName((*iter2).first)),getInPort(other.getPortName((*iter2).second)));
+}
+
+//! Create a Bloc node with a given name
+/*!
+ *   \param name : the given name
+ */
+Bloc::Bloc(const std::string& name):StaticDefinedComposedNode(name),_fwLinks(0),_bwLinks(0)
 {
 }
 
@@ -12,91 +38,108 @@ Bloc::~Bloc()
 {
   for(set<Node *>::iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
     delete *iter;
+  delete _fwLinks;
+  delete _bwLinks;
 }
 
-void Bloc::init()
+//! Initialize the bloc
+/*!
+ * \param start : a boolean flag indicating the kind of initialization
+ * If start is true, it's a complete initialization with reinitialization of port values
+ * If start is false, there is no initialization of port values
+ */
+void Bloc::init(bool start)
 {
-  _inGate.exReset();
+  Node::init(start);
   for(set<Node *>::iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
-    (*iter)->init();
-  if(_inGate.exIsReady())
-    _state=YACS::TOACTIVATE;
-  else
-    _state=YACS::INITED;
+    (*iter)->init(start);
 }
 
+//! Indicate if the bloc execution is finished
+/*!
+ * The execution bloc is finished if all its child nodes
+ * are finished with or without error or if it is disabled (not to execute)
+ */
 bool Bloc::isFinished()
 {
-  return _state==YACS::DONE;
+    if(_state==YACS::DONE)return true;
+    if(_state==YACS::ERROR)return true;
+    if(_state==YACS::FAILED)return true;
+    if(_state==YACS::DISABLED)return true;
+    return false;
 }
 
 int Bloc::getNumberOfCFLinks() const
 {
   int ret=0;
   for(set<Node *>::const_iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
-    {
-      ret+=(*iter)->getOutGate()->getNbOfInGatesConnected();
-    }
+    ret+=(*iter)->getOutGate()->getNbOfInGatesConnected();
   return ret;
 }
 
-vector<Task *> Bloc::getNextTasks(bool& isMore)
+Node *Bloc::simpleClone(ComposedNode *father, bool editionOnly) const
 {
-  vector<Task *> ret;
-  isMore=false;
-  if(_state==YACS::DONE || _state==YACS::INITED)
-    return ret;
-  for(set<Node *>::iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
-    (*iter)->getReadyTasks(ret);
-  isMore=!ret.empty();
-  return ret;
+  return new Bloc(*this,father,editionOnly);
 }
 
-void Bloc::getReadyTasks(vector<Task *>& tasks)
+//! Collect all nodes that are ready to execute
+/*!
+ * \param tasks : vector of tasks to collect ready nodes
+ */
+void Bloc::getReadyTasks(std::vector<Task *>& tasks)
 {
+  /*
+   * ComposedNode state goes to ACTIVATED when one of its child has been ACTIVATED
+   * To change this uncomment the following line
+   * Then the father node will go to ACTIVATED state before its child node
+   */
+  if(_state==YACS::TOACTIVATE ) setState(YACS::ACTIVATED);
   if(_state==YACS::TOACTIVATE || _state==YACS::ACTIVATED)
     for(set<Node *>::iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
       (*iter)->getReadyTasks(tasks);
 }
 
-set<ElementaryNode *> Bloc::getRecursiveConstituents()
-{
-  set<ElementaryNode *> ret;
-  for(set<Node *>::iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
-    {
-      set<ElementaryNode *> myCurrentSet=(*iter)->getRecursiveConstituents();
-      ret.insert(myCurrentSet.begin(),myCurrentSet.end());
-    }
-  return ret;
-}
-
-/**
+//! Update the bloc state
+/*!
  * Update the '_state' attribute.
- * Typically called by 'this->_inGate' when 'this->_inGate' is ready. Contrary to Node::exUpdateState no check done on inputs
+ * Typically called by 'this->_inGate' when 'this->_inGate' is ready. 
+ * Contrary to Node::exUpdateState no check done on inputs
  * because internal linked DF inputports are not valid yet.
  */
-
 void Bloc::exUpdateState()
 {
+  if(_state == YACS::DISABLED)return;
   if(_inGate.exIsReady())
-    _state=YACS::TOACTIVATE;
+    {
+      setState(YACS::TOACTIVATE);
+      for(set<Node *>::iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
+        if((*iter)->exIsControlReady())
+          (*iter)->exUpdateState();
+    }
 }
 
-/**
-* If node is already a direct child of current bloc, do nothing.
-* If node is a child of another bloc, throw exception.
-* If node name already used in bloc, throw exception.
-* Publish inputPorts in current bloc and ancestors.
-*/
-
+//! Add a child node to the bloc
+/*!
+ * \param node: the node to add to the bloc
+ * \return a boolean flag indicating if the node has been added
+ *
+ * If node is already a direct child of current bloc, do nothing.
+ * If node is a child of another bloc, throw exception.
+ * If node name already used in bloc, throw exception.
+ * Publish inputPorts in current bloc and ancestors.
+ */
 bool Bloc::edAddChild(Node *node) throw(Exception)
 {
   if(isNodeAlreadyAggregated(node))
     {
       if(node->_father==this)
-	return false;
+        return false;
       else
-	throw Exception("Bloc::edAddChild : Internal error occured");
+        {
+          string what = "Bloc::edAddChild : node "; what += node->getName();
+          what += " is already grand children of node";
+          throw Exception(what);
+        }
     }
 
   if(node->_father)
@@ -107,76 +150,80 @@ bool Bloc::edAddChild(Node *node) throw(Exception)
 
   if(isNameAlreadyUsed(node->getName()))
     {
-      string what("Bloc::edAddChild : name "); what+=node->getName(); what+=" already exists in the scope of "; what+=_name;
+      string what("Bloc::edAddChild : name "); what+=node->getName(); 
+      what+=" already exists in the scope of "; what+=_name;
       throw Exception(what);
     }
 
   node->_father=this;
   _setOfNode.insert(node);
-
   ComposedNode *iter=node->_father;
-  while(iter)
-    {
-      for(set<InputPort *>::iterator itn = node->_setOfInputPort.begin(); itn != node->_setOfInputPort.end(); itn++)
-	iter->publishInputPort(*itn);
-      iter=iter->_father;
-    }
-
   return true;
 }
 
 /**
  * Remove 'node' from the set of direct children.
- * WARNING 1 : node is destroyed after invocation of this method because Bloc class has ownership of its child nodes.
- * WARNING 2 : all links to 'node' are automatically desactivated. As consequence this method is quite heavy for big graphs due to
- *             unilateral storing policy of links. 
- * @exception If 'node' is NOT the direct son of 'this'.
+ * @exception If 'node' is NOT the son of 'this'.
  */
 
 void Bloc::edRemoveChild(Node *node) throw(Exception)
 {
-  if(node->_father!=this)
-    throw Exception("Bloc::edRemoveChild : node is NOT managed by this");
-  if(!isNodeAlreadyAggregated(node))
-    throw Exception("Bloc::edRemoveChild : Internal error occured");
-  ComposedNode *myRootNode=getRootNode();
-  myRootNode->disconnectAllLinksConnectedTo(node);
+  StaticDefinedComposedNode::edRemoveChild(node);
   _setOfNode.erase(node);
-  delete node;
 }
 
-void Bloc::selectRunnableTasks(vector<Task *>& tasks)
+std::set<Node *> Bloc::edGetDirectDescendants() const
 {
+  return _setOfNode;
+}
+
+Node *Bloc::getChildByShortName(const std::string& name) const throw(Exception)
+{
+  for (set<Node *>::const_iterator iter = _setOfNode.begin(); iter != _setOfNode.end(); iter++)
+    if ((*iter)->getName() == name)
+      return (*iter);
+  string what("node "); what+= name ; what+=" is not a child of Bloc "; what += getName();
+  throw Exception(what);
+}
+
+void Bloc::selectRunnableTasks(std::vector<Task *>& tasks)
+{
+}
+
+bool Bloc::areAllSubNodesDone() const
+{
+  for(set<Node *>::const_iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
+    {
+      if((*iter)->_state == YACS::DONE)continue;
+      if((*iter)->_state == YACS::DISABLED)continue;
+      return false;
+    }
+  return true;
 }
 
 bool Bloc::areAllSubNodesFinished() const
 {
-  bool ret=true;
-  for(set<Node *>::const_iterator iter=_setOfNode.begin();iter!=_setOfNode.end() && ret;iter++)
-    if((*iter)->_state!=YACS::DONE)
-      ret=false;
-  return ret;
-}
-
-bool Bloc::isNodeAlreadyAggregated(Node *node) const
-{
   for(set<Node *>::const_iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
     {
-      if((*iter)==node)
-	return true;
+      if((*iter)->_state == YACS::DONE)continue;
+      if((*iter)->_state == YACS::FAILED)continue;
+      if((*iter)->_state == YACS::DISABLED)continue;
+      if((*iter)->_state == YACS::ERROR)continue;
+      if((*iter)->_state == YACS::INTERNALERR)continue;
+      return false;
     }
-  return false;
+  return true;
 }
 
-bool Bloc::isNameAlreadyUsed(const string& name) const
+bool Bloc::isNameAlreadyUsed(const std::string& name) const
 {
   for(set<Node *>::const_iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
-      if((*iter)->getName()==name)
-	return true;
+    if((*iter)->getName()==name)
+      return true;
   return false;
 }
 
-bool insertNodeChildrenInSet(Node *node, set<Node *> nodeSet)
+bool insertNodeChildrenInSet(Node *node, std::set<Node *>& nodeSet)
 {
   bool verdict=true;
   set<Node *> outNodes=node->getOutNodes();
@@ -184,59 +231,435 @@ bool insertNodeChildrenInSet(Node *node, set<Node *> nodeSet)
     {
       verdict=(nodeSet.insert(*iter)).second;
       if (verdict) verdict = insertNodeChildrenInSet((*iter),nodeSet);
-      if (!verdict) break;
     }
   return verdict;
 }
 
-/**
- * @note : Checks that in the forest from 'node' there are NO back-edges.
- *          WARNING : When using this method 'node' has to be checked in order to be part of direct children of 'this'. 
+/*!
+ * \note  Checks that in the forest from 'node' there are NO back-edges.
+ *        \b WARNING : When using this method 'node' has to be checked in order to be part of direct children of 'this'. 
  *
  */
 void Bloc::checkNoCyclePassingThrough(Node *node) throw(Exception)
 {
   set<Node *> currentNodesToTest;
-  currentNodesToTest.insert(node);
-  if (!insertNodeChildrenInSet(node,currentNodesToTest))
+  //don't insert node to test in set. 
+  //If it is present after insertion of connected nodes we have a loop
+  //collect all connected nodes
+  insertNodeChildrenInSet(node,currentNodesToTest);
+  //try to insert node
+  if(!(currentNodesToTest.insert(node)).second)
     throw Exception("Cycle has been detected");
 }
 
-void Bloc::initChildrenForDFS() const
+std::vector< std::pair<OutGate *, InGate *> > Bloc::getSetOfInternalCFLinks() const
 {
+  vector< pair<OutGate *, InGate *> > ret;
   for(set<Node *>::const_iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
-    (*iter)->initForDFS();
+    {
+      set<InGate *> outCFLinksOfCurNode=(*iter)->_outGate.edSetInGate();
+      for(set<InGate *>::iterator iter2=outCFLinksOfCurNode.begin();iter2!=outCFLinksOfCurNode.end();iter2++)
+        ret.push_back(pair<OutGate *, InGate *>(&(*iter)->_outGate,*iter2));
+    }
+  return ret;
 }
 
-/**
+/*!
  *
- * @note : Runtime called method. Indirectly called by ComposedNode::updateStateFrom which has dispatch to this method
- *          'when event == START'.
- *          WARNING Precondition : '_state == Running' and 'node->_father==this'(garanteed by ComposedNode::notifyFrom)
- *
- */
-YACS::Event Bloc::updateStateOnStartEventFrom(Node *node)
-{
-  _state=YACS::ACTIVATED;
-  return YACS::START;
-}
-
-/**
- *
- * @note : Runtime called method. Indirectly called by ComposedNode::updateStateFrom which has dispatch to this method
+ * @note : Runtime called method. Indirectly called by StaticDefinedComposedNode::updateStateFrom which has dispatch to this method
  *          'when event == FINISH'.
- *          WARNING Precondition : '_state == Running' and 'node->_father==this'(garanteed by ComposedNode::notifyFrom)
+ *          WARNING Precondition : '_state == Running' and 'node->_father==this'(garanteed by StaticDefinedComposedNode::notifyFrom)
  *
+ * Calls the node's outgate OutGate::exNotifyDone if all nodes are not finished
  */
 YACS::Event Bloc::updateStateOnFinishedEventFrom(Node *node)
 {
   //ASSERT(node->_father==this)
   if(areAllSubNodesFinished())
     {
-      _state=YACS::DONE;
+      setState(YACS::DONE);
+      if(!areAllSubNodesDone())
+        {
+          setState(YACS::FAILED);
+          return YACS::ABORT;
+        }
       return YACS::FINISH;//notify to father node that 'this' has becomed finished.
     }
-  //more job to do in 'this'
-  node->_outGate.exNotifyDone();
+  //more job to do in 'this' bloc
+  //Conversion exceptions can be thrown so catch them to control errors
+  try
+    {
+      //notify the finished node to propagate to its following nodes
+      node->exForwardFinished();
+    }
+  catch(YACS::Exception& ex)
+    {
+      //The node has failed to propagate. It must be put in error
+      std::cerr << "Bloc::updateStateOnFinishedEventFrom: " << ex.what() << std::endl;
+      // notify the node it has failed
+      node->exForwardFailed();
+      setState(YACS::FAILED);
+      return YACS::ABORT;
+    }
   return YACS::NOEVENT;//no notification to father needed because from father point of view nothing happened.
+}
+
+//! Notify this bloc that a node has failed
+/*!
+ * \param node : node that has emitted the event
+ * \return the event to notify to bloc's father
+ */
+YACS::Event Bloc::updateStateOnFailedEventFrom(Node *node)
+{
+  node->exForwardFailed();
+  if(areAllSubNodesFinished())
+    {
+      setState(YACS::DONE);
+      if(!areAllSubNodesDone()){
+          setState(YACS::FAILED);
+          return YACS::ABORT;
+      }
+      return YACS::FINISH;//notify to father node that 'this' has becomed finished.
+    }
+  return YACS::NOEVENT;
+}
+
+void Bloc::writeDot(std::ostream &os)
+{
+    os << "  subgraph cluster_" << getId() << "  {\n" ;
+    set<Node *>nodes=getChildren();
+    for(set<Node *>::const_iterator iter=nodes.begin();iter!=nodes.end();iter++)
+    {
+        (*iter)->writeDot(os);
+        string p=(*iter)->getId();
+        //not connected node
+        if((*iter)->_inGate._backLinks.size() == 0) os << getId() << " -> " << p << ";\n";
+        set<Node *>outnodes = (*iter)->getOutNodes();
+        for(set<Node *>::const_iterator itout=outnodes.begin();itout!=outnodes.end();itout++)
+        {
+            os << p << " -> " << (*itout)->getId() << ";\n";
+        }
+    }
+    os << "}\n" ;
+    os << getId() << "[fillcolor=\"" ;
+    YACS::StatesForNode state=getEffectiveState();
+    os << getColorState(state);
+    os << "\" label=\"" << "Bloc:" ;
+    os << getQualifiedName() <<"\"];\n";
+}
+
+void Bloc::accept(Visitor* visitor)
+{
+  visitor->visitBloc(this);
+}
+
+/*!
+ * Updates mutable structures _fwLinks and _bwLinks with the result of computation.
+ * CPU consumer.
+ */
+void Bloc::performCFComputations(LinkInfo& info) const
+{
+  StaticDefinedComposedNode::performCFComputations(info);
+  delete _fwLinks;//Normally useless
+  delete _bwLinks;//Normally useless
+  _fwLinks=new map<Node *,set<Node *> >;
+  _bwLinks=new map<Node *,set<Node *> >;
+  map<Node *, set<Node *> > accelStr;
+  for(set<Node *>::iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
+    findAllNodesStartingFrom<true>(*iter,(*_fwLinks)[*iter],accelStr,info);
+  accelStr.clear();
+  for(set<Node *>::iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
+    findAllNodesStartingFrom<false>(*iter,(*_bwLinks)[*iter],accelStr,info);
+}
+
+void Bloc::destructCFComputations(LinkInfo& info) const
+{
+  StaticDefinedComposedNode::destructCFComputations(info);
+  delete _fwLinks; _fwLinks=0;
+  delete _bwLinks; _bwLinks=0;
+}
+
+/*!
+ * \b WARNING \b Needs call of performCFComputations before beeing called.
+ *  Perform updates of containers regarding attributes of link 'start' -> 'end' and check the correct linking.
+ *  The output is in info struct.
+ *
+ * \param fw out parameter beeing append if start -> end link is a forward link \b without cross type DF/DS.
+ * \param fwCross out parameter beeing append if start -> end link is a forward link \b with cross type DF/DS.
+ * \param bw out parameter beeing append if start -> end link is a backward link.
+ * \param info out parameter beeing informed about eventual errors.
+ */
+void Bloc::checkControlDependancy(OutPort *start, InPort *end, bool cross,
+                                  std::map < ComposedNode *,  std::list < OutPort * > >& fw,
+                                  std::vector<OutPort *>& fwCross,
+                                  std::map< ComposedNode *, std::list < OutPort *> >& bw,
+                                  LinkInfo& info) const
+{
+  if(!cross)
+    {
+      Node *startN=isInMyDescendance(start->getNode());
+      Node *endN=isInMyDescendance(end->getNode());
+      if(startN==endN)
+        bw[(ComposedNode *)this].push_back(start);
+      else if(areLinked(startN,endN,true))
+        fw[(ComposedNode *)this].push_back(start);
+      else
+        if(areLinked(startN,endN,false))
+          bw[(ComposedNode *)this].push_back(start);
+        else
+          info.pushErrLink(start,end,E_UNPREDICTABLE_FED);
+    }
+  else//DFDS detected
+    if(arePossiblyRunnableAtSameTime(isInMyDescendance(start->getNode()),isInMyDescendance(end->getNode())))
+      fwCross.push_back(start);
+    else
+      info.pushErrLink(start,end,E_DS_LINK_UNESTABLISHABLE);
+}
+
+/*!
+ * 'start' and 'end' \b must be direct son of 'this'.
+ * Typically used for data link.
+ * \param fw indicates if it is a forward link searched (true : default value) or a backward link serach.
+ */
+bool Bloc::areLinked(Node *start, Node *end, bool fw) const
+{
+  set<Node *>& nexts=fw ? (*_fwLinks)[start] : (*_bwLinks)[start];
+  return nexts.find(end)!=nexts.end();
+}
+
+/*!
+ * Typically used for stream link.
+ * 'start' and 'end' \b must be direct son of 'this'.
+ */
+bool Bloc::arePossiblyRunnableAtSameTime(Node *start, Node *end) const
+{
+  set<Node *>& nexts=(*_fwLinks)[start];
+  set<Node *>& preds=(*_bwLinks)[start];
+  return nexts.find(end)==nexts.end() && preds.find(end)==preds.end();
+}
+
+/*!
+ * \param starts If different of 0, must aggregate at leat \b 1 element.
+ * \param alreadyFed in/out parameter. Indicates if 'end' ports is already and surely set or fed by an another port.
+ * \param direction If true : forward direction else backward direction.
+ */
+void Bloc::checkCFLinks(const std::list< OutPort *>& starts, InputPort *end, unsigned char& alreadyFed, bool direction, LinkInfo& info) const
+{
+  if(alreadyFed==FREE_ST || alreadyFed==FED_ST)
+    {
+      map<Node *,list <OutPort *> > classPerNodes;
+      for(list< OutPort *>::const_iterator iter1=starts.begin();iter1!=starts.end();iter1++)
+        classPerNodes[isInMyDescendance((*iter1)->getNode())].push_back(*iter1);
+      set<Node *> allNodes;
+      for(map<Node *,list <OutPort *> >::iterator iter2=classPerNodes.begin();iter2!=classPerNodes.end();iter2++)
+        allNodes.insert((*iter2).first);
+      vector<Node *> okAndUseless1,useless2;
+      seekOkAndUseless1(okAndUseless1,allNodes);
+      seekUseless2(useless2,allNodes);//after this point allNodes contains collapses
+      verdictForOkAndUseless1(classPerNodes,end,okAndUseless1,alreadyFed,direction,info);
+      verdictForCollapses(classPerNodes,end,allNodes,alreadyFed,direction,info);
+      verdictForOkAndUseless1(classPerNodes,end,useless2,alreadyFed,direction,info);
+    }
+  else if(alreadyFed==FED_DS_ST)
+    for(list< OutPort *>::const_iterator iter1=starts.begin();iter1!=starts.end();iter1++)
+      info.pushErrLink(*iter1,end,E_COLLAPSE_DFDS);
+}
+
+void Bloc::initComputation() const
+{
+  for(set<Node *>::iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
+    {
+      (*iter)->_colour=White;
+      (*iter)->getInGate()->exReset();
+      (*iter)->getOutGate()->exReset();
+    }
+}
+
+/*!
+ * Part of final step for CF graph anylizing. This is the part of non collapse nodes. 
+ * \param alreadyFed in/out parameter. Indicates if 'end' ports is already and surely set or fed by an another port.
+ */
+void Bloc::verdictForOkAndUseless1(const std::map<Node *,std::list <OutPort *> >& pool, InputPort *end, const std::vector<Node *>& candidates, unsigned char& alreadyFed, 
+                                   bool direction, LinkInfo& info)
+{
+  for(vector<Node *>::const_iterator iter=candidates.begin();iter!=candidates.end();iter++)
+    {
+      const list<OutPort *>& mySet=(*pool.find(*iter)).second;
+      if(mySet.size()==1)
+        {
+          if(alreadyFed==FREE_ST)
+            {
+              alreadyFed=FED_ST;//This the final choice. General case !
+              if(!direction)
+                info.pushInfoLink(*(mySet.begin()),end,I_BACK);
+            }
+          else if(alreadyFed==FED_ST)
+              info.pushInfoLink(*(mySet.begin()),end,direction ? I_USELESS : I_BACK_USELESS);//Second or more turn in case of alreadyFed==FREE_ST before call of this method
+        }
+      else
+        {
+          if(dynamic_cast<ElementaryNode *>(*iter))
+            {
+              WarnReason reason;
+              if(alreadyFed==FREE_ST)
+                reason=direction ? W_COLLAPSE_EL : W_BACK_COLLAPSE_EL;
+              else if(alreadyFed==FED_ST)
+                reason=direction ? W_COLLAPSE_EL_AND_USELESS : W_BACK_COLLAPSE_EL_AND_USELESS;
+              for(list<OutPort *>::const_iterator iter2=mySet.begin();iter2!=mySet.end();iter2++)    
+                info.pushWarnLink(*iter2,end,reason);
+            }
+          else
+            ((ComposedNode *)(*iter))->checkCFLinks(mySet,end,alreadyFed,direction,info);//Thanks to recursive model!
+        }
+    }
+}
+
+/*!
+ * Part of final step for CF graph anylizing. This is the part of collapses nodes. 
+ * \param alreadyFed in/out parameter. Indicates if 'end' ports is already and surely set or fed by an another port.
+ */
+void Bloc::verdictForCollapses(const std::map<Node *,std::list <OutPort *> >& pool, InputPort *end, const std::set<Node *>& candidates, unsigned char& alreadyFed, 
+                               bool direction, LinkInfo& info)
+{
+  info.startCollapseTransac();
+  for(set<Node *>::const_iterator iter=candidates.begin();iter!=candidates.end();iter++)
+    {
+      const list<OutPort *>& mySet=(*pool.find(*iter)).second;
+      if(mySet.size()==1)
+        {
+          if(alreadyFed==FREE_ST)
+            info.pushWarnLink(*(mySet.begin()),end,direction ? W_COLLAPSE : W_BACK_COLLAPSE);
+          else if(alreadyFed==FED_ST)
+            info.pushWarnLink(*(mySet.begin()),end,direction ? W_COLLAPSE_AND_USELESS : W_BACK_COLLAPSE_EL_AND_USELESS);
+        }
+      else
+        {
+          if(dynamic_cast<ElementaryNode *>(*iter))
+            {
+              WarnReason reason;
+              if(alreadyFed==FREE_ST)
+                reason=direction ? W_COLLAPSE_EL : W_BACK_COLLAPSE_EL;
+              else if(alreadyFed==FED_ST)
+                reason=direction ? W_COLLAPSE_EL_AND_USELESS : W_BACK_COLLAPSE_EL_AND_USELESS;
+              for(list<OutPort *>::const_iterator iter2=mySet.begin();iter2!=mySet.end();iter2++)    
+                info.pushWarnLink(*iter2,end,reason);
+            }
+          else
+            {
+              ((ComposedNode *)(*iter))->checkCFLinks(mySet,end,alreadyFed,direction,info);//Thanks to recursive model!
+              WarnReason reason;
+              if(alreadyFed==FREE_ST)
+                reason=direction ? W_COLLAPSE : W_BACK_COLLAPSE;
+              else if(alreadyFed==FED_ST)
+                reason=direction ? W_COLLAPSE_AND_USELESS : W_BACK_COLLAPSE_AND_USELESS;
+              for(list<OutPort *>::const_iterator iter2=mySet.begin();iter2!=mySet.end();iter2++)    
+                info.pushWarnLink(*iter2,end,reason);
+            }
+        }
+    }
+  if(!candidates.empty())
+    if(alreadyFed==FREE_ST)
+      alreadyFed=FED_ST;
+  info.endCollapseTransac();
+}
+
+/*!
+ * \b WARNING use this method only after having called Bloc::performCFComputations method.
+ * \param okAndUseless1 out param contains at the end, the nodes without any collapse.
+ * \param allNodes in/out param. At the end, all the nodes in 'okAndUseless1' are deleted from 'allNodes'.
+ */
+void Bloc::seekOkAndUseless1(std::vector<Node *>& okAndUseless1, std::set<Node *>& allNodes) const
+{
+  set<Node *>::iterator iter=allNodes.begin();
+  while(iter!=allNodes.end())
+    {
+      set<Node *>& whereToFind=(*_bwLinks)[*iter];
+      std::set<Node *>::iterator iter2;
+      for(iter2=allNodes.begin();iter2!=allNodes.end();iter2++)
+        if((*iter)!=(*iter2))
+          if(whereToFind.find(*iter2)==whereToFind.end())
+            break;
+      if(iter2!=allNodes.end())
+        iter++;
+      else
+        {
+          okAndUseless1.push_back((*iter));
+          allNodes.erase(iter);
+          iter=allNodes.begin();
+        }
+    }
+}
+
+/*!
+ * \b WARNING use this method only after having called Bloc::performCFComputations method.
+ * For params see Bloc::seekOkAndUseless1.
+ */
+void Bloc::seekUseless2(std::vector<Node *>& useless2, std::set<Node *>& allNodes) const
+{
+  set<Node *>::iterator iter=allNodes.begin();
+  while(iter!=allNodes.end())
+    {
+      set<Node *>& whereToFind=(*_fwLinks)[*iter];
+      std::set<Node *>::iterator iter2;
+      for(iter2=allNodes.begin();iter2!=allNodes.end();iter2++)
+        if((*iter)!=(*iter2))
+          if(whereToFind.find(*iter2)==whereToFind.end())
+            break;
+      if(iter2!=allNodes.end())
+        {
+          iter++;
+        }
+      else
+        {
+          useless2.push_back((*iter));
+          allNodes.erase(iter);
+          iter=allNodes.begin();
+        }
+    }
+}
+
+/*! 
+ * Internal method : Given a succeful path : updates 'fastFinder'
+ */
+void Bloc::updateWithNewFind(const std::vector<Node *>& path, map<Node *, std::set<Node *> >& fastFinder)
+{
+  if(path.size()>=3)
+    {
+      vector<Node *>::const_iterator iter=path.begin(); iter++;
+      vector<Node *>::const_iterator iter2=path.end(); iter2-=1;
+      for(;iter!=iter2;iter++)
+        fastFinder[*iter].insert(*(iter+1));
+    }
+}
+
+/*! 
+ * Internal method : After all paths have been found, useless CF links are searched
+ */
+void Bloc::findUselessLinksIn(const std::list< std::vector<Node *> >& res , LinkInfo& info)
+{
+  unsigned maxSize=0;
+  list< vector<Node *> >::const_iterator whereToPeerAt;
+  for(list< vector<Node *> >::const_iterator iter=res.begin();iter!=res.end();iter++)
+    if((*iter).size()>maxSize)
+      {
+        maxSize=(*iter).size();
+        whereToPeerAt=iter;
+      }
+  //
+  if(maxSize>1)
+    {
+      vector<Node *>::const_iterator iter2=(*whereToPeerAt).begin();
+      map<Node *,bool>::iterator iter4;
+      set<Node *> searcher(iter2+1,(*whereToPeerAt).end());//to boost research
+      for(;iter2!=((*whereToPeerAt).end()-2);iter2++)
+        {
+          map<InGate *,bool>::iterator iter4;
+          map<InGate *,bool>& nexts=(*iter2)->getOutGate()->edMapInGate();
+          for(iter4=nexts.begin();iter4!=nexts.end();iter4++)
+            if((*iter4).first->getNode()!=*(iter2+1))
+              if(searcher.find((*iter4).first->getNode())!=searcher.end())
+                info.pushUselessCFLink(*iter2,(*iter4).first->getNode());
+          searcher.erase(*iter2);
+        }
+    }
 }

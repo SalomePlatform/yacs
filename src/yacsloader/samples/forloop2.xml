@@ -1,0 +1,32 @@
+<proc>
+    <!--one loop with 5 steps initialized by parameter -->
+    <!--types -->
+    <!--nodes -->
+    <forloop name="b1" >
+      <inline name="node2" >
+        <function name="f">
+            <code>a=0</code>
+            <code>def f(p1):</code>
+            <code>  global a</code>
+            <code>  p1= p1+10.</code>
+            <code>  print "a=",a</code>
+            <code>  a=a+p1</code>
+            <code>  print "a=",a</code>
+            <code>  return p1</code>
+        </function>
+        <inport name="p1" type="double"/>
+        <outport name="p1" type="double"/>
+      </inline>
+    </forloop>
+
+    <!--parameters -->
+    <parameter>
+        <tonode>b1.node2</tonode> <toport>p1</toport>
+        <value><double>23</double> </value>
+    </parameter>
+    <parameter>
+        <tonode>b1</tonode> <toport>nsteps</toport>
+        <value><int>5</int> </value>
+    </parameter>
+
+</proc>

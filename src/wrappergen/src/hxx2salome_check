@@ -1,0 +1,96 @@
+check_arguments()
+{
+    # check if $1 is a directory
+    if [ ${BE_QUIET} -lt 1 ] ; then
+       echo -e "-> check arguments\n"
+    fi
+    if [ ! -d $1 ]
+    then
+       echo -e "Error : directory $1 does not exist!\n"
+       usage
+    fi
+    CPP_ROOT_DIR=${1%%/} # remove trailing slash if present 
+    OLD_DIR=`pwd`
+    cd $CPP_ROOT_DIR
+    CPP_ROOT_DIR=`pwd`
+    cd $OLD_DIR
+    if [ ${BE_QUIET} -lt 2 ] ; then
+       echo "    C++ Component directory : ${CPP_ROOT_DIR}"
+    fi
+
+    # look for include file $2 - check number of files found and extension
+    nb=`find ${CPP_ROOT_DIR} -name $2 | wc -l` # number of files found, should be equal to 1
+    extension=${2##*\.}
+    if [ $nb -eq 0 ]
+    then
+       echo -e "\n  Error:\n  Include file $2 not found in $1 directory!\n"
+       usage
+    elif [ $nb -ge 2 ]
+    then
+       echo -e "\n  Error:\n  More than one file named $2 was found in $1!\n  Include file should be unique!"
+     usage
+    elif [ $extension != "hxx" -a $extension != "hh" -a $extension != "h" ]
+    then
+        echo -e "\n  Error:\n  Extension=$extension\n  Include file $2 should have extension .hxx .hh or .h !\n"
+     usage
+    fi
+    hxx_file=`find ${CPP_ROOT_DIR} -name $2` # name of c++ header we will parse to generate salome module
+    hxx=$2
+    if [ ${BE_QUIET} -lt 2 ] ; then
+       echo "    C++ Component header    : ${hxx_file}"
+    fi
+    hxx_dir=`dirname ${hxx_file}`
+
+    # look for library $3
+    nb=`find ${CPP_ROOT_DIR} -name $3 | wc -l` # number of files found, should be equal to 1
+    if [ $nb -eq 0 ]
+    then
+        echo -e "\n  Error:\n  Library file $3 not found in $1 directory!\n"
+    usage
+    elif [ $nb -ge 2 ]
+    then
+        echo -e "\n  Error:\n  More than one file named $3 was found in $1!\n  Library file should be unique!"
+    usage
+    fi
+    so_file=`find ${CPP_ROOT_DIR} -name $3` # absolute path of library containing c++ module
+    if [ ${BE_QUIET} -lt 2 ] ; then
+       echo "    C++ Component library   : ${so_file}"
+    fi
+    lib_dir=`dirname ${so_file}`
+    lib_file=${3%.so} # name without .so
+    lib_file=${lib_file#lib} # name of library without lib and .so (needed by makefile)
+
+    # installation directory
+    if [[ ! -d $4 ]]
+    then
+       mkdir -p $4
+    fi
+    salomeComponentRoot=${4%%/} # remove trailing slash
+    OLD_DIR=`pwd`
+    cd $salomeComponentRoot
+    salomeComponentRoot=`pwd`
+    cd $OLD_DIR
+    if [ ${BE_QUIET} -lt 2 ] ; then
+       echo "    Salome Component directory : ${salomeComponentRoot}"
+    fi
+}
+
+validate_generation_choices()
+{
+    declare -a arr
+    arr=( `echo "$@"` )
+   
+    echo "$@" 
+    if [ x${arr[$iCORBA]} == "xyes" ]
+    then
+       if [ "x${KERNEL_ROOT_DIR}" == "x" ]
+       then
+          arr[$iCORBA]="no"
+       else
+           if [ ! -f ${KERNEL_ROOT_DIR}/idl/salome/SALOME_Component.idl ]
+           then
+               arr[$iCORBA]="no"
+           fi
+       fi
+    fi
+}

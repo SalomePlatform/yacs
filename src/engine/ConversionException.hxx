@@ -13,6 +13,7 @@ namespace YACS
     {
     public:
       ConversionException(const std::string& what);
+      virtual ~ConversionException() throw();
     private:
       static const char TYPEOFEXCEPTION[];
     };

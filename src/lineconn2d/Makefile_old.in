@@ -1,0 +1,54 @@
+#  File   : Makefile.in
+#  Author : Pavel TELKOV (OCN)
+#  Module : CATHARE
+
+top_srcdir=@top_srcdir@
+top_builddir=../..
+srcdir=@srcdir@
+VPATH=.:@srcdir@:@srcdir@/resources
+
+
+@COMMENCE@
+
+# header files 
+EXPORT_HEADERS= LineConn2d.h \
+                LineConn2d_Box.h \
+                LineConn2d_BoxTree.h \
+                LineConn2d_Connection.h \
+                LineConn2d_IntervalBuffer.h \
+                LineConn2d_Model.h \
+                LineConn2d_Object.h \
+                LineConn2d_Path.h \
+                LineConn2d_PathIterator.h \
+                LineConn2d_Port.h \
+                LineConn2d_Segment.h \
+                LineConn2d_SegmentIterator.h \
+                LineConn2d_ZInterval.h
+
+# .po files to transform in .qm
+PO_FILES = \
+
+# Libraries targets
+LIB = libLineConn2d.la
+LIB_SRC= LineConn2d.cxx \
+         LineConn2d_Box.cxx \
+         LineConn2d_BoxTree.cxx \
+         LineConn2d_Connection.cxx \
+         LineConn2d_IntervalBuffer.cxx \
+         LineConn2d_Model.cxx \
+         LineConn2d_Object.cxx \
+         LineConn2d_Path.cxx \
+         LineConn2d_PathIterator.cxx \
+         LineConn2d_Segment.cxx
+
+LIB_MOC = \
+          
+RESOURCES_FILES = 
+
+BIN = 
+
+CPPFLAGS+=$(OCC_INCLUDES)
+
+LDFLAGS+=$(CAS_KERNEL) -lTKernel
+
+@CONCLUDE@

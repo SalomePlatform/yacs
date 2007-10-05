@@ -1,0 +1,195 @@
+<proc>
+    <!--types -->
+    <objref name="Obj" id="IDL:eo/Obj:1.0"/>
+    <sequence name="objvec" content="Obj"/>
+
+    <!--nodes -->
+
+    <inline name="pyth0" >
+      <script>
+      </script>
+      <inport name="p1" type="Obj"/>
+      <outport name="p1" type="Obj"/>
+    </inline>
+    <inline name="pyth1" >
+      <script>
+      </script>
+      <inport name="p1" type="Obj"/>
+      <outport name="p1" type="Obj"/>
+    </inline>
+    <inline name="pyth3" >
+      <script/>
+      <inport name="p1" type="Obj"/>
+      <outport name="p1" type="Obj"/>
+    </inline>
+
+    <service name="corba0" >
+      <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+      <method>echoObj2</method>
+      <inport name="p1" type="Obj"/>
+      <outport name="p1" type="Obj"/>
+    </service>
+    <service name="corba1" >
+      <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+      <method>echoObj2</method>
+      <inport name="p1" type="Obj"/>
+      <outport name="p1" type="Obj"/>
+    </service>
+    <service name="corba2" >
+      <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+      <method>echoObj2</method>
+      <inport name="p1" type="Obj"/>
+      <outport name="p1" type="Obj"/>
+    </service>
+
+    <inline name="pyth6" >
+      <script>
+        <code>print p1</code>
+      </script>
+      <inport name="p1" type="objvec"/>
+      <outport name="p1" type="objvec"/>
+    </inline>
+
+    <service name="corba6" >
+      <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+      <method>echoObjectVec</method>
+      <inport name="p1" type="objvec"/>
+      <outport name="p1" type="objvec"/>
+    </service>
+
+    <foreach name="foreach3" nbranch="3" type="Obj" >
+      <service name="corba4" >
+        <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+        <method>echoObj2</method>
+        <inport name="p1" type="Obj"/>
+        <outport name="p1" type="Obj"/>
+      </service>
+    </foreach>
+
+    <service name="corba7" >
+      <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+      <method>echoObjectVec</method>
+      <inport name="p1" type="objvec"/>
+      <outport name="p1" type="objvec"/>
+    </service>
+
+    <foreach name="foreach4" nbranch="3" type="Obj" >
+      <inline name="pyth" >
+        <script>
+          <code>print p1</code>
+        </script>
+        <inport name="p1" type="Obj"/>
+        <outport name="p1" type="Obj"/>
+      </inline>
+    </foreach>
+
+    <inline name="pyth7" >
+      <script>
+        <code>print p1</code>
+      </script>
+      <inport name="p1" type="objvec"/>
+      <outport name="p1" type="objvec"/>
+    </inline>
+
+    <foreach name="foreach5" nbranch="3" type="Obj" >
+      <service name="xml5" >
+        <kind>xmlsh</kind>
+        <ref>./xmlrun.sh</ref>
+        <method>echo</method>
+        <inport name="p1" type="Obj"/>
+        <outport name="p1" type="Obj"/>
+      </service>
+    </foreach>
+
+    <service name="xml6" >
+      <kind>xmlsh</kind>
+      <ref>./xmlrun.sh</ref>
+      <method>echo</method>
+      <inport name="p1" type="objvec"/>
+      <outport name="p1" type="objvec"/>
+    </service>
+
+
+    <!--parameters -->
+    <parameter>
+        <tonode>pyth0</tonode> <toport>p1</toport>
+        <value><objref>corbaname:rir:#test.my_context/Obj.Object</objref></value>
+    </parameter>
+    <parameter>
+        <tonode>corba0</tonode> <toport>p1</toport>
+        <value><objref>corbaname:rir:#test.my_context/Obj.Object</objref></value>
+    </parameter>
+    <parameter>
+        <tonode>pyth6</tonode> <toport>p1</toport>
+        <value> <array> <data>
+            <value><objref>corbaname:rir:#test.my_context/Obj.Object</objref></value>
+            <value><objref>corbaname:rir:#test.my_context/Obj.Object</objref></value>
+        </data> </array> </value>
+    </parameter>
+    <parameter>
+        <tonode>corba6</tonode> <toport>p1</toport>
+        <value> <array> <data>
+            <value><objref>corbaname:rir:#test.my_context/Obj.Object</objref></value>
+            <value><objref>corbaname:rir:#test.my_context/Obj.Object</objref></value>
+        </data> </array> </value>
+    </parameter>
+
+    <!--datalinks -->
+    <datalink>
+      <fromnode>pyth0</fromnode><fromport>p1</fromport>
+      <tonode>pyth1</tonode> <toport>p1</toport>
+    </datalink>
+
+    <datalink>
+      <fromnode>corba0</fromnode><fromport>p1</fromport>
+      <tonode>corba1</tonode> <toport>p1</toport>
+    </datalink>
+
+    <datalink>
+      <fromnode>pyth0</fromnode><fromport>p1</fromport>
+      <tonode>corba2</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+      <fromnode>corba1</fromnode><fromport>p1</fromport>
+      <tonode>pyth3</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+      <fromnode>corba6</fromnode><fromport>p1</fromport>
+      <tonode>foreach3</tonode> <toport>SmplsCollection</toport>
+    </datalink>
+    <datalink>
+      <fromnode>foreach3</fromnode><fromport>SmplPrt</fromport>
+      <tonode>foreach3.corba4</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+      <fromnode>foreach3.corba4</fromnode><fromport>p1</fromport>
+      <tonode>corba7</tonode> <toport>p1</toport>
+    </datalink>
+
+    <datalink>
+      <fromnode>corba6</fromnode><fromport>p1</fromport>
+      <tonode>foreach4</tonode> <toport>SmplsCollection</toport>
+    </datalink>
+    <datalink>
+      <fromnode>foreach4</fromnode><fromport>SmplPrt</fromport>
+      <tonode>foreach4.pyth</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+      <fromnode>foreach4.pyth</fromnode><fromport>p1</fromport>
+      <tonode>pyth7</tonode> <toport>p1</toport>
+    </datalink>
+
+    <datalink>
+      <fromnode>corba6</fromnode><fromport>p1</fromport>
+      <tonode>foreach5</tonode> <toport>SmplsCollection</toport>
+    </datalink>
+    <datalink>
+      <fromnode>foreach5</fromnode><fromport>SmplPrt</fromport>
+      <tonode>foreach5.xml5</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+      <fromnode>foreach5.xml5</fromnode><fromport>p1</fromport>
+      <tonode>xml6</tonode> <toport>p1</toport>
+    </datalink>
+
+</proc>

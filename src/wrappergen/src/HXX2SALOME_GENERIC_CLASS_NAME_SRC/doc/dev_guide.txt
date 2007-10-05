@@ -1,0 +1,103 @@
+Code Wrapping into SALOME with hxx2salome
+=========================================
+
+
+1 Context
+---------
+
+Assuming you want to integrate the component "COMP" into SALOME, you may use the hxx2salome command.
+
+If you are able to read this document, it is assumed that you succeeded running hxx2salome command.
+The command you typed looks like:
+
+    hxx2salome -g -s sh ${COMP_CPP_ROOT_DIR} COMP.hxx libCOMPCXX.so ${COMP_ROOT_DIR}
+    
+    where:
+    ${COMP_CPP_ROOT_DIR}   : is the directory (absolute path) where the component to be integrated lies
+                             something as /export/home/john/COMP/COMP_CPP_INSTALL
+    
+    COMP.hxx               : is the header file describing the methods to be wrapped (must lie in one 
+                             unique occurence in ${COMP_CPP_ROOT_DIR} tree)  
+  
+    libCOMPCXX.so          : is the library file containing the implemented methods of the component 
+                             (must lie in one unique occurence in ${COMP_CPP_ROOT_DIR} tree)  
+
+    ${COMP_BUILD_ROOT_DIR} : is the directory (absolute path) where the component building tree has to  
+                             be installed something as /usr/local/salome_3.x.x/COMPONENTS
+			  
+    -g                     : is an hxx2salome option asking for the GUI part of the component
+			  
+    -s sh                  : is an hxx2salome option asking to use a sh-style environment file
+
+The present file is ${COMP_ROOT_DIR}/COMP/COMP_SRC/doc/dev_guide.txt
+
+
+2 Implementing your wrapper
+---------------------------
+
+In the ${COMP_BUILD_ROOT_DIR}/COMP/COMP_SRC/src/COMP directory you will find a COMP_i.hxx file describing
+all wrapped methods from your component.
+
+2.1 Implementation for testing component from console
+
+In the same ${COMP_BUILD_ROOT_DIR}/COMP/COMP_SRC/src/COMP directory you will find a COMP_test.py file. Edit it
+to add (at bottom part) some calls to your component methods. They will look like: my_COMP.method(...).
+
+2.2 Implementation for testing component from SALOME GUI
+
+If you used option -g, you will find another directory named ${COMP_BUILD_ROOT_DIR}/COMP/COMP_SRC/src/COMPGUI.
+You have to edit the following files:
+
+COMPGUI.h     : Mainly changing the class fields that are only preferences-oriented in the template
+COMPGUI.cxx   : - Constructor to fit your needs, 
+                - initialize to define your menus, toolbars, dialogs and preferences as shown in template
+		- OnMyNewItem, OnCallAction and equivalent own call-back routine names (template includes
+		  examples in OnCallAction to retrieve user preferences values). Here are included the
+		  calls to component library. They will look like: COMPgen->method( arg1, arg2, ... );
+		- createPreferences to define your own user preferences data entries
+		- preferencesChanged to get prepared for automatic SALOME call-back
+COMP_msg_en.po: Resources file with all English text strings used in the source code COMPGUI.cxx
+COMP_msg_xx.po: Resources file with all strings translated in language xx (for instance fr)
+
+
+3 Building your component
+-------------------------
+
+When your implementation is ready, the SALOME client side of the component is built the regular way:
+
+        check definition of environment variables (COMP_SRC_DIR, COMP_BUILD_DIR, COMP_ROOT_DIR) in
+	    file ${COMP_BUILD_ROOT_DIR}/COMP/COMP_SRC/env_COMP.sh and source it
+        cd ${COMP_SRC_DIR}
+        ./build_configure
+        mkdir -p ${COMP_BUILD_DIR}
+        cd ${COMP_BUILD_DIR}
+        ${COMP_SRC_DIR}/configure  --prefix=${COMP_ROOT_DIR}
+        make
+        make install
+
+4 Using your component
+----------------------
+
+To be done once:
+	edit your configuration file ~/.SalomeApprc.3.x.x:
+		Somewhere between <document> and </document> add:
+			 <section name="COMP" >
+  			   <parameter value="COMP" name="name" />
+  			   <parameter value="COMP.png" name="icon" />
+ 			 </section>
+ 			 <section name="resources" >
+  			   <parameter value="${COMP_ROOT_DIR}/share/salome/resources" name="COMP" />
+ 			 </section>
+		In launch section add reference to COMP
+ 			 <section name="launch" >
+ 			   <parameter value="GEOM,SMESH,COMP" name="modules" />
+			 </section>
+
+To be done at login:
+        source the Salome environment
+        source the component environment file (${COMP_BUILD_ROOT_DIR}/COMP/COMP_SRC/env_COMP.sh)
+
+To be done at execution:
+        run Salome (runSalome command)
+	kill any still runing process if necessary (killSalome.py command)
+

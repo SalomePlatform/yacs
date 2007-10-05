@@ -1,0 +1,61 @@
+# Check availability of Med binary distribution
+#
+# Author : Nicolas REJNERI (OPEN CASCADE, 2003)
+#
+
+AC_DEFUN([CHECK_MED],[
+
+CHECK_HDF5
+CHECK_MED2
+
+AC_CHECKING(for Med)
+
+Med_ok=no
+
+AC_ARG_WITH(med,
+	    [  --with-med=DIR root directory path of MED installation ],
+	    MED_DIR="$withval",MED_DIR="")
+
+if test "x$MED_DIR" == "x" ; then
+
+# no --with-med-dir option used
+
+   if test "x$MED_ROOT_DIR" != "x" ; then
+
+    # MED_ROOT_DIR environment variable defined
+      MED_DIR=$MED_ROOT_DIR
+
+   else
+
+    # search Med binaries in PATH variable
+      AC_PATH_PROG(TEMP, libMEDMEM_Swig.py)
+      if test "x$TEMP" != "x" ; then
+         MED_BIN_DIR=`dirname $TEMP`
+         MED_DIR=`dirname $MED_BIN_DIR`
+      fi
+      
+   fi
+# 
+fi
+
+if test -f ${MED_DIR}/bin/salome/libMEDMEM_Swig.py ; then
+   Med_ok=yes
+   AC_MSG_RESULT(Using Med module distribution in ${MED_DIR})
+
+   if test "x$MED_ROOT_DIR" == "x" ; then
+      MED_ROOT_DIR=${MED_DIR}
+   fi
+   AC_SUBST(MED_ROOT_DIR)
+   MED_INCLUDES="-I${MED_ROOT_DIR}/include/salome ${MED2_INCLUDES} ${HDF5_INCLUDES} -I${KERNEL_ROOT_DIR}/include/salome"
+   MED_LIBS="-L${MED_ROOT_DIR}/lib/salome -lmedmem ${MED2_LIBS} ${HDF5_LIBS} -L${KERNEL_ROOT_DIR}/lib/salome -lSALOMELocalTrace"
+   AC_SUBST(MED_INCLUDES)
+   AC_SUBST(MED_LIBS)
+
+else
+   AC_MSG_WARN("Cannot find Med module sources")
+fi
+  
+AC_MSG_RESULT(for Med: $Med_ok)
+ 
+])dnl
+ 

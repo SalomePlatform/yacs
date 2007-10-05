@@ -1,29 +1,31 @@
-
-#include "CORBACORBAConv.hxx"
 #include "TypeConversions.hxx"
+#include "CORBACORBAConv.hxx"
+#include "CORBAPorts.hxx"
 
 using namespace YACS::ENGINE;
 using namespace std;
 
 CorbaCorba::CorbaCorba(InputCorbaPort* p)
-  : ProxyPort(p), Port(p->getNode())
+  : ProxyPort(p), DataPort(p->getName(), p->getNode(), p->edGetType()), Port(p->getNode())
 {
 }
 
-//!Convertit un Any convertible en CORBA::Any 
+//!Convert a CORBA::Any to a CORBA::Any 
 /*!
- *   \param data : CORBA::Any object
+ *   transition method from const void* to CORBA::Any*
+ *   \param data : const void * data
  */
-
 void CorbaCorba::put(const void *data) throw(ConversionException)
 {
   put((CORBA::Any *)data);
 }
 
+//!Convert a CORBA::Any to a CORBA::Any 
+/*!
+ *   \param data : CORBA::Any object
+ */
 void CorbaCorba::put(CORBA::Any *data) throw(ConversionException)
 {
-  //conversion du Any data en any attendu (de type type())
-
-  CORBA::Any *a = convertCorbaCorba(type(),data);
+  CORBA::Any *a = convertCorbaCorba(edGetType(),data);
   _port->put(a);
 }

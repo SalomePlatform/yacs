@@ -1,4 +1,6 @@
 
+#define UNIT_TEST_HEADER " --- TEST src/runtime"
+
 #include "runtimeTest.hxx"
 
 using namespace YACS;

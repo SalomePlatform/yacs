@@ -1,0 +1,56 @@
+generate_cpp_module_source()
+{
+   if [ ${BE_QUIET} -lt 1 ] ; then
+       echo -e "\n\n\tC++ wrapper generation"
+   fi
+   cd ${tmp_dir}
+#
+# ------------------------- C++ generation ------------------------------------------------------
+   sed -e "s/SUBDIRS = /SUBDIRS = ${CLASS_NAME}_CPP /" < ${CLASS_NAME}_SRC/src/Makefile.am > ${CLASS_NAME}_SRC/src/tmpfile
+   \mv -f ${CLASS_NAME}_SRC/src/tmpfile ${CLASS_NAME}_SRC/src/Makefile.am
+
+   if [ ${BE_QUIET} -lt 1 ] ; then
+       echo -e "\n\n-> Generate Salome2 C++ files\n"
+   fi
+   cat ${CLASS_NAME}_public_functions |\
+   awk -v class_name=${CLASS_NAME} -f ${gene_dir}/parse4.awk
+   echo "#include \""`basename ${hxx_file}`"\"" > ${CLASS_NAME}_SRC/src/${CLASS_NAME}_CPP/${CLASS_NAME}_CPP.cxx
+   echo >> ${CLASS_NAME}_SRC/src/${CLASS_NAME}_CPP/${CLASS_NAME}_CPP.cxx
+
+   cat code_dispatch >> ${CLASS_NAME}_SRC/src/${CLASS_NAME}_CPP/${CLASS_NAME}_CPP.cxx
+   get_info_makefile
+    
+   if [ ${BE_QUIET} -lt 1 ] ; then
+       echo -e "\n-> Substitute flags in Makefile.am"
+   fi
+   sed "s?HXX2SALOME_INCLUDE?${makefile_include}?g
+        s?HXX2SALOME_PYTHON_FILE?${python_test_file}?g
+        s?HXX2SALOME_LIB?${makefile_lib}?g
+       " ${CLASS_NAME}_SRC/src/${CLASS_NAME}_CPP/Makefile.am > tmpfile
+   sed "s?XXX?XXX -I$hxx_dir?" tmpfile > tmp2file
+   
+   if [ "x${USE_MED}" == "x1" ]
+   then
+       sed "/AM_CXXFLAGS/s?\$? -DMED_WITHOUT_KERNEL -DUSE_MED \${MED2_INCLUDES} -I\${MED_ROOT_DIR}/include/salome?" tmp2file > tmpfile
+       sed "s?USE_MED=0?USE_MED=1?" tmpfile > tmp2file
+   fi 
+   mv tmp2file ${CLASS_NAME}_SRC/src/${CLASS_NAME}_CPP/Makefile.am
+   \rm -f tmpfile tmp2file 
+
+   if [ ${BE_QUIET} -lt 1 ] ; then
+       echo -e "\n-> XML Catalog generation"
+   fi
+   cat ${CLASS_NAME}_public_functions | awk -v class_name=${CLASS_NAME} -f ${gene_dir}/parse5.awk
+   mv catalog.xml ${CLASS_NAME}_SRC/resources/${CLASS_NAME}Catalog.xml
+
+   echo "" >> ${CLASS_NAME}_SRC/resources/Makefile.am
+   echo "${CLASS_NAME}Catalog.xml: \${srcdir}/${CLASS_NAME}Catalog.xml" >> ${CLASS_NAME}_SRC/resources/Makefile.am
+   echo "	cp \$^ \$@" >> ${CLASS_NAME}_SRC/resources/Makefile.am
+
+}
+
+clean_cpp_module_source()
+{
+   \rm -rf ${CLASS_NAME}_SRC/src/${CLASS_NAME}_CPP
+}
+        

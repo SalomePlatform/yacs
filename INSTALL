@@ -3,19 +3,35 @@ Installation Instructions
 
 Specific part for YACS
 ~~~~~~~~~~~~~~~~~~~~~~
+
 Prerequisites
 =============
 YACS needs:
  - g++ 3.3.5 or more,
  - CPPUNIT
  - omniORB 4.05 or more,
- - Python
+ - Python,
+ - SALOME 3.2.x KERNEL (for SALOME tests)
+
+**WARNINGS**:
+ -  with g++>= 4.1, problem with CORBA::Any and double, for omniORB <= 4.0.7
+    You need to take the latest omniORB cvs snapshot from http://omniorb.sourceforge.net/snapshots
 
 Build and check
 ===============
 
+SALOME is required for directories runtime and yacsloader. For tests with make check,
+we suppose that all SALOME <modules>_ROOT_DIR are in a directory under a name
+<PATH_TO_ROOT_DIR>/<MODULE>_<VERSION>, for instance $HOME/SALOME/KERNEL_V3_2_3.
+We also suppose that there a script that sets prerequisites environment for SALOME
+under the name <PATH_TO_ROOT_DIR>/profile_<VERSION>.
+So, to define SALOME installation, just KERNEL_ROOT_DIR is required. Other path
+are deduced.
+
 build and install are done in separate directories, not in source directory.
 For instance, if the path to YACS sources is ${BASEREP}/YACS_SRC::
+
+  export KERNEL_ROOT_DIR=...
 
   cd ${BASEREP}
   rm -rf build install
@@ -48,7 +64,7 @@ Basic Installation
 
 These are generic installation instructions.
 
-   The `configure' shell script attempts to guess correct values for
+The `configure' shell script attempts to guess correct values for
 various system-dependent variables used during compilation.  It uses
 those values to create a `Makefile' in each directory of the package.
 It may also create one or more `.h' files containing system-dependent
@@ -57,20 +73,20 @@ you can run in the future to recreate the current configuration, and a
 file `config.log' containing compiler output (useful mainly for
 debugging `configure').
 
-   It can also use an optional file (typically called `config.cache'
+It can also use an optional file (typically called `config.cache'
 and enabled with `--cache-file=config.cache' or simply `-C') that saves
 the results of its tests to speed up reconfiguring.  (Caching is
 disabled by default to prevent problems with accidental use of stale
 cache files.)
 
-   If you need to do unusual things to compile the package, please try
+If you need to do unusual things to compile the package, please try
 to figure out how `configure' could check whether to do them, and mail
 diffs or instructions to the address given in the `README' so they can
 be considered for the next release.  If you are using the cache, and at
 some point `config.cache' contains results you don't want to keep, you
 may remove or edit it.
 
-   The file `configure.ac' (or `configure.in') is used to create
+The file `configure.ac' (or `configure.in') is used to create
 `configure' by a program called `autoconf'.  You only need
 `configure.ac' if you want to change it or regenerate `configure' using
 a newer version of `autoconf'.

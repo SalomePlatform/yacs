@@ -7,7 +7,7 @@ namespace YACS
 {
   namespace ENGINE
   {
-    //Ports adaptateurs Xml->Corba pour les différents types
+    //Adaptator Ports Xml->Corba for several types
 
     class XmlCorba : public ProxyPort
     {

@@ -1,0 +1,67 @@
+<proc>
+
+    <!-- types -->
+    <sequence name="dblevec" content="double"/>
+    <!-- inline -->
+    <!-- service -->
+
+    <inline name="node1" >
+                <function name="f">
+                    <code>def f():</code>
+                    <code>  return "coucou" </code>
+                </function>
+                <outport name="p1" type="string"/>
+    </inline>
+    <inline name="node2" >
+                <function name="f">
+                    <code>def f():</code>
+                    <code>  s1 = [3.14, 0.5, 1.29] </code>
+                    <code>  return s1 </code>
+                </function>
+                <outport name="s1" type="dblevec"/>
+    </inline>
+    <bloc name="b1" >
+        <inline name="node1" >
+                <function name="f">
+                    <code>def f():</code>
+                    <code>  return "coucou" </code>
+                </function>
+                <outport name="p1" type="string"/>
+        </inline>
+        <inline name="node2" >
+                <function name="f">
+                    <code>def f(s1):</code>
+                    <code>  print s1 </code>
+                    <code>  return s1 </code>
+                </function>
+                <inport name="s1" type="dblevec"/>
+                <outport name="s1" type="dblevec"/>
+        </inline>
+        <bloc name="b2" >
+            <inline name="node1" >
+                <function name="f">
+                    <code>def f(p1):</code>
+                    <code>  print p1;p1=2*p1 </code>
+                    <code>  return p1 </code>
+                </function>
+                <inport name="p1" type="string"/>
+                <outport name="p1" type="string"/>
+            </inline>
+        </bloc>
+        <control> <fromnode>node1</fromnode> <tonode>b2</tonode> </control>
+    </bloc>
+
+    <!--control -->
+    <control> <fromnode>node2</fromnode> <tonode>b1</tonode> </control>
+
+    <!--datalinks -->
+    <datalink> <fromnode>node2</fromnode><fromport>s1</fromport>
+               <tonode>b1.node2</tonode> <toport>s1</toport> </datalink>
+
+    <!--parameters -->
+    <parameter>
+        <tonode>b1.b2.node1</tonode> <toport>p1</toport>
+        <value><string>coucou</string></value>
+    </parameter>
+
+</proc>

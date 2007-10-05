@@ -15,6 +15,12 @@ namespace YACS
   {
     CPPUNIT_TEST_SUITE( EngineTest );
     CPPUNIT_TEST(checkGetRuntime );
+    CPPUNIT_TEST(checkAny1);
+    CPPUNIT_TEST(checkSharedPtr);
+    CPPUNIT_TEST(checkAny2);
+    CPPUNIT_TEST(checkAny3);
+    CPPUNIT_TEST(checkAny4);
+    CPPUNIT_TEST(checkAny5);
     CPPUNIT_TEST(checkInGateOutGate );
     CPPUNIT_TEST(checkNodePortNumber );
     CPPUNIT_TEST(checkPortTypeName );
@@ -27,15 +33,25 @@ namespace YACS
     CPPUNIT_TEST(checkRecursiveBlocs_NumberOfPorts );
     CPPUNIT_TEST(checkPortNameInBloc );
     CPPUNIT_TEST(checkGetNameOfPortNotInBloc );
+    CPPUNIT_TEST(checkRemoveNode );
     CPPUNIT_TEST(RecursiveBlocs_multipleRecursion );
+    CPPUNIT_TEST(RecursiveBlocs_removeNodes );
+    CPPUNIT_TEST(cleanUp);
     CPPUNIT_TEST_SUITE_END();
       
   public:
       
     void setUp();
     void tearDown();
-      
+    void cleanUp();
+
     void checkGetRuntime();
+    void checkAny1();
+    void checkSharedPtr();
+    void checkAny2();
+    void checkAny3();
+    void checkAny4();
+    void checkAny5();
     void checkInGateOutGate();
     void checkNodePortNumber();
     void checkPortTypeName();
@@ -48,7 +64,9 @@ namespace YACS
     void checkRecursiveBlocs_NumberOfPorts();
     void checkPortNameInBloc();
     void checkGetNameOfPortNotInBloc();
+    void checkRemoveNode();
     void RecursiveBlocs_multipleRecursion();
+    void RecursiveBlocs_removeNodes();
       
   protected:
     static std::map<std::string, YACS::ENGINE::Node*> _nodeMap; 

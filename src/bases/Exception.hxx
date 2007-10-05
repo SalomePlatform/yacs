@@ -13,7 +13,7 @@ namespace YACS
   public:
     Exception(const std::string& what);
     const char *what( void ) const throw ();
-    ~Exception() throw ();
+    virtual ~Exception() throw ();
   };
 }
 

@@ -4,6 +4,7 @@
 #include "Port.hxx"
 #include "Exception.hxx"
 
+#include <map>
 #include <set>
 
 namespace YACS
@@ -17,16 +18,21 @@ namespace YACS
     {
       friend class ElementaryNode;
     protected:
-      std::set<InGate *> _setOfInGate;
+      std::map<InGate *, bool> _setOfInGate;
     public:
       static const char NAME[];
     public:
       OutGate(Node *node);
       std::string getNameOfTypeOfCurrentInstance() const;
+      void exReset();
       void exNotifyDone();
+      void exNotifyFailed();
+      void exNotifyDisabled();
+      void edDisconnectAllLinksFromMe();
       bool edAddInGate(InGate *inGate);
+      std::map<InGate *, bool>& edMapInGate() { return _setOfInGate; }
       std::set<InGate *> edSetInGate() const;
-      void edRemoveInGate(InGate *inGate) throw(Exception);
+      void edRemoveInGate(InGate *inGate, bool coherenceWithInGate=true) throw(Exception);
       int getNbOfInGatesConnected() const;
     protected:
       void edRemoveInGateOneWay(InGate *inGate);

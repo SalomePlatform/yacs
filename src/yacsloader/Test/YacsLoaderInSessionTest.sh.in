@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# --- script to execute in SALOME environment (use runSession)
+
+# --- wait until SALOME containers are ready
+
+python @srcdir@/waitContainers.py
+
+# --- launch CORBA server echoSrv for tests
+
+./echoSrv &
+pidecho=$!
+echo $pidecho > "/tmp/YACSTEST_PidEcho"
+
+# --- launch unit tests
+
+export ROOT_SAMPLES=@ROOT_SRCDIR@/src/yacsloader/samples
+
+./TestYacsLoader
+ret=$?
+echo "exec status TestYacsLoader " $ret
+
+# --- return unit tests status
+
+exit $ret

@@ -1,0 +1,85 @@
+#ifndef __DEPLOYMENTTREE_HXX__
+#define __DEPLOYMENTTREE_HXX__
+
+#include <vector>
+
+namespace YACS
+{
+  namespace ENGINE
+  {
+    class Task;
+    class Container;
+    class Scheduler;
+    class ComponentInstance;
+
+    class DeploymentTreeOnHeap
+    {
+    public:
+      DeploymentTreeOnHeap();
+      ~DeploymentTreeOnHeap();
+      bool decrRef();
+      void incrRef() const;
+      //
+      unsigned char appendTask(Task *task, Scheduler *cloner);
+      //
+      unsigned getNumberOfCTDefContainer() const;
+      unsigned getNumberOfRTODefContainer() const;
+      unsigned getNumberOfCTDefComponentInstances() const;
+      unsigned getNumberOfRTODefComponentInstances() const;
+      //
+      std::vector<Container *> getAllContainers() const;
+      std::vector<Container *> getAllCTDefContainers() const;
+      std::vector<Container *> getAllRTODefContainers() const;
+      std::vector<Task *> getTasksLinkedToComponent(ComponentInstance *comp) const;
+      std::vector<ComponentInstance *> getComponentsLinkedToContainer(Container *cont) const;
+      //
+      bool presenceOfDefaultContainer() const;
+      std::vector<Task *> getFreeDeployableTasks() const;
+    private:
+      static bool isConsistentTaskRegardingShCompInst(std::vector< std::pair<Task *, Scheduler * > >& tasksSharingSameCompInst, Scheduler *cloner);
+    private:
+      mutable int _cnt;
+      std::vector< std::pair<Task *,Scheduler *> > _freePlacableTasks;
+      //! internal representation of tree. Scheduler is the duplicating Task, \b if it exists, on runtime unpredictable times on compil-time
+      std::vector< std::vector< std::vector< std::pair<Task *, Scheduler * > > > > _tree;
+    };
+
+    class DeploymentTree
+    {
+    public:
+      DeploymentTree();
+      ~DeploymentTree();
+      DeploymentTree(const DeploymentTree& other);
+      const DeploymentTree &operator=(const DeploymentTree& other);
+      unsigned char appendTask(Task *task, Scheduler *cloner);
+      //
+      unsigned getNumberOfCTDefContainer() const;
+      unsigned getNumberOfRTODefContainer() const;
+      unsigned getNumberOfCTDefComponentInstances() const;
+      unsigned getNumberOfRTODefComponentInstances() const;
+      //
+      bool presenceOfDefaultContainer() const;
+      std::vector<Container *> getAllContainers() const;
+      std::vector<Container *> getAllCTDefContainers() const;
+      std::vector<Container *> getAllRTODefContainers() const;
+      std::vector<Task *> getTasksLinkedToComponent(ComponentInstance *comp) const;
+      std::vector<ComponentInstance *> getComponentsLinkedToContainer(Container *cont) const;
+      //
+      bool isNull() const;
+      std::vector<Task *> getFreeDeployableTasks() const;
+    public:
+      //possible return of appendTask method.
+      static const unsigned char NULL_TASK = 3;
+      static const unsigned char APPEND_OK = 0;
+      static const unsigned char NULL_TREE = 199;
+      static const unsigned char ALREADY_IN_TREE = 1;
+      static const unsigned char NOT_DEPLOYABLE_TASK = 2;
+      static const unsigned char DEPLOYABLE_BUT_NOT_SPECIFIED = 5;
+      static const unsigned char DUP_TASK_NOT_COMPATIBLE_WITH_EXISTING_TREE = 4;
+    private:
+      DeploymentTreeOnHeap *_treeHandle;
+    };
+  }
+}
+
+#endif

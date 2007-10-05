@@ -22,6 +22,7 @@ dnl Andrew Collier <address@hidden>.
 dnl
 dnl
 AC_DEFUN([AC_PROG_SWIG],[
+  swig_ok=no
 	AC_PATH_PROG([SWIG],[swig])
 	if test -z "$SWIG" ; then
 		AC_MSG_WARN([cannot find 'swig' program. You should look at http://www.swig.org])
@@ -70,6 +71,7 @@ AC_DEFUN([AC_PROG_SWIG],[
 				SWIG='echo "Error: SWIG version >= $1 is required.  You have '"$swig_version"'.  You should look at http://www.swig.org" ; false'
 			else
 				AC_MSG_NOTICE([SWIG executable is '$SWIG'])
+        swig_ok=yes
 				SWIG_LIB=`$SWIG -swiglib`
 				AC_MSG_NOTICE([SWIG runtime library directory is '$SWIG_LIB'])
 			fi

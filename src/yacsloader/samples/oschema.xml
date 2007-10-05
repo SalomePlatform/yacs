@@ -1,0 +1,106 @@
+<proc>
+    <type name="double" kind="double"/>
+    <type name="int" kind="int"/>
+    <sequence name="dblevec" content="double"/>
+    <sequence name="dblevecvec" content="dblevec"/>
+    <objref name="geom" />
+    <objref name="mesh" />
+    <objref name="sgeom" >
+        <base>geom</base>
+    </objref>
+    <sequence name="geomvec" content="geom"/>
+    <sequence name="sgeomvec" content="sgeom"/>
+    <sequence name="sgeomvecvec" content="sgeomvec"/>
+    <objref name="ugeom" >
+        <base>geom</base>
+        <base>mesh</base>
+    </objref>
+
+    <inline name="node2" >
+        <script>
+          <code>p1= 10.</code>
+        </script>
+        <outport name="p1" type="double"/>
+    </inline>
+    <inline name="node3" >
+        <script>
+        <code>p1= p1+10.</code>
+        </script>
+        <inport name="p1" type="double"/>
+        <outport name="p1" type="double"/>
+    </inline>
+    <service name="node4" >
+        <ref>corbaname::localhost#test.my_context/Echo.Object</ref>
+        <method>echoDouble</method>
+        <inport name="p1" type="double"/>
+        <outport name="p1" type="double"/>
+    </service>
+    <service name="node5" >
+        <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+        <method>echoDouble</method>
+        <inport name="p1" type="double"/>
+        <outport name="p1" type="double"/>
+    </service>
+    <bloc name="b0" >
+        <inline name="n1" > <script><code></code></script> </inline>
+    </bloc>
+    <bloc name="c0" >
+        <inline name="n1" > <script><code></code></script> </inline>
+        <service name="node5" >
+            <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+            <method>echoDouble</method>
+            <inport name="p1" type="double"/>
+            <outport name="p1" type="double"/>
+        </service>
+        <bloc name="c1" >
+            <inline name="n1" > <script><code></code></script> </inline>
+        </bloc>
+    </bloc>
+    <bloc name="b1" >
+        <inline name="n1" > <script><code></code></script> </inline>
+        <inline name="n2" > <script><code></code></script> </inline>
+        <inline name="n3" > <script><code></code></script> </inline>
+        <inline name="n4">
+            <script><code></code></script> 
+            <inport name="p1" type="int"/>
+            <inport name="p2" type="double"/>
+            <inport name="p3" type="int"/>
+            <inport name="p4" type="int"/>
+            <outport name="p1" type="int"/>
+        </inline>
+        <inline name="n5" > <script><code></code></script> </inline>
+        <inline name="n6" > <script><code></code></script> </inline>
+        <bloc name="b2">
+            <inline name="no1" >
+                <script><code></code></script> 
+                <outport name="p1" type="int"/>
+            </inline>
+            <inline name="no2" >
+                <script><code></code></script> 
+                <inport name="p1" type="int"/>
+            </inline>
+            <bloc name="bb1">
+                <inline name="bbno1" > <script><code></code></script> </inline>
+            </bloc>
+            <datalink>
+                <fromnode>no1</fromnode>
+                <tonode>no2</tonode>
+                <fromport>p1</fromport>
+                <toport>p1</toport>
+            </datalink>
+        </bloc>
+    </bloc>
+    <control> <fromnode>node2</fromnode> <tonode>node3</tonode> </control>
+    <datalink>
+        <fromnode>node2</fromnode> <fromport>p1</fromport> 
+        <tonode>node3</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+        <fromnode>node3</fromnode> <fromport>p1</fromport>
+        <tonode>node4</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+        <fromnode>node4</fromnode> <fromport>p1</fromport>
+        <tonode>node5</tonode> <toport>p1</toport>
+    </datalink>
+</proc>

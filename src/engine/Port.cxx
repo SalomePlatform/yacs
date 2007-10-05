@@ -1,16 +1,21 @@
 #include "Port.hxx"
+#include <iostream>
 
 using namespace YACS::ENGINE;
 using namespace std;
 
 const char Port::NAME[]="Port";
 
-int Port::total_ = 0;
+int Port::_total = 0;
 
-Port::Port(Node *node)
-  : _node(node)
+Port::Port(Node *node):_node(node)
 {
-  id_ = total_++;
+  _id = _total++;
+}
+
+Port::Port(const Port& other, Node *newHelder):_node(newHelder)
+{
+  _id = _total++;
 }
 
 Port::~Port()
@@ -21,8 +26,3 @@ string Port::getNameOfTypeOfCurrentInstance() const
 {
   return NAME;
 }
-
-// TypeCode * Port::type()
-// {
-//   return _type;
-// }

@@ -1,0 +1,209 @@
+<proc>
+
+    <!-- types -->
+    <objref name="CALCIUM_integer"/>
+    <objref name="CALCIUM_real"/>
+    <container name="A">
+    </container>
+    <container name="B">
+    </container>
+    <container name="C">
+    </container>
+    <container name="D">
+    </container>
+    <container name="E">
+    </container>
+    <container name="F">
+    </container>
+
+    <!-- inline -->
+
+    <bloc name="a">
+      <service name="canal" >
+        <component>FLUIDE</component>
+        <method>prun</method>
+        <load container="A"/> 
+        <instream name="tpi" type="CALCIUM_real"/>
+        <instream name="iconv" type="CALCIUM_integer"/>
+        <outstream name="tfi" type="CALCIUM_real"/>
+      </service>
+      <service name="crayon" >
+        <component>SOLIDE</component>
+        <method>prun</method>
+        <load container="B"/>
+        <instream name="puissi" type="CALCIUM_real"/>
+        <instream name="tfi" type="CALCIUM_real"/>
+        <outstream name="tpi" type="CALCIUM_real"/>
+        <outstream name="tempi" type="CALCIUM_real"/>
+        <outstream name="iconv" type="CALCIUM_integer"/>
+      </service>
+      <service name="comb" >
+        <component>NEUTRO</component>
+        <method>prun</method>
+        <load container="C"/>
+        <instream name="tempi" type="CALCIUM_real"/>
+        <instream name="iconv" type="CALCIUM_integer"/>
+        <outstream name="puissi" type="CALCIUM_real"/>
+      </service>
+      <service name="int4" >
+        <component>INTERPI</component>
+        <method>prun</method>
+        <load container="D"/>
+        <instream name="tparoi" type="CALCIUM_real"/>
+        <outstream name="tpar" type="CALCIUM_real"/>
+      </service>
+      <stream>
+        <fromnode>crayon</fromnode> <fromport>tpi</fromport>
+        <tonode>int4</tonode> <toport>tparoi</toport>
+        <property name="level" value="10"/>
+      </stream>
+      <stream>
+        <fromnode>int4</fromnode> <fromport>tpar</fromport>
+        <tonode>canal</tonode> <toport>tpi</toport>
+        <property name="level" value="10"/>
+      </stream>
+      <stream>
+        <fromnode>canal</fromnode> <fromport>tfi</fromport>
+        <tonode>crayon</tonode> <toport>tfi</toport>
+        <property name="level" value="10"/>
+      </stream>
+      <stream>
+        <fromnode>crayon</fromnode> <fromport>tempi</fromport>
+        <tonode>comb</tonode> <toport>tempi</toport>
+        <property name="level" value="10"/>
+      </stream>
+      <stream>
+        <fromnode>comb</fromnode> <fromport>puissi</fromport>
+        <tonode>crayon</tonode> <toport>puissi</toport>
+        <property name="level" value="10"/>
+      </stream>
+      <stream>
+        <fromnode>crayon</fromnode> <fromport>iconv</fromport>
+        <tonode>canal</tonode> <toport>iconv</toport>
+        <property name="level" value="10"/>
+      </stream>
+      <stream>
+        <fromnode>crayon</fromnode> <fromport>iconv</fromport>
+        <tonode>comb</tonode> <toport>iconv</toport>
+        <property name="level" value="10"/>
+      </stream>
+    </bloc>
+
+    <bloc name="b">
+      <service name="canal" >
+        <node>a.canal</node>
+        <method>trun</method>
+        <inport name="dt" type="double"/>
+        <instream name="tparoi" type="CALCIUM_real"/>
+        <instream name="rparoi" type="CALCIUM_real"/>
+        <outstream name="tfluide" type="CALCIUM_real"/>
+        <outstream name="rfluide" type="CALCIUM_real"/>
+      </service>
+      <service name="crayon" >
+        <node>a.crayon</node>
+        <method>trun</method>
+        <inport name="dt" type="double"/>
+        <instream name="puissa" type="CALCIUM_real"/>
+        <instream name="text" type="CALCIUM_real"/>
+        <instream name="rext" type="CALCIUM_real"/>
+        <outstream name="tparoi" type="CALCIUM_real"/>
+        <outstream name="rparoi" type="CALCIUM_real"/>
+        <outstream name="temperature" type="CALCIUM_real"/>
+      </service>
+      <service name="comb" >
+        <node>a.comb</node>
+        <method>trun</method>
+        <inport name="dt" type="double"/>
+        <instream name="temperature" type="CALCIUM_real"/>
+        <outstream name="puissance" type="CALCIUM_real"/>
+      </service>
+      <service name="int1" >
+        <node>a.int4</node>
+        <method>trun</method>
+        <instream name="tparoit" type="CALCIUM_real"/>
+        <outstream name="tpart" type="CALCIUM_real"/>
+      </service>
+      <service name="int2" >
+        <component>INTERPJ</component>
+        <method>trun</method>
+        <load container="E"/>
+        <instream name="tparoit" type="CALCIUM_real"/>
+        <outstream name="tpart" type="CALCIUM_real"/>
+      </service>
+      <service name="int3" >
+        <component>INTERPK</component>
+        <method>trun</method>
+        <load container="F"/>
+        <instream name="tparoit" type="CALCIUM_real"/>
+        <outstream name="tpart" type="CALCIUM_real"/>
+      </service>
+      <stream>
+        <fromnode>canal</fromnode> <fromport>rfluide</fromport>
+        <tonode>crayon</tonode> <toport>rext</toport>
+        <property name="level" value="10"/>
+      </stream>
+      <stream>
+        <fromnode>canal</fromnode> <fromport>tfluide</fromport>
+        <tonode>crayon</tonode> <toport>text</toport>
+        <property name="level" value="10"/>
+      </stream>
+      <stream>
+        <fromnode>crayon</fromnode> <fromport>rparoi</fromport>
+        <tonode>canal</tonode> <toport>rparoi</toport>
+        <property name="level" value="10"/>
+      </stream>
+      <stream>
+        <fromnode>crayon</fromnode> <fromport>tparoi</fromport>
+        <tonode>int1</tonode> <toport>tparoit</toport>
+        <property name="level" value="10"/>
+      </stream>
+      <stream>
+        <fromnode>int1</fromnode> <fromport>tpart</fromport>
+        <tonode>canal</tonode> <toport>tparoi</toport>
+        <property name="level" value="10"/>
+      </stream>
+      <stream>
+        <fromnode>crayon</fromnode> <fromport>temperature</fromport>
+        <tonode>int2</tonode> <toport>tparoit</toport>
+        <property name="level" value="10"/>
+      </stream>
+      <stream>
+        <fromnode>int2</fromnode> <fromport>tpart</fromport>
+        <tonode>comb</tonode> <toport>temperature</toport>
+        <property name="level" value="10"/>
+      </stream>
+      <stream>
+        <fromnode>comb</fromnode> <fromport>puissance</fromport>
+        <tonode>int3</tonode> <toport>tparoit</toport>
+        <property name="level" value="10"/>
+      </stream>
+      <stream>
+        <fromnode>int3</fromnode> <fromport>tpart</fromport>
+        <tonode>crayon</tonode> <toport>puissa</toport>
+        <property name="level" value="10"/>
+      </stream>
+    </bloc>
+
+    <!-- control -->
+    <control> <fromnode>a</fromnode> <tonode>b</tonode> </control>
+
+    <!--datalinks -->
+
+    <!--parameters -->
+    <parameter>
+      <tonode>b.canal</tonode> <toport>dt</toport>
+      <value><double>0.8</double></value>
+    </parameter>
+    <parameter>
+      <tonode>b.crayon</tonode> <toport>dt</toport>
+      <value><double>0.8</double></value>
+    </parameter>
+    <parameter>
+      <tonode>b.comb</tonode> <toport>dt</toport>
+      <value><double>0.8</double></value>
+    </parameter>
+
+
+    <!--stream -->
+
+</proc>

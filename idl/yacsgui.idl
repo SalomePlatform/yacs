@@ -1,0 +1,52 @@
+#ifndef __YACSGUI_IDL__
+#define __YACSGUI_IDL__
+
+#include "SALOME_Component.idl"
+#include "SALOMEDS.idl"
+#include "SALOME_Exception.idl"
+
+  // SALOME Engine interface for execution in a SALOME Container
+
+module YACSGui_ORB
+{
+  enum executionMode { CONTINUE, STEPBYSTEP, STOPBEFORENODES };
+
+  typedef sequence<string> stringArray;
+  typedef sequence<long> longArray;
+
+  interface Observer
+  {
+    void notifyObserver(in long numid , in string event);
+  };
+
+  interface ProcExec
+  {
+    long getNodeState(in long numid);
+    string getXMLState(in long numid);
+    long getExecutorState();
+    void getIds(out longArray numids,out stringArray names);
+    longArray getNumIds();
+    stringArray getNames();
+
+    void Run();
+    void addObserver(in Observer obs,in long numid, in string event);
+    void setExecMode(in executionMode mode);
+    void setListOfBreakPoints(in stringArray listOfBreakPoints);
+    stringArray getTasksToLoad();
+    boolean setStepsToExecute(in stringArray listToExecute);
+    boolean resumeCurrentBreakPoint();
+    boolean isNotFinished();
+    void stopExecution();
+    boolean saveState(in string xmlFile);
+    void setStopOnError(in boolean dumpRequested, in string xmlFile);
+  };
+
+  interface YACSGui_Gen : Engines::Component, SALOMEDS::Driver
+  {
+    ProcExec LoadProc(in string xmlFile);
+    string convertSupervFile(in string xmlFile);
+  };
+
+};
+
+#endif 

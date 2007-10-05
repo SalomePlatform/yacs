@@ -1,0 +1,97 @@
+#include "ComponentInstanceTest.hxx"
+#include "ToyNode.hxx"
+
+using namespace std;
+using namespace YACS::ENGINE;
+
+ComponentInstanceTest1::ComponentInstanceTest1(const ComponentInstanceTest1& other):ComponentInstance(other),_loaded(false)
+{
+}
+
+ComponentInstanceTest1::ComponentInstanceTest1(const std::string& name):ComponentInstance(name),_loaded(false)
+{
+}
+
+void ComponentInstanceTest1::load()
+{
+  _loaded=true;
+}
+
+void ComponentInstanceTest1::unload()
+{
+  _loaded=false;
+}
+
+bool ComponentInstanceTest1::isLoaded()
+{
+  return _loaded;
+}
+
+std::string ComponentInstanceTest1::getKind() const
+{
+  return ToyNode1S::KIND;
+}
+
+ServiceNode* ComponentInstanceTest1::createNode(const std::string& name)
+{
+  ToyNode1S* node=new ToyNode1S(name);
+  node->setComponent(this);
+  return node;
+}
+
+ComponentInstance *ComponentInstanceTest1::clone() const
+{
+  if(isAttachedOnCloning())
+    {
+      incrRef();
+      return (ComponentInstance *) this;
+    }
+  else
+    return new ComponentInstanceTest1(*this);
+}
+
+ComponentInstanceTest2::ComponentInstanceTest2(const ComponentInstanceTest2& other):ComponentInstance(other),_loaded(false)
+{
+}
+
+ComponentInstanceTest2::ComponentInstanceTest2(const std::string& name):ComponentInstance(name),_loaded(false)
+{
+}
+
+void ComponentInstanceTest2::load()
+{
+  _loaded=true;
+}
+
+void ComponentInstanceTest2::unload()
+{
+  _loaded=false;
+}
+
+bool ComponentInstanceTest2::isLoaded()
+{
+  return _loaded;
+}
+
+std::string ComponentInstanceTest2::getKind() const
+{
+  return ToyNode2S::KIND;
+}
+
+ServiceNode* ComponentInstanceTest2::createNode(const std::string& name)
+{
+  ToyNode2S* node=new ToyNode2S(name);
+  node->setComponent(this);
+  return node;
+}
+
+ComponentInstance *ComponentInstanceTest2::clone() const
+{
+  if(isAttachedOnCloning())
+    {
+      incrRef();
+      return (ComponentInstance *) this;
+    }
+  else
+    return new ComponentInstanceTest2(*this);
+}

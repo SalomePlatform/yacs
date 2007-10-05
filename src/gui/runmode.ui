@@ -1,0 +1,636 @@
+<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
+<class>runMode</class>
+<widget class="QDialog">
+    <property name="name">
+        <cstring>runMode</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>395</width>
+            <height>509</height>
+        </rect>
+    </property>
+    <property name="sizePolicy">
+        <sizepolicy>
+            <hsizetype>5</hsizetype>
+            <vsizetype>5</vsizetype>
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+    </property>
+    <property name="caption">
+        <string>run mode</string>
+    </property>
+    <property name="sizeGripEnabled">
+        <bool>true</bool>
+    </property>
+    <property name="toolTip" stdset="0">
+        <string></string>
+    </property>
+    <vbox>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <widget class="QLayoutWidget">
+            <property name="name">
+                <cstring>layout11</cstring>
+            </property>
+            <vbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <widget class="QLayoutWidget">
+                    <property name="name">
+                        <cstring>layout10</cstring>
+                    </property>
+                    <hbox>
+                        <property name="name">
+                            <cstring>unnamed</cstring>
+                        </property>
+                        <widget class="QLayoutWidget">
+                            <property name="name">
+                                <cstring>layout8</cstring>
+                            </property>
+                            <vbox>
+                                <property name="name">
+                                    <cstring>unnamed</cstring>
+                                </property>
+                                <widget class="QButtonGroup">
+                                    <property name="name">
+                                        <cstring>buttonGroup1</cstring>
+                                    </property>
+                                    <property name="title">
+                                        <string>execution mode</string>
+                                    </property>
+                                    <widget class="QRadioButton">
+                                        <property name="name">
+                                            <cstring>rb_modeContinue</cstring>
+                                        </property>
+                                        <property name="geometry">
+                                            <rect>
+                                                <x>10</x>
+                                                <y>20</y>
+                                                <width>121</width>
+                                                <height>23</height>
+                                            </rect>
+                                        </property>
+                                        <property name="text">
+                                            <string>without stop</string>
+                                        </property>
+                                        <property name="toolTip" stdset="0">
+                                            <string>Select execution without stop</string>
+                                        </property>
+                                    </widget>
+                                    <widget class="QRadioButton">
+                                        <property name="name">
+                                            <cstring>rb_modeBreakpoint</cstring>
+                                        </property>
+                                        <property name="geometry">
+                                            <rect>
+                                                <x>10</x>
+                                                <y>40</y>
+                                                <width>121</width>
+                                                <height>23</height>
+                                            </rect>
+                                        </property>
+                                        <property name="text">
+                                            <string>breakpoints</string>
+                                        </property>
+                                        <property name="toolTip" stdset="0">
+                                            <string>Select execution with Breakpoints</string>
+                                        </property>
+                                    </widget>
+                                    <widget class="QRadioButton">
+                                        <property name="name">
+                                            <cstring>rb_modeStepByStep</cstring>
+                                        </property>
+                                        <property name="geometry">
+                                            <rect>
+                                                <x>10</x>
+                                                <y>60</y>
+                                                <width>121</width>
+                                                <height>23</height>
+                                            </rect>
+                                        </property>
+                                        <property name="text">
+                                            <string>step by step</string>
+                                        </property>
+                                        <property name="toolTip" stdset="0">
+                                            <string>Select execution step by step</string>
+                                        </property>
+                                    </widget>
+                                </widget>
+                                <widget class="QButtonGroup">
+                                    <property name="name">
+                                        <cstring>buttonGroup5</cstring>
+                                    </property>
+                                    <property name="title">
+                                        <string>...</string>
+                                    </property>
+                                    <widget class="QCheckBox">
+                                        <property name="name">
+                                            <cstring>chk_saveState</cstring>
+                                        </property>
+                                        <property name="geometry">
+                                            <rect>
+                                                <x>10</x>
+                                                <y>40</y>
+                                                <width>107</width>
+                                                <height>23</height>
+                                            </rect>
+                                        </property>
+                                        <property name="text">
+                                            <string>save state</string>
+                                        </property>
+                                        <property name="toolTip" stdset="0">
+                                            <string>automatic save state on end</string>
+                                        </property>
+                                    </widget>
+                                    <widget class="QCheckBox">
+                                        <property name="name">
+                                            <cstring>chk_stopOnError</cstring>
+                                        </property>
+                                        <property name="geometry">
+                                            <rect>
+                                                <x>10</x>
+                                                <y>20</y>
+                                                <width>130</width>
+                                                <height>23</height>
+                                            </rect>
+                                        </property>
+                                        <property name="text">
+                                            <string>stop on error</string>
+                                        </property>
+                                        <property name="toolTip" stdset="0">
+                                            <string>stop execution on first node in error</string>
+                                        </property>
+                                    </widget>
+                                </widget>
+                            </vbox>
+                        </widget>
+                        <widget class="QLayoutWidget">
+                            <property name="name">
+                                <cstring>layout9</cstring>
+                            </property>
+                            <vbox>
+                                <property name="name">
+                                    <cstring>unnamed</cstring>
+                                </property>
+                                <widget class="QFrame">
+                                    <property name="name">
+                                        <cstring>frame3</cstring>
+                                    </property>
+                                    <property name="frameShape">
+                                        <enum>StyledPanel</enum>
+                                    </property>
+                                    <property name="frameShadow">
+                                        <enum>Raised</enum>
+                                    </property>
+                                    <vbox>
+                                        <property name="name">
+                                            <cstring>unnamed</cstring>
+                                        </property>
+                                        <widget class="QLayoutWidget">
+                                            <property name="name">
+                                                <cstring>layout8</cstring>
+                                            </property>
+                                            <vbox>
+                                                <property name="name">
+                                                    <cstring>unnamed</cstring>
+                                                </property>
+                                                <widget class="QLabel">
+                                                    <property name="name">
+                                                        <cstring>textLabel1</cstring>
+                                                    </property>
+                                                    <property name="text">
+                                                        <string>graph status</string>
+                                                    </property>
+                                                    <property name="alignment">
+                                                        <set>AlignCenter</set>
+                                                    </property>
+                                                </widget>
+                                                <widget class="QLabel">
+                                                    <property name="name">
+                                                        <cstring>lab_status</cstring>
+                                                    </property>
+                                                    <property name="frameShape">
+                                                        <enum>Panel</enum>
+                                                    </property>
+                                                    <property name="frameShadow">
+                                                        <enum>Sunken</enum>
+                                                    </property>
+                                                    <property name="text">
+                                                        <string>ready</string>
+                                                    </property>
+                                                    <property name="alignment">
+                                                        <set>AlignCenter</set>
+                                                    </property>
+                                                    <property name="toolTip" stdset="0">
+                                                        <string>current execution status</string>
+                                                    </property>
+                                                </widget>
+                                            </vbox>
+                                        </widget>
+                                    </vbox>
+                                </widget>
+                                <widget class="QLayoutWidget">
+                                    <property name="name">
+                                        <cstring>layout4</cstring>
+                                    </property>
+                                    <hbox>
+                                        <property name="name">
+                                            <cstring>unnamed</cstring>
+                                        </property>
+                                        <spacer>
+                                            <property name="name">
+                                                <cstring>spacer4</cstring>
+                                            </property>
+                                            <property name="orientation">
+                                                <enum>Horizontal</enum>
+                                            </property>
+                                            <property name="sizeType">
+                                                <enum>Expanding</enum>
+                                            </property>
+                                            <property name="sizeHint">
+                                                <size>
+                                                    <width>20</width>
+                                                    <height>20</height>
+                                                </size>
+                                            </property>
+                                        </spacer>
+                                        <widget class="QPushButton">
+                                            <property name="name">
+                                                <cstring>pushButton_start</cstring>
+                                            </property>
+                                            <property name="text">
+                                                <string>Start/Resume</string>
+                                            </property>
+                                            <property name="toolTip" stdset="0">
+                                                <string>Start or resume execution</string>
+                                            </property>
+                                        </widget>
+                                        <spacer>
+                                            <property name="name">
+                                                <cstring>spacer5</cstring>
+                                            </property>
+                                            <property name="orientation">
+                                                <enum>Horizontal</enum>
+                                            </property>
+                                            <property name="sizeType">
+                                                <enum>Expanding</enum>
+                                            </property>
+                                            <property name="sizeHint">
+                                                <size>
+                                                    <width>21</width>
+                                                    <height>20</height>
+                                                </size>
+                                            </property>
+                                        </spacer>
+                                    </hbox>
+                                </widget>
+                                <widget class="QLayoutWidget">
+                                    <property name="name">
+                                        <cstring>layout3</cstring>
+                                    </property>
+                                    <hbox>
+                                        <property name="name">
+                                            <cstring>unnamed</cstring>
+                                        </property>
+                                        <spacer>
+                                            <property name="name">
+                                                <cstring>spacer2</cstring>
+                                            </property>
+                                            <property name="orientation">
+                                                <enum>Horizontal</enum>
+                                            </property>
+                                            <property name="sizeType">
+                                                <enum>Expanding</enum>
+                                            </property>
+                                            <property name="sizeHint">
+                                                <size>
+                                                    <width>16</width>
+                                                    <height>20</height>
+                                                </size>
+                                            </property>
+                                        </spacer>
+                                        <widget class="QPushButton">
+                                            <property name="name">
+                                                <cstring>pushButton_pause</cstring>
+                                            </property>
+                                            <property name="text">
+                                                <string>Pause</string>
+                                            </property>
+                                            <property name="toolTip" stdset="0">
+                                                <string>pause execution as soon as possible</string>
+                                            </property>
+                                        </widget>
+                                        <spacer>
+                                            <property name="name">
+                                                <cstring>spacer3</cstring>
+                                            </property>
+                                            <property name="orientation">
+                                                <enum>Horizontal</enum>
+                                            </property>
+                                            <property name="sizeType">
+                                                <enum>Expanding</enum>
+                                            </property>
+                                            <property name="sizeHint">
+                                                <size>
+                                                    <width>21</width>
+                                                    <height>20</height>
+                                                </size>
+                                            </property>
+                                        </spacer>
+                                    </hbox>
+                                </widget>
+                            </vbox>
+                        </widget>
+                    </hbox>
+                </widget>
+                <widget class="QTabWidget">
+                    <property name="name">
+                        <cstring>tabWidget_nodes</cstring>
+                    </property>
+                    <property name="toolTip" stdset="0">
+                        <string>nodes status and selection</string>
+                    </property>
+                    <widget class="QWidget">
+                        <property name="name">
+                            <cstring>tab</cstring>
+                        </property>
+                        <attribute name="title">
+                            <string>Nodes - breakpoints</string>
+                        </attribute>
+                        <vbox>
+                            <property name="name">
+                                <cstring>unnamed</cstring>
+                            </property>
+                            <widget class="QListView">
+                                <column>
+                                    <property name="text">
+                                        <string>Nodes</string>
+                                    </property>
+                                    <property name="clickable">
+                                        <bool>true</bool>
+                                    </property>
+                                    <property name="resizable">
+                                        <bool>true</bool>
+                                    </property>
+                                </column>
+                            <item>
+                                <property name="text">
+                                    <string>New Item</string>
+                                </property>
+                                <property name="pixmap">
+                                    <pixmap></pixmap>
+                                </property>
+                            </item>
+                                <property name="name">
+                                    <cstring>listView_breakpoints</cstring>
+                                </property>
+                                <property name="toolTip" stdset="0">
+                                    <string>Tree node view - select breakpoints</string>
+                                </property>
+                            </widget>
+                        </vbox>
+                    </widget>
+                    <widget class="QWidget">
+                        <property name="name">
+                            <cstring>tab</cstring>
+                        </property>
+                        <attribute name="title">
+                            <string>next to run</string>
+                        </attribute>
+                        <vbox>
+                            <property name="name">
+                                <cstring>unnamed</cstring>
+                            </property>
+                            <widget class="QListView">
+                                <column>
+                                    <property name="text">
+                                        <string>Nodes</string>
+                                    </property>
+                                    <property name="clickable">
+                                        <bool>true</bool>
+                                    </property>
+                                    <property name="resizable">
+                                        <bool>true</bool>
+                                    </property>
+                                </column>
+                            <item>
+                                <property name="text">
+                                    <string>New Item</string>
+                                </property>
+                                <property name="pixmap">
+                                    <pixmap></pixmap>
+                                </property>
+                            </item>
+                                <property name="name">
+                                    <cstring>listView_nextSteps</cstring>
+                                </property>
+                                <property name="sizePolicy">
+                                    <sizepolicy>
+                                        <hsizetype>7</hsizetype>
+                                        <vsizetype>7</vsizetype>
+                                        <horstretch>0</horstretch>
+                                        <verstretch>0</verstretch>
+                                    </sizepolicy>
+                                </property>
+                                <property name="toolTip" stdset="0">
+                                    <string>list next steps - select steps to execute</string>
+                                </property>
+                            </widget>
+                        </vbox>
+                    </widget>
+                </widget>
+                <widget class="QLayoutWidget">
+                    <property name="name">
+                        <cstring>layout18</cstring>
+                    </property>
+                    <hbox>
+                        <property name="name">
+                            <cstring>unnamed</cstring>
+                        </property>
+                        <widget class="QPushButton">
+                            <property name="name">
+                                <cstring>pushButton_stop</cstring>
+                            </property>
+                            <property name="text">
+                                <string>Stop</string>
+                            </property>
+                            <property name="toolTip" stdset="0">
+                                <string>stop execution</string>
+                            </property>
+                        </widget>
+                        <spacer>
+                            <property name="name">
+                                <cstring>spacer6</cstring>
+                            </property>
+                            <property name="orientation">
+                                <enum>Horizontal</enum>
+                            </property>
+                            <property name="sizeType">
+                                <enum>Expanding</enum>
+                            </property>
+                            <property name="sizeHint">
+                                <size>
+                                    <width>110</width>
+                                    <height>20</height>
+                                </size>
+                            </property>
+                        </spacer>
+                        <widget class="QToolButton">
+                            <property name="name">
+                                <cstring>toolButton_all</cstring>
+                            </property>
+                            <property name="text">
+                                <string>--&gt;</string>
+                            </property>
+                            <property name="toolTip" stdset="0">
+                                <string>select all nodes to run</string>
+                            </property>
+                        </widget>
+                        <widget class="QToolButton">
+                            <property name="name">
+                                <cstring>toolButton_remove</cstring>
+                            </property>
+                            <property name="text">
+                                <string>&lt;--</string>
+                            </property>
+                            <property name="toolTip" stdset="0">
+                                <string>remove all nodes from run list</string>
+                            </property>
+                        </widget>
+                        <spacer>
+                            <property name="name">
+                                <cstring>spacer7</cstring>
+                            </property>
+                            <property name="orientation">
+                                <enum>Horizontal</enum>
+                            </property>
+                            <property name="sizeType">
+                                <enum>Expanding</enum>
+                            </property>
+                            <property name="sizeHint">
+                                <size>
+                                    <width>120</width>
+                                    <height>20</height>
+                                </size>
+                            </property>
+                        </spacer>
+                        <widget class="QPushButton">
+                            <property name="name">
+                                <cstring>pushButton_dismiss</cstring>
+                            </property>
+                            <property name="text">
+                                <string>dismiss</string>
+                            </property>
+                            <property name="toolTip" stdset="0">
+                                <string>quit dialog, no effect on execution</string>
+                            </property>
+                        </widget>
+                    </hbox>
+                </widget>
+            </vbox>
+        </widget>
+    </vbox>
+</widget>
+<connections>
+    <connection>
+        <sender>chk_saveState</sender>
+        <signal>clicked()</signal>
+        <receiver>runMode</receiver>
+        <slot>onSaveState()</slot>
+    </connection>
+    <connection>
+        <sender>chk_stopOnError</sender>
+        <signal>clicked()</signal>
+        <receiver>runMode</receiver>
+        <slot>onStopOnError()</slot>
+    </connection>
+    <connection>
+        <sender>pushButton_dismiss</sender>
+        <signal>clicked()</signal>
+        <receiver>runMode</receiver>
+        <slot>onDismiss()</slot>
+    </connection>
+    <connection>
+        <sender>pushButton_pause</sender>
+        <signal>clicked()</signal>
+        <receiver>runMode</receiver>
+        <slot>onPause()</slot>
+    </connection>
+    <connection>
+        <sender>pushButton_start</sender>
+        <signal>clicked()</signal>
+        <receiver>runMode</receiver>
+        <slot>onResume()</slot>
+    </connection>
+    <connection>
+        <sender>pushButton_stop</sender>
+        <signal>clicked()</signal>
+        <receiver>runMode</receiver>
+        <slot>onStop()</slot>
+    </connection>
+    <connection>
+        <sender>toolButton_all</sender>
+        <signal>clicked()</signal>
+        <receiver>runMode</receiver>
+        <slot>onAllNextToRun()</slot>
+    </connection>
+    <connection>
+        <sender>rb_modeBreakpoint</sender>
+        <signal>clicked()</signal>
+        <receiver>runMode</receiver>
+        <slot>onModeBreakpoints()</slot>
+    </connection>
+    <connection>
+        <sender>rb_modeContinue</sender>
+        <signal>clicked()</signal>
+        <receiver>runMode</receiver>
+        <slot>onModeContinue()</slot>
+    </connection>
+    <connection>
+        <sender>rb_modeStepByStep</sender>
+        <signal>clicked()</signal>
+        <receiver>runMode</receiver>
+        <slot>onModeStepByStep()</slot>
+    </connection>
+    <connection>
+        <sender>toolButton_remove</sender>
+        <signal>clicked()</signal>
+        <receiver>runMode</receiver>
+        <slot>onRemoveAllNextToRun()</slot>
+    </connection>
+    <connection>
+        <sender>listView_breakpoints</sender>
+        <signal>clicked(QListViewItem*)</signal>
+        <receiver>runMode</receiver>
+        <slot>onBreakpointClicked(QListViewItem*)</slot>
+    </connection>
+    <connection>
+        <sender>listView_nextSteps</sender>
+        <signal>clicked(QListViewItem*)</signal>
+        <receiver>runMode</receiver>
+        <slot>onNextStepClicked(QListViewItem*)</slot>
+    </connection>
+</connections>
+<slots>
+    <slot>onResume()</slot>
+    <slot>onPause()</slot>
+    <slot>onStop()</slot>
+    <slot>onModeContinue()</slot>
+    <slot>onModeStepByStep()</slot>
+    <slot>onModeBreakpoints()</slot>
+    <slot>onDismiss()</slot>
+    <slot>onStopOnError()</slot>
+    <slot>onSaveState()</slot>
+    <slot>onAllNextToRun()</slot>
+    <slot>onRemoveAllNextToRun()</slot>
+    <slot>onBreakpointClicked(QListViewItem *item)</slot>
+    <slot>onNextStepClicked(QListViewItem *item)</slot>
+</slots>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>

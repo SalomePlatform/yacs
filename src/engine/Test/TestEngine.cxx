@@ -1,4 +1,6 @@
 
+#define UNIT_TEST_HEADER " --- TEST src/engine EngineTest"
+
 #include "engineTest.hxx"
 
 using namespace YACS;

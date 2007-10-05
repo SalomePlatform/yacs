@@ -1,0 +1,99 @@
+# This is a Qt message file in .po format.  Each msgid starts with
+# a scope.  This scope should *NOT* be translated - eg. translating
+# from French to English, "Foo::Bar" would be translated to "Pub",
+# not "Foo::Pub".
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2003-11-19 03:10:25 PM CET\n"
+"PO-Revision-Date: YYYY-MM-DD\n"
+"Last-Translator: FULLNAME <EMAIL@ADDRESS>\n"
+"Content-Type: text/plain; charset=iso-8859-1\n"
+
+msgid "HXX2SALOME_GENERIC_CLASS_NAMEGUI::BUT_OK"
+msgstr "OK"
+
+msgid "HXX2SALOME_GENERIC_CLASS_NAMEGUI::BUT_CANCEL"
+msgstr "Annuler"
+
+msgid "HXX2SALOME_GENERIC_CLASS_NAMEGUI::INF_HXX2SALOME_GENERIC_CLASS_NAME_TITLE"
+msgstr "Information HXX2SALOME_GENERIC_CLASS_NAME"
+
+msgid "HXX2SALOME_GENERIC_CLASS_NAMEGUI::INF_HXX2SALOME_GENERIC_CLASS_NAME_TEXT"
+msgstr "Ceci est un simple test"
+
+msgid "HXX2SALOME_GENERIC_CLASS_NAMEGUI::INF_HXX2SALOME_GENERIC_CLASS_NAME_CHECK"
+msgstr "Cochée"
+
+msgid "HXX2SALOME_GENERIC_CLASS_NAMEGUI::INF_HXX2SALOME_GENERIC_CLASS_NAME_UNCHECK"
+msgstr "Décochée"
+
+msgid "HXX2SALOME_GENERIC_CLASS_NAMEGUI::RES_HXX2SALOME_GENERIC_CLASS_NAME_TITLE"
+msgstr "Dialogue example de HXX2SALOME_GENERIC_CLASS_NAME"
+
+msgid "HXX2SALOME_GENERIC_CLASS_NAMEGUI::RES_HXX2SALOME_GENERIC_CLASS_NAME_TEXT"
+msgstr "Les préférences sont : \n\tCase à cocher : %1\n\tEntier : %2\n\tEntier2 : %3\n\tDouble : %4\n\tTexte : %5"
+
+msgid "TLT_MY_NEW_ITEM"
+msgstr "Un article de menu propre à HXX2SALOME_GENERIC_CLASS_NAME"
+
+msgid "MEN_MY_NEW_ITEM"
+msgstr "Mon menu"
+
+msgid "STS_MY_NEW_ITEM"
+msgstr "Affiche une boîte de dialogue simple"
+
+msgid "TLT_HXX2SALOME_GENERIC_CLASS_NAME_ACTION"
+msgstr "Ouvre la boîte de dialogue de HXX2SALOME_GENERIC_CLASS_NAME"
+
+msgid "MEN_HXX2SALOME_GENERIC_CLASS_NAME_ACTION"
+msgstr "Boîte de dialogue de HXX2SALOME_GENERIC_CLASS_NAME"
+
+msgid "STS_HXX2SALOME_GENERIC_CLASS_NAME_ACTION"
+msgstr "Ouvre la boîte de dialogue de HXX2SALOME_GENERIC_CLASS_NAME"
+
+msgid "MEN_FILE"
+msgstr "&File"
+
+msgid "MEN_FILE_HXX2SALOME_GENERIC_CLASS_NAME"
+msgstr "Menu de HXX2SALOME_GENERIC_CLASS_NAME"
+
+msgid "MEN_HXX2SALOME_GENERIC_CLASS_NAME"
+msgstr "HXX2SALOME_GENERIC_CLASS_NAME"
+
+msgid "TOOL_HXX2SALOME_GENERIC_CLASS_NAME"
+msgstr "HXX2SALOME_GENERIC_CLASS_NAME"
+
+#-------------------------------------------------------------------------
+# PREFEERENCES
+#-------------------------------------------------------------------------
+
+msgid "HXX2SALOME_GENERIC_CLASS_NAMEGUI::PREF_TAB_GENERAL"
+msgstr "Général"
+
+msgid "HXX2SALOME_GENERIC_CLASS_NAMEGUI::PREF_GROUP_DEFAULTS"
+msgstr "Valeurs par défaut"
+
+msgid "HXX2SALOME_GENERIC_CLASS_NAMEGUI::PREF_DEFAULT_BOOL"
+msgstr "Cochez-moi"
+
+msgid "HXX2SALOME_GENERIC_CLASS_NAMEGUI::PREF_DEFAULT_INTEGER"
+msgstr "Entrez un entier :"
+
+msgid "HXX2SALOME_GENERIC_CLASS_NAMEGUI::PREF_DEFAULT_SPININT"
+msgstr "Cliquez sur les flèches (entier) :"
+
+msgid "HXX2SALOME_GENERIC_CLASS_NAMEGUI::PREF_DEFAULT_SPINDBL"
+msgstr "Cliquez sur les flèches (double) :"
+
+msgid "HXX2SALOME_GENERIC_CLASS_NAMEGUI::PREF_DEFAULT_SELECTOR"
+msgstr "Choisissez une option"
+
+msgid "HXX2SALOME_GENERIC_CLASS_NAMEGUI::PREF_LIST_TEXT_0"
+msgstr "Première option"
+
+msgid "HXX2SALOME_GENERIC_CLASS_NAMEGUI::PREF_LIST_TEXT_1"
+msgstr "Seconde option"
+
+msgid "HXX2SALOME_GENERIC_CLASS_NAMEGUI::PREF_LIST_TEXT_2"
+msgstr "Troisième option"

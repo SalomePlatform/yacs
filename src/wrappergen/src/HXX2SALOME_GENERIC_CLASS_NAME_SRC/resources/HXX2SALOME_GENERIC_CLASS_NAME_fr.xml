@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='us-ascii'?>
+<!DOCTYPE application PUBLIC "" "desktop.dtd">
+<application title="HXX2SALOME_GENERIC_CLASS_NAME component" date="9/12/2001" author="C Caremoli" appId="HXX2SALOME_GENERIC_CLASS_NAME" >
+<desktop>
+<!-- ### MENUBAR ###  -->
+<menubar>
+ <menu-item label-id="File" item-id="1" pos-id="">
+  <submenu label-id="Hello" item-id="19" pos-id="9">
+   <popup-item item-id="190" pos-id="" label-id="MyNewItem" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+  </submenu>
+  <endsubmenu />
+ </menu-item>
+ <menu-item label-id="HXX2SALOME_GENERIC_CLASS_NAME" item-id="90" pos-id="3">
+  <popup-item item-id="941" label-id="Lancer IHM" icon-id="" tooltip-id="Lancer IHM HXX2SALOME_GENERIC_CLASS_NAME" accel-id="" toggle-id="" execute-action=""/>
+ </menu-item>
+</menubar>
+<!-- ### TOOLBAR ###  -->
+<toolbar label-id="HXX2SALOME_GENERIC_CLASS_NAME">
+ <toolbutton-item item-id="941" label-id="Lancer IHM" icon-id="ExecHXX2SALOME_GENERIC_CLASS_NAME.png" tooltip-id="Lancer IHM HXX2SALOME_GENERIC_CLASS_NAME" accel-id="" toggle-id="" execute-action=""/>
+</toolbar>
+</desktop>
+</application>
+

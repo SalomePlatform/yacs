@@ -1,0 +1,24 @@
+
+SUFFIXES =
+
+# --------------------------------------------
+# *.i --> *wrap.cxx
+# --------------------------------------------
+
+SUFFIXES += .i WRAP.cxx .idl .hh SK.cc _idl.py
+
+%WRAP.cxx : %.i
+	$(SWIG) $(SWIG_PYTHON_OPT) $(SWIG_PYTHON_INCLUDES) -o $@ $<
+
+
+%.hh %SK.cc: %.idl
+	$(OMNIORB_IDL) $(OMNIORB_IDLCXXFLAGS) -bcxx $<
+
+%.hh %SK.cc: ${KERNEL_ROOT_DIR}/idl/salome/%.idl
+	$(OMNIORB_IDL) $(OMNIORB_IDLCXXFLAGS) -bcxx $<
+
+%.hh %SK.cc: ${MED_ROOT_DIR}/idl/salome/%.idl
+	$(OMNIORB_IDL) $(OMNIORB_IDLCXXFLAGS) -bcxx $<
+
+%_idl.py: %.idl
+	$(OMNIORB_IDL) $(OMNIORB_IDLPYFLAGS) -bpython $<

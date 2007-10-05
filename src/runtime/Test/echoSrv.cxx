@@ -5,7 +5,10 @@
 #include <iostream>
 using namespace std;
 
-static CORBA::Boolean bindObjectToName(CORBA::ORB_ptr, CORBA::Object_ptr);
+//#define _DEVDEBUG_
+#include "YacsTrace.hxx"
+
+static CORBA::Boolean bindObjectToName(CORBA::ORB_ptr, CORBA::Object_ptr,const char*);
 
 static ostream& operator<<(ostream& os, const CORBA::Exception& e)
 {
@@ -43,6 +46,7 @@ class D_i : public POA_eo::D, public PortableServer::RefCountServantBase
 public:
   inline D_i() {}
   virtual ~D_i() {}
+  CORBA::Long echoLong(CORBA::Long i);
   CORBA::Long echoLong2(CORBA::Long i);
 };
 
@@ -56,7 +60,7 @@ public:
 };
 
 class Echo_i : public POA_eo::Echo,
-	       public PortableServer::RefCountServantBase
+               public PortableServer::RefCountServantBase
 {
 public:
   inline Echo_i() {}
@@ -69,6 +73,9 @@ public:
   void echoIntVec(const eo::IntVec&, eo::IntVec_out);
   void echoStrVec(const eo::StrVec&, eo::StrVec_out);
   void echoObjectVec(const eo::ObjectVec&, eo::ObjectVec_out);
+  void echoObj2(eo::Obj_ptr , eo::Obj_out);
+  void echoD(eo::D_ptr , eo::D_out);
+  void echoC(eo::C_ptr , eo::C_out);
   void echoObjectVecVec(const eo::ObjectVecVec&, eo::ObjectVecVec_out);
 
   eo::Obj_ptr echoObj(CORBA::Long i, eo::Obj_ptr o, CORBA::Long j, eo::Obj_out oo);
@@ -93,48 +100,48 @@ PortableServer::POA_ptr Echo_i::_default_POA()
 
 char* Echo_i::echoString(const char* mesg)
 {
-  cout << "Echo_i::echoString " << mesg << endl;
+  DEBTRACE("Echo_i::echoString " << mesg);
   return CORBA::string_dup(mesg);
 }
 
 void Echo_i::echoDouble(CORBA::Double i,CORBA::Double& j ) {
-  cout << "Echo_i::echoDouble " << i << endl;
+  DEBTRACE("Echo_i::echoDouble " << i);
   j=i+1;
 }
 
 void Echo_i::echoIntVec(const eo::IntVec& in, eo::IntVec_out out)
 {
-  cout << "Echo_i::echoIntVec " << in.length() << endl;
+  DEBTRACE("Echo_i::echoIntVec " << in.length());
   for(int i=0;i<in.length(); i++){
-    cout << in[i] << endl;
+    DEBTRACE(in[i]);
   };
   out=new eo::IntVec(in);
 }
 
 void Echo_i::echoStrVec(const eo::StrVec& in, eo::StrVec_out out)
 {
-  cout << "Echo_i::echoStrVec " << in.length() << endl;
+  DEBTRACE("Echo_i::echoStrVec " << in.length());
   for(int i=0;i<in.length(); i++){
-    cout << in[i] << endl;
+    DEBTRACE(in[i]);
   }
   out=new eo::StrVec(in);
 }
 
 void Echo_i::echoObjectVec(const eo::ObjectVec& in, eo::ObjectVec_out out)
 {
-  cout << "Echo_i::echoObjectVec " << in.length() << endl;
+  DEBTRACE("Echo_i::echoObjectVec " << in.length());
   for(int i=0;i<in.length(); i++){
-    cout << in[i]->_PD_repoId << endl;
+    DEBTRACE(in[i]->_PD_repoId);
   };
   out=new eo::ObjectVec(in);
 }
 
 void Echo_i::echoObjectVecVec(const eo::ObjectVecVec& in, eo::ObjectVecVec_out out)
 {
-  cout << "Echo_i::echoObjectVecVec " << in.length() << endl;
+  DEBTRACE("Echo_i::echoObjectVecVec " << in.length());
   for(int i=0;i< in.length(); i++){
     for(int j=0;j< in[i].length(); j++){
-      cout << in[i][j]->_PD_repoId << endl;
+      DEBTRACE(in[i][j]->_PD_repoId);
     };
   };
   out=new eo::ObjectVecVec(in);
@@ -142,19 +149,19 @@ void Echo_i::echoObjectVecVec(const eo::ObjectVecVec& in, eo::ObjectVecVec_out o
 
 void Echo_i::echoDoubleVec(const eo::DoubleVec& in,eo::DoubleVec_out out ) 
 {
-  cout << "Echo_i::echoDoubleVec " << in.length() << endl;
+  DEBTRACE("Echo_i::echoDoubleVec " << in.length());
   for(int i=0;i<in.length(); i++){
-    cout << in[i] << endl;
+    DEBTRACE(in[i]);
   };
   out=new eo::DoubleVec(in);
 }
 
 void Echo_i::echoDoubleVecVec(const eo::DoubleVecVec& in, eo::DoubleVecVec_out out)
 {
-  cout << "Echo_i::echoDoubleVecVec " << in.length() << endl;
+  DEBTRACE("Echo_i::echoDoubleVecVec " << in.length());
   for(int i=0;i< in.length(); i++){
     for(int j=0;j< in[i].length(); j++){
-      cout << in[i][j] << endl;
+      DEBTRACE(in[i][j]);
     };
   };
   out=new eo::DoubleVecVec(in);
@@ -162,7 +169,7 @@ void Echo_i::echoDoubleVecVec(const eo::DoubleVecVec& in, eo::DoubleVecVec_out o
 
 CORBA::Long Echo_i::echoLong(CORBA::Long i ) throw(eo::SALOME_Exception) 
 {
-  cout << "Echo_i::echoLong " << i << endl;
+  DEBTRACE("Echo_i::echoLong " << i);
   if(i < 0) {
     eo::ExceptionStruct es;
     es.type = eo::COMM;
@@ -174,14 +181,35 @@ CORBA::Long Echo_i::echoLong(CORBA::Long i ) throw(eo::SALOME_Exception)
   return j;
 }
 
+void Echo_i::echoC(eo::C_ptr o,eo::C_out oo){
+  DEBTRACE("Echo_i::echoC ");
+  o->echoLong(10);
+  oo=eo::C::_duplicate(o); 
+}
+
+void Echo_i::echoD(eo::D_ptr o,eo::D_out oo){
+  DEBTRACE("Echo_i::echoD ");
+  o->echoLong2(10);
+  //oo=eo::D::_duplicate(o); 
+  D_i* myD = new D_i();
+  oo=myD->_this();
+  myD->_remove_ref();
+}
+
+void Echo_i::echoObj2(eo::Obj_ptr o,eo::Obj_out oo){
+  DEBTRACE("Echo_i::echoObj2 ");
+  o->echoLong(10);
+  oo=eo::Obj::_duplicate(o); 
+}
+
 eo::Obj_ptr Echo_i::echoObj(CORBA::Long i ,eo::Obj_ptr o,CORBA::Long j,eo::Obj_out oo){
-  cout << "Echo_i::echoObj " << i << "," << j << endl;
+  DEBTRACE("Echo_i::echoObj " << i << "," << j );
   oo=eo::Obj::_duplicate(o); 
   return eo::Obj::_duplicate(o); 
 }
 
 void Echo_i::createObj(CORBA::Long i ,eo::Obj_out oo){
-  cout << "Echo_i::createObj " << i << endl;
+  DEBTRACE("Echo_i::createObj " << i);
   Obj_i* myobj = new Obj_i();
   CORBA::Object_var myref = myobj->_this();
   oo = eo::Obj::_narrow(myref);
@@ -189,7 +217,7 @@ void Echo_i::createObj(CORBA::Long i ,eo::Obj_out oo){
 }
 
 void Echo_i::createC(eo::C_out oo){
-  cout << "Echo_i::createC " << endl;
+  DEBTRACE("Echo_i::createC ");
   C_i* myobj = new C_i();
   CORBA::Object_var myref = myobj->_this();
   oo = eo::C::_narrow(myref);
@@ -198,7 +226,7 @@ void Echo_i::createC(eo::C_out oo){
 
 void Echo_i::echoAll(CORBA::Double d,CORBA::Long l,const char * m,eo::Obj_ptr o,CORBA::Double& dd,CORBA::Long& ll,CORBA::String_out s,eo::Obj_out oo)
 {
-  cout << "Echo_i::echoAll " << d << "," << l << "," << m << endl;
+  DEBTRACE("Echo_i::echoAll " << d << "," << l << "," << m);
   dd=d;
   ll=l;
   s=CORBA::string_dup(m);
@@ -207,33 +235,38 @@ void Echo_i::echoAll(CORBA::Double d,CORBA::Long l,const char * m,eo::Obj_ptr o,
 
 //Implementation Obj
 CORBA::Long Obj_i::echoLong(CORBA::Long i ){
-  cout << "Obj_i::echoLong " << i << endl;
+  DEBTRACE("Obj_i::echoLong " << i );
   CORBA::Long j=i+1;
   return j;
 }
 
 //Implementation C
 CORBA::Long C_i::echoLong(CORBA::Long i ){
-  cout << "C_i::echoLong " << i << endl;
+  DEBTRACE("C_i::echoLong " << i);
   CORBA::Long j=i+5;
   return j;
 }
 
 //Implementation D
 CORBA::Long D_i::echoLong2(CORBA::Long i ){
-  cout << "D_i::echoLong " << i << endl;
+  DEBTRACE("D_i::echoLong " << i);
   CORBA::Long j=i+10;
+  return j;
+}
+CORBA::Long D_i::echoLong(CORBA::Long i ){
+  DEBTRACE("D_i::echoLong " << i);
+  CORBA::Long j=i+1;
   return j;
 }
 
 //Implementation E
 CORBA::Long E_i::echoLong2(CORBA::Long i ){
-  cout << "E_i::echoLong " << i << endl;
+  DEBTRACE("E_i::echoLong " << i);
   CORBA::Long j=i+20;
   return j;
 }
 CORBA::Long E_i::echoLong(CORBA::Long i ){
-  cout << "E_i::echoLong " << i << endl;
+  DEBTRACE("E_i::echoLong " << i);
   CORBA::Long j=i+15;
   return j;
 }
@@ -268,33 +301,53 @@ int main(int argc, char** argv)
       // stringified IOR.
       obj = myecho->_this();
       CORBA::String_var sior(orb->object_to_string(obj));
-      cerr << "'" << (char*)sior << "'" << endl;
+      DEBTRACE("'" << (char*)sior << "'");
       myechoref = eo::Echo::_narrow(obj);
 
-      if( !bindObjectToName(orb, myechoref) )
-	return 1;
+      if( !bindObjectToName(orb, myechoref,"Echo") ) return 1;
 
       // Decrement the reference count of the object implementation, so
       // that it will be properly cleaned up when the POA has determined
       // that it is no longer needed.
       myecho->_remove_ref();
+
+      //create object C and register it in naming service
+      C_i* myC = new C_i();
+      obj=myC->_this();
+      eo::C_var myCref=eo::C::_narrow(obj);
+      myC->_remove_ref();
+      if( !bindObjectToName(orb, myCref,"C") ) return 1;
+
+      //create object D and register it in naming service
+      D_i* myD = new D_i();
+      obj=myD->_this();
+      eo::D_var myDref=eo::D::_narrow(obj);
+      myD->_remove_ref();
+      if( !bindObjectToName(orb, myDref,"D") ) return 1;
+
+      //create object Obj and register it in naming service
+      Obj_i* myObj = new Obj_i();
+      obj=myObj->_this();
+      eo::Obj_var myObjref=eo::Obj::_narrow(obj);
+      myObj->_remove_ref();
+      if( !bindObjectToName(orb, myObjref,"Obj") ) return 1;
     }
     orb->run();
   }
   catch(CORBA::SystemException&) {
-    cerr << "Caught CORBA::SystemException." << endl;
+    DEBTRACE("Caught CORBA::SystemException.");
   }
   catch(CORBA::Exception& ex) {
-    cerr << "Caught CORBA::Exception." << ex << endl;
+    DEBTRACE("Caught CORBA::Exception." << ex);
   }
   catch(omniORB::fatalException& fe) {
-    cerr << "Caught omniORB::fatalException:" << endl;
-    cerr << "  file: " << fe.file() << endl;
-    cerr << "  line: " << fe.line() << endl;
-    cerr << "  mesg: " << fe.errmsg() << endl;
+    DEBTRACE("Caught omniORB::fatalException:");
+    DEBTRACE("  file: " << fe.file());
+    DEBTRACE("  line: " << fe.line());
+    DEBTRACE("  mesg: " << fe.errmsg());
   }
   catch(...) {
-    cerr << "Caught unknown exception." << endl;
+    DEBTRACE("Caught unknown exception." );
   }
 
   return 0;
@@ -304,7 +357,7 @@ int main(int argc, char** argv)
 //////////////////////////////////////////////////////////////////////
 
 static CORBA::Boolean
-bindObjectToName(CORBA::ORB_ptr orb, CORBA::Object_ptr objref)
+bindObjectToName(CORBA::ORB_ptr orb, CORBA::Object_ptr objref,const char *name)
 {
   CosNaming::NamingContext_var rootContext;
 
@@ -316,13 +369,13 @@ bindObjectToName(CORBA::ORB_ptr orb, CORBA::Object_ptr objref)
     // Narrow the reference returned.
     rootContext = CosNaming::NamingContext::_narrow(obj);
     if( CORBA::is_nil(rootContext) ) {
-      cerr << "Failed to narrow the root naming context." << endl;
+      DEBTRACE("Failed to narrow the root naming context.");
       return 0;
     }
   }
   catch(CORBA::ORB::InvalidName& ex) {
     // This should not happen!
-    cerr << "Service required is invalid [does not exist]." << endl;
+    DEBTRACE("Service required is invalid [does not exist]." );
     return 0;
   }
 
@@ -350,7 +403,7 @@ bindObjectToName(CORBA::ORB_ptr orb, CORBA::Object_ptr objref)
       obj = rootContext->resolve(contextName);
       testContext = CosNaming::NamingContext::_narrow(obj);
       if( CORBA::is_nil(testContext) ) {
-        cerr << "Failed to narrow naming context." << endl;
+        DEBTRACE("Failed to narrow naming context.");
         return 0;
       }
     }
@@ -358,7 +411,7 @@ bindObjectToName(CORBA::ORB_ptr orb, CORBA::Object_ptr objref)
     // Bind objref with name Echo to the testContext:
     CosNaming::Name objectName;
     objectName.length(1);
-    objectName[0].id   = (const char*) "Echo";   // string copied
+    objectName[0].id   = name;   // string copied
     objectName[0].kind = (const char*) "Object"; // string copied
 
     try {
@@ -379,13 +432,12 @@ bindObjectToName(CORBA::ORB_ptr orb, CORBA::Object_ptr objref)
     // it should just bind].
   }
   catch(CORBA::COMM_FAILURE& ex) {
-    cerr << "Caught system exception COMM_FAILURE -- unable to contact the "
-         << "naming service." << endl;
+    DEBTRACE("Caught system exception COMM_FAILURE -- unable to contact the "
+             << "naming service.");
     return 0;
   }
   catch(CORBA::SystemException&) {
-    cerr << "Caught a CORBA::SystemException while using the naming service."
-	 << endl;
+    DEBTRACE("Caught a CORBA::SystemException while using the naming service.");
     return 0;
   }
 

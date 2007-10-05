@@ -27,10 +27,12 @@
 #include <cppunit/BriefTestProgressListener.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/TestRunner.h>
+#include <cppunit/TextTestRunner.h>
 #include <stdexcept>
 
 #include <iostream>
 #include <fstream>
+#include <stdlib.h>
 
 // ============================================================================
 /*!
@@ -39,12 +41,14 @@
  */
 // ============================================================================
 
+#include "UnitTestsResult.hxx"
+
 int main(int argc, char* argv[])
 {
   // --- Create the event manager and test controller
   CPPUNIT_NS::TestResult controller;
 
-  // ---  Add a listener that colllects test result
+  // ---  Add a listener that collects test result
   CPPUNIT_NS::TestResultCollector result;
   controller.addListener( &result );        
 
@@ -64,13 +68,17 @@ int main(int argc, char* argv[])
   // ---  Adds the test to the list of test to run
 
   CPPUNIT_NS::TestRunner runner;
+  //CPPUNIT_NS::TextTestRunner runner;
   runner.addTest( suite );
   runner.run( controller);
+  //bool wasSucessful = runner.run();
 
   // ---  Print test in a compiler compatible format.
 
+  system("mkdir -p /tmp/${USER}");
   std::ofstream testFile;
-  testFile.open("UnitTestsResult", std::ios::out |  std::ios::trunc);
+  testFile.open(UnitTestsResult.c_str(), std::ios::out | std::ios::app);
+  testFile << UNIT_TEST_HEADER << endl;
   //CPPUNIT_NS::CompilerOutputter outputter( &result, std::cerr );
   CPPUNIT_NS::CompilerOutputter outputter( &result, testFile );
   outputter.write(); 

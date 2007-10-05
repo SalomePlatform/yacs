@@ -1,0 +1,27 @@
+
+
+#### Icons for YACS module presentations ####
+
+msgid "ICON_STATUS_NO"
+msgstr "no_status.png"
+
+msgid "ICON_DISABLED"
+msgstr "disabled.png"
+
+msgid "ICON_STATUS_RUNNING"
+msgstr "running.png"
+
+msgid "ICON_STATUS_WAITING"
+msgstr "waiting.png"
+
+msgid "ICON_STATUS_DONE"
+msgstr "done.png"
+
+msgid "ICON_STATUS_ABORTED"
+msgstr "aborted1.png"
+
+msgid "ICON_TITLE_RARROW"
+msgstr "right_arrows.png"
+
+msgid "ICON_TITLE_LARROW"
+msgstr "left_arrows.png"

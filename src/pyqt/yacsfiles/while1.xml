@@ -1,0 +1,45 @@
+<proc>
+    <!--a Python node in a while loop 
+        expect 2 steps
+    -->
+    <!--types -->
+    <!--nodes -->
+    <inline name="n" >
+        <script>
+            <code>condition=1</code>
+        </script>
+        <outport name="condition" type="int"/>
+    </inline>
+    <while name="b1" >
+      <inline name="node2" >
+        <function name="f">
+            <code>a=0</code>
+            <code>def f(p1):</code>
+            <code>  global a</code>
+            <code>  p1= p1+10.</code>
+            <code>  print a</code>
+            <code>  a=a+p1</code>
+            <code>  print "p1:",p1</code>
+            <code><![CDATA[  condition=p1 < 40.]]> </code>
+            <code>  return p1,condition</code>
+        </function>
+        <inport name="p1" type="double"/>
+        <outport name="p1" type="double"/>
+        <outport name="condition" type="bool"/>
+      </inline>
+    <datalink> <fromnode>node2</fromnode><fromport>condition</fromport>
+               <tonode>b1</tonode> <toport>condition</toport> </datalink>
+    <datalink> <fromnode>node2</fromnode><fromport>p1</fromport>
+               <tonode>node2</tonode> <toport>p1</toport> </datalink>
+    </while>
+    <!--control links -->
+    <!--data links -->
+    <datalink> <fromnode>n</fromnode><fromport>condition</fromport>
+               <tonode>b1</tonode> <toport>condition</toport> </datalink>
+    <!--parameters -->
+    <parameter>
+        <tonode>b1.node2</tonode> <toport>p1</toport>
+        <value><double>23</double> </value>
+    </parameter>
+
+</proc>

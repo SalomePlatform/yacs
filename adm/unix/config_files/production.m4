@@ -94,7 +94,7 @@ enable_debug=AC_ENABLE_DEBUG_DEFAULT)dnl
 if test "X$enable_debug" = "Xyes"; then
   FFLAGS="$FFLAGS -g "
   CFLAGS="$CFLAGS -g "
-  CXXFLAGS="$CXXFLAGS -g "
+  CXXFLAGS="$CXXFLAGS -g -D_DEBUG_ "
 else
   FFLAGS="$FFLAGS"
   CFLAGS="$CFLAGS"

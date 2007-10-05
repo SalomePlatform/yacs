@@ -1,0 +1,12 @@
+#!/bin/sh
+
+sleep 2
+
+if [ -f killdisplay.sh ] ; then
+   sh killdisplay.sh
+fi
+
+dot -Tpng titi >tutu.png
+display tutu.png &
+pidisplay=$!
+echo "kill -9 " $pidisplay > killdisplay.sh

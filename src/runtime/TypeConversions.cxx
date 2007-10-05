@@ -1,10 +1,23 @@
 
+//#define REFCNT
+#ifdef REFCNT
+#define private public
+#define protected public
+#include <omniORB4/CORBA.h>
+#include <omniORB4/internal/typecode.h>
+#endif
+
 #include "TypeConversions.hxx"
-#include "Exception.hxx"
+#include "ConversionException.hxx"
 #include "RuntimeSALOME.hxx"
+#include "TypeCode.hxx"
+#include "Cstr2d.hxx"
 
 #include <iostream>
 #include <sstream>
+
+//#define _DEVDEBUG_
+#include "YacsTrace.hxx"
 
 using namespace std;
 
@@ -12,1042 +25,1857 @@ namespace YACS
 {
   namespace ENGINE
   {
-
     /*
-     * Fonctions qui retournent un TypeCode CORBA equivalent a un TypeCode Superviseur
+     * Functions to return a CORBA TypeCode equivalent to a YACS TypeCode
      */
 
-    CORBA::TypeCode_ptr getCorbaTCNull(TypeCode *t)
+    typedef CORBA::TypeCode_ptr (*getCorbaTCFn)(const TypeCode *);
+
+    CORBA::TypeCode_ptr getCorbaTCNull(const TypeCode *t)
+      {
+        stringstream msg;
+        msg << "Conversion not implemented: kind= " << t->kind();
+        msg << " : " << __FILE__ << ":" << __LINE__;
+        throw YACS::ENGINE::ConversionException(msg.str());
+      }
+
+    CORBA::TypeCode_ptr getCorbaTCDouble(const TypeCode *t)
     {
-      stringstream msg;
-      msg << "Conversion not implemented: kind= " << t->kind() << " : " << __FILE__ << ":" << __LINE__;
-      throw YACS::Exception(msg.str());
+      return CORBA::TypeCode::_duplicate(CORBA::_tc_double);
     }
 
-    CORBA::TypeCode_ptr getCorbaTCDouble(TypeCode *t)
+    CORBA::TypeCode_ptr getCorbaTCInt(const TypeCode *t)
     {
-      return CORBA::_tc_double;
+      return CORBA::TypeCode::_duplicate(CORBA::_tc_long);
     }
 
-    CORBA::TypeCode_ptr getCorbaTCInt(TypeCode *t)
+    CORBA::TypeCode_ptr getCorbaTCString(const TypeCode *t)
     {
-      return CORBA::_tc_long;
+      return CORBA::TypeCode::_duplicate(CORBA::_tc_string);
     }
 
-    CORBA::TypeCode_ptr getCorbaTCString(TypeCode *t)
+    CORBA::TypeCode_ptr getCorbaTCBool(const TypeCode *t)
     {
-      return CORBA::_tc_string;
+      return CORBA::TypeCode::_duplicate(CORBA::_tc_boolean);
     }
 
-    CORBA::TypeCode_ptr getCorbaTCObjref(TypeCode *t)
+    CORBA::TypeCode_ptr getCorbaTCObjref(const TypeCode *t)
     {
-      return CORBA::_tc_Object;
+      DEBTRACE( t->name() << " " << t->shortName());
+      CORBA::TypeCode_ptr tc= getSALOMERuntime()->getOrb()->create_interface_tc(t->id(),t->shortName());
+#ifdef REFCNT
+      DEBTRACE("refcount CORBA tc Objref: " << ((omni::TypeCode_base*)tc)->pd_ref_count);
+#endif
+      return tc;
     }
 
-    CORBA::TypeCode_ptr getCorbaTCSequence(TypeCode *t)
+    CORBA::TypeCode_ptr getCorbaTCSequence(const TypeCode *t)
     {
-      return getSALOMERuntime()->getOrb()->create_sequence_tc(0,getCorbaTC(t->content_type()));
+      CORBA::TypeCode_var content_type=getCorbaTC(t->contentType());
+      CORBA::TypeCode_ptr tc= getSALOMERuntime()->getOrb()->create_sequence_tc(0,content_type);
+#ifdef REFCNT
+      DEBTRACE("refcount CORBA content_type: " << ((omni::TypeCode_base*)content_type.in())->pd_ref_count);
+      DEBTRACE("refcount CORBA tc: " << ((omni::TypeCode_base*)tc)->pd_ref_count);
+#endif
+      return tc;
+    }
+
+    CORBA::TypeCode_ptr getCorbaTCStruct(const TypeCode *t)
+    {
+      CORBA::StructMemberSeq mseq;
+      YACS::ENGINE::TypeCodeStruct* tst=(YACS::ENGINE::TypeCodeStruct*)t;
+      int nMember=tst->memberCount();
+      mseq.length(nMember);
+      for(int i=0;i<nMember;i++)
+        {
+          const char * name=tst->memberName(i);
+          TypeCode* tm=tst->memberType(i);
+          mseq[i].name=CORBA::string_dup(name);
+          mseq[i].type=getCorbaTC(tm);
+        }
+      CORBA::TypeCode_ptr tc= getSALOMERuntime()->getOrb()->create_struct_tc(t->id(),t->shortName(),mseq);
+#ifdef REFCNT
+      DEBTRACE("refcount CORBA tc: " << ((omni::TypeCode_base*)tc)->pd_ref_count);
+#endif
+      return tc;
     }
 
     getCorbaTCFn getCorbaTCFns[]=
       {
-	getCorbaTCNull,
-	getCorbaTCDouble,
-	getCorbaTCInt,
-	getCorbaTCString,
-	getCorbaTCNull,
-	getCorbaTCObjref,
-	getCorbaTCSequence,
-	getCorbaTCNull,
+        getCorbaTCNull,
+        getCorbaTCDouble,
+        getCorbaTCInt,
+        getCorbaTCString,
+        getCorbaTCBool,
+        getCorbaTCObjref,
+        getCorbaTCSequence,
+        getCorbaTCNull,
+        getCorbaTCStruct,
       };
 
-    CORBA::TypeCode_ptr getCorbaTC(TypeCode *t)
+    CORBA::TypeCode_ptr getCorbaTC(const TypeCode *t)
     {
       int tk=t->kind();
       return getCorbaTCFns[tk](t);
     }
 
     /*
-     * Fin des Fonctions qui retournent un TypeCode CORBA equivalent a un TypeCode Superviseur
+     * End of Functions to return a CORBA TypeCode equivalent to a YACS TypeCode
      */
 
     /*
-     * Fonctions de conversion d'un PyObject * quelconque en CORBA::Any *
-     * du type donné par le TypeCode passé en argument
+     * Section that defines functions to check adaptation from one implementation to another
+     * isAdaptable is template function that checks if TypeCode t1 from implementation IMPLIN
+     * can be converted to TypeCode t2 from implementation IMPLOUT
+     * IMPLIN is the implementation of an output port
+     * IMPLOUT is the implementation of an input port
+     * If the check is True, the input port can be adapted to the output port
      */
 
-    //Le TypeCode passé en argument est celui du port qui recoit la donnée : InputCorbaPort
+    template <ImplType IMPLIN,ImplType IMPLOUT> inline int isAdaptable(const TypeCode *t1,const TypeCode* t2);
 
-    //CORBA::Any *convertCorbaPyObject(TypeCode* t,PyObject* ob);
+    template <ImplType IMPLIN,ImplType IMPLOUT>
+    struct isAdaptableDouble
+      {
+        static inline int apply(const TypeCode *t1,const TypeCode* t2)
+          {
+            if(t1->kind() == Double)return 1;
+            if(t1->kind() == Int)return 1;
+            return 0;
+          }
+      };
+    template <ImplType IMPLIN,ImplType IMPLOUT>
+    struct isAdaptableInt
+      {
+        static inline int apply(const TypeCode *t1,const TypeCode* t2)
+          {
+            if(t1->kind() == Int)return 1;
+            return 0;
+          }
+      };
+    template <ImplType IMPLIN,ImplType IMPLOUT>
+    struct isAdaptableString
+      {
+        static inline int apply(const TypeCode *t1,const TypeCode* t2)
+          {
+            if(t1->kind() == String)return 1;
+            return 0;
+          }
+      };
+    template <ImplType IMPLIN,ImplType IMPLOUT>
+    struct isAdaptableBool
+      {
+        static inline int apply(const TypeCode *t1,const TypeCode* t2)
+          {
+            if(t1->kind() == Bool)return 1;
+            if(t1->kind() == Int)return 1;
+            return 0;
+          }
+      };
+    template <ImplType IMPLIN,ImplType IMPLOUT>
+    struct isAdaptableObjref
+      {
+        static inline int apply(const TypeCode *t1,const TypeCode* t2)
+          {
+            if(t1->kind() == Objref)
+              {
+                //The inport type must be more general than outport type
+                if( t1->isA(t2->id()) )
+                  return 1;
+              }
+            return 0;
+          }
+      };
+    template <ImplType IMPLIN,ImplType IMPLOUT>
+    struct isAdaptableSequence
+      {
+        static inline int apply(const TypeCode *t1,const TypeCode* t2)
+          {
+            if(t1->kind() == Sequence)
+              {
+                if(isAdaptable<IMPLIN,IMPLOUT>(t1->contentType(),t2->contentType()))
+                  {
+                    return 1;
+                  }
+              }
+            return 0;
+          }
+      };
+    template <ImplType IMPLIN,ImplType IMPLOUT>
+    struct isAdaptableArray
+      {
+        static inline int apply(const TypeCode *t1,const TypeCode* t2)
+          {
+            return 0;
+          }
+      };
+    template <ImplType IMPLIN,ImplType IMPLOUT>
+    struct isAdaptableStruct
+      {
+        static inline int apply(const TypeCode *t1,const TypeCode* t2)
+          {
+            if(t1->kind() == Struct)
+              {
+                if( t1->isA(t2->id()) )
+                  return 1;
+              }
+            return 0;
+          }
+      };
 
-    CORBA::Any *convertCorbaPyObjectNull(TypeCode *t,PyObject *ob)
+    /*
+     * Function to check adaptation from implementation 1 (IMPLIN,t1) to implementation 2 (IMPLOUT,t2)
+     * t1 is the IMPLIN output port type
+     * t2 is the IMPLOUT input port type
+     */
+    template <ImplType IMPLIN,ImplType IMPLOUT>
+    inline int isAdaptable(const TypeCode *t1,const TypeCode* t2)
+      {
+         switch(t2->kind())
+           {
+           case Double:
+             return isAdaptableDouble<IMPLIN,IMPLOUT>::apply(t1,t2);
+           case Int:
+             return isAdaptableInt<IMPLIN,IMPLOUT>::apply(t1,t2);
+           case String:
+             return isAdaptableString<IMPLIN,IMPLOUT>::apply(t1,t2);
+           case Bool:
+             return isAdaptableBool<IMPLIN,IMPLOUT>::apply(t1,t2);
+           case Objref:
+             return isAdaptableObjref<IMPLIN,IMPLOUT>::apply(t1,t2);
+           case Sequence:
+             return isAdaptableSequence<IMPLIN,IMPLOUT>::apply(t1,t2);
+           case Array:
+             return isAdaptableArray<IMPLIN,IMPLOUT>::apply(t1,t2);
+           case Struct:
+             return isAdaptableStruct<IMPLIN,IMPLOUT>::apply(t1,t2);
+           default:
+             break;
+           }
+         return 0;
+      }
+
+    //xxx to Python adaptations
+    int isAdaptableCorbaPyObject(const TypeCode *t1,const TypeCode *t2)
     {
-      stringstream msg;
-      msg << "Conversion not implemented: kind= " << t->kind() << " : " << __FILE__ << ":" << __LINE__;
-      throw YACS::Exception(msg.str());
+      return isAdaptable<PYTHONImpl,CORBAImpl>(t1,t2);
+    }
+    int isAdaptableNeutralPyObject(const TypeCode * t1, const TypeCode * t2)
+    {
+      return isAdaptable<PYTHONImpl,NEUTRALImpl>(t1,t2);
+    }
+    int isAdaptablePyObjectPyObject(const TypeCode *t1,const TypeCode *t2)
+    {
+      return isAdaptable<PYTHONImpl,PYTHONImpl>(t1,t2);
     }
 
-    //kind = 1
-    //Conversion d'un objet Python "equivalent double" en CORBA::Any double
-
-    CORBA::Any *convertCorbaPyObjectDouble(TypeCode *t,PyObject *ob)
+    //xxx to Neutral adaptations
+    int isAdaptableCorbaNeutral(const TypeCode *t1,const TypeCode *t2)
     {
-      PyObject_Print(ob,stdout,Py_PRINT_RAW);
-      cerr << endl;
-      CORBA::Double d = 0;
-      if (PyFloat_Check(ob))
-	d = (CORBA::Double)PyFloat_AS_DOUBLE(ob);
-      else if (PyInt_Check(ob))
-	d = (CORBA::Double)PyInt_AS_LONG(ob);
-      else
-	d = (CORBA::Double)PyLong_AsDouble(ob);
-      CORBA::Any *any = new CORBA::Any();
-      *any <<= d;
-      return any;
+      return isAdaptable<NEUTRALImpl,CORBAImpl>(t1,t2);
+    }
+    int isAdaptablePyObjectNeutral(const TypeCode *t1,const TypeCode *t2)
+    {
+      return isAdaptable<NEUTRALImpl,PYTHONImpl>(t1,t2);
+    }
+    int isAdaptableXmlNeutral(const TypeCode *t1,const TypeCode *t2)
+    {
+      return isAdaptable<NEUTRALImpl,XMLImpl>(t1,t2);
+    }
+    int isAdaptableNeutralNeutral(const TypeCode *t1, const TypeCode *t2)
+    {
+      return isAdaptableNeutralCorba(t1, t2);
     }
 
-    //kind = 2
-
-    CORBA::Any *convertCorbaPyObjectInt(TypeCode *t,PyObject *ob)
+    //xxx to XML adaptations
+    int isAdaptableNeutralXml(const TypeCode * t1, const TypeCode * t2)
     {
-      PyObject_Print(ob,stdout,Py_PRINT_RAW);
-      cerr << endl;
-      CORBA::Long l;
-      if (PyInt_Check(ob))
-	l = PyInt_AS_LONG(ob);
-      else
-	l = PyLong_AsLong(ob);
-      CORBA::Any *any = new CORBA::Any();
-      *any <<= l;
-      return any;
+      return isAdaptable<XMLImpl,NEUTRALImpl>(t1,t2);
     }
 
-    //kind = 3
-
-    CORBA::Any *convertCorbaPyObjectString(TypeCode *t,PyObject *ob)
+    //xxx to Corba adaptations
+    int isAdaptableNeutralCorba(const TypeCode *t1,const TypeCode *t2)
     {
-      PyObject_Print(ob,stdout,Py_PRINT_RAW);
-      cerr << endl;
-      char * s=PyString_AsString(ob);
-      CORBA::Any *any = new CORBA::Any();
-      *any <<= s;
-      return any;
+      return isAdaptable<CORBAImpl,NEUTRALImpl>(t1,t2);
+    }
+    int isAdaptableXmlCorba(const TypeCode *t1,const TypeCode *t2)
+    {
+      return isAdaptable<CORBAImpl,XMLImpl>(t1,t2);
+    }
+    int isAdaptableCorbaCorba(const TypeCode *t1,const TypeCode *t2)
+    {
+      return isAdaptable<CORBAImpl,CORBAImpl>(t1,t2);
+    }
+    int isAdaptablePyObjectCorba(const TypeCode *t1,const TypeCode *t2)
+    {
+      return isAdaptable<CORBAImpl,PYTHONImpl>(t1,t2);
     }
 
-    //kind = 5
-
-    CORBA::Any *convertCorbaPyObjectObjref(TypeCode *t,PyObject *ob)
+    //! Basic template convertor from type TIN to Yacs<TOUT> type
+    /*!
+     * This convertor does nothing : throws exception
+     * It must be partially specialize for a specific type (TIN)
+     */
+    template <ImplType IMPLIN,class TIN,class TIN2,ImplType IMPLOUT, class TOUT>
+    struct convertToYacsDouble
     {
-      PyObject_Print(ob,stdout,Py_PRINT_RAW);
-      cerr << endl;
-      PyObject *pystring=PyObject_CallMethod(getSALOMERuntime()->getPyOrb(),
-					     "object_to_string", "O", ob);
-      CORBA::Object_ptr obref =
-	getSALOMERuntime()->getOrb()->string_to_object(PyString_AsString(pystring));
-      Py_DECREF(pystring);
-      CORBA::Any *any = new CORBA::Any();
-      *any <<= obref;
-      cerr << "typecode: " << any->type()->id() << endl;
-      return any;
+      static inline double convert(const TypeCode *t,TIN o,TIN2 aux)
+        {
+          stringstream msg;
+          msg << "Conversion not implemented: kind= " << t->kind() << " Implementation: " << IMPLIN << " to: " << IMPLOUT;
+          msg << " : " << __FILE__ << ":" << __LINE__;
+          throw YACS::ENGINE::ConversionException(msg.str());
+        }
+    };
+    template <ImplType IMPLIN,class TIN,class TIN2,ImplType IMPLOUT, class TOUT>
+    struct convertToYacsInt
+    {
+      static inline long convert(const TypeCode *t,TIN o,TIN2 aux)
+        {
+          stringstream msg;
+          msg << "Conversion not implemented: kind= " << t->kind() << " Implementation: " << IMPLIN << " to: " << IMPLOUT;
+          msg << " : " << __FILE__ << ":" << __LINE__;
+          throw YACS::ENGINE::ConversionException(msg.str());
+        }
+    };
+    template <ImplType IMPLIN,class TIN,class TIN2,ImplType IMPLOUT, class TOUT>
+    struct convertToYacsString
+    {
+      static inline std::string convert(const TypeCode *t,TIN o,TIN2 aux)
+        {
+          stringstream msg;
+          msg << "Conversion not implemented: kind= " << t->kind() << " Implementation: " << IMPLIN << " to: " << IMPLOUT;
+          msg << " : " << __FILE__ << ":" << __LINE__;
+          throw YACS::ENGINE::ConversionException(msg.str());
+        }
+    };
+    template <ImplType IMPLIN,class TIN,class TIN2,ImplType IMPLOUT, class TOUT>
+    struct convertToYacsBool
+    {
+      static inline bool convert(const TypeCode *t,TIN o,TIN2 aux)
+        {
+          stringstream msg;
+          msg << "Conversion not implemented: kind= " << t->kind() << " Implementation: " << IMPLIN << " to: " << IMPLOUT;
+          msg << " : " << __FILE__ << ":" << __LINE__;
+          throw YACS::ENGINE::ConversionException(msg.str());
+        }
+    };
+    template <ImplType IMPLIN,class TIN,class TIN2,ImplType IMPLOUT, class TOUT>
+    struct convertToYacsObjref
+    {
+      static inline std::string convert(const TypeCode *t,TIN o,TIN2 aux)
+        {
+          stringstream msg;
+          msg << "Conversion not implemented: kind= " << t->kind() << " Implementation: " << IMPLIN << " to: " << IMPLOUT;
+          msg << " : " << __FILE__ << ":" << __LINE__;
+          throw YACS::ENGINE::ConversionException(msg.str());
+        }
+    };
+    template <ImplType IMPLIN,class TIN,class TIN2,ImplType IMPLOUT, class TOUT>
+    struct convertToYacsSequence
+    {
+      static inline void convert(const TypeCode *t,TIN o,TIN2 aux,std::vector<TOUT>& v)
+        {
+          stringstream msg;
+          msg << "Conversion not implemented: kind= " << t->kind() << " Implementation: " << IMPLIN << " to: " << IMPLOUT;
+          msg << " : " << __FILE__ << ":" << __LINE__;
+          throw YACS::ENGINE::ConversionException(msg.str());
+        }
+    };
+    template <ImplType IMPLIN,class TIN,class TIN2,ImplType IMPLOUT, class TOUT>
+    struct convertToYacsArray
+    {
+      static inline void convert(const TypeCode *t,TIN o,TIN2 aux,std::vector<TOUT>& v)
+        {
+          stringstream msg;
+          msg << "Conversion not implemented: kind= " << t->kind() << " Implementation: " << IMPLIN << " to: " << IMPLOUT;
+          msg << " : " << __FILE__ << ":" << __LINE__;
+          throw YACS::ENGINE::ConversionException(msg.str());
+        }
+    };
+    template <ImplType IMPLIN,class TIN,class TIN2,ImplType IMPLOUT, class TOUT>
+    struct convertToYacsStruct
+    {
+      static inline void convert(const TypeCode *t,TIN o,TIN2 aux,std::map<std::string,TOUT>& v)
+        {
+          stringstream msg;
+          msg << "Conversion not implemented: kind= " << t->kind() << " Implementation: " << IMPLIN << " to: " << IMPLOUT;
+          msg << " : " << __FILE__ << ":" << __LINE__;
+          throw YACS::ENGINE::ConversionException(msg.str());
+        }
     };
 
-    //kind = 6
-
-    CORBA::Any *convertCorbaPyObjectSequence(TypeCode *t,PyObject *ob)
+    //! Basic convertor from Yacs<TOUT> type to full TOUT type
+    /*!
+     *
+     */
+    template <ImplType IMPLOUT, class TOUT>
+    struct convertFromYacsDouble
     {
-      PyObject_Print(ob,stdout,Py_PRINT_RAW);
-      cerr << endl;
-      int length=PySequence_Size(ob);
-      cerr <<"length: " << length << endl;
-      CORBA::TypeCode_var tc_content;
-      DynamicAny::AnySeq as ;
-      as.length(length);
-      for(int i=0;i<length;i++)
-	{
-	  PyObject *o=PySequence_ITEM(ob,i);
-	  cerr <<"item[" << i << "]=";
-	  PyObject_Print(o,stdout,Py_PRINT_RAW);
-	  cerr << endl;
-	  cerr << "o refcnt: " << o->ob_refcnt << endl;
-	  CORBA::Any *a= convertCorbaPyObject(t->content_type(),o);
-	  //ici on fait une copie. Peut-on l'éviter ?
-	  as[i]=*a;
-	  tc_content=a->type();
-	  //delete a;
-	  Py_DECREF(o);
-	}
-
-      CORBA::TypeCode_var tc = 
-	getSALOMERuntime()->getOrb()->create_sequence_tc(0,tc_content);
-      DynamicAny::DynAny_var dynany =
-	getSALOMERuntime()->getDynFactory()->create_dyn_any_from_type_code(tc);
-      DynamicAny::DynSequence_var ds =
-	DynamicAny::DynSequence::_narrow(dynany);
-
-      try
-	{
-	  ds->set_elements(as);
-	}
-      catch(DynamicAny::DynAny::TypeMismatch& ex)
-	{
-	  throw YACS::Exception("type mismatch");
-	}
-      catch(DynamicAny::DynAny::InvalidValue& ex)
-	{
-	  throw YACS::Exception("invalid value");
-	}
-      CORBA::Any *any=ds->to_any();
-      return any;
+      static inline TOUT convert(const TypeCode *t,double o)
+        {
+          stringstream msg;
+          msg << "Conversion not implemented: kind= " << t->kind() << " Implementation: " << IMPLOUT;
+          msg << " : " << __FILE__ << ":" << __LINE__;
+          throw YACS::ENGINE::ConversionException(msg.str());
+        }
+    };
+    template <ImplType IMPLOUT, class TOUT>
+    struct convertFromYacsInt
+    {
+      static inline TOUT convert(const TypeCode *t,long o)
+        {
+          stringstream msg;
+          msg << "Conversion not implemented: kind= " << t->kind() << " Implementation: " << IMPLOUT;
+          msg << " : " << __FILE__ << ":" << __LINE__;
+          throw YACS::ENGINE::ConversionException(msg.str());
+        }
+    };
+    template <ImplType IMPLOUT, class TOUT>
+    struct convertFromYacsString
+    {
+      static inline TOUT convert(const TypeCode *t,std::string o)
+        {
+          stringstream msg;
+          msg << "Conversion not implemented: kind= " << t->kind() << " Implementation: " << IMPLOUT;
+          msg << " : " << __FILE__ << ":" << __LINE__;
+          throw YACS::ENGINE::ConversionException(msg.str());
+        }
+    };
+    template <ImplType IMPLOUT, class TOUT>
+    struct convertFromYacsBool
+    {
+      static inline TOUT convert(const TypeCode *t,bool o)
+        {
+          stringstream msg;
+          msg << "Conversion not implemented: kind= " << t->kind() << " Implementation: " << IMPLOUT;
+          msg << " : " << __FILE__ << ":" << __LINE__;
+          throw YACS::ENGINE::ConversionException(msg.str());
+        }
+    };
+    template <ImplType IMPLOUT, class TOUT>
+    struct convertFromYacsObjref
+    {
+      static inline TOUT convert(const TypeCode *t,std::string o)
+        {
+          stringstream msg;
+          msg << "Conversion not implemented: kind= " << t->kind() << " Implementation: " << IMPLOUT;
+          msg << " : " << __FILE__ << ":" << __LINE__;
+          throw YACS::ENGINE::ConversionException(msg.str());
+        }
+    };
+    template <ImplType IMPLOUT, class TOUT>
+    struct convertFromYacsSequence
+    {
+      static inline TOUT convert(const TypeCode *t,std::vector<TOUT>& v)
+        {
+          stringstream msg;
+          msg << "Conversion not implemented: kind= " << t->kind() << " Implementation: " << IMPLOUT;
+          msg << " : " << __FILE__ << ":" << __LINE__;
+          throw YACS::ENGINE::ConversionException(msg.str());
+        }
+    };
+    template <ImplType IMPLOUT, class TOUT>
+    struct convertFromYacsArray
+    {
+      static inline TOUT convert(const TypeCode *t,std::vector<TOUT>& v)
+        {
+          stringstream msg;
+          msg << "Conversion not implemented: kind= " << t->kind() << " Implementation: " << IMPLOUT;
+          msg << " : " << __FILE__ << ":" << __LINE__;
+          throw YACS::ENGINE::ConversionException(msg.str());
+        }
+    };
+    template <ImplType IMPLOUT, class TOUT>
+    struct convertFromYacsStruct
+    {
+      static inline TOUT convert(const TypeCode *t,std::map<std::string,TOUT>& v)
+        {
+          stringstream msg;
+          msg << "Conversion not implemented: kind= " << t->kind() << " Implementation: " << IMPLOUT;
+          msg << " : " << __FILE__ << ":" << __LINE__;
+          throw YACS::ENGINE::ConversionException(msg.str());
+        }
+    };
+    template <ImplType IMPLIN,class TIN,class TIN2,ImplType IMPLOUT, class TOUT>
+    inline TOUT convertDouble(const TypeCode *t,TIN o,TIN2 aux)
+    {
+      double d=convertToYacsDouble<IMPLIN,TIN,TIN2,IMPLOUT,TOUT>::convert(t,o,aux);
+      DEBTRACE( d );
+      TOUT r=convertFromYacsDouble<IMPLOUT,TOUT>::convert(t,d);
+      return r;
+    }
+    template <ImplType IMPLIN,class TIN,class TIN2,ImplType IMPLOUT, class TOUT>
+    inline TOUT convertInt(const TypeCode *t,TIN o,TIN2 aux)
+    {
+      long d=convertToYacsInt<IMPLIN,TIN,TIN2,IMPLOUT,TOUT>::convert(t,o,aux);
+      DEBTRACE( d );
+      TOUT r=convertFromYacsInt<IMPLOUT,TOUT>::convert(t,d);
+      return r;
+    }
+    template <ImplType IMPLIN,class TIN,class TIN2,ImplType IMPLOUT, class TOUT>
+    inline TOUT convertString(const TypeCode *t,TIN o,TIN2 aux)
+    {
+      std::string d=convertToYacsString<IMPLIN,TIN,TIN2,IMPLOUT,TOUT>::convert(t,o,aux);
+      DEBTRACE( d );
+      TOUT r=convertFromYacsString<IMPLOUT,TOUT>::convert(t,d);
+      return r;
+    }
+    template <ImplType IMPLIN,class TIN,class TIN2,ImplType IMPLOUT, class TOUT>
+    inline TOUT convertBool(const TypeCode *t,TIN o,TIN2 aux)
+    {
+      double d=convertToYacsBool<IMPLIN,TIN,TIN2,IMPLOUT,TOUT>::convert(t,o,aux);
+      DEBTRACE( d );
+      TOUT r=convertFromYacsBool<IMPLOUT,TOUT>::convert(t,d);
+      return r;
+    }
+    template <ImplType IMPLIN,class TIN,class TIN2,ImplType IMPLOUT, class TOUT>
+    inline TOUT convertObjref(const TypeCode *t,TIN o,TIN2 aux)
+    {
+      std::string d=convertToYacsObjref<IMPLIN,TIN,TIN2,IMPLOUT,TOUT>::convert(t,o,aux);
+      DEBTRACE( d );
+      TOUT r=convertFromYacsObjref<IMPLOUT,TOUT>::convert(t,d);
+      return r;
     }
 
-    convertCorbaPyObjectFn convertCorbaPyObjectFns[] =
+    template <ImplType IMPLIN,class TIN,class TIN2,ImplType IMPLOUT, class TOUT>
+    inline TOUT convertSequence(const TypeCode *t,TIN o,TIN2 aux)
+    {
+      std::vector<TOUT> v;
+      convertToYacsSequence<IMPLIN,TIN,TIN2,IMPLOUT,TOUT>::convert(t,o,aux,v);
+      TOUT r=convertFromYacsSequence<IMPLOUT,TOUT>::convert(t,v);
+      return r;
+    }
+    template <ImplType IMPLIN,class TIN,class TIN2,ImplType IMPLOUT, class TOUT>
+    inline TOUT convertArray(const TypeCode *t,TIN o,TIN2 aux)
+    {
+      std::vector<TOUT> v;
+      convertToYacsArray<IMPLIN,TIN,TIN2,IMPLOUT,TOUT>::convert(t,o,aux,v);
+      TOUT r=convertFromYacsArray<IMPLOUT,TOUT>::convert(t,v);
+      return r;
+    }
+    template <ImplType IMPLIN,class TIN,class TIN2,ImplType IMPLOUT, class TOUT>
+    inline TOUT convertStruct(const TypeCode *t,TIN o,TIN2 aux)
+    {
+      std::map<std::string,TOUT> v;
+      convertToYacsStruct<IMPLIN,TIN,TIN2,IMPLOUT,TOUT>::convert(t,o,aux,v);
+      TOUT r=convertFromYacsStruct<IMPLOUT,TOUT>::convert(t,v);
+      return r;
+    }
+
+    template <ImplType IMPLIN,class TIN,class TIN2,ImplType IMPLOUT, class TOUT>
+    inline TOUT YacsConvertor(const TypeCode *t,TIN o,TIN2 aux)
       {
-	convertCorbaPyObjectNull,
-	convertCorbaPyObjectDouble,
-	convertCorbaPyObjectInt,
-	convertCorbaPyObjectString,
-	convertCorbaPyObjectNull,
-	convertCorbaPyObjectObjref,
-	convertCorbaPyObjectSequence,
-      };
-
-    CORBA::Any *convertCorbaPyObject(TypeCode *t,PyObject *ob)
-    {
-      int tk=t->kind();
-      return convertCorbaPyObjectFns[tk](t,ob);
-    }
-
-    /*
-     * Fin des fonctions de conversion PyObject * -> CORBA::Any *
-     */
-
-    /*
-     * Fonctions de test d'adaptation pour conversion PyObject * (t1) -> CORBA::Any * (t2)
-     */
-    //t1 est le type du port output Python
-    //t2 est le type du port input Corba
-
-    int isAdaptableCorbaPyObjectNull(TypeCode *t1,TypeCode* t2)
-    {
-      return 0;
-    }
-
-    int isAdaptableCorbaPyObjectDouble(TypeCode *t1,TypeCode* t2)
-    {
-      if (t1->kind() == Double) return 1;
-      if (t1->kind() == Int) return 1;
-      return 0;
-    }
-
-    int isAdaptableCorbaPyObjectInt(TypeCode *t1,TypeCode* t2)
-    {
-      if (t1->kind() == Int) return 1;
-      return 0;
-    }
-
-    int isAdaptableCorbaPyObjectString(TypeCode *t1,TypeCode* t2)
-    {
-      if (t1->kind() == String)return 1;
-      return 0;
-    }
-
-    int isAdaptableCorbaPyObjectObjref(TypeCode *t1,TypeCode* t2)
-    {
-      if(t1->kind() == Objref)
-	{
-	  //Il faut que le type du inport soit plus général que celui du outport
-	  if ( t1->is_a(t2->id()) ) return 1;
-	}
-      return 0;
-    }
-
-    int isAdaptableCorbaPyObjectSequence(TypeCode *t1,TypeCode* t2)
-    {
-      if(t1->kind() == Sequence)
-	{
-	  if(isAdaptableCorbaPyObject(t1->content_type(),t2->content_type()))
-	    {
-	      return 1;
-	    }
-	}
-      return 0;
-    }
-
-    isAdaptableCorbaPyObjectFn isAdaptableCorbaPyObjectFns[]=
-      {
-	isAdaptableCorbaPyObjectNull,
-	isAdaptableCorbaPyObjectDouble,
-	isAdaptableCorbaPyObjectInt,
-	isAdaptableCorbaPyObjectString,
-	isAdaptableCorbaPyObjectNull,
-	isAdaptableCorbaPyObjectObjref,
-	isAdaptableCorbaPyObjectSequence,
-      };
-
-    int isAdaptableCorbaPyObject(TypeCode *t1,TypeCode *t2)
-    {
-      int tk=t2->kind();
-      return isAdaptableCorbaPyObjectFns[tk](t1,t2);
-    }
-
-    /*
-     * Fin des fonctions d'adaptation pour conversion PyObject * -> CORBA::Any *
-     */
-
-    /*
-     * Fonctions de test d'adaptation pour conversion CORBA::Any * (t1) -> Xml::char * (t2)
-     */
-    //t1 est le type du port output Corba
-    //t2 est le type du port input Xml
-
-    int isAdaptableXmlCorbaNull(TypeCode *t1,TypeCode* t2)
-    {
-      return 0;
-    }
-
-    int isAdaptableXmlCorbaDouble(TypeCode *t1,TypeCode* t2)
-    {
-      if(t1->kind() == Double)return 1;
-      if(t1->kind() == Int)return 1;
-      return 0;
-    }
-
-    int isAdaptableXmlCorbaInt(TypeCode *t1,TypeCode* t2)
-    {
-      if(t1->kind() == Int)return 1;
-      return 0;
-    }
-
-    int isAdaptableXmlCorbaString(TypeCode *t1,TypeCode* t2)
-    {
-      if(t1->kind() == String)return 1;
-      return 0;
-    }
-
-    int isAdaptableXmlCorbaObjref(TypeCode *t1,TypeCode* t2)
-    {
-      if(t1->kind() == Objref)
-	{
-	  //Il faut que le type du inport soit plus général que celui du outport
-	  if( t1->is_a(t2->id()) )return 1;
-	}
-      return 0;
-    }
-
-    int isAdaptableXmlCorbaSequence(TypeCode *t1,TypeCode* t2)
-    {
-      if(t1->kind() == Sequence)
-	{
-	  if(isAdaptableXmlCorba(t1->content_type(),t2->content_type()))
-	    {
-	      return 1;
-	    }
-	}
-      return 0;
-    }
-
-    isAdaptableXmlCorbaFn isAdaptableXmlCorbaFns[]=
-      {
-	isAdaptableXmlCorbaNull,
-	isAdaptableXmlCorbaDouble,
-	isAdaptableXmlCorbaInt,
-	isAdaptableXmlCorbaString,
-	isAdaptableXmlCorbaNull,
-	isAdaptableXmlCorbaObjref,
-	isAdaptableXmlCorbaSequence,
-      };
-
-    int isAdaptableXmlCorba(TypeCode *t1,TypeCode *t2)
-    {
-      int tk=t2->kind();
-      return isAdaptableXmlCorbaFns[tk](t1,t2);
-    }
-
-    /*
-     * Fin des fonctions d'adaptation pour conversion CORBA::Any * (t1) -> Xml::char * (t2)
-     */
-
-    /*
-     * Fonctions de test d'adaptation pour conversion CORBA::Any * (t1) -> CORBA::Any * (t2)
-     */
-    //t1 est le type du port output Corba
-    //t2 est le type du port input Corba
-
-    int isAdaptableCorbaCorbaNull(TypeCode *t1,TypeCode* t2)
-    {
-      return 0;
-    }
-
-    int isAdaptableCorbaCorbaDouble(TypeCode *t1,TypeCode* t2)
-    {
-      if(t1->kind() == Double)return 1;
-      if(t1->kind() == Int)return 1;
-      return 0;
-    }
-
-    int isAdaptableCorbaCorbaInt(TypeCode *t1,TypeCode* t2)
-    {
-      if(t1->kind() == Int)return 1;
-      return 0;
-    }
-
-    int isAdaptableCorbaCorbaString(TypeCode *t1,TypeCode* t2)
-    {
-      if(t1->kind() == String)return 1;
-      return 0;
-    }
-
-    int isAdaptableCorbaCorbaObjref(TypeCode *t1,TypeCode* t2)
-    {
-      if(t1->kind() == Objref){
-	//Il faut que le type du inport soit plus général que celui du outport
-	if( t1->is_a(t2->id()) )return 1;
+         int tk=t->kind();
+         switch(t->kind())
+           {
+           case Double:
+             return convertDouble<IMPLIN,TIN,TIN2,IMPLOUT,TOUT>(t,o,aux);
+           case Int:
+             return convertInt<IMPLIN,TIN,TIN2,IMPLOUT,TOUT>(t,o,aux);
+           case String:
+             return convertString<IMPLIN,TIN,TIN2,IMPLOUT,TOUT>(t,o,aux);
+           case Bool:
+             return convertBool<IMPLIN,TIN,TIN2,IMPLOUT,TOUT>(t,o,aux);
+           case Objref:
+             return convertObjref<IMPLIN,TIN,TIN2,IMPLOUT,TOUT>(t,o,aux);
+           case Sequence:
+             return convertSequence<IMPLIN,TIN,TIN2,IMPLOUT,TOUT>(t,o,aux);
+           case Array:
+             return convertArray<IMPLIN,TIN,TIN2,IMPLOUT,TOUT>(t,o,aux);
+           case Struct:
+             return convertStruct<IMPLIN,TIN,TIN2,IMPLOUT,TOUT>(t,o,aux);
+           default:
+             break;
+           }
+         stringstream msg;
+         msg << "Conversion not implemented: kind= " << tk << " Implementation: " << IMPLOUT;
+         msg << " : " << __FILE__ << ":" << __LINE__;
+         throw YACS::ENGINE::ConversionException(msg.str());
       }
-      return 0;
-    }
 
-    int isAdaptableCorbaCorbaSequence(TypeCode *t1,TypeCode* t2)
-    {
-      if(t1->kind() == Sequence)
-	{
-	  if(isAdaptableCorbaCorba(t1->content_type(),t2->content_type()))
-	    {
-	      return 1;
-	    }
-	}
-      return 0;
-    }
-
-    isAdaptableCorbaCorbaFn isAdaptableCorbaCorbaFns[]=
-      {
-	isAdaptableCorbaCorbaNull,
-	isAdaptableCorbaCorbaDouble,
-	isAdaptableCorbaCorbaInt,
-	isAdaptableCorbaCorbaString,
-	isAdaptableCorbaCorbaNull,
-	isAdaptableCorbaCorbaObjref,
-	isAdaptableCorbaCorbaSequence,
-      };
-
-    int isAdaptableCorbaCorba(TypeCode *t1,TypeCode *t2)
-    {
-      int tk=t2->kind();
-      return isAdaptableCorbaCorbaFns[tk](t1,t2);
-    }
-
-    /*
-     * Fin des fonctions d'adaptation pour conversion CORBA::Any * -> CORBA::Any *
+    //! ToYacs Convertor for PYTHONImpl
+    /*!
+     * This convertor converts Python object to YACS<TOUT> types
+     * Partial specialization for Python implementation with type PyObject* (PYTHONImpl)
      */
+    template <ImplType IMPLOUT, class TOUT>
+    struct convertToYacsDouble<PYTHONImpl,PyObject*,void*,IMPLOUT,TOUT>
+    {
+      static inline double convert(const TypeCode *t,PyObject* o,void*)
+        {
+          double x;
+          if (PyFloat_Check(o))
+            x=PyFloat_AS_DOUBLE(o);
+          else if (PyInt_Check(o))
+            x=PyInt_AS_LONG(o);
+          else if(PyLong_Check(o))
+            x=PyLong_AsLong(o);
+          else
+            {
+              stringstream msg;
+              msg << "Not a python double. kind=" << t->kind() ;
+              msg << " ( " << __FILE__ << ":" << __LINE__ << ")";
+              throw YACS::ENGINE::ConversionException(msg.str());
+            }
+          return x;
+        }
+    };
+    template <ImplType IMPLOUT, class TOUT>
+    struct convertToYacsInt<PYTHONImpl,PyObject*,void*,IMPLOUT,TOUT>
+    {
+      static inline long convert(const TypeCode *t,PyObject* o,void*)
+        {
+          long l;
+          if (PyInt_Check(o))
+            l=PyInt_AS_LONG(o);
+          else if(PyLong_Check(o))
+            l=PyLong_AsLong(o);
+          else
+            {
+              stringstream msg;
+              msg << "Not a python integer. kind=" << t->kind() ;
+              msg << " ( " << __FILE__ << ":" << __LINE__ << ")";
+              throw YACS::ENGINE::ConversionException(msg.str());
+            }
+          return l;
+        }
+    };
+    template <ImplType IMPLOUT, class TOUT>
+    struct convertToYacsString<PYTHONImpl,PyObject*,void*,IMPLOUT,TOUT>
+    {
+      static inline std::string convert(const TypeCode *t,PyObject* o,void*)
+        {
+          if (PyString_Check(o))
+            return PyString_AS_STRING(o);
+          else
+            {
+              stringstream msg;
+              msg << "Not a python string. kind=" << t->kind() ;
+              msg << " ( " << __FILE__ << ":" << __LINE__ << ")";
+              throw YACS::ENGINE::ConversionException(msg.str());
+            }
+        }
+    };
+    template <ImplType IMPLOUT, class TOUT>
+    struct convertToYacsBool<PYTHONImpl,PyObject*,void*,IMPLOUT,TOUT>
+    {
+      static inline bool convert(const TypeCode *t,PyObject* o,void*)
+        {
+          bool l;
+          if (PyBool_Check(o))
+              l=(o==Py_True);
+          else if (PyInt_Check(o))
+              l=(PyInt_AS_LONG(o)!=0);
+          else if(PyLong_Check(o))
+              l=(PyLong_AsLong(o)!=0);
+          else
+            {
+              stringstream msg;
+              msg << "Problem in Python to xml conversion: kind= " << t->kind() ;
+              msg << " : " << __FILE__ << ":" << __LINE__;
+              throw YACS::ENGINE::ConversionException(msg.str());
+            }
+          return l;
+        }
+    };
+    template <ImplType IMPLOUT, class TOUT>
+    struct convertToYacsObjref<PYTHONImpl,PyObject*,void*,IMPLOUT,TOUT>
+    {
+      static inline std::string convert(const TypeCode *t,PyObject* o,void*)
+        {
+          if (PyString_Check(o))
+            {
+              // the objref is used by Python as a string (prefix:value) keep it as a string
+              return PyString_AS_STRING(o);
+            }
+          PyObject *pystring=PyObject_CallMethod(getSALOMERuntime()->getPyOrb(),"object_to_string","O",o);
+          std::string mystr=PyString_AsString(pystring);
+          Py_DECREF(pystring);
+          return mystr;
+        }
+    };
+    template <ImplType IMPLOUT, class TOUT>
+    struct convertToYacsSequence<PYTHONImpl,PyObject*,void*,IMPLOUT,TOUT>
+    {
+      static inline void convert(const TypeCode *t,PyObject* o,void*,std::vector<TOUT>& v)
+        {
+          int length=PySequence_Size(o);
+          DEBTRACE("length: " << length );
+          v.resize(length);
+          for(int i=0;i<length;i++)
+            {
+              PyObject *item=PySequence_ITEM(o,i);
+#ifdef _DEVDEBUG_
+              std::cerr <<"item[" << i << "]=";
+              PyObject_Print(item,stderr,Py_PRINT_RAW);
+              std::cerr << std::endl;
+#endif
+              DEBTRACE( "item refcnt: " << item->ob_refcnt );
+              TOUT ro=YacsConvertor<PYTHONImpl,PyObject*,void*,IMPLOUT,TOUT>(t->contentType(),item,0);
+              v[i]=ro;
+              Py_DECREF(item);
+            }
+        }
+    };
+    template <ImplType IMPLOUT, class TOUT>
+    struct convertToYacsStruct<PYTHONImpl,PyObject*,void*,IMPLOUT,TOUT>
+    {
+      static inline void convert(const TypeCode *t,PyObject* o,void*,std::map<std::string,TOUT>& m)
+        {
+          DEBTRACE( "o refcnt: " << o->ob_refcnt );
+          PyObject *key, *value;
+          YACS::ENGINE::TypeCodeStruct* tst=(YACS::ENGINE::TypeCodeStruct*)t;
+          int nMember=tst->memberCount();
+          DEBTRACE("nMember="<<nMember);
+          for(int i=0;i<nMember;i++)
+            {
+              std::string name=tst->memberName(i);
+              DEBTRACE("Member name="<<name);
+              TypeCode* tm=tst->memberType(i);
+              value=PyDict_GetItemString(o, name.c_str());
+              if(value==NULL)
+                {
+                  //member name not present
+                  //TODO delete all allocated objects in m
+#ifdef _DEVDEBUG_
+                  PyObject_Print(o,stderr,Py_PRINT_RAW);
+                  std::cerr << std::endl;
+#endif
+                  stringstream msg;
+                  msg << "Problem in conversion: member " << name << " not present " << endl;
+                  msg << " (" << __FILE__ << ":" << __LINE__ << ")";
+                  throw YACS::ENGINE::ConversionException(msg.str());
+                }
+              DEBTRACE( "value refcnt: " << value->ob_refcnt );
+              TOUT ro=YacsConvertor<PYTHONImpl,PyObject*,void*,IMPLOUT,TOUT>(tm,value,0);
+              m[name]=ro;
+            }
+        }
+    };
+    /* End of ToYacs Convertor for PYTHONImpl */
 
-    /*
-     * Fonctions de test d'adaptation pour conversion PyObject * (t1) -> PyObject * (t2)
+    //! FromYacs Convertor for PYTHONImpl
+    /*!
+     * Convert YACS<PyObject*> intermediate types to PyObject* types (PYTHONImpl)
      */
-    //t1 est le type du port output Python
-    //t2 est le type du port input Python
-
-    int isAdaptablePyObjectPyObjectNull(TypeCode *t1,TypeCode* t2)
+    template <>
+    struct convertFromYacsDouble<PYTHONImpl,PyObject*>
     {
-      return 0;
-    }
-
-    int isAdaptablePyObjectPyObjectDouble(TypeCode *t1,TypeCode* t2)
+      static inline PyObject* convert(const TypeCode *t,double o)
+        {
+          PyObject *pyob=PyFloat_FromDouble(o);
+          return pyob;
+        }
+    };
+    template <>
+    struct convertFromYacsInt<PYTHONImpl,PyObject*>
     {
-      if(t1->kind() == Double)return 1;
-      if(t1->kind() == Int)return 1;
-      return 0;
-    }
-
-    int isAdaptablePyObjectPyObjectInt(TypeCode *t1,TypeCode* t2)
+      static inline PyObject* convert(const TypeCode *t,long o)
+        {
+          PyObject *pyob=PyLong_FromLong(o);
+          return pyob;
+        }
+    };
+    template <>
+    struct convertFromYacsString<PYTHONImpl,PyObject*>
     {
-      if(t1->kind() == Int)return 1;
-      return 0;
-    }
-
-    int isAdaptablePyObjectPyObjectString(TypeCode *t1,TypeCode* t2)
+      static inline PyObject* convert(const TypeCode *t,std::string& o)
+        {
+          return PyString_FromString(o.c_str());
+        }
+    };
+    template <>
+    struct convertFromYacsBool<PYTHONImpl,PyObject*>
     {
-      if(t1->kind() == String)return 1;
-      return 0;
-    }
-
-    int isAdaptablePyObjectPyObjectObjref(TypeCode *t1,TypeCode* t2)
+      static inline PyObject* convert(const TypeCode *t,bool o)
+        {
+          return PyBool_FromLong ((long)o);
+        }
+    };
+    template <>
+    struct convertFromYacsObjref<PYTHONImpl,PyObject*>
     {
-      if(t1->kind() == Objref)
-	{
-	  //Il faut que le type du inport soit plus général que celui du outport
-	  if( t1->is_a(t2->id()) )return 1;
-	}
-      return 0;
-    }
+      static inline PyObject* convert(const TypeCode *t,std::string& o)
+        {
+          std::string::size_type pos=o.find_first_of(":");
+          std::string prefix=o.substr(0,pos);
+          DEBTRACE(prefix);
+          if(prefix == "file")
+            {
+              //It's an objref file. Convert it specially
+              return PyString_FromString(o.c_str());
+            }
+          /* another way
+          PyObject* ob= PyObject_CallMethod(getSALOMERuntime()->getPyOrb(),"string_to_object","s",o.c_str());
+          DEBTRACE( "Objref python refcnt: " << ob->ob_refcnt );
+          return ob;
+          */
 
-    int isAdaptablePyObjectPyObjectSequence(TypeCode *t1,TypeCode* t2)
-    {
-      if(t1->kind() == Sequence)
-	{
-	  if(isAdaptablePyObjectPyObject(t1->content_type(),t2->content_type()))
-	    {
-	      return 1;
-	    }
-	}
-      return 0;
-    }
+          //Objref CORBA. prefix=IOR,corbaname,corbaloc
+          CORBA::Object_var obref;
+          try
+            {
+              obref = getSALOMERuntime()->getOrb()->string_to_object(o.c_str());
+#ifdef REFCNT
+              DEBTRACE("obref refCount: " << obref->_PR_getobj()->pd_refCount);
+#endif
+            }
+          catch(CORBA::Exception& ex) 
+            {
+              DEBTRACE( "Can't get reference to object." );
+              throw ConversionException("Can't get reference to object");
+            }
 
-    isAdaptablePyObjectPyObjectFn isAdaptablePyObjectPyObjectFns[]=
-      {
-	isAdaptablePyObjectPyObjectNull,
-	isAdaptablePyObjectPyObjectDouble,
-	isAdaptablePyObjectPyObjectInt,
-	isAdaptablePyObjectPyObjectString,
-	isAdaptablePyObjectPyObjectNull,
-	isAdaptablePyObjectPyObjectObjref,
-	isAdaptablePyObjectPyObjectSequence,
-      };
+          if( CORBA::is_nil(obref) )
+            {
+              DEBTRACE( "Can't get reference to object (or it was nil)." );
+              throw ConversionException("Can't get reference to object");
+            }
 
-    int isAdaptablePyObjectPyObject(TypeCode *t1,TypeCode *t2)
-    {
-      int tk=t2->kind();
-      return isAdaptablePyObjectPyObjectFns[tk](t1,t2);
-    }
-
-    /*
-     * Fin des fonctions d'adaptation pour conversion PyObject * -> PyObject *
-     */
-
-    /*
-     * Fonctions de test d'adaptation pour conversion CORBA::Any * (t1) -> PyObject * (t2)
-     */
-    //t1 est le type du port output Corba
-    //t2 est le type du port input Python
-
-    int isAdaptablePyObjectCorbaNull(TypeCode *t1,TypeCode* t2)
-    {
-      return 0;
-    }
-
-    //on peut convertir un double ou un int en CORBA double
-    int isAdaptablePyObjectCorbaDouble(TypeCode *t1,TypeCode* t2)
-    {
-      if(t1->kind() == Double)return 1;
-      if(t1->kind() == Int)return 1;
-      return 0;
-    }
-
-    int isAdaptablePyObjectCorbaInt(TypeCode *t1,TypeCode* t2)
-    {
-      if(t1->kind() == Int)return 1;
-      return 0;
-    }
-
-    int isAdaptablePyObjectCorbaString(TypeCode *t1,TypeCode* t2)
-    {
-      if(t1->kind() == String)return 1;
-      return 0;
-    }
-
-    int isAdaptablePyObjectCorbaObjref(TypeCode *t1,TypeCode* t2)
-    {
-      if(t1->kind() == Objref){
-	//Il faut que le type du inport soit plus général que celui du outport
-	if( t1->is_a(t2->id()) )return 1;
-      }
-      return 0;
-    }
-
-    int isAdaptablePyObjectCorbaSequence(TypeCode *t1,TypeCode* t2)
-    {
-      if(t1->kind() == Sequence)
-	{
-	  if(isAdaptablePyObjectCorba(t1->content_type(),t2->content_type()))
-	    {
-	      return 1;
-	    }
-	}
-      return 0;
-    }
-
-    isAdaptablePyObjectCorbaFn isAdaptablePyObjectCorbaFns[]={
-      isAdaptablePyObjectCorbaNull,
-      isAdaptablePyObjectCorbaDouble,
-      isAdaptablePyObjectCorbaInt,
-      isAdaptablePyObjectCorbaString,
-      isAdaptablePyObjectCorbaNull,
-      isAdaptablePyObjectCorbaObjref,
-      isAdaptablePyObjectCorbaSequence,
+          if(!obref->_is_a(t->id()))
+            {
+              stringstream msg;
+              msg << "Problem in conversion: an objref " << t->id() << " is expected " << endl;
+              msg << "An objref of type " << obref->_PD_repoId << " is given " << endl;
+              msg << " (" << __FILE__ << ":" << __LINE__ << ")";
+              throw YACS::ENGINE::ConversionException(msg.str());
+            }
+          //hold_lock is true: caller is supposed to hold the GIL.
+          //omniorb will not take the GIL
+#ifdef REFCNT
+          DEBTRACE("obref refCount: " << obref->_PR_getobj()->pd_refCount);
+#endif
+          PyObject* ob= getSALOMERuntime()->getApi()->cxxObjRefToPyObjRef(obref, 1);
+#ifdef REFCNT
+          DEBTRACE("obref refCount: " << obref->_PR_getobj()->pd_refCount);
+#endif
+          return ob;
+        }
     };
 
-    int isAdaptablePyObjectCorba(TypeCode *t1,TypeCode *t2)
+    template <>
+    struct convertFromYacsSequence<PYTHONImpl,PyObject*>
     {
-      int tk=t2->kind();
-      return isAdaptablePyObjectCorbaFns[tk](t1,t2);
-    }
+      static inline PyObject* convert(const TypeCode *t,std::vector<PyObject*>& v)
+        {
+          std::vector<PyObject*>::const_iterator iter;
+          PyObject *pyob = PyList_New(v.size());
+          int i=0;
+          for(iter=v.begin();iter!=v.end();iter++)
+            {
+              PyObject* item=*iter;
+              DEBTRACE( "item refcnt: " << item->ob_refcnt );
+              PyList_SetItem(pyob,i,item);
+              DEBTRACE( "item refcnt: " << item->ob_refcnt );
+              i++;
+            }
+          return pyob;
+        }
+    };
+    template <>
+    struct convertFromYacsStruct<PYTHONImpl,PyObject*>
+    {
+      static inline PyObject* convert(const TypeCode *t,std::map<std::string,PyObject*>& m)
+        {
+          PyObject *pyob = PyDict_New();
+          std::map<std::string, PyObject*>::const_iterator pt;
+          for(pt=m.begin();pt!=m.end();pt++)
+            {
+              std::string name=(*pt).first;
+              PyObject* item=(*pt).second;
+              DEBTRACE( "item refcnt: " << item->ob_refcnt );
+              PyDict_SetItemString(pyob,name.c_str(),item);
+              Py_DECREF(item);
+              DEBTRACE( "item refcnt: " << item->ob_refcnt );
+            }
+          DEBTRACE( "pyob refcnt: " << pyob->ob_refcnt );
+          return pyob;
+        }
+    };
+    /* End of FromYacs Convertor for PYTHONImpl */
 
-    /*
-     * Fin des fonctions d'adaptation pour conversion CORBA::Any * -> PyObject *
+    //! ToYacs Convertor for XMLImpl
+    /*!
+     * Partial specialization for XML implementation (XMLImpl)
+     * This convertor converts xml object to YACS<TOUT> types
      */
+    template <ImplType IMPLOUT, class TOUT>
+    struct convertToYacsDouble<XMLImpl,xmlDocPtr,xmlNodePtr,IMPLOUT,TOUT>
+    {
+      static inline double convert(const TypeCode *t,xmlDocPtr doc,xmlNodePtr cur)
+        {
+          double d;
+          cur = cur->xmlChildrenNode;
+          while (cur != NULL)
+            {
+              if ((!xmlStrcmp(cur->name, (const xmlChar *)"double")))
+                {
+                  //wait a double, got a double
+                  xmlChar * s = NULL;
+                  s = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
+                  DEBTRACE( "convertToYacsDouble " << (const char *)s );
+                  d=Cstr2d((const char *)s);
+                  xmlFree(s);
+                  return d;
+                }
+              else if ((!xmlStrcmp(cur->name, (const xmlChar *)"int")))
+                {
+                  //wait a double, got an int
+                  xmlChar * s = NULL;
+                  s = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
+                  DEBTRACE( "convertToYacsDouble " << (const char *)s );
+                  d=Cstr2d((const char *)s);
+                  xmlFree(s);
+                  return d;
+                }
+              cur = cur->next;
+            }
+          stringstream msg;
+          msg << "Problem in Xml to TOUT conversion: kind= " << t->kind() ;
+          msg << " : " << __FILE__ << ":" << __LINE__;
+          throw YACS::ENGINE::ConversionException(msg.str());
+        }
+    };
+    template <ImplType IMPLOUT, class TOUT>
+    struct convertToYacsInt<XMLImpl,xmlDocPtr,xmlNodePtr,IMPLOUT,TOUT>
+    {
+      static inline long convert(const TypeCode *t,xmlDocPtr doc,xmlNodePtr cur)
+        {
+          long d;
+          cur = cur->xmlChildrenNode;
+          while (cur != NULL)
+            {
+              if ((!xmlStrcmp(cur->name, (const xmlChar *)"int")))
+                {
+                  //wait a double, got an int
+                  xmlChar * s = NULL;
+                  s = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
+                  DEBTRACE( "convertToYacsInt " << (const char *)s );
+                  d=atol((const char *)s);
+                  xmlFree(s);
+                  return d;
+                }
+              cur = cur->next;
+            }
+          stringstream msg;
+          msg << "Problem in Xml to TOUT conversion: kind= " << t->kind() ;
+          msg << " : " << __FILE__ << ":" << __LINE__;
+          throw YACS::ENGINE::ConversionException(msg.str());
+        }
+    };
+    template <ImplType IMPLOUT, class TOUT>
+    struct convertToYacsString<XMLImpl,xmlDocPtr,xmlNodePtr,IMPLOUT,TOUT>
+    {
+      static inline std::string convert(const TypeCode *t,xmlDocPtr doc,xmlNodePtr cur)
+        {
+          cur = cur->xmlChildrenNode;
+          while (cur != NULL)
+            {
+              if ((!xmlStrcmp(cur->name, (const xmlChar *)"string")))
+                {
+                  //wait a string, got a string
+                  xmlChar * s = NULL;
+                  s = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
+                  if(s==0)return "";
+                  DEBTRACE( "convertToYacsString " << (const char *)s );
+                  std::string mystr=std::string((const char *)s);
+                  xmlFree(s);
+                  return mystr;
+                }
+              cur = cur->next;
+            }
+          stringstream msg;
+          msg << "Problem in Xml to TOUT conversion: kind= " << t->kind() ;
+          msg << " : " << __FILE__ << ":" << __LINE__;
+          throw YACS::ENGINE::ConversionException(msg.str());
+        }
+    };
+    template <ImplType IMPLOUT, class TOUT>
+    struct convertToYacsBool<XMLImpl,xmlDocPtr,xmlNodePtr,IMPLOUT,TOUT>
+    {
+      static inline bool convert(const TypeCode *t,xmlDocPtr doc,xmlNodePtr cur)
+        {
+          cur = cur->xmlChildrenNode;
+          while (cur != NULL)
+            {
+              if ((!xmlStrcmp(cur->name, (const xmlChar *)"boolean")))
+                {
+                  //wait a boolean, got a boolean
+                  xmlChar * s = NULL;
+                  s = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
+                  DEBTRACE( "convertToYacsBool " << (const char *)s );
+                  bool ob=atoi((const char*)s)!=0;
+                  xmlFree(s);
+                  return ob;
+                }
+              cur = cur->next;
+            }
+          stringstream msg;
+          msg << "Problem in Xml to TOUT conversion: kind= " << t->kind() ;
+          msg << " : " << __FILE__ << ":" << __LINE__;
+          throw YACS::ENGINE::ConversionException(msg.str());
+        }
+    };
+    template <ImplType IMPLOUT, class TOUT>
+    struct convertToYacsObjref<XMLImpl,xmlDocPtr,xmlNodePtr,IMPLOUT,TOUT>
+    {
+      static inline std::string convert(const TypeCode *t,xmlDocPtr doc,xmlNodePtr cur)
+        {
+          cur = cur->xmlChildrenNode;
+          while (cur != NULL)
+            {
+              if ((!xmlStrcmp(cur->name, (const xmlChar *)"objref")))
+                {
+                  //we wait a objref, we have got a objref
+                  xmlChar * s = NULL;
+                  s = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
+                  DEBTRACE( "convertToYacsObjref " << (const char *)s );
+                  std::string mystr((const char *)s);
+                  xmlFree(s);
+                  return mystr;
+                }
+              cur = cur->next;
+            }
+          stringstream msg;
+          msg << "Problem in conversion: a objref is expected " ;
+          msg << " (" << __FILE__ << ":" << __LINE__ << ")";
+          throw YACS::ENGINE::ConversionException(msg.str());
+        }
+    };
+    template <ImplType IMPLOUT, class TOUT>
+    struct convertToYacsSequence<XMLImpl,xmlDocPtr,xmlNodePtr,IMPLOUT,TOUT>
+    {
+      static inline void convert(const TypeCode *t,xmlDocPtr doc,xmlNodePtr cur,std::vector<TOUT>& v)
+        {
+          cur = cur->xmlChildrenNode;
+          while (cur != NULL)
+            {
+              if ((!xmlStrcmp(cur->name, (const xmlChar *)"array")))
+                {
+                  DEBTRACE( "parse sequence " );
+                  xmlNodePtr cur1=cur->xmlChildrenNode;
+                  while (cur1 != NULL)
+                    {
+                      if ((!xmlStrcmp(cur1->name, (const xmlChar *)"data")))
+                        {
+                          DEBTRACE( "parse data " );
+                          xmlNodePtr cur2=cur1->xmlChildrenNode;
+                          while (cur2 != NULL)
+                            {
+                              //collect all values
+                              if ((!xmlStrcmp(cur2->name, (const xmlChar *)"value")))
+                                {
+                                  TOUT ro=YacsConvertor<XMLImpl,xmlDocPtr,xmlNodePtr,IMPLOUT,TOUT>(t->contentType(),doc,cur2);
+                                  v.push_back(ro);
+                                }
+                              cur2 = cur2->next;
+                            } // end while value
+                          break;
+                        }
+                      cur1 = cur1->next;
+                    } // end while data
+                  break;
+                }
+              cur = cur->next;
+            } // end while array
+        }
+    };
+    template <ImplType IMPLOUT, class TOUT>
+    struct convertToYacsStruct<XMLImpl,xmlDocPtr,xmlNodePtr,IMPLOUT,TOUT>
+    {
+      static inline void convert(const TypeCode *t,xmlDocPtr doc,xmlNodePtr cur,std::map<std::string,TOUT>& m)
+        {
+          YACS::ENGINE::TypeCodeStruct* tst=(YACS::ENGINE::TypeCodeStruct*)t;
+          int nMember=tst->memberCount();
+          DEBTRACE("nMember="<<nMember);
+          std::map<std::string,TypeCode*> mtc;
+          for(int i=0;i<nMember;i++)
+            {
+              mtc[tst->memberName(i)]=tst->memberType(i);
+            }
 
-    /*
-     * Fonctions de conversion CORBA::Any * -> PyObject *
+          cur = cur->xmlChildrenNode;
+          while (cur != NULL)
+            {
+              if ((!xmlStrcmp(cur->name, (const xmlChar *)"struct")))
+                {
+                  DEBTRACE( "parse struct " );
+                  xmlNodePtr cur1=cur->xmlChildrenNode;
+                  while (cur1 != NULL)
+                    {
+                      if ((!xmlStrcmp(cur1->name, (const xmlChar *)"member")))
+                        {
+                          DEBTRACE( "parse member " );
+                          xmlNodePtr cur2=cur1->xmlChildrenNode;
+                          while (cur2 != NULL)
+                            {
+                              //member name
+                              if ((!xmlStrcmp(cur2->name, (const xmlChar *)"name")))
+                                {
+                                  xmlChar * s = NULL;
+                                  s = xmlNodeListGetString(doc, cur2->xmlChildrenNode, 1);
+                                  std::string name= (char *)s;
+                                  cur2 = cur2->next;
+                                  while (cur2 != NULL)
+                                    {
+                                      if ((!xmlStrcmp(cur2->name, (const xmlChar *)"value")))
+                                        {
+                                          TOUT ro=YacsConvertor<XMLImpl,xmlDocPtr,xmlNodePtr,IMPLOUT,TOUT>(mtc[name],doc,cur2);
+                                          m[name]=ro;
+                                          break;
+                                        }
+                                      cur2 = cur2->next;
+                                    }
+                                  xmlFree(s);
+                                  break;
+                                }
+                              cur2 = cur2->next;
+                            } // end while member/value
+                        }
+                      cur1 = cur1->next;
+                    } // end while member
+                  break;
+                }
+              cur = cur->next;
+            } // end while struct
+        }
+    };
+    /* End of ToYacs Convertor for XMLImpl */
+
+    //! FromYacs Convertor for XMLImpl
+    /*!
+     * Convert YACS<std::string> intermediate types to std::string types (XMLImpl)
      */
-    //Le TypeCode t est celui vers lequel on convertit (celui de l'InputPort)
-    //On a le type Corba de l'objet sortant par ob->type()
-
-    PyObject *convertPyObjectCorbaNull(TypeCode *t,CORBA::Any *ob)
+    template <>
+    struct convertFromYacsDouble<XMLImpl,std::string>
     {
-      stringstream msg;
-      msg << "Conversion not implemented: kind= " << t->kind() ;
-      msg << " : " << __FILE__ << ":" << __LINE__;
-      throw YACS::Exception(msg.str());
-    }
-
-    //kind=1
-    //Convertit un CORBA::Any "equivalent double" en Python double
-
-    PyObject *convertPyObjectCorbaDouble(TypeCode *t,CORBA::Any *ob)
+      static inline std::string convert(const TypeCode *t,double o)
+        {
+          stringstream msg ;
+          msg << "<value><double>" << o << "</double></value>\n";
+          return msg.str();
+        }
+    };
+    template <>
+    struct convertFromYacsInt<XMLImpl,std::string>
     {
-      CORBA::TypeCode_var tc = ob->type();
-      if (tc->equivalent(CORBA::_tc_double)) 
-	{
-	  CORBA::Double d;
-	  *ob >>= d;
-	  PyObject *pyob=PyFloat_FromDouble(d);
-	  cerr << "pyob refcnt: " << pyob->ob_refcnt << endl;
-	  return pyob;
-	}
-      if (tc->equivalent(CORBA::_tc_long))
-	{
-	  CORBA::Long d;
-	  *ob >>= d;
-	  //Faudrait-il convertir en PyFloat ??
-	  PyObject *pyob=PyInt_FromLong(d);
-	  cerr << "pyob refcnt: " << pyob->ob_refcnt << endl;
-	  return pyob;
-	}
-      stringstream msg;
-      msg << "Internal error " ;
-      msg << " : " << __FILE__ << ":" << __LINE__;
-      throw YACS::Exception(msg.str());
-    }
-
-    PyObject *convertPyObjectCorbaInt(TypeCode *t,CORBA::Any *ob)
+      static inline std::string convert(const TypeCode *t,long o)
+        {
+          stringstream msg ;
+          msg << "<value><int>" << o << "</int></value>\n";
+          return msg.str();
+        }
+    };
+    template <>
+    struct convertFromYacsString<XMLImpl,std::string>
     {
-      CORBA::Long l;
-      *ob >>= l;
-      return PyInt_FromLong(l);
-    }
-
-    PyObject *convertPyObjectCorbaString(TypeCode *t,CORBA::Any *ob)
+      static inline std::string convert(const TypeCode *t,std::string& o)
+        {
+          std::string msg="<value><string>";
+          return msg+o+"</string></value>\n";
+        }
+    };
+    template <>
+    struct convertFromYacsBool<XMLImpl,std::string>
     {
-      char *s;
-      *ob >>=s;
-      PyObject *pyob=PyString_FromString(s);
-      cerr << "pyob refcnt: " << pyob->ob_refcnt << endl;
-      return pyob;
-    }
-
-    PyObject *convertPyObjectCorbaObjref(TypeCode *t,CORBA::Any *ob)
+      static inline std::string convert(const TypeCode *t,bool o)
+        {
+          stringstream msg ;
+          msg << "<value><boolean>" << o << "</boolean></value>\n";
+          return msg.str();
+        }
+    };
+    template <>
+    struct convertFromYacsObjref<XMLImpl,std::string>
     {
-      CORBA::Object_ptr ObjRef ;
-      *ob >>= (CORBA::Any::to_object ) ObjRef ;
-      //hold_lock is true: caller is supposed to hold the GIL.
-      //omniorb will not take the GIL
-      PyObject *pyob = getSALOMERuntime()->getApi()->cxxObjRefToPyObjRef(ObjRef, 1);
-      cerr << "pyob refcnt: " << pyob->ob_refcnt << endl;
-      return pyob;
-    }
+      static inline std::string convert(const TypeCode *t,std::string& o)
+        {
+          return "<value><objref>" + o + "</objref></value>\n";
+        }
+    };
 
-    PyObject *convertPyObjectCorbaSequence(TypeCode *t,CORBA::Any *ob)
+    template <>
+    struct convertFromYacsSequence<XMLImpl,std::string>
     {
-      cerr << "convertPyObjectCorbaSequence" << endl;
-      DynamicAny::DynAny_var dynany= getSALOMERuntime()->getDynFactory()->create_dyn_any(*ob);
-      DynamicAny::DynSequence_var ds=DynamicAny::DynSequence::_narrow(dynany);
-      DynamicAny::AnySeq_var as=ds->get_elements();
-      int len=as->length();
-      PyObject *pyob = PyList_New(len);
-      for(int i=0;i<len;i++)
-	{
-	  PyObject *e=convertPyObjectCorba(t->content_type(),&as[i]);
-	  cerr << "e refcnt: " << e->ob_refcnt << endl;
-	  PyList_SetItem(pyob,i,e);
-	  cerr << "e refcnt: " << e->ob_refcnt << endl;
-	}
-      cerr << "pyob refcnt: " << pyob->ob_refcnt << endl;
-      cerr << "Sequence= ";
-      PyObject_Print(pyob,stdout,Py_PRINT_RAW);
-      cerr << endl;
-      return pyob;
-    }
-
-
-    convertPyObjectCorbaFn convertPyObjectCorbaFns[]=
-      {
-	convertPyObjectCorbaNull,
-	convertPyObjectCorbaDouble,
-	convertPyObjectCorbaInt,
-	convertPyObjectCorbaString,
-	convertPyObjectCorbaNull,
-	convertPyObjectCorbaObjref,
-	convertPyObjectCorbaSequence,
-      };
-
-    PyObject *convertPyObjectCorba(TypeCode *t,CORBA::Any *ob)
+      static inline std::string convert(const TypeCode *t,std::vector<std::string>& v)
+        {
+          std::vector<std::string>::const_iterator iter;
+          stringstream xmlob;
+          xmlob << "<value><array><data>\n";
+          for(iter=v.begin();iter!=v.end();iter++)
+            {
+              xmlob << *iter;
+            }
+          xmlob << "</data></array></value>\n";
+          DEBTRACE("Sequence= " << xmlob);
+          return xmlob.str();
+        }
+    };
+    template <>
+    struct convertFromYacsStruct<XMLImpl,std::string>
     {
-      int tk=t->kind();
-      return convertPyObjectCorbaFns[tk](t,ob);
-    }
+      static inline std::string convert(const TypeCode *t,std::map<std::string,std::string>& m)
+        {
+          std::string result="<value><struct>\n";
+          std::map<std::string, std::string>::const_iterator pt;
+          for(pt=m.begin();pt!=m.end();pt++)
+            {
+              std::string name=(*pt).first;
+              std::string item=(*pt).second;
+              result=result+"<member>\n";
+              result=result+"<name>"+name+"</name>\n";
+              result=result+item;
+              result=result+"</member>\n";
+            }
+          result=result+"</struct></value>\n";
+          return result;
+        }
+    };
 
-    /*
-     * Fin des fonctions de conversion CORBA::Any * -> PyObject *
+    /* End of FromYacs Convertor for XMLImpl */
+
+    //! ToYacs Convertor for NEUTRALImpl
+    /*!
+     * This convertor converts Neutral objects to intermediate YACS<TOUT> types
+     * Template : Partial specialization for Neutral implementation with types YACS::ENGINE::Any*
      */
+    template <ImplType IMPLOUT, class TOUT>
+    struct convertToYacsDouble<NEUTRALImpl,YACS::ENGINE::Any*,void*,IMPLOUT,TOUT>
+    {
+      static inline double convert(const TypeCode *t,YACS::ENGINE::Any* o,void*)
+        {
+          if(o->getType()->kind()==Double)
+            return o->getDoubleValue();
+          else if(o->getType()->kind()==Int)
+            return o->getIntValue();
 
-    /*
-     * Fonctions de conversion CORBA::Any * -> Xml char *
+          stringstream msg;
+          msg << "Problem in conversion: a double or int is expected " ;
+          msg << " (" << __FILE__ << ":" << __LINE__ << ")";
+          throw YACS::ENGINE::ConversionException(msg.str());
+        }
+    };
+    template <ImplType IMPLOUT, class TOUT>
+    struct convertToYacsInt<NEUTRALImpl,YACS::ENGINE::Any*,void*,IMPLOUT,TOUT>
+    {
+      static inline long convert(const TypeCode *t,YACS::ENGINE::Any* o,void*)
+        {
+          return o->getIntValue();
+        }
+    };
+    template <ImplType IMPLOUT, class TOUT>
+    struct convertToYacsString<NEUTRALImpl,YACS::ENGINE::Any*,void*,IMPLOUT,TOUT>
+    {
+      static inline std::string convert(const TypeCode *t,YACS::ENGINE::Any* o,void*)
+        {
+          return o->getStringValue();
+        }
+    };
+    template <ImplType IMPLOUT, class TOUT>
+    struct convertToYacsBool<NEUTRALImpl,YACS::ENGINE::Any*,void*,IMPLOUT,TOUT>
+    {
+      static inline bool convert(const TypeCode *t,YACS::ENGINE::Any* o,void*)
+        {
+          if(o->getType()->kind()==Bool)
+            return o->getBoolValue();
+          else if(o->getType()->kind()==Int)
+            return o->getIntValue() != 0;
+          stringstream msg;
+          msg << "Problem in conversion: a bool or int is expected " ;
+          msg << " (" << __FILE__ << ":" << __LINE__ << ")";
+        }
+    };
+    template <ImplType IMPLOUT, class TOUT>
+    struct convertToYacsObjref<NEUTRALImpl,YACS::ENGINE::Any*,void*,IMPLOUT,TOUT>
+    {
+      static inline std::string convert(const TypeCode *t,YACS::ENGINE::Any* o,void*)
+        {
+          return o->getStringValue();
+        }
+    };
+    template <ImplType IMPLOUT, class TOUT>
+    struct convertToYacsSequence<NEUTRALImpl,YACS::ENGINE::Any*,void*,IMPLOUT,TOUT>
+    {
+      static inline void convert(const TypeCode *t,YACS::ENGINE::Any* o,void*,std::vector<TOUT>& v)
+        {
+          SequenceAny* sdata= (SequenceAny*)o;
+          int length=sdata->size();
+          v.resize(length);
+          for(int i=0;i<length;i++)
+            {
+              TOUT ro=YacsConvertor<NEUTRALImpl,YACS::ENGINE::Any*,void*,IMPLOUT,TOUT>(t->contentType(),(*sdata)[i],0);
+              v[i]=ro;
+            }
+        }
+    };
+    /* End of ToYacs Convertor for NEUTRALImpl */
+
+    //! FromYacs Convertor for NEUTRALImpl
+    /*!
+     * Convert YACS<YACS::ENGINE::Any*> intermediate types to YACS::ENGINE::Any* types (NEUTRALImpl)
      */
-    //Le TypeCode t est celui vers lequel on convertit (celui de l'InputPort)
-    //On a le type Corba de l'objet sortant par ob->type()
-
-    char *convertXmlCorbaNull(TypeCode *t,CORBA::Any *ob)
+    template <>
+    struct convertFromYacsDouble<NEUTRALImpl,YACS::ENGINE::Any*>
     {
-      stringstream msg;
-      msg << "Conversion not implemented: kind= " << t->kind() ;
-      msg << " : " << __FILE__ << ":" << __LINE__;
-      throw YACS::Exception(msg.str());
-    }
-
-    //kind=1
-    //Convertit un CORBA::Any "equivalent double" en Python double
-
-    char *convertXmlCorbaDouble(TypeCode *t,CORBA::Any *ob)
+      static inline YACS::ENGINE::Any* convert(const TypeCode *t,double o)
+        {
+          YACS::ENGINE::Any *ob=YACS::ENGINE::AtomAny::New(o);
+          return ob;
+        }
+    };
+    template <>
+    struct convertFromYacsInt<NEUTRALImpl,YACS::ENGINE::Any*>
     {
-      CORBA::TypeCode_var tc = ob->type();
+      static inline YACS::ENGINE::Any* convert(const TypeCode *t,long o)
+        {
+          return YACS::ENGINE::AtomAny::New((int)o);
+        }
+    };
+    template <>
+    struct convertFromYacsString<NEUTRALImpl,YACS::ENGINE::Any*>
+    {
+      static inline YACS::ENGINE::Any* convert(const TypeCode *t,std::string& o)
+        {
+          return YACS::ENGINE::AtomAny::New(o);
+        }
+    };
+    template <>
+    struct convertFromYacsBool<NEUTRALImpl,YACS::ENGINE::Any*>
+    {
+      static inline YACS::ENGINE::Any* convert(const TypeCode *t,bool o)
+        {
+          return YACS::ENGINE::AtomAny::New(o);
+        }
+    };
+    template <>
+    struct convertFromYacsObjref<NEUTRALImpl,YACS::ENGINE::Any*>
+    {
+      static inline YACS::ENGINE::Any* convert(const TypeCode *t,std::string& o)
+        {
+          return YACS::ENGINE::AtomAny::New(o);
+        }
+    };
+
+    template <>
+    struct convertFromYacsSequence<NEUTRALImpl,YACS::ENGINE::Any*>
+    {
+      static inline YACS::ENGINE::Any* convert(const TypeCode *t,std::vector<YACS::ENGINE::Any*>& v)
+        {
+          std::vector<YACS::ENGINE::Any*>::const_iterator iter;
+          //Objref are managed as string within YACS::ENGINE::Any objs
+          SequenceAny* any;
+          any=SequenceAny::New(t->contentType());
+          for(iter=v.begin();iter!=v.end();iter++)
+            {
+              any->pushBack(*iter);
+              (*iter)->decrRef();
+            }
+          DEBTRACE( "refcnt: " << any->getRefCnt() );
+          return any;
+        }
+    };
+    /* End of FromYacs Convertor for NEUTRALImpl */
+
+    //! ToYacs Convertor for CORBAImpl
+    /*!
+     * This convertor converts Corba objects to intermediate YACS<TOUT> types
+     * Template : Partial specialization for CORBA implementation with types CORBA::Any*
+     */
+    template <ImplType IMPLOUT, class TOUT>
+    struct convertToYacsDouble<CORBAImpl,CORBA::Any*,void*,IMPLOUT,TOUT>
+    {
+      static inline double convert(const TypeCode *t,CORBA::Any* o,void*)
+        {
+          CORBA::TypeCode_var tc = o->type();
+          if (tc->equivalent(CORBA::_tc_double))
+            {
+              CORBA::Double d;
+              *o >>= d;
+              return d;
+            }
+          if (tc->equivalent(CORBA::_tc_long))
+            {
+              CORBA::Long d;
+              *o >>= d;
+              return d;
+            }
+          stringstream msg;
+          msg << "Problem in CORBA to TOUT conversion: kind= " << t->kind() ;
+          msg << " : " << __FILE__ << ":" << __LINE__;
+          throw YACS::ENGINE::ConversionException(msg.str());
+        }
+    };
+    template <ImplType IMPLOUT, class TOUT>
+    struct convertToYacsInt<CORBAImpl,CORBA::Any*,void*,IMPLOUT,TOUT>
+    {
+      static inline long convert(const TypeCode *t,CORBA::Any* o,void*)
+        {
+          CORBA::Long d;
+          *o >>= d;
+          return d;
+        }
+    };
+    template <ImplType IMPLOUT, class TOUT>
+    struct convertToYacsString<CORBAImpl,CORBA::Any*,void*,IMPLOUT,TOUT>
+    {
+      static inline std::string convert(const TypeCode *t,CORBA::Any* o,void*)
+        {
+          const char *s;
+          *o >>=s;
+          return s;
+        }
+    };
+    template <ImplType IMPLOUT, class TOUT>
+    struct convertToYacsBool<CORBAImpl,CORBA::Any*,void*,IMPLOUT,TOUT>
+    {
+      static inline bool convert(const TypeCode *t,CORBA::Any* o,void*)
+        {
+          CORBA::Boolean b;
+          if(*o >>= CORBA::Any::to_boolean(b))
+            return b;
+          stringstream msg;
+          msg << "Problem in Corba to TOUT conversion: kind= " << t->kind() ;
+          msg << " : " << __FILE__ << ":" << __LINE__;
+          throw YACS::ENGINE::ConversionException(msg.str());
+        }
+    };
+    template <ImplType IMPLOUT, class TOUT>
+    struct convertToYacsObjref<CORBAImpl,CORBA::Any*,void*,IMPLOUT,TOUT>
+    {
+      static inline std::string convert(const TypeCode *t,CORBA::Any* o,void*)
+        {
+          CORBA::Object_var ObjRef ;
+          *o >>= (CORBA::Any::to_object ) ObjRef ;
+          CORBA::String_var objref = getSALOMERuntime()->getOrb()->object_to_string(ObjRef);
+          return (char *)objref;
+        }
+    };
+    template <ImplType IMPLOUT, class TOUT>
+    struct convertToYacsSequence<CORBAImpl,CORBA::Any*,void*,IMPLOUT,TOUT>
+    {
+      static inline void convert(const TypeCode *t,CORBA::Any* o,void*,std::vector<TOUT>& v)
+        {
+          CORBA::TypeCode_var tc=o->type();
+          if (tc->kind() != CORBA::tk_sequence)
+            {
+              stringstream msg;
+              msg << "Not a sequence corba type " << tc->kind();
+              msg << " : " << __FILE__ << ":" << __LINE__;
+              throw YACS::ENGINE::ConversionException(msg.str());
+            }
+          DynamicAny::DynAny_ptr dynany=getSALOMERuntime()->getDynFactory()->create_dyn_any(*o);
+          DynamicAny::DynSequence_ptr ds=DynamicAny::DynSequence::_narrow(dynany);
+          CORBA::release(dynany);
+          DynamicAny::AnySeq_var as=ds->get_elements();
+          int len=as->length();
+          v.resize(len);
+          for(int i=0;i<len;i++)
+            {
+#ifdef REFCNT
+              DEBTRACE("refcount CORBA as[i]: " << ((omni::TypeCode_base*)as[i].pd_tc.in())->pd_ref_count);
+#endif
+              TOUT ro=YacsConvertor<CORBAImpl,CORBA::Any*,void*,IMPLOUT,TOUT>(t->contentType(),&as[i],0);
+              v[i]=ro;
+            }
+          ds->destroy();
+          CORBA::release(ds);
+          for(int i=0;i<len;i++)
+            {
+#ifdef REFCNT
+              DEBTRACE("refcount CORBA as[i]: " << ((omni::TypeCode_base*)as[i].pd_tc.in())->pd_ref_count);
+#endif
+            }
+        }
+    };
+    template <ImplType IMPLOUT, class TOUT>
+    struct convertToYacsStruct<CORBAImpl,CORBA::Any*,void*,IMPLOUT,TOUT>
+    {
+      static inline void convert(const TypeCode *t,CORBA::Any* o,void*,std::map<std::string,TOUT>& m)
+        {
+          CORBA::TypeCode_var tc=o->type();
+          DEBTRACE(tc->kind());
+          if (tc->kind() != CORBA::tk_struct)
+            {
+              stringstream msg;
+              msg << "Not a struct corba type " << tc->kind();
+              msg << " : " << __FILE__ << ":" << __LINE__;
+              throw YACS::ENGINE::ConversionException(msg.str());
+            }
+          YACS::ENGINE::TypeCodeStruct* tst=(YACS::ENGINE::TypeCodeStruct*)t;
+          DynamicAny::DynAny_ptr dynany=getSALOMERuntime()->getDynFactory()->create_dyn_any(*o);
+          DynamicAny::DynStruct_ptr ds=DynamicAny::DynStruct::_narrow(dynany);
+          CORBA::release(dynany);
+          DynamicAny::NameValuePairSeq_var as=ds->get_members();
+          int len=as->length();
+          for(int i=0;i<len;i++)
+            {
+              std::string name=as[i].id.in();
+              DEBTRACE(name);
+              CORBA::Any value=as[i].value;
+#ifdef REFCNT
+              DEBTRACE("refcount CORBA value: " << ((omni::TypeCode_base*)value.pd_tc.in())->pd_ref_count);
+#endif
+              TOUT ro=YacsConvertor<CORBAImpl,CORBA::Any*,void*,IMPLOUT,TOUT>(tst->memberType(i),&value,0);
+              m[name]=ro;
+            }
+          ds->destroy();
+          CORBA::release(ds);
+        }
+    };
+    /* End of ToYacs Convertor for CORBAImpl */
+
+    //! FromYacs Convertor for CORBAImpl
+    /*!
+     * Convert YACS<CORBA::Any*> intermediate types to CORBA::Any* types (CORBAImpl)
+     */
+    template <>
+    struct convertFromYacsDouble<CORBAImpl,CORBA::Any*>
+    {
+      static inline CORBA::Any* convert(const TypeCode *t,double o)
+        {
+          CORBA::Any *any = new CORBA::Any();
+          *any <<= o;
+          return any;
+        }
+    };
+    template <>
+    struct convertFromYacsInt<CORBAImpl,CORBA::Any*>
+    {
+      static inline CORBA::Any* convert(const TypeCode *t,long o)
+        {
+          CORBA::Any *any = new CORBA::Any();
+          *any <<= o;
+          return any;
+        }
+    };
+    template <>
+    struct convertFromYacsString<CORBAImpl,CORBA::Any*>
+    {
+      static inline CORBA::Any* convert(const TypeCode *t,std::string& o)
+        {
+          CORBA::Any *any = new CORBA::Any();
+          *any <<= o.c_str();
+          return any;
+        }
+    };
+    template <>
+    struct convertFromYacsBool<CORBAImpl,CORBA::Any*>
+    {
+      static inline CORBA::Any* convert(const TypeCode *t,bool o)
+        {
+          CORBA::Any *any = new CORBA::Any();
+          *any <<= CORBA::Any::from_boolean(o);
+          return any;
+        }
+    };
+    template <>
+    struct convertFromYacsObjref<CORBAImpl,CORBA::Any*>
+    {
+      static inline CORBA::Any* convert(const TypeCode *t,std::string& o)
+        {
+          /*
+          std::string::size_type pos=o.find_first_of(":");
+          std::string prefix=o.substr(0,pos);
+          DEBTRACE(prefix);
+          if(prefix == "file")
+            {
+              //It's an objref file. Convert it specially
+            }
+            */
+          CORBA::Object_var obref =
+            getSALOMERuntime()->getOrb()->string_to_object(o.c_str());
+#ifdef REFCNT
+          DEBTRACE("ObjRef refCount: " << obref->_PR_getobj()->pd_refCount);
+#endif
+          CORBA::Any *any = new CORBA::Any();
+          *any <<= obref;
+#ifdef REFCNT
+          DEBTRACE("ObjRef refCount: " << obref->_PR_getobj()->pd_refCount);
+#endif
+          return any;
+        }
+    };
+
+    template <>
+    struct convertFromYacsSequence<CORBAImpl,CORBA::Any*>
+    {
+      static inline CORBA::Any* convert(const TypeCode *t,std::vector<CORBA::Any*>& v)
+        {
+          CORBA::Any *any;
+          CORBA::TypeCode_ptr seqTC;
+
+          //the equivalent CORBA TypeCode
+          seqTC=getCorbaTC(t);
+#ifdef REFCNT
+          DEBTRACE("refcount CORBA seqTC: " << ((omni::TypeCode_base*)seqTC)->pd_ref_count);
+#endif
+          DynamicAny::DynAny_ptr dynany =
+            getSALOMERuntime()->getDynFactory()->create_dyn_any_from_type_code(seqTC);
+          CORBA::release(seqTC);
+          DynamicAny::DynSequence_ptr ds =
+            DynamicAny::DynSequence::_narrow(dynany);
+          CORBA::release(dynany);
+
+          std::vector<CORBA::Any*>::const_iterator iter;
+          DynamicAny::AnySeq as ;
+          as.length(v.size());
+          int i=0;
+          for(iter=v.begin();iter!=v.end();iter++)
+            {
+              //Can we avoid making a copy ?
+              CORBA::Any* a=*iter;
+              as[i]=*a;
+              i++;
+              //delete intermediate any
+              delete a;
+            }
+          try
+            {
+              ds->set_elements(as);
+            }
+          catch(DynamicAny::DynAny::TypeMismatch& ex)
+            {
+              throw YACS::ENGINE::ConversionException("type mismatch");
+            }
+          catch(DynamicAny::DynAny::InvalidValue& ex)
+            {
+              throw YACS::ENGINE::ConversionException("invalid value");
+            }
+          any=ds->to_any();
+          ds->destroy();
+          CORBA::release(ds);
+#ifdef REFCNT
+          DEBTRACE("refcount CORBA seqTC: " << ((omni::TypeCode_base*)seqTC)->pd_ref_count);
+#endif
+          return any;
+        }
+    };
+    template <>
+    struct convertFromYacsStruct<CORBAImpl,CORBA::Any*>
+    {
+      static inline CORBA::Any* convert(const TypeCode *t,std::map<std::string,CORBA::Any*>& m)
+        {
+          CORBA::Any *any;
+          CORBA::TypeCode_ptr structTC;
+
+          //the equivalent CORBA TypeCode
+          structTC=getCorbaTC(t);
+#ifdef REFCNT
+          DEBTRACE("refcount CORBA structTC: " << ((omni::TypeCode_base*)structTC)->pd_ref_count);
+          DEBTRACE("refcount CORBA tc_double: " << ((omni::TypeCode_base*)CORBA::_tc_double)->pd_ref_count);
+#endif
+          YACS::ENGINE::TypeCodeStruct* tst=(YACS::ENGINE::TypeCodeStruct*)t;
+          int nMember=tst->memberCount();
+          DEBTRACE("nMember="<<nMember);
+          DynamicAny::DynAny_ptr da=
+            getSALOMERuntime()->getDynFactory()->create_dyn_any_from_type_code(structTC);
+#ifdef REFCNT
+          DEBTRACE("refcount CORBA structTC: " << ((omni::TypeCode_base*)structTC)->pd_ref_count);
+          DEBTRACE("refcount CORBA tc_double: " << ((omni::TypeCode_base*)CORBA::_tc_double)->pd_ref_count);
+#endif
+          CORBA::release(structTC);
+#ifdef REFCNT
+          DEBTRACE("refcount CORBA structTC: " << ((omni::TypeCode_base*)structTC)->pd_ref_count);
+          DEBTRACE("refcount CORBA tc_double: " << ((omni::TypeCode_base*)CORBA::_tc_double)->pd_ref_count);
+#endif
+          DynamicAny::DynStruct_ptr ds=DynamicAny::DynStruct::_narrow(da);
+          CORBA::release(da);
+#ifdef REFCNT
+          DEBTRACE("refcount CORBA structTC: " << ((omni::TypeCode_base*)structTC)->pd_ref_count);
+          DEBTRACE("refcount CORBA tc_double: " << ((omni::TypeCode_base*)CORBA::_tc_double)->pd_ref_count);
+#endif
+          DynamicAny::NameValuePairSeq members;
+          members.length(nMember);
+          for(int i=0;i<nMember;i++)
+            {
+              const char * name=tst->memberName(i);
+              DEBTRACE("Member name="<<name);
+              //TypeCode* tm=tst->memberType(i);
+              //do not test member presence : test has been done in ToYacs convertor
+              CORBA::Any* a=m[name];
+              members[i].id=CORBA::string_dup(name);
+              members[i].value=*a;
+              //delete intermediate any
+              delete a;
+            }
+#ifdef REFCNT
+          DEBTRACE("refcount CORBA structTC: " << ((omni::TypeCode_base*)structTC)->pd_ref_count);
+          DEBTRACE("refcount CORBA tc_double: " << ((omni::TypeCode_base*)CORBA::_tc_double)->pd_ref_count);
+#endif
+          ds->set_members(members);
+#ifdef REFCNT
+          DEBTRACE("refcount CORBA structTC: " << ((omni::TypeCode_base*)structTC)->pd_ref_count);
+          DEBTRACE("refcount CORBA tc_double: " << ((omni::TypeCode_base*)CORBA::_tc_double)->pd_ref_count);
+#endif
+          any=ds->to_any();
+#ifdef REFCNT
+          DEBTRACE("refcount CORBA structTC: " << ((omni::TypeCode_base*)structTC)->pd_ref_count);
+          DEBTRACE("refcount CORBA tc_double: " << ((omni::TypeCode_base*)CORBA::_tc_double)->pd_ref_count);
+#endif
+          ds->destroy();
+          CORBA::release(ds);
+#ifdef REFCNT
+          DEBTRACE("refcount CORBA structTC: " << ((omni::TypeCode_base*)structTC)->pd_ref_count);
+          DEBTRACE("refcount CORBA tc_double: " << ((omni::TypeCode_base*)CORBA::_tc_double)->pd_ref_count);
+#endif
+          return any;
+        }
+    };
+    /* End of FromYacs Convertor for CORBAImpl */
+
+    /* Some shortcuts for CORBA to CORBA conversion */
+    template <>
+    inline CORBA::Any* convertDouble<CORBAImpl,CORBA::Any*,void*,CORBAImpl,CORBA::Any*>(const TypeCode *t,CORBA::Any* o,void* aux)
+    {
+      CORBA::TypeCode_var tc = o->type();
       if (tc->equivalent(CORBA::_tc_double))
-	{
-	  CORBA::Double d;
-	  *ob >>= d;
-	  stringstream msg ;
-	  msg << "<value><double>" << d << "</double></value>\n";
-	  return (char *)msg.str().c_str();
-	}
+        {
+          return o;
+        }
       if (tc->equivalent(CORBA::_tc_long))
-	{
-	  CORBA::Long d;
-	  *ob >>= d;
-	  stringstream msg;
-	  msg << "<value><double>" << d << "</double></value>\n";
-	  return (char *)msg.str().c_str();
-	}
+        {
+          CORBA::Long d;
+          *o >>= d;
+          CORBA::Any *any = new CORBA::Any();
+          *any <<= (CORBA::Double)d;
+          return any;
+        }
       stringstream msg;
-      msg << "Internal error " ;
+      msg << "Not a double or long corba type " << tc->kind();
       msg << " : " << __FILE__ << ":" << __LINE__;
-      throw YACS::Exception(msg.str());
+      throw YACS::ENGINE::ConversionException(msg.str());
     }
-
-    char *convertXmlCorbaInt(TypeCode *t,CORBA::Any *ob)
+    template <>
+    inline CORBA::Any* convertInt<CORBAImpl,CORBA::Any*,void*,CORBAImpl,CORBA::Any*>(const TypeCode *t,CORBA::Any* o,void* aux)
     {
-      CORBA::Long l;
-      *ob >>= l;
-      stringstream msg ;
-      msg << "<value><int>" << l << "</int></value>\n";
-      return (char *)msg.str().c_str();
+      return o;
     }
-
-    char *convertXmlCorbaString(TypeCode *t,CORBA::Any *ob)
+    template <>
+    inline CORBA::Any* convertString<CORBAImpl,CORBA::Any*,void*,CORBAImpl,CORBA::Any*>(const TypeCode *t,CORBA::Any* o,void* aux)
     {
-      char *s;
-      *ob >>=s;
-      stringstream msg ;
-      msg << "<value><string>" << s << "</string></value>\n";
-      return (char *)msg.str().c_str();
+      return o;
     }
-
-    char *convertXmlCorbaObjref(TypeCode *t,CORBA::Any *ob)
+    template <>
+    inline CORBA::Any* convertBool<CORBAImpl,CORBA::Any*,void*,CORBAImpl,CORBA::Any*>(const TypeCode *t,CORBA::Any* o,void* aux)
     {
-      CORBA::Object_ptr ObjRef ;
-      *ob >>= (CORBA::Any::to_object ) ObjRef ;
-      stringstream msg ;
-      msg << "<value><objref>" << getSALOMERuntime()->getOrb()->object_to_string(ObjRef) << "</objref></value>\n";
-      return (char *)msg.str().c_str();
+      return o;
     }
-
-    char *convertXmlCorbaSequence(TypeCode *t,CORBA::Any *ob)
+    template <>
+    inline CORBA::Any* convertObjref<CORBAImpl,CORBA::Any*,void*,CORBAImpl,CORBA::Any*>(const TypeCode *t,CORBA::Any* o,void* aux)
     {
-      cerr << "convertXmlCorbaSequence" << endl;
-      DynamicAny::DynAny_var dynany=getSALOMERuntime()->getDynFactory()->create_dyn_any(*ob);
-      DynamicAny::DynSequence_var ds=DynamicAny::DynSequence::_narrow(dynany);
-      DynamicAny::AnySeq_var as=ds->get_elements();
-      int len=as->length();
-      stringstream xmlob;
-      xmlob << "<value><array><data>\n";
-      for(int i=0;i<len;i++)
-	{
-	  xmlob << convertXmlCorba(t->content_type(),&as[i]);
-	}
-      xmlob << "</data></array></value>\n";
-      cerr << "Sequence= ";
-      cerr << xmlob;
-      cerr << endl;
-      return (char *)xmlob.str().c_str();
+      return o;
     }
-
-    convertXmlCorbaFn convertXmlCorbaFns[]=
-      {
-	convertXmlCorbaNull,
-	convertXmlCorbaDouble,
-	convertXmlCorbaInt,
-	convertXmlCorbaString,
-	convertXmlCorbaNull,
-	convertXmlCorbaObjref,
-	convertXmlCorbaSequence,
-      };
-
-    char *convertXmlCorba(TypeCode *t,CORBA::Any *ob)
+    template <>
+    inline CORBA::Any* convertStruct<CORBAImpl,CORBA::Any*,void*,CORBAImpl,CORBA::Any*>(const TypeCode *t,CORBA::Any* o,void* aux)
     {
-      int tk=t->kind();
-      return convertXmlCorbaFns[tk](t,ob);
+      return o;
     }
+    /* End of shortcuts for CORBA to CORBA conversion */
 
-    /*
-     * Fin des fonctions de conversion CORBA::Any * -> Xml char *
+    //! ToYacs Convertor for CPPImpl
+    /*!
+     * This convertor converts Python object to YACS<TOUT> types
+     * Partial specialization for Python implementation with type PyObject* (PYTHONImpl)
      */
-
-    /*
-     * Fonctions de conversion CORBA::Any * -> CORBA::Any *
-     */
-    //Le TypeCode t est celui vers lequel on convertit (celui de l'InputPort)
-    //On a le type Corba de l'objet sortant par ob->type()
-
-    CORBA::Any *convertCorbaCorbaNull(TypeCode *t,CORBA::Any *ob)
+    template <ImplType IMPLOUT, class TOUT>
+    struct convertToYacsDouble<CPPImpl,void*,const TypeCode*,IMPLOUT,TOUT>
     {
-      stringstream msg;
-      msg << "Conversion not implemented: kind= " << t->kind() ;
-      msg << " : " << __FILE__ << ":" << __LINE__;
-      throw YACS::Exception(msg.str());
+      static inline double convert(const TypeCode *t,void* o,const TypeCode* intype)
+        {
+          if(intype->kind()==YACS::ENGINE::Double)
+            {
+              return *(double*)o;
+            }
+          else if(intype->kind()==YACS::ENGINE::Int)
+            {
+              return *(long*)o;
+            }
+          stringstream msg;
+          msg << "Problem in Cpp to TOUT conversion: kind= " << t->kind() ;
+          msg << " : " << __FILE__ << ":" << __LINE__;
+          throw YACS::ENGINE::ConversionException(msg.str());
+        }
     };
-
-    //kind=1
-    //Convertit un CORBA::Any "equivalent double" en Python double
-
-    CORBA::Any *convertCorbaCorbaDouble(TypeCode *t,CORBA::Any *ob)
+    template <ImplType IMPLOUT, class TOUT>
+    struct convertToYacsInt<CPPImpl,void*,const TypeCode*,IMPLOUT,TOUT>
     {
-      CORBA::TypeCode_var tc = ob->type();
-      if (tc->equivalent(CORBA::_tc_double)) 
-	{
-	  return ob;
-	}
-      if (tc->equivalent(CORBA::_tc_long))
-	{
-	  CORBA::Long d;
-	  *ob >>= d;
-	  CORBA::Any *any = new CORBA::Any();
-	  *any <<= (CORBA::Double)d;
-	  return any;
-	}
-      stringstream msg;
-      msg << "Internal error " ;
-      msg << " : " << __FILE__ << ":" << __LINE__;
-      throw YACS::Exception(msg.str());
-    }
+      static inline long convert(const TypeCode *t,void* o,const TypeCode* intype)
+        {
+          if(intype->kind()==YACS::ENGINE::Int)
+            {
+              return *(long*)o;
+            }
+          stringstream msg;
+          msg << "Problem in Cpp to TOUT conversion: kind= " << t->kind() ;
+          msg << " : " << __FILE__ << ":" << __LINE__;
+          throw YACS::ENGINE::ConversionException(msg.str());
+        }
+    };
+    /* End of ToYacs Convertor for CPPImpl */
 
-    CORBA::Any *convertCorbaCorbaInt(TypeCode *t,CORBA::Any *ob)
-    {
-      return ob;
-    }
-
-    CORBA::Any *convertCorbaCorbaString(TypeCode *t,CORBA::Any *ob)
-    {
-      return ob;
-    }
-
-    CORBA::Any *convertCorbaCorbaObjref(TypeCode *t,CORBA::Any *ob)
-    {
-      return ob;
-    }
-
-    CORBA::Any *convertCorbaCorbaSequence(TypeCode *t,CORBA::Any *ob)
-    {
-      cerr << "convertCorbaCorbaSequence" << endl;
-      DynamicAny::DynAny_var dynany= getSALOMERuntime()->getDynFactory()->create_dyn_any(*ob);
-      DynamicAny::DynSequence_var ds=DynamicAny::DynSequence::_narrow(dynany);
-      DynamicAny::AnySeq_var as=ds->get_elements();
-      int length=as->length();
-      CORBA::TypeCode_var tc_content;
-      DynamicAny::AnySeq asout ;
-      asout.length(length);
-      for(int i=0;i<length;i++)
-	{
-	  CORBA::Any *a=convertCorbaCorba(t->content_type(),&as[i]);
-	  //ici on fait une copie. Peut-on l'éviter ?
-	  asout[i]=*a;
-	  tc_content=a->type();
-	  //delete a;
-	}
-      CORBA::TypeCode_var tc= getSALOMERuntime()->getOrb()->create_sequence_tc(0,tc_content);
-      DynamicAny::DynAny_var dynanyout=getSALOMERuntime()->getDynFactory()->create_dyn_any_from_type_code(tc);
-      DynamicAny::DynSequence_var dsout=DynamicAny::DynSequence::_narrow(dynanyout);
-      try
-	{
-	  dsout->set_elements(asout);
-	}
-      catch(DynamicAny::DynAny::TypeMismatch& ex)
-	{
-	  throw YACS::Exception("type mismatch");
-	}
-      catch(DynamicAny::DynAny::InvalidValue& ex)
-	{
-	  throw YACS::Exception("invalid value");
-	}
-      CORBA::Any *any=dsout->to_any();
-      return any;
-    }
-
-
-    convertCorbaCorbaFn convertCorbaCorbaFns[]=
+    //Python conversions
+    std::string convertPyObjectXml(const TypeCode *t,PyObject *data)
       {
-	convertCorbaCorbaNull,
-	convertCorbaCorbaDouble,
-	convertCorbaCorbaInt,
-	convertCorbaCorbaString,
-	convertCorbaCorbaNull,
-	convertCorbaCorbaObjref,
-	convertCorbaCorbaSequence,
-      };
-
-    CORBA::Any *convertCorbaCorba(TypeCode *t,CORBA::Any *ob)
-    {
-      int tk=t->kind();
-      return convertCorbaCorbaFns[tk](t,ob);
-    }
-
-    /*
-     * Fin des fonctions de conversion CORBA::Any * -> PyObject *
-     */
-
-    /*
-     * Fonctions de conversion Xml char * -> CORBA::Any *
-     */
-
-    //Le TypeCode t est celui vers lequel on convertit (celui de l'InputPort)
-    
-    CORBA::Any *convertCorbaXmlNull(TypeCode *t, xmlDocPtr doc, xmlNodePtr cur)
-    {
-      stringstream msg;
-      msg << "Conversion not implemented: kind= " << t->kind() ;
-      msg << " : " << __FILE__ << ":" << __LINE__;
-      throw YACS::Exception(msg.str());
-    }
-    
-    CORBA::Any *convertCorbaXmlDouble(TypeCode *t,xmlDocPtr doc,xmlNodePtr cur)
-    {
-      cur = cur->xmlChildrenNode;
-      while (cur != NULL)
-	{
-	  if ((!xmlStrcmp(cur->name, (const xmlChar *)"double")))
-	    {
-	      //on attend un double, on a bien un double
-	      xmlChar * s = NULL;
-	      s = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
-	      CORBA::Any *any = new CORBA::Any();
-	      cerr << "convertCorbaXmlDouble " << (const char *)s << endl;
-	      *any <<= (CORBA::Double)atof((const char *)s);
-	      xmlFree(s);
-	      return any;
-	    }
-	  else if ((!xmlStrcmp(cur->name, (const xmlChar *)"int")))
-	    {
-	      //on attend un double, on a un int
-	      xmlChar * s = NULL;
-	      s = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
-	      CORBA::Any *any = new CORBA::Any();
-	      cerr << "convertCorbaXmlDouble " << (const char *)s << endl;
-	      *any <<= (CORBA::Double)atof((const char *)s);
-	      xmlFree(s);
-	      return any;
-	    }
-	  cur = cur->next;
-	}
-      stringstream msg;
-      msg << "Problem in conversion: kind= " << t->kind() ;
-      msg << " : " << __FILE__ << ":" << __LINE__;
-      throw YACS::Exception(msg.str());
-    }
-    
-    CORBA::Any *convertCorbaXmlSequence(TypeCode *t,xmlDocPtr doc,xmlNodePtr cur)
-    {
-      CORBA::TypeCode_var tc_content;
-      DynamicAny::AnySeq as ;
-      int len=0;
-      cur = cur->xmlChildrenNode;
-      while (cur != NULL)
-	{
-	  if ((!xmlStrcmp(cur->name, (const xmlChar *)"array"))) 
-	    {
-	      cerr << "parse sequence " << endl;
-	      xmlNodePtr cur1=cur->xmlChildrenNode;
-	      while (cur1 != NULL)
-		{
-		  if ((!xmlStrcmp(cur1->name, (const xmlChar *)"data")))
-		    {
-		      cerr << "parse data " << endl;
-		      xmlNodePtr cur2=cur1->xmlChildrenNode;
-                    while (cur2 != NULL)
-		      {
-                        //on recupere toutes les values
-                        if ((!xmlStrcmp(cur2->name, (const xmlChar *)"value")))
-			  {
-                            cerr << "parse value " << endl;
-                            CORBA::Any *a=convertCorbaXml(t->content_type(),doc,cur2);
-                            as.length(len+1);
-                            as[len++]=*a;
-                            tc_content=a->type();
-			  }
-                        cur2 = cur2->next;
-		      } // end while value
-                    break;
-		    }
-		  cur1 = cur1->next;
-		} // end while data
-	      break;
-	    }
-	  cur = cur->next;
-	} // end while array
-
-      CORBA::TypeCode_var tc=getSALOMERuntime()->getOrb()->create_sequence_tc(0,tc_content);
-      DynamicAny::DynAny_var dynanyout=getSALOMERuntime()->getDynFactory()->create_dyn_any_from_type_code(tc);
-      DynamicAny::DynSequence_var dsout=DynamicAny::DynSequence::_narrow(dynanyout);
-    try
-      {
-        dsout->set_elements(as);
+        return YacsConvertor<PYTHONImpl,PyObject*,void*,XMLImpl,std::string>(t,data,0);
       }
-    catch(DynamicAny::DynAny::TypeMismatch& ex)
+    YACS::ENGINE::Any* convertPyObjectNeutral(const TypeCode *t,PyObject *data)
       {
-        throw YACS::Exception("type mismatch");
+        return YacsConvertor<PYTHONImpl,PyObject*,void*,NEUTRALImpl,YACS::ENGINE::Any*>(t,data,0);
       }
-    catch(DynamicAny::DynAny::InvalidValue& ex)
+    CORBA::Any* convertPyObjectCorba(const TypeCode *t,PyObject *data)
       {
-        throw YACS::Exception("invalid value");
+        return YacsConvertor<PYTHONImpl,PyObject*,void*,CORBAImpl,CORBA::Any*>(t,data,0);
       }
-    CORBA::Any *any=dsout->to_any();
-    return any;
-    }
 
-    convertCorbaXmlFn convertCorbaXmlFns[]=
+    //XML conversions
+    PyObject* convertXmlPyObject(const TypeCode *t,xmlDocPtr doc,xmlNodePtr cur)
       {
-	convertCorbaXmlNull,
-	convertCorbaXmlDouble,
-	convertCorbaXmlNull,
-	convertCorbaXmlNull,
-	convertCorbaXmlNull,
-	convertCorbaXmlNull,
-	convertCorbaXmlSequence,
-      };
+        return YacsConvertor<XMLImpl,xmlDocPtr,xmlNodePtr,PYTHONImpl,PyObject*>(t,doc,cur);
+      }
+    YACS::ENGINE::Any* convertXmlNeutral(const TypeCode *t,xmlDocPtr doc,xmlNodePtr cur)
+      {
+        return YacsConvertor<XMLImpl,xmlDocPtr,xmlNodePtr,NEUTRALImpl,YACS::ENGINE::Any*>(t,doc,cur);
+      }
+    CORBA::Any* convertXmlCorba(const TypeCode *t,xmlDocPtr doc,xmlNodePtr cur)
+      {
+        return YacsConvertor<XMLImpl,xmlDocPtr,xmlNodePtr,CORBAImpl,CORBA::Any*>(t,doc,cur);
+      }
+    //NEUTRAL conversions
+    PyObject* convertNeutralPyObject(const TypeCode *t,YACS::ENGINE::Any* data)
+      {
+        return YacsConvertor<NEUTRALImpl,YACS::ENGINE::Any*,void*,PYTHONImpl,PyObject*>(t,data,0);
+      }
+    std::string convertNeutralXml(const TypeCode *t,YACS::ENGINE::Any* data)
+      {
+        return YacsConvertor<NEUTRALImpl,YACS::ENGINE::Any*,void*,XMLImpl,std::string>(t,data,0);
+      }
+    CORBA::Any* convertNeutralCorba(const TypeCode *t,YACS::ENGINE::Any* data)
+      {
+        return YacsConvertor<NEUTRALImpl,YACS::ENGINE::Any*,void*,CORBAImpl,CORBA::Any*>(t,data,0);
+      }
+    YACS::ENGINE::Any *convertNeutralNeutral(const TypeCode *t, YACS::ENGINE::Any* data)
+      {
+        data->incrRef();
+        return data;
+      }
 
-    CORBA::Any *convertCorbaXml(TypeCode *t,xmlDocPtr doc,xmlNodePtr cur)
-    {
-      int tk=t->kind();
-      return convertCorbaXmlFns[tk](t,doc,cur);
-    }
-
-    /*
-     * Fin des fonctions de conversion Xml char * -> CORBA::Any *
-     */
-
+    //CORBA conversions
+    PyObject* convertCorbaPyObject(const TypeCode *t,CORBA::Any* data)
+      {
+        return YacsConvertor<CORBAImpl,CORBA::Any*,void*,PYTHONImpl,PyObject*>(t,data,0);
+      }
+    std::string convertCorbaXml(const TypeCode *t,CORBA::Any* data)
+      {
+        return YacsConvertor<CORBAImpl,CORBA::Any*,void*,XMLImpl,std::string>(t,data,0);
+      }
+    YACS::ENGINE::Any* convertCorbaNeutral(const TypeCode *t,CORBA::Any* data)
+      {
+        return YacsConvertor<CORBAImpl,CORBA::Any*,void*,NEUTRALImpl,YACS::ENGINE::Any*>(t,data,0);
+      }
+    CORBA::Any *convertCorbaCorba(const TypeCode *t,CORBA::Any *data)
+      {
+        return YacsConvertor<CORBAImpl,CORBA::Any*,void*,CORBAImpl,CORBA::Any*>(t,data,0);
+      }
   }
 }

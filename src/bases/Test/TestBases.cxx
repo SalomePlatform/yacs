@@ -1,4 +1,6 @@
 
+#define UNIT_TEST_HEADER " --- TEST src/bases"
+
 #include "basesTest.hxx"
 
 using namespace YACS::BASES;

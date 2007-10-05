@@ -1,0 +1,15 @@
+This directory contains contain the tree directories to compile a C++ components linked with MED library.
+
+
+Component sbased on automake. 
+To INSTALL it :
+
+ mkdir ../COMPO_CXX_BUILD
+ mkdir ../COMPO_CXX_INSTALL
+ ./build_configure
+ cd ../COMPO_CXX_BUILD
+ ../COMPO_CXX_SRC/configure --prefix=<absolute path of COMPO_CXX_INSTALL>
+ make
+ make install
+
+

@@ -1,3 +1,4 @@
+#!/bin/sh
 
 BASEREP=`pwd`
 OMNIORB_CONFIG=${BASEREP}/omniorb.cfg
@@ -27,5 +28,8 @@ pidecho=$!
 echo $pidecho
 
 ./TestRuntime
+ret=$?
 
 kill -9 $pidecho $pidomni
+cat /tmp/${USER}/UnitTestsResult
+exit $ret

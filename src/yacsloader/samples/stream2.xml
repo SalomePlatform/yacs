@@ -1,0 +1,51 @@
+<proc>
+
+    <!-- types -->
+    <objref name="BASIC_short"/>
+    <!-- inline -->
+    <inline name="node0" >
+      <script>
+        <code>n=20</code>
+      </script>
+      <outport name="n" type="int"/>
+    </inline>
+    <!-- service -->
+    <service name="node1" >
+      <component>DSCCODA</component>
+      <method>prun</method>
+      <inport name="niter" type="int"/>
+      <instream name="prun_in_port" type="BASIC_short"/>
+      <outstream name="prun_out_port" type="BASIC_short"/>
+    </service>
+    <service name="node2" >
+      <component>DSCCODB</component>
+      <method>prun</method>
+      <inport name="niter" type="int"/>
+      <instream name="prun_in_port" type="BASIC_short"/>
+      <outstream name="prun_out_port" type="BASIC_short"/>
+    </service>
+    <!--control -->
+    <control> <fromnode>node0</fromnode> <tonode>node1</tonode> </control>
+    <control> <fromnode>node0</fromnode> <tonode>node2</tonode> </control>
+    <!--datalinks -->
+    <datalink> 
+      <fromnode>node0</fromnode><fromport>n</fromport>
+      <tonode>node1</tonode> <toport>niter</toport> 
+    </datalink>
+    <datalink> 
+      <fromnode>node0</fromnode><fromport>n</fromport>
+      <tonode>node2</tonode> <toport>niter</toport> 
+    </datalink>
+    <!--parameters -->
+
+    <!--stream -->
+    <stream>
+      <fromnode>node1</fromnode> <fromport>prun_out_port</fromport>
+      <tonode>node2</tonode> <toport>prun_in_port</toport>
+    </stream>
+    <stream>
+      <fromnode>node2</fromnode> <fromport>prun_out_port</fromport>
+      <tonode>node1</tonode> <toport>prun_in_port</toport>
+    </stream>
+
+</proc>

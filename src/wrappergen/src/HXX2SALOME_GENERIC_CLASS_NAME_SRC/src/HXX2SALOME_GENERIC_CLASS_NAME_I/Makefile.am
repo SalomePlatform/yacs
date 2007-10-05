@@ -1,0 +1,10 @@
+include $(top_srcdir)/adm_local/unix/make_common_starter.am
+
+USE_MED=0
+
+AM_CXXFLAGS = -fPIC @OMNIORB_INCLUDES@ @OMNIORB_CXXFLAGS@ -DXXX  -I${top_builddir}/idl -I${top_builddir}/adm_local/unix -I ${KERNEL_ROOT_DIR}/include/salome HXX2SALOME_INCLUDE
+
+lib_LTLIBRARIES=libHXX2SALOME_GENERIC_CLASS_NAMEEngine.la
+libHXX2SALOME_GENERIC_CLASS_NAMEEngine_la_SOURCES=HXX2SALOME_GENERIC_CLASS_NAME_i.cxx
+libHXX2SALOME_GENERIC_CLASS_NAMEEngine_la_LIBADD=-L${top_builddir}/idl -lHXX2SALOME_GENERIC_CLASS_NAMESK HXX2SALOME_LIB
+

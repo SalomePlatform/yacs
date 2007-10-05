@@ -1,0 +1,32 @@
+#ifndef __YACS_IDL__
+#define __YACS_IDL__
+
+module YACS_ORB
+{
+  enum executionMode { CONTINUE, STEPBYSTEP, STOPBEFORENODES };
+
+  typedef sequence<string> stringArray;
+  typedef sequence<long> longArray;
+
+  interface Observer
+  {
+    void notifyObserver(in long numid , in string event);
+  };
+
+  interface Proc
+  {
+    long getState(in long numid);
+    string getXMLState(in long numid);
+    void getIds(out longArray numids,out stringArray names);
+  };
+
+  interface YACS_Gen 
+  {
+    Proc Load(in string xmlFile);
+    void Run(in Proc p);
+    void addObserver(in Observer obs,in long numid, in string event);
+  };
+
+};
+
+#endif 

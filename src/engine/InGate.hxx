@@ -4,32 +4,39 @@
 #include "Port.hxx"
 #include "define.hxx"
 
+#include <map>
+#include <list>
+
 namespace YACS
 {
   namespace ENGINE
   {
+    class OutGate;
+
     class InGate : public Port
     {
       friend class Bloc;
       friend class Node;
     protected:
-      int _nbPrecursor;
-      int _nbPrecursorDone;
       static const char NAME[];
     private:
-      //for graphs algs
-      mutable Colour _colour;
+      std::map< OutGate *, bool > _backLinks;
     public:
       InGate(Node *node);
+      virtual ~InGate();
       std::string getNameOfTypeOfCurrentInstance() const;
-      void exNotifyFromPrecursor();
-      void edAppendPrecursor();
-      void edRemovePrecursor();
-      void edSet(int nbOfPrecursors);
+      void exNotifyFromPrecursor(OutGate *from);
+      std::map<OutGate *, bool>& edMapOutGate() { return _backLinks; }
+      void edAppendPrecursor(OutGate *from);
+      void edRemovePrecursor(OutGate *from);
+      int getNumberOfBackLinks() const;
+      void edDisconnectAllLinksToMe();
+      void exNotifyFailed();
+      void exNotifyDisabled();
       void exReset();
       bool exIsReady() const;
-    private:
-      void initForDFS() const { _colour=YACS::White; }
+      std::list<OutGate *> getBackLinks();
+      void setPrecursorDone(OutGate *from);
     };
   }
 }

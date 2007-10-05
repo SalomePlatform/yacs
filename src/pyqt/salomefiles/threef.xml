@@ -1,0 +1,185 @@
+<!DOCTYPE SuperGraph>
+<supergraph>
+ <dataflow>
+  <info-list>
+   <node>
+    <component-name>?</component-name>
+    <interface-name>?</interface-name>
+    <node-name>aNewDataFlow_1</node-name>
+    <kind>1</kind>
+    <coupled-node>?</coupled-node>
+    <service>
+     <service-name>aNewDataFlow_1</service-name>
+     <inParameter-list>
+      <inParameter>
+       <inParameter-type>double</inParameter-type>
+       <inParameter-name>f__a</inParameter-name>
+      </inParameter>
+     </inParameter-list>
+     <outParameter-list>
+      <outParameter>
+       <outParameter-type>double</outParameter-type>
+       <outParameter-name>f_2__a</outParameter-name>
+      </outParameter>
+     </outParameter-list>
+    </service>
+    <DataStream-list/>
+    <PyFunction-list/>
+    <creation-date>10/3/2006 - 19:8:42</creation-date>
+    <lastmodification-date>18/3/2006 - 13:51:19</lastmodification-date>
+    <editor-release>3.0</editor-release>
+    <author>?</author>
+    <container>?</container>
+    <comment>?</comment>
+    <x-position>0</x-position>
+    <y-position>0</y-position>
+   </node>
+  </info-list>
+  <node-list>
+   <node>
+    <component-name>?</component-name>
+    <interface-name>?</interface-name>
+    <node-name>f</node-name>
+    <kind>3</kind>
+    <coupled-node>?</coupled-node>
+    <service>
+     <service-name>f</service-name>
+     <inParameter-list>
+      <inParameter>
+       <inParameter-type>double</inParameter-type>
+       <inParameter-name>a</inParameter-name>
+      </inParameter>
+     </inParameter-list>
+     <outParameter-list>
+      <outParameter>
+       <outParameter-type>double</outParameter-type>
+       <outParameter-name>a</outParameter-name>
+      </outParameter>
+     </outParameter-list>
+    </service>
+    <DataStream-list/>
+    <PyFunction-list>
+     <PyFunction>
+      <FuncName>f</FuncName>
+      <PyFunc><![CDATA[def f(a): ]]></PyFunc>
+      <PyFunc><![CDATA[    return a ]]></PyFunc>
+     </PyFunction>
+    </PyFunction-list>
+    <creation-date>18/3/2006 - 13:47:40</creation-date>
+    <lastmodification-date>18/3/2006 - 13:47:40</lastmodification-date>
+    <editor-release>3.0</editor-release>
+    <author>?</author>
+    <container>?</container>
+    <comment>Compute Node</comment>
+    <x-position>58</x-position>
+    <y-position>76</y-position>
+   </node>
+   <node>
+    <component-name>?</component-name>
+    <interface-name>?</interface-name>
+    <node-name>f_1</node-name>
+    <kind>3</kind>
+    <coupled-node>?</coupled-node>
+    <service>
+     <service-name>f_1</service-name>
+     <inParameter-list>
+      <inParameter>
+       <inParameter-type>double</inParameter-type>
+       <inParameter-name>a</inParameter-name>
+      </inParameter>
+     </inParameter-list>
+     <outParameter-list>
+      <outParameter>
+       <outParameter-type>double</outParameter-type>
+       <outParameter-name>a</outParameter-name>
+      </outParameter>
+     </outParameter-list>
+    </service>
+    <DataStream-list/>
+    <PyFunction-list>
+     <PyFunction>
+      <FuncName>f_1</FuncName>
+      <PyFunc><![CDATA[def f_1(a): ]]></PyFunc>
+      <PyFunc><![CDATA[    return a ]]></PyFunc>
+     </PyFunction>
+    </PyFunction-list>
+    <creation-date>18/3/2006 - 13:47:40</creation-date>
+    <lastmodification-date>18/3/2006 - 13:47:40</lastmodification-date>
+    <editor-release>3.0</editor-release>
+    <author>?</author>
+    <container>?</container>
+    <comment>Compute Node</comment>
+    <x-position>343</x-position>
+    <y-position>74</y-position>
+   </node>
+   <node>
+    <component-name>?</component-name>
+    <interface-name>?</interface-name>
+    <node-name>f_2</node-name>
+    <kind>3</kind>
+    <coupled-node>?</coupled-node>
+    <service>
+     <service-name>f_2</service-name>
+     <inParameter-list>
+      <inParameter>
+       <inParameter-type>double</inParameter-type>
+       <inParameter-name>a</inParameter-name>
+      </inParameter>
+     </inParameter-list>
+     <outParameter-list>
+      <outParameter>
+       <outParameter-type>double</outParameter-type>
+       <outParameter-name>a</outParameter-name>
+      </outParameter>
+     </outParameter-list>
+    </service>
+    <DataStream-list/>
+    <PyFunction-list>
+     <PyFunction>
+      <FuncName>f_2</FuncName>
+      <PyFunc><![CDATA[def f_2(a): ]]></PyFunc>
+      <PyFunc><![CDATA[    return a ]]></PyFunc>
+     </PyFunction>
+    </PyFunction-list>
+    <creation-date>18/3/2006 - 13:47:40</creation-date>
+    <lastmodification-date>18/3/2006 - 13:47:40</lastmodification-date>
+    <editor-release>3.0</editor-release>
+    <author>?</author>
+    <container>?</container>
+    <comment>Compute Node</comment>
+    <x-position>677</x-position>
+    <y-position>74</y-position>
+   </node>
+  </node-list>
+  <link-list>
+   <link>
+    <fromnode-name>f</fromnode-name>
+    <fromserviceparameter-name>a</fromserviceparameter-name>
+    <tonode-name>f_1</tonode-name>
+    <toserviceparameter-name>a</toserviceparameter-name>
+    <coord-list/>
+   </link>
+   <link>
+    <fromnode-name>f_1</fromnode-name>
+    <fromserviceparameter-name>a</fromserviceparameter-name>
+    <tonode-name>f_2</tonode-name>
+    <toserviceparameter-name>a</toserviceparameter-name>
+    <coord-list/>
+   </link>
+  </link-list>
+  <data-list>
+   <data>
+    <fromnode-name>aNewDataFlow_1</fromnode-name>
+    <fromserviceparameter-name>f__a</fromserviceparameter-name>
+    <tonode-name>f</tonode-name>
+    <toserviceparameter-name>a</toserviceparameter-name>
+    <data-value>
+     <value-type>7</value-type>
+     <value>1</value>
+    </data-value>
+    <coord-list/>
+   </data>
+  </data-list>
+ </dataflow>
+</supergraph>
+
