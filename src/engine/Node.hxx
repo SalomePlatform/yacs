@@ -79,6 +79,7 @@ namespace YACS
       InGate *getInGate() { return &_inGate; }
       OutGate *getOutGate() { return &_outGate; }
       const std::string& getName() const { return _name; }
+      void setName(const std::string& name);
       ComposedNode * getFather() const { return _father; }
       const std::string getId();
       bool exIsControlReady() const;

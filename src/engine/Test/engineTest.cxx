@@ -2,6 +2,8 @@
 // --- include from engine first, to avoid redifinition warning _POSIX_C_SOURCE
 
 #include "Bloc.hxx"
+#include "Proc.hxx"
+#include "Logger.hxx"
 #include "ElementaryNode.hxx"
 #include "Loop.hxx"
 #include "Switch.hxx"
@@ -822,4 +824,31 @@ void EngineTest::RecursiveBlocs_removeNodes()
     CPPUNIT_ASSERT(outset.size() == 12);
   }
 
+}
+
+void EngineTest::checkLogger()
+{
+  Proc* proc=new Proc("proc");
+  Logger* logger=proc->getLogger("parser");
+  logger->error("error1","file.cxx",324);
+  logger->error("error2","file.cxx",852);
+  CPPUNIT_ASSERT(logger->hasErrors()==true);
+  CPPUNIT_ASSERT(logger->isEmpty()==false);
+  char* expected1="LogRecord: parser:ERROR:error1 (file.cxx:324)\n"
+                  "LogRecord: parser:ERROR:error2 (file.cxx:852)\n";
+  CPPUNIT_ASSERT(logger->getStr()==expected1);
+
+  logger->reset();
+  CPPUNIT_ASSERT(logger->hasErrors()==false);
+  CPPUNIT_ASSERT(logger->isEmpty()==true);
+
+  logger->error("error1","file.cxx",324);
+  logger->error("error2","file.cxx",852);
+  logger->error("error3","file.cxx",978);
+  CPPUNIT_ASSERT(logger->hasErrors()==true);
+  CPPUNIT_ASSERT(logger->isEmpty()==false);
+  char* expected2="LogRecord: parser:ERROR:error1 (file.cxx:324)\n"
+                  "LogRecord: parser:ERROR:error2 (file.cxx:852)\n"
+                  "LogRecord: parser:ERROR:error3 (file.cxx:978)\n";
+  CPPUNIT_ASSERT(logger->getStr()==expected2);
 }

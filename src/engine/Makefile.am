@@ -53,6 +53,10 @@ libYACSEngine_la_SOURCES =             \
 	Dispatcher.cxx                 \
 	Container.cxx                  \
 	DeploymentTree.cxx             \
+	Logger.cxx                     \
+	LogRecord.cxx                  \
+	Catalog.cxx                    \
+	ComponentDefinition.cxx        \
 	$(__dummy__)
 
 salomeinclude_HEADERS =                \
@@ -126,7 +130,20 @@ MYSWIG_FLAGS = -noexcept -I$(srcdir)/../bases
 pkgpython_PYTHON = pilot.py
 pkgpyexec_LTLIBRARIES = _pilot.la
 
-pilotWRAP.cxx:pilot.i InlineNode.hxx ServiceNode.hxx
+SWIGINCLUDES=Any.hxx     DeploymentTree.hxx  InputDataStreamPort.hxx         OutPort.hxx               SharedPtr.hxx \
+AnyInputPort.hxx         Dispatcher.hxx      InputPort.hxx                   OutputDataStreamPort.hxx  StaticDefinedComposedNode.hxx \
+Bloc.hxx                 DynParaLoop.hxx     InvalidExtractionException.hxx  OutputPort.hxx            Switch.hxx \
+ComponentInstance.hxx    ElementaryNode.hxx  LinkInfo.hxx                    Pool.hxx                  Task.hxx \
+ComposedNode.hxx         Executor.hxx        Logger.hxx                      Port.hxx                  TypeCode.hxx \
+ConditionInputPort.hxx   ExecutorSwig.hxx    LogRecord.hxx                   Proc.hxx                  Visitor.hxx \
+Container.hxx            ForEachLoop.hxx     Loop.hxx                        RefCounter.hxx            VisitorSaveSchema.hxx \
+ConversionException.hxx  ForLoop.hxx         Node.hxx                        Runtime.hxx               VisitorSaveState.hxx \
+DataFlowPort.hxx         InGate.hxx          OptimizerAlg.hxx                Scheduler.hxx             WhileLoop.hxx \
+DataPort.hxx             InlineNode.hxx      OptimizerLoop.hxx               ServiceInlineNode.hxx     ComponentDefinition.hxx \
+DataStreamPort.hxx       InPort.hxx          OutGate.hxx                     ServiceNode.hxx           Catalog.hxx  \
+../bases/yacsconfig.h
+
+pilotWRAP.cxx:pilot.i $(SWIGINCLUDES)
 	$(SWIG) $(SWIG_PYTHON_OPT) $(SWIG_PYTHON_INCLUDES) $(MYSWIG_FLAGS) -o $@ $<
 
 _pilot_la_SOURCES =   \
@@ -140,7 +157,7 @@ _pilot_la_CXXFLAGS = \
 
 _pilot_la_LDFLAGS  = -module
 
-_pilot_la_LIBADD = libYACSEngine.la
+_pilot_la_LIBADD = libYACSEngine.la $(OMNIORB_LIBS)
 
 
 include $(top_srcdir)/adm/unix/make_end.am

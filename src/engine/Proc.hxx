@@ -15,6 +15,7 @@ namespace YACS
     class InlineNode;
     class ServiceNode;
     class Container;
+    class Logger;
 
     class Proc: public Bloc
     {
@@ -35,6 +36,7 @@ namespace YACS
       std::string getXMLState(int numId);
       std::list<int> getNumIds();
       std::list<std::string> getIds();
+      virtual Logger *getLogger(const std::string& name);
 
       virtual void writeDot(std::ostream &os);
       void setName(const std::string& name); // Used by GUI to display graph name
@@ -45,6 +47,10 @@ namespace YACS
       std::map<std::string, TypeCode*> typeMap;
       std::map<std::string, Container*> containerMap;
       std::vector<std::string> names;
+
+      typedef std::map<std::string, Logger*> LoggerMap;
+      LoggerMap _loggers;
+
     };
   }
 }

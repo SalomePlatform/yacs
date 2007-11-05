@@ -79,10 +79,11 @@ namespace YACS
       ~Switch();
       void exUpdateState();
       void init(bool start=true);
-      Node *edSetDefaultNode(Node *node);
+      //Node* DISOWNnode is a SWIG notation to indicate that the ownership of the node is transfered to C++
+      Node *edSetDefaultNode(Node *DISOWNnode);
       Node *edReleaseDefaultNode() throw(Exception);
       Node *edReleaseCase(int caseId) throw(Exception);
-      Node *edSetNode(int caseId, Node *node) throw(Exception);
+      Node *edSetNode(int caseId, Node *DISOWNnode) throw(Exception);
       void getReadyTasks(std::vector<Task *>& tasks);
       void selectRunnableTasks(std::vector<Task *>& tasks);
       std::set<Node *> edGetDirectDescendants() const;
@@ -91,6 +92,7 @@ namespace YACS
       int getNumberOfInputPorts() const;
       void edRemoveChild(Node *node) throw(Exception);
       std::list<InputPort *> getSetOfInputPort() const;
+      YACS::StatesForNode getEffectiveState();
       YACS::StatesForNode getEffectiveState(Node* node);
       OutPort *getOutPort(const std::string& name) const throw(Exception);
       InputPort* getInputPort(const std::string& name) const throw(Exception);

@@ -7,6 +7,7 @@
 
 #include "Proc.hxx"
 
+#ifndef SWIG
 
 struct parser
 {
@@ -69,6 +70,7 @@ struct parser
 };
 
 static parser main_parser;
+#endif
 
 
 namespace YACS
@@ -78,7 +80,8 @@ namespace YACS
     public:
         YACSLoader();
         virtual ~YACSLoader();
-        virtual YACS::ENGINE::Proc* load(const char *);
+        virtual YACS::ENGINE::Proc* load(const char * filename);
+        void registerProcCataLoader();
 
     protected:
         std::map<std::string,parser*> _defaultParsersMap;

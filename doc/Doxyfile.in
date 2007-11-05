@@ -90,6 +90,7 @@ INPUT                  =  \
    @top_srcdir@/src/yacsloader \
    @top_srcdir@/src/yacsorb \
    @top_srcdir@/src/gui \
+   @top_srcdir@/src/hmi \
    @top_srcdir@/src/lineconn2d \
    @top_srcdir@/src/prs \
    @top_srcdir@/src/pyqt
@@ -157,8 +158,8 @@ VERBATIM_HEADERS       = YES
 #---------------------------------------------------------------------------
 # configuration options related to the alphabetical class index
 #---------------------------------------------------------------------------
-ALPHABETICAL_INDEX     = NO
-COLS_IN_ALPHA_INDEX    = 5
+ALPHABETICAL_INDEX     = YES
+COLS_IN_ALPHA_INDEX    = 2
 IGNORE_PREFIX          = 
 #---------------------------------------------------------------------------
 # configuration options related to the HTML output

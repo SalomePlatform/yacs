@@ -23,7 +23,7 @@ static std::ostream & operator<<(std::ostream & f, const Any & A)
        f << "(type NULL)";
     else 
        switch (t->kind()) {
-         case None :
+         case NONE :
             f << "(type None)";
             break;
          case Double :

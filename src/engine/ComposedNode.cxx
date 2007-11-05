@@ -1208,3 +1208,9 @@ std::list<OutputPort *> ComposedNode::getLocalOutputPorts() const
 {
   std::list<OutputPort *> lop; return lop; // empty list
 }
+
+bool ComposedNode::isNameAlreadyUsed(const std::string& name) const
+{
+  return false;
+}
+

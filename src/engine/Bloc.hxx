@@ -33,7 +33,8 @@ namespace YACS
       void init(bool start=true);
       void getReadyTasks(std::vector<Task *>& tasks);
       void exUpdateState();
-      bool edAddChild(Node *node) throw(Exception);
+      //Node* DISOWNnode is a SWIG notation to indicate that the ownership of the node is transfered to C++
+      bool edAddChild(Node *DISOWNnode) throw(Exception);
       void edRemoveChild(Node *node) throw(Exception);
       std::set<Node *> getChildren() { return _setOfNode; }
       std::set<Node *> edGetDirectDescendants() const;

@@ -96,7 +96,7 @@ void XmlNode::execute()
     run << _ref << "> stdout 2>&1 " << std::endl;
   else
     run << "../"<<_ref << "> stdout 2>&1 " << std::endl;
-  run << "cat stdout" << std::endl;
+  //run << "cat stdout" << std::endl;
   run.close();
   chmod(call.c_str(),00777);
 

@@ -19,6 +19,7 @@
 #include "Switch.hxx"
 #include "Bloc.hxx"
 #include "Proc.hxx"
+#include "Logger.hxx"
 #include "InlineNode.hxx"
 #include "ServiceNode.hxx"
 #include "ServiceInlineNode.hxx"
@@ -28,6 +29,7 @@
 #include "InputDataStreamPort.hxx"
 #include "ComponentInstance.hxx"
 #include "Container.hxx"
+#include "ProcCataLoader.hxx"
 
 using namespace YACS;
 using YACS::ENGINE::Runtime;
@@ -257,6 +259,20 @@ void parser::onStart(const XML_Char* el, const XML_Char** attr)
   sp.push(&main_parser);
   main_parser.buildAttr(attr);
 }
+
+struct roottypeParser:parser
+{
+  void onStart(const XML_Char* el, const XML_Char** attr);
+  virtual void onEnd(const char *el,parser* child);
+  virtual void proc (Proc* const& b)
+    {
+      DEBTRACE( "root_proc_set" << b->getName() )
+      _proc=b;
+    }
+  Proc* _proc;
+  const char* file;
+};
+static roottypeParser rootParser;
 
 /*! \brief Class for string parser.
  *
@@ -2163,7 +2179,8 @@ struct looptypeParser:parser
         {
           msg="from node " + l.fromnode() + " does not exist in data link: ";
           msg=msg+l.fromnode()+"("+l.fromport()+")->"+l.tonode()+"("+l.toport()+")";
-          throw Exception(msg);
+          currentProc->getLogger("parser")->error(msg,rootParser.file,XML_GetCurrentLineNumber(p));
+          return;
         }
       //Try relative name for to node and then absolute one
       std::string toname = currentProc->names.back()+l.tonode();
@@ -2176,17 +2193,25 @@ struct looptypeParser:parser
               // The TO node does not exist -> error
               msg="to node " + l.tonode() + " does not exist in data link: ";
               msg=msg+l.fromnode()+"("+l.fromport()+")->"+l.tonode()+"("+l.toport()+")";
-              throw Exception(msg);
+              currentProc->getLogger("parser")->error(msg,rootParser.file,XML_GetCurrentLineNumber(p));
+              return;
             }
         }
       // We only link local node and other nodes (relative or absolute name in this order)
       DEBTRACE(fromname <<":"<<l.fromport()<<toname<<":"<<l.toport());
-      if (l.withControl())
-        _cnode->edAddDFLink(currentProc->nodeMap[fromname]->getOutputPort(l.fromport()),
-                            currentProc->nodeMap[toname]->getInputPort(l.toport()));
-      else
-        _cnode->edAddLink(currentProc->nodeMap[fromname]->getOutputPort(l.fromport()),
-                            currentProc->nodeMap[toname]->getInputPort(l.toport()));
+      try
+        {
+          if (l.withControl())
+            _cnode->edAddDFLink(currentProc->nodeMap[fromname]->getOutputPort(l.fromport()),
+                                currentProc->nodeMap[toname]->getInputPort(l.toport()));
+          else
+            _cnode->edAddLink(currentProc->nodeMap[fromname]->getOutputPort(l.fromport()),
+                              currentProc->nodeMap[toname]->getInputPort(l.toport()));
+        }
+      catch(Exception& e)
+        {
+            currentProc->getLogger("parser")->error(e.what(),rootParser.file,XML_GetCurrentLineNumber(p));
+        }
     }
 
   std::string _state;
@@ -2465,18 +2490,27 @@ struct bloctypeParser:parser
           msg="from node " + l.fromnode() + " does not exist in control link: ";
           msg=msg+l.fromnode()+"->"+l.tonode();
           msg=msg+ " context: "+currentProc->names.back();
-          throw Exception(msg);
+          currentProc->getLogger("parser")->error(msg,rootParser.file,XML_GetCurrentLineNumber(p));
+          return;
         }
       if(currentProc->nodeMap.count(currentProc->names.back()+l.tonode()) == 0)
         {
           msg="to node " + l.tonode() + " does not exist in control link: ";
           msg=msg+l.fromnode()+"->"+l.tonode();
           msg=msg+ " context: "+currentProc->names.back();
-          throw Exception(msg);
+          currentProc->getLogger("parser")->error(msg,rootParser.file,XML_GetCurrentLineNumber(p));
+          return;
         }
       // We only link local nodes
-      _bloc->edAddCFLink(currentProc->nodeMap[currentProc->names.back()+l.fromnode()],
-                         currentProc->nodeMap[currentProc->names.back()+l.tonode()]);
+      try
+        {
+          _bloc->edAddCFLink(currentProc->nodeMap[currentProc->names.back()+l.fromnode()],
+                             currentProc->nodeMap[currentProc->names.back()+l.tonode()]);
+        }
+      catch(Exception& e)
+        {
+          currentProc->getLogger("parser")->error(e.what(),rootParser.file,XML_GetCurrentLineNumber(p));
+        }
     }
   virtual void datalink (const mylink& l)
     {
@@ -2489,7 +2523,8 @@ struct bloctypeParser:parser
         {
           msg="from node " + l.fromnode() + " does not exist in data link: ";
           msg=msg+l.fromnode()+"("+l.fromport()+")->"+l.tonode()+"("+l.toport()+")";
-          throw Exception(msg);
+          currentProc->getLogger("parser")->error(msg,rootParser.file,XML_GetCurrentLineNumber(p));
+          return;
         }
       //Try relative name for to node and then absolute one
       std::string toname = currentProc->names.back()+l.tonode();
@@ -2502,17 +2537,26 @@ struct bloctypeParser:parser
               // The TO node does not exist -> error
               msg="to node " + l.tonode() + " does not exist in data link: ";
               msg=msg+l.fromnode()+"("+l.fromport()+")->"+l.tonode()+"("+l.toport()+")";
-              throw Exception(msg);
+              currentProc->getLogger("parser")->error(msg,rootParser.file,XML_GetCurrentLineNumber(p));
+              return;
             }
         }
       // We only link local node and other nodes (relative or absolute name in this order)
-      DEBTRACE(fromname <<":"<<l.fromport()<<toname<<":"<<l.toport())
-      if (l.withControl())
-        _bloc->edAddDFLink(currentProc->nodeMap[fromname]->getOutputPort(l.fromport()),
-                            currentProc->nodeMap[toname]->getInputPort(l.toport()));
-      else
-        _bloc->edAddLink(currentProc->nodeMap[fromname]->getOutputPort(l.fromport()),
-                            currentProc->nodeMap[toname]->getInputPort(l.toport()));
+      DEBTRACE(fromname <<":"<<l.fromport()<<toname<<":"<<l.toport());
+      try
+        {
+          if (l.withControl())
+            _bloc->edAddDFLink(currentProc->nodeMap[fromname]->getOutputPort(l.fromport()),
+                               currentProc->nodeMap[toname]->getInputPort(l.toport()));
+          else
+            _bloc->edAddLink(currentProc->nodeMap[fromname]->getOutputPort(l.fromport()),
+                             currentProc->nodeMap[toname]->getInputPort(l.toport()));
+        }
+      catch(Exception& e)
+        {
+          YACS::ENGINE::Logger* logger=currentProc->getLogger("parser");
+          logger->error(e.what(),rootParser.file,XML_GetCurrentLineNumber(p));
+        }
     }
   virtual void stream (const mystream& l)
     {
@@ -2525,13 +2569,15 @@ struct bloctypeParser:parser
         {
             msg="from node " + l.fromnode() + " does not exist in stream link: ";
             msg=msg+l.fromnode()+"("+l.fromport()+")->"+l.tonode()+"("+l.toport()+")";
-            throw Exception(msg);
+            currentProc->getLogger("parser")->error(msg,rootParser.file,XML_GetCurrentLineNumber(p));
+            return;
         }
       if(currentProc->nodeMap.count(toname) == 0)
         {
             msg="to node " + l.tonode() + " does not exist in stream link: ";
             msg=msg+l.fromnode()+"("+l.fromport()+")->"+l.tonode()+"("+l.toport()+")";
-            throw Exception(msg);
+            currentProc->getLogger("parser")->error(msg,rootParser.file,XML_GetCurrentLineNumber(p));
+            return;
         }
       OutputDataStreamPort* pout=currentProc->nodeMap[fromname]->getOutputDataStreamPort(l.fromport());
       InputDataStreamPort* pin=currentProc->nodeMap[toname]->getInputDataStreamPort(l.toport());
@@ -2544,23 +2590,30 @@ struct bloctypeParser:parser
           pout->setProperty((*pt).first,(*pt).second);
         }
     }
-  virtual void parameter (const myparam& p)
+  virtual void parameter (const myparam& param)
     {
-      DEBTRACE( "++++++++++++++++++++Parameter+++++++++++++++++++++" )             
+      DEBTRACE( "++++++++++++++++++++Parameter+++++++++++++++++++++" );
       std::string msg;
-      std::string toname = currentProc->names.back()+p._tonode;
+      std::string toname = currentProc->names.back()+param._tonode;
       if(currentProc->nodeMap.count(toname) == 0)
         {
-          msg="to node " + p._tonode + " does not exist in parameter: ";
-          msg=msg+"->"+p._tonode+"("+p._toport+")";
-          throw Exception(msg);
+          msg="to node " + param._tonode + " does not exist in parameter: ";
+          msg=msg+"->"+param._tonode+"("+param._toport+")";
+          currentProc->getLogger("parser")->error(msg,rootParser.file,XML_GetCurrentLineNumber(p));
+          return;
         }
-      InputPort* inport=currentProc->nodeMap[toname]->getInputPort(p._toport);
+      InputPort* inport=currentProc->nodeMap[toname]->getInputPort(param._toport);
       //We don't know the parameter type. So we try to initialize the port
       //with the value. If it's not the right type, edInit throws an exception
-      //std::cerr << "----------------------------- " << p.value.c_str() << std::endl;
-      inport->edInit("XML",p._value.c_str());
-      DEBTRACE( "++++++++++++++++++++End parameter+++++++++++++++++++++" )             
+      try
+        {
+          inport->edInit("XML",param._value.c_str());
+        }
+      catch(Exception& e)
+        {
+          currentProc->getLogger("parser")->error(e.what(),rootParser.file,XML_GetCurrentLineNumber(p));
+        }
+      DEBTRACE( "++++++++++++++++++++End parameter+++++++++++++++++++++" );
     }
   T post()
     {
@@ -2903,11 +2956,9 @@ struct proctypeParser:bloctypeParser<T>
 };
 static proctypeParser<> procParser;
 
-struct roottypeParser:parser
+void roottypeParser::onStart(const XML_Char* el, const XML_Char** attr)
 {
-  void onStart(const XML_Char* el, const XML_Char** attr)
-    {
-      DEBTRACE( "roottypeParser::onStart: " << el )             
+      DEBTRACE( "roottypeParser::onStart: " << el )
       std::string element(el);
       parser* pp=&main_parser;
       if(element == "proc")pp=&procParser;
@@ -2916,25 +2967,25 @@ struct roottypeParser:parser
       pp->init();
       pp->pre();
       pp->buildAttr(attr);
-    }
-  virtual void onEnd(const char *el,parser* child)
-    {
-      DEBTRACE( "roottypeParser::onEnd: " << el )             
+}
+
+void roottypeParser::onEnd(const char *el,parser* child)
+{
+      DEBTRACE( "roottypeParser::onEnd: " << el )
       std::string element(el);
       if(element == "proc")proc(((proctypeParser<>*)child)->post());
-    }
-  virtual void proc (Proc* const& b)
-    {
-      DEBTRACE( "root_proc_set" << b->getName() )             
-      _proc=b;
-    }
-  Proc* _proc;
-};
-static roottypeParser rootParser;
+}
 
 YACSLoader::YACSLoader()
 {
   theRuntime = getRuntime();
+  //theRuntime->_catalogLoaderFactoryMap["proc"]=new YACS::ENGINE::ProcCataLoader;
+}
+
+void YACSLoader::registerProcCataLoader()
+{
+  YACS::ENGINE::ProcCataLoader* factory= new YACS::ENGINE::ProcCataLoader(this);
+  theRuntime->setCatalogLoaderFactory("proc",factory);
 }
 
 Proc* YACSLoader::load(const char * file)
@@ -2944,7 +2995,6 @@ Proc* YACSLoader::load(const char * file)
     {
       std::cerr << "Couldn't open schema file" << std::endl;
       throw std::invalid_argument("Couldn't open schema file");
-      //throw Exception("Couldn't open schema file");
     }
 
   p = XML_ParserCreate(NULL);
@@ -2963,6 +3013,8 @@ Proc* YACSLoader::load(const char * file)
   if ( !_defaultParsersMap.empty() )
     procParser._defaultParsersMap = &_defaultParsersMap;
   
+  rootParser.file=file;
+
   try
     {
       for (;;) 
@@ -2980,7 +3032,9 @@ Proc* YACSLoader::load(const char * file)
 
           if (XML_Parse(p, Buff, len, done) == XML_STATUS_ERROR) 
             {
-              throw Exception(XML_ErrorString(XML_GetErrorCode(p)));
+              YACS::ENGINE::Logger* logger=currentProc->getLogger("parser");
+              logger->fatal(XML_ErrorString(XML_GetErrorCode(p)),file,XML_GetCurrentLineNumber(p));
+              break;
             }
 
           if (done)
@@ -2988,15 +3042,16 @@ Proc* YACSLoader::load(const char * file)
         }
       XML_ParserFree (p);
       p=0;
-      return rootParser._proc;
+      return currentProc;
     }
   catch(Exception& e)
     {
       //get line number from XML parser
-      std::cerr << "Error at line: " << XML_GetCurrentLineNumber(p) << std::endl;
-      delete currentProc;
-      currentProc=0;
-      throw e;
+      YACS::ENGINE::Logger* logger=currentProc->getLogger("parser");
+      logger->fatal(e.what(),file,XML_GetCurrentLineNumber(p));
+      XML_ParserFree (p);
+      p=0;
+      return currentProc;
     }
 }
 

@@ -49,7 +49,7 @@ class TestEdit(unittest.TestCase):
         inport=n.getInputPort("p1");
         retex=None
         try:
-            inport.edInit("XML","<value><intt>5</int></value>")
+            inport.edInitXML("<value><intt>5</int></value>")
         except ValueError, ex:
             print "Value Error: ", ex
             retex=ex
@@ -57,7 +57,7 @@ class TestEdit(unittest.TestCase):
             print "YACS exception:",ex.what()
             retex=ex.what()
         self.assert_(retex is not None, "exception not raised, or wrong type")
-        inport.edInit("XML","<value><int>5</int></value>")
+        inport.edInitXML("<value><int>5</int></value>")
 
         # --- create script node node2
         n2=self.r.createScriptNode("","node2")

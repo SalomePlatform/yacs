@@ -285,7 +285,7 @@ void toString(Any* theAny, QString& theValue)
 	}
 	break;
       }
-      case None:
+      case NONE:
       default:
 	theValue += QString("");
 	break;

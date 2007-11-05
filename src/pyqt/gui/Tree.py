@@ -7,12 +7,13 @@
 import sys
 from qt import *
 import Icons
+import CONNECTOR
 
 class Tree(QListView):
   """Tree(parent=None)
      Classe pour faire une vue d'un arbre
   """
-  def __init__(self,parent=None,onSelect=None):
+  def __init__(self,parent=None,onSelect=None,onDblSelect=None):
     QListView.__init__(self,parent)
     self.setCaption("Tree")
     self.setRootIsDecorated(1)
@@ -21,18 +22,54 @@ class Tree(QListView):
     self.children=[]
     self.last=None
     self.onSelect=onSelect
+    self.onDblSelect=onDblSelect
     self.connect(self,SIGNAL('selectionChanged(QListViewItem *)'),
                      self.handleSelected)
+    self.connect(self,SIGNAL('doubleClicked(QListViewItem *, const QPoint &, int)'),
+                     self.handleDblSelected)
 
   def handleSelected(self,node):
-    if self.onSelect:self.onSelect(node.item)
+    node.item.selected()
+    if self.onSelect:
+      self.onSelect(node.item)
+
+  def handleDblSelected(self,node,point,col):
+    node.item.dblselected()
+    if self.onDblSelect:
+      self.onDblSelect(node.item)
 
   def additem(self,item):
     node=Node(self,item.label,item,self.last)
     self.last=node
     self.children.append(node)
+    CONNECTOR.Connect(item,"selected",self.selectItem,())
+    CONNECTOR.Connect(item,"add",node.addNode,())
     return node
 
+  def selectNodeItem(self,item,node):
+    #print "selectNodeItem",node,item
+    self.setSelected(node,True)
+
+  def selectItem(self,item):
+    #print "selectItem",item
+    node=self.selectedItem()
+    if node.item is item:
+      print "item has been selected at item level"
+      return
+
+    print "item has not been selected at item level"
+    #try another way
+    #find its father 
+    it = QListViewItemIterator(self)
+    node = it.current()
+    while node:
+      if node.item is item:
+        break
+      it += 1
+      node = it.current()
+
+    if node:
+      self.setSelected(node,True)
 
 class Node(QListViewItem):
   """Node(parent,text,item,after)
@@ -48,12 +85,23 @@ class Node(QListViewItem):
     self.setExpandable(self.item.isExpandable())
     self.children = []
 
+  def selectNode(self,item):
+    self.listView().setSelected(self,True)
+
+  def addNode(self,item):
+    print "Tree.addNode",item
+    print "Tree.addNode",self,self.item
+    self.additem(item)
+
   def additem(self,item):
     if self.children:
       node=Node(self,item.label,item,self.children[-1])
     else:
       node=Node(self,item.label,item)
     self.children.append(node)
+    #CONNECTOR.Connect(item,"selected",self.listView().selectNodeItem,(node,))
+    CONNECTOR.Connect(item,"selected",node.selectNode,())
+    CONNECTOR.Connect(item,"add",node.addNode,())
     return node
 
   def setOpen(self,o):
@@ -64,6 +112,9 @@ class Node(QListViewItem):
     else:
       #close
       for node in self.children:
+        #CONNECTOR.Disconnect(node.item,"selected",self.listView().selectNodeItem,(node,))
+        CONNECTOR.Disconnect(node.item,"selected",node.selectNode,())
+        CONNECTOR.Disconnect(node.item,"add",node.addNode,())
         self.takeItem(node)
         del node
       self.children=[]

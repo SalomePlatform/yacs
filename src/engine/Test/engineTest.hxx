@@ -37,6 +37,7 @@ namespace YACS
     CPPUNIT_TEST(RecursiveBlocs_multipleRecursion );
     CPPUNIT_TEST(RecursiveBlocs_removeNodes );
     CPPUNIT_TEST(cleanUp);
+    CPPUNIT_TEST(checkLogger);
     CPPUNIT_TEST_SUITE_END();
       
   public:
@@ -67,6 +68,7 @@ namespace YACS
     void checkRemoveNode();
     void RecursiveBlocs_multipleRecursion();
     void RecursiveBlocs_removeNodes();
+    void checkLogger();
       
   protected:
     static std::map<std::string, YACS::ENGINE::Node*> _nodeMap; 

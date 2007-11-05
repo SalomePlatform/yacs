@@ -4,32 +4,48 @@ import sys,os
 from qt import *
 import Tree
 import PanelManager
+import BoxManager
 import Icons
 import Items
 import adapt
 import Item
+import logview
 import pilot
 import threading
 import time
+import CONNECTOR
+import catalog
 
 class Browser(QVBox):
   def __init__(self,parent,proc):
     QVBox.__init__(self,parent)
-    self.hSplitter = QSplitter(self,"hSplitter")
-    self.objectBrowser=Tree.Tree(self.hSplitter,self.onSelect)
-    pp=adapt.adapt(proc,Item.Item)
+    pp=Item.adapt(proc)
     self.proc=proc
     self.pproc=pp
+    self.hSplitter = QSplitter(self,"hSplitter")
+    self.objectBrowser=Tree.Tree(self.hSplitter,self.onSelect,self.onDblSelect)
     self.objectBrowser.additem(pp)
     self.panelManager=PanelManager.PanelManager(self.hSplitter)
+    self.panelManager.setRootItem(pp)
+    self.boxManager=BoxManager.BoxManager(self.hSplitter)
+    self.boxManager.setRootItem(pp)
+    self.selected=None
     self.executor=None
     self.resume=0
     self.thr=None
+    self.log=logview.LogView()
+
+  def view_log(self):
+    self.log.text.setText(self.proc.getLogger("parser").getStr())
+    self.log.show()
+
+  def onDblSelect(self,item):
+    #item is instance of Item.Item
+    pass
 
   def onSelect(self,item):
     #item is instance of Item.Item
     self.selected=item
-    self.panelManager.setview(item)
 
   def run(self):
     if not self.executor:
@@ -137,7 +153,7 @@ class Appli(QMainWindow):
     self.newAct.setStatusTip('Open an empty editor window')
     self.newAct.setWhatsThis( """<b>New</b>"""
             """<p>An empty editor window will be created.</p>""")
-    self.newAct.connect(self.newAct,SIGNAL('activated()'), self.handleFile)
+    self.newAct.connect(self.newAct,SIGNAL('activated()'), self.newProc)
     self.actions.append(self.newAct)
 
     self.prefAct=QAction('Preferences',QIconSet(Icons.get_image("configure.png")),'&Preferences...',
@@ -168,6 +184,10 @@ class Appli(QMainWindow):
     self.stopAct.connect(self.stopAct,SIGNAL('activated()'), self.stop)
     self.stopAct.setStatusTip('Stop the selected schema')
     self.actions.append(self.stopAct)
+
+    self.cataToolAct=QAction('Catalog Tool',0,self,"catatool")
+    self.cataToolAct.connect(self.cataToolAct,SIGNAL('activated()'), self.cata_tool)
+    self.actions.append(self.cataToolAct)
 
   def initMenus(self):
     menubar = self.menuBar()
@@ -203,6 +223,8 @@ class Appli(QMainWindow):
 
     #menu window
     self.windowMenu = QPopupMenu(self)
+    self.cataToolAct.addTo(self.windowMenu)
+    self.windowMenu.insertItem("&Log", self.view_log)
     menubar.insertItem('&Window', self.windowMenu)
     self.connect(self.windowMenu, SIGNAL('aboutToShow()'), self.handleWindowMenu)
 
@@ -220,6 +242,7 @@ class Appli(QMainWindow):
     self.loader = loader.YACSLoader()
     self.executor = pilot.ExecutorSwig()
     self.salomeloader=salomeloader.SalomeLoader()
+    self.loader.registerProcCataLoader()
 
   def openSalomeFile(self):
     fn = QFileDialog.getOpenFileName(QString.null,QString.null,self)
@@ -241,11 +264,33 @@ class Appli(QMainWindow):
       return
     fileName = str(fn)
     proc=self.loader.load(fileName)
+    logger=proc.getLogger("parser")
+    if logger.hasErrors():
+      self.logFile=logview.LogView()
+      self.logFile.text.setText(logger.getStr())
+      self.logFile.show()
 
     panel=Browser(self.tabWidget,proc)
     self.currentPanel=panel
     self.tabWidget.addTab( panel,os.path.basename(fileName))
     self.tabWidget.showPage(panel)
+
+  def newProc(self):
+    r=pilot.getRuntime()
+    proc=r.createProc("pr")
+    panel=Browser(self.tabWidget,proc)
+    self.currentPanel=panel
+    self.tabWidget.addTab( panel,proc.getName())
+    self.tabWidget.showPage(panel)
+
+  def cata_tool(self):
+    self.catalogTool=catalog.CatalogTool(self)
+    self.catalogTool.show()
+    return
+
+  def view_log(self):
+    if self.currentPanel:
+      self.currentPanel.view_log()
 
   def LR(self):
     if self.currentPanel.selected and isinstance(self.currentPanel.selected,Items.ItemComposedNode):
@@ -257,11 +302,11 @@ class Appli(QMainWindow):
         #on peut updater
         self.currentPanel.selected.editor.updateCanvas()
 
-  def addNode(self):
-    if self.currentPanel.selected:#item selected
+  def addNode(self,node):
+    if self.currentPanel and self.currentPanel.selected:#item selected
       if isinstance(self.currentPanel.selected,Items.ItemComposedNode):
-        #on peut ajouter un noeud
-        self.currentPanel.selected.addNode()
+        #can add node
+        self.currentPanel.selected.addNode(node)
 
   def zoomIn(self):
     if self.currentPanel.selected:#item selected
@@ -274,9 +319,6 @@ class Appli(QMainWindow):
       if isinstance(self.currentPanel.selected,Items.ItemComposedNode):
         #on peut dezoomer
         self.currentPanel.selected.editor.zoomOut()
-
-  def handleFile(self):
-    pass
 
   def handlePreferences(self):
     pass

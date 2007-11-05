@@ -19,6 +19,9 @@
 #include "InputDataStreamPort.hxx"
 #include "OutputDataStreamPort.hxx"
 #include "SalomeProc.hxx"
+//Catalog Loaders
+#include "SessionCataLoader.hxx"
+
 //Components
 #include "CORBAComponent.hxx"
 #include "SalomeComponent.hxx"
@@ -81,7 +84,7 @@
 #include <sstream>
 #include <cassert>
 
-//#define _DEVDEBUG_
+#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
 using namespace std;
@@ -91,7 +94,9 @@ void RuntimeSALOME::setRuntime(long flags) // singleton creation (not thread saf
 {
   if (! Runtime::_singleton)
     {
-      Runtime::_singleton = new RuntimeSALOME(flags);
+      RuntimeSALOME* r=new RuntimeSALOME(flags);
+      Runtime::_singleton = r;
+      r->initBuiltins();
     }
   DEBTRACE("RuntimeSALOME::setRuntime() done !");
 }
@@ -109,6 +114,22 @@ RuntimeSALOME* YACS::ENGINE::getSALOMERuntime()
 RuntimeSALOME::RuntimeSALOME()
 {
   assert(0);
+}
+
+void RuntimeSALOME::initBuiltins()
+{
+  //Fill the builtin catalog with nodes specific to the runtime
+  std::map<std::string,TypeCode*>& typeMap=_builtinCatalog->_typeMap;
+  std::map<std::string,Node*>& nodeMap=_builtinCatalog->_nodeMap;
+  std::map<std::string,ComposedNode*>& composednodeMap=_builtinCatalog->_composednodeMap;
+  std::map<std::string,ComponentDefinition*>& componentMap=_builtinCatalog->_componentMap;
+  nodeMap["PyFunction"]=new PyFuncNode("PyFunction");
+  nodeMap["PyScript"]=new PythonNode("PyScript");
+  nodeMap["CORBANode"]=new CORBANode("CORBANode");
+  nodeMap["XmlNode"]=new XmlNode("XmlNode");
+  nodeMap["SalomeNode"]=new SalomeNode("SalomeNode");
+  nodeMap["CppNode"]=new CppNode("CppNode");
+  nodeMap["SalomePythonNode"]=new SalomePythonNode("SalomePythonNode");
 }
 
 RuntimeSALOME::RuntimeSALOME(long flags)
@@ -140,6 +161,13 @@ RuntimeSALOME::RuntimeSALOME(long flags)
 
 RuntimeSALOME::~RuntimeSALOME()
 {
+  DEBTRACE("RuntimeSALOME::~RuntimeSALOME");
+  // destroy catalog loader prototypes
+  std::map<std::string, CatalogLoader*>::const_iterator pt;
+  for(pt=_catalogLoaderFactoryMap.begin();pt!=_catalogLoaderFactoryMap.end();pt++)
+    {
+      delete (*pt).second;
+    }
 }
 
 //! CORBA and Python initialization
@@ -249,6 +277,11 @@ void RuntimeSALOME::init(long flags)
         }
       out:
         PyGILState_Release(gstate); // Release the Global Interpreter Lock
+    }
+  if (_useCorba)
+    {
+      // initialize the catalogLoaderFactory map with the session one
+      _catalogLoaderFactoryMap["session"]=new SessionCataLoader;
     }
 }
 
@@ -887,8 +920,8 @@ InputPort* RuntimeSALOME::adaptCorbaToPython(InputCorbaPort* inport,
     }
   // Adaptation not possible
   stringstream msg;
-  msg << "Cannot connect InputCorbaPort to Python output " ;
-  msg << __FILE__ << ":" <<__LINE__;
+  msg << "Cannot connect Python output port with type: " << type->id() << " to CORBA input port with type: " << inport->edGetType()->id();
+  msg << " (" << __FILE__ << ":" <<__LINE__ << ")";
   throw ConversionException(msg.str());
 }
 

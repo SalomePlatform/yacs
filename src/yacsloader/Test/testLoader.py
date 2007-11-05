@@ -13,6 +13,11 @@ class TestLoader(unittest.TestCase):
     self.e = pilot.ExecutorSwig()
     pass
 
+  def tearDown(self):
+    del self.r
+    del self.l
+    del self.e
+
   def test1_FileNotExist(self):
     # --- File does not exist
     retex=None
@@ -35,18 +40,19 @@ class TestLoader(unittest.TestCase):
     except ValueError,ex:
       print "Caught ValueError Exception:",ex
       retex = ex
-    self.assert_(retex is not None, "exception not raised, or wrong type")
+    expected="LogRecord: parser:ERROR:from node node5 does not exist in control link: node5->b2 context: b1. (samples/bid.xml:33)\n"
+    self.assert_(p.getLogger("parser").getStr() == expected, "error not found")
     pass
 
   def test3_normal(self):
     # --- File exists and no parsing problem
     try:
       p = self.l.load("samples/aschema.xml")
+      print p.getLogger("parser").getStr()
       print p
       print p.getName()
       for k in p.typeMap: print k
       for k in p.nodeMap: print k
-      for k in p.names: print k
       for k in p.inlineMap: print k
       for k in p.serviceMap: print k
       print self.e.getTasksToLoad()

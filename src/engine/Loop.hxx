@@ -138,7 +138,8 @@ namespace YACS
       ~Loop();
       void init(bool start=true);
       int getNbOfTurns() const { return _nbOfTurns; }
-      Node *edSetNode(Node *node);
+      //Node* DISOWNnode is a SWIG notation to indicate that the ownership of the node is transfered to C++
+      Node *edSetNode(Node *DISOWNnode);
       Node *edRemoveNode();
       void getReadyTasks(std::vector<Task *>& tasks);
       void edRemoveChild(Node *node) throw(Exception);

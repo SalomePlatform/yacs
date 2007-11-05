@@ -58,8 +58,9 @@ namespace YACS
     public:
       Node *edRemoveNode();
       Node *edRemoveInitNode();
-      Node *edSetNode(Node *node);
-      Node *edSetInitNode(Node *node);
+      //Node* DISOWNnode is a SWIG notation to indicate that the ownership of the node is transfered to C++
+      Node *edSetNode(Node *DISOWNnode);
+      Node *edSetInitNode(Node *DISOWNnode);
       void init(bool start=true);
       InputPort *edGetNbOfBranchesPort() { return &_nbOfBranches; }
       int getNumberOfInputPorts() const;

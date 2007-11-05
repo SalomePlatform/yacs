@@ -1,0 +1,575 @@
+
+#include "RuntimeSALOME.hxx"
+#include "editTree.h"
+#include "Proc.hxx"
+#include "Node.hxx"
+#include "guiContext.hxx"
+#include "Catalog.hxx"
+
+#include <iostream>
+#define _DEVDEBUG_
+#include "YacsTrace.hxx"
+
+#include <qpopupmenu.h>
+#include <qlabel.h>
+#include <qcursor.h>
+
+#include <string>
+#include <sstream>
+#include <iostream>
+
+using namespace std;
+
+using namespace YACS;
+using namespace YACS::HMI;
+
+
+/*!
+ *
+ */
+
+ViewItem::ViewItem(QListView *parent, QString label, Subject* subject)
+  : QListViewItem(parent, label)
+{
+  _parent = parent;
+  _subject = subject;
+  _cf = Qt::black;
+  _subject->attach(this);
+}
+
+/*!
+ *
+ */
+
+ViewItem::ViewItem(ViewItem *parent, QString label, Subject* subject)
+  : QListViewItem(parent, label)
+{
+  _parent = parent->getParent();
+  _subject = subject;
+  _cf = Qt::black;
+  _subject->attach(this);
+}
+
+/*!
+ *
+ */
+
+ViewItem::~ViewItem()
+{
+  _subject->detach(this);
+}
+
+/*!
+ *
+ */
+
+void ViewItem::setState(int state)
+{
+}
+
+/*!
+ *
+ */
+
+QListView *ViewItem::getParent()
+{
+  return _parent;
+}
+
+/*!
+ *
+ */
+
+Subject* ViewItem::getSubject()
+{
+  return _subject;
+}
+
+/*!
+ *
+ */
+
+void ViewItem::select(bool isSelected)
+{
+//   DEBTRACE("ViewItem::select() "<< this);
+  _parent->setSelected(this, isSelected);
+}
+
+void ViewItem::update(GuiEvent event, int type, Subject* son)
+{
+  DEBTRACE("ViewItem::update");
+  switch (event)
+    {
+    case RENAME:
+      DEBTRACE("NodeViewItem::update RENAME "<< _subject->getName());
+      setText(0,_subject->getName());
+      break;
+    default:
+      DEBTRACE("NodeViewItem::update(), event not handled: " << event);
+      GuiObserver::update(event, type, son);
+    }
+}
+
+/*!
+ *
+ */
+
+void ViewItem::paintCell( QPainter *p, const QColorGroup &cg,
+                          int column, int width, int alignment )
+{
+  QColorGroup _cg( cg );
+  QColor c = _cg.text();
+  if (column == 1) _cg.setColor( QColorGroup::Text, _cf );
+  QListViewItem::paintCell( p, _cg, column, width, alignment );
+  if (column == 1) _cg.setColor( QColorGroup::Text, c );
+}
+
+// ----------------------------------------------------------------------------
+
+/*!
+ *
+ */
+
+NodeViewItem::NodeViewItem(ViewItem *parent,
+                           QString label,
+                           Subject* subject)
+  : ViewItem::ViewItem(parent, label, subject)
+{
+}
+
+void NodeViewItem::update(GuiEvent event, int type, Subject* son)
+{
+  DEBTRACE("NodeViewItem::update");
+  ViewItem *item = 0;
+  switch (event)
+    {
+    case YACS::HMI::ADD:
+      switch (type)
+        {
+        case YACS::HMI::INPUTPORT:
+        case YACS::HMI::OUTPUTPORT:
+        case YACS::HMI::INPUTDATASTREAMPORT:
+        case YACS::HMI::OUTPUTDATASTREAMPORT:
+          item =  new PortViewItem(this,
+                                   son->getName(),
+                                   son);
+          break;
+        default:
+          DEBTRACE("NodeViewItem::update(), ADD, type not handled: " << type);
+        }
+      break;
+    default:
+      DEBTRACE("NodeViewItem::update(), event not handled: " << event);
+      ViewItem::update(event, type, son);
+    }
+}
+
+// ----------------------------------------------------------------------------
+
+/*!
+ *
+ */
+
+ComposedNodeViewItem::ComposedNodeViewItem(QListView *parent,
+                                           QString label,
+                                           Subject* subject)
+  : ViewItem::ViewItem(parent, label, subject)
+{
+}
+
+/*!
+ *
+ */
+
+
+ComposedNodeViewItem::ComposedNodeViewItem(ViewItem *parent,
+                                           QString label,
+                                           Subject* subject)
+  : ViewItem::ViewItem(parent, label, subject)
+{
+}
+
+void ComposedNodeViewItem::update(GuiEvent event, int type, Subject* son)
+{
+  DEBTRACE("ComposedNodeViewItem::update");
+  ViewItem *item = 0;
+  switch (event)
+    {
+    case YACS::HMI::ADD:
+      switch (type)
+        {
+        case YACS::HMI::BLOC:
+        case YACS::HMI::FORLOOP:
+        case YACS::HMI::WHILELOOP:
+        case YACS::HMI::SWITCH:
+        case YACS::HMI::FOREACHLOOP:
+        case YACS::HMI::OPTIMIZERLOOP:
+          item =  new ComposedNodeViewItem(this,
+                                           son->getName(),
+                                           son);
+          break;
+        case YACS::HMI::PYTHONNODE:
+        case YACS::HMI::PYFUNCNODE:
+        case YACS::HMI::CORBANODE:
+        case YACS::HMI::CPPNODE:
+        case YACS::HMI::SALOMENODE:
+        case YACS::HMI::SALOMEPYTHONNODE:
+        case YACS::HMI::XMLNODE:
+          item =  new NodeViewItem(this,
+                                   son->getName(),
+                                   son);
+          break;
+        default:
+          DEBTRACE("ComposedNodeViewItem::update() ADD, type not handled:" << type);
+        }
+      break;
+    default:
+      DEBTRACE("ComposedNodeViewItem::update(), event not handled: << event");
+      ViewItem::update(event, type, son);
+    }
+}
+
+// ----------------------------------------------------------------------------
+
+PortViewItem::PortViewItem(ViewItem *parent, QString label, Subject* subject)
+  : ViewItem::ViewItem(parent, label, subject)
+{
+}
+
+void PortViewItem::update(GuiEvent event, int type, Subject* son)
+{
+  DEBTRACE("PortViewItem::update");
+}
+
+// ----------------------------------------------------------------------------
+
+
+/*!
+ *
+ */
+
+editTree::editTree(YACS::HMI::Subject *root, 
+                   QWidget* parent,
+                   const char* name,
+                   WFlags fl) : wiEditTree(parent, name, fl)
+{
+  _root = root;
+  _previousSelected=0;
+  resetTreeNode(lv);
+  connect( lv, SIGNAL(selectionChanged()),
+           this, SLOT(select()) );
+//   connect( lv, SIGNAL(clicked(QListViewItem *)),
+//            this, SLOT(select()) );
+//   connect( lv, SIGNAL(selectionChanged(QListViewItem *)),
+//            this, SLOT(select(QListViewItem *)) );
+//   connect( lv, SIGNAL(clicked(QListViewItem *)),
+//            this, SLOT(select(QListViewItem *)) );
+}
+
+/*!
+ *
+ */
+
+editTree::~editTree()
+{
+}
+
+void editTree::addViewItemInMap(YACS::HMI::ViewItem* item, YACS::HMI::Subject* subject)
+{
+  _viewItemsMap[subject] = item;
+}
+
+YACS::HMI::ViewItem* editTree::getViewItem(YACS::HMI::Subject* subject)
+{
+  return _viewItemsMap[subject];
+}
+
+/*!
+ *
+ */
+
+void editTree::resetTreeNode(QListView *lv)
+{
+  lv->clear();
+  lv->addColumn( "state", 100);
+  lv->setRootIsDecorated( TRUE );
+  string name = _root->getName();
+  ViewItem *start = new ComposedNodeViewItem(lv, name, _root);
+  addViewItemInMap(start, _root);
+}
+
+/*!
+ *
+ */
+
+void editTree::printName()
+{
+  QListViewItem *it = lv->selectedItem();
+  if (it) DEBTRACE("my name is Bond, James Bond... "<< this)
+  else DEBTRACE("nobody "<< this);
+}
+
+void editTree::destroy()
+{
+  DEBTRACE("editTree::destroy");
+  QListViewItem *it = lv->selectedItem();
+  if (it)
+    {
+      ViewItem *item = dynamic_cast<ViewItem*> (it);
+      Subject *sub = 0;
+      if (item) sub = item->getSubject();
+      Subject *parent = sub->getParent();
+      if (parent)
+        {
+          parent->destroy(sub);
+        }
+    }
+}
+
+void editTree::newNode(int key)
+{
+  YACS::ENGINE::Catalog* catalog = _catalogItemsMap[key].first;
+  std::string type = _catalogItemsMap[key].second;
+  QListViewItem *it = lv->selectedItem();
+  if (it)
+    {
+      DEBTRACE("editTree::newNode(Catalog* catalog, string type): "<< this);
+      ViewItem *item = dynamic_cast<ViewItem*> (it);
+      Subject *sub = 0;
+      if (item) sub = item->getSubject();
+
+      YACS::HMI::SubjectComposedNode *subject = dynamic_cast< YACS::HMI::SubjectComposedNode*>(sub);
+      if (subject)
+        {
+          std::stringstream name;
+          name << type << GuiContext::getCurrent()->getNewId();
+          YACS::HMI::SubjectSwitch *aSwitch = dynamic_cast< YACS::HMI::SubjectSwitch*>(subject);
+          if (aSwitch)
+            {
+              map<int, SubjectNode*> bodyMap = aSwitch->getBodyMap();
+              int swCase = 0;
+              if (bodyMap.empty()) swCase = 1;
+              else
+                {
+                  map<int, SubjectNode*>::reverse_iterator rit = bodyMap.rbegin();
+                  swCase = (*rit).first + 1;
+                }
+              aSwitch->addNode(catalog, type, name.str(), swCase);
+            }
+          else
+            subject->addNode(catalog, type, name.str());
+        }
+    }
+  else DEBTRACE("editTree::newNode(Catalog* catalog, string type): no ComposedNode selected  "<< this);
+}
+
+void editTree::newInputPort(int key)
+{
+  YACS::ENGINE::Catalog* catalog = _catalogItemsMap[key].first;
+  std::string type = _catalogItemsMap[key].second;
+  QListViewItem *it = lv->selectedItem();
+  if (it)
+    {
+      DEBTRACE("editTree::newInputPort(Catalog* catalog, string type): "<< this);
+      ViewItem *item = dynamic_cast<ViewItem*> (it);
+      Subject *sub = 0;
+      if (item) sub = item->getSubject();
+      YACS::HMI::SubjectElementaryNode *subject = dynamic_cast< YACS::HMI::SubjectElementaryNode*>(sub);
+      if (subject)
+        {
+          std::stringstream name;
+          name << "InDF_" << type << GuiContext::getCurrent()->getNewId();
+          subject->addInputPort(catalog, type, name.str());
+        }
+    }
+}
+
+void editTree::newOutputPort(int key)
+{
+  YACS::ENGINE::Catalog* catalog = _catalogItemsMap[key].first;
+  std::string type = _catalogItemsMap[key].second;
+  QListViewItem *it = lv->selectedItem();
+  if (it)
+    {
+      DEBTRACE("editTree::newOutputPort(Catalog* catalog, string type): "<< this);
+      ViewItem *item = dynamic_cast<ViewItem*> (it);
+      Subject *sub = 0;
+      if (item) sub = item->getSubject();
+      YACS::HMI::SubjectElementaryNode *subject = dynamic_cast< YACS::HMI::SubjectElementaryNode*>(sub);
+      if (subject)
+        {
+          std::stringstream name;
+          name << "OutDF_" << type << GuiContext::getCurrent()->getNewId();
+          subject->addOutputPort(catalog, type, name.str());
+        }
+    }
+}
+
+
+/*!
+ *
+ */
+
+void editTree::select()
+{
+//   DEBTRACE("editTree::select() "<< this);
+  QListViewItem *it =lv->selectedItem();
+  ViewItem *item = 0;
+  if (it)                          // an item selected
+    {
+      if (it != _previousSelected) // a new item is selected
+        {
+          _previousSelected = it;
+          item = dynamic_cast<ViewItem*> (it);
+        }
+    }
+  else if (_previousSelected)      // nothing selected, deselect previous
+    {
+      it = _previousSelected;
+      _previousSelected = 0;
+      item = dynamic_cast<ViewItem*> (it);
+    }
+  if (item)
+    {
+        item->getSubject()->select(it->isSelected());
+    }
+}
+
+/*!
+ *
+ */
+
+void editTree::select(QListViewItem *it)
+{
+  DEBTRACE("editTree::select(QListViewItem *item) "<< this);
+  ViewItem *item = dynamic_cast<ViewItem*> (it);
+  if (item) item->getSubject()->select(it->isSelected());
+}
+
+/*!
+ *
+ */
+
+void editTree::contextMenuEvent( QContextMenuEvent * )
+{
+  QListViewItem *it =lv->selectedItem();
+  ViewItem *item = 0;
+  if (it)
+    {
+      if (item = dynamic_cast<ComposedNodeViewItem*> (it))
+        ComposedNodeContextMenu();
+      else if (item = dynamic_cast<NodeViewItem*> (it))
+        NodeContextMenu();
+      else if (item = dynamic_cast<PortViewItem*> (it))
+        PortContextMenu();
+    }
+}
+
+/*!
+ *
+ */
+
+void editTree::ComposedNodeContextMenu()
+{
+  DEBTRACE("editTree::ComposedNodeContextMenu");
+  QPopupMenu*	contextMenu = new QPopupMenu();
+  Q_CHECK_PTR( contextMenu );
+  QLabel *caption = new QLabel( "<font color=darkblue><u><b>"
+                                "ComposedNode Context Menu</b></u></font>",
+                                contextMenu );
+  caption->setAlignment( Qt::AlignCenter );
+  contextMenu->insertItem( caption );
+  contextMenu->insertItem( "Message", this, SLOT(printName()) );
+  contextMenu->insertItem( "Delete", this, SLOT(destroy()) );
+  _keymap = 0;
+  _catalogItemsMap.clear();
+  YACS::ENGINE::Catalog *builtinCatalog = YACS::ENGINE::getSALOMERuntime()->getBuiltinCatalog();
+  {
+    map<string,YACS::ENGINE::Node*>::iterator it;
+    for (it=builtinCatalog->_nodeMap.begin(); it!=builtinCatalog->_nodeMap.end(); ++it)
+      {
+        string nodeType = "new " + (*it).first;
+        //DEBTRACE(nodeType);
+        int id =contextMenu->insertItem( nodeType.c_str(), this,
+                                         SLOT(newNode(int)) );
+        std::pair<YACS::ENGINE::Catalog*, std::string> p(builtinCatalog, (*it).first);
+        _catalogItemsMap[_keymap] = p;
+        contextMenu->setItemParameter(id, _keymap++);
+      }
+  }
+  {
+    map<string,YACS::ENGINE::ComposedNode*>::iterator it;
+    for (it=builtinCatalog->_composednodeMap.begin(); it!=builtinCatalog->_composednodeMap.end(); ++it)
+      {
+        string nodeType = "new " + (*it).first;
+        //DEBTRACE(nodeType);
+        int id =contextMenu->insertItem( nodeType.c_str(), this,
+                                         SLOT(newNode(int)) );
+        std::pair<YACS::ENGINE::Catalog*, std::string> p(builtinCatalog, (*it).first);
+        _catalogItemsMap[_keymap] = p;
+        contextMenu->setItemParameter(id, _keymap++);
+      }
+  }
+  contextMenu->exec( QCursor::pos() );
+  delete contextMenu;
+}
+
+/*!
+ *
+ */
+
+void editTree::NodeContextMenu()
+{
+  QPopupMenu*	contextMenu = new QPopupMenu();
+  Q_CHECK_PTR( contextMenu );
+  QLabel *caption = new QLabel( "<font color=darkblue><u><b>"
+                                "InlineNode Context Menu</b></u></font>",
+                                contextMenu );
+  caption->setAlignment( Qt::AlignCenter );
+  contextMenu->insertItem( caption );
+  contextMenu->insertItem( "Message", this, SLOT(printName()) );
+  contextMenu->insertItem( "Delete", this, SLOT(destroy()) );
+  _keymap = 0;
+  _catalogItemsMap.clear();
+  YACS::ENGINE::Catalog *builtinCatalog = YACS::ENGINE::getSALOMERuntime()->getBuiltinCatalog();
+  {
+    map<string,YACS::ENGINE::TypeCode*>::iterator it;
+    for (it=builtinCatalog->_typeMap.begin(); it!=builtinCatalog->_typeMap.end(); ++it)
+      {
+        std::pair<YACS::ENGINE::Catalog*, std::string> p(builtinCatalog, (*it).first);
+        {
+          string typeCode = "new input port " + (*it).first;
+          DEBTRACE(typeCode);
+          int id =contextMenu->insertItem( typeCode.c_str(), this,
+                                           SLOT(newInputPort(int)) );
+          _catalogItemsMap[_keymap] = p;
+          contextMenu->setItemParameter(id, _keymap++);
+        }
+        {
+          string typeCode = "new output port " + (*it).first;
+          DEBTRACE(typeCode);
+          int id =contextMenu->insertItem( typeCode.c_str(), this,
+                                           SLOT(newOutputPort(int)) );
+          _catalogItemsMap[_keymap] = p;
+          contextMenu->setItemParameter(id, _keymap++);
+        }
+      }
+  }
+  contextMenu->exec( QCursor::pos() );
+  delete contextMenu;
+}
+
+void editTree::PortContextMenu()
+{
+  QPopupMenu*	contextMenu = new QPopupMenu();
+  Q_CHECK_PTR( contextMenu );
+  QLabel *caption = new QLabel( "<font color=darkblue><u><b>"
+                                "InlineNode Context Menu</b></u></font>",
+                                contextMenu );
+  caption->setAlignment( Qt::AlignCenter );
+  contextMenu->insertItem( caption );
+  contextMenu->insertItem( "Message", this, SLOT(printName()) );
+  contextMenu->insertItem( "Delete", this, SLOT(destroy()) );
+  contextMenu->exec( QCursor::pos() );
+  delete contextMenu;
+}

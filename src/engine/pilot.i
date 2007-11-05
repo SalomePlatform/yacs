@@ -18,7 +18,44 @@ All is needed to create and execute a calculation schema."
 // ----------------------------------------------------------------------------
 
 %{
+#include "yacsconfig.h"
+
+#ifdef OMNIORB
+#include <omniORB4/CORBA.h>
+
+//--- from omniORBpy.h (not present on Debian Sarge packages)
+struct omniORBpyAPI
+{
+  PyObject* (*cxxObjRefToPyObjRef)(const CORBA::Object_ptr cxx_obj,
+           CORBA::Boolean hold_lock);
+  // Convert a C++ object reference to a Python object reference.
+  // If <hold_lock> is true, caller holds the Python interpreter lock.
+
+  CORBA::Object_ptr (*pyObjRefToCxxObjRef)(PyObject* py_obj,
+             CORBA::Boolean hold_lock);
+  // Convert a Python object reference to a C++ object reference.
+  // Raises BAD_PARAM if the Python object is not an object reference.
+  // If <hold_lock> is true, caller holds the Python interpreter lock.
+
+  PyObject* (*handleCxxSystemException)(const CORBA::SystemException& ex);
+  // Sets the Python exception state to reflect the given C++ system
+  // exception. Always returns NULL. The caller must hold the Python
+  // interpreter lock.
+};
+
+omniORBpyAPI* api;
+
+#define OMNIPY_CATCH_AND_HANDLE_SYSTEM_EXCEPTIONS \
+catch (const CORBA::SystemException& ex) { \
+  return api->handleCxxSystemException(ex); \
+}
+#else
+#define OMNIPY_CATCH_AND_HANDLE_SYSTEM_EXCEPTIONS 
+#endif
+
 #include "Runtime.hxx"
+#include "Logger.hxx"
+#include "LinkInfo.hxx"
 #include "Loop.hxx"
 #include "WhileLoop.hxx"
 #include "ForLoop.hxx"
@@ -35,6 +72,8 @@ All is needed to create and execute a calculation schema."
 #include "ServiceInlineNode.hxx"
 
 #include "TypeCode.hxx"
+#include "Catalog.hxx"
+#include "ComponentDefinition.hxx"
 
 #include "OutPort.hxx"
 #include "InputPort.hxx"
@@ -112,10 +151,96 @@ namespace YACS
         std::cerr << "pynotify " << event << object << std::endl;
       }
     };
+
   }
 }
+    static PyObject* convertNode(YACS::ENGINE::Node* node)
+    {
+      PyObject* ob;
+      //should use $descriptor(YACS::ENGINE::Bloc *) and so on but $descriptor is not defined
+      //here. It is better to define a helper function to avoid code bloat
+      //You must respect inheritance order in casting : Bloc before ComposedNode and so on
+      if(dynamic_cast<YACS::ENGINE::Bloc *>(node))
+        ob=SWIG_NewPointerObj((void*)node,SWIGTYPE_p_YACS__ENGINE__Bloc,0);
+      else if(dynamic_cast<YACS::ENGINE::ForLoop *>(node))
+        ob=SWIG_NewPointerObj((void*)node,SWIGTYPE_p_YACS__ENGINE__ForLoop,0);
+      else if(dynamic_cast<YACS::ENGINE::WhileLoop *>(node))
+        ob=SWIG_NewPointerObj((void*)node,SWIGTYPE_p_YACS__ENGINE__WhileLoop,0);
+      else if(dynamic_cast<YACS::ENGINE::ForEachLoop *>(node))
+        ob=SWIG_NewPointerObj((void*)node,SWIGTYPE_p_YACS__ENGINE__ForEachLoop,0);
+      else if(dynamic_cast<YACS::ENGINE::Switch *>(node))
+        ob=SWIG_NewPointerObj((void*)node,SWIGTYPE_p_YACS__ENGINE__Switch,0);
+      else if(dynamic_cast<YACS::ENGINE::ComposedNode *>(node))
+        ob=SWIG_NewPointerObj((void*)node,SWIGTYPE_p_YACS__ENGINE__ComposedNode,0);
+      else if(dynamic_cast<YACS::ENGINE::InlineFuncNode *>(node))
+        ob=SWIG_NewPointerObj((void*)node,SWIGTYPE_p_YACS__ENGINE__InlineFuncNode,0);
+      else if(dynamic_cast<YACS::ENGINE::InlineNode *>(node))
+        ob=SWIG_NewPointerObj((void*)node,SWIGTYPE_p_YACS__ENGINE__InlineNode,0);
+      else if(dynamic_cast<YACS::ENGINE::ServiceInlineNode *>(node))
+        ob=SWIG_NewPointerObj((void*)node,SWIGTYPE_p_YACS__ENGINE__ServiceInlineNode,0);
+      else if(dynamic_cast<YACS::ENGINE::ServiceNode *>(node))
+        ob=SWIG_NewPointerObj((void*)node,SWIGTYPE_p_YACS__ENGINE__ServiceNode,0);
+      else if(dynamic_cast<YACS::ENGINE::ElementaryNode *>(node))
+        ob=SWIG_NewPointerObj((void*)node,SWIGTYPE_p_YACS__ENGINE__ElementaryNode,0);
+      else
+        ob=SWIG_NewPointerObj((void*)node,SWIGTYPE_p_YACS__ENGINE__Node,0);
+      return ob;
+    }
 
 %}
+
+%init
+%{
+  // init section
+#ifdef OMNIORB
+  PyObject* omnipy = PyImport_ImportModule((char*)"_omnipy");
+  if (!omnipy)
+  {
+    PyErr_SetString(PyExc_ImportError,(char*)"Cannot import _omnipy");
+    return;
+  }
+  PyObject* pyapi = PyObject_GetAttrString(omnipy, (char*)"API");
+  api = (omniORBpyAPI*)PyCObject_AsVoidPtr(pyapi);
+  Py_DECREF(pyapi);
+#endif
+%}
+
+%ignore operator=;
+
+/*
+ * Template section
+ */
+%template()              std::pair<std::string, YACS::ENGINE::TypeCode *>;
+%template()              std::pair<std::string, YACS::ENGINE::Node *>;
+%template()              std::pair<std::string, YACS::ENGINE::InlineNode *>;
+%template()              std::pair<std::string, YACS::ENGINE::ServiceNode *>;
+%template()              std::pair<YACS::ENGINE::OutPort *,YACS::ENGINE::InPort *>;
+%template()              std::pair<YACS::ENGINE::InPort *,YACS::ENGINE::OutPort *>;
+%template(TCmap)         std::map<std::string, YACS::ENGINE::TypeCode *>;
+%template(NODEmap)       std::map<std::string, YACS::ENGINE::Node *>;
+%template(INODEmap)      std::map<std::string, YACS::ENGINE::InlineNode *>;
+%template(SNODEmap)      std::map<std::string, YACS::ENGINE::ServiceNode *>;
+%template(strvec)        std::vector<std::string>;
+%template(linksvec)      std::vector< std::pair<YACS::ENGINE::OutPort *,YACS::ENGINE::InPort *> >;
+%template(linkvec)       std::vector< std::pair<YACS::ENGINE::InPort *,YACS::ENGINE::OutPort *> >;
+%template(inlist)        std::list<YACS::ENGINE::InPort *>;
+%template(outlist)       std::list<YACS::ENGINE::OutPort *>;
+%template(inputlist)     std::list<YACS::ENGINE::InputPort *>;
+%template(outputlist)    std::list<YACS::ENGINE::OutputPort *>;
+%template(instreamlist)  std::list<YACS::ENGINE::InputDataStreamPort *>;
+%template(outstreamlist) std::list<YACS::ENGINE::OutputDataStreamPort *>;
+
+%template()              std::pair<std::string, YACS::ENGINE::CatalogLoader *>;
+%template(loadermap)     std::map<std::string,YACS::ENGINE::CatalogLoader *>;
+%template()              std::pair<std::string, YACS::ENGINE::ComposedNode *>;
+%template(composedmap)   std::map<std::string,YACS::ENGINE::ComposedNode *>;
+%template()              std::pair<std::string, YACS::ENGINE::ComponentDefinition *>;
+%template(compomap)      std::map<std::string, YACS::ENGINE::ComponentDefinition *>;
+
+#if SWIG_VERSION >= 0x010329
+%template()        std::list<int>;
+%template()        std::list<std::string>;
+#else
 
 %typemap(python,out) std::list<int>
 {
@@ -164,6 +289,49 @@ namespace YACS
       return NULL;
     }
 }
+#endif
+
+%typemap(python,in) std::list<YACS::ENGINE::TypeCodeObjref*>
+{
+  // Check if input is a list 
+  if (PyList_Check($input))
+    {
+      int size = PyList_Size($input);
+      int i = 0;
+      std::list<YACS::ENGINE::TypeCodeObjref*> myList;
+      $1 = myList;
+      for (i = 0; i < size; i++)
+        {
+          PyObject *o = PyList_GetItem($input,i);
+          YACS::ENGINE::TypeCode* temp;
+          if ((SWIG_ConvertPtr(o, (void **) &temp, $descriptor(YACS::ENGINE::TypeCode*),0)) == -1) 
+            {
+              PyErr_SetString(PyExc_TypeError,"not a YACS::ENGINE::TypeCode*");
+              return NULL;
+            }
+          else
+            {
+              if(temp->kind() == Objref)
+                $1.push_back((TypeCodeObjref*)temp);
+              else
+                {
+                  PyErr_SetString(PyExc_TypeError,"not a YACS::ENGINE::TypeCodeObjref*");
+                  return NULL;
+                }
+            }
+        }
+    }
+  else
+    {
+      PyErr_SetString(PyExc_TypeError,"not a list");
+      return NULL;
+    }
+}
+
+%typemap(python,out) YACS::ENGINE::Node*
+{
+  $result=convertNode($1);
+}
 
 %typemap(python,out) std::set<YACS::ENGINE::Node *>
 {
@@ -174,31 +342,7 @@ namespace YACS
   PyObject * ob;
   for (i=0, iL=$1.begin(); iL!=$1.end(); i++, iL++)
     {
-      if(dynamic_cast<Bloc *>(*iL))
-        ob=SWIG_NewPointerObj((void*)(*iL),$descriptor(YACS::ENGINE::Bloc *),0); 
-      else if(dynamic_cast<ForLoop *>(*iL))
-        ob=SWIG_NewPointerObj((void*)(*iL),$descriptor(YACS::ENGINE::ForLoop *),0); 
-      else if(dynamic_cast<WhileLoop *>(*iL))
-        ob=SWIG_NewPointerObj((void*)(*iL),$descriptor(YACS::ENGINE::WhileLoop *), 0); 
-      else if(dynamic_cast<ForEachLoop *>(*iL))
-        ob=SWIG_NewPointerObj((void*)(*iL),$descriptor(YACS::ENGINE::ForEachLoop *), 0); 
-      else if(dynamic_cast<Switch *>(*iL))
-        ob=SWIG_NewPointerObj((void*)(*iL),$descriptor(YACS::ENGINE::Switch *), 0); 
-      else if(dynamic_cast<ComposedNode *>(*iL))
-        ob=SWIG_NewPointerObj((void*)(*iL),$descriptor(YACS::ENGINE::ComposedNode *), 0); 
-      else if(dynamic_cast<InlineFuncNode *>(*iL))
-        ob=SWIG_NewPointerObj((void*)(*iL),$descriptor(YACS::ENGINE::InlineFuncNode *), 0);
-      else if(dynamic_cast<InlineNode *>(*iL))
-        ob=SWIG_NewPointerObj((void*)(*iL),$descriptor(YACS::ENGINE::InlineNode *), 0);
-      else if(dynamic_cast<ServiceNode *>(*iL))
-        ob=SWIG_NewPointerObj((void*)(*iL),$descriptor(YACS::ENGINE::ServiceNode *), 0); 
-      else if(dynamic_cast<ServiceInlineNode *>(*iL))
-        ob=SWIG_NewPointerObj((void*)(*iL),$descriptor(YACS::ENGINE::ServiceInlineNode *), 0); 
-      else if(dynamic_cast<ElementaryNode *>(*iL))
-        ob=SWIG_NewPointerObj((void*)(*iL),$descriptor(YACS::ENGINE::ElementaryNode *), 0); 
-      else
-        ob=SWIG_NewPointerObj((void*)(*iL),$descriptor(YACS::ENGINE::Node *), 0); 
-
+      ob=convertNode(*iL);
       PyList_SetItem($result,i,ob); 
     }
 }
@@ -258,6 +402,10 @@ namespace YACS
 }
 
 /*
+ * End of Template section
+ */
+
+/*
  * Exception section
  */
 // a general exception handler
@@ -271,14 +419,12 @@ namespace YACS
       PyErr_SetString(PyExc_ValueError,_e.what());
       return NULL;
    } 
-   catch (Swig::DirectorException &e) 
-   { 
-     SWIG_fail; 
-   }
+   OMNIPY_CATCH_AND_HANDLE_SYSTEM_EXCEPTIONS
 }
 
 // a specific exception handler = generic + release lock
-%exception RunW {
+%define PYEXCEPTION(name)
+%exception name {
    try {
       InterpreterUnlocker _l;
       $action
@@ -287,53 +433,18 @@ namespace YACS
       return NULL;
    }
 }
-%exception RunB {
-   try {
-      InterpreterUnlocker _l;
-      $action
-   } catch(YACS::Exception& _e) {
-      PyErr_SetString(PyExc_ValueError,_e.what());
-      return NULL;
-   }
-}
+%enddef
 
-%exception setExecMode {
-   try {
-      InterpreterUnlocker _l;
-      $action
-   } catch(YACS::Exception& _e) {
-      PyErr_SetString(PyExc_ValueError,_e.what());
-      return NULL;
-   }
-}
-
-%exception resumeCurrentBreakPoint {
-   try {
-      InterpreterUnlocker _l;
-      $action
-   } catch(YACS::Exception& _e) {
-      PyErr_SetString(PyExc_ValueError,_e.what());
-      return NULL;
-   }
-}
-
-%exception stopExecution {
-   try {
-      InterpreterUnlocker _l;
-      $action
-   } catch(YACS::Exception& _e) {
-      PyErr_SetString(PyExc_ValueError,_e.what());
-      return NULL;
-   }
-}
+PYEXCEPTION(RunW)
+PYEXCEPTION(RunB)
+PYEXCEPTION(setExecMode)
+PYEXCEPTION(resumeCurrentBreakPoint)
+PYEXCEPTION(stopExecution)
 
 /*
  * End of Exception section
  */
 
-/*
- * Template section
- */
 
 
 %wrapper %{
@@ -370,37 +481,6 @@ namespace YACS
   */
 %}
 
-
-%template()              std::pair<std::string, YACS::ENGINE::TypeCode *>;
-%template()              std::pair<std::string, YACS::ENGINE::Node *>;
-%template()              std::pair<std::string, YACS::ENGINE::InlineNode *>;
-%template()              std::pair<std::string, YACS::ENGINE::ServiceNode *>;
-%template()              std::pair<YACS::ENGINE::OutPort *,YACS::ENGINE::InPort *>;
-%template()              std::pair<YACS::ENGINE::InPort *,YACS::ENGINE::OutPort *>;
-%template(TypeList)      std::list<YACS::ENGINE::TypeCodeObjref *>;
-%template(TCmap)         std::map<std::string, YACS::ENGINE::TypeCode *>;
-%template(NODEmap)       std::map<std::string, YACS::ENGINE::Node *>;
-%template(INODEmap)      std::map<std::string, YACS::ENGINE::InlineNode *>;
-%template(SNODEmap)      std::map<std::string, YACS::ENGINE::ServiceNode *>;
-%template(strvec)        std::vector<std::string>;
-%template(linksvec)      std::vector< std::pair<YACS::ENGINE::OutPort *,YACS::ENGINE::InPort *> >;
-%template(linkvec)       std::vector< std::pair<YACS::ENGINE::InPort *,YACS::ENGINE::OutPort *> >;
-%template(inlist)        std::list<YACS::ENGINE::InPort *>;
-%template(outlist)       std::list<YACS::ENGINE::OutPort *>;
-%template(inputlist)     std::list<YACS::ENGINE::InputPort *>;
-%template(outputlist)    std::list<YACS::ENGINE::OutputPort *>;
-%template(instreamlist)  std::list<YACS::ENGINE::InputDataStreamPort *>;
-%template(outstreamlist) std::list<YACS::ENGINE::OutputDataStreamPort *>;
-
-//Pb : cannot iterate with SWIG 1.3.24
-//%template(NODEset)      std::set<YACS::ENGINE::Node *>;
-//%template(InPortset)    std::set<YACS::ENGINE::InPort *>;
-//%template(OutPortset)   std::set<YACS::ENGINE::OutPort *>;
-
-/*
- * End of Template section
- */
-
 /*
  * Ownership section
  */
@@ -416,17 +496,21 @@ namespace YACS
 %newobject YACS::ENGINE::Runtime::createForEachLoop;
 %newobject YACS::ENGINE::Runtime::createWhileLoop;
 %newobject YACS::ENGINE::Runtime::createSwitch;
+%newobject YACS::ENGINE::Runtime::loadCatalog;
+%newobject YACS::ENGINE::Node::clone;
 
 //Release ownership : transfer it to C++
+%apply SWIGTYPE *DISOWN { YACS::ENGINE::CatalogLoader* factory};
 %apply SWIGTYPE *DISOWN { YACS::ENGINE::Node *DISOWNnode };
+%apply SWIGTYPE *DISOWN { Node *DISOWNnode };
 
-//Take ownership : transfer it from C++ (to complete)
+//Take ownership : transfer it from C++ (has to be completed)
 %newobject YACS::ENGINE::Loop::edRemoveNode;
 %newobject YACS::ENGINE::Switch::edReleaseDefaultNode;
 %newobject YACS::ENGINE::Switch::edReleaseCase;
 %newobject YACS::ENGINE::DynParaLoop::edRemoveNode;
 %newobject YACS::ENGINE::DynParaLoop::edRemoveInitNode;
-//No other way to do
+//No other way to do ??
 %feature("pythonappend") YACS::ENGINE::Bloc::edRemoveChild(Node *node)%{
         args[1].thisown=1
 %}
@@ -444,8 +528,12 @@ namespace YACS
  * End of Reference counting section
  */
 
+/*
+ * Director section : classes that can be subclassed in python
+ */
 %feature("director") YACS::ENGINE::PyObserver;
 %feature("nodirector") YACS::ENGINE::PyObserver::notifyObserver;
+%feature("director") YACS::ENGINE::CatalogLoader;
 /*
 %feature("director:except") {
   if ($error != NULL) {
@@ -456,6 +544,9 @@ namespace YACS
   }
 }
 */
+/*
+ * End of Director section
+ */
 
 %include <define.hxx>
 %include <Exception.hxx>
@@ -465,493 +556,111 @@ namespace YACS
 %include <ExecutorSwig.hxx>
 %include <RefCounter.hxx>
 
-%import <Scheduler.hxx>
-%import <Task.hxx>
+%ignore YACS::ENGINE::TypeCode::getOrBuildAnyFromZippedData;
+%include <TypeCode.hxx>
 
-
-namespace YACS
+%include <Scheduler.hxx>
+%include <Task.hxx>
+%include <Dispatcher.hxx>
+%include <DeploymentTree.hxx>
+%include <Port.hxx>
+%extend YACS::ENGINE::Port
 {
-  namespace ENGINE
-  {
-    typedef enum
-      {
-      //Problem with None (same name as python)
-       // None     = 0,
-        Double   = 1,
-        Int      = 2,
-        String   = 3,
-        Bool     = 4,
-        Objref   = 5,
-        Sequence = 6,
-        Array    = 7
-      } DynType;
-
-    class TypeCode : public RefCounter
+  int __cmp__(Port* other)
     {
-    public:
-      TypeCode(DynType kind);
-      DynType kind() const;
-      virtual TypeCode *clone() const;
-      virtual const char * name()       ;
-      virtual const char * shortName()  ;
-      virtual const char * id()         ;
-      virtual const TypeCode * contentType() ;
-      virtual int isA(const char* repositoryId) ;
-      virtual int isA(const TypeCode* tc) const;
-      virtual int isAdaptable(const TypeCode* tc) const;
-    protected:
-      TypeCode(const TypeCode& tc);
-      virtual ~TypeCode();
-    };
-
-    class TypeCodeObjref: public TypeCode
+      if(self==other)
+        return 0;
+      else 
+        return 1;
+    }
+  long ptr()
     {
-    public:
-      TypeCodeObjref(const char* repositoryId, const char* name);
-      TypeCodeObjref(const char* repositoryId, const char* name, 
-                      const std::list<TypeCodeObjref *>& ltc);
-    protected:
-      virtual ~TypeCodeObjref();
-    };
-
-    class DeploymentTree
-    {
-    public:
-      DeploymentTree();
-      ~DeploymentTree();
-      unsigned char appendTask(Task *task, Scheduler *cloner);
-      //
-      unsigned getNumberOfCTDefContainer() const;
-      unsigned getNumberOfRTODefContainer() const;
-      unsigned getNumberOfCTDefComponentInstances() const;
-      unsigned getNumberOfRTODefComponentInstances() const;
-      //
-      bool presenceOfDefaultContainer() const;
-    };
-
-    class Node;
-
-    class Observer
-    {
-    public:
-      virtual void notifyObserver(Node* object,const std::string& event);
-      virtual ~Observer();
-    };
-
-    class PyObserver:public Observer
-    {
-    public:
-      //virtual void notifyObserver(Node* object,const std::string& event);
-      virtual void pynotify(Node* object,const std::string& event);
-    };
-
-    class Dispatcher
-    {
-    public:
-      static Dispatcher* getDispatcher();
-      virtual void dispatch(Node* object,const std::string& event);
-      virtual void addObserver(Observer* observer,Node* object,const std::string& event);
-      virtual void removeObserver(Observer* observer,Node* object,const std::string& event);
-      virtual void printObservers();
-    };
-
-    class Port
-    {
-    public:
-      virtual ~Port();
-      Node *getNode() const ;
-      virtual std::string getNameOfTypeOfCurrentInstance() const;
-      %extend{
-        int __cmp__(Port* other)
-        {
-          if(self==other)return 0;
-          else return 1;
-        }
-        long ptr()
-        {
-          return (long)self;
-        }
-      }
-    protected:
-      Port(Node *node);
-      Port(const Port& other, Node *newHelder);
-    };
-
-    class DataPort : public virtual Port
-    {
-    public:
-      static const char NAME[];
-      TypeCode* edGetType() const ;
-      void edSetType(TypeCode* type);
-      std::string getName() const ;
-      std::string getNameOfTypeOfCurrentInstance() const;
-      virtual void edRemoveAllLinksLinkedWithMe() = 0;
-    protected:
-      virtual ~DataPort();
-      DataPort(const DataPort& other, Node *newHelder);
-      DataPort(const std::string& name, Node *node, TypeCode* type);
-    };
-
-    class InPort;
-    class OutPort : virtual public DataPort
-    {
-    protected:
-      OutPort(const OutPort& other, Node *newHelder);
-      OutPort(const std::string& name, Node *node, TypeCode* type);
-    public:
-      virtual int edGetNumberOfOutLinks() const;
-      virtual std::set<InPort *> edSetInPort() const = 0;
-      virtual bool isAlreadyLinkedWith(InPort *with) const = 0;
-      virtual void getAllRepresented(std::set<OutPort *>& represented) const;
-      virtual bool addInPort(InPort *inPort) throw(Exception) = 0;
-      virtual int removeInPort(InPort *inPort, bool forward) throw(Exception) = 0;
-      virtual ~OutPort();
-      std::vector<DataPort *> calculateHistoryOfLinkWith(InPort *end);
-    };
-
-    class InPort : virtual public DataPort
-    {
-    public:
-      virtual int edGetNumberOfLinks() const;
-      virtual std::set<OutPort *> edSetOutPort() const;
-      virtual ~InPort();
-    protected:
-      InPort(const InPort& other, Node *newHelder);
-      InPort(const std::string& name, Node *node, TypeCode* type);
-      void edRemoveAllLinksLinkedWithMe() throw(Exception);
-      virtual void edNotifyReferencedBy(OutPort *fromPort);
-      virtual void edNotifyDereferencedBy(OutPort *fromPort);
-      virtual void getAllRepresentants(std::set<InPort *>& repr) const;
-    };
-  }
+      return (long)self;
+    }
 }
-
+%include <DataPort.hxx>
+%include <InPort.hxx>
+%include <OutPort.hxx>
 %include <InGate.hxx>
 %include <OutGate.hxx>
 %include <DataFlowPort.hxx>
 %include <DataStreamPort.hxx>
 
-namespace YACS
+%include <LinkInfo.hxx>
+%include <Logger.hxx>
+
+%include <ComponentInstance.hxx>
+%include <Container.hxx>
+%include <InputPort.hxx>
+%extend YACS::ENGINE::InputPort
 {
-  namespace ENGINE
-  {
-    class InputPort : public DataFlowPort, public InPort
+  void edInitXML(const char * s)
     {
-    public:
-      std::string getNameOfTypeOfCurrentInstance() const;
-      template<class T>
-      void edInit(T value);
-      %template(edInitInt)    edInit<int>;
-      %template(edInitBool)    edInit<bool>;
-      %template(edInitString)    edInit<std::string>;
-      %template(edInitDbl)    edInit<double>;
-      void edInit(const std::string& impl,char* value);
-      virtual InputPort *clone(Node *newHelder) const = 0;
-      bool isEmpty();
-      virtual void put(const void *data) throw(ConversionException) = 0;
-      virtual std::string dump();
-    protected:
-      InputPort(const std::string& name, Node *node, TypeCode* type);
-    };
-
-    class OutputPort : public DataFlowPort, public OutPort
+      self->edInit("XML",s);
+    }
+  void edInitPy(PyObject* ob)
     {
-    public:
-      virtual ~OutputPort();
-      std::set<InPort *> edSetInPort() const;
-      bool isAlreadyLinkedWith(InPort *with) const;
-      bool isAlreadyInSet(InputPort *inputPort) const;
-      std::string getNameOfTypeOfCurrentInstance() const;
-      int removeInPort(InPort *inPort, bool forward) throw(Exception);
-      virtual bool edAddInputPort(InputPort *phyPort) throw(Exception);
-      virtual int edRemoveInputPort(InputPort *inputPort, bool forward) throw(Exception);
-      bool addInPort(InPort *inPort) throw(Exception);
-      void edRemoveAllLinksLinkedWithMe() throw(Exception);//entry point for forward port deletion
-      virtual void exInit();
-      virtual OutputPort *clone(Node *newHelder) const = 0;
-      virtual void put(const void *data) throw(ConversionException);
-      virtual std::string dump();
-    protected:
-      OutputPort(const OutputPort& other, Node *newHelder);
-      OutputPort(const std::string& name, Node *node, TypeCode* type);
-    };
+      self->edInit("Python",ob);
+    }
+}
+%template(edInitInt)       YACS::ENGINE::InputPort::edInit<int>;
+%template(edInitBool)      YACS::ENGINE::InputPort::edInit<bool>;
+%template(edInitString)    YACS::ENGINE::InputPort::edInit<std::string>;
+%template(edInitDbl)       YACS::ENGINE::InputPort::edInit<double>;
 
-    class InputDataStreamPort : public DataStreamPort, public InPort
+%include <OutputPort.hxx>
+%include <InputDataStreamPort.hxx>
+%include <OutputDataStreamPort.hxx>
+%include <AnyInputPort.hxx>
+
+%include <Node.hxx>
+%extend YACS::ENGINE::Node 
+{
+  int __cmp__(Node* other)
     {
-    public:
-      InputDataStreamPort(const std::string& name, Node *node, TypeCode* type);
-      std::string getNameOfTypeOfCurrentInstance() const;
-      InputDataStreamPort *clone(Node *newHelder) const;
-    };
-
-    class OutputDataStreamPort : public DataStreamPort, public OutPort
+      if(self==other)
+        return 0;
+      else 
+        return 1;
+    }
+  long ptr()
     {
-    public:
-      OutputDataStreamPort(const OutputDataStreamPort& other, Node *newHelder);
-      OutputDataStreamPort(const std::string& name, Node *node, TypeCode* type);
-      virtual ~OutputDataStreamPort();
-      virtual OutputDataStreamPort *clone(Node *newHelder) const;
-      std::set<InPort *> edSetInPort() const;
-      virtual int edGetNumberOfOutLinks() const;
-      bool isAlreadyLinkedWith(InPort *with) const;
-      virtual std::string getNameOfTypeOfCurrentInstance() const;
-      virtual bool addInPort(InPort *inPort) throw(Exception);
-      virtual bool edAddInputDataStreamPort(InputDataStreamPort *port) throw(ConversionException);
-      int edRemoveInputDataStreamPort(InputDataStreamPort *inPort, bool forward) throw(Exception);
-      void edRemoveAllLinksLinkedWithMe() throw(Exception);
-      int removeInPort(InPort *inPort, bool forward) throw(Exception);
-    };
-
-    class ComposedNode;
-    class ElementaryNode;
-
-    class Node
-    {
-    protected:
-      Node(const std::string& name);
-    public:
-      virtual ~Node();
-      YACS::StatesForNode getState() ;
-      virtual YACS::StatesForNode getEffectiveState() ;
-      std::string getColorState(YACS::StatesForNode state);
-      InGate *getInGate() ;
-      OutGate *getOutGate();
-      const std::string& getName();
-      ComposedNode * getFather() ;
-      std::set<Node *> getOutNodes() const;
-      virtual std::set<ElementaryNode *> getRecursiveConstituents() const = 0;
-      virtual int getNumberOfInputPorts() const = 0;
-      virtual int getNumberOfOutputPorts() const = 0;
-      std::list<InPort *> getSetOfInPort() const;
-      std::list<OutPort *> getSetOfOutPort() const;
-      virtual std::list<InputPort *> getSetOfInputPort() const = 0;
-      virtual std::list<OutputPort *> getSetOfOutputPort() const = 0;
-      virtual std::string getInPortName(const InPort *) const = 0;
-      virtual std::string getOutPortName(const OutPort *) const  = 0;
-      virtual std::list<InputDataStreamPort *> getSetOfInputDataStreamPort() const = 0;
-      virtual std::list<OutputDataStreamPort *> getSetOfOutputDataStreamPort() const = 0;
-      InPort *getInPort(const std::string& name) const ;
-      virtual OutPort *getOutPort(const std::string& name) const ;
-      virtual std::set<OutPort *> getAllOutPortsLeavingCurrentScope() const = 0;
-      virtual std::set<InPort *> getAllInPortsComingFromOutsideOfCurrentScope() const = 0;
-      virtual InputPort *getInputPort(const std::string& name) const = 0;
-      virtual OutputPort *getOutputPort(const std::string& name) const = 0;
-      virtual InputDataStreamPort *getInputDataStreamPort(const std::string& name) const = 0;
-      virtual OutputDataStreamPort *getOutputDataStreamPort(const std::string& name) const = 0;
-      std::set<ComposedNode *> getAllAscendanceOf(ComposedNode *levelToStop = 0);
-      std::string getImplementation();
-      virtual ComposedNode *getRootNode() ;
-      virtual void setProperty(const std::string& name,const std::string& value);
-      virtual Node *getChildByName(const std::string& name) const = 0;
-      virtual void sendEvent(const std::string& event);
-
-      %extend{
-        int __cmp__(Node* other)
-        {
-          if(self==other)return 0;
-          else return 1;
-        }
-        long ptr()
-        {
           return (long)self;
-        }
-      }
-    };
-
-    class Container
-    {
-    public:
-      virtual bool isAlreadyStarted() const;
-      virtual std::string getPlacementId() const = 0;
-      virtual void attachOnCloning() const;
-      virtual void dettachOnCloning() const;
-      bool isAttachedOnCloning() const;
-    protected:
-      ~Container();
-    };
-
-    class ElementaryNode: public Node, public Task
-    {
-    public:
-      virtual InputPort *edAddInputPort(const std::string& inputPortName, TypeCode* type) ;
-      virtual OutputPort *edAddOutputPort(const std::string& outputPortName, TypeCode* type) ;
-      InputPort *getInputPort(const std::string& name) ;
-      OutputPort *getOutputPort(const std::string& name) ;
-      InputDataStreamPort *getInputDataStreamPort(const std::string& name) ;
-      OutputDataStreamPort *getOutputDataStreamPort(const std::string& name) ;
-      virtual InputDataStreamPort *edAddInputDataStreamPort(const std::string& inputPortDSName, TypeCode* type) ;
-      virtual OutputDataStreamPort *edAddOutputDataStreamPort(const std::string& outputPortDSName, TypeCode* type) ;
-    protected:
-      ElementaryNode(const std::string& name);
-    };
-
-    class ComposedNode: public Node, public Scheduler
-    {
-    protected:
-      ComposedNode(const std::string& name);
-      ComposedNode(const ComposedNode& other, ComposedNode *father);
-    public:
-      virtual ~ComposedNode();
-      bool isFinished();
-      DeploymentTree getDeploymentTree() const;
-      std::vector<Task *> getNextTasks(bool& isMore);
-      void notifyFrom(const Task *sender, YACS::Event event);
-      bool edAddLink(OutPort *start, InPort *end) throw(Exception);
-      virtual bool edAddDFLink(OutPort *start, InPort *end) throw(Exception);
-      bool edAddLink(OutGate *start, InGate *end) throw(Exception);
-      bool edAddCFLink(Node *nodeS, Node *nodeE) throw(Exception);
-      void edRemoveLink(OutPort *start, InPort *end) throw(Exception);
-      void edRemoveLink(OutGate *start, InGate *end) throw(Exception);
-      virtual bool isRepeatedUnpredictablySeveralTimes() const { return false; }
-      virtual std::set<Node *> edGetDirectDescendants() const =  0;
-      std::set<ElementaryNode *> getRecursiveConstituents() const;
-      std::string getInPortName(const InPort *) const throw (Exception);
-      std::string getOutPortName(const OutPort *) const throw (Exception);
-
-      int getNumberOfInputPorts() const;
-      int getNumberOfOutputPorts() const;
-      std::list<InputPort *> getSetOfInputPort() const;
-      std::list<OutputPort *> getSetOfOutputPort() const;
-      std::set<OutPort *> getAllOutPortsLeavingCurrentScope() const;
-      std::set<InPort *> getAllInPortsComingFromOutsideOfCurrentScope() const;
-      std::list<InputDataStreamPort *> getSetOfInputDataStreamPort() const;
-      std::list<OutputDataStreamPort *> getSetOfOutputDataStreamPort() const;
-      OutPort *getOutPort(const std::string& name) const throw(Exception);
-      InputPort *getInputPort(const std::string& name) const throw(Exception);
-      OutputPort *getOutputPort(const std::string& name) const throw(Exception);
-      InputDataStreamPort *getInputDataStreamPort(const std::string& name) const throw(Exception);
-      OutputDataStreamPort *getOutputDataStreamPort(const std::string& name) const throw(Exception);
-      std::vector< std::pair<OutPort *, InPort *> > getSetOfInternalLinks() const;
-      std::vector< std::pair<OutPort *, InPort *> > getSetOfLinksLeavingCurrentScope() const;
-      virtual std::vector< std::pair<InPort *, OutPort *> > getSetOfLinksComingInCurrentScope() const;
-      //
-      ComposedNode *getRootNode() throw(Exception);
-      bool isNodeAlreadyAggregated(Node *node) const;
-      Node *isInMyDescendance(Node *nodeToTest) const;
-      std::string getChildName(Node* node) const throw(Exception);
-      Node *getChildByName(const std::string& name) const throw(Exception);
-      static ComposedNode *getLowestCommonAncestor(Node *node1, Node *node2) throw(Exception);
-      void loaded();
-    };
-
-    class Bloc: public ComposedNode
-    {
-    public:
-      Bloc(const std::string& name);
-      bool edAddChild(Node *DISOWNnode) ;
-      void edRemoveChild(Node *node) ;
-      std::set<Node *> getChildren();
-      std::set<Node *> edGetDirectDescendants() const;
-      bool isFinished();
-    };
-
-    class Loop : public ComposedNode
-    {
-    public:
-      Loop(const std::string& name);
-      int getNbOfTurns() ;
-      void edSetNode(Node *DISOWNnode);
-      std::set<Node *> edGetDirectDescendants() const;
-      Node *edRemoveNode();
-    };
-
-    class ForLoop : public Loop
-    {
-    public:
-      ForLoop(const std::string& name);
-      InputPort *edGetNbOfTimesInputPort();
-    };
-
-    class WhileLoop : public Loop
-    {
-    public:
-      WhileLoop(const std::string& name);
-      InputPort *edGetConditionPort();
-    };
-
-    class DynParaLoop : public ComposedNode
-    {
-    public:
-      Node *edRemoveNode();
-      Node *edRemoveInitNode();
-      Node *edSetNode(Node *DISOWNnode);
-      Node *edSetInitNode(Node *DISOWNnode);
-      InputPort *edGetNbOfBranchesPort();
-      OutputPort *edGetSamplePort();
-      unsigned getNumberOfBranchesCreatedDyn() const throw(Exception);
-      Node *getChildByNameExec(const std::string& name, unsigned id) const throw(Exception);
-    protected:
-      ~DynParaLoop();
-    };
-
-    class ForEachLoop : public DynParaLoop
-    {
-    public:
-      ForEachLoop(const std::string& name, TypeCode *typeOfDataSplitted);
-      std::set<Node *> edGetDirectDescendants() const;
-      InputPort *edGetSeqOfSamplesPort();
-    };
-
-    class Switch : public ComposedNode
-    {
-    public:
-      Switch(const std::string& name);
-      Node *clone(ComposedNode *father) const;
-      Node *edSetDefaultNode(Node *DISOWNnode);
-      Node *edReleaseDefaultNode() ;
-      Node *edReleaseCase(int caseId) ;
-      Node *edSetNode(int caseId, Node *DISOWNnode) ;
-      InputPort *edGetConditionPort();
-      std::set<Node *> edGetDirectDescendants() const;
-      void checkConsistency();
-    };
-
-    class Proc: public Bloc
-    {
-    public:
-      Proc(const std::string& name);
-      bool isFinished();
-      virtual TypeCode *createType(const std::string& name, const std::string& kind);
-      virtual TypeCodeObjref *createInterfaceTc(const std::string& id, const std::string& name,
-                                                std::list<TypeCodeObjref *> ltc);
-      virtual TypeCode *createSequenceTc(const std::string& id, const std::string& name,
-                                        TypeCode *content);
-      virtual TypeCode *createStructTc(const std::string& id, const std::string& name);
-
-      virtual TypeCode* getTypeCode(const std::string& name);
-      virtual void setTypeCode(const std::string& name,TypeCode *t);
-
-      YACS::StatesForNode getNodeState(int numId);
-      std::string getXMLState(int numId);
-      std::list<int> getNumIds();
-      std::list<std::string> getIds();
-
-      std::map<std::string, TypeCode*> typeMap;
-      std::map<std::string, Node*> nodeMap;
-      std::map<std::string, ServiceNode*> serviceMap;
-      std::map<std::string, InlineNode*> inlineMap;
-      std::vector<std::string> names;
-      void setName(const std::string& name);
-    };
-  }
+    }
 }
 
+%include <ElementaryNode.hxx>
 %include <InlineNode.hxx>
 %include <ServiceNode.hxx>
-%include <ComponentInstance.hxx>
 %include <ServiceInlineNode.hxx>
+
+%include <ComposedNode.hxx>
+%include <StaticDefinedComposedNode.hxx>
+%include <Bloc.hxx>
+%include <Proc.hxx>
+
+%include <Loop.hxx>
+%include <ForLoop.hxx>
+%include <DynParaLoop.hxx>
+%include <WhileLoop.hxx>
+%include <ForEachLoop.hxx>
 %include <OptimizerAlg.hxx>
 %include <OptimizerLoop.hxx>
+%include <Switch.hxx>
+%include <Visitor.hxx>
+%include <VisitorSaveSchema.hxx>
+%include <ComponentDefinition.hxx>
+%include <Catalog.hxx>
 
 namespace YACS
 {
   namespace ENGINE
   {
-    class SchemaSave
+    class PyObserver:public Observer
     {
     public:
-      SchemaSave(Proc* proc);
-      virtual void save(std::string xmlSchemaFile);
+      virtual void pynotify(Node* object,const std::string& event);
     };
   }
 }
+

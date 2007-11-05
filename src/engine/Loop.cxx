@@ -266,7 +266,7 @@ void FakeNodeForLoop::finished()
   _loop->setState(YACS::DONE);
 }
 
-Loop::Loop(const Loop& other, ComposedNode *father, bool editionOnly):StaticDefinedComposedNode(other,father),_nbOfTurns(0),_nodeForNullTurnOfLoops(0)
+Loop::Loop(const Loop& other, ComposedNode *father, bool editionOnly):StaticDefinedComposedNode(other,father),_nbOfTurns(0),_nodeForNullTurnOfLoops(0),_node(0)
 {
   if(other._node)
     _node=other._node->simpleClone(this,editionOnly);
@@ -581,8 +581,11 @@ void Loop::writeDot(std::ostream &os)
 {
   os << "  subgraph cluster_" << getId() << "  {\n" ;
   //only one node in a loop
-  _node->writeDot(os);
-  os << getId() << " -> " << _node->getId() << ";\n";
+  if(_node)
+    {
+      _node->writeDot(os);
+      os << getId() << " -> " << _node->getId() << ";\n";
+    }
   os << "}\n" ;
   os << getId() << "[fillcolor=\"" ;
   YACS::StatesForNode state=getEffectiveState();

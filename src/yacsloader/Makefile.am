@@ -8,7 +8,7 @@ bin_PROGRAMS=driver debugger resume
 lib_LTLIBRARIES = libYACSloader.la
 
 libYACSloader_la_SOURCES =      \
-	parsers.cxx LoadState.cxx  xmlParserBase.cxx    \
+	parsers.cxx LoadState.cxx  xmlParserBase.cxx ProcCataLoader.cxx   \
 	$(__dummy__)
 
 EXTRA_libYACSloader_la_SOURCES =  \
@@ -96,6 +96,11 @@ debugger_LDFLAGS = $(PYTHON_EXTRA_LDFLAGS) -lexpat -pthread -lxml2
 
 SWIG_PYTHON_INCLUDES = -noexcept -I$(srcdir)/../bases -I$(srcdir)/../engine
 BUILT_SOURCES = loaderWRAP.cxx
+
+SWIGINCLUDES=parsers.hxx LoadState.hxx xmlParserBase.hxx ProcCataLoader.hxx
+
+loaderWRAP.cxx:loader.i $(SWIGINCLUDES)
+	$(SWIG) $(SWIG_PYTHON_OPT) $(SWIG_PYTHON_INCLUDES) $(MYSWIG_FLAGS) -o $@ $<
 
 pkgpython_PYTHON = loader.py
 pkgpyexec_LTLIBRARIES = _loader.la

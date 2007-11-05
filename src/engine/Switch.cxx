@@ -620,6 +620,10 @@ YACS::StatesForNode Switch::getEffectiveState(Node* node)
   else
     return YACS::INITED;
 }
+YACS::StatesForNode Switch::getEffectiveState()
+{
+  return Node::getEffectiveState();
+}
 
 void Switch::writeDot(std::ostream &os)
 {

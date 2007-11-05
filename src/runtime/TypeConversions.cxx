@@ -25,6 +25,24 @@ namespace YACS
 {
   namespace ENGINE
   {
+    std::string getImplName(ImplType impl)
+      {
+         switch(impl)
+           {
+           case CORBAImpl:
+             return "CORBA";
+           case PYTHONImpl:
+             return "PYTHON";
+           case NEUTRALImpl:
+             return "NEUTRAL";
+           case XMLImpl:
+             return "XML";
+           case CPPImpl:
+             return "CPP";
+           default:
+             return "UNKNOWN";
+           }
+      }
     /*
      * Functions to return a CORBA TypeCode equivalent to a YACS TypeCode
      */
@@ -932,8 +950,8 @@ namespace YACS
               cur = cur->next;
             }
           stringstream msg;
-          msg << "Problem in Xml to TOUT conversion: kind= " << t->kind() ;
-          msg << " : " << __FILE__ << ":" << __LINE__;
+          msg << "Problem in conversion from Xml to " << getImplName(IMPLOUT) << " with type:  " << t->id() ;
+          msg << " (" << __FILE__ << ":" << __LINE__ << ")";
           throw YACS::ENGINE::ConversionException(msg.str());
         }
     };
@@ -948,7 +966,6 @@ namespace YACS
             {
               if ((!xmlStrcmp(cur->name, (const xmlChar *)"int")))
                 {
-                  //wait a double, got an int
                   xmlChar * s = NULL;
                   s = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
                   DEBTRACE( "convertToYacsInt " << (const char *)s );
@@ -959,8 +976,8 @@ namespace YACS
               cur = cur->next;
             }
           stringstream msg;
-          msg << "Problem in Xml to TOUT conversion: kind= " << t->kind() ;
-          msg << " : " << __FILE__ << ":" << __LINE__;
+          msg << "Problem in conversion from Xml to " << getImplName(IMPLOUT) << " with type:  " << t->id() ;
+          msg << " (" << __FILE__ << ":" << __LINE__ << ")";
           throw YACS::ENGINE::ConversionException(msg.str());
         }
     };
@@ -986,8 +1003,8 @@ namespace YACS
               cur = cur->next;
             }
           stringstream msg;
-          msg << "Problem in Xml to TOUT conversion: kind= " << t->kind() ;
-          msg << " : " << __FILE__ << ":" << __LINE__;
+          msg << "Problem in conversion from Xml to " << getImplName(IMPLOUT) << " with type:  " << t->id() ;
+          msg << " (" << __FILE__ << ":" << __LINE__ << ")";
           throw YACS::ENGINE::ConversionException(msg.str());
         }
     };
@@ -1012,8 +1029,8 @@ namespace YACS
               cur = cur->next;
             }
           stringstream msg;
-          msg << "Problem in Xml to TOUT conversion: kind= " << t->kind() ;
-          msg << " : " << __FILE__ << ":" << __LINE__;
+          msg << "Problem in conversion from Xml to " << getImplName(IMPLOUT) << " with type:  " << t->id() ;
+          msg << " (" << __FILE__ << ":" << __LINE__ << ")";
           throw YACS::ENGINE::ConversionException(msg.str());
         }
     };
@@ -1038,7 +1055,7 @@ namespace YACS
               cur = cur->next;
             }
           stringstream msg;
-          msg << "Problem in conversion: a objref is expected " ;
+          msg << "Problem in conversion from Xml to " << getImplName(IMPLOUT) << " with type:  " << t->id() ;
           msg << " (" << __FILE__ << ":" << __LINE__ << ")";
           throw YACS::ENGINE::ConversionException(msg.str());
         }

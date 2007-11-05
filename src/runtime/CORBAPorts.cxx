@@ -269,7 +269,7 @@ CORBA::Any * OutputCorbaPort::getAnyOut()
       {
         a->replace(CORBA::_tc_boolean, (void*) 0);
       }
-    else if(kind == None)
+    else if(kind == NONE)
       {
         stringstream msg;
         msg << "Cannot set Any Out for None" << __FILE__ << ":" << __LINE__;

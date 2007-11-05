@@ -1,5 +1,5 @@
 #include "RefCounter.hxx"
-//#define REFCNT
+#define REFCNT
 
 #include <iostream>
 #include <sstream>

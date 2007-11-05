@@ -79,6 +79,7 @@ namespace YACS
       //
       ComposedNode *getRootNode() throw(Exception);
       bool isNodeAlreadyAggregated(Node *node) const;
+      virtual bool isNameAlreadyUsed(const std::string& name) const;
       Node *isInMyDescendance(Node *nodeToTest) const;
       std::string getChildName(Node* node) const throw(Exception);
       virtual std::string getMyQualifiedName(const Node *directSon) const;

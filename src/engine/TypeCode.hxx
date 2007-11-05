@@ -16,7 +16,7 @@ namespace YACS
 
     typedef enum
       {
-        None     = 0,
+        NONE     = 0,
         Double   = 1,
         Int      = 2,
         String   = 3,

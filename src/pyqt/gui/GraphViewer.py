@@ -26,6 +26,11 @@ class GraphViewer(QCanvasView):
     self.__moving=0
     self.__connecting=0
     self.__moving_start= 0
+    # for highlighting selections
+    self.selectPen=QPen(QColor(255,255,0),2,Qt.DashLine)
+    self.selectBrush=QBrush(Qt.red)
+    self.selectStyle = Qt.Dense5Pattern
+    self.selected=None
     self.tooltip = DynamicTip( self )
 
   def contentsMouseDoubleClickEvent(self,e): # QMouseEvent e
@@ -51,6 +56,7 @@ class GraphViewer(QCanvasView):
         if not each_item.hit(point):
           continue
       if e.button()== Qt.RightButton:
+        #Right button click
         self.__moving=0
         self.__connecting=0
         if hasattr(each_item,"popup"):
@@ -64,15 +70,28 @@ class GraphViewer(QCanvasView):
             menu.exec_loop( QCursor.pos() )
             self.canvas().update()
       elif e.button()== Qt.LeftButton:
+        #Left button click
         if self.__connecting:
+          #We are linking objects
           if hasattr(each_item,"getObj"):
             #a connection is ending
             self.__connecting.link(each_item.getObj())
             self.canvas().update()
           self.__connecting=0
         else:
+          #We are moving or selecting a composite object
+          #if self.selected:
+          #  try:
+          #    self.deselectObj(self.selected)
+          #  except:
+          #    pass
+          #  self.selected=None
+          #self.selected=each_item
+          #self.selectObj(self.selected)
+          each_item.selected()
           self.__moving=each_item
           self.__moving_start=point
+          self.canvas().update()
       return
     if e.button()== Qt.RightButton:
       menu=self.popup()
@@ -82,6 +101,35 @@ class GraphViewer(QCanvasView):
     self.__moving=0
     self.__connecting=0
     QCanvasView.contentsMousePressEvent(self,e)
+
+  def selectItem(self,item):
+    #print "selectItem",item
+    if self.selected:
+      try:
+        self.deselectObj(self.selected)
+      except:
+        pass
+      self.selected=None
+    #need to find equivalent canvas item 
+    for citem in self.canvas().allItems():
+      if citem.item is item:
+        self.selected=citem
+        self.selectObj(self.selected)
+        break
+    self.canvas().update()
+
+  def selectObj(self,obj):
+    if obj:
+      obj._origPen = obj.pen()
+      obj._origBrush = obj.brush()
+      obj._origStyle = obj.brush().style()
+      #obj.setPen(self.selectPen)
+      obj.setBrush(self.selectBrush)
+
+  def deselectObj(self,obj):
+    if obj:
+      #obj.setPen(obj._origPen)
+      obj.setBrush(obj._origBrush)
 
   def popup(self):
     menu=QPopupMenu()
@@ -101,8 +149,8 @@ class GraphViewer(QCanvasView):
     self.repaintContents(True)
     #self.canvas().update()
 
-  def addNode(self):
-    self.item.addNode()
+  #def addNode(self):
+  #  self.item.addNode()
 
   def zoomIn(self):
     m = self.worldMatrix()

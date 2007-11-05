@@ -836,9 +836,6 @@ void Executor::launchTasks(std::vector<Task *>& tasks)
   //Third phase, execute each task in a thread
   for(iter=tasks.begin();iter!=tasks.end();iter++)
     {
-      DEBTRACE("before _semForMaxThreads.wait " << _semThreadCnt);
-      _semForMaxThreads.wait();
-      _semThreadCnt -= 1;
       launchTask(*iter);
     }
 }
@@ -856,6 +853,11 @@ void Executor::launchTask(Task *task)
 {
   DEBTRACE("Executor::launchTask(Task *task)");
   if(task->getState() != YACS::TOACTIVATE)return;
+
+  DEBTRACE("before _semForMaxThreads.wait " << _semThreadCnt);
+  _semForMaxThreads.wait();
+  _semThreadCnt -= 1;
+
   void **args=new void *[3];
   args[0]=(void *)task;
   args[1]=(void *)_mainSched;

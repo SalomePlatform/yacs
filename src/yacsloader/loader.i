@@ -6,7 +6,7 @@ loads an XML file."
 
 %module(docstring=LOADERDOCSTRING) loader
 
-%feature("autodoc", "0");
+%feature("autodoc", "1");
 
 %include std_string.i
 
@@ -21,6 +21,7 @@ loads an XML file."
 #include "Exception.hxx"
 #include "parsers.hxx"
 #include "LoadState.hxx"
+#include "ProcCataLoader.hxx"
 
 using namespace YACS::ENGINE;
 using namespace std;
@@ -39,18 +40,24 @@ using namespace std;
    }
 }
 
-namespace YACS
-{
-  class YACSLoader
-  {
-    public:
-        YACSLoader();
-%feature("autodoc", "load(self, file) -> YACS::ENGINE::Proc");
-%feature("docstring") "loads a XML file which name is given by file argument" ;
-        virtual YACS::ENGINE::Proc* load(char *);
-  };
-}
+/*
+ * Ownership section
+ */
+//Take ownership : it is not the default (constructor) as it is a factory
+%newobject YACS::YACSLoader::load;
+/*
+ * End of Ownership section
+ */
 
+%ignore parser;
+
+%include "parsers.hxx"
+%import "xmlParserBase.hxx"
+%include "LoadState.hxx"
+%import "Catalog.hxx"
+%include "ProcCataLoader.hxx"
+
+/*
 class xmlParserBase
 {
 };
@@ -72,3 +79,4 @@ namespace YACS
     };
   }
 }
+*/

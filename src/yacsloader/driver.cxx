@@ -1,6 +1,7 @@
 
 #include "RuntimeSALOME.hxx"
 #include "Proc.hxx"
+#include "Logger.hxx"
 #include "Exception.hxx"
 #include "Executor.hxx"
 #include "parsers.hxx"
@@ -143,7 +144,26 @@ main (int argc, char* argv[])
   try
     {
       Proc* p=loader.load(myArgs.args[0]);
+      //Get the parser logger
+      Logger* logger=p->getLogger("parser");
+      //Print errors logged if any
+      if(!logger->isEmpty())
+        {
+          std::cerr << logger->getStr() << std::endl;
+        }
+      //Don't execute if there are errors
+      if(logger->hasErrors())
+        {
+          delete p;
+          Runtime* r=YACS::ENGINE::getRuntime();
+          Dispatcher* disp=Dispatcher::getDispatcher();
+          r->fini();
+          delete r;
+          delete disp;
+          return 1;
+        }
 
+      //execution
       bool isXmlSchema = (strlen(myArgs.xmlSchema) != 0);
       if (isXmlSchema)
       {

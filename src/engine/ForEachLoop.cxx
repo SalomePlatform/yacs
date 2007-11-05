@@ -689,8 +689,11 @@ void ForEachLoop::writeDot(std::ostream &os)
 {
   os << "  subgraph cluster_" << getId() << "  {\n" ;
   //only one node in a loop
-  _node->writeDot(os);
-  os << getId() << " -> " << _node->getId() << ";\n";
+  if(_node)
+    {
+      _node->writeDot(os);
+      os << getId() << " -> " << _node->getId() << ";\n";
+    }
   os << "}\n" ;
   os << getId() << "[fillcolor=\"" ;
   YACS::StatesForNode state=getEffectiveState();

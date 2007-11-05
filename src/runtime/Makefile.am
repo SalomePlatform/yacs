@@ -50,6 +50,7 @@ libYACSRuntimeSALOME_la_SOURCES =      \
   NeutralCppConv.cxx             \
 	XMLCppConv.cxx                 \
   PythonCppConv.cxx              \
+  SessionCataLoader.cxx          \
 	$(__dummy__)
 
 
@@ -134,6 +135,11 @@ _SALOMERuntime_la_SOURCES =   \
 	SALOMERuntimeWRAP.cxx
 
 MYSWIG_FLAGS = -noexcept -I$(srcdir)/../bases -I$(srcdir)/../engine
+
+SWIGINCLUDES= RuntimeSALOME.hxx SALOMEDispatcher.hxx ../engine/Runtime.hxx ../engine/Dispatcher.hxx
+
+SALOMERuntimeWRAP.cxx:SALOMERuntime.i $(SWIGINCLUDES)
+	$(SWIG) $(SWIG_PYTHON_OPT) $(SWIG_PYTHON_INCLUDES) $(MYSWIG_FLAGS) -o $@ $<
 
 _SALOMERuntime_la_CXXFLAGS = \
 	$(THREAD_DEF) \

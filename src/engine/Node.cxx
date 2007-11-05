@@ -61,6 +61,27 @@ Node *Node::clone(ComposedNode *father, bool editionOnly) const
   return ret;
 }
 
+//! Change the name of the node
+/*!
+ *  raise an exception if the name is already used in the scope of its father 
+ *  \param name : the new name
+ */
+void Node::setName(const std::string& name)
+{
+  if(_father)
+    {
+      if(_father->isNameAlreadyUsed(name))
+        {
+          std::string what("Name "); 
+          what+=name;
+          what+=" already exists in the scope of "; what+=_father->getName();
+          throw Exception(what);
+        }
+    }
+  _name=name;
+}
+
+
 /**
  *  get the set of all nodes connected to the outGate
  */

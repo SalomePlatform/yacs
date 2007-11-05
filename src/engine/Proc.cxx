@@ -1,15 +1,16 @@
 #include "Proc.hxx"
 #include "Runtime.hxx"
 #include "Container.hxx"
+#include "Logger.hxx"
 #include "Visitor.hxx"
 #include <sstream>
 #include <set>
 
-//#define _DEVDEBUG_
+#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
-using namespace YACS::ENGINE;
 using namespace std;
+using namespace YACS::ENGINE;
 
 Proc::Proc(const std::string& name):Bloc(name)
 {
@@ -33,6 +34,7 @@ Proc::Proc(const std::string& name):Bloc(name)
 
 Proc::~Proc()
 {
+  DEBTRACE("Proc::~Proc");
   //for the moment all nodes are owned, so no need to manage their destruction
   //nodeMap, inlineMap, serviceMap will be cleared automatically
   //but we need to destroy TypeCodes
@@ -44,6 +46,11 @@ Proc::~Proc()
   std::map<std::string, Container*>::const_iterator it;
   for(it=containerMap.begin();it!=containerMap.end();it++)
     ((*it).second)->decrRef();
+
+  //get rid of loggers in logger map
+  std::map<std::string, Logger*>::const_iterator lt;
+  for(lt=_loggers.begin();lt!=_loggers.end();lt++)
+    delete (*lt).second;
 }
 
 void Proc::writeDot(std::ostream &os)
@@ -180,3 +187,22 @@ std::list<std::string> Proc::getIds()
   ids.push_back("_root_");
   return ids;
 }
+
+Logger *Proc::getLogger(const std::string& name)
+{
+  Logger* logger;
+  LoggerMap::const_iterator it = _loggers.find(name);
+
+  if (it != _loggers.end())
+  {
+    logger = it->second;
+  }
+  else
+  {
+    logger = new Logger(name);
+    _loggers[name]=logger;
+  }
+  return logger;
+
+}
+
