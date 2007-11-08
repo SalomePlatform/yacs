@@ -20,6 +20,12 @@ namespace YACS
       bool isPlacementPredictableB4Run() const;
       bool isMultiplicitySpecified(unsigned& value) const;
       void forceMultiplicity(unsigned value);
+    protected:
+      void checkControlDependancy(OutPort *start, InPort *end, bool cross,
+                                  std::map < ComposedNode *,  std::list < OutPort * >, SortHierarc >& fw,
+                                  std::vector<OutPort *>& fwCross,
+                                  std::map< ComposedNode *, std::list < OutPort *>, SortHierarc >& bw,
+                                  LinkInfo& info) const;
     };
   }
 }

@@ -8,7 +8,7 @@ using namespace std;
 
 const char FakeNodeForOptimizerLoop::NAME[]="thisIsAFakeNode";
 
-const int OptimizerLoop::NOT_RUNNING_BRANCH_ID=-1979020617;
+const int OptimizerLoop::NOT_RUNNING_BRANCH_ID=-1973012217;
 
 const char OptimizerLoop::NAME_OF_FILENAME_INPUT[]="FileNameInitAlg";
 
@@ -375,10 +375,6 @@ void OptimizerLoop::checkNoCyclePassingThrough(Node *node) throw(Exception)
 {
 }
 
-void OptimizerLoop::checkConsistency(ComposedNode *pointOfView) const throw(Exception)
-{
-}
-
 void OptimizerLoop::buildDelegateOf(InPort * & port, OutPort *initialStart, const std::set<ComposedNode *>& pointsOfView)
 {
   DynParaLoop::buildDelegateOf(port,initialStart,pointsOfView);
@@ -392,6 +388,26 @@ void OptimizerLoop::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPor
   string typeOfPortInstance=(port.first)->getNameOfTypeOfCurrentInstance();
   if(typeOfPortInstance!=OutputPort::NAME)
     throw Exception("OptimizerLoop::buildDelegateOf : not implemented for DS because not specified ");
+}
+
+void OptimizerLoop::checkControlDependancy(OutPort *start, InPort *end, bool cross,
+                                           std::map < ComposedNode *,  std::list < OutPort * >, SortHierarc >& fw,
+                                           std::vector<OutPort *>& fwCross,
+                                           std::map< ComposedNode *, std::list < OutPort *>, SortHierarc >& bw,
+                                           LinkInfo& info) const
+{
+  if(end==&_retPortForOutPool)
+    fw[(ComposedNode *)this].push_back(start);
+  else
+    DynParaLoop::checkControlDependancy(start,end,cross,fw,fwCross,bw,info);
+}
+
+void OptimizerLoop::checkCFLinks(const std::list<OutPort *>& starts, InputPort *end, unsigned char& alreadyFed, bool direction, LinkInfo& info) const
+{
+  if(end==&_retPortForOutPool)
+    solveObviousOrDelegateCFLinks(starts,end,alreadyFed,direction,info);
+  else
+    DynParaLoop::checkCFLinks(starts,end,alreadyFed,direction,info);
 }
 
 void OptimizerLoop::cleanInterceptors()

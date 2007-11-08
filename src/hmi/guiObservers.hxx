@@ -33,6 +33,7 @@ namespace YACS
     class SalomeNode;
     class SalomePythonNode;
     class XmlNode;
+    class SplitterNode;
     class DataPort;
     class InputPort;
     class OutputPort;
@@ -51,17 +52,11 @@ namespace YACS
         CUT,
         PASTE,
         EDIT,
-        RENAME
+        RENAME,
+        NEWROOT,
+        ADDLINK
       } GuiEvent;
     
-    typedef enum
-      {
-        INPUTPORT,
-        OUTPUTPORT,
-        INPUTDATASTREAMPORT,
-        OUTPUTDATASTREAMPORT
-      } PortKind;
-
     class ProcInvoc;
     class GuiObserver;
     
@@ -78,6 +73,7 @@ namespace YACS
       virtual bool setName(std::string name);
       virtual Subject* getParent();
       virtual bool destroy(Subject *son);
+      virtual void loadChildren();
     protected:
       std::set<GuiObserver *> _setObs;
       Subject *_parent;
@@ -93,6 +89,55 @@ namespace YACS
     protected:
     };
     
+    class SubjectDataPort: public Subject
+    {
+    public:
+      SubjectDataPort(YACS::ENGINE::DataPort* port, Subject *parent);
+      virtual ~SubjectDataPort();
+      virtual std::string getName();
+      virtual void tryCreateLink(SubjectDataPort *subInport);
+    protected:
+      YACS::ENGINE::DataPort *_dataPort;
+    };
+
+    class SubjectInputPort: public SubjectDataPort
+    {
+    public:
+      SubjectInputPort(YACS::ENGINE::InputPort *port, Subject *parent);
+      virtual ~SubjectInputPort();
+    protected:
+      YACS::ENGINE::InputPort *_inputPort;
+    };
+    
+    class SubjectOutputPort: public SubjectDataPort
+    {
+    public:
+      SubjectOutputPort(YACS::ENGINE::OutputPort *port, Subject *parent);
+      virtual ~SubjectOutputPort();
+      virtual void tryCreateLink(SubjectDataPort *subInport);
+    protected:
+      YACS::ENGINE::OutputPort *_outputPort;
+    };
+    
+    class SubjectInputDataStreamPort: public SubjectDataPort
+    {
+    public:
+      SubjectInputDataStreamPort(YACS::ENGINE::InputDataStreamPort *port, Subject *parent);
+      virtual ~SubjectInputDataStreamPort();
+    protected:
+      YACS::ENGINE::InputDataStreamPort *_inputDataStreamPort;
+    };
+    
+    class SubjectOutputDataStreamPort: public SubjectDataPort
+    {
+    public:
+      SubjectOutputDataStreamPort(YACS::ENGINE::OutputDataStreamPort *port, Subject *parent);
+      virtual ~SubjectOutputDataStreamPort();
+      virtual void tryCreateLink(SubjectDataPort *subInport);
+    protected:
+      YACS::ENGINE::OutputDataStreamPort *_outputDataStreamPort;
+    };
+
     
     class SubjectNode: public Subject
     {
@@ -103,20 +148,32 @@ namespace YACS
       virtual bool setName(std::string name);
       virtual YACS::ENGINE::Node* getNode();
     protected:
+      virtual SubjectInputPort* addSubjectInputPort(YACS::ENGINE::InputPort *port, std::string name = "");
+      virtual SubjectOutputPort* addSubjectOutputPort(YACS::ENGINE::OutputPort *port, std::string name = "");
       YACS::ENGINE::Node *_node;
+      std::list<SubjectInputPort*> _listSubjectInputPort;
+      std::list<SubjectOutputPort*> _listSubjectOutputPort;
     };
     
+    class SubjectLink;
     class SubjectComposedNode: public SubjectNode
     {
     public:
       SubjectComposedNode(YACS::ENGINE::ComposedNode *composedNode, Subject *parent);
       virtual ~SubjectComposedNode();
       virtual bool addNode(YACS::ENGINE::Catalog *catalog, std::string type, std::string name);
+      virtual void loadChildren();
+      virtual void loadLinks();
+      SubjectLink* addSubjectLink(SubjectNode *sno,
+                                  SubjectDataPort *spo,
+                                  SubjectNode *sni,
+                                  SubjectDataPort *spi);
     protected:
-      SubjectNode *createNode(YACS::ENGINE::Catalog *catalog,
-                              std::string type,
-                              std::string name,
-                              int swCase=0);
+      virtual SubjectNode *createNode(YACS::ENGINE::Catalog *catalog,
+                                      std::string type,
+                                      std::string name,
+                                      int swCase=0);
+      virtual SubjectNode* addSubjectNode(YACS::ENGINE::Node * node, std::string name = "");
       YACS::ENGINE::ComposedNode *_composedNode;
     };
 
@@ -137,6 +194,7 @@ namespace YACS
     public:
       SubjectProc(YACS::ENGINE::Proc *proc, Subject *parent);
       virtual ~SubjectProc();
+      void loadProc();
     protected:
       YACS::ENGINE::Proc *_proc;
     };
@@ -198,52 +256,6 @@ namespace YACS
       SubjectNode* _body;
     };
 
-    class SubjectDataPort: public Subject
-    {
-    public:
-      SubjectDataPort(YACS::ENGINE::DataPort* port, Subject *parent);
-      virtual ~SubjectDataPort();
-      virtual std::string getName();
-    protected:
-      YACS::ENGINE::DataPort *_dataPort;
-    };
-
-    class SubjectInputPort: public SubjectDataPort
-    {
-    public:
-      SubjectInputPort(YACS::ENGINE::InputPort *port, Subject *parent);
-      virtual ~SubjectInputPort();
-    protected:
-      YACS::ENGINE::InputPort *_inputPort;
-    };
-    
-    class SubjectOutputPort: public SubjectDataPort
-    {
-    public:
-      SubjectOutputPort(YACS::ENGINE::OutputPort *port, Subject *parent);
-      virtual ~SubjectOutputPort();
-    protected:
-      YACS::ENGINE::OutputPort *_outputPort;
-    };
-    
-    class SubjectInputDataStreamPort: public SubjectDataPort
-    {
-    public:
-      SubjectInputDataStreamPort(YACS::ENGINE::InputDataStreamPort *port, Subject *parent);
-      virtual ~SubjectInputDataStreamPort();
-    protected:
-      YACS::ENGINE::InputDataStreamPort *_inputDataStreamPort;
-    };
-    
-    class SubjectOutputDataStreamPort: public SubjectDataPort
-    {
-    public:
-      SubjectOutputDataStreamPort(YACS::ENGINE::OutputDataStreamPort *port, Subject *parent);
-      virtual ~SubjectOutputDataStreamPort();
-    protected:
-      YACS::ENGINE::OutputDataStreamPort *_outputDataStreamPort;
-    };
-
     class SubjectElementaryNode: public SubjectNode
     {
     public:
@@ -252,10 +264,9 @@ namespace YACS
       virtual bool addInputPort(YACS::ENGINE::Catalog *catalog, std::string type, std::string name);
       virtual bool addOutputPort(YACS::ENGINE::Catalog *catalog, std::string type, std::string name);
       virtual void removePort(SubjectDataPort* port);
+      virtual void loadChildren();
     protected:
       YACS::ENGINE::ElementaryNode *_elementaryNode;
-      std::list<SubjectInputPort*> _listSubjectInputPort;
-      std::list<SubjectOutputPort*> _listSubjectOutputPort;
     };
 
     class SubjectInlineNode: public SubjectElementaryNode
@@ -324,7 +335,8 @@ namespace YACS
     class SubjectSalomePythonNode: public SubjectServiceNode
     {
     public:
-      SubjectSalomePythonNode(YACS::ENGINE::SalomePythonNode *salomePythonNode, Subject *parent);
+      SubjectSalomePythonNode(YACS::ENGINE::SalomePythonNode *salomePythonNode,
+                              Subject *parent);
       virtual ~SubjectSalomePythonNode();
     protected:
       YACS::ENGINE::SalomePythonNode *_salomePythonNode;
@@ -338,7 +350,36 @@ namespace YACS
     protected:
       YACS::ENGINE::XmlNode *_xmlNode;
     };
-    
+
+    class SubjectSplitterNode: public SubjectElementaryNode
+    {
+    public:
+      SubjectSplitterNode(YACS::ENGINE::SplitterNode *splitterNode, Subject *parent);
+      virtual ~SubjectSplitterNode();
+      virtual std::string getName();
+    protected:
+      YACS::ENGINE::SplitterNode *_splitterNode;
+    };
+
+    class SubjectLink: public Subject
+    {
+    public:
+      SubjectLink(SubjectNode* subOutNode,
+                  SubjectDataPort* outPort,
+                  SubjectNode* subInNode,
+                  SubjectDataPort* inPort,
+                  Subject *parent);
+      virtual ~SubjectLink();
+      virtual std::string getName();
+
+    protected:
+      SubjectNode* _subOutNode;
+      SubjectDataPort* _outPort;
+      SubjectNode* _subInNode;
+      SubjectDataPort* _inPort;
+      std::string _name;
+    };
+
   }
 }
 #endif

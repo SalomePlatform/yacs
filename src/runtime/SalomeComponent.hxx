@@ -12,7 +12,6 @@ namespace YACS
 
 /*! \brief Class for Salome component instance
  *
- * \ingroup Nodes
  *
  */
     class SalomeComponent : public ComponentInstance

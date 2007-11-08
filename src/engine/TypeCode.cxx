@@ -213,18 +213,28 @@ TypeCode * TypeCode::structTc(const char* id,
   return new TypeCodeStruct(id, name);
 };
 
+TypeCodeComposed::TypeCodeComposed(const TypeCodeComposed& other):TypeCode(other),
+                                                                  _name(other._name),_repoId(other._shortName),
+                                                                  _shortName(other._shortName)
+{
+}
+
+TypeCodeComposed::TypeCodeComposed(DynType kind, const char* repositoryId, const char* name):TypeCode(kind),
+                                                                                             _repoId(repositoryId),_name(name)
+{
+  string::size_type debut =_name.find_last_of('/');
+  if(debut == std::string::npos)
+    _shortName= name;
+  else
+    _shortName=_name.substr(debut+1);
+}
 
 // --- TypeCodeObjref
 
 
 TypeCodeObjref::TypeCodeObjref(const char* repositoryId, 
-                                 const char* name) : TypeCode(Objref)
+                               const char* name) : TypeCodeComposed(Objref,repositoryId,name)
 {
-  _repoId = repositoryId;
-  _name = name;
-  string::size_type debut =_name.find_last_of('/');
-  if(debut == std::string::npos)_shortName= name;
-  else _shortName=_name.substr(debut+1);
 }
 
 
@@ -271,14 +281,9 @@ const char * TypeCodeObjref::shortName() const
 }
 
 TypeCodeObjref::TypeCodeObjref(const char* repositoryId,
-                                 const char* name,
-                                 const std::list<TypeCodeObjref *>& ltc) : TypeCode(Objref)
+                               const char* name,
+                               const std::list<TypeCodeObjref *>& ltc) : TypeCodeComposed(Objref,repositoryId,name)
 {
-  _repoId = repositoryId;
-  _name = name;
-  string::size_type debut =_name.find_last_of('/');
-  if(debut == std::string::npos)_shortName= name;
-  else _shortName=_name.substr(debut+1);
   _listOfBases=ltc;
   list<TypeCodeObjref *>::const_iterator iter;
   for(iter=_listOfBases.begin();iter != _listOfBases.end(); iter++)
@@ -322,9 +327,8 @@ int TypeCodeObjref::isAdaptable(const TypeCode* tc) const
   return 0;
 }
 
-TypeCodeObjref::TypeCodeObjref(const TypeCodeObjref& other):TypeCode(other),_name(other._name),
-                                                               _repoId(other._shortName),
-                                                               _listOfBases(other._listOfBases)
+TypeCodeObjref::TypeCodeObjref(const TypeCodeObjref& other):TypeCodeComposed(other),
+                                                            _listOfBases(other._listOfBases)
 {
   list<TypeCodeObjref *>::const_iterator iter;
   for(iter=other._listOfBases.begin();iter!=other._listOfBases.end();iter++)
@@ -341,14 +345,9 @@ TypeCodeObjref::TypeCodeObjref(const TypeCodeObjref& other):TypeCode(other),_nam
  *   \param content : the given contained TypeCode
  */
 TypeCodeSeq::TypeCodeSeq(const char* repositoryId,
-                           const char* name, 
-                           const TypeCode *content) : TypeCode(Sequence), _content(content)
+                         const char* name, 
+                         const TypeCode *content) : TypeCodeComposed(Sequence,repositoryId,name), _content(content)
 {
-  _repoId = repositoryId;
-  _name = name;
-  string::size_type debut =_name.find_last_of('/');
-  if(debut == std::string::npos)_shortName= name;
-  else _shortName=_name.substr(debut+1);
   _content->incrRef();
 }
 
@@ -370,6 +369,11 @@ void TypeCodeSeq::putReprAtPlace(char *pt, const char *val, bool deepCpy) const
 void TypeCodeSeq::destroyZippedAny(char *data) const
 {
   SequenceAny::destroyReprAtPlace(data,this);
+}
+
+unsigned TypeCodeSeq::getSizeInByteOfAnyReprInSeq() const
+{
+  return sizeof(void*);
 }
 
 AnyPtr TypeCodeSeq::getOrBuildAnyFromZippedData(char *data) const
@@ -415,10 +419,8 @@ int TypeCodeSeq::isAdaptable(const TypeCode* tc) const
   return 0;
 }
 
-TypeCodeSeq::TypeCodeSeq(const TypeCodeSeq& tc):TypeCode(tc),
-                                                   _name(tc._name),_shortName(tc._shortName),
-                                                   _repoId(tc._repoId),
-                                                   _content(tc._content)
+TypeCodeSeq::TypeCodeSeq(const TypeCodeSeq& tc):TypeCodeComposed(tc),
+                                                _content(tc._content)
 {
   _content->incrRef();
 }
@@ -435,13 +437,8 @@ TypeCodeSeq::TypeCodeSeq(const TypeCodeSeq& tc):TypeCode(tc),
 TypeCodeArray::TypeCodeArray(const char* repositoryId,
                              const char* name, 
                              const TypeCode *content,
-                             unsigned staticLgth) : TypeCode(Array), _content(content),_staticLgth(staticLgth)
+                             unsigned staticLgth) : TypeCodeComposed(Array,repositoryId,name), _content(content),_staticLgth(staticLgth)
 {
-  _repoId = repositoryId;
-  _name = name;
-  string::size_type debut =_name.find_last_of('/');
-  if(debut == std::string::npos)_shortName= name;
-  else _shortName=_name.substr(debut+1);
   _content->incrRef();
 }
 
@@ -519,9 +516,7 @@ int TypeCodeArray::isAdaptable(const TypeCode* tc) const
   return 0;
 }
 
-TypeCodeArray::TypeCodeArray(const TypeCodeArray& tc):TypeCode(tc),
-                                                      _name(tc._name),_shortName(tc._shortName),
-                                                      _repoId(tc._repoId),
+TypeCodeArray::TypeCodeArray(const TypeCodeArray& tc):TypeCodeComposed(tc),
                                                       _content(tc._content),
                                                       _staticLgth(tc._staticLgth)
 {
@@ -542,11 +537,8 @@ unsigned TypeCodeArray::getSizeInByteOfAnyReprInSeq() const
  *   \param name : the given name
  */
 TypeCodeStruct::TypeCodeStruct(const char* repositoryId, 
-                         const char* name) : TypeCode(Struct), _name(name),_repoId(repositoryId)
+                               const char* name) : TypeCodeComposed(Struct,repositoryId,name)
 {
-  string::size_type debut =_name.find_last_of('/');
-  if(debut == std::string::npos)_shortName= name;
-  else _shortName=_name.substr(debut+1);
 }
 
 TypeCodeStruct::~TypeCodeStruct()
@@ -558,25 +550,25 @@ TypeCode *TypeCodeStruct::clone() const
   return new TypeCodeStruct(*this);
 }
 
-TypeCodeStruct::TypeCodeStruct(const TypeCodeStruct& tc):TypeCode(tc),
-                                                         _name(tc._name),_shortName(tc._shortName),
-                                                         _repoId(tc._repoId)
+TypeCodeStruct::TypeCodeStruct(const TypeCodeStruct& tc):TypeCodeComposed(tc),_members(tc._members)
 {
+  for(vector< std::pair<std::string,TypeCode*> >::iterator iter=_members.begin();iter!=_members.end();iter++)
+    (*iter).second->incrRef();
 }
 
 void TypeCodeStruct::putReprAtPlace(char *pt, const char *val, bool deepCpy) const
 {
-  throw Exception("Not implemented yet : YACS::Any for struct");
+  StructAny::putReprAtPlace(pt,val,this,deepCpy);
 }
 
 void TypeCodeStruct::destroyZippedAny(char *data) const
 {
-  throw Exception("Not implemented yet : YACS::Any for struct");
+  StructAny::destroyReprAtPlace(data,this);
 }
 
 AnyPtr TypeCodeStruct::getOrBuildAnyFromZippedData(char *data) const
 {
-  throw Exception("Not implemented yet : YACS::Any for struct");
+  return StructAny::getOrBuildFromData(data,this);
 }
 
 const char * TypeCodeStruct::id() const throw(Exception)
@@ -594,6 +586,20 @@ const char * TypeCodeStruct::shortName() const
   return _shortName.c_str();
 }
 
+unsigned TypeCodeStruct::getSizeInByteOfAnyReprInSeq() const
+{
+  unsigned ret=0;
+  for(vector< pair<string,TypeCode*> >::const_iterator iter=_members.begin();iter!=_members.end();iter++)
+    ret+=(*iter).second->getSizeInByteOfAnyReprInSeq();
+  return ret;
+}
+
+const TypeCode *TypeCodeStruct::contentType() const throw(Exception)
+{
+  const char what[]="Content type is specified by giving a key.";
+  throw Exception(what);
+}
+
 //! Check if this TypeCode is derived from a TypeCode with a given id
 /*!
  *   \param id :  a given id
@@ -601,7 +607,7 @@ const char * TypeCodeStruct::shortName() const
  */
 int TypeCodeStruct::isA(const char* id) const throw(Exception)
 {
-  if(_repoId.c_str() == id)return 1;
+  if(_repoId == id)return 1;
   return 0;
 }
 
@@ -636,6 +642,23 @@ void TypeCodeStruct::addMember(const std::string& name,TypeCode* tc)
         throw Exception("Struct member " + name + " already defined");
     }
   _members.push_back(std::pair<std::string,TypeCode*>(name,tc));
+}
+
+/*!
+ * If name is not an existing key, 0 is returned.
+ * \param offset : Out parameter, that specified the location of start of data discriminated by name key.
+ */
+const TypeCode *TypeCodeStruct::getMember(const std::string& name, unsigned& offset) const
+{
+  std::vector< std::pair<std::string,TypeCode*> >::const_iterator iter;
+  offset=0;
+  for(iter=_members.begin();iter != _members.end(); iter++)
+    {
+      if((*iter).first==name)
+        return (*iter).second;
+      offset+=(*iter).second->getSizeInByteOfAnyReprInSeq();
+    }
+  return 0;
 }
 
 int TypeCodeStruct::memberCount() const

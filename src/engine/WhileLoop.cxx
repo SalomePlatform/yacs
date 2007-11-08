@@ -56,21 +56,9 @@ void WhileLoop::exUpdateState()
     }
 }
 
-int WhileLoop::getNumberOfInputPorts() const
-{
-  return StaticDefinedComposedNode::getNumberOfInputPorts()+1;
-}
-
 Node *WhileLoop::simpleClone(ComposedNode *father, bool editionOnly) const
 {
   return new WhileLoop(*this,father,editionOnly);
-}
-
-std::list<InputPort *> WhileLoop::getSetOfInputPort() const
-{
-  list<InputPort *> ret=StaticDefinedComposedNode::getSetOfInputPort();
-  ret.push_back((InputPort *)&_conditionPort);
-  return ret;
 }
 
 InputPort *WhileLoop::getInputPort(const std::string& name) const throw(Exception)

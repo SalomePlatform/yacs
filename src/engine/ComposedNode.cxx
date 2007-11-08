@@ -89,22 +89,6 @@ std::string ComposedNode::getTaskName(Task *task) const
   return getChildName(dynamic_cast<ElementaryNode *>(task));
 }
 
-bool ComposedNode::operator>(const ComposedNode& other) const
-{
-  const ComposedNode *iter=_father;
-  while(iter!=0 && iter!=&other)
-    iter=iter->_father;
-  return iter==0;
-}
-
-bool ComposedNode::operator<(const ComposedNode& other) const
-{
-  const ComposedNode *iter=other._father;
-  while(iter!=0 && iter!=this)
-    iter=iter->_father;
-  return iter==0;
-}
-
 //! Essentially for test. Use checkDeploymentTree instead to be sure that returned DeploymentTree is consistent.
 DeploymentTree ComposedNode::getDeploymentTree() const
 {
@@ -273,6 +257,8 @@ bool ComposedNode::edAddDFLink(OutPort *start, InPort *end) throw(Exception)
     }
   if(n2 == father)
     throw Exception("Back link authorized only in special context (loop for example)");
+
+  bool ret= edAddLink(start,end);
   if(n1 != father)
     {
       //add a control link only if nodes are not in the same descendance
@@ -284,7 +270,7 @@ bool ComposedNode::edAddDFLink(OutPort *start, InPort *end) throw(Exception)
         n2=n2->getFather();
       edAddCFLink(n1,n2);
     }
-  return edAddLink(start,end);
+  return ret;
 }
 
 //! Add a controlflow link between two control ports.
@@ -488,19 +474,15 @@ void ComposedNode::checkConsistency(LinkInfo& info) const throw(Exception)
   list<InputPort *> setOfInToTest=getSetOfInputPort();
   for(list<InputPort *>::iterator iter1=setOfInToTest.begin();iter1!=setOfInToTest.end();iter1++)
     {
-      map<OutPort *,vector<OutPort *> > candidateForAdvCheck;//key is physical OutPort, value semantic OutPort behind.
+      vector<OutPort *> candidateForAdvCheck;
       set<OutPort *> outPorts=(*iter1)->edSetOutPort();
       //Filtering among outPorts, which of them, are candidates to fill *iter1 at the current scope.
       for(set<OutPort *>::iterator iter2=outPorts.begin();iter2!=outPorts.end();iter2++)
         {
-          set<OutPort *> repr;
-          (*iter2)->getAllRepresented(repr);
-          for(set<OutPort *>::iterator iter3=repr.begin();iter3!=repr.end();iter3++)
-            {
-              ComposedNode *manager=getLowestCommonAncestor((*iter3)->getNode(),(*iter1)->getNode());
-              if(isInMyDescendance(manager))
-                candidateForAdvCheck[*iter2].push_back(*iter3);
-            }
+          (*iter2)->checkConsistency(info);
+          ComposedNode *manager=getLowestCommonAncestor((*iter2)->getNode(),(*iter1)->getNode());
+          if(isInMyDescendance(manager))
+            candidateForAdvCheck.push_back(*iter2);
         }
       if(!candidateForAdvCheck.empty())
         //End of filtering. Now regarding CF constraints for the current InPutPort.
@@ -511,6 +493,25 @@ void ComposedNode::checkConsistency(LinkInfo& info) const throw(Exception)
           info.pushErrLink(0,*iter1,E_NEVER_SET_INPUTPORT);
     }
   destructCFComputations(info);
+}
+
+/*!
+ * This method check that G1 <- G2 <- G3 <- G1 does not happened.
+ * Typically called by methods that set a hierarchy (Bloc::edAddChild, Loop::edSetNode, ...).
+ */
+void ComposedNode::checkNoCrossHierachyWith(Node *node) const throw (Exception)
+{
+  ComposedNode *nodeC=dynamic_cast<ComposedNode *>(node);
+  if(!nodeC)
+    return ;
+  set<ComposedNode *> ascendants=getAllAscendanceOf();
+  if(ascendants.find(nodeC)!=ascendants.end())
+    {
+      const char what[]="ComposedNode::checkNoCrossHierachyWith : ComposedNode with name \"";
+      string stream(what); stream+=node->getName(); stream+="\" is already in hierarchy ascendance of node with name \"";
+      stream+=_name; stream+="\" ; So it can't be now in its descendance !";
+      throw Exception(stream);
+    }
 }
 
 //! perform \b recursively all CF computations.
@@ -532,31 +533,39 @@ void ComposedNode::destructCFComputations(LinkInfo& info) const
 }
 
 /*!
+ * Returns the lowest Node (Elementary or Composed) (is sense of hierachy level ( operator< ) ) containing all 'ports'.
+ * Typically use in consistency computation.
+ * Precondition : 'ports' \b must contain at least one element. All elements of 'ports' should be in descendance of 'this'.
+ */
+Node *ComposedNode::getLowestNodeDealingAll(const std::list<OutPort *>& ports) const
+{
+  list< OutPort *>::const_iterator iter=ports.begin();
+  Node *ret=(*iter)->getNode();
+  iter++;
+  for(;iter!=ports.end();iter++)
+    {
+      Node *tmp=(*iter)->getNode();
+      if(*tmp>*ret)
+        ret=tmp;
+    }
+  return ret;
+}
+
+/*!
  * call it only for 'starts' to 'end' links \b DEALED by 'this'.
  */
-void ComposedNode::checkLinksCoherenceRegardingControl(const std::map<OutPort *, std::vector<OutPort *> >& starts, InputPort *end, LinkInfo& info) const throw(Exception)
+void ComposedNode::checkLinksCoherenceRegardingControl(const std::vector<OutPort *>& starts, InputPort *end, LinkInfo& info) const throw(Exception)
 {
-  map < ComposedNode *, list<OutPort *> > outputs;//forward link classical
+  map < ComposedNode *, list<OutPort *>, SortHierarc > outputs;//forward link classical
   vector<OutPort *> outputsCross;//forward link cross
-  map < ComposedNode *, list<OutPort *> > outputsBw;//backward
-  map<OutPort *,vector<OutPort *> >::const_iterator iter1;
-  vector<OutPort *>::const_iterator iter2;
+  map < ComposedNode *, list<OutPort *>, SortHierarc > outputsBw;//backward
+  vector<OutPort *>::const_iterator iter1;
+  //vector<DataPort *> history=((*iter1).second)[0]->calculateHistoryOfLinkWith(end);
+  //DataPort *cross=DataPort::isCrossingType(history);
   for(iter1=starts.begin();iter1!=starts.end();iter1++)
     {
-      DataPort *cross;
-      if((*iter1).second[0]==(*iter1).first)//Little optimisation. Representant (key) is equal to first value -> crossing impossible.
-        {
-          ComposedNode *manager=getLowestCommonAncestor(((*iter1).first)->getNode(),end->getNode());
-          manager->checkControlDependancy((*iter1).first, end, false, outputs, outputsCross, outputsBw, info);
-        }
-      else
-        for(iter2=(*iter1).second.begin();iter2!=(*iter1).second.end();iter2++)
-          {
-            ComposedNode *manager=getLowestCommonAncestor(((*iter1).first)->getNode(),end->getNode());
-            vector<DataPort *> history=((*iter1).second)[0]->calculateHistoryOfLinkWith(end);
-            cross=DataPort::isCrossingType(history);
-            manager->checkControlDependancy(*iter2, end, cross!=0, outputs, outputsCross, outputsBw, info);
-          }
+      ComposedNode *manager=getLowestCommonAncestor((*iter1)->getNode(),end->getNode());
+      manager->checkControlDependancy((*iter1), end, false, outputs, outputsCross, outputsBw, info);
     }
   //Ok now let's regarding outputs all combinations : (outputs.size())*(outputs.size()-1)/2
   unsigned char isAlreadyFed=FREE_ST;
@@ -568,7 +577,7 @@ void ComposedNode::checkLinksCoherenceRegardingControl(const std::map<OutPort *,
         for(vector< OutPort *>::const_iterator iter1=outputsCross.begin();iter1!=(outputsCross.end()-2);iter1++)
           info.pushErrLink(*iter1,end,E_COLLAPSE_DS);
     }
-  map < ComposedNode *, list<OutPort *> >::iterator iter3=outputs.begin();
+  map < ComposedNode *, list<OutPort *>, SortHierarc >::iterator iter3=outputs.begin();
   for(;iter3!=outputs.end();iter3++)
     ((*iter3).first)->checkCFLinks((*iter3).second,end,isAlreadyFed,true,info);
   if(isAlreadyFed==FREE_ST)
@@ -576,24 +585,55 @@ void ComposedNode::checkLinksCoherenceRegardingControl(const std::map<OutPort *,
       info.pushErrLink(0,end,E_ONLY_BACKWARD_DEFINED);
   isAlreadyFed=FREE_ST;
   //
-  map < ComposedNode *, list<OutPort *> >::reverse_iterator iter5=outputsBw.rbegin();
+  map < ComposedNode *, list<OutPort *>, SortHierarc >::reverse_iterator iter5=outputsBw.rbegin();
   for(;iter5!=outputsBw.rend();iter5++)
     ((*iter5).first)->checkCFLinks((*iter5).second,end,isAlreadyFed,false,info);
 }
 
 /*!
- * \param cross indicates if start -> end link is a DS link behind.
- * \param fw out parameter.
- * \param fwCross out parameter storing links where a cross has been detected.
- * \param bw out parameter where backward links are stored.
+ * Internal method during CF links. This méthode is in charge to statuate on links consistency in the case that no control flow defined by user
+ * is set.
  */
-void ComposedNode::checkControlDependancy(OutPort *start, InPort *end, bool cross,
-                                          std::map < ComposedNode *,  std::list < OutPort * > >& fw,
-                                          std::vector<OutPort *>& fwCross,
-                                          std::map< ComposedNode *, std::list < OutPort *> >& bw,
-                                          LinkInfo& info) const
+void ComposedNode::solveObviousOrDelegateCFLinks(const std::list<OutPort *>& starts, InputPort *end, unsigned char& alreadyFed, bool direction, LinkInfo& info) const
 {
-  throw Exception("ComposedNode::checkControlDependancy : Internal error occured - should never been called !");
+  static const char what[]="ComposedNode::solveObviousOrDelegateCFLinks : Internal error occured - uncorrect hierarchy detected !";
+  if(starts.size()==1)
+    {
+      if(alreadyFed==FREE_ST)
+        {
+          if(!direction)
+            info.pushInfoLink(*(starts.begin()),end,I_BACK);
+          alreadyFed=FED_ST;
+        }
+      else if(alreadyFed==FED_ST)
+        info.pushInfoLink(*(starts.begin()),end,direction ?  I_USELESS : I_BACK_USELESS);
+      else
+        info.pushErrLink(*(starts.begin()),end,E_COLLAPSE_DFDS);
+    }
+  else
+    {
+      Node *levelOfDecision=getLowestNodeDealingAll(starts);
+      if(levelOfDecision==this)
+        throw Exception(what);
+      if(dynamic_cast<ElementaryNode *>(levelOfDecision))
+        {
+          WarnReason reason;
+          if(alreadyFed==FREE_ST || alreadyFed==FED_ST)
+            {
+              if(alreadyFed==FREE_ST)
+                {
+                  reason=direction ? W_COLLAPSE_EL : W_BACK_COLLAPSE_EL;
+                  alreadyFed=FED_ST;
+                }
+              else
+                reason=direction ? W_COLLAPSE_EL_AND_USELESS : W_BACK_COLLAPSE_EL_AND_USELESS;
+              for(list< OutPort *>::const_iterator iter=starts.begin();iter!=starts.end();iter++)
+                info.pushWarnLink(*iter,end,reason);
+            }
+        }
+      else
+        ((ComposedNode *)levelOfDecision)->checkCFLinks(starts,end,alreadyFed,direction,info);
+    }
 }
 
 /*!
@@ -601,9 +641,30 @@ void ComposedNode::checkControlDependancy(OutPort *start, InPort *end, bool cros
  * \param alreadyFed in/out parameter. Indicates if 'end' ports is already and surely set or fed by an another port.
  * \param direction If true : forward direction else backward direction.
  */
-void ComposedNode::checkCFLinks(const std::list< OutPort *>& starts, InputPort *end, unsigned char& alreadyFed, bool direction, LinkInfo& info) const
+void ComposedNode::checkCFLinks(const std::list<OutPort *>& starts, InputPort *end, unsigned char& alreadyFed, bool direction, LinkInfo& info) const
 {
-  throw Exception("ComposedNode::checkCFLinks : Internal error occured - should never been called !");
+  static const char what[]="ComposedNode::checkCFLinks : Internal error occured - uncorrect hierarchy detected !";
+  Node *nodeEnd=isInMyDescendance(end->getNode());
+  if(!nodeEnd)
+    return solveObviousOrDelegateCFLinks(starts,end,alreadyFed,direction,info);
+  //This case is typically dedicated when direct son is ElementaryNode and self link is defined on this.
+  if(!dynamic_cast<ElementaryNode *>(nodeEnd))
+    throw Exception(what);
+  list< OutPort *>::const_iterator iter=starts.begin();
+  Node *nodeStart=(*iter)->getNode();
+  iter++;
+  if(nodeEnd!=nodeStart)
+    throw Exception(what);
+  for(;iter!=starts.end();iter++)
+    if((*iter)->getNode()!=nodeStart)
+      throw Exception(what);
+  //Ok at this step we are sure that we have back links on the same elementary node.
+  if(starts.size()>1)
+    for(iter=starts.begin();iter!=starts.end();iter++)
+      info.pushWarnLink(*iter,end,W_BACK_COLLAPSE_EL);
+  else//here no need to look at 'alreadyFed' var because it is waranteed to be equal to FREE_ST by construction.
+    info.pushInfoLink(*(starts.begin()),end,I_BACK);
+  alreadyFed=FED_ST;
 }
 
 std::vector< std::pair<InPort *, OutPort *> > ComposedNode::getSetOfLinksComingInCurrentScope() const

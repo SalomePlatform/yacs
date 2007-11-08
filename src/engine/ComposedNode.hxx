@@ -13,6 +13,7 @@ namespace YACS
   namespace ENGINE
   {
     class Bloc;
+    class Loop;
     class InPort;
     class OutPort;
     class LinkInfo;
@@ -21,6 +22,7 @@ namespace YACS
     class ComposedNode : public Node, public Scheduler
     {
       friend class Bloc;
+      friend class Loop;
       friend class OutPort;
       friend class ElementaryNode;
     protected:
@@ -36,8 +38,6 @@ namespace YACS
       std::string getName() const;
       std::string getTaskName(Task *task) const;
       DeploymentTree getDeploymentTree() const;
-      bool operator>(const ComposedNode& other) const;
-      bool operator<(const ComposedNode& other) const;
       DeploymentTree checkDeploymentTree(bool deep) const throw(Exception);
       std::vector<Task *> getNextTasks(bool& isMore);
       virtual bool isPlacementPredictableB4Run() const = 0;
@@ -88,6 +88,14 @@ namespace YACS
       void loaded();
       void accept(Visitor *visitor);
     protected:
+      struct SortHierarc
+      {
+        bool operator()(ComposedNode *n1, ComposedNode *n2) const
+        {
+          return *n1<*n2;
+        }
+      };
+    protected:
       void edDisconnectAllLinksWithMe();
       static bool splitNamesBySep(const std::string& globalName, const char separator[],
                                   std::string& firstPart, std::string& lastPart, bool priority) throw(Exception);
@@ -110,16 +118,19 @@ namespace YACS
       template <class PORT>
       std::string getPortName(const PORT * port) const throw (Exception);
       //For CF Computations
+      void checkNoCrossHierachyWith(Node *node) const throw (Exception);
       virtual void performCFComputations(LinkInfo& info) const;
       virtual void destructCFComputations(LinkInfo& info) const;
-      void checkLinksCoherenceRegardingControl(const std::map<OutPort *, std::vector<OutPort *> >& starts,
+      Node *getLowestNodeDealingAll(const std::list<OutPort *>& ports) const;
+      void checkLinksCoherenceRegardingControl(const std::vector<OutPort *>& starts,
                                                InputPort *end, LinkInfo& info) const throw(Exception);
       virtual void checkControlDependancy(OutPort *start, InPort *end, bool cross,
-                                          std::map < ComposedNode *,  std::list < OutPort * > >& fw,
+                                          std::map < ComposedNode *,  std::list < OutPort * >, SortHierarc >& fw,
                                           std::vector<OutPort *>& fwCross,
-                                          std::map< ComposedNode *, std::list < OutPort *> >& bw,
-                                          LinkInfo& info) const;
-      virtual void checkCFLinks(const std::list< OutPort *>& starts, InputPort *end, unsigned char& alreadyFed, bool direction, LinkInfo& info) const;
+                                          std::map< ComposedNode *, std::list < OutPort *>, SortHierarc >& bw,
+                                          LinkInfo& info) const = 0;
+      void solveObviousOrDelegateCFLinks(const std::list<OutPort *>& starts, InputPort *end, unsigned char& alreadyFed, bool direction, LinkInfo& info) const;
+      virtual void checkCFLinks(const std::list<OutPort *>& starts, InputPort *end, unsigned char& alreadyFed, bool direction, LinkInfo& info) const;
     protected:
       //For internal calculations.
       static const unsigned char FED_ST = 2;

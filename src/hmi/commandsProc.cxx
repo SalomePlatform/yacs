@@ -20,6 +20,7 @@
 #include "Switch.hxx"
 #include "OptimizerLoop.hxx"
 #include "Exception.hxx"
+#include "OutputDataStreamPort.hxx"
 
 #include "guiContext.hxx"
 
@@ -37,14 +38,14 @@ using namespace YACS::HMI;
 
 // ----------------------------------------------------------------------------
 
-ProcInvoc::ProcInvoc(YACS::ENGINE::Proc *proc):
-  _proc(proc), Invocator()
+ProcInvoc::ProcInvoc()
+  : Invocator()
 {
 }
 
-TypeOfNode ProcInvoc::getTypeOfNode(YACS::ENGINE::Node* node)
+TypeOfElem ProcInvoc::getTypeOfNode(YACS::ENGINE::Node* node)
 {
-  TypeOfNode nodeType = UNKNOWN;
+  TypeOfElem nodeType = UNKNOWN;
   if      (dynamic_cast<YACS::ENGINE::Bloc*>(node))             nodeType = BLOC;
   else if (dynamic_cast<YACS::ENGINE::PythonNode*>(node))       nodeType = PYTHONNODE;
   else if (dynamic_cast<YACS::ENGINE::PyFuncNode*>(node))       nodeType = PYFUNCNODE;
@@ -53,6 +54,7 @@ TypeOfNode ProcInvoc::getTypeOfNode(YACS::ENGINE::Node* node)
   else if (dynamic_cast<YACS::ENGINE::SalomeNode*>(node))       nodeType = SALOMENODE;
   else if (dynamic_cast<YACS::ENGINE::SalomePythonNode*>(node)) nodeType = SALOMEPYTHONNODE;
   else if (dynamic_cast<YACS::ENGINE::XmlNode*>(node))          nodeType = XMLNODE;
+  else if (dynamic_cast<YACS::ENGINE::SplitterNode*>(node))     nodeType = SPLITTERNODE;
   else if (dynamic_cast<YACS::ENGINE::ForLoop*>(node))          nodeType = FORLOOP;
   else if (dynamic_cast<YACS::ENGINE::WhileLoop*>(node))        nodeType = WHILELOOP;
   else if (dynamic_cast<YACS::ENGINE::Switch*>(node))           nodeType = SWITCH;
@@ -101,7 +103,7 @@ bool CommandAddNodeFromCatalog::localExecute()
         }
       if (son)
         {
-          TypeOfNode fatherType = ProcInvoc::getTypeOfNode(father);
+          TypeOfElem fatherType = ProcInvoc::getTypeOfNode(father);
           switch (fatherType)
             {
             case BLOC:
@@ -277,3 +279,43 @@ bool CommandDestroy::localExecute()
 bool CommandDestroy::localReverse()
 {
 }
+ 
+// ----------------------------------------------------------------------------
+
+CommandAddLink::CommandAddLink(std::string outNode, std::string outPort,
+                               std::string inNode, std::string inPort)
+  : Command(), _outNode(outNode), _outPort(outPort), _inNode(inNode), _inPort(inPort)
+{
+  DEBTRACE("CommandAddLink::CommandAddLink "<<outNode<<"."<<outPort<<"->"<<inNode<<"."<<inPort);
+}
+
+bool CommandAddLink::localExecute()
+{
+  try
+    {
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      Node* outn = proc->getChildByName(_outNode);
+      Node* inn = proc->getChildByName(_inNode);
+      OutPort* outp = outn->getOutPort(_outPort);
+      InPort* inp = inn->getInPort(_inPort);
+      ComposedNode *cla = ComposedNode::getLowestCommonAncestor(outn->getFather(),inn->getFather());
+      DEBTRACE(cla->getName());
+      if (dynamic_cast<OutputDataStreamPort*>(outp))
+        cla->edAddLink(outp,inp);
+      else
+        cla->edAddDFLink(outp,inp);
+      return true;
+    }
+ catch (Exception& ex)
+   {
+     DEBTRACE("CommandAddLink::localExecute() : " << ex.what());
+     return false;
+   }
+}
+
+bool CommandAddLink::localReverse()
+{
+}
+ 
+// ----------------------------------------------------------------------------
+

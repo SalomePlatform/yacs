@@ -91,7 +91,7 @@ void InputPort::edRemoveManInit()
   _initValue=0;
 }
 
-//! Check basisically that this port has one chance to be specified on time. It's a necessary condition \b not \b sufficient at all.
+//! Check basically that this port has one chance to be specified on time. It's a necessary condition \b not \b sufficient at all.
 void InputPort::checkBasicConsistency() const throw(Exception)
 {
   if(!edIsManuallyInitialized() and _backLinks.size()==0 )

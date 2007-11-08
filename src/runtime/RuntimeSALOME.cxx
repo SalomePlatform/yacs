@@ -84,7 +84,7 @@
 #include <sstream>
 #include <cassert>
 
-#define _DEVDEBUG_
+//#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
 using namespace std;
@@ -307,6 +307,14 @@ void RuntimeSALOME::fini()
           else
             Py_DECREF(res);
         }
+      std::map<std::string,Node*>& nodeMap=_builtinCatalog->_nodeMap;
+      delete nodeMap["PyFunction"];
+      delete nodeMap["PyScript"];
+      delete nodeMap["SalomePythonNode"];
+      nodeMap.erase("PyFunction");
+      nodeMap.erase("PyScript");
+      nodeMap.erase("SalomePythonNode");
+
       Py_Finalize();
 #ifdef REFCNT
       DEBTRACE("_orb refCount: " << ((omniOrbORB*)_orb.in())->pd_refCount);

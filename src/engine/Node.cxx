@@ -200,7 +200,7 @@ std::list<OutPort *> Node::getSetOfOutPort() const
  * @return               ascendancy, direct father first in set.
  */
 
-std::set<ComposedNode *> Node::getAllAscendanceOf(ComposedNode *levelToStop)
+std::set<ComposedNode *> Node::getAllAscendanceOf(ComposedNode *levelToStop) const
 {
   set<ComposedNode *> ret;
   if(this==levelToStop)
@@ -208,6 +208,22 @@ std::set<ComposedNode *> Node::getAllAscendanceOf(ComposedNode *levelToStop)
   for(ComposedNode *iter=_father;iter!=levelToStop && iter!=0; iter=iter->_father)
       ret.insert(iter);
   return ret;
+}
+
+bool Node::operator>(const Node& other) const
+{
+  const ComposedNode *iter=other._father;
+  while(iter!=0 && iter!=this)
+    iter=iter->_father;
+  return iter==this;
+}
+
+bool Node::operator<(const Node& other) const
+{
+  const ComposedNode *iter=_father;
+  while(iter!=0 && iter!=(&other))
+    iter=iter->_father;
+  return iter==(&other);
 }
 
 /**

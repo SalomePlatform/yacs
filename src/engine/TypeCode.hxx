@@ -77,8 +77,19 @@ namespace YACS
       TypeCode& operator=(const TypeCode& tc);
       virtual ~TypeCode();
     protected:
-      DynType _kind;
+      const DynType _kind;
       static const char *KIND_STR_REPR [];
+    };
+
+    class TypeCodeComposed : public TypeCode
+    {
+    protected:
+      TypeCodeComposed(const TypeCodeComposed& other);
+      TypeCodeComposed(DynType kind, const char* repositoryId, const char* name);
+    protected:
+      const std::string _name;
+      const std::string _repoId;
+      std::string _shortName;
     };
 
 
@@ -87,7 +98,7 @@ namespace YACS
  * \ingroup TypeCodes
  *
  */
-    class TypeCodeObjref: public TypeCode
+    class TypeCodeObjref : public TypeCodeComposed
     {
       friend class Visitor;
     public:
@@ -109,9 +120,6 @@ namespace YACS
       ~TypeCodeObjref();
       TypeCodeObjref(const TypeCodeObjref& other);
     private:
-      std::string _name;
-      std::string _shortName;
-      std::string _repoId;
       std::list<TypeCodeObjref *> _listOfBases;
     };
 
@@ -121,7 +129,7 @@ namespace YACS
  * \ingroup TypeCodes
  *
  */
-    class TypeCodeSeq: public TypeCode
+    class TypeCodeSeq: public TypeCodeComposed
     {
     public:
       TypeCodeSeq(const char* repositoryId, const char* name, const TypeCode *content);
@@ -129,6 +137,7 @@ namespace YACS
       TypeCode *clone() const;
       void putReprAtPlace(char *pt, const char *val, bool deepCpy) const;
       void destroyZippedAny(char *data) const;
+      virtual unsigned getSizeInByteOfAnyReprInSeq() const;
       AnyPtr getOrBuildAnyFromZippedData(char *data) const;
       const char * id()   const throw(Exception);
       const char * name() const throw(Exception);
@@ -141,9 +150,6 @@ namespace YACS
       ~TypeCodeSeq();
       TypeCodeSeq(const TypeCodeSeq& tc);
     private:
-      std::string _name;
-      std::string _shortName;
-      std::string _repoId;
       const TypeCode  *_content;
     };
 
@@ -152,7 +158,7 @@ namespace YACS
  * \ingroup TypeCodes
  *
  */
-    class TypeCodeArray : public TypeCode
+    class TypeCodeArray : public TypeCodeComposed
     {
     public:
       TypeCodeArray(const char* repositoryId, const char* name, const TypeCode *content, unsigned staticLgth);
@@ -173,20 +179,20 @@ namespace YACS
       ~TypeCodeArray();
       TypeCodeArray(const TypeCodeArray& tc);
     private:
-      std::string _name;
-      std::string _shortName;
-      std::string _repoId;
-      unsigned _staticLgth;
       const TypeCode  *_content;
+      const unsigned _staticLgth;
     };
+
+    class StructAny;
 
 /*! \brief Class for struct type.
  *
  * \ingroup TypeCodes
  *
  */
-    class TypeCodeStruct : public TypeCode
+    class TypeCodeStruct : public TypeCodeComposed
     {
+      friend class StructAny;//Access to _members attribute.
     public:
       TypeCodeStruct(const char* repositoryId, const char* name);
       TypeCode *clone() const;
@@ -196,10 +202,14 @@ namespace YACS
       const char * id() const   throw(Exception);
       const char * name() const throw(Exception);
       const char * shortName() const;
+      virtual unsigned getSizeInByteOfAnyReprInSeq() const;
+      const TypeCode * contentType() const throw(Exception);
       virtual int isA(const char* repositoryId) const throw(Exception);
       virtual int isA(const TypeCode* tc) const ;
       virtual int isAdaptable(const TypeCode* tc) const;
+      //! The only non const method.
       virtual void addMember(const std::string& name,TypeCode* tc);
+      const TypeCode *getMember(const std::string& name, unsigned& offset) const;
       int memberCount() const;
       const char*  memberName(int index) const;
       TypeCode*  memberType(int index) const;
@@ -207,9 +217,6 @@ namespace YACS
       ~TypeCodeStruct();
       TypeCodeStruct(const TypeCodeStruct& tc);
     private:
-      std::string _name;
-      std::string _shortName;
-      std::string _repoId;
       std::vector< std::pair<std::string,TypeCode*> > _members;
     };
 

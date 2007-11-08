@@ -12,12 +12,14 @@ namespace YACS
   namespace ENGINE
   {
     class InPort;
+    class LinkInfo;
     class OutPort : public virtual DataPort
     {
     protected:
       OutPort(const OutPort& other, Node *newHelder);
       OutPort(const std::string& name, Node *node, TypeCode* type);
     public:
+      virtual void checkConsistency(LinkInfo& info) const;
       virtual int edGetNumberOfOutLinks() const;
       virtual std::set<InPort *> edSetInPort() const = 0;
       virtual bool isAlreadyLinkedWith(InPort *with) const = 0;

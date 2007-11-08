@@ -12,7 +12,6 @@ namespace YACS
 
 /*! \brief Class for CORBA component instance
  *
- * \ingroup Nodes
  *
  */
     class CORBAComponent : public ComponentInstance

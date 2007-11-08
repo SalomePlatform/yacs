@@ -219,12 +219,25 @@ void ComposedNodeViewItem::update(GuiEvent event, int type, Subject* son)
                                    son->getName(),
                                    son);
           break;
+        case YACS::HMI::INPUTPORT:
+        case YACS::HMI::OUTPUTPORT:
+        case YACS::HMI::INPUTDATASTREAMPORT:
+        case YACS::HMI::OUTPUTDATASTREAMPORT:
+          item =  new PortViewItem(this,
+                                   son->getName(),
+                                   son);
+          break;
         default:
           DEBTRACE("ComposedNodeViewItem::update() ADD, type not handled:" << type);
         }
       break;
+    case YACS::HMI::ADDLINK:
+      item = new LinkViewItem(this,
+                              son->getName(),
+                              son);
+      break;
     default:
-      DEBTRACE("ComposedNodeViewItem::update(), event not handled: << event");
+      DEBTRACE("ComposedNodeViewItem::update(), event not handled: "<< event);
       ViewItem::update(event, type, son);
     }
 }
@@ -243,19 +256,34 @@ void PortViewItem::update(GuiEvent event, int type, Subject* son)
 
 // ----------------------------------------------------------------------------
 
+LinkViewItem::LinkViewItem(ViewItem *parent, QString label, Subject* subject)
+  : ViewItem::ViewItem(parent, label, subject)
+{
+}
+
+void LinkViewItem::update(GuiEvent event, int type, Subject* son)
+{
+  DEBTRACE("LinkViewItem::update");
+}
+
+// ----------------------------------------------------------------------------
+
 
 /*!
  *
  */
 
-editTree::editTree(YACS::HMI::Subject *root, 
+editTree::editTree(YACS::HMI::Subject *context, 
                    QWidget* parent,
                    const char* name,
                    WFlags fl) : wiEditTree(parent, name, fl)
 {
-  _root = root;
-  _previousSelected=0;
+  _context = context;
+  _root = 0;
+  _previousSelected = 0;
+  _selectedSubjectOutPort = 0;
   resetTreeNode(lv);
+  _context->attach(this);
   connect( lv, SIGNAL(selectionChanged()),
            this, SLOT(select()) );
 //   connect( lv, SIGNAL(clicked(QListViewItem *)),
@@ -272,6 +300,26 @@ editTree::editTree(YACS::HMI::Subject *root,
 
 editTree::~editTree()
 {
+}
+
+void editTree::update(GuiEvent event, int type, Subject* son)
+{
+  DEBTRACE("editTree::update");
+  switch (event)
+    {
+    case YACS::HMI::NEWROOT:
+      setNewRoot(son);
+      break;
+    default:
+      DEBTRACE("editTree::update(), event not handled: "<< event);
+    }
+}
+
+void editTree::setNewRoot(YACS::HMI::Subject *root)
+{
+  _root=root;
+  _previousSelected=0;
+  resetTreeNode(lv);
 }
 
 void editTree::addViewItemInMap(YACS::HMI::ViewItem* item, YACS::HMI::Subject* subject)
@@ -291,11 +339,14 @@ YACS::HMI::ViewItem* editTree::getViewItem(YACS::HMI::Subject* subject)
 void editTree::resetTreeNode(QListView *lv)
 {
   lv->clear();
-  lv->addColumn( "state", 100);
+//   lv->addColumn( "state", 100);
   lv->setRootIsDecorated( TRUE );
-  string name = _root->getName();
-  ViewItem *start = new ComposedNodeViewItem(lv, name, _root);
-  addViewItemInMap(start, _root);
+  if (_root)
+    {
+      string name = _root->getName();
+      ViewItem *start = new ComposedNodeViewItem(lv, name, _root);
+      addViewItemInMap(start, _root);
+    }
 }
 
 /*!
@@ -323,6 +374,21 @@ void editTree::destroy()
         {
           parent->destroy(sub);
         }
+    }
+}
+
+void editTree::addLink()
+{
+  DEBTRACE("editTree::addLink");
+  QListViewItem *it = lv->selectedItem();
+  if (it)
+    {
+      ViewItem *item = dynamic_cast<ViewItem*> (it);
+      Subject *sub = 0;
+      if (item) sub = item->getSubject();
+      if (sub)
+        if (dynamic_cast<SubjectOutputPort*>(sub) || dynamic_cast<SubjectOutputDataStreamPort*>(sub))
+          _selectedSubjectOutPort = static_cast<SubjectDataPort*>(sub);
     }
 }
 
@@ -432,6 +498,17 @@ void editTree::select()
   if (item)
     {
         item->getSubject()->select(it->isSelected());
+        if (_selectedSubjectOutPort)
+          {
+            Subject *sub = item->getSubject();
+            if (dynamic_cast<SubjectInputPort*>(sub) || dynamic_cast<SubjectInputDataStreamPort*>(sub))
+              {
+                SubjectDataPort *sdp = dynamic_cast<SubjectDataPort*>(sub);
+                assert(sdp);
+                _selectedSubjectOutPort->tryCreateLink(sdp);
+                _selectedSubjectOutPort = 0;
+              }
+          }
     }
 }
 
@@ -570,6 +647,7 @@ void editTree::PortContextMenu()
   contextMenu->insertItem( caption );
   contextMenu->insertItem( "Message", this, SLOT(printName()) );
   contextMenu->insertItem( "Delete", this, SLOT(destroy()) );
+  contextMenu->insertItem( "Add link", this, SLOT(addLink()) );
   contextMenu->exec( QCursor::pos() );
   delete contextMenu;
 }

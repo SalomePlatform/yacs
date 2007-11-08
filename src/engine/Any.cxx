@@ -135,9 +135,14 @@ AtomAny *AtomAny::New(char *val,Deallocator dealloc)
   return new AtomAny(val,dealloc);
 }
 
-AnyPtr AtomAny::operator[](int i) const
+AnyPtr AtomAny::operator[](int i) const throw(Exception)
 {
   throw InvalidExtractionException(_type->kind(),Sequence);
+}
+
+AnyPtr AtomAny::operator[](const char *key) const throw(Exception)
+{
+  throw Exception("AtomAny::operator[] : try to get a part of a partitionned data whereas atomical.");
 }
 
 bool AtomAny::operator ==(const Any& other) const
@@ -272,9 +277,21 @@ ComposedAny::ComposedAny(const ComposedAny& other):Any(other)
 {
 }
 
-ComposedAny::ComposedAny(TypeCode* type):Any(type)
+ComposedAny::ComposedAny(TypeCode* type, bool isNew):Any(type)
 {
-  _type->decrRef();
+  if(isNew)
+    _type->decrRef();
+}
+
+AnyPtr ComposedAny::operator[](const char *key) const throw(Exception)
+{
+  throw Exception("AtomAny::operator[] : try to get a part of a partitionned data not localizable by a string.");
+}
+
+void ComposedAny::checkTypeOf(const Any *elem) const throw(Exception)
+{
+  if(!elem->getType()->isA(_type->contentType()))
+    throw Exception("ComposedAny::checkTypeOf : invalid type.");
 }
 
 int ComposedAny::getIntValue() const throw(Exception)
@@ -436,13 +453,14 @@ bool SequenceAny::operator ==(const Any& other) const
   return true;
 }
 
-void SequenceAny::setEltAtRank(int i, const Any *elem)
+void SequenceAny::setEltAtRank(int i, const Any *elem) throw(Exception)
 {
+  checkTypeOf(elem);
   _alloc.destroy(_alloc._start+i*_alloc._sizeOf1Elm,_type->contentType());
   _alloc.construct(_alloc._start+i*_alloc._sizeOf1Elm,elem);
 }
 
-AnyPtr SequenceAny::operator[](int i) const
+AnyPtr SequenceAny::operator[](int i) const throw(Exception)
 {
   return _type->contentType()->getOrBuildAnyFromZippedData(_alloc._start+i*_alloc._sizeOf1Elm);
 }
@@ -630,16 +648,29 @@ char *SequenceAny::performCpy(char *srcStart, char *srcFinish, char *destStart)
 
 ArrayAny::~ArrayAny()
 {
+  const TypeCode *subType=_type->contentType();
+  unsigned sizePerContent=subType->getSizeInByteOfAnyReprInSeq();
+  unsigned int size=((TypeCodeArray *)_type)->getStaticLgth();
+  char *tmp=_data;
+  for(unsigned i=0;i<size;i++,tmp+=sizePerContent)
+    subType->destroyZippedAny(tmp);
   delete [] _data;
 }
 
-ArrayAny::ArrayAny(char *data, TypeCodeArray * type):ComposedAny(type),_data(0)
+ArrayAny::ArrayAny(const TypeCode *typeOfContent, unsigned int lgth):ComposedAny(new TypeCodeArray("","",typeOfContent,lgth))
+{
+  _data=new char[_type->getSizeInByteOfAnyReprInSeq()];
+  for(unsigned int i=0;i<_type->getSizeInByteOfAnyReprInSeq();i++)
+    _data[i]='\0';
+}
+
+ArrayAny::ArrayAny(char *data, TypeCodeArray * type):ComposedAny(type,false),_data(0)
 {
   _data=new char[_type->getSizeInByteOfAnyReprInSeq()];
   const TypeCode *subType=_type->contentType();
   unsigned sizePerContent=subType->getSizeInByteOfAnyReprInSeq();
   for(unsigned i=0;i<type->getStaticLgth();i++)
-    subType->putReprAtPlace(_data+i*sizePerContent,data+i*sizePerContent,true);
+    subType->putReprAtPlace(_data+i*sizePerContent,data+i*sizePerContent,false);
 }
 
 ArrayAny::ArrayAny(const ArrayAny& other):ComposedAny(other)
@@ -700,6 +731,14 @@ ArrayAny::ArrayAny(const std::vector<std::string>& val):ComposedAny(new TypeCode
     }
 }
 
+void ArrayAny::setEltAtRank(int i, const Any *elem) throw(Exception)
+{
+  checkTypeOf(elem);
+  const TypeCode *subType=_type->contentType();
+  subType->destroyZippedAny(_data+i*subType->getSizeInByteOfAnyReprInSeq());
+  elem->putMyReprAtPlace(_data+i*subType->getSizeInByteOfAnyReprInSeq());
+}
+
 bool ArrayAny::operator ==(const Any& other) const
 {
   if(!_type->isA(other.getType()))
@@ -711,18 +750,28 @@ bool ArrayAny::operator ==(const Any& other) const
   return true;
 }
 
-AnyPtr ArrayAny::operator[](int i) const
+AnyPtr ArrayAny::operator[](int i) const throw(Exception)
 {
   const TypeCode *subType=_type->contentType();
   unsigned sizePerContent=subType->getSizeInByteOfAnyReprInSeq();
   if(i<0 || i>=((TypeCodeArray *)_type)->getStaticLgth())
     throw Exception("Trying to access to an invalid index in an Any Tuple");
-  return _type->getOrBuildAnyFromZippedData(_data+i*sizePerContent);
+  return _type->contentType()->getOrBuildAnyFromZippedData(_data+i*sizePerContent);
+}
+
+unsigned int ArrayAny::size() const
+{
+  return ((TypeCodeArray *)_type)->getStaticLgth();
 }
 
 Any *ArrayAny::clone() const
 {
   return new ArrayAny(*this);
+}
+
+ArrayAny *ArrayAny::New(const TypeCode *typeOfContent, unsigned int lgth)
+{
+  return new ArrayAny(typeOfContent,lgth);
 }
 
 void ArrayAny::putMyReprAtPlace(char *data) const
@@ -752,7 +801,6 @@ void ArrayAny::destroyReprAtPlace(char *data, const TypeCodeArray *type)
 AnyPtr ArrayAny::getOrBuildFromData(char *data, const TypeCodeArray *type)
 {
   Any *ret;
-  type->incrRef();
   ret=new ArrayAny(data,(TypeCodeArray *)type);
   return AnyPtr(ret);
 }
@@ -761,4 +809,155 @@ bool ArrayAny::takeInChargeStorageOf(TypeCode *type)
 {
   DynType typ=type->kind();
   return (typ==Array);
+}
+
+Any *StructAny::clone() const
+{
+  return new StructAny(*this);
+}
+
+bool StructAny::operator ==(const Any& other) const
+{
+  if(!_type->isA(other.getType()))
+    return false;
+  const TypeCodeStruct *typeC=(const TypeCodeStruct *)_type;
+  vector< pair<string,TypeCode*> >::const_iterator iter;
+  for(iter=typeC->_members.begin();iter!=typeC->_members.end();iter++)
+    if(!((*(*this)[(*iter).first.c_str()]==(*other[(*iter).first.c_str()]))))
+      return false;
+  return true;
+}
+
+AnyPtr StructAny::operator[](int i) const throw(Exception)
+{
+  const char what[]="StructAny::operator[](int i) : Struct key are strings not integers.";
+  throw Exception(what);
+}
+
+AnyPtr StructAny::operator[](const char *key) const throw(Exception)
+{
+  const TypeCodeStruct *typeC=(const TypeCodeStruct *)_type;
+  char *whereToGet=_data;
+  vector< pair<string,TypeCode*> >::const_iterator iter;
+  for(iter=typeC->_members.begin();iter!=typeC->_members.end();iter++)
+    if((*iter).first!=key)
+      whereToGet+=(*iter).second->getSizeInByteOfAnyReprInSeq();
+    else
+      break;
+  if(iter==typeC->_members.end())
+    {
+      string what("Unexisting key \""); what+=key; what+="\" for struct extraction.";
+      throw Exception(what);
+    }
+  return (*iter).second->getOrBuildAnyFromZippedData(whereToGet);
+}
+
+void StructAny::setEltAtRank(int i, const Any *elem) throw(Exception)
+{
+  const char what[]="Struct key are strings not integers.";
+  throw Exception(what);
+}
+
+void StructAny::setEltAtRank(const char *key, const Any *elem) throw(Exception)
+{
+  const TypeCodeStruct *typeC=(const TypeCodeStruct *)_type;
+  unsigned offset;
+  const TypeCode *tcOnKey=typeC->getMember(key,offset);
+  if(!tcOnKey)
+    throw Exception("StructAny::setEltAtRank : invalid key given.");
+  if(!elem->getType()->isA(tcOnKey))
+    throw Exception("StructAny::setEltAtRank : invalid data type on the specified given key.");
+  tcOnKey->destroyZippedAny(_data+offset);
+  elem->putMyReprAtPlace(_data+offset);
+}
+
+void StructAny::putMyReprAtPlace(char *data) const
+{
+  const TypeCodeStruct *typeC=(const TypeCodeStruct *)_type;
+  unsigned offset=0;
+  vector< pair<string,TypeCode*> >::const_iterator iter;
+  for(iter=typeC->_members.begin();iter!=typeC->_members.end();iter++)
+    {
+      (*iter).second->putReprAtPlace(data+offset,_data+offset,false);
+      offset+=(*iter).second->getSizeInByteOfAnyReprInSeq();
+    }
+}
+
+void StructAny::putReprAtPlace(char *data, const char *src, const TypeCodeStruct *type, bool deepCpy)
+{
+  unsigned offset=0;
+  vector< pair<string,TypeCode*> >::const_iterator iter;
+  for(iter=type->_members.begin();iter!=type->_members.end();iter++)
+    {
+      (*iter).second->putReprAtPlace(data+offset,src+offset,deepCpy);
+      offset+=(*iter).second->getSizeInByteOfAnyReprInSeq();
+    }
+}
+
+void StructAny::destroyReprAtPlace(char *data, const TypeCodeStruct *type)
+{
+  char *whereToGet=data;
+  vector< pair<string,TypeCode*> >::const_iterator iter;
+  for(iter=type->_members.begin();iter!=type->_members.end();iter++)
+    {
+      (*iter).second->destroyZippedAny(whereToGet);
+      whereToGet+=(*iter).second->getSizeInByteOfAnyReprInSeq();
+    }
+}
+
+AnyPtr StructAny::getOrBuildFromData(char *data, const TypeCodeStruct *type)
+{
+  Any *ret;
+  ret=new StructAny(data,(TypeCodeStruct *)type);
+  return AnyPtr(ret);
+}
+
+StructAny::~StructAny()
+{
+  const TypeCodeStruct *typeC=(const TypeCodeStruct *)_type;
+  vector< pair<string,TypeCode*> >::const_iterator iter;
+  char *whereToGet=_data;
+  for(iter=typeC->_members.begin();iter!=typeC->_members.end();iter++)
+    {
+      (*iter).second->destroyZippedAny(whereToGet);
+      whereToGet+=(*iter).second->getSizeInByteOfAnyReprInSeq();
+    }
+  delete [] _data;
+}
+
+StructAny::StructAny(TypeCodeStruct *type):ComposedAny(type,false)
+{
+  _data=new char[_type->getSizeInByteOfAnyReprInSeq()];
+  for(unsigned int i=0;i<_type->getSizeInByteOfAnyReprInSeq();i++)
+    _data[i]='\0';
+}
+
+StructAny::StructAny(const StructAny& other):ComposedAny(other)
+{
+  _data=new char[_type->getSizeInByteOfAnyReprInSeq()];
+  const TypeCodeStruct *typeC=(const TypeCodeStruct *)_type;
+  vector< pair<string,TypeCode*> >::const_iterator iter;
+  unsigned offset=0;
+  for(iter=typeC->_members.begin();iter!=typeC->_members.end();iter++)
+    {
+     (*iter).second->putReprAtPlace(_data+offset,other._data+offset,true);
+     offset+=(*iter).second->getSizeInByteOfAnyReprInSeq();
+    }
+}
+
+StructAny::StructAny(char *data, TypeCodeStruct * type):ComposedAny(type,false),_data(0)
+{
+  _data=new char[_type->getSizeInByteOfAnyReprInSeq()];
+  vector< pair<string,TypeCode*> >::const_iterator iter;
+  unsigned offset=0;
+  for(iter=type->_members.begin();iter!=type->_members.end();iter++)
+    {
+      (*iter).second->putReprAtPlace(_data+offset,data+offset,false);
+      offset+=(*iter).second->getSizeInByteOfAnyReprInSeq();
+    }
+}
+
+StructAny *StructAny::New(TypeCodeStruct *type)
+{
+  return new StructAny(type);
 }

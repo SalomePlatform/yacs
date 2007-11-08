@@ -129,7 +129,6 @@ namespace YACS
       void getReadyTasks(std::vector<Task *>& tasks);
       int getNumberOfInputPorts() const;
       //
-      void checkConsistency(ComposedNode *pointOfView) const throw(Exception);
       void checkNoCyclePassingThrough(Node *node) throw(Exception);
       void selectRunnableTasks(std::vector<Task *>& tasks);
       //

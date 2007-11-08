@@ -18,8 +18,17 @@ class BoxManager(QWidgetStack):
 
   def setview(self,item):
     if not self.panels.has_key(item):
+      CONNECTOR.Connect(item,"changed",self.changePanel,(item,))
       panel=item.box(self)
       self.panels[item]=panel
       idd=self.addWidget(panel)
-      self.raiseWidget(panel)
+    self.raiseWidget(self.panels[item])
+
+  def changePanel(self,item):
+    print "changePanel",item
+    if self.panels.has_key(item):
+      self.removeWidget(self.panels[item])
+    panel=item.box(self)
+    self.panels[item]=panel
+    idd=self.addWidget(panel)
     self.raiseWidget(self.panels[item])

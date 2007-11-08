@@ -5,7 +5,7 @@
 #include <iostream>
 using namespace std;
 
-#define _DEVDEBUG_
+//#define _DEVDEBUG_
 #ifdef _DEVDEBUG_
 #define MYDEBTRACE {std::cerr << __FILE__ << " [" << __LINE__ << "] : ";}
 #define DEBTRACE(msg) {MYDEBTRACE; std::cerr<<msg<<std::endl<<std::flush;}

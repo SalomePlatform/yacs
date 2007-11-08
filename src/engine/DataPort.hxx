@@ -7,6 +7,12 @@ namespace YACS
 {
   namespace ENGINE
   {
+    typedef enum
+      {
+        DATAFLOW,
+        DATASTREAM
+      } TypeOfChannel;
+
     class DataPort : public virtual Port
     {
     protected:
@@ -23,7 +29,9 @@ namespace YACS
       void edSetType(TypeCode* type);
       std::string getName() const { return _name; }
       std::string getNameOfTypeOfCurrentInstance() const;
-      virtual bool isDifferentTypeOf(const DataPort *other) const = 0;
+      //! returns type of channel the port will use for data exchange on runtime : DATAFLOW or DATASTREAM.
+      virtual TypeOfChannel getTypeOfChannel() const = 0;
+      bool isDifferentTypeOf(const DataPort *other) const;
       virtual void edRemoveAllLinksLinkedWithMe() throw(Exception) = 0;
     public:
       static DataPort *isCrossingType(const std::vector<DataPort *>& historyOfLink);

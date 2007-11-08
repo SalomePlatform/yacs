@@ -15,6 +15,29 @@ import threading
 import time
 import CONNECTOR
 import catalog
+import traceback
+
+class ErrorEvent(QCustomEvent):
+  def __init__(self,caption,msg):
+    QCustomEvent.__init__(self,8888)
+    self.caption=caption
+    self.msg=msg
+  def process(self,parent):
+    QMessageBox.warning(parent,self.caption,self.msg)
+
+class Runner(threading.Thread):
+  def __init__(self,parent,executor,proc):
+    threading.Thread.__init__(self)
+    self.parent=parent
+    self.executor=executor
+    self.proc=proc
+
+  def run(self):
+    try:
+      self.executor.RunW(self.proc,0)
+    except ValueError,ex:
+      #traceback.print_exc()
+      QApplication.postEvent(self.parent, ErrorEvent('YACS execution error',str(ex)))
 
 class Browser(QVBox):
   def __init__(self,parent,proc):
@@ -47,27 +70,24 @@ class Browser(QVBox):
     #item is instance of Item.Item
     self.selected=item
 
+  def customEvent(self,ev):
+    if ev.type() == 8888:
+      ev.process(self)
+
   def run(self):
     if not self.executor:
       self.executor = pilot.ExecutorSwig()
     if self.thr and self.thr.isAlive():
       return
-    #step by step execution mode
-    self.executor.setExecMode(1)
+    #continue execution mode
+    self.executor.setExecMode(0)
     #execute it in a thread
-    self.thr = threading.Thread(target=self.executor.RunW, args=(self.proc,0))
+    self.thr = Runner(self, self.executor, self.proc)
     #as a daemon (no need to join)
     self.thr.setDaemon(1)
     #start the thread
     self.thr.start()
-    self.resume=1
-    #wait pause
     time.sleep(0.1)
-    self.executor.waitPause()
-    #switch to continue execution mode
-    self.executor.setExecMode(0)
-    #resume it
-    self.executor.resumeCurrentBreakPoint()
     self.resume=0
 
   def susp(self):
@@ -80,14 +100,12 @@ class Browser(QVBox):
     if self.resume:
       #continue execution mode
       self.executor.setExecMode(0)
-      #if finished stop it
       #resume it
       self.executor.resumeCurrentBreakPoint()
       self.resume=0
     else:
       #step by step execution mode
       self.executor.setExecMode(1)
-      #self.executor.waitPause()
       self.resume=1
 
   def step(self):
@@ -97,7 +115,7 @@ class Browser(QVBox):
     if not self.thr or not self.thr.isAlive():
       #start in step by step mode
       self.executor.setExecMode(1)
-      self.thr = threading.Thread(target=self.executor.RunW, args=(self.proc,0))
+      self.thr = Runner(self, self.executor, self.proc)
       self.thr.setDaemon(1)
       self.thr.start()
       self.resume=1
@@ -106,7 +124,6 @@ class Browser(QVBox):
     #step by step execution mode
     self.resume=1
     self.executor.setExecMode(1)
-    #if finished stop it
     #resume it
     self.executor.resumeCurrentBreakPoint()
 
@@ -214,6 +231,9 @@ class Appli(QMainWindow):
     #sous menu layout
     self.layoutMenu = QPopupMenu(self)
     self.layoutMenu.insertItem("&Left Right", self.LR)
+    self.layoutMenu.insertItem("Right Left", self.RL)
+    self.layoutMenu.insertItem("Top Bottom", self.TB)
+    self.layoutMenu.insertItem("Bottom Top", self.BT)
     self.canvasMenu = QPopupMenu(self)
     self.canvasMenu.insertItem("&Zoom in", self.zoomIn)
     self.canvasMenu.insertItem("Zoom &out", self.zoomOut)
@@ -292,14 +312,19 @@ class Appli(QMainWindow):
     if self.currentPanel:
       self.currentPanel.view_log()
 
-  def LR(self):
-    if self.currentPanel.selected and isinstance(self.currentPanel.selected,Items.ItemComposedNode):
-      self.currentPanel.selected.layout("LR")
+  def LR(self,*args ):self.rankdir("LR")
+  def RL(self,*args ):self.rankdir("RL")
+  def TB(self,*args ):self.rankdir("TB")
+  def BT(self,*args ):self.rankdir("BT")
+
+  def rankdir(self,orient):
+    if self.currentPanel and self.currentPanel.panelManager.visible:
+      self.currentPanel.panelManager.visible.layout(orient)
 
   def updateCanvas(self):
     if self.currentPanel.selected:#item selected
       if isinstance(self.currentPanel.selected,Items.ItemComposedNode):
-        #on peut updater
+        #can update
         self.currentPanel.selected.editor.updateCanvas()
 
   def addNode(self,node):

@@ -20,8 +20,6 @@
 #ifndef YACSGui_Executor_HeaderFile
 #define YACSGui_Executor_HeaderFile
 
-#define YACS_PTHREAD //@
-
 #include <Proc.hxx>
 #include <Executor.hxx>
 

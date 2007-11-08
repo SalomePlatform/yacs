@@ -35,7 +35,7 @@ namespace YACS
       QListView *_parent;
     };
     
-    class editTree: public wiEditTree
+    class editTree: public wiEditTree, public GuiObserver
     {
       Q_OBJECT
         
@@ -45,14 +45,17 @@ namespace YACS
       void newInputPort(int key);
       void newOutputPort(int key);
       void select();
-      void select(QListViewItem *it);;
+      void select(QListViewItem *it);
       void destroy();
+      void addLink();
     public:
-      editTree(YACS::HMI::Subject *root,
+      editTree(YACS::HMI::Subject *context,
                 QWidget* parent = 0,
                 const char* name = 0,
                 WFlags fl = 0 );
       virtual ~editTree();
+      virtual void update(GuiEvent event, int type, Subject* son);
+      void setNewRoot(YACS::HMI::Subject *root);
       void addViewItemInMap(YACS::HMI::ViewItem* item, YACS::HMI::Subject* subject);
       YACS::HMI::ViewItem* getViewItem(YACS::HMI::Subject* subject);
     protected:
@@ -61,8 +64,10 @@ namespace YACS
       void NodeContextMenu();
       void PortContextMenu();
       void resetTreeNode(QListView *lv);
+      Subject *_context;
       Subject *_root;
       QListViewItem *_previousSelected;
+      SubjectDataPort *_selectedSubjectOutPort;
       std::map<YACS::HMI::Subject*,YACS::HMI::ViewItem*> _viewItemsMap;
       std::map<int, std::pair<YACS::ENGINE::Catalog*, std::string> > _catalogItemsMap;
       int _keymap;
@@ -91,6 +96,15 @@ namespace YACS
     {
     public:
       PortViewItem(ViewItem *parent, QString label, Subject* subject);
+      virtual void update(GuiEvent event, int type, Subject* son);
+    protected:
+      
+    };
+    
+    class LinkViewItem: public ViewItem
+    {
+    public:
+      LinkViewItem(ViewItem *parent, QString label, Subject* subject);
       virtual void update(GuiEvent event, int type, Subject* son);
     protected:
       

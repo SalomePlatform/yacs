@@ -54,12 +54,12 @@ class Tree(QListView):
     #print "selectItem",item
     node=self.selectedItem()
     if node.item is item:
-      print "item has been selected at item level"
+      #print "item has been selected at item level"
       return
 
-    print "item has not been selected at item level"
+    #print "item has not been selected at item level"
     #try another way
-    #find its father 
+    #find its father ???
     it = QListViewItemIterator(self)
     node = it.current()
     while node:
@@ -89,9 +89,16 @@ class Node(QListViewItem):
     self.listView().setSelected(self,True)
 
   def addNode(self,item):
-    print "Tree.addNode",item
-    print "Tree.addNode",self,self.item
+    #print "Tree.addNode",item
     self.additem(item)
+
+  def delNode(self,node):
+    #print "Tree.delNode",node,node.item
+    CONNECTOR.Disconnect(node.item,"selected",node.selectNode,())
+    CONNECTOR.Disconnect(node.item,"add",node.addNode,())
+    CONNECTOR.Disconnect(node.item,"remove",self.delNode,(node,))
+    self.takeItem(node)
+    self.children.remove(node)
 
   def additem(self,item):
     if self.children:
@@ -102,9 +109,16 @@ class Node(QListViewItem):
     #CONNECTOR.Connect(item,"selected",self.listView().selectNodeItem,(node,))
     CONNECTOR.Connect(item,"selected",node.selectNode,())
     CONNECTOR.Connect(item,"add",node.addNode,())
+    CONNECTOR.Connect(item,"remove",self.delNode,(node,))
     return node
 
   def setOpen(self,o):
+    if o and not self.childCount():
+      for child in self.item.getChildren():
+        self.additem(child)
+    QListViewItem.setOpen(self,o)
+
+  def setOpen_old(self,o):
     if o:
       #open
       for child in self.item.getChildren():

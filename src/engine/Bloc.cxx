@@ -147,6 +147,8 @@ bool Bloc::edAddChild(Node *node) throw(Exception)
       string what = "Bloc::edAddChild: node is not orphan: "; what += node->getName();
       throw Exception(what);
     }
+  
+  checkNoCrossHierachyWith(node);
 
   if(isNameAlreadyUsed(node->getName()))
     {
@@ -390,9 +392,9 @@ void Bloc::destructCFComputations(LinkInfo& info) const
  * \param info out parameter beeing informed about eventual errors.
  */
 void Bloc::checkControlDependancy(OutPort *start, InPort *end, bool cross,
-                                  std::map < ComposedNode *,  std::list < OutPort * > >& fw,
+                                  std::map < ComposedNode *,  std::list < OutPort * >, SortHierarc >& fw,
                                   std::vector<OutPort *>& fwCross,
-                                  std::map< ComposedNode *, std::list < OutPort *> >& bw,
+                                  std::map< ComposedNode *, std::list < OutPort *>, SortHierarc >& bw,
                                   LinkInfo& info) const
 {
   if(!cross)
@@ -443,7 +445,7 @@ bool Bloc::arePossiblyRunnableAtSameTime(Node *start, Node *end) const
  * \param alreadyFed in/out parameter. Indicates if 'end' ports is already and surely set or fed by an another port.
  * \param direction If true : forward direction else backward direction.
  */
-void Bloc::checkCFLinks(const std::list< OutPort *>& starts, InputPort *end, unsigned char& alreadyFed, bool direction, LinkInfo& info) const
+void Bloc::checkCFLinks(const std::list<OutPort *>& starts, InputPort *end, unsigned char& alreadyFed, bool direction, LinkInfo& info) const
 {
   if(alreadyFed==FREE_ST || alreadyFed==FED_ST)
     {

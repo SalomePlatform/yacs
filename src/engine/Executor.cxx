@@ -198,8 +198,17 @@ void Executor::RunB(Scheduler *graph,int debug, bool fromScratch)
 
   if (fromScratch)
     {
-      graph->init();
-      graph->exUpdateState();
+      try
+        {
+          graph->init();
+          graph->exUpdateState();
+        }
+      catch(Exception)
+        {
+          _executorState = YACS::FINISHED;
+          sendEvent("executor");
+          throw;
+        }
     }
   _executorState = YACS::INITIALISED;
   sendEvent("executor");
@@ -521,7 +530,7 @@ bool Executor::setStepsToExecute(std::list<std::string> listToExecute)
 
 void Executor::waitPause()
 {
-  DEBTRACE("Executor::waitPause()");
+  DEBTRACE("Executor::waitPause()" << _executorState);
   { // --- Critical section
     _mutexForSchedulerUpdate.lock();
     _isRunningunderExternalControl=true;
@@ -578,7 +587,7 @@ bool Executor::loadState()
 }
 
 
-static int isfile(char *filename) 
+static int isfile(const char *filename) 
 {
   struct stat buf;
   if (stat(filename, &buf) != 0)
@@ -606,7 +615,8 @@ void Executor::_displayDot(Scheduler *graph)
    std::ofstream g("titi");
    ((ComposedNode*)graph)->writeDot(g);
    g.close();
-   if(isfile("display.sh"))
+   const char displayScript[]="display.sh";
+   if(isfile(displayScript))
      system("sh display.sh");
    else
      system("dot -Tpng titi|display -delay 5");

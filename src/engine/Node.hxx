@@ -112,7 +112,9 @@ namespace YACS
       virtual OutputPort *getOutputPort(const std::string& name) const throw(Exception) = 0;
       virtual InputDataStreamPort *getInputDataStreamPort(const std::string& name) const throw(Exception) = 0;
       virtual OutputDataStreamPort *getOutputDataStreamPort(const std::string& name) const throw(Exception) = 0;
-      std::set<ComposedNode *> getAllAscendanceOf(ComposedNode *levelToStop = 0);
+      std::set<ComposedNode *> getAllAscendanceOf(ComposedNode *levelToStop = 0) const;
+      bool operator>(const Node& other) const;
+      bool operator<(const Node& other) const;
       std::string getImplementation();
       virtual ComposedNode *getRootNode() throw(Exception);
       virtual void setProperty(const std::string& name,const std::string& value);

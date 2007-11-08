@@ -4,7 +4,6 @@ import Item
 import adapt
 from qt import *
 from qtcanvas import *
-from GraphViewer import GraphViewer
 import Editor
 import CItems
 import pygraphviz
@@ -44,15 +43,17 @@ class ControlLinkItem(Item.Item):
     return "controllink.png"
 
 class ControlLinksItem(Item.Item):
-  """Item pour les liens controle d'un noeud compose"""
+  """Item for all control links of a composed node"""
   def __init__(self,item):
     Item.Item.__init__(self)
     self.item=item
     self.label="Control Links"
+
   def getIconName(self):
     return "folder"
   def isExpandable(self):
     return True
+
   def getChildren(self):
     sublist=[]
     for n in self.item.node.edGetDirectDescendants():
@@ -60,8 +61,11 @@ class ControlLinksItem(Item.Item):
         sublist.append(ControlLinkItem(n,p))
     return sublist
 
+  def addLink(self,link):
+    CONNECTOR.Emit(self,"add",link)
+
 class DataLinksItem(Item.Item):
-  """Item pour les liens data d'un noeud compose"""
+  """Item for all data links of a composed node"""
   def __init__(self,item):
     Item.Item.__init__(self)
     self.item=item
@@ -69,7 +73,6 @@ class DataLinksItem(Item.Item):
 
   def getIconName(self):
     return "folder"
-
   def isExpandable(self):
     return True
 
@@ -88,6 +91,9 @@ class DataLinksItem(Item.Item):
     #  sublist.append(DataLinkItem(pin,pout))
     return sublist
 
+  def addLink(self,link):
+    CONNECTOR.Emit(self,"add",link)
+
 class ItemComposedNode(Item.Item):
   """Item pour les noeuds composes"""
   n=0
@@ -97,6 +103,8 @@ class ItemComposedNode(Item.Item):
     self.node=node
     self.graph=None
     self.label=node.getName()
+    self.datalinks=DataLinksItem(self)
+    self.controllinks=ControlLinksItem(self)
 
   def isExpandable(self):
     return True
@@ -113,8 +121,8 @@ class ItemComposedNode(Item.Item):
         #print n
         #traceback.print_exc()
         raise
-    sublist.append(DataLinksItem(self))
-    sublist.append(ControlLinksItem(self))
+    sublist.append(self.datalinks)
+    sublist.append(self.controllinks)
     return sublist
 
   def dblselected(self):
@@ -167,17 +175,34 @@ class ItemComposedNode(Item.Item):
 
   panels=[("Panel1",panel1)]
 
+  def addLink(self,link):
+    print "Composed.addLink",link
+    if isinstance(link,DataLinkItem):
+      self.datalinks.addLink(link)
+    elif isinstance(link,StreamLinkItem):
+      self.datalinks.addLink(link)
+    else:
+      self.controllinks.addLink(link)
+
+
 class ItemForLoop(ItemComposedNode):
-  """Item pour la procedure"""
+  def box(self,parent):
+    return panels.PanelForLoop(parent,self)
+
   def addNode(self,service):
-    print "ForLoop.addNode",service
     new_node=service.clone(None)
     ItemComposedNode.n=ItemComposedNode.n+1
     name=service.getName()+"_%d" % ItemComposedNode.n
     new_node.setName(name)
+    #replace the old node (if it exists) with the new one
+    nodes=self.node.edGetDirectDescendants()
+    if nodes:
+      old_item=Item.adapt(nodes[0])
+      CONNECTOR.Emit(old_item,"remove")
     self.node.edSetNode(new_node)
     item=Item.adapt(new_node)
     CONNECTOR.Emit(self,"add",item)
+    CONNECTOR.Emit(self,"changed")
 
 class ItemWhile(ItemForLoop):
   pass
@@ -227,36 +252,15 @@ class ItemPort(Item.Item):
     return tabWidget
   box=panel
 
+  def link(self,other):
+    print "ItemPort.link:",self,other
+
 class ItemInPort(ItemPort):
   def getIconName(self):
     return "inport.png"
 
   def panel1(self,parent):
-    qvbox=QVBox(parent)
-    qvbox.layout().setAlignment(Qt.AlignTop|Qt.AlignLeft)
-    qvbox.setSpacing( 5 )
-    row0=QHBox(qvbox)
-    label=QLabel("Name: ",row0)
-    lined0 = QLineEdit(self.port.getName(),row0)
-    label=QLabel("Type: ",row0)
-    QLineEdit(self.port.edGetType().name(),row0)
-
-    label=QLabel("Value: ",qvbox)
-    #self.value=QLabel("Empty",qvbox)
-    self.value=QTextEdit(qvbox)
-    self.value.setText("Empty")
-    if not self.port.isEmpty():
-      self.value.setText(self.port.dump())
-
-    row3=QHBox(qvbox)
-    but2=QPushButton( "Refresh", row3 )
-    qvbox.connect( but2, SIGNAL("clicked()"), self.handleRefresh )
-
-    return qvbox
-
-  def handleRefresh(self):
-    if not self.port.isEmpty():
-      self.value.setText(self.port.dump())
+    return panels.PanelInPort(parent,self)
 
   panels=[("Panel1",panel1)]
 
@@ -265,45 +269,55 @@ class ItemOutPort(ItemPort):
     return "outport.png"
 
   def panel1(self,parent):
-    qvbox=QVBox(parent)
-    qvbox.layout().setAlignment(Qt.AlignTop|Qt.AlignLeft)
-    qvbox.setSpacing( 5 )
-
-    row0=QHBox(qvbox)
-    QLabel("Name: ",row0)
-    QLineEdit(self.port.getName(),row0)
-    QLabel("Type: ",row0)
-    QLineEdit(self.port.edGetType().name(),row0)
-
-    QLabel("Value: ",qvbox)
-    self.value=QTextEdit(qvbox)
-    self.value.setText("Empty")
-    try:
-      self.value.setText(self.port.dump())
-    except:
-      traceback.print_exc()
-
-    row3=QHBox(qvbox)
-    but2=QPushButton( "Refresh", row3 )
-    qvbox.connect( but2, SIGNAL("clicked()"), self.handleRefresh )
-
-    return qvbox
-
-  def handleRefresh(self):
-    try:
-      self.value.setText(self.port.dump())
-    except:
-      traceback.print_exc()
+    return panels.PanelOutPort(parent,self)
 
   panels=[("Panel1",panel1)]
 
+  def link(self,other):
+    nodeS=self.port.getNode()
+    nodeE=other.port.getNode()
+    father=nodeS.getFather()
+    if father != nodeE.getFather():
+      #not same father : do nothing for the moment
+      return
+    try:
+      #cflink=nodeS.getOutGate().isAlreadyInSet(nodeE.getInGate())
+      cflink= nodeE.getInGate() in nodeS.getOutGate().edSetInGate()
+      father.edAddDFLink(self.port,other.port)
+      l=DataLinkItem(other.port,self.port)
+      fitem=Item.adapt(father)
+      fitem.addLink(l)
+      if not cflink:
+        #add also a control flow link
+        fitem.addLink(ControlLinkItem(nodeS,nodeE))
+    except ValueError,ex:
+      traceback.print_exc()
+      QMessageBox.warning(None,"YACS error",str(ex))
+      return
 
 class ItemInStream(ItemPort):
   def getIconName(self):
     return "instream.png"
+
 class ItemOutStream(ItemPort):
   def getIconName(self):
     return "outstream.png"
+
+  def link(self,other):
+    father=self.port.getNode().getFather()
+    if father != other.port.getNode().getFather():
+      #not same father : not for the moment
+      return
+    try:
+      father.edAddLink(self.port,other.port)
+      l=StreamLinkItem(other.port,self.port)
+      fitem=Item.adapt(father)
+      fitem.addLink(l)
+    except ValueError,ex:
+      traceback.print_exc()
+      QMessageBox.warning(None,"YACS error",str(ex))
+      return
+
 class ItemInGate(ItemPort):
   """Item for InGate"""
   def __init__(self,port):
@@ -371,53 +385,17 @@ class ItemScriptNode(ItemNode):
   def getIconName(self):
     return "green-ball"
 
-  def handleSave(self):
-    self.node.setScript(str(self.mle.text()))
-
-  def handleCancel(self):
-    self.lined0.setText(self.node.getName())
-    self.mle.setText(self.node.getScript())
-
 class ItemFuncNode(ItemNode):
   def panel1(self,parent):
-    """Retourne un widget pour browser/editer l'item"""
-    qvbox=QVBox(parent)
-    qvbox.setSpacing( 5 )
-
-    row0=QHBox(qvbox)
-    label=QLabel("Name: ",row0)
-    self.lined0 = QLineEdit(self.node.getName(),row0)
-
-    row1=QHBox(qvbox)
-    label=QLabel("Fname: ",row1)
-    self.lined1 = QLineEdit(self.node.getFname(),row1)
-
-    label=QLabel("Function: ",qvbox)
-    self.mle=Editor.Editor(qvbox,"multiLineEdit" )
-    self.mle.setText(self.node.getScript())
-
-    row2=QHBox(qvbox)
-    but1=QPushButton( "Save", row2 )
-    but2=QPushButton( "Cancel", row2 )
-    qvbox.connect( but1, SIGNAL("clicked()"), self.handleSave )
-    qvbox.connect( but2, SIGNAL("clicked()"), self.handleCancel )
-
-    return qvbox
+    return panels.PanelFunc(parent,self)
 
   panels=[("Panel1",panel1)]
 
   def getIconName(self):
     return "green-ball"
+
   def FuncChanged(self, newText ):
     self.myFunc=str(newText)
-
-  def handleSave(self):
-    self.node.setFname(str(self.lined1.text()))
-    self.node.setScript(str(self.mle.text()))
-  def handleCancel(self):
-    self.lined0.setText(self.node.getName())
-    self.lined1.setText(self.node.getFname())
-    self.mle.setText(self.node.getScript())
 
 class ItemService(ItemNode):
   def panel1(self,parent):
@@ -485,7 +463,6 @@ def adapt_ComposedNode_to_Item(obj, protocol, alternate):
   return ItemComposedNode(obj)
 
 def adapt_ForLoop_to_Item(obj, protocol, alternate):
-  print "adapt_ForLoop_to_Item",obj
   return ItemForLoop(obj)
 
 def adapt_Switch_to_Item(obj, protocol, alternate):

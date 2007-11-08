@@ -58,13 +58,13 @@ namespace YACS
       void performCFComputations(LinkInfo& info) const;
       void destructCFComputations(LinkInfo& info) const;
       void checkControlDependancy(OutPort *start, InPort *end, bool cross,
-                                  std::map < ComposedNode *,  std::list < OutPort * > >& fw,
+                                  std::map < ComposedNode *,  std::list < OutPort * >, SortHierarc >& fw,
                                   std::vector<OutPort *>& fwCross,
-                                  std::map< ComposedNode *, std::list < OutPort *> >& bw,
+                                  std::map< ComposedNode *, std::list < OutPort *>, SortHierarc >& bw,
                                   LinkInfo& info) const;
       bool areLinked(Node *start, Node *end, bool fw) const;
       bool arePossiblyRunnableAtSameTime(Node *start, Node *end) const;
-      void checkCFLinks(const std::list< OutPort *>& starts, InputPort *end, unsigned char& alreadyFed, bool direction, LinkInfo& info) const;
+      void checkCFLinks(const std::list<OutPort *>& starts, InputPort *end, unsigned char& alreadyFed, bool direction, LinkInfo& info) const;
       static void verdictForOkAndUseless1(const std::map<Node *,std::list <OutPort *> >& pool, InputPort *end, const std::vector<Node *>& candidates,
                                           unsigned char& alreadyFed, bool direction, LinkInfo& info);
       static void verdictForCollapses(const std::map<Node *,std::list <OutPort *> >& pool, InputPort *end, const std::set<Node *>& candidates,

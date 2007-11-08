@@ -341,13 +341,16 @@ static booltypeParser boolParser;
 
 /*! \brief Class for property parser.
  *
- *  Class used to parse a property
+ *  Class used to parse a property.
  *  A property is a pair of name(string), value(string)
- *  XML schema is 
- *    <xsd:complexType name="PropertyType">
- *      <xsd:attribute name="name" type="xsd:string" use="required"/>
- *      <xsd:attribute name="value" type="xsd:string" use="required"/>
- *    </xsd:complexType>
+ *
+   XML schema is 
+   \verbatim
+     <xsd:complexType name="PropertyType">
+       <xsd:attribute name="name" type="xsd:string" use="required"/>
+       <xsd:attribute name="value" type="xsd:string" use="required"/>
+     </xsd:complexType>
+   \endverbatim
  *
  */
 struct propertytypeParser: parser
@@ -373,12 +376,14 @@ static propertytypeParser propertyParser;
  *
  *  Class used to parse a type definition (class TypeCode in implementation)
  *  with a name and a kind (reserved to atomic types)
- *  XML schema is 
- *    <xsd:complexType name="TypeType">
- *      <xsd:attribute name="name" type="xsd:string" use="required"/>
- *      <xsd:attribute name="kind" type="xsd:string" use="required"/>
- *    </xsd:complexType>
- *
+ 
+   XML schema is 
+   \verbatim
+     <xsd:complexType name="TypeType">
+       <xsd:attribute name="name" type="xsd:string" use="required"/>
+       <xsd:attribute name="kind" type="xsd:string" use="required"/>
+     </xsd:complexType>
+   \endverbatim
  */
 struct typetypeParser: parser
 {
@@ -419,12 +424,16 @@ static typetypeParser typeParser;
 /*! \brief Class for sequence parser.
  *
  *  Class used to parse a sequence (type) definition (class TypeCodeSeq in implementation)
- *  XML schema is 
- *    <xsd:complexType name="SequenceType">
- *      <xsd:attribute name="name" type="xsd:string" use="required"/>
- *      <xsd:attribute name="content" type="xsd:string" use="required"/>
- *    </xsd:complexType>
  *
+   XML schema is 
+ 
+ \verbatim
+     <xsd:complexType name="SequenceType">
+       <xsd:attribute name="name" type="xsd:string" use="required"/>
+       <xsd:attribute name="content" type="xsd:string" use="required"/>
+     </xsd:complexType>
+ \endverbatim
+ 
  */
 struct seqtypeParser:public parser
 {
@@ -483,15 +492,18 @@ static seqtypeParser seqParser;
 /*! \brief Class for objref parser.
  *
  *  Class used to parse a objref (type) definition (class TypeCodeObjref in implementation)
- *  XML schema is 
- *    <xsd:complexType name="ObjrefType">
- *      <xsd:sequence>
- *        <xsd:element name="base" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
- *      </xsd:sequence>
- *      <xsd:attribute name="name" type="xsd:string" use="required"/>
- *      <xsd:attribute name="id" type="xsd:string" />
- *    </xsd:complexType>
- *
+ 
+   XML schema is 
+   \verbatim
+     <xsd:complexType name="ObjrefType">
+       <xsd:sequence>
+         <xsd:element name="base" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+       </xsd:sequence>
+       <xsd:attribute name="name" type="xsd:string" use="required"/>
+       <xsd:attribute name="id" type="xsd:string" />
+     </xsd:complexType>
+   \endverbatim
+ 
  */
 struct objtypeParser: parser
 {
@@ -572,12 +584,15 @@ static objtypeParser objParser;
  *
  *  Class used to parse a struct member
  *  A struct member is a pair of name(string), type(string)
- *  XML schema is
- *    <xsd:complexType name="MemberType">
- *      <xsd:attribute name="name" type="xsd:string" use="required"/>
- *      <xsd:attribute name="type" type="xsd:string" use="required"/>
- *    </xsd:complexType>
- *
+ 
+   XML schema is
+   \verbatim
+     <xsd:complexType name="MemberType">
+       <xsd:attribute name="name" type="xsd:string" use="required"/>
+       <xsd:attribute name="type" type="xsd:string" use="required"/>
+     </xsd:complexType>
+   \endverbatim
+ 
  */
 struct membertypeParser: parser
 {
@@ -601,14 +616,17 @@ static membertypeParser memberParser;
 /*! \brief Class for struct parser.
  *
  *  Class used to parse a struct (type) definition (class TypeCodeStruct in implementation)
+ *
  *  XML schema is 
- *    <xsd:complexType name="StructType">
- *      <xsd:sequence>
- *        <xsd:element name="member" type="MemberType" minOccurs="0" maxOccurs="unbounded"/>
- *      </xsd:sequence>
- *      <xsd:attribute name="name" type="xsd:string" use="required"/>
- *      <xsd:attribute name="id" type="xsd:string" />
- *    </xsd:complexType>
+   \verbatim
+     <xsd:complexType name="StructType">
+       <xsd:sequence>
+         <xsd:element name="member" type="MemberType" minOccurs="0" maxOccurs="unbounded"/>
+       </xsd:sequence>
+       <xsd:attribute name="name" type="xsd:string" use="required"/>
+       <xsd:attribute name="id" type="xsd:string" />
+     </xsd:complexType>
+   \endverbatim
  *
  */
 struct structtypeParser: parser
@@ -705,10 +723,13 @@ static structtypeParser structParser;
 /*! \brief Class for machine parser.
  *
  *  Class used to parse computer adress on which container must be started
+ *
  *  XML schema is 
- *    <xsd:complexType name="MachineType">
- *      <xsd:attribute name="name" type="xsd:string" use="required"/>
- *    </xsd:complexType>
+   \verbatim
+     <xsd:complexType name="MachineType">
+       <xsd:attribute name="name" type="xsd:string" use="required"/>
+     </xsd:complexType>
+   \endverbatim
  */
 struct machinetypeParser: parser
 {
@@ -733,14 +754,17 @@ static machinetypeParser machineParser;
 /*! \brief Class for container parser
  *
  *  Class used to parse container description
+ *
  *  XML schema is 
- *    <xsd:complexType name="ContainerType">
- *      <xsd:sequence>
- *        <xsd:element name="machine" type="MachineType" minOccurs="0" maxOccurs="unbounded"/>
- *        <xsd:element name="property" type="PropertyType" minOccurs="0" maxOccurs="unbounded"/>
- *      </xsd:sequence>
- *      <xsd:attribute name="name" type="xsd:string" use="required"/>
- *    </xsd:complexType>
+   \verbatim
+     <xsd:complexType name="ContainerType">
+       <xsd:sequence>
+         <xsd:element name="machine" type="MachineType" minOccurs="0" maxOccurs="unbounded"/>
+         <xsd:element name="property" type="PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+       </xsd:sequence>
+       <xsd:attribute name="name" type="xsd:string" use="required"/>
+     </xsd:complexType>
+   \endverbatim
  */
 struct containertypeParser: parser
 {
@@ -794,10 +818,13 @@ static containertypeParser containerParser;
 /*! \brief Class for loading parser
  *
  *  Class used to parse service node loading information
+ *
  *  XML schema is 
- *    <xsd:complexType name="LoadType">
- *      <xsd:attribute name="container" type="xsd:string" use="required"/>
- *    </xsd:complexType>
+   \verbatim
+     <xsd:complexType name="LoadType">
+       <xsd:attribute name="container" type="xsd:string" use="required"/>
+     </xsd:complexType>
+   \endverbatim
  */
 struct loadtypeParser: parser
 {
@@ -822,13 +849,17 @@ static loadtypeParser loadParser;
 /*! \brief Class for Inport parser.
  *
  *  This class is a base class for other inport parsers
- *    <xsd:complexType name="InPortType">
- *      <xsd:sequence>
- *        <xsd:element name="property" type="PropertyType" minOccurs="0"/>
- *      </xsd:sequence>
- *      <xsd:attribute name="name" type="xsd:string" use="required"/>
- *      <xsd:attribute name="type" type="xsd:string" use="required"/>
- *    </xsd:complexType>
+ *
+ *  XML schema:
+   \verbatim
+     <xsd:complexType name="InPortType">
+       <xsd:sequence>
+         <xsd:element name="property" type="PropertyType" minOccurs="0"/>
+       </xsd:sequence>
+       <xsd:attribute name="name" type="xsd:string" use="required"/>
+       <xsd:attribute name="type" type="xsd:string" use="required"/>
+     </xsd:complexType>
+   \endverbatim
  *
  */
 template <class T=myinport>
@@ -1513,18 +1544,21 @@ static std::string t4[]={"string","objref","double","int","boolean","array","str
 /*! \brief Class for XML-RPC value parser.
  *
  *  This class is used to parse XML data that describes a sequence in XML-RPC format
+ *
  *  Its XML schema is:
- *    <xsd:complexType name="ValueType">
- *      <xsd:choice >
- *        <xsd:element name="int" type="IntType"/>
- *        <xsd:element name="boolean" type="BooleanType"/>
- *        <xsd:element name="double" type="DoubleType"/>
- *        <xsd:element name="string" type="StringType"/>
- *        <xsd:element name="objref" type="ObjrefType"/>
- *        <xsd:element name="array" type="ArrayType"/>
- *        <xsd:element name="struct" type="StructType"/>
- *      </xsd:choice>
- *    </xsd:complexType>
+   \verbatim
+     <xsd:complexType name="ValueType">
+       <xsd:choice >
+         <xsd:element name="int" type="IntType"/>
+         <xsd:element name="boolean" type="BooleanType"/>
+         <xsd:element name="double" type="DoubleType"/>
+         <xsd:element name="string" type="StringType"/>
+         <xsd:element name="objref" type="ObjrefType"/>
+         <xsd:element name="array" type="ArrayType"/>
+         <xsd:element name="struct" type="StructType"/>
+       </xsd:choice>
+     </xsd:complexType>
+   \endverbatim
  */
 struct valuetypeParser: parser
 {
@@ -1585,10 +1619,13 @@ static valuetypeParser valueParser;
 /*! \brief Class for XML-RPC data parser.
  *
  *  This class is used to parse XML data that describes a sequence in XML-RPC format
+ *
  *  Its XML schema is:
- *    <xsd:complexType name="DataType">
- *      <xsd:element name="value" type="ValueType"/>
- *    </xsd:complexType>
+   \verbatim
+     <xsd:complexType name="DataType">
+       <xsd:element name="value" type="ValueType"/>
+     </xsd:complexType>
+   \endverbatim
  */
 struct datatypeParser: parser
 {
@@ -1632,11 +1669,14 @@ static datatypeParser dataParser;
 /*! \brief Class for XML-RPC member parser.
  *
  *  This class is used to parse XML data that describes a sequence in XML-RPC format
+ *
  *  Its XML schema is:
- *    <xsd:complexType name="MemberDataType">
- *      <xsd:element name="name" type="StringType"/>
- *      <xsd:element name="value" type="ValueType"/>
- *    </xsd:complexType>
+   \verbatim
+     <xsd:complexType name="MemberDataType">
+       <xsd:element name="name" type="StringType"/>
+       <xsd:element name="value" type="ValueType"/>
+     </xsd:complexType>
+   \endverbatim
  */
 struct memberdatatypeParser: parser
 {
@@ -1690,10 +1730,13 @@ static memberdatatypeParser memberdataParser;
 /*! \brief Class for XML-RPC struct parser.
  *
  *  This class is used to parse XML data that describes a sequence in XML-RPC format
+ *
  *  Its XML schema is:
- *    <xsd:complexType name="StructDataType">
- *      <xsd:element name="member" type="MemberDataType" minOccurs="1"/>
- *    </xsd:complexType>
+   \verbatim
+     <xsd:complexType name="StructDataType">
+       <xsd:element name="member" type="MemberDataType" minOccurs="1"/>
+     </xsd:complexType>
+   \endverbatim
  */
 struct structdatatypeParser: parser
 {
@@ -1738,10 +1781,13 @@ static structdatatypeParser structdataParser;
 /*! \brief Class for XML-RPC array parser.
  *
  *  This class is used to parse XML data that describes a sequence in XML-RPC format
+ *
  *  Its XML schema is:
- *    <xsd:complexType name="ArrayType">
- *      <xsd:element name="data" type="DataType" minOccurs="1" maxOccurs="1"/>
- *    </xsd:complexType>
+   \verbatim
+     <xsd:complexType name="ArrayType">
+       <xsd:element name="data" type="DataType" minOccurs="1" maxOccurs="1"/>
+     </xsd:complexType>
+   \endverbatim
  */
 struct arraytypeParser: parser
 {

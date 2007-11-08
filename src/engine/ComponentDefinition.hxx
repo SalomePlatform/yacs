@@ -12,7 +12,6 @@ namespace YACS
 
 /*! \brief Base class for component definition.
  *
- * \ingroup Nodes
  *
  */
     class ComponentDefinition 

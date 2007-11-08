@@ -19,6 +19,10 @@ OutPort::~OutPort()
 {
 }
 
+void OutPort::checkConsistency(LinkInfo& info) const
+{
+}
+
 void OutPort::getAllRepresented(std::set<OutPort *>& represented) const
 {
   represented.insert((OutPort *)this);

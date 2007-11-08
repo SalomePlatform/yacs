@@ -83,7 +83,14 @@ void SalomeComponent::load()
       //   _objComponent=containerC->_trueCont->load_impl(componentName,val2);
       bool isLoadable = containerC->_trueCont->load_component_Library(componentName);
       if (isLoadable) 
-        _objComponent=containerC->_trueCont->create_component_instance(componentName, 0);
+	if (containerC->isAPaCOContainer()) {
+	  std::string compo_paco_name(componentName);
+	  compo_paco_name = compo_paco_name + "@PARALLEL@";
+	  char * c_paco_name = CORBA::string_dup(compo_paco_name.c_str());
+	  _objComponent=containerC->_trueCont->create_component_instance(c_paco_name, 0);
+	}
+	else
+	  _objComponent=containerC->_trueCont->create_component_instance(componentName, 0);
 
       if(CORBA::is_nil(_objComponent))
         {

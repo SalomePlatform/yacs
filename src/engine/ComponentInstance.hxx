@@ -15,7 +15,6 @@ namespace YACS
 
 /*! \brief Base class for all component instances.
  *
- * \ingroup Nodes
  *
  * This is an abstract class that must be specialized in runtime.
  * Specialized classes must provide implementation for loading of

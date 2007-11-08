@@ -23,13 +23,15 @@ namespace YACS
       bool isAlreadyLinkedWith(InPort *with) const;
       std::string getNameOfTypeOfCurrentInstance() const;
       void edRemoveAllLinksLinkedWithMe() throw(Exception);
-      bool isDifferentTypeOf(const DataPort *other) const;
+      TypeOfChannel getTypeOfChannel() const;
       void getAllRepresented(std::set<OutPort *>& represented) const;
       bool addInPort(InPort *inPort) throw(Exception);
       int removeInPort(InPort *inPort, bool forward) throw(Exception);
+    public:
+      void getHumanReprOfIncompleteCases(std::ostream& stream) const;
     private://Specific part
       bool removePotentialProducerForMaster();
-      void checkCompletenessOfCases() const throw(Exception);
+      void checkConsistency(LinkInfo& info) const;
       CollectorSwOutPort(Switch *master, InPort *port);
       CollectorSwOutPort(const CollectorSwOutPort& other, Switch *master);
       void addPotentialProducerForMaster(OutPort *port);
@@ -96,7 +98,6 @@ namespace YACS
       YACS::StatesForNode getEffectiveState(Node* node);
       OutPort *getOutPort(const std::string& name) const throw(Exception);
       InputPort* getInputPort(const std::string& name) const throw(Exception);
-      void checkConsistency(ComposedNode *pointOfView=0) const throw(Exception);
       Node *getChildByShortName(const std::string& name) const throw(Exception);
       std::string getMyQualifiedName(const Node *directSon) const;
       std::string getCaseId(const Node *node) const throw(Exception);
@@ -112,6 +113,12 @@ namespace YACS
       void buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::set<ComposedNode *>& pointsOfView);
       void getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::set<ComposedNode *>& pointsOfView) throw(Exception);
       void releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::set<ComposedNode *>& pointsOfView) throw(Exception);
+      void checkCFLinks(const std::list<OutPort *>& starts, InputPort *end, unsigned char& alreadyFed, bool direction, LinkInfo& info) const;
+      void checkControlDependancy(OutPort *start, InPort *end, bool cross,
+                                  std::map < ComposedNode *,  std::list < OutPort * > >& fw,
+                                  std::vector<OutPort *>& fwCross,
+                                  std::map< ComposedNode *, std::list < OutPort *> >& bw,
+                                  LinkInfo& info) const;
       void checkNoCyclePassingThrough(Node *node) throw(Exception);
     private:
       int getNbOfCases() const;

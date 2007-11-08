@@ -35,6 +35,10 @@ string DataPort::getNameOfTypeOfCurrentInstance() const
   return NAME;
 }
 
+bool DataPort::isDifferentTypeOf(const DataPort *other) const
+{
+  return getTypeOfChannel()!=other->getTypeOfChannel();
+}
 
 /*!
  * If in historyOfLink different type of Port are detected : The first one (by starting from the end of 'historyOfLink')

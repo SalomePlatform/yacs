@@ -1,6 +1,6 @@
 #include "DynParaLoop.hxx"
+#include "LinkInfo.hxx"
 #include "OutPort.hxx"
-#include<iostream>
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -88,6 +88,7 @@ Node *DynParaLoop::edSetNode(Node *node)
             throw Exception(what);
           }
     }
+  checkNoCrossHierachyWith(node);
   ComposedNode::edRemoveChild(_node);
   Node *ret=_node;
   _node=node;
@@ -126,6 +127,7 @@ Node *DynParaLoop::edSetInitNode(Node *node)
             throw Exception(what);
           }
     }
+  checkNoCrossHierachyWith(node);
   edRemoveChild(_initNode);
   Node *ret=_initNode;
   _initNode=node;
@@ -360,6 +362,46 @@ void DynParaLoop::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort 
       throw Exception("DynParaLoop::buildDelegateOf : uncorrect ForEach link : a link starting from init node can't leave the scope of ForEachLoop node it belongs to.");
   if(port.first==&_splittedPort)
     throw Exception("DynParaLoop::buildDelegateOf : uncorrect ForEach link : splitted port must be link within the scope of ForEachLoop node it belongs to.");
+}
+
+void DynParaLoop::checkCFLinks(const std::list<OutPort *>& starts, InputPort *end, unsigned char& alreadyFed, bool direction, LinkInfo& info) const
+{
+  const char what[]="DynParaLoop::checkCFLinks : internal error.";
+  //First dealing checkCFLinks forwarding...
+  if(isInMyDescendance(end->getNode())==0)//no chance that _splittedPort is in starts due to buildDelegate.
+    solveObviousOrDelegateCFLinks(starts,end,alreadyFed,direction,info);
+  else
+    {//no forwarding here.
+      if(starts.size()!=1)
+        throw Exception(what);
+      //ASSERT(direction) : see DynParaLoop::checkControlDependancy only 'fw' filled.
+      if(*(starts.begin())!=&_splittedPort)
+        throw Exception(what);
+      if(alreadyFed==FREE_ST)
+        alreadyFed=FED_ST;
+      else if(alreadyFed==FED_ST)
+        {//Shame ! splittedPort fills a port already fed...
+          info.pushInfoLink(*(starts.begin()),end,I_USELESS);
+        }
+    }
+}
+
+/*!
+ * \param cross indicates if start -> end link is a DS link behind.
+ * \param fw out parameter.
+ * \param fwCross out parameter storing links where a cross has been detected.
+ * \param bw out parameter where backward links are stored.
+ */
+void DynParaLoop::checkControlDependancy(OutPort *start, InPort *end, bool cross,
+                                         std::map < ComposedNode *,  std::list < OutPort * >, SortHierarc >& fw,
+                                         std::vector<OutPort *>& fwCross,
+                                         std::map< ComposedNode *, std::list < OutPort *>, SortHierarc >& bw,
+                                         LinkInfo& info) const
+{
+  if(start==&_splittedPort)
+    fw[(ComposedNode *)this].push_back(start);
+  else
+    throw Exception("DynParaLoop::checkControlDependancy : Internal error occured - should never been called !");
 }
 
 /*!

@@ -299,12 +299,15 @@ std::string OutputCorbaPort::dump()
   string xmldump = convertCorbaXml(edGetType(), &_data);
   return xmldump;
 }
-
-ostream& YACS::ENGINE::operator<<(ostream& os, const OutputCorbaPort& p)
-{
-  CORBA::Double l;
-  p._data>>=l;
-  os << p._name << " : " << l ;
-  return os;
-}
+namespace YACS {
+  namespace ENGINE {
+    ostream& operator<<(ostream& os, const OutputCorbaPort& p)
+    {
+      CORBA::Double l;
+      p._data>>=l;
+      os << p._name << " : " << l ;
+      return os;
+    }
+  };
+};
 

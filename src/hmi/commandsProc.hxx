@@ -39,18 +39,21 @@ namespace YACS
         CPPNODE,
         SALOMEPYTHONNODE,
         XMLNODE,
+        SPLITTERNODE,
         DFTODSFORLOOPNODE,
         DSTODFFORLOOPNODE,
+        INPUTPORT,
+        OUTPUTPORT,
+        INPUTDATASTREAMPORT,
+        OUTPUTDATASTREAMPORT,
         UNKNOWN
-      } TypeOfNode;
+      } TypeOfElem;
    
     class ProcInvoc: public Invocator
     {
     public:
-      ProcInvoc(YACS::ENGINE::Proc *proc);
-      static TypeOfNode getTypeOfNode(YACS::ENGINE::Node* node);
-    protected:
-      YACS::ENGINE::Proc *_proc;
+      ProcInvoc();
+      static TypeOfElem getTypeOfNode(YACS::ENGINE::Node* node);
     };
     
 
@@ -67,7 +70,7 @@ namespace YACS
       virtual bool localExecute();
       virtual bool localReverse();
       YACS::ENGINE::Catalog* _catalog;
-      TypeOfNode _typeNode;
+      TypeOfElem  _typeNode;
       std::string _typeName;
       std::string _position;
       std::string _name;
@@ -125,7 +128,8 @@ namespace YACS
     class CommandAddLink: public Command
     {
     public:
-      CommandAddLink(std::string outNode, std::string outPort, std::string inNode, std::string inPort);
+      CommandAddLink(std::string outNode, std::string outPort,
+                     std::string inNode, std::string inPort);
     protected:
       virtual bool localExecute();
       virtual bool localReverse();

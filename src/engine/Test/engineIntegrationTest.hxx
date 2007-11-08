@@ -15,6 +15,7 @@ namespace YACS
       CPPUNIT_TEST( testBloc1 );
       CPPUNIT_TEST( testBloc2 );
       CPPUNIT_TEST( testBloc3 );
+      CPPUNIT_TEST( testBloc4 );
       CPPUNIT_TEST( testForLoop1 );
       CPPUNIT_TEST( testForLoop2 );
       CPPUNIT_TEST( testForLoop3 );
@@ -43,6 +44,8 @@ namespace YACS
       CPPUNIT_TEST( testForDeployment2 );
       CPPUNIT_TEST( testForCheckConsistency1 );
       CPPUNIT_TEST( testForCheckConsistency2 );
+      CPPUNIT_TEST( testForCheckConsistency3 );
+      CPPUNIT_TEST( testForCheckConsistency4 );
       CPPUNIT_TEST_SUITE_END();
     public:
       void setUp();
@@ -50,6 +53,7 @@ namespace YACS
       void testBloc1();
       void testBloc2();
       void testBloc3();
+      void testBloc4();
       void testSwitch();
       void testSwitch2();
       void testSwitch3();
@@ -78,6 +82,8 @@ namespace YACS
       void testForDeployment2();
       void testForCheckConsistency1();
       void testForCheckConsistency2();
+      void testForCheckConsistency3();
+      void testForCheckConsistency4();
     protected:
       template<class T>
       static void checkSetsEqual(const std::set<T>& setToTest1, const std::set<T>& setToTest2);

@@ -23,18 +23,6 @@ Node *ForLoop::simpleClone(ComposedNode *father, bool editionOnly) const
   return new ForLoop(*this,father,editionOnly);
 }
 
-int ForLoop::getNumberOfInputPorts() const
-{ 
-  return StaticDefinedComposedNode::getNumberOfInputPorts()+1; 
-}
-
-std::list<InputPort *> ForLoop::getSetOfInputPort() const
-{
-  list<InputPort *> ret=StaticDefinedComposedNode::getSetOfInputPort();
-  ret.push_back((InputPort *)&_nbOfTimesPort);
-  return ret;
-}
-
 InputPort* ForLoop::getInputPort(const std::string& name) const throw(Exception)
 {
     if(name == NAME_OF_NSTEPS_NUMBER)return (InputPort*)&_nbOfTimesPort;

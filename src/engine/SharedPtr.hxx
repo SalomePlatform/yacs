@@ -25,6 +25,7 @@ public:
   operator T &() { return *_ptr; }
   operator const T &() const { return *_ptr; }
   SharedPtr<T> operator[](int i) const;
+  SharedPtr<T> operator[](const char *key) const;
 };
 
 template<class T>
@@ -39,6 +40,12 @@ template<class T>
 SharedPtr<T> SharedPtr<T>::operator[](int i) const
 {
   return (*_ptr)[i];
+}
+
+template<class T>
+SharedPtr<T> SharedPtr<T>::operator[](const char *key) const
+{
+  return (*_ptr)[key];
 }
 
 #endif

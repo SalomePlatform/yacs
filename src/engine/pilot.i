@@ -186,6 +186,30 @@ namespace YACS
         ob=SWIG_NewPointerObj((void*)node,SWIGTYPE_p_YACS__ENGINE__Node,0);
       return ob;
     }
+    static PyObject* convertPort(YACS::ENGINE::Port* port)
+    {
+      PyObject* ob;
+      if(dynamic_cast<YACS::ENGINE::InputPort *>(port))
+        ob=SWIG_NewPointerObj((void*)port,SWIGTYPE_p_YACS__ENGINE__InputPort,0);
+      else if(dynamic_cast<YACS::ENGINE::OutputPort *>(port))
+        ob=SWIG_NewPointerObj((void*)port,SWIGTYPE_p_YACS__ENGINE__OutputPort,0);
+      else if(dynamic_cast<YACS::ENGINE::InputDataStreamPort *>(port))
+        ob=SWIG_NewPointerObj((void*)port,SWIGTYPE_p_YACS__ENGINE__InputDataStreamPort, 0);
+      else if(dynamic_cast<YACS::ENGINE::OutputDataStreamPort *>(port))
+        ob=SWIG_NewPointerObj((void*)port,SWIGTYPE_p_YACS__ENGINE__OutputDataStreamPort, 0);
+      else if(dynamic_cast<YACS::ENGINE::InPort *>(port))
+        ob=SWIG_NewPointerObj((void*)port,SWIGTYPE_p_YACS__ENGINE__InPort, 0);
+      else if(dynamic_cast<YACS::ENGINE::OutPort *>(port))
+        ob=SWIG_NewPointerObj((void*)port,SWIGTYPE_p_YACS__ENGINE__OutPort, 0);
+      else if(dynamic_cast<YACS::ENGINE::InGate *>(port))
+        ob=SWIG_NewPointerObj((void*)port,SWIGTYPE_p_YACS__ENGINE__InGate, 0);
+      else if(dynamic_cast<YACS::ENGINE::OutGate *>(port))
+        ob=SWIG_NewPointerObj((void*)port,SWIGTYPE_p_YACS__ENGINE__OutGate, 0);
+      else
+        ob=SWIG_NewPointerObj((void*)port,SWIGTYPE_p_YACS__ENGINE__Port, 0);
+
+      return ob;
+    }
 
 %}
 
@@ -347,6 +371,32 @@ namespace YACS
     }
 }
 
+%typemap(python,out) std::set<YACS::ENGINE::InGate *>
+{
+  int i;
+  std::set<YACS::ENGINE::InGate *>::iterator iL;
+  $result = PyList_New($1.size());
+  PyObject * ob;
+  for (i=0, iL=$1.begin(); iL!=$1.end(); i++, iL++)
+    {
+      ob=convertPort(*iL);
+      PyList_SetItem($result,i,ob); 
+    }
+}
+
+%typemap(python,out) std::set<YACS::ENGINE::OutGate *>
+{
+  int i;
+  std::set<YACS::ENGINE::OutGate *>::iterator iL;
+  $result = PyList_New($1.size());
+  PyObject * ob;
+  for (i=0, iL=$1.begin(); iL!=$1.end(); i++, iL++)
+    {
+      ob=convertPort(*iL);
+      PyList_SetItem($result,i,ob); 
+    }
+}
+
 %typemap(python,out) std::set<YACS::ENGINE::InPort *>
 {
   std::set<YACS::ENGINE::InPort *>::iterator iL;
@@ -355,15 +405,8 @@ namespace YACS
   int status;
   for (iL=$1.begin(); iL!=$1.end(); iL++)
     {
-      if(dynamic_cast<InputPort *>(*iL))
-        ob=SWIG_NewPointerObj((void*)(*iL),$descriptor(YACS::ENGINE::InputPort *), 0); 
-      else if(dynamic_cast<InputDataStreamPort *>(*iL))
-        ob=SWIG_NewPointerObj((void*)(*iL),$descriptor(YACS::ENGINE::InputDataStreamPort *), 0); 
-      else
-        ob=SWIG_NewPointerObj((void*)(*iL),$descriptor(YACS::ENGINE::InPort *), 0); 
-
+      ob=convertPort(*iL);
       //ob=swig::from((YACS::ENGINE::InPort *)(*iL));
-
       status=PyList_Append($result,ob);
       Py_DECREF(ob);
       if (status < 0)
@@ -382,13 +425,7 @@ namespace YACS
   int status;
   for (iL=$1.begin(); iL!=$1.end(); iL++)
     {
-      if(dynamic_cast<OutputPort *>(*iL))
-        ob=SWIG_NewPointerObj((void*)(*iL),$descriptor(YACS::ENGINE::OutputPort *), 0); 
-      else if(dynamic_cast<OutputDataStreamPort *>(*iL))
-        ob=SWIG_NewPointerObj((void*)(*iL),$descriptor(YACS::ENGINE::OutputDataStreamPort *), 0); 
-      else
-        ob=SWIG_NewPointerObj((void*)(*iL),$descriptor(YACS::ENGINE::OutPort *), 0); 
-
+      ob=convertPort(*iL);
       //ob=swig::from((YACS::ENGINE::OutPort *)(*iL));
 
       status=PyList_Append($result,ob);

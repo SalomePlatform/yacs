@@ -40,8 +40,15 @@ namespace YACS
       CORBA::ORB_ptr _orb;
     };
 
+    class OutputCorbaPort;
+
+    std::ostream & operator<<( std::ostream &os,
+                               const YACS::ENGINE::OutputCorbaPort& p);
+
     class OutputCorbaPort : public OutputPort
     {
+      friend std::ostream &operator<< ( std::ostream &os,
+                                        const OutputCorbaPort& p);
     public:
       OutputCorbaPort(const std::string& name, Node *node, TypeCode * type);
       OutputCorbaPort(const OutputCorbaPort& other, Node *newHelder);
@@ -52,8 +59,6 @@ namespace YACS
       virtual CORBA::Any * getAny();
       virtual CORBA::Any * getAnyOut();
       virtual std::string dump();
-      friend std::ostream & operator<< ( std::ostream &os,
-                                         const OutputCorbaPort& p);
     protected:
       CORBA::Any  _data;
       CORBA::ORB_ptr _orb;

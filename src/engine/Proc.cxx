@@ -6,7 +6,7 @@
 #include <sstream>
 #include <set>
 
-#define _DEVDEBUG_
+//#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
 using namespace std;

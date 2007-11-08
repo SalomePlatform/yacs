@@ -87,7 +87,8 @@ void EngineTest::checkAny1()
   CPPUNIT_ASSERT( tmp->getStringValue() == "lkjlkj");
   CPPUNIT_ASSERT( tmp->getStringValue() == "lkjlkj");
   tmp->decrRef();
-  tmp=AtomAny::New("coucou",0);
+  const char tmp2[]="coucou";
+  tmp=AtomAny::New((char *)tmp2,0);
   CPPUNIT_ASSERT( tmp->getStringValue() == "coucou");
   CPPUNIT_ASSERT( tmp->getStringValue() == "coucou");
   tmp->decrRef();
@@ -377,7 +378,8 @@ void EngineTest::checkAny4()
   tmp->setEltAtRank(3,tmp2);
   CPPUNIT_ASSERT_EQUAL(107,(*tmp)[3]->getIntValue());
   tmp=SequenceAny::New(Runtime::_tc_string,2);
-  tmp2=AtomAny::New("titi",0);
+  const char tmpSt[]="titi";
+  tmp2=AtomAny::New((char*)tmpSt,0);
   tmp->setEltAtRank(1,tmp2);
   CPPUNIT_ASSERT((*tmp)[1]->getStringValue()=="titi");
   vector<double> vec4;
@@ -426,6 +428,7 @@ void EngineTest::checkAny5()
   CPPUNIT_ASSERT((*tmp3)[2]->getStringValue()=="tutu");
   AnyPtr tmp4=tmp3->clone();
   CPPUNIT_ASSERT( (*tmp3==*tmp4) );
+  CPPUNIT_ASSERT( (*tmp3==*tmp3) );
   tmp3->popBack();
   CPPUNIT_ASSERT( !(*tmp3==*tmp4) );
   tmp1=AtomAny::New("tutu");
@@ -440,6 +443,203 @@ void EngineTest::checkAny5()
   tmp1=AtomAny::New("tutug");
   tmp3->pushBack(tmp1);
   CPPUNIT_ASSERT( !(*tmp3==*tmp4) );
+}
+
+/*!
+ * Test of ArrayAny. Only one level. 
+ */
+void EngineTest::checkAny6()
+{
+  const int lgth=8;
+  const int tab[lgth]={0,1,1,9,2,7,2,3};
+  const int tab2[lgth]={13,1,1,9,2,7,2,3};
+  ArrayAnyPtr tmp1(ArrayAny::New(tab,lgth));
+  ArrayAnyPtr tmp2(ArrayAny::New(tab,lgth));
+  CPPUNIT_ASSERT((*tmp1)[3]->getIntValue()==9);
+  CPPUNIT_ASSERT( (*tmp1==*tmp2) );
+  CPPUNIT_ASSERT( (*tmp1==*tmp1) );
+  CPPUNIT_ASSERT( 8==tmp1->size() );
+  CPPUNIT_ASSERT( 8==tmp2->size() );
+  tmp2=ArrayAny::New(tab,lgth-1);
+  CPPUNIT_ASSERT( 7==tmp2->size() );
+  CPPUNIT_ASSERT( !(*tmp1==*tmp2) );
+  tmp2=ArrayAny::New(tab2,lgth);
+  CPPUNIT_ASSERT( !(*tmp1==*tmp2) );
+  tmp2=ArrayAny::New(tab,lgth);
+  CPPUNIT_ASSERT( (*tmp1==*tmp2) );
+  ArrayAnyPtr tmp3=(ArrayAny *)tmp1->clone();
+  CPPUNIT_ASSERT( (*tmp1==*tmp3) );
+  CPPUNIT_ASSERT((*tmp3)[3]->getIntValue()==9); CPPUNIT_ASSERT((*tmp3)[4]->getIntValue()==2);
+  // Ok let's test with double.
+  const double tab3[lgth]={0.1,1.1,1.1,9.1,2.1,7.1,2.1,3.1};
+  const double tab4[lgth]={13.1,1.1,1.1,9.1,2.1,7.1,2.1,3.1};
+  ArrayAnyPtr tmp4(ArrayAny::New(tab3,lgth));
+  ArrayAnyPtr tmp5(ArrayAny::New(tab3,lgth));
+  CPPUNIT_ASSERT_DOUBLES_EQUAL((*tmp4)[3]->getDoubleValue(),9.1,1e-12);
+  CPPUNIT_ASSERT( (*tmp4==*tmp5) );
+  CPPUNIT_ASSERT( (*tmp4==*tmp4) );
+  CPPUNIT_ASSERT( 8==tmp4->size() );
+  CPPUNIT_ASSERT( 8==tmp5->size() );
+  tmp5=ArrayAny::New(tab3,lgth-1);
+  CPPUNIT_ASSERT( 7==tmp5->size() );
+  CPPUNIT_ASSERT( !(*tmp4==*tmp5) );
+  tmp5=ArrayAny::New(tab4,lgth);
+  CPPUNIT_ASSERT( !(*tmp4==*tmp5) );
+  tmp5=ArrayAny::New(tab3,lgth);
+  CPPUNIT_ASSERT( (*tmp4==*tmp5) );
+  ArrayAnyPtr tmp6=(ArrayAny *)tmp4->clone();
+  CPPUNIT_ASSERT( (*tmp4==*tmp6) );
+  CPPUNIT_ASSERT_DOUBLES_EQUAL((*tmp6)[3]->getDoubleValue(),9.1,1e-12);
+  CPPUNIT_ASSERT_DOUBLES_EQUAL((*tmp6)[4]->getDoubleValue(),2.1,1e-12);
+  //Ok let's test with bool.
+  const bool tab5[lgth]={false,true,false,true,false,false,false,false};
+  const bool tab6[lgth]={true ,true,false,true,false,false,false,false};
+  ArrayAnyPtr tmp7(ArrayAny::New(tab5,lgth));
+  ArrayAnyPtr tmp8(ArrayAny::New(tab5,lgth));
+  CPPUNIT_ASSERT((*tmp7)[3]->getBoolValue());
+  CPPUNIT_ASSERT( (*tmp7==*tmp8) );
+  CPPUNIT_ASSERT( (*tmp7==*tmp7) );
+  CPPUNIT_ASSERT( 8==tmp7->size() );
+  CPPUNIT_ASSERT( 8==tmp8->size() );
+  tmp8=ArrayAny::New(tab5,lgth-1);
+  CPPUNIT_ASSERT( 7==tmp8->size() );
+  CPPUNIT_ASSERT( !(*tmp7==*tmp8) );
+  tmp8=ArrayAny::New(tab6,lgth);
+  CPPUNIT_ASSERT( !(*tmp7==*tmp8) );
+  tmp8=ArrayAny::New(tab5,lgth);
+  CPPUNIT_ASSERT( (*tmp7==*tmp8) );
+  ArrayAnyPtr tmp9=(ArrayAny *)tmp7->clone();
+  CPPUNIT_ASSERT( (*tmp9==*tmp7) );
+  CPPUNIT_ASSERT((*tmp8)[3]->getBoolValue());
+  CPPUNIT_ASSERT(!(*tmp8)[4]->getBoolValue());
+  //Ok let's test with strings.
+  vector<string> tab7(lgth); tab7[0]="abc"; tab7[1]="def"; tab7[2]="ghi"; tab7[3]="jkl"; tab7[4]="mno"; tab7[5]="pqr"; tab7[6]="stu"; tab7[7]="vwx";
+  vector<string> tab8(lgth); tab8[0]="zbc"; tab8[1]="def"; tab8[2]="ghi"; tab8[3]="jkl"; tab8[4]="mno"; tab8[5]="pqr"; tab8[6]="stu"; tab8[7]="vwx";
+  ArrayAnyPtr tmp10(ArrayAny::New(tab7));
+  ArrayAnyPtr tmp11(ArrayAny::New(tab7));
+  CPPUNIT_ASSERT((*tmp10)[3]->getStringValue()=="jkl");
+  CPPUNIT_ASSERT( (*tmp10==*tmp11) );
+  CPPUNIT_ASSERT( (*tmp10==*tmp10) );
+  CPPUNIT_ASSERT( 8==tmp10->size() );
+  CPPUNIT_ASSERT( 8==tmp11->size() );
+  vector<string> tab9(tab7); tab9.pop_back();
+  tmp11=ArrayAny::New(tab9);
+  CPPUNIT_ASSERT( 7==tmp11->size() );
+  CPPUNIT_ASSERT( !(*tmp10==*tmp11) );
+  tmp11=ArrayAny::New(tab8);
+  CPPUNIT_ASSERT( !(*tmp10==*tmp11) );
+  tmp11=ArrayAny::New(tab7);
+  CPPUNIT_ASSERT( (*tmp10==*tmp11) );
+  ArrayAnyPtr tmp12=(ArrayAny *)tmp10->clone();
+  CPPUNIT_ASSERT( (*tmp12==*tmp10) );
+  CPPUNIT_ASSERT((*tmp11)[3]->getStringValue()=="jkl");
+  CPPUNIT_ASSERT((*tmp11)[4]->getStringValue()=="mno");
+}
+
+/*!
+ * Test of ArrayAny on multi-levels. To test recursion.
+ */
+void EngineTest::checkAny7()
+{
+  const int lgth=8;
+  const int tab1[lgth]={0,1,1,9,2,7,2,3};
+  const int tab2[lgth]={7,8,8,16,9,14,9,10};
+  //Testing Arrays of arrays
+  ArrayAnyPtr tmp11(ArrayAny::New(tab1,lgth));
+  ArrayAnyPtr tmp12(ArrayAny::New(tab2,lgth));
+  ArrayAnyPtr tmp12Throw(ArrayAny::New(tab2,lgth+1));
+  ArrayAnyPtr tmp2(ArrayAny::New(tmp11->getType(),2));
+  tmp2->setEltAtRank(0,tmp11);
+  CPPUNIT_ASSERT_THROW(tmp2->setEltAtRank(1,tmp12Throw),Exception);
+  tmp2->setEltAtRank(1,tmp12);
+  CPPUNIT_ASSERT_EQUAL(0,(*tmp2)[0][0]->getIntValue()); CPPUNIT_ASSERT_EQUAL(7,(*tmp2)[1][0]->getIntValue());
+  CPPUNIT_ASSERT_EQUAL(9,(*tmp2)[0][3]->getIntValue()); CPPUNIT_ASSERT_EQUAL(16,(*tmp2)[1][3]->getIntValue());
+  //    Show deep copy process of arrays
+  AnyPtr tmp=AtomAny::New(49);
+  tmp11->setEltAtRank(0,tmp);
+  CPPUNIT_ASSERT_EQUAL(0,(*tmp2)[0][0]->getIntValue()); CPPUNIT_ASSERT_EQUAL(7,(*tmp2)[1][0]->getIntValue());
+  CPPUNIT_ASSERT_EQUAL(9,(*tmp2)[0][3]->getIntValue()); CPPUNIT_ASSERT_EQUAL(16,(*tmp2)[1][3]->getIntValue());
+  ArrayAnyPtr tmp2Cloned=(ArrayAny *)(tmp2->clone());
+  CPPUNIT_ASSERT_EQUAL(0,(*tmp2Cloned)[0][0]->getIntValue()); CPPUNIT_ASSERT_EQUAL(7,(*tmp2Cloned)[1][0]->getIntValue());
+  CPPUNIT_ASSERT_EQUAL(9,(*tmp2Cloned)[0][3]->getIntValue()); CPPUNIT_ASSERT_EQUAL(16,(*tmp2Cloned)[1][3]->getIntValue());
+  CPPUNIT_ASSERT( *tmp2==*tmp2Cloned );
+  CPPUNIT_ASSERT( *tmp2==*tmp2 );
+  //Testing Array of Sequences
+  SequenceAnyPtr tmp13(SequenceAny::New((int *)tab1,lgth,0));
+  SequenceAnyPtr tmp14(SequenceAny::New((int *)tab2,lgth,0));
+  tmp2=ArrayAny::New(tmp13->getType(),2);
+  tmp2->setEltAtRank(0,tmp13);
+  tmp2->setEltAtRank(1,tmp14);
+  CPPUNIT_ASSERT_EQUAL(0,(*tmp2)[0][0]->getIntValue()); CPPUNIT_ASSERT_EQUAL(7,(*tmp2)[1][0]->getIntValue());
+  CPPUNIT_ASSERT_EQUAL(9,(*tmp2)[0][3]->getIntValue()); CPPUNIT_ASSERT_EQUAL(16,(*tmp2)[1][3]->getIntValue());
+  tmp13->setEltAtRank(0,tmp);
+  //    No deep copy here contrary to 14 lines ahead.
+  CPPUNIT_ASSERT_EQUAL(49,(*tmp2)[0][0]->getIntValue()); CPPUNIT_ASSERT_EQUAL(7,(*tmp2)[1][0]->getIntValue());
+  CPPUNIT_ASSERT_EQUAL(9,(*tmp2)[0][3]->getIntValue()); CPPUNIT_ASSERT_EQUAL(16,(*tmp2)[1][3]->getIntValue());
+  tmp2Cloned=(ArrayAny *)(tmp2->clone());
+  CPPUNIT_ASSERT_EQUAL(49,(*tmp2Cloned)[0][0]->getIntValue()); CPPUNIT_ASSERT_EQUAL(7,(*tmp2Cloned)[1][0]->getIntValue());
+  CPPUNIT_ASSERT_EQUAL(9,(*tmp2Cloned)[0][3]->getIntValue()); CPPUNIT_ASSERT_EQUAL(16,(*tmp2Cloned)[1][3]->getIntValue());
+  CPPUNIT_ASSERT( *tmp2==*tmp2Cloned );
+  CPPUNIT_ASSERT( *tmp2==*tmp2 );
+  //Testing Sequence of array
+  tmp13=SequenceAny::New(tmp11->getType(),2);
+  tmp13->setEltAtRank(0,tmp11);
+  tmp13->setEltAtRank(1,tmp12);
+  CPPUNIT_ASSERT_EQUAL(49,(*tmp13)[0][0]->getIntValue()); CPPUNIT_ASSERT_EQUAL(7,(*tmp13)[1][0]->getIntValue());
+  CPPUNIT_ASSERT_EQUAL(9,(*tmp13)[0][3]->getIntValue()); CPPUNIT_ASSERT_EQUAL(16,(*tmp13)[1][3]->getIntValue());
+  tmp14=(SequenceAny *)tmp13->clone();
+  CPPUNIT_ASSERT_EQUAL(49,(*tmp14)[0][0]->getIntValue()); CPPUNIT_ASSERT_EQUAL(7,(*tmp14)[1][0]->getIntValue());
+  CPPUNIT_ASSERT_EQUAL(9,(*tmp14)[0][3]->getIntValue()); CPPUNIT_ASSERT_EQUAL(16,(*tmp14)[1][3]->getIntValue());
+  CPPUNIT_ASSERT( *tmp13==*tmp14 );
+  CPPUNIT_ASSERT( *tmp13==*tmp13 );
+}
+
+/*!
+ * First test of structs.
+ */
+void EngineTest::checkAny8()
+{
+  TypeCodeStruct *tc=new TypeCodeStruct("","");
+  tc->addMember("MyInt",Runtime::_tc_int);
+  tc->addMember("MyDouble",Runtime::_tc_double);
+  tc->addMember("MyBool",Runtime::_tc_bool);
+  tc->addMember("MyStr",Runtime::_tc_string);
+  StructAnyPtr tmp1=StructAny::New(tc);
+  tmp1=StructAny::New(tc);
+  AnyPtr tmpAtom=AtomAny::New(3791);
+  tmp1->setEltAtRank("MyInt",tmpAtom);
+  CPPUNIT_ASSERT_THROW(tmp1->setEltAtRank(1,tmpAtom),Exception);
+  tmpAtom=AtomAny::New(3.14);
+  CPPUNIT_ASSERT_THROW(tmp1->setEltAtRank("MyDoubl",tmpAtom),Exception);
+  tmp1->setEltAtRank("MyDouble",tmpAtom);
+  tmpAtom=AtomAny::New(false);
+  tmp1->setEltAtRank("MyBool",tmpAtom);
+  tmpAtom=AtomAny::New("abcdef");
+  tmp1->setEltAtRank("MyStr",tmpAtom);
+  CPPUNIT_ASSERT_EQUAL(3791,(*tmp1)["MyInt"]->getIntValue());
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(3.14,(*tmp1)["MyDouble"]->getDoubleValue(),1e-12);
+  CPPUNIT_ASSERT_THROW((*tmp1)["MyIntT"],Exception);
+  CPPUNIT_ASSERT(!(*tmp1)["MyBool"]->getBoolValue());
+  CPPUNIT_ASSERT_THROW((*tmp1)["MyBool"]->getStringValue(),Exception);
+  CPPUNIT_ASSERT((*tmp1)["MyStr"]->getStringValue()=="abcdef");
+  tmpAtom=AtomAny::New("ghijklm");
+  tmp1->setEltAtRank("MyStr",tmpAtom);
+  CPPUNIT_ASSERT((*tmp1)["MyStr"]->getStringValue()=="ghijklm");
+  //Introduce some recursive structure.
+  SequenceAnyPtr tmp2=SequenceAny::New(tc,2);
+  tmp2->setEltAtRank(0,tmp1);
+  tmpAtom=AtomAny::New("opqrst");
+  tmp1->setEltAtRank("MyStr",tmpAtom);
+  tmp2->setEltAtRank(1,tmp1);
+  CPPUNIT_ASSERT_EQUAL(3791,(*tmp2)[1]["MyInt"]->getIntValue());
+  CPPUNIT_ASSERT((*tmp2)[0]["MyStr"]->getStringValue()=="ghijklm");
+  CPPUNIT_ASSERT((*tmp2)[1]["MyStr"]->getStringValue()=="opqrst");
+  CPPUNIT_ASSERT(*tmp2==*tmp2);
+  AnyPtr tmp3=tmp2->clone();
+  CPPUNIT_ASSERT(*tmp2==*tmp3);
+  CPPUNIT_ASSERT((*tmp3)[0]["MyStr"]->getStringValue()=="ghijklm");
+  CPPUNIT_ASSERT((*tmp3)[1]["MyStr"]->getStringValue()=="opqrst");
+  tc->decrRef();
 }
 
 void EngineTest::checkInGateOutGate()

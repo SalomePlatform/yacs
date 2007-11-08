@@ -33,7 +33,7 @@ void XmlCorba::put(const char *data) throw(ConversionException)
   DEBTRACE(data);
   xmlDocPtr doc;
   xmlNodePtr cur;
-  CORBA::Any *a;
+  CORBA::Any *a=NULL;
   
   doc = xmlParseMemory(data, strlen(data));
   if (doc == NULL ) 
@@ -76,6 +76,14 @@ void XmlCorba::put(const char *data) throw(ConversionException)
       cur = cur->next;
     }
   xmlFreeDoc(doc);
+  if(a==NULL)
+    {
+      stringstream msg;
+      msg << "Problem in conversion: incorrect XML value";
+      msg << " (" << __FILE__ << ":" << __LINE__ << ")";
+      throw ConversionException(msg.str());
+    }
+
   //xmlCleanupParser();
   _port->put(a);
   _port->setStringRef(data);

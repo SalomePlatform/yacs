@@ -43,7 +43,7 @@ namespace YACS
       DEBTRACE("XmlCpp::put " << data);
       xmlDocPtr doc;
       xmlNodePtr cur;
-      Any *ob;
+      Any *ob=NULL;
       {
 	doc = xmlParseMemory(data, strlen(data));
 	if (doc == NULL )
@@ -72,7 +72,13 @@ namespace YACS
 	    cur = cur->next;
 	  }
 	xmlFreeDoc(doc);
-	//xmlCleanupParser();
+        if(ob==NULL)
+          {
+            stringstream msg;
+            msg << "Problem in conversion: incorrect XML value";
+            msg << " (" << __FILE__ << ":" << __LINE__ << ")";
+            throw ConversionException(msg.str());
+          }
       }
       _port->put(ob);
       ob->decrRef();

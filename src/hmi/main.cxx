@@ -9,6 +9,7 @@
 #include "commandsProc.hxx"
 #include "guiContext.hxx"
 #include "nodeEdition.h"
+#include "parsers.hxx"
 
 #include <qapplication.h>
 #include <qfiledialog.h>
@@ -59,12 +60,14 @@ public:
   virtual ~myMainform();
   virtual void fileExit();
   virtual void fileOpen();
+  virtual void fileNew();
   virtual void addTree(Qt::Dock pos);
   virtual void setCanvas();
   virtual void setStackOfWidgets();
 protected:
   virtual void load(const QString &f);
   YACS::ENGINE::Proc* _proc;
+  YACS::YACSLoader *_loader;
 };
 
 
@@ -72,9 +75,8 @@ myMainform::myMainform(QWidget* parent, const char* name, WFlags fl)
   : mainform(parent, name, fl)
 {
   YACS::ENGINE::RuntimeSALOME::setRuntime();
-  YACS::ENGINE::RuntimeSALOME* runTime = YACS::ENGINE::getSALOMERuntime();
-  _proc = runTime->createProc("mySchema");
-  YACS::HMI::GuiContext* context = new YACS::HMI::GuiContext(_proc);
+  _loader = new YACS::YACSLoader();
+  YACS::HMI::GuiContext* context = new YACS::HMI::GuiContext();
   YACS::HMI::GuiContext::setCurrent(context);
   setMinimumWidth(1000);
   setMinimumHeight(600);
@@ -90,19 +92,20 @@ myMainform::~myMainform()
   delete _proc;
 }
 
+void myMainform::fileNew()
+{
+  YACS::ENGINE::RuntimeSALOME* runTime = YACS::ENGINE::getSALOMERuntime();
+  _proc = runTime->createProc("newSchema");
+  YACS::HMI::GuiContext::getCurrent()->setProc(_proc);
+}
+
 void myMainform::setCanvas()
 {
   QCanvas * canvas = YACS::HMI::GuiContext::getCurrent()->getCanvas();
-  YACS::HMI::EditCanvas *editor = new YACS::HMI::EditCanvas(canvas,this);
+  YACS::HMI::EditCanvas *editor
+    = new YACS::HMI::EditCanvas(YACS::HMI::GuiContext::getCurrent(), canvas, this);
   canvas->setBackgroundColor(QColor(204,237,239));
   setCentralWidget(editor);
-
-  YACS::ENGINE::Proc* proc =
-    YACS::HMI::GuiContext::getCurrent()->getProc();
-  YACS::HMI::SubjectProc* subjectProc =
-    YACS::HMI::GuiContext::getCurrent()->getSubjectProc();
-  YACS::HMI::ComposedNodeCanvasItem* root =
-    new YACS::HMI::ComposedNodeCanvasItem(0, proc->getName(), subjectProc);
 }
 
 void myMainform::addTree(Qt::Dock pos)
@@ -116,7 +119,7 @@ void myMainform::addTree(Qt::Dock pos)
   dw->setCloseMode( QDockWindow::Never );
 
   YACS::HMI::editTree *dbtree =
-    new YACS::HMI::editTree(YACS::HMI::GuiContext::getCurrent()->getSubjectProc(), dw);
+    new YACS::HMI::editTree(YACS::HMI::GuiContext::getCurrent(), dw);
   dw->setWidget(dbtree);
   dw->setCaption( tr("edit tree"));
 }
@@ -141,19 +144,22 @@ void myMainform::setStackOfWidgets()
   dw->setWidget(ws);
   dw->setCaption( tr("edit stack"));
 
-  YACS::HMI::SubjectProc* subjectProc =
-    YACS::HMI::GuiContext::getCurrent()->getSubjectProc();
-  YACS::HMI::NodeEdition* rootEdit = new YACS::HMI::NodeEdition(subjectProc,
+  YACS::HMI::Subject* context = YACS::HMI::GuiContext::getCurrent();
+  YACS::HMI::NodeEdition* rootEdit = new YACS::HMI::NodeEdition(context,
                                                                 ws,
-                                                                subjectProc->getName().c_str());
+                                                                context->getName().c_str());
 }
 
 void myMainform::fileOpen()
 {
-  QString fn = QFileDialog::getOpenFileName( QString::null, tr( "Python-Files (*.py);;All Files (*)" ), this );
+  QString fn = QFileDialog::getOpenFileName( QString::null, tr( "XML-Files (*.xml);;All Files (*)" ), this );
   if ( !fn.isEmpty() )
-    load( fn );
- }
+    {
+      _proc = _loader->load(fn.latin1());
+      YACS::HMI::GuiContext::getCurrent()->setProc(_proc);
+    }
+}
+
 void myMainform::fileExit()
 {
   close();

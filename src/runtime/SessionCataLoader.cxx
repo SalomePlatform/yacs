@@ -6,7 +6,7 @@
 #include <iostream>
 #include <sstream>
 
-#define _DEVDEBUG_
+//#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
 using namespace YACS::ENGINE;
@@ -171,21 +171,84 @@ TypeCode * createInterfaceTc(const std::string& id, const std::string& name,
     return TypeCode::interfaceTc(myName.c_str(),name.c_str(),ltc);
 }
 
-void SessionCataLoader::loadCata(Catalog* cata)
+void SessionCataLoader::loadTypes(Catalog* cata,SALOME_ModuleCatalog::ModuleCatalog_ptr catalog)
 {
-  DEBTRACE("SessionCataLoader::load")
-  datastreamMap[SALOME_ModuleCatalog::DATASTREAM_UNKNOWN]="CALCIUM_unknown";
-  datastreamMap[SALOME_ModuleCatalog::DATASTREAM_INTEGER]="CALCIUM_integer";
-  datastreamMap[SALOME_ModuleCatalog::DATASTREAM_FLOAT]="CALCIUM_real";
-  datastreamMap[SALOME_ModuleCatalog::DATASTREAM_DOUBLE]="CALCIUM_double";
-  datastreamMap[SALOME_ModuleCatalog::DATASTREAM_BOOLEAN]="CALCIUM_boolean";
-  datastreamMap[SALOME_ModuleCatalog::DATASTREAM_STRING]="CALCIUM_string";
+#ifdef NEW_KERNEL
+  Runtime* r=getRuntime();
+  std::map<std::string,TypeCode*>& typeMap=cata->_typeMap;
+  // Get types list
+  SALOME_ModuleCatalog::ListOfTypeDefinition_var types_list=catalog->GetTypes();
+  for (int i=0; i< types_list->length(); i++)
+    {
+      const char* name=types_list[i].name;
+      DEBTRACE ("type : " << types_list[i].name << " " << types_list[i].kind);
+      if(types_list[i].kind == SALOME_ModuleCatalog::Dble)
+        {
+          r->_tc_double->incrRef();
+          typeMap[name]=r->_tc_double;
+        }
+      else if(types_list[i].kind == SALOME_ModuleCatalog::Int)
+        {
+          r->_tc_int->incrRef();
+          typeMap[name]=r->_tc_int;
+        }
+      else if(types_list[i].kind == SALOME_ModuleCatalog::Bool)
+        {
+          r->_tc_bool->incrRef();
+          typeMap[name]=r->_tc_bool;
+        }
+      else if(types_list[i].kind == SALOME_ModuleCatalog::Str)
+        {
+          r->_tc_string->incrRef();
+          typeMap[name]=r->_tc_string;
+        }
+      else if(types_list[i].kind == SALOME_ModuleCatalog::Seq)
+        {
+          const char* content=types_list[i].content;
+          if ( typeMap.find(content) != typeMap.end() )
+            typeMap[name]=TypeCode::sequenceTc(name,name,typeMap[content]);
+          //else ignored !!
+        }
+      else if(types_list[i].kind == SALOME_ModuleCatalog::Array)
+        {
+          //ignored, for the moment !!
+        }
+      else if(types_list[i].kind == SALOME_ModuleCatalog::Objref)
+        {
+          std::list<TypeCodeObjref *> ltc;
+          const char* id=types_list[i].id;
+          for (int m=0; m< types_list[i].bases.length(); m++)
+            {
+              const char* b_name=types_list[i].bases[m];
+              if(typeMap.find(b_name) != typeMap.end())
+                ltc.push_back((TypeCodeObjref *)typeMap[b_name]);
+              //else ignored !!!
+            }
+          typeMap[name]=TypeCode::interfaceTc(id,name,ltc);
+        }
+      else if(types_list[i].kind == SALOME_ModuleCatalog::Struc)
+        {
+          TypeCodeStruct* t=(TypeCodeStruct*)TypeCode::structTc("",name);
+          for (int m=0; m< types_list[i].members.length(); m++)
+            {
+              const char* m_name=types_list[i].members[m].name;
+              const char* m_type=types_list[i].members[m].type;
+              if(typeMap.find(m_type) != typeMap.end())
+                t->addMember(m_name,typeMap[m_type]);
+              //else ignored !!!
+            }
+          typeMap[name]=t;
+        }
+      else
+        {
+          std::cerr << "Unknown kind: " << types_list[i].kind << std::endl;
+        }
+    }
+#endif
+}
 
-  CORBA::ORB_ptr orb = getSALOMERuntime()->getOrb();
-  CORBA::Object_var obj;
-  SALOME_ModuleCatalog::ModuleCatalog_var catalog;
-  obj=orb->string_to_object(_path.c_str());
-  catalog= SALOME_ModuleCatalog::ModuleCatalog::_narrow(obj);
+void SessionCataLoader::loadTypesOld(Catalog* cata)
+{
   // Fill the types map with built in types
   Runtime* r=getRuntime();
   std::map<std::string,TypeCode*>& typeMap=cata->_typeMap;
@@ -209,6 +272,7 @@ void SessionCataLoader::loadCata(Catalog* cata)
   cata->_typeMap["boolean"]=r->_tc_bool;
   cata->_typeMap["Study"]=TypeCode::interfaceTc("IDL:SALOMEDS/Study:1.0","Study");
   cata->_typeMap["SObject"]=TypeCode::interfaceTc("IDL:SALOMEDS/SObject:1.0","SObject");
+  //GEOM
   cata->_typeMap["GEOM_Object"]=TypeCode::interfaceTc("IDL:GEOM/GEOM_Object:1.0","GEOM_Object");
   cata->_typeMap["ListOfLong"]=TypeCode::sequenceTc("ListOfLong","ListOfLong",r->_tc_int);
   cata->_typeMap["GEOM_List"]=TypeCode::interfaceTc("IDL:GEOM/GEOM_List:1.0","GEOM_List");
@@ -223,6 +287,7 @@ void SessionCataLoader::loadCata(Catalog* cata)
   typeMap["GEOM_Gen"]=TypeCode::interfaceTc("IDL:GEOM/GEOM_Gen:1.0","GEOM_Gen");
   typeMap["GEOM_Object"]->incrRef();
   typeMap["GEOM_Shape"]=typeMap["GEOM_Object"];
+
   typeMap["SMESH_Mesh"]=TypeCode::interfaceTc("IDL:Mesh/SMESH_Mesh:1.0","SMESH_Mesh");
   typeMap["SMESH_Hypothesis"]=TypeCode::interfaceTc("IDL:SMESH/SMESH_Hypothesis:1.0","SMESH_Hypothesis");
 
@@ -244,6 +309,27 @@ void SessionCataLoader::loadCata(Catalog* cata)
   typeMap["CALCIUM_double"]=TypeCode::interfaceTc("IDL:Ports/Calcium_Ports/Calcium_Double_Port:1.0","CALCIUM_double");
   typeMap["CALCIUM_string"]=TypeCode::interfaceTc("IDL:Ports/Calcium_Ports/Calcium_String_Port:1.0","CALCIUM_string");
   typeMap["CALCIUM_boolean"]=TypeCode::interfaceTc("IDL:Ports/Calcium_Ports/Calcium_Logical_Port:1.0","CALCIUM_boolean");
+}
+
+void SessionCataLoader::loadCata(Catalog* cata)
+{
+  DEBTRACE("SessionCataLoader::load")
+  datastreamMap[SALOME_ModuleCatalog::DATASTREAM_UNKNOWN]="CALCIUM_unknown";
+  datastreamMap[SALOME_ModuleCatalog::DATASTREAM_INTEGER]="CALCIUM_integer";
+  datastreamMap[SALOME_ModuleCatalog::DATASTREAM_FLOAT]="CALCIUM_real";
+  datastreamMap[SALOME_ModuleCatalog::DATASTREAM_DOUBLE]="CALCIUM_double";
+  datastreamMap[SALOME_ModuleCatalog::DATASTREAM_BOOLEAN]="CALCIUM_boolean";
+  datastreamMap[SALOME_ModuleCatalog::DATASTREAM_STRING]="CALCIUM_string";
+
+  CORBA::ORB_ptr orb = getSALOMERuntime()->getOrb();
+  CORBA::Object_var obj;
+  SALOME_ModuleCatalog::ModuleCatalog_var catalog;
+  obj=orb->string_to_object(_path.c_str());
+  catalog= SALOME_ModuleCatalog::ModuleCatalog::_narrow(obj);
+
+  // Get types
+  loadTypesOld(cata);
+  //loadTypes(cata,catalog);
 
   // Get component list
   SALOME_ModuleCatalog::ListOfComponents_var componentname_list;

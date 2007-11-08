@@ -23,12 +23,13 @@ class Graph:
     self.node=item.node
     #Canvas size : 10000x10000
     self.canvas=MyCanvas(10000,10000)
-    self.editor=GraphViewer(self,self.canvas,parent,"example",0)
+    self.editor=GraphViewer(self.canvas,parent,"example",0)
     self.createGraph()
     root=self.node.getRootNode()
     rootItem=Item.adapt(root)
     CONNECTOR.Connect(rootItem,"selected",self.selectItem,())
     CONNECTOR.Connect(self.item,"add",self.addItem,())
+    CONNECTOR.Connect(self.item.datalinks,"add",self.addLink,())
 
   def createGraph(self):
     #citems dict helps finding items in canvas from swig proxy
@@ -68,15 +69,34 @@ class Graph:
 
     self.layout("LR")
 
+  def addLink(self,link):
+    print "graph.addLink",link
+    #CItem for outport
+    nodeS=self.citems[link.pout.getNode().ptr()]
+    nodeE=self.citems[link.pin.getNode().ptr()]
+    po=pi=None
+    for p in nodeS.outports:
+      if p.port == link.pout:
+        po=p
+        break
+    for p in nodeE.inports:
+      if p.port == link.pin:
+        pi=p
+        break
+
+    if pi and po:
+      l=CItems.LinkItem(po,pi,self.canvas)
+      self.canvas.update()
+
   def addItem(self,item):
-    print "graph.addItem",item
+    #print "graph.addItem",item
     node=CItems.Cell(item.node,self.canvas)
     self.citems[item.node.ptr()]=node
     node.show()
     self.canvas.update()
 
   def selectItem(self,item):
-    print "graph.selectItem",item
+    #print "graph.selectItem",item
     self.editor.selectItem(item)
 
   def layout(self,rankdir):

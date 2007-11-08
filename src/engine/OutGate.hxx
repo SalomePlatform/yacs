@@ -34,9 +34,9 @@ namespace YACS
       std::set<InGate *> edSetInGate() const;
       void edRemoveInGate(InGate *inGate, bool coherenceWithInGate=true) throw(Exception);
       int getNbOfInGatesConnected() const;
+      bool isAlreadyInSet(InGate *inGate) const;
     protected:
       void edRemoveInGateOneWay(InGate *inGate);
-      bool isAlreadyInSet(InGate *inGate) const;
     };
   }
 }

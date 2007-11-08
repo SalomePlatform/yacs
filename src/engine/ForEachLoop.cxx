@@ -414,11 +414,6 @@ int ForEachLoop::getNumberOfInputPorts() const
   return DynParaLoop::getNumberOfInputPorts()+1;
 }
 
-void ForEachLoop::checkConsistency(ComposedNode *pointOfView) const throw(Exception)
-{
-  //TO DO
-}
-
 void ForEachLoop::checkNoCyclePassingThrough(Node *node) throw(Exception)
 {
   //TO DO

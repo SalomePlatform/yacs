@@ -26,11 +26,10 @@ namespace YACS
       void exUpdateState();
       void init(bool start=true);
       InputPort *edGetConditionPort() { return &_conditionPort; }
-      int getNumberOfInputPorts() const;
-      std::list<InputPort *> getSetOfInputPort() const;
       InputPort* getInputPort(const std::string& name) const throw(Exception);
       std::list<InputPort *> getLocalInputPorts() const;
       virtual void accept(Visitor *visitor);
+      InputPort *getDecisionPort() const { return (InputPort *)&_conditionPort; }
     protected:
       Node *simpleClone(ComposedNode *father, bool editionOnly=true) const;
       void checkLinkPossibility(OutPort *start, const std::set<ComposedNode *>& pointsOfViewStart,

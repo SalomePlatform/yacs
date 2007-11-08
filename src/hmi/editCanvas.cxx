@@ -15,7 +15,7 @@ using namespace YACS::HMI;
 
 #define LX 60
 #define LY 40
-#define OX 10
+#define OX 20
 #define OY 5
 #define PX 6
 #define PY 6
@@ -24,11 +24,33 @@ using namespace YACS::HMI;
  
 // ----------------------------------------------------------------------------
 
-EditCanvas::EditCanvas( QCanvas* c, QWidget* parent,
-                        const char* name, WFlags f) :
-  QCanvasView(c,parent,name,f)
+EditCanvas::EditCanvas( YACS::HMI::Subject *context,
+                        QCanvas* c, QWidget* parent,
+                        const char* name, WFlags f)
+  : _context(context), QCanvasView(c,parent,name,f)
 {
+  _context->attach(this);
   //_previousSelected = 0;
+}
+
+void EditCanvas::update(GuiEvent event, int type, Subject* son)
+{
+  DEBTRACE("editCanvas::update");
+  switch (event)
+    {
+    case YACS::HMI::NEWROOT:
+      setNewRoot(son);
+      break;
+    default:
+      DEBTRACE("editCanvas::update(), event not handled: "<< event);
+    }
+}
+
+void EditCanvas::setNewRoot(YACS::HMI::Subject *root)
+{
+  YACS::ENGINE::Proc* proc = GuiContext::getCurrent()->getProc();
+//   SubjectProc* subjectProc =GuiContext::getCurrent()->getSubjectProc();
+  _rootItem = new ComposedNodeCanvasItem(0, proc->getName(), root);
 }
 
 void EditCanvas::contentsMousePressEvent(QMouseEvent* e)
@@ -170,6 +192,16 @@ int CanvasItem::getLy()
   return _ly;
 }
 
+int CanvasItem::getOfxInPort(CanvasItem *child)
+{
+  return getOfx() +DX; // used only in derivation
+}
+
+int CanvasItem::getOfxOutPort(CanvasItem *child)
+{
+  return getOfy() +DY; // used only in derivation
+}
+
 void CanvasItem::redraw()
 {
   DEBTRACE("CanvasItem::redraw");
@@ -303,6 +335,8 @@ ComposedNodeCanvasItem::ComposedNodeCanvasItem(CanvasItem *parent, QString label
   : CanvasItem(parent, label, subject)
 {
   _children.clear();
+  _inPorts.clear();
+  _outPorts.clear();
 }
 
 
@@ -382,6 +416,22 @@ void ComposedNodeCanvasItem::update(GuiEvent event, int type, Subject* son)
           _children.push_back(item);
           _root->redraw();
           break;
+        case YACS::HMI::INPUTPORT:
+        case YACS::HMI::INPUTDATASTREAMPORT:
+          item =  new InPortCanvasItem(this,
+                                       son->getName(),
+                                       son);
+          _inPorts.push_back(item);
+          _root->redraw();
+          break;
+        case YACS::HMI::OUTPUTPORT:
+        case YACS::HMI::OUTPUTDATASTREAMPORT:
+          item =  new OutPortCanvasItem(this,
+                                        son->getName(),
+                                        son);
+          _outPorts.push_back(item);
+          _root->redraw();
+           break;
         default:
           DEBTRACE("ComposedNodeCanvasItem::update() ADD, type not handled:" << type);
         }
@@ -403,6 +453,10 @@ void ComposedNodeCanvasItem::redraw()
   drawNode(getOfx(), getOfy(), getLx(), getLy(), getLevel());
   for (list<CanvasItem*>::iterator it = _children.begin(); it!=_children.end(); ++it)
     (*it)->redraw();
+  for (list<CanvasItem*>::iterator it = _inPorts.begin(); it!=_inPorts.end(); ++it)
+    (*it)->redraw();
+  for (list<CanvasItem*>::iterator it = _outPorts.begin(); it!=_outPorts.end(); ++it)
+    (*it)->redraw();
   canvas->update();
 }
 
@@ -414,6 +468,28 @@ QColor ComposedNodeCanvasItem::getNormalColor()
 QColor ComposedNodeCanvasItem::getSelectedColor()
 {
   return QColor(166,227,191);
+}
+
+int ComposedNodeCanvasItem::getOfxInPort(CanvasItem *child)
+{
+  int ofx = getOfx() +DX;
+  for (list<CanvasItem*>::iterator it = _inPorts.begin(); it!=_inPorts.end(); ++it)
+    {
+      if ((*it) == static_cast<CanvasItem*>(child)) break;
+      else ofx += PX+ DX;
+    }
+  return ofx;
+}
+
+int ComposedNodeCanvasItem::getOfxOutPort(CanvasItem *child)
+{
+  int ofx = getOfx() +DX;
+  for (list<CanvasItem*>::iterator it = _outPorts.begin(); it!=_outPorts.end(); ++it)
+    {
+      if ((*it) == static_cast<CanvasItem*>(child)) break;
+      else ofx += PX+ DX;
+    }
+  return ofx;
 }
  
 // ----------------------------------------------------------------------------
@@ -459,9 +535,9 @@ int InPortCanvasItem::getOfx()
   int ofx = 0;
   if (_parent)
     {
-      NodeCanvasItem* parent = dynamic_cast<NodeCanvasItem*>(_parent);
-      assert(parent);
-      ofx = parent->getOfxInPort(this);
+//       NodeCanvasItem* parent = dynamic_cast<NodeCanvasItem*>(_parent);
+//       assert(parent);
+      ofx = _parent->getOfxInPort(this);
     }
   _ofx = ofx;
   return _ofx;
@@ -527,9 +603,9 @@ int OutPortCanvasItem::getOfx()
   int ofx = 0;
   if (_parent)
     {
-      NodeCanvasItem* parent = dynamic_cast<NodeCanvasItem*>(_parent);
-      assert(parent);
-      ofx = parent->getOfxOutPort(this);
+//       NodeCanvasItem* parent = dynamic_cast<NodeCanvasItem*>(_parent);
+//       assert(parent);
+      ofx = _parent->getOfxOutPort(this);
     }
   _ofx = ofx;
   return _ofx;

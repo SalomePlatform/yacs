@@ -8,7 +8,7 @@
 #include <sstream>
 
 
-#define _DEVDEBUG_
+//#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
 using namespace YACS::ENGINE;
@@ -45,6 +45,7 @@ void ProcCataLoader::loadCata(Catalog* cata)
   while(it != p->typeMap.end())
     {
       typeMap[it->first]=it->second;
+      it->second->incrRef();
       it++;
     }
 

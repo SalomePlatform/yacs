@@ -18,7 +18,7 @@ namespace YACS
       DataFlowPort(const std::string& name, Node *node, TypeCode* type);
     public:
       std::string getNameOfTypeOfCurrentInstance() const;
-      bool isDifferentTypeOf(const DataPort *other) const;
+      TypeOfChannel getTypeOfChannel() const { return DATAFLOW; }
       virtual ~DataFlowPort();
     };
   }

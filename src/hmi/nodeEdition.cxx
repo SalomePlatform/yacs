@@ -94,6 +94,11 @@ void NodeEdition::update(GuiEvent event, int type, Subject* son)
   NodeEdition *item = 0;
   switch (event)
     {
+    case NEWROOT:
+      item =  new NodeEdition(son,
+                              GuiContext::getCurrent()->getWidgetStack(),
+                              son->getName().c_str());
+      break;
     case ADD:
       switch (type)
         {

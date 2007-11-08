@@ -20,8 +20,9 @@ namespace YACS
     class GuiContext: public Subject
     {
     public:
-      GuiContext(YACS::ENGINE::Proc* proc);
+      GuiContext();
       virtual ~GuiContext();
+      void setProc(YACS::ENGINE::Proc* proc);
       inline YACS::ENGINE::Catalog* getBuiltinCatalog()  {return _builtinCatalog; };
       inline YACS::ENGINE::Proc* getProc()               {return _proc; };
       inline YACS::HMI::ProcInvoc* getInvoc()            {return _invoc; };
@@ -34,6 +35,10 @@ namespace YACS
       inline void setWidgetStack(QWidgetStack* ws)       {_widgetStack = ws; };
       inline static GuiContext* getCurrent()             {return _current; };
       inline static void setCurrent(GuiContext* context) { _current=context; };
+
+      std::map<YACS::ENGINE::Node*,YACS::HMI::SubjectNode*> _mapOfSubjectNode;
+      std::map<YACS::ENGINE::DataPort*,YACS::HMI::SubjectDataPort*> _mapOfSubjectDataPort;
+      std::map<std::pair<YACS::ENGINE::OutPort*, YACS::ENGINE::InPort*>,YACS::HMI::SubjectLink*> _mapOfSubjectLink;
 
     protected:
       YACS::ENGINE::Catalog* _builtinCatalog;

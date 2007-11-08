@@ -18,6 +18,7 @@ namespace YACS
     class OutGate;
     class OutPort;
     class ComposedNode;
+    class CollectorSwOutPort;
 
     typedef enum
       {
@@ -51,6 +52,7 @@ namespace YACS
         E_COLLAPSE_DFDS           = 244,
         E_COLLAPSE_DS             = 245,
         E_UNPREDICTABLE_FED       = 246,
+        E_UNCOMPLETE_SW            =247,
         E_ALL                     = 249
       } ErrReason;
 
@@ -69,6 +71,7 @@ namespace YACS
       std::map<InfoReason, std::vector< std::pair<OutPort *,InPort *> > > _infos;
       std::map<WarnReason, std::vector< std::vector< std::pair<OutPort *,InPort *> > > > _collapse;
       std::map<ErrReason, std::vector< std::pair<OutPort *,InPort *> > > _errors;
+      std::vector<CollectorSwOutPort *> _errorsOnSwitchCases;
     public:
       LinkInfo(unsigned char level);
       void clearAll();
@@ -78,6 +81,7 @@ namespace YACS
       void pushInfoLink(OutPort *semStart, InPort *end, InfoReason reason);
       void pushWarnLink(OutPort *semStart, InPort *end, WarnReason reason);
       void pushErrLink(OutPort *semStart, InPort *end, ErrReason reason) throw(Exception);
+      void pushErrSwitch(CollectorSwOutPort *collector) throw(Exception);
       void pushUselessCFLink(Node *start, Node *end);
       void takeDecision() const throw(Exception);
       //Typically methods for high level use.
@@ -85,6 +89,7 @@ namespace YACS
       std::string getInfoRepr() const;
       std::string getWarnRepr() const;
       std::string getErrRepr() const;
+      bool areWarningsOrErrors() const;
       unsigned getNumberOfInfoLinks(InfoReason reason) const;
       unsigned getNumberOfWarnLinksGrp(WarnReason reason) const;
       unsigned getNumberOfErrLinks(ErrReason reason) const;
@@ -100,7 +105,7 @@ namespace YACS
     public:
       static const unsigned char ALL_STOP_ASAP       = 1;
       static const unsigned char ALL_DONT_STOP       = 2;
-      static const unsigned char ERR_ONLY_DONT_STOP  = 3;
+      static const unsigned char WARN_ONLY_DONT_STOP = 3;
     };
   }
 }

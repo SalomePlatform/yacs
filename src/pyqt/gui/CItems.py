@@ -197,7 +197,7 @@ class LinkItem:
     r = QRect(pos.x(), pos.y(), pos.x()+10, pos.y()+10)
     s = QString( "link: "+self.fromPort.port.getNode().getName() +":"+self.fromPort.port.getName()+"->"+self.toPort.port.getNode().getName()+":"+self.toPort.port.getName()  )
     view.tip( r, s )
-    #QToolTip(view).tip( r, s )
+
   def selected(self):
     """The canvas item has been selected"""
 
@@ -221,10 +221,13 @@ class ControlItem(QCanvasRectangle):
 
   def moveBy(self,dx,dy):
     self.node.moveBy(dx,dy)
+
   def myMove(self,dx,dy):
     QCanvasRectangle.moveBy(self,dx,dy)
+
   def getObj(self):
     return self
+
   def popup(self,canvasView):
     self.context=canvasView
     menu=QPopupMenu()
@@ -233,16 +236,26 @@ class ControlItem(QCanvasRectangle):
     menu.insertItem( caption )
     menu.insertItem("Connect", self.connect)
     return menu
+
   def connect(self):
-    print "connect",self.context
-    self.context.connecting(self)
+    print "ControlItem.connect",self.context
+    print self.port
+    item=Item.adapt(self.port)
+    print item
+    self.context.connecting(item)
+    #self.context.connecting(self)
+
   def link(self,obj):
+    #Protocol to link 2 objects (ports, at first)
+    #First, notify the canvas View (or any view that can select) we are connecting (see method connect above)
+    #Second (and last) make the link in the link method of object that was declared connecting
     print "link:",obj
+
   def tooltip(self,view,pos):
     r = QRect(pos.x(), pos.y(), self.width(), self.height())
     s = QString( "gate:")
     view.tip( r, s )
-    #QToolTip(view).tip( r, s )
+
   def selected(self):
     """The canvas item has been selected"""
     #print "control port selected"
@@ -260,6 +273,8 @@ class InControlItem(ControlItem):
       link.setToPoint( int(self.x()), int(self.y()) )
 
   def link(self,obj):
+    #Here we create the link between self and obj.
+    #self has been declared connecting in connect method
     print "link:",obj
     if isinstance(obj,OutControlItem):
       #Connection possible
@@ -285,6 +300,8 @@ class OutControlItem(ControlItem):
       link.setFromPoint( int(self.x()), int(self.y()) )
 
   def link(self,obj):
+    #Here we create the link between self and obj.
+    #self has been declared connecting in connect method
     print "link:",obj
     if isinstance(obj,InControlItem):
       #Connection possible
@@ -304,6 +321,7 @@ class PortItem(QCanvasEllipse):
     QCanvasEllipse.__init__(self,6,6,canvas)
     self.port=port
     self.item=None
+    self.item=Item.adapt(self.port)
     self.setPen(QPen(Qt.black))
     self.setBrush(QBrush(Qt.red))
     self.setZ(node.z()+1)
@@ -328,18 +346,22 @@ class PortItem(QCanvasEllipse):
     return menu
 
   def connect(self):
-    print "connect",self.context
-    self.context.connecting(self)
+    print "PortItem.connect",self.context
+    print self.port
+    item=Item.adapt(self.port)
+    print item
+    self.context.connecting(item)
+    #self.context.connecting(self)
 
   def link(self,obj):
-    print "link:",obj
+    print "PortItem.link:",obj
 
   def tooltip(self,view,pos):
     r = QRect(pos.x(),pos.y(),self.width(), self.height())
     t=self.port.edGetType()
     s = QString( "port: " + self.port.getName() + ":" + t.name())
     view.tip( r, s )
-    #QToolTip(view).tip( r, s )
+
   def selected(self):
     """The canvas item has been selected"""
     #print "port selected"
@@ -357,6 +379,8 @@ class InPortItem(PortItem):
       link.setToPoint( int(self.x()), int(self.y()) )
 
   def link(self,obj):
+    #Here we create the link between self and obj.
+    #self has been declared connecting in connect method
     print "link:",obj
     if isinstance(obj,OutPortItem):
       #Connection possible
@@ -364,8 +388,6 @@ class InPortItem(PortItem):
 
   def addInLink(self,link):
     self.__inList.append(link)
-
-
 
 class OutPortItem(PortItem):
   def __init__(self,node,port,canvas):
@@ -378,6 +400,8 @@ class OutPortItem(PortItem):
       link.setFromPoint( int(self.x()), int(self.y()) )
 
   def link(self,obj):
+    #Here we create the link between self and obj.
+    #self has been declared connecting in connect method
     print "link:",obj
     if isinstance(obj,InPortItem):
       #Connection possible
@@ -410,7 +434,6 @@ class Cell(QCanvasRectangle,pilot.PyObserver):
     }
 
   def __init__(self,node,canvas):
-    print "CItems.Cell"
     QCanvasRectangle.__init__(self,canvas)
     pilot.PyObserver.__init__(self)
     self.inports=[]
@@ -429,9 +452,6 @@ class Cell(QCanvasRectangle,pilot.PyObserver):
     color= self.colors.get(node.getColorState(node.getEffectiveState()),Qt.white)
     self.setBrush(QBrush(color))
 
-    print "Cell.getSetOfInputPort",
-    liste= self.node.getSetOfInputPort()
-    print liste
     dy=6
     y=0
     for inport in self.node.getSetOfInputPort():
@@ -448,7 +468,6 @@ class Cell(QCanvasRectangle,pilot.PyObserver):
 
     ymax=y
 
-    liste= self.node.getSetOfOutputPort()
     dy=6
     y=0
     for outport in self.node.getSetOfOutputPort():

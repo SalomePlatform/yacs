@@ -20,9 +20,8 @@ class DynamicTip( QToolTip ):
         return
 
 class GraphViewer(QCanvasView):
-  def __init__(self,item,c,parent,name,f):
+  def __init__(self,c,parent,name,f):
     QCanvasView.__init__(self,c,parent,name,f)
-    self.item=item
     self.__moving=0
     self.__connecting=0
     self.__moving_start= 0
@@ -69,25 +68,19 @@ class GraphViewer(QCanvasView):
           if menu:
             menu.exec_loop( QCursor.pos() )
             self.canvas().update()
+
       elif e.button()== Qt.LeftButton:
         #Left button click
         if self.__connecting:
           #We are linking objects
           if hasattr(each_item,"getObj"):
             #a connection is ending
-            self.__connecting.link(each_item.getObj())
+            self.__connecting.link(each_item.getObj().item)
+            #self.__connecting.link(each_item.getObj())
             self.canvas().update()
           self.__connecting=0
         else:
           #We are moving or selecting a composite object
-          #if self.selected:
-          #  try:
-          #    self.deselectObj(self.selected)
-          #  except:
-          #    pass
-          #  self.selected=None
-          #self.selected=each_item
-          #self.selectObj(self.selected)
           each_item.selected()
           self.__moving=each_item
           self.__moving_start=point
@@ -123,13 +116,13 @@ class GraphViewer(QCanvasView):
       obj._origPen = obj.pen()
       obj._origBrush = obj.brush()
       obj._origStyle = obj.brush().style()
-      #obj.setPen(self.selectPen)
-      obj.setBrush(self.selectBrush)
+      obj.setPen(self.selectPen)
+      #obj.setBrush(self.selectBrush)
 
   def deselectObj(self,obj):
     if obj:
-      #obj.setPen(obj._origPen)
-      obj.setBrush(obj._origBrush)
+      obj.setPen(obj._origPen)
+      #obj.setBrush(obj._origBrush)
 
   def popup(self):
     menu=QPopupMenu()
@@ -149,8 +142,8 @@ class GraphViewer(QCanvasView):
     self.repaintContents(True)
     #self.canvas().update()
 
-  #def addNode(self):
-  #  self.item.addNode()
+  def addNode(self):
+    print "addNode"    
 
   def zoomIn(self):
     m = self.worldMatrix()
@@ -290,7 +283,7 @@ class LinkItem(QCanvasLine):
   def tooltip(self,view,pos):
     r = QRect(pos.x(), pos.y(), pos.x()+10, pos.y()+10)
     s = QString( "link: %d,%d" % (r.center().x(), r.center().y()) )
-    QToolTip(view).tip( r, s )
+    view.tip( r, s )
 
 class PortItem(QCanvasEllipse):
   def __init__(self,node,canvas):
@@ -328,7 +321,7 @@ class PortItem(QCanvasEllipse):
   def tooltip(self,view,pos):
     r = QRect(self.x(), self.y(), self.width(), self.height())
     s = QString( "port: %d,%d" % (r.center().x(), r.center().y()) )
-    QToolTip(view).tip( r, s )
+    view.tip( r, s )
 
 class InPortItem(PortItem):
   def __init__(self,node,canvas):
@@ -411,25 +404,29 @@ class Cell(QCanvasRectangle):
   def tooltip(self,view,pos):
     r = QRect(self.x(), self.y(), self.width(), self.height())
     s = QString( "node: %d,%d" % (r.center().x(), r.center().y()) )
-    QToolTip(view).tip( r, s )
+    view.tip( r, s )
 
   def browse(self):
     print "browse"
 
+  def selected(self):
+    print "selected"
+
 if __name__=='__main__':
   app=QApplication(sys.argv)
-  qvbox=QVBox()
-  QToolBar(qvbox,"toolbar")
+  box=QMainWindow()
+  QToolBar(box,"toolbar")
   canvas=QCanvas(800,600)
   canvas.setAdvancePeriod(30)
-  m=GraphViewer(canvas,qvbox,"example",0)
+  m=GraphViewer(canvas,box,"example",0)
+  box.setCentralWidget(m)
   for x,y in ((150,150),(150,250)):
     c=Cell(canvas)
     c.moveBy(x,y)
     c.show()
 
-  qApp.setMainWidget(qvbox)
-  qvbox.show()
+  qApp.setMainWidget(box)
+  box.show()
   app.exec_loop()
 
 

@@ -3,6 +3,7 @@
 #include "OutputPort.hxx"
 #include "InputDataStreamPort.hxx"
 #include "OutputDataStreamPort.hxx"
+#include "LinkInfo.hxx"
 #include "Runtime.hxx"
 #include "Visitor.hxx"
 #include <cassert>
@@ -310,6 +311,7 @@ Node *Loop::edSetNode(Node *node)
           throw Exception(what);
         }
     }
+  checkNoCrossHierachyWith(node);
   StaticDefinedComposedNode::edRemoveChild(_node);
   Node *ret=_node;
   _node=node;
@@ -370,8 +372,16 @@ std::set<Node *> Loop::edGetDirectDescendants() const
   return ret;
 }
 
-void Loop::checkConsistency(ComposedNode *pointOfView) const throw(Exception)
+std::list<InputPort *> Loop::getSetOfInputPort() const
 {
+  list<InputPort *> ret=StaticDefinedComposedNode::getSetOfInputPort();
+  ret.push_back(getDecisionPort());
+  return ret;
+}
+
+int Loop::getNumberOfInputPorts() const
+{
+  return StaticDefinedComposedNode::getNumberOfInputPorts()+1;
 }
 
 Node *Loop::getChildByShortName(const std::string& name) const throw(Exception)
@@ -545,6 +555,18 @@ void Loop::checkNoCyclePassingThrough(Node *node) throw(Exception)
   //throw Exception("Loop::checkNoCyclePassingThrough : Internal error occured");
 }
 
+void Loop::checkCFLinks(const std::list<OutPort *>& starts, InputPort *end, unsigned char& alreadyFed, bool direction, LinkInfo& info) const
+{
+  Node *nodeEnd=end->getNode();
+  if(nodeEnd==this)
+    {//In this case 'end' port is a special port of this (for exemple ForLoop::_nbOfTimesPort)
+      //ASSERT(!direction) see Loop::checkControlDependancy (bw only)
+      solveObviousOrDelegateCFLinks(starts,end,alreadyFed,direction,info);
+    }
+  else
+    StaticDefinedComposedNode::checkCFLinks(starts,end,alreadyFed,direction,info);
+}
+
 /*!
  * \note : States if a DF port must be considered on an upper level in hierarchy as a DS port or not from 'pointsOfView' observers.
  * \return : 
@@ -598,6 +620,20 @@ void Loop::writeDot(std::ostream &os)
 void Loop::accept(Visitor *visitor)
 {
   visitor->visitLoop(this);
+}
+
+void Loop::checkControlDependancy(OutPort *start, InPort *end, bool cross,
+                                  std::map < ComposedNode *,  std::list < OutPort * >, SortHierarc >& fw,
+                                  std::vector<OutPort *>& fwCross,
+                                  std::map< ComposedNode *, std::list < OutPort *>, SortHierarc >& bw,
+                                  LinkInfo& info) const
+{
+  //First testing if end==getDecisionPort. This is the only case possible in theory.
+  if(end!=getDecisionPort())
+    return StaticDefinedComposedNode::checkControlDependancy(start,end,cross,fw,fwCross,bw,info);
+  if(cross)
+    throw Exception("Internal error occured - cross type link detected on decision port of a loop. Forbidden !");
+  fw[(ComposedNode *)this].push_back(start);
 }
 
 /*!

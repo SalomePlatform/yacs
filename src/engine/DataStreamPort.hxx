@@ -21,7 +21,7 @@ namespace YACS
       std::map<std::string,std::string> _propertyMap;
     public:
       std::string getNameOfTypeOfCurrentInstance() const;
-      bool isDifferentTypeOf(const DataPort *other) const;
+      TypeOfChannel getTypeOfChannel() const { return DATASTREAM; }
       virtual void setProperty(const std::string& name,const std::string& value);
       virtual std::string getProperty(const std::string& name);
       std::map<std::string,std::string> getPropertyMap() const { return _propertyMap; }
