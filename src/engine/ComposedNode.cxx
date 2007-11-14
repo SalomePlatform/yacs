@@ -12,6 +12,7 @@
 #include <iostream>
 #include <set>
 #include <string>
+#include <sstream>
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -343,6 +344,14 @@ void ComposedNode::edRemoveLink(OutPort *start, InPort *end) throw(Exception)
   vector<pair< ComposedNode * , pair < OutPort* , OutPort *> > > needsToDestroyO;
   while(iterS!=lwstCmnAnctr)
     {
+      if (!iterS)
+        {
+          stringstream what;
+          what << "ComposedNode::edRemoveLink: "
+               << start->getNode()->getName() << "." <<start->getName() << "->"
+               << end->getNode()->getName() << "." << end->getName();
+          throw Exception(what.str());
+        }
       OutPort *tmp=currentPortO.first;
       iterS->getDelegateOf(currentPortO, end, allAscendanceOfNodeEnd);
       needsToDestroyO.push_back(pair< ComposedNode * , pair < OutPort* , OutPort *> >(iterS,pair<OutPort* , OutPort *> (tmp,currentPortO.first)));
@@ -353,6 +362,14 @@ void ComposedNode::edRemoveLink(OutPort *start, InPort *end) throw(Exception)
   InPort * currentPortI=end;
   while(iterS!=lwstCmnAnctr)
     {
+      if (!iterS)
+        {
+          stringstream what;
+          what << "ComposedNode::edRemoveLink: "
+               << start->getNode()->getName() << "." <<start->getName() << "->"
+               << end->getNode()->getName() << "." << end->getName();
+          throw Exception(what.str());
+        }
       iterS->getDelegateOf(currentPortI, start, allAscendanceOfNodeStart);
       iterS=iterS->_father;
     }
@@ -733,17 +750,25 @@ std::set<InPort *> ComposedNode::getAllInPortsComingFromOutsideOfCurrentScope() 
 void ComposedNode::edDisconnectAllLinksWithMe()
 {
   //CF
+  DEBTRACE("-");
   Node::edDisconnectAllLinksWithMe();
   //Leaving part
+  DEBTRACE("--");
   vector< pair<OutPort *, InPort *> > linksToDestroy=getSetOfLinksLeavingCurrentScope();
   vector< pair<OutPort *, InPort *> >::iterator iter;
   for(iter=linksToDestroy.begin();iter!=linksToDestroy.end();iter++)
-    (*iter).first->removeInPort((*iter).second,true);
+    {
+      DEBTRACE("---");
+      (*iter).first->removeInPort((*iter).second,true);
+    }
   //Arriving part
   vector< pair<InPort *, OutPort *> > linksToDestroy2=getSetOfLinksComingInCurrentScope();
   vector< pair<InPort *, OutPort *> >::iterator iter2;
   for(iter2=linksToDestroy2.begin();iter2!=linksToDestroy2.end();iter2++)
-    (*iter2).second->removeInPort((*iter2).first,true);
+    {
+      DEBTRACE("----");
+      (*iter2).second->removeInPort((*iter2).first,true);
+    }
 }
 
 ComposedNode *ComposedNode::getRootNode() throw(Exception)

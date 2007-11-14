@@ -76,6 +76,7 @@ namespace YACS
       void edRemoveChild(Node *node) throw(Exception);
       std::set<Node *> edGetDirectDescendants() const;
       std::list<InputPort *> getSetOfInputPort() const;
+      std::list<InputPort *> getLocalInputPorts() const;
       unsigned getNumberOfBranchesCreatedDyn() const throw(Exception);
       Node *getChildByShortName(const std::string& name) const throw(Exception);
       Node *getChildByNameExec(const std::string& name, unsigned id) const throw(Exception);

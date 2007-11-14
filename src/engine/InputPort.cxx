@@ -190,5 +190,6 @@ void ProxyPort::put(const void *data) throw(ConversionException)
 
 void ProxyPort::getAllRepresentants(std::set<InPort *>& repr) const
 {
+  DEBTRACE("ProxyPort::getAllRepresentants");
   _port->getAllRepresentants(repr);
 }

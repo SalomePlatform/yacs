@@ -23,21 +23,15 @@ namespace YACS
                  QCanvas* c, QWidget* parent=0, const char* name=0, WFlags f=0);
       virtual void update(GuiEvent event, int type, Subject* son);
       void setNewRoot(YACS::HMI::Subject *root);
-
-/*       void clear(); */
       
     protected:
       YACS::HMI::Subject *_context;
       ComposedNodeCanvasItem *_rootItem;
       void contentsMousePressEvent(QMouseEvent* e);
-/*       void contentsMouseMoveEvent(QMouseEvent*); */
       
     signals:
-/*       void status(const QString&); */
       
     private:
-/*       QCanvasItem* moving; */
-/*       QPoint moving_start; */
     };
 
     class CanvasItem : public QCanvasRectangle, public GuiObserver
@@ -74,21 +68,28 @@ namespace YACS
     public:
       NodeCanvasItem(CanvasItem *parent, QString label, Subject* subject);
       virtual ~NodeCanvasItem();
+      virtual void removeInPort(CanvasItem* inport);
+      virtual void removeOutPort(CanvasItem* outport);
+      std::list<CanvasItem*> _inPorts;
+      std::list<CanvasItem*> _outPorts;      
+    };
+
+    class ElementaryNodeCanvasItem: public NodeCanvasItem
+    {
+    public:
+      ElementaryNodeCanvasItem(CanvasItem *parent, QString label, Subject* subject);
+      virtual ~ElementaryNodeCanvasItem();
       virtual QColor getNormalColor();
       virtual QColor getSelectedColor();
       virtual void update(GuiEvent event, int type, Subject* son);
-      virtual void removeInPort(CanvasItem* inport);
-      virtual void removeOutPort(CanvasItem* outport);
       virtual int getLx();
       virtual int getLy();
       virtual void redraw();
       virtual int getOfxInPort(CanvasItem *child);
       virtual int getOfxOutPort(CanvasItem *child);
-      std::list<CanvasItem*> _inPorts;
-      std::list<CanvasItem*> _outPorts;      
     };
 
-    class ComposedNodeCanvasItem: public CanvasItem
+    class ComposedNodeCanvasItem: public NodeCanvasItem
     {
     public:
       ComposedNodeCanvasItem(CanvasItem *parent, QString label, Subject* subject);
@@ -103,8 +104,6 @@ namespace YACS
       virtual void redraw();
       virtual int getOfxInPort(CanvasItem *child);
       virtual int getOfxOutPort(CanvasItem *child);
-      std::list<CanvasItem*> _inPorts;
-      std::list<CanvasItem*> _outPorts;      
     protected:
       std::list<CanvasItem*> _children;
     };

@@ -77,8 +77,12 @@ int OutputPort::edRemoveInputPort(InputPort *inputPort, bool forward) throw(Exce
     {
       set<InPort *> s;
       inputPort->getAllRepresentants(s);
+      DEBTRACE("+++");
       for(set<InPort *>::iterator iter=s.begin();iter!=s.end();iter++)
-        _node->getRootNode()->edRemoveLink(this,*iter);
+        {
+          DEBTRACE("---");
+          _node->getRootNode()->edRemoveLink(this,*iter);
+        }
       return -1;
     }
   else

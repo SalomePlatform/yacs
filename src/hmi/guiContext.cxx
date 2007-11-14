@@ -26,7 +26,7 @@ GuiContext::GuiContext()
   _numItem = 0;
   _selectedCanvasItem = 0;
 
-  _canvas = new QCanvas(800,600);
+  _canvas = new QCanvas(800,2000);
   _widgetStack = 0;
   _mapOfSubjectNode.clear();
   _mapOfSubjectDataPort.clear();

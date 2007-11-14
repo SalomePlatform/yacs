@@ -505,7 +505,7 @@ void editTree::select()
               {
                 SubjectDataPort *sdp = dynamic_cast<SubjectDataPort*>(sub);
                 assert(sdp);
-                _selectedSubjectOutPort->tryCreateLink(sdp);
+                SubjectDataPort::tryCreateLink(_selectedSubjectOutPort, sdp);
                 _selectedSubjectOutPort = 0;
               }
           }
@@ -539,6 +539,8 @@ void editTree::contextMenuEvent( QContextMenuEvent * )
         NodeContextMenu();
       else if (item = dynamic_cast<PortViewItem*> (it))
         PortContextMenu();
+      else if (item = dynamic_cast<LinkViewItem*> (it))
+        LinkContextMenu();
     }
 }
 
@@ -648,6 +650,21 @@ void editTree::PortContextMenu()
   contextMenu->insertItem( "Message", this, SLOT(printName()) );
   contextMenu->insertItem( "Delete", this, SLOT(destroy()) );
   contextMenu->insertItem( "Add link", this, SLOT(addLink()) );
+  contextMenu->exec( QCursor::pos() );
+  delete contextMenu;
+}
+
+void editTree::LinkContextMenu()
+{
+  QPopupMenu*	contextMenu = new QPopupMenu();
+  Q_CHECK_PTR( contextMenu );
+  QLabel *caption = new QLabel( "<font color=darkblue><u><b>"
+                                "InlineNode Context Menu</b></u></font>",
+                                contextMenu );
+  caption->setAlignment( Qt::AlignCenter );
+  contextMenu->insertItem( caption );
+  contextMenu->insertItem( "Message", this, SLOT(printName()) );
+  contextMenu->insertItem( "Delete", this, SLOT(destroy()) );
   contextMenu->exec( QCursor::pos() );
   delete contextMenu;
 }

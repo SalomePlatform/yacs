@@ -430,6 +430,13 @@ std::list<InputPort *> ForEachLoop::getSetOfInputPort() const
   return ret;
 }
 
+std::list<InputPort *> ForEachLoop::getLocalInputPorts() const
+{
+  list<InputPort *> ret=DynParaLoop::getLocalInputPorts();
+  ret.push_back((InputPort *)&_splitterNode._dataPortToDispatch);
+  return ret;
+}
+
 InputPort *ForEachLoop::getInputPort(const std::string& name) const throw(Exception)
 {
   if(name==SplitterNode::NAME_OF_SEQUENCE_INPUT)

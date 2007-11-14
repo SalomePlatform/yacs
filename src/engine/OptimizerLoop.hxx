@@ -91,6 +91,7 @@ namespace YACS
       InputPort *edGetPortForInitFile() { return &_portForInitFile; }
       InputPort *getInputPort(const std::string& name) const throw(Exception);
       std::list<InputPort *> getSetOfInputPort() const;
+      std::list<InputPort *> getLocalInputPorts() const;
       void selectRunnableTasks(std::vector<Task *>& tasks);
       void getReadyTasks(std::vector<Task *>& tasks);
       YACS::Event updateStateOnFinishedEventFrom(Node *node);

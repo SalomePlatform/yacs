@@ -97,15 +97,12 @@ CanvasItem::CanvasItem(CanvasItem *parent, QString label, Subject* subject) :
 
 CanvasItem::~CanvasItem()
 {
-  DEBTRACE("CanvasItem::~CanvasItem");
+  DEBTRACE("CanvasItem::~CanvasItem " << _subject->getName());
   QCanvasItem* can = GuiContext::getCurrent()->getSelectedCanvasItem();
   if (can == this)
     GuiContext::getCurrent()->setSelectedCanvasItem(0);
-  if (_parent)
-    {
-      ComposedNodeCanvasItem* cnci = dynamic_cast<ComposedNodeCanvasItem*>(_parent);
-      if (cnci) cnci->removeChild(this);
-    }
+//   QCanvas * canvas = GuiContext::getCurrent()->getCanvas();
+//   canvas->update();
 }
 
 CanvasItem *CanvasItem::getParent()
@@ -204,7 +201,7 @@ int CanvasItem::getOfxOutPort(CanvasItem *child)
 
 void CanvasItem::redraw()
 {
-  DEBTRACE("CanvasItem::redraw");
+//   DEBTRACE("CanvasItem::redraw");
 }
 
 void CanvasItem::drawNode(int ofx, int ofy, int lx, int ly, int level)
@@ -217,7 +214,7 @@ void CanvasItem::drawNode(int ofx, int ofy, int lx, int ly, int level)
   setZ(level);
   show();
 }
- 
+
 // ----------------------------------------------------------------------------
 
 NodeCanvasItem::NodeCanvasItem(CanvasItem *parent, QString label, Subject* subject)
@@ -229,21 +226,49 @@ NodeCanvasItem::NodeCanvasItem(CanvasItem *parent, QString label, Subject* subje
 
 NodeCanvasItem::~NodeCanvasItem()
 {
+  DEBTRACE("NodeCanvasItem::~NodeCanvasItem " << _subject->getName());
 }
 
-int NodeCanvasItem::getLx()
+void NodeCanvasItem::removeInPort(CanvasItem* inport)
+{
+  _inPorts.remove(inport);
+}
+
+void NodeCanvasItem::removeOutPort(CanvasItem* outport)
+{
+  _outPorts.remove(outport);
+}
+
+// ----------------------------------------------------------------------------
+
+ElementaryNodeCanvasItem::ElementaryNodeCanvasItem(CanvasItem *parent, QString label, Subject* subject)
+  : NodeCanvasItem(parent, label, subject)
+{
+}
+
+ElementaryNodeCanvasItem::~ElementaryNodeCanvasItem()
+{
+  DEBTRACE("ElementaryNodeCanvasItem::~ElementaryNodeCanvasItem " << _subject->getName());
+  if (_parent)
+    {
+      ComposedNodeCanvasItem* cnci = dynamic_cast<ComposedNodeCanvasItem*>(_parent);
+      if (cnci) cnci->removeChild(this);
+    }
+}
+
+int ElementaryNodeCanvasItem::getLx()
 {
   return LX;
 }
 
-int NodeCanvasItem::getLy()
+int ElementaryNodeCanvasItem::getLy()
 {
   return LY;
 }
 
-void NodeCanvasItem::update(GuiEvent event, int type, Subject* son)
+void ElementaryNodeCanvasItem::update(GuiEvent event, int type, Subject* son)
 {
-  DEBTRACE("NodeCanvasItem::update");
+  DEBTRACE("ElementaryNodeCanvasItem::update");
   CanvasItem *item;
   switch (event)
     {
@@ -267,27 +292,17 @@ void NodeCanvasItem::update(GuiEvent event, int type, Subject* son)
           _root->redraw();
            break;
         default:
-          DEBTRACE("NodeCanvasItem::update() ADD, type not handled:" << type);
+          DEBTRACE("ElementaryNodeCanvasItem::update() ADD, type not handled:" << type);
         }
       break;
     default:
-      DEBTRACE("NodeCanvasItem::update(), event not handled: << event");
+      DEBTRACE("ElementaryNodeCanvasItem::update(), event not handled: << event");
     }
 }
 
-void NodeCanvasItem::removeInPort(CanvasItem* inport)
+void ElementaryNodeCanvasItem::redraw()
 {
-  _inPorts.remove(inport);
-}
-
-void NodeCanvasItem::removeOutPort(CanvasItem* outport)
-{
-  _outPorts.remove(outport);
-}
-
-void NodeCanvasItem::redraw()
-{
-//   DEBTRACE(" NodeCanvasItem::redraw() "<<getOfx()<<" "<<getOfy()<<" "<<getLx()<<" "<<getLy());
+//   DEBTRACE(" ElementaryNodeCanvasItem::redraw() "<<getOfx()<<" "<<getOfy()<<" "<<getLx()<<" "<<getLy());
   QCanvas * canvas = GuiContext::getCurrent()->getCanvas();
   drawNode(getOfx(), getOfy(), getLx(), getLy(), getLevel());
   for (list<CanvasItem*>::iterator it = _inPorts.begin(); it!=_inPorts.end(); ++it)
@@ -297,17 +312,17 @@ void NodeCanvasItem::redraw()
   canvas->update();
 }
 
-QColor NodeCanvasItem::getNormalColor()
+QColor ElementaryNodeCanvasItem::getNormalColor()
 {
   return QColor(171,167,118);
 }
 
-QColor NodeCanvasItem::getSelectedColor()
+QColor ElementaryNodeCanvasItem::getSelectedColor()
 {
   return QColor(219,213,151);
 }
 
-int NodeCanvasItem::getOfxInPort(CanvasItem *child)
+int ElementaryNodeCanvasItem::getOfxInPort(CanvasItem *child)
 {
   int ofx = getOfx() +DX;
   for (list<CanvasItem*>::iterator it = _inPorts.begin(); it!=_inPorts.end(); ++it)
@@ -318,7 +333,7 @@ int NodeCanvasItem::getOfxInPort(CanvasItem *child)
   return ofx;
 }
 
-int NodeCanvasItem::getOfxOutPort(CanvasItem *child)
+int ElementaryNodeCanvasItem::getOfxOutPort(CanvasItem *child)
 {
   int ofx = getOfx() +DX;
   for (list<CanvasItem*>::iterator it = _outPorts.begin(); it!=_outPorts.end(); ++it)
@@ -332,16 +347,20 @@ int NodeCanvasItem::getOfxOutPort(CanvasItem *child)
 // ----------------------------------------------------------------------------
 
 ComposedNodeCanvasItem::ComposedNodeCanvasItem(CanvasItem *parent, QString label, Subject* subject)
-  : CanvasItem(parent, label, subject)
+  : NodeCanvasItem(parent, label, subject)
 {
   _children.clear();
-  _inPorts.clear();
-  _outPorts.clear();
 }
 
 
 ComposedNodeCanvasItem::~ComposedNodeCanvasItem()
 {
+  DEBTRACE("ComposedNodeCanvasItem::~ComposedNodeCanvasItem " << _subject->getName());
+  if (_parent)
+    {
+      ComposedNodeCanvasItem* cnci = dynamic_cast<ComposedNodeCanvasItem*>(_parent);
+      if (cnci) cnci->removeChild(this);
+    }
 }
 
 int ComposedNodeCanvasItem::getLx()
@@ -410,7 +429,7 @@ void ComposedNodeCanvasItem::update(GuiEvent event, int type, Subject* son)
         case YACS::HMI::SALOMENODE:
         case YACS::HMI::SALOMEPYTHONNODE:
         case YACS::HMI::XMLNODE:
-          item =  new NodeCanvasItem(this,
+          item =  new ElementaryNodeCanvasItem(this,
                                      son->getName(),
                                      son);
           _children.push_back(item);
@@ -501,8 +520,12 @@ InPortCanvasItem::InPortCanvasItem(CanvasItem *parent, QString label, Subject* s
 
 InPortCanvasItem::~InPortCanvasItem()
 {
-  NodeCanvasItem* nci = dynamic_cast<NodeCanvasItem*>(_parent);
-  if(nci) nci->removeInPort(this);
+  DEBTRACE("InPortCanvasItem::~InPortCanvasItem " << _subject->getName());
+  if(_parent)
+    {
+      NodeCanvasItem* nci = dynamic_cast<NodeCanvasItem*>(_parent);
+      if(nci) nci->removeInPort(this);
+    }
 }
 
 QColor InPortCanvasItem::getNormalColor()
@@ -535,8 +558,6 @@ int InPortCanvasItem::getOfx()
   int ofx = 0;
   if (_parent)
     {
-//       NodeCanvasItem* parent = dynamic_cast<NodeCanvasItem*>(_parent);
-//       assert(parent);
       ofx = _parent->getOfxInPort(this);
     }
   _ofx = ofx;
@@ -554,7 +575,7 @@ int InPortCanvasItem::getOfy()
 
 void InPortCanvasItem::redraw()
 {
-  DEBTRACE(" InportCanvasItem::redraw() "<<getOfx()<<" "<<getOfy()<<" "<<getLx()<<" "<<getLy());
+//   DEBTRACE(" InportCanvasItem::redraw() "<<getOfx()<<" "<<getOfy()<<" "<<getLx()<<" "<<getLy());
   QCanvas * canvas = GuiContext::getCurrent()->getCanvas();
   drawNode(getOfx(), getOfy(), getLx(), getLy(), getLevel());
   canvas->update();
@@ -569,8 +590,12 @@ OutPortCanvasItem::OutPortCanvasItem(CanvasItem *parent, QString label, Subject*
 
 OutPortCanvasItem::~OutPortCanvasItem()
 {
-  NodeCanvasItem* nci = dynamic_cast<NodeCanvasItem*>(_parent);
-  if(nci) nci->removeOutPort(this);
+  DEBTRACE("OutPortCanvasItem::~OutPortCanvasItem " << _subject->getName());
+  if(_parent)
+    {
+      NodeCanvasItem* nci = dynamic_cast<NodeCanvasItem*>(_parent);
+      if(nci) nci->removeOutPort(this);
+    }
 }
 
 QColor OutPortCanvasItem::getNormalColor()
@@ -603,8 +628,6 @@ int OutPortCanvasItem::getOfx()
   int ofx = 0;
   if (_parent)
     {
-//       NodeCanvasItem* parent = dynamic_cast<NodeCanvasItem*>(_parent);
-//       assert(parent);
       ofx = _parent->getOfxOutPort(this);
     }
   _ofx = ofx;
@@ -622,7 +645,7 @@ int OutPortCanvasItem::getOfy()
 
 void OutPortCanvasItem::redraw()
 {
-  DEBTRACE(" OutportCanvasItem::redraw() "<<getOfx()<<" "<<getOfy()<<" "<<getLx()<<" "<<getLy());
+//   DEBTRACE(" OutportCanvasItem::redraw() "<<getOfx()<<" "<<getOfy()<<" "<<getLx()<<" "<<getLy());
   QCanvas * canvas = GuiContext::getCurrent()->getCanvas();
   drawNode(getOfx(), getOfy(), getLx(), getLy(), getLevel());
   canvas->update();

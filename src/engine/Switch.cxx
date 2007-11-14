@@ -398,6 +398,13 @@ std::list<InputPort *> Switch::getSetOfInputPort() const
   return ret;
 }
 
+
+std::list<InputPort *> Switch::getLocalInputPorts() const
+{
+  list<InputPort *> ret=StaticDefinedComposedNode::getLocalInputPorts();
+  ret.push_back((InputPort *)&_condition);
+  return ret;
+}
 OutPort *Switch::getOutPort(const std::string& name) const throw(Exception)
 {
   for(map<InPort *, CollectorSwOutPort * >::const_iterator iter=_outPortsCollector.begin();iter!=_outPortsCollector.end();iter++)
@@ -513,16 +520,6 @@ std::set<InPort *> Switch::getAllInPortsComingFromOutsideOfCurrentScope() const
         ret.insert((InPort *)&_condition);
         break;
       }
-  return ret;
-}
-
-std::vector< std::pair<InPort *, OutPort *> > Switch::getSetOfLinksComingInCurrentScope() const
-{
-  vector< std::pair<InPort *, OutPort *> > ret=StaticDefinedComposedNode::getSetOfLinksComingInCurrentScope();
-  set<OutPort *> temp2=_condition.edSetOutPort();
-  for(set<OutPort *>::iterator iter3=temp2.begin();iter3!=temp2.end();iter3++)
-    if(!isInMyDescendance((*iter3)->getNode()))
-      ret.push_back(pair<InPort *, OutPort *>((InPort *)&_condition,*iter3));
   return ret;
 }
 

@@ -99,19 +99,33 @@ bool Subject::destroy(Subject *son)
   DEBTRACE("Subject::destroy " << son->getName());
   Proc *proc = GuiContext::getCurrent()->getProc();
   string position = "";
-  if (! dynamic_cast<SubjectProc*>(son))
+
+  if (dynamic_cast<SubjectProc*>(son))
+    position = proc->getName();
+  else
     {
-      SubjectNode *subNode = dynamic_cast<SubjectNode*>(son);
-      if (subNode)
-        position = proc->getChildName(subNode->getNode());
+      if (SubjectNode *subNode = dynamic_cast<SubjectNode*>(son))
+        {
+          position = proc->getChildName(subNode->getNode());
+        }
       else if (dynamic_cast<SubjectDataPort*>(son))
         {
           SubjectNode *subNodep = dynamic_cast<SubjectNode*>(son->getParent());
-          position = proc->getChildName(subNodep->getNode());
+          if (dynamic_cast<SubjectProc*>(subNodep))
+            position = proc->getName();
+          else
+            position = proc->getChildName(subNodep->getNode());
+        }
+      else if (dynamic_cast<SubjectLink*>(son))
+        {
+          SubjectNode *subNodep = dynamic_cast<SubjectNode*>(son->getParent());
+          if (dynamic_cast<SubjectProc*>(subNodep))
+            position = proc->getName();
+          else
+            position = proc->getChildName(subNodep->getNode());
         }
     }
-  else
-    position = proc->getName();
+
   CommandDestroy* command = new CommandDestroy(position, son);
   if (command->execute())
     {
@@ -158,6 +172,48 @@ SubjectNode::SubjectNode(YACS::ENGINE::Node *node, Subject *parent)
 SubjectNode::~SubjectNode()
 {
   DEBTRACE("SubjectNode::~SubjectNode " << getName());
+  list<SubjectInputPort*>::iterator iti;
+  list<SubjectInputPort*> cpli = _listSubjectInputPort;
+  for(iti = cpli.begin(); iti != cpli.end(); ++iti)
+    delete (*iti);
+  list<SubjectOutputPort*>::iterator ito;
+  list<SubjectOutputPort*> cplo = _listSubjectOutputPort;
+  for(ito = cplo.begin(); ito != cplo.end(); ++ito)
+    delete (*ito);
+  list<SubjectInputDataStreamPort*>::iterator itid;
+  list<SubjectInputDataStreamPort*> cplid = _listSubjectIDSPort;
+  for(itid = cplid.begin(); itid != cplid.end(); ++itid)
+    delete (*itid);
+  list<SubjectOutputDataStreamPort*>::iterator itod;
+  list<SubjectOutputDataStreamPort*> cplod = _listSubjectODSPort;
+  for(itod = cplod.begin(); itod != cplod.end(); ++itod)
+    delete (*itod);
+  ComposedNode* father = _node->getFather();
+  if (father)
+    try
+      {
+        Bloc *bloc = dynamic_cast<Bloc*>(father);
+        if (bloc) bloc->edRemoveChild(_node);
+        else
+          {
+            Loop *loop = dynamic_cast<Loop*>(father);
+            if (loop) loop->edRemoveChild(_node);
+            else
+              {
+                Switch *aSwitch = dynamic_cast<Switch*>(father);
+                if (aSwitch) aSwitch->edRemoveChild(_node);
+              }
+          }
+      }
+    catch (YACS::Exception &e)
+      {
+          DEBTRACE("SubjectNode::~SubjectNode: father->edRemoveChild: YACS exception " << e.what());
+      }
+  if (_parent)
+    {
+      SubjectBloc* sb = dynamic_cast<SubjectBloc*>(_parent);
+      if (sb) sb->removeNode(this);
+    }
 }
 
 std::string SubjectNode::getName()
@@ -189,7 +245,8 @@ bool SubjectNode::setName(std::string name)
   return false;
 }
 
-SubjectInputPort* SubjectNode::addSubjectInputPort(YACS::ENGINE::InputPort *port, std::string name)
+SubjectInputPort* SubjectNode::addSubjectInputPort(YACS::ENGINE::InputPort *port,
+                                                   std::string name)
 {
   string theName = name;
   if (name.empty()) theName =port->getName();
@@ -203,7 +260,8 @@ SubjectInputPort* SubjectNode::addSubjectInputPort(YACS::ENGINE::InputPort *port
 }
 
 
-SubjectOutputPort* SubjectNode::addSubjectOutputPort(YACS::ENGINE::OutputPort *port, std::string name)
+SubjectOutputPort* SubjectNode::addSubjectOutputPort(YACS::ENGINE::OutputPort *port,
+                                                     std::string name)
 {
   string theName = name;
   if (name.empty()) theName =port->getName();
@@ -213,6 +271,35 @@ SubjectOutputPort* SubjectNode::addSubjectOutputPort(YACS::ENGINE::OutputPort *p
   _listSubjectOutputPort.push_back(son);
   if (!name.empty()) son->setName(name);
   update(ADD, OUTPUTPORT ,son);
+  return son;
+}
+
+SubjectInputDataStreamPort* SubjectNode::addSubjectIDSPort(YACS::ENGINE::InputDataStreamPort *port,
+                                                           std::string name)
+{
+  string theName = name;
+  if (name.empty()) theName =port->getName();
+  DEBTRACE("SubjectNode::addSubjectIDSPort "<< theName);
+  SubjectInputDataStreamPort *son = new SubjectInputDataStreamPort(port, this);
+  GuiContext::getCurrent()->_mapOfSubjectDataPort[static_cast<DataPort*>(port)] = son;
+  _listSubjectIDSPort.push_back(son);
+  if (!name.empty()) son->setName(name);
+  update(ADD, INPUTDATASTREAMPORT ,son);
+  return son;
+}
+
+
+SubjectOutputDataStreamPort* SubjectNode::addSubjectODSPort(YACS::ENGINE::OutputDataStreamPort *port,
+                                                            std::string name)
+{
+  string theName = name;
+  if (name.empty()) theName =port->getName();
+  DEBTRACE("SubjectNode::addSubjectODSPort "<< theName);
+  SubjectOutputDataStreamPort *son = new SubjectOutputDataStreamPort(port, this);
+  GuiContext::getCurrent()->_mapOfSubjectDataPort[static_cast<DataPort*>(port)] = son;
+  _listSubjectODSPort.push_back(son);
+  if (!name.empty()) son->setName(name);
+  update(ADD, OUTPUTDATASTREAMPORT ,son);
   return son;
 }
 
@@ -255,6 +342,7 @@ SubjectNode *SubjectComposedNode::createNode(YACS::ENGINE::Catalog *catalog,
       GuiContext::getCurrent()->getInvoc()->add(command);
       Node * node = command->getNode();
       SubjectNode *son = addSubjectNode(node);
+      son->loadChildren();
       return son;
     }
   return 0;
@@ -318,8 +406,13 @@ SubjectNode *SubjectComposedNode::addSubjectNode(YACS::ENGINE::Node * node, std:
   assert(son);
   GuiContext::getCurrent()->_mapOfSubjectNode[static_cast<Node*>(node)] = son;
   if (!name.empty()) son->setName(name);
+  completeChildrenSubjectList(son);
   update(ADD, ntyp ,son);
   return son;
+}
+
+void SubjectComposedNode::completeChildrenSubjectList(SubjectNode *son)
+{
 }
 
 void SubjectComposedNode::loadChildren()
@@ -336,17 +429,12 @@ void SubjectComposedNode::loadChildren()
   list<OutputPort*> listOutputPorts = _composedNode->getLocalOutputPorts();
   list<InputDataStreamPort*>  listIDSPorts = _composedNode->getSetOfInputDataStreamPort();
   list<OutputDataStreamPort*> listODSPorts = _composedNode->getSetOfOutputDataStreamPort();
-  if (Switch *aSwitch = dynamic_cast<Switch*>(_composedNode))
-    listInputPorts.push_back(aSwitch->edGetConditionPort());
   list<InputPort*>::const_iterator iti;
   for (iti = listInputPorts.begin(); iti != listInputPorts.end(); ++iti)
     addSubjectInputPort(*iti);
   list<OutputPort*>::const_iterator ito;
   for (ito = listOutputPorts.begin(); ito != listOutputPorts.end(); ++ito)
     addSubjectOutputPort(*ito);
-
-  // --- TO BE COMPLETED : datastream ports
-
 }
 
 SubjectLink* SubjectComposedNode::addSubjectLink(SubjectNode *sno,
@@ -412,43 +500,19 @@ SubjectBloc::~SubjectBloc()
   set<SubjectNode*> copyChildren = _children;
   for (it = copyChildren.begin(); it !=copyChildren.end(); ++it)
     delete (*it) ;
-  ComposedNode* father = _bloc->getFather();
-  if (father)
-    {
-      Bloc *bloc = dynamic_cast<Bloc*>(father);
-      if (bloc)
-        {
-          DEBTRACE("---");
-          bloc->edRemoveChild(_bloc);
-        }
-      else
-        {
-          Loop *loop = dynamic_cast<Loop*>(father);
-          if (loop) loop->edRemoveChild(_bloc);
-          else
-            {
-              Switch *aSwitch = dynamic_cast<Switch*>(father);
-              if (aSwitch) aSwitch->edRemoveChild(_bloc);
-            }
-        }
-    }
-  if (_parent)
-    {
-      SubjectBloc* sb = dynamic_cast<SubjectBloc*>(_parent);
-      if (sb) sb->removeNode(this);
-    }
 }
 
 bool SubjectBloc::addNode(YACS::ENGINE::Catalog *catalog, std::string type, std::string name)
 {
   DEBTRACE("SubjectBloc::addNode( " << catalog << ", " << type << ", " << name << " )");
   SubjectNode* child = createNode(catalog, type, name);
-  if (child)
-    {
-      _children.insert(child);
-      return true;
-    }
+  if (child) return true;
   return false;
+}
+
+void SubjectBloc::completeChildrenSubjectList(SubjectNode *son)
+{
+  _children.insert(son);
 }
 
 void SubjectBloc::removeNode(SubjectNode* child)
@@ -486,35 +550,6 @@ SubjectElementaryNode::SubjectElementaryNode(YACS::ENGINE::ElementaryNode *eleme
 SubjectElementaryNode::~SubjectElementaryNode()
 {
   DEBTRACE("SubjectElementaryNode::~SubjectElementaryNode " << getName());
-  list<SubjectInputPort*>::iterator iti;
-  list<SubjectInputPort*> cpli = _listSubjectInputPort;
-  for(iti = cpli.begin(); iti != cpli.end(); ++iti)
-    delete (*iti);
-  list<SubjectOutputPort*>::iterator ito;
-  list<SubjectOutputPort*> cplo = _listSubjectOutputPort;
-  for(ito = cplo.begin(); ito != cplo.end(); ++ito)
-    delete (*ito);
-  ComposedNode* father = _elementaryNode->getFather();
-  if (father)
-    {
-      Bloc *bloc = dynamic_cast<Bloc*>(father);
-      if (bloc) bloc->edRemoveChild(_elementaryNode);
-      else
-        {
-          Loop *loop = dynamic_cast<Loop*>(father);
-          if (loop) loop->edRemoveChild(_elementaryNode);
-          else
-            {
-              Switch *aSwitch = dynamic_cast<Switch*>(father);
-              if (aSwitch) aSwitch->edRemoveChild(_elementaryNode);
-            }
-        }
-    }
-  if (_parent)
-    {
-      SubjectBloc* sb = dynamic_cast<SubjectBloc*>(_parent);
-      if (sb) sb->removeNode(this);
-    }
 }
 
 bool SubjectElementaryNode::addInputPort(YACS::ENGINE::Catalog *catalog, std::string type, std::string name)
@@ -562,20 +597,25 @@ bool SubjectElementaryNode::addOutputPort(YACS::ENGINE::Catalog *catalog, std::s
 void SubjectElementaryNode::removePort(SubjectDataPort* port)
 {
   DEBTRACE("SubjectElementaryNode::removePort " << port->getName());
-  SubjectInputPort* inp = dynamic_cast<SubjectInputPort*>(port);
-  if (inp)
+  if (SubjectInputPort* inp = dynamic_cast<SubjectInputPort*>(port))
     {
-      DEBTRACE("---");
+      DEBTRACE("-");
       _listSubjectInputPort.remove(inp);
     }
-  else
+  else if(SubjectOutputPort* outp = dynamic_cast<SubjectOutputPort*>(port))
     {
-      SubjectOutputPort* outp = dynamic_cast<SubjectOutputPort*>(port);
-      if (outp)
-        {
-          DEBTRACE("---");
-          _listSubjectOutputPort.remove(outp);
-        }
+      DEBTRACE("--");
+      _listSubjectOutputPort.remove(outp);
+    }
+  if (SubjectInputDataStreamPort* idsp = dynamic_cast<SubjectInputDataStreamPort*>(port))
+    {
+      DEBTRACE("---");
+      _listSubjectIDSPort.remove(idsp);
+    }
+  else if(SubjectOutputDataStreamPort* odsp = dynamic_cast<SubjectOutputDataStreamPort*>(port))
+    {
+      DEBTRACE("----");
+      _listSubjectODSPort.remove(odsp);
     }
 }
 
@@ -593,7 +633,12 @@ void SubjectElementaryNode::loadChildren()
   list<OutputPort*>::const_iterator ito;
   for (ito = listOutputPorts.begin(); ito != listOutputPorts.end(); ++ito)
     addSubjectOutputPort(*ito);
-  // --- TO BE COMPLETED : datastream ports
+  list<InputDataStreamPort*>::const_iterator itids;
+  for (itids = listIDSPorts.begin(); itids != listIDSPorts.end(); ++itids)
+    addSubjectIDSPort(*itids);
+  list<OutputDataStreamPort*>::const_iterator itods;
+  for (itods = listODSPorts.begin(); itods != listODSPorts.end(); ++itods)
+    addSubjectODSPort(*itods);
 }
 
 // ----------------------------------------------------------------------------
@@ -606,6 +651,7 @@ SubjectInlineNode::SubjectInlineNode(YACS::ENGINE::InlineNode *inlineNode, Subje
 
 SubjectInlineNode::~SubjectInlineNode()
 {
+  DEBTRACE("SubjectInlineNode::~SubjectInlineNode " << getName());
 }
 
 // ----------------------------------------------------------------------------
@@ -617,6 +663,7 @@ SubjectServiceNode::SubjectServiceNode(YACS::ENGINE::ServiceNode *serviceNode, S
 
 SubjectServiceNode::~SubjectServiceNode()
 {
+  DEBTRACE("SubjectServiceNode::~SubjectServiceNode " << getName());
 }
 
 // ----------------------------------------------------------------------------
@@ -628,6 +675,7 @@ SubjectPythonNode::SubjectPythonNode(YACS::ENGINE::PythonNode *pythonNode, Subje
 
 SubjectPythonNode::~SubjectPythonNode()
 {
+  DEBTRACE("SubjectPythonNode::~SubjectPythonNode " << getName());
 }
 
 // ----------------------------------------------------------------------------
@@ -639,6 +687,7 @@ SubjectPyFuncNode::SubjectPyFuncNode(YACS::ENGINE::PyFuncNode *pyFuncNode, Subje
 
 SubjectPyFuncNode::~SubjectPyFuncNode()
 {
+  DEBTRACE("SubjectPyFuncNode::~SubjectPyFuncNode " << getName());
 }
 
 // ----------------------------------------------------------------------------
@@ -650,6 +699,7 @@ SubjectCORBANode::SubjectCORBANode(YACS::ENGINE::CORBANode *corbaNode, Subject *
 
 SubjectCORBANode::~SubjectCORBANode()
 {
+  DEBTRACE("SubjectCORBANode::~SubjectCORBANode " << getName());
 }
 
 // ----------------------------------------------------------------------------
@@ -661,6 +711,7 @@ SubjectCppNode::SubjectCppNode(YACS::ENGINE::CppNode *cppNode, Subject *parent)
 
 SubjectCppNode::~SubjectCppNode()
 {
+  DEBTRACE("SubjectCppNode::~SubjectCppNode " << getName());
 }
 
 // ----------------------------------------------------------------------------
@@ -672,6 +723,7 @@ SubjectSalomeNode::SubjectSalomeNode(YACS::ENGINE::SalomeNode *salomeNode, Subje
 
 SubjectSalomeNode::~SubjectSalomeNode()
 {
+  DEBTRACE("SubjectSalomeNode::~SubjectSalomeNode " << getName());
 }
 
 // ----------------------------------------------------------------------------
@@ -684,6 +736,7 @@ SubjectSalomePythonNode::SubjectSalomePythonNode(YACS::ENGINE::SalomePythonNode 
 
 SubjectSalomePythonNode::~SubjectSalomePythonNode()
 {
+  DEBTRACE("SubjectSalomePythonNode::~SubjectSalomePythonNode " << getName());
 }
 
 // ----------------------------------------------------------------------------
@@ -695,6 +748,7 @@ SubjectXmlNode::SubjectXmlNode(YACS::ENGINE::XmlNode *xmlNode, Subject *parent)
 
 SubjectXmlNode::~SubjectXmlNode()
 {
+  DEBTRACE("SubjectXmlNode::~SubjectXmlNode " << getName());
 }
 
 // ----------------------------------------------------------------------------
@@ -706,6 +760,7 @@ SubjectSplitterNode::SubjectSplitterNode(YACS::ENGINE::SplitterNode *splitterNod
 
 SubjectSplitterNode::~SubjectSplitterNode()
 {
+  DEBTRACE("SubjectSplitterNode::~SubjectSplitterNode " << getName());
 }
 
 std::string SubjectSplitterNode::getName()
@@ -731,9 +786,14 @@ bool SubjectForLoop::addNode(YACS::ENGINE::Catalog *catalog, std::string type, s
 {
   DEBTRACE("SubjectForLoop::addNode(catalog, type, name)");
   if (_body) return false;
-  _body = createNode(catalog, type, name);
-  if (_body) return true;
+  SubjectNode* body = createNode(catalog, type, name);
+  if (body) return true;
   return false;
+}
+
+void SubjectForLoop::completeChildrenSubjectList(SubjectNode *son)
+{
+  _body = son;
 }
 
 // ----------------------------------------------------------------------------
@@ -754,9 +814,14 @@ bool SubjectWhileLoop::addNode(YACS::ENGINE::Catalog *catalog, std::string type,
 {
   DEBTRACE("SubjectWhileLoop::addNode(catalog, type, name)");
   if (_body) return false;
-  _body = createNode(catalog, type, name);
-  if (_body) return true;
+  SubjectNode* body = createNode(catalog, type, name);
+  if (body) return true;
   return false;
+}
+
+void SubjectWhileLoop::completeChildrenSubjectList(SubjectNode *son)
+{
+  _body = son;
 }
 
 // ----------------------------------------------------------------------------
@@ -781,11 +846,7 @@ bool SubjectSwitch::addNode(YACS::ENGINE::Catalog *catalog, std::string type, st
   DEBTRACE("SubjectSwitch::addNode( " << catalog << ", " << type << ", " << name <<", " << swCase << " )");
   if (_bodyMap.count(swCase)) return false;
   SubjectNode* body = createNode(catalog, type, name, swCase);
-  if(body)
-    {
-      _bodyMap[swCase] = body;
-      return true;
-    }
+  if(body) return true;
   return false;
 }
 
@@ -794,28 +855,54 @@ std::map<int, SubjectNode*> SubjectSwitch::getBodyMap()
   return _bodyMap;
 }
 
+void SubjectSwitch::completeChildrenSubjectList(SubjectNode *son)
+{
+  _bodyMap[_switch->getRankOfNode(son->getNode())] = son;
+}
+
 // ----------------------------------------------------------------------------
 
 SubjectForEachLoop::SubjectForEachLoop(YACS::ENGINE::ForEachLoop *forEachLoop, Subject *parent)
   : SubjectComposedNode(forEachLoop, parent), _forEachLoop(forEachLoop)
 {
   _body = 0;
+  _splitter = 0;
 }
 
 SubjectForEachLoop::~SubjectForEachLoop()
 {
   DEBTRACE("SubjectForEachLoop::~SubjectForEachLoop " << getName());
-  if (_body) delete _body;
+  if (_body)
+    {
+      DEBTRACE(_body->getName());
+      delete _body;
+    }
+  if (_splitter)
+    {
+      DEBTRACE(_splitter->getName());
+      delete _splitter;
+    }
 }
 
 bool SubjectForEachLoop::addNode(YACS::ENGINE::Catalog *catalog, std::string type, std::string name)
 {
   DEBTRACE("SubjectForEachLoop::addNode(catalog, type, name)");
   if (_body) return false;
-  _body = createNode(catalog, type, name);
-  if (_body) return true;
+  SubjectNode *body = createNode(catalog, type, name);
+  if (body) return true;
   return false;
 }
+
+void SubjectForEachLoop::completeChildrenSubjectList(SubjectNode *son)
+{
+  string name = son->getName();
+  DEBTRACE("SubjectForEachLoop::completeChildrenSubjectList " << name);
+  if (name == ForEachLoop::NAME_OF_SPLITTERNODE)
+    _splitter = son;
+  else
+    _body = son;
+}
+
 
 // ----------------------------------------------------------------------------
 
@@ -836,9 +923,14 @@ bool SubjectOptimizerLoop::addNode(YACS::ENGINE::Catalog *catalog, std::string t
 {
   DEBTRACE("SubjectOptimizerLoop::addNode(catalog, type, name)");
   if (_body) return false;
-  _body = createNode(catalog, type, name);
-  if (_body) return true;
+  SubjectNode *body = createNode(catalog, type, name);
+  if (body) return true;
   return false;
+}
+
+void SubjectOptimizerLoop::completeChildrenSubjectList(SubjectNode *son)
+{
+  _body = son;
 }
 
 // ----------------------------------------------------------------------------
@@ -857,7 +949,14 @@ SubjectDataPort::~SubjectDataPort()
   if (father)
     {
       DEBTRACE("father->edRemovePort(_dataPort)");
-      father->edRemovePort(_dataPort);
+      try
+        {
+          father->edRemovePort(_dataPort);
+        }
+      catch (YACS::Exception &e)
+        {
+          DEBTRACE("SubjectDataPort::~SubjectDataPort: father->edRemovePort: YACS exception " << e.what());
+        }
     }
 }
 
@@ -866,8 +965,48 @@ std::string SubjectDataPort::getName()
   return _dataPort->getName();
 }
 
-void SubjectDataPort::tryCreateLink(SubjectDataPort *subInport)
+YACS::ENGINE::DataPort* SubjectDataPort::getPort()
 {
+  return _dataPort;
+}
+
+void SubjectDataPort::tryCreateLink(SubjectDataPort *subOutport, SubjectDataPort *subInport)
+{
+  Proc *proc = GuiContext::getCurrent()->getProc();
+
+  string outNodePos = "";
+  SubjectNode *sno = dynamic_cast<SubjectNode*>(subOutport->getParent());
+  assert(sno);
+  Node *outNode = sno->getNode();
+  outNodePos = proc->getChildName(outNode);
+  string outportName = subOutport->getName();
+
+  string inNodePos = "";
+  SubjectNode *sni = dynamic_cast<SubjectNode*>(subInport->getParent());
+  assert(sni);
+  Node *inNode = sni->getNode();
+  inNodePos = proc->getChildName(inNode);
+  string inportName = subInport->getName();
+  
+  CommandAddLink *command = new CommandAddLink(outNodePos, outportName,
+                                                   inNodePos, inportName);
+  if (command->execute())
+    {
+      GuiContext::getCurrent()->getInvoc()->add(command);
+      
+      ComposedNode *cla = ComposedNode::getLowestCommonAncestor(outNode->getFather(),
+                                                                inNode->getFather());
+      SubjectComposedNode *scla = dynamic_cast<SubjectComposedNode*>(sno->getParent());
+      ComposedNode *ancestor = outNode->getFather();
+      while (ancestor && ancestor != cla)
+        {
+          ancestor = ancestor->getFather();
+          scla = dynamic_cast<SubjectComposedNode*>(scla->getParent());
+          assert(scla);
+        }
+      DEBTRACE(scla->getName());
+      scla->addSubjectLink(sno, subOutport, sni, subInport);
+    }
 }
 
 // ----------------------------------------------------------------------------
@@ -904,47 +1043,6 @@ SubjectOutputPort::~SubjectOutputPort()
     }
 }
 
-void SubjectOutputPort::tryCreateLink(SubjectDataPort *subInport)
-{
-  SubjectInputPort *sip = dynamic_cast<SubjectInputPort*>(subInport);
-  if (sip)
-    {
-      Proc *proc = GuiContext::getCurrent()->getProc();
-      string outNodePos = "";
-      SubjectNode *sno = dynamic_cast<SubjectNode*>(_parent);
-      assert(sno);
-      Node *outNode = sno->getNode();
-      outNodePos = proc->getChildName(outNode);
-      string outportName = getName();
-      string inNodePos = "";
-      SubjectNode *sni = dynamic_cast<SubjectNode*>(subInport->getParent());
-      assert(sni);
-      Node *inNode = sni->getNode();
-      inNodePos = proc->getChildName(inNode);
-      string inportName = subInport->getName();
-
-      CommandAddLink *command = new CommandAddLink(outNodePos, outportName,
-                                                   inNodePos, inportName);
-      if (command->execute())
-        {
-          GuiContext::getCurrent()->getInvoc()->add(command);
-
-          ComposedNode *cla = ComposedNode::getLowestCommonAncestor(outNode->getFather(),
-                                                                    inNode->getFather());
-          SubjectComposedNode *scla = dynamic_cast<SubjectComposedNode*>(sno->getParent());
-          ComposedNode *ancestor = outNode->getFather();
-          while (ancestor && ancestor != cla)
-            {
-              ancestor = ancestor->getFather();
-              scla = dynamic_cast<SubjectComposedNode*>(scla->getParent());
-              assert(scla);
-            }
-          DEBTRACE(scla->getName());
-          scla->addSubjectLink(sno, this, sni, subInport);
-        }
-    }
-}
-
 // ----------------------------------------------------------------------------
 
 SubjectInputDataStreamPort::SubjectInputDataStreamPort(YACS::ENGINE::InputDataStreamPort *port,
@@ -969,10 +1067,6 @@ SubjectOutputDataStreamPort::SubjectOutputDataStreamPort(YACS::ENGINE::OutputDat
 SubjectOutputDataStreamPort::~SubjectOutputDataStreamPort()
 {
   DEBTRACE("SubjectOutputDataStreamPort::~SubjectOutputDataStreamPort " << getName());
-}
-
-void SubjectOutputDataStreamPort::tryCreateLink(SubjectDataPort *subInport)
-{
 }
 
 // ----------------------------------------------------------------------------
@@ -1002,6 +1096,18 @@ SubjectLink::SubjectLink(SubjectNode* subOutNode,
 SubjectLink::~SubjectLink()
 {
   DEBTRACE("SubjectLink::~SubjectLink " << getName());
+  if (_parent)
+    {
+      SubjectComposedNode *father = dynamic_cast<SubjectComposedNode*>(_parent);
+      assert(father);
+      ComposedNode *cla = dynamic_cast<ComposedNode*>(father->getNode());
+      assert(cla);
+      OutPort *outp = dynamic_cast<OutPort*>(_outPort->getPort());
+      assert(outp);
+      InPort *inp = dynamic_cast<InPort*>(_inPort->getPort());
+      assert(inp);
+      cla->edRemoveLink(outp, inp);
+    }
 }
 
 std::string SubjectLink::getName()

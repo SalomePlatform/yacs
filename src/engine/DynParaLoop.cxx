@@ -224,6 +224,13 @@ std::list<InputPort *> DynParaLoop::getSetOfInputPort() const
   return ret;
 }
 
+std::list<InputPort *> DynParaLoop::getLocalInputPorts() const
+{
+  list<InputPort *> ret=ComposedNode::getLocalInputPorts();
+  ret.push_back((InputPort *)&_nbOfBranches);
+  return ret;
+}
+
 unsigned DynParaLoop::getNumberOfBranchesCreatedDyn() const throw(Exception)
 {
   if(_execNodes.empty())

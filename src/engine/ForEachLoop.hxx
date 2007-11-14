@@ -134,6 +134,7 @@ namespace YACS
       //
       unsigned getExecCurrentId() const { return _execCurrentId; } // for update progress bar on GUI part
       std::list<InputPort *> getSetOfInputPort() const;
+      std::list<InputPort *> getLocalInputPorts() const;
       InputPort *edGetSeqOfSamplesPort() { return &_splitterNode._dataPortToDispatch; }
       InputPort *getInputPort(const std::string& name) const throw(Exception);
       OutPort *getOutPort(const std::string& name) const throw(Exception);

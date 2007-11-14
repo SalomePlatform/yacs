@@ -94,6 +94,7 @@ namespace YACS
       int getNumberOfInputPorts() const;
       void edRemoveChild(Node *node) throw(Exception);
       std::list<InputPort *> getSetOfInputPort() const;
+      std::list<InputPort *> getLocalInputPorts() const;
       YACS::StatesForNode getEffectiveState();
       YACS::StatesForNode getEffectiveState(Node* node);
       OutPort *getOutPort(const std::string& name) const throw(Exception);
@@ -107,7 +108,6 @@ namespace YACS
       YACS::Event updateStateOnFinishedEventFrom(Node *node);
       Node *simpleClone(ComposedNode *father, bool editionOnly=true) const;
       std::set<InPort *> getAllInPortsComingFromOutsideOfCurrentScope() const;
-      std::vector< std::pair<InPort *, OutPort *> > getSetOfLinksComingInCurrentScope() const;
       void checkLinkPossibility(OutPort *start, const std::set<ComposedNode *>& pointsOfViewStart,
                                 InPort *end, const std::set<ComposedNode *>& pointsOfViewEnd) throw(Exception);
       void buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::set<ComposedNode *>& pointsOfView);

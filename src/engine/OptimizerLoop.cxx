@@ -295,6 +295,14 @@ std::list<InputPort *> OptimizerLoop::getSetOfInputPort() const
   return ret;
 }
 
+std::list<InputPort *> OptimizerLoop::getLocalInputPorts() const
+{
+  list<InputPort *> ret=DynParaLoop::getLocalInputPorts();
+  ret.push_back((InputPort *)&_portForInitFile);
+  ret.push_back((InputPort *)&_retPortForOutPool);
+  return ret;
+}
+
 void OptimizerLoop::selectRunnableTasks(std::vector<Task *>& tasks)
 {
 }

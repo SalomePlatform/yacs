@@ -63,6 +63,7 @@ namespace YACS
       void ComposedNodeContextMenu();
       void NodeContextMenu();
       void PortContextMenu();
+      void LinkContextMenu();
       void resetTreeNode(QListView *lv);
       Subject *_context;
       Subject *_root;

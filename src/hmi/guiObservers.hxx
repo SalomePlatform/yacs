@@ -95,7 +95,8 @@ namespace YACS
       SubjectDataPort(YACS::ENGINE::DataPort* port, Subject *parent);
       virtual ~SubjectDataPort();
       virtual std::string getName();
-      virtual void tryCreateLink(SubjectDataPort *subInport);
+      virtual YACS::ENGINE::DataPort* getPort();
+      static void tryCreateLink(SubjectDataPort *subOutport, SubjectDataPort *subInport);
     protected:
       YACS::ENGINE::DataPort *_dataPort;
     };
@@ -114,7 +115,6 @@ namespace YACS
     public:
       SubjectOutputPort(YACS::ENGINE::OutputPort *port, Subject *parent);
       virtual ~SubjectOutputPort();
-      virtual void tryCreateLink(SubjectDataPort *subInport);
     protected:
       YACS::ENGINE::OutputPort *_outputPort;
     };
@@ -133,7 +133,6 @@ namespace YACS
     public:
       SubjectOutputDataStreamPort(YACS::ENGINE::OutputDataStreamPort *port, Subject *parent);
       virtual ~SubjectOutputDataStreamPort();
-      virtual void tryCreateLink(SubjectDataPort *subInport);
     protected:
       YACS::ENGINE::OutputDataStreamPort *_outputDataStreamPort;
     };
@@ -148,11 +147,19 @@ namespace YACS
       virtual bool setName(std::string name);
       virtual YACS::ENGINE::Node* getNode();
     protected:
-      virtual SubjectInputPort* addSubjectInputPort(YACS::ENGINE::InputPort *port, std::string name = "");
-      virtual SubjectOutputPort* addSubjectOutputPort(YACS::ENGINE::OutputPort *port, std::string name = "");
+      virtual SubjectInputPort* addSubjectInputPort(YACS::ENGINE::InputPort *port,
+                                                    std::string name = "");
+      virtual SubjectOutputPort* addSubjectOutputPort(YACS::ENGINE::OutputPort *port,
+                                                      std::string name = "");
+      virtual SubjectInputDataStreamPort* addSubjectIDSPort(YACS::ENGINE::InputDataStreamPort *port,
+                                                            std::string name = "");
+      virtual SubjectOutputDataStreamPort* addSubjectODSPort(YACS::ENGINE::OutputDataStreamPort *port,
+                                                             std::string name = "");
       YACS::ENGINE::Node *_node;
       std::list<SubjectInputPort*> _listSubjectInputPort;
       std::list<SubjectOutputPort*> _listSubjectOutputPort;
+      std::list<SubjectInputDataStreamPort*> _listSubjectIDSPort;
+      std::list<SubjectOutputDataStreamPort*> _listSubjectODSPort;
     };
     
     class SubjectLink;
@@ -164,6 +171,7 @@ namespace YACS
       virtual bool addNode(YACS::ENGINE::Catalog *catalog, std::string type, std::string name);
       virtual void loadChildren();
       virtual void loadLinks();
+      virtual void completeChildrenSubjectList(SubjectNode *son);
       SubjectLink* addSubjectLink(SubjectNode *sno,
                                   SubjectDataPort *spo,
                                   SubjectNode *sni,
@@ -184,6 +192,7 @@ namespace YACS
       virtual ~SubjectBloc();
       virtual bool addNode(YACS::ENGINE::Catalog *catalog, std::string type, std::string name);
       virtual void removeNode(SubjectNode* child);
+      virtual void completeChildrenSubjectList(SubjectNode *son);
     protected:
       YACS::ENGINE::Bloc *_bloc;
       std::set<SubjectNode*> _children;
@@ -205,6 +214,7 @@ namespace YACS
       SubjectForLoop(YACS::ENGINE::ForLoop *forLoop, Subject *parent);
       virtual ~SubjectForLoop();
       virtual bool addNode(YACS::ENGINE::Catalog *catalog, std::string type, std::string name);
+      virtual void completeChildrenSubjectList(SubjectNode *son);
     protected:
       YACS::ENGINE::ForLoop *_forLoop;
       SubjectNode* _body;
@@ -216,6 +226,7 @@ namespace YACS
       SubjectWhileLoop(YACS::ENGINE::WhileLoop *whileLoop, Subject *parent);
       virtual ~SubjectWhileLoop();
       virtual bool addNode(YACS::ENGINE::Catalog *catalog, std::string type, std::string name);
+      virtual void completeChildrenSubjectList(SubjectNode *son);
     protected:
       YACS::ENGINE::WhileLoop *_whileLoop;
       SubjectNode* _body;
@@ -229,6 +240,7 @@ namespace YACS
       virtual bool addNode(YACS::ENGINE::Catalog *catalog, std::string type, std::string name,
                            int swCase);
       std::map<int, SubjectNode*> getBodyMap();
+      virtual void completeChildrenSubjectList(SubjectNode *son);
     protected:
       YACS::ENGINE::Switch *_switch;
       std::map<int, SubjectNode*> _bodyMap;
@@ -240,9 +252,11 @@ namespace YACS
       SubjectForEachLoop(YACS::ENGINE::ForEachLoop *forEachLoop, Subject *parent);
       virtual ~SubjectForEachLoop();
       virtual bool addNode(YACS::ENGINE::Catalog *catalog, std::string type, std::string name);
+      virtual void completeChildrenSubjectList(SubjectNode *son);
     protected:
       YACS::ENGINE::ForEachLoop *_forEachLoop;
       SubjectNode* _body;
+      SubjectNode* _splitter;
     };
 
     class SubjectOptimizerLoop: public SubjectComposedNode
@@ -251,6 +265,7 @@ namespace YACS
       SubjectOptimizerLoop(YACS::ENGINE::OptimizerLoop *optimizerLoop, Subject *parent);
       virtual ~SubjectOptimizerLoop();
       virtual bool addNode(YACS::ENGINE::Catalog *catalog, std::string type, std::string name);
+      virtual void completeChildrenSubjectList(SubjectNode *son);
     protected:
       YACS::ENGINE::OptimizerLoop *_optimizerLoop;
       SubjectNode* _body;

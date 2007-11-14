@@ -267,6 +267,7 @@ bool CommandAddOutputPortFromCatalog::localReverse()
 CommandDestroy::CommandDestroy(std::string position,  Subject* subject)
   : Command(), _position(position), _subject(subject)
 {
+  //todo: store what is needed to recreate the subject
 }
 
 bool CommandDestroy::localExecute()

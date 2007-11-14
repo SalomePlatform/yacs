@@ -10,6 +10,9 @@
 #include "guiContext.hxx"
 #include "nodeEdition.h"
 #include "parsers.hxx"
+#include "Logger.hxx"
+#include "LinkInfo.hxx"
+#include "VisitorSaveSchema.hxx"
 
 #include <qapplication.h>
 #include <qfiledialog.h>
@@ -61,6 +64,8 @@ public:
   virtual void fileExit();
   virtual void fileOpen();
   virtual void fileNew();
+  virtual void fileSave();
+  virtual void fileSaveAs();
   virtual void addTree(Qt::Dock pos);
   virtual void setCanvas();
   virtual void setStackOfWidgets();
@@ -152,10 +157,19 @@ void myMainform::setStackOfWidgets()
 
 void myMainform::fileOpen()
 {
-  QString fn = QFileDialog::getOpenFileName( QString::null, tr( "XML-Files (*.xml);;All Files (*)" ), this );
+  QString fn = QFileDialog::getOpenFileName( QString::null,
+                                             tr( "XML-Files (*.xml);;All Files (*)" ),
+                                             this,
+                                             "load YACS scheme file dialog",
+                                             "Choose a filename to load"  );
   if ( !fn.isEmpty() )
     {
       _proc = _loader->load(fn.latin1());
+      YACS::ENGINE::Logger* logger= _proc->getLogger("parser");
+      if(!logger->isEmpty())
+        {
+          DEBTRACE(logger->getStr());
+        }
       YACS::HMI::GuiContext::getCurrent()->setProc(_proc);
     }
 }
@@ -164,6 +178,34 @@ void myMainform::fileExit()
 {
   close();
 }
+
+void myMainform::fileSave()
+{
+  fileSaveAs();
+}
+
+void myMainform::fileSaveAs()
+{
+  QString fn = QFileDialog::getSaveFileName(QString::null,
+                                           tr( "XML-Files (*.xml)" ),
+                                           this,
+                                           "save YACS scheme file dialog",
+                                           "Choose a filename to save under" );
+  if ( !fn.isEmpty() )
+    {
+      YACS::ENGINE::Proc* proc = YACS::HMI::GuiContext::getCurrent()->getProc();
+      YACS::ENGINE::LinkInfo info(YACS::ENGINE::LinkInfo::ALL_DONT_STOP);
+      proc->checkConsistency(info);
+      if (info.areWarningsOrErrors())
+        DEBTRACE(info.getGlobalRepr());
+      YACS::ENGINE::VisitorSaveSchema vss(proc);
+      vss.openFileSchema(fn.latin1());
+      proc->accept(&vss);
+      vss.closeFileSchema();
+      
+    }
+}
+
 
 void myMainform::load(const QString &f)
 {
@@ -190,3 +232,4 @@ int main( int argc, char **argv )
     a.connect( &a, SIGNAL(lastWindowClosed()), &a, SLOT(quit()) );
     return a.exec();
 }
+
