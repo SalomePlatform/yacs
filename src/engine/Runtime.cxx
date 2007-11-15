@@ -94,6 +94,11 @@ Runtime::~Runtime()
   DEBTRACE( "Total YACS::ENGINE::Refcount: " << RefCounter::_totalCnt );
 }
 
+DataNode* Runtime::createDataNode(const std::string& kind,const std::string& name)
+{
+  throw Exception("DataNode factory not implemented");
+}
+
 InlineFuncNode* Runtime::createFuncNode(const std::string& kind,const std::string& name)
 {
   throw Exception("FuncNode factory not implemented");

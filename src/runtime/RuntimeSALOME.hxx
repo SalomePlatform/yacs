@@ -74,6 +74,7 @@ namespace YACS
       virtual OutputDataStreamPort* createOutputDataStreamPort(const std::string& name,
                                                                Node *node,TypeCode *type);
 
+      virtual DataNode* createDataNode(const std::string& kind,const std::string& name);
       virtual InlineFuncNode* createFuncNode(const std::string& kind,const std::string& name);
       virtual InlineNode* createScriptNode(const std::string& kind,const std::string& name);
 

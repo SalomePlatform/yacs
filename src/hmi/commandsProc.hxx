@@ -61,6 +61,7 @@ namespace YACS
     {
     public:
       CommandAddNodeFromCatalog(YACS::ENGINE::Catalog *catalog,
+                                std::string compo,
                                 std::string type,
                                 std::string position,
                                 std::string name,
@@ -70,7 +71,9 @@ namespace YACS
       virtual bool localExecute();
       virtual bool localReverse();
       YACS::ENGINE::Catalog* _catalog;
+      YACS::ENGINE::Node *_nodeToClone;
       TypeOfElem  _typeNode;
+      std::string _compoName;
       std::string _typeName;
       std::string _position;
       std::string _name;

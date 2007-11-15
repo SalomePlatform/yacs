@@ -14,6 +14,10 @@
 #include "LinkInfo.hxx"
 #include "VisitorSaveSchema.hxx"
 
+#include "SALOME_NamingService.hxx"
+#include "SALOME_ModuleCatalog.hxx"
+#include "SALOME_ModuleCatalog.hh"
+
 #include <qapplication.h>
 #include <qfiledialog.h>
 #include <qdockwindow.h>
@@ -81,6 +85,7 @@ myMainform::myMainform(QWidget* parent, const char* name, WFlags fl)
 {
   YACS::ENGINE::RuntimeSALOME::setRuntime();
   _loader = new YACS::YACSLoader();
+  _loader->registerProcCataLoader();
   YACS::HMI::GuiContext* context = new YACS::HMI::GuiContext();
   YACS::HMI::GuiContext::setCurrent(context);
   setMinimumWidth(1000);
@@ -90,6 +95,33 @@ myMainform::myMainform(QWidget* parent, const char* name, WFlags fl)
   addTree(Qt::DockRight);
   //  addTree(Qt::DockLeft);
   setStackOfWidgets();
+
+  try
+    {
+      YACS::ENGINE::RuntimeSALOME* runTime = YACS::ENGINE::getSALOMERuntime();
+      CORBA::ORB_ptr orb = runTime->getOrb();
+      if (orb)
+        {
+          SALOME_NamingService namingService(orb);
+          CORBA::Object_ptr obj = namingService.Resolve("/Kernel/ModulCatalog");
+          SALOME_ModuleCatalog::ModuleCatalog_var aModuleCatalog =
+            SALOME_ModuleCatalog::ModuleCatalog::_narrow(obj);
+          if (! CORBA::is_nil(aModuleCatalog))
+            {
+              DEBTRACE("SALOME_ModuleCatalog::ModuleCatalog found");
+              std::string anIOR = orb->object_to_string( aModuleCatalog );
+              YACS::ENGINE::Catalog* aCatalog = runTime->loadCatalog( "session", anIOR );
+              YACS::HMI::GuiContext::getCurrent()->setSessionCatalog(aCatalog);
+              std::map< std::string, YACS::ENGINE::ComponentDefinition * >::iterator it;
+              for (it = aCatalog->_componentMap.begin();it != aCatalog->_componentMap.end(); ++it)
+                DEBTRACE("Component: " <<(*it).first);
+            }
+        }
+    }
+  catch(ServiceUnreachable& e)
+    {
+      DEBTRACE("Caught Exception. "<<e);
+    }
 }
 
 myMainform::~myMainform()

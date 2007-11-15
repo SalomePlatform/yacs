@@ -317,14 +317,16 @@ SubjectComposedNode::~SubjectComposedNode()
 }
 
 bool SubjectComposedNode::addNode(YACS::ENGINE::Catalog *catalog,
+                                  std::string compo,
                                   std::string type,
                                   std::string name)
 {
-  DEBTRACE("SubjectComposedNode::addNode(Catalog *catalog, string type, string name)");
+  DEBTRACE("SubjectComposedNode::addNode("<<catalog<<","<<compo<<","<<type<<","<<name<<")");
   return false;
 }
 
 SubjectNode *SubjectComposedNode::createNode(YACS::ENGINE::Catalog *catalog,
+                                             std::string compo,
                                              std::string type,
                                              std::string name,
                                              int swCase)
@@ -333,6 +335,7 @@ SubjectNode *SubjectComposedNode::createNode(YACS::ENGINE::Catalog *catalog,
   string position = "";
   if (proc != dynamic_cast<Proc*>(_node)) position = proc->getChildName(_node);
   CommandAddNodeFromCatalog *command = new CommandAddNodeFromCatalog(catalog,
+                                                                     compo,
                                                                      type,
                                                                      position,
                                                                      name,
@@ -502,10 +505,13 @@ SubjectBloc::~SubjectBloc()
     delete (*it) ;
 }
 
-bool SubjectBloc::addNode(YACS::ENGINE::Catalog *catalog, std::string type, std::string name)
+bool SubjectBloc::addNode(YACS::ENGINE::Catalog *catalog,
+                          std::string compo,
+                          std::string type,
+                          std::string name)
 {
-  DEBTRACE("SubjectBloc::addNode( " << catalog << ", " << type << ", " << name << " )");
-  SubjectNode* child = createNode(catalog, type, name);
+  DEBTRACE("SubjectBloc::addNode( " << catalog << ", " << compo << ", " << type << ", " << name << " )");
+  SubjectNode* child = createNode(catalog, compo, type, name);
   if (child) return true;
   return false;
 }
@@ -782,11 +788,14 @@ SubjectForLoop::~SubjectForLoop()
   if (_body) delete _body;
 }
 
-bool SubjectForLoop::addNode(YACS::ENGINE::Catalog *catalog, std::string type, std::string name)
+bool SubjectForLoop::addNode(YACS::ENGINE::Catalog *catalog,
+                             std::string compo,
+                             std::string type,
+                             std::string name)
 {
-  DEBTRACE("SubjectForLoop::addNode(catalog, type, name)");
+  DEBTRACE("SubjectForLoop::addNode(catalog, compo, type, name)");
   if (_body) return false;
-  SubjectNode* body = createNode(catalog, type, name);
+  SubjectNode* body = createNode(catalog, compo, type, name);
   if (body) return true;
   return false;
 }
@@ -810,11 +819,14 @@ SubjectWhileLoop::~SubjectWhileLoop()
   if (_body) delete _body;
 }
 
-bool SubjectWhileLoop::addNode(YACS::ENGINE::Catalog *catalog, std::string type, std::string name)
+bool SubjectWhileLoop::addNode(YACS::ENGINE::Catalog *catalog,
+                               std::string compo,
+                               std::string type,
+                               std::string name)
 {
-  DEBTRACE("SubjectWhileLoop::addNode(catalog, type, name)");
+  DEBTRACE("SubjectWhileLoop::addNode(catalog, compo, type, name)");
   if (_body) return false;
-  SubjectNode* body = createNode(catalog, type, name);
+  SubjectNode* body = createNode(catalog, compo, type, name);
   if (body) return true;
   return false;
 }
@@ -840,12 +852,15 @@ SubjectSwitch::~SubjectSwitch()
     delete (*it).second;
 }
 
-bool SubjectSwitch::addNode(YACS::ENGINE::Catalog *catalog, std::string type, std::string name,
+bool SubjectSwitch::addNode(YACS::ENGINE::Catalog *catalog,
+                            std::string compo,
+                            std::string type,
+                            std::string name,
                             int swCase)
 {
-  DEBTRACE("SubjectSwitch::addNode( " << catalog << ", " << type << ", " << name <<", " << swCase << " )");
+  DEBTRACE("SubjectSwitch::addNode("<<catalog<<","<<compo<<","<<type<<","<<name<<","<<swCase<<")");
   if (_bodyMap.count(swCase)) return false;
-  SubjectNode* body = createNode(catalog, type, name, swCase);
+  SubjectNode* body = createNode(catalog, compo, type, name, swCase);
   if(body) return true;
   return false;
 }
@@ -884,11 +899,14 @@ SubjectForEachLoop::~SubjectForEachLoop()
     }
 }
 
-bool SubjectForEachLoop::addNode(YACS::ENGINE::Catalog *catalog, std::string type, std::string name)
+bool SubjectForEachLoop::addNode(YACS::ENGINE::Catalog *catalog,
+                                 std::string compo,
+                                 std::string type,
+                                 std::string name)
 {
-  DEBTRACE("SubjectForEachLoop::addNode(catalog, type, name)");
+  DEBTRACE("SubjectForEachLoop::addNode(catalog, compo, type, name)");
   if (_body) return false;
-  SubjectNode *body = createNode(catalog, type, name);
+  SubjectNode *body = createNode(catalog, compo, type, name);
   if (body) return true;
   return false;
 }
@@ -919,11 +937,14 @@ SubjectOptimizerLoop::~SubjectOptimizerLoop()
   if (_body) delete _body;
 }
 
-bool SubjectOptimizerLoop::addNode(YACS::ENGINE::Catalog *catalog, std::string type, std::string name)
+bool SubjectOptimizerLoop::addNode(YACS::ENGINE::Catalog *catalog,
+                                   std::string compo,
+                                   std::string type,
+                                   std::string name)
 {
-  DEBTRACE("SubjectOptimizerLoop::addNode(catalog, type, name)");
+  DEBTRACE("SubjectOptimizerLoop::addNode(catalog, compo, type, name)");
   if (_body) return false;
-  SubjectNode *body = createNode(catalog, type, name);
+  SubjectNode *body = createNode(catalog, compo, type, name);
   if (body) return true;
   return false;
 }

@@ -618,7 +618,17 @@ int TypeCodeStruct::isA(const char* id) const throw(Exception)
  */
 int TypeCodeStruct::isA(const TypeCode* tc) const 
 {
-  return isA(tc->id());
+  if(_kind != tc->kind()) return 0;
+  if(_repoId == tc->id())return 1;
+  int nMember=memberCount();
+  if(nMember != ((TypeCodeStruct*)tc)->memberCount())return 0;
+  for(int i=0;i<nMember;i++)
+    {
+       const char * name=memberName(i);
+       if(strcmp(memberName(i),((TypeCodeStruct*)tc)->memberName(i)) != 0)return 0;
+       if(!memberType(i)->isA(((TypeCodeStruct*)tc)->memberType(i)))return 0;
+    }
+  return 1;
 }
 
 //! Check if this TypeCode is adaptable to a given TypeCode (tc)

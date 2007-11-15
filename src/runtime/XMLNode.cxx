@@ -100,7 +100,8 @@ void XmlNode::execute()
   run.close();
   chmod(call.c_str(),00777);
 
-  int ret=system(call.c_str());
+  std::string call2="/bin/sh "+call;
+  int ret=system(call2.c_str());
   if(ret)
     {
       std::cerr << "Problem: " << ret << std::endl;

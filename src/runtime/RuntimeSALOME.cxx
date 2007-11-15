@@ -16,6 +16,7 @@
 #include "Bloc.hxx"
 #include "InputPort.hxx"
 #include "OutputPort.hxx"
+#include "PresetPorts.hxx"
 #include "InputDataStreamPort.hxx"
 #include "OutputDataStreamPort.hxx"
 #include "SalomeProc.hxx"
@@ -36,8 +37,9 @@
 #include "CORBANode.hxx"
 #include "XMLNode.hxx"
 #include "CppNode.hxx"
-#include "TypeConversions.hxx"
+#include "PresetNode.hxx"
 #include "SalomePythonNode.hxx"
+
 //CORBA proxy ports
 #include "CORBACORBAConv.hxx"
 #include "CORBAPythonConv.hxx"
@@ -45,6 +47,7 @@
 #include "CORBACppConv.hxx"
 #include "CORBANeutralConv.hxx"
 
+#include "TypeConversions.hxx"
 //Python proxy ports
 #include "PythonCORBAConv.hxx"
 #include "PythonXMLConv.hxx"
@@ -151,6 +154,9 @@ RuntimeSALOME::RuntimeSALOME(long flags)
   _usePython = flags & RuntimeSALOME::UsePython;
   _useCpp = flags & RuntimeSALOME::UseCpp;
   _useXml = flags & RuntimeSALOME::UseXml;
+
+  /* Init libxml */
+  xmlInitParser();
 
   if (_useCpp)    _setOfImplementation.insert(CppNode::IMPL_NAME);
   if (_usePython) _setOfImplementation.insert(PythonNode::IMPL_NAME);
@@ -352,6 +358,18 @@ ForLoop* RuntimeSALOME::createForLoop(const std::string& name)
   return new ForLoop(name);
 }
 
+DataNode* RuntimeSALOME::createDataNode(const std::string& kind,const std::string& name)
+{
+  DataNode* node;
+  if(kind == "" )
+    {
+      node = new PresetNode(name);
+      return node;
+    }
+  std::string msg="DataNode kind ("+kind+") unknown";
+  throw Exception(msg);
+}
+
 InlineFuncNode* RuntimeSALOME::createFuncNode(const std::string& kind,const std::string& name)
 {
   InlineFuncNode* node;
@@ -494,6 +512,10 @@ OutputPort * RuntimeSALOME::createOutputPort(const std::string& name,
   else if(impl == XmlNode::IMPL_NAME)
     {
       return new OutputXmlPort(name, node, type);
+    }
+  else if(impl == PresetNode::IMPL_NAME)
+    {
+      return new OutputPresetPort(name, node, type);
     }
   else
     {
@@ -686,7 +708,7 @@ InputPort* RuntimeSALOME::adaptNeutral(InputPort* source,
     {
       return adaptNeutralToCorba(source,type);
     }
-  else if(impl == XmlNode::IMPL_NAME)
+  else if((impl == XmlNode::IMPL_NAME) || (impl == PresetNode::IMPL_NAME))
     {
       return adaptNeutralToXml(source,type);
     }
@@ -812,7 +834,7 @@ InputPort* RuntimeSALOME::adapt(InputXmlPort* source,
     {
       return adaptXmlToCpp(source,type);
     }
-  else if(impl == XmlNode::IMPL_NAME)
+  else if((impl == XmlNode::IMPL_NAME) || (impl == PresetNode::IMPL_NAME))
     {
       return new ProxyPort(source);
     }
@@ -1053,7 +1075,7 @@ InputPort* RuntimeSALOME::adapt(InputCorbaPort* source,
     {
       return adaptCorbaToCorba(source,type);
     }
-  else if(impl == XmlNode::IMPL_NAME)
+  else if((impl == XmlNode::IMPL_NAME) || (impl == PresetNode::IMPL_NAME))
     {
       return adaptCorbaToXml(source,type);
     }
@@ -1297,7 +1319,7 @@ InputPort* RuntimeSALOME::adapt(InputPyPort* source,
     {
       return adaptPythonToNeutral(source,type);
     }
-  else if(impl == XmlNode::IMPL_NAME)
+  else if((impl == XmlNode::IMPL_NAME) || (impl == PresetNode::IMPL_NAME))
     {
       return adaptPythonToXml(source,type);
     }

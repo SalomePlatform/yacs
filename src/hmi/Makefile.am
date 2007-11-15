@@ -8,12 +8,15 @@ guidemo_SOURCES = \
 	editTree.cxx \
 	editCanvas.cxx \
 	nodeEdition.cxx \
+	browseCatalog.cxx \
 	mainempty_moc.cxx \
 	wiedittree_moc.cxx \
 	winodeedition_moc.cxx \
+	catalog_moc.cxx \
 	editTree_moc.cxx \
 	editCanvas_moc.cxx \
-	nodeEdition_moc.cxx
+	nodeEdition_moc.cxx \
+	browseCatalog_moc.cxx
 
 
 lib_LTLIBRARIES = libHMI.la
@@ -36,11 +39,13 @@ MOCSOURCES =
 mainempty.cxx: mainempty.h
 wiedittree.cxx: wiedittree.h
 winodeedition.cxx: winodeedition.h
+catalog.cxx: catalog.h
 
 UISOURCES = \
 	mainempty.cxx \
 	wiedittree.cxx \
-	winodeedition.cxx 
+	winodeedition.cxx \
+	catalog.cxx
 
 # Resources
 LIBPOFILES = 

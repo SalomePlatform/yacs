@@ -12,6 +12,11 @@
 
 namespace YACS
 {
+  namespace ENGINE
+  {
+    class Catalog;
+  }
+
   namespace HMI
   {
 
@@ -42,12 +47,17 @@ namespace YACS
     public slots:
       void printName();
       void newNode(int key);
+      void newNode(YACS::ENGINE::Catalog* catalog,
+                   Subject* sub,
+                   std::pair<std::string,std::string> compoServ);
       void newInputPort(int key);
       void newOutputPort(int key);
       void select();
       void select(QListViewItem *it);
       void destroy();
       void addLink();
+      void cataSession();
+      void cataProc();
     public:
       editTree(YACS::HMI::Subject *context,
                 QWidget* parent = 0,
@@ -58,6 +68,7 @@ namespace YACS
       void setNewRoot(YACS::HMI::Subject *root);
       void addViewItemInMap(YACS::HMI::ViewItem* item, YACS::HMI::Subject* subject);
       YACS::HMI::ViewItem* getViewItem(YACS::HMI::Subject* subject);
+      YACS::HMI::Subject* getSelectedSubject();
     protected:
       void contextMenuEvent ( QContextMenuEvent * );
       void ComposedNodeContextMenu();
@@ -65,6 +76,7 @@ namespace YACS
       void PortContextMenu();
       void LinkContextMenu();
       void resetTreeNode(QListView *lv);
+      QWidget* _parent;
       Subject *_context;
       Subject *_root;
       QListViewItem *_previousSelected;

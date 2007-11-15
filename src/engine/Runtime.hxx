@@ -20,6 +20,7 @@ namespace YACS
     class InlineNode;
     class InlineFuncNode;
     class ServiceNode;
+    class DataNode;
     class Container;
     class ServiceInlineNode;
     class ComponentInstance;
@@ -47,6 +48,7 @@ namespace YACS
       virtual ServiceNode* createRefNode(const std::string& kind,const std::string& name);
       virtual ServiceNode* createCompoNode(const std::string& kind,const std::string& name);
       virtual ServiceInlineNode *createSInlineNode(const std::string& kind, const std::string& name);
+      virtual DataNode* createDataNode(const std::string& kind,const std::string& name);
 
       virtual ComponentInstance* createComponentInstance(const std::string& name,
                                                          const std::string& kind="");

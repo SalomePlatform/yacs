@@ -168,7 +168,10 @@ namespace YACS
     public:
       SubjectComposedNode(YACS::ENGINE::ComposedNode *composedNode, Subject *parent);
       virtual ~SubjectComposedNode();
-      virtual bool addNode(YACS::ENGINE::Catalog *catalog, std::string type, std::string name);
+      virtual bool addNode(YACS::ENGINE::Catalog *catalog,
+                           std::string compo,
+                           std::string type,
+                           std::string name);
       virtual void loadChildren();
       virtual void loadLinks();
       virtual void completeChildrenSubjectList(SubjectNode *son);
@@ -178,6 +181,7 @@ namespace YACS
                                   SubjectDataPort *spi);
     protected:
       virtual SubjectNode *createNode(YACS::ENGINE::Catalog *catalog,
+                                      std::string compo,
                                       std::string type,
                                       std::string name,
                                       int swCase=0);
@@ -190,7 +194,10 @@ namespace YACS
     public:
       SubjectBloc(YACS::ENGINE::Bloc *bloc, Subject *parent);
       virtual ~SubjectBloc();
-      virtual bool addNode(YACS::ENGINE::Catalog *catalog, std::string type, std::string name);
+      virtual bool addNode(YACS::ENGINE::Catalog *catalog,
+                           std::string compo,
+                           std::string type,
+                           std::string name);
       virtual void removeNode(SubjectNode* child);
       virtual void completeChildrenSubjectList(SubjectNode *son);
     protected:
@@ -213,7 +220,10 @@ namespace YACS
     public:
       SubjectForLoop(YACS::ENGINE::ForLoop *forLoop, Subject *parent);
       virtual ~SubjectForLoop();
-      virtual bool addNode(YACS::ENGINE::Catalog *catalog, std::string type, std::string name);
+      virtual bool addNode(YACS::ENGINE::Catalog *catalog,
+                           std::string compo,
+                           std::string type,
+                           std::string name);
       virtual void completeChildrenSubjectList(SubjectNode *son);
     protected:
       YACS::ENGINE::ForLoop *_forLoop;
@@ -225,7 +235,10 @@ namespace YACS
     public:
       SubjectWhileLoop(YACS::ENGINE::WhileLoop *whileLoop, Subject *parent);
       virtual ~SubjectWhileLoop();
-      virtual bool addNode(YACS::ENGINE::Catalog *catalog, std::string type, std::string name);
+      virtual bool addNode(YACS::ENGINE::Catalog *catalog,
+                           std::string compo,
+                           std::string type,
+                           std::string name);
       virtual void completeChildrenSubjectList(SubjectNode *son);
     protected:
       YACS::ENGINE::WhileLoop *_whileLoop;
@@ -237,7 +250,10 @@ namespace YACS
     public:
       SubjectSwitch(YACS::ENGINE::Switch *aSwitch, Subject *parent);
       virtual ~SubjectSwitch();
-      virtual bool addNode(YACS::ENGINE::Catalog *catalog, std::string type, std::string name,
+      virtual bool addNode(YACS::ENGINE::Catalog *catalog,
+                           std::string compo,
+                           std::string type,
+                           std::string name,
                            int swCase);
       std::map<int, SubjectNode*> getBodyMap();
       virtual void completeChildrenSubjectList(SubjectNode *son);
@@ -251,7 +267,10 @@ namespace YACS
     public:
       SubjectForEachLoop(YACS::ENGINE::ForEachLoop *forEachLoop, Subject *parent);
       virtual ~SubjectForEachLoop();
-      virtual bool addNode(YACS::ENGINE::Catalog *catalog, std::string type, std::string name);
+      virtual bool addNode(YACS::ENGINE::Catalog *catalog,
+                           std::string compo,
+                           std::string type,
+                           std::string name);
       virtual void completeChildrenSubjectList(SubjectNode *son);
     protected:
       YACS::ENGINE::ForEachLoop *_forEachLoop;
@@ -264,7 +283,10 @@ namespace YACS
     public:
       SubjectOptimizerLoop(YACS::ENGINE::OptimizerLoop *optimizerLoop, Subject *parent);
       virtual ~SubjectOptimizerLoop();
-      virtual bool addNode(YACS::ENGINE::Catalog *catalog, std::string type, std::string name);
+      virtual bool addNode(YACS::ENGINE::Catalog *catalog,
+                           std::string compo,
+                           std::string type,
+                           std::string name);
       virtual void completeChildrenSubjectList(SubjectNode *son);
     protected:
       YACS::ENGINE::OptimizerLoop *_optimizerLoop;

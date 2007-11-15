@@ -57,6 +57,7 @@ libYACSEngine_la_SOURCES =             \
 	LogRecord.cxx                  \
 	Catalog.cxx                    \
 	ComponentDefinition.cxx        \
+	DataNode.cxx                   \
 	$(__dummy__)
 
 salomeinclude_HEADERS =                \

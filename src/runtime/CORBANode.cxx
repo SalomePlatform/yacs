@@ -146,6 +146,18 @@ void CORBANode::execute()
       {
         DEBTRACE( "An exception was thrown!" )
         DEBTRACE( "The raised exception is of Type:" << exc->_name() )
+
+        std::cerr << "The raised exception is of Type:" << exc->_name() << std::endl;
+        /*
+        if(strcmp(exc->_name(),"MARSHAL") == 0)
+          {
+            const char* ms = ((CORBA::MARSHAL*)exc)->NP_minorString();
+            if (ms)
+               std::cerr << "(CORBA::MARSHAL: minor = " << ms << ")" << std::endl;
+            else
+               std::cerr << "(CORBA::MARSHAL: minor = " << ((CORBA::MARSHAL*)exc)->minor() << ")" << std::endl;
+          }
+          */
         throw Exception("Execution problem");
       }
     

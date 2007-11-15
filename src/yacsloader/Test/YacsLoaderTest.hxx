@@ -50,6 +50,7 @@ namespace YACS
     CPPUNIT_TEST(objrefs);
     CPPUNIT_TEST(structs);
     CPPUNIT_TEST(cpps);
+    CPPUNIT_TEST(datanodes);
     CPPUNIT_TEST_SUITE_END();
       
   public:
@@ -96,6 +97,7 @@ namespace YACS
     void objrefs();
     void structs();
     void cpps();
+    void datanodes();
      
   protected:
       

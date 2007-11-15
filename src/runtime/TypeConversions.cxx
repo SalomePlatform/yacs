@@ -234,7 +234,7 @@ namespace YACS
           {
             if(t1->kind() == Struct)
               {
-                if( t1->isA(t2->id()) )
+                if( t1->isA(t2) )
                   return 1;
               }
             return 0;
@@ -690,8 +690,8 @@ namespace YACS
           else
             {
               stringstream msg;
-              msg << "Problem in Python to xml conversion: kind= " << t->kind() ;
-              msg << " : " << __FILE__ << ":" << __LINE__;
+              msg << "Not a python boolean. kind=" << t->kind() ;
+              msg << " ( " << __FILE__ << ":" << __LINE__ << ")";
               throw YACS::ENGINE::ConversionException(msg.str());
             }
           return l;
@@ -718,6 +718,13 @@ namespace YACS
     {
       static inline void convert(const TypeCode *t,PyObject* o,void*,std::vector<TOUT>& v)
         {
+          if(!PySequence_Check(o))
+            {
+              stringstream msg;
+              msg << "Problem in conversion: the python object is not a sequence " << std::endl;
+              msg << " (" << __FILE__ << ":" << __LINE__ << ")";
+              throw YACS::ENGINE::ConversionException(msg.str());
+            }
           int length=PySequence_Size(o);
           DEBTRACE("length: " << length );
           v.resize(length);
@@ -1619,52 +1626,57 @@ namespace YACS
     {
       static inline CORBA::Any* convert(const TypeCode *t,std::vector<CORBA::Any*>& v)
         {
-          CORBA::Any *any;
-          CORBA::TypeCode_ptr seqTC;
-
-          //the equivalent CORBA TypeCode
-          seqTC=getCorbaTC(t);
-#ifdef REFCNT
-          DEBTRACE("refcount CORBA seqTC: " << ((omni::TypeCode_base*)seqTC)->pd_ref_count);
-#endif
-          DynamicAny::DynAny_ptr dynany =
-            getSALOMERuntime()->getDynFactory()->create_dyn_any_from_type_code(seqTC);
-          CORBA::release(seqTC);
-          DynamicAny::DynSequence_ptr ds =
-            DynamicAny::DynSequence::_narrow(dynany);
-          CORBA::release(dynany);
-
+          CORBA::ORB_ptr orb=getSALOMERuntime()->getOrb();
           std::vector<CORBA::Any*>::const_iterator iter;
-          DynamicAny::AnySeq as ;
-          as.length(v.size());
-          int i=0;
+
+          // Build an Any from vector v
+          int homog=1;
+          CORBA::TypeCode_var tc;
+          if(v.size() != 0)
+            {
+              // Check if it's an homogeneous vector : all TypeCodes must be equivalent
+              CORBA::TypeCode_var any_tc=v[0]->type();
+              tc=orb->create_sequence_tc(0,any_tc);
+              for(iter=v.begin();iter!=v.end();iter++)
+                {
+                  CORBA::Any* a=*iter;
+                  CORBA::TypeCode_var tc2=a->type();
+                  if(!tc2->equivalent(any_tc))
+                    {
+                      // It's a non homogeneous vector : create a sequence of any
+                      tc=orb->create_sequence_tc(0,CORBA::_tc_any);
+                      homog=0;
+                      break;
+                    }
+                }
+              // It's a homogeneous vector : create a sequence of the homogeneous type
+            }
+          else
+            {
+              // It's an empty vector : create a sequence of any
+              tc=orb->create_sequence_tc(0,CORBA::_tc_any);
+              homog=0;
+            }
+
+          DynamicAny::DynAny_var dynany=getSALOMERuntime()->getDynFactory()->create_dyn_any_from_type_code(tc);
+          DynamicAny::DynSequence_var ds = DynamicAny::DynSequence::_narrow(dynany);
+          ds->set_length(v.size());
+
           for(iter=v.begin();iter!=v.end();iter++)
             {
-              //Can we avoid making a copy ?
+              DynamicAny::DynAny_var temp=ds->current_component();
               CORBA::Any* a=*iter;
-              as[i]=*a;
-              i++;
+              if(homog)
+                temp->from_any(*a);
+              else
+                ds->insert_any(*a);
               //delete intermediate any
               delete a;
+              ds->next();
             }
-          try
-            {
-              ds->set_elements(as);
-            }
-          catch(DynamicAny::DynAny::TypeMismatch& ex)
-            {
-              throw YACS::ENGINE::ConversionException("type mismatch");
-            }
-          catch(DynamicAny::DynAny::InvalidValue& ex)
-            {
-              throw YACS::ENGINE::ConversionException("invalid value");
-            }
-          any=ds->to_any();
+
+          CORBA::Any *any=ds->to_any();
           ds->destroy();
-          CORBA::release(ds);
-#ifdef REFCNT
-          DEBTRACE("refcount CORBA seqTC: " << ((omni::TypeCode_base*)seqTC)->pd_ref_count);
-#endif
           return any;
         }
     };
@@ -1673,69 +1685,42 @@ namespace YACS
     {
       static inline CORBA::Any* convert(const TypeCode *t,std::map<std::string,CORBA::Any*>& m)
         {
-          CORBA::Any *any;
-          CORBA::TypeCode_ptr structTC;
+          CORBA::ORB_ptr orb=getSALOMERuntime()->getOrb();
 
-          //the equivalent CORBA TypeCode
-          structTC=getCorbaTC(t);
-#ifdef REFCNT
-          DEBTRACE("refcount CORBA structTC: " << ((omni::TypeCode_base*)structTC)->pd_ref_count);
-          DEBTRACE("refcount CORBA tc_double: " << ((omni::TypeCode_base*)CORBA::_tc_double)->pd_ref_count);
-#endif
           YACS::ENGINE::TypeCodeStruct* tst=(YACS::ENGINE::TypeCodeStruct*)t;
           int nMember=tst->memberCount();
           DEBTRACE("nMember="<<nMember);
-          DynamicAny::DynAny_ptr da=
-            getSALOMERuntime()->getDynFactory()->create_dyn_any_from_type_code(structTC);
-#ifdef REFCNT
-          DEBTRACE("refcount CORBA structTC: " << ((omni::TypeCode_base*)structTC)->pd_ref_count);
-          DEBTRACE("refcount CORBA tc_double: " << ((omni::TypeCode_base*)CORBA::_tc_double)->pd_ref_count);
-#endif
-          CORBA::release(structTC);
-#ifdef REFCNT
-          DEBTRACE("refcount CORBA structTC: " << ((omni::TypeCode_base*)structTC)->pd_ref_count);
-          DEBTRACE("refcount CORBA tc_double: " << ((omni::TypeCode_base*)CORBA::_tc_double)->pd_ref_count);
-#endif
-          DynamicAny::DynStruct_ptr ds=DynamicAny::DynStruct::_narrow(da);
-          CORBA::release(da);
-#ifdef REFCNT
-          DEBTRACE("refcount CORBA structTC: " << ((omni::TypeCode_base*)structTC)->pd_ref_count);
-          DEBTRACE("refcount CORBA tc_double: " << ((omni::TypeCode_base*)CORBA::_tc_double)->pd_ref_count);
-#endif
-          DynamicAny::NameValuePairSeq members;
-          members.length(nMember);
+
+          CORBA::StructMemberSeq mseq;
+          mseq.length(nMember);
           for(int i=0;i<nMember;i++)
             {
               const char * name=tst->memberName(i);
+              std::cerr << name << std::endl;
+              if(m.count(name) !=0)
+                {
+                  mseq[i].type=m[name]->type();
+                }
+            }
+          CORBA::TypeCode_var tc= orb->create_struct_tc("","",mseq);
+          DynamicAny::DynAny_var dynany=getSALOMERuntime()->getDynFactory()->create_dyn_any_from_type_code(tc);
+          DynamicAny::DynStruct_var ds = DynamicAny::DynStruct::_narrow(dynany);
+
+          for(int i=0;i<nMember;i++)
+            {
+              DynamicAny::DynAny_var temp=ds->current_component();
+              const char * name=tst->memberName(i);
               DEBTRACE("Member name="<<name);
-              //TypeCode* tm=tst->memberType(i);
               //do not test member presence : test has been done in ToYacs convertor
               CORBA::Any* a=m[name];
-              members[i].id=CORBA::string_dup(name);
-              members[i].value=*a;
+              temp->from_any(*a);
               //delete intermediate any
               delete a;
+              ds->next();
             }
-#ifdef REFCNT
-          DEBTRACE("refcount CORBA structTC: " << ((omni::TypeCode_base*)structTC)->pd_ref_count);
-          DEBTRACE("refcount CORBA tc_double: " << ((omni::TypeCode_base*)CORBA::_tc_double)->pd_ref_count);
-#endif
-          ds->set_members(members);
-#ifdef REFCNT
-          DEBTRACE("refcount CORBA structTC: " << ((omni::TypeCode_base*)structTC)->pd_ref_count);
-          DEBTRACE("refcount CORBA tc_double: " << ((omni::TypeCode_base*)CORBA::_tc_double)->pd_ref_count);
-#endif
-          any=ds->to_any();
-#ifdef REFCNT
-          DEBTRACE("refcount CORBA structTC: " << ((omni::TypeCode_base*)structTC)->pd_ref_count);
-          DEBTRACE("refcount CORBA tc_double: " << ((omni::TypeCode_base*)CORBA::_tc_double)->pd_ref_count);
-#endif
+          CORBA::Any *any=ds->to_any();
           ds->destroy();
-          CORBA::release(ds);
-#ifdef REFCNT
-          DEBTRACE("refcount CORBA structTC: " << ((omni::TypeCode_base*)structTC)->pd_ref_count);
-          DEBTRACE("refcount CORBA tc_double: " << ((omni::TypeCode_base*)CORBA::_tc_double)->pd_ref_count);
-#endif
+
           return any;
         }
     };

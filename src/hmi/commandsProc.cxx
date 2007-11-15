@@ -21,6 +21,7 @@
 #include "OptimizerLoop.hxx"
 #include "Exception.hxx"
 #include "OutputDataStreamPort.hxx"
+#include "ComponentDefinition.hxx"
 
 #include "guiContext.hxx"
 
@@ -66,18 +67,33 @@ TypeOfElem ProcInvoc::getTypeOfNode(YACS::ENGINE::Node* node)
 // ----------------------------------------------------------------------------
 
 CommandAddNodeFromCatalog::CommandAddNodeFromCatalog(YACS::ENGINE::Catalog *catalog,
+                                                     std::string compo,
                                                      std::string type,
                                                      std::string position,
                                                      std::string name,
                                                      int swCase)
-  : Command(), _catalog(catalog), _typeName(type),
+  : Command(), _catalog(catalog), _compoName(compo), _typeName(type),
     _position(position), _name(name), _swCase(swCase)
 {
-  if (_catalog->_nodeMap.count(_typeName))
-    _typeNode = ProcInvoc::getTypeOfNode(_catalog->_nodeMap[_typeName]);
-  else if (_catalog->_composednodeMap.count(_typeName))
-    _typeNode = ProcInvoc::getTypeOfNode(_catalog->_composednodeMap[_typeName]);
+  _nodeToClone = 0;
+  if (_compoName.empty())
+    {
+      if (_catalog->_nodeMap.count(_typeName))
+        _nodeToClone = _catalog->_nodeMap[_typeName];
+      else if (_catalog->_composednodeMap.count(_typeName))
+        _nodeToClone = _catalog->_composednodeMap[_typeName];
+    }
+  else
+    if (_catalog->_componentMap.count(_compoName))
+      {
+        YACS::ENGINE::ComponentDefinition* compodef = _catalog->_componentMap[_compoName];
+        if (compodef->_serviceMap.count(_typeName))
+          _nodeToClone = compodef->_serviceMap[_typeName];
+      }
+  if (_nodeToClone)
+    _typeNode = ProcInvoc::getTypeOfNode(_nodeToClone);
 }
+
 
 YACS::ENGINE::Node *CommandAddNodeFromCatalog::getNode()
 {
@@ -94,13 +110,7 @@ bool CommandAddNodeFromCatalog::localExecute()
       if (!_position.empty()) node = proc->getChildByName(_position);
       ComposedNode* father =dynamic_cast<ComposedNode*> (node);
       if (father)
-        {
-          if (_catalog->_nodeMap.count(_typeName))
-            son = _catalog->_nodeMap[_typeName]->clone(0);
-          else if (_catalog->_composednodeMap.count(_typeName))
-            son = _catalog->_composednodeMap[_typeName]->clone(0);
-          else DEBTRACE(_typeName << " not found in catalog");
-        }
+        son = _nodeToClone->clone(0);
       if (son)
         {
           TypeOfElem fatherType = ProcInvoc::getTypeOfNode(father);

@@ -5,6 +5,8 @@
 #include "Node.hxx"
 #include "guiContext.hxx"
 #include "Catalog.hxx"
+#include "browseCatalog.h"
+#include "ServiceNode.hxx"
 
 #include <iostream>
 #define _DEVDEBUG_
@@ -279,6 +281,7 @@ editTree::editTree(YACS::HMI::Subject *context,
                    WFlags fl) : wiEditTree(parent, name, fl)
 {
   _context = context;
+  _parent = parent;
   _root = 0;
   _previousSelected = 0;
   _selectedSubjectOutPort = 0;
@@ -360,15 +363,24 @@ void editTree::printName()
   else DEBTRACE("nobody "<< this);
 }
 
-void editTree::destroy()
+YACS::HMI::Subject* editTree::getSelectedSubject()
 {
-  DEBTRACE("editTree::destroy");
+  Subject *sub = 0;
   QListViewItem *it = lv->selectedItem();
   if (it)
     {
       ViewItem *item = dynamic_cast<ViewItem*> (it);
-      Subject *sub = 0;
       if (item) sub = item->getSubject();
+    }
+  return sub;
+}
+
+void editTree::destroy()
+{
+  DEBTRACE("editTree::destroy");
+  Subject *sub =getSelectedSubject();
+  if (sub)
+    {
       Subject *parent = sub->getParent();
       if (parent)
         {
@@ -380,30 +392,22 @@ void editTree::destroy()
 void editTree::addLink()
 {
   DEBTRACE("editTree::addLink");
-  QListViewItem *it = lv->selectedItem();
-  if (it)
+  Subject *sub =getSelectedSubject();
+  if (sub)
     {
-      ViewItem *item = dynamic_cast<ViewItem*> (it);
-      Subject *sub = 0;
-      if (item) sub = item->getSubject();
-      if (sub)
-        if (dynamic_cast<SubjectOutputPort*>(sub) || dynamic_cast<SubjectOutputDataStreamPort*>(sub))
-          _selectedSubjectOutPort = static_cast<SubjectDataPort*>(sub);
+      if (dynamic_cast<SubjectOutputPort*>(sub) || dynamic_cast<SubjectOutputDataStreamPort*>(sub))
+        _selectedSubjectOutPort = static_cast<SubjectDataPort*>(sub);
     }
 }
 
 void editTree::newNode(int key)
 {
+  DEBTRACE("editTree::newNode(Catalog* catalog, string type): "<< this);
   YACS::ENGINE::Catalog* catalog = _catalogItemsMap[key].first;
   std::string type = _catalogItemsMap[key].second;
-  QListViewItem *it = lv->selectedItem();
-  if (it)
+  Subject *sub =getSelectedSubject();
+  if (sub)
     {
-      DEBTRACE("editTree::newNode(Catalog* catalog, string type): "<< this);
-      ViewItem *item = dynamic_cast<ViewItem*> (it);
-      Subject *sub = 0;
-      if (item) sub = item->getSubject();
-
       YACS::HMI::SubjectComposedNode *subject = dynamic_cast< YACS::HMI::SubjectComposedNode*>(sub);
       if (subject)
         {
@@ -420,26 +424,54 @@ void editTree::newNode(int key)
                   map<int, SubjectNode*>::reverse_iterator rit = bodyMap.rbegin();
                   swCase = (*rit).first + 1;
                 }
-              aSwitch->addNode(catalog, type, name.str(), swCase);
+              aSwitch->addNode(catalog, "", type, name.str(), swCase);
             }
           else
-            subject->addNode(catalog, type, name.str());
+            subject->addNode(catalog, "", type, name.str());
         }
     }
   else DEBTRACE("editTree::newNode(Catalog* catalog, string type): no ComposedNode selected  "<< this);
 }
 
+void editTree::newNode(YACS::ENGINE::Catalog* catalog,
+                       Subject* sub,
+                       std::pair<std::string,std::string> compoServ)
+{
+  DEBTRACE("editTree::newNode(catalog, subject, std::pair<std::string,std::string> compoServ)");
+  std::string compo = compoServ.first;
+  std::string service = compoServ.second;
+  std::stringstream name;
+  name << compo << "_" << service << GuiContext::getCurrent()->getNewId();
+  YACS::HMI::SubjectComposedNode *subject = dynamic_cast< YACS::HMI::SubjectComposedNode*>(sub);
+  if (subject)
+    {
+      YACS::HMI::SubjectSwitch *aSwitch = dynamic_cast< YACS::HMI::SubjectSwitch*>(subject);
+      if (aSwitch)
+        {
+          map<int, SubjectNode*> bodyMap = aSwitch->getBodyMap();
+          int swCase = 0;
+          if (bodyMap.empty()) swCase = 1;
+          else
+            {
+              map<int, SubjectNode*>::reverse_iterator rit = bodyMap.rbegin();
+              swCase = (*rit).first + 1;
+            }
+          aSwitch->addNode(catalog, compo, service, name.str(), swCase);
+        }
+      else
+        subject->addNode(catalog, compo, service, name.str());
+    }
+}
+
+
 void editTree::newInputPort(int key)
 {
+  DEBTRACE("editTree::newInputPort(Catalog* catalog, string type): "<< this);
   YACS::ENGINE::Catalog* catalog = _catalogItemsMap[key].first;
   std::string type = _catalogItemsMap[key].second;
-  QListViewItem *it = lv->selectedItem();
-  if (it)
+  Subject *sub =getSelectedSubject();
+  if (sub)
     {
-      DEBTRACE("editTree::newInputPort(Catalog* catalog, string type): "<< this);
-      ViewItem *item = dynamic_cast<ViewItem*> (it);
-      Subject *sub = 0;
-      if (item) sub = item->getSubject();
       YACS::HMI::SubjectElementaryNode *subject = dynamic_cast< YACS::HMI::SubjectElementaryNode*>(sub);
       if (subject)
         {
@@ -452,15 +484,12 @@ void editTree::newInputPort(int key)
 
 void editTree::newOutputPort(int key)
 {
+  DEBTRACE("editTree::newOutputPort(Catalog* catalog, string type): "<< this);
   YACS::ENGINE::Catalog* catalog = _catalogItemsMap[key].first;
   std::string type = _catalogItemsMap[key].second;
-  QListViewItem *it = lv->selectedItem();
-  if (it)
+  Subject *sub =getSelectedSubject();
+  if (sub)
     {
-      DEBTRACE("editTree::newOutputPort(Catalog* catalog, string type): "<< this);
-      ViewItem *item = dynamic_cast<ViewItem*> (it);
-      Subject *sub = 0;
-      if (item) sub = item->getSubject();
       YACS::HMI::SubjectElementaryNode *subject = dynamic_cast< YACS::HMI::SubjectElementaryNode*>(sub);
       if (subject)
         {
@@ -469,6 +498,20 @@ void editTree::newOutputPort(int key)
           subject->addOutputPort(catalog, type, name.str());
         }
     }
+}
+
+void editTree::cataSession()
+{
+  Subject *sub =getSelectedSubject();
+  if (sub)
+    {
+      BrowseCatalog *brCat = new BrowseCatalog(this,sub);
+      brCat->exec();
+    }
+}
+
+void editTree::cataProc()
+{
 }
 
 
@@ -589,6 +632,8 @@ void editTree::ComposedNodeContextMenu()
         contextMenu->setItemParameter(id, _keymap++);
       }
   }
+  contextMenu->insertItem( "Session Catalog", this, SLOT(cataSession()) );
+  contextMenu->insertItem( "Scheme Catalog", this, SLOT(cataProc()) );
   contextMenu->exec( QCursor::pos() );
   delete contextMenu;
 }

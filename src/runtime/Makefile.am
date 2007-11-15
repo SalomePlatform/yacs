@@ -48,10 +48,12 @@ libYACSRuntimeSALOME_la_SOURCES =      \
   CppPythonConv.cxx              \
 	CORBACppConv.cxx               \
   NeutralCppConv.cxx             \
-	XMLCppConv.cxx                 \
+  XMLCppConv.cxx                 \
   PythonCppConv.cxx              \
   SessionCataLoader.cxx          \
-	$(__dummy__)
+  PresetPorts.cxx                \
+  PresetNode.cxx                 \
+  $(__dummy__)
 
 
 EXTRA_libYACSRuntimeSALOME_la_SOURCES =  \

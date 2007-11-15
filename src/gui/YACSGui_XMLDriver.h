@@ -8,6 +8,8 @@
 
 #include <qpoint.h>
 
+using YACS::parser;
+
 class YACSGui_Module;
 
 /*! 

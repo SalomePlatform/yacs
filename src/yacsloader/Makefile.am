@@ -8,7 +8,10 @@ bin_PROGRAMS=driver debugger resume
 lib_LTLIBRARIES = libYACSloader.la
 
 libYACSloader_la_SOURCES =      \
-	parsers.cxx LoadState.cxx  xmlParserBase.cxx ProcCataLoader.cxx   \
+	parsers.cxx parserBase.cxx dataParsers.cxx typeParsers.cxx \
+	propertyParsers.cxx containerParsers.cxx xmlrpcParsers.cxx \
+	rootParser.cxx codeParsers.cxx \
+	LoadState.cxx  xmlParserBase.cxx ProcCataLoader.cxx   \
 	$(__dummy__)
 
 EXTRA_libYACSloader_la_SOURCES =  \

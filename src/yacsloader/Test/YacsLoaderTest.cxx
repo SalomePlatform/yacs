@@ -697,6 +697,12 @@ void YacsLoaderTest::structs()
   ret = driverTest(p, "samples/struct1.xml");
   CPPUNIT_ASSERT(ret == 0);
   CPPUNIT_ASSERT(p->getEffectiveState() == YACS::DONE );
+  delete p;
+
+  ret = driverTest(p, "samples/struct2.xml");
+  CPPUNIT_ASSERT(ret == 0);
+  CPPUNIT_ASSERT(p->getEffectiveState() == YACS::DONE );
+  delete p;
 }
 
 void YacsLoaderTest::cpps()
@@ -704,6 +710,16 @@ void YacsLoaderTest::cpps()
   Proc *p = 0;
   int ret;
   ret = driverTest(p, "samples/cpp1.xml");
+  CPPUNIT_ASSERT(ret == 0);
+  CPPUNIT_ASSERT(p->getEffectiveState() == YACS::DONE );
+  delete p;
+}
+
+void YacsLoaderTest::datanodes()
+{
+  Proc *p = 0;
+  int ret;
+  ret = driverTest(p, "samples/datanode0.xml");
   CPPUNIT_ASSERT(ret == 0);
   CPPUNIT_ASSERT(p->getEffectiveState() == YACS::DONE );
   delete p;

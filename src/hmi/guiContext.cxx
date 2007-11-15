@@ -20,6 +20,7 @@ GuiContext::GuiContext()
   : Subject(0)
 {
   _builtinCatalog = getSALOMERuntime()->getBuiltinCatalog();
+  _sessionCatalog = 0;
   _invoc = new ProcInvoc();
   _proc = 0;
   _subjectProc = 0;

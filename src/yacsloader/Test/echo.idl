@@ -58,6 +58,14 @@ module eo{
   {
     S1 s;
   };
+  struct S3
+  {
+    double x;
+    long y;
+    string s;
+    boolean b;
+    Obj ob;
+  };
 
   interface Echo
   {
@@ -81,6 +89,10 @@ module eo{
     void echoAll(in double d,in long l,in string m,in Obj o,out double dd,out long ll,out string s,out Obj p);
     void sleepLong(in double time1,out double time2) ;
     S2 echoStruct(in S2 s);
+    S3 echoStruct2(in S3 s);
+
+    // Shuts down the server.
+    void shutdown();
   };
   interface SubEcho:Echo
   {

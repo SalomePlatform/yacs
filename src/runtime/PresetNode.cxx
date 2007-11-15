@@ -1,0 +1,87 @@
+
+#include "PresetNode.hxx"
+#include "PresetPorts.hxx"
+
+#include <iostream>
+#include <set>
+#include <cassert>
+
+using namespace YACS::ENGINE;
+using namespace std;
+
+const char PresetNode::IMPL_NAME[]="XMLPRESET";
+
+PresetNode::PresetNode(const std::string& name)
+  : DataNode(name)
+{
+  _implementation=IMPL_NAME;
+}
+
+PresetNode::PresetNode(const PresetNode& other, ComposedNode *father)
+  : DataNode(other, father)
+{
+}
+
+void PresetNode::execute()
+{
+  cerr << "+++++++ PresetNode::execute +++++++++++" << endl;
+  list<OutputPort *>::const_iterator iter;
+  for(iter = _setOfOutputPort.begin(); iter != _setOfOutputPort.end(); iter++)
+    {
+      OutputPresetPort *outp = dynamic_cast<OutputPresetPort *>(*iter);
+      assert(outp);
+      string data = outp->getData();
+      cerr << "data: " << data << endl;
+      outp->put(data.c_str());
+    }
+  cerr << "+++++++ end DataNode::execute +++++++++++" << endl;
+}
+
+void PresetNode::accept(Visitor *visitor)
+{
+}
+
+void PresetNode::setData(OutputPort* port, std::string& data)
+{
+  OutputPresetPort *outp = dynamic_cast<OutputPresetPort *>(port);
+  outp->setData(data);
+}
+
+void PresetNode::checkBasicConsistency() const throw(Exception)
+{
+  if (! _setOfInputPort.empty())
+    {
+      string what = "PresetNode ";
+      what += getName();
+      what += " only accepts OutputPresetPorts, no InputPorts";
+      throw Exception(what);
+    }
+
+  list<OutputPort *>::const_iterator iter;
+  for(iter=_setOfOutputPort.begin();iter!=_setOfOutputPort.end();iter++)
+    {
+      OutputPresetPort *preset = dynamic_cast<OutputPresetPort*>(*iter);
+      if (!preset)
+        {
+          string what("Output port: ");
+          what += (*iter)->getName();
+          what += " is not an OutputPresetPort. PresetNode ";
+          what += getName();
+          what += "only accepts OutputPresetPorts";
+          throw Exception(what);
+        }
+      string data = preset->getData();
+      if (data.empty())
+        {
+          string what("OutputPresetPort: ");
+          what += (*iter)->getName();
+          what += "is not initialised";
+          throw Exception(what);
+        }
+    }
+}
+
+Node *PresetNode::simpleClone(ComposedNode *father, bool editionOnly) const
+{
+  return new PresetNode(*this,father);
+}
