@@ -22,6 +22,8 @@
 #include "Exception.hxx"
 #include "OutputDataStreamPort.hxx"
 #include "ComponentDefinition.hxx"
+#include "SalomeContainer.hxx"
+#include "SalomeComponent.hxx"
 
 #include "guiContext.hxx"
 
@@ -110,7 +112,10 @@ bool CommandAddNodeFromCatalog::localExecute()
       if (!_position.empty()) node = proc->getChildByName(_position);
       ComposedNode* father =dynamic_cast<ComposedNode*> (node);
       if (father)
-        son = _nodeToClone->clone(0);
+        {
+          son = _nodeToClone->clone(0);
+          son->setName(_name);
+        }
       if (son)
         {
           TypeOfElem fatherType = ProcInvoc::getTypeOfNode(father);
@@ -140,12 +145,12 @@ bool CommandAddNodeFromCatalog::localExecute()
         }
       _node = son;
     }
- catch (Exception& ex)
-   {
-     DEBTRACE("CommandAddNode::localExecute() : " << ex.what());
-     if (son) delete son;
-     _node = 0;
-   }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandAddNode::localExecute() : " << ex.what());
+      if (son) delete son;
+      _node = 0;
+    }
   return (_node != 0);
 }
 
@@ -172,8 +177,8 @@ bool CommandRenameNode::localExecute()
     }
   catch (Exception& ex)
     {
-     DEBTRACE("CommandRenameNode::localExecute() : " << ex.what());
-     node = 0;
+      DEBTRACE("CommandRenameNode::localExecute() : " << ex.what());
+      node = 0;
     }
   return (node != 0); 
 }
@@ -214,12 +219,12 @@ bool CommandAddInputPortFromCatalog::localExecute()
         }
       _inputPort = son;
     }
- catch (Exception& ex)
-   {
-     DEBTRACE("CommandAddInputPortFromCatalog::localExecute() : " << ex.what());
-     if (son) delete son;
-     _inputPort = 0;
-   }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandAddInputPortFromCatalog::localExecute() : " << ex.what());
+      if (son) delete son;
+      _inputPort = 0;
+    }
   return (_inputPort != 0);
 }
 
@@ -259,12 +264,12 @@ bool CommandAddOutputPortFromCatalog::localExecute()
         }
       _outputPort = son;
     }
- catch (Exception& ex)
-   {
-     DEBTRACE("CommandAddOutputPortFromCatalog::localExecute() : " << ex.what());
-     if (son) delete son;
-     _outputPort = 0;
-   }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandAddOutputPortFromCatalog::localExecute() : " << ex.what());
+      if (son) delete son;
+      _outputPort = 0;
+    }
   return (_outputPort != 0);
 }
 
@@ -317,16 +322,227 @@ bool CommandAddLink::localExecute()
         cla->edAddDFLink(outp,inp);
       return true;
     }
- catch (Exception& ex)
-   {
-     DEBTRACE("CommandAddLink::localExecute() : " << ex.what());
-     return false;
-   }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandAddLink::localExecute() : " << ex.what());
+      return false;
+    }
 }
 
 bool CommandAddLink::localReverse()
 {
 }
- 
+
 // ----------------------------------------------------------------------------
 
+CommandAddContainer::CommandAddContainer(std::string name,
+                                         std::string refContainer)
+  : Command(), _name(name), _containerToClone(refContainer), _container(0)
+{
+  DEBTRACE("CommandAddContainer::CommandAddContainer " << name << " " << refContainer);
+}
+
+bool CommandAddContainer::localExecute()
+{
+  try
+    {
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      if (proc->containerMap.count(_name)) return false;
+      Container *container = new SalomeContainer();
+      if (! _containerToClone.empty())
+        {
+          if (proc->containerMap.count(_containerToClone))
+            {
+              Container *ref = proc->containerMap[_containerToClone];
+              assert(ref);
+              container->setProperties(ref->getProperties());
+            }
+          else
+            return false;
+        }
+      _container = container;
+      _container->setName(_name);
+      proc->containerMap[_name] = _container;
+      return true;
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandAddContainer::localExecute() : " << ex.what());
+      return false;
+    }
+}
+
+bool CommandAddContainer::localReverse()
+{
+}
+
+YACS::ENGINE::Container* CommandAddContainer::getContainer()
+{
+  return _container;
+}
+
+// ----------------------------------------------------------------------------
+
+CommandSetContainerProperties::CommandSetContainerProperties(std::string container,
+                                                             std::map<std::string,std::string> properties)
+  : Command(), _container(container), _properties(properties)
+{
+  DEBTRACE("CommandSetContainerProperties::CommandSetContainerProperties " << container);
+}
+
+bool CommandSetContainerProperties::localExecute()
+{
+  try
+    {
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      if (proc->containerMap.count(_container))
+        {
+          Container *ref = proc->containerMap[_container];
+          assert(ref);
+          ref->setProperties(_properties);
+          return true;
+        }
+      return false;
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandSetContainerProperties::localExecute() : " << ex.what());
+      return false;
+    }
+}
+
+bool CommandSetContainerProperties::localReverse()
+{
+}
+
+// ----------------------------------------------------------------------------
+
+CommandAddComponentInstance::CommandAddComponentInstance(std::string name,
+                                                         std::string refComponent)
+  : Command(), _name(name), _componentToClone(refComponent), _compoInst(0)
+{
+  DEBTRACE("CommandAddComponentInstance::CommandAddComponentInstance " << name << " " << refComponent);
+}
+
+bool CommandAddComponentInstance::localExecute()
+{
+  try
+    {
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      ComponentInstance *compo = 0;
+      if (_componentToClone.empty())
+        {
+          compo = new SalomeComponent(_name);
+        }
+      else
+        {
+          DEBTRACE("CommandAddComponentInstance::localExecute with ref Component = semantic not clear ******");
+          ComponentInstance *ref = 0;
+          if (proc->componentInstanceMap.count(_componentToClone))
+            {
+              ComponentInstance *ref = proc->componentInstanceMap[_componentToClone]; // only the last one kept
+              assert(ref);
+              compo = ref->clone();
+            }
+          else
+            return false;
+        }
+      _compoInst = compo;
+      proc->componentInstanceMap[_name] = _compoInst; // --- potentially several instances under the same name
+      return true;
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandAddComponentInstance::localExecute() : " << ex.what());
+      return false;
+    }
+}
+
+bool CommandAddComponentInstance::localReverse()
+{
+}
+
+YACS::ENGINE::ComponentInstance* CommandAddComponentInstance::getComponentInstance()
+{
+  return _compoInst;
+}
+
+  
+// ----------------------------------------------------------------------------
+
+CommandAssociateComponentToContainer::CommandAssociateComponentToContainer(std::string component,
+                                                                           std::string container)
+  : Command(), _component(component), _container(container)
+{
+  DEBTRACE("CommandAssociateComponentToContainer::CommandAssociateComponentToContainer "
+           << component << " " << container);
+}
+
+bool CommandAssociateComponentToContainer::localExecute()
+{
+  try
+    {
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      if (proc->containerMap.count(_container))
+        {
+          Container *cont = proc->containerMap[_container];
+          if (proc->componentInstanceMap.count(_component))
+            {
+              ComponentInstance *compo = proc->componentInstanceMap[_component];
+              compo->setContainer(cont);
+              return true;
+            }
+        }
+      return false;
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandAssociateComponentToContainer::localExecute() : " << ex.what());
+      return false;
+    }
+}
+
+bool CommandAssociateComponentToContainer::localReverse()
+{
+}
+
+// ----------------------------------------------------------------------------
+
+CommandAssociateServiceToComponent::CommandAssociateServiceToComponent(std::string service,
+                                                                       std::string component)
+  : Command(), _service(service), _component(component)
+{
+  DEBTRACE("CommandAssociateServiceToComponent::CommandAssociateServiceToComponent "
+           << service << " " << component);
+}
+
+bool CommandAssociateServiceToComponent::localExecute()
+{
+  try
+    {
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      if (_service == proc->getName()) return false; // proc is not an elementary node
+      Node* node = proc->getChildByName(_service);
+      if (ServiceNode *service = dynamic_cast<ServiceNode*>(node))
+        {
+          if (proc->componentInstanceMap.count(_component))
+            {
+              ComponentInstance *compo = proc->componentInstanceMap[_component];
+              service->setComponent(compo);
+              return true;
+            }
+        }
+      return false;
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandAssociateServiceToComponent::localExecute() : " << ex.what());
+      return false;
+    }
+}
+
+bool CommandAssociateServiceToComponent::localReverse()
+{
+}
+
+// ----------------------------------------------------------------------------

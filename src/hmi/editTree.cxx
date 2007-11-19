@@ -100,14 +100,21 @@ void ViewItem::select(bool isSelected)
 void ViewItem::update(GuiEvent event, int type, Subject* son)
 {
   DEBTRACE("ViewItem::update");
+  ViewItem *item = 0;
   switch (event)
     {
     case RENAME:
-      DEBTRACE("NodeViewItem::update RENAME "<< _subject->getName());
+      DEBTRACE("ViewItem::update RENAME " << _subject->getName());
       setText(0,_subject->getName());
       break;
+    case ADDREF:
+      DEBTRACE("ViewItem::update ADDREF " << _subject->getName());
+      item = new ReferenceViewItem(this,
+                                   son->getName(),
+                                   son);
+      break;
     default:
-      DEBTRACE("NodeViewItem::update(), event not handled: " << event);
+      DEBTRACE("ViewItem::update(), event not handled: " << event);
       GuiObserver::update(event, type, son);
     }
 }
@@ -229,6 +236,16 @@ void ComposedNodeViewItem::update(GuiEvent event, int type, Subject* son)
                                    son->getName(),
                                    son);
           break;
+        case YACS::HMI::COMPONENT:
+          item =  new ComponentViewItem(this,
+                                        son->getName(),
+                                        son);
+          break;
+        case YACS::HMI::CONTAINER:
+          item =  new ContainerViewItem(this,
+                                        son->getName(),
+                                        son);
+          break;
         default:
           DEBTRACE("ComposedNodeViewItem::update() ADD, type not handled:" << type);
         }
@@ -254,6 +271,7 @@ PortViewItem::PortViewItem(ViewItem *parent, QString label, Subject* subject)
 void PortViewItem::update(GuiEvent event, int type, Subject* son)
 {
   DEBTRACE("PortViewItem::update");
+  ViewItem::update(event, type, son);
 }
 
 // ----------------------------------------------------------------------------
@@ -266,6 +284,46 @@ LinkViewItem::LinkViewItem(ViewItem *parent, QString label, Subject* subject)
 void LinkViewItem::update(GuiEvent event, int type, Subject* son)
 {
   DEBTRACE("LinkViewItem::update");
+  ViewItem::update(event, type, son);
+}
+
+// ----------------------------------------------------------------------------
+
+ComponentViewItem::ComponentViewItem(ViewItem *parent, QString label, Subject* subject)
+  : ViewItem::ViewItem(parent, label, subject)
+{
+}
+
+void ComponentViewItem::update(GuiEvent event, int type, Subject* son)
+{
+  DEBTRACE("ComponentViewItem::update");
+  ViewItem::update(event, type, son);
+}
+
+// ----------------------------------------------------------------------------
+
+ContainerViewItem::ContainerViewItem(ViewItem *parent, QString label, Subject* subject)
+  : ViewItem::ViewItem(parent, label, subject)
+{
+}
+
+void ContainerViewItem::update(GuiEvent event, int type, Subject* son)
+{
+  DEBTRACE("ContainerViewItem::update");
+  ViewItem::update(event, type, son);
+}
+ 
+// ----------------------------------------------------------------------------
+
+ReferenceViewItem::ReferenceViewItem(ViewItem *parent, QString label, Subject* subject)
+  : ViewItem::ViewItem(parent, label, subject)
+{
+}
+
+void ReferenceViewItem::update(GuiEvent event, int type, Subject* son)
+{
+  DEBTRACE("ReferenceViewItem::update");
+  ViewItem::update(event, type, son);
 }
 
 // ----------------------------------------------------------------------------
@@ -398,6 +456,23 @@ void editTree::addLink()
       if (dynamic_cast<SubjectOutputPort*>(sub) || dynamic_cast<SubjectOutputDataStreamPort*>(sub))
         _selectedSubjectOutPort = static_cast<SubjectDataPort*>(sub);
     }
+}
+
+void editTree::addComponent()
+{
+  DEBTRACE("editTree::addComponent");
+  stringstream name;
+  name << "component";
+  name << "_" << GuiContext::getCurrent()->getNewId();
+  GuiContext::getCurrent()->getSubjectProc()->addComponent(name.str());
+}
+
+void editTree::addContainer()
+{
+  DEBTRACE("editTree::addContainer");
+  std::stringstream name;
+  name << "container" << GuiContext::getCurrent()->getNewId();
+  GuiContext::getCurrent()->getSubjectProc()->addContainer(name.str());
 }
 
 void editTree::newNode(int key)
@@ -584,6 +659,8 @@ void editTree::contextMenuEvent( QContextMenuEvent * )
         PortContextMenu();
       else if (item = dynamic_cast<LinkViewItem*> (it))
         LinkContextMenu();
+      else if (item = dynamic_cast<ComponentViewItem*> (it))
+        ComponentContextMenu();
     }
 }
 
@@ -647,12 +724,13 @@ void editTree::NodeContextMenu()
   QPopupMenu*	contextMenu = new QPopupMenu();
   Q_CHECK_PTR( contextMenu );
   QLabel *caption = new QLabel( "<font color=darkblue><u><b>"
-                                "InlineNode Context Menu</b></u></font>",
+                                "Elementary Node Context Menu</b></u></font>",
                                 contextMenu );
   caption->setAlignment( Qt::AlignCenter );
   contextMenu->insertItem( caption );
   contextMenu->insertItem( "Message", this, SLOT(printName()) );
   contextMenu->insertItem( "Delete", this, SLOT(destroy()) );
+  contextMenu->insertItem( "add Component", this, SLOT(addComponent()) );
   _keymap = 0;
   _catalogItemsMap.clear();
   YACS::ENGINE::Catalog *builtinCatalog = YACS::ENGINE::getSALOMERuntime()->getBuiltinCatalog();
@@ -688,7 +766,7 @@ void editTree::PortContextMenu()
   QPopupMenu*	contextMenu = new QPopupMenu();
   Q_CHECK_PTR( contextMenu );
   QLabel *caption = new QLabel( "<font color=darkblue><u><b>"
-                                "InlineNode Context Menu</b></u></font>",
+                                "Port Context Menu</b></u></font>",
                                 contextMenu );
   caption->setAlignment( Qt::AlignCenter );
   contextMenu->insertItem( caption );
@@ -704,12 +782,27 @@ void editTree::LinkContextMenu()
   QPopupMenu*	contextMenu = new QPopupMenu();
   Q_CHECK_PTR( contextMenu );
   QLabel *caption = new QLabel( "<font color=darkblue><u><b>"
-                                "InlineNode Context Menu</b></u></font>",
+                                "Link Context Menu</b></u></font>",
                                 contextMenu );
   caption->setAlignment( Qt::AlignCenter );
   contextMenu->insertItem( caption );
   contextMenu->insertItem( "Message", this, SLOT(printName()) );
   contextMenu->insertItem( "Delete", this, SLOT(destroy()) );
+  contextMenu->exec( QCursor::pos() );
+  delete contextMenu;
+}
+
+void  editTree::ComponentContextMenu()
+{
+  QPopupMenu*	contextMenu = new QPopupMenu();
+  Q_CHECK_PTR( contextMenu );
+  QLabel *caption = new QLabel( "<font color=darkblue><u><b>"
+                                "Component Context Menu</b></u></font>",
+                                contextMenu );
+  caption->setAlignment( Qt::AlignCenter );
+  contextMenu->insertItem( caption );
+  contextMenu->insertItem( "Message", this, SLOT(printName()) );
+  contextMenu->insertItem( "add Container", this, SLOT(addContainer()) );
   contextMenu->exec( QCursor::pos() );
   delete contextMenu;
 }

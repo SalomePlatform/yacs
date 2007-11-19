@@ -23,10 +23,14 @@
 #include "OutputPort.hxx"
 #include "InputDataStreamPort.hxx"
 #include "OutputDataStreamPort.hxx"
+#include "SalomeContainer.hxx"
+#include "SalomeComponent.hxx"
+#include "ComponentDefinition.hxx"
 
 #include "guiContext.hxx"
 
 #include <string>
+#include <sstream>
 
 #define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -139,6 +143,13 @@ void Subject::loadChildren()
 {
 }
 
+void Subject::addSubjectReference(Subject *ref)
+{
+  DEBTRACE("Subject::addSubjectReference " << getName() << " " << ref->getName());
+  SubjectReference *son = new SubjectReference(ref, this);
+  update(ADDREF, 0, son);
+}
+
 // ----------------------------------------------------------------------------
 
 GuiObserver::GuiObserver()
@@ -158,6 +169,24 @@ void GuiObserver::select(bool isSelected)
 void GuiObserver::update(GuiEvent event, int type,  Subject* son)
 {
   DEBTRACE("GuiObserver::update, event not handled");
+}
+
+// ----------------------------------------------------------------------------
+
+SubjectReference::SubjectReference(Subject* ref, Subject *parent)
+  : Subject(parent), _reference(ref)
+{
+}
+
+SubjectReference::~SubjectReference()
+{
+}
+
+std::string SubjectReference::getName()
+{
+  std::stringstream name;
+  name << "ref-->" << _reference->getName();
+  return name.str();
 }
 
 // ----------------------------------------------------------------------------
@@ -207,7 +236,7 @@ SubjectNode::~SubjectNode()
       }
     catch (YACS::Exception &e)
       {
-          DEBTRACE("SubjectNode::~SubjectNode: father->edRemoveChild: YACS exception " << e.what());
+        DEBTRACE("SubjectNode::~SubjectNode: father->edRemoveChild: YACS exception " << e.what());
       }
   if (_parent)
     {
@@ -344,14 +373,18 @@ SubjectNode *SubjectComposedNode::createNode(YACS::ENGINE::Catalog *catalog,
     {
       GuiContext::getCurrent()->getInvoc()->add(command);
       Node * node = command->getNode();
-      SubjectNode *son = addSubjectNode(node);
+      SubjectNode *son = addSubjectNode(node,"",catalog,compo,type);
       son->loadChildren();
       return son;
     }
   return 0;
 }
 
-SubjectNode *SubjectComposedNode::addSubjectNode(YACS::ENGINE::Node * node, std::string name)
+SubjectNode *SubjectComposedNode::addSubjectNode(YACS::ENGINE::Node * node,
+                                                 std::string name,
+                                                 YACS::ENGINE::Catalog *catalog,
+                                                 std::string compo,
+                                                 std::string type)
 {
   string theName = name;
   if (name.empty()) theName =node->getName();
@@ -411,6 +444,11 @@ SubjectNode *SubjectComposedNode::addSubjectNode(YACS::ENGINE::Node * node, std:
   if (!name.empty()) son->setName(name);
   completeChildrenSubjectList(son);
   update(ADD, ntyp ,son);
+  if (SubjectServiceNode *service = dynamic_cast<SubjectServiceNode*>(son))
+    if (catalog && !compo.empty() && !type.empty()) // --- clone from catalog: set component
+      service->setComponentFromCatalog(catalog,compo,type);
+    else
+      service->setComponent();
   return son;
 }
 
@@ -545,6 +583,61 @@ void SubjectProc::loadProc()
   loadLinks();
 }
 
+bool SubjectProc::addComponent(std::string name, std::string ref)
+{
+  DEBTRACE("SubjectProc::addComponent " << name << " " << ref);
+  if (! GuiContext::getCurrent()->getProc()->componentInstanceMap.count(name))
+    {
+      CommandAddComponentInstance *command = new CommandAddComponentInstance(name,ref);
+      if (command->execute())
+        {
+          GuiContext::getCurrent()->getInvoc()->add(command);
+          ComponentInstance *compo = command->getComponentInstance();
+          SubjectComponent *son = addSubjectComponent(compo, name);
+          GuiContext::getCurrent()->getProc()->componentInstanceMap[name] = compo;
+          return son;
+        }
+    }
+  return 0;
+}
+
+bool SubjectProc::addContainer(std::string name, std::string ref)
+{
+  DEBTRACE("SubjectProc::addContainer " << name << " " << ref);
+  if (! GuiContext::getCurrent()->getProc()->containerMap.count(name))
+    {
+      CommandAddContainer *command = new CommandAddContainer(name,ref);
+      if (command->execute())
+        {
+          GuiContext::getCurrent()->getInvoc()->add(command);
+          Container *cont = command->getContainer();
+          SubjectContainer *son = addSubjectContainer(cont, name);
+          GuiContext::getCurrent()->getProc()->containerMap[name] = cont;
+          return son;
+        }
+    }
+  return 0;
+}
+
+SubjectComponent* SubjectProc::addSubjectComponent(YACS::ENGINE::ComponentInstance* compo,
+                                                   std::string name)
+{
+  DEBTRACE("SubjectProc::addSubjectComponent " << name);
+  SubjectComponent *son = new SubjectComponent(compo, this);
+  update(ADD, COMPONENT, son);
+  son->setContainer();
+  return son;
+}
+
+SubjectContainer* SubjectProc::addSubjectContainer(YACS::ENGINE::Container* cont,
+                                                   std::string name)
+{
+  DEBTRACE("SubjectProc::addSubjectContainer " << name);
+  SubjectContainer *son = new SubjectContainer(cont, this);
+  update(ADD, CONTAINER, son);
+  return son;
+}
+
 // ----------------------------------------------------------------------------
 
 SubjectElementaryNode::SubjectElementaryNode(YACS::ENGINE::ElementaryNode *elementaryNode,
@@ -670,6 +763,57 @@ SubjectServiceNode::SubjectServiceNode(YACS::ENGINE::ServiceNode *serviceNode, S
 SubjectServiceNode::~SubjectServiceNode()
 {
   DEBTRACE("SubjectServiceNode::~SubjectServiceNode " << getName());
+}
+
+/*!
+ *  When cloning a service node from a catalog, create the component associated to the node,
+ *  if not already existing, and create the corresponding subject.
+ */
+void SubjectServiceNode::setComponentFromCatalog(YACS::ENGINE::Catalog *catalog,
+                                                 std::string compo,
+                                                 std::string service)
+{
+  DEBTRACE("SubjectServiceNode::setComponent " << compo);
+  if (catalog->_componentMap.count(compo))
+    {
+      YACS::ENGINE::ComponentDefinition* compodef = catalog->_componentMap[compo];
+      if (compodef->_serviceMap.count(service))
+        {
+          Proc* proc = GuiContext::getCurrent()->getProc();
+          ComponentInstance *instance = 0;
+          if (! proc->componentInstanceMap.count(compo))
+            {
+              instance = new SalomeComponent(compo);
+              proc->componentInstanceMap[compo] = instance;
+              SubjectComponent* subCompo =
+                GuiContext::getCurrent()->getSubjectProc()->addSubjectComponent(instance, compo);
+              addSubjectReference(subCompo);
+            }
+          else instance = proc->componentInstanceMap[compo];
+          _serviceNode->setComponent(instance);
+        }
+    }
+}
+
+/*!
+ *  When loading scheme from file, get the component associated to the node, if any,
+ *  and create the corresponding subject.
+ */
+void SubjectServiceNode::setComponent()
+{
+  ComponentInstance *instance = _serviceNode->getComponent();
+  if (instance)
+    {
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      string compo = instance->getName();
+      if (! proc->componentInstanceMap.count(compo))
+        {
+          proc->componentInstanceMap[compo] = instance;
+          SubjectComponent* subCompo =
+            GuiContext::getCurrent()->getSubjectProc()->addSubjectComponent(instance, compo);
+          addSubjectReference(subCompo);
+        }       
+    }
 }
 
 // ----------------------------------------------------------------------------
@@ -957,7 +1101,7 @@ void SubjectOptimizerLoop::completeChildrenSubjectList(SubjectNode *son)
 // ----------------------------------------------------------------------------
 
 SubjectDataPort::SubjectDataPort(YACS::ENGINE::DataPort* port, Subject *parent)
-: Subject(parent), _dataPort(port)
+  : Subject(parent), _dataPort(port)
 {
 }
 
@@ -1010,7 +1154,7 @@ void SubjectDataPort::tryCreateLink(SubjectDataPort *subOutport, SubjectDataPort
   string inportName = subInport->getName();
   
   CommandAddLink *command = new CommandAddLink(outNodePos, outportName,
-                                                   inNodePos, inportName);
+                                               inNodePos, inportName);
   if (command->execute())
     {
       GuiContext::getCurrent()->getInvoc()->add(command);
@@ -1134,6 +1278,54 @@ SubjectLink::~SubjectLink()
 std::string SubjectLink::getName()
 {
   return _name;
+}
+
+// ----------------------------------------------------------------------------
+
+SubjectComponent::SubjectComponent(YACS::ENGINE::ComponentInstance* component, Subject *parent)
+  : Subject(parent), _compoInst(component)
+{
+}
+
+SubjectComponent::~SubjectComponent()
+{
+}
+
+std::string SubjectComponent::getName()
+{
+  return _compoInst->getName();
+}
+
+/*!
+ *  When loading scheme from file, get the container associated to the component, if any,
+ *  and create the corresponding subject.
+ */
+void SubjectComponent::setContainer()
+{
+  DEBTRACE("SubjectComponent::setContainer " << getName());
+  Container* container = _compoInst->getContainer();
+  if (container)
+    {
+      SubjectContainer *subContainer =
+        GuiContext::getCurrent()->getSubjectProc()->addSubjectContainer(container, container->getName());
+      addSubjectReference(subContainer);
+    }
+}
+
+// ----------------------------------------------------------------------------
+
+SubjectContainer::SubjectContainer(YACS::ENGINE::Container* container, Subject *parent)
+  : Subject(parent), _container(container)
+{
+}
+
+SubjectContainer::~SubjectContainer()
+{
+}
+
+std::string SubjectContainer::getName()
+{
+  return _container->getName();
 }
 
 // ----------------------------------------------------------------------------

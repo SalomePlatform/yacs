@@ -40,6 +40,8 @@ namespace YACS
     class InputDataStreamPort;
     class OutputDataStreamPort;
     class Catalog;
+    class ComponentInstance;
+    class Container;
   }
 
   namespace HMI
@@ -54,12 +56,14 @@ namespace YACS
         EDIT,
         RENAME,
         NEWROOT,
-        ADDLINK
+        ADDLINK,
+        ADDREF,
       } GuiEvent;
     
     class ProcInvoc;
     class GuiObserver;
     
+    class SubjectReference;
     class Subject
     {
     public:
@@ -74,6 +78,7 @@ namespace YACS
       virtual Subject* getParent();
       virtual bool destroy(Subject *son);
       virtual void loadChildren();
+      virtual void addSubjectReference(Subject *ref);
     protected:
       std::set<GuiObserver *> _setObs;
       Subject *_parent;
@@ -89,6 +94,16 @@ namespace YACS
     protected:
     };
     
+    class SubjectReference: public Subject
+    {
+    public:
+      SubjectReference(Subject* ref, Subject *parent);
+      virtual ~SubjectReference();
+      virtual std::string getName();
+    protected:
+      Subject* _reference;
+    };
+
     class SubjectDataPort: public Subject
     {
     public:
@@ -185,7 +200,11 @@ namespace YACS
                                       std::string type,
                                       std::string name,
                                       int swCase=0);
-      virtual SubjectNode* addSubjectNode(YACS::ENGINE::Node * node, std::string name = "");
+      virtual SubjectNode* addSubjectNode(YACS::ENGINE::Node * node,
+                                          std::string name = "",
+                                          YACS::ENGINE::Catalog *catalog = 0,
+                                          std::string compo = "",
+                                          std::string type ="");
       YACS::ENGINE::ComposedNode *_composedNode;
     };
 
@@ -205,12 +224,39 @@ namespace YACS
       std::set<SubjectNode*> _children;
     };
 
+    class SubjectComponent: public Subject
+    {
+    public:
+      SubjectComponent(YACS::ENGINE::ComponentInstance* component, Subject *parent);
+      virtual ~SubjectComponent();
+      virtual std::string getName();
+      virtual void setContainer();
+    protected:
+      YACS::ENGINE::ComponentInstance* _compoInst;
+    };
+
+    class SubjectContainer: public Subject
+    {
+    public:
+      SubjectContainer(YACS::ENGINE::Container* container, Subject *parent);
+      virtual ~SubjectContainer();
+      virtual std::string getName();
+    protected:
+      YACS::ENGINE::Container* _container;
+    };
+
     class SubjectProc: public SubjectBloc
     {
     public:
       SubjectProc(YACS::ENGINE::Proc *proc, Subject *parent);
       virtual ~SubjectProc();
       void loadProc();
+      virtual bool addComponent(std::string name, std::string ref="");
+      virtual bool addContainer(std::string name, std::string ref="");
+      SubjectComponent* addSubjectComponent(YACS::ENGINE::ComponentInstance* compo,
+                                            std::string name = "");
+      SubjectContainer* addSubjectContainer(YACS::ENGINE::Container* cont,
+                                            std::string name = "");
     protected:
       YACS::ENGINE::Proc *_proc;
     };
@@ -338,6 +384,10 @@ namespace YACS
     public:
       SubjectServiceNode(YACS::ENGINE::ServiceNode *serviceNode, Subject *parent);
       virtual ~SubjectServiceNode();
+      virtual void setComponentFromCatalog(YACS::ENGINE::Catalog *catalog,
+                                           std::string compo,
+                                           std::string service);
+      virtual void setComponent();
     protected:
       YACS::ENGINE::ServiceNode *_serviceNode;
     };

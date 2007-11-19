@@ -74,6 +74,7 @@ struct proctypeParser: bloctypeParser<T>
       if(currentProc->containerMap.count(t._name) == 0)
         {
           YACS::ENGINE::Container* cont=theRuntime->createContainer();
+          cont->setName(t._name);
           // Set all properties for this container
           std::map<std::string, std::string>::const_iterator pt;
           for(pt=t._props.begin();pt!=t._props.end();pt++)

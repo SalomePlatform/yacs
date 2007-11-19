@@ -56,6 +56,8 @@ namespace YACS
       void select(QListViewItem *it);
       void destroy();
       void addLink();
+      void addComponent();
+      void addContainer();
       void cataSession();
       void cataProc();
     public:
@@ -75,6 +77,7 @@ namespace YACS
       void NodeContextMenu();
       void PortContextMenu();
       void LinkContextMenu();
+      void ComponentContextMenu();
       void resetTreeNode(QListView *lv);
       QWidget* _parent;
       Subject *_context;
@@ -92,7 +95,6 @@ namespace YACS
       NodeViewItem(ViewItem *parent, QString label, Subject* subject);
       virtual void update(GuiEvent event, int type, Subject* son);
     protected:
-      
     };
     
     
@@ -111,7 +113,6 @@ namespace YACS
       PortViewItem(ViewItem *parent, QString label, Subject* subject);
       virtual void update(GuiEvent event, int type, Subject* son);
     protected:
-      
     };
     
     class LinkViewItem: public ViewItem
@@ -119,10 +120,33 @@ namespace YACS
     public:
       LinkViewItem(ViewItem *parent, QString label, Subject* subject);
       virtual void update(GuiEvent event, int type, Subject* son);
-    protected:
-      
+    protected: 
     };
     
+    class ComponentViewItem: public ViewItem
+    {
+    public:
+      ComponentViewItem(ViewItem *parent, QString label, Subject* subject);
+      virtual void update(GuiEvent event, int type, Subject* son);
+    protected:
+    };
+    
+    class ContainerViewItem: public ViewItem
+    {
+    public:
+      ContainerViewItem(ViewItem *parent, QString label, Subject* subject);
+      virtual void update(GuiEvent event, int type, Subject* son);
+    protected:
+    };
+
+class ReferenceViewItem: public ViewItem
+    {
+    public:
+      ReferenceViewItem(ViewItem *parent, QString label, Subject* subject);
+      virtual void update(GuiEvent event, int type, Subject* son);
+    protected:
+    };
+
   }
 }
 

@@ -7,6 +7,7 @@
 #include <list>
 #include <stack>
 #include <string>
+#include <map>
 
 namespace YACS
 {
@@ -18,6 +19,8 @@ namespace YACS
     class Catalog;
     class InputPort;
     class OutputPort;
+    class Container;
+    class ComponentInstance;
   }
 
   namespace HMI
@@ -46,6 +49,9 @@ namespace YACS
         OUTPUTPORT,
         INPUTDATASTREAMPORT,
         OUTPUTDATASTREAMPORT,
+        CONTAINER,
+        COMPONENT,
+        REFERENCE,
         UNKNOWN
       } TypeOfElem;
    
@@ -140,6 +146,70 @@ namespace YACS
       std::string _outPort;
       std::string _inNode;
       std::string _inPort;
+    };
+
+    class CommandAddContainer: public Command
+    {
+    public:
+      CommandAddContainer(std::string name,
+                          std::string refContainer ="");
+      virtual YACS::ENGINE::Container* getContainer();
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      std::string _name;
+      std::string _containerToClone;
+      YACS::ENGINE::Container* _container;
+    };
+
+    class CommandSetContainerProperties: public Command
+    {
+    public:
+      CommandSetContainerProperties(std::string container,
+                                    std::map<std::string,std::string> properties);
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      std::string _container;
+      std::map<std::string,std::string> _properties;
+    };
+
+    class CommandAddComponentInstance: public Command
+    {
+    public:
+      CommandAddComponentInstance(std::string name,
+                                  std::string refComponent="");
+      virtual YACS::ENGINE::ComponentInstance* getComponentInstance();
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      std::string _name;
+      std::string _componentToClone;
+      YACS::ENGINE::ComponentInstance *_compoInst;
+    };
+
+    class CommandAssociateComponentToContainer: public Command
+    {
+    public:
+      CommandAssociateComponentToContainer(std::string component,
+                                           std::string container);
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      std::string _component;
+      std::string _container;
+    };
+
+    class CommandAssociateServiceToComponent: public Command
+    {
+    public:
+      CommandAssociateServiceToComponent(std::string service,
+                                         std::string component);
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      std::string _service;
+      std::string _component;
     };
 
     class Subject;
