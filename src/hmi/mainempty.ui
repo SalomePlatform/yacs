@@ -25,6 +25,7 @@
         <action name="fileOpenAction"/>
         <action name="fileSaveAction"/>
         <action name="fileSaveAsAction"/>
+        <action name="checkLoadAction"/>
         <separator/>
         <action name="filePrintAction"/>
         <separator/>
@@ -310,6 +311,17 @@
             <string></string>
         </property>
     </action>
+    <action>
+        <property name="name">
+            <cstring>checkLoadAction</cstring>
+        </property>
+        <property name="text">
+            <string>check Load</string>
+        </property>
+        <property name="menuText">
+            <string>check Load</string>
+        </property>
+    </action>
 </actions>
 <connections>
     <connection>
@@ -402,6 +414,12 @@
         <receiver>mainform</receiver>
         <slot>helpAbout()</slot>
     </connection>
+    <connection>
+        <sender>checkLoadAction</sender>
+        <signal>activated()</signal>
+        <receiver>mainform</receiver>
+        <slot>fileCheckLoad()</slot>
+    </connection>
 </connections>
 <slots>
     <slot>fileNew()</slot>
@@ -419,6 +437,7 @@
     <slot>helpIndex()</slot>
     <slot>helpContents()</slot>
     <slot>helpAbout()</slot>
+    <slot>fileCheckLoad()</slot>
 </slots>
 <pixmapinproject/>
 <layoutdefaults spacing="6" margin="11"/>

@@ -20,6 +20,14 @@ namespace YACS
 
   namespace HMI
   {
+
+    typedef enum
+      {
+        CATALOGNODE,
+        CATALOGDATATYPE,
+        CATALOGCOMPOSEDNODE
+      } TypeOfCatalogItem;
+
     class editTree;
     class Subject;
 
@@ -30,6 +38,7 @@ namespace YACS
     public:
       BrowseCatalog(editTree* editTree,
                     Subject* sub,
+                    int cataType,
                     QWidget* parent = 0,
                     const char* name = 0,
                     bool modal = FALSE,
@@ -41,8 +50,10 @@ namespace YACS
     protected:
       YACS::ENGINE::Catalog* _sessionCatalog;
       std::map<QListViewItem*,std::pair<std::string,std::string> > _serviceMap;
+      std::map<QListViewItem*,std::string> _typeCodeMap;
       editTree* _editTree;
       Subject* _subject;
+      int _cataType;
     };
 
   }

@@ -50,6 +50,9 @@ namespace YACS
       void newNode(YACS::ENGINE::Catalog* catalog,
                    Subject* sub,
                    std::pair<std::string,std::string> compoServ);
+      void newDataType(YACS::ENGINE::Catalog* catalog,
+                       Subject* sub,
+                       std::string typeName);
       void newInputPort(int key);
       void newOutputPort(int key);
       void select();
@@ -57,8 +60,10 @@ namespace YACS
       void destroy();
       void addLink();
       void addComponent();
+      void associateServiceToComponent();
       void addContainer();
-      void cataSession();
+      void associateComponentToContainer();
+      void cataSession(int cataType);
       void cataProc();
     public:
       editTree(YACS::HMI::Subject *context,
@@ -84,6 +89,8 @@ namespace YACS
       Subject *_root;
       QListViewItem *_previousSelected;
       SubjectDataPort *_selectedSubjectOutPort;
+      SubjectComponent *_selectedSubjectComponent;
+      SubjectServiceNode *_selectedSubjectService;
       std::map<YACS::HMI::Subject*,YACS::HMI::ViewItem*> _viewItemsMap;
       std::map<int, std::pair<YACS::ENGINE::Catalog*, std::string> > _catalogItemsMap;
       int _keymap;
@@ -139,7 +146,15 @@ namespace YACS
     protected:
     };
 
-class ReferenceViewItem: public ViewItem
+    class DataTypeViewItem: public ViewItem
+    {
+    public:
+      DataTypeViewItem(ViewItem *parent, QString label, Subject* subject);
+      virtual void update(GuiEvent event, int type, Subject* son);
+    protected:
+    };
+
+    class ReferenceViewItem: public ViewItem
     {
     public:
       ReferenceViewItem(ViewItem *parent, QString label, Subject* subject);

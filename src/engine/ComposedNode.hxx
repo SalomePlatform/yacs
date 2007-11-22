@@ -73,7 +73,7 @@ namespace YACS
       InputDataStreamPort *getInputDataStreamPort(const std::string& name) const throw(Exception);
       OutputDataStreamPort *getOutputDataStreamPort(const std::string& name) const throw(Exception);
       std::vector< std::pair<OutPort *, InPort *> > getSetOfInternalLinks() const;
-      std::vector< std::pair<OutPort *, InPort *> > getSetOfLinksLeavingCurrentScope() const;
+      virtual std::vector< std::pair<OutPort *, InPort *> > getSetOfLinksLeavingCurrentScope() const;
       void checkConsistency(LinkInfo& info) const throw(Exception);
       virtual std::vector< std::pair<InPort *, OutPort *> > getSetOfLinksComingInCurrentScope() const;
       //

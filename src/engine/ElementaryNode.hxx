@@ -55,6 +55,8 @@ namespace YACS
       std::list<OutputPort *> getLocalOutputPorts() const { return _setOfOutputPort; }
       std::set<OutPort *> getAllOutPortsLeavingCurrentScope() const;
       std::set<InPort *> getAllInPortsComingFromOutsideOfCurrentScope() const;
+      virtual std::vector< std::pair<OutPort *, InPort *> > getSetOfLinksLeavingCurrentScope() const;
+      virtual std::vector< std::pair<InPort *, OutPort *> > getSetOfLinksComingInCurrentScope() const;
       std::list<InputDataStreamPort *> getSetOfInputDataStreamPort() const { return _setOfInputDataStreamPort; }
       std::list<OutputDataStreamPort *> getSetOfOutputDataStreamPort() const { return _setOfOutputDataStreamPort; }
       InputDataStreamPort *getInputDataStreamPort(const std::string& name) const throw(Exception);

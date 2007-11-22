@@ -5,6 +5,7 @@
 #include <string>
 #include <iostream>
 #include <list>
+#include <map>
 
 namespace YACS
 {
@@ -47,7 +48,7 @@ namespace YACS
       std::map<std::string, InlineNode*> inlineMap;
       std::map<std::string, TypeCode*> typeMap;
       std::map<std::string, Container*> containerMap;
-      std::map<std::string, ComponentInstance*> componentInstanceMap;
+      std::map<std::pair<std::string,int>, ComponentInstance*> componentInstanceMap;
       std::vector<std::string> names;
 
       typedef std::map<std::string, Logger*> LoggerMap;

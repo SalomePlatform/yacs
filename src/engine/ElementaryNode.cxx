@@ -140,6 +140,32 @@ std::set<InPort *> ElementaryNode::getAllInPortsComingFromOutsideOfCurrentScope(
   return ret;
 }
 
+std::vector< std::pair<OutPort *, InPort *> > ElementaryNode::getSetOfLinksLeavingCurrentScope() const
+{
+  vector< pair<OutPort *, InPort *> > ret;
+  std::set<OutPort *> ports=getAllOutPortsLeavingCurrentScope();
+  for(set<OutPort *>::iterator iter2=ports.begin();iter2!=ports.end();iter2++)
+    {
+      set<InPort *> temp2=(*iter2)->edSetInPort();
+      for(set<InPort *>::iterator iter3=temp2.begin();iter3!=temp2.end();iter3++)
+        ret.push_back(pair<OutPort *, InPort *>(*iter2,*iter3));
+    }
+  return ret;
+}
+
+std::vector< std::pair<InPort *, OutPort *> > ElementaryNode::getSetOfLinksComingInCurrentScope() const
+{
+  vector< pair<InPort *, OutPort *> > ret;
+  set<InPort *> ports=getAllInPortsComingFromOutsideOfCurrentScope();
+  for(set<InPort *>::iterator iter2=ports.begin();iter2!=ports.end();iter2++)
+    {
+      set<OutPort *> temp2=(*iter2)->edSetOutPort();
+      for(set<OutPort *>::iterator iter3=temp2.begin();iter3!=temp2.end();iter3++)
+        ret.push_back(pair<InPort *, OutPort *>(*iter2,*iter3));
+    }
+  return ret;
+}
+
 InputDataStreamPort *ElementaryNode::getInputDataStreamPort(const std::string& name) const throw(Exception)
 {
   return getPort<InputDataStreamPort>(name,_setOfInputDataStreamPort);

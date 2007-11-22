@@ -37,6 +37,7 @@ GuiContext::GuiContext()
 GuiContext::~GuiContext()
 {
   delete _invoc;
+  _subjectProc->clean();
   delete _subjectProc;
 }
 
@@ -44,13 +45,14 @@ void GuiContext::setProc(YACS::ENGINE::Proc* proc)
 {
   if (_subjectProc)
     {
-      delete _subjectProc;
+      Subject::erase(_subjectProc);
       _subjectProc = 0;
     }
   _proc = proc;
   _mapOfSubjectNode.clear();
   _mapOfSubjectDataPort.clear();
   _mapOfSubjectLink.clear();
+  _mapOfSubjectComponent.clear();
   _subjectProc = new SubjectProc(proc, this);
   _mapOfSubjectNode[static_cast<Node*>(proc)] = _subjectProc;
   update(YACS::HMI::NEWROOT, 0, _subjectProc);

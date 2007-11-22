@@ -1,4 +1,5 @@
 
+#include <Python.h>
 #include "commandsProc.hxx"
 
 #include "Node.hxx"
@@ -189,6 +190,41 @@ bool CommandRenameNode::localReverse()
 
 // ----------------------------------------------------------------------------
 
+CommandAddDataTypeFromCatalog::CommandAddDataTypeFromCatalog(YACS::ENGINE::Catalog* catalog,
+                                                             std::string typeName)
+  : Command(), _catalog(catalog), _typeName(typeName)
+{
+  DEBTRACE("CommandAddDataTypeFromCatalog::CommandAddDataTypeFromCatalog " << typeName);
+}
+
+YACS::ENGINE::TypeCode *CommandAddDataTypeFromCatalog::getTypeCode()
+{
+  if (GuiContext::getCurrent()->getProc()->typeMap.count(_typeName))
+    return GuiContext::getCurrent()->getProc()->typeMap[_typeName];
+  else return 0;
+}
+
+bool CommandAddDataTypeFromCatalog::localExecute()
+{
+  Proc* proc = GuiContext::getCurrent()->getProc();
+  if (proc->typeMap.count(_typeName))
+    return false;
+  else
+    if (_catalog->_typeMap.count(_typeName))
+      {
+        proc->typeMap[_typeName] = _catalog->_typeMap[_typeName]->clone();
+        return true;
+      }
+  return false;
+}
+
+bool CommandAddDataTypeFromCatalog::localReverse()
+{
+}
+
+
+// ----------------------------------------------------------------------------
+
 CommandAddInputPortFromCatalog::CommandAddInputPortFromCatalog(YACS::ENGINE::Catalog *catalog,
                                                                std::string type,
                                                                std::string node,
@@ -287,7 +323,7 @@ CommandDestroy::CommandDestroy(std::string position,  Subject* subject)
 
 bool CommandDestroy::localExecute()
 {
-  delete _subject;
+  Subject::erase(_subject);
   _subject = 0;
   return true; 
 }
@@ -417,11 +453,12 @@ bool CommandSetContainerProperties::localReverse()
 
 // ----------------------------------------------------------------------------
 
-CommandAddComponentInstance::CommandAddComponentInstance(std::string name,
-                                                         std::string refComponent)
-  : Command(), _name(name), _componentToClone(refComponent), _compoInst(0)
+CommandAddComponentInstance::CommandAddComponentInstance(std::pair<std::string,int> key,
+                                                         std::pair<std::string,int> refkey)
+  : Command(), _key(key), _keyToClone(refkey), _compoInst(0)
 {
-  DEBTRACE("CommandAddComponentInstance::CommandAddComponentInstance " << name << " " << refComponent);
+  DEBTRACE("CommandAddComponentInstance::CommandAddComponentInstance " << key.first<< " " << key.second
+           << " " << refkey.first << " " << refkey.second );
 }
 
 bool CommandAddComponentInstance::localExecute()
@@ -430,17 +467,17 @@ bool CommandAddComponentInstance::localExecute()
     {
       Proc* proc = GuiContext::getCurrent()->getProc();
       ComponentInstance *compo = 0;
-      if (_componentToClone.empty())
+      if (_keyToClone.first.empty())
         {
-          compo = new SalomeComponent(_name);
+          compo = new SalomeComponent(_key.first);
         }
       else
         {
           DEBTRACE("CommandAddComponentInstance::localExecute with ref Component = semantic not clear ******");
           ComponentInstance *ref = 0;
-          if (proc->componentInstanceMap.count(_componentToClone))
+          if (proc->componentInstanceMap.count(_keyToClone))
             {
-              ComponentInstance *ref = proc->componentInstanceMap[_componentToClone]; // only the last one kept
+              ComponentInstance *ref = proc->componentInstanceMap[_keyToClone];
               assert(ref);
               compo = ref->clone();
             }
@@ -448,7 +485,7 @@ bool CommandAddComponentInstance::localExecute()
             return false;
         }
       _compoInst = compo;
-      proc->componentInstanceMap[_name] = _compoInst; // --- potentially several instances under the same name
+      proc->componentInstanceMap[_key] = _compoInst; // --- potentially several instances under the same name
       return true;
     }
   catch (Exception& ex)
@@ -470,12 +507,12 @@ YACS::ENGINE::ComponentInstance* CommandAddComponentInstance::getComponentInstan
   
 // ----------------------------------------------------------------------------
 
-CommandAssociateComponentToContainer::CommandAssociateComponentToContainer(std::string component,
+CommandAssociateComponentToContainer::CommandAssociateComponentToContainer(std::pair<std::string,int> key,
                                                                            std::string container)
-  : Command(), _component(component), _container(container)
+  : Command(), _key(key), _container(container)
 {
   DEBTRACE("CommandAssociateComponentToContainer::CommandAssociateComponentToContainer "
-           << component << " " << container);
+           << key.first << " " << key.second << " " << container);
 }
 
 bool CommandAssociateComponentToContainer::localExecute()
@@ -486,9 +523,9 @@ bool CommandAssociateComponentToContainer::localExecute()
       if (proc->containerMap.count(_container))
         {
           Container *cont = proc->containerMap[_container];
-          if (proc->componentInstanceMap.count(_component))
+          if (proc->componentInstanceMap.count(_key))
             {
-              ComponentInstance *compo = proc->componentInstanceMap[_component];
+              ComponentInstance *compo = proc->componentInstanceMap[_key];
               compo->setContainer(cont);
               return true;
             }
@@ -509,11 +546,11 @@ bool CommandAssociateComponentToContainer::localReverse()
 // ----------------------------------------------------------------------------
 
 CommandAssociateServiceToComponent::CommandAssociateServiceToComponent(std::string service,
-                                                                       std::string component)
-  : Command(), _service(service), _component(component)
+                                                                       std::pair<std::string,int> key)
+  : Command(), _service(service), _key(key)
 {
   DEBTRACE("CommandAssociateServiceToComponent::CommandAssociateServiceToComponent "
-           << service << " " << component);
+           << service << " " << key.first << " " << key.second);
 }
 
 bool CommandAssociateServiceToComponent::localExecute()
@@ -525,9 +562,9 @@ bool CommandAssociateServiceToComponent::localExecute()
       Node* node = proc->getChildByName(_service);
       if (ServiceNode *service = dynamic_cast<ServiceNode*>(node))
         {
-          if (proc->componentInstanceMap.count(_component))
+          if (proc->componentInstanceMap.count(_key))
             {
-              ComponentInstance *compo = proc->componentInstanceMap[_component];
+              ComponentInstance *compo = proc->componentInstanceMap[_key];
               service->setComponent(compo);
               return true;
             }

@@ -108,6 +108,8 @@ namespace YACS
       virtual OutPort *getOutPort(const std::string& name) const throw(Exception);
       virtual std::set<OutPort *> getAllOutPortsLeavingCurrentScope() const = 0;
       virtual std::set<InPort *> getAllInPortsComingFromOutsideOfCurrentScope() const = 0;
+      virtual std::vector< std::pair<OutPort *, InPort *> > getSetOfLinksLeavingCurrentScope() const = 0;
+      virtual std::vector< std::pair<InPort *, OutPort *> > getSetOfLinksComingInCurrentScope() const =0;
       virtual InputPort *getInputPort(const std::string& name) const throw(Exception) = 0;
       virtual OutputPort *getOutputPort(const std::string& name) const throw(Exception) = 0;
       virtual InputDataStreamPort *getInputDataStreamPort(const std::string& name) const throw(Exception) = 0;

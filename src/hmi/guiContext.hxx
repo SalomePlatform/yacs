@@ -45,6 +45,8 @@ namespace YACS
       std::map<YACS::ENGINE::Node*,YACS::HMI::SubjectNode*> _mapOfSubjectNode;
       std::map<YACS::ENGINE::DataPort*,YACS::HMI::SubjectDataPort*> _mapOfSubjectDataPort;
       std::map<std::pair<YACS::ENGINE::OutPort*, YACS::ENGINE::InPort*>,YACS::HMI::SubjectLink*> _mapOfSubjectLink;
+      std::map<YACS::ENGINE::ComponentInstance*, YACS::HMI::SubjectComponent*> _mapOfSubjectComponent;
+      std::map<YACS::ENGINE::Container*, YACS::HMI::SubjectContainer*> _mapOfSubjectContainer;
 
     protected:
       YACS::ENGINE::Catalog* _builtinCatalog;

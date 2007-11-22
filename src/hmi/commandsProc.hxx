@@ -52,6 +52,7 @@ namespace YACS
         CONTAINER,
         COMPONENT,
         REFERENCE,
+        DATATYPE,
         UNKNOWN
       } TypeOfElem;
    
@@ -96,6 +97,19 @@ namespace YACS
       virtual bool localReverse();
       std::string _position;
       std::string _name;
+    };
+
+    class CommandAddDataTypeFromCatalog: public Command
+    {
+    public:
+      CommandAddDataTypeFromCatalog(YACS::ENGINE::Catalog* catalog,
+                                    std::string typeName);
+      YACS::ENGINE::TypeCode *getTypeCode();
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      YACS::ENGINE::Catalog* _catalog;
+      std::string _typeName;
     };
 
     class CommandAddInputPortFromCatalog: public Command
@@ -177,26 +191,26 @@ namespace YACS
     class CommandAddComponentInstance: public Command
     {
     public:
-      CommandAddComponentInstance(std::string name,
-                                  std::string refComponent="");
+      CommandAddComponentInstance(std::pair<std::string,int> key,
+                                  std::pair<std::string,int> = (std::pair<std::string,int>("",0)));
       virtual YACS::ENGINE::ComponentInstance* getComponentInstance();
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
-      std::string _name;
-      std::string _componentToClone;
+      std::pair<std::string,int> _key;
+      std::pair<std::string,int> _keyToClone;
       YACS::ENGINE::ComponentInstance *_compoInst;
     };
 
     class CommandAssociateComponentToContainer: public Command
     {
     public:
-      CommandAssociateComponentToContainer(std::string component,
+      CommandAssociateComponentToContainer(std::pair<std::string,int> key,
                                            std::string container);
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
-      std::string _component;
+      std::pair<std::string,int>  _key;
       std::string _container;
     };
 
@@ -204,12 +218,12 @@ namespace YACS
     {
     public:
       CommandAssociateServiceToComponent(std::string service,
-                                         std::string component);
+                                         std::pair<std::string,int> key);
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
       std::string _service;
-      std::string _component;
+      std::pair<std::string,int>  _key;
     };
 
     class Subject;

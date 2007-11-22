@@ -70,6 +70,7 @@ public:
   virtual void fileNew();
   virtual void fileSave();
   virtual void fileSaveAs();
+  virtual void fileCheckLoad();
   virtual void addTree(Qt::Dock pos);
   virtual void setCanvas();
   virtual void setStackOfWidgets();
@@ -196,6 +197,9 @@ void myMainform::fileOpen()
                                              "Choose a filename to load"  );
   if ( !fn.isEmpty() )
     {
+      DEBTRACE("***************************************************************************");
+      DEBTRACE("file loaded : " <<fn.latin1());
+      DEBTRACE("***************************************************************************");
       _proc = _loader->load(fn.latin1());
       YACS::ENGINE::Logger* logger= _proc->getLogger("parser");
       if(!logger->isEmpty())
@@ -237,6 +241,40 @@ void myMainform::fileSaveAs()
       
     }
 }
+
+void myMainform::fileCheckLoad()
+{
+//   QString s = QFileDialog::getExistingDirectory(QString::null,
+//                                                 this,
+//                                                 "get samples xml files directory",
+//                                                 "Choose a sample xml files directory",
+//                                                 TRUE );
+  QStringList files = QFileDialog::getOpenFileNames(tr( "XML-Files (*.xml)" ),
+                                                    QString::null,
+                                                    this,
+                                                    "check load on samples xml files",
+                                                    "Select one or more files to load" );
+  QStringList list = files;
+  QStringList::Iterator it = list.begin();
+  while( it != list.end() )
+    {
+      QString fn = *it;
+      if ( !fn.isEmpty() )
+        {
+          DEBTRACE("***************************************************************************");
+          DEBTRACE("file loaded : " <<fn.latin1());
+          DEBTRACE("***************************************************************************");
+          _proc = _loader->load(fn.latin1());
+          YACS::ENGINE::Logger* logger= _proc->getLogger("parser");
+          if(!logger->isEmpty())
+            {
+              DEBTRACE(logger->getStr());
+            }
+          YACS::HMI::GuiContext::getCurrent()->setProc(_proc);
+        }
+      ++it;
+    }
+ }
 
 
 void myMainform::load(const QString &f)

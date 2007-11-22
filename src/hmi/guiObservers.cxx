@@ -1,4 +1,5 @@
 
+#include <Python.h>
 #include "guiObservers.hxx"
 #include "commandsProc.hxx"
 #include "Node.hxx"
@@ -31,6 +32,7 @@
 
 #include <string>
 #include <sstream>
+#include <vector>
 
 #define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -43,13 +45,32 @@ using namespace YACS::ENGINE;
 
 // ----------------------------------------------------------------------------
 
+void Subject::erase(Subject* sub)
+{
+  sub->clean();
+  delete sub;
+}
+
+// ----------------------------------------------------------------------------
+
 Subject::Subject(Subject *parent) : _parent(parent)
 {
+  _destructible = true;
 }
 
 Subject::~Subject()
 {
   DEBTRACE("Subject::~Subject " << getName());
+}
+
+void Subject::clean()
+{
+  localClean();
+}
+
+void Subject::localClean()
+{
+  DEBTRACE("Subject::localClean ");
   set<GuiObserver*>::iterator it;
   set<GuiObserver*> copySet = _setObs;
   for (it = copySet.begin(); it != copySet.end(); ++it)
@@ -100,7 +121,8 @@ Subject* Subject::getParent()
 
 bool Subject::destroy(Subject *son)
 {
-  DEBTRACE("Subject::destroy " << son->getName());
+  string toDestroy = son->getName();
+  DEBTRACE("Subject::destroy " << toDestroy);
   Proc *proc = GuiContext::getCurrent()->getProc();
   string position = "";
 
@@ -129,12 +151,14 @@ bool Subject::destroy(Subject *son)
             position = proc->getChildName(subNodep->getNode());
         }
     }
-
-  CommandDestroy* command = new CommandDestroy(position, son);
-  if (command->execute())
+  if (son->isDestructible())
     {
-      DEBTRACE("Destruction done: " << position);
-      return true;
+      CommandDestroy* command = new CommandDestroy(position, son);
+      if (command->execute())
+        {
+          DEBTRACE("Destruction done: " << toDestroy);
+          return true;
+        }
     }
   return false;
 }
@@ -182,6 +206,17 @@ SubjectReference::~SubjectReference()
 {
 }
 
+void SubjectReference::clean()
+{
+  localClean();
+  Subject::clean();
+}
+
+void SubjectReference::localClean()
+{
+  DEBTRACE("SubjectReference::localClean ");
+}
+
 std::string SubjectReference::getName()
 {
   std::stringstream name;
@@ -196,27 +231,17 @@ SubjectNode::SubjectNode(YACS::ENGINE::Node *node, Subject *parent)
 {
   _listSubjectInputPort.clear();
   _listSubjectOutputPort.clear();
+  _listSubjectIDSPort.clear();
+  _listSubjectODSPort.clear();
+  _listSubjectLink.clear();
 }
 
+/*!
+ * all destruction is done in generic class SubjectNode
+ */
 SubjectNode::~SubjectNode()
 {
   DEBTRACE("SubjectNode::~SubjectNode " << getName());
-  list<SubjectInputPort*>::iterator iti;
-  list<SubjectInputPort*> cpli = _listSubjectInputPort;
-  for(iti = cpli.begin(); iti != cpli.end(); ++iti)
-    delete (*iti);
-  list<SubjectOutputPort*>::iterator ito;
-  list<SubjectOutputPort*> cplo = _listSubjectOutputPort;
-  for(ito = cplo.begin(); ito != cplo.end(); ++ito)
-    delete (*ito);
-  list<SubjectInputDataStreamPort*>::iterator itid;
-  list<SubjectInputDataStreamPort*> cplid = _listSubjectIDSPort;
-  for(itid = cplid.begin(); itid != cplid.end(); ++itid)
-    delete (*itid);
-  list<SubjectOutputDataStreamPort*>::iterator itod;
-  list<SubjectOutputDataStreamPort*> cplod = _listSubjectODSPort;
-  for(itod = cplod.begin(); itod != cplod.end(); ++itod)
-    delete (*itod);
   ComposedNode* father = _node->getFather();
   if (father)
     try
@@ -236,14 +261,59 @@ SubjectNode::~SubjectNode()
       }
     catch (YACS::Exception &e)
       {
-        DEBTRACE("SubjectNode::~SubjectNode: father->edRemoveChild: YACS exception " << e.what());
+        DEBTRACE("------------------------------------------------------------------------------");
+        DEBTRACE("SubjectNode::localClean: father->edRemoveChild: YACS exception " << e.what());
+        DEBTRACE("------------------------------------------------------------------------------");
       }
+}
+
+void SubjectNode::clean()
+{
+  localClean();
+  Subject::clean();
+}
+
+void SubjectNode::localClean()
+{
+  DEBTRACE("SubjectNode::localClean ");
+  removeExternalLinks();
+  {
+    list<SubjectLink*>::iterator its;
+    list<SubjectLink*> cpll = _listSubjectLink;
+    for (its = cpll.begin(); its != cpll.end(); ++its)
+      erase(*its);
+  }
+  {
+    list<SubjectInputPort*>::iterator iti;
+    list<SubjectInputPort*> cpli = _listSubjectInputPort;
+    for(iti = cpli.begin(); iti != cpli.end(); ++iti)
+      erase(*iti);
+  }
+  {
+    list<SubjectOutputPort*>::iterator ito;
+    list<SubjectOutputPort*> cplo = _listSubjectOutputPort;
+    for(ito = cplo.begin(); ito != cplo.end(); ++ito)
+      erase(*ito);
+  }
+  {
+    list<SubjectInputDataStreamPort*>::iterator itid;
+    list<SubjectInputDataStreamPort*> cplid = _listSubjectIDSPort;
+    for(itid = cplid.begin(); itid != cplid.end(); ++itid)
+      erase(*itid);
+  }
+  {
+    list<SubjectOutputDataStreamPort*>::iterator itod;
+    list<SubjectOutputDataStreamPort*> cplod = _listSubjectODSPort;
+    for(itod = cplod.begin(); itod != cplod.end(); ++itod)
+      erase(*itod);
+  }
   if (_parent)
     {
       SubjectBloc* sb = dynamic_cast<SubjectBloc*>(_parent);
       if (sb) sb->removeNode(this);
     }
 }
+
 
 std::string SubjectNode::getName()
 {
@@ -285,6 +355,8 @@ SubjectInputPort* SubjectNode::addSubjectInputPort(YACS::ENGINE::InputPort *port
   _listSubjectInputPort.push_back(son);
   if (!name.empty()) son->setName(name);
   update(ADD, INPUTPORT ,son);
+  YACS::ENGINE::TypeCode *typcod = port->edGetType();
+  GuiContext::getCurrent()->getSubjectProc()->addSubjectDataType(typcod);
   return son;
 }
 
@@ -300,6 +372,8 @@ SubjectOutputPort* SubjectNode::addSubjectOutputPort(YACS::ENGINE::OutputPort *p
   _listSubjectOutputPort.push_back(son);
   if (!name.empty()) son->setName(name);
   update(ADD, OUTPUTPORT ,son);
+  YACS::ENGINE::TypeCode *typcod = port->edGetType();
+  GuiContext::getCurrent()->getSubjectProc()->addSubjectDataType(typcod);
   return son;
 }
 
@@ -314,6 +388,8 @@ SubjectInputDataStreamPort* SubjectNode::addSubjectIDSPort(YACS::ENGINE::InputDa
   _listSubjectIDSPort.push_back(son);
   if (!name.empty()) son->setName(name);
   update(ADD, INPUTDATASTREAMPORT ,son);
+  YACS::ENGINE::TypeCode *typcod = port->edGetType();
+  GuiContext::getCurrent()->getSubjectProc()->addSubjectDataType(typcod);
   return son;
 }
 
@@ -329,7 +405,43 @@ SubjectOutputDataStreamPort* SubjectNode::addSubjectODSPort(YACS::ENGINE::Output
   _listSubjectODSPort.push_back(son);
   if (!name.empty()) son->setName(name);
   update(ADD, OUTPUTDATASTREAMPORT ,son);
+  YACS::ENGINE::TypeCode *typcod = port->edGetType();
+  GuiContext::getCurrent()->getSubjectProc()->addSubjectDataType(typcod);
   return son;
+}
+
+void SubjectNode::removeExternalLinks()
+{
+  DEBTRACE("SubjectNode::removeExternalLinks " << getName());
+  std::vector< std::pair<OutPort *, InPort *> > listLeaving  = getNode()->getSetOfLinksLeavingCurrentScope();
+  std::vector< std::pair<InPort *, OutPort *> > listIncoming = getNode()->getSetOfLinksComingInCurrentScope();
+  std::vector< std::pair<OutPort *, InPort *> > globalList = listLeaving;
+  std::vector< std::pair<InPort *, OutPort *> >::iterator it1;
+  for (it1 = listIncoming.begin(); it1 != listIncoming.end(); ++it1)
+    {
+      std::pair<OutPort *, InPort *> outin = std::pair<OutPort *, InPort *>((*it1).second, (*it1).first);
+      globalList.push_back(outin);
+    }
+  std::vector< std::pair<OutPort *, InPort *> >::iterator it2;
+  for (it2 = globalList.begin(); it2 != globalList.end(); ++it2)
+    {
+      SubjectLink* subject = 0;
+      if (GuiContext::getCurrent()->_mapOfSubjectLink.count(*it2))
+        {
+          subject = GuiContext::getCurrent()->_mapOfSubjectLink[*it2];
+          assert(subject);
+          DEBTRACE("link to remove " << subject->getName());
+          erase(subject);
+          GuiContext::getCurrent()->_mapOfSubjectLink.erase(*it2);
+        }
+      else
+        {
+          DEBTRACE("------------------------------------------------------------------------------");
+          DEBTRACE("SubjectNode::removeExternalLinks(): an external link not in map...");
+          DEBTRACE("------------------------------------------------------------------------------");
+        }
+    } 
+      
 }
 
 // ----------------------------------------------------------------------------
@@ -340,9 +452,23 @@ SubjectComposedNode::SubjectComposedNode(YACS::ENGINE::ComposedNode *composedNod
 {
 }
 
+/*!
+ * all generic destruction is done in generic class SubjectNode
+ */
 SubjectComposedNode::~SubjectComposedNode()
 {
   DEBTRACE("SubjectComposedNode::~SubjectComposedNode " << getName());
+}
+
+void SubjectComposedNode::clean()
+{
+  localClean();
+  SubjectNode::clean();
+}
+
+void SubjectComposedNode::localClean()
+{
+  DEBTRACE("SubjectComposedNode::localClean ");
 }
 
 bool SubjectComposedNode::addNode(YACS::ENGINE::Catalog *catalog,
@@ -488,8 +614,19 @@ SubjectLink* SubjectComposedNode::addSubjectLink(SubjectNode *sno,
   InPort *inp = sni->getNode()->getInPort(spi->getName());
   pair<OutPort*,InPort*> keyLink(outp,inp);
   GuiContext::getCurrent()->_mapOfSubjectLink[keyLink] = son;
+  _listSubjectLink.push_back(son);
+  spo->addSubjectLink(son);
+  spi->addSubjectLink(son);
   update(ADDLINK, 0, son);
+  DEBTRACE("addSubjectLink: " << getName() << " " << son->getName());
   return son;
+}
+
+void SubjectComposedNode::removeLink(SubjectLink* link)
+{
+  link->getSubjectOutPort()->removeSubjectLink(link);
+  link->getSubjectInPort()->removeSubjectLink(link);
+  _listSubjectLink.remove(link);
 }
 
 void SubjectComposedNode::loadLinks()
@@ -534,13 +671,27 @@ SubjectBloc::SubjectBloc(YACS::ENGINE::Bloc *bloc, Subject *parent)
   _children.clear();
 }
 
+/*!
+ * all generic destruction is done in generic class SubjectNode
+ */
 SubjectBloc::~SubjectBloc()
 {
   DEBTRACE("SubjectBloc::~SubjectBloc " << getName());
+}
+
+void SubjectBloc::clean()
+{
+  localClean();
+  SubjectComposedNode::clean();
+}
+
+void SubjectBloc::localClean()
+{
+  DEBTRACE("SubjectBloc::localClean ");
   set<SubjectNode*>::iterator it;
   set<SubjectNode*> copyChildren = _children;
   for (it = copyChildren.begin(); it !=copyChildren.end(); ++it)
-    delete (*it) ;
+    erase(*it);
 }
 
 bool SubjectBloc::addNode(YACS::ENGINE::Catalog *catalog,
@@ -576,6 +727,17 @@ SubjectProc::~SubjectProc()
   DEBTRACE("SubjectProc::~SubjectProc " << getName());
 }
 
+void SubjectProc::clean()
+{
+  localClean();
+  SubjectBloc::clean();
+}
+
+void SubjectProc::localClean()
+{
+  DEBTRACE("SubjectProc::localClean ");
+}
+
 void SubjectProc::loadProc()
 {
   DEBTRACE("SubjectProc::loadProc "  << getName());
@@ -583,18 +745,20 @@ void SubjectProc::loadProc()
   loadLinks();
 }
 
-bool SubjectProc::addComponent(std::string name, std::string ref)
+bool SubjectProc::addComponent(std::string name)
 {
-  DEBTRACE("SubjectProc::addComponent " << name << " " << ref);
-  if (! GuiContext::getCurrent()->getProc()->componentInstanceMap.count(name))
+  DEBTRACE("SubjectProc::addComponent " << name);
+  int id = GuiContext::getCurrent()->getNewId();
+  pair<string,int> key = pair<string,int>(name,id);
+  if (! GuiContext::getCurrent()->getProc()->componentInstanceMap.count(key))
     {
-      CommandAddComponentInstance *command = new CommandAddComponentInstance(name,ref);
+      CommandAddComponentInstance *command = new CommandAddComponentInstance(key);
       if (command->execute())
         {
           GuiContext::getCurrent()->getInvoc()->add(command);
           ComponentInstance *compo = command->getComponentInstance();
-          SubjectComponent *son = addSubjectComponent(compo, name);
-          GuiContext::getCurrent()->getProc()->componentInstanceMap[name] = compo;
+          SubjectComponent *son = addSubjectComponent(compo, key);
+          GuiContext::getCurrent()->getProc()->componentInstanceMap[key] = compo;
           return son;
         }
     }
@@ -619,11 +783,25 @@ bool SubjectProc::addContainer(std::string name, std::string ref)
   return 0;
 }
 
-SubjectComponent* SubjectProc::addSubjectComponent(YACS::ENGINE::ComponentInstance* compo,
-                                                   std::string name)
+bool SubjectProc::addDataType(YACS::ENGINE::Catalog* catalog, std::string typeName)
 {
-  DEBTRACE("SubjectProc::addSubjectComponent " << name);
-  SubjectComponent *son = new SubjectComponent(compo, this);
+  DEBTRACE("SubjectProc::addDataType " << typeName);
+  CommandAddDataTypeFromCatalog *command = new CommandAddDataTypeFromCatalog(catalog, typeName);
+  if (command->execute())
+    {
+      GuiContext::getCurrent()->getInvoc()->add(command);
+      SubjectDataType *son = addSubjectDataType(command->getTypeCode());
+      return son;
+    }
+  return 0;
+}
+
+SubjectComponent* SubjectProc::addSubjectComponent(YACS::ENGINE::ComponentInstance* compo,
+                                                   std::pair<std::string,int> key)
+{
+  DEBTRACE("SubjectProc::addSubjectComponent " << key.first << " " << key.second);
+  SubjectComponent *son = new SubjectComponent(compo, key.second, this);
+  GuiContext::getCurrent()->_mapOfSubjectComponent[compo] = son;
   update(ADD, COMPONENT, son);
   son->setContainer();
   return son;
@@ -634,7 +812,23 @@ SubjectContainer* SubjectProc::addSubjectContainer(YACS::ENGINE::Container* cont
 {
   DEBTRACE("SubjectProc::addSubjectContainer " << name);
   SubjectContainer *son = new SubjectContainer(cont, this);
+  GuiContext::getCurrent()->_mapOfSubjectContainer[cont] = son;
   update(ADD, CONTAINER, son);
+  return son;
+}
+
+SubjectDataType* SubjectProc::addSubjectDataType(YACS::ENGINE::TypeCode *type)
+{
+  string typeName = type->name();
+  DEBTRACE("SubjectProc::addSubjectDataType " << typeName);
+  Proc* proc = GuiContext::getCurrent()->getProc();
+  SubjectDataType* son = 0;
+  if (! proc->typeMap.count(typeName))
+    {
+      proc->typeMap[typeName] = type->clone();
+      son = new SubjectDataType(typeName, this);
+      update(ADD, DATATYPE, son);
+    }
   return son;
 }
 
@@ -646,10 +840,25 @@ SubjectElementaryNode::SubjectElementaryNode(YACS::ENGINE::ElementaryNode *eleme
 {
 }
 
+/*!
+ * all generic destruction is done in generic class SubjectNode
+ */
 SubjectElementaryNode::~SubjectElementaryNode()
 {
   DEBTRACE("SubjectElementaryNode::~SubjectElementaryNode " << getName());
 }
+
+void SubjectElementaryNode::clean()
+{
+  localClean();
+  SubjectNode::clean();
+}
+
+void SubjectElementaryNode::localClean()
+{
+  DEBTRACE("SubjectElementaryNode::localClean ");
+}
+
 
 bool SubjectElementaryNode::addInputPort(YACS::ENGINE::Catalog *catalog, std::string type, std::string name)
 {
@@ -753,6 +962,18 @@ SubjectInlineNode::~SubjectInlineNode()
   DEBTRACE("SubjectInlineNode::~SubjectInlineNode " << getName());
 }
 
+void SubjectInlineNode::clean()
+{
+  localClean();
+  SubjectElementaryNode::clean();
+}
+
+void SubjectInlineNode::localClean()
+{
+  DEBTRACE("SubjectInlineNode::localClean ");
+}
+
+
 // ----------------------------------------------------------------------------
 
 SubjectServiceNode::SubjectServiceNode(YACS::ENGINE::ServiceNode *serviceNode, Subject *parent)
@@ -764,6 +985,18 @@ SubjectServiceNode::~SubjectServiceNode()
 {
   DEBTRACE("SubjectServiceNode::~SubjectServiceNode " << getName());
 }
+
+void SubjectServiceNode::clean()
+{
+  localClean();
+  SubjectElementaryNode::clean();
+}
+
+void SubjectServiceNode::localClean()
+{
+  DEBTRACE("SubjectServiceNode::localClean ");
+}
+
 
 /*!
  *  When cloning a service node from a catalog, create the component associated to the node,
@@ -781,15 +1014,23 @@ void SubjectServiceNode::setComponentFromCatalog(YACS::ENGINE::Catalog *catalog,
         {
           Proc* proc = GuiContext::getCurrent()->getProc();
           ComponentInstance *instance = 0;
-          if (! proc->componentInstanceMap.count(compo))
+          SubjectComponent* subCompo = 0;
+          int id = GuiContext::getCurrent()->getNewId();
+          pair<string,int> key = pair<string,int>(compo,id);
+          if (! proc->componentInstanceMap.count(key))
             {
               instance = new SalomeComponent(compo);
-              proc->componentInstanceMap[compo] = instance;
-              SubjectComponent* subCompo =
-                GuiContext::getCurrent()->getSubjectProc()->addSubjectComponent(instance, compo);
-              addSubjectReference(subCompo);
+              proc->componentInstanceMap[key] = instance;
+              subCompo =
+                GuiContext::getCurrent()->getSubjectProc()->addSubjectComponent(instance, key);
             }
-          else instance = proc->componentInstanceMap[compo];
+          else
+            {
+              instance = proc->componentInstanceMap[key];
+              subCompo = GuiContext::getCurrent()->_mapOfSubjectComponent[instance];
+            }
+          assert(subCompo);
+          addSubjectReference(subCompo);
           _serviceNode->setComponent(instance);
         }
     }
@@ -806,13 +1047,33 @@ void SubjectServiceNode::setComponent()
     {
       Proc* proc = GuiContext::getCurrent()->getProc();
       string compo = instance->getName();
-      if (! proc->componentInstanceMap.count(compo))
+      SubjectComponent* subCompo = 0;
+      int id = GuiContext::getCurrent()->getNewId();
+      pair<string,int> key = pair<string,int>(compo,id);
+      if (! GuiContext::getCurrent()->_mapOfSubjectComponent.count(instance))
         {
-          proc->componentInstanceMap[compo] = instance;
-          SubjectComponent* subCompo =
-            GuiContext::getCurrent()->getSubjectProc()->addSubjectComponent(instance, compo);
-          addSubjectReference(subCompo);
+          proc->componentInstanceMap[key] = instance;
+          subCompo =
+            GuiContext::getCurrent()->getSubjectProc()->addSubjectComponent(instance, key);
+        }
+      else
+        {
+          subCompo = GuiContext::getCurrent()->_mapOfSubjectComponent[instance];
         }       
+      assert(subCompo);
+      addSubjectReference(subCompo);
+    }
+}
+
+void SubjectServiceNode::associateToComponent(SubjectComponent *subcomp)
+{
+  DEBTRACE("SubjectServiceNode::associateToComponent " << getName() << " " << subcomp->getName())
+  CommandAssociateServiceToComponent *command =
+    new CommandAssociateServiceToComponent(getName(), subcomp->getKey());
+  if (command->execute())
+    {
+      GuiContext::getCurrent()->getInvoc()->add(command);
+      addSubjectReference(subcomp);
     }
 }
 
@@ -828,6 +1089,18 @@ SubjectPythonNode::~SubjectPythonNode()
   DEBTRACE("SubjectPythonNode::~SubjectPythonNode " << getName());
 }
 
+void SubjectPythonNode::clean()
+{
+  localClean();
+  SubjectInlineNode::clean();
+}
+
+void SubjectPythonNode::localClean()
+{
+  DEBTRACE("SubjectPythonNode::localClean ");
+}
+
+
 // ----------------------------------------------------------------------------
 
 SubjectPyFuncNode::SubjectPyFuncNode(YACS::ENGINE::PyFuncNode *pyFuncNode, Subject *parent)
@@ -839,6 +1112,18 @@ SubjectPyFuncNode::~SubjectPyFuncNode()
 {
   DEBTRACE("SubjectPyFuncNode::~SubjectPyFuncNode " << getName());
 }
+
+void SubjectPyFuncNode::clean()
+{
+  localClean();
+  SubjectInlineNode::clean();
+}
+
+void SubjectPyFuncNode::localClean()
+{
+  DEBTRACE("SubjectPyFuncNode::localClean ");
+}
+
 
 // ----------------------------------------------------------------------------
 
@@ -852,6 +1137,18 @@ SubjectCORBANode::~SubjectCORBANode()
   DEBTRACE("SubjectCORBANode::~SubjectCORBANode " << getName());
 }
 
+void SubjectCORBANode::clean()
+{
+  localClean();
+  SubjectServiceNode::clean();
+}
+
+void SubjectCORBANode::localClean()
+{
+  DEBTRACE("SubjectCORBANode::localClean ");
+}
+
+
 // ----------------------------------------------------------------------------
 
 SubjectCppNode::SubjectCppNode(YACS::ENGINE::CppNode *cppNode, Subject *parent)
@@ -864,6 +1161,18 @@ SubjectCppNode::~SubjectCppNode()
   DEBTRACE("SubjectCppNode::~SubjectCppNode " << getName());
 }
 
+void SubjectCppNode::clean()
+{
+  localClean();
+  SubjectServiceNode::clean();
+}
+
+void SubjectCppNode::localClean()
+{
+  DEBTRACE("SubjectCppNode::localClean ");
+}
+
+
 // ----------------------------------------------------------------------------
 
 SubjectSalomeNode::SubjectSalomeNode(YACS::ENGINE::SalomeNode *salomeNode, Subject *parent)
@@ -875,6 +1184,18 @@ SubjectSalomeNode::~SubjectSalomeNode()
 {
   DEBTRACE("SubjectSalomeNode::~SubjectSalomeNode " << getName());
 }
+
+void SubjectSalomeNode::clean()
+{
+  localClean();
+  SubjectServiceNode::clean();
+}
+
+void SubjectSalomeNode::localClean()
+{
+  DEBTRACE("SubjectSalomeNode::localClean ");
+}
+
 
 // ----------------------------------------------------------------------------
 
@@ -889,6 +1210,18 @@ SubjectSalomePythonNode::~SubjectSalomePythonNode()
   DEBTRACE("SubjectSalomePythonNode::~SubjectSalomePythonNode " << getName());
 }
 
+void SubjectSalomePythonNode::clean()
+{
+  localClean();
+  SubjectServiceNode::clean();
+}
+
+void SubjectSalomePythonNode::localClean()
+{
+  DEBTRACE("SubjectSalomePythonNode::localClean ");
+}
+
+
 // ----------------------------------------------------------------------------
 
 SubjectXmlNode::SubjectXmlNode(YACS::ENGINE::XmlNode *xmlNode, Subject *parent)
@@ -901,17 +1234,42 @@ SubjectXmlNode::~SubjectXmlNode()
   DEBTRACE("SubjectXmlNode::~SubjectXmlNode " << getName());
 }
 
+void SubjectXmlNode::clean()
+{
+  localClean();
+  SubjectServiceNode::clean();
+}
+
+void SubjectXmlNode::localClean()
+{
+  DEBTRACE("SubjectXmlNode::localClean ");
+}
+
+
 // ----------------------------------------------------------------------------
 
 SubjectSplitterNode::SubjectSplitterNode(YACS::ENGINE::SplitterNode *splitterNode, Subject *parent)
   : SubjectElementaryNode(splitterNode, parent), _splitterNode(splitterNode)
 {
+  _destructible = false;
 }
 
 SubjectSplitterNode::~SubjectSplitterNode()
 {
   DEBTRACE("SubjectSplitterNode::~SubjectSplitterNode " << getName());
 }
+
+void SubjectSplitterNode::clean()
+{
+  localClean();
+  SubjectElementaryNode::clean();
+}
+
+void SubjectSplitterNode::localClean()
+{
+  DEBTRACE("SubjectSplitterNode::localClean ");
+}
+
 
 std::string SubjectSplitterNode::getName()
 {
@@ -929,8 +1287,21 @@ SubjectForLoop::SubjectForLoop(YACS::ENGINE::ForLoop *forLoop, Subject *parent)
 SubjectForLoop::~SubjectForLoop()
 {
   DEBTRACE("SubjectForLoop::~SubjectForLoop " << getName());
-  if (_body) delete _body;
 }
+
+void SubjectForLoop::clean()
+{
+  localClean();
+  SubjectComposedNode::clean();
+}
+
+void SubjectForLoop::localClean()
+{
+  DEBTRACE("SubjectForLoop::localClean ");
+  if (_body)
+    erase(_body);
+}
+
 
 bool SubjectForLoop::addNode(YACS::ENGINE::Catalog *catalog,
                              std::string compo,
@@ -960,7 +1331,19 @@ SubjectWhileLoop::SubjectWhileLoop(YACS::ENGINE::WhileLoop *whileLoop, Subject *
 SubjectWhileLoop::~SubjectWhileLoop()
 {
   DEBTRACE("SubjectWhileLoop::~SubjectWhileLoop " << getName());
-  if (_body) delete _body;
+}
+
+void SubjectWhileLoop::clean()
+{
+  localClean();
+  SubjectComposedNode::clean();
+}
+
+void SubjectWhileLoop::localClean()
+{
+  DEBTRACE("SubjectWhileLoop::localClean ");
+  if (_body)
+    erase(_body);
 }
 
 bool SubjectWhileLoop::addNode(YACS::ENGINE::Catalog *catalog,
@@ -991,9 +1374,20 @@ SubjectSwitch::SubjectSwitch(YACS::ENGINE::Switch *aSwitch, Subject *parent)
 SubjectSwitch::~SubjectSwitch()
 {
   DEBTRACE("SubjectSwitch::~SubjectSwitch " << getName());
+}
+
+void SubjectSwitch::clean()
+{
+  localClean();
+  SubjectComposedNode::clean();
+}
+
+void SubjectSwitch::localClean()
+{
+  DEBTRACE("SubjectSwitch::localClean ");
   map<int, SubjectNode*>::iterator it;
   for (it = _bodyMap.begin(); it != _bodyMap.end(); ++it)
-    delete (*it).second;
+    erase((*it).second);
 }
 
 bool SubjectSwitch::addNode(YACS::ENGINE::Catalog *catalog,
@@ -1031,17 +1425,29 @@ SubjectForEachLoop::SubjectForEachLoop(YACS::ENGINE::ForEachLoop *forEachLoop, S
 SubjectForEachLoop::~SubjectForEachLoop()
 {
   DEBTRACE("SubjectForEachLoop::~SubjectForEachLoop " << getName());
+}
+
+void SubjectForEachLoop::clean()
+{
+  localClean();
+  SubjectComposedNode::clean();
+}
+
+void SubjectForEachLoop::localClean()
+{
+  DEBTRACE("SubjectForEachLoop::localClean ");
   if (_body)
     {
       DEBTRACE(_body->getName());
-      delete _body;
+      erase(_body);
     }
   if (_splitter)
     {
       DEBTRACE(_splitter->getName());
-      delete _splitter;
+      erase(_splitter);
     }
 }
+
 
 bool SubjectForEachLoop::addNode(YACS::ENGINE::Catalog *catalog,
                                  std::string compo,
@@ -1078,7 +1484,19 @@ SubjectOptimizerLoop::SubjectOptimizerLoop(YACS::ENGINE::OptimizerLoop *optimize
 SubjectOptimizerLoop::~SubjectOptimizerLoop()
 {
   DEBTRACE("SubjectOptimizerLoop::~SubjectOptimizerLoop " << getName());
-  if (_body) delete _body;
+}
+
+void SubjectOptimizerLoop::clean()
+{
+  localClean();
+  SubjectComposedNode::clean();
+}
+
+void SubjectOptimizerLoop::localClean()
+{
+  DEBTRACE("SubjectOptimizerLoop::localClean ");
+  if (_body)
+    erase(_body);
 }
 
 bool SubjectOptimizerLoop::addNode(YACS::ENGINE::Catalog *catalog,
@@ -1103,26 +1521,46 @@ void SubjectOptimizerLoop::completeChildrenSubjectList(SubjectNode *son)
 SubjectDataPort::SubjectDataPort(YACS::ENGINE::DataPort* port, Subject *parent)
   : Subject(parent), _dataPort(port)
 {
+  _listSubjectLink.clear();
 }
 
 SubjectDataPort::~SubjectDataPort()
 {
   DEBTRACE("SubjectDataPort::~SubjectDataPort " << getName());
-  Node* node = _dataPort->getNode();
-  assert(node);
-  ElementaryNode * father = dynamic_cast<ElementaryNode*>(node);
-  if (father)
+  if (isDestructible())
     {
-      DEBTRACE("father->edRemovePort(_dataPort)");
-      try
+      Node* node = _dataPort->getNode();
+      assert(node);
+      ElementaryNode * father = dynamic_cast<ElementaryNode*>(node);
+      if (father)
         {
-          father->edRemovePort(_dataPort);
-        }
-      catch (YACS::Exception &e)
-        {
-          DEBTRACE("SubjectDataPort::~SubjectDataPort: father->edRemovePort: YACS exception " << e.what());
+          DEBTRACE("father->edRemovePort(_dataPort)");
+          try
+            {
+              father->edRemovePort(_dataPort);
+            }
+          catch (YACS::Exception &e)
+            {
+              DEBTRACE("------------------------------------------------------------------------------");
+              DEBTRACE("SubjectDataPort::~SubjectDataPort: father->edRemovePort: YACS exception " << e.what());
+              DEBTRACE("------------------------------------------------------------------------------");
+            }
         }
     }
+}
+
+void SubjectDataPort::clean()
+{
+  localClean();
+  Subject::clean();
+}
+
+void SubjectDataPort::localClean()
+{
+  DEBTRACE("SubjectDataPort::localClean ");
+  list<SubjectLink*> lsl = getListOfSubjectLink();
+  for (list<SubjectLink*>::iterator it = lsl.begin(); it != lsl.end(); ++it)
+    erase(*it);
 }
 
 std::string SubjectDataPort::getName()
@@ -1179,11 +1617,48 @@ void SubjectDataPort::tryCreateLink(SubjectDataPort *subOutport, SubjectDataPort
 SubjectInputPort::SubjectInputPort(YACS::ENGINE::InputPort *port, Subject *parent)
   : SubjectDataPort(port, parent), _inputPort(port)
 {
+  Node *node = _inputPort->getNode();
+  if (ForLoop* forloop = dynamic_cast<ForLoop*>(node))
+    {
+      if (_inputPort->getName() == "nsteps") _destructible = false;
+    }
+  else if (WhileLoop* whileloop = dynamic_cast<WhileLoop*>(node))
+    {
+      if (_inputPort->getName() == "condition") _destructible = false;
+    }
+  else if (Switch* aSwitch = dynamic_cast<Switch*>(node))
+    {
+      if (_inputPort->getName() == "select") _destructible = false;
+    }
+  else if (ForEachLoop* foreach = dynamic_cast<ForEachLoop*>(node))
+    {
+      if (_inputPort->getName() == "nbBranches") _destructible = false;
+    }
+  else if (OptimizerLoop* optil = dynamic_cast<OptimizerLoop*>(node))
+    {
+      if (_inputPort->getName() == "nbBranches") _destructible = false;
+    }
+  else if (SplitterNode* split = dynamic_cast<SplitterNode*>(node))
+    {
+      if (_inputPort->getName() == "SmplsCollection") _destructible = false;
+    }
+
 }
 
 SubjectInputPort::~SubjectInputPort()
 {
   DEBTRACE("SubjectInputPort::~SubjectInputPort " << getName());
+}
+
+void SubjectInputPort::clean()
+{
+  localClean();
+  SubjectDataPort::clean();
+}
+
+void SubjectInputPort::localClean()
+{
+  DEBTRACE("SubjectInputPort::localClean ");
   if (_parent)
     {
       SubjectElementaryNode* elem = dynamic_cast<SubjectElementaryNode*>(_parent);
@@ -1196,11 +1671,31 @@ SubjectInputPort::~SubjectInputPort()
 SubjectOutputPort::SubjectOutputPort(YACS::ENGINE::OutputPort *port, Subject *parent)
   : SubjectDataPort(port, parent), _outputPort(port)
 {
+  Node *node = _outputPort->getNode();
+  if (ForEachLoop* foreach = dynamic_cast<ForEachLoop*>(node))
+    {
+      if (_outputPort->getName() == "SmplPrt") _destructible = false;
+    }
+  else if (OptimizerLoop* optil = dynamic_cast<OptimizerLoop*>(node))
+    {
+      if (_outputPort->getName() == "SmplPrt") _destructible = false;
+    }
 }
 
 SubjectOutputPort::~SubjectOutputPort()
 {
   DEBTRACE("SubjectOutputPort::~SubjectOutputPort " << getName());
+}
+
+void SubjectOutputPort::clean()
+{
+  localClean();
+  SubjectDataPort::clean();
+}
+
+void SubjectOutputPort::localClean()
+{
+  DEBTRACE("SubjectOutputPort::localClean ");
   if (_parent)
     {
       SubjectElementaryNode* elem = dynamic_cast<SubjectElementaryNode*>(_parent);
@@ -1221,6 +1716,17 @@ SubjectInputDataStreamPort::~SubjectInputDataStreamPort()
   DEBTRACE("SubjectInputDataStreamPort::~SubjectInputDataStreamPort " << getName());
 }
 
+void SubjectInputDataStreamPort::clean()
+{
+  localClean();
+  SubjectDataPort::clean();
+}
+
+void SubjectInputDataStreamPort::localClean()
+{
+  DEBTRACE("SubjectInputDataStreamPort::localClean ");
+}
+
 // ----------------------------------------------------------------------------
 
 SubjectOutputDataStreamPort::SubjectOutputDataStreamPort(YACS::ENGINE::OutputDataStreamPort *port,
@@ -1232,6 +1738,17 @@ SubjectOutputDataStreamPort::SubjectOutputDataStreamPort(YACS::ENGINE::OutputDat
 SubjectOutputDataStreamPort::~SubjectOutputDataStreamPort()
 {
   DEBTRACE("SubjectOutputDataStreamPort::~SubjectOutputDataStreamPort " << getName());
+}
+
+void SubjectOutputDataStreamPort::clean()
+{
+  localClean();
+  SubjectDataPort::clean();
+}
+
+void SubjectOutputDataStreamPort::localClean()
+{
+  DEBTRACE("SubjectOutputDataStreamPort::localClean ");
 }
 
 // ----------------------------------------------------------------------------
@@ -1261,17 +1778,42 @@ SubjectLink::SubjectLink(SubjectNode* subOutNode,
 SubjectLink::~SubjectLink()
 {
   DEBTRACE("SubjectLink::~SubjectLink " << getName());
+  if (isDestructible())
+    {
+      try
+        {
+          _cla->edRemoveLink(_outp, _inp);
+        }
+      catch (YACS::Exception &e)
+        {
+          DEBTRACE("------------------------------------------------------------------------------");
+          DEBTRACE("SubjectLink::~SubjectLink: edRemoveLink YACS exception " << e.what());
+          DEBTRACE("------------------------------------------------------------------------------");
+        }
+    }
+}
+
+void SubjectLink::clean()
+{
+  localClean();
+  Subject::clean();
+}
+
+void SubjectLink::localClean()
+{
+  DEBTRACE("SubjectLink::localClean ");
   if (_parent)
     {
-      SubjectComposedNode *father = dynamic_cast<SubjectComposedNode*>(_parent);
+      DEBTRACE("clean link: " << _parent->getName() << " " << getName());
+      SubjectComposedNode* father = dynamic_cast<SubjectComposedNode*>(_parent);
       assert(father);
-      ComposedNode *cla = dynamic_cast<ComposedNode*>(father->getNode());
-      assert(cla);
-      OutPort *outp = dynamic_cast<OutPort*>(_outPort->getPort());
-      assert(outp);
-      InPort *inp = dynamic_cast<InPort*>(_inPort->getPort());
-      assert(inp);
-      cla->edRemoveLink(outp, inp);
+      father->removeLink(this); // --- clean subjects first
+      _cla = dynamic_cast<ComposedNode*>(father->getNode());
+      assert(_cla);
+      _outp = dynamic_cast<OutPort*>(_outPort->getPort());
+      assert(_outp);
+      _inp = dynamic_cast<InPort*>(_inPort->getPort());
+      assert(_inp);
     }
 }
 
@@ -1282,8 +1824,8 @@ std::string SubjectLink::getName()
 
 // ----------------------------------------------------------------------------
 
-SubjectComponent::SubjectComponent(YACS::ENGINE::ComponentInstance* component, Subject *parent)
-  : Subject(parent), _compoInst(component)
+SubjectComponent::SubjectComponent(YACS::ENGINE::ComponentInstance* component, int id, Subject *parent)
+  : Subject(parent), _compoInst(component), _id(id)
 {
 }
 
@@ -1291,9 +1833,26 @@ SubjectComponent::~SubjectComponent()
 {
 }
 
+void SubjectComponent::clean()
+{
+  localClean();
+  Subject::clean();
+}
+
+void SubjectComponent::localClean()
+{
+  DEBTRACE("SubjectComponent::localClean ");
+}
+
 std::string SubjectComponent::getName()
 {
   return _compoInst->getName();
+}
+
+std::pair<std::string, int> SubjectComponent::getKey()
+{
+  std::pair<std::string, int> key = std::pair<std::string, int>(_compoInst->getName(), _id);
+  return key;
 }
 
 /*!
@@ -1312,6 +1871,18 @@ void SubjectComponent::setContainer()
     }
 }
 
+void SubjectComponent::associateToContainer(SubjectContainer* subcont)
+{
+  DEBTRACE("SubjectComponent::associateToContainer " << getName() << subcont->getName());
+  CommandAssociateComponentToContainer *command =
+    new CommandAssociateComponentToContainer(getKey(), subcont->getName());
+  if (command->execute())
+    {
+      GuiContext::getCurrent()->getInvoc()->add(command);
+      addSubjectReference(subcont);
+    }
+}
+
 // ----------------------------------------------------------------------------
 
 SubjectContainer::SubjectContainer(YACS::ENGINE::Container* container, Subject *parent)
@@ -1323,9 +1894,47 @@ SubjectContainer::~SubjectContainer()
 {
 }
 
+void SubjectContainer::clean()
+{
+  localClean();
+  Subject::clean();
+}
+
+void SubjectContainer::localClean()
+{
+  DEBTRACE("SubjectContainer::localClean ");
+}
+
 std::string SubjectContainer::getName()
 {
   return _container->getName();
+}
+
+// ----------------------------------------------------------------------------
+
+SubjectDataType::SubjectDataType(std::string typeName, Subject *parent)
+  : Subject(parent), _typeName(typeName)
+{
+}
+
+SubjectDataType::~SubjectDataType()
+{
+}
+
+void SubjectDataType::clean()
+{
+  localClean();
+  Subject::clean();
+}
+
+void SubjectDataType::localClean()
+{
+  DEBTRACE("SubjectDataType::localClean ");
+}
+
+std::string SubjectDataType::getName()
+{
+  return _typeName;
 }
 
 // ----------------------------------------------------------------------------
