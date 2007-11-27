@@ -60,6 +60,7 @@ namespace YACS
         RENAME,
         NEWROOT,
         ADDLINK,
+        ADDCONTROLLINK,
         ADDREF,
       } GuiEvent;
     
@@ -115,6 +116,7 @@ namespace YACS
     };
 
     class SubjectLink;
+    class SubjectControlLink;
     class SubjectDataPort: public Subject
     {
     public:
@@ -187,7 +189,10 @@ namespace YACS
       virtual bool setName(std::string name);
       virtual YACS::ENGINE::Node* getNode();
       virtual void clean();
+      SubjectControlLink* addSubjectControlLink(SubjectControlLink *sub) { _listSubjectControlLink.push_back(sub); };
+      void removeSubjectControlLink(SubjectControlLink* sub) { _listSubjectControlLink.remove(sub); };
       void localClean();
+      static void tryCreateLink(SubjectNode *subOutNode, SubjectNode *subInNode);
     protected:
       virtual SubjectInputPort* addSubjectInputPort(YACS::ENGINE::InputPort *port,
                                                     std::string name = "");
@@ -204,6 +209,7 @@ namespace YACS
       std::list<SubjectInputDataStreamPort*> _listSubjectIDSPort;
       std::list<SubjectOutputDataStreamPort*> _listSubjectODSPort;
       std::list<SubjectLink*> _listSubjectLink;
+      std::list<SubjectControlLink*> _listSubjectControlLink;
     };
     
     class SubjectComposedNode: public SubjectNode
@@ -222,7 +228,10 @@ namespace YACS
                                   SubjectDataPort *spo,
                                   SubjectNode *sni,
                                   SubjectDataPort *spi);
+      SubjectControlLink* addSubjectControlLink(SubjectNode *sno,
+                                                SubjectNode *sni);
       virtual void removeLink(SubjectLink* link);
+      virtual void removeControlLink(SubjectControlLink* link);
       virtual void clean();
       void localClean();
     protected:
@@ -562,6 +571,25 @@ namespace YACS
       YACS::ENGINE::ComposedNode *_cla;
       YACS::ENGINE::OutPort *_outp;
       YACS::ENGINE::InPort *_inp;
+    };
+
+    class SubjectControlLink: public Subject
+    {
+    public:
+      SubjectControlLink(SubjectNode* subOutNode,
+                         SubjectNode* subInNode,
+                         Subject *parent);
+      virtual ~SubjectControlLink();
+      virtual std::string getName();
+      virtual void clean();
+      void localClean();
+      SubjectNode* getSubjectOutNode() { return _subOutNode; };
+      SubjectNode* getSubjectInNode() { return _subInNode; };
+    protected:
+      SubjectNode* _subOutNode;
+      SubjectNode* _subInNode;
+      std::string _name;
+      YACS::ENGINE::ComposedNode *_cla;
     };
 
   }

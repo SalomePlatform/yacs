@@ -38,6 +38,7 @@
 #include "XMLNode.hxx"
 #include "CppNode.hxx"
 #include "PresetNode.hxx"
+#include "OutNode.hxx"
 #include "SalomePythonNode.hxx"
 
 //CORBA proxy ports
@@ -194,12 +195,20 @@ void RuntimeSALOME::init(long flags)
   bool ispyext = flags & RuntimeSALOME::IsPyExt;
   if (_useCorba)
     {
+      PortableServer::POA_var root_poa;
+      PortableServer::POAManager_var pman;
+      CORBA::Object_var obj;
       int nbargs = 0; char **args = 0;
       _orb = CORBA::ORB_init (nbargs, args);
+      obj = _orb->resolve_initial_references("RootPOA");
+      root_poa = PortableServer::POA::_narrow(obj);
+      pman = root_poa->the_POAManager();
+      pman->activate();
+
 #ifdef REFCNT
       DEBTRACE("_orb refCount: " << ((omniOrbORB*)_orb.in())->pd_refCount);
 #endif
-      CORBA::Object_var obj = _orb->resolve_initial_references("DynAnyFactory");
+      obj = _orb->resolve_initial_references("DynAnyFactory");
       _dynFactory = DynamicAny::DynAnyFactory::_narrow(obj);
     }
 
@@ -366,6 +375,10 @@ DataNode* RuntimeSALOME::createDataNode(const std::string& kind,const std::strin
       node = new PresetNode(name);
       return node;
     }
+  else if(kind == "outnode" )
+    {
+      return new OutNode(name);
+    }
   std::string msg="DataNode kind ("+kind+") unknown";
   throw Exception(msg);
 }
@@ -483,6 +496,10 @@ InputPort * RuntimeSALOME::createInputPort(const std::string& name,
     {
       return new InputXmlPort(name, node, type);
     }
+  else if(impl == PresetNode::IMPL_NAME)
+    {
+      return new InputPresetPort(name, node, type);
+    }
   else
     {
       stringstream msg;
@@ -579,7 +596,7 @@ InputPort* RuntimeSALOME::adapt(InputPort* source,
     {
       return adapt((InputCorbaPort*)source,impl,type);
     }
-  else if(imp_source == XmlNode::IMPL_NAME)
+  else if(imp_source == XmlNode::IMPL_NAME || imp_source == PresetNode::IMPL_NAME)
     {
       return adapt((InputXmlPort*)source,impl,type);
     }

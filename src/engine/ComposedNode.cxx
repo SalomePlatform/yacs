@@ -357,23 +357,25 @@ void ComposedNode::edRemoveLink(OutPort *start, InPort *end) throw(Exception)
       needsToDestroyO.push_back(pair< ComposedNode * , pair < OutPort* , OutPort *> >(iterS,pair<OutPort* , OutPort *> (tmp,currentPortO.first)));
       iterS=iterS->_father;
     }
-
-  iterS=end->getNode()->_father;
+  Node *nodeTemp=end->getNode();
   InPort * currentPortI=end;
-  while(iterS!=lwstCmnAnctr)
+  if(*nodeTemp<*lwstCmnAnctr)
     {
-      if (!iterS)
+      iterS=nodeTemp->_father;    
+      while(iterS!=lwstCmnAnctr)
         {
-          stringstream what;
-          what << "ComposedNode::edRemoveLink: "
-               << start->getNode()->getName() << "." <<start->getName() << "->"
-               << end->getNode()->getName() << "." << end->getName();
-          throw Exception(what.str());
+          if (!iterS)
+            {
+              stringstream what;
+              what << "ComposedNode::edRemoveLink: "
+                   << start->getNode()->getName() << "." <<start->getName() << "->"
+                   << end->getNode()->getName() << "." << end->getName();
+              throw Exception(what.str());
+            }
+          iterS->getDelegateOf(currentPortI, start, allAscendanceOfNodeStart);
+          iterS=iterS->_father;
         }
-      iterS->getDelegateOf(currentPortI, start, allAscendanceOfNodeStart);
-      iterS=iterS->_father;
     }
-
   // --- End of test for evt intermediate ports created
   
   (currentPortO.first)->removeInPort(currentPortI,false);
@@ -388,12 +390,16 @@ void ComposedNode::edRemoveLink(OutPort *start, InPort *end) throw(Exception)
   vector<pair< ComposedNode * , pair < OutPort* , OutPort *> > >::reverse_iterator iter;
   for(iter=needsToDestroyO.rbegin();iter!=needsToDestroyO.rend();iter++)
     (*iter).first->releaseDelegateOf(((*iter).second).first, ((*iter).second).second, end,allAscendanceOfNodeEnd);
-  iterS=end->getNode()->_father;
-  currentPortI=end;
-  while(iterS!=lwstCmnAnctr)
+  nodeTemp=end->getNode();
+  if(*nodeTemp<*lwstCmnAnctr)
     {
-      iterS->releaseDelegateOf(currentPortI, start, allAscendanceOfNodeStart);
-      iterS=iterS->_father;
+      iterS=end->getNode()->_father;
+      currentPortI=end;
+      while(iterS!=lwstCmnAnctr)
+        {
+          iterS->releaseDelegateOf(currentPortI, start, allAscendanceOfNodeStart);
+          iterS=iterS->_father;
+        }
     }
 }
 

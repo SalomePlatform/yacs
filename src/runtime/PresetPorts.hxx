@@ -25,6 +25,24 @@ namespace YACS
     protected:
       std::string _storeData;
     };
+
+/*! \brief Class for PRESET input Ports
+ *
+ * \ingroup Ports
+ *
+ * \see OutNode
+ */
+    class InputPresetPort: public InputXmlPort
+    {
+    public:
+      InputPresetPort(const std::string& name,  Node* node, TypeCode* type);
+      InputPresetPort(const InputPresetPort& other, Node *newHelder);
+      void setData(std::string data);
+      std::string getData();
+    protected:
+      std::string _storeData;
+    };
+
   }
 }
 

@@ -22,7 +22,11 @@ namespace YACS
     public:
       virtual void setData(InputPort* port ,std::string& data);
       virtual void setData(OutputPort* port ,std::string& data);
+      virtual void setRef(std::string& ref);
+      virtual std::string getRef();
       virtual ~DataNode();
+    protected:
+      std::string _ref;
     };
   }
 }

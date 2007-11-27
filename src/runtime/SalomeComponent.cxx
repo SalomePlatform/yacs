@@ -147,3 +147,20 @@ std::string SalomeComponent::getFileRepr() const
   stream << "<component>" << getName() << "</component>";
   return stream.str();
 }
+
+void SalomeComponent::setContainer(Container *cont)
+{
+  if (cont == _container) return;
+
+  if(cont)
+    cont->checkCapabilityToDealWith(this);
+
+  if(_container)
+    _container->decrRef();
+  _container=cont;
+  if(_container)
+    _container->incrRef();
+
+  ((SalomeContainer*)_container)->addComponentName(_name);
+}
+

@@ -31,6 +31,8 @@ namespace YACS
       CPPUNIT_TEST( testLinkUpdate1DS );
       CPPUNIT_TEST( testLinkUpdate2 );
       CPPUNIT_TEST( testLinkUpdate2DS );
+      CPPUNIT_TEST( testLinkUpdate3 );
+      CPPUNIT_TEST( testLinkUpdate4 );
       CPPUNIT_TEST( testInterLoopDFLink );
       CPPUNIT_TEST( deathTestForLinks );
       CPPUNIT_TEST( testForEachLoop1 );
@@ -69,6 +71,8 @@ namespace YACS
       void testLinkUpdate1DS();
       void testLinkUpdate2();
       void testLinkUpdate2DS();
+      void testLinkUpdate3();
+      void testLinkUpdate4();
       void testInterLoopDFLink();
       void deathTestForLinks();
       void testForEachLoop1();

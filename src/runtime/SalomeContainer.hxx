@@ -3,6 +3,8 @@
 
 #include "Container.hxx"
 #include "Mutex.hxx"
+#include <string>
+#include <vector>
 #include <SALOMEconfig.h>
 #include CORBA_CLIENT_HEADER(SALOME_Component)
 #include CORBA_CLIENT_HEADER(SALOME_ContainerManager)
@@ -30,12 +32,14 @@ namespace YACS
       void checkCapabilityToDealWith(const ComponentInstance *inst) const throw (Exception);
       void setProperty(const std::string& name, const std::string& value);
       bool isAPaCOContainer() const;
+      virtual void addComponentName(std::string name);
     protected:
       virtual ~SalomeContainer();
     protected:
       //! thread safety in Salome ???
       YACS::BASES::Mutex _mutex;
       Engines::Container_var _trueCont;
+      std::vector<std::string> _componentNames;
     public:
       Engines::MachineParameters _params;
     };

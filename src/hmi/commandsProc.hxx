@@ -162,6 +162,17 @@ namespace YACS
       std::string _inPort;
     };
 
+    class CommandAddControlLink: public Command
+    {
+    public:
+      CommandAddControlLink(std::string outNode, std::string inNode);
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      std::string _outNode;
+      std::string _inNode;
+    };
+
     class CommandAddContainer: public Command
     {
     public:

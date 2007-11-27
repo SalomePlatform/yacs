@@ -9,6 +9,7 @@ namespace YACS
   switchtypeParser switchtypeParser::switchParser;
   casetypeParser casetypeParser::caseParser;
   presetdatatypeParser presetdatatypeParser::presetdataParser;
+  outputdatatypeParser outputdatatypeParser::outputdataParser;
 
 void roottypeParser::proc (YACS::ENGINE::Proc* const& b)
 {

@@ -2,6 +2,9 @@
 #include "PresetPorts.hxx"
 #include <iostream>
 
+#define _DEVDEBUG_
+#include "YacsTrace.hxx"
+
 using namespace YACS::ENGINE;
 using namespace std;
 
@@ -22,11 +25,39 @@ OutputPresetPort::OutputPresetPort(const OutputPresetPort& other, Node *newHelde
 void OutputPresetPort::setData(std::string data)
 {
   _storeData = data;
-  cerr << "OutputPresetPort::setData " << _storeData << endl;
+  DEBTRACE( "OutputPresetPort::setData " << _storeData );
 }
 
 std::string OutputPresetPort::getData()
 {
-  cerr << "OutputPresetPort::getData " << _storeData << endl;
+  DEBTRACE("OutputPresetPort::getData " << _storeData);
   return _storeData;
 }
+
+
+InputPresetPort::InputPresetPort(const std::string& name,  Node* node, TypeCode* type)
+  : InputXmlPort(name, node, type),
+    DataPort(name, node, type),
+    Port(node)
+{
+}
+
+InputPresetPort::InputPresetPort(const InputPresetPort& other, Node *newHelder)
+  : InputXmlPort(other,newHelder),
+    DataPort(other,newHelder),
+    Port(other,newHelder)
+{
+}
+
+void InputPresetPort::setData(std::string data)
+{
+  _storeData = data;
+  DEBTRACE( "InputPresetPort::setData " << _storeData );
+}
+
+std::string InputPresetPort::getData()
+{
+  DEBTRACE("InputPresetPort::getData " << _storeData);
+  return _storeData;
+}
+

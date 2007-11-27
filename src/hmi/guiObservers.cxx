@@ -234,6 +234,7 @@ SubjectNode::SubjectNode(YACS::ENGINE::Node *node, Subject *parent)
   _listSubjectIDSPort.clear();
   _listSubjectODSPort.clear();
   _listSubjectLink.clear();
+  _listSubjectControlLink.clear();
 }
 
 /*!
@@ -408,6 +409,33 @@ SubjectOutputDataStreamPort* SubjectNode::addSubjectODSPort(YACS::ENGINE::Output
   YACS::ENGINE::TypeCode *typcod = port->edGetType();
   GuiContext::getCurrent()->getSubjectProc()->addSubjectDataType(typcod);
   return son;
+}
+
+void SubjectNode::tryCreateLink(SubjectNode *subOutNode, SubjectNode *subInNode)
+{
+  DEBTRACE("SubjectNode::tryCreateLink " << subOutNode->getName() << " " << subInNode->getName());
+  Proc *proc = GuiContext::getCurrent()->getProc();
+  Node *outNode = subOutNode->getNode();
+  string outNodePos = proc->getChildName(outNode);
+  Node *inNode = subInNode->getNode();
+  string inNodePos = proc->getChildName(inNode);
+  CommandAddControlLink *command = new CommandAddControlLink(outNodePos, inNodePos);
+  if (command->execute())
+    {
+      GuiContext::getCurrent()->getInvoc()->add(command);
+      ComposedNode *cla = ComposedNode::getLowestCommonAncestor(outNode->getFather(),
+                                                                inNode->getFather());
+      SubjectComposedNode *scla = dynamic_cast<SubjectComposedNode*>(subOutNode->getParent());
+      ComposedNode *ancestor = outNode->getFather();
+      while (ancestor && ancestor != cla)
+        {
+          ancestor = ancestor->getFather();
+          scla = dynamic_cast<SubjectComposedNode*>(scla->getParent());
+          assert(scla);
+        }
+      DEBTRACE(scla->getName());
+      scla->addSubjectControlLink(subOutNode,subInNode);
+    }
 }
 
 void SubjectNode::removeExternalLinks()
@@ -629,6 +657,38 @@ void SubjectComposedNode::removeLink(SubjectLink* link)
   _listSubjectLink.remove(link);
 }
 
+SubjectControlLink* SubjectComposedNode::addSubjectControlLink(SubjectNode *sno,
+                                                        SubjectNode *sni)
+{
+  SubjectControlLink *son = new SubjectControlLink(sno, sni, this);
+  Node *outn = sno->getNode();
+  Node *inn = sni->getNode();
+  pair<Node*,Node*> keyLink(outn,inn);
+
+  GuiContext::getCurrent()->_mapOfSubjectControlLink[keyLink] = son;
+  _listSubjectControlLink.push_back(son);
+  sno->addSubjectControlLink(son);
+  sni->addSubjectControlLink(son);
+  update(ADDCONTROLLINK, 0, son);
+  DEBTRACE("addSubjectControlLink: " << getName() << " " << son->getName());
+  return son;
+}
+
+void SubjectComposedNode::removeControlLink(SubjectControlLink* link)
+{
+  link->getSubjectOutNode()->removeSubjectControlLink(link);
+  link->getSubjectInNode()->removeSubjectControlLink(link);
+  _listSubjectControlLink.remove(link);
+}
+
+/*!
+ * loadLinks is used when an existing scheme has been loaded in memory, to create gui representation.
+ * Gui representation of links is done after node representation (loadChildren).
+ * Proc is explored recursively to find the composedNodes and create the corresponding links
+ * representation, from bottom to top.
+ * For each composedNode, data links representation are created first and stored in a map to avoid
+ * double represention. Then control links representation are created.
+ */
 void SubjectComposedNode::loadLinks()
 {
   set<Node *> setOfNode= _composedNode->edGetDirectDescendants();
@@ -661,6 +721,22 @@ void SubjectComposedNode::loadLinks()
         SubjectDataPort *spi = GuiContext::getCurrent()->_mapOfSubjectDataPort[static_cast<DataPort*>(inp)];
         addSubjectLink(sno,spo,sni,spi);
       }
+
+  std::set<Node*> setOfNodes = _composedNode->edGetDirectDescendants();
+  std::set<Node*>::const_iterator itn;
+  for(itn = setOfNodes.begin(); itn != setOfNodes.end(); ++itn)
+    {
+      SubjectNode* sno = GuiContext::getCurrent()->_mapOfSubjectNode[*itn];
+      OutGate* outgate = (*itn)->getOutGate();
+      std::set<InGate*> setIngate = outgate->edSetInGate();
+      std::set<InGate*>::const_iterator itg;
+      for(itg = setIngate.begin(); itg != setIngate.end(); ++itg)
+        {
+          Node* inNode = (*itg)->getNode();
+          SubjectNode* sni = GuiContext::getCurrent()->_mapOfSubjectNode[inNode];
+          addSubjectControlLink(sno,sni);
+        }
+    }
 }
 
 // ----------------------------------------------------------------------------
@@ -1818,6 +1894,69 @@ void SubjectLink::localClean()
 }
 
 std::string SubjectLink::getName()
+{
+  return _name;
+}
+// ----------------------------------------------------------------------------
+
+SubjectControlLink::SubjectControlLink(SubjectNode* subOutNode,
+                                       SubjectNode* subInNode,
+                                       Subject *parent)
+  : Subject(parent),
+    _subOutNode(subOutNode), _subInNode(subInNode)
+{
+  _name = "";
+  ComposedNode *cla = ComposedNode::getLowestCommonAncestor(_subOutNode->getNode()->getFather(),
+                                                            _subInNode->getNode()->getFather());
+  DEBTRACE(_subOutNode->getName());
+  DEBTRACE(_subInNode->getName());
+  DEBTRACE(cla->getName());
+  _name += cla->getChildName(_subOutNode->getNode());
+  _name += "-->>";
+  _name += cla->getChildName(_subInNode->getNode());
+  DEBTRACE("SubjectControlLink::SubjectControlLink " << _name);
+}
+
+SubjectControlLink::~SubjectControlLink()
+{
+  DEBTRACE("SubjectControlLink::~SubjectControlLink " << getName());
+  if (isDestructible())
+    {
+      try
+        {
+
+          _cla->edRemoveCFLink(_subOutNode->getNode(), _subInNode->getNode());
+        }
+      catch (YACS::Exception &e)
+        {
+          DEBTRACE("------------------------------------------------------------------------------");
+          DEBTRACE("SubjectControlLink::~SubjectControlLink: edRemoveLink YACS exception " << e.what());
+          DEBTRACE("------------------------------------------------------------------------------");
+        }
+    }
+}
+
+void SubjectControlLink::clean()
+{
+  localClean();
+  Subject::clean();
+}
+
+void SubjectControlLink::localClean()
+{
+  DEBTRACE("SubjectControlLink::localClean ");
+  if (_parent)
+    {
+      DEBTRACE("clean control link: " << _parent->getName() << " " << getName());
+      SubjectComposedNode* father = dynamic_cast<SubjectComposedNode*>(_parent);
+      assert(father);
+      father->removeControlLink(this); // --- clean subjects first
+      _cla = dynamic_cast<ComposedNode*>(father->getNode());
+      assert(_cla);
+    }
+}
+
+std::string SubjectControlLink::getName()
 {
   return _name;
 }

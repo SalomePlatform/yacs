@@ -32,6 +32,7 @@ GuiContext::GuiContext()
   _mapOfSubjectNode.clear();
   _mapOfSubjectDataPort.clear();
   _mapOfSubjectLink.clear();
+  _mapOfSubjectControlLink.clear();
 }
 
 GuiContext::~GuiContext()

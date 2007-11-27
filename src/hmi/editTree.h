@@ -89,6 +89,7 @@ namespace YACS
       Subject *_root;
       QListViewItem *_previousSelected;
       SubjectDataPort *_selectedSubjectOutPort;
+      SubjectNode *_selectedSubjectNode;
       SubjectComponent *_selectedSubjectComponent;
       SubjectServiceNode *_selectedSubjectService;
       std::map<YACS::HMI::Subject*,YACS::HMI::ViewItem*> _viewItemsMap;

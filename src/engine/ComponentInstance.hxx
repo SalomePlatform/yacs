@@ -34,7 +34,7 @@ namespace YACS
       ComponentInstance(const std::string& name);
       ComponentInstance(const ComponentInstance& other);
       const std::string& getName() const { return _name; }
-      void setContainer(Container *cont);
+      virtual void setContainer(Container *cont);
       Container *getContainer() const { return _container; }
 //! Load the component instance
       virtual void load() = 0;

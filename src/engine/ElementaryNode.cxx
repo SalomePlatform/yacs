@@ -396,3 +396,12 @@ void ElementaryNode::accept(Visitor *visitor)
 {
   visitor->visitElementaryNode(this);
 }
+
+//! Give a description of error when node status is ERROR
+/*!
+ *
+ */
+std::string ElementaryNode::getErrorDetails()
+{
+  return _errorDetails;
+}

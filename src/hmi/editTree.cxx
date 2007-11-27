@@ -256,6 +256,7 @@ void ComposedNodeViewItem::update(GuiEvent event, int type, Subject* son)
         }
       break;
     case YACS::HMI::ADDLINK:
+    case YACS::HMI::ADDCONTROLLINK:
       item = new LinkViewItem(this,
                               son->getName(),
                               son);
@@ -361,6 +362,7 @@ editTree::editTree(YACS::HMI::Subject *context,
   _root = 0;
   _previousSelected = 0;
   _selectedSubjectOutPort = 0;
+  _selectedSubjectNode = 0;
   _selectedSubjectComponent = 0;
   _selectedSubjectService = 0;
   resetTreeNode(lv);
@@ -475,6 +477,8 @@ void editTree::addLink()
     {
       if (dynamic_cast<SubjectOutputPort*>(sub) || dynamic_cast<SubjectOutputDataStreamPort*>(sub))
         _selectedSubjectOutPort = static_cast<SubjectDataPort*>(sub);
+      else if (dynamic_cast<SubjectNode*>(sub))
+        _selectedSubjectNode = static_cast<SubjectNode*>(sub);
     }
 }
 
@@ -678,6 +682,15 @@ void editTree::select()
                 _selectedSubjectOutPort = 0;
               }
           }
+        if (_selectedSubjectNode)
+          {
+            Subject *sub = item->getSubject();
+            if (SubjectNode* subNode = dynamic_cast<SubjectNode*>(sub))
+              {
+                SubjectNode::tryCreateLink(_selectedSubjectNode, subNode);
+                _selectedSubjectNode = 0;
+              }
+          }
         if (_selectedSubjectService)
           {
             Subject *sub = item->getSubject();
@@ -750,6 +763,7 @@ void editTree::ComposedNodeContextMenu()
   contextMenu->insertItem( caption );
   contextMenu->insertItem( "Message", this, SLOT(printName()) );
   contextMenu->insertItem( "Delete", this, SLOT(destroy()) );
+  contextMenu->insertItem( "add control link to other node", this, SLOT(addLink()) );
   _keymap = 0;
   _catalogItemsMap.clear();
   YACS::ENGINE::Catalog *builtinCatalog = YACS::ENGINE::getSALOMERuntime()->getBuiltinCatalog();
@@ -803,6 +817,7 @@ void editTree::NodeContextMenu()
   contextMenu->insertItem( "Delete", this, SLOT(destroy()) );
   contextMenu->insertItem( "add Component", this, SLOT(addComponent()) );
   contextMenu->insertItem( "associate to Component", this, SLOT(associateServiceToComponent()) );
+  contextMenu->insertItem( "add control link to other node", this, SLOT(addLink()) );
   _keymap = 0;
   _catalogItemsMap.clear();
   YACS::ENGINE::Catalog *builtinCatalog = YACS::ENGINE::getSALOMERuntime()->getBuiltinCatalog();

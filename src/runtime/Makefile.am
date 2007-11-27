@@ -53,6 +53,7 @@ libYACSRuntimeSALOME_la_SOURCES =      \
   SessionCataLoader.cxx          \
   PresetPorts.cxx                \
   PresetNode.cxx                 \
+  OutNode.cxx                    \
   $(__dummy__)
 
 
@@ -67,6 +68,15 @@ SALOME_IDL = \
 	$(KERNEL_ROOT_DIR)/idl/salome/SALOME_Component.idl \
 	$(KERNEL_ROOT_DIR)/idl/salome/SALOME_Exception.idl
 
+libYACSRuntimeSALOME_la_SOURCES += \
+	SALOME_ComponentSK.cc \
+	SALOME_ComponentDynSK.cc \
+	SALOME_ContainerManagerSK.cc \
+	SALOME_ContainerManagerDynSK.cc \
+	SALOME_ExceptionSK.cc \
+	SALOME_ExceptionDynSK.cc
+
+
 SALOME_INCLUDES =SALOME_ContainerManager.hh SALOME_Exception.hh SALOME_Component.hh
 SALOME_LIBS=-L$(KERNEL_ROOT_DIR)/lib@LIB_LOCATION_SUFFIX@/salome -lSalomeLifeCycleCORBA
 SALOME_INCL_PATH=-I$(KERNEL_ROOT_DIR)/include/salome $(QT_INCLUDES)
@@ -74,8 +84,16 @@ SALOME_OMNIPY=
 endif
 
 if DSC_PORTS
-DSC_IDL = $(KERNEL_ROOT_DIR)/idl/salome/DSC_Engines.idl \
-					$(KERNEL_ROOT_DIR)/idl/salome/SALOME_Ports.idl
+DSC_IDL = \
+	$(KERNEL_ROOT_DIR)/idl/salome/DSC_Engines.idl \
+	$(KERNEL_ROOT_DIR)/idl/salome/SALOME_Ports.idl
+
+libYACSRuntimeSALOME_la_SOURCES += \
+	DSC_EnginesSK.cc \
+	DSC_EnginesDynSK.cc \
+	SALOME_PortsSK.cc \
+	SALOME_PortsDynSK.cc
+
 DSC_INCLUDES = DSC_Engines.hh SALOME_Ports.hh
 DSC_LIBS=-L$(KERNEL_ROOT_DIR)/lib@LIB_LOCATION_SUFFIX@/salome -lSalomeDSCContainer
 DSC_INCL_PATH=-I$(KERNEL_ROOT_DIR)/include
@@ -108,24 +126,24 @@ AM_CXXFLAGS = \
 
 if SALOME_KERNEL
 SALOME_Component.hh:$(KERNEL_ROOT_DIR)/idl/salome/SALOME_Component.idl
-	    $(OMNIORB_IDL) $(OMNIORB_IDLCXXFLAGS) -bcxx -I$(KERNEL_ROOT_DIR)/idl/salome $<
+	    $(OMNIORB_IDL) $(OMNIORB_IDLCXXFLAGS) -bcxx -Wba -I$(KERNEL_ROOT_DIR)/idl/salome $<
 SALOME_Exception.hh:$(KERNEL_ROOT_DIR)/idl/salome/SALOME_Exception.idl
-	    $(OMNIORB_IDL) $(OMNIORB_IDLCXXFLAGS) -bcxx -I$(KERNEL_ROOT_DIR)/idl/salome $<
+	    $(OMNIORB_IDL) $(OMNIORB_IDLCXXFLAGS) -bcxx -Wba -I$(KERNEL_ROOT_DIR)/idl/salome $<
 SALOME_ContainerManager.hh:$(KERNEL_ROOT_DIR)/idl/salome/SALOME_ContainerManager.idl
-	    $(OMNIORB_IDL) $(OMNIORB_IDLCXXFLAGS) -bcxx -I$(KERNEL_ROOT_DIR)/idl/salome $<
+	    $(OMNIORB_IDL) $(OMNIORB_IDLCXXFLAGS) -bcxx -Wba -I$(KERNEL_ROOT_DIR)/idl/salome $<
 
 SALOME_Component_idl.py:$(KERNEL_ROOT_DIR)/idl/salome/SALOME_Component.idl
-	    $(OMNIORB_IDL) -bpython -I. -I$(KERNEL_ROOT_DIR)/idl/salome $<
+	    $(OMNIORB_IDL) -bpython -Wba -I. -I$(KERNEL_ROOT_DIR)/idl/salome $<
 endif
 
 if DSC_PORTS
 DSC_Engines.hh:$(KERNEL_ROOT_DIR)/idl/salome/DSC_Engines.idl
-	    $(OMNIORB_IDL) $(OMNIORB_IDLCXXFLAGS) -bcxx -I$(KERNEL_ROOT_DIR)/idl $<
+	    $(OMNIORB_IDL) $(OMNIORB_IDLCXXFLAGS) -bcxx -Wba -I$(KERNEL_ROOT_DIR)/idl $<
 SALOME_Ports.hh:$(KERNEL_ROOT_DIR)/idl/salome/SALOME_Ports.idl
-	    $(OMNIORB_IDL) $(OMNIORB_IDLCXXFLAGS) -bcxx -I$(KERNEL_ROOT_DIR)/idl $<
+	    $(OMNIORB_IDL) $(OMNIORB_IDLCXXFLAGS) -bcxx -Wba -I$(KERNEL_ROOT_DIR)/idl $<
 
 SALOME_Ports_idl.py :$(KERNEL_ROOT_DIR)/idl/salome/SALOME_Ports.idl
-	    $(OMNIORB_IDL) -bpython -I. -I$(KERNEL_ROOT_DIR)/idl $<
+	    $(OMNIORB_IDL) -bpython -Wba -I. -I$(KERNEL_ROOT_DIR)/idl $<
 endif
 
 #################################################################

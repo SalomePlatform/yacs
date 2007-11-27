@@ -1946,6 +1946,52 @@ void EngineIntegrationTest::testLinkUpdate2DS()
   delete graph;
 }
 
+void EngineIntegrationTest::testLinkUpdate3()
+{
+  Bloc *graph=new Bloc("Graph");
+  WhileLoop *loop2=new WhileLoop("loop2");
+  graph->edAddChild(loop2);
+  LimitNode *n1=new LimitNode("T1"); graph->edAddChild(n1);
+  OutputPort *o1s=n1->getSwitchPort();
+  graph->edAddCFLink(n1,loop2);
+  LimitNode *n2=new LimitNode("T2"); loop2->edSetNode(n2);
+  OutputPort *o2s=n2->getSwitchPort();
+  graph->edAddLink(o1s,loop2->edGetConditionPort());
+  graph->edAddLink(o2s,loop2->edGetConditionPort());
+  graph->edRemoveLink(o2s,loop2->edGetConditionPort());
+  graph->edRemoveLink(o1s,loop2->edGetConditionPort());
+  delete graph;
+}
+
+void EngineIntegrationTest::testLinkUpdate4()
+{
+  Bloc *graph1=new Bloc("graph1");
+  Bloc *graph2=new Bloc("graph2");
+  graph1->edAddChild(graph2);
+  ForEachLoop *forEach=new ForEachLoop("myFE",Runtime::_tc_double);
+  graph2->edAddChild(forEach);
+  ToyNode *n1=new ToyNode("T1");
+  OutputPort *o11=n1->edAddOutputPort("o11",Runtime::_tc_double);
+  Seq2ToyNode *n2=new Seq2ToyNode("n2");
+  graph2->edAddChild(n2);
+  graph2->edAddCFLink(forEach,n2);
+  forEach->edSetNode(n1);
+  Seq2ToyNode *n3=new Seq2ToyNode("n3");
+  graph1->edAddChild(n3);
+  graph1->edAddCFLink(graph2,n3);
+  //
+  CPPUNIT_ASSERT(graph1->edAddLink(o11,n2->edGetInValue1()));
+  CPPUNIT_ASSERT(!graph1->edAddLink(o11,n2->edGetInValue1()));
+  CPPUNIT_ASSERT(graph1->edAddLink(o11,n3->edGetInValue1()));
+  CPPUNIT_ASSERT(!graph1->edAddLink(o11,n3->edGetInValue1()));
+  graph1->edRemoveLink(o11,n2->edGetInValue1());
+  graph1->edRemoveLink(o11,n3->edGetInValue1());
+  //
+  graph1->edRemoveChild(graph2);
+  delete graph2;
+  delete graph1;
+}
+
 /*!
  * test of links between 2 loops to simulate coupling.
  */

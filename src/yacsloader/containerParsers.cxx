@@ -48,7 +48,11 @@ namespace YACS
       if(element == "machine")machine_(((machinetypeParser*)child)->post());
       if(element == "property")property(((propertytypeParser*)child)->post());
     }
-  void containertypeParser::pre (){_container._machs.clear();}
+  void containertypeParser::pre ()
+    {
+      _container._machs.clear();
+      _container._props.clear();
+    }
   void containertypeParser::name(const std::string& name){ _container._name=name; }
   void containertypeParser::machine_(const machine& m)
     {
@@ -57,7 +61,7 @@ namespace YACS
     }
   void containertypeParser::property (const myprop& prop)
     {
-      DEBTRACE( "property_set: " << prop._name << prop._value )             
+      DEBTRACE( "property_set: " << prop._name << " " << prop._value );
       _container._props[prop._name]=prop._value;
     }
   mycontainer containertypeParser::post()

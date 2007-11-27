@@ -6,6 +6,9 @@
 #include <set>
 #include <cassert>
 
+#define _DEVDEBUG_
+#include "YacsTrace.hxx"
+
 using namespace YACS::ENGINE;
 using namespace std;
 
@@ -24,17 +27,17 @@ PresetNode::PresetNode(const PresetNode& other, ComposedNode *father)
 
 void PresetNode::execute()
 {
-  cerr << "+++++++ PresetNode::execute +++++++++++" << endl;
+  DEBTRACE("+++++++ PresetNode::execute +++++++++++");
   list<OutputPort *>::const_iterator iter;
   for(iter = _setOfOutputPort.begin(); iter != _setOfOutputPort.end(); iter++)
     {
       OutputPresetPort *outp = dynamic_cast<OutputPresetPort *>(*iter);
       assert(outp);
       string data = outp->getData();
-      cerr << "data: " << data << endl;
+      DEBTRACE("data: " << data );
       outp->put(data.c_str());
     }
-  cerr << "+++++++ end DataNode::execute +++++++++++" << endl;
+  DEBTRACE("+++++++ end PresetNode::execute +++++++++++" );
 }
 
 void PresetNode::accept(Visitor *visitor)

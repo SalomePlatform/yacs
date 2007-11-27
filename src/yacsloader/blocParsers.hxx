@@ -44,6 +44,7 @@ struct bloctypeParser:parser
     _orders["sinline"]=2;
     _orders["node"]=2;
     _orders["datanode"]=2;
+    _orders["outnode"]=2;
     _orders["forloop"]=2;
     _orders["foreach"]=2;
     _orders["while"]=2;
@@ -288,6 +289,7 @@ struct bloctypeParser:parser
     }
 
   virtual void preset (ENGINE::DataNode* const& n);
+  virtual void outnode (ENGINE::DataNode* const& n);
 
   T post()
     {
@@ -312,10 +314,20 @@ template <class T> bloctypeParser<T> bloctypeParser<T>::blocParser;
 template <class T>
 void bloctypeParser<T>::preset (ENGINE::DataNode* const& n)
 {
-   DEBTRACE("bloc_preset_set: " << n->getName() );
-   _bloc->edAddChild(n);
-   std::string fullname = currentProc->names.back()+n->getName();
-   currentProc->nodeMap[fullname]=n;
+  DEBTRACE("bloc_preset_set: " << n->getName() );
+  _bloc->edAddChild(n);
+  std::string fullname = currentProc->names.back()+n->getName();
+  currentProc->nodeMap[fullname]=n;
+}
+
+template <class T>
+void bloctypeParser<T>::outnode (ENGINE::DataNode* const& n)
+{
+  DEBTRACE("bloc_outnode: " << n->getName() );
+  std::cerr << "outnode: " << n->getName() << std::endl;
+  _bloc->edAddChild(n);
+  std::string fullname = currentProc->names.back()+n->getName();
+  currentProc->nodeMap[fullname]=n;
 }
 
 template <>
@@ -333,6 +345,7 @@ void bloctypeParser<YACS::ENGINE::Bloc*>::name (const std::string& name)
 #include "loopParsers.hxx"
 #include "switchParsers.hxx"
 #include "presetParsers.hxx"
+#include "outputParsers.hxx"
 
 namespace YACS
 {
@@ -351,6 +364,7 @@ void bloctypeParser<T>::onStart(const XML_Char* el, const XML_Char** attr)
   else if(element == "service")pp=&servicetypeParser<>::serviceParser;
   else if(element == "node")pp=&nodetypeParser<>::nodeParser;
   else if(element == "datanode")pp=&presettypeParser<>::presetParser;
+  else if(element == "outnode")pp=&outnodetypeParser<>::outnodeParser;
 
   else if(element == "bloc")pp=&bloctypeParser<>::blocParser;
   else if(element == "forloop")pp=&forlooptypeParser<>::forloopParser;
@@ -380,6 +394,7 @@ void bloctypeParser<T>::onEnd(const char *el,parser* child)
   else if(element == "service")service(((servicetypeParser<>*)child)->post());
   else if(element == "node")node(((nodetypeParser<>*)child)->post());
   else if(element == "datanode")preset(((presettypeParser<>*)child)->post());
+  else if(element == "outnode")outnode(((outnodetypeParser<>*)child)->post());
 
   else if(element == "bloc")bloc(((bloctypeParser<>*)child)->post());
   else if(element == "forloop")forloop(((forlooptypeParser<>*)child)->post());

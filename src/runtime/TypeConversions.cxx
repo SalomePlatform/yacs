@@ -10,13 +10,14 @@
 #include "TypeConversions.hxx"
 #include "ConversionException.hxx"
 #include "RuntimeSALOME.hxx"
+#include "Salome_file_i.hxx"
 #include "TypeCode.hxx"
 #include "Cstr2d.hxx"
 
 #include <iostream>
 #include <sstream>
 
-//#define _DEVDEBUG_
+#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
 using namespace std;
@@ -823,10 +824,7 @@ namespace YACS
     {
       static inline PyObject* convert(const TypeCode *t,std::string& o)
         {
-          std::string::size_type pos=o.find_first_of(":");
-          std::string prefix=o.substr(0,pos);
-          DEBTRACE(prefix);
-          if(prefix == "file")
+          if(t->isA(Runtime::_tc_file))
             {
               //It's an objref file. Convert it specially
               return PyString_FromString(o.c_str());
@@ -1469,10 +1467,25 @@ namespace YACS
     {
       static inline std::string convert(const TypeCode *t,CORBA::Any* o,void*)
         {
-          CORBA::Object_var ObjRef ;
-          *o >>= (CORBA::Any::to_object ) ObjRef ;
-          CORBA::String_var objref = getSALOMERuntime()->getOrb()->object_to_string(ObjRef);
-          return (char *)objref;
+          char file[]="/tmp/XXXXXX";
+          if(t->isA(Runtime::_tc_file))
+            {
+              Engines::Salome_file_ptr sf;
+              *o >>= sf;
+              Salome_file_i* f=new Salome_file_i();
+              mkstemp(file);
+              f->setDistributedFile(file);
+              f->connect(sf);
+              f->recvFiles();
+              return file;
+            }
+          else
+            {
+              CORBA::Object_var ObjRef ;
+              *o >>= (CORBA::Any::to_object ) ObjRef ;
+              CORBA::String_var objref = getSALOMERuntime()->getOrb()->object_to_string(ObjRef);
+              return (char *)objref;
+            }
         }
     };
     template <ImplType IMPLOUT, class TOUT>
@@ -1598,17 +1611,29 @@ namespace YACS
     {
       static inline CORBA::Any* convert(const TypeCode *t,std::string& o)
         {
-          /*
-          std::string::size_type pos=o.find_first_of(":");
-          std::string prefix=o.substr(0,pos);
-          DEBTRACE(prefix);
-          if(prefix == "file")
+          CORBA::Object_var obref;
+          if(t->isA(Runtime::_tc_file))
             {
               //It's an objref file. Convert it specially
+              Salome_file_i* aSalome_file = new Salome_file_i();
+              try
+                {
+                  aSalome_file->setLocalFile(o.c_str());
+                  obref = aSalome_file->_this();
+                  aSalome_file->_remove_ref();
+                }
+              catch (const SALOME::SALOME_Exception& e)
+                {
+                  stringstream msg;
+                  msg << e.details.text;
+                  msg << " : " << __FILE__ << ":" << __LINE__;
+                  throw YACS::ENGINE::ConversionException(msg.str());
+                }
             }
-            */
-          CORBA::Object_var obref =
-            getSALOMERuntime()->getOrb()->string_to_object(o.c_str());
+          else
+            {
+              obref=getSALOMERuntime()->getOrb()->string_to_object(o.c_str());
+            }
 #ifdef REFCNT
           DEBTRACE("ObjRef refCount: " << obref->_PR_getobj()->pd_refCount);
 #endif
@@ -1696,7 +1721,6 @@ namespace YACS
           for(int i=0;i<nMember;i++)
             {
               const char * name=tst->memberName(i);
-              std::cerr << name << std::endl;
               if(m.count(name) !=0)
                 {
                   mseq[i].type=m[name]->type();

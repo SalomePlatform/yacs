@@ -131,18 +131,15 @@ void CorbaPyObjref::put(const void *data) throw(ConversionException)
  */
 void CorbaPyObjref::put(CORBA::Any *data) throw(ConversionException)
 {
-  CORBA::Object_var ObjRef ;
-  *data >>= (CORBA::Any::to_object ) ObjRef ;
   PyObject *ob;
   {
-  InterpreterUnlocker loc;
-  //hold_lock is true: caller is supposed to hold the GIL. 
-  //omniorb will not take the GIL
-  ob = getSALOMERuntime()->getApi()->cxxObjRefToPyObjRef(ObjRef, 1);
-  DEBTRACE("ob refcnt: " << ob->ob_refcnt );
+    InterpreterUnlocker loc;
+    ob=convertCorbaPyObject(edGetType(),data);
+    DEBTRACE("ob refcnt: " << ob->ob_refcnt );
+    _port->put(ob);
+    Py_DECREF(ob);
+    DEBTRACE("ob refcnt: " << ob->ob_refcnt );
   }
-  _port->put(ob);
-  Py_DECREF(ob);
 }
 
 //!Class to convert a CORBA::Any sequence to a PyObject Sequence

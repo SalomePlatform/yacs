@@ -14,6 +14,7 @@ Logger::Logger(const std::string& name):_name(name)
 
 Logger::~Logger()
 {
+  reset();
 }
 
 const std::string& Logger::getName()

@@ -89,7 +89,8 @@ int AnySplitOutputPort::removeInPort(InPort *inPort, bool forward) throw(Excepti
 {
   bool ret=OutputPort::removeInPort(inPort,forward);
   if(_repr)
-    _repr->removeInPort(_intercptr,forward);
+    if(_setOfInputPort.empty())
+      _repr->removeInPort(_intercptr,forward);
   return ret;
 }
 

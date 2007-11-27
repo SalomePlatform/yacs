@@ -67,7 +67,7 @@ void RuntimeTest::setUp()
   if (_ltc.size() == 0)
     {
       _ltc.push_back((TypeCodeObjref *)_tc_obj);
-      _tc_C         = TypeCode::interfaceTc("eo:C","C",_ltc);
+      _tc_C         = TypeCode::interfaceTc("IDL:eo/C:1.0","C",_ltc);
       _tc_seqC      = TypeCode::sequenceTc("eo:seqC","seqC",_tc_C);
     }
 }

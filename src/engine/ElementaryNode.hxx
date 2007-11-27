@@ -71,6 +71,7 @@ namespace YACS
       void finished();
       void aborted();
       void loaded();
+      virtual std::string getErrorDetails();
       virtual void initService() { }
       virtual void connectService() { }
       virtual void disconnectService() { }
@@ -89,6 +90,7 @@ namespace YACS
       static void edRemovePortTypedFromSet(PORT *port, std::list<PORT *>& setOfPorts) throw(Exception);
       template<class PORT>
       static bool isPortNameAlreadyExist(const std::string& portName, const std::list<PORT *>& setOfPorts);
+      std::string _errorDetails;
     };
 
     /**

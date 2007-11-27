@@ -371,6 +371,41 @@ bool CommandAddLink::localReverse()
 
 // ----------------------------------------------------------------------------
 
+CommandAddControlLink::CommandAddControlLink(std::string outNode, std::string inNode)
+  : Command(), _outNode(outNode), _inNode(inNode)
+{
+  DEBTRACE("CommandAddControlLink::CommandAddControlLink "<<outNode<<"-->>"<<inNode);
+}
+
+bool CommandAddControlLink::localExecute()
+{
+  try
+    {
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      Node* outn = proc;
+      if (! _outNode.empty())
+        outn = proc->getChildByName(_outNode);
+      Node* inn = proc;
+      if (! _inNode.empty())
+        inn = proc->getChildByName(_inNode);
+      ComposedNode *cla = ComposedNode::getLowestCommonAncestor(outn,inn);
+      DEBTRACE(cla->getName());
+      cla->edAddCFLink(outn,inn);
+      return true;
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandAddControlLink::localExecute() : " << ex.what());
+      return false;
+    }
+}
+
+bool CommandAddControlLink::localReverse()
+{
+}
+
+// ----------------------------------------------------------------------------
+
 CommandAddContainer::CommandAddContainer(std::string name,
                                          std::string refContainer)
   : Command(), _name(name), _containerToClone(refContainer), _container(0)

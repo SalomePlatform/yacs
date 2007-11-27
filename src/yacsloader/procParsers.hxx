@@ -115,6 +115,7 @@ void proctypeParser<T>::onStart(const XML_Char* el, const XML_Char** attr)
     else if(element == "service")pp=&servicetypeParser<>::serviceParser;
     else if(element == "node")pp=&nodetypeParser<>::nodeParser;
     else if(element == "datanode")pp=&presettypeParser<>::presetParser;
+    else if(element == "outnode")pp=&outnodetypeParser<>::outnodeParser;
 
     else if(element == "bloc")pp=&bloctypeParser<>::blocParser;
     else if(element == "forloop")pp=&forlooptypeParser<>::forloopParser;
@@ -166,6 +167,7 @@ void proctypeParser<T>::onEnd(const char *el,parser* child)
       else if(element == "service")this->service(((servicetypeParser<>*)child)->post());
       else if(element == "node")this->node(((nodetypeParser<>*)child)->post());
       else if(element == "datanode")this->preset(((presettypeParser<>*)child)->post());
+      else if(element == "outnode")this->outnode(((outnodetypeParser<>*)child)->post());
 
       else if(element == "bloc")this->bloc(((bloctypeParser<>*)child)->post());
       else if(element == "forloop")this->forloop(((forlooptypeParser<>*)child)->post());

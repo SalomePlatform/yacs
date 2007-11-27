@@ -82,12 +82,20 @@ void SalomeContainer::start() throw (Exception)
   Engines::ContainerManager_var contManager=Engines::ContainerManager::_narrow(obj);
 
   std::string str(_params.container_name);
-  if (str == "") {
-    std::ostringstream stream;
-    stream << (void *)(this);
-    _params.container_name=CORBA::string_dup(stream.str().c_str());
-  }
+  if (str == "") 
+    {
+      std::ostringstream stream;
+      stream << (void *)(this);
+      _params.container_name=CORBA::string_dup(stream.str().c_str());
+    }
   Engines::CompoList compolist;
+  compolist.length(_componentNames.size());
+  std::vector<std::string>::iterator iter;
+  for(CORBA::ULong i=0; i < _componentNames.size();i++)
+    {
+      compolist[i]=CORBA::string_dup(_componentNames[i].c_str());
+    }
+
   try
     { 
       std::string policy=getProperty("policy");
@@ -108,6 +116,11 @@ void SalomeContainer::start() throw (Exception)
     }
   if(CORBA::is_nil(_trueCont))
     throw Exception("SalomeContainer::start : Unable to launch container in Salome");
+
+  CORBA::String_var containerName=_trueCont->name();
+  CORBA::String_var hostName=_trueCont->getHostName();
+  std::cerr << "SalomeContainer launched : " << containerName << " " << hostName << " " << _trueCont->getPID() << std::endl;
+
 #ifdef REFCNT
     DEBTRACE(_trueCont->_PR_getobj()->pd_refCount );
 #endif
@@ -152,7 +165,7 @@ void SalomeContainer::checkCapabilityToDealWith(const ComponentInstance *inst) c
 void SalomeContainer::setProperty(const std::string& name, const std::string& value)
 {
 #ifdef _DEVDEBUG_
-  cerr << "SalomeContainer::SetProperty : " << name << " ; " << value << endl;
+  cerr << "SalomeContainer::setProperty : " << name << " ; " << value << endl;
 #endif
   
   if (name == "container_name")
@@ -206,4 +219,9 @@ bool SalomeContainer::isAPaCOContainer() const {
   if (parallelLib != "")
     result = true;
   return result;
+}
+
+void SalomeContainer::addComponentName(std::string name)
+{
+  _componentNames.push_back(name);
 }

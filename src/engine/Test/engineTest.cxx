@@ -1051,4 +1051,5 @@ void EngineTest::checkLogger()
                   "LogRecord: parser:ERROR:error2 (file.cxx:852)\n"
                   "LogRecord: parser:ERROR:error3 (file.cxx:978)\n";
   CPPUNIT_ASSERT(logger->getStr()==expected2);
+  delete proc;
 }

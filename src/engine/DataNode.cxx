@@ -13,6 +13,14 @@ namespace YACS
     void DataNode::setData(OutputPort* port,std::string& data) 
       {
       }
+    void DataNode::setRef(std::string& ref) 
+      {
+        _ref=ref;
+      }
+    std::string DataNode::getRef() 
+      {
+        return _ref;
+      }
   }
 }
 

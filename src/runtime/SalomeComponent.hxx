@@ -23,6 +23,7 @@ namespace YACS
       virtual void load();
       virtual void unload();
       virtual bool isLoaded();
+      virtual void setContainer(Container *cont);
       virtual ServiceNode* createNode(const std::string& name);
       virtual ComponentInstance* clone() const;
       virtual std::string getFileRepr() const;
