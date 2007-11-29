@@ -25,6 +25,10 @@ namespace YACS
       {
         CATALOGNODE,
         CATALOGDATATYPE,
+        CATALOGINPUTPORT,
+        CATALOGOUTPUTPORT,
+        CATALOGIDSPORT,
+        CATALOGODSPORT,
         CATALOGCOMPOSEDNODE
       } TypeOfCatalogItem;
 
@@ -48,7 +52,7 @@ namespace YACS
     public slots:
       virtual void addSelection();
     protected:
-      YACS::ENGINE::Catalog* _sessionCatalog;
+      YACS::ENGINE::Catalog* _currentCatalog;
       std::map<QListViewItem*,std::pair<std::string,std::string> > _serviceMap;
       std::map<QListViewItem*,std::string> _typeCodeMap;
       editTree* _editTree;

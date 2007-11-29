@@ -44,6 +44,15 @@ class proc_i(YACSGui_ORB__POA.ProcExec):
     def getXMLState(self, numid):
         return self.p.getXMLState(numid)
 
+    def getInPortValue(self, nodeNumid, portName):
+        return self.p.getInPortValue(nodeNumid, portName)
+
+    def getOutPortValue(self, nodeNumid, portName):
+        return self.p.getOutPortValue(nodeNumid, portName)
+
+    def getErrorDetails(self, nodeNumid):
+        return self.p.getErrorDetails(nodeNumid)
+
     def getExecutorState(self):
         return self.e.getExecutorState()
 
@@ -61,7 +70,7 @@ class proc_i(YACSGui_ORB__POA.ProcExec):
     def Run(self):
         execState = self.e.getExecutorState()
         if execState >= 305:
-            # --- not clean, value from define.hxx
+            # --- not clean, value from define.hxx (YACS::FINISHED)
             self.run1.join()
             self.run1 = None
             pass

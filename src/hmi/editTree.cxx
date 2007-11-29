@@ -13,6 +13,7 @@
 #include "YacsTrace.hxx"
 
 #include <qpopupmenu.h>
+#include <qfiledialog.h>
 #include <qlabel.h>
 #include <qcursor.h>
 
@@ -600,16 +601,7 @@ void editTree::newInputPort(int key)
   YACS::ENGINE::Catalog* catalog = _catalogItemsMap[key].first;
   std::string type = _catalogItemsMap[key].second;
   Subject *sub =getSelectedSubject();
-  if (sub)
-    {
-      YACS::HMI::SubjectElementaryNode *subject = dynamic_cast< YACS::HMI::SubjectElementaryNode*>(sub);
-      if (subject)
-        {
-          std::stringstream name;
-          name << "InDF_" << type << GuiContext::getCurrent()->getNewId();
-          subject->addInputPort(catalog, type, name.str());
-        }
-    }
+  newDFInputPort(catalog, sub, type);
 }
 
 void editTree::newOutputPort(int key)
@@ -618,19 +610,124 @@ void editTree::newOutputPort(int key)
   YACS::ENGINE::Catalog* catalog = _catalogItemsMap[key].first;
   std::string type = _catalogItemsMap[key].second;
   Subject *sub =getSelectedSubject();
+  newDFOutputPort(catalog, sub, type);
+}
+
+void editTree::newDFInputPort(YACS::ENGINE::Catalog* catalog,
+                              Subject* sub,
+                              std::string typeName)
+{
   if (sub)
     {
       YACS::HMI::SubjectElementaryNode *subject = dynamic_cast< YACS::HMI::SubjectElementaryNode*>(sub);
       if (subject)
         {
           std::stringstream name;
-          name << "OutDF_" << type << GuiContext::getCurrent()->getNewId();
-          subject->addOutputPort(catalog, type, name.str());
+          name << "InDF_" << typeName << GuiContext::getCurrent()->getNewId();
+          subject->addInputPort(catalog, typeName, name.str());
         }
     }
 }
 
-void editTree::cataSession(int cataType)
+void editTree::newDFOutputPort(YACS::ENGINE::Catalog* catalog,
+                               Subject* sub,
+                               std::string typeName)
+{
+  if (sub)
+    {
+      YACS::HMI::SubjectElementaryNode *subject = dynamic_cast< YACS::HMI::SubjectElementaryNode*>(sub);
+      if (subject)
+        {
+          std::stringstream name;
+          name << "OutDF_" << typeName << GuiContext::getCurrent()->getNewId();
+          subject->addOutputPort(catalog, typeName, name.str());
+        }
+    }
+}
+
+void editTree::newDSInputPort(YACS::ENGINE::Catalog* catalog,
+                              Subject* sub,
+                              std::string typeName)
+{
+  if (sub)
+    {
+      YACS::HMI::SubjectElementaryNode *subject = dynamic_cast< YACS::HMI::SubjectElementaryNode*>(sub);
+      if (subject)
+        {
+          std::stringstream name;
+          name << "InDS_" << typeName << GuiContext::getCurrent()->getNewId();
+          subject->addIDSPort(catalog, typeName, name.str());
+        }
+    }
+}
+
+void editTree::newDSOutputPort(YACS::ENGINE::Catalog* catalog,
+                               Subject* sub,
+                               std::string typeName)
+{
+  if (sub)
+    {
+      YACS::HMI::SubjectElementaryNode *subject = dynamic_cast< YACS::HMI::SubjectElementaryNode*>(sub);
+      if (subject)
+        {
+          std::stringstream name;
+          name << "OutDS_" << typeName << GuiContext::getCurrent()->getNewId();
+          subject->addODSPort(catalog, typeName, name.str());
+        }
+    }
+}
+
+
+void editTree::newDFInputPort()
+{
+  DEBTRACE("editTree::newDFInputPort");
+  Subject *sub =getSelectedSubject();
+  if (sub)
+    {
+      YACS::HMI::SubjectElementaryNode *subject = dynamic_cast< YACS::HMI::SubjectElementaryNode*>(sub);
+      if (subject)
+        catalog(CATALOGINPUTPORT);
+    }
+
+}
+
+void editTree::newDFOutputPort()
+{
+  DEBTRACE("editTree::newDFOutputPort");
+  Subject *sub =getSelectedSubject();
+  if (sub)
+    {
+      YACS::HMI::SubjectElementaryNode *subject = dynamic_cast< YACS::HMI::SubjectElementaryNode*>(sub);
+      if (subject)
+        catalog(CATALOGOUTPUTPORT);
+    }
+}
+void editTree::newDSInputPort()
+{
+  DEBTRACE("editTree::newDSInputPort");
+  Subject *sub =getSelectedSubject();
+  if (sub)
+    {
+      YACS::HMI::SubjectElementaryNode *subject = dynamic_cast< YACS::HMI::SubjectElementaryNode*>(sub);
+      if (subject)
+        catalog(CATALOGIDSPORT);
+    }
+
+}
+
+void editTree::newDSOutputPort()
+{
+  DEBTRACE("editTree::newDSOutputPort");
+  Subject *sub =getSelectedSubject();
+  if (sub)
+    {
+      YACS::HMI::SubjectElementaryNode *subject = dynamic_cast< YACS::HMI::SubjectElementaryNode*>(sub);
+      if (subject)
+        catalog(CATALOGODSPORT);
+    }
+}
+
+void editTree::catalog(int cataType)
 {
   Subject *sub =getSelectedSubject();
   if (sub)
@@ -640,8 +737,30 @@ void editTree::cataSession(int cataType)
     }
 }
 
-void editTree::cataProc()
+void editTree::setCatalog(int isproc)
 {
+  Subject *sub =getSelectedSubject();
+  if (sub)
+    {
+      if (isproc)
+        {
+          QString fn = QFileDialog::getOpenFileName( QString::null,
+                                                     tr( "XML-Files (*.xml);;All Files (*)" ),
+                                                     this,
+                                                     "load YACS scheme file dialog as catalog",
+                                                     "Choose a filename to load"  );
+          if ( !fn.isEmpty() )
+            {
+              YACS::ENGINE::Catalog* aCatalog = YACS::ENGINE::getSALOMERuntime()->loadCatalog( "proc", fn.latin1());
+              GuiContext::getCurrent()->setProcCatalog(aCatalog);
+              GuiContext::getCurrent()->setCurrentCatalog(aCatalog);
+            }
+        }
+      else
+        {
+          GuiContext::getCurrent()->setCurrentCatalog(GuiContext::getCurrent()->getSessionCatalog());
+        }
+    }
 }
 
 
@@ -793,9 +912,12 @@ void editTree::ComposedNodeContextMenu()
         contextMenu->setItemParameter(id, _keymap++);
       }
   }
-  id = contextMenu->insertItem( "Session Catalog", this, SLOT(cataSession(int)) );
+  id = contextMenu->insertItem( "set current catalog to session", this, SLOT(setCatalog(int)) );
+  contextMenu->setItemParameter(id, 0);
+  id = contextMenu->insertItem( "set current catalog to proc", this, SLOT(setCatalog(int)) );
+  contextMenu->setItemParameter(id, 1);
+  id = contextMenu->insertItem( "new node from current Catalog", this, SLOT(catalog(int)) );
   contextMenu->setItemParameter(id, CATALOGNODE);
-  contextMenu->insertItem( "Scheme Catalog", this, SLOT(cataProc()) );
   contextMenu->exec( QCursor::pos() );
   delete contextMenu;
 }
@@ -844,7 +966,15 @@ void editTree::NodeContextMenu()
           contextMenu->setItemParameter(id, _keymap++);
         }
       }
-    id = contextMenu->insertItem( "Data Type Catalog", this, SLOT(cataSession(int)) );
+    id = contextMenu->insertItem( "set current catalog to session", this, SLOT(setCatalog(int)) );
+    contextMenu->setItemParameter(id, 0);
+    id = contextMenu->insertItem( "set current catalog to proc", this, SLOT(setCatalog(int)) );
+    contextMenu->setItemParameter(id, 1);
+    id = contextMenu->insertItem( "new InputPort from catalog", this, SLOT(newDFInputPort()));
+    id = contextMenu->insertItem( "new OutputPort from catalog", this, SLOT(newDFOutputPort()));
+    id = contextMenu->insertItem( "new DataStream InputPort from catalog", this, SLOT(newDSInputPort()));
+    id = contextMenu->insertItem( "new DataStream OutputPort from catalog", this, SLOT(newDSOutputPort()));
+    id = contextMenu->insertItem( "add Data Type from current Catalog", this, SLOT(catalog(int)) );
     contextMenu->setItemParameter(id, CATALOGDATATYPE);
   }
   contextMenu->exec( QCursor::pos() );

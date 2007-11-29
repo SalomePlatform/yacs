@@ -19,6 +19,8 @@ namespace YACS
     class Catalog;
     class InputPort;
     class OutputPort;
+    class InputDataStreamPort;
+    class OutputDataStreamPort;
     class Container;
     class ComponentInstance;
   }
@@ -146,6 +148,42 @@ namespace YACS
       std::string _node;
       std::string _name;
       YACS::ENGINE::OutputPort *_outputPort;
+    };
+
+    class CommandAddIDSPortFromCatalog: public Command
+    {
+    public:
+      CommandAddIDSPortFromCatalog(YACS::ENGINE::Catalog *catalog,
+                                   std::string type,
+                                   std::string node,
+                                   std::string name);
+      YACS::ENGINE::InputDataStreamPort *getIDSPort();
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      YACS::ENGINE::Catalog* _catalog;
+      std::string _typePort;
+      std::string _node;
+      std::string _name;
+      YACS::ENGINE::InputDataStreamPort *_IDSPort;
+    };
+
+    class CommandAddODSPortFromCatalog: public Command
+    {
+    public:
+      CommandAddODSPortFromCatalog(YACS::ENGINE::Catalog *catalog,
+                                   std::string type,
+                                   std::string node,
+                                   std::string name);
+      YACS::ENGINE::OutputDataStreamPort *getODSPort();
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      YACS::ENGINE::Catalog* _catalog;
+      std::string _typePort;
+      std::string _node;
+      std::string _name;
+      YACS::ENGINE::OutputDataStreamPort *_ODSPort;
     };
 
     class CommandAddLink: public Command

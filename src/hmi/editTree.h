@@ -55,6 +55,22 @@ namespace YACS
                        std::string typeName);
       void newInputPort(int key);
       void newOutputPort(int key);
+      void newDFInputPort();
+      void newDFOutputPort();
+      void newDSInputPort();
+      void newDSOutputPort();
+      void newDFInputPort(YACS::ENGINE::Catalog* catalog,
+                          Subject* sub,
+                          std::string typeName);
+      void newDFOutputPort(YACS::ENGINE::Catalog* catalog,
+                           Subject* sub,
+                           std::string typeName);
+      void newDSInputPort(YACS::ENGINE::Catalog* catalog,
+                          Subject* sub,
+                          std::string typeName);
+      void newDSOutputPort(YACS::ENGINE::Catalog* catalog,
+                           Subject* sub,
+                           std::string typeName);
       void select();
       void select(QListViewItem *it);
       void destroy();
@@ -63,8 +79,8 @@ namespace YACS
       void associateServiceToComponent();
       void addContainer();
       void associateComponentToContainer();
-      void cataSession(int cataType);
-      void cataProc();
+      void catalog(int cataType);
+      void setCatalog(int isproc);
     public:
       editTree(YACS::HMI::Subject *context,
                 QWidget* parent = 0,

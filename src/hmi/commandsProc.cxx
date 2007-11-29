@@ -21,6 +21,7 @@
 #include "Switch.hxx"
 #include "OptimizerLoop.hxx"
 #include "Exception.hxx"
+#include "InputDataStreamPort.hxx"
 #include "OutputDataStreamPort.hxx"
 #include "ComponentDefinition.hxx"
 #include "SalomeContainer.hxx"
@@ -194,11 +195,12 @@ CommandAddDataTypeFromCatalog::CommandAddDataTypeFromCatalog(YACS::ENGINE::Catal
                                                              std::string typeName)
   : Command(), _catalog(catalog), _typeName(typeName)
 {
-  DEBTRACE("CommandAddDataTypeFromCatalog::CommandAddDataTypeFromCatalog " << typeName);
+  DEBTRACE("CommandAddDataTypeFromCatalog::CommandAddDataTypeFromCatalog: " << typeName);
 }
 
 YACS::ENGINE::TypeCode *CommandAddDataTypeFromCatalog::getTypeCode()
 {
+
   if (GuiContext::getCurrent()->getProc()->typeMap.count(_typeName))
     return GuiContext::getCurrent()->getProc()->typeMap[_typeName];
   else return 0;
@@ -208,10 +210,14 @@ bool CommandAddDataTypeFromCatalog::localExecute()
 {
   Proc* proc = GuiContext::getCurrent()->getProc();
   if (proc->typeMap.count(_typeName))
-    return false;
+    {
+      DEBTRACE("typecode already existing in proc: " << _typeName);
+      return false;
+    }
   else
     if (_catalog->_typeMap.count(_typeName))
       {
+        DEBTRACE("typecode found in catalog, cloned: " << _typeName);
         proc->typeMap[_typeName] = _catalog->_typeMap[_typeName]->clone();
         return true;
       }
@@ -312,7 +318,97 @@ bool CommandAddOutputPortFromCatalog::localExecute()
 bool CommandAddOutputPortFromCatalog::localReverse()
 {
 }
+
+// ----------------------------------------------------------------------------
+
+CommandAddIDSPortFromCatalog::CommandAddIDSPortFromCatalog(YACS::ENGINE::Catalog *catalog,
+                                                           std::string type,
+                                                           std::string node,
+                                                           std::string name)
+  : Command(), _catalog(catalog), _typePort(type), _node(node), _name(name)
+{
+  _IDSPort = 0;
+}
+
+YACS::ENGINE::InputDataStreamPort *CommandAddIDSPortFromCatalog::getIDSPort()
+{
+  return _IDSPort;
+}
+
+bool CommandAddIDSPortFromCatalog::localExecute()
+{
+  InputDataStreamPort *son = 0;
+  try
+    {
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      Node* node = proc->getChildByName(_node);
+      ElementaryNode* father =dynamic_cast<ElementaryNode*> (node);
+      if (father)
+        {
+          if (_catalog->_typeMap.count(_typePort))
+            son = father->edAddInputDataStreamPort(_name, _catalog->_typeMap[_typePort]);
+          else DEBTRACE(_typePort << " not found in catalog");
+        }
+      _IDSPort = son;
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandAddIDSPortFromCatalog::localExecute() : " << ex.what());
+      if (son) delete son;
+      _IDSPort = 0;
+    }
+  return (_IDSPort != 0);
+}
+
+bool CommandAddIDSPortFromCatalog::localReverse()
+{
+}
  
+// ----------------------------------------------------------------------------
+
+CommandAddODSPortFromCatalog::CommandAddODSPortFromCatalog(YACS::ENGINE::Catalog *catalog,
+                                                           std::string type,
+                                                           std::string node,
+                                                           std::string name)
+  : Command(), _catalog(catalog), _typePort(type), _node(node), _name(name)
+{
+  _ODSPort = 0;
+}
+
+YACS::ENGINE::OutputDataStreamPort *CommandAddODSPortFromCatalog::getODSPort()
+{
+  return _ODSPort;
+}
+
+bool CommandAddODSPortFromCatalog::localExecute()
+{
+  OutputDataStreamPort *son = 0;
+  try
+    {
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      Node* node = proc->getChildByName(_node);
+      ElementaryNode* father =dynamic_cast<ElementaryNode*> (node);
+      if (father)
+        {
+          if (_catalog->_typeMap.count(_typePort))
+            son = father->edAddOutputDataStreamPort(_name, _catalog->_typeMap[_typePort]);
+          else DEBTRACE(_typePort << " not found in catalog");
+        }
+      _ODSPort = son;
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandAddODSPortFromCatalog::localExecute() : " << ex.what());
+      if (son) delete son;
+      _ODSPort = 0;
+    }
+  return (_ODSPort != 0);
+}
+
+bool CommandAddODSPortFromCatalog::localReverse()
+{
+}
+
 // ----------------------------------------------------------------------------
 
 CommandDestroy::CommandDestroy(std::string position,  Subject* subject)

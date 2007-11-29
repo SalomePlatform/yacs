@@ -865,6 +865,7 @@ bool SubjectProc::addDataType(YACS::ENGINE::Catalog* catalog, std::string typeNa
   CommandAddDataTypeFromCatalog *command = new CommandAddDataTypeFromCatalog(catalog, typeName);
   if (command->execute())
     {
+      DEBTRACE("new datatype " << typeName);
       GuiContext::getCurrent()->getInvoc()->add(command);
       SubjectDataType *son = addSubjectDataType(command->getTypeCode());
       return son;
@@ -900,9 +901,11 @@ SubjectDataType* SubjectProc::addSubjectDataType(YACS::ENGINE::TypeCode *type)
   Proc* proc = GuiContext::getCurrent()->getProc();
   SubjectDataType* son = 0;
   if (! proc->typeMap.count(typeName))
+    proc->typeMap[typeName] = type->clone();
+  if (! GuiContext::getCurrent()->_mapOfSubjectDataType.count(typeName))
     {
-      proc->typeMap[typeName] = type->clone();
       son = new SubjectDataType(typeName, this);
+      GuiContext::getCurrent()->_mapOfSubjectDataType[typeName] = son;
       update(ADD, DATATYPE, son);
     }
   return son;
@@ -973,6 +976,48 @@ bool SubjectElementaryNode::addOutputPort(YACS::ENGINE::Catalog *catalog, std::s
       GuiContext::getCurrent()->getInvoc()->add(command);
       OutputPort * port = command->getOutputPort();
       SubjectOutputPort *son = addSubjectOutputPort(port, name);
+      return son;
+    }
+  return 0;
+}
+
+bool SubjectElementaryNode::addIDSPort(YACS::ENGINE::Catalog *catalog, std::string type, std::string name)
+{
+  DEBTRACE("SubjectElementaryNode::addIDSPort( " << catalog << ", " << type << ", " << name << " )");
+  Proc *proc = GuiContext::getCurrent()->getProc();
+  string position = "";
+  if (proc != dynamic_cast<Proc*>(_node)) position = proc->getChildName(_node);
+  else assert(0);
+  CommandAddIDSPortFromCatalog *command = new CommandAddIDSPortFromCatalog(catalog,
+                                                                           type,
+                                                                           position,
+                                                                           name);
+  if (command->execute())
+    {
+      GuiContext::getCurrent()->getInvoc()->add(command);
+      InputDataStreamPort * port = command->getIDSPort();
+      SubjectInputDataStreamPort *son = addSubjectIDSPort(port, name);
+      return son;
+    }
+  return 0;
+}
+
+bool SubjectElementaryNode::addODSPort(YACS::ENGINE::Catalog *catalog, std::string type, std::string name)
+{
+  DEBTRACE("SubjectElementaryNode::addODSPort( " << catalog << ", " << type << ", " << name << " )");
+  Proc *proc = GuiContext::getCurrent()->getProc();
+  string position = "";
+  if (proc != dynamic_cast<Proc*>(_node)) position = proc->getChildName(_node);
+  else assert(0);
+  CommandAddODSPortFromCatalog *command = new CommandAddODSPortFromCatalog(catalog,
+                                                                           type,
+                                                                           position,
+                                                                           name);
+  if (command->execute())
+    {
+      GuiContext::getCurrent()->getInvoc()->add(command);
+      OutputDataStreamPort * port = command->getODSPort();
+      SubjectOutputDataStreamPort *son = addSubjectODSPort(port, name);
       return son;
     }
   return 0;

@@ -35,6 +35,9 @@ namespace YACS
       virtual void accept(Visitor *visitor);
 
       YACS::StatesForNode getNodeState(int numId);
+      std::string getInPortValue(int nodeNumId, std::string portName);
+      std::string getOutPortValue(int nodeNumId, std::string portName);
+      std::string getErrorDetails(int nodeNumId);
       std::string getXMLState(int numId);
       std::list<int> getNumIds();
       std::list<std::string> getIds();

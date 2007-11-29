@@ -21,6 +21,9 @@ GuiContext::GuiContext()
 {
   _builtinCatalog = getSALOMERuntime()->getBuiltinCatalog();
   _sessionCatalog = 0;
+  _procCatalog = 0;
+  _currentCatalog = 0;
+
   _invoc = new ProcInvoc();
   _proc = 0;
   _subjectProc = 0;
@@ -33,6 +36,9 @@ GuiContext::GuiContext()
   _mapOfSubjectDataPort.clear();
   _mapOfSubjectLink.clear();
   _mapOfSubjectControlLink.clear();
+  _mapOfSubjectComponent.clear();
+  _mapOfSubjectContainer.clear();
+  _mapOfSubjectDataType.clear();
 }
 
 GuiContext::~GuiContext()
@@ -53,7 +59,11 @@ void GuiContext::setProc(YACS::ENGINE::Proc* proc)
   _mapOfSubjectNode.clear();
   _mapOfSubjectDataPort.clear();
   _mapOfSubjectLink.clear();
+  _mapOfSubjectControlLink.clear();
   _mapOfSubjectComponent.clear();
+  _mapOfSubjectContainer.clear();
+  _mapOfSubjectDataType.clear();
+
   _subjectProc = new SubjectProc(proc, this);
   _mapOfSubjectNode[static_cast<Node*>(proc)] = _subjectProc;
   update(YACS::HMI::NEWROOT, 0, _subjectProc);

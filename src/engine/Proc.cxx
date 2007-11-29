@@ -1,6 +1,9 @@
 #include "Proc.hxx"
+#include "ElementaryNode.hxx"
 #include "Runtime.hxx"
 #include "Container.hxx"
+#include "InputPort.hxx"
+#include "OutputPort.hxx"
 #include "Logger.hxx"
 #include "Visitor.hxx"
 #include <sstream>
@@ -158,6 +161,71 @@ std::string Proc::getXMLState(int numId)
   msg << "<name>" << node->getQualifiedName() << "</name>";
   msg << "<id>" << numId << "</id>";
   return msg.str();
+}
+
+std::string Proc::getInPortValue(int nodeNumId, std::string portName)
+{
+  DEBTRACE("Proc::getInPortValue " << nodeNumId << " " << portName);
+  stringstream msg;
+  if(YACS::ENGINE::Node::idMap.count(nodeNumId) == 0)
+    {
+      msg << "<value><error>unknown node id: " << nodeNumId << "</error></value>";
+      return msg.str();
+    }
+  try
+    {
+      YACS::ENGINE::Node* node = YACS::ENGINE::Node::idMap[nodeNumId];
+      InputPort * inputPort = node->getInputPort(portName);
+      return inputPort->dump();
+    }
+  catch(YACS::Exception& ex)
+    {
+      DEBTRACE("Proc::getInPortValue " << ex.what());
+      msg << "<value><error>" << ex.what() << "</error></value>";
+      return msg.str();
+    }
+}
+
+std::string Proc::getOutPortValue(int nodeNumId, std::string portName)
+{
+  DEBTRACE("Proc::getOutPortValue " << nodeNumId << " " << portName);
+  stringstream msg;
+  if(YACS::ENGINE::Node::idMap.count(nodeNumId) == 0)
+    {
+      msg << "<value><error>unknown node id: " << nodeNumId << "</error></value>";
+      return msg.str();
+    }
+  try
+    {
+      YACS::ENGINE::Node* node = YACS::ENGINE::Node::idMap[nodeNumId];
+      OutputPort * outputPort = node->getOutputPort(portName);
+      return outputPort->dump();
+    }
+  catch(YACS::Exception& ex)
+    {
+      DEBTRACE("Proc::getOutPortValue " << ex.what());
+      msg << "<value><error>" << ex.what() << "</error></value>";
+      return msg.str();
+    }
+}
+
+std::string Proc::getErrorDetails(int nodeNumId)
+{
+  DEBTRACE("Proc::getErrorDetails " << nodeNumId);
+  stringstream msg;
+  if(YACS::ENGINE::Node::idMap.count(nodeNumId) == 0)
+    {
+      msg << "Unknown node id " << nodeNumId;
+      return msg.str();
+    }
+  YACS::ENGINE::Node* node = YACS::ENGINE::Node::idMap[nodeNumId];
+  if ( YACS::ENGINE::ElementaryNode *elemNode = dynamic_cast<YACS::ENGINE::ElementaryNode*>(node))
+    return elemNode->getErrorDetails();
+  else
+    {
+      msg << "node id " << nodeNumId << " is not an ElementaryNode";
+      return msg.str();
+    }
 }
 
 std::list<int> Proc::getNumIds()

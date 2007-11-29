@@ -8,7 +8,11 @@
 """
 
 import sys,os
-import cElementTree as ElementTree
+try:
+  import cElementTree as ElementTree
+except ImportError:
+  import ElementTree
+
 from sets import Set
 import pilot
 import SALOMERuntime

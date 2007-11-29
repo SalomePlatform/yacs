@@ -6,7 +6,7 @@
 #include <set>
 #include <cassert>
 
-#define _DEVDEBUG_
+//#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
 using namespace YACS::ENGINE;

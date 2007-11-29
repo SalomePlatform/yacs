@@ -421,6 +421,8 @@ namespace YACS
       virtual ~SubjectElementaryNode();
       virtual bool addInputPort(YACS::ENGINE::Catalog *catalog, std::string type, std::string name);
       virtual bool addOutputPort(YACS::ENGINE::Catalog *catalog, std::string type, std::string name);
+      virtual bool addIDSPort(YACS::ENGINE::Catalog *catalog, std::string type, std::string name);
+      virtual bool addODSPort(YACS::ENGINE::Catalog *catalog, std::string type, std::string name);
       virtual void removePort(SubjectDataPort* port);
       virtual void loadChildren();
       virtual void clean();

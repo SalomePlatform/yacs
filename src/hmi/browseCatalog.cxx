@@ -40,15 +40,15 @@ void BrowseCatalog::resetTree()
 {
   lv1->clear();
   lv1->setRootIsDecorated( TRUE );
-  _sessionCatalog = YACS::HMI::GuiContext::getCurrent()->getSessionCatalog();
-  if (_sessionCatalog)
+  _currentCatalog = YACS::HMI::GuiContext::getCurrent()->getCurrentCatalog();
+  if (_currentCatalog)
     switch (_cataType)
       {
       case CATALOGNODE:
         {
           map<string, YACS::ENGINE::ComponentDefinition*>::const_iterator itComp; 
-          for (itComp = _sessionCatalog->_componentMap.begin();
-               itComp != _sessionCatalog->_componentMap.end();
+          for (itComp = _currentCatalog->_componentMap.begin();
+               itComp != _currentCatalog->_componentMap.end();
                ++itComp)
             {
               string compoName = (*itComp).first;
@@ -67,11 +67,15 @@ void BrowseCatalog::resetTree()
             }
           break;
         }
+      case CATALOGINPUTPORT:
+      case CATALOGOUTPUTPORT:
+      case CATALOGIDSPORT:
+      case CATALOGODSPORT:
       case CATALOGDATATYPE:
         {
           map<string, YACS::ENGINE::TypeCode*>::const_iterator itType;
-          for(itType = _sessionCatalog->_typeMap.begin();
-              itType != _sessionCatalog->_typeMap.end();
+          for(itType = _currentCatalog->_typeMap.begin();
+              itType != _currentCatalog->_typeMap.end();
               ++itType)
             {
               string typeName = (*itType).first;
@@ -95,12 +99,32 @@ void BrowseCatalog::addSelection()
       {
       case CATALOGNODE:
         {
-          _editTree->newNode(_sessionCatalog, _subject, _serviceMap[it]);
+          _editTree->newNode(_currentCatalog, _subject, _serviceMap[it]);
           break;
         }
       case CATALOGDATATYPE:
         {
-          _editTree->newDataType(_sessionCatalog, _subject, _typeCodeMap[it]);
+          _editTree->newDataType(_currentCatalog, _subject, _typeCodeMap[it]);
+          break;
+        }
+      case CATALOGINPUTPORT:
+        {
+          _editTree->newDFInputPort(_currentCatalog, _subject, _typeCodeMap[it]);
+          break;
+        }
+      case CATALOGOUTPUTPORT:
+        {
+          _editTree->newDFOutputPort(_currentCatalog, _subject, _typeCodeMap[it]);
+          break;
+        }
+      case CATALOGIDSPORT:
+        {
+          _editTree->newDSInputPort(_currentCatalog, _subject, _typeCodeMap[it]);
+          break;
+        }
+      case CATALOGODSPORT:
+        {
+          _editTree->newDSOutputPort(_currentCatalog, _subject, _typeCodeMap[it]);
           break;
         }
       default:

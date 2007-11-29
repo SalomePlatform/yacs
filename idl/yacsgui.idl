@@ -23,6 +23,9 @@ module YACSGui_ORB
   {
     long getNodeState(in long numid);
     string getXMLState(in long numid);
+    string getInPortValue(in long nodeNumid, in string portName);
+    string getOutPortValue(in long nodeNumid, in string portName);
+    string getErrorDetails(in long nodeNumid);
     long getExecutorState();
     void getIds(out longArray numids,out stringArray names);
     longArray getNumIds();
