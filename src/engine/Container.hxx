@@ -36,7 +36,7 @@ namespace YACS
       virtual void setProperty(const std::string& name,const std::string& value);
       virtual std::string getProperty(const std::string& name);
       std::map<std::string,std::string> getProperties() { return _propertyMap; };
-      void setProperties(std::map<std::string,std::string> properties) {_propertyMap = properties; };
+      virtual void setProperties(std::map<std::string,std::string> properties);
       std::string getName() const { return _name; };
       //! \b WARNING ! name is used in edition to identify different containers, it is not the runtime name of the container
       void setName(std::string name) { _name = name; };

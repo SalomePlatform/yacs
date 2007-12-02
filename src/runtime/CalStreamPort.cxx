@@ -63,8 +63,7 @@ void InputCalStreamPort::setProperty(const std::string& name, const std::string&
     setSchema(value);
   else if(name == "level")
     setLevel(value);
-  else
-    InputDataStreamPort::setProperty(name,value);
+  InputDataStreamPort::setProperty(name,value);
 }
 
 #ifdef DSC_PORTS
@@ -157,8 +156,7 @@ void OutputCalStreamPort::setProperty(const std::string& name, const std::string
     setSchema(value);
   else if(name == "level")
     setLevel(value);
-  else
-    OutputDataStreamPort::setProperty(name,value);
+  OutputDataStreamPort::setProperty(name,value);
 }
 
 std::string OutputCalStreamPort::getNameOfTypeOfCurrentInstance() const

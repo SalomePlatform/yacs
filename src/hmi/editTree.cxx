@@ -6,6 +6,7 @@
 #include "guiContext.hxx"
 #include "Catalog.hxx"
 #include "browseCatalog.h"
+#include "chooseName.h"
 #include "ServiceNode.hxx"
 
 #include <iostream>
@@ -16,6 +17,8 @@
 #include <qfiledialog.h>
 #include <qlabel.h>
 #include <qcursor.h>
+#include <qmessagebox.h>
+
 
 #include <string>
 #include <sstream>
@@ -483,13 +486,51 @@ void editTree::addLink()
     }
 }
 
+void editTree::editPortProperties()
+{
+  DEBTRACE("editTree::editPortProperties");
+  Subject *sub =getSelectedSubject();
+  if (sub)
+    {
+      if (SubjectOutputDataStreamPort* subODS = dynamic_cast<SubjectOutputDataStreamPort*>(sub))
+        {
+          map<string, string> properties = subODS->getProperties();
+          properties["prop1"] = "val1";
+          properties["prop2"] = "val2";
+          subODS->setProperties(properties);
+          properties = subODS->getProperties();
+          map<string, string>::iterator it;
+          for (it = properties.begin(); it !=properties.end(); ++it)
+            DEBTRACE("OutputDataStreamPort property " << (*it).first << " " << (*it).second);
+        }
+      else if (SubjectInputDataStreamPort* subIDS = dynamic_cast<SubjectInputDataStreamPort*>(sub))
+        {
+          map<string, string> properties = subIDS->getProperties();
+          properties["prop1"] = "val1";
+          properties["prop2"] = "val2";
+          subIDS->setProperties(properties);
+          properties = subIDS->getProperties();
+          map<string, string>::iterator it;
+          for (it = properties.begin(); it !=properties.end(); ++it)
+            DEBTRACE("InputDataStreamPort property " << (*it).first << " " << (*it).second);
+         }
+    }
+}
+
 void editTree::addComponent()
 {
   DEBTRACE("editTree::addComponent");
   stringstream name;
   name << "component";
   name << "_" << GuiContext::getCurrent()->getNewId();
-  GuiContext::getCurrent()->getSubjectProc()->addComponent(name.str());
+  ChooseName chooseName("root", "component", name.str());
+  chooseName.exec();
+  if (chooseName.isOk())
+    {
+      string theName = chooseName.getChoosenName();
+      bool ret = GuiContext::getCurrent()->getSubjectProc()->addComponent(theName);
+      if (!ret) QMessageBox::warning(this, "Component not Created", GuiContext::getCurrent()->_lastErrorMessage );
+    }
 }
 
 void editTree::addContainer()
@@ -497,7 +538,14 @@ void editTree::addContainer()
   DEBTRACE("editTree::addContainer");
   std::stringstream name;
   name << "container" << GuiContext::getCurrent()->getNewId();
-  GuiContext::getCurrent()->getSubjectProc()->addContainer(name.str());
+  ChooseName chooseName("root", "container", name.str());
+  chooseName.exec();
+  if (chooseName.isOk())
+    {
+      string theName = chooseName.getChoosenName();
+      bool ret = GuiContext::getCurrent()->getSubjectProc()->addContainer(theName);
+      if (!ret) QMessageBox::warning(this, "Container not Created", GuiContext::getCurrent()->_lastErrorMessage );
+    }
 }
 
 void editTree::associateServiceToComponent()
@@ -519,6 +567,26 @@ void editTree::associateComponentToContainer()
     {
       if (SubjectComponent *subcomp = dynamic_cast<SubjectComponent*>(sub))
         _selectedSubjectComponent = subcomp;
+    }
+}
+
+void editTree::editContainerProperties()
+{
+  DEBTRACE("editTree::editContainerProperties");
+  Subject *sub =getSelectedSubject();
+  if (sub)
+    {
+      if (SubjectContainer *subcont = dynamic_cast<SubjectContainer*>(sub))
+        {
+          map<string, string> properties = subcont->getProperties();
+          properties["prop1"] = "val1";
+          properties["prop2"] = "val2";
+          subcont->setProperties(properties);
+          properties = subcont->getProperties();
+          map<string, string>::iterator it;
+          for (it = properties.begin(); it !=properties.end(); ++it)
+            DEBTRACE("container property " << (*it).first << " " << (*it).second);
+        }
     }
 }
 
@@ -624,7 +692,14 @@ void editTree::newDFInputPort(YACS::ENGINE::Catalog* catalog,
         {
           std::stringstream name;
           name << "InDF_" << typeName << GuiContext::getCurrent()->getNewId();
-          subject->addInputPort(catalog, typeName, name.str());
+          ChooseName chooseName(subject->getName(), typeName, name.str());
+          chooseName.exec();
+          if (chooseName.isOk())
+            {
+              string theName = chooseName.getChoosenName();
+              bool ret = subject->addInputPort(catalog, typeName, theName);
+              if (!ret) QMessageBox::warning(this, "Input Port not Created", GuiContext::getCurrent()->_lastErrorMessage );
+            }
         }
     }
 }
@@ -640,7 +715,14 @@ void editTree::newDFOutputPort(YACS::ENGINE::Catalog* catalog,
         {
           std::stringstream name;
           name << "OutDF_" << typeName << GuiContext::getCurrent()->getNewId();
-          subject->addOutputPort(catalog, typeName, name.str());
+          ChooseName chooseName(subject->getName(), typeName, name.str());
+          chooseName.exec();
+          if (chooseName.isOk())
+            {
+              string theName = chooseName.getChoosenName();
+              bool ret = subject->addOutputPort(catalog, typeName, theName);
+              if (!ret) QMessageBox::warning(this, "Output Port not Created", GuiContext::getCurrent()->_lastErrorMessage );
+            }
         }
     }
 }
@@ -656,7 +738,14 @@ void editTree::newDSInputPort(YACS::ENGINE::Catalog* catalog,
         {
           std::stringstream name;
           name << "InDS_" << typeName << GuiContext::getCurrent()->getNewId();
-          subject->addIDSPort(catalog, typeName, name.str());
+          ChooseName chooseName(subject->getName(), typeName, name.str());
+          chooseName.exec();
+          if (chooseName.isOk())
+            {
+              string theName = chooseName.getChoosenName();
+              bool ret = subject->addIDSPort(catalog, typeName, theName);
+              if (!ret) QMessageBox::warning(this, "Input Port not Created", GuiContext::getCurrent()->_lastErrorMessage );
+            }
         }
     }
 }
@@ -672,7 +761,14 @@ void editTree::newDSOutputPort(YACS::ENGINE::Catalog* catalog,
         {
           std::stringstream name;
           name << "OutDS_" << typeName << GuiContext::getCurrent()->getNewId();
-          subject->addODSPort(catalog, typeName, name.str());
+          ChooseName chooseName(subject->getName(), typeName, name.str());
+          chooseName.exec();
+          if (chooseName.isOk())
+            {
+              string theName = chooseName.getChoosenName();
+              bool ret = subject->addODSPort(catalog, typeName, theName);
+              if (!ret) QMessageBox::warning(this, "Output Port not Created", GuiContext::getCurrent()->_lastErrorMessage );
+            }
         }
     }
 }
@@ -862,6 +958,8 @@ void editTree::contextMenuEvent( QContextMenuEvent * )
         LinkContextMenu();
       else if (item = dynamic_cast<ComponentViewItem*> (it))
         ComponentContextMenu();
+      else if (item = dynamic_cast<ContainerViewItem*> (it))
+        ContainerContextMenu();
     }
 }
 
@@ -993,6 +1091,7 @@ void editTree::PortContextMenu()
   contextMenu->insertItem( "Message", this, SLOT(printName()) );
   contextMenu->insertItem( "Delete", this, SLOT(destroy()) );
   contextMenu->insertItem( "Add link", this, SLOT(addLink()) );
+  contextMenu->insertItem( "edit properties", this, SLOT(editPortProperties()) );
   contextMenu->exec( QCursor::pos() );
   delete contextMenu;
 }
@@ -1024,6 +1123,21 @@ void  editTree::ComponentContextMenu()
   contextMenu->insertItem( "Message", this, SLOT(printName()) );
   contextMenu->insertItem( "add Container", this, SLOT(addContainer()) );
   contextMenu->insertItem( "associate to Container", this, SLOT(associateComponentToContainer()) );
+  contextMenu->exec( QCursor::pos() );
+  delete contextMenu;
+}
+
+void  editTree::ContainerContextMenu()
+{
+  QPopupMenu*	contextMenu = new QPopupMenu();
+  Q_CHECK_PTR( contextMenu );
+  QLabel *caption = new QLabel( "<font color=darkblue><u><b>"
+                                "Container Context Menu</b></u></font>",
+                                contextMenu );
+  caption->setAlignment( Qt::AlignCenter );
+  contextMenu->insertItem( caption );
+  contextMenu->insertItem( "Message", this, SLOT(printName()) );
+  contextMenu->insertItem( "edit container properties", this, SLOT(editContainerProperties()) );
   contextMenu->exec( QCursor::pos() );
   delete contextMenu;
 }

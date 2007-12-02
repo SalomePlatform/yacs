@@ -23,6 +23,7 @@ namespace YACS
       std::string getNameOfTypeOfCurrentInstance() const;
       TypeOfChannel getTypeOfChannel() const { return DATASTREAM; }
       virtual void setProperty(const std::string& name,const std::string& value);
+      virtual void setProperties(std::map<std::string,std::string> properties);
       virtual std::string getProperty(const std::string& name);
       std::map<std::string,std::string> getPropertyMap() const { return _propertyMap; }
       virtual void initPortProperties();

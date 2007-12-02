@@ -231,7 +231,7 @@ void VisitorSaveSchema::visitServiceNode(ServiceNode *node)
   else
     {
       ComponentInstance *compo = node->getComponent();
-      if (_componentInstanceMap.find(compo) == _componentInstanceMap.end())
+      if (compo && (_componentInstanceMap.find(compo) == _componentInstanceMap.end()))
         {
           _out << indent(depth+1) << compo->getFileRepr() << endl;
           _componentInstanceMap[compo] = _root->getChildName(node);
@@ -448,6 +448,11 @@ void VisitorSaveSchema::writeContainers(Proc *proc)
     {
       string name = it->first;
       _out << indent(depth) << "<container name=\"" << name << "\">" << endl;
+      map<string, string> properties = (it->second)->getProperties();
+      map<string, string>::iterator itm;
+      for(itm = properties.begin(); itm != properties.end(); ++itm)
+        _out << indent(depth+1) << "<property name=\"" << (*itm).first
+             << "\" value=\"" << (*itm).second << "\"/>" << endl;
       _out << indent(depth) << "</container>"  << endl;
     }
 }

@@ -75,10 +75,12 @@ namespace YACS
       void select(QListViewItem *it);
       void destroy();
       void addLink();
+      void editPortProperties();
       void addComponent();
       void associateServiceToComponent();
       void addContainer();
       void associateComponentToContainer();
+      void editContainerProperties();
       void catalog(int cataType);
       void setCatalog(int isproc);
     public:
@@ -99,6 +101,7 @@ namespace YACS
       void PortContextMenu();
       void LinkContextMenu();
       void ComponentContextMenu();
+      void ContainerContextMenu();
       void resetTreeNode(QListView *lv);
       QWidget* _parent;
       Subject *_context;

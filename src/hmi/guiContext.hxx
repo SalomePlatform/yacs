@@ -54,6 +54,7 @@ namespace YACS
       std::map<YACS::ENGINE::ComponentInstance*, YACS::HMI::SubjectComponent*> _mapOfSubjectComponent;
       std::map<YACS::ENGINE::Container*, YACS::HMI::SubjectContainer*> _mapOfSubjectContainer;
       std::map<std::string, YACS::HMI::SubjectDataType*> _mapOfSubjectDataType;
+      std::string _lastErrorMessage;
 
     protected:
       YACS::ENGINE::Catalog* _builtinCatalog;

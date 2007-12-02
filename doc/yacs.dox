@@ -30,12 +30,13 @@
 
  \section Packages
 
- %YACS is composed of four packages
+ %YACS is composed of several packages
  - \ref bases : common base classes (threads,...) and constants
  - \ref engine : calculation schema generic classes (calculation nodes, control nodes,
    control and data flow links, ...)
  - \ref runtime : implementation of generic calculation nodes for Salome platform
  - \ref xml_loader : XML reader for generic calculation schema
+ - \ref gui_design : Graphic User Interface design
 
  A Python API is provided by wrapping with swig : \ref python
 

@@ -237,18 +237,16 @@ void myMainform::fileSaveAs()
       YACS::ENGINE::VisitorSaveSchema vss(proc);
       vss.openFileSchema(fn.latin1());
       proc->accept(&vss);
-      vss.closeFileSchema();
-      
+      vss.closeFileSchema();      
     }
 }
 
+/*!
+ * Select several xml files in a directory to check load and delete of all the files.
+ * Mainly used do test delete mechanism.
+ */
 void myMainform::fileCheckLoad()
 {
-//   QString s = QFileDialog::getExistingDirectory(QString::null,
-//                                                 this,
-//                                                 "get samples xml files directory",
-//                                                 "Choose a sample xml files directory",
-//                                                 TRUE );
   QStringList files = QFileDialog::getOpenFileNames(tr( "XML-Files (*.xml)" ),
                                                     QString::null,
                                                     this,
@@ -276,7 +274,9 @@ void myMainform::fileCheckLoad()
     }
  }
 
-
+/*!
+ * Not used any more ?
+ */
 void myMainform::load(const QString &f)
 {
   if (!QFile::exists(f))

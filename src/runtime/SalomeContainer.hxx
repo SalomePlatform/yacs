@@ -30,7 +30,7 @@ namespace YACS
       Container *clone() const;
       std::string getPlacementId() const;
       void checkCapabilityToDealWith(const ComponentInstance *inst) const throw (Exception);
-      void setProperty(const std::string& name, const std::string& value);
+      virtual void setProperty(const std::string& name, const std::string& value);
       bool isAPaCOContainer() const;
       virtual void addComponentName(std::string name);
     protected:

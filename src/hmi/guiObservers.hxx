@@ -162,6 +162,8 @@ namespace YACS
     public:
       SubjectInputDataStreamPort(YACS::ENGINE::InputDataStreamPort *port, Subject *parent);
       virtual ~SubjectInputDataStreamPort();
+      virtual bool setProperties(std::map<std::string, std::string> properties);
+      virtual std::map<std::string, std::string> getProperties();
       virtual void clean();
       void localClean();
     protected:
@@ -173,6 +175,8 @@ namespace YACS
     public:
       SubjectOutputDataStreamPort(YACS::ENGINE::OutputDataStreamPort *port, Subject *parent);
       virtual ~SubjectOutputDataStreamPort();
+      virtual bool setProperties(std::map<std::string, std::string> properties);
+      virtual std::map<std::string, std::string> getProperties();
       virtual void clean();
       void localClean();
     protected:
@@ -272,6 +276,8 @@ namespace YACS
       SubjectContainer(YACS::ENGINE::Container* container, Subject *parent);
       virtual ~SubjectContainer();
       virtual std::string getName();
+      virtual std::map<std::string, std::string> getProperties();
+      virtual bool setProperties(std::map<std::string, std::string> properties);
       virtual void clean();
       void localClean();
     protected:

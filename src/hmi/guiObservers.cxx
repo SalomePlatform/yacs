@@ -159,6 +159,7 @@ bool Subject::destroy(Subject *son)
           DEBTRACE("Destruction done: " << toDestroy);
           return true;
         }
+      else delete command;
     }
   return false;
 }
@@ -342,6 +343,7 @@ bool SubjectNode::setName(std::string name)
       update(RENAME, 0, this);
       return true;
     }
+  else delete command;
   return false;
 }
 
@@ -436,6 +438,7 @@ void SubjectNode::tryCreateLink(SubjectNode *subOutNode, SubjectNode *subInNode)
       DEBTRACE(scla->getName());
       scla->addSubjectControlLink(subOutNode,subInNode);
     }
+  else delete command;
 }
 
 void SubjectNode::removeExternalLinks()
@@ -531,6 +534,7 @@ SubjectNode *SubjectComposedNode::createNode(YACS::ENGINE::Catalog *catalog,
       son->loadChildren();
       return son;
     }
+  else delete command;
   return 0;
 }
 
@@ -837,7 +841,8 @@ bool SubjectProc::addComponent(std::string name)
           GuiContext::getCurrent()->getProc()->componentInstanceMap[key] = compo;
           return son;
         }
-    }
+      else delete command;
+   }
   return 0;
 }
 
@@ -855,7 +860,10 @@ bool SubjectProc::addContainer(std::string name, std::string ref)
           GuiContext::getCurrent()->getProc()->containerMap[name] = cont;
           return son;
         }
+      else
+          delete command;
     }
+  else GuiContext::getCurrent()->_lastErrorMessage = "There is already a container with that name";
   return 0;
 }
 
@@ -870,6 +878,7 @@ bool SubjectProc::addDataType(YACS::ENGINE::Catalog* catalog, std::string typeNa
       SubjectDataType *son = addSubjectDataType(command->getTypeCode());
       return son;
     }
+  else delete command;
   return 0;
 }
 
@@ -957,6 +966,7 @@ bool SubjectElementaryNode::addInputPort(YACS::ENGINE::Catalog *catalog, std::st
       SubjectInputPort *son = addSubjectInputPort(port, name);
       return son;
     }
+  else delete command;
   return 0;
 }
 
@@ -978,6 +988,7 @@ bool SubjectElementaryNode::addOutputPort(YACS::ENGINE::Catalog *catalog, std::s
       SubjectOutputPort *son = addSubjectOutputPort(port, name);
       return son;
     }
+  else delete command;
   return 0;
 }
 
@@ -999,6 +1010,7 @@ bool SubjectElementaryNode::addIDSPort(YACS::ENGINE::Catalog *catalog, std::stri
       SubjectInputDataStreamPort *son = addSubjectIDSPort(port, name);
       return son;
     }
+  else delete command;
   return 0;
 }
 
@@ -1020,6 +1032,7 @@ bool SubjectElementaryNode::addODSPort(YACS::ENGINE::Catalog *catalog, std::stri
       SubjectOutputDataStreamPort *son = addSubjectODSPort(port, name);
       return son;
     }
+  else delete command;
   return 0;
 }
 
@@ -1196,6 +1209,7 @@ void SubjectServiceNode::associateToComponent(SubjectComponent *subcomp)
       GuiContext::getCurrent()->getInvoc()->add(command);
       addSubjectReference(subcomp);
     }
+  else delete command;
 }
 
 // ----------------------------------------------------------------------------
@@ -1731,6 +1745,7 @@ void SubjectDataPort::tryCreateLink(SubjectDataPort *subOutport, SubjectDataPort
       DEBTRACE(scla->getName());
       scla->addSubjectLink(sno, subOutport, sni, subInport);
     }
+  else delete command;
 }
 
 // ----------------------------------------------------------------------------
@@ -1837,6 +1852,25 @@ SubjectInputDataStreamPort::~SubjectInputDataStreamPort()
   DEBTRACE("SubjectInputDataStreamPort::~SubjectInputDataStreamPort " << getName());
 }
 
+std::map<std::string, std::string> SubjectInputDataStreamPort::getProperties()
+{
+  return _inputDataStreamPort->getPropertyMap();
+}
+
+bool SubjectInputDataStreamPort::setProperties(std::map<std::string, std::string> properties)
+{
+  Proc *proc = GuiContext::getCurrent()->getProc();
+  CommandSetDSPortProperties *command =
+    new CommandSetDSPortProperties(proc->getChildName(getPort()->getNode()), getName(), true, properties);
+  if (command->execute())
+    {
+      GuiContext::getCurrent()->getInvoc()->add(command);
+      return true;
+    }
+  else delete command;
+  return false;
+}
+
 void SubjectInputDataStreamPort::clean()
 {
   localClean();
@@ -1859,6 +1893,25 @@ SubjectOutputDataStreamPort::SubjectOutputDataStreamPort(YACS::ENGINE::OutputDat
 SubjectOutputDataStreamPort::~SubjectOutputDataStreamPort()
 {
   DEBTRACE("SubjectOutputDataStreamPort::~SubjectOutputDataStreamPort " << getName());
+}
+
+std::map<std::string, std::string> SubjectOutputDataStreamPort::getProperties()
+{
+  return _outputDataStreamPort->getPropertyMap();
+}
+
+bool SubjectOutputDataStreamPort::setProperties(std::map<std::string, std::string> properties)
+{
+  Proc *proc = GuiContext::getCurrent()->getProc();
+  CommandSetDSPortProperties *command =
+    new CommandSetDSPortProperties(proc->getChildName(getPort()->getNode()), getName(), false, properties);
+  if (command->execute())
+    {
+      GuiContext::getCurrent()->getInvoc()->add(command);
+      return true;
+    }
+  else delete command;
+  return false;
 }
 
 void SubjectOutputDataStreamPort::clean()
@@ -2065,6 +2118,7 @@ void SubjectComponent::associateToContainer(SubjectContainer* subcont)
       GuiContext::getCurrent()->getInvoc()->add(command);
       addSubjectReference(subcont);
     }
+  else delete command;
 }
 
 // ----------------------------------------------------------------------------
@@ -2076,6 +2130,23 @@ SubjectContainer::SubjectContainer(YACS::ENGINE::Container* container, Subject *
 
 SubjectContainer::~SubjectContainer()
 {
+}
+
+std::map<std::string, std::string> SubjectContainer::getProperties()
+{
+  return _container->getProperties();
+}
+
+bool SubjectContainer::setProperties(std::map<std::string, std::string> properties)
+{
+  CommandSetContainerProperties *command = new CommandSetContainerProperties(getName(), properties);
+  if (command->execute())
+    {
+      GuiContext::getCurrent()->getInvoc()->add(command);
+      return true;
+    }
+  else delete command;
+  return false;
 }
 
 void SubjectContainer::clean()

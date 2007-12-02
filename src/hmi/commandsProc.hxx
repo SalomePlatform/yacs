@@ -17,6 +17,7 @@ namespace YACS
     class Node;
     class TypeCode;
     class Catalog;
+    class DataPort;
     class InputPort;
     class OutputPort;
     class InputDataStreamPort;
@@ -63,6 +64,10 @@ namespace YACS
     public:
       ProcInvoc();
       static TypeOfElem getTypeOfNode(YACS::ENGINE::Node* node);
+      static TypeOfElem getTypeOfPort(YACS::ENGINE::DataPort* port);
+      static std::string getTypeName(TypeOfElem type);
+    protected:
+      static std::map<int, std::string> _typeNameMap;
     };
     
 
@@ -234,6 +239,20 @@ namespace YACS
       virtual bool localExecute();
       virtual bool localReverse();
       std::string _container;
+      std::map<std::string,std::string> _properties;
+    };
+
+    class CommandSetDSPortProperties: public Command
+    {
+    public:
+      CommandSetDSPortProperties(std::string node, std::string port, bool isInport,
+                                 std::map<std::string,std::string> properties);
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      std::string _nodeName;
+      std::string _portName;
+      bool _isInport;
       std::map<std::string,std::string> _properties;
     };
 

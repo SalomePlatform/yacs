@@ -21,6 +21,7 @@
 #include "Switch.hxx"
 #include "OptimizerLoop.hxx"
 #include "Exception.hxx"
+#include "DataPort.hxx"
 #include "InputDataStreamPort.hxx"
 #include "OutputDataStreamPort.hxx"
 #include "ComponentDefinition.hxx"
@@ -41,11 +42,39 @@ using namespace YACS;
 using namespace YACS::ENGINE;
 using namespace YACS::HMI;
 
+std::map<int, std::string> ProcInvoc::_typeNameMap;
+
 // ----------------------------------------------------------------------------
 
 ProcInvoc::ProcInvoc()
   : Invocator()
 {
+  _typeNameMap.clear();
+  _typeNameMap[SALOMEPROC]           = "SALOMEPROC";
+  _typeNameMap[BLOC]                 = "BLOC";
+  _typeNameMap[FOREACHLOOP]          = "FOREACHLOOP";
+  _typeNameMap[OPTIMIZERLOOP]        = "OPTIMIZERLOOP";
+  _typeNameMap[FORLOOP]              = "FORLOOP";
+  _typeNameMap[WHILELOOP]            = "WHILELOOP";
+  _typeNameMap[SWITCH]               = "SWITCH";
+  _typeNameMap[PYTHONNODE]           = "PYTHONNODE";
+  _typeNameMap[PYFUNCNODE]           = "PYFUNCNODE";
+  _typeNameMap[CORBANODE]            = "CORBANODE";
+  _typeNameMap[SALOMENODE]           = "SALOMENODE";
+  _typeNameMap[CPPNODE]              = "CPPNODE";
+  _typeNameMap[SALOMEPYTHONNODE]     = "SALOMEPYTHONNODE";
+  _typeNameMap[XMLNODE]              = "XMLNODE";
+  _typeNameMap[SPLITTERNODE]         = "SPLITTERNODE";
+  _typeNameMap[DFTODSFORLOOPNODE]    = "DFTODSFORLOOPNODE";
+  _typeNameMap[DSTODFFORLOOPNODE]    = "DSTODFFORLOOPNODE";
+  _typeNameMap[INPUTPORT]            = "INPUTPORT";
+  _typeNameMap[OUTPUTPORT]           = "OUTPUTPORT";
+  _typeNameMap[INPUTDATASTREAMPORT]  = "INPUTDATASTREAMPORT";
+  _typeNameMap[OUTPUTDATASTREAMPORT] = "OUTPUTDATASTREAMPORT";
+  _typeNameMap[CONTAINER]            = "CONTAINER";
+  _typeNameMap[COMPONENT]            = "COMPONENT";
+  _typeNameMap[REFERENCE]            = "REFERENCE";
+  _typeNameMap[DATATYPE]             = "DATATYPE";
 }
 
 TypeOfElem ProcInvoc::getTypeOfNode(YACS::ENGINE::Node* node)
@@ -66,6 +95,24 @@ TypeOfElem ProcInvoc::getTypeOfNode(YACS::ENGINE::Node* node)
   else if (dynamic_cast<YACS::ENGINE::ForEachLoop*>(node))      nodeType = FOREACHLOOP;
   else if (dynamic_cast<YACS::ENGINE::OptimizerLoop*>(node))    nodeType = OPTIMIZERLOOP;
   return nodeType;
+}
+
+TypeOfElem ProcInvoc::getTypeOfPort(YACS::ENGINE::DataPort* port)
+{
+  TypeOfElem portType = UNKNOWN;
+  if      (dynamic_cast<YACS::ENGINE::InputPort*>(port))            portType = INPUTPORT;
+  else if (dynamic_cast<YACS::ENGINE::OutputPort*>(port))           portType = OUTPUTPORT;
+  else if (dynamic_cast<YACS::ENGINE::InputDataStreamPort*>(port))  portType = INPUTDATASTREAMPORT;
+  else if (dynamic_cast<YACS::ENGINE::OutputDataStreamPort*>(port)) portType = OUTPUTDATASTREAMPORT;
+  return portType;
+}
+
+std::string ProcInvoc::getTypeName(TypeOfElem type)
+{
+  if (_typeNameMap.count(type))
+    return _typeNameMap[type];
+  else
+    return "UNKNOWN";
 }
 
 // ----------------------------------------------------------------------------
@@ -150,6 +197,7 @@ bool CommandAddNodeFromCatalog::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandAddNode::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
       if (son) delete son;
       _node = 0;
     }
@@ -180,6 +228,7 @@ bool CommandRenameNode::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandRenameNode::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
       node = 0;
     }
   return (node != 0); 
@@ -264,6 +313,7 @@ bool CommandAddInputPortFromCatalog::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandAddInputPortFromCatalog::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
       if (son) delete son;
       _inputPort = 0;
     }
@@ -309,6 +359,7 @@ bool CommandAddOutputPortFromCatalog::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandAddOutputPortFromCatalog::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
       if (son) delete son;
       _outputPort = 0;
     }
@@ -354,6 +405,7 @@ bool CommandAddIDSPortFromCatalog::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandAddIDSPortFromCatalog::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
       if (son) delete son;
       _IDSPort = 0;
     }
@@ -399,6 +451,7 @@ bool CommandAddODSPortFromCatalog::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandAddODSPortFromCatalog::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
       if (son) delete son;
       _ODSPort = 0;
     }
@@ -457,6 +510,7 @@ bool CommandAddLink::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandAddLink::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
       return false;
     }
 }
@@ -492,6 +546,7 @@ bool CommandAddControlLink::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandAddControlLink::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
       return false;
     }
 }
@@ -514,7 +569,11 @@ bool CommandAddContainer::localExecute()
   try
     {
       Proc* proc = GuiContext::getCurrent()->getProc();
-      if (proc->containerMap.count(_name)) return false;
+      if (proc->containerMap.count(_name))
+        {
+          GuiContext::getCurrent()->_lastErrorMessage = "There is already a container with that name";
+          return false;
+        }
       Container *container = new SalomeContainer();
       if (! _containerToClone.empty())
         {
@@ -525,7 +584,10 @@ bool CommandAddContainer::localExecute()
               container->setProperties(ref->getProperties());
             }
           else
-            return false;
+            {
+              GuiContext::getCurrent()->_lastErrorMessage = "There is no reference container to clone properties";
+              return false;
+            }
         }
       _container = container;
       _container->setName(_name);
@@ -535,6 +597,7 @@ bool CommandAddContainer::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandAddContainer::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
       return false;
     }
 }
@@ -574,11 +637,47 @@ bool CommandSetContainerProperties::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandSetContainerProperties::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
       return false;
     }
 }
 
 bool CommandSetContainerProperties::localReverse()
+{
+}
+
+// ----------------------------------------------------------------------------
+
+CommandSetDSPortProperties::CommandSetDSPortProperties(std::string node, std::string port, bool isInport,
+                                                       std::map<std::string,std::string> properties)
+  : Command(), _nodeName(node), _portName(port), _isInport(isInport), _properties(properties)
+{
+  DEBTRACE("CommandSetDSPortProperties::CommandSetDSPortProperties " << node << "." << port << " " << isInport);
+}
+      
+bool CommandSetDSPortProperties::localExecute()
+{
+  try
+    {
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      Node* node = proc->getChildByName(_nodeName);
+      DataStreamPort* DSPort = 0;
+      if (_isInport)
+        DSPort = node->getInputDataStreamPort(_portName);
+      else
+        DSPort = node->getOutputDataStreamPort(_portName);
+      DSPort->setProperties(_properties);
+      return true;
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandSetDSPortProperties::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      return false;
+    }
+}
+      
+bool CommandSetDSPortProperties::localReverse()
 {
 }
 
@@ -622,6 +721,7 @@ bool CommandAddComponentInstance::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandAddComponentInstance::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
       return false;
     }
 }
@@ -666,6 +766,7 @@ bool CommandAssociateComponentToContainer::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandAssociateComponentToContainer::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
       return false;
     }
 }
@@ -705,6 +806,7 @@ bool CommandAssociateServiceToComponent::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandAssociateServiceToComponent::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
       return false;
     }
 }

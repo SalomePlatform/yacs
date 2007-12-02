@@ -164,9 +164,7 @@ void SalomeContainer::checkCapabilityToDealWith(const ComponentInstance *inst) c
 
 void SalomeContainer::setProperty(const std::string& name, const std::string& value)
 {
-#ifdef _DEVDEBUG_
-  cerr << "SalomeContainer::setProperty : " << name << " ; " << value << endl;
-#endif
+  DEBTRACE("SalomeContainer::setProperty : " << name << " ; " << value);
   
   if (name == "container_name")
     _params.container_name = CORBA::string_dup(value.c_str());
@@ -176,44 +174,50 @@ void SalomeContainer::setProperty(const std::string& name, const std::string& va
     _params.OS = CORBA::string_dup(value.c_str());
   else if (name == "parallelLib")
     _params.parallelLib = CORBA::string_dup(value.c_str());
-  else if (name == "isMPI") {
-    if (value == "true")
-      _params.isMPI = true;
-    else if (value == "false")
-      _params.isMPI = false;
-    else 
-      throw Exception("SalomeContainer::SetProperty : params.isMPI value not correct : " + value);
-  }
-  else if (name == "mem_mb") {
-    std::istringstream iss(value);
-    if (!(iss >> _params.mem_mb))
-      throw Exception("salomecontainer::setproperty : params.mem_mb value not correct : " + value);
-  }
-  else if (name == "cpu_clock") {
-    std::istringstream iss(value);
-    if (!(iss >> _params.cpu_clock))
-      throw Exception("salomecontainer::setproperty : params.cpu_clock value not correct : " + value);
-  }
-  else if (name == "nb_proc_per_node") {
-    std::istringstream iss(value);
-    if (!(iss >> _params.nb_proc_per_node))
-      throw Exception("salomecontainer::setproperty : params.nb_proc_per_node value not correct : " + value);
-  }
-  else if (name == "nb_node") {
-    std::istringstream iss(value);
-    if (!(iss >> _params.nb_node))
-      throw Exception("salomecontainer::setproperty : params.nb_node value not correct : " + value);
-  }
-  else if (name == "nb_component_nodes") {
-    std::istringstream iss(value);
-    if (!(iss >> _params.nb_component_nodes))
-      throw Exception("salomecontainer::setproperty : params.nb_component_nodes value not correct : " + value);
-  }
-  else
-    Container::setProperty(name, value);
+  else if (name == "isMPI")
+    {
+      if (value == "true")
+        _params.isMPI = true;
+      else if (value == "false")
+        _params.isMPI = false;
+      else 
+        throw Exception("SalomeContainer::SetProperty : params.isMPI value not correct : " + value);
+    }
+  else if (name == "mem_mb")
+    {
+      std::istringstream iss(value);
+      if (!(iss >> _params.mem_mb))
+        throw Exception("salomecontainer::setproperty : params.mem_mb value not correct : " + value);
+    }
+  else if (name == "cpu_clock")
+    {
+      std::istringstream iss(value);
+      if (!(iss >> _params.cpu_clock))
+        throw Exception("salomecontainer::setproperty : params.cpu_clock value not correct : " + value);
+    }
+  else if (name == "nb_proc_per_node")
+    {
+      std::istringstream iss(value);
+      if (!(iss >> _params.nb_proc_per_node))
+        throw Exception("salomecontainer::setproperty : params.nb_proc_per_node value not correct : " + value);
+    }
+  else if (name == "nb_node")
+    {
+      std::istringstream iss(value);
+      if (!(iss >> _params.nb_node))
+        throw Exception("salomecontainer::setproperty : params.nb_node value not correct : " + value);
+    }
+  else if (name == "nb_component_nodes")
+    {
+      std::istringstream iss(value);
+      if (!(iss >> _params.nb_component_nodes))
+        throw Exception("salomecontainer::setproperty : params.nb_component_nodes value not correct : " + value);
+    }
+  Container::setProperty(name, value);
 }
 
-bool SalomeContainer::isAPaCOContainer() const {
+bool SalomeContainer::isAPaCOContainer() const
+{
   bool result = false;
   string parallelLib(_params.parallelLib);
   if (parallelLib != "")

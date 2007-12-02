@@ -9,13 +9,16 @@ guidemo_SOURCES = \
 	editCanvas.cxx \
 	nodeEdition.cxx \
 	browseCatalog.cxx \
+	chooseName.cxx \
 	mainempty_moc.cxx \
 	wiedittree_moc.cxx \
+	dichoosename_moc.cxx \
 	winodeedition_moc.cxx \
 	catalog_moc.cxx \
 	editTree_moc.cxx \
 	editCanvas_moc.cxx \
 	nodeEdition_moc.cxx \
+	chooseName_moc.cxx \
 	browseCatalog_moc.cxx
 
 
@@ -39,12 +42,14 @@ MOCSOURCES =
 mainempty.cxx: mainempty.h
 wiedittree.cxx: wiedittree.h
 winodeedition.cxx: winodeedition.h
+dichoosename.cxx: dichoosename.h
 catalog.cxx: catalog.h
 
 UISOURCES = \
 	mainempty.cxx \
 	wiedittree.cxx \
 	winodeedition.cxx \
+	dichoosename.cxx \
 	catalog.cxx
 
 # Resources
