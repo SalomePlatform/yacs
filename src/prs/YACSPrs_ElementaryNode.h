@@ -21,6 +21,7 @@
 
 #include <Port.hxx>
 #include <Node.hxx>
+#include <guiObservers.hxx>
 
 #include "QxGraph_ActiveItem.h"
 
@@ -165,6 +166,7 @@ class YACSPrs_LabelPort : public YACSPrs_Port {
   ~YACSPrs_LabelPort();
 
   YACS::ENGINE::Node* getSlaveNode() const { return mySlaveNode; }
+  void setSlaveNode( YACS::ENGINE::Node* theNode ) { mySlaveNode = theNode; }
   
   void setName(QString theName) { myName = theName; }
 
@@ -229,16 +231,28 @@ class YACSPrs_InOutPort : public YACSPrs_Port {
 };
 
 class YACSPrs_LabelLink;
-class YACSPrs_ElementaryNode : public QxGraph_ActiveItem, public QCanvasPolygonalItem {
+class YACSPrs_ElementaryNode : public QxGraph_ActiveItem,
+			       public QCanvasPolygonalItem,
+			       public YACS::HMI::GuiObserver {
  public:
-  YACSPrs_ElementaryNode( SUIT_ResourceMgr*, QCanvas*, YACS::ENGINE::Node* );
+  YACSPrs_ElementaryNode( SUIT_ResourceMgr*, QCanvas*, YACS::HMI::SubjectNode* );
   virtual ~YACSPrs_ElementaryNode();
 
-  YACS::ENGINE::Node* getEngine() const { return myEngine; }
+   virtual void select( bool isSelected );
+   virtual void update( YACS::HMI::GuiEvent event, int type, YACS::HMI::Subject* son);
+
+  YACS::ENGINE::Node* getEngine() const;
+  YACS::HMI::SubjectNode* getSEngine() const { return mySEngine; }
 
   QPtrList<YACSPrs_Port> getPortList() const { return myPortList; }
   
   YACSPrs_InOutPort* getPortPrs(YACS::ENGINE::Port* thePort);
+
+  void sortPorts();
+  void moveUp(YACS::ENGINE::Port* thePort);
+  void moveDown(YACS::ENGINE::Port* thePort);
+  void addPortPrs(YACS::ENGINE::Port* thePort);
+  void removePortPrs(YACS::ENGINE::Port* thePort);
 
   virtual void setCanvas(QCanvas* theCanvas);
 
@@ -279,7 +293,7 @@ class YACSPrs_ElementaryNode : public QxGraph_ActiveItem, public QCanvasPolygona
 
   virtual void update();
   virtual void updateForEachLoopBody(YACS::ENGINE::Node* theEngine=0);
-  virtual void updatePorts();
+  virtual void updatePorts(bool theForce=false);
   virtual void updateGates(bool theCreate);
 
   virtual void setNodeColor(const QColor& theColor);
@@ -349,6 +363,9 @@ class YACSPrs_ElementaryNode : public QxGraph_ActiveItem, public QCanvasPolygona
   bool isCheckAreaNeeded() const { return myIsCheckAreaNeeded; }
   void setIsCheckAreaNeeded(bool theValue) { myIsCheckAreaNeeded = theValue; }
 
+ //signals:
+  //void portsChanged();
+
  protected:
   void draw(QPainter& thePainter);
   virtual void drawShape(QPainter& thePainter);
@@ -363,7 +380,7 @@ class YACSPrs_ElementaryNode : public QxGraph_ActiveItem, public QCanvasPolygona
 
   SUIT_ResourceMgr*   myMgr;
 
-  YACS::ENGINE::Node* myEngine; // node engine
+  YACS::HMI::SubjectNode* mySEngine; // node subject
 
   QPixmap myStatePixmap;
   //QCanvasSprite* mySprite; // for states animation

@@ -49,8 +49,8 @@ LIBICONS = \
 	left_arrows.png
 
 # Add "resources" subdirectory to resource file names
-POFILES = $(LIBPOFILES:%=resources/%)
-ICONS = $(LIBICONS:%=resources/%)
+POFILES += $(LIBPOFILES:%=resources/%)
+ICONS += $(LIBICONS:%=resources/%)
 
 libYACSPrs_la_SOURCES = $(LIBSOURCES) $(LIBHEADERS)
 nodist_libYACSPrs_la_SOURCES = $(MOCSOURCES)
@@ -61,6 +61,7 @@ BUILT_SOURCES = $(MOCSOURCES)
 libYACSPrs_la_LIBADD = \
 	../engine/libYACSEngine.la \
 	../runtime/libYACSRuntimeSALOME.la \
+	../hmi/libHMI.la \
 	@QT_MT_LIBS@ @GUI_LDFLAGS@ -lQxGraph @PYTHON_LDFLAGS@
 
 libYACSPrs_la_CXXFLAGS = \
@@ -70,6 +71,7 @@ libYACSPrs_la_CXXFLAGS = \
 	-I$(srcdir)/../bases \
 	-I$(srcdir)/../engine \
 	-I$(srcdir)/../runtime \
+	-I$(srcdir)/../hmi \
 	@QT_INCLUDES@ @GUI_CXXFLAGS@
 
 include $(top_srcdir)/adm/unix/make_end.am

@@ -49,6 +49,7 @@ YACSGui_Executor::YACSGui_Executor(YACSGui_Module* guiMod, Proc* theProc) :
   _serv = 0;
   _isRunning = false;
   _isSuspended = false;
+  _isStopOnError = false;
   _execMode = YACS::CONTINUE;
 }
 
@@ -236,6 +237,9 @@ void YACSGui_Executor::resumeDataflow()
     }
 }
 
+//! Stop dataflow.
+/*!
+ */
 void YACSGui_Executor::stopDataflow()
 {
   MESSAGE("YACSGui_Executor::stopDataflow");
@@ -256,10 +260,12 @@ void YACSGui_Executor::setStepByStepMode()
   _execMode = YACS::STEPBYSTEP;
   if (running())        // --- local run
     {
+      printf("=> local\n");
       _localEngine->setExecMode(YACS::STEPBYSTEP);
     }
   else if (_isRunning)  // --- remote run
     {
+      printf("=> remote\n");
       _procRef->setExecMode(YACSGui_ORB::STEPBYSTEP);
     }
 }
@@ -298,10 +304,12 @@ void YACSGui_Executor::setStopOnError(bool aMode)
   if (running())        // --- local run
     {
       _localEngine->setStopOnError(aMode, "/tmp/dumpStateOnError.xml");
+      _isStopOnError = aMode;
     }
   else if (_isRunning)  // --- remote run
     {
       _procRef->setStopOnError(aMode, "/tmp/dumpStateOnError.xml");
+      _isStopOnError = aMode;
     }
 }
 

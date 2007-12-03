@@ -23,7 +23,7 @@
 
 class YACSPrs_InlineNode : public YACSPrs_ElementaryNode {
  public:
-  YACSPrs_InlineNode( SUIT_ResourceMgr*, QCanvas*, YACS::ENGINE::Node*, const bool& thePortUpdate=true );
+  YACSPrs_InlineNode( SUIT_ResourceMgr*, QCanvas*, YACS::HMI::SubjectNode*, const bool& thePortUpdate=true );
   virtual ~YACSPrs_InlineNode();
 
   /* reimplement functions from QxGraph_ActiveItem */

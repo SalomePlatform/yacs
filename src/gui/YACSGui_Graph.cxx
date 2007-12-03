@@ -25,6 +25,7 @@
 
 #include "YACSPrs_ElementaryNode.h"
 #include "YACSPrs_BlocNode.h"
+#include "YACSPrs_LoopNode.h"
 #include "YACSPrs_Link.h"
 #include "YACSPrs_Def.h"
 
@@ -57,16 +58,17 @@
 #include "utilities.h"
 
 using namespace YACS::ENGINE;
+using namespace YACS::HMI;
 
 /*!
   Constructor
 */
 YACSGui_Graph::YACSGui_Graph(YACSGui_Module* theModule, 
 			     QxGraph_Canvas* theCanvas, 
-			     Proc* theProc) :
+			     YACS::HMI::GuiContext* theCProc) :
   QxGraph_Prs(theCanvas),
   myModule(theModule),
-  myProc(theProc)
+  myCProc(theCProc)
 {
   // Create node status observer instance
   myNodeStatusObserver = new YACSGui_Observer(this);
@@ -103,6 +105,14 @@ YACSGui_Graph::~YACSGui_Graph()
   }
 }
 
+//! Returns the subject's Proc
+/*!
+ */
+YACS::ENGINE::Proc* YACSGui_Graph::getProc() const
+{
+  return ( myCProc ? myCProc->getProc() : 0 );
+}
+
 
 //! Re-builds all the elements of the graph's presentation
 /*!
@@ -122,47 +132,28 @@ void YACSGui_Graph::update()
   int aMaxNodeWidth=0, aMaxNodeHeight=0;
   bool aNeedToArrange = false;
 
-  // Iterate through myProc's nodes and create presentation items for them
-  /// comment set for testing, uncomment this code when myProc'll be really not null graph 
-  if (myProc)
+  // Iterate through Proc's nodes and create presentation items for them
+  Proc* aProc = getProc();
+  if (aProc)
   {
-    std::set<Node*> aNodeSet = myProc->getAllRecursiveConstituents(); //myProc->getChildren();
+    std::set<Node*> aNodeSet = aProc->getAllRecursiveConstituents();
 
     if ( !getItem( *(aNodeSet.begin()) ) ) aNeedToArrange = true;
-    
+
+    createChildNodesPresentations( ( myCProc ? myCProc->getSubjectProc() : 0 ) );
+
+    // TODO : to be removed in the future (when the arrange nodes algorithm is included) -->
     for ( std::set<Node*>::iterator it = aNodeSet.begin(); it != aNodeSet.end(); it++ )
     {
-      // create presentations for all nodes except Bloc itself
-      // (for its internal not Bloc nodes presentations created too)
-      if ( !dynamic_cast<Bloc*>( *it ) ) {
-	update( *it );
-	
-	YACSPrs_ElementaryNode* aNodePrs = getItem( *it );
-	if ( aNodePrs ) {
-	  if ( aMaxNodeWidth < aNodePrs->maxWidth() ) aMaxNodeWidth = aNodePrs->maxWidth();
-	  if ( aMaxNodeHeight < aNodePrs->maxHeight() ) aMaxNodeHeight = aNodePrs->maxHeight();
-	}
+      YACSPrs_ElementaryNode* aNodePrs = getItem( *it );
+      if ( aNodePrs ) {
+	if ( aMaxNodeWidth < aNodePrs->maxWidth() ) aMaxNodeWidth = aNodePrs->maxWidth();
+	if ( aMaxNodeHeight < aNodePrs->maxHeight() ) aMaxNodeHeight = aNodePrs->maxHeight();
       }
     }
+    // <--
 
-    // create presentations for Bloc nodes (for all other nodes, including internal
-    // nodes of Bloc's, presentations already created)
-    for ( std::set<Node*>::iterator it = aNodeSet.begin(); it != aNodeSet.end(); it++ )
-    {
-      // create presentations for all nodes except Bloc itself
-      // (for its internal not Bloc nodes presentations created too)
-      if ( dynamic_cast<Bloc*>( *it ) ) {
-	update( *it );
-
-	YACSPrs_ElementaryNode* aNodePrs = getItem( *it );
-	if ( aNodePrs ) {
-	  if ( aMaxNodeWidth < aNodePrs->maxWidth() ) aMaxNodeWidth = aNodePrs->maxWidth();
-	  if ( aMaxNodeHeight < aNodePrs->maxHeight() ) aMaxNodeHeight = aNodePrs->maxHeight();
-	}
-      }
-    }
-
-    // TODO - Create links
+    // Create links
     for ( std::set<Node*>::iterator it = aNodeSet.begin(); it != aNodeSet.end(); it++ )
     {
       YACSPrs_ElementaryNode* aNodePrs = getItem( *it );
@@ -187,7 +178,7 @@ void YACSGui_Graph::update()
     if ( aNeedToArrange )
     {
       // table arrangement of the first level nodes
-      aNodeSet = myProc->edGetDirectDescendants();
+      aNodeSet = aProc->edGetDirectDescendants();
       int aColNum, aRowNum; aColNum = aRowNum = (int)sqrt((double)aNodeSet.size());
       if ( aNodeSet.size() - aColNum*aRowNum > 0 ) aRowNum++;
       int i=0,j=0;
@@ -212,7 +203,7 @@ void YACSGui_Graph::update()
 //! Updates the presentation items related to given graph node.
 /*!
  */
-void YACSGui_Graph::update(Node* theEngine)
+void YACSGui_Graph::update(Node* theEngine, SubjectComposedNode* theParent)
 {
   MESSAGE("YACSGui_Graph::update " << theEngine->getQualifiedName());
   /// comment set for testing, uncomment this code when theEngine'll be really not null node
@@ -229,12 +220,14 @@ void YACSGui_Graph::update(Node* theEngine)
     needToAddItem = true; // into display map for the current display mode
   
   // If <anItems> is empty, it is filled by a driver, if not empty - only update by a driver
-  aDriver->update( theEngine, anItem );
+  aDriver->update( theEngine, theParent, anItem );
 
   if (needToAddItem)
   {
     addItem( anItem ); // add item for the current display mode
     myItems[theEngine] = anItem;
+
+    //myModule->connectArrangeNodes(anItem);
   }
 }
 
@@ -281,6 +274,10 @@ void YACSGui_Graph::update( YACSPrs_InOutPort* thePort )
   }
   else 
   { // update already existing port links
+    std::list<YACSPrs_Link*> aLinks = thePort->getLinks();
+    std::list<YACSPrs_Link*>::iterator it = aLinks.begin();
+    for(; it != aLinks.end(); it++)
+      ( *it )->show();
   }
 }
 
@@ -326,6 +323,25 @@ void YACSGui_Graph::update( YACSPrs_LabelPort* thePort )
   }
   else 
   { // update already existing label links
+    std::list<YACSPrs_Link*> aLinks = thePort->getLinks();
+    std::list<YACSPrs_Link*>::iterator it = aLinks.begin();
+    for(; it != aLinks.end(); it++)
+      ( *it )->show();
+  }
+}
+
+//! Creates presentations (and at first subjects), i.e. observers of the given composed node.
+/*!
+ */
+void YACSGui_Graph::createChildNodesPresentations( YACS::HMI::SubjectComposedNode* theParent )
+{
+  if ( !theParent ) return;
+
+  if ( ComposedNode* theNode = dynamic_cast<ComposedNode*>( theParent->getNode() ) )
+  {
+    std::set<Node*> aNodeSet = theNode->edGetDirectDescendants();
+    for ( std::set<Node*>::iterator itN = aNodeSet.begin(); itN != aNodeSet.end(); itN++ )
+      update( *itN, theParent );
   }
 }
 
@@ -339,7 +355,8 @@ void YACSGui_Graph::rebuildLinks()
 
   // Bloc II : iteration on nodes -> output ports -> links => fill LineConn2d_Model object with datas
   std::map<int,YACSPrs_Link*> aConnId2Link;
-  if (myProc)
+  Proc* aProc = getProc();
+  if (aProc)
   {
     std::map<YACSPrs_ElementaryNode*, int> aNodePrs2ObjId;
     std::map<YACSPrs_Port*, int> aPortPrs2PortId;
@@ -347,7 +364,7 @@ void YACSGui_Graph::rebuildLinks()
     // commented because LabelPort <----> MasterPoint
     //std::map<YACSPrs_Hook*, int> aHookPrs2PortId;
 
-    std::set<Node*> aNodeSet = myProc->getAllRecursiveConstituents();
+    std::set<Node*> aNodeSet = aProc->getAllRecursiveConstituents();
     for ( std::set<Node*>::iterator itN = aNodeSet.begin(); itN != aNodeSet.end(); itN++ )
     {
       YACSPrs_ElementaryNode* aNodePrs = getItem( *itN );

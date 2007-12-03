@@ -73,7 +73,8 @@ POFILES = $(LIBPOFILES:%=resources/%)
 ICONS = $(LIBICONS:%=resources/%)
 
 libHMI_la_SOURCES = $(LIBSOURCES) $(LIBHEADERS)
-nodist_libHMI_la_SOURCES = $(UISOURCES) $(MOCSOURCES)
+#nodist_libHMI_la_SOURCES = $(UISOURCES) $(MOCSOURCES)
+nodist_guidemo_SOURCES = $(UISOURCES) $(MOCSOURCES)
 
 # List all generated files here
 BUILT_SOURCES = $(UISOURCES) $(MOCSOURCES) mainempty.h

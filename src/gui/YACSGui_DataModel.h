@@ -19,34 +19,48 @@
 #ifndef YACSGui_DataModel_HeaderFile
 #define YACSGui_DataModel_HeaderFile
 
+#include <ServiceNode.hxx>
 #include <Proc.hxx>
+#include <SalomeContainer.hxx>
 
-#include <LightApp_DataModel.h>
+#include <SalomeApp_DataModel.h>
 
 #include <map>
 
-class YACSGui_DataModel : public LightApp_DataModel
+class YACSGui_DataModel : public SalomeApp_DataModel
 {
+ public:
+  enum ObjectType
+    {
+      SchemaObject,
+      RunObject,
+      UnknownObject
+    };
 
-public:
+  static QString Type2Str( ObjectType type );
+  static ObjectType Str2Type( const QString& );
+
+ public:
   YACSGui_DataModel(CAM_Module* theModule);
   virtual ~YACSGui_DataModel();
 
-  void add(YACS::ENGINE::Proc*, bool);
-  void remove(YACS::ENGINE::Proc*);
+  virtual bool open( const QString&, CAM_Study*, QStringList );
+  virtual bool save( QStringList& );
+  virtual bool saveAs( const QString&, CAM_Study*, QStringList& );
 
-  void addData(YACS::ENGINE::Proc*);
+  void       createNewSchema( QString&, YACS::ENGINE::Proc* );
+  void       createNewRun( _PTR(SObject), YACS::ENGINE::Proc* );
 
-  bool isEditable(YACS::ENGINE::Proc*);
+  ObjectType objectType( const QString& ) const;
 
-protected:
-  virtual void build();
+  YACS::ENGINE::Proc* getProc( _PTR(SObject) ) const;
+  SUIT_DataObject* getDataObject( YACS::ENGINE::Proc* ) const;
 
-private:
-  typedef std::map<YACS::ENGINE::Proc*, bool> ProcMap;
-  ProcMap myProcs;
+  void updateItem( YACS::ENGINE::Proc*, bool theIsRecursive = false );
 
-  std::list<YACS::ENGINE::Proc*> myProcData;
+ private:
+  typedef std::map<std::string, YACS::ENGINE::Proc*> ObjectProcMap;
+  ObjectProcMap myObjectProcMap;
 };
 
 #endif

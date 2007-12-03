@@ -1,0 +1,212 @@
+<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
+<class>WhileLoopNodePage</class>
+<widget class="QWidget">
+    <property name="name">
+        <cstring>WhileLoopNodePage</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>393</width>
+            <height>239</height>
+        </rect>
+    </property>
+    <property name="sizePolicy">
+        <sizepolicy>
+            <hsizetype>2</hsizetype>
+            <vsizetype>0</vsizetype>
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+    </property>
+    <property name="caption">
+        <string>Form1</string>
+    </property>
+    <hbox>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <property name="margin">
+            <number>0</number>
+        </property>
+        <property name="spacing">
+            <number>0</number>
+        </property>
+        <widget class="QFrame">
+            <property name="name">
+                <cstring>WhileLoopNodeFrame</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>5</hsizetype>
+                    <vsizetype>0</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="frameShape">
+                <enum>StyledPanel</enum>
+            </property>
+            <property name="frameShadow">
+                <enum>Raised</enum>
+            </property>
+            <vbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <property name="margin">
+                    <number>5</number>
+                </property>
+                <property name="spacing">
+                    <number>5</number>
+                </property>
+                <widget class="QGroupBox">
+                    <property name="name">
+                        <cstring>NameGroupBox</cstring>
+                    </property>
+                    <property name="sizePolicy">
+                        <sizepolicy>
+                            <hsizetype>5</hsizetype>
+                            <vsizetype>0</vsizetype>
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                        </sizepolicy>
+                    </property>
+                    <property name="title">
+                        <string></string>
+                    </property>
+                    <grid>
+                        <property name="name">
+                            <cstring>unnamed</cstring>
+                        </property>
+                        <widget class="QLabel" row="2" column="0">
+                            <property name="name">
+                                <cstring>NodeType</cstring>
+                            </property>
+                            <property name="text">
+                                <string>Node Type:</string>
+                            </property>
+                        </widget>
+                        <widget class="QLineEdit" row="1" column="1">
+                            <property name="name">
+                                <cstring>myNodeFullName</cstring>
+                            </property>
+                            <property name="readOnly">
+                                <bool>true</bool>
+                            </property>
+                        </widget>
+                        <widget class="QLineEdit" row="2" column="1">
+                            <property name="name">
+                                <cstring>myNodeType</cstring>
+                            </property>
+                            <property name="text">
+                                <string>WHILE loop</string>
+                            </property>
+                            <property name="readOnly">
+                                <bool>true</bool>
+                            </property>
+                        </widget>
+                        <widget class="QLabel" row="1" column="0">
+                            <property name="name">
+                                <cstring>NodeFullName</cstring>
+                            </property>
+                            <property name="text">
+                                <string>Node Full Name:</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel" row="0" column="0">
+                            <property name="name">
+                                <cstring>NodeName</cstring>
+                            </property>
+                            <property name="text">
+                                <string>Node Name:</string>
+                            </property>
+                        </widget>
+                        <widget class="QLineEdit" row="0" column="1">
+                            <property name="name">
+                                <cstring>myNodeName</cstring>
+                            </property>
+                        </widget>
+                        <widget class="QComboBox" row="3" column="1">
+                            <item>
+                                <property name="text">
+                                    <string>true</string>
+                                </property>
+                            </item>
+                            <item>
+                                <property name="text">
+                                    <string>false</string>
+                                </property>
+                            </item>
+                            <property name="name">
+                                <cstring>myCondInputPortValue</cstring>
+                            </property>
+                        </widget>
+                        <widget class="QLineEdit" row="4" column="1">
+                            <property name="name">
+                                <cstring>myLoopBodyNodeName</cstring>
+                            </property>
+                            <property name="readOnly">
+                                <bool>true</bool>
+                            </property>
+                        </widget>
+                        <widget class="QLabel" row="3" column="0">
+                            <property name="name">
+                                <cstring>CondInputPortValue</cstring>
+                            </property>
+                            <property name="text">
+                                <string>Condition Input Port Value:</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel" row="4" column="0">
+                            <property name="name">
+                                <cstring>LoopBodyNodeName</cstring>
+                            </property>
+                            <property name="text">
+                                <string>Loop Body Node Name:</string>
+                            </property>
+                        </widget>
+                    </grid>
+                </widget>
+                <widget class="QButtonGroup">
+                    <property name="name">
+                        <cstring>ViewModeButtonGroup</cstring>
+                    </property>
+                    <property name="title">
+                        <string>View Mode</string>
+                    </property>
+                    <hbox>
+                        <property name="name">
+                            <cstring>unnamed</cstring>
+                        </property>
+                        <widget class="QRadioButton">
+                            <property name="name">
+                                <cstring>myExpandedRadioButton</cstring>
+                            </property>
+                            <property name="text">
+                                <string>Expanded</string>
+                            </property>
+                            <property name="checked">
+                                <bool>true</bool>
+                            </property>
+                        </widget>
+                        <widget class="QRadioButton">
+                            <property name="name">
+                                <cstring>myCollapsedRadioButton</cstring>
+                            </property>
+                            <property name="text">
+                                <string>Collapsed</string>
+                            </property>
+                        </widget>
+                    </hbox>
+                </widget>
+            </vbox>
+        </widget>
+    </hbox>
+</widget>
+<slots>
+    <slot>onApply()</slot>
+</slots>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>

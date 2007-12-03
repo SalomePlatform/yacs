@@ -24,6 +24,9 @@
 #include <Proc.hxx>
 #include <Node.hxx>
 
+#include <guiObservers.hxx>
+#include <guiContext.hxx>
+
 #include <QxGraph_Prs.h>
 
 #include <map>
@@ -43,22 +46,30 @@ class YACSPrs_LabelPort;
 class YACSPrs_Link;
 class YACSPrs_LabelLink;
 
+struct Agraph_t;
 class LineConn2d_Model;
 
 class YACSGui_Graph : public QxGraph_Prs
 {
 public:
-  YACSGui_Graph(YACSGui_Module*, QxGraph_Canvas*, YACS::ENGINE::Proc*);
+  YACSGui_Graph(YACSGui_Module*, QxGraph_Canvas*, YACS::HMI::GuiContext*);
   virtual ~YACSGui_Graph();
 
-  YACS::ENGINE::Proc*     getProc() const { return myProc; }
+  YACS::ENGINE::Proc*     getProc() const;
+  YACS::HMI::GuiContext*  getContext() const { return myCProc; }
   
   YACSGui_Observer*       getStatusObserver() const { return myNodeStatusObserver; }
 
   virtual void            update();
-  void                    update( YACS::ENGINE::Node* );
+  void                    update( YACS::ENGINE::Node*, YACS::HMI::SubjectComposedNode* );
   void                    update( YACSPrs_InOutPort* );
   void                    update( YACSPrs_LabelPort* );
+
+  void                    createChildNodesPresentations( YACS::HMI::SubjectComposedNode* );
+
+  int                     arrangeNodes(YACS::ENGINE::Bloc* theBloc);
+  int                     arrangeNodesWithinBloc(YACS::ENGINE::Bloc* theBloc);
+  void                    createGraphvizNodes(YACS::ENGINE::Bloc* theBloc, YACS::ENGINE::ComposedNode* theFather, Agraph_t* theGraph);
 
   void                    rebuildLinks();
   int                     addObjectToLine2dModel(YACSPrs_ElementaryNode* theNode,
@@ -100,7 +111,7 @@ private:
   typedef std::map<YACS::ENGINE::Node*, YACSPrs_ElementaryNode*> ItemMap;
   
   YACSGui_Module*         myModule;
-  YACS::ENGINE::Proc*     myProc; // graph engine
+  YACS::HMI::GuiContext*  myCProc; // context of corresponding Proc*
   DriverMap               myDrivers; // map of update drivers for specific node types
   ItemMap                 myItems; // map of graphic items for a given engine node
 

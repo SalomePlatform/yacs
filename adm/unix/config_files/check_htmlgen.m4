@@ -70,6 +70,7 @@ if test "x$DOT" = "x" ; then
   AC_MSG_WARN(graphviz not found)
   graphviz_ok=no
 else
+  GRAPHVIZHOME="/usr"
   GRAPHVIZ_CPPFLAGS="-I${GRAPHVIZHOME}/include/graphviz"
   GRAPHVIZ_LDFLAGS="-L${GRAPHVIZHOME}/lib/graphviz"
 fi

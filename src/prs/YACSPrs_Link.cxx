@@ -48,10 +48,10 @@ YACSPrs_Link::YACSPrs_Link( SUIT_ResourceMgr* theMgr, QCanvas* theCanvas ):
 YACSPrs_Link::~YACSPrs_Link()
 {
   // TO DO : check commented code if link is deleted
-  //for (QCanvasItemList::Iterator it = myPrs.begin(); it != myPrs.end(); ++it) {
-    //(*it)->hide();
+  for (QCanvasItemList::Iterator it = myPrs.begin(); it != myPrs.end(); ++it) {
+    (*it)->hide();
     //delete *it;
-  //}
+  }
   
   myPoints.clear();
 }
@@ -321,8 +321,14 @@ YACSPrs_PortLink::YACSPrs_PortLink( SUIT_ResourceMgr* theMgr,
 
 YACSPrs_PortLink::~YACSPrs_PortLink()
 {
-  if (myInputPort) myInputPort->removeLink(this);
-  if (myOutputPort) myOutputPort->removeLink(this);
+  if (myInputPort) {
+    myInputPort->removeLink(this);
+    myInputPort = 0;
+  }
+  if (myOutputPort) {
+    myOutputPort->removeLink(this);
+    myOutputPort = 0;
+  }
 }
 
 void YACSPrs_PortLink::moveByPort(YACSPrs_Port* thePort, bool theMoveInternalLinkPoints, QRect theArea)
@@ -511,8 +517,14 @@ YACSPrs_LabelLink::YACSPrs_LabelLink( SUIT_ResourceMgr* theMgr,
 
 YACSPrs_LabelLink::~YACSPrs_LabelLink()
 {
-  if (myOutputPort) myOutputPort->removeLink(this);
-  if (mySlaveNode) mySlaveNode->removeLabelLink();
+  if (myOutputPort) {
+    myOutputPort->removeLink(this);
+    myOutputPort = 0;
+  }
+  if (mySlaveNode) {
+    mySlaveNode->removeLabelLink();
+    mySlaveNode = 0;
+  }
 }
 
 void YACSPrs_LabelLink::moveByPort(YACSPrs_Port* thePort, bool theMoveInternalLinkPoints, QRect theArea)

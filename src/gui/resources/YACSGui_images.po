@@ -1,8 +1,90 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"PO-Revision-Date: 2007-09-11 15:28+0400\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
 #### YACS module root icon ####
 msgid "YACS_MODULE_ICON"
 msgstr "ModuleYacs.png"
 
 #### Icons for YACS module menus and toolbars ####
+
+msgid "ICON_IMPORT_YACS_SCHEMA"
+msgstr "import_dataflow.png"
+
+msgid "ICON_IMPORT_SUPERV_SCHEMA"
+msgstr "import_superv_dataflow.png"
+
+msgid "ICON_EXPORT_SCHEMA"
+msgstr "export_dataflow.png"
+
+msgid "ICON_NEW_CONTAINER"
+msgstr "container.png"
+
+msgid "ICON_NEW_SALOME_COMPONENT"
+msgstr "new_salome_component.png"
+
+msgid "ICON_NEW_SALOMEPYTHON_COMPONENT"
+msgstr "new_salomepy_component.png"
+
+msgid "ICON_NEW_CORBA_COMPONENT"
+msgstr "new_corba_component.png"
+
+msgid "ICON_NEW_SCHEMA"
+msgstr "new_dataflow.png"
+
+msgid "ICON_NEW_SALOME_SERVICE_NODE"
+msgstr "new_salome_service_node.png"
+
+msgid "ICON_NEW_CORBA_SERVICE_NODE"
+msgstr "new_corba_service_node.png"
+
+msgid "ICON_NEW_NODENODE_SERVICE_NODE"
+msgstr "new_nodenode_service_node.png"
+
+msgid "ICON_NEW_SERVICE_INLINE_NODE"
+msgstr "new_service_inline_node.png"
+
+msgid "ICON_NEW_XML_NODE"
+msgstr "new_xml_node.png"
+
+msgid "ICON_NEW_INLINE_SCRIPT_NODE"
+msgstr "new_inline_script_node.png"
+
+msgid "ICON_NEW_INLINE_FUNCTION_NODE"
+msgstr "new_inline_function_node.png"
+
+msgid "ICON_NEW_BLOCK_NODE"
+msgstr "block_node.png"
+
+msgid "ICON_NEW_FOR_LOOP_NODE"
+msgstr "loop_node.png"
+
+msgid "ICON_NEW_FOREACH_LOOP_NODE"
+msgstr "loop_node.png"
+
+msgid "ICON_NEW_WHILE_LOOP_NODE"
+msgstr "loop_node.png"
+
+msgid "ICON_NEW_SWITCH_LOOP_NODE"
+msgstr "switch_node.png"
+
+msgid "ICON_NEW_FROM_LIBRARY_NODE"
+msgstr "new_from_library_node.png"
+
+msgid "ICON_NEW_LINK"
+msgstr "new_link.png"
+
 
 msgid "ICON_ADD_DATAFLOW_IN_STUDY"
 msgstr "add_in_study.png"
@@ -16,8 +98,6 @@ msgstr "change_informations.png"
 msgid "ICON_CONTROL_VIEW"
 msgstr "control_view.png"
 
-msgid "ICON_EXPORT_DATAFLOW"
-msgstr "export_dataflow.png"
 
 msgid "ICON_FILTERNEXTSTEPS"
 msgstr "filter_next_steps.png"
@@ -28,16 +108,11 @@ msgstr "filter_notification.png"
 msgid "ICON_FULL_VIEW"
 msgstr "full_view.png"
 
-msgid "ICON_IMPORT_DATAFLOW"
-msgstr "import_dataflow.png"
-
-msgid "ICON_IMPORT_SUPERV_DATAFLOW"
-msgstr "import_superv_dataflow.png"
 
 msgid "ICON_INSERT_FILE"
 msgstr "insert_file.png"
 
-msgid "ICON_KILL_DATAFLOW"
+msgid "ICON_ABORT"
 msgstr "kill.png"
 
 msgid "ICON_BREAKPOINT_DATAFLOW"
@@ -52,8 +127,9 @@ msgstr "modify_dataflow.png"
 msgid "ICON_MODIFY_SUPERV_DATAFLOW"
 msgstr "modify_superv_dataflow.png"
 
-msgid "ICON_NEW_DATAFLOW"
-msgstr "new_dataflow.png"
+
+msgid "ICON_ARRANGE_NODES"
+msgstr "arrange_nodes.png"
 
 msgid "ICON_REBUILD_LINKS"
 msgstr "rebuild_links.png"
@@ -64,16 +140,16 @@ msgstr "reload.png"
 msgid "ICON_REMOTE_RUN_DATAFLOW"
 msgstr "remote_run.png"
 
-msgid "ICON_RUN_DATAFLOW"
+msgid "ICON_EXECUTE"
 msgstr "run.png"
 
-msgid "ICON_SAVEDATAFLOWSTATE"
-msgstr "save_dataflow_state.png"
-
-msgid "ICON_STEPBYSTEP_DATAFLOW"
+msgid "ICON_EXECUTE_STBY"
 msgstr "step_by_step.png"
 
-msgid "ICON_SUSPEND_RESUME_DATAFLOW"
+msgid "ICON_SAVE_EXECUTION_STATE"
+msgstr "save_dataflow_state.png"
+
+msgid "ICON_SUSPEND_RESUME"
 msgstr "suspend_resume.png"
 
 msgid "ICON_TABLE_VIEW"
@@ -81,3 +157,60 @@ msgstr "table_view.png"
 
 msgid "ICON_TOGGLESTOPONERROR"
 msgstr "toggle_stop_on_error.png"
+
+msgid "ICON_SCHEMA_OBJECT"
+msgstr "schema.png"
+
+msgid "ICON_BLOCK_OBJECT"
+msgstr "block_node.png"
+
+msgid "ICON_LOOP_NODE_OBJECT"
+msgstr "loop_node.png"
+
+msgid "ICON_SWITCH_NODE_OBJECT"
+msgstr "switch_node.png"
+
+msgid "ICON_NODE_OBJECT"
+msgstr "node.png"
+
+msgid "ICON_OUT_PORT_OBJECT"
+msgstr "out_port.png"
+
+msgid "ICON_IN_PORT_OBJECT"
+msgstr "in_port.png"
+
+msgid "ICON_CONTROL_LINK_OBJECT"
+msgstr "control_link.png"
+
+msgid "ICON_DATA_LINK_OBJECT"
+msgstr "data_link.png"
+
+msgid "ICON_STREAM_LINK_OBJECT"
+msgstr "stream_link.png"
+
+msgid "ICON_CONTAINER_OBJECT"
+msgstr "container.png"
+
+msgid "ICON_COMPONENT_OBJECT"
+msgstr "component.png"
+
+msgid "ICON_RUN_OBJECT"
+msgstr "run_object.png"
+
+msgid "ICON_UP"
+msgstr "icon_up.png"
+
+msgid "ICON_DOWN"
+msgstr "icon_down.png"
+
+msgid "ICON_INSERT"
+msgstr "icon_insert.png"
+
+msgid "ICON_SELECT"
+msgstr "icon_select.png"
+
+msgid "ICON_PLUS"
+msgstr "icon_plus.png"
+
+msgid "ICON_MINUS"
+msgstr "icon_minus.png"

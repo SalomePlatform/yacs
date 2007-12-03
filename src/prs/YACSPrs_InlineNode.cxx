@@ -58,8 +58,9 @@ void drawText2(QPainter& thePainter, const QString& theText,
 /*!
   Constructor
 */
-YACSPrs_InlineNode::YACSPrs_InlineNode(SUIT_ResourceMgr* theMgr, QCanvas* theCanvas, YACS::ENGINE::Node* theNode, const bool& thePortUpdate):
-  YACSPrs_ElementaryNode(theMgr, theCanvas, theNode)
+YACSPrs_InlineNode::YACSPrs_InlineNode(SUIT_ResourceMgr* theMgr, QCanvas* theCanvas,
+				       YACS::HMI::SubjectNode* theSNode, const bool& thePortUpdate):
+  YACSPrs_ElementaryNode(theMgr, theCanvas, theSNode)
 {
   setNodeColor(INLINENODE_COLOR);
   setNodeSubColor(INLINENODE_SUBCOLOR);
@@ -177,10 +178,11 @@ void YACSPrs_InlineNode::drawTitleShape(QPainter& thePainter)
   // draw texts
   thePainter.setPen(Qt::white);
 
-  drawText2(thePainter, QString(myEngine->getName()), getTitleRect(), Qt::AlignLeft);
+  drawText2(thePainter, QString(getEngine()->getName()), getTitleRect(), Qt::AlignLeft);
   drawText2(thePainter, myStatus, getStatusRect(), Qt::AlignLeft);
   drawText2(thePainter, myTime, getTimeRect(), Qt::AlignLeft);
-  drawText2(thePainter, QString::number(( (getStoredPercentage() < 0) ? getPercentage() : getStoredPercentage() ))+QString("%"), getTimeRect(), Qt::AlignRight); // percentage
+  drawText2(thePainter, QString::number(( (getStoredPercentage() < 0) ? getPercentage() : getStoredPercentage() ), 'g', 4)+QString("%"),
+	    getTimeRect(), Qt::AlignRight); // percentage
   
   thePainter.setPen(savedP);
 

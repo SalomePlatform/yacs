@@ -23,7 +23,7 @@
 
 class YACSPrs_ServiceNode : public YACSPrs_ElementaryNode {
  public:
-  YACSPrs_ServiceNode( SUIT_ResourceMgr*, QCanvas*, YACS::ENGINE::Node* );
+  YACSPrs_ServiceNode( SUIT_ResourceMgr*, QCanvas*, YACS::HMI::SubjectNode* );
   virtual ~YACSPrs_ServiceNode();
 
   /* reimplement functions from QxGraph_ActiveItem */

@@ -57,6 +57,9 @@ namespace YACS
         CUT,
         PASTE,
         EDIT,
+	UPDATE,
+	UP,
+	DOWN,
         RENAME,
         NEWROOT,
         ADDLINK,
@@ -109,6 +112,7 @@ namespace YACS
       SubjectReference(Subject* ref, Subject *parent);
       virtual ~SubjectReference();
       virtual std::string getName();
+      virtual Subject* getReference() const;
       virtual void clean();
       void localClean();
     protected:
@@ -189,6 +193,7 @@ namespace YACS
     public:
       SubjectNode(YACS::ENGINE::Node *node, Subject *parent);
       virtual ~SubjectNode();
+      virtual void reparent(Subject* parent);
       virtual std::string getName();
       virtual bool setName(std::string name);
       virtual YACS::ENGINE::Node* getNode();
@@ -197,7 +202,8 @@ namespace YACS
       void removeSubjectControlLink(SubjectControlLink* sub) { _listSubjectControlLink.remove(sub); };
       void localClean();
       static void tryCreateLink(SubjectNode *subOutNode, SubjectNode *subInNode);
-    protected:
+    //protected: // a temporary solution while SessionCataLoader use loadTypesOld(...)
+                 // method instead of a new loadTypes(...) method
       virtual SubjectInputPort* addSubjectInputPort(YACS::ENGINE::InputPort *port,
                                                     std::string name = "");
       virtual SubjectOutputPort* addSubjectOutputPort(YACS::ENGINE::OutputPort *port,
@@ -206,6 +212,7 @@ namespace YACS
                                                             std::string name = "");
       virtual SubjectOutputDataStreamPort* addSubjectODSPort(YACS::ENGINE::OutputDataStreamPort *port,
                                                              std::string name = "");
+    protected:
       virtual void removeExternalLinks();
       YACS::ENGINE::Node *_node;
       std::list<SubjectInputPort*> _listSubjectInputPort;
@@ -225,6 +232,7 @@ namespace YACS
                            std::string compo,
                            std::string type,
                            std::string name);
+      virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const  { return 0; }
       virtual void loadChildren();
       virtual void loadLinks();
       virtual void completeChildrenSubjectList(SubjectNode *son);
@@ -263,6 +271,7 @@ namespace YACS
                            std::string name);
       virtual void removeNode(SubjectNode* child);
       virtual void completeChildrenSubjectList(SubjectNode *son);
+      virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const;
       virtual void clean();
       void localClean();
     protected:
@@ -280,6 +289,7 @@ namespace YACS
       virtual bool setProperties(std::map<std::string, std::string> properties);
       virtual void clean();
       void localClean();
+      YACS::ENGINE::Container* getContainer() const;
     protected:
       YACS::ENGINE::Container* _container;
     };
@@ -295,6 +305,7 @@ namespace YACS
       virtual std::pair<std::string, int> getKey();
       virtual void clean();
       void localClean();
+      YACS::ENGINE::ComponentInstance* getComponent() const;
     protected:
       int _id;
       YACS::ENGINE::ComponentInstance* _compoInst;
@@ -342,6 +353,7 @@ namespace YACS
                            std::string type,
                            std::string name);
       virtual void completeChildrenSubjectList(SubjectNode *son);
+      virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const { return _body; }
       virtual void clean();
       void localClean();
     protected:
@@ -359,6 +371,7 @@ namespace YACS
                            std::string type,
                            std::string name);
       virtual void completeChildrenSubjectList(SubjectNode *son);
+      virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const { return _body; }
       virtual void clean();
       void localClean();
     protected:
@@ -378,6 +391,7 @@ namespace YACS
                            int swCase);
       std::map<int, SubjectNode*> getBodyMap();
       virtual void completeChildrenSubjectList(SubjectNode *son);
+      virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const;
       virtual void clean();
       void localClean();
     protected:
@@ -395,6 +409,7 @@ namespace YACS
                            std::string type,
                            std::string name);
       virtual void completeChildrenSubjectList(SubjectNode *son);
+      virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const { return _body; }
       virtual void clean();
       void localClean();
     protected:
@@ -413,6 +428,7 @@ namespace YACS
                            std::string type,
                            std::string name);
       virtual void completeChildrenSubjectList(SubjectNode *son);
+      virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const { return _body; }
       virtual void clean();
       void localClean();
     protected:
@@ -425,8 +441,8 @@ namespace YACS
     public:
       SubjectElementaryNode(YACS::ENGINE::ElementaryNode *elementaryNode, Subject *parent);
       virtual ~SubjectElementaryNode();
-      virtual bool addInputPort(YACS::ENGINE::Catalog *catalog, std::string type, std::string name);
-      virtual bool addOutputPort(YACS::ENGINE::Catalog *catalog, std::string type, std::string name);
+      virtual SubjectDataPort* addInputPort(YACS::ENGINE::Catalog *catalog, std::string type, std::string name);
+      virtual SubjectDataPort* addOutputPort(YACS::ENGINE::Catalog *catalog, std::string type, std::string name);
       virtual bool addIDSPort(YACS::ENGINE::Catalog *catalog, std::string type, std::string name);
       virtual bool addODSPort(YACS::ENGINE::Catalog *catalog, std::string type, std::string name);
       virtual void removePort(SubjectDataPort* port);
@@ -480,10 +496,13 @@ namespace YACS
                                            std::string service);
       virtual void setComponent();
       virtual void associateToComponent(SubjectComponent *subcomp);
+      virtual void addSubjectReference(Subject *ref);
+      virtual SubjectReference* getSubjectReference(Subject *ref);
       virtual void clean();
       void localClean();
     protected:
       YACS::ENGINE::ServiceNode *_serviceNode;
+      std::list<SubjectReference*> _listSubjectReference;
     };
 
     class SubjectCORBANode: public SubjectServiceNode

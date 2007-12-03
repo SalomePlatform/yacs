@@ -225,6 +225,11 @@ std::string SubjectReference::getName()
   return name.str();
 }
 
+Subject* SubjectReference::getReference() const
+{
+  return _reference;
+}
+
 // ----------------------------------------------------------------------------
 
 SubjectNode::SubjectNode(YACS::ENGINE::Node *node, Subject *parent)
@@ -316,6 +321,27 @@ void SubjectNode::localClean()
     }
 }
 
+void SubjectNode::reparent(Subject* parent)
+{
+  // remove this node from children list of an old parent
+  if (_parent)
+  {
+    if( SubjectBloc* sb = dynamic_cast<SubjectBloc*>(_parent) )
+      sb->removeNode(this);
+  }
+
+  // reparent
+  _parent = parent;
+  
+  // add this node into the children list of a new parent
+  if (_parent)
+  {
+    if( SubjectBloc* sb = dynamic_cast<SubjectBloc*>(_parent) )
+      sb->completeChildrenSubjectList(this);
+    else if( SubjectSwitch* ss = dynamic_cast<SubjectSwitch*>(_parent) )
+      ss->completeChildrenSubjectList(this);
+  }  
+}
 
 std::string SubjectNode::getName()
 {
@@ -795,6 +821,24 @@ void SubjectBloc::removeNode(SubjectNode* child)
   _children.erase(child);
 }
 
+SubjectNode* SubjectBloc::getChild(YACS::ENGINE::Node* node) const
+{
+  SubjectNode* aChild = 0;
+
+  if (node)
+  {
+    set<SubjectNode*>::iterator it = _children.begin();
+    for ( ; it != _children.end(); it++ )
+      if ( (*it)->getNode() == node )
+      {
+	aChild = (*it);
+	break;
+      }
+  }
+
+  return aChild;
+}
+
 // ----------------------------------------------------------------------------
 
 SubjectProc::SubjectProc(YACS::ENGINE::Proc *proc, Subject *parent)
@@ -948,7 +992,7 @@ void SubjectElementaryNode::localClean()
 }
 
 
-bool SubjectElementaryNode::addInputPort(YACS::ENGINE::Catalog *catalog, std::string type, std::string name)
+SubjectDataPort* SubjectElementaryNode::addInputPort(YACS::ENGINE::Catalog *catalog, std::string type, std::string name)
 {
   DEBTRACE("SubjectElementaryNode::addInputPort( " << catalog << ", " << type << ", " << name << " )");
   Proc *proc = GuiContext::getCurrent()->getProc();
@@ -970,7 +1014,7 @@ bool SubjectElementaryNode::addInputPort(YACS::ENGINE::Catalog *catalog, std::st
   return 0;
 }
 
-bool SubjectElementaryNode::addOutputPort(YACS::ENGINE::Catalog *catalog, std::string type, std::string name)
+SubjectDataPort* SubjectElementaryNode::addOutputPort(YACS::ENGINE::Catalog *catalog, std::string type, std::string name)
 {
   DEBTRACE("SubjectElementaryNode::addOutputPort( " << catalog << ", " << type << ", " << name << " )");
   Proc *proc = GuiContext::getCurrent()->getProc();
@@ -1183,15 +1227,18 @@ void SubjectServiceNode::setComponent()
       string compo = instance->getName();
       SubjectComponent* subCompo = 0;
       int id = GuiContext::getCurrent()->getNewId();
+      DEBTRACE("SubjectServiceNode::setComponent : id = " << id);
       pair<string,int> key = pair<string,int>(compo,id);
       if (! GuiContext::getCurrent()->_mapOfSubjectComponent.count(instance))
         {
+	  DEBTRACE("SubjectServiceNode::setComponent : create subject for compo = " << compo.c_str());
           proc->componentInstanceMap[key] = instance;
           subCompo =
             GuiContext::getCurrent()->getSubjectProc()->addSubjectComponent(instance, key);
         }
       else
         {
+	  DEBTRACE("SubjectServiceNode::setComponent : get already created subject for compo = " <<compo.c_str());
           subCompo = GuiContext::getCurrent()->_mapOfSubjectComponent[instance];
         }       
       assert(subCompo);
@@ -1210,6 +1257,29 @@ void SubjectServiceNode::associateToComponent(SubjectComponent *subcomp)
       addSubjectReference(subcomp);
     }
   else delete command;
+}
+
+void SubjectServiceNode::addSubjectReference(Subject *ref)
+{
+  DEBTRACE("Subject::addSubjectReference " << getName() << " " << ref->getName());
+  SubjectReference *son = new SubjectReference(ref, this);
+  _listSubjectReference.push_back(son);
+  update(ADDREF, 0, son);
+}
+
+SubjectReference* SubjectServiceNode::getSubjectReference(Subject *ref)
+{
+  SubjectReference* aSubjRef = 0;
+
+  std::list<SubjectReference*>::iterator it = _listSubjectReference.begin();
+  for ( ; it != _listSubjectReference.end(); it++ )
+    if ( (*it)->getReference() == ref )
+    {
+      aSubjRef = *it;
+      break;
+    }
+
+  return aSubjRef;
 }
 
 // ----------------------------------------------------------------------------
@@ -1546,6 +1616,24 @@ std::map<int, SubjectNode*> SubjectSwitch::getBodyMap()
 void SubjectSwitch::completeChildrenSubjectList(SubjectNode *son)
 {
   _bodyMap[_switch->getRankOfNode(son->getNode())] = son;
+}
+
+SubjectNode* SubjectSwitch::getChild(YACS::ENGINE::Node* node) const
+{
+  SubjectNode* aChild = 0;
+
+  if (node)
+  {
+    map<int, SubjectNode*>::const_iterator it;
+    for (it = _bodyMap.begin(); it != _bodyMap.end(); ++it)
+      if ( (*it).second->getNode() == node )
+      {
+	aChild = (*it).second;
+	break;
+      }
+  }
+
+  return aChild;
 }
 
 // ----------------------------------------------------------------------------
@@ -2092,6 +2180,11 @@ std::pair<std::string, int> SubjectComponent::getKey()
   return key;
 }
 
+YACS::ENGINE::ComponentInstance* SubjectComponent::getComponent() const
+{
+  return _compoInst;
+}
+
 /*!
  *  When loading scheme from file, get the container associated to the component, if any,
  *  and create the corresponding subject.
@@ -2163,6 +2256,11 @@ void SubjectContainer::localClean()
 std::string SubjectContainer::getName()
 {
   return _container->getName();
+}
+
+YACS::ENGINE::Container* SubjectContainer::getContainer() const
+{
+  return _container;
 }
 
 // ----------------------------------------------------------------------------

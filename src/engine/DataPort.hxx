@@ -28,6 +28,7 @@ namespace YACS
       TypeCode* edGetType() const { return _type; }
       void edSetType(TypeCode* type);
       std::string getName() const { return _name; }
+      void setName( std::string theName ) { _name = theName; }
       std::string getNameOfTypeOfCurrentInstance() const;
       //! returns type of channel the port will use for data exchange on runtime : DATAFLOW or DATASTREAM.
       virtual TypeOfChannel getTypeOfChannel() const = 0;

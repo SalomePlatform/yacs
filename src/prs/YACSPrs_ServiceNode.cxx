@@ -65,8 +65,8 @@ void drawText1(QPainter& thePainter, const QString& theText,
 /*!
   Constructor
 */
-YACSPrs_ServiceNode::YACSPrs_ServiceNode(SUIT_ResourceMgr* theMgr, QCanvas* theCanvas, YACS::ENGINE::Node* theNode):
-  YACSPrs_ElementaryNode(theMgr, theCanvas, theNode)
+YACSPrs_ServiceNode::YACSPrs_ServiceNode(SUIT_ResourceMgr* theMgr, QCanvas* theCanvas, YACS::HMI::SubjectNode* theSNode):
+  YACSPrs_ElementaryNode(theMgr, theCanvas, theSNode)
 {
   myServiceHeight = TITLE_HEIGHT;
   myComponentHeight = TITLE_HEIGHT;
@@ -210,8 +210,8 @@ void YACSPrs_ServiceNode::drawTitleShape(QPainter& thePainter)
   // draw texts
   thePainter.setPen(Qt::white);
 
-  ServiceNode* aSEngine = dynamic_cast<ServiceNode*>( myEngine );
-  drawText1(thePainter, QString(myEngine->getName()), getTitleRect(), Qt::AlignLeft);
+  ServiceNode* aSEngine = dynamic_cast<ServiceNode*>( getEngine() );
+  drawText1(thePainter, QString(getEngine()->getName()), getTitleRect(), Qt::AlignLeft);
   drawText1(thePainter, QString( "Service: ") + QString( aSEngine ? aSEngine->getMethod() : "..." ), getServiceRect(), Qt::AlignLeft);
   drawText1(thePainter, QString( "Component: " ) + QString( aSEngine ? aSEngine->getComponent()->getName() : "..." ), getComponentRect(), Qt::AlignLeft);
   drawText1(thePainter, QString("Machine: ..."), getMachineRect(), Qt::AlignLeft);
@@ -224,7 +224,8 @@ void YACSPrs_ServiceNode::drawTitleShape(QPainter& thePainter)
 
   drawText1(thePainter, myStatus, aStateRect, Qt::AlignLeft);
   drawText1(thePainter, myTime, aTimeRect, Qt::AlignLeft);
-  drawText1(thePainter, QString::number(( (getStoredPercentage() < 0) ? getPercentage() : getStoredPercentage() ))+QString("%"), aTimeRect, Qt::AlignRight); // percentage
+  drawText1(thePainter, QString::number(( (getStoredPercentage() < 0) ? getPercentage() : getStoredPercentage() ), 'g', 4)+QString("%"),
+	    aTimeRect, Qt::AlignRight); // percentage
   
   thePainter.setPen(savedP);
 

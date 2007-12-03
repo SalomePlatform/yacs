@@ -25,6 +25,14 @@ sharedpkgpythondir =$(pkgpythondir)/shared_modules
 # Documentation directory
 docdir             = $(datadir)/doc/@PACKAGE@
 
+# .qm translator files and icons
+POFILES =
+ICONS =
+QMFILES = $(POFILES:%.po=%.qm)
+#resourcesdir = $(pkgdatadir)/resources
+#resources_DATA = $(QMFILES) $(ICONS)
+dist_salomeres_DATA = $(QMFILES) $(ICONS)
+
 EXTRA_DIST = $(wildcard $(srcdir)/*.hxx) $(wildcard $(srcdir)/*.h)
 
 # Gui specific makefile variable (not needed for base, engine, runtime parts)

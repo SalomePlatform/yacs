@@ -50,21 +50,26 @@ class YACSGui_Executor : public QObject, public QThread
   void suspendDataflow();
   void resumeDataflow();
   void stopDataflow();
+  
   void setStepByStepMode();
   void setContinueMode();
   void setBreakpointMode();
   void setStopOnError(bool aMode);
+  YACSGui_ORB::executionMode getCurrentExecMode();
+  
   void setBreakpointList(std::list<std::string> breakpointList);
   void setNextStepList(std::list<std::string> nextStepList);
 
   void setGraph(YACSGui_Graph* theGraph) { _graph = theGraph; }
+  YACSGui_Graph* getGraph() const { return _graph; }
   void registerStatusObservers();
-  bool isRunning() { return _isRunning; };
+  bool isRunning() const { return _isRunning; };
+  bool isStopOnError() const { return _isStopOnError; }
+
   //YACS::ENGINE::Executor* getLocalEngine() { return _localEngine; };
   YACS::ENGINE::Proc* getProc() { return _proc; };
  protected:
   virtual void run();
-  YACSGui_ORB::executionMode getCurrentExecMode();
   void _setBPList();
 
  private:
@@ -80,6 +85,7 @@ class YACSGui_Executor : public QObject, public QThread
   bool _isRemoteRun;
   bool _isRunning;
   bool _isSuspended;
+  bool _isStopOnError;
   std::list<std::string> _breakpointList;
 };
 

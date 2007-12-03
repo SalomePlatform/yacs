@@ -23,7 +23,7 @@
 
 class YACSPrs_ForEachLoopNode : public YACSPrs_LoopNode {
  public:
-  YACSPrs_ForEachLoopNode( SUIT_ResourceMgr*, QCanvas*, YACS::ENGINE::Node*);
+  YACSPrs_ForEachLoopNode( SUIT_ResourceMgr*, QCanvas*, YACS::HMI::SubjectNode*);
   virtual ~YACSPrs_ForEachLoopNode();
 
   /* reimplement functions from QxGraph_ActiveItem */
@@ -31,7 +31,7 @@ class YACSPrs_ForEachLoopNode : public YACSPrs_LoopNode {
 
   virtual int rtti() const;
 
-  virtual void updatePorts();
+  virtual void updatePorts(bool theForce=false);
 
   virtual void    nextTimeIteration(YACS::ENGINE::Node* theEngine=0);
   virtual double  getPercentage(YACS::ENGINE::Node* theEngine=0) const;

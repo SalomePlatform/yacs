@@ -23,7 +23,7 @@
 
 class YACSPrs_LoopNode : public YACSPrs_InlineNode {
  public:
-  YACSPrs_LoopNode( SUIT_ResourceMgr*, QCanvas*, YACS::ENGINE::Node*, const bool& thePortUpdate=true );
+  YACSPrs_LoopNode( SUIT_ResourceMgr*, QCanvas*, YACS::HMI::SubjectNode*, const bool& thePortUpdate=true );
   virtual ~YACSPrs_LoopNode();
 
   /* reimplement functions from QxGraph_ActiveItem */
@@ -37,7 +37,7 @@ class YACSPrs_LoopNode : public YACSPrs_InlineNode {
   virtual void setBracketColor(const QColor& theColor, bool theUpdate=false);
   virtual QColor bracketColor() const { return myBracketColor; }
 
-  virtual void updatePorts();
+  virtual void updatePorts(bool theForce=false);
   virtual int getCorner() const { return 0; }
 
   virtual int maxWidth() const;

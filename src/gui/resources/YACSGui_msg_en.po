@@ -14,73 +14,248 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 
+#### YACSGui input panel ####
+
+msgid "INLINE_FUNCTION_NODE"
+msgstr "Inline function node"
+
+msgid "INLINE_SCRIPT_NODE"
+msgstr "Inline script node"
+
+msgid "SALOME_SERVICE_NODE"
+msgstr "SALOME service node"
+
+msgid "CORBA_SERVICE_NODE"
+msgstr "CORBA service node"
+
 #### YACSGui module menus and toolbars ####
 
 msgid "MEN_FILE"
 msgstr "File"
 
-msgid "TOOLBAR_DATAFLOW"
-msgstr "Dataflow"
+msgid "MEN_IMPORT_SCHEMA"
+msgstr "Import Schema"
+
+msgid "MEN_IMPORT_YACS_SCHEMA"
+msgstr "YACS XML"
+
+msgid "TOP_IMPORT_YACS_SCHEMA"
+msgstr "Import schema"
+
+msgid "STB_IMPORT_YACS_SCHEMA"
+msgstr "Import schema"
+
+msgid "MEN_IMPORT_SUPERV_SCHEMA"
+msgstr "SUPERV XML"
+
+msgid "TOP_IMPORT_SUPERV_SCHEMA"
+msgstr "Import SUPERV schema"
+
+msgid "STB_IMPORT_SUPERV_SCHEMA"
+msgstr "Import SUPERV schema"
+
+msgid "MEN_EXPORT_SCHEMA"
+msgstr "Export schema"
+
+msgid "TOP_EXPORT_SCHEMA"
+msgstr "Export schema"
+
+msgid "STB_EXPORT_SCHEMA"
+msgstr "Export schema"
 
 msgid "TOOLBAR_EXECUTION"
 msgstr "Execution"
 
-msgid "TOOLBAR_EXECUTIONMODE"
-msgstr "Execution Mode"
+msgid "TOOLBAR_SCHEMA"
+msgstr "Schema"
 
-msgid "MEN_NEW_DATAFLOW"
-msgstr "New dataflow"
+msgid "TOOLBAR_CREATION"
+msgstr "Creation"
 
-msgid "TOP_NEW_DATAFLOW"
-msgstr "New dataflow"
+msgid "TOOLBAR_VISUALIZATION"
+msgstr "Visualization"
 
-msgid "STB_NEW_DATAFLOW"
-msgstr "Create new dataflow"
+msgid "MEN_CREATE"
+msgstr "Create"
 
-msgid "MEN_MODIFY_DATAFLOW"
-msgstr "Modify dataflow"
+msgid "MEN_NEW_SCHEMA"
+msgstr "New Schema"
 
-msgid "TOP_MODIFY_DATAFLOW"
-msgstr "Modify dataflow"
+msgid "TOP_NEW_SCHEMA"
+msgstr "New Schema"
 
-msgid "STB_MODIFY_DATAFLOW"
-msgstr "Modify dataflow"
+msgid "STB_NEW_SCHEMA"
+msgstr "Create new schema"
 
-msgid "MEN_IMPORT_DATAFLOW"
-msgstr "Import dataflow"
+msgid "MEN_NEW_CONTAINER"
+msgstr "New container"
 
-msgid "TOP_IMPORT_DATAFLOW"
-msgstr "Import dataflow"
+msgid "TOP_NEW_CONTAINER"
+msgstr "New container"
 
-msgid "STB_IMPORT_DATAFLOW"
-msgstr "Import dataflow"
+msgid "STB_NEW_CONTAINER"
+msgstr "Create new container"
 
-msgid "MEN_MODIFY_SUPERV_DATAFLOW"
-msgstr "Modify SUPERV dataflow"
+msgid "MEN_NEW_COMPONENT"
+msgstr "New Component"
 
-msgid "TOP_MODIFY_SUPERV_DATAFLOW"
-msgstr "Modify SUPERV dataflow"
+msgid "MEN_NEW_SALOME_COMPONENT"
+msgstr "New SALOME component"
 
-msgid "STB_MODIFY_SUPERV_DATAFLOW"
-msgstr "Modify SUPERV dataflow"
+msgid "TOP_NEW_SALOME_COMPONENT"
+msgstr "New SALOME component"
 
-msgid "MEN_IMPORT_SUPERV_DATAFLOW"
-msgstr "Import SUPERV dataflow"
+msgid "STB_NEW_SALOME_COMPONENT"
+msgstr "Create new SALOME component"
 
-msgid "TOP_IMPORT_SUPERV_DATAFLOW"
-msgstr "Import SUPERV dataflow"
+msgid "MEN_NEW_SALOMEPYTHON_COMPONENT"
+msgstr "New SALOME Python component"
 
-msgid "STB_IMPORT_SUPERV_DATAFLOW"
-msgstr "Import SUPERV dataflow"
+msgid "TOP_NEW_SALOMEPYTHON_COMPONENT"
+msgstr "New SALOME Python component"
 
-msgid "MEN_EXPORT_DATAFLOW"
-msgstr "Export dataflow"
+msgid "STB_NEW_SALOMEPYTHON_COMPONENT"
+msgstr "Create new SALOME Python component"
 
-msgid "TOP_EXPORT_DATAFLOW"
-msgstr "Export dataflow"
+msgid "MEN_NEW_CORBA_COMPONENT"
+msgstr "New CORBA component"
 
-msgid "STB_EXPORT_DATAFLOW"
-msgstr "Export dataflow"
+msgid "TOP_NEW_CORBA_COMPONENT"
+msgstr "New CORBA component"
+
+msgid "STB_NEW_CORBA_COMPONENT"
+msgstr "Create new CORBA component"
+
+msgid "MEN_NEW_NODE"
+msgstr "New Node"
+
+msgid "MEN_NEW_SALOME_SERVICE_NODE"
+msgstr "SALOME service"
+
+msgid "TOP_NEW_SALOME_SERVICE_NODE"
+msgstr "New SALOME service node"
+
+msgid "STB_NEW_SALOME_SERVICE_NODE"
+msgstr "Create new SALOME service node"
+
+msgid "MEN_NEW_CORBA_SERVICE_NODE"
+msgstr "CORBA service"
+
+msgid "TOP_NEW_CORBA_SERVICE_NODE"
+msgstr "New CORBA service node"
+
+msgid "STB_NEW_CORBA_SERVICE_NODE"
+msgstr "Create new CORBA service node"
+
+msgid "MEN_NEW_NODENODE_SERVICE_NODE"
+msgstr "Node-node service"
+
+msgid "TOP_NEW_NODENODE_SERVICE_NODE"
+msgstr "New node-node service node"
+
+msgid "STB_NEW_NODENODE_SERVICE_NODE"
+msgstr "Create new node-node service node"
+
+msgid "MEN_NEW_SERVICE_INLINE_NODE"
+msgstr "Service inline"
+
+msgid "TOP_NEW_SERVICE_INLINE_NODE"
+msgstr "New service inline node"
+
+msgid "STB_NEW_SERVICE_INLINE_NODE"
+msgstr "Create new service inline node"
+
+msgid "MEN_NEW_XML_NODE"
+msgstr "XML"
+
+msgid "TOP_NEW_XML_NODE"
+msgstr "New XML node"
+
+msgid "STB_NEW_XML_NODE"
+msgstr "Create new XML node"
+
+msgid "MEN_NEW_INLINE_SCRIPT_NODE"
+msgstr "Inline script"
+
+msgid "TOP_NEW_INLINE_SCRIPT_NODE"
+msgstr "New inline script node"
+
+msgid "STB_NEW_INLINE_SCRIPT_NODE"
+msgstr "Create new inline sript node"
+
+msgid "MEN_NEW_INLINE_FUNCTION_NODE"
+msgstr "Inline function"
+
+msgid "TOP_NEW_INLINE_FUNCTION_NODE"
+msgstr "New inline function node"
+
+msgid "STB_NEW_INLINE_FUNCTION_NODE"
+msgstr "Create new inline function node"
+
+msgid "MEN_NEW_BLOCK_NODE"
+msgstr "Block"
+
+msgid "TOP_NEW_BLOCK_NODE"
+msgstr "New block node"
+
+msgid "STB_NEW_BLOCK_NODE"
+msgstr "Create new block node"
+
+msgid "MEN_NEW_FOR_LOOP_NODE"
+msgstr "FOR loop"
+
+msgid "TOP_NEW_FOR_LOOP_NODE"
+msgstr "New FOR loop node"
+
+msgid "STB_NEW_FOR_LOOP_NODE"
+msgstr "Create new FOR loop node"
+
+msgid "MEN_NEW_FOREACH_LOOP_NODE"
+msgstr "FOREACH loop"
+
+msgid "TOP_NEW_FOREACH_LOOP_NODE"
+msgstr "New FOREACH loop node"
+
+msgid "STB_NEW_FOREACH_LOOP_NODE"
+msgstr "Create new FOREACH loop node"
+
+msgid "MEN_NEW_WHILE_LOOP_NODE"
+msgstr "WHILE loop"
+
+msgid "TOP_NEW_WHILE_LOOP_NODE"
+msgstr "New WHILE loop node"
+
+msgid "STB_NEW_WHILE_LOOP_NODE"
+msgstr "Create new WHILE loop node"
+
+msgid "MEN_NEW_SWITCH_LOOP_NODE"
+msgstr "SWITCH loop"
+
+msgid "TOP_NEW_SWITCH_LOOP_NODE"
+msgstr "New SWITCH loop node"
+
+msgid "STB_NEW_SWITCH_LOOP_NODE"
+msgstr "Create new SWITCH loop node"
+
+msgid "MEN_NEW_FROM_LIBRARY_NODE"
+msgstr "From library ..."
+
+msgid "TOP_NEW_FROM_LIBRARY_NODE"
+msgstr "New from node from library"
+
+msgid "STB_NEW_FROM_LIBRARY_NODE"
+msgstr "Create new node from library"
+
+msgid "MEN_NEW_LINK"
+msgstr "New Link"
+
+msgid "TOP_NEW_LINK"
+msgstr "New Link"
+
+msgid "STB_NEW_LINK"
+msgstr "Create new link"
+
+
 
 msgid "MEN_SUPERVISOR"
 msgstr "Supervisor"
@@ -101,7 +276,16 @@ msgid "TOP_REBUILD_LINKS"
 msgstr "Rebuild links"
 
 msgid "STB_REBUILD_LINKS"
-msgstr "Rebuild dataflow links"
+msgstr "Rebuild schema links"
+
+msgid "MEN_ARRANGE_NODES"
+msgstr "Arrange nodes"
+
+msgid "TOP_ARRANGE_NODES"
+msgstr "Arrange nodes"
+
+msgid "STB_ARRANGE_NODES"
+msgstr "Arrange schema nodes"
 
 msgid "MEN_ADD_NODE"
 msgstr "Add Node to Dataflow"
@@ -194,13 +378,13 @@ msgid "STB_SAVEDATAFLOWSTATE"
 msgstr "Save Dataflow state"
 
 msgid "MEN_TOGGLESTOPONERROR"
-msgstr "Toggle stop on error"
+msgstr "Stop on error"
 
 msgid "TOP_TOGGLESTOPONERROR"
-msgstr "Toggle stop on error"
+msgstr "Stop on error"
 
 msgid "STB_TOGGLESTOPONERROR"
-msgstr "Toggle stop on error"
+msgstr "Stop on error"
 
 msgid "MEN_SUSPEND_RESUME_DATAFLOW"
 msgstr "Remote Run - Control"
@@ -265,23 +449,179 @@ msgstr "Table View"
 msgid "STB_TABLE_VIEW"
 msgstr "Table View"
 
+#execurion menu
+msgid "MEN_EXECUTE"
+msgstr "Execute"
+
+msgid "TOP_NEW_EXECUTION"
+msgstr "New execution"
+
+msgid "MEN_NEW_EXECUTION"
+msgstr "New execution"
+
+msgid "STB_NEW_EXECUTION"
+msgstr "Create new execution"
+
+msgid "TOP_RELOAD_EXECUTION"
+msgstr "Reload execution"
+
+msgid "MEN_RELOAD_EXECUTION"
+msgstr "Reload execution"
+
+msgid "STB_RELOAD_EXECUTION"
+msgstr "Reload execution"
+
+msgid "TOP_NEW_BATCH_EXECUTION"
+msgstr "New Bacth Execution"
+
+msgid "MEN_NEW_BATCH_EXECUTION"
+msgstr "New Bacth Execution"
+
+msgid "STB_NEW_BATCH_EXECUTION"
+msgstr "Create new bacth execution"
+
+msgid "TOP_EXECUTE"
+msgstr "Execute"
+
+msgid "STB_EXECUTE"
+msgstr "Execute"
+
+msgid "TOP_EXECUTE_STBY"
+msgstr "Execute step-by-step"
+
+msgid "MEN_EXECUTE_STBY"
+msgstr "Execute step-by-step"
+
+msgid "STB_EXECUTE_STBY"
+msgstr "Execute step-by-step"
+
+msgid "TOP_EXECUTE_BATCH"
+msgstr "Execute in batch"
+
+msgid "MEN_EXECUTE_BATCH"
+msgstr "Execute in batch"
+
+msgid "STB_EXECUTE_BATCH"
+msgstr "Execute in batch"
+
+msgid "TOP_PAUSE"
+msgstr "Pause"
+
+msgid "MEN_PAUSE" 
+msgstr "Pause"
+
+msgid "STB_PAUSE"
+msgstr "Pause"
+
+msgid "TOP_RESUME"
+msgstr "Resume"
+
+msgid "MEN_RESUME"
+msgstr "Resume"
+
+msgid "STB_RESUME"
+msgstr "Resume"
+
+msgid "TOP_SUSPEND_RESUME"
+msgstr "Suspend/Resume"
+
+msgid "MEN_SUSPEND_RESUME"
+msgstr "Suspend/Resume"
+
+msgid "STB_SUSPEND_RESUME"
+msgstr "Suspend/Resume schema execution"
+
+msgid "TOP_ABORT"
+msgstr "Abort"
+
+msgid "MEN_ABORT"
+msgstr "Abort"
+
+msgid "STB_ABORT"
+msgstr "Abort"
+
+msgid "TOP_RESET"
+msgstr "Reset"
+
+msgid "MEN_RESET"
+msgstr "Reset"
+
+msgid "STB_RESET"
+msgstr "Reset"
+
+msgid "TOP_ADD_BREAK_POINT"
+msgstr "Add a breakpoint ..."
+
+msgid "MEN_ADD_BREAK_POINT"
+msgstr "Add a breakpoint ..."
+
+msgid "STB_ADD_BREAK_POINT"
+msgstr "Add a breakpoint ..."
+
+msgid "TOP_SAVE_EXECUTION_STATE"
+msgstr "Save execution state ..."
+
+msgid "MEN_SAVE_EXECUTION_STATE"
+msgstr "Save execution state ..."
+
+msgid "STB_SAVE_EXECUTION_STATE"
+msgstr "Save execution state ..."
+
+msgid "TOP_CONNECT_TO_RUNNING"
+msgstr "Connect to a running batch session ..."
+
+msgid "MEN_CONNECT_TO_RUNNING"
+msgstr "Connect to a running batch session ..."
+
+msgid "STB_CONNECT_TO_RUNNING"
+msgstr "Connect to a running batch session ..."
+
+msgid "MEN_DATAFLOW_VIEW"
+msgstr "Data Flow View"
+
+msgid "TOP_DATAFLOW_VIEW"
+msgstr "Data Flow View"
+
+msgid "STB_DATAFLOW_VIEW"
+msgstr "Data Flow View"
+
+msgid "MEN_DATASTREAM_VIEW"
+msgstr "Data Stream View"
+
+msgid "TOP_DATASTREAM_VIEW"
+msgstr "Data Stream View"
+
+msgid "STB_DATASTREAM_VIEW"
+msgstr "Data Stream View"
+
+
+
+#### POPUP items
+msgid "TOP_SET_ACTIVE"
+msgstr "Set as active"
+
+msgid "MEN_SET_ACTIVE"
+msgstr "Set as active"
+
+msgid "STB_SET_ACTIVE"
+msgstr "Set the selected object to be an active"
 
 #### YACSGui module dialog titles ####
 
-msgid "TLT_MODIFY_DATAFLOW"
-msgstr "Modify Dataflow"
+msgid "TLT_MODIFY_SCHEMA"
+msgstr "Modify Schema"
 
-msgid "TLT_IMPORT_DATAFLOW"
-msgstr "Import Dataflow"
+msgid "TLT_IMPORT_SCHEMA"
+msgstr "Import Schema"
 
-msgid "TLT_MODIFY_SUPERV_DATAFLOW"
-msgstr "Modify SUPERV Dataflow"
+msgid "TLT_MODIFY_SUPERV_SCHEMA"
+msgstr "Modify SUPERV Schema"
 
-msgid "TLT_IMPORT_SUPERV_DATAFLOW"
-msgstr "Import SUPERV Dataflow"
+msgid "TLT_IMPORT_SUPERV_SCHEMA"
+msgstr "Import SUPERV Schema"
 
-msgid "TLT_EXPORT_DATAFLOW"
-msgstr "Export Dataflow"
+msgid "TLT_EXPORT_SCHEMA"
+msgstr "Export Schema"
 
 #### YACSGui module message boxes ####
 
@@ -315,11 +655,114 @@ msgstr "No dataflow to kill is selected."
 msgid "MSG_NO_DATAFLOW_TO_SUSPEND_RESUME"
 msgstr "No dataflow to suspend/resume is selected."
 
-msgid "MSG_NO_DATAFLOW_TO_SUSPEND_RESUME"
-msgstr "No dataflow to suspend/resume is selected."
-
 msgid "MSG_DATAFLOW_IS_NOT_RUNNING"
 msgstr "The dataflow is not running."
 
+msgid "MSG_DATAFLOW_IS_CURRENTLY_RUNNING"
+msgstr "The dataflow is running or suspended."
 
+msgid "MSG_DATAFLOW_IS_CURRENTLY_RUNNING_ABORT"
+msgstr "The dataflow is running or suspended. Abort the schema execution and try to start it again."
 
+msgid "EDIT_TREE_VIEW"
+msgstr "Tree View : edition mode"
+
+msgid "RUN_TREE_VIEW"
+msgstr "Tree View : run mode"
+
+#### YACSGui module input panel ####
+
+msgid "INPUT_PANEL"
+msgstr "Input Panel"
+
+msgid "APPLY_BTN"
+msgstr "Apply"
+
+msgid "CLOSE_BTN"
+msgstr "Close"
+
+#### YACSGui module tree view ####
+
+msgid "POP_EXPORT"
+msgstr "Export"
+
+msgid "POP_CREATE_DATA_TYPE"
+msgstr "Create a Data Type"
+
+msgid "POP_CREATE_CONTAINER_DEF"
+msgstr "Create a Container definition"
+
+msgid "POP_INLINE_SCRIPT"
+msgstr "Inline script"
+
+msgid "POP_INLINE_FUNCTION"
+msgstr "Inline function"
+
+msgid "POP_BLOCK"
+msgstr "Block"
+
+msgid "POP_FOR_LOOP"
+msgstr "FOR loop"
+
+msgid "POP_FOREACH_LOOP"
+msgstr "FOREACH loop"
+
+msgid "POP_WHILE_LOOP"
+msgstr "WHILE loop"
+
+msgid "POP_SWITCH"
+msgstr "SWITCH"
+
+msgid "POP_FROM_LIBRARY"
+msgstr "From library"
+
+msgid "POP_CREATE_NODE"
+msgstr "Create a node"
+
+msgid "POP_EXECUTE"
+msgstr "Execute"
+
+msgid "POP_COPY"
+msgstr "Copy"
+
+msgid "POP_PASTE"
+msgstr "Paste"
+
+msgid "POP_DELETE"
+msgstr "Delete"
+
+msgid "POP_DISPLAY"
+msgstr "Display"
+
+msgid "POP_ERASE"
+msgstr "Erase"
+
+msgid "POP_SALOME_COMPONENT"
+msgstr "SALOME"
+
+msgid "POP_PYTHON_COMPONENT"
+msgstr "SALOME Python"
+
+msgid "POP_CREATE_COMPONENT"
+msgstr "Create a component instance definition"
+
+msgid "POP_CREATE_SALOME_SERVICE_NODE"
+msgstr "Create a SALOME service node"
+
+msgid "POP_CREATE_SERVICE_INLINE_NODE"
+msgstr "Create a service inline node"
+
+msgid "POP_CREATE_CORBA_SERVICE_NODE"
+msgstr "Create a CORBA service node"
+
+msgid "POP_CREATE_NODE-NODE_SERVICE_NODE"
+msgstr "Create a node-node service node"
+
+msgid "POP_CREATE_BODY"
+msgstr "Create a body"
+
+msgid "POP_CREATE_LOOP"
+msgstr "Create a loop"
+
+msgid "POP_ADD_TO_LIBRARY"
+msgstr "Add to library"

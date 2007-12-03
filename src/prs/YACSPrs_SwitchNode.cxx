@@ -34,8 +34,8 @@ using namespace YACS::ENGINE;
 /*!
   Constructor
 */
-YACSPrs_SwitchNode::YACSPrs_SwitchNode( SUIT_ResourceMgr* theMgr, QCanvas* theCanvas, YACS::ENGINE::Node* theNode ):
-  YACSPrs_InlineNode(theMgr, theCanvas, theNode, false)
+YACSPrs_SwitchNode::YACSPrs_SwitchNode( SUIT_ResourceMgr* theMgr, QCanvas* theCanvas, YACS::HMI::SubjectNode* theSNode ):
+  YACSPrs_InlineNode(theMgr, theCanvas, theSNode, false)
 {
   setNodeColor(SWITCHNODE_COLOR);
   setNodeSubColor(SWITCHNODE_SUBCOLOR);
@@ -75,11 +75,18 @@ QPointArray YACSPrs_SwitchNode::constructAreaPoints(int theW, int theH) const
   return aPnts;
 }
 
-void YACSPrs_SwitchNode::updatePorts()
+void YACSPrs_SwitchNode::updatePorts(bool theForce)
 {
   bool aDisp = isVisible();
   if (aDisp) hide();
-  
+
+  if (theForce)
+  {
+    myPortHeight = 2*PORT_MARGIN;
+    myPortList.setAutoDelete(true);
+    myPortList.clear();
+  }
+
   // Switch node has only 1 input port: its name is 'select',
   //                                    its type is 'int',
   //                                    its value is a number of active case (i.e. the case to execute)
@@ -103,7 +110,7 @@ void YACSPrs_SwitchNode::updatePorts()
   if ( withCreate )
   { // create (and update)
     // 'select' input port (name, type (and value) of the port will set in YACSPrs_InOutPort from port engine)
-    Switch* aSEngine = dynamic_cast<Switch*>( myEngine );
+    Switch* aSEngine = dynamic_cast<Switch*>( getEngine() );
     if ( aSEngine )
     {
       YACSPrs_InOutPort* anInPort = new YACSPrs_InOutPort(myMgr,canvas(),aSEngine->edGetConditionPort(),this);
@@ -198,6 +205,12 @@ void YACSPrs_SwitchNode::updatePorts()
     
   // can update gates only after body height will be defined
   updateGates(withCreate);
+
+  if (theForce && myPointMaster)
+  {
+    QPoint aPnt = getConnectionMasterPoint();
+    myPointMaster->setCoords(aPnt.x(), aPnt.y());
+  }
 
   if (aDisp) show();
 }

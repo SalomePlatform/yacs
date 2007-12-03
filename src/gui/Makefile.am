@@ -7,14 +7,22 @@ lib_LTLIBRARIES = libYACSGui.la
 LIBSOURCES = \
 	YACSGui_Node.cxx \
 	YACSGui_Graph.cxx \
+	YACSGui_Graph_1.cxx \
 	YACSGui_Module.cxx \
 	YACSGui_DataModel.cxx \
 	YACSGui_DataObject.cxx \
+	YACSGui_TreeView.cxx \
+	YACSGui_TreeViewItem.cxx \
 	YACSGui_Executor.cxx \
 	YACSGui_Observer.cxx \
 	YACSGui_XMLDriver.cxx \
 	YACSGui_Swig.cxx \
-	YACSGui_RunMode.cxx
+	YACSGui_RunMode.cxx \
+	YACSGui_InputPanel.cxx \
+	YACSGui_Selection.cxx \
+	YACSGui_PlusMinusGrp.cxx \
+	YACSGui_Table.cxx
+
 
 # Headers
 LIBHEADERS = \
@@ -23,21 +31,52 @@ LIBHEADERS = \
 	YACSGui_Module.h \
 	YACSGui_DataModel.h \
 	YACSGui_DataObject.h \
+	YACSGui_TreeView.h \
+	YACSGui_TreeViewItem.h \
 	YACSGui_Executor.h \
 	YACSGui_Observer.h \
 	YACSGui_XMLDriver.h \
-	YACSGui_Swig.h
+	YACSGui_Swig.h \
+	YACSGui_Selection.h \
+	YACSGui_PlusMinusGrp.h \
+	YACSGui_Table.h
+
 
 # MOC-generated files
 MOCSOURCES = \
 	YACSGui_Module_moc.cxx \
 	YACSGui_Executor_moc.cxx \
 	runmode_moc.cxx \
-	YACSGui_RunMode_moc.cxx
+	YACSGui_RunMode_moc.cxx \
+	YACSGui_InputPanel_moc.cxx \
+	YACSGui_TreeView_moc.cxx \
+	YACSGui_PlusMinusGrp_moc.cxx \
+	YACSGui_Table_moc.cxx \
+	schemapage_moc.cxx \
+	containerpage_moc.cxx \
+	componentpage_moc.cxx \
+	inlinenodepage_moc.cxx \
+	servicenodepage_moc.cxx \
+	forloopnodepage_moc.cxx \
+	foreachloopnodepage_moc.cxx \
+	whileloopnodepage_moc.cxx \
+	switchnodepage_moc.cxx \
+	blocknodepage_moc.cxx
 
 # UIC-generated files
 runmode.cxx : runmode.h
-UISOURCES = runmode.cxx
+schemapage.cxx : schemapage.h
+containerpage.cxx : containerpage.h
+componentpage.cxx : componentpage.h
+inlinenodepage.cxx : inlinenodepage.h
+servicenodepage.cxx : servicenodepage.h
+forloopnodepage.cxx : forloopnodepage.h
+foreachloopnodepage.cxx : foreachloopnodepage.h
+whileloopnodepage.cxx : whileloopnodepage.h
+switchnodepage.cxx : switchnodepage.h
+blocknodepage.cxx : blocknodepage.h
+UISOURCES = runmode.cxx schemapage.cxx containerpage.cxx componentpage.cxx inlinenodepage.cxx servicenodepage.cxx \
+            forloopnodepage.cxx foreachloopnodepage.cxx whileloopnodepage.cxx switchnodepage.cxx blocknodepage.cxx
 
 # Resources
 LIBPOFILES = \
@@ -67,6 +106,7 @@ LIBICONS = \
 	modify_superv_dataflow.png \
 	new_dataflow.png \
 	rebuild_links.png \
+	arrange_nodes.png \
 	reload.png \
 	remote_run.png \
 	run.png \
@@ -74,11 +114,48 @@ LIBICONS = \
 	step_by_step.png \
 	suspend_resume.png \
 	table_view.png \
-	toggle_stop_on_error.png
+	toggle_stop_on_error.png \
+	schema.png \
+	block_node.png \
+	loop_node.png \
+	switch_node.png \
+	node.png \
+	out_port.png \
+	in_port.png \
+	control_link.png \
+	data_link.png \
+	stream_link.png \
+	container.png \
+	component.png \
+	run_object.png \
+	new_salome_component.png \
+	new_salomepy_component.png \
+	new_corba_component.png \
+	new_salome_service_node.png \
+	new_corba_service_node.png \
+	new_nodenode_service_node.png \
+	new_service_inline_node.png \
+	new_xml_node.png \
+	new_inline_script_node.png \
+	new_inline_function_node.png \
+	new_block_node.png \
+	new_for_loop_node.png \
+	new_foreach_loop_node.png \
+	new_while_loop_node.png \
+	new_switch_loop_node.png \
+	new_from_library_node.png \
+	new_link.png \
+	icon_select.png \
+	icon_up.png \
+	icon_down.png \
+	icon_insert.png \
+	icon_select.png \
+	icon_plus.png \
+	icon_minus.png
 
 # Add "resources" subdirectory to resource file names
-POFILES = $(LIBPOFILES:%=resources/%)
-ICONS = $(LIBICONS:%=resources/%)
+POFILES += $(LIBPOFILES:%=resources/%)
+ICONS += $(LIBICONS:%=resources/%)
 
 libYACSGui_la_SOURCES = $(LIBSOURCES) $(LIBHEADERS)
 nodist_libYACSGui_la_SOURCES = $(UISOURCES) $(MOCSOURCES)
@@ -112,9 +189,11 @@ libYACSGui_la_LIBADD = \
 	../yacsloader/libYACSloader.la \
 	../prs/libYACSPrs.la \
 	../lineconn2d/libLineConn2d.la \
+	../hmi/libHMI.la \
 	../yacsorb/libYACSorb.la \
 	@QT_MT_LIBS@ @GUI_LDFLAGS@ \
-	-lQxGraph -lCAM -lsuit -lLightApp -lexpat -lxml2
+	-lQxGraph -lCAM -lsuit -lLightApp -lexpat -lxml2 \
+	@GRAPHVIZ_LDFLAGS@ -lgvc
 
 libYACSGui_la_CXXFLAGS = \
 	$(THREAD_DEF) \
@@ -126,8 +205,9 @@ libYACSGui_la_CXXFLAGS = \
 	-I$(srcdir)/../yacsloader \
 	-I$(srcdir)/../prs \
 	-I$(srcdir)/../lineconn2d \
+	-I$(srcdir)/../hmi \
 	-I../../idl \
 	-I../yacsorb \
-	@QT_INCLUDES@ @GUI_CXXFLAGS@ @CAS_CPPFLAGS@
+	@QT_INCLUDES@ @GUI_CXXFLAGS@ @CAS_CPPFLAGS@ @GRAPHVIZ_CPPFLAGS@
 
 include $(top_srcdir)/adm/unix/make_end.am

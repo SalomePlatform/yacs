@@ -32,8 +32,9 @@ using namespace YACS::ENGINE;
 /*!
   Constructor
 */
-YACSPrs_LoopNode::YACSPrs_LoopNode( SUIT_ResourceMgr* theMgr, QCanvas* theCanvas, YACS::ENGINE::Node* theNode, const bool& thePortUpdate ):
-  YACSPrs_InlineNode(theMgr, theCanvas, theNode, false)
+YACSPrs_LoopNode::YACSPrs_LoopNode( SUIT_ResourceMgr* theMgr, QCanvas* theCanvas,
+				    YACS::HMI::SubjectNode* theSNode, const bool& thePortUpdate ):
+  YACSPrs_InlineNode(theMgr, theCanvas, theSNode, false)
 {
   setNodeColor(LOOPNODE_COLOR);
   setNodeSubColor(LOOPNODE_SUBCOLOR);
@@ -165,11 +166,18 @@ void YACSPrs_LoopNode::setBracketColor(const QColor& theColor, bool theUpdate)
   }
 }
 
-void YACSPrs_LoopNode::updatePorts()
+void YACSPrs_LoopNode::updatePorts(bool theForce)
 {
   bool aDisp = isVisible();
   if (aDisp) hide();
-  
+
+  if (theForce)
+  {
+    myPortHeight = 2*PORT_MARGIN;
+    myPortList.setAutoDelete(true);
+    myPortList.clear();
+  }
+
   // ForLoop and WhileLoop nodes have only 1 input port.
   // ForLoop : its name is 'nsteps' ,
   //           its type is 'int',
@@ -193,7 +201,7 @@ void YACSPrs_LoopNode::updatePorts()
   int ox = ix + aPRectWidth + 2*PORT_MARGIN;
   int oy = r.y() + PORT_MARGIN;// + 1;
 
-  ForLoop* aFLoop = dynamic_cast<ForLoop*>( myEngine );
+  ForLoop* aFLoop = dynamic_cast<ForLoop*>( getEngine() );
   WhileLoop* aWLoop = 0;
 
   if ( withCreate )
@@ -205,7 +213,7 @@ void YACSPrs_LoopNode::updatePorts()
       anInPort = new YACSPrs_InOutPort(myMgr,canvas(),aFLoop->edGetNbOfTimesInputPort(),this);
     else
     {
-      aWLoop = dynamic_cast<WhileLoop*>( myEngine );
+      aWLoop = dynamic_cast<WhileLoop*>( getEngine() );
       if ( aWLoop )
 	anInPort = new YACSPrs_InOutPort(myMgr,canvas(),aWLoop->edGetConditionPort(),this);
     }
@@ -258,6 +266,12 @@ void YACSPrs_LoopNode::updatePorts()
     
   // can update gates only after body height will be defined
   updateGates(withCreate);
+
+  if (theForce && myPointMaster)
+  {
+    QPoint aPnt = getConnectionMasterPoint();
+    myPointMaster->setCoords(aPnt.x(), aPnt.y());
+  }
 
   if (aDisp) show();
 }

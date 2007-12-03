@@ -26,6 +26,8 @@
 
 #include "SUIT_ResourceMgr.h"
 
+#include <commandsProc.hxx>
+
 #include <qpainter.h>
 
 using namespace YACS::ENGINE;
@@ -66,10 +68,11 @@ void drawText4(QPainter& thePainter, const QString& theText,
  * =========================== YACSPrs_BlocNode ===========================
  !*/
 
-YACSPrs_BlocNode::YACSPrs_BlocNode(SUIT_ResourceMgr* theMgr, QCanvas* theCanvas, YACS::ENGINE::Node* theNode,
+YACSPrs_BlocNode::YACSPrs_BlocNode(SUIT_ResourceMgr* theMgr, QCanvas* theCanvas,
+				   YACS::HMI::SubjectNode* theSNode,
 				   DisplayMode theDisplayMode, int theZ,
 				   int theLeft, int theTop, int theWidth, int theHeight):
-  YACSPrs_ElementaryNode(theMgr, theCanvas, theNode),
+  YACSPrs_ElementaryNode(theMgr, theCanvas, theSNode),
   myDisplayMode(theDisplayMode)
 {
   printf("YACSPrs_BlocNode::YACSPrs_BlocNode\n");
@@ -123,6 +126,49 @@ YACSPrs_BlocNode::~YACSPrs_BlocNode()
   myChildren.clear();
 }
 
+void YACSPrs_BlocNode::update( YACS::HMI::GuiEvent event, int type, YACS::HMI::Subject* son)
+{
+  printf(">> YACSPrs_BlocNode::update\n");
+  switch (event)
+  {
+  case YACS::HMI::RENAME:
+    if ( canvas() )
+    { 
+      canvas()->setChanged(getTitleRect());
+      canvas()->update();
+    }
+    break;
+  case YACS::HMI::EDIT:
+    {
+      int anOldHeight = maxHeight();
+      updateHeight();
+
+      bool needToCanvasUpdate = true;
+      if ( anOldHeight != maxHeight() )
+      {
+	//emit portsChanged();
+
+	YACS::HMI::SubjectBloc* aParentSubj = dynamic_cast<YACS::HMI::SubjectBloc*>( getSEngine()->getParent() );
+	if ( aParentSubj && !dynamic_cast<YACS::HMI::SubjectProc*>( aParentSubj ) )
+	{
+	  aParentSubj->update( event, YACS::HMI::BLOC, getSEngine() );
+	  needToCanvasUpdate = false;
+	}
+      }
+      
+      if ( needToCanvasUpdate && canvas() )
+      { 
+	QRect aRect((int)x(),(int)y(),maxWidth(),maxHeight());
+	canvas()->setChanged(aRect);
+	canvas()->update();
+      }
+    }
+    break;
+  default:
+    GuiObserver::update(event, type, son);
+  }
+}
+
 void YACSPrs_BlocNode::setChildren(std::set<YACSPrs_ElementaryNode*>& theChildren)
 { 
   if ( myDisplayMode == Expanded )
@@ -160,7 +206,7 @@ void YACSPrs_BlocNode::setChildren(std::set<YACSPrs_ElementaryNode*>& theChildre
     setZ(z());
 
     updateGates();
-    printf("Parent : %s. Number of children : %d\n",myEngine->getName().c_str(),myChildren.size());
+    printf("Parent : %s. Number of children : %d\n",getEngine()->getName().c_str(),myChildren.size());
   }  
 }
 
@@ -520,6 +566,11 @@ void YACSPrs_BlocNode::setZ(double z)
   if ( myPointMaster ) myPointMaster->setZ(z);
 }
 
+void YACSPrs_BlocNode::update()
+{
+  YACSPrs_ElementaryNode::update();
+}
+
 void YACSPrs_BlocNode::updateGates()
 {
   bool aDisp = isVisible();
@@ -538,14 +589,14 @@ void YACSPrs_BlocNode::updateGates()
     if ( myPortList.isEmpty() )
     { // create (and update)
       // input Gate
-      YACSPrs_InOutPort* anInPort = new YACSPrs_InOutPort(myMgr,canvas(),myEngine->getInGate(),this);
+      YACSPrs_InOutPort* anInPort = new YACSPrs_InOutPort(myMgr,canvas(),getEngine()->getInGate(),this);
       anInPort->setPortRect(QRect(ix, iy, aPRectWidth, PORT_HEIGHT));
       anInPort->setColor(nodeSubColor());
       anInPort->setStoreColor(nodeSubColor());
       myPortList.append(anInPort);
       
       // output Gate
-      YACSPrs_InOutPort* anOutPort = new YACSPrs_InOutPort(myMgr,canvas(),myEngine->getOutGate(),this);
+      YACSPrs_InOutPort* anOutPort = new YACSPrs_InOutPort(myMgr,canvas(),getEngine()->getOutGate(),this);
       anOutPort->setPortRect(QRect(ox, oy, aPRectWidth, PORT_HEIGHT));
       anOutPort->setColor(nodeSubColor());
       anOutPort->setStoreColor(nodeSubColor());
@@ -615,6 +666,18 @@ void YACSPrs_BlocNode::resize(int theWidth, int theHeight)
       (*it)->setArea(getAreaRect());
 
     myContentMoving = true;
+  }
+}
+
+void YACSPrs_BlocNode::updateHeight()
+{
+  if ( myDisplayMode == Expanded )
+  { 
+    int aMinY = minYContent();
+    int aMaxY = maxYContent();
+    myHeight = aMaxY - aMinY;
+   
+    resize( myWidth, myHeight );
   }
 }
 
@@ -834,7 +897,7 @@ void YACSPrs_BlocNode::drawTitle(QPainter& thePainter)
   thePainter.drawRoundRect(aRoundRect,myXRnd,myYRnd);
 
   thePainter.setPen(Qt::white);
-  drawText4(thePainter, QString(myEngine->getName()), aRoundRect, Qt::AlignHCenter);
+  drawText4(thePainter, QString(getEngine()->getName()), aRoundRect, Qt::AlignHCenter);
 
   thePainter.setBrush(savedB);
   thePainter.setPen(savedP);

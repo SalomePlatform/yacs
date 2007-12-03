@@ -42,8 +42,10 @@
 #include <PythonPorts.hxx>
 #include <XMLPorts.hxx>
 #include <CalStreamPort.hxx>
+#include <commandsProc.hxx>
 
 using namespace YACS::ENGINE;
+using namespace YACS::HMI;
 
 using namespace std;
 #include <sstream>
@@ -297,16 +299,19 @@ void toString(Any* theAny, QString& theValue)
  * =========================== YACSPrs_ElementaryNode ===========================
  !*/
 
-YACSPrs_ElementaryNode::YACSPrs_ElementaryNode(SUIT_ResourceMgr* theMgr, QCanvas* theCanvas, YACS::ENGINE::Node* theNode):
+YACSPrs_ElementaryNode::YACSPrs_ElementaryNode(SUIT_ResourceMgr* theMgr, QCanvas* theCanvas, YACS::HMI::SubjectNode* theSNode):
   QxGraph_ActiveItem(),
   QCanvasPolygonalItem(theCanvas),
+  GuiObserver(),
   myMgr(theMgr),
-  myEngine(theNode),
+  mySEngine(theSNode),
   myLabelLink(0),
   myHilightedPort(0),
   mySelectedPort(0)
 {
   printf("YACSPrs_ElementaryNode::YACSPrs_ElementaryNode\n");
+  if ( mySEngine ) mySEngine->attach(this);
+
   myWidth = NODE_WIDTH;
   if (2*(PORT_WIDTH+PORT_MARGIN) > myWidth)
     myWidth = 2*(PORT_WIDTH+PORT_MARGIN);
@@ -364,6 +369,168 @@ YACSPrs_ElementaryNode::~YACSPrs_ElementaryNode()
   myPortList.clear();
 
   if (myPointMaster) delete myPointMaster;
+
+  mySEngine->detach(this);
+  //delete mySEngine;
+}
+
+void YACSPrs_ElementaryNode::select( bool isSelected )
+{
+  printf(">> YACSPrs_ElementaryNode::select\n");
+}
+
+void YACSPrs_ElementaryNode::update( YACS::HMI::GuiEvent event, int type, YACS::HMI::Subject* son)
+{
+  printf(">> YACSPrs_ElementaryNode::update\n");
+  switch (event)
+  {
+  case RENAME:
+    if ( canvas() )
+    { 
+      canvas()->setChanged(getTitleRect());
+      canvas()->update();
+    }
+    break;
+  case EDIT:
+    switch (type)
+    {
+    case INPUTPORT:
+    case OUTPUTPORT:
+    case INPUTDATASTREAMPORT:
+    case OUTPUTDATASTREAMPORT:
+      {
+	if ( canvas() )
+	  if ( SubjectDataPort* aDP = dynamic_cast<SubjectDataPort*>(son) )
+	    if ( YACSPrs_InOutPort* aPPrs = getPortPrs(aDP->getPort()) )
+	    {
+	      printf(">> In prs : EDIT\n");
+	      aPPrs->update();
+	      canvas()->update();
+	    }
+      }
+      break;
+    default:
+      {
+	int anOldHeight = maxHeight();
+	updatePorts(true);
+	
+	bool needToCanvasUpdate = true;
+	if ( anOldHeight != maxHeight() )
+	{
+	  //emit portsChanged();
+	  
+	  SubjectBloc* aParentSubj = dynamic_cast<SubjectBloc*>( mySEngine->getParent() );
+	  if ( aParentSubj && !dynamic_cast<SubjectProc*>( aParentSubj ) )
+	  {
+	    aParentSubj->update( event, BLOC, mySEngine );
+	    needToCanvasUpdate = false;
+	  }
+	}
+	
+	if ( needToCanvasUpdate && canvas() )
+	{ 
+	  QRect aRect((int)x(),(int)y(),maxWidth(),maxHeight());
+	  canvas()->setChanged(aRect);
+	  canvas()->update();
+	}
+      }
+      break;
+    }
+    break;
+  case ADD:
+    switch (type)
+    {
+    case INPUTPORT:
+    case OUTPUTPORT:
+    case INPUTDATASTREAMPORT:
+    case OUTPUTDATASTREAMPORT:
+      {
+	if ( SubjectDataPort* aDP = dynamic_cast<SubjectDataPort*>(son) )
+	{
+	  printf(">> In prs : ADD\n");
+	  addPortPrs(aDP->getPort());
+	}
+      }
+      break;
+    default:
+      break;
+    }
+    break;
+  case REMOVE:
+    switch (type)
+    {
+    case INPUTPORT:
+    case OUTPUTPORT:
+    case INPUTDATASTREAMPORT:
+    case OUTPUTDATASTREAMPORT:
+      {
+	if ( SubjectDataPort* aDP = dynamic_cast<SubjectDataPort*>(son) )
+	{
+	  printf(">> In prs : REMOVE\n");
+	  removePortPrs(aDP->getPort());
+	}
+      }
+      break;
+    default:
+      break;
+    }
+    break;
+  case UPDATE:
+    {
+      if ( canvas() )
+      {
+	printf(">> In prs : UPDATE\n");
+	updatePorts();
+	canvas()->update();
+      }
+    }
+    break;
+  case UP:
+    switch (type)
+    {
+    case INPUTPORT:
+    case OUTPUTPORT:
+    case INPUTDATASTREAMPORT:
+    case OUTPUTDATASTREAMPORT: 
+      {
+	if ( SubjectDataPort* aDP = dynamic_cast<SubjectDataPort*>(son) )
+	{
+	  printf(">> In prs : UP\n");
+	  moveUp(aDP->getPort());
+	}
+      }
+      break;
+    default:
+      break;
+    }
+    break;
+  case DOWN:
+    switch (type)
+    {
+    case INPUTPORT:
+    case OUTPUTPORT:
+    case INPUTDATASTREAMPORT:
+    case OUTPUTDATASTREAMPORT: 
+      {
+	if ( SubjectDataPort* aDP = dynamic_cast<SubjectDataPort*>(son) )
+	{
+	  printf(">> In prs : DOWN\n");
+	  moveDown(aDP->getPort());
+	}
+      }
+      break;
+    default:
+      break;
+    }
+    break;
+  default:
+    GuiObserver::update(event, type, son);
+  }
+}
+
+YACS::ENGINE::Node* YACSPrs_ElementaryNode::getEngine() const
+{
+  return ( mySEngine ? mySEngine->getNode() : 0 );
 }
 
 YACSPrs_InOutPort* YACSPrs_ElementaryNode::getPortPrs(YACS::ENGINE::Port* thePort)
@@ -376,6 +543,181 @@ YACSPrs_InOutPort* YACSPrs_ElementaryNode::getPortPrs(YACS::ENGINE::Port* thePor
       aRetPort = anIOPort;
   }
   return aRetPort;
+}
+
+void YACSPrs_ElementaryNode::sortPorts()
+{
+  ElementaryNode* aNode = dynamic_cast<ElementaryNode*>(getEngine());
+  if ( !aNode ) return;
+
+  QPtrList<YACSPrs_Port> aSortedPortList;
+
+  list<InPort*> anInPortsEngine = aNode->getSetOfInPort();
+  list<InPort*>::iterator itIn = anInPortsEngine.begin();
+  for ( ; itIn != anInPortsEngine.end(); itIn++ )
+    aSortedPortList.append( getPortPrs(*itIn) );
+
+  list<OutPort*> anOutPortsEngine = aNode->getSetOfOutPort();
+  list<OutPort*>::iterator itOut = anOutPortsEngine.begin();
+  for ( ; itOut != anOutPortsEngine.end(); itOut++ )
+    aSortedPortList.append( getPortPrs(*itOut) );
+
+  aSortedPortList.append( getPortPrs(aNode->getInGate()) );
+  aSortedPortList.append( getPortPrs(aNode->getOutGate()) );
+
+  myPortList = aSortedPortList;
+}
+
+void YACSPrs_ElementaryNode::moveUp(YACS::ENGINE::Port* thePort)
+{
+  if ( !thePort ) return;
+
+  YACSPrs_InOutPort* aPortToMoveUp = getPortPrs(thePort);
+  int anId = myPortList.find(aPortToMoveUp);
+  if ( anId > -1 )
+  {
+    myPortList.take(anId);
+    anId--;
+    myPortList.insert(anId,aPortToMoveUp);
+  }
+}
+
+void YACSPrs_ElementaryNode::moveDown(YACS::ENGINE::Port* thePort)
+{
+  if ( !thePort ) return;
+
+  YACSPrs_InOutPort* aPortToMoveDown = getPortPrs(thePort);
+  int anId = myPortList.find(aPortToMoveDown);
+  if ( anId > -1 )
+  {
+    myPortList.take(anId);
+    anId++;
+    myPortList.insert(anId,aPortToMoveDown);
+  }
+}
+
+void YACSPrs_ElementaryNode::addPortPrs(YACS::ENGINE::Port* thePort)
+{
+  if ( !thePort ) return;
+
+  ElementaryNode* aNode = dynamic_cast<ElementaryNode*>(getEngine());
+  if ( !aNode ) return;
+
+  int anIPNum = aNode->getNumberOfInputPorts();
+  int anOPNum = aNode->getNumberOfOutputPorts();
+
+  bool isInput = true;
+  if ( dynamic_cast<OutPort*>(thePort) )
+    isInput = false;
+
+  bool aDisp = isVisible();
+  if (aDisp) hide();
+
+  QRect r = getBodyRect();
+  int aPRectWidth = (int)(r.width()/2) - 2*PORT_MARGIN;
+  if ( aPRectWidth < PORT_WIDTH ) aPRectWidth = PORT_WIDTH;
+  
+  int ix = r.x() + PORT_MARGIN + 1;
+  int iy;
+  if ( anIPNum > 1 )
+    iy = r.y() + PORT_MARGIN + (PORT_HEIGHT+PORT_SPACE)*(anIPNum-1);
+  else
+    iy = r.y() + PORT_MARGIN;
+
+  int ox = ix + aPRectWidth + 2*PORT_MARGIN;
+  int oy;
+  if ( anOPNum > 1 )
+    oy = r.y() + PORT_MARGIN + (PORT_HEIGHT+PORT_SPACE)*(anOPNum-1);
+  else
+    oy = r.y() + PORT_MARGIN;
+
+  YACSPrs_InOutPort* aPortPrs = new YACSPrs_InOutPort(myMgr, canvas(), thePort, this);
+  aPortPrs->setPortRect(QRect( (isInput ? ix : ox), 
+			       (isInput ? iy : oy),
+			       aPRectWidth,
+			       PORT_HEIGHT )); // commented
+  aPortPrs->setColor(nodeSubColor());
+  aPortPrs->setStoreColor(nodeSubColor());
+  
+  YACSPrs_InOutPort* aPort;
+  for (aPort = (YACSPrs_InOutPort*)(myPortList.first()); 
+       aPort;
+       aPort = (YACSPrs_InOutPort*)(myPortList.next()))
+  {
+    if ( aPortPrs->isInput() && !aPort->isInput() )
+    { 
+      myPortList.insert( myPortList.find(aPort), aPortPrs );
+      break;
+    }
+    if ( !aPortPrs->isInput() && aPort->isGate() )
+    { 
+      myPortList.insert( myPortList.find(aPort), aPortPrs );
+      break;
+    }
+  }
+
+  if ( (isInput && anIPNum > anOPNum) || (!isInput && anIPNum < anOPNum) )
+    myPortHeight += PORT_HEIGHT+PORT_SPACE;
+  
+  updateGates(false);
+  //updatePorts();
+
+  if (myPointMaster)
+  {
+    QPoint aPnt = getConnectionMasterPoint();
+    myPointMaster->setCoords(aPnt.x(), aPnt.y());
+  }
+
+  if (aDisp) show();
+
+  if ( canvas() )
+  { 
+    canvas()->setChanged(getRect());
+    canvas()->update();
+  }
+}
+
+void YACSPrs_ElementaryNode::removePortPrs(YACS::ENGINE::Port* thePort)
+{
+  if ( YACSPrs_InOutPort* aPort = getPortPrs(thePort) )
+  {
+    ElementaryNode* aNode = dynamic_cast<ElementaryNode*>(getEngine());
+    if ( !aNode ) return;
+    
+    int anIPNum = aNode->getNumberOfInputPorts();
+    int anOPNum = aNode->getNumberOfOutputPorts();
+
+    bool aDisp = isVisible();
+    if (aDisp) hide();
+
+    bool isInput = true;
+    if ( dynamic_cast<OutPort*>(thePort) )
+      isInput = false;
+
+    if ( ElementaryNode* aNode = dynamic_cast<ElementaryNode*>(getEngine()) )
+      if ( (isInput && anIPNum > anOPNum) || (!isInput && anIPNum < anOPNum) )
+	myPortHeight -= PORT_HEIGHT+PORT_SPACE;
+
+    myPortList.setAutoDelete(true);
+    myPortList.remove(aPort);
+    
+    //updateGates(false);
+    updatePorts();
+
+    if (myPointMaster)
+    {
+      QPoint aPnt = getConnectionMasterPoint();
+      myPointMaster->setCoords(aPnt.x(), aPnt.y());
+    }
+
+    if (aDisp) show();
+
+    if ( canvas() )
+    { 
+      canvas()->setChanged(getRect());
+      canvas()->update();
+    }
+  }
 }
 
 void YACSPrs_ElementaryNode::setCanvas(QCanvas* theCanvas)
@@ -757,17 +1099,23 @@ void YACSPrs_ElementaryNode::setZFromLinks(double z)
  */
 void YACSPrs_ElementaryNode::update()
 {
-  if ( !myEngine ) return;
+  printf("==> YACSPrs_ElementaryNode::update()\n");
+
+  if ( !getEngine() ) return;
 
   // update state
-  setState( myEngine->getState() );
+  setState( getEngine()->getState() );
 
   // update ports values
   YACSPrs_Port* aPort = 0;
   for (aPort = myPortList.first(); aPort; aPort = myPortList.next())
   {
     YACSPrs_InOutPort* anIOPort = dynamic_cast<YACSPrs_InOutPort*>( aPort );
-    if ( anIOPort && !anIOPort->isGate() ) anIOPort->update();
+    if ( anIOPort && !anIOPort->isGate() )
+    {
+      printf("==> update port : %s\n",aPort->getName().latin1());
+      anIOPort->update();
+    }
   }
   
   // update progress bar
@@ -792,7 +1140,9 @@ void YACSPrs_ElementaryNode::update()
  */
 void YACSPrs_ElementaryNode::updateForEachLoopBody(YACS::ENGINE::Node* theEngine)
 {
-  if ( !myEngine || !theEngine ) return;
+  printf("==> YACSPrs_ElementaryNode::updateForEachLoopBody()\n");
+  
+  if ( !getEngine() || !theEngine ) return;
 
   // update state
   setState( theEngine->getState() );
@@ -824,12 +1174,19 @@ void YACSPrs_ElementaryNode::updateForEachLoopBody(YACS::ENGINE::Node* theEngine
   }
 }
 
-void YACSPrs_ElementaryNode::updatePorts()
+void YACSPrs_ElementaryNode::updatePorts(bool theForce)
 {
   bool aDisp = isVisible();
   if (aDisp) hide();
+
+  if (theForce)
+  {
+    myPortHeight = 2*PORT_MARGIN;
+    myPortList.setAutoDelete(true);
+    myPortList.clear();
+  }
   
-  // iterates on all engine ports of the engine node myEngine,
+  // iterates on all engine ports of the engine node getEngine(),
   // create (if not already exists) for each engine port YACSPrs_InOutPort object and
   // set the rectangle for it
 
@@ -849,7 +1206,7 @@ void YACSPrs_ElementaryNode::updatePorts()
   { // create (and update)
 
     // input ports
-    list<InPort*> anInPortsEngine = myEngine->getSetOfInPort();
+    list<InPort*> anInPortsEngine = getEngine()->getSetOfInPort();
     list<InPort*>::iterator anInPortsIter = anInPortsEngine.begin();
     int heightIncr = 0;
     for( ;anInPortsIter!=anInPortsEngine.end();anInPortsIter++)
@@ -863,7 +1220,7 @@ void YACSPrs_ElementaryNode::updatePorts()
       }
     
     // output ports
-    list<OutPort*> anOutPortsEngine = myEngine->getSetOfOutPort();
+    list<OutPort*> anOutPortsEngine = getEngine()->getSetOfOutPort();
     list<OutPort*>::iterator anOutPortsIter = anOutPortsEngine.begin();
     heightIncr = 0;
     for( ;anOutPortsIter!=anOutPortsEngine.end();anOutPortsIter++)
@@ -884,25 +1241,32 @@ void YACSPrs_ElementaryNode::updatePorts()
   { // only update
     YACSPrs_InOutPort* aPort;
     for (aPort = (YACSPrs_InOutPort*)(myPortList.first()); 
-	 aPort && !aPort->isGate();
+	 aPort;
 	 aPort = (YACSPrs_InOutPort*)(myPortList.next()))
     { 
-      if ( aPort->isInput() )
-      { // test input ports
-	aPort->setPortRect(QRect(ix, iy, aPRectWidth, PORT_HEIGHT), !mySelfMoving, myArea);
-	iy += PORT_HEIGHT+PORT_SPACE;
-      }
-      else
-      { // test output ports
-	aPort->setPortRect(QRect(ox, oy, aPRectWidth, PORT_HEIGHT), !mySelfMoving, myArea);
-	oy += PORT_HEIGHT+PORT_SPACE;
-      }
+      if ( !aPort->isGate() )
+      	if ( aPort->isInput() )
+	{ // test input ports
+	  aPort->setPortRect(QRect(ix, iy, aPRectWidth, PORT_HEIGHT), !mySelfMoving, myArea);
+	  iy += PORT_HEIGHT+PORT_SPACE;
+	}
+	else
+	{ // test output ports
+	  aPort->setPortRect(QRect(ox, oy, aPRectWidth, PORT_HEIGHT), !mySelfMoving, myArea);
+	  oy += PORT_HEIGHT+PORT_SPACE;
+	}
     }
   }
     
   // can update gates only after body height will be defined
   updateGates(withCreate);
 
+  if (theForce && myPointMaster)
+  {
+    QPoint aPnt = getConnectionMasterPoint();
+    myPointMaster->setCoords(aPnt.x(), aPnt.y());
+  }
+    
   if (aDisp) show();
 }
 
@@ -923,14 +1287,14 @@ void YACSPrs_ElementaryNode::updateGates(bool theCreate)
   if ( theCreate )
   { // create (and update)
     // input Gate
-    YACSPrs_InOutPort* anInPort = new YACSPrs_InOutPort(myMgr,canvas(),myEngine->getInGate(),this);
+    YACSPrs_InOutPort* anInPort = new YACSPrs_InOutPort(myMgr,canvas(),getEngine()->getInGate(),this);
     anInPort->setPortRect(QRect(ix, iy,	aPRectWidth, PORT_HEIGHT));
     anInPort->setColor(nodeSubColor());
     anInPort->setStoreColor(nodeSubColor());
     myPortList.append(anInPort);
 
     // output Gate
-    YACSPrs_InOutPort* anOutPort = new YACSPrs_InOutPort(myMgr,canvas(),myEngine->getOutGate(),this);
+    YACSPrs_InOutPort* anOutPort = new YACSPrs_InOutPort(myMgr,canvas(),getEngine()->getOutGate(),this);
     anOutPort->setPortRect(QRect(ox, oy, aPRectWidth, PORT_HEIGHT));
     anOutPort->setColor(nodeSubColor());
     anOutPort->setStoreColor(nodeSubColor());
@@ -1090,17 +1454,17 @@ QRect YACSPrs_ElementaryNode::getGateRect() const
 void YACSPrs_ElementaryNode::nextTimeIteration(YACS::ENGINE::Node* theEngine)
 {
   bool nullifyOnToActivate = false;
-  if ( !theEngine ) theEngine = myEngine;
+  if ( !theEngine ) theEngine = getEngine();
   else nullifyOnToActivate = true;
 
   if ( theEngine
        &&
-       ( theEngine->getState() == YACS::INITED || theEngine->getEffectiveState() == YACS::INITED 
+       ( theEngine->getState() == YACS::INITED /*|| theEngine->getEffectiveState() == YACS::INITED*/
 	 ||
 	 ( nullifyOnToActivate && ( theEngine->getState() == YACS::TOACTIVATE || theEngine->getEffectiveState() == YACS::TOACTIVATE) ) ) )
     myTimeIteration = 0.;
   else if ( theEngine &&
-	    theEngine->getState() != YACS::INITED && theEngine->getEffectiveState() != YACS::INITED &&
+	    theEngine->getState() != YACS::INITED /*&& theEngine->getEffectiveState() != YACS::INITED*/ &&
 	    !myFinished ) {
     const double aGoodTime = 0.02 * 100; // estimated time to run, s
     myTimeIteration += 1./aGoodTime;
@@ -1116,19 +1480,21 @@ void YACSPrs_ElementaryNode::nextTimeIteration(YACS::ENGINE::Node* theEngine)
 double YACSPrs_ElementaryNode::getPercentage(YACS::ENGINE::Node* theEngine) const
 {
   bool nullifyOnToActivate = false;
-  if ( !theEngine ) theEngine = myEngine;
+  if ( !theEngine ) theEngine = getEngine();
   else nullifyOnToActivate = true;
     
   if ( !theEngine ) return 0.;
 
-  if ( theEngine->getState() == YACS::INITED || theEngine->getEffectiveState() == YACS::INITED ||
+  if ( theEngine->getState() == YACS::INITED || /*theEngine->getEffectiveState() == YACS::INITED ||*/
        theEngine->getState() == YACS::TOLOAD || theEngine->getEffectiveState() == YACS::TOLOAD ||
        theEngine->getState() == YACS::DISABLED || theEngine->getEffectiveState() == YACS::DISABLED
        ||
        ( nullifyOnToActivate && ( theEngine->getState() == YACS::TOACTIVATE || theEngine->getEffectiveState() == YACS::TOACTIVATE) ) )
     return 0.;
+
   if ( theEngine->getState() == YACS::DONE )
     return 100.;
+
   // progress bar is manipulated at logarithmic scale:
   // iteration=1 -> 1%, iteration==goodtime -> 50%, iteration=infinite -> 99%
   return ( 0.499 + 99. * ( myTimeIteration * myTimeIteration / ( 1. + myTimeIteration * myTimeIteration ) ) );
@@ -1143,7 +1509,7 @@ double YACSPrs_ElementaryNode::getPercentage(YACS::ENGINE::Node* theEngine) cons
 void YACSPrs_ElementaryNode::updateExecTime(YACS::ENGINE::Node* theEngine)
 {
   bool nullifyOnToActivate = false;
-  if ( !theEngine ) theEngine = myEngine;
+  if ( !theEngine ) theEngine = getEngine();
   else nullifyOnToActivate = true;
     
   if ( !theEngine ) return;
@@ -1154,7 +1520,7 @@ void YACSPrs_ElementaryNode::updateExecTime(YACS::ENGINE::Node* theEngine)
     return;
   }
 
-  if ( theEngine->getState() == YACS::INITED || theEngine->getEffectiveState() == YACS::INITED
+  if ( theEngine->getState() == YACS::INITED /*|| theEngine->getEffectiveState() == YACS::INITED*/
        ||
        ( nullifyOnToActivate && ( theEngine->getState() == YACS::TOACTIVATE || theEngine->getEffectiveState() == YACS::TOACTIVATE) ) )
   {
@@ -1275,7 +1641,7 @@ void YACSPrs_ElementaryNode::drawShape(QPainter& thePainter)
 void YACSPrs_ElementaryNode::drawTitleShape(QPainter& thePainter)
 {
   thePainter.drawRoundRect(getTitleRect(),myXRnd,myYRnd);
-  drawText(thePainter, QString(myEngine->getName()), getTitleRect(), Qt::AlignHCenter);
+  drawText(thePainter, QString(getEngine()->getName()), getTitleRect(), Qt::AlignHCenter);
 }
 
 void YACSPrs_ElementaryNode::drawTitle(QPainter& thePainter)
@@ -1408,15 +1774,24 @@ YACSPrs_Port::YACSPrs_Port( SUIT_ResourceMgr* theMgr, QCanvas* theCanvas, YACSPr
 
 YACSPrs_Port::~YACSPrs_Port()
 {
+  printf(">> YACSPrs_Port::~YACSPrs_Port()\n");
   if (myPoint) delete myPoint;
 
   for(list<YACSPrs_Link*>::iterator it = myLinks.begin(); it != myLinks.end(); it++) {
     if ( YACSPrs_PortLink* aPL = dynamic_cast<YACSPrs_PortLink*>( *it ) ) {
+      //delete aPL;
+      //aPL->getInputPort()->removeLink(aPL);
       aPL->setInputPort(0);
+
+      //aPL->getOutputPort()->removeLink(aPL);
       aPL->setOutputPort(0);
     }
     else if ( YACSPrs_LabelLink* aLL = dynamic_cast<YACSPrs_LabelLink*>( *it ) ) {
+      //delete aLL;
+      //aLL->getOutputPort()->setSlaveNode(0);
       aLL->setOutputPort(0);
+
+      //aLL->getSlaveNode()->removeLabelLink();
       aLL->setSlaveNode(0);
     }
   }

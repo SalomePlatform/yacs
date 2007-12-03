@@ -72,15 +72,17 @@ void Node::setName(const std::string& name)
     {
       if(_father->isNameAlreadyUsed(name))
         {
-          std::string what("Name "); 
-          what+=name;
-          what+=" already exists in the scope of "; what+=_father->getName();
-          throw Exception(what);
+	  if ( _father->getChildByName(name) != this )
+	    {
+	      std::string what("Name "); 
+	      what+=name;
+	      what+=" already exists in the scope of "; what+=_father->getName();
+	      throw Exception(what);
+	    }
         }
     }
   _name=name;
 }
-
 
 /**
  *  get the set of all nodes connected to the outGate

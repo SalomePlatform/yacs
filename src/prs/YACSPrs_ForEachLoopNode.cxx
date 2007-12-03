@@ -31,8 +31,8 @@ using namespace YACS::ENGINE;
 /*!
   Constructor
 */
-YACSPrs_ForEachLoopNode::YACSPrs_ForEachLoopNode( SUIT_ResourceMgr* theMgr, QCanvas* theCanvas, YACS::ENGINE::Node* theNode ):
-  YACSPrs_LoopNode(theMgr, theCanvas, theNode, false)
+YACSPrs_ForEachLoopNode::YACSPrs_ForEachLoopNode( SUIT_ResourceMgr* theMgr, QCanvas* theCanvas, YACS::HMI::SubjectNode* theSNode ):
+  YACSPrs_LoopNode(theMgr, theCanvas, theSNode, false)
 {
   //updatePorts(); // will be called in moveBy(...) function
   moveBy(3*TITLE_HEIGHT/2, 3*TITLE_HEIGHT/2);
@@ -50,11 +50,18 @@ int YACSPrs_ForEachLoopNode::rtti() const
   return 0;//YACSPrs_Canvas::Rtti_ForEachLoopNode;
 }
 
-void YACSPrs_ForEachLoopNode::updatePorts()
+void YACSPrs_ForEachLoopNode::updatePorts(bool theForce)
 {
   bool aDisp = isVisible();
   if (aDisp) hide();
   
+  if (theForce)
+  {
+    myPortHeight = 2*PORT_MARGIN;
+    myPortList.setAutoDelete(true);
+    myPortList.clear();
+  }
+
   // ForEachLoop has 2 input ports and 2 output ports.
   // Input ports : 1) 'nbBranches' port, its type is 'int', its value is a number of iterations;
   //               2) 'SmplsCollection' port, its type is 'sequence' of elelmnts of the given type,
@@ -78,7 +85,7 @@ void YACSPrs_ForEachLoopNode::updatePorts()
 
   if ( withCreate )
   { // create (and update)
-    ForEachLoop* aFELoop = dynamic_cast<ForEachLoop*>( myEngine );
+    ForEachLoop* aFELoop = dynamic_cast<ForEachLoop*>( getEngine() );
     if ( aFELoop )
     { // create 2 input and 1 output ports
       // 'nbBranches'
@@ -153,6 +160,12 @@ void YACSPrs_ForEachLoopNode::updatePorts()
   // can update gates only after body height will be defined
   updateGates(withCreate);
 
+  if (theForce && myPointMaster)
+  {
+    QPoint aPnt = getConnectionMasterPoint();
+    myPointMaster->setCoords(aPnt.x(), aPnt.y());
+  }
+
   if (aDisp) show();
 }
 
@@ -165,7 +178,7 @@ void YACSPrs_ForEachLoopNode::updatePorts()
 void YACSPrs_ForEachLoopNode::nextTimeIteration(YACS::ENGINE::Node* theEngine)
 {
   bool nullifyOnToActivate = false;
-  if ( !theEngine ) theEngine = myEngine;
+  if ( !theEngine ) theEngine = getEngine();
   else nullifyOnToActivate = true;
   
   if ( theEngine
@@ -190,7 +203,7 @@ void YACSPrs_ForEachLoopNode::nextTimeIteration(YACS::ENGINE::Node* theEngine)
  */
 double YACSPrs_ForEachLoopNode::getPercentage(YACS::ENGINE::Node* theEngine) const
 {
-  if ( !theEngine ) theEngine = myEngine;
+  if ( !theEngine ) theEngine = getEngine();
   
   if ( !theEngine ) return 0.;
 

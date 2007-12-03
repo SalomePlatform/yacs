@@ -1,0 +1,237 @@
+<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
+<class>ServiceNodePage</class>
+<widget class="QWidget">
+    <property name="name">
+        <cstring>ServiceNodePage</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>389</width>
+            <height>226</height>
+        </rect>
+    </property>
+    <property name="sizePolicy">
+        <sizepolicy>
+            <hsizetype>2</hsizetype>
+            <vsizetype>0</vsizetype>
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+    </property>
+    <property name="caption">
+        <string>Form1</string>
+    </property>
+    <hbox>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <property name="margin">
+            <number>0</number>
+        </property>
+        <property name="spacing">
+            <number>0</number>
+        </property>
+        <widget class="QFrame">
+            <property name="name">
+                <cstring>ServiceNodeFrame</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>5</hsizetype>
+                    <vsizetype>0</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="frameShape">
+                <enum>StyledPanel</enum>
+            </property>
+            <property name="frameShadow">
+                <enum>Raised</enum>
+            </property>
+            <vbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <property name="margin">
+                    <number>5</number>
+                </property>
+                <property name="spacing">
+                    <number>5</number>
+                </property>
+                <widget class="QGroupBox">
+                    <property name="name">
+                        <cstring>NameGroupBox</cstring>
+                    </property>
+                    <property name="sizePolicy">
+                        <sizepolicy>
+                            <hsizetype>5</hsizetype>
+                            <vsizetype>0</vsizetype>
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                        </sizepolicy>
+                    </property>
+                    <property name="title">
+                        <string></string>
+                    </property>
+                    <grid>
+                        <property name="name">
+                            <cstring>unnamed</cstring>
+                        </property>
+                        <widget class="QLabel" row="1" column="0">
+                            <property name="name">
+                                <cstring>NodeFullName</cstring>
+                            </property>
+                            <property name="text">
+                                <string>Node Full Name:</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel" row="0" column="0">
+                            <property name="name">
+                                <cstring>NodeName</cstring>
+                            </property>
+                            <property name="text">
+                                <string>Node Name:</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel" row="2" column="0">
+                            <property name="name">
+                                <cstring>NodeType</cstring>
+                            </property>
+                            <property name="text">
+                                <string>Node Type:</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel" row="4" column="0">
+                            <property name="name">
+                                <cstring>MethodName</cstring>
+                            </property>
+                            <property name="text">
+                                <string>Method Name:</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel" row="3" column="0">
+                            <property name="name">
+                                <cstring>ComponentDefinitionLabel</cstring>
+                            </property>
+                            <property name="text">
+                                <string>Component Definition:</string>
+                            </property>
+                        </widget>
+                        <widget class="QLineEdit" row="3" column="1">
+                            <property name="name">
+                                <cstring>myComponentDefinition</cstring>
+                            </property>
+                            <property name="readOnly">
+                                <bool>true</bool>
+                            </property>
+                        </widget>
+                        <widget class="QToolButton" row="3" column="2">
+                            <property name="name">
+                                <cstring>myComponentButton</cstring>
+                            </property>
+                            <property name="text">
+                                <string></string>
+                            </property>
+                            <property name="toggleButton">
+                                <bool>true</bool>
+                            </property>
+                            <property name="iconSet">
+                                <iconset>image0</iconset>
+                            </property>
+                        </widget>
+                        <widget class="QLineEdit" row="1" column="1" rowspan="1" colspan="2">
+                            <property name="name">
+                                <cstring>myNodeFullName</cstring>
+                            </property>
+                            <property name="readOnly">
+                                <bool>true</bool>
+                            </property>
+                        </widget>
+                        <widget class="QLineEdit" row="0" column="1" rowspan="1" colspan="2">
+                            <property name="name">
+                                <cstring>myNodeName</cstring>
+                            </property>
+                        </widget>
+                        <widget class="QComboBox" row="4" column="1" rowspan="1" colspan="2">
+                            <property name="name">
+                                <cstring>myMethodName</cstring>
+                            </property>
+                        </widget>
+                        <widget class="QLineEdit" row="2" column="1" rowspan="1" colspan="2">
+                            <property name="name">
+                                <cstring>myNodeType</cstring>
+                            </property>
+                            <property name="text">
+                                <string>SALOME service node</string>
+                            </property>
+                            <property name="readOnly">
+                                <bool>true</bool>
+                            </property>
+                        </widget>
+                    </grid>
+                </widget>
+                <widget class="QGroupBox">
+                    <property name="name">
+                        <cstring>PortListGroupBox</cstring>
+                    </property>
+                    <property name="title">
+                        <string>Port List</string>
+                    </property>
+                    <vbox>
+                        <property name="name">
+                            <cstring>unnamed</cstring>
+                        </property>
+                        <widget class="YACSGui_PlusMinusGrp">
+                            <property name="name">
+                                <cstring>myInputPortsGroupBox</cstring>
+                            </property>
+                        </widget>
+                        <widget class="YACSGui_PlusMinusGrp">
+                            <property name="name">
+                                <cstring>myOutputPortsGroupBox</cstring>
+                            </property>
+                        </widget>
+                    </vbox>
+                </widget>
+            </vbox>
+        </widget>
+    </hbox>
+</widget>
+<customwidgets>
+    <customwidget>
+        <class>YACSGui_PlusMinusGrp</class>
+        <header location="global">YACSGui_PlusMinusGrp.h</header>
+        <sizehint>
+            <width>0</width>
+            <height>0</height>
+        </sizehint>
+        <container>1</container>
+        <sizepolicy>
+            <hordata>5</hordata>
+            <verdata>5</verdata>
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        <pixmap>image1</pixmap>
+    </customwidget>
+</customwidgets>
+<images>
+    <image name="image0">
+        <data format="PNG" length="238">89504e470d0a1a0a0000000d49484452000000140000001408060000008d891d0d000000b549444154388db5933b0ec320104467231aae9136c7489b1ba5887c275fc56771636952809d6459ccc7ce4814c0f2f458848038359773717f00baaa2ad9690c21edc0987198e09dc7bcccf0cee3febc263575572604843c5eb70043805aa9efa1809b2182613f708545b3d53453da60166120643ba91e65dfd030d3009d3c50f52c81c587328e15cc2c589361c9ac905fc3036659c35eb34ff835008ec31466547bb5235d3808b517fba1f99f22604f0fcb5faf316f495d9de1cd9f82cb0000000049454e44ae426082</data>
+    </image>
+    <image name="image1">
+        <data format="PNG" length="872">89504e470d0a1a0a0000000d4948445200000016000000160806000000c4b46c3b0000032f49444154388db5953148254718c77f1e5b7c030ab3e0c12e5ce00927f88a14af7d87c5590ac29d6013b0497b844008a9120e1248938354a6b1482131cde5a510b4f03081f07c8d4421c2063cd85708bbe0831938613ec8c0a5588dd1dc33452e5f33bb33c36f7ffbed7fd889fe7e9fcb7ad07df09ab750fdfdfec4c425787b6bfb757bae8df79e6a54e1bcc36008845b47e71dc549c1e06000f10a9e5c9a3effee39690ef92cb4a25e2c3b4804709844807035cfd57d7122f0ad65f0c25f0703d4a39af41d28473fa0af4a42548c81f007f85aa86a4510cc34cccc8288420405640ad2bbcadfeb2fb01b39021e7d5513a2c74c59ca43d8db510e0f6a24018d8a2496ecbeb0b892d29d0f08cdbc9d149ac7dc0057bea2831262853196fd5d6573dd43046b85fcbe2002d55019be54bef9a2a45ecd585e059106fe46639318403153427908bd0be8e2a38c874b90e70692806acade4ea0b7eee96d0cc9b2360b8f0d92e835e33b97172106400801b6b73c1a95c54719cbef439a2b9a54f833c3f68f8ec59594f73eb090089b1b153afa67e4ae1b270e5fa7144725d636a6228d853fcf59fbca511e7bdc193cf92467b0eb297f578a2220721d7ccdd82442553b48206f417a1714c5fb94b5cf2b8a638f58a13b9fc2a4a3ddb16854aa53d03806dcf4180481a8d8c98b8f7296b3f6a5a33c6ee2652785fc1ea4d2bcaf248246901bca377a0c661a482cc5505135ecbd088de9a490ddb30c8735cf9e5614872955a96854665a066e4f85a33d0bad96500f95bd9dc0f26a8a3b53ba0f53f20c9e3d85e1cb9a4f3facd0734f9659da1da8ea5b7a0c02a22cae081a95deba676fc7f1e4a39cce7ca0d5097cfc594e9659fca88608dd25cbccdcbfe6384014baf3509f66f436866c7e0d835d4ffb5d0b0954a5c38fb4e92d4af18b521c19ac8c39796ee42ecebe22c0f2aa90656d7adf5714c74a71346c7647b0d39685c7965f7f52aa738fc6947a34c6b83829284a41d2c6441258580a74e7738a22509d36d0bc65687760660e8a25033187c451fec69bc1838301ac0b69de444ad53779c32317bb2481f2d437b9dd6adae13d14874a558f3126c2e0e7cbc59be3b81abf7e67ecca7fac3bd0fca3fe17f0db86f7f7fb137f0208c29bb2c76e387f0000000049454e44ae426082</data>
+    </image>
+</images>
+<slots>
+    <slot>onApply()</slot>
+</slots>
+<layoutdefaults spacing="6" margin="11"/>
+<includehints>
+    <includehint>YACSGui_PlusMinusGrp.h</includehint>
+    <includehint>YACSGui_PlusMinusGrp.h</includehint>
+</includehints>
+</UI>

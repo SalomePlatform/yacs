@@ -23,7 +23,7 @@
 
 class YACSPrs_SwitchNode : public YACSPrs_InlineNode {
  public:
-  YACSPrs_SwitchNode( SUIT_ResourceMgr*, QCanvas*, YACS::ENGINE::Node*);
+  YACSPrs_SwitchNode( SUIT_ResourceMgr*, QCanvas*, YACS::HMI::SubjectNode*);
   virtual ~YACSPrs_SwitchNode();
 
   /* reimplement functions from QxGraph_ActiveItem */
@@ -33,7 +33,7 @@ class YACSPrs_SwitchNode : public YACSPrs_InlineNode {
 
   virtual QPointArray constructAreaPoints(int theW, int theH) const;
 
-  virtual void updatePorts();
+  virtual void updatePorts(bool theForce=false);
   virtual int getCorner() const { return 0; }
 
  protected:
