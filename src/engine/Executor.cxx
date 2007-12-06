@@ -293,7 +293,7 @@ void Executor::RunB(Scheduler *graph,int debug, bool fromScratch)
       }
     _mutexForSchedulerUpdate.unlock();
   } // --- End of critical section
-  if ( _dumpOnErrorRequested && _errorDetected && !_isRunningunderExternalControl)
+  if ( _dumpOnErrorRequested && _errorDetected)
     {
       saveState(_dumpErrorFile);
     }
@@ -336,6 +336,20 @@ void Executor::setStopOnError(bool dumpRequested, std::string xmlFile)
     _dumpOnErrorRequested = dumpRequested;
     if (dumpRequested && xmlFile.empty())
       throw YACS::Exception("dump on error requested and no filename given for dump");
+    _mutexForSchedulerUpdate.unlock();
+    DEBTRACE("_dumpErrorFile " << _dumpErrorFile << " " << _dumpOnErrorRequested);
+  } // --- End of critical section
+}
+
+//! ask to do not stop execution on nodes found in error
+/*!
+ */
+
+void Executor::unsetStopOnError()
+{
+  { // --- Critical section
+    _mutexForSchedulerUpdate.lock();
+    _stopOnErrorRequested=false;
     _mutexForSchedulerUpdate.unlock();
   } // --- End of critical section
 }
@@ -1013,7 +1027,7 @@ void *Executor::functionForTaskExecution(void *arg)
             if (execInst->_stopOnErrorRequested)
               {
                 execInst->_execMode = YACS::STEPBYSTEP;
-                if (!execInst->_isRunningunderExternalControl) execInst->_isOKToEnd = true;
+                execInst->_isOKToEnd = true;
               }
             task->aborted();
           }

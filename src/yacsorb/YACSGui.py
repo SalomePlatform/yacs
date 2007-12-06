@@ -80,6 +80,37 @@ class proc_i(YACSGui_ORB__POA.ProcExec):
             pass
         pass
 
+    def RunFromState(self, xmlFile):
+        execState = self.e.getExecutorState()
+        if execState >= 305:
+            # --- not clean, value from define.hxx (YACS::FINISHED)
+            self.run1.join()
+            self.run1 = None
+            pass
+        try:
+            self.p.init()
+            self.p.exUpdateState();
+            sp = loader.stateParser()
+            sl = loader.stateLoader(sp,self.p)
+            sl.parse(xmlFile)
+        except IOError, ex:
+            print "IO Error: ", ex
+            return None
+        except ValueError,ex:
+            print "Caught ValueError Exception:",ex
+            return None
+        except pilot.Exception,ex:
+            print ex.what()
+            return None
+        except:
+            print "Unknown exception!"
+            return None
+        if self.run1 is None:
+            self.run1 = threading.Thread(None, self.e.RunPy, "CORBAExec", (self.p,0))
+            self.run1.start()
+            pass
+        pass
+    
     def addObserver(self, obs, numid, event):
         disp = SALOMERuntime.SALOMEDispatcher_getSALOMEDispatcher()
         disp.addObserver(obs, numid, event)
@@ -122,6 +153,10 @@ class proc_i(YACSGui_ORB__POA.ProcExec):
 
     def setStopOnError(self, dumpRequested, xmlFile):
         self.e.setStopOnError(dumpRequested, xmlFile)
+        pass
+
+    def unsetStopOnError(self):
+        self.e.unsetStopOnError()
         pass
 
     pass

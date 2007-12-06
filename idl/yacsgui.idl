@@ -32,6 +32,7 @@ module YACSGui_ORB
     stringArray getNames();
 
     void Run();
+    void RunFromState(in string xmlfile);
     void addObserver(in Observer obs,in long numid, in string event);
     void setExecMode(in executionMode mode);
     void setListOfBreakPoints(in stringArray listOfBreakPoints);
@@ -42,6 +43,7 @@ module YACSGui_ORB
     void stopExecution();
     boolean saveState(in string xmlFile);
     void setStopOnError(in boolean dumpRequested, in string xmlFile);
+    void unsetStopOnError();
   };
 
   interface YACSGui_Gen : Engines::Component, SALOMEDS::Driver

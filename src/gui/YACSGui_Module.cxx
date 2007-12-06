@@ -789,11 +789,11 @@ bool YACSGui_Module::deactivateModule( SUIT_Study* theStudy )
 QString YACSGui_Module::engineIOR() const
 {
   MESSAGE("YACSGui_Module::engineIOR");
-  //CORBA::String_var anIOR = getApp()->orb()->object_to_string( InitYACSGuiGen( getApp() ) );
-  //return QString( anIOR.in() );
+  CORBA::String_var anIOR = getApp()->orb()->object_to_string( InitYACSGuiGen( getApp() ) );
+  return QString( anIOR.in() );
   
   // returns default IOR
-  return getApp()->defaultEngineIOR();
+  //return getApp()->defaultEngineIOR();
 }
 
 //! Gets a reference to the module's engine
@@ -802,7 +802,7 @@ QString YACSGui_Module::engineIOR() const
 YACSGui_ORB::YACSGui_Gen_ptr YACSGui_Module::InitYACSGuiGen( SalomeApp_Application* app )
 {
   MESSAGE("YACSGui_Module::InitYACSGuiGen");
-  Engines::Component_var comp = app->lcc()->FindOrLoad_Component( "FactoryServerPy", "YACSGui" );
+  Engines::Component_var comp = app->lcc()->FindOrLoad_Component( "YACSContainer", "YACSGui" );
   YACSGui_ORB::YACSGui_Gen_ptr clr = YACSGui_ORB::YACSGui_Gen::_narrow(comp);
   ASSERT(!CORBA::is_nil(clr));
   return clr;

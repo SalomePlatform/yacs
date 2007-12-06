@@ -77,6 +77,7 @@ namespace YACS
       int getNbOfThreads();
       void displayDot(Scheduler *graph);
       void setStopOnError(bool dumpRequested=false, std::string xmlFile="");
+      void unsetStopOnError();
       void waitPause();
     protected:
       bool checkBreakPoints();
