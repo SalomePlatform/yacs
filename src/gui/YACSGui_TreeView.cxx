@@ -451,6 +451,33 @@ void YACSGui_EditionTreeView::displayChildren( YACSGui_NodeViewItem* theNodeItem
 
 }
 
+/*!
+  Method returns a subject of the selected tree viewitem if the selection is a single selection or 0, otherwise
+*/
+YACS::HMI::Subject* YACSGui_EditionTreeView::getSelectedSubject()
+{
+  Subject* aSub = 0;
+
+  std::list<QListViewItem*> aSelList = getSelected();
+  QListViewItem* anItem = 0;
+  
+  // check if the current selection is a single selection
+  if ( aSelList.size() == 1 ) anItem = aSelList.front();
+   
+  if ( YACSGui_ReferenceViewItem* aRefItem = dynamic_cast<YACSGui_ReferenceViewItem*>( anItem ) )
+    aSub = aRefItem->getSReference();
+  else if ( YACSGui_NodeViewItem* aNodeItem = dynamic_cast<YACSGui_NodeViewItem*>( anItem ) )
+    aSub = aNodeItem->getSNode();
+  else if ( YACSGui_SchemaViewItem* aSchemaItem = dynamic_cast<YACSGui_SchemaViewItem*>( anItem ) )
+    aSub = aSchemaItem->getSProc();
+  else if ( YACSGui_ContainerViewItem* aContItem = dynamic_cast<YACSGui_ContainerViewItem*>( anItem ) )
+    aSub = aContItem->getSContainer();
+  else if ( YACSGui_ComponentViewItem* aCompItem = dynamic_cast<YACSGui_ComponentViewItem*>( anItem ) )
+    aSub = aCompItem->getSComponent();
+
+  return aSub;
+}
+
 //! Public slot.  Creates data type for the schema.
 /*!
  */
@@ -602,8 +629,8 @@ void YACSGui_EditionTreeView::build()
   // Create "Nodes" label if necessary
   YACSGui_LabelViewItem* aNodesItem = 0;
   set<Node*> aDirectNodeSet = getProc()->edGetDirectDescendants();
-  if (aDirectNodeSet.size() > 0)
-    aNodesItem = new YACSGui_LabelViewItem( aSchemaItem, aDataTypesItem, "Nodes" );
+  //if (aDirectNodeSet.size() > 0)
+  aNodesItem = new YACSGui_LabelViewItem( aSchemaItem, aDataTypesItem, "Nodes" );
   
   // Put all nodes under "Nodes" label
   if ( aNodesItem )
@@ -701,8 +728,8 @@ void YACSGui_EditionTreeView::build()
   
   // Create "Containers" label if necessary
   YACSGui_LabelViewItem* aContainersItem = 0;
-  if ( !mySalomeComponentData.empty() || !myCorbaComponentData.empty() )
-    aContainersItem = new YACSGui_LabelViewItem( aSchemaItem, aLinksItem, "Containers" );
+  //if ( !mySalomeComponentData.empty() || !myCorbaComponentData.empty() )
+  aContainersItem = new YACSGui_LabelViewItem( aSchemaItem, aLinksItem, "Containers" );
 
   if ( aContainersItem )
   {

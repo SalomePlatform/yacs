@@ -58,6 +58,7 @@ namespace YACS
         PASTE,
         EDIT,
 	UPDATE,
+	UPDATEPROGRESS,
 	UP,
 	DOWN,
         RENAME,
@@ -329,7 +330,7 @@ namespace YACS
       SubjectProc(YACS::ENGINE::Proc *proc, Subject *parent);
       virtual ~SubjectProc();
       void loadProc();
-      virtual bool addComponent(std::string name);
+      virtual SubjectComponent* addComponent(std::string name);
       virtual bool addContainer(std::string name, std::string ref="");
       virtual bool addDataType(YACS::ENGINE::Catalog* catalog, std::string typeName);
       SubjectComponent* addSubjectComponent(YACS::ENGINE::ComponentInstance* compo,
@@ -388,7 +389,8 @@ namespace YACS
                            std::string compo,
                            std::string type,
                            std::string name,
-                           int swCase);
+                           int swCase,
+			   bool replace = false);
       std::map<int, SubjectNode*> getBodyMap();
       virtual void completeChildrenSubjectList(SubjectNode *son);
       virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const;
@@ -443,8 +445,8 @@ namespace YACS
       virtual ~SubjectElementaryNode();
       virtual SubjectDataPort* addInputPort(YACS::ENGINE::Catalog *catalog, std::string type, std::string name);
       virtual SubjectDataPort* addOutputPort(YACS::ENGINE::Catalog *catalog, std::string type, std::string name);
-      virtual bool addIDSPort(YACS::ENGINE::Catalog *catalog, std::string type, std::string name);
-      virtual bool addODSPort(YACS::ENGINE::Catalog *catalog, std::string type, std::string name);
+      virtual SubjectDataPort* addIDSPort(YACS::ENGINE::Catalog *catalog, std::string type, std::string name);
+      virtual SubjectDataPort* addODSPort(YACS::ENGINE::Catalog *catalog, std::string type, std::string name);
       virtual void removePort(SubjectDataPort* port);
       virtual void loadChildren();
       virtual void clean();

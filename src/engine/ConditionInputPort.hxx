@@ -29,7 +29,7 @@ namespace YACS
     protected:
       Any *_value;
     public:
-      bool getValue() const { return _value->getBoolValue(); }
+      bool getValue() const { return (_value ? _value->getBoolValue() : false); }
     };
   }
 }

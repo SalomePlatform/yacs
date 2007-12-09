@@ -68,7 +68,7 @@ public:
 	 // Menu "Create"
 	 NewContainerId, 
 	 NewSalomeComponentId, NewSalomePythonComponentId, NewCorbaComponentId, 
-	 NewSalomeServiceNodeId, NewCorbaServiceNodeId, NewNodeNodeServiceNodeId, 
+	 NewSalomeServiceNodeId, NewCorbaServiceNodeId, NewCppNodeId, NewNodeNodeServiceNodeId, 
 	 NewServiceInlineNodeId, NewXmlNodeId, NewInlineScriptNodeId,
 	 NewInlineFunctionNodeId, NewBlockNodeId, NewForLoopNodeId, NewForeachLoopNodeId, 
 	 NewWhileLoopNodeId, NewSwitchLoopNodeId, NewFromLibraryNodeId,
@@ -161,6 +161,8 @@ public:
   YACSGui_Executor* findExecutor();
 
   void temporaryExport();
+
+  std::string getNodeType( YACS::HMI::TypeOfElem theElemType );
   
 public slots:
   virtual bool activateModule( SUIT_Study* );
@@ -190,6 +192,7 @@ private slots:
   void onServiceInlineNode();
   void onCorbaServiceNode();
   void onNodeNodeServiceNode();
+  void onCppNode();
   void onXMLNode();
   void onInlineScriptNode();
   void onInlineFunctionNode();
@@ -270,6 +273,11 @@ private:
   QxGraph_ViewWindow* createNewViewManager( GuiMode, YACS::ENGINE::Proc*, int = 0, int = 0 );
   void activateViewWindow( YACS::ENGINE::Proc* );
 
+  void fillNodeTypesMap();
+  std::string getNodeType( YACS::ENGINE::Node* theNode );
+
+  void createNode( YACS::HMI::TypeOfElem theElemType );
+
 private:
   typedef std::map<YACS::ENGINE::Proc*, YACSGui_Executor*> ExecutorMap;
   typedef std::map<YACS::ENGINE::Proc*, QxGraph_ViewWindow*> WindowsMap;
@@ -278,6 +286,7 @@ private:
   typedef std::map<int, int> TreeViewActiveMap;
   typedef std::map<int, SUIT_ToolButton*> ToolButtonMap;
   typedef std::map<int, QToolBar*> ToolBarMap;
+  typedef std::map<YACS::HMI::TypeOfElem, std::string> NodeTypeMap;
   
   YACS::ENGINE::Catalog*   myCatalog;
 
@@ -295,6 +304,8 @@ private:
 
   WindowsMap               myWindowsMap;
   bool                     myBlockWindowActivateSignal;
+
+  NodeTypeMap              myNodeTypeMap;
 };
 
 #endif

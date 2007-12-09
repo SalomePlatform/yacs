@@ -156,6 +156,15 @@ msgstr "New node-node service node"
 msgid "STB_NEW_NODENODE_SERVICE_NODE"
 msgstr "Create new node-node service node"
 
+msgid "MEN_NEW_CPP_NODE"
+msgstr "CPP node"
+
+msgid "TOP_NEW_CPP_NODE"
+msgstr "New CPP node"
+
+msgid "STB_NEW_CPP_NODE"
+msgstr "Create new CPP node"
+
 msgid "MEN_NEW_SERVICE_INLINE_NODE"
 msgstr "Service inline"
 
@@ -462,14 +471,14 @@ msgstr "New execution"
 msgid "STB_NEW_EXECUTION"
 msgstr "Create new execution"
 
-msgid "TOP_RELOAD_EXECUTION"
-msgstr "Reload execution"
+msgid "TOP_LOAD_EXECUTION_STATE"
+msgstr "Load execution state"
 
-msgid "MEN_RELOAD_EXECUTION"
-msgstr "Reload execution"
+msgid "MEN_LOAD_EXECUTION_STATE"
+msgstr "Load execution state"
 
-msgid "STB_RELOAD_EXECUTION"
-msgstr "Reload execution"
+msgid "STB_LOAD_EXECUTION_STATE"
+msgstr "Load execution state"
 
 msgid "TOP_NEW_BATCH_EXECUTION"
 msgstr "New Bacth Execution"
@@ -623,6 +632,9 @@ msgstr "Import SUPERV Schema"
 msgid "TLT_EXPORT_SCHEMA"
 msgstr "Export Schema"
 
+msgid "TLT_SAVE_SCHEMA_STATE"
+msgstr "Save Schema state"
+
 #### YACSGui module message boxes ####
 
 msgid "ERROR"
@@ -663,6 +675,15 @@ msgstr "The dataflow is running or suspended."
 
 msgid "MSG_DATAFLOW_IS_CURRENTLY_RUNNING_ABORT"
 msgstr "The dataflow is running or suspended. Abort the schema execution and try to start it again."
+
+msgid "MSG_ARRANGE_NODES_ERROR"
+msgstr "Error(s) in arrange nodes algorithm."
+
+msgid "MSG_ARRANGE_NODES_EXCEPTION"
+msgstr "Exception in arrange nodes algorithm."
+
+msgid "MSG_NO_ANY_CONTAINER_SELECTED_IN_TREE_VIEW"
+msgstr "A container item is not selected in the tree view."
 
 msgid "EDIT_TREE_VIEW"
 msgstr "Tree View : edition mode"

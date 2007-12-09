@@ -869,7 +869,7 @@ void SubjectProc::loadProc()
   loadLinks();
 }
 
-bool SubjectProc::addComponent(std::string name)
+SubjectComponent* SubjectProc::addComponent(std::string name)
 {
   DEBTRACE("SubjectProc::addComponent " << name);
   int id = GuiContext::getCurrent()->getNewId();
@@ -1036,7 +1036,7 @@ SubjectDataPort* SubjectElementaryNode::addOutputPort(YACS::ENGINE::Catalog *cat
   return 0;
 }
 
-bool SubjectElementaryNode::addIDSPort(YACS::ENGINE::Catalog *catalog, std::string type, std::string name)
+SubjectDataPort* SubjectElementaryNode::addIDSPort(YACS::ENGINE::Catalog *catalog, std::string type, std::string name)
 {
   DEBTRACE("SubjectElementaryNode::addIDSPort( " << catalog << ", " << type << ", " << name << " )");
   Proc *proc = GuiContext::getCurrent()->getProc();
@@ -1058,7 +1058,7 @@ bool SubjectElementaryNode::addIDSPort(YACS::ENGINE::Catalog *catalog, std::stri
   return 0;
 }
 
-bool SubjectElementaryNode::addODSPort(YACS::ENGINE::Catalog *catalog, std::string type, std::string name)
+SubjectDataPort* SubjectElementaryNode::addODSPort(YACS::ENGINE::Catalog *catalog, std::string type, std::string name)
 {
   DEBTRACE("SubjectElementaryNode::addODSPort( " << catalog << ", " << type << ", " << name << " )");
   Proc *proc = GuiContext::getCurrent()->getProc();
@@ -1599,10 +1599,11 @@ bool SubjectSwitch::addNode(YACS::ENGINE::Catalog *catalog,
                             std::string compo,
                             std::string type,
                             std::string name,
-                            int swCase)
+                            int swCase,
+			    bool replace)
 {
-  DEBTRACE("SubjectSwitch::addNode("<<catalog<<","<<compo<<","<<type<<","<<name<<","<<swCase<<")");
-  if (_bodyMap.count(swCase)) return false;
+  DEBTRACE("SubjectSwitch::addNode("<<catalog<<","<<compo<<","<<type<<","<<name<<","<<swCase<<","<<(int)replace<<")");
+  if (!replace && _bodyMap.count(swCase)) return false;
   SubjectNode* body = createNode(catalog, compo, type, name, swCase);
   if(body) return true;
   return false;

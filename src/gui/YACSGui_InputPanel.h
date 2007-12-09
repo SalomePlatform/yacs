@@ -95,9 +95,12 @@ public:
   void                                setVisible( const bool , const int );
   void                                setExclusiveVisible( const bool , const std::list<int> );
 
-  void                                setMode( const PageMode, const int );
+  void                                setMode( const YACSGui_InputPanel::PageMode, const int );
 
   QSize                               getPrefferedSize();
+
+public slots:
+  void                                onNotifyNodeStatus( int theNodeId, int theStatus );
 
 signals:
   void                                Apply( const int theId );
@@ -340,6 +343,11 @@ public:
   QString                             getNodeName() const;
   void                                setNodeName( const QString& );
 
+  virtual void                        setMode( const YACSGui_InputPanel::PageMode );
+
+  virtual void                        notifyNodeStatus( int theStatus ) {}
+  virtual void                        notifyNodeProgress() {}
+
 protected:
   virtual void                        updateState();
 
@@ -348,6 +356,7 @@ protected:
 
   YACS::HMI::SubjectNode*             mySNode;
   NodeType                            myType; //?
+  YACSGui_InputPanel::PageMode        myMode;
 };
 
 /*
@@ -365,6 +374,13 @@ public:
   virtual                             ~YACSGui_InlineNodePage();
 
   virtual void                        setSNode( YACS::HMI::SubjectNode* theSNode );
+
+  YACSGui_InputPanel*                 getInputPanel() const;
+
+  virtual void                        setMode( const YACSGui_InputPanel::PageMode );
+
+  virtual void                        notifyNodeStatus( int theStatus );
+  virtual void                        notifyNodeProgress();
 
 public slots:
   virtual void                        onApply();
@@ -424,6 +440,11 @@ public:
 
   YACSGui_InputPanel*                 getInputPanel() const;
 
+  virtual void                        setMode( const YACSGui_InputPanel::PageMode );
+
+  virtual void                        notifyNodeStatus( int theStatus );
+  virtual void                        notifyNodeProgress();
+
 public slots:
   virtual void                        onApply();
 
@@ -468,6 +489,11 @@ public:
 
   YACSGui_InputPanel*                 getInputPanel() const;
 
+  virtual void                        setMode( const YACSGui_InputPanel::PageMode );
+
+  virtual void                        notifyNodeStatus( int theStatus );
+  virtual void                        notifyNodeProgress();
+
 public slots:
   virtual void                        onApply();
 
@@ -495,6 +521,11 @@ public:
   virtual void                        setSNode( YACS::HMI::SubjectNode* theSNode );
 
   YACSGui_InputPanel*                 getInputPanel() const;
+
+  virtual void                        setMode( const YACSGui_InputPanel::PageMode );
+
+  virtual void                        notifyNodeStatus( int theStatus );
+  virtual void                        notifyNodeProgress();
 
 public slots:
   virtual void                        onApply();
@@ -524,6 +555,11 @@ public:
   virtual void                        setSNode( YACS::HMI::SubjectNode* theSNode );
 
   YACSGui_InputPanel*                 getInputPanel() const;
+  
+  virtual void                        setMode( const YACSGui_InputPanel::PageMode );
+
+  virtual void                        notifyNodeStatus( int theStatus );
+  virtual void                        notifyNodeProgress();
 
 public slots:
   virtual void                        onApply();
@@ -557,6 +593,11 @@ public:
 
   bool                                isSelectChild() const;
 
+  virtual void                        setMode( const YACSGui_InputPanel::PageMode );
+
+  virtual void                        notifyNodeStatus( int theStatus );
+  virtual void                        notifyNodeProgress();
+
 public slots:
   virtual void                        onApply();
   
@@ -565,6 +606,7 @@ protected:
 
 protected slots:
   void                                onNodeNameChanged( const QString& );
+  void                                onValueChanged( int, int );
   void                                onInitSelection( const int theRow, const int theCol ); 
   void                                onNewItem( const int theRow, const int theCol );
   void                                onAdded( const int theRow );
@@ -602,6 +644,11 @@ public:
   void                                setChild( YACS::HMI::SubjectNode* theChildNode );
 
   bool                                isSelectChild() const;
+
+  virtual void                        setMode( const YACSGui_InputPanel::PageMode );
+
+  virtual void                        notifyNodeStatus( int theStatus );
+  virtual void                        notifyNodeProgress();
 
 public slots:
   virtual void                        onApply();

@@ -213,7 +213,9 @@ void YACSPrs_ServiceNode::drawTitleShape(QPainter& thePainter)
   ServiceNode* aSEngine = dynamic_cast<ServiceNode*>( getEngine() );
   drawText1(thePainter, QString(getEngine()->getName()), getTitleRect(), Qt::AlignLeft);
   drawText1(thePainter, QString( "Service: ") + QString( aSEngine ? aSEngine->getMethod() : "..." ), getServiceRect(), Qt::AlignLeft);
-  drawText1(thePainter, QString( "Component: " ) + QString( aSEngine ? aSEngine->getComponent()->getName() : "..." ), getComponentRect(), Qt::AlignLeft);
+  drawText1(thePainter, QString( "Component: " ) +
+	                QString( (aSEngine && aSEngine->getComponent()) ? aSEngine->getComponent()->getName() : "..." ),
+	    getComponentRect(), Qt::AlignLeft);
   drawText1(thePainter, QString("Machine: ..."), getMachineRect(), Qt::AlignLeft);
 
   int aMidX = getTitleRect().right()-getTitleRect().width()/2;

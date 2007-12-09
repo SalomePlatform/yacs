@@ -259,15 +259,9 @@ void YACSGui_Executor::setStepByStepMode()
   MESSAGE("YACSGui_Executor::setStepByStepMode");
   _execMode = YACS::STEPBYSTEP;
   if (running())        // --- local run
-    {
-      printf("=> local\n");
-      _localEngine->setExecMode(YACS::STEPBYSTEP);
-    }
+    _localEngine->setExecMode(YACS::STEPBYSTEP);
   else if (_isRunning)  // --- remote run
-    {
-      printf("=> remote\n");
-      _procRef->setExecMode(YACSGui_ORB::STEPBYSTEP);
-    }
+    _procRef->setExecMode(YACSGui_ORB::STEPBYSTEP);
 }
 
 void YACSGui_Executor::setContinueMode()
@@ -304,13 +298,43 @@ void YACSGui_Executor::setStopOnError(bool aMode)
   if (running())        // --- local run
     {
       _localEngine->setStopOnError(aMode, "/tmp/dumpStateOnError.xml");
-      _isStopOnError = aMode;
+      _isStopOnError = true;
     }
   else if (_isRunning)  // --- remote run
     {
       _procRef->setStopOnError(aMode, "/tmp/dumpStateOnError.xml");
-      _isStopOnError = aMode;
+      _isStopOnError = true;
     }
+}
+
+void YACSGui_Executor::unsetStopOnError()
+{
+  MESSAGE("YACSGui_Executor::unsetStopOnError");
+  if (running())        // --- local run
+    {
+      _localEngine->unsetStopOnError();
+      _isStopOnError = false;
+    }
+  else if (_isRunning)  // --- remote run
+    {
+      _procRef->unsetStopOnError();
+      _isStopOnError = false;
+    }
+}
+
+void YACSGui_Executor::saveState(const std::string& xmlFile)
+{
+  MESSAGE("YACSGui_Executor::saveState");
+  bool StartFinish = (getExecutorState() == YACS::NOTYETINITIALIZED || getExecutorState() == YACS::FINISHED );
+
+  if ( running()
+       ||
+       _localEngine && (CORBA::is_nil(_procRef)) && StartFinish )        // --- local run
+    _localEngine->saveState(xmlFile);
+  else if ( _isRunning
+	    ||
+	    !_localEngine && !(CORBA::is_nil(_procRef)) && StartFinish )  // --- remote run
+    _procRef->saveState(xmlFile.c_str());
 }
 
 void YACSGui_Executor::setNextStepList(std::list<std::string> nextStepList)
@@ -395,4 +419,20 @@ YACSGui_ORB::executionMode YACSGui_Executor::getCurrentExecMode()
     case YACS::STOPBEFORENODES: return YACSGui_ORB::STOPBEFORENODES;
     default: return YACSGui_ORB::CONTINUE;
     }
+}
+
+int YACSGui_Executor::getExecutorState()
+{
+  if ( running()
+       ||
+       _localEngine && (CORBA::is_nil(_procRef)) )        // --- local run
+    return _localEngine->getExecutorState();
+  else if ( _isRunning
+	    ||
+	    !_localEngine && !(CORBA::is_nil(_procRef)) )  // --- remote run
+    return _procRef->getExecutorState();
+  else if ( !_localEngine && (CORBA::is_nil(_procRef)) )
+    return YACS::NOTYETINITIALIZED;
+  else if ( _localEngine && !(CORBA::is_nil(_procRef)) )
+    return YACS::FINISHED;
 }

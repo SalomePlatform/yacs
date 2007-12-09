@@ -281,11 +281,17 @@ bool Observer_i::event(QEvent *e)
               int aState = _engineProc->getNodeState(numid);
               if (aState < 0)
                 return true;
+
               YACSGui_RunMode* theRunMode = _guiMod->getRunMode(_guiExec);
               if (theRunMode)
                 theRunMode->onNotifyNodeStatus(iGui, aState);
+
 	      if ( YACSGui_RunTreeView* aRunTV = dynamic_cast<YACSGui_RunTreeView*>(_guiMod->activeTreeView()) )
 		aRunTV->onNotifyNodeStatus(iGui, aState);
+
+	      if ( YACSGui_InputPanel* anIP = _guiMod->getInputPanel() )
+		anIP->onNotifyNodeStatus(iGui, aState);
+
               myImpl->setNodeState(aName, aState);
             }
         }

@@ -121,64 +121,70 @@ void YACSPrs_SwitchNode::updatePorts(bool theForce)
     
       // get a set of internal case nodes
       std::set<Node*> aNodes = aSEngine->edGetDirectDescendants();
-      std::set<Node*>::iterator aNodesIter = aNodes.begin();
-
-      // get default node
-      Node* aDefaultNode = aSEngine->getChildByShortName(Switch::DEFAULT_NODE_NAME);
-
-      int aMinCaseId, aMaxCaseId;
-      aMinCaseId = aMaxCaseId = aSEngine->getRankOfNode(*aNodesIter);
-      // a list of case nodes ordered from minimum to maximum case id
-      std::list<Node*> aCaseNodes;
-      for (; aNodesIter != aNodes.end(); aNodesIter++)
+      if ( aNodes.empty() )
+	myPortHeight += PORT_HEIGHT;
+      else
       {
-	if ( *aNodesIter == aDefaultNode) continue;
-
-	// less than min => push front
-	if ( aMinCaseId >= aSEngine->getRankOfNode(*aNodesIter) ) {
-	  aCaseNodes.push_front(*aNodesIter);
-	  aMinCaseId = aSEngine->getRankOfNode(*aNodesIter);
-	}
-	// in the middle
-	else if ( aMinCaseId < aSEngine->getRankOfNode(*aNodesIter)
-		  &&
-		  aMaxCaseId > aSEngine->getRankOfNode(*aNodesIter) ) {
-	  std::list<Node*>::iterator aCaseNodesIter = aCaseNodes.begin();
-	  for (std::list<Node*>::iterator anIt = aCaseNodesIter;
-	       anIt++ != aCaseNodes.end();
-	       aCaseNodesIter++, anIt = aCaseNodesIter) {
-	    if ( aSEngine->getRankOfNode(*aNodesIter) >= aSEngine->getRankOfNode(*aCaseNodesIter)
-		 &&
-		 aSEngine->getRankOfNode(*aNodesIter) <= aSEngine->getRankOfNode(*anIt) ) {
-	      aCaseNodes.insert(anIt,*aNodesIter);
-	      break;
+	std::set<Node*>::iterator aNodesIter = aNodes.begin();
+	
+	// get default node
+	Node* aDefaultNode = aSEngine->getChildByShortName(Switch::DEFAULT_NODE_NAME);
+	
+	int aMinCaseId, aMaxCaseId;
+	aMinCaseId = aMaxCaseId = aSEngine->getRankOfNode(*aNodesIter);
+	// a list of case nodes ordered from minimum to maximum case id
+	std::list<Node*> aCaseNodes;
+	for (; aNodesIter != aNodes.end(); aNodesIter++)
+	{
+	  if ( *aNodesIter == aDefaultNode) continue;
+	  
+	  // less than min => push front
+	  if ( aMinCaseId >= aSEngine->getRankOfNode(*aNodesIter) ) {
+	    aCaseNodes.push_front(*aNodesIter);
+	    aMinCaseId = aSEngine->getRankOfNode(*aNodesIter);
+	  }
+	  // in the middle
+	  else if ( aMinCaseId < aSEngine->getRankOfNode(*aNodesIter)
+		    &&
+		    aMaxCaseId > aSEngine->getRankOfNode(*aNodesIter) ) {
+	    std::list<Node*>::iterator aCaseNodesIter = aCaseNodes.begin();
+	    for (std::list<Node*>::iterator anIt = aCaseNodesIter;
+		 anIt++ != aCaseNodes.end();
+		 aCaseNodesIter++, anIt = aCaseNodesIter) {
+	      if ( aSEngine->getRankOfNode(*aNodesIter) >= aSEngine->getRankOfNode(*aCaseNodesIter)
+		   &&
+		   aSEngine->getRankOfNode(*aNodesIter) <= aSEngine->getRankOfNode(*anIt) ) {
+		aCaseNodes.insert(anIt,*aNodesIter);
+		break;
+	      }
 	    }
 	  }
+	  // more than max => push back
+	  else if ( aMaxCaseId <= aSEngine->getRankOfNode(*aNodesIter) ) {
+	    aCaseNodes.push_back(*aNodesIter);
+	    aMaxCaseId = aSEngine->getRankOfNode(*aNodesIter);
+	  }
 	}
-	// more than max => push back
-	else if ( aMaxCaseId <= aSEngine->getRankOfNode(*aNodesIter) ) {
-	  aCaseNodes.push_back(*aNodesIter);
-	  aMaxCaseId = aSEngine->getRankOfNode(*aNodesIter);
+	if ( aDefaultNode )
+	  aCaseNodes.push_back(aDefaultNode);
+	
+	int heightIncr = 0;
+	std::list<Node*>::iterator aCaseNodesIter = aCaseNodes.begin();
+	for (; aCaseNodesIter != aCaseNodes.end(); aCaseNodesIter++)
+	{ // (in fact we have to get from user number of switch cases)
+	  // output label ports	
+	  YACSPrs_LabelPort* anOutPort = new YACSPrs_LabelPort(myMgr,canvas(),*aCaseNodesIter,this,
+							       true,aSEngine->getRankOfNode(*aCaseNodesIter));
+	  anOutPort->setPortRect(QRect(ox, oy+heightIncr, aPRectWidth, PORT_HEIGHT));
+	  anOutPort->setColor(nodeSubColor().dark(140));
+	  anOutPort->setStoreColor(nodeSubColor().dark(140));
+	  if ( *aCaseNodesIter == aDefaultNode) anOutPort->setName(Switch::DEFAULT_NODE_NAME);
+	  myPortList.append(anOutPort);
+	  heightIncr += PORT_HEIGHT+PORT_SPACE;
 	}
+	
+	myPortHeight += aNodes.size()*PORT_HEIGHT + (aNodes.size()-1)*PORT_SPACE;
       }
-      aCaseNodes.push_back(aDefaultNode);
-
-      int heightIncr = 0;
-      std::list<Node*>::iterator aCaseNodesIter = aCaseNodes.begin();
-      for (; aCaseNodesIter != aCaseNodes.end(); aCaseNodesIter++)
-      { // (in fact we have to get from user number of switch cases)
-	// output label ports	
-	YACSPrs_LabelPort* anOutPort = new YACSPrs_LabelPort(myMgr,canvas(),*aCaseNodesIter,this,
-							     true,aSEngine->getRankOfNode(*aCaseNodesIter));
-	anOutPort->setPortRect(QRect(ox, oy+heightIncr, aPRectWidth, PORT_HEIGHT));
-	anOutPort->setColor(nodeSubColor().dark(140));
-	anOutPort->setStoreColor(nodeSubColor().dark(140));
-	if ( *aCaseNodesIter == aDefaultNode) anOutPort->setName(Switch::DEFAULT_NODE_NAME);
-	myPortList.append(anOutPort);
-	heightIncr += PORT_HEIGHT+PORT_SPACE;
-      }
-
-      myPortHeight += aNodes.size()*PORT_HEIGHT + (aNodes.size()-1)*PORT_SPACE;
     }
   }
   else

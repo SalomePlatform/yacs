@@ -1124,6 +1124,8 @@ void YACSPrs_ElementaryNode::update()
   // update execution time
   updateExecTime();
 
+  mySEngine->update( UPDATEPROGRESS, 0, mySEngine );
+
   if ( canvas() ) {
     canvas()->setChanged(getRect());
     canvas()->update();
@@ -1167,6 +1169,8 @@ void YACSPrs_ElementaryNode::updateForEachLoopBody(YACS::ENGINE::Node* theEngine
   updateExecTime(theEngine);
 
   myPercentage = getPercentage(theEngine);
+
+  mySEngine->update( UPDATEPROGRESS, 0, mySEngine );
 
   if ( canvas() ) {
     canvas()->setChanged(getRect());
@@ -1477,27 +1481,27 @@ void YACSPrs_ElementaryNode::nextTimeIteration(YACS::ENGINE::Node* theEngine)
  *
  * \param theEngine : the engine of clone node from which we have to update presentation of this node.
  */
-double YACSPrs_ElementaryNode::getPercentage(YACS::ENGINE::Node* theEngine) const
+int YACSPrs_ElementaryNode::getPercentage(YACS::ENGINE::Node* theEngine) const
 {
   bool nullifyOnToActivate = false;
   if ( !theEngine ) theEngine = getEngine();
   else nullifyOnToActivate = true;
     
-  if ( !theEngine ) return 0.;
+  if ( !theEngine ) return 0;
 
   if ( theEngine->getState() == YACS::INITED || /*theEngine->getEffectiveState() == YACS::INITED ||*/
        theEngine->getState() == YACS::TOLOAD || theEngine->getEffectiveState() == YACS::TOLOAD ||
        theEngine->getState() == YACS::DISABLED || theEngine->getEffectiveState() == YACS::DISABLED
        ||
        ( nullifyOnToActivate && ( theEngine->getState() == YACS::TOACTIVATE || theEngine->getEffectiveState() == YACS::TOACTIVATE) ) )
-    return 0.;
+    return 0;
 
   if ( theEngine->getState() == YACS::DONE )
-    return 100.;
+    return 100;
 
   // progress bar is manipulated at logarithmic scale:
   // iteration=1 -> 1%, iteration==goodtime -> 50%, iteration=infinite -> 99%
-  return ( 0.499 + 99. * ( myTimeIteration * myTimeIteration / ( 1. + myTimeIteration * myTimeIteration ) ) );
+  return (int)( 0.499 + 99. * ( myTimeIteration * myTimeIteration / ( 1. + myTimeIteration * myTimeIteration ) ) );
 }
 
 //! Updates execution time.

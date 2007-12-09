@@ -55,7 +55,11 @@ class YACSGui_Executor : public QObject, public QThread
   void setContinueMode();
   void setBreakpointMode();
   void setStopOnError(bool aMode);
+  void unsetStopOnError();
+  void saveState(const std::string& xmlFile);
+  
   YACSGui_ORB::executionMode getCurrentExecMode();
+  int getExecutorState();
   
   void setBreakpointList(std::list<std::string> breakpointList);
   void setNextStepList(std::list<std::string> nextStepList);

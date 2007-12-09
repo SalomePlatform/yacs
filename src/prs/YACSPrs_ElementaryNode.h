@@ -340,8 +340,8 @@ class YACSPrs_ElementaryNode : public QxGraph_ActiveItem,
 
   double getStoredPercentage() const { return myPercentage; }
 
-  virtual void    nextTimeIteration(YACS::ENGINE::Node* theEngine=0);
-  virtual double  getPercentage(YACS::ENGINE::Node* theEngine=0) const;
+  virtual void nextTimeIteration(YACS::ENGINE::Node* theEngine=0);
+  virtual int  getPercentage(YACS::ENGINE::Node* theEngine=0) const;
   
   void    updateExecTime(YACS::ENGINE::Node* theEngine=0);
   bool    isFinished() const { return myFinished; }

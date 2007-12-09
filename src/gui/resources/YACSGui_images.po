@@ -52,6 +52,9 @@ msgstr "new_corba_service_node.png"
 msgid "ICON_NEW_NODENODE_SERVICE_NODE"
 msgstr "new_nodenode_service_node.png"
 
+msgid "ICON_NEW_CPP_NODE"
+msgstr "new_cpp_node.png"
+
 msgid "ICON_NEW_SERVICE_INLINE_NODE"
 msgstr "new_service_inline_node.png"
 
@@ -98,6 +101,12 @@ msgstr "change_informations.png"
 msgid "ICON_CONTROL_VIEW"
 msgstr "control_view.png"
 
+msgid "ICON_DATAFLOW_VIEW"
+msgstr "dataflow_view.png"
+
+msgid "ICON_DATASTREAM_VIEW"
+msgstr "datastream_view.png"
+
 
 msgid "ICON_FILTERNEXTSTEPS"
 msgstr "filter_next_steps.png"
@@ -140,14 +149,38 @@ msgstr "reload.png"
 msgid "ICON_REMOTE_RUN_DATAFLOW"
 msgstr "remote_run.png"
 
+msgid "ICON_NEW_EXECUTION"
+msgstr "new_execution.png"
+
+msgid "ICON_NEW_BATCH_EXECUTION"
+msgstr "new_batch_execution.png"
+
+msgid "ICON_LOAD_EXECUTION_STATE"
+msgstr "load_execution_state.png"
+
 msgid "ICON_EXECUTE"
 msgstr "run.png"
 
 msgid "ICON_EXECUTE_STBY"
 msgstr "step_by_step.png"
 
+msgid "ICON_EXECUTE_BATCH"
+msgstr "execute_in_batch.png"
+
+msgid "ICON_PAUSE"
+msgstr "pause.png"
+
+msgid "ICON_RESUME"
+msgstr "resume.png"
+
+msgid "ICON_RESET"
+msgstr "reset.png"
+
 msgid "ICON_SAVE_EXECUTION_STATE"
 msgstr "save_dataflow_state.png"
+
+msgid "ICON_CONNECT_TO_RUNNING"
+msgstr "connect_to_batch_session.png"
 
 msgid "ICON_SUSPEND_RESUME"
 msgstr "suspend_resume.png"

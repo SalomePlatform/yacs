@@ -75,6 +75,7 @@
 #include <qtextedit.h>
 #include <qtoolbutton.h>
 #include <qspinbox.h>
+#include <qprogressbar.h>
 
 #include <sstream>
 
@@ -363,6 +364,58 @@ void YACSGui_InputPanel::BtnStyle::drawControl( ControlElement element,
   }
 }
 
+QString getText( int theStatus )
+{
+  QString aText;
+  switch (theStatus)
+    {
+    case UNDEFINED:    aText = "UNDEFINED";    break;
+    case INITED:       aText = "INITED";       break;
+    case TOLOAD:       aText = "TOLOAD";       break;
+    case LOADED:       aText = "LOADED";       break;
+    case TOACTIVATE:   aText = "TOACTIVATE";   break;
+    case ACTIVATED:    aText = "ACTIVATED";    break;
+    case DESACTIVATED: aText = "DESACTIVATED"; break;
+    case DONE:         aText = "DONE";         break;
+    case SUSPENDED:    aText = "SUSPENDED";    break;
+    case LOADFAILED:   aText = "LOADFAILED";   break;
+    case EXECFAILED:   aText = "EXECFAILED";   break;
+    case PAUSE:        aText = "PAUSE";        break;
+    case INTERNALERR:  aText = "INTERNALERR";  break;
+    case DISABLED:     aText = "DISABLED";     break;
+    case FAILED:       aText = "FAILED";       break;
+    case ERROR:        aText = "ERROR";        break;
+    default: break;
+    }
+  return aText;
+}
+
+QColor getColor( int theStatus )
+{
+  QColor aColor;
+  switch (theStatus)
+    {
+    case UNDEFINED:    aColor = Qt::lightGray;     break;
+    case INITED:       aColor = Qt::gray;          break;
+    case TOLOAD:       aColor = Qt::darkYellow;    break;
+    case LOADED:       aColor = Qt::darkMagenta;   break;
+    case TOACTIVATE:   aColor = Qt::darkCyan;      break;
+    case ACTIVATED:    aColor = Qt::darkBlue;      break;
+    case DESACTIVATED: aColor = Qt::gray;          break;
+    case DONE:         aColor = Qt::darkGreen;     break;
+    case SUSPENDED:    aColor = Qt::gray;          break;
+    case LOADFAILED:   aColor.setHsv(320,255,255); break;
+    case EXECFAILED:   aColor.setHsv( 20,255,255); break;
+    case PAUSE:        aColor.setHsv(180,255,255); break;
+    case INTERNALERR:  aColor.setHsv(340,255,255); break;
+    case DISABLED:     aColor.setHsv( 40,255,255); break;
+    case FAILED:       aColor.setHsv( 20,255,255); break;
+    case ERROR:        aColor.setHsv(  0,255,255); break;
+    default:           aColor = Qt::lightGray;
+    }
+  return aColor;
+}
+
 /*
   Class       : YACSGui_InputPanel
   Description : Dockable window containing push buttons and corresponding widgets
@@ -584,13 +637,25 @@ void YACSGui_InputPanel::setExclusiveVisible( const bool on, const std::list<int
 // name    : setMode
 // Purpose : 
 //=======================================================================
-void YACSGui_InputPanel::setMode( const PageMode theMode, const int thePageId )
+void YACSGui_InputPanel::setMode( const YACSGui_InputPanel::PageMode theMode, const int thePageId )
 {
   switch( thePageId )
   {
   case SchemaId:
     {
       if ( YACSGui_SchemaPage* page = dynamic_cast<YACSGui_SchemaPage*>(myPages[thePageId]) )
+      	page->setMode( theMode );
+    }
+    break;
+  case InlineNodeId:
+  case ServiceNodeId:
+  case ForLoopNodeId:
+  case ForEachLoopNodeId:
+  case WhileLoopNodeId:
+  case SwitchNodeId:
+  case BlockNodeId:
+    {
+      if ( YACSGui_NodePage* page = dynamic_cast<YACSGui_NodePage*>(myPages[thePageId]) )
       	page->setMode( theMode );
     }
     break;
@@ -719,6 +784,71 @@ void YACSGui_InputPanel::onApply()
   // export the modified schema (i.e. an active schema!) into
   // the temporary XML file, which will be used for create execution objects
   myModule->temporaryExport();
+}
+
+//=======================================================================
+// name    : onNotifyNodeStatus
+// Purpose : 
+//=======================================================================
+void YACSGui_InputPanel::onNotifyNodeStatus( int theNodeId, int theStatus )
+{
+  if ( Node::idMap.count(theNodeId) == 0 ) return;
+  Node* aNode= Node::idMap[theNodeId];
+  
+  QMap< int, QWidget* >::const_iterator anIter;
+  for ( anIter = myPages.begin(); anIter != myPages.end(); ++anIter )
+  {
+    int anId = anIter.key();
+    if ( isVisible(anId) )
+    {
+      switch(anId) {
+      case InlineNodeId: {
+        YACSGui_InlineNodePage* page = dynamic_cast<YACSGui_InlineNodePage*>(myPages[anId]);
+        if(page && page->getNode() == aNode)
+          page->notifyNodeStatus(theStatus);
+        break;
+      }
+      case ServiceNodeId: {
+        YACSGui_ServiceNodePage* page = dynamic_cast<YACSGui_ServiceNodePage*>(myPages[anId]);
+        if(page && page->getNode() == aNode)
+          page->notifyNodeStatus(theStatus);
+        break;
+      }
+      case ForLoopNodeId: {
+        YACSGui_ForLoopNodePage* page = dynamic_cast<YACSGui_ForLoopNodePage*>(myPages[anId]);
+        if(page && page->getNode() == aNode)
+          page->notifyNodeStatus(theStatus);
+        break;
+      }
+      case ForEachLoopNodeId: {
+        YACSGui_ForEachLoopNodePage* page = dynamic_cast<YACSGui_ForEachLoopNodePage*>(myPages[anId]);
+        if(page && page->getNode() == aNode)
+          page->notifyNodeStatus(theStatus);
+        break;
+      }
+      case WhileLoopNodeId: {
+        YACSGui_WhileLoopNodePage* page = dynamic_cast<YACSGui_WhileLoopNodePage*>(myPages[anId]);
+        if(page && page->getNode() == aNode)
+          page->notifyNodeStatus(theStatus);
+        break;
+      }
+      case SwitchNodeId: {
+        YACSGui_SwitchNodePage* page = dynamic_cast<YACSGui_SwitchNodePage*>(myPages[anId]);
+        if(page && page->getNode() == aNode)
+          page->notifyNodeStatus(theStatus);
+        break;
+      }
+      case BlockNodeId: {
+        YACSGui_BlockNodePage* page = dynamic_cast<YACSGui_BlockNodePage*>(myPages[anId]);
+        if(page && page->getNode() == aNode)
+          page->notifyNodeStatus(theStatus);
+        break;
+      }
+      default:
+        break;
+      }
+    }
+  }
 }
 
 //=======================================================================
@@ -1497,6 +1627,14 @@ void YACSGui_NodePage::select( bool isSelected )
 void YACSGui_NodePage::update( YACS::HMI::GuiEvent event, int type, YACS::HMI::Subject* son)
 {
   printf(">> YACSGui_NodePage::update\n");
+  switch (event)
+  {
+  case UPDATEPROGRESS:
+    notifyNodeProgress();
+    break;
+  default:
+    GuiObserver::update(event, type, son);
+  }
 }
 
 void YACSGui_NodePage::setSNode( YACS::HMI::SubjectNode* theSNode )
@@ -1508,6 +1646,12 @@ void YACSGui_NodePage::setSNode( YACS::HMI::SubjectNode* theSNode )
   {
     mySNode = theSNode;
     mySNode->attach(this);
+
+    if ( getNode() )
+    {
+      notifyNodeStatus( getNode()->getState() );
+      notifyNodeProgress();
+    }
   }
   updateState();
 }
@@ -1529,6 +1673,11 @@ void YACSGui_NodePage::setNodeName( const QString& theName )
     getNode()->setName( theName.latin1() );
     mySNode->update( RENAME, 0, mySNode );
   }
+}
+
+void YACSGui_NodePage::setMode( const YACSGui_InputPanel::PageMode theMode )
+{
+  myMode = theMode;
 }
 
 void YACSGui_NodePage::updateState()
@@ -1809,6 +1958,95 @@ void YACSGui_InlineNodePage::setSNode( YACS::HMI::SubjectNode* theSNode )
     YACSGui_NodePage::setSNode( theSNode );
     myIPList.clear();
     myOPList.clear();
+  }
+}
+
+YACSGui_InputPanel* YACSGui_InlineNodePage::getInputPanel() const
+{
+  return dynamic_cast<YACSGui_InputPanel*>( parent()->parent()->parent()->parent() );
+}
+
+void YACSGui_InlineNodePage::setMode( const YACSGui_InputPanel::PageMode theMode )
+{
+  YACSGui_NodePage::setMode(theMode);
+
+  if ( myMode == YACSGui_InputPanel::EditMode )
+  {
+    myNodeName->setReadOnly(false);
+
+    ExecutionGroupBox->hide();
+
+    EditPortsGroupBox->setTitle( tr( "Edit Ports" ) );
+
+    YACSGui_Table* aTable;
+    
+    myInputPortsGroupBox->ShowBtn();
+    myInputPortsGroupBox->HideBtn( YACSGui_PlusMinusGrp::SelectBtn );
+    aTable = myInputPortsGroupBox->Table();
+    aTable->setReadOnly( -1, 0, false );
+    aTable->setReadOnly( -1, 1, false );
+    aTable->setReadOnly( -1, 2, false );
+
+    myOutputPortsGroupBox->ShowBtn();
+    myOutputPortsGroupBox->HideBtn( YACSGui_PlusMinusGrp::SelectBtn );
+    aTable = myOutputPortsGroupBox->Table();
+    aTable->setReadOnly( -1, 0, false );
+    aTable->setReadOnly( -1, 1, false );
+    aTable->setReadOnly( -1, 2, false );
+
+    InPythonEditorGroupBox->show();
+  } 
+  else if ( myMode == YACSGui_InputPanel::RunMode )
+  {
+    myNodeName->setReadOnly(true);
+
+    ExecutionGroupBox->show();
+
+    EditPortsGroupBox->setTitle( tr( "Port List" ) );
+
+    YACSGui_Table* aTable;
+
+    myInputPortsGroupBox->HideBtn();
+    aTable = myInputPortsGroupBox->Table();
+    aTable->setReadOnly( -1, 0, true );
+    aTable->setReadOnly( -1, 1, true );
+    aTable->setReadOnly( -1, 2, true );
+    
+    myOutputPortsGroupBox->HideBtn();
+    aTable = myOutputPortsGroupBox->Table();
+    aTable->setReadOnly( -1, 0, true );
+    aTable->setReadOnly( -1, 1, true );
+    aTable->setReadOnly( -1, 2, true );
+
+    InPythonEditorGroupBox->hide();
+  }
+}
+
+void YACSGui_InlineNodePage::notifyNodeStatus( int theStatus )
+{
+  if ( myNodeState )
+  {
+    myNodeState->setPaletteForegroundColor(getColor(theStatus));
+    myNodeState->setText(getText(theStatus));
+  }
+}
+
+void YACSGui_InlineNodePage::notifyNodeProgress()
+{
+  if ( myProgressBar )
+  {
+    Proc* aProc = dynamic_cast<Proc*>(getNode()->getRootNode());
+    if ( !aProc ) return;
+
+    YACSGui_Graph* aGraph = getInputPanel()->getModule()->getGraph( aProc );
+    if ( !aGraph ) return;
+
+    if ( YACSPrs_ElementaryNode* anItem = aGraph->getItem(getNode()) )
+    {
+      int aProgress = (int)( ( (anItem->getStoredPercentage() < 0) ? anItem->getPercentage() :
+			                                             anItem->getStoredPercentage() ) );
+      myProgressBar->setProgress(aProgress);
+    }
   }
 }
 
@@ -2355,10 +2593,14 @@ void YACSGui_InlineNodePage::resetStoredPortsMaps()
   int aRowId = 0;
   for ( QStringList::Iterator it = aIPortNames.begin(); it != aIPortNames.end(); ++it )
   {
-    if ( InputPort* aIDP = getNode()->getInputPort((*it).latin1()) )
-      myRow2StoredInPorts.insert( std::make_pair(aRowId,aIDP) );
-    else if ( InputDataStreamPort* aIDSP = getNode()->getInputDataStreamPort((*it).latin1()) )
-      myRow2StoredInPorts.insert( std::make_pair(aRowId,aIDSP) );
+    try {
+      if ( InputPort* aIDP = getNode()->getInputPort((*it).latin1()) )
+	myRow2StoredInPorts.insert( std::make_pair(aRowId,aIDP) );
+    }
+    catch (YACS::Exception& ex) {
+      if ( InputDataStreamPort* aIDSP = getNode()->getInputDataStreamPort((*it).latin1()) )
+	myRow2StoredInPorts.insert( std::make_pair(aRowId,aIDSP) );
+    }
     aRowId++;
   }
 
@@ -2370,10 +2612,14 @@ void YACSGui_InlineNodePage::resetStoredPortsMaps()
   aRowId = 0;
   for ( QStringList::Iterator it = aOPortNames.begin(); it != aOPortNames.end(); ++it )
   {
-    if ( OutputPort* aODP = getNode()->getOutputPort((*it).latin1()) )
-      myRow2StoredOutPorts.insert( std::make_pair(aRowId,aODP) );
-    else if ( OutputDataStreamPort* aODSP = getNode()->getOutputDataStreamPort((*it).latin1()) )
-      myRow2StoredOutPorts.insert( std::make_pair(aRowId,aODSP) );
+    try {
+      if ( OutputPort* aODP = getNode()->getOutputPort((*it).latin1()) )
+	myRow2StoredOutPorts.insert( std::make_pair(aRowId,aODP) );
+    }
+    catch (YACS::Exception& ex) {
+      if ( OutputDataStreamPort* aODSP = getNode()->getOutputDataStreamPort((*it).latin1()) )
+	myRow2StoredOutPorts.insert( std::make_pair(aRowId,aODSP) );
+    }
     aRowId++;
   }
 }
@@ -2392,10 +2638,14 @@ void YACSGui_InlineNodePage::resetIPLists()
   myInputPortsGroupBox->Table()->strings( 0, aIPortNames );
 
   for ( QStringList::Iterator it = aIPortNames.begin(); it != aIPortNames.end(); ++it )
-    if ( InPort* aIDP = getNode()->getInputPort((*it).latin1()) )
-      myIPList.append(aIDP);
-    else if ( InPort* aIDSP = getNode()->getInputDataStreamPort((*it).latin1()) )
-      myIPList.append(aIDSP);
+    try {
+      if ( InPort* aIDP = getNode()->getInputPort((*it).latin1()) )
+	myIPList.append(aIDP);
+    }
+    catch (YACS::Exception& ex) {
+      if ( InPort* aIDSP = getNode()->getInputDataStreamPort((*it).latin1()) )
+	myIPList.append(aIDSP);
+    }
 }
 
 void YACSGui_InlineNodePage::resetOPLists()
@@ -2406,10 +2656,14 @@ void YACSGui_InlineNodePage::resetOPLists()
   myOutputPortsGroupBox->Table()->strings( 0, aOPortNames );
 
   for ( QStringList::Iterator it = aOPortNames.begin(); it != aOPortNames.end(); ++it )
-    if ( OutPort* aODP = getNode()->getOutputPort((*it).latin1()) )
-      myOPList.append(aODP);
-    else if ( OutPort* aODSP = getNode()->getOutputDataStreamPort((*it).latin1()) )
-      myOPList.append(aODSP);
+    try {
+      if ( OutPort* aODP = getNode()->getOutputPort((*it).latin1()) )
+	myOPList.append(aODP);
+    }
+    catch (YACS::Exception& ex) {
+      if ( OutPort* aODSP = getNode()->getOutputDataStreamPort((*it).latin1()) )
+	myOPList.append(aODSP);
+    }
 }
 
 void YACSGui_InlineNodePage::orderPorts( bool withFilling )
@@ -2735,16 +2989,8 @@ void YACSGui_InlineNodePage::setInputPorts()
 	}
 	else
 	{
-	  // there is no now SubjectElementaryNode::addInputDataStreamPort(...) function in the hmi library
-	  // => this case is temporary omitted => commented
-	  //aIDSP = dynamic_cast<InputDataStreamPort*>( dynamic_cast<SubjectElementaryNode*>(mySNode)->addInputDataStreamPort( aCatalog, aType, *it )->getPort() );
-	  //aTC = aIDSP->edGetType();
-	  
-	  // --> to be removed if the upper code is uncommented
-	  aTC = aCatalog->_typeMap[aType];
-	  aIDSP = aNode->edAddInputDataStreamPort( *it, aTC );
-	  mySNode->addSubjectIDSPort( aIDSP, *it );
-	  // <-- to be removed if the upper code is uncommented
+	  aIDSP = dynamic_cast<InputDataStreamPort*>( dynamic_cast<SubjectElementaryNode*>(mySNode)->addIDSPort( aCatalog, aType, *it )->getPort() );
+	  aTC = aIDSP->edGetType();
 	}
 
 	// ADD event will be emitted => re-create port prs
@@ -2935,16 +3181,8 @@ void YACSGui_InlineNodePage::setOutputPorts()
 	}
 	else
 	{
-	  // there is no now SubjectElementaryNode::addOutputDataStreamPort(...) function in the hmi library
-	  // => this case is temporary omitted => commented
-	  //aODSP = dynamic_cast<OutputDataStreamPort*>( dynamic_cast<SubjectElementaryNode*>(mySNode)->addOutputDataStreamPort( aCatalog, aType, *it )->getPort() );
-	  //aTC = aODSP->edGetType();
-	  
-	  // --> to be removed if the upper code is uncommented
-	  aTC = aCatalog->_typeMap[aType];
-	  aODSP = aNode->edAddOutputDataStreamPort( *it, aTC );
-	  mySNode->addSubjectODSPort( aODSP, *it );
-	  // <-- to be removed if the upper code is uncommented
+	  aODSP = dynamic_cast<OutputDataStreamPort*>( dynamic_cast<SubjectElementaryNode*>(mySNode)->addODSPort( aCatalog, aType, *it )->getPort() );
+	  aTC = aODSP->edGetType();
 	}
 
 	// ADD event will be emitted => re-create port prs
@@ -3095,9 +3333,10 @@ void YACSGui_ServiceNodePage::setSNode( YACS::HMI::SubjectNode* theSNode )
 {
   if ( !theSNode ) return;
 
-  if ( dynamic_cast<ServiceNode*>( theSNode->getNode() ) )
+  if ( YACS::ENGINE::ServiceNode* aServiceNode = dynamic_cast<ServiceNode*>( theSNode->getNode() ) )
   {
     myComponentName = QString::null;
+    myComponent = aServiceNode->getComponent();
     YACSGui_NodePage::setSNode( theSNode );
   }
 }
@@ -3142,6 +3381,62 @@ YACSGui_InputPanel* YACSGui_ServiceNodePage::getInputPanel() const
   return aModule->getInputPanel();
 }
 
+void YACSGui_ServiceNodePage::setMode( const YACSGui_InputPanel::PageMode theMode )
+{
+  YACSGui_NodePage::setMode(theMode);
+
+  if ( myMode == YACSGui_InputPanel::EditMode )
+  {
+    myNodeName->setReadOnly(false);
+    myComponentButton->show();
+    myMethodName->setEnabled(true);
+
+    ExecutionGroupBox->hide();
+
+    myInputPortsGroupBox->ShowBtn( YACSGui_PlusMinusGrp::UpBtn | YACSGui_PlusMinusGrp::DownBtn );
+    myOutputPortsGroupBox->ShowBtn( YACSGui_PlusMinusGrp::UpBtn | YACSGui_PlusMinusGrp::DownBtn );
+  } 
+  else if ( myMode == YACSGui_InputPanel::RunMode )
+  {
+    myNodeName->setReadOnly(true);
+    myComponentButton->hide();
+    myMethodName->setEnabled(false);
+
+    ExecutionGroupBox->show();
+
+    myInputPortsGroupBox->HideBtn();
+    myOutputPortsGroupBox->HideBtn();
+  }
+}
+
+void YACSGui_ServiceNodePage::notifyNodeStatus( int theStatus )
+{
+  if ( myNodeState )
+  {
+    myNodeState->setPaletteForegroundColor(getColor(theStatus));
+    myNodeState->setText(getText(theStatus));
+  }
+}
+
+void YACSGui_ServiceNodePage::notifyNodeProgress()
+{
+  if ( myProgressBar )
+  {
+    Proc* aProc = dynamic_cast<Proc*>(getNode()->getRootNode());
+    if ( !aProc ) return;
+
+    YACSGui_Graph* aGraph = getInputPanel()->getModule()->getGraph( aProc );
+    if ( !aGraph ) return;
+
+    if ( YACSPrs_ElementaryNode* anItem = aGraph->getItem(getNode()) )
+    {
+      int aProgress = (int)( ( (anItem->getStoredPercentage() < 0) ? anItem->getPercentage() :
+			                                             anItem->getStoredPercentage() ) );
+      myProgressBar->setProgress(aProgress);
+    }
+  }
+}
+
 void YACSGui_ServiceNodePage::onApply()
 {
   printf( "YACSGui_ServiceNodePage::onApply\n" );
@@ -3155,10 +3450,16 @@ void YACSGui_ServiceNodePage::onApply()
   {
     if ( YACS::ENGINE::ServiceNode* aServiceNode = dynamic_cast<ServiceNode*>( getNode() ) )
     {
-      printf( "Component - %s\n", myComponent->getName().c_str() );
+      //printf( "Component - %s\n", myComponent->getName().c_str() );
+      //printf( "Method - %s\n", myMethodName->currentText().latin1() );
+
+      ComponentInstance* aPrevComponent = aServiceNode->getComponent();
+      SubjectComponent* aPrevSComponent = GuiContext::getCurrent()->_mapOfSubjectComponent[aPrevComponent];
+
       aServiceNode->setComponent( myComponent );
-      printf( "Method - %s\n", myMethodName->currentText().latin1() );
       aServiceNode->setMethod( myMethodName->currentText().latin1() );
+
+      aPrevSComponent->update( EDIT, REFERENCE, mySNode );
     }
   }
 
@@ -3530,7 +3831,13 @@ void YACSGui_ServiceNodePage::setInputPorts()
   {
     if ( aTable->intValueCombo( 1, aRowId ) == 0 ) // Data Flow port
     {
-      InputPort* aIDP = aNode->getInputPort(*it);
+      InputPort* aIDP;
+      try {
+	aIDP = aNode->getInputPort(*it);
+      }
+      catch (YACS::Exception& ex) {
+	continue;
+      }
       if ( !aIDP )
 	continue;
 
@@ -3675,7 +3982,55 @@ void YACSGui_ForLoopNodePage::setSNode( YACS::HMI::SubjectNode* theSNode )
 
 YACSGui_InputPanel* YACSGui_ForLoopNodePage::getInputPanel() const
 {
-  return dynamic_cast<YACSGui_InputPanel*>( parent()->parent());
+  return dynamic_cast<YACSGui_InputPanel*>( parent()->parent()->parent()->parent() );
+}
+
+void YACSGui_ForLoopNodePage::setMode( const YACSGui_InputPanel::PageMode theMode )
+{
+  YACSGui_NodePage::setMode(theMode);
+
+  if ( myMode == YACSGui_InputPanel::EditMode )
+  {
+    myNodeName->setReadOnly(false);
+    ViewModeButtonGroup->show();
+
+    ExecutionGroupBox->hide();
+  } 
+  else if ( myMode == YACSGui_InputPanel::RunMode )
+  {
+    myNodeName->setReadOnly(true);
+    ViewModeButtonGroup->hide();
+
+    ExecutionGroupBox->show();
+  }
+}
+
+void YACSGui_ForLoopNodePage::notifyNodeStatus( int theStatus )
+{
+  if ( myNodeState )
+  {
+    myNodeState->setPaletteForegroundColor(getColor(theStatus));
+    myNodeState->setText(getText(theStatus));
+  }
+}
+
+void YACSGui_ForLoopNodePage::notifyNodeProgress()
+{
+  if ( myProgressBar )
+  {
+    Proc* aProc = dynamic_cast<Proc*>(getNode()->getRootNode());
+    if ( !aProc ) return;
+
+    YACSGui_Graph* aGraph = getInputPanel()->getModule()->getGraph( aProc );
+    if ( !aGraph ) return;
+
+    if ( YACSPrs_ElementaryNode* anItem = aGraph->getItem(getNode()) )
+    {
+      int aProgress = (int)( ( (anItem->getStoredPercentage() < 0) ? anItem->getPercentage() :
+			                                             anItem->getStoredPercentage() ) );
+      myProgressBar->setProgress(aProgress);
+    }
+  }
 }
 
 void YACSGui_ForLoopNodePage::onApply()
@@ -3781,7 +4136,55 @@ void YACSGui_ForEachLoopNodePage::setSNode( YACS::HMI::SubjectNode* theSNode )
 
 YACSGui_InputPanel* YACSGui_ForEachLoopNodePage::getInputPanel() const
 {
-  return dynamic_cast<YACSGui_InputPanel*>( parent()->parent());
+  return dynamic_cast<YACSGui_InputPanel*>( parent()->parent()->parent()->parent() );
+}
+
+void YACSGui_ForEachLoopNodePage::setMode( const YACSGui_InputPanel::PageMode theMode )
+{
+  YACSGui_NodePage::setMode(theMode);
+
+  if ( myMode == YACSGui_InputPanel::EditMode )
+  {
+    myNodeName->setReadOnly(false);
+    ViewModeButtonGroup->show();
+
+    ExecutionGroupBox->hide();
+  } 
+  else if ( myMode == YACSGui_InputPanel::RunMode )
+  {
+    myNodeName->setReadOnly(true);
+    ViewModeButtonGroup->hide();
+
+    ExecutionGroupBox->show();
+  }
+}
+
+void YACSGui_ForEachLoopNodePage::notifyNodeStatus( int theStatus )
+{
+  if ( myNodeState )
+  {
+    myNodeState->setPaletteForegroundColor(getColor(theStatus));
+    myNodeState->setText(getText(theStatus));
+  }
+}
+
+void YACSGui_ForEachLoopNodePage::notifyNodeProgress()
+{
+  if ( myProgressBar )
+  {
+    Proc* aProc = dynamic_cast<Proc*>(getNode()->getRootNode());
+    if ( !aProc ) return;
+
+    YACSGui_Graph* aGraph = getInputPanel()->getModule()->getGraph( aProc );
+    if ( !aGraph ) return;
+
+    if ( YACSPrs_ElementaryNode* anItem = aGraph->getItem(getNode()) )
+    {
+      int aProgress = (int)( ( (anItem->getStoredPercentage() < 0) ? anItem->getPercentage() :
+			                                             anItem->getStoredPercentage() ) );
+      myProgressBar->setProgress(aProgress);
+    }
+  }
 }
 
 void YACSGui_ForEachLoopNodePage::onApply()
@@ -3911,7 +4314,55 @@ void YACSGui_WhileLoopNodePage::setSNode( YACS::HMI::SubjectNode* theSNode )
 
 YACSGui_InputPanel* YACSGui_WhileLoopNodePage::getInputPanel() const
 {
-  return dynamic_cast<YACSGui_InputPanel*>( parent()->parent());
+  return dynamic_cast<YACSGui_InputPanel*>( parent()->parent()->parent()->parent() );
+}
+
+void YACSGui_WhileLoopNodePage::setMode( const YACSGui_InputPanel::PageMode theMode )
+{
+  YACSGui_NodePage::setMode(theMode);
+
+  if ( myMode == YACSGui_InputPanel::EditMode )
+  {
+    myNodeName->setReadOnly(false);
+    ViewModeButtonGroup->show();
+
+    ExecutionGroupBox->hide();
+  } 
+  else if ( myMode == YACSGui_InputPanel::RunMode )
+  {
+    myNodeName->setReadOnly(true);
+    ViewModeButtonGroup->hide();
+
+    ExecutionGroupBox->show();
+  }
+}
+
+void YACSGui_WhileLoopNodePage::notifyNodeStatus( int theStatus )
+{
+  if ( myNodeState )
+  {
+    myNodeState->setPaletteForegroundColor(getColor(theStatus));
+    myNodeState->setText(getText(theStatus));
+  }
+}
+
+void YACSGui_WhileLoopNodePage::notifyNodeProgress()
+{
+  if ( myProgressBar )
+  {
+    Proc* aProc = dynamic_cast<Proc*>(getNode()->getRootNode());
+    if ( !aProc ) return;
+
+    YACSGui_Graph* aGraph = getInputPanel()->getModule()->getGraph( aProc );
+    if ( !aGraph ) return;
+
+    if ( YACSPrs_ElementaryNode* anItem = aGraph->getItem(getNode()) )
+    {
+      int aProgress = (int)( ( (anItem->getStoredPercentage() < 0) ? anItem->getPercentage() :
+			                                             anItem->getStoredPercentage() ) );
+      myProgressBar->setProgress(aProgress);
+    }
+  }
 }
 
 void YACSGui_WhileLoopNodePage::onApply()
@@ -4008,6 +4459,8 @@ YACSGui_SwitchNodePage::YACSGui_SwitchNodePage( QWidget* theParent, const char* 
     aTable->setCellType( -1, 0, YACSGui_Table::String );
     aTable->setCellType( -1, 1, YACSGui_Table::String );
 
+    connect( aTable,     SIGNAL(valueChanged( int, int )), this, SLOT(onValueChanged( int, int )) );
+
     mySwitchCasesGroupBox->EnableBtn( YACSGui_PlusMinusGrp::AllBtn );
     mySwitchCasesGroupBox->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Expanding ) );
 
@@ -4090,6 +4543,66 @@ bool YACSGui_SwitchNodePage::isSelectChild() const
   return myIsSelectChild;
 }
 
+void YACSGui_SwitchNodePage::setMode( const YACSGui_InputPanel::PageMode theMode )
+{
+  YACSGui_NodePage::setMode(theMode);
+
+  if ( myMode == YACSGui_InputPanel::EditMode )
+  {
+    myNodeName->setReadOnly(false);
+    
+    mySwitchCasesGroupBox->ShowBtn( YACSGui_PlusMinusGrp::SelectBtn |
+				    YACSGui_PlusMinusGrp::PlusBtn |
+				    YACSGui_PlusMinusGrp::MinusBtn );
+    YACSGui_Table* aTable = mySwitchCasesGroupBox->Table();
+    aTable->setReadOnly( -1, 0, false );
+
+    ViewModeButtonGroup->show();
+
+    ExecutionGroupBox->hide();
+  } 
+  else if ( myMode == YACSGui_InputPanel::RunMode )
+  {
+    myNodeName->setReadOnly(true);
+    
+    mySwitchCasesGroupBox->HideBtn();
+    YACSGui_Table* aTable = mySwitchCasesGroupBox->Table();
+    aTable->setReadOnly( -1, 0, true );
+
+    ViewModeButtonGroup->hide();
+
+    ExecutionGroupBox->show();
+  }
+}
+
+void YACSGui_SwitchNodePage::notifyNodeStatus( int theStatus )
+{
+  if ( myNodeState )
+  {
+    myNodeState->setPaletteForegroundColor(getColor(theStatus));
+    myNodeState->setText(getText(theStatus));
+  }
+}
+
+void YACSGui_SwitchNodePage::notifyNodeProgress()
+{
+  if ( myProgressBar )
+  {
+    Proc* aProc = dynamic_cast<Proc*>(getNode()->getRootNode());
+    if ( !aProc ) return;
+
+    YACSGui_Graph* aGraph = getInputPanel()->getModule()->getGraph( aProc );
+    if ( !aGraph ) return;
+
+    if ( YACSPrs_ElementaryNode* anItem = aGraph->getItem(getNode()) )
+    {
+      int aProgress = (int)( ( (anItem->getStoredPercentage() < 0) ? anItem->getPercentage() :
+			                                             anItem->getStoredPercentage() ) );
+      myProgressBar->setProgress(aProgress);
+    }
+  }
+}
+
 void YACSGui_SwitchNodePage::onApply()
 {
   // Rename a node
@@ -4102,6 +4615,14 @@ void YACSGui_SwitchNodePage::onApply()
   {
     SubjectNode* aNewSelectedChild = myRow2ChildMap[*it];
     Node* aNode = aNewSelectedChild->getNode();
+
+    if( SubjectSwitch* aSSwitch = dynamic_cast<SubjectSwitch*>( aNewSelectedChild->getParent() ) )
+    {
+      Switch* aSwitch = dynamic_cast<Switch*>( aSSwitch->getNode() );
+      if( aSwitch->getChildByShortName(Switch::DEFAULT_NODE_NAME) == aNode )
+	continue; // do not remove a default node - keep it for copying
+    }
+
     try {
       getNode()->getChildByName( aNode->getName() );
     }
@@ -4246,6 +4767,24 @@ void YACSGui_SwitchNodePage::onNodeNameChanged( const QString& theName )
   }
 }
 
+void YACSGui_SwitchNodePage::onValueChanged( int theRow, int theCol )
+{
+  if ( YACSGui_Table* aTable = ( YACSGui_Table* )sender() )
+  {
+    if ( theCol == 0 )
+    {
+      QString anId = aTable->item( theRow, theCol )->text();
+      QStringList anIds;
+      aTable->strings( 0, anIds );
+      if( anIds.contains( anId ) > 1 )
+	SUIT_MessageBox::warn1(getInputPanel()->getModule()->getApp()->desktop(),
+			       tr("WRN_WARNING"),
+			       QString("Switch is already contains a node with such id."),
+			       tr("BUT_OK"));
+    }
+  }
+}
+
 void YACSGui_SwitchNodePage::onInitSelection( const int theRow, const int theCol )
 {
   myIsSelectChild = true;
@@ -4253,7 +4792,7 @@ void YACSGui_SwitchNodePage::onInitSelection( const int theRow, const int theCol
 
 void YACSGui_SwitchNodePage::onNewItem( const int theRow, const int theCol )
 {
-  if ( mySwitchCasesGroupBox )
+  if ( mySwitchCasesGroupBox && theCol == 1 ) // set "node name" column read only
     mySwitchCasesGroupBox->Table()->setReadOnly( theRow, theCol, true );
 }
 
@@ -4465,7 +5004,6 @@ void YACSGui_SwitchNodePage::setSwitchCases()
     }
   }
 
- 
   // read new children nodes from the table
   printf( "read new children nodes from the table\n" );
   YACSGui_Table* aTable = mySwitchCasesGroupBox->Table();
@@ -4480,33 +5018,96 @@ void YACSGui_SwitchNodePage::setSwitchCases()
   {
     SubjectNode* aSChild = (*aChildIt).second;
     Node* aChild = aSChild->getNode();
-    if ( aChildNames.find( QString(aChild->getName()) ) != aChildNames.end() )
+    if( aChild->getFather() == aSwitch )
+      continue;
+
+    int aRow = aChildNames.findIndex( QString(aChild->getName()) );
+    if ( aRow != -1 )
     {
+      int aNewId;
+      QString aStr = aChildIds[ aRow ];
+      if( aStr == Switch::DEFAULT_NODE_NAME )
+	aNewId = Switch::ID_FOR_DEFAULT_NODE;
+      else
+	aNewId = aStr.toInt();
+
       if ( Switch* aFather = dynamic_cast<Switch*>(aChild->getFather()) )
       {
 	int anId;
 	if( aChild == aFather->getChildByShortName(Switch::DEFAULT_NODE_NAME) )
+	{
 	  anId = Switch::ID_FOR_DEFAULT_NODE;
+
+	  // If the child is a default node of the another switch - just copy it to the current switch
+	  YACS::ENGINE::Catalog* catalog = YACS::ENGINE::getSALOMERuntime()->getBuiltinCatalog();
+
+	  std::string compo;
+	  std::string type;
+	  if( YACS::ENGINE::ServiceNode* aServiceNode = dynamic_cast<ServiceNode*>( aChild ) )
+	  {
+	    compo = aServiceNode->getComponent()->getName();
+	    type = aServiceNode->getMethod();
+	  }
+	  else
+	    type = getInputPanel()->getModule()->getNodeType( ProcInvoc::getTypeOfNode(aChild) );
+
+	  std::string name = aChild->getName();
+	  if( aSNode->addNode( catalog, compo, type, name, aNewId, true ) )
+	  {
+	    Node* aNewChild;
+	    set<Node*> aNewChildren = aSwitch->edGetDirectDescendants();
+	    set<Node*>::iterator aNewChildIt = aNewChildren.begin();
+	    set<Node*>::iterator aNewChildItEnd = aNewChildren.end();
+	    for( ; aNewChildIt != aNewChildItEnd; aNewChildIt++ )
+	      if( (*aNewChildIt)->getName() == name )
+	      {
+		aNewChild = (*aNewChildIt);
+		break;
+	      }
+
+	    aGraph->update( aNewChild, dynamic_cast<SubjectSwitch*>( getSNode() ) );
+	    aGraph->show();
+	  }
+	}
 	else
 	  anId = aFather->getRankOfNode( aChild );
-	printf( "%d - %s\n", anId, aChild->getName().c_str() );
-	//aFather->edRemoveChild(aChild);
+
+	if( anId == Switch::ID_FOR_DEFAULT_NODE )
+	  continue;
+
 	aFather->edReleaseCase( anId );
       
 	try {
-	  //aSwitch->edAddChild(aChild);
-	  aSwitch->edSetNode(anId, aChild);
+	  aSwitch->edSetNode(aNewId, aChild);
 	  aSChild->reparent(mySNode);
 	}
 	catch (YACS::Exception& ex)
 	{
 	  SUIT_MessageBox::warn1(getInputPanel()->getModule()->getApp()->desktop(),
 				 tr("WRN_WARNING"),
-				 QString(ex.what())+QString("\nRename, please, a new child node and try to add it into the block once more."),
+				 QString(ex.what())+QString("\nRename, please, a new child node and try to add it into the switch once more."),
 				 tr("BUT_OK"));
 	  
-	  //aFather->edAddChild(aChild);
 	  aFather->edSetNode(anId, aChild);
+	  isNeedToUpdate = true;
+	}
+      }
+      else if ( Bloc* aFather = dynamic_cast<Bloc*>(aChild->getFather()) )
+      {
+	aFather->edRemoveChild(aChild);
+      
+	try {
+	  aSwitch->edSetNode(aNewId, aChild);
+	  aSChild->reparent(mySNode);
+	}
+	catch (YACS::Exception& ex)
+	{
+	  SUIT_MessageBox::warn1(getInputPanel()->getModule()->getApp()->desktop(),
+				 tr("WRN_WARNING"),
+				 QString(ex.what())+QString("\nRename, please, a new child node and try to add it into the switch once more."),
+				 tr("BUT_OK"));
+	  
+	  aFather->edAddChild(aChild);
 	  isNeedToUpdate = true;
 	}
       }
@@ -4621,6 +5222,66 @@ void YACSGui_BlockNodePage::setChild( YACS::HMI::SubjectNode* theChildNode )
 bool YACSGui_BlockNodePage::isSelectChild() const
 {
   return myIsSelectChild;
+}
+
+void YACSGui_BlockNodePage::setMode( const YACSGui_InputPanel::PageMode theMode )
+{
+  YACSGui_NodePage::setMode(theMode);
+
+  if ( myMode == YACSGui_InputPanel::EditMode )
+  {
+    myNodeName->setReadOnly(false);
+    
+    myDirectChildrenGroupBox->ShowBtn( YACSGui_PlusMinusGrp::SelectBtn |
+				       YACSGui_PlusMinusGrp::PlusBtn |
+				       YACSGui_PlusMinusGrp::MinusBtn );
+    YACSGui_Table* aTable = myDirectChildrenGroupBox->Table();
+    aTable->setReadOnly( -1, 0, false );
+
+    ViewModeButtonGroup->show();
+
+    ExecutionGroupBox->hide();
+  } 
+  else if ( myMode == YACSGui_InputPanel::RunMode )
+  {
+    myNodeName->setReadOnly(true);
+    
+    myDirectChildrenGroupBox->HideBtn();
+    YACSGui_Table* aTable = myDirectChildrenGroupBox->Table();
+    aTable->setReadOnly( -1, 0, true );
+
+    ViewModeButtonGroup->hide();
+
+    ExecutionGroupBox->show();
+  }
+}
+
+void YACSGui_BlockNodePage::notifyNodeStatus( int theStatus )
+{
+  if ( myNodeState )
+  {
+    myNodeState->setPaletteForegroundColor(getColor(theStatus));
+    myNodeState->setText(getText(theStatus));
+  }
+}
+
+void YACSGui_BlockNodePage::notifyNodeProgress()
+{
+  if ( myProgressBar )
+  {
+    Proc* aProc = dynamic_cast<Proc*>(getNode()->getRootNode());
+    if ( !aProc ) return;
+
+    YACSGui_Graph* aGraph = getInputPanel()->getModule()->getGraph( aProc );
+    if ( !aGraph ) return;
+
+    if ( YACSPrs_ElementaryNode* anItem = aGraph->getItem(getNode()) )
+    {
+      int aProgress = (int)( ( (anItem->getStoredPercentage() < 0) ? anItem->getPercentage() :
+			                                             anItem->getStoredPercentage() ) );
+      myProgressBar->setProgress(aProgress);
+    }
+  }
 }
 
 void YACSGui_BlockNodePage::onApply()

@@ -163,6 +163,7 @@ private:
   void removePortItem( YACS::HMI::Subject* theSPort );
   void moveUpPortItem( YACS::HMI::Subject* theSPort );
   void moveDownPortItem( YACS::HMI::Subject* theSPort );
+  bool isPublished( YACS::ENGINE::Port* thePort );
 
   YACS::HMI::SubjectNode* mySNode;
 };
@@ -222,6 +223,9 @@ public:
 		       YACSGui_NodeViewItem* theBlocItem = 0 );
     
 private:
+  void addNodeItem( YACS::HMI::Subject* theSNode );
+  void addContainerItem( YACS::HMI::Subject* theSContainer );
+  
   YACS::HMI::SubjectProc* mySProc;
 };
 
@@ -252,6 +256,8 @@ public:
   virtual void update( YACSGui_ComponentViewItem* theComponent = 0 );
     
 private:
+  void addComponentItem( YACS::HMI::Subject* theSComponent );
+
   YACS::HMI::SubjectContainer* mySContainer;
 };
 
@@ -280,6 +286,7 @@ public:
   YACS::HMI::SubjectComponent* getSComponent() const { return mySComponent; }
 
   virtual void update( const bool theMove = false );
+  virtual void move( YACS::HMI::Subject* theSReference );
     
 private:
   YACS::HMI::SubjectComponent* mySComponent;

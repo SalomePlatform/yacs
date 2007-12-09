@@ -93,6 +93,8 @@ class YACSGui_EditionTreeView: public YACSGui_TreeView
 					      YACS::HMI::SubjectNode* theSNode );
   void displayChildren( YACSGui_NodeViewItem* theNodeItem );
 
+  YACS::HMI::Subject* getSelectedSubject();
+
  public slots:
   void onCreateDataType();
   void onAddToLibrary();
@@ -118,7 +120,7 @@ class YACSGui_EditionTreeView: public YACSGui_TreeView
   void fillContainerData( YACS::HMI::SubjectComposedNode* theSNode );
   virtual QPopupMenu* contextMenuPopup( const int );
   void showPopup( QPopupMenu*, const QPoint );
-
+  
  private slots:
   void onSelectionChanged();
   void onDblClick( QListViewItem* );
@@ -151,7 +153,7 @@ class YACSGui_RunTreeView: public YACSGui_TreeView
   virtual void syncPageTypeWithSelection();
 
  public slots:
-   virtual void onNotifyNodeStatus( int theNodeId, int theStatus );
+  virtual void onNotifyNodeStatus( int theNodeId, int theStatus );
   virtual void onNotifyStatus( int theStatus );
 
  protected:

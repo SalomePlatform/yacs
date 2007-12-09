@@ -641,6 +641,8 @@ void YACSGui_NodeViewItem::addPortItem( YACS::HMI::Subject* theSPort )
     Port* aPort = aSPort->getPort();
     if ( !aPort ) return;
 
+    if ( isPublished(aPort) ) return;
+
     YACSGui_PortViewItem* aPortItem = new YACSGui_PortViewItem( this, 0, aPort );
     if ( !aPortItem ) return;
 
@@ -763,6 +765,19 @@ void YACSGui_NodeViewItem::moveDownPortItem( YACS::HMI::Subject* theSPort )
     if ( aChild->nextSibling()->text(0).compare( QString("Gate") ) )
       aChild->moveItem(aChild->nextSibling());
   }
+}
+
+bool YACSGui_NodeViewItem::isPublished( YACS::ENGINE::Port* thePort )
+{
+  QListViewItem* aChild = firstChild();
+  while( aChild )
+  {
+    if ( YACSGui_PortViewItem* aPort = dynamic_cast<YACSGui_PortViewItem*>(aChild) )
+      if ( aPort->getPort() == thePort )
+	return true;
+    aChild = aChild->nextSibling();
+  }
+  return false;
 }
 
 // YACSGui_LinkViewItem class:
@@ -909,6 +924,39 @@ void YACSGui_SchemaViewItem::update(YACS::HMI::GuiEvent event, int type, YACS::H
   case EDIT:
     update(true, son);
     break;
+  case ADD:
+    switch (type)
+    {
+    case BLOC:
+    case FOREACHLOOP:
+    case OPTIMIZERLOOP:
+    case FORLOOP:
+    case WHILELOOP:
+    case SWITCH:
+    case PYTHONNODE:
+    case PYFUNCNODE:
+    case CORBANODE:
+    case SALOMENODE:
+    case CPPNODE:
+    case SALOMEPYTHONNODE:
+    case XMLNODE:
+      {
+	// add a node item (this = schema item)
+	printf("SchemaViewItem:  ADD node\n");
+	addNodeItem(son);
+      }
+      break;
+    case CONTAINER:
+      {
+	// add a container item (this = schema item)
+	printf("SchemaViewItem:  ADD container\n");
+	addContainerItem(son);
+      }
+      break;
+    default:
+      break;
+    }
+    break;
   case REMOVE:
     {
       printf("SchemaViewItem:  REMOVE\n");
@@ -1046,6 +1094,51 @@ void YACSGui_SchemaViewItem::update( const bool theIsRecursive,
     setText( 0, QString( mySProc->getName() ) );
 }
 
+void YACSGui_SchemaViewItem::addNodeItem( YACS::HMI::Subject* theSNode )
+{
+  if ( SubjectNode* aSNode = dynamic_cast<SubjectNode*>(theSNode) )
+  {
+    // get the "Nodes" label view item, which is used as a parent for first level nodes
+    YACSGui_LabelViewItem* aNodesL = dynamic_cast<YACSGui_LabelViewItem*>(firstChild()->nextSibling());
+    if ( !aNodesL || aNodesL->text(0).compare(QString("Nodes")) ) return;
+
+    QListViewItem* anAfter = 0;
+
+    if ( QListViewItem* aChild = aNodesL->firstChild() )
+    {
+      while( aChild->nextSibling() )
+	aChild = aChild->nextSibling();
+      anAfter = aChild;
+    }
+
+    YACSGui_NodeViewItem* aNodeItem = new YACSGui_NodeViewItem( aNodesL, anAfter, aSNode );
+    if ( YACSGui_EditionTreeView* anETV = dynamic_cast<YACSGui_EditionTreeView*>(listView()) )
+      // create node view item after the last view item under "Nodes" label
+      anETV->displayChildren(aNodeItem );
+  }
+}
+
+void YACSGui_SchemaViewItem::addContainerItem( YACS::HMI::Subject* theSContainer )
+{
+  if ( SubjectContainer* aSContainer = dynamic_cast<SubjectContainer*>(theSContainer) )
+  {
+    // get the "Containers" label view item, which is used as a parent for first level nodes
+    YACSGui_LabelViewItem* aContainersL = dynamic_cast<YACSGui_LabelViewItem*>(firstChild()->nextSibling()->nextSibling()->nextSibling());
+    if ( !aContainersL || aContainersL->text(0).compare(QString("Containers")) ) return;
+
+    QListViewItem* anAfter = 0;
+
+    if ( QListViewItem* aChild = aContainersL->firstChild() )
+    {
+      while( aChild->nextSibling() )
+	aChild = aChild->nextSibling();
+      anAfter = aChild;
+    }
+
+    new YACSGui_ContainerViewItem( aContainersL, anAfter, aSContainer );
+  }
+}
+
 // YACSGui_ContainerViewItem class:
 
 YACSGui_ContainerViewItem::YACSGui_ContainerViewItem(  QListView* theParent, 
@@ -1099,6 +1192,20 @@ void YACSGui_ContainerViewItem::update(YACS::HMI::GuiEvent event, int type, YACS
   {
   case RENAME:
     update();
+    break;
+  case ADD:
+    switch (type)
+    {
+    case COMPONENT:
+      {
+	// add a component item (this = container item)
+	printf("ContainerViewItem:  ADD component\n");
+	addComponentItem(son);
+      }
+      break;
+    default:
+      break;
+    }
     break;
   default:
     GuiObserver::update(event, type, son);
@@ -1156,6 +1263,23 @@ void YACSGui_ContainerViewItem::update( YACSGui_ComponentViewItem* theComponent 
   setText( 0, name() ); // only rename
 }
 
+void YACSGui_ContainerViewItem::addComponentItem( YACS::HMI::Subject* theSComponent )
+{
+  if ( SubjectComponent* aSComponent = dynamic_cast<SubjectComponent*>(theSComponent) )
+  {
+    QListViewItem* anAfter = 0;
+
+    if ( QListViewItem* aChild = firstChild() )
+    {
+      while( aChild->nextSibling() )
+	aChild = aChild->nextSibling();
+      anAfter = aChild;
+    }
+    
+    new YACSGui_ComponentViewItem( this, anAfter, aSComponent );
+  }
+}
+
 // YACSGui_ComponentViewItem class:
 
 YACSGui_ComponentViewItem::YACSGui_ComponentViewItem( QListView* theParent, 
@@ -1211,7 +1335,15 @@ void YACSGui_ComponentViewItem::update(YACS::HMI::GuiEvent event, int type, YACS
     update();
     break;
   case EDIT:
-    update(true);
+    switch (type)
+    {
+    case REFERENCE:
+      move(son);
+      break;
+    default:
+      update(true);
+      break;
+    }
     break;
   default:
     GuiObserver::update(event, type, son);
@@ -1256,6 +1388,64 @@ void YACSGui_ComponentViewItem::update( const bool theMove )
   }
 
   setText( 0, name() ); // only rename
+}
+
+void YACSGui_ComponentViewItem::move( YACS::HMI::Subject* theSReference )
+{
+  printf( "YACSGui_ComponentViewItem::move %s\n", theSReference->getName().c_str() );
+
+  SubjectServiceNode* aSServiceNode = dynamic_cast<SubjectServiceNode*>( theSReference );
+
+  if( aSServiceNode )
+  {
+    ServiceNode* aServiceNode = dynamic_cast<ServiceNode*>( aSServiceNode->getNode() );
+
+    // get the "Containers" label view item
+    YACSGui_LabelViewItem* aContsL = 
+      dynamic_cast<YACSGui_LabelViewItem*>(listView()->firstChild()->firstChild()->nextSibling()->nextSibling()->nextSibling());
+    if ( !aContsL || aContsL->text(0).compare(QString("Containers")) ) return;
+
+    // find new component view item, under which theReference view item should be moved
+    YACSGui_ReferenceViewItem* aReference = 0;
+    YACSGui_ComponentViewItem* aComponent = 0;
+    QListViewItem* aChildContainer = aContsL->firstChild();
+    while( aChildContainer )
+    {
+      //printf( "ContainerViewItem - %s\n", aChildContainer->text(0).latin1() );
+      if( YACSGui_ContainerViewItem* aChildContItem = dynamic_cast<YACSGui_ContainerViewItem*>(aChildContainer) )
+      {
+	QListViewItem* aChildComponent = aChildContItem->firstChild();
+	while( aChildComponent )
+	{
+	  //printf( "  ComponentViewItem - %s\n", aChildComponent->text(0).latin1() );
+	  if( YACSGui_ComponentViewItem* aChildCompItem = dynamic_cast<YACSGui_ComponentViewItem*>(aChildComponent) )
+	  {
+	    QListViewItem* aChildReference = aChildCompItem->firstChild();
+	    while( aChildReference )
+	    {
+	      //printf( "    ReferenceViewItem - %s\n", aChildReference->text(0).latin1() );
+	      if( YACSGui_ReferenceViewItem* aChildRefItem = dynamic_cast<YACSGui_ReferenceViewItem*>(aChildReference) )
+	      {
+		if( !aReference && aChildRefItem->getNode() == aServiceNode )
+		  aReference = aChildRefItem;
+	      }
+	      aChildReference = aChildReference->nextSibling();
+	    }
+
+	    if( !aComponent && aChildCompItem->getComponent() == aServiceNode->getComponent() )
+	      aComponent = aChildCompItem;
+	  }
+	  aChildComponent = aChildComponent->nextSibling();
+	}
+      }
+      aChildContainer = aChildContainer->nextSibling();
+    }
+
+    printf( "Reference - %s\n", aReference->name().latin1() );
+    takeItem( aReference );
+    if( aComponent )
+      aComponent->insertItem( aReference );
+  }
 }
 
 /* ================ items for tree view in run mode ================ */

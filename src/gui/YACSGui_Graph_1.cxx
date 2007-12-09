@@ -37,7 +37,7 @@
 #include <OutGate.hxx>
 #include <CalStreamPort.hxx>
 
-//#define WITH_DOTNEATO
+#define WITH_DOTNEATO
 #ifdef WITH_DOTNEATO
   #include <dotneato.h>
 #else
@@ -46,26 +46,69 @@
 
 using namespace YACS::ENGINE;
 
+using namespace std;
+
 
 //! Auto-arrange nodes inside a schema using Graphviz C API.
 /*!
  */
-int YACSGui_Graph::arrangeNodes(YACS::ENGINE::Bloc* theBloc)
+int YACSGui_Graph::arrangeNodesAlgo( YACS::ENGINE::Bloc* theBloc )
 {
+  myBlocInsideLinks.clear();
+  return arrangeNodes(theBloc);
+}
+
+int YACSGui_Graph::arrangeNodes( YACS::ENGINE::Bloc* theBloc )
+{
+  int aRetVal = 0;
+
   if ( theBloc )
   {
     // collect all Bloc children nodes of the given theBloc
-    std::set<Node*> aChildren = theBloc->edGetDirectDescendants();
-    for ( std::set<Node*>::iterator it = aChildren.begin(); it != aChildren.end(); it++ )
+    set<Node*> aChildren = theBloc->edGetDirectDescendants();
+    for ( set<Node*>::iterator it = aChildren.begin(); it != aChildren.end(); it++ )
+    {
       // iterates on a Bloc children to find a Bloc with the maximum nested level
-      if ( dynamic_cast<Bloc*>( *it ) )
-	arrangeNodes( dynamic_cast<Bloc*>( *it ) );
+      if ( Bloc* aCBloc = dynamic_cast<Bloc*>( *it ) )
+      {
+	if ( aRetVal = arrangeNodes( aCBloc ) )
+	  return aRetVal;
+      }
+      else if ( ComposedNode* aCNode = dynamic_cast<ComposedNode*>( *it ) ) // FOR, FOREACH, WHILE, SWITCH
+      {
+	if ( aRetVal = arrangeIterativeAndSwitchNodes(aCNode) )
+	  return aRetVal;
+      }
+    }
     
-    arrangeNodesWithinBloc( theBloc );
+    if ( aRetVal = arrangeNodesWithinBloc( theBloc ) )
+      return aRetVal;
     
     if ( dynamic_cast<Proc*>( theBloc ) )
       getCanvas()->update();
   }
+
+  return aRetVal;
+}
+
+int YACSGui_Graph::arrangeIterativeAndSwitchNodes( YACS::ENGINE::ComposedNode* theNode )
+{
+  int aRetVal = 0;
+
+  set<Node*> aCChildren = theNode->edGetDirectDescendants();
+  for ( set<Node*>::iterator itC = aCChildren.begin(); itC != aCChildren.end(); itC++ )
+    if ( Bloc* aCBloc = dynamic_cast<Bloc*>( *itC ) )
+    {
+      if ( aRetVal = arrangeNodes( aCBloc ) )
+	return aRetVal;
+    }
+    else if ( ComposedNode* aCNode = dynamic_cast<ComposedNode*>( *itC ) )
+    {
+      if ( aRetVal = arrangeIterativeAndSwitchNodes(aCNode) )
+	return aRetVal;
+    }
+
+  return aRetVal;
 }
 
 int YACSGui_Graph::arrangeNodesWithinBloc( Bloc* theBloc )
@@ -147,7 +190,7 @@ int YACSGui_Graph::arrangeNodesWithinBloc( Bloc* theBloc )
     //printf(">> tail node %s\n", aNode->name);
     // lets, aNodes[i] is a tail (from) node of the link
     Agnode_t* aTailNode = aNode; //aNodes[i];
-    Node* aNodeEngine = theBloc->getChildByName( std::string(aTailNode->name) ); //getNodeByName( std::string(aTailNode->name) );
+    Node* aNodeEngine = theBloc->getChildByName( string(aTailNode->name) ); //getNodeByName( string(aTailNode->name) );
     YACSPrs_ElementaryNode* aNodePrs = getItem( aNodeEngine );
     if ( aNodePrs )
     {
@@ -159,30 +202,32 @@ int YACSGui_Graph::arrangeNodesWithinBloc( Bloc* theBloc )
 	if ( anIOPort )
 	{
 	  // take links from output ports of the node (i.e. from tail ports)
-	  std::string aClassName = anIOPort->getEngine()->getNameOfTypeOfCurrentInstance();
+	  string aClassName = anIOPort->getEngine()->getNameOfTypeOfCurrentInstance();
 	  if ( !aClassName.compare(OutputPort::NAME) ||
 	       !aClassName.compare(OutputDataStreamPort::NAME) ||
 	       !aClassName.compare(OutputCalStreamPort::NAME) ||
 	       !aClassName.compare(OutGate::NAME) )
 	  {
-	    std::list<YACSPrs_Link*> aLinks = anIOPort->getLinks();
-	    std::list<YACSPrs_Link*>::iterator it = aLinks.begin();
+	    list<YACSPrs_Link*> aLinks = anIOPort->getLinks();
+	    list<YACSPrs_Link*>::iterator it = aLinks.begin();
 	    for(; it != aLinks.end(); it++)
 	      if ( YACSPrs_PortLink* aLink = dynamic_cast<YACSPrs_PortLink*>( *it ) )
 	      {
 		// search head node of the link
-		Agnode_t* aHeadNode = agnode( aGraph, 
-					      //(char*)(aLink->getInputPort()->getNode()->getEngine()->getQualifiedName().c_str())
-					      (char*)(theBloc->getChildName( aLink->getInputPort()->getNode()->getEngine() ).c_str()) );
-		Agedge_t* anEdge = agedge( aGraph, aTailNode, aHeadNode );
-		//printf(">> Add edge : %s -> %s\n", aTailNode->name, aHeadNode->name);
-
-		// ---- Set attributes for the concrete edge
-		// 1) headport attribute
-		agxset( anEdge, agfindattr(aGraph->proto->e,"headport")->index, "w" );
-
-		// 2) tailport attribute
-		agxset( anEdge, agfindattr(aGraph->proto->e,"tailport")->index, "e" );
+		string aNodeName = getInNodeName(theBloc,aNodeEngine,aLink->getInputPort()->getNode()->getEngine());
+		if ( aNodeName != "" )
+		{
+		  Agnode_t* aHeadNode = agnode( aGraph, (char*)(aNodeName.c_str()) );
+		  Agedge_t* anEdge = agedge( aGraph, aTailNode, aHeadNode );
+		  //printf(">> Add edge : %s -> %s\n", aTailNode->name, aHeadNode->name);
+		  
+		  // ---- Set attributes for the concrete edge
+		  // 1) headport attribute
+		  agxset( anEdge, agfindattr(aGraph->proto->e,"headport")->index, "w" );
+		  
+		  // 2) tailport attribute
+		  agxset( anEdge, agfindattr(aGraph->proto->e,"tailport")->index, "e" );
+		}
 	      }
 	  }
 	}
@@ -191,22 +236,50 @@ int YACSGui_Graph::arrangeNodesWithinBloc( Bloc* theBloc )
 	  // label links (its have to be removed in the future)
 	  if ( aLPort->getSlaveNode() )
 	  {
-	    Agnode_t* aHeadNode = agnode( aGraph,
-					  (char*)(theBloc->getChildName( aLPort->getSlaveNode() ).c_str()) );
-	    Agedge_t* anEdge = agedge( aGraph, aTailNode, aHeadNode );
-	    //printf(">> Add edge : %s -> %s\n", aTailNode->name, aHeadNode->name);
-
-	    // ---- Set attributes for the concrete edge
-	    // 1) headport attribute
-	    agxset( anEdge, agfindattr(aGraph->proto->e,"headport")->index, "s" );
-	    
-	    // 2) tailport attribute
-	    agxset( anEdge, agfindattr(aGraph->proto->e,"tailport")->index, "e" );
+	    string aNodeName = getInNodeName(theBloc,aNodeEngine,aLPort->getSlaveNode());
+	    if ( aNodeName != "" )
+	    {
+	      Agnode_t* aHeadNode = agnode( aGraph, (char*)(aNodeName.c_str()) );
+	      Agedge_t* anEdge = agedge( aGraph, aTailNode, aHeadNode );
+	      //printf(">> Add edge : %s -> %s\n", aTailNode->name, aHeadNode->name);
+	      
+	      // ---- Set attributes for the concrete edge
+	      // 1) headport attribute
+	      agxset( anEdge, agfindattr(aGraph->proto->e,"headport")->index, "s" );
+	      
+	      // 2) tailport attribute
+	      agxset( anEdge, agfindattr(aGraph->proto->e,"tailport")->index, "e" );
+	    }
 	  }
 	}
       }
     }
     //printf("\n");
+  }
+
+  // check if any "OutBloc -> InBloc" links from myBlocInsideLinks map have to be added
+  // into aGraph corresponding to theBloc
+  if ( myBlocInsideLinks.find(theBloc) != myBlocInsideLinks.end() )
+  {
+    list< pair<Bloc*,Bloc*> > aBLinks = myBlocInsideLinks[theBloc];
+    list< pair<Bloc*,Bloc*> >::iterator aBLinksIt = aBLinks.begin();
+    for ( ; aBLinksIt != aBLinks.end(); aBLinksIt++ )
+    {
+      Bloc* anOutBloc = (*aBLinksIt).first;
+      Bloc* anInBloc = (*aBLinksIt).second;
+
+      Agnode_t* aTailNode = agnode( aGraph, (char*)(anOutBloc->getName().c_str()) );
+      Agnode_t* aHeadNode = agnode( aGraph, (char*)(anInBloc->getName().c_str()) );
+      Agedge_t* anEdge = agedge( aGraph, aTailNode, aHeadNode );
+      //printf(">> 11 Add edge : %s -> %s\n", aTailNode->name, aHeadNode->name);
+		  
+      // ---- Set attributes for the concrete edge
+      // 1) headport attribute
+      agxset( anEdge, agfindattr(aGraph->proto->e,"headport")->index, "w" );
+      
+      // 2) tailport attribute
+      agxset( anEdge, agfindattr(aGraph->proto->e,"tailport")->index, "e" );
+    }
   }
 
   //printf("--------------\n");
@@ -249,7 +322,7 @@ int YACSGui_Graph::arrangeNodesWithinBloc( Bloc* theBloc )
     int aYCenter = ND_coord_i( aNode ).y;
     //printf(">> node %s graphviz center (%d,%d)\n", aNode->name, aXCenter, aYCenter);
 
-    Node* aNodeEngine = theBloc->getChildByName( std::string(aNode->name) ); //getNodeByName( std::string(aNode->name) );
+    Node* aNodeEngine = theBloc->getChildByName( string(aNode->name) ); //getNodeByName( string(aNode->name) );
     YACSPrs_ElementaryNode* aNodePrs = getItem( aNodeEngine );
     if ( aNodePrs )
     {
@@ -333,8 +406,8 @@ void YACSGui_Graph::createGraphvizNodes( Bloc* theBloc, ComposedNode* theFather,
   // NOTE: it is a test code for graphs without block nodes (clusters) only. TO BE IMPROVED.
   if ( theFather )
   {
-    std::set<Node*> aNodeSet = theFather->edGetDirectDescendants(); //getChildren(); //getAllRecursiveConstituents();
-    for ( std::set<Node*>::iterator it = aNodeSet.begin(); it != aNodeSet.end(); it++ )
+    set<Node*> aNodeSet = theFather->edGetDirectDescendants(); //getChildren(); //getAllRecursiveConstituents();
+    for ( set<Node*>::iterator it = aNodeSet.begin(); it != aNodeSet.end(); it++ )
     {
       // create graphviz objects for all not Block nodes and nodes not including into the Block
       Agnode_t* aNode = agnode( theGraph, (char*)(theBloc->getChildName( *it ).c_str()) );
@@ -361,7 +434,7 @@ void YACSGui_Graph::createGraphvizNodes( Bloc* theBloc, ComposedNode* theFather,
       /*if ( dynamic_cast<Bloc*>( *it ) )
       {
 	// create graphviz objects for all Block nodes
-	Agraph_t* aCluster = agsubg( theGraph, (char*)((std::string("cluster")+getProc()->getChildName( *it )).c_str()) );
+	Agraph_t* aCluster = agsubg( theGraph, (char*)((string("cluster")+getProc()->getChildName( *it )).c_str()) );
 	printf(">> Add Block node %s\n", aCluster->name);
 
 	// ---- Set attributes for the concrete node
@@ -376,4 +449,93 @@ void YACSGui_Graph::createGraphvizNodes( Bloc* theBloc, ComposedNode* theFather,
       }*/
     }
   }
+}
+
+std::string YACSGui_Graph::getInNodeName(YACS::ENGINE::Bloc* theBloc,
+					 YACS::ENGINE::Node* theOutNode,
+					 YACS::ENGINE::Node* theInNode)
+{
+  Node* anInNode = theInNode;
+  Node* aStoredNode = anInNode;
+  
+  string aNodeName = "";
+
+  if ( !theBloc || !theOutNode || !theInNode )
+    return aNodeName;
+
+  try {
+    aNodeName = theBloc->getChildName(anInNode);
+  }
+  catch (YACS::Exception& ex) {
+    // check two cases:
+    // 1) when anInNode is in descendance of theBloc, but not direct
+    //  - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // |theBloc             - - - - - - - - - - - - - - - - -  |
+    // |                   |another block                    | |
+    // |                   |     - - - - - - - - - - - - - - | |
+    // |  ______________   |    |another block  _________   || |
+    // | |theOutNode    |__|____|______________|anInNode |  || |
+    // | |              |  |    |              |         |  || |
+    // | |______________|  |    |              |_________|  || |
+    // |                   |    |_ _ _ _ _ _ _ _ _ _ _ _ _ _|| |
+    // |                   |_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _| |
+    // |_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _|
+    //
+    // 2) when anInNode is not of descendance of theBloc
+    //  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+    // |aCommonFather                                                          |
+    // |  - - - - - - - - - - - -                                              |
+    // | |theBloc                |        - - - - - - - - - - - - - - - - -    |
+    // | |                       |       |another block                    |   |
+    // | |                       |       |     - - - - - - - - - - - - - - |   |
+    // | |  ______________       |       |    |another block  _________   ||   |
+    // | | |theOunNode    |______|_______|____|______________|anInNode |  ||   |
+    // | | |              |      |       |    |              |_________|  ||   |
+    // | | |______________|      |       |    |                           ||   |
+    // | |                       |       |    |_ _ _ _ _ _ _ _ _ _ _ _ _ _||   |
+    // | |_ _ _ _ _ _ _ _ _ _ _ _|       |_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _|   |
+    // |_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _|
+    //
+    while ( anInNode->getFather() != theBloc && anInNode->getFather() != getProc() )
+    //                 case 1                               case 2
+    {
+      anInNode = anInNode->getFather();
+    }
+    
+    if ( anInNode->getFather() == theBloc )
+    { // case 1
+      aNodeName = theBloc->getChildName(anInNode);
+    }
+    else if ( anInNode->getFather() == getProc() )
+    { // case 2
+      anInNode = aStoredNode;
+      
+      Bloc* aBlocOut = 0;
+      Bloc* aBlocIn = 0;
+      // find the nearest common ancestor for anOutNode and anInNode
+      while ( anInNode->getFather() != getProc() )
+      {
+	if ( aBlocOut = dynamic_cast<Bloc*>(anInNode->getFather()->isInMyDescendance(theOutNode)) )
+	{
+	  aBlocIn = dynamic_cast<Bloc*>(anInNode);
+	  break;
+	}
+	anInNode = anInNode->getFather();
+      }
+      
+      if ( aBlocOut && aBlocIn )
+      {
+	if ( Bloc* aCommonFather = dynamic_cast<Bloc*>(aBlocOut->getFather()) )
+	{
+	  if ( myBlocInsideLinks.find(aCommonFather) == myBlocInsideLinks.end() )
+	    myBlocInsideLinks.insert( make_pair( aCommonFather, 
+						 list<pair<Bloc*,Bloc*> >(1,make_pair(aBlocOut,aBlocIn)) ) );
+	  else
+	    myBlocInsideLinks[aCommonFather].push_back( make_pair(aBlocOut,aBlocIn) );
+	}
+      }
+    }
+  }
+
+  return aNodeName;
 }

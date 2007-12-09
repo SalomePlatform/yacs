@@ -230,15 +230,20 @@ void YACSPrs_LoopNode::updatePorts(bool theForce)
     {
       // get a set of internal loop nodes (in fact in ForLoop and WhileLoop we have only one internal node)
       std::set<Node*> aNodes = aFLoop ? aFLoop->edGetDirectDescendants() : aWLoop->edGetDirectDescendants();
-      std::set<Node*>::iterator aNodesIter = aNodes.begin();
-      for (; aNodesIter != aNodes.end(); aNodesIter++)
-      { // output label port
-	YACSPrs_LabelPort* anOutPort = new YACSPrs_LabelPort(myMgr,canvas(),*aNodesIter,this);
-	anOutPort->setPortRect(QRect(ox, oy, aPRectWidth, PORT_HEIGHT));
-	anOutPort->setColor(nodeSubColor().dark(140));
-	anOutPort->setStoreColor(nodeSubColor().dark(140));
-	myPortList.append(anOutPort);
-      	myPortHeight += PORT_HEIGHT;
+      if ( aNodes.empty() )
+	myPortHeight += PORT_HEIGHT;
+      else
+      {
+	std::set<Node*>::iterator aNodesIter = aNodes.begin();
+	for (; aNodesIter != aNodes.end(); aNodesIter++)
+	{ // output label port
+	  YACSPrs_LabelPort* anOutPort = new YACSPrs_LabelPort(myMgr,canvas(),*aNodesIter,this);
+	  anOutPort->setPortRect(QRect(ox, oy, aPRectWidth, PORT_HEIGHT));
+	  anOutPort->setColor(nodeSubColor().dark(140));
+	  anOutPort->setStoreColor(nodeSubColor().dark(140));
+	  myPortList.append(anOutPort);
+	  myPortHeight += PORT_HEIGHT;
+	}
       }
     }
   }

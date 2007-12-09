@@ -92,6 +92,8 @@ LIBICONS = \
 	add_node.png \
 	change_informations.png \
 	control_view.png \
+	dataflow_view.png \
+	datastream_view.png \
 	export_dataflow.png \
 	filter_next_steps.png \
 	filter_notification.png \
@@ -134,6 +136,7 @@ LIBICONS = \
 	new_salome_service_node.png \
 	new_corba_service_node.png \
 	new_nodenode_service_node.png \
+	new_cpp_node.png \
 	new_service_inline_node.png \
 	new_xml_node.png \
 	new_inline_script_node.png \
@@ -151,7 +154,15 @@ LIBICONS = \
 	icon_insert.png \
 	icon_select.png \
 	icon_plus.png \
-	icon_minus.png
+	icon_minus.png \
+	new_execution.png \
+	new_batch_execution.png \
+	load_execution_state.png \
+	execute_in_batch.png \
+	pause.png \
+	resume.png \
+	reset.png \
+	connect_to_batch_session.png
 
 # Add "resources" subdirectory to resource file names
 POFILES += $(LIBPOFILES:%=resources/%)
@@ -193,7 +204,7 @@ libYACSGui_la_LIBADD = \
 	../yacsorb/libYACSorb.la \
 	@QT_MT_LIBS@ @GUI_LDFLAGS@ \
 	-lQxGraph -lCAM -lsuit -lLightApp -lexpat -lxml2 \
-	@GRAPHVIZ_LDFLAGS@ -lgvc
+	@GRAPHVIZ_LDFLAGS@ -ldotneato
 
 libYACSGui_la_CXXFLAGS = \
 	$(THREAD_DEF) \

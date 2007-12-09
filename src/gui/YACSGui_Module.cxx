@@ -65,6 +65,14 @@
 #include <OutputPort.hxx> // for a test function
 #include <OutputDataStreamPort.hxx> // for a test function
 #include <Node.hxx>
+#include <PythonNode.hxx>
+#include <SalomePythonNode.hxx>
+#include <CppNode.hxx>
+#include <CORBANode.hxx>
+#include <XMLNode.hxx>
+#include <Switch.hxx>
+#include <ForLoop.hxx>
+#include <WhileLoop.hxx>
 #include <ForEachLoop.hxx>
 #include <commandsProc.hxx>
 
@@ -87,7 +95,7 @@ using namespace YACS;
 using namespace YACS::ENGINE;
 using namespace YACS::HMI;
 
-
+using namespace std;
 
 
 extern "C"
@@ -133,6 +141,9 @@ void YACSGui_Module::initialize( CAM_Application* theApp )
   createActions();
   createMenus();
   createPopups();
+
+  RuntimeSALOME::setRuntime();
+  fillNodeTypesMap();
 
   if ( theApp && theApp->desktop() )
     connect( theApp->desktop(), SIGNAL( windowActivated( SUIT_ViewWindow* ) ),
@@ -210,6 +221,11 @@ void YACSGui_Module::createActions()
   createAction( NewNodeNodeServiceNodeId, tr("TOP_NEW_NODENODE_SERVICE_NODE"), QIconSet(aPixmap),
                 tr("MEN_NEW_NODENODE_SERVICE_NODE"), tr("STB_NEW_NODENODE_SERVICE_NODE"), 
 		0, aDesktop, false, this, SLOT(onNodeNodeServiceNode()));
+
+  aPixmap = aResourceMgr->loadPixmap("YACSGui", tr("ICON_NEW_CPP_NODE"));
+  createAction( NewCppNodeId, tr("TOP_NEW_CPP_NODE"), QIconSet(aPixmap),
+                tr("MEN_NEW_CPP_NODE"), tr("STB_NEW_CPP_NODE"), 
+		0, aDesktop, false, this, SLOT(onCppNode()));
 
   aPixmap = aResourceMgr->loadPixmap("YACSGui", tr("ICON_NEW_SERVICE_INLINE_NODE"));
   createAction( NewServiceInlineNodeId, tr("TOP_NEW_SERVICE_INLINE_NODE"), QIconSet(aPixmap),
@@ -365,9 +381,9 @@ void YACSGui_Module::createActions()
                 tr("MEN_NEW_BATCH_EXECUTION"), tr("STB_NEW_BATCH_EXECUTION"), 
 		0, aDesktop, false, this, SLOT(onCreateBatchExecution()));
 
-  aPixmap = aResourceMgr->loadPixmap("YACSGui", tr("ICON_RELOAD_EXECUTION"));
-  createAction( ReloadExecutionId, tr("TOP_RELOAD_EXECUTION"), QIconSet(aPixmap),
-                tr("MEN_RELOAD_EXECUTION"), tr("STB_RELOAD_EXECUTION"), 
+  aPixmap = aResourceMgr->loadPixmap("YACSGui", tr("ICON_LOAD_EXECUTION_STATE"));
+  createAction( ReloadExecutionId, tr("TOP_LOAD_EXECUTION_STATE"), QIconSet(aPixmap),
+                tr("MEN_LOAD_EXECUTION_STATE"), tr("STB_LOAD_EXECUTION_STATE"), 
 		0, aDesktop, false, this, SLOT(onReloadExecution()));
   
     //Menu "Execute" (run gui mode)
@@ -490,6 +506,7 @@ void YACSGui_Module::createMenus()
   createMenu( NewSalomeServiceNodeId, newNodeId, -1 );
   createMenu( NewCorbaServiceNodeId, newNodeId, -1 );
   createMenu( NewNodeNodeServiceNodeId, newNodeId, -1 );
+  createMenu( NewCppNodeId, newNodeId, -1 );
   createMenu( NewServiceInlineNodeId, newNodeId, -1 );
   createMenu( NewXmlNodeId, newNodeId, -1 );
   createMenu( NewInlineScriptNodeId, newNodeId, -1 );
@@ -566,6 +583,7 @@ void YACSGui_Module::createMenus()
   myToolButtons[NewNodeBtn]->AddAction(action(NewSalomeServiceNodeId));
   myToolButtons[NewNodeBtn]->AddAction(action(NewCorbaServiceNodeId));
   myToolButtons[NewNodeBtn]->AddAction(action(NewNodeNodeServiceNodeId));
+  myToolButtons[NewNodeBtn]->AddAction(action(NewCppNodeId));
   myToolButtons[NewNodeBtn]->AddAction(action(NewServiceInlineNodeId));
   myToolButtons[NewNodeBtn]->AddAction(action(NewXmlNodeId));
   myToolButtons[NewNodeBtn]->AddAction(action(NewInlineScriptNodeId));
@@ -742,7 +760,7 @@ bool YACSGui_Module::activateModule( SUIT_Study* theStudy )
   setToolShown( true );
   setGuiMode(YACSGui_Module::InitMode);
 
-  RuntimeSALOME::setRuntime();
+  //RuntimeSALOME::setRuntime();
 
   connect( getApp()->objectBrowser()->listView(), SIGNAL( doubleClicked( QListViewItem* ) ), 
 	   this,                                  SLOT  ( onDblClick( QListViewItem* ) ) );
@@ -913,6 +931,19 @@ void YACSGui_Module::onNewSchema()
 void YACSGui_Module::onNewContainer()
 {
   MESSAGE("YACSGui_Module::onNewContainer()");
+
+  if ( SubjectProc* aSchema = GuiContext::getCurrent()->getSubjectProc() )
+  {
+    stringstream aName;
+    aName << "container" << GuiContext::getCurrent()->getNewId();
+
+    bool aRet = aSchema->addContainer(aName.str());
+    if ( !aRet )
+      SUIT_MessageBox::warn1(getApp()->desktop(), 
+			     tr("WARNING"), 
+			     GuiContext::getCurrent()->_lastErrorMessage,
+			     tr("BUT_OK"));
+  }
 }
 
 //! Private slot. Creates a new SALOME component.
@@ -921,6 +952,45 @@ void YACSGui_Module::onNewContainer()
 void YACSGui_Module::onNewSalomeComponent()
 {
   MESSAGE("YACSGui_Module::onNewSalomeComponent()");
+  
+  YACSGui_EditionTreeView* anETV = dynamic_cast<YACSGui_EditionTreeView*>( activeTreeView() );
+  if ( !anETV )
+  {
+    SUIT_MessageBox::warn1(getApp()->desktop(), 
+			   tr("WARNING"), 
+			   tr("MSG_NO_ANY_CONTAINER_SELECTED_IN_TREE_VIEW"),
+			   tr("BUT_OK"));
+    return;
+  }
+
+  Subject* aSub = anETV->getSelectedSubject();
+  if ( !aSub )
+  {
+    SUIT_MessageBox::warn1(getApp()->desktop(), 
+			   tr("WARNING"), 
+			   tr("MSG_NO_ANY_CONTAINER_SELECTED_IN_TREE_VIEW"),
+			   tr("BUT_OK"));
+    return;
+  }
+
+  if ( SubjectContainer* aCont = dynamic_cast<SubjectContainer*>(aSub) )
+  {
+    stringstream aName;
+    aName << "component" << GuiContext::getCurrent()->getNewId();
+    
+    SubjectComponent* aRet = GuiContext::getCurrent()->getSubjectProc()->addComponent(aName.str());
+    if ( !aRet )
+    {
+      SUIT_MessageBox::warn1(getApp()->desktop(), 
+			     tr("WARNING"), 
+			     GuiContext::getCurrent()->_lastErrorMessage,
+			     tr("BUT_OK"));
+      return;
+    }
+    
+    aRet->associateToContainer(aCont);
+    aCont->update(ADD, COMPONENT, aRet);
+  }
 }
 
 //! Private slot. Creates a new SALOME Python component.
@@ -928,7 +998,7 @@ void YACSGui_Module::onNewSalomeComponent()
  */
 void YACSGui_Module::onNewSalomePythonComponent()
 {
-  MESSAGE("YACSGui_Module::onNewSalomePythonComponent()");
+  MESSAGE("YACSGui_Module::onNewSalomePythonComponent() --- NOT YET IMPLEMENTED!");
 }
 
 //! Private slot. Creates a new CORBA component.
@@ -936,7 +1006,7 @@ void YACSGui_Module::onNewSalomePythonComponent()
  */
 void YACSGui_Module::onNewCorbaComponent()
 {
-  MESSAGE("YACSGui_Module::onNewCorbaComponent()");
+  MESSAGE("YACSGui_Module::onNewCorbaComponent() --- NOT YET IMPLEMENTED!");
 }
 
 //! Private slot. Creates a new SALOME service node.
@@ -944,17 +1014,7 @@ void YACSGui_Module::onNewCorbaComponent()
  */
 void YACSGui_Module::onSalomeServiceNode()
 {
-  MESSAGE("YACSGui_Module::onSalomeServiceNode()");
-
-  YACSGui_Graph* aGraph = activeGraph();
-  if (!aGraph)
-    {
-      SUIT_MessageBox::warn1(getApp()->desktop(), 
-			     tr("WARNING"), 
-			     tr("MSG_NO_DATAFLOW_SELECTED"), 
-			     tr("BUT_OK"));
-      return;
-    }
+  createNode(SALOMENODE);
 }
 
 //! Private slot. Creates a new service inline node.
@@ -962,7 +1022,7 @@ void YACSGui_Module::onSalomeServiceNode()
  */
 void YACSGui_Module::onServiceInlineNode()
 {
-
+  createNode(SALOMEPYTHONNODE);
 }
 
 //! Private slot. Creates a new CORBA service node.
@@ -970,7 +1030,7 @@ void YACSGui_Module::onServiceInlineNode()
  */
 void YACSGui_Module::onCorbaServiceNode()
 {
-
+  createNode(CORBANODE);
 }
 
 //! Private slot. Creates a new "node-node" service node.
@@ -978,7 +1038,16 @@ void YACSGui_Module::onCorbaServiceNode()
  */
 void YACSGui_Module::onNodeNodeServiceNode()
 {
+  MESSAGE("YACSGui_Module::onNodeNodeServiceNode --- NOT YET IMPLEMENTED!");
+  //createNode(NODENODE);
+}
 
+//! Private slot. Creates a new cpp node.
+/*!
+ */
+void YACSGui_Module::onCppNode()
+{
+  createNode(CPPNODE);
 }
 
 //! Private slot. Creates a new XML node.
@@ -986,7 +1055,7 @@ void YACSGui_Module::onNodeNodeServiceNode()
  */
 void YACSGui_Module::onXMLNode()
 {
-
+  createNode(XMLNODE);
 }
 
 //! Private slot. Creates a new inline script node.
@@ -994,46 +1063,7 @@ void YACSGui_Module::onXMLNode()
  */
 void YACSGui_Module::onInlineScriptNode()
 {
-  /* 
-  printf(">> YACSGui_Module::onInlineScriptNode\n");
-
-  YACSGui_EditionTreeView* anETV = dynamic_cast<YACSGui_EditionTreeView*>( activeTreeView() );
-  if ( !anETV ) return;
-
-  // get the list of items selected in the edition tree view
-  std::list<QListViewItem*> aSelList = anETV->getSelected();
-  
-  QListViewItem* anItem = 0;
-  
-  // check if the current selection is a single selection
-  if ( aSelList.size() == 1 ) anItem = aSelList.front();
-    
-  if ( YACSGui_SchemaViewItem* aSchemaItem = dynamic_cast<YACSGui_SchemaViewItem*>( anItem ) )
-  { 
-    Proc* aProc = aSchemaItem->getProc();
-
-    YACS::ENGINE::Catalog* catalog = YACS::ENGINE::getSALOMERuntime()->getBuiltinCatalog();
-    std::string type = "PyScript";
-    string position = ""; //dynamic_cast<Proc*>( aProc->getRootNode() )->getChildName( aProc );
-    std::string name = "TestNode1";
-
-    GuiContext* context = new GuiContext(aProc);
-    GuiContext::setCurrent(context);
-
-    CommandAddNodeFromCatalog* command = new CommandAddNodeFromCatalog(catalog,
-								       type,
-								       position,
-								       name);
-    if (command->execute())
-    {
-      printf(">> OK for inline script node creation\n");
-      anETV->clear();
-      anETV->build();//update( 0, true );
-    }
-    else
-      printf(">> KO for inline script node creation\n");
-   
-  }*/
+  createNode(PYTHONNODE);
 }
 
 //! Private slot. Creates a new inline function node.
@@ -1041,7 +1071,7 @@ void YACSGui_Module::onInlineScriptNode()
  */
 void YACSGui_Module::onInlineFunctionNode()
 {
-
+  createNode(PYFUNCNODE);
 }
 
 //! Private slot. Creates a new block node.
@@ -1049,7 +1079,7 @@ void YACSGui_Module::onInlineFunctionNode()
  */
 void YACSGui_Module::onBlockNode()
 {
-
+  createNode(BLOC);
 }
 
 //! Private slot. Creates a new FOR loop node.
@@ -1057,7 +1087,7 @@ void YACSGui_Module::onBlockNode()
  */
 void YACSGui_Module::onFORNode()
 {
-
+  createNode(FORLOOP);
 }
 
 //! Private slot. Creates a new FOREACH loop node.
@@ -1065,7 +1095,7 @@ void YACSGui_Module::onFORNode()
  */
 void YACSGui_Module::onFOREACHNode()
 {
-
+  createNode(FOREACHLOOP);
 }
 
 //! Private slot. Creates a new WHILE loop node.
@@ -1073,7 +1103,7 @@ void YACSGui_Module::onFOREACHNode()
  */
 void YACSGui_Module::onWHILENode()
 {
-
+  createNode(WHILELOOP);
 }
 
 //! Private slot. Creates a new SWITCH node.
@@ -1081,7 +1111,7 @@ void YACSGui_Module::onWHILENode()
  */
 void YACSGui_Module::onSWITCHNode()
 {
-
+  createNode(SWITCH);
 }
 
 //! Private slot. Loads a new from the library.
@@ -1089,7 +1119,7 @@ void YACSGui_Module::onSWITCHNode()
  */
 void YACSGui_Module::onNodeFromLibrary()
 {
-
+  MESSAGE("YACSGui_Module::onNodeFromLibrary --- NOT YET IMPLEMENTED!");
 }
 
 //! Private slot. Creates a new link.
@@ -1107,7 +1137,7 @@ void YACSGui_Module::onImportSchema()
 {
   MESSAGE("YACSGui_Module::onImportSchema");
 
-  QString aFileName = SUIT_FileDlg::getFileName( application()->desktop(), "", "*.xml", "TLT_IMPORT_SCHEMA", true );
+  QString aFileName = SUIT_FileDlg::getFileName( application()->desktop(), "", "*.xml", tr("TLT_IMPORT_SCHEMA"), true );
   if ( GuiContext* aCProc = ImportProcFromFile(aFileName, EditMode,  false) )
     if ( Proc* aProc = aCProc->getProc() )
     { 
@@ -1129,7 +1159,7 @@ void YACSGui_Module::onImportSupervSchema()
   // switch to edition mode
   //setGuiMode(YACSGui_Module::EditMode);
 
-  QString aFileName = SUIT_FileDlg::getFileName( application()->desktop(), "", "*.xml", "TLT_IMPORT_SUPERV_SCHEMA", true );
+  QString aFileName = SUIT_FileDlg::getFileName( application()->desktop(), "", "*.xml", tr("TLT_IMPORT_SUPERV_SCHEMA"), true );
   if ( GuiContext* aCProc = ImportProcFromFile(aFileName, EditMode, false, true) )
     if ( Proc* aProc  = aCProc->getProc() )
     {
@@ -1184,11 +1214,16 @@ void YACSGui_Module::onArrangeNodes()
 {
   YACSGui_Graph* aGraph = activeGraph();
   if (aGraph)
-    if ( aGraph->arrangeNodes(aGraph->getProc()) )
+  {
+    int anErr = 0;
+
+    anErr = aGraph->arrangeNodesAlgo(aGraph->getProc());
+    if ( anErr )
       SUIT_MessageBox::error1(getApp()->desktop(), 
 			      tr("ERROR"), 
 			      tr("MSG_ARRANGE_NODES_ERROR"), 
 			      tr("BUT_OK"));
+  }
 }
 
 //! Private slot. Rebuilds dataflow links.
@@ -1341,14 +1376,14 @@ void YACSGui_Module::publishInStudy(YACSGui_Graph* theGraph)
 
 	  // iterates on all schema nodes and create a new node SObject for each node,
 	  // which has any output port
-	  std::set<Node*> aNodeSet = aProc->getAllRecursiveConstituents();
-	  for ( std::set<Node*>::iterator it = aNodeSet.begin(); it != aNodeSet.end(); it++ )
+	  set<Node*> aNodeSet = aProc->getAllRecursiveConstituents();
+	  for ( set<Node*>::iterator it = aNodeSet.begin(); it != aNodeSet.end(); it++ )
 	  {
 	    YACSPrs_ElementaryNode* aNodePrs = theGraph->getItem(*it);
 	    if ( !aNodePrs ) return;
 	
-	    std::list<OutputPort*> aDataPorts = (*it)->getSetOfOutputPort();
-	    std::list<OutputDataStreamPort *> aDataStreamPorts = (*it)->getSetOfOutputDataStreamPort();
+	    list<OutputPort*> aDataPorts = (*it)->getSetOfOutputPort();
+	    list<OutputDataStreamPort *> aDataStreamPorts = (*it)->getSetOfOutputDataStreamPort();
 	    
 	    if ( !aDataPorts.empty() || !aDataStreamPorts.empty() )
 	    {
@@ -1362,7 +1397,7 @@ void YACSGui_Module::publishInStudy(YACSGui_Graph* theGraph)
 	      _PTR(SObject) aPSObj;	      
 
 	      // create output data port SObjects
-	      for ( std::list<OutputPort*>::iterator itDP = aDataPorts.begin(); itDP != aDataPorts.end(); itDP++ )
+	      for ( list<OutputPort*>::iterator itDP = aDataPorts.begin(); itDP != aDataPorts.end(); itDP++ )
 	      {
 		printf(">> create output data port SObjects\n");
 		aPSObj = aBuilder->NewObject( aSObj );
@@ -1375,7 +1410,7 @@ void YACSGui_Module::publishInStudy(YACSGui_Graph* theGraph)
 	      }
 
 	      // create output data stream port SObjects
-	      for ( std::list<OutputDataStreamPort*>::iterator itDSP = aDataStreamPorts.begin(); itDSP != aDataStreamPorts.end(); itDSP++ )
+	      for ( list<OutputDataStreamPort*>::iterator itDSP = aDataStreamPorts.begin(); itDSP != aDataStreamPorts.end(); itDSP++ )
 	      {
 		printf(">> create output data stream port SObjects\n");
 		aPSObj = aBuilder->NewObject( aSObj );
@@ -1553,7 +1588,7 @@ void YACSGui_Module::onApplyInputPanel( const int theId )
   if ( !anETV ) return;
 
   // get the list of items selected in the edition tree view
-  std::list<QListViewItem*> aSelList = anETV->getSelected();
+  list<QListViewItem*> aSelList = anETV->getSelected();
   
   // check if the current selection is a single selection
   if (  aSelList.size() == 1 )
@@ -1687,8 +1722,8 @@ YACSGui_Graph* YACSGui_Module::displayGraph( YACS::HMI::GuiContext* theCGraph,
       YACSPrs_ElementaryNode* aFromNodePrs = aGraph->getItem( (*it).first.first->getNode() );
       if ( !aFromNodePrs ) continue;
 
-      std::list<YACSPrs_Link*> aLinksPrs = aFromNodePrs->getPortPrs( (*it).first.first )->getLinks();
-      for ( std::list<YACSPrs_Link*>::iterator itL = aLinksPrs.begin(); itL != aLinksPrs.end(); itL++ )
+      list<YACSPrs_Link*> aLinksPrs = aFromNodePrs->getPortPrs( (*it).first.first )->getLinks();
+      for ( list<YACSPrs_Link*>::iterator itL = aLinksPrs.begin(); itL != aLinksPrs.end(); itL++ )
       {
 	if ( YACSPrs_PortLink* aPortLink = dynamic_cast<YACSPrs_PortLink*>( *itL ) )
 	{
@@ -1874,7 +1909,7 @@ void YACSGui_Module::loadCatalog()
   }
 
   CORBA::ORB_ptr orb = aRuntimeSALOME->getOrb();
-  std::string anIOR = orb->object_to_string( aModuleCatalog );
+  string anIOR = orb->object_to_string( aModuleCatalog );
   printf("ModuleCatalog - %s",anIOR.c_str());
 
   myCatalog = aRuntimeSALOME->loadCatalog( "session", anIOR );
@@ -1959,7 +1994,7 @@ YACS::HMI::GuiContext* YACSGui_Module::ImportProcFromFile( const QString& theFil
         }
       catch(...)
         {
-          std::cerr<<"Unexpected exception in convertSupervFile " <<std::endl;
+          cerr<<"Unexpected exception in convertSupervFile " <<endl;
           SUIT_MessageBox::warn1(getApp()->desktop(),
                                  tr("WARNING"),
                                  tr("Unexpected exception in convertSupervFile"),
@@ -2014,7 +2049,7 @@ YACS::HMI::GuiContext* YACSGui_Module::ImportProcFromFile( const QString& theFil
     }
   catch (YACS::Exception& ex)
     {
-      std::cerr<<"YACSGui_Module::importSchema: " <<ex.what()<<std::endl;     
+      cerr<<"YACSGui_Module::importSchema: " <<ex.what()<<endl;     
     }
 
   loadCatalog();
@@ -2335,11 +2370,13 @@ void YACSGui_Module::onReset()
       YACSGui_RunTreeView* aRunTV = dynamic_cast<YACSGui_RunTreeView*>(activeTreeView());
       if ( !aRunTV ) return;
 
+      if ( !myInputPanel ) return;
+
       // notify schema view item in the tree view
       aRunTV->onNotifyStatus(aSchemaState);
   
-      std::set<Node*> aChildren = anExecutor->getProc()->getAllRecursiveConstituents();
-      std::set<Node*>::iterator it = aChildren.begin();
+      set<Node*> aChildren = anExecutor->getProc()->getAllRecursiveConstituents();
+      set<Node*>::iterator it = aChildren.begin();
       for ( ; it != aChildren.end(); it++ )
       {
 	(*it)->setState( aNodeState );
@@ -2362,8 +2399,8 @@ void YACSGui_Module::onReset()
 		// transmit event from the last clone node to original loop body node
 		if ( (*it) == (dynamic_cast<ForEachLoop*>( (*it)->getFather() ))->getNodes().back() )
                 {
-                  std::set<Node *> aFELChildren = dynamic_cast<ForEachLoop*>( (*it)->getFather() )->edGetDirectDescendants();
-                  for( std::set<Node *>::iterator iter = aFELChildren.begin(); iter != aFELChildren.end(); iter++ )
+                  set<Node *> aFELChildren = dynamic_cast<ForEachLoop*>( (*it)->getFather() )->edGetDirectDescendants();
+                  for( set<Node *>::iterator iter = aFELChildren.begin(); iter != aFELChildren.end(); iter++ )
                     if ( YACSPrs_ElementaryNode* aFELBodyNodePrs = aGraph->getItem(*iter) )
 		      aFELBodyNodePrs->updateForEachLoopBody(*it);
                 }
@@ -2374,6 +2411,9 @@ void YACSGui_Module::onReset()
 
 	// notify node view item in the tree view
 	aRunTV->onNotifyNodeStatus( (*it)->getNumId(), aNodeState );
+
+	// notify node property page
+	myInputPanel->onNotifyNodeStatus( (*it)->getNumId(), aNodeState );
       }
     }
     else // in progress (suspended or running)
@@ -2388,7 +2428,41 @@ void YACSGui_Module::onReset()
 
 void YACSGui_Module::onSaveExecutionState()
 {
-  MESSAGE("YACSGui_Module:: onSaveExecutionState()--- NOT YET IMPLEMENTED!");
+  MESSAGE("YACSGui_Module:: onSaveExecutionState()");
+  YACSGui_Executor* anExecutor = findExecutor();
+  if (anExecutor)
+  {
+    printf(">> anExecutor->getExecutorState() = %d\n",anExecutor->getExecutorState());
+    if ( anExecutor->getExecutorState() == YACS::NOTYETINITIALIZED
+	 ||
+	 anExecutor->getExecutorState() == YACS::PAUSED
+	 ||
+	 anExecutor->getExecutorState() == YACS::STOPPED
+	 ||
+	 anExecutor->getExecutorState() == YACS::FINISHED )
+    {
+
+      if ( !activeGraph() ) return;
+      Proc* aProc = activeGraph()->getProc();
+      if ( !aProc ) return;
+      
+      QString aDef = aProc->getName();
+      aDef = aDef.left( aDef.findRev(".xml") ) + "_state.xml";
+      QString aFileName = SUIT_FileDlg::getFileName( application()->desktop(), aDef, "*.xml", tr("TLT_SAVE_SCHEMA_STATE"), false );
+      if (aFileName.isEmpty())
+	return;
+      
+      anExecutor->saveState(aFileName.latin1());
+    }
+    else // in progress (suspended or running)
+    {
+      SUIT_MessageBox::warn1(getApp()->desktop(), 
+			     tr("WARNING"), 
+			     tr("MSG_DATAFLOW_IS_CURRENTLY_RUNNING"), 
+			     tr("BUT_OK"));
+      return;
+    }
+  }
 }
 
 void YACSGui_Module::onConnectToRunning()
@@ -2403,15 +2477,9 @@ void YACSGui_Module::onToggleStopOnError()
   if (anExecutor)
   {
     if ( !anExecutor->isStopOnError() )
-    {
-      printf("==> set stop\n");
       anExecutor->setStopOnError(true);
-    }
     else
-    {
-      printf("==> unset stop\n");
-      anExecutor->setStopOnError(false);
-    }
+      anExecutor->unsetStopOnError();
   }
 }
 
@@ -2443,7 +2511,7 @@ void YACSGui_Module::addTreeView( YACSGui_TreeView* theTreeView,
     LightApp_WidgetContainer* newWC = new LightApp_WidgetContainer( sId, getApp()->desktop() );
     //connect( newWC, SIGNAL(  destroyed ( QObject* ) ), this, SLOT( onWCDestroyed( QObject* ) ) );
     // the widget container is destroyed on study closing
-    myTreeViews.insert( std::make_pair( sId, newWC ) );
+    myTreeViews.insert( make_pair( sId, newWC ) );
     getApp()->desktop()->moveDockWindow( myTreeViews[sId], Qt::DockLeft );
 
     myTreeViews[sId]->setResizeEnabled( true );
@@ -2569,7 +2637,7 @@ void YACSGui_Module::activateTreeView( const int theStudyId, const int theId )
 
   // change the content of active tree view map
   if ( myActiveTreeViews.find(theStudyId) == myActiveTreeViews.end() )
-    myActiveTreeViews.insert( std::make_pair( theStudyId, theId ) );
+    myActiveTreeViews.insert( make_pair( theStudyId, theId ) );
   else
     myActiveTreeViews[theStudyId] = theId;
   
@@ -2586,7 +2654,7 @@ void YACSGui_Module::setInputPanelVisibility( const bool theOn )
   if ( !anATV ) return;
 
   // get the list of items selected in the current active edition tree view
-  std::list<QListViewItem*> aSelList = anATV->getSelected();
+  list<QListViewItem*> aSelList = anATV->getSelected();
   
   // check if the current selection is not empty (if it is true => the Input Panel is currently visible => hide it)
   if ( !aSelList.empty() && myInputPanel ) 
@@ -2610,7 +2678,6 @@ void YACSGui_Module::onSetActive()
   printf( "YACSGui_Module::onSetActive() not implemented yet\n" );
 }
 
-
 //! Public. Set gui mode by ObjectType
 /*!
  */
@@ -2632,7 +2699,6 @@ void YACSGui_Module::setGuiMode( YACSGui_DataModel::ObjectType theType )
     setGuiMode( YACSGui_Module::EmptyMode );
   }
 }
-
 
 //! Public. Set gui mode to theMode 
 /*!
@@ -2832,7 +2898,7 @@ QxGraph_ViewWindow* YACSGui_Module::createNewViewManager(  YACSGui_Module::GuiMo
   if ( aVW && theProc)
   {
     aVW->setCaption( theProc->getName() );
-    myWindowsMap.insert( std::make_pair( theProc, aVW ) );
+    myWindowsMap.insert( make_pair( theProc, aVW ) );
   }
 
   if ( width > 0 && height > 0 )
@@ -2969,4 +3035,102 @@ void YACSGui_Module::temporaryExport()
   aWriter.openFileSchema( anEditionName );
   aWriter.visitProc( aSchema );
   aWriter.closeFileSchema();
+}
+
+//! Returns a kind of a node as a string, which is using in the built-in catalog node maps
+/*!
+ */
+std::string YACSGui_Module::getNodeType( YACS::ENGINE::Node* theNode )
+{
+  //if ( getApp()->activeModule() != this ) return "";    
+
+  ServiceNode* aSNode = dynamic_cast<ServiceNode*>(theNode);
+  if ( aSNode )
+  {
+    ComponentInstance* aComp = aSNode->getComponent();
+    if ( aComp && !aComp->getName().empty() )
+      return ""; // the given node is not an empty template
+  }
+  
+  YACS::ENGINE::Catalog* aCatalog = YACS::ENGINE::getSALOMERuntime()->getBuiltinCatalog();
+  if ( !aCatalog ) return "";
+
+  map<string,Node*>::iterator it =  aCatalog->_nodeMap.begin();
+  for ( ; it != aCatalog->_nodeMap.end(); it++ )
+  {
+    printf("==> _nodeMap : type : %d\n",ProcInvoc::getTypeOfNode((*it).second));
+    if ( ProcInvoc::getTypeOfNode((*it).second) == ProcInvoc::getTypeOfNode(theNode) )
+      return (*it).first;
+  }
+    
+  map<string,ComposedNode*>::iterator itC =  aCatalog->_composednodeMap.begin();
+  for ( ; itC != aCatalog->_composednodeMap.end(); itC++ )
+  {
+    printf("==> _composednodeMap : type : %d\n",ProcInvoc::getTypeOfNode((*itC).second));
+    if ( ProcInvoc::getTypeOfNode((*itC).second) == ProcInvoc::getTypeOfNode(theNode) )
+      return (*itC).first;
+  }
+
+  return "";
+}
+
+std::string YACSGui_Module::getNodeType( YACS::HMI::TypeOfElem theElemType )
+{
+  string aType = "";
+  if ( myNodeTypeMap.find(theElemType) != myNodeTypeMap.end() )
+    aType = myNodeTypeMap[theElemType];
+  return aType;
+}
+
+void YACSGui_Module::fillNodeTypesMap()
+{
+  myNodeTypeMap[BLOC]             = getNodeType(new Bloc(""));
+  myNodeTypeMap[FOREACHLOOP]      = getNodeType(new ForEachLoop("",Runtime::_tc_double));
+  myNodeTypeMap[FORLOOP]          = getNodeType(new ForLoop(""));
+  myNodeTypeMap[WHILELOOP]        = getNodeType(new WhileLoop(""));
+  myNodeTypeMap[SWITCH]           = getNodeType(new Switch(""));
+  myNodeTypeMap[PYTHONNODE]       = getNodeType(new PythonNode(""));
+  myNodeTypeMap[PYFUNCNODE]       = getNodeType(new PyFuncNode(""));
+  myNodeTypeMap[CORBANODE]        = getNodeType(new CORBANode(""));
+  myNodeTypeMap[SALOMENODE]       = getNodeType(new SalomeNode(""));
+  myNodeTypeMap[CPPNODE]          = getNodeType(new CppNode(""));
+  myNodeTypeMap[SALOMEPYTHONNODE] = getNodeType(new SalomePythonNode(""));
+  myNodeTypeMap[XMLNODE]          = getNodeType(new XmlNode(""));
+}
+
+void YACSGui_Module::createNode( YACS::HMI::TypeOfElem theElemType )
+{
+  YACS::ENGINE::Catalog* aCatalog = YACS::ENGINE::getSALOMERuntime()->getBuiltinCatalog();
+  if ( !aCatalog ) return;
+
+  if( YACSGui_EditionTreeView* anETV = dynamic_cast<YACSGui_EditionTreeView*>( activeTreeView() ) )
+    if ( Subject* aSub = anETV->getSelectedSubject() )
+    {
+      if ( SubjectSwitch* aSwitch = dynamic_cast<SubjectSwitch*>(aSub) )
+      {
+	stringstream aName;
+	string aType = getNodeType(theElemType);
+	aName << aType << GuiContext::getCurrent()->getNewId();
+	
+	map<int, SubjectNode*> bodyMap = aSwitch->getBodyMap();
+	int aSwCase = 0;
+	if (bodyMap.empty()) aSwCase = 1;
+	else
+	{
+	  map<int, SubjectNode*>::reverse_iterator rit = bodyMap.rbegin();
+	  aSwCase = (*rit).first + 1;
+	}
+	aSwitch->addNode(aCatalog, "", aType, aName.str(), aSwCase);
+      }
+      //else if ( SubjectForLoop* aFor = dynamic_cast<SubjectForLoop*>(aSub) ... )
+      //{ ... }
+    }
+    else if ( SubjectProc* aSchema = GuiContext::getCurrent()->getSubjectProc() )
+    {  
+      stringstream aName;
+      string aType = getNodeType(theElemType);
+      aName << aType << GuiContext::getCurrent()->getNewId();
+      
+      aSchema->addNode(aCatalog, "", aType, aName.str());
+    }
 }

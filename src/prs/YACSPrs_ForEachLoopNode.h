@@ -33,8 +33,8 @@ class YACSPrs_ForEachLoopNode : public YACSPrs_LoopNode {
 
   virtual void updatePorts(bool theForce=false);
 
-  virtual void    nextTimeIteration(YACS::ENGINE::Node* theEngine=0);
-  virtual double  getPercentage(YACS::ENGINE::Node* theEngine=0) const;
+  virtual void nextTimeIteration(YACS::ENGINE::Node* theEngine=0);
+  virtual int  getPercentage(YACS::ENGINE::Node* theEngine=0) const;
 };
 
 #endif

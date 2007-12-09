@@ -183,12 +183,12 @@ void YACSPrs_ForEachLoopNode::nextTimeIteration(YACS::ENGINE::Node* theEngine)
   
   if ( theEngine
        &&
-       ( theEngine->getState() == YACS::INITED || theEngine->getEffectiveState() == YACS::INITED
+       ( theEngine->getState() == YACS::INITED /*|| theEngine->getEffectiveState() == YACS::INITED*/
 	 ||
 	 ( nullifyOnToActivate && ( theEngine->getState() == YACS::TOACTIVATE || theEngine->getEffectiveState() == YACS::TOACTIVATE) ) ) )
     setTimeIteration( 0. );
   else if ( theEngine &&
-	    theEngine->getState() != YACS::INITED && theEngine->getEffectiveState() != YACS::INITED &&
+	    theEngine->getState() != YACS::INITED /*&& theEngine->getEffectiveState() != YACS::INITED*/ &&
 	    !isFinished() ) {
     if ( ForEachLoop* aLoop = dynamic_cast<ForEachLoop*>( theEngine ) )
       setTimeIteration( aLoop->getExecCurrentId()-1. >= 0 ? aLoop->getExecCurrentId()-1. : 0. );
@@ -201,21 +201,21 @@ void YACSPrs_ForEachLoopNode::nextTimeIteration(YACS::ENGINE::Node* theEngine)
  *
  * \param theEngine : the engine of clone node from which we have to update presentation of this node.
  */
-double YACSPrs_ForEachLoopNode::getPercentage(YACS::ENGINE::Node* theEngine) const
+int YACSPrs_ForEachLoopNode::getPercentage(YACS::ENGINE::Node* theEngine) const
 {
   if ( !theEngine ) theEngine = getEngine();
   
-  if ( !theEngine ) return 0.;
+  if ( !theEngine ) return 0;
 
-  if ( theEngine->getState() == YACS::INITED || theEngine->getEffectiveState() == YACS::INITED ||
+  if ( theEngine->getState() == YACS::INITED || /*theEngine->getEffectiveState() == YACS::INITED ||*/
        theEngine->getState() == YACS::TOLOAD || theEngine->getEffectiveState() == YACS::TOLOAD )
-    return 0.;
+    return 0;
   if ( theEngine->getState() == YACS::DONE )
-    return 100.;
+    return 100;
   if ( ForEachLoop* aLoop = dynamic_cast<ForEachLoop*>( theEngine ) ) {
     SeqAnyInputPort* aCollection = dynamic_cast<SeqAnyInputPort*>( aLoop->edGetSeqOfSamplesPort() );
     if ( aCollection && !aCollection->isEmpty() )
-      return 100. / aCollection->getNumberOfElements() * getTimeIteration();
+      return (int)( 100. / aCollection->getNumberOfElements() * getTimeIteration() );
   }
-  return 0.;
+  return 0;
 }

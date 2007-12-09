@@ -67,9 +67,12 @@ YACSGui_Graph::YACSGui_Graph(YACSGui_Module* theModule,
 			     QxGraph_Canvas* theCanvas, 
 			     YACS::HMI::GuiContext* theCProc) :
   QxGraph_Prs(theCanvas),
+  GuiObserver(),
   myModule(theModule),
   myCProc(theCProc)
 {
+  if ( myCProc->getSubjectProc() ) myCProc->getSubjectProc()->attach(this);
+
   // Create node status observer instance
   myNodeStatusObserver = new YACSGui_Observer(this);
 }
@@ -79,6 +82,8 @@ YACSGui_Graph::YACSGui_Graph(YACSGui_Module* theModule,
 */
 YACSGui_Graph::~YACSGui_Graph()
 {
+  if ( myCProc->getSubjectProc() ) myCProc->getSubjectProc()->detach(this);
+
   Dispatcher* aDispatcher = Dispatcher::getDispatcher();
 
   DMode2ItemList aDM = getDisplayMap();
@@ -102,6 +107,58 @@ YACSGui_Graph::~YACSGui_Graph()
       // Remove status observer from dispatcher
       aDispatcher->removeObserver(myNodeStatusObserver, aEN->getEngine(), "status");
     }
+  }
+}
+
+void YACSGui_Graph::select(bool isSelected)
+{
+  printf(">> YACSGui_Graph::select\n");
+}
+
+void YACSGui_Graph::update(YACS::HMI::GuiEvent event, int type, YACS::HMI::Subject* son)
+{
+  printf(">> YACSGui_Graph::update\n");
+  switch (event)
+  {
+  case ADD:
+    switch (type)
+    {
+    case BLOC:
+    case FOREACHLOOP:
+    case OPTIMIZERLOOP:
+    case FORLOOP:
+    case WHILELOOP:
+    case SWITCH:
+    case PYTHONNODE:
+    case PYFUNCNODE:
+    case CORBANODE:
+    case SALOMENODE:
+    case CPPNODE:
+    case SALOMEPYTHONNODE:
+    case XMLNODE:
+      {
+	// add a node item (this = schema item)
+	printf("Graph:  ADD node\n");
+	if ( SubjectNode* aNode = dynamic_cast<SubjectNode*>(son) )
+	{
+	  update( aNode->getNode(), dynamic_cast<SubjectComposedNode*>(aNode->getParent()) );
+	  show();
+	  getCanvas()->update();
+	}
+      }
+      break;
+    default:
+      break;
+    }
+    break;
+  case REMOVE:
+    {
+      printf("Graph:  REMOVE\n");
+      //...
+    }
+    break;
+  default:
+    GuiObserver::update(event, type, son);
   }
 }
 
@@ -640,7 +697,10 @@ void YACSGui_Graph::getAllComposedNodeChildren(ComposedNode* theNode, std::set<N
       else
       {
 	ComposedNode* aCNode = dynamic_cast<ComposedNode*>( *it );
-	if ( aCNode ) getAllComposedNodeChildren( aCNode, theSet );
+	if ( aCNode ) {
+	  getAllComposedNodeChildren( aCNode, theSet );
+	  theSet.insert( *it );
+	}
       }
     }
   }
