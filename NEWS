@@ -36,16 +36,23 @@ priority: 0
 status--: NOK
 description: add node from catalog is missing (from session and from existing schema file).
 Must be implemented, it is the only way to add SALOME service nodes from SALOME components.
-comments: OCC: This remarks concerns to both points 3 and 4. As we
+comments: OCC: This remarks concerns to both points 3 and 4. -a- As we
 understand correctly, the only one possibility for nodes creation
-should be available within YACS module. It is a creation from two
-types of catalog. The type of catalog should be specified during
-SALOME service node creation process in the additional dialog box. It
-is not possible to create an empty SALOME service node. And it is not
+should be available within YACS module. -b- It is a creation from two
+types of catalog. -c- The type of catalog should be specified during
+SALOME service node creation process in the additional dialog box. -d- It
+is not possible to create an empty SALOME service node. -e- And it is not
 possible to create a SALOME service node from component popup menu in
 the tree view taking into account the selected component as a
 component from which a service node will be created. Is the described
 behaviour correct?
+EDF: working examples for node clone from catalog are in guidemo.
+(see editTree::ComposedNodeContextMenu in src/hmi/editTree.cxx)
+-a- prefered mode of creation = pick a node from a catalog (see -e-)
+-b,c,d- yes
+-e- I am not sure to understand: select a service from a componentinstance already in tree ?
+There could be here a shortcut but it is not a priority.
+
 ----------------------------------------------------------------------------------------------------
 Num-----: 4 
 priority: 0
@@ -77,6 +84,9 @@ terminate called after throwing an instance of 'St9bad_alloc'
 
 comments: OCC: Could you, please, provide a schema sample, on which
 this bug is reproduced?
+EDF:
+I generally load samples/bloc1.xml, and sometimes YACS enters in an infinite loop and consume the memory (swap).
+I can't be more precise on the conditions of occurence.
 ----------------------------------------------------------------------------------------------------
 Num-----: 7
 priority: 0
@@ -103,6 +113,15 @@ terminate called after throwing an instance of 'YACS::Exception'
  
 comments: OCC: Could you, please, provide a test scenario to reproduce
 this bug?
+EDF:
+launch YACSGui
+create new schema schema1
+add an inline script node
+load samples/bloc1.xml
+return to schema schema1
+in Node properties, create an inputport p and an outputport q (dataflow, double),
+change PyScript0 in PyScripta and apply:
+
 ----------------------------------------------------------------------------------------------------
 Num-----: 10 
 priority: 0
@@ -113,6 +132,7 @@ same problem, and the bloc in the inner level is not movable. When we move the o
 to englobe the inner bloc, the canvas flickers. The rezize of the bloc have a very strange behaviour.
 comments:  OCC: Could you, please, provide a schema sample, on which
 this bug is reproduced?
+EDF: samples/bloc1.xml
 ----------------------------------------------------------------------------------------------------
 Num-----: 11 
 priority: 0
@@ -134,6 +154,16 @@ description: When the bloc properties is open, there is a button to add nodes, t
 (remove seems possible)
 comments: OCC: Could you, please, provide a test scenario to reproduce
 this bug?
+EDF:
+launch YACSGui
+create new schema schema1
+add a block
+load samples/bloc1.xml (to activate node properties)
+return to schema schema1
+in bloc properties, Direct Children + (for add node)
+a line number 1 appears in Direct Children with an empty node name
+I don't know what to do after...
+
 ----------------------------------------------------------------------------------------------------
 Num-----: 14
 priority: 0
@@ -155,6 +185,8 @@ description: only container "FactoryServerPy" works on OCN tests, instead of a C
 container works at EDF: There is a problem with the OCN distribution that may compromise SALOME
 Application deployement.
 comments: OCC: Could you, please, specify the launch options for YACSContainer?
+EDF: Head of BR_DEV or BR_PR works with YACSContainer at EDF (with SALOME V4.1.0rc1 ou rc2) :
+try, and please provide detailed diagnostic if it does not work on your configuration.
 ----------------------------------------------------------------------------------------------------
 Num-----: 1002 
 priority: 1
