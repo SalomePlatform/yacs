@@ -1,0 +1,494 @@
+<!DOCTYPE SuperGraph>
+<supergraph>
+<dataflow>
+<info-list>
+<node>
+<component-name>?</component-name>
+    <interface-name>?</interface-name>
+    <node-name>TestVisu20</node-name>
+    <kind>1</kind>
+    <coupled-node>?</coupled-node>
+    <service>
+<service-name>aNewDataFlow_1</service-name>
+     <inParameter-list>
+<inParameter>
+<inParameter-type>long</inParameter-type>
+       <inParameter-name>Init__index</inParameter-name>      </inParameter>
+      <inParameter>
+<inParameter-type>long</inParameter-type>
+       <inParameter-name>Init__min</inParameter-name>      </inParameter>
+      <inParameter>
+<inParameter-type>long</inParameter-type>
+       <inParameter-name>Init__max</inParameter-name>      </inParameter>
+      <inParameter>
+<inParameter-type>double</inParameter-type>
+       <inParameter-name>Init__x1</inParameter-name>      </inParameter>     </inParameter-list>
+     <outParameter-list>
+<outParameter>
+<outParameter-type>long</outParameter-type>
+       <outParameter-name>EndOfInit__index</outParameter-name>      </outParameter>
+      <outParameter>
+<outParameter-type>long</outParameter-type>
+       <outParameter-name>EndOfInit__min</outParameter-name>      </outParameter>
+      <outParameter>
+<outParameter-type>long</outParameter-type>
+       <outParameter-name>EndOfInit__max</outParameter-name>      </outParameter>
+      <outParameter>
+<outParameter-type>objref</outParameter-type>
+       <outParameter-name>EndOfInit__aVisu</outParameter-name>      </outParameter>
+      <outParameter>
+<outParameter-type>objref</outParameter-type>
+       <outParameter-name>EndOfInit__aView</outParameter-name>      </outParameter>
+      <outParameter>
+<outParameter-type>objref</outParameter-type>
+       <outParameter-name>EndOfInit__aResult</outParameter-name>      </outParameter>
+      <outParameter>
+<outParameter-type>double</outParameter-type>
+       <outParameter-name>EndOfInit__x1</outParameter-name>      </outParameter>     </outParameter-list>    </service>
+    <DataStream-list/>
+    <PyFunction-list/>
+    <creation-date>13/11/2003 - 11:15:53</creation-date>
+    <lastmodification-date>8/4/2005 - 14:3:47</lastmodification-date>
+    <editor-release>1.05</editor-release>
+    <author>?</author>
+    <container>?</container>
+    <comment>?</comment>
+    <x-position>0</x-position>
+    <y-position>0</y-position>   </node>  </info-list>
+  <node-list>
+<node>
+<component-name>?</component-name>
+    <interface-name>?</interface-name>
+    <node-name>InitDisplay</node-name>
+    <kind>3</kind>
+    <coupled-node>?</coupled-node>
+    <service>
+<service-name>InitDisplay</service-name>
+     <inParameter-list/>
+     <outParameter-list>
+<outParameter>
+<outParameter-type>objref</outParameter-type>
+       <outParameter-name>aVisu</outParameter-name>      </outParameter>
+      <outParameter>
+<outParameter-type>objref</outParameter-type>
+       <outParameter-name>aView</outParameter-name>      </outParameter>
+      <outParameter>
+<outParameter-type>objref</outParameter-type>
+       <outParameter-name>myResult</outParameter-name>      </outParameter>     </outParameter-list>    </service>
+    <DataStream-list/>
+    <PyFunction-list>
+<PyFunction>
+<FuncName>InitDisplay</FuncName>
+      <PyFunc><![CDATA[import os         ]]></PyFunc>
+      <PyFunc><![CDATA[import time         ]]></PyFunc>
+      <PyFunc><![CDATA[from LifeCycleCORBA import *      ]]></PyFunc>
+      <PyFunc><![CDATA[from SALOME_NamingServicePy import *      ]]></PyFunc>
+      <PyFunc><![CDATA[import SALOMEDS      ]]></PyFunc>
+      <PyFunc><![CDATA[from VISU import *      ]]></PyFunc>
+      <PyFunc><![CDATA[def InitDisplay():         ]]></PyFunc>
+      <PyFunc><![CDATA[    #  --- initialize the ORB        ]]></PyFunc>
+      <PyFunc><![CDATA[    orb = CORBA.ORB_init([], CORBA.ORB_ID)      ]]></PyFunc>
+      <PyFunc><![CDATA[    # --- create a LifeCycleCORBA instance           ]]></PyFunc>
+      <PyFunc><![CDATA[    lcc = LifeCycleCORBA(orb)                     ]]></PyFunc>
+      <PyFunc><![CDATA[    # --- create a naming service instance              ]]></PyFunc>
+      <PyFunc><![CDATA[    naming_service = SALOME_NamingServicePy_i(orb)    ]]></PyFunc>
+      <PyFunc><![CDATA[    # --- get Study Manager reference                     ]]></PyFunc>
+      <PyFunc><![CDATA[    obj = naming_service.Resolve('myStudyManager')    ]]></PyFunc>
+      <PyFunc><![CDATA[    StudyManager = obj._narrow(SALOMEDS.StudyManager)    ]]></PyFunc>
+      <PyFunc><![CDATA[    # --- load visu component                          ]]></PyFunc>
+      <PyFunc><![CDATA[    aVisu = lcc.FindOrLoadComponent("FactoryServer","VISU")       ]]></PyFunc>
+      <PyFunc><![CDATA[    aStudy = StudyManager.GetStudyByID(1)      ]]></PyFunc>
+      <PyFunc><![CDATA[    aVisu.SetCurrentStudy(aStudy)      ]]></PyFunc>
+      <PyFunc><![CDATA[    print "InitDisplay --> aVisu ", aVisu         ]]></PyFunc>
+      <PyFunc><![CDATA[    time.sleep(2)         ]]></PyFunc>
+      <PyFunc><![CDATA[    aViewManager=aVisu.GetViewManager()         ]]></PyFunc>
+      <PyFunc><![CDATA[    print "InitDisplay --> aViewManager ", aViewManager         ]]></PyFunc>
+      <PyFunc><![CDATA[    #time.sleep(2)         ]]></PyFunc>
+      <PyFunc><![CDATA[    #aView=aViewManager.GetCurrentView()         ]]></PyFunc>
+      <PyFunc><![CDATA[    aView=aViewManager.Create3DView()         ]]></PyFunc>
+      <PyFunc><![CDATA[    print "InitDisplay --> aView ", aView         ]]></PyFunc>
+      <PyFunc><![CDATA[    #time.sleep(2)         ]]></PyFunc>
+      <PyFunc><![CDATA[    medFile = "TimeStamps.med"       ]]></PyFunc>
+      <PyFunc><![CDATA[    medFile = os.getenv('DATA_DIR') + '/MedFiles/' + medFile       ]]></PyFunc>
+      <PyFunc><![CDATA[    myResult = aVisu.ImportFile(medFile)       ]]></PyFunc>
+      <PyFunc><![CDATA[    print "InitDisplay --> myResult ", myResult         ]]></PyFunc>
+      <PyFunc><![CDATA[    return aVisu,aView,myResult       ]]></PyFunc>
+      </PyFunction>    </PyFunction-list>
+    <creation-date>8/4/2005 - 14:3:47</creation-date>
+    <lastmodification-date>8/4/2005 - 14:3:47</lastmodification-date>
+    <editor-release>1.05</editor-release>
+    <author>?</author>
+    <container>?</container>
+    <comment>Compute Node</comment>
+    <x-position>0</x-position>
+    <y-position>46</y-position>   </node>
+   <node>
+<component-name>?</component-name>
+    <interface-name>?</interface-name>
+    <node-name>Init</node-name>
+    <kind>4</kind>
+    <coupled-node>EndOfInit</coupled-node>
+    <service>
+<service-name>Init</service-name>
+     <inParameter-list>
+<inParameter>
+<inParameter-type>long</inParameter-type>
+       <inParameter-name>index</inParameter-name>      </inParameter>
+      <inParameter>
+<inParameter-type>long</inParameter-type>
+       <inParameter-name>min</inParameter-name>      </inParameter>
+      <inParameter>
+<inParameter-type>long</inParameter-type>
+       <inParameter-name>max</inParameter-name>      </inParameter>
+      <inParameter>
+<inParameter-type>objref</inParameter-type>
+       <inParameter-name>aVisu</inParameter-name>      </inParameter>
+      <inParameter>
+<inParameter-type>objref</inParameter-type>
+       <inParameter-name>aView</inParameter-name>      </inParameter>
+      <inParameter>
+<inParameter-type>objref</inParameter-type>
+       <inParameter-name>aResult</inParameter-name>      </inParameter>
+      <inParameter>
+<inParameter-type>double</inParameter-type>
+       <inParameter-name>x1</inParameter-name>      </inParameter>     </inParameter-list>
+     <outParameter-list>
+<outParameter>
+<outParameter-type>long</outParameter-type>
+       <outParameter-name>index</outParameter-name>      </outParameter>
+      <outParameter>
+<outParameter-type>long</outParameter-type>
+       <outParameter-name>min</outParameter-name>      </outParameter>
+      <outParameter>
+<outParameter-type>long</outParameter-type>
+       <outParameter-name>max</outParameter-name>      </outParameter>
+      <outParameter>
+<outParameter-type>objref</outParameter-type>
+       <outParameter-name>aVisu</outParameter-name>      </outParameter>
+      <outParameter>
+<outParameter-type>objref</outParameter-type>
+       <outParameter-name>aView</outParameter-name>      </outParameter>
+      <outParameter>
+<outParameter-type>objref</outParameter-type>
+       <outParameter-name>aResult</outParameter-name>      </outParameter>
+      <outParameter>
+<outParameter-type>double</outParameter-type>
+       <outParameter-name>x1</outParameter-name>      </outParameter>     </outParameter-list>    </service>
+    <DataStream-list/>
+    <PyFunction-list>
+<PyFunction>
+<FuncName>Init</FuncName>
+      <PyFunc><![CDATA[def Init(index,min,max,aVisu,aView,myResult,x1):   ]]></PyFunc>
+      <PyFunc><![CDATA[    if max >= min :   ]]></PyFunc>
+      <PyFunc><![CDATA[        index = min      ]]></PyFunc>
+      <PyFunc><![CDATA[    else :     ]]></PyFunc>
+      <PyFunc><![CDATA[        index = max  ]]></PyFunc>
+      <PyFunc><![CDATA[    print "---- Init ",index,min,max,aVisu,aView,myResult,x1 ]]></PyFunc>
+      <PyFunc><![CDATA[    return index,min,max,aVisu,aView,myResult,x1  ]]></PyFunc>     </PyFunction>
+     <PyFunction>
+<FuncName>More</FuncName>
+      <PyFunc><![CDATA[def More(index,min,max,aVisu,aView,myResult,x1):   ]]></PyFunc>
+      <PyFunc><![CDATA[    if max >= index :       ]]></PyFunc>
+      <PyFunc><![CDATA[        DoLoop = 1       ]]></PyFunc>
+      <PyFunc><![CDATA[    else :       ]]></PyFunc>
+      <PyFunc><![CDATA[        DoLoop = 0       ]]></PyFunc>
+      <PyFunc><![CDATA[    print "---- More",index,min,max,aVisu,aView,myResult,x1 ]]></PyFunc>
+      <PyFunc><![CDATA[    return DoLoop,index,min,max,aVisu,aView,myResult,x1   ]]></PyFunc>     </PyFunction>
+     <PyFunction>
+<FuncName>Next</FuncName>
+      <PyFunc><![CDATA[def Next(index,min,max,aVisu,aView,myResult,x1):   ]]></PyFunc>
+      <PyFunc><![CDATA[    index = index + 1 ]]></PyFunc>
+      <PyFunc><![CDATA[    x1=x1+1.0 ]]></PyFunc>
+      <PyFunc><![CDATA[    print "---- Next",index,min,max,aVisu,aView,myResult,x1   ]]></PyFunc>
+      <PyFunc><![CDATA[    return index,min,max,aVisu,aView,myResult,x1   ]]></PyFunc>     </PyFunction>    </PyFunction-list>
+    <creation-date>8/4/2005 - 14:3:47</creation-date>
+    <lastmodification-date>8/4/2005 - 14:3:47</lastmodification-date>
+    <editor-release>1.05</editor-release>
+    <author>?</author>
+    <container>?</container>
+    <comment>Compute Node</comment>
+    <x-position>190</x-position>
+    <y-position>4</y-position>   </node>
+   <node>
+<component-name>?</component-name>
+    <interface-name>?</interface-name>
+    <node-name>EndOfInit</node-name>
+    <kind>5</kind>
+    <coupled-node>Init</coupled-node>
+    <service>
+<service-name>EndOfInit</service-name>
+     <inParameter-list>
+<inParameter>
+<inParameter-type>long</inParameter-type>
+       <inParameter-name>index</inParameter-name>      </inParameter>
+      <inParameter>
+<inParameter-type>long</inParameter-type>
+       <inParameter-name>min</inParameter-name>      </inParameter>
+      <inParameter>
+<inParameter-type>long</inParameter-type>
+       <inParameter-name>max</inParameter-name>      </inParameter>
+      <inParameter>
+<inParameter-type>objref</inParameter-type>
+       <inParameter-name>aVisu</inParameter-name>      </inParameter>
+      <inParameter>
+<inParameter-type>objref</inParameter-type>
+       <inParameter-name>aView</inParameter-name>      </inParameter>
+      <inParameter>
+<inParameter-type>objref</inParameter-type>
+       <inParameter-name>aResult</inParameter-name>      </inParameter>
+      <inParameter>
+<inParameter-type>double</inParameter-type>
+       <inParameter-name>x1</inParameter-name>      </inParameter>     </inParameter-list>
+     <outParameter-list>
+<outParameter>
+<outParameter-type>long</outParameter-type>
+       <outParameter-name>index</outParameter-name>      </outParameter>
+      <outParameter>
+<outParameter-type>long</outParameter-type>
+       <outParameter-name>min</outParameter-name>      </outParameter>
+      <outParameter>
+<outParameter-type>long</outParameter-type>
+       <outParameter-name>max</outParameter-name>      </outParameter>
+      <outParameter>
+<outParameter-type>objref</outParameter-type>
+       <outParameter-name>aVisu</outParameter-name>      </outParameter>
+      <outParameter>
+<outParameter-type>objref</outParameter-type>
+       <outParameter-name>aView</outParameter-name>      </outParameter>
+      <outParameter>
+<outParameter-type>objref</outParameter-type>
+       <outParameter-name>aResult</outParameter-name>      </outParameter>
+      <outParameter>
+<outParameter-type>double</outParameter-type>
+       <outParameter-name>x1</outParameter-name>      </outParameter>     </outParameter-list>    </service>
+    <DataStream-list/>
+    <PyFunction-list>
+<PyFunction>
+<FuncName>?</FuncName>
+      <PyFunc><![CDATA[?]]></PyFunc>     </PyFunction>    </PyFunction-list>
+    <creation-date>8/4/2005 - 14:3:47</creation-date>
+    <lastmodification-date>8/4/2005 - 14:3:47</lastmodification-date>
+    <editor-release>1.05</editor-release>
+    <author>?</author>
+    <container>?</container>
+    <comment>Compute Node</comment>
+    <x-position>553</x-position>
+    <y-position>5</y-position>   </node>
+   <node>
+<component-name>?</component-name>
+    <interface-name>?</interface-name>
+    <node-name>DisplayVitesse</node-name>
+    <kind>3</kind>
+    <coupled-node>?</coupled-node>
+    <service>
+<service-name>DisplayVitesse</service-name>
+     <inParameter-list>
+<inParameter>
+<inParameter-type>long</inParameter-type>
+       <inParameter-name>index</inParameter-name>      </inParameter>
+      <inParameter>
+<inParameter-type>objref</inParameter-type>
+       <inParameter-name>aVisu</inParameter-name>      </inParameter>
+      <inParameter>
+<inParameter-type>objref</inParameter-type>
+       <inParameter-name>aView</inParameter-name>      </inParameter>
+      <inParameter>
+<inParameter-type>objref</inParameter-type>
+       <inParameter-name>aResult</inParameter-name>      </inParameter>
+      <inParameter>
+<inParameter-type>double</inParameter-type>
+       <inParameter-name>x1</inParameter-name>      </inParameter>     </inParameter-list>
+     <outParameter-list>
+<outParameter>
+<outParameter-type>objref</outParameter-type>
+       <outParameter-name>theResult</outParameter-name>      </outParameter>     </outParameter-list>    </service>
+    <DataStream-list/>
+    <PyFunction-list>
+<PyFunction>
+<FuncName>DisplayVitesse</FuncName>
+      <PyFunc><![CDATA[import VISU                               ]]></PyFunc>
+      <PyFunc><![CDATA[import os                               ]]></PyFunc>
+      <PyFunc><![CDATA[import time                               ]]></PyFunc>
+      <PyFunc><![CDATA[def DisplayVitesse(index,aVisu,aView,aResult,x1):                          ]]></PyFunc>
+      <PyFunc><![CDATA[    print "----- Display 1 index = ", index,aVisu,aView,aResult,x1                    ]]></PyFunc>
+      <PyFunc><![CDATA[    aMeshName ="dom"                               ]]></PyFunc>
+      <PyFunc><![CDATA[    myFieldName = "vitesse"                     ]]></PyFunc>
+      <PyFunc><![CDATA[    anEntity = VISU.NODE                               ]]></PyFunc>
+      <PyFunc><![CDATA[    aMesh = aVisu.MeshOnEntity(aResult, aMeshName, anEntity)     ]]></PyFunc>
+      <PyFunc><![CDATA[    print "----- Display 2 ", aMesh                 ]]></PyFunc>
+      <PyFunc><![CDATA[    x1=int(x1)                 ]]></PyFunc>
+      <PyFunc><![CDATA[    aScalarMap=aVisu.ScalarMapOnField(aResult,aMeshName,anEntity,myFieldName,x1)  ]]></PyFunc>
+      <PyFunc><![CDATA[    print "----- Display 4"                         ]]></PyFunc>
+      <PyFunc><![CDATA[    if aScalarMap is not None:                               ]]></PyFunc>
+      <PyFunc><![CDATA[        aScalarMap.SetScaling(VISU.LINEAR)                               ]]></PyFunc>
+      <PyFunc><![CDATA[    else:                               ]]></PyFunc>
+      <PyFunc><![CDATA[        print "Null scalar map is created"                               ]]></PyFunc>
+      <PyFunc><![CDATA[    print "----- Display 5"           ]]></PyFunc>
+      <PyFunc><![CDATA[    aView.DisplayOnly(aScalarMap)                               ]]></PyFunc>
+      <PyFunc><![CDATA[    aView.FitAll()                               ]]></PyFunc>
+      <PyFunc><![CDATA[    aView.Update()                              ]]></PyFunc>
+      <PyFunc><![CDATA[    print "----- Display 6"                         ]]></PyFunc>
+      <PyFunc><![CDATA[    theResult=aResult                           ]]></PyFunc>
+      <PyFunc><![CDATA[    #time.sleep(2)                   ]]></PyFunc>
+      <PyFunc><![CDATA[    return theResult                    ]]></PyFunc>
+      </PyFunction>    </PyFunction-list>
+    <creation-date>8/4/2005 - 14:3:47</creation-date>
+    <lastmodification-date>8/4/2005 - 14:3:47</lastmodification-date>
+    <editor-release>1.05</editor-release>
+    <author>?</author>
+    <container>?</container>
+    <comment>Compute Node</comment>
+    <x-position>374</x-position>
+    <y-position>16</y-position>   </node>  </node-list>
+  <link-list>
+<link>
+<fromnode-name>InitDisplay</fromnode-name>
+    <fromserviceparameter-name>aVisu</fromserviceparameter-name>
+    <tonode-name>Init</tonode-name>
+    <toserviceparameter-name>aVisu</toserviceparameter-name>
+    <coord-list/>   </link>
+   <link>
+<fromnode-name>InitDisplay</fromnode-name>
+    <fromserviceparameter-name>aView</fromserviceparameter-name>
+    <tonode-name>Init</tonode-name>
+    <toserviceparameter-name>aView</toserviceparameter-name>
+    <coord-list/>   </link>
+   <link>
+<fromnode-name>InitDisplay</fromnode-name>
+    <fromserviceparameter-name>myResult</fromserviceparameter-name>
+    <tonode-name>Init</tonode-name>
+    <toserviceparameter-name>aResult</toserviceparameter-name>
+    <coord-list/>   </link>
+   <link>
+<fromnode-name>Init</fromnode-name>
+    <fromserviceparameter-name>DoLoop</fromserviceparameter-name>
+    <tonode-name>EndOfInit</tonode-name>
+    <toserviceparameter-name>DoLoop</toserviceparameter-name>
+    <coord-list/>   </link>
+   <link>
+<fromnode-name>Init</fromnode-name>
+    <fromserviceparameter-name>index</fromserviceparameter-name>
+    <tonode-name>EndOfInit</tonode-name>
+    <toserviceparameter-name>index</toserviceparameter-name>
+    <coord-list/>   </link>
+   <link>
+<fromnode-name>Init</fromnode-name>
+    <fromserviceparameter-name>index</fromserviceparameter-name>
+    <tonode-name>DisplayVitesse</tonode-name>
+    <toserviceparameter-name>index</toserviceparameter-name>
+    <coord-list>
+<coord>
+<x>351</x>
+      <y>96</y>     </coord>
+     <coord>
+<x>350</x>
+      <y>38</y>     </coord>    </coord-list>   </link>
+   <link>
+<fromnode-name>Init</fromnode-name>
+    <fromserviceparameter-name>min</fromserviceparameter-name>
+    <tonode-name>EndOfInit</tonode-name>
+    <toserviceparameter-name>min</toserviceparameter-name>
+    <coord-list/>   </link>
+   <link>
+<fromnode-name>Init</fromnode-name>
+    <fromserviceparameter-name>max</fromserviceparameter-name>
+    <tonode-name>EndOfInit</tonode-name>
+    <toserviceparameter-name>max</toserviceparameter-name>
+    <coord-list/>   </link>
+   <link>
+<fromnode-name>Init</fromnode-name>
+    <fromserviceparameter-name>aVisu</fromserviceparameter-name>
+    <tonode-name>EndOfInit</tonode-name>
+    <toserviceparameter-name>aVisu</toserviceparameter-name>
+    <coord-list/>   </link>
+   <link>
+<fromnode-name>Init</fromnode-name>
+    <fromserviceparameter-name>aVisu</fromserviceparameter-name>
+    <tonode-name>DisplayVitesse</tonode-name>
+    <toserviceparameter-name>aVisu</toserviceparameter-name>
+    <coord-list/>   </link>
+   <link>
+<fromnode-name>Init</fromnode-name>
+    <fromserviceparameter-name>aView</fromserviceparameter-name>
+    <tonode-name>EndOfInit</tonode-name>
+    <toserviceparameter-name>aView</toserviceparameter-name>
+    <coord-list/>   </link>
+   <link>
+<fromnode-name>Init</fromnode-name>
+    <fromserviceparameter-name>aView</fromserviceparameter-name>
+    <tonode-name>DisplayVitesse</tonode-name>
+    <toserviceparameter-name>aView</toserviceparameter-name>
+    <coord-list/>   </link>
+   <link>
+<fromnode-name>Init</fromnode-name>
+    <fromserviceparameter-name>aResult</fromserviceparameter-name>
+    <tonode-name>DisplayVitesse</tonode-name>
+    <toserviceparameter-name>aResult</toserviceparameter-name>
+    <coord-list/>   </link>
+   <link>
+<fromnode-name>Init</fromnode-name>
+    <fromserviceparameter-name>x1</fromserviceparameter-name>
+    <tonode-name>EndOfInit</tonode-name>
+    <toserviceparameter-name>x1</toserviceparameter-name>
+    <coord-list/>   </link>
+   <link>
+<fromnode-name>Init</fromnode-name>
+    <fromserviceparameter-name>x1</fromserviceparameter-name>
+    <tonode-name>DisplayVitesse</tonode-name>
+    <toserviceparameter-name>x1</toserviceparameter-name>
+    <coord-list/>   </link>
+   <link>
+<fromnode-name>EndOfInit</fromnode-name>
+    <fromserviceparameter-name>DoLoop</fromserviceparameter-name>
+    <tonode-name>Init</tonode-name>
+    <toserviceparameter-name>DoLoop</toserviceparameter-name>
+    <coord-list/>   </link>
+   <link>
+<fromnode-name>DisplayVitesse</fromnode-name>
+    <fromserviceparameter-name>theResult</fromserviceparameter-name>
+    <tonode-name>EndOfInit</tonode-name>
+    <toserviceparameter-name>aResult</toserviceparameter-name>
+    <coord-list>
+<coord>
+<x>548</x>
+      <y>183</y>     </coord>
+     <coord>
+<x>548</x>
+      <y>97</y>     </coord>    </coord-list>   </link>  </link-list>
+  <data-list>
+<data>
+<fromnode-name>TestVisu20</fromnode-name>
+    <fromserviceparameter-name>Init__index</fromserviceparameter-name>
+    <tonode-name>Init</tonode-name>
+    <toserviceparameter-name>index</toserviceparameter-name>
+    <data-value>
+<value-type>3</value-type>
+     <value>1</value>    </data-value>
+    <coord-list/>   </data>
+   <data>
+<fromnode-name>TestVisu20</fromnode-name>
+    <fromserviceparameter-name>Init__min</fromserviceparameter-name>
+    <tonode-name>Init</tonode-name>
+    <toserviceparameter-name>min</toserviceparameter-name>
+    <data-value>
+<value-type>3</value-type>
+     <value>1</value>    </data-value>
+    <coord-list/>   </data>
+   <data>
+<fromnode-name>TestVisu20</fromnode-name>
+    <fromserviceparameter-name>Init__max</fromserviceparameter-name>
+    <tonode-name>Init</tonode-name>
+    <toserviceparameter-name>max</toserviceparameter-name>
+    <data-value>
+<value-type>3</value-type>
+     <value>100</value>    </data-value>
+    <coord-list/>   </data>
+   <data>
+<fromnode-name>TestVisu20</fromnode-name>
+    <fromserviceparameter-name>Init__x1</fromserviceparameter-name>
+    <tonode-name>Init</tonode-name>
+    <toserviceparameter-name>x1</toserviceparameter-name>
+    <data-value>
+<value-type>7</value-type>
+     <value>1</value>    </data-value>
+    <coord-list/>   </data>  </data-list> </dataflow></supergraph>

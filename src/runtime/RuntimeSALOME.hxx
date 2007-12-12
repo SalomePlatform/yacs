@@ -74,7 +74,8 @@ namespace YACS
       virtual OutputDataStreamPort* createOutputDataStreamPort(const std::string& name,
                                                                Node *node,TypeCode *type);
 
-      virtual DataNode* createDataNode(const std::string& kind,const std::string& name);
+      virtual DataNode* createInDataNode(const std::string& kind,const std::string& name);
+      virtual DataNode* createOutDataNode(const std::string& kind,const std::string& name);
       virtual InlineFuncNode* createFuncNode(const std::string& kind,const std::string& name);
       virtual InlineNode* createScriptNode(const std::string& kind,const std::string& name);
 
@@ -188,6 +189,7 @@ namespace YACS
       PyObject * getBuiltins();
       DynamicAny::DynAnyFactory_ptr getDynFactory();
       omniORBpyAPI* getApi();
+      PyObject * get_omnipy();
 
     protected:
       RuntimeSALOME();  // singleton
@@ -198,6 +200,7 @@ namespace YACS
       PyObject * _bltins;
       DynamicAny::DynAnyFactory_var _dynFactory;
       omniORBpyAPI* _api;
+      PyObject* _omnipy;
       long _flags;
       bool _usePython, _useCorba, _useCpp, _useXml;
 

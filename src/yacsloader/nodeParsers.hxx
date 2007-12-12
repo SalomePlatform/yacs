@@ -7,6 +7,7 @@
 #include "dataParsers.hxx"
 #include "portParsers.hxx"
 #include "codeParsers.hxx"
+#include "propertyParsers.hxx"
 
 #include "Proc.hxx"
 #include "InlineNode.hxx"
@@ -78,6 +79,7 @@ struct nodetypeParser: parser
       DEBTRACE( "node_type " << name )             
       _type=name;
     }
+  virtual void property (const myprop& prop);
   virtual T post();
   std::string _type;
   std::string _name;
@@ -88,9 +90,15 @@ struct nodetypeParser: parser
 template <class T> nodetypeParser<T> nodetypeParser<T>::nodeParser;
 
 template <class T>
+void nodetypeParser<T>::property (const myprop& prop)
+{
+  _node->setProperty(prop._name,prop._value);
+}
+
+template <class T>
 T nodetypeParser<T>::post()
 {
-      return _node;
+  return _node;
 }
 
 template <>

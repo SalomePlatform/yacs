@@ -58,11 +58,14 @@ nodist_libYACSPrs_la_SOURCES = $(MOCSOURCES)
 # List all generated files here
 BUILT_SOURCES = $(MOCSOURCES)
 
+libYACSPrs_la_LDFLAGS = \
+	 @GUI_LDFLAGS@ @PYTHON_LDFLAGS@ @QT_MT_LDFLAGS@
+
 libYACSPrs_la_LIBADD = \
 	../engine/libYACSEngine.la \
 	../runtime/libYACSRuntimeSALOME.la \
 	../hmi/libHMI.la \
-	@QT_MT_LIBS@ @GUI_LDFLAGS@ -lQxGraph @PYTHON_LDFLAGS@
+	@QT_MT_LIBADD@ -lQxGraph
 
 libYACSPrs_la_CXXFLAGS = \
 	$(THREAD_DEF) \

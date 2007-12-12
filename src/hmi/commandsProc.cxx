@@ -261,6 +261,7 @@ bool CommandAddDataTypeFromCatalog::localExecute()
   if (proc->typeMap.count(_typeName))
     {
       DEBTRACE("typecode already existing in proc: " << _typeName);
+      GuiContext::getCurrent()->_lastErrorMessage = "typecode already existing in proc: " + _typeName;
       return false;
     }
   else
@@ -270,6 +271,7 @@ bool CommandAddDataTypeFromCatalog::localExecute()
         proc->typeMap[_typeName] = _catalog->_typeMap[_typeName]->clone();
         return true;
       }
+  GuiContext::getCurrent()->_lastErrorMessage = "typecode not found in catalog: " + _typeName;
   return false;
 }
 
@@ -306,7 +308,11 @@ bool CommandAddInputPortFromCatalog::localExecute()
         {
           if (_catalog->_typeMap.count(_typePort))
             son = father->edAddInputPort(_name, _catalog->_typeMap[_typePort]);
-          else DEBTRACE(_typePort << " not found in catalog");
+          else
+            {
+              DEBTRACE(_typePort << " not found in catalog");
+              GuiContext::getCurrent()->_lastErrorMessage = _typePort + " not found in catalog";
+            }
         }
       _inputPort = son;
     }
@@ -352,7 +358,11 @@ bool CommandAddOutputPortFromCatalog::localExecute()
         {
           if (_catalog->_typeMap.count(_typePort))
             son = father->edAddOutputPort(_name, _catalog->_typeMap[_typePort]);
-          else DEBTRACE(_typePort << " not found in catalog");
+          else
+            {
+              DEBTRACE(_typePort << " not found in catalog");
+              GuiContext::getCurrent()->_lastErrorMessage = _typePort + " not found in catalog";
+            }
         }
       _outputPort = son;
     }
@@ -398,7 +408,11 @@ bool CommandAddIDSPortFromCatalog::localExecute()
         {
           if (_catalog->_typeMap.count(_typePort))
             son = father->edAddInputDataStreamPort(_name, _catalog->_typeMap[_typePort]);
-          else DEBTRACE(_typePort << " not found in catalog");
+          else
+            {
+              DEBTRACE(_typePort << " not found in catalog");
+              GuiContext::getCurrent()->_lastErrorMessage = _typePort + " not found in catalog";
+            }
         }
       _IDSPort = son;
     }
@@ -444,7 +458,11 @@ bool CommandAddODSPortFromCatalog::localExecute()
         {
           if (_catalog->_typeMap.count(_typePort))
             son = father->edAddOutputDataStreamPort(_name, _catalog->_typeMap[_typePort]);
-          else DEBTRACE(_typePort << " not found in catalog");
+          else
+            {
+              DEBTRACE(_typePort << " not found in catalog");
+              GuiContext::getCurrent()->_lastErrorMessage = _typePort + " not found in catalog";
+            }
         }
       _ODSPort = son;
     }
@@ -632,6 +650,7 @@ bool CommandSetContainerProperties::localExecute()
           ref->setProperties(_properties);
           return true;
         }
+      GuiContext::getCurrent()->_lastErrorMessage = "container not found: " + _container;
       return false;
     }
   catch (Exception& ex)
@@ -683,6 +702,90 @@ bool CommandSetDSPortProperties::localReverse()
 
 // ----------------------------------------------------------------------------
 
+CommandSetFuncNodeFunctionName::CommandSetFuncNodeFunctionName(std::string node, std::string funcName)
+  : Command(), _nodeName(node), _funcName(funcName)
+{
+  DEBTRACE("CommandSetFuncNodeFunctionName::CommandSetFuncNodeFunctionName " << node << " " <<funcName);
+}
+
+bool CommandSetFuncNodeFunctionName::localExecute()
+{
+  try
+    {
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      Node* node = proc->getChildByName(_nodeName);
+      if (_funcName.empty())
+        {
+          GuiContext::getCurrent()->_lastErrorMessage = "InlineFuncNode function name empty: " + _nodeName;
+          return false;
+        }
+      if (YACS::ENGINE::InlineFuncNode* funcNode = dynamic_cast<YACS::ENGINE::InlineFuncNode*>(node))
+        {
+          funcNode->setFname(_funcName);
+          return true;
+        }
+      else
+        {
+          GuiContext::getCurrent()->_lastErrorMessage = "node is not an InlineFuncNode: " + _nodeName;
+          return false;
+        }
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandSetFuncNodeFunctionName::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      return false;
+    }  
+}
+
+bool CommandSetFuncNodeFunctionName::localReverse()
+{
+}
+
+// ----------------------------------------------------------------------------
+
+CommandSetInlineNodeScript::CommandSetInlineNodeScript(std::string node, std::string script)
+  : Command(), _nodeName(node), _script(script)
+{
+  DEBTRACE("CommandSetInlineNodeScript::CommandSetInlineNodeScript " << node << " " <<script);
+}
+
+bool CommandSetInlineNodeScript::localExecute()
+{
+  try
+    {
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      Node* node = proc->getChildByName(_nodeName);
+      if (_script.empty())
+        {
+          GuiContext::getCurrent()->_lastErrorMessage = "InlineNode script empty: " + _nodeName;
+          return false;
+        }
+      if (YACS::ENGINE::InlineNode* inlineNode = dynamic_cast<YACS::ENGINE::InlineNode*>(node))
+        {
+          inlineNode->setScript(_script);
+          return true;
+        }
+      else
+        {
+          GuiContext::getCurrent()->_lastErrorMessage = "node is not an InlineNode: " + _nodeName;
+          return false;
+        }
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandSetInlineNodeScript::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      return false;
+    }  
+}
+
+bool CommandSetInlineNodeScript::localReverse()
+{
+}
+
+// ----------------------------------------------------------------------------
+
 CommandAddComponentInstance::CommandAddComponentInstance(std::pair<std::string,int> key,
                                                          std::pair<std::string,int> refkey)
   : Command(), _key(key), _keyToClone(refkey), _compoInst(0)
@@ -712,7 +815,10 @@ bool CommandAddComponentInstance::localExecute()
               compo = ref->clone();
             }
           else
-            return false;
+            {
+              GuiContext::getCurrent()->_lastErrorMessage = "component instance not found: " + _keyToClone.first;
+              return false;
+            }
         }
       _compoInst = compo;
       proc->componentInstanceMap[_key] = _compoInst; // --- potentially several instances under the same name
@@ -760,7 +866,11 @@ bool CommandAssociateComponentToContainer::localExecute()
               compo->setContainer(cont);
               return true;
             }
+          else
+            GuiContext::getCurrent()->_lastErrorMessage = "Component instance not found: " + _key.first;
         }
+      else
+        GuiContext::getCurrent()->_lastErrorMessage = "Containernot found: " + _container;
       return false;
     }
   catch (Exception& ex)
@@ -800,7 +910,11 @@ bool CommandAssociateServiceToComponent::localExecute()
               service->setComponent(compo);
               return true;
             }
+          else
+            GuiContext::getCurrent()->_lastErrorMessage = "Component instance not found: " + _key.first;
         }
+      else
+        GuiContext::getCurrent()->_lastErrorMessage = "Node is note a service node: " + _service;
       return false;
     }
   catch (Exception& ex)

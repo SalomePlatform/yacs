@@ -276,6 +276,11 @@ ComposedNode *ElementaryNode::getDynClonerIfExists(const ComposedNode *levelToSt
   return 0;
 }
 
+InputPort *ElementaryNode::createInputPort(const std::string& inputPortName, TypeCode* type)
+{
+  return getRuntime()->createInputPort(inputPortName, _implementation, this, type);
+}
+
 /**
  * the input port is also published recursively in ancestors because it may be visible from everywhere.
  * WARNING: CHECK CASE OF BLOC: ONLY INPUT PORTS NOT INTERNALLY CONNECTED MUST BE VISIBLE.
@@ -286,13 +291,20 @@ InputPort *ElementaryNode::edAddInputPort(const std::string& inputPortName, Type
   InputPort *ret = 0;
   if (edCheckAddPort<InputPort, TypeCode*>(inputPortName,_setOfInputPort,type))
     {
-      ret = getRuntime()->createInputPort(inputPortName, _implementation, this, type);
+      ret = createInputPort(inputPortName, type);
       _setOfInputPort.push_back(ret);
+      /*
       ComposedNode *iter=_father;
       while(iter)
         iter=iter->_father;
+        */
     }
   return ret;
+}
+
+OutputPort *ElementaryNode::createOutputPort(const std::string& outputPortName, TypeCode* type)
+{
+  return getRuntime()->createOutputPort(outputPortName, _implementation, this, type);
 }
 
 /**
@@ -305,13 +317,20 @@ OutputPort *ElementaryNode::edAddOutputPort(const std::string& outputPortName, T
   OutputPort *ret =0;
   if (edCheckAddPort<OutputPort, TypeCode*>(outputPortName,_setOfOutputPort,type))
     {
-      ret = getRuntime()->createOutputPort(outputPortName, _implementation, this, type);
+      ret = createOutputPort(outputPortName, type);
       _setOfOutputPort.push_back(ret);
+      /*
       ComposedNode *iter=_father;
       while(iter)
         iter=iter->_father;
+        */
     }
   return ret;
+}
+
+InputDataStreamPort *ElementaryNode::createInputDataStreamPort(const std::string& inputPortDSName, TypeCode* type)
+{
+  return getRuntime()->createInputDataStreamPort(inputPortDSName, this, type);
 }
 
 InputDataStreamPort *ElementaryNode::edAddInputDataStreamPort(const std::string& inputPortDSName, TypeCode* type) throw(Exception)
@@ -319,10 +338,15 @@ InputDataStreamPort *ElementaryNode::edAddInputDataStreamPort(const std::string&
   InputDataStreamPort *ret = 0;
   if (edCheckAddPort<InputDataStreamPort, TypeCode*>(inputPortDSName,_setOfInputDataStreamPort,type))
     {
-      ret = getRuntime()->createInputDataStreamPort(inputPortDSName, this, type);
+      ret = createInputDataStreamPort(inputPortDSName, type);
       _setOfInputDataStreamPort.push_back(ret);
     }
   return ret;
+}
+
+OutputDataStreamPort *ElementaryNode::createOutputDataStreamPort(const std::string& outputPortDSName, TypeCode* type)
+{
+  return getRuntime()->createOutputDataStreamPort(outputPortDSName, this, type);
 }
 
 OutputDataStreamPort *ElementaryNode::edAddOutputDataStreamPort(const std::string& outputPortDSName, TypeCode* type) throw(Exception)
@@ -330,7 +354,7 @@ OutputDataStreamPort *ElementaryNode::edAddOutputDataStreamPort(const std::strin
   OutputDataStreamPort *ret = 0;
   if (edCheckAddPort<OutputDataStreamPort, TypeCode*>(outputPortDSName,_setOfOutputDataStreamPort,type))
     {
-      ret = getRuntime()->createOutputDataStreamPort(outputPortDSName, this, type);
+      ret = createOutputDataStreamPort(outputPortDSName, type);
       _setOfOutputDataStreamPort.push_back(ret);
     }
   return ret;

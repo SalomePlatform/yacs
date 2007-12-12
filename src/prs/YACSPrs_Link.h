@@ -40,7 +40,10 @@ class YACSPrs_Link : public QObject {
   virtual ~YACSPrs_Link();
   
   void show();
+  void hide();
   void merge();
+
+  void setCanvas(QCanvas* theCanvas);
 
   std::list<QPoint> getPoints() const { return myPoints; }
   void              setPoints(std::list<QPoint> thePoints) { myPoints = thePoints; }

@@ -1,16 +1,37 @@
 #ifndef _NODEEDITION_H_
 #define _NODEEDITION_H_
 
+#include <qtextedit.h>
 #include "guiObservers.hxx"
 
 #include "winodeedition.h"
+
+#ifdef HAVE_QEXTSCINTILLA_H
+class QextScintilla;
+#endif
 
 namespace YACS
 {
   namespace HMI
   {
 
-    class NodeEdition: public wiNodeEdition, public GuiObserver
+    class itemEdition: public GuiObserver
+    {
+    public:
+      itemEdition(Subject* subject);
+      virtual ~itemEdition();
+      virtual void select(bool isSelected);
+      virtual void update(GuiEvent event, int type, Subject* son);
+      virtual Subject* getSubject();
+    protected:
+      Subject* _subject;
+      int _stackId;
+      std::string _name;
+      std::string _type;
+      std::string _category;
+    };
+
+    class NodeEdition: public wiNodeEdition, public itemEdition
     {
       Q_OBJECT
 
@@ -18,6 +39,8 @@ namespace YACS
       virtual void onApply();
       virtual void onCancel();
       virtual void onModify(const QString &text);
+      virtual void onFuncNameModified(const QString &text);
+      virtual void onScriptModified();
     public:
       NodeEdition(Subject* subject,
                   QWidget* parent = 0,
@@ -25,17 +48,21 @@ namespace YACS
                   WFlags fl = 0 );
       virtual ~NodeEdition();
       virtual void setName(std::string name);
-      virtual void select(bool isSelected);
       virtual void update(GuiEvent event, int type, Subject* son);
-      virtual Subject* getSubject();
 
     protected:
       virtual void setEdited(bool isEdited);
-      std::string _type;
-      std::string _name;
       bool _isEdited;
-      Subject* _subject;
-      int _stackId;
+      bool _haveScript;
+#ifdef HAVE_QEXTSCINTILLA_H
+      QextScintilla* _sci;
+#else
+      QTextEdit* _sci;
+#endif
+      SubjectInlineNode *_subInlineNode;
+      SubjectPyFuncNode* _subFuncNode;
+      std::string _funcName;
+      QLineEdit* _liFuncName;
     };
 
   }

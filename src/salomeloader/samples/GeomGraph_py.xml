@@ -1,0 +1,560 @@
+<!DOCTYPE SuperGraph>
+<supergraph>
+<dataflow>
+<info-list>
+<node>
+<component-name>?</component-name>
+    <interface-name>?</interface-name>
+    <node-name>aNewDataFlow_1_4_2_1_1_2_2_1_1</node-name>
+    <kind>1</kind>
+    <coupled-node>?</coupled-node>
+    <service>
+<service-name>aNewDataFlow_1_4_2_1_1_2_2_1_1</service-name>
+     <inParameter-list>
+<inParameter>
+<inParameter-type>double</inParameter-type>
+       <inParameter-name>MakeBox1__x1</inParameter-name>      </inParameter>
+      <inParameter>
+<inParameter-type>double</inParameter-type>
+       <inParameter-name>MakeBox1__y1</inParameter-name>      </inParameter>
+      <inParameter>
+<inParameter-type>double</inParameter-type>
+       <inParameter-name>MakeBox1__z1</inParameter-name>      </inParameter>
+      <inParameter>
+<inParameter-type>double</inParameter-type>
+       <inParameter-name>MakeBox1__x2</inParameter-name>      </inParameter>
+      <inParameter>
+<inParameter-type>double</inParameter-type>
+       <inParameter-name>MakeBox1__y2</inParameter-name>      </inParameter>
+      <inParameter>
+<inParameter-type>double</inParameter-type>
+       <inParameter-name>MakeBox1__z2</inParameter-name>      </inParameter>
+      <inParameter>
+<inParameter-type>double</inParameter-type>
+       <inParameter-name>MakeSphere_1__x1</inParameter-name>      </inParameter>
+      <inParameter>
+<inParameter-type>double</inParameter-type>
+       <inParameter-name>MakeSphere_1__y1</inParameter-name>      </inParameter>
+      <inParameter>
+<inParameter-type>double</inParameter-type>
+       <inParameter-name>MakeSphere_1__z1</inParameter-name>      </inParameter>
+      <inParameter>
+<inParameter-type>double</inParameter-type>
+       <inParameter-name>MakeSphere_1__radius</inParameter-name>      </inParameter>
+      <inParameter>
+<inParameter-type>double</inParameter-type>
+       <inParameter-name>MakeTranslation_1__x1</inParameter-name>      </inParameter>
+      <inParameter>
+<inParameter-type>double</inParameter-type>
+       <inParameter-name>MakeTranslation_1__y1</inParameter-name>      </inParameter>
+      <inParameter>
+<inParameter-type>double</inParameter-type>
+       <inParameter-name>MakeTranslation_1__z1</inParameter-name>      </inParameter>     </inParameter-list>
+     <outParameter-list>
+<outParameter>
+<outParameter-type>objref</outParameter-type>
+       <outParameter-name>MakeFuse_2__shape</outParameter-name>      </outParameter>     </outParameter-list>    </service>
+    <DataStream-list/>
+    <PyFunction-list/>
+    <creation-date>25/8/2004 - 16:28:50</creation-date>
+    <lastmodification-date>29/10/2004 - 10:50:25</lastmodification-date>
+    <editor-release>2.0</editor-release>
+    <author>?</author>
+    <container>?</container>
+    <comment>?</comment>
+    <x-position>0</x-position>
+    <y-position>0</y-position>   </node>  </info-list>
+  <node-list>
+<node>
+<component-name>?</component-name>
+    <interface-name>?</interface-name>
+    <node-name>gag</node-name>
+    <kind>3</kind>
+    <coupled-node>?</coupled-node>
+    <service>
+<service-name>gag</service-name>
+     <inParameter-list/>
+     <outParameter-list/>    </service>
+    <DataStream-list/>
+    <PyFunction-list>
+<PyFunction>
+<FuncName>gag</FuncName>
+      <PyFunc><![CDATA[from batchmode_geompy import *  ]]></PyFunc>
+      <PyFunc><![CDATA[def gag():   ]]></PyFunc>
+      <PyFunc><![CDATA[    # This is a gag   ]]></PyFunc>
+      <PyFunc><![CDATA[    return  ]]></PyFunc>     </PyFunction>    </PyFunction-list>
+    <creation-date>29/10/2004 - 10:50:25</creation-date>
+    <lastmodification-date>29/10/2004 - 10:50:25</lastmodification-date>
+    <editor-release>2.0</editor-release>
+    <author>?</author>
+    <container>?</container>
+    <comment>Compute Node</comment>
+    <x-position>0</x-position>
+    <y-position>123</y-position>   </node>
+   <node>
+<component-name>?</component-name>
+    <interface-name>?</interface-name>
+    <node-name>MakeBox1</node-name>
+    <kind>3</kind>
+    <coupled-node>?</coupled-node>
+    <service>
+<service-name>MakeBox1</service-name>
+     <inParameter-list>
+<inParameter>
+<inParameter-type>double</inParameter-type>
+       <inParameter-name>x1</inParameter-name>      </inParameter>
+      <inParameter>
+<inParameter-type>double</inParameter-type>
+       <inParameter-name>y1</inParameter-name>      </inParameter>
+      <inParameter>
+<inParameter-type>double</inParameter-type>
+       <inParameter-name>z1</inParameter-name>      </inParameter>
+      <inParameter>
+<inParameter-type>double</inParameter-type>
+       <inParameter-name>x2</inParameter-name>      </inParameter>
+      <inParameter>
+<inParameter-type>double</inParameter-type>
+       <inParameter-name>y2</inParameter-name>      </inParameter>
+      <inParameter>
+<inParameter-type>double</inParameter-type>
+       <inParameter-name>z2</inParameter-name>      </inParameter>     </inParameter-list>
+     <outParameter-list>
+<outParameter>
+<outParameter-type>objref</outParameter-type>
+       <outParameter-name>shape</outParameter-name>      </outParameter>     </outParameter-list>    </service>
+    <DataStream-list/>
+    <PyFunction-list>
+<PyFunction>
+<FuncName>MakeBox1</FuncName>
+      <PyFunc><![CDATA[from batchmode_geompy import MakeBox ]]></PyFunc>
+      <PyFunc><![CDATA[def MakeBox1(x1,y1,z1,x2,y2,z2):   ]]></PyFunc>
+      <PyFunc><![CDATA[    aBox = MakeBox(x1,y1,z1,x2,y2,z2)  ]]></PyFunc>
+      <PyFunc><![CDATA[    return aBox   ]]></PyFunc>     </PyFunction>    </PyFunction-list>
+    <creation-date>29/10/2004 - 10:50:25</creation-date>
+    <lastmodification-date>29/10/2004 - 10:50:25</lastmodification-date>
+    <editor-release>2.0</editor-release>
+    <author>?</author>
+    <container>?</container>
+    <comment>Compute Node</comment>
+    <x-position>194</x-position>
+    <y-position>3</y-position>   </node>
+   <node>
+<component-name>?</component-name>
+    <interface-name>?</interface-name>
+    <node-name>MakeCopy_1</node-name>
+    <kind>3</kind>
+    <coupled-node>?</coupled-node>
+    <service>
+<service-name>MakeCopy_1</service-name>
+     <inParameter-list>
+<inParameter>
+<inParameter-type>objref</inParameter-type>
+       <inParameter-name>shape1</inParameter-name>      </inParameter>     </inParameter-list>
+     <outParameter-list>
+<outParameter>
+<outParameter-type>objref</outParameter-type>
+       <outParameter-name>shape</outParameter-name>      </outParameter>     </outParameter-list>    </service>
+    <DataStream-list/>
+    <PyFunction-list>
+<PyFunction>
+<FuncName>MakeCopy_1</FuncName>
+      <PyFunc><![CDATA[from batchmode_geompy import MakeCopy ]]></PyFunc>
+      <PyFunc><![CDATA[def MakeCopy_1(shape1):  ]]></PyFunc>
+      <PyFunc><![CDATA[    shape=MakeCopy(shape1) ]]></PyFunc>
+      <PyFunc><![CDATA[    return shape ]]></PyFunc>     </PyFunction>    </PyFunction-list>
+    <creation-date>29/10/2004 - 10:50:25</creation-date>
+    <lastmodification-date>29/10/2004 - 10:50:25</lastmodification-date>
+    <editor-release>2.0</editor-release>
+    <author>?</author>
+    <container>?</container>
+    <comment>Compute Node</comment>
+    <x-position>389</x-position>
+    <y-position>3</y-position>   </node>
+   <node>
+<component-name>?</component-name>
+    <interface-name>?</interface-name>
+    <node-name>MakeCopy_2</node-name>
+    <kind>3</kind>
+    <coupled-node>?</coupled-node>
+    <service>
+<service-name>MakeCopy_2</service-name>
+     <inParameter-list>
+<inParameter>
+<inParameter-type>objref</inParameter-type>
+       <inParameter-name>shape1</inParameter-name>      </inParameter>     </inParameter-list>
+     <outParameter-list>
+<outParameter>
+<outParameter-type>objref</outParameter-type>
+       <outParameter-name>shape</outParameter-name>      </outParameter>     </outParameter-list>    </service>
+    <DataStream-list/>
+    <PyFunction-list>
+<PyFunction>
+<FuncName>MakeCopy_2</FuncName>
+      <PyFunc><![CDATA[from batchmode_geompy import MakeCopy ]]></PyFunc>
+      <PyFunc><![CDATA[def MakeCopy_2(shape1):  ]]></PyFunc>
+      <PyFunc><![CDATA[    shape=MakeCopy(shape1)  ]]></PyFunc>
+      <PyFunc><![CDATA[    return shape ]]></PyFunc>     </PyFunction>    </PyFunction-list>
+    <creation-date>29/10/2004 - 10:50:25</creation-date>
+    <lastmodification-date>29/10/2004 - 10:50:25</lastmodification-date>
+    <editor-release>2.0</editor-release>
+    <author>?</author>
+    <container>?</container>
+    <comment>Compute Node</comment>
+    <x-position>389</x-position>
+    <y-position>136</y-position>   </node>
+   <node>
+<component-name>?</component-name>
+    <interface-name>?</interface-name>
+    <node-name>MakeSphere_1</node-name>
+    <kind>3</kind>
+    <coupled-node>?</coupled-node>
+    <service>
+<service-name>MakeSphere_1</service-name>
+     <inParameter-list>
+<inParameter>
+<inParameter-type>double</inParameter-type>
+       <inParameter-name>x1</inParameter-name>      </inParameter>
+      <inParameter>
+<inParameter-type>double</inParameter-type>
+       <inParameter-name>y1</inParameter-name>      </inParameter>
+      <inParameter>
+<inParameter-type>double</inParameter-type>
+       <inParameter-name>z1</inParameter-name>      </inParameter>
+      <inParameter>
+<inParameter-type>double</inParameter-type>
+       <inParameter-name>radius</inParameter-name>      </inParameter>     </inParameter-list>
+     <outParameter-list>
+<outParameter>
+<outParameter-type>objref</outParameter-type>
+       <outParameter-name>shape</outParameter-name>      </outParameter>     </outParameter-list>    </service>
+    <DataStream-list/>
+    <PyFunction-list>
+<PyFunction>
+<FuncName>MakeSphere_1</FuncName>
+      <PyFunc><![CDATA[from batchmode_geompy import MakeVertex,MakeSpherePntR ]]></PyFunc>
+      <PyFunc><![CDATA[def MakeSphere_1(x1,y1,z1,radius):   ]]></PyFunc>
+      <PyFunc><![CDATA[    apoint=MakeVertex(x1,y1,z1) ]]></PyFunc>
+      <PyFunc><![CDATA[    shape=MakeSpherePntR(apoint,radius) ]]></PyFunc>
+      <PyFunc><![CDATA[    return shape ]]></PyFunc>     </PyFunction>    </PyFunction-list>
+    <creation-date>29/10/2004 - 10:50:25</creation-date>
+    <lastmodification-date>29/10/2004 - 10:50:25</lastmodification-date>
+    <editor-release>2.0</editor-release>
+    <author>?</author>
+    <container>?</container>
+    <comment>Compute Node</comment>
+    <x-position>203</x-position>
+    <y-position>315</y-position>   </node>
+   <node>
+<component-name>?</component-name>
+    <interface-name>?</interface-name>
+    <node-name>MakeTranslation_1</node-name>
+    <kind>3</kind>
+    <coupled-node>?</coupled-node>
+    <service>
+<service-name>MakeTranslation_1</service-name>
+     <inParameter-list>
+<inParameter>
+<inParameter-type>objref</inParameter-type>
+       <inParameter-name>shape1</inParameter-name>      </inParameter>
+      <inParameter>
+<inParameter-type>double</inParameter-type>
+       <inParameter-name>x1</inParameter-name>      </inParameter>
+      <inParameter>
+<inParameter-type>double</inParameter-type>
+       <inParameter-name>y1</inParameter-name>      </inParameter>
+      <inParameter>
+<inParameter-type>double</inParameter-type>
+       <inParameter-name>z1</inParameter-name>      </inParameter>     </inParameter-list>
+     <outParameter-list>
+<outParameter>
+<outParameter-type>objref</outParameter-type>
+       <outParameter-name>shape</outParameter-name>      </outParameter>     </outParameter-list>    </service>
+    <DataStream-list/>
+    <PyFunction-list>
+<PyFunction>
+<FuncName>MakeTranslation_1</FuncName>
+      <PyFunc><![CDATA[from batchmode_geompy import MakeTranslation ]]></PyFunc>
+      <PyFunc><![CDATA[def MakeTranslation_1(shape1,x1,y1,z1):   ]]></PyFunc>
+      <PyFunc><![CDATA[    shape = MakeTranslation(shape1,x1,y1,z1)  ]]></PyFunc>
+      <PyFunc><![CDATA[    return shape  ]]></PyFunc>     </PyFunction>    </PyFunction-list>
+    <creation-date>29/10/2004 - 10:50:25</creation-date>
+    <lastmodification-date>29/10/2004 - 10:50:25</lastmodification-date>
+    <editor-release>2.0</editor-release>
+    <author>?</author>
+    <container>?</container>
+    <comment>Compute Node</comment>
+    <x-position>596</x-position>
+    <y-position>3</y-position>   </node>
+   <node>
+<component-name>?</component-name>
+    <interface-name>?</interface-name>
+    <node-name>MakeFuse_1</node-name>
+    <kind>3</kind>
+    <coupled-node>?</coupled-node>
+    <service>
+<service-name>MakeFuse_1</service-name>
+     <inParameter-list>
+<inParameter>
+<inParameter-type>objref</inParameter-type>
+       <inParameter-name>shape1</inParameter-name>      </inParameter>
+      <inParameter>
+<inParameter-type>objref</inParameter-type>
+       <inParameter-name>shape2</inParameter-name>      </inParameter>     </inParameter-list>
+     <outParameter-list>
+<outParameter>
+<outParameter-type>objref</outParameter-type>
+       <outParameter-name>shape</outParameter-name>      </outParameter>     </outParameter-list>    </service>
+    <DataStream-list/>
+    <PyFunction-list>
+<PyFunction>
+<FuncName>MakeFuse_1</FuncName>
+      <PyFunc><![CDATA[from batchmode_geompy import MakeBoolean ]]></PyFunc>
+      <PyFunc><![CDATA[def MakeFuse_1(shape1,shape2): ]]></PyFunc>
+      <PyFunc><![CDATA[    # fuse operation 3 ]]></PyFunc>
+      <PyFunc><![CDATA[    shape = MakeBoolean(shape1,shape2,3)  ]]></PyFunc>
+      <PyFunc><![CDATA[    return shape ]]></PyFunc>     </PyFunction>    </PyFunction-list>
+    <creation-date>29/10/2004 - 10:50:25</creation-date>
+    <lastmodification-date>29/10/2004 - 10:50:25</lastmodification-date>
+    <editor-release>2.0</editor-release>
+    <author>?</author>
+    <container>?</container>
+    <comment>Compute Node</comment>
+    <x-position>823</x-position>
+    <y-position>116</y-position>   </node>
+   <node>
+<component-name>?</component-name>
+    <interface-name>?</interface-name>
+    <node-name>MakeFuse_2</node-name>
+    <kind>3</kind>
+    <coupled-node>?</coupled-node>
+    <service>
+<service-name>MakeFuse_2</service-name>
+     <inParameter-list>
+<inParameter>
+<inParameter-type>objref</inParameter-type>
+       <inParameter-name>shape1</inParameter-name>      </inParameter>
+      <inParameter>
+<inParameter-type>objref</inParameter-type>
+       <inParameter-name>shape2</inParameter-name>      </inParameter>     </inParameter-list>
+     <outParameter-list>
+<outParameter>
+<outParameter-type>objref</outParameter-type>
+       <outParameter-name>shape</outParameter-name>      </outParameter>     </outParameter-list>    </service>
+    <DataStream-list/>
+    <PyFunction-list>
+<PyFunction>
+<FuncName>MakeFuse_2</FuncName>
+      <PyFunc><![CDATA[from SALOME_NamingServicePy import SALOME_NamingServicePy_i ]]></PyFunc>
+      <PyFunc><![CDATA[from batchmode_geompy import * ]]></PyFunc>
+      <PyFunc><![CDATA[def MakeFuse_2(shape1,shape2):           ]]></PyFunc>
+      <PyFunc><![CDATA[    # fuse operation 3          ]]></PyFunc>
+      <PyFunc><![CDATA[    shape = MakeBoolean(shape1,shape2,3) ]]></PyFunc>
+      <PyFunc><![CDATA[    myNamingService = SALOME_NamingServicePy_i(orb) ]]></PyFunc>
+      <PyFunc><![CDATA[    aSession = myNamingService.Resolve('/Kernel/Session') ]]></PyFunc>
+      <PyFunc><![CDATA[    if aSession == None : ]]></PyFunc>
+      <PyFunc><![CDATA[      aStudyId = 1 ]]></PyFunc>
+      <PyFunc><![CDATA[    else : ]]></PyFunc>
+      <PyFunc><![CDATA[      aStudyId = aSession.GetActiveStudyId() ]]></PyFunc>
+      <PyFunc><![CDATA[    myStudyManager = myNamingService.Resolve('/myStudyManager') ]]></PyFunc>
+      <PyFunc><![CDATA[    aStudy = myStudyManager.GetStudyByID(aStudyId) ]]></PyFunc>
+      <PyFunc><![CDATA[    aSObject = geom.AddInStudy(aStudy, shape, "shape", None) ]]></PyFunc>
+      <PyFunc><![CDATA[    return shape ]]></PyFunc>     </PyFunction>    </PyFunction-list>
+    <creation-date>29/10/2004 - 10:50:25</creation-date>
+    <lastmodification-date>29/10/2004 - 10:50:25</lastmodification-date>
+    <editor-release>2.0</editor-release>
+    <author>?</author>
+    <container>?</container>
+    <comment>Compute Node</comment>
+    <x-position>1049</x-position>
+    <y-position>295</y-position>   </node>  </node-list>
+  <link-list>
+<link>
+<fromnode-name>gag</fromnode-name>
+    <fromserviceparameter-name>Gate</fromserviceparameter-name>
+    <tonode-name>MakeBox1</tonode-name>
+    <toserviceparameter-name>Gate</toserviceparameter-name>
+    <coord-list/>   </link>
+   <link>
+<fromnode-name>gag</fromnode-name>
+    <fromserviceparameter-name>Gate</fromserviceparameter-name>
+    <tonode-name>MakeSphere_1</tonode-name>
+    <toserviceparameter-name>Gate</toserviceparameter-name>
+    <coord-list>
+<coord>
+<x>164</x>
+      <y>470</y>     </coord>
+     <coord>
+<x>164</x>
+      <y>265</y>     </coord>    </coord-list>   </link>
+   <link>
+<fromnode-name>MakeBox1</fromnode-name>
+    <fromserviceparameter-name>shape</fromserviceparameter-name>
+    <tonode-name>MakeCopy_1</tonode-name>
+    <toserviceparameter-name>shape1</toserviceparameter-name>
+    <coord-list/>   </link>
+   <link>
+<fromnode-name>MakeBox1</fromnode-name>
+    <fromserviceparameter-name>shape</fromserviceparameter-name>
+    <tonode-name>MakeCopy_2</tonode-name>
+    <toserviceparameter-name>shape1</toserviceparameter-name>
+    <coord-list>
+<coord>
+<x>384</x>
+      <y>207</y>     </coord>    </coord-list>   </link>
+   <link>
+<fromnode-name>MakeCopy_1</fromnode-name>
+    <fromserviceparameter-name>shape</fromserviceparameter-name>
+    <tonode-name>MakeTranslation_1</tonode-name>
+    <toserviceparameter-name>shape1</toserviceparameter-name>
+    <coord-list/>   </link>
+   <link>
+<fromnode-name>MakeCopy_2</fromnode-name>
+    <fromserviceparameter-name>shape</fromserviceparameter-name>
+    <tonode-name>MakeFuse_1</tonode-name>
+    <toserviceparameter-name>shape2</toserviceparameter-name>
+    <coord-list>
+<coord>
+<x>674</x>
+      <y>207</y>     </coord>    </coord-list>   </link>
+   <link>
+<fromnode-name>MakeSphere_1</fromnode-name>
+    <fromserviceparameter-name>shape</fromserviceparameter-name>
+    <tonode-name>MakeFuse_2</tonode-name>
+    <toserviceparameter-name>shape2</toserviceparameter-name>
+    <coord-list/>   </link>
+   <link>
+<fromnode-name>MakeTranslation_1</fromnode-name>
+    <fromserviceparameter-name>shape</fromserviceparameter-name>
+    <tonode-name>MakeFuse_1</tonode-name>
+    <toserviceparameter-name>shape1</toserviceparameter-name>
+    <coord-list/>   </link>
+   <link>
+<fromnode-name>MakeFuse_1</fromnode-name>
+    <fromserviceparameter-name>shape</fromserviceparameter-name>
+    <tonode-name>MakeFuse_2</tonode-name>
+    <toserviceparameter-name>shape1</toserviceparameter-name>
+    <coord-list>
+<coord>
+<x>1017</x>
+      <y>366</y>     </coord>
+     <coord>
+<x>1017</x>
+      <y>187</y>     </coord>    </coord-list>   </link>  </link-list>
+  <data-list>
+<data>
+<fromnode-name>aNewDataFlow_1_4_2_1_1_2_2_1_1</fromnode-name>
+    <fromserviceparameter-name>MakeBox1__x1</fromserviceparameter-name>
+    <tonode-name>MakeBox1</tonode-name>
+    <toserviceparameter-name>x1</toserviceparameter-name>
+    <data-value>
+<value-type>7</value-type>
+     <value>0</value>    </data-value>
+    <coord-list/>   </data>
+   <data>
+<fromnode-name>aNewDataFlow_1_4_2_1_1_2_2_1_1</fromnode-name>
+    <fromserviceparameter-name>MakeBox1__y1</fromserviceparameter-name>
+    <tonode-name>MakeBox1</tonode-name>
+    <toserviceparameter-name>y1</toserviceparameter-name>
+    <data-value>
+<value-type>7</value-type>
+     <value>0</value>    </data-value>
+    <coord-list/>   </data>
+   <data>
+<fromnode-name>aNewDataFlow_1_4_2_1_1_2_2_1_1</fromnode-name>
+    <fromserviceparameter-name>MakeBox1__z1</fromserviceparameter-name>
+    <tonode-name>MakeBox1</tonode-name>
+    <toserviceparameter-name>z1</toserviceparameter-name>
+    <data-value>
+<value-type>7</value-type>
+     <value>0</value>    </data-value>
+    <coord-list/>   </data>
+   <data>
+<fromnode-name>aNewDataFlow_1_4_2_1_1_2_2_1_1</fromnode-name>
+    <fromserviceparameter-name>MakeBox1__x2</fromserviceparameter-name>
+    <tonode-name>MakeBox1</tonode-name>
+    <toserviceparameter-name>x2</toserviceparameter-name>
+    <data-value>
+<value-type>7</value-type>
+     <value>50</value>    </data-value>
+    <coord-list/>   </data>
+   <data>
+<fromnode-name>aNewDataFlow_1_4_2_1_1_2_2_1_1</fromnode-name>
+    <fromserviceparameter-name>MakeBox1__y2</fromserviceparameter-name>
+    <tonode-name>MakeBox1</tonode-name>
+    <toserviceparameter-name>y2</toserviceparameter-name>
+    <data-value>
+<value-type>7</value-type>
+     <value>50</value>    </data-value>
+    <coord-list/>   </data>
+   <data>
+<fromnode-name>aNewDataFlow_1_4_2_1_1_2_2_1_1</fromnode-name>
+    <fromserviceparameter-name>MakeBox1__z2</fromserviceparameter-name>
+    <tonode-name>MakeBox1</tonode-name>
+    <toserviceparameter-name>z2</toserviceparameter-name>
+    <data-value>
+<value-type>7</value-type>
+     <value>50</value>    </data-value>
+    <coord-list/>   </data>
+   <data>
+<fromnode-name>aNewDataFlow_1_4_2_1_1_2_2_1_1</fromnode-name>
+    <fromserviceparameter-name>MakeSphere_1__x1</fromserviceparameter-name>
+    <tonode-name>MakeSphere_1</tonode-name>
+    <toserviceparameter-name>x1</toserviceparameter-name>
+    <data-value>
+<value-type>7</value-type>
+     <value>0</value>    </data-value>
+    <coord-list/>   </data>
+   <data>
+<fromnode-name>aNewDataFlow_1_4_2_1_1_2_2_1_1</fromnode-name>
+    <fromserviceparameter-name>MakeSphere_1__y1</fromserviceparameter-name>
+    <tonode-name>MakeSphere_1</tonode-name>
+    <toserviceparameter-name>y1</toserviceparameter-name>
+    <data-value>
+<value-type>7</value-type>
+     <value>0</value>    </data-value>
+    <coord-list/>   </data>
+   <data>
+<fromnode-name>aNewDataFlow_1_4_2_1_1_2_2_1_1</fromnode-name>
+    <fromserviceparameter-name>MakeSphere_1__z1</fromserviceparameter-name>
+    <tonode-name>MakeSphere_1</tonode-name>
+    <toserviceparameter-name>z1</toserviceparameter-name>
+    <data-value>
+<value-type>7</value-type>
+     <value>0</value>    </data-value>
+    <coord-list/>   </data>
+   <data>
+<fromnode-name>aNewDataFlow_1_4_2_1_1_2_2_1_1</fromnode-name>
+    <fromserviceparameter-name>MakeSphere_1__radius</fromserviceparameter-name>
+    <tonode-name>MakeSphere_1</tonode-name>
+    <toserviceparameter-name>radius</toserviceparameter-name>
+    <data-value>
+<value-type>7</value-type>
+     <value>12</value>    </data-value>
+    <coord-list/>   </data>
+   <data>
+<fromnode-name>aNewDataFlow_1_4_2_1_1_2_2_1_1</fromnode-name>
+    <fromserviceparameter-name>MakeTranslation_1__x1</fromserviceparameter-name>
+    <tonode-name>MakeTranslation_1</tonode-name>
+    <toserviceparameter-name>x1</toserviceparameter-name>
+    <data-value>
+<value-type>7</value-type>
+     <value>25</value>    </data-value>
+    <coord-list/>   </data>
+   <data>
+<fromnode-name>aNewDataFlow_1_4_2_1_1_2_2_1_1</fromnode-name>
+    <fromserviceparameter-name>MakeTranslation_1__y1</fromserviceparameter-name>
+    <tonode-name>MakeTranslation_1</tonode-name>
+    <toserviceparameter-name>y1</toserviceparameter-name>
+    <data-value>
+<value-type>7</value-type>
+     <value>25</value>    </data-value>
+    <coord-list/>   </data>
+   <data>
+<fromnode-name>aNewDataFlow_1_4_2_1_1_2_2_1_1</fromnode-name>
+    <fromserviceparameter-name>MakeTranslation_1__z1</fromserviceparameter-name>
+    <tonode-name>MakeTranslation_1</tonode-name>
+    <toserviceparameter-name>z1</toserviceparameter-name>
+    <data-value>
+<value-type>7</value-type>
+     <value>25</value>    </data-value>
+    <coord-list/>   </data>  </data-list> </dataflow></supergraph>

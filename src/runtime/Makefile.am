@@ -54,6 +54,8 @@ libYACSRuntimeSALOME_la_SOURCES =      \
   PresetPorts.cxx                \
   PresetNode.cxx                 \
   OutNode.cxx                    \
+	StudyNodes.cxx                 \
+	StudyPorts.cxx                 \
   $(__dummy__)
 
 
@@ -69,6 +71,8 @@ SALOME_IDL = \
 	$(KERNEL_ROOT_DIR)/idl/salome/SALOME_Exception.idl
 
 libYACSRuntimeSALOME_la_SOURCES += \
+	SALOME_GenericObjSK.cc \
+	SALOME_GenericObjDynSK.cc \
 	SALOME_ComponentSK.cc \
 	SALOME_ComponentDynSK.cc \
 	SALOME_ContainerManagerSK.cc \
@@ -77,7 +81,7 @@ libYACSRuntimeSALOME_la_SOURCES += \
 	SALOME_ExceptionDynSK.cc
 
 
-SALOME_INCLUDES =SALOME_ContainerManager.hh SALOME_Exception.hh SALOME_Component.hh
+SALOME_INCLUDES =SALOME_ContainerManager.hh SALOME_Exception.hh SALOME_Component.hh SALOME_GenericObj.hh
 SALOME_LIBS=-L$(KERNEL_ROOT_DIR)/lib@LIB_LOCATION_SUFFIX@/salome -lSalomeLifeCycleCORBA
 SALOME_INCL_PATH=-I$(KERNEL_ROOT_DIR)/include/salome $(QT_INCLUDES)
 SALOME_OMNIPY=
@@ -130,6 +134,8 @@ SALOME_Component.hh:$(KERNEL_ROOT_DIR)/idl/salome/SALOME_Component.idl
 SALOME_Exception.hh:$(KERNEL_ROOT_DIR)/idl/salome/SALOME_Exception.idl
 	    $(OMNIORB_IDL) $(OMNIORB_IDLCXXFLAGS) -bcxx -Wba -I$(KERNEL_ROOT_DIR)/idl/salome $<
 SALOME_ContainerManager.hh:$(KERNEL_ROOT_DIR)/idl/salome/SALOME_ContainerManager.idl
+	    $(OMNIORB_IDL) $(OMNIORB_IDLCXXFLAGS) -bcxx -Wba -I$(KERNEL_ROOT_DIR)/idl/salome $<
+SALOME_GenericObj.hh:$(KERNEL_ROOT_DIR)/idl/salome/SALOME_GenericObj.idl
 	    $(OMNIORB_IDL) $(OMNIORB_IDLCXXFLAGS) -bcxx -Wba -I$(KERNEL_ROOT_DIR)/idl/salome $<
 
 SALOME_Component_idl.py:$(KERNEL_ROOT_DIR)/idl/salome/SALOME_Component.idl

@@ -6,7 +6,7 @@ check_PROGRAMS = TestRuntime echoSrv echo_clt
 lib_LTLIBRARIES = libTestComponentLocal.la
 
 IDL_FILES = echo.idl
-IDL_SOURCES = echoSK.cc
+IDL_SOURCES = echoSK.cc echoDynSK.cc
 BUILT_SOURCES = $(IDL_SOURCES) echo_idl.py xmlrun.sh
 
 TESTS = runtimeTest.sh
@@ -46,6 +46,9 @@ TestRuntime_CXXFLAGS = \
 xmlrun.sh:${srcdir}/xmlrun_orig.sh
 	cp $(srcdir)/xmlrun_orig.sh xmlrun.sh
 
+echoDynSK.cc echo.hh:echo.idl
+	$(OMNIORB_IDL) $(OMNIORB_IDLCXXFLAGS) -bcxx -Wba $<
+
 echoSrv_SOURCES = echoSrv.cxx $(IDL_SOURCES)
 
 echoSrv_CXXFLAGS = \
@@ -60,6 +63,7 @@ echo_clt_SOURCES = echo_clt.cxx $(IDL_SOURCES)
 
 echo_clt_CXXFLAGS = \
 	$(OMNIORB_INCLUDES) \
+	-I$(OMNIORB_ROOT)/include/omniORB4/internal \
 	$(OMNIORB_CXXFLAGS) 
 
 echo_clt_LDFLAGS = \

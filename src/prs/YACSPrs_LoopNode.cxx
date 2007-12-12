@@ -49,7 +49,10 @@ YACSPrs_LoopNode::YACSPrs_LoopNode( SUIT_ResourceMgr* theMgr, QCanvas* theCanvas
   
   if ( thePortUpdate ) {
     //updatePorts(); // will be called in moveBy(...) function
-    moveBy(3*TITLE_HEIGHT/2, 3*TITLE_HEIGHT/2);
+    if ( isFullDMode() )
+      moveBy(3*TITLE_HEIGHT/2, 3*TITLE_HEIGHT/2);
+    else if ( isControlDMode() )
+      moveBy(2*HOOKPOINT_SIZE,0);
   }
 }
 
@@ -85,6 +88,8 @@ void YACSPrs_LoopNode::select(const QPoint& theMousePos, const bool toSelect)
 	    else
 	    {
 	      setSelected(false);
+	      getSEngine()->select(false);
+
 	      setBracketColor( myStoreBracketColor );
 	      setNodeSubColor( storeSubColor(), true );
 	    }
@@ -111,6 +116,8 @@ void YACSPrs_LoopNode::select(const QPoint& theMousePos, const bool toSelect)
 	setStoreSubColor( nodeSubColor() );
 	
 	setSelected(true);
+	getSEngine()->select(true);
+
 	setBracketColor( bracketColor().dark(130) );
 	setNodeSubColor( nodeSubColor().dark(130), true );
       }
@@ -125,6 +132,8 @@ void YACSPrs_LoopNode::select(const QPoint& theMousePos, const bool toSelect)
     }
     else {
       setSelected(false);
+      getSEngine()->select(false);
+
       setBracketColor( myStoreBracketColor );
       setNodeSubColor( storeSubColor(), true );
     }
@@ -138,21 +147,35 @@ int YACSPrs_LoopNode::rtti() const
 
 QPointArray YACSPrs_LoopNode::constructAreaPoints(int theW, int theH) const
 {
-  int h = theH-1;
+  QPointArray aPnts;
 
-  int aCorner = 3*TITLE_HEIGHT/2;
+  if ( isControlDMode() )
+  {
+    aPnts = QPointArray(4);
+    aPnts[0] = QPoint((int)x(), (int)y()) + QPoint(-NODEBOUNDARY_MARGIN,-NODEBOUNDARY_MARGIN);
+    aPnts[1] = aPnts[0] + QPoint(theW, 0) + QPoint(NODEBOUNDARY_MARGIN,0);
+    aPnts[2] = aPnts[1] + QPoint(0, theH) + QPoint(0,NODEBOUNDARY_MARGIN);
+    aPnts[3] = aPnts[0] + QPoint(0, theH) + QPoint(0,NODEBOUNDARY_MARGIN);
+  }
+  else if ( isFullDMode() )
+  {
+    int h = theH-1;
+    
+    int aCorner = 3*TITLE_HEIGHT/2;
+    
+    aPnts = QPointArray(8);
+    QPoint p((int)x(), (int)y());
+    p = p + QPoint(-NODEBOUNDARY_MARGIN,0);
+    aPnts[0] = p;
+    aPnts[1] = p + QPoint(aCorner, -aCorner) + QPoint(NODEBOUNDARY_MARGIN,-NODEBOUNDARY_MARGIN);
+    aPnts[2] = aPnts[1] + QPoint(theW, 0) + QPoint(NODEBOUNDARY_MARGIN,0);
+    aPnts[3] = p + QPoint(theW, 0) + QPoint(NODEBOUNDARY_MARGIN,0);
+    aPnts[4] = aPnts[3] + QPoint(0, h) + QPoint(0,-NODEBOUNDARY_MARGIN/2);
+    aPnts[5] = aPnts[4] + QPoint(-aCorner, aCorner) + QPoint(-NODEBOUNDARY_MARGIN,NODEBOUNDARY_MARGIN);
+    aPnts[6] = aPnts[5] + QPoint(-theW, 0) + QPoint(-NODEBOUNDARY_MARGIN,0);
+    aPnts[7] = p + QPoint(0, h) + QPoint(0,-NODEBOUNDARY_MARGIN/2);
+  }
 
-  QPointArray aPnts(8);
-  QPoint p((int)x(), (int)y());
-  p = p + QPoint(-NODEBOUNDARY_MARGIN,0);
-  aPnts[0] = p;
-  aPnts[1] = p + QPoint(aCorner, -aCorner) + QPoint(NODEBOUNDARY_MARGIN,-NODEBOUNDARY_MARGIN);
-  aPnts[2] = aPnts[1] + QPoint(theW, 0) + QPoint(NODEBOUNDARY_MARGIN,0);
-  aPnts[3] = p + QPoint(theW, 0) + QPoint(NODEBOUNDARY_MARGIN,0);
-  aPnts[4] = aPnts[3] + QPoint(0, h) + QPoint(0,-NODEBOUNDARY_MARGIN/2);
-  aPnts[5] = aPnts[4] + QPoint(-aCorner, aCorner) + QPoint(-NODEBOUNDARY_MARGIN,NODEBOUNDARY_MARGIN);
-  aPnts[6] = aPnts[5] + QPoint(-theW, 0) + QPoint(-NODEBOUNDARY_MARGIN,0);
-  aPnts[7] = p + QPoint(0, h) + QPoint(0,-NODEBOUNDARY_MARGIN/2);
   return aPnts;
 }
 
@@ -173,7 +196,10 @@ void YACSPrs_LoopNode::updatePorts(bool theForce)
 
   if (theForce)
   {
-    myPortHeight = 2*PORT_MARGIN;
+    if ( isFullDMode() )
+      myPortHeight = 2*PORT_MARGIN;
+    else
+      myPortHeight = 0;
     myPortList.setAutoDelete(true);
     myPortList.clear();
   }
@@ -192,79 +218,82 @@ void YACSPrs_LoopNode::updatePorts(bool theForce)
   bool withCreate = false;
   if ( myPortList.isEmpty() ) withCreate = true;
 
-  QRect r = getBodyRect();
-  int aPRectWidth = (int)(r.width()/2) - 2*PORT_MARGIN;
-  if ( aPRectWidth < PORT_WIDTH ) aPRectWidth = PORT_WIDTH;
-  
-  int ix = r.x() + PORT_MARGIN + 1;
-  int iy = r.y() + PORT_MARGIN;// + 1;
-  int ox = ix + aPRectWidth + 2*PORT_MARGIN;
-  int oy = r.y() + PORT_MARGIN;// + 1;
-
-  ForLoop* aFLoop = dynamic_cast<ForLoop*>( getEngine() );
-  WhileLoop* aWLoop = 0;
-
-  if ( withCreate )
-  { // create (and update)
-    // 'nsteps'/'condition' input port (name, type (and value) of the port will set in YACSPrs_InOutPort from port engine)
-    YACSPrs_InOutPort* anInPort = 0;
-
-    if ( aFLoop )
-      anInPort = new YACSPrs_InOutPort(myMgr,canvas(),aFLoop->edGetNbOfTimesInputPort(),this);
-    else
-    {
-      aWLoop = dynamic_cast<WhileLoop*>( getEngine() );
-      if ( aWLoop )
-	anInPort = new YACSPrs_InOutPort(myMgr,canvas(),aWLoop->edGetConditionPort(),this);
-    }
+  if ( isFullDMode() )
+  {
+    QRect r = getBodyRect();
+    int aPRectWidth = (int)(r.width()/2) - 2*PORT_MARGIN;
+    if ( aPRectWidth < PORT_WIDTH ) aPRectWidth = PORT_WIDTH;
     
-    if ( anInPort )
-    {
-      anInPort->setPortRect(QRect(ix, iy, aPRectWidth, PORT_HEIGHT));
-      anInPort->setColor(nodeSubColor());
-      anInPort->setStoreColor(nodeSubColor());
-      myPortList.append(anInPort);
-    }
+    int ix = r.x() + PORT_MARGIN + 1;
+    int iy = r.y() + PORT_MARGIN;// + 1;
+    int ox = ix + aPRectWidth + 2*PORT_MARGIN;
+    int oy = r.y() + PORT_MARGIN;// + 1;
     
-    if ( aFLoop || aWLoop )
-    {
-      // get a set of internal loop nodes (in fact in ForLoop and WhileLoop we have only one internal node)
-      std::set<Node*> aNodes = aFLoop ? aFLoop->edGetDirectDescendants() : aWLoop->edGetDirectDescendants();
-      if ( aNodes.empty() )
-	myPortHeight += PORT_HEIGHT;
+    ForLoop* aFLoop = dynamic_cast<ForLoop*>( getEngine() );
+    WhileLoop* aWLoop = 0;
+    
+    if ( withCreate )
+    { // create (and update)
+      // 'nsteps'/'condition' input port (name, type (and value) of the port will set in YACSPrs_InOutPort from port engine)
+      YACSPrs_InOutPort* anInPort = 0;
+      
+      if ( aFLoop )
+	anInPort = new YACSPrs_InOutPort(myMgr,canvas(),aFLoop->edGetNbOfTimesInputPort(),this);
       else
       {
-	std::set<Node*>::iterator aNodesIter = aNodes.begin();
-	for (; aNodesIter != aNodes.end(); aNodesIter++)
-	{ // output label port
-	  YACSPrs_LabelPort* anOutPort = new YACSPrs_LabelPort(myMgr,canvas(),*aNodesIter,this);
-	  anOutPort->setPortRect(QRect(ox, oy, aPRectWidth, PORT_HEIGHT));
-	  anOutPort->setColor(nodeSubColor().dark(140));
-	  anOutPort->setStoreColor(nodeSubColor().dark(140));
-	  myPortList.append(anOutPort);
+	aWLoop = dynamic_cast<WhileLoop*>( getEngine() );
+	if ( aWLoop )
+	  anInPort = new YACSPrs_InOutPort(myMgr,canvas(),aWLoop->edGetConditionPort(),this);
+      }
+      
+      if ( anInPort )
+      {
+	anInPort->setPortRect(QRect(ix, iy, aPRectWidth, PORT_HEIGHT));
+	anInPort->setColor(nodeSubColor());
+	anInPort->setStoreColor(nodeSubColor());
+	myPortList.append(anInPort);
+      }
+      
+      if ( aFLoop || aWLoop )
+      {
+	// get a set of internal loop nodes (in fact in ForLoop and WhileLoop we have only one internal node)
+	std::set<Node*> aNodes = aFLoop ? aFLoop->edGetDirectDescendants() : aWLoop->edGetDirectDescendants();
+	if ( aNodes.empty() )
 	  myPortHeight += PORT_HEIGHT;
+	else
+	{
+	  std::set<Node*>::iterator aNodesIter = aNodes.begin();
+	  for (; aNodesIter != aNodes.end(); aNodesIter++)
+	  { // output label port
+	    YACSPrs_LabelPort* anOutPort = new YACSPrs_LabelPort(myMgr,canvas(),*aNodesIter,this);
+	    anOutPort->setPortRect(QRect(ox, oy, aPRectWidth, PORT_HEIGHT));
+	    anOutPort->setColor(nodeSubColor().dark(140));
+	    anOutPort->setStoreColor(nodeSubColor().dark(140));
+	    myPortList.append(anOutPort);
+	    myPortHeight += PORT_HEIGHT;
+	  }
 	}
       }
     }
-  }
-  else
-  { // only update
-    YACSPrs_Port* aPort;
-    for (aPort = myPortList.first(); aPort; aPort = myPortList.next())
-    { 
-      YACSPrs_InOutPort* anInPort = dynamic_cast<YACSPrs_InOutPort*>( aPort );
-      if ( anInPort )
+    else
+    { // only update
+      YACSPrs_Port* aPort;
+      for (aPort = myPortList.first(); aPort; aPort = myPortList.next())
       { 
-	if ( !anInPort->isGate() && anInPort->isInput() )
-	{ // input data (i.e. not Gate) ports
-	  anInPort->setPortRect(QRect(ix, iy, aPRectWidth, PORT_HEIGHT), !isSelfMoving(), myArea);
-	  iy += PORT_HEIGHT+PORT_SPACE;
+	YACSPrs_InOutPort* anInPort = dynamic_cast<YACSPrs_InOutPort*>( aPort );
+	if ( anInPort )
+	{ 
+	  if ( !anInPort->isGate() && anInPort->isInput() )
+	  { // input data (i.e. not Gate) ports
+	    anInPort->setPortRect(QRect(ix, iy, aPRectWidth, PORT_HEIGHT), !isSelfMoving(), myArea);
+	    iy += PORT_HEIGHT+PORT_SPACE;
+	  }
 	}
-      }
-      else
-      { // not YACSPrs_InOutPort => it is YACSPrs_LabelPort => we not need to dynamic cast
-	aPort->setPortRect(QRect(ox, oy, aPRectWidth, PORT_HEIGHT), !isSelfMoving(), myArea);
-	oy += PORT_HEIGHT+PORT_SPACE;
+	else
+	{ // not YACSPrs_InOutPort => it is YACSPrs_LabelPort => we not need to dynamic cast
+	  aPort->setPortRect(QRect(ox, oy, aPRectWidth, PORT_HEIGHT), !isSelfMoving(), myArea);
+	  oy += PORT_HEIGHT+PORT_SPACE;
+	}
       }
     }
   }
@@ -283,6 +312,10 @@ void YACSPrs_LoopNode::updatePorts(bool theForce)
 
 int YACSPrs_LoopNode::maxWidth() const
 {
+  if ( isControlDMode() )
+    return YACSPrs_ElementaryNode::maxWidth();
+
+  // Full view mode as a default
   return YACSPrs_ElementaryNode::maxWidth() - 4*HOOKPOINT_SIZE + ( ( 4*HOOKPOINT_SIZE > 3*TITLE_HEIGHT ) ? 4*HOOKPOINT_SIZE-3*TITLE_HEIGHT : 0 );
 }
 
@@ -321,36 +354,39 @@ void YACSPrs_LoopNode::drawFrame(QPainter& thePainter)
 
   thePainter.drawRect(aRect);
 
-  QBrush savedB = thePainter.brush();
-  thePainter.setBrush(bracketColor());
-
-  int aCorner =  3*TITLE_HEIGHT/2;
-  QPoint aP1(aRect.x(),            aRect.y());
-  QPoint aP2(aRect.x()+aCorner,    aRect.y()-aCorner);
-  QPoint aP3(aRect.right()+aCorner,aRect.y()-aCorner);
-  QPoint aP4(aRect.right(),        aRect.y());
-  QPoint aP5(aRect.x(),            aRect.bottom());
-  QPoint aP6(aRect.x()-aCorner,    aRect.bottom()+aCorner);
-  QPoint aP7(aRect.right()-aCorner,aRect.bottom()+aCorner);
-  QPoint aP8(aRect.right(),        aRect.bottom());
-  QPointArray aPAUp(4);
-  aPAUp.putPoints(0, 4, aP1.x(),aP1.y(), aP2.x(),aP2.y(), aP3.x(),aP3.y(), aP4.x(),aP4.y());
-  thePainter.drawPolygon( aPAUp );
-  QPointArray aPADown(4);
-  aPADown.putPoints(0, 4, aP5.x(),aP5.y(), aP6.x(),aP6.y(), aP7.x(),aP7.y(), aP8.x(),aP8.y());
-  thePainter.drawPolygon( aPADown );
-
-  thePainter.setBrush(savedB);
-
-  // draw top pixmap
-  QRect aTPRect(aRect.x()+aRect.width()/2-aCorner/3, aRect.y()-aCorner/2-aCorner/3,
-		2*aCorner/3, 2*aCorner/3);
-  thePainter.drawPixmap(aTPRect,myTopPixmap);
-
-  // draw bottom pixmap
-  QRect aBPRect(aRect.x()+aRect.width()/2-aCorner/3, aRect.bottom()+aCorner/2-aCorner/3,
-		2*aCorner/3, 2*aCorner/3);
-  thePainter.drawPixmap(aBPRect,myBottomPixmap);
+  if ( isFullDMode() )
+  {
+    QBrush savedB = thePainter.brush();
+    thePainter.setBrush(bracketColor());
+    
+    int aCorner =  3*TITLE_HEIGHT/2;
+    QPoint aP1(aRect.x(),            aRect.y());
+    QPoint aP2(aRect.x()+aCorner,    aRect.y()-aCorner);
+    QPoint aP3(aRect.right()+aCorner,aRect.y()-aCorner);
+    QPoint aP4(aRect.right(),        aRect.y());
+    QPoint aP5(aRect.x(),            aRect.bottom());
+    QPoint aP6(aRect.x()-aCorner,    aRect.bottom()+aCorner);
+    QPoint aP7(aRect.right()-aCorner,aRect.bottom()+aCorner);
+    QPoint aP8(aRect.right(),        aRect.bottom());
+    QPointArray aPAUp(4);
+    aPAUp.putPoints(0, 4, aP1.x(),aP1.y(), aP2.x(),aP2.y(), aP3.x(),aP3.y(), aP4.x(),aP4.y());
+    thePainter.drawPolygon( aPAUp );
+    QPointArray aPADown(4);
+    aPADown.putPoints(0, 4, aP5.x(),aP5.y(), aP6.x(),aP6.y(), aP7.x(),aP7.y(), aP8.x(),aP8.y());
+    thePainter.drawPolygon( aPADown );
+    
+    thePainter.setBrush(savedB);
+    
+    // draw top pixmap
+    QRect aTPRect(aRect.x()+aRect.width()/2-aCorner/3, aRect.y()-aCorner/2-aCorner/3,
+		  2*aCorner/3, 2*aCorner/3);
+    thePainter.drawPixmap(aTPRect,myTopPixmap);
+    
+    // draw bottom pixmap
+    QRect aBPRect(aRect.x()+aRect.width()/2-aCorner/3, aRect.bottom()+aCorner/2-aCorner/3,
+		  2*aCorner/3, 2*aCorner/3);
+    thePainter.drawPixmap(aBPRect,myBottomPixmap);
+  }
 
   // draw bounding nodes' polygon if node is currently selected
   if ( isSelected() ) drawBoundary(thePainter,5);

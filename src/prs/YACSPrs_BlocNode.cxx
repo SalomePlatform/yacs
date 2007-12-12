@@ -105,8 +105,9 @@ YACSPrs_BlocNode::YACSPrs_BlocNode(SUIT_ResourceMgr* theMgr, QCanvas* theCanvas,
     myBoundColor = BLOCNODERECT_COLOR;
 
     setZ(theZ);
-    
+
     updateGates();
+
   }
   else
   {
@@ -394,7 +395,7 @@ void YACSPrs_BlocNode::resize(QPoint thePoint)
 	break;
       }
     QPoint aPnt = getConnectionMasterPoint();
-    myPointMaster->setCoords(aPnt.x(), aPnt.y());
+    if ( myPointMaster ) myPointMaster->setCoords(aPnt.x(), aPnt.y());
 
     updateGates();
 
@@ -451,7 +452,7 @@ void YACSPrs_BlocNode::setVisible(bool b)
   }
   
   // set visibility to master point
-  myPointMaster->setVisible(b);
+  if ( myPointMaster ) myPointMaster->setVisible(b);
   updateLabelLink();
 }
 
@@ -530,7 +531,7 @@ void YACSPrs_BlocNode::moveBy(double dx, double dy)
       aPort->moveBy(xx, yy);
   }
 
-  myPointMaster->moveBy(dx, dy);
+  if ( myPointMaster ) myPointMaster->moveBy(dx, dy);
   if ( myLabelLink ) myLabelLink->moveByNode(this, (int)dx, (int)dy);
   
   if ( isSelected() && canvas() && isMoving() )
@@ -649,7 +650,7 @@ void YACSPrs_BlocNode::resize(int theWidth, int theHeight)
     myHeight = theHeight;
 
     QPoint aPnt = getConnectionMasterPoint();
-    myPointMaster->setCoords(aPnt.x(), aPnt.y());
+    if ( myPointMaster ) myPointMaster->setCoords(aPnt.x(), aPnt.y());
 
     updateGates();
 
@@ -874,6 +875,12 @@ void YACSPrs_BlocNode::drawShape(QPainter& thePainter)
     drawFrame(thePainter);
     drawTitle(thePainter);
     drawGate(thePainter);
+
+    if ( isControlDMode() && myPointMaster)
+    {
+      myPointMaster->setVisible(false);
+      myPointMaster->setCanvas(0);
+    }
   }
   else
   { 

@@ -178,7 +178,7 @@ InputPort *ProxyPort::getPublicRepresentant()
   return _port->getPublicRepresentant();
 }
 
-void *ProxyPort::get() const throw(Exception)
+void *ProxyPort::get() const
 {
   return _port->get();
 }

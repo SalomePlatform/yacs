@@ -161,9 +161,12 @@ private:
   void renamePortItem( YACS::HMI::Subject* theSPort );
   void addPortItem( YACS::HMI::Subject* theSPort );
   void removePortItem( YACS::HMI::Subject* theSPort );
+  void removeNodeItem( YACS::HMI::Subject* theSNode );
   void moveUpPortItem( YACS::HMI::Subject* theSPort );
   void moveDownPortItem( YACS::HMI::Subject* theSPort );
   bool isPublished( YACS::ENGINE::Port* thePort );
+
+  void addReferenceItem( YACS::HMI::Subject* theSRef );
 
   YACS::HMI::SubjectNode* mySNode;
 };

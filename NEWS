@@ -1,0 +1,233 @@
+
+
+YACS GUI : list of missing functionalities and bugs
+====================================================================================================
+
+One list is initiated by EDF (problems detected by EDF), Another list can be completed by OCC 
+(problems detected by OCC). The separaration will allow an easier CVS merge.
+Each list contains numeroted items, with a description, comments from both parts,
+a priority and a status.
+The present file must be committed in CVS as often as required, in developments branchs.
+
+
+
+Problems detected by EDF
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+----------------------------------------------------------------------------------------------------
+Num ----: 1
+priority: 0
+status--: NOK
+description: On the launcf of YACSGui, without any schema open, if we create a new schema, unless we 
+double click on schema1 in object browser, we can add nothing because no schema is selected. It is 
+not obvious and very frustrating. The must always be a schema selected.
+comments: OCC: DONE. This functionality will be available from CVS today evening.
+----------------------------------------------------------------------------------------------------
+Num-----: 2
+priority: 0
+status--: NOK
+description: It is possible to create builtin nodes and blocs at the root level on the schema but not
+inside a block or other composed node.
+popup must be available on the composed node representation in the tree.
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----: 3 
+priority: 0
+status--: NOK
+description: add node from catalog is missing (from session and from existing schema file).
+Must be implemented, it is the only way to add SALOME service nodes from SALOME components.
+comments: OCC: This remarks concerns to both points 3 and 4. As we
+understand correctly, the only one possibility for nodes creation
+should be available within YACS module. It is a creation from two
+types of catalog. The type of catalog should be specified during
+SALOME service node creation process in the additional dialog box. It
+is not possible to create an empty SALOME service node. And it is not
+possible to create a SALOME service node from component popup menu in
+the tree view taking into account the selected component as a
+component from which a service node will be created. Is the described
+behaviour correct?
+----------------------------------------------------------------------------------------------------
+Num-----: 4 
+priority: 0
+status--: NOK
+description: in create node menu, salome service is useless (we cannot edit ports). Salome service 
+come by clone from a catalog.
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----: 5 
+priority: 0
+status--: NOK
+description: in create node menu, CPPNode create sigsegv
+comments: OCC: This bug is not reproduced on OCC local version in
+debug mode. It is needed to check it on BR_OCC branch today evening after our
+integration.
+----------------------------------------------------------------------------------------------------
+Num-----: 6 
+priority: 0
+status--: NOK
+description: Bug on bloc creation (not systematic)
+>> YACSGui_Graph::update
+Graph:  ADD node
+== aTypeName = N4YACS6ENGINE4BlocE
+th. 3050337968 - Trace /home/prascle/SALOME2/YACS/BR_OCC/YACS_SRC/src/gui/YACSGui_Graph.cxx [309] : YACSGui_Graph::update Bloc0
+YACSPrs_ElementaryNode::YACSPrs_ElementaryNode : Bloc0
+YACSPrs_BlocNode::YACSPrs_BlocNode
+terminate called after throwing an instance of 'St9bad_alloc'
+  what():  St9bad_alloc
+
+comments: OCC: Could you, please, provide a schema sample, on which
+this bug is reproduced?
+----------------------------------------------------------------------------------------------------
+Num-----: 7
+priority: 0
+status--: NOK
+description: when creating schema from scratch, we do not have panel for node properties unless
+we load another existing schema, then come back to the first schema.
+comments: OCC: DONE. This functionality will be available from CVS today evening.
+----------------------------------------------------------------------------------------------------
+Num-----: 8 
+priority: 0
+status--: NOK
+description: in python node properties, the port creation works, but the other buttons (arrows...)
+have a confusing behaviour, and lead sometimes to sigsegv.
+
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----: 9
+priority: 0
+status--: NOK
+description: in python node properties, changing the name leads to abort
+/home/prascle/SALOME2/YACS/BR_OCC/YACS_SRC/src/hmi/guiObservers.cxx [1038] : SubjectElementaryNode::addInputPort( 0x8552168, int, sds )
+terminate called after throwing an instance of 'YACS::Exception'
+  what():  node PyFunctiona is not a child of node bloc1.xml
+ 
+comments: OCC: Could you, please, provide a test scenario to reproduce
+this bug?
+----------------------------------------------------------------------------------------------------
+Num-----: 10 
+priority: 0
+status--: NOK
+description: Node placement looks OK when there are no blocs, but there are problems of placement of
+nodes inside the bloc (nodes are outside). When there are two levels of blocks (see bloc1.xml),
+same problem, and the bloc in the inner level is not movable. When we move the outer bloc
+to englobe the inner bloc, the canvas flickers. The rezize of the bloc have a very strange behaviour.
+comments:  OCC: Could you, please, provide a schema sample, on which
+this bug is reproduced?
+----------------------------------------------------------------------------------------------------
+Num-----: 11 
+priority: 0
+status--: NOK
+description: after loading bschema.xml, ports are not visibles in the node properties panel
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----: 12 
+priority: 0
+status--: NOK
+description: in edition, Selection is not possible from canvas (highlight in tree, open properties...)
+and selection in tree has no action on canvas.
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----: 13
+priority: 0
+status--: NOK
+description: When the bloc properties is open, there is a button to add nodes, that does not work.
+(remove seems possible)
+comments: OCC: Could you, please, provide a test scenario to reproduce
+this bug?
+----------------------------------------------------------------------------------------------------
+Num-----: 14
+priority: 0
+status--: NOK
+description: In general, there are too much buttons or menus that have no action, or very unclear.
+these buttons must be either removed, or grayed if they corresponds to something in development.
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----:  
+priority: 0
+status--: NOK
+description: 
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----: 1001 
+priority: 1
+status--: NOK
+description: only container "FactoryServerPy" works on OCN tests, instead of a C++ container. C++
+container works at EDF: There is a problem with the OCN distribution that may compromise SALOME
+Application deployement.
+comments: OCC: Could you, please, specify the launch options for YACSContainer?
+----------------------------------------------------------------------------------------------------
+Num-----: 1002 
+priority: 1
+status--: NOK
+description: in create node menu, node node service is confusing. It is better to create a 
+service node, then to associate it with another node with which the coponent instance is shared.
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----:  
+priority: 0
+status--: NOK
+description: 
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----: 2001
+priority: 2
+status--: NOK
+description: control gates on tree are useless, we can use directly the node itself.
+(the idea is to have a lighter tree)
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----: 2002 
+priority: 2
+status--: NOK
+description: Link redrawing is globally OK, but sometimes the links are not visible because very 
+near the blocs borders.
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----:  
+priority: 0
+status--: NOK
+description: 
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----:  
+priority: 0
+status--: NOK
+description: 
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----:  
+priority: 0
+status--: NOK
+description: 
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----:  
+priority: 0
+status--: NOK
+description: 
+comments:
+----------------------------------------------------------------------------------------------------
+
+
+Problems detected by OCC
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+----------------------------------------------------------------------------------------------------
+Num-----:  
+priority: 0
+status--: NOK
+description: 
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----:  
+priority: 0
+status--: NOK
+description: 
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----:  
+priority: 0
+status--: NOK
+description: 
+comments:
+----------------------------------------------------------------------------------------------------

@@ -21,10 +21,16 @@
         </inline>
         </bloc>
 
+        <outnode name="out" ref="g.data">
+          <parameter name="d1" type="double" />
+        </outnode>
+
         <datalink> <fromnode>a</fromnode><fromport>p1</fromport>
             <tonode>n2</tonode> <toport>p1</toport> </datalink>
         <datalink> <fromnode>a</fromnode><fromport>p1</fromport>
             <tonode>b.n2</tonode> <toport>p1</toport> </datalink>
+        <datalink> <fromnode>b.n2</fromnode><fromport>p1</fromport>
+            <tonode>out</tonode> <toport>d1</toport> </datalink>
 
 
 </proc>

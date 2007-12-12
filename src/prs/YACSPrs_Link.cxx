@@ -48,10 +48,10 @@ YACSPrs_Link::YACSPrs_Link( SUIT_ResourceMgr* theMgr, QCanvas* theCanvas ):
 YACSPrs_Link::~YACSPrs_Link()
 {
   // TO DO : check commented code if link is deleted
-  for (QCanvasItemList::Iterator it = myPrs.begin(); it != myPrs.end(); ++it) {
-    (*it)->hide();
-    //delete *it;
-  }
+  //for (QCanvasItemList::Iterator it = myPrs.begin(); it != myPrs.end(); ++it) {
+  //(*it)->hide();
+  //delete *it;
+  //}
   
   myPoints.clear();
 }
@@ -62,6 +62,15 @@ void YACSPrs_Link::show()
 
   for (QCanvasItemList::Iterator it = myPrs.begin(); it != myPrs.end(); ++it) {
     (*it)->show();
+  }
+}
+
+void YACSPrs_Link::hide()
+{
+  if (myPrs.isEmpty()) return;
+
+  for (QCanvasItemList::Iterator it = myPrs.begin(); it != myPrs.end(); ++it) {
+    (*it)->hide();
   }
 }
 
@@ -82,6 +91,15 @@ void YACSPrs_Link::merge()
 
   // restore z of the link
   setZ(aZ);
+}
+
+void YACSPrs_Link::setCanvas(QCanvas* theCanvas)
+{
+  myCanvas = theCanvas;
+
+  // set canvas for all prs items
+  for (QCanvasItemList::Iterator it = myPrs.begin(); it != myPrs.end(); ++it)
+    (*it)->setCanvas(theCanvas);
 }
 
 void YACSPrs_Link::updatePoints(QCanvasItem* thePointItem)
@@ -783,7 +801,7 @@ void YACSPrs_Point::moveBy(double dx, double dy)
   if (myInEdge) myInEdge->setFromPoint(this);
   if (myOutEdge) myOutEdge->setToPoint(this);
   
-  if ( getLink() && !getLink()->isEmptyPrs() ) {
+  if ( canvas() && getLink() && !getLink()->isEmptyPrs() ) {
     //resize canvas view if mouse is outside
     int w = (int)(x()+dx) + width() + GRAPH_MARGIN;
     int h = (int)(y()+dy) + height() + GRAPH_MARGIN;

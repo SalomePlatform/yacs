@@ -100,6 +100,7 @@ struct outnodetypeParser:public nodetypeParser<T>
   virtual void name (const std::string& name);
   virtual void kind (const std::string& kind);
   virtual void ref (const std::string& ref);
+  virtual void create ();
   virtual void parameter (myoutport& p);
   virtual T post();
   std::string _name;
@@ -117,6 +118,7 @@ void outnodetypeParser<T>::onStart(const XML_Char* el, const XML_Char** attr)
       std::string element(el);
       parser* pp=&parser::main_parser;
       if(element == "parameter")pp=&outputdatatypeParser::outputdataParser;
+      if(element == "property")pp=&propertytypeParser::propertyParser;
       this->SetUserDataAndPush(pp);
       pp->init();
       pp->pre();
@@ -129,6 +131,7 @@ void outnodetypeParser<T>::onEnd(const char *el,parser* child)
       DEBTRACE("outnodetypeParser::onEnd");
       std::string element(el);
       if(element == "parameter")parameter(((outputdatatypeParser*)child)->post());
+      if(element == "property")this->property(((propertytypeParser*)child)->post());
     }
 
 template <class T>
@@ -142,13 +145,14 @@ void outnodetypeParser<T>::buildAttr(const XML_Char** attr)
           if(std::string(attr[i]) == "kind")kind(attr[i+1]);
           if(std::string(attr[i]) == "ref")ref(attr[i+1]);
         }
+      create();
     }
 
 template <class T>
 void outnodetypeParser<T>::pre ()
 {
   this->_node=0;
-  _kind="outnode";
+  _kind="";
   _ref="";
 }
 
@@ -169,11 +173,15 @@ void outnodetypeParser<T>::ref (const std::string& ref)
 }
 
 template <class T>
+void outnodetypeParser<T>::create ()
+{
+  this->_node = theRuntime->createOutDataNode(_kind,_name);
+}
+
+template <class T>
 void outnodetypeParser<T>::parameter (myoutport& p)
 {
   DEBTRACE("outnodetypeParser::parameter");
-  if(this->_node==0)
-    this->_node = theRuntime->createDataNode(_kind,_name);
   if(currentProc->typeMap.count(p._type)==0)
     {
       std::string msg="Unknown Type: ";
@@ -188,8 +196,6 @@ void outnodetypeParser<T>::parameter (myoutport& p)
 template <class T>
 T outnodetypeParser<T>::post()
 {
-  if(this->_node==0)
-    this->_node = theRuntime->createDataNode(_kind,_name);
   this->_node->setRef(_ref);
   return this->_node;
 }

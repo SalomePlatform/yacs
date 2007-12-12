@@ -135,7 +135,7 @@ void YACSGui_ServiceNode::update(YACS::ENGINE::Node* theEngine,
     SubjectNode* aSNode = theParent->getChild(theEngine);
     if ( aSNode )
     {
-      theItem = new YACSPrs_ServiceNode( resMgr(), 0, aSNode );
+      theItem = new YACSPrs_ServiceNode( resMgr(), graph()->getCanvas(), aSNode );
       graph()->registerStatusObserverWithNode(theEngine);
     }
   }
@@ -181,7 +181,7 @@ void YACSGui_InlineNode::update(YACS::ENGINE::Node* theEngine,
     SubjectNode* aINode = theParent->getChild(theEngine);
     if ( aINode )
     {
-      theItem = new YACSPrs_InlineNode( resMgr(), 0, aINode );
+      theItem = new YACSPrs_InlineNode( resMgr(), graph()->getCanvas(), aINode );
       graph()->registerStatusObserverWithNode(theEngine);
     }
   }
@@ -227,7 +227,7 @@ void YACSGui_IfNode::update(YACS::ENGINE::Node* theEngine,
     SubjectComposedNode* aCNode = dynamic_cast<SubjectComposedNode*>( theParent->getChild(theEngine) );
     if ( aCNode )
     {
-      theItem = new YACSPrs_IfNode( resMgr(), 0, aCNode );
+      theItem = new YACSPrs_IfNode( resMgr(), graph()->getCanvas(), aCNode );
       graph()->registerStatusObserverWithNode(theEngine);
       graph()->createChildNodesPresentations( aCNode );
     }
@@ -274,7 +274,7 @@ void YACSGui_SwitchNode::update(YACS::ENGINE::Node* theEngine,
     SubjectSwitch* aSNode = dynamic_cast<SubjectSwitch*>( theParent->getChild(theEngine) );
     if ( aSNode )
     {
-      theItem = new YACSPrs_SwitchNode( resMgr(), 0, aSNode );
+      theItem = new YACSPrs_SwitchNode( resMgr(), graph()->getCanvas(), aSNode );
       graph()->registerStatusObserverWithNode(theEngine);
       graph()->createChildNodesPresentations( aSNode );
     }
@@ -321,7 +321,7 @@ void YACSGui_LoopNode::update(YACS::ENGINE::Node* theEngine,
     SubjectComposedNode* aLNode = dynamic_cast<SubjectComposedNode*>( theParent->getChild(theEngine) );
     if ( aLNode )
     {
-      theItem = new YACSPrs_LoopNode( resMgr(), 0, aLNode );
+      theItem = new YACSPrs_LoopNode( resMgr(), graph()->getCanvas(), aLNode );
       graph()->registerStatusObserverWithNode(theEngine);
       graph()->createChildNodesPresentations( aLNode );
     }
@@ -368,7 +368,7 @@ void YACSGui_ForEachLoopNode::update(YACS::ENGINE::Node* theEngine,
     SubjectComposedNode* aFELNode = dynamic_cast<SubjectComposedNode*>( theParent->getChild(theEngine) );
     if ( aFELNode )
     {
-      theItem = new YACSPrs_ForEachLoopNode( resMgr(), 0, aFELNode );
+      theItem = new YACSPrs_ForEachLoopNode( resMgr(), graph()->getCanvas(), aFELNode );
       graph()->registerStatusObserverWithNode(theEngine);
       graph()->createChildNodesPresentations( aFELNode );
     }
@@ -430,7 +430,8 @@ void YACSGui_BlocNode::update(YACS::ENGINE::Node* theEngine,
 	  if ( graph()->getItem( *it ) )
 	    aNodePrsSet.insert( graph()->getItem( *it ) );
 	
-	YACSPrs_BlocNode* aBlocPrs = new YACSPrs_BlocNode( resMgr(), 0, aBNode,
+	YACSPrs_BlocNode* aBlocPrs = new YACSPrs_BlocNode( resMgr(), graph()->getCanvas(),
+							   aBNode,
 							   YACSPrs_BlocNode::Expanded,
 							   level(theEngine) );
 	aBlocPrs->setChildren( aNodePrsSet );

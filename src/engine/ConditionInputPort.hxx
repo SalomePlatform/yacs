@@ -23,7 +23,7 @@ namespace YACS
       bool isLinkedOutOfScope() const;
       void edNotifyReferencedBy(OutPort *fromPort);
       void edNotifyDereferencedBy(OutPort *fromPort);
-      void *get() const throw(Exception);
+      void *get() const;
       void put(const void *data) throw(ConversionException);
       std::string dump();
     protected:

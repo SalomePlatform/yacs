@@ -26,12 +26,12 @@ sharedpkgpythondir =$(pkgpythondir)/shared_modules
 docdir             = $(datadir)/doc/@PACKAGE@
 
 # .qm translator files and icons
-POFILES =
-ICONS =
-QMFILES = $(POFILES:%.po=%.qm)
+#POFILES =
+#ICONS =
+#QMFILES = $(POFILES:%.po=%.qm)
 #resourcesdir = $(pkgdatadir)/resources
 #resources_DATA = $(QMFILES) $(ICONS)
-dist_salomeres_DATA = $(QMFILES) $(ICONS)
+#dist_salomeres_DATA = $(QMFILES) $(ICONS)
 
 EXTRA_DIST = $(wildcard $(srcdir)/*.hxx) $(wildcard $(srcdir)/*.h)
 

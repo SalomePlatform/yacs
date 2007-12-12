@@ -37,12 +37,13 @@ namespace YACS
     {
       DEBTRACE(" CppPython::put(Any *data)");
       PyObject *ob;
-      {
-	InterpreterUnlocker l;
-	ob=convertCppPyObject(edGetType(), data);
-	PyObject_Print(ob,stderr,Py_PRINT_RAW);
-        DEBTRACE( "ob refcnt: " << ob->ob_refcnt );
-      }
+      InterpreterUnlocker l;
+      ob=convertCppPyObject(edGetType(), data);
+#ifdef _DEVDEBUG_
+      PyObject_Print(ob,stderr,Py_PRINT_RAW);
+      std::cerr << std::endl;
+#endif
+      DEBTRACE( "ob refcnt: " << ob->ob_refcnt );
       _port->put(ob);
       Py_DECREF(ob);
       DEBTRACE( "ob refcnt: " << ob->ob_refcnt );

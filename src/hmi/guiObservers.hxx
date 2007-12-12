@@ -229,10 +229,10 @@ namespace YACS
     public:
       SubjectComposedNode(YACS::ENGINE::ComposedNode *composedNode, Subject *parent);
       virtual ~SubjectComposedNode();
-      virtual bool addNode(YACS::ENGINE::Catalog *catalog,
-                           std::string compo,
-                           std::string type,
-                           std::string name);
+      virtual SubjectNode* addNode(YACS::ENGINE::Catalog *catalog,
+				   std::string compo,
+				   std::string type,
+				   std::string name);
       virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const  { return 0; }
       virtual void loadChildren();
       virtual void loadLinks();
@@ -266,10 +266,10 @@ namespace YACS
     public:
       SubjectBloc(YACS::ENGINE::Bloc *bloc, Subject *parent);
       virtual ~SubjectBloc();
-      virtual bool addNode(YACS::ENGINE::Catalog *catalog,
-                           std::string compo,
-                           std::string type,
-                           std::string name);
+      virtual SubjectNode* addNode(YACS::ENGINE::Catalog *catalog,
+				   std::string compo,
+				   std::string type,
+				   std::string name);
       virtual void removeNode(SubjectNode* child);
       virtual void completeChildrenSubjectList(SubjectNode *son);
       virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const;
@@ -315,13 +315,14 @@ namespace YACS
     class SubjectDataType: public Subject
     {
     public:
-      SubjectDataType(std::string typeName, Subject *parent);
+      SubjectDataType(YACS::ENGINE::TypeCode *typeCode, Subject *parent);
       virtual ~SubjectDataType();
       virtual std::string getName();
+      virtual YACS::ENGINE::TypeCode* getTypeCode();
       virtual void clean();
       void localClean();
     protected:
-      std::string _typeName;
+      YACS::ENGINE::TypeCode *_typeCode;
     };
 
     class SubjectProc: public SubjectBloc
@@ -330,6 +331,8 @@ namespace YACS
       SubjectProc(YACS::ENGINE::Proc *proc, Subject *parent);
       virtual ~SubjectProc();
       void loadProc();
+      void loadComponents();
+      void loadContainers();
       virtual SubjectComponent* addComponent(std::string name);
       virtual bool addContainer(std::string name, std::string ref="");
       virtual bool addDataType(YACS::ENGINE::Catalog* catalog, std::string typeName);
@@ -349,10 +352,10 @@ namespace YACS
     public:
       SubjectForLoop(YACS::ENGINE::ForLoop *forLoop, Subject *parent);
       virtual ~SubjectForLoop();
-      virtual bool addNode(YACS::ENGINE::Catalog *catalog,
-                           std::string compo,
-                           std::string type,
-                           std::string name);
+      virtual SubjectNode* addNode(YACS::ENGINE::Catalog *catalog,
+				   std::string compo,
+				   std::string type,
+				   std::string name);
       virtual void completeChildrenSubjectList(SubjectNode *son);
       virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const { return _body; }
       virtual void clean();
@@ -367,10 +370,10 @@ namespace YACS
     public:
       SubjectWhileLoop(YACS::ENGINE::WhileLoop *whileLoop, Subject *parent);
       virtual ~SubjectWhileLoop();
-      virtual bool addNode(YACS::ENGINE::Catalog *catalog,
-                           std::string compo,
-                           std::string type,
-                           std::string name);
+      virtual SubjectNode* addNode(YACS::ENGINE::Catalog *catalog,
+				   std::string compo,
+				   std::string type,
+				   std::string name);
       virtual void completeChildrenSubjectList(SubjectNode *son);
       virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const { return _body; }
       virtual void clean();
@@ -385,12 +388,12 @@ namespace YACS
     public:
       SubjectSwitch(YACS::ENGINE::Switch *aSwitch, Subject *parent);
       virtual ~SubjectSwitch();
-      virtual bool addNode(YACS::ENGINE::Catalog *catalog,
-                           std::string compo,
-                           std::string type,
-                           std::string name,
-                           int swCase,
-			   bool replace = false);
+      virtual SubjectNode* addNode(YACS::ENGINE::Catalog *catalog,
+				   std::string compo,
+				   std::string type,
+				   std::string name,
+				   int swCase,
+				   bool replace = false);
       std::map<int, SubjectNode*> getBodyMap();
       virtual void completeChildrenSubjectList(SubjectNode *son);
       virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const;
@@ -406,10 +409,10 @@ namespace YACS
     public:
       SubjectForEachLoop(YACS::ENGINE::ForEachLoop *forEachLoop, Subject *parent);
       virtual ~SubjectForEachLoop();
-      virtual bool addNode(YACS::ENGINE::Catalog *catalog,
-                           std::string compo,
-                           std::string type,
-                           std::string name);
+      virtual SubjectNode* addNode(YACS::ENGINE::Catalog *catalog,
+				   std::string compo,
+				   std::string type,
+				   std::string name);
       virtual void completeChildrenSubjectList(SubjectNode *son);
       virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const { return _body; }
       virtual void clean();
@@ -425,10 +428,10 @@ namespace YACS
     public:
       SubjectOptimizerLoop(YACS::ENGINE::OptimizerLoop *optimizerLoop, Subject *parent);
       virtual ~SubjectOptimizerLoop();
-      virtual bool addNode(YACS::ENGINE::Catalog *catalog,
-                           std::string compo,
-                           std::string type,
-                           std::string name);
+      virtual SubjectNode* addNode(YACS::ENGINE::Catalog *catalog,
+				   std::string compo,
+				   std::string type,
+				   std::string name);
       virtual void completeChildrenSubjectList(SubjectNode *son);
       virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const { return _body; }
       virtual void clean();
@@ -460,6 +463,8 @@ namespace YACS
     public:
       SubjectInlineNode(YACS::ENGINE::InlineNode *inlineNode, Subject *parent);
       virtual ~SubjectInlineNode();
+      virtual bool setScript(std::string script);
+      virtual std::string getScript();
       virtual void clean();
       void localClean();
     protected:
@@ -482,6 +487,7 @@ namespace YACS
     public:
       SubjectPyFuncNode(YACS::ENGINE::PyFuncNode *pyFuncNode, Subject *parent);
       virtual ~SubjectPyFuncNode();
+      virtual bool setFunctionName(std::string funcName);
       virtual void clean();
       void localClean();
     protected:

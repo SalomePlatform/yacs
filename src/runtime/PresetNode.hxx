@@ -19,6 +19,7 @@ namespace YACS
       virtual void accept(Visitor *visitor);
       virtual void checkBasicConsistency() const throw(Exception);
       virtual void setData(OutputPort* port, std::string& data);
+      virtual OutputPort *createOutputPort(const std::string& outputPortName, TypeCode* type);
     public:
       static const char IMPL_NAME[];
     };

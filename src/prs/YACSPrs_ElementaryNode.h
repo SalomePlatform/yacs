@@ -363,6 +363,9 @@ class YACSPrs_ElementaryNode : public QxGraph_ActiveItem,
   bool isCheckAreaNeeded() const { return myIsCheckAreaNeeded; }
   void setIsCheckAreaNeeded(bool theValue) { myIsCheckAreaNeeded = theValue; }
 
+  bool isFullDMode() const;
+  bool isControlDMode() const;
+
  //signals:
   //void portsChanged();
 
@@ -441,6 +444,8 @@ class YACSPrs_ElementaryNode : public QxGraph_ActiveItem,
   QTime myStartTime;
   bool  myStarted;
   bool  myFinished;
+
+  int   myViewMode;
 };
 
 #endif

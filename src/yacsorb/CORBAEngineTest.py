@@ -14,7 +14,7 @@ procEx = yacsgen.LoadProc("samples/legendre7.xml")
 procEx.setExecMode(YACSGui_ORB.CONTINUE)
 procEx.Run()
 
-# --- wait until executor is paused, finised or stopped
+# --- wait until executor is paused, finished or stopped
 
 isRunning = 1
 while isRunning:
@@ -34,10 +34,10 @@ for name in names:
     i+=1
     pass
 
-procEx.getOutPortValue(dico["poly_7"],"Pn")
-procEx.getInPortValue(dico["poly_7"],"x")
-procEx.getInPortValue(dico["poly_7"],"notAPort")
-procEx.getInPortValue(dico["Legendre.loopIter"],"nsteps")
+print procEx.getOutPortValue(dico["poly_7"],"Pn")
+print procEx.getInPortValue(dico["poly_7"],"x")
+print procEx.getInPortValue(dico["poly_7"],"notAPort")
+print procEx.getInPortValue(dico["Legendre.loopIter"],"nsteps")
 
 # -----------------------------------------------------------------------------
 # --- schema with errors (echoSrv must be launched)
@@ -66,8 +66,8 @@ for name in names:
     i+=1
     pass
 
-procEx.getErrorDetails(dico["c1"])
-procEx.getErrorDetails(dico["node13"])
+print procEx.getErrorDetails(dico["c1"])
+print procEx.getErrorDetails(dico["node13"])
 
 # -----------------------------------------------------------------------------
 # --- schema with errors

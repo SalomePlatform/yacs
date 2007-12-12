@@ -89,8 +89,8 @@ myMainform::myMainform(QWidget* parent, const char* name, WFlags fl)
   _loader->registerProcCataLoader();
   YACS::HMI::GuiContext* context = new YACS::HMI::GuiContext();
   YACS::HMI::GuiContext::setCurrent(context);
-  setMinimumWidth(1000);
-  setMinimumHeight(600);
+  setMinimumWidth(1260);
+  setMinimumHeight(800);
   setCanvas();
   addTree(Qt::DockLeft);
   addTree(Qt::DockRight);

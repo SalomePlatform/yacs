@@ -238,12 +238,14 @@ namespace YACS
 %template()              std::pair<std::string, YACS::ENGINE::Node *>;
 %template()              std::pair<std::string, YACS::ENGINE::InlineNode *>;
 %template()              std::pair<std::string, YACS::ENGINE::ServiceNode *>;
+%template()              std::pair<std::string, YACS::ENGINE::Container *>;
 %template()              std::pair<YACS::ENGINE::OutPort *,YACS::ENGINE::InPort *>;
 %template()              std::pair<YACS::ENGINE::InPort *,YACS::ENGINE::OutPort *>;
 %template(TCmap)         std::map<std::string, YACS::ENGINE::TypeCode *>;
 %template(NODEmap)       std::map<std::string, YACS::ENGINE::Node *>;
 %template(INODEmap)      std::map<std::string, YACS::ENGINE::InlineNode *>;
 %template(SNODEmap)      std::map<std::string, YACS::ENGINE::ServiceNode *>;
+%template(CONTAINmap)    std::map<std::string, YACS::ENGINE::Container *>;
 %template(strvec)        std::vector<std::string>;
 %template(linksvec)      std::vector< std::pair<YACS::ENGINE::OutPort *,YACS::ENGINE::InPort *> >;
 %template(linkvec)       std::vector< std::pair<YACS::ENGINE::InPort *,YACS::ENGINE::OutPort *> >;

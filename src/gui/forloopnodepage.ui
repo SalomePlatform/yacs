@@ -7,9 +7,9 @@
     <property name="geometry">
         <rect>
             <x>0</x>
-            <y>0</y>
+            <y>30</y>
             <width>360</width>
-            <height>286</height>
+            <height>326</height>
         </rect>
     </property>
     <property name="sizePolicy">
@@ -157,10 +157,13 @@
                                 <cstring>myNbTimesInputPortValue</cstring>
                             </property>
                             <property name="maxValue">
-                                <number>100</number>
+                                <number>1000000</number>
                             </property>
                             <property name="minValue">
-                                <number>1</number>
+                                <number>0</number>
+                            </property>
+                            <property name="value">
+                                <number>0</number>
                             </property>
                         </widget>
                     </grid>

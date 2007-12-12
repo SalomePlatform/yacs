@@ -282,6 +282,27 @@ bool Observer_i::event(QEvent *e)
               if (aState < 0)
                 return true;
 
+	      /*
+	      if ( aState == YACS::DONE ) //for test
+	      {
+		std::list<InPort*> IPs = aNode->getSetOfInPort();
+		std::list<InPort*>::iterator itIP = IPs.begin();
+		for ( ; itIP!=IPs.end(); itIP++ )
+		{
+		  string aValue = _engineProc->getInPortValue(numid,(*itIP)->getName().c_str());
+		  printf(">> In port : %s -> %s\n",(*itIP)->getName().c_str(),aValue.c_str());
+		}
+
+		std::list<OutPort*> OPs = aNode->getSetOfOutPort();
+		std::list<OutPort*>::iterator itOP = OPs.begin();
+		for ( ; itOP!=OPs.end(); itOP++ )
+		{
+		  string aValue = _engineProc->getOutPortValue(numid,(*itOP)->getName().c_str());
+		  printf(">> Out port : %s -> %s\n",(*itOP)->getName().c_str(),aValue.c_str());
+		}
+	      }
+	      */
+
               YACSGui_RunMode* theRunMode = _guiMod->getRunMode(_guiExec);
               if (theRunMode)
                 theRunMode->onNotifyNodeStatus(iGui, aState);

@@ -41,7 +41,7 @@ then
 	  DOXYGEN_WITH_PYTHON=yes
 	  DOXYGEN_WITH_STL=yes
 	  ;;
-	[1-9].[5-9]*)
+	[[1-9]].[[5-9]]*)
 	  DOXYGEN_WITH_PYTHON=yes
 	  DOXYGEN_WITH_STL=yes
 	  ;;
@@ -60,8 +60,10 @@ dnl AC_SUBST(DOXYGEN)
 AC_SUBST(GRAPHVIZHOME)
 AC_SUBST(GRAPHVIZ_CPPFLAGS)
 AC_SUBST(GRAPHVIZ_LDFLAGS)
+AC_SUBST(GRAPHVIZ_LIBADD)
 GRAPHVIZ_CPPFLAGS=""
 GRAPHVIZ_LDFLAGS=""
+GRAPHVIZ_LIBADD=""
 
 graphviz_ok=yes
 dnl were is graphviz ?
@@ -70,11 +72,21 @@ if test "x$DOT" = "x" ; then
   AC_MSG_WARN(graphviz not found)
   graphviz_ok=no
 else
-dnl  GRAPHVIZHOME="/usr"
   GRAPHVIZ_CPPFLAGS="-I${GRAPHVIZHOME}/include/graphviz"
   GRAPHVIZ_LDFLAGS="-L${GRAPHVIZHOME}/lib/graphviz"
 fi
 dnl AC_SUBST(DOT)
+CPPFLAGS_old=$CPPFLAGS
+CPPFLAGS="$CPPFLAGS $GRAPHVIZ_CPPFLAGS"
+old_graphviz="yes"
+AC_CHECK_HEADERS(dotneato.h, old_graphviz="yes", old_graphviz="no")
+if test "x$old_graphviz" = "xyes" ; then
+  GRAPHVIZ_CPPFLAGS=" -DHAVE_DOTNEATO_H $GRAPHVIZ_CPPFLAGS"
+  GRAPHVIZ_LIBADD="-ldotneato"
+else
+  GRAPHVIZ_LIBADD="-lgvc"
+fi
+CPPFLAGS_old=$CPPFLAGS
 
 AC_PATH_PROG(LATEX,latex) 
 if test "x$LATEX" = "x" ; then

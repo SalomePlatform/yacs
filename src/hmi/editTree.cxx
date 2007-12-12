@@ -99,6 +99,7 @@ void ViewItem::select(bool isSelected)
 {
 //   DEBTRACE("ViewItem::select() "<< this);
   _parent->setSelected(this, isSelected);
+  _parent->ensureItemVisible(this);
 }
 
 void ViewItem::update(GuiEvent event, int type, Subject* son)
@@ -426,6 +427,7 @@ YACS::HMI::ViewItem* editTree::getViewItem(YACS::HMI::Subject* subject)
 void editTree::resetTreeNode(QListView *lv)
 {
   lv->clear();
+  lv->setColumnWidth(0,400);
 //   lv->addColumn( "state", 100);
   lv->setRootIsDecorated( TRUE );
   if (_root)

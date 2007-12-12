@@ -325,7 +325,7 @@ class Appli(QMainWindow):
     if self.currentPanel.selected:#item selected
       if isinstance(self.currentPanel.selected,Items.ItemComposedNode):
         #can update
-        self.currentPanel.selected.editor.updateCanvas()
+        self.currentPanel.selected.graph.editor.updateCanvas()
 
   def addNode(self,node):
     if self.currentPanel and self.currentPanel.selected:#item selected
@@ -337,13 +337,13 @@ class Appli(QMainWindow):
     if self.currentPanel.selected:#item selected
       if isinstance(self.currentPanel.selected,Items.ItemComposedNode):
         #on peut zoomer
-        self.currentPanel.selected.editor.zoomIn()
+        self.currentPanel.selected.graph.editor.zoomIn()
 
   def zoomOut(self):
     if self.currentPanel.selected:#item selected
       if isinstance(self.currentPanel.selected,Items.ItemComposedNode):
         #on peut dezoomer
-        self.currentPanel.selected.editor.zoomOut()
+        self.currentPanel.selected.graph.editor.zoomOut()
 
   def handlePreferences(self):
     pass

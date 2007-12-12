@@ -21,10 +21,10 @@ void NeutralCorbaInt::put(const void *data)  throw(ConversionException)
 
 void NeutralCorbaInt::put(YACS::ENGINE::Any *data)  throw(ConversionException)
 {
-  CORBA::Long l= data->getIntValue();
-  CORBA::Any a;
-  a <<= l;
-  _port->put(&a);
+  CORBA::Any *a =convertNeutralCorba(edGetType(),data);
+  _port->put(a);
+  //delete Any that has been allocated by convertNeutralCorba
+  delete a;
 }
 
 void NeutralCorbaBool::put(const void *data)  throw(ConversionException)
@@ -58,10 +58,10 @@ void NeutralCorbaDouble::put(const void *data)  throw(ConversionException)
 
 void NeutralCorbaDouble::put(YACS::ENGINE::Any *data)  throw(ConversionException)
 {
-  CORBA::Double d = data->getDoubleValue();
-  CORBA::Any a;
-  a <<= d;
-  _port->put(&a);
+  CORBA::Any *a =convertNeutralCorba(edGetType(),data);
+  _port->put(a);
+  //delete Any that has been allocated by convertNeutralCorba
+  delete a;
 }
 
 void NeutralCorbaSequence::put(const void *data) throw(ConversionException)
@@ -96,10 +96,10 @@ void NeutralCorbaString::put(const void *data) throw(ConversionException)
  */
 void NeutralCorbaString::put(YACS::ENGINE::Any *data) throw(ConversionException)
 {
-  string val=data->getStringValue();
-  CORBA::Any a;
-  a <<= val.c_str();
-  _port->put(&a);
+  CORBA::Any *a =convertNeutralCorba(edGetType(),data);
+  _port->put(a);
+  //delete Any that has been allocated by convertNeutralCorba
+  delete a;
 }
 
 NeutralCorbaObjref::NeutralCorbaObjref(InputCorbaPort* p):ProxyPort(p), DataPort(p->getName(), p->getNode(), p->edGetType()), Port(p->getNode())

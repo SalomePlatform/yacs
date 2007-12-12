@@ -52,6 +52,9 @@ class LineConn2d_Model;
 class YACSGui_Graph : public QxGraph_Prs, public YACS::HMI::GuiObserver
 {
 public:
+  enum { FullId = 0, ControlId, DataflowId, DataStreamId };
+
+public:
   YACSGui_Graph(YACSGui_Module*, QxGraph_Canvas*, YACS::HMI::GuiContext*);
   virtual ~YACSGui_Graph();
 
@@ -67,6 +70,9 @@ public:
   void                    update( YACS::ENGINE::Node*, YACS::HMI::SubjectComposedNode* );
   void                    update( YACSPrs_InOutPort* );
   void                    update( YACSPrs_LabelPort* );
+
+  virtual void            show( bool theWithArrange = true );
+  void                    viewModesConsistency( int theDModeFrom, int theDModeTo );
 
   void                    createChildNodesPresentations( YACS::HMI::SubjectComposedNode* );
 
@@ -106,6 +112,8 @@ public:
 
   void                    registerStatusObserverWithNode(YACS::ENGINE::Node* theNode);
 
+  void                    deletePrs(YACS::HMI::SubjectNode* theSubject);
+
 private:
   YACSGui_Node*           driver( YACS::ENGINE::Node* theNode );
   void                    createLinksFromGivenOutPortPrs( YACSPrs_InOutPort* theOutPortPrs,
@@ -114,7 +122,7 @@ private:
 private:
 
   typedef std::map<const char*, YACSGui_Node*> DriverMap;
-  typedef std::map<YACS::ENGINE::Node*, YACSPrs_ElementaryNode*> ItemMap;
+  typedef std::map<int, std::map<YACS::ENGINE::Node*, YACSPrs_ElementaryNode*> > ItemMap;
   typedef std::map<YACS::ENGINE::Bloc*, std::list< std::pair<YACS::ENGINE::Bloc*,YACS::ENGINE::Bloc*> > > Bloc2InsideLinksMap;
   
   YACSGui_Module*         myModule;

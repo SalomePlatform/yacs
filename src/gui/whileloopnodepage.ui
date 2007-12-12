@@ -9,7 +9,7 @@
             <x>0</x>
             <y>0</y>
             <width>393</width>
-            <height>286</height>
+            <height>318</height>
         </rect>
     </property>
     <property name="sizePolicy">
@@ -141,6 +141,9 @@
                             </item>
                             <property name="name">
                                 <cstring>myCondInputPortValue</cstring>
+                            </property>
+                            <property name="currentItem">
+                                <number>1</number>
                             </property>
                         </widget>
                         <widget class="QLineEdit" row="4" column="1">

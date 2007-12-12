@@ -24,6 +24,7 @@ namespace YACS
       GuiContext();
       virtual ~GuiContext();
       void setProc(YACS::ENGINE::Proc* proc);
+      long getNewId(YACS::HMI::TypeOfElem type);
 
       inline YACS::ENGINE::Catalog* getBuiltinCatalog()  {return _builtinCatalog; };
       inline YACS::ENGINE::Catalog* getSessionCatalog()  {return _sessionCatalog; };

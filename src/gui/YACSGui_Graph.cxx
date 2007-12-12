@@ -60,6 +60,8 @@
 using namespace YACS::ENGINE;
 using namespace YACS::HMI;
 
+using namespace std;
+
 /*!
   Constructor
 */
@@ -71,6 +73,8 @@ YACSGui_Graph::YACSGui_Graph(YACSGui_Module* theModule,
   myModule(theModule),
   myCProc(theCProc)
 {
+  setDMode(YACSGui_Graph::FullId);
+
   if ( myCProc->getSubjectProc() ) myCProc->getSubjectProc()->attach(this);
 
   // Create node status observer instance
@@ -91,7 +95,7 @@ YACSGui_Graph::~YACSGui_Graph()
 	it1 != aDM.end();
 	it1++ )
   {
-    for ( std::list<QCanvasItem*>::iterator it2 = (*it1).second.begin();
+    for ( list<QCanvasItem*>::iterator it2 = (*it1).second.begin();
 	  it2 != (*it1).second.end();
 	  it2++ )
     {
@@ -152,9 +156,30 @@ void YACSGui_Graph::update(YACS::HMI::GuiEvent event, int type, YACS::HMI::Subje
     }
     break;
   case REMOVE:
+    switch (type)
     {
-      printf("Graph:  REMOVE\n");
-      //...
+    case BLOC:
+    case FOREACHLOOP:
+    case OPTIMIZERLOOP:
+    case FORLOOP:
+    case WHILELOOP:
+    case SWITCH:
+    case PYTHONNODE:
+    case PYFUNCNODE:
+    case CORBANODE:
+    case SALOMENODE:
+    case CPPNODE:
+    case SALOMEPYTHONNODE:
+    case XMLNODE:
+      {
+	// remove a node item (this = schema item)
+	printf("Graph:  REMOVE node\n");
+	if ( SubjectNode* aNode = dynamic_cast<SubjectNode*>(son) )
+	  deletePrs( aNode );
+      }
+      break;
+    default:
+      break;
     }
     break;
   default:
@@ -185,33 +210,16 @@ void YACSGui_Graph::update()
   // TODO - clean exisiting items first
   // ...
 
-  // maximum width and height of nodes presentation (for table arrangement first level nodes)
-  int aMaxNodeWidth=0, aMaxNodeHeight=0;
-  bool aNeedToArrange = false;
-
   // Iterate through Proc's nodes and create presentation items for them
   Proc* aProc = getProc();
   if (aProc)
   {
-    std::set<Node*> aNodeSet = aProc->getAllRecursiveConstituents();
-
-    if ( !getItem( *(aNodeSet.begin()) ) ) aNeedToArrange = true;
+    set<Node*> aNodeSet = aProc->getAllRecursiveConstituents();
 
     createChildNodesPresentations( ( myCProc ? myCProc->getSubjectProc() : 0 ) );
 
-    // TODO : to be removed in the future (when the arrange nodes algorithm is included) -->
-    for ( std::set<Node*>::iterator it = aNodeSet.begin(); it != aNodeSet.end(); it++ )
-    {
-      YACSPrs_ElementaryNode* aNodePrs = getItem( *it );
-      if ( aNodePrs ) {
-	if ( aMaxNodeWidth < aNodePrs->maxWidth() ) aMaxNodeWidth = aNodePrs->maxWidth();
-	if ( aMaxNodeHeight < aNodePrs->maxHeight() ) aMaxNodeHeight = aNodePrs->maxHeight();
-      }
-    }
-    // <--
-
     // Create links
-    for ( std::set<Node*>::iterator it = aNodeSet.begin(); it != aNodeSet.end(); it++ )
+    for ( set<Node*>::iterator it = aNodeSet.begin(); it != aNodeSet.end(); it++ )
     {
       YACSPrs_ElementaryNode* aNodePrs = getItem( *it );
       if ( aNodePrs )
@@ -222,39 +230,75 @@ void YACSGui_Graph::update()
 	  // data and control links
 	  YACSPrs_InOutPort* anIOPort = dynamic_cast<YACSPrs_InOutPort*>( aPort );
 	  if ( anIOPort ) {
-	    update( anIOPort );
+	    if ( getDMode() == YACSGui_Graph::FullId
+		 ||
+		 getDMode() == YACSGui_Graph::ControlId && anIOPort->isGate() )
+	      update( anIOPort );
 	    continue;
 	  }
-	  // label links
-	  YACSPrs_LabelPort* aLabelPort = dynamic_cast<YACSPrs_LabelPort*>( aPort );
-	  if ( aLabelPort ) update( aLabelPort );
+	  
+	  if ( getDMode() == YACSGui_Graph::FullId )
+	  {
+	    // label links
+	    YACSPrs_LabelPort* aLabelPort = dynamic_cast<YACSPrs_LabelPort*>( aPort );
+	    if ( aLabelPort ) update( aLabelPort );
+	  }
 	}
       }
     }
-
-    if ( aNeedToArrange )
-    {
-      // table arrangement of the first level nodes
-      aNodeSet = aProc->edGetDirectDescendants();
-      int aColNum, aRowNum; aColNum = aRowNum = (int)sqrt((double)aNodeSet.size());
-      if ( aNodeSet.size() - aColNum*aRowNum > 0 ) aRowNum++;
-      int i=0,j=0;
-      int aMargin = 50;
-      for ( std::set<Node*>::iterator it = aNodeSet.begin(); it != aNodeSet.end(); it++ )
-      {
-	YACSPrs_ElementaryNode* aNodePrs = getItem( *it );
-	if ( aNodePrs )
-	{
-	  if ( j == aColNum) { j = 0; i++; }
-	  aNodePrs->move( aNodePrs->x() + i*(aMaxNodeWidth+aMargin), aNodePrs->y() + j*(aMaxNodeHeight+aMargin) );
-	  j++;
-	}
-      }
-    }
-    
   }
 
   QxGraph_Prs::update();
+}
+
+//! Arrange nodes of the graph's presentation
+/*!
+ */
+void YACSGui_Graph::show( bool theWithArrange )
+{
+  QxGraph_Prs::show();
+
+  if ( myModule && theWithArrange ) myModule->onArrangeNodes();
+}
+
+//! Corresponds the nodes positions : Full view <-> Control view.
+/*!
+ */
+void YACSGui_Graph::viewModesConsistency( int theDModeFrom, int theDModeTo )
+{
+  if ( myItems.find(theDModeFrom) != myItems.end()
+       &&
+       myItems.find(theDModeTo) != myItems.end() )
+  {
+    map<Node*, YACSPrs_ElementaryNode*> aMapFrom = myItems[theDModeFrom];
+    map<Node*, YACSPrs_ElementaryNode*>::iterator it = aMapFrom.begin();
+    for ( ; it!=aMapFrom.end(); it++ )
+    {
+      YACSPrs_ElementaryNode* aFrom = (*it).second;
+      YACSPrs_ElementaryNode* aTo = myItems[theDModeTo][(*it).first];
+      
+      if ( aFrom && aTo )
+      {
+	aTo->hide();
+
+	if ( theDModeTo == YACSGui_Graph::ControlId ) aTo->setIsCheckAreaNeeded(false);
+
+	YACSPrs_BlocNode* aBloc = dynamic_cast<YACSPrs_BlocNode*>(aTo);
+	if ( aBloc
+	     &&
+	     ( theDModeTo == YACSGui_Graph::ControlId
+	       ||
+	       aBloc->width() <= aFrom->width() && aBloc->height() <= aFrom->height() ) )
+	  aBloc->resize( aFrom->width(), aFrom->height() );
+
+	aTo->move( (int)(aFrom->x()), (int)(aFrom->y()) );
+
+	if ( theDModeTo == YACSGui_Graph::ControlId ) aTo->setIsCheckAreaNeeded(true);
+
+	aTo->show();
+      }
+    }
+  }
 }
 
 //! Updates the presentation items related to given graph node.
@@ -282,7 +326,7 @@ void YACSGui_Graph::update(Node* theEngine, SubjectComposedNode* theParent)
   if (needToAddItem)
   {
     addItem( anItem ); // add item for the current display mode
-    myItems[theEngine] = anItem;
+    myItems[getDMode()][theEngine] = anItem;
 
     //myModule->connectArrangeNodes(anItem);
   }
@@ -295,7 +339,7 @@ void YACSGui_Graph::update( YACSPrs_InOutPort* thePort )
 {
   if ( thePort->getLinks().empty() )
   {
-    std::string aClassName = thePort->getEngine()->getNameOfTypeOfCurrentInstance();
+    string aClassName = thePort->getEngine()->getNameOfTypeOfCurrentInstance();
     if ( !aClassName.compare(OutputPort::NAME) )
     { // this is an output data port => create all links going from it
       OutputPort* anOutputDFPort = dynamic_cast<OutputPort*>( thePort->getEngine() );
@@ -313,8 +357,8 @@ void YACSGui_Graph::update( YACSPrs_InOutPort* thePort )
       OutGate* anOutPort = dynamic_cast<OutGate*>( thePort->getEngine() );
       if ( anOutPort )
       {
-	std::set<InGate *> anInPorts = anOutPort->edSetInGate();
-	for(std::set<InGate *>::iterator iter=anInPorts.begin(); iter!=anInPorts.end(); iter++)
+	set<InGate *> anInPorts = anOutPort->edSetInGate();
+	for(set<InGate *>::iterator iter=anInPorts.begin(); iter!=anInPorts.end(); iter++)
 	{ // the pair <(*iter),anOutPort> is a link
 	  YACSPrs_ElementaryNode* aToNodePrs = getItem((*iter)->getNode());
 	  if ( aToNodePrs )
@@ -331,8 +375,8 @@ void YACSGui_Graph::update( YACSPrs_InOutPort* thePort )
   }
   else 
   { // update already existing port links
-    std::list<YACSPrs_Link*> aLinks = thePort->getLinks();
-    std::list<YACSPrs_Link*>::iterator it = aLinks.begin();
+    list<YACSPrs_Link*> aLinks = thePort->getLinks();
+    list<YACSPrs_Link*>::iterator it = aLinks.begin();
     for(; it != aLinks.end(); it++)
       ( *it )->show();
   }
@@ -340,7 +384,7 @@ void YACSGui_Graph::update( YACSPrs_InOutPort* thePort )
 
 void YACSGui_Graph::createLinksFromGivenOutPortPrs( YACSPrs_InOutPort* theOutPortPrs, std::set<YACS::ENGINE::InPort *> theInPorts )
 {
-  for(std::set<InPort *>::iterator iter=theInPorts.begin(); iter!=theInPorts.end(); iter++)
+  for(set<InPort *>::iterator iter=theInPorts.begin(); iter!=theInPorts.end(); iter++)
   { // the pair <(*iter),OutPort> is a link
     YACSPrs_ElementaryNode* aToNodePrs = 0;
     if ( dynamic_cast<SplitterNode*>( (*iter)->getNode() ) )
@@ -380,8 +424,8 @@ void YACSGui_Graph::update( YACSPrs_LabelPort* thePort )
   }
   else 
   { // update already existing label links
-    std::list<YACSPrs_Link*> aLinks = thePort->getLinks();
-    std::list<YACSPrs_Link*>::iterator it = aLinks.begin();
+    list<YACSPrs_Link*> aLinks = thePort->getLinks();
+    list<YACSPrs_Link*>::iterator it = aLinks.begin();
     for(; it != aLinks.end(); it++)
       ( *it )->show();
   }
@@ -396,8 +440,8 @@ void YACSGui_Graph::createChildNodesPresentations( YACS::HMI::SubjectComposedNod
 
   if ( ComposedNode* theNode = dynamic_cast<ComposedNode*>( theParent->getNode() ) )
   {
-    std::set<Node*> aNodeSet = theNode->edGetDirectDescendants();
-    for ( std::set<Node*>::iterator itN = aNodeSet.begin(); itN != aNodeSet.end(); itN++ )
+    set<Node*> aNodeSet = theNode->edGetDirectDescendants();
+    for ( set<Node*>::iterator itN = aNodeSet.begin(); itN != aNodeSet.end(); itN++ )
       update( *itN, theParent );
   }
 }
@@ -411,18 +455,18 @@ void YACSGui_Graph::rebuildLinks()
   aLineModel->SetSearchDepth( 2 );
 
   // Bloc II : iteration on nodes -> output ports -> links => fill LineConn2d_Model object with datas
-  std::map<int,YACSPrs_Link*> aConnId2Link;
+  map<int,YACSPrs_Link*> aConnId2Link;
   Proc* aProc = getProc();
   if (aProc)
   {
-    std::map<YACSPrs_ElementaryNode*, int> aNodePrs2ObjId;
-    std::map<YACSPrs_Port*, int> aPortPrs2PortId;
+    map<YACSPrs_ElementaryNode*, int> aNodePrs2ObjId;
+    map<YACSPrs_Port*, int> aPortPrs2PortId;
     //                             1    1
     // commented because LabelPort <----> MasterPoint
-    //std::map<YACSPrs_Hook*, int> aHookPrs2PortId;
+    //map<YACSPrs_Hook*, int> aHookPrs2PortId;
 
-    std::set<Node*> aNodeSet = aProc->getAllRecursiveConstituents();
-    for ( std::set<Node*>::iterator itN = aNodeSet.begin(); itN != aNodeSet.end(); itN++ )
+    set<Node*> aNodeSet = aProc->getAllRecursiveConstituents();
+    for ( set<Node*>::iterator itN = aNodeSet.begin(); itN != aNodeSet.end(); itN++ )
     {
       YACSPrs_ElementaryNode* aNodePrs = getItem( *itN );
       if ( aNodePrs )
@@ -436,8 +480,8 @@ void YACSGui_Graph::rebuildLinks()
 	  YACSPrs_InOutPort* anIOPort = dynamic_cast<YACSPrs_InOutPort*>( aPort );
 	  if ( anIOPort && !anIOPort->isInput() )
 	  { // anIOPort is a "from" port of the link
-	    std::list<YACSPrs_Link*> aLinks = anIOPort->getLinks();
-	    for(std::list<YACSPrs_Link*>::iterator itL = aLinks.begin(); itL != aLinks.end(); itL++)
+	    list<YACSPrs_Link*> aLinks = anIOPort->getLinks();
+	    for(list<YACSPrs_Link*>::iterator itL = aLinks.begin(); itL != aLinks.end(); itL++)
 	    {
 	      int PortId1 = addPortToLine2dModel(anIOPort, aNodePrs, *itL, aLineModel, aNodePrs2ObjId, aPortPrs2PortId);
 
@@ -447,7 +491,7 @@ void YACSGui_Graph::rebuildLinks()
 
 		int PortId2 = addPortToLine2dModel(anIPort, 0, *itL, aLineModel, aNodePrs2ObjId, aPortPrs2PortId);
 		int ConnId = aLineModel->AddConnection( PortId1, PortId2 );
-		aConnId2Link.insert(std::make_pair(ConnId,aPortLink));
+		aConnId2Link.insert(make_pair(ConnId,aPortLink));
 	      }
 	    }
     	  }
@@ -457,8 +501,8 @@ void YACSGui_Graph::rebuildLinks()
 	  if ( aLabelPort )
 	  { // aLabelPort is a "from" port of the link,
 	    //the master point of the slave node can be considered as a "to" port of the link
-	    std::list<YACSPrs_Link*> aLinks = aLabelPort->getLinks();
-	    for(std::list<YACSPrs_Link*>::iterator itL = aLinks.begin(); itL != aLinks.end(); itL++)
+	    list<YACSPrs_Link*> aLinks = aLabelPort->getLinks();
+	    for(list<YACSPrs_Link*>::iterator itL = aLinks.begin(); itL != aLinks.end(); itL++)
 	    {
 	      int PortId1 = addPortToLine2dModel(aLabelPort, aNodePrs, *itL, aLineModel, aNodePrs2ObjId, aPortPrs2PortId);
 	      
@@ -467,7 +511,7 @@ void YACSGui_Graph::rebuildLinks()
 		YACSPrs_Hook* aMPoint = aLabelLink->getSlaveNode()->getMasterPoint();
 		int PortId2 = addPortToLine2dModel(aMPoint, aLabelLink->getSlaveNode(), aLabelLink, aLineModel, aNodePrs2ObjId);
 		int ConnId = aLineModel->AddConnection( PortId1, PortId2 );
-		aConnId2Link.insert(std::make_pair(ConnId,aLabelLink));
+		aConnId2Link.insert(make_pair(ConnId,aLabelLink));
 	      }
 	    }
 	  }
@@ -500,7 +544,7 @@ void YACSGui_Graph::rebuildLinks()
     if ( portId1 == -1 || portId2 == -1 )
       continue; // should not be
 
-    std::list<QPoint> aList;
+    list<QPoint> aList;
     if ( !isSimpleLine )
     {
       int nbSeg = curConn.NbSegments();
@@ -550,7 +594,7 @@ int YACSGui_Graph::addObjectToLine2dModel(YACSPrs_ElementaryNode* theNode,
       if ( aBNode && aBNode->getDisplayMode() == YACSPrs_BlocNode::Expanded ) break;
     }
     
-    theNodePrs2ObjId.insert( std::make_pair(theNode, ObjId) );
+    theNodePrs2ObjId.insert( make_pair(theNode, ObjId) );
     // <--
   }
 
@@ -583,7 +627,7 @@ int YACSGui_Graph::addPortToLine2dModel(YACSPrs_Port*           thePort,
     gp_Dir2d aDir2d( 1, 0 );
     if ( anIOPort && anIOPort->isInput() ) aDir2d.SetX( -1 );
     PortId = theLineModel->AddPoort( ObjId, aP2d, aDir2d );
-    thePortPrs2PortId.insert( std::make_pair(thePort, PortId) );
+    thePortPrs2PortId.insert( make_pair(thePort, PortId) );
     // <--
   }
 
@@ -657,17 +701,17 @@ YACSGui_Node* YACSGui_Graph::driver(Node* theEngine)
 YACSPrs_ElementaryNode* YACSGui_Graph::getItem( YACS::ENGINE::Node* theEngine )
 {
   YACSPrs_ElementaryNode* aNode = 0;
-  if ( myItems.find( theEngine ) == myItems.end() )
-    myItems[theEngine] = aNode;
-  return myItems[theEngine];
+  if ( myItems[getDMode()].find( theEngine ) == myItems[getDMode()].end() )
+    myItems[getDMode()][theEngine] = aNode;
+  return myItems[getDMode()][theEngine];
 }
 
 void YACSGui_Graph::getAllBlocChildren(Bloc* theNode, std::set<Node*>& theSet)
 {
   if ( theNode )
   {
-    std::set<Node*> aChildren = theNode->getChildren();
-    for ( std::set<Node*>::iterator it = aChildren.begin(); it != aChildren.end(); it++ )
+    set<Node*> aChildren = theNode->getChildren();
+    for ( set<Node*>::iterator it = aChildren.begin(); it != aChildren.end(); it++ )
     {
       if ( dynamic_cast<Bloc*>( *it )
 	   ||
@@ -688,8 +732,8 @@ void YACSGui_Graph::getAllComposedNodeChildren(ComposedNode* theNode, std::set<N
 {
   if ( theNode )
   {
-    std::set<Node*> aDescendants = theNode->edGetDirectDescendants();
-    for ( std::set<Node*>::iterator it = aDescendants.begin(); it != aDescendants.end(); it++ )
+    set<Node*> aDescendants = theNode->edGetDirectDescendants();
+    for ( set<Node*>::iterator it = aDescendants.begin(); it != aDescendants.end(); it++ )
     {
       if ( dynamic_cast<Bloc*>( *it )
 	   ||
@@ -739,4 +783,18 @@ YACS::ENGINE::Node* YACSGui_Graph::getNodeByName( const std::string theName ) co
     return 0;
 
   return getProc()->getChildByName(theName);
+}
+
+//! Delete prs with the defined subject from graph
+/*!
+ */
+void YACSGui_Graph::deletePrs(YACS::HMI::SubjectNode* theSubject)
+{
+  if( YACSPrs_ElementaryNode* aPrs = getItem( theSubject->getNode() ) )
+  {
+    aPrs->hide();
+    removeItem( aPrs );
+    delete aPrs;
+    getCanvas()->update();
+  }
 }

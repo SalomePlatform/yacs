@@ -195,6 +195,11 @@ _YACSGui_Swig_la_LDFLAGS  = -module
 
 _YACSGui_Swig_la_LIBADD = libYACSGui.la
 
+libYACSGui_la_LDFLAGS = \
+	 @GRAPHVIZ_LDFLAGS@ \
+	 @GUI_LDFLAGS@ \
+	 @QT_MT_LDFLAGS@
+
 libYACSGui_la_LIBADD = \
 	../runtime/libYACSRuntimeSALOME.la \
 	../yacsloader/libYACSloader.la \
@@ -202,9 +207,9 @@ libYACSGui_la_LIBADD = \
 	../lineconn2d/libLineConn2d.la \
 	../hmi/libHMI.la \
 	../yacsorb/libYACSorb.la \
-	@QT_MT_LIBS@ @GUI_LDFLAGS@ \
-	-lQxGraph -lCAM -lsuit -lLightApp -lexpat -lxml2 \
-	@GRAPHVIZ_LDFLAGS@ -ldotneato
+	@GRAPHVIZ_LIBADD@
+	@QT_MT_LIBADD@\
+	-lQxGraph -lCAM -lsuit -lLightApp -lexpat -lxml2
 
 libYACSGui_la_CXXFLAGS = \
 	$(THREAD_DEF) \

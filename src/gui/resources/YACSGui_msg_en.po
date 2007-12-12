@@ -28,6 +28,18 @@ msgstr "SALOME service node"
 msgid "CORBA_SERVICE_NODE"
 msgstr "CORBA service node"
 
+msgid "NODENODE_SERVICE_NODE"
+msgstr "Node-node service"
+
+msgid "CPP_NODE"
+msgstr "CPP node"
+
+msgid "SERVICE_INLINE_NODE"
+msgstr "Service inline"
+
+msgid "XML_NODE"
+msgstr "XML node"
+
 #### YACSGui module menus and toolbars ####
 
 msgid "MEN_FILE"
@@ -175,7 +187,7 @@ msgid "STB_NEW_SERVICE_INLINE_NODE"
 msgstr "Create new service inline node"
 
 msgid "MEN_NEW_XML_NODE"
-msgstr "XML"
+msgstr "XML node"
 
 msgid "TOP_NEW_XML_NODE"
 msgstr "New XML node"
@@ -712,6 +724,24 @@ msgstr "Create a Data Type"
 
 msgid "POP_CREATE_CONTAINER_DEF"
 msgstr "Create a Container definition"
+
+msgid "POP_SALOME_SERVICE"
+msgstr "SALOME service"
+
+msgid "POP_CORBA_SERVICE"
+msgstr "CORBA service"
+
+msgid "POP_NODENODE_SERVICE"
+msgstr "Node-node service"
+
+msgid "POP_CPP"
+msgstr "CPP node"
+
+msgid "POP_SERVICE_INLINE"
+msgstr "Service inline"
+
+msgid "POP_XML"
+msgstr "XML node"
 
 msgid "POP_INLINE_SCRIPT"
 msgstr "Inline script"

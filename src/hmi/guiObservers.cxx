@@ -528,13 +528,14 @@ void SubjectComposedNode::localClean()
   DEBTRACE("SubjectComposedNode::localClean ");
 }
 
-bool SubjectComposedNode::addNode(YACS::ENGINE::Catalog *catalog,
-                                  std::string compo,
-                                  std::string type,
-                                  std::string name)
+SubjectNode* SubjectComposedNode::addNode(YACS::ENGINE::Catalog *catalog,
+					  std::string compo,
+					  std::string type,
+					  std::string name)
 {
   DEBTRACE("SubjectComposedNode::addNode("<<catalog<<","<<compo<<","<<type<<","<<name<<")");
-  return false;
+  SubjectNode* body = 0;
+  return body;
 }
 
 SubjectNode *SubjectComposedNode::createNode(YACS::ENGINE::Catalog *catalog,
@@ -675,7 +676,7 @@ SubjectLink* SubjectComposedNode::addSubjectLink(SubjectNode *sno,
   _listSubjectLink.push_back(son);
   spo->addSubjectLink(son);
   spi->addSubjectLink(son);
-  update(ADDLINK, 0, son);
+  update(ADDLINK, LINK, son);
   DEBTRACE("addSubjectLink: " << getName() << " " << son->getName());
   return son;
 }
@@ -699,7 +700,7 @@ SubjectControlLink* SubjectComposedNode::addSubjectControlLink(SubjectNode *sno,
   _listSubjectControlLink.push_back(son);
   sno->addSubjectControlLink(son);
   sni->addSubjectControlLink(son);
-  update(ADDCONTROLLINK, 0, son);
+  update(ADDCONTROLLINK, CONTROLLINK, son);
   DEBTRACE("addSubjectControlLink: " << getName() << " " << son->getName());
   return son;
 }
@@ -800,15 +801,14 @@ void SubjectBloc::localClean()
     erase(*it);
 }
 
-bool SubjectBloc::addNode(YACS::ENGINE::Catalog *catalog,
-                          std::string compo,
-                          std::string type,
-                          std::string name)
+SubjectNode* SubjectBloc::addNode(YACS::ENGINE::Catalog *catalog,
+				  std::string compo,
+				  std::string type,
+				  std::string name)
 {
   DEBTRACE("SubjectBloc::addNode( " << catalog << ", " << compo << ", " << type << ", " << name << " )");
   SubjectNode* child = createNode(catalog, compo, type, name);
-  if (child) return true;
-  return false;
+  return child;
 }
 
 void SubjectBloc::completeChildrenSubjectList(SubjectNode *son)
@@ -867,6 +867,47 @@ void SubjectProc::loadProc()
   DEBTRACE("SubjectProc::loadProc "  << getName());
   loadChildren();
   loadLinks();
+  loadComponents();
+  loadContainers();
+}
+
+/*!
+ * loadComponents is used when an existing scheme has been loaded in memory,
+ * to create subjects for components stored in the schema file, but are not
+ * associated with any service nodes. Note, that if such component is associated
+ * to any container, the subject for this container is also created, if it is not
+ * exist yet.
+ */
+void SubjectProc::loadComponents()
+{
+  Proc* aProc = GuiContext::getCurrent()->getProc();
+  for (map<pair<string,int>, ComponentInstance*>::const_iterator itComp = aProc->componentInstanceMap.begin();
+       itComp != aProc->componentInstanceMap.end(); ++itComp)
+    if ( GuiContext::getCurrent()->_mapOfSubjectComponent.find((*itComp).second)
+	 ==
+	 GuiContext::getCurrent()->_mapOfSubjectComponent.end() )
+    { // engine object for component already exists => add only a subject for it
+      int id = GuiContext::getCurrent()->getNewId();
+      pair<string,int> key = pair<string,int>((*itComp).second->getName(),id);
+      addSubjectComponent((*itComp).second, key);
+    }
+}
+
+/*!
+ * loadContainers is used when an existing scheme has been loaded in memory,
+ * to create subjects for containers stored in the schema file, but are not
+ * associated with components.
+ */
+void SubjectProc::loadContainers()
+{
+  Proc* aProc = GuiContext::getCurrent()->getProc();
+  for (map<string, Container*>::const_iterator itCont = aProc->containerMap.begin();
+       itCont != aProc->containerMap.end(); ++itCont)
+    if ( GuiContext::getCurrent()->_mapOfSubjectContainer.find((*itCont).second)
+	 ==
+	 GuiContext::getCurrent()->_mapOfSubjectContainer.end() )
+      // engine object for container already exists => add only a subject for it
+      addSubjectContainer((*itCont).second, (*itCont).second->getName());
 }
 
 SubjectComponent* SubjectProc::addComponent(std::string name)
@@ -898,7 +939,7 @@ bool SubjectProc::addContainer(std::string name, std::string ref)
       CommandAddContainer *command = new CommandAddContainer(name,ref);
       if (command->execute())
         {
-          GuiContext::getCurrent()->getInvoc()->add(command);
+	  GuiContext::getCurrent()->getInvoc()->add(command);
           Container *cont = command->getContainer();
           SubjectContainer *son = addSubjectContainer(cont, name);
           GuiContext::getCurrent()->getProc()->containerMap[name] = cont;
@@ -957,7 +998,7 @@ SubjectDataType* SubjectProc::addSubjectDataType(YACS::ENGINE::TypeCode *type)
     proc->typeMap[typeName] = type->clone();
   if (! GuiContext::getCurrent()->_mapOfSubjectDataType.count(typeName))
     {
-      son = new SubjectDataType(typeName, this);
+      son = new SubjectDataType(type, this);
       GuiContext::getCurrent()->_mapOfSubjectDataType[typeName] = son;
       update(ADD, DATATYPE, son);
     }
@@ -1140,6 +1181,25 @@ SubjectInlineNode::~SubjectInlineNode()
   DEBTRACE("SubjectInlineNode::~SubjectInlineNode " << getName());
 }
 
+bool SubjectInlineNode::setScript(std::string script)
+{
+  Proc *proc = GuiContext::getCurrent()->getProc();
+  CommandSetInlineNodeScript *command =
+    new CommandSetInlineNodeScript(proc->getChildName(_node), script);
+  if (command->execute())
+    {
+      GuiContext::getCurrent()->getInvoc()->add(command);
+      return true;
+    }
+  else delete command;
+  return false;
+}
+
+std::string SubjectInlineNode::getScript()
+{
+  return _inlineNode->getScript();
+}
+
 void SubjectInlineNode::clean()
 {
   localClean();
@@ -1316,6 +1376,20 @@ SubjectPyFuncNode::SubjectPyFuncNode(YACS::ENGINE::PyFuncNode *pyFuncNode, Subje
 SubjectPyFuncNode::~SubjectPyFuncNode()
 {
   DEBTRACE("SubjectPyFuncNode::~SubjectPyFuncNode " << getName());
+}
+
+bool SubjectPyFuncNode::setFunctionName(std::string funcName)
+{
+  Proc *proc = GuiContext::getCurrent()->getProc();
+  CommandSetFuncNodeFunctionName *command =
+    new CommandSetFuncNodeFunctionName(proc->getChildName(_node), funcName);
+  if (command->execute())
+    {
+      GuiContext::getCurrent()->getInvoc()->add(command);
+      return true;
+    }
+  else delete command;
+  return false;
 }
 
 void SubjectPyFuncNode::clean()
@@ -1508,16 +1582,16 @@ void SubjectForLoop::localClean()
 }
 
 
-bool SubjectForLoop::addNode(YACS::ENGINE::Catalog *catalog,
-                             std::string compo,
-                             std::string type,
-                             std::string name)
+SubjectNode* SubjectForLoop::addNode(YACS::ENGINE::Catalog *catalog,
+				     std::string compo,
+				     std::string type,
+				     std::string name)
 {
   DEBTRACE("SubjectForLoop::addNode(catalog, compo, type, name)");
-  if (_body) return false;
-  SubjectNode* body = createNode(catalog, compo, type, name);
-  if (body) return true;
-  return false;
+  SubjectNode* body = 0;
+  if (_body) return body;
+  body = createNode(catalog, compo, type, name);
+  return body;
 }
 
 void SubjectForLoop::completeChildrenSubjectList(SubjectNode *son)
@@ -1551,16 +1625,16 @@ void SubjectWhileLoop::localClean()
     erase(_body);
 }
 
-bool SubjectWhileLoop::addNode(YACS::ENGINE::Catalog *catalog,
-                               std::string compo,
-                               std::string type,
-                               std::string name)
+SubjectNode* SubjectWhileLoop::addNode(YACS::ENGINE::Catalog *catalog,
+				       std::string compo,
+				       std::string type,
+				       std::string name)
 {
   DEBTRACE("SubjectWhileLoop::addNode(catalog, compo, type, name)");
-  if (_body) return false;
-  SubjectNode* body = createNode(catalog, compo, type, name);
-  if (body) return true;
-  return false;
+  SubjectNode* body = 0;
+  if (_body) return body;
+  body = createNode(catalog, compo, type, name);
+  return body;
 }
 
 void SubjectWhileLoop::completeChildrenSubjectList(SubjectNode *son)
@@ -1595,18 +1669,18 @@ void SubjectSwitch::localClean()
     erase((*it).second);
 }
 
-bool SubjectSwitch::addNode(YACS::ENGINE::Catalog *catalog,
-                            std::string compo,
-                            std::string type,
-                            std::string name,
-                            int swCase,
-			    bool replace)
+SubjectNode* SubjectSwitch::addNode(YACS::ENGINE::Catalog *catalog,
+				    std::string compo,
+				    std::string type,
+				    std::string name,
+				    int swCase,
+				    bool replace)
 {
   DEBTRACE("SubjectSwitch::addNode("<<catalog<<","<<compo<<","<<type<<","<<name<<","<<swCase<<","<<(int)replace<<")");
-  if (!replace && _bodyMap.count(swCase)) return false;
-  SubjectNode* body = createNode(catalog, compo, type, name, swCase);
-  if(body) return true;
-  return false;
+  SubjectNode* body = 0;
+  if (!replace && _bodyMap.count(swCase)) return body;
+  body = createNode(catalog, compo, type, name, swCase);
+  return body;
 }
 
 std::map<int, SubjectNode*> SubjectSwitch::getBodyMap()
@@ -1673,16 +1747,16 @@ void SubjectForEachLoop::localClean()
 }
 
 
-bool SubjectForEachLoop::addNode(YACS::ENGINE::Catalog *catalog,
-                                 std::string compo,
-                                 std::string type,
-                                 std::string name)
+SubjectNode* SubjectForEachLoop::addNode(YACS::ENGINE::Catalog *catalog,
+					 std::string compo,
+					 std::string type,
+					 std::string name)
 {
   DEBTRACE("SubjectForEachLoop::addNode(catalog, compo, type, name)");
-  if (_body) return false;
-  SubjectNode *body = createNode(catalog, compo, type, name);
-  if (body) return true;
-  return false;
+  SubjectNode* body = 0;
+  if (_body) return body;
+  body = createNode(catalog, compo, type, name);
+  return body;
 }
 
 void SubjectForEachLoop::completeChildrenSubjectList(SubjectNode *son)
@@ -1723,16 +1797,16 @@ void SubjectOptimizerLoop::localClean()
     erase(_body);
 }
 
-bool SubjectOptimizerLoop::addNode(YACS::ENGINE::Catalog *catalog,
-                                   std::string compo,
-                                   std::string type,
-                                   std::string name)
+SubjectNode* SubjectOptimizerLoop::addNode(YACS::ENGINE::Catalog *catalog,
+					   std::string compo,
+					   std::string type,
+					   std::string name)
 {
   DEBTRACE("SubjectOptimizerLoop::addNode(catalog, compo, type, name)");
-  if (_body) return false;
-  SubjectNode *body = createNode(catalog, compo, type, name);
-  if (body) return true;
-  return false;
+  SubjectNode* body = 0;
+  if (_body) return body;
+  body = createNode(catalog, compo, type, name);
+  return body;
 }
 
 void SubjectOptimizerLoop::completeChildrenSubjectList(SubjectNode *son)
@@ -2196,8 +2270,14 @@ void SubjectComponent::setContainer()
   Container* container = _compoInst->getContainer();
   if (container)
     {
-      SubjectContainer *subContainer =
-        GuiContext::getCurrent()->getSubjectProc()->addSubjectContainer(container, container->getName());
+      SubjectContainer *subContainer;
+      if (GuiContext::getCurrent()->_mapOfSubjectContainer.find(container)
+	  ==
+	  GuiContext::getCurrent()->_mapOfSubjectContainer.end())
+	subContainer = 
+	  GuiContext::getCurrent()->getSubjectProc()->addSubjectContainer(container, container->getName());
+      else
+	subContainer = GuiContext::getCurrent()->_mapOfSubjectContainer[container];
       addSubjectReference(subContainer);
     }
 }
@@ -2266,8 +2346,8 @@ YACS::ENGINE::Container* SubjectContainer::getContainer() const
 
 // ----------------------------------------------------------------------------
 
-SubjectDataType::SubjectDataType(std::string typeName, Subject *parent)
-  : Subject(parent), _typeName(typeName)
+SubjectDataType::SubjectDataType(YACS::ENGINE::TypeCode *typeCode, Subject *parent)
+  : Subject(parent), _typeCode(typeCode)
 {
 }
 
@@ -2288,7 +2368,12 @@ void SubjectDataType::localClean()
 
 std::string SubjectDataType::getName()
 {
-  return _typeName;
+  return _typeCode->name();
+}
+
+YACS::ENGINE::TypeCode* SubjectDataType::getTypeCode()
+{
+  return _typeCode;
 }
 
 // ----------------------------------------------------------------------------

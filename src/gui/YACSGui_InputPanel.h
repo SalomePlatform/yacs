@@ -270,9 +270,6 @@ class YACSGui_SchemaPage : public SchemaPage, public YACS::HMI::GuiObserver
 {
   Q_OBJECT
 
-public: 
-  enum { FullId, DataflowId, ThreadId, ControlId, DataStreamId };
-
 public:
                                       YACSGui_SchemaPage( QWidget* theParent = 0,
 							  const char* theName = 0,
@@ -350,6 +347,7 @@ public:
 
 protected:
   virtual void                        updateState();
+  void                                updateBlocSize();
 
   PortType                            getDataPortType( YACS::ENGINE::Port* ) const;
   QString                             getPortValue( YACS::ENGINE::Port* ) const;
@@ -469,6 +467,7 @@ private:
 private:
   YACS::ENGINE::ComponentInstance*    myComponent;
   QString                             myComponentName;
+  bool                                myMethodChanged;
 };
 
 /*

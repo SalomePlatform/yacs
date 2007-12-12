@@ -12,7 +12,7 @@
 using namespace YACS::ENGINE;
 using namespace std;
 
-const char PresetNode::IMPL_NAME[]="XMLPRESET";
+const char PresetNode::IMPL_NAME[]="XML";
 
 PresetNode::PresetNode(const std::string& name)
   : DataNode(name)
@@ -23,6 +23,11 @@ PresetNode::PresetNode(const std::string& name)
 PresetNode::PresetNode(const PresetNode& other, ComposedNode *father)
   : DataNode(other, father)
 {
+}
+
+OutputPort* PresetNode::createOutputPort(const std::string& outputPortName, TypeCode* type)
+{
+  return new OutputPresetPort(outputPortName, this, type);
 }
 
 void PresetNode::execute()

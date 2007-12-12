@@ -273,7 +273,11 @@ void VisitorSaveSchema::visitServiceInlineNode(ServiceInlineNode *node)
     _out << " state=\"disabled\">" << endl;
   else
     _out << ">" << endl;
-  _out << indent(depth+1) << node->getComponent()->getFileRepr() << endl;
+  
+  ComponentInstance *compo = node->getComponent();
+  if (compo)
+    _out << indent(depth+1) << compo->getFileRepr() << endl;
+
   _out << indent(depth+1) << "<function name=\"" << node->getMethod() << "\">" << endl;
   _out << indent(depth+2) << "<code><![CDATA[";
   _out << node->getScript();

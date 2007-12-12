@@ -79,12 +79,13 @@ nodist_guidemo_SOURCES = $(UISOURCES) $(MOCSOURCES)
 # List all generated files here
 BUILT_SOURCES = $(UISOURCES) $(MOCSOURCES) mainempty.h
 
+libHMI_la_LDFLAGS = @QT_MT_LDFLAGS@
 
 libHMI_la_LIBADD = \
 	../runtime/libYACSRuntimeSALOME.la \
 	../yacsloader/libYACSloader.la \
 	../yacsorb/libYACSorb.la \
-	@QT_MT_LIBS@ \
+	@QT_MT_LIBADD@ \
 	-lexpat -lxml2
 
 libHMI_la_CXXFLAGS = \
@@ -99,8 +100,16 @@ libHMI_la_CXXFLAGS = \
 	-I../yacsorb \
 	@QT_INCLUDES@
 
-guidemo_CXXFLAGS = $(libHMI_la_CXXFLAGS)
 
-guidemo_LDADD = libHMI.la
+guidemo_CPPFLAGS = @QSCINTILLA_CCPFLAGS@
+
+guidemo_CXXFLAGS = \
+	$(libHMI_la_CXXFLAGS)
+
+guidemo_LDFLAGS=@QT_MT_LDFLAGS@
+
+guidemo_LDADD = \
+	libHMI.la \
+	@QSCINTILLA_LIBADD@
 
 include $(top_srcdir)/adm/unix/make_end.am

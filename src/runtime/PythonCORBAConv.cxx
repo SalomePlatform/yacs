@@ -33,14 +33,9 @@ void PyCorbaInt::put(const void *data)  throw(ConversionException)
  */
 void PyCorbaInt::put(PyObject *data)  throw(ConversionException)
 {
-  CORBA::Long l= 0;
-  if (PyInt_Check(data))l=PyInt_AS_LONG(data);
-  else if(PyLong_Check(data))l=PyLong_AsLong(data);
-  else throw ConversionException("Not an int");
-
-  CORBA::Any a;
-  a <<= l;
-  _port->put(&a);
+  CORBA::Any *a= convertPyObjectCorba(_port->edGetType(),data);
+  _port->put(a);
+  delete a;
 }
 
 //!Convert a PyObject (boolean) to CORBA::Any (boolean)
@@ -80,13 +75,9 @@ void PyCorbaString::put(const void *data)  throw(ConversionException)
 
 void PyCorbaString::put(PyObject *data)  throw(ConversionException)
 {
-  char * s;
-  if(PyString_Check(data))s=PyString_AsString(data);
-  else throw ConversionException("Not a string");
-
-  CORBA::Any a;
-  a <<= s;
-  _port->put(&a);
+  CORBA::Any *a= convertPyObjectCorba(_port->edGetType(),data);
+  _port->put(a);
+  delete a;
 }
 
 
@@ -102,15 +93,9 @@ void PyCorbaDouble::put(const void *data)  throw(ConversionException)
 
 void PyCorbaDouble::put(PyObject *data)  throw(ConversionException)
 {
-  CORBA::Double d = 0;
-  if (PyFloat_Check(data)) d = (CORBA::Double)PyFloat_AS_DOUBLE(data);
-  else if (PyInt_Check(data)) d = (CORBA::Double)PyInt_AS_LONG(data);
-  else if (PyLong_Check(data)) d = (CORBA::Double)PyLong_AsDouble(data);
-  else throw ConversionException("Not a double");
-
-  CORBA::Any a;
-  a <<= d;
-  _port->put(&a);
+  CORBA::Any *a= convertPyObjectCorba(_port->edGetType(),data);
+  _port->put(a);
+  delete a;
 }
 
 //!Class PyCorbaSequence is a proxy port that converts a PyObject object (of type sequence) to a CORBA::Any object (of type sequence)
@@ -180,24 +165,9 @@ void PyCorbaObjref::put(PyObject *data)  throw(ConversionException)
   PyObject_Print(data,stderr,Py_PRINT_RAW);
   std::cerr << std::endl;
 #endif
-
-  //does not work : replace by a call to object_to_string - string_to_object
-  //hold_lock is true: caller is supposed to hold the GIL. 
-  //omniorb will not take the GIL
-  //CORBA::Object_ptr ob=api->pyObjRefToCxxObjRef(data,(CORBA::Boolean)1);
-
-  PyObject *pystring = PyObject_CallMethod(_pyorb, "object_to_string", "O", data);
-  if(pystring == NULL)
-    {
-      PyErr_Print();
-      throw ConversionException("can't get objref");
-    }
-  CORBA::Object_var ob= _orb->string_to_object(PyString_AsString(pystring));
-  Py_DECREF(pystring);
-
-  CORBA::Any a;
-  a <<= ob;
-  _port->put(&a);
+  CORBA::Any *a= convertPyObjectCorba(_port->edGetType(),data);
+  _port->put(a);
+  delete a;
 }
 
 //!Class PyCorbaStruct is a proxy port that converts a PyObject object (of type struct) to a CORBA::Any object (of type struct)

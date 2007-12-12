@@ -23,12 +23,11 @@ void NeutralPyDouble::put(const void *data) throw(ConversionException)
  */
 void NeutralPyDouble::put(YACS::ENGINE::Any *data) throw(ConversionException)
 {
-  double d = data->getDoubleValue();
-  PyObject *ob=PyFloat_FromDouble(d);
+  InterpreterUnlocker loc;
+  PyObject* ob=convertNeutralPyObject(edGetType(),data);
   DEBTRACE( "ob refcnt: " << ob->ob_refcnt );
   _port->put(ob);
   Py_DECREF(ob);
-  DEBTRACE( "ob refcnt: " << ob->ob_refcnt );
 }
 
 
@@ -43,12 +42,11 @@ void NeutralPyInt::put(const void *data) throw(ConversionException)
  */
 void NeutralPyInt::put(YACS::ENGINE::Any *data) throw(ConversionException)
 {
-  int l = data->getIntValue();
-  PyObject *ob=PyLong_FromLong(l);
+  InterpreterUnlocker loc;
+  PyObject* ob=convertNeutralPyObject(edGetType(),data);
   DEBTRACE( "ob refcnt: " << ob->ob_refcnt );
   _port->put(ob);
   Py_DECREF(ob);
-  DEBTRACE( "ob refcnt: " << ob->ob_refcnt );
 }
 
 void NeutralPyString::put(const void *data) throw(ConversionException)
@@ -62,12 +60,11 @@ void NeutralPyString::put(const void *data) throw(ConversionException)
  */
 void NeutralPyString::put(YACS::ENGINE::Any *data) throw(ConversionException)
 {
-  string val=data->getStringValue();
-  PyObject *ob=PyString_FromString(val.c_str());
+  InterpreterUnlocker loc;
+  PyObject* ob=convertNeutralPyObject(edGetType(),data);
   DEBTRACE( "ob refcnt: " << ob->ob_refcnt );
   _port->put(ob);
   Py_DECREF(ob);
-  DEBTRACE( "ob refcnt: " << ob->ob_refcnt );
 }
 
 void NeutralPyBool::put(const void *data) throw(ConversionException)
@@ -81,12 +78,11 @@ void NeutralPyBool::put(const void *data) throw(ConversionException)
  */
 void NeutralPyBool::put(YACS::ENGINE::Any *data) throw(ConversionException)
 {
-  int l = data->getBoolValue();
-  PyObject *ob=PyLong_FromLong(l);
+  InterpreterUnlocker loc;
+  PyObject* ob=convertNeutralPyObject(edGetType(),data);
   DEBTRACE( "ob refcnt: " << ob->ob_refcnt );
   _port->put(ob);
   Py_DECREF(ob);
-  DEBTRACE( "ob refcnt: " << ob->ob_refcnt );
 }
 
 void NeutralPyObjref::put(const void *data) throw(ConversionException)
@@ -100,11 +96,8 @@ void NeutralPyObjref::put(const void *data) throw(ConversionException)
  */
 void NeutralPyObjref::put(YACS::ENGINE::Any *data) throw(ConversionException)
 {
-  PyObject *ob;
-  {
-    InterpreterUnlocker loc;
-    ob=convertNeutralPyObject(edGetType(),data);
-  }
+  InterpreterUnlocker loc;
+  PyObject* ob=convertNeutralPyObject(edGetType(),data);
   DEBTRACE( "ob refcnt: " << ob->ob_refcnt );
   _port->put(ob);
   Py_DECREF(ob);
@@ -123,17 +116,14 @@ void NeutralPySequence::put(const void *data) throw(ConversionException)
 void NeutralPySequence::put(YACS::ENGINE::Any *data) throw(ConversionException)
 {
   DEBTRACE( "--------NeutralPySequence::put" );
-  PyObject *ob;
-  {
   InterpreterUnlocker loc;
-  ob=convertNeutralPyObject(edGetType(),data);
+  PyObject* ob=convertNeutralPyObject(edGetType(),data);
   DEBTRACE( "ob refcnt: " << ob->ob_refcnt );
 #ifdef _DEVDEBUG_
   cerr << "Sequence= ";
   PyObject_Print(ob,stderr,Py_PRINT_RAW);
   cerr << endl;
 #endif
-  }
   _port->put(ob);
   Py_DECREF(ob);
   DEBTRACE( "ob refcnt: " << ob->ob_refcnt );

@@ -37,8 +37,7 @@
 #include <OutGate.hxx>
 #include <CalStreamPort.hxx>
 
-#define WITH_DOTNEATO
-#ifdef WITH_DOTNEATO
+#ifdef HAVE_DOTNEATO_H
   #include <dotneato.h>
 #else
   #include <gvc.h>
@@ -285,7 +284,7 @@ int YACSGui_Graph::arrangeNodesWithinBloc( Bloc* theBloc )
   //printf("--------------\n");
 
   // ---- Bind graph to graphviz context - currently must be done before layout
-#ifdef WITH_DOTNEATO
+#ifdef HAVE_DOTNEATO_H
   gvBindContext( aGvc, aGraph );
 
   // ---- Compute a layout
@@ -361,7 +360,7 @@ int YACSGui_Graph::arrangeNodesWithinBloc( Bloc* theBloc )
 	}
       }
 
-      if ( dynamic_cast<YACSPrs_LoopNode*>( aNodePrs ) )
+      if ( dynamic_cast<YACSPrs_LoopNode*>( aNodePrs ) && getDMode() == YACSGui_Graph::FullId )
       {
 	aXLeft += 3*TITLE_HEIGHT/2;
 	aYTop += 3*TITLE_HEIGHT/2;
@@ -381,7 +380,7 @@ int YACSGui_Graph::arrangeNodesWithinBloc( Bloc* theBloc )
   }
 
   // ---- Delete layout
-#ifdef WITH_DOTNEATO
+#ifdef HAVE_DOTNEATO_H
   dot_cleanup( aGraph );
 #else
   gvFreeLayout( aGvc, aGraph );

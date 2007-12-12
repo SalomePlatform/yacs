@@ -133,6 +133,7 @@ void CORBANode::execute()
 #ifdef REFCNT
         DEBTRACE("refcount CORBA : " << ((omni::TypeCode_base*)ob->pd_tc.in())->pd_ref_count);
 #endif
+        delete ob;
       }
 
     //return value
@@ -405,7 +406,7 @@ void SalomeNode::execute()
           DEBTRACE( "port kind: " << p->edGetType()->kind() );
           CORBA::Any* ob=p->getAny();
 #ifdef _DEVDEBUG_
-          CORBA::TypeCode_var tc;
+          CORBA::TypeCode_var tc=ob->type();
           switch(p->edGetType()->kind())
           {
           case Double:
@@ -479,6 +480,7 @@ void SalomeNode::execute()
           CORBA::Any* ob=p->getAnyOut();
           //add_value makes a copy of any. Copy will be deleted with request
           arguments->add_value( p->getName().c_str() , *ob , CORBA::ARG_OUT );
+          delete ob;
     }
 
     //return value

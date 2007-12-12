@@ -61,6 +61,8 @@
 #include <QxGraph_Canvas.h> // for test presentations
 #include <QxGraph_Prs.h> // for test presentations
 
+#include <commandsProc.hxx>
+
 #include <Catalog.hxx>
 #include <OutputPort.hxx> // for a test function
 #include <OutputDataStreamPort.hxx> // for a test function
@@ -74,7 +76,7 @@
 #include <ForLoop.hxx>
 #include <WhileLoop.hxx>
 #include <ForEachLoop.hxx>
-#include <commandsProc.hxx>
+#include <SalomeComponent.hxx>
 
 #include <SALOME_LifeCycleCORBA.hxx>
 
@@ -906,8 +908,9 @@ void YACSGui_Module::onNewSchema()
   printf("YACSGui_Module::newSchema\n");
 
   // TODO: create an empty Proc*
-  Proc* aProc = new Proc("");
-
+  RuntimeSALOME* aRuntimeSALOME = YACS::ENGINE::getSALOMERuntime();
+  Proc* aProc = aRuntimeSALOME->createProc("newSchema");//new Proc("");
+  
   // create GuiContext for Proc*
   GuiContext* aCProc = new GuiContext();
   GuiContext::setCurrent( aCProc );
@@ -935,14 +938,18 @@ void YACSGui_Module::onNewContainer()
   if ( SubjectProc* aSchema = GuiContext::getCurrent()->getSubjectProc() )
   {
     stringstream aName;
-    aName << "container" << GuiContext::getCurrent()->getNewId();
+    aName << "container" << GuiContext::getCurrent()->getNewId(CONTAINER);
 
     bool aRet = aSchema->addContainer(aName.str());
     if ( !aRet )
+    {
       SUIT_MessageBox::warn1(getApp()->desktop(), 
 			     tr("WARNING"), 
 			     GuiContext::getCurrent()->_lastErrorMessage,
 			     tr("BUT_OK"));
+      return;
+    }
+    temporaryExport();
   }
 }
 
@@ -976,7 +983,7 @@ void YACSGui_Module::onNewSalomeComponent()
   if ( SubjectContainer* aCont = dynamic_cast<SubjectContainer*>(aSub) )
   {
     stringstream aName;
-    aName << "component" << GuiContext::getCurrent()->getNewId();
+    aName << "component" << GuiContext::getCurrent()->getNewId(COMPONENT);
     
     SubjectComponent* aRet = GuiContext::getCurrent()->getSubjectProc()->addComponent(aName.str());
     if ( !aRet )
@@ -990,6 +997,7 @@ void YACSGui_Module::onNewSalomeComponent()
     
     aRet->associateToContainer(aCont);
     aCont->update(ADD, COMPONENT, aRet);
+    temporaryExport();
   }
 }
 
@@ -1444,7 +1452,35 @@ void YACSGui_Module::onChangeInformations()
  */
 void YACSGui_Module::onFullView()
 {
-  MESSAGE("YACSGui_Module::onFullView --- NOT YET IMPLEMENTED!");
+  MESSAGE("YACSGui_Module::onFullView");
+
+  YACSGui_Graph* aGraph = activeGraph();
+  if (aGraph)
+  {
+    int aPrevMode = aGraph->getDMode();
+    if ( aPrevMode != YACSGui_Graph::FullId )
+    {
+      QCanvas* aCanvas = aGraph->getCanvas();
+      if ( !aCanvas ) return;
+
+      aGraph->hide(); // canvas is 0 for all presentations
+      aCanvas->setChanged( QRect(0,0,aCanvas->width(),aCanvas->height()) );
+      aCanvas->update();
+
+      aGraph->setDMode(YACSGui_Graph::FullId);
+      aGraph->setToUpdate(true);
+      aGraph->show(); // set canvas for full view presentations
+      aCanvas->update();
+      
+      //aGraph->viewModesConsistency(aPrevMode,YACSGui_Graph::FullId);
+      
+      //if ( QCanvas* aCanvas = aGraph->getCanvas() )
+      //{
+      //	aCanvas->setChanged( QRect(0,0,aCanvas->width(),aCanvas->height()) );
+      //	aCanvas->update();
+      //}
+    }
+  }
 }
 
 //! Private slot.  Switch current schema to control view mode.
@@ -1452,7 +1488,29 @@ void YACSGui_Module::onFullView()
  */
 void YACSGui_Module::onControlView()
 {
-  MESSAGE("YACSGui_Module::onControlView --- NOT YET IMPLEMENTED!");
+  MESSAGE("YACSGui_Module::onControlView");
+
+  YACSGui_Graph* aGraph = activeGraph();
+  if (aGraph)
+  {
+    int aPrevMode = aGraph->getDMode();
+    if ( aPrevMode != YACSGui_Graph::ControlId )
+    {
+      aGraph->hide();
+
+      aGraph->setDMode(YACSGui_Graph::ControlId);
+      aGraph->setToUpdate(true);
+      aGraph->show();
+
+      //aGraph->viewModesConsistency(aPrevMode,YACSGui_Graph::ControlId);
+      
+      if ( QCanvas* aCanvas = aGraph->getCanvas() )
+      {
+	aCanvas->setChanged( QRect(0,0,aCanvas->width(),aCanvas->height()) );
+	aCanvas->update();
+      }
+    }
+  }
 }
 
 //! Private slot.  Switch current schema to data flow view mode.
@@ -2564,6 +2622,8 @@ void YACSGui_Module::removeTreeView( const int theStudyId, const int theId )
   if ( myTreeViews.find( sId ) == myTreeViews.end() ) return;
 
   QWidget* wid = myTreeViews[sId]->widget( theId );
+  if ( YACSGui_TreeView* aTV = dynamic_cast<YACSGui_TreeView*>(wid) )
+    aTV->clearSelection();
   myTreeViews[sId]->remove( theId );
   delete wid;
 
@@ -3110,7 +3170,7 @@ void YACSGui_Module::createNode( YACS::HMI::TypeOfElem theElemType )
       {
 	stringstream aName;
 	string aType = getNodeType(theElemType);
-	aName << aType << GuiContext::getCurrent()->getNewId();
+	aName << aType << GuiContext::getCurrent()->getNewId(theElemType);
 	
 	map<int, SubjectNode*> bodyMap = aSwitch->getBodyMap();
 	int aSwCase = 0;
@@ -3121,16 +3181,45 @@ void YACSGui_Module::createNode( YACS::HMI::TypeOfElem theElemType )
 	  aSwCase = (*rit).first + 1;
 	}
 	aSwitch->addNode(aCatalog, "", aType, aName.str(), aSwCase);
+	temporaryExport();
       }
       //else if ( SubjectForLoop* aFor = dynamic_cast<SubjectForLoop*>(aSub) ... )
       //{ ... }
+      else if ( SubjectComponent* aSComp = dynamic_cast<SubjectComponent*>(aSub) )
+      {
+	ComponentInstance* aComp = aSComp->getComponent();
+	if ( !aComp || aComp->getKind() != SalomeComponent::KIND ) return;
+
+	if ( SubjectProc* aSchema = GuiContext::getCurrent()->getSubjectProc() )
+	  if ( theElemType == SALOMENODE || theElemType == SALOMEPYTHONNODE )
+	  {
+	    stringstream aName;
+	    string aType = getNodeType(theElemType);
+	    aName << aType << GuiContext::getCurrent()->getNewId(theElemType);
+	    
+	    if ( SubjectServiceNode* aSNode = dynamic_cast<SubjectServiceNode*>(aSchema->addNode(aCatalog, "", aType, aName.str())) )
+	      aSNode->associateToComponent(aSComp);
+	    
+	    temporaryExport();
+	  }
+      }
+      else if ( SubjectProc* aSchema = dynamic_cast<SubjectProc*>(aSub) )
+      {
+	stringstream aName;
+	string aType = getNodeType(theElemType);
+	aName << aType << GuiContext::getCurrent()->getNewId(theElemType);
+	
+	aSchema->addNode(aCatalog, "", aType, aName.str());
+	temporaryExport();
+      }
     }
     else if ( SubjectProc* aSchema = GuiContext::getCurrent()->getSubjectProc() )
     {  
       stringstream aName;
       string aType = getNodeType(theElemType);
-      aName << aType << GuiContext::getCurrent()->getNewId();
+      aName << aType << GuiContext::getCurrent()->getNewId(theElemType);
       
       aSchema->addNode(aCatalog, "", aType, aName.str());
+      temporaryExport();
     }
 }

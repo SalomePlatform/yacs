@@ -28,6 +28,7 @@
 #include <CalStreamPort.hxx>
 
 #include <ServiceNode.hxx>
+#include <CORBANode.hxx>
 #include <InlineNode.hxx>
 #include <Switch.hxx>
 #include <ForLoop.hxx>
@@ -748,15 +749,26 @@ void YACSGui_EditionTreeView::build()
 	aComponent2ServiceNodes = mySalomeComponentData[dynamic_cast<SalomeContainer*>( (*itCont).second )];
 
       YACSGui_ComponentViewItem* aComponentItem = 0;
-      for ( Component2ServiceNodesMap::iterator itComp = aComponent2ServiceNodes.begin();
-	    itComp != aComponent2ServiceNodes.end(); itComp++ )
+      for (map<pair<string,int>, ComponentInstance*>::const_iterator itComp = getProc()->componentInstanceMap.begin();
+	   itComp != getProc()->componentInstanceMap.end(); ++itComp)
       {
-	SubjectComponent* aSComp = GuiContext::getCurrent()->_mapOfSubjectComponent[(*itComp).first];
+	bool aNeedToPublish = true;
+	list<SubjectServiceNode*> aServiceNodes;
+	if ( aComponent2ServiceNodes.find((*itComp).second) != aComponent2ServiceNodes.end() )
+	  aServiceNodes = aComponent2ServiceNodes[(*itComp).second];
+	else
+	  // this component is not associated with any service node
+	  // check this component have to be loaded in the current container (itCont) or not
+	  if ( (*itComp).second->getContainer() != (*itCont).second )
+	    aNeedToPublish = false;
+	
+	if ( !aNeedToPublish ) continue;
+
+	SubjectComponent* aSComp = GuiContext::getCurrent()->_mapOfSubjectComponent[(*itComp).second];
 	aComponentItem = new YACSGui_ComponentViewItem( aContainerItem, aComponentItem, aSComp );
 
 	YACSGui_ReferenceViewItem* aRefNodeItem = 0;
-	list<SubjectServiceNode*> aServiceNodes = (*itComp).second;
-	for ( list<SubjectServiceNode*>::iterator itSNode = aServiceNodes.begin();
+       	for ( list<SubjectServiceNode*>::iterator itSNode = aServiceNodes.begin();
 	      itSNode != aServiceNodes.end(); itSNode++ )
 	  // Put a reference to the schemas node, which is used this component instance
 	  aRefNodeItem = new YACSGui_ReferenceViewItem( aComponentItem, aRefNodeItem, (*itSNode)->getSubjectReference(aSComp) );
@@ -851,6 +863,12 @@ QPopupMenu* YACSGui_EditionTreeView::contextMenuPopup( const int theType )
       aPopup->insertSeparator();
       
       QPopupMenu* aCrNPopup = new QPopupMenu( this );
+      aCrNPopup->insertItem( tr("POP_SALOME_SERVICE"), myModule, SLOT(onSalomeServiceNode()) );
+      aCrNPopup->insertItem( tr("POP_CORBA_SERVICE"), myModule, SLOT(onCORBAServiceNode()) );
+      aCrNPopup->insertItem( tr("POP_NODENODE_SERVICE"), myModule, SLOT(onNodeNodeServiceNode()) );
+      aCrNPopup->insertItem( tr("POP_CPP"), myModule, SLOT(onCppNode()) );
+      aCrNPopup->insertItem( tr("POP_SERVICE_INLINE"), myModule, SLOT(onServiceInlineNode()) );
+      aCrNPopup->insertItem( tr("POP_XML"), myModule, SLOT(onXMLNode()) );
       aCrNPopup->insertItem( tr("POP_INLINE_SCRIPT"), myModule, SLOT(onInlineScriptNode()) );
       aCrNPopup->insertItem( tr("POP_INLINE_FUNCTION"), myModule, SLOT(onInlineFunctionNode()) );
       aCrNPopup->insertItem( tr("POP_BLOCK"), myModule, SLOT(onBlockNode()) );
@@ -892,8 +910,11 @@ QPopupMenu* YACSGui_EditionTreeView::contextMenuPopup( const int theType )
     break;
   case YACSGui_EditionTreeView::ComponentItem:
     {
-      aPopup->insertItem( tr("POP_CREATE_SALOME_SERVICE_NODE"), myModule, SLOT(onSalomeServiceNode()) );
-      aPopup->insertItem( tr("POP_CREATE_SERVICE_INLINE_NODE"), myModule, SLOT(onServiceInlineNode()) );
+      QPopupMenu* aCrNPopup = new QPopupMenu( this );
+      aCrNPopup->insertItem( tr("POP_SALOME_SERVICE"), myModule, SLOT(onSalomeServiceNode()) );
+      aCrNPopup->insertItem( tr("POP_SERVICE_INLINE"), myModule, SLOT(onServiceInlineNode()) );
+
+      aPopup->insertItem(tr("POP_CREATE_NODE"), aCrNPopup);
       aPopup->insertSeparator();
       
       aPopup->insertItem( tr("POP_COPY"), this, SLOT(onCopyItem()) );
@@ -925,6 +946,12 @@ QPopupMenu* YACSGui_EditionTreeView::contextMenuPopup( const int theType )
 	// TODO: in slots we have to check what is selected: schema,
 	//                                                   loop node (=> from ¨Create a body¨) or
 	//                                                   another node (=> from ¨Create a loop¨).
+	aCrNPopup->insertItem( tr("POP_SALOME_SERVICE"), myModule, SLOT(onSalomeServiceNode()) );
+	aCrNPopup->insertItem( tr("POP_CORBA_SERVICE"), myModule, SLOT(onCORBAServiceNode()) );
+	aCrNPopup->insertItem( tr("POP_NODENODE_SERVICE"), myModule, SLOT(onNodeNodeServiceNode()) );
+	aCrNPopup->insertItem( tr("POP_CPP"), myModule, SLOT(onCppNode()) );
+	aCrNPopup->insertItem( tr("POP_SERVICE_INLINE"), myModule, SLOT(onServiceInlineNode()) );
+	aCrNPopup->insertItem( tr("POP_XML"), myModule, SLOT(onXMLNode()) );
 	aCrNPopup->insertItem( tr("POP_INLINE_SCRIPT"), myModule, SLOT(onInlineScriptNode()) );
 	aCrNPopup->insertItem( tr("POP_INLINE_FUNCTION"), myModule, SLOT(onInlineFunctionNode()) );
 	aCrNPopup->insertItem( tr("POP_BLOCK"), myModule, SLOT(onBlockNode()) );
@@ -1043,20 +1070,29 @@ void YACSGui_EditionTreeView::syncPageTypeWithSelection()
 	{
 	  list<int> aPagesIds;
 
-	  YACSGui_ContainerPage* aContPage = 
-	    dynamic_cast<YACSGui_ContainerPage*>( anIP->getPage( YACSGui_InputPanel::ContainerId ) );
-	  if ( aContPage )
+	  if ( !dynamic_cast<CORBANode*>(sNode) )
 	  {
-	    aContPage->setSContainer( GuiContext::getCurrent()->_mapOfSubjectContainer[sNode->getComponent()->getContainer()] );
-	    anIP->setOn( false, YACSGui_InputPanel::ContainerId );
-	    aPagesIds.push_back(YACSGui_InputPanel::ContainerId);
+	    YACSGui_ContainerPage* aContPage = 
+	      dynamic_cast<YACSGui_ContainerPage*>( anIP->getPage( YACSGui_InputPanel::ContainerId ) );
+	    if ( aContPage )
+	    {
+	      SubjectContainer* aCont = 0;
+	      if ( sNode->getComponent() && sNode->getComponent()->getContainer() )
+		aCont = GuiContext::getCurrent()->_mapOfSubjectContainer[sNode->getComponent()->getContainer()];
+	      aContPage->setSContainer(aCont);
+	      anIP->setOn( false, YACSGui_InputPanel::ContainerId );
+	      aPagesIds.push_back(YACSGui_InputPanel::ContainerId);
+	    }
 	  }
 	    
 	  YACSGui_ComponentPage* aCompPage = 
 	    dynamic_cast<YACSGui_ComponentPage*>( anIP->getPage( YACSGui_InputPanel::ComponentId ) );
 	  if ( aCompPage )
 	  {
-	    aCompPage->setSComponent( GuiContext::getCurrent()->_mapOfSubjectComponent[sNode->getComponent()] );
+	    SubjectComponent* aComp = 0;
+	    if ( sNode->getComponent() )
+	      aComp = GuiContext::getCurrent()->_mapOfSubjectComponent[sNode->getComponent()];
+	    aCompPage->setSComponent(aComp);
 	    anIP->setOn( false, YACSGui_InputPanel::ComponentId );
 	    aPagesIds.push_back(YACSGui_InputPanel::ComponentId);
 	  }
@@ -1243,18 +1279,26 @@ void YACSGui_EditionTreeView::onSelectionChanged()
     {
       if ( YACSGui_ComponentViewItem* aCompItem = dynamic_cast<YACSGui_ComponentViewItem*>( anItem ) )
       {
-	printf(">> Set component instance for Service Node page (%s)\n", aCompItem->getComponent()->getName().c_str());
-	aSNPage->setComponent(aCompItem->getComponent());
-	printf(">> Set component instance for Service Node page (%s)\n", aCompItem->getComponent()->getName().c_str());
-
-	// change selection from the component instance to the service node
-	bool block = signalsBlocked();
-	blockSignals( true );
-	setSelected( aCompItem, false );
-	QListViewItem* aSNItem = findItem( aSNPage->getNodeName(), 0 );
-	if( aSNItem )
-	  setSelected( aSNItem, true );
-	blockSignals( block );
+      	if ( ServiceNode* sNode = dynamic_cast<ServiceNode*>(aSNPage->getNode()) )
+	{
+	  if ( sNode->getKind() == aCompItem->getComponent()->getKind() )
+	  {
+	    printf(">> Set component instance for Service Node page (%s)\n", aCompItem->getComponent()->getName().c_str());
+	    aSNPage->setComponent(aCompItem->getComponent());
+	    printf(">> Set component instance for Service Node page (%s)\n", aCompItem->getComponent()->getName().c_str());
+	    
+	    // change selection from the component instance to the service node
+	    bool block = signalsBlocked();
+	    blockSignals( true );
+	    setSelected( aCompItem, false );
+	    QListViewItem* aSNItem = findItem( aSNPage->getNodeName(), 0 );
+	    if( aSNItem )
+	      setSelected( aSNItem, true );
+	    blockSignals( block );
+	  }
+	  else setSelected( anItem, false );
+	}
+	else setSelected( anItem, false );
       }
       else
       { // remove selection from incompatible object (which is not component instance)

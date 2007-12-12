@@ -49,7 +49,7 @@ namespace YACS
       virtual InputPort *clone(Node *newHelder) const = 0;
       virtual bool isEmpty();
 
-      virtual void *get() const throw(Exception) = 0;
+      virtual void *get() const = 0;
       virtual void put(const void *data) throw(ConversionException) = 0;
       virtual std::string dump();
       virtual void setStringRef(std::string strRef);
@@ -78,7 +78,7 @@ namespace YACS
       void edNotifyDereferencedBy(OutPort *fromPort);
       std::set<OutPort *> edSetOutPort() const;
       InputPort *getPublicRepresentant();
-      void *get() const throw(Exception);
+      void *get() const;
       virtual void put(const void *data) throw(ConversionException) ;
       int edGetNumberOfLinks() const;
       bool isIntermediate() const { return true; }

@@ -2,6 +2,7 @@
 #include "PythonPorts.hxx"
 #include "TypeConversions.hxx"
 #include "Node.hxx"
+#include "ConversionException.hxx"
 
 #include <iostream>
 #include <sstream>
@@ -11,6 +12,79 @@
 
 using namespace YACS::ENGINE;
 using namespace std;
+
+void releasePyObj(PyObject* data)
+{
+  DEBTRACE( "data refcnt: " << data->ob_refcnt );
+  if (PyObject_HasAttrString(data, (char*)"_is_a"))
+    {
+      PyObject *result = PyObject_CallMethod(data, (char*)"_is_a", (char*)"s",(char*)"IDL:SALOME/GenericObj:1.0");
+      if(result && PyInt_Check(result))
+        {
+          if(PyInt_AS_LONG(result))
+            {
+              PyObject* o=PyObject_CallMethod(data, (char*)"Destroy", (char*)"");
+              if(o)
+                Py_XDECREF( o);
+              else
+                {
+#ifdef _DEVDEBUG_
+                  PyErr_Print();
+#else
+                  PyErr_Clear();
+#endif
+                  throw ConversionException("Corba object does not exist: you have perhaps forgotten to call Register on a GenericObj");      
+                }
+            }
+          Py_XDECREF(result); 
+        }
+      if(!result)
+        {
+#ifdef _DEVDEBUG_
+          PyErr_Print();
+#else
+          PyErr_Clear();
+#endif
+          throw ConversionException("Corba object does not exist: you have perhaps forgotten to call Register on a GenericObj");      
+        }
+    }
+}
+
+void registerPyObj(PyObject* data)
+{
+  if (PyObject_HasAttrString(data, (char*)"_is_a"))
+    {
+      PyObject *result = PyObject_CallMethod(data, (char*)"_is_a", (char*)"s",(char*)"IDL:SALOME/GenericObj:1.0");
+      if(result && PyInt_Check(result))
+        {
+          if(PyInt_AS_LONG(result))
+            {
+              PyObject* o= PyObject_CallMethod(data, (char*)"Register", (char*)"") ;
+              if(o)
+                Py_XDECREF( o);
+              else
+                {
+#ifdef _DEVDEBUG_
+                  PyErr_Print();
+#else
+                  PyErr_Clear();
+#endif
+                  throw ConversionException("Corba object does not exist: you have perhaps forgotten to call Register on a GenericObj");      
+                }
+            }
+          Py_XDECREF(result); 
+        }
+      if(!result)
+        {
+#ifdef _DEVDEBUG_
+          PyErr_Print();
+#else
+          PyErr_Clear();
+#endif
+          throw ConversionException("Corba object does not exist: you have perhaps forgotten to call Register on a GenericObj");      
+        }
+    }
+}
 
 InputPyPort::InputPyPort(const std::string& name, Node *node, TypeCode * type)
   : InputPort(name, node, type), DataPort(name, node, type), Port(node), _data(Py_None),_initData(Py_None)
@@ -23,6 +97,8 @@ InputPyPort::~InputPyPort()
   PyGILState_STATE gstate = PyGILState_Ensure();
   DEBTRACE( "_data refcnt: " << _data->ob_refcnt );
   DEBTRACE( "_initData refcnt: " << _initData->ob_refcnt );
+  // Release or not release : all GenericObj are deleted when the input port is deleted
+  //CCAR: waiting for support in Salome ;releasePyObj(_data);
   Py_XDECREF(_data); 
   Py_XDECREF(_initData); 
   PyGILState_Release(gstate);
@@ -56,9 +132,12 @@ void InputPyPort::put(const void *data) throw(ConversionException)
 
 void InputPyPort::put(PyObject *data) throw(ConversionException)
 {
+  InterpreterUnlocker l;
+  //CCAR: waiting for support in Salome ;releasePyObj(_data);
   Py_XDECREF(_data); 
   _data = data;
   Py_INCREF(_data); 
+  //CCAR: waiting for support in Salome ;registerPyObj(_data);
   DEBTRACE( "_data refcnt: " << _data->ob_refcnt );
 }
 
@@ -140,6 +219,8 @@ OutputPyPort::~OutputPyPort()
 {
   PyGILState_STATE gstate = PyGILState_Ensure();
   DEBTRACE( "_data refcnt: " << _data->ob_refcnt );
+  // Release or not release : all GenericObj are deleted when the output port is deleted
+  //CCAR: waiting for support in Salome ;releasePyObj(_data);
   Py_XDECREF(_data); 
   PyGILState_Release(gstate);
 }
@@ -162,9 +243,11 @@ void OutputPyPort::put(PyObject *data) throw(ConversionException)
   PyObject_Print(data,stderr,Py_PRINT_RAW);
   cerr << endl;
 #endif
+  //CCAR: waiting for support in Salome ;releasePyObj(_data);
   Py_XDECREF(_data); 
   _data = data;
   Py_INCREF(_data); 
+  //no registerPyObj : we steal the output reference of the node
   DEBTRACE( "OutputPyPort::put.ob refcnt: " << data->ob_refcnt );
   OutputPort::put(data);
 }

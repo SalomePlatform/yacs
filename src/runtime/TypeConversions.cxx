@@ -13,6 +13,7 @@
 #include "Salome_file_i.hxx"
 #include "TypeCode.hxx"
 #include "Cstr2d.hxx"
+#include "SALOME_GenericObj.hh"
 
 #include <iostream>
 #include <sstream>
@@ -709,6 +710,11 @@ namespace YACS
               return PyString_AS_STRING(o);
             }
           PyObject *pystring=PyObject_CallMethod(getSALOMERuntime()->getPyOrb(),"object_to_string","O",o);
+          if(pystring==NULL)
+            {
+              PyErr_Print();
+              throw YACS::ENGINE::ConversionException("Problem in convertToYacsObjref<PYTHONImpl");
+            }
           std::string mystr=PyString_AsString(pystring);
           Py_DECREF(pystring);
           return mystr;
@@ -864,12 +870,46 @@ namespace YACS
               msg << " (" << __FILE__ << ":" << __LINE__ << ")";
               throw YACS::ENGINE::ConversionException(msg.str());
             }
-          //hold_lock is true: caller is supposed to hold the GIL.
-          //omniorb will not take the GIL
 #ifdef REFCNT
           DEBTRACE("obref refCount: " << obref->_PR_getobj()->pd_refCount);
 #endif
+#ifdef _DEVDEBUG_
+          std::cerr << "_PD_repoId: " << obref->_PD_repoId << std::endl;
+          std::cerr << "_mostDerivedRepoId: " << obref->_PR_getobj()->_mostDerivedRepoId()  << std::endl;
+#endif
+
+          //hold_lock is true: caller is supposed to hold the GIL.
+          //omniorb will not take the GIL
           PyObject* ob= getSALOMERuntime()->getApi()->cxxObjRefToPyObjRef(obref, 1);
+
+#ifdef _DEVDEBUG_
+          PyObject_Print(ob,stderr,Py_PRINT_RAW);
+          std::cerr << std::endl;
+          std::cerr << "obref is a generic: " << obref->_is_a("IDL:SALOME/GenericObj:1.0") << std::endl;
+          PyObject_Print(getSALOMERuntime()->get_omnipy(),stderr,Py_PRINT_RAW);
+          std::cerr << std::endl;
+#endif
+
+          //ob is a CORBA::Object. Try to convert it to more specific type SALOME/GenericObj
+          if(obref->_is_a("IDL:SALOME/GenericObj:1.0"))
+            {
+              PyObject *result = PyObject_CallMethod(getSALOMERuntime()->get_omnipy(), "narrow", "Osi",ob,"IDL:SALOME/GenericObj:1.0",1);
+              if(result==NULL)
+                PyErr_Clear();//Exception during narrow. Keep ob
+              else if(result==Py_None)
+                Py_DECREF(result); //Can't narrow. Keep ob
+              else
+                {
+                  //Can narrow. Keep result
+#ifdef _DEVDEBUG_
+                  PyObject_Print(result,stderr,Py_PRINT_RAW);
+                  std::cerr << std::endl;
+#endif
+                  Py_DECREF(ob);
+                  ob=result;
+                }
+            }
+
 #ifdef REFCNT
           DEBTRACE("obref refCount: " << obref->_PR_getobj()->pd_refCount);
 #endif
@@ -1283,7 +1323,12 @@ namespace YACS
     {
       static inline long convert(const TypeCode *t,YACS::ENGINE::Any* o,void*)
         {
-          return o->getIntValue();
+          if(o->getType()->kind()==Int)
+            return o->getIntValue();
+          stringstream msg;
+          msg << "Problem in conversion: a int is expected " ;
+          msg << " (" << __FILE__ << ":" << __LINE__ << ")";
+          throw YACS::ENGINE::ConversionException(msg.str());
         }
     };
     template <ImplType IMPLOUT, class TOUT>
@@ -1291,7 +1336,12 @@ namespace YACS
     {
       static inline std::string convert(const TypeCode *t,YACS::ENGINE::Any* o,void*)
         {
-          return o->getStringValue();
+          if(o->getType()->kind()==String)
+            return o->getStringValue();
+          stringstream msg;
+          msg << "Problem in conversion: a string is expected " ;
+          msg << " (" << __FILE__ << ":" << __LINE__ << ")";
+          throw YACS::ENGINE::ConversionException(msg.str());
         }
     };
     template <ImplType IMPLOUT, class TOUT>
@@ -1306,6 +1356,7 @@ namespace YACS
           stringstream msg;
           msg << "Problem in conversion: a bool or int is expected " ;
           msg << " (" << __FILE__ << ":" << __LINE__ << ")";
+          throw YACS::ENGINE::ConversionException(msg.str());
         }
     };
     template <ImplType IMPLOUT, class TOUT>
@@ -1313,7 +1364,12 @@ namespace YACS
     {
       static inline std::string convert(const TypeCode *t,YACS::ENGINE::Any* o,void*)
         {
-          return o->getStringValue();
+          if(o->getType()->kind()==String)
+            return o->getStringValue();
+          stringstream msg;
+          msg << "Problem in conversion: a objref(string) is expected " ;
+          msg << " (" << __FILE__ << ":" << __LINE__ << ")";
+          throw YACS::ENGINE::ConversionException(msg.str());
         }
     };
     template <ImplType IMPLOUT, class TOUT>
@@ -1434,8 +1490,12 @@ namespace YACS
       static inline long convert(const TypeCode *t,CORBA::Any* o,void*)
         {
           CORBA::Long d;
-          *o >>= d;
-          return d;
+          if(*o >>= d)
+            return d;
+          stringstream msg;
+          msg << "Problem in CORBA to TOUT conversion: kind= " << t->kind() ;
+          msg << " : " << __FILE__ << ":" << __LINE__;
+          throw YACS::ENGINE::ConversionException(msg.str());
         }
     };
     template <ImplType IMPLOUT, class TOUT>
@@ -1444,8 +1504,12 @@ namespace YACS
       static inline std::string convert(const TypeCode *t,CORBA::Any* o,void*)
         {
           const char *s;
-          *o >>=s;
-          return s;
+          if(*o >>=s)
+            return s;
+          stringstream msg;
+          msg << "Problem in CORBA to TOUT conversion: kind= " << t->kind() ;
+          msg << " : " << __FILE__ << ":" << __LINE__;
+          throw YACS::ENGINE::ConversionException(msg.str());
         }
     };
     template <ImplType IMPLOUT, class TOUT>
@@ -1477,12 +1541,13 @@ namespace YACS
               f->setDistributedFile(file);
               f->connect(sf);
               f->recvFiles();
+              delete f;
               return file;
             }
           else
             {
               CORBA::Object_var ObjRef ;
-              *o >>= (CORBA::Any::to_object ) ObjRef ;
+              *o >>= CORBA::Any::to_object(ObjRef) ;
               CORBA::String_var objref = getSALOMERuntime()->getOrb()->object_to_string(ObjRef);
               return (char *)objref;
             }

@@ -1,4 +1,11 @@
+//#define REFCNT
+#ifdef REFCNT
+#define private public
+#define protected public
 #include <omniORB4/CORBA.h>
+#include <omniORB4/internal/typecode.h>
+#endif
+
 #include <echo.hh>
 #include <iostream>
 #include <vector>
@@ -71,9 +78,33 @@ int main(int argc, char** argv)
       CORBA::Any *any2 = new CORBA::Any();
       *any2 <<= oob;
       v.push_back(any2);
+#ifdef REFCNT
+      std::cerr << "refcount: " << oob->_PR_getobj()->pd_refCount << std::endl;
+#endif
+
       CORBA::Any *any3 = new CORBA::Any();
       *any3 <<= oob;
       v.push_back(any3);
+#ifdef REFCNT
+      std::cerr << "refcount: " << oob->_PR_getobj()->pd_refCount << std::endl;
+#endif
+
+      eo::Obj_ptr xobj;
+      *any2 >>= xobj;
+#ifdef REFCNT
+      std::cerr << "refcount: " << xobj->_PR_getobj()->pd_refCount << std::endl;
+#endif
+      eo::Obj_ptr yobj;
+      *any2 >>= yobj;
+#ifdef REFCNT
+      std::cerr << "refcount: " << yobj->_PR_getobj()->pd_refCount << std::endl;
+#endif
+
+      CORBA::Object_var zobj ;
+      *any2 >>= CORBA::Any::to_object(zobj) ;
+#ifdef REFCNT
+      std::cerr << "refcount: " << zobj->_PR_getobj()->pd_refCount << std::endl;
+#endif
 
       // Build an Any from vector v
       int homog=1;
@@ -243,6 +274,25 @@ int main(int argc, char** argv)
                 std::cerr << "(CORBA::MARSHAL: minor = " << ms << ")" << std::endl;
             }
         }
+
+      //DII on echoObj2
+      std::cerr << "Before request" << std::endl;
+      req = echoref->_request("echoObj2");
+      std::cerr << "After request" << std::endl;
+      req->add_in_arg() <<= Objref;
+      std::cerr << "After add_in_arg" << std::endl;
+      req->add_out_arg() <<= Objout;
+      std::cerr << "After add_out_arg" << std::endl;
+      req->set_return_type(CORBA::_tc_void);
+      std::cerr << "After set_return_type" << std::endl;
+      req->invoke();
+      std::cerr << "After invoke" << std::endl;
+      exc =req->env()->exception();
+      if( exc )
+        {
+          std::cerr << "The raised exception is of Type:" << exc->_name() << std::endl;
+        }
+      //end of DII on echoObj2
 
       // Delete allocated objects to remove memory leaks (valgrind tests)
 

@@ -56,6 +56,8 @@ namespace YACS
         COMPONENT,
         REFERENCE,
         DATATYPE,
+        LINK,
+        CONTROLLINK,
         UNKNOWN
       } TypeOfElem;
    
@@ -254,6 +256,28 @@ namespace YACS
       std::string _portName;
       bool _isInport;
       std::map<std::string,std::string> _properties;
+    };
+
+    class CommandSetFuncNodeFunctionName: public Command
+    {
+    public:
+      CommandSetFuncNodeFunctionName(std::string node, std::string funcName);
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      std::string _nodeName;
+      std::string _funcName;
+    };
+
+    class CommandSetInlineNodeScript: public Command
+    {
+    public:
+      CommandSetInlineNodeScript(std::string node, std::string script);
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      std::string _nodeName;
+      std::string _script;
     };
 
     class CommandAddComponentInstance: public Command

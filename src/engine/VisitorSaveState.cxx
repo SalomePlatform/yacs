@@ -193,9 +193,11 @@ void VisitorSaveState::visitWhileLoop(WhileLoop *node)
   InputPort * ip = node->edGetConditionPort();
   if (ip->isEmpty())
     throw Exception("condition in WhileLoop empty, case not handled yet...");
-  Any *val = static_cast<Any*>(ip->get());
-  bool condition = val->getBoolValue();
-  _out << "    <condition>" << condition << "</condition>" << endl;
+  if ( ConditionInputPort* cip = dynamic_cast<ConditionInputPort*>(ip) )
+  {
+    bool condition = cip->getValue();
+    _out << "    <condition>" << condition << "</condition>" << endl;
+  }
 
   _out << "  </node>" << endl;
 }

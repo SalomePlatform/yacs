@@ -20,6 +20,7 @@ namespace YACS
       virtual void checkBasicConsistency() const throw(Exception);
       virtual void setData(InputPort* port, std::string& data);
       virtual void dump(std::ostream &os);
+      virtual InputPort *createInputPort(const std::string& inputPortName, TypeCode* type);
     public:
       static const char IMPL_NAME[];
     };

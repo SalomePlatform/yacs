@@ -61,10 +61,15 @@ namespace YACS
       std::list<OutputDataStreamPort *> getSetOfOutputDataStreamPort() const { return _setOfOutputDataStreamPort; }
       InputDataStreamPort *getInputDataStreamPort(const std::string& name) const throw(Exception);
       OutputDataStreamPort *getOutputDataStreamPort(const std::string& name) const throw(Exception);
+      virtual InputPort *createInputPort(const std::string& inputPortName, TypeCode* type);
+      virtual OutputPort *createOutputPort(const std::string& outputPortName, TypeCode* type);
+      virtual InputDataStreamPort *createInputDataStreamPort(const std::string& inputPortDSName, TypeCode* type);
+      virtual OutputDataStreamPort *createOutputDataStreamPort(const std::string& outputPortDSName, TypeCode* type);
       virtual InputPort *edAddInputPort(const std::string& inputPortName, TypeCode* type) throw(Exception);
       virtual OutputPort *edAddOutputPort(const std::string& outputPortName, TypeCode* type) throw(Exception);
       virtual InputDataStreamPort *edAddInputDataStreamPort(const std::string& inputPortDSName, TypeCode* type) throw(Exception);
       virtual OutputDataStreamPort *edAddOutputDataStreamPort(const std::string& outputPortDSName, TypeCode* type) throw(Exception);
+
       //run part
       void begin();
       bool isReady();

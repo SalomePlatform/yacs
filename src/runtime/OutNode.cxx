@@ -17,7 +17,7 @@ namespace YACS
   namespace ENGINE
     {
 
-const char OutNode::IMPL_NAME[]="XMLPRESET";
+const char OutNode::IMPL_NAME[]="XML";
 
 OutNode::OutNode(const std::string& name)
   : DataNode(name)
@@ -28,6 +28,11 @@ OutNode::OutNode(const std::string& name)
 OutNode::OutNode(const OutNode& other, ComposedNode *father)
   : DataNode(other, father)
 {
+}
+
+InputPort* OutNode::createInputPort(const std::string& inputPortName, TypeCode* type)
+{
+  return new InputPresetPort(inputPortName, this, type);
 }
 
 void OutNode::dump(std::ostream &out)
