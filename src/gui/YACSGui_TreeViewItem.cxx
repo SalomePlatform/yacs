@@ -425,6 +425,25 @@ void YACSGui_NodeViewItem::update(YACS::HMI::GuiEvent event, int type, YACS::HMI
 	addPortItem(son);
       }
       break;
+    case BLOC:
+    case FOREACHLOOP:
+    case OPTIMIZERLOOP:
+    case FORLOOP:
+    case WHILELOOP:
+    case SWITCH:
+    case PYTHONNODE:
+    case PYFUNCNODE:
+    case CORBANODE:
+    case SALOMENODE:
+    case CPPNODE:
+    case SALOMEPYTHONNODE:
+    case XMLNODE:
+      {
+	// remove a node inside a block (this = block item)
+	printf("NodeViewItem:  ADD\n");
+	addNodeItem(son);
+      }
+      break;
     default:
       break;
     }
@@ -638,6 +657,14 @@ void YACSGui_NodeViewItem::renamePortItem( YACS::HMI::Subject* theSPort )
   }
 }
 
+void YACSGui_NodeViewItem::addNodeItem( YACS::HMI::Subject* theSNode )
+{
+  if ( SubjectNode* aSNode = dynamic_cast<SubjectNode*>(theSNode) )
+  {
+    YACSGui_NodeViewItem* aNodeItem = new YACSGui_NodeViewItem( this, 0, aSNode );
+  }
+}
+
 void YACSGui_NodeViewItem::addPortItem( YACS::HMI::Subject* theSPort )
 {
   if ( SubjectDataPort* aSPort = dynamic_cast<SubjectDataPort*>(theSPort) )
@@ -735,14 +762,14 @@ void YACSGui_NodeViewItem::removePortItem( YACS::HMI::Subject* theSPort )
   }
 }
 
-void YACSGui_NodeViewItem::removeNodeItem( YACS::HMI::Subject* theSPort )
+void YACSGui_NodeViewItem::removeNodeItem( YACS::HMI::Subject* theSNode )
 {
   YACSGui_NodeViewItem* aNode = 0;
   QListViewItem* aChild = firstChild();
   while( aChild )
   {
     if ( aNode = dynamic_cast<YACSGui_NodeViewItem*>(aChild) )
-      if ( aNode->getSNode() == theSPort )
+      if ( aNode->getSNode() == theSNode )
       {
 	printf(">> the son is found\n");
 	break;

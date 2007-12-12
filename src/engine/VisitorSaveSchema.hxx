@@ -58,6 +58,7 @@ namespace YACS
 
     protected:
       virtual void writeProperties(Node *node);
+      virtual void dumpTypeCode(TypeCode* type, std::set<std::string>& typeNames,std::map<std::string, TypeCode*>& typeMap,int depth);
       virtual void writeTypeCodes(Proc *proc);
       virtual void writeContainers(Proc *proc);
       virtual void writeInputPorts(Node *node);

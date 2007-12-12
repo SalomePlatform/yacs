@@ -76,6 +76,8 @@ public:
 
   void                    createChildNodesPresentations( YACS::HMI::SubjectComposedNode* );
 
+  void                    updateNodePrs( int theNodeId, std::string thePortName, std::string thePortValue );
+
   int                     arrangeNodesAlgo(YACS::ENGINE::Bloc* theBloc);
   int                     arrangeNodes(YACS::ENGINE::Bloc* theBloc);
   int                     arrangeIterativeAndSwitchNodes(YACS::ENGINE::ComposedNode* theNode);
@@ -112,6 +114,7 @@ public:
 
   void                    registerStatusObserverWithNode(YACS::ENGINE::Node* theNode);
 
+  void                    createPrs(YACS::HMI::SubjectNode* theSubject);
   void                    deletePrs(YACS::HMI::SubjectNode* theSubject);
 
 private:

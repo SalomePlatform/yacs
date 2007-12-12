@@ -17,7 +17,7 @@ Problems detected by EDF
 ----------------------------------------------------------------------------------------------------
 Num ----: 1
 priority: 0
-status--: NOK
+status--: DONE
 description: On the launcf of YACSGui, without any schema open, if we create a new schema, unless we 
 double click on schema1 in object browser, we can add nothing because no schema is selected. It is 
 not obvious and very frustrating. The must always be a schema selected.
@@ -60,14 +60,16 @@ status--: NOK
 description: in create node menu, salome service is useless (we cannot edit ports). Salome service 
 come by clone from a catalog.
 comments:
+EDF: see 3
 ----------------------------------------------------------------------------------------------------
 Num-----: 5 
 priority: 0
-status--: NOK
+status--: DONE
 description: in create node menu, CPPNode create sigsegv
 comments: OCC: This bug is not reproduced on OCC local version in
 debug mode. It is needed to check it on BR_OCC branch today evening after our
 integration.
+EDF: OK
 ----------------------------------------------------------------------------------------------------
 Num-----: 6 
 priority: 0
@@ -163,6 +165,8 @@ return to schema schema1
 in bloc properties, Direct Children + (for add node)
 a line number 1 appears in Direct Children with an empty node name
 I don't know what to do after...
+IMPORTANT NOTE: prefered way is to have a popup menu (add nodes) at bloc item in tree view (see 2).
+Either the '+' button activate the same menu, or it must be grayed or removed.
 
 ----------------------------------------------------------------------------------------------------
 Num-----: 14

@@ -101,7 +101,13 @@ public:
 
 public slots:
   void                                onNotifyNodeStatus( int theNodeId, int theStatus );
-
+  void                                onNotifyInPortValues( int theNodeId,
+							    std::list<std::string> theInPortsNames,
+							    std::list<std::string> theValues );
+  void                                onNotifyOutPortValues( int theNodeId,
+							     std::list<std::string> theOutPortsNames,
+							     std::list<std::string> theValues );
+  
 signals:
   void                                Apply( const int theId );
 
@@ -344,6 +350,11 @@ public:
 
   virtual void                        notifyNodeStatus( int theStatus ) {}
   virtual void                        notifyNodeProgress() {}
+  virtual void                        notifyInPortValues( std::list<std::string> theInPortsNames,
+							  std::list<std::string> theValues ) {}
+  virtual void                        notifyOutPortValues( std::list<std::string> theOutPortsNames,
+							   std::list<std::string> theValues ) {}
+  virtual void                        notifyNodeCreateBody( YACS::HMI::Subject* theSubject ) {}
 
 protected:
   virtual void                        updateState();
@@ -379,6 +390,10 @@ public:
 
   virtual void                        notifyNodeStatus( int theStatus );
   virtual void                        notifyNodeProgress();
+  virtual void                        notifyInPortValues( std::list<std::string> theInPortsNames,
+							  std::list<std::string> theValues );
+  virtual void                        notifyOutPortValues( std::list<std::string> theOutPortsNames,
+							   std::list<std::string> theValues );
 
 public slots:
   virtual void                        onApply();
@@ -442,6 +457,10 @@ public:
 
   virtual void                        notifyNodeStatus( int theStatus );
   virtual void                        notifyNodeProgress();
+  virtual void                        notifyInPortValues( std::list<std::string> theInPortsNames,
+							  std::list<std::string> theValues );
+  virtual void                        notifyOutPortValues( std::list<std::string> theOutPortsNames,
+							   std::list<std::string> theValues );
 
 public slots:
   virtual void                        onApply();
@@ -492,6 +511,11 @@ public:
 
   virtual void                        notifyNodeStatus( int theStatus );
   virtual void                        notifyNodeProgress();
+  virtual void                        notifyInPortValues( std::list<std::string> theInPortsNames,
+							  std::list<std::string> theValues );
+  virtual void                        notifyOutPortValues( std::list<std::string> theOutPortsNames,
+							   std::list<std::string> theValues );
+  virtual void                        notifyNodeCreateBody( YACS::HMI::Subject* theSubject );
 
 public slots:
   virtual void                        onApply();
@@ -525,6 +549,10 @@ public:
 
   virtual void                        notifyNodeStatus( int theStatus );
   virtual void                        notifyNodeProgress();
+  virtual void                        notifyInPortValues( std::list<std::string> theInPortsNames,
+							  std::list<std::string> theValues );
+  virtual void                        notifyOutPortValues( std::list<std::string> theOutPortsNames,
+							   std::list<std::string> theValues );
 
 public slots:
   virtual void                        onApply();
@@ -559,6 +587,11 @@ public:
 
   virtual void                        notifyNodeStatus( int theStatus );
   virtual void                        notifyNodeProgress();
+  virtual void                        notifyInPortValues( std::list<std::string> theInPortsNames,
+							  std::list<std::string> theValues );
+  virtual void                        notifyOutPortValues( std::list<std::string> theOutPortsNames,
+							   std::list<std::string> theValues );
+  virtual void                        notifyNodeCreateBody( YACS::HMI::Subject* theSubject );
 
 public slots:
   virtual void                        onApply();
@@ -596,6 +629,10 @@ public:
 
   virtual void                        notifyNodeStatus( int theStatus );
   virtual void                        notifyNodeProgress();
+  virtual void                        notifyInPortValues( std::list<std::string> theInPortsNames,
+							  std::list<std::string> theValues );
+  virtual void                        notifyOutPortValues( std::list<std::string> theOutPortsNames,
+							   std::list<std::string> theValues );
 
 public slots:
   virtual void                        onApply();
@@ -648,6 +685,10 @@ public:
 
   virtual void                        notifyNodeStatus( int theStatus );
   virtual void                        notifyNodeProgress();
+  virtual void                        notifyInPortValues( std::list<std::string> theInPortsNames,
+							  std::list<std::string> theValues );
+  virtual void                        notifyOutPortValues( std::list<std::string> theOutPortsNames,
+							   std::list<std::string> theValues );
 
 public slots:
   virtual void                        onApply();

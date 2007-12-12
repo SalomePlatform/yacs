@@ -282,27 +282,6 @@ bool Observer_i::event(QEvent *e)
               if (aState < 0)
                 return true;
 
-	      /*
-	      if ( aState == YACS::DONE ) //for test
-	      {
-		std::list<InPort*> IPs = aNode->getSetOfInPort();
-		std::list<InPort*>::iterator itIP = IPs.begin();
-		for ( ; itIP!=IPs.end(); itIP++ )
-		{
-		  string aValue = _engineProc->getInPortValue(numid,(*itIP)->getName().c_str());
-		  printf(">> In port : %s -> %s\n",(*itIP)->getName().c_str(),aValue.c_str());
-		}
-
-		std::list<OutPort*> OPs = aNode->getSetOfOutPort();
-		std::list<OutPort*>::iterator itOP = OPs.begin();
-		for ( ; itOP!=OPs.end(); itOP++ )
-		{
-		  string aValue = _engineProc->getOutPortValue(numid,(*itOP)->getName().c_str());
-		  printf(">> Out port : %s -> %s\n",(*itOP)->getName().c_str(),aValue.c_str());
-		}
-	      }
-	      */
-
               YACSGui_RunMode* theRunMode = _guiMod->getRunMode(_guiExec);
               if (theRunMode)
                 theRunMode->onNotifyNodeStatus(iGui, aState);
@@ -311,7 +290,75 @@ bool Observer_i::event(QEvent *e)
 		aRunTV->onNotifyNodeStatus(iGui, aState);
 
 	      if ( YACSGui_InputPanel* anIP = _guiMod->getInputPanel() )
+	      {
 		anIP->onNotifyNodeStatus(iGui, aState);
+		
+		list<string> anInPortsNames;
+		list<string> anInPortsValues;
+		list<InPort*> IPs = aNode->getSetOfInPort();
+		list<InPort*>::iterator itIP = IPs.begin();
+		for ( ; itIP!=IPs.end(); itIP++ )
+		{
+		  int aEngineNodeId = numid;
+		  int aGuiNodeId = iGui;
+		  if ( dynamic_cast<ComposedNode*>(aNode) )
+		  {
+		    Node* aChildNode = (*itIP)->getNode();
+		    if ( aNode != aChildNode )
+		    { // the event is emitted for a child node of a composed node
+		      // (with numid corresponded to a composed node)
+		      aGuiNodeId = aChildNode->getNumId();
+		      aEngineNodeId = _guiToEngineMap[aGuiNodeId];
+		    }
+		  }
+		  string aDump = _engineProc->getInPortValue(aEngineNodeId,(*itIP)->getName().c_str());
+		  QString aValue(aDump);
+		  aValue = aValue.right(aValue.length()-(aValue.find(">",aValue.find(">")+1)+1));
+		  aValue = aValue.left(aValue.find("<"));
+		  if ( aValue.isEmpty() ) aValue = QString("<?>");
+		  
+		  anInPortsNames.push_back((*itIP)->getName());
+		  anInPortsValues.push_back(string(aValue.latin1()));
+		  
+		  _guiMod->getGraph(_guiProc)->updateNodePrs(aGuiNodeId,
+							     (*itIP)->getName(),
+							     string(aValue.latin1()));
+		}
+		anIP->onNotifyInPortValues(iGui,anInPortsNames,anInPortsValues);
+		
+		list<string> anOutPortsNames;
+		list<string> anOutPortsValues;
+		list<OutPort*> OPs = aNode->getSetOfOutPort();
+		list<OutPort*>::iterator itOP = OPs.begin();
+		for ( ; itOP!=OPs.end(); itOP++ )
+		{
+		  int aEngineNodeId = numid;
+		  int aGuiNodeId = iGui;
+		  if ( dynamic_cast<ComposedNode*>(aNode) )
+		  {
+		    Node* aChildNode = (*itOP)->getNode();
+		    if ( aNode != aChildNode )
+		    { // the event is emitted for a child node of a composed node
+		      // (with numid corresponded to a composed node)
+		      aGuiNodeId = aChildNode->getNumId();
+		      aEngineNodeId = _guiToEngineMap[aGuiNodeId];
+		    }
+		  }
+		  string aDump = _engineProc->getOutPortValue(aEngineNodeId,(*itOP)->getName().c_str());
+		  QString aValue(aDump);
+		  aValue = aValue.right(aValue.length()-(aValue.find(">",aValue.find(">")+1)+1));
+		  aValue = aValue.left(aValue.find("<"));
+		  if ( aValue.isEmpty() ) aValue = QString("< ? >");
+		  
+		  anOutPortsNames.push_back((*itOP)->getName());
+		  anOutPortsValues.push_back(string(aValue.latin1()));
+		  
+		  _guiMod->getGraph(_guiProc)->updateNodePrs(aGuiNodeId,
+							     (*itOP)->getName(),
+							     string(aValue.latin1()));
+		}
+		anIP->onNotifyOutPortValues(iGui,anOutPortsNames,anOutPortsValues);
+	      }
 
               myImpl->setNodeState(aName, aState);
             }

@@ -37,6 +37,7 @@
 #include "QxGraph_CanvasView.h"
 
 #include "SUIT_Session.h"
+#include "SUIT_MessageBox.h"
 
 #include <Node.hxx>
 #include <ElementaryNode.hxx>
@@ -145,9 +146,7 @@ void YACSGui_Graph::update(YACS::HMI::GuiEvent event, int type, YACS::HMI::Subje
 	printf("Graph:  ADD node\n");
 	if ( SubjectNode* aNode = dynamic_cast<SubjectNode*>(son) )
 	{
-	  update( aNode->getNode(), dynamic_cast<SubjectComposedNode*>(aNode->getParent()) );
-	  show();
-	  getCanvas()->update();
+	  createPrs( aNode );
 	}
       }
       break;
@@ -443,6 +442,40 @@ void YACSGui_Graph::createChildNodesPresentations( YACS::HMI::SubjectComposedNod
     set<Node*> aNodeSet = theNode->edGetDirectDescendants();
     for ( set<Node*>::iterator itN = aNodeSet.begin(); itN != aNodeSet.end(); itN++ )
       update( *itN, theParent );
+  }
+}
+
+void YACSGui_Graph::updateNodePrs( int theNodeId, std::string thePortName, std::string thePortValue )
+{
+  if ( Node::idMap.count(theNodeId) == 0 ) return;
+  Node* aNode= Node::idMap[theNodeId];
+  
+  if ( getDMode() == YACSGui_Graph::FullId )
+  {
+    YACSPrs_ElementaryNode* aNodePrs = getItem(aNode);
+    if ( aNodePrs )
+    {
+      Port* aPort = 0;
+      try {
+	aPort = aNode->getInPort(thePortName);
+      }
+      catch (YACS::Exception& ex) {
+	try {
+	  aPort = aNode->getOutPort(thePortName);
+	}
+	catch (YACS::Exception& ex) {
+	  SUIT_MessageBox::warn1(myModule->getApp()->desktop(), 
+				 QObject::tr("ERROR"), 
+				 QString("Update %1 node presentation : ").arg(aNode->getName().c_str()) + QString(ex.what()),
+				 QObject::tr("BUT_OK"));
+	  return;
+	}
+      }
+      if ( !aPort ) return;
+	
+      if ( YACSPrs_InOutPort* aPortPrs = aNodePrs->getPortPrs(aPort) )
+	aPortPrs->updateValue(QString(thePortValue));      
+    }
   }
 }
 
@@ -783,6 +816,19 @@ YACS::ENGINE::Node* YACSGui_Graph::getNodeByName( const std::string theName ) co
     return 0;
 
   return getProc()->getChildByName(theName);
+}
+
+//! Create prs for the defined subject in graph
+/*!
+ */
+void YACSGui_Graph::createPrs(YACS::HMI::SubjectNode* theSubject)
+{
+  if( theSubject )
+  {
+    update( theSubject->getNode(), dynamic_cast<SubjectComposedNode*>(theSubject->getParent()) );
+    show( false );
+    getCanvas()->update();
+  }
 }
 
 //! Delete prs with the defined subject from graph

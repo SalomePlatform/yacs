@@ -1843,29 +1843,29 @@ YACSPrs_Port::~YACSPrs_Port()
   printf(">> YACSPrs_Port::~YACSPrs_Port()\n");
   if (myPoint) delete myPoint;
 
-  for(list<YACSPrs_Link*>::iterator it = myLinks.begin(); it != myLinks.end(); it++) {
-    if ( YACSPrs_PortLink* aPL = dynamic_cast<YACSPrs_PortLink*>( *it ) ) {
-      //delete aPL;
-      //aPL->getInputPort()->removeLink(aPL);
-      aPL->setInputPort(0);
-
-      //aPL->getOutputPort()->removeLink(aPL);
-      aPL->setOutputPort(0);
-    }
-    else if ( YACSPrs_LabelLink* aLL = dynamic_cast<YACSPrs_LabelLink*>( *it ) ) {
-      //delete aLL;
-      //aLL->getOutputPort()->setSlaveNode(0);
-      aLL->setOutputPort(0);
-
-      //aLL->getSlaveNode()->removeLabelLink();
-      aLL->setSlaveNode(0);
+  for(list<YACSPrs_Link*>::iterator it = myLinks.begin(); it != myLinks.end(); ++it) {
+    YACSPrs_Link* aLink = *it;
+    if( aLink )
+    {
+      if ( YACSPrs_PortLink* aPL = dynamic_cast<YACSPrs_PortLink*>( aLink ) )
+      {
+	if ( aPL->getInputPort() == this )
+	  aPL->setInputPort(0);
+	else if ( aPL->getOutputPort() == this )
+	  aPL->setOutputPort(0);
+	delete aPL;
+	aPL = 0;
+      }
+      else if ( YACSPrs_LabelLink* aLL = dynamic_cast<YACSPrs_LabelLink*>( aLink ) )
+      {
+	if ( aLL->getOutputPort() == this )
+	  aLL->setOutputPort(0);
+	delete aLL;
+	aLL = 0;
+      }
     }
   }
-  
-  //for(list<YACSPrs_Link*>::iterator it = myLinks.begin(); it != myLinks.end(); ++it) {
-  //  delete (*it);
-  //}
-  //myLinks.clear();
+  myLinks.clear();
 }
 
 void YACSPrs_Port::setCanvas(QCanvas* theCanvas)
@@ -2094,16 +2094,33 @@ void YACSPrs_InOutPort::update(bool theForce, YACS::ENGINE::Port* theEngine)
   if ( !myGate )
   {  
     QString aNewType = getType();
-    QString aNewValue = getValue(theEngine);
     if (theForce || myType.compare(aNewType) != 0) {
       myType = aNewType;
       if (myCanvas) myCanvas->setChanged(myTypeRect);
     }
-    if (theForce || myValue.compare(aNewValue) != 0) {
-      myValue = aNewValue;
-      if (myCanvas) myCanvas->setChanged(myValueRect);
+
+    if ( getNode()->getEngine()->getState() == YACS::INITED ) //edition
+    {
+      QString aNewValue = getValue(theEngine); // !!! during execution the value updated by events from YACSORB engine
+      if (theForce || myValue.compare(aNewValue) != 0) {
+	myValue = aNewValue;
+	if (myCanvas) myCanvas->setChanged(myValueRect);
+      }
     }
   }
+}
+
+//! Updates a port value during execution.
+/*!
+ * \param theValue : the new port value to be set for port presentation.
+ */
+void YACSPrs_InOutPort::updateValue( QString theValue )
+{
+  if ( !myGate )
+    if ( myValue.compare(theValue) != 0 ) {
+      myValue = theValue;
+      if (myCanvas) myCanvas->setChanged(myValueRect);
+    }
 }
 
 bool YACSPrs_InOutPort::isHilight() const

@@ -260,9 +260,12 @@ YACSGui_EditionTreeView::YACSGui_EditionTreeView( YACSGui_Module* theModule, YAC
     
     addColumn( "Object" );
     
+    printf(">> Create tree view before build\n");
+
     fillContainerData(mySProc);
     build();
 
+    printf(">> Create tree view after build\n");
     connect( this, SIGNAL( doubleClicked( QListViewItem* ) ), this, SLOT( onDblClick( QListViewItem* ) ) );
     connect( this, SIGNAL( selectionChanged() ), this, SLOT( onSelectionChanged() ) );
   }
@@ -598,10 +601,12 @@ void YACSGui_EditionTreeView::build()
 {
   if ( !getProc() ) return;
 
+  printf(">> Build\n");
   // Create a schema root object
   YACSGui_SchemaViewItem* aSchemaItem = new YACSGui_SchemaViewItem( this, 0, mySProc );
    
   // Create "Data Types" label
+
   YACSGui_LabelViewItem* aDataTypesItem = new YACSGui_LabelViewItem( aSchemaItem, 0, "Data Types" );
 
   // Create "Simple" label
@@ -801,9 +806,11 @@ void YACSGui_EditionTreeView::fillContainerData( YACS::HMI::SubjectComposedNode*
   if ( theSNode )
     if ( ComposedNode* aNode = dynamic_cast<ComposedNode*>(theSNode->getNode()) ) //if ( getProc() )
     { // find containers and components, which are used by Proc* service nodes
+      printf(">> Fill container data 1\n");
       set<Node*> aNodeSet = aNode->edGetDirectDescendants(); //getProc()->getAllRecursiveConstituents();
       for ( set<Node*>::iterator it = aNodeSet.begin(); it != aNodeSet.end(); it++ )
       {
+	printf(">> Fill container data 2\n");
 	if ( ServiceNode* aSNode = dynamic_cast<ServiceNode*>( *it ) )
 	{
 	  if ( ComponentInstance* aComponent = aSNode->getComponent() )

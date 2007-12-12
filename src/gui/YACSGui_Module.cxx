@@ -37,6 +37,7 @@
 
 #include <YACSPrs_ElementaryNode.h>
 #include <YACSPrs_BlocNode.h>
+#include <YACSPrs_LoopNode.h>
 #include <YACSPrs_Link.h>
 
 #include <OB_Browser.h>
@@ -719,12 +720,14 @@ void YACSGui_Module::createTreeView( YACS::HMI::SubjectProc* theSProc, YACSGui_D
       int aVMId = viewManagerId( aProc ); // id of view manager for the given proc
       YACSGui_TreeView* aTV = treeView( aStudyId, aVMId );
       if ( !aTV )
+      {
 	if ( theType == YACSGui_DataModel::SchemaObject )
 	  // here the aVMId is index of the 2D schema view in edition mode
 	  addTreeView( createTreeView( theSProc, WT_EditTreeView ), aStudyId, aVMId );
 	else if ( theType == YACSGui_DataModel::RunObject )
 	  // activate 2D schema view in execution mode, and get its id, use it as aVMId
 	  addTreeView( createTreeView( theSProc, WT_RunTreeView ), aStudyId, aVMId );
+      }
       activateTreeView( aStudyId, aVMId );
     }
   }
@@ -905,11 +908,10 @@ int YACSGui_Module::viewManagerId( YACS::ENGINE::Proc* theProc )
 void YACSGui_Module::onNewSchema()
 {
   MESSAGE("YACSGui_Module::onNewSchema");
-  printf("YACSGui_Module::newSchema\n");
 
   // TODO: create an empty Proc*
   RuntimeSALOME* aRuntimeSALOME = YACS::ENGINE::getSALOMERuntime();
-  Proc* aProc = aRuntimeSALOME->createProc("newSchema");//new Proc("");
+  Proc* aProc = aRuntimeSALOME->createProc("newSchema");
   
   // create GuiContext for Proc*
   GuiContext* aCProc = new GuiContext();
@@ -923,7 +925,17 @@ void YACSGui_Module::onNewSchema()
 
   // create new ViewManager for the new empty schema
   createNewViewManager( EditMode, aProc );
-  
+
+  // create Input Panel
+  createInputPanel();
+
+  // create graph
+  QxGraph_Canvas* aCanvas = getCanvas();
+  if ( !aCanvas ) return;
+
+  YACSGui_Graph* aGraph = new YACSGui_Graph( this, aCanvas, aCProc );
+  aGraph->show();
+
   // create and activate the edition tree view for the new schema
   createTreeView( aCProc->getSubjectProc(), YACSGui_DataModel::SchemaObject );
 }
@@ -1568,7 +1580,6 @@ void YACSGui_Module::onDblClick( QListViewItem* theItem )
 	  //                                        show edition tree view
 	  int aStudyId = study->id();
 	  int aVMId = viewManagerId( aProc ); // id of view manager for the given proc
-	  printf(">> aVMId = %d\n",aVMId);
 	  if ( aVMId == -1 )
 	  { // create a new one view manager and view window
 	    GuiContext* aCProc = 0;
@@ -2247,17 +2258,19 @@ void YACSGui_Module::onCreateExecution()
 	    // check if file for modified schema was created earlier
 	    if ( QFile::exists(anEditionName) )
 	      aSchemaFile.setName(anEditionName);
+
+	  QString tmpDir = SALOMEDS_Tool::GetTmpDir();
+	  QDir aTmpDir( tmpDir );
+	  aTmpDir.mkdir( "YASCGui" );
+	  aTmpDir.cd( "YASCGui", false );
+
+	  QDateTime curTime = QDateTime::currentDateTime();   
+	  QString aRunName = aSchemaName + "-" + curTime.toString( Qt::ISODate );
+	  aRunName = aTmpDir.absFilePath(aRunName);
 	  
           if ( aSchemaFile.open( IO_ReadOnly ) )
           {
-            QString tmpDir = SALOMEDS_Tool::GetTmpDir();
-            QDir aTmpDir( tmpDir );
-            aTmpDir.mkdir( "YASCGui" );
-	    aTmpDir.cd( "YASCGui", false );
-
-            QDateTime curTime = QDateTime::currentDateTime();   
-            QString aRunName = aSchemaName + "-" + curTime.toString( Qt::ISODate );
-            QFile aRunFile( aTmpDir.absFilePath(aRunName) );
+	    QFile aRunFile( aRunName );
             if ( aRunFile.open( IO_WriteOnly ) )
             {
               QTextStream aSchemaTS( &aSchemaFile ),
@@ -2267,29 +2280,36 @@ void YACSGui_Module::onCreateExecution()
               aRunFile.close();
               aSchemaFile.close();
 
-              //TODO: check for superv
-              if ( GuiContext* aCProc = ImportProcFromFile( QFileInfo( aRunFile ).absFilePath(), RunMode,  false) )
-		if ( Proc* aProc = aCProc->getProc() )
-		{
-		  getDataModel()->createNewRun( sobj, aProc );                
-		  updateObjBrowser();
-		  
-		  // create  ViewManager for new the RunObject
-		  //createNewViewManager( RunMode, aProc );
-		  
-		  // create and activate the run tree view for the create run object
-		  createTreeView( aCProc->getSubjectProc(), YACSGui_DataModel::RunObject );
-		}
-            }
+	    }
             else
             {
               printf( "Can't open temp run file: %s\n", QFileInfo( aRunFile ).absFilePath().latin1() );
             }
-          }
+	  }
           else
           {
-            printf( "Can't open schema file: %s\n", QFileInfo( aSchemaFile ).absFilePath().latin1() );
+            //printf( "Can't open schema file: %s\n", QFileInfo( aSchemaFile ).absFilePath().latin1() );
+	    // in such a case it is a new created schema, not yet saved anywhere => just export it
+	    Proc* aProc = getDataModel()->getProc(sobj);
+	    if ( !aProc )
+	      return;
+	    
+	    YACSGui_VisitorSaveSchema aWriter( this, aProc );
+	    aWriter.openFileSchema( aRunName );
+	    aWriter.visitProc( aProc );
+	    aWriter.closeFileSchema();
           }
+
+	  //TODO: check for superv
+	  if ( GuiContext* aCProc = ImportProcFromFile( aRunName, RunMode,  false) )
+	    if ( Proc* aProc = aCProc->getProc() )
+	    {
+	      getDataModel()->createNewRun( sobj, aProc );                
+	      updateObjBrowser();
+	      
+	      // create and activate the run tree view for the create run object
+	      createTreeView( aCProc->getSubjectProc(), YACSGui_DataModel::RunObject );
+	    }
         }                 
       }
     }
@@ -2490,7 +2510,6 @@ void YACSGui_Module::onSaveExecutionState()
   YACSGui_Executor* anExecutor = findExecutor();
   if (anExecutor)
   {
-    printf(">> anExecutor->getExecutorState() = %d\n",anExecutor->getExecutorState());
     if ( anExecutor->getExecutorState() == YACS::NOTYETINITIALIZED
 	 ||
 	 anExecutor->getExecutorState() == YACS::PAUSED
@@ -2969,13 +2988,11 @@ QxGraph_ViewWindow* YACSGui_Module::createNewViewManager(  YACSGui_Module::GuiMo
 
 void YACSGui_Module::activateViewWindow( Proc* theProc )
 {
-  printf( "YACSGui_Module::activateViewWindow\n" );
   if ( theProc  )
   {
     WindowsMap::iterator anIterator = myWindowsMap.find(theProc);
     if (anIterator != myWindowsMap.end())
     {
-      printf(">> Proc found!!!\n");
       QxGraph_ViewWindow* aVW = (*anIterator).second;
       if ( aVW )
       {
@@ -2992,13 +3009,7 @@ void YACSGui_Module::activateViewWindow( Proc* theProc )
 
 void YACSGui_Module::onWindowActivated( SUIT_ViewWindow* theVW )
 {  
-  printf( "YACSGui_Module::onWindowActivated( SUIT_ViewWindow* theVW )\n" );
-
-  if ( myBlockWindowActivateSignal )
-  {
-    printf( "Blocked!!!\n" );
-    return;
-  }
+  if ( myBlockWindowActivateSignal ) return;
   
   YACSGui_DataModel* model = getDataModel();
   
@@ -3117,20 +3128,14 @@ std::string YACSGui_Module::getNodeType( YACS::ENGINE::Node* theNode )
 
   map<string,Node*>::iterator it =  aCatalog->_nodeMap.begin();
   for ( ; it != aCatalog->_nodeMap.end(); it++ )
-  {
-    printf("==> _nodeMap : type : %d\n",ProcInvoc::getTypeOfNode((*it).second));
     if ( ProcInvoc::getTypeOfNode((*it).second) == ProcInvoc::getTypeOfNode(theNode) )
       return (*it).first;
-  }
     
   map<string,ComposedNode*>::iterator itC =  aCatalog->_composednodeMap.begin();
   for ( ; itC != aCatalog->_composednodeMap.end(); itC++ )
-  {
-    printf("==> _composednodeMap : type : %d\n",ProcInvoc::getTypeOfNode((*itC).second));
     if ( ProcInvoc::getTypeOfNode((*itC).second) == ProcInvoc::getTypeOfNode(theNode) )
       return (*itC).first;
-  }
-
+  
   return "";
 }
 
@@ -3183,8 +3188,18 @@ void YACSGui_Module::createNode( YACS::HMI::TypeOfElem theElemType )
 	aSwitch->addNode(aCatalog, "", aType, aName.str(), aSwCase);
 	temporaryExport();
       }
-      //else if ( SubjectForLoop* aFor = dynamic_cast<SubjectForLoop*>(aSub) ... )
-      //{ ... }
+      else if ( SubjectForLoop* aForLoop = dynamic_cast<SubjectForLoop*>(aSub) )
+      {
+	createBody( theElemType, aSub, aCatalog );
+      }
+      else if ( SubjectForEachLoop* aForEachLoop = dynamic_cast<SubjectForEachLoop*>(aSub) )
+      {
+	createBody( theElemType, aSub, aCatalog );
+      }
+      else if ( SubjectWhileLoop* aWhileLoop = dynamic_cast<SubjectWhileLoop*>(aSub) )
+      {
+	createBody( theElemType, aSub, aCatalog );
+      }
       else if ( SubjectComponent* aSComp = dynamic_cast<SubjectComponent*>(aSub) )
       {
 	ComponentInstance* aComp = aSComp->getComponent();
@@ -3222,4 +3237,116 @@ void YACSGui_Module::createNode( YACS::HMI::TypeOfElem theElemType )
       aSchema->addNode(aCatalog, "", aType, aName.str());
       temporaryExport();
     }
+}
+
+void YACSGui_Module::createBody( YACS::HMI::TypeOfElem theElemType,
+				 YACS::HMI::Subject* theSubject,
+				 YACS::ENGINE::Catalog* theCatalog )
+{
+  if( !theCatalog )
+    return;
+
+  SubjectComposedNode* aComposedNode = dynamic_cast<SubjectComposedNode*>( theSubject );
+  if( !aComposedNode )
+    return;
+
+  YACSGui_Graph* aGraph = activeGraph();
+  if( !aGraph )
+    return;
+
+  // remove current body node (if exists)
+  if( SubjectNode* aChildNode = aComposedNode->getChild() )
+  {
+    if( SUIT_MessageBox::warn2(getApp()->desktop(),
+			       tr("WRN_WARNING"),
+			       QString("Body node is already exist. Do you want to remove it?"),
+			       tr("BUT_YES"), tr("BUT_NO"), 0, 1, 1) == 1 )
+      return;
+
+    aGraph->deletePrs( aChildNode );
+
+    aComposedNode->update( REMOVE,
+			   ProcInvoc::getTypeOfNode( aChildNode->getNode() ),
+			   aChildNode );
+
+    aComposedNode->destroy( aChildNode );
+  }
+
+  stringstream aName;
+  string aType = getNodeType(theElemType);
+  aName << aType << GuiContext::getCurrent()->getNewId(theElemType);
+  SubjectNode* aBodyNode = aComposedNode->addNode(theCatalog, "", aType, aName.str());
+  aGraph->createPrs( aBodyNode );
+	
+  if( YACSPrs_LoopNode* aNodePrs = dynamic_cast<YACSPrs_LoopNode*>( aGraph->getItem( aComposedNode->getNode() ) ) )
+  {
+    aNodePrs->removeLabelLink();
+    aNodePrs->updatePorts( true );
+    QPtrList<YACSPrs_Port> aPorts = aNodePrs->getPortList();
+    for (YACSPrs_Port* aPort = aPorts.first(); aPort; aPort = aPorts.next())
+    {
+      if( YACSPrs_LabelPort* aLabelPort = dynamic_cast<YACSPrs_LabelPort*>( aPort ) )
+	aGraph->update( aLabelPort );
+      else if( YACSPrs_InOutPort* anInOutPort = dynamic_cast<YACSPrs_InOutPort*>( aPort ) )
+      {
+	if( anInOutPort->isInput() )
+	{
+	  if( InPort* anInPort = dynamic_cast<InPort*>( anInOutPort->getEngine() ) )
+	  {
+	    std::set<OutPort*> aSetOfOutPort = anInPort->edSetOutPort();
+	    for( set<OutPort*>::iterator iter = aSetOfOutPort.begin(); iter != aSetOfOutPort.end(); iter++ )
+	    {
+	      OutPort* anOutPort = *iter;
+	      Node* anOutNode = anOutPort->getNode();
+
+	      if( YACSPrs_ElementaryNode* anOutPrs = dynamic_cast<YACSPrs_ElementaryNode*>( aGraph->getItem( anOutNode ) ) )
+	      {
+		YACSPrs_InOutPort* aPortPrs = anOutPrs->getPortPrs( anOutPort );
+		if( aPortPrs )
+		  aGraph->update( aPortPrs );
+	      }
+	    }
+	  }
+	  else if( InGate* anInGate = dynamic_cast<InGate*>( anInOutPort->getEngine() ) )
+	  {
+	    std::map<OutGate*, bool> aSetOfOutGate = anInGate->edMapOutGate();
+	    for( map<OutGate*, bool>::iterator iter = aSetOfOutGate.begin(); iter != aSetOfOutGate.end(); iter++ )
+	    {
+	      OutGate* anOutGate = (*iter).first;
+	      Node* anOutNode = anOutGate->getNode();
+
+	      if( YACSPrs_ElementaryNode* anOutPrs = dynamic_cast<YACSPrs_ElementaryNode*>( aGraph->getItem( anOutNode ) ) )
+	      {
+		YACSPrs_InOutPort* aPortPrs = anOutPrs->getPortPrs( anOutGate );
+		if( aPortPrs )
+		  aGraph->update( aPortPrs );
+	      }
+	    }
+	  }
+	}
+	else
+	  aGraph->update( anInOutPort );
+      }
+    }
+
+    Subject* aParent = aComposedNode->getParent();
+    while( aParent )
+    {
+      if( dynamic_cast<SubjectProc*>( aParent ) )
+	break;
+
+      if( SubjectBloc* aSubjectBloc = dynamic_cast<SubjectBloc*>( aParent ) )
+      {
+	aGraph->update( aSubjectBloc->getNode(), dynamic_cast<SubjectComposedNode*>( aSubjectBloc->getParent() ) );
+	break;
+      }
+      aParent = aParent->getParent();
+    }
+
+    aGraph->getCanvas()->update();
+  }
+
+
+
+  temporaryExport();
 }

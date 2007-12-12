@@ -277,6 +277,9 @@ private:
   std::string getNodeType( YACS::ENGINE::Node* theNode );
 
   void createNode( YACS::HMI::TypeOfElem theElemType );
+  void createBody( YACS::HMI::TypeOfElem theElemType,
+		   YACS::HMI::Subject* theSubject,
+		   YACS::ENGINE::Catalog* theCatalog );
 
 private:
   typedef std::map<YACS::ENGINE::Proc*, YACSGui_Executor*> ExecutorMap;

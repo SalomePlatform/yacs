@@ -344,6 +344,88 @@ void VisitorSaveSchema::writeProperties(Node *node)
     }
 }
 
+void VisitorSaveSchema::dumpTypeCode(TypeCode* type, set<string>& typeNames,map<string, TypeCode*>& typeMap,int depth)
+{
+  DynType kind = type->kind();
+  string typeName = type->name();
+  if (typeNames.find(typeName) != typeNames.end())
+    return;
+  switch(kind)
+    {
+    case YACS::ENGINE::Double:
+        {
+          typeNames.insert(typeName);
+          _out << indent(depth) << "<type name=\"" << typeName << "\" kind=\"double\"/>" << endl;
+          break;
+        }
+    case YACS::ENGINE::Int:
+        {
+          typeNames.insert(typeName);
+          _out << indent(depth) << "<type name=\"" << typeName << "\" kind=\"int\"/>" << endl;
+          break;
+        }
+    case YACS::ENGINE::String:
+        {
+          typeNames.insert(typeName);
+          _out << indent(depth) << "<type name=\"" << typeName << "\" kind=\"string\"/>" << endl;
+          break;
+        }
+    case YACS::ENGINE::Bool:
+        {
+          typeNames.insert(typeName);
+          _out << indent(depth) << "<type name=\"" << typeName << "\" kind=\"bool\"/>" << endl;
+          break;
+        }
+    case YACS::ENGINE::Objref:
+        {
+          TypeCodeObjref *objref = dynamic_cast<TypeCodeObjref*>(type);
+          std::list<TypeCodeObjref*> listOfBases = getListOfBases(objref);
+          //try to dump base classes
+          for(std::list<TypeCodeObjref*>::iterator il=listOfBases.begin(); il != listOfBases.end(); ++il)
+            {
+              if (typeNames.find((*il)->name()) == typeNames.end())
+                dumpTypeCode((*il),typeNames,typeMap,depth);
+            }
+          //effective dump
+          typeNames.insert(typeName);
+          _out << indent(depth) << "<objref name=\"" << typeName << "\" id=\""
+               << objref->id() << "\"";
+          if (listOfBases.empty())
+            _out << "/>" << endl;
+          else
+            {
+              _out << ">" << endl;
+              for(std::list<TypeCodeObjref*>::iterator il=listOfBases.begin(); il != listOfBases.end(); ++il)
+                {
+                  _out << indent(depth+1) << "<base>";
+                  _out << (*il)->name();
+                  _out << "</base>" << endl;
+                }
+              _out << indent(depth) << "</objref>" << endl;
+            }
+          break;
+        }
+    case YACS::ENGINE::Sequence:
+        {
+          TypeCode* content = (TypeCode*)type->contentType();
+          if (typeNames.find(content->name()) == typeNames.end())
+            {
+              //content type not dumped
+              dumpTypeCode(content,typeNames,typeMap,depth);
+            }
+          typeNames.insert(typeName);
+          _out << indent(depth) << "<sequence name=\"" << typeName << "\" content=\""
+               << content->name() <<  "\"/>" << endl;
+          break;
+        }
+    default:
+        {
+          string what = "wrong TypeCode: "; 
+          throw Exception(what);
+        }
+    }
+}
+
 void VisitorSaveSchema::writeTypeCodes(Proc *proc)
 {
   int depth = depthNode(proc)+1;
@@ -364,82 +446,7 @@ void VisitorSaveSchema::writeTypeCodes(Proc *proc)
 
   for (it = typeMap.begin(); it != typeMap.end(); it++)
     {
-      DynType kind = (it->second)->kind();
-      string typeId = (it->second)->id();
-      switch(kind)
-        {
-        case YACS::ENGINE::Double:
-          {
-            if (typeNames.find(typeId) == typeNames.end())
-              {
-                typeNames.insert(typeId);
-                _out << indent(depth) << "<type name=\"" << typeId << "\" kind=\"double\"/>" << endl;
-              }
-            break;
-          }
-        case YACS::ENGINE::Int:
-          {
-            if (typeNames.find(typeId) == typeNames.end())
-              {
-                typeNames.insert(typeId);
-                _out << indent(depth) << "<type name=\"" << typeId << "\" kind=\"int\"/>" << endl;
-              }
-            break;
-          }
-        case YACS::ENGINE::String:
-          {
-            if (typeNames.find(typeId) == typeNames.end())
-              {
-                typeNames.insert(typeId);
-                _out << indent(depth) << "<type name=\"" << typeId << "\" kind=\"string\"/>" << endl;
-              }
-            break;
-          }
-        case YACS::ENGINE::Bool:
-          {
-            if (typeNames.find(typeId) == typeNames.end())
-              {
-                typeNames.insert(typeId);
-                _out << indent(depth) << "<type name=\"" << typeId << "\" kind=\"bool\"/>" << endl;
-              }
-            break;
-          }
-        case YACS::ENGINE::Objref:
-          {
-            TypeCodeObjref *objref = dynamic_cast<TypeCodeObjref*>(it->second);
-            assert(objref);
-            std::list<TypeCodeObjref*> listOfBases = getListOfBases(objref);
-            _out << indent(depth) << "<objref name=\"" << it->first << "\" id=\""
-                 << objref->id() << "\"";
-            if (listOfBases.empty())
-              _out << "/>" << endl;
-            else
-              {
-                _out << ">" << endl;
-                for(std::list<TypeCodeObjref*>::iterator il=listOfBases.begin(); il != listOfBases.end(); ++il)
-                  {
-                    _out << indent(depth+1) << "<base>";
-                    _out << (*il)->name();
-                    _out << "</base>" << endl;
-                  }
-                _out << indent(depth) << "</objref>" << endl;
-              }
-            break;
-          }
-        case YACS::ENGINE::Sequence:
-          {
-            const TypeCode* content = (it->second)->contentType();
-
-            _out << indent(depth) << "<sequence name=\"" << it->first << "\" content=\""
-                 << content->name() <<  "\"/>" << endl;
-            break;
-          }
-        default:
-          {
-            string what = "wrong TypeCode: "; 
-            throw Exception(what);
-          }
-        }
+      dumpTypeCode(it->second,typeNames,typeMap,depth);
     }
 }
 

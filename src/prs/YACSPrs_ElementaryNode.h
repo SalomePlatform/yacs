@@ -198,6 +198,7 @@ class YACSPrs_InOutPort : public YACSPrs_Port {
   bool isGate() const { return myGate; }
 
   virtual void update(bool theForce = false, YACS::ENGINE::Port* theEngine = 0);
+  void updateValue( QString theValue );
 
   virtual bool isHilight() const;
   virtual bool isAlert() const;

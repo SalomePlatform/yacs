@@ -316,8 +316,10 @@ void SubjectNode::localClean()
   }
   if (_parent)
     {
-      SubjectBloc* sb = dynamic_cast<SubjectBloc*>(_parent);
-      if (sb) sb->removeNode(this);
+      if( SubjectBloc* sb = dynamic_cast<SubjectBloc*>(_parent) )
+	sb->removeNode(this);
+      else if( SubjectForLoop* sfl = dynamic_cast<SubjectForLoop*>(_parent) )
+	sfl->completeChildrenSubjectList( 0 );
     }
 }
 

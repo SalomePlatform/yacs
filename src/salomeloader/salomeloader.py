@@ -163,12 +163,14 @@ class InlineNode(Node):
         if not typeMap.has_key(para.type):
           #create the missing type and add it in type map
           typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[])
+        if not currentProc.typeMap.has_key(para.type):
           currentProc.typeMap[para.type]=typeMap[para.type]
         n.edAddInputPort(para.name,typeMap[para.type])
       for para in self.service.outParameters:
         if not typeMap.has_key(para.type):
           #create the missing type and add it in type map
           typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[])
+        if not currentProc.typeMap.has_key(para.type):
           currentProc.typeMap[para.type]=typeMap[para.type]
         n.edAddOutputPort(para.name,typeMap[para.type])
 
@@ -206,12 +208,14 @@ class ComputeNode(Node):
         if not typeMap.has_key(para.type):
           #Create the missing type and adds it into types table
           typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[])
+        if not currentProc.typeMap.has_key(para.type):
           currentProc.typeMap[para.type]=typeMap[para.type]
         n.edAddInputPort(para.name,typeMap[para.type])
       for para in self.service.outParameters:
         if not typeMap.has_key(para.type):
           #Create the missing type and adds it into types table
           typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[])
+        if not currentProc.typeMap.has_key(para.type):
           currentProc.typeMap[para.type]=typeMap[para.type]
         pout=n.edAddOutputPort(para.name,typeMap[para.type])
 
@@ -391,12 +395,14 @@ class LoopNode(ComposedNode):
         if not typeMap.has_key(para.type):
           #create the missing type and add it in type map
           typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[])
+        if not currentProc.typeMap.has_key(para.type):
           currentProc.typeMap[para.type]=typeMap[para.type]
         init.edAddInputPort(para.name,typeMap[para.type])
       for para in self.service.outParameters:
         if not typeMap.has_key(para.type):
           #create the missing type and add it in type map
           typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[])
+        if not currentProc.typeMap.has_key(para.type):
           currentProc.typeMap[para.type]=typeMap[para.type]
         init.edAddOutputPort(para.name,typeMap[para.type])
       bloop.edAddChild(init)
@@ -418,12 +424,14 @@ class LoopNode(ComposedNode):
         if not typeMap.has_key(para.type):
           #create the missing type and add it in type map
           typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[])
+        if not currentProc.typeMap.has_key(para.type):
           currentProc.typeMap[para.type]=typeMap[para.type]
         next.edAddInputPort(para.name,typeMap[para.type])
       for para in self.service.outParameters:
         if not typeMap.has_key(para.type):
           #create the missing type and add it in type map
           typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[])
+        if not currentProc.typeMap.has_key(para.type):
           currentProc.typeMap[para.type]=typeMap[para.type]
         next.edAddOutputPort(para.name,typeMap[para.type])
       blnode.edAddChild(next)
@@ -438,6 +446,7 @@ class LoopNode(ComposedNode):
         if not typeMap.has_key(para.type):
           #create the missing type and add it in type map
           typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[])
+        if not currentProc.typeMap.has_key(para.type):
           currentProc.typeMap[para.type]=typeMap[para.type]
         more.edAddInputPort(para.name,typeMap[para.type])
       more.edAddOutputPort("DoLoop",typeMap["int"])
@@ -445,6 +454,7 @@ class LoopNode(ComposedNode):
         if not typeMap.has_key(para.type):
           #create the missing type and add it in type map
           typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[])
+        if not currentProc.typeMap.has_key(para.type):
           currentProc.typeMap[para.type]=typeMap[para.type]
         more.edAddOutputPort(para.name,typeMap[para.type])
       blnode.edAddChild(more)
@@ -565,6 +575,7 @@ class ProcNode(ComposedNode):
     typeMap["SuperVisionTest::Addre"]=p.createInterfaceTc("","SuperVisionTest/Addre",[])
     typeMap["SuperVision::Adder"]=p.createInterfaceTc("","SuperVision/Adder",[])
 
+    currentProc.typeMap["Object"]=typeMap["objref"]
     currentProc.typeMap["Unknown"]=typeMap["Unknown"]
     currentProc.typeMap["GEOM_Object"]=typeMap["GEOM_Object"]
     currentProc.typeMap["GEOM_Shape"]=typeMap["GEOM_Shape"]
