@@ -62,6 +62,7 @@ echoSrv_LDFLAGS = \
 echo_clt_SOURCES = echo_clt.cxx $(IDL_SOURCES)
 
 echo_clt_CXXFLAGS = \
+	-I$(srcdir)/../../bases \
 	$(OMNIORB_INCLUDES) \
 	-I$(OMNIORB_ROOT)/include/omniORB4/internal \
 	$(OMNIORB_CXXFLAGS) 

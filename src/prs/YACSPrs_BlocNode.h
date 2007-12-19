@@ -65,6 +65,8 @@ class YACSPrs_BlocNode : public YACSPrs_ElementaryNode {
   virtual QPointArray constructAreaPoints(int theW, int theH) const;
   void moveBy(double dx, double dy);
   void setZ(double z);
+  void setX(int x);
+  void setY(int y);
 
   virtual void update();
   virtual void updateGates();
@@ -86,6 +88,7 @@ class YACSPrs_BlocNode : public YACSPrs_ElementaryNode {
   virtual int maxWidth() const;
   virtual int maxHeight() const;
   
+  virtual QRect getRect() const;
   virtual QRect getTitleRect() const;
   virtual QRect getGateRect() const;
 

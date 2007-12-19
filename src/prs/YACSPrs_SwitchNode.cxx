@@ -94,14 +94,30 @@ void YACSPrs_SwitchNode::updatePorts(bool theForce)
   bool aDisp = isVisible();
   if (aDisp) hide();
 
+  bool withCreate = theForce;
+
   if (theForce)
   {
     if ( isFullDMode() )
       myPortHeight = 2*PORT_MARGIN;
     else
       myPortHeight = 0;
+
     myPortList.setAutoDelete(true);
-    myPortList.clear();
+    //myPortList.clear();
+
+    QPtrList<YACSPrs_LabelPort> aDeletePortList;
+    for (YACSPrs_Port* aPort = myPortList.first(); aPort; aPort = myPortList.next())
+    {
+      if( YACSPrs_LabelPort* aLabelPort = dynamic_cast<YACSPrs_LabelPort*>( aPort ) )
+      {
+	aDeletePortList.append( aLabelPort );
+	withCreate = true;
+      }
+    }
+
+    for (YACSPrs_Port* aPort = aDeletePortList.first(); aPort; aPort = aDeletePortList.next())
+      myPortList.remove( aPort );
   }
 
   // Switch node has only 1 input port: its name is 'select',
@@ -112,7 +128,6 @@ void YACSPrs_SwitchNode::updatePorts(bool theForce)
   // as a 'label' ports. Each 'label' port connects with help of 'case' link to 'Master' hook
   // of the node, which is set to this case ID.
 
-  bool withCreate = false;
   if ( myPortList.isEmpty() ) withCreate = true;
 
   if ( isFullDMode() )
@@ -132,11 +147,24 @@ void YACSPrs_SwitchNode::updatePorts(bool theForce)
       Switch* aSEngine = dynamic_cast<Switch*>( getEngine() );
       if ( aSEngine )
       {
-	YACSPrs_InOutPort* anInPort = new YACSPrs_InOutPort(myMgr,canvas(),aSEngine->edGetConditionPort(),this);
-	anInPort->setPortRect(QRect(ix, iy, aPRectWidth, PORT_HEIGHT));
-	anInPort->setColor(nodeSubColor());
-	anInPort->setStoreColor(nodeSubColor());
-	myPortList.append(anInPort);
+	bool isConditionPortCreated = false;
+	InputPort* aConditionPort = aSEngine->edGetConditionPort();
+	for (YACSPrs_Port* aPort = myPortList.first(); aPort; aPort = myPortList.next())
+	{
+	  if( !aPort->getName().compare( QString( aConditionPort->getName() ) ) )
+	  {
+	    isConditionPortCreated = true;
+	    break;
+	  }
+	}
+	if( !isConditionPortCreated )
+	{
+	  YACSPrs_InOutPort* anInPort = new YACSPrs_InOutPort(myMgr,canvas(),aConditionPort,this);
+	  anInPort->setPortRect(QRect(ix, iy, aPRectWidth, PORT_HEIGHT));
+	  anInPort->setColor(nodeSubColor());
+	  anInPort->setStoreColor(nodeSubColor());
+	  myPortList.append(anInPort);
+	}
 	
 	// get a set of internal case nodes
 	std::set<Node*> aNodes = aSEngine->edGetDirectDescendants();
@@ -230,7 +258,19 @@ void YACSPrs_SwitchNode::updatePorts(bool theForce)
   }
 
   // can update gates only after body height will be defined
-  updateGates(withCreate);
+  bool createGates = withCreate;
+  for (YACSPrs_Port* aPort = myPortList.first(); aPort; aPort = myPortList.next())
+  {
+    if( YACSPrs_InOutPort* anIOPort = dynamic_cast<YACSPrs_InOutPort*>( aPort ) )
+    {
+      if ( anIOPort->isGate() ) 
+      { // gate ports are already created - we should only update them
+	createGates = false;
+	break;
+      }
+    }
+  }
+  updateGates(createGates);
 
   if (theForce && myPointMaster)
   {

@@ -320,7 +320,7 @@ void NodeEdition::update(GuiEvent event, int type, Subject* son)
     case ADDLINK:
       switch (type)
         {
-        case YACS::HMI::LINK:
+        case YACS::HMI::DATALINK:
           item =  new NodeEdition(son,
                                   GuiContext::getCurrent()->getWidgetStack(),
                                   son->getName().c_str());

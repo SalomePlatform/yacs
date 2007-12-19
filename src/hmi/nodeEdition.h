@@ -1,6 +1,7 @@
 #ifndef _NODEEDITION_H_
 #define _NODEEDITION_H_
 
+#include "yacsconfig.h"
 #include <qtextedit.h>
 #include "guiObservers.hxx"
 

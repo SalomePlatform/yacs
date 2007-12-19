@@ -52,12 +52,12 @@ namespace YACS
         OUTPUTPORT,
         INPUTDATASTREAMPORT,
         OUTPUTDATASTREAMPORT,
+	DATALINK,
+	CONTROLLINK,
         CONTAINER,
         COMPONENT,
         REFERENCE,
         DATATYPE,
-        LINK,
-        CONTROLLINK,
         UNKNOWN
       } TypeOfElem;
    

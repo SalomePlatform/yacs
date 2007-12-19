@@ -84,6 +84,7 @@ void YACSPrs_LoopNode::select(const QPoint& theMousePos, const bool toSelect)
 	    {
 	      mySelectedPort->setSelected(false);
 	      mySelectedPort->setColor(mySelectedPort->storeColor(), false, true, true);
+              synchronize( mySelectedPort, false );
 	    }
 	    else
 	    {
@@ -96,6 +97,7 @@ void YACSPrs_LoopNode::select(const QPoint& theMousePos, const bool toSelect)
 	    aPort->setSelected(true);
 	    aPort->setColor(aPort->Color().dark(130), false, true, true);
 	    mySelectedPort = aPort;
+            synchronize( mySelectedPort, true );
 	  }
 	  break;
 	}
@@ -107,6 +109,7 @@ void YACSPrs_LoopNode::select(const QPoint& theMousePos, const bool toSelect)
       if ( mySelectedPort )
       {
 	mySelectedPort->setSelected(false);
+        synchronize( mySelectedPort, false );
 	mySelectedPort = 0;
       }
       
@@ -128,6 +131,7 @@ void YACSPrs_LoopNode::select(const QPoint& theMousePos, const bool toSelect)
     if ( mySelectedPort ) {
       mySelectedPort->setSelected(false);
       mySelectedPort->setColor(mySelectedPort->storeColor(), false, true, true);
+      synchronize( mySelectedPort, false );
       mySelectedPort = 0;
     }
     else {
@@ -194,14 +198,30 @@ void YACSPrs_LoopNode::updatePorts(bool theForce)
   bool aDisp = isVisible();
   if (aDisp) hide();
 
+  bool withCreate = theForce;
+
   if (theForce)
   {
     if ( isFullDMode() )
       myPortHeight = 2*PORT_MARGIN;
     else
       myPortHeight = 0;
+
     myPortList.setAutoDelete(true);
-    myPortList.clear();
+    //myPortList.clear();
+
+    QPtrList<YACSPrs_LabelPort> aDeletePortList;
+    for (YACSPrs_Port* aPort = myPortList.first(); aPort; aPort = myPortList.next())
+    {
+      if( YACSPrs_LabelPort* aLabelPort = dynamic_cast<YACSPrs_LabelPort*>( aPort ) )
+      {
+	aDeletePortList.append( aLabelPort );
+	withCreate = true;
+      }
+    }
+
+    for (YACSPrs_Port* aPort = aDeletePortList.first(); aPort; aPort = aDeletePortList.next())
+      myPortList.remove( aPort );
   }
 
   // ForLoop and WhileLoop nodes have only 1 input port.
@@ -215,7 +235,6 @@ void YACSPrs_LoopNode::updatePorts(bool theForce)
   // name 'Body'. This 'label' port connects with help of 'case' link to 'Master' hook
   // of the node, which is set as an internal node of the loop.
 
-  bool withCreate = false;
   if ( myPortList.isEmpty() ) withCreate = true;
 
   if ( isFullDMode() )
@@ -230,28 +249,41 @@ void YACSPrs_LoopNode::updatePorts(bool theForce)
     int oy = r.y() + PORT_MARGIN;// + 1;
     
     ForLoop* aFLoop = dynamic_cast<ForLoop*>( getEngine() );
-    WhileLoop* aWLoop = 0;
+    WhileLoop* aWLoop = dynamic_cast<WhileLoop*>( getEngine() );
     
     if ( withCreate )
     { // create (and update)
       // 'nsteps'/'condition' input port (name, type (and value) of the port will set in YACSPrs_InOutPort from port engine)
-      YACSPrs_InOutPort* anInPort = 0;
-      
-      if ( aFLoop )
-	anInPort = new YACSPrs_InOutPort(myMgr,canvas(),aFLoop->edGetNbOfTimesInputPort(),this);
-      else
+      bool isConditionPortCreated = false;
+      InputPort* aConditionPort = 0;
+      if( aFLoop )
+	aConditionPort = aFLoop->edGetNbOfTimesInputPort();
+      else if( aWLoop )
+	aConditionPort = aWLoop->edGetConditionPort();
+
+      for (YACSPrs_Port* aPort = myPortList.first(); aPort; aPort = myPortList.next())
       {
-	aWLoop = dynamic_cast<WhileLoop*>( getEngine() );
-	if ( aWLoop )
-	  anInPort = new YACSPrs_InOutPort(myMgr,canvas(),aWLoop->edGetConditionPort(),this);
+	if( !aPort->getName().compare( QString( aConditionPort->getName() ) ) )
+	{
+	  isConditionPortCreated = true;
+	  break;
+	}
       }
-      
-      if ( anInPort )
+      if( !isConditionPortCreated )
       {
-	anInPort->setPortRect(QRect(ix, iy, aPRectWidth, PORT_HEIGHT));
-	anInPort->setColor(nodeSubColor());
-	anInPort->setStoreColor(nodeSubColor());
-	myPortList.append(anInPort);
+	YACSPrs_InOutPort* anInPort = 0;
+	if ( aFLoop )
+	  anInPort = new YACSPrs_InOutPort(myMgr,canvas(),aFLoop->edGetNbOfTimesInputPort(),this);
+	else if ( aWLoop )
+	  anInPort = new YACSPrs_InOutPort(myMgr,canvas(),aWLoop->edGetConditionPort(),this);
+      
+	if ( anInPort )
+	{
+	  anInPort->setPortRect(QRect(ix, iy, aPRectWidth, PORT_HEIGHT));
+	  anInPort->setColor(nodeSubColor());
+	  anInPort->setStoreColor(nodeSubColor());
+	  myPortList.append(anInPort);
+	}
       }
       
       if ( aFLoop || aWLoop )
@@ -299,7 +331,19 @@ void YACSPrs_LoopNode::updatePorts(bool theForce)
   }
     
   // can update gates only after body height will be defined
-  updateGates(withCreate);
+  bool createGates = withCreate;
+  for (YACSPrs_Port* aPort = myPortList.first(); aPort; aPort = myPortList.next())
+  {
+    if( YACSPrs_InOutPort* anIOPort = dynamic_cast<YACSPrs_InOutPort*>( aPort ) )
+    {
+      if ( anIOPort->isGate() ) 
+      { // gate ports are already created - we should only update them
+	createGates = false;
+	break;
+      }
+    }
+  }
+  updateGates(createGates);
 
   if (theForce && myPointMaster)
   {
@@ -412,3 +456,9 @@ bool YACSPrs_LoopNode::checkArea(double dx, double dy)
   return false;
   // <--
 }
+
+bool YACSPrs_LoopNode::synchronize( YACSPrs_Port* port, const bool toSelect )
+{
+  return YACSPrs_InOutPort::synchronize( port, toSelect );
+}
+

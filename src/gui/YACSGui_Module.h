@@ -68,12 +68,11 @@ public:
 	 // Menu "Create"
 	 NewContainerId, 
 	 NewSalomeComponentId, NewSalomePythonComponentId, NewCorbaComponentId, 
-	 NewSalomeServiceNodeId, NewCorbaServiceNodeId, NewCppNodeId, NewNodeNodeServiceNodeId, 
+	 NewSalomeServiceNodeId, NewCorbaServiceNodeId, NewCppNodeId, 
 	 NewServiceInlineNodeId, NewXmlNodeId, NewInlineScriptNodeId,
 	 NewInlineFunctionNodeId, NewBlockNodeId, NewForLoopNodeId, NewForeachLoopNodeId, 
 	 NewWhileLoopNodeId, NewSwitchLoopNodeId, NewFromLibraryNodeId,
-	 NewLinkId,
-	 	 
+	 	 	 
 	 //Menu "Execute" (edit gui mode)
 	 NewExecutionId, NewBatchExecutionId, ReloadExecutionId,
 
@@ -102,7 +101,8 @@ public:
     EmptyMode,  
     InitMode,
     EditMode,
-    RunMode
+    RunMode,
+    NewMode
   };
   enum{ImportBtnId=1,NewContainerBtnId,NewNodeBtn};
   enum{SchemaTbId, CreationTbId};
@@ -163,6 +163,12 @@ public:
   void temporaryExport();
 
   std::string getNodeType( YACS::HMI::TypeOfElem theElemType );
+
+  YACS::HMI::SubjectNode* createBody( YACS::HMI::TypeOfElem theElemType,
+				      YACS::HMI::Subject* theSubject,
+				      YACS::ENGINE::Catalog* theCatalog,
+				      std::string theCompo = "",
+				      std::string theService = "" );
   
 public slots:
   virtual bool activateModule( SUIT_Study* );
@@ -183,6 +189,9 @@ private slots:
   void onImportSupervSchema();
   void onExportSchema();
   
+  void onEditDataTypes();
+  void onCreateDataType();
+
   void onNewContainer();
   void onNewSalomeComponent();
   void onNewSalomePythonComponent();
@@ -204,8 +213,6 @@ private slots:
   void onSWITCHNode();
   void onNodeFromLibrary();
 
-  void onNewLink();
-  
   void onReloadDataflow();
   void onRebuildLinks();
 
@@ -276,11 +283,10 @@ private:
   void fillNodeTypesMap();
   std::string getNodeType( YACS::ENGINE::Node* theNode );
 
-  void createNode( YACS::HMI::TypeOfElem theElemType );
-  void createBody( YACS::HMI::TypeOfElem theElemType,
-		   YACS::HMI::Subject* theSubject,
-		   YACS::ENGINE::Catalog* theCatalog );
-
+  void createNode( YACS::HMI::TypeOfElem theElemType,
+		   std::string theCompo = "",
+		   std::string theService = "" );
+  
 private:
   typedef std::map<YACS::ENGINE::Proc*, YACSGui_Executor*> ExecutorMap;
   typedef std::map<YACS::ENGINE::Proc*, QxGraph_ViewWindow*> WindowsMap;

@@ -162,7 +162,8 @@ LIBICONS = \
 	pause.png \
 	resume.png \
 	reset.png \
-	connect_to_batch_session.png
+	connect_to_batch_session.png \
+	icon_text.png 
 
 # Add "resources" subdirectory to resource file names
 POFILES += $(LIBPOFILES:%=resources/%)
@@ -207,7 +208,7 @@ libYACSGui_la_LIBADD = \
 	../lineconn2d/libLineConn2d.la \
 	../hmi/libHMI.la \
 	../yacsorb/libYACSorb.la \
-	@GRAPHVIZ_LIBADD@
+	@GRAPHVIZ_LIBADD@ @QSCINTILLA_LIBADD@ \
 	@QT_MT_LIBADD@\
 	-lQxGraph -lCAM -lsuit -lLightApp -lexpat -lxml2
 
@@ -224,6 +225,6 @@ libYACSGui_la_CXXFLAGS = \
 	-I$(srcdir)/../hmi \
 	-I../../idl \
 	-I../yacsorb \
-	@QT_INCLUDES@ @GUI_CXXFLAGS@ @CAS_CPPFLAGS@ @GRAPHVIZ_CPPFLAGS@
+	@QT_INCLUDES@ @GUI_CXXFLAGS@ @CAS_CPPFLAGS@ @GRAPHVIZ_CPPFLAGS@ @QSCINTILLA_CCPFLAGS@
 
 include $(top_srcdir)/adm/unix/make_end.am

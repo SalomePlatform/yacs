@@ -34,6 +34,7 @@ class YACSPrs_SwitchNode : public YACSPrs_InlineNode {
   virtual QPointArray constructAreaPoints(int theW, int theH) const;
 
   virtual void updatePorts(bool theForce=false);
+
   virtual int getCorner() const { return 0; }
 
  protected:

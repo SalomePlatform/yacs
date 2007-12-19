@@ -18,6 +18,7 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
+#include <Python.h>
 #include <PythonNode.hxx>
 
 #include <YACSGui_Node.h>
@@ -277,6 +278,7 @@ void YACSGui_SwitchNode::update(YACS::ENGINE::Node* theEngine,
       theItem = new YACSPrs_SwitchNode( resMgr(), graph()->getCanvas(), aSNode );
       graph()->registerStatusObserverWithNode(theEngine);
       graph()->createChildNodesPresentations( aSNode );
+      aSNode->attach( graph() );
     }
   }
   else
@@ -324,6 +326,7 @@ void YACSGui_LoopNode::update(YACS::ENGINE::Node* theEngine,
       theItem = new YACSPrs_LoopNode( resMgr(), graph()->getCanvas(), aLNode );
       graph()->registerStatusObserverWithNode(theEngine);
       graph()->createChildNodesPresentations( aLNode );
+      aLNode->attach( graph() );
     }
   }
   else
@@ -371,6 +374,7 @@ void YACSGui_ForEachLoopNode::update(YACS::ENGINE::Node* theEngine,
       theItem = new YACSPrs_ForEachLoopNode( resMgr(), graph()->getCanvas(), aFELNode );
       graph()->registerStatusObserverWithNode(theEngine);
       graph()->createChildNodesPresentations( aFELNode );
+      aFELNode->attach( graph() );
     }
   }
   else
@@ -439,6 +443,7 @@ void YACSGui_BlocNode::update(YACS::ENGINE::Node* theEngine,
 	theItem = aBlocPrs;
 	
 	graph()->registerStatusObserverWithNode(theEngine);
+	aBNode->attach( graph() );
       }
     }
   }

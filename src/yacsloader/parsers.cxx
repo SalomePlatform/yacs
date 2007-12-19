@@ -12,6 +12,9 @@
 
 #include "rootParser.hxx"
 
+#define _DEVDEBUG_
+#include "YacsTrace.hxx"
+
 YACS::ENGINE::Runtime* theRuntime=0;
 
 #define BUFFSIZE        8192
@@ -37,6 +40,7 @@ void YACSLoader::registerProcCataLoader()
 
 ENGINE::Proc* YACSLoader::load(const char * file)
 {
+  DEBTRACE("YACSLoader::load: " << file);
   FILE* fin=fopen(file,"r");
   if (! fin) 
     {

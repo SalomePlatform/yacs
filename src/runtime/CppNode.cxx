@@ -32,7 +32,7 @@ CppNode::CppNode(const std::string & name) : ServiceNode(name), _run(NULL)
   _implementation=IMPL_NAME;
 }
 
-void CppNode::setCode(const::string & componentName, const string & method)
+void CppNode::setCode(const std::string & componentName, const std::string & method)
 {
   _method = method;
   _componentName = componentName;

@@ -83,7 +83,7 @@ InputCorbaPort::~InputCorbaPort()
 {
   delete _initData;
   // Release or not release : all GenericObj are deleted when the input port is deleted
-  //CCAR: waiting for support in Salome ;releaseObj(_data);
+  releaseObj(_data);
 }
 
 bool InputCorbaPort::edIsManuallyInitialized() const
@@ -132,12 +132,12 @@ void InputCorbaPort::put(CORBA::Any *data) throw (ConversionException)
   display(data);
 #endif
 
-  //CCAR: waiting for support in Salome ;releaseObj(_data);
+  releaseObj(_data);
 
   // make a copy of the any (protect against deletion of any source)
   _data=*data;
 
-  //CCAR: waiting for support in Salome ;registerObj(_data);
+  registerObj(_data);
 
 #ifdef REFCNT
   DEBTRACE("refcount CORBA : " << ((omni::TypeCode_base*)_data.pd_tc.in())->pd_ref_count);
@@ -224,7 +224,7 @@ OutputCorbaPort::~OutputCorbaPort()
 {
   DEBTRACE(getName());
   // Release or not release : all GenericObj are deleted when the output port is deleted
-  //CCAR: waiting for support in Salome ;releaseObj(_data);
+  releaseObj(_data);
 #ifdef REFCNT
   DEBTRACE("refcount CORBA : " << ((omni::TypeCode_base*)_data.pd_tc.in())->pd_ref_count);
   DEBTRACE("refcount CORBA tc_double: " << ((omni::TypeCode_base*)CORBA::_tc_double)->pd_ref_count);
@@ -246,7 +246,7 @@ void OutputCorbaPort::put(CORBA::Any *data) throw (ConversionException)
   DEBTRACE("refcount CORBA : " << ((omni::TypeCode_base*)_data.pd_tc.in())->pd_ref_count);
 #endif
 
-  //CCAR: waiting for support in Salome ;releaseObj(_data);
+  releaseObj(_data);
 
   _data=*data;
 

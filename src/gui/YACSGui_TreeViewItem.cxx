@@ -21,6 +21,8 @@
 #include <YACSGui_TreeViewItem.h>
 #include <YACSGui_TreeView.h>
 
+#include <guiContext.hxx>
+
 #include <SUIT_Session.h>
 #include <SUIT_ResourceMgr.h>
 
@@ -110,8 +112,56 @@ YACSGui_ViewItem::YACSGui_ViewItem( QListView* theParent,
 YACSGui_ViewItem::YACSGui_ViewItem( QListViewItem* theParent, 
 				    QListViewItem* theAfter ):
   QListViewItem( theParent, theAfter ),
-  GuiObserver()
+  GuiObserver(),
+  myBlockSelect( false )
 {
+}
+
+/*!
+  \brief Block actions performed in select() method. Usually this method is called 
+         from select() in order to avoid circularity because of synchronization: 
+         selection in 2D viewer --> selection in tree view --> selection in 2D viewer --> etc.
+  \param toBlock block selection
+  \return previous blocking value 
+*/
+bool YACSGui_ViewItem::blockSelection( const bool toBlock )
+{
+  bool prevVal = myBlockSelect;
+  myBlockSelect = toBlock;
+  return prevVal;
+}
+
+/*!
+  \brief Verifiee whether actions performed in select() method are blocked
+         (see blockSelection method for more dscription)
+  \return blocking value 
+*/
+bool YACSGui_ViewItem::selectionBlocked() const
+{
+  return myBlockSelect;
+}
+
+void YACSGui_ViewItem::select( bool isSelected )
+{
+  if ( selectionBlocked() )
+    return;
+
+  printf(">> YACSGui_ViewItem::select( %d ) \n", isSelected );
+
+  if ( !isSelected ) // do nothing
+    return;
+
+  // select item in tree view
+  QListView* aListView = listView();
+  if ( !aListView )
+    return;
+
+  blockSelection( true );
+  aListView->clearSelection();
+  aListView->setCurrentItem( this );
+  aListView->setSelected( this, true );
+  aListView->ensureItemVisible( this );
+  blockSelection( false );
 }
 
 // YACSGui_LabelViewItem class:
@@ -148,6 +198,11 @@ QPixmap YACSGui_LabelViewItem::icon() const
   if ( isOpen() )
     return QPixmap( (const char**) open_xpm );
   return QPixmap( (const char**) closed_xpm );
+}
+
+void YACSGui_LabelViewItem::select( bool isSelected )
+{
+  printf(">> YACSGui_ReferenceViewItem::select( %d ) does nothing\n", isSelected);
 }
 
 void YACSGui_LabelViewItem::update( const bool theIsRecursive )
@@ -192,7 +247,7 @@ YACSGui_ReferenceViewItem::~YACSGui_ReferenceViewItem()
 
 void YACSGui_ReferenceViewItem::select(bool isSelected)
 {
-  printf(">> YACSGui_ReferenceViewItem::select\n");
+  printf(">> YACSGui_ReferenceViewItem::select( %d ) does nothing\n", isSelected);
 }
 
 void YACSGui_ReferenceViewItem::update(YACS::HMI::GuiEvent event, int type, YACS::HMI::Subject* son)
@@ -279,37 +334,50 @@ void YACSGui_ReferenceViewItem::update( const bool theIsRecursive )
 
 YACSGui_PortViewItem::YACSGui_PortViewItem( QListView* theParent, 
 					    QListViewItem* theAfter,
-					    YACS::ENGINE::Port* thePort ):
+					    YACS::HMI::SubjectDataPort* theSPort ):
   YACSGui_ViewItem( theParent, theAfter ),
-  myPort( thePort )
+  mySPort( theSPort )
 {
-  QString aName = name();
-  if ( !aName.isEmpty() )
-    setText( 0, aName );
-  setPixmap( 0, icon() );
+  if ( mySPort )
+  {
+    mySPort->attach( this );
+
+    QString aName = name();
+    if ( !aName.isEmpty() )
+      setText( 0, aName );
+    setPixmap( 0, icon() );
+  }
 }
 
 YACSGui_PortViewItem::YACSGui_PortViewItem( QListViewItem* theParent, 
 					    QListViewItem* theAfter,
-					    YACS::ENGINE::Port* thePort ):
+					    YACS::HMI::SubjectDataPort* theSPort ):
   YACSGui_ViewItem( theParent, theAfter ),
-  myPort( thePort )
+  mySPort( theSPort )
 {
-  QString aName = name();
-  if ( !aName.isEmpty() )
-    setText( 0, aName );
-  setPixmap( 0, icon() );
+  if ( mySPort )
+  {
+    mySPort->attach( this );
+    
+    QString aName = name();
+    if ( !aName.isEmpty() )
+      setText( 0, aName );
+    setPixmap( 0, icon() );
+  }
 }
-  
+
+YACSGui_PortViewItem::~YACSGui_PortViewItem()
+{
+  if ( mySPort ) mySPort->detach(this);
+}
+
 QString YACSGui_PortViewItem::name() const
 {
   QString aName = "";
 
-  DataPort* aDataPort = dynamic_cast<DataPort*>( myPort );
+  DataPort* aDataPort = getPort();
   if (aDataPort)
     aName = aDataPort->getName();
-  else if (dynamic_cast<InGate*>( myPort ) || dynamic_cast<OutGate*>( myPort ))
-    aName = QString("Gate");
   
   return aName;
 }
@@ -320,9 +388,9 @@ QPixmap YACSGui_PortViewItem::icon() const
   
   QString anIconName;
 
-  if ( dynamic_cast<OutPort*>( myPort ) || dynamic_cast<OutGate*>( myPort ) )
+  if ( dynamic_cast<OutPort*>( getPort() ) )
     anIconName = QString(QObject::tr("ICON_OUT_PORT_OBJECT"));
-  else if ( dynamic_cast<InPort*>( myPort ) || dynamic_cast<InGate*>( myPort ) )
+  else if ( dynamic_cast<InPort*>( getPort() ) )
     anIconName = QString(QObject::tr("ICON_IN_PORT_OBJECT"));
 
   if ( !anIconName.isEmpty() )
@@ -331,9 +399,116 @@ QPixmap YACSGui_PortViewItem::icon() const
   return aRes;
 }
 
+YACS::ENGINE::DataPort* YACSGui_PortViewItem::getPort() const
+{
+  return ( mySPort ? mySPort->getPort() : 0 );
+}
+
 void YACSGui_PortViewItem::update( const bool theIsRecursive )
 {
 
+}
+
+// YACSGui_DataTypeItem class:
+
+/*!
+  \brief Constructor
+*/
+YACSGui_DataTypeItem::YACSGui_DataTypeItem( QListView*                  theParent,
+			                    QListViewItem*              theAfter,
+			                    YACS::HMI::SubjectDataType* theSDataType )
+: YACSGui_ViewItem( theParent, theAfter ),
+  mySDataType( theSDataType )
+{
+  if ( theSDataType ) 
+    theSDataType->attach( this );
+
+  QString aName = name();
+  if ( !aName.isEmpty() )
+    setText( 0, aName );
+  setPixmap( 0, icon() );
+
+  // to do: maybe this constructor is useless (analize this letter)
+}
+
+/*!
+  \brief Constructor
+*/
+YACSGui_DataTypeItem::YACSGui_DataTypeItem( QListViewItem* theParent, 
+			                    QListViewItem* theAfter,
+			                    YACS::HMI::SubjectDataType* theSDataType )
+: YACSGui_ViewItem( theParent, theAfter ),
+  mySDataType( theSDataType )
+{
+  if ( theSDataType ) 
+    theSDataType->attach( this );
+
+  QString aName = name();
+  if ( !aName.isEmpty() )
+    setText( 0, aName );
+  setPixmap( 0, icon() );
+}
+
+/*!
+  \brief Destructor
+*/
+YACSGui_DataTypeItem::~YACSGui_DataTypeItem()
+{
+}
+  
+/*!
+  \brief Updates item in accordance with GUI event
+*/
+void YACSGui_DataTypeItem::update( YACS::HMI::GuiEvent event, 
+                                   int type, 
+                                   YACS::HMI::Subject* son )
+{
+  // to do: update this method
+
+  printf(">> YACSGui_DataTypeItem::update\n");
+  switch ( event )
+  {
+  case RENAME:
+    update();
+    break;
+  default:
+    GuiObserver::update( event, type, son );
+    break;
+  }
+}
+
+/*!
+  \brief Gets item name
+*/
+QString YACSGui_DataTypeItem::name() const
+{
+  QString aName;
+  if ( mySDataType )
+    aName = QString( mySDataType->getName() );
+  return aName;
+}
+
+/*!
+  \brief Gets item icon
+*/
+QPixmap YACSGui_DataTypeItem::icon() const
+{
+  // YACSGui_NodeViewItem::icon
+
+  QPixmap aRes;
+  QString anIconName = QString( QObject::tr( "ICON_TEXT" ) ); 
+
+  anIconName = QString( QObject::tr( "ICON_TEXT" ) );
+  
+  aRes = SUIT_Session::session()->resourceMgr()->loadPixmap(
+    "YACSGui", anIconName, false );
+
+  return aRes;
+}
+  
+void YACSGui_DataTypeItem::update( const bool /*theIsRecursive*/ )
+{
+  // to do
 }
 
 // YACSGui_NodeViewItem class:
@@ -369,11 +544,6 @@ YACSGui_NodeViewItem::YACSGui_NodeViewItem( QListViewItem* theParent,
 YACSGui_NodeViewItem::~YACSGui_NodeViewItem()
 {
   if ( mySNode ) mySNode->detach(this);
-}
-
-void YACSGui_NodeViewItem::select(bool isSelected)
-{
-  printf(">> YACSGui_NodeViewItem::select\n");
 }
 
 void YACSGui_NodeViewItem::update(YACS::HMI::GuiEvent event, int type, YACS::HMI::Subject* son)
@@ -451,6 +621,14 @@ void YACSGui_NodeViewItem::update(YACS::HMI::GuiEvent event, int type, YACS::HMI
   case REMOVE:
     switch (type)
     {
+    case DATALINK:
+    case CONTROLLINK:
+      {
+	// remove a link item (this = out node item)
+	printf("NodeViewItem:  REMOVE link\n");
+	removeLinkItem(son);
+      }
+      break;
     case INPUTPORT:
     case OUTPUTPORT:
     case INPUTDATASTREAMPORT:
@@ -478,6 +656,13 @@ void YACSGui_NodeViewItem::update(YACS::HMI::GuiEvent event, int type, YACS::HMI
 	// remove a node inside a block (this = block item)
 	printf("NodeViewItem:  REMOVE\n");
 	removeNodeItem(son);
+      }
+      break;
+    case REFERENCE:
+      {
+	// remove a reference to a component (this = service node item)
+	printf("NodeViewItem:  REMOVE reference\n");
+	removeReferenceItem(son);
       }
       break;
     default:
@@ -516,6 +701,14 @@ void YACSGui_NodeViewItem::update(YACS::HMI::GuiEvent event, int type, YACS::HMI
       break;
     default:
       break;
+    }
+    break;
+  case ADDLINK:
+  case ADDCONTROLLINK:
+    {
+      // add link item (this = composed node item)
+      printf("NodeViewItem:  ADDLINK\n");
+      addLinkItem(son);
     }
     break;
   default:
@@ -657,14 +850,6 @@ void YACSGui_NodeViewItem::renamePortItem( YACS::HMI::Subject* theSPort )
   }
 }
 
-void YACSGui_NodeViewItem::addNodeItem( YACS::HMI::Subject* theSNode )
-{
-  if ( SubjectNode* aSNode = dynamic_cast<SubjectNode*>(theSNode) )
-  {
-    YACSGui_NodeViewItem* aNodeItem = new YACSGui_NodeViewItem( this, 0, aSNode );
-  }
-}
-
 void YACSGui_NodeViewItem::addPortItem( YACS::HMI::Subject* theSPort )
 {
   if ( SubjectDataPort* aSPort = dynamic_cast<SubjectDataPort*>(theSPort) )
@@ -674,7 +859,7 @@ void YACSGui_NodeViewItem::addPortItem( YACS::HMI::Subject* theSPort )
 
     if ( isPublished(aPort) ) return;
 
-    YACSGui_PortViewItem* aPortItem = new YACSGui_PortViewItem( this, 0, aPort );
+    YACSGui_PortViewItem* aPortItem = new YACSGui_PortViewItem( this, 0, aSPort );
     if ( !aPortItem ) return;
 
     Port* anAfter = 0;
@@ -708,20 +893,20 @@ void YACSGui_NodeViewItem::addPortItem( YACS::HMI::Subject* theSPort )
       aChild = firstChild();
     else if ( dynamic_cast<OutPort*>(aPort) )
     {
-      // find tree view item corresponds to input Gate port
-      QListViewItem* aGate = firstChild();
-      while( aGate )
+      // find tree view item corresponds to the last input port
+      QListViewItem* aLastInPort = firstChild();
+      while( aLastInPort )
       {
-	if ( YACSGui_PortViewItem* aGateItem = dynamic_cast<YACSGui_PortViewItem*>(aGate) )
-	  if ( aGateItem->getPort() == getNode()->getInGate() )
+	if ( YACSGui_PortViewItem* aFirstOutPortItem = dynamic_cast<YACSGui_PortViewItem*>(aLastInPort->nextSibling()) )
+	  if ( dynamic_cast<OutPort*>(aFirstOutPortItem->getPort()) )
 	    break;
-	aGate = aGate->nextSibling();
+	aLastInPort = aLastInPort->nextSibling();
       }
-      aChild = aGate;
+      aChild = aLastInPort;
       
       if ( !anAfter )
       {
-	aPortItem->moveItem(aGate);
+	aPortItem->moveItem(aLastInPort);
 	return;
       }
     }
@@ -760,6 +945,12 @@ void YACSGui_NodeViewItem::removePortItem( YACS::HMI::Subject* theSPort )
       aChild = aChild->nextSibling();
     }
   }
+}
+
+void YACSGui_NodeViewItem::addNodeItem( YACS::HMI::Subject* theSNode )
+{
+  if ( SubjectNode* aSNode = dynamic_cast<SubjectNode*>(theSNode) )
+    YACSGui_NodeViewItem* aNodeItem = new YACSGui_NodeViewItem( this, 0, aSNode );
 }
 
 void YACSGui_NodeViewItem::removeNodeItem( YACS::HMI::Subject* theSNode )
@@ -811,9 +1002,15 @@ void YACSGui_NodeViewItem::moveUpPortItem( YACS::HMI::Subject* theSPort )
 
     printf(">> 4\n");
     // here aChild is an after item for old position of theSPort
-    if ( dynamic_cast<InPort*>(aSPort->getPort())
+    YACSGui_PortViewItem* aCPort = dynamic_cast<YACSGui_PortViewItem*>(aChild);
+    if ( !aCPort ) return;
+
+    if ( dynamic_cast<InPort*>(aSPort->getPort()) && dynamic_cast<InPort*>(aCPort->getPort())
 	 ||
-	 aChild->text(0).compare( QString("Gate") ) )
+	 dynamic_cast<OutPort*>(aSPort->getPort()) && dynamic_cast<OutPort*>(aCPort->getPort()) )
+    //if ( dynamic_cast<InPort*>(aSPort->getPort())
+    //	   ||
+    //     aChild->text(0).compare( QString("Gate") ) )
       {
 	printf(">> 5\n");
 	aChild->moveItem(aChild->nextSibling());
@@ -840,7 +1037,14 @@ void YACSGui_NodeViewItem::moveDownPortItem( YACS::HMI::Subject* theSPort )
     }
 
     // here aChild is an item corresponding to the old position of theSPort
-    if ( aChild->nextSibling()->text(0).compare( QString("Gate") ) )
+    YACSGui_PortViewItem* aCPort = dynamic_cast<YACSGui_PortViewItem*>(aChild);
+    if ( !aCPort ) return;
+
+    YACSGui_PortViewItem* aCNPort = dynamic_cast<YACSGui_PortViewItem*>(aChild->nextSibling());
+    if ( !aCNPort ) return;
+
+    if ( !dynamic_cast<InPort*>(aCPort->getPort()) || !dynamic_cast<OutPort*>(aCNPort->getPort()) )
+    //if ( aChild->nextSibling()->text(0).compare( QString("Gate") ) )
       aChild->moveItem(aChild->nextSibling());
   }
 }
@@ -873,10 +1077,12 @@ void YACSGui_NodeViewItem::addReferenceItem( YACS::HMI::Subject* theSRef )
       ComponentInstance* aComp = aSComp->getComponent();
       if ( aComp && aComp->getKind() != CORBAComponent::KIND )
       {
+	printf(">><<  1\n");
 	// get container corresponds to the component
 	Container* aCont = aComp->getContainer();
 	if ( aCont )
 	{
+	  printf(">><<  2\n");
 	  QListViewItem* aContItem = 0;
 	  QListViewItem* aChild = aContainersL->firstChild();
 	  while( aChild )
@@ -884,6 +1090,7 @@ void YACSGui_NodeViewItem::addReferenceItem( YACS::HMI::Subject* theSRef )
 	    if ( YACSGui_ContainerViewItem* aC = dynamic_cast<YACSGui_ContainerViewItem*>(aChild) )
 	      if ( aC->getContainer() == aCont )
 	      {
+		printf(">><<  3\n");
 		aContItem = aChild;
 		break;
 	      }
@@ -892,6 +1099,7 @@ void YACSGui_NodeViewItem::addReferenceItem( YACS::HMI::Subject* theSRef )
 
 	  if ( aContItem )
 	  {
+	    printf(">><<  4\n");
 	    // find component view item corresponds to the aSComp
 	    QListViewItem* aCompItem = 0;
 	    QListViewItem* aChild = aContItem->firstChild();
@@ -900,6 +1108,7 @@ void YACSGui_NodeViewItem::addReferenceItem( YACS::HMI::Subject* theSRef )
 	      if ( YACSGui_ComponentViewItem* aC = dynamic_cast<YACSGui_ComponentViewItem*>(aChild) )
 		if ( aC->getComponent() == aComp )
 		{
+		  printf(">><<  5\n");
 		  aCompItem = aChild;
 		  break;
 		}
@@ -908,6 +1117,7 @@ void YACSGui_NodeViewItem::addReferenceItem( YACS::HMI::Subject* theSRef )
 	    
 	    if ( aCompItem )
 	    {
+	      printf(">><<  6\n");
 	      // add a new reference to the end
 	      QListViewItem* anAfter = 0;
 	      
@@ -918,6 +1128,7 @@ void YACSGui_NodeViewItem::addReferenceItem( YACS::HMI::Subject* theSRef )
 		anAfter = aChild;
 	      }
 
+	      printf(">><<  7\n");
 	      new YACSGui_ReferenceViewItem( aCompItem, anAfter, aSRef );
 	    }
 	  }
@@ -926,6 +1137,7 @@ void YACSGui_NodeViewItem::addReferenceItem( YACS::HMI::Subject* theSRef )
       else
       { // it is a CORBA component
 	// find component view item corresponds to the aSComp
+	printf(">><<  8\n");
 	QListViewItem* aCompItem = 0;
 	QListViewItem* aChild = aContainersL->firstChild();
 	while( aChild )
@@ -958,73 +1170,299 @@ void YACSGui_NodeViewItem::addReferenceItem( YACS::HMI::Subject* theSRef )
   }
 }
 
+void YACSGui_NodeViewItem::removeReferenceItem( YACS::HMI::Subject* theSRef )
+{
+  if ( SubjectReference* aSRef = dynamic_cast<SubjectReference*>(theSRef) )
+  {
+    // get component subject of the given reference
+    if ( SubjectComponent* aSComp = dynamic_cast<SubjectComponent*>(aSRef->getReference()) )
+    {     
+      // get "Containers" label view item
+      YACSGui_LabelViewItem* aContainersL = 
+	dynamic_cast<YACSGui_LabelViewItem*>(listView()->firstChild()->firstChild()->nextSibling()->nextSibling()->nextSibling());
+      if ( !aContainersL || aContainersL->text(0).compare(QString("Containers")) ) return;
+  
+      ComponentInstance* aComp = aSComp->getComponent();
+      if ( aComp && aComp->getKind() != CORBAComponent::KIND )
+      {
+	printf(">><  1\n");
+	// get container corresponds to the component
+	Container* aCont = aComp->getContainer();
+	if ( aCont )
+	{
+	  printf(">><  2\n");
+	  QListViewItem* aContItem = 0;
+	  QListViewItem* aChild = aContainersL->firstChild();
+	  while( aChild )
+	  {
+	    if ( YACSGui_ContainerViewItem* aC = dynamic_cast<YACSGui_ContainerViewItem*>(aChild) )
+	      if ( aC->getContainer() == aCont )
+	      {
+		printf(">><  3\n");
+		aContItem = aChild;
+		break;
+	      }
+	    aChild = aChild->nextSibling();
+	  }
+
+	  if ( aContItem )
+	  {
+	    printf(">><  4\n");
+	    // find component view item corresponds to the aSComp
+	    QListViewItem* aCompItem = 0;
+	    QListViewItem* aChild = aContItem->firstChild();
+	    while( aChild )
+	    {
+	      if ( YACSGui_ComponentViewItem* aC = dynamic_cast<YACSGui_ComponentViewItem*>(aChild) )
+		if ( aC->getComponent() == aComp )
+		{
+		  printf("><<  5\n");
+		  aCompItem = aChild;
+		  break;
+		}
+	      aChild = aChild->nextSibling();
+	    }
+	    
+	    if ( aCompItem )
+	    {
+	      printf(">><  6\n");
+	      // delete a given reference
+	      if ( QListViewItem* aChild = aCompItem->firstChild() )
+	      {
+		while( aChild )
+		{
+		  if ( YACSGui_ReferenceViewItem* aRefItem = dynamic_cast<YACSGui_ReferenceViewItem*>(aChild) )
+		    if ( aRefItem->getSReference() == aSRef )
+		    {
+		      printf(">><  7\n");
+		      aCompItem->takeItem(aChild);
+		      delete aChild;
+		      break;
+		    }
+		  aChild = aChild->nextSibling();
+		}
+	      }
+	    }
+	  }
+	}
+      }
+      else
+      { // it is a CORBA component
+	// find component view item corresponds to the aSComp
+	printf(">><  8\n");
+	QListViewItem* aCompItem = 0;
+	QListViewItem* aChild = aContainersL->firstChild();
+	while( aChild )
+	{
+	  if ( YACSGui_ComponentViewItem* aC = dynamic_cast<YACSGui_ComponentViewItem*>(aChild) )
+	    if ( aC->getComponent() == aComp )
+	    {
+	      aCompItem = aChild;
+	      break;
+	    }
+	  aChild = aChild->nextSibling();
+	}
+	    
+	if ( aCompItem )
+	{
+	  // delete a given reference
+	  if ( QListViewItem* aChild = aCompItem->firstChild() )
+	  {
+	    while( aChild )
+	    {
+	      if ( YACSGui_ReferenceViewItem* aRefItem = dynamic_cast<YACSGui_ReferenceViewItem*>(aChild) )
+		if ( aRefItem->getSReference() == aSRef )
+		{
+		  printf(">><  9\n");
+		  aCompItem->takeItem(aChild);
+		  delete aChild;
+		  break;
+		}
+	      aChild = aChild->nextSibling();
+	    }
+	  }
+	}
+      }
+    }
+  }
+}
+
+void YACSGui_NodeViewItem::addLinkItem( YACS::HMI::Subject* theSLink )
+{
+  SubjectLink* aSLink = dynamic_cast<SubjectLink*>(theSLink);
+  SubjectControlLink* aSCLink = dynamic_cast<SubjectControlLink*>(theSLink);
+  if ( aSLink || aSCLink )
+  {
+    // get the "Links" label view item under this node view item
+    QListViewItem* aChildLinks = firstChild();
+    while( aChildLinks->nextSibling() )
+      aChildLinks = aChildLinks->nextSibling();
+
+    YACSGui_LabelViewItem* aLinksL = dynamic_cast<YACSGui_LabelViewItem*>(aChildLinks);
+    if ( !aLinksL || aLinksL->text(0).compare(QString("Links")) ) return;
+
+    // find the last link item published under in the Links folder
+    QListViewItem* anAfter = 0;
+    if ( QListViewItem* aChild = aLinksL->firstChild() )
+    {
+      while( aChild->nextSibling() )
+	aChild = aChild->nextSibling();
+      anAfter = aChild;
+    }
+
+    if ( aSLink ) new YACSGui_LinkViewItem( aLinksL, anAfter, aSLink );
+    else if ( aSCLink ) new YACSGui_ControlLinkViewItem( aLinksL, anAfter, aSCLink );
+  }
+}
+
+void YACSGui_NodeViewItem::removeLinkItem( YACS::HMI::Subject* theSLink )
+{
+  SubjectLink* aSLink = dynamic_cast<SubjectLink*>(theSLink);
+  SubjectControlLink* aSCLink = dynamic_cast<SubjectControlLink*>(theSLink);
+  if ( aSLink || aSCLink )
+  {
+    // get the "Links" label view item under the parent node of this node view item
+    QListViewItem* aChildLinks = parent()->firstChild();
+    while( aChildLinks->nextSibling() )
+      aChildLinks = aChildLinks->nextSibling();
+
+    YACSGui_LabelViewItem* aLinksL = dynamic_cast<YACSGui_LabelViewItem*>(aChildLinks);
+    if ( !aLinksL || aLinksL->text(0).compare(QString("Links")) ) return;
+
+    // find the link item published under in the Links folder to delete
+    QListViewItem* aChild = aLinksL->firstChild();
+    while( aChild )
+    {
+      if ( aSLink )
+      {
+	if ( YACSGui_LinkViewItem* aLink = dynamic_cast<YACSGui_LinkViewItem*>(aChild) )
+	  if ( aLink->getSLink() == aSLink )
+	  {
+	    printf(">> the data link is found\n");
+	    aLinksL->takeItem(aChild);
+	    delete aChild;
+	    break;
+	  }
+      }
+      else if ( aSCLink )
+      {
+	if ( YACSGui_ControlLinkViewItem* aCLink = dynamic_cast<YACSGui_ControlLinkViewItem*>(aChild) )
+	  if ( aCLink->getSLink() == aSCLink )
+	  {
+	    printf(">> the control link is found\n");
+	    aLinksL->takeItem(aChild);
+	    delete aChild;
+	    break;
+	  }
+      }
+      
+      aChild = aChild->nextSibling();
+    }
+  }
+}
+
 // YACSGui_LinkViewItem class:
 
 YACSGui_LinkViewItem::YACSGui_LinkViewItem( QListView* theParent, 
 					    QListViewItem* theAfter,
-					    YACS::ENGINE::Port* theOutPort,
-					    YACS::ENGINE::Port* theInPort ):
+					    YACS::HMI::SubjectLink* theSLink ):
   YACSGui_ViewItem( theParent, theAfter ),
-  myOutPort( theOutPort ),
-  myInPort( theInPort )
+  mySLink( theSLink )
 {
-  QString aName = name();
-  if ( !aName.isEmpty() )
-    setText( 0, aName );
-  setPixmap( 0, icon() );
+  if ( mySLink )
+  {
+    mySLink->attach(this);
+    
+    QString aName = name();
+    if ( !aName.isEmpty() )
+      setText( 0, aName );
+    setPixmap( 0, icon() );
+  }
 }
 
 YACSGui_LinkViewItem::YACSGui_LinkViewItem( QListViewItem* theParent, 
 					    QListViewItem* theAfter,
-					    YACS::ENGINE::Port* theOutPort,
-					    YACS::ENGINE::Port* theInPort ):
+					    YACS::HMI::SubjectLink* theSLink ):
   YACSGui_ViewItem( theParent, theAfter ),
-  myOutPort( theOutPort ),
-  myInPort( theInPort )
+  mySLink( theSLink )
 {
-  QString aName = name();
-  if ( !aName.isEmpty() )
-    setText( 0, aName );
-  setPixmap( 0, icon() );
+  if ( mySLink )
+  {
+    mySLink->attach(this);
+    
+    QString aName = name();
+    if ( !aName.isEmpty() )
+      setText( 0, aName );
+    setPixmap( 0, icon() );
+  }
 }
-  
+
+YACSGui_LinkViewItem::~YACSGui_LinkViewItem()
+{
+  if ( mySLink ) mySLink->detach(this);
+}
+
 QString YACSGui_LinkViewItem::name() const
 {
   QString aName = "";
-  
-  if ( myOutPort && myInPort )
+
+  if ( !mySLink ) return aName;
+
+  DataPort* anOutPort = mySLink->getSubjectOutPort()->getPort();
+  DataPort* anInPort = mySLink->getSubjectInPort()->getPort();
+  if ( anOutPort && anInPort )
   {
-    Node* anOutPortNode = myOutPort->getNode();
+    Node* anOutPortNode = anOutPort->getNode();
+    ComposedNode* aRootO = 0;
+    if ( dynamic_cast<Bloc*>( anOutPortNode->getFather() ) )
+      aRootO = anOutPortNode->getFather();
+    else
+      aRootO = anOutPortNode->getRootNode();
+
+    Node* anInPortNode = anInPort->getNode();
+    ComposedNode* aRootI = 0;
+    if ( dynamic_cast<Bloc*>( anInPortNode->getFather() ) )
+      aRootI = anInPortNode->getFather();
+    else
+      aRootI = anInPortNode->getRootNode();
 
     ComposedNode* aRoot = 0;
-    if ( dynamic_cast<Bloc*>( anOutPortNode->getFather() ) )
-      aRoot = anOutPortNode->getFather();
+    if ( aRootO->isInMyDescendance(aRootI) )
+      aRoot = aRootO;
+    else if ( aRootI->isInMyDescendance(aRootO) )
+      aRoot = aRootI;
     else
-      aRoot = anOutPortNode->getRootNode();
+    {
+      Bloc* aBlocOut = 0;
+      Bloc* aBlocIn = 0;
+      // find the nearest common ancestor for anOutNode and anInNode
+      Proc* aProc = dynamic_cast<Proc*>(aRootI->getRootNode());
+      if ( !aProc ) return aName;
+
+      while ( aRootI->getFather() != aProc )
+      {
+	if ( aBlocOut = dynamic_cast<Bloc*>(aRootI->getFather()->isInMyDescendance(aRootO)) )
+	{
+	  aBlocIn = dynamic_cast<Bloc*>(aRootI);
+	  break;
+	}
+	aRootI = aRootI->getFather();
+      }
+      
+      if ( aBlocOut && aBlocIn )
+      	aRoot = aBlocOut->getFather();
+    }
 
     if (aRoot)
       aName += QString(aRoot->getChildName(anOutPortNode));
     
-    DataPort* aDataPort = dynamic_cast<DataPort*>(myOutPort);
-    if (aDataPort)
-      aName += QString(".%1").arg(aDataPort->getName());
-    
+    aName += QString(".%1").arg(anOutPort->getName());
     aName += QString(" --> ");
-    
-    Node* anInPortNode = myInPort->getNode();
-    
-    aRoot = 0;
-    if ( dynamic_cast<Bloc*>( anInPortNode->getFather() ) )
-      aRoot = anInPortNode->getFather();
-    else
-      aRoot = anInPortNode->getRootNode();
-    
+            
     if (aRoot)
       aName += QString(aRoot->getChildName(anInPortNode));
     
-    aDataPort = dynamic_cast<DataPort*>(myInPort);
-    if (aDataPort)
-      aName += QString(".%1").arg(aDataPort->getName());
+    aName += QString(".%1").arg(anInPort->getName());
   }
 
   return aName;
@@ -1036,20 +1474,140 @@ QPixmap YACSGui_LinkViewItem::icon() const
   
   QString anIconName;
 
-  if ( dynamic_cast<OutGate*>( myOutPort ) )
-    anIconName = QString(QObject::tr("ICON_CONTROL_LINK_OBJECT"));
-  else if ( dynamic_cast<OutputDataStreamPort*>( myOutPort ) )
-    anIconName = QString(QObject::tr("ICON_STREAM_LINK_OBJECT"));
-  else if ( dynamic_cast<OutputPort*>( myOutPort ) )
-    anIconName = QString(QObject::tr("ICON_DATA_LINK_OBJECT"));
+  if ( !mySLink ) return aRes;
 
-  if ( !anIconName.isEmpty() )
-    aRes = SUIT_Session::session()->resourceMgr()->loadPixmap("YACSGui",  anIconName, false);
+  if ( DataPort* anOutPort = mySLink->getSubjectOutPort()->getPort() )
+  {
+    if ( dynamic_cast<OutputDataStreamPort*>( anOutPort ) )
+      anIconName = QString(QObject::tr("ICON_STREAM_LINK_OBJECT"));
+    else if ( dynamic_cast<OutputPort*>( anOutPort ) )
+      anIconName = QString(QObject::tr("ICON_DATA_LINK_OBJECT"));
+
+    if ( !anIconName.isEmpty() )
+      aRes = SUIT_Session::session()->resourceMgr()->loadPixmap("YACSGui",  anIconName, false);
+  }
 
   return aRes;
 }
 
 void YACSGui_LinkViewItem::update( const bool theIsRecursive )
+{
+
+}
+
+// YACSGui_ControlLinkViewItem class:
+
+YACSGui_ControlLinkViewItem::YACSGui_ControlLinkViewItem( QListView* theParent, 
+							  QListViewItem* theAfter,
+							  YACS::HMI::SubjectControlLink* theSLink ):
+  YACSGui_ViewItem( theParent, theAfter ),
+  mySLink( theSLink )
+{
+  if ( mySLink )
+  {
+    mySLink->attach(this);
+    
+    QString aName = name();
+    if ( !aName.isEmpty() )
+      setText( 0, aName );
+    setPixmap( 0, icon() );
+  }
+}
+
+YACSGui_ControlLinkViewItem::YACSGui_ControlLinkViewItem( QListViewItem* theParent, 
+							  QListViewItem* theAfter,
+							  YACS::HMI::SubjectControlLink* theSLink ):
+  YACSGui_ViewItem( theParent, theAfter ),
+  mySLink( theSLink )
+{
+  if ( mySLink )
+  {
+    mySLink->attach(this);
+    
+    QString aName = name();
+    if ( !aName.isEmpty() )
+      setText( 0, aName );
+    setPixmap( 0, icon() );
+  }
+}
+  
+YACSGui_ControlLinkViewItem::~YACSGui_ControlLinkViewItem()
+{
+  if ( mySLink ) mySLink->detach(this);
+}
+
+QString YACSGui_ControlLinkViewItem::name() const
+{
+  QString aName = "";
+
+  if ( !mySLink ) return aName;
+
+  Node* anOutPortNode = mySLink->getSubjectOutNode()->getNode();
+  ComposedNode* aRootO = 0;
+  if ( dynamic_cast<Bloc*>( anOutPortNode->getFather() ) )
+    aRootO = anOutPortNode->getFather();
+  else
+    aRootO = anOutPortNode->getRootNode();
+  
+  Node* anInPortNode = mySLink->getSubjectInNode()->getNode();
+  ComposedNode* aRootI = 0;
+  if ( dynamic_cast<Bloc*>( anInPortNode->getFather() ) )
+    aRootI = anInPortNode->getFather();
+  else
+    aRootI = anInPortNode->getRootNode();
+
+  ComposedNode* aRoot = 0;
+  if ( aRootO->isInMyDescendance(aRootI) )
+    aRoot = aRootO;
+  else if ( aRootI->isInMyDescendance(aRootO) )
+    aRoot = aRootI;
+  else
+  {
+    Bloc* aBlocOut = 0;
+    Bloc* aBlocIn = 0;
+    // find the nearest common ancestor for anOutNode and anInNode
+    Proc* aProc = dynamic_cast<Proc*>(aRootI->getRootNode());
+    if ( !aProc ) return aName;
+    
+    while ( aRootI->getFather() != aProc )
+    {
+      if ( aBlocOut = dynamic_cast<Bloc*>(aRootI->getFather()->isInMyDescendance(aRootO)) )
+      {
+	aBlocIn = dynamic_cast<Bloc*>(aRootI);
+	break;
+      }
+      aRootI = aRootI->getFather();
+    }
+    
+    if ( aBlocOut && aBlocIn )
+      aRoot = aBlocOut->getFather();
+  }
+  
+  if (aRoot)
+    aName += QString(aRoot->getChildName(anOutPortNode));
+
+  aName += QString(" --> ");
+    
+  if (aRoot)
+    aName += QString(aRoot->getChildName(anInPortNode));
+    
+  return aName;
+}
+
+QPixmap YACSGui_ControlLinkViewItem::icon() const
+{
+  QPixmap aRes;
+  
+  QString anIconName;
+
+  anIconName = QString(QObject::tr("ICON_CONTROL_LINK_OBJECT"));
+  if ( !anIconName.isEmpty() )
+    aRes = SUIT_Session::session()->resourceMgr()->loadPixmap("YACSGui",  anIconName, false);
+  
+  return aRes;
+}
+
+void YACSGui_ControlLinkViewItem::update( const bool theIsRecursive )
 {
 
 }
@@ -1085,11 +1643,6 @@ YACSGui_SchemaViewItem::YACSGui_SchemaViewItem( QListViewItem* theParent,
 YACSGui_SchemaViewItem::~YACSGui_SchemaViewItem()
 {
   if ( mySProc ) mySProc->detach(this);
-}
-
-void YACSGui_SchemaViewItem::select(bool isSelected)
-{
-  printf(">> YACSGui_SchemaViewItem::select\n");
 }
 
 void YACSGui_SchemaViewItem::update(YACS::HMI::GuiEvent event, int type, YACS::HMI::Subject* son)
@@ -1136,33 +1689,60 @@ void YACSGui_SchemaViewItem::update(YACS::HMI::GuiEvent event, int type, YACS::H
     }
     break;
   case REMOVE:
+    switch (type)
     {
-      printf("SchemaViewItem:  REMOVE\n");
-
-      // get the "Nodes" label view item, which is used as a parent for first level nodes
-      YACSGui_LabelViewItem* aNodesL = dynamic_cast<YACSGui_LabelViewItem*>(firstChild()->nextSibling());
-      if ( !aNodesL || aNodesL->text(0).compare(QString("Nodes")) ) return;
-
-      YACSGui_NodeViewItem* aNode = 0;
-      QListViewItem* aChild = aNodesL->firstChild();
-      while( aChild )
+    case CONTAINER:
       {
-	if ( aNode = dynamic_cast<YACSGui_NodeViewItem*>(aChild) )
-	  if ( aNode->getSNode() == son )
+	// remove a container item (this = schema item)
+	printf("SchemaViewItem:  REMOVE container\n");
+	removeContainerItem(son);
+      }
+      break;
+    case COMPONENT:
+      {
+	// remove a CORBA component item (this = schema item)
+	printf("SchemaViewItem:  REMOVE component\n");
+	removeComponentItem(son);
+      }
+      break;
+    default:
+      {
+	printf("SchemaViewItem:  REMOVE\n");
+	
+	// get the "Nodes" label view item, which is used as a parent for first level nodes
+	YACSGui_LabelViewItem* aNodesL = dynamic_cast<YACSGui_LabelViewItem*>(firstChild()->nextSibling());
+	if ( !aNodesL || aNodesL->text(0).compare(QString("Nodes")) ) return;
+	
+	YACSGui_NodeViewItem* aNode = 0;
+	QListViewItem* aChild = aNodesL->firstChild();
+	while( aChild )
+	{
+	  if ( aNode = dynamic_cast<YACSGui_NodeViewItem*>(aChild) )
+	    if ( aNode->getSNode() == son )
 	    {
 	      printf(">> the son is found\n");
 	      break;
 	    }
+	  
+	  aChild = aChild->nextSibling();
+	}
 	
-	aChild = aChild->nextSibling();
+	if ( aNode )
+	{
+	  printf(">> delete the son item\n");
+	  aNodesL->takeItem(aNode);
+	  delete aNode;
+	}
       }
-      
-      if ( aNode )
-      {
-	printf(">> delete the son item\n");
-	aNodesL->takeItem(aNode);
-	delete aNode;
-      }
+      break;
+    }
+    break;
+  case ADDLINK:
+  case ADDCONTROLLINK:
+    {
+      // add link item (this = schema item)
+      printf("SchemaViewItem:  ADDLINK\n");
+      addLinkItem(son);
     }
     break;
   default:
@@ -1290,9 +1870,6 @@ void YACSGui_SchemaViewItem::addNodeItem( YACS::HMI::Subject* theSNode )
     }
 
     YACSGui_NodeViewItem* aNodeItem = new YACSGui_NodeViewItem( aNodesL, anAfter, aSNode );
-    if ( YACSGui_EditionTreeView* anETV = dynamic_cast<YACSGui_EditionTreeView*>(listView()) )
-      // create node view item after the last view item under "Nodes" label
-      anETV->displayChildren(aNodeItem );
   }
 }
 
@@ -1300,7 +1877,7 @@ void YACSGui_SchemaViewItem::addContainerItem( YACS::HMI::Subject* theSContainer
 {
   if ( SubjectContainer* aSContainer = dynamic_cast<SubjectContainer*>(theSContainer) )
   {
-    // get the "Containers" label view item, which is used as a parent for first level nodes
+    // get the "Containers" label view item
     YACSGui_LabelViewItem* aContainersL = dynamic_cast<YACSGui_LabelViewItem*>(firstChild()->nextSibling()->nextSibling()->nextSibling());
     if ( !aContainersL || aContainersL->text(0).compare(QString("Containers")) ) return;
 
@@ -1314,6 +1891,84 @@ void YACSGui_SchemaViewItem::addContainerItem( YACS::HMI::Subject* theSContainer
     }
 
     new YACSGui_ContainerViewItem( aContainersL, anAfter, aSContainer );
+  }
+}
+
+void YACSGui_SchemaViewItem::removeContainerItem( YACS::HMI::Subject* theSContainer )
+{
+  if ( SubjectContainer* aSContainer = dynamic_cast<SubjectContainer*>(theSContainer) )
+  {
+    // get the "Containers" label view item
+    YACSGui_LabelViewItem* aContainersL = dynamic_cast<YACSGui_LabelViewItem*>(firstChild()->nextSibling()->nextSibling()->nextSibling());
+    if ( !aContainersL || aContainersL->text(0).compare(QString("Containers")) ) return;
+
+    QListViewItem* aChild = aContainersL->firstChild();
+    while( aChild )
+    {
+      if ( YACSGui_ContainerViewItem* aCont = dynamic_cast<YACSGui_ContainerViewItem*>(aChild) )
+	if ( aCont->getSContainer() == aSContainer )
+	{
+	  aContainersL->takeItem(aChild);
+	  delete aChild;
+	  break;
+	}
+      aChild = aChild->nextSibling();
+    }
+  }
+}
+
+void YACSGui_SchemaViewItem::removeComponentItem( YACS::HMI::Subject* theSComponent )
+{
+  // ! for CORBA components only
+  if ( SubjectComponent* aSComponent = dynamic_cast<SubjectComponent*>(theSComponent) )
+  {
+    CORBAComponent* aCComp = dynamic_cast<CORBAComponent*>(aSComponent->getComponent());
+    if ( !aCComp ) return;
+
+    // get the "Containers" label view item
+    YACSGui_LabelViewItem* aContainersL = dynamic_cast<YACSGui_LabelViewItem*>(firstChild()->nextSibling()->nextSibling()->nextSibling());
+    if ( !aContainersL || aContainersL->text(0).compare(QString("Containers")) ) return;
+
+    QListViewItem* aChild = aContainersL->firstChild();
+    while( aChild )
+    {
+      if ( YACSGui_ComponentViewItem* aCont = dynamic_cast<YACSGui_ComponentViewItem*>(aChild) )
+	if ( aCont->getSComponent() == aSComponent )
+	{
+	  aContainersL->takeItem(aChild);
+	  delete aChild;
+	  break;
+	}
+      aChild = aChild->nextSibling();
+    }
+  }
+}
+
+void YACSGui_SchemaViewItem::addLinkItem( YACS::HMI::Subject* theSLink )
+{
+  SubjectLink* aSLink = dynamic_cast<SubjectLink*>(theSLink);
+  SubjectControlLink* aSCLink = dynamic_cast<SubjectControlLink*>(theSLink);
+  if ( aSLink || aSCLink )
+  {
+    if ( aSLink && aSLink->getSubjectOutNode()->getParent() != mySProc ) return;
+
+    if ( aSCLink && aSCLink->getSubjectOutNode()->getParent() != mySProc ) return;
+
+    // get the "Links" label view item under the schema (root) view item
+    YACSGui_LabelViewItem* aLinksL = dynamic_cast<YACSGui_LabelViewItem*>(firstChild()->nextSibling()->nextSibling());
+    if ( !aLinksL || aLinksL->text(0).compare(QString("Links")) ) return;
+
+    QListViewItem* anAfter = 0;
+
+    if ( QListViewItem* aChild = aLinksL->firstChild() )
+    {
+      while( aChild->nextSibling() )
+	aChild = aChild->nextSibling();
+      anAfter = aChild;
+    }
+
+    if ( aSLink ) new YACSGui_LinkViewItem( aLinksL, anAfter, aSLink );
+    else if ( aSCLink ) new YACSGui_ControlLinkViewItem( aLinksL, anAfter, aSCLink );
   }
 }
 
@@ -1362,11 +2017,6 @@ YACSGui_ContainerViewItem::~YACSGui_ContainerViewItem()
   if ( mySContainer ) mySContainer->detach(this);
 }
 
-void YACSGui_ContainerViewItem::select(bool isSelected)
-{
-  printf(">> YACSGui_ContainerViewItem::select\n");
-}
-
 void YACSGui_ContainerViewItem::update(YACS::HMI::GuiEvent event, int type, YACS::HMI::Subject* son)
 {
   printf(">> YACSGui_ContainerViewItem::update\n");
@@ -1383,6 +2033,20 @@ void YACSGui_ContainerViewItem::update(YACS::HMI::GuiEvent event, int type, YACS
 	// add a component item (this = container item)
 	printf("ContainerViewItem:  ADD component\n");
 	addComponentItem(son);
+      }
+      break;
+    default:
+      break;
+    }
+    break;
+  case REMOVE:
+    switch (type)
+    {
+    case COMPONENT:
+      {
+	// remove a component item (this = container item)
+	printf("ContainerViewItem:  REMOVE component\n");
+	removeComponentItem(son);
       }
       break;
     default:
@@ -1462,6 +2126,26 @@ void YACSGui_ContainerViewItem::addComponentItem( YACS::HMI::Subject* theSCompon
   }
 }
 
+void YACSGui_ContainerViewItem::removeComponentItem( YACS::HMI::Subject* theSComponent )
+{
+  if ( SubjectComponent* aSComponent = dynamic_cast<SubjectComponent*>(theSComponent) )
+  {
+    QListViewItem* aChild = firstChild();
+    while( aChild )
+    {
+      if ( YACSGui_ComponentViewItem* aComp = dynamic_cast<YACSGui_ComponentViewItem*>(aChild) )
+	if ( aComp->getSComponent() == aSComponent )
+	{
+	  takeItem(aChild);
+	  delete aChild;
+	  break;
+	}
+      
+      aChild = aChild->nextSibling();
+    }
+  }
+}
+
 // YACSGui_ComponentViewItem class:
 
 YACSGui_ComponentViewItem::YACSGui_ComponentViewItem( QListView* theParent, 
@@ -1501,11 +2185,6 @@ YACSGui_ComponentViewItem::YACSGui_ComponentViewItem( QListViewItem* theParent,
 YACSGui_ComponentViewItem::~YACSGui_ComponentViewItem()
 {
   if ( mySComponent ) mySComponent->detach(this);
-}
-
-void YACSGui_ComponentViewItem::select(bool isSelected)
-{
-  printf(">> YACSGui_ComponentViewItem::select\n");
 }
 
 void YACSGui_ComponentViewItem::update(YACS::HMI::GuiEvent event, int type, YACS::HMI::Subject* son)
@@ -1637,20 +2316,59 @@ void YACSGui_ComponentViewItem::move( YACS::HMI::Subject* theSReference )
 YACSGui_ComposedNodeViewItem::YACSGui_ComposedNodeViewItem(QListView *parent,
 							   QString label,
 							   YACS::ENGINE::ComposedNode *node)
-  : QListViewItem(parent, label),
+  : YACSGui_ViewItem(parent, 0),
     _node(node)
 {
+  setText( 0, label );
+
   _cf = Qt::black;
   setPixmap( 0, icon() );
+
+  // attach to HMI 
+  YACS::HMI::Subject* aSub = getSubject();
+  if ( aSub )
+    aSub->attach( this );
 }
 
 YACSGui_ComposedNodeViewItem::YACSGui_ComposedNodeViewItem(QListViewItem *parent,
 							   QString label,
 							   YACS::ENGINE::ComposedNode *node)
-  : QListViewItem(parent, label),
+  : YACSGui_ViewItem(parent, 0),
     _node(node)
 {
+  setText( 0, label );
+
   _cf = Qt::black;
+
+  // attach to HMI 
+  YACS::HMI::Subject* aSub = getSubject();
+  if ( aSub )
+    aSub->attach( this );
+}
+
+YACSGui_ComposedNodeViewItem::~YACSGui_ComposedNodeViewItem()
+{
+  // detach from HMI 
+  YACS::HMI::Subject* aSub = getSubject();
+  if ( aSub )
+    aSub->detach( this );
+}
+
+YACS::HMI::Subject* YACSGui_ComposedNodeViewItem::getSubject() const
+{
+  YACS::HMI::Subject* aSub = 0;
+
+  if ( _node )
+  {
+    GuiContext* aContext = GuiContext::getCurrent();
+    if ( aContext )
+    {
+      if ( aContext->_mapOfSubjectNode.find( _node ) != aContext->_mapOfSubjectNode.end() )
+        aSub = aContext->_mapOfSubjectNode[ _node ];
+    }
+  }
+
+  return aSub;
 }
 
 void YACSGui_ComposedNodeViewItem::paintCell( QPainter *p, const QColorGroup &cg,
@@ -1774,20 +2492,108 @@ YACSGui_ElementaryNodeViewItem::YACSGui_ElementaryNodeViewItem(QListView *parent
 							       const QString &text,
 							       Type tt,
 							       YACS::ENGINE::ElementaryNode *node)
-  : QCheckListItem(parent, text, tt)
+  : QCheckListItem(parent, text, tt),
+    myBlockSelect( false )
 {
   _cf = Qt::green;
   _node = node;
+
+  // attach to HMI 
+  YACS::HMI::Subject* aSub = getSubject();
+  if ( aSub )
+    aSub->attach( this );
 }
 
 YACSGui_ElementaryNodeViewItem::YACSGui_ElementaryNodeViewItem(QListViewItem *parent,
 							       const QString &text,
 							       Type tt,
 							       YACS::ENGINE::ElementaryNode *node)
-  : QCheckListItem(parent, text, tt)
+  : QCheckListItem(parent, text, tt),
+    myBlockSelect( false )
 {
   _cf = Qt::green;
   _node = node;
+
+  // attach to HMI 
+  YACS::HMI::Subject* aSub = getSubject();
+  if ( aSub )
+    aSub->attach( this );
+}
+
+YACSGui_ElementaryNodeViewItem::~YACSGui_ElementaryNodeViewItem()
+{
+  // detach from HMI 
+  YACS::HMI::Subject* aSub = getSubject();
+  if ( aSub )
+    aSub->detach( this );
+}
+
+YACS::HMI::Subject* YACSGui_ElementaryNodeViewItem::getSubject() const
+{
+  YACS::HMI::Subject* aSub = 0;
+
+  if ( _node )
+  {
+    GuiContext* aContext = GuiContext::getCurrent();
+    if ( aContext )
+    {
+      if ( aContext->_mapOfSubjectNode.find( _node ) != aContext->_mapOfSubjectNode.end() )
+        aSub = aContext->_mapOfSubjectNode[ _node ];
+    }
+  }
+
+  return aSub;
+}
+
+/*!
+  \brief Block actions performed in select() method. Usually this method is called 
+         from select() in order to avoid circularity because of synchronization: 
+         selection in 2D viewer --> selection in tree view --> selection in 2D viewer --> etc.
+  \param toBlock block selection
+  \return previous blocking value 
+*/
+bool YACSGui_ElementaryNodeViewItem::blockSelection( const bool toBlock )
+{
+  bool prevVal = myBlockSelect;
+  myBlockSelect = toBlock;
+  return prevVal;
+}
+
+/*!
+  \brief Verifiee whether actions performed in select() method are blocked
+         (see blockSelection method for more dscription)
+  \return blocking value 
+*/
+bool YACSGui_ElementaryNodeViewItem::selectionBlocked() const
+{
+  return myBlockSelect;
+}
+
+/*!
+  \brief Selects item in tree view 
+  \param isSelected specifies whether item has to be selected
+*/
+void YACSGui_ElementaryNodeViewItem::select( bool isSelected )
+{
+  if ( selectionBlocked() )
+    return;
+
+  printf(">> YACSGui_ViewItem::select( %d ) \n", isSelected );
+
+  if ( !isSelected ) // do nothing
+    return;
+
+  // select item in tree view
+  QListView* aListView = listView();
+  if ( !aListView )
+    return;
+
+  blockSelection( true );
+  aListView->clearSelection();
+  aListView->setCurrentItem( this );
+  aListView->setSelected( this, true );
+  aListView->ensureItemVisible( this );
+  blockSelection( false );
 }
 
 void YACSGui_ElementaryNodeViewItem::paintCell( QPainter *p, const QColorGroup &cg,

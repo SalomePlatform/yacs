@@ -48,6 +48,8 @@ class YACSPrs_LoopNode : public YACSPrs_InlineNode {
   virtual bool checkArea(double dx, double dy);
   // <--
 
+  bool synchronize( YACSPrs_Port* port, const bool toSelect );
+
  protected:
   virtual void drawPort(QPainter& thePainter);
   virtual void drawFrame(QPainter& thePainter);

@@ -11,6 +11,9 @@
 #include <vector>
 #include <map>
 
+#define _DEVDEBUG_
+#include "YacsTrace.hxx"
+
 int main(int argc, char** argv)
 {
   try 
@@ -293,6 +296,71 @@ int main(int argc, char** argv)
           std::cerr << "The raised exception is of Type:" << exc->_name() << std::endl;
         }
       //end of DII on echoObj2
+
+      //DII on echoObjVec
+      req = echoref->_request("echoObjVec");
+      CORBA::Any *aAny = new CORBA::Any();
+      *aAny <<= oob;
+
+      CORBA::TypeCode_var any_tc2=aAny->type();
+      CORBA::TypeCode_var tc2=orb->create_sequence_tc(0,any_tc2);
+      DynamicAny::DynAny_var dynany2 = dynFactory->create_dyn_any_from_type_code(tc2);
+      DynamicAny::DynSequence_var ds2 = DynamicAny::DynSequence::_narrow(dynany2);
+      ds2->set_length(2);
+      DynamicAny::DynAny_var temp=ds2->current_component();
+      temp->from_any(*aAny);
+      ds2->next();
+      temp=ds2->current_component();
+      CORBA::Any *aAny2 = new CORBA::Any();
+      *aAny2 <<= cob;
+      CORBA::Object_var zzobj ;
+      *aAny2 >>= CORBA::Any::to_object(zzobj) ;
+      temp->insert_reference(zzobj);
+      ds2->next();
+
+      CORBA::Any_var seqany2=ds2->to_any();
+      ds2->destroy();
+
+      arguments = req->arguments() ;
+      arguments->add_value( "s1" , seqany2 , CORBA::ARG_IN ) ;
+
+      CORBA::Any out2;
+      out2.replace(tc2, (void*) 0);
+      arguments->add_value( "s2" , out2 , CORBA::ARG_OUT );
+      req->set_return_type(CORBA::_tc_void);
+      req->invoke();
+
+      CORBA::Exception *exc2 =req->env()->exception();
+      if( exc2 )
+        {
+          std::cerr << "The raised exception is of Type:" << exc2->_name() << std::endl;
+          if(strcmp(exc2->_name(),"MARSHAL") == 0)
+            {
+              const char* ms = ((CORBA::MARSHAL*)exc2)->NP_minorString();
+              if (ms)
+                std::cerr << "(CORBA::MARSHAL: minor = " << ms << ")" << std::endl;
+            }
+        }
+      else
+        {
+          CORBA::Any *ob=arguments->item(1)->value();
+          DynamicAny::DynAny_var dynany= dynFactory->create_dyn_any(*ob);
+          DynamicAny::DynSequence_ptr ds=DynamicAny::DynSequence::_narrow(dynany);
+          DynamicAny::AnySeq_var as=ds->get_elements();
+          int length=as->length();
+          DEBTRACE(length);
+          for(int i=0;i<length; i++)
+            {
+              CORBA::TypeCode_var t=as[i].type();
+              DEBTRACE(t->id());
+              eo::Obj_ptr xobj;
+              as[i] >>= xobj;
+              DEBTRACE(xobj->_PD_repoId);
+              xobj->echoLong(12);
+            };
+        }
+
+      //end of DII on echoObjVec
 
       // Delete allocated objects to remove memory leaks (valgrind tests)
 

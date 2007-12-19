@@ -21,6 +21,10 @@ class UnknownKind(Exception):pass
 debug=0
 typeMap={}
 
+def typeName(name):
+  """Replace :: in type name by /"""
+  return "/".join(name.split("::"))
+
 streamTypes={
              '0':"Unknown",
              '1':"CALCIUM_integer",
@@ -78,7 +82,7 @@ class SalomeLoader:
       macro_dict[p.name]=p
 
     if debug:print filename
-    yacsproc=ProcNode(proc,macro_dict)
+    yacsproc=ProcNode(proc,macro_dict,filename)
     return yacsproc.createNode()
 
 class Container:
@@ -487,8 +491,9 @@ class LoopNode(ComposedNode):
             blnode.edAddDFLink(l.from_node.getOutputPort(l.from_param),
                              l.to_node.getInputPort(l.to_param))
           except:
-            print "Error while connecting output port:",l.from_param,"from node:",l.from_node.name
-            raise
+            reason="Error while connecting output port: "+l.from_param+" from node: "+l.from_node.name
+            reason=reason+" to input port: "+l.to_param+" from node: "+l.to_node.name
+            currentProc.getLogger("parser").error(reason,currentProc.filename,-1)
 
       return bloop
 
@@ -530,10 +535,11 @@ class ProcNode(ComposedNode):
      The Salome proc is stored in attribute proc
      The Salome macros are stored in attribute macro_dict ({})
   """
-  def __init__(self,proc,macro_dict):
+  def __init__(self,proc,macro_dict,filename):
     ComposedNode.__init__(self)
     self.proc=proc
     self.macro_dict=macro_dict
+    self.filename=filename
 
   def createNode(self):
     """Create the YACS node (Proc) equivalent a Salome proc"""
@@ -548,6 +554,7 @@ class ProcNode(ComposedNode):
     p=r.createProc("pr")
     self.node=p
     currentProc=p
+    p.filename=self.filename
     typeMap["double"]=p.typeMap["double"]
     typeMap["float"]=p.typeMap["double"]
     typeMap["int"]=p.typeMap["int"]
@@ -572,8 +579,6 @@ class ProcNode(ComposedNode):
 
     typeMap["SuperVisionTest::Adder"]=p.createInterfaceTc("","SuperVisionTest/Adder",[objref])
     typeMap["Adder"]=typeMap["SuperVisionTest::Adder"]
-    typeMap["SuperVisionTest::Addre"]=p.createInterfaceTc("","SuperVisionTest/Addre",[])
-    typeMap["SuperVision::Adder"]=p.createInterfaceTc("","SuperVision/Adder",[])
 
     currentProc.typeMap["Object"]=typeMap["objref"]
     currentProc.typeMap["Unknown"]=typeMap["Unknown"]
@@ -607,8 +612,13 @@ class ProcNode(ComposedNode):
     for n in G:
       #dataflow links
       for l in n.links:
-        p.edAddLink(l.from_node.getOutputPort(l.from_param),
+        try:
+          p.edAddLink(l.from_node.getOutputPort(l.from_param),
                     l.to_node.getInputPort(l.to_param))
+        except:
+          reason="Error while connecting output port: "+l.from_param+" from node: "+l.from_node.name
+          reason=reason+" to input port: "+l.to_param+" from node: "+l.to_node.name
+          currentProc.getLogger("parser").error(reason,currentProc.filename,-1)
 
       #datastream links
       for l in n.outStreamLinks:
@@ -818,7 +828,7 @@ class SalomeProc(ComposedNode):
         for inParam in s.findall("inParameter-list/inParameter"):
             p=Parameter()
             p.name=inParam.findtext("inParameter-name")
-            p.type=inParam.findtext("inParameter-type")
+            p.type=typeName(inParam.findtext("inParameter-type"))
             if debug:print "\tinParameter-name",p.name
             if debug:print "\tinParameter-type",p.type
             inParameters.append(p)
@@ -829,7 +839,7 @@ class SalomeProc(ComposedNode):
         for outParam in s.findall("outParameter-list/outParameter"):
             p=Parameter()
             p.name=outParam.findtext("outParameter-name")
-            p.type=outParam.findtext("outParameter-type")
+            p.type=typeName(outParam.findtext("outParameter-type"))
             if debug:print "\toutParameter-name",p.name
             if debug:print "\toutParameter-type",p.type
             outParameters.append(p)
@@ -876,7 +886,7 @@ class SalomeProc(ComposedNode):
         if debug:print d.tag,":",d
         p=Parameter()
         p.name=d.findtext("inParameter-name")
-        p.type=d.findtext("inParameter-type")
+        p.type=typeName(d.findtext("inParameter-type"))
         p.dependency=d.findtext("inParameter-dependency")
         p.schema=d.findtext("inParameter-schema")
         p.interpolation=d.findtext("inParameter-interpolation")
@@ -888,7 +898,7 @@ class SalomeProc(ComposedNode):
         if debug:print d.tag,":",d
         p=Parameter()
         p.name=d.findtext("outParameter-name")
-        p.type=d.findtext("outParameter-type")
+        p.type=typeName(d.findtext("outParameter-type"))
         p.dependency=d.findtext("outParameter-dependency")
         p.values=d.findtext("outParameter-values")
         if debug:print "\toutParameter-name",p.name
@@ -993,8 +1003,8 @@ class SalomeProc(ComposedNode):
             stream.write('   %s -> %s;\n' % (id(from_node), id(to_node)))
         stream.write("}\n")
 
-if __name__ == "__main__":
 
+def main():
   import traceback
   usage ="""Usage: %s salomeFile convertedFile
     where salomeFile is the name of the input schema file (old Salome syntax)
@@ -1014,8 +1024,13 @@ if __name__ == "__main__":
     p= loader.load(salomeFile)
     s= pilot.SchemaSave(p)
     s.save(convertedFile)
+    logger=p.getLogger("parser")
+    if not logger.isEmpty():
+      print logger.getStr()
   except:
     traceback.print_exc()
     f=open(convertedFile,'w')
     f.write("<proc></proc>\n")
 
+if __name__ == "__main__":
+  main()

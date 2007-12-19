@@ -647,6 +647,9 @@ msgstr "Export Schema"
 msgid "TLT_SAVE_SCHEMA_STATE"
 msgstr "Save Schema state"
 
+msgid "TLT_LOAD_SCHEMA_STATE"
+msgstr "Load Schema state"
+
 #### YACSGui module message boxes ####
 
 msgid "ERROR"
@@ -722,6 +725,9 @@ msgstr "Export"
 msgid "POP_CREATE_DATA_TYPE"
 msgstr "Create a Data Type"
 
+msgid "POP_EDIT"
+msgstr "Edit"
+
 msgid "POP_CREATE_CONTAINER_DEF"
 msgstr "Create a Container definition"
 
@@ -773,6 +779,12 @@ msgstr "Create a node"
 msgid "POP_EXECUTE"
 msgstr "Execute"
 
+msgid "POP_ADDDATALINK"
+msgstr "Add data link"
+
+msgid "POP_ADDCONTROLLINK"
+msgstr "Add control link to other node"
+
 msgid "POP_COPY"
 msgstr "Copy"
 
@@ -817,3 +829,43 @@ msgstr "Create a loop"
 
 msgid "POP_ADD_TO_LIBRARY"
 msgstr "Add to library"
+
+msgid "YACSGui_EditionTreeView::DATA_TYPES"
+msgstr "Data Types"
+
+msgid "YACSGui_EditionTreeView::SIMPLE"
+msgstr "Simple"
+
+msgid "YACSGui_EditionTreeView::OBJREF"
+msgstr "Objref"
+
+msgid "YACSGui_EditionTreeView::SEQUENCE"
+msgstr "Sequence"
+
+msgid "YACSGui_EditionTreeView::ARRAY"
+msgstr "Array"
+
+msgid "YACSGui_EditionTreeView::STRUCT"
+msgstr "Struct"
+
+msgid "YACSGui_EditionTreeView::DOUBLE"
+msgstr "Double"
+
+msgid "YACSGui_EditionTreeView::INT"
+msgstr "Int"
+
+msgid "YACSGui_EditionTreeView::STRING"
+msgstr "String"
+
+msgid "YACSGui_EditionTreeView::BOOL"
+msgstr "Bool"
+
+msgid "YACSGui_EditionTreeView::NODES"
+msgstr "Nodes"
+
+msgid "YACSGui_EditionTreeView::LINKS"
+msgstr "Links"
+
+
+
+

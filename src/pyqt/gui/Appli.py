@@ -271,6 +271,11 @@ class Appli(QMainWindow):
       return
     fileName = str(fn)
     proc=self.salomeloader.load(fileName)
+    logger=proc.getLogger("parser")
+    if logger.hasErrors():
+      self.logFile=logview.LogView()
+      self.logFile.text.setText(logger.getStr())
+      self.logFile.show()
 
     panel=Browser(self.tabWidget,proc)
     self.currentPanel=panel

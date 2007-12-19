@@ -19,8 +19,7 @@ graphs of execution independently from the context (\ref engine_runtime) the gra
 
 \section basic_concepts Basic concepts in YACS::ENGINE
 
-The understanding of YACS::ENGINE implementation needs a well
-knowledge of the following concepts :
+The understanding of YACS::ENGINE implementation needs a good knowledge of the basic concepts (\subpage engineConcepts):
 
 - \ref engine_node
 - \ref engine_ports

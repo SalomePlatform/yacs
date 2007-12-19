@@ -78,6 +78,7 @@
 #include <WhileLoop.hxx>
 #include <ForEachLoop.hxx>
 #include <SalomeComponent.hxx>
+#include <LoadState.hxx>
 
 #include <SALOME_LifeCycleCORBA.hxx>
 
@@ -204,11 +205,13 @@ void YACSGui_Module::createActions()
   createAction( NewSalomePythonComponentId, tr("TOP_NEW_SALOMEPYTHON_COMPONENT"), QIconSet(aPixmap),
                 tr("MEN_NEW_SALOMEPYTHON_COMPONENT"), tr("STB_NEW_SALOMEPYTHON_COMPONENT"), 
 		0, aDesktop, false, this, SLOT(onNewSalomePythonComponent()));
+  action(NewSalomePythonComponentId)->setEnabled(false);
 
   aPixmap = aResourceMgr->loadPixmap("YACSGui", tr("ICON_NEW_CORBA_COMPONENT"));
   createAction( NewCorbaComponentId, tr("TOP_NEW_CORBA_COMPONENT"), QIconSet(aPixmap),
                 tr("MEN_NEW_CORBA_COMPONENT"), tr("STB_NEW_CORBA_COMPONENT"), 
 		0, aDesktop, false, this, SLOT(onNewCorbaComponent()));
+  action(NewCorbaComponentId)->setEnabled(false);
   
   aPixmap = aResourceMgr->loadPixmap("YACSGui", tr("ICON_NEW_SALOME_SERVICE_NODE"));
   createAction( NewSalomeServiceNodeId, tr("TOP_NEW_SALOME_SERVICE_NODE"), QIconSet(aPixmap),
@@ -220,11 +223,6 @@ void YACSGui_Module::createActions()
                 tr("MEN_NEW_CORBA_SERVICE_NODE"), tr("STB_NEW_CORBA_SERVICE_NODE"), 
 		0, aDesktop, false, this, SLOT(onCorbaServiceNode()));
 
-  aPixmap = aResourceMgr->loadPixmap("YACSGui", tr("ICON_NEW_NODENODE_SERVICE_NODE"));
-  createAction( NewNodeNodeServiceNodeId, tr("TOP_NEW_NODENODE_SERVICE_NODE"), QIconSet(aPixmap),
-                tr("MEN_NEW_NODENODE_SERVICE_NODE"), tr("STB_NEW_NODENODE_SERVICE_NODE"), 
-		0, aDesktop, false, this, SLOT(onNodeNodeServiceNode()));
-
   aPixmap = aResourceMgr->loadPixmap("YACSGui", tr("ICON_NEW_CPP_NODE"));
   createAction( NewCppNodeId, tr("TOP_NEW_CPP_NODE"), QIconSet(aPixmap),
                 tr("MEN_NEW_CPP_NODE"), tr("STB_NEW_CPP_NODE"), 
@@ -234,11 +232,13 @@ void YACSGui_Module::createActions()
   createAction( NewServiceInlineNodeId, tr("TOP_NEW_SERVICE_INLINE_NODE"), QIconSet(aPixmap),
                 tr("MEN_NEW_SERVICE_INLINE_NODE"), tr("STB_NEW_SERVICE_INLINE_NODE"), 
 		0, aDesktop, false, this, SLOT(onServiceInlineNode()));
+  action(NewServiceInlineNodeId)->setEnabled(false);
 
   aPixmap = aResourceMgr->loadPixmap("YACSGui", tr("ICON_NEW_XML_NODE"));
   createAction( NewXmlNodeId, tr("TOP_NEW_XML_NODE"), QIconSet(aPixmap),
                 tr("MEN_NEW_XML_NODE"), tr("STB_NEW_XML_NODE"), 
 		0, aDesktop, false, this, SLOT(onXMLNode()));
+  action(NewXmlNodeId)->setEnabled(false);
 
   aPixmap = aResourceMgr->loadPixmap("YACSGui", tr("ICON_NEW_INLINE_SCRIPT_NODE"));
   createAction( NewInlineScriptNodeId, tr("TOP_NEW_INLINE_SCRIPT_NODE"), QIconSet(aPixmap),
@@ -279,11 +279,7 @@ void YACSGui_Module::createActions()
   createAction( NewFromLibraryNodeId, tr("TOP_NEW_FROM_LIBRARY_NODE"), QIconSet(aPixmap),
                 tr("MEN_NEW_FROM_LIBRARY_NODE"), tr("STB_NEW_FROM_LIBRARY_NODE"), 
 		0, aDesktop, false, this, SLOT(onNodeFromLibrary()));
-
-  aPixmap = aResourceMgr->loadPixmap("YACSGui", tr("ICON_NEW_LINK"));
-  createAction( NewLinkId, tr("TOP_NEW_LINK"), QIconSet(aPixmap),
-                tr("MEN_NEW_LINK"), tr("STB_NEW_LINK"), 
-		0, aDesktop, false, this, SLOT(onNewLink()));
+  action(NewFromLibraryNodeId)->setEnabled(false);
 
   // Menu "Supervisor"
   aPixmap = aResourceMgr->loadPixmap("YACSGui", tr("ICON_SUSPEND_RESUME"));
@@ -388,7 +384,8 @@ void YACSGui_Module::createActions()
   createAction( ReloadExecutionId, tr("TOP_LOAD_EXECUTION_STATE"), QIconSet(aPixmap),
                 tr("MEN_LOAD_EXECUTION_STATE"), tr("STB_LOAD_EXECUTION_STATE"), 
 		0, aDesktop, false, this, SLOT(onReloadExecution()));
-  
+  //action(ReloadExecutionId)->setEnabled(false);
+    
     //Menu "Execute" (run gui mode)
   aPixmap = aResourceMgr->loadPixmap("YACSGui", tr("ICON_EXECUTE"));
   createAction( ExecuteId, tr("TOP_EXECUTE"), QIconSet(aPixmap),
@@ -446,9 +443,9 @@ void YACSGui_Module::createActions()
 		0, aDesktop, true, this, SLOT(onToggleStopOnError()));
 
    // Popup "Schema"
-  createAction( SetActiveId, tr("TOP_SET_ACTIVE"), QIconSet(),
-                tr("MEN_SET_ACTIVE"), tr("STB_SET_ACTIVE"), 
-		0, aDesktop, false, this, SLOT(onSetActive()));
+  //createAction( SetActiveId, tr("TOP_SET_ACTIVE"), QIconSet(),
+  //              tr("MEN_SET_ACTIVE"), tr("STB_SET_ACTIVE"), 
+  // 		  0, aDesktop, false, this, SLOT(onSetActive()));
 
 
   // View mode section of "Dataflow" toolbar  
@@ -508,7 +505,6 @@ void YACSGui_Module::createMenus()
   int newNodeId = createMenu( tr("MEN_NEW_NODE"), createId );
   createMenu( NewSalomeServiceNodeId, newNodeId, -1 );
   createMenu( NewCorbaServiceNodeId, newNodeId, -1 );
-  createMenu( NewNodeNodeServiceNodeId, newNodeId, -1 );
   createMenu( NewCppNodeId, newNodeId, -1 );
   createMenu( NewServiceInlineNodeId, newNodeId, -1 );
   createMenu( NewXmlNodeId, newNodeId, -1 );
@@ -520,7 +516,6 @@ void YACSGui_Module::createMenus()
   createMenu( NewWhileLoopNodeId, newNodeId, -1 );
   createMenu( NewSwitchLoopNodeId, newNodeId, -1 );
   createMenu( NewFromLibraryNodeId, newNodeId, -1 );
-  createMenu( NewLinkId, createId, -1 );
 
   //Menu "Execute" (edit gui mode)
   int execId = createMenu( tr( "MEN_EXECUTE" ), -1, -1, 10 );
@@ -585,7 +580,6 @@ void YACSGui_Module::createMenus()
   myToolButtons[NewNodeBtn] = new SUIT_ToolButton(myToolBars[CreationTbId], "new_node_btn");
   myToolButtons[NewNodeBtn]->AddAction(action(NewSalomeServiceNodeId));
   myToolButtons[NewNodeBtn]->AddAction(action(NewCorbaServiceNodeId));
-  myToolButtons[NewNodeBtn]->AddAction(action(NewNodeNodeServiceNodeId));
   myToolButtons[NewNodeBtn]->AddAction(action(NewCppNodeId));
   myToolButtons[NewNodeBtn]->AddAction(action(NewServiceInlineNodeId));
   myToolButtons[NewNodeBtn]->AddAction(action(NewXmlNodeId));
@@ -598,8 +592,6 @@ void YACSGui_Module::createMenus()
   myToolButtons[NewNodeBtn]->AddAction(action(NewSwitchLoopNodeId));
   myToolButtons[NewNodeBtn]->AddAction(action(NewFromLibraryNodeId));
 
-  action(NewLinkId)->addTo(myToolBars[CreationTbId]);
-  
   //Toolbar "Execute" (edit gui mode)
   int executionTbId = createTool( tr("TOOLBAR_EXECUTION") );
   createTool( NewExecutionId,  executionTbId);
@@ -674,8 +666,8 @@ void YACSGui_Module::createPopups()
   rule = "client='ObjectBrowser' and selcount = 1 and $ObjectType in { 'SchemaObject' 'RunObject' }";
 
   // Schema popup
-  popupMgr()->insert( action(SetActiveId), -1, 1 );
-  popupMgr()->setRule( action(SetActiveId), rule, true );  
+  //popupMgr()->insert( action(SetActiveId), -1, 1 );
+  //popupMgr()->setRule( action(SetActiveId), rule, true );  
 }
 
 //! Creates module Input Page.
@@ -938,6 +930,24 @@ void YACSGui_Module::onNewSchema()
 
   // create and activate the edition tree view for the new schema
   createTreeView( aCProc->getSubjectProc(), YACSGui_DataModel::SchemaObject );
+
+  if ( !myCatalog ) loadCatalog();
+}
+
+//! Public slot.  Edit data types of the schema.
+/*!
+ */
+void YACSGui_Module::onEditDataTypes()
+{
+  
+}
+
+//! Public slot.  Creates data type for the schema.
+/*!
+ */
+void YACSGui_Module::onCreateDataType()
+{
+  
 }
 
 //! Private slot. Creates a new container.
@@ -1034,7 +1044,12 @@ void YACSGui_Module::onNewCorbaComponent()
  */
 void YACSGui_Module::onSalomeServiceNode()
 {
-  createNode(SALOMENODE);
+  //createNode(SALOMENODE);
+  if ( activeTreeView() )
+  {
+    setGuiMode(YACSGui_Module::NewMode);
+    activeTreeView()->syncPageTypeWithSelection();
+  }
 }
 
 //! Private slot. Creates a new service inline node.
@@ -1081,6 +1096,7 @@ void YACSGui_Module::onXMLNode()
 //! Private slot. Creates a new inline script node.
 /*!
  */
+
 void YACSGui_Module::onInlineScriptNode()
 {
   createNode(PYTHONNODE);
@@ -1140,14 +1156,6 @@ void YACSGui_Module::onSWITCHNode()
 void YACSGui_Module::onNodeFromLibrary()
 {
   MESSAGE("YACSGui_Module::onNodeFromLibrary --- NOT YET IMPLEMENTED!");
-}
-
-//! Private slot. Creates a new link.
-/*!
- */
-void YACSGui_Module::onNewLink()
-{
-  MESSAGE("YACSGui_Module::onNewLink()");
 }
 
 //! Private slot. Imports uneditable dataflow from the XML file(choosing via a file dialog)
@@ -1921,6 +1929,19 @@ QxGraph_Canvas* YACSGui_Module::getCanvas()
   return aCanvas;
 }
 
+/*!
+  \brief Update viewer. Invalidate whole canvas rect and update it.
+*/
+void YACSGui_Module::updateViewer()
+{
+  QxGraph_Canvas* aCanvas = getCanvas();
+  if ( aCanvas )
+  {
+    aCanvas->setChanged( QRect( 0, 0, aCanvas->width(), aCanvas->height() ) );
+    aCanvas->update();
+  }
+}
+
 void YACSGui_Module::createElementaryNodePrs()
 {
   MESSAGE("YACSGui_Module::createElementaryNodePrs --- NOT YET IMPLEMENTED!");
@@ -1982,6 +2003,9 @@ void YACSGui_Module::loadCatalog()
   printf("ModuleCatalog - %s",anIOR.c_str());
 
   myCatalog = aRuntimeSALOME->loadCatalog( "session", anIOR );
+
+  YACS::YACSLoader* _loader = new YACS::YACSLoader();
+  _loader->registerProcCataLoader();
 
   SALOME_ModuleCatalog::ListOfComponents_var aComponentList = aModuleCatalog->GetComponentList();
   long aNbComp = aComponentList->length();
@@ -2056,10 +2080,21 @@ YACS::HMI::GuiContext* YACSGui_Module::ImportProcFromFile( const QString& theFil
 
   if (fromSuperv)
     {
-      YACSGui_ORB::YACSGui_Gen_ptr engineRef = InitYACSGuiGen(getApp());
+      //YACSGui_ORB::YACSGui_Gen_ptr engineRef = InitYACSGuiGen(getApp());
       try
         {
-          tmpFileName = engineRef->convertSupervFile(theFilePath);
+          char file[]="/tmp/XXXXXX";
+          mkstemp(file);
+          tmpFileName=file;
+          
+          std::string call="salomeloader.sh " +theFilePath+ " " + file;
+          std::cerr << call << std::endl;
+          int ret=system(call.c_str());
+          if(ret)
+            {
+               std::cerr << "Problem: " << ret << std::endl;
+            }
+          //tmpFileName = engineRef->convertSupervFile(theFilePath);
         }
       catch(...)
         {
@@ -2121,7 +2156,7 @@ YACS::HMI::GuiContext* YACSGui_Module::ImportProcFromFile( const QString& theFil
       cerr<<"YACSGui_Module::importSchema: " <<ex.what()<<endl;     
     }
 
-  loadCatalog();
+  if ( !myCatalog ) loadCatalog();
 
   return aCProc;
 }
@@ -2331,14 +2366,47 @@ void YACSGui_Module::onReloadExecution()
   // switch to run mode
   setGuiMode(YACSGui_Module::RunMode);
 
-  // TODO: create run object in the Object Browser
-  // ... 
+  // get file with schema state
+  QString aFileName = SUIT_FileDlg::getFileName( application()->desktop(), "", "*.xml", tr("TLT_LOAD_SCHEMA_STATE"), true );
+  if (aFileName.isEmpty())
+    return;
 
-  // TODO: create 2D view presentation for schema run mode
-  // ...
-  
-  // TODO: create and activate the run tree view for the imported schema
-  // ...
+  // create execution in an order way
+  onCreateExecution();
+
+  YACSGui_Executor* anExecutor = findExecutor();
+  if (anExecutor)
+  {
+    // set the load state file name to the executor of the new created (in run mode) schema copy
+    anExecutor->setLoadStateFile(aFileName.latin1());
+    cout<<">> anExecutor = "<<anExecutor<<endl<<endl;
+  }
+
+  // update presentation of the new created run copy of the schema
+  // according to the nodes states from the load state file name
+  if ( GuiContext* aContext = GuiContext::getCurrent() )
+    if ( Proc* aProc = aContext->getProc() )
+    {
+      // update nodes states inside the schema (2D view)
+      string aProcName = aProc->getName(); // workaround to correctly reading XML with saved states in the GUI side
+      aProc->setName("proc");
+      aProc->init();
+      aProc->exUpdateState();
+      stateLoader* aStateLoader = new stateLoader(new stateParser(),aProc);
+      aStateLoader->parse(aFileName.latin1());
+      aProc->setName(aProcName);
+
+      // update nodes states inside the schema (tree view)
+      if ( YACSGui_RunTreeView* aRunTV = dynamic_cast<YACSGui_RunTreeView*>(activeTreeView()) )
+      {
+	aRunTV->onNotifyStatus(aProc->getState());
+	set<Node*> aNodeSet = aProc->getAllRecursiveConstituents();
+	for ( set<Node*>::iterator it = aNodeSet.begin(); it != aNodeSet.end(); it++ )
+	{
+	  aRunTV->onNotifyNodeStatus((*it)->getNumId(), (*it)->getState());
+	}
+      }
+    }
 }
 
 /*! Private slot. Start execution.
@@ -2811,6 +2879,7 @@ void YACSGui_Module::setGuiMode(YACSGui_Module::GuiMode theMode)
       myGuiMode = theMode;
       break;
     case YACSGui_Module::EditMode:
+    case YACSGui_Module::NewMode:
       setModifyActionShown(true);
       setRunActionShown(false);
       setVisualizationActionShown(true);
@@ -2849,7 +2918,6 @@ void YACSGui_Module::setModifyActionShown(const bool on)
   setMenuShown( NewCorbaComponentId,on );
   setMenuShown( NewSalomeServiceNodeId, on );
   setMenuShown( NewCorbaServiceNodeId, on );
-  setMenuShown( NewNodeNodeServiceNodeId,on );
   setMenuShown( NewServiceInlineNodeId,on );
   setMenuShown( NewXmlNodeId,on );
   setMenuShown( NewInlineScriptNodeId,on );
@@ -2860,7 +2928,6 @@ void YACSGui_Module::setModifyActionShown(const bool on)
   setMenuShown( NewWhileLoopNodeId,on );
   setMenuShown( NewSwitchLoopNodeId,on );
   setMenuShown( NewFromLibraryNodeId,on );
-  setMenuShown( NewLinkId, on );
   
     //Menu "Execute"
   setMenuShown( NewExecutionId, on );
@@ -2871,7 +2938,6 @@ void YACSGui_Module::setModifyActionShown(const bool on)
     //"Schema" and "Create" toolbars
   action(ExportSchemaId)->setVisible(on);
   action(NewContainerId)->setVisible(on);
-  action(NewLinkId)->setVisible(on);
   
   if(on == true) {
     myToolButtons[NewContainerBtnId]->show();
@@ -3163,10 +3229,13 @@ void YACSGui_Module::fillNodeTypesMap()
   myNodeTypeMap[XMLNODE]          = getNodeType(new XmlNode(""));
 }
 
-void YACSGui_Module::createNode( YACS::HMI::TypeOfElem theElemType )
+void YACSGui_Module::createNode( YACS::HMI::TypeOfElem theElemType, std::string theCompo, std::string theService )
 {
   YACS::ENGINE::Catalog* aCatalog = YACS::ENGINE::getSALOMERuntime()->getBuiltinCatalog();
   if ( !aCatalog ) return;
+
+  YACSGui_Graph* aGraph = activeGraph();
+  if( !aGraph ) return;
 
   if( YACSGui_EditionTreeView* anETV = dynamic_cast<YACSGui_EditionTreeView*>( activeTreeView() ) )
     if ( Subject* aSub = anETV->getSelectedSubject() )
@@ -3190,15 +3259,15 @@ void YACSGui_Module::createNode( YACS::HMI::TypeOfElem theElemType )
       }
       else if ( SubjectForLoop* aForLoop = dynamic_cast<SubjectForLoop*>(aSub) )
       {
-	createBody( theElemType, aSub, aCatalog );
+	createBody( theElemType, aSub, aCatalog, theCompo, theService );
       }
       else if ( SubjectForEachLoop* aForEachLoop = dynamic_cast<SubjectForEachLoop*>(aSub) )
       {
-	createBody( theElemType, aSub, aCatalog );
+	createBody( theElemType, aSub, aCatalog, theCompo, theService );
       }
       else if ( SubjectWhileLoop* aWhileLoop = dynamic_cast<SubjectWhileLoop*>(aSub) )
       {
-	createBody( theElemType, aSub, aCatalog );
+	createBody( theElemType, aSub, aCatalog, theCompo, theService );
       }
       else if ( SubjectComponent* aSComp = dynamic_cast<SubjectComponent*>(aSub) )
       {
@@ -3227,6 +3296,26 @@ void YACSGui_Module::createNode( YACS::HMI::TypeOfElem theElemType )
 	aSchema->addNode(aCatalog, "", aType, aName.str());
 	temporaryExport();
       }
+      else if ( SubjectBloc* aBloc = dynamic_cast<SubjectBloc*>(aSub) )
+      {
+	stringstream aName;
+	string aType = getNodeType(theElemType);
+	aName << aType << GuiContext::getCurrent()->getNewId(theElemType);
+	
+	aBloc->addNode(aCatalog, "", aType, aName.str());
+	if( SubjectComposedNode* aParent = dynamic_cast<SubjectComposedNode*>(aBloc->getParent()) )
+	  {
+	    aGraph->update(aBloc->getNode(), aParent);
+	    Bloc* aFather = dynamic_cast<Bloc*>(aBloc->getNode());
+	    while ( aFather )
+	    {
+	      aGraph->arrangeNodesWithinBloc(aFather);
+	      aFather = dynamic_cast<Bloc*>(aFather->getFather());
+	    }
+	    aGraph->getCanvas()->update();
+	  }
+	temporaryExport();
+      }
     }
     else if ( SubjectProc* aSchema = GuiContext::getCurrent()->getSubjectProc() )
     {  
@@ -3239,20 +3328,23 @@ void YACSGui_Module::createNode( YACS::HMI::TypeOfElem theElemType )
     }
 }
 
-void YACSGui_Module::createBody( YACS::HMI::TypeOfElem theElemType,
-				 YACS::HMI::Subject* theSubject,
-				 YACS::ENGINE::Catalog* theCatalog )
+YACS::HMI::SubjectNode* YACSGui_Module::createBody( YACS::HMI::TypeOfElem theElemType,
+						    YACS::HMI::Subject* theSubject,
+						    YACS::ENGINE::Catalog* theCatalog,
+						    std::string theCompo,
+						    std::string theService )
 {
-  if( !theCatalog )
-    return;
+  printf( "YACSGui_Module::createBody\n" );
+
+  SubjectNode* aBodyNode = 0;
+
+  if( !theCatalog ) return aBodyNode;
 
   SubjectComposedNode* aComposedNode = dynamic_cast<SubjectComposedNode*>( theSubject );
-  if( !aComposedNode )
-    return;
+  if( !aComposedNode ) return aBodyNode;
 
   YACSGui_Graph* aGraph = activeGraph();
-  if( !aGraph )
-    return;
+  if( !aGraph ) return aBodyNode;
 
   // remove current body node (if exists)
   if( SubjectNode* aChildNode = aComposedNode->getChild() )
@@ -3261,9 +3353,9 @@ void YACSGui_Module::createBody( YACS::HMI::TypeOfElem theElemType,
 			       tr("WRN_WARNING"),
 			       QString("Body node is already exist. Do you want to remove it?"),
 			       tr("BUT_YES"), tr("BUT_NO"), 0, 1, 1) == 1 )
-      return;
+      return aBodyNode;
 
-    aGraph->deletePrs( aChildNode );
+    aGraph->deletePrs( aChildNode, false );
 
     aComposedNode->update( REMOVE,
 			   ProcInvoc::getTypeOfNode( aChildNode->getNode() ),
@@ -3275,12 +3367,14 @@ void YACSGui_Module::createBody( YACS::HMI::TypeOfElem theElemType,
   stringstream aName;
   string aType = getNodeType(theElemType);
   aName << aType << GuiContext::getCurrent()->getNewId(theElemType);
-  SubjectNode* aBodyNode = aComposedNode->addNode(theCatalog, "", aType, aName.str());
+  aBodyNode = aComposedNode->addNode( theCatalog,
+				      theCompo,
+				      ( theService.empty() ? aType : theService ),
+				      aName.str() );
   aGraph->createPrs( aBodyNode );
 	
   if( YACSPrs_LoopNode* aNodePrs = dynamic_cast<YACSPrs_LoopNode*>( aGraph->getItem( aComposedNode->getNode() ) ) )
   {
-    aNodePrs->removeLabelLink();
     aNodePrs->updatePorts( true );
     QPtrList<YACSPrs_Port> aPorts = aNodePrs->getPortList();
     for (YACSPrs_Port* aPort = aPorts.first(); aPort; aPort = aPorts.next())
@@ -3346,7 +3440,7 @@ void YACSGui_Module::createBody( YACS::HMI::TypeOfElem theElemType,
     aGraph->getCanvas()->update();
   }
 
-
-
   temporaryExport();
+
+  return aBodyNode;
 }

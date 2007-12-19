@@ -293,8 +293,7 @@ bool Observer_i::event(QEvent *e)
 	      {
 		anIP->onNotifyNodeStatus(iGui, aState);
 		
-		list<string> anInPortsNames;
-		list<string> anInPortsValues;
+		map<int, map<string, string> > aGuiNodeId2InPortsValues;
 		list<InPort*> IPs = aNode->getSetOfInPort();
 		list<InPort*>::iterator itIP = IPs.begin();
 		for ( ; itIP!=IPs.end(); itIP++ )
@@ -315,19 +314,26 @@ bool Observer_i::event(QEvent *e)
 		  QString aValue(aDump);
 		  aValue = aValue.right(aValue.length()-(aValue.find(">",aValue.find(">")+1)+1));
 		  aValue = aValue.left(aValue.find("<"));
-		  if ( aValue.isEmpty() ) aValue = QString("<?>");
+		  if ( aValue.isEmpty() ) aValue = QString("< ? >");
 		  
-		  anInPortsNames.push_back((*itIP)->getName());
-		  anInPortsValues.push_back(string(aValue.latin1()));
+		  if ( aGuiNodeId2InPortsValues.find(aGuiNodeId) == aGuiNodeId2InPortsValues.end() )
+		  {
+		    map<string, string> aPName2PValue;
+		    aPName2PValue.insert( make_pair((*itIP)->getName(),string(aValue.latin1())) );
+		    aGuiNodeId2InPortsValues.insert( make_pair( aGuiNodeId, aPName2PValue ) );
+		  }
+		  else
+		    aGuiNodeId2InPortsValues[aGuiNodeId].insert( make_pair((*itIP)->getName(),string(aValue.latin1()) ) );
 		  
 		  _guiMod->getGraph(_guiProc)->updateNodePrs(aGuiNodeId,
 							     (*itIP)->getName(),
 							     string(aValue.latin1()));
 		}
-		anIP->onNotifyInPortValues(iGui,anInPortsNames,anInPortsValues);
-		
-		list<string> anOutPortsNames;
-		list<string> anOutPortsValues;
+		map<int, map<string, string> >::iterator itMI = aGuiNodeId2InPortsValues.begin();
+		for( ; itMI!=aGuiNodeId2InPortsValues.end(); itMI++ )
+		  anIP->onNotifyInPortValues((*itMI).first,(*itMI).second);
+
+		map<int, map<string, string> > aGuiNodeId2OutPortsValues;
 		list<OutPort*> OPs = aNode->getSetOfOutPort();
 		list<OutPort*>::iterator itOP = OPs.begin();
 		for ( ; itOP!=OPs.end(); itOP++ )
@@ -350,14 +356,22 @@ bool Observer_i::event(QEvent *e)
 		  aValue = aValue.left(aValue.find("<"));
 		  if ( aValue.isEmpty() ) aValue = QString("< ? >");
 		  
-		  anOutPortsNames.push_back((*itOP)->getName());
-		  anOutPortsValues.push_back(string(aValue.latin1()));
-		  
+		  if ( aGuiNodeId2OutPortsValues.find(aGuiNodeId) == aGuiNodeId2OutPortsValues.end() )
+		  {
+		    map<string, string> aPName2PValue;
+		    aPName2PValue.insert( make_pair((*itOP)->getName(),string(aValue.latin1())) );
+		    aGuiNodeId2OutPortsValues.insert( make_pair( aGuiNodeId, aPName2PValue ) );
+		  }
+		  else
+		    aGuiNodeId2OutPortsValues[aGuiNodeId].insert( make_pair((*itOP)->getName(),string(aValue.latin1()) ) );
+
 		  _guiMod->getGraph(_guiProc)->updateNodePrs(aGuiNodeId,
 							     (*itOP)->getName(),
 							     string(aValue.latin1()));
 		}
-		anIP->onNotifyOutPortValues(iGui,anOutPortsNames,anOutPortsValues);
+		map<int, map<string, string> >::iterator itMO = aGuiNodeId2OutPortsValues.begin();
+		for( ; itMO!=aGuiNodeId2OutPortsValues.end(); itMO++ )
+		  anIP->onNotifyOutPortValues((*itMO).first,(*itMO).second);
 	      }
 
               myImpl->setNodeState(aName, aState);

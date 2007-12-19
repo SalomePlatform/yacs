@@ -57,6 +57,8 @@ class YACSGui_Executor : public QObject, public QThread
   void setStopOnError(bool aMode);
   void unsetStopOnError();
   void saveState(const std::string& xmlFile);
+
+  void setLoadStateFile(std::string xmlFile);
   
   YACSGui_ORB::executionMode getCurrentExecMode();
   int getExecutorState();
@@ -91,6 +93,7 @@ class YACSGui_Executor : public QObject, public QThread
   bool _isSuspended;
   bool _isStopOnError;
   std::list<std::string> _breakpointList;
+  std::string _loadStateFile;
 };
 
 #endif

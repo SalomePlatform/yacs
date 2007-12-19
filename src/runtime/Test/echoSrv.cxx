@@ -5,7 +5,7 @@
 #include <iostream>
 using namespace std;
 
-//#define _DEVDEBUG_
+#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
 static CORBA::Boolean bindObjectToName(CORBA::ORB_ptr, CORBA::Object_ptr,const char*);
@@ -73,6 +73,7 @@ public:
   void echoIntVec(const eo::IntVec&, eo::IntVec_out);
   void echoStrVec(const eo::StrVec&, eo::StrVec_out);
   void echoObjectVec(const eo::ObjectVec&, eo::ObjectVec_out);
+  void echoObjVec(const eo::ObjVec&, eo::ObjVec_out);
   void echoObj2(eo::Obj_ptr , eo::Obj_out);
   void echoD(eo::D_ptr , eo::D_out);
   void echoC(eo::C_ptr , eo::C_out);
@@ -134,6 +135,32 @@ void Echo_i::echoObjectVec(const eo::ObjectVec& in, eo::ObjectVec_out out)
     DEBTRACE(in[i]->_PD_repoId);
   };
   out=new eo::ObjectVec(in);
+}
+
+void Echo_i::echoObjVec(const eo::ObjVec& in, eo::ObjVec_out out)
+  {
+    DEBTRACE("Echo_i::echoObjVec " << in.length());
+    for(int i=0;i<in.length(); i++)
+      {
+        DEBTRACE(in[i]->_mostDerivedRepoId());
+      };
+
+    out=new eo::ObjVec;
+    out->length(2);
+
+    Obj_i* obj0 = new Obj_i();
+    CORBA::Object_var ref0 = obj0->_this();
+    eo::Obj_var o0 = eo::Obj::_narrow(ref0);
+    (*out)[0]=o0;
+    obj0->_remove_ref();
+
+    C_i* obj1 = new C_i();
+    CORBA::Object_var ref1 = obj1->_this();
+    eo::Obj_var o1 = eo::Obj::_narrow(ref1);
+    (*out)[1]=o1;
+    obj1->_remove_ref();
+
+    DEBTRACE("ENDOF Echo_i::echoObjVec " );
 }
 
 void Echo_i::echoObjectVecVec(const eo::ObjectVecVec& in, eo::ObjectVecVec_out out)

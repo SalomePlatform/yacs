@@ -31,33 +31,32 @@
  \section Packages
 
  %YACS is composed of several packages
- - \ref bases : common base classes (threads,...) and constants
- - \ref engine : calculation schema generic classes (calculation nodes, control nodes,
+ - \subpage bases : common base classes (threads,...) and constants
+ - \subpage engine : calculation schema generic classes (calculation nodes, control nodes,
    control and data flow links, ...)
- - \ref runtime : implementation of generic calculation nodes for Salome platform
- - \ref xml_loader : XML reader for generic calculation schema
- - \ref gui_design : Graphic User Interface design
+ - \subpage runtime : implementation of generic calculation nodes for Salome platform
+ - \subpage xml_loader : XML reader for generic calculation schema
+ - \subpage gui_design : Graphic User Interface design
 
- A Python API is provided by wrapping with swig : \ref python
+ A Python API is provided by wrapping with swig : \subpage python
 
  \section Building
 
  For building %YACS, you need some prerequisites
- - g++ 3.3 or more (mandatory)
+ - g++ 4.1 or more (mandatory)
  - libxml2 (mandatory)
  - expat (mandatory)
- - omniorb (mandatory)
+ - omniorb 4.1 or more (mandatory)
  - python 2.3 and + (mandatory)
- - swig 1.3.24 (optional)
+ - swig 1.3.31 (mandatory)
  - cppunits (optional, for unit tests only)
- - Salome 3.2.x (optional)
- - DSC Salome Extension (optional)
+ - Salome 4.1.x (optional)
 
  If you want to install %YACS for SALOME, you need to set environment 
  variable: \b KERNEL_ROOT_DIR.
 
- If you want to install %YACS for Dsc Salome Extension, you need to set environment 
- variable: \b PARALLEL_KERNEL_ROOT_DIR.
+ If you want to install %YACS with SALOME GUI, you need to set environment 
+ variable: \b GUI_ROOT_DIR.
 
  The building process is the traditional configure/make/make install:
  - configure --prefix=path_to_install
@@ -69,8 +68,8 @@
  Then you can run a small demo in Demo directory:
  - cd Demo
  - make
- - launch the echoSrv server : echoSrv& (if the omniorb name server is not
- running you need to launch it : omniNames& should be enough)
+ - launch the echoSrv server : ./echoSrv& (if the omniorb name server is not
+   running you need to launch it : omniNames -start -logdir /tmp & should be enough)
  - run yacs supervisor with the schema.xml file : ../src/yacsloader/driver schema.xml
 
  Finally you can install yacs:

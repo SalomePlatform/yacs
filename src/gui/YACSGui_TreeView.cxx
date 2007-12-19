@@ -24,6 +24,8 @@
 #include <YACSGui_InputPanel.h>
 #include <YACSGui_Executor.h>
 
+#include <SUIT_MessageBox.h>
+
 #include <OutputDataStreamPort.hxx>
 #include <CalStreamPort.hxx>
 
@@ -246,7 +248,6 @@ void YACSGui_TreeView::update( QListViewItem* theItem, const bool theIsRecursive
 {
 }
 
-
 //! Constructor.
 /*!
  */
@@ -264,6 +265,10 @@ YACSGui_EditionTreeView::YACSGui_EditionTreeView( YACSGui_Module* theModule, YAC
 
     fillContainerData(mySProc);
     build();
+
+    myPreviousSelected = 0;
+    mySelectedSubjectOutPort = 0;
+    mySelectedSubjectOutNode = 0;
 
     printf(">> Create tree view after build\n");
     connect( this, SIGNAL( doubleClicked( QListViewItem* ) ), this, SLOT( onDblClick( QListViewItem* ) ) );
@@ -350,35 +355,41 @@ void YACSGui_EditionTreeView::displayChildren( YACSGui_NodeViewItem* theNodeItem
  
     list<InPort *>::iterator InPortsIter = anInPorts.begin(); 
     for(; InPortsIter != anInPorts.end(); InPortsIter++)
-      anInPortItem = new YACSGui_PortViewItem( theNodeItem, anInPortItem, *InPortsIter );
+      anInPortItem = new YACSGui_PortViewItem( theNodeItem, anInPortItem,
+					       GuiContext::getCurrent()->_mapOfSubjectDataPort[*InPortsIter] );
   }
   else if ( ForLoop* aForLoopNode = dynamic_cast<ForLoop*>( aNode ) ) {
     InputPort* anInputPort = aForLoopNode->edGetNbOfTimesInputPort();
     if (anInputPort)
-      anInPortItem = new YACSGui_PortViewItem( theNodeItem, aSubNodeItem, anInputPort );
+      anInPortItem = new YACSGui_PortViewItem( theNodeItem, aSubNodeItem,
+					       GuiContext::getCurrent()->_mapOfSubjectDataPort[anInputPort] );
   }
   else if ( Switch* aSwitchNode = dynamic_cast<Switch*>( aNode ) ) {
     InputPort* anInputPort = aSwitchNode->edGetConditionPort();
     if (anInputPort)
-      anInPortItem = new YACSGui_PortViewItem( theNodeItem, aSubNodeItem, anInputPort );
+      anInPortItem = new YACSGui_PortViewItem( theNodeItem, aSubNodeItem,
+					       GuiContext::getCurrent()->_mapOfSubjectDataPort[anInputPort] );
   }
   else if ( WhileLoop* aWhileLoopNode = dynamic_cast<WhileLoop*>( aNode ) ) {
     InputPort* anInputPort = aWhileLoopNode->edGetConditionPort();
     if (anInputPort)
-      anInPortItem = new YACSGui_PortViewItem( theNodeItem, aSubNodeItem, anInputPort );
+      anInPortItem = new YACSGui_PortViewItem( theNodeItem, aSubNodeItem,
+					       GuiContext::getCurrent()->_mapOfSubjectDataPort[anInputPort] );
   }
   else if ( ForEachLoop* aForEachLoopNode = dynamic_cast<ForEachLoop*>( aNode ) ) {
     InputPort* anInputPort1 = aForEachLoopNode->edGetNbOfBranchesPort();
     if (anInputPort1)
-      anInPortItem = new YACSGui_PortViewItem( theNodeItem, aSubNodeItem, anInputPort1 );
+      anInPortItem = new YACSGui_PortViewItem( theNodeItem, aSubNodeItem,
+					       GuiContext::getCurrent()->_mapOfSubjectDataPort[anInputPort1] );
     InputPort* anInputPort2 = aForEachLoopNode->edGetSeqOfSamplesPort();
     if (anInputPort2)
-      anInPortItem = new YACSGui_PortViewItem( theNodeItem, anInPortItem, anInputPort2 );
+      anInPortItem = new YACSGui_PortViewItem( theNodeItem, anInPortItem,
+					       GuiContext::getCurrent()->_mapOfSubjectDataPort[anInputPort2] );
   }
   
-  InGate* anInGate = aNode->getInGate();
-  if (anInGate)
-    anInPortItem = new YACSGui_PortViewItem( theNodeItem, anInPortItem, anInGate );
+  //InGate* anInGate = aNode->getInGate();
+  //if (anInGate)
+  //  anInPortItem = new YACSGui_PortViewItem( theNodeItem, anInPortItem, anInGate );
   
   // output ports
   
@@ -388,17 +399,19 @@ void YACSGui_EditionTreeView::displayChildren( YACSGui_NodeViewItem* theNodeItem
           
     list<OutPort *>::iterator OutPortsIter = anOutPorts.begin();
     for(; OutPortsIter != anOutPorts.end(); OutPortsIter++)
-      anOutPortItem = new YACSGui_PortViewItem( theNodeItem, anOutPortItem, *OutPortsIter );
+      anOutPortItem = new YACSGui_PortViewItem( theNodeItem, anOutPortItem,
+						GuiContext::getCurrent()->_mapOfSubjectDataPort[*OutPortsIter] );
   }
   else if ( ForEachLoop* aForEachLoopNode = dynamic_cast<ForEachLoop*>( aNode ) ) {
     OutputPort* anOutputPort = aForEachLoopNode->edGetSamplePort();
     if (anOutputPort)
-      anOutPortItem = new YACSGui_PortViewItem( theNodeItem, anInPortItem, anOutputPort );
+      anOutPortItem = new YACSGui_PortViewItem( theNodeItem, anInPortItem,
+						GuiContext::getCurrent()->_mapOfSubjectDataPort[anOutputPort] );
   }
     
-  OutGate* anOutGate = aNode->getOutGate();
-  if (anOutGate)
-    anOutPortItem = new YACSGui_PortViewItem( theNodeItem, anOutPortItem, anOutGate );
+  //OutGate* anOutGate = aNode->getOutGate();
+  //if (anOutGate)
+  //  anOutPortItem = new YACSGui_PortViewItem( theNodeItem, anOutPortItem, anOutGate );
   
   if (aComposedNode)
   {
@@ -415,8 +428,11 @@ void YACSGui_EditionTreeView::displayChildren( YACSGui_NodeViewItem* theNodeItem
     QListViewItem* aControlLinkItem = 0;
     set< pair< OutGate*,InGate* > >::iterator aGateLinksIter = anInternalGateLinks.begin();
     for ( ; aGateLinksIter != anInternalGateLinks.end(); aGateLinksIter++ )
-      aControlLinkItem = new YACSGui_LinkViewItem( aLinksItem, aControlLinkItem,
-						   (*aGateLinksIter).first, (*aGateLinksIter).second );
+    {
+      pair<Node*,Node*> On2IN = make_pair( (*aGateLinksIter).first->getNode(), (*aGateLinksIter).second->getNode() );
+      aControlLinkItem = new YACSGui_ControlLinkViewItem( aLinksItem, aControlLinkItem,
+							  GuiContext::getCurrent()->_mapOfSubjectControlLink[On2IN] );
+    }
     
     // Process out ports list of the node : Data links
     QListViewItem* aDataLinkItem = aControlLinkItem;
@@ -425,13 +441,12 @@ void YACSGui_EditionTreeView::displayChildren( YACSGui_NodeViewItem* theNodeItem
       OutPort* aCurOutPort = (*aLinksIter).first;
       string aClassName = aCurOutPort->getNameOfTypeOfCurrentInstance();
       
-      InPort* aCurInPort = (*aLinksIter).second;
-	
       // Data links
       if ( !aClassName.compare(OutputPort::NAME) ) {
 	OutputPort* anOutputDFPort = dynamic_cast<OutputPort*>( aCurOutPort );
 	if ( anOutputDFPort )
-	  aDataLinkItem = new YACSGui_LinkViewItem( aLinksItem, aDataLinkItem, anOutputDFPort, aCurInPort);
+	  aDataLinkItem = new YACSGui_LinkViewItem( aLinksItem, aDataLinkItem,
+						    GuiContext::getCurrent()->_mapOfSubjectLink[*aLinksIter] );
       }
     } 
 
@@ -442,13 +457,12 @@ void YACSGui_EditionTreeView::displayChildren( YACSGui_NodeViewItem* theNodeItem
       OutPort* aCurOutPort = (*aLinksIter).first;
       string aClassName = aCurOutPort->getNameOfTypeOfCurrentInstance();
       
-      InPort* aCurInPort = (*aLinksIter).second;
-      
       // Stream links
       if ( !aClassName.compare(OutputDataStreamPort::NAME) || !aClassName.compare(OutputCalStreamPort::NAME) ) {
 	OutputDataStreamPort* anOutputDSPort = dynamic_cast<OutputDataStreamPort*>( aCurOutPort );
 	if ( anOutputDSPort ) 
-	  aStreamLinkItem = new YACSGui_LinkViewItem( aLinksItem, aStreamLinkItem, anOutputDSPort, aCurInPort);
+	  aStreamLinkItem = new YACSGui_LinkViewItem( aLinksItem, aStreamLinkItem,
+						      GuiContext::getCurrent()->_mapOfSubjectLink[*aLinksIter] );
       }
     }
   }
@@ -456,38 +470,45 @@ void YACSGui_EditionTreeView::displayChildren( YACSGui_NodeViewItem* theNodeItem
 }
 
 /*!
+  Method returns a subject of given tree viewitem 
+*/
+
+YACS::HMI::Subject* YACSGui_EditionTreeView::getSubject( QListViewItem* theItem )
+{
+  Subject* aSub = 0;
+
+  if ( YACSGui_ReferenceViewItem* aRefItem = dynamic_cast<YACSGui_ReferenceViewItem*>( theItem ) )
+    aSub = aRefItem->getSReference();
+  if ( YACSGui_PortViewItem* aPortItem = dynamic_cast<YACSGui_PortViewItem*>( theItem ) )
+    aSub = aPortItem->getSPort();
+  else if ( YACSGui_NodeViewItem* aNodeItem = dynamic_cast<YACSGui_NodeViewItem*>( theItem ) )
+    aSub = aNodeItem->getSNode();
+  else if ( YACSGui_LinkViewItem* aLinkItem = dynamic_cast<YACSGui_LinkViewItem*>( theItem ) )
+    aSub = aLinkItem->getSLink();
+  else if ( YACSGui_ControlLinkViewItem* aCLinkItem = dynamic_cast<YACSGui_ControlLinkViewItem*>( theItem ) )
+    aSub = aCLinkItem->getSLink();
+  else if ( YACSGui_SchemaViewItem* aSchemaItem = dynamic_cast<YACSGui_SchemaViewItem*>( theItem ) )
+    aSub = aSchemaItem->getSProc();
+  else if ( YACSGui_ContainerViewItem* aContItem = dynamic_cast<YACSGui_ContainerViewItem*>( theItem ) )
+    aSub = aContItem->getSContainer();
+  else if ( YACSGui_ComponentViewItem* aCompItem = dynamic_cast<YACSGui_ComponentViewItem*>( theItem ) )
+    aSub = aCompItem->getSComponent();
+
+  return aSub;
+}
+
+/*!
   Method returns a subject of the selected tree viewitem if the selection is a single selection or 0, otherwise
 */
 YACS::HMI::Subject* YACSGui_EditionTreeView::getSelectedSubject()
 {
-  Subject* aSub = 0;
-
   std::list<QListViewItem*> aSelList = getSelected();
   QListViewItem* anItem = 0;
   
   // check if the current selection is a single selection
   if ( aSelList.size() == 1 ) anItem = aSelList.front();
    
-  if ( YACSGui_ReferenceViewItem* aRefItem = dynamic_cast<YACSGui_ReferenceViewItem*>( anItem ) )
-    aSub = aRefItem->getSReference();
-  else if ( YACSGui_NodeViewItem* aNodeItem = dynamic_cast<YACSGui_NodeViewItem*>( anItem ) )
-    aSub = aNodeItem->getSNode();
-  else if ( YACSGui_SchemaViewItem* aSchemaItem = dynamic_cast<YACSGui_SchemaViewItem*>( anItem ) )
-    aSub = aSchemaItem->getSProc();
-  else if ( YACSGui_ContainerViewItem* aContItem = dynamic_cast<YACSGui_ContainerViewItem*>( anItem ) )
-    aSub = aContItem->getSContainer();
-  else if ( YACSGui_ComponentViewItem* aCompItem = dynamic_cast<YACSGui_ComponentViewItem*>( anItem ) )
-    aSub = aCompItem->getSComponent();
-
-  return aSub;
-}
-
-//! Public slot.  Creates data type for the schema.
-/*!
- */
-void YACSGui_EditionTreeView::onCreateDataType()
-{
-  
+  return getSubject( anItem );
 }
 
 //! Public slot.  Adds the selected node into the library.
@@ -496,6 +517,21 @@ void YACSGui_EditionTreeView::onCreateDataType()
 void YACSGui_EditionTreeView::onAddToLibrary()
 {
 
+}
+
+//! Public slot.  Adds the data (flow or stream) / control link from the selected port / node to the other (selected later).
+/*!
+ */
+void YACSGui_EditionTreeView::onAddLink()
+{
+  printf(">>> YACSGui_EditionTreeView::onAddLink\n");
+  if ( Subject* aSub = getSelectedSubject() )
+  {
+    if ( dynamic_cast<SubjectOutputPort*>(aSub) || dynamic_cast<SubjectOutputDataStreamPort*>(aSub) )
+      mySelectedSubjectOutPort = static_cast<SubjectDataPort*>(aSub);
+    else if (dynamic_cast<SubjectNode*>(aSub))
+      mySelectedSubjectOutNode = static_cast<SubjectNode*>(aSub);
+  }
 }
 
 //! Public slot.  Copies the selected item.
@@ -519,7 +555,106 @@ void YACSGui_EditionTreeView::onPasteItem()
  */
 void YACSGui_EditionTreeView::onDeleteItem()
 {
+  printf(">>> YACSGui_EditionTreeView::onDeleteItem : ");
+  if ( Subject* aSub = getSelectedSubject() )
+  {
+    clearSelection();
+    
+    if ( SubjectLink* aSLink = dynamic_cast<SubjectLink*>(aSub) )
+    {
+      printf("data link\n");
+      SubjectNode* aNode = aSLink->getSubjectOutNode();
+      aNode->update( REMOVE, DATALINK, aSLink );
+      aSLink->getParent()->destroy( aSLink );
+    }
+    else if ( SubjectControlLink* aSCLink = dynamic_cast<SubjectControlLink*>(aSub) )
+    {
+      printf("control link\n");
+      SubjectNode* aNode = aSCLink->getSubjectOutNode();
+      aNode->update( REMOVE, CONTROLLINK, aSCLink );
+      aSCLink->getParent()->destroy( aSCLink );
+    }
+    else if ( SubjectDataPort* aSDPort = dynamic_cast<SubjectDataPort*>(aSub) )
+    {
+      printf("port\n");
+      Subject* aNode = aSDPort->getParent();
+      aNode->update( REMOVE, ProcInvoc::getTypeOfPort(aSDPort->getPort()), aSDPort );
+      aNode->destroy( aSDPort );
+    }
+    else if ( SubjectNode* aSNode = dynamic_cast<SubjectNode*>(aSub) )
+    {
+      printf("node\n");
+      if ( !myModule ) return;
+      
+      YACSGui_Graph* aGraph = myModule->activeGraph();
+      if( !aGraph ) return;
 
+      SubjectComposedNode* aSParent = dynamic_cast<SubjectComposedNode*>(aSNode->getParent());
+      if ( !aSParent ) return;
+      
+      aSParent->update( REMOVE,	ProcInvoc::getTypeOfNode( aSNode->getNode() ), aSNode );
+
+      aGraph->removeNode( aSNode->getNode() );
+      aSParent->destroy( aSNode );
+
+      SubjectBloc* aSBloc = dynamic_cast<SubjectBloc*>(aSParent);
+      if ( aSBloc && !dynamic_cast<SubjectProc*>(aSParent) )
+      {
+	Node* aBloc = aSBloc->getNode();
+	if ( !aBloc ) return;
+	
+	SubjectComposedNode* aSBlocParent = dynamic_cast<SubjectComposedNode*>( aSBloc->getParent() );
+	if ( !aSBlocParent ) return;
+	
+	aGraph->update( aBloc, aSBlocParent );
+      }
+    }
+    else if ( SubjectComponent* aSComp = dynamic_cast<SubjectComponent*>(aSub) )
+    {
+      printf("component\n");
+      Subject* aProc = aSComp->getParent();
+      ComponentInstance* aComp = aSComp->getComponent();
+      if ( !aComp )
+      {
+	SUIT_MessageBox::warn1(myModule->getApp()->desktop(), 
+			       tr("WARNING"), 
+			       "The component instance is null.",
+			       tr("BUT_OK"));
+	aProc->update( REMOVE, COMPONENT, aSComp );
+	return;
+      }
+
+      if ( dynamic_cast<CORBAComponent*>(aComp) )
+      {
+	aProc->update( REMOVE, COMPONENT, aSComp );
+	aProc->destroy( aSComp );
+	return;
+      }
+
+      Container* aCont = aComp->getContainer();
+      if ( !aCont ) return;
+      
+      GuiContext* aContext = GuiContext::getCurrent();
+      if ( !aContext ) return;
+
+      SubjectContainer* aSCont = 0;
+      if ( aContext->_mapOfSubjectContainer.find(aCont) != aContext->_mapOfSubjectContainer.end() )
+        aSCont = aContext->_mapOfSubjectContainer[aCont];
+      if ( !aSCont ) return;
+
+      aSCont->update( REMOVE, COMPONENT, aSComp );
+      aProc->destroy( aSComp );
+    }
+    else if ( SubjectContainer* aSCont = dynamic_cast<SubjectContainer*>(aSub) )
+    {
+      printf("container\n");
+      SubjectProc* aProc = dynamic_cast<SubjectProc*>(aSCont->getParent());
+      if ( !aProc ) return;
+
+      aProc->update( REMOVE, CONTAINER, aSCont );
+      aProc->destroy( aSCont );
+    }
+  }
 }
 
 //! Public slot.  Display 2D view of the selected schema.
@@ -560,7 +695,12 @@ void YACSGui_EditionTreeView::onEraseNode()
 void YACSGui_EditionTreeView::onContextMenuRequested( QListViewItem* theItem, const QPoint& thePoint )
 {
   printf("===>> YACSGui_EditionTreeView::onContextMenuRequested\n");
-  if ( dynamic_cast<YACSGui_SchemaViewItem*>( theItem ) )
+  if ( YACSGui_LabelViewItem* aLIt = dynamic_cast<YACSGui_LabelViewItem*>( theItem ) )
+  {
+    if ( !aLIt->name().compare( QString("Data Types") ) )
+      showPopup( contextMenuPopup( YACSGui_EditionTreeView::DataTypeItem ), thePoint );
+  }
+  else if ( dynamic_cast<YACSGui_SchemaViewItem*>( theItem ) )
   {
     showPopup( contextMenuPopup( YACSGui_TreeView::SchemaItem ), thePoint );
   }
@@ -568,16 +708,18 @@ void YACSGui_EditionTreeView::onContextMenuRequested( QListViewItem* theItem, co
   {
     if ( dynamic_cast<ServiceNode*>( aNIt->getNode() ) )
       showPopup( contextMenuPopup( YACSGui_EditionTreeView::ServiceNodeItem ), thePoint );
+    else if ( dynamic_cast<Bloc*>( aNIt->getNode() ) || dynamic_cast<Switch*>( aNIt->getNode() ) )
+      showPopup( contextMenuPopup( YACSGui_EditionTreeView::ComposedNodeItem ), thePoint );
     else if ( dynamic_cast<Loop*>( aNIt->getNode() ) || dynamic_cast<ForEachLoop*>( aNIt->getNode() ) )
       showPopup( contextMenuPopup( YACSGui_EditionTreeView::LoopNodeItem ), thePoint );
     else
       showPopup( contextMenuPopup( YACSGui_TreeView::NodeItem ), thePoint );
   }
-  else if ( dynamic_cast<YACSGui_PortViewItem*>( theItem ) )
+  else if ( YACSGui_PortViewItem* aPIt = dynamic_cast<YACSGui_PortViewItem*>( theItem ) )
   {
-    showPopup( contextMenuPopup( YACSGui_EditionTreeView::PortItem ), thePoint );
+    showPopup( contextMenuPopup( YACSGui_EditionTreeView::PortItem, aPIt->getSPort() ), thePoint );
   }
-  else if ( dynamic_cast<YACSGui_LinkViewItem*>( theItem ) )
+  else if ( dynamic_cast<YACSGui_LinkViewItem*>( theItem ) || dynamic_cast<YACSGui_ControlLinkViewItem*>( theItem ) )
   {
     showPopup( contextMenuPopup( YACSGui_EditionTreeView::LinkItem ), thePoint );
   }
@@ -594,6 +736,98 @@ void YACSGui_EditionTreeView::onContextMenuRequested( QListViewItem* theItem, co
   }
 }
 
+/*!
+  \brief Builds tree for data types
+  \param theSchemaItemL schema item
+  \return "Data types" item
+  */
+YACSGui_LabelViewItem* YACSGui_EditionTreeView::buildDataTypesTree( 
+  YACSGui_SchemaViewItem* theSchemaItem )
+{
+  GuiContext* aContext = GuiContext::getCurrent();
+  Proc* aProc = getProc(); 
+  if ( !aContext || !aProc )
+    return 0;
+
+  // Create "Data Types" label
+
+  YACSGui_LabelViewItem* aDataTypesItem = 
+    new YACSGui_LabelViewItem( theSchemaItem, 0, tr( "DATA_TYPES" ) );
+
+  // Create "Simple" label
+  YACSGui_LabelViewItem* aSimpleItem = 
+    new YACSGui_LabelViewItem( aDataTypesItem, 0, tr( "SIMPLE" ) );
+
+  std::map< YACS::ENGINE::DynType, QListViewItem* > aTypeItems;
+
+  // Create "Objref" label
+  aTypeItems[ YACS::ENGINE::Objref ] = 
+    new YACSGui_LabelViewItem( aDataTypesItem, aSimpleItem, tr( "OBJREF" ) );
+
+  // Create "Sequence" label
+  aTypeItems[ YACS::ENGINE::Sequence ] = new YACSGui_LabelViewItem( 
+    aDataTypesItem, aTypeItems[ YACS::ENGINE::Objref ], tr( "SEQUENCE" ) );
+
+  // Create "Array" label
+  aTypeItems[ YACS::ENGINE::Array ] = new YACSGui_LabelViewItem( 
+    aDataTypesItem, aTypeItems[ YACS::ENGINE::Sequence ], tr( "ARRAY" ) );
+
+  // Create "Struct" label
+  aTypeItems[ YACS::ENGINE::Struct ] = new YACSGui_LabelViewItem( 
+    aDataTypesItem, aTypeItems[ YACS::ENGINE::Array ], tr( "STRUCT" ) );
+
+  // Iterate through DataTypes and build tree
+
+  std::map<std::string, YACS::HMI::SubjectDataType*>::iterator it;
+  for ( it = aContext->_mapOfSubjectDataType.begin(); 
+        it != aContext->_mapOfSubjectDataType.end(); ++it )
+  {
+    std::string aName = (*it).first;
+    YACS::HMI::SubjectDataType* aSub = (*it).second;
+    if ( !aSub )
+      continue;
+
+    if ( aProc->typeMap.find( aName ) == aProc->typeMap.end() )
+      continue;
+
+    YACS::ENGINE::TypeCode* aTypeCode = aProc->typeMap[ aName ];
+    if ( !aTypeCode )
+      continue;
+
+    DynType aDynType = aTypeCode->kind();
+
+    QListViewItem* aFatherItem = 0;
+
+    // Create types item if necessary
+    if ( aTypeItems.find( aDynType ) == aTypeItems.end() )
+    {
+      QString aText;
+      switch ( aDynType )
+      {
+      case YACS::ENGINE::NONE  :                         break;
+      case YACS::ENGINE::Double: aText = tr( "DOUBLE" ); break; 
+      case YACS::ENGINE::Int   : aText = tr( "INT" );    break; 
+      case YACS::ENGINE::String: aText = tr( "STRING" ); break; 
+      case YACS::ENGINE::Bool  : aText = tr( "BOOL" );   break; 
+      default: break;
+      }
+
+      if ( aText.isEmpty() )
+        continue;
+
+      aFatherItem = new YACSGui_LabelViewItem( aSimpleItem, 0, aText );
+      aTypeItems[ aDynType ] = aFatherItem;
+    }
+    else 
+      aFatherItem = aTypeItems[ aDynType ];
+
+    // Create new item ander aFatherItem
+    YACSGui_DataTypeItem* anItem = new YACSGui_DataTypeItem( aFatherItem, 0, aSub );
+  }
+
+  return aDataTypesItem;
+}
+
 //! Builds the tree view according to the schema content. Schema is used as the root object.
 /*!
  */
@@ -605,38 +839,15 @@ void YACSGui_EditionTreeView::build()
   // Create a schema root object
   YACSGui_SchemaViewItem* aSchemaItem = new YACSGui_SchemaViewItem( this, 0, mySProc );
    
-  // Create "Data Types" label
-
-  YACSGui_LabelViewItem* aDataTypesItem = new YACSGui_LabelViewItem( aSchemaItem, 0, "Data Types" );
-
-  // Create "Simple" label
-  YACSGui_LabelViewItem* aSimpleItem = new YACSGui_LabelViewItem( aDataTypesItem, 0, "Simple" );
-
-  // Create "Double" data type view item
-
-  // Create "Int" data type view item
-
-  // Create "String" data type view item
-
-  // Create "Bool" data type view item
-
-  // Create "Objref" label
-  YACSGui_LabelViewItem* anObjrefItem = new YACSGui_LabelViewItem( aDataTypesItem, aSimpleItem, "Objref" );
-
-  // Create "Sequence" label
-  YACSGui_LabelViewItem* aSequenceItem = new YACSGui_LabelViewItem( aDataTypesItem, anObjrefItem, "Sequence" );
-
-  // Create "Array" label
-  YACSGui_LabelViewItem* anArrayItem = new YACSGui_LabelViewItem( aDataTypesItem, aSequenceItem, "Array" );
-
-  // Create "Struct" label
-  YACSGui_LabelViewItem* aStructItem = new YACSGui_LabelViewItem( aDataTypesItem, anArrayItem, "Struct" );
+  YACSGui_LabelViewItem* aDataTypesItem = buildDataTypesTree( aSchemaItem );
+  if ( !aDataTypesItem )
+    return;
 
   // Create "Nodes" label if necessary
   YACSGui_LabelViewItem* aNodesItem = 0;
   set<Node*> aDirectNodeSet = getProc()->edGetDirectDescendants();
   //if (aDirectNodeSet.size() > 0)
-  aNodesItem = new YACSGui_LabelViewItem( aSchemaItem, aDataTypesItem, "Nodes" );
+  aNodesItem = new YACSGui_LabelViewItem( aSchemaItem, aDataTypesItem, tr( "NODES" ) );
   
   // Put all nodes under "Nodes" label
   if ( aNodesItem )
@@ -649,7 +860,7 @@ void YACSGui_EditionTreeView::build()
   // Create "Links" label
   YACSGui_LabelViewItem* aLinksItem = new YACSGui_LabelViewItem( aSchemaItem, 
 								 aNodesItem ? aNodesItem : aDataTypesItem,
-								 "Links" );
+								 tr( "LINKS" ) );
   
   // Put all links under "Links" label
   set<Node*> aNodeSet = getProc()->getAllRecursiveConstituents();
@@ -673,7 +884,11 @@ void YACSGui_EditionTreeView::build()
 	InGate* aCurInGate = *anInGatesIter;
 	
 	if ( anInternalGateLinks.find( make_pair< OutGate*,InGate* >(anOutGate, aCurInGate) ) == anInternalGateLinks.end() )
-	  aLinkItem = new YACSGui_LinkViewItem( aLinksItem, aLinkItem, anOutGate, aCurInGate);
+	{
+	  pair<Node*,Node*> On2IN = make_pair( anOutGate->getNode(), aCurInGate->getNode() );
+	  aLinkItem = new YACSGui_ControlLinkViewItem( aLinksItem, aLinkItem,
+						       GuiContext::getCurrent()->_mapOfSubjectControlLink[On2IN] );
+	}
       }
     }
       
@@ -703,8 +918,11 @@ void YACSGui_EditionTreeView::build()
 	if ( OutputPort* anOutputDFPort = dynamic_cast<OutputPort*>( aCurOutPort ) )
 	  for ( ; anInPortsIter != anInPorts.end(); anInPortsIter++ ) {
 	    InPort* aCurInPort = *anInPortsIter;
-	    if ( anInternalLinks.find( make_pair< OutPort*,InPort* >(anOutputDFPort, aCurInPort) ) == anInternalLinks.end() )
-	      aDataLinkItem = new YACSGui_LinkViewItem( aLinksItem, aDataLinkItem, anOutputDFPort, aCurInPort);
+	    
+	    pair< OutPort*,InPort* > anOIP = make_pair(anOutputDFPort, aCurInPort);
+	    if ( anInternalLinks.find(anOIP) == anInternalLinks.end() )
+	      aDataLinkItem = new YACSGui_LinkViewItem( aLinksItem, aDataLinkItem,
+							GuiContext::getCurrent()->_mapOfSubjectLink[anOIP] );
 	  }
       }
     } // out ports of the node iteration
@@ -724,8 +942,10 @@ void YACSGui_EditionTreeView::build()
 	if ( OutputDataStreamPort* anOutputDSPort = dynamic_cast<OutputDataStreamPort*>( aCurOutPort ) )
 	  for ( ; anInPortsIter != anInPorts.end(); anInPortsIter++ ) {
 	    InPort* aCurInPort = *anInPortsIter;
-	    if ( anInternalLinks.find( make_pair< OutPort*,InPort* >(anOutputDSPort, aCurInPort) ) == anInternalLinks.end() ) 
-	      aStreamLinkItem = new YACSGui_LinkViewItem( aLinksItem, aStreamLinkItem, anOutputDSPort, aCurInPort);
+	    pair< OutPort*,InPort* > anOIP = make_pair(anOutputDSPort, aCurInPort);
+	    if ( anInternalLinks.find(anOIP) == anInternalLinks.end() ) 
+	      aStreamLinkItem = new YACSGui_LinkViewItem( aLinksItem, aStreamLinkItem,
+							  GuiContext::getCurrent()->_mapOfSubjectLink[anOIP] );
 	  }
       }
     } // out ports of the node iteration
@@ -854,18 +1074,26 @@ void YACSGui_EditionTreeView::fillContainerData( YACS::HMI::SubjectComposedNode*
     }
 }
 
-QPopupMenu* YACSGui_EditionTreeView::contextMenuPopup( const int theType )
+QPopupMenu* YACSGui_EditionTreeView::contextMenuPopup( const int theType, YACS::HMI::Subject* theSub )
 {
   QPopupMenu* aPopup = new QPopupMenu( this );
 
+  int anId;
   switch ( theType )
   {
+  case YACSGui_EditionTreeView::DataTypeItem:
+    {
+      anId = aPopup->insertItem( tr("POP_EDIT"), myModule, SLOT(onEditDataTypes()) );
+      aPopup->setItemEnabled ( anId, false );
+    }
+    break;
   case YACSGui_TreeView::SchemaItem:
     {
       aPopup->insertItem( tr("POP_EXPORT"), myModule, SLOT(onExportSchema()) );
       aPopup->insertSeparator();
-      
-      aPopup->insertItem( tr("POP_CREATE_DATA_TYPE"), this, SLOT(onCreateDataType()) );
+
+      anId = aPopup->insertItem( tr("POP_CREATE_DATA_TYPE"), myModule, SLOT(onCreateDataType()) );
+      aPopup->setItemEnabled ( anId, false );
       aPopup->insertItem( tr("POP_CREATE_CONTAINER_DEF"), myModule, SLOT(onNewContainer()) );
       aPopup->insertSeparator();
       
@@ -874,8 +1102,10 @@ QPopupMenu* YACSGui_EditionTreeView::contextMenuPopup( const int theType )
       aCrNPopup->insertItem( tr("POP_CORBA_SERVICE"), myModule, SLOT(onCORBAServiceNode()) );
       aCrNPopup->insertItem( tr("POP_NODENODE_SERVICE"), myModule, SLOT(onNodeNodeServiceNode()) );
       aCrNPopup->insertItem( tr("POP_CPP"), myModule, SLOT(onCppNode()) );
-      aCrNPopup->insertItem( tr("POP_SERVICE_INLINE"), myModule, SLOT(onServiceInlineNode()) );
-      aCrNPopup->insertItem( tr("POP_XML"), myModule, SLOT(onXMLNode()) );
+      anId = aCrNPopup->insertItem( tr("POP_SERVICE_INLINE"), myModule, SLOT(onServiceInlineNode()) );
+      aCrNPopup->setItemEnabled ( anId, false );
+      anId = aCrNPopup->insertItem( tr("POP_XML"), myModule, SLOT(onXMLNode()) );
+      aCrNPopup->setItemEnabled ( anId, false );
       aCrNPopup->insertItem( tr("POP_INLINE_SCRIPT"), myModule, SLOT(onInlineScriptNode()) );
       aCrNPopup->insertItem( tr("POP_INLINE_FUNCTION"), myModule, SLOT(onInlineFunctionNode()) );
       aCrNPopup->insertItem( tr("POP_BLOCK"), myModule, SLOT(onBlockNode()) );
@@ -892,39 +1122,48 @@ QPopupMenu* YACSGui_EditionTreeView::contextMenuPopup( const int theType )
       // TODO: if theIsFromTreeView = true, search SObject in Object Browser by name of the selected schema item in the tree view
       aPopup->insertSeparator();
       
-      aPopup->insertItem( tr("POP_COPY"), this, SLOT(onCopyItem()) );
-      aPopup->insertItem( tr("POP_PASTE"), this, SLOT(onPasteItem()) );
-      aPopup->insertItem( tr("POP_DELETE"), this, SLOT(onDeleteItem()) );
+      anId = aPopup->insertItem( tr("POP_COPY"), this, SLOT(onCopyItem()) );
+      aPopup->setItemEnabled ( anId, false );
+      anId = aPopup->insertItem( tr("POP_PASTE"), this, SLOT(onPasteItem()) );
+      aPopup->setItemEnabled ( anId, false );
+      //aPopup->insertItem( tr("POP_DELETE"), this, SLOT(onDeleteItem()) );
       aPopup->insertSeparator();
       
-      aPopup->insertItem( tr("POP_DISPLAY"), this, SLOT(onDisplaySchema()) );
-      aPopup->insertItem( tr("POP_ERASE"), this, SLOT(onEraseSchema()) );
+      anId = aPopup->insertItem( tr("POP_DISPLAY"), this, SLOT(onDisplaySchema()) );
+      aPopup->setItemEnabled ( anId, false );
+      anId = aPopup->insertItem( tr("POP_ERASE"), this, SLOT(onEraseSchema()) );
+      aPopup->setItemEnabled ( anId, false );
     }
     break;
   case YACSGui_EditionTreeView::ContainerItem:
     {    
       QPopupMenu* aCrCPopup = new QPopupMenu( this );
       aCrCPopup->insertItem( tr("POP_SALOME_COMPONENT"), myModule, SLOT(onNewSalomeComponent()) );
-      aCrCPopup->insertItem( tr("POP_PYTHON_COMPONENT"), myModule, SLOT(onNewSalomePythonComponent()) );
+      anId = aCrCPopup->insertItem( tr("POP_PYTHON_COMPONENT"), myModule, SLOT(onNewSalomePythonComponent()) );
+      aCrCPopup->setItemEnabled ( anId, false );
       
       aPopup->insertItem(tr("POP_CREATE_COMPONENT"), aCrCPopup);
       aPopup->insertSeparator();
       
-      aPopup->insertItem( tr("POP_COPY"), this, SLOT(onCopyItem()) );
-      aPopup->insertItem( tr("POP_PASTE"), this, SLOT(onPasteItem()) ); 
+      anId = aPopup->insertItem( tr("POP_COPY"), this, SLOT(onCopyItem()) );
+      aPopup->setItemEnabled ( anId, false );
+      anId = aPopup->insertItem( tr("POP_PASTE"), this, SLOT(onPasteItem()) ); 
+      aPopup->setItemEnabled ( anId, false );
       aPopup->insertItem( tr("POP_DELETE"), this, SLOT(onDeleteItem()) );
     }
     break;
   case YACSGui_EditionTreeView::ComponentItem:
     {
       QPopupMenu* aCrNPopup = new QPopupMenu( this );
-      aCrNPopup->insertItem( tr("POP_SALOME_SERVICE"), myModule, SLOT(onSalomeServiceNode()) );
-      aCrNPopup->insertItem( tr("POP_SERVICE_INLINE"), myModule, SLOT(onServiceInlineNode()) );
+      //aCrNPopup->insertItem( tr("POP_SALOME_SERVICE"), myModule, SLOT(onSalomeServiceNode()) );
+      //anId = aCrNPopup->insertItem( tr("POP_SERVICE_INLINE"), myModule, SLOT(onServiceInlineNode()) );
+      //aCrNPopup->setItemEnabled ( anId, false );
 
-      aPopup->insertItem(tr("POP_CREATE_NODE"), aCrNPopup);
-      aPopup->insertSeparator();
+      //aPopup->insertItem(tr("POP_CREATE_NODE"), aCrNPopup);
+      //aPopup->insertSeparator();
       
-      aPopup->insertItem( tr("POP_COPY"), this, SLOT(onCopyItem()) );
+      anId = aPopup->insertItem( tr("POP_COPY"), this, SLOT(onCopyItem()) );
+      aPopup->setItemEnabled ( anId, false );
       aPopup->insertItem( tr("POP_DELETE"), this, SLOT(onDeleteItem()) );
     }
     break;
@@ -933,21 +1172,24 @@ QPopupMenu* YACSGui_EditionTreeView::contextMenuPopup( const int theType )
       aPopup->insertItem( tr("POP_CREATE_CORBA_SERVICE_NODE"), myModule, SLOT(onCorbaServiceNode()) );
       aPopup->insertSeparator();
       
-      aPopup->insertItem( tr("POP_COPY"), this, SLOT(onCopyItem()) );
+      anId = aPopup->insertItem( tr("POP_COPY"), this, SLOT(onCopyItem()) );
+      aPopup->setItemEnabled ( anId, false );
       aPopup->insertItem( tr("POP_DELETE"), this, SLOT(onDeleteItem()) );
     }
     break;
   case YACSGui_TreeView::NodeItem:
   case YACSGui_EditionTreeView::ServiceNodeItem:
+  case YACSGui_EditionTreeView::ComposedNodeItem:
   case YACSGui_EditionTreeView::LoopNodeItem:
     {
-      if ( theType == YACSGui_EditionTreeView::ServiceNodeItem )
-      {
-	aPopup->insertItem( tr("POP_CREATE_NODE-NODE_SERVICE_NODE"), myModule, SLOT(onNodeNodeServiceNode()) );
-	aPopup->insertSeparator();
-      }
+      //if ( theType == YACSGui_EditionTreeView::ServiceNodeItem )
+      //{
+      //	aPopup->insertItem( tr("POP_CREATE_NODE-NODE_SERVICE_NODE"), myModule, SLOT(onNodeNodeServiceNode()) );
+      //	aPopup->insertSeparator();
+      //}
       
-      if ( theType == YACSGui_EditionTreeView::LoopNodeItem )
+      if ( theType == YACSGui_EditionTreeView::LoopNodeItem ||
+	   theType == YACSGui_EditionTreeView::ComposedNodeItem )
       {
 	QPopupMenu* aCrNPopup = new QPopupMenu( this );
 	// TODO: in slots we have to check what is selected: schema,
@@ -955,10 +1197,12 @@ QPopupMenu* YACSGui_EditionTreeView::contextMenuPopup( const int theType )
 	//                                                   another node (=> from ¨Create a loop¨).
 	aCrNPopup->insertItem( tr("POP_SALOME_SERVICE"), myModule, SLOT(onSalomeServiceNode()) );
 	aCrNPopup->insertItem( tr("POP_CORBA_SERVICE"), myModule, SLOT(onCORBAServiceNode()) );
-	aCrNPopup->insertItem( tr("POP_NODENODE_SERVICE"), myModule, SLOT(onNodeNodeServiceNode()) );
+	//aCrNPopup->insertItem( tr("POP_NODENODE_SERVICE"), myModule, SLOT(onNodeNodeServiceNode()) );
 	aCrNPopup->insertItem( tr("POP_CPP"), myModule, SLOT(onCppNode()) );
-	aCrNPopup->insertItem( tr("POP_SERVICE_INLINE"), myModule, SLOT(onServiceInlineNode()) );
-	aCrNPopup->insertItem( tr("POP_XML"), myModule, SLOT(onXMLNode()) );
+	anId = aCrNPopup->insertItem( tr("POP_SERVICE_INLINE"), myModule, SLOT(onServiceInlineNode()) );
+	aCrNPopup->setItemEnabled ( anId, false );
+	anId = aCrNPopup->insertItem( tr("POP_XML"), myModule, SLOT(onXMLNode()) );
+	aCrNPopup->setItemEnabled ( anId, false );
 	aCrNPopup->insertItem( tr("POP_INLINE_SCRIPT"), myModule, SLOT(onInlineScriptNode()) );
 	aCrNPopup->insertItem( tr("POP_INLINE_FUNCTION"), myModule, SLOT(onInlineFunctionNode()) );
 	aCrNPopup->insertItem( tr("POP_BLOCK"), myModule, SLOT(onBlockNode()) );
@@ -966,35 +1210,58 @@ QPopupMenu* YACSGui_EditionTreeView::contextMenuPopup( const int theType )
 	aCrNPopup->insertItem( tr("POP_FOREACH_LOOP"), myModule, SLOT(onFOREACHNode()) );
 	aCrNPopup->insertItem( tr("POP_WHILE_LOOP"), myModule, SLOT(onWHILENode()) );
 	aCrNPopup->insertItem( tr("POP_SWITCH"), myModule, SLOT(onSWITCHNode()) );
-	aCrNPopup->insertItem( tr("POP_FROM_LIBRARY"), myModule, SLOT(onNodeFromLibrary()) );
+	anId = aCrNPopup->insertItem( tr("POP_FROM_LIBRARY"), myModule, SLOT(onNodeFromLibrary()) );
+	aCrNPopup->setItemEnabled ( anId, false );
 	
-	aPopup->insertItem(tr("POP_CREATE_BODY"), aCrNPopup);
+	if ( theType == YACSGui_EditionTreeView::LoopNodeItem )
+	  aPopup->insertItem(tr("POP_CREATE_BODY"), aCrNPopup);
+	else if ( theType == YACSGui_EditionTreeView::ComposedNodeItem )
+	  aPopup->insertItem(tr("POP_CREATE_NODE"), aCrNPopup);
 	aPopup->insertSeparator();
       }
-      else
-      {
-	QPopupMenu* aCrNPopup = new QPopupMenu( this );
-	aCrNPopup->insertItem( tr("POP_FOR_LOOP"), myModule, SLOT(onFORNode()) );
-	aCrNPopup->insertItem( tr("POP_FOREACH_LOOP"), myModule, SLOT(onFOREACHNode()) );
-	aCrNPopup->insertItem( tr("POP_WHILE_LOOP"), myModule, SLOT(onWHILENode()) );
-	
-	aPopup->insertItem(tr("POP_CREATE_LOOP"), aCrNPopup);
-	aPopup->insertSeparator();
-      }
+
+      QPopupMenu* aCrNPopup = new QPopupMenu( this );
+      aCrNPopup->insertItem( tr("POP_FOR_LOOP"), myModule, SLOT(onFORNode()) );
+      aCrNPopup->insertItem( tr("POP_FOREACH_LOOP"), myModule, SLOT(onFOREACHNode()) );
+      aCrNPopup->insertItem( tr("POP_WHILE_LOOP"), myModule, SLOT(onWHILENode()) );
       
-      aPopup->insertItem( tr("POP_ADD_TO_LIBRARY"), this, SLOT(onAddToLibrary()) );
+      aPopup->insertItem(tr("POP_CREATE_LOOP"), aCrNPopup);
+      aPopup->insertSeparator();
+
+      anId = aPopup->insertItem( tr("POP_ADD_TO_LIBRARY"), this, SLOT(onAddToLibrary()) );
+      aPopup->setItemEnabled ( anId, false );
       aPopup->insertSeparator();
       
-      aPopup->insertItem( tr("POP_COPY"), this, SLOT(onCopyItem()) );
+      aPopup->insertItem( tr("POP_ADDCONTROLLINK"), this, SLOT(onAddLink()) );
+      aPopup->insertSeparator();
+
+      anId = aPopup->insertItem( tr("POP_COPY"), this, SLOT(onCopyItem()) );
+      aPopup->setItemEnabled ( anId, false );
       aPopup->insertItem( tr("POP_DELETE"), this, SLOT(onDeleteItem()) );
       aPopup->insertSeparator();
       
-      aPopup->insertItem( tr("POP_DISPLAY"), this, SLOT(onDisplayNode()) );
-      aPopup->insertItem( tr("POP_ERASE"), this, SLOT(onEraseNode()) );
+      anId = aPopup->insertItem( tr("POP_DISPLAY"), this, SLOT(onDisplayNode()) );
+      aPopup->setItemEnabled ( anId, false );
+      anId = aPopup->insertItem( tr("POP_ERASE"), this, SLOT(onEraseNode()) );
+      aPopup->setItemEnabled ( anId, false );
     }
     break;
   case YACSGui_EditionTreeView::PortItem:
-    aPopup->insertItem( tr("POP_DELETE"), this, SLOT(onDeleteItem()) );
+    if ( SubjectDataPort* aSub = dynamic_cast<SubjectDataPort*>(theSub) )
+    {
+      if ( dynamic_cast<OutputPort*>( aSub->getPort() ) || dynamic_cast<OutputDataStreamPort*>( aSub->getPort() ) )
+      	aPopup->insertItem( tr("POP_ADDDATALINK"), this, SLOT(onAddLink()) );
+	
+    
+      if ( !dynamic_cast<SubjectSalomeNode*>(aSub->getParent()) ) 
+	// delete ports only for all nodes except SALOME service nodes
+	// (change its ports only in the Input Panel when the method name is changed)
+	if ( aSub->isDestructible() )
+	{
+	  aPopup->insertSeparator();
+	  aPopup->insertItem( tr("POP_DELETE"), this, SLOT(onDeleteItem()) );
+	}
+    }
     break;
   case YACSGui_EditionTreeView::LinkItem:
     aPopup->insertItem( tr("POP_DELETE"), this, SLOT(onDeleteItem()) );
@@ -1003,12 +1270,14 @@ QPopupMenu* YACSGui_EditionTreeView::contextMenuPopup( const int theType )
     break;
   }
 
+  if ( aPopup->count() == 0 ) return 0;
+
   return aPopup;
 }
 
 void YACSGui_EditionTreeView::showPopup( QPopupMenu* thePopup, const QPoint thePos )
 {
-  thePopup->exec(thePos);
+  if ( thePopup ) thePopup->exec(thePos);
 }
 
 void YACSGui_EditionTreeView::syncPageTypeWithSelection()
@@ -1026,7 +1295,27 @@ void YACSGui_EditionTreeView::syncPageTypeWithSelection()
   // check if the current selection is a single selection
   if ( aSelList.size() == 1 ) anItem = aSelList.front();
     
-  if ( YACSGui_SchemaViewItem* aSchemaItem = dynamic_cast<YACSGui_SchemaViewItem*>( anItem ) )
+  if(myModule->getGuiMode()==YACSGui_Module::NewMode) {
+    printf(">> Show Input Panel for a new Salome Service node\n");
+    YACSGui_ServiceNodePage* aSNPage = 
+      dynamic_cast<YACSGui_ServiceNodePage*>( anIP->getPage( YACSGui_InputPanel::ServiceNodeId ) );
+    SubjectComposedNode* aSub = dynamic_cast<SubjectComposedNode*>(getSelectedSubject());
+    if(!aSub)
+      aSub = GuiContext::getCurrent()->getSubjectProc();
+    if ( aSNPage )
+      {
+	list<int> aPagesIds;
+
+	aSNPage->setSCNode( aSub );
+	anIP->setOn( true, YACSGui_InputPanel::ServiceNodeId );
+	anIP->setMode( YACSGui_InputPanel::NewMode, YACSGui_InputPanel::ServiceNodeId );
+	aPagesIds.push_back(YACSGui_InputPanel::ServiceNodeId);
+	
+	anIP->setExclusiveVisible( true, aPagesIds );
+	anIP->show();
+      }
+  } 
+  else if ( YACSGui_SchemaViewItem* aSchemaItem = dynamic_cast<YACSGui_SchemaViewItem*>( anItem ) )
   { // this is a schema view item
     // find or create a property page for a schema
     printf(">> Show Input Panel for a given schema (Proc*)\n");
@@ -1121,7 +1410,8 @@ void YACSGui_EditionTreeView::syncPageTypeWithSelection()
 	dynamic_cast<YACSGui_InlineNodePage*>( anIP->getPage( YACSGui_InputPanel::InlineNodeId ) );
       if ( aINPage )
       {
-	aINPage->setSNode( aNodeItem->getSNode() );
+        YACS::HMI::SubjectNode* aSub = aNodeItem->getSNode();
+	aINPage->setSNode( aSub );
 	anIP->setOn( true, YACSGui_InputPanel::InlineNodeId );
 	anIP->setMode( YACSGui_InputPanel::EditMode, YACSGui_InputPanel::InlineNodeId );
 	anIP->setExclusiveVisible( true,  list<int>(1,YACSGui_InputPanel::InlineNodeId) );
@@ -1267,9 +1557,6 @@ void YACSGui_EditionTreeView::onSelectionChanged()
   
   if ( !getProc() || !myModule ) return;
 
-  YACSGui_InputPanel* anIP = myModule->getInputPanel();
-  if ( !anIP ) return;
-
   // get the list of selected items
   list<QListViewItem*> aSelList = getSelected();
   
@@ -1277,6 +1564,68 @@ void YACSGui_EditionTreeView::onSelectionChanged()
   
   // check if the current selection is a single selection
   if ( aSelList.size() == 1 ) anItem = aSelList.front();
+  else if ( aSelList.size() == 0 ) // nothing selected, deselect previous
+    if ( myPreviousSelected ) myPreviousSelected = 0;
+  
+  // creation of a link -->
+  YACSGui_ViewItem* aVItem = 0;
+  if ( anItem ) // an item selected
+  {
+    printf(">>>## 1\n");
+    if ( anItem != myPreviousSelected ) // a new item is selected
+    {
+      printf(">>>## 2\n");
+      myPreviousSelected = anItem;
+      aVItem = dynamic_cast<YACSGui_ViewItem*>(anItem);
+    }
+  }
+  else if ( myPreviousSelected ) // nothing selected, deselect previous
+  {
+    printf(">>>## 3\n");
+    anItem = myPreviousSelected;
+    myPreviousSelected = 0;
+    aVItem = dynamic_cast<YACSGui_ViewItem*>(anItem);
+  }
+  if ( aVItem )
+  {
+    //aVItem->getSubject()->select(anItem->isSelected());
+    if ( mySelectedSubjectOutPort )
+    {
+      if ( YACSGui_PortViewItem* aPItem = dynamic_cast<YACSGui_PortViewItem*>(aVItem) )
+      {
+	SubjectDataPort* aSubPort = aPItem->getSPort();
+	if ( dynamic_cast<SubjectInputPort*>(aSubPort) || dynamic_cast<SubjectInputDataStreamPort*>(aSubPort) )
+	{
+	  if ( !SubjectDataPort::tryCreateLink( mySelectedSubjectOutPort, aSubPort ) )
+	    SUIT_MessageBox::warn1(myModule->getApp()->desktop(), 
+				   tr("WARNING"), 
+				   GuiContext::getCurrent()->_lastErrorMessage,
+				   tr("BUT_OK"));
+	  mySelectedSubjectOutPort = 0;
+	}
+      }
+    }
+    if ( mySelectedSubjectOutNode )
+    {
+      if ( YACSGui_NodeViewItem* aNItem = dynamic_cast<YACSGui_NodeViewItem*>(aVItem) )
+      {
+	if ( SubjectNode* aSubNode = aNItem->getSNode() )
+	{
+	  printf(">>> Try create control link!\n");
+	  if ( !SubjectNode::tryCreateLink( mySelectedSubjectOutNode, aSubNode ) )
+	    SUIT_MessageBox::warn1(myModule->getApp()->desktop(), 
+				   tr("WARNING"), 
+				   GuiContext::getCurrent()->_lastErrorMessage,
+				   tr("BUT_OK"));
+	  mySelectedSubjectOutNode = 0;
+	}
+      }
+    }
+  }
+  // creation of a link <--
+
+  YACSGui_InputPanel* anIP = myModule->getInputPanel();
+  if ( !anIP ) return;
 
   // check if the component instance selection is active
   if( ((QWidget*)anIP)->isVisible() && anIP->isVisible( YACSGui_InputPanel::ServiceNodeId ) )
@@ -1307,9 +1656,38 @@ void YACSGui_EditionTreeView::onSelectionChanged()
 	}
 	else setSelected( anItem, false );
       }
+      else if ( YACSGui_NodeViewItem* aNodeItem = dynamic_cast< YACSGui_NodeViewItem* >( anItem ) )
+      { 
+        if ( ServiceNode* sNode = dynamic_cast<ServiceNode*>( aNodeItem->getNode() ) )
+        {
+          YACS::ENGINE::ComponentInstance* aComp = sNode->getComponent();
+          if ( aComp )
+          {
+            printf(">> Set component instance for Service Node page (%s)\n", aComp->getName().c_str());
+            aSNPage->setComponent( aComp );
+            printf(">> Set component instance for Service Node page (%s)\n", aComp->getName().c_str());
+
+            // change selection from the another selected service node to the initial service node
+            if ( aSNPage->getNode() != sNode )
+            {
+              bool block = signalsBlocked();
+              blockSignals( true );
+              setSelected( aNodeItem, false );
+              QListViewItem* aSNItem = findItem( aSNPage->getNodeName(), 0 );
+              if( aSNItem )
+                setSelected( aSNItem, true );
+              blockSignals( block );
+            }
+          }
+          else 
+            setSelected( anItem, false );
+        }
+        else 
+          setSelected( anItem, false );
+      }
       else
       { // remove selection from incompatible object (which is not component instance)
-	setSelected( anItem, false );
+        setSelected( anItem, false );
       }
 
       return;
@@ -1401,7 +1779,8 @@ void YACSGui_EditionTreeView::onSelectionChanged()
   }
 
   syncPageTypeWithSelection();
-    
+  syncHMIWithSelection();
+
   //else
   //{
   //  anIP->hide();
@@ -1446,6 +1825,47 @@ void YACSGui_EditionTreeView::onDblClick( QListViewItem* theItem )
       }
     }
   }
+}
+
+void YACSGui_EditionTreeView::syncHMIWithSelection()
+{
+  // notify about selection other observers
+
+  std::list<QListViewItem*> aSelList = getSelected();
+
+  // notify about selection
+  list<QListViewItem*>::iterator it;
+  for ( it = aSelList.begin(); it != aSelList.end(); ++it )
+  {
+    YACSGui_ViewItem* item = dynamic_cast<YACSGui_ViewItem*>( *it );
+    if ( item )
+    {
+      YACS::HMI::Subject* aSub = getSubject( *it );
+      if ( aSub )
+      {
+        bool isBlocked = item->blockSelection( true );
+        aSub->select( true );
+        item->blockSelection( isBlocked );
+        myLastSelected.erase( item );
+      }
+    }
+  }
+
+  // notify about deselection 
+  std::set< QListViewItem* >::iterator lIt;
+  for ( lIt = myLastSelected.begin(); lIt != myLastSelected.end(); ++lIt )
+  { 
+    YACS::HMI::Subject* aSub = getSubject( *lIt );
+    if ( aSub )
+      aSub->select( false );
+  }
+
+  // fill last mySelected
+  myLastSelected.clear();
+  for ( it = aSelList.begin(); it != aSelList.end(); ++it )
+    myLastSelected.insert( *it );
+
+  myModule->updateViewer();
 }
 
 //! Constructor.
@@ -1710,6 +2130,19 @@ void YACSGui_RunTreeView::onSelectionChanged()
 {
   printf("===>> YACSGui_RunTreeView::onSelectionChanged\n");
   syncPageTypeWithSelection();
+  syncHMIWithSelection();
+}
+
+YACS::HMI::Subject* YACSGui_RunTreeView::getSubject( QListViewItem* theItem )
+{
+  Subject* aSub = 0;
+
+  if ( YACSGui_ElementaryNodeViewItem* anItem = dynamic_cast<YACSGui_ElementaryNodeViewItem*>( theItem ) )
+    aSub = anItem->getSubject();
+  else if ( YACSGui_ComposedNodeViewItem* anCompItem = dynamic_cast<YACSGui_ComposedNodeViewItem*>( theItem ) )
+    aSub = anCompItem->getSubject();  
+  
+  return aSub;
 }
 
 void YACSGui_RunTreeView::onBreakpointClicked( QListViewItem* theItem )
@@ -1769,3 +2202,56 @@ void YACSGui_RunTreeView::onNotifyStatus( int theStatus )
   if ( YACSGui_ComposedNodeViewItem* aRootItem = dynamic_cast<YACSGui_ComposedNodeViewItem*>(myMapListViewItem[getProc()->getNumId()]) )
     aRootItem->setStatus(theStatus);
 }
+
+void YACSGui_RunTreeView::syncHMIWithSelection()
+{
+  // notify about selection other observers
+
+  std::list<QListViewItem*> aSelList = getSelected();
+
+  // notify about selection
+  list<QListViewItem*>::iterator it;
+  for ( it = aSelList.begin(); it != aSelList.end(); ++it )
+  {
+    if ( *it )
+    {
+      YACS::HMI::Subject* aSub = getSubject( *it );
+      if ( aSub )
+      {
+        if ( YACSGui_ElementaryNodeViewItem* item = dynamic_cast<YACSGui_ElementaryNodeViewItem*>( *it ) )
+        {
+          bool isBlocked = item->blockSelection( true );
+          aSub->select( true );
+          item->blockSelection( isBlocked );
+        }
+        else if ( YACSGui_ComposedNodeViewItem* cItem = dynamic_cast<YACSGui_ComposedNodeViewItem*>( *it ) )
+        {
+          bool isBlocked = cItem->blockSelection( true );
+          aSub->select( true );
+          cItem->blockSelection( isBlocked );
+        }
+        else 
+          continue;
+        
+        myLastSelected.erase( *it );
+      }
+    }
+  }
+
+  // notify about deselection 
+  std::set< QListViewItem* >::iterator lIt;
+  for ( lIt = myLastSelected.begin(); lIt != myLastSelected.end(); ++lIt )
+  { 
+    YACS::HMI::Subject* aSub = getSubject( *lIt );
+    if ( aSub )
+      aSub->select( false );
+  }
+
+  // fill last mySelected
+  myLastSelected.clear();
+  for ( it = aSelList.begin(); it != aSelList.end(); ++it )
+    myLastSelected.insert( *it );
+
+  myModule->updateViewer();
+}
+

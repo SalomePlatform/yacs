@@ -239,15 +239,6 @@ void LocalContainer::unregisterComponentInstance(CppComponent * C)
 	  _instance_mapMutex.unlock(); // unlock
 }
 
-//=============================================================================
-/*! 
- *  load a new component class (C++ implementation)
- *  \param componentName like COMPONENT
- *                          try to load libCOMPONENTLocal.so
- *  \return true if dlopen successfull or already done, false otherwise
- */
-//=============================================================================
-
 inline void toupper (std::string & s)
 {
    transform (s.begin (), s.end (), s.begin (), (int(*)(int)) toupper);

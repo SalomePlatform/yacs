@@ -29,7 +29,7 @@ status--: NOK
 description: It is possible to create builtin nodes and blocs at the root level on the schema but not
 inside a block or other composed node.
 popup must be available on the composed node representation in the tree.
-comments:
+comments: OCC: DONE
 ----------------------------------------------------------------------------------------------------
 Num-----: 3 
 priority: 0
@@ -52,7 +52,7 @@ EDF: working examples for node clone from catalog are in guidemo.
 -b,c,d- yes
 -e- I am not sure to understand: select a service from a componentinstance already in tree ?
 There could be here a shortcut but it is not a priority.
-
+OCC: The creation of SALOME service nodes from session catalog is done.
 ----------------------------------------------------------------------------------------------------
 Num-----: 4 
 priority: 0
@@ -89,6 +89,7 @@ this bug is reproduced?
 EDF:
 I generally load samples/bloc1.xml, and sometimes YACS enters in an infinite loop and consume the memory (swap).
 I can't be more precise on the conditions of occurence.
+OCC: DONE
 ----------------------------------------------------------------------------------------------------
 Num-----: 7
 priority: 0
@@ -103,7 +104,7 @@ status--: NOK
 description: in python node properties, the port creation works, but the other buttons (arrows...)
 have a confusing behaviour, and lead sometimes to sigsegv.
 
-comments:
+comments: OCC: DONE. Debugged.
 ----------------------------------------------------------------------------------------------------
 Num-----: 9
 priority: 0
@@ -123,7 +124,7 @@ load samples/bloc1.xml
 return to schema schema1
 in Node properties, create an inputport p and an outputport q (dataflow, double),
 change PyScript0 in PyScripta and apply:
-
+OCC: DONE
 ----------------------------------------------------------------------------------------------------
 Num-----: 10 
 priority: 0
@@ -140,14 +141,14 @@ Num-----: 11
 priority: 0
 status--: NOK
 description: after loading bschema.xml, ports are not visibles in the node properties panel
-comments:
+comments: OCC: DONE
 ----------------------------------------------------------------------------------------------------
 Num-----: 12 
 priority: 0
 status--: NOK
 description: in edition, Selection is not possible from canvas (highlight in tree, open properties...)
 and selection in tree has no action on canvas.
-comments:
+comments: OCC: DONE
 ----------------------------------------------------------------------------------------------------
 Num-----: 13
 priority: 0
@@ -167,14 +168,14 @@ a line number 1 appears in Direct Children with an empty node name
 I don't know what to do after...
 IMPORTANT NOTE: prefered way is to have a popup menu (add nodes) at bloc item in tree view (see 2).
 Either the '+' button activate the same menu, or it must be grayed or removed.
-
+OCC: DONE (see2)
 ----------------------------------------------------------------------------------------------------
 Num-----: 14
 priority: 0
 status--: NOK
 description: In general, there are too much buttons or menus that have no action, or very unclear.
 these buttons must be either removed, or grayed if they corresponds to something in development.
-comments:
+comments: OCC: DONE
 ----------------------------------------------------------------------------------------------------
 Num-----:  
 priority: 0
@@ -197,6 +198,49 @@ priority: 1
 status--: NOK
 description: in create node menu, node node service is confusing. It is better to create a 
 service node, then to associate it with another node with which the coponent instance is shared.
+comments: OCC: DONE. There are two ways now to set component to the
+SALOME service node: with help of selection control from Input Panel
+for the SALOME service node the user can set the component to the
+selected service node 1) by selection a SALOME component in the
+edition tree view, 2) by selection an another SALOME service node in
+the edition tree view.
+----------------------------------------------------------------------------------------------------
+Num-----:  
+priority: 0
+status--: NOK
+description: 
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----:  
+priority: 2
+status--: NOK
+description: strange behaviour to check
+access to SALOME_ResourcesManager while browsing salome services in edition (calcium4)
+access to Subject::detach when clicking in canvas : edition widget destroyed then recreated ?
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----:  
+priority: 0
+status--: NOK
+description: 
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----:  
+priority: 0
+status--: NOK
+description: 
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----:  
+priority: 0
+status--: NOK
+description: 
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----:  
+priority: 0
+status--: NOK
+description: 
 comments:
 ----------------------------------------------------------------------------------------------------
 Num-----:  
@@ -210,7 +254,7 @@ priority: 2
 status--: NOK
 description: control gates on tree are useless, we can use directly the node itself.
 (the idea is to have a lighter tree)
-comments:
+comments: DONE
 ----------------------------------------------------------------------------------------------------
 Num-----: 2002 
 priority: 2

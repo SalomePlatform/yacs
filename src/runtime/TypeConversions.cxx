@@ -1720,33 +1720,11 @@ namespace YACS
           std::vector<CORBA::Any*>::const_iterator iter;
 
           // Build an Any from vector v
-          int homog=1;
-          CORBA::TypeCode_var tc;
-          if(v.size() != 0)
-            {
-              // Check if it's an homogeneous vector : all TypeCodes must be equivalent
-              CORBA::TypeCode_var any_tc=v[0]->type();
-              tc=orb->create_sequence_tc(0,any_tc);
-              for(iter=v.begin();iter!=v.end();iter++)
-                {
-                  CORBA::Any* a=*iter;
-                  CORBA::TypeCode_var tc2=a->type();
-                  if(!tc2->equivalent(any_tc))
-                    {
-                      // It's a non homogeneous vector : create a sequence of any
-                      tc=orb->create_sequence_tc(0,CORBA::_tc_any);
-                      homog=0;
-                      break;
-                    }
-                }
-              // It's a homogeneous vector : create a sequence of the homogeneous type
-            }
-          else
-            {
-              // It's an empty vector : create a sequence of any
-              tc=orb->create_sequence_tc(0,CORBA::_tc_any);
-              homog=0;
-            }
+          int isObjref=0;
+          if(t->contentType()->kind() == Objref)
+            isObjref=1;
+
+          CORBA::TypeCode_var tc=getCorbaTC(t);
 
           DynamicAny::DynAny_var dynany=getSALOMERuntime()->getDynFactory()->create_dyn_any_from_type_code(tc);
           DynamicAny::DynSequence_var ds = DynamicAny::DynSequence::_narrow(dynany);
@@ -1756,10 +1734,15 @@ namespace YACS
             {
               DynamicAny::DynAny_var temp=ds->current_component();
               CORBA::Any* a=*iter;
-              if(homog)
-                temp->from_any(*a);
+              if(isObjref)
+                {
+                  CORBA::Object_var zzobj ;
+                  *a >>= CORBA::Any::to_object(zzobj) ;
+                  temp->insert_reference(zzobj);
+                }
               else
-                ds->insert_any(*a);
+                temp->from_any(*a);
+
               //delete intermediate any
               delete a;
               ds->next();

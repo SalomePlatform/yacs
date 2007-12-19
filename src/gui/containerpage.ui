@@ -74,13 +74,13 @@
                         </sizepolicy>
                     </property>
                     <property name="title">
-                        <string></string>
+                        <string>Basic Parameters</string>
                     </property>
-                    <hbox>
+                    <grid>
                         <property name="name">
                             <cstring>unnamed</cstring>
                         </property>
-                        <widget class="QLabel">
+                        <widget class="QLabel" row="0" column="0">
                             <property name="name">
                                 <cstring>ContainerName</cstring>
                             </property>
@@ -88,49 +88,12 @@
                                 <string>Container Name:</string>
                             </property>
                         </widget>
-                        <widget class="QLineEdit">
+                        <widget class="QLineEdit" row="0" column="1">
                             <property name="name">
                                 <cstring>myContainerName</cstring>
                             </property>
                         </widget>
-                    </hbox>
-                </widget>
-                <widget class="QGroupBox">
-                    <property name="name">
-                        <cstring>groupBox5</cstring>
-                    </property>
-                    <property name="title">
-                        <string>Machine Parameters</string>
-                    </property>
-                    <grid>
-                        <property name="name">
-                            <cstring>unnamed</cstring>
-                        </property>
-                        <widget class="QLabel" row="2" column="0">
-                            <property name="name">
-                                <cstring>CpuClock</cstring>
-                            </property>
-                            <property name="text">
-                                <string>cpu_clock:</string>
-                            </property>
-                        </widget>
-                        <widget class="QLabel" row="4" column="0" rowspan="2" colspan="1">
-                            <property name="name">
-                                <cstring>NbNode</cstring>
-                            </property>
-                            <property name="text">
-                                <string>nb_node:</string>
-                            </property>
-                        </widget>
                         <widget class="QLabel" row="1" column="0">
-                            <property name="name">
-                                <cstring>MemMb</cstring>
-                            </property>
-                            <property name="text">
-                                <string>mem_mb:</string>
-                            </property>
-                        </widget>
-                        <widget class="QLabel" row="0" column="0">
                             <property name="name">
                                 <cstring>HostName</cstring>
                             </property>
@@ -138,7 +101,57 @@
                                 <string>Host Name:</string>
                             </property>
                         </widget>
-                        <widget class="QLabel" row="6" column="0">
+                        <widget class="QComboBox" row="1" column="1">
+                            <property name="name">
+                                <cstring>myHostName</cstring>
+                            </property>
+                        </widget>
+                    </grid>
+                </widget>
+                <widget class="QCheckBox">
+                    <property name="name">
+                        <cstring>showAdvanced</cstring>
+                     </property>
+                     <property name="text">
+                        <string>Show Anvanced parameters</string>
+                     </property>
+                </widget>
+                <widget class="QGroupBox">
+                    <property name="name">
+                        <cstring>groupBoxAdv</cstring>
+                    </property>
+                    <property name="title">
+                        <string>Advanced Parameters</string>
+                    </property>
+                    <grid>
+                        <property name="name">
+                            <cstring>unnamed</cstring>
+                        </property>
+                        <widget class="QLabel" row="1" column="0">
+                            <property name="name">
+                                <cstring>CpuClock</cstring>
+                            </property>
+                            <property name="text">
+                                <string>cpu_clock:</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel" row="3" column="0" rowspan="2" colspan="1">
+                            <property name="name">
+                                <cstring>NbNode</cstring>
+                            </property>
+                            <property name="text">
+                                <string>nb_node:</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel" row="0" column="0">
+                            <property name="name">
+                                <cstring>MemMb</cstring>
+                            </property>
+                            <property name="text">
+                                <string>mem_mb:</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel" row="5" column="0">
                             <property name="name">
                                 <cstring>MpiUsage</cstring>
                             </property>
@@ -146,7 +159,7 @@
                                 <string>MPI usage:</string>
                             </property>
                         </widget>
-                        <widget class="QLabel" row="7" column="0">
+                        <widget class="QLabel" row="6" column="0">
                             <property name="name">
                                 <cstring>ParallelLib</cstring>
                             </property>
@@ -154,7 +167,7 @@
                                 <string>Parallel Library:</string>
                             </property>
                         </widget>
-                        <widget class="QLabel" row="3" column="0">
+                        <widget class="QLabel" row="2" column="0">
                             <property name="name">
                                 <cstring>NbProcPerNode</cstring>
                             </property>
@@ -162,7 +175,7 @@
                                 <string>nb_proc_per_node:</string>
                             </property>
                         </widget>
-                        <widget class="QLabel" row="8" column="0">
+                        <widget class="QLabel" row="7" column="0">
                             <property name="name">
                                 <cstring>NbComponentNodes</cstring>
                             </property>
@@ -170,7 +183,7 @@
                                 <string>nb_component_nodes:</string>
                             </property>
                         </widget>
-                        <widget class="QLineEdit" row="7" column="1">
+                        <widget class="QLineEdit" row="6" column="1">
                             <property name="name">
                                 <cstring>myParallelLib</cstring>
                             </property>
@@ -178,7 +191,7 @@
                                 <bool>false</bool>
                             </property>
                         </widget>
-                        <widget class="QComboBox" row="5" column="1" rowspan="2" colspan="1">
+                        <widget class="QComboBox" row="4" column="1" rowspan="2" colspan="1">
                             <item>
                                 <property name="text">
                                     <string>yes</string>
@@ -196,7 +209,7 @@
                                 <number>1</number>
                             </property>
                         </widget>
-                        <widget class="QSpinBox" row="8" column="1">
+                        <widget class="QSpinBox" row="7" column="1">
                             <property name="name">
                                 <cstring>myNbComponentNodes</cstring>
                             </property>
@@ -210,7 +223,7 @@
                                 <number>0</number>
                             </property>
                         </widget>
-                        <widget class="QSpinBox" row="4" column="1">
+                        <widget class="QSpinBox" row="3" column="1">
                             <property name="name">
                                 <cstring>myNbNode</cstring>
                             </property>
@@ -224,7 +237,7 @@
                                 <number>0</number>
                             </property>
                         </widget>
-                        <widget class="QSpinBox" row="3" column="1">
+                        <widget class="QSpinBox" row="2" column="1">
                             <property name="name">
                                 <cstring>myNbProcPerNode</cstring>
                             </property>
@@ -238,7 +251,7 @@
                                 <number>0</number>
                             </property>
                         </widget>
-                        <widget class="QSpinBox" row="2" column="1">
+                        <widget class="QSpinBox" row="1" column="1">
                             <property name="name">
                                 <cstring>myCpuClock</cstring>
                             </property>
@@ -252,7 +265,7 @@
                                 <number>0</number>
                             </property>
                         </widget>
-                        <widget class="QSpinBox" row="1" column="1">
+                        <widget class="QSpinBox" row="0" column="1">
                             <property name="name">
                                 <cstring>myMemMb</cstring>
                             </property>
@@ -264,11 +277,6 @@
                             </property>
                             <property name="value">
                                 <number>0</number>
-                            </property>
-                        </widget>
-                        <widget class="QComboBox" row="0" column="1">
-                            <property name="name">
-                                <cstring>myHostName</cstring>
                             </property>
                         </widget>
                     </grid>

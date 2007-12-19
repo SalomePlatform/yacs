@@ -291,6 +291,12 @@ void SubjectNode::localClean()
       erase(*its);
   }
   {
+    list<SubjectControlLink*>::iterator its;
+    list<SubjectControlLink*> cplcl = _listSubjectControlLink;
+    for (its = cplcl.begin(); its != cplcl.end(); ++its)
+      erase(*its);
+  }
+  {
     list<SubjectInputPort*>::iterator iti;
     list<SubjectInputPort*> cpli = _listSubjectInputPort;
     for(iti = cpli.begin(); iti != cpli.end(); ++iti)
@@ -441,7 +447,7 @@ SubjectOutputDataStreamPort* SubjectNode::addSubjectODSPort(YACS::ENGINE::Output
   return son;
 }
 
-void SubjectNode::tryCreateLink(SubjectNode *subOutNode, SubjectNode *subInNode)
+bool SubjectNode::tryCreateLink(SubjectNode *subOutNode, SubjectNode *subInNode)
 {
   DEBTRACE("SubjectNode::tryCreateLink " << subOutNode->getName() << " " << subInNode->getName());
   Proc *proc = GuiContext::getCurrent()->getProc();
@@ -465,8 +471,13 @@ void SubjectNode::tryCreateLink(SubjectNode *subOutNode, SubjectNode *subInNode)
         }
       DEBTRACE(scla->getName());
       scla->addSubjectControlLink(subOutNode,subInNode);
+      return true;
     }
-  else delete command;
+  else
+    {
+      delete command;
+      return false;
+    }
 }
 
 void SubjectNode::removeExternalLinks()
@@ -678,7 +689,7 @@ SubjectLink* SubjectComposedNode::addSubjectLink(SubjectNode *sno,
   _listSubjectLink.push_back(son);
   spo->addSubjectLink(son);
   spi->addSubjectLink(son);
-  update(ADDLINK, LINK, son);
+  update(ADDLINK, DATALINK, son);
   DEBTRACE("addSubjectLink: " << getName() << " " << son->getName());
   return son;
 }
@@ -933,7 +944,7 @@ SubjectComponent* SubjectProc::addComponent(std::string name)
   return 0;
 }
 
-bool SubjectProc::addContainer(std::string name, std::string ref)
+SubjectContainer* SubjectProc::addContainer(std::string name, std::string ref)
 {
   DEBTRACE("SubjectProc::addContainer " << name << " " << ref);
   if (! GuiContext::getCurrent()->getProc()->containerMap.count(name))
@@ -1235,6 +1246,13 @@ void SubjectServiceNode::clean()
 void SubjectServiceNode::localClean()
 {
   DEBTRACE("SubjectServiceNode::localClean ");
+  list<SubjectReference*>::iterator its;
+  list<SubjectReference*> cpll = _listSubjectReference;
+  for (its = cpll.begin(); its != cpll.end(); ++its)
+  {
+    update( REMOVE, REFERENCE, *its );
+    erase(*its);
+  }
 }
 
 
@@ -1310,9 +1328,10 @@ void SubjectServiceNode::setComponent()
 
 void SubjectServiceNode::associateToComponent(SubjectComponent *subcomp)
 {
-  DEBTRACE("SubjectServiceNode::associateToComponent " << getName() << " " << subcomp->getName())
+  DEBTRACE("SubjectServiceNode::associateToComponent " << getName() << " " << subcomp->getName());
+  string aName = GuiContext::getCurrent()->getProc()->getChildName(_serviceNode);
   CommandAssociateServiceToComponent *command =
-    new CommandAssociateServiceToComponent(getName(), subcomp->getKey());
+    new CommandAssociateServiceToComponent(aName, subcomp->getKey());
   if (command->execute())
     {
       GuiContext::getCurrent()->getInvoc()->add(command);
@@ -1685,6 +1704,31 @@ SubjectNode* SubjectSwitch::addNode(YACS::ENGINE::Catalog *catalog,
   return body;
 }
 
+void SubjectSwitch::removeNode(SubjectNode* son)
+{
+  DEBTRACE("SubjectSwitch::removeNode("<<son->getName()<<")");
+  if (son)
+  {
+    int id;
+    bool isFound = false;
+    map<int, SubjectNode*>::const_iterator it;
+    for (it = _bodyMap.begin(); it != _bodyMap.end(); ++it)
+    {
+      if ( (*it).second == son )
+      {
+	isFound = true;
+	id = (*it).first;
+	break;
+      }
+    }
+    if (isFound)
+    {
+      DEBTRACE("id = "<<id);
+      _bodyMap.erase(id);
+    }
+  }
+}
+
 std::map<int, SubjectNode*> SubjectSwitch::getBodyMap()
 {
   return _bodyMap;
@@ -1873,7 +1917,7 @@ YACS::ENGINE::DataPort* SubjectDataPort::getPort()
   return _dataPort;
 }
 
-void SubjectDataPort::tryCreateLink(SubjectDataPort *subOutport, SubjectDataPort *subInport)
+bool SubjectDataPort::tryCreateLink(SubjectDataPort *subOutport, SubjectDataPort *subInport)
 {
   Proc *proc = GuiContext::getCurrent()->getProc();
 
@@ -1909,8 +1953,13 @@ void SubjectDataPort::tryCreateLink(SubjectDataPort *subOutport, SubjectDataPort
         }
       DEBTRACE(scla->getName());
       scla->addSubjectLink(sno, subOutport, sni, subInport);
+      return true;
     }
-  else delete command;
+  else
+    {
+      delete command;
+      return false;
+    }
 }
 
 // ----------------------------------------------------------------------------
@@ -2233,6 +2282,22 @@ SubjectComponent::SubjectComponent(YACS::ENGINE::ComponentInstance* component, i
 
 SubjectComponent::~SubjectComponent()
 {
+  Proc* aProc = GuiContext::getCurrent()->getProc();
+  if ( aProc )
+  {
+    pair<string,int> key = pair<string,int>(_compoInst->getName(),_id);
+    aProc->componentInstanceMap.erase(key);
+    
+    std::map<std::string, ServiceNode*>::iterator it = aProc->serviceMap.begin();
+    for ( ; it!=aProc->serviceMap.end(); it++ )
+      if ( (*it).second->getComponent() == _compoInst )
+	(*it).second->setComponent(0);
+   
+    GuiContext::getCurrent()->_mapOfSubjectComponent.erase(_compoInst);
+    
+    //if ( SalomeComponent* aSalomeCompo = static_cast<SalomeComponent*>(_compoInst) )
+    //delete aSalomeCompo;
+  }
 }
 
 void SubjectComponent::clean()
@@ -2306,6 +2371,21 @@ SubjectContainer::SubjectContainer(YACS::ENGINE::Container* container, Subject *
 
 SubjectContainer::~SubjectContainer()
 {
+  Proc* aProc = GuiContext::getCurrent()->getProc();
+  if ( aProc )
+  {
+    aProc->containerMap.erase(_container->getName());
+    
+    map<ComponentInstance*,SubjectComponent*>::iterator it = GuiContext::getCurrent()->_mapOfSubjectComponent.begin();
+    for ( ; it!=GuiContext::getCurrent()->_mapOfSubjectComponent.end(); it++ )
+      if ( (*it).first && (*it).first->getContainer() == _container )
+      {
+	(*it).first->setContainer(0);
+	GuiContext::getCurrent()->getSubjectProc()->destroy((*it).second);
+      }
+   
+    GuiContext::getCurrent()->_mapOfSubjectContainer.erase(_container);
+  }
 }
 
 std::map<std::string, std::string> SubjectContainer::getProperties()

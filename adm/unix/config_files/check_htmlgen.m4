@@ -81,7 +81,6 @@ CPPFLAGS="$CPPFLAGS $GRAPHVIZ_CPPFLAGS"
 old_graphviz="yes"
 AC_CHECK_HEADERS(dotneato.h, old_graphviz="yes", old_graphviz="no")
 if test "x$old_graphviz" = "xyes" ; then
-  GRAPHVIZ_CPPFLAGS=" -DHAVE_DOTNEATO_H $GRAPHVIZ_CPPFLAGS"
   GRAPHVIZ_LIBADD="-ldotneato"
 else
   GRAPHVIZ_LIBADD="-lgvc"

@@ -192,7 +192,7 @@ then
   CPPFLAGS="$CPPFLAGS -I$QTDIR/include/qscintilla"
   AC_CHECK_HEADERS(qextscintilla.h, qscintilla="yes", qscintilla="no")
   if test "x$qscintilla" = "xyes" ; then
-  QSCINTILLA_CCPFLAGS=" -DHAVE_QEXTSCINTILLA_H -I$QTDIR/include/qscintilla"
+  QSCINTILLA_CCPFLAGS="-I$QTDIR/include/qscintilla"
   QSCINTILLA_LIBADD="-lqscintilla"
   else
   QSCINTILLA_CCPFLAGS=""

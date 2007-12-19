@@ -159,8 +159,9 @@ void SalomeComponent::setContainer(Container *cont)
     _container->decrRef();
   _container=cont;
   if(_container)
+  {
     _container->incrRef();
-
-  ((SalomeContainer*)_container)->addComponentName(_name);
+    ((SalomeContainer*)_container)->addComponentName(_name);
+  }
 }
 

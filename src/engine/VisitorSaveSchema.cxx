@@ -602,13 +602,13 @@ void VisitorSaveSchema::writeSimpleDataLinks(ComposedNode *node)
             {
               InPort *anIP = *iip;
               Node* to = anIP->getNode();
-              cerr << "from " << from->getName() << " outputPort " << anOP->getName()
-                   << " to " << to->getName() << " inputPort " << anIP->getName() << endl;
+              DEBTRACE("from " << from->getName() << " outputPort " << anOP->getName()
+                   << " to " << to->getName() << " inputPort " << anIP->getName() );
               Node* child = node->isInMyDescendance(to);
               if (child && (child->getNumId() != node->getNumId())
                   && (from->getNumId() != to->getNumId()))
                 {
-                  cerr << "BINGO!" << endl;
+                  DEBTRACE( "BINGO!" );
 
 		  string fromName;
 		  if ( dynamic_cast<SplitterNode*>(from) && dynamic_cast<ForEachLoop*>(from->getFather()) )
@@ -630,7 +630,7 @@ void VisitorSaveSchema::writeSimpleDataLinks(ComposedNode *node)
                 }
               else
                 { // --- store info to create the link later, given the input port
-                  cerr << "For later" << endl;
+                  DEBTRACE( "For later" );
                   struct DataLinkInfo aLink = { from, to, anOP, anIP, false };
                   _mapOfDLtoCreate.insert(make_pair(anIP->getNumId(), aLink));
                 }
@@ -701,13 +701,13 @@ void VisitorSaveSchema::writeSimpleStreamLinks(ComposedNode *node)
             {
               InPort *anIP = *iip;
               Node* to = anIP->getNode();
-              cerr << "from " << from->getName() << " outputPort " << anOP->getName()
-                   << " to " << to->getName() << " inputPort " << anIP->getName() << endl;
+              DEBTRACE("from " << from->getName() << " outputPort " << anOP->getName()
+                   << " to " << to->getName() << " inputPort " << anIP->getName() );
               Node* child = node->isInMyDescendance(to);
               if (child && (child->getNumId() != node->getNumId())
                   && (from->getNumId() != to->getNumId()))
                 {
-                  cerr << "BINGO!" << endl;
+                  DEBTRACE( "BINGO!" );
                   string childName = node->getChildName(to);
                   _out << indent(depth) << "<stream>" << endl;
                   _out << indent(depth+1) << "<fromnode>" << node->getChildName(from) << "</fromnode> ";
@@ -724,7 +724,7 @@ void VisitorSaveSchema::writeSimpleStreamLinks(ComposedNode *node)
 		}
               else
                 { // --- store info to create the link later, given the input port
-                  cerr << "For later" << endl;
+                  DEBTRACE("For later" );
                   struct StreamLinkInfo aLink = { from, to, anOP, anIP, false };
                   _mapOfSLtoCreate.insert(make_pair(anIP->getNumId(), aLink));
                 }

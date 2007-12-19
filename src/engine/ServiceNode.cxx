@@ -105,7 +105,7 @@ void ServiceNode::setComponent(ComponentInstance* compo) throw(Exception)
           }
       _component->incrRef();
     }
-  assert(_component);
+  //assert(_component);
 }
 
 //! Associate a new component instance to this service node

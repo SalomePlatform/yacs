@@ -129,7 +129,7 @@ namespace YACS
       virtual ~SubjectDataPort();
       virtual std::string getName();
       virtual YACS::ENGINE::DataPort* getPort();
-      static void tryCreateLink(SubjectDataPort *subOutport, SubjectDataPort *subInport);
+      static bool tryCreateLink(SubjectDataPort *subOutport, SubjectDataPort *subInport);
       virtual void clean();
       void localClean();
       void addSubjectLink(SubjectLink* subject) { _listSubjectLink.push_back(subject); };
@@ -202,7 +202,7 @@ namespace YACS
       SubjectControlLink* addSubjectControlLink(SubjectControlLink *sub) { _listSubjectControlLink.push_back(sub); };
       void removeSubjectControlLink(SubjectControlLink* sub) { _listSubjectControlLink.remove(sub); };
       void localClean();
-      static void tryCreateLink(SubjectNode *subOutNode, SubjectNode *subInNode);
+      static bool tryCreateLink(SubjectNode *subOutNode, SubjectNode *subInNode);
     //protected: // a temporary solution while SessionCataLoader use loadTypesOld(...)
                  // method instead of a new loadTypes(...) method
       virtual SubjectInputPort* addSubjectInputPort(YACS::ENGINE::InputPort *port,
@@ -334,7 +334,7 @@ namespace YACS
       void loadComponents();
       void loadContainers();
       virtual SubjectComponent* addComponent(std::string name);
-      virtual bool addContainer(std::string name, std::string ref="");
+      virtual SubjectContainer* addContainer(std::string name, std::string ref="");
       virtual bool addDataType(YACS::ENGINE::Catalog* catalog, std::string typeName);
       SubjectComponent* addSubjectComponent(YACS::ENGINE::ComponentInstance* compo,
                                             std::pair<std::string,int> key);
@@ -394,6 +394,7 @@ namespace YACS
 				   std::string name,
 				   int swCase,
 				   bool replace = false);
+      virtual void removeNode(SubjectNode* son);
       std::map<int, SubjectNode*> getBodyMap();
       virtual void completeChildrenSubjectList(SubjectNode *son);
       virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const;

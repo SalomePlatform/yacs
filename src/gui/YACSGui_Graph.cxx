@@ -18,6 +18,7 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
+#include "yacsconfig.h"
 #include "YACSGui_Graph.h"
 #include "YACSGui_Node.h"
 #include "YACSGui_Module.h"
@@ -26,6 +27,8 @@
 #include "YACSPrs_ElementaryNode.h"
 #include "YACSPrs_BlocNode.h"
 #include "YACSPrs_LoopNode.h"
+#include "YACSPrs_ForEachLoopNode.h"
+#include "YACSPrs_SwitchNode.h"
 #include "YACSPrs_Link.h"
 #include "YACSPrs_Def.h"
 
@@ -144,10 +147,7 @@ void YACSGui_Graph::update(YACS::HMI::GuiEvent event, int type, YACS::HMI::Subje
       {
 	// add a node item (this = schema item)
 	printf("Graph:  ADD node\n");
-	if ( SubjectNode* aNode = dynamic_cast<SubjectNode*>(son) )
-	{
-	  createPrs( aNode );
-	}
+	createPrs( son );
       }
       break;
     default:
@@ -179,6 +179,14 @@ void YACSGui_Graph::update(YACS::HMI::GuiEvent event, int type, YACS::HMI::Subje
       break;
     default:
       break;
+    }
+    break;
+  case ADDLINK:
+  case ADDCONTROLLINK:
+    {
+      // add link item (this = composed schema item)
+      printf("Graph:  ADDLINK\n");
+      createPrs(son);
     }
     break;
   default:
@@ -274,7 +282,10 @@ void YACSGui_Graph::viewModesConsistency( int theDModeFrom, int theDModeTo )
     for ( ; it!=aMapFrom.end(); it++ )
     {
       YACSPrs_ElementaryNode* aFrom = (*it).second;
-      YACSPrs_ElementaryNode* aTo = myItems[theDModeTo][(*it).first];
+      YACSPrs_ElementaryNode* aTo = 0;
+      
+      if ( myItems[theDModeTo].find((*it).first) != myItems[theDModeTo].end() )
+	aTo = myItems[theDModeTo][(*it).first];
       
       if ( aFrom && aTo )
       {
@@ -325,7 +336,19 @@ void YACSGui_Graph::update(Node* theEngine, SubjectComposedNode* theParent)
   if (needToAddItem)
   {
     addItem( anItem ); // add item for the current display mode
-    myItems[getDMode()][theEngine] = anItem;
+
+    int aDMode = getDMode();
+    if ( myItems.find(aDMode) == myItems.end() )
+    {
+      map<Node*, YACSPrs_ElementaryNode*> aMap;
+      aMap.insert(std::make_pair(theEngine,anItem));
+      myItems.insert(std::make_pair(aDMode,aMap));
+    }
+    else
+    {
+      if ( myItems[aDMode].find(theEngine) == myItems[aDMode].end() )
+      	myItems[aDMode].insert(std::make_pair(theEngine,anItem));
+    }
 
     //myModule->connectArrangeNodes(anItem);
   }
@@ -734,9 +757,35 @@ YACSGui_Node* YACSGui_Graph::driver(Node* theEngine)
 YACSPrs_ElementaryNode* YACSGui_Graph::getItem( YACS::ENGINE::Node* theEngine )
 {
   YACSPrs_ElementaryNode* aNode = 0;
-  if ( myItems[getDMode()].find( theEngine ) == myItems[getDMode()].end() )
-    myItems[getDMode()][theEngine] = aNode;
-  return myItems[getDMode()][theEngine];
+  int aDMode = getDMode();
+
+  if ( myItems.find(aDMode) == myItems.end() ) return aNode;
+
+  if ( myItems[aDMode].find(theEngine) == myItems[aDMode].end() ) return aNode;
+
+  //if ( myItems[getDMode()].find( theEngine ) == myItems[getDMode()].end() )
+  //  myItems[getDMode()][theEngine] = aNode;
+  //return myItems[getDMode()][theEngine];
+
+  return myItems[aDMode][theEngine];
+}
+
+void YACSGui_Graph::removeNode( YACS::ENGINE::Node* theNode )
+{
+  if ( !theNode ) return;
+
+  map<int, map<Node*, YACSPrs_ElementaryNode*> >::iterator it = myItems.begin();
+  for ( ; it!=myItems.end(); it++ )
+  {
+    if ( (*it).second.find(theNode) != (*it).second.end() )
+    {
+      if ( (*it).first != getDMode() )
+	// not current view mode => remove the canvas item associated with theNode from display mode map
+	removeItem( (*it).second[theNode], (*it).first );
+
+      (*it).second.erase(theNode);
+    }
+  }
 }
 
 void YACSGui_Graph::getAllBlocChildren(Bloc* theNode, std::set<Node*>& theSet)
@@ -821,12 +870,84 @@ YACS::ENGINE::Node* YACSGui_Graph::getNodeByName( const std::string theName ) co
 //! Create prs for the defined subject in graph
 /*!
  */
-void YACSGui_Graph::createPrs(YACS::HMI::SubjectNode* theSubject)
+void YACSGui_Graph::createPrs(YACS::HMI::Subject* theSubject)
 {
-  if( theSubject )
+  if( SubjectNode* aSubject = dynamic_cast<SubjectNode*>(theSubject) )
   {
-    update( theSubject->getNode(), dynamic_cast<SubjectComposedNode*>(theSubject->getParent()) );
+    update( aSubject->getNode(), dynamic_cast<SubjectComposedNode*>(aSubject->getParent()) );
     show( false );
+
+    if( SubjectSwitch* aSwitch = dynamic_cast<SubjectSwitch*>( aSubject->getParent() ) )
+    {
+      if ( YACSPrs_ElementaryNode* aNodePrs = getItem( aSwitch->getNode() ) )
+      {
+	aNodePrs->updatePorts( true );
+
+	QPtrList<YACSPrs_Port> aPorts = aNodePrs->getPortList();
+	for (YACSPrs_Port* aPort = aPorts.first(); aPort; aPort = aPorts.next())
+	{
+	  if ( YACSPrs_LabelPort* aLabelPort = dynamic_cast<YACSPrs_LabelPort*>( aPort ) )
+	    update( aLabelPort );
+	}
+      }
+    }
+    getCanvas()->update();
+  }
+  // 1. In the Full mode we can create presentation for all types of links: data and control
+  // 2. In the Control mode we can create presentation only for control links
+  else if ( SubjectLink* aSL = dynamic_cast<SubjectLink*>(theSubject) )
+  {
+    if ( getDMode() == YACSGui_Graph::FullId )
+    {
+      Port* anOP = aSL->getSubjectOutPort()->getPort();
+      Node* anON = aSL->getSubjectOutNode()->getNode();
+      
+      Port* anIP = aSL->getSubjectInPort()->getPort();
+      Node* anIN = aSL->getSubjectInNode()->getNode();
+      
+      if ( !anOP || !anON || !anIP || !anIN ) return;
+      
+      YACSPrs_ElementaryNode* anONPrs = getItem(anON);
+      YACSPrs_ElementaryNode* anINPrs = getItem(anIN);
+      
+      if ( !anONPrs || !anINPrs ) return;
+      
+      YACSPrs_InOutPort* anOPPrs = dynamic_cast<YACSPrs_InOutPort*>( anONPrs->getPortPrs( anOP ) );
+      YACSPrs_InOutPort* anIPPrs = dynamic_cast<YACSPrs_InOutPort*>( anINPrs->getPortPrs( anIP ) );
+      
+      YACSPrs_Link* aLink = new YACSPrs_PortLink( SUIT_Session::session()->resourceMgr(), getCanvas(),
+						  anIPPrs, anOPPrs );
+      aLink->setZ(anOPPrs->z());
+      //anOPPrs->moveBy(0,0);
+      aLink->show();
+      if ( getCanvas() ) getCanvas()->update();
+    }
+  }
+  else if ( SubjectControlLink* aSCL = dynamic_cast<SubjectControlLink*>(theSubject) )
+  {
+    Node* anON = aSCL->getSubjectOutNode()->getNode();
+    Node* anIN = aSCL->getSubjectInNode()->getNode();
+
+    if ( !anON || !anIN ) return;
+
+    Port* anOP = anON->getOutGate();
+    Port* anIP = anIN->getInGate();
+    
+    if ( !anOP || !anIP ) return;
+
+    YACSPrs_ElementaryNode* anONPrs = getItem(anON);
+    YACSPrs_ElementaryNode* anINPrs = getItem(anIN);
+
+    if ( !anONPrs || !anINPrs ) return;
+
+    YACSPrs_InOutPort* anOPPrs = dynamic_cast<YACSPrs_InOutPort*>( anONPrs->getPortPrs( anOP ) );
+    YACSPrs_InOutPort* anIPPrs = dynamic_cast<YACSPrs_InOutPort*>( anINPrs->getPortPrs( anIP ) );
+
+    YACSPrs_Link* aLink = new YACSPrs_PortLink( SUIT_Session::session()->resourceMgr(), getCanvas(),
+						anIPPrs, anOPPrs );
+    aLink->setZ(anOPPrs->z());
+    //anOPPrs->moveBy(0,0);
+    aLink->show();
     getCanvas()->update();
   }
 }
@@ -834,13 +955,44 @@ void YACSGui_Graph::createPrs(YACS::HMI::SubjectNode* theSubject)
 //! Delete prs with the defined subject from graph
 /*!
  */
-void YACSGui_Graph::deletePrs(YACS::HMI::SubjectNode* theSubject)
+void YACSGui_Graph::deletePrs(YACS::HMI::SubjectNode* theSubject, bool removeLabelPort )
 {
+  if ( !theSubject ) return;
+
   if( YACSPrs_ElementaryNode* aPrs = getItem( theSubject->getNode() ) )
   {
+    if ( dynamic_cast<YACSPrs_SwitchNode*>(aPrs) ||
+	 dynamic_cast<YACSPrs_BlocNode*>(aPrs) ||
+	 dynamic_cast<YACSPrs_LoopNode*>(aPrs) ||
+	 dynamic_cast<YACSPrs_ForEachLoopNode*>(aPrs) )
+      theSubject->detach(this);
+
+    if( SubjectSwitch* aSwitch = dynamic_cast<SubjectSwitch*>( theSubject->getParent() ) )
+      aSwitch->removeNode( theSubject );
+    
     aPrs->hide();
     removeItem( aPrs );
     delete aPrs;
+
+    if( removeLabelPort )
+    {
+      SubjectComposedNode* aComposedNode = dynamic_cast<SubjectComposedNode*>( theSubject->getParent() );
+      if( aComposedNode && !dynamic_cast<SubjectBloc*>( aComposedNode ) )
+      {
+	if ( YACSPrs_ElementaryNode* aNodePrs = getItem( aComposedNode->getNode() ) )
+	{
+	  QPtrList<YACSPrs_Port> aPorts = aNodePrs->getPortList();
+	  for (YACSPrs_Port* aPort = aPorts.first(); aPort; aPort = aPorts.next())
+	  {
+	    if ( YACSPrs_LabelPort* aLabelPort = dynamic_cast<YACSPrs_LabelPort*>( aPort ) )
+	    {
+	      if( aLabelPort->getSlaveNode() == theSubject->getNode() )
+		aNodePrs->removeLabelPortPrs( aLabelPort );
+	    }
+	  }
+	}
+      }
+    }
     getCanvas()->update();
   }
 }

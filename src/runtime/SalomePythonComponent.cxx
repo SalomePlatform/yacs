@@ -1,3 +1,4 @@
+#include <Python.h>
 #include "SalomePythonComponent.hxx"
 #include "SalomeComponent.hxx"
 #include "SalomePythonNode.hxx"

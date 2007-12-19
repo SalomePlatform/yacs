@@ -18,7 +18,11 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
+#include <Python.h>
 #include <PythonNode.hxx>
+
+#include <SALOME_ResourcesManager.hxx>
+#include <SALOME_LifeCycleCORBA.hxx>
 
 #include <YACSGui_InputPanel.h>
 #include <YACSGui_Module.h>
@@ -26,17 +30,18 @@
 #include <YACSGui_Table.h>
 #include <YACSGui_Graph.h>
 #include <YACSGui_Executor.h>
+#include <YACSGui_TreeView.h>
+#include <YACSGui_TreeViewItem.h>
 
 #include <YACSPrs_ElementaryNode.h>
+
+#include <QxGraph_Canvas.h>
 
 #include <LightApp_Application.h>
 #include <CAM_Application.h>
 #include <SUIT_Session.h>
 #include <SUIT_Application.h>
 #include <SUIT_MessageBox.h>
-
-#include <SALOME_ResourcesManager.hxx>
-#include <SALOME_LifeCycleCORBA.hxx>
 
 #include <InPort.hxx>
 #include <OutPort.hxx>
@@ -80,6 +85,9 @@
 #include <qtoolbutton.h>
 #include <qspinbox.h>
 #include <qprogressbar.h>
+#include <qobjectlist.h>
+#include <qfiledialog.h>
+#include <qcheckbox.h>
 
 #include <sstream>
 
@@ -488,7 +496,7 @@ YACSGui_InputPanel::YACSGui_InputPanel( YACSGui_Module* theModule )
   connect( myApplyBtn, SIGNAL( clicked() ), this, SLOT( onApply() ) );
 
   myCancelBtn = new QPushButton( tr( "CLOSE_BTN" ), aGrpBtns );
-  connect( myCancelBtn, SIGNAL( clicked() ), this, SLOT( hide() ) );
+  connect( myCancelBtn, SIGNAL( clicked() ), this, SLOT( onClose() ) );
 
   aGrpBtnsLayout->addWidget( myApplyBtn );
   aGrpBtnsLayout->addItem  ( new QSpacerItem( 5, 5, QSizePolicy::Expanding, QSizePolicy::Minimum ) );
@@ -509,6 +517,8 @@ YACSGui_InputPanel::YACSGui_InputPanel( YACSGui_Module* theModule )
 //=======================================================================
 YACSGui_InputPanel::~YACSGui_InputPanel()
 {
+  myMainBtns.clear();
+  myPages.clear();
 }
 
 //================================================================
@@ -536,7 +546,8 @@ QWidget* YACSGui_InputPanel::getPage( const int thePageId,
     return myPages.contains( thePageId ) ? myPages[ thePageId ] : 0;
   }
 
-  return 0;
+  QWidget* aWid = 0;
+  return aWid;
 }
 
 //=============================================================================
@@ -576,6 +587,27 @@ int YACSGui_InputPanel::insertPage( QWidget*,
 				    const int theStretch ) const
 {
  
+}
+
+//=======================================================================
+// name    : removePage
+// Purpose : 
+//=======================================================================
+void YACSGui_InputPanel::removePage( QWidget* thePage )
+{
+  if ( !thePage ) return;
+
+  int anId = getPageId(thePage);
+
+  if ( myMainBtns.find(anId) != myMainBtns.end() )
+  {
+    QPushButton* aBtn = myMainBtns[anId];
+    myMainBtns.erase(anId);
+    delete aBtn;
+  }
+    
+  if ( myPages.find(anId) != myPages.end() )
+    myPages.erase(anId);
 }
 
 //=======================================================================
@@ -716,6 +748,15 @@ void YACSGui_InputPanel::onMainBtn( bool )
 }
 
 //=======================================================================
+// name    : onApplyEnabled
+// Purpose : SLOT. Called when "Apply" button should be disabled or enabled.
+//=======================================================================
+void YACSGui_InputPanel::onApplyEnabled( bool enable )
+{
+  myApplyBtn->setEnabled(enable);
+}
+
+//=======================================================================
 // name    : onApply
 // Purpose : SLOT. Called when "Apply" button clicked. Emit signal with 
 //           Corresponding id.
@@ -809,6 +850,21 @@ void YACSGui_InputPanel::onApply()
 }
 
 //=======================================================================
+// name    : onClose
+// Purpose : SLOT. Called when "Close" button clicked.
+//=======================================================================
+void YACSGui_InputPanel::onClose()
+{
+  hide();
+  if(getModule()->getGuiMode() == YACSGui_Module::NewMode) {
+    getModule()->setGuiMode(YACSGui_Module::EditMode);
+    if(getModule()->activeTreeView())
+      getModule()->activeTreeView()->syncPageTypeWithSelection();
+  }
+  onApplyEnabled(true);
+}
+
+//=======================================================================
 // name    : onNotifyNodeStatus
 // Purpose : 
 //=======================================================================
@@ -878,8 +934,7 @@ void YACSGui_InputPanel::onNotifyNodeStatus( int theNodeId, int theStatus )
 // Purpose : 
 //=======================================================================
 void YACSGui_InputPanel::onNotifyInPortValues( int theNodeId,
-					       std::list<std::string> theInPortsNames,
-					       std::list<std::string> theValues )
+					       std::map<std::string,std::string> theInPortName2Value )
 {
   if ( Node::idMap.count(theNodeId) == 0 ) return;
   Node* aNode= Node::idMap[theNodeId];
@@ -894,43 +949,43 @@ void YACSGui_InputPanel::onNotifyInPortValues( int theNodeId,
       case InlineNodeId: {
         YACSGui_InlineNodePage* page = dynamic_cast<YACSGui_InlineNodePage*>(myPages[anId]);
         if(page && page->getNode() == aNode)
-          page->notifyInPortValues(theInPortsNames,theValues);
+          page->notifyInPortValues(theInPortName2Value);
         break;
       }
       case ServiceNodeId: {
         YACSGui_ServiceNodePage* page = dynamic_cast<YACSGui_ServiceNodePage*>(myPages[anId]);
         if(page && page->getNode() == aNode)
-          page->notifyInPortValues(theInPortsNames,theValues);
+          page->notifyInPortValues(theInPortName2Value);
         break;
       }
       case ForLoopNodeId: {
         YACSGui_ForLoopNodePage* page = dynamic_cast<YACSGui_ForLoopNodePage*>(myPages[anId]);
         if(page && page->getNode() == aNode)
-          page->notifyInPortValues(theInPortsNames,theValues);
+          page->notifyInPortValues(theInPortName2Value);
         break;
       }
       case ForEachLoopNodeId: {
         YACSGui_ForEachLoopNodePage* page = dynamic_cast<YACSGui_ForEachLoopNodePage*>(myPages[anId]);
         if(page && page->getNode() == aNode)
-          page->notifyInPortValues(theInPortsNames,theValues);
+          page->notifyInPortValues(theInPortName2Value);
         break;
       }
       case WhileLoopNodeId: {
         YACSGui_WhileLoopNodePage* page = dynamic_cast<YACSGui_WhileLoopNodePage*>(myPages[anId]);
         if(page && page->getNode() == aNode)
-          page->notifyInPortValues(theInPortsNames,theValues);
+          page->notifyInPortValues(theInPortName2Value);
         break;
       }
       case SwitchNodeId: {
         YACSGui_SwitchNodePage* page = dynamic_cast<YACSGui_SwitchNodePage*>(myPages[anId]);
         if(page && page->getNode() == aNode)
-          page->notifyInPortValues(theInPortsNames,theValues);
+          page->notifyInPortValues(theInPortName2Value);
         break;
       }
       case BlockNodeId: {
         YACSGui_BlockNodePage* page = dynamic_cast<YACSGui_BlockNodePage*>(myPages[anId]);
         if(page && page->getNode() == aNode)
-          page->notifyInPortValues(theInPortsNames,theValues);
+          page->notifyInPortValues(theInPortName2Value);
         break;
       }
       default:
@@ -945,8 +1000,7 @@ void YACSGui_InputPanel::onNotifyInPortValues( int theNodeId,
 // Purpose : 
 //=======================================================================
 void YACSGui_InputPanel::onNotifyOutPortValues( int theNodeId,
-						std::list<std::string> theOutPortsNames,
-						std::list<std::string> theValues )
+						std::map<std::string,std::string> theOutPortName2Value )
 {
   if ( Node::idMap.count(theNodeId) == 0 ) return;
   Node* aNode= Node::idMap[theNodeId];
@@ -961,43 +1015,43 @@ void YACSGui_InputPanel::onNotifyOutPortValues( int theNodeId,
       case InlineNodeId: {
         YACSGui_InlineNodePage* page = dynamic_cast<YACSGui_InlineNodePage*>(myPages[anId]);
         if(page && page->getNode() == aNode)
-          page->notifyOutPortValues(theOutPortsNames,theValues);
+          page->notifyOutPortValues(theOutPortName2Value);
         break;
       }
       case ServiceNodeId: {
         YACSGui_ServiceNodePage* page = dynamic_cast<YACSGui_ServiceNodePage*>(myPages[anId]);
         if(page && page->getNode() == aNode)
-          page->notifyOutPortValues(theOutPortsNames,theValues);
+          page->notifyOutPortValues(theOutPortName2Value);
         break;
       }
       case ForLoopNodeId: {
         YACSGui_ForLoopNodePage* page = dynamic_cast<YACSGui_ForLoopNodePage*>(myPages[anId]);
         if(page && page->getNode() == aNode)
-          page->notifyOutPortValues(theOutPortsNames,theValues);
+          page->notifyOutPortValues(theOutPortName2Value);
         break;
       }
       case ForEachLoopNodeId: {
         YACSGui_ForEachLoopNodePage* page = dynamic_cast<YACSGui_ForEachLoopNodePage*>(myPages[anId]);
         if(page && page->getNode() == aNode)
-          page->notifyOutPortValues(theOutPortsNames,theValues);
+          page->notifyOutPortValues(theOutPortName2Value);
         break;
       }
       case WhileLoopNodeId: {
         YACSGui_WhileLoopNodePage* page = dynamic_cast<YACSGui_WhileLoopNodePage*>(myPages[anId]);
         if(page && page->getNode() == aNode)
-          page->notifyOutPortValues(theOutPortsNames,theValues);
+          page->notifyOutPortValues(theOutPortName2Value);
         break;
       }
       case SwitchNodeId: {
         YACSGui_SwitchNodePage* page = dynamic_cast<YACSGui_SwitchNodePage*>(myPages[anId]);
         if(page && page->getNode() == aNode)
-          page->notifyOutPortValues(theOutPortsNames,theValues);
+          page->notifyOutPortValues(theOutPortName2Value);
         break;
       }
       case BlockNodeId: {
         YACSGui_BlockNodePage* page = dynamic_cast<YACSGui_BlockNodePage*>(myPages[anId]);
         if(page && page->getNode() == aNode)
-          page->notifyOutPortValues(theOutPortsNames,theValues);
+          page->notifyOutPortValues(theOutPortName2Value);
         break;
       }
       default:
@@ -1084,9 +1138,22 @@ void YACSGui_InputPanel::createPage( const int thePageId )
     return;
   }
 
-  myMainLayout->insertWidget( -1, button );
-  myMainLayout->insertWidget( -1, page );
-
+  if ( myApplyBtn && myCancelBtn )
+  {
+    int anIndex;
+    if ( thePageId == ContainerId ) anIndex = 0;
+    if ( thePageId == ComponentId ) anIndex = 2;
+    else anIndex = myMainLayout->findWidget(myApplyBtn->parentWidget()) - 1;
+    
+    myMainLayout->insertWidget( anIndex, page );
+    myMainLayout->insertWidget( anIndex, button );
+  }
+  else
+  {
+    myMainLayout->insertWidget( -1, button );
+    myMainLayout->insertWidget( -1, page );
+  }
+  
   myMainBtns.insert( thePageId, button );
   myPages.insert( thePageId, page );
     
@@ -1166,10 +1233,15 @@ YACSGui_ContainerPage::YACSGui_ContainerPage( QWidget* theParent, const char* th
     GuiObserver(),
     mySContainer( 0 )
 {
+  showAdvanced->setChecked(false);
+  onShowAdvanced();
+  connect(showAdvanced, SIGNAL(clicked()), this, SLOT(onShowAdvanced()));
 }
 
 YACSGui_ContainerPage::~YACSGui_ContainerPage()
 {
+  getInputPanel()->removePage(this);
+
   if ( mySContainer ) mySContainer->detach(this);
 }
 
@@ -1348,6 +1420,15 @@ void YACSGui_ContainerPage::setNbComponentNodes(const int theNbComponentNodes)
     getSalomeContainer()->setProperty( "nb_component_nodes", QString("%1").arg(theNbComponentNodes).latin1() );
 }
 
+void YACSGui_ContainerPage::onShowAdvanced()
+{
+  if(showAdvanced->isChecked()) {
+    groupBoxAdv->show();
+  } else {
+    groupBoxAdv->hide();
+  }
+}
+
 void YACSGui_ContainerPage::updateState()
 {
   // Set container name
@@ -1436,6 +1517,8 @@ YACSGui_ComponentPage::YACSGui_ComponentPage( QWidget* theParent, const char* th
 
 YACSGui_ComponentPage::~YACSGui_ComponentPage()
 {
+  getInputPanel()->removePage(this);
+
   if ( mySComponent ) mySComponent->detach(this);
 }
 
@@ -1616,6 +1699,8 @@ YACSGui_SchemaPage::YACSGui_SchemaPage( QWidget* theParent, const char* theName,
 
 YACSGui_SchemaPage::~YACSGui_SchemaPage()
 {
+  getInputPanel()->removePage(this);
+
   if ( mySProc ) mySProc->detach(this);
 }
 
@@ -1794,9 +1879,11 @@ void YACSGui_NodePage::update( YACS::HMI::GuiEvent event, int type, YACS::HMI::S
       if( SubjectNode* aSNode = dynamic_cast<SubjectNode*>( son->getParent() ) )
       {
 	if( Loop* aLoop = dynamic_cast<Loop*>( aSNode->getNode() ) )
-	{
 	  notifyNodeCreateBody( son );
-	}
+	else if( Switch* aSwitch = dynamic_cast<Switch*>( aSNode->getNode() ) )
+	  notifyNodeCreateNode( son );
+	else if( Bloc* aBloc = dynamic_cast<Bloc*>( aSNode->getNode() ) )
+	  notifyNodeCreateNode( son );
       }
     }
     break;
@@ -1813,19 +1900,104 @@ void YACSGui_NodePage::setSNode( YACS::HMI::SubjectNode* theSNode )
   if ( !theSNode )
     return;
 
+  bool isNeedToUpdatePortValues = false;
   if ( mySNode != theSNode )
   {
     if ( mySNode ) mySNode->detach(this); //detach from old node
     mySNode = theSNode;
     mySNode->attach(this); // attach to new node
 
-    if ( getNode() )
+    // specify the node type
+    Node* aNode = getNode();
+    if ( dynamic_cast<PyFuncNode*>(aNode) )
+      myType = InlineFunction;
+    else if ( dynamic_cast<PythonNode*>(aNode) )
+      myType = InlineScript;
+    else if ( dynamic_cast<SalomeNode*>(aNode) )
+      myType = SALOMEService;
+    else if ( dynamic_cast<CORBANode*>(aNode) )
+      myType = CORBAService;
+    else if ( dynamic_cast<CppNode*>(aNode) )
+      myType = CPPNode;
+    else if ( dynamic_cast<SalomePythonNode*>(aNode) )
+      myType = ServiceInline;
+    else if ( dynamic_cast<XmlNode*>(aNode) )
+      myType = XMLNode;
+    else if ( dynamic_cast<ForLoop*>(aNode) )
+      myType = FOR;
+    else if ( dynamic_cast<ForEachLoop*>(aNode) )
+      myType = FOREACH;
+    else if ( dynamic_cast<WhileLoop*>(aNode) )
+      myType = WHILE;
+    else if ( dynamic_cast<Switch*>(aNode) )
+      myType = SWITCH;
+    else if ( dynamic_cast<Bloc*>(aNode) )
+      myType = Block;
+    
+    if ( aNode )
     {
       notifyNodeStatus( getNode()->getState() );
       notifyNodeProgress();
     }
+
+    isNeedToUpdatePortValues = true;
   }
+  
   updateState();
+
+  if ( isNeedToUpdatePortValues && getNode() )
+  {
+    Proc* aProc = dynamic_cast<Proc*>(getNode()->getRootNode());
+    if ( !aProc ) return;
+    
+    SalomeApp_Application* anApp = dynamic_cast<SalomeApp_Application*>( SUIT_Session::session()->activeApplication() );
+    if( !anApp ) return;
+    
+    YACSGui_Module* aModule = dynamic_cast<YACSGui_Module*>( anApp->activeModule() );
+    if( !aModule ) return;
+    
+    YACSGui_Graph* aGraph = aModule->getGraph( aProc );
+    if ( !aGraph ) return;
+    
+    if ( YACSPrs_ElementaryNode* anItem = aGraph->getItem(getNode()) )
+    {
+      map<string,string> anInPortName2Value;
+      list<InPort*> IPs = getNode()->getSetOfInPort();
+      list<InPort*>::iterator itIP = IPs.begin();
+      //printf("Input ports\n");
+      for ( ; itIP!=IPs.end(); itIP++ )
+      {
+	if ( anItem->getPortPrs(*itIP) ) {
+	  anInPortName2Value.insert( make_pair((*itIP)->getName(),
+					       string(anItem->getPortPrs(*itIP)->getCurrentValue().latin1())) );
+	  //printf(">> Name = %s, Value = %s\n",
+	  // (*itIP)->getName().c_str(),
+	  // anItem->getPortPrs(*itIP)->getCurrentValue().latin1());
+	}
+      }
+      //printf("--------\n\n");
+      //printf("Notify\n");
+      notifyInPortValues( anInPortName2Value );
+            
+      map<string,string> anOutPortName2Value;
+      list<OutPort*> OPs = getNode()->getSetOfOutPort();
+      list<OutPort*>::iterator itOP = OPs.begin();
+      //printf("Output ports\n");
+      for ( ; itOP!=OPs.end(); itOP++ )
+      {
+	if ( anItem->getPortPrs(*itOP) ) {
+	  anOutPortName2Value.insert( make_pair((*itOP)->getName(),
+						string(anItem->getPortPrs(*itOP)->getCurrentValue().latin1())) );
+	  //printf(">> Name = %s, Value = %s\n",
+	  // (*itOP)->getName().c_str(),
+	  // anItem->getPortPrs(*itOP)->getCurrentValue().latin1());
+	}
+      }
+      //printf("--------\n\n");
+      //printf("Notify\n");
+      notifyOutPortValues( anOutPortName2Value );
+    }
+  }
 }
 
 YACS::ENGINE::Node* YACSGui_NodePage::getNode() const
@@ -2056,6 +2228,25 @@ YACSGui_InlineNodePage::YACSGui_InlineNodePage( QWidget* theParent, const char* 
 {
   if ( !myInputPortsGroupBox || !myOutputPortsGroupBox ) return;
 
+  //#undef HAVE_QEXTSCINTILLA_H
+#ifdef HAVE_QEXTSCINTILLA_H
+  _myTextEdit = new QextScintilla( InPythonEditorGroupBox, "Python Editor" );
+  _myTextEdit->setMinimumHeight(150);
+  InPythonEditorGroupBoxLayout->insertWidget(InPythonEditorGroupBoxLayout->findWidget(myTextEdit),
+                                             _myTextEdit );
+  InPythonEditorGroupBoxLayout->remove(myTextEdit);
+  delete myTextEdit;
+  _myTextEdit->setUtf8(1);
+  QextScintillaLexerPython *lex = new QextScintillaLexerPython(_myTextEdit);
+  _myTextEdit->setLexer(lex);
+  _myTextEdit->setBraceMatching(QextScintilla::SloppyBraceMatch);
+  _myTextEdit->setAutoIndent(1);
+  _myTextEdit->setIndentationWidth(4);
+  _myTextEdit->setIndentationGuides(1);
+  _myTextEdit->setIndentationsUseTabs(0);
+  _myTextEdit->setAutoCompletionThreshold(2);
+#endif
+
   QString aPortTypes = QString("Data Flow"); //";Data Stream (BASIC);Data Stream (CALCIUM);Data Stream (PALM)");
   QString aValueTypes = QString("Double;Int;String;Bool;Objref;Sequence;Array;Struct");
 
@@ -2109,6 +2300,9 @@ YACSGui_InlineNodePage::YACSGui_InlineNodePage( QWidget* theParent, const char* 
   aTable->setParams( 0, 4, QString("Yes;No") );
   aTable->setDefValue( 0, 4, QString("Yes") );
 
+  myPara = 0;
+  myIndex = 0;
+
   connect( aTable, SIGNAL(valueChanged( int, int )), this, SLOT(onValueChanged( int, int )) );
 
   myOutputPortsGroupBox->EnableBtn( YACSGui_PlusMinusGrp::AllBtn );
@@ -2125,6 +2319,7 @@ YACSGui_InlineNodePage::YACSGui_InlineNodePage( QWidget* theParent, const char* 
 
 YACSGui_InlineNodePage::~YACSGui_InlineNodePage()
 {
+  getInputPanel()->removePage(this);
 }
 
 void YACSGui_InlineNodePage::setSNode( YACS::HMI::SubjectNode* theSNode )
@@ -2228,48 +2423,44 @@ void YACSGui_InlineNodePage::notifyNodeProgress()
   }
 }
 
-void YACSGui_InlineNodePage::notifyInPortValues( std::list<std::string> theInPortsNames,
-						 std::list<std::string> theValues )
+void YACSGui_InlineNodePage::notifyInPortValues( std::map<std::string,std::string> theInPortName2Value )
 {
   QStringList aValues;
 
   QStringList aPortNames;
   myInputPortsGroupBox->Table()->strings( 0, aPortNames );
 
-  int aRowId = 0;
-  list<string>::iterator itN = theInPortsNames.begin();
-  list<string>::iterator itV = theValues.begin();
-  for ( ; itN!=theInPortsNames.end() && itV!=theValues.end(); itN++, itV++ )
+  for ( QStringList::Iterator it = aPortNames.begin(); it != aPortNames.end(); ++it )
   {
-    if ( !aPortNames[aRowId].compare(QString(*itN)) )
-      aValues.append(QString(*itV));
-    else return;
-    aRowId++;
+    if ( (*it).isEmpty() ) continue;
+
+    map<string,string>::iterator it1 = theInPortName2Value.find( (*it).latin1() );
+    if ( it1 != theInPortName2Value.end() )
+      aValues.append( QString((*it1).second.c_str()) );
   }
-  
-  myInputPortsGroupBox->Table()->setStrings( 3, aValues );
+
+  if ( aPortNames.count() == aValues.count() )
+    myInputPortsGroupBox->Table()->setStrings( 3, aValues );
 }
 
-void YACSGui_InlineNodePage::notifyOutPortValues( std::list<std::string> theOutPortsNames,
-						  std::list<std::string> theValues )
+void YACSGui_InlineNodePage::notifyOutPortValues( std::map<std::string,std::string> theOutPortName2Value )
 {
   QStringList aValues;
 
   QStringList aPortNames;
   myOutputPortsGroupBox->Table()->strings( 0, aPortNames );
 
-  int aRowId = 0;
-  list<string>::iterator itN = theOutPortsNames.begin();
-  list<string>::iterator itV = theValues.begin();
-  for ( ; itN!=theOutPortsNames.end() && itV!=theValues.end(); itN++, itV++ )
+  for ( QStringList::Iterator it = aPortNames.begin(); it != aPortNames.end(); ++it )
   {
-    if ( !aPortNames[aRowId].compare(QString(*itN)) )
-      aValues.append(QString(*itV));
-    else return;
-    aRowId++;
+    if ( (*it).isEmpty() ) continue;
+
+    map<string,string>::iterator it1 = theOutPortName2Value.find( (*it).latin1() );
+    if ( it1 != theOutPortName2Value.end() )
+      aValues.append( QString((*it1).second.c_str()) );
   }
-  
-  myOutputPortsGroupBox->Table()->setStrings( 3, aValues );
+
+  if ( aPortNames.count() == aValues.count() )
+    myOutputPortsGroupBox->Table()->setStrings( 3, aValues );
 }
 
 void YACSGui_InlineNodePage::onApply()
@@ -2288,15 +2479,23 @@ void YACSGui_InlineNodePage::onApply()
 
   // Reset Python function/script
   if ( InlineNode* anIN = dynamic_cast<InlineNode*>( getNode() ) )
-    anIN->setScript( myTextEdit->text().latin1() );
+#ifdef HAVE_QEXTSCINTILLA_H
+    anIN->setScript( _myTextEdit->text().isEmpty() ? string("") : _myTextEdit->text().latin1()  );
+#else
+    anIN->setScript(myTextEdit->text().isEmpty() ? string("") : myTextEdit->text().latin1()  );
+#endif
   if ( InlineFuncNode* anIFN = dynamic_cast<InlineFuncNode*>( getNode() ) )
   {
+#ifdef HAVE_QEXTSCINTILLA_H
+    QString aText = _myTextEdit->text();
+#else
     QString aText = myTextEdit->text();
+#endif
     int aFromId = aText.find( QString("\ndef ") ) + QString("\ndef ").length();
     int aToId = aText.find( QString("("), aFromId );
     aText = aText.left( aToId );
     QString aFname = aText.right( aText.length() - aFromId ).stripWhiteSpace();
-    anIFN->setFname( aFname.latin1() );
+    anIFN->setFname( aFname.isEmpty() ? string("") : aFname.latin1() );
   }
 
   if ( myIsNeedToReorder )
@@ -2347,7 +2546,11 @@ void YACSGui_InlineNodePage::updateState()
   // Show the body (script/function) of inline node
   if ( InlineNode* anIN = dynamic_cast<InlineNode*>( getNode() ) )
   {
+#ifdef HAVE_QEXTSCINTILLA_H
+    _myTextEdit->setText( QString(anIN->getScript()) );
+#else
     myTextEdit->setText( QString(anIN->getScript()) );
+#endif
   }
 }
 
@@ -2403,9 +2606,48 @@ void YACSGui_InlineNodePage::onValueChanged( int theRow, int theCol )
   }
 }
 
+void YACSGui_InlineNodePage::hideEvent( QHideEvent*)
+{
+  myPara = 0;
+  myIndex = 0;
+#ifdef HAVE_QEXTSCINTILLA_H
+//   _myTextEdit->removeSelection(); // --- see if replacement ?
+#else
+  myTextEdit->removeSelection();
+#endif
+  }
+
 void YACSGui_InlineNodePage::onSearch()
 {
-
+#ifdef HAVE_QEXTSCINTILLA_H
+  if ( _myTextEdit && mySearch )
+  {
+    printf(">> Try find\n");
+    if ( _myTextEdit->findFirst( mySearch->text(), true, false, true, &myPara, &myIndex ) )
+    {
+      printf(">> The text is found!\n");
+      _myTextEdit->setSelection( myPara, myIndex, myPara, myIndex + mySearch->text().length() );
+      myIndex += mySearch->text().length();
+    } else {
+      myPara = 0;
+      myIndex = 0;
+    }
+  }
+#else
+  if ( myTextEdit && mySearch )
+  {
+    printf(">> Try find\n");
+    if ( myTextEdit->find( mySearch->text(), true, false, true, &myPara, &myIndex ) )
+    {
+      printf(">> The text is found!\n");
+      myTextEdit->setSelection( myPara, myIndex, myPara, myIndex + mySearch->text().length() );
+      myIndex += mySearch->text().length();
+    } else {
+      myPara = 0;
+      myIndex = 0;
+    }
+  }
+#endif
 }
 
 void YACSGui_InlineNodePage::onInserted( const int theRow )
@@ -2827,6 +3069,8 @@ void YACSGui_InlineNodePage::resetStoredPortsMaps()
   int aRowId = 0;
   for ( QStringList::Iterator it = aIPortNames.begin(); it != aIPortNames.end(); ++it )
   {
+    if ( (*it).isEmpty() ) continue;
+
     try {
       if ( InputPort* aIDP = getNode()->getInputPort((*it).latin1()) )
 	myRow2StoredInPorts.insert( std::make_pair(aRowId,aIDP) );
@@ -2846,6 +3090,8 @@ void YACSGui_InlineNodePage::resetStoredPortsMaps()
   aRowId = 0;
   for ( QStringList::Iterator it = aOPortNames.begin(); it != aOPortNames.end(); ++it )
   {
+    if ( (*it).isEmpty() ) continue;
+
     try {
       if ( OutputPort* aODP = getNode()->getOutputPort((*it).latin1()) )
 	myRow2StoredOutPorts.insert( std::make_pair(aRowId,aODP) );
@@ -2872,6 +3118,9 @@ void YACSGui_InlineNodePage::resetIPLists()
   myInputPortsGroupBox->Table()->strings( 0, aIPortNames );
 
   for ( QStringList::Iterator it = aIPortNames.begin(); it != aIPortNames.end(); ++it )
+  {
+    if ( (*it).isEmpty() ) continue;
+
     try {
       if ( InPort* aIDP = getNode()->getInputPort((*it).latin1()) )
 	myIPList.append(aIDP);
@@ -2880,6 +3129,7 @@ void YACSGui_InlineNodePage::resetIPLists()
       if ( InPort* aIDSP = getNode()->getInputDataStreamPort((*it).latin1()) )
 	myIPList.append(aIDSP);
     }
+  }
 }
 
 void YACSGui_InlineNodePage::resetOPLists()
@@ -2890,6 +3140,9 @@ void YACSGui_InlineNodePage::resetOPLists()
   myOutputPortsGroupBox->Table()->strings( 0, aOPortNames );
 
   for ( QStringList::Iterator it = aOPortNames.begin(); it != aOPortNames.end(); ++it )
+  {
+    if ( (*it).isEmpty() ) continue;
+
     try {
       if ( OutPort* aODP = getNode()->getOutputPort((*it).latin1()) )
 	myOPList.append(aODP);
@@ -2898,6 +3151,7 @@ void YACSGui_InlineNodePage::resetOPLists()
       if ( OutPort* aODSP = getNode()->getOutputDataStreamPort((*it).latin1()) )
 	myOPList.append(aODSP);
     }
+  }
 }
 
 void YACSGui_InlineNodePage::orderPorts( bool withFilling )
@@ -2923,6 +3177,8 @@ void YACSGui_InlineNodePage::orderPorts( bool withFilling )
   aRowId = 0;
   for ( QStringList::Iterator it = aPortNames.begin(); it != aPortNames.end(); ++it )
   {
+    if ( (*it).isEmpty() ) continue;
+
     InPort* anIP = myIPList.at(aRowId);
     if ( !anIP ) return;
 
@@ -2978,6 +3234,8 @@ void YACSGui_InlineNodePage::orderPorts( bool withFilling )
   aRowId = 0;
   for ( QStringList::Iterator it = aPortNames.begin(); it != aPortNames.end(); ++it )
   {
+    if ( (*it).isEmpty() ) continue;
+
     OutPort* anOP = myOPList.at(aRowId);
     if ( !anOP ) return;
 
@@ -3056,6 +3314,8 @@ void YACSGui_InlineNodePage::setInputPorts()
   int aRowId = 0;
   for ( QStringList::Iterator it = aPortNames.begin(); it != aPortNames.end(); ++it )
   {
+    if ( (*it).isEmpty() ) continue;
+
     if ( aPortNames.contains(*it) > 1 )
     {
       std::string what("The node ");
@@ -3276,6 +3536,8 @@ void YACSGui_InlineNodePage::setOutputPorts()
   int aRowId = 0;
   for ( QStringList::Iterator it = aPortNames.begin(); it != aPortNames.end(); ++it )
   {
+    if ( (*it).isEmpty() ) continue;
+
     if ( aPortNames.contains(*it) > 1 )
     {
       std::string what("The node ");
@@ -3474,7 +3736,8 @@ YACSGui_ServiceNodePage::YACSGui_ServiceNodePage( QWidget* theParent, const char
   : ServiceNodePage( theParent, theName, theFlags ),
     YACSGui_NodePage(),
     myComponent( 0 ),
-    myMethodChanged( false )
+    myMethodChanged( false ),
+    mySCNode( 0 )
 {
   connect( myMethodName, SIGNAL( activated( const QString& ) ),
 	   this, SLOT( onMethodChanged( const QString& ) ) );
@@ -3529,6 +3792,9 @@ YACSGui_ServiceNodePage::YACSGui_ServiceNodePage( QWidget* theParent, const char
   aTable->setParams( 0, 4, QString("Yes;No") );
   aTable->setDefValue( 0, 4, QString("Yes") );
 
+  myPara = 0;
+  myIndex = 0;
+
   connect( aTable, SIGNAL(valueChanged( int, int )), this, SLOT(onValueChanged( int, int )) );
 
   myOutputPortsGroupBox->HideBtn( YACSGui_PlusMinusGrp::PlusBtn | YACSGui_PlusMinusGrp::MinusBtn |
@@ -3536,13 +3802,29 @@ YACSGui_ServiceNodePage::YACSGui_ServiceNodePage( QWidget* theParent, const char
   myOutputPortsGroupBox->EnableBtn( YACSGui_PlusMinusGrp::UpBtn | YACSGui_PlusMinusGrp::DownBtn );
   myOutputPortsGroupBox->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Expanding ) );
 
+  myProcName = "";
+  myProcRadioButton->setEnabled(false);
+
   connect( myNodeName, SIGNAL(textChanged( const QString& )), this, SLOT(onNodeNameChanged( const QString& )) );
+  connect( myBrowseButton, SIGNAL(clicked(  )), this, SLOT(onBrowse( )) );
+  connect( this, SIGNAL( enableApply( bool ) ), getInputPanel(), SLOT( onApplyEnabled( bool ) ) );
+  connect( CatalogTree, SIGNAL( clicked( QListViewItem* ) ), this, SLOT( onCatalogMethodClicked( QListViewItem* ) ) );
+  connect( mySessionRadioButton, SIGNAL( stateChanged( int ) ), this, SLOT( onCatalogChanged( int ) ) );
+  connect( myProcRadioButton, SIGNAL( stateChanged( int ) ), this, SLOT( onCatalogChanged( int ) ) );
 
   //connect( this, SIGNAL(visibilityChanged( bool )), this, SLOT(onVisibilityChanged( bool )) );
 }
 
 YACSGui_ServiceNodePage::~YACSGui_ServiceNodePage()
 {
+  if ( mySCNode ) mySCNode->detach(this);
+  getInputPanel()->removePage(this);
+}
+
+void YACSGui_ServiceNodePage::setSCNode( YACS::HMI::SubjectComposedNode* theSCNode )
+{
+  if ( theSCNode && mySCNode != theSCNode )
+    mySCNode = theSCNode;
 }
 
 void YACSGui_ServiceNodePage::setSNode( YACS::HMI::SubjectNode* theSNode )
@@ -3600,6 +3882,38 @@ void YACSGui_ServiceNodePage::setMode( const YACSGui_InputPanel::PageMode theMod
 {
   YACSGui_NodePage::setMode(theMode);
 
+  if ( myMode == YACSGui_InputPanel::NewMode )
+  {
+    CatalogGroupBox->show();
+    PortListGroupBox->hide();
+    InPythonEditorGroupBox->hide();
+    ComponentDefinitionLabel->hide();
+    myComponentDefinition->hide();
+    myComponentButton->hide();
+    MethodName->hide();
+    myMethodName->hide();
+    ExecutionGroupBox->hide();
+    stringstream aName;
+    string aType = getInputPanel()->getModule()->getNodeType(SALOMENODE);
+    aName << aType << GuiContext::getCurrent()->getNewId(SALOMENODE);
+    myNodeName->setText(aName.str());
+    myNodeFullName->setText(aName.str());
+    getInputPanel()->onApplyEnabled(false);
+    mySNode = 0;
+    updateState();
+  }
+  else
+  {
+    CatalogGroupBox->hide();
+    PortListGroupBox->show();
+    ComponentDefinitionLabel->show();
+    myComponentDefinition->show();
+    myComponentButton->show();
+    MethodName->show();
+    myMethodName->show();
+    getInputPanel()->onApplyEnabled(true);
+  }
+
   if ( myMode == YACSGui_InputPanel::EditMode )
   {
     myNodeName->setReadOnly(false);
@@ -3652,52 +3966,296 @@ void YACSGui_ServiceNodePage::notifyNodeProgress()
   }
 }
 
-void YACSGui_ServiceNodePage::notifyInPortValues( std::list<std::string> theInPortsNames,
-						  std::list<std::string> theValues )
+void YACSGui_ServiceNodePage::notifyInPortValues( std::map<std::string,std::string> theInPortName2Value )
 {
   QStringList aValues;
 
   QStringList aPortNames;
   myInputPortsGroupBox->Table()->strings( 0, aPortNames );
 
-  int aRowId = 0;
-  list<string>::iterator itN = theInPortsNames.begin();
-  list<string>::iterator itV = theValues.begin();
-  for ( ; itN!=theInPortsNames.end() && itV!=theValues.end(); itN++, itV++ )
+  for ( QStringList::Iterator it = aPortNames.begin(); it != aPortNames.end(); ++it )
   {
-    if ( !aPortNames[aRowId].compare(QString(*itN)) )
-      aValues.append(QString(*itV));
-    else return;
-    aRowId++;
+    if ( (*it).isEmpty() ) continue;
+
+    map<string,string>::iterator it1 = theInPortName2Value.find( (*it).latin1() );
+    if ( it1 != theInPortName2Value.end() )
+      aValues.append( QString((*it1).second.c_str()) );
   }
-  
-  myInputPortsGroupBox->Table()->setStrings( 3, aValues );
+
+  if ( aPortNames.count() == aValues.count() )
+    myInputPortsGroupBox->Table()->setStrings( 3, aValues );
 }
 
-void YACSGui_ServiceNodePage::notifyOutPortValues( std::list<std::string> theOutPortsNames,
-						   std::list<std::string> theValues )
+void YACSGui_ServiceNodePage::notifyOutPortValues( std::map<std::string,std::string> theOutPortName2Value )
 {
   QStringList aValues;
 
   QStringList aPortNames;
   myOutputPortsGroupBox->Table()->strings( 0, aPortNames );
 
-  int aRowId = 0;
-  list<string>::iterator itN = theOutPortsNames.begin();
-  list<string>::iterator itV = theValues.begin();
-  for ( ; itN!=theOutPortsNames.end() && itV!=theValues.end(); itN++, itV++ )
+  for ( QStringList::Iterator it = aPortNames.begin(); it != aPortNames.end(); ++it )
   {
-    if ( !aPortNames[aRowId].compare(QString(*itN)) )
-      aValues.append(QString(*itV));
-    else return;
-    aRowId++;
+    if ( (*it).isEmpty() ) continue;
+
+    map<string,string>::iterator it1 = theOutPortName2Value.find( (*it).latin1() );
+    if ( it1 != theOutPortName2Value.end() )
+      aValues.append( QString((*it1).second.c_str()) );
   }
-  
-  myOutputPortsGroupBox->Table()->setStrings( 3, aValues );
+
+  if ( aPortNames.count() == aValues.count() )
+    myOutputPortsGroupBox->Table()->setStrings( 3, aValues );
+}
+
+void YACSGui_ServiceNodePage::onCatalogChanged( int )
+{
+  getInputPanel()->onApplyEnabled(false);
+  updateState();
+}
+
+void YACSGui_ServiceNodePage::onCatalogMethodClicked( QListViewItem* it )
+{
+  if (it)
+  {
+    std::pair<std::string, std::string> compoServ = myServiceMap[it];
+    getInputPanel()->onApplyEnabled(!compoServ.first.empty() && !compoServ.second.empty());
+  }
+}
+
+void YACSGui_ServiceNodePage::onBrowse()
+{
+  myProcName = "";
+  QString fn = QFileDialog::getOpenFileName( QString::null,
+					     tr( "XML-Files (*.xml);;All Files (*)" ),
+					     this,
+					     "load YACS scheme file dialog as catalog",
+					     "Choose a filename to load"  );
+  if ( !fn.isEmpty() )
+  {
+    /*      
+    YACS::ENGINE::Catalog* aCatalog = YACS::ENGINE::getSALOMERuntime()->loadCatalog( "proc", fn.latin1());
+    GuiContext::getCurrent()->setProcCatalog(aCatalog);
+    GuiContext::getCurrent()->setCurrentCatalog(aCatalog);
+    */
+    myProcName = fn.latin1();
+  }
+
+  if ( !myProcName.empty() )
+  {
+    myProcRadioButton->setEnabled(true);
+    myProcRadioButton->setChecked(true);
+  }
+
+  getInputPanel()->onApplyEnabled(false);
+  updateState();
 }
 
 void YACSGui_ServiceNodePage::onApply()
 {
+  if ( myMode == YACSGui_InputPanel::NewMode )
+  {
+    GuiContext* aContext = GuiContext::getCurrent();
+    if ( !aContext ) return;
+
+    YACSGui_Module* aModule = getInputPanel()->getModule();
+    if ( !aModule ) return;
+
+    YACSGui_EditionTreeView * aETV = dynamic_cast<YACSGui_EditionTreeView*>(aModule->activeTreeView());
+    if ( !aETV ) return;
+
+    SubjectProc* aSchema = aContext->getSubjectProc();
+
+    YACS::ENGINE::Catalog* aCatalog = 0;
+    if ( myProcRadioButton->isChecked() )
+      aCatalog = YACS::ENGINE::getSALOMERuntime()->loadCatalog( "proc", myProcName.c_str() );
+    else
+      aCatalog = aModule->getCatalog();
+    
+    QListViewItem* anItem = CatalogTree->selectedItem();
+
+    SubjectServiceNode* aNewSNode = 0;
+    if ( aSchema && aCatalog && anItem && mySCNode )
+    {
+      pair<string, string> compoServ = myServiceMap[anItem];
+      string compo = compoServ.first;
+      string service = compoServ.second;
+
+      myComponentName = compo;
+      myMethodName->setCurrentText( service );
+
+      Proc* aProc = aContext->getProc();
+      if ( !aProc ) return;
+
+      YACSGui_Graph* aGraph = aModule->getGraph( aProc );
+      if ( !aGraph ) return;
+
+      stringstream aName;
+      string aType = aModule->getNodeType(SALOMENODE);
+      aName << aType << aContext->getNewId(SALOMENODE);
+
+      // ---> block for correct node (engine - subject - presentaion) creation
+      SubjectNode* aCreatedSNode = 0;
+      if ( mySCNode )
+      {
+	if ( SubjectSwitch* aSwitch = dynamic_cast<SubjectSwitch*>(mySCNode) )
+	{
+	  map<int, SubjectNode*> bodyMap = aSwitch->getBodyMap();
+	  int aSwCase = 0;
+	  if (bodyMap.empty()) aSwCase = 1;
+	  else
+	  {
+	    map<int, SubjectNode*>::reverse_iterator rit = bodyMap.rbegin();
+	    aSwCase = (*rit).first + 1;
+	  }
+	  aCreatedSNode = aSwitch->addNode( aCatalog, compo, service, aName.str(), aSwCase);
+	}
+	else if ( SubjectForLoop* aForLoop = dynamic_cast<SubjectForLoop*>(mySCNode) )
+	{
+	  aCreatedSNode = aModule->createBody( SALOMENODE, mySCNode, aCatalog, compo, service );
+	}
+	else if ( SubjectForEachLoop* aForEachLoop = dynamic_cast<SubjectForEachLoop*>(mySCNode) )
+	{
+	  aCreatedSNode = aModule->createBody( SALOMENODE, mySCNode, aCatalog, compo, service );
+	}
+	else if ( SubjectWhileLoop* aWhileLoop = dynamic_cast<SubjectWhileLoop*>(mySCNode) )
+	{
+	  aCreatedSNode = aModule->createBody( SALOMENODE, mySCNode, aCatalog, compo, service );
+	}
+	else if ( SubjectProc* aSchema = dynamic_cast<SubjectProc*>(mySCNode) )
+	{
+	  aCreatedSNode = aSchema->addNode( aCatalog, compo, service, aName.str() );
+	}
+	else if ( SubjectBloc* aBloc = dynamic_cast<SubjectBloc*>(mySCNode) )
+	{
+	  aCreatedSNode = aBloc->addNode( aCatalog, compo, service, aName.str() );
+	  if( SubjectComposedNode* aParent = dynamic_cast<SubjectComposedNode*>(aBloc->getParent()) )
+	  {
+	    aGraph->update(aBloc->getNode(), aParent);
+	    Bloc* aFather = dynamic_cast<Bloc*>(aBloc->getNode());
+	    while ( aFather )
+	    {
+	      aGraph->arrangeNodesWithinBloc(aFather);
+	      aFather = dynamic_cast<Bloc*>(aFather->getFather());
+	    }
+	    aGraph->getCanvas()->update();
+	  }
+	}
+      }
+      else
+      {  
+	aCreatedSNode = aSchema->addNode( aCatalog, compo, service, aName.str() );
+      }
+      // <---
+
+      aNewSNode = dynamic_cast<SubjectServiceNode*>(aCreatedSNode);
+      if ( !aNewSNode ) return;
+      
+      if ( SubjectBloc* aSB = dynamic_cast<SubjectBloc*>(mySCNode) )
+	aSB->update( EDIT, 0, aSB );
+
+      ServiceNode* aNewNode = dynamic_cast<ServiceNode*>(aNewSNode->getNode());
+      if ( !aNewNode ) return;
+      
+      ComponentInstance* aComp = aNewNode->getComponent();
+      if ( !aComp ) return;
+
+      // find the component subject in the current GuiContext
+      SubjectComponent* aSComp = 0;
+      if ( aContext->_mapOfSubjectComponent.find(aComp) != aContext->_mapOfSubjectComponent.end() )
+	aSComp = aContext->_mapOfSubjectComponent[aComp];
+      
+      if ( aSComp )
+      {
+	printf(">>== Not null component subject\n ");
+	SubjectContainer* aSCont = 0;
+	SalomeContainer* aCont = dynamic_cast<SalomeContainer*>(aComp->getContainer());
+	if ( !aCont )
+	{ // container is not found
+	  // 1) try to find the first container with the suitable type (i.e. Salome container)
+	  //    in the current GuiContext
+	  printf(">>== Null container\n");
+	  map<Container*, SubjectContainer*>::iterator itCont = aContext->_mapOfSubjectContainer.begin();
+	  for ( ; itCont!=aContext->_mapOfSubjectContainer.end(); itCont++ )
+	  {
+	    SalomeContainer* aSalomeCont = dynamic_cast<SalomeContainer*>( (*itCont).first );
+	    if ( aSalomeCont )
+	    {
+	      printf(">>= The first Salome container is found\n");
+	      aSCont = (*itCont).second;
+	      aCont = aSalomeCont;
+	      break;
+	    }
+	  }
+	  
+	  if ( !aSCont )
+	  {
+	    printf(">>== Container is still null\n");
+	    // 2) create a new default Salome container and subject for it
+	    string aDefContainer = "DefaultContainer";
+	    if ( !aProc->containerMap.count(aDefContainer) )
+	    {
+	      printf(">>== Add a default container\n");
+	      aSCont = aSchema->addContainer(aDefContainer);
+	      aCont = dynamic_cast<SalomeContainer*>(aSCont->getContainer());
+	    }
+	  }
+	}
+	else
+	{ //container is found => try to get its subject from the current GuiContext
+	  printf(">>== Not Null Container\n");
+	  if ( aContext->_mapOfSubjectContainer.find(aCont) != aContext->_mapOfSubjectContainer.end() )
+	    aSCont = aContext->_mapOfSubjectContainer[aCont];
+	}
+	
+	if ( aSCont )
+	{
+	  printf(">>== Note Null container subject\n");
+	  YACSGui_ContainerViewItem* aContainerItem = 0;
+
+	  printf(">>== aETV\n");
+	  // get the "Containers" label view item
+	  YACSGui_LabelViewItem* aContainersL = 
+	    dynamic_cast<YACSGui_LabelViewItem*>(aETV->firstChild()->firstChild()->nextSibling()->nextSibling()->nextSibling());
+	  if ( !aContainersL || aContainersL->text(0).compare(QString("Containers")) ) return;
+	  
+	  YACSGui_ContainerViewItem* anAfter = 0;
+	  if ( QListViewItem* aChild = aContainersL->firstChild() )
+	  {
+	    while( aChild )
+	    {
+	      if ( anAfter = dynamic_cast<YACSGui_ContainerViewItem*>(aChild) )
+		if ( anAfter->getContainer() == aCont )
+		{
+		  printf(">>== Container view item is found\n");
+		  aContainerItem = anAfter;
+		  break;
+		}
+	      aChild = aChild->nextSibling();
+	    }
+	  }
+
+	  if ( aContainerItem )
+	  {
+	    printf(">>== Create a component view item\n");
+	    aContainerItem->addComponentItem(aSComp);
+	    aSComp->associateToContainer( aSCont );
+	    aNewSNode->associateToComponent(aSComp);
+	  }
+	}
+      }
+
+      aModule->temporaryExport();
+    }  
+    
+    aModule->setGuiMode(YACSGui_Module::EditMode);
+    setMode(YACSGui_InputPanel::EditMode);
+    if ( aNewSNode ) setSNode(aNewSNode);
+
+    if ( aModule->activeTreeView() )
+      aModule->activeTreeView()->syncPageTypeWithSelection();
+
+    return;
+  }
+
   // Rename a node
   if ( myNodeName )
     setNodeName( myNodeName->text() );
@@ -3750,13 +4308,96 @@ void YACSGui_ServiceNodePage::onApply()
   // Reset Python function/script
   // ...
 
-  mySNode->update( EDIT, 0, mySNode );
-
   updateBlocSize();
 }
 
 void YACSGui_ServiceNodePage::updateState()
 {
+  printf(">> updateState : myMode = %d\n",myMode);
+  if ( myMode == YACSGui_InputPanel::NewMode )
+  {
+    myNodeType->setText( tr( "SALOME_SERVICE_NODE" ) ); // SALOME service node
+    CatalogTree->clear();
+    CatalogTree->setRootIsDecorated( TRUE );
+
+    YACS::ENGINE::Catalog *_currentCatalog;
+    //YACS::ENGINE::Catalog* _currentCatalog = YACS::ENGINE::getSALOMERuntime()->getBuiltinCatalog();
+    if ( myProcRadioButton->isChecked() )
+    {
+      //      YACS::YACSLoader* _loader = new YACS::YACSLoader();
+      //      _loader->registerProcCataLoader();
+      _currentCatalog = YACS::ENGINE::getSALOMERuntime()->loadCatalog( "proc", myProcName.c_str() );
+      //      delete _loader;
+    }
+    else
+    {
+      _currentCatalog = getInputPanel()->getModule()->getCatalog();
+    }
+
+    if (_currentCatalog) {
+      map<string, YACS::ENGINE::ComponentDefinition*>::const_iterator itComp; 
+      for (itComp = _currentCatalog->_componentMap.begin();
+	   itComp != _currentCatalog->_componentMap.end();
+	   ++itComp)
+	{
+	  string compoName = (*itComp).first;
+	  YACS::ENGINE::ComponentDefinition* compo = (*itComp).second;
+	  QListViewItem *item = new QListViewItem(CatalogTree, compoName.c_str());
+	  myServiceMap[item] = pair<string,string>(compoName,"");
+	  map<string, YACS::ENGINE::ServiceNode*>::iterator itServ;
+	  for (itServ = compo->_serviceMap.begin(); itServ != compo->_serviceMap.end(); ++itServ)
+	    {
+	      string serviceName = (*itServ).first;
+	      YACS::ENGINE::ServiceNode* service = (*itServ).second;
+	      QListViewItem *sitem = new QListViewItem(item, serviceName.c_str());
+	      myServiceMap[sitem] = pair<string,string>(compoName,serviceName);
+	    }
+	}
+    }
+    return;
+  }
+
+  printf(">> updateState : myType = %d\n",myType);
+  if ( myType != SALOMEService )
+  {
+    myInputPortsGroupBox->ShowBtn( YACSGui_PlusMinusGrp::AllBtn );
+    myInputPortsGroupBox->HideBtn( YACSGui_PlusMinusGrp::SelectBtn );
+    myInputPortsGroupBox->EnableBtn( YACSGui_PlusMinusGrp::UpBtn | YACSGui_PlusMinusGrp::DownBtn |
+				     YACSGui_PlusMinusGrp::PlusBtn | YACSGui_PlusMinusGrp::MinusBtn |
+				     YACSGui_PlusMinusGrp::InsertBtn );
+
+    myOutputPortsGroupBox->ShowBtn( YACSGui_PlusMinusGrp::AllBtn );
+    myOutputPortsGroupBox->HideBtn( YACSGui_PlusMinusGrp::SelectBtn );
+    myOutputPortsGroupBox->EnableBtn( YACSGui_PlusMinusGrp::UpBtn | YACSGui_PlusMinusGrp::DownBtn |
+				      YACSGui_PlusMinusGrp::PlusBtn | YACSGui_PlusMinusGrp::MinusBtn |
+				      YACSGui_PlusMinusGrp::InsertBtn );
+  }
+  else
+  {
+    myInputPortsGroupBox->HideBtn( YACSGui_PlusMinusGrp::PlusBtn | YACSGui_PlusMinusGrp::MinusBtn |
+				   YACSGui_PlusMinusGrp::InsertBtn | YACSGui_PlusMinusGrp::SelectBtn );
+    myInputPortsGroupBox->EnableBtn( YACSGui_PlusMinusGrp::UpBtn | YACSGui_PlusMinusGrp::DownBtn );
+
+    myOutputPortsGroupBox->HideBtn( YACSGui_PlusMinusGrp::PlusBtn | YACSGui_PlusMinusGrp::MinusBtn |
+				    YACSGui_PlusMinusGrp::InsertBtn | YACSGui_PlusMinusGrp::SelectBtn );
+    myOutputPortsGroupBox->EnableBtn( YACSGui_PlusMinusGrp::UpBtn | YACSGui_PlusMinusGrp::DownBtn );
+  }
+
+  if ( (myType == ServiceInline || myType == XMLNode) && InPythonEditorGroupBox )
+  {
+    // show built-in Python code editor
+    InPythonEditorGroupBox->show();
+    printf(">> show!!!\n");
+    connect( mySearch, SIGNAL(returnPressed()), this, SLOT(onSearch()) );
+  }
+  else if ( InPythonEditorGroupBox )
+  {
+    // hide built-in Python code editor
+    InPythonEditorGroupBox->hide();
+    printf(">> hide!!!\n");
+    disconnect( mySearch, SIGNAL(returnPressed()), this, SLOT(onSearch()) );
+  }
+  
   // Clear input ports table and output ports tables, if they are not empty
   if ( myInputPortsGroupBox )
   {
@@ -3768,7 +4409,7 @@ void YACSGui_ServiceNodePage::updateState()
     myOutputPortsGroupBox->Table()->setNumRows( 0 );
     myOutputPortsGroupBox->EnableBtn( YACSGui_PlusMinusGrp::UpBtn | YACSGui_PlusMinusGrp::DownBtn );
   }
-
+  
   // Set node name
   if ( myNodeName ) myNodeName->setText( getNodeName() );
   
@@ -3777,28 +4418,33 @@ void YACSGui_ServiceNodePage::updateState()
     myNodeFullName->setText( getNode()->getRootNode()->getChildName(getNode()) );
   
   // Set node type: SALOME or CORBA service
-  if ( dynamic_cast<SalomeNode*>( getNode() ) )
-    myNodeType->setText( tr( "SALOME_SERVICE_NODE" ) ); // SALOME service node
-  else if ( dynamic_cast<CORBANode*>( getNode() ) )
-    myNodeType->setText( tr( "CORBA_SERVICE_NODE" ) ); // CORBA service node
-  //else if ( dynamic_cast<NodeNode*>( getNode() ) )
-  //  myNodeType->setText( tr( "NODENODE_SERVICE_NODE" ) ); // node-node service node
-  else if ( dynamic_cast<CppNode*>( getNode() ) )
-    myNodeType->setText( tr( "CPP_NODE" ) ); // CPP node
-  else if ( dynamic_cast<SalomePythonNode*>( getNode() ) )
-    myNodeType->setText( tr( "SERVICE_INLINE_NODE" ) ); // service inline node
-  else if ( dynamic_cast<XmlNode*>( getNode() ) )
-    myNodeType->setText( tr( "XML_NODE" ) ); // XML node
+  switch (myType)
+  {
+  case SALOMEService:
+    myNodeType->setText( tr( "SALOME_SERVICE_NODE" ) ); break;
+  case CORBAService:
+    myNodeType->setText( tr( "CORBA_SERVICE_NODE" ) );  break;
+  case CPPNode:
+    myNodeType->setText( tr( "CPP_NODE" ) );            break;
+  case ServiceInline:
+    myNodeType->setText( tr( "SERVICE_INLINE_NODE" ) ); break;
+  case XMLNode:
+    myNodeType->setText( tr( "XML_NODE" ) );            break;
+  default:                                              break;
+  }
 
   // Set component instance and services
   if( myComponentDefinition && myMethodName )
     updateServices();
 
-  // Fill the table of input ports of the node
-  //fillInputPortsTable( getNode() );
-  
-  // Fill the table of output ports of the node
-  //fillOutputPortsTable( getNode() );
+  if ( myType == CORBAService || myType == CPPNode /*|| myType == ServiceInline || myType == XMLNode*/ )
+  {
+    // Fill the table of input ports of the node
+    fillInputPortsTable( getNode() );
+    
+    // Fill the table of output ports of the node
+    fillOutputPortsTable( getNode() );
+  }
 }
 
 void YACSGui_ServiceNodePage::onVisibilityChanged( bool visible )
@@ -3841,6 +4487,27 @@ void YACSGui_ServiceNodePage::onValueChanged( int theRow, int theCol )
       else // i.e. "String" or "Objref" or "Sequence" or "Array" or "Struct"
 	aTable->setCellType( theRow, 3, YACSGui_Table::String );
     }
+}
+
+void YACSGui_ServiceNodePage::hideEvent( QHideEvent* )
+{
+  myPara = 0;
+  myIndex = 0;
+  myTextEdit->removeSelection();
+ }
+
+void YACSGui_ServiceNodePage::onSearch()
+{
+  if ( myTextEdit && mySearch )
+  {
+    printf(">> Try find\n");
+    if ( myTextEdit->find( mySearch->text(), true, false, true, &myPara, &myIndex ) )
+    {
+      printf(">> The text is found!\n");
+      myTextEdit->setSelection( myPara, myIndex, myPara, myIndex + mySearch->text().length() );
+      myIndex += mySearch->text().length();
+    }
+  }
 }
 
 void YACSGui_ServiceNodePage::updateServices( const QString& theCurrent )
@@ -3977,10 +4644,13 @@ void YACSGui_ServiceNodePage::fillInputPortsTable( YACS::ENGINE::Node* theNode )
   // Fill "Value" column
   aTable->setStrings( 3, aValues, true );
 
-  // Set all columns read only (except "Value" column)
-  aTable->setReadOnly( -1, 0, true );
-  aTable->setReadOnly( -1, 1, true );
-  aTable->setReadOnly( -1, 2, true );
+  if ( myType == SALOMEService )
+  {
+    // Set all columns read only (except "Value" column)
+    aTable->setReadOnly( -1, 0, true );
+    aTable->setReadOnly( -1, 1, true );
+    aTable->setReadOnly( -1, 2, true );
+  }
 
   // Set "Value" column read only (for linked ports)
   for ( int i = 0, n = aTable->numRows(); i < n; i++ )
@@ -4064,11 +4734,14 @@ void YACSGui_ServiceNodePage::fillOutputPortsTable( YACS::ENGINE::Node* theNode 
   // Fill "Is in study" column
   aTable->setStrings( 4, anIsInStudy, true );
 
-  // Set all columns read only
-  aTable->setReadOnly( -1, 0, true );
-  aTable->setReadOnly( -1, 1, true );
-  aTable->setReadOnly( -1, 2, true );
-  aTable->setReadOnly( -1, 3, true );
+  if ( myType == SALOMEService )
+  {
+    // Set all columns read only
+    aTable->setReadOnly( -1, 0, true );
+    aTable->setReadOnly( -1, 1, true );
+    aTable->setReadOnly( -1, 2, true );
+    aTable->setReadOnly( -1, 3, true );
+  }
 
   if ( aPortNames.count() > 1 )
     myOutputPortsGroupBox->EnableBtn( YACSGui_PlusMinusGrp::UpBtn | YACSGui_PlusMinusGrp::DownBtn );
@@ -4105,7 +4778,7 @@ void YACSGui_ServiceNodePage::setInputPorts()
   ServiceNode* aNode = dynamic_cast<ServiceNode*>( getNode() );
   if ( !aNode ) return;
 
-  if ( myMethodChanged )
+  if ( myMethodChanged || myType != SALOMEService )
   {
     // remove old ports
     list<InPort*> anInPortsEngine = aNode->getSetOfInPort();
@@ -4159,6 +4832,8 @@ void YACSGui_ServiceNodePage::setInputPorts()
   int aRowId = 0;
   for ( QStringList::Iterator it = aPortNames.begin(); it != aPortNames.end(); ++it )
   {
+    if ( (*it).isEmpty() ) continue;
+
     if ( aTable->intValueCombo( 1, aRowId ) == 0 ) // Data Flow port
     {
       InputPort* aIDP;
@@ -4226,7 +4901,7 @@ void YACSGui_ServiceNodePage::setOutputPorts()
   ServiceNode* aNode = dynamic_cast<ServiceNode*>( getNode() );
   if ( !aNode ) return;
 
-  if ( myMethodChanged )
+  if ( myMethodChanged || myType != SALOMEService )
   {
     // remove old ports
     list<OutPort*> anOutPortsEngine = aNode->getSetOfOutPort();
@@ -4276,6 +4951,8 @@ void YACSGui_ServiceNodePage::setOutputPorts()
   int aRowId = 0;
   for ( QStringList::Iterator it = aPortNames.begin(); it != aPortNames.end(); ++it )
   {
+    if ( (*it).isEmpty() ) continue;
+
     // TODO : Remember "Is in study" flag for output port
     // ...
 
@@ -4343,6 +5020,7 @@ YACSGui_ForLoopNodePage::YACSGui_ForLoopNodePage( QWidget* theParent, const char
 
 YACSGui_ForLoopNodePage::~YACSGui_ForLoopNodePage()
 {
+  getInputPanel()->removePage(this);
 }
 
 void YACSGui_ForLoopNodePage::setSNode( YACS::HMI::SubjectNode* theSNode )
@@ -4406,23 +5084,22 @@ void YACSGui_ForLoopNodePage::notifyNodeProgress()
   }
 }
 
-void YACSGui_ForLoopNodePage::notifyInPortValues( std::list<std::string> theInPortsNames,
-						  std::list<std::string> theValues )
+void YACSGui_ForLoopNodePage::notifyInPortValues( std::map<std::string,std::string> theInPortName2Value )
 {
-  //printf("==> ForLoopNodePage : Size of theInPortsNames : %d\n",theInPortsNames.size());
-  //printf("==> ForLoopNodePage : Size of theValues : %d\n",theValues.size());
-
+  //printf("==> ForLoopNodePage : Size of theInPortName2Value : %d\n",theInPortName2Value.size());
+  
   ForLoop* aForLoopNode = dynamic_cast<ForLoop*>( getNode() );
   if ( !aForLoopNode ) return;
 
-  if ( theInPortsNames.size() == 1 && theValues.size() == 1 )
+  if ( theInPortName2Value.size() == 1 )
   {
     // nsteps port
     QString aName(aForLoopNode->edGetNbOfTimesInputPort()->getName());
-    QString aGivenName( theInPortsNames.front() );
+    map<string,string>::iterator it = theInPortName2Value.begin();
+    QString aGivenName( (*it).first );
     if ( !aGivenName.compare(aName) && myNbTimesInputPortValue )
     {
-      QString aValue(theValues.front());
+      QString aValue( (*it).second );
       if ( !aValue.compare(QString("< ? >")) )
 	myNbTimesInputPortValue->setValue( myNbTimesInputPortValue->minValue() );
       else
@@ -4431,11 +5108,9 @@ void YACSGui_ForLoopNodePage::notifyInPortValues( std::list<std::string> theInPo
   }
 }
 
-void YACSGui_ForLoopNodePage::notifyOutPortValues( std::list<std::string> theOutPortsNames,
-						   std::list<std::string> theValues )
+void YACSGui_ForLoopNodePage::notifyOutPortValues( std::map<std::string,std::string> theOutPortName2Value )
 {
   //printf("==> ForLoopNodePage : Size of theOutPortsNames : %d\n",theOutPortsNames.size());
-  //printf("==> ForLoopNodePage : Size of theValues : %d\n",theValues.size());
 }
 
 void YACSGui_ForLoopNodePage::notifyNodeCreateBody( YACS::HMI::Subject* theSubject )
@@ -4459,13 +5134,12 @@ void YACSGui_ForLoopNodePage::onApply()
     {
       int aValue = myNbTimesInputPortValue->value();
       aPort->edInit( aValue );
+      mySNode->update( EDIT, INPUTPORT, GuiContext::getCurrent()->_mapOfSubjectDataPort[aPort] );
     }
   }
 
   // Reset the view mode
   // ...
-
-  mySNode->update( EDIT, 0, mySNode );
 
   updateBlocSize();
 }
@@ -4492,14 +5166,13 @@ void YACSGui_ForLoopNodePage::updateState()
 
     if( myLoopBodyNodeName )
     {
+      QString aBodyName;
       std::set<Node*> aNodes = aForLoopNode->edGetDirectDescendants();
       std::set<Node*>::iterator aNodesIt = aNodes.begin();
       Node* aNode = *aNodesIt;
       if( aNode )
-      {
-	QString aBodyName = aNode->getName();
-	myLoopBodyNodeName->setText( aBodyName );
-      }
+	aBodyName = aNode->getName();
+      myLoopBodyNodeName->setText( aBodyName );
     }
   }
 
@@ -4540,6 +5213,7 @@ YACSGui_ForEachLoopNodePage::YACSGui_ForEachLoopNodePage( QWidget* theParent, co
 
 YACSGui_ForEachLoopNodePage::~YACSGui_ForEachLoopNodePage()
 {
+  getInputPanel()->removePage(this);
 }
 
 void YACSGui_ForEachLoopNodePage::setSNode( YACS::HMI::SubjectNode* theSNode )
@@ -4603,27 +5277,24 @@ void YACSGui_ForEachLoopNodePage::notifyNodeProgress()
   }
 }
 
-void YACSGui_ForEachLoopNodePage::notifyInPortValues( std::list<std::string> theInPortsNames,
-						      std::list<std::string> theValues )
+void YACSGui_ForEachLoopNodePage::notifyInPortValues( std::map<std::string,std::string> theInPortName2Value )
 {
-  //printf("==> ForEachLoopNodePage : Size of theInPortsNames : %d\n",theInPortsNames.size());
-  //printf("==> ForEachLoopNodePage : Size of theValues : %d\n",theValues.size());
+  //printf("==> ForEachLoopNodePage : Size of theInPortName2Value : %d\n",theInPortName2Value.size());
 
   ForEachLoop* aForEachLoopNode = dynamic_cast<ForEachLoop*>( getNode() );
   if ( !aForEachLoopNode ) return;
 
-  if ( theInPortsNames.size() == 2 && theValues.size() == 2 )
+  if ( theInPortName2Value.size() == 2 )
   {
     QString aName1 = QString(aForEachLoopNode->edGetNbOfBranchesPort()->getName());
     QString aName2 = QString(aForEachLoopNode->edGetSeqOfSamplesPort()->getName());
     QString aGivenName, aValue;
     
-    list<string>::iterator itN = theInPortsNames.begin();
-    list<string>::iterator itV = theValues.begin();
-    for ( ; itN!=theInPortsNames.end() && itV!=theValues.end(); itN++, itV++ )
+    map<string,string>::iterator it = theInPortName2Value.begin();
+    for ( ; it!=theInPortName2Value.end(); it++ )
     {
-      aGivenName = QString(*itN);
-      aValue = QString(*itV);
+      aGivenName = QString( (*it).first );
+      aValue = QString( (*it).second );
       
       if ( !aGivenName.compare(aName1) && myNbBranchesInputPortValue )
       {	// nbBranches port
@@ -4641,11 +5312,9 @@ void YACSGui_ForEachLoopNodePage::notifyInPortValues( std::list<std::string> the
   }
 }
 
-void YACSGui_ForEachLoopNodePage::notifyOutPortValues( std::list<std::string> theOutPortsNames,
-						       std::list<std::string> theValues )
+void YACSGui_ForEachLoopNodePage::notifyOutPortValues( std::map<std::string,std::string> theOutPortName2Value )
 {
-  //printf("==> ForEachLoopNodePage : Size of theOutPortsNames : %d\n",theOutPortsNames.size());
-  //printf("==> ForEachLoopNodePage : Size of theValues : %d\n",theValues.size());
+  //printf("==> ForEachLoopNodePage : Size of theOutPortName2Value : %d\n",theOutPortName2Value.size());
   // SmplPrt port (no gui control for it in the property page!)
   //...
 }
@@ -4662,19 +5331,19 @@ void YACSGui_ForEachLoopNodePage::onApply()
     {
       int aValue = myNbBranchesInputPortValue->value();
       aBranchesPort->edInit( aValue );
+      mySNode->update( EDIT, INPUTPORT, GuiContext::getCurrent()->_mapOfSubjectDataPort[aBranchesPort] );
     }
 
     if( YACS::ENGINE::InputPort* aSamplesPort = aForEachLoopNode->edGetSeqOfSamplesPort() )
     {
       QString aValue = myDataPortToDispatchValue->text();
       aSamplesPort->edInit( aValue.latin1() );
+      mySNode->update( EDIT, INPUTPORT, GuiContext::getCurrent()->_mapOfSubjectDataPort[aSamplesPort] );
     }
   }
 
   // Reset the view mode
   // ...
-
-  mySNode->update( EDIT, 0, mySNode );
 
   updateBlocSize();
 }
@@ -4767,6 +5436,7 @@ YACSGui_WhileLoopNodePage::YACSGui_WhileLoopNodePage( QWidget* theParent, const 
 
 YACSGui_WhileLoopNodePage::~YACSGui_WhileLoopNodePage()
 {
+  getInputPanel()->removePage(this);
 }
 
 void YACSGui_WhileLoopNodePage::setSNode( YACS::HMI::SubjectNode* theSNode )
@@ -4830,22 +5500,21 @@ void YACSGui_WhileLoopNodePage::notifyNodeProgress()
   }
 }
 
-void YACSGui_WhileLoopNodePage::notifyInPortValues( std::list<std::string> theInPortsNames,
-						    std::list<std::string> theValues )
+void YACSGui_WhileLoopNodePage::notifyInPortValues( std::map<std::string,std::string> theInPortName2Value )
 {
-  //printf("==> WhileLoopNodePage : Size of theInPortsNames : %d\n",theInPortsNames.size());
-  //printf("==> WhileLoopNodePage : Size of theValues : %d\n",theValues.size());
+  //printf("==> WhileLoopNodePage : Size of theInPortName2Value : %d\n",theInPortName2Value.size());
 
   WhileLoop* aWhileLoopNode = dynamic_cast<WhileLoop*>( getNode() );
   if ( !aWhileLoopNode ) return;
 
-  if ( theInPortsNames.size() == 1 && theValues.size() == 1 )
+  if ( theInPortName2Value.size() == 1 )
   {
     QString aName(aWhileLoopNode->edGetConditionPort()->getName());
-    QString aGivenName( theInPortsNames.front() );
+    map<string,string>::iterator it = theInPortName2Value.begin();
+    QString aGivenName( (*it).first );
     if ( !aGivenName.compare(aName) && myCondInputPortValue )
     {
-      QString aValue(theValues.front());
+      QString aValue( (*it).second );
       int anId = 0;
       if ( !aValue.compare(QString("< ? >")) ||
 	   aValue.compare(QString("false")) ||
@@ -4856,11 +5525,9 @@ void YACSGui_WhileLoopNodePage::notifyInPortValues( std::list<std::string> theIn
   }
 }
 
-void YACSGui_WhileLoopNodePage::notifyOutPortValues( std::list<std::string> theOutPortsNames,
-						     std::list<std::string> theValues )
+void YACSGui_WhileLoopNodePage::notifyOutPortValues( std::map<std::string,std::string> theOutPortName2Value )
 {
-  //printf("==> WhileLoopNodePage : Size of theOutPortsNames : %d\n",theOutPortsNames.size());
-  //printf("==> WhileLoopNodePage : Size of theValues : %d\n",theValues.size());
+  //printf("==> WhileLoopNodePage : Size of theOutPortName2Value : %d\n",theOutPortName2Value.size());
 }
 
 void YACSGui_WhileLoopNodePage::notifyNodeCreateBody( YACS::HMI::Subject* theSubject )
@@ -4884,13 +5551,12 @@ void YACSGui_WhileLoopNodePage::onApply()
     {
       bool aValue = myCondInputPortValue->currentItem() == 0 ? true : false;
       aPort->edInit( aValue );
+      mySNode->update( EDIT, INPUTPORT, GuiContext::getCurrent()->_mapOfSubjectDataPort[aPort] );
     }
   }
   
   // Reset the view mode
   // ...
-
-  mySNode->update( EDIT, 0, mySNode );
 
   updateBlocSize();
 }
@@ -4993,6 +5659,8 @@ YACSGui_SwitchNodePage::YACSGui_SwitchNodePage( QWidget* theParent, const char* 
 
 YACSGui_SwitchNodePage::~YACSGui_SwitchNodePage()
 {
+  getInputPanel()->removePage(this);
+
   myRow2ChildMap.clear();
   myRowsOfSelectedChildren.clear();
 }
@@ -5110,37 +5778,38 @@ void YACSGui_SwitchNodePage::notifyNodeProgress()
   }
 }
 
-void YACSGui_SwitchNodePage::notifyInPortValues( std::list<std::string> theInPortsNames,
-						 std::list<std::string> theValues )
+void YACSGui_SwitchNodePage::notifyInPortValues( std::map<std::string,std::string> theInPortName2Value )
 {
-  //printf("==> SwitchNodePage : Size of theInPortsNames : %d\n",theInPortsNames.size());
-  //printf("==> SwitchNodePage : Size of theValues : %d\n",theValues.size());
+  //printf("==> SwitchNodePage : Size of theInPortName2Value : %d\n",theInPortName2Value.size());
 
   Switch* aSwitchNode = dynamic_cast<Switch*>( getNode() );
   if ( !aSwitchNode ) return;
 
-  if ( theInPortsNames.size() == 1 && theValues.size() == 1 )
+  if ( theInPortName2Value.size() == 1 )
   {
     // select port
     QString aName(aSwitchNode->edGetConditionPort()->getName());
-    QString aGivenName( theInPortsNames.front() );
-    // (no gui control for it in the property page!) : will be implemented as a combobox
-    if ( !aGivenName.compare(aName) /*&& mySelectPortValue*/ )
+    map<string,string>::iterator it = theInPortName2Value.begin();
+    QString aGivenName( (*it).first );
+    if ( !aGivenName.compare(aName) && mySelectInputPortValue )
     {
-      QString aValue(theValues.front());
-      //if ( !aValue.compare(QString("< ? >")) )
-      //	mySelectPortValue->setCurrentItem( /* default case */ );
-      //else
-      //	mySelectPortValue->setCurrentItem( aValue.toInt() );
+      QString aValue( (*it).second );
+      if ( !aValue.compare(QString("< ? >")) )
+        mySelectInputPortValue->setValue( 0 );
+      else
+        mySelectInputPortValue->setValue( aValue.toInt() );
     }
   }
 }
 
-void YACSGui_SwitchNodePage::notifyOutPortValues( std::list<std::string> theOutPortsNames,
-						  std::list<std::string> theValues )
+void YACSGui_SwitchNodePage::notifyOutPortValues( std::map<std::string,std::string> theOutPortName2Value )
 {
-  //printf("==> SwitchNodePage : Size of theOutPortsNames : %d\n",theOutPortsNames.size());
-  //printf("==> SwitchNodePage : Size of theValues : %d\n",theValues.size());
+  //printf("==> SwitchNodePage : Size of theOutPortName2Value : %d\n",theOutPortName2Value.size());
+}
+
+void YACSGui_SwitchNodePage::notifyNodeCreateNode( YACS::HMI::Subject* theSubject )
+{
+  updateState();
 }
 
 void YACSGui_SwitchNodePage::onApply()
@@ -5149,6 +5818,17 @@ void YACSGui_SwitchNodePage::onApply()
   if ( myNodeName && getNode() )
     getNode()->setName( myNodeName->text().latin1() );
   
+  // Reset select input port value
+  if ( YACS::ENGINE::Switch* aSwitchNode = dynamic_cast<Switch*>( getNode() ) )
+  {
+    if( YACS::ENGINE::InputPort* aPort = aSwitchNode->edGetConditionPort() )
+    {
+      int aValue = mySelectInputPortValue->value();
+      aPort->edInit( aValue );
+      mySNode->update( EDIT, INPUTPORT, GuiContext::getCurrent()->_mapOfSubjectDataPort[aPort] );
+    }
+  }
+
   // To remove a new child nodes from its old places in the tree view
   std::list<int>::iterator it = myRowsOfSelectedChildren.begin();
   for ( ; it != myRowsOfSelectedChildren.end(); it++ )
@@ -5188,7 +5868,9 @@ void YACSGui_SwitchNodePage::onApply()
   // ...
 
   mySNode->update( EDIT, 0, mySNode );
-  
+
+  updateLabelPorts();
+
   // clear for next selections
   myRowsOfSelectedChildren.clear();
 
@@ -5219,6 +5901,14 @@ void YACSGui_SwitchNodePage::updateState()
   {
     if( Switch* aSwitch = dynamic_cast<Switch*>(getNode()) )
     {
+      if( YACS::ENGINE::InputPort* aPort = aSwitch->edGetConditionPort() )
+      {
+	bool ok;
+	int aValue = getPortValue( aPort ).toInt( &ok );
+	if( ok )
+	mySelectInputPortValue->setValue( aValue );
+      }
+
       set<Node*> aChildren = dynamic_cast<Switch*>(getNode())->edGetDirectDescendants();
       if ( !aChildren.empty() )
       {
@@ -5314,6 +6004,26 @@ void YACSGui_SwitchNodePage::updateState()
   // the following method can be used if its needed:
   // YACSGui_Graph* aGraph = getInputPanel()->getModule()->getGraph( myProc );
   // ...
+}
+
+void YACSGui_SwitchNodePage::updateLabelPorts()
+{
+  if( Proc* aProc = dynamic_cast<Proc*>(getNode()->getRootNode()) )
+  {
+    if( YACSGui_Graph* aGraph = getInputPanel()->getModule()->getGraph( aProc ) )
+    {
+      if ( YACSPrs_ElementaryNode* aNodePrs = aGraph->getItem( getNode() ) )
+      {
+	QPtrList<YACSPrs_Port> aPorts = aNodePrs->getPortList();
+	for (YACSPrs_Port* aPort = aPorts.first(); aPort; aPort = aPorts.next())
+	{
+	  if ( YACSPrs_LabelPort* aLabelPort = dynamic_cast<YACSPrs_LabelPort*>( aPort ) )
+	    aGraph->update( aLabelPort );
+	}
+      }
+      aGraph->getCanvas()->update();
+    }
+  }
 }
 
 void YACSGui_SwitchNodePage::onNodeNameChanged( const QString& theName )
@@ -5728,6 +6438,8 @@ YACSGui_BlockNodePage::YACSGui_BlockNodePage( QWidget* theParent, const char* th
 
 YACSGui_BlockNodePage::~YACSGui_BlockNodePage()
 {
+  getInputPanel()->removePage(this);
+
   myRow2ChildMap.clear();
   myRowsOfSelectedChildren.clear();
 }
@@ -5845,18 +6557,19 @@ void YACSGui_BlockNodePage::notifyNodeProgress()
   }
 }
 
-void YACSGui_BlockNodePage::notifyInPortValues( std::list<std::string> theInPortsNames,
-						std::list<std::string> theValues )
+void YACSGui_BlockNodePage::notifyInPortValues( std::map<std::string,std::string> theInPortName2Value )
 {
-  //printf("==> BlockNodePage : Size of theInPortsNames : %d\n",theInPortsNames.size());
-  //printf("==> BlockNodePage : Size of theValues : %d\n",theValues.size());
+  //printf("==> BlockNodePage : Size of theInPortName2Value : %d\n",theInPortName2Value.size());
 }
 
-void YACSGui_BlockNodePage::notifyOutPortValues( std::list<std::string> theOutPortsNames,
-						 std::list<std::string> theValues )
+void YACSGui_BlockNodePage::notifyOutPortValues( std::map<std::string,std::string> theOutPortName2Value )
 {
-  //printf("==> BlockNodePage : Size of theOutPortsNames : %d\n",theOutPortsNames.size());
-  //printf("==> BlockNodePage : Size of theValues : %d\n",theValues.size());
+  //printf("==> BlockNodePage : Size of theOutPortName2Value : %d\n",theOutPortName2Value.size());
+}
+
+void YACSGui_BlockNodePage::notifyNodeCreateNode( YACS::HMI::Subject* theSubject )
+{
+  updateState();
 }
 
 void YACSGui_BlockNodePage::onApply()

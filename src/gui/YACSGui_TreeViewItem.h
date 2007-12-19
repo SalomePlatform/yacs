@@ -44,10 +44,17 @@ public:
   YACSGui_ViewItem( QListViewItem* theParent, 
 		    QListViewItem* theAfter );
   
-  //virtual void select(bool isSelected);
+  virtual void select(bool isSelected);
   //virtual void update(YACS::HMI::GuiEvent event, int type, YACS::HMI::Subject* son);
 
+  // axiluary methods for blocking reaction inside select() method
+  bool blockSelection( const bool toBlock );
+  bool selectionBlocked() const;
+
   virtual void update( const bool theIsRecursive = false ) {}
+
+protected:
+  bool myBlockSelect;
 };
 
 /*!
@@ -62,6 +69,8 @@ public:
   YACSGui_LabelViewItem( QListViewItem* theParent, 
 			 QListViewItem* theAfter, 
 			 const QString theName );
+
+  virtual void select( bool isSelected );
   
   QString name() const;
   QPixmap icon() const;
@@ -114,20 +123,22 @@ class YACSGui_PortViewItem : public YACSGui_ViewItem
 public:
   YACSGui_PortViewItem( QListView* theParent, 
 			QListViewItem* theAfter,
-			YACS::ENGINE::Port* thePort );
+			YACS::HMI::SubjectDataPort* theSPort );
   YACSGui_PortViewItem( QListViewItem* theParent, 
 			QListViewItem* theAfter,
-			YACS::ENGINE::Port* thePort );
-  
+			YACS::HMI::SubjectDataPort* theSPort );
+  virtual ~YACSGui_PortViewItem();
+
   QString name() const;
   QPixmap icon() const;
 
-  YACS::ENGINE::Port* getPort() const { return myPort; }
+  YACS::ENGINE::DataPort* getPort() const;
+  YACS::HMI::SubjectDataPort* getSPort() const { return mySPort; }
 
   virtual void update( const bool theIsRecursive = false );
     
 private:
-  YACS::ENGINE::Port* myPort;
+  YACS::HMI::SubjectDataPort* mySPort;
 };
 
 /*!
@@ -146,7 +157,6 @@ public:
 			YACS::HMI::SubjectNode* theSNode );
   virtual ~YACSGui_NodeViewItem();
   
-  virtual void select(bool isSelected);
   virtual void update(YACS::HMI::GuiEvent event, int type, YACS::HMI::Subject* son);
 
   QString name() const;
@@ -156,7 +166,7 @@ public:
   YACS::HMI::SubjectNode* getSNode() const { return mySNode; }
 
   virtual void update( const bool theIsRecursive = false );
-    
+
 private:
   void renamePortItem( YACS::HMI::Subject* theSPort );
   void addPortItem( YACS::HMI::Subject* theSPort );
@@ -168,36 +178,62 @@ private:
   bool isPublished( YACS::ENGINE::Port* thePort );
 
   void addReferenceItem( YACS::HMI::Subject* theSRef );
+  void removeReferenceItem( YACS::HMI::Subject* theSRef );
+
+  void addLinkItem( YACS::HMI::Subject* theSLink );
+  void removeLinkItem( YACS::HMI::Subject* theSLink );
 
   YACS::HMI::SubjectNode* mySNode;
 };
 
 /*!
- * YACS tree view item for link
+ * YACS tree view item for data link
  */
 class YACSGui_LinkViewItem : public YACSGui_ViewItem
 {
 public:
   YACSGui_LinkViewItem( QListView* theParent, 
 			QListViewItem* theAfter,
-			YACS::ENGINE::Port* theOutPort,
-			YACS::ENGINE::Port* theInPort );
+			YACS::HMI::SubjectLink* theSLink );
   YACSGui_LinkViewItem( QListViewItem* theParent, 
 			QListViewItem* theAfter,
-			YACS::ENGINE::Port* theOutPort,
-			YACS::ENGINE::Port* theInPort );
+			YACS::HMI::SubjectLink* theSLink );
+  virtual ~YACSGui_LinkViewItem();
   
   QString name() const;
   QPixmap icon() const;
 
-  YACS::ENGINE::Port* getOutPort() const { return myOutPort; }
-  YACS::ENGINE::Port* getInPort() const { return myInPort; }
+  YACS::HMI::SubjectLink* getSLink() const { return mySLink; }
 
   virtual void update( const bool theIsRecursive = false );
     
 private:
-  YACS::ENGINE::Port* myOutPort;
-  YACS::ENGINE::Port* myInPort;
+  YACS::HMI::SubjectLink* mySLink;
+};
+
+/*!
+ * YACS tree view item for control link
+ */
+class YACSGui_ControlLinkViewItem : public YACSGui_ViewItem
+{
+public:
+  YACSGui_ControlLinkViewItem( QListView* theParent, 
+			       QListViewItem* theAfter,
+			       YACS::HMI::SubjectControlLink* theSLink );
+  YACSGui_ControlLinkViewItem( QListViewItem* theParent, 
+			       QListViewItem* theAfter,
+			       YACS::HMI::SubjectControlLink* theSLink );
+  virtual ~YACSGui_ControlLinkViewItem();
+  
+  QString name() const;
+  QPixmap icon() const;
+
+  YACS::HMI::SubjectControlLink* getSLink() const { return mySLink; }
+
+  virtual void update( const bool theIsRecursive = false );
+    
+private:
+  YACS::HMI::SubjectControlLink* mySLink;
 };
 
 /*!
@@ -214,7 +250,6 @@ public:
 			  YACS::HMI::SubjectProc* theSProc );
   virtual ~YACSGui_SchemaViewItem();
   
-  virtual void select(bool isSelected);
   virtual void update(YACS::HMI::GuiEvent event, int type, YACS::HMI::Subject* son);
   
   QPixmap icon() const;
@@ -229,6 +264,10 @@ public:
 private:
   void addNodeItem( YACS::HMI::Subject* theSNode );
   void addContainerItem( YACS::HMI::Subject* theSContainer );
+  void removeContainerItem( YACS::HMI::Subject* theSContainer );
+  void removeComponentItem( YACS::HMI::Subject* theSComponent );
+
+  void addLinkItem( YACS::HMI::Subject* theSLink );
   
   YACS::HMI::SubjectProc* mySProc;
 };
@@ -248,7 +287,6 @@ public:
 			      YACS::HMI::SubjectContainer* theSContainer = 0 );
   virtual ~YACSGui_ContainerViewItem();
 
-  virtual void select(bool isSelected);
   virtual void update(YACS::HMI::GuiEvent event, int type, YACS::HMI::Subject* son);
 
   QString name() const;
@@ -258,9 +296,11 @@ public:
   YACS::HMI::SubjectContainer* getSContainer() const { return mySContainer; }
 
   virtual void update( YACSGui_ComponentViewItem* theComponent = 0 );
-    
-private:
+  
   void addComponentItem( YACS::HMI::Subject* theSComponent );
+  
+private:
+  void removeComponentItem( YACS::HMI::Subject* theSComponent );
 
   YACS::HMI::SubjectContainer* mySContainer;
 };
@@ -280,7 +320,6 @@ public:
 
   virtual ~YACSGui_ComponentViewItem();
 
-  virtual void select(bool isSelected);
   virtual void update(YACS::HMI::GuiEvent event, int type, YACS::HMI::Subject* son);
   
   QString name() const;
@@ -296,9 +335,38 @@ private:
   YACS::HMI::SubjectComponent* mySComponent;
 };
 
+/*!
+ * YACS tree view item for data type
+ */
+class YACSGui_DataTypeItem : public YACSGui_ViewItem
+{
+public:
+  //typedef enum { Text, HighlightedText, Highlight } ColorRole;
+
+  YACSGui_DataTypeItem( QListView* theParent, 
+			QListViewItem* theAfter,
+			YACS::HMI::SubjectDataType* theSDataType );
+  YACSGui_DataTypeItem( QListViewItem* theParent, 
+			QListViewItem* theAfter,
+			YACS::HMI::SubjectDataType* theSDataType );
+  virtual ~YACSGui_DataTypeItem();
+  
+  virtual void update(YACS::HMI::GuiEvent event, int type, YACS::HMI::Subject* son);
+
+  QString name() const;
+  QPixmap icon() const;
+  
+  YACS::HMI::SubjectDataType* getSDataType() const { return mySDataType; }
+
+  virtual void update( const bool theIsRecursive = false );
+
+private:
+  YACS::HMI::SubjectDataType* mySDataType;
+};
+
 /* ================ items for tree view in run mode ================ */
 
-class YACSGui_ComposedNodeViewItem: public QListViewItem
+class YACSGui_ComposedNodeViewItem: public YACSGui_ViewItem
 {
  public:
   YACSGui_ComposedNodeViewItem(QListView *parent,
@@ -307,6 +375,7 @@ class YACSGui_ComposedNodeViewItem: public QListViewItem
   YACSGui_ComposedNodeViewItem(QListViewItem *parent,
 			       QString label,
 			       YACS::ENGINE::ComposedNode *node = 0);
+  virtual ~YACSGui_ComposedNodeViewItem();
 
   void setState(int state);
   void setStatus(int status);
@@ -316,8 +385,10 @@ class YACSGui_ComposedNodeViewItem: public QListViewItem
   YACS::ENGINE::ComposedNode* getNode() {return _node;};
 
   QPixmap icon() const;
-  
+
   void update( const bool theIsRecursive = false );
+
+  YACS::HMI::Subject* getSubject() const;
 
  protected:
   int _state;
@@ -325,7 +396,8 @@ class YACSGui_ComposedNodeViewItem: public QListViewItem
   YACS::ENGINE::ComposedNode *_node;
 };
 
-class YACSGui_ElementaryNodeViewItem: public QCheckListItem
+class YACSGui_ElementaryNodeViewItem: public QCheckListItem,
+                                      public YACS::HMI::GuiObserver
 {
  public:
   YACSGui_ElementaryNodeViewItem(QListView *parent,
@@ -336,18 +408,29 @@ class YACSGui_ElementaryNodeViewItem: public QCheckListItem
 				 const QString &text,
 				 Type tt = RadioButtonController,
 				 YACS::ENGINE::ElementaryNode *node = 0);
+  virtual ~YACSGui_ElementaryNodeViewItem();
   
   void setState(int state); 
   virtual void paintCell( QPainter *p, const QColorGroup &cg,
                           int column, int width, int alignment );
   YACS::ENGINE::ElementaryNode* getNode() {return _node;};
 
+  virtual void select(bool isSelected);
+
   void update( const bool theIsRecursive = false );
+
+  // axiluary methods for blocking reaction inside select() method
+  bool blockSelection( const bool toBlock );
+  bool selectionBlocked() const;
+
+  YACS::HMI::Subject* getSubject() const;
   
  protected:
   int _state;
   QColor _cf;
   YACS::ENGINE::ElementaryNode *_node;
+
+  bool myBlockSelect;
 };
 
 #endif

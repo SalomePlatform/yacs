@@ -102,6 +102,7 @@ public:
 					       std::map<YACSPrs_ElementaryNode*, int>& theNodePrs2ObjId);
 
   YACSPrs_ElementaryNode* getItem( YACS::ENGINE::Node* );
+  void                    removeNode( YACS::ENGINE::Node* );
 
   YACS::ENGINE::Node*     getNodeById( const int theID ) const;
 
@@ -114,8 +115,8 @@ public:
 
   void                    registerStatusObserverWithNode(YACS::ENGINE::Node* theNode);
 
-  void                    createPrs(YACS::HMI::SubjectNode* theSubject);
-  void                    deletePrs(YACS::HMI::SubjectNode* theSubject);
+  void                    createPrs(YACS::HMI::Subject* theSubject);
+  void                    deletePrs(YACS::HMI::SubjectNode* theSubject, bool removeLabelPort = true );
 
 private:
   YACSGui_Node*           driver( YACS::ENGINE::Node* theNode );

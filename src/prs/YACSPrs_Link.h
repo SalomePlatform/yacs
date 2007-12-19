@@ -20,6 +20,8 @@
 #ifndef YACSPRS_LINK_H
 #define YACSPRS_LINK_H
 
+#include <guiObservers.hxx>
+
 #include "QxGraph_ActiveItem.h"
 
 #include <qcanvas.h>
@@ -104,11 +106,16 @@ class YACSPrs_Link : public QObject {
   double myZ;
 };
 
-class YACSPrs_PortLink : public YACSPrs_Link {
+class YACSPrs_PortLink : public YACSPrs_Link, public YACS::HMI::GuiObserver {
 
  public:
   YACSPrs_PortLink(SUIT_ResourceMgr* theMgr, QCanvas* theCanvas, YACSPrs_InOutPort* theInputPort, YACSPrs_InOutPort* theOutputPort);
   virtual ~YACSPrs_PortLink();
+
+  virtual void select( bool isSelected );
+  virtual void update( YACS::HMI::GuiEvent event, int type, YACS::HMI::Subject* son);
+
+  YACS::HMI::Subject* getSubject() const;
 
   virtual void moveByPort(YACSPrs_Port* thePort, bool theMoveInternalLinkPoints=false, QRect theArea=QRect());
   virtual void moveByPort(YACSPrs_Port* thePort, int dx, int dy);

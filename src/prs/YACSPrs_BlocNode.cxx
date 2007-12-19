@@ -27,10 +27,12 @@
 #include "SUIT_ResourceMgr.h"
 
 #include <commandsProc.hxx>
+#include <guiContext.hxx>
 
 #include <qpainter.h>
 
 using namespace YACS::ENGINE;
+using namespace YACS::HMI;
 
 void drawText4(QPainter& thePainter, const QString& theText, 
 	       const QRect& theRect, int theHAlign = Qt::AlignAuto)
@@ -76,9 +78,9 @@ YACSPrs_BlocNode::YACSPrs_BlocNode(SUIT_ResourceMgr* theMgr, QCanvas* theCanvas,
   myDisplayMode(theDisplayMode)
 {
   printf("YACSPrs_BlocNode::YACSPrs_BlocNode\n");
-  setX(theLeft);
-  setY(theTop);
-
+  //setX(theLeft);
+  //setY(theTop);
+  
   setNodeColor(BLOCNODE_COLOR);
   setNodeSubColor(BLOCNODE_SUBCOLOR);
 
@@ -90,12 +92,13 @@ YACSPrs_BlocNode::YACSPrs_BlocNode(SUIT_ResourceMgr* theMgr, QCanvas* theCanvas,
 
   myWidth = theWidth;
   myHeight = theHeight;
+  myArea = QRect(100, 100, theWidth, theHeight);
 
   if ( myDisplayMode == Expanded )
   {
     if ( myPointMaster ) myWidth = myPointMaster->width() > theWidth ? myPointMaster->width() : theWidth;
     else myWidth = theWidth;
-    
+
     int anEmptyHeight = getTitleHeight() + getGateHeight() + 2*BLOCNODE_MARGIN;
     myHeight = ( (anEmptyHeight > theHeight) ? anEmptyHeight : theHeight);
     
@@ -165,6 +168,27 @@ void YACSPrs_BlocNode::update( YACS::HMI::GuiEvent event, int type, YACS::HMI::S
       }
     }
     break;
+  case ADDLINK:
+  case ADDCONTROLLINK:
+    {
+      printf(">> In prs : ADDLINK\n");
+      GuiContext* aContext = GuiContext::getCurrent();
+      if ( aContext )
+      	if ( aContext->getSubjectProc() )
+	  aContext->getSubjectProc()->update(event, type, son);
+    }
+    break;
+  case REMOVE:
+    switch (type)
+    {
+    case CONTROLLINK:
+      {
+	printf(">> In prs:  REMOVE link\n");
+	removeLinkPrs(son);
+      }
+      break;
+    }
+    break;
   default:
     GuiObserver::update(event, type, son);
   }
@@ -174,7 +198,11 @@ void YACSPrs_BlocNode::setChildren(std::set<YACSPrs_ElementaryNode*>& theChildre
 { 
   if ( myDisplayMode == Expanded )
   { 
-    myChildren = theChildren;
+    //myChildren = theChildren;
+    if ( !myChildren.empty() ) myChildren.clear();
+    for ( std::set<YACSPrs_ElementaryNode*>::iterator it = theChildren.begin(); it != theChildren.end(); it++ )
+      myChildren.insert(*it);
+      
     // resize bounding rectangle if needed
     int aMaxWidth=0, aMaxHeight=0;
     int aX = (int)x();
@@ -208,7 +236,7 @@ void YACSPrs_BlocNode::setChildren(std::set<YACSPrs_ElementaryNode*>& theChildre
 
     updateGates();
     printf("Parent : %s. Number of children : %d\n",getEngine()->getName().c_str(),myChildren.size());
-  }  
+  } 
 }
 
 void YACSPrs_BlocNode::setCanvas(QCanvas* theCanvas)
@@ -567,6 +595,18 @@ void YACSPrs_BlocNode::setZ(double z)
   if ( myPointMaster ) myPointMaster->setZ(z);
 }
 
+void YACSPrs_BlocNode::setX(int x)
+{
+  QCanvasPolygonalItem::setX(x);
+  myArea = boundingRect();
+}
+
+void YACSPrs_BlocNode::setY(int y)
+{
+  QCanvasPolygonalItem::setY(y);
+  myArea = boundingRect();
+}
+
 void YACSPrs_BlocNode::update()
 {
   YACSPrs_ElementaryNode::update();
@@ -815,6 +855,12 @@ int YACSPrs_BlocNode::maxHeight() const
   {
     return YACSPrs_ElementaryNode::maxHeight();// + sliseWidth; // not yet implemented
   }
+}
+
+
+QRect YACSPrs_BlocNode::getRect() const
+{
+  return QRect((int)x(), (int)y(), width(), height());
 }
 
 QRect YACSPrs_BlocNode::getTitleRect() const

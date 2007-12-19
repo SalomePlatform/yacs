@@ -30,6 +30,8 @@
 
 #include <qdir.h>
 
+#include <iostream.h> //for debug only
+
 using namespace YACS::ENGINE;
 using namespace YACS;
 using namespace std;
@@ -51,6 +53,7 @@ YACSGui_Executor::YACSGui_Executor(YACSGui_Module* guiMod, Proc* theProc) :
   _isSuspended = false;
   _isStopOnError = false;
   _execMode = YACS::CONTINUE;
+  _loadStateFile = "";
 }
 
 //! Destructor
@@ -113,7 +116,27 @@ void YACSGui_Executor::runDataflow(const bool isRemoteRun)
         }
       _procRef->setExecMode(getCurrentExecMode());
       _setBPList();
-      _procRef->Run();
+      if ( _loadStateFile.empty() )
+      {
+	printf(">> Run!\n");
+	cout<<">> this = "<<this<<endl<<endl;
+	_procRef->Run();
+      }
+      else
+      {
+	printf(">> Run from STATE!\n");
+	try {
+	_procRef->RunFromState(_loadStateFile.c_str());
+	}
+	catch (...) {
+	  SUIT_MessageBox::error1(_guiMod->getApp()->desktop(), 
+				  tr("ERROR"), 
+				  tr("Runtime error: execution from the loaded state failed"), 
+				  tr("BUT_OK"));
+	  return;
+	}
+	cout<<">> this = "<<this<<endl<<endl;
+      }
     }
 }
 
@@ -335,6 +358,11 @@ void YACSGui_Executor::saveState(const std::string& xmlFile)
 	    ||
 	    !_localEngine && !(CORBA::is_nil(_procRef)) && StartFinish )  // --- remote run
     _procRef->saveState(xmlFile.c_str());
+}
+
+void YACSGui_Executor::setLoadStateFile(std::string xmlFile)
+{
+  _loadStateFile = xmlFile;
 }
 
 void YACSGui_Executor::setNextStepList(std::list<std::string> nextStepList)

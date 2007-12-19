@@ -98,7 +98,7 @@ InputPyPort::~InputPyPort()
   DEBTRACE( "_data refcnt: " << _data->ob_refcnt );
   DEBTRACE( "_initData refcnt: " << _initData->ob_refcnt );
   // Release or not release : all GenericObj are deleted when the input port is deleted
-  //CCAR: waiting for support in Salome ;releasePyObj(_data);
+  releasePyObj(_data);
   Py_XDECREF(_data); 
   Py_XDECREF(_initData); 
   PyGILState_Release(gstate);
@@ -133,11 +133,11 @@ void InputPyPort::put(const void *data) throw(ConversionException)
 void InputPyPort::put(PyObject *data) throw(ConversionException)
 {
   InterpreterUnlocker l;
-  //CCAR: waiting for support in Salome ;releasePyObj(_data);
+  releasePyObj(_data);
   Py_XDECREF(_data); 
   _data = data;
   Py_INCREF(_data); 
-  //CCAR: waiting for support in Salome ;registerPyObj(_data);
+  registerPyObj(_data);
   DEBTRACE( "_data refcnt: " << _data->ob_refcnt );
 }
 
@@ -220,7 +220,7 @@ OutputPyPort::~OutputPyPort()
   PyGILState_STATE gstate = PyGILState_Ensure();
   DEBTRACE( "_data refcnt: " << _data->ob_refcnt );
   // Release or not release : all GenericObj are deleted when the output port is deleted
-  //CCAR: waiting for support in Salome ;releasePyObj(_data);
+  releasePyObj(_data);
   Py_XDECREF(_data); 
   PyGILState_Release(gstate);
 }
@@ -243,7 +243,7 @@ void OutputPyPort::put(PyObject *data) throw(ConversionException)
   PyObject_Print(data,stderr,Py_PRINT_RAW);
   cerr << endl;
 #endif
-  //CCAR: waiting for support in Salome ;releasePyObj(_data);
+  releasePyObj(_data);
   Py_XDECREF(_data); 
   _data = data;
   Py_INCREF(_data); 

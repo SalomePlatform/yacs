@@ -247,3 +247,6 @@ msgstr "icon_plus.png"
 
 msgid "ICON_MINUS"
 msgstr "icon_minus.png"
+
+msgid "ICON_TEXT"
+msgstr "icon_text.png"

@@ -24,10 +24,13 @@
 #include "YACSPrs_Link.h"
 #include "YACSPrs_Def.h"
 
+#include <guiContext.hxx>
+
 #include <QxGraph_Canvas.h>
 #include <QxGraph_Prs.h>
 
 #include "SUIT_ResourceMgr.h"
+#include "SUIT_Session.h"
 
 #include <qpainter.h>
 //#include <qvaluelist.h> // for states animation
@@ -387,7 +390,14 @@ YACSPrs_ElementaryNode::YACSPrs_ElementaryNode(SUIT_ResourceMgr* theMgr, QCanvas
 
 YACSPrs_ElementaryNode::~YACSPrs_ElementaryNode() 
 {
-  myPortList.setAutoDelete(true);
+  myPortList.setAutoDelete(false);
+  for (YACSPrs_Port* aPort = myPortList.first(); aPort; aPort = myPortList.next())
+  {
+    if ( YACSPrs_InOutPort* anIOP = dynamic_cast<YACSPrs_InOutPort*>(aPort) )
+      delete anIOP;
+    else if ( YACSPrs_LabelPort* aLP = dynamic_cast<YACSPrs_LabelPort*>(aPort) )
+      delete aLP;
+  }
   myPortList.clear();
 
   if (myPointMaster) delete myPointMaster;
@@ -399,6 +409,18 @@ void YACSPrs_ElementaryNode::select( bool isSelected )
 {
   printf(">> YACSPrs_ElementaryNode::select\n");
   setSelected(isSelected);
+
+  // Unselect gates. They cannot be selected/unselected in tree view
+  // so unselect them here
+  if ( !isSelected )
+  {
+    for (YACSPrs_Port* aPort = myPortList.first(); aPort; aPort = myPortList.next())
+    {
+      YACSPrs_InOutPort* anIOPort = dynamic_cast<YACSPrs_InOutPort*>( aPort );
+      if ( anIOPort &&  anIOPort->isGate() )
+        anIOPort->setSelected( false );
+    }
+  }
 }
 
 void YACSPrs_ElementaryNode::update( YACS::HMI::GuiEvent event, int type, YACS::HMI::Subject* son)
@@ -484,6 +506,13 @@ void YACSPrs_ElementaryNode::update( YACS::HMI::GuiEvent event, int type, YACS::
     if ( isFullDMode() )
       switch (type)
       {
+      case DATALINK:
+      case CONTROLLINK:
+	{
+	  printf(">> In prs:  REMOVE link\n");
+	  removeLinkPrs(son);
+	}
+	break;
       case INPUTPORT:
       case OUTPUTPORT:
       case INPUTDATASTREAMPORT:
@@ -547,6 +576,16 @@ void YACSPrs_ElementaryNode::update( YACS::HMI::GuiEvent event, int type, YACS::
       default:
 	break;
       }
+    break;
+  case ADDLINK:
+  case ADDCONTROLLINK:
+    {
+      printf(">> In prs : ADDLINK\n");
+      GuiContext* aContext = GuiContext::getCurrent();
+      if ( aContext )
+      	if ( aContext->getSubjectProc() )
+	  aContext->getSubjectProc()->update(event, type, son);
+    }
     break;
   default:
     GuiObserver::update(event, type, son);
@@ -624,6 +663,8 @@ void YACSPrs_ElementaryNode::moveDown(YACS::ENGINE::Port* thePort)
 void YACSPrs_ElementaryNode::addPortPrs(YACS::ENGINE::Port* thePort)
 {
   if ( !thePort ) return;
+
+  if ( getPortPrs(thePort) ) return;
 
   ElementaryNode* aNode = dynamic_cast<ElementaryNode*>(getEngine());
   if ( !aNode ) return;
@@ -723,8 +764,10 @@ void YACSPrs_ElementaryNode::removePortPrs(YACS::ENGINE::Port* thePort)
       if ( (isInput && anIPNum > anOPNum) || (!isInput && anIPNum < anOPNum) )
 	myPortHeight -= PORT_HEIGHT+PORT_SPACE;
 
-    myPortList.setAutoDelete(true);
+    myPortList.setAutoDelete(false);
     myPortList.remove(aPort);
+    if ( mySelectedPort == aPort ) mySelectedPort = 0;
+    delete aPort;
     
     //updateGates(false);
     updatePorts();
@@ -742,6 +785,42 @@ void YACSPrs_ElementaryNode::removePortPrs(YACS::ENGINE::Port* thePort)
       canvas()->setChanged(getRect());
       canvas()->update();
     }
+  }
+}
+
+void YACSPrs_ElementaryNode::removeLabelPortPrs(YACSPrs_LabelPort* thePort)
+{
+  if ( !thePort ) return;
+
+  ComposedNode* aNode = dynamic_cast<ComposedNode*>(getEngine());
+  if ( !aNode ) return;
+
+  bool aDisp = isVisible();
+  if (aDisp) hide();
+
+  int anOPNum = aNode->getNumberOfOutputPorts();
+  if ( anOPNum > 1 )
+    myPortHeight -= PORT_HEIGHT+PORT_SPACE;
+
+  myPortList.setAutoDelete(false);
+  myPortList.remove(thePort);
+  if ( mySelectedPort == thePort ) mySelectedPort = 0;
+  delete thePort;
+    
+  updatePorts();
+
+  if (myPointMaster)
+  {
+    QPoint aPnt = getConnectionMasterPoint();
+    myPointMaster->setCoords(aPnt.x(), aPnt.y());
+  }
+
+  if (aDisp) show();
+
+  if ( canvas() )
+  { 
+    canvas()->setChanged(getRect());
+    canvas()->update();
   }
 }
 
@@ -775,6 +854,40 @@ void YACSPrs_ElementaryNode::removeLabelLink()
 void YACSPrs_ElementaryNode::updateLabelLink()
 {
   if ( myLabelLink ) myLabelLink->moveByNode(this);
+}
+
+void YACSPrs_ElementaryNode::removeLinkPrs(YACS::HMI::Subject* theSLink)
+{
+  YACSPrs_PortLink* aLinkPrs = 0;
+
+  if ( SubjectLink* aSLink = dynamic_cast<SubjectLink*>(theSLink) )
+  { //remove data link presentation (this node is an out node for the given link)
+    if ( aSLink->getSubjectOutNode() != mySEngine ) return;
+
+    YACSPrs_InOutPort* anOPPrs =
+      dynamic_cast<YACSPrs_InOutPort*>(getPortPrs(aSLink->getSubjectOutPort()->getPort()));
+    if ( !anOPPrs ) return;
+
+    aLinkPrs = anOPPrs->getLink(aSLink);
+  }
+  else if ( SubjectControlLink* aSCLink = dynamic_cast<SubjectControlLink*>(theSLink) )
+  { //remove control link presentation (this node is an out node for the given link)
+    if ( aSCLink->getSubjectOutNode() != mySEngine ) return;
+
+    YACSPrs_InOutPort* anOPPrs =
+      dynamic_cast<YACSPrs_InOutPort*>(getPortPrs(getEngine()->getOutGate()));
+    if ( !anOPPrs ) return;
+
+    aLinkPrs = anOPPrs->getLink(aSCLink);
+  }
+
+  if ( !aLinkPrs ) return;
+  
+  aLinkPrs->setSelected(false);
+  printf(">> Delete link presentation\n");
+  delete aLinkPrs;
+
+  if ( canvas() ) canvas()->update();
 }
 
 void YACSPrs_ElementaryNode::beforeMoving()
@@ -877,10 +990,12 @@ void YACSPrs_ElementaryNode::select(const QPoint& theMousePos, const bool toSele
 	    {
 	      mySelectedPort->setSelected(false);
 	      mySelectedPort->setColor(mySelectedPort->storeColor(), false, true, true);
+              synchronize( mySelectedPort, false );
 	    }
 	    else
 	    {
 	      setSelected(false);
+	      printf(">>>## 4\n");
 	      getSEngine()->select(false);
 
 	      setNodeSubColor( myStoreSubColor, true );
@@ -888,6 +1003,7 @@ void YACSPrs_ElementaryNode::select(const QPoint& theMousePos, const bool toSele
 	    aPort->setSelected(true);
 	    aPort->setColor(aPort->Color().dark(130), false, true, true);
 	    mySelectedPort = aPort;
+            synchronize( mySelectedPort, true );
 	  }
 	  break;
 	}
@@ -899,6 +1015,7 @@ void YACSPrs_ElementaryNode::select(const QPoint& theMousePos, const bool toSele
       if ( mySelectedPort )
       {
 	mySelectedPort->setSelected(false);
+        synchronize( mySelectedPort, false );
 	mySelectedPort = 0;
       }
       
@@ -907,6 +1024,7 @@ void YACSPrs_ElementaryNode::select(const QPoint& theMousePos, const bool toSele
 	myStoreSubColor = mySubColor;
 
 	setSelected(true);
+	printf(">>>## 5\n");
 	getSEngine()->select(true);
 
 	setNodeSubColor( nodeSubColor().dark(130), true );
@@ -918,10 +1036,12 @@ void YACSPrs_ElementaryNode::select(const QPoint& theMousePos, const bool toSele
     if ( mySelectedPort ) {
       mySelectedPort->setSelected(false);
       mySelectedPort->setColor(mySelectedPort->storeColor(), false, true, true);
+      synchronize( mySelectedPort, false );
       mySelectedPort = 0;
     }
     else {
       setSelected(false);
+      printf(">>>## 6\n");
       getSEngine()->select(false);
 
       setNodeSubColor( myStoreSubColor, true );
@@ -953,7 +1073,7 @@ QString YACSPrs_ElementaryNode::getToolTipText(const QPoint& theMousePos, QRect&
 		aText += QString(" data stream");
 	      aText += QString(" port \"") + anIOPort->getName() + QString("\", ");
 	      aText += anIOPort->getType(true) + QString(", ");
-	      aText += QString("value = ") + anIOPort->getValue();
+	      aText += QString("value = ") + anIOPort->getCurrentValue();
 	    }
 	    else
 	      aText += QString(" gate port");
@@ -1820,6 +1940,16 @@ bool YACSPrs_ElementaryNode::isControlDMode() const
   return false;
 }
 
+void YACSPrs_ElementaryNode::setSelected( bool b ) 
+{ 
+  mySelected = b;
+}
+
+bool YACSPrs_ElementaryNode::synchronize( YACSPrs_Port* port, const bool toSelect )
+{
+  return YACSPrs_InOutPort::synchronize( port, toSelect );
+}
+
 /*!
  * =========================== YACSPrs_Port ===========================
  !*/
@@ -1849,10 +1979,16 @@ YACSPrs_Port::~YACSPrs_Port()
     {
       if ( YACSPrs_PortLink* aPL = dynamic_cast<YACSPrs_PortLink*>( aLink ) )
       {
+	// detach port link presentation from HMI
+	YACS::HMI::Subject* aSub = aPL->getSubject();
+	if ( aSub )
+	  aSub->detach(aPL);
+
 	if ( aPL->getInputPort() == this )
 	  aPL->setInputPort(0);
 	else if ( aPL->getOutputPort() == this )
 	  aPL->setOutputPort(0);
+
 	delete aPL;
 	aPL = 0;
       }
@@ -1866,6 +2002,24 @@ YACSPrs_Port::~YACSPrs_Port()
     }
   }
   myLinks.clear();
+}
+
+YACSPrs_PortLink* YACSPrs_Port::getLink(YACS::HMI::Subject* theSLink)
+{
+  YACSPrs_PortLink* aRet = 0;
+
+  if ( !theSLink ) return aRet;
+  
+  for(list<YACSPrs_Link*>::iterator it = myLinks.begin(); it != myLinks.end(); it++)
+  {
+    YACSPrs_PortLink* aPLink = dynamic_cast<YACSPrs_PortLink*>(*it);
+    if ( !aPLink ) continue;
+
+    if ( aPLink->getSubject() == theSLink )
+      return aPLink;
+  }
+
+  return aRet;
 }
 
 void YACSPrs_Port::setCanvas(QCanvas* theCanvas)
@@ -2067,15 +2221,32 @@ YACSPrs_InOutPort::YACSPrs_InOutPort( SUIT_ResourceMgr* theMgr, QCanvas* theCanv
   if ( !myGate ) {
     myType = getType();
     myValue = getValue();
+    printf("Set VAL 0\n");
   }
 
   myColor = myMgr->colorValue( "QxGraph", "Title", TITLE_COLOR );
 
   myPoint = new YACSPrs_Hook(theMgr, theCanvas, this, myInput, myGate);
+
+  // attach to HMI myself
+  YACS::HMI::Subject* aSub = getSubject();
+  if ( aSub )
+    aSub->attach( this );
 }
 
 YACSPrs_InOutPort::~YACSPrs_InOutPort()
 {
+  printf(">> YACSPrs_InOutPort::~YACSPrs_InOutPort() detach this from HMI\n");
+  // detach from HMI
+  YACS::HMI::Subject* aSub = getSubject();
+  if ( aSub )
+    aSub->detach(this);
+}
+
+void YACSPrs_InOutPort::select( bool isSelected )
+{
+  printf(">> YACSPrs_InOutPort::select( %d )\n", isSelected );
+  setSelected( isSelected );
 }
 
 //! Updates a port presentation during execution.
@@ -2104,6 +2275,7 @@ void YACSPrs_InOutPort::update(bool theForce, YACS::ENGINE::Port* theEngine)
       QString aNewValue = getValue(theEngine); // !!! during execution the value updated by events from YACSORB engine
       if (theForce || myValue.compare(aNewValue) != 0) {
 	myValue = aNewValue;
+	printf("Set VAL 1\n");
 	if (myCanvas) myCanvas->setChanged(myValueRect);
       }
     }
@@ -2119,6 +2291,7 @@ void YACSPrs_InOutPort::updateValue( QString theValue )
   if ( !myGate )
     if ( myValue.compare(theValue) != 0 ) {
       myValue = theValue;
+      printf("Set VAL 2\n");
       if (myCanvas) myCanvas->setChanged(myValueRect);
     }
 }
@@ -2472,6 +2645,59 @@ void YACSPrs_InOutPort::draw(QPainter& thePainter, int theXRnd, int theYRnd)
   }
 }
 
+YACS::HMI::Subject* YACSPrs_InOutPort::getSubject() const
+{
+  YACS::HMI::Subject* aSub = 0;
+
+  DataPort* aDataPort = dynamic_cast<DataPort*>( myEngine );
+  if ( aDataPort )
+  {
+    GuiContext* aContext = GuiContext::getCurrent();
+    if ( aContext )
+    {
+      if ( aContext->_mapOfSubjectDataPort.find( aDataPort ) != aContext->_mapOfSubjectDataPort.end() )
+        aSub = aContext->_mapOfSubjectDataPort[ aDataPort ];
+    }
+  }
+
+  return aSub;
+}
+
+bool YACSPrs_InOutPort::synchronize( YACSPrs_Port* port, const bool toSelect )
+{
+  YACSPrs_InOutPort* anInOutPort = dynamic_cast< YACSPrs_InOutPort* >( port );
+  if ( !anInOutPort ) 
+    return false;
+
+  if ( !anInOutPort->isGate() )
+  {
+    YACS::HMI::Subject* aSub = anInOutPort->getSubject();
+    if ( aSub )
+    {
+      printf(">>>## 7\n");
+      aSub->select( toSelect );
+      return true;
+    }
+  }
+  else 
+  {
+    // try to synchronize port with parent prs
+    YACSPrs_ElementaryNode* aNodePrs = anInOutPort->getNode();
+    if ( aNodePrs )
+    {
+      YACS::HMI::SubjectNode* aSub = aNodePrs->getSEngine();
+      if ( aSub )
+      {
+	printf(">>>## 8\n");
+        aSub->select( toSelect );
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
 /*!
  * =========================== YACSPrs_Hook ===========================
  !*/
@@ -2766,3 +2992,4 @@ void YACSPrs_Hook::drawShape(QPainter& thePainter)
     }
   }
 }
+

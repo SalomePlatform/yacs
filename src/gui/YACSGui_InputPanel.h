@@ -21,6 +21,7 @@
 #ifndef YACSGui_InputPanel_HeaderFile
 #define YACSGui_InputPanel_HeaderFile
 
+#include "yacsconfig.h"
 #include "schemapage.h"
 #include "containerpage.h"
 #include "componentpage.h"
@@ -39,6 +40,11 @@
 
 #include <qdockwindow.h>
 #include <qlistview.h>
+
+#ifdef HAVE_QEXTSCINTILLA_H
+#include <qextscintilla.h>
+#include <qextscintillalexerpython.h>
+#endif
 
 class YACSGui_Module;
 class YACSGui_PropertyPage;
@@ -69,7 +75,7 @@ public:
 	 ForLoopNodeId, ForEachLoopNodeId, WhileLoopNodeId, SwitchNodeId, BlockNodeId,
 	 LinkId, LastId = LinkId };
 
-  typedef enum { EditMode, RunMode } PageMode;
+  typedef enum { EditMode, RunMode, NewMode } PageMode;
 
 public: 
   YACSGui_InputPanel( YACSGui_Module* );
@@ -78,13 +84,14 @@ public:
   void                                setBtnText( const QString& theText, 
                                                   const int thePageId );
 
-  QWidget*                            getPage( const int thePageId, const bool theWithCreate = false );
+  QWidget*                            getPage( const int thePageId, const bool theWithCreate = true );
   YACSGui_Module*                     getModule() const { return myModule; }
   int                                 getPageId( QWidget* thePage ) const;
   int                                 insertPage( QWidget* thePage, 
                                                   const int thePageId = -1,
                                                   const int theBeforePageId = -1, 
                                                   const int theStretch = 0 ) const;
+  void                                removePage( QWidget* thePage );
 
   virtual QSize                       sizeHint() const;
 
@@ -102,11 +109,10 @@ public:
 public slots:
   void                                onNotifyNodeStatus( int theNodeId, int theStatus );
   void                                onNotifyInPortValues( int theNodeId,
-							    std::list<std::string> theInPortsNames,
-							    std::list<std::string> theValues );
+							    std::map<std::string,std::string> theInPortName2Value );
   void                                onNotifyOutPortValues( int theNodeId,
-							     std::list<std::string> theOutPortsNames,
-							     std::list<std::string> theValues );
+							     std::map<std::string,std::string> theOutPortName2Value );
+  void                                onApplyEnabled( bool );
   
 signals:
   void                                Apply( const int theId );
@@ -114,6 +120,7 @@ signals:
 private slots:
   void                                onMainBtn( bool );
   void                                onApply();
+  void                                onClose();
 
 private:
   void                                updateState();
@@ -216,6 +223,9 @@ public:
 public slots:
   virtual void                        onApply();
 
+protected slots:
+  void                                onShowAdvanced(); 
+
 private:
   void                                updateState();
   YACS::HMI::SubjectContainer*        mySContainer;
@@ -256,7 +266,7 @@ public:
   void                                setContainer();
 
 public slots:
-  virtual void                        onApply();
+  virtual void                        onApply(); 
 
 protected slots:
   void                                onContainerChanged( const QString& );
@@ -321,9 +331,9 @@ private:
 class YACSGui_NodePage : public YACS::HMI::GuiObserver
 {
 public: 
-  typedef enum { SALOMEService, CORBAService, NodeNode, ServiceInline, XML,
+  typedef enum { SALOMEService, CORBAService, CPPNode, ServiceInline, XMLNode,
 		 InlineFunction, InlineScript,
-		 FOR, FOREACH, WHILE, SWITCH, Block, Unknown } NodeType; //?
+		 FOR, FOREACH, WHILE, SWITCH, Block, Unknown } NodeType;
 
   typedef enum { UnknownType,
 		 Input, SeqAnyInput, AnyInput, ConditionInput, InputCorba,  InputPy, InputXml,
@@ -350,11 +360,10 @@ public:
 
   virtual void                        notifyNodeStatus( int theStatus ) {}
   virtual void                        notifyNodeProgress() {}
-  virtual void                        notifyInPortValues( std::list<std::string> theInPortsNames,
-							  std::list<std::string> theValues ) {}
-  virtual void                        notifyOutPortValues( std::list<std::string> theOutPortsNames,
-							   std::list<std::string> theValues ) {}
+  virtual void                        notifyInPortValues( std::map<std::string,std::string> theInPortName2Value ) {}
+  virtual void                        notifyOutPortValues( std::map<std::string,std::string> theOutPortName2Value ) {}
   virtual void                        notifyNodeCreateBody( YACS::HMI::Subject* theSubject ) {}
+  virtual void                        notifyNodeCreateNode( YACS::HMI::Subject* theSubject ) {}
 
 protected:
   virtual void                        updateState();
@@ -364,7 +373,7 @@ protected:
   QString                             getPortValue( YACS::ENGINE::Port* ) const;
 
   YACS::HMI::SubjectNode*             mySNode;
-  NodeType                            myType; //?
+  NodeType                            myType;
   YACSGui_InputPanel::PageMode        myMode;
 };
 
@@ -390,16 +399,15 @@ public:
 
   virtual void                        notifyNodeStatus( int theStatus );
   virtual void                        notifyNodeProgress();
-  virtual void                        notifyInPortValues( std::list<std::string> theInPortsNames,
-							  std::list<std::string> theValues );
-  virtual void                        notifyOutPortValues( std::list<std::string> theOutPortsNames,
-							   std::list<std::string> theValues );
+  virtual void                        notifyInPortValues( std::map<std::string,std::string> theInPortName2Value );
+  virtual void                        notifyOutPortValues( std::map<std::string,std::string> theOutPortName2Value );
 
 public slots:
   virtual void                        onApply();
 
 protected:
   virtual void                        updateState();
+  virtual void                        hideEvent( QHideEvent* );
 
 protected slots:
   void                                onNodeNameChanged( const QString& );
@@ -410,6 +418,11 @@ protected slots:
   void                                onMovedDown( const int theDownRow );
   void                                onRemoved( const int theRow );
   
+ protected:
+#ifdef HAVE_QEXTSCINTILLA_H
+  QextScintilla *_myTextEdit;
+#endif
+
 private:
   void                                fillInputPortsTable();
   void                                fillOutputPortsTable();
@@ -429,6 +442,8 @@ private:
   QPtrList<YACS::ENGINE::InPort> myIPList;
   QPtrList<YACS::ENGINE::OutPort> myOPList;
   bool myIsNeedToReorder;
+  int                             myPara;
+  int                             myIndex;
 };
 
 /*
@@ -445,6 +460,7 @@ public:
 							       WFlags theFlags = 0 );
   virtual                             ~YACSGui_ServiceNodePage();
 
+  virtual void                        setSCNode( YACS::HMI::SubjectComposedNode* theSCNode );
   virtual void                        setSNode( YACS::HMI::SubjectNode* theSNode );
 
   virtual void                        setComponent( YACS::ENGINE::ComponentInstance* theComponent );
@@ -457,22 +473,28 @@ public:
 
   virtual void                        notifyNodeStatus( int theStatus );
   virtual void                        notifyNodeProgress();
-  virtual void                        notifyInPortValues( std::list<std::string> theInPortsNames,
-							  std::list<std::string> theValues );
-  virtual void                        notifyOutPortValues( std::list<std::string> theOutPortsNames,
-							   std::list<std::string> theValues );
+  virtual void                        notifyInPortValues( std::map<std::string,std::string> theInPortName2Value );
+  virtual void                        notifyOutPortValues( std::map<std::string,std::string> theOutPortName2Value );
+
+signals:
+  void                                enableApply( bool );
 
 public slots:
   virtual void                        onApply();
-
+ 
 protected:
   virtual void                        updateState();
+  virtual void                        hideEvent( QHideEvent* );
 
 protected slots:
   void                                onVisibilityChanged( bool );
   void                                onNodeNameChanged( const QString& );
   void                                onMethodChanged( const QString& );
   void                                onValueChanged( int, int );
+  void                                onSearch();
+  void                                onBrowse( );
+  void                                onCatalogMethodClicked( QListViewItem* );
+  void                                onCatalogChanged( int );
   
 private:
   void                                updateServices( const QString& = QString::null );
@@ -487,6 +509,11 @@ private:
   YACS::ENGINE::ComponentInstance*    myComponent;
   QString                             myComponentName;
   bool                                myMethodChanged;
+  YACS::HMI::SubjectComposedNode*     mySCNode;
+  std::map<QListViewItem*,std::pair<std::string,std::string> > myServiceMap;
+  std::string                         myProcName;
+  int                                 myPara;
+  int                                 myIndex;
 };
 
 /*
@@ -511,10 +538,8 @@ public:
 
   virtual void                        notifyNodeStatus( int theStatus );
   virtual void                        notifyNodeProgress();
-  virtual void                        notifyInPortValues( std::list<std::string> theInPortsNames,
-							  std::list<std::string> theValues );
-  virtual void                        notifyOutPortValues( std::list<std::string> theOutPortsNames,
-							   std::list<std::string> theValues );
+  virtual void                        notifyInPortValues( std::map<std::string,std::string> theInPortName2Value );
+  virtual void                        notifyOutPortValues( std::map<std::string,std::string> theOutPortName2Value );
   virtual void                        notifyNodeCreateBody( YACS::HMI::Subject* theSubject );
 
 public slots:
@@ -549,10 +574,8 @@ public:
 
   virtual void                        notifyNodeStatus( int theStatus );
   virtual void                        notifyNodeProgress();
-  virtual void                        notifyInPortValues( std::list<std::string> theInPortsNames,
-							  std::list<std::string> theValues );
-  virtual void                        notifyOutPortValues( std::list<std::string> theOutPortsNames,
-							   std::list<std::string> theValues );
+  virtual void                        notifyInPortValues( std::map<std::string,std::string> theInPortName2Value );
+  virtual void                        notifyOutPortValues( std::map<std::string,std::string> theOutPortName2Value );
 
 public slots:
   virtual void                        onApply();
@@ -587,10 +610,8 @@ public:
 
   virtual void                        notifyNodeStatus( int theStatus );
   virtual void                        notifyNodeProgress();
-  virtual void                        notifyInPortValues( std::list<std::string> theInPortsNames,
-							  std::list<std::string> theValues );
-  virtual void                        notifyOutPortValues( std::list<std::string> theOutPortsNames,
-							   std::list<std::string> theValues );
+  virtual void                        notifyInPortValues( std::map<std::string,std::string> theInPortName2Value );
+  virtual void                        notifyOutPortValues( std::map<std::string,std::string> theOutPortName2Value );
   virtual void                        notifyNodeCreateBody( YACS::HMI::Subject* theSubject );
 
 public slots:
@@ -629,10 +650,9 @@ public:
 
   virtual void                        notifyNodeStatus( int theStatus );
   virtual void                        notifyNodeProgress();
-  virtual void                        notifyInPortValues( std::list<std::string> theInPortsNames,
-							  std::list<std::string> theValues );
-  virtual void                        notifyOutPortValues( std::list<std::string> theOutPortsNames,
-							   std::list<std::string> theValues );
+  virtual void                        notifyInPortValues( std::map<std::string,std::string> theInPortName2Value );
+  virtual void                        notifyOutPortValues( std::map<std::string,std::string> theOutPortName2Value );
+  virtual void                        notifyNodeCreateNode( YACS::HMI::Subject* theSubject );
 
 public slots:
   virtual void                        onApply();
@@ -652,6 +672,7 @@ protected slots:
   void                                onRemoved( const int theRow );
 
 private:
+  void                                updateLabelPorts();
   void                                setSwitchCases();
 
   bool                                  myIsSelectChild;
@@ -685,10 +706,9 @@ public:
 
   virtual void                        notifyNodeStatus( int theStatus );
   virtual void                        notifyNodeProgress();
-  virtual void                        notifyInPortValues( std::list<std::string> theInPortsNames,
-							  std::list<std::string> theValues );
-  virtual void                        notifyOutPortValues( std::list<std::string> theOutPortsNames,
-							   std::list<std::string> theValues );
+  virtual void                        notifyInPortValues( std::map<std::string,std::string> theInPortName2Value );
+  virtual void                        notifyOutPortValues( std::map<std::string,std::string> theOutPortName2Value );
+  virtual void                        notifyNodeCreateNode( YACS::HMI::Subject* theSubject );
 
 public slots:
   virtual void                        onApply();

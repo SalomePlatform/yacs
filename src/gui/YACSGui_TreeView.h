@@ -31,6 +31,8 @@
 #include <qlistview.h>
 
 class YACSGui_NodeViewItem;
+class YACSGui_SchemaViewItem;
+class YACSGui_LabelViewItem;
 
 class QPopupMenu;
 
@@ -55,7 +57,8 @@ class YACSGui_TreeView: public QListView
   virtual void build(); //temporary solution, for testing only
 
   virtual void syncPageTypeWithSelection() {}
-
+  virtual void syncHMIWithSelection() {}
+  
  protected slots:
   virtual void onContextMenuRequested( QListViewItem*, const QPoint& ) {}
 
@@ -94,10 +97,14 @@ class YACSGui_EditionTreeView: public YACSGui_TreeView
   void displayChildren( YACSGui_NodeViewItem* theNodeItem );
 
   YACS::HMI::Subject* getSelectedSubject();
+  virtual YACS::HMI::Subject* getSubject( QListViewItem* theItem );
 
+  virtual void syncHMIWithSelection();
+  
  public slots:
-  void onCreateDataType();
   void onAddToLibrary();
+
+  void onAddLink();
 
   void onCopyItem();
   void onPasteItem();
@@ -114,17 +121,21 @@ class YACSGui_EditionTreeView: public YACSGui_TreeView
 
  protected:
  enum { ServiceNodeItem = YACSGui_TreeView::NodeItem+1, LoopNodeItem, PortItem,
-	LinkItem, ContainerItem, ComponentItem, CorbaComponentItem };
+	LinkItem, ContainerItem, ComponentItem, CorbaComponentItem, ComposedNodeItem, DataTypeItem };
 
   //virtual void build();
   void fillContainerData( YACS::HMI::SubjectComposedNode* theSNode );
-  virtual QPopupMenu* contextMenuPopup( const int );
+  virtual QPopupMenu* contextMenuPopup( const int, YACS::HMI::Subject* theSubj = 0 );
   void showPopup( QPopupMenu*, const QPoint );
-  
+    
  private slots:
   void onSelectionChanged();
   void onDblClick( QListViewItem* );
   void sampleSlot() {}// for testing only!
+
+private:
+
+  YACSGui_LabelViewItem* buildDataTypesTree( YACSGui_SchemaViewItem* theSchemaItem );
 
  private:
   typedef std::map< YACS::ENGINE::ComponentInstance*, std::list<YACS::HMI::SubjectServiceNode*> > Component2ServiceNodesMap;
@@ -132,6 +143,12 @@ class YACSGui_EditionTreeView: public YACSGui_TreeView
 
   Container2ComponentsMap mySalomeComponentData;
   Component2ServiceNodesMap myCorbaComponentData;
+
+  QListViewItem* myPreviousSelected;
+  YACS::HMI::SubjectDataPort* mySelectedSubjectOutPort;
+  YACS::HMI::SubjectNode* mySelectedSubjectOutNode;    
+
+  std::set< QListViewItem* > myLastSelected;
 };
 
 /*! Class for tree view widget in run mode.
@@ -151,7 +168,10 @@ class YACSGui_RunTreeView: public YACSGui_TreeView
   virtual void build(); //temporary solution, for testing only
 
   virtual void syncPageTypeWithSelection();
+  virtual void syncHMIWithSelection();
 
+  virtual YACS::HMI::Subject* getSubject( QListViewItem* theItem );
+    
  public slots:
   virtual void onNotifyNodeStatus( int theNodeId, int theStatus );
   virtual void onNotifyStatus( int theStatus );
@@ -168,6 +188,8 @@ class YACSGui_RunTreeView: public YACSGui_TreeView
  private:
   std::set<int>                 myBreakpointSet;
   std::map<int, QListViewItem*> myMapListViewItem;
+
+    std::set< QListViewItem* > myLastSelected;
 };
 
 #endif
