@@ -13,6 +13,7 @@
 #include "SALOME_NamingService.hxx"
 #include "SALOME_LifeCycleCORBA.hxx"
 #include "SALOME_ContainerManager.hxx"
+#include "OpUtil.hxx"
 
 #include <sstream>
 #include <iostream>
@@ -82,6 +83,23 @@ void SalomeContainer::start() throw (Exception)
   Engines::ContainerManager_var contManager=Engines::ContainerManager::_narrow(obj);
 
   std::string str(_params.container_name);
+  //If a container_name is given try to find an already existing container in naming service
+  //If not found start a new container with the given parameters
+  if (str != "")
+    {
+      std::string machine(_params.hostname);
+      if(machine == "" || machine == "localhost")
+        machine=GetHostname();
+      std::string ContainerNameInNS=ns.BuildContainerNameForNS(_params,machine.c_str());
+      obj=ns.Resolve(ContainerNameInNS.c_str());
+      if(!CORBA::is_nil(obj))
+        {
+          std::cerr << "Container already exists: " << ContainerNameInNS << std::endl;
+          _trueCont=Engines::Container::_narrow(obj);
+          return;
+        }
+    }
+
   if (str == "") 
     {
       std::ostringstream stream;

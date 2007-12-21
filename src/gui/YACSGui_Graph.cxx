@@ -77,6 +77,7 @@ YACSGui_Graph::YACSGui_Graph(YACSGui_Module* theModule,
   myModule(theModule),
   myCProc(theCProc)
 {
+  _mainGraph = 0;
   setDMode(YACSGui_Graph::FullId);
 
   if ( myCProc->getSubjectProc() ) myCProc->getSubjectProc()->attach(this);

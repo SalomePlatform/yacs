@@ -65,6 +65,8 @@ GRAPHVIZ_CPPFLAGS=""
 GRAPHVIZ_LDFLAGS=""
 GRAPHVIZ_LIBADD=""
 
+AC_CHECKING([graphviz configuration])
+
 graphviz_ok=yes
 dnl were is graphviz ?
 AC_PATH_PROG(DOT,dot) 
@@ -72,6 +74,10 @@ if test "x$DOT" = "x" ; then
   AC_MSG_WARN(graphviz not found)
   graphviz_ok=no
 else
+  GRAPHVIZ_PREFIX=`echo $DOT | sed -e "s,[[^/]]*$,,;s,/$,,;s,^$,.,"`
+  GRAPHVIZ_PREFIX=`echo $GRAPHVIZ_PREFIX | sed -e "s,[[^/]]*$,,;s,/$,,;s,^$,.,"`
+  GRAPHVIZHOME=$GRAPHVIZ_PREFIX
+
   GRAPHVIZ_CPPFLAGS="-I${GRAPHVIZHOME}/include/graphviz"
   GRAPHVIZ_LDFLAGS="-L${GRAPHVIZHOME}/lib/graphviz"
 fi

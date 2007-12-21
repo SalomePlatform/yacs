@@ -180,6 +180,12 @@ comments: OCC: DONE
 Num-----:  
 priority: 0
 status--: NOK
+description: No tree view nor canvas for salome SUPERV files 
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----:  
+priority: 0
+status--: NOK
 description: 
 comments:
 ----------------------------------------------------------------------------------------------------

@@ -4133,7 +4133,7 @@ void YACSGui_ServiceNodePage::onApply()
 	    Bloc* aFather = dynamic_cast<Bloc*>(aBloc->getNode());
 	    while ( aFather )
 	    {
-	      aGraph->arrangeNodesWithinBloc(aFather);
+	      //aGraph->arrangeNodesWithinBloc(aFather);
 	      aFather = dynamic_cast<Bloc*>(aFather->getFather());
 	    }
 	    aGraph->getCanvas()->update();

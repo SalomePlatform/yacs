@@ -636,8 +636,8 @@ class ProcNode(ComposedNode):
           try:
             port.edInitInt(l.value)
           except:
-            print "Problem in initialization, not an int expected:",l.tonodeparam,l.value
-            raise
+            reason="Problem in initialization, not expected type (int): %s %s" % (l.tonodeparam,l.value)
+            currentProc.getLogger("parser").error(reason,currentProc.filename,-1)
 
     return p
 
@@ -1015,7 +1015,7 @@ def main():
     convertedFile=sys.argv[2]
   except :
     print usage%(sys.argv[0])
-    sys.exit(1)
+    sys.exit(3)
 
   SALOMERuntime.RuntimeSALOME_setRuntime()
   loader=SalomeLoader()
@@ -1024,13 +1024,16 @@ def main():
     p= loader.load(salomeFile)
     s= pilot.SchemaSave(p)
     s.save(convertedFile)
-    logger=p.getLogger("parser")
-    if not logger.isEmpty():
-      print logger.getStr()
   except:
-    traceback.print_exc()
+    traceback.print_exc(file=sys.stdout)
     f=open(convertedFile,'w')
     f.write("<proc></proc>\n")
+    sys.exit(2)
+
+  logger=p.getLogger("parser")
+  if not logger.isEmpty():
+    print logger.getStr()
+    sys.exit(1)
 
 if __name__ == "__main__":
   main()

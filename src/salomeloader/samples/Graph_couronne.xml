@@ -134,33 +134,36 @@
      <PyFunction>
       <FuncName>Init</FuncName>
       <PyFunc><![CDATA[def Init(index,min,max,couronne,Rcouronne,Rsphere):        ]]></PyFunc>
-      <PyFunc><![CDATA[	if max > min :        ]]></PyFunc>
-      <PyFunc><![CDATA[		index = min        ]]></PyFunc>
-      <PyFunc><![CDATA[	else :        ]]></PyFunc>
-      <PyFunc><![CDATA[		index = max        ]]></PyFunc>
-      <PyFunc><![CDATA[	print "Init :" ]]></PyFunc>
-      <PyFunc><![CDATA[	print index,min,max,couronne,Rcouronne,Rsphere       ]]></PyFunc>
-      <PyFunc><![CDATA[	return index,min,max,couronne,Rcouronne,Rsphere    ]]></PyFunc>
+      <PyFunc><![CDATA[  if max > min :        ]]></PyFunc>
+      <PyFunc><![CDATA[    index = min        ]]></PyFunc>
+      <PyFunc><![CDATA[  else :        ]]></PyFunc>
+      <PyFunc><![CDATA[    index = max        ]]></PyFunc>
+      <PyFunc><![CDATA[  print "Init :" ]]></PyFunc>
+      <PyFunc><![CDATA[  print index,min,max,couronne,Rcouronne,Rsphere       ]]></PyFunc>
+      <PyFunc><![CDATA[  couronne.Register() ]]></PyFunc>
+      <PyFunc><![CDATA[  return index,min,max,couronne,Rcouronne,Rsphere    ]]></PyFunc>
       <PyFunc><![CDATA[?]]></PyFunc>
      </PyFunction>
      <PyFunction>
       <FuncName>More</FuncName>
       <PyFunc><![CDATA[def More(index,min,max,couronne,Rcouronne,Rsphere):        ]]></PyFunc>
-      <PyFunc><![CDATA[	OutLoop = 0       ]]></PyFunc>
-      <PyFunc><![CDATA[	if max > index :        ]]></PyFunc>
-      <PyFunc><![CDATA[		OutLoop = 1       ]]></PyFunc>
-      <PyFunc><![CDATA[	print "More :" ]]></PyFunc>
-      <PyFunc><![CDATA[	print OutLoop,index,min,max,couronne,Rcouronne,Rsphere       ]]></PyFunc>
-      <PyFunc><![CDATA[	return OutLoop,index,min,max,couronne,Rcouronne,Rsphere        ]]></PyFunc>
+      <PyFunc><![CDATA[  OutLoop = 0       ]]></PyFunc>
+      <PyFunc><![CDATA[  if max > index :        ]]></PyFunc>
+      <PyFunc><![CDATA[    OutLoop = 1       ]]></PyFunc>
+      <PyFunc><![CDATA[  print "More :" ]]></PyFunc>
+      <PyFunc><![CDATA[  print OutLoop,index,min,max,couronne,Rcouronne,Rsphere       ]]></PyFunc>
+      <PyFunc><![CDATA[  couronne.Register() ]]></PyFunc>
+      <PyFunc><![CDATA[  return OutLoop,index,min,max,couronne,Rcouronne,Rsphere        ]]></PyFunc>
       <PyFunc><![CDATA[?]]></PyFunc>
      </PyFunction>
      <PyFunction>
       <FuncName>Next</FuncName>
       <PyFunc><![CDATA[def Next(index,min,max,couronne,Rcouronne,Rsphere):         ]]></PyFunc>
-      <PyFunc><![CDATA[	index = index + 1   ]]></PyFunc>
-      <PyFunc><![CDATA[	print "Next :"       ]]></PyFunc>
-      <PyFunc><![CDATA[	print index,min,max,couronne,Rcouronne,Rsphere        ]]></PyFunc>
-      <PyFunc><![CDATA[	return index,min,max,couronne,Rcouronne,Rsphere        ]]></PyFunc>
+      <PyFunc><![CDATA[  index = index + 1   ]]></PyFunc>
+      <PyFunc><![CDATA[  print "Next :"       ]]></PyFunc>
+      <PyFunc><![CDATA[  print index,min,max,couronne,Rcouronne,Rsphere        ]]></PyFunc>
+      <PyFunc><![CDATA[  couronne.Register() ]]></PyFunc>
+      <PyFunc><![CDATA[  return index,min,max,couronne,Rcouronne,Rsphere        ]]></PyFunc>
       <PyFunc><![CDATA[?]]></PyFunc>
      </PyFunction>
     </PyFunction-list>
@@ -279,10 +282,10 @@
      <PyFunction>
       <FuncName>Init_parameters</FuncName>
       <PyFunc><![CDATA[def Init_parameters() :   ]]></PyFunc>
-      <PyFunc><![CDATA[	Rsphere = 100.    ]]></PyFunc>
-      <PyFunc><![CDATA[	Rcouronne = 200.    ]]></PyFunc>
-      <PyFunc><![CDATA[	Nbspheres = 8    ]]></PyFunc>
-      <PyFunc><![CDATA[	return Rsphere,Rcouronne,Nbspheres    ]]></PyFunc>
+      <PyFunc><![CDATA[  Rsphere = 100.    ]]></PyFunc>
+      <PyFunc><![CDATA[  Rcouronne = 200.    ]]></PyFunc>
+      <PyFunc><![CDATA[  Nbspheres = 8    ]]></PyFunc>
+      <PyFunc><![CDATA[  return Rsphere,Rcouronne,Nbspheres    ]]></PyFunc>
      </PyFunction>
     </PyFunction-list>
     <creation-date>18/10/2006 - 9:33:31</creation-date>
@@ -462,14 +465,14 @@
       <PyFunc><![CDATA[import math]]></PyFunc>
       <PyFunc><![CDATA[import time]]></PyFunc>
       <PyFunc><![CDATA[def nouvelle_position(R,N,i):]]></PyFunc>
-      <PyFunc><![CDATA[	# R = rayon de la couronne]]></PyFunc>
-      <PyFunc><![CDATA[	# N = nombre de spheres sur la couronne]]></PyFunc>
-      <PyFunc><![CDATA[	# i = numero de la sphere sur le cercle trigo]]></PyFunc>
-      <PyFunc><![CDATA[	x = R*math.cos(2*math.pi*i/N)]]></PyFunc>
-      <PyFunc><![CDATA[	y = R*math.sin(2*math.pi*i/N)]]></PyFunc>
-      <PyFunc><![CDATA[	z = 0.]]></PyFunc>
-      <PyFunc><![CDATA[	time.sleep(2)]]></PyFunc>
-      <PyFunc><![CDATA[	return x,y,z]]></PyFunc>
+      <PyFunc><![CDATA[  # R = rayon de la couronne]]></PyFunc>
+      <PyFunc><![CDATA[  # N = nombre de spheres sur la couronne]]></PyFunc>
+      <PyFunc><![CDATA[  # i = numero de la sphere sur le cercle trigo]]></PyFunc>
+      <PyFunc><![CDATA[  x = R*math.cos(2*math.pi*i/N)]]></PyFunc>
+      <PyFunc><![CDATA[  y = R*math.sin(2*math.pi*i/N)]]></PyFunc>
+      <PyFunc><![CDATA[  z = 0.]]></PyFunc>
+      <PyFunc><![CDATA[  time.sleep(2)]]></PyFunc>
+      <PyFunc><![CDATA[  return x,y,z]]></PyFunc>
       <PyFunc><![CDATA[?]]></PyFunc>
      </PyFunction>
     </PyFunction-list>

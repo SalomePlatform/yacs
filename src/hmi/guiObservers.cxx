@@ -635,7 +635,8 @@ SubjectNode *SubjectComposedNode::addSubjectNode(YACS::ENGINE::Node * node,
       son = new SubjectOptimizerLoop(dynamic_cast<YACS::ENGINE::OptimizerLoop*>(node), this);
       break;
     default:
-      assert(0);
+      throw YACS::Exception("Not implemented");
+      //assert(0);
     }
   assert(son);
   GuiContext::getCurrent()->_mapOfSubjectNode[static_cast<Node*>(node)] = son;
@@ -661,8 +662,15 @@ void SubjectComposedNode::loadChildren()
     setOfNode.insert(feloop->getChildByName(ForEachLoop::NAME_OF_SPLITTERNODE));
   for(set<Node *>::iterator iter=setOfNode.begin();iter!=setOfNode.end();iter++)
     {
+      try
+        {
       SubjectNode * son = addSubjectNode(*iter);
       son->loadChildren();
+        }
+      catch(YACS::Exception& ex)
+        {
+          std::cerr << "Unknown type of node" << std::endl;
+        }
     }
   list<InputPort*>  listInputPorts  = _composedNode->getLocalInputPorts();
   list<OutputPort*> listOutputPorts = _composedNode->getLocalOutputPorts();

@@ -79,6 +79,7 @@
 #include <ForEachLoop.hxx>
 #include <SalomeComponent.hxx>
 #include <LoadState.hxx>
+#include <Logger.hxx>
 
 #include <SALOME_LifeCycleCORBA.hxx>
 
@@ -91,7 +92,12 @@
 #include <qdatetime.h>
 #include <qfile.h>
 #include <qtextstream.h>
+#include <qlayout.h>
+#include <qtextbrowser.h>
+#include <qpushbutton.h>
 
+#include <fstream>
+#include <sstream>
 #include <iostream> // for debug only
 #include "utilities.h"
 
@@ -2064,6 +2070,41 @@ void YACSGui_Module::CreateNewSchema( QString& theName, YACS::ENGINE::Proc* theP
   }
 }
 
+
+class LogViewer : public QDialog {
+public:
+    LogViewer(const std::string& txt, QWidget *parent=0, const char *name=0) : QDialog(parent,name)
+      {
+        mytext=txt;
+        QVBoxLayout* vb = new QVBoxLayout(this,8);
+        vb->setAutoAdd(TRUE);
+        browser = new QTextBrowser( this );
+        browser->setFrameStyle( QFrame::Panel | QFrame::Sunken );
+        browser->setTextFormat( QTextEdit::PlainText );
+        browser->setWordWrap(QTextEdit::NoWrap);
+//        browser->setWordWrap(QTextEdit::FixedColumnWidth);
+//        browser->setWrapColumnOrWidth(150);
+        browser->setReadOnly(1);
+        browser->setText(txt);
+        button= new QPushButton("Close",this);
+        connect(button,SIGNAL(clicked()),this, SLOT(accept()));
+        resize(500,500);
+      }
+    void readFile(const std::string& filename)
+      {
+        std::fstream f(filename.c_str());
+        std::stringstream hfile;
+        hfile << f.rdbuf();
+        browser->setText(mytext+"\n\n"+ hfile.str());
+        f.close();
+      }
+
+private:
+    std::string mytext;
+    QPushButton* button;
+    QTextBrowser* browser;
+};
+
 //! Load dataflow from file.
 /*!
  *  \param setEditable - define if the dataflow will be editable.
@@ -2087,12 +2128,36 @@ YACS::HMI::GuiContext* YACSGui_Module::ImportProcFromFile( const QString& theFil
           mkstemp(file);
           tmpFileName=file;
           
-          std::string call="salomeloader.sh " +theFilePath+ " " + file;
+          std::string outfile("salomeloader_output");
+          std::string call="salomeloader.sh " +theFilePath+ " " + file + " > " + outfile;
           std::cerr << call << std::endl;
           int ret=system(call.c_str());
-          if(ret)
+          if(ret != 0)
             {
-               std::cerr << "Problem: " << ret << std::endl;
+              //Problem in execution
+              int status=WEXITSTATUS(ret);
+              if(status == 1)
+                {
+                   LogViewer* log=new LogViewer("Problems in conversion: some errors but an incomplete proc has nevertheless been created",getApp()->desktop());
+                   log->readFile(outfile);
+                   log->show();
+                }
+              else if(status == 2)
+                {
+                   LogViewer* log=new LogViewer("Problems in conversion: a fatal error has been encountered. The proc can't be created",getApp()->desktop());
+                   log->readFile(outfile);
+                   log->show();
+                   return 0;
+                }
+              else
+                {
+                  std::cerr << "Unknown problem: " << ret << std::endl;
+                  SUIT_MessageBox::warn1(getApp()->desktop(),
+                                         tr("WARNING"),
+                                         tr("Unexpected exception in salomeloader"),
+                                         tr("BUT_OK"));
+                  return 0;
+                }
             }
           //tmpFileName = engineRef->convertSupervFile(theFilePath);
         }
@@ -2118,7 +2183,7 @@ YACS::HMI::GuiContext* YACSGui_Module::ImportProcFromFile( const QString& theFil
       
       if (!tmpFileName.isEmpty())
         aProc = aLoader.load(tmpFileName);
-      
+
       //TD: Check the result of file loading
       if (!aProc)
 	{
@@ -2128,6 +2193,15 @@ YACS::HMI::GuiContext* YACSGui_Module::ImportProcFromFile( const QString& theFil
 				  tr("BUT_OK"));
 	  return 0;
 	}
+
+      //Print errors logged if any
+      Logger* logger=aProc->getLogger("parser");
+      if(!logger->isEmpty())
+        {
+          std::string txt="Problems when loading: the proc is not probably completely built\n\n"+logger->getStr();
+          LogViewer* log=new LogViewer(txt,getApp()->desktop());
+          log->show();
+        }
 
       QString name = QFileInfo(theFilePath).fileName ();
       aProc->setName( name );
@@ -3309,7 +3383,7 @@ void YACSGui_Module::createNode( YACS::HMI::TypeOfElem theElemType, std::string 
 	    Bloc* aFather = dynamic_cast<Bloc*>(aBloc->getNode());
 	    while ( aFather )
 	    {
-	      aGraph->arrangeNodesWithinBloc(aFather);
+	      //aGraph->arrangeNodesWithinBloc(aFather);
 	      aFather = dynamic_cast<Bloc*>(aFather->getFather());
 	    }
 	    aGraph->getCanvas()->update();
