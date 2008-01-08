@@ -1,44 +1,30 @@
 // ----------------------------------------------------------------------------
 %define LOADERDOCSTRING
-"Loader docstring
-loads an XML file."
+"Module to load an calculation schema from a XML file."
 %enddef
 
 %module(docstring=LOADERDOCSTRING) loader
 
+//work around SWIG bug #1863647
+#define PySwigIterator loader_PySwigIterator
+
 %feature("autodoc", "1");
 
-%include std_string.i
+%include "engtypemaps.i"
+#undef PySwigIterator 
 
 // ----------------------------------------------------------------------------
 
 %{
-#include <stdexcept>
-#include <iostream>
-#include <fstream>
-
-#include "Proc.hxx"
-#include "Exception.hxx"
 #include "parsers.hxx"
 #include "LoadState.hxx"
-#include "ProcCataLoader.hxx"
-
-using namespace YACS::ENGINE;
-using namespace std;
-
 %}
 
-%exception load {
-   try {
-      $action
-   } catch(YACS::Exception& _e) {
-      PyErr_SetString(PyExc_ValueError,_e.what());
-      return NULL;
-   } catch(std::invalid_argument& _e) {
-      PyErr_SetString(PyExc_IOError ,_e.what());
-      return NULL;
-   }
-}
+%types(YACS::ENGINE::Node *);
+%types(YACS::ENGINE::InputPort *,YACS::ENGINE::OutputPort *,YACS::ENGINE::InputDataStreamPort *,YACS::ENGINE::OutputDataStreamPort *);
+%types(YACS::ENGINE::InGate *,YACS::ENGINE::OutGate *,YACS::ENGINE::InPort *,YACS::ENGINE::OutPort *,YACS::ENGINE::Port *);
+
+%import "pilot.i"
 
 /*
  * Ownership section
@@ -49,34 +35,7 @@ using namespace std;
  * End of Ownership section
  */
 
-%ignore parser;
-
 %include "parsers.hxx"
 %import "xmlParserBase.hxx"
 %include "LoadState.hxx"
-%import "Catalog.hxx"
-%include "ProcCataLoader.hxx"
 
-/*
-class xmlParserBase
-{
-};
-
-namespace YACS
-{
-  namespace ENGINE
-  {
-    class stateParser: public xmlParserBase
-    {
-    };
-
-    class stateLoader: public xmlReader
-    {
-    public:
-      stateLoader(xmlParserBase* parser,
-                  YACS::ENGINE::Proc* p);
-      virtual void parse(std::string xmlState);
-    };
-  }
-}
-*/

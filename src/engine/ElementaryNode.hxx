@@ -69,6 +69,7 @@ namespace YACS
       virtual OutputPort *edAddOutputPort(const std::string& outputPortName, TypeCode* type) throw(Exception);
       virtual InputDataStreamPort *edAddInputDataStreamPort(const std::string& inputPortDSName, TypeCode* type) throw(Exception);
       virtual OutputDataStreamPort *edAddOutputDataStreamPort(const std::string& outputPortDSName, TypeCode* type) throw(Exception);
+      virtual std::string typeName() {return "YACS__ENGINE__ElementaryNode";}
 
       //run part
       void begin();

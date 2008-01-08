@@ -162,7 +162,9 @@ _SALOMERuntime_la_SOURCES =   \
 
 MYSWIG_FLAGS = -noexcept -I$(srcdir)/../bases -I$(srcdir)/../engine
 
-SWIGINCLUDES= RuntimeSALOME.hxx SALOMEDispatcher.hxx ../engine/Runtime.hxx ../engine/Dispatcher.hxx
+SWIGINCLUDES= RuntimeSALOME.hxx SALOMEDispatcher.hxx SalomeProc.hxx PythonNode.hxx PythonPorts.hxx \
+							CORBANode.hxx CORBAPorts.hxx TypeConversions.hxx \
+							../engine/pilot.i ../engine/engtypemaps.i
 
 SALOMERuntimeWRAP.cxx:SALOMERuntime.i $(SWIGINCLUDES)
 	$(SWIG) $(SWIG_PYTHON_OPT) $(SWIG_PYTHON_INCLUDES) $(MYSWIG_FLAGS) -o $@ $<
@@ -180,10 +182,6 @@ _SALOMERuntime_la_CXXFLAGS = \
 
 _SALOMERuntime_la_LDFLAGS  = -module
 
-_SALOMERuntime_la_LIBADD = libYACSRuntimeSALOME.la \
-	../engine/libYACSEngine.la \
-	$(DSC_LIBS) $(SALOME_LIBS)  \
-	-lxml2 
-
+_SALOMERuntime_la_LIBADD = libYACSRuntimeSALOME.la 
 
 include $(top_srcdir)/adm/unix/make_end.am

@@ -116,13 +116,15 @@ void SalomeContainer::start() throw (Exception)
 
   try
     { 
+      // --- GiveContainer is used in batch mode to retreive launched containers,
+      //     and is equivalent to StartContainer when not in batch.
       std::string policy=getProperty("policy");
       if(policy=="best")
-        _trueCont=contManager->StartContainer(_params,Engines::P_BEST,compolist);
+        _trueCont=contManager->GiveContainer(_params,Engines::P_BEST,compolist);
       else if(policy=="first")
-        _trueCont=contManager->StartContainer(_params,Engines::P_FIRST,compolist);
+        _trueCont=contManager->GiveContainer(_params,Engines::P_FIRST,compolist);
       else
-        _trueCont=contManager->StartContainer(_params,Engines::P_CYCL,compolist);
+        _trueCont=contManager->GiveContainer(_params,Engines::P_CYCL,compolist);
     }
   catch(CORBA::COMM_FAILURE&)
     {

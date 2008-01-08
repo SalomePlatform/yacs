@@ -31,6 +31,7 @@ namespace YACS
       std::list<InputPort *> getLocalInputPorts() const;
       virtual void accept(Visitor *visitor);
       InputPort *getDecisionPort() const { return (InputPort *)&_nbOfTimesPort; }
+      virtual std::string typeName() {return "YACS__ENGINE__ForLoop";}
     protected:
       YACS::Event updateStateOnFinishedEventFrom(Node *node);
     };

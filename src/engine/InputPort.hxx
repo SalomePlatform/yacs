@@ -53,6 +53,7 @@ namespace YACS
       virtual void put(const void *data) throw(ConversionException) = 0;
       virtual std::string dump();
       virtual void setStringRef(std::string strRef);
+      virtual std::string typeName() {return "YACS__ENGINE__InputPort";}
     protected:
       InputPort(const InputPort& other, Node *newHelder);
       InputPort(const std::string& name, Node *node, TypeCode* type);
@@ -85,6 +86,7 @@ namespace YACS
       void exRestoreInit();
       void exSaveInit();
       void getAllRepresentants(std::set<InPort *>& repr) const;
+      virtual std::string typeName() {return "YACS__ENGINE__ProxyPort";}
     protected:
       InputPort* _port;
     };

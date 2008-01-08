@@ -22,6 +22,7 @@ namespace YACS
       PythonNode* cloneNode(const std::string& name);
       static const char KIND[];
       static const char IMPL_NAME[];
+      virtual std::string typeName() {return "YACS__ENGINE__PythonNode";}
     protected:
       PyObject* _context;
     };
@@ -37,6 +38,7 @@ namespace YACS
       virtual void execute();
       virtual void load();
       PyFuncNode* cloneNode(const std::string& name);
+      virtual std::string typeName() {return "YACS__ENGINE__PyFuncNode";}
     protected:
       PyObject* _context;
       PyObject* _pyfunc;

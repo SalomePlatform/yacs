@@ -28,6 +28,7 @@ namespace YACS
       std::map<std::string,std::string> getPropertyMap() const { return _propertyMap; }
       virtual void initPortProperties();
       virtual ~DataStreamPort();
+      virtual std::string typeName() {return "YACS__ENGINE__DataStreamPort";}
     };
   }
 }

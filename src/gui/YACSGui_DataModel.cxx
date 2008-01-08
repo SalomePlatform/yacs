@@ -22,6 +22,7 @@
 #include <YACSGui_DataObject.h>
 #include <YACSGui_Module.h>
 
+#include <SUIT_MessageBox.h>
 #include <CAM_Module.h>
 #include <CAM_Application.h>
 #include <LightApp_Application.h>
@@ -30,6 +31,7 @@
 #include <SalomeApp_Study.h>
 
 #include <SALOMEDSClient.hxx>
+#include <SALOMEDS_Tool.hxx>
 
 #include <InPort.hxx>
 #include <OutPort.hxx>
@@ -41,6 +43,8 @@
 #include <WhileLoop.hxx>
 #include <ForEachLoop.hxx>
 
+#include <guiContext.hxx>
+
 #include <ComponentInstance.hxx>
 #include <CORBAComponent.hxx>
 
@@ -48,6 +52,7 @@
 #include <qfileinfo.h>
 
 using namespace YACS::ENGINE;
+using namespace YACS::HMI;
 
 /*!
   Method for conversion enum value to string value
@@ -92,6 +97,67 @@ YACSGui_DataModel::~YACSGui_DataModel()
 bool YACSGui_DataModel::open( const QString& theFileName, CAM_Study* theStudy, QStringList theListOfFiles)
 {
   SalomeApp_DataModel::open( theFileName, theStudy, theListOfFiles );
+
+  // create Proc* objects for all schema (and schema run), published in the Object Browser
+  YACSGui_Module* aModule = dynamic_cast<YACSGui_Module*>( module() );
+  if ( aModule )
+  {
+    // get a list of all schemas
+    DataObjectList objlist = root()->children( true );
+    
+    for ( DataObjectListIterator it( objlist ); it.current(); ++it )
+    {
+      SalomeApp_DataObject* obj = dynamic_cast<SalomeApp_DataObject*>( it.current() );
+      
+      if ( obj && aModule && aModule->getApp()->checkDataObject(obj) &&
+	   ( objectType( obj->entry() ) == YACSGui_DataModel::SchemaObject /*||
+	     objectType( obj->entry() ) == YACSGui_DataModel::RunObject*/ ) )
+      {
+	_PTR(SObject) sobj = obj->object();
+	_PTR(GenericAttribute)   anAttr;
+	_PTR(AttributeName)      aName;
+	_PTR(AttributeParameter) aType;
+	if ( sobj->FindAttribute( anAttr, "AttributeParameter" ) )
+	{
+	  aType = _PTR(AttributeParameter) ( anAttr );
+	  QString aSchemaFileName( aType->GetString("FilePath") );
+	  printf(">> DataModel : open : FilePath = %s\n",aSchemaFileName.latin1());
+	  
+	  YACSGui_Loader aLoader;
+	  GuiContext* aCProc = 0;
+	  
+	  try
+	  {
+	    Proc* aProc = 0;
+	    
+	    if (!aSchemaFileName.isEmpty())
+	      aProc = aLoader.load(aSchemaFileName);
+      
+	    if (!aProc)
+	    {
+	      SUIT_MessageBox::error1(aModule->getApp()->desktop(), 
+				      tr("ERROR"), 
+				      tr("MSG_OPEN_STUDY_ERROR").arg(aSchemaFileName.latin1()), 
+				      tr("BUT_OK"));
+	      return 0;
+	    }
+	    
+	    aProc->setName( QFileInfo(aSchemaFileName).fileName() );
+	    myObjectProcMap.insert( std::make_pair( sobj->GetID(), aProc ) );
+
+	    // create GuiContext for Proc*
+	    aCProc = new GuiContext();
+	    GuiContext::setCurrent( aCProc );
+	    aCProc->setProc( aProc );
+	  }
+	  catch (YACS::Exception& ex)
+	  {
+	    std::cerr<<"YACSGui_DataModel::open: " <<ex.what()<<std::endl;     
+	  }
+	}
+      }
+    }
+  }
 }
 
 bool YACSGui_DataModel::save( QStringList& theListOfFiles )
@@ -182,6 +248,7 @@ void YACSGui_DataModel::createNewSchema( QString& theName, Proc* proc)
     aType = _PTR(AttributeParameter)( anAttr );
     aType->SetInt( "ObjectType", SchemaObject );
     aType->SetString( "FilePath", theName );
+    printf(">> DataModel : FilePath = %s\n",theName.latin1());
 
     myObjectProcMap.insert( std::make_pair( aSObj->GetID(), proc ) );
   }
@@ -216,7 +283,7 @@ void YACSGui_DataModel::createNewRun( _PTR(SObject) parent, YACS::ENGINE::Proc* 
     anAttr =  aBuilder->FindOrCreateAttribute(aSObj, "AttributeName");
     aName = _PTR(AttributeName) ( anAttr );
     
-    aName->SetValue( name);
+    aName->SetValue(name);
 
     anAttr = aBuilder->FindOrCreateAttribute(aSObj, "AttributePixMap");
     aPixmap = _PTR(AttributePixMap)( anAttr );
@@ -225,6 +292,12 @@ void YACSGui_DataModel::createNewRun( _PTR(SObject) parent, YACS::ENGINE::Proc* 
     anAttr = aBuilder->FindOrCreateAttribute(aSObj, "AttributeParameter");
     aType = _PTR(AttributeParameter)( anAttr );
     aType->SetInt( "ObjectType", RunObject );
+
+    QString anAbsFileName = SALOMEDS_Tool::GetTmpDir();
+    anAbsFileName += "YASCGui/" + name;
+    printf(">> YACSGui_DataModel::createNewRun : anAbsFileName = %s\n",
+	   anAbsFileName.latin1());
+    aType->SetString( "FilePath", anAbsFileName );
 
     myObjectProcMap.insert( std::make_pair( aSObj->GetID(), proc ) );
   }

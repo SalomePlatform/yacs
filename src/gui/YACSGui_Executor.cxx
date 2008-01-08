@@ -95,7 +95,10 @@ void YACSGui_Executor::runDataflow(const bool isRemoteRun)
   else              // --- wanted run in a SALOME Container
     {
       if (CORBA::is_nil(_engineRef))
+      {
+	printf(">> Create YACS ORB engine!\n");
         _engineRef = YACSGui_Module::InitYACSGuiGen(_guiMod->getApp());
+      }
 
       if (_isRunning)
         if (! checkEndOfDataFlow()) return;
@@ -463,4 +466,9 @@ int YACSGui_Executor::getExecutorState()
     return YACS::NOTYETINITIALIZED;
   else if ( _localEngine && !(CORBA::is_nil(_procRef)) )
     return YACS::FINISHED;
+}
+
+void YACSGui_Executor::setEngineRef(YACSGui_ORB::YACSGui_Gen_ptr theRef)
+{
+  _engineRef = theRef;
 }

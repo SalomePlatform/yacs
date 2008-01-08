@@ -16,6 +16,7 @@ import time
 import CONNECTOR
 import catalog
 import traceback
+import glob
 
 class ErrorEvent(QCustomEvent):
   def __init__(self,caption,msg):
@@ -214,6 +215,16 @@ class Appli(QMainWindow):
     self.newAct.addTo(self.fileMenu)
     self.fileMenu.insertItem("&Open", self.openFile)
     self.fileMenu.insertItem("&Open Salome", self.openSalomeFile)
+    self.loadersMenu = QPopupMenu(self)
+    self.fileMenu.insertItem("Loaders", self.loadersMenu)
+    self.loaders=[]
+    for file in glob.glob("/local/chris/SALOME2/SUPERV/YACS/BR_CC/YACS_SRC/src/pyqt/*loader.py"):
+      d,f=os.path.split(file)
+      name=f[:-9]
+      def call_loader(event,obj=self,file=file):
+        obj.openFileWithLoader(file)
+      self.loaders.append(call_loader)
+      self.loadersMenu.insertItem(name, call_loader)
     menubar.insertItem('&File',self.fileMenu)
 
     #menu settings
@@ -238,6 +249,8 @@ class Appli(QMainWindow):
     self.canvasMenu.insertItem("&Zoom in", self.zoomIn)
     self.canvasMenu.insertItem("Zoom &out", self.zoomOut)
     self.canvasMenu.insertItem("Layout", self.layoutMenu)
+    self.canvasMenu.insertItem("Ortholinks", self.orthoLinks)
+    self.canvasMenu.insertItem("Clearlinks", self.clearLinks)
     self.canvasMenu.insertItem("&Update", self.updateCanvas)
     menubar.insertItem('&Canvas', self.canvasMenu)
 
@@ -308,6 +321,30 @@ class Appli(QMainWindow):
     self.tabWidget.addTab( panel,proc.getName())
     self.tabWidget.showPage(panel)
 
+  def openFileWithLoader(self,file):
+    d,f=os.path.split(file)
+    sys.path.insert(0,d)
+    module=__import__(os.path.splitext(f)[0])
+    del sys.path[0]
+    loader=module.Loader()
+
+    fn = QFileDialog.getOpenFileName(QString.null,QString.null,self)
+    if fn.isEmpty():
+      self.statusBar().message('Loading aborted',2000)
+      return
+    fileName = str(fn)
+    proc=loader.load(fileName)
+    logger=proc.getLogger("parser")
+    if logger.hasErrors():
+      self.logFile=logview.LogView()
+      self.logFile.text.setText(logger.getStr())
+      self.logFile.show()
+
+    panel=Browser(self.tabWidget,proc)
+    self.currentPanel=panel
+    self.tabWidget.addTab( panel,os.path.basename(fileName))
+    self.tabWidget.showPage(panel)
+
   def cata_tool(self):
     self.catalogTool=catalog.CatalogTool(self)
     self.catalogTool.show()
@@ -339,16 +376,28 @@ class Appli(QMainWindow):
         self.currentPanel.selected.addNode(node)
 
   def zoomIn(self):
-    if self.currentPanel.selected:#item selected
-      if isinstance(self.currentPanel.selected,Items.ItemComposedNode):
-        #on peut zoomer
-        self.currentPanel.selected.graph.editor.zoomIn()
+    if self.currentPanel and self.currentPanel.panelManager.visible:
+      if isinstance(self.currentPanel.panelManager.visible,Items.ItemComposedNode):
+        #we can zoom
+        self.currentPanel.panelManager.visible.graph.editor.zoomIn()
 
   def zoomOut(self):
-    if self.currentPanel.selected:#item selected
-      if isinstance(self.currentPanel.selected,Items.ItemComposedNode):
-        #on peut dezoomer
-        self.currentPanel.selected.graph.editor.zoomOut()
+    if self.currentPanel and self.currentPanel.panelManager.visible:
+      if isinstance(self.currentPanel.panelManager.visible,Items.ItemComposedNode):
+        #we can unzoom 
+        self.currentPanel.panelManager.visible.graph.editor.zoomOut()
+
+  def orthoLinks(self):
+    if self.currentPanel and self.currentPanel.panelManager.visible:
+      if isinstance(self.currentPanel.panelManager.visible,Items.ItemComposedNode):
+        #it is a composed node with a graph
+        self.currentPanel.panelManager.visible.graph.orthoLinks()
+
+  def clearLinks(self):
+    if self.currentPanel and self.currentPanel.panelManager.visible:
+      if isinstance(self.currentPanel.panelManager.visible,Items.ItemComposedNode):
+        #it is a composed node with a graph
+        self.currentPanel.panelManager.visible.graph.clearLinks()
 
   def handlePreferences(self):
     pass

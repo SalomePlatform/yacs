@@ -342,20 +342,26 @@ void ComposedNode::edRemoveLink(OutPort *start, InPort *end) throw(Exception)
   ComposedNode *iterS=start->getNode()->_father;
   pair<OutPort *,OutPort *> currentPortO(start,start);
   vector<pair< ComposedNode * , pair < OutPort* , OutPort *> > > needsToDestroyO;
-  while(iterS!=lwstCmnAnctr)
+
+  Node *nodeOTemp=start->getNode();
+  if(*nodeOTemp<*lwstCmnAnctr)
     {
-      if (!iterS)
-        {
-          stringstream what;
-          what << "ComposedNode::edRemoveLink: "
-               << start->getNode()->getName() << "." <<start->getName() << "->"
-               << end->getNode()->getName() << "." << end->getName();
-          throw Exception(what.str());
-        }
-      OutPort *tmp=currentPortO.first;
-      iterS->getDelegateOf(currentPortO, end, allAscendanceOfNodeEnd);
-      needsToDestroyO.push_back(pair< ComposedNode * , pair < OutPort* , OutPort *> >(iterS,pair<OutPort* , OutPort *> (tmp,currentPortO.first)));
-      iterS=iterS->_father;
+      iterS=nodeOTemp->_father;
+      while(iterS!=lwstCmnAnctr)
+	{
+	  if (!iterS)
+	    {
+	      stringstream what;
+	      what << "ComposedNode::edRemoveLink: "
+		   << start->getNode()->getName() << "." <<start->getName() << "->"
+		   << end->getNode()->getName() << "." << end->getName();
+	      throw Exception(what.str());
+	    }
+	  OutPort *tmp=currentPortO.first;
+	  iterS->getDelegateOf(currentPortO, end, allAscendanceOfNodeEnd);
+	  needsToDestroyO.push_back(pair< ComposedNode * , pair < OutPort* , OutPort *> >(iterS,pair<OutPort* , OutPort *> (tmp,currentPortO.first)));
+	  iterS=iterS->_father;
+	}
     }
   Node *nodeTemp=end->getNode();
   InPort * currentPortI=end;

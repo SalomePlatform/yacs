@@ -30,6 +30,7 @@ namespace YACS
       std::list<InputPort *> getLocalInputPorts() const;
       virtual void accept(Visitor *visitor);
       InputPort *getDecisionPort() const { return (InputPort *)&_conditionPort; }
+      virtual std::string typeName() {return "YACS__ENGINE__WhileLoop";}
     protected:
       Node *simpleClone(ComposedNode *father, bool editionOnly=true) const;
       void checkLinkPossibility(OutPort *start, const std::set<ComposedNode *>& pointsOfViewStart,

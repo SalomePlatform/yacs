@@ -968,6 +968,38 @@ void YACSGui_Graph::deletePrs(YACS::HMI::SubjectNode* theSubject, bool removeLab
 	 dynamic_cast<YACSPrs_ForEachLoopNode*>(aPrs) )
       theSubject->detach(this);
 
+    if ( ComposedNode* aNodeToDelete = dynamic_cast<ComposedNode*>(theSubject->getNode()) )
+    {
+      // remove from canvas all canvas items corresponds to the constituents of the deleted composed node
+      set<Node*> aNodeSet = aNodeToDelete->getAllRecursiveConstituents();
+      for ( set<Node*>::iterator it = aNodeSet.begin(); it != aNodeSet.end(); it++ )
+      {
+	if ( YACSPrs_ElementaryNode* aChildPrs = getItem(*it) )
+	{
+	  if ( dynamic_cast<YACSPrs_SwitchNode*>(aChildPrs) ||
+	       dynamic_cast<YACSPrs_BlocNode*>(aChildPrs) ||
+	       dynamic_cast<YACSPrs_LoopNode*>(aChildPrs) ||
+	       dynamic_cast<YACSPrs_ForEachLoopNode*>(aChildPrs) )
+	    aChildPrs->getSEngine()->detach(this);
+
+	  aChildPrs->hide();
+
+	  if ( !dynamic_cast<YACSPrs_BlocNode*>(aPrs) )
+	  {
+	    SubjectNode* aChildSub = aChildPrs->getSEngine();
+	    // to remove body nodes properly (with all its links), when a father loop or switch node is removed
+	    aChildSub->detach(aChildPrs);
+	    deletePrs(aChildSub);
+	    // clear the content of the property page of deleted node
+	    aChildSub->update( REMOVE, 0, 0 );
+	  }
+
+	  removeItem(aChildPrs);
+	}
+	removeNode(*it);
+      }
+    }
+
     if( SubjectSwitch* aSwitch = dynamic_cast<SubjectSwitch*>( theSubject->getParent() ) )
       aSwitch->removeNode( theSubject );
     

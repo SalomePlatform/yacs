@@ -201,7 +201,10 @@ namespace YACS
       virtual void clean();
       SubjectControlLink* addSubjectControlLink(SubjectControlLink *sub) { _listSubjectControlLink.push_back(sub); };
       void removeSubjectControlLink(SubjectControlLink* sub) { _listSubjectControlLink.remove(sub); };
+      std::list<SubjectLink*> getSubjectLinks() const { return _listSubjectLink; };
+      std::list<SubjectControlLink*> getSubjectControlLinks() const { return _listSubjectControlLink; };
       void localClean();
+      virtual void update(GuiEvent event, int type, Subject* son);
       static bool tryCreateLink(SubjectNode *subOutNode, SubjectNode *subInNode);
     //protected: // a temporary solution while SessionCataLoader use loadTypesOld(...)
                  // method instead of a new loadTypes(...) method
@@ -341,6 +344,7 @@ namespace YACS
       SubjectContainer* addSubjectContainer(YACS::ENGINE::Container* cont,
                                             std::string name = "");
       SubjectDataType* addSubjectDataType(YACS::ENGINE::TypeCode *type);
+      void removeSubjectDataType(YACS::ENGINE::TypeCode *type);
       virtual void clean();
       void localClean();
     protected:

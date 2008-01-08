@@ -124,12 +124,12 @@ AM_CXXFLAGS = $(THREAD_DEF)  \
               -I$(srcdir)/../bases
 
 
-BUILT_SOURCES = pilotWRAP.cxx
+BUILT_SOURCES = pilotWRAP.cxx 
 
 MYSWIG_FLAGS = -noexcept -I$(srcdir)/../bases
 
-pkgpython_PYTHON = pilot.py
-pkgpyexec_LTLIBRARIES = _pilot.la
+pkgpython_PYTHON = pilot.py pypilot.py
+pkgpyexec_LTLIBRARIES = _pilot.la _pypilot.la
 
 SWIGINCLUDES=Any.hxx     DeploymentTree.hxx  InputDataStreamPort.hxx         OutPort.hxx               SharedPtr.hxx \
 AnyInputPort.hxx         Dispatcher.hxx      InputPort.hxx                   OutputDataStreamPort.hxx  StaticDefinedComposedNode.hxx \
@@ -142,7 +142,7 @@ ConversionException.hxx  ForLoop.hxx         Node.hxx                        Run
 DataFlowPort.hxx         InGate.hxx          OptimizerAlg.hxx                Scheduler.hxx             WhileLoop.hxx \
 DataPort.hxx             InlineNode.hxx      OptimizerLoop.hxx               ServiceInlineNode.hxx     ComponentDefinition.hxx \
 DataStreamPort.hxx       InPort.hxx          OutGate.hxx                     ServiceNode.hxx           Catalog.hxx  \
-../bases/yacsconfig.h
+../bases/yacsconfig.h engtypemaps.i
 
 pilotWRAP.cxx:pilot.i $(SWIGINCLUDES)
 	$(SWIG) $(SWIG_PYTHON_OPT) $(SWIG_PYTHON_INCLUDES) $(MYSWIG_FLAGS) -o $@ $<
@@ -150,6 +150,7 @@ pilotWRAP.cxx:pilot.i $(SWIGINCLUDES)
 _pilot_la_SOURCES =   \
 	pilotWRAP.cxx \
 	ExecutorSwig.cxx
+
 
 _pilot_la_CXXFLAGS = \
 	$(THREAD_DEF) \
@@ -160,5 +161,11 @@ _pilot_la_LDFLAGS  = -module
 
 _pilot_la_LIBADD = libYACSEngine.la $(OMNIORB_LIBS)
 
+pypilotWRAP.cxx: pypilot.i pilot.i $(SWIGINCLUDES)
+	$(SWIG) $(SWIG_PYTHON_OPT) $(SWIG_PYTHON_INCLUDES) $(MYSWIG_FLAGS) -o $@ $<
+_pypilot_la_SOURCES =  pypilotWRAP.cxx
+_pypilot_la_CXXFLAGS =  $(THREAD_DEF) $(PYTHON_CPPFLAGS) -I$(srcdir)/../bases
+_pypilot_la_LDFLAGS  = -module
+_pypilot_la_LIBADD = libYACSEngine.la $(OMNIORB_LIBS)
 
 include $(top_srcdir)/adm/unix/make_end.am

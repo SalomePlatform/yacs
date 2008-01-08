@@ -390,17 +390,26 @@ YACSPrs_ElementaryNode::YACSPrs_ElementaryNode(SUIT_ResourceMgr* theMgr, QCanvas
 
 YACSPrs_ElementaryNode::~YACSPrs_ElementaryNode() 
 {
+  setCanvas(0);
+
   myPortList.setAutoDelete(false);
   for (YACSPrs_Port* aPort = myPortList.first(); aPort; aPort = myPortList.next())
   {
-    if ( YACSPrs_InOutPort* anIOP = dynamic_cast<YACSPrs_InOutPort*>(aPort) )
-      delete anIOP;
-    else if ( YACSPrs_LabelPort* aLP = dynamic_cast<YACSPrs_LabelPort*>(aPort) )
-      delete aLP;
+    if ( aPort )
+    {
+      if ( YACSPrs_InOutPort* anIOP = dynamic_cast<YACSPrs_InOutPort*>(aPort) )
+	delete anIOP;
+      else if ( YACSPrs_LabelPort* aLP = dynamic_cast<YACSPrs_LabelPort*>(aPort) )
+        delete aLP;
+    }
   }
   myPortList.clear();
 
-  if (myPointMaster) delete myPointMaster;
+  if (myPointMaster)
+  {
+    myPointMaster = 0;
+    delete myPointMaster;
+  }
 
   mySEngine->detach(this);
 }
@@ -798,8 +807,9 @@ void YACSPrs_ElementaryNode::removeLabelPortPrs(YACSPrs_LabelPort* thePort)
   bool aDisp = isVisible();
   if (aDisp) hide();
 
+  int anIPNum = aNode->getNumberOfInputPorts();
   int anOPNum = aNode->getNumberOfOutputPorts();
-  if ( anOPNum > 1 )
+  if ( anOPNum > 1 && anIPNum < anOPNum )
     myPortHeight -= PORT_HEIGHT+PORT_SPACE;
 
   myPortList.setAutoDelete(false);
@@ -821,6 +831,17 @@ void YACSPrs_ElementaryNode::removeLabelPortPrs(YACSPrs_LabelPort* thePort)
   { 
     canvas()->setChanged(getRect());
     canvas()->update();
+  }
+}
+
+void YACSPrs_ElementaryNode::erasePortPrs(YACSPrs_Port* thePort)
+{
+  if ( !myPortList.isEmpty() )
+  {
+    bool anADFlag = myPortList.autoDelete();
+    myPortList.setAutoDelete(false);
+    if ( myPortList.contains(thePort) ) myPortList.remove(thePort);
+    myPortList.setAutoDelete(anADFlag);
   }
 }
 
@@ -1971,7 +1992,13 @@ YACSPrs_Port::YACSPrs_Port( SUIT_ResourceMgr* theMgr, QCanvas* theCanvas, YACSPr
 YACSPrs_Port::~YACSPrs_Port()
 {
   printf(">> YACSPrs_Port::~YACSPrs_Port()\n");
-  if (myPoint) delete myPoint;
+  //if ( getNode() ) getNode()->erasePortPrs(this);
+
+  if (myPoint) 
+  {
+    delete myPoint;
+    myPoint = 0;
+  }
 
   for(list<YACSPrs_Link*>::iterator it = myLinks.begin(); it != myLinks.end(); ++it) {
     YACSPrs_Link* aLink = *it;

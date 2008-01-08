@@ -44,6 +44,7 @@ namespace YACS
  */
       virtual std::string getKind() const;
       static const char KIND[];
+      virtual std::string typeName() {return "YACS__ENGINE__ServiceNode";}
     protected:
       ComponentInstance* _component;
       std::string _method;

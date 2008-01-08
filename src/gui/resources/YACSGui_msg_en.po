@@ -249,14 +249,14 @@ msgstr "New WHILE loop node"
 msgid "STB_NEW_WHILE_LOOP_NODE"
 msgstr "Create new WHILE loop node"
 
-msgid "MEN_NEW_SWITCH_LOOP_NODE"
-msgstr "SWITCH loop"
+msgid "MEN_NEW_SWITCH_NODE"
+msgstr "SWITCH"
 
-msgid "TOP_NEW_SWITCH_LOOP_NODE"
-msgstr "New SWITCH loop node"
+msgid "TOP_NEW_SWITCH_NODE"
+msgstr "New SWITCH node"
 
-msgid "STB_NEW_SWITCH_LOOP_NODE"
-msgstr "Create new SWITCH loop node"
+msgid "STB_NEW_SWITCH_NODE"
+msgstr "Create new SWITCH node"
 
 msgid "MEN_NEW_FROM_LIBRARY_NODE"
 msgstr "From library ..."
@@ -667,6 +667,9 @@ msgstr "No dataflow has been selected."
 msgid "MSG_IMPORT_FILE_ERROR"
 msgstr "The file is incorrect."
 
+msgid "MSG_OPEN_STUDY_ERROR"
+msgstr "Open study error: the schema file %1 is incorrect."
+
 msgid "MSG_DATAFLOW_NOT_EDITABLE"
 msgstr "Current dataflow is not editable."
 
@@ -830,34 +833,34 @@ msgstr "Create a loop"
 msgid "POP_ADD_TO_LIBRARY"
 msgstr "Add to library"
 
-msgid "YACSGui_EditionTreeView::DATA_TYPES"
+msgid "DT_DATA_TYPES"
 msgstr "Data Types"
 
-msgid "YACSGui_EditionTreeView::SIMPLE"
+msgid "DT_SIMPLE"
 msgstr "Simple"
 
-msgid "YACSGui_EditionTreeView::OBJREF"
+msgid "DT_OBJREF"
 msgstr "Objref"
 
-msgid "YACSGui_EditionTreeView::SEQUENCE"
+msgid "DT_SEQUENCE"
 msgstr "Sequence"
 
-msgid "YACSGui_EditionTreeView::ARRAY"
+msgid "DT_ARRAY"
 msgstr "Array"
 
-msgid "YACSGui_EditionTreeView::STRUCT"
+msgid "DT_STRUCT"
 msgstr "Struct"
 
-msgid "YACSGui_EditionTreeView::DOUBLE"
+msgid "DT_DOUBLE"
 msgstr "Double"
 
-msgid "YACSGui_EditionTreeView::INT"
+msgid "DT_INT"
 msgstr "Int"
 
-msgid "YACSGui_EditionTreeView::STRING"
+msgid "DT_STRING"
 msgstr "String"
 
-msgid "YACSGui_EditionTreeView::BOOL"
+msgid "DT_BOOL"
 msgstr "Bool"
 
 msgid "YACSGui_EditionTreeView::NODES"
@@ -866,6 +869,9 @@ msgstr "Nodes"
 msgid "YACSGui_EditionTreeView::LINKS"
 msgstr "Links"
 
+msgid "YACSGui_ServiceNodePage::COMPOSED_NODES"
+msgstr "Composed nodes"
 
-
+msgid "YACSGui_ServiceNodePage::NODES"
+msgstr "Nodes"
 

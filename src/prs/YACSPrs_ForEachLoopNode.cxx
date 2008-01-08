@@ -55,14 +55,30 @@ void YACSPrs_ForEachLoopNode::updatePorts(bool theForce)
   bool aDisp = isVisible();
   if (aDisp) hide();
   
+  bool withCreate = theForce;
+
   if (theForce)
   {
     if ( isFullDMode() )
       myPortHeight = 2*PORT_MARGIN;
     else
       myPortHeight = 0;
+
     myPortList.setAutoDelete(true);
-    myPortList.clear();
+    //myPortList.clear();
+
+    QPtrList<YACSPrs_LabelPort> aDeletePortList;
+    for (YACSPrs_Port* aPort = myPortList.first(); aPort; aPort = myPortList.next())
+    {
+      if( YACSPrs_LabelPort* aLabelPort = dynamic_cast<YACSPrs_LabelPort*>( aPort ) )
+      {
+	aDeletePortList.append( aLabelPort );
+	withCreate = true;
+      }
+    }
+
+    for (YACSPrs_Port* aPort = aDeletePortList.first(); aPort; aPort = aDeletePortList.next())
+      myPortList.remove( aPort );
   }
 
   // ForEachLoop has 2 input ports and 2 output ports.
@@ -74,7 +90,6 @@ void YACSPrs_ForEachLoopNode::updatePorts(bool theForce)
   //                2) 'Body' label port, this 'label' port connects with help of label link to 
   //                   'Master' hook of the node, which is set as an internal node of the loop.
 
-  bool withCreate = false;
   if ( myPortList.isEmpty() ) withCreate = true;
 
   if ( isFullDMode() )
@@ -93,27 +108,54 @@ void YACSPrs_ForEachLoopNode::updatePorts(bool theForce)
       ForEachLoop* aFELoop = dynamic_cast<ForEachLoop*>( getEngine() );
       if ( aFELoop )
       { // create 2 input and 1 output ports
-	// 'nbBranches'
-	YACSPrs_InOutPort* anIn1Port = new YACSPrs_InOutPort(myMgr,canvas(),aFELoop->edGetNbOfBranchesPort(),this);
-	anIn1Port->setPortRect(QRect(ix, iy, aPRectWidth, PORT_HEIGHT));
-	anIn1Port->setColor(nodeSubColor());
-	anIn1Port->setStoreColor(nodeSubColor());
-	myPortList.append(anIn1Port);
-	// 'SmplsCollection'
-	YACSPrs_InOutPort* anIn2Port = new YACSPrs_InOutPort(myMgr,canvas(),aFELoop->edGetSeqOfSamplesPort(),this);
-	anIn2Port->setPortRect(QRect(ix, iy+PORT_HEIGHT+PORT_SPACE, aPRectWidth, PORT_HEIGHT));
-	anIn2Port->setColor(nodeSubColor());
-	anIn2Port->setStoreColor(nodeSubColor());
-	myPortList.append(anIn2Port);
+	bool isBranchesPortCreated = false;
+	bool isSeqOfSamplesPortCreated = false;
+	bool isSamplePortCreated = false;
+	InputPort* aBranchesPort = aFELoop->edGetNbOfBranchesPort();
+	InputPort* aSeqOfSamplesPort = aFELoop->edGetSeqOfSamplesPort();
+	OutputPort* aSamplePort = aFELoop->edGetSamplePort();
+
+	for (YACSPrs_Port* aPort = myPortList.first(); aPort; aPort = myPortList.next())
+	{
+	  if( !aPort->getName().compare( QString( aBranchesPort->getName() ) ) )
+	    isBranchesPortCreated = true;
+	  else if( !aPort->getName().compare( QString( aSeqOfSamplesPort->getName() ) ) )
+	    isSeqOfSamplesPortCreated = true;
+	  else if( !aPort->getName().compare( QString( aSamplePort->getName() ) ) )
+	    isSamplePortCreated = true;
+	}
+ 
+	if( !isBranchesPortCreated )
+	{
+	  // 'nbBranches'
+	  YACSPrs_InOutPort* anIn1Port = new YACSPrs_InOutPort(myMgr,canvas(),aBranchesPort,this);
+	  anIn1Port->setPortRect(QRect(ix, iy, aPRectWidth, PORT_HEIGHT));
+	  anIn1Port->setColor(nodeSubColor());
+	  anIn1Port->setStoreColor(nodeSubColor());
+	  myPortList.append(anIn1Port);
+	}
+	if( !isSeqOfSamplesPortCreated )
+	{
+	  // 'SmplsCollection'
+	  YACSPrs_InOutPort* anIn2Port = new YACSPrs_InOutPort(myMgr,canvas(),aSeqOfSamplesPort,this);
+	  anIn2Port->setPortRect(QRect(ix, iy+PORT_HEIGHT+PORT_SPACE, aPRectWidth, PORT_HEIGHT));
+	  anIn2Port->setColor(nodeSubColor());
+	  anIn2Port->setStoreColor(nodeSubColor());
+	  myPortList.append(anIn2Port);
+	}
 	
-	myPortHeight += 2*PORT_HEIGHT+PORT_SPACE;
+	myPortHeight += 2*PORT_HEIGHT;
+	myPortHeight += PORT_SPACE;
 	
-	// 'SmplPtr'
-	YACSPrs_InOutPort* anOutPort = new YACSPrs_InOutPort(myMgr,canvas(),aFELoop->edGetSamplePort(),this);
-	anOutPort->setPortRect(QRect(ox, oy, aPRectWidth, PORT_HEIGHT));
-	anOutPort->setColor(nodeSubColor());
-	anOutPort->setStoreColor(nodeSubColor());
-	myPortList.append(anOutPort);
+	if( !isSamplePortCreated )
+	{
+	  // 'SmplPtr'
+	  YACSPrs_InOutPort* anOutPort = new YACSPrs_InOutPort(myMgr,canvas(),aSamplePort,this);
+	  anOutPort->setPortRect(QRect(ox, oy, aPRectWidth, PORT_HEIGHT));
+	  anOutPort->setColor(nodeSubColor());
+	  anOutPort->setStoreColor(nodeSubColor());
+	  myPortList.append(anOutPort);
+	}
         
 	// get a set of internal loop nodes (in fact ForEachLoop has 2 internal nodes: _node and _initNode,
 	// but only _node was initialized in engine, in all examples _initNode is null)
@@ -126,10 +168,7 @@ void YACSPrs_ForEachLoopNode::updatePorts(bool theForce)
 	  anOutPort->setColor(nodeSubColor().dark(140));
 	  anOutPort->setStoreColor(nodeSubColor().dark(140));
 	  myPortList.append(anOutPort);
-	  oy += PORT_HEIGHT+PORT_SPACE;
 	}
-	if ( aNodes.size() > 1 )
-	  myPortHeight += (aNodes.size()-1)*PORT_HEIGHT + (aNodes.size()-2)*PORT_SPACE;
       }
     }
     else
@@ -164,7 +203,19 @@ void YACSPrs_ForEachLoopNode::updatePorts(bool theForce)
   }
   
   // can update gates only after body height will be defined
-  updateGates(withCreate);
+  bool createGates = withCreate;
+  for (YACSPrs_Port* aPort = myPortList.first(); aPort; aPort = myPortList.next())
+  {
+    if( YACSPrs_InOutPort* anIOPort = dynamic_cast<YACSPrs_InOutPort*>( aPort ) )
+    {
+      if ( anIOPort->isGate() ) 
+      { // gate ports are already created - we should only update them
+	createGates = false;
+	break;
+      }
+    }
+  }
+  updateGates(createGates);
 
   if (theForce && myPointMaster)
   {

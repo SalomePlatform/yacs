@@ -267,8 +267,10 @@ class YACSPrs_ElementaryNode : public QxGraph_ActiveItem,
   void moveDown(YACS::ENGINE::Port* thePort);
   void addPortPrs(YACS::ENGINE::Port* thePort);
   void removePortPrs(YACS::ENGINE::Port* thePort);
-
+  
   void removeLabelPortPrs(YACSPrs_LabelPort* thePort);
+
+  void erasePortPrs(YACSPrs_Port* thePort);
 
   virtual void setCanvas(QCanvas* theCanvas);
 

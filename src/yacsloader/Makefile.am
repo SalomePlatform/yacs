@@ -100,7 +100,7 @@ debugger_LDFLAGS = $(PYTHON_EXTRA_LDFLAGS) -lexpat -pthread -lxml2
 SWIG_PYTHON_INCLUDES = -noexcept -I$(srcdir)/../bases -I$(srcdir)/../engine
 BUILT_SOURCES = loaderWRAP.cxx
 
-SWIGINCLUDES=parsers.hxx LoadState.hxx xmlParserBase.hxx ProcCataLoader.hxx
+SWIGINCLUDES=parsers.hxx LoadState.hxx xmlParserBase.hxx ProcCataLoader.hxx ../engine/engtypemaps.i ../engine/pilot.i
 
 loaderWRAP.cxx:loader.i $(SWIGINCLUDES)
 	$(SWIG) $(SWIG_PYTHON_OPT) $(SWIG_PYTHON_INCLUDES) $(MYSWIG_FLAGS) -o $@ $<
@@ -117,13 +117,10 @@ _loader_la_CXXFLAGS = \
 	$(OMNIORB_INCLUDES) \
 	$(OMNIORB_CXXFLAGS) \
 	-I$(srcdir)/../bases \
-	-I$(srcdir)/../engine \
-	-I$(srcdir)/../runtime
+	-I$(srcdir)/../engine
 
-_loader_la_LDFLAGS  = -module -lexpat -pthread -lxml2
+_loader_la_LDFLAGS  = -module 
 
-_loader_la_LIBADD =  libYACSloader.la \
-               ../runtime/libYACSRuntimeSALOME.la \
-               ../engine/libYACSEngine.la 
+_loader_la_LIBADD =  libYACSloader.la $(OMNIORB_LIBS)
 
 include $(top_srcdir)/adm/unix/make_end.am

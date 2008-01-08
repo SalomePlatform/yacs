@@ -40,6 +40,7 @@
 
 #include <qdockwindow.h>
 #include <qlistview.h>
+#include <qdialog.h>
 
 #ifdef HAVE_QEXTSCINTILLA_H
 #include <qextscintilla.h>
@@ -169,6 +170,37 @@ protected:
 //==================================================================================================
 
 /*
+  Class : YACSGui_YACSORBContainerDialog
+  Description : Dialog for container properties used for loading YACSGui ORAB engine
+*/
+class YACSGui_YACSORBContainerDialog : public QDialog
+{
+  Q_OBJECT
+
+public:
+                                      YACSGui_YACSORBContainerDialog( QWidget* theParent = 0,
+								      const char* theName = 0,
+								      WFlags theFlags = 0 );
+  virtual                             ~YACSGui_YACSORBContainerDialog();
+
+  Engines::MachineParameters          getParams() const { return myParams; }
+
+public slots:
+  virtual void                        onApply();
+
+protected slots:
+  void                                onShowAdvanced();
+  void                                fillHostNames() const; 
+
+private:
+  void                                updateState();
+  Engines::MachineParameters          myParams;
+  ContainerPage*                      myPage;
+};
+
+//==================================================================================================
+
+/*
   Class : YACSGui_ContainerPage
   Description : Page for container properties
 */
@@ -253,7 +285,7 @@ public:
 
   YACSGui_InputPanel*                 getInputPanel() const;
 
-  void                                setSComponent( YACS::HMI::SubjectComponent* theSComponent );
+  void                                setSComponent( YACS::HMI::SubjectComponent* theSComponent, bool isEdit = true );
 
   YACS::ENGINE::ComponentInstance*    getComponent() const;
 
@@ -272,10 +304,12 @@ protected slots:
   void                                onContainerChanged( const QString& );
 
 private:
+  void                                fillComponentNames();
   void                                fillContainerNames();
   void                                updateState();
   YACS::HMI::SubjectComponent*        mySComponent;
   ComponentType                       myType;
+  bool                                myEditComp;
 };
 
 /*
@@ -347,6 +381,8 @@ public:
 				      
   virtual void                        select( bool isSelected );
   virtual void                        update( YACS::HMI::GuiEvent event, int type, YACS::HMI::Subject* son);
+
+  YACSGui_InputPanel*                 getInputPanel() const;
   
   virtual void                        setSNode( YACS::HMI::SubjectNode* theSNode );
 
@@ -393,8 +429,6 @@ public:
 
   virtual void                        setSNode( YACS::HMI::SubjectNode* theSNode );
 
-  YACSGui_InputPanel*                 getInputPanel() const;
-
   virtual void                        setMode( const YACSGui_InputPanel::PageMode );
 
   virtual void                        notifyNodeStatus( int theStatus );
@@ -409,6 +443,9 @@ protected:
   virtual void                        updateState();
   virtual void                        hideEvent( QHideEvent* );
 
+  QString                             scriptText() const;
+  void                                setScriptText( const QString& );
+
 protected slots:
   void                                onNodeNameChanged( const QString& );
   void                                onValueChanged( int, int );
@@ -418,7 +455,7 @@ protected slots:
   void                                onMovedDown( const int theDownRow );
   void                                onRemoved( const int theRow );
   
- protected:
+protected:
 #ifdef HAVE_QEXTSCINTILLA_H
   QextScintilla *_myTextEdit;
 #endif
@@ -437,13 +474,13 @@ private:
   void                                resetOPLists();
   void                                orderPorts( bool withFilling = false );
 
-  std::map<int,YACS::ENGINE::InPort*> myRow2StoredInPorts;
+  std::map<int,YACS::ENGINE::InPort*>  myRow2StoredInPorts;
   std::map<int,YACS::ENGINE::OutPort*> myRow2StoredOutPorts;
-  QPtrList<YACS::ENGINE::InPort> myIPList;
-  QPtrList<YACS::ENGINE::OutPort> myOPList;
-  bool myIsNeedToReorder;
-  int                             myPara;
-  int                             myIndex;
+  QPtrList<YACS::ENGINE::InPort>       myIPList;
+  QPtrList<YACS::ENGINE::OutPort>      myOPList;
+  bool                                 myIsNeedToReorder;
+  int                                  myPara;
+  int                                  myIndex;
 };
 
 /*
@@ -467,8 +504,6 @@ public:
 
   bool                                isSelectComponent() const;
 
-  YACSGui_InputPanel*                 getInputPanel() const;
-
   virtual void                        setMode( const YACSGui_InputPanel::PageMode );
 
   virtual void                        notifyNodeStatus( int theStatus );
@@ -485,6 +520,9 @@ public slots:
 protected:
   virtual void                        updateState();
   virtual void                        hideEvent( QHideEvent* );
+
+  QString                             scriptText() const;
+  void                                setScriptText( const QString& );
 
 protected slots:
   void                                onVisibilityChanged( bool );
@@ -504,6 +542,12 @@ private:
   void                                setInputPorts();
   void                                setOutputPorts();
   YACS::ENGINE::TypeCode*             createTypeCode( YACS::ENGINE::DynType, YACSGui_Table*, int );
+  void                                buildTree( YACS::ENGINE::Node* theNode, QListViewItem* theParent );
+
+ protected:
+#ifdef HAVE_QEXTSCINTILLA_H
+  QextScintilla *_myTextEdit;
+#endif
 
 private:
   YACS::ENGINE::ComponentInstance*    myComponent;
@@ -511,6 +555,7 @@ private:
   bool                                myMethodChanged;
   YACS::HMI::SubjectComposedNode*     mySCNode;
   std::map<QListViewItem*,std::pair<std::string,std::string> > myServiceMap;
+  std::map<QListViewItem*, YACS::ENGINE::Node* > myProcNodesMap;
   std::string                         myProcName;
   int                                 myPara;
   int                                 myIndex;
@@ -531,8 +576,6 @@ public:
   virtual                             ~YACSGui_ForLoopNodePage();
 
   virtual void                        setSNode( YACS::HMI::SubjectNode* theSNode );
-
-  YACSGui_InputPanel*                 getInputPanel() const;
 
   virtual void                        setMode( const YACSGui_InputPanel::PageMode );
 
@@ -568,14 +611,13 @@ public:
 
   virtual void                        setSNode( YACS::HMI::SubjectNode* theSNode );
 
-  YACSGui_InputPanel*                 getInputPanel() const;
-
   virtual void                        setMode( const YACSGui_InputPanel::PageMode );
 
   virtual void                        notifyNodeStatus( int theStatus );
   virtual void                        notifyNodeProgress();
   virtual void                        notifyInPortValues( std::map<std::string,std::string> theInPortName2Value );
   virtual void                        notifyOutPortValues( std::map<std::string,std::string> theOutPortName2Value );
+  virtual void                        notifyNodeCreateBody( YACS::HMI::Subject* theSubject );
 
 public slots:
   virtual void                        onApply();
@@ -604,8 +646,6 @@ public:
 
   virtual void                        setSNode( YACS::HMI::SubjectNode* theSNode );
 
-  YACSGui_InputPanel*                 getInputPanel() const;
-  
   virtual void                        setMode( const YACSGui_InputPanel::PageMode );
 
   virtual void                        notifyNodeStatus( int theStatus );
@@ -639,8 +679,6 @@ public:
   virtual                             ~YACSGui_SwitchNodePage();
 
   virtual void                        setSNode( YACS::HMI::SubjectNode* theSNode );
-
-  YACSGui_InputPanel*                 getInputPanel() const;
 
   void                                setChild( YACS::HMI::SubjectNode* theChildNode );
 
@@ -695,8 +733,6 @@ public:
   virtual                             ~YACSGui_BlockNodePage();
 
   virtual void                        setSNode( YACS::HMI::SubjectNode* theSNode );
-
-  YACSGui_InputPanel*                 getInputPanel() const;
 
   void                                setChild( YACS::HMI::SubjectNode* theChildNode );
 

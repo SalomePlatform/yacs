@@ -25,6 +25,7 @@ namespace YACS
       virtual void setRef(std::string& ref);
       virtual std::string getRef();
       virtual ~DataNode();
+      virtual std::string typeName() {return "YACS__ENGINE__DataNode";}
     protected:
       std::string _ref;
     };

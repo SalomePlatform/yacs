@@ -74,7 +74,11 @@ void Subject::localClean()
   set<GuiObserver*>::iterator it;
   set<GuiObserver*> copySet = _setObs;
   for (it = copySet.begin(); it != copySet.end(); ++it)
-    delete (*it) ;
+  {
+    GuiObserver* anObs = (*it);
+    delete anObs ;
+    anObs = 0;
+  }
 }
 
 void Subject::attach(GuiObserver *obs)
@@ -102,7 +106,8 @@ void Subject::select(bool isSelected)
 {
   for (set<GuiObserver *>::iterator it = _setObs.begin(); it != _setObs.end(); ++it)
     {
-      (*it)->select(isSelected);
+      GuiObserver* currOb = *it;
+      currOb->select(isSelected);
     }
 }
 
@@ -132,7 +137,8 @@ bool Subject::destroy(Subject *son)
     {
       if (SubjectNode *subNode = dynamic_cast<SubjectNode*>(son))
         {
-          position = proc->getChildName(subNode->getNode());
+	  if (subNode->getNode()->getFather() )
+	    position = proc->getChildName(subNode->getNode());
         }
       else if (dynamic_cast<SubjectDataPort*>(son))
         {
@@ -261,8 +267,16 @@ SubjectNode::~SubjectNode()
             if (loop) loop->edRemoveChild(_node);
             else
               {
-                Switch *aSwitch = dynamic_cast<Switch*>(father);
-                if (aSwitch) aSwitch->edRemoveChild(_node);
+		ForEachLoop *feloop = dynamic_cast<ForEachLoop*>(father);
+		if (feloop) {
+		  DEBTRACE("SubjectNode::localClean: remove for each loop body");
+		  feloop->edRemoveChild(_node);
+		}
+		else
+		  {
+		    Switch *aSwitch = dynamic_cast<Switch*>(father);
+		    if (aSwitch) aSwitch->edRemoveChild(_node);
+		  }
               }
           }
       }
@@ -326,6 +340,10 @@ void SubjectNode::localClean()
 	sb->removeNode(this);
       else if( SubjectForLoop* sfl = dynamic_cast<SubjectForLoop*>(_parent) )
 	sfl->completeChildrenSubjectList( 0 );
+      else if( SubjectWhileLoop* swl = dynamic_cast<SubjectWhileLoop*>(_parent) )
+	swl->completeChildrenSubjectList( 0 );
+      else if( SubjectForEachLoop* sfel = dynamic_cast<SubjectForEachLoop*>(_parent) )
+	sfel->completeChildrenSubjectList( 0 );
     }
 }
 
@@ -397,6 +415,23 @@ SubjectInputPort* SubjectNode::addSubjectInputPort(YACS::ENGINE::InputPort *port
   return son;
 }
 
+void SubjectNode::update( GuiEvent event, int type, Subject* son )
+{
+  Subject::update( event, type, son );
+  
+  // remove subject data type if necessary
+  YACS::HMI::SubjectDataPort* aSPort = dynamic_cast< YACS::HMI::SubjectDataPort* >( son );
+  if ( aSPort && event == REMOVE )
+  {
+    YACS::ENGINE::DataPort* aEPort = aSPort->getPort();
+    if ( aEPort )
+    {
+      YACS::ENGINE::TypeCode* aTypeCode = aEPort->edGetType();
+      if ( aTypeCode )
+        GuiContext::getCurrent()->getSubjectProc()->removeSubjectDataType( aTypeCode );
+    }
+  }
+}
 
 SubjectOutputPort* SubjectNode::addSubjectOutputPort(YACS::ENGINE::OutputPort *port,
                                                      std::string name)
@@ -664,8 +699,8 @@ void SubjectComposedNode::loadChildren()
     {
       try
         {
-      SubjectNode * son = addSubjectNode(*iter);
-      son->loadChildren();
+	  SubjectNode * son = addSubjectNode(*iter);
+	  son->loadChildren();
         }
       catch(YACS::Exception& ex)
         {
@@ -1016,7 +1051,9 @@ SubjectDataType* SubjectProc::addSubjectDataType(YACS::ENGINE::TypeCode *type)
   Proc* proc = GuiContext::getCurrent()->getProc();
   SubjectDataType* son = 0;
   if (! proc->typeMap.count(typeName))
-    proc->typeMap[typeName] = type->clone();
+    proc->typeMap[ typeName ] = type->clone();
+  else 
+    proc->typeMap[ typeName ]->incrRef();
   if (! GuiContext::getCurrent()->_mapOfSubjectDataType.count(typeName))
     {
       son = new SubjectDataType(type, this);
@@ -1024,6 +1061,45 @@ SubjectDataType* SubjectProc::addSubjectDataType(YACS::ENGINE::TypeCode *type)
       update(ADD, DATATYPE, son);
     }
   return son;
+}
+
+void SubjectProc::removeSubjectDataType( YACS::ENGINE::TypeCode* theType )
+{
+  if ( !theType )
+    return;
+
+  YACS::HMI::GuiContext* aContext = GuiContext::getCurrent();
+  if ( !aContext )
+    return;
+
+  YACS::ENGINE::Proc* aProc = aContext->getProc();
+  if ( !aProc )
+    return;
+
+  string typeName = theType->name();
+  if ( !aProc->typeMap.count( typeName ) )
+    return;
+  
+  YACS::ENGINE::TypeCode* aTypeCode = aProc->typeMap[ typeName ];
+  if ( !aTypeCode )
+    return;
+
+  if ( !aContext->_mapOfSubjectDataType.count( typeName ) )
+    return;
+
+  YACS::HMI::SubjectDataType* aSDataType = aContext->_mapOfSubjectDataType[ typeName ];
+  if ( !aSDataType )
+    return;
+
+  unsigned int aRefCnt = aTypeCode->getRefCnt();
+  if ( aRefCnt == 1 )
+  {
+    update( REMOVE, DATATYPE, aSDataType );
+    aContext->_mapOfSubjectDataType.erase( typeName );
+    aProc->typeMap.erase( typeName );
+  }
+
+  aTypeCode->decrRef();
 }
 
 // ----------------------------------------------------------------------------
@@ -1815,6 +1891,12 @@ SubjectNode* SubjectForEachLoop::addNode(YACS::ENGINE::Catalog *catalog,
 
 void SubjectForEachLoop::completeChildrenSubjectList(SubjectNode *son)
 {
+  if ( !son )
+  {
+    _body = son;
+    return;
+  }
+
   string name = son->getName();
   DEBTRACE("SubjectForEachLoop::completeChildrenSubjectList " << name);
   if (name == ForEachLoop::NAME_OF_SPLITTERNODE)
@@ -2286,6 +2368,7 @@ std::string SubjectControlLink::getName()
 SubjectComponent::SubjectComponent(YACS::ENGINE::ComponentInstance* component, int id, Subject *parent)
   : Subject(parent), _compoInst(component), _id(id)
 {
+  _compoInst->incrRef();
 }
 
 SubjectComponent::~SubjectComponent()
@@ -2306,6 +2389,7 @@ SubjectComponent::~SubjectComponent()
     //if ( SalomeComponent* aSalomeCompo = static_cast<SalomeComponent*>(_compoInst) )
     //delete aSalomeCompo;
   }
+  _compoInst->decrRef();
 }
 
 void SubjectComponent::clean()

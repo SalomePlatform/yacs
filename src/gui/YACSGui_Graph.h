@@ -82,6 +82,10 @@ public:
   int                     arrangeNodes(YACS::ENGINE::ComposedNode* theBloc, Agraph_t* aSubGraph, int dep);
   void                    createGraphvizNodes(YACS::ENGINE::ComposedNode* theBloc, Agraph_t* aSubGraph);
   void                    arrangeCanvasNodes(YACS::ENGINE::ComposedNode* theBloc, Agraph_t* aSubGraph, int dep);
+  // store some functions to have possibility to arrange nodes only on the one giving level
+  int                     arrangeNodesWithinBloc(YACS::ENGINE::Bloc* theBloc);
+  void                    createGraphvizNodes(YACS::ENGINE::Bloc* theBloc, YACS::ENGINE::ComposedNode* theFather, Agraph_t* theGraph);
+  std::string             getInNodeName(YACS::ENGINE::Bloc* theBloc, YACS::ENGINE::Node* theOutNode, YACS::ENGINE::Node* theInNode);
 
   void                    rebuildLinks();
   int                     addObjectToLine2dModel(YACSPrs_ElementaryNode* theNode,
@@ -125,11 +129,13 @@ private:
 
   typedef std::map<const char*, YACSGui_Node*> DriverMap;
   typedef std::map<int, std::map<YACS::ENGINE::Node*, YACSPrs_ElementaryNode*> > ItemMap;
+  typedef std::map<YACS::ENGINE::Bloc*, std::list< std::pair<YACS::ENGINE::Bloc*,YACS::ENGINE::Bloc*> > > Bloc2InsideLinksMap;
   
   YACSGui_Module*         myModule;
   YACS::HMI::GuiContext*  myCProc; // context of corresponding Proc*
   DriverMap               myDrivers; // map of update drivers for specific node types
   ItemMap                 myItems; // map of graphic items for a given engine node
+  Bloc2InsideLinksMap     myBlocInsideLinks; // map of links from block to block ( BlocOut -> BlocIn ) inside a given block
 
   YACSGui_Observer*       myNodeStatusObserver;
   Agraph_t*               _mainGraph;

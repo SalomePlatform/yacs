@@ -34,6 +34,7 @@ namespace YACS
       virtual TypeOfChannel getTypeOfChannel() const = 0;
       bool isDifferentTypeOf(const DataPort *other) const;
       virtual void edRemoveAllLinksLinkedWithMe() throw(Exception) = 0;
+      virtual std::string typeName() {return "YACS__ENGINE__DataPort";}
     public:
       static DataPort *isCrossingType(const std::vector<DataPort *>& historyOfLink);
     };

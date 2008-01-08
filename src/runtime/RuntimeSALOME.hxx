@@ -22,6 +22,11 @@ struct omniORBpyAPI
       // Convert a Python object reference to a C++ object reference.
       // Raises BAD_PARAM if the Python object is not an object reference.
       // If <hold_lock> is true, caller holds the Python interpreter lock.
+
+      PyObject* (*handleCxxSystemException)(const CORBA::SystemException& ex);
+      // Sets the Python exception state to reflect the given C++ system
+      // exception. Always returns NULL. The caller must hold the Python
+      // interpreter lock.
 };
 //--- end of from omniORBpy.h (not present on Debian Sarge packages)
       

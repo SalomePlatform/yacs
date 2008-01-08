@@ -34,6 +34,7 @@ namespace YACS
       virtual void exSaveInit();
       virtual void exRestoreInit();
       virtual std::string dump();
+      virtual std::string typeName() {return "YACS__ENGINE__InputCorbaPort";}
     protected:
       CORBA::Any  _data;
       CORBA::Any *  _initData;
@@ -59,6 +60,7 @@ namespace YACS
       virtual CORBA::Any * getAny();
       virtual CORBA::Any * getAnyOut();
       virtual std::string dump();
+      virtual std::string typeName() {return "YACS__ENGINE__OutputCorbaPort";}
     protected:
       CORBA::Any  _data;
       CORBA::ORB_ptr _orb;

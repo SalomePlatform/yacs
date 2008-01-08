@@ -15,6 +15,7 @@ namespace YACS
 {
   namespace ENGINE
   {
+    void StateLoader(Node* node, YACS::StatesForNode state);
     class Task;
     class InPort;
     class OutPort;
@@ -126,6 +127,7 @@ namespace YACS
       int getNumId();
       virtual void sendEvent(const std::string& event);
       static std::map<int,Node *> idMap;
+      virtual std::string typeName() {return "YACS__ENGINE__Node";}
     protected:
       virtual void exForwardFailed();
       virtual void exForwardFinished();
@@ -134,7 +136,6 @@ namespace YACS
       static ComposedNode *checkHavingCommonFather(Node *node1, Node *node2) throw(Exception);
     };
 
-    void StateLoader(Node* node, YACS::StatesForNode state);
   }
 }
 

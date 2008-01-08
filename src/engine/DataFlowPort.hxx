@@ -20,6 +20,7 @@ namespace YACS
       std::string getNameOfTypeOfCurrentInstance() const;
       TypeOfChannel getTypeOfChannel() const { return DATAFLOW; }
       virtual ~DataFlowPort();
+      virtual std::string typeName() {return "YACS__ENGINE__DataFlowPort";}
     };
   }
 }

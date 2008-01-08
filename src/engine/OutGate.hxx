@@ -35,6 +35,7 @@ namespace YACS
       void edRemoveInGate(InGate *inGate, bool coherenceWithInGate=true) throw(Exception);
       int getNbOfInGatesConnected() const;
       bool isAlreadyInSet(InGate *inGate) const;
+      virtual std::string typeName() {return "YACS__ENGINE__OutGate";}
     protected:
       void edRemoveInGateOneWay(InGate *inGate);
     };

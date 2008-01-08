@@ -11,6 +11,7 @@ namespace YACS
 {
   namespace ENGINE
   {
+    void NbDoneLoader(Loop* node, int val);
     class Loop;
     class ForLoop;
     class WhileLoop;
@@ -156,6 +157,7 @@ namespace YACS
       virtual bool edAddDFLink(OutPort *start, InPort *end) throw(Exception);
       void writeDot(std::ostream &os);
       virtual void accept(Visitor *visitor);
+      virtual std::string typeName() {return "YACS__ENGINE__Loop";}
     protected:
       void buildDelegateOf(InPort * & port, OutPort *initialStart, const std::set<ComposedNode *>& pointsOfView);
       void buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::set<ComposedNode *>& pointsOfView);
@@ -173,7 +175,6 @@ namespace YACS
       static bool isNecessaryToBuildSpecificDelegateDF2DS(const std::set<ComposedNode *>& pointsOfView);
     };
 
-    void NbDoneLoader(Loop* node, int val);
   }
 }
 

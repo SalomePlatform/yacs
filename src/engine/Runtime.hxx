@@ -11,6 +11,9 @@ namespace YACS
 {
   namespace ENGINE
   {
+    class Runtime;
+    Runtime* getRuntime() throw(Exception);
+
     class InputPort;
     class OutputPort;
     class ForLoop;
@@ -101,7 +104,6 @@ namespace YACS
       Catalog* _builtinCatalog;
     };
 
-    Runtime* getRuntime() throw(Exception);
   }
 }
 #endif

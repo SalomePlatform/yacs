@@ -143,6 +143,7 @@ namespace YACS
       std::list<OutputPort *> getLocalOutputPorts() const;
       void accept(Visitor *visitor);
       void writeDot(std::ostream &os);
+      virtual std::string typeName() {return "YACS__ENGINE__ForEachLoop";}
     protected:
       Node *simpleClone(ComposedNode *father, bool editionOnly=true) const;
       void checkLinkPossibility(OutPort *start, const std::set<ComposedNode *>& pointsOfViewStart,

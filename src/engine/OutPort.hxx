@@ -28,6 +28,7 @@ namespace YACS
       virtual int removeInPort(InPort *inPort, bool forward) throw(Exception) = 0;
       virtual ~OutPort();
       std::vector<DataPort *> calculateHistoryOfLinkWith(InPort *end);
+      virtual std::string typeName() {return "YACS__ENGINE__OutPort";}
     };
   }
 }

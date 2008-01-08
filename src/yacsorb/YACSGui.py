@@ -16,6 +16,7 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+import sys
 import YACSGui_ORB__POA
 import YACSGui_ORB
 import SALOME_ComponentPy
@@ -28,6 +29,7 @@ import SALOMERuntime
 import loader
 import salomeloader
 import pilot
+import traceback
 
 class proc_i(YACSGui_ORB__POA.ProcExec):
     def __init__(self, xmlFile):
@@ -195,16 +197,16 @@ class YACSGui(YACSGui_ORB__POA.YACSGui_Gen,
         try:
             procExec_i = proc_i(xmlFile)
         except IOError, ex:
-            print "IO Error: ", ex
+            print >> sys.stderr ,"IO Error: ", ex
             return None
         except ValueError,ex:
-            print "Caught ValueError Exception:",ex
+            print >> sys.stderr ,"Caught ValueError Exception:",ex
             return None
         except pilot.Exception,ex:
-            print ex.what()
+            print >> sys.stderr ,ex.what()
             return None
         except:
-            print "Unknown exception!"
+            print >> sys.stderr ,"Unknown exception!"
             return None
         procExec_o = procExec_i._this()
         return procExec_o

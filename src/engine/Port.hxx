@@ -26,6 +26,7 @@ namespace YACS
       Node *getNode() const { return _node; }
       virtual std::string getNameOfTypeOfCurrentInstance() const;
       int getNumId() const { return _id; }
+      virtual std::string typeName() {return "YACS__ENGINE__Port";}
     protected:
       Port(Node *node);
       Port(const Port& other, Node *newHelder);

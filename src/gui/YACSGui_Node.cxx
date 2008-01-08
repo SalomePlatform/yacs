@@ -474,7 +474,31 @@ void YACSGui_BlocNode::update(YACS::ENGINE::Node* theEngine,
 	  aNodePrsSet.insert( graph()->getItem( *it ) );
       
       aBlocPrs->setChildren( aNodePrsSet );
-      
+
+      // remove control links of the new children
+      for ( std::set<YACSPrs_ElementaryNode*>::iterator childIt = aNodePrsSet.begin(); childIt != aNodePrsSet.end(); childIt++ )
+      {  
+	YACSPrs_ElementaryNode* aPrs = *childIt;
+	if( anOldChildren.count( aPrs ) )
+	  continue;
+	std::list<SubjectControlLink*> aControlLinks = aPrs->getSEngine()->getSubjectControlLinks();
+	for( std::list<SubjectControlLink*>::iterator iter = aControlLinks.begin(); iter != aControlLinks.end(); iter++ )
+	{
+	  SubjectControlLink* aControlLink = *iter;
+	  if( SubjectNode* anOutNode = aControlLink->getSubjectOutNode() )
+	    if( YACSPrs_ElementaryNode* aParentPrs = graph()->getItem( anOutNode->getNode() ) )
+	      aParentPrs->removeLinkPrs( aControlLink );
+	}
+      }
+
+      Bloc* aFather = aBloc;
+      while ( aFather && !dynamic_cast<Proc*>(aFather) )
+      {
+	graph()->arrangeNodesWithinBloc(aFather);
+	aFather = dynamic_cast<Bloc*>(aFather->getFather());
+      }
+      graph()->getCanvas()->update();
+
       theItem = aBlocPrs;
     }
     

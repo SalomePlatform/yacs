@@ -72,6 +72,8 @@ class YACSGui_Executor : public QObject, public QThread
   bool isRunning() const { return _isRunning; };
   bool isStopOnError() const { return _isStopOnError; }
 
+  void setEngineRef(YACSGui_ORB::YACSGui_Gen_ptr theRef);
+
   //YACS::ENGINE::Executor* getLocalEngine() { return _localEngine; };
   YACS::ENGINE::Proc* getProc() { return _proc; };
  protected:

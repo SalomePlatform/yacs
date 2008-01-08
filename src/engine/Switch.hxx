@@ -104,6 +104,7 @@ namespace YACS
       std::string getCaseId(const Node *node) const throw(Exception);
       virtual void accept(Visitor *visitor);
       int getRankOfNode(Node *node) const;
+      virtual std::string typeName() {return "YACS__ENGINE__Switch";}
     protected:
       YACS::Event updateStateOnFinishedEventFrom(Node *node);
       Node *simpleClone(ComposedNode *father, bool editionOnly=true) const;

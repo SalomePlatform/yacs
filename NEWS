@@ -177,11 +177,11 @@ description: In general, there are too much buttons or menus that have no action
 these buttons must be either removed, or grayed if they corresponds to something in development.
 comments: OCC: DONE
 ----------------------------------------------------------------------------------------------------
-Num-----:  
+Num-----: 15 
 priority: 0
 status--: NOK
 description: No tree view nor canvas for salome SUPERV files 
-comments:
+comments: OCC: DONE
 ----------------------------------------------------------------------------------------------------
 Num-----:  
 priority: 0
@@ -298,6 +298,192 @@ comments:
 Problems detected by OCC
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+----------------------------------------------------------------------------------------------------
+Num-----: 1 
+priority: 0
+status--: OK
+description:
+ --	   Import test_schema.xml
+ --	   Select "psnode14" => press "Apply" in opened dialog box
+Result: Crash of application
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 2
+priority: 0
+status--: OK
+description:
+ --	   Import test_schema.xml
+ --	   Select "psnode34" => press "Apply" in opened dialog box
+Result: Fatal error (reference to object)
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 3 
+priority: 0
+status--: OK
+description:
+ --	   Import test_schema.xml
+ --	   Select "psnode33" => assign "Input Ports/p1../Value"=10, "Input Ports/obj../Value"=20
+ --	   Press "Apply" in opened dialog box
+Result: Fatal error
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 4 
+priority: 0
+status--: OK
+description: Tree View isn't updated after changing of name of SALOME
+component and old name of it is shown inspite of new name is stored in corresponding dialog box
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 5 
+priority: 0
+status--: OK
+description: 
+ --	   Import test_schema.xml
+ --	   Select "bb1" => modify its parameters as:   Case id       Node  name 
+			                                  5          psnode33
+                                                       default           n2
+                                                          7          psnode32
+ --        Press Apply button (warning message about deletion of "n2" is shown)
+ --        Press Yess button 
+Result: SIGSEGV
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 6
+priority: 0
+status--: OK
+description:
+ --	   Import test_schema.xml
+ --	   Select block node "bbb" => modify its parameters as: 
+	   ·  Delete "node4" from first line
+	   ·  Create new line by "+" pressing
+	   ·  Add "nnode0"
+ --	   Press Apply button 
+Result: SIGSEGV
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 7 
+priority: 0
+status--: OK
+description:
+ --	   Import test_schema_last.xml
+ --	   Select node "node1" => modify its parameters as: 
+	   ·  Change name
+	   ·  Assign new valyes to X and Y
+ --	   Press Apply button 
+ --	   Select in 2D Viewer block node"Sb1", for which previous node belongs
+Result: SIGSEGV
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 8
+priority: 0
+status--: OK
+description:
+ --	   Import schema bloc1.xml
+ --        Select b1 node
+ --        Add empty "Direct Children" row and press Apply button
+Result: SIGSEGV
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 9
+priority: 0
+status--: OK
+description:
+ --	   Import schema bloc1.xml
+ --	   Select node1
+ --	   Add row for "Input Ports"
+ --	   Select the row
+ --	   Click "->"
+Result: SIGSEGV
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 10
+priority: 0
+status--: OK
+description:
+ --	   Import schema bloc1.xml
+ --	   Select link inside node "b1" - popup - Add Point 
+ --	   If there is no fatal error SIGSEGV after this step - try next: popup - Delete Point
+Result: SIGSEGV
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 11 
+priority: 0
+status--: OK
+description:
+ --	   Launch application
+ --	   File - New
+ --	   Activate YACS
+ --	   Import schema => the "Import Schema" dialog is opened
+Result: confusing "data" in "File name" and "Quick path" fields
+comments: OCC: DONE. Fixed in YACS module by calling SUIT_FileDlg::getFileName(...) method with
+correct arguments and setting the DATA_DIR environment variable to the directory
+with schema samples.
+----------------------------------------------------------------------------------------------------
+Num-----: 12
+priority: 0
+status--: NOK
+description:
+ --	   Import schema double1.xml
+ --	   Fit all
+Result: three red broken links in the viewer
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----: 13 
+priority: 0
+status--: OK, but
+description:
+ --	   Import schema bloc1.xml
+ --	   Fit all
+ --	   Select node "b1"
+ --	   Click "Apply" in the appeared "Input Panel"
+BUG: node "b2" jumps on "node1" inside the "b1"
+comments: OCC: DONE, but it is needed to avoid canvas flickers
+----------------------------------------------------------------------------------------------------
+Num-----: 14 
+priority: 0
+status--: OK
+description:
+ --	   Import forloop1.xml (any other graph)
+ --	   Delete loop node (any other node)
+ --	   Close 2D viewer
+Result: SIGSEGV
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 15
+priority: 0
+status--: OK
+description:
+ --	   Import bloc1.xml
+ --	   Select node1
+ --	   Rename node1 as node3
+ --	   Select b1 block node
+ --	   Add a new line for a new children with help of + button
+ --	   Select node3 as a new child node
+ --	   Press Apply button
+Result: SIGSEGV
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 16 
+priority: 0
+status--: OK
+description:  Show log messages (error messages during schema import) in the Message Log
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 17
+priority: 0
+status--: OK
+description:
+ --	   Import test_schema.xml
+ --	   Select bbb.b1 foreach loop node
+ --	   Delete this node
+Result: SIGSEGV
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 18
+priority: 0
+status--: NOK
+description: Not systematic: change (activate) 2D view with help of tabs.
+comments:
 ----------------------------------------------------------------------------------------------------
 Num-----:  
 priority: 0

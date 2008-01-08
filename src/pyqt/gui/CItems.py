@@ -3,7 +3,9 @@ import sys,traceback
 from qt import *
 from qtcanvas import *
 import pilot
+import pypilot
 import Item
+import math
 
 dispatcher=pilot.Dispatcher.getDispatcher()
 
@@ -73,6 +75,7 @@ class PointItem(QCanvasEllipse):
 
   def handleDoubleClick(self,pos):
     self.obj.deletePoint(self,pos)
+
   #def __del__(self):
   #  print "PointItem.__del__"
 
@@ -99,14 +102,35 @@ class LineItem(QCanvasLine):
     self.setPoints(int(fromPoint.x()),int(fromPoint.y()), int(toPoint.x()), int(toPoint.y()))
     self.setZ(min(fromPoint.z(),toPoint.z())-1)
     self.setVisible(True)
+    self.arrow = QCanvasPolygon(self.canvas())
+    self.arrow.setBrush(QBrush(Qt.black))
+    self.setArrow()
+    self.arrow.show()
 
   def setFromPoint(self,x,y):
     self.setPoints(x,y,self.endPoint().x(),self.endPoint().y())
+    self.setArrow()
   def setToPoint(self,x,y):
     self.setPoints(self.startPoint().x(), self.startPoint().y(),x,y)
+    self.setArrow()
   def moveBy(self,dx,dy):
     """Disable line move"""
     pass
+
+  def setArrow(self):
+    x1,y1=self.startPoint().x(),self.startPoint().y()
+    x2,y2=self.endPoint().x(),self.endPoint().y()
+    d=math.hypot(x2-x1,y2-y1)
+    sina=(y2-y1)/d
+    cosa=(x2-x1)/d
+    x=(x1+x2)/2.
+    y=(y1+y2)/2.
+    l,e=6,3 
+    pa=QPointArray(3)
+    pa.setPoint(0, QPoint(x+l*cosa,y+l*sina))
+    pa.setPoint(1, QPoint(x-e*sina,y+e*cosa))
+    pa.setPoint(2, QPoint(x+e*sina,y-e*cosa))
+    self.arrow.setPoints(pa)
 
   def getObj(self):
     """The object which contains the line"""
@@ -114,14 +138,19 @@ class LineItem(QCanvasLine):
   def handleDoubleClick(self,pos):
     #split the line
     self.obj.splitline(self,pos)
+
   #def __del__(self):
   #  print "LineItem.__del__"
+
   def clear(self):
     """To remove from canvas"""
     self.setCanvas(None)
     self.fromPoint=None
     self.toPoint=None
     self.obj=None
+    self.arrow.setCanvas(None)
+    self.arrow=None
+
   def selected(self):
     """The canvas item has been selected"""
 
@@ -153,10 +182,18 @@ class LinkItem:
     point.clear()
     outline.clear()
 
+  def clearPoints(self):
+    #make a copy as deletePoint modify self.points
+    for point in self.points[:]:
+      self.deletePoint(point,0)
+
   def splitline(self,line,pos):
-    """Split line at position pos"""
+    self.splitLine(line,pos.x(),pos.y())
+
+  def splitLine(self,line,x,y):
+    """Split line at position x,y"""
     #The new point
-    point=PointItem(self,pos.x(),pos.y(),self.canvas)
+    point=PointItem(self,x,y,self.canvas)
     self.points.append(point)
     i=self.lines.index(line)
 
@@ -166,7 +203,7 @@ class LinkItem:
       line.toPoint.setInline(newline)
     self.lines.insert(i+1,newline)
 
-    line.setToPoint(pos.x(),pos.y())
+    line.setToPoint(x,y)
     line.toPoint=point
     point.setInline(line)
     point.setOutline(newline)
@@ -242,6 +279,7 @@ class ControlItem(QCanvasRectangle):
     print self.port
     item=Item.adapt(self.port)
     print item
+    item.connect()
     self.context.connecting(item)
     #self.context.connecting(self)
 
@@ -315,6 +353,9 @@ class OutControlItem(ControlItem):
     s = QString( "outgate:")
     view.tip( r, s )
     #QToolTip(view).tip( r, s )
+
+  def links(self):
+    return self.__outList
 
 class PortItem(QCanvasEllipse):
   def __init__(self,node,port,canvas):
@@ -410,6 +451,9 @@ class OutPortItem(PortItem):
   def addOutLink(self,link):
     self.__outList.append(link)
 
+  def links(self):
+    return self.__outList
+
 class InStreamItem(InPortItem):
   def __init__(self,node,port,canvas):
     InPortItem.__init__(self,node,port,canvas)
@@ -420,7 +464,7 @@ class OutStreamItem(OutPortItem):
     OutPortItem.__init__(self,node,port,canvas)
     self.setBrush(QBrush(Qt.green))
 
-class Cell(QCanvasRectangle,pilot.PyObserver):
+class Cell(QCanvasRectangle,pypilot.PyObserver):
   colors={
       "pink":Qt.cyan,
       "green":Qt.green,
@@ -435,7 +479,7 @@ class Cell(QCanvasRectangle,pilot.PyObserver):
 
   def __init__(self,node,canvas):
     QCanvasRectangle.__init__(self,canvas)
-    pilot.PyObserver.__init__(self)
+    pypilot.PyObserver.__init__(self)
     self.inports=[]
     self.outports=[]
     self.setSize(50,50)

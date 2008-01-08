@@ -2,6 +2,7 @@
 import sys
 from qt import *
 from qtcanvas import *
+import math
 
 class DynamicTip( QToolTip ):
   def __init__( self, parent ):
@@ -105,7 +106,7 @@ class GraphViewer(QCanvasView):
       self.selected=None
     #need to find equivalent canvas item 
     for citem in self.canvas().allItems():
-      if citem.item is item:
+      if hasattr(citem,"item") and citem.item is item:
         self.selected=citem
         self.selectObj(self.selected)
         break
@@ -132,8 +133,8 @@ class GraphViewer(QCanvasView):
     menu.insertItem("add Node", self.addNode)
     return menu
 
-  def layout(self,rankdir):
-    print rankdir
+  #def layout(self,rankdir):
+  #  print rankdir
 
   def updateCanvas(self):
     #Par defaut, Qt n'efface pas le background. Seul repaintContents
@@ -202,53 +203,6 @@ class ImageItem(QCanvasRectangle):
     def drawShape(self,p):
       p.drawPixmap( self.x(), self.y(), self.pixmap )
 
-
-class NodeItem(QCanvasEllipse):
-    def __init__(self,canvas):
-      QCanvasEllipse.__init__(self,6,6,canvas)
-      self.__inList=[]
-      self.__outList=[]
-      self.setPen(QPen(Qt.black))
-      self.setBrush(QBrush(Qt.red))
-      self.setZ(128)
-
-    def addInEdge(self,edge):
-      self.__inList.append(edge)
-
-    def addOutEdge(self,edge):
-      self.__outList.append(edge)
-
-    def moveBy(self,dx,dy):
-      QCanvasEllipse.moveBy(self,dx,dy)
-      for each_edge in self.__inList:
-        each_edge.setToPoint( int(self.x()), int(self.y()) )
-      for each_edge in self.__outList:
-        each_edge.setFromPoint( int(self.x()), int(self.y()) )
-
-class EdgeItem(QCanvasLine):
-    __c=0
-    def __init__(self,fromNode, toNode,canvas):
-      QCanvasLine.__init__(self,canvas)
-      self.__c=self.__c+1
-      self.setPen(QPen(Qt.black))
-      self.setBrush(QBrush(Qt.red))
-      fromNode.addOutEdge(self)
-      toNode.addInEdge(self)
-      self.setPoints(int(fromNode.x()),int(fromNode.y()), int(toNode.x()), int(toNode.y()))
-      self.setZ(127)
-
-    def setFromPoint(self,x,y):
-      self.setPoints(x,y,self.endPoint().x(),self.endPoint().y())
-
-    def setToPoint(self,x,y):
-      self.setPoints(self.startPoint().x(), self.startPoint().y(),x,y)
-
-    def count(self):
-      return self.__c
-
-    def moveBy(self,dx,dy):
-      pass
-
 class LinkItem(QCanvasLine):
   def __init__(self,fromPort, toPort,canvas):
     QCanvasLine.__init__(self,canvas)
@@ -259,15 +213,35 @@ class LinkItem(QCanvasLine):
     self.setPoints(int(fromPort.x()),int(fromPort.y()), int(toPort.x()), int(toPort.y()))
     self.setZ(min(fromPort.z(),toPort.z())-1)
     self.setVisible(True)
+    self.arrow = QCanvasPolygon(self.canvas())
+    self.arrow.setBrush(QBrush(Qt.black))
+    self.setArrow()
+    self.arrow.show()
 
   def setFromPoint(self,x,y):
     self.setPoints(x,y,self.endPoint().x(),self.endPoint().y())
+    self.setArrow()
 
   def setToPoint(self,x,y):
     self.setPoints(self.startPoint().x(), self.startPoint().y(),x,y)
+    self.setArrow()
 
   def moveBy(self,dx,dy):
     pass
+
+  def setArrow(self):
+    x1,y1=self.startPoint().x(),self.startPoint().y()
+    x2,y2=self.endPoint().x(),self.endPoint().y()
+    d=math.hypot(x2-x1,y2-y1)
+    sina=(y2-y1)/d
+    cosa=(x2-x1)/d
+    x=(x1+x2)/2.
+    y=(y1+y2)/2.
+    pa=QPointArray(3)
+    pa.setPoint(0, QPoint(x+10*cosa,y+10*sina))
+    pa.setPoint(1, QPoint(x-5*sina,y+5*cosa))
+    pa.setPoint(2, QPoint(x+5*sina,y-5*cosa))
+    self.arrow.setPoints(pa)
 
   def popup(self,canvasView):
     menu=QPopupMenu()
@@ -420,10 +394,13 @@ if __name__=='__main__':
   canvas.setAdvancePeriod(30)
   m=GraphViewer(canvas,box,"example",0)
   box.setCentralWidget(m)
-  for x,y in ((150,150),(150,250)):
-    c=Cell(canvas)
-    c.moveBy(x,y)
-    c.show()
+  c1=Cell(canvas)
+  c1.moveBy(150,150)
+  c1.show()
+  c2=Cell(canvas)
+  c2.moveBy(250,150)
+  c2.show()
+  c1.outports[0].link(c2.inports[0])
 
   qApp.setMainWidget(box)
   box.show()

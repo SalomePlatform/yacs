@@ -76,6 +76,7 @@ namespace YACS
       virtual std::vector< std::pair<OutPort *, InPort *> > getSetOfLinksLeavingCurrentScope() const;
       void checkConsistency(LinkInfo& info) const throw(Exception);
       virtual std::vector< std::pair<InPort *, OutPort *> > getSetOfLinksComingInCurrentScope() const;
+      virtual std::string typeName() {return "YACS__ENGINE__ComposedNode";}
       //
       ComposedNode *getRootNode() throw(Exception);
       bool isNodeAlreadyAggregated(Node *node) const;

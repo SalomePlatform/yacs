@@ -23,6 +23,7 @@ namespace YACS
       virtual ~InputDataStreamPort();
       virtual std::string getNameOfTypeOfCurrentInstance() const;
       virtual InputDataStreamPort *clone(Node *newHelder) const;
+      virtual std::string typeName() {return "YACS__ENGINE__InputDataStreamPort";}
     };
   }
 }

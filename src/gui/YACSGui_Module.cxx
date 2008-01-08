@@ -40,6 +40,7 @@
 #include <YACSPrs_LoopNode.h>
 #include <YACSPrs_Link.h>
 
+#include <LogWindow.h>
 #include <OB_Browser.h>
 #include <OB_ListItem.h>
 
@@ -276,9 +277,9 @@ void YACSGui_Module::createActions()
                 tr("MEN_NEW_WHILE_LOOP_NODE"), tr("STB_NEW_WHILE_LOOP_NODE"), 
 		0, aDesktop, false, this, SLOT(onWHILENode()));
 
-  aPixmap = aResourceMgr->loadPixmap("YACSGui", tr("ICON_NEW_SWITCH_LOOP_NODE"));
-  createAction( NewSwitchLoopNodeId, tr("TOP_NEW_SWITCH_LOOP_NODE"), QIconSet(aPixmap),
-                tr("MEN_NEW_SWITCH_LOOP_NODE"), tr("STB_NEW_SWITCH_LOOP_NODE"), 
+  aPixmap = aResourceMgr->loadPixmap("YACSGui", tr("ICON_NEW_SWITCH_NODE"));
+  createAction( NewSwitchLoopNodeId, tr("TOP_NEW_SWITCH_NODE"), QIconSet(aPixmap),
+                tr("MEN_NEW_SWITCH_NODE"), tr("STB_NEW_SWITCH_NODE"), 
 		0, aDesktop, false, this, SLOT(onSWITCHNode()));
 
   aPixmap = aResourceMgr->loadPixmap("YACSGui", tr("ICON_NEW_FROM_LIBRARY_NODE"));
@@ -810,11 +811,11 @@ bool YACSGui_Module::deactivateModule( SUIT_Study* theStudy )
 QString YACSGui_Module::engineIOR() const
 {
   MESSAGE("YACSGui_Module::engineIOR");
-  CORBA::String_var anIOR = getApp()->orb()->object_to_string( InitYACSGuiGen( getApp() ) );
-  return QString( anIOR.in() );
+  //CORBA::String_var anIOR = getApp()->orb()->object_to_string( InitYACSGuiGen( getApp() ) );
+  //return QString( anIOR.in() );
   
   // returns default IOR
-  //return getApp()->defaultEngineIOR();
+  return getApp()->defaultEngineIOR();
 }
 
 //! Gets a reference to the module's engine
@@ -822,8 +823,8 @@ QString YACSGui_Module::engineIOR() const
  */
 YACSGui_ORB::YACSGui_Gen_ptr YACSGui_Module::InitYACSGuiGen( SalomeApp_Application* app )
 {
-  MESSAGE("YACSGui_Module::InitYACSGuiGen");
-  Engines::Component_var comp = app->lcc()->FindOrLoad_Component( "YACSContainer", "YACSGui" );
+  MESSAGE("YACSGui_Module::InitYACSGuiGen"); 
+  Engines::Component_var comp = app->lcc()->FindOrLoad_Component( /*"YACSContainer"*/"FactoryServerPy", "YACSGui" );
   YACSGui_ORB::YACSGui_Gen_ptr clr = YACSGui_ORB::YACSGui_Gen::_narrow(comp);
   ASSERT(!CORBA::is_nil(clr));
   return clr;
@@ -1102,7 +1103,6 @@ void YACSGui_Module::onXMLNode()
 //! Private slot. Creates a new inline script node.
 /*!
  */
-
 void YACSGui_Module::onInlineScriptNode()
 {
   createNode(PYTHONNODE);
@@ -1615,7 +1615,10 @@ void YACSGui_Module::onDblClick( QListViewItem* theItem )
 	      displayGraph( aCProc, aPrsData, aPortLinkData, aLabelLinkData );
 	    }
 
-	    // create and activate the run tree view for the create run object
+	    // create Input Panel
+	    createInputPanel();
+
+	    // create and activate the tree view for the created schema
 	    createTreeView( aCProc ? aCProc->getSubjectProc() : 0, anObjType );
 	  }
 	  else
@@ -1934,7 +1937,6 @@ QxGraph_Canvas* YACSGui_Module::getCanvas()
     aCanvas = aViewer->getCanvas();
   return aCanvas;
 }
-
 /*!
   \brief Update viewer. Invalidate whole canvas rect and update it.
 */
@@ -2128,26 +2130,39 @@ YACS::HMI::GuiContext* YACSGui_Module::ImportProcFromFile( const QString& theFil
           mkstemp(file);
           tmpFileName=file;
           
-          std::string outfile("salomeloader_output");
+          std::string outfile(SALOMEDS_Tool::GetTmpDir() + "/salomeloader_output");
           std::string call="salomeloader.sh " +theFilePath+ " " + file + " > " + outfile;
           std::cerr << call << std::endl;
           int ret=system(call.c_str());
           if(ret != 0)
             {
+	      // read file with logs
+	      std::fstream f(outfile.c_str());
+	      std::stringstream hfile;
+	      hfile << f.rdbuf();
+	      f.close();
+
               //Problem in execution
               int status=WEXITSTATUS(ret);
               if(status == 1)
                 {
-                   LogViewer* log=new LogViewer("Problems in conversion: some errors but an incomplete proc has nevertheless been created",getApp()->desktop());
-                   log->readFile(outfile);
-                   log->show();
+		  getApp()->logWindow()->putMessage( QString("Problems in conversion: some errors but an incomplete proc has nevertheless been created")
+						     + QString("\n\n"+ hfile.str()) );
+
+		  //LogViewer* log=new LogViewer("Problems in conversion: some errors but an incomplete proc has nevertheless been created",getApp()->desktop());
+		  //log->readFile(outfile);
+		  //log->show();
                 }
               else if(status == 2)
                 {
-                   LogViewer* log=new LogViewer("Problems in conversion: a fatal error has been encountered. The proc can't be created",getApp()->desktop());
-                   log->readFile(outfile);
-                   log->show();
-                   return 0;
+		  getApp()->logWindow()->putMessage( QString("Problems in conversion: a fatal error has been encountered. The proc can't be created")
+						     + QString("\n\n"+ hfile.str()) );
+
+		  //LogViewer* log=new LogViewer("Problems in conversion: a fatal error has been encountered. The proc can't be created",getApp()->desktop());
+		  //log->readFile(outfile);
+		  //log->show();
+		  
+		  return 0;
                 }
               else
                 {
@@ -2183,7 +2198,7 @@ YACS::HMI::GuiContext* YACSGui_Module::ImportProcFromFile( const QString& theFil
       
       if (!tmpFileName.isEmpty())
         aProc = aLoader.load(tmpFileName);
-
+      
       //TD: Check the result of file loading
       if (!aProc)
 	{
@@ -2198,9 +2213,10 @@ YACS::HMI::GuiContext* YACSGui_Module::ImportProcFromFile( const QString& theFil
       Logger* logger=aProc->getLogger("parser");
       if(!logger->isEmpty())
         {
-          std::string txt="Problems when loading: the proc is not probably completely built\n\n"+logger->getStr();
-          LogViewer* log=new LogViewer(txt,getApp()->desktop());
-          log->show();
+	  getApp()->logWindow()->putMessage("Problems when loading: the proc is not probably completely built\n\n"+logger->getStr());
+
+          //LogViewer* log=new LogViewer(txt,getApp()->desktop());
+          //log->show();
         }
 
       QString name = QFileInfo(theFilePath).fileName ();
@@ -2249,9 +2265,20 @@ YACSGui_Executor* YACSGui_Module::getExecutor( YACS::ENGINE::Proc* theProc )
   
   if (!anExecutor)
     {
-      anExecutor = new YACSGui_Executor(this, theProc);
-      anExecutor->setGraph(activeGraph());
-      myExecutors[theProc] = anExecutor;
+      YACSGui_YACSORBContainerDialog* aYACSOrbDial =
+	new YACSGui_YACSORBContainerDialog(getApp()->desktop(),"Set machine parameters for YACS ORB container");
+      if ( aYACSOrbDial->exec() )
+      {
+	Engines::Component_var comp = getApp()->lcc()->LoadComponent( aYACSOrbDial->getParams(), "YACSGui" );
+	YACSGui_ORB::YACSGui_Gen_ptr clr = YACSGui_ORB::YACSGui_Gen::_narrow(comp);
+	ASSERT(!CORBA::is_nil(clr));
+	
+	anExecutor = new YACSGui_Executor(this, theProc);
+	anExecutor->setGraph(activeGraph());
+	anExecutor->setEngineRef(clr);
+	
+	myExecutors[theProc] = anExecutor;
+      }
     }
   
   return anExecutor;
@@ -2435,7 +2462,7 @@ void YACSGui_Module::onCreateBatchExecution()
 
 void YACSGui_Module::onReloadExecution()
 {
-  printf("YACSGui_Module::onReloadExecution - Not implemented yet");
+  MESSAGE("YACSGui_Module::onReloadExecution()");
   
   // switch to run mode
   setGuiMode(YACSGui_Module::RunMode);
@@ -3380,13 +3407,14 @@ void YACSGui_Module::createNode( YACS::HMI::TypeOfElem theElemType, std::string 
 	if( SubjectComposedNode* aParent = dynamic_cast<SubjectComposedNode*>(aBloc->getParent()) )
 	  {
 	    aGraph->update(aBloc->getNode(), aParent);
-	    Bloc* aFather = dynamic_cast<Bloc*>(aBloc->getNode());
-	    while ( aFather )
+	    // already done in YACSGui_BlocNode::update(...)
+	    /*Bloc* aFather = dynamic_cast<Bloc*>(aBloc->getNode());
+	    while ( aFather && !dynamic_cast<Proc*>(aFather) )
 	    {
-	      //aGraph->arrangeNodesWithinBloc(aFather);
+	      aGraph->arrangeNodesWithinBloc(aFather);
 	      aFather = dynamic_cast<Bloc*>(aFather->getFather());
 	    }
-	    aGraph->getCanvas()->update();
+	    aGraph->getCanvas()->update();*/
 	  }
 	temporaryExport();
       }
@@ -3408,8 +3436,6 @@ YACS::HMI::SubjectNode* YACSGui_Module::createBody( YACS::HMI::TypeOfElem theEle
 						    std::string theCompo,
 						    std::string theService )
 {
-  printf( "YACSGui_Module::createBody\n" );
-
   SubjectNode* aBodyNode = 0;
 
   if( !theCatalog ) return aBodyNode;
@@ -3429,11 +3455,13 @@ YACS::HMI::SubjectNode* YACSGui_Module::createBody( YACS::HMI::TypeOfElem theEle
 			       tr("BUT_YES"), tr("BUT_NO"), 0, 1, 1) == 1 )
       return aBodyNode;
 
-    aGraph->deletePrs( aChildNode, false );
-
     aComposedNode->update( REMOVE,
 			   ProcInvoc::getTypeOfNode( aChildNode->getNode() ),
 			   aChildNode );
+    // clear the content of the property page of deleted node
+    aChildNode->update( REMOVE, 0, 0 );
+
+    aGraph->removeNode( aChildNode->getNode() );
 
     aComposedNode->destroy( aChildNode );
   }
@@ -3446,7 +3474,7 @@ YACS::HMI::SubjectNode* YACSGui_Module::createBody( YACS::HMI::TypeOfElem theEle
 				      ( theService.empty() ? aType : theService ),
 				      aName.str() );
   aGraph->createPrs( aBodyNode );
-	
+
   if( YACSPrs_LoopNode* aNodePrs = dynamic_cast<YACSPrs_LoopNode*>( aGraph->getItem( aComposedNode->getNode() ) ) )
   {
     aNodePrs->updatePorts( true );

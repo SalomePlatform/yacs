@@ -1,5 +1,6 @@
 import sys
 import pilot
+import SALOMERuntime
 import Item
 import adapt
 from qt import *
@@ -216,6 +217,9 @@ class ItemSwitch(ItemComposedNode):
 
 class ItemProc(ItemComposedNode):
   """Item pour la procedure"""
+  def connecting(self,item):
+    print "ItemProc.connecting",item
+    self._connecting=item
 
 class ItemPort(Item.Item):
   """Item pour les ports """
@@ -254,6 +258,10 @@ class ItemPort(Item.Item):
 
   def link(self,other):
     print "ItemPort.link:",self,other
+
+  def connect(self):
+    print "ItemPort.connect:"
+    self.root.connecting(self)
 
 class ItemInPort(ItemPort):
   def getIconName(self):
@@ -339,6 +347,7 @@ class ItemNode(Item.Item):
     Item.Item.__init__(self)
     self.node=node
     self.label=node.getName()
+    self.father=Item.adapt(node.getFather())
 
   def selected(self):
     #print "ItemNode selected"
@@ -530,6 +539,7 @@ if hasattr(pilot,"ProcPtr"):
 else:
   #SWIG 1.3.29
   adapt.registerAdapterFactory(pilot.Proc, Item.Item, adapt_Proc_to_Item)
+  adapt.registerAdapterFactory(SALOMERuntime.SalomeProc, Item.Item, adapt_Proc_to_Item)
   adapt.registerAdapterFactory(pilot.Bloc, Item.Item, adapt_ComposedNode_to_Item)
   adapt.registerAdapterFactory(pilot.ForLoop, Item.Item, adapt_ForLoop_to_Item)
 
@@ -539,13 +549,21 @@ else:
   adapt.registerAdapterFactory(pilot.ComposedNode, Item.Item, adapt_ComposedNode_to_Item)
 
   adapt.registerAdapterFactory(pilot.ServiceNode, Item.Item, adapt_ServiceNode_to_Item)
+  adapt.registerAdapterFactory(SALOMERuntime.CORBANode, Item.Item, adapt_ServiceNode_to_Item)
+  adapt.registerAdapterFactory(SALOMERuntime.SalomeNode, Item.Item, adapt_ServiceNode_to_Item)
   #adapt.registerAdapterFactory(pilot.ServiceNodeNode, Item.Item, adapt_Node_to_Item)
   adapt.registerAdapterFactory(pilot.InlineNode, Item.Item, adapt_InlineScriptNode_to_Item)
+  adapt.registerAdapterFactory(SALOMERuntime.PythonNode, Item.Item, adapt_InlineScriptNode_to_Item)
   adapt.registerAdapterFactory(pilot.InlineFuncNode, Item.Item, adapt_InlineFuncNode_to_Item)
+  adapt.registerAdapterFactory(SALOMERuntime.PyFuncNode, Item.Item, adapt_InlineFuncNode_to_Item)
   adapt.registerAdapterFactory(pilot.Node, Item.Item, adapt_Node_to_Item)
 
   adapt.registerAdapterFactory(pilot.OutputPort, Item.Item, adapt_OutPort_to_Item)
+  adapt.registerAdapterFactory(SALOMERuntime.OutputPyPort, Item.Item, adapt_OutPort_to_Item)
+  adapt.registerAdapterFactory(SALOMERuntime.OutputCorbaPort, Item.Item, adapt_OutPort_to_Item)
   adapt.registerAdapterFactory(pilot.InputPort, Item.Item, adapt_InPort_to_Item)
+  adapt.registerAdapterFactory(SALOMERuntime.InputPyPort, Item.Item, adapt_InPort_to_Item)
+  adapt.registerAdapterFactory(SALOMERuntime.InputCorbaPort, Item.Item, adapt_InPort_to_Item)
   adapt.registerAdapterFactory(pilot.OutputDataStreamPort, Item.Item, adapt_OutStream_to_Item)
   adapt.registerAdapterFactory(pilot.InputDataStreamPort, Item.Item, adapt_InStream_to_Item)
   adapt.registerAdapterFactory(pilot.OutGate, Item.Item, adapt_OutGate_to_Item)

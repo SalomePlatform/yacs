@@ -79,7 +79,7 @@ msgstr "loop_node.png"
 msgid "ICON_NEW_WHILE_LOOP_NODE"
 msgstr "loop_node.png"
 
-msgid "ICON_NEW_SWITCH_LOOP_NODE"
+msgid "ICON_NEW_SWITCH_NODE"
 msgstr "switch_node.png"
 
 msgid "ICON_NEW_FROM_LIBRARY_NODE"

@@ -457,7 +457,9 @@ QColor getColor( int theStatus )
 //=======================================================================
 YACSGui_InputPanel::YACSGui_InputPanel( YACSGui_Module* theModule )
   :  QDockWindow( QDockWindow::InDock, theModule && theModule->getApp() ? theModule->application()->desktop() : 0 ),
-     myModule(theModule)
+     myModule(theModule),
+     myApplyBtn(0),
+     myCancelBtn(0)
 {
   QScrollView* scrollView = new QScrollView( this );
 
@@ -1224,6 +1226,181 @@ void YACSGui_PropertyPage::onApply()
 }
 
 /*
+  Class : YACSGui_YACSORBContainerDialog
+  Description :  Page for container properties
+*/
+
+YACSGui_YACSORBContainerDialog::YACSGui_YACSORBContainerDialog( QWidget* theParent, const char* theName, WFlags theFlags )
+  : QDialog( theParent, theName, true, theFlags )
+{
+  setCaption(theName);
+
+  QVBoxLayout* aTopLayout = new QVBoxLayout( this );
+  aTopLayout->setSpacing( 6 );
+  aTopLayout->setMargin( 11 );
+
+  myPage = new ContainerPage(this);
+
+  QGroupBox* aGrpBtns = new QGroupBox( this, "GroupButtons" );
+  aGrpBtns->setColumnLayout(0, Qt::Vertical );
+  aGrpBtns->layout()->setSpacing( 0 ); aGrpBtns->layout()->setMargin( 0 );
+  aGrpBtns->setFrameStyle( QFrame::NoFrame );
+  QHBoxLayout* aGrpBtnsLayout = new QHBoxLayout( aGrpBtns->layout() );
+  aGrpBtnsLayout->setAlignment( Qt::AlignTop );
+  aGrpBtnsLayout->setSpacing( 0 ); aGrpBtnsLayout->setMargin( 0 );
+
+  QPushButton* okB = new QPushButton( tr( "BUT_OK" ), aGrpBtns );
+  connect( okB, SIGNAL( clicked() ), this, SLOT( onApply() ) );
+
+  aGrpBtnsLayout->addItem  ( new QSpacerItem( 5, 5, QSizePolicy::Expanding, QSizePolicy::Minimum ) );
+  aGrpBtnsLayout->addWidget( okB );
+  aGrpBtnsLayout->addItem  ( new QSpacerItem( 5, 5, QSizePolicy::Expanding, QSizePolicy::Minimum ) );
+
+  aTopLayout->addWidget(myPage);
+  aTopLayout->addStretch(1);
+  aTopLayout->addWidget(aGrpBtns);
+  
+  SalomeApp_Application* anApp = dynamic_cast<SalomeApp_Application*>( SUIT_Session::session()->activeApplication() );
+  if( anApp )
+  {
+    anApp->lcc()->preSet(myParams);
+    myParams.container_name = "FactoryServerPy";
+    myParams.hostname = "localhost";
+  }
+  else
+  {
+    myParams.container_name = "FactoryServerPy";
+    myParams.hostname = "localhost";
+    myParams.OS = "";
+    myParams.mem_mb = 0;
+    myParams.cpu_clock = 0;
+    myParams.nb_proc_per_node = 0;
+    myParams.nb_node = 0;
+    myParams.isMPI = false;
+    myParams.parallelLib = "";
+    myParams.nb_component_nodes = 0;
+  }
+
+  myPage->showAdvanced->setChecked(false);
+  onShowAdvanced();
+  updateState();
+  myPage->myHostName->setEditable(true);
+  connect(myPage->showAdvanced, SIGNAL(clicked()), this, SLOT(onShowAdvanced()));
+}
+
+YACSGui_YACSORBContainerDialog::~YACSGui_YACSORBContainerDialog()
+{
+}
+
+void YACSGui_YACSORBContainerDialog::fillHostNames() const
+{
+  SalomeApp_Application* anApp = dynamic_cast<SalomeApp_Application*>( SUIT_Session::session()->activeApplication() );
+  if ( !anApp ) return;
+
+  SALOME_NamingService* namingService = anApp->namingService();
+
+  CORBA::Object_var obj = namingService->Resolve(SALOME_ResourcesManager::_ResourcesManagerNameInNS);
+  if ( !CORBA::is_nil(obj) )
+    if ( Engines::ResourcesManager_var aResManager=Engines::ResourcesManager::_narrow(obj) )
+    {
+      Engines::CompoList aCompoList ;
+      Engines::MachineParameters params;
+      anApp->lcc()->preSet(params);
+
+      Engines::MachineList* aMachineList = aResManager->GetFittingResources( params, aCompoList );
+
+      myPage->myHostName->clear();
+      myPage->myHostName->insertItem( QString("localhost") );
+      for ( unsigned int i = 0; i < aMachineList->length(); i++ )
+      {
+	const char* aMachine = (*aMachineList)[i];
+	myPage->myHostName->insertItem( QString(aMachine) );
+      }
+    }
+}
+
+void YACSGui_YACSORBContainerDialog::onShowAdvanced()
+{
+  if(myPage->showAdvanced->isChecked())
+    myPage->groupBoxAdv->show();
+  else
+    myPage->groupBoxAdv->hide();
+}
+
+void YACSGui_YACSORBContainerDialog::updateState()
+{
+  fillHostNames();
+
+  // Set container name
+  if ( myPage->myContainerName )
+    myPage->myContainerName->setText(QString(myParams.container_name));
+
+  // Set host name
+  if ( myPage->myHostName )
+    myPage->myHostName->setCurrentText(QString(myParams.hostname));
+
+  // Set mem_mb
+  if ( myPage->myMemMb )
+    myPage->myMemMb->setValue(myParams.mem_mb);
+
+  // Set cpu_clock
+  if ( myPage->myCpuClock )
+    myPage->myCpuClock->setValue(myParams.cpu_clock);
+  
+  // Set nb_proc_per_node
+  if ( myPage->myNbProcPerNode )
+    myPage->myNbProcPerNode->setValue(myParams.nb_proc_per_node);
+
+  // Set nb_node
+  if ( myPage->myNbNode )
+    myPage->myNbNode->setValue(myParams.nb_node);
+  
+  // Set MPI usage
+  if ( myPage->myMpiUsage )
+    myPage->myMpiUsage->setCurrentItem( myParams.isMPI ? 0 : 1 );
+
+  // Set parallel library
+  if ( myPage->myParallelLib )
+    myPage->myParallelLib->setText(QString(myParams.parallelLib));
+
+  // Set nb_component_nodes
+  if ( myPage->myNbComponentNodes )
+    myPage->myNbComponentNodes->setValue(myParams.nb_component_nodes);
+}
+
+void YACSGui_YACSORBContainerDialog::onApply()
+{
+  if ( myPage->myContainerName )
+    myParams.container_name = myPage->myContainerName->text().latin1();
+
+  if ( myPage->myHostName )
+    myParams.hostname = myPage->myHostName->currentText().latin1();
+
+  if ( myPage->myMemMb )
+    myParams.mem_mb = myPage->myMemMb->value();
+
+  if ( myPage->myCpuClock )
+    myParams.cpu_clock = myPage->myCpuClock->value();
+  
+  if ( myPage->myNbProcPerNode )
+    myParams.nb_proc_per_node = myPage->myNbProcPerNode->value();
+
+  if ( myPage->myNbNode )
+    myParams.nb_node = myPage->myNbNode->value();
+  
+  if ( myPage->myMpiUsage )
+    myParams.isMPI = ( myPage->myMpiUsage->currentItem() ? false : true );
+
+  if ( myPage->myParallelLib )
+    myParams.parallelLib = myPage->myParallelLib->text().latin1();
+
+  if ( myPage->myNbComponentNodes )
+    myParams.nb_component_nodes = myPage->myNbComponentNodes->value();
+
+  accept();
+}
+
+/*
   Class : YACSGui_ContainerPage
   Description :  Page for container properties
 */
@@ -1240,7 +1417,7 @@ YACSGui_ContainerPage::YACSGui_ContainerPage( QWidget* theParent, const char* th
 
 YACSGui_ContainerPage::~YACSGui_ContainerPage()
 {
-  getInputPanel()->removePage(this);
+  if (getInputPanel()) getInputPanel()->removePage(this);
 
   if ( mySContainer ) mySContainer->detach(this);
 }
@@ -1253,6 +1430,20 @@ void YACSGui_ContainerPage::select( bool isSelected )
 void YACSGui_ContainerPage::update( YACS::HMI::GuiEvent event, int type, YACS::HMI::Subject* son)
 {
   printf(">> YACSGui_ContainerPage::update\n");
+  switch (event)
+  {
+  case REMOVE:
+    {
+      if ( !type && !son && mySContainer )
+      {
+	mySContainer->detach(this);
+	mySContainer = 0;
+      }
+    }
+    break;
+  default:
+    GuiObserver::update(event, type, son);
+  }
 }
 
 void YACSGui_ContainerPage::setSContainer(YACS::HMI::SubjectContainer* theSContainer )
@@ -1296,7 +1487,15 @@ void YACSGui_ContainerPage::setContainerName( const QString& theName )
 
 YACSGui_InputPanel* YACSGui_ContainerPage::getInputPanel() const
 {
-  return dynamic_cast<YACSGui_InputPanel*>( parent()->parent()->parent()->parent() );
+  SalomeApp_Application* anApp = dynamic_cast<SalomeApp_Application*>( SUIT_Session::session()->activeApplication() );
+  if( !anApp )
+    return 0;
+
+  YACSGui_Module* aModule = dynamic_cast<YACSGui_Module*>( anApp->activeModule() );
+  if( !aModule )
+    return 0;
+
+  return aModule->getInputPanel();
 }
 
 void YACSGui_ContainerPage::fillHostNames() const
@@ -1509,7 +1708,8 @@ YACSGui_ComponentPage::YACSGui_ComponentPage( QWidget* theParent, const char* th
   : ComponentPage( theParent, theName, theFlags ),
     GuiObserver(),
     mySComponent( 0 ),
-    myType( SALOME )
+    myType( SALOME ),
+    myEditComp(true)
 {
   connect( myContainerName, SIGNAL( activated( const QString& ) ),
 	   this, SLOT( onContainerChanged( const QString& ) ) );
@@ -1517,7 +1717,7 @@ YACSGui_ComponentPage::YACSGui_ComponentPage( QWidget* theParent, const char* th
 
 YACSGui_ComponentPage::~YACSGui_ComponentPage()
 {
-  getInputPanel()->removePage(this);
+  if (getInputPanel()) getInputPanel()->removePage(this);
 
   if ( mySComponent ) mySComponent->detach(this);
 }
@@ -1530,14 +1730,36 @@ void YACSGui_ComponentPage::select( bool isSelected )
 void YACSGui_ComponentPage::update( YACS::HMI::GuiEvent event, int type, YACS::HMI::Subject* son)
 {
   printf(">> YACSGui_ComponentPage::update\n");
+  switch (event)
+  {
+  case REMOVE:
+    {
+      if ( !type && !son && mySComponent )
+      {
+	mySComponent->detach(this);
+	mySComponent = 0;
+      }
+    }
+    break;
+  default:
+    GuiObserver::update(event, type, son);
+  }
 }
 
 YACSGui_InputPanel* YACSGui_ComponentPage::getInputPanel() const
 {
-  return dynamic_cast<YACSGui_InputPanel*>( parent()->parent()->parent()->parent() );
+  SalomeApp_Application* anApp = dynamic_cast<SalomeApp_Application*>( SUIT_Session::session()->activeApplication() );
+  if( !anApp )
+    return 0;
+
+  YACSGui_Module* aModule = dynamic_cast<YACSGui_Module*>( anApp->activeModule() );
+  if( !aModule )
+    return 0;
+
+  return aModule->getInputPanel();
 }
 
-void YACSGui_ComponentPage::setSComponent( YACS::HMI::SubjectComponent* theSComponent )
+void YACSGui_ComponentPage::setSComponent( YACS::HMI::SubjectComponent* theSComponent, bool isEdit )
 {
   if( mySComponent != theSComponent)
   {
@@ -1555,8 +1777,9 @@ void YACSGui_ComponentPage::setSComponent( YACS::HMI::SubjectComponent* theSComp
 	  aContPage->setSContainer( GuiContext::getCurrent()->_mapOfSubjectContainer[getComponent()->getContainer()] );
       }
     }
-    updateState();
   }
+  myEditComp = isEdit;
+  updateState();
 }
 
 YACS::ENGINE::ComponentInstance* YACSGui_ComponentPage::getComponent() const
@@ -1631,9 +1854,76 @@ void YACSGui_ComponentPage::setContainer()
 
 void YACSGui_ComponentPage::onApply()
 {
+  QString aText = myComponentName->currentText();
+  if ( aText.isEmpty() ) return;
+    getComponent()->setName( aText.latin1() );
+
   setContainer();
 
-  if ( mySComponent ) mySComponent->update( EDIT, 0, mySComponent );
+  if ( mySComponent ) {
+    mySComponent->update( EDIT, 0, mySComponent );
+    YACSGui_EditionTreeView * aETV = 
+      dynamic_cast<YACSGui_EditionTreeView*>(getInputPanel()->getModule()->activeTreeView());
+    if(!aETV) return;
+    if ( YACSGui_ComponentViewItem* aComp = dynamic_cast<YACSGui_ComponentViewItem*>(aETV->getSelected().front()) ) {
+      if ( aComp->getSComponent() == mySComponent ) {
+	QListViewItem* aChild = aComp->firstChild();
+	while( aChild ){
+	  if(YACSGui_ReferenceViewItem* aRef = dynamic_cast<YACSGui_ReferenceViewItem*>(aChild)) {
+	    SubjectServiceNode* aSSNode = dynamic_cast<SubjectServiceNode*>(aRef->getSReference()->getParent());
+	    ServiceNode* sNode = dynamic_cast<ServiceNode*>(aSSNode->getNode());
+	    if(aSSNode && sNode) {
+	      YACSGui_InputPanel* anIP = getInputPanel();
+	      YACSGui_ServiceNodePage* aSNPage = 
+		dynamic_cast<YACSGui_ServiceNodePage*>( anIP->getPage( YACSGui_InputPanel::ServiceNodeId ) );
+	      if( aSNPage ) {
+		if ( !dynamic_cast<CORBANode*>(sNode) ) {
+		  YACSGui_ContainerPage* aContPage = 
+		    dynamic_cast<YACSGui_ContainerPage*>( anIP->getPage( YACSGui_InputPanel::ContainerId ) );
+		  if ( aContPage ) {
+		    SubjectContainer* aCont = 0;
+		    if ( mySComponent->getComponent()->getContainer() )
+		      aCont = GuiContext::getCurrent()->_mapOfSubjectContainer[mySComponent->getComponent()->getContainer()];
+		    aContPage->setSContainer(aCont);
+		    anIP->setOn( false, YACSGui_InputPanel::ContainerId );
+		  }
+		}
+	    
+		aSNPage->setSNode( aSSNode );
+		anIP->setOn( true, YACSGui_InputPanel::ServiceNodeId );
+		anIP->setMode( YACSGui_InputPanel::EditMode, YACSGui_InputPanel::ServiceNodeId );
+		aSNPage->setComponent(mySComponent->getComponent());
+		aSNPage->onApply();
+	      }
+	    }
+	  }
+	  aChild = aChild->nextSibling();
+	}
+      }
+    }
+  }
+}
+
+void YACSGui_ComponentPage::fillComponentNames()
+{
+  myComponentName->clear();
+  
+  if ( myType == CORBA ) // TODO: in case of CORBA component myComponentName control should be QLineEdit
+    myComponentName->setEnabled(false);  
+  else
+    myComponentName->setEnabled(myEditComp);
+
+  Proc* aProc = GuiContext::getCurrent()->getProc();
+  if ( !aProc ) return;
+
+  YACS::ENGINE::Catalog *aCatalog = getInputPanel()->getModule()->getCatalog();
+  if ( aCatalog )
+  {
+    map<string, YACS::ENGINE::ComponentDefinition*>::const_iterator it = aCatalog->_componentMap.begin(); 
+    map<string, YACS::ENGINE::ComponentDefinition*>::const_iterator itEnd = aCatalog->_componentMap.end(); 
+    for ( ; it != itEnd; ++it )
+      myComponentName->insertItem( QString( (*it).first ) );
+  }
 }
 
 void YACSGui_ComponentPage::fillContainerNames()
@@ -1654,9 +1944,10 @@ void YACSGui_ComponentPage::fillContainerNames()
 
 void YACSGui_ComponentPage::updateState()
 {
+  fillComponentNames();
   // Set component name
   if ( myComponentName )
-    myComponentName->setText( getComponentName() );
+    myComponentName->setCurrentText( getComponentName() );
   
   // Set component type
   setComponentType();
@@ -1699,7 +1990,7 @@ YACSGui_SchemaPage::YACSGui_SchemaPage( QWidget* theParent, const char* theName,
 
 YACSGui_SchemaPage::~YACSGui_SchemaPage()
 {
-  getInputPanel()->removePage(this);
+  if (getInputPanel()) getInputPanel()->removePage(this);
 
   if ( mySProc ) mySProc->detach(this);
 }
@@ -1753,7 +2044,15 @@ void YACSGui_SchemaPage::onApply()
 
 YACSGui_InputPanel* YACSGui_SchemaPage::getInputPanel() const
 {
-  return dynamic_cast<YACSGui_InputPanel*>( parent()->parent()->parent()->parent() );
+  SalomeApp_Application* anApp = dynamic_cast<SalomeApp_Application*>( SUIT_Session::session()->activeApplication() );
+  if( !anApp )
+    return 0;
+
+  YACSGui_Module* aModule = dynamic_cast<YACSGui_Module*>( anApp->activeModule() );
+  if( !aModule )
+    return 0;
+
+  return aModule->getInputPanel();
 }
 
 void YACSGui_SchemaPage::setMode( const YACSGui_InputPanel::PageMode theMode )
@@ -1878,12 +2177,19 @@ void YACSGui_NodePage::update( YACS::HMI::GuiEvent event, int type, YACS::HMI::S
       // check if the parent of the son is a loop
       if( SubjectNode* aSNode = dynamic_cast<SubjectNode*>( son->getParent() ) )
       {
-	if( Loop* aLoop = dynamic_cast<Loop*>( aSNode->getNode() ) )
+	if ( dynamic_cast<Loop*>( aSNode->getNode() ) || dynamic_cast<ForEachLoop*>( aSNode->getNode() ) )
 	  notifyNodeCreateBody( son );
-	else if( Switch* aSwitch = dynamic_cast<Switch*>( aSNode->getNode() ) )
+	else if ( dynamic_cast<Switch*>( aSNode->getNode() ) || dynamic_cast<Bloc*>( aSNode->getNode() ) )
 	  notifyNodeCreateNode( son );
-	else if( Bloc* aBloc = dynamic_cast<Bloc*>( aSNode->getNode() ) )
-	  notifyNodeCreateNode( son );
+      }
+    }
+    break;
+  case REMOVE:
+    {
+      if ( !type && !son && mySNode )
+      {
+	mySNode->detach(this);
+	mySNode = 0;
       }
     }
     break;
@@ -1893,6 +2199,19 @@ void YACSGui_NodePage::update( YACS::HMI::GuiEvent event, int type, YACS::HMI::S
   default:
     GuiObserver::update(event, type, son);
   }
+}
+
+YACSGui_InputPanel* YACSGui_NodePage::getInputPanel() const
+{
+  SalomeApp_Application* anApp = dynamic_cast<SalomeApp_Application*>( SUIT_Session::session()->activeApplication() );
+  if( !anApp )
+    return 0;
+
+  YACSGui_Module* aModule = dynamic_cast<YACSGui_Module*>( anApp->activeModule() );
+  if( !aModule )
+    return 0;
+
+  return aModule->getInputPanel();
 }
 
 void YACSGui_NodePage::setSNode( YACS::HMI::SubjectNode* theSNode )
@@ -1967,13 +2286,25 @@ void YACSGui_NodePage::setSNode( YACS::HMI::SubjectNode* theSNode )
       //printf("Input ports\n");
       for ( ; itIP!=IPs.end(); itIP++ )
       {
-	if ( anItem->getPortPrs(*itIP) ) {
-	  anInPortName2Value.insert( make_pair((*itIP)->getName(),
-					       string(anItem->getPortPrs(*itIP)->getCurrentValue().latin1())) );
+        InPort* aPort = *itIP;
+        if ( !aPort )
+          continue;
+
+        YACSPrs_InOutPort* aPortPrs = anItem->getPortPrs( aPort );
+        if ( !aPortPrs )
+          continue;
+
+        QString aCurrVal = aPortPrs->getCurrentValue();
+        if ( aCurrVal.isNull() )
+          continue; 
+        
+        anInPortName2Value.insert( 
+          make_pair( aPort->getName(), string( aCurrVal.latin1() ) ) );
+
 	  //printf(">> Name = %s, Value = %s\n",
 	  // (*itIP)->getName().c_str(),
 	  // anItem->getPortPrs(*itIP)->getCurrentValue().latin1());
-	}
+	
       }
       //printf("--------\n\n");
       //printf("Notify\n");
@@ -1985,13 +2316,24 @@ void YACSGui_NodePage::setSNode( YACS::HMI::SubjectNode* theSNode )
       //printf("Output ports\n");
       for ( ; itOP!=OPs.end(); itOP++ )
       {
-	if ( anItem->getPortPrs(*itOP) ) {
-	  anOutPortName2Value.insert( make_pair((*itOP)->getName(),
-						string(anItem->getPortPrs(*itOP)->getCurrentValue().latin1())) );
+        OutPort* aPort = *itOP;
+        if ( !aPort )
+          continue;
+
+        YACSPrs_InOutPort* aPortPrs = anItem->getPortPrs( aPort );
+        if ( !aPortPrs )
+          continue;
+
+        QString aCurrVal = aPortPrs->getCurrentValue();
+        if ( aCurrVal.isNull() )
+          continue; 
+
+	  anOutPortName2Value.insert( 
+            make_pair( aPort->getName(), string( aCurrVal.latin1() ) ) );
+
 	  //printf(">> Name = %s, Value = %s\n",
 	  // (*itOP)->getName().c_str(),
 	  // anItem->getPortPrs(*itOP)->getCurrentValue().latin1());
-	}
       }
       //printf("--------\n\n");
       //printf("Notify\n");
@@ -2162,6 +2504,7 @@ QString YACSGui_NodePage::getPortValue(YACS::ENGINE::Port* thePort) const
   }
   else if( aType == InputXml )
   {
+    aValue = QString("xml");
   }
   else if( aType == InputBasicStream )
   {
@@ -2197,6 +2540,7 @@ QString YACSGui_NodePage::getPortValue(YACS::ENGINE::Port* thePort) const
   }
   else if( aType == OutputXml )
   {
+    aValue = QString("xml");
   }
   else if( aType == OutputBasicStream )
   {
@@ -2319,7 +2663,7 @@ YACSGui_InlineNodePage::YACSGui_InlineNodePage( QWidget* theParent, const char* 
 
 YACSGui_InlineNodePage::~YACSGui_InlineNodePage()
 {
-  getInputPanel()->removePage(this);
+  if (getInputPanel()) getInputPanel()->removePage(this);
 }
 
 void YACSGui_InlineNodePage::setSNode( YACS::HMI::SubjectNode* theSNode )
@@ -2332,11 +2676,6 @@ void YACSGui_InlineNodePage::setSNode( YACS::HMI::SubjectNode* theSNode )
     myIPList.clear();
     myOPList.clear();
   }
-}
-
-YACSGui_InputPanel* YACSGui_InlineNodePage::getInputPanel() const
-{
-  return dynamic_cast<YACSGui_InputPanel*>( parent()->parent()->parent()->parent() );
 }
 
 void YACSGui_InlineNodePage::setMode( const YACSGui_InputPanel::PageMode theMode )
@@ -2479,18 +2818,10 @@ void YACSGui_InlineNodePage::onApply()
 
   // Reset Python function/script
   if ( InlineNode* anIN = dynamic_cast<InlineNode*>( getNode() ) )
-#ifdef HAVE_QEXTSCINTILLA_H
-    anIN->setScript( _myTextEdit->text().isEmpty() ? string("") : _myTextEdit->text().latin1()  );
-#else
-    anIN->setScript(myTextEdit->text().isEmpty() ? string("") : myTextEdit->text().latin1()  );
-#endif
+    anIN->setScript( scriptText().isEmpty() ? string("") : scriptText().latin1() );
   if ( InlineFuncNode* anIFN = dynamic_cast<InlineFuncNode*>( getNode() ) )
   {
-#ifdef HAVE_QEXTSCINTILLA_H
-    QString aText = _myTextEdit->text();
-#else
-    QString aText = myTextEdit->text();
-#endif
+    QString aText = scriptText();
     int aFromId = aText.find( QString("\ndef ") ) + QString("\ndef ").length();
     int aToId = aText.find( QString("("), aFromId );
     aText = aText.left( aToId );
@@ -2545,13 +2876,7 @@ void YACSGui_InlineNodePage::updateState()
 
   // Show the body (script/function) of inline node
   if ( InlineNode* anIN = dynamic_cast<InlineNode*>( getNode() ) )
-  {
-#ifdef HAVE_QEXTSCINTILLA_H
-    _myTextEdit->setText( QString(anIN->getScript()) );
-#else
-    myTextEdit->setText( QString(anIN->getScript()) );
-#endif
-  }
+    setScriptText( QString(anIN->getScript()) );
 }
 
 void YACSGui_InlineNodePage::onNodeNameChanged( const QString& theName )
@@ -2615,17 +2940,15 @@ void YACSGui_InlineNodePage::hideEvent( QHideEvent*)
 #else
   myTextEdit->removeSelection();
 #endif
-  }
+}
 
 void YACSGui_InlineNodePage::onSearch()
 {
 #ifdef HAVE_QEXTSCINTILLA_H
   if ( _myTextEdit && mySearch )
   {
-    printf(">> Try find\n");
     if ( _myTextEdit->findFirst( mySearch->text(), true, false, true, &myPara, &myIndex ) )
     {
-      printf(">> The text is found!\n");
       _myTextEdit->setSelection( myPara, myIndex, myPara, myIndex + mySearch->text().length() );
       myIndex += mySearch->text().length();
     } else {
@@ -2636,10 +2959,8 @@ void YACSGui_InlineNodePage::onSearch()
 #else
   if ( myTextEdit && mySearch )
   {
-    printf(">> Try find\n");
     if ( myTextEdit->find( mySearch->text(), true, false, true, &myPara, &myIndex ) )
     {
-      printf(">> The text is found!\n");
       myTextEdit->setSelection( myPara, myIndex, myPara, myIndex + mySearch->text().length() );
       myIndex += mySearch->text().length();
     } else {
@@ -2655,6 +2976,9 @@ void YACSGui_InlineNodePage::onInserted( const int theRow )
   if ( YACSGui_PlusMinusGrp* aGrpBox = ( YACSGui_PlusMinusGrp* )sender() )
     if ( myInputPortsGroupBox == aGrpBox )
     {
+      if ( myRow2StoredInPorts.size() == 0 )
+        return;
+
       if ( myRow2StoredInPorts.size() == 1 )
       {
 	if ( theRow == 0 )
@@ -2664,7 +2988,7 @@ void YACSGui_InlineNodePage::onInserted( const int theRow )
 	  myRow2StoredInPorts.erase(0);
 	} 
       }
-      else
+      else 
       {
 	map<int,InPort*>::iterator it = myRow2StoredInPorts.end();
 	map<int,InPort*>::iterator itBeforeBegin = myRow2StoredInPorts.begin()--;
@@ -2684,6 +3008,9 @@ void YACSGui_InlineNodePage::onInserted( const int theRow )
     }
     else if ( myOutputPortsGroupBox == aGrpBox )
     {
+      if ( myRow2StoredOutPorts.size() == 0 )
+        return;
+
       if ( myRow2StoredOutPorts.size() == 1 )
       {
 	if ( theRow == 0 )
@@ -3420,16 +3747,16 @@ void YACSGui_InlineNodePage::setInputPorts()
 	  aIDP->edInit( aValues[aRowId].compare( aTable->Params(aRowId,3)[0] ) ? false : true );
 	  break;
 	case Objref:
-	  aIDP->edInit( "" ); // TODO : create an Any* with corresponding type and initialize with it
+	  //aIDP->edInit( "" ); // TODO : create an Any* with corresponding type and initialize with it
 	  break;
 	case Sequence:
-	  aIDP->edInit( "" ); // TODO : create an Any* (i.e. SequenceAny*) with corresponding type and initialize with it
+	  //aIDP->edInit( "" ); // TODO : create an Any* (i.e. SequenceAny*) with corresponding type and initialize with it
 	  break;
 	case Array:
-	  aIDP->edInit( "" ); // TODO : create an Any* (i.e. ArrayAny*) with corresponding type and initialize with it
+	  //aIDP->edInit( "" ); // TODO : create an Any* (i.e. ArrayAny*) with corresponding type and initialize with it
 	  break;
 	case Struct:
-	  aIDP->edInit( "" ); // TODO : create an Any* with corresponding type and initialize with it
+	  //aIDP->edInit( "" ); // TODO : create an Any* with corresponding type and initialize with it
 	  break;
 	default:
 	  break;
@@ -3727,6 +4054,24 @@ YACS::ENGINE::TypeCode* YACSGui_InlineNodePage::createTypeCode( YACS::ENGINE::Dy
   return aTC;
 }
 
+QString YACSGui_InlineNodePage::scriptText() const
+{
+#ifdef HAVE_QEXTSCINTILLA_H
+  return _myTextEdit->text();
+#else
+  return myTextEdit->text();
+#endif
+}
+
+void YACSGui_InlineNodePage::setScriptText( const QString& txt )
+{
+#ifdef HAVE_QEXTSCINTILLA_H
+  _myTextEdit->setText( txt );
+#else
+  myTextEdit->setText( txt );
+#endif
+}
+
 /*
   Class : YACSGui_ServiceNodePage
   Description :  Page for SALOME and CORBA service nodes properties
@@ -3739,6 +4084,25 @@ YACSGui_ServiceNodePage::YACSGui_ServiceNodePage( QWidget* theParent, const char
     myMethodChanged( false ),
     mySCNode( 0 )
 {
+  //#undef HAVE_QEXTSCINTILLA_H
+#ifdef HAVE_QEXTSCINTILLA_H
+  _myTextEdit = new QextScintilla( InPythonEditorGroupBox, "Python Editor" );
+  _myTextEdit->setMinimumHeight(150);
+  InPythonEditorGroupBoxLayout->insertWidget(InPythonEditorGroupBoxLayout->findWidget(myTextEdit),
+                                             _myTextEdit );
+  InPythonEditorGroupBoxLayout->remove(myTextEdit);
+  delete myTextEdit;
+  _myTextEdit->setUtf8(1);
+  QextScintillaLexerPython *lex = new QextScintillaLexerPython(_myTextEdit);
+  _myTextEdit->setLexer(lex);
+  _myTextEdit->setBraceMatching(QextScintilla::SloppyBraceMatch);
+  _myTextEdit->setAutoIndent(1);
+  _myTextEdit->setIndentationWidth(4);
+  _myTextEdit->setIndentationGuides(1);
+  _myTextEdit->setIndentationsUseTabs(0);
+  _myTextEdit->setAutoCompletionThreshold(2);
+#endif
+
   connect( myMethodName, SIGNAL( activated( const QString& ) ),
 	   this, SLOT( onMethodChanged( const QString& ) ) );
 
@@ -3817,8 +4181,7 @@ YACSGui_ServiceNodePage::YACSGui_ServiceNodePage( QWidget* theParent, const char
 
 YACSGui_ServiceNodePage::~YACSGui_ServiceNodePage()
 {
-  if ( mySCNode ) mySCNode->detach(this);
-  getInputPanel()->removePage(this);
+  if (getInputPanel()) getInputPanel()->removePage(this);
 }
 
 void YACSGui_ServiceNodePage::setSCNode( YACS::HMI::SubjectComposedNode* theSCNode )
@@ -3853,7 +4216,7 @@ void YACSGui_ServiceNodePage::setComponent( YACS::ENGINE::ComponentInstance* the
     YACSGui_ComponentPage* aCompPage = 
       dynamic_cast<YACSGui_ComponentPage*>( getInputPanel()->getPage( YACSGui_InputPanel::ComponentId ) );
     if ( aCompPage )
-      aCompPage->setSComponent( GuiContext::getCurrent()->_mapOfSubjectComponent[theComponent] );
+      aCompPage->setSComponent( GuiContext::getCurrent()->_mapOfSubjectComponent[theComponent], false );
   }
 
   if( aComponentName != "" && myComponentButton && myComponentButton->isOn() )
@@ -3863,19 +4226,6 @@ void YACSGui_ServiceNodePage::setComponent( YACS::ENGINE::ComponentInstance* the
 bool YACSGui_ServiceNodePage::isSelectComponent() const
 {
   return ( myComponentButton ? myComponentButton->isOn() : false );
-}
-
-YACSGui_InputPanel* YACSGui_ServiceNodePage::getInputPanel() const
-{
-  SalomeApp_Application* anApp = dynamic_cast<SalomeApp_Application*>( SUIT_Session::session()->activeApplication() );
-  if( !anApp )
-    return 0;
-
-  YACSGui_Module* aModule = dynamic_cast<YACSGui_Module*>( anApp->activeModule() );
-  if( !aModule )
-    return 0;
-
-  return aModule->getInputPanel();
 }
 
 void YACSGui_ServiceNodePage::setMode( const YACSGui_InputPanel::PageMode theMode )
@@ -4009,41 +4359,74 @@ void YACSGui_ServiceNodePage::notifyOutPortValues( std::map<std::string,std::str
 void YACSGui_ServiceNodePage::onCatalogChanged( int )
 {
   getInputPanel()->onApplyEnabled(false);
+
+  // generate name of node if session catalog is active one. Name for proc catalog
+  // is generated when node is selected in catalog view
+  /*if ( !myProcRadioButton->isChecked() )
+  {
+    stringstream aName;
+    string aType = getInputPanel()->getModule()->getNodeType( SALOMENODE );
+    aName << aType << GuiContext::getCurrent()->getNewId( SALOMENODE );
+    myNodeName->setText(aName.str());
+  }*/
+  
   updateState();
 }
 
 void YACSGui_ServiceNodePage::onCatalogMethodClicked( QListViewItem* it )
 {
-  if (it)
+    if ( it )
   {
-    std::pair<std::string, std::string> compoServ = myServiceMap[it];
-    getInputPanel()->onApplyEnabled(!compoServ.first.empty() && !compoServ.second.empty());
+    if ( !myProcRadioButton->isChecked() )
+    {
+      // session catalog is used
+      std::pair<std::string, std::string> compoServ = myServiceMap[it];
+      getInputPanel()->onApplyEnabled(!compoServ.first.empty() && !compoServ.second.empty());
+    }
+    else 
+    {
+      // This block of code is commented because service nodes can be creatwed here only
+
+      // proc catalog is used. Apply button should be enabled if selected item is not
+      // "Nodes" or "Composed nodes" one.
+      QListViewItem* aParent = it->parent();
+      getInputPanel()->onApplyEnabled( aParent != 0 );
+
+      // At the time service nodes can be created only so there is no point in 
+      // regenerating default node name in accordance with its type
+      // Update name
+      /*if ( myProcNodesMap.count( it ) )
+      {
+        YACS::ENGINE::Node* aNode = myProcNodesMap[ it ];
+        if ( aNode )
+        {
+          YACS::HMI::TypeOfElem aTypeId = ProcInvoc::getTypeOfNode( aNode );
+          stringstream aName;
+          string aType = getInputPanel()->getModule()->getNodeType( aTypeId );
+          aName << aType << GuiContext::getCurrent()->getNewId( aTypeId );
+          myNodeName->setText( aName.str() );
+          myNodeFullName->setText( aName.str() );
+          myNodeType->setText( aType.c_str() );
+        }
+      }*/
+    }
   }
 }
 
 void YACSGui_ServiceNodePage::onBrowse()
 {
-  myProcName = "";
   QString fn = QFileDialog::getOpenFileName( QString::null,
 					     tr( "XML-Files (*.xml);;All Files (*)" ),
 					     this,
 					     "load YACS scheme file dialog as catalog",
 					     "Choose a filename to load"  );
-  if ( !fn.isEmpty() )
-  {
-    /*      
-    YACS::ENGINE::Catalog* aCatalog = YACS::ENGINE::getSALOMERuntime()->loadCatalog( "proc", fn.latin1());
-    GuiContext::getCurrent()->setProcCatalog(aCatalog);
-    GuiContext::getCurrent()->setCurrentCatalog(aCatalog);
-    */
-    myProcName = fn.latin1();
-  }
-
-  if ( !myProcName.empty() )
-  {
-    myProcRadioButton->setEnabled(true);
-    myProcRadioButton->setChecked(true);
-  }
+  if ( fn.isEmpty() )
+    return;
+  
+  myProcName = fn.latin1();
+  
+  myProcRadioButton->setEnabled(true);
+  myProcRadioButton->setChecked(true);
 
   getInputPanel()->onApplyEnabled(false);
   updateState();
@@ -4075,9 +4458,47 @@ void YACSGui_ServiceNodePage::onApply()
     SubjectServiceNode* aNewSNode = 0;
     if ( aSchema && aCatalog && anItem && mySCNode )
     {
-      pair<string, string> compoServ = myServiceMap[anItem];
-      string compo = compoServ.first;
-      string service = compoServ.second;
+            string compo;
+      string service;
+      YACS::HMI::TypeOfElem aTypeId = UNKNOWN;
+      if ( !myProcRadioButton->isChecked() )
+      {
+        if ( myServiceMap.find( anItem ) == myServiceMap.end() )
+          return;
+         
+        pair<string, string> compoServ = myServiceMap[anItem];
+        compo = compoServ.first;
+        service = compoServ.second;
+        aTypeId = SALOMENODE;
+      }
+      else 
+      {
+        if ( anItem->text( 0 ).isNull() )
+          return;
+
+        compo = "";
+        service = anItem->text( 0 ).latin1();
+
+        if ( !myProcNodesMap.count( anItem ) )
+          return; // nonsense
+
+        YACS::ENGINE::Node* aNode = myProcNodesMap[ anItem ];
+        
+        // Add node in catalog map if necessary. In the other case it will not be
+        // found in CommandAddNodeFromCatalog method
+        if ( !aCatalog->_nodeMap.count( service ) && 
+             !aCatalog->_composednodeMap.count( service ) )
+        {
+          aCatalog->_nodeMap[ service ] = aNode;
+        }
+
+        YACS::ENGINE::ServiceNode* aServiceNode = 
+          dynamic_cast< YACS::ENGINE::ServiceNode* >( aNode );
+        if ( aServiceNode )
+          aServiceNode->setComponent( 0 );
+
+         aTypeId = ProcInvoc::getTypeOfNode( aNode );
+      }
 
       myComponentName = compo;
       myMethodName->setCurrentText( service );
@@ -4089,8 +4510,8 @@ void YACSGui_ServiceNodePage::onApply()
       if ( !aGraph ) return;
 
       stringstream aName;
-      string aType = aModule->getNodeType(SALOMENODE);
-      aName << aType << aContext->getNewId(SALOMENODE);
+      string aType = aModule->getNodeType( aTypeId );
+      aName << aType << aContext->getNewId( aTypeId );
 
       // ---> block for correct node (engine - subject - presentaion) creation
       SubjectNode* aCreatedSNode = 0;
@@ -4130,13 +4551,14 @@ void YACSGui_ServiceNodePage::onApply()
 	  if( SubjectComposedNode* aParent = dynamic_cast<SubjectComposedNode*>(aBloc->getParent()) )
 	  {
 	    aGraph->update(aBloc->getNode(), aParent);
-	    Bloc* aFather = dynamic_cast<Bloc*>(aBloc->getNode());
-	    while ( aFather )
+	    // already done in YACSGui_BlocNode::update(...)
+	    /*Bloc* aFather = dynamic_cast<Bloc*>(aBloc->getNode());
+	    while ( aFather && !dynamic_cast<Proc*>(aFather) )
 	    {
-	      //aGraph->arrangeNodesWithinBloc(aFather);
+	      aGraph->arrangeNodesWithinBloc(aFather);
 	      aFather = dynamic_cast<Bloc*>(aFather->getFather());
 	    }
-	    aGraph->getCanvas()->update();
+	    aGraph->getCanvas()->update();*/
 	  }
 	}
       }
@@ -4165,21 +4587,18 @@ void YACSGui_ServiceNodePage::onApply()
       
       if ( aSComp )
       {
-	printf(">>== Not null component subject\n ");
 	SubjectContainer* aSCont = 0;
 	SalomeContainer* aCont = dynamic_cast<SalomeContainer*>(aComp->getContainer());
 	if ( !aCont )
 	{ // container is not found
 	  // 1) try to find the first container with the suitable type (i.e. Salome container)
 	  //    in the current GuiContext
-	  printf(">>== Null container\n");
 	  map<Container*, SubjectContainer*>::iterator itCont = aContext->_mapOfSubjectContainer.begin();
 	  for ( ; itCont!=aContext->_mapOfSubjectContainer.end(); itCont++ )
 	  {
 	    SalomeContainer* aSalomeCont = dynamic_cast<SalomeContainer*>( (*itCont).first );
 	    if ( aSalomeCont )
 	    {
-	      printf(">>= The first Salome container is found\n");
 	      aSCont = (*itCont).second;
 	      aCont = aSalomeCont;
 	      break;
@@ -4188,12 +4607,10 @@ void YACSGui_ServiceNodePage::onApply()
 	  
 	  if ( !aSCont )
 	  {
-	    printf(">>== Container is still null\n");
 	    // 2) create a new default Salome container and subject for it
 	    string aDefContainer = "DefaultContainer";
 	    if ( !aProc->containerMap.count(aDefContainer) )
 	    {
-	      printf(">>== Add a default container\n");
 	      aSCont = aSchema->addContainer(aDefContainer);
 	      aCont = dynamic_cast<SalomeContainer*>(aSCont->getContainer());
 	    }
@@ -4201,17 +4618,14 @@ void YACSGui_ServiceNodePage::onApply()
 	}
 	else
 	{ //container is found => try to get its subject from the current GuiContext
-	  printf(">>== Not Null Container\n");
 	  if ( aContext->_mapOfSubjectContainer.find(aCont) != aContext->_mapOfSubjectContainer.end() )
 	    aSCont = aContext->_mapOfSubjectContainer[aCont];
 	}
 	
 	if ( aSCont )
 	{
-	  printf(">>== Note Null container subject\n");
 	  YACSGui_ContainerViewItem* aContainerItem = 0;
 
-	  printf(">>== aETV\n");
 	  // get the "Containers" label view item
 	  YACSGui_LabelViewItem* aContainersL = 
 	    dynamic_cast<YACSGui_LabelViewItem*>(aETV->firstChild()->firstChild()->nextSibling()->nextSibling()->nextSibling());
@@ -4225,7 +4639,6 @@ void YACSGui_ServiceNodePage::onApply()
 	      if ( anAfter = dynamic_cast<YACSGui_ContainerViewItem*>(aChild) )
 		if ( anAfter->getContainer() == aCont )
 		{
-		  printf(">>== Container view item is found\n");
 		  aContainerItem = anAfter;
 		  break;
 		}
@@ -4235,7 +4648,6 @@ void YACSGui_ServiceNodePage::onApply()
 
 	  if ( aContainerItem )
 	  {
-	    printf(">>== Create a component view item\n");
 	    aContainerItem->addComponentItem(aSComp);
 	    aSComp->associateToContainer( aSCont );
 	    aNewSNode->associateToComponent(aSComp);
@@ -4311,9 +4723,44 @@ void YACSGui_ServiceNodePage::onApply()
   updateBlocSize();
 }
 
+void YACSGui_ServiceNodePage::buildTree( YACS::ENGINE::Node* theNode, QListViewItem* theParent )
+{
+  if ( !theNode )
+    return;
+
+  // Create item corresponding to the node
+  QString aName( theNode->getName().c_str() );
+  if ( aName.isNull())
+    return;
+
+  // create item for SALOME service node only
+  YACS::HMI::TypeOfElem aTypeId = ProcInvoc::getTypeOfNode( theNode );
+  if ( aTypeId == YACS::HMI::SALOMENODE )
+  {
+    QListViewItem* anItem = new QListViewItem( theParent, aName );
+    anItem->setPixmap( 0, YACSGui_NodeViewItem::icon( theNode ) );
+    myProcNodesMap[ anItem ] = theNode;
+  }
+
+  // Create items for children if node is composed object
+  YACS::ENGINE::ComposedNode* aCompNode = 
+    dynamic_cast< YACS::ENGINE::ComposedNode* >( theNode );
+  if ( !aCompNode )
+    return;
+
+  std::set<Node*> aNodes = aCompNode->edGetDirectDescendants();
+  std::set<Node*>::iterator anIter;
+  for ( anIter = aNodes.begin(); anIter != aNodes.end(); ++anIter )
+  {
+    // buildTree( *anIter, anItem );
+    // composed nodes cannot be processed here. so all items are created under one parent
+    buildTree( *anIter, theParent );
+  }
+}
+
+
 void YACSGui_ServiceNodePage::updateState()
 {
-  printf(">> updateState : myMode = %d\n",myMode);
   if ( myMode == YACSGui_InputPanel::NewMode )
   {
     myNodeType->setText( tr( "SALOME_SERVICE_NODE" ) ); // SALOME service node
@@ -4328,36 +4775,68 @@ void YACSGui_ServiceNodePage::updateState()
       //      _loader->registerProcCataLoader();
       _currentCatalog = YACS::ENGINE::getSALOMERuntime()->loadCatalog( "proc", myProcName.c_str() );
       //      delete _loader;
+
+      if ( _currentCatalog )
+      {
+        myProcNodesMap.clear();
+
+        // nodes
+        std::map< std::string, Node* >& aNodeMap = _currentCatalog->_nodeMap;
+        QListViewItem* aNodeRoot = new QListViewItem( CatalogTree, tr( "NODES" ) );
+        if ( aNodeMap.size() )
+        {
+          std::map< std::string, Node* >::iterator nIter;
+          for ( nIter = aNodeMap.begin(); nIter != aNodeMap.end(); ++nIter )
+          {
+            YACS::ENGINE::Node* aNode = nIter->second;
+            buildTree( aNode, aNodeRoot );
+          }
+        }
+
+        // composed nodes
+        std::map< std::string, ComposedNode* >& aCompMap = _currentCatalog->_composednodeMap;
+        if ( aCompMap.size() )
+        {
+          //QListViewItem* aCompRoot = new QListViewItem( CatalogTree, tr( "COMPOSED_NODES" ) );
+          std::map< std::string, ComposedNode* >::iterator cIter;
+          for ( cIter = aCompMap.begin(); cIter != aCompMap.end(); ++cIter )
+          {
+            YACS::ENGINE::Node* aNode = cIter->second;
+            buildTree( aNode, aNodeRoot );
+          }
+        }
+      }
     }
     else
     {
       _currentCatalog = getInputPanel()->getModule()->getCatalog();
+
+      if (_currentCatalog) 
+      {
+        map<string, YACS::ENGINE::ComponentDefinition*>::const_iterator itComp; 
+        for (itComp = _currentCatalog->_componentMap.begin();
+          itComp != _currentCatalog->_componentMap.end();
+          ++itComp)
+        {
+          string compoName = (*itComp).first;
+          YACS::ENGINE::ComponentDefinition* compo = (*itComp).second;
+          QListViewItem *item = new QListViewItem(CatalogTree, compoName.c_str());
+          myServiceMap[item] = pair<string,string>(compoName,"");
+          map<string, YACS::ENGINE::ServiceNode*>::iterator itServ;
+          for (itServ = compo->_serviceMap.begin(); itServ != compo->_serviceMap.end(); ++itServ)
+          {
+            string serviceName = (*itServ).first;
+            YACS::ENGINE::ServiceNode* service = (*itServ).second;
+            QListViewItem *sitem = new QListViewItem(item, serviceName.c_str());
+            myServiceMap[sitem] = pair<string,string>(compoName,serviceName);
+          }
+        }
+      }
     }
 
-    if (_currentCatalog) {
-      map<string, YACS::ENGINE::ComponentDefinition*>::const_iterator itComp; 
-      for (itComp = _currentCatalog->_componentMap.begin();
-	   itComp != _currentCatalog->_componentMap.end();
-	   ++itComp)
-	{
-	  string compoName = (*itComp).first;
-	  YACS::ENGINE::ComponentDefinition* compo = (*itComp).second;
-	  QListViewItem *item = new QListViewItem(CatalogTree, compoName.c_str());
-	  myServiceMap[item] = pair<string,string>(compoName,"");
-	  map<string, YACS::ENGINE::ServiceNode*>::iterator itServ;
-	  for (itServ = compo->_serviceMap.begin(); itServ != compo->_serviceMap.end(); ++itServ)
-	    {
-	      string serviceName = (*itServ).first;
-	      YACS::ENGINE::ServiceNode* service = (*itServ).second;
-	      QListViewItem *sitem = new QListViewItem(item, serviceName.c_str());
-	      myServiceMap[sitem] = pair<string,string>(compoName,serviceName);
-	    }
-	}
-    }
     return;
   }
 
-  printf(">> updateState : myType = %d\n",myType);
   if ( myType != SALOMEService )
   {
     myInputPortsGroupBox->ShowBtn( YACSGui_PlusMinusGrp::AllBtn );
@@ -4387,14 +4866,12 @@ void YACSGui_ServiceNodePage::updateState()
   {
     // show built-in Python code editor
     InPythonEditorGroupBox->show();
-    printf(">> show!!!\n");
     connect( mySearch, SIGNAL(returnPressed()), this, SLOT(onSearch()) );
   }
   else if ( InPythonEditorGroupBox )
   {
     // hide built-in Python code editor
     InPythonEditorGroupBox->hide();
-    printf(">> hide!!!\n");
     disconnect( mySearch, SIGNAL(returnPressed()), this, SLOT(onSearch()) );
   }
   
@@ -4493,21 +4970,40 @@ void YACSGui_ServiceNodePage::hideEvent( QHideEvent* )
 {
   myPara = 0;
   myIndex = 0;
+#ifdef HAVE_QEXTSCINTILLA_H
+//   _myTextEdit->removeSelection(); // --- see if replacement ?
+#else
   myTextEdit->removeSelection();
- }
+#endif
+}
 
 void YACSGui_ServiceNodePage::onSearch()
 {
-  if ( myTextEdit && mySearch )
+#ifdef HAVE_QEXTSCINTILLA_H
+  if ( _myTextEdit && mySearch )
   {
-    printf(">> Try find\n");
-    if ( myTextEdit->find( mySearch->text(), true, false, true, &myPara, &myIndex ) )
+    if ( _myTextEdit->findFirst( mySearch->text(), true, false, true, &myPara, &myIndex ) )
     {
-      printf(">> The text is found!\n");
-      myTextEdit->setSelection( myPara, myIndex, myPara, myIndex + mySearch->text().length() );
+      _myTextEdit->setSelection( myPara, myIndex, myPara, myIndex + mySearch->text().length() );
       myIndex += mySearch->text().length();
+    } else {
+      myPara = 0;
+      myIndex = 0;
     }
   }
+#else
+  if ( myTextEdit && mySearch )
+  {
+    if ( myTextEdit->find( mySearch->text(), true, false, true, &myPara, &myIndex ) )
+    {
+      myTextEdit->setSelection( myPara, myIndex, myPara, myIndex + mySearch->text().length() );
+      myIndex += mySearch->text().length();
+    } else {
+      myPara = 0;
+      myIndex = 0;
+    }
+  }
+#endif
 }
 
 void YACSGui_ServiceNodePage::updateServices( const QString& theCurrent )
@@ -4866,16 +5362,16 @@ void YACSGui_ServiceNodePage::setInputPorts()
 	aIDP->edInit( aValues[aRowId].compare( aTable->Params(aRowId,3)[0] ) ? false : true );
 	break;
       case Objref:
-	aIDP->edInit( "" ); // TODO : create an Any* with corresponding type and initialize with it
+	//aIDP->edInit( "" ); // TODO : create an Any* with corresponding type and initialize with it
 	break;
       case Sequence:
-	aIDP->edInit( "" ); // TODO : create an Any* (i.e. SequenceAny*) with corresponding type and initialize with it
+	//aIDP->edInit( "" ); // TODO : create an Any* (i.e. SequenceAny*) with corresponding type and initialize with it
 	break;
       case Array:
-	aIDP->edInit( "" ); // TODO : create an Any* (i.e. ArrayAny*) with corresponding type and initialize with it
+	//aIDP->edInit( "" ); // TODO : create an Any* (i.e. ArrayAny*) with corresponding type and initialize with it
 	break;
       case Struct:
-	aIDP->edInit( "" ); // TODO : create an Any* with corresponding type and initialize with it
+	//aIDP->edInit( "" ); // TODO : create an Any* with corresponding type and initialize with it
 	break;
       default:
 	break;
@@ -5002,6 +5498,24 @@ YACS::ENGINE::TypeCode* YACSGui_ServiceNodePage::createTypeCode( YACS::ENGINE::D
   return aTC;
 }
 
+QString YACSGui_ServiceNodePage::scriptText() const
+{
+#ifdef HAVE_QEXTSCINTILLA_H
+  return _myTextEdit->text();
+#else
+  return myTextEdit->text();
+#endif
+}
+
+void YACSGui_ServiceNodePage::setScriptText( const QString& txt )
+{
+#ifdef HAVE_QEXTSCINTILLA_H
+  _myTextEdit->setText( txt );
+#else
+  myTextEdit->setText( txt );
+#endif
+}
+
 /*
   Class : YACSGui_ForLoopNodePage
   Description :  Page for FOR node properties
@@ -5020,7 +5534,7 @@ YACSGui_ForLoopNodePage::YACSGui_ForLoopNodePage( QWidget* theParent, const char
 
 YACSGui_ForLoopNodePage::~YACSGui_ForLoopNodePage()
 {
-  getInputPanel()->removePage(this);
+  if (getInputPanel()) getInputPanel()->removePage(this);
 }
 
 void YACSGui_ForLoopNodePage::setSNode( YACS::HMI::SubjectNode* theSNode )
@@ -5029,11 +5543,6 @@ void YACSGui_ForLoopNodePage::setSNode( YACS::HMI::SubjectNode* theSNode )
 
   if ( dynamic_cast<ForLoop*>( theSNode->getNode() ) )
     YACSGui_NodePage::setSNode( theSNode );
-}
-
-YACSGui_InputPanel* YACSGui_ForLoopNodePage::getInputPanel() const
-{
-  return dynamic_cast<YACSGui_InputPanel*>( parent()->parent()->parent()->parent() );
 }
 
 void YACSGui_ForLoopNodePage::setMode( const YACSGui_InputPanel::PageMode theMode )
@@ -5213,7 +5722,7 @@ YACSGui_ForEachLoopNodePage::YACSGui_ForEachLoopNodePage( QWidget* theParent, co
 
 YACSGui_ForEachLoopNodePage::~YACSGui_ForEachLoopNodePage()
 {
-  getInputPanel()->removePage(this);
+  if (getInputPanel()) getInputPanel()->removePage(this);
 }
 
 void YACSGui_ForEachLoopNodePage::setSNode( YACS::HMI::SubjectNode* theSNode )
@@ -5222,11 +5731,6 @@ void YACSGui_ForEachLoopNodePage::setSNode( YACS::HMI::SubjectNode* theSNode )
 
   if ( dynamic_cast<ForEachLoop*>( theSNode->getNode() ) )
     YACSGui_NodePage::setSNode( theSNode );
-}
-
-YACSGui_InputPanel* YACSGui_ForEachLoopNodePage::getInputPanel() const
-{
-  return dynamic_cast<YACSGui_InputPanel*>( parent()->parent()->parent()->parent() );
 }
 
 void YACSGui_ForEachLoopNodePage::setMode( const YACSGui_InputPanel::PageMode theMode )
@@ -5319,6 +5823,15 @@ void YACSGui_ForEachLoopNodePage::notifyOutPortValues( std::map<std::string,std:
   //...
 }
 
+void YACSGui_ForEachLoopNodePage::notifyNodeCreateBody( YACS::HMI::Subject* theSubject )
+{
+  if( myLoopBodyNodeName )
+  {
+    QString aBodyName = theSubject->getName();
+    myLoopBodyNodeName->setText( aBodyName );
+  }
+}
+
 void YACSGui_ForEachLoopNodePage::onApply()
 {
   // Rename a node
@@ -5376,14 +5889,13 @@ void YACSGui_ForEachLoopNodePage::updateState()
 
     if( myLoopBodyNodeName )
     {
+      QString aBodyName;
       std::set<Node*> aNodes = aForEachLoopNode->edGetDirectDescendants();
       std::set<Node*>::iterator aNodesIt = aNodes.begin();
       Node* aNode = *aNodesIt;
       if( aNode )
-      {
-	QString aBodyName = aNode->getName();
-	myLoopBodyNodeName->setText( aBodyName );
-      }
+	aBodyName = aNode->getName();
+      myLoopBodyNodeName->setText( aBodyName );
     }
   }
   
@@ -5436,7 +5948,7 @@ YACSGui_WhileLoopNodePage::YACSGui_WhileLoopNodePage( QWidget* theParent, const 
 
 YACSGui_WhileLoopNodePage::~YACSGui_WhileLoopNodePage()
 {
-  getInputPanel()->removePage(this);
+  if (getInputPanel()) getInputPanel()->removePage(this);
 }
 
 void YACSGui_WhileLoopNodePage::setSNode( YACS::HMI::SubjectNode* theSNode )
@@ -5445,11 +5957,6 @@ void YACSGui_WhileLoopNodePage::setSNode( YACS::HMI::SubjectNode* theSNode )
 
   if ( dynamic_cast<WhileLoop*>( theSNode->getNode() ) )
     YACSGui_NodePage::setSNode( theSNode );
-}
-
-YACSGui_InputPanel* YACSGui_WhileLoopNodePage::getInputPanel() const
-{
-  return dynamic_cast<YACSGui_InputPanel*>( parent()->parent()->parent()->parent() );
 }
 
 void YACSGui_WhileLoopNodePage::setMode( const YACSGui_InputPanel::PageMode theMode )
@@ -5582,14 +6089,13 @@ void YACSGui_WhileLoopNodePage::updateState()
 
     if( myLoopBodyNodeName )
     {
+      QString aBodyName;
       std::set<Node*> aNodes = aWhileLoopNode->edGetDirectDescendants();
       std::set<Node*>::iterator aNodesIt = aNodes.begin();
       Node* aNode = *aNodesIt;
       if( aNode )
-      {
-	QString aBodyName = aNode->getName();
-	myLoopBodyNodeName->setText( aBodyName );
-      }
+	aBodyName = aNode->getName();
+      myLoopBodyNodeName->setText( aBodyName );
     }
   }
   
@@ -5659,7 +6165,7 @@ YACSGui_SwitchNodePage::YACSGui_SwitchNodePage( QWidget* theParent, const char* 
 
 YACSGui_SwitchNodePage::~YACSGui_SwitchNodePage()
 {
-  getInputPanel()->removePage(this);
+  if (getInputPanel()) getInputPanel()->removePage(this);
 
   myRow2ChildMap.clear();
   myRowsOfSelectedChildren.clear();
@@ -5671,11 +6177,6 @@ void YACSGui_SwitchNodePage::setSNode( YACS::HMI::SubjectNode* theSNode )
 
   if ( dynamic_cast<Switch*>( theSNode->getNode() ) )
     YACSGui_NodePage::setSNode( theSNode );
-}
-
-YACSGui_InputPanel* YACSGui_SwitchNodePage::getInputPanel() const
-{
-  return dynamic_cast<YACSGui_InputPanel*>( parent()->parent()->parent()->parent() );
 }
 
 void YACSGui_SwitchNodePage::setChild( YACS::HMI::SubjectNode* theChildNode )
@@ -5854,10 +6355,21 @@ void YACSGui_SwitchNodePage::onApply()
       getNode()->getChildByName( aNode->getName() );
     }
     catch (YACS::Exception& ex) {
-      // block is not contain nodes with the same name as aNode
+      // switch is not contain nodes with the same name as aNode
+      // get schema engine object
+      Proc* aProc = GuiContext::getCurrent()->getProc();
+      if ( !aProc ) return;
+      // get gui graph
+      YACSGui_Graph* aGraph = getInputPanel()->getModule()->getGraph( aProc );
+      if ( !aGraph ) return;
+
+      aNewSelectedChild->getParent()->detach(aGraph); // to remove only a node view item in the tree, node presentation is still alive
+	
       aNewSelectedChild->getParent()->update( REMOVE,
 					      ProcInvoc::getTypeOfNode( aNewSelectedChild->getNode() ),
 					      aNewSelectedChild );
+      
+      aNewSelectedChild->getParent()->attach(aGraph); // to remove only a node view item in the tree, node presentation is still alive
     }
   }
   
@@ -5974,6 +6486,8 @@ void YACSGui_SwitchNodePage::updateState()
 	{
 	  QString anId, aName;
 	  Node* aNode = *anIt;
+
+	  if ( !aNode ) continue;
 	  
 	  if( aNode == aDefaultNode )
 	    anId = Switch::DEFAULT_NODE_NAME;
@@ -6254,10 +6768,10 @@ void YACSGui_SwitchNodePage::setSwitchCases()
 				  tr("BUT_YES"), tr("BUT_NO"), 0, 1, 1) == 0 )
       {
 	// delete the old child node
-	// 1) delete 2D presentation
-	aGraph->deletePrs(aSChild);
-	// 2) delete corresponding tree view item
+	// 1) delete corresponding tree view item
 	aSNode->update(REMOVE, ProcInvoc::getTypeOfNode( aSChild->getNode() ), aSChild);
+	// 2) delete 2D presentation
+	aGraph->removeNode( aSChild->getNode() );
 	// 3) delete corresponding subject
 	aSNode->destroy(aSChild);
       }
@@ -6438,7 +6952,7 @@ YACSGui_BlockNodePage::YACSGui_BlockNodePage( QWidget* theParent, const char* th
 
 YACSGui_BlockNodePage::~YACSGui_BlockNodePage()
 {
-  getInputPanel()->removePage(this);
+  if (getInputPanel()) getInputPanel()->removePage(this);
 
   myRow2ChildMap.clear();
   myRowsOfSelectedChildren.clear();
@@ -6450,11 +6964,6 @@ void YACSGui_BlockNodePage::setSNode( YACS::HMI::SubjectNode* theSNode )
 
   if ( dynamic_cast<Bloc*>( theSNode->getNode() ) )
     YACSGui_NodePage::setSNode( theSNode );
-}
-
-YACSGui_InputPanel* YACSGui_BlockNodePage::getInputPanel() const
-{
-  return dynamic_cast<YACSGui_InputPanel*>( parent()->parent()->parent()->parent() );
 }
 
 void YACSGui_BlockNodePage::setChild( YACS::HMI::SubjectNode* theChildNode )
@@ -6583,15 +7092,28 @@ void YACSGui_BlockNodePage::onApply()
   for ( ; it != myRowsOfSelectedChildren.end(); it++ )
   {
     SubjectNode* aNewSelectedChild = myRow2ChildMap[*it];
+    if( !aNewSelectedChild )
+      continue;
     Node* aNode = aNewSelectedChild->getNode();
     try {
       getNode()->getChildByName( aNode->getName() );
     }
     catch (YACS::Exception& ex) {
       // block is not contain nodes with the same name as aNode
+      // get schema engine object
+      Proc* aProc = GuiContext::getCurrent()->getProc();
+      if ( !aProc ) return;
+      // get gui graph
+      YACSGui_Graph* aGraph = getInputPanel()->getModule()->getGraph( aProc );
+      if ( !aGraph ) return;
+
+      aNewSelectedChild->getParent()->detach(aGraph); // to remove only a node view item in the tree, node presentation is still alive
+	
       aNewSelectedChild->getParent()->update( REMOVE,
 					      ProcInvoc::getTypeOfNode( aNewSelectedChild->getNode() ),
 					      aNewSelectedChild );
+      
+      aNewSelectedChild->getParent()->attach(aGraph); // to remove only a node view item in the tree, node presentation is still alive
     }
   }
   
@@ -6848,10 +7370,10 @@ void YACSGui_BlockNodePage::setDirectChildren()
 				  tr("BUT_YES"), tr("BUT_NO"), 0, 1, 1) == 0 )
       {
 	// delete the old child node
-	// 1) delete 2D presentation
-	aGraph->deletePrs(aSChild);
-	// 2) delete corresponding tree view item
+	// 1) delete corresponding tree view item
 	aSNode->update(REMOVE, ProcInvoc::getTypeOfNode( aSChild->getNode() ), aSChild);
+	// 2) delete 2D presentation
+	aGraph->removeNode( aSChild->getNode() );
 	// 3) delete corresponding subject
 	aSNode->destroy(aSChild);
       }
@@ -6875,6 +7397,8 @@ void YACSGui_BlockNodePage::setDirectChildren()
   for( ;aChildIt!=myRow2ChildMap.end();aChildIt++)
   {
     SubjectNode* aSChild = (*aChildIt).second;
+    if( !aSChild )
+      continue;
     Node* aChild = aSChild->getNode();
     if ( aChildNames.find( QString(aChild->getName()) ) != aChildNames.end() )
     {

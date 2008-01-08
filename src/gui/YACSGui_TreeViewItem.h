@@ -161,6 +161,8 @@ public:
 
   QString name() const;
   QPixmap icon() const;
+
+  static QPixmap icon( YACS::ENGINE::Node* );
   
   YACS::ENGINE::Node* getNode() const;
   YACS::HMI::SubjectNode* getSNode() const { return mySNode; }
@@ -260,16 +262,24 @@ public:
   virtual void update( const bool theIsRecursive = false,
 		       YACS::HMI::Subject* theSon = 0,
 		       YACSGui_NodeViewItem* theBlocItem = 0 );
-    
+
+  YACSGui_LabelViewItem* buildDataTypesTree();
+
 private:
   void addNodeItem( YACS::HMI::Subject* theSNode );
+  void removeNodeItem( YACS::HMI::Subject* theSNode );
   void addContainerItem( YACS::HMI::Subject* theSContainer );
   void removeContainerItem( YACS::HMI::Subject* theSContainer );
   void removeComponentItem( YACS::HMI::Subject* theSComponent );
+  void addDataTypeItem( YACS::HMI::Subject* theSDataType );
+  void removeDataTypeItem( YACS::HMI::Subject* theSDataType );
 
   void addLinkItem( YACS::HMI::Subject* theSLink );
   
   YACS::HMI::SubjectProc* mySProc;
+
+  std::map< YACS::ENGINE::DynType, QListViewItem* > myRootDataTypeItems;
+
 };
 
 class YACSGui_ComponentViewItem;

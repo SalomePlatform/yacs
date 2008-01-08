@@ -262,6 +262,11 @@ PyObject * OutputPyPort::get() const
   return _data;
 }
 
+PyObject * OutputPyPort::getPyObj() const
+{
+  return _data;
+}
+
 std::string OutputPyPort::dump()
 {
   if( _data == Py_None)

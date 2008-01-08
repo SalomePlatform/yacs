@@ -45,6 +45,8 @@ namespace YACS
 
       virtual void writeDot(std::ostream &os);
       void setName(const std::string& name); // Used by GUI to display graph name
+      virtual std::string typeName() {return "YACS__ENGINE__Proc";}
+
       friend std::ostream & operator<< ( std::ostream &os, const Proc& p);
       std::map<std::string, Node*> nodeMap;
       std::map<std::string, ServiceNode*> serviceMap;

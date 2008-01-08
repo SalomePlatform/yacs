@@ -42,6 +42,7 @@ namespace YACS
       virtual std::string dump();
 
       virtual void put(const void *data) throw(ConversionException);
+      virtual std::string typeName() {return "YACS__ENGINE__OutputPort";}
 
     protected:
       OutputPort(const OutputPort& other, Node *newHelder);
