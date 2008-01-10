@@ -193,6 +193,10 @@ OCC: DONE (see2)
 EDF: button '+' in bloc properties, Direct Children is still active, it is still possible to try
 to remove nodes from other buttons, with effect only on the property pannel. ==> this must be at least
 grayed or removed if inactive)
+EDF: I have finally understood the use of '+' button and selection, to move (reparent) a node,
+idem with '-' button. It is not obvious to find how it works, but it works!
+The main problem is if we forget to apply, there is no warning.
+I don't know if it is possible to have tooltips on such buttons (or other kind of help)
 ----------------------------------------------------------------------------------------------------
 Num-----: 14
 priority: 0
@@ -245,9 +249,56 @@ an already executed schema, or, better, to force an explicit (visible) copy of a
 modifications.
 comments:
 ----------------------------------------------------------------------------------------------------
-Num-----: 
+Num-----: 19
 priority: 0
 status--: NOK 
+description: abort on switch edition, menu add node, python node:
+ Switch::getChildByShortName : no default node defined for switch of name Switch0
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----: 20
+priority: 0
+status--: NOK 
+description: when export, save before execution... an incomplete schema there must be checks and warnings
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----: 
+priority: 21
+status--: NOK 
+description: when modifying 2 output ports, type double to int, in a pyscript node, only one modif
+is taken into account when apply.
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----: 
+priority: 22
+status--: NOK 
+description: abort on selection in canvas (after problem 21 above):
+YACSGui_TreeView.cxx 474 if ( YACSGui_ReferenceViewItem* aRefItem = dynamic_cast<YACSGui_ReferenceViewItem*>( theItem ) )
+segfault in dynamic_cast
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----: 23 
+priority: 0
+status--: NOK
+description: when zoom to fit area, click in a bloc, the bloc moves instead of an aera selection,
+release the mouse button leads sometimes to abort.
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----: 24 
+priority: 0
+status--: NOK
+description: schema is not automatically checked before execution
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----:  
+priority: 0
+status--: NOK
+description: 
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----:  
+priority: 0
+status--: NOK
 description: 
 comments:
 ----------------------------------------------------------------------------------------------------
@@ -279,46 +330,38 @@ created by default on DefaultContainer, for each node. OK.
 It is not possible to change the component instance of node 2 to the other component instance
 (selection control does nothing).
 ----------------------------------------------------------------------------------------------------
+Num-----: 1003 
+priority: 1
+status--: NOK
+description: Is it possible to keep the center of the view at the same place when zooming the canvas ?
+comments:
+----------------------------------------------------------------------------------------------------
 Num-----:  
-priority: 0
+priority: 1
 status--: NOK
 description: 
 comments:
 ----------------------------------------------------------------------------------------------------
 Num-----:  
-priority: 2
-status--: NOK
-description: strange behaviour to check
-access to SALOME_ResourcesManager while browsing salome services in edition (calcium4)
-access to Subject::detach when clicking in canvas : edition widget destroyed then recreated ?
-comments:
-----------------------------------------------------------------------------------------------------
-Num-----:  
-priority: 0
+priority: 1
 status--: NOK
 description: 
 comments:
 ----------------------------------------------------------------------------------------------------
 Num-----:  
-priority: 0
+priority: 1
 status--: NOK
 description: 
 comments:
 ----------------------------------------------------------------------------------------------------
 Num-----:  
-priority: 0
+priority: 1
 status--: NOK
 description: 
 comments:
 ----------------------------------------------------------------------------------------------------
 Num-----:  
-priority: 0
-status--: NOK
-description: 
-comments:
-----------------------------------------------------------------------------------------------------
-Num-----:  
-priority: 0
+priority: 1
 status--: NOK
 description: 
 comments:
@@ -337,26 +380,34 @@ description: Link redrawing is globally OK, but sometimes the links are not visi
 near the blocs borders.
 comments:
 ----------------------------------------------------------------------------------------------------
+Num-----: 2003 
+priority: 2
+status--: NOK
+description: strange behaviour to check
+access to SALOME_ResourcesManager while browsing salome services in edition (calcium4)
+access to Subject::detach when clicking in canvas : edition widget destroyed then recreated ?
+comments:
+----------------------------------------------------------------------------------------------------
 Num-----:  
-priority: 0
+priority: 2
 status--: NOK
 description: 
 comments:
 ----------------------------------------------------------------------------------------------------
 Num-----:  
-priority: 0
+priority: 2
 status--: NOK
 description: 
 comments:
 ----------------------------------------------------------------------------------------------------
 Num-----:  
-priority: 0
+priority: 2
 status--: NOK
 description: 
 comments:
 ----------------------------------------------------------------------------------------------------
 Num-----:  
-priority: 0
+priority: 2
 status--: NOK
 description: 
 comments:
