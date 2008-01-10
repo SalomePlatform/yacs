@@ -394,6 +394,8 @@ public:
 
   virtual void                        setMode( const YACSGui_InputPanel::PageMode );
 
+  void                                setValueCellValidator( YACSGui_Table* theTable, int theRow );
+
   virtual void                        notifyNodeStatus( int theStatus ) {}
   virtual void                        notifyNodeProgress() {}
   virtual void                        notifyInPortValues( std::map<std::string,std::string> theInPortName2Value ) {}

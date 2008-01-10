@@ -7,6 +7,7 @@
 #include "TypeCode.hxx"
 #include "DataFlowPort.hxx"
 #include "ConversionException.hxx"
+#include "yacsconfig.h"
 
 #include <string>
 
@@ -31,7 +32,11 @@ namespace YACS
 
       std::string getNameOfTypeOfCurrentInstance() const;
       //! returns the final physical port behind 'this'.
+#ifdef NOCOVARIANT
+      virtual InPort *getPublicRepresentant() { return this; }
+#else
       virtual InputPort *getPublicRepresentant() { return this; }
+#endif
       virtual bool isIntermediate() const { return false; }
       virtual bool edIsManuallyInitialized() const;
       //!soon deprecated
@@ -78,7 +83,11 @@ namespace YACS
       void edNotifyReferencedBy(OutPort *fromPort);
       void edNotifyDereferencedBy(OutPort *fromPort);
       std::set<OutPort *> edSetOutPort() const;
+#ifdef NOCOVARIANT
+      InPort *getPublicRepresentant();
+#else
       InputPort *getPublicRepresentant();
+#endif
       void *get() const;
       virtual void put(const void *data) throw(ConversionException) ;
       int edGetNumberOfLinks() const;

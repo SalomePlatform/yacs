@@ -120,6 +120,18 @@ int TypeCode::isAdaptable(const TypeCode* tc) const
     }
 }
 
+//! Check if this TypeCode can be used in place of tc
+/*!
+ * this TypeCode is equivalent to tc if they have the same kind
+ *
+ *   \param tc : the TypeCode to compare
+ */
+int TypeCode::isEquivalent(const TypeCode* tc) const 
+{
+  if(_kind == tc->kind()) return 1;
+  return 0;
+}
+
 unsigned TypeCode::getSizeInByteOfAnyReprInSeq() const
 {
   switch(_kind)
@@ -214,7 +226,7 @@ TypeCode * TypeCode::structTc(const char* id,
 };
 
 TypeCodeComposed::TypeCodeComposed(const TypeCodeComposed& other):TypeCode(other),
-                                                                  _name(other._name),_repoId(other._shortName),
+                                                                  _name(other._name),_repoId(other._repoId),
                                                                   _shortName(other._shortName)
 {
 }
@@ -327,6 +339,19 @@ int TypeCodeObjref::isAdaptable(const TypeCode* tc) const
   return 0;
 }
 
+//! Check if this TypeCode can be used in place of tc
+/*!
+ * this TypeCode is equivalent to tc if they have the same kind
+ *
+ *   \param tc : the TypeCode to compare
+ */
+int TypeCodeObjref::isEquivalent(const TypeCode* tc) const 
+{
+  if(_kind != tc->kind())return 0;
+  if(_repoId == tc->id())return 1;
+  return 0;
+}
+
 TypeCodeObjref::TypeCodeObjref(const TypeCodeObjref& other):TypeCodeComposed(other),
                                                             _listOfBases(other._listOfBases)
 {
@@ -416,6 +441,19 @@ int TypeCodeSeq::isAdaptable(const TypeCode* tc) const
 {
   if(_kind == tc->kind())
     return contentType()->isAdaptable(tc->contentType());
+  return 0;
+}
+
+//! Check if this TypeCode can be used in place of tc
+/*!
+ * this TypeCode is equivalent to tc if they have the same kind
+ *
+ *   \param tc : the TypeCode to compare
+ */
+int TypeCodeSeq::isEquivalent(const TypeCode* tc) const 
+{
+  if(_kind == tc->kind())
+    return _content->isEquivalent(tc->contentType());
   return 0;
 }
 
@@ -513,6 +551,19 @@ int TypeCodeArray::isAdaptable(const TypeCode* tc) const
 {
   if(_kind == tc->kind())
     return contentType()->isAdaptable(tc->contentType());
+  return 0;
+}
+
+//! Check if this TypeCode can be used in place of tc
+/*!
+ * this TypeCode is equivalent to tc if they have the same kind
+ *
+ *   \param tc : the TypeCode to compare
+ */
+int TypeCodeArray::isEquivalent(const TypeCode* tc) const 
+{
+  if(_kind == tc->kind())
+    return _content->isEquivalent(tc->contentType());
   return 0;
 }
 
@@ -640,6 +691,26 @@ int TypeCodeStruct::isAdaptable(const TypeCode* tc) const
 {
   if(_kind == tc->kind()) return isA(tc->id());
   return 0;
+}
+
+//! Check if this TypeCode can be used in place of tc
+/*!
+ * this TypeCode is equivalent to tc if they have the same kind
+ *
+ *   \param tc : the TypeCode to compare
+ */
+int TypeCodeStruct::isEquivalent(const TypeCode* tc) const 
+{
+  if(_kind != tc->kind()) return 0;
+  int nMember=memberCount();
+  if(nMember != ((TypeCodeStruct*)tc)->memberCount())return 0;
+  for(int i=0;i<nMember;i++)
+    {
+       const char * name=memberName(i);
+       if(strcmp(memberName(i),((TypeCodeStruct*)tc)->memberName(i)) != 0)return 0;
+       if(!memberType(i)->isEquivalent(((TypeCodeStruct*)tc)->memberType(i)))return 0;
+    }
+  return 1;
 }
 
 void TypeCodeStruct::addMember(const std::string& name,TypeCode* tc)

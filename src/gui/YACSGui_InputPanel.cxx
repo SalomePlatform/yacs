@@ -2264,7 +2264,7 @@ void YACSGui_NodePage::setSNode( YACS::HMI::SubjectNode* theSNode )
   
   updateState();
 
-  if ( isNeedToUpdatePortValues && getNode() )
+  if ( (isNeedToUpdatePortValues || myType == SALOMEService) && getNode() )
   {
     Proc* aProc = dynamic_cast<Proc*>(getNode()->getRootNode());
     if ( !aProc ) return;
@@ -2366,6 +2366,22 @@ void YACSGui_NodePage::setMode( const YACSGui_InputPanel::PageMode theMode )
   myMode = theMode;
 }
 
+void YACSGui_NodePage::setValueCellValidator( YACSGui_Table* theTable, int theRow )
+{
+  QString aVT = theTable->item( theRow, 2 )->text();
+  if ( !aVT.compare(QString("Double")) )
+    theTable->setCellType( theRow, 3, YACSGui_Table::Double );
+  else if ( !aVT.compare(QString("Int")) )
+    theTable->setCellType( theRow, 3, YACSGui_Table::Int );
+  else if ( !aVT.compare(QString("Bool")) )
+  {
+    theTable->setCellType( theRow, 3, YACSGui_Table::Combo );
+    theTable->setParams( theRow, 3, QString("True;False") );
+  }
+  else // i.e. "String" or "Objref" or "Sequence" or "Array" or "Struct"
+    theTable->setCellType( theRow, 3, YACSGui_Table::String );
+}
+
 void YACSGui_NodePage::updateState()
 {
 }
@@ -2373,7 +2389,23 @@ void YACSGui_NodePage::updateState()
 void YACSGui_NodePage::updateBlocSize()
 {
   if ( SubjectBloc* aSB = dynamic_cast<SubjectBloc*>(mySNode->getParent()) )
-    aSB->update( EDIT, 0, aSB );
+  {
+    //aSB->update( EDIT, 0, aSB );
+
+    Proc* aProc = dynamic_cast<Proc*>(getNode()->getRootNode());
+    if ( !aProc ) return;
+
+    YACSGui_Graph* aGraph = getInputPanel()->getModule()->getGraph( aProc );
+    if ( !aGraph ) return;
+
+    Bloc* aFather = dynamic_cast<Bloc*>(aSB->getNode());
+    while ( aFather && !dynamic_cast<Proc*>(aFather) )
+    {
+      aGraph->arrangeNodesWithinBloc(aFather);
+      aFather = dynamic_cast<Bloc*>(aFather->getFather());
+    }
+    aGraph->getCanvas()->update();
+  }
 }
 
 YACSGui_NodePage::PortType YACSGui_NodePage::getDataPortType(YACS::ENGINE::Port* thePort) const
@@ -2901,18 +2933,7 @@ void YACSGui_InlineNodePage::onValueChanged( int theRow, int theCol )
 
     if ( theCol == 2 ) // the value type of the port was changed
     {
-      QString aVT = aTable->item( theRow, theCol )->text();
-      if ( !aVT.compare(QString("Double")) )
-	aTable->setCellType( theRow, 3, YACSGui_Table::Double );
-      else if ( !aVT.compare(QString("Int")) )
-	aTable->setCellType( theRow, 3, YACSGui_Table::Int );
-      else if ( !aVT.compare(QString("Bool")) )
-      {
-	aTable->setCellType( theRow, 3, YACSGui_Table::Combo );
-	aTable->setParams( theRow, 3, QString("True;False") );
-      }
-      else // i.e. "String" or "Objref" or "Sequence" or "Array" or "Struct"
-	aTable->setCellType( theRow, 3, YACSGui_Table::String );
+      setValueCellValidator( aTable, theRow );
 
       if( aTable == myOutputPortsGroupBox->Table() )
 	aTable->setReadOnly( theRow, 3, true );
@@ -3736,27 +3757,35 @@ void YACSGui_InlineNodePage::setInputPorts()
 	{
 	case Double:
 	  aIDP->edInit( aValues[aRowId].toDouble() );
+	  anEvent = EDIT;
 	  break;
 	case Int:
 	  aIDP->edInit( aValues[aRowId].toInt() );
+	  anEvent = EDIT;
 	  break;
 	case String:
-	  aIDP->edInit( aValues[aRowId].latin1() );
+	  aIDP->edInit( aValues[aRowId].isEmpty() ? "" : aValues[aRowId].latin1() );
+	  anEvent = EDIT;
 	  break;
 	case Bool:
 	  aIDP->edInit( aValues[aRowId].compare( aTable->Params(aRowId,3)[0] ) ? false : true );
+	  anEvent = EDIT;
 	  break;
 	case Objref:
 	  //aIDP->edInit( "" ); // TODO : create an Any* with corresponding type and initialize with it
+	  //anEvent = EDIT;
 	  break;
 	case Sequence:
 	  //aIDP->edInit( "" ); // TODO : create an Any* (i.e. SequenceAny*) with corresponding type and initialize with it
+	  //anEvent = EDIT;
 	  break;
 	case Array:
 	  //aIDP->edInit( "" ); // TODO : create an Any* (i.e. ArrayAny*) with corresponding type and initialize with it
+	  //anEvent = EDIT;
 	  break;
 	case Struct:
 	  //aIDP->edInit( "" ); // TODO : create an Any* with corresponding type and initialize with it
+	  //anEvent = EDIT;
 	  break;
 	default:
 	  break;
@@ -4950,20 +4979,7 @@ void YACSGui_ServiceNodePage::onValueChanged( int theRow, int theCol )
 {
   if ( YACSGui_Table* aTable = ( YACSGui_Table* )sender() )
     if ( theCol == 2 ) // the value type of the port was changed
-    {
-      QString aVT = aTable->item( theRow, theCol )->text();
-      if ( !aVT.compare(QString("Double")) )
-	aTable->setCellType( theRow, 3, YACSGui_Table::Double );
-      else if ( !aVT.compare(QString("Int")) )
-	aTable->setCellType( theRow, 3, YACSGui_Table::Int );
-      else if ( !aVT.compare(QString("Bool")) )
-      {
-	aTable->setCellType( theRow, 3, YACSGui_Table::Combo );
-	aTable->setParams( theRow, 3, QString("True;False") );
-      }
-      else // i.e. "String" or "Objref" or "Sequence" or "Array" or "Struct"
-	aTable->setCellType( theRow, 3, YACSGui_Table::String );
-    }
+      setValueCellValidator( aTable, theRow );
 }
 
 void YACSGui_ServiceNodePage::hideEvent( QHideEvent* )
@@ -5142,6 +5158,10 @@ void YACSGui_ServiceNodePage::fillInputPortsTable( YACS::ENGINE::Node* theNode )
 
   if ( myType == SALOMEService )
   {
+    // Set the valid cell type for the input ports values
+    for ( int i=0; i<aTable->numRows(); i++ )
+      setValueCellValidator( aTable, i );
+    
     // Set all columns read only (except "Value" column)
     aTable->setReadOnly( -1, 0, true );
     aTable->setReadOnly( -1, 1, true );

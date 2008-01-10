@@ -11,7 +11,6 @@
 %feature("autodoc", "1");
 
 %include "engtypemaps.i"
-#undef PySwigIterator 
 
 // ----------------------------------------------------------------------------
 

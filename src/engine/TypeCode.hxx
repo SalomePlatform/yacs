@@ -63,6 +63,7 @@ namespace YACS
       virtual int isA(const char* repositoryId) const throw(Exception);
       virtual int isA(const TypeCode* tc) const ;
       virtual int isAdaptable(const TypeCode* tc) const;
+      virtual int isEquivalent(const TypeCode* tc) const;
       virtual unsigned getSizeInByteOfAnyReprInSeq() const;
 
       static const char *getKindRepr(DynType kind);
@@ -116,6 +117,7 @@ namespace YACS
       int isA(const char* repositoryId) const throw(Exception);
       virtual int isA(const TypeCode* tc) const ;
       virtual int isAdaptable(const TypeCode* tc) const;
+      virtual int isEquivalent(const TypeCode* tc) const;
     protected:
       ~TypeCodeObjref();
       TypeCodeObjref(const TypeCodeObjref& other);
@@ -146,6 +148,7 @@ namespace YACS
       virtual const TypeCode * contentType() const throw(Exception);
       virtual int isA(const TypeCode* tc) const ;
       virtual int isAdaptable(const TypeCode* tc) const;
+      virtual int isEquivalent(const TypeCode* tc) const;
     protected:
       ~TypeCodeSeq();
       TypeCodeSeq(const TypeCodeSeq& tc);
@@ -174,6 +177,7 @@ namespace YACS
       virtual const TypeCode * contentType() const throw(Exception);
       virtual int isA(const TypeCode* tc) const ;
       virtual int isAdaptable(const TypeCode* tc) const;
+      virtual int isEquivalent(const TypeCode* tc) const;
       unsigned getSizeInByteOfAnyReprInSeq() const;
     protected:
       ~TypeCodeArray();
@@ -207,6 +211,7 @@ namespace YACS
       virtual int isA(const char* repositoryId) const throw(Exception);
       virtual int isA(const TypeCode* tc) const ;
       virtual int isAdaptable(const TypeCode* tc) const;
+      virtual int isEquivalent(const TypeCode* tc) const;
       //! The only non const method.
       virtual void addMember(const std::string& name,TypeCode* tc);
       const TypeCode *getMember(const std::string& name, unsigned& offset) const;

@@ -87,7 +87,11 @@ int OutputPort::edRemoveInputPort(InputPort *inputPort, bool forward) throw(Exce
     }
   else
     {
+#ifdef NOCOVARIANT
+      InPort *publicRepr=inputPort->getPublicRepresentant();
+#else
       InputPort *publicRepr=inputPort->getPublicRepresentant();
+#endif
       set<InputPort *>::iterator iter;
       for(iter=_setOfInputPort.begin();iter!=_setOfInputPort.end();iter++)
         if((*iter)->getPublicRepresentant()==publicRepr)
@@ -135,7 +139,11 @@ bool OutputPort::isAlreadyLinkedWith(InPort *with) const
 
 bool OutputPort::isAlreadyInSet(InputPort *inputPort) const
 {
+#ifdef NOCOVARIANT
+  InPort *publicRepr=inputPort->getPublicRepresentant();
+#else
   InputPort *publicRepr=inputPort->getPublicRepresentant();
+#endif
   for(set<InputPort *>::const_iterator iter=_setOfInputPort.begin();iter!=_setOfInputPort.end();iter++)
     if((*iter)->getPublicRepresentant()==publicRepr)
       return true;

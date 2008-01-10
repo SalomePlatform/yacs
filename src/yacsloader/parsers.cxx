@@ -29,6 +29,8 @@ namespace YACS
 
 YACSLoader::YACSLoader()
 {
+  _defaultParsersMap.clear();
+
   theRuntime = ENGINE::getRuntime();
 }
 
@@ -64,6 +66,8 @@ ENGINE::Proc* YACSLoader::load(const char * file)
   // graph presentation data
   if ( !_defaultParsersMap.empty() )
     roottypeParser::rootParser.setDefaultMap(&_defaultParsersMap);
+  else
+    roottypeParser::rootParser.setDefaultMap(0);
   
   parser::main_parser._file=file;
 

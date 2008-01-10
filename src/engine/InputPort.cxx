@@ -173,7 +173,11 @@ void ProxyPort::exSaveInit()
   _port->exSaveInit();
 }
 
+#ifdef NOCOVARIANT
+InPort *ProxyPort::getPublicRepresentant()
+#else
 InputPort *ProxyPort::getPublicRepresentant()
+#endif
 { 
   return _port->getPublicRepresentant();
 }

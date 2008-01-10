@@ -147,8 +147,6 @@ void YACSGui_VisitorSaveSchema::writeLinks(YACS::ENGINE::Proc *proc)
 YACSGui_Loader::YACSGui_Loader()
   : YACSLoader()
 {
-  _defaultParsersMap.clear();
-
   presentation_parser.collector_ = this;
   prslink_parser.collector_ = this;
 

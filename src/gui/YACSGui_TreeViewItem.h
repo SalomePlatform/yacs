@@ -54,6 +54,10 @@ public:
   virtual void update( const bool theIsRecursive = false ) {}
 
 protected:
+  void removeNodeItem( YACS::HMI::Subject* theSNode );
+  void removeLinkItem( YACS::HMI::Subject* theSLink );
+
+protected:
   bool myBlockSelect;
 };
 
@@ -174,7 +178,6 @@ private:
   void addPortItem( YACS::HMI::Subject* theSPort );
   void removePortItem( YACS::HMI::Subject* theSPort );
   void addNodeItem( YACS::HMI::Subject* theSNode );
-  void removeNodeItem( YACS::HMI::Subject* theSNode );
   void moveUpPortItem( YACS::HMI::Subject* theSPort );
   void moveDownPortItem( YACS::HMI::Subject* theSPort );
   bool isPublished( YACS::ENGINE::Port* thePort );
@@ -183,7 +186,6 @@ private:
   void removeReferenceItem( YACS::HMI::Subject* theSRef );
 
   void addLinkItem( YACS::HMI::Subject* theSLink );
-  void removeLinkItem( YACS::HMI::Subject* theSLink );
 
   YACS::HMI::SubjectNode* mySNode;
 };
@@ -267,7 +269,6 @@ public:
 
 private:
   void addNodeItem( YACS::HMI::Subject* theSNode );
-  void removeNodeItem( YACS::HMI::Subject* theSNode );
   void addContainerItem( YACS::HMI::Subject* theSContainer );
   void removeContainerItem( YACS::HMI::Subject* theSContainer );
   void removeComponentItem( YACS::HMI::Subject* theSComponent );

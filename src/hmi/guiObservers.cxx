@@ -268,7 +268,7 @@ SubjectNode::~SubjectNode()
             else
               {
 		ForEachLoop *feloop = dynamic_cast<ForEachLoop*>(father);
-		if (feloop) {
+		if (feloop && getName() != ForEachLoop::NAME_OF_SPLITTERNODE) {
 		  DEBTRACE("SubjectNode::localClean: remove for each loop body");
 		  feloop->edRemoveChild(_node);
 		}
@@ -739,6 +739,7 @@ SubjectLink* SubjectComposedNode::addSubjectLink(SubjectNode *sno,
 
 void SubjectComposedNode::removeLink(SubjectLink* link)
 {
+  DEBTRACE("removeSubjectLink: " << getName());
   link->getSubjectOutPort()->removeSubjectLink(link);
   link->getSubjectInPort()->removeSubjectLink(link);
   _listSubjectLink.remove(link);
@@ -763,6 +764,7 @@ SubjectControlLink* SubjectComposedNode::addSubjectControlLink(SubjectNode *sno,
 
 void SubjectComposedNode::removeControlLink(SubjectControlLink* link)
 {
+  DEBTRACE("removeSubjectControlLink: " << getName());
   link->getSubjectOutNode()->removeSubjectControlLink(link);
   link->getSubjectInNode()->removeSubjectControlLink(link);
   _listSubjectControlLink.remove(link);
@@ -824,6 +826,27 @@ void SubjectComposedNode::loadLinks()
           addSubjectControlLink(sno,sni);
         }
     }
+}
+
+//! Retrieves the lowest common ancestor of 2 nodes
+/*!
+ * 
+ * \note Retrieves the lowest common ancestor of 'node1' AND 'node2'. 
+ *       If  'node1' or 'node2' are both or indiscriminately instances of ComposedNode and that
+ *       'node1' is in descendance of 'node2' (resp. 'node2' in descendance of 'node1')
+ *       'node2' is returned (resp. 'node1').
+ * \exception Exception : if 'node1' and 'node2' do not share the same genealogy.
+ * \return The lowest common ancestor if it exists.
+ *
+ */
+SubjectComposedNode* SubjectComposedNode::getLowestCommonAncestor(SubjectNode* snode1, SubjectNode* snode2)
+{
+  Node* node1 = snode1->getNode();
+  Node* node2 = snode2->getNode();
+
+  ComposedNode *node = ComposedNode::getLowestCommonAncestor(node1->getFather(), node2->getFather());
+  SubjectComposedNode* snode = dynamic_cast<SubjectComposedNode*>( GuiContext::getCurrent()->_mapOfSubjectNode[node] );
+  return snode;
 }
 
 // ----------------------------------------------------------------------------
@@ -1857,8 +1880,17 @@ SubjectForEachLoop::~SubjectForEachLoop()
 
 void SubjectForEachLoop::clean()
 {
+  Node* aSplitterEngine = 0;
+  if (_splitter) aSplitterEngine = _splitter->getNode();
+
   localClean();
   SubjectComposedNode::clean();
+
+  if (_forEachLoop && aSplitterEngine)
+    {
+      DEBTRACE("SubjectForEachLoop::clean: remove for each loop splitter");
+      _forEachLoop->edRemoveChild(aSplitterEngine);
+    }
 }
 
 void SubjectForEachLoop::localClean()

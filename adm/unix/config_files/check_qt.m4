@@ -188,17 +188,21 @@ then
 
   AC_SUBST(QSCINTILLA_CCPFLAGS)
   AC_SUBST(QSCINTILLA_LIBADD)
+  QSCINTILLA_CCPFLAGS=""
+  QSCINTILLA_LIBADD=""
+
   AC_LANG_CPLUSPLUS
   CPPFLAGS="$CPPFLAGS -I$QTDIR/include/qscintilla"
   AC_CHECK_HEADERS(qextscintilla.h, qscintilla="yes", qscintilla="no")
   if test "x$qscintilla" = "xyes" ; then
-  QSCINTILLA_CCPFLAGS="-I$QTDIR/include/qscintilla"
-  QSCINTILLA_LIBADD="-lqscintilla"
+    QSCINTILLA_CCPFLAGS="-I$QTDIR/include/qscintilla"
+    QSCINTILLA_LIBADD="-lqscintilla"
   else
-  QSCINTILLA_CCPFLAGS=""
-  QSCINTILLA_LIBADD=""
+    CPPFLAGS="$CPPFLAGS -I/usr/include/qscintilla"
+    AC_CHECK_HEADERS(/usr/include/qscintilla/qextscintilla.h, 
+           [qscintilla="yes"; QSCINTILLA_CCPFLAGS="-I/usr/include/qscintilla"; QSCINTILLA_LIBADD="-lqscintilla"], 
+           [qscintilla="no"])
   fi
-
 
   LIBS=$LIBS_old
   CXXFLAGS=$CXXFLAGS_old

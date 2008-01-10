@@ -173,7 +173,6 @@ TypeCode * createInterfaceTc(const std::string& id, const std::string& name,
 
 void SessionCataLoader::loadTypes(Catalog* cata,SALOME_ModuleCatalog::ModuleCatalog_ptr catalog)
 {
-#ifdef NEW_KERNEL
   Runtime* r=getRuntime();
   std::map<std::string,TypeCode*>& typeMap=cata->_typeMap;
   // Get types list
@@ -244,7 +243,6 @@ void SessionCataLoader::loadTypes(Catalog* cata,SALOME_ModuleCatalog::ModuleCata
           std::cerr << "Unknown kind: " << types_list[i].kind << std::endl;
         }
     }
-#endif
 }
 
 void SessionCataLoader::loadTypesOld(Catalog* cata)
@@ -252,33 +250,14 @@ void SessionCataLoader::loadTypesOld(Catalog* cata)
   // Fill the types map with built in types
   Runtime* r=getRuntime();
   std::map<std::string,TypeCode*>& typeMap=cata->_typeMap;
-  r->_tc_double->incrRef();
-  cata->_typeMap["double"]=r->_tc_double;
-  r->_tc_double->incrRef();
-  cata->_typeMap["float"]=r->_tc_double;
-  r->_tc_string->incrRef();
-  cata->_typeMap["string"]=r->_tc_string;
-  r->_tc_string->incrRef();
-  cata->_typeMap["char"]=r->_tc_string;
-  r->_tc_int->incrRef();
-  cata->_typeMap["int"]=r->_tc_int;
-  r->_tc_int->incrRef();
-  cata->_typeMap["long"]=r->_tc_int;
-  r->_tc_int->incrRef();
-  cata->_typeMap["short"]=r->_tc_int;
-  r->_tc_bool->incrRef();
-  cata->_typeMap["bool"]=r->_tc_bool;
-  r->_tc_bool->incrRef();
-  cata->_typeMap["boolean"]=r->_tc_bool;
-  cata->_typeMap["Study"]=TypeCode::interfaceTc("IDL:SALOMEDS/Study:1.0","Study");
-  cata->_typeMap["SObject"]=TypeCode::interfaceTc("IDL:SALOMEDS/SObject:1.0","SObject");
+
   //GEOM
-  cata->_typeMap["GEOM_Object"]=TypeCode::interfaceTc("IDL:GEOM/GEOM_Object:1.0","GEOM_Object");
-  cata->_typeMap["ListOfLong"]=TypeCode::sequenceTc("ListOfLong","ListOfLong",r->_tc_int);
-  cata->_typeMap["GEOM_List"]=TypeCode::interfaceTc("IDL:GEOM/GEOM_List:1.0","GEOM_List");
-  cata->_typeMap["GEOM_Superv"]=TypeCode::interfaceTc("IDL:GEOM/GEOM_Superv:1.0","GEOM_Superv");
-  cata->_typeMap["ListOfGO"]=TypeCode::sequenceTc("ListOfGO","ListOfGO",cata->_typeMap["GEOM_Object"]);
-  cata->_typeMap["string_array"]=TypeCode::sequenceTc("string_array","string_array",r->_tc_string);
+  typeMap["GEOM_Object"]=TypeCode::interfaceTc("IDL:GEOM/GEOM_Object:1.0","GEOM_Object");
+  typeMap["ListOfLong"]=TypeCode::sequenceTc("ListOfLong","ListOfLong",r->_tc_int);
+  typeMap["GEOM_List"]=TypeCode::interfaceTc("IDL:GEOM/GEOM_List:1.0","GEOM_List");
+  typeMap["GEOM_Superv"]=TypeCode::interfaceTc("IDL:GEOM/GEOM_Superv:1.0","GEOM_Superv");
+  typeMap["ListOfGO"]=TypeCode::sequenceTc("ListOfGO","ListOfGO",cata->_typeMap["GEOM_Object"]);
+  typeMap["string_array"]=TypeCode::sequenceTc("string_array","string_array",r->_tc_string);
   r->_tc_int->incrRef();
   typeMap["BCErrorType"]=r->_tc_int;
   typeMap["BCError"]=TypeCode::structTc("","BCError");
@@ -288,14 +267,17 @@ void SessionCataLoader::loadTypesOld(Catalog* cata)
   typeMap["GEOM_Object"]->incrRef();
   typeMap["GEOM_Shape"]=typeMap["GEOM_Object"];
 
+  //SMESH
   typeMap["SMESH_Mesh"]=TypeCode::interfaceTc("IDL:Mesh/SMESH_Mesh:1.0","SMESH_Mesh");
   typeMap["SMESH_Hypothesis"]=TypeCode::interfaceTc("IDL:SMESH/SMESH_Hypothesis:1.0","SMESH_Hypothesis");
 
+  //MED
   typeMap["MED"]=TypeCode::interfaceTc("IDL:SALOME_MED/MED:1.0","MED");
   typeMap["FIELD"]=TypeCode::interfaceTc("IDL:SALOME_MED/FIELD:1.0","FIELD");
   // TODO : FIELDDOUBLE inherits FIELD
   typeMap["FIELDDOUBLE"]=TypeCode::interfaceTc("IDL:SALOME_MED/FIELDDOUBLE:1.0","FIELDDOUBLE");
 
+  //COMPONENT
   typeMap["AddComponent"]=TypeCode::interfaceTc("IDL:SuperVisionTest/AddComponent:1.0","AddComponent");
   typeMap["AddComponent"]->incrRef();
   typeMap["AddInterface"]=typeMap["AddComponent"];
@@ -303,12 +285,6 @@ void SessionCataLoader::loadTypesOld(Catalog* cata)
   typeMap["AdditionComponent/Adder"]=TypeCode::interfaceTc("IDL:AdditionComponent/Adder:1.0","AdditionComponent/Adder");
   typeMap["Syr"]=TypeCode::interfaceTc("IDL:SuperVisionTest/Syr:1.0","Syr");
   typeMap["ListOfSyr"]=TypeCode::interfaceTc("IDL:SuperVisionTest/ListOfSyr:1.0","ListOfSyr");
-  //CALCIUM
-  typeMap["CALCIUM_integer"]=TypeCode::interfaceTc("IDL:Ports/Calcium_Ports/Calcium_Integer_Port:1.0","CALCIUM_integer");
-  typeMap["CALCIUM_real"]=TypeCode::interfaceTc("IDL:Ports/Calcium_Ports/Calcium_Real_Port:1.0","CALCIUM_real");
-  typeMap["CALCIUM_double"]=TypeCode::interfaceTc("IDL:Ports/Calcium_Ports/Calcium_Double_Port:1.0","CALCIUM_double");
-  typeMap["CALCIUM_string"]=TypeCode::interfaceTc("IDL:Ports/Calcium_Ports/Calcium_String_Port:1.0","CALCIUM_string");
-  typeMap["CALCIUM_boolean"]=TypeCode::interfaceTc("IDL:Ports/Calcium_Ports/Calcium_Logical_Port:1.0","CALCIUM_boolean");
 }
 
 void SessionCataLoader::loadCata(Catalog* cata)
@@ -327,9 +303,10 @@ void SessionCataLoader::loadCata(Catalog* cata)
   obj=orb->string_to_object(_path.c_str());
   catalog= SALOME_ModuleCatalog::ModuleCatalog::_narrow(obj);
 
-  // Get types
+  // Get types in catalog
+  loadTypes(cata,catalog);
+  // Get old types 
   loadTypesOld(cata);
-  //loadTypes(cata,catalog);
 
   // Get component list
   SALOME_ModuleCatalog::ListOfComponents_var componentname_list;

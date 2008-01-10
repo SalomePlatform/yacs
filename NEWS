@@ -540,12 +540,12 @@ with schema samples.
 ----------------------------------------------------------------------------------------------------
 Num-----: 12
 priority: 0
-status--: NOK
+status--: OK
 description:
  --	   Import schema double1.xml
  --	   Fit all
-Result: three red broken links in the viewer
-comments:
+Result: three red broken links are in the viewer
+comments: OCC: DONE
 ----------------------------------------------------------------------------------------------------
 Num-----: 13 
 priority: 0

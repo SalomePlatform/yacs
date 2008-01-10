@@ -3349,11 +3349,17 @@ void YACSGui_Module::createNode( YACS::HMI::TypeOfElem theElemType, std::string 
 	
 	map<int, SubjectNode*> bodyMap = aSwitch->getBodyMap();
 	int aSwCase = 0;
-	if (bodyMap.empty()) aSwCase = 1;
+	if (bodyMap.empty())
+	{
+	  aSwCase = Switch::ID_FOR_DEFAULT_NODE;
+	}
 	else
 	{
 	  map<int, SubjectNode*>::reverse_iterator rit = bodyMap.rbegin();
-	  aSwCase = (*rit).first + 1;
+	  if ((*rit).first == Switch::ID_FOR_DEFAULT_NODE)
+	    aSwCase = 1;
+	  else
+	    aSwCase = (*rit).first + 1;
 	}
 	aSwitch->addNode(aCatalog, "", aType, aName.str(), aSwCase);
 	temporaryExport();

@@ -203,6 +203,10 @@ namespace YACS
       void removeSubjectControlLink(SubjectControlLink* sub) { _listSubjectControlLink.remove(sub); };
       std::list<SubjectLink*> getSubjectLinks() const { return _listSubjectLink; };
       std::list<SubjectControlLink*> getSubjectControlLinks() const { return _listSubjectControlLink; };
+      std::list<SubjectInputPort*> getSubjectInputPorts() const { return _listSubjectInputPort; };
+      std::list<SubjectOutputPort*> getSubjectOutputPorts() const { return _listSubjectOutputPort; };
+      std::list<SubjectInputDataStreamPort*> getSubjectInputDataStreamPorts() const { return _listSubjectIDSPort; };
+      std::list<SubjectOutputDataStreamPort*> getSubjectOutputDataStreamPorts() const { return _listSubjectODSPort; };
       void localClean();
       virtual void update(GuiEvent event, int type, Subject* son);
       static bool tryCreateLink(SubjectNode *subOutNode, SubjectNode *subInNode);
@@ -250,6 +254,7 @@ namespace YACS
       virtual void removeControlLink(SubjectControlLink* link);
       virtual void clean();
       void localClean();
+      static SubjectComposedNode* getLowestCommonAncestor(SubjectNode* snode1, SubjectNode* snode2);
     protected:
       virtual SubjectNode *createNode(YACS::ENGINE::Catalog *catalog,
                                       std::string compo,

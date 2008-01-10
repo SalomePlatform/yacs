@@ -4,8 +4,10 @@
 
 %module(docstring=DOCSTRING) pilot
 
+#ifndef SWIGIMPORTED
 //work around SWIG bug #1863647
 #define PySwigIterator pilot_PySwigIterator
+#endif
 
 %feature("autodoc", "1");
 

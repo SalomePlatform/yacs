@@ -560,7 +560,7 @@ void YACSPrs_BlocNode::moveBy(double dx, double dy)
   }
 
   if ( myPointMaster ) myPointMaster->moveBy(dx, dy);
-  if ( myLabelLink ) myLabelLink->moveByNode(this, (int)dx, (int)dy);
+  if ( myLabelLink ) myLabelLink->moveByNode(this);
   
   if ( isSelected() && canvas() && isMoving() )
   {

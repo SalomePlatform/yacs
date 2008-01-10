@@ -164,6 +164,208 @@ void YACSGui_ViewItem::select( bool isSelected )
   blockSelection( false );
 }
 
+void YACSGui_ViewItem::removeNodeItem( YACS::HMI::Subject* theSNode )
+{
+  //printf( "YACSGui_ViewItem::removeNodeItem (this=%s)\n", text(0).latin1() );
+  QListViewItem* aNodesL = this;
+  if( !aNodesL->parent() )
+  {
+    // get the "Nodes" label view item, which is used as a parent for first level nodes
+    aNodesL = firstChild()->nextSibling();
+    if ( !aNodesL || aNodesL->text(0).compare(QString("Nodes")) )
+      return;
+  }
+
+  YACSGui_NodeViewItem* aNode = 0;
+  QListViewItem* aChild = aNodesL->firstChild();
+  while( aChild )
+  {
+    if ( aNode = dynamic_cast<YACSGui_NodeViewItem*>(aChild) )
+      if ( aNode->getSNode() == theSNode )
+      {
+	//printf(">> the son is found\n");
+	break;
+      }
+
+    aChild = aChild->nextSibling();
+  }    
+
+  if ( aNode )
+  {
+    if( YACS::HMI::SubjectNode* aSNode = dynamic_cast<SubjectNode*>( theSNode ) )
+    {
+      //printf( ">> remove control links\n" );
+      std::list<SubjectControlLink*> aControlLinks = aSNode->getSubjectControlLinks();
+      std::list<SubjectControlLink*>::iterator cIt = aControlLinks.begin();
+      std::list<SubjectControlLink*>::iterator cItEnd = aControlLinks.end();
+      for( ; cIt != cItEnd; cIt++ )
+      {
+	SubjectControlLink* aControlLink = *cIt;
+	if( aControlLink )
+	{
+	  Subject* aParentSNode = aControlLink->getSubjectOutNode()->getParent();
+	  aParentSNode->update( REMOVE, CONTROLLINK, aControlLink );
+	}
+      }
+
+      //printf( ">> remove data links\n" );
+      std::list<SubjectLink*> aDataLinks = aSNode->getSubjectLinks();
+      std::list<SubjectLink*>::iterator dIt = aDataLinks.begin();
+      std::list<SubjectLink*>::iterator dItEnd = aDataLinks.end();
+      for( ; dIt != dItEnd; dIt++ )
+      {
+	SubjectLink* aDataLink = *dIt;
+	if( aDataLink )
+	{
+	  Subject* aParentSNode = aDataLink->getSubjectOutNode()->getParent();
+	  aParentSNode->update( REMOVE, DATALINK, aDataLink );
+	}
+      }
+
+      //printf( ">> remove port links\n" );
+      std::list<SubjectDataPort*> aDataPorts;
+
+      std::list<SubjectInputPort*> anInputPorts = aSNode->getSubjectInputPorts();
+      for( std::list<SubjectInputPort*>::iterator pIt = anInputPorts.begin(); pIt != anInputPorts.end(); pIt++ )
+	aDataPorts.push_back( *pIt );
+
+      std::list<SubjectOutputPort*> anOutputPorts = aSNode->getSubjectOutputPorts();
+      for( std::list<SubjectOutputPort*>::iterator pIt = anOutputPorts.begin(); pIt != anOutputPorts.end(); pIt++ )
+	aDataPorts.push_back( *pIt );
+
+      std::list<SubjectInputDataStreamPort*> anInputDataStreamPorts = aSNode->getSubjectInputDataStreamPorts();
+      for( std::list<SubjectInputDataStreamPort*>::iterator pIt = anInputDataStreamPorts.begin();
+	   pIt != anInputDataStreamPorts.end(); pIt++ )
+	aDataPorts.push_back( *pIt );
+
+      std::list<SubjectOutputDataStreamPort*> anOutputDataStreamPorts = aSNode->getSubjectOutputDataStreamPorts();
+      for( std::list<SubjectOutputDataStreamPort*>::iterator pIt = anOutputDataStreamPorts.begin();
+	   pIt != anOutputDataStreamPorts.end(); pIt++ )
+	aDataPorts.push_back( *pIt );
+
+      std::list<SubjectDataPort*>::iterator dpIt = aDataPorts.begin();
+      std::list<SubjectDataPort*>::iterator dpItEnd = aDataPorts.end();
+      for( ; dpIt != dpItEnd; dpIt++ )
+      {
+	SubjectDataPort* aDataPort = *dpIt;
+	if( aDataPort )
+	{
+	  std::list<SubjectLink*> lsl = aDataPort->getListOfSubjectLink();
+	  for( std::list<SubjectLink*>::iterator it = lsl.begin(); it != lsl.end(); ++it )
+	  {
+	    SubjectLink* aLink = *it;
+	    if( aLink )
+	    {
+	      //printf( ">> link : %s\n", aLink->getName().c_str() );
+	      SubjectNode* aNode1 = aLink->getSubjectInNode();
+	      SubjectNode* aNode2 = aLink->getSubjectOutNode();
+	      //printf( ">> nodes : %s - %s\n", aNode1->getName().c_str(), aNode2->getName().c_str() );
+	      if( SubjectComposedNode* aLowestCommonAncestor =
+		  SubjectComposedNode::getLowestCommonAncestor( aNode1, aNode2 ) )
+	      {
+		//printf( ">> lowest common ancestor : %s\n", aLowestCommonAncestor->getName().c_str() );
+		aLowestCommonAncestor->update( REMOVE, DATALINK, aLink );
+	      }
+	    }
+	  }
+	}
+      }
+
+      //printf( ">> remove leaving/coming current scope links\n" );
+      std::vector< std::pair<OutPort *, InPort *> > listLeaving  = aSNode->getNode()->getSetOfLinksLeavingCurrentScope();
+      std::vector< std::pair<InPort *, OutPort *> > listIncoming = aSNode->getNode()->getSetOfLinksComingInCurrentScope();
+      std::vector< std::pair<OutPort *, InPort *> > globalList = listLeaving;
+      std::vector< std::pair<InPort *, OutPort *> >::iterator it1;
+      for (it1 = listIncoming.begin(); it1 != listIncoming.end(); ++it1)
+      {
+	std::pair<OutPort *, InPort *> outin = std::pair<OutPort *, InPort *>((*it1).second, (*it1).first);
+	globalList.push_back(outin);
+      }
+      std::vector< std::pair<OutPort *, InPort *> >::iterator it2;
+      for (it2 = globalList.begin(); it2 != globalList.end(); ++it2)
+      {
+	if (GuiContext::getCurrent()->_mapOfSubjectLink.count(*it2))
+        {
+          SubjectLink* aLink = GuiContext::getCurrent()->_mapOfSubjectLink[*it2];
+	  if( aLink )
+	  {
+	    //printf( ">> link : %s\n", aLink->getName().c_str() );
+	    SubjectNode* aNode1 = aLink->getSubjectInNode();
+	    SubjectNode* aNode2 = aLink->getSubjectOutNode();
+	    //printf( ">> nodes : %s - %s\n", aNode1->getName().c_str(), aNode2->getName().c_str() );
+	    if( SubjectComposedNode* aLowestCommonAncestor =
+		SubjectComposedNode::getLowestCommonAncestor( aNode1, aNode2 ) )
+	    {
+	      //printf( ">> lowest common ancestor : %s\n", aLowestCommonAncestor->getName().c_str() );
+	      aLowestCommonAncestor->update( REMOVE, DATALINK, aLink );
+	    }
+	  }
+	}
+      }
+    }
+
+    //printf(">> delete the son item\n");
+    aNodesL->takeItem(aNode);
+    delete aNode;
+  }
+}
+
+void YACSGui_ViewItem::removeLinkItem( YACS::HMI::Subject* theSLink )
+{
+  //printf( "YACSGui_ViewItem::removeLinkItem (this=%s)\n", text(0).latin1() );
+  SubjectLink* aSLink = dynamic_cast<SubjectLink*>(theSLink);
+  SubjectControlLink* aSCLink = dynamic_cast<SubjectControlLink*>(theSLink);
+  if ( aSLink || aSCLink )
+  {
+    // get the "Links" label view item under the parent node of this node view item
+    YACSGui_LabelViewItem* aLinksL = 0;
+    QListViewItem* aChildLinks = this;
+    if( !aChildLinks->parent() )
+      aChildLinks = aChildLinks->firstChild();
+    while( aChildLinks )
+    {
+      //printf( ">> item : %s\n", aChildLinks->text(0).latin1() );
+      aLinksL = dynamic_cast<YACSGui_LabelViewItem*>(aChildLinks);
+      if ( aLinksL && aLinksL->text(0).compare(QString("Links")) == 0 )
+	break;
+      aChildLinks = aChildLinks->nextSibling();
+    }
+
+    if ( !aLinksL )
+      return;
+
+    // find the link item published under in the Links folder to delete
+    QListViewItem* aChild = aLinksL->firstChild();
+    while( aChild )
+    {
+      if ( aSLink )
+      {
+	if ( YACSGui_LinkViewItem* aLink = dynamic_cast<YACSGui_LinkViewItem*>(aChild) )
+	  if ( aLink->getSLink() == aSLink )
+	  {
+	    //printf(">> the data link is found\n");
+	    aLinksL->takeItem(aChild);
+	    delete aChild;
+	    break;
+	  }
+      }
+      else if ( aSCLink )
+      {
+	if ( YACSGui_ControlLinkViewItem* aCLink = dynamic_cast<YACSGui_ControlLinkViewItem*>(aChild) )
+	  if ( aCLink->getSLink() == aSCLink )
+	  {
+	    //printf(">> the control link is found\n");
+	    aLinksL->takeItem(aChild);
+	    delete aChild;
+	    break;
+	  }
+      }
+      
+      aChild = aChild->nextSibling();
+    }
+  }
+}
+
 // YACSGui_LabelViewItem class:
 
 YACSGui_LabelViewItem::YACSGui_LabelViewItem( QListView* theParent, 
@@ -961,82 +1163,6 @@ void YACSGui_NodeViewItem::addNodeItem( YACS::HMI::Subject* theSNode )
     YACSGui_NodeViewItem* aNodeItem = new YACSGui_NodeViewItem( this, 0, aSNode );
 }
 
-void YACSGui_NodeViewItem::removeNodeItem( YACS::HMI::Subject* theSNode )
-{
-  YACSGui_NodeViewItem* aNode = 0;
-  QListViewItem* aChild = firstChild();
-  while( aChild )
-  {
-    if ( aNode = dynamic_cast<YACSGui_NodeViewItem*>(aChild) )
-      if ( aNode->getSNode() == theSNode )
-      {
-	//printf(">> the son is found\n");
-	break;
-      }
-	  
-    aChild = aChild->nextSibling();
-  }
-	
-  if ( aNode )
-  {
-    if( YACS::HMI::SubjectNode* aSNode = dynamic_cast<SubjectNode*>( theSNode ) )
-    {
-      std::list<SubjectControlLink*> aControlLinks = aSNode->getSubjectControlLinks();
-      std::list<SubjectControlLink*>::iterator cIt = aControlLinks.begin();
-      std::list<SubjectControlLink*>::iterator cItEnd = aControlLinks.end();
-      for( ; cIt != cItEnd; cIt++ )
-      {
-	SubjectControlLink* aControlLink = *cIt;
-	if( aControlLink )
-	{
-	  SubjectNode* aParentSNode = aControlLink->getSubjectOutNode();
-	  aParentSNode->update( REMOVE, CONTROLLINK, aControlLink );
-	}
-      }
-
-      std::list<SubjectLink*> aDataLinks = aSNode->getSubjectLinks();
-      std::list<SubjectLink*>::iterator dIt = aDataLinks.begin();
-      std::list<SubjectLink*>::iterator dItEnd = aDataLinks.end();
-      for( ; dIt != dItEnd; dIt++ )
-      {
-	SubjectLink* aDataLink = *dIt;
-	if( aDataLink )
-	{
-	  SubjectNode* aParentSNode = aDataLink->getSubjectOutNode();
-	  aParentSNode->update( REMOVE, DATALINK, aDataLink );
-	}
-      }
-
-      std::vector< std::pair<OutPort *, InPort *> > listLeaving  = aSNode->getNode()->getSetOfLinksLeavingCurrentScope();
-      std::vector< std::pair<InPort *, OutPort *> > listIncoming = aSNode->getNode()->getSetOfLinksComingInCurrentScope();
-      std::vector< std::pair<OutPort *, InPort *> > globalList = listLeaving;
-      std::vector< std::pair<InPort *, OutPort *> >::iterator it1;
-      for (it1 = listIncoming.begin(); it1 != listIncoming.end(); ++it1)
-      {
-	std::pair<OutPort *, InPort *> outin = std::pair<OutPort *, InPort *>((*it1).second, (*it1).first);
-	globalList.push_back(outin);
-      }
-      std::vector< std::pair<OutPort *, InPort *> >::iterator it2;
-      for (it2 = globalList.begin(); it2 != globalList.end(); ++it2)
-      {
-	if (GuiContext::getCurrent()->_mapOfSubjectLink.count(*it2))
-        {
-          SubjectLink* aLink = GuiContext::getCurrent()->_mapOfSubjectLink[*it2];
-	  if( aLink )
-	  {
-	    SubjectNode* aParentSNode = aLink->getSubjectOutNode();
-	    aParentSNode->update( REMOVE, DATALINK, aLink );
-	  }
-	}
-      }
-    }
-
-    //printf(">> delete the son item\n");
-    takeItem(aNode);
-    delete aNode;
-  }
-}
-
 void YACSGui_NodeViewItem::moveUpPortItem( YACS::HMI::Subject* theSPort )
 {
   if ( SubjectDataPort* aSPort = dynamic_cast<SubjectDataPort*>(theSPort) )
@@ -1352,60 +1478,6 @@ void YACSGui_NodeViewItem::addLinkItem( YACS::HMI::Subject* theSLink )
   }
 }
 
-void YACSGui_NodeViewItem::removeLinkItem( YACS::HMI::Subject* theSLink )
-{
-  SubjectLink* aSLink = dynamic_cast<SubjectLink*>(theSLink);
-  SubjectControlLink* aSCLink = dynamic_cast<SubjectControlLink*>(theSLink);
-  if ( aSLink || aSCLink )
-  {
-    // get the "Links" label view item under the parent node of this node view item
-    YACSGui_LabelViewItem* aLinksL = 0;
-    QListViewItem* aChildLinks = parent();
-    if( aChildLinks->parent()->parent() )
-      aChildLinks = aChildLinks->firstChild();
-    while( aChildLinks )
-    {
-      aLinksL = dynamic_cast<YACSGui_LabelViewItem*>(aChildLinks);
-      if ( aLinksL && aLinksL->text(0).compare(QString("Links")) == 0 )
-	break;
-      aChildLinks = aChildLinks->nextSibling();
-    }
-
-    if ( !aLinksL )
-      return;
-
-    // find the link item published under in the Links folder to delete
-    QListViewItem* aChild = aLinksL->firstChild();
-    while( aChild )
-    {
-      if ( aSLink )
-      {
-	if ( YACSGui_LinkViewItem* aLink = dynamic_cast<YACSGui_LinkViewItem*>(aChild) )
-	  if ( aLink->getSLink() == aSLink )
-	  {
-	    //printf(">> the data link is found\n");
-	    aLinksL->takeItem(aChild);
-	    delete aChild;
-	    break;
-	  }
-      }
-      else if ( aSCLink )
-      {
-	if ( YACSGui_ControlLinkViewItem* aCLink = dynamic_cast<YACSGui_ControlLinkViewItem*>(aChild) )
-	  if ( aCLink->getSLink() == aSCLink )
-	  {
-	    //printf(">> the control link is found\n");
-	    aLinksL->takeItem(aChild);
-	    delete aChild;
-	    break;
-	  }
-      }
-      
-      aChild = aChild->nextSibling();
-    }
-  }
-}
-
 // YACSGui_LinkViewItem class:
 
 YACSGui_LinkViewItem::YACSGui_LinkViewItem( QListView* theParent, 
@@ -1484,6 +1556,7 @@ QString YACSGui_LinkViewItem::name() const
       Proc* aProc = dynamic_cast<Proc*>(aRootI->getRootNode());
       if ( !aProc ) return aName;
 
+      aRoot = aProc;
       while ( aRootI->getFather() != aProc )
       {
 	if ( aBlocOut = dynamic_cast<Bloc*>(aRootI->getFather()->isInMyDescendance(aRootO)) )
@@ -1818,6 +1891,14 @@ void YACSGui_SchemaViewItem::update(YACS::HMI::GuiEvent event, int type, YACS::H
 	removeDataTypeItem( son );
       }
       break;
+    case DATALINK:
+    case CONTROLLINK:
+      {
+	// remove a link item (this = schema item)
+	//printf("SchemaViewItem:  REMOVE link\n");
+	removeLinkItem(son);
+      }
+      break;
     case BLOC:
     case FOREACHLOOP:
     case OPTIMIZERLOOP:
@@ -2013,86 +2094,6 @@ void YACSGui_SchemaViewItem::addNodeItem( YACS::HMI::Subject* theSNode )
     }
 
     YACSGui_NodeViewItem* aNodeItem = new YACSGui_NodeViewItem( aNodesL, anAfter, aSNode );
-  }
-}
-
-void YACSGui_SchemaViewItem::removeNodeItem( YACS::HMI::Subject* theSNode )
-{
-  // get the "Nodes" label view item, which is used as a parent for first level nodes
-  YACSGui_LabelViewItem* aNodesL = dynamic_cast<YACSGui_LabelViewItem*>(firstChild()->nextSibling());
-  if ( !aNodesL || aNodesL->text(0).compare(QString("Nodes")) ) return;
-
-  YACSGui_NodeViewItem* aNode = 0;
-  QListViewItem* aChild = aNodesL->firstChild();
-  while( aChild )
-  {
-    if ( aNode = dynamic_cast<YACSGui_NodeViewItem*>(aChild) )
-      if ( aNode->getSNode() == theSNode )
-      {
-	//printf(">> the son is found\n");
-	break;
-      }
-
-    aChild = aChild->nextSibling();
-  }    
-
-  if ( aNode )
-  {
-    if( YACS::HMI::SubjectNode* aSNode = dynamic_cast<SubjectNode*>( theSNode ) )
-    {
-      std::list<SubjectControlLink*> aControlLinks = aSNode->getSubjectControlLinks();
-      std::list<SubjectControlLink*>::iterator cIt = aControlLinks.begin();
-      std::list<SubjectControlLink*>::iterator cItEnd = aControlLinks.end();
-      for( ; cIt != cItEnd; cIt++ )
-      {
-	SubjectControlLink* aControlLink = *cIt;
-	if( aControlLink )
-	{
-	  SubjectNode* aParentSNode = aControlLink->getSubjectOutNode();
-	  aParentSNode->update( REMOVE, CONTROLLINK, aControlLink );
-	}
-      }
-
-      std::list<SubjectLink*> aDataLinks = aSNode->getSubjectLinks();
-      std::list<SubjectLink*>::iterator dIt = aDataLinks.begin();
-      std::list<SubjectLink*>::iterator dItEnd = aDataLinks.end();
-      for( ; dIt != dItEnd; dIt++ )
-      {
-	SubjectLink* aDataLink = *dIt;
-	if( aDataLink )
-	{
-	  SubjectNode* aParentSNode = aDataLink->getSubjectOutNode();
-	  aParentSNode->update( REMOVE, DATALINK, aDataLink );
-	}
-      }
-
-      std::vector< std::pair<OutPort *, InPort *> > listLeaving  = aSNode->getNode()->getSetOfLinksLeavingCurrentScope();
-      std::vector< std::pair<InPort *, OutPort *> > listIncoming = aSNode->getNode()->getSetOfLinksComingInCurrentScope();
-      std::vector< std::pair<OutPort *, InPort *> > globalList = listLeaving;
-      std::vector< std::pair<InPort *, OutPort *> >::iterator it1;
-      for (it1 = listIncoming.begin(); it1 != listIncoming.end(); ++it1)
-      {
-	std::pair<OutPort *, InPort *> outin = std::pair<OutPort *, InPort *>((*it1).second, (*it1).first);
-	globalList.push_back(outin);
-      }
-      std::vector< std::pair<OutPort *, InPort *> >::iterator it2;
-      for (it2 = globalList.begin(); it2 != globalList.end(); ++it2)
-      {
-	if (GuiContext::getCurrent()->_mapOfSubjectLink.count(*it2))
-        {
-          SubjectLink* aLink = GuiContext::getCurrent()->_mapOfSubjectLink[*it2];
-	  if( aLink )
-	  {
-	    SubjectNode* aParentSNode = aLink->getSubjectOutNode();
-	    aParentSNode->update( REMOVE, DATALINK, aLink );
-	  }
-	}
-      }
-    }
-
-    //printf(">> delete the son item\n");
-    aNodesL->takeItem(aNode);
-    delete aNode;
   }
 }
 

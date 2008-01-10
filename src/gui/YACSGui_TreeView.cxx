@@ -1020,7 +1020,7 @@ QPopupMenu* YACSGui_EditionTreeView::contextMenuPopup( const int theType, YACS::
       
       QPopupMenu* aCrNPopup = new QPopupMenu( this );
       aCrNPopup->insertItem( tr("POP_SALOME_SERVICE"), myModule, SLOT(onSalomeServiceNode()) );
-      aCrNPopup->insertItem( tr("POP_CORBA_SERVICE"), myModule, SLOT(onCORBAServiceNode()) );
+      aCrNPopup->insertItem( tr("POP_CORBA_SERVICE"), myModule, SLOT(onCorbaServiceNode()) );
       aCrNPopup->insertItem( tr("POP_NODENODE_SERVICE"), myModule, SLOT(onNodeNodeServiceNode()) );
       aCrNPopup->insertItem( tr("POP_CPP"), myModule, SLOT(onCppNode()) );
       anId = aCrNPopup->insertItem( tr("POP_SERVICE_INLINE"), myModule, SLOT(onServiceInlineNode()) );
@@ -1117,7 +1117,7 @@ QPopupMenu* YACSGui_EditionTreeView::contextMenuPopup( const int theType, YACS::
 	//                                                   loop node (=> from ¨Create a body¨) or
 	//                                                   another node (=> from ¨Create a loop¨).
 	aCrNPopup->insertItem( tr("POP_SALOME_SERVICE"), myModule, SLOT(onSalomeServiceNode()) );
-	aCrNPopup->insertItem( tr("POP_CORBA_SERVICE"), myModule, SLOT(onCORBAServiceNode()) );
+	aCrNPopup->insertItem( tr("POP_CORBA_SERVICE"), myModule, SLOT(onCorbaServiceNode()) );
 	//aCrNPopup->insertItem( tr("POP_NODENODE_SERVICE"), myModule, SLOT(onNodeNodeServiceNode()) );
 	aCrNPopup->insertItem( tr("POP_CPP"), myModule, SLOT(onCppNode()) );
 	anId = aCrNPopup->insertItem( tr("POP_SERVICE_INLINE"), myModule, SLOT(onServiceInlineNode()) );

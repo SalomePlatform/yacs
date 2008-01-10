@@ -1210,8 +1210,8 @@ void YACSPrs_ElementaryNode::moveBy(double dx, double dy)
   //  aPort->moveBy(xx, yy);
 
   if ( myPointMaster ) myPointMaster->moveBy(dx, dy);
-  if ( myLabelLink ) myLabelLink->moveByNode(this, (int)dx, (int)dy);
-
+  if ( myLabelLink ) myLabelLink->moveByNode(this);
+  
   //if (!myCellPrs) {
   //  myPointIn->moveBy(dx, dy);
   //  myPointOut->moveBy(dx, dy);

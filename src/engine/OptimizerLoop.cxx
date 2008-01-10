@@ -512,7 +512,11 @@ void OptimizerLoop::initInterceptors(unsigned nbOfBr)
       const set<InputPort *>& links=portC->getSetOfPhyLinks();
       for(set<InputPort *>::const_iterator iter2=links.begin();iter2!=links.end();iter2++)
         {
+#ifdef NOCOVARIANT
+          InputPort *reprCur=dynamic_cast<InputPort *>((*iter2)->getPublicRepresentant());
+#else
           InputPort *reprCur=(*iter2)->getPublicRepresentant();
+#endif
           if(!isInMyDescendance(reprCur->getNode()))
             {//here we've got an out of scope link : Let's intercept it
               if(_interceptors.find(reprCur)==_interceptors.end())
