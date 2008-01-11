@@ -33,7 +33,7 @@ comments: OCC: DONE
 ----------------------------------------------------------------------------------------------------
 Num-----: 3 
 priority: 0
-status--: NOK (checked on BR_DEV mergefrom_BR_PR_8jan08)
+status--: OK (checked on BR_DEV mergefrom_BR_PR_10jan08)
 description: add node from catalog is missing (from session and from existing schema file).
 Must be implemented, it is the only way to add SALOME service nodes from SALOME components.
 comments: OCC: This remarks concerns to both points 3 and 4. -a- As we
@@ -60,6 +60,7 @@ Example scenario:
 - Load SUPERV file salomeloader/samples/GeomGraph.xml and save it as a YACS schema.
   This schema is runnable.
 - Create a new yacs schema, create a salome node, browse to find the saved schema. SIGSEGV
+OCC: DONE
 ----------------------------------------------------------------------------------------------------
 Num-----: 4 
 priority: 0
@@ -118,7 +119,7 @@ Example:
 Create a python script or function node, add 3 input dataflow ports a, b, c type int, double, string
 Try to select input c. Only one column is selected. Use the arrow up. It looks like only the selected
 column is switched with input b, not the entire line. Clik on the other items of the two lines.
-Sometimes the entire line is switched (OK) sometimes not... Cnofusing behaviour, not always the same.
+Sometimes the entire line is switched (OK) sometimes not... Confusing behaviour, not always the same.
 
 ----------------------------------------------------------------------------------------------------
 Num-----: 9
@@ -205,6 +206,8 @@ description: In general, there are too much buttons or menus that have no action
 these buttons must be either removed, or grayed if they corresponds to something in development.
 comments: OCC: DONE
 EDF: Still a list of confusing buttons or menus without effect or with an unknown behaviour...
+OCC: Could you, please, provide a list of such buttons and menus?
+EDF(PR): OK I will try to make some snapshots and mark the things I don't understand.
 ----------------------------------------------------------------------------------------------------
 Num-----: 15 
 priority: 0
@@ -223,7 +226,12 @@ apply, everything is lost...
 action necessary to keep values of each widget). Either something similar is reproduced, or a state
 of modification is generated to ask for apply/cancel before switch (may be difficult to implement
 properly...)
-comments:
+comments: OCC: OK, we will try to implement the second way: warn the user if he selects another object
+without applying modifications (if modifications were really done) for the current object.
+In such a case we will provide two possibilities: Apply - to apply modifications for the current object
+and switch selection to the choosen object, Cancel - to lose modifications for the current object and
+switch selection to the choosen object. Is it suitable for you?
+EDF: yes
 ----------------------------------------------------------------------------------------------------
 Num-----: 17
 priority: 0
@@ -247,14 +255,21 @@ particular version of the schema corresponding to an execution.
 The best thing to do is to create a new schema entry in object browser at the first modification of
 an already executed schema, or, better, to force an explicit (visible) copy of an executed schema to allow
 modifications.
-comments:
+comments: OCC: As we understand correctly, you want to have a possibility to open the schema corresponding
+to any run object in the edition state (i.e. to create a new schema object in the object browser,
+edition tree view and 2D view for it) to continue its modification and after that to create a new run object
+based on the modified schema and execute it taking into account the last modifications. Is it right?
+If yes, we think, that it may be done with help of e.g. "New edition" popup menu item on the run object
+in the object browser (and/or the same toolbar button, as it was done for creation of a new execution).
+EDF(PR): Yes, I think it is OK. To be complete, when a schema is executed, it must be impossible to modify
+it without copy,to keep the coherence between the schema and it's execution.
 ----------------------------------------------------------------------------------------------------
 Num-----: 19
 priority: 0
-status--: NOK 
+status--: OK (checked on BR_DEV mergefrom_BR_PR_10jan08)
 description: abort on switch edition, menu add node, python node:
  Switch::getChildByShortName : no default node defined for switch of name Switch0
-comments:
+comments: OCC: DONE
 ----------------------------------------------------------------------------------------------------
 Num-----: 20
 priority: 0
@@ -267,7 +282,11 @@ priority: 21
 status--: NOK 
 description: when modifying 2 output ports, type double to int, in a pyscript node, only one modif
 is taken into account when apply.
-comments:
+comments: OCC: Could you, please, provide a test scenario to reproduce this bug?
+EDF: For instance, create a new schema, a pyscript node, add 2 inputs ports a and b type double and apply.
+Then, change both type to int then apply, WITHOUT cliking elsewhere between the last combo box for type and
+the apply button.
+
 ----------------------------------------------------------------------------------------------------
 Num-----: 
 priority: 22
