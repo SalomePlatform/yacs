@@ -208,6 +208,20 @@ comments: OCC: DONE
 EDF: Still a list of confusing buttons or menus without effect or with an unknown behaviour...
 OCC: Could you, please, provide a list of such buttons and menus?
 EDF(PR): OK I will try to make some snapshots and mark the things I don't understand.
+EDF: Well, you already have done a lot of cleaning in the last versions. There are still a few 
+things remaining.
+- buttons data flow view and data stream view do nothing (comment in source until implementation)
+- idem in schema property panel
+- menu create node/node node service does nothing (grayed or comment in source until implementation)
+- menu create node/from library does nothing (to be removed)
+- menu create node, from a component instance item in tree (does nothing, could be useful, to check)
+- search in python script, property panel does not work with qscintilla. Not very useful, could be 
+  removed.
+- in execution mode, button "remote run, control" could be removed, provided execution mode radio buttons
+  and "stop on error" check button exist somewhere (the existing button "stop on error" is not clear:
+  is it a toggle ?). It should be possible to start an execution in a mode and switch to another mode
+  at any time during the execution (step by step / breakpoints / without stop).
+
 ----------------------------------------------------------------------------------------------------
 Num-----: 15 
 priority: 0
@@ -309,6 +323,12 @@ status--: NOK
 description: schema is not automatically checked before execution
 comments:
 ----------------------------------------------------------------------------------------------------
+Num-----: 25
+priority: 0
+status--: NOK
+description: DSC ports are not displayed in node properties panel (for instance samples/calcium4)
+comments:
+----------------------------------------------------------------------------------------------------
 Num-----:  
 priority: 0
 status--: NOK
@@ -355,31 +375,83 @@ status--: NOK
 description: Is it possible to keep the center of the view at the same place when zooming the canvas ?
 comments:
 ----------------------------------------------------------------------------------------------------
-Num-----:  
+Num-----: 1004
 priority: 1
 status--: NOK
-description: 
-comments:
+description: a default container is explicitely created when creating a component, but not when we
+import a a schema. In YACS Engine, there is an implicit default container when nothing is defined.
+There must not be two kind of default containers.
+comments: 
+EDF: A possibility is to create explicitely a default container in YACS Engine and XML file. Not yet
+decided, nothing to do now.
 ----------------------------------------------------------------------------------------------------
-Num-----:  
+Num-----: 1005
 priority: 1
 status--: NOK
-description: 
+description: Mismatch in container names. We must distinguish:
+- the name in YACS schema and xml file, useful to distinguish process (memory context). Lets call it
+  "Definition Name".
+- the effective name of the container in execution (localhost/factoryServer) useful to retreive the
+  container with naming service, and particular to an execution. Lets call it "Execution Name".
+The term "Definition Name" and "Execution Name" are used here for explanation, they may not be the appropriate
+terms for gui.
+in tree view, container must be referenced by it's definition name (lets say A, B, C) and not by it's
+execution name (localhost/factoryServer).
+Container properties panel must give the to names. The execution name (localhost/factoryServer) and
+hostname can stay empty (resource manager job).
 comments:
 ----------------------------------------------------------------------------------------------------
-Num-----:  
+Num-----: 1006 
 priority: 1
 status--: NOK
-description: 
+description: popup menu item missing on tree view.
+- under Container directory: create a container definition
+- under Nodes directory: create a node
+- under Data Types directory: import a data type from catalog (required for use in a python node, for
+  instance)
+- under a salome node, create a node (here, it is easy to define a create a node corresponding to 
+  a service of the same component instance (see 1002). 
 comments:
 ----------------------------------------------------------------------------------------------------
-Num-----:  
+Num-----: 1007 
 priority: 1
 status--: NOK
-description: 
+description: instead of having a dialog a execution to define the properties of the YACS Engine 
+container, put thev parameters on the schema properties panel for execution.
 comments:
 ----------------------------------------------------------------------------------------------------
-Num-----:  
+Num-----: 1008 
+priority: 1
+status--: NOK
+description: When switching from edition to execution, nodes and link arrangements are lost.
+idem for view (zoom, panning).
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----: 1009
+priority: 1
+status--: NOK
+description: There is nothing to show the validity of a graph in edition, node by node.
+A recursive validationnode by node is required in engine (will probably be developed soon).
+When this information will be available, it have to be represented in Gui (different color for items
+in tree view, for instance).
+When a node is modified, local impact on graph validity must be recomputed (Engine) and displayed
+(gui notification).
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----: 1010
+priority: 1
+status--: NOK
+description: in edition, when adding a node in a block, do not reorganize automatically nodes
+(the user may prefer his own placement); do not resize the bloc, unless it is too small.
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----: 1011
+priority: 1
+status--: NOK
+description: When adding a link between to nodes in a block canvas is not always udpdated.
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----: 
 priority: 1
 status--: NOK
 description: 
@@ -407,19 +479,19 @@ access to SALOME_ResourcesManager while browsing salome services in edition (cal
 access to Subject::detach when clicking in canvas : edition widget destroyed then recreated ?
 comments:
 ----------------------------------------------------------------------------------------------------
-Num-----:  
+Num-----: 2004 
 priority: 2
 status--: NOK
-description: 
+description: add a panel property on a link: information on from node and to node.
 comments:
 ----------------------------------------------------------------------------------------------------
-Num-----:  
+Num-----: 2005 
 priority: 2
 status--: NOK
-description: 
+description: add a panel property on Data Types: type id, content, associated classes...
 comments:
 ----------------------------------------------------------------------------------------------------
-Num-----:  
+Num-----: 2006 
 priority: 2
 status--: NOK
 description: 
