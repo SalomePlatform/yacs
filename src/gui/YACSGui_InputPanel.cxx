@@ -4777,8 +4777,8 @@ void YACSGui_ServiceNodePage::buildTree( YACS::ENGINE::Node* theNode, QListViewI
   if ( !aCompNode )
     return;
 
-  std::set<Node*> aNodes = aCompNode->edGetDirectDescendants();
-  std::set<Node*>::iterator anIter;
+  std::list<Node*> aNodes = aCompNode->edGetDirectDescendants();
+  std::list<Node*>::iterator anIter;
   for ( anIter = aNodes.begin(); anIter != aNodes.end(); ++anIter )
   {
     // buildTree( *anIter, anItem );
@@ -5696,8 +5696,8 @@ void YACSGui_ForLoopNodePage::updateState()
     if( myLoopBodyNodeName )
     {
       QString aBodyName;
-      std::set<Node*> aNodes = aForLoopNode->edGetDirectDescendants();
-      std::set<Node*>::iterator aNodesIt = aNodes.begin();
+      std::list<Node*> aNodes = aForLoopNode->edGetDirectDescendants();
+      std::list<Node*>::iterator aNodesIt = aNodes.begin();
       Node* aNode = *aNodesIt;
       if( aNode )
 	aBodyName = aNode->getName();
@@ -5910,8 +5910,8 @@ void YACSGui_ForEachLoopNodePage::updateState()
     if( myLoopBodyNodeName )
     {
       QString aBodyName;
-      std::set<Node*> aNodes = aForEachLoopNode->edGetDirectDescendants();
-      std::set<Node*>::iterator aNodesIt = aNodes.begin();
+      std::list<Node*> aNodes = aForEachLoopNode->edGetDirectDescendants();
+      std::list<Node*>::iterator aNodesIt = aNodes.begin();
       Node* aNode = *aNodesIt;
       if( aNode )
 	aBodyName = aNode->getName();
@@ -6110,8 +6110,8 @@ void YACSGui_WhileLoopNodePage::updateState()
     if( myLoopBodyNodeName )
     {
       QString aBodyName;
-      std::set<Node*> aNodes = aWhileLoopNode->edGetDirectDescendants();
-      std::set<Node*>::iterator aNodesIt = aNodes.begin();
+      std::list<Node*> aNodes = aWhileLoopNode->edGetDirectDescendants();
+      std::list<Node*>::iterator aNodesIt = aNodes.begin();
       Node* aNode = *aNodesIt;
       if( aNode )
 	aBodyName = aNode->getName();
@@ -6441,10 +6441,10 @@ void YACSGui_SwitchNodePage::updateState()
 	mySelectInputPortValue->setValue( aValue );
       }
 
-      set<Node*> aChildren = dynamic_cast<Switch*>(getNode())->edGetDirectDescendants();
+      list<Node*> aChildren = dynamic_cast<Switch*>(getNode())->edGetDirectDescendants();
       if ( !aChildren.empty() )
       {
-	set<Node*>::iterator aChildIt = aChildren.begin();
+	list<Node*>::iterator aChildIt = aChildren.begin();
 
 	Node* aDefaultNode = 0;
 	try {
@@ -6741,8 +6741,8 @@ void YACSGui_SwitchNodePage::setSwitchCases()
 
   // remove old children
   Node* aRemovedOldChild;
-  set<Node*> aChildren = aSwitch->edGetDirectDescendants();
-  set<Node*>::iterator aChildIter = aChildren.begin();
+  list<Node*> aChildren = aSwitch->edGetDirectDescendants();
+  list<Node*>::iterator aChildIter = aChildren.begin();
   for( ;aChildIter!=aChildren.end();aChildIter++)
   {
     bool isNeedToRemove = true;
@@ -6861,9 +6861,9 @@ void YACSGui_SwitchNodePage::setSwitchCases()
 	  if( aSNode->addNode( catalog, compo, type, name, aNewId, true ) )
 	  {
 	    Node* aNewChild;
-	    set<Node*> aNewChildren = aSwitch->edGetDirectDescendants();
-	    set<Node*>::iterator aNewChildIt = aNewChildren.begin();
-	    set<Node*>::iterator aNewChildItEnd = aNewChildren.end();
+	    list<Node*> aNewChildren = aSwitch->edGetDirectDescendants();
+	    list<Node*>::iterator aNewChildIt = aNewChildren.begin();
+	    list<Node*>::iterator aNewChildItEnd = aNewChildren.end();
 	    for( ; aNewChildIt != aNewChildItEnd; aNewChildIt++ )
 	      if( (*aNewChildIt)->getName() == name )
 	      {
@@ -7175,8 +7175,8 @@ void YACSGui_BlockNodePage::updateState()
   {
     QStringList aChildNames;
     
-    set<Node*> aChildren = dynamic_cast<Bloc*>(getNode())->edGetDirectDescendants();
-    set<Node*>::iterator aChildIt = aChildren.begin();
+    list<Node*> aChildren = dynamic_cast<Bloc*>(getNode())->edGetDirectDescendants();
+    list<Node*>::iterator aChildIt = aChildren.begin();
     int aRow = 0;
     for( ;aChildIt!=aChildren.end();aChildIt++)
     {
@@ -7360,8 +7360,8 @@ void YACSGui_BlockNodePage::setDirectChildren()
 
   // remove old children
   Node* aRemovedOldChild;
-  set<Node*> aChildren = aBloc->edGetDirectDescendants();
-  set<Node*>::iterator aChildIter = aChildren.begin();
+  list<Node*> aChildren = aBloc->edGetDirectDescendants();
+  list<Node*>::iterator aChildIter = aChildren.begin();
   for( ;aChildIter!=aChildren.end();aChildIter++)
   {
     bool isNeedToRemove = true;

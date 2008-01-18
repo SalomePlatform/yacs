@@ -74,23 +74,23 @@ namespace YACS
       Node *clone(ComposedNode *father, bool editionOnly=true) const;
       void setState(YACS::StatesForNode theState); // To centralize state changes
       virtual YACS::StatesForNode getState() const { return _state; }
-      virtual YACS::StatesForNode getEffectiveState();
-      virtual YACS::StatesForNode getEffectiveState(Node*);
-      std::string getColorState(YACS::StatesForNode state);
+      virtual YACS::StatesForNode getEffectiveState() const;
+      virtual YACS::StatesForNode getEffectiveState(const Node*) const;
+      std::string getColorState(YACS::StatesForNode state) const;
       InGate *getInGate() { return &_inGate; }
       OutGate *getOutGate() { return &_outGate; }
       const std::string& getName() const { return _name; }
       void setName(const std::string& name);
       ComposedNode * getFather() const { return _father; }
-      const std::string getId();
+      const std::string getId() const;
       bool exIsControlReady() const;
       std::set<Node *> getOutNodes() const;
-      virtual void writeDot(std::ostream &os);
+      virtual void writeDot(std::ostream &os) const;
       virtual void exUpdateState();
       virtual void exFailedState();
       virtual void exDisabledState();
       virtual void getReadyTasks(std::vector<Task *>& tasks) = 0;
-      virtual std::set<ElementaryNode *> getRecursiveConstituents() const = 0;
+      virtual std::list<ElementaryNode *> getRecursiveConstituents() const = 0;
       virtual int getNumberOfInputPorts() const = 0;
       virtual int getNumberOfOutputPorts() const = 0;
       std::list<InPort *> getSetOfInPort() const;
@@ -115,11 +115,11 @@ namespace YACS
       virtual OutputPort *getOutputPort(const std::string& name) const throw(Exception) = 0;
       virtual InputDataStreamPort *getInputDataStreamPort(const std::string& name) const throw(Exception) = 0;
       virtual OutputDataStreamPort *getOutputDataStreamPort(const std::string& name) const throw(Exception) = 0;
-      std::set<ComposedNode *> getAllAscendanceOf(ComposedNode *levelToStop = 0) const;
+      std::list<ComposedNode *> getAllAscendanceOf(ComposedNode *levelToStop = 0) const;
       bool operator>(const Node& other) const;
       bool operator<(const Node& other) const;
-      std::string getImplementation();
-      virtual ComposedNode *getRootNode() throw(Exception);
+      std::string getImplementation() const;
+      virtual ComposedNode *getRootNode() const throw(Exception);
       virtual void setProperty(const std::string& name,const std::string& value);
       virtual Node *getChildByName(const std::string& name) const throw(Exception) = 0;
       virtual void accept(Visitor *visitor) = 0;

@@ -10,7 +10,7 @@
     <!--nodes -->
     <datanode name="s" kind="study" >
       <property name="StudyID" value="1" />
-      <parameter name="b" type="GEOM/GEOM_Object" ref="0:1:1:1"/>
+      <parameter name="b" type="GEOM/GEOM_Object" ref="0:1:2:2"/>
       <parameter name="c" type="bool" ref="/Geometry/Box_1"/>
     </datanode>
 

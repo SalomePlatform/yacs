@@ -207,13 +207,13 @@ void DynParaLoop::edRemoveChild(Node *node) throw(Exception)
     _initNode=0;
 }
 
-std::set<Node *> DynParaLoop::edGetDirectDescendants() const
+std::list<Node *> DynParaLoop::edGetDirectDescendants() const
 {
-  set<Node *> ret;
+  list<Node *> ret;
   if(_node)
-    ret.insert(_node);
+    ret.push_back(_node);
   if(_initNode)
-    ret.insert(_initNode);
+    ret.push_back(_initNode);
   return ret;
 }
 
@@ -355,14 +355,14 @@ void DynParaLoop::forceMultiplicity(unsigned value)
   _nbOfBranches.edInit((int)value);
 }
 
-void DynParaLoop::buildDelegateOf(InPort * & port, OutPort *initialStart, const std::set<ComposedNode *>& pointsOfView)
+void DynParaLoop::buildDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView)
 {
   string typeOfPortInstance=port->getNameOfTypeOfCurrentInstance();
   if(typeOfPortInstance!=InputPort::NAME)
     throw Exception("DynParaLoop::buildDelegateOf : A link with datastream end inside DynParaLoop this is not possible");
 }
 
-void DynParaLoop::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::set<ComposedNode *>& pointsOfView)
+void DynParaLoop::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView)
 {
   if(_initNode)
     if(isInMyDescendance(port.first->getNode())==_initNode)

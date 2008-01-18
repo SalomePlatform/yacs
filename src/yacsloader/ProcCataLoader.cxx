@@ -49,8 +49,8 @@ void ProcCataLoader::loadCata(Catalog* cata)
       it++;
     }
 
-  std::set<Node *> s=p->getChildren();
-  for(std::set<Node *>::iterator iter=s.begin();iter!=s.end();iter++)
+  std::list<Node *> s=p->getChildren();
+  for(std::list<Node *>::iterator iter=s.begin();iter!=s.end();iter++)
     {
       YACS::ENGINE::ComposedNode * cnode= dynamic_cast<YACS::ENGINE::ComposedNode *>(*iter);
       if(cnode)

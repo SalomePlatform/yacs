@@ -20,6 +20,9 @@
 #include "WhileLoop.hxx"
 #include "Switch.hxx"
 #include "OptimizerLoop.hxx"
+#include "PresetNode.hxx"
+#include "OutNode.hxx"
+#include "StudyNodes.hxx"
 #include "Exception.hxx"
 #include "DataPort.hxx"
 #include "InputDataStreamPort.hxx"
@@ -67,6 +70,10 @@ ProcInvoc::ProcInvoc()
   _typeNameMap[SPLITTERNODE]         = "SPLITTERNODE";
   _typeNameMap[DFTODSFORLOOPNODE]    = "DFTODSFORLOOPNODE";
   _typeNameMap[DSTODFFORLOOPNODE]    = "DSTODFFORLOOPNODE";
+  _typeNameMap[PRESETNODE]           = "PRESETNODE";
+  _typeNameMap[OUTNODE]              = "OUTNODE";
+  _typeNameMap[STUDYINNODE]          = "STUDYINNODE";
+  _typeNameMap[STUDYOUTNODE]         = "STUDYOUTNODE";
   _typeNameMap[INPUTPORT]            = "INPUTPORT";
   _typeNameMap[OUTPUTPORT]           = "OUTPUTPORT";
   _typeNameMap[INPUTDATASTREAMPORT]  = "INPUTDATASTREAMPORT";
@@ -94,6 +101,10 @@ TypeOfElem ProcInvoc::getTypeOfNode(YACS::ENGINE::Node* node)
   else if (dynamic_cast<YACS::ENGINE::Switch*>(node))           nodeType = SWITCH;
   else if (dynamic_cast<YACS::ENGINE::ForEachLoop*>(node))      nodeType = FOREACHLOOP;
   else if (dynamic_cast<YACS::ENGINE::OptimizerLoop*>(node))    nodeType = OPTIMIZERLOOP;
+  else if (dynamic_cast<YACS::ENGINE::PresetNode*>(node))       nodeType = PRESETNODE;
+  else if (dynamic_cast<YACS::ENGINE::OutNode*>(node))          nodeType = OUTNODE;
+  else if (dynamic_cast<YACS::ENGINE::StudyInNode*>(node))      nodeType = STUDYINNODE;
+  else if (dynamic_cast<YACS::ENGINE::StudyOutNode*>(node))     nodeType = STUDYOUTNODE;
   return nodeType;
 }
 

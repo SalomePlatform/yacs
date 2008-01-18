@@ -6,7 +6,7 @@
 #include "Executor.hxx"
 #include "parsers.hxx"
 #include "VisitorSaveState.hxx"
-#include "VisitorSaveSchema.hxx"
+#include "VisitorSaveSalomeSchema.hxx"
 #include "LoadState.hxx"
 #include "Dispatcher.hxx"
 
@@ -167,7 +167,7 @@ main (int argc, char* argv[])
       bool isXmlSchema = (strlen(myArgs.xmlSchema) != 0);
       if (isXmlSchema)
       {
-        YACS::ENGINE::VisitorSaveSchema vss(p);
+        YACS::ENGINE::VisitorSaveSalomeSchema vss(p);
         vss.openFileSchema(myArgs.xmlSchema);
         p->accept(&vss);
         vss.closeFileSchema();

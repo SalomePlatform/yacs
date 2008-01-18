@@ -524,7 +524,7 @@ YACS::Event ForEachLoop::updateStateOnFinishedEventFrom(Node *node)
   return YACS::NOEVENT;
 }
 
-void ForEachLoop::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::set<ComposedNode *>& pointsOfView)
+void ForEachLoop::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView)
 {
   DynParaLoop::buildDelegateOf(port,finalTarget,pointsOfView);
   string typeOfPortInstance=(port.first)->getNameOfTypeOfCurrentInstance();
@@ -558,7 +558,7 @@ void ForEachLoop::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort 
     throw Exception("ForEachLoop::buildDelegateOf : not implemented for DS because not specified");
 }
 
-void ForEachLoop::getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::set<ComposedNode *>& pointsOfView) throw(Exception)
+void ForEachLoop::getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(Exception)
 {
   string typeOfPortInstance=(port.first)->getNameOfTypeOfCurrentInstance();
   if(typeOfPortInstance==OutputPort::NAME)
@@ -579,7 +579,7 @@ void ForEachLoop::getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *f
     throw Exception("ForEachLoop::getDelegateOf : not implemented because not specified");
 }
 
-void ForEachLoop::releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::set<ComposedNode *>& pointsOfView) throw(Exception)
+void ForEachLoop::releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(Exception)
 {
   string typeOfPortInstance=portDwn->getNameOfTypeOfCurrentInstance();
   if(typeOfPortInstance==OutputPort::NAME)
@@ -664,8 +664,8 @@ void ForEachLoop::createOutputOutOfScopeInterceptors(int branchNb)
     }
 }
 
-void ForEachLoop::checkLinkPossibility(OutPort *start, const std::set<ComposedNode *>& pointsOfViewStart,
-                                       InPort *end, const std::set<ComposedNode *>& pointsOfViewEnd) throw(Exception)
+void ForEachLoop::checkLinkPossibility(OutPort *start, const std::list<ComposedNode *>& pointsOfViewStart,
+                                       InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) throw(Exception)
 {
   if(isInMyDescendance(start->getNode())==_node)
     throw Exception("ForEachLoop::checkLinkPossibility : A link from work node to init node not permitted");
@@ -688,7 +688,7 @@ void ForEachLoop::accept(Visitor *visitor)
 /*!
  * \param os : the output stream
  */
-void ForEachLoop::writeDot(std::ostream &os)
+void ForEachLoop::writeDot(std::ostream &os) const
 {
   os << "  subgraph cluster_" << getId() << "  {\n" ;
   //only one node in a loop

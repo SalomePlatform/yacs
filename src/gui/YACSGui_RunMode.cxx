@@ -62,8 +62,8 @@ YACSGui_RunMode::~YACSGui_RunMode()
 void YACSGui_RunMode::addTreeNode(YACSGui_ComposedNodeViewItem *parent,
                                   YACS::ENGINE::ComposedNode* father)
 {
-  set<Node *> setOfNode= father->edGetDirectDescendants();
-  for(set<Node *>::iterator iter=setOfNode.begin();iter!=setOfNode.end();iter++)
+  list<Node *> setOfNode= father->edGetDirectDescendants();
+  for(list<Node *>::iterator iter=setOfNode.begin();iter!=setOfNode.end();iter++)
     {
       if (ElementaryNode* elemNode = dynamic_cast<ElementaryNode*> (*iter) )
         {

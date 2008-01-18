@@ -205,7 +205,7 @@ void RuntimeTest::createBloc()
     bloc->edAddChild(_nodeMap["Node_0"]);
     bloc->edAddChild(_nodeMap["Node_1"]);
     {
-      set<ElementaryNode *> setelem = bloc->getRecursiveConstituents();
+      list<ElementaryNode *> setelem = bloc->getRecursiveConstituents();
       CPPUNIT_ASSERT(setelem.size() == 2);
     }
   }
@@ -248,9 +248,9 @@ void RuntimeTest::createRecursiveBlocs()
   }
 
   {
-    set<ElementaryNode *> setelem = _blocMap["Bloc_2"]->getRecursiveConstituents();
+    list<ElementaryNode *> setelem = _blocMap["Bloc_2"]->getRecursiveConstituents();
     CPPUNIT_ASSERT(setelem.size() == 4);
-    for (set<ElementaryNode*>::iterator it=setelem.begin(); it!=setelem.end(); it++)
+    for (list<ElementaryNode*>::iterator it=setelem.begin(); it!=setelem.end(); it++)
       {
         DEBTRACE("     elem name = " << (*it)->getName());
       }
@@ -729,7 +729,7 @@ void RuntimeTest::createBloc2()
         bloc->edAddChild(_nodeMap[sn]);
       }
     {
-      set<ElementaryNode *> setelem = bloc->getRecursiveConstituents();
+      list<ElementaryNode *> setelem = bloc->getRecursiveConstituents();
       CPPUNIT_ASSERT(setelem.size() == _inode - 10);
     }
   }

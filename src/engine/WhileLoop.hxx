@@ -33,8 +33,8 @@ namespace YACS
       virtual std::string typeName() {return "YACS__ENGINE__WhileLoop";}
     protected:
       Node *simpleClone(ComposedNode *father, bool editionOnly=true) const;
-      void checkLinkPossibility(OutPort *start, const std::set<ComposedNode *>& pointsOfViewStart,
-                                InPort *end, const std::set<ComposedNode *>& pointsOfViewEnd) throw(Exception);
+      void checkLinkPossibility(OutPort *start, const std::list<ComposedNode *>& pointsOfViewStart,
+                                InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) throw(Exception);
       YACS::Event updateStateOnFinishedEventFrom(Node *node);
     };
   }

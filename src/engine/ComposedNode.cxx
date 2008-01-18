@@ -13,6 +13,7 @@
 #include <set>
 #include <string>
 #include <sstream>
+#include <algorithm>
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -38,7 +39,7 @@ void ComposedNode::performDuplicationOfPlacement(const Node& other)
 {
   const ComposedNode &otherC=*(dynamic_cast<const ComposedNode *>(&other));
   DeploymentTree treeToDup=otherC.getDeploymentTree();
-  set< ElementaryNode * > clones=otherC.getRecursiveConstituents();
+  list< ElementaryNode * > clones=otherC.getRecursiveConstituents();
   vector<Container *> conts=treeToDup.getAllContainers();
   for(vector<Container *>::iterator iterCt=conts.begin();iterCt!=conts.end();iterCt++)
     {
@@ -54,7 +55,7 @@ void ComposedNode::performDuplicationOfPlacement(const Node& other)
           for(vector<Task *>::iterator iterT=tasks.begin();iterT!=tasks.end();iterT++)
             {
               //No risk for static cast : appendTask called by ComposedNode.
-              set< ElementaryNode * >::iterator res=clones.find((ElementaryNode *)(*iterT));
+              list< ElementaryNode * >::iterator res=find(clones.begin(),clones.end(),(ElementaryNode *)(*iterT));
               //No risk here to because called only on cloning process...
               ServiceNode *nodeC=(ServiceNode *)getChildByName(otherC.getChildName(*res));
               nodeC->setComponent(curCloned);
@@ -94,8 +95,8 @@ std::string ComposedNode::getTaskName(Task *task) const
 DeploymentTree ComposedNode::getDeploymentTree() const
 {
   DeploymentTree ret;
-  set< ElementaryNode * > tasks=getRecursiveConstituents();
-  for(set< ElementaryNode * >::iterator iter=tasks.begin();iter!=tasks.end();iter++)
+  list< ElementaryNode * > tasks=getRecursiveConstituents();
+  for(list< ElementaryNode * >::iterator iter=tasks.begin();iter!=tasks.end();iter++)
     ret.appendTask(*iter,(*iter)->getDynClonerIfExists(this));
   return ret;
 }
@@ -107,8 +108,8 @@ DeploymentTree ComposedNode::getDeploymentTree() const
 DeploymentTree ComposedNode::checkDeploymentTree(bool deep) const throw(Exception)
 {
   DeploymentTree ret;
-  set< ElementaryNode * > tasks=getRecursiveConstituents();
-  for(set< ElementaryNode * >::iterator iter=tasks.begin();iter!=tasks.end();iter++)
+  list< ElementaryNode * > tasks=getRecursiveConstituents();
+  for(list< ElementaryNode * >::iterator iter=tasks.begin();iter!=tasks.end();iter++)
     {
       switch(ret.appendTask(*iter,(*iter)->getDynClonerIfExists(this)))
         {
@@ -201,8 +202,8 @@ bool ComposedNode::edAddLink(OutPort *start, InPort *end) throw(Exception)
   if(start->isAlreadyLinkedWith(end))
     return false;
   ComposedNode* lwstCmnAnctr=getLowestCommonAncestor(start->getNode(),end->getNode());
-  set<ComposedNode *> allAscendanceOfNodeStart=start->getNode()->getAllAscendanceOf(lwstCmnAnctr);
-  set<ComposedNode *> allAscendanceOfNodeEnd=end->getNode()->getAllAscendanceOf(lwstCmnAnctr);
+  list<ComposedNode *> allAscendanceOfNodeStart=start->getNode()->getAllAscendanceOf(lwstCmnAnctr);
+  list<ComposedNode *> allAscendanceOfNodeEnd=end->getNode()->getAllAscendanceOf(lwstCmnAnctr);
   checkInMyDescendance(lwstCmnAnctr);
   lwstCmnAnctr->checkLinkPossibility(start,allAscendanceOfNodeStart,end,allAscendanceOfNodeEnd);
   ComposedNode *iterS;
@@ -334,8 +335,8 @@ void ComposedNode::edRemoveLink(OutPort *start, InPort *end) throw(Exception)
     throw Exception("ComposedNode::edRemoveLink : unexisting link");
   ComposedNode* lwstCmnAnctr=getLowestCommonAncestor(start->getNode(),end->getNode());
   checkInMyDescendance(lwstCmnAnctr);
-  set<ComposedNode *> allAscendanceOfNodeStart=start->getNode()->getAllAscendanceOf(lwstCmnAnctr);
-  set<ComposedNode *> allAscendanceOfNodeEnd=end->getNode()->getAllAscendanceOf(lwstCmnAnctr);
+  list<ComposedNode *> allAscendanceOfNodeStart=start->getNode()->getAllAscendanceOf(lwstCmnAnctr);
+  list<ComposedNode *> allAscendanceOfNodeEnd=end->getNode()->getAllAscendanceOf(lwstCmnAnctr);
 
   // --- Part of test if the link from 'start' to 'end' really exist particulary all eventually intermediate ports created
 
@@ -533,8 +534,8 @@ void ComposedNode::checkNoCrossHierachyWith(Node *node) const throw (Exception)
   ComposedNode *nodeC=dynamic_cast<ComposedNode *>(node);
   if(!nodeC)
     return ;
-  set<ComposedNode *> ascendants=getAllAscendanceOf();
-  if(ascendants.find(nodeC)!=ascendants.end())
+  list<ComposedNode *> ascendants=getAllAscendanceOf();
+  if(find(ascendants.begin(),ascendants.end(),nodeC)!=ascendants.end())
     {
       const char what[]="ComposedNode::checkNoCrossHierachyWith : ComposedNode with name \"";
       string stream(what); stream+=node->getName(); stream+="\" is already in hierarchy ascendance of node with name \"";
@@ -546,8 +547,8 @@ void ComposedNode::checkNoCrossHierachyWith(Node *node) const throw (Exception)
 //! perform \b recursively all CF computations.
 void ComposedNode::performCFComputations(LinkInfo& info) const
 {
-  set<Node *> nodes=edGetDirectDescendants();
-  for(set<Node *>::iterator iter=nodes.begin();iter!=nodes.end();iter++)
+  list<Node *> nodes=edGetDirectDescendants();
+  for(list<Node *>::iterator iter=nodes.begin();iter!=nodes.end();iter++)
     if(dynamic_cast<ComposedNode *>(*iter))
       ((ComposedNode *)(*iter))->performCFComputations(info);
 }
@@ -555,8 +556,8 @@ void ComposedNode::performCFComputations(LinkInfo& info) const
 //! destroy \b recursively all results of initial computations.
 void ComposedNode::destructCFComputations(LinkInfo& info) const
 {
-  set<Node *> nodes=edGetDirectDescendants();
-  for(set<Node *>::iterator iter=nodes.begin();iter!=nodes.end();iter++)
+  list<Node *> nodes=edGetDirectDescendants();
+  for(list<Node *>::iterator iter=nodes.begin();iter!=nodes.end();iter++)
     if(dynamic_cast<ComposedNode *>(*iter))
       ((ComposedNode *)(*iter))->destructCFComputations(info);
 }
@@ -783,20 +784,18 @@ void ComposedNode::edDisconnectAllLinksWithMe()
     }
 }
 
-ComposedNode *ComposedNode::getRootNode() throw(Exception)
+ComposedNode *ComposedNode::getRootNode() const throw(Exception)
 {
   if(!_father)
-    return this;
+    return (ComposedNode *)this;
   return Node::getRootNode();
 }
 
-bool ComposedNode::isNodeAlreadyAggregated(Node *node) const
+//! Check that Node 'node' is already a direct son of this.
+bool ComposedNode::isNodeAlreadyAggregated(const Node *node) const
 {
-  set<ComposedNode *> nodeAncestors = node->getAllAscendanceOf();
-  if ( nodeAncestors.find((ComposedNode*)this) == nodeAncestors.end() )
-    return false;
-  else
-    return true;
+  list<ComposedNode *> nodeAncestors = node->getAllAscendanceOf();
+  return find(nodeAncestors.begin(),nodeAncestors.end(),(ComposedNode *)this)!=nodeAncestors.end();
 }
 
 //! Returns the parent of a node that is the direct child of this node 
@@ -826,9 +825,9 @@ Node *ComposedNode::isInMyDescendance(Node *nodeToTest) const
     return 0;
 }
 
-string ComposedNode::getChildName(Node* node) const throw(Exception)
+string ComposedNode::getChildName(const Node* node) const throw(Exception)
 {
-  string nodeName = node->getQualifiedName();    
+  string nodeName=node->getQualifiedName();    
   if (!isNodeAlreadyAggregated(node))
     {
       if (node->getName() == "thisIsAFakeNode")
@@ -843,7 +842,7 @@ string ComposedNode::getChildName(Node* node) const throw(Exception)
         }
     }
   
-  Node *father = node->_father;
+  const Node *father = node->_father;
   while (father != this)
     {
       nodeName = father->getQualifiedName() + SEP_CHAR_BTW_LEVEL + nodeName;
@@ -940,60 +939,59 @@ ComposedNode *ComposedNode::getLowestCommonAncestor(Node *node1, Node *node2) th
   return *iter;
 }
 
-set<ElementaryNode *> ComposedNode::getRecursiveConstituents() const
+list<ElementaryNode *> ComposedNode::getRecursiveConstituents() const
 {
-  set<ElementaryNode *> ret;
-  set<Node *> setOfNode=edGetDirectDescendants();
-  for(set<Node *>::const_iterator iter=setOfNode.begin();iter!=setOfNode.end();iter++)
+  list<ElementaryNode *> ret;
+  list<Node *> setOfNode=edGetDirectDescendants();
+  for(list<Node *>::const_iterator iter=setOfNode.begin();iter!=setOfNode.end();iter++)
     {
-      set<ElementaryNode *> myCurrentSet=(*iter)->getRecursiveConstituents();
-      ret.insert(myCurrentSet.begin(),myCurrentSet.end());
+      list<ElementaryNode *> myCurrentSet=(*iter)->getRecursiveConstituents();
+      ret.insert(ret.end(),myCurrentSet.begin(),myCurrentSet.end());
     }
   return ret;
 }
 
-set<Node *> ComposedNode::getAllRecursiveConstituents()
+//! Idem getAllRecursiveNodes, but this node is NOT included.
+list<Node *> ComposedNode::getAllRecursiveConstituents()
 {
-  set<Node *> ret;
-  set<Node *> setOfNode=edGetDirectDescendants();
-  for(set<Node *>::const_iterator iter=setOfNode.begin();iter!=setOfNode.end();iter++)
+  list<Node *> ret;
+  list<Node *> setOfNode=edGetDirectDescendants();
+  for(list<Node *>::const_iterator iter=setOfNode.begin();iter!=setOfNode.end();iter++)
     {
       if ( dynamic_cast<ComposedNode*> (*iter) )
         {
-          set<Node *> myCurrentSet=((ComposedNode*)(*iter))->getAllRecursiveConstituents();
-          ret.insert(myCurrentSet.begin(),myCurrentSet.end());
-          ret.insert(*iter);
+          list<Node *> myCurrentSet=((ComposedNode*)(*iter))->getAllRecursiveConstituents();
+          ret.insert(ret.end(),myCurrentSet.begin(),myCurrentSet.end());
+          ret.push_back(*iter);
         }
       else
         {
-          set<ElementaryNode *> myCurrentSet=(*iter)->getRecursiveConstituents();
-          ret.insert(myCurrentSet.begin(),myCurrentSet.end());
+          list<ElementaryNode *> myCurrentSet=(*iter)->getRecursiveConstituents();
+          ret.insert(ret.end(),myCurrentSet.begin(),myCurrentSet.end());
         }
     }
   return ret;
 }
 
 //! Get all children nodes  elementary and composed including this node
-set<Node *> ComposedNode::getAllRecursiveNodes()
+list<Node *> ComposedNode::getAllRecursiveNodes()
 {
-  set<Node *> ret;
-  set<Node *> setOfNode=edGetDirectDescendants();
-  for(set<Node *>::iterator iter=setOfNode.begin();iter!=setOfNode.end();iter++)
+  list<Node *> ret;
+  list<Node *> setOfNode=edGetDirectDescendants();
+  for(list<Node *>::iterator iter=setOfNode.begin();iter!=setOfNode.end();iter++)
     {
       if ( dynamic_cast<ElementaryNode*> (*iter) )
         {
-          set<ElementaryNode *> myCurrentSet=(*iter)->getRecursiveConstituents();
-          ret.insert(myCurrentSet.begin(),myCurrentSet.end());
-          //ret.insert(*iter);
+          list<ElementaryNode *> myCurrentSet=(*iter)->getRecursiveConstituents();
+          ret.insert(ret.end(),myCurrentSet.begin(),myCurrentSet.end());
         }
       else
         {
-          set<Node *> myCurrentSet=((ComposedNode*)(*iter))->getAllRecursiveNodes();
-          ret.insert(myCurrentSet.begin(),myCurrentSet.end());
-          //ret.insert(*iter);
+          list<Node *> myCurrentSet=((ComposedNode*)(*iter))->getAllRecursiveNodes();
+          ret.insert(ret.end(),myCurrentSet.begin(),myCurrentSet.end());
         }
     }
-  ret.insert(this);
+  ret.push_back(this);
   return ret;
 }
 
@@ -1014,27 +1012,27 @@ string ComposedNode::getOutPortName(const OutPort *outPort) const throw (Excepti
 
 int ComposedNode::getNumberOfInputPorts() const
 {
-  set<Node *> constituents=edGetDirectDescendants();
+  list<Node *> constituents=edGetDirectDescendants();
   int ret=0;
-  for(set<Node *>::iterator iter=constituents.begin();iter!=constituents.end();iter++)
+  for(list<Node *>::iterator iter=constituents.begin();iter!=constituents.end();iter++)
     ret+=(*iter)->getNumberOfInputPorts();
   return ret;
 }
 
 int ComposedNode::getNumberOfOutputPorts() const
 {
-  set<Node *> constituents=edGetDirectDescendants();
+  list<Node *> constituents=edGetDirectDescendants();
   int ret=0;
-  for(set<Node *>::iterator iter=constituents.begin();iter!=constituents.end();iter++)
+  for(list<Node *>::iterator iter=constituents.begin();iter!=constituents.end();iter++)
     ret+=(*iter)->getNumberOfOutputPorts();
   return ret;
 }
 
 list<InputPort *> ComposedNode::getSetOfInputPort() const
 {
-  set<Node *> constituents=edGetDirectDescendants();
+  list<Node *> constituents=edGetDirectDescendants();
   list<InputPort *> ret;
-  for(set<Node *>::iterator iter=constituents.begin();iter!=constituents.end();iter++)
+  for(list<Node *>::iterator iter=constituents.begin();iter!=constituents.end();iter++)
     {
       list<InputPort *> currentsPorts=(*iter)->getSetOfInputPort();
       ret.insert(ret.end(),currentsPorts.begin(),currentsPorts.end());
@@ -1044,9 +1042,9 @@ list<InputPort *> ComposedNode::getSetOfInputPort() const
 
 list<OutputPort *> ComposedNode::getSetOfOutputPort() const
 {
-  set<Node *> constituents=edGetDirectDescendants();
+  list<Node *> constituents=edGetDirectDescendants();
   list<OutputPort *> ret;
-  for(set<Node *>::iterator iter=constituents.begin();iter!=constituents.end();iter++)
+  for(list<Node *>::iterator iter=constituents.begin();iter!=constituents.end();iter++)
     {
       list<OutputPort *> currentsPorts=(*iter)->getSetOfOutputPort();
       ret.insert(ret.end(),currentsPorts.begin(),currentsPorts.end());
@@ -1056,9 +1054,9 @@ list<OutputPort *> ComposedNode::getSetOfOutputPort() const
 
 list<InputDataStreamPort *> ComposedNode::getSetOfInputDataStreamPort() const
 {
-  set<Node *> constituents=edGetDirectDescendants();
+  list<Node *> constituents=edGetDirectDescendants();
   list<InputDataStreamPort *> ret;
-  for(set<Node *>::iterator iter=constituents.begin();iter!=constituents.end();iter++)
+  for(list<Node *>::iterator iter=constituents.begin();iter!=constituents.end();iter++)
     {
       list<InputDataStreamPort *> currentsPorts=(*iter)->getSetOfInputDataStreamPort();
       ret.insert(ret.end(),currentsPorts.begin(),currentsPorts.end());
@@ -1068,9 +1066,9 @@ list<InputDataStreamPort *> ComposedNode::getSetOfInputDataStreamPort() const
 
 list<OutputDataStreamPort *> ComposedNode::getSetOfOutputDataStreamPort() const
 {
-  set<Node *> constituents=edGetDirectDescendants();
+  list<Node *> constituents=edGetDirectDescendants();
   list<OutputDataStreamPort *> ret;
-  for(set<Node *>::iterator iter=constituents.begin();iter!=constituents.end();iter++)
+  for(list<Node *>::iterator iter=constituents.begin();iter!=constituents.end();iter++)
     {
       list<OutputDataStreamPort *> currentsPorts=(*iter)->getSetOfOutputDataStreamPort();
       ret.insert(ret.end(),currentsPorts.begin(),currentsPorts.end());
@@ -1241,14 +1239,14 @@ YACS::Event ComposedNode::updateStateOnFailedEventFrom(Node *node)
    return YACS::ABORT;
 }
 
-void ComposedNode::checkLinkPossibility(OutPort *start, const std::set<ComposedNode *>& pointsOfViewStart,
-                                        InPort *end, const std::set<ComposedNode *>& pointsOfViewEnd) throw(Exception)
+void ComposedNode::checkLinkPossibility(OutPort *start, const std::list<ComposedNode *>& pointsOfViewStart,
+                                        InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) throw(Exception)
 {
   if((dynamic_cast<DataFlowPort *>(start) or dynamic_cast<DataFlowPort *>(end))
      and (dynamic_cast<DataStreamPort *>(start) or dynamic_cast<DataStreamPort *>(end)))
     {//cross protocol required : deeper check needed
       bool isOK=false;
-      set<ComposedNode *>::iterator iter;
+      list<ComposedNode *>::const_iterator iter;
       for(iter=pointsOfViewStart.begin();iter!=pointsOfViewStart.end() and !isOK;iter++)
         isOK=(*iter)->isRepeatedUnpredictablySeveralTimes();
       for(iter=pointsOfViewEnd.begin();iter!=pointsOfViewEnd.end() and !isOK;iter++)
@@ -1258,27 +1256,27 @@ void ComposedNode::checkLinkPossibility(OutPort *start, const std::set<ComposedN
     }
 }
 
-void ComposedNode::buildDelegateOf(InPort * & port, OutPort *initialStart, const std::set<ComposedNode *>& pointsOfView)
+void ComposedNode::buildDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView)
 {
 }
 
-void ComposedNode::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::set<ComposedNode *>& pointsOfView)
+void ComposedNode::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView)
 {
 }
 
-void ComposedNode::getDelegateOf(InPort * & port, OutPort *initialStart, const std::set<ComposedNode *>& pointsOfView) throw(Exception)
+void ComposedNode::getDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView) throw(Exception)
 {
 }
 
-void ComposedNode::getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::set<ComposedNode *>& pointsOfView) throw(Exception)
+void ComposedNode::getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(Exception)
 {
 }
 
-void ComposedNode::releaseDelegateOf(InPort * & port, OutPort *initialStart, const std::set<ComposedNode *>& pointsOfView) throw(Exception)
+void ComposedNode::releaseDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView) throw(Exception)
 {
 }
 
-void ComposedNode::releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::set<ComposedNode *>& pointsOfView) throw(Exception)
+void ComposedNode::releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(Exception)
 {
 }
 
@@ -1288,8 +1286,8 @@ void ComposedNode::loaded()
 
 void ComposedNode::accept(Visitor *visitor)
 {
-  set<Node *> constituents=edGetDirectDescendants();
-  for(set<Node *>::iterator iter=constituents.begin(); iter!=constituents.end(); iter++)
+  list<Node *> constituents=edGetDirectDescendants();
+  for(list<Node *>::iterator iter=constituents.begin(); iter!=constituents.end(); iter++)
     {
       (*iter)->accept(visitor);
     }

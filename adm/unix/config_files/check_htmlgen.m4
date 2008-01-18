@@ -91,7 +91,7 @@ if test "x$old_graphviz" = "xyes" ; then
 else
   GRAPHVIZ_LIBADD="-lgvc"
 fi
-CPPFLAGS_old=$CPPFLAGS
+CPPFLAGS=$CPPFLAGS_old
 
 AC_PATH_PROG(LATEX,latex) 
 if test "x$LATEX" = "x" ; then

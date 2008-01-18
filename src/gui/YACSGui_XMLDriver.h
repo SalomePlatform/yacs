@@ -3,7 +3,7 @@
 
 #include <ComposedNode.hxx>
 #include <Proc.hxx>
-#include <VisitorSaveSchema.hxx>
+#include <VisitorSaveSalomeSchema.hxx>
 #include <parsers.hxx>
 
 #include <qpoint.h>
@@ -16,7 +16,7 @@ class YACSGui_Module;
  * Class that extends engine XML wirter capabilities by
  * adding information about node presentations to the output file.
  */
-class YACSGui_VisitorSaveSchema : public YACS::ENGINE::VisitorSaveSchema
+class YACSGui_VisitorSaveSchema : public YACS::ENGINE::VisitorSaveSalomeSchema
 {
 public:
   YACSGui_VisitorSaveSchema(YACSGui_Module* module, YACS::ENGINE::ComposedNode *root);

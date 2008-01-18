@@ -2,6 +2,7 @@
 #define __ENGINEINTEGRATIONTEST_HXX__
 
 #include <cppunit/extensions/HelperMacros.h>
+#include <list>
 
 namespace YACS
 {
@@ -90,10 +91,22 @@ namespace YACS
       void testForCheckConsistency4();
     protected:
       template<class T>
+      static void checkListsEqual(const std::list<T>& setToTest1, const std::list<T>& setToTest2);
+      template<class T>
       static void checkSetsEqual(const std::set<T>& setToTest1, const std::set<T>& setToTest2);
       template<class T>
       static void checkSetsNotEqual(const std::set<T *>& setToTest1, const std::set<T *>&setToTest2);
     };
+
+    template<class T>
+    void EngineIntegrationTest::checkListsEqual(const std::list<T>& setToTest1, const std::list<T>& setToTest2)
+    {
+      typename std::list<T>::iterator iter1=setToTest1.begin();
+      typename std::list<T>::iterator iter2=setToTest2.begin();
+      CPPUNIT_ASSERT_EQUAL_MESSAGE("Lists can't be equal : size different", (int)setToTest1.size(), (int)setToTest2.size());
+      for(;iter1!=setToTest1.end();iter1++,iter2++)
+        CPPUNIT_ASSERT_MESSAGE("Lists can't be equal : value different", *iter1==*iter2);
+    }
 
     template<class T>
     void EngineIntegrationTest::checkSetsEqual(const std::set<T>& setToTest1, const std::set<T>& setToTest2)

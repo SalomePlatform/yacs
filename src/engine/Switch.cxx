@@ -364,12 +364,12 @@ void Switch::selectRunnableTasks(std::vector<Task *>& tasks)
 {
 }
 
-set<Node *> Switch::edGetDirectDescendants() const
+list<Node *> Switch::edGetDirectDescendants() const
 {
-  set<Node *> ret;
+  list<Node *> ret;
   for(map< int , Node * >::const_iterator iter=_mapOfNode.begin();iter!=_mapOfNode.end();iter++)
     if((*iter).second)
-      ret.insert((*iter).second);
+      ret.push_back((*iter).second);
   return ret;
 }
 
@@ -557,13 +557,13 @@ void Switch::checkNoCyclePassingThrough(Node *node) throw(Exception)
   throw Exception("Switch::checkNoCyclePassingThrough : uncorrect control flow link relative to switch");
 }
 
-void Switch::checkLinkPossibility(OutPort *start, const std::set<ComposedNode *>& pointsOfViewStart,
-                                  InPort *end, const std::set<ComposedNode *>& pointsOfViewEnd) throw(Exception)
+void Switch::checkLinkPossibility(OutPort *start, const std::list<ComposedNode *>& pointsOfViewStart,
+                                  InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) throw(Exception)
 {
   throw Exception("Switch::checkLinkPossibility : A link between 2 different cases of a same Switch requested -> Impossible");
 }
 
-void Switch::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::set<ComposedNode *>& pointsOfView)
+void Switch::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView)
 {
   map<InPort *, CollectorSwOutPort * >::iterator result=_outPortsCollector.find(finalTarget);
   CollectorSwOutPort *newCollector;
@@ -580,7 +580,7 @@ void Switch::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *fina
   port.first=newCollector;
 }
 
-void Switch::getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::set<ComposedNode *>& pointsOfView) throw(Exception)
+void Switch::getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(Exception)
 {
   map<InPort *, CollectorSwOutPort * >::iterator iter=_outPortsCollector.find(finalTarget);
   if(iter==_outPortsCollector.end())
@@ -594,7 +594,7 @@ void Switch::getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalT
   port.first=(*iter).second;
 }
 
-void Switch::releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::set<ComposedNode *>& pointsOfView) throw(Exception)
+void Switch::releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(Exception)
 {
   set<OutPort *> repr;
   portDwn->getAllRepresented(repr);
@@ -640,7 +640,7 @@ string Switch::getRepresentationOfCase(int i)
  * \param node: the node which effective state is queried
  * \return the effective node state
  */
-YACS::StatesForNode Switch::getEffectiveState(Node* node)
+YACS::StatesForNode Switch::getEffectiveState(const Node* node) const
 {
   YACS::StatesForNode effectiveState=Node::getEffectiveState();
   if(effectiveState==YACS::INITED)
@@ -649,18 +649,18 @@ YACS::StatesForNode Switch::getEffectiveState(Node* node)
     return YACS::INITED;
   if(effectiveState==YACS::DISABLED)
     return YACS::DISABLED;
-  map< int , Node * >::iterator iter=_mapOfNode.find(_condition.getIntValue());
+  map< int , Node * >::const_iterator iter=_mapOfNode.find(_condition.getIntValue());
   if(iter!=_mapOfNode.end() && (*iter).second==node)
     return node->getState();
   else
     return YACS::INITED;
 }
-YACS::StatesForNode Switch::getEffectiveState()
+YACS::StatesForNode Switch::getEffectiveState() const
 {
   return Node::getEffectiveState();
 }
 
-void Switch::writeDot(std::ostream &os)
+void Switch::writeDot(std::ostream &os) const
 {
   os << "  subgraph cluster_" << getId() << "  {\n" ;
   for(map<int,Node*>::const_iterator iter=_mapOfNode.begin();iter!=_mapOfNode.end();iter++)

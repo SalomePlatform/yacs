@@ -56,7 +56,7 @@ Proc::~Proc()
     delete (*lt).second;
 }
 
-void Proc::writeDot(std::ostream &os)
+void Proc::writeDot(std::ostream &os) const
 {
   os << "digraph " << getQualifiedName() << " {\n" ;
   os << "node [ style=\"filled\" ];\n" ;
@@ -230,10 +230,10 @@ std::string Proc::getErrorDetails(int nodeNumId)
 
 std::list<int> Proc::getNumIds()
 {
-  set<YACS::ENGINE::Node *> nodes = getAllRecursiveConstituents();
+  list<YACS::ENGINE::Node *> nodes = getAllRecursiveConstituents();
   int len = nodes.size();
   list<int> numids;
-  for( set<YACS::ENGINE::Node *>::const_iterator iter = nodes.begin();
+  for( list<YACS::ENGINE::Node *>::const_iterator iter = nodes.begin();
        iter != nodes.end(); iter++)
     {
       numids.push_back((*iter)->getNumId());
@@ -244,10 +244,10 @@ std::list<int> Proc::getNumIds()
 
 std::list<std::string> Proc::getIds()
 {
-  set<YACS::ENGINE::Node *> nodes = getAllRecursiveConstituents();
+  list<YACS::ENGINE::Node *> nodes = getAllRecursiveConstituents();
   int len = nodes.size();
   list<string> ids;
-  for( set<YACS::ENGINE::Node *>::const_iterator iter = nodes.begin();
+  for( list<YACS::ENGINE::Node *>::const_iterator iter = nodes.begin();
        iter != nodes.end(); iter++)
     {
       ids.push_back(getChildName(*iter));

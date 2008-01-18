@@ -70,6 +70,7 @@ libYACSPrs_la_LIBADD = \
 libYACSPrs_la_CXXFLAGS = \
 	$(THREAD_DEF) \
 	$(PYTHON_CPPFLAGS) \
+	$(OMNIORB_INCLUDES) \
 	-I$(KERNEL_ROOT_DIR)/include/salome \
 	-I$(srcdir)/../bases \
 	-I$(srcdir)/../engine \

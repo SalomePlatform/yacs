@@ -1,13 +1,14 @@
 
 #include "OutNode.hxx"
 #include "PresetPorts.hxx"
+#include "Visitor.hxx"
 
 #include <iostream>
 #include <fstream>
 #include <list>
 #include <cassert>
 
-//#define _DEVDEBUG_
+#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
 using namespace std;
@@ -73,6 +74,7 @@ void OutNode::execute()
 
 void OutNode::accept(Visitor *visitor)
 {
+  visitor->visitOutNode(this);
 }
 
 void OutNode::setData(InputPort* port, std::string& data)

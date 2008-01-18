@@ -12,7 +12,7 @@
 #include "parsers.hxx"
 #include "Logger.hxx"
 #include "LinkInfo.hxx"
-#include "VisitorSaveSchema.hxx"
+#include "VisitorSaveSalomeSchema.hxx"
 
 #include "SALOME_NamingService.hxx"
 #include "SALOME_ModuleCatalog.hxx"
@@ -234,7 +234,7 @@ void myMainform::fileSaveAs()
       proc->checkConsistency(info);
       if (info.areWarningsOrErrors())
         DEBTRACE(info.getGlobalRepr());
-      YACS::ENGINE::VisitorSaveSchema vss(proc);
+      YACS::ENGINE::VisitorSaveSalomeSchema vss(proc);
       vss.openFileSchema(fn.latin1());
       proc->accept(&vss);
       vss.closeFileSchema();      

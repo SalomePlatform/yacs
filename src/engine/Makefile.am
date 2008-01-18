@@ -119,6 +119,7 @@ EXTRA_libYACSEngine_la_SOURCES =  \
 	$(__dummy__)
 
 libYACSEngine_la_LIBADD = ../bases/libYACSBases.la 
+libYACSEngine_la_LDFLAGS = -pthread -lpthread -ldl
 
 AM_CXXFLAGS = $(THREAD_DEF)  \
               -I$(srcdir)/../bases
@@ -155,6 +156,8 @@ _pilot_la_SOURCES =   \
 _pilot_la_CXXFLAGS = \
 	$(THREAD_DEF) \
 	$(PYTHON_CPPFLAGS) \
+	$(OMNIORB_INCLUDES) \
+  $(OMNIORB_CXXFLAGS) \
 	-I$(srcdir)/../bases
 
 _pilot_la_LDFLAGS  = -module
@@ -164,7 +167,7 @@ _pilot_la_LIBADD = libYACSEngine.la $(OMNIORB_LIBS)
 pypilotWRAP.cxx: pypilot.i pilot.i $(SWIGINCLUDES)
 	$(SWIG) $(SWIG_PYTHON_OPT) $(SWIG_PYTHON_INCLUDES) $(MYSWIG_FLAGS) -o $@ $<
 _pypilot_la_SOURCES =  pypilotWRAP.cxx
-_pypilot_la_CXXFLAGS =  $(THREAD_DEF) $(PYTHON_CPPFLAGS) -I$(srcdir)/../bases
+_pypilot_la_CXXFLAGS =  $(THREAD_DEF) $(PYTHON_CPPFLAGS) $(OMNIORB_INCLUDES) $(OMNIORB_CXXFLAGS) -I$(srcdir)/../bases
 _pypilot_la_LDFLAGS  = -module
 _pypilot_la_LIBADD = libYACSEngine.la $(OMNIORB_LIBS)
 

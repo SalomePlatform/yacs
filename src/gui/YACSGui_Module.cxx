@@ -2501,8 +2501,8 @@ void YACSGui_Module::onReloadExecution()
       if ( YACSGui_RunTreeView* aRunTV = dynamic_cast<YACSGui_RunTreeView*>(activeTreeView()) )
       {
 	aRunTV->onNotifyStatus(aProc->getState());
-	set<Node*> aNodeSet = aProc->getAllRecursiveConstituents();
-	for ( set<Node*>::iterator it = aNodeSet.begin(); it != aNodeSet.end(); it++ )
+	list<Node*> aNodeSet = aProc->getAllRecursiveConstituents();
+	for ( list<Node*>::iterator it = aNodeSet.begin(); it != aNodeSet.end(); it++ )
 	{
 	  aRunTV->onNotifyNodeStatus((*it)->getNumId(), (*it)->getState());
 	}
@@ -2622,8 +2622,8 @@ void YACSGui_Module::onReset()
       // notify schema view item in the tree view
       aRunTV->onNotifyStatus(aSchemaState);
   
-      set<Node*> aChildren = anExecutor->getProc()->getAllRecursiveConstituents();
-      set<Node*>::iterator it = aChildren.begin();
+      list<Node*> aChildren = anExecutor->getProc()->getAllRecursiveConstituents();
+      list<Node*>::iterator it = aChildren.begin();
       for ( ; it != aChildren.end(); it++ )
       {
 	(*it)->setState( aNodeState );
@@ -2646,8 +2646,8 @@ void YACSGui_Module::onReset()
 		// transmit event from the last clone node to original loop body node
 		if ( (*it) == (dynamic_cast<ForEachLoop*>( (*it)->getFather() ))->getNodes().back() )
                 {
-                  set<Node *> aFELChildren = dynamic_cast<ForEachLoop*>( (*it)->getFather() )->edGetDirectDescendants();
-                  for( set<Node *>::iterator iter = aFELChildren.begin(); iter != aFELChildren.end(); iter++ )
+                  list<Node *> aFELChildren = dynamic_cast<ForEachLoop*>( (*it)->getFather() )->edGetDirectDescendants();
+                  for( list<Node *>::iterator iter = aFELChildren.begin(); iter != aFELChildren.end(); iter++ )
                     if ( YACSPrs_ElementaryNode* aFELBodyNodePrs = aGraph->getItem(*iter) )
 		      aFELBodyNodePrs->updateForEachLoopBody(*it);
                 }

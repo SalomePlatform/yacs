@@ -202,13 +202,13 @@ std::list<OutPort *> Node::getSetOfOutPort() const
  * @return               ascendancy, direct father first in set.
  */
 
-std::set<ComposedNode *> Node::getAllAscendanceOf(ComposedNode *levelToStop) const
+std::list<ComposedNode *> Node::getAllAscendanceOf(ComposedNode *levelToStop) const
 {
-  set<ComposedNode *> ret;
+  list<ComposedNode *> ret;
   if(this==levelToStop)
     return ret;
   for(ComposedNode *iter=_father;iter!=levelToStop && iter!=0; iter=iter->_father)
-      ret.insert(iter);
+      ret.push_back(iter);
   return ret;
 }
 
@@ -235,7 +235,7 @@ bool Node::operator<(const Node& other) const
  *  Potential problem with Ports attached to composed Nodes...
  */
 
-string Node::getImplementation()
+string Node::getImplementation() const
 {
   return _implementation;
 }
@@ -285,14 +285,14 @@ void Node::edDisconnectAllLinksWithMe()
   _outGate.edDisconnectAllLinksFromMe();
 }
 
-ComposedNode *Node::getRootNode() throw(Exception)
+ComposedNode *Node::getRootNode() const throw(Exception)
 {
   if(!_father)
     throw Exception("No root node");
   ComposedNode *iter=_father;
   while(iter->_father)
     iter=iter->_father;
-  return iter;
+  return (ComposedNode *)iter;
 }
 
 /**
@@ -323,7 +323,7 @@ ComposedNode *Node::checkHavingCommonFather(Node *node1, Node *node2) throw(Exce
   throw Exception("check failed : nodes have not the same father");
 }
 
-const std::string Node::getId()
+const std::string Node::getId() const
 {
     std::string id=getRootNode()->getName();
     if(getRootNode() != this)
@@ -352,7 +352,7 @@ void Node::setProperty(const std::string& name, const std::string& value)
  * This method returns the effective state of the node taking
  * into account that of its father.
  */
-YACS::StatesForNode Node::getEffectiveState()
+YACS::StatesForNode Node::getEffectiveState() const
 {
   if(!_father)   //the root node
     return _state;
@@ -366,7 +366,7 @@ YACS::StatesForNode Node::getEffectiveState()
  * \param node: the node which effective state is queried
  * \return the effective node state
  */
-YACS::StatesForNode Node::getEffectiveState(Node* node)
+YACS::StatesForNode Node::getEffectiveState(const Node* node) const
 {
   if(node->getState()==YACS::DISABLED)
     return YACS::DISABLED;
@@ -392,7 +392,7 @@ YACS::StatesForNode Node::getEffectiveState(Node* node)
  * \param state : the node state
  * \return the associated color
  */
-std::string Node::getColorState(YACS::StatesForNode state)
+std::string Node::getColorState(YACS::StatesForNode state) const
 {
   switch(state)
     {
@@ -425,7 +425,7 @@ std::string Node::getColorState(YACS::StatesForNode state)
 /*!
  *  \param os : the input stream
  */
-void Node::writeDot(std::ostream &os)
+void Node::writeDot(std::ostream &os) const
 {
   os << getId() << "[fillcolor=\"" ;
   YACS::StatesForNode state=getEffectiveState();

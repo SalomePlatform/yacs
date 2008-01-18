@@ -222,12 +222,12 @@ void YACSGui_Graph::update()
   Proc* aProc = getProc();
   if (aProc)
   {
-    set<Node*> aNodeSet = aProc->getAllRecursiveConstituents();
+    list<Node*> aNodeSet = aProc->getAllRecursiveConstituents();
 
     createChildNodesPresentations( ( myCProc ? myCProc->getSubjectProc() : 0 ) );
 
     // Create links
-    for ( set<Node*>::iterator it = aNodeSet.begin(); it != aNodeSet.end(); it++ )
+    for ( list<Node*>::iterator it = aNodeSet.begin(); it != aNodeSet.end(); it++ )
     {
       YACSPrs_ElementaryNode* aNodePrs = getItem( *it );
       if ( aNodePrs )
@@ -463,8 +463,8 @@ void YACSGui_Graph::createChildNodesPresentations( YACS::HMI::SubjectComposedNod
 
   if ( ComposedNode* theNode = dynamic_cast<ComposedNode*>( theParent->getNode() ) )
   {
-    set<Node*> aNodeSet = theNode->edGetDirectDescendants();
-    for ( set<Node*>::iterator itN = aNodeSet.begin(); itN != aNodeSet.end(); itN++ )
+    list<Node*> aNodeSet = theNode->edGetDirectDescendants();
+    for ( list<Node*>::iterator itN = aNodeSet.begin(); itN != aNodeSet.end(); itN++ )
       update( *itN, theParent );
   }
 }
@@ -522,8 +522,8 @@ void YACSGui_Graph::rebuildLinks()
     // commented because LabelPort <----> MasterPoint
     //map<YACSPrs_Hook*, int> aHookPrs2PortId;
 
-    set<Node*> aNodeSet = aProc->getAllRecursiveConstituents();
-    for ( set<Node*>::iterator itN = aNodeSet.begin(); itN != aNodeSet.end(); itN++ )
+    list<Node*> aNodeSet = aProc->getAllRecursiveConstituents();
+    for ( list<Node*>::iterator itN = aNodeSet.begin(); itN != aNodeSet.end(); itN++ )
     {
       YACSPrs_ElementaryNode* aNodePrs = getItem( *itN );
       if ( aNodePrs )
@@ -671,9 +671,13 @@ int YACSGui_Graph::addPortToLine2dModel(YACSPrs_Port*           thePort,
   int PortId = -1;
 
   YACSPrs_InOutPort* anIOPort = dynamic_cast<YACSPrs_InOutPort*>( thePort );
-  if ( anIOPort && !theNode)
+  if ( anIOPort && !theNode) {
     // take from anIOPort its node presentation
-    theNode = getItem( anIOPort->getEngine()->getNode() );
+    Node* aNodeEngine = anIOPort->getEngine()->getNode();
+    if ( SplitterNode* aSplitter = dynamic_cast<SplitterNode*>(aNodeEngine) )
+      aNodeEngine = aSplitter->getFather(); // take ForEach loop node if we added SmplsCollection port
+    theNode = getItem( aNodeEngine );
+  }
   
   if ( theNode )
   {
@@ -793,8 +797,8 @@ void YACSGui_Graph::getAllBlocChildren(Bloc* theNode, std::set<Node*>& theSet)
 {
   if ( theNode )
   {
-    set<Node*> aChildren = theNode->getChildren();
-    for ( set<Node*>::iterator it = aChildren.begin(); it != aChildren.end(); it++ )
+    list<Node*> aChildren = theNode->getChildren();
+    for ( list<Node*>::iterator it = aChildren.begin(); it != aChildren.end(); it++ )
     {
       if ( dynamic_cast<Bloc*>( *it )
 	   ||
@@ -815,8 +819,8 @@ void YACSGui_Graph::getAllComposedNodeChildren(ComposedNode* theNode, std::set<N
 {
   if ( theNode )
   {
-    set<Node*> aDescendants = theNode->edGetDirectDescendants();
-    for ( set<Node*>::iterator it = aDescendants.begin(); it != aDescendants.end(); it++ )
+    list<Node*> aDescendants = theNode->edGetDirectDescendants();
+    for ( list<Node*>::iterator it = aDescendants.begin(); it != aDescendants.end(); it++ )
     {
       if ( dynamic_cast<Bloc*>( *it )
 	   ||
@@ -971,8 +975,8 @@ void YACSGui_Graph::deletePrs(YACS::HMI::SubjectNode* theSubject, bool removeLab
     if ( ComposedNode* aNodeToDelete = dynamic_cast<ComposedNode*>(theSubject->getNode()) )
     {
       // remove from canvas all canvas items corresponds to the constituents of the deleted composed node
-      set<Node*> aNodeSet = aNodeToDelete->getAllRecursiveConstituents();
-      for ( set<Node*>::iterator it = aNodeSet.begin(); it != aNodeSet.end(); it++ )
+      list<Node*> aNodeSet = aNodeToDelete->getAllRecursiveConstituents();
+      for ( list<Node*>::iterator it = aNodeSet.begin(); it != aNodeSet.end(); it++ )
       {
 	if ( YACSPrs_ElementaryNode* aChildPrs = getItem(*it) )
 	{

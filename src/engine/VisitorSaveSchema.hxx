@@ -55,6 +55,10 @@ namespace YACS
       virtual void visitServiceInlineNode(ServiceInlineNode *node);
       virtual void visitSwitch(Switch *node);
       virtual void visitWhileLoop(WhileLoop *node);
+      virtual void visitPresetNode(DataNode *node);
+      virtual void visitOutNode(DataNode *node);
+      virtual void visitStudyInNode(DataNode *node);
+      virtual void visitStudyOutNode(DataNode *node);
 
     protected:
       virtual void writeProperties(Node *node);

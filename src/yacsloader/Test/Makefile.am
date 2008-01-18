@@ -31,7 +31,7 @@ TestYacsLoader_LDADD = \
 	../../bases/libYACSBases.la
 
 TestYacsLoader_LDFLAGS = \
-	@CPPUNIT_LIBS@ -pthread -ldl -lxml2 -lexpat
+	@CPPUNIT_LIBS@ -pthread -ldl $(EXPAT_LIBS) $(LIBXML_LIBS)
 
 TestYacsLoader_CXXFLAGS = \
 	$(THREAD_DEF) \
@@ -44,7 +44,7 @@ TestYacsLoader_CXXFLAGS = \
 	-I$(srcdir)/../../bases/Test \
 	-I$(srcdir)/../../runtime \
 	-I$(srcdir)/../../engine \
-  -I/usr/include/libxml2
+	$(LIBXML_INCLUDES)
 
 IDL_FILES = echo.idl
 IDL_SOURCES = echoSK.cc

@@ -210,11 +210,13 @@ libYACSGui_la_LIBADD = \
 	../yacsorb/libYACSorb.la \
 	@GRAPHVIZ_LIBADD@ @QSCINTILLA_LIBADD@ \
 	@QT_MT_LIBADD@\
-	-lQxGraph -lCAM -lsuit -lLightApp -lexpat -lxml2
+	-lQxGraph -lCAM -lsuit -lLightApp $(EXPAT_LIBS) $(LIBXML_LIBS)
 
 libYACSGui_la_CXXFLAGS = \
 	$(THREAD_DEF) \
 	$(PYTHON_CPPFLAGS) \
+	$(OMNIORB_INCLUDES) \
+	$(LIBXML_INCLUDES) \
 	-I$(KERNEL_ROOT_DIR)/include/salome \
 	-I$(srcdir)/../bases \
 	-I$(srcdir)/../engine \

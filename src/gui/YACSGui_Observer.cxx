@@ -77,8 +77,8 @@ void YACSGui_Observer::notifyObserver(YACS::ENGINE::Node* object, const std::str
               if ( object == (dynamic_cast<YACS::ENGINE::ForEachLoop*>( object->getFather() ))->getNodes().back() )
                 {
 		  printf("==> status 3\n");
-                  std::set<Node *> aChildren = dynamic_cast<YACS::ENGINE::ForEachLoop*>( object->getFather() )->edGetDirectDescendants();
-                  for(std::set<Node *>::iterator iter=aChildren.begin();iter!=aChildren.end();iter++)
+                  std::list<Node *> aChildren = dynamic_cast<YACS::ENGINE::ForEachLoop*>( object->getFather() )->edGetDirectDescendants();
+                  for(std::list<Node *>::iterator iter=aChildren.begin();iter!=aChildren.end();iter++)
                     if ( myGraph->getItem(*iter) )
                       ProcessVoidEvent( new TVoidMemFun1ArgEvent<YACSPrs_ElementaryNode,YACS::ENGINE::Node*>( myGraph->getItem(*iter), 
                                                                                                               &YACSPrs_ElementaryNode::updateForEachLoopBody,

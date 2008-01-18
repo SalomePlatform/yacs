@@ -148,23 +148,23 @@ namespace YACS
       void edRemoveChild(Node *node) throw(Exception);
       bool isRepeatedUnpredictablySeveralTimes() const { return true; }
       void selectRunnableTasks(std::vector<Task *>& tasks);
-      std::set<Node *> edGetDirectDescendants() const;
+      std::list<Node *> edGetDirectDescendants() const;
       std::list<InputPort *> getSetOfInputPort() const;
       int getNumberOfInputPorts() const;
       Node *getChildByShortName(const std::string& name) const throw(Exception);
       static TypeCode* MappingDF2DS(TypeCode* type) throw(Exception);
       static TypeCode* MappingDS2DF(TypeCode* type) throw(Exception);
       virtual bool edAddDFLink(OutPort *start, InPort *end) throw(Exception);
-      void writeDot(std::ostream &os);
+      void writeDot(std::ostream &os) const;
       virtual void accept(Visitor *visitor);
       virtual std::string typeName() {return "YACS__ENGINE__Loop";}
     protected:
-      void buildDelegateOf(InPort * & port, OutPort *initialStart, const std::set<ComposedNode *>& pointsOfView);
-      void buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::set<ComposedNode *>& pointsOfView);
-      void getDelegateOf(InPort * & port, OutPort *initialStart, const std::set<ComposedNode *>& pointsOfView) throw(Exception);
-      void getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::set<ComposedNode *>& pointsOfView) throw(Exception);
-      void releaseDelegateOf(InPort * & port, OutPort *initialStart, const std::set<ComposedNode *>& pointsOfView) throw(Exception);
-      void releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::set<ComposedNode *>& pointsOfView) throw(Exception);
+      void buildDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView);
+      void buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView);
+      void getDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView) throw(Exception);
+      void getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(Exception);
+      void releaseDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView) throw(Exception);
+      void releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(Exception);
       void checkNoCyclePassingThrough(Node *node) throw(Exception);
       void checkControlDependancy(OutPort *start, InPort *end, bool cross,
                                   std::map < ComposedNode *,  std::list < OutPort * >, SortHierarc >& fw,
@@ -172,7 +172,7 @@ namespace YACS
                                   std::map< ComposedNode *, std::list < OutPort *>, SortHierarc >& bw,
                                   LinkInfo& info) const;
       void checkCFLinks(const std::list<OutPort *>& starts, InputPort *end, unsigned char& alreadyFed, bool direction, LinkInfo& info) const;
-      static bool isNecessaryToBuildSpecificDelegateDF2DS(const std::set<ComposedNode *>& pointsOfView);
+      static bool isNecessaryToBuildSpecificDelegateDF2DS(const std::list<ComposedNode *>& pointsOfView);
     };
 
   }

@@ -26,7 +26,7 @@ TestRuntime_LDADD = \
 
 
 TestRuntime_LDFLAGS = \
-	@CPPUNIT_LIBS@ -pthread -ldl -lxml2 
+	@CPPUNIT_LIBS@ -pthread -ldl $(LIBXML_LIBS)
 
 TestRuntime_CXXFLAGS = \
 	-DUSE_CPPUNIT \
@@ -40,7 +40,7 @@ TestRuntime_CXXFLAGS = \
 	-I$(srcdir)/../../bases/Test \
 	-I$(srcdir)/../../engine \
 	-I$(srcdir)/../../engine/Test \
-        -I/usr/include/libxml2 \
+	$(LIBXML_INCLUDES) \
 	-DLOCATION="\"@prefix@\"" -DYACS_PTHREAD
 
 xmlrun.sh:${srcdir}/xmlrun_orig.sh

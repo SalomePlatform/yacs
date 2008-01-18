@@ -92,9 +92,9 @@ YACS::Event WhileLoop::updateStateOnFinishedEventFrom(Node *node)
 }
 
 void WhileLoop::checkLinkPossibility(OutPort *start, 
-                                     const std::set<ComposedNode *>& pointsOfViewStart,
+                                     const std::list<ComposedNode *>& pointsOfViewStart,
                                      InPort *end, 
-                                     const std::set<ComposedNode *>& pointsOfViewEnd) throw(Exception)
+                                     const std::list<ComposedNode *>& pointsOfViewEnd) throw(Exception)
 {
   DEBTRACE("WhileLoop::checkLinkPossibility");
 }

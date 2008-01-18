@@ -289,12 +289,12 @@ void YACSPrs_LoopNode::updatePorts(bool theForce)
       if ( aFLoop || aWLoop )
       {
 	// get a set of internal loop nodes (in fact in ForLoop and WhileLoop we have only one internal node)
-	std::set<Node*> aNodes = aFLoop ? aFLoop->edGetDirectDescendants() : aWLoop->edGetDirectDescendants();
+	std::list<Node*> aNodes = aFLoop ? aFLoop->edGetDirectDescendants() : aWLoop->edGetDirectDescendants();
 	if ( aNodes.empty() )
 	  myPortHeight += PORT_HEIGHT;
 	else
 	{
-	  std::set<Node*>::iterator aNodesIter = aNodes.begin();
+	  std::list<Node*>::iterator aNodesIter = aNodes.begin();
 	  for (; aNodesIter != aNodes.end(); aNodesIter++)
 	  { // output label port
 	    YACSPrs_LabelPort* anOutPort = new YACSPrs_LabelPort(myMgr,canvas(),*aNodesIter,this);

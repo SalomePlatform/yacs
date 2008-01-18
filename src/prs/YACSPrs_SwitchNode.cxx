@@ -167,12 +167,12 @@ void YACSPrs_SwitchNode::updatePorts(bool theForce)
 	}
 	
 	// get a set of internal case nodes
-	std::set<Node*> aNodes = aSEngine->edGetDirectDescendants();
+	std::list<Node*> aNodes = aSEngine->edGetDirectDescendants();
 	if ( aNodes.empty() )
 	  myPortHeight += PORT_HEIGHT;
 	else
 	{
-	  std::set<Node*>::iterator aNodesIter = aNodes.begin();
+	  std::list<Node*>::iterator aNodesIter = aNodes.begin();
 	  
 	  // get default node
 	  Node* aDefaultNode = aSEngine->getChildByShortName(Switch::DEFAULT_NODE_NAME);

@@ -30,7 +30,7 @@
 
 #include <qdir.h>
 
-#include <iostream.h> //for debug only
+#include <iostream> //for debug only
 
 using namespace YACS::ENGINE;
 using namespace YACS;
@@ -433,8 +433,8 @@ void YACSGui_Executor::registerStatusObservers()
   _serv->SetRemoteProc(_procRef);
   _serv->setConversion();
   MESSAGE("---");
-  std::set<Node*> aNodeSet = _proc->getAllRecursiveConstituents();
-  for ( std::set<Node*>::iterator it = aNodeSet.begin(); it != aNodeSet.end(); it++ )
+  std::list<Node*> aNodeSet = _proc->getAllRecursiveConstituents();
+  for ( std::list<Node*>::iterator it = aNodeSet.begin(); it != aNodeSet.end(); it++ )
     {
       _procRef->addObserver(_observerRef, _serv->getEngineId((*it)->getNumId()) , "status");
     }

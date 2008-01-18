@@ -1,6 +1,7 @@
 
 #include "PresetNode.hxx"
 #include "PresetPorts.hxx"
+#include "Visitor.hxx"
 
 #include <iostream>
 #include <set>
@@ -47,6 +48,7 @@ void PresetNode::execute()
 
 void PresetNode::accept(Visitor *visitor)
 {
+  visitor->visitPresetNode(this);
 }
 
 void PresetNode::setData(OutputPort* port, std::string& data)

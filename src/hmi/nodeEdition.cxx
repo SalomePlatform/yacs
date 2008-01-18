@@ -298,6 +298,10 @@ void NodeEdition::update(GuiEvent event, int type, Subject* son)
         case YACS::HMI::CPPNODE:
         case YACS::HMI::SALOMEPYTHONNODE:
         case YACS::HMI::XMLNODE:
+        case YACS::HMI::PRESETNODE:
+        case YACS::HMI::OUTNODE:
+        case YACS::HMI::STUDYINNODE:
+        case YACS::HMI::STUDYOUTNODE:
         case YACS::HMI::SPLITTERNODE:
         case YACS::HMI::DFTODSFORLOOPNODE:
         case YACS::HMI::DSTODFFORLOOPNODE:

@@ -74,7 +74,7 @@ namespace YACS
       //! For the moment false is returned : impovement about it coming soon.
       bool isPlacementPredictableB4Run() const;
       void edRemoveChild(Node *node) throw(Exception);
-      std::set<Node *> edGetDirectDescendants() const;
+      std::list<Node *> edGetDirectDescendants() const;
       std::list<InputPort *> getSetOfInputPort() const;
       std::list<InputPort *> getLocalInputPorts() const;
       unsigned getNumberOfBranchesCreatedDyn() const throw(Exception);
@@ -84,8 +84,8 @@ namespace YACS
       bool isMultiplicitySpecified(unsigned& value) const;
       void forceMultiplicity(unsigned value);
     protected:
-      void buildDelegateOf(InPort * & port, OutPort *initialStart, const std::set<ComposedNode *>& pointsOfView);
-      void buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::set<ComposedNode *>& pointsOfView);
+      void buildDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView);
+      void buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView);
       void checkCFLinks(const std::list<OutPort *>& starts, InputPort *end, unsigned char& alreadyFed, bool direction, LinkInfo& info) const;
       void checkControlDependancy(OutPort *start, InPort *end, bool cross,
                                   std::map < ComposedNode *,  std::list < OutPort * >, SortHierarc >& fw,

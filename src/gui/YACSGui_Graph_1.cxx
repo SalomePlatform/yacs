@@ -229,8 +229,8 @@ void YACSGui_Graph::arrangeCanvasNodes(YACS::ENGINE::ComposedNode* theBloc, Agra
       
   // --- subgraphs
   
-  set<Node*> children = theBloc->edGetDirectDescendants();
-  for ( set<Node*>::iterator it = children.begin(); it != children.end(); it++ )
+  list<Node*> children = theBloc->edGetDirectDescendants();
+  for ( list<Node*>::iterator it = children.begin(); it != children.end(); it++ )
     {
       if (ComposedNode* childBloc = dynamic_cast<ComposedNode*>(*it))
         {
@@ -289,8 +289,8 @@ int YACSGui_Graph::arrangeNodes( YACS::ENGINE::ComposedNode* theBloc, Agraph_t* 
 
   // --- collect all Bloc children nodes of the given theBloc
 
-  set<Node*> children = theBloc->edGetDirectDescendants();
-  for ( set<Node*>::iterator it = children.begin(); it != children.end(); it++ )
+  list<Node*> children = theBloc->edGetDirectDescendants();
+  for ( list<Node*>::iterator it = children.begin(); it != children.end(); it++ )
     {
       // iterates on a Bloc children to find a Bloc with the maximum nested level
       if ( ComposedNode* childBloc = dynamic_cast<ComposedNode*>( *it ) )
@@ -387,8 +387,8 @@ void YACSGui_Graph::createGraphvizNodes( ComposedNode* theBloc, Agraph_t* aSubGr
       agxset( dummyNode, agfindattr(_mainGraph->proto->n,"fixedsize")->index, "true" );
     }
   
-  set<Node*> children = theBloc->edGetDirectDescendants();
-  for ( set<Node*>::iterator it = children.begin(); it != children.end(); it++ )
+  list<Node*> children = theBloc->edGetDirectDescendants();
+  for ( list<Node*>::iterator it = children.begin(); it != children.end(); it++ )
     {
       if ( !getItem(*it) ) continue;
 
@@ -859,8 +859,8 @@ void YACSGui_Graph::createGraphvizNodes( Bloc* theBloc, ComposedNode* theFather,
   // NOTE: it is a test code for graphs without block nodes (clusters) only. TO BE IMPROVED.
   if ( theFather )
   {
-    set<Node*> aNodeSet = theFather->edGetDirectDescendants(); //getChildren(); //getAllRecursiveConstituents();
-    for ( set<Node*>::iterator it = aNodeSet.begin(); it != aNodeSet.end(); it++ )
+    list<Node*> aNodeSet = theFather->edGetDirectDescendants(); //getChildren(); //getAllRecursiveConstituents();
+    for ( list<Node*>::iterator it = aNodeSet.begin(); it != aNodeSet.end(); it++ )
     {
       if ( !getItem( *it ) ) continue;
 

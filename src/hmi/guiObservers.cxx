@@ -14,7 +14,10 @@
 #include "CppNode.hxx"
 #include "XMLNode.hxx"
 #include "SalomePythonNode.hxx"
-#include "XMLNode.hxx"
+#include "DataNode.hxx"
+#include "PresetNode.hxx"
+#include "OutNode.hxx"
+#include "StudyNodes.hxx"
 #include "ForLoop.hxx"
 #include "ForEachLoop.hxx"
 #include "WhileLoop.hxx"
@@ -654,6 +657,18 @@ SubjectNode *SubjectComposedNode::addSubjectNode(YACS::ENGINE::Node * node,
     case SPLITTERNODE:
       son = new SubjectSplitterNode(dynamic_cast<YACS::ENGINE::SplitterNode*>(node), this);
       break;
+    case PRESETNODE:
+      son = new SubjectPresetNode(dynamic_cast<YACS::ENGINE::PresetNode*>(node), this);
+      break;
+    case OUTNODE:
+      son = new SubjectOutNode(dynamic_cast<YACS::ENGINE::OutNode*>(node), this);
+      break;
+    case STUDYINNODE:
+      son = new SubjectStudyInNode(dynamic_cast<YACS::ENGINE::StudyInNode*>(node), this);
+      break;
+    case STUDYOUTNODE:
+      son = new SubjectStudyOutNode(dynamic_cast<YACS::ENGINE::StudyOutNode*>(node), this);
+      break;
     case FORLOOP:
       son = new SubjectForLoop(dynamic_cast<YACS::ENGINE::ForLoop*>(node), this);
       break;
@@ -692,10 +707,14 @@ void SubjectComposedNode::completeChildrenSubjectList(SubjectNode *son)
 
 void SubjectComposedNode::loadChildren()
 {
-  set<Node *> setOfNode= _composedNode->edGetDirectDescendants();
+  list<Node *> setOfNode= _composedNode->edGetDirectDescendants();
   if (ForEachLoop *feloop = dynamic_cast<ForEachLoop*>(_composedNode))
-    setOfNode.insert(feloop->getChildByName(ForEachLoop::NAME_OF_SPLITTERNODE));
-  for(set<Node *>::iterator iter=setOfNode.begin();iter!=setOfNode.end();iter++)
+    {
+      Node *node2Insert=feloop->getChildByName(ForEachLoop::NAME_OF_SPLITTERNODE);
+      if(find(setOfNode.begin(),setOfNode.end(),node2Insert)==setOfNode.end())
+        setOfNode.push_back(node2Insert);
+    }
+  for(list<Node *>::iterator iter=setOfNode.begin();iter!=setOfNode.end();iter++)
     {
       try
         {
@@ -780,8 +799,8 @@ void SubjectComposedNode::removeControlLink(SubjectControlLink* link)
  */
 void SubjectComposedNode::loadLinks()
 {
-  set<Node *> setOfNode= _composedNode->edGetDirectDescendants();
-  for(set<Node *>::iterator iter=setOfNode.begin();iter!=setOfNode.end();iter++)
+  list<Node *> setOfNode= _composedNode->edGetDirectDescendants();
+  for(list<Node *>::iterator iter=setOfNode.begin();iter!=setOfNode.end();iter++)
     {
       ComposedNode *cnSon = dynamic_cast<ComposedNode*>(*iter);
       if (cnSon)
@@ -811,8 +830,8 @@ void SubjectComposedNode::loadLinks()
         addSubjectLink(sno,spo,sni,spi);
       }
 
-  std::set<Node*> setOfNodes = _composedNode->edGetDirectDescendants();
-  std::set<Node*>::const_iterator itn;
+  std::list<Node*> setOfNodes = _composedNode->edGetDirectDescendants();
+  std::list<Node*>::const_iterator itn;
   for(itn = setOfNodes.begin(); itn != setOfNodes.end(); ++itn)
     {
       SubjectNode* sno = GuiContext::getCurrent()->_mapOfSubjectNode[*itn];
@@ -1337,6 +1356,7 @@ void SubjectInlineNode::localClean()
 SubjectServiceNode::SubjectServiceNode(YACS::ENGINE::ServiceNode *serviceNode, Subject *parent)
   : SubjectElementaryNode(serviceNode, parent), _serviceNode(serviceNode)
 {
+  _subjectReference=0;
 }
 
 SubjectServiceNode::~SubjectServiceNode()
@@ -1353,13 +1373,12 @@ void SubjectServiceNode::clean()
 void SubjectServiceNode::localClean()
 {
   DEBTRACE("SubjectServiceNode::localClean ");
-  list<SubjectReference*>::iterator its;
-  list<SubjectReference*> cpll = _listSubjectReference;
-  for (its = cpll.begin(); its != cpll.end(); ++its)
-  {
-    update( REMOVE, REFERENCE, *its );
-    erase(*its);
-  }
+  if (_subjectReference)
+    {
+      update( REMOVE, REFERENCE, _subjectReference );
+      erase( _subjectReference );
+      _subjectReference = 0;
+    }
 }
 
 
@@ -1451,23 +1470,13 @@ void SubjectServiceNode::addSubjectReference(Subject *ref)
 {
   DEBTRACE("Subject::addSubjectReference " << getName() << " " << ref->getName());
   SubjectReference *son = new SubjectReference(ref, this);
-  _listSubjectReference.push_back(son);
+  _subjectReference = son;
   update(ADDREF, 0, son);
 }
 
-SubjectReference* SubjectServiceNode::getSubjectReference(Subject *ref)
+SubjectReference* SubjectServiceNode::getSubjectReference()
 {
-  SubjectReference* aSubjRef = 0;
-
-  std::list<SubjectReference*>::iterator it = _listSubjectReference.begin();
-  for ( ; it != _listSubjectReference.end(); it++ )
-    if ( (*it)->getReference() == ref )
-    {
-      aSubjRef = *it;
-      break;
-    }
-
-  return aSubjRef;
+  return _subjectReference;
 }
 
 // ----------------------------------------------------------------------------
@@ -1681,6 +1690,126 @@ void SubjectSplitterNode::localClean()
 std::string SubjectSplitterNode::getName()
 {
   return "splitter";
+}
+
+// ----------------------------------------------------------------------------
+
+SubjectDataNode::SubjectDataNode(YACS::ENGINE::DataNode *dataNode, Subject *parent)
+  : SubjectElementaryNode(dataNode, parent), _dataNode(dataNode)
+{
+  _destructible = true;
+}
+
+SubjectDataNode::~SubjectDataNode()
+{
+  DEBTRACE("SubjectDataNode::~SubjectDataNode " << getName());
+}
+
+void SubjectDataNode::clean()
+{
+  localClean();
+  SubjectElementaryNode::clean();
+}
+
+void SubjectDataNode::localClean()
+{
+  DEBTRACE("SubjectDataNode::localClean ");
+}
+
+// ----------------------------------------------------------------------------
+
+SubjectPresetNode::SubjectPresetNode(YACS::ENGINE::PresetNode *presetNode, Subject *parent)
+  : SubjectDataNode(presetNode, parent), _presetNode(presetNode)
+{
+  _destructible = true;
+}
+
+SubjectPresetNode::~SubjectPresetNode()
+{
+  DEBTRACE("SubjectPresetNode::~SubjectPresetNode " << getName());
+}
+
+void SubjectPresetNode::clean()
+{
+  localClean();
+  SubjectDataNode::clean();
+}
+
+void SubjectPresetNode::localClean()
+{
+  DEBTRACE("SubjectPresetNode::localClean ");
+}
+
+// ----------------------------------------------------------------------------
+
+SubjectOutNode::SubjectOutNode(YACS::ENGINE::OutNode *outNode, Subject *parent)
+  : SubjectDataNode(outNode, parent), _outNode(outNode)
+{
+  _destructible = true;
+}
+
+SubjectOutNode::~SubjectOutNode()
+{
+  DEBTRACE("SubjectOutNode::~SubjectOutNode " << getName());
+}
+
+void SubjectOutNode::clean()
+{
+  localClean();
+  SubjectDataNode::clean();
+}
+
+void SubjectOutNode::localClean()
+{
+  DEBTRACE("SubjectOutNode::localClean ");
+}
+
+// ----------------------------------------------------------------------------
+
+SubjectStudyInNode::SubjectStudyInNode(YACS::ENGINE::StudyInNode *studyInNode, Subject *parent)
+  : SubjectDataNode(studyInNode, parent), _studyInNode(studyInNode)
+{
+  _destructible = true;
+}
+
+SubjectStudyInNode::~SubjectStudyInNode()
+{
+  DEBTRACE("SubjectStudyInNode::~SubjectStudyInNode " << getName());
+}
+
+void SubjectStudyInNode::clean()
+{
+  localClean();
+  SubjectDataNode::clean();
+}
+
+void SubjectStudyInNode::localClean()
+{
+  DEBTRACE("SubjectStudyInNode::localClean ");
+}
+
+// ----------------------------------------------------------------------------
+
+SubjectStudyOutNode::SubjectStudyOutNode(YACS::ENGINE::StudyOutNode *studyOutNode, Subject *parent)
+  : SubjectDataNode(studyOutNode, parent), _studyOutNode(studyOutNode)
+{
+  _destructible = true;
+}
+
+SubjectStudyOutNode::~SubjectStudyOutNode()
+{
+  DEBTRACE("SubjectStudyOutNode::~SubjectStudyOutNode " << getName());
+}
+
+void SubjectStudyOutNode::clean()
+{
+  localClean();
+  SubjectDataNode::clean();
+}
+
+void SubjectStudyOutNode::localClean()
+{
+  DEBTRACE("SubjectStudyOutNode::localClean ");
 }
 
 // ----------------------------------------------------------------------------

@@ -39,7 +39,7 @@ namespace YACS
       YACS::StatesForNode getState() const;
       void getReadyTasks(std::vector<Task *>& tasks);
       void edRemovePort(Port *port) throw(Exception);
-      std::set<ElementaryNode *> getRecursiveConstituents() const;
+      std::list<ElementaryNode *> getRecursiveConstituents() const;
       Node *getChildByName(const std::string& name) const throw(Exception);
       void checkBasicConsistency() const throw(Exception);
       ComposedNode *getDynClonerIfExists(const ComposedNode *levelToStop) const;

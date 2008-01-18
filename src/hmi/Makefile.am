@@ -86,11 +86,12 @@ libHMI_la_LIBADD = \
 	../yacsloader/libYACSloader.la \
 	../yacsorb/libYACSorb.la \
 	@QT_MT_LIBADD@ \
-	-lexpat -lxml2
+	$(EXPAT_LIBS) $(LIBXML_LIBS)
 
 libHMI_la_CXXFLAGS = \
 	$(THREAD_DEF) \
 	$(PYTHON_CPPFLAGS) \
+	$(OMNIORB_INCLUDES) \
 	-I$(KERNEL_ROOT_DIR)/include/salome \
 	-I$(srcdir)/../bases \
 	-I$(srcdir)/../engine \

@@ -113,7 +113,7 @@
                         <cstring>showAdvanced</cstring>
                      </property>
                      <property name="text">
-                        <string>Show Anvanced parameters</string>
+                        <string>Show Advanced parameters</string>
                      </property>
                 </widget>
                 <widget class="QGroupBox">

@@ -39,7 +39,7 @@ void prslinktype_parser::onStart(const XML_Char* el, const XML_Char** attr)
 
 YACSGui_VisitorSaveSchema::YACSGui_VisitorSaveSchema(YACSGui_Module* module,
 						     ComposedNode *root)
-  : VisitorSaveSchema(root), myModule(module)
+  : VisitorSaveSalomeSchema(root), myModule(module)
 {
 }
 

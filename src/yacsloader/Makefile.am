@@ -18,16 +18,17 @@ EXTRA_libYACSloader_la_SOURCES =  \
 	$(__dummy__)
 
 libYACSloader_la_LIBADD = ../engine/libYACSEngine.la
+libYACSloader_la_LDFLAGS = $(EXPAT_LIBS)
 
 AM_CXXFLAGS = \
 							$(THREAD_DEF) \
               $(PYTHON_CPPFLAGS) \
               $(OMNIORB_INCLUDES) \
               $(OMNIORB_CXXFLAGS) \
+							$(EXPAT_INCLUDES) \
               -I$(srcdir) \
               -I$(srcdir)/../bases \
-              -I$(srcdir)/../engine \
-              -I$(srcdir)/../runtime
+              -I$(srcdir)/../engine
 
 if SALOME_KERNEL
 SALOME_LIBS=-L$(KERNEL_ROOT_DIR)/lib/salome -lSalomeLifeCycleCORBA
@@ -52,7 +53,7 @@ driver_LDADD = libYACSloader.la \
                $(PYTHON_LDFLAGS) \
                $(PYTHON_EXTRA_LIBS) 
 
-driver_LDFLAGS = $(PYTHON_EXTRA_LDFLAGS) -lexpat -pthread -lxml2
+driver_LDFLAGS = $(PYTHON_EXTRA_LDFLAGS) -pthread $(EXPAT_LIBS) $(LIBXML_LIBS)
 
 
 resume_SOURCES = resume.cxx
@@ -73,7 +74,7 @@ resume_LDADD = libYACSloader.la \
                $(PYTHON_LDFLAGS) \
                $(PYTHON_EXTRA_LIBS) 
 
-resume_LDFLAGS = $(PYTHON_EXTRA_LDFLAGS) -lexpat -pthread -lxml2
+resume_LDFLAGS = $(PYTHON_EXTRA_LDFLAGS) -pthread $(EXPAT_LIBS) $(LIBXML_LIBS)
 
 
 debugger_SOURCES = debugger.cxx 
@@ -94,7 +95,7 @@ debugger_LDADD = libYACSloader.la \
                $(PYTHON_LDFLAGS) \
                $(PYTHON_EXTRA_LIBS) 
 
-debugger_LDFLAGS = $(PYTHON_EXTRA_LDFLAGS) -lexpat -pthread -lxml2
+debugger_LDFLAGS = $(PYTHON_EXTRA_LDFLAGS) -pthread $(EXPAT_LIBS) $(LIBXML_LIBS)
 
 
 SWIG_PYTHON_INCLUDES = -noexcept -I$(srcdir)/../bases -I$(srcdir)/../engine

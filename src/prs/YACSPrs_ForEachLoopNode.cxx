@@ -159,8 +159,8 @@ void YACSPrs_ForEachLoopNode::updatePorts(bool theForce)
         
 	// get a set of internal loop nodes (in fact ForEachLoop has 2 internal nodes: _node and _initNode,
 	// but only _node was initialized in engine, in all examples _initNode is null)
-	std::set<Node*> aNodes = aFELoop->edGetDirectDescendants();
-	std::set<Node*>::iterator aNodesIter = aNodes.begin();
+	std::list<Node*> aNodes = aFELoop->edGetDirectDescendants();
+	std::list<Node*>::iterator aNodesIter = aNodes.begin();
 	for (; aNodesIter != aNodes.end(); aNodesIter++)
 	{ // output label port
 	  YACSPrs_LabelPort* anOutPort = new YACSPrs_LabelPort(myMgr,canvas(),*aNodesIter,this);

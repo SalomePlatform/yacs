@@ -11,6 +11,7 @@
 #include "InlineNode.hxx"
 #include "ServiceNode.hxx"
 #include "ServiceInlineNode.hxx"
+#include "DataNode.hxx"
 
 #include "VisitorSaveState.hxx"
 
@@ -239,6 +240,26 @@ void VisitorSaveState::visitServiceNode(ServiceNode *node)
 
 
 void VisitorSaveState::visitServiceInlineNode(ServiceInlineNode *node)
+{
+  visitElementaryNode(node);
+}
+
+void VisitorSaveState::visitPresetNode(DataNode *node)
+{
+  visitElementaryNode(node);
+}
+
+void VisitorSaveState::visitOutNode(DataNode *node)
+{
+  visitElementaryNode(node);
+}
+
+void VisitorSaveState::visitStudyInNode(DataNode *node)
+{
+  visitElementaryNode(node);
+}
+
+void VisitorSaveState::visitStudyOutNode(DataNode *node)
 {
   visitElementaryNode(node);
 }

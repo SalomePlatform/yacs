@@ -1,6 +1,7 @@
 #include "RuntimeSALOME.hxx"
 #include "StudyNodes.hxx"
 #include "StudyPorts.hxx"
+#include "Visitor.hxx"
 
 #include "SALOME_NamingService.hxx"
 #include "SALOMEDS.hh"
@@ -127,6 +128,7 @@ void StudyInNode::checkBasicConsistency() const throw(Exception)
 
 void StudyInNode::accept(Visitor *visitor)
 {
+  visitor->visitStudyInNode(this);
 }
 
 const char StudyOutNode::IMPL_NAME[]="XML";
@@ -322,6 +324,7 @@ void StudyOutNode::checkBasicConsistency() const throw(Exception)
 
 void StudyOutNode::accept(Visitor *visitor)
 {
+  visitor->visitStudyOutNode(this);
 }
 
 } //end namespace ENGINE

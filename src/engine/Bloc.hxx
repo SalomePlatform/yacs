@@ -17,7 +17,7 @@ namespace YACS
     class Bloc : public StaticDefinedComposedNode
     {
     protected:
-      std::set<Node *> _setOfNode;//OWNERSHIP OF ALL NODES
+      std::list<Node *> _setOfNode;//OWNERSHIP OF ALL NODES
       //! For internal calculations
       mutable std::map<Node *,std::set<Node *> > *_fwLinks;
       //! For internal calculations
@@ -36,11 +36,11 @@ namespace YACS
       //Node* DISOWNnode is a SWIG notation to indicate that the ownership of the node is transfered to C++
       bool edAddChild(Node *DISOWNnode) throw(Exception);
       void edRemoveChild(Node *node) throw(Exception);
-      std::set<Node *> getChildren() { return _setOfNode; }
-      std::set<Node *> edGetDirectDescendants() const;
+      std::list<Node *> getChildren() const { return _setOfNode; }
+      std::list<Node *> edGetDirectDescendants() const { return _setOfNode; }
       Node *getChildByShortName(const std::string& name) const throw(Exception);
       void selectRunnableTasks(std::vector<Task *>& tasks);
-      virtual void writeDot(std::ostream &os);
+      virtual void writeDot(std::ostream &os) const;
       void accept(Visitor *visitor);
       template<bool direction>
       void findAllPathsStartingFrom(Node *start, std::list< std::vector<Node *> >& vec, std::map<Node *, std::set<Node *> >& accelStr) const;

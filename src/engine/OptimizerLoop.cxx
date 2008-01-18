@@ -383,14 +383,14 @@ void OptimizerLoop::checkNoCyclePassingThrough(Node *node) throw(Exception)
 {
 }
 
-void OptimizerLoop::buildDelegateOf(InPort * & port, OutPort *initialStart, const std::set<ComposedNode *>& pointsOfView)
+void OptimizerLoop::buildDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView)
 {
   DynParaLoop::buildDelegateOf(port,initialStart,pointsOfView);
   if(port==&_retPortForOutPool)
     throw Exception("OptimizerLoop::buildDelegateOf : uncorrect OptimizerLoop link : out pool port must be linked within the scope of OptimizerLoop node it belongs to.");
 }
 
-void OptimizerLoop::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::set<ComposedNode *>& pointsOfView)
+void OptimizerLoop::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView)
 {
   DynParaLoop::buildDelegateOf(port,finalTarget,pointsOfView);
   string typeOfPortInstance=(port.first)->getNameOfTypeOfCurrentInstance();

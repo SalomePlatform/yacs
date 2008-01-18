@@ -771,7 +771,7 @@ void EngineTest::checkAddNodesToBloc()
   bloc1->edAddChild(_nodeMap["Node_1"]);
   bloc1->edAddChild(_nodeMap["Node_2"]);
   {
-    set<ElementaryNode *> setelem = bloc1->getRecursiveConstituents();
+    list<ElementaryNode *> setelem = bloc1->getRecursiveConstituents();
     CPPUNIT_ASSERT(setelem.size() == 2);
   }
 }
@@ -811,9 +811,9 @@ void EngineTest::checkRecursiveBlocs_NumberOfNodes()
   bloc3->edAddChild((bloc2));  // 1 elementary node
   bloc3->edAddChild(_nodeMap["Node_4"]);   // 1 elementary node
   {
-    set<ElementaryNode *> setelem = bloc3->getRecursiveConstituents();
+    list<ElementaryNode *> setelem = bloc3->getRecursiveConstituents();
     CPPUNIT_ASSERT(setelem.size() == 4);
-    for (set<ElementaryNode*>::iterator it=setelem.begin(); it!=setelem.end(); it++)
+    for (list<ElementaryNode*>::iterator it=setelem.begin(); it!=setelem.end(); it++)
       {
         DEBTRACE("     elem name = " << (*it)->getName());
       }
@@ -871,10 +871,10 @@ void EngineTest::checkRemoveNode()
   bloc->edAddChild(_nodeMap["Node_7"]);
 
   {
-    set<ElementaryNode *> setelem = _nodeMap["blocR"]->getRecursiveConstituents();
+    list<ElementaryNode *> setelem = _nodeMap["blocR"]->getRecursiveConstituents();
     CPPUNIT_ASSERT(setelem.size() == 3);
 
-    for (set<ElementaryNode*>::iterator it=setelem.begin(); it!=setelem.end(); it++)
+    for (list<ElementaryNode*>::iterator it=setelem.begin(); it!=setelem.end(); it++)
       {
         DEBTRACE("     elem name = " << (*it)->getName());
       }
@@ -883,9 +883,9 @@ void EngineTest::checkRemoveNode()
   ((Bloc *)_nodeMap["blocR"])->edRemoveChild(_nodeMap["Node_6"]);
 
   {
-    set<ElementaryNode *> setelem = _nodeMap["blocR"]->getRecursiveConstituents();
+    list<ElementaryNode *> setelem = _nodeMap["blocR"]->getRecursiveConstituents();
     CPPUNIT_ASSERT(setelem.size() == 2);
-    for (set<ElementaryNode*>::iterator it=setelem.begin(); it!=setelem.end(); it++)
+    for (list<ElementaryNode*>::iterator it=setelem.begin(); it!=setelem.end(); it++)
       {
         DEBTRACE("     elem name         = " << (*it)->getName());
         DEBTRACE("     elem name in Bloc = " << ((Bloc *)_nodeMap["blocR"])->getChildName(*it));
@@ -910,7 +910,7 @@ void EngineTest::checkRemoveNode()
   ((Bloc *)_nodeMap["blocR"])->edRemoveChild(_nodeMap["Node_5"]);
   ((Bloc *)_nodeMap["blocR"])->edRemoveChild(_nodeMap["Node_7"]);
   {
-    set<ElementaryNode *> setelem = _nodeMap["blocR"]->getRecursiveConstituents();
+    list<ElementaryNode *> setelem = _nodeMap["blocR"]->getRecursiveConstituents();
     CPPUNIT_ASSERT(setelem.size() == 0);
   }
 }
@@ -958,9 +958,9 @@ void EngineTest::RecursiveBlocs_multipleRecursion()
   }
 
   {
-    set<ElementaryNode *> setelem = _nodeMap["graphe"]->getRecursiveConstituents();
+    list<ElementaryNode *> setelem = _nodeMap["graphe"]->getRecursiveConstituents();
     CPPUNIT_ASSERT(setelem.size() == 9);
-    for (set<ElementaryNode*>::iterator it=setelem.begin(); it!=setelem.end(); it++)
+    for (list<ElementaryNode*>::iterator it=setelem.begin(); it!=setelem.end(); it++)
       {
         DEBTRACE("     elem name = " << (*it)->getName());
       }
@@ -997,7 +997,7 @@ void EngineTest::RecursiveBlocs_removeNodes()
 //   }
 
   {
-    set<Node *> setNode = ((Bloc*)_nodeMap["graphe"])->getAllRecursiveConstituents();
+    list<Node *> setNode = ((Bloc*)_nodeMap["graphe"])->getAllRecursiveConstituents();
     CPPUNIT_ASSERT(setNode.size() == 16);
     list<InputPort *> inset = _nodeMap["bloc7"]->getSetOfInputPort();
     list<OutputPort *> outset = _nodeMap["bloc7"]->getSetOfOutputPort();
@@ -1010,9 +1010,9 @@ void EngineTest::RecursiveBlocs_removeNodes()
   ((Bloc *)_nodeMap["bloc7"])->edRemoveChild(_nodeMap["bloc6"]);
 
   {
-    set<Node *> setNode = ((Bloc*)_nodeMap["graphe"])->getAllRecursiveConstituents();
+    list<Node *> setNode = ((Bloc*)_nodeMap["graphe"])->getAllRecursiveConstituents();
     CPPUNIT_ASSERT(setNode.size() == 9);
-    for (set<Node*>::iterator it=setNode.begin(); it!=setNode.end(); it++)
+    for (list<Node*>::iterator it=setNode.begin(); it!=setNode.end(); it++)
       {
         DEBTRACE("     elem name = " << ((Bloc *)_nodeMap["graphe"])->getChildName(*it));
       }
@@ -1034,8 +1034,8 @@ void EngineTest::checkLogger()
   logger->error("error2","file.cxx",852);
   CPPUNIT_ASSERT(logger->hasErrors()==true);
   CPPUNIT_ASSERT(logger->isEmpty()==false);
-  char* expected1="LogRecord: parser:ERROR:error1 (file.cxx:324)\n"
-                  "LogRecord: parser:ERROR:error2 (file.cxx:852)\n";
+  const char* expected1="LogRecord: parser:ERROR:error1 (file.cxx:324)\n"
+                        "LogRecord: parser:ERROR:error2 (file.cxx:852)\n";
   CPPUNIT_ASSERT(logger->getStr()==expected1);
 
   logger->reset();
@@ -1047,9 +1047,9 @@ void EngineTest::checkLogger()
   logger->error("error3","file.cxx",978);
   CPPUNIT_ASSERT(logger->hasErrors()==true);
   CPPUNIT_ASSERT(logger->isEmpty()==false);
-  char* expected2="LogRecord: parser:ERROR:error1 (file.cxx:324)\n"
-                  "LogRecord: parser:ERROR:error2 (file.cxx:852)\n"
-                  "LogRecord: parser:ERROR:error3 (file.cxx:978)\n";
+  const char* expected2="LogRecord: parser:ERROR:error1 (file.cxx:324)\n"
+                        "LogRecord: parser:ERROR:error2 (file.cxx:852)\n"
+                        "LogRecord: parser:ERROR:error3 (file.cxx:978)\n";
   CPPUNIT_ASSERT(logger->getStr()==expected2);
   delete proc;
 }

@@ -39,8 +39,8 @@ std::vector<DataPort *> OutPort::calculateHistoryOfLinkWith(InPort *end)
     throw Exception("ComposedNode::edRemoveLink : unexisting link");
   vector<DataPort *> ret;
   ComposedNode* lwstCmnAnctr=ComposedNode::getLowestCommonAncestor(getNode(),end->getNode());
-  set<ComposedNode *> allAscendanceOfNodeStart=getNode()->getAllAscendanceOf(lwstCmnAnctr);
-  set<ComposedNode *> allAscendanceOfNodeEnd=end->getNode()->getAllAscendanceOf(lwstCmnAnctr);
+  list<ComposedNode *> allAscendanceOfNodeStart=getNode()->getAllAscendanceOf(lwstCmnAnctr);
+  list<ComposedNode *> allAscendanceOfNodeEnd=end->getNode()->getAllAscendanceOf(lwstCmnAnctr);
 
   // --- Part of test if the link from 'start' to 'end' really exist particulary all eventually intermediate ports created
 

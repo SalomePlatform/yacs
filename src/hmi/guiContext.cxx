@@ -119,8 +119,8 @@ long GuiContext::getNewId(YACS::HMI::TypeOfElem type)
     }
     else
     {
-      set<Node*> aNodes = aProc->getAllRecursiveConstituents();
-      set<Node*>::iterator it = aNodes.begin();
+      list<Node*> aNodes = aProc->getAllRecursiveConstituents();
+      list<Node*>::iterator it = aNodes.begin();
       for ( ; it != aNodes.end(); it++ )
       {
 	QString aName( (*it)->getName() );

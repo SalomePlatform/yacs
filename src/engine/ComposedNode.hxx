@@ -50,10 +50,10 @@ namespace YACS
       void edRemoveLink(OutPort *start, InPort *end) throw(Exception);
       void edRemoveLink(OutGate *start, InGate *end) throw(Exception);
       virtual bool isRepeatedUnpredictablySeveralTimes() const { return false; }
-      virtual std::set<Node *> edGetDirectDescendants() const =  0;
-      std::set<ElementaryNode *> getRecursiveConstituents() const;
-      std::set<Node *> getAllRecursiveNodes();
-      virtual std::set<Node *> getAllRecursiveConstituents(); // first implementation
+      virtual std::list<Node *> edGetDirectDescendants() const =  0;
+      std::list<ElementaryNode *> getRecursiveConstituents() const;
+      std::list<Node *> getAllRecursiveNodes();
+      virtual std::list<Node *> getAllRecursiveConstituents(); // first implementation
       std::string getInPortName(const InPort *) const throw (Exception);
       std::string getOutPortName(const OutPort *) const throw (Exception);
       //
@@ -78,11 +78,11 @@ namespace YACS
       virtual std::vector< std::pair<InPort *, OutPort *> > getSetOfLinksComingInCurrentScope() const;
       virtual std::string typeName() {return "YACS__ENGINE__ComposedNode";}
       //
-      ComposedNode *getRootNode() throw(Exception);
-      bool isNodeAlreadyAggregated(Node *node) const;
+      ComposedNode *getRootNode() const throw(Exception);
+      bool isNodeAlreadyAggregated(const Node *node) const;
       virtual bool isNameAlreadyUsed(const std::string& name) const;
       Node *isInMyDescendance(Node *nodeToTest) const;
-      std::string getChildName(Node* node) const throw(Exception);
+      std::string getChildName(const Node* node) const throw(Exception);
       virtual std::string getMyQualifiedName(const Node *directSon) const;
       Node *getChildByName(const std::string& name) const throw(Exception);
       static ComposedNode *getLowestCommonAncestor(Node *node1, Node *node2) throw(Exception);
@@ -106,14 +106,14 @@ namespace YACS
       virtual YACS::Event updateStateOnStartEventFrom(Node *node);//transition 3 doc P.R
       virtual YACS::Event updateStateOnFinishedEventFrom(Node *node) = 0;//transition 9 doc P.R.
       virtual YACS::Event updateStateOnFailedEventFrom(Node *node);//transition 9 doc P.R.
-      virtual void checkLinkPossibility(OutPort *start, const std::set<ComposedNode *>& pointsOfViewStart,
-                                        InPort *end, const std::set<ComposedNode *>& pointsOfViewEnd) throw(Exception);
-      virtual void buildDelegateOf(InPort * & port, OutPort *initialStart, const std::set<ComposedNode *>& pointsOfView);
-      virtual void buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::set<ComposedNode *>& pointsOfView);
-      virtual void getDelegateOf(InPort * & port, OutPort *initialStart, const std::set<ComposedNode *>& pointsOfView) throw(Exception);
-      virtual void getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::set<ComposedNode *>& pointsOfView) throw(Exception);
-      virtual void releaseDelegateOf(InPort * & port, OutPort *initialStart, const std::set<ComposedNode *>& pointsOfView) throw(Exception);
-      virtual void releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::set<ComposedNode *>& pointsOfView) throw(Exception);
+      virtual void checkLinkPossibility(OutPort *start, const std::list<ComposedNode *>& pointsOfViewStart,
+                                        InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) throw(Exception);
+      virtual void buildDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView);
+      virtual void buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView);
+      virtual void getDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView) throw(Exception);
+      virtual void getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(Exception);
+      virtual void releaseDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView) throw(Exception);
+      virtual void releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(Exception);
       virtual void checkNoCyclePassingThrough(Node *node) throw(Exception) = 0;
       void checkInMyDescendance(Node *nodeToTest) const throw(Exception);
       template <class PORT>

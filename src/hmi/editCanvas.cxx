@@ -429,6 +429,10 @@ void ComposedNodeCanvasItem::update(GuiEvent event, int type, Subject* son)
         case YACS::HMI::SALOMENODE:
         case YACS::HMI::SALOMEPYTHONNODE:
         case YACS::HMI::XMLNODE:
+        case YACS::HMI::PRESETNODE:
+        case YACS::HMI::OUTNODE:
+        case YACS::HMI::STUDYINNODE:
+        case YACS::HMI::STUDYOUTNODE:
           item =  new ElementaryNodeCanvasItem(this,
                                      son->getName(),
                                      son);

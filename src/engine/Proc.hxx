@@ -43,7 +43,7 @@ namespace YACS
       std::list<std::string> getIds();
       virtual Logger *getLogger(const std::string& name);
 
-      virtual void writeDot(std::ostream &os);
+      virtual void writeDot(std::ostream &os) const;
       void setName(const std::string& name); // Used by GUI to display graph name
       virtual std::string typeName() {return "YACS__ENGINE__Proc";}
 

@@ -21,6 +21,7 @@ namespace YACS
     class Proc;
     class ServiceNode;
     class ServiceInlineNode;
+    class DataNode;
     class Switch;
     class WhileLoop;
     class TypeCode;
@@ -43,6 +44,10 @@ namespace YACS
       virtual void visitServiceInlineNode(ServiceInlineNode *node) = 0;
       virtual void visitSwitch(Switch *node) = 0;
       virtual void visitWhileLoop(WhileLoop *node) = 0;
+      virtual void visitPresetNode(DataNode *node) = 0;
+      virtual void visitOutNode(DataNode *node) = 0;
+      virtual void visitStudyInNode(DataNode *node) = 0;
+      virtual void visitStudyOutNode(DataNode *node) = 0;
 
     protected:
       std::map<std::string, std::string> getNodeProperties(Node *node);

@@ -1,4 +1,4 @@
-# Check presence of "CPPUNIT" product presence
+# Check presence of "threads" 
 #
 # Author : Anthony GEAY (CEA, 2006)
 #

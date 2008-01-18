@@ -1160,7 +1160,7 @@ QPointArray YACSPrs_ElementaryNode::areaPoints() const
 QPointArray YACSPrs_ElementaryNode::maxAreaPoints() const
 {
   int w = width();
-  int h = maxHeight()+1; // add pen width
+  int h = height() + ( myPointMaster ? myPointMaster->height()/2 : 0 ) + 1; // add pen width
 
   return constructAreaPoints(w,h);
 }

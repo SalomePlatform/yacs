@@ -7,9 +7,6 @@
 #include <map>
 #include <list>
 
-#define _DEVDEBUG_
-#include "YacsTrace.hxx"
-
 namespace YACS
 {
   namespace ENGINE
@@ -34,6 +31,11 @@ namespace YACS
     class SalomePythonNode;
     class XmlNode;
     class SplitterNode;
+    class DataNode;
+    class PresetNode;
+    class OutNode;
+    class StudyInNode;
+    class StudyOutNode;
     class DataPort;
     class InputPort;
     class OutputPort;
@@ -515,12 +517,12 @@ namespace YACS
       virtual void setComponent();
       virtual void associateToComponent(SubjectComponent *subcomp);
       virtual void addSubjectReference(Subject *ref);
-      virtual SubjectReference* getSubjectReference(Subject *ref);
+      virtual SubjectReference* getSubjectReference();
       virtual void clean();
       void localClean();
     protected:
       YACS::ENGINE::ServiceNode *_serviceNode;
-      std::list<SubjectReference*> _listSubjectReference;
+      SubjectReference* _subjectReference;
     };
 
     class SubjectCORBANode: public SubjectServiceNode
@@ -589,6 +591,61 @@ namespace YACS
       void localClean();
     protected:
       YACS::ENGINE::SplitterNode *_splitterNode;
+    };
+
+    class SubjectDataNode: public SubjectElementaryNode
+    {
+    public:
+      SubjectDataNode(YACS::ENGINE::DataNode *dataNode, Subject *parent);
+      virtual ~SubjectDataNode();
+      virtual void clean();
+      void localClean();
+    protected:
+      YACS::ENGINE::DataNode *_dataNode;
+    };
+
+    class SubjectPresetNode: public SubjectDataNode
+    {
+    public:
+      SubjectPresetNode(YACS::ENGINE::PresetNode *presetNode, Subject *parent);
+      virtual ~SubjectPresetNode();
+      virtual void clean();
+      void localClean();
+    protected:
+      YACS::ENGINE::PresetNode *_presetNode;
+    };
+
+    class SubjectOutNode: public SubjectDataNode
+    {
+    public:
+      SubjectOutNode(YACS::ENGINE::OutNode *outNode, Subject *parent);
+      virtual ~SubjectOutNode();
+      virtual void clean();
+      void localClean();
+    protected:
+      YACS::ENGINE::OutNode *_outNode;
+    };
+
+    class SubjectStudyInNode: public SubjectDataNode
+    {
+    public:
+      SubjectStudyInNode(YACS::ENGINE::StudyInNode *studyInNode, Subject *parent);
+      virtual ~SubjectStudyInNode();
+      virtual void clean();
+      void localClean();
+    protected:
+      YACS::ENGINE::StudyInNode *_studyInNode;
+    };
+
+    class SubjectStudyOutNode: public SubjectDataNode
+    {
+    public:
+      SubjectStudyOutNode(YACS::ENGINE::StudyOutNode *studyOutNode, Subject *parent);
+      virtual ~SubjectStudyOutNode();
+      virtual void clean();
+      void localClean();
+    protected:
+      YACS::ENGINE::StudyOutNode *_studyOutNode;
     };
 
     class SubjectLink: public Subject

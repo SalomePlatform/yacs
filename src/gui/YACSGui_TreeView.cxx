@@ -43,7 +43,7 @@
 
 #include <qpopupmenu.h>
 
-#include <iostream.h> //for debug only
+#include <iostream> //for debug only
 
 using namespace YACS::ENGINE;
 using namespace YACS::HMI;
@@ -59,8 +59,8 @@ std::vector< std::pair< OutGate*,InGate* > > getInternalControlLinks( ComposedNo
   
   if (theNode)
   {
-    set<Node *> constituents = theNode->edGetDirectDescendants();
-    for(set<Node *>::iterator iter=constituents.begin();iter!=constituents.end();iter++)
+    list<Node *> constituents = theNode->edGetDirectDescendants();
+    for(list<Node *>::iterator iter=constituents.begin();iter!=constituents.end();iter++)
     {
       // fill control links: check links going from output gate port of each direct child node
       OutGate* anOutGate = ( *iter )->getOutGate();
@@ -69,7 +69,7 @@ std::vector< std::pair< OutGate*,InGate* > > getInternalControlLinks( ComposedNo
 	set<InGate *>::iterator anInGatesIter = anInGates.begin();
 	for(; anInGatesIter!=anInGates.end(); anInGatesIter++) {
 	  InGate* aCurInGate = *anInGatesIter;
-	  if ( constituents.find(aCurInGate->getNode()) != constituents.end() )
+	  if ( find(constituents.begin(),constituents.end(),aCurInGate->getNode()) != constituents.end() )
 	    anInternalGateLinks.push_back(pair<OutGate *, InGate *>(anOutGate,aCurInGate));
 	}
       }
@@ -88,9 +88,9 @@ std::vector< std::pair< OutPort*,InPort* > > getInternalLinks( ComposedNode* the
   
   if (theNode)
   {
-    set<Node *> constituents = theNode->edGetDirectDescendants();
+    list<Node *> constituents = theNode->edGetDirectDescendants();
     list<OutPort *> temp;
-    for(set<Node *>::iterator iter=constituents.begin();iter!=constituents.end();iter++)
+    for(list<Node *>::iterator iter=constituents.begin();iter!=constituents.end();iter++)
     {
       if ( !dynamic_cast<ComposedNode*>( *iter ) )
       { // not cross link
@@ -107,7 +107,7 @@ std::vector< std::pair< OutPort*,InPort* > > getInternalLinks( ComposedNode* the
 	vector< pair< OutPort*,InPort* > >::iterator aCrossLinksIter = aCrossLinks.begin();
 	for ( ; aCrossLinksIter != aCrossLinks.end(); aCrossLinksIter++ ) {
 	  InPort* aCurInPort = (*aCrossLinksIter).second;
-	  if ( constituents.find(aCurInPort->getNode()) != constituents.end() )
+	  if ( find(constituents.begin(),constituents.end(),aCurInPort->getNode()) != constituents.end() )
 	    temp.insert(temp.end(),(*aCrossLinksIter).first);
 	}
       }
@@ -135,9 +135,9 @@ void getAllInternalLinks( ComposedNode* theNode,
 {
   if (theNode)
   {
-    set<Node *> constituents = theNode->edGetDirectDescendants();
+    list<Node *> constituents = theNode->edGetDirectDescendants();
     list<OutPort *> temp;
-    for(set<Node *>::iterator iter=constituents.begin();iter!=constituents.end();iter++)
+    for(list<Node *>::iterator iter=constituents.begin();iter!=constituents.end();iter++)
     {
       if ( !dynamic_cast<ComposedNode*>( *iter ) )
       { // not cross link
@@ -155,7 +155,7 @@ void getAllInternalLinks( ComposedNode* theNode,
 	vector< pair< OutPort*,InPort* > >::iterator aCrossLinksIter = aCrossLinks.begin();
 	for ( ; aCrossLinksIter != aCrossLinks.end(); aCrossLinksIter++ ) {
 	  InPort* aCurInPort = (*aCrossLinksIter).second;
-	  if ( constituents.find(aCurInPort->getNode()) != constituents.end() )
+	  if ( find(constituents.begin(),constituents.end(),aCurInPort->getNode()) != constituents.end() )
 	    temp.insert(temp.end(),(*aCrossLinksIter).first);
 	}
       }
@@ -167,7 +167,7 @@ void getAllInternalLinks( ComposedNode* theNode,
 	set<InGate *>::iterator anInGatesIter = anInGates.begin();
 	for(; anInGatesIter!=anInGates.end(); anInGatesIter++) {
 	  InGate* aCurInGate = *anInGatesIter;
-	  if ( constituents.find(aCurInGate->getNode()) != constituents.end() )
+	  if ( find(constituents.begin(),constituents.end(),aCurInGate->getNode()) != constituents.end() )
 	    theInternalGateLinks.insert(pair<OutGate *, InGate *>(anOutGate,aCurInGate));
 	}
       }
@@ -333,8 +333,8 @@ void YACSGui_EditionTreeView::displayChildren( YACSGui_NodeViewItem* theNodeItem
   // Process all subnodes of a composed node
   YACSGui_NodeViewItem* aSubNodeItem = 0;
   if (aSComposedNode && aComposedNode) {
-    set<Node*> aChildNodeSet = aComposedNode->edGetDirectDescendants();
-    set<Node*>::const_iterator aChildIter = aChildNodeSet.begin();
+    list<Node*> aChildNodeSet = aComposedNode->edGetDirectDescendants();
+    list<Node*>::const_iterator aChildIter = aChildNodeSet.begin();
     for(;aChildIter!=aChildNodeSet.end();aChildIter++)
       aSubNodeItem = displayNodeWithPorts( theNodeItem, aSubNodeItem, aSComposedNode->getChild(*aChildIter) );
   }
@@ -768,7 +768,7 @@ void YACSGui_EditionTreeView::build()
 
   // Create "Nodes" label if necessary
   YACSGui_LabelViewItem* aNodesItem = 0;
-  set<Node*> aDirectNodeSet = getProc()->edGetDirectDescendants();
+  list<Node*> aDirectNodeSet = getProc()->edGetDirectDescendants();
   //if (aDirectNodeSet.size() > 0)
   aNodesItem = new YACSGui_LabelViewItem( aSchemaItem, aDataTypesItem, tr( "NODES" ) );
   
@@ -776,7 +776,7 @@ void YACSGui_EditionTreeView::build()
   if ( aNodesItem )
   {
     YACSGui_NodeViewItem* aNodeItem = 0;
-    for ( set<Node*>::iterator it = aDirectNodeSet.begin(); it != aDirectNodeSet.end(); it++ )
+    for ( list<Node*>::iterator it = aDirectNodeSet.begin(); it != aDirectNodeSet.end(); it++ )
       aNodeItem = displayNodeWithPorts( aNodesItem, aNodeItem, mySProc->getChild(*it) );
   }
   
@@ -786,8 +786,8 @@ void YACSGui_EditionTreeView::build()
 								 tr( "LINKS" ) );
   
   // Put all links under "Links" label
-  set<Node*> aNodeSet = getProc()->getAllRecursiveConstituents();
-  for ( set<Node*>::iterator it = aNodeSet.begin(); it != aNodeSet.end(); it++ ) {
+  list<Node*> aNodeSet = getProc()->getAllRecursiveConstituents();
+  for (  list<Node*>::iterator it = aNodeSet.begin(); it != aNodeSet.end(); it++ ) {
     Node* aCurNode = *it;
     if (!aCurNode) continue;
     
@@ -919,7 +919,7 @@ void YACSGui_EditionTreeView::build()
        	for ( list<SubjectServiceNode*>::iterator itSNode = aServiceNodes.begin();
 	      itSNode != aServiceNodes.end(); itSNode++ )
 	  // Put a reference to the schemas node, which is used this component instance
-	  aRefNodeItem = new YACSGui_ReferenceViewItem( aComponentItem, aRefNodeItem, (*itSNode)->getSubjectReference(aSComp) );
+	  aRefNodeItem = new YACSGui_ReferenceViewItem( aComponentItem, aRefNodeItem, (*itSNode)->getSubjectReference() );
       }
     }
     
@@ -939,7 +939,7 @@ void YACSGui_EditionTreeView::build()
       for ( list<SubjectServiceNode*>::iterator itSNode = aServiceNodes.begin();
 	    itSNode != aServiceNodes.end(); itSNode++ )
       	// Put a reference to the schemas node, which is used this component instance
-	aRefNodeItem = new YACSGui_ReferenceViewItem( aCComponentItem, aRefNodeItem, (*itSNode)->getSubjectReference(aSComp) );
+	aRefNodeItem = new YACSGui_ReferenceViewItem( aCComponentItem, aRefNodeItem, (*itSNode)->getSubjectReference() );
     }
   }
 }
@@ -949,8 +949,8 @@ void YACSGui_EditionTreeView::fillContainerData( YACS::HMI::SubjectComposedNode*
   if ( theSNode )
     if ( ComposedNode* aNode = dynamic_cast<ComposedNode*>(theSNode->getNode()) ) //if ( getProc() )
     { // find containers and components, which are used by Proc* service nodes
-      set<Node*> aNodeSet = aNode->edGetDirectDescendants(); //getProc()->getAllRecursiveConstituents();
-      for ( set<Node*>::iterator it = aNodeSet.begin(); it != aNodeSet.end(); it++ )
+      list<Node*> aNodeSet = aNode->edGetDirectDescendants(); //getProc()->getAllRecursiveConstituents();
+      for ( list<Node*>::iterator it = aNodeSet.begin(); it != aNodeSet.end(); it++ )
       {
 	if ( ServiceNode* aSNode = dynamic_cast<ServiceNode*>( *it ) )
 	{
@@ -1859,8 +1859,8 @@ void YACSGui_RunTreeView::build()
 void YACSGui_RunTreeView::addTreeNode( QListViewItem* theParent,
 				       YACS::ENGINE::ComposedNode* theFather )
 {
-  set<Node*> aSetOfNodes = theFather->edGetDirectDescendants();
-  for ( set<Node*>::iterator iter = aSetOfNodes.begin(); iter != aSetOfNodes.end(); iter++)
+  list<Node*> aSetOfNodes = theFather->edGetDirectDescendants();
+  for ( list<Node*>::iterator iter = aSetOfNodes.begin(); iter != aSetOfNodes.end(); iter++)
   {
     if (ElementaryNode* anElemNode = dynamic_cast<ElementaryNode*>(*iter) )
     {

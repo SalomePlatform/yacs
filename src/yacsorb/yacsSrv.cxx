@@ -103,14 +103,14 @@ char * Proc_i::getXMLState(CORBA::Long numid)
 
 void Proc_i::getIds(YACS_ORB::longArray_out numids,YACS_ORB::stringArray_out names)
 {
-  std::set<YACS::ENGINE::Node *> nodes=_proc->getAllRecursiveNodes();
+  std::list<YACS::ENGINE::Node *> nodes=_proc->getAllRecursiveNodes();
   int len=nodes.size();
   names=new YACS_ORB::stringArray;
   numids=new YACS_ORB::longArray;
   names->length(len);
   numids->length(len);
   int i=0;
-  for(set<YACS::ENGINE::Node *>::const_iterator iter=nodes.begin();iter!=nodes.end();iter++,i++)
+  for(list<YACS::ENGINE::Node *>::const_iterator iter=nodes.begin();iter!=nodes.end();iter++,i++)
     {
       (*names)[i]=CORBA::string_dup((*iter)->getQualifiedName().c_str());
       (*numids)[i]=(*iter)->getNumId();

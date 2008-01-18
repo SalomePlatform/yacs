@@ -248,10 +248,10 @@ void ElementaryNode::edRemovePort(Port *port) throw(Exception)
  * @return a set with only this node. (Same method in composed nodes)
  */
 
-set<ElementaryNode *> ElementaryNode::getRecursiveConstituents() const
+list<ElementaryNode *> ElementaryNode::getRecursiveConstituents() const
 {
-  set<ElementaryNode *> ret;
-  ret.insert((ElementaryNode *)this);
+  list<ElementaryNode *> ret;
+  ret.push_back((ElementaryNode *)this);
   return ret;
 }
 

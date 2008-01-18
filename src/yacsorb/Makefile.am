@@ -10,6 +10,10 @@ lib_LTLIBRARIES = libYACSorb.la
 
 nodist_libYACSorb_la_SOURCES = $(IDL_SOURCES)
 
+libYACSorb_la_CPPFLAGS =  $(OMNIORB_INCLUDES)
+
+libYACSorb_la_CXXFLAGS =  $(OMNIORB_CXXFLAGS)
+
 bin_PROGRAMS=yacsSrv yacs_clt
 
 yacsSrv_SOURCES = yacsSrv.cxx $(IDL_SOURCES)
@@ -36,7 +40,7 @@ yacsSrv_CXXFLAGS = -g -DYACS_PTHREAD \
   -I$(srcdir)/../yacsloader \
   -I$(srcdir)/../runtime
 
-yacsSrv_LDFLAGS = $(PYTHON_EXTRA_LDFLAGS) -lexpat -pthread -lxml2
+yacsSrv_LDFLAGS = $(PYTHON_EXTRA_LDFLAGS) $(EXPAT_LIBS) $(LIBXML_LIBS) -pthread 
 
 yacsSrv_LDADD =  ../yacsloader/libYACSloader.la \
                ../runtime/libYACSRuntimeSALOME.la \
@@ -59,7 +63,7 @@ yacs_clt_CXXFLAGS = \
   $(OMNIORB_INCLUDES) \
   $(OMNIORB_CXXFLAGS)
 
-yacs_clt_LDFLAGS = $(PYTHON_EXTRA_LDFLAGS) -lexpat -pthread -lxml2
+yacs_clt_LDFLAGS = $(PYTHON_EXTRA_LDFLAGS) $(EXPAT_LIBS) -pthread $(LIBXML_LIBS) 
 
 yacs_clt_LDADD =  ../yacsloader/libYACSloader.la \
                ../runtime/libYACSRuntimeSALOME.la \
