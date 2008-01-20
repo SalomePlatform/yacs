@@ -405,19 +405,20 @@ Num-----: 1006
 priority: 1
 status--: NOK
 description: popup menu item missing on tree view.
-- under Container directory: create a container definition
-- under Nodes directory: create a node
-- under Data Types directory: import a data type from catalog (required for use in a python node, for
+1 under Container directory: create a container definition
+2 under Nodes directory: create a node
+3 under Data Types directory: import a data type from catalog (required for use in a python node, for
   instance)
-- under a salome node, create a node (here, it is easy to define a create a node corresponding to 
+4 under a salome node, create a node (here, it is easy to define a create a node corresponding to 
   a service of the same component instance (see 1002). 
 comments:
+EDF : 1,2 done (on BR_PR branch)
 ----------------------------------------------------------------------------------------------------
 Num-----: 1007 
 priority: 1
 status--: NOK
-description: instead of having a dialog a execution to define the properties of the YACS Engine 
-container, put thev parameters on the schema properties panel for execution.
+description: instead of having a dialog at execution to define the properties of the YACS Engine 
+container, put the parameters on the schema properties panel for execution.
 comments:
 ----------------------------------------------------------------------------------------------------
 Num-----: 1008 
