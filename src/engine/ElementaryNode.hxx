@@ -70,6 +70,7 @@ namespace YACS
       virtual InputDataStreamPort *edAddInputDataStreamPort(const std::string& inputPortDSName, TypeCode* type) throw(Exception);
       virtual OutputDataStreamPort *edAddOutputDataStreamPort(const std::string& outputPortDSName, TypeCode* type) throw(Exception);
       virtual std::string typeName() {return "YACS__ENGINE__ElementaryNode";}
+      virtual void edUpdateState();
 
       //run part
       void begin();
@@ -96,7 +97,6 @@ namespace YACS
       static void edRemovePortTypedFromSet(PORT *port, std::list<PORT *>& setOfPorts) throw(Exception);
       template<class PORT>
       static bool isPortNameAlreadyExist(const std::string& portName, const std::list<PORT *>& setOfPorts);
-      std::string _errorDetails;
     };
 
     /**

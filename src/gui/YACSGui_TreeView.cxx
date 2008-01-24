@@ -37,11 +37,13 @@
 #include <ForEachLoop.hxx>
 #include <WhileLoop.hxx>
 #include <Bloc.hxx>
+#include "Logger.hxx"
 
 #include <ComponentInstance.hxx>
 #include <CORBAComponent.hxx>
 
 #include <qpopupmenu.h>
+#include <qtextedit.h>
 
 #include <iostream> //for debug only
 
@@ -558,6 +560,8 @@ void YACSGui_EditionTreeView::onDeleteItem()
       SubjectNode* aNode = aSLink->getSubjectOutNode();
       aNode->update( REMOVE, DATALINK, aSLink );
       aSLink->getParent()->destroy( aSLink );
+      
+      myModule->temporaryExport();
     }
     else if ( SubjectControlLink* aSCLink = dynamic_cast<SubjectControlLink*>(aSub) )
     {
@@ -565,6 +569,8 @@ void YACSGui_EditionTreeView::onDeleteItem()
       SubjectNode* aNode = aSCLink->getSubjectOutNode();
       aNode->update( REMOVE, CONTROLLINK, aSCLink );
       aSCLink->getParent()->destroy( aSCLink );
+
+      myModule->temporaryExport();
     }
     else if ( SubjectDataPort* aSDPort = dynamic_cast<SubjectDataPort*>(aSub) )
     {
@@ -572,6 +578,8 @@ void YACSGui_EditionTreeView::onDeleteItem()
       Subject* aNode = aSDPort->getParent();
       aNode->update( REMOVE, ProcInvoc::getTypeOfPort(aSDPort->getPort()), aSDPort );
       aNode->destroy( aSDPort );
+
+      myModule->temporaryExport();
     }
     else if ( SubjectNode* aSNode = dynamic_cast<SubjectNode*>(aSub) )
     {
@@ -590,6 +598,8 @@ void YACSGui_EditionTreeView::onDeleteItem()
 
       aGraph->removeNode( aSNode->getNode() );
       aSParent->destroy( aSNode );
+
+      myModule->temporaryExport();
 
       SubjectBloc* aSBloc = dynamic_cast<SubjectBloc*>(aSParent);
       if ( aSBloc && !dynamic_cast<SubjectProc*>(aSParent) )
@@ -617,6 +627,9 @@ void YACSGui_EditionTreeView::onDeleteItem()
 	aProc->update( REMOVE, COMPONENT, aSComp );
 	// clear the content of the property page of deleted component
 	aSComp->update( REMOVE, 0, 0 );
+
+	myModule->temporaryExport();
+
 	return;
       }
 
@@ -626,6 +639,9 @@ void YACSGui_EditionTreeView::onDeleteItem()
 	// clear the content of the property page of deleted component
 	aSComp->update( REMOVE, 0, 0 );
 	aProc->destroy( aSComp );
+
+	myModule->temporaryExport();
+
 	return;
       }
 
@@ -644,6 +660,8 @@ void YACSGui_EditionTreeView::onDeleteItem()
       // clear the content of the property page of deleted component
       aSComp->update( REMOVE, 0, 0 );
       aProc->destroy( aSComp );
+
+      myModule->temporaryExport();
     }
     else if ( SubjectContainer* aSCont = dynamic_cast<SubjectContainer*>(aSub) )
     {
@@ -655,6 +673,8 @@ void YACSGui_EditionTreeView::onDeleteItem()
       // clear the content of the property page of deleted container
       aSCont->update( REMOVE, 0, 0 );
       aProc->destroy( aSCont );
+
+      myModule->temporaryExport();
     }
   }
 }
@@ -704,6 +724,10 @@ void YACSGui_EditionTreeView::onContextMenuRequested( QListViewItem* theItem, co
   {
     if ( !aLIt->name().compare( QString("Data Types") ) )
       showPopup( contextMenuPopup( YACSGui_EditionTreeView::DataTypeItem ), thePoint );
+    if ( !aLIt->name().compare( QString("Nodes") ) )
+      showPopup( contextMenuPopup( YACSGui_EditionTreeView::LabelNodesItem ), thePoint );
+    if ( !aLIt->name().compare( QString("Containers") ) )
+      showPopup( contextMenuPopup( YACSGui_EditionTreeView::LabelContainersItem ), thePoint );
   }
   else if ( dynamic_cast<YACSGui_SchemaViewItem*>( theItem ) )
   {
@@ -1000,12 +1024,40 @@ QPopupMenu* YACSGui_EditionTreeView::contextMenuPopup( const int theType, YACS::
   QPopupMenu* aPopup = new QPopupMenu( this );
 
   int anId;
+  QPopupMenu* aCrNPopup = new QPopupMenu( this );
+  aCrNPopup->insertItem( tr("POP_SALOME_SERVICE"),        myModule, SLOT(onSalomeServiceNode()) );
+  aCrNPopup->insertItem( tr("POP_CORBA_SERVICE"),         myModule, SLOT(onCorbaServiceNode()) );
+  //aCrNPopup->insertItem( tr("POP_NODENODE_SERVICE"),      myModule, SLOT(onNodeNodeServiceNode()) );
+  aCrNPopup->insertItem( tr("POP_CPP"),                   myModule, SLOT(onCppNode()) );
+  anId = aCrNPopup->insertItem( tr("POP_SERVICE_INLINE"), myModule, SLOT(onServiceInlineNode()) );
+  aCrNPopup->setItemEnabled ( anId, false );
+  anId = aCrNPopup->insertItem( tr("POP_XML"),            myModule, SLOT(onXMLNode()) );
+  aCrNPopup->setItemEnabled ( anId, false );
+  aCrNPopup->insertItem( tr("POP_INLINE_SCRIPT"),         myModule, SLOT(onInlineScriptNode()) );
+  aCrNPopup->insertItem( tr("POP_INLINE_FUNCTION"),       myModule, SLOT(onInlineFunctionNode()) );
+  aCrNPopup->insertItem( tr("POP_BLOCK"),                 myModule, SLOT(onBlockNode()) );
+  aCrNPopup->insertItem( tr("POP_FOR_LOOP"),              myModule, SLOT(onFORNode()) );
+  aCrNPopup->insertItem( tr("POP_FOREACH_LOOP"),          myModule, SLOT(onFOREACHNode()) );
+  aCrNPopup->insertItem( tr("POP_WHILE_LOOP"),            myModule, SLOT(onWHILENode()) );
+  aCrNPopup->insertItem( tr("POP_SWITCH"),                myModule, SLOT(onSWITCHNode()) );
+  //aCrNPopup->insertItem( tr("POP_FROM_LIBRARY"),          myModule, SLOT(onNodeFromLibrary()) );
+
   switch ( theType )
   {
   case YACSGui_EditionTreeView::DataTypeItem:
     {
       anId = aPopup->insertItem( tr("POP_EDIT"), myModule, SLOT(onEditDataTypes()) );
       aPopup->setItemEnabled ( anId, false );
+    }
+    break;
+  case YACSGui_EditionTreeView::LabelNodesItem:
+    {
+      aPopup->insertItem(tr("POP_CREATE_NODE"), aCrNPopup);
+    }
+    break;
+  case YACSGui_EditionTreeView::LabelContainersItem:
+    {
+      aPopup->insertItem( tr("POP_CREATE_CONTAINER_DEF"), myModule, SLOT(onNewContainer()) );
     }
     break;
   case YACSGui_TreeView::SchemaItem:
@@ -1017,25 +1069,6 @@ QPopupMenu* YACSGui_EditionTreeView::contextMenuPopup( const int theType, YACS::
       aPopup->setItemEnabled ( anId, false );
       aPopup->insertItem( tr("POP_CREATE_CONTAINER_DEF"), myModule, SLOT(onNewContainer()) );
       aPopup->insertSeparator();
-      
-      QPopupMenu* aCrNPopup = new QPopupMenu( this );
-      aCrNPopup->insertItem( tr("POP_SALOME_SERVICE"), myModule, SLOT(onSalomeServiceNode()) );
-      aCrNPopup->insertItem( tr("POP_CORBA_SERVICE"), myModule, SLOT(onCorbaServiceNode()) );
-      aCrNPopup->insertItem( tr("POP_NODENODE_SERVICE"), myModule, SLOT(onNodeNodeServiceNode()) );
-      aCrNPopup->insertItem( tr("POP_CPP"), myModule, SLOT(onCppNode()) );
-      anId = aCrNPopup->insertItem( tr("POP_SERVICE_INLINE"), myModule, SLOT(onServiceInlineNode()) );
-      aCrNPopup->setItemEnabled ( anId, false );
-      anId = aCrNPopup->insertItem( tr("POP_XML"), myModule, SLOT(onXMLNode()) );
-      aCrNPopup->setItemEnabled ( anId, false );
-      aCrNPopup->insertItem( tr("POP_INLINE_SCRIPT"), myModule, SLOT(onInlineScriptNode()) );
-      aCrNPopup->insertItem( tr("POP_INLINE_FUNCTION"), myModule, SLOT(onInlineFunctionNode()) );
-      aCrNPopup->insertItem( tr("POP_BLOCK"), myModule, SLOT(onBlockNode()) );
-      aCrNPopup->insertItem( tr("POP_FOR_LOOP"), myModule, SLOT(onFORNode()) );
-      aCrNPopup->insertItem( tr("POP_FOREACH_LOOP"), myModule, SLOT(onFOREACHNode()) );
-      aCrNPopup->insertItem( tr("POP_WHILE_LOOP"), myModule, SLOT(onWHILENode()) );
-      aCrNPopup->insertItem( tr("POP_SWITCH"), myModule, SLOT(onSWITCHNode()) );
-      aCrNPopup->insertItem( tr("POP_FROM_LIBRARY"), myModule, SLOT(onNodeFromLibrary()) );
-      
       aPopup->insertItem(tr("POP_CREATE_NODE"), aCrNPopup);
       aPopup->insertSeparator();
       
@@ -1075,12 +1108,12 @@ QPopupMenu* YACSGui_EditionTreeView::contextMenuPopup( const int theType, YACS::
     break;
   case YACSGui_EditionTreeView::ComponentItem:
     {
-      QPopupMenu* aCrNPopup = new QPopupMenu( this );
-      //      aCrNPopup->insertItem( tr("POP_SALOME_SERVICE"), myModule, SLOT(onSalomeServiceNode()) );
-      anId = aCrNPopup->insertItem( tr("POP_SERVICE_INLINE"), myModule, SLOT(onServiceInlineNode()) );
-      aCrNPopup->setItemEnabled ( anId, false );
+      QPopupMenu* aCrN2Popup = new QPopupMenu( this );
+      //      aCrN2Popup->insertItem( tr("POP_SALOME_SERVICE"), myModule, SLOT(onSalomeServiceNode()) );
+      anId = aCrN2Popup->insertItem( tr("POP_SERVICE_INLINE"), myModule, SLOT(onServiceInlineNode()) );
+      aCrN2Popup->setItemEnabled ( anId, false );
 
-      aPopup->insertItem(tr("POP_CREATE_NODE"), aCrNPopup);
+      aPopup->insertItem(tr("POP_CREATE_NODE"), aCrN2Popup);
       aPopup->insertSeparator();
       
       anId = aPopup->insertItem( tr("POP_COPY"), this, SLOT(onCopyItem()) );
@@ -1112,28 +1145,9 @@ QPopupMenu* YACSGui_EditionTreeView::contextMenuPopup( const int theType, YACS::
       if ( theType == YACSGui_EditionTreeView::LoopNodeItem ||
 	   theType == YACSGui_EditionTreeView::ComposedNodeItem )
       {
-	QPopupMenu* aCrNPopup = new QPopupMenu( this );
 	// TODO: in slots we have to check what is selected: schema,
 	//                                                   loop node (=> from ¨Create a body¨) or
 	//                                                   another node (=> from ¨Create a loop¨).
-	aCrNPopup->insertItem( tr("POP_SALOME_SERVICE"), myModule, SLOT(onSalomeServiceNode()) );
-	aCrNPopup->insertItem( tr("POP_CORBA_SERVICE"), myModule, SLOT(onCorbaServiceNode()) );
-	//aCrNPopup->insertItem( tr("POP_NODENODE_SERVICE"), myModule, SLOT(onNodeNodeServiceNode()) );
-	aCrNPopup->insertItem( tr("POP_CPP"), myModule, SLOT(onCppNode()) );
-	anId = aCrNPopup->insertItem( tr("POP_SERVICE_INLINE"), myModule, SLOT(onServiceInlineNode()) );
-	aCrNPopup->setItemEnabled ( anId, false );
-	anId = aCrNPopup->insertItem( tr("POP_XML"), myModule, SLOT(onXMLNode()) );
-	aCrNPopup->setItemEnabled ( anId, false );
-	aCrNPopup->insertItem( tr("POP_INLINE_SCRIPT"), myModule, SLOT(onInlineScriptNode()) );
-	aCrNPopup->insertItem( tr("POP_INLINE_FUNCTION"), myModule, SLOT(onInlineFunctionNode()) );
-	aCrNPopup->insertItem( tr("POP_BLOCK"), myModule, SLOT(onBlockNode()) );
-	aCrNPopup->insertItem( tr("POP_FOR_LOOP"), myModule, SLOT(onFORNode()) );
-	aCrNPopup->insertItem( tr("POP_FOREACH_LOOP"), myModule, SLOT(onFOREACHNode()) );
-	aCrNPopup->insertItem( tr("POP_WHILE_LOOP"), myModule, SLOT(onWHILENode()) );
-	aCrNPopup->insertItem( tr("POP_SWITCH"), myModule, SLOT(onSWITCHNode()) );
-	anId = aCrNPopup->insertItem( tr("POP_FROM_LIBRARY"), myModule, SLOT(onNodeFromLibrary()) );
-	aCrNPopup->setItemEnabled ( anId, false );
-	
 	if ( theType == YACSGui_EditionTreeView::LoopNodeItem )
 	  aPopup->insertItem(tr("POP_CREATE_BODY"), aCrNPopup);
 	else if ( theType == YACSGui_EditionTreeView::ComposedNodeItem )
@@ -1141,12 +1155,12 @@ QPopupMenu* YACSGui_EditionTreeView::contextMenuPopup( const int theType, YACS::
 	aPopup->insertSeparator();
       }
 
-      QPopupMenu* aCrNPopup = new QPopupMenu( this );
-      aCrNPopup->insertItem( tr("POP_FOR_LOOP"), myModule, SLOT(onFORNode()) );
-      aCrNPopup->insertItem( tr("POP_FOREACH_LOOP"), myModule, SLOT(onFOREACHNode()) );
-      aCrNPopup->insertItem( tr("POP_WHILE_LOOP"), myModule, SLOT(onWHILENode()) );
+      QPopupMenu* aCrN2Popup = new QPopupMenu( this );
+      aCrN2Popup->insertItem( tr("POP_FOR_LOOP"), myModule, SLOT(onFORNode()) );
+      aCrN2Popup->insertItem( tr("POP_FOREACH_LOOP"), myModule, SLOT(onFOREACHNode()) );
+      aCrN2Popup->insertItem( tr("POP_WHILE_LOOP"), myModule, SLOT(onWHILENode()) );
       
-      aPopup->insertItem(tr("POP_CREATE_LOOP"), aCrNPopup);
+      aPopup->insertItem(tr("POP_CREATE_LOOP"), aCrN2Popup);
       aPopup->insertSeparator();
 
       anId = aPopup->insertItem( tr("POP_ADD_TO_LIBRARY"), this, SLOT(onAddToLibrary()) );
@@ -1249,6 +1263,9 @@ void YACSGui_EditionTreeView::syncPageTypeWithSelection()
       anIP->setOn( true, YACSGui_InputPanel::SchemaId );
       anIP->setMode( YACSGui_InputPanel::EditMode, YACSGui_InputPanel::SchemaId );
       anIP->setExclusiveVisible( true,  list<int>(1,YACSGui_InputPanel::SchemaId) );
+      Logger* logger=getProc()->getLogger("parser");
+      if (!logger->isEmpty()) aSPage->myErrorLog->setText(logger->getStr());
+      else aSPage->myErrorLog->setText("");
       anIP->show();
     }
   }
@@ -1518,6 +1535,7 @@ void YACSGui_EditionTreeView::onSelectionChanged()
 				   tr("WARNING"), 
 				   GuiContext::getCurrent()->_lastErrorMessage,
 				   tr("BUT_OK"));
+	  else myModule->temporaryExport();
 	  mySelectedSubjectOutPort = 0;
 	}
       }
@@ -1533,6 +1551,7 @@ void YACSGui_EditionTreeView::onSelectionChanged()
 				   tr("WARNING"), 
 				   GuiContext::getCurrent()->_lastErrorMessage,
 				   tr("BUT_OK"));
+	  else myModule->temporaryExport();
 	  mySelectedSubjectOutNode = 0;
 	}
       }

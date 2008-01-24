@@ -53,7 +53,7 @@ class proc_i(YACSGui_ORB__POA.ProcExec):
         return self.p.getOutPortValue(nodeNumid, portName)
 
     def getErrorDetails(self, nodeNumid):
-        return self.p.getErrorDetails(nodeNumid)
+        return self.p.getNodeErrorDetails(nodeNumid)
 
     def getExecutorState(self):
         return self.e.getExecutorState()

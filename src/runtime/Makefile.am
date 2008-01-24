@@ -57,6 +57,7 @@ libYACSRuntimeSALOME_la_SOURCES =      \
 	StudyNodes.cxx                 \
 	StudyPorts.cxx                 \
 	VisitorSaveSalomeSchema.cxx    \
+	PyStdout.cxx                   \
 	$(__dummy__)
 
 

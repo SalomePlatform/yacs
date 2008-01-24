@@ -1310,3 +1310,60 @@ bool ComposedNode::isNameAlreadyUsed(const std::string& name) const
   return false;
 }
 
+void ComposedNode::edUpdateState()
+{
+  YACS::StatesForNode state=YACS::READY;
+
+  //update children if needed
+  list<Node *> constituents=edGetDirectDescendants();
+  for(list<Node *>::iterator iter=constituents.begin(); iter!=constituents.end(); iter++)
+    {
+      if(!(*iter)->isValid())
+        state=YACS::INVALID;
+    }
+  if(state != _state)
+    setState(state);
+  _modified=0;
+}
+
+std::string ComposedNode::getErrorReport()
+{
+  DEBTRACE("ComposedNode::getErrorReport: " << getName() << " " << _state);
+  YACS::StatesForNode effectiveState=getEffectiveState();
+  if(effectiveState == YACS::READY || effectiveState == YACS::DONE)
+    return "";
+
+  std::string report="<error node= " + getName();
+  switch(effectiveState)
+    {
+    case YACS::INVALID:
+      report=report+" state= INVALID";
+      break;
+    case YACS::ERROR:
+      report=report+" state= ERROR";
+      break;
+    case YACS::FAILED:
+      report=report+" state= FAILED";
+      break;
+    default:
+      break;
+    }
+  report=report + ">\n" ;
+  if(_errorDetails != "")
+    report=report+_errorDetails+"\n";
+
+  list<Node *> constituents=edGetDirectDescendants();
+  for(list<Node *>::iterator iter=constituents.begin(); iter!=constituents.end(); iter++)
+    {
+      std::string rep=(*iter)->getErrorReport();
+      if(rep != "")
+        {
+          report=report+rep+"\n";
+        }
+    }
+  report=report+"</error>";
+  return report;
+}
+
+
+

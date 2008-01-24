@@ -49,7 +49,7 @@ class YACSGui_DataModel : public SalomeApp_DataModel
   virtual bool saveAs( const QString&, CAM_Study*, QStringList& );
 
   void       createNewSchema( QString&, YACS::ENGINE::Proc* );
-  void       createNewRun( _PTR(SObject), YACS::ENGINE::Proc* );
+  void       createNewRun( _PTR(SObject), QString& theName, YACS::ENGINE::Proc* );
 
   ObjectType objectType( const QString& ) const;
 

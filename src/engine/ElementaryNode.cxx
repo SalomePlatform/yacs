@@ -8,6 +8,9 @@
 #include "Visitor.hxx"
 #include <iostream>
 
+//#define _DEVDEBUG_
+#include "YacsTrace.hxx"
+
 using namespace YACS::ENGINE;
 using namespace std;
 
@@ -56,7 +59,7 @@ void ElementaryNode::init(bool start)
       return;
     }
   if(start) //complete initialization
-    setState(YACS::INITED);
+    setState(YACS::READY);
   else //partial initialization (inside a loop)
     _state=YACS::LOADED;
 }
@@ -81,7 +84,7 @@ void ElementaryNode::exUpdateState()
   if(_state==YACS::DISABLED)return;
   if(_inGate.exIsReady())
     if(areAllInputPortsValid())
-      if(_state == YACS::INITED)
+      if(_state == YACS::READY)
 	setState(YACS::TOLOAD);
       else
         setState(YACS::TOACTIVATE);
@@ -429,3 +432,24 @@ std::string ElementaryNode::getErrorDetails()
 {
   return _errorDetails;
 }
+
+void ElementaryNode::edUpdateState()
+{
+  DEBTRACE("ElementaryNode::edUpdateState: " << getName());
+  YACS::StatesForNode state=YACS::READY;
+  try
+    {
+      checkBasicConsistency();
+      _errorDetails="";
+    }
+  catch(Exception& e)
+    {
+      state=YACS::INVALID;
+      _errorDetails=e.what();
+    }
+  DEBTRACE("ElementaryNode::edUpdateState: " << _errorDetails);
+  if(state != _state)
+    setState(state);
+  _modified=0;
+}
+

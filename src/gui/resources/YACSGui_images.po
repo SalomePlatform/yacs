@@ -152,6 +152,9 @@ msgstr "remote_run.png"
 msgid "ICON_NEW_EXECUTION"
 msgstr "new_execution.png"
 
+msgid "ICON_NEW_EDITION"
+msgstr "new_edition.png"
+
 msgid "ICON_NEW_BATCH_EXECUTION"
 msgstr "new_batch_execution.png"
 

@@ -47,12 +47,23 @@ void ServiceNode::load()
   if(_component)
     {
       if(!_component->isLoaded())
-        _component->load();
+        {
+          try
+            {
+              _component->load();
+            }
+          catch(Exception& e)
+            {
+              _errorDetails=e.what();
+              throw e;
+            }
+        }
     }
   else
     {
       std::string what("ServiceNode::load : a load operation requested on ServiceNode called \"");
       what+=_name; what+="\" with no component specified.";
+      _errorDetails=what;
       throw Exception(what);
     }
 }

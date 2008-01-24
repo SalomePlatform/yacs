@@ -57,6 +57,8 @@ namespace YACS
       std::string _name;
       ComposedNode *_father;
       YACS::StatesForNode _state;
+      int _modified;
+      std::string _errorDetails;
       static const char SEP_CHAR_IN_PORT[];
       static int _total;
       int _numId;
@@ -128,6 +130,11 @@ namespace YACS
       virtual void sendEvent(const std::string& event);
       static std::map<int,Node *> idMap;
       virtual std::string typeName() {return "YACS__ENGINE__Node";}
+      virtual void modified();
+      virtual int isModified(){return _modified;}
+      virtual int isValid();
+      virtual void edUpdateState();
+      virtual std::string getErrorReport();
     protected:
       virtual void exForwardFailed();
       virtual void exForwardFinished();

@@ -18,8 +18,8 @@ const char Node::SEP_CHAR_IN_PORT[]=".";
 int Node::_total = 0;
 std::map<int,Node*> Node::idMap;
 
-Node::Node(const std::string& name):_name(name),_inGate(this),_outGate(this),_father(0),_state(YACS::INITED),
-                                    _implementation(Runtime::RUNTIME_ENGINE_INTERACTION_IMPL_NAME)
+Node::Node(const std::string& name):_name(name),_inGate(this),_outGate(this),_father(0),_state(YACS::READY),
+                                    _implementation(Runtime::RUNTIME_ENGINE_INTERACTION_IMPL_NAME),_modified(1)
 {
   // Should be protected by lock ??
   _numId = _total++;
@@ -27,8 +27,8 @@ Node::Node(const std::string& name):_name(name),_inGate(this),_outGate(this),_fa
 }
 
 Node::Node(const Node& other, ComposedNode *father):_inGate(this),_outGate(this),_name(other._name),_father(father),
-                                                   _state(YACS::INITED),_implementation(other._implementation),
-                                                    _propertyMap(other._propertyMap)
+                                                   _state(YACS::READY),_implementation(other._implementation),
+                                                    _propertyMap(other._propertyMap),_modified(other._modified)
 {
   _numId = _total++;
   idMap[_numId]=this;
@@ -51,7 +51,7 @@ void Node::init(bool start)
       exDisabledState(); // to refresh propagation of DISABLED state 
       return;
     }
-  setState(YACS::INITED);
+  setState(YACS::READY);
 }
 
 Node *Node::clone(ComposedNode *father, bool editionOnly) const
@@ -347,8 +347,8 @@ void Node::setProperty(const std::string& name, const std::string& value)
  *
  * The node state is stored in a private attribute _state.
  * This state is relative to its father state : a node with a
- * TOACTIVATE state with a father node in a INITED state is not
- * to activate. Its effective state is only INITED.
+ * TOACTIVATE state with a father node in a READY state is not
+ * to activate. Its effective state is only READY.
  * This method returns the effective state of the node taking
  * into account that of its father.
  */
@@ -374,10 +374,10 @@ YACS::StatesForNode Node::getEffectiveState(const Node* node) const
   YACS::StatesForNode effectiveState=getEffectiveState();
   switch(effectiveState)
     {
-    case YACS::INITED:
-      return YACS::INITED;
+    case YACS::READY:
+      return YACS::READY;
     case YACS::TOACTIVATE:
-      return YACS::INITED;
+      return YACS::READY;
     case YACS::DISABLED:
       return YACS::DISABLED;
     case YACS::ERROR:
@@ -396,7 +396,7 @@ std::string Node::getColorState(YACS::StatesForNode state) const
 {
   switch(state)
     {
-    case YACS::INITED:
+    case YACS::READY:
       return "pink";
     case YACS::TOLOAD:
       return "magenta";
@@ -485,3 +485,78 @@ void YACS::ENGINE::StateLoader(Node* node, YACS::StatesForNode state)
 {
   node->setState(state);
 }
+
+//! indicates if the node is valid (returns 1) or not (returns 0)
+/*!
+ * This method is useful when editing a schema. It has no meaning in execution.
+ * When a node is edited, its modified method must be called so when isValid is called, its state
+ * is updated (call to edUpdateState) before returning the validity check
+ */
+int Node::isValid()
+{
+  if(_modified)
+    edUpdateState();
+  if(_state > YACS::INVALID)
+    return 1;
+  else
+    return 0;
+}
+
+//! update the status of the node
+/*!
+ * Only useful when editing a schema
+ * Do nothing in base Node : to implement in derived classes
+ */
+void Node::edUpdateState()
+{
+  _modified=0;
+}
+
+//! returns a string that contains an error report if the node is in error
+/*!
+ * 
+ */
+std::string Node::getErrorReport()
+{
+  if(getState()==YACS::DISABLED)
+    return "<error node= "+getName()+ "state= DISABLED/>\n";
+
+  YACS::StatesForNode effectiveState=getEffectiveState();
+
+  DEBTRACE("Node::getErrorReport: " << getName() << " " << effectiveState << " " << _errorDetails);
+  if(effectiveState == YACS::READY || effectiveState == YACS::DONE)
+    return "";
+
+  std::string report="<error node= " ;
+  report=report + getName() ;
+  switch(effectiveState)
+    {
+    case YACS::INVALID:
+      report=report+" state= INVALID";
+      break;
+    case YACS::ERROR:
+      report=report+" state= ERROR";
+      break;
+    case YACS::FAILED:
+      report=report+" state= FAILED";
+      break;
+    default:
+      break;
+    }
+  report=report + ">\n" ;
+  report=report+_errorDetails;
+  report=report+"</error>";
+  return report;
+}
+
+//! Sets Node in modified state and its father if it exists
+/*!
+ * 
+ */
+void Node::modified()
+{
+  _modified=1;
+  if(_father)
+    _father->modified();
+}
+

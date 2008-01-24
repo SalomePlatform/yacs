@@ -643,17 +643,17 @@ string Switch::getRepresentationOfCase(int i)
 YACS::StatesForNode Switch::getEffectiveState(const Node* node) const
 {
   YACS::StatesForNode effectiveState=Node::getEffectiveState();
-  if(effectiveState==YACS::INITED)
-    return YACS::INITED;
+  if(effectiveState==YACS::READY)
+    return YACS::READY;
   if(effectiveState==YACS::TOACTIVATE)
-    return YACS::INITED;
+    return YACS::READY;
   if(effectiveState==YACS::DISABLED)
     return YACS::DISABLED;
   map< int , Node * >::const_iterator iter=_mapOfNode.find(_condition.getIntValue());
   if(iter!=_mapOfNode.end() && (*iter).second==node)
     return node->getState();
   else
-    return YACS::INITED;
+    return YACS::READY;
 }
 YACS::StatesForNode Switch::getEffectiveState() const
 {

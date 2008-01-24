@@ -2694,7 +2694,7 @@ void YACSGui_ComposedNodeViewItem::setState(int state)
   switch (_state)
     {
     case YACS::UNDEFINED:    _cf=Qt::lightGray;       setText(1,"UNDEFINED");    repaint(); break;
-    case YACS::INITED:       _cf=Qt::gray;            setText(1,"INITED");       repaint(); break;
+    case YACS::READY:        _cf=Qt::gray;            setText(1,"READY");       repaint(); break;
     case YACS::TOLOAD:       _cf=Qt::darkYellow;      setText(1,"TOLOAD");       repaint(); break;
     case YACS::LOADED:       _cf=Qt::darkMagenta;     setText(1,"LOADED");       repaint(); break;
     case YACS::TOACTIVATE:   _cf=Qt::darkCyan;        setText(1,"TOACTIVATE");   repaint(); break;
@@ -2888,7 +2888,7 @@ void YACSGui_ElementaryNodeViewItem::setState(int state)
   switch (_state)
     {
     case YACS::UNDEFINED:    _cf=Qt::lightGray;       setText(1,"UNDEFINED");    repaint(); break;
-    case YACS::INITED:       _cf=Qt::gray;            setText(1,"INITED");       repaint(); break;
+    case YACS::READY:        _cf=Qt::gray;            setText(1,"READY");       repaint(); break;
     case YACS::TOLOAD:       _cf=Qt::darkYellow;      setText(1,"TOLOAD");       repaint(); break;
     case YACS::LOADED:       _cf=Qt::darkMagenta;     setText(1,"LOADED");       repaint(); break;
     case YACS::TOACTIVATE:   _cf=Qt::darkCyan;        setText(1,"TOACTIVATE");   repaint(); break;

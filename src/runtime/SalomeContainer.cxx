@@ -78,7 +78,15 @@ bool SalomeContainer::isAlreadyStarted() const
 void SalomeContainer::start() throw (Exception)
 {
   CORBA::ORB_ptr orb=getSALOMERuntime()->getOrb();
-  SALOME_NamingService ns(orb);
+  SALOME_NamingService ns;
+  try
+    {
+      ns.init_orb(orb);
+    }
+  catch(SALOME_Exception& e)
+    {
+      throw Exception("SalomeContainer::start : Unable to contact the SALOME Naming Service");
+    }
   CORBA::Object_var obj=ns.Resolve(SALOME_ContainerManager::_ContainerManagerNameInNS);
   Engines::ContainerManager_var contManager=Engines::ContainerManager::_narrow(obj);
 
@@ -135,7 +143,7 @@ void SalomeContainer::start() throw (Exception)
       throw Exception("SalomeContainer::start : Unable to launch container in Salome : Unexpected CORBA failure detected");
     }
   if(CORBA::is_nil(_trueCont))
-    throw Exception("SalomeContainer::start : Unable to launch container in Salome");
+    throw Exception("SalomeContainer::start : Unable to launch container in Salome. Check your CatalogResources.xml file");
 
   CORBA::String_var containerName=_trueCont->name();
   CORBA::String_var hostName=_trueCont->getHostName();

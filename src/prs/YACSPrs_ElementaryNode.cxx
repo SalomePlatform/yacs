@@ -1641,12 +1641,12 @@ void YACSPrs_ElementaryNode::nextTimeIteration(YACS::ENGINE::Node* theEngine)
 
   if ( theEngine
        &&
-       ( theEngine->getState() == YACS::INITED /*|| theEngine->getEffectiveState() == YACS::INITED*/
+       ( theEngine->getState() == YACS::READY /*|| theEngine->getEffectiveState() == YACS::READY*/
 	 ||
 	 ( nullifyOnToActivate && ( theEngine->getState() == YACS::TOACTIVATE || theEngine->getEffectiveState() == YACS::TOACTIVATE) ) ) )
     myTimeIteration = 0.;
   else if ( theEngine &&
-	    theEngine->getState() != YACS::INITED /*&& theEngine->getEffectiveState() != YACS::INITED*/ &&
+	    theEngine->getState() != YACS::READY /*&& theEngine->getEffectiveState() != YACS::READY*/ &&
 	    !myFinished ) {
     const double aGoodTime = 0.02 * 100; // estimated time to run, s
     myTimeIteration += 1./aGoodTime;
@@ -1667,7 +1667,7 @@ int YACSPrs_ElementaryNode::getPercentage(YACS::ENGINE::Node* theEngine) const
     
   if ( !theEngine ) return 0;
 
-  if ( theEngine->getState() == YACS::INITED || /*theEngine->getEffectiveState() == YACS::INITED ||*/
+  if ( theEngine->getState() == YACS::READY || /*theEngine->getEffectiveState() == YACS::READY ||*/
        theEngine->getState() == YACS::TOLOAD || theEngine->getEffectiveState() == YACS::TOLOAD ||
        theEngine->getState() == YACS::DISABLED || theEngine->getEffectiveState() == YACS::DISABLED
        ||
@@ -1702,13 +1702,13 @@ void YACSPrs_ElementaryNode::updateExecTime(YACS::ENGINE::Node* theEngine)
     return;
   }
 
-  if ( theEngine->getState() == YACS::INITED /*|| theEngine->getEffectiveState() == YACS::INITED*/
+  if ( theEngine->getState() == YACS::READY /*|| theEngine->getEffectiveState() == YACS::READY*/
        ||
        ( nullifyOnToActivate && ( theEngine->getState() == YACS::TOACTIVATE || theEngine->getEffectiveState() == YACS::TOACTIVATE) ) )
   {
     myTime = QString("00:00:00");
     myStarted = false;
-    if ( theEngine->getState() == YACS::INITED ) return;
+    if ( theEngine->getState() == YACS::READY ) return;
   }
 
   if ( !myTime.compare(QString("00:00:00")) && !myStarted ) {
@@ -1717,7 +1717,7 @@ void YACSPrs_ElementaryNode::updateExecTime(YACS::ENGINE::Node* theEngine)
     myFinished = false;
   }
 
-  if ( theEngine->getState() != YACS::INITED && theEngine->getState() != YACS::DONE && 
+  if ( theEngine->getState() != YACS::READY && theEngine->getState() != YACS::DONE && 
        theEngine->getState() != YACS::FAILED && theEngine->getState() != YACS::ERROR )
   {
     int aMS = myStartTime.elapsed();
@@ -1751,8 +1751,8 @@ void YACSPrs_ElementaryNode::setState(YACS::StatesForNode theState)
 {
   switch ( theState )
     {
-    case YACS::INITED:
-      myStatus = QString("Inited");
+    case YACS::READY:
+      myStatus = QString("Ready");
       myStatePixmap = myMgr->loadPixmap( "YACSPrs", QObject::tr( "ICON_STATUS_NO" ));
       break;
     case YACS::TOLOAD:
@@ -2297,7 +2297,7 @@ void YACSPrs_InOutPort::update(bool theForce, YACS::ENGINE::Port* theEngine)
       if (myCanvas) myCanvas->setChanged(myTypeRect);
     }
 
-    if ( getNode()->getEngine()->getState() == YACS::INITED ) //edition
+    if ( getNode()->getEngine()->getState() == YACS::READY ) //edition
     {
       QString aNewValue = getValue(theEngine); // !!! during execution the value updated by events from YACSORB engine
       if (theForce || myValue.compare(aNewValue) != 0) {

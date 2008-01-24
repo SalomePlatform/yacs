@@ -209,9 +209,9 @@ std::string Proc::getOutPortValue(int nodeNumId, std::string portName)
     }
 }
 
-std::string Proc::getErrorDetails(int nodeNumId)
+std::string Proc::getNodeErrorDetails(int nodeNumId)
 {
-  DEBTRACE("Proc::getErrorDetails " << nodeNumId);
+  DEBTRACE("Proc::getNodeErrorDetails " << nodeNumId);
   stringstream msg;
   if(YACS::ENGINE::Node::idMap.count(nodeNumId) == 0)
     {

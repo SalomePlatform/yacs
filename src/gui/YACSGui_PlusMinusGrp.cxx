@@ -163,12 +163,13 @@ void YACSGui_PlusMinusGrp::onUp()
 {
   int row;
   row = myTable->currentRow( );
-  if ( row >= 0 )
+  if ( row > 0 )
   {
     myTable->swapRows( row, row-1 );
-    //myTable->updateContents( QRect( myTable->contentsWidth(), 
-    //                                myTable->rowHeight(row)+myTable->rowHeight(row-1) ) );
-    myTable->ensureCellVisible( row-1, myTable->currentColumn() );
+    myTable->updateContents( QRect( myTable->columnPos(0),
+				    myTable->rowPos(row-1),
+				    myTable->contentsWidth(), 
+                                    myTable->rowHeight(row)+myTable->rowHeight(row-1) ) );
     emit MovedUp( row-1 );
   }
 
@@ -186,9 +187,10 @@ void YACSGui_PlusMinusGrp::onDown()
   if ( row >= 0 )
   {
     myTable->swapRows( row, row+1 );
-    //myTable->updateContents( QRect( myTable->contentsWidth(), 
-    //                                myTable->rowHeight(row)+myTable->rowHeight(row+1) ) );
-    myTable->ensureCellVisible( row+1, myTable->currentColumn() );
+    myTable->updateContents( QRect( myTable->columnPos(0),
+				    myTable->rowPos(row),
+				    myTable->contentsWidth(), 
+                                    myTable->rowHeight(row)+myTable->rowHeight(row+1) ) );
     emit MovedDown( row+1 );
   }
   
@@ -399,6 +401,30 @@ void YACSGui_PlusMinusGrp::EnableBtn( const int theBtns, bool theEnable )
     myAddBtn->setEnabled( theEnable );
   if ( ( theBtns & MinusBtn ) && myRemoveBtn != 0 )
     myRemoveBtn->setEnabled( theEnable );
+}
+
+//================================================================
+// Function : Btn
+// Purpose  : 
+//================================================================
+QToolButton* YACSGui_PlusMinusGrp::Btn( const int theBtn ) const
+{
+  QToolButton* aRet = 0;
+
+  if ( theBtn == UpBtn && myUpBtn != 0 )
+    aRet = myUpBtn;
+  else if ( theBtn == DownBtn && myDownBtn != 0 )
+    aRet = myDownBtn;
+  else if ( theBtn == InsertBtn && myInsertBtn != 0 )
+    aRet = myInsertBtn;
+  else if ( theBtn == SelectBtn && mySelectBtn != 0 )
+    aRet = mySelectBtn;
+  else if ( theBtn == PlusBtn && myAddBtn != 0 )
+    aRet = myAddBtn;
+  else if ( theBtn == MinusBtn && myRemoveBtn != 0 )
+    aRet = myRemoveBtn;
+  
+  return aRet;
 }
 
 //================================================================

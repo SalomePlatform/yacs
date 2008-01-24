@@ -26,7 +26,7 @@ using namespace std;
 
 VisitorSaveState::VisitorSaveState(ComposedNode *root): Visitor(root)
 {
-  _nodeStateName[YACS::INITED] ="INITED";
+  _nodeStateName[YACS::READY] ="READY";
   _nodeStateName[YACS::TOLOAD] ="TOLOAD";
   _nodeStateName[YACS::LOADED] ="LOADED";
   _nodeStateName[YACS::TOACTIVATE] ="TOACTIVATE";

@@ -57,6 +57,11 @@ public:
   void                                EnableBtn( const int = AllBtn );
   void                                EnableBtn( const int, bool theEnable );
 
+  /*! Returns the tool button with given id
+      parameter: defines tool buttons' id
+   */ 
+  QToolButton*                        Btn( const int ) const;
+
   /*! Set min allowed number of rows at the table. 
       It is 0 by default.
    */

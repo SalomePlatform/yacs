@@ -78,7 +78,7 @@ public:
 
 	 //Menu "Execute" (run gui mode)
 	 ExecuteId, ExecuteStById,ExecuteInBatchId, PauseId,
-	 ResumeId, AbortId, ResetId, SaveExecutionStateId,
+	 ResumeId, AbortId, ResetId, SaveExecutionStateId, NewEditionId,
 	 ConnectToRunningId, ToggleStopOnErrorId,
 	 
 
@@ -234,6 +234,7 @@ private slots:
   void onAbort();
   void onReset();
   void onSaveExecutionState();
+  void onCreateEdition();
   void onConnectToRunning();
   void onToggleStopOnError();
   

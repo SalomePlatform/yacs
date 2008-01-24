@@ -1,0 +1,41 @@
+<proc>
+  <!--Schema for testing errors : validation errors -->
+    <!--types -->
+
+    <container name="A"> <property name="hostname" value="localhost" /> </container>
+    <container name="B"> </container>
+    <!--nodes -->
+    <inline name="node0" >
+      <script>
+        <code>p1="toto"</code>
+        <code>print p1</code>
+      </script>
+      <outport name="p1" type="string"/>
+    </inline>
+
+    <service name="node1" >
+        <component>HELLO</component>
+        <method>makeBanner</method>
+        <load container="B"/>
+        <inport name="p1" type="string"/>
+        <outport name="p1" type="string"/>
+    </service>
+
+
+    <bloc name="a">
+    <inline name="node0" >
+      <script>
+        <code>p1="toto"</code>
+        <code>print p1</code>
+        <code>#a=1/0</code>
+      </script>
+      <inport name="p1" type="string"/>
+      <outport name="p1" type="string"/>
+    </inline>
+    </bloc>
+    <datalink>
+        <fromnode>node0</fromnode><fromport>p1</fromport>
+        <tonode>node1</tonode> <toport>p1</toport>
+    </datalink>
+
+</proc>

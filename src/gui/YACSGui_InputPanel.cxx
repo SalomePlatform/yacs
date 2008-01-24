@@ -400,7 +400,7 @@ QString getText( int theStatus )
   switch (theStatus)
     {
     case UNDEFINED:    aText = "UNDEFINED";    break;
-    case INITED:       aText = "INITED";       break;
+    case READY:        aText = "READY";       break;
     case TOLOAD:       aText = "TOLOAD";       break;
     case LOADED:       aText = "LOADED";       break;
     case TOACTIVATE:   aText = "TOACTIVATE";   break;
@@ -426,7 +426,7 @@ QColor getColor( int theStatus )
   switch (theStatus)
     {
     case UNDEFINED:    aColor = Qt::lightGray;     break;
-    case INITED:       aColor = Qt::gray;          break;
+    case READY:        aColor = Qt::gray;          break;
     case TOLOAD:       aColor = Qt::darkYellow;    break;
     case LOADED:       aColor = Qt::darkMagenta;   break;
     case TOACTIVATE:   aColor = Qt::darkCyan;      break;
@@ -1986,6 +1986,7 @@ YACSGui_SchemaPage::YACSGui_SchemaPage( QWidget* theParent, const char* theName,
     mySProc( 0 ),
     myMode( YACSGui_InputPanel::EditMode )
 {
+  myErrorLog->setReadOnly(true);
 }
 
 YACSGui_SchemaPage::~YACSGui_SchemaPage()
@@ -2644,6 +2645,8 @@ YACSGui_InlineNodePage::YACSGui_InlineNodePage( QWidget* theParent, const char* 
   aTable->setParams( 0, 1, aPortTypes );
   aTable->setParams( 0, 2, aValueTypes );
 
+  aTable->setEditorSync(true);
+
   connect( aTable, SIGNAL(valueChanged( int, int )), this, SLOT(onValueChanged( int, int )) );
   
   myInputPortsGroupBox->EnableBtn( YACSGui_PlusMinusGrp::AllBtn );
@@ -2675,6 +2678,8 @@ YACSGui_InlineNodePage::YACSGui_InlineNodePage( QWidget* theParent, const char* 
   aTable->setParams( 0, 2, aValueTypes );
   aTable->setParams( 0, 4, QString("Yes;No") );
   aTable->setDefValue( 0, 4, QString("Yes") );
+
+  aTable->setEditorSync(true);
 
   myPara = 0;
   myIndex = 0;
@@ -4157,6 +4162,8 @@ YACSGui_ServiceNodePage::YACSGui_ServiceNodePage( QWidget* theParent, const char
   aTable->setParams( 0, 1, aPortTypes );
   aTable->setParams( 0, 2, aValueTypes );
 
+  aTable->setEditorSync(true);
+
   connect( aTable, SIGNAL(valueChanged( int, int )), this, SLOT(onValueChanged( int, int )) );
   
   myInputPortsGroupBox->HideBtn( YACSGui_PlusMinusGrp::PlusBtn | YACSGui_PlusMinusGrp::MinusBtn |
@@ -4184,6 +4191,8 @@ YACSGui_ServiceNodePage::YACSGui_ServiceNodePage( QWidget* theParent, const char
   aTable->setParams( 0, 2, aValueTypes );
   aTable->setParams( 0, 4, QString("Yes;No") );
   aTable->setDefValue( 0, 4, QString("Yes") );
+
+  aTable->setEditorSync(true);
 
   myPara = 0;
   myIndex = 0;
@@ -4487,7 +4496,7 @@ void YACSGui_ServiceNodePage::onApply()
     SubjectServiceNode* aNewSNode = 0;
     if ( aSchema && aCatalog && anItem && mySCNode )
     {
-            string compo;
+      string compo;
       string service;
       YACS::HMI::TypeOfElem aTypeId = UNKNOWN;
       if ( !myProcRadioButton->isChecked() )
@@ -6165,6 +6174,10 @@ YACSGui_SwitchNodePage::YACSGui_SwitchNodePage( QWidget* theParent, const char* 
     mySwitchCasesGroupBox->EnableBtn( YACSGui_PlusMinusGrp::AllBtn );
     mySwitchCasesGroupBox->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Expanding ) );
 
+    mySwitchCasesGroupBox->Btn(YACSGui_PlusMinusGrp::SelectBtn)->setTextLabel(tr("SELECT_BTN_TOOLTIP"),true);
+    mySwitchCasesGroupBox->Btn(YACSGui_PlusMinusGrp::PlusBtn)->setTextLabel(tr("PLUS_BTN_TOOLTIP"),true);
+    mySwitchCasesGroupBox->Btn(YACSGui_PlusMinusGrp::MinusBtn)->setTextLabel(tr("MINUS_BTN_TOOLTIP"),true);
+
     connect( myNodeName, SIGNAL(textChanged( const QString& )), this, SLOT(onNodeNameChanged( const QString& )) );
     connect( mySwitchCasesGroupBox, SIGNAL(initSelection( const int, const int )),
 	     this,                  SLOT(onInitSelection( const int, const int )) );
@@ -6951,6 +6964,10 @@ YACSGui_BlockNodePage::YACSGui_BlockNodePage( QWidget* theParent, const char* th
 
     myDirectChildrenGroupBox->EnableBtn( YACSGui_PlusMinusGrp::AllBtn );
     myDirectChildrenGroupBox->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Expanding ) );
+
+    myDirectChildrenGroupBox->Btn(YACSGui_PlusMinusGrp::SelectBtn)->setTextLabel(tr("SELECT_BTN_TOOLTIP"),true);
+    myDirectChildrenGroupBox->Btn(YACSGui_PlusMinusGrp::PlusBtn)->setTextLabel(tr("PLUS_BTN_TOOLTIP"),true);
+    myDirectChildrenGroupBox->Btn(YACSGui_PlusMinusGrp::MinusBtn)->setTextLabel(tr("MINUS_BTN_TOOLTIP"),true);
 
     connect( myNodeName, SIGNAL(textChanged( const QString& )), this, SLOT(onNodeNameChanged( const QString& )) );
     connect( myDirectChildrenGroupBox, SIGNAL(initSelection( const int, const int )),

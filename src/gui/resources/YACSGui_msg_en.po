@@ -588,6 +588,15 @@ msgstr "Save execution state ..."
 msgid "STB_SAVE_EXECUTION_STATE"
 msgstr "Save execution state ..."
 
+msgid "TOP_NEW_EDITION"
+msgstr "New edition"
+
+msgid "MEN_NEW_EDITION"
+msgstr "New edition"
+
+msgid "STB_NEW_EDITION"
+msgstr "Create a schema copy in the edition mode"
+
 msgid "TOP_CONNECT_TO_RUNNING"
 msgstr "Connect to a running batch session ..."
 
@@ -719,6 +728,15 @@ msgstr "Apply"
 
 msgid "CLOSE_BTN"
 msgstr "Close"
+
+msgid "SELECT_BTN_TOOLTIP"
+msgstr "Select a new child node in the tree view"
+
+msgid "PLUS_BTN_TOOLTIP"
+msgstr "Add an empty row for a new child node"
+
+msgid "MINUS_BTN_TOOLTIP"
+msgstr "Remove selected row from the children list"
 
 #### YACSGui module tree view ####
 

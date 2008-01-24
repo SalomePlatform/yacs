@@ -156,6 +156,7 @@ LIBICONS = \
 	icon_plus.png \
 	icon_minus.png \
 	new_execution.png \
+	new_edition.png \
 	new_batch_execution.png \
 	load_execution_state.png \
 	execute_in_batch.png \

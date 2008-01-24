@@ -3,6 +3,7 @@
 #include "PythonNode.hxx"
 #include "PythonPorts.hxx"
 
+#include "PyStdout.hxx"
 #include <iostream>
 #include <sstream>
 
@@ -82,7 +83,13 @@ void PythonNode::execute()
   DEBTRACE( "_context refcnt: " << _context->ob_refcnt );
   if(res == NULL)
     {
+      _errorDetails="";
+      PyObject* new_stderr = newPyStdOut(_errorDetails);
+      PySys_SetObject("stderr", new_stderr);
       PyErr_Print();
+      PySys_SetObject("stderr", PySys_GetObject("__stderr__"));
+      Py_DECREF(new_stderr);
+
       PyGILState_Release(gstate);
       throw Exception("Error during execution");
     }
@@ -275,7 +282,13 @@ void PyFuncNode::execute()
   Py_DECREF(args);
   if(result == NULL)
     {
+      _errorDetails="";
+      PyObject* new_stderr = newPyStdOut(_errorDetails);
+      PySys_SetObject("stderr", new_stderr);
       PyErr_Print();
+      PySys_SetObject("stderr", PySys_GetObject("__stderr__"));
+      Py_DECREF(new_stderr);
+
       PyGILState_Release(gstate);
       throw Exception("Error during execution");
     }

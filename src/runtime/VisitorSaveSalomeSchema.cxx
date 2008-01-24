@@ -17,7 +17,7 @@
 using namespace YACS::ENGINE;
 using namespace std;
 
-#define _DEVDEBUG_
+//#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
 VisitorSaveSalomeSchema::VisitorSaveSalomeSchema(ComposedNode *root)

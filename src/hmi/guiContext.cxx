@@ -42,6 +42,7 @@ GuiContext::GuiContext()
   _mapOfSubjectContainer.clear();
   _mapOfSubjectDataType.clear();
   _lastErrorMessage ="";
+  _xmlSchema ="";
 }
 
 GuiContext::~GuiContext()

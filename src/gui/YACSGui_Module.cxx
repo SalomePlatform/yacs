@@ -439,6 +439,11 @@ void YACSGui_Module::createActions()
                 tr("MEN_SAVE_EXECUTION_STATE"), tr("STB_SAVE_EXECUTION_STATE"), 
 		0, aDesktop, false, this, SLOT(onSaveExecutionState()));
 
+  aPixmap = aResourceMgr->loadPixmap("YACSGui", tr("ICON_NEW_EDITION"));
+  createAction( NewEditionId, tr("TOP_NEW_EDITION"), QIconSet(aPixmap),
+                tr("MEN_NEW_EDITION"), tr("STB_NEW_EDITION"), 
+		0, aDesktop, false, this, SLOT(onCreateEdition()));
+
   aPixmap = aResourceMgr->loadPixmap("YACSGui", tr("ICON_CONNECT_TO_RUNNING"));
   createAction( ConnectToRunningId, tr("TOP_CONNECT_TO_RUNNING"), QIconSet(aPixmap),
                 tr("MEN_CONNECT_TO_RUNNING"), tr("STB_CONNECT_TO_RUNNING"), 
@@ -541,6 +546,7 @@ void YACSGui_Module::createMenus()
   //createMenu( StopOnErrorId, execId, -1 );
   createMenu( separator(),execId, -1 );
   createMenu( SaveExecutionStateId, execId, -1 );
+  createMenu( NewEditionId, execId, -1 );
   createMenu( separator(),execId, -1 );
   createMenu( ConnectToRunningId, execId, -1 );
   createMenu( ToggleStopOnErrorId, execId, -1 );
@@ -614,7 +620,10 @@ void YACSGui_Module::createMenus()
   createTool( AbortId,  executionTbId);
   createTool( ResetId,  executionTbId);
   //createTool( StopOnErrorId,  executionTbId);
+  //createTool( separator(),  executionTbId);
   createTool( SaveExecutionStateId,  executionTbId);
+  createTool( NewEditionId,  executionTbId);
+  //createTool( separator(),  executionTbId);
   createTool( ConnectToRunningId, executionTbId);
   createTool( ToggleStopOnErrorId,  executionTbId);
   createTool( SuspendResumeDataflowId, executionTbId); //For testing
@@ -669,6 +678,12 @@ void YACSGui_Module::createPopups()
   popupMgr()->insert( action(ReloadExecutionId), -1, 0 );
   popupMgr()->setRule( action(NewExecutionId), rule, true );
   popupMgr()->setRule( action(ReloadExecutionId), rule, true );
+
+  rule = "client='ObjectBrowser' and selcount = 1 and $ObjectType = { 'RunObject' }";
+
+  //Edit menu
+  popupMgr()->insert( action(NewEditionId), -1, 0 );
+  popupMgr()->setRule( action(NewEditionId), rule, true );
 
   rule = "client='ObjectBrowser' and selcount = 1 and $ObjectType in { 'SchemaObject' 'RunObject' }";
 
@@ -2116,11 +2131,11 @@ YACS::HMI::GuiContext* YACSGui_Module::ImportProcFromFile( const QString& theFil
 							   const bool setEditable,
 							   bool fromSuperv )
 {
-  MESSAGE("YACSGui_Module::ImportProcFromFile");
+  MESSAGE("YACSGui_Module::ImportProcFromFile " << theFilePath.latin1());
   if (theFilePath.isEmpty())
     return 0;
   QString tmpFileName = theFilePath;
-
+  SCRUTE(fromSuperv);
   if (fromSuperv)
     {
       //YACSGui_ORB::YACSGui_Gen_ptr engineRef = InitYACSGuiGen(getApp());
@@ -2130,7 +2145,7 @@ YACS::HMI::GuiContext* YACSGui_Module::ImportProcFromFile( const QString& theFil
           mkstemp(file);
           tmpFileName=file;
           
-          std::string outfile(SALOMEDS_Tool::GetTmpDir() + "/salomeloader_output");
+          std::string outfile(SALOMEDS_Tool::GetTmpDir() + "salomeloader_output");
           std::string call="salomeloader.sh " +theFilePath+ " " + file + " > " + outfile;
           std::cerr << call << std::endl;
           int ret=system(call.c_str());
@@ -2195,7 +2210,7 @@ YACS::HMI::GuiContext* YACSGui_Module::ImportProcFromFile( const QString& theFil
   try
     {
       Proc* aProc = 0;
-      
+      SCRUTE(tmpFileName);
       if (!tmpFileName.isEmpty())
         aProc = aLoader.load(tmpFileName);
       
@@ -2211,6 +2226,7 @@ YACS::HMI::GuiContext* YACSGui_Module::ImportProcFromFile( const QString& theFil
 
       //Print errors logged if any
       Logger* logger=aProc->getLogger("parser");
+      getApp()->logWindow()->putMessage("Load schema: "+theFilePath);
       if(!logger->isEmpty())
         {
 	  getApp()->logWindow()->putMessage("Problems when loading: the proc is not probably completely built\n\n"+logger->getStr());
@@ -2236,6 +2252,7 @@ YACS::HMI::GuiContext* YACSGui_Module::ImportProcFromFile( const QString& theFil
 	aCProc = new GuiContext();
 	GuiContext::setCurrent( aCProc );
 	aCProc->setProc( aProc );
+        aCProc->setXMLSchema( tmpFileName.latin1() );
 	// from now we have to use GuiContext* instead of Proc* in the YACSGui_Graph
 	
 	displayGraph( aCProc, aPrsData, aPortLinkData, aLabelLinkData );
@@ -2353,7 +2370,17 @@ LightApp_Selection* YACSGui_Module::createSelection() const
   return new YACSGui_Selection();
 }
 
-
+/*! Get selection from SALOME object browser. Get a schema name and a schema file name from selection.
+ *  If the schema as already been executed and saved under a fixed name: /tmp/YACSGui/"aSchemaName"-modified,
+ *  use this schema file name.
+ *  
+ *  Create a file run name based on current date and time.
+ *  If the schema file name coresponds to an existing file, copy the schema file under the run name.
+ *  Else save the proc under the run name.
+ *
+ *  Import the run name file and create a specific GuiContext.
+ *
+ */
 void YACSGui_Module::onCreateExecution()
 {
   DataObjectList objlist;
@@ -2373,28 +2400,33 @@ void YACSGui_Module::onCreateExecution()
       {
         aType = _PTR(AttributeParameter) ( anAttr );
         QFile aSchemaFile( aType->GetString("FilePath") );
-        
+        SCRUTE(aSchemaFile.name().latin1());
+
         if ( sobj->FindAttribute( anAttr, "AttributeName" )  )
         {
           aName = _PTR(AttributeName)( anAttr );
           QString aSchemaName = aName->Value();
+          SCRUTE(aSchemaName.latin1());
 	  QString anEditionName = "/tmp/YACSGui/" + aSchemaName + "-modified";
 
 	  // check it is a first execution object created under the schema object
+	  /*
 	  _PTR(Study) aStudy = (( SalomeApp_Study* )(getApp()->activeStudy()))->studyDS();
 	  _PTR(ChildIterator) anIterator ( aStudy->NewChildIterator(sobj) );
-	  bool noAnyRunObjects = true;
+	  bool anyRunObjects = false;
 	  for (; anIterator->More(); anIterator->Next())
 	  {
-	    noAnyRunObjects = false;
+	    anyRunObjects = true;
 	    break;
 	  }
 
-	  if ( !noAnyRunObjects )
-	    // check if file for modified schema was created earlier
-	    if ( QFile::exists(anEditionName) )
-	      aSchemaFile.setName(anEditionName);
+	  if ( anyRunObjects )
+	  */
+	  // check if file for modified schema was created earlier
+	  if ( QFile::exists(anEditionName) )
+	    aSchemaFile.setName(anEditionName);
 
+          SCRUTE(aSchemaFile.name().latin1());
 	  QString tmpDir = SALOMEDS_Tool::GetTmpDir();
 	  QDir aTmpDir( tmpDir );
 	  aTmpDir.mkdir( "YASCGui" );
@@ -2403,9 +2435,11 @@ void YACSGui_Module::onCreateExecution()
 	  QDateTime curTime = QDateTime::currentDateTime();   
 	  QString aRunName = aSchemaName + "-" + curTime.toString( Qt::ISODate );
 	  aRunName = aTmpDir.absFilePath(aRunName);
-	  
+	  SCRUTE(aRunName.latin1());
+
           if ( aSchemaFile.open( IO_ReadOnly ) )
           {
+            MESSAGE("copy from aSchemaFile to aRunName");
 	    QFile aRunFile( aRunName );
             if ( aRunFile.open( IO_WriteOnly ) )
             {
@@ -2424,6 +2458,7 @@ void YACSGui_Module::onCreateExecution()
 	  }
           else
           {
+            MESSAGE("save proc under aRunName");
             //printf( "Can't open schema file: %s\n", QFileInfo( aSchemaFile ).absFilePath().latin1() );
 	    // in such a case it is a new created schema, not yet saved anywhere => just export it
 	    Proc* aProc = getDataModel()->getProc(sobj);
@@ -2440,7 +2475,7 @@ void YACSGui_Module::onCreateExecution()
 	  if ( GuiContext* aCProc = ImportProcFromFile( aRunName, RunMode,  false) )
 	    if ( Proc* aProc = aCProc->getProc() )
 	    {
-	      getDataModel()->createNewRun( sobj, aProc );                
+	      getDataModel()->createNewRun( sobj, aRunName, aProc );                
 	      updateObjBrowser();
 	      
 	      // create and activate the run tree view for the create run object
@@ -2612,7 +2647,7 @@ void YACSGui_Module::onReset()
     if ( anExecutor->checkEndOfDataFlow(false) ) // finished or not started
     {
       YACS::ExecutorState aSchemaState = YACS::NOTYETINITIALIZED;
-      YACS::StatesForNode aNodeState = YACS::INITED;
+      YACS::StatesForNode aNodeState = YACS::READY;
       
       YACSGui_RunTreeView* aRunTV = dynamic_cast<YACSGui_RunTreeView*>(activeTreeView());
       if ( !aRunTV ) return;
@@ -2707,6 +2742,83 @@ void YACSGui_Module::onSaveExecutionState()
 			     tr("MSG_DATAFLOW_IS_CURRENTLY_RUNNING"), 
 			     tr("BUT_OK"));
       return;
+    }
+  }
+}
+
+void YACSGui_Module::onCreateEdition()
+{
+  // get a FilePath from the selected run object in the object browser
+  DataObjectList objlist;
+  getApp()->objectBrowser()->getSelected( objlist );
+
+  // check if the current selection is a single selection
+  if ( objlist.count() == 1 )
+  {
+    SalomeApp_DataObject* obj = dynamic_cast<SalomeApp_DataObject*>( objlist.getFirst() );
+    if ( obj && getDataModel()->objectType( obj->entry() ) == YACSGui_DataModel::RunObject )
+    {
+      _PTR(SObject) sobj = obj->object();
+      _PTR(GenericAttribute)   anAttr;
+      _PTR(AttributeName)      aName;
+      _PTR(AttributeParameter) aType;
+      if ( sobj->FindAttribute( anAttr, "AttributeParameter" ) )
+      {
+        aType = _PTR(AttributeParameter) ( anAttr );
+	QString aRunFileName =  aType->GetString("FilePath");
+        
+	if ( QFile::exists(aRunFileName) )
+	{
+	  QFile aRunFile(aRunFileName);
+
+	  // create a new file with name FilePath+"-modified" and copy FilePath content into it
+	  QString tmpDir = SALOMEDS_Tool::GetTmpDir();
+	  QDir aTmpDir( tmpDir );
+	  aTmpDir.mkdir( "YASCGui" );
+	  aTmpDir.cd( "YASCGui", false );
+
+	  if ( Proc* aProcRun = getDataModel()->getProc( sobj ) )
+	  {
+	    QDateTime curTime = QDateTime::currentDateTime();
+	    QString anEditionName = aProcRun->getName() + "-modified-" + curTime.toString( Qt::ISODate );
+	    anEditionName = aTmpDir.absFilePath(anEditionName);
+	  
+	    if ( aRunFile.open( IO_ReadOnly ) )
+	    {
+	      QFile anEditionFile( anEditionName );
+	      if ( anEditionFile.open( IO_WriteOnly ) )
+	      {
+		QTextStream aRunTS( &aRunFile ), anEditionTS( &anEditionFile );
+		while( !aRunTS.atEnd() )
+		  anEditionTS << aRunTS.readLine() << "\n";
+		anEditionFile.close();
+		aRunFile.close();
+	      }
+	      else
+	      {
+		printf( "Can't open temp edition file: %s\n", QFileInfo( anEditionFile ).absFilePath().latin1() );
+		return;
+	      }
+	    }
+	    else
+	    {
+	      printf( "Can't open run file: %s\n", QFileInfo( aRunFile ).absFilePath().latin1() );
+	      return;
+	    }
+
+	    // import proc from anEditionName file, create SObject, 2D view and tree view for it
+	    if ( GuiContext* aCProc = ImportProcFromFile(anEditionName, EditMode,  false) )
+	      if ( Proc* aProcEdition = aCProc->getProc() )
+	      { 
+		// create schema object in the Object Browser
+		CreateNewSchema(anEditionName,aProcEdition);
+		
+		// create and activate the edition tree view for the imported schema
+		createTreeView( aCProc->getSubjectProc(), YACSGui_DataModel::SchemaObject );
+	      }
+	  }
+	}
+      }
     }
   }
 }
@@ -3099,6 +3211,7 @@ void YACSGui_Module::setRunActionShown(const bool on)
   setMenuShown( ResetId, on );
   //setMenuShown( StopOnErrorId, on );
   setMenuShown( SaveExecutionStateId, on );
+  setMenuShown( NewEditionId, on );
   setMenuShown( ConnectToRunningId, on );
   setMenuShown( ToggleStopOnErrorId, on );
   
@@ -3121,6 +3234,7 @@ void YACSGui_Module::setRunActionShown(const bool on)
   setToolShown( ResetId, on );
   //setToolShown( StopOnErrorId, on );
   setToolShown( SaveExecutionStateId, on );
+  setToolShown( NewEditionId, on );
   setToolShown( ConnectToRunningId, on );
   setToolShown( ToggleStopOnErrorId, on );
   setToolShown( SuspendResumeDataflowId, on);
@@ -3244,6 +3358,7 @@ void YACSGui_Module::onWindowClosed( SUIT_ViewWindow* theVW )
  */
 void YACSGui_Module::temporaryExport()
 {
+  printf(">>> temporaryEXPORT!\n");
   // get active schema
   YACSGui_Graph* aGraph = activeGraph();
   if ( !aGraph ) return;

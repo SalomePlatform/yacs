@@ -9,6 +9,7 @@
 #include "VisitorSaveSalomeSchema.hxx"
 #include "LoadState.hxx"
 #include "Dispatcher.hxx"
+#include "LinkInfo.hxx"
 
 #include <iostream>
 #include <fstream>
@@ -144,17 +145,51 @@ main (int argc, char* argv[])
   try
     {
       Proc* p=loader.load(myArgs.args[0]);
+      if(p==0)
+        {
+          std::cerr << "The imported file is probably not a YACS schema file" << std::endl;
+          return 1;
+        }
       //Get the parser logger
       Logger* logger=p->getLogger("parser");
       //Print errors logged if any
       if(!logger->isEmpty())
         {
+          std::cerr << "The imported file has errors" << std::endl;
           std::cerr << logger->getStr() << std::endl;
         }
       //Don't execute if there are errors
       if(logger->hasErrors())
         {
           delete p;
+          Runtime* r=YACS::ENGINE::getRuntime();
+          Dispatcher* disp=Dispatcher::getDispatcher();
+          r->fini();
+          delete r;
+          delete disp;
+          return 1;
+        }
+
+      if(!p->isValid())
+        {
+          std::string report=p->getErrorReport();
+          std::cerr << "The schema is not valid and can not be executed" << std::endl;
+          std::cerr << report << std::endl;
+          Runtime* r=YACS::ENGINE::getRuntime();
+          Dispatcher* disp=Dispatcher::getDispatcher();
+          r->fini();
+          delete r;
+          delete disp;
+          return 1;
+        }
+
+      // Check consistency
+      LinkInfo info(LinkInfo::ALL_DONT_STOP);
+      p->checkConsistency(info);
+      if(info.areWarningsOrErrors())
+        {
+          std::cerr << "The schema is not consistent and can not be executed" << std::endl;
+          std::cerr << info.getGlobalRepr() << std::endl;
           Runtime* r=YACS::ENGINE::getRuntime();
           Dispatcher* disp=Dispatcher::getDispatcher();
           r->fini();
@@ -197,6 +232,13 @@ main (int argc, char* argv[])
       executor.RunW(p,myArgs.display, fromScratch);
       cerr << "+++++++++++++++++++  end calculation  +++++++++++++++++++" << endl;
       cerr << "Proc state : " << p->getEffectiveState() << endl;
+
+      if(p->getEffectiveState() != YACS::DONE)
+        {
+          std::string report=p->getErrorReport();
+          std::cerr << "Execution has ended in error" << std::endl;
+          std::cerr << report << std::endl;
+        }
 
       std::ofstream g("titi");
       p->writeDot(g);

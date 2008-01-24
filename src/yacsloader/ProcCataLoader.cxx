@@ -26,7 +26,27 @@ ProcCataLoader::~ProcCataLoader()
 void ProcCataLoader::loadCata(Catalog* cata)
 {
   DEBTRACE("ProcCataLoader::load");
-  Proc* p=_xmlLoader->load(_path.c_str());
+  Proc* p;
+  try
+    {
+      p=_xmlLoader->load(_path.c_str());
+      if(p==0)
+        {
+          std::cerr << "the file is probably not a YACS schema file" << std::endl;
+          return; 
+        }
+    }
+  catch (YACS::Exception& e)
+    {
+      std::cerr << "Caught a YACS exception" << std::endl;
+      std::cerr << e.what() << std::endl;
+      return ;
+    }
+  catch (const std::ios_base::failure&)
+    {
+      std::cerr << "Caught an io failure exception" << std::endl;
+      return ;
+    }
 
   //Get the parser logger
   Logger* logger=p->getLogger("parser");

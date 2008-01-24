@@ -120,7 +120,7 @@ Create a python script or function node, add 3 input dataflow ports a, b, c type
 Try to select input c. Only one column is selected. Use the arrow up. It looks like only the selected
 column is switched with input b, not the entire line. Clik on the other items of the two lines.
 Sometimes the entire line is switched (OK) sometimes not... Confusing behaviour, not always the same.
-
+comments: OCC: DONE
 ----------------------------------------------------------------------------------------------------
 Num-----: 9
 priority: 0
@@ -144,6 +144,7 @@ OCC: DONE
 EDF:
 Still observed a SIGSEGV when trying to rename a python node created following example 8 above.
 (not systematic).
+comments: OCC: DONE
 ----------------------------------------------------------------------------------------------------
 Num-----: 10 
 priority: 0
@@ -198,6 +199,7 @@ EDF: I have finally understood the use of '+' button and selection, to move (rep
 idem with '-' button. It is not obvious to find how it works, but it works!
 The main problem is if we forget to apply, there is no warning.
 I don't know if it is possible to have tooltips on such buttons (or other kind of help)
+comments: OCC: DONE, tooltips were added
 ----------------------------------------------------------------------------------------------------
 Num-----: 14
 priority: 0
@@ -258,7 +260,7 @@ previous nodes.
 If you create a new execution (click on object browser, Schema1) you got the 3 nodes without the new links.
 you have first to make apply on schema properties in edition : A state of modification is needed to ask
 for apply changes before execution.
-comments:
+comments: OCC: DONE
 ----------------------------------------------------------------------------------------------------
 Num-----: 18
 priority: 0
@@ -277,6 +279,7 @@ If yes, we think, that it may be done with help of e.g. "New edition" popup menu
 in the object browser (and/or the same toolbar button, as it was done for creation of a new execution).
 EDF(PR): Yes, I think it is OK. To be complete, when a schema is executed, it must be impossible to modify
 it without copy,to keep the coherence between the schema and it's execution.
+comments: OCC: DONE
 ----------------------------------------------------------------------------------------------------
 Num-----: 19
 priority: 0
@@ -300,7 +303,7 @@ comments: OCC: Could you, please, provide a test scenario to reproduce this bug?
 EDF: For instance, create a new schema, a pyscript node, add 2 inputs ports a and b type double and apply.
 Then, change both type to int then apply, WITHOUT cliking elsewhere between the last combo box for type and
 the apply button.
-
+comments: OCC: DONE
 ----------------------------------------------------------------------------------------------------
 Num-----: 
 priority: 22
@@ -308,7 +311,7 @@ status--: NOK
 description: abort on selection in canvas (after problem 21 above):
 YACSGui_TreeView.cxx 474 if ( YACSGui_ReferenceViewItem* aRefItem = dynamic_cast<YACSGui_ReferenceViewItem*>( theItem ) )
 segfault in dynamic_cast
-comments:
+comments: OCC: DONE
 ----------------------------------------------------------------------------------------------------
 Num-----: 23 
 priority: 0

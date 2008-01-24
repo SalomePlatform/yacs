@@ -187,7 +187,7 @@ QWidget* YACSGui_TableItem::createEditor() const
       break;
 
     case YACSGui_Table::Combo:
-      sign = SIGNAL( textChanged( const QString& ) );
+      sign = SIGNAL( activated( const QString& ) );
       break;
 
     default:
@@ -196,7 +196,7 @@ QWidget* YACSGui_TableItem::createEditor() const
     if( !sign.isEmpty() )
       QObject::connect( res, sign, tab, SLOT( onSync() ) );
   }
-
+  
   return res;
 }
 

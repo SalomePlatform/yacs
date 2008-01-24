@@ -293,6 +293,20 @@ static PyObject* convertPort(YACS::ENGINE::Port* port,int owner=0)
   $result=convertNode($1,$owner);
 }
 
+%typemap(out) std::set<YACS::ENGINE::Node *>
+{
+  int i;
+  std::set<YACS::ENGINE::Node *>::iterator iL;
+
+  $result = PyList_New($1.size());
+  PyObject * ob;
+  for (i=0, iL=$1.begin(); iL!=$1.end(); i++, iL++)
+    {
+      ob=convertNode(*iL);
+      PyList_SetItem($result,i,ob); 
+    }
+}
+
 %typemap(out) std::list<YACS::ENGINE::Node *>
 {
   int i;

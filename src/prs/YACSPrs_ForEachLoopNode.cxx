@@ -240,12 +240,12 @@ void YACSPrs_ForEachLoopNode::nextTimeIteration(YACS::ENGINE::Node* theEngine)
   
   if ( theEngine
        &&
-       ( theEngine->getState() == YACS::INITED /*|| theEngine->getEffectiveState() == YACS::INITED*/
+       ( theEngine->getState() == YACS::READY /*|| theEngine->getEffectiveState() == YACS::READY*/
 	 ||
 	 ( nullifyOnToActivate && ( theEngine->getState() == YACS::TOACTIVATE || theEngine->getEffectiveState() == YACS::TOACTIVATE) ) ) )
     setTimeIteration( 0. );
   else if ( theEngine &&
-	    theEngine->getState() != YACS::INITED /*&& theEngine->getEffectiveState() != YACS::INITED*/ &&
+	    theEngine->getState() != YACS::READY /*&& theEngine->getEffectiveState() != YACS::READY*/ &&
 	    !isFinished() ) {
     if ( ForEachLoop* aLoop = dynamic_cast<ForEachLoop*>( theEngine ) )
       setTimeIteration( aLoop->getExecCurrentId()-1. >= 0 ? aLoop->getExecCurrentId()-1. : 0. );
@@ -264,7 +264,7 @@ int YACSPrs_ForEachLoopNode::getPercentage(YACS::ENGINE::Node* theEngine) const
   
   if ( !theEngine ) return 0;
 
-  if ( theEngine->getState() == YACS::INITED || /*theEngine->getEffectiveState() == YACS::INITED ||*/
+  if ( theEngine->getState() == YACS::READY || /*theEngine->getEffectiveState() == YACS::READY ||*/
        theEngine->getState() == YACS::TOLOAD || theEngine->getEffectiveState() == YACS::TOLOAD )
     return 0;
   if ( theEngine->getState() == YACS::DONE )

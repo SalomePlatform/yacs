@@ -149,6 +149,7 @@ bool YACSGui_DataModel::open( const QString& theFileName, CAM_Study* theStudy, Q
 	    aCProc = new GuiContext();
 	    GuiContext::setCurrent( aCProc );
 	    aCProc->setProc( aProc );
+            aCProc->setXMLSchema( aSchemaFileName.latin1() );
 	  }
 	  catch (YACS::Exception& ex)
 	  {
@@ -210,7 +211,7 @@ QString generateSchemeName( const _PTR(Study) theStudy,
   return result;
 }
 
-void YACSGui_DataModel::createNewSchema( QString& theName, Proc* proc)
+void YACSGui_DataModel::createNewSchema( QString& theName, YACS::ENGINE::Proc* proc)
 {
   SalomeApp_ModuleObject* aRoot = dynamic_cast<SalomeApp_ModuleObject*>( root() );
   if ( aRoot )
@@ -247,14 +248,15 @@ void YACSGui_DataModel::createNewSchema( QString& theName, Proc* proc)
     anAttr = aBuilder->FindOrCreateAttribute(aSObj, "AttributeParameter");
     aType = _PTR(AttributeParameter)( anAttr );
     aType->SetInt( "ObjectType", SchemaObject );
-    aType->SetString( "FilePath", theName );
-    printf(">> DataModel : FilePath = %s\n",theName.latin1());
+    QString theFilePath = GuiContext::getCurrent()->getXMLSchema();
+    aType->SetString( "FilePath", theFilePath );
+    printf(">> DataModel : FilePath = %s\n",theFilePath.latin1());
 
     myObjectProcMap.insert( std::make_pair( aSObj->GetID(), proc ) );
   }
 }
 
-void YACSGui_DataModel::createNewRun( _PTR(SObject) parent, YACS::ENGINE::Proc* proc)
+void YACSGui_DataModel::createNewRun( _PTR(SObject) parent, QString& theName, YACS::ENGINE::Proc* proc)
 {
   SalomeApp_ModuleObject* aRoot = dynamic_cast<SalomeApp_ModuleObject*>( root() );
   if ( aRoot )
@@ -293,11 +295,7 @@ void YACSGui_DataModel::createNewRun( _PTR(SObject) parent, YACS::ENGINE::Proc* 
     aType = _PTR(AttributeParameter)( anAttr );
     aType->SetInt( "ObjectType", RunObject );
 
-    QString anAbsFileName = SALOMEDS_Tool::GetTmpDir();
-    anAbsFileName += "YASCGui/" + name;
-    printf(">> YACSGui_DataModel::createNewRun : anAbsFileName = %s\n",
-	   anAbsFileName.latin1());
-    aType->SetString( "FilePath", anAbsFileName );
+    aType->SetString( "FilePath", theName );
 
     myObjectProcMap.insert( std::make_pair( aSObj->GetID(), proc ) );
   }

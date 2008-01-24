@@ -223,6 +223,13 @@ void YACSPrs_Link::addPoint() {
 
     merge();
     if (myCanvas) myCanvas->update();
+
+    /*
+    GuiContext* aContext = GuiContext::getCurrent();
+    if ( aContext )
+      if ( aContext->getSubjectProc() )
+	aContext->getSubjectProc()->update( EDIT, DATALINK, 0 );
+    */
   }
 }
 
@@ -237,6 +244,13 @@ void YACSPrs_Link::removePoint() {
 
     merge();
     if (myCanvas) myCanvas->update();
+
+    /*
+    GuiContext* aContext = GuiContext::getCurrent();
+    if ( aContext )
+      if ( aContext->getSubjectProc() )
+	aContext->getSubjectProc()->update( EDIT, DATALINK, 0 );
+    */
   }
 }
 

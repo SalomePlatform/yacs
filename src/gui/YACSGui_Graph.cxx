@@ -190,6 +190,21 @@ void YACSGui_Graph::update(YACS::HMI::GuiEvent event, int type, YACS::HMI::Subje
       createPrs(son);
     }
     break;
+  /*
+  case EDIT:
+    switch (type)
+    {
+    case DATALINK:
+    case CONTROLLINK:
+      {
+	if ( myModule ) myModule->temporaryExport();
+      }
+      break;
+    default:
+      break;
+    }
+    break;
+  */
   default:
     GuiObserver::update(event, type, son);
   }

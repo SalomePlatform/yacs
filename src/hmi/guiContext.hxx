@@ -38,23 +38,25 @@ namespace YACS
       inline QCanvasItem* getSelectedCanvasItem()        {return _selectedCanvasItem; };
       inline long getNewId()                             {return _numItem++; };
       inline QWidgetStack* getWidgetStack()              {return _widgetStack; };
+      inline std::string getXMLSchema()                  {return _xmlSchema; };
 
       inline void setSelectedCanvasItem(QCanvasItem *c)          {_selectedCanvasItem = c; };
       inline void setWidgetStack(QWidgetStack* ws)               {_widgetStack = ws; };
       inline void setSessionCatalog(YACS::ENGINE::Catalog* cata) {_sessionCatalog = cata; };
       inline void setProcCatalog(YACS::ENGINE::Catalog* cata)    {_procCatalog = cata; };
       inline void setCurrentCatalog(YACS::ENGINE::Catalog* cata) {_currentCatalog = cata; };
+      inline void setXMLSchema(std::string xmlSchema)            {_xmlSchema = xmlSchema; };
 
       inline static GuiContext* getCurrent()             {return _current; };
       inline static void setCurrent(GuiContext* context) { _current=context; };
 
-      std::map<YACS::ENGINE::Node*,YACS::HMI::SubjectNode*> _mapOfSubjectNode;
-      std::map<YACS::ENGINE::DataPort*,YACS::HMI::SubjectDataPort*> _mapOfSubjectDataPort;
-      std::map<std::pair<YACS::ENGINE::OutPort*, YACS::ENGINE::InPort*>,YACS::HMI::SubjectLink*> _mapOfSubjectLink;
+      std::map<YACS::ENGINE::Node*,YACS::HMI::SubjectNode*>                                        _mapOfSubjectNode;
+      std::map<YACS::ENGINE::DataPort*,YACS::HMI::SubjectDataPort*>                                _mapOfSubjectDataPort;
+      std::map<std::pair<YACS::ENGINE::OutPort*, YACS::ENGINE::InPort*>,YACS::HMI::SubjectLink*>   _mapOfSubjectLink;
       std::map<std::pair<YACS::ENGINE::Node*, YACS::ENGINE::Node*>,YACS::HMI::SubjectControlLink*> _mapOfSubjectControlLink;
-      std::map<YACS::ENGINE::ComponentInstance*, YACS::HMI::SubjectComponent*> _mapOfSubjectComponent;
-      std::map<YACS::ENGINE::Container*, YACS::HMI::SubjectContainer*> _mapOfSubjectContainer;
-      std::map<std::string, YACS::HMI::SubjectDataType*> _mapOfSubjectDataType;
+      std::map<YACS::ENGINE::ComponentInstance*, YACS::HMI::SubjectComponent*>                     _mapOfSubjectComponent;
+      std::map<YACS::ENGINE::Container*, YACS::HMI::SubjectContainer*>                             _mapOfSubjectContainer;
+      std::map<std::string, YACS::HMI::SubjectDataType*>                                           _mapOfSubjectDataType;
       std::string _lastErrorMessage;
 
     protected:
@@ -70,6 +72,7 @@ namespace YACS
       QCanvas *_canvas;
       QCanvasItem *_selectedCanvasItem;
       QWidgetStack* _widgetStack;
+      std::string _xmlSchema;
 
     };
   }

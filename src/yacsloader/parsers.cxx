@@ -12,7 +12,7 @@
 
 #include "rootParser.hxx"
 
-#define _DEVDEBUG_
+//#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
 YACS::ENGINE::Runtime* theRuntime=0;
@@ -71,6 +71,8 @@ ENGINE::Proc* YACSLoader::load(const char * file)
   
   parser::main_parser._file=file;
 
+  currentProc=0;
+
   try
     {
       for (;;) 
@@ -88,6 +90,8 @@ ENGINE::Proc* YACSLoader::load(const char * file)
 
           if (XML_Parse(p, Buff, len, done) == XML_STATUS_ERROR) 
             {
+              if(currentProc==0)
+                break;
               YACS::ENGINE::Logger* logger=currentProc->getLogger("parser");
               logger->fatal(XML_ErrorString(XML_GetErrorCode(p)),file,XML_GetCurrentLineNumber(p));
               break;

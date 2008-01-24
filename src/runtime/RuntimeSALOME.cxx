@@ -244,7 +244,7 @@ void RuntimeSALOME::init(long flags)
         }
 
       _bltins = PyEval_GetBuiltins();  /* borrowed ref */
-  
+
       if (_useCorba)
         {
 

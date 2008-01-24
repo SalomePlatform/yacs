@@ -121,7 +121,8 @@ class YACSGui_EditionTreeView: public YACSGui_TreeView
 
  protected:
  enum { ServiceNodeItem = YACSGui_TreeView::NodeItem+1, LoopNodeItem, PortItem,
-	LinkItem, ContainerItem, ComponentItem, CorbaComponentItem, ComposedNodeItem, DataTypeItem };
+	LinkItem, ContainerItem, ComponentItem, CorbaComponentItem, ComposedNodeItem, DataTypeItem,
+        LabelNodesItem, LabelContainersItem };
 
   //virtual void build();
   void fillContainerData( YACS::HMI::SubjectComposedNode* theSNode );
