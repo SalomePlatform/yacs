@@ -231,7 +231,7 @@ status--: NOK (checked on BR_DEV mergefrom_BR_PR_8jan08)
 description: No tree view nor canvas for salome SUPERV files 
 comments: OCC: DONE
 EDF: Loading seems OK for edition (tree view, canvas...) but execution tree view is not visible. 
-
+EDF: OK
 ----------------------------------------------------------------------------------------------------
 Num-----: 16
 priority: 0
@@ -325,13 +325,13 @@ Num-----: 24
 priority: 0
 status--: NOK
 description: schema is not automatically checked before execution
-comments:
+comments: EDF: DONE
 ----------------------------------------------------------------------------------------------------
 Num-----: 25
 priority: 0
 status--: NOK
 description: DSC ports are not displayed in node properties panel (for instance samples/calcium4)
-comments:
+comments: OCC: DONE
 ----------------------------------------------------------------------------------------------------
 Num-----:  
 priority: 0
