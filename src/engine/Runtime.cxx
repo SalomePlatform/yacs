@@ -90,6 +90,8 @@ Runtime::~Runtime()
   Runtime::_tc_bool->decrRef();
   Runtime::_tc_string->decrRef();
   Runtime::_tc_file->decrRef();
+  for(std::vector<Catalog *>::const_iterator it=_catalogs.begin();it !=_catalogs.end();it++)
+    delete (*it);
   Runtime::_singleton=0;
   DEBTRACE( "Total YACS::ENGINE::Refcount: " << RefCounter::_totalCnt );
 }
@@ -219,3 +221,29 @@ Catalog* Runtime::getBuiltinCatalog()
 {
   return _builtinCatalog;
 }
+
+//! Add a catalog of types and nodes to the runtime
+/*!
+ * These catalogs are searched when calling getTypeCode method
+ */
+void Runtime::addCatalog(Catalog* catalog)
+{
+  _catalogs.push_back(catalog);
+}
+
+//! Get a typecode by its name from runtime catalogs
+/*!
+ * \return the typecode if it exists or NULL
+ */
+TypeCode* Runtime::getTypeCode(const std::string& name)
+{
+  if (_builtinCatalog->_typeMap.count(name) != 0)
+    return _builtinCatalog->_typeMap[name];
+  for(std::vector<Catalog *>::const_iterator it=_catalogs.begin();it !=_catalogs.end();it++)
+    {
+      if ((*it)->_typeMap.count(name) != 0)
+        return (*it)->_typeMap[name];
+    }
+  return 0;
+}
+

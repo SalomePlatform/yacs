@@ -1,4 +1,5 @@
 #include "Port.hxx"
+#include "Node.hxx"
 #include <iostream>
 
 using namespace YACS::ENGINE;
@@ -25,4 +26,10 @@ Port::~Port()
 string Port::getNameOfTypeOfCurrentInstance() const
 {
   return NAME;
+}
+
+void Port::modified()
+{
+  if(_node)
+    _node->modified();
 }

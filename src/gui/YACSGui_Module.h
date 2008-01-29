@@ -175,6 +175,11 @@ public slots:
   virtual bool deactivateModule( SUIT_Study* );
   void onArrangeNodes();
 
+  void onFullView();
+  void onControlView();
+  void onDataFlowView();
+  void onDataStreamView();
+
  protected:
   void createSComponent(); 
   void loadCatalog();
@@ -239,11 +244,6 @@ private slots:
   void onToggleStopOnError();
   
   void onChangeInformations();
-
-  void onFullView();
-  void onControlView();
-  void onDataFlowView();
-  void onDataStreamView();
 
   void onTableView();
 

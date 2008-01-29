@@ -9,6 +9,8 @@
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
+#define NEW_KERNEL
+
 using namespace YACS::ENGINE;
 
 SessionCataLoader::SessionCataLoader(const std::string& path):CatalogLoader(path)
@@ -18,6 +20,7 @@ SessionCataLoader::SessionCataLoader(const std::string& path):CatalogLoader(path
 }
 
 /*
+ In salome catalog, the type names for CALCIUM are : INTEGER, FLOAT,DOUBLE,STRING,BOOLEAN
   enum DataStreamType {
     DATASTREAM_UNKNOWN,
     DATASTREAM_INTEGER,
@@ -27,7 +30,9 @@ SessionCataLoader::SessionCataLoader(const std::string& path):CatalogLoader(path
     DATASTREAM_BOOLEAN
   } ;
 */
+#ifndef NEW_KERNEL
 std::map<SALOME_ModuleCatalog::DataStreamType,std::string> datastreamMap;
+#endif
 
 //! import a SALOME component definition in a YACS catalog
 /*!
@@ -41,6 +46,16 @@ std::map<SALOME_ModuleCatalog::DataStreamType,std::string> datastreamMap;
 void SessionCataLoader::importComponent(Catalog* cata,SALOME_ModuleCatalog::Acomponent_ptr compo)
 {
   CORBA::String_var componame = compo->componentname();
+
+  DEBTRACE("Implementation type : " << compo->implementation_type());
+#ifdef NEW_KERNEL
+  SALOME_ModuleCatalog::ImplType imptyp=compo->implementation_type();
+  if(imptyp == SALOME_ModuleCatalog::SO)DEBTRACE("Dyn lib");
+  if(imptyp == SALOME_ModuleCatalog::PY)DEBTRACE("Python module");
+  if(imptyp == SALOME_ModuleCatalog::EXE)DEBTRACE("Executable");
+  DEBTRACE("Implementation name : " << compo->implementation_name());
+#endif
+
   SALOME_ModuleCatalog::ListOfInterfaces_var interfacename_list = compo->GetInterfaceList();
   if(interfacename_list->length() == 0)
     return;
@@ -75,7 +90,11 @@ void SessionCataLoader::importComponent(Catalog* cata,SALOME_ModuleCatalog::Acom
           const char* ty=services[k].ServiceinParameter[kk].Parametertype;
           if(cata->_typeMap.count(ty)==0)
             {
-              std::cerr << "Type " << ty << " does not exist" << " (" <<__FILE__ << ":" << __LINE__ << ")" << std::endl;
+              std::stringstream msg; 
+              msg << "Type " <<ty <<" does not exist. Service " << s << " of component " << componame << " is not available";
+              _errors=_errors+"\n"+msg.str();
+              std::cerr << msg.str() << std::endl;
+              compodef->_serviceMap[s+std::string("_IS_INVALID")]=0;
               delete node;
               node=0;
               break;
@@ -92,7 +111,11 @@ void SessionCataLoader::importComponent(Catalog* cata,SALOME_ModuleCatalog::Acom
           const char* ty=services[k].ServiceoutParameter[kk].Parametertype;
           if(cata->_typeMap.count(ty)==0)
             {
-              std::cerr << "Type " << ty << " does not exist" << " (" <<__FILE__ << ":" << __LINE__ << ")" << std::endl;
+              std::stringstream msg; 
+              msg << "Type " <<ty <<" does not exist. Service " << s << " of component " << componame << " is not available";
+              _errors=_errors+"\n"+msg.str();
+              std::cerr << msg.str() << std::endl;
+              compodef->_serviceMap[s+std::string("_IS_INVALID")]=0;
               delete node;
               node=0;
               break;
@@ -107,10 +130,18 @@ void SessionCataLoader::importComponent(Catalog* cata,SALOME_ModuleCatalog::Acom
           DEBTRACE("Parameter : " <<  services[k].ServiceinDataStreamParameter[kk].Parametername);
           DEBTRACE("Type : " <<  services[k].ServiceinDataStreamParameter[kk].Parametertype);
           DEBTRACE("Dependency : " <<  services[k].ServiceinDataStreamParameter[kk].Parameterdependency);
+#ifdef NEW_KERNEL
+          const char* ty=services[k].ServiceinDataStreamParameter[kk].Parametertype;
+#else
           std::string ty=datastreamMap[services[k].ServiceinDataStreamParameter[kk].Parametertype];
+#endif
           if(cata->_typeMap.count(ty)==0)
             {
-              std::cerr << "Type " << ty << " does not exist" << " (" <<__FILE__ << ":" << __LINE__ << ")" << std::endl;
+              std::stringstream msg; 
+              msg << "Type " <<ty <<" does not exist. Service " << s << " of component " << componame << " is not available";
+              _errors=_errors+"\n"+msg.str();
+              std::cerr << msg.str() << std::endl;
+              compodef->_serviceMap[s+std::string("_IS_INVALID")]=0;
               delete node;
               node=0;
               break;
@@ -126,10 +157,18 @@ void SessionCataLoader::importComponent(Catalog* cata,SALOME_ModuleCatalog::Acom
           DEBTRACE("Parameter : " <<  services[k].ServiceoutDataStreamParameter[kk].Parametername);
           DEBTRACE("Type : " <<  services[k].ServiceoutDataStreamParameter[kk].Parametertype);
           DEBTRACE("Dependency : " <<  services[k].ServiceoutDataStreamParameter[kk].Parameterdependency);
+#ifdef NEW_KERNEL
+          const char* ty=services[k].ServiceoutDataStreamParameter[kk].Parametertype;
+#else
           std::string ty=datastreamMap[services[k].ServiceoutDataStreamParameter[kk].Parametertype];
+#endif
           if(cata->_typeMap.count(ty)==0)
             {
-              std::cerr << "Type " << ty << " does not exist" << " (" <<__FILE__ << ":" << __LINE__ << ")" << std::endl;
+              std::stringstream msg; 
+              msg << "Type " <<ty <<" does not exist. Service " << s << " of component " << componame << " is not available";
+              _errors=_errors+"\n"+msg.str();
+              std::cerr << msg.str() << std::endl;
+              compodef->_serviceMap[s+std::string("_IS_INVALID")]=0;
               delete node;
               node=0;
               break;
@@ -147,6 +186,8 @@ void SessionCataLoader::importComponent(Catalog* cata,SALOME_ModuleCatalog::Acom
       if(node == 0)continue;
       compodef->_serviceMap[s]=node;
     }
+
+  /* Even if a component has no service, put it in the catalog
   if(compodef->_serviceMap.size() > 0)
     {
       cata->_componentMap[(const char*)componame]=compodef;
@@ -155,6 +196,8 @@ void SessionCataLoader::importComponent(Catalog* cata,SALOME_ModuleCatalog::Acom
     {
       delete compodef;
     }
+    */
+  cata->_componentMap[(const char*)componame]=compodef;
 }
 
 SessionCataLoader::~SessionCataLoader()
@@ -251,6 +294,20 @@ void SessionCataLoader::loadTypesOld(Catalog* cata)
   Runtime* r=getRuntime();
   std::map<std::string,TypeCode*>& typeMap=cata->_typeMap;
 
+#ifdef NEW_KERNEL
+  //Add old Calcium data types for KERNEL
+  typeMap["DOUBLE"]=typeMap["CALCIUM_double"];
+  typeMap["DOUBLE"]->incrRef();
+  typeMap["FLOAT"]=typeMap["CALCIUM_real"];
+  typeMap["FLOAT"]->incrRef();
+  typeMap["INTEGER"]=typeMap["CALCIUM_integer"];
+  typeMap["INTEGER"]->incrRef();
+  typeMap["BOOLEAN"]=typeMap["CALCIUM_boolean"];
+  typeMap["BOOLEAN"]->incrRef();
+  typeMap["STRING"]=typeMap["CALCIUM_string"];
+  typeMap["STRING"]->incrRef();
+#endif
+
   //GEOM
   typeMap["GEOM_Object"]=TypeCode::interfaceTc("IDL:GEOM/GEOM_Object:1.0","GEOM_Object");
   typeMap["ListOfLong"]=TypeCode::sequenceTc("ListOfLong","ListOfLong",r->_tc_int);
@@ -290,18 +347,21 @@ void SessionCataLoader::loadTypesOld(Catalog* cata)
 void SessionCataLoader::loadCata(Catalog* cata)
 {
   DEBTRACE("SessionCataLoader::load")
+#ifndef NEW_KERNEL
   datastreamMap[SALOME_ModuleCatalog::DATASTREAM_UNKNOWN]="CALCIUM_unknown";
   datastreamMap[SALOME_ModuleCatalog::DATASTREAM_INTEGER]="CALCIUM_integer";
   datastreamMap[SALOME_ModuleCatalog::DATASTREAM_FLOAT]="CALCIUM_real";
   datastreamMap[SALOME_ModuleCatalog::DATASTREAM_DOUBLE]="CALCIUM_double";
   datastreamMap[SALOME_ModuleCatalog::DATASTREAM_BOOLEAN]="CALCIUM_boolean";
   datastreamMap[SALOME_ModuleCatalog::DATASTREAM_STRING]="CALCIUM_string";
+#endif
 
   CORBA::ORB_ptr orb = getSALOMERuntime()->getOrb();
   CORBA::Object_var obj;
   SALOME_ModuleCatalog::ModuleCatalog_var catalog;
   obj=orb->string_to_object(_path.c_str());
   catalog= SALOME_ModuleCatalog::ModuleCatalog::_narrow(obj);
+  _errors="";
 
   // Get types in catalog
   loadTypes(cata,catalog);
@@ -317,4 +377,5 @@ void SessionCataLoader::loadCata(Catalog* cata)
       SALOME_ModuleCatalog::Acomponent_var component = catalog->GetComponent(componentname_list[i]);
       importComponent(cata,component);
     }
+  cata->setErrors(_errors);
 }

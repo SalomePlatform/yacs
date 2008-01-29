@@ -40,7 +40,8 @@ std::string LogRecord::getStr()
 {
   std::stringstream msg;
   msg << "LogRecord: " << _loggerName << ":" << getLevelName(_level) << ":" << _message;
-  msg << " (" << _fileName << ":" << _line << ")";
+  if(_fileName != "")
+    msg << " (" << _fileName << ":" << _line << ")";
   return msg.str();
 }
 

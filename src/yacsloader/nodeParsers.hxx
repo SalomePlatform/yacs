@@ -10,6 +10,7 @@
 #include "propertyParsers.hxx"
 
 #include "Proc.hxx"
+#include "TypeCode.hxx"
 #include "InlineNode.hxx"
 #include "ServiceNode.hxx"
 #include "ServiceInlineNode.hxx"
@@ -64,6 +65,7 @@ struct nodetypeParser: parser
   virtual void pre()
     {
       _node=0;
+      _container="";
     }
   virtual void name (const std::string& name)
     {
@@ -84,6 +86,7 @@ struct nodetypeParser: parser
   std::string _type;
   std::string _name;
   std::string _state;
+  std::string _container;
   T _node;
 };
 
@@ -158,6 +161,7 @@ struct inlinetypeParser:public nodetypeParser<T>
       this->_node=0;
       _kind="";
       this->_state="";
+      this->_container="";
     }
   virtual void kind (const std::string& name)
     {
@@ -173,12 +177,23 @@ struct inlinetypeParser:public nodetypeParser<T>
       DEBTRACE( "inline_inport: " << p._name <<":"<<p._type)             
       if(this->_node==0)
         throw YACS::Exception("Node must be completely defined before defining its ports");
+
       if(currentProc->typeMap.count(p._type)==0)
+      {
+        //Check if the typecode is defined in the runtime
+        YACS::ENGINE::TypeCode* t=theRuntime->getTypeCode(p._type);
+        if(t==0)
         {
           std::string msg="Unknown InPort Type: ";
           msg=msg+p._type+" for node: "+this->_node->getName()+" port name: "+p._name;
           throw YACS::Exception(msg);
         }
+        else
+        {
+          currentProc->typeMap[p._type]=t;
+          t->incrRef();
+        }
+      }
       this->_node->edAddInputPort(p._name,currentProc->typeMap[p._type]);
     }
   virtual void outport (const myoutport& p)
@@ -186,12 +201,22 @@ struct inlinetypeParser:public nodetypeParser<T>
       DEBTRACE( "inline_outport: " << p._name <<":"<<p._type)             
       if(this->_node==0)
         throw YACS::Exception("Node must be completely defined before defining its ports");
+
       if(currentProc->typeMap.count(p._type)==0)
+      {
+        YACS::ENGINE::TypeCode* t=theRuntime->getTypeCode(p._type);
+        if(t==0)
         {
           std::string msg="Unknown OutPort Type: ";
           msg=msg+p._type+" for node: "+this->_node->getName()+" port name: "+p._name;
           throw YACS::Exception(msg);
         }
+        else
+        {
+          currentProc->typeMap[p._type]=t;
+          t->incrRef();
+        }
+      }
       this->_node->edAddOutputPort(p._name,currentProc->typeMap[p._type]);
     }
   virtual T post()
@@ -257,18 +282,31 @@ struct sinlinetypeParser:public inlinetypeParser<T>
   virtual void load (const loadon& l)
     {
       DEBTRACE( "sinline_load: " )             
-      if(this->_node==0)
-        throw YACS::Exception("ServiceInlineNode must be completely defined before defining how to load it");
+      this->_container=l._container;
+    }
+  virtual T post()
+    {
+      DEBTRACE( "sinline_post " << this->_node->getName() );
+      if(this->_state == "disabled")this->_node->exDisabledState();
 
-      if(currentProc->containerMap.count(l._container) != 0)
+      if(currentProc->containerMap.count(this->_container) != 0)
         {
-          //If it has already a container replace it ?????
-          this->_node->getComponent()->setContainer(currentProc->containerMap[l._container]);
+          this->_node->getComponent()->setContainer(currentProc->containerMap[this->_container]);
+        }
+      else if(this->_container == "")
+        {
+          if(currentProc->containerMap.count("DefaultContainer") != 0)
+          {
+            //a default container is defined : use it
+            this->_node->getComponent()->setContainer(currentProc->containerMap["DefaultContainer"]);
+          }
         }
       else
         {
-          std::cerr <<  "WARNING: Unknown container " << l._container << std::endl;
+          std::cerr << "WARNING: Unknown container " << this->_container << " ignored" << std::endl;
         }
+
+      return this->_node;
     }
 };
 template <class T> sinlinetypeParser<T> sinlinetypeParser<T>::sinlineParser;
@@ -355,19 +393,8 @@ struct servicetypeParser:public inlinetypeParser<T>
 
   virtual void load (const loadon& l)
     {
-      DEBTRACE( "service_load: " )             
-      if(this->_node==0)
-        throw YACS::Exception("ServiceNode must be completely defined before defining how to load it");
-
-      if(currentProc->containerMap.count(l._container) != 0)
-        {
-          //If it has already a container replace it ?????
-          this->_node->getComponent()->setContainer(currentProc->containerMap[l._container]);
-        }
-      else
-        {
-          std::cerr << "WARNING: Unknown container " << l._container << std::endl;
-        }
+      DEBTRACE( "service_load: " );
+      this->_container=l._container;
     }
 
   virtual void instream (const myinport& p)
@@ -377,12 +404,22 @@ struct servicetypeParser:public inlinetypeParser<T>
       DEBTRACE( p._name )             
       if(this->_node==0)
         throw YACS::Exception("ServiceNode must be completely defined before defining its ports");
+
       if(currentProc->typeMap.count(p._type)==0)
+      {
+        YACS::ENGINE::TypeCode* t=theRuntime->getTypeCode(p._type);
+        if(t==0)
         {
-          std::string msg="Unknown InPort Type: ";
+          std::string msg="Unknown InStreamPort Type: ";
           msg=msg+p._type+" for node: "+this->_node->getName()+" port name: "+p._name;
           throw YACS::Exception(msg);
         }
+        else
+        {
+          currentProc->typeMap[p._type]=t;
+          t->incrRef();
+        }
+      }
       YACS::ENGINE::InputDataStreamPort* port;
       port=this->_node->edAddInputDataStreamPort(p._name,currentProc->typeMap[p._type]);
       // Set all properties for this port
@@ -397,12 +434,22 @@ struct servicetypeParser:public inlinetypeParser<T>
       DEBTRACE( p._name )             
       if(this->_node==0)
         throw YACS::Exception("ServiceNode must be completely defined before defining its ports");
+
       if(currentProc->typeMap.count(p._type)==0)
+      {
+        YACS::ENGINE::TypeCode* t=theRuntime->getTypeCode(p._type);
+        if(t==0)
         {
-          std::string msg="Unknown OutPort Type: ";
+          std::string msg="Unknown OutStreamPort Type: ";
           msg=msg+p._type+" for node: "+this->_node->getName()+" port name: "+p._name;
           throw YACS::Exception(msg);
         }
+        else
+        {
+          currentProc->typeMap[p._type]=t;
+          t->incrRef();
+        }
+      }
       YACS::ENGINE::OutputDataStreamPort* port;
       port=this->_node->edAddOutputDataStreamPort(p._name,currentProc->typeMap[p._type]);
       // Set all properties for this port
@@ -415,6 +462,23 @@ struct servicetypeParser:public inlinetypeParser<T>
       DEBTRACE( "service_post " << this->_node->getName() )             
       this->mincount("method",1);
       if(this->_state == "disabled")this->_node->exDisabledState();
+
+      if(currentProc->containerMap.count(this->_container) != 0)
+        {
+          this->_node->getComponent()->setContainer(currentProc->containerMap[this->_container]);
+        }
+      else if(this->_container == "")
+        {
+          if(currentProc->containerMap.count("DefaultContainer") != 0)
+          {
+            //a default container is defined : use it
+            this->_node->getComponent()->setContainer(currentProc->containerMap["DefaultContainer"]);
+          }
+        }
+      else
+        {
+          std::cerr << "WARNING: Unknown container " << this->_container << " ignored" << std::endl;
+        }
       return this->_node;
     }
 };

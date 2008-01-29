@@ -32,6 +32,7 @@
 #include <YACSGui_Executor.h>
 #include <YACSGui_TreeView.h>
 #include <YACSGui_TreeViewItem.h>
+#include <YACSGui_LogViewer.h>
 
 #include <YACSPrs_ElementaryNode.h>
 
@@ -42,6 +43,7 @@
 #include <SUIT_Session.h>
 #include <SUIT_Application.h>
 #include <SUIT_MessageBox.h>
+#include <LogWindow.h>
 
 #include <InPort.hxx>
 #include <OutPort.hxx>
@@ -690,6 +692,23 @@ void YACSGui_InputPanel::setExclusiveVisible( const bool on, const std::list<int
 }
 
 //=======================================================================
+// name    : getVisiblePagesIds
+// Purpose : 
+//=======================================================================
+std::list<int> YACSGui_InputPanel::getVisiblePagesIds()
+{
+  list<int> aRetList;
+
+  for ( QMap< int, QWidget* >::const_iterator anIter = myPages.begin(); anIter != myPages.end(); ++anIter )
+  {
+    int anId = anIter.key();
+    if ( isVisible(anId) ) aRetList.push_back(anId);
+  }
+
+  return aRetList;
+}
+
+//=======================================================================
 // name    : setMode
 // Purpose : 
 //=======================================================================
@@ -737,6 +756,15 @@ QSize YACSGui_InputPanel::getPrefferedSize()
   setUpdatesEnabled( true );
   repaint();
   return aSize;
+}
+
+//================================================================
+// Function : emitApply
+// Purpose  : 
+//================================================================
+void YACSGui_InputPanel::emitApply( const int theId )
+{
+  emit Apply( theId );
 }
 
 //=======================================================================
@@ -1264,12 +1292,12 @@ YACSGui_YACSORBContainerDialog::YACSGui_YACSORBContainerDialog( QWidget* thePare
   if( anApp )
   {
     anApp->lcc()->preSet(myParams);
-    myParams.container_name = "FactoryServerPy";
+    myParams.container_name = "YACSServer";
     myParams.hostname = "localhost";
   }
   else
   {
-    myParams.container_name = "FactoryServerPy";
+    myParams.container_name = "YACSServer";
     myParams.hostname = "localhost";
     myParams.OS = "";
     myParams.mem_mb = 0;
@@ -1332,8 +1360,8 @@ void YACSGui_YACSORBContainerDialog::updateState()
   fillHostNames();
 
   // Set container name
-  if ( myPage->myContainerName )
-    myPage->myContainerName->setText(QString(myParams.container_name));
+  if ( myPage->myExecutionName )
+    myPage->myExecutionName->setText(QString(myParams.container_name));
 
   // Set host name
   if ( myPage->myHostName )
@@ -1370,8 +1398,8 @@ void YACSGui_YACSORBContainerDialog::updateState()
 
 void YACSGui_YACSORBContainerDialog::onApply()
 {
-  if ( myPage->myContainerName )
-    myParams.container_name = myPage->myContainerName->text().latin1();
+  if ( myPage->myExecutionName )
+    myParams.container_name = myPage->myExecutionName->text().latin1();
 
   if ( myPage->myHostName )
     myParams.hostname = myPage->myHostName->currentText().latin1();
@@ -1457,6 +1485,31 @@ void YACSGui_ContainerPage::setSContainer(YACS::HMI::SubjectContainer* theSConta
     fillHostNames();
     updateState();
   }
+
+  if ( theSContainer )
+  {
+    // set "Container Name" fields to read only if the user is editing a service node
+    ServiceNode* aService = 0;
+    if ( YACSGui_EditionTreeView * aETV = 
+	 dynamic_cast<YACSGui_EditionTreeView*>(getInputPanel()->getModule()->activeTreeView()) )
+      {
+        std::list<QListViewItem*> aList = aETV->getSelected();
+        if (!aList.empty())
+          if ( YACSGui_NodeViewItem* aNode = dynamic_cast<YACSGui_NodeViewItem*>(aList.front()) )
+            aService = dynamic_cast<ServiceNode*>(aNode->getNode());
+      }
+    
+    if ( aService )
+      {
+        myDefinitionName->setReadOnly(true);
+        myExecutionName->setReadOnly(true);
+      }
+    else
+      {
+        myDefinitionName->setReadOnly(false);
+        myExecutionName->setReadOnly(false);
+      }
+  }
 }
 
 YACS::ENGINE::Container* YACSGui_ContainerPage::getContainer() const
@@ -1469,20 +1522,55 @@ YACS::ENGINE::SalomeContainer* YACSGui_ContainerPage::getSalomeContainer() const
   return ( mySContainer ? dynamic_cast<SalomeContainer*>(mySContainer->getContainer()) : 0 );
 }
 
-QString YACSGui_ContainerPage::getContainerName() const
+QString YACSGui_ContainerPage::getDefinitionName() const
 {
   return ( mySContainer ? QString( mySContainer->getName() ) : QString("") );
 }
 
-void YACSGui_ContainerPage::setContainerName( const QString& theName )
+bool YACSGui_ContainerPage::setDefinitionName( const QString& theName )
 {
+  bool ret = false;
+  bool alreadyExists = false;
   if ( getContainer() )
+    {
+      GuiContext* aContext = GuiContext::getCurrent();
+      map<Container*, SubjectContainer*>::const_iterator it;
+      for(it = aContext->_mapOfSubjectContainer.begin(); it !=aContext->_mapOfSubjectContainer.end(); ++it)
+        {
+          if ( QString::compare(theName, (*it).first->getName().c_str()) == 0)
+            {
+              alreadyExists =true;
+              break;
+            }
+        }
+      }
+  if (!alreadyExists)
   {
     getContainer()->setName( theName.latin1() );
-    if ( getSalomeContainer() )
-      getSalomeContainer()->setProperty( "container_name", theName.latin1() );
     mySContainer->update( RENAME, 0, mySContainer );
+    ret = true;
   }
+  return ret;
+}
+
+QString YACSGui_ContainerPage::getExecutionName() const
+{
+  QString name = "";
+  if (getSalomeContainer())
+    {
+      string nc = getSalomeContainer()->getProperty("container_name");
+      name = nc.c_str();
+    } 
+  return name;
+}
+
+void YACSGui_ContainerPage::setExecutionName( const QString& theName )
+{
+  if ( getSalomeContainer() )
+    {
+      getSalomeContainer()->setProperty( "container_name", theName.latin1() );
+      mySContainer->update( RENAME, 0, mySContainer );
+    }
 }
 
 YACSGui_InputPanel* YACSGui_ContainerPage::getInputPanel() const
@@ -1528,18 +1616,16 @@ QString YACSGui_ContainerPage::getHostName() const
   if ( getSalomeContainer() )
   {
     QString aHN(getSalomeContainer()->_params.hostname);
-    return ( !aHN.compare(QString("")) ? QString("localhost") : aHN );
+    return aHN;
   }
   else 
-    return QString("localhost");
+    return QString("");
 }
 
 void YACSGui_ContainerPage::setHostName( const QString& theHostName )
 {
   if ( getSalomeContainer() )
-    getSalomeContainer()->setProperty( "hostname", 
-				       !theHostName.compare(QString("localhost")) ? QString("").latin1() :
-				                                                    theHostName.latin1() );
+    getSalomeContainer()->setProperty( "hostname", theHostName.latin1() );
 }
 
 int YACSGui_ContainerPage::getMemMb() const
@@ -1619,6 +1705,56 @@ void YACSGui_ContainerPage::setNbComponentNodes(const int theNbComponentNodes)
     getSalomeContainer()->setProperty( "nb_component_nodes", QString("%1").arg(theNbComponentNodes).latin1() );
 }
 
+void YACSGui_ContainerPage::checkModifications( bool& theWarnToShow, bool& theToApply )
+{
+  if ( !getContainer() || !theWarnToShow && !theToApply ) return;
+
+  // 1) check if the content of the page is really modified (in compare with the content of engine object)
+  bool isModified = false;
+  if ( myDefinitionName->text().compare(getDefinitionName()) != 0
+       ||
+       myExecutionName->text().compare(getExecutionName()) != 0
+       ||
+       myHostName->currentText().compare(getHostName()) != 0
+       ||
+       myMemMb->value() != getMemMb()
+       ||
+       myCpuClock->value() != getCpuClock()
+       ||
+       myNbProcPerNode->value() != getNbProcPerNode()
+       ||
+       myNbNode->value() != getNbNode()
+       ||
+       ( myMpiUsage->currentItem() ? false : true ) != getMpiUsage()
+       ||
+       myParallelLib->text().compare(getParallelLib()) != 0
+       ||
+       myNbComponentNodes->value() != getNbComponentNodes() ) isModified = true;
+    
+  // 2) if yes, show a warning message: Apply or Cancel
+  if ( isModified )
+    if ( theWarnToShow )
+    {
+      theWarnToShow = false;
+      if ( SUIT_MessageBox::warn2(getInputPanel()->getModule()->getApp()->desktop(),
+				  tr("WRN_WARNING"),
+				  tr("APPLY_CANCEL_MODIFICATIONS"),
+				  tr("BUT_YES"), tr("BUT_NO"), 0, 1, 0) == 0 )
+      {
+	onApply();
+	theToApply = true;
+	if ( getInputPanel() ) getInputPanel()->emitApply(YACSGui_InputPanel::ContainerId);
+      }
+      else
+	theToApply = false;
+    }
+    else if ( theToApply )
+    {
+      onApply();
+      if ( getInputPanel() ) getInputPanel()->emitApply(YACSGui_InputPanel::ContainerId);
+    }
+}
+
 void YACSGui_ContainerPage::onShowAdvanced()
 {
   if(showAdvanced->isChecked()) {
@@ -1631,8 +1767,20 @@ void YACSGui_ContainerPage::onShowAdvanced()
 void YACSGui_ContainerPage::updateState()
 {
   // Set container name
-  if ( myContainerName )
-    myContainerName->setText(getContainerName());
+
+  if ( myDefinitionName )
+    {
+      QString defName = getDefinitionName();
+      if (QString::compare(defName, "DefaultContainer") == 0)
+        myDefinitionName->setReadOnly(true);
+      else
+        myDefinitionName->setReadOnly(false);
+      myDefinitionName->setText(defName);
+      
+    }
+
+  if ( myExecutionName )
+    myExecutionName->setText(getExecutionName());
 
   // Set host name
   if ( myHostName )
@@ -1669,8 +1817,12 @@ void YACSGui_ContainerPage::updateState()
 
 void YACSGui_ContainerPage::onApply()
 {
-  if ( myContainerName )
-    setContainerName(myContainerName->text().latin1());
+  if ( myDefinitionName )
+    if (! setDefinitionName(myDefinitionName->text().latin1()))
+      if (getContainer()) myDefinitionName->setText(getContainer()->getName());
+
+  if ( myExecutionName )
+    setExecutionName(myExecutionName->text().latin1());
 
   if ( myHostName )
     setHostName(myHostName->currentText().latin1());
@@ -1852,6 +2004,40 @@ void YACSGui_ComponentPage::setContainer()
       getComponent()->setContainer(aCont);
 }
 
+void YACSGui_ComponentPage::checkModifications( bool& theWarnToShow, bool& theToApply )
+{
+  if ( !getComponent() || !theWarnToShow && !theToApply ) return;
+
+  // 1) check if the content of the page is really modified (in compare with the content of engine object)
+  bool isModified = false;
+  if ( myComponentName->currentText().compare(getComponentName()) != 0
+       ||
+       myContainerName->currentText().compare(getContainerName()) != 0 ) isModified = true;
+    
+  // 2) if yes, show a warning message: Apply or Cancel
+  if ( isModified )
+    if ( theWarnToShow )
+    {
+      theWarnToShow = false;
+      if ( SUIT_MessageBox::warn2(getInputPanel()->getModule()->getApp()->desktop(),
+				  tr("WRN_WARNING"),
+				  tr("APPLY_CANCEL_MODIFICATIONS"),
+				  tr("BUT_YES"), tr("BUT_NO"), 0, 1, 0) == 0 )
+      {
+	onApply();
+	theToApply = true;
+	if ( getInputPanel() ) getInputPanel()->emitApply(YACSGui_InputPanel::ComponentId);
+      }
+      else
+	theToApply = false;
+    }
+    else if ( theToApply )
+    {
+      onApply();
+      if ( getInputPanel() ) getInputPanel()->emitApply(YACSGui_InputPanel::ComponentId);
+    }
+}
+
 void YACSGui_ComponentPage::onApply()
 {
   QString aText = myComponentName->currentText();
@@ -1865,6 +2051,7 @@ void YACSGui_ComponentPage::onApply()
     YACSGui_EditionTreeView * aETV = 
       dynamic_cast<YACSGui_EditionTreeView*>(getInputPanel()->getModule()->activeTreeView());
     if(!aETV) return;
+    if(aETV->getSelected().empty()) return; 
     if ( YACSGui_ComponentViewItem* aComp = dynamic_cast<YACSGui_ComponentViewItem*>(aETV->getSelected().front()) ) {
       if ( aComp->getSComponent() == mySComponent ) {
 	QListViewItem* aChild = aComp->firstChild();
@@ -1987,6 +2174,9 @@ YACSGui_SchemaPage::YACSGui_SchemaPage( QWidget* theParent, const char* theName,
     myMode( YACSGui_InputPanel::EditMode )
 {
   myErrorLog->setReadOnly(true);
+  // temporary disabled, because of data flow and data stream views are not yet implemented
+  myDataFlowMode_2->setEnabled(false);
+  myDataStreamMode_2->setEnabled(false);
 }
 
 YACSGui_SchemaPage::~YACSGui_SchemaPage()
@@ -2017,6 +2207,11 @@ void YACSGui_SchemaPage::setSProc( YACS::HMI::SubjectProc* theSProc )
   }
 }
 
+YACS::ENGINE::Proc* YACSGui_SchemaPage::getProc() const
+{
+  return ( mySProc ? dynamic_cast<Proc*>(mySProc->getNode()) : 0 );
+}
+
 QString YACSGui_SchemaPage::getSchemaName() const
 {
   return ( mySProc ? QString( mySProc->getName() ) : QString("") );
@@ -2029,8 +2224,7 @@ void YACSGui_SchemaPage::setSchemaName( const QString& theName )
     mySProc->update( RENAME, 0, mySProc );
 
     if(getInputPanel())
-      getInputPanel()->getModule()->getDataModel()->updateItem( dynamic_cast<Proc*>(mySProc->getNode()),
-								true );
+      getInputPanel()->getModule()->getDataModel()->updateItem( getProc(), true );
   }
 }
 
@@ -2040,7 +2234,14 @@ void YACSGui_SchemaPage::onApply()
   if ( mySchemaName ) setSchemaName( mySchemaName->text() );
 
   // Change a view mode of a schema
-  // ...
+  QButton* aSelBtn = ViewModeButtonGroup->selected();
+  if ( aSelBtn && getInputPanel() )
+    if ( aSelBtn == myFullMode_2 )
+      getInputPanel()->getModule()->onFullView();
+    else if ( aSelBtn == myControlMode_2 )
+      getInputPanel()->getModule()->onControlView();
+    //else if ( aSelBtn == myDataFlowMode_2 )
+    //else if ( aSelBtn == myDataStreamMode_2 )
 }
 
 YACSGui_InputPanel* YACSGui_SchemaPage::getInputPanel() const
@@ -2076,6 +2277,45 @@ void YACSGui_SchemaPage::setMode( const YACSGui_InputPanel::PageMode theMode )
   }
 
   if ( mySchemaName ) mySchemaName->setText( getSchemaName() );
+}
+
+void YACSGui_SchemaPage::checkModifications()
+{
+  if ( !getProc() ) return;
+
+  // 1) check if the content of the page is really modified (in compare with the content of engine object)
+  bool isModified = false;
+  if ( mySchemaName->text().compare(getSchemaName()) != 0 ) isModified = true;
+
+  if ( !isModified )
+    if ( mySProc && getInputPanel() )
+      if ( Proc* aProc = getProc() )
+      {
+	// get gui graph
+	YACSGui_Graph* aGraph = getInputPanel()->getModule()->getGraph(aProc);
+	if ( !aGraph ) return;
+	
+	int aViewMode = aGraph->getDMode();
+      	if ( myFullMode_2->isOn() && aViewMode != YACSGui_Graph::FullId
+	     ||
+	     myControlMode_2->isOn() && aViewMode != YACSGui_Graph::ControlId
+	     ||
+	     myDataFlowMode_2->isOn() && aViewMode != YACSGui_Graph::DataflowId
+	     ||
+	     myDataStreamMode_2->isOn() && aViewMode != YACSGui_Graph::DataStreamId ) isModified = true;
+      }
+  
+  // 2) if yes, show a warning message: Apply or Cancel
+  if ( isModified )
+    if ( SUIT_MessageBox::warn2(getInputPanel()->getModule()->getApp()->desktop(),
+				tr("WRN_WARNING"),
+				tr("APPLY_CANCEL_MODIFICATIONS"),
+				tr("BUT_YES"), tr("BUT_NO"), 0, 1, 0) == 0 )
+    {
+      onApply();
+      if ( getInputPanel() ) getInputPanel()->emitApply(YACSGui_InputPanel::SchemaId);
+    }
+    else updateState();
 }
 
 void YACSGui_SchemaPage::onAddAllNextToRun()
@@ -2141,9 +2381,23 @@ void YACSGui_SchemaPage::updateState()
     myNextStepsListView->clear();
   
   // Set view mode of the given schema
-  // the following method can be used if its needed:
-  // YACSGui_Graph* aGraph = getInputPanel()->getModule()->getGraph( dynamic_cast<Proc*>(mySProc->getNode()) );
-  // ...
+  if ( mySProc )
+    if ( Proc* aProc = getProc() )
+    {
+      // get gui graph
+      YACSGui_Graph* aGraph = getInputPanel()->getModule()->getGraph(aProc);
+      if ( !aGraph ) return;
+
+      int aViewMode = aGraph->getDMode();
+      if ( aViewMode == YACSGui_Graph::FullId && !myFullMode_2->isOn() )
+	myFullMode_2->toggle();
+      else if ( aViewMode == YACSGui_Graph::ControlId && !myControlMode_2->isOn() )
+	myControlMode_2->toggle();
+      else if ( aViewMode == YACSGui_Graph::DataflowId && !myDataFlowMode_2->isOn() )
+	myDataFlowMode_2->toggle();
+      else if ( aViewMode == YACSGui_Graph::DataStreamId && !myDataStreamMode_2->isOn() )
+	myDataStreamMode_2->toggle();
+    }
 }
 
 /*
@@ -2605,6 +2859,10 @@ YACSGui_InlineNodePage::YACSGui_InlineNodePage( QWidget* theParent, const char* 
 {
   if ( !myInputPortsGroupBox || !myOutputPortsGroupBox ) return;
 
+  // the possibility to search is hided according to the Num. 14 from NEWS file
+  Search->hide();
+  mySearch->hide();
+
   //#undef HAVE_QEXTSCINTILLA_H
 #ifdef HAVE_QEXTSCINTILLA_H
   _myTextEdit = new QextScintilla( InPythonEditorGroupBox, "Python Editor" );
@@ -2837,6 +3095,40 @@ void YACSGui_InlineNodePage::notifyOutPortValues( std::map<std::string,std::stri
 
   if ( aPortNames.count() == aValues.count() )
     myOutputPortsGroupBox->Table()->setStrings( 3, aValues );
+}
+
+void YACSGui_InlineNodePage::checkModifications()
+{
+  if ( !getNode() ) return;
+
+  // 1) check if the content of the page is really modified (in compare with the content of engine object)
+  bool isModified = false;
+  if ( myNodeName->text().compare(getNodeName()) != 0 ) isModified = true;
+
+  if ( !isModified ) isModified = isPortsModified();
+  if ( !isModified ) isModified = isPortsModified(false);
+
+  if ( !isModified )
+    // check the code modifications in the built-in Python code editor
+    if ( InlineNode* anIN = dynamic_cast<InlineNode*>( getNode() ) )
+      {
+#ifdef HAVE_QEXTSCINTILLA_H
+        QString theText = _myTextEdit->text();
+#else
+        QString theText = myTextEdit->text();
+#endif
+        if (theText.compare(QString(anIN->getScript())) != 0 ) isModified = true;
+      }
+  // 2) if yes, show a warning message: Apply or Cancel
+  if ( isModified )
+    if ( SUIT_MessageBox::warn2(getInputPanel()->getModule()->getApp()->desktop(),
+				tr("WRN_WARNING"),
+				tr("APPLY_CANCEL_MODIFICATIONS"),
+				tr("BUT_YES"), tr("BUT_NO"), 0, 1, 0) == 0 )
+    {
+      onApply();
+      if ( getInputPanel() ) getInputPanel()->emitApply(YACSGui_InputPanel::InlineNodeId);
+    }
 }
 
 void YACSGui_InlineNodePage::onApply()
@@ -4106,6 +4398,85 @@ void YACSGui_InlineNodePage::setScriptText( const QString& txt )
 #endif
 }
 
+bool YACSGui_InlineNodePage::isPortsModified( bool theInput )
+{
+  bool isModified = false;
+  
+  if ( !getNode() ) return isModified;
+
+  // read data and data stream ports from the table
+  YACSGui_Table* aTable = 0;
+  if ( theInput ) aTable = myInputPortsGroupBox->Table();
+  else aTable = myOutputPortsGroupBox->Table();
+  if ( !aTable ) return isModified;
+    
+  QStringList aPortNames;
+  aTable->strings( 0, aPortNames );
+
+  if ( ( theInput ? aPortNames.count() != getNode()->getNumberOfInputPorts() :
+	            aPortNames.count() != getNode()->getNumberOfOutputPorts() ) ) isModified = true;
+  else
+  {
+    QStringList aPortTypes;
+    QStringList aValueTypes;
+    QStringList aValues;
+    
+    aTable->strings( 1, aPortTypes );
+    aTable->strings( 2, aValueTypes );
+    aTable->strings( 3, aValues );
+      
+    QStringList aPTCB = aTable->Params( 0, 1 );
+    
+    int aRowId = 0;
+    for ( QStringList::Iterator it = aPortNames.begin(); it != aPortNames.end(); ++it )
+    {
+      Port* aPort = 0;
+      try {
+	aPort = ( theInput ? (Port*)(getNode()->getInPort(*it)) : (Port*)(getNode()->getOutPort(*it)) );
+      }
+      catch (...) {}
+      
+      if ( aPort )
+      {
+	// check value type and value (for input ports only) of the port
+	if ( theInput && getPortValue( aPort ).compare(aValues[aRowId]) != 0
+	     ||
+	     getPortType( aPort ).compare(aValueTypes[aRowId]) != 0 )
+	{
+	  isModified = true;
+	  break;
+	}
+	
+	// check port type
+	QString aPortType = aPTCB[0];
+	/*if ( dynamic_cast<InputBasicStreamPort*>(aPort) )
+	  aPortType = aPTCB[1];
+	else*/ if ( dynamic_cast<InputCalStreamPort*>(aPort) )
+	  aPortType = aPTCB[2];
+	/*else if ( dynamic_cast<InputPalmStreamPort*>(aPort) )
+	  aPortType = aPTCB[3];*/
+	
+	if ( aPortType.compare(aPortTypes[aRowId]) != 0 )
+	{
+	  isModified = true;
+	  break;
+	}
+
+	//if ( !theInput ) 
+	//  TODO: compare "Is in study" fields (not yet in use)
+      }
+      else // this case means that we renamed any port or added a new one (i.e. check port name)
+      {
+	isModified = true;
+	break;
+      }
+      aRowId++;
+    }
+  }
+
+  return isModified;
+}
+
 /*
   Class : YACSGui_ServiceNodePage
   Description :  Page for SALOME and CORBA service nodes properties
@@ -4118,6 +4489,10 @@ YACSGui_ServiceNodePage::YACSGui_ServiceNodePage( QWidget* theParent, const char
     myMethodChanged( false ),
     mySCNode( 0 )
 {
+  // the possibility to search is hided according to the Num. 14 from NEWS file
+  Search->hide();
+  mySearch->hide();
+
   //#undef HAVE_QEXTSCINTILLA_H
 #ifdef HAVE_QEXTSCINTILLA_H
   _myTextEdit = new QextScintilla( InPythonEditorGroupBox, "Python Editor" );
@@ -4394,6 +4769,89 @@ void YACSGui_ServiceNodePage::notifyOutPortValues( std::map<std::string,std::str
     myOutputPortsGroupBox->Table()->setStrings( 3, aValues );
 }
 
+void YACSGui_ServiceNodePage::checkModifications( bool& theWarnToShow, bool& theToApply )
+{
+  if ( !getNode() || !theWarnToShow && !theToApply ) return;
+
+  // 1) check if the content of the page is really modified (in compare with the content of engine object)
+  bool isModified = false;
+  ServiceNode* aServiceNode = dynamic_cast<ServiceNode*>( getNode() );
+  if ( !aServiceNode ) return;
+
+  if ( myNodeName->text().compare(getNodeName()) != 0
+       ||
+       aServiceNode->getComponent() 
+       &&
+       myComponentDefinition->text().compare(QString(aServiceNode->getComponent()->getName())) != 0
+       ||
+       myMethodName->currentText().compare(QString(aServiceNode->getMethod())) != 0
+     ) isModified = true;
+
+  if ( !isModified )
+  {
+    // read input data and input data stream ports values from the table
+    YACSGui_Table* aTable = myInputPortsGroupBox->Table();
+    
+    QStringList aPortNames;
+    QStringList aValues;
+    
+    aTable->strings( 0, aPortNames );
+    aTable->strings( 3, aValues );
+    
+    int aRowId = 0;
+    for ( QStringList::Iterator it = aPortNames.begin(); it != aPortNames.end(); ++it )
+    {
+      InPort* anInPort = aServiceNode->getInPort(*it);
+      if ( anInPort && getPortValue( anInPort ).compare(aValues[aRowId]) != 0 ) {
+	isModified = true;
+	break;
+      }
+      aRowId++;
+    }
+  }
+
+  //if ( !isModified )
+  //  TODO: compare "Is in study" fields (not yet in use)
+
+  if ( !isModified  && (myType == ServiceInline || myType == XMLNode) )
+  {
+    // check the code modifications in the built-in Python code editor
+    QString aScript;
+    if ( ServiceInlineNode* aSIN = dynamic_cast<ServiceInlineNode*>( getNode() ) ) aScript = QString(aSIN->getScript());
+    else if ( XmlNode* aXN = dynamic_cast<XmlNode*>( getNode() ) ) aScript = QString(aXN->getScript());
+
+#ifdef HAVE_QEXTSCINTILLA_H
+    QString theText = _myTextEdit->text();
+#else
+    QString theText = myTextEdit->text();
+#endif
+    if ( theText.compare(aScript) != 0 ) isModified = true;
+  }
+    
+  // 2) if yes, show a warning message: Apply or Cancel
+  if ( isModified )
+    if ( theWarnToShow )
+    {
+      theWarnToShow = false;
+      if ( SUIT_MessageBox::warn2(getInputPanel()->getModule()->getApp()->desktop(),
+				  tr("WRN_WARNING"),
+				  tr("APPLY_CANCEL_MODIFICATIONS"),
+				  tr("BUT_YES"), tr("BUT_NO"), 0, 1, 0) == 0 )
+      {
+	onApply();
+	theToApply = true;
+	if ( getInputPanel() ) getInputPanel()->emitApply(YACSGui_InputPanel::ServiceNodeId);
+      }
+      else
+	theToApply = false;
+    }
+    else if ( theToApply )
+    {
+      onApply();
+      if ( getInputPanel() ) getInputPanel()->emitApply(YACSGui_InputPanel::ServiceNodeId);
+    }
+}
+
 void YACSGui_ServiceNodePage::onCatalogChanged( int )
 {
   getInputPanel()->onApplyEnabled(false);
@@ -4487,7 +4945,19 @@ void YACSGui_ServiceNodePage::onApply()
 
     YACS::ENGINE::Catalog* aCatalog = 0;
     if ( myProcRadioButton->isChecked() )
-      aCatalog = YACS::ENGINE::getSALOMERuntime()->loadCatalog( "proc", myProcName.c_str() );
+      {
+        aCatalog = YACS::ENGINE::getSALOMERuntime()->loadCatalog( "proc", myProcName.c_str() );
+        std::string errors=aCatalog->getErrors();
+        if(errors != "")
+          {
+
+            std::string msg="The imported file ";
+            msg=msg+myProcName+" has errors. Some nodes can be uncompletely built\n";
+            LogViewer* log=new LogViewer(msg+errors,getInputPanel()->getModule()->getApp()->desktop());
+            log->show();
+            //getInputPanel()->getModule()->getApp()->logWindow()->putMessage(msg+errors );
+          }
+      }
     else
       aCatalog = aModule->getCatalog();
     
@@ -4756,7 +5226,9 @@ void YACSGui_ServiceNodePage::onApply()
   if ( myMethodChanged ) myMethodChanged = false;
 
   // Reset Python function/script
-  // ...
+  string aScript = scriptText().isEmpty() ? string("") : scriptText().latin1();
+  if ( ServiceInlineNode* aSIN = dynamic_cast<ServiceInlineNode*>( getNode() ) ) aSIN->setScript( aScript );
+  else if ( XmlNode* aXN = dynamic_cast<XmlNode*>( getNode() ) ) aXN->setScript( aScript );
 
   updateBlocSize();
 }
@@ -4812,6 +5284,15 @@ void YACSGui_ServiceNodePage::updateState()
       //      YACS::YACSLoader* _loader = new YACS::YACSLoader();
       //      _loader->registerProcCataLoader();
       _currentCatalog = YACS::ENGINE::getSALOMERuntime()->loadCatalog( "proc", myProcName.c_str() );
+      std::string errors=_currentCatalog->getErrors();
+      if(errors != "")
+        {
+          std::string msg="The imported file ";
+          msg=msg+myProcName+" has errors. Some nodes can be uncompletely built\n";
+          LogViewer* log=new LogViewer(msg+errors,getInputPanel()->getModule()->getApp()->desktop());
+          log->show();
+          //getInputPanel()->getModule()->getApp()->logWindow()->putMessage(msg+errors );
+        }
       //      delete _loader;
 
       if ( _currentCatalog )
@@ -5038,9 +5519,7 @@ void YACSGui_ServiceNodePage::updateServices( const QString& theCurrent )
   if( !aCatalog )
     return;
       
-  if ( !myComponent
-       ||
-       ( myComponent && aCatalog && aCatalog->_componentMap.count(myComponent->getName()) == 0 ) )
+  if ( !myComponent )
   {
     if ( myComponentDefinition ) myComponentDefinition->clear();
     if ( myMethodName ) myMethodName->clear();
@@ -5056,10 +5535,6 @@ void YACSGui_ServiceNodePage::updateServices( const QString& theCurrent )
   if( myComponentName.isNull() )
     myComponentName = aServiceNode->getComponent()->getName();
 
-  ComponentDefinition* aCompoDef = aCatalog->_componentMap[ myComponentName.latin1() ];
-  if( !aCompoDef )
-    return;
-
   if( isForced )
   {
     myComponentDefinition->setText( myComponentName );
@@ -5068,6 +5543,16 @@ void YACSGui_ServiceNodePage::updateServices( const QString& theCurrent )
 
   QString aRefName = isForced ? QString( aServiceNode->getMethod() ) : theCurrent;
 
+  ComponentDefinition* aCompoDef = 0;
+  if ( aCatalog && aCatalog->_componentMap.count(myComponent->getName()) > 0 )
+    aCompoDef = aCatalog->_componentMap[ myComponentName.latin1() ];
+  if( !aCompoDef ) {
+    myMethodName->insertItem( aRefName );
+    fillInputPortsTable( aServiceNode );
+    fillOutputPortsTable( aServiceNode );
+    return;
+  }
+  
   std::map<std::string,ServiceNode*> aServiceMap = aCompoDef->_serviceMap;
   std::map<std::string,ServiceNode*>::const_iterator it = aServiceMap.begin();
   std::map<std::string,ServiceNode*>::const_iterator itEnd = aServiceMap.end();
@@ -5081,7 +5566,7 @@ void YACSGui_ServiceNodePage::updateServices( const QString& theCurrent )
     if( !strcmp( aRefName.latin1(), (*it).first.c_str() ) )
     {
       aCurrentIndex = index;
-      aCurrentNode = (*it).second;
+      aCurrentNode = isForced ? aServiceNode : (*it).second;
     }
 
     if( isForced )
@@ -5162,15 +5647,16 @@ void YACSGui_ServiceNodePage::fillInputPortsTable( YACS::ENGINE::Node* theNode )
   // Fill "Value type" column
   aTable->setStrings( 2, aValueTypes, true );
 
+  if ( myType == SALOMEService )
+    // Set the valid cell type for the input ports values
+    for ( int i=0; i<aTable->numRows(); i++ )
+      setValueCellValidator( aTable, i );
+
   // Fill "Value" column
   aTable->setStrings( 3, aValues, true );
 
   if ( myType == SALOMEService )
   {
-    // Set the valid cell type for the input ports values
-    for ( int i=0; i<aTable->numRows(); i++ )
-      setValueCellValidator( aTable, i );
-    
     // Set all columns read only (except "Value" column)
     aTable->setReadOnly( -1, 0, true );
     aTable->setReadOnly( -1, 1, true );
@@ -5660,6 +6146,37 @@ void YACSGui_ForLoopNodePage::notifyNodeCreateBody( YACS::HMI::Subject* theSubje
   }
 }
 
+void YACSGui_ForLoopNodePage::checkModifications()
+{
+  if ( !getNode() ) return;
+
+  // 1) check if the content of the page is really modified (in compare with the content of engine object)
+  bool isModified = false;
+
+  if ( myNodeName->text().compare(getNodeName()) != 0 ) isModified = true;
+  else if ( YACS::ENGINE::ForLoop* aForLoopNode = dynamic_cast<ForLoop*>( getNode() ) )
+    if( YACS::ENGINE::InputPort* aPort = aForLoopNode->edGetNbOfTimesInputPort() )
+    {
+      bool ok;
+      int aValue = getPortValue( aPort ).toInt( &ok );
+      if( ok && myNbTimesInputPortValue->value() != aValue ) isModified = true;
+    }
+  
+  //if ( !isModified )
+  //  TODO: compare view mode: expanded or collapsed (not yet in use)    
+  
+  // 2) if yes, show a warning message: Apply or Cancel
+  if ( isModified )
+    if ( SUIT_MessageBox::warn2(getInputPanel()->getModule()->getApp()->desktop(),
+				tr("WRN_WARNING"),
+				tr("APPLY_CANCEL_MODIFICATIONS"),
+				tr("BUT_YES"), tr("BUT_NO"), 0, 1, 0) == 0 )
+    {
+      onApply();
+      if ( getInputPanel() ) getInputPanel()->emitApply(YACSGui_InputPanel::InlineNodeId);
+    }
+}
+
 void YACSGui_ForLoopNodePage::onApply()
 {
   // Rename a node
@@ -5859,6 +6376,41 @@ void YACSGui_ForEachLoopNodePage::notifyNodeCreateBody( YACS::HMI::Subject* theS
     QString aBodyName = theSubject->getName();
     myLoopBodyNodeName->setText( aBodyName );
   }
+}
+
+void YACSGui_ForEachLoopNodePage::checkModifications()
+{
+  if ( !getNode() ) return;
+
+  // 1) check if the content of the page is really modified (in compare with the content of engine object)
+  bool isModified = false;
+
+  if ( myNodeName->text().compare(getNodeName()) != 0 ) isModified = true;
+  else if ( YACS::ENGINE::ForEachLoop* aForEachLoopNode = dynamic_cast<ForEachLoop*>( getNode() ) )
+  {
+    if( YACS::ENGINE::InputPort* aBranchesPort = aForEachLoopNode->edGetNbOfBranchesPort() )
+    {
+      bool ok;
+      int aValue = getPortValue( aBranchesPort ).toInt( &ok );
+      if( ok && myNbBranchesInputPortValue->value() != aValue ) isModified = true;
+    }
+    if( YACS::ENGINE::InputPort* aSamplesPort = aForEachLoopNode->edGetSeqOfSamplesPort() )
+      if ( myDataPortToDispatchValue->text().compare(getPortValue(aSamplesPort)) ) isModified = true;
+  }
+  
+  //if ( !isModified )
+  //  TODO: compare view mode: expanded or collapsed (not yet in use)    
+  
+  // 2) if yes, show a warning message: Apply or Cancel
+  if ( isModified )
+    if ( SUIT_MessageBox::warn2(getInputPanel()->getModule()->getApp()->desktop(),
+				tr("WRN_WARNING"),
+				tr("APPLY_CANCEL_MODIFICATIONS"),
+				tr("BUT_YES"), tr("BUT_NO"), 0, 1, 0) == 0 )
+    {
+      onApply();
+      if ( getInputPanel() ) getInputPanel()->emitApply(YACSGui_InputPanel::InlineNodeId);
+    }
 }
 
 void YACSGui_ForEachLoopNodePage::onApply()
@@ -6073,6 +6625,37 @@ void YACSGui_WhileLoopNodePage::notifyNodeCreateBody( YACS::HMI::Subject* theSub
     QString aBodyName = theSubject->getName();
     myLoopBodyNodeName->setText( aBodyName );
   }
+}
+
+void YACSGui_WhileLoopNodePage::checkModifications()
+{
+  if ( !getNode() ) return;
+
+  // 1) check if the content of the page is really modified (in compare with the content of engine object)
+  bool isModified = false;
+
+  if ( myNodeName->text().compare(getNodeName()) != 0 ) isModified = true;
+  else if ( YACS::ENGINE::WhileLoop* aWhileLoopNode = dynamic_cast<WhileLoop*>( getNode() ) )
+    if( YACS::ENGINE::InputPort* aPort = aWhileLoopNode->edGetConditionPort() )
+    {
+      QString aValue = getPortValue( aPort );
+      int anIndex = aValue == "True" ? 0 : 1;
+      if( myCondInputPortValue->currentItem() != anIndex ) isModified = true;
+    }
+  
+  //if ( !isModified )
+  //  TODO: compare view mode: expanded or collapsed (not yet in use)    
+  
+  // 2) if yes, show a warning message: Apply or Cancel
+  if ( isModified )
+    if ( SUIT_MessageBox::warn2(getInputPanel()->getModule()->getApp()->desktop(),
+				tr("WRN_WARNING"),
+				tr("APPLY_CANCEL_MODIFICATIONS"),
+				tr("BUT_YES"), tr("BUT_NO"), 0, 1, 0) == 0 )
+    {
+      onApply();
+      if ( getInputPanel() ) getInputPanel()->emitApply(YACSGui_InputPanel::InlineNodeId);
+    }
 }
 
 void YACSGui_WhileLoopNodePage::onApply()
@@ -6344,6 +6927,91 @@ void YACSGui_SwitchNodePage::notifyOutPortValues( std::map<std::string,std::stri
 void YACSGui_SwitchNodePage::notifyNodeCreateNode( YACS::HMI::Subject* theSubject )
 {
   updateState();
+}
+
+void YACSGui_SwitchNodePage::checkModifications()
+{
+  if ( !getNode() ) return;
+
+  Switch* aSwitch = dynamic_cast<Switch*>(getNode());
+  if ( !aSwitch ) return;
+
+  // 1) check if the content of the page is really modified (in compare with the content of engine object)
+  bool isModified = false;
+
+  if ( myNodeName->text().compare(getNodeName()) != 0 ) isModified = true;
+  else if( YACS::ENGINE::InputPort* aPort = aSwitch->edGetConditionPort() )
+  {
+    bool ok;
+    int aValue = getPortValue( aPort ).toInt( &ok );
+    if( ok && mySelectInputPortValue->value() != aValue ) isModified = true;
+  }
+
+  if ( !isModified )
+  {
+    // check switch cases nodes
+    YACSGui_Table* aTable = mySwitchCasesGroupBox->Table();
+    if ( !aTable ) return;
+    
+    QStringList aChildIds, aChildNames;
+    aTable->strings( 0, aChildIds );
+    aTable->strings( 1, aChildNames );
+
+    std::list<Node*> aCaseNodes = aSwitch->edGetDirectDescendants();
+    if ( aChildIds.count() != aCaseNodes.size() ) isModified = true;
+    else
+    {
+      std::list<Node*>::iterator anIter;
+      std::map<int,Node*> aCase2Node;
+      for ( anIter = aCaseNodes.begin(); anIter != aCaseNodes.end(); ++anIter )
+	aCase2Node.insert(make_pair(aSwitch->getRankOfNode(*anIter),(*anIter)));
+
+      int aRowId = 0;
+      for ( QStringList::Iterator it = aChildIds.begin(); it != aChildIds.end(); ++it )
+      {
+	int aCaseId;
+	if( (*it).compare(Switch::DEFAULT_NODE_NAME) == 0 )
+	  aCaseId = Switch::ID_FOR_DEFAULT_NODE;
+	else
+	  aCaseId = (*it).toInt();
+
+	map<int,Node*>::iterator iter = aCase2Node.find(aCaseId);
+	if ( iter == aCase2Node.end() )
+	{
+	  isModified = true;
+	  break;
+	}
+	else
+	{ 
+	  Node* aChild = 0;
+	  if ( SubjectNode* aSChild = myRow2ChildMap[aRowId] )
+	    aChild = aSChild->getNode();
+
+	  if ( (*iter).second != aChild )
+	  {
+	    isModified = true;
+	    break;
+	  }
+	}
+	
+	aRowId++;
+      }
+    }
+  }
+  
+  //if ( !isModified )
+  //  TODO: compare view mode: expanded or collapsed (not yet in use)    
+  
+  // 2) if yes, show a warning message: Apply or Cancel
+  if ( isModified )
+    if ( SUIT_MessageBox::warn2(getInputPanel()->getModule()->getApp()->desktop(),
+				tr("WRN_WARNING"),
+				tr("APPLY_CANCEL_MODIFICATIONS"),
+				tr("BUT_YES"), tr("BUT_NO"), 0, 1, 0) == 0 )
+    {
+      onApply();
+      if ( getInputPanel() ) getInputPanel()->emitApply(YACSGui_InputPanel::InlineNodeId);
+    }
 }
 
 void YACSGui_SwitchNodePage::onApply()
@@ -7116,6 +7784,65 @@ void YACSGui_BlockNodePage::notifyOutPortValues( std::map<std::string,std::strin
 void YACSGui_BlockNodePage::notifyNodeCreateNode( YACS::HMI::Subject* theSubject )
 {
   updateState();
+}
+
+void YACSGui_BlockNodePage::checkModifications()
+{
+  if ( !getNode() ) return;
+
+  Bloc* aBloc = dynamic_cast<Bloc*>(getNode());
+  if ( !aBloc ) return;
+
+  // 1) check if the content of the page is really modified (in compare with the content of engine object)
+  bool isModified = false;
+
+  if ( myNodeName->text().compare(getNodeName()) != 0 ) isModified = true;
+  else
+  {
+    // check child nodes
+    YACSGui_Table* aTable = myDirectChildrenGroupBox->Table();
+    if ( !aTable ) return;
+    
+    QStringList aChildNames;
+    aTable->strings( 0, aChildNames );
+
+    list<Node*> aChildren = aBloc->edGetDirectDescendants();
+
+    if ( aChildNames.count() != aChildren.size() ) isModified = true;
+    else
+    {
+      int aRowId = 0;
+      for ( QStringList::Iterator it = aChildNames.begin(); it != aChildNames.end(); ++it )
+      {
+	Node* aChild = 0;
+	if ( SubjectNode* aSChild = myRow2ChildMap[aRowId] )
+	  aChild = aSChild->getNode();
+
+        for (list<Node*>::iterator itn = aChildren.begin(); itn != aChildren.end(); ++itn)
+          if (aChild == (*itn))
+            {
+              isModified = true;
+              break;
+            }
+	if (isModified) break;
+	aRowId++;
+      }
+    }
+  }
+  
+  //if ( !isModified )
+  //  TODO: compare view mode: expanded or collapsed (not yet in use)    
+  
+  // 2) if yes, show a warning message: Apply or Cancel
+  if ( isModified )
+    if ( SUIT_MessageBox::warn2(getInputPanel()->getModule()->getApp()->desktop(),
+				tr("WRN_WARNING"),
+				tr("APPLY_CANCEL_MODIFICATIONS"),
+				tr("BUT_YES"), tr("BUT_NO"), 0, 1, 0) == 0 )
+    {
+      onApply();
+      if ( getInputPanel() ) getInputPanel()->emitApply(YACSGui_InputPanel::InlineNodeId);
+    }
 }
 
 void YACSGui_BlockNodePage::onApply()

@@ -34,6 +34,7 @@
 #include <YACSGui_InputPanel.h>
 #include <YACSGui_TreeView.h>
 #include <YACSGui_TreeViewItem.h>
+#include <YACSGui_LogViewer.h>
 
 #include <YACSPrs_ElementaryNode.h>
 #include <YACSPrs_BlocNode.h>
@@ -81,6 +82,7 @@
 #include <SalomeComponent.hxx>
 #include <LoadState.hxx>
 #include <Logger.hxx>
+#include "LinkInfo.hxx"
 
 #include <SALOME_LifeCycleCORBA.hxx>
 
@@ -144,22 +146,35 @@ YACSGui_Module::~YACSGui_Module()
 void YACSGui_Module::initialize( CAM_Application* theApp )
 {
   MESSAGE("YACSGui_Module::initialize");
+  printf(">>= 1\n");
   SalomeApp_Module::initialize(theApp);
+  printf(">>= 2\n");
   //InitYACSGuiGen( dynamic_cast<SalomeApp_Application*>( theApp ) );
   createSComponent();
+  printf(">>= 3\n");
   updateObjBrowser();
+  printf(">>= 4\n");
 
   createActions();
+  printf(">>= 5\n");
   createMenus();
+  printf(">>= 6\n");
   createPopups();
+  printf(">>= 7\n");
 
   RuntimeSALOME::setRuntime();
+  printf(">>= 8\n");
   fillNodeTypesMap();
+  printf(">>= 9\n");
 
-  if ( theApp && theApp->desktop() )
+  if ( theApp && theApp->desktop() ) {
+    printf(">>= 10\n");
     connect( theApp->desktop(), SIGNAL( windowActivated( SUIT_ViewWindow* ) ),
              this, SLOT(onWindowActivated( SUIT_ViewWindow* )) );
-    
+    printf(">>= 11\n");
+  }
+   
+  printf(">>= 12\n");
 }
 
 //! Creates module actions.
@@ -475,11 +490,13 @@ void YACSGui_Module::createActions()
   createAction( DataFlowViewId, tr("TOP_DATAFLOW_VIEW"), QIconSet(aPixmap),
                 tr("MEN_DATAFLOW_VIEW"), tr("STB_DATAFLOW_VIEW"),
 		0, aDesktop, false, this, SLOT(onDataFlowView()));
+  action(DataFlowViewId)->setEnabled(false);
 
   aPixmap = aResourceMgr->loadPixmap("YACSGui", tr("ICON_DATASTREAM_VIEW"));
   createAction( DataStreamViewId, tr("TOP_DATASTREAM_VIEW"), QIconSet(aPixmap),
                 tr("MEN_DATASTREAM_VIEW"), tr("STB_DATASTREAM_VIEW"),
 		0, aDesktop, false, this, SLOT(onDataStreamView()));
+  action(DataStreamViewId)->setEnabled(false);
   
   aPixmap = aResourceMgr->loadPixmap("YACSGui", tr("ICON_ARRANGE_NODES"));
   createAction( ArrangeNodesId, tr("TOP_ARRANGE_NODES"), QIconSet(aPixmap),
@@ -1217,6 +1234,8 @@ void YACSGui_Module::onImportSupervSchema()
 
       // create and activate the edition tree view for the imported schema
       createTreeView( aCProc->getSubjectProc(), YACSGui_DataModel::SchemaObject );
+
+      temporaryExport();
     }
 }
 
@@ -1685,6 +1704,10 @@ void YACSGui_Module::onCollapsed( QListViewItem* theItem )
  */
 void YACSGui_Module::onApplyInputPanel( const int theId )
 {
+  MESSAGE("YACSGui_Module::onApplyInputPanel");
+
+  if ( !myInputPanel ) return;
+
   YACSGui_EditionTreeView* anETV = dynamic_cast<YACSGui_EditionTreeView*>( activeTreeView() );
   if ( !anETV ) return;
 
@@ -1694,71 +1717,69 @@ void YACSGui_Module::onApplyInputPanel( const int theId )
   // check if the current selection is a single selection
   if (  aSelList.size() == 1 )
   {
-    if ( QListViewItem* anItem = aSelList.front() )
+    switch ( theId )
     {
-      switch ( theId )
-      {
-      case YACSGui_InputPanel::ContainerId:
-	break;
-      case YACSGui_InputPanel::ComponentId:
-	break;
-      case YACSGui_InputPanel::SchemaId:
-      	if ( YACSGui_SchemaViewItem* aSchemaItem = dynamic_cast<YACSGui_SchemaViewItem*>( anItem ) )
-	{ // this is a schema view item
-	  if ( Proc* aSchema = aSchemaItem->getProc() )
-	  { 
-	    SalomeApp_DataObject* aDataObj = dynamic_cast<SalomeApp_DataObject*>( getDataModel()->getDataObject(aSchema) );
-	    if ( !aDataObj ) return;
-
-	    // update Object Browser:
-	    getApp()->objectBrowser()->updateTree(aDataObj,true);
-
-	    // update 2D schema view (if this schema is active):
-	    // a.) update caption for active 2D view (edition mode)
-	    if ( activeGraph()->getProc() == aSchema )
-	    {
-	      QxGraph_ViewWindow* aVW = dynamic_cast<QxGraph_ViewWindow*>( getApp()->activeViewManager()->getActiveView() );
-	      if ( aVW ) aVW->setCaption( QString(aSchema->getName()) );
-	    }
-	    
-	    _PTR(SObject) aSObj = aDataObj->object();
-	    if ( aSObj )
-	    {
-	      _PTR(Study) aStudy = (( SalomeApp_Study* )(getApp()->activeStudy()))->studyDS();
-	      _PTR(ChildIterator) anIterator ( aStudy->NewChildIterator(aSObj) );
-	      for (; anIterator->More(); anIterator->Next())
-	      { // iterates on all run sub-objects of the given schema
-		Proc* aCorrSchema = getDataModel()->getProc( anIterator->Value() );
-		
-		// b.) update caption for corresponding 2D views in run mode
-		WindowsMap::iterator anItWM = myWindowsMap.find( aCorrSchema );
-		if (anItWM != myWindowsMap.end())
-		  if (QxGraph_ViewWindow* aVW = (*anItWM).second)
-		    aVW->setCaption( QString(aCorrSchema->getName()) );
-
-		// b.) update all corresponding run tree views if any
-		int aVMId = viewManagerId( aCorrSchema );
-		if (YACSGui_RunTreeView* aRTV = dynamic_cast<YACSGui_RunTreeView*>( treeView( (( SalomeApp_Study* )(getApp()->activeStudy()))->id(),
-											      aVMId ) ) )
-		  aRTV->update();
-	      }
-	    }
-
-	    // 2) update presentation according to new view mode
-	    if ( activeGraph()->getProc() == aSchema )
-	    {
-	      // ...
+    case YACSGui_InputPanel::ContainerId:
+      break;
+    case YACSGui_InputPanel::ComponentId:
+      break;
+    case YACSGui_InputPanel::SchemaId:
+      if ( YACSGui_SchemaPage* aSPage =
+	   dynamic_cast<YACSGui_SchemaPage*>( myInputPanel->getPage( YACSGui_InputPanel::SchemaId ) ) )
+      { // this is a schema view item
+	if ( Proc* aSchema = aSPage->getProc() )
+	{ 
+	  SalomeApp_DataObject* aDataObj = dynamic_cast<SalomeApp_DataObject*>( getDataModel()->getDataObject(aSchema) );
+	  if ( !aDataObj ) return;
+	  
+	  // update Object Browser:
+	  getApp()->objectBrowser()->updateTree(aDataObj,true);
+	  
+	  // update 2D schema view (if this schema is active):
+	  // a.) update caption for active 2D view (edition mode)
+	  if ( activeGraph()->getProc() == aSchema )
+	  {
+	    QxGraph_ViewWindow* aVW = dynamic_cast<QxGraph_ViewWindow*>( getApp()->activeViewManager()->getActiveView() );
+	    if ( aVW ) aVW->setCaption( QString(aSchema->getName()) );
+	  }
+	  
+	  _PTR(SObject) aSObj = aDataObj->object();
+	  if ( aSObj )
+	  {
+	    _PTR(Study) aStudy = (( SalomeApp_Study* )(getApp()->activeStudy()))->studyDS();
+	    _PTR(ChildIterator) anIterator ( aStudy->NewChildIterator(aSObj) );
+	    for (; anIterator->More(); anIterator->Next())
+	    { // iterates on all run sub-objects of the given schema
+	      Proc* aCorrSchema = getDataModel()->getProc( anIterator->Value() );
+	      
+	      // b.) update caption for corresponding 2D views in run mode
+	      WindowsMap::iterator anItWM = myWindowsMap.find( aCorrSchema );
+	      if (anItWM != myWindowsMap.end())
+		if (QxGraph_ViewWindow* aVW = (*anItWM).second)
+		  aVW->setCaption( QString(aCorrSchema->getName()) );
+	      
+	      // b.) update all corresponding run tree views if any
+	      int aVMId = viewManagerId( aCorrSchema );
+	      if (YACSGui_RunTreeView* aRTV = dynamic_cast<YACSGui_RunTreeView*>( treeView( (( SalomeApp_Study* )(getApp()->activeStudy()))->id(),
+											    aVMId ) ) )
+		aRTV->update();
 	    }
 	  }
+	  
+	  // 2) update presentation according to new view mode
+	  if ( activeGraph()->getProc() == aSchema )
+	  {
+	    // ...
+	  }
 	}
-	break;
-      case YACSGui_InputPanel::InlineNodeId:
-	break;
-      case YACSGui_InputPanel::LinkId:
-	break;
-      default:
-	break;
       }
+      break;
+    case YACSGui_InputPanel::InlineNodeId:
+      break;
+    case YACSGui_InputPanel::LinkId:
+      break;
+    default:
+      break;
     }
   }
 }
@@ -1984,25 +2005,38 @@ void YACSGui_Module::createElementaryNodePrs()
  */
 void YACSGui_Module::createSComponent()
 {
+  printf(">>= 13\n");
   _PTR(Study)            aStudy = (( SalomeApp_Study* )(getApp()->activeStudy()))->studyDS();
   _PTR(StudyBuilder)     aBuilder ( aStudy->NewBuilder() );
   _PTR(GenericAttribute) anAttr;
   _PTR(AttributeName)    aName;
 
+  printf(">>= 14\n");
   // Find or create "YACS" SComponent in the study
   _PTR(SComponent) aComponent = aStudy->FindComponent("YACSGui");
+  printf(">>= 15\n");
   if ( !aComponent ) {
+    printf(">>= 16\n");
     aComponent = aBuilder->NewComponent("YACSGui");
+    printf(">>= 17\n");
     anAttr = aBuilder->FindOrCreateAttribute(aComponent, "AttributeName");
+    printf(">>= 18\n");
     aName = _PTR(AttributeName) ( anAttr );
+    printf(">>= 19\n");
     aName->SetValue( getApp()->moduleTitle( "YACSGui" ).latin1() );
+    printf(">>= 20\n");
 	
     anAttr = aBuilder->FindOrCreateAttribute(aComponent, "AttributePixMap");
+    printf(">>= 21\n");
     _PTR(AttributePixMap) aPixmap ( anAttr );
+    printf(">>= 22\n");
     aPixmap->SetPixMap( "YACS_MODULE_ICON" );
+    printf(">>= 23\n");
 
     aBuilder->DefineComponentInstance( aComponent, engineIOR() );
+    printf(">>= 24\n");
   }
+  printf(">>= 25\n");
 }
 
 //! Load services from Module Catalog
@@ -2026,6 +2060,12 @@ void YACSGui_Module::loadCatalog()
   printf("ModuleCatalog - %s",anIOR.c_str());
 
   myCatalog = aRuntimeSALOME->loadCatalog( "session", anIOR );
+  std::string errors=myCatalog->getErrors();
+  if(errors != "")
+    {
+      LogViewer* log=new LogViewer("The session catalog has errors : some nodes will be unavailable\n"+errors,getApp()->desktop());
+      log->show();
+    }
 
   YACS::YACSLoader* _loader = new YACS::YACSLoader();
   _loader->registerProcCataLoader();
@@ -2086,41 +2126,6 @@ void YACSGui_Module::CreateNewSchema( QString& theName, YACS::ENGINE::Proc* theP
       updateObjBrowser();
   }
 }
-
-
-class LogViewer : public QDialog {
-public:
-    LogViewer(const std::string& txt, QWidget *parent=0, const char *name=0) : QDialog(parent,name)
-      {
-        mytext=txt;
-        QVBoxLayout* vb = new QVBoxLayout(this,8);
-        vb->setAutoAdd(TRUE);
-        browser = new QTextBrowser( this );
-        browser->setFrameStyle( QFrame::Panel | QFrame::Sunken );
-        browser->setTextFormat( QTextEdit::PlainText );
-        browser->setWordWrap(QTextEdit::NoWrap);
-//        browser->setWordWrap(QTextEdit::FixedColumnWidth);
-//        browser->setWrapColumnOrWidth(150);
-        browser->setReadOnly(1);
-        browser->setText(txt);
-        button= new QPushButton("Close",this);
-        connect(button,SIGNAL(clicked()),this, SLOT(accept()));
-        resize(500,500);
-      }
-    void readFile(const std::string& filename)
-      {
-        std::fstream f(filename.c_str());
-        std::stringstream hfile;
-        hfile << f.rdbuf();
-        browser->setText(mytext+"\n\n"+ hfile.str());
-        f.close();
-      }
-
-private:
-    std::string mytext;
-    QPushButton* button;
-    QTextBrowser* browser;
-};
 
 //! Load dataflow from file.
 /*!
@@ -2229,7 +2234,7 @@ YACS::HMI::GuiContext* YACSGui_Module::ImportProcFromFile( const QString& theFil
       getApp()->logWindow()->putMessage("Load schema: "+theFilePath);
       if(!logger->isEmpty())
         {
-	  getApp()->logWindow()->putMessage("Problems when loading: the proc is not probably completely built\n\n"+logger->getStr());
+	  getApp()->logWindow()->putMessage("Problems when loading: the proc is probably not completely built\n\n"+logger->getStr());
 
           //LogViewer* log=new LogViewer(txt,getApp()->desktop());
           //log->show();
@@ -2393,6 +2398,31 @@ void YACSGui_Module::onCreateExecution()
     if ( obj && getDataModel()->objectType( obj->entry() ) == YACSGui_DataModel::SchemaObject )
     {
       _PTR(SObject) sobj = obj->object();
+      //Check if the proc is valid. If not, don't create an execution
+      Proc* theProc = getDataModel()->getProc(sobj);
+      if ( !theProc )
+        return;
+      // Check validity
+      if(!theProc->isValid())
+        {
+          std::string msg="The YACS schema is not valid : can not create a new execution\n\n";
+          msg=msg+theProc->getErrorReport();
+          LogViewer* log=new LogViewer(msg,getApp()->desktop());
+          log->show();
+          return;
+        }
+      // Check consistency
+      LinkInfo info(LinkInfo::ALL_DONT_STOP);
+      theProc->checkConsistency(info);
+      if(info.areWarningsOrErrors())
+        {
+          std::string msg="The YACS schema is not consistent : can not create a new execution\n\n";
+          msg=msg+info.getGlobalRepr();
+          LogViewer* log=new LogViewer(msg,getApp()->desktop());
+          log->show();
+          return;
+        }
+
       _PTR(GenericAttribute)   anAttr;
       _PTR(AttributeName)      aName;
       _PTR(AttributeParameter) aType;
@@ -2404,24 +2434,29 @@ void YACSGui_Module::onCreateExecution()
 
         if ( sobj->FindAttribute( anAttr, "AttributeName" )  )
         {
+          // --- check first the validity of the proc
+          {
+	    Proc* aProc = getDataModel()->getProc(sobj);
+	    if (!aProc) return;
+            YACSGui_SchemaPage* aSPage 
+              = dynamic_cast<YACSGui_SchemaPage*>(myInputPanel->getPage(YACSGui_InputPanel::SchemaId));
+            if (!aSPage) return;
+            LinkInfo info(LinkInfo::ALL_DONT_STOP);
+            aProc->checkConsistency(info);
+            if (info.areWarningsOrErrors())
+              {
+                MESSAGE(info.getGlobalRepr());
+                aSPage->myErrorLog->setText(info.getGlobalRepr());
+                return;
+              }
+            else aSPage->myErrorLog->setText("");
+          }
+
           aName = _PTR(AttributeName)( anAttr );
           QString aSchemaName = aName->Value();
           SCRUTE(aSchemaName.latin1());
 	  QString anEditionName = "/tmp/YACSGui/" + aSchemaName + "-modified";
 
-	  // check it is a first execution object created under the schema object
-	  /*
-	  _PTR(Study) aStudy = (( SalomeApp_Study* )(getApp()->activeStudy()))->studyDS();
-	  _PTR(ChildIterator) anIterator ( aStudy->NewChildIterator(sobj) );
-	  bool anyRunObjects = false;
-	  for (; anIterator->More(); anIterator->Next())
-	  {
-	    anyRunObjects = true;
-	    break;
-	  }
-
-	  if ( anyRunObjects )
-	  */
 	  // check if file for modified schema was created earlier
 	  if ( QFile::exists(anEditionName) )
 	    aSchemaFile.setName(anEditionName);
@@ -2477,7 +2512,7 @@ void YACSGui_Module::onCreateExecution()
 	    {
 	      getDataModel()->createNewRun( sobj, aRunName, aProc );                
 	      updateObjBrowser();
-	      
+	     
 	      // create and activate the run tree view for the create run object
 	      createTreeView( aCProc->getSubjectProc(), YACSGui_DataModel::RunObject );
 	    }

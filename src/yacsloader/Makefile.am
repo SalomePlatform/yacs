@@ -32,6 +32,7 @@ AM_CXXFLAGS = \
 
 if SALOME_KERNEL
 SALOME_LIBS=-L$(KERNEL_ROOT_DIR)/lib/salome -lSalomeLifeCycleCORBA
+SALOME_INCL_PATH=-I$(KERNEL_ROOT_DIR)/include/salome
 endif
 
 
@@ -39,6 +40,7 @@ driver_SOURCES = driver.cxx
 
 driver_CXXFLAGS = -g -DYACS_PTHREAD \
               $(PYTHON_CPPFLAGS) \
+							$(SALOME_INCL_PATH) \
               $(OMNIORB_INCLUDES) \
               $(OMNIORB_CXXFLAGS) \
               -I$(srcdir)/../bases \

@@ -375,11 +375,21 @@ struct foreachlooptypeParser:looptypeParser<T>
   virtual void postAttr()
     {
       if(currentProc->typeMap.count(_datatype)==0)
+      {
+        //Check if the typecode is defined in the runtime
+        YACS::ENGINE::TypeCode* t=theRuntime->getTypeCode(_datatype);
+        if(t==0)
         {
           std::stringstream msg;
           msg << "Type "<< _datatype <<" does not exist"<<" ("<<__FILE__<<":"<<__LINE__<< ")";
           throw Exception(msg.str());
         }
+        else
+        {
+          currentProc->typeMap[_datatype]=t;
+          t->incrRef();
+        }
+      }
       this->_cnode=theRuntime->createForEachLoop(_name,currentProc->typeMap[_datatype]);
       //set number of branches
       if(_nbranch > 0)this->_cnode->edGetNbOfBranchesPort()->edInit(_nbranch);

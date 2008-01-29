@@ -377,6 +377,8 @@ private:
 
 /* ================ items for tree view in run mode ================ */
 
+class YACSGui_Executor;
+
 class YACSGui_ComposedNodeViewItem: public YACSGui_ViewItem
 {
  public:
@@ -400,6 +402,7 @@ class YACSGui_ComposedNodeViewItem: public YACSGui_ViewItem
   void update( const bool theIsRecursive = false );
 
   YACS::HMI::Subject* getSubject() const;
+  void popup(YACSGui_Executor* anExecutor,const QPoint & point);
 
  protected:
   int _state;
@@ -435,6 +438,7 @@ class YACSGui_ElementaryNodeViewItem: public QCheckListItem,
   bool selectionBlocked() const;
 
   YACS::HMI::Subject* getSubject() const;
+  void popup(YACSGui_Executor* anExecutor,const QPoint & point);
   
  protected:
   int _state;

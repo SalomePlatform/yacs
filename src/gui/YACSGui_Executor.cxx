@@ -472,3 +472,17 @@ void YACSGui_Executor::setEngineRef(YACSGui_ORB::YACSGui_Gen_ptr theRef)
 {
   _engineRef = theRef;
 }
+
+std::string YACSGui_Executor::getErrorDetails(YACS::ENGINE::Node* node)
+{
+  //get the node engine id
+  int engineId=_serv->getEngineId(node->getNumId());
+  return _procRef->getErrorDetails(engineId);
+}
+
+std::string YACSGui_Executor::getErrorReport(YACS::ENGINE::Node* node)
+{
+  //get the node engine id
+  int engineId=_serv->getEngineId(node->getNumId());
+  return _procRef->getErrorReport(engineId);
+}

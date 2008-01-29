@@ -219,13 +219,19 @@ std::string Proc::getNodeErrorDetails(int nodeNumId)
       return msg.str();
     }
   YACS::ENGINE::Node* node = YACS::ENGINE::Node::idMap[nodeNumId];
-  if ( YACS::ENGINE::ElementaryNode *elemNode = dynamic_cast<YACS::ENGINE::ElementaryNode*>(node))
-    return elemNode->getErrorDetails();
-  else
+  return node->getErrorDetails();
+}
+std::string Proc::getNodeErrorReport(int nodeNumId)
+{
+  DEBTRACE("Proc::getNodeErrorReport " << nodeNumId);
+  stringstream msg;
+  if(YACS::ENGINE::Node::idMap.count(nodeNumId) == 0)
     {
-      msg << "node id " << nodeNumId << " is not an ElementaryNode";
+      msg << "Unknown node id " << nodeNumId;
       return msg.str();
     }
+  YACS::ENGINE::Node* node = YACS::ENGINE::Node::idMap[nodeNumId];
+  return node->getErrorReport();
 }
 
 std::list<int> Proc::getNumIds()

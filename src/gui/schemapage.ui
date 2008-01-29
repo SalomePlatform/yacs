@@ -118,6 +118,9 @@
                             <property name="title">
                                 <string>View Mode</string>
                             </property>
+                            <property name="exclusive">
+                                <bool>true</bool>
+                            </property>
                             <grid>
                                 <property name="name">
                                     <cstring>unnamed</cstring>

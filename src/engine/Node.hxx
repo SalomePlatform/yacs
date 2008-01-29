@@ -130,6 +130,8 @@ namespace YACS
       virtual void sendEvent(const std::string& event);
       static std::map<int,Node *> idMap;
       virtual std::string typeName() {return "YACS__ENGINE__Node";}
+      virtual std::string getErrorDetails(){return _errorDetails;};
+      virtual void setErrorDetails(const std::string& error){_errorDetails=error;};
       virtual void modified();
       virtual int isModified(){return _modified;}
       virtual int isValid();

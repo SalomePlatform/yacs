@@ -50,6 +50,11 @@ void XmlNode::setScript(const std::string& script)
   _script=script;
 }
 
+std::string XmlNode::getScript() const
+{
+  return _script;
+}
+
 std::string XmlNode::getKind() const
 {
   return KIND;

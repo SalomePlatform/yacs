@@ -248,6 +248,7 @@ In such a case we will provide two possibilities: Apply - to apply modifications
 and switch selection to the choosen object, Cancel - to lose modifications for the current object and
 switch selection to the choosen object. Is it suitable for you?
 EDF: yes
+comments: OCC: DONE
 ----------------------------------------------------------------------------------------------------
 Num-----: 17
 priority: 0

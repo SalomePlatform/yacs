@@ -184,10 +184,20 @@ void outnodetypeParser<T>::parameter (myoutport& p)
   DEBTRACE("outnodetypeParser::parameter");
   if(currentProc->typeMap.count(p._type)==0)
     {
-      std::string msg="Unknown Type: ";
-      msg=msg+p._type+" for node: "+this->_node->getName()+" port name: "+p._name;
-      this->logError(msg);
-      return;
+      //Check if the typecode is defined in the runtime
+      YACS::ENGINE::TypeCode* t=theRuntime->getTypeCode(p._type);
+      if(t==0)
+      {
+        std::string msg="Unknown Type: ";
+        msg=msg+p._type+" for node: "+this->_node->getName()+" port name: "+p._name;
+        this->logError(msg);
+        return;
+      }
+      else
+      {
+        currentProc->typeMap[p._type]=t;
+        t->incrRef();
+      }
     }
   ENGINE::InputPort *port = this->_node->edAddInputPort(p._name,currentProc->typeMap[p._type]);
   this->_node->setData(port,p._props["ref"]);

@@ -22,12 +22,15 @@ namespace YACS
       Catalog(const std::string& name);
       virtual ~Catalog();
       const std::string& getName() const { return _name; }
+      std::string getErrors(){return _errors;}
+      void setErrors(const std::string& errors){_errors=errors;}
       std::map<std::string,TypeCode*> _typeMap;
       std::map<std::string,ComponentDefinition*> _componentMap;
       std::map<std::string,Node*> _nodeMap;
       std::map<std::string,ComposedNode*> _composednodeMap;
     protected:
       std::string _name;
+      std::string _errors;
     };
 
 /*! \brief class for YACS catalog loader.

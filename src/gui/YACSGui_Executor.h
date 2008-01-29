@@ -76,6 +76,8 @@ class YACSGui_Executor : public QObject, public QThread
 
   //YACS::ENGINE::Executor* getLocalEngine() { return _localEngine; };
   YACS::ENGINE::Proc* getProc() { return _proc; };
+  std::string getErrorDetails(YACS::ENGINE::Node* node);
+  std::string getErrorReport(YACS::ENGINE::Node* node);
  protected:
   virtual void run();
   void _setBPList();

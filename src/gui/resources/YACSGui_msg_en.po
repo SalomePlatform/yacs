@@ -40,6 +40,9 @@ msgstr "Service inline"
 msgid "XML_NODE"
 msgstr "XML node"
 
+msgid "APPLY_CANCEL_MODIFICATIONS"
+msgstr "Properties of the previous selected object were changed. Do you want to apply these modifications?"
+
 #### YACSGui module menus and toolbars ####
 
 msgid "MEN_FILE"

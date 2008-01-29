@@ -20,6 +20,8 @@
 
 #include <YACSGui_TreeViewItem.h>
 #include <YACSGui_TreeView.h>
+#include <YACSGui_Executor.h>
+#include <YACSGui_LogViewer.h>
 
 #include <guiContext.hxx>
 
@@ -2761,6 +2763,27 @@ void YACSGui_ComposedNodeViewItem::update( const bool theIsRecursive )
   }
 }
 
+void YACSGui_ComposedNodeViewItem::popup(YACSGui_Executor* anExecutor,const QPoint & point)
+{
+  std::cerr << anExecutor->getErrorDetails(getNode()) << std::endl;
+  QPopupMenu menu(listView());
+  menu.insertItem("Error Details",0);
+  menu.insertItem("Error Report",1);
+  int id=menu.exec(point);
+  if(id==0)
+    {
+      std::string msg = anExecutor->getErrorDetails(getNode());
+      LogViewer* log=new LogViewer(msg,listView());
+      log->show();
+    }
+  else if(id==1)
+    {
+      std::string msg = anExecutor->getErrorReport(getNode());
+      LogViewer* log=new LogViewer(msg,listView());
+      log->show();
+    }
+}
+
 // YACSGui_ElementaryNodeViewItem class:
 
 YACSGui_ElementaryNodeViewItem::YACSGui_ElementaryNodeViewItem(QListView *parent,
@@ -2888,7 +2911,7 @@ void YACSGui_ElementaryNodeViewItem::setState(int state)
   switch (_state)
     {
     case YACS::UNDEFINED:    _cf=Qt::lightGray;       setText(1,"UNDEFINED");    repaint(); break;
-    case YACS::READY:        _cf=Qt::gray;            setText(1,"READY");       repaint(); break;
+    case YACS::READY:        _cf=Qt::gray;            setText(1,"READY");        repaint(); break;
     case YACS::TOLOAD:       _cf=Qt::darkYellow;      setText(1,"TOLOAD");       repaint(); break;
     case YACS::LOADED:       _cf=Qt::darkMagenta;     setText(1,"LOADED");       repaint(); break;
     case YACS::TOACTIVATE:   _cf=Qt::darkCyan;        setText(1,"TOACTIVATE");   repaint(); break;
@@ -2911,4 +2934,24 @@ void YACSGui_ElementaryNodeViewItem::update( const bool theIsRecursive )
 {
   // update state
   // ...
+}
+
+void YACSGui_ElementaryNodeViewItem::popup(YACSGui_Executor* anExecutor,const QPoint & point)
+{
+  QPopupMenu menu(listView());
+  menu.insertItem("Error Details",0);
+  menu.insertItem("Error Report",1);
+  int id=menu.exec(point);
+  if(id==0)
+    {
+      std::string msg = anExecutor->getErrorDetails(getNode());
+      LogViewer* log=new LogViewer(msg,listView());
+      log->show();
+    }
+  else if(id==1)
+    {
+      std::string msg = anExecutor->getErrorReport(getNode());
+      LogViewer* log=new LogViewer(msg,listView());
+      log->show();
+    }
 }

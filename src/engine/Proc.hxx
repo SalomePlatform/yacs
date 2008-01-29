@@ -38,6 +38,7 @@ namespace YACS
       std::string getInPortValue(int nodeNumId, std::string portName);
       std::string getOutPortValue(int nodeNumId, std::string portName);
       std::string getNodeErrorDetails(int nodeNumId);
+      std::string getNodeErrorReport(int nodeNumId);
       std::string getXMLState(int numId);
       std::list<int> getNumIds();
       std::list<std::string> getIds();

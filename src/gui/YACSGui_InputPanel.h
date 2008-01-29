@@ -102,10 +102,13 @@ public:
   bool                                isVisible( const int ) const;
   void                                setVisible( const bool , const int );
   void                                setExclusiveVisible( const bool , const std::list<int> );
+  std::list<int>                      getVisiblePagesIds();
 
   void                                setMode( const YACSGui_InputPanel::PageMode, const int );
 
   QSize                               getPrefferedSize();
+
+  void                                emitApply( const int theId );
 
 public slots:
   void                                onNotifyNodeStatus( int theNodeId, int theStatus );
@@ -224,8 +227,11 @@ public:
   YACS::ENGINE::Container*            getContainer() const;
   YACS::ENGINE::SalomeContainer*      getSalomeContainer() const;
 
-  QString                             getContainerName() const;
-  void                                setContainerName( const QString& );
+  QString                             getDefinitionName() const;
+  bool                                setDefinitionName( const QString& );
+
+  QString                             getExecutionName() const;
+  void                                setExecutionName( const QString& );
   
   void                                fillHostNames() const;
   QString                             getHostName() const;
@@ -251,6 +257,8 @@ public:
 
   int                                 getNbComponentNodes() const;
   void                                setNbComponentNodes(const int);
+
+  void                                checkModifications( bool& theWarnToShow, bool& theToApply );
   
 public slots:
   virtual void                        onApply();
@@ -297,6 +305,8 @@ public:
   QString                             getContainerName() const;
   void                                setContainer();
 
+  void                                checkModifications( bool& theWarnToShow, bool& theToApply );
+
 public slots:
   virtual void                        onApply(); 
 
@@ -331,6 +341,8 @@ public:
   
   void                                setSProc( YACS::HMI::SubjectProc* theProc );
 
+  YACS::ENGINE::Proc*                 getProc() const;
+
   QString                             getSchemaName() const;
   void                                setSchemaName( const QString& );
 
@@ -339,6 +351,8 @@ public:
   YACSGui_InputPanel*                 getInputPanel() const;
 
   void                                setMode( const YACSGui_InputPanel::PageMode );
+
+  void                                checkModifications();
 
 public slots:
   virtual void                        onAddAllNextToRun();
@@ -438,6 +452,8 @@ public:
   virtual void                        notifyInPortValues( std::map<std::string,std::string> theInPortName2Value );
   virtual void                        notifyOutPortValues( std::map<std::string,std::string> theOutPortName2Value );
 
+  void                                checkModifications();
+
 public slots:
   virtual void                        onApply();
 
@@ -447,6 +463,8 @@ protected:
 
   QString                             scriptText() const;
   void                                setScriptText( const QString& );
+
+  bool                                isPortsModified( bool theInput = true );
 
 protected slots:
   void                                onNodeNameChanged( const QString& );
@@ -512,6 +530,8 @@ public:
   virtual void                        notifyNodeProgress();
   virtual void                        notifyInPortValues( std::map<std::string,std::string> theInPortName2Value );
   virtual void                        notifyOutPortValues( std::map<std::string,std::string> theOutPortName2Value );
+
+  void                                checkModifications( bool& theWarnToShow, bool& theToApply );
 
 signals:
   void                                enableApply( bool );
@@ -587,6 +607,8 @@ public:
   virtual void                        notifyOutPortValues( std::map<std::string,std::string> theOutPortName2Value );
   virtual void                        notifyNodeCreateBody( YACS::HMI::Subject* theSubject );
 
+  void                                checkModifications();
+
 public slots:
   virtual void                        onApply();
 
@@ -619,7 +641,9 @@ public:
   virtual void                        notifyNodeProgress();
   virtual void                        notifyInPortValues( std::map<std::string,std::string> theInPortName2Value );
   virtual void                        notifyOutPortValues( std::map<std::string,std::string> theOutPortName2Value );
-  virtual void                        notifyNodeCreateBody( YACS::HMI::Subject* theSubject );
+  virtual void                        notifyNodeCreateBody( YACS::HMI::Subject* theSubject );  
+
+  void                                checkModifications();
 
 public slots:
   virtual void                        onApply();
@@ -655,6 +679,8 @@ public:
   virtual void                        notifyInPortValues( std::map<std::string,std::string> theInPortName2Value );
   virtual void                        notifyOutPortValues( std::map<std::string,std::string> theOutPortName2Value );
   virtual void                        notifyNodeCreateBody( YACS::HMI::Subject* theSubject );
+
+  void                                checkModifications();
 
 public slots:
   virtual void                        onApply();
@@ -693,6 +719,8 @@ public:
   virtual void                        notifyInPortValues( std::map<std::string,std::string> theInPortName2Value );
   virtual void                        notifyOutPortValues( std::map<std::string,std::string> theOutPortName2Value );
   virtual void                        notifyNodeCreateNode( YACS::HMI::Subject* theSubject );
+
+  void                                checkModifications();
 
 public slots:
   virtual void                        onApply();
@@ -747,6 +775,8 @@ public:
   virtual void                        notifyInPortValues( std::map<std::string,std::string> theInPortName2Value );
   virtual void                        notifyOutPortValues( std::map<std::string,std::string> theOutPortName2Value );
   virtual void                        notifyNodeCreateNode( YACS::HMI::Subject* theSubject );
+
+  void                                checkModifications();
 
 public slots:
   virtual void                        onApply();

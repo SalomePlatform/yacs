@@ -6,6 +6,7 @@
 #include <set>
 #include <iostream>
 #include <sstream>
+#include <stdexcept>
 
 
 //#define _DEVDEBUG_
@@ -32,19 +33,30 @@ void ProcCataLoader::loadCata(Catalog* cata)
       p=_xmlLoader->load(_path.c_str());
       if(p==0)
         {
-          std::cerr << "the file is probably not a YACS schema file" << std::endl;
+          std::string msg="the file is probably not a YACS schema file";
+          cata->setErrors(msg);
+          std::cerr << msg << std::endl;
           return; 
         }
     }
   catch (YACS::Exception& e)
     {
-      std::cerr << "Caught a YACS exception" << std::endl;
-      std::cerr << e.what() << std::endl;
+      std::string msg="Caught a YACS exception";
+      msg=msg + e.what();
+      std::cerr << msg << std::endl;
+      cata->setErrors(msg);
+      return ;
+    }
+  catch (const std::invalid_argument& e)
+    {
+      cata->setErrors(e.what());
       return ;
     }
   catch (const std::ios_base::failure&)
     {
-      std::cerr << "Caught an io failure exception" << std::endl;
+      std::string msg="Caught an io failure exception";
+      std::cerr << msg << std::endl;
+      cata->setErrors(msg);
       return ;
     }
 
@@ -53,7 +65,9 @@ void ProcCataLoader::loadCata(Catalog* cata)
   //Print errors logged if any
   if(!logger->isEmpty())
     {
-      std::cerr << logger->getStr() << std::endl;
+      std::string msg=logger->getStr();
+      std::cerr << msg << std::endl;
+      cata->setErrors(msg);
     }
 
   std::map<std::string,TypeCode*>& typeMap=cata->_typeMap;

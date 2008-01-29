@@ -93,6 +93,8 @@ Node *DynParaLoop::edSetNode(Node *node)
   Node *ret=_node;
   _node=node;
   _node->_father=this;
+  //set _modified flag so that edUpdateState can refresh state
+  modified();
   return ret;
 }
 
@@ -132,6 +134,7 @@ Node *DynParaLoop::edSetInitNode(Node *node)
   Node *ret=_initNode;
   _initNode=node;
   _initNode->_father=this;
+  modified();
   return ret;
 }
 

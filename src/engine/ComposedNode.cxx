@@ -431,6 +431,8 @@ void ComposedNode::edRemoveChild(Node *node) throw(Exception)
     }
   node->edDisconnectAllLinksWithMe();
   node->_father = 0;
+  //set _modified flag so edUpdateState() can refresh state
+  modified();
 }
 
 //! Splits name globalName in 2 parts using separator.

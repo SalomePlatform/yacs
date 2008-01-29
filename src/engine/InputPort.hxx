@@ -110,6 +110,7 @@ namespace YACS
       if(manuallySet!=this)
         delete manuallySet;
       any->decrRef();
+      modified();
       exSaveInit();
     }
   }

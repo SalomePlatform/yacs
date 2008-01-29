@@ -488,6 +488,7 @@ Node *Switch::edSetNode(int caseId, Node *node) throw(Exception)
   checkNoCrossHierachyWith(node);
   node->_father=this;
   map< int , Node * >::iterator iter=_mapOfNode.find(caseId);
+  modified();
   if(iter==_mapOfNode.end())
     {
       _mapOfNode[caseId]=node;

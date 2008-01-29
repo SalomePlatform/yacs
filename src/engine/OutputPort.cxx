@@ -60,6 +60,8 @@ bool OutputPort::edAddInputPort(InputPort *phyPort) throw(Exception)
                                              _node->getImplementation(),
                                              this->edGetType());
       _setOfInputPort.insert(pwrap);
+      modified();
+      phyPort->modified();
       return true;
     }
   else
@@ -98,9 +100,11 @@ int OutputPort::edRemoveInputPort(InputPort *inputPort, bool forward) throw(Exce
           break;
       if(iter!=_setOfInputPort.end())
         {
+          (*iter)->modified();
           if((*iter)->isIntermediate())
             delete (*iter);
           _setOfInputPort.erase(iter);
+          modified();
           return edGetNumberOfOutLinks();
         }
       else

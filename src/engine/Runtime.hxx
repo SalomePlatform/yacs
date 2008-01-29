@@ -6,6 +6,7 @@
 #include<string>
 #include<set>
 #include<map>
+#include<vector>
 
 namespace YACS
 {
@@ -96,12 +97,15 @@ namespace YACS
       virtual void setCatalogLoaderFactory(const std::string& name, CatalogLoader* factory);
       std::map<std::string,CatalogLoader*> _catalogLoaderFactoryMap;
       Catalog* getBuiltinCatalog();
+      virtual void addCatalog(Catalog* catalog);
+      virtual TypeCode* getTypeCode(const std::string& name);
 
     protected:
       static Runtime* _singleton;
       Runtime();
       std::set<std::string> _setOfImplementation;
       Catalog* _builtinCatalog;
+      std::vector<Catalog*> _catalogs;
     };
 
   }

@@ -316,6 +316,8 @@ Node *Loop::edSetNode(Node *node)
   Node *ret=_node;
   _node=node;
   _node->_father=this;
+  //set _modified flag so that edUpdateState() can refresh state
+  modified();
   return ret;
 }
 

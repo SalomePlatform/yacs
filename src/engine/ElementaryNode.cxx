@@ -93,6 +93,7 @@ void ElementaryNode::exUpdateState()
         string what("ElementaryNode::exUpdateState : Invalid graph given : Node with name \"");
         what+=_name; what+="\" ready to run whereas some inputports are not set correctly\nCheck coherence DF/CF";
         setState(YACS::INTERNALERR);
+        _errorDetails=what;
         throw Exception(what);
       }
 }

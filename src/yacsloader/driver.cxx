@@ -1,4 +1,5 @@
 
+#include "yacsconfig.h"
 #include "RuntimeSALOME.hxx"
 #include "Proc.hxx"
 #include "Logger.hxx"
@@ -10,6 +11,11 @@
 #include "LoadState.hxx"
 #include "Dispatcher.hxx"
 #include "LinkInfo.hxx"
+
+#ifdef SALOME_KERNEL
+#include "SALOME_NamingService.hxx"
+#include "SALOME_ModuleCatalog.hh"
+#endif
 
 #include <iostream>
 #include <fstream>
@@ -138,6 +144,29 @@ main (int argc, char* argv[])
     cerr << endl;
 
   RuntimeSALOME::setRuntime();
+
+  // Try to load the session catalog if it exists
+  try
+    {
+      YACS::ENGINE::RuntimeSALOME* runTime = YACS::ENGINE::getSALOMERuntime();
+      CORBA::ORB_ptr orb = runTime->getOrb();
+      if (orb)
+        {
+          SALOME_NamingService namingService(orb);
+          CORBA::Object_var obj = namingService.Resolve("/Kernel/ModulCatalog");
+          SALOME_ModuleCatalog::ModuleCatalog_var aModuleCatalog = SALOME_ModuleCatalog::ModuleCatalog::_narrow(obj);
+          if (! CORBA::is_nil(aModuleCatalog))
+            {
+              CORBA::String_var anIOR = orb->object_to_string( aModuleCatalog );
+              YACS::ENGINE::Catalog* aCatalog = runTime->loadCatalog( "session", anIOR.in() );
+              runTime->addCatalog(aCatalog);
+            }
+        }
+    }
+  catch(ServiceUnreachable& e)
+    {
+      //Naming service unreachable don't add catalog
+    }
 
   YACSLoader loader;
   Executor executor;

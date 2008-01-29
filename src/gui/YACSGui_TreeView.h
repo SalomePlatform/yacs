@@ -89,8 +89,9 @@ class YACSGui_EditionTreeView: public YACSGui_TreeView
 
   virtual void build(); //temporary solution, for testing only
 
+  void warnAboutSelectionChanged();
   virtual void syncPageTypeWithSelection();
-
+  
   YACSGui_NodeViewItem* displayNodeWithPorts( QListViewItem* theRoot,
 					      YACSGui_NodeViewItem* theAfter,
 					      YACS::HMI::SubjectNode* theSNode );
@@ -176,6 +177,7 @@ class YACSGui_RunTreeView: public YACSGui_TreeView
  public slots:
   virtual void onNotifyNodeStatus( int theNodeId, int theStatus );
   virtual void onNotifyStatus( int theStatus );
+  virtual void onMenuRequested( QListViewItem*, const QPoint &, int );
 
  protected:
   //virtual void build();

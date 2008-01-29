@@ -55,6 +55,9 @@ class proc_i(YACSGui_ORB__POA.ProcExec):
     def getErrorDetails(self, nodeNumid):
         return self.p.getNodeErrorDetails(nodeNumid)
 
+    def getErrorReport(self, nodeNumid):
+        return self.p.getNodeErrorReport(nodeNumid)
+
     def getExecutorState(self):
         return self.e.getExecutorState()
 
