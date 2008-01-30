@@ -109,7 +109,7 @@ comments: OCC: DONE. This functionality will be available from CVS today evening
 ----------------------------------------------------------------------------------------------------
 Num-----: 8 
 priority: 0
-status--: NOK (checked on BR_DEV mergefrom_BR_PR_8jan08)
+status--: OK (checked on BR_DEV mergefrom_BR_PR_29jan08)
 description: in python node properties, the port creation works, but the other buttons (arrows...)
 have a confusing behaviour, and lead sometimes to sigsegv.
 
@@ -124,7 +124,7 @@ comments: OCC: DONE
 ----------------------------------------------------------------------------------------------------
 Num-----: 9
 priority: 0
-status--: NOK (checked on BR_DEV mergefrom_BR_PR_8jan08)
+status--: OK (checked on BR_DEV mergefrom_BR_PR_29jan08)
 description: in python node properties, changing the name leads to abort
 /home/prascle/SALOME2/YACS/BR_OCC/YACS_SRC/src/hmi/guiObservers.cxx [1038] : SubjectElementaryNode::addInputPort( 0x8552168, int, sds )
 terminate called after throwing an instance of 'YACS::Exception'
@@ -175,7 +175,7 @@ comments: OCC: DONE
 ----------------------------------------------------------------------------------------------------
 Num-----: 13
 priority: 0
-status--: NOK (checked on BR_DEV mergefrom_BR_PR_8jan08)
+status--: NOK (checked on BR_DEV mergefrom_BR_PR_29jan08)
 description: When the bloc properties is open, there is a button to add nodes, that does not work.
 (remove seems possible)
 comments: OCC: Could you, please, provide a test scenario to reproduce
@@ -200,10 +200,14 @@ idem with '-' button. It is not obvious to find how it works, but it works!
 The main problem is if we forget to apply, there is no warning.
 I don't know if it is possible to have tooltips on such buttons (or other kind of help)
 comments: OCC: DONE, tooltips were added
+EDF: still problems (unnecessary warning, abort) with warnings on apply on certain cases
+scenario: Create several nodes and a block, move a node to the bloc and click on this node without apply.
+abort on OK.
+
 ----------------------------------------------------------------------------------------------------
 Num-----: 14
 priority: 0
-status--: NOK (checked on BR_DEV mergefrom_BR_PR_8jan08)
+status--: NOK (checked on BR_DEV mergefrom_BR_PR_29jan08: remaining item "remote run, control")
 description: In general, there are too much buttons or menus that have no action, or very unclear.
 these buttons must be either removed, or grayed if they corresponds to something in development.
 comments: OCC: DONE
@@ -212,30 +216,30 @@ OCC: Could you, please, provide a list of such buttons and menus?
 EDF(PR): OK I will try to make some snapshots and mark the things I don't understand.
 EDF: Well, you already have done a lot of cleaning in the last versions. There are still a few 
 things remaining.
-- buttons data flow view and data stream view do nothing (comment in source until implementation)
-- idem in schema property panel
-- menu create node/node node service does nothing (grayed or comment in source until implementation)
-- menu create node/from library does nothing (to be removed)
-- menu create node, from a component instance item in tree (does nothing, could be useful, to check)
-- search in python script, property panel does not work with qscintilla. Not very useful, could be 
+1 buttons data flow view and data stream view do nothing (comment in source until implementation)
+2 idem in schema property panel
+3 menu create node/node node service does nothing (grayed or comment in source until implementation)
+4 menu create node/from library does nothing (to be removed)
+5 menu create node, from a component instance item in tree (does nothing, could be useful, to check)
+6 search in python script, property panel does not work with qscintilla. Not very useful, could be 
   removed.
-- in execution mode, button "remote run, control" could be removed, provided execution mode radio buttons
+7 in execution mode, button "remote run, control" could be removed, provided execution mode radio buttons
   and "stop on error" check button exist somewhere (the existing button "stop on error" is not clear:
   is it a toggle ?). It should be possible to start an execution in a mode and switch to another mode
   at any time during the execution (step by step / breakpoints / without stop).
-
+EDF: 1,2,3,4,6: OK --- 5,7: NOK
 ----------------------------------------------------------------------------------------------------
 Num-----: 15 
 priority: 0
-status--: NOK (checked on BR_DEV mergefrom_BR_PR_8jan08)
+status--: OK (checked on BR_DEV mergefrom_BR_PR_29jan08)
 description: No tree view nor canvas for salome SUPERV files 
 comments: OCC: DONE
 EDF: Loading seems OK for edition (tree view, canvas...) but execution tree view is not visible. 
-EDF: OK
+
 ----------------------------------------------------------------------------------------------------
 Num-----: 16
 priority: 0
-status--: NOK (checked on BR_DEV mergefrom_BR_PR_8jan08)
+status--: OK (checked on BR_DEV mergefrom_BR_PR_29jan08, but related bugs: 13)
 description: When editing a node (for instance a python script), if we switch on another node without 
 apply, everything is lost...
 (in guidemo, I used a qt stack of widget for properties, so each item have it's own instance. No specific
@@ -252,7 +256,7 @@ comments: OCC: DONE
 ----------------------------------------------------------------------------------------------------
 Num-----: 17
 priority: 0
-status--: NOK (checked on BR_DEV mergefrom_BR_PR_8jan08)
+status--: OK (checked on BR_DEV mergefrom_BR_PR_29jan08)
 description: Confusing behaviour, when switching from execution to edition and reverse.
 Example: create a new schema with 2 python script nodes, one producing to outputs double(a,b), the other
 with 2 input double (a,b) and an output double (c) (script: c=a+b), create the 2 links a->a b->b and execute.
@@ -265,7 +269,7 @@ comments: OCC: DONE
 ----------------------------------------------------------------------------------------------------
 Num-----: 18
 priority: 0
-status--: NOK (checked on BR_DEV mergefrom_BR_PR_8jan08)
+status--: OK (checked on BR_DEV mergefrom_BR_PR_29jan08)
 description: When switching from execution to edition and reverse, each execution may correspond to a modified
 schema. Now, all executions are under the same item in object browser. There is no way to retrieve a
 particular version of the schema corresponding to an execution.
@@ -281,6 +285,8 @@ in the object browser (and/or the same toolbar button, as it was done for creati
 EDF(PR): Yes, I think it is OK. To be complete, when a schema is executed, it must be impossible to modify
 it without copy,to keep the coherence between the schema and it's execution.
 comments: OCC: DONE
+EDF: The schema is still modifiable after execution, but it is always possible to retreive the original
+with "new edition" popup menu on execuction item (OK)
 ----------------------------------------------------------------------------------------------------
 Num-----: 19
 priority: 0
@@ -291,13 +297,13 @@ comments: OCC: DONE
 ----------------------------------------------------------------------------------------------------
 Num-----: 20
 priority: 0
-status--: NOK 
+status--: OK (checked on BR_DEV mergefrom_BR_PR_29jan08)
 description: when export, save before execution... an incomplete schema there must be checks and warnings
-comments:
+comments: EDF: the error log is given on schema item in tree
 ----------------------------------------------------------------------------------------------------
 Num-----: 
 priority: 21
-status--: NOK 
+status--: OK (checked on BR_DEV mergefrom_BR_PR_29jan08)
 description: when modifying 2 output ports, type double to int, in a pyscript node, only one modif
 is taken into account when apply.
 comments: OCC: Could you, please, provide a test scenario to reproduce this bug?
@@ -308,7 +314,7 @@ comments: OCC: DONE
 ----------------------------------------------------------------------------------------------------
 Num-----: 
 priority: 22
-status--: NOK 
+status--: OK (not reproduced on BR_DEV mergefrom_BR_PR_29jan08)
 description: abort on selection in canvas (after problem 21 above):
 YACSGui_TreeView.cxx 474 if ( YACSGui_ReferenceViewItem* aRefItem = dynamic_cast<YACSGui_ReferenceViewItem*>( theItem ) )
 segfault in dynamic_cast
@@ -323,20 +329,34 @@ comments:
 ----------------------------------------------------------------------------------------------------
 Num-----: 24 
 priority: 0
-status--: NOK
+status--: OK (checked on BR_DEV mergefrom_BR_PR_29jan08)
 description: schema is not automatically checked before execution
-comments: EDF: DONE
+comments:
 ----------------------------------------------------------------------------------------------------
 Num-----: 25
 priority: 0
-status--: NOK
+status--: OK (checked on BR_DEV mergefrom_BR_PR_29jan08)
 description: DSC ports are not displayed in node properties panel (for instance samples/calcium4)
-comments: OCC: DONE
+comments:
 ----------------------------------------------------------------------------------------------------
-Num-----:  
+Num-----: 26 
 priority: 0
 status--: NOK
-description: 
+description: It must be possible to use data types from other nodes already loaded, or to get them 
+from catalogs. For instance, use GEOM_Object in a python node.
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----: 27 
+priority: 0
+status--: NOK
+description: input ports must not be initialised automatically by default.
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----:  
+priority: 28
+status--: NOK
+description: data nodes in and out, study in and study out, to implement
+(to be created by the way of popup menu put in study, get from study, with path stored)
 comments:
 ----------------------------------------------------------------------------------------------------
 Num-----:  
@@ -391,7 +411,7 @@ decided, nothing to do now.
 ----------------------------------------------------------------------------------------------------
 Num-----: 1005
 priority: 1
-status--: NOK
+status--: OK (checked on BR_DEV mergefrom_BR_PR_29jan08)
 description: Mismatch in container names. We must distinguish:
 - the name in YACS schema and xml file, useful to distinguish process (memory context). Lets call it
   "Definition Name".
@@ -403,7 +423,7 @@ in tree view, container must be referenced by it's definition name (lets say A, 
 execution name (localhost/factoryServer).
 Container properties panel must give the to names. The execution name (localhost/factoryServer) and
 hostname can stay empty (resource manager job).
-comments:
+comments: EDF: Done
 ----------------------------------------------------------------------------------------------------
 Num-----: 1006 
 priority: 1
@@ -436,7 +456,7 @@ Num-----: 1009
 priority: 1
 status--: NOK
 description: There is nothing to show the validity of a graph in edition, node by node.
-A recursive validationnode by node is required in engine (will probably be developed soon).
+A recursive validation node by node is required in engine (will probably be developed soon).
 When this information will be available, it have to be represented in Gui (different color for items
 in tree view, for instance).
 When a node is modified, local impact on graph validity must be recomputed (Engine) and displayed
@@ -453,7 +473,19 @@ comments:
 Num-----: 1011
 priority: 1
 status--: NOK
-description: When adding a link between to nodes in a block canvas is not always udpdated.
+description: When adding a link between to nodes in a block, canvas is not always udpdated.
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----: 1012
+priority: 1
+status--: NOK
+description: in node properties, value type always set to double when clicking (must stay to its value)
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----: 1013
+priority: 1
+status--: NOK
+description: Nodes with data stream ports must only be available by import from catalogs
 comments:
 ----------------------------------------------------------------------------------------------------
 Num-----: 
