@@ -146,35 +146,23 @@ YACSGui_Module::~YACSGui_Module()
 void YACSGui_Module::initialize( CAM_Application* theApp )
 {
   MESSAGE("YACSGui_Module::initialize");
-  printf(">>= 1\n");
   SalomeApp_Module::initialize(theApp);
-  printf(">>= 2\n");
   //InitYACSGuiGen( dynamic_cast<SalomeApp_Application*>( theApp ) );
   createSComponent();
-  printf(">>= 3\n");
   updateObjBrowser();
-  printf(">>= 4\n");
 
   createActions();
-  printf(">>= 5\n");
   createMenus();
-  printf(">>= 6\n");
   createPopups();
-  printf(">>= 7\n");
 
   RuntimeSALOME::setRuntime();
-  printf(">>= 8\n");
   fillNodeTypesMap();
-  printf(">>= 9\n");
 
   if ( theApp && theApp->desktop() ) {
-    printf(">>= 10\n");
     connect( theApp->desktop(), SIGNAL( windowActivated( SUIT_ViewWindow* ) ),
              this, SLOT(onWindowActivated( SUIT_ViewWindow* )) );
-    printf(">>= 11\n");
   }
    
-  printf(">>= 12\n");
 }
 
 //! Creates module actions.
@@ -2005,38 +1993,25 @@ void YACSGui_Module::createElementaryNodePrs()
  */
 void YACSGui_Module::createSComponent()
 {
-  printf(">>= 13\n");
   _PTR(Study)            aStudy = (( SalomeApp_Study* )(getApp()->activeStudy()))->studyDS();
   _PTR(StudyBuilder)     aBuilder ( aStudy->NewBuilder() );
   _PTR(GenericAttribute) anAttr;
   _PTR(AttributeName)    aName;
 
-  printf(">>= 14\n");
   // Find or create "YACS" SComponent in the study
   _PTR(SComponent) aComponent = aStudy->FindComponent("YACSGui");
-  printf(">>= 15\n");
   if ( !aComponent ) {
-    printf(">>= 16\n");
     aComponent = aBuilder->NewComponent("YACSGui");
-    printf(">>= 17\n");
     anAttr = aBuilder->FindOrCreateAttribute(aComponent, "AttributeName");
-    printf(">>= 18\n");
     aName = _PTR(AttributeName) ( anAttr );
-    printf(">>= 19\n");
     aName->SetValue( getApp()->moduleTitle( "YACSGui" ).latin1() );
-    printf(">>= 20\n");
 	
     anAttr = aBuilder->FindOrCreateAttribute(aComponent, "AttributePixMap");
-    printf(">>= 21\n");
     _PTR(AttributePixMap) aPixmap ( anAttr );
-    printf(">>= 22\n");
     aPixmap->SetPixMap( "YACS_MODULE_ICON" );
-    printf(">>= 23\n");
 
     aBuilder->DefineComponentInstance( aComponent, engineIOR() );
-    printf(">>= 24\n");
   }
-  printf(">>= 25\n");
 }
 
 //! Load services from Module Catalog
@@ -2063,6 +2038,8 @@ void YACSGui_Module::loadCatalog()
   std::string errors=myCatalog->getErrors();
   if(errors != "")
     {
+      getApp()->logWindow()->putMessage("The session catalog has errors : some nodes will be unavailable\n"+errors);
+
       LogViewer* log=new LogViewer("The session catalog has errors : some nodes will be unavailable\n"+errors,getApp()->desktop());
       log->show();
     }
@@ -2407,6 +2384,7 @@ void YACSGui_Module::onCreateExecution()
         {
           std::string msg="The YACS schema is not valid : can not create a new execution\n\n";
           msg=msg+theProc->getErrorReport();
+	  getApp()->logWindow()->putMessage(msg);
           LogViewer* log=new LogViewer(msg,getApp()->desktop());
           log->show();
           return;
@@ -2418,6 +2396,7 @@ void YACSGui_Module::onCreateExecution()
         {
           std::string msg="The YACS schema is not consistent : can not create a new execution\n\n";
           msg=msg+info.getGlobalRepr();
+	  getApp()->logWindow()->putMessage(msg);
           LogViewer* log=new LogViewer(msg,getApp()->desktop());
           log->show();
           return;
@@ -3393,7 +3372,6 @@ void YACSGui_Module::onWindowClosed( SUIT_ViewWindow* theVW )
  */
 void YACSGui_Module::temporaryExport()
 {
-  printf(">>> temporaryEXPORT!\n");
   // get active schema
   YACSGui_Graph* aGraph = activeGraph();
   if ( !aGraph ) return;

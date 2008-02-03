@@ -475,14 +475,22 @@ void YACSGui_Executor::setEngineRef(YACSGui_ORB::YACSGui_Gen_ptr theRef)
 
 std::string YACSGui_Executor::getErrorDetails(YACS::ENGINE::Node* node)
 {
-  //get the node engine id
-  int engineId=_serv->getEngineId(node->getNumId());
-  return _procRef->getErrorDetails(engineId);
+  if (_serv)
+  {
+    //get the node engine id
+    int engineId=_serv->getEngineId(node->getNumId());
+    return _procRef->getErrorDetails(engineId);
+  }
+  return "No YACS Engine Observer Yet (internal logic error ?)";
 }
 
 std::string YACSGui_Executor::getErrorReport(YACS::ENGINE::Node* node)
 {
-  //get the node engine id
-  int engineId=_serv->getEngineId(node->getNumId());
-  return _procRef->getErrorReport(engineId);
+  if (_serv)
+  {
+    //get the node engine id
+    int engineId=_serv->getEngineId(node->getNumId());
+    return _procRef->getErrorReport(engineId);
+  }
+  return "No YACS Engine Observer Yet (internal logic error ?)";
 }

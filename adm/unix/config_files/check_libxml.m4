@@ -12,7 +12,12 @@ if test "x$LIBXML_DIR" != "x"
 then
   CPPFLAGS="$CPPFLAGS -I$LIBXML_DIR/include/libxml2"
   CXXFLAGS="$CXXFLAGS -I$LIBXML_DIR/include/libxml2"
-  TMPLIBS="-L$LIBXML_DIR/lib -lxml2 $LIBS"
+  if test "x$LIBXML_DIR" = "x/usr"
+  then
+    TMPLIBS="-lxml2 $LIBS"
+  else
+    TMPLIBS="-L$LIBXML_DIR/lib -lxml2 $LIBS"
+  fi
   LIBXML_INCLUDES="-I$LIBXML_DIR/include/libxml2"
 else
   CPPFLAGS="$CPPFLAGS -I/usr/include/libxml2"

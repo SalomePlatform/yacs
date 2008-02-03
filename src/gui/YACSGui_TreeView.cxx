@@ -1634,7 +1634,158 @@ void YACSGui_EditionTreeView::onSelectionChanged()
   
   // check if the current selection is a single selection
   if ( aSelList.size() == 1 ) anItem = aSelList.front();
-  else if ( aSelList.size() == 0 ) // nothing selected, deselect previous
+  
+  YACSGui_InputPanel* anIP = myModule->getInputPanel();
+  if ( anItem && anIP )
+  {
+    // check if the component instance selection is active
+    if( ((QWidget*)anIP)->isVisible() && anIP->isVisible( YACSGui_InputPanel::ServiceNodeId ) )
+    {
+      YACSGui_ServiceNodePage* aSNPage = dynamic_cast<YACSGui_ServiceNodePage*>( anIP->getPage( YACSGui_InputPanel::ServiceNodeId ) );
+      if ( aSNPage && aSNPage->isSelectComponent() )
+      {
+	isWarn = false;
+	if ( YACSGui_ComponentViewItem* aCompItem = dynamic_cast<YACSGui_ComponentViewItem*>( anItem ) )
+	{
+	  if ( ServiceNode* sNode = dynamic_cast<ServiceNode*>(aSNPage->getNode()) )
+	  {
+	    if ( sNode->getKind() == aCompItem->getComponent()->getKind() )
+	    {
+	      aSNPage->setComponent(aCompItem->getComponent());
+	      
+	      // change selection from the component instance to the service node
+	      bool block = signalsBlocked();
+	      blockSignals( true );
+	      setSelected( aCompItem, false );
+	      QListViewItem* aSNItem = findItem( aSNPage->getNodeName(), 0 );
+	      if( aSNItem )
+		setSelected( aSNItem, true );
+	      blockSignals( block );
+	    }
+	    else setSelected( anItem, false );
+	  }
+	  else setSelected( anItem, false );
+	}
+	else if ( YACSGui_NodeViewItem* aNodeItem = dynamic_cast< YACSGui_NodeViewItem* >( anItem ) )
+	{ 
+	  if ( ServiceNode* sNode = dynamic_cast<ServiceNode*>( aNodeItem->getNode() ) )
+	  {
+	    YACS::ENGINE::ComponentInstance* aComp = sNode->getComponent();
+	    if ( aComp )
+	    {
+	      aSNPage->setComponent( aComp );
+	      
+	      // change selection from the another selected service node to the initial service node
+	      if ( aSNPage->getNode() != sNode )
+	      {
+		bool block = signalsBlocked();
+		blockSignals( true );
+		setSelected( aNodeItem, false );
+		QListViewItem* aSNItem = findItem( aSNPage->getNodeName(), 0 );
+		if( aSNItem )
+		  setSelected( aSNItem, true );
+		blockSignals( block );
+	      }
+	    }
+	    else 
+	      setSelected( anItem, false );
+	  }
+	  else 
+	    setSelected( anItem, false );
+	}
+	else
+	{ // remove selection from incompatible object (which is not component instance)
+	  setSelected( anItem, false );
+	}
+	
+	return;
+      }
+    }
+    
+    // check if the case selection of switch node is active
+    if( ((QWidget*)anIP)->isVisible() && anIP->isVisible( YACSGui_InputPanel::SwitchNodeId ) )
+    {
+      YACSGui_SwitchNodePage* aSNPage = dynamic_cast<YACSGui_SwitchNodePage*>( anIP->getPage( YACSGui_InputPanel::SwitchNodeId ) );
+      if ( aSNPage && aSNPage->isSelectChild() )
+      {
+	isWarn = false;
+	if ( YACSGui_NodeViewItem* aNodeItem = dynamic_cast<YACSGui_NodeViewItem*>( anItem ) )
+	{
+	  if ( aSNPage->getNode() != aNodeItem->getNode() )
+	  {
+	    aSNPage->setChild(aNodeItem->getSNode());
+	    
+	    // change selection from the child node back to the switch node
+	    bool block = signalsBlocked();
+	    blockSignals( true );
+	    setSelected( aNodeItem, false );
+	    
+	    QString aName = aSNPage->getNodeName();
+	    QListViewItem* aSNItem = 0;
+	    bool continueSearch = true;
+	    while ( continueSearch )
+	    {
+	      aSNItem = findItem( aName, 0 );
+	      if ( YACSGui_NodeViewItem* aSNVItem = dynamic_cast<YACSGui_NodeViewItem*>( aSNItem ) )
+		if ( aSNPage->getNode() == aSNVItem->getNode() )
+		  continueSearch = false;
+	    }
+	    if( aSNItem )
+	      setSelected( aSNItem, true );
+	    blockSignals( block );
+	  }
+	}
+	else
+	{ // remove selection from incompatible object (which is not a node)
+	  setSelected( anItem, false );
+	}
+	return;
+      }
+    }
+    
+    // check if the child node selection of block node is active
+    if( ((QWidget*)anIP)->isVisible() && anIP->isVisible( YACSGui_InputPanel::BlockNodeId ) )
+    {
+      YACSGui_BlockNodePage* aBNPage = dynamic_cast<YACSGui_BlockNodePage*>( anIP->getPage( YACSGui_InputPanel::BlockNodeId ) );
+      if ( aBNPage && aBNPage->isSelectChild() )
+      {
+	isWarn = false;
+	if ( YACSGui_NodeViewItem* aNodeItem = dynamic_cast<YACSGui_NodeViewItem*>( anItem ) )
+	{
+	  if ( aBNPage->getNode() != aNodeItem->getNode() )
+	  {
+	    aBNPage->setChild(aNodeItem->getSNode());
+	    
+	    // change selection from the child node back to the block node
+	    bool block = signalsBlocked();
+	    blockSignals( true );
+	    setSelected( aNodeItem, false );
+	    
+	    QString aName = aBNPage->getNodeName();
+	    QListViewItem* aBNItem = 0;
+	    bool continueSearch = true;
+	    while ( continueSearch )
+	    {
+	      aBNItem = findItem( aName, 0 );
+	      if ( YACSGui_NodeViewItem* aBNVItem = dynamic_cast<YACSGui_NodeViewItem*>( aBNItem ) )
+		if ( aBNPage->getNode() == aBNVItem->getNode() )
+		  continueSearch = false;
+	    }
+	    if( aBNItem )
+	      setSelected( aBNItem, true );
+	    blockSignals( block );
+	  }
+	}
+	else
+	{ // remove selection from incompatible object (which is not a node)
+	  setSelected( anItem, false );
+	}
+	return;
+      }
+    }
+  }
+  
+  if ( aSelList.size() == 0 ) // nothing selected, deselect previous
   {
     if ( myPreviousSelected )
     {
@@ -1702,172 +1853,10 @@ void YACSGui_EditionTreeView::onSelectionChanged()
   }
   // creation of a link <--
 
-  YACSGui_InputPanel* anIP = myModule->getInputPanel();
-  if ( !anIP ) return;
-
-  // check if the component instance selection is active
-  if( ((QWidget*)anIP)->isVisible() && anIP->isVisible( YACSGui_InputPanel::ServiceNodeId ) )
-  {
-    YACSGui_ServiceNodePage* aSNPage = dynamic_cast<YACSGui_ServiceNodePage*>( anIP->getPage( YACSGui_InputPanel::ServiceNodeId ) );
-    if ( aSNPage && aSNPage->isSelectComponent() )
-    {
-      isWarn = false;
-      if ( YACSGui_ComponentViewItem* aCompItem = dynamic_cast<YACSGui_ComponentViewItem*>( anItem ) )
-      {
-      	if ( ServiceNode* sNode = dynamic_cast<ServiceNode*>(aSNPage->getNode()) )
-	{
-	  if ( sNode->getKind() == aCompItem->getComponent()->getKind() )
-	  {
-	    aSNPage->setComponent(aCompItem->getComponent());
-	   	    
-	    // change selection from the component instance to the service node
-	    bool block = signalsBlocked();
-	    blockSignals( true );
-	    setSelected( aCompItem, false );
-	    QListViewItem* aSNItem = findItem( aSNPage->getNodeName(), 0 );
-	    if( aSNItem )
-	      setSelected( aSNItem, true );
-	    blockSignals( block );
-	  }
-	  else setSelected( anItem, false );
-	}
-	else setSelected( anItem, false );
-      }
-      else if ( YACSGui_NodeViewItem* aNodeItem = dynamic_cast< YACSGui_NodeViewItem* >( anItem ) )
-      { 
-        if ( ServiceNode* sNode = dynamic_cast<ServiceNode*>( aNodeItem->getNode() ) )
-        {
-          YACS::ENGINE::ComponentInstance* aComp = sNode->getComponent();
-          if ( aComp )
-          {
-            aSNPage->setComponent( aComp );
-
-            // change selection from the another selected service node to the initial service node
-            if ( aSNPage->getNode() != sNode )
-            {
-              bool block = signalsBlocked();
-              blockSignals( true );
-              setSelected( aNodeItem, false );
-              QListViewItem* aSNItem = findItem( aSNPage->getNodeName(), 0 );
-              if( aSNItem )
-                setSelected( aSNItem, true );
-              blockSignals( block );
-            }
-          }
-          else 
-            setSelected( anItem, false );
-        }
-        else 
-          setSelected( anItem, false );
-      }
-      else
-      { // remove selection from incompatible object (which is not component instance)
-        setSelected( anItem, false );
-      }
-
-      return;
-    }
-  }
-
-  // check if the case selection of switch node is active
-  if( ((QWidget*)anIP)->isVisible() && anIP->isVisible( YACSGui_InputPanel::SwitchNodeId ) )
-  {
-    YACSGui_SwitchNodePage* aSNPage = dynamic_cast<YACSGui_SwitchNodePage*>( anIP->getPage( YACSGui_InputPanel::SwitchNodeId ) );
-    if ( aSNPage && aSNPage->isSelectChild() )
-    {
-      isWarn = false;
-      if ( YACSGui_NodeViewItem* aNodeItem = dynamic_cast<YACSGui_NodeViewItem*>( anItem ) )
-      {
-	if ( aSNPage->getNode() != aNodeItem->getNode() )
-	{
-	  aSNPage->setChild(aNodeItem->getSNode());
-	  
-	  // change selection from the child node back to the switch node
-	  bool block = signalsBlocked();
-	  blockSignals( true );
-	  setSelected( aNodeItem, false );
-	  
-	  QString aName = aSNPage->getNodeName();
-	  QListViewItem* aSNItem = 0;
-	  bool continueSearch = true;
-	  while ( continueSearch )
-	  {
-	    aSNItem = findItem( aName, 0 );
-	    if ( YACSGui_NodeViewItem* aSNVItem = dynamic_cast<YACSGui_NodeViewItem*>( aSNItem ) )
-	      if ( aSNPage->getNode() == aSNVItem->getNode() )
-		continueSearch = false;
-	  }
-	  if( aSNItem )
-	    setSelected( aSNItem, true );
-	  blockSignals( block );
-	}
-      }
-      else
-      { // remove selection from incompatible object (which is not a node)
-	setSelected( anItem, false );
-      }
-      return;
-    }
-  }
-    
-  // check if the child node selection of block node is active
-  if( ((QWidget*)anIP)->isVisible() && anIP->isVisible( YACSGui_InputPanel::BlockNodeId ) )
-  {
-    YACSGui_BlockNodePage* aBNPage = dynamic_cast<YACSGui_BlockNodePage*>( anIP->getPage( YACSGui_InputPanel::BlockNodeId ) );
-    if ( aBNPage && aBNPage->isSelectChild() )
-    {
-      isWarn = false;
-      if ( YACSGui_NodeViewItem* aNodeItem = dynamic_cast<YACSGui_NodeViewItem*>( anItem ) )
-      {
-	if ( aBNPage->getNode() != aNodeItem->getNode() )
-	{
-	  aBNPage->setChild(aNodeItem->getSNode());
-	  
-	  // change selection from the child node back to the block node
-	  bool block = signalsBlocked();
-	  blockSignals( true );
-	  setSelected( aNodeItem, false );
-	  
-	  QString aName = aBNPage->getNodeName();
-	  QListViewItem* aBNItem = 0;
-	  bool continueSearch = true;
-	  while ( continueSearch )
-	  {
-	    aBNItem = findItem( aName, 0 );
-	    if ( YACSGui_NodeViewItem* aBNVItem = dynamic_cast<YACSGui_NodeViewItem*>( aBNItem ) )
-	      if ( aBNPage->getNode() == aBNVItem->getNode() )
-		continueSearch = false;
-	  }
-	  if( aBNItem )
-	    setSelected( aBNItem, true );
-	  blockSignals( block );
-	}
-      }
-      else
-      { // remove selection from incompatible object (which is not a node)
-	setSelected( anItem, false );
-      }
-      return;
-    }
-  }
-
   if ( isWarn ) warnAboutSelectionChanged();
 
   if ( isNewSelection ) syncPageTypeWithSelection();
   syncHMIWithSelection();
-
-  //else
-  //{
-  //  anIP->hide();
-
-    // check if the current selection contains two ports => create link operation had to be added in the popup
-    /*if ( aSelList.size() == 2 )
-    {
-      anItem = aSelList.front();
-      QListViewItem* anItem2 = aSelList.back();
-    }*/
-
-  //}
 }
 
 //! Private slot.  Selects the original node in the tree view if a reference node is double clicked.

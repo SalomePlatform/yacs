@@ -80,8 +80,8 @@ void Subject::localClean()
   {
     GuiObserver* anObs = (*it);
     delete anObs ;
-    anObs = 0;
   }
+  _setObs.clear();
 }
 
 void Subject::attach(GuiObserver *obs)

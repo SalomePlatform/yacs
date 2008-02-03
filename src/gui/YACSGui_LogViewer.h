@@ -33,6 +33,7 @@ class LogViewer : public QDialog {
 public:
     LogViewer(const std::string& txt, QWidget *parent=0, const char *name=0) : QDialog(parent,name)
       {
+	setCaption("Error Log");
         mytext=txt;
         QVBoxLayout* vb = new QVBoxLayout(this,8);
         vb->setAutoAdd(TRUE);

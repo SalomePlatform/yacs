@@ -203,7 +203,7 @@ comments: OCC: DONE, tooltips were added
 EDF: still problems (unnecessary warning, abort) with warnings on apply on certain cases
 scenario: Create several nodes and a block, move a node to the bloc and click on this node without apply.
 abort on OK.
-
+comments: OCC: DONE
 ----------------------------------------------------------------------------------------------------
 Num-----: 14
 priority: 0
@@ -325,7 +325,7 @@ priority: 0
 status--: NOK
 description: when zoom to fit area, click in a bloc, the bloc moves instead of an aera selection,
 release the mouse button leads sometimes to abort.
-comments:
+comments: OCC: DONE
 ----------------------------------------------------------------------------------------------------
 Num-----: 24 
 priority: 0
@@ -732,11 +732,16 @@ status--: NOK
 description: Not systematic: change (activate) 2D view with help of tabs.
 comments:
 ----------------------------------------------------------------------------------------------------
-Num-----:  
+Num-----: 19
 priority: 0
-status--: NOK
+status--: OK
 description: 
-comments:
+ --	   Import, for example, fschema.xml
+ --	   Create a new execution
+ --	   First of all try to activate popup menu on the node1 item in the
+ execution tree view
+Result: SIGSEGV
+comments: OCC: DONE
 ----------------------------------------------------------------------------------------------------
 Num-----:  
 priority: 0

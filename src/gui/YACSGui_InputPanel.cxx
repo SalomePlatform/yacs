@@ -485,13 +485,14 @@ YACSGui_InputPanel::YACSGui_InputPanel( YACSGui_Module* theModule )
   createPage( YACSGui_InputPanel::BlockNodeId );
   createPage( YACSGui_InputPanel::LinkId );
 
-  myMainLayout->addStretch( 1 );
+  //  myMainLayout->addStretch( 1 );
 
   // Add "Apply" and "Close" buttons
   QGroupBox* aGrpBtns = new QGroupBox( aMainFrame, "GroupButtons" );
   aGrpBtns->setColumnLayout(0, Qt::Vertical );
   aGrpBtns->layout()->setSpacing( 0 ); aGrpBtns->layout()->setMargin( 0 );
   aGrpBtns->setFrameStyle( QFrame::NoFrame );
+  //aGrpBtns->setFrameStyle( QFrame::StyledPanel );
   QHBoxLayout* aGrpBtnsLayout = new QHBoxLayout( aGrpBtns->layout() );
   aGrpBtnsLayout->setAlignment( Qt::AlignTop );
   aGrpBtnsLayout->setSpacing( 0 ); aGrpBtnsLayout->setMargin( 0 );
@@ -2010,7 +2011,7 @@ void YACSGui_ComponentPage::checkModifications( bool& theWarnToShow, bool& theTo
 
   // 1) check if the content of the page is really modified (in compare with the content of engine object)
   bool isModified = false;
-  if ( myComponentName->currentText().compare(getComponentName()) != 0
+  if ( !myComponentName->currentText().isEmpty() && myComponentName->currentText().compare(getComponentName()) != 0
        ||
        myContainerName->currentText().compare(getContainerName()) != 0 ) isModified = true;
     
@@ -2889,11 +2890,11 @@ YACSGui_InlineNodePage::YACSGui_InlineNodePage( QWidget* theParent, const char* 
   myInputPortsGroupBox->setTitle( tr("Input Ports") );
   myInputPortsGroupBox->HideBtn( YACSGui_PlusMinusGrp::SelectBtn );
   YACSGui_Table* aTable = myInputPortsGroupBox->Table();
-  aTable->setFixedHeight( 100 );
+  //aTable->setFixedHeight( 100 );
   aTable->setNumCols( 4 );
-  aTable->horizontalHeader()->setLabel( 0, tr( "Port name" ) );
-  aTable->horizontalHeader()->setLabel( 1, tr( "Port type" ) );
-  aTable->horizontalHeader()->setLabel( 2, tr( "Value type" ) );
+  aTable->horizontalHeader()->setLabel( 0, tr( "Name" ) );
+  aTable->horizontalHeader()->setLabel( 1, tr( "Class" ) );
+  aTable->horizontalHeader()->setLabel( 2, tr( "Type" ) );
   aTable->horizontalHeader()->setLabel( 3, tr( "Value" ) );
   aTable->setCellType( -1, 0, YACSGui_Table::String );
   aTable->setCellType( -1, 1, YACSGui_Table::Combo );
@@ -2919,11 +2920,11 @@ YACSGui_InlineNodePage::YACSGui_InlineNodePage( QWidget* theParent, const char* 
   myOutputPortsGroupBox->setTitle( tr("Output Ports") );
   myOutputPortsGroupBox->HideBtn( YACSGui_PlusMinusGrp::SelectBtn );
   aTable = myOutputPortsGroupBox->Table();
-  aTable->setFixedHeight( 100 );
+  //aTable->setFixedHeight( 100 );
   aTable->setNumCols( 5 );
-  aTable->horizontalHeader()->setLabel( 0, tr( "Port name" ) );
-  aTable->horizontalHeader()->setLabel( 1, tr( "Port type" ) );
-  aTable->horizontalHeader()->setLabel( 2, tr( "Value type" ) );
+  aTable->horizontalHeader()->setLabel( 0, tr( "Name" ) );
+  aTable->horizontalHeader()->setLabel( 1, tr( "Class" ) );
+  aTable->horizontalHeader()->setLabel( 2, tr( "Type" ) );
   aTable->horizontalHeader()->setLabel( 3, tr( "Value" ) );
   aTable->horizontalHeader()->setLabel( 4, tr( "Is in study" ) );
   aTable->setCellType( -1, 0, YACSGui_Table::String );
@@ -4523,11 +4524,11 @@ YACSGui_ServiceNodePage::YACSGui_ServiceNodePage( QWidget* theParent, const char
   // Input Ports table
   myInputPortsGroupBox->setTitle( tr("Input Ports") );
   YACSGui_Table* aTable = myInputPortsGroupBox->Table();
-  aTable->setFixedHeight( 100 );
+  //aTable->setFixedHeight( 100 );
   aTable->setNumCols( 4 );
-  aTable->horizontalHeader()->setLabel( 0, tr( "Port name" ) );
-  aTable->horizontalHeader()->setLabel( 1, tr( "Port type" ) );
-  aTable->horizontalHeader()->setLabel( 2, tr( "Value type" ) );
+  aTable->horizontalHeader()->setLabel( 0, tr( "Name" ) );
+  aTable->horizontalHeader()->setLabel( 1, tr( "Class" ) );
+  aTable->horizontalHeader()->setLabel( 2, tr( "Type" ) );
   aTable->horizontalHeader()->setLabel( 3, tr( "Value" ) );
   aTable->setCellType( -1, 0, YACSGui_Table::String );
   aTable->setCellType( -1, 1, YACSGui_Table::Combo );
@@ -4549,11 +4550,11 @@ YACSGui_ServiceNodePage::YACSGui_ServiceNodePage( QWidget* theParent, const char
   // Output Ports table  
   myOutputPortsGroupBox->setTitle( tr("Output Ports") );
   aTable = myOutputPortsGroupBox->Table();
-  aTable->setFixedHeight( 100 );
+  //aTable->setFixedHeight( 100 );
   aTable->setNumCols( 5 );
-  aTable->horizontalHeader()->setLabel( 0, tr( "Port name" ) );
-  aTable->horizontalHeader()->setLabel( 1, tr( "Port type" ) );
-  aTable->horizontalHeader()->setLabel( 2, tr( "Value type" ) );
+  aTable->horizontalHeader()->setLabel( 0, tr( "Name" ) );
+  aTable->horizontalHeader()->setLabel( 1, tr( "Class" ) );
+  aTable->horizontalHeader()->setLabel( 2, tr( "Type" ) );
   aTable->horizontalHeader()->setLabel( 3, tr( "Value" ) );
   aTable->horizontalHeader()->setLabel( 4, tr( "Is in study" ) );
   aTable->setCellType( -1, 0, YACSGui_Table::String );
@@ -4802,7 +4803,8 @@ void YACSGui_ServiceNodePage::checkModifications( bool& theWarnToShow, bool& the
     for ( QStringList::Iterator it = aPortNames.begin(); it != aPortNames.end(); ++it )
     {
       InPort* anInPort = aServiceNode->getInPort(*it);
-      if ( anInPort && getPortValue( anInPort ).compare(aValues[aRowId]) != 0 ) {
+      if ( anInPort && getPortValue( anInPort ).compare(aValues[aRowId]) != 0 )
+      {
 	isModified = true;
 	break;
       }
@@ -4955,7 +4957,7 @@ void YACSGui_ServiceNodePage::onApply()
             msg=msg+myProcName+" has errors. Some nodes can be uncompletely built\n";
             LogViewer* log=new LogViewer(msg+errors,getInputPanel()->getModule()->getApp()->desktop());
             log->show();
-            //getInputPanel()->getModule()->getApp()->logWindow()->putMessage(msg+errors );
+            getInputPanel()->getModule()->getApp()->logWindow()->putMessage(msg+errors );
           }
       }
     else
@@ -5291,7 +5293,7 @@ void YACSGui_ServiceNodePage::updateState()
           msg=msg+myProcName+" has errors. Some nodes can be uncompletely built\n";
           LogViewer* log=new LogViewer(msg+errors,getInputPanel()->getModule()->getApp()->desktop());
           log->show();
-          //getInputPanel()->getModule()->getApp()->logWindow()->putMessage(msg+errors );
+          getInputPanel()->getModule()->getApp()->logWindow()->putMessage(msg+errors );
         }
       //      delete _loader;
 
@@ -7818,13 +7820,19 @@ void YACSGui_BlockNodePage::checkModifications()
 	if ( SubjectNode* aSChild = myRow2ChildMap[aRowId] )
 	  aChild = aSChild->getNode();
 
+	bool isContains = false;
         for (list<Node*>::iterator itn = aChildren.begin(); itn != aChildren.end(); ++itn)
           if (aChild == (*itn))
-            {
-              isModified = true;
-              break;
-            }
-	if (isModified) break;
+          {
+	    isContains = true;
+	    break;
+	  }
+	if (!isContains)
+	{
+	  isModified = true;
+	  break;
+	}
+
 	aRowId++;
       }
     }
