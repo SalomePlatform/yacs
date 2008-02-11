@@ -6,8 +6,10 @@ check_PROGRAMS = TestRuntime echoSrv echo_clt
 lib_LTLIBRARIES = libTestComponentLocal.la
 
 IDL_FILES = echo.idl
-IDL_SOURCES = echoSK.cc echoDynSK.cc
-BUILT_SOURCES = $(IDL_SOURCES) echo_idl.py xmlrun.sh
+IDL_SOURCES = echoSK.cc echoDynSK.cc 
+BUILT_SOURCES = $(IDL_SOURCES) echo_idl.py xmlrun.sh echo.hh
+
+EXTRA_DIST = $(IDL_FILES) standaloneTest.sh runtimeTest.hxx runtimeTest.sh TestComponent.hxx xmlrun_orig.sh
 
 TESTS = runtimeTest.sh
 TESTS_ENVIRONMENT=$(SHELL) -x
@@ -46,10 +48,11 @@ TestRuntime_CXXFLAGS = \
 xmlrun.sh:${srcdir}/xmlrun_orig.sh
 	cp $(srcdir)/xmlrun_orig.sh xmlrun.sh
 
-echoDynSK.cc echo.hh:echo.idl
+echoDynSK.cc echoSK.cc echo.hh:echo.idl
 	$(OMNIORB_IDL) $(OMNIORB_IDLCXXFLAGS) -bcxx -Wba $<
 
-echoSrv_SOURCES = echoSrv.cxx $(IDL_SOURCES)
+echoSrv_SOURCES = echoSrv.cxx 
+nodist_echoSrv_SOURCES = $(IDL_SOURCES)
 
 echoSrv_CXXFLAGS = \
 	-I$(srcdir)/../../bases \
@@ -59,7 +62,8 @@ echoSrv_CXXFLAGS = \
 echoSrv_LDFLAGS = \
 	$(OMNIORB_LIBS)
 
-echo_clt_SOURCES = echo_clt.cxx $(IDL_SOURCES)
+echo_clt_SOURCES = echo_clt.cxx 
+nodist_echo_clt_SOURCES = $(IDL_SOURCES)
 
 echo_clt_CXXFLAGS = \
 	-I$(srcdir)/../../bases \
@@ -81,5 +85,8 @@ libTestComponentLocal_la_CXXFLAGS = \
 	-I$(srcdir)/../../engine/Test
 
 libTestComponentLocal_la_LDFLAGS = -module
+
+clean-local:
+	rm -rf echo_idl.py* echoSK.cc echoDynSK.cc echo.hh eo eo__POA yacs* omnilog lib omniorb.cfg  traceExec_*  xmlrun.sh
 
 include $(top_srcdir)/adm/unix/make_end.am

@@ -298,6 +298,7 @@ public:
   YACS::ENGINE::ComponentInstance*    getComponent() const;
 
   QString                             getComponentName() const;
+  QString                             getInstanceName() const;
 
   void                                setComponentType();
   ComponentType                       getComponentType() const;
@@ -314,7 +315,6 @@ protected slots:
   void                                onContainerChanged( const QString& );
 
 private:
-  void                                fillComponentNames();
   void                                fillContainerNames();
   void                                updateState();
   YACS::HMI::SubjectComponent*        mySComponent;
@@ -473,6 +473,7 @@ protected slots:
   void                                onInserted( const int theRow );
   void                                onMovedUp( const int theUpRow );
   void                                onMovedDown( const int theDownRow );
+  void                                onAdded( const int theRow );
   void                                onRemoved( const int theRow );
   
 protected:
@@ -522,8 +523,6 @@ public:
 
   virtual void                        setComponent( YACS::ENGINE::ComponentInstance* theComponent );
 
-  bool                                isSelectComponent() const;
-
   virtual void                        setMode( const YACSGui_InputPanel::PageMode );
 
   virtual void                        notifyNodeStatus( int theStatus );
@@ -547,17 +546,17 @@ protected:
   void                                setScriptText( const QString& );
 
 protected slots:
-  void                                onVisibilityChanged( bool );
   void                                onNodeNameChanged( const QString& );
-  void                                onMethodChanged( const QString& );
   void                                onValueChanged( int, int );
   void                                onSearch();
   void                                onBrowse( );
+  void                                onInstanceNameChanged(const QString&);
   void                                onCatalogMethodClicked( QListViewItem* );
   void                                onCatalogChanged( int );
   
 private:
-  void                                updateServices( const QString& = QString::null );
+  void                                updateServices();
+  void                                fillInstanceNames();
   void                                fillInputPortsTable( YACS::ENGINE::Node* );
   void                                fillOutputPortsTable( YACS::ENGINE::Node* );
   QString                             getPortType( YACS::ENGINE::Port* ) const;
@@ -574,7 +573,6 @@ private:
 private:
   YACS::ENGINE::ComponentInstance*    myComponent;
   QString                             myComponentName;
-  bool                                myMethodChanged;
   YACS::HMI::SubjectComposedNode*     mySCNode;
   std::map<QListViewItem*,std::pair<std::string,std::string> > myServiceMap;
   std::map<QListViewItem*, YACS::ENGINE::Node* > myProcNodesMap;

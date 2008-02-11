@@ -79,7 +79,7 @@ YACSPrs_ServiceNode::YACSPrs_ServiceNode(SUIT_ResourceMgr* theMgr, QCanvas* theC
   setStoreSubColor(nodeSubColor());
 
   //updatePorts(); // will be called in moveBy(...) function
-  moveBy(2*HOOKPOINT_SIZE,0);
+  moveBy(2*HOOKPOINT_SIZE+NODEBOUNDARY_MARGIN,2*HOOKPOINT_SIZE+NODEBOUNDARY_MARGIN);
 
   update();
 }
@@ -228,7 +228,7 @@ void YACSPrs_ServiceNode::drawTitleShape(QPainter& thePainter)
     ServiceNode* aSEngine = dynamic_cast<ServiceNode*>( getEngine() );
     drawText1(thePainter, QString( "Service: ") + QString( aSEngine ? aSEngine->getMethod() : "..." ), getServiceRect(), Qt::AlignLeft);
     drawText1(thePainter, QString( "Component: " ) +
-	      QString( (aSEngine && aSEngine->getComponent()) ? aSEngine->getComponent()->getName() : "..." ),
+	      QString( (aSEngine && aSEngine->getComponent()) ? aSEngine->getComponent()->getInstanceName() : "..." ),
 	      getComponentRect(), Qt::AlignLeft);
     drawText1(thePainter, QString("Machine: ..."), getMachineRect(), Qt::AlignLeft);
     

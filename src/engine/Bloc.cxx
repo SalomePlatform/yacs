@@ -159,10 +159,11 @@ bool Bloc::edAddChild(Node *node) throw(Exception)
   
   node->_father=this;
   _setOfNode.push_back(node);
-  //set the _modified flag so that latter on edUpdateState (eventually called by isValid) refresh state
-  modified();
   //should we also set _modified flag for node ??
   ComposedNode *iter=node->_father;
+  //set the _modified flag so that latter on edUpdateState (eventually called by isValid) refresh state
+  //better call it at end
+  modified();
   return true;
 }
 

@@ -161,6 +161,15 @@ msgstr "new_batch_execution.png"
 msgid "ICON_LOAD_EXECUTION_STATE"
 msgstr "load_execution_state.png"
 
+msgid "ICON_WITHOUTSTOP_MODE"
+msgstr "run.png"
+
+msgid "ICON_BREAKPOINTS_MODE"
+msgstr "breakpoints.png"
+
+msgid "ICON_STEPBYSTEP_MODE"
+msgstr "step_by_step.png"
+
 msgid "ICON_EXECUTE"
 msgstr "run.png"
 
@@ -172,6 +181,9 @@ msgstr "execute_in_batch.png"
 
 msgid "ICON_PAUSE"
 msgstr "pause.png"
+
+msgid "ICON_STARTRESUME"
+msgstr "resume.png"
 
 msgid "ICON_RESUME"
 msgstr "resume.png"

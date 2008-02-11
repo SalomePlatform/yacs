@@ -67,7 +67,7 @@ void YACSGui_Swig::createGraphPresentation( YACS::ENGINE::Proc* theProc )
 {
   // get YACSGui module
   CAM_Application* anApp = ( CAM_Application* )(SUIT_Session::session()->activeApplication());
-  YACSGui_Module* aModule = dynamic_cast<YACSGui_Module*>( anApp->module( anApp->moduleTitle( "YACSGui" ) ) );
+  YACSGui_Module* aModule = dynamic_cast<YACSGui_Module*>( anApp->module( anApp->moduleTitle( "YACS" ) ) );
   if ( !aModule ) return;
   
   // create view window for presentation of theProc

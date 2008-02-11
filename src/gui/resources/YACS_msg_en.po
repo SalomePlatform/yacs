@@ -504,6 +504,15 @@ msgstr "New Bacth Execution"
 msgid "STB_NEW_BATCH_EXECUTION"
 msgstr "Create new bacth execution"
 
+msgid "TOP_STARTRESUME"
+msgstr "Start/Resume"
+
+msgid "MEN_STARTRESUME"
+msgstr "Start/Resume"
+
+msgid "STB_STARTRESUME"
+msgstr "Start/Resume schema execution"
+
 msgid "TOP_EXECUTE"
 msgstr "Execute"
 
@@ -572,6 +581,33 @@ msgstr "Reset"
 
 msgid "STB_RESET"
 msgstr "Reset"
+
+msgid "TOP_WITHOUTSTOP_MODE"
+msgstr "Without stop"
+
+msgid "MEN_WITHOUTSTOP_MODE"
+msgstr "Without stop"
+
+msgid "STB_WITHOUTSTOP_MODE"
+msgstr "Without stop mode of schema execution"
+
+msgid "TOP_BREAKPOINTS_MODE"
+msgstr "Breakpoints"
+
+msgid "MEN_BREAKPOINTS_MODE"
+msgstr "Breakpoints"
+
+msgid "STB_BREAKPOINTS_MODE"
+msgstr "Breakpoints mode of schema execution"
+
+msgid "TOP_STEPBYSTEP_MODE"
+msgstr "Step by step"
+
+msgid "MEN_STEPBYSTEP_MODE"
+msgstr "Step by step"
+
+msgid "STB_STEPBYSTEP_MODE"
+msgstr "Step by step mode of schema execution"
 
 msgid "TOP_ADD_BREAK_POINT"
 msgstr "Add a breakpoint ..."

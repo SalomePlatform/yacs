@@ -36,7 +36,7 @@
 #include <iostream>
 #include <string>
 
-#define _DEVDEBUG_
+//#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
 using namespace std;
@@ -797,12 +797,10 @@ bool CommandSetInlineNodeScript::localReverse()
 
 // ----------------------------------------------------------------------------
 
-CommandAddComponentInstance::CommandAddComponentInstance(std::pair<std::string,int> key,
-                                                         std::pair<std::string,int> refkey)
-  : Command(), _key(key), _keyToClone(refkey), _compoInst(0)
+CommandAddComponentInstance::CommandAddComponentInstance(std::string compoName)
+  : Command(), _compoName(compoName), _compoInst(0)
 {
-  DEBTRACE("CommandAddComponentInstance::CommandAddComponentInstance " << key.first<< " " << key.second
-           << " " << refkey.first << " " << refkey.second );
+  DEBTRACE("CommandAddComponentInstance::CommandAddComponentInstance " <<_compoName);
 }
 
 bool CommandAddComponentInstance::localExecute()
@@ -810,29 +808,9 @@ bool CommandAddComponentInstance::localExecute()
   try
     {
       Proc* proc = GuiContext::getCurrent()->getProc();
-      ComponentInstance *compo = 0;
-      if (_keyToClone.first.empty())
-        {
-          compo = new SalomeComponent(_key.first);
-        }
-      else
-        {
-          DEBTRACE("CommandAddComponentInstance::localExecute with ref Component = semantic not clear ******");
-          ComponentInstance *ref = 0;
-          if (proc->componentInstanceMap.count(_keyToClone))
-            {
-              ComponentInstance *ref = proc->componentInstanceMap[_keyToClone];
-              assert(ref);
-              compo = ref->clone();
-            }
-          else
-            {
-              GuiContext::getCurrent()->_lastErrorMessage = "component instance not found: " + _keyToClone.first;
-              return false;
-            }
-        }
-      _compoInst = compo;
-      proc->componentInstanceMap[_key] = _compoInst; // --- potentially several instances under the same name
+      _compoInst = new SalomeComponent(_compoName);
+      pair<string,int> key = pair<string,int>(_compoName, _compoInst->getNumId());
+      proc->componentInstanceMap[key] = _compoInst;
       return true;
     }
   catch (Exception& ex)
@@ -881,7 +859,7 @@ bool CommandAssociateComponentToContainer::localExecute()
             GuiContext::getCurrent()->_lastErrorMessage = "Component instance not found: " + _key.first;
         }
       else
-        GuiContext::getCurrent()->_lastErrorMessage = "Containernot found: " + _container;
+        GuiContext::getCurrent()->_lastErrorMessage = "Container not found: " + _container;
       return false;
     }
   catch (Exception& ex)

@@ -30,7 +30,9 @@ LIBHEADERS = \
         LineConn2d_Port.h \
         LineConn2d_Segment.h \
         LineConn2d_SegmentIterator.h \
-        LineConn2d_ZInterval.h
+        LineConn2d_ZInterval.h \
+        LineConn2dAfx.h    
+
 
 # MOC-generated files
 MOCSOURCES = 
@@ -41,8 +43,8 @@ LIBPOFILES =
 LIBICONS = 
 
 # Add "resources" subdirectory to resource file names
-POFILES = $(LIBPOFILES)
-ICONS = $(LIBICONS)
+POFILES += $(LIBPOFILES)
+ICONS += $(LIBICONS)
 
 libLineConn2d_la_SOURCES = $(LIBSOURCES) $(LIBHEADERS)
 nodist_libLineConn2d_la_SOURCES = $(MOCSOURCES)

@@ -228,6 +228,20 @@ things remaining.
   is it a toggle ?). It should be possible to start an execution in a mode and switch to another mode
   at any time during the execution (step by step / breakpoints / without stop).
 EDF: 1,2,3,4,6: OK --- 5,7: NOK
+comments: OCC: 
+5 DONE: 1) It is possible now to create a Salome service node
+from a Salome component instance item selected in the edition tree
+view. In such a case, we take the first method name from the catalog"s
+service map as a default service for the created node. This method may
+be changed later with help of the property page of service node. 2) It
+is possible to create a Corba service node from a Corba component
+instance selected in the edition tree view. But in such a case I have a
+question: How can I retrieve a list of services from Corba component
+instance? Is it possible?
+7 DONE: The modes of schema execution ( without stop / breakpoints /
+step by step ) were moved to the exclusive group of toggle buttons on
+the execution toolbar. "Stop on error" toggle button is placed on the
+execution toolbar too. The "remote run, control" button was removed.
 ----------------------------------------------------------------------------------------------------
 Num-----: 15 
 priority: 0
@@ -397,7 +411,7 @@ Num-----: 1003
 priority: 1
 status--: NOK
 description: Is it possible to keep the center of the view at the same place when zooming the canvas ?
-comments:
+comments: OCC: DONE
 ----------------------------------------------------------------------------------------------------
 Num-----: 1004
 priority: 1
@@ -450,7 +464,7 @@ priority: 1
 status--: NOK
 description: When switching from edition to execution, nodes and link arrangements are lost.
 idem for view (zoom, panning).
-comments:
+comments: OCC: DONE
 ----------------------------------------------------------------------------------------------------
 Num-----: 1009
 priority: 1
@@ -468,19 +482,19 @@ priority: 1
 status--: NOK
 description: in edition, when adding a node in a block, do not reorganize automatically nodes
 (the user may prefer his own placement); do not resize the bloc, unless it is too small.
-comments:
+comments: OCC: DONE
 ----------------------------------------------------------------------------------------------------
 Num-----: 1011
 priority: 1
 status--: NOK
 description: When adding a link between to nodes in a block, canvas is not always udpdated.
-comments:
+comments: OCC: DONE
 ----------------------------------------------------------------------------------------------------
 Num-----: 1012
 priority: 1
 status--: NOK
 description: in node properties, value type always set to double when clicking (must stay to its value)
-comments:
+comments: OCC: DONE
 ----------------------------------------------------------------------------------------------------
 Num-----: 1013
 priority: 1

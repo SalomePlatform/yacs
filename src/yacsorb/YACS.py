@@ -167,18 +167,18 @@ class proc_i(YACSGui_ORB__POA.ProcExec):
     pass
 
 
-class YACSGui(YACSGui_ORB__POA.YACSGui_Gen,
+class YACS(YACSGui_ORB__POA.YACSGui_Gen,
               SALOME_ComponentPy.SALOME_ComponentPy_i,
               SALOME_DriverPy.SALOME_DriverPy_i):
     """
     To be a SALOME component, this Python class must have the component name
-    (YACSGui) and inherit the YACSGui_Gen class build from idl compilation
+    (YACS) and inherit the YACSGui_Gen class build from idl compilation
     with omniidl and also the class SALOME_ComponentPy_i which defines general
     SALOME component behaviour.
     """
     def __init__ ( self, orb, poa, contID, containerName, instanceName, 
                    interfaceName ):
-        print "YACSGui.__init__: ", containerName, ';', instanceName
+        print "YACS.__init__: ", containerName, ';', instanceName
         SALOME_ComponentPy.SALOME_ComponentPy_i.__init__(self, orb, poa, contID,
                                                          containerName, instanceName,
                                                          interfaceName, 0)

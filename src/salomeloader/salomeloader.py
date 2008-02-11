@@ -20,6 +20,7 @@ class UnknownKind(Exception):pass
 
 debug=0
 typeMap={}
+objref=None
 
 def typeName(name):
   """Replace :: in type name by /"""
@@ -149,6 +150,39 @@ class Node:
     def getOutputDataStreamPort(self,p):
       return self.node.getOutputDataStreamPort(p)
 
+    def initPort(self,l):
+      if l.type == 7:
+        #double (CORBA::tk_double)
+        try:
+          self.getInputPort(l.tonodeparam).edInitDbl(l.value)
+        except:
+          reason="Problem in initialization, not expected type (double): %s %s" % (l.tonodeparam,l.value)
+          currentProc.getLogger("parser").error(reason,currentProc.filename,-1)
+      elif l.type == 3:
+        #int (CORBA::tk_long)
+        try:
+          self.getInputPort(l.tonodeparam).edInitInt(l.value)
+        except:
+          reason="Problem in initialization, not expected type (int): %s %s" % (l.tonodeparam,l.value)
+          currentProc.getLogger("parser").error(reason,currentProc.filename,-1)
+      elif l.type == 14:
+        #objref (CORBA::tk_objref)
+        try:
+          self.getInputPort(l.tonodeparam).edInitString(l.value)
+        except:
+          reason="Problem in initialization, not expected type (objref): %s %s" % (l.tonodeparam,l.value)
+          currentProc.getLogger("parser").error(reason,currentProc.filename,-1)
+      elif l.type == 18:
+        #string (CORBA::tk_string)
+        try:
+          self.getInputPort(l.tonodeparam).edInitString(l.value)
+        except:
+          reason="Problem in initialization, not expected type (string): %s %s" % (l.tonodeparam,l.value)
+          currentProc.getLogger("parser").error(reason,currentProc.filename,-1)
+      else:
+        reason="Problem in initialization, not expected type (%s): %s %s" % (l.type,l.tonodeparam,l.value)
+        currentProc.getLogger("parser").error(reason,currentProc.filename,-1)
+
 class InlineNode(Node):
     """Inline Node salome : python function in self.codes[0]"""
     def __init__(self):
@@ -166,17 +200,20 @@ class InlineNode(Node):
       for para in self.service.inParameters:
         if not typeMap.has_key(para.type):
           #create the missing type and add it in type map
-          typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[])
+          typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[objref])
         if not currentProc.typeMap.has_key(para.type):
           currentProc.typeMap[para.type]=typeMap[para.type]
         n.edAddInputPort(para.name,typeMap[para.type])
       for para in self.service.outParameters:
         if not typeMap.has_key(para.type):
           #create the missing type and add it in type map
-          typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[])
+          typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[objref])
         if not currentProc.typeMap.has_key(para.type):
           currentProc.typeMap[para.type]=typeMap[para.type]
         n.edAddOutputPort(para.name,typeMap[para.type])
+
+      for d in self.datas:
+        self.initPort(d)
 
       return n
 
@@ -211,14 +248,14 @@ class ComputeNode(Node):
       for para in self.service.inParameters:
         if not typeMap.has_key(para.type):
           #Create the missing type and adds it into types table
-          typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[])
+          typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[objref])
         if not currentProc.typeMap.has_key(para.type):
           currentProc.typeMap[para.type]=typeMap[para.type]
         n.edAddInputPort(para.name,typeMap[para.type])
       for para in self.service.outParameters:
         if not typeMap.has_key(para.type):
           #Create the missing type and adds it into types table
-          typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[])
+          typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[objref])
         if not currentProc.typeMap.has_key(para.type):
           currentProc.typeMap[para.type]=typeMap[para.type]
         pout=n.edAddOutputPort(para.name,typeMap[para.type])
@@ -231,6 +268,9 @@ class ComputeNode(Node):
       for para in self.outStreams:
         if debug:print para.name,para.type,para.dependency,para.values
         pout=n.edAddOutputDataStreamPort(para.name,typeMap[streamTypes[para.type]])
+
+      for d in self.datas:
+        self.initPort(d)
 
       return n
 
@@ -347,11 +387,36 @@ class ComposedNode(Node):
           #initializations
           for l in n.datas:
             if l.type == 7:
-              #double
-              n.getInputPort(l.tonodeparam).edInitDbl(l.value)
+              #double (CORBA::tk_double)
+              try:
+                n.getInputPort(l.tonodeparam).edInitDbl(l.value)
+              except:
+                reason="Problem in initialization, not expected type (double): %s %s" % (l.tonodeparam,l.value)
+                currentProc.getLogger("parser").error(reason,currentProc.filename,-1)
             elif l.type == 3:
-              #int
-              n.getInputPort(l.tonodeparam).edInitInt(l.value)
+              #int (CORBA::tk_long)
+              try:
+                n.getInputPort(l.tonodeparam).edInitInt(l.value)
+              except:
+                reason="Problem in initialization, not expected type (int): %s %s" % (l.tonodeparam,l.value)
+                currentProc.getLogger("parser").error(reason,currentProc.filename,-1)
+            elif l.type == 14:
+              #objref (CORBA::tk_objref)
+              try:
+                n.getInputPort(l.tonodeparam).edInitString(l.value)
+              except:
+                reason="Problem in initialization, not expected type (objref): %s %s" % (l.tonodeparam,l.value)
+                currentProc.getLogger("parser").error(reason,currentProc.filename,-1)
+            elif l.type == 18:
+              #string (CORBA::tk_string)
+              try:
+                n.getInputPort(l.tonodeparam).edInitString(l.value)
+              except:
+                reason="Problem in initialization, not expected type (string): %s %s" % (l.tonodeparam,l.value)
+                currentProc.getLogger("parser").error(reason,currentProc.filename,-1)
+            else:
+              reason="Problem in initialization, not expected type (%s): %s %s" % (l.type,l.tonodeparam,l.value)
+              currentProc.getLogger("parser").error(reason,currentProc.filename,-1)
 
 class LoopNode(ComposedNode):
     """Objet qui simule le comportement d'une boucle Salome."""
@@ -398,14 +463,14 @@ class LoopNode(ComposedNode):
       for para in self.service.inParameters:
         if not typeMap.has_key(para.type):
           #create the missing type and add it in type map
-          typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[])
+          typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[objref])
         if not currentProc.typeMap.has_key(para.type):
           currentProc.typeMap[para.type]=typeMap[para.type]
         init.edAddInputPort(para.name,typeMap[para.type])
       for para in self.service.outParameters:
         if not typeMap.has_key(para.type):
           #create the missing type and add it in type map
-          typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[])
+          typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[objref])
         if not currentProc.typeMap.has_key(para.type):
           currentProc.typeMap[para.type]=typeMap[para.type]
         init.edAddOutputPort(para.name,typeMap[para.type])
@@ -427,14 +492,14 @@ class LoopNode(ComposedNode):
       for para in self.service.inParameters:
         if not typeMap.has_key(para.type):
           #create the missing type and add it in type map
-          typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[])
+          typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[objref])
         if not currentProc.typeMap.has_key(para.type):
           currentProc.typeMap[para.type]=typeMap[para.type]
         next.edAddInputPort(para.name,typeMap[para.type])
       for para in self.service.outParameters:
         if not typeMap.has_key(para.type):
           #create the missing type and add it in type map
-          typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[])
+          typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[objref])
         if not currentProc.typeMap.has_key(para.type):
           currentProc.typeMap[para.type]=typeMap[para.type]
         next.edAddOutputPort(para.name,typeMap[para.type])
@@ -449,7 +514,7 @@ class LoopNode(ComposedNode):
       for para in self.service.inParameters:
         if not typeMap.has_key(para.type):
           #create the missing type and add it in type map
-          typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[])
+          typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[objref])
         if not currentProc.typeMap.has_key(para.type):
           currentProc.typeMap[para.type]=typeMap[para.type]
         more.edAddInputPort(para.name,typeMap[para.type])
@@ -457,7 +522,7 @@ class LoopNode(ComposedNode):
       for para in self.service.outParameters:
         if not typeMap.has_key(para.type):
           #create the missing type and add it in type map
-          typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[])
+          typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[objref])
         if not currentProc.typeMap.has_key(para.type):
           currentProc.typeMap[para.type]=typeMap[para.type]
         more.edAddOutputPort(para.name,typeMap[para.type])
@@ -543,7 +608,7 @@ class ProcNode(ComposedNode):
 
   def createNode(self):
     """Create the YACS node (Proc) equivalent a Salome proc"""
-    global currentProc
+    global currentProc,objref
     r = pilot.getRuntime()
 
     #create_graph gives a hierarchical graph equivalent to the Salome proc
@@ -628,16 +693,37 @@ class ProcNode(ComposedNode):
       #initializations
       for l in n.datas:
         if l.type == 7:
-          #double
-          n.getInputPort(l.tonodeparam).edInitDbl(l.value)
+          #double (CORBA::tk_double)
+          try:
+            n.getInputPort(l.tonodeparam).edInitDbl(l.value)
+          except:
+            reason="Problem in initialization, not expected type (double): %s %s" % (l.tonodeparam,l.value)
+            currentProc.getLogger("parser").error(reason,currentProc.filename,-1)
         elif l.type == 3:
-          #int
+          #int (CORBA::tk_long)
           port=n.getInputPort(l.tonodeparam)
           try:
             port.edInitInt(l.value)
           except:
             reason="Problem in initialization, not expected type (int): %s %s" % (l.tonodeparam,l.value)
             currentProc.getLogger("parser").error(reason,currentProc.filename,-1)
+        elif l.type == 14:
+          #objref (CORBA::tk_objref)
+          try:
+            n.getInputPort(l.tonodeparam).edInitString(l.value)
+          except:
+            reason="Problem in initialization, not expected type (objref): %s %s" % (l.tonodeparam,l.value)
+            currentProc.getLogger("parser").error(reason,currentProc.filename,-1)
+        elif l.type == 18:
+          #string (CORBA::tk_string)
+          try:
+            n.getInputPort(l.tonodeparam).edInitString(l.value)
+          except:
+            reason="Problem in initialization, not expected type (string): %s %s" % (l.tonodeparam,l.value)
+            currentProc.getLogger("parser").error(reason,currentProc.filename,-1)
+        else:
+          reason="Problem in initialization, not expected type (%s): %s %s" % (l.type,l.tonodeparam,l.value)
+          currentProc.getLogger("parser").error(reason,currentProc.filename,-1)
 
     return p
 
@@ -968,6 +1054,7 @@ class SalomeProc(ComposedNode):
             self.node_dict[link.to_name].loop=self.node_dict[link.from_name]
 
       for data in self.datas:
+        if debug:print "datas",data
         self.node_dict[data.tonode].datas.append(data)
 
       self.G=G

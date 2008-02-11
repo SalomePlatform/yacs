@@ -8,7 +8,7 @@ using namespace std;
 
 using namespace YACS;
 using namespace YACS::HMI;
-#define _DEVDEBUG_
+//#define _DEVDEBUG_
 
 #include "YacsTrace.hxx"
 

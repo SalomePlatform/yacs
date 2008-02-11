@@ -937,8 +937,13 @@ void YACSGui_Graph::createPrs(YACS::HMI::Subject* theSubject)
       
       YACSPrs_Link* aLink = new YACSPrs_PortLink( SUIT_Session::session()->resourceMgr(), getCanvas(),
 						  anIPPrs, anOPPrs );
-      aLink->setZ(anOPPrs->z());
-      //anOPPrs->moveBy(0,0);
+      double anOZ = anOPPrs->z();
+      double anIZ = anIPPrs->z();
+      if ( anOZ > anIZ )
+      	anOPPrs->setZ( anOZ, anOPPrs->getNode()->isMoving() );
+      else
+	anIPPrs->setZ( anIZ, anIPPrs->getNode()->isMoving() );
+
       aLink->show();
       if ( getCanvas() ) getCanvas()->update();
     }
@@ -965,10 +970,16 @@ void YACSGui_Graph::createPrs(YACS::HMI::Subject* theSubject)
 
     YACSPrs_Link* aLink = new YACSPrs_PortLink( SUIT_Session::session()->resourceMgr(), getCanvas(),
 						anIPPrs, anOPPrs );
-    aLink->setZ(anOPPrs->z());
-    //anOPPrs->moveBy(0,0);
+
+    double anOZ = anOPPrs->z();
+    double anIZ = anIPPrs->z();
+    if ( anOZ > anIZ )
+      anOPPrs->setZ( anOZ, anOPPrs->getNode()->isMoving() );
+    else
+      anIPPrs->setZ( anIZ, anIPPrs->getNode()->isMoving() );
+    
     aLink->show();
-    getCanvas()->update();
+    if ( getCanvas() ) getCanvas()->update();
   }
 }
 
@@ -1047,4 +1058,24 @@ void YACSGui_Graph::deletePrs(YACS::HMI::SubjectNode* theSubject, bool removeLab
     }
     getCanvas()->update();
   }
+}
+
+//! Returns true if it is needed to increase a size of block node presentation according to the size of its content
+/*!
+ */
+bool YACSGui_Graph::isNeededToIncreaseBlocSize( YACS::ENGINE::Bloc* theBloc )
+{
+  bool isNeedToArrange = false;
+
+  if ( theBloc )
+  {
+    YACSPrs_BlocNode* aNodePrs = dynamic_cast<YACSPrs_BlocNode*>(getItem(theBloc));
+    if ( aNodePrs )
+      if ( aNodePrs->width() < aNodePrs->maxXContent() - aNodePrs->minXContent()
+	   ||
+	   aNodePrs->getAreaRect().height() + 2*BLOCNODE_MARGIN < aNodePrs->maxYContent() - aNodePrs->minYContent() )
+	isNeedToArrange = true;
+  }
+  
+  return isNeedToArrange;
 }

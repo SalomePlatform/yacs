@@ -3,25 +3,6 @@ include $(top_srcdir)/adm/unix/make_begin.am
 
 bin_PROGRAMS = guidemo
 
-guidemo_SOURCES = \
-	main.cxx \
-	editTree.cxx \
-	editCanvas.cxx \
-	nodeEdition.cxx \
-	browseCatalog.cxx \
-	chooseName.cxx \
-	mainempty_moc.cxx \
-	wiedittree_moc.cxx \
-	dichoosename_moc.cxx \
-	winodeedition_moc.cxx \
-	catalog_moc.cxx \
-	editTree_moc.cxx \
-	editCanvas_moc.cxx \
-	nodeEdition_moc.cxx \
-	chooseName_moc.cxx \
-	browseCatalog_moc.cxx
-
-
 lib_LTLIBRARIES = libHMI.la
 
 # Implementation files
@@ -69,16 +50,11 @@ LIBICONS = \
 
 
 # Add "resources" subdirectory to resource file names
-POFILES = $(LIBPOFILES:%=resources/%)
-ICONS = $(LIBICONS:%=resources/%)
+POFILES += $(LIBPOFILES:%=resources/%)
+ICONS += $(LIBICONS:%=resources/%)
 
 libHMI_la_SOURCES = $(LIBSOURCES) $(LIBHEADERS)
 #nodist_libHMI_la_SOURCES = $(UISOURCES) $(MOCSOURCES)
-nodist_guidemo_SOURCES = $(UISOURCES) $(MOCSOURCES)
-
-# List all generated files here
-BUILT_SOURCES = $(UISOURCES) $(MOCSOURCES) mainempty.h
-
 libHMI_la_LDFLAGS = @QT_MT_LDFLAGS@
 
 libHMI_la_LIBADD = \
@@ -101,6 +77,27 @@ libHMI_la_CXXFLAGS = \
 	-I../yacsorb \
 	@QT_INCLUDES@
 
+# List all generated files here
+BUILT_SOURCES = $(UISOURCES) $(MOCSOURCES) mainempty.h
+
+guidemo_SOURCES = \
+	main.cxx \
+	editTree.cxx \
+	editCanvas.cxx \
+	nodeEdition.cxx \
+	browseCatalog.cxx \
+	chooseName.cxx \
+	mainempty_moc.cxx \
+	wiedittree_moc.cxx \
+	dichoosename_moc.cxx \
+	winodeedition_moc.cxx \
+	catalog_moc.cxx \
+	editTree_moc.cxx \
+	editCanvas_moc.cxx \
+	nodeEdition_moc.cxx \
+	chooseName_moc.cxx \
+	browseCatalog_moc.cxx \
+  $(UISOURCES) $(MOCSOURCES)
 
 guidemo_CPPFLAGS = @QSCINTILLA_CCPFLAGS@
 
@@ -112,5 +109,11 @@ guidemo_LDFLAGS=@QT_MT_LDFLAGS@
 guidemo_LDADD = \
 	libHMI.la \
 	@QSCINTILLA_LIBADD@
+
+EXTRA_DIST = \
+browseCatalog.h  chooseName.h    commands.hxx      commandsProc.hxx  editCanvas.h \
+editTree.h       guiContext.hxx  guiObservers.hxx  nodeEdition.h \
+mainempty.h wiedittree.h winodeedition.h dichoosename.h catalog.h
+
 
 include $(top_srcdir)/adm/unix/make_end.am

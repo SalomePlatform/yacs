@@ -159,8 +159,19 @@ QWidget* YACSGui_TableItem::createEditor() const
       QStringList aL = tab->Params( row(), col() );
       if( !aL.empty() )
       {
+	QString aDefVal;
+	if ( YACSGui_Table* aTable = dynamic_cast<YACSGui_Table*>(table()) )
+	  aDefVal = aTable->defValue(row(), col());
+	int anIndex = 0;
+
+	int id = 0;
 	for( QStringList::Iterator it = aL.begin(); it != aL.end(); it++ )
+	{
           cb->insertItem( *it );
+	  if ( !aDefVal.isEmpty() && aDefVal.compare(*it) == 0 ) anIndex = id;
+	  id++;
+	}
+	cb->setCurrentItem( anIndex );
       }
       res = cb;
     }
@@ -640,6 +651,7 @@ void YACSGui_Table::onSync()
   if( it && sender() && sender()->inherits( "QWidget" ) )
   {
     it->setContentFromEditor( ( QWidget* )sender() );
+    setDefValue(it->row(), it->col(), it->text());
     emit valueChanged( currEditRow(), currEditCol() );
   }
 }

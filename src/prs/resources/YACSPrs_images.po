@@ -20,6 +20,12 @@ msgstr ""
 msgid "ICON_STATUS_NO"
 msgstr "no_status.png"
 
+msgid "ICON_STATUS_INVALID"
+msgstr "ledred.png"
+
+msgid "ICON_STATUS_READY"
+msgstr "ledgreen.png"
+
 msgid "ICON_DISABLED"
 msgstr "disabled.png"
 

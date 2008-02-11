@@ -158,12 +158,20 @@ void YACSGui_ViewItem::select( bool isSelected )
   if ( !aListView )
     return;
 
+  bool block = aListView->signalsBlocked();
+  aListView->blockSignals( true );
+
   blockSelection( true );
   aListView->clearSelection();
   aListView->setCurrentItem( this );
   aListView->setSelected( this, true );
   aListView->ensureItemVisible( this );
   blockSelection( false );
+
+  aListView->blockSignals( block );
+  
+  if ( YACSGui_EditionTreeView* aETV = dynamic_cast<YACSGui_EditionTreeView*>(aListView) )
+    aETV->emitSelectionChanged();
 }
 
 void YACSGui_ViewItem::removeNodeItem( YACS::HMI::Subject* theSNode )
@@ -309,6 +317,7 @@ void YACSGui_ViewItem::removeNodeItem( YACS::HMI::Subject* theSNode )
     //printf(">> delete the son item\n");
     aNodesL->takeItem(aNode);
     delete aNode;
+    aNode = 0;
   }
 }
 
@@ -598,7 +607,7 @@ QPixmap YACSGui_PortViewItem::icon() const
     anIconName = QString(QObject::tr("ICON_IN_PORT_OBJECT"));
 
   if ( !anIconName.isEmpty() )
-    aRes = SUIT_Session::session()->resourceMgr()->loadPixmap("YACSGui",  anIconName, false);
+    aRes = SUIT_Session::session()->resourceMgr()->loadPixmap("YACS",  anIconName, false);
   
   return aRes;
 }
@@ -699,7 +708,7 @@ QPixmap YACSGui_DataTypeItem::icon() const
   anIconName = QString( QObject::tr( "ICON_TEXT" ) );
   
   aRes = SUIT_Session::session()->resourceMgr()->loadPixmap(
-    "YACSGui", anIconName, false );
+    "YACS", anIconName, false );
 
   return aRes;
 }
@@ -949,7 +958,7 @@ QPixmap YACSGui_NodeViewItem::icon( YACS::ENGINE::Node* theNode )
     anIconName = QString(QObject::tr("ICON_NODE_OBJECT"));
   
   if ( !anIconName.isEmpty() )
-    aRes = SUIT_Session::session()->resourceMgr()->loadPixmap("YACSGui", anIconName, false);
+    aRes = SUIT_Session::session()->resourceMgr()->loadPixmap("YACS", anIconName, false);
   
   return aRes;
 }
@@ -1162,7 +1171,12 @@ void YACSGui_NodeViewItem::removePortItem( YACS::HMI::Subject* theSPort )
 void YACSGui_NodeViewItem::addNodeItem( YACS::HMI::Subject* theSNode )
 {
   if ( SubjectNode* aSNode = dynamic_cast<SubjectNode*>(theSNode) )
+  {
     YACSGui_NodeViewItem* aNodeItem = new YACSGui_NodeViewItem( this, 0, aSNode );
+
+    if ( SubjectComposedNode* aSCompNode = dynamic_cast<SubjectComposedNode*>(aSNode) )
+      YACSGui_LabelViewItem* aLinksItem = new YACSGui_LabelViewItem( aNodeItem, 0, QObject::tr( "LINKS" ) );
+  }
 }
 
 void YACSGui_NodeViewItem::moveUpPortItem( YACS::HMI::Subject* theSPort )
@@ -1604,7 +1618,7 @@ QPixmap YACSGui_LinkViewItem::icon() const
       anIconName = QString(QObject::tr("ICON_DATA_LINK_OBJECT"));
 
     if ( !anIconName.isEmpty() )
-      aRes = SUIT_Session::session()->resourceMgr()->loadPixmap("YACSGui",  anIconName, false);
+      aRes = SUIT_Session::session()->resourceMgr()->loadPixmap("YACS",  anIconName, false);
   }
 
   return aRes;
@@ -1722,7 +1736,7 @@ QPixmap YACSGui_ControlLinkViewItem::icon() const
 
   anIconName = QString(QObject::tr("ICON_CONTROL_LINK_OBJECT"));
   if ( !anIconName.isEmpty() )
-    aRes = SUIT_Session::session()->resourceMgr()->loadPixmap("YACSGui",  anIconName, false);
+    aRes = SUIT_Session::session()->resourceMgr()->loadPixmap("YACS",  anIconName, false);
   
   return aRes;
 }
@@ -1941,7 +1955,7 @@ QPixmap YACSGui_SchemaViewItem::icon() const
 
   QString anIconName = QString(QObject::tr("ICON_SCHEMA_OBJECT"));
   if ( !anIconName.isEmpty() )
-    aRes = SUIT_Session::session()->resourceMgr()->loadPixmap("YACSGui", anIconName, false);
+    aRes = SUIT_Session::session()->resourceMgr()->loadPixmap("YACS", anIconName, false);
   
   return aRes;
 }
@@ -2096,6 +2110,9 @@ void YACSGui_SchemaViewItem::addNodeItem( YACS::HMI::Subject* theSNode )
     }
 
     YACSGui_NodeViewItem* aNodeItem = new YACSGui_NodeViewItem( aNodesL, anAfter, aSNode );
+
+    if ( SubjectComposedNode* aSCompNode = dynamic_cast<SubjectComposedNode*>(aSNode) )
+      YACSGui_LabelViewItem* aLinksItem = new YACSGui_LabelViewItem( aNodeItem, 0, QObject::tr( "LINKS" ) );
   }
 }
 
@@ -2345,7 +2362,7 @@ QPixmap YACSGui_ContainerViewItem::icon() const
   QPixmap aRes;
   
   if ( getContainer() )
-    aRes = SUIT_Session::session()->resourceMgr()->loadPixmap("YACSGui",  QObject::tr("ICON_CONTAINER_OBJECT"));
+    aRes = SUIT_Session::session()->resourceMgr()->loadPixmap("YACS",  QObject::tr("ICON_CONTAINER_OBJECT"));
 
   return aRes;
 }
@@ -2435,9 +2452,9 @@ YACSGui_ComponentViewItem::YACSGui_ComponentViewItem( QListView* theParent,
   {
     mySComponent->attach(this);
     
-    QString aName = name();
-    if ( !aName.isEmpty() )
-      setText( 0, aName );
+    QString anInstName = instanceName();
+    if ( !anInstName.isEmpty() )
+      setText( 0, anInstName );
     setPixmap( 0, icon() );
   }
 }
@@ -2452,9 +2469,9 @@ YACSGui_ComponentViewItem::YACSGui_ComponentViewItem( QListViewItem* theParent,
   {
     mySComponent->attach(this);
 
-    QString aName = name();
-    if ( !aName.isEmpty() )
-      setText( 0, aName );
+    QString anInstName = instanceName();
+    if ( !anInstName.isEmpty() )
+      setText( 0, anInstName );
     setPixmap( 0, icon() );
   }
 }
@@ -2476,7 +2493,6 @@ void YACSGui_ComponentViewItem::update(YACS::HMI::GuiEvent event, int type, YACS
     switch (type)
     {
     case REFERENCE:
-      move(son);
       break;
     default:
       update(true);
@@ -2490,7 +2506,15 @@ void YACSGui_ComponentViewItem::update(YACS::HMI::GuiEvent event, int type, YACS
  
 QString YACSGui_ComponentViewItem::name() const
 {
-  return ( mySComponent ? QString(mySComponent->getName()) : QString("") );
+  return instanceName();
+}
+
+QString YACSGui_ComponentViewItem::instanceName() const
+{
+  QString instName ="";
+  if (mySComponent)
+    instName = mySComponent->getComponent()->getInstanceName();
+  return instName;
 }
 
 QPixmap YACSGui_ComponentViewItem::icon() const
@@ -2498,7 +2522,7 @@ QPixmap YACSGui_ComponentViewItem::icon() const
   QPixmap aRes;
 
   if ( getComponent() )
-    aRes = SUIT_Session::session()->resourceMgr()->loadPixmap("YACSGui",  QObject::tr("ICON_COMPONENT_OBJECT"));
+    aRes = SUIT_Session::session()->resourceMgr()->loadPixmap("YACS",  QObject::tr("ICON_COMPONENT_OBJECT"));
 
   return aRes;
 }
@@ -2691,12 +2715,13 @@ QColor YACSGui_ComposedNodeViewItem::statusBgColor() const
 
 void YACSGui_ComposedNodeViewItem::setState(int state)
 {
-  //MESSAGE("ComposedNodeViewItem::setState");
+  //MESSAGE("ComposedNodeViewItem::setState: " << state);
   _state = state;
   switch (_state)
     {
     case YACS::UNDEFINED:    _cf=Qt::lightGray;       setText(1,"UNDEFINED");    repaint(); break;
-    case YACS::READY:        _cf=Qt::gray;            setText(1,"READY");       repaint(); break;
+    case YACS::INVALID:      _cf=Qt::red;             setText(1,"INVALID");      repaint(); break;
+    case YACS::READY:        _cf=Qt::gray;            setText(1,"READY");        repaint(); break;
     case YACS::TOLOAD:       _cf=Qt::darkYellow;      setText(1,"TOLOAD");       repaint(); break;
     case YACS::LOADED:       _cf=Qt::darkMagenta;     setText(1,"LOADED");       repaint(); break;
     case YACS::TOACTIVATE:   _cf=Qt::darkCyan;        setText(1,"TOACTIVATE");   repaint(); break;
@@ -2744,7 +2769,7 @@ QPixmap YACSGui_ComposedNodeViewItem::icon() const
 
   QString anIconName = QString(QObject::tr("ICON_SCHEMA_OBJECT"));
   if ( !anIconName.isEmpty() )
-    aRes = SUIT_Session::session()->resourceMgr()->loadPixmap("YACSGui", anIconName, false);
+    aRes = SUIT_Session::session()->resourceMgr()->loadPixmap("YACS", anIconName, false);
   
   return aRes;
 }
@@ -2765,7 +2790,6 @@ void YACSGui_ComposedNodeViewItem::update( const bool theIsRecursive )
 
 void YACSGui_ComposedNodeViewItem::popup(YACSGui_Executor* anExecutor,const QPoint & point)
 {
-  std::cerr << anExecutor->getErrorDetails(getNode()) << std::endl;
   QPopupMenu menu(listView());
   menu.insertItem("Error Details",0);
   menu.insertItem("Error Report",1);
@@ -2906,11 +2930,12 @@ void YACSGui_ElementaryNodeViewItem::paintCell( QPainter *p, const QColorGroup &
 
 void YACSGui_ElementaryNodeViewItem::setState(int state)
 {
-  //MESSAGE("ElementaryNodeViewItem::setState");
+  //MESSAGE("ElementaryNodeViewItem::setState: " << state);
   _state = state;
   switch (_state)
     {
     case YACS::UNDEFINED:    _cf=Qt::lightGray;       setText(1,"UNDEFINED");    repaint(); break;
+    case YACS::INVALID:      _cf=Qt::red;             setText(1,"INVALID");      repaint(); break;
     case YACS::READY:        _cf=Qt::gray;            setText(1,"READY");        repaint(); break;
     case YACS::TOLOAD:       _cf=Qt::darkYellow;      setText(1,"TOLOAD");       repaint(); break;
     case YACS::LOADED:       _cf=Qt::darkMagenta;     setText(1,"LOADED");       repaint(); break;

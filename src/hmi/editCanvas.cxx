@@ -2,7 +2,7 @@
 #include "editCanvas.h"
 #include "guiContext.hxx"
 
-#define _DEVDEBUG_
+//#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
 #include <string>

@@ -33,8 +33,9 @@ namespace YACS
     public:
       ComponentInstance(const std::string& name);
       ComponentInstance(const ComponentInstance& other);
-      const std::string& getName() const { return _name; }
-      void setName(const std::string& name) { _name = name; }
+      const std::string& getCompoName() const { return _compoName; }
+      const std::string& getInstanceName() const { return _instanceName; }
+      int getNumId() const { return _numId; }
       virtual void setContainer(Container *cont);
       Container *getContainer() const { return _container; }
 //! Load the component instance
@@ -59,12 +60,16 @@ namespace YACS
       virtual std::string getKind() const;
       static const char KIND[];
     protected:
-      //! \b WARNING : _name has a strong semantic. It discriminates ComponentInstance instances each other.
-      std::string _name;
+      //! \b WARNING : _compoName identify only the component type.
+      std::string _compoName;
+      //! \b WARNING : _InstanceName has a strong semantic. It discriminates ComponentInstance instances each other.
+      std::string _instanceName;
+      int _numId;
       Container *_container;
       mutable bool _isAttachedOnCloning;
     protected:
       static const char NULL_FILE_REPR[];
+      static int _total;
     };
   }
 }

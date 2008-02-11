@@ -1697,7 +1697,18 @@ namespace YACS
             }
           else
             {
-              obref=getSALOMERuntime()->getOrb()->string_to_object(o.c_str());
+              try
+                {
+                  obref=getSALOMERuntime()->getOrb()->string_to_object(o.c_str());
+                }
+              catch(CORBA::Exception& ex)
+                {
+                  throw ConversionException("Can't get reference to object");
+                }
+              if( CORBA::is_nil(obref) )
+                {
+                  throw ConversionException("Can't get reference to object");
+                }
             }
 #ifdef REFCNT
           DEBTRACE("ObjRef refCount: " << obref->_PR_getobj()->pd_refCount);

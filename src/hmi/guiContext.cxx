@@ -7,7 +7,7 @@
 #include "commandsProc.hxx"
 #include "guiObservers.hxx"
 
-#define _DEVDEBUG_
+//#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
 using namespace std;
@@ -107,7 +107,7 @@ long GuiContext::getNewId(YACS::HMI::TypeOfElem type)
 	aProc->componentInstanceMap.begin();
       for ( ; itComp != aProc->componentInstanceMap.end(); ++itComp)
       {
-	QString aName( (*itComp).second->getName() );
+	QString aName( (*itComp).second->getCompoName() );
 	printf(">> component name : %s\n",aName.latin1());
 	if ( aName.length() > aTemplate.length() && !aName.left(aTemplate.length()).compare(aTemplate) )
 	{

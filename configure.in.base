@@ -3,7 +3,21 @@
 # Author : Anthony Geay (CEA)
 # --
 # -----------------------------------------------------------------------------
-#
+
+AC_INIT([Salome2 Project], [4.1.1], [paul.rascle@edf.fr], [SalomeYacs])
+AM_INIT_AUTOMAKE([tar-pax])
+AC_CONFIG_HEADER(yacs_config.h)
+
+# set up MODULE_NAME variable for dynamic construction of directories (resources, etc.)
+MODULE_NAME=yacs
+AC_SUBST(MODULE_NAME)
+
+XVERSION=0x040101
+AC_SUBST(XVERSION)
+
+RELEASE=$VERSION
+AC_SUBST(RELEASE)
+
 # This function return on stdout the absolute path of the filename in
 # argument. Exemple:
 # $ filename="../KERNEL_SRC/configure
@@ -34,12 +48,6 @@ echo Build  root directory : $ROOT_BUILDDIR
 
 AC_ENABLE_DEBUG(yes)
 AC_DISABLE_PRODUCTION
-AC_SUBST(RELEASE)
-AC_SUBST(MODULE_NAME)
-AC_SUBST(PACKAGE)
-
-AM_INIT_AUTOMAKE($PROJECT, $RELEASE)
-AC_CONFIG_HEADER(yacs_config.h)
 
 #Linker options
 AC_CANONICAL_BUILD
@@ -92,6 +100,7 @@ echo
 echo "Mandatory products:"
 echo "  Threads ................ : $thread_ok"
 echo "  OmniOrb (CORBA) ........ : $omniORB_ok"
+echo "  OmniOrbpy (CORBA) ...... : $omniORBpy_ok"
 echo "  Python ................. : $python_ok"
 echo "  Expat .................. : $expat_ok"
 echo "  libxml ................. : $libxml_ok"
@@ -118,9 +127,47 @@ fi
 if test "x$python_ok" = "xno"; then
   AC_MSG_ERROR([Python is required],1)
 fi
+if test "x$omniORBpy_ok" = "xno"; then
+  AC_MSG_ERROR([OmniOrbpy is required],1)
+fi
 if test "x$expat_ok" = "xno"; then
   AC_MSG_ERROR([Expat is required],1)
 fi
 if test "x$libxml_ok" = "xno"; then
   AC_MSG_ERROR([Libxml is required],1)
 fi
+
+
+AC_OUTPUT([ \
+  Makefile \
+  Demo/Makefile \
+  doc/Makefile \
+  idl/Makefile \
+  src/Makefile \
+  src/bases/Makefile \
+  src/bases/Test/Makefile \
+  src/engine/Makefile \
+  src/engine/Plugin/Makefile \
+  src/engine/Test/Makefile \
+  src/gui/Makefile \
+  src/hmi/Makefile \
+  src/lineconn2d/Makefile \
+  src/prs/Makefile \
+  src/pyqt/Makefile \
+  src/runtime/Makefile \
+  src/runtime/Test/Makefile \
+  src/salomeloader/Makefile \
+  src/wrappergen/Makefile \
+  src/wrappergen/src/Makefile \
+  src/yacsloader/Makefile \
+  src/yacsloader/Test/Makefile \
+  src/yacsorb/Makefile \
+    src/yacsloader/Test/YacsLoaderTest.sh \
+    src/yacsloader/Test/YacsLoaderInSessionTest.sh \
+    src/yacsloader/Test/YacsLoaderInSessionTest2.sh \
+    src/yacsloader/Test/display.sh \
+    src/yacsloader/Test/config_appli.xml \
+    src/gui/resources/YACSCatalog.xml \
+    doc/Doxyfile \
+])
+

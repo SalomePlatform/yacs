@@ -50,9 +50,9 @@ YACSPrs_LoopNode::YACSPrs_LoopNode( SUIT_ResourceMgr* theMgr, QCanvas* theCanvas
   if ( thePortUpdate ) {
     //updatePorts(); // will be called in moveBy(...) function
     if ( isFullDMode() )
-      moveBy(3*TITLE_HEIGHT/2, 3*TITLE_HEIGHT/2);
+      moveBy(3*TITLE_HEIGHT/2+NODEBOUNDARY_MARGIN, 3*TITLE_HEIGHT/2+NODEBOUNDARY_MARGIN);
     else if ( isControlDMode() )
-      moveBy(2*HOOKPOINT_SIZE,0);
+      moveBy(2*HOOKPOINT_SIZE+NODEBOUNDARY_MARGIN,2*HOOKPOINT_SIZE+NODEBOUNDARY_MARGIN);
   }
 }
 
@@ -361,6 +361,20 @@ int YACSPrs_LoopNode::maxWidth() const
 
   // Full view mode as a default
   return YACSPrs_ElementaryNode::maxWidth() - 4*HOOKPOINT_SIZE + ( ( 4*HOOKPOINT_SIZE > 3*TITLE_HEIGHT ) ? 4*HOOKPOINT_SIZE-3*TITLE_HEIGHT : 0 );
+}
+
+int YACSPrs_LoopNode::minX() const
+{
+  return YACSPrs_ElementaryNode::minX() + 2*HOOKPOINT_SIZE - ( ( 2*HOOKPOINT_SIZE > 3*TITLE_HEIGHT/2 ) ? 
+							       2*HOOKPOINT_SIZE :
+							       3*TITLE_HEIGHT/2 );
+}
+
+int YACSPrs_LoopNode::maxX() const
+{
+  return YACSPrs_ElementaryNode::maxX() - 2*HOOKPOINT_SIZE + ( ( 2*HOOKPOINT_SIZE > 3*TITLE_HEIGHT/2 ) ? 
+							       2*HOOKPOINT_SIZE :
+							       3*TITLE_HEIGHT/2 );
 }
 
 void YACSPrs_LoopNode::drawPort(QPainter& thePainter)

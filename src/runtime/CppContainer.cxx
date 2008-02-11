@@ -235,7 +235,7 @@ void LocalContainer::createInternalInstance(const char *name, void *&obj,
 void LocalContainer::unregisterComponentInstance(CppComponent * C)
 {
 	  _instance_mapMutex.lock(); // lock to be alone 
-	  _instance_map.erase(C->getName());
+	  _instance_map.erase(C->getCompoName());
 	  _instance_mapMutex.unlock(); // unlock
 }
 

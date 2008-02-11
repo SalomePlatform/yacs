@@ -287,14 +287,12 @@ namespace YACS
     class CommandAddComponentInstance: public Command
     {
     public:
-      CommandAddComponentInstance(std::pair<std::string,int> key,
-                                  std::pair<std::string,int> = (std::pair<std::string,int>("",0)));
+      CommandAddComponentInstance(std::string compoName);
       virtual YACS::ENGINE::ComponentInstance* getComponentInstance();
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
-      std::pair<std::string,int> _key;
-      std::pair<std::string,int> _keyToClone;
+      std::string _compoName;
       YACS::ENGINE::ComponentInstance *_compoInst;
     };
 

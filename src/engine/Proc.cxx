@@ -15,7 +15,7 @@
 using namespace std;
 using namespace YACS::ENGINE;
 
-Proc::Proc(const std::string& name):Bloc(name)
+Proc::Proc(const std::string& name):Bloc(name),_edition(false)
 {
   Runtime *theRuntime=getRuntime();
   DEBTRACE("theRuntime->_tc_double->ref: " << theRuntime->_tc_double->getRefCnt());
@@ -278,5 +278,24 @@ Logger *Proc::getLogger(const std::string& name)
   }
   return logger;
 
+}
+
+void Proc::setEdition(bool edition)
+{
+  DEBTRACE("Proc::setEdition: " << edition);
+  _edition=edition;
+  if(_edition)
+    edUpdateState();
+}
+//! Sets Proc in modified state and update state if in edition mode
+/*!
+ *
+ */
+void Proc::modified()
+{
+  DEBTRACE("Proc::modified() " << _edition);
+  _modified=1;
+  if(_edition)
+    edUpdateState();
 }
 

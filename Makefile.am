@@ -1,9 +1,11 @@
 include $(top_srcdir)/adm/unix/make_begin.am
 
+ACLOCAL_AMFLAGS = -I adm/unix/config_files
+
 if SALOME_KERNEL
-  SUBDIRS = idl src doc
+  SUBDIRS = idl src doc Demo
 else
-  SUBDIRS = src doc
+  SUBDIRS = src doc Demo
 endif
 
 install-exec-hook:

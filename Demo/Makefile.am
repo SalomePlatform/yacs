@@ -2,10 +2,13 @@ include $(top_srcdir)/adm/unix/make_begin.am
 
 BUILT_SOURCES = echoSK.cc schema.xml xmlrpcprog.py
 bin_PROGRAMS=echoSrv 
-echoSrv_SOURCES = echoSrv.cxx echoSK.cc 
+echoSrv_SOURCES = echoSrv.cxx 
+nodist_echoSrv_SOURCES = echoSK.cc
 echoSrv_CXXFLAGS = $(OMNIORB_INCLUDES) $(OMNIORB_CXXFLAGS) 
 echoSrv_LDFLAGS = $(OMNIORB_LIBS)
 AM_CXXFLAGS = $(THREAD_DEF)
+
+EXTRA_DIST = echo.idl schema_orig.xml xmlrpcprog_orig.py
 
 schema.xml:schema_orig.xml
 	cp $(srcdir)/schema_orig.xml schema.xml

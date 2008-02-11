@@ -1554,6 +1554,26 @@ int YACSPrs_ElementaryNode::maxHeight() const
   return boundingRect().height() + ( myPointMaster ? myPointMaster->height()/2 : 0 );
 }
 
+int YACSPrs_ElementaryNode::minX() const
+{
+  return boundingRect().left() - 2*HOOKPOINT_SIZE;
+}
+
+int YACSPrs_ElementaryNode::maxX() const
+{
+  return boundingRect().right() + 2*HOOKPOINT_SIZE;
+}
+
+int YACSPrs_ElementaryNode::minY() const
+{
+  return boundingRect().top();
+}
+ 
+int YACSPrs_ElementaryNode::maxY() const
+{
+  return boundingRect().bottom() + (myPointMaster ? myPointMaster->height()/2 : 0 );
+}
+
 int YACSPrs_ElementaryNode::getInfoHeight() const
 { 
   return myTitleHeight;
@@ -1751,9 +1771,13 @@ void YACSPrs_ElementaryNode::setState(YACS::StatesForNode theState)
 {
   switch ( theState )
     {
+    case YACS::INVALID:
+      myStatus = QString("Invalid");
+      myStatePixmap = myMgr->loadPixmap( "YACSPrs", QObject::tr( "ICON_STATUS_INVALID" ));
+      break;
     case YACS::READY:
       myStatus = QString("Ready");
-      myStatePixmap = myMgr->loadPixmap( "YACSPrs", QObject::tr( "ICON_STATUS_NO" ));
+      myStatePixmap = myMgr->loadPixmap( "YACSPrs", QObject::tr( "ICON_STATUS_READY" ));
       break;
     case YACS::TOLOAD:
       myStatus = QString("To Load");

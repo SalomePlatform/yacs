@@ -55,7 +55,7 @@ myAddBeforeRowNum( -1 )
   // cerate buttons
   if ( theBtns & UpBtn )
   {
-    QPixmap upPix = aResMgr->loadPixmap( "YACSGui", tr( "ICON_UP" ) );
+    QPixmap upPix = aResMgr->loadPixmap( "YACS", tr( "ICON_UP" ) );
     myUpBtn = new QToolButton( 0 );
     myUpBtn->setIconSet( upPix );
     myUpBtn->setFixedSize( upPix.size() );
@@ -66,7 +66,7 @@ myAddBeforeRowNum( -1 )
 
   if ( theBtns & DownBtn )
   {
-    QPixmap downPix = aResMgr->loadPixmap( "YACSGui", tr( "ICON_DOWN" ) );
+    QPixmap downPix = aResMgr->loadPixmap( "YACS", tr( "ICON_DOWN" ) );
     myDownBtn = new QToolButton( 0 );
     myDownBtn->setIconSet( downPix );
     myDownBtn->setFixedSize( downPix.size() );
@@ -77,7 +77,7 @@ myAddBeforeRowNum( -1 )
 
   if ( theBtns & InsertBtn )
   {
-    QPixmap insertPix = aResMgr->loadPixmap( "YACSGui", tr( "ICON_INSERT" ) );
+    QPixmap insertPix = aResMgr->loadPixmap( "YACS", tr( "ICON_INSERT" ) );
     myInsertBtn = new QToolButton( 0 );
     myInsertBtn->setIconSet( insertPix );
     myInsertBtn->setFixedSize( insertPix.size() );
@@ -88,7 +88,7 @@ myAddBeforeRowNum( -1 )
 
   if ( theBtns & SelectBtn )
   {
-    QPixmap selectPix = aResMgr->loadPixmap( "YACSGui", tr( "ICON_SELECT" ) );
+    QPixmap selectPix = aResMgr->loadPixmap( "YACS", tr( "ICON_SELECT" ) );
     mySelectBtn = new QToolButton( 0 );
     mySelectBtn->setIconSet( selectPix );
     mySelectBtn->setFixedSize( selectPix.size() );
@@ -100,7 +100,7 @@ myAddBeforeRowNum( -1 )
 
   if ( theBtns & PlusBtn )
   {
-    QPixmap plusPix = aResMgr->loadPixmap( "YACSGui", tr( "ICON_PLUS" ) );
+    QPixmap plusPix = aResMgr->loadPixmap( "YACS", tr( "ICON_PLUS" ) );
     myAddBtn = new QToolButton( 0 );
     myAddBtn->setIconSet( plusPix );
     myAddBtn->setFixedSize( plusPix.size() );
@@ -111,7 +111,7 @@ myAddBeforeRowNum( -1 )
 
   if ( theBtns & MinusBtn )
   {
-    QPixmap minusPix = aResMgr->loadPixmap( "YACSGui", tr( "ICON_MINUS" ) );
+    QPixmap minusPix = aResMgr->loadPixmap( "YACS", tr( "ICON_MINUS" ) );
     myRemoveBtn = new QToolButton( 0 );
     myRemoveBtn->setIconSet( minusPix );
     myRemoveBtn->setFixedSize( minusPix.size() );

@@ -1496,7 +1496,6 @@ void RuntimeTest::executeCppNode()
   
   DEBTRACE("execute a CppNode with an external C++ implementation (in a dynamic library)");
   
-  setenv("TESTCOMPONENT_ROOT_DIR", LOCATION, 1);
   node = _myRuntime->createCompoNode("Cpp", "test");
   CppComponent * C = new CppComponent("TestComponent");
   node->setComponent(C);
@@ -1532,7 +1531,6 @@ void RuntimeTest::executeCppNode()
 
 void RuntimeTest::createGraphWithCppNodes()
 {
-  setenv("TESTCOMPONENT_ROOT_DIR", LOCATION, 1);
   ElementaryNode * n1, * n2;
   InputPort  *in1, *in2;
   OutputPort  *out1, *out2;

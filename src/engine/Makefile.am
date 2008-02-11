@@ -61,57 +61,18 @@ libYACSEngine_la_SOURCES =             \
 	$(__dummy__)
 
 salomeinclude_HEADERS =                \
-             Any.hxx \
-             AnyInputPort.hxx \
-             Bloc.hxx \
-             ComponentInstance.hxx \
-             ComposedNode.hxx \
-             ConditionInputPort.hxx \
-             Container.hxx \
-             ConversionException.hxx \
-             DataFlowPort.hxx \
-             DataPort.hxx \
-             DataStreamPort.hxx \
-             DeploymentTree.hxx \
-             Dispatcher.hxx \
-             DynParaLoop.hxx \
-             ElementaryNode.hxx \
-             Executor.hxx \
-             ExecutorSwig.hxx \
-             ForEachLoop.hxx \
-             ForLoop.hxx \
-             InGate.hxx \
-             InlineNode.hxx \
-             InPort.hxx \
-             InputDataStreamPort.hxx \
-             InputPort.hxx \
-             InvalidExtractionException.hxx \
-             LinkInfo.hxx \
-             Loop.hxx \
-             Node.hxx \
-             OptimizerAlg.hxx \
-             OptimizerLoop.hxx \
-             OutGate.hxx \
-             OutPort.hxx \
-             OutputDataStreamPort.hxx \
-             OutputPort.hxx \
-             Pool.hxx \
-             Port.hxx \
-             Proc.hxx \
-             RefCounter.hxx \
-             Runtime.hxx \
-             Scheduler.hxx \
-             ServiceInlineNode.hxx \
-             ServiceNode.hxx \
-             SharedPtr.hxx \
-             StaticDefinedComposedNode.hxx \
-             Switch.hxx \
-             Task.hxx \
-             TypeCode.hxx \
-             Visitor.hxx \
-             VisitorSaveSchema.hxx \
-             VisitorSaveState.hxx \
-             WhileLoop.hxx \
+Any.hxx                  AnyInputPort.hxx  Bloc.hxx                        Catalog.hxx                    ComponentDefinition.hxx \
+ComponentInstance.hxx    ComposedNode.hxx  ConditionInputPort.hxx          Container.hxx                  ConversionException.hxx \
+DataFlowPort.hxx         DataNode.hxx      DataPort.hxx                    DataStreamPort.hxx             DeploymentTree.hxx \
+Dispatcher.hxx           DynParaLoop.hxx   ElementaryNode.hxx              Executor.hxx                   ExecutorSwig.hxx \
+ForEachLoop.hxx          ForLoop.hxx       InGate.hxx                      InlineNode.hxx                 InPort.hxx \
+InputDataStreamPort.hxx  InputPort.hxx     InvalidExtractionException.hxx  LinkInfo.hxx                   Logger.hxx \
+LogRecord.hxx            Loop.hxx          Node.hxx                        OptimizerAlg.hxx               OptimizerLoop.hxx \
+OutGate.hxx              OutPort.hxx       OutputDataStreamPort.hxx        OutputPort.hxx                 Pool.hxx \
+Port.hxx                 Proc.hxx          RefCounter.hxx                  Runtime.hxx                    Scheduler.hxx \
+ServiceInlineNode.hxx    ServiceNode.hxx   SharedPtr.hxx                   StaticDefinedComposedNode.hxx  Switch.hxx \
+Task.hxx                 TypeCode.hxx      Visitor.hxx                     VisitorSaveSchema.hxx          VisitorSaveState.hxx \
+WhileLoop.hxx \
 	     $(__dummy__)
 
 
@@ -125,12 +86,12 @@ AM_CXXFLAGS = $(THREAD_DEF)  \
               -I$(srcdir)/../bases
 
 
-BUILT_SOURCES = pilotWRAP.cxx 
+BUILT_SOURCES = pilotWRAP.cxx pypilotWRAP.cxx pypilotWRAP.h
 
 MYSWIG_FLAGS = -noexcept -I$(srcdir)/../bases
 
-pkgpython_PYTHON = pilot.py pypilot.py
-pkgpyexec_LTLIBRARIES = _pilot.la _pypilot.la
+salomepython_PYTHON = pilot.py pypilot.py
+salomepyexec_LTLIBRARIES = _pilot.la _pypilot.la
 
 SWIGINCLUDES=Any.hxx     DeploymentTree.hxx  InputDataStreamPort.hxx         OutPort.hxx               SharedPtr.hxx \
 AnyInputPort.hxx         Dispatcher.hxx      InputPort.hxx                   OutputDataStreamPort.hxx  StaticDefinedComposedNode.hxx \
@@ -146,7 +107,7 @@ DataStreamPort.hxx       InPort.hxx          OutGate.hxx                     Ser
 ../bases/yacsconfig.h engtypemaps.i
 
 pilotWRAP.cxx:pilot.i $(SWIGINCLUDES)
-	$(SWIG) $(SWIG_PYTHON_OPT) $(SWIG_PYTHON_INCLUDES) $(MYSWIG_FLAGS) -o $@ $<
+	$(SWIG) $(SWIG_PYTHON_OPT) $(SWIG_PYTHON_INCLUDES) $(MYSWIG_FLAGS) -o pilotWRAP.cxx $(srcdir)/pilot.i 
 
 _pilot_la_SOURCES =   \
 	pilotWRAP.cxx \
@@ -164,11 +125,16 @@ _pilot_la_LDFLAGS  = -module
 
 _pilot_la_LIBADD = libYACSEngine.la $(OMNIORB_LIBS)
 
-pypilotWRAP.cxx: pypilot.i pilot.i $(SWIGINCLUDES)
-	$(SWIG) $(SWIG_PYTHON_OPT) $(SWIG_PYTHON_INCLUDES) $(MYSWIG_FLAGS) -o $@ $<
+pypilotWRAP.cxx pypilotWRAP.h: pypilot.i pilot.i $(SWIGINCLUDES)
+	$(SWIG) $(SWIG_PYTHON_OPT) $(SWIG_PYTHON_INCLUDES) $(MYSWIG_FLAGS) -o pypilotWRAP.cxx $(srcdir)/pypilot.i
+
 _pypilot_la_SOURCES =  pypilotWRAP.cxx
 _pypilot_la_CXXFLAGS =  $(THREAD_DEF) $(PYTHON_CPPFLAGS) $(OMNIORB_INCLUDES) $(OMNIORB_CXXFLAGS) -I$(srcdir)/../bases
 _pypilot_la_LDFLAGS  = -module
 _pypilot_la_LIBADD = libYACSEngine.la $(OMNIORB_LIBS)
 
+EXTRA_DIST = pilot.i pypilot.i engtypemaps.i pypilotWRAP.h
+
+clean-local:
+	rm -f pypilot.py* pypilotWRAP.*
 include $(top_srcdir)/adm/unix/make_end.am

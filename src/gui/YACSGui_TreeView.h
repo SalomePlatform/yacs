@@ -101,6 +101,8 @@ class YACSGui_EditionTreeView: public YACSGui_TreeView
   virtual YACS::HMI::Subject* getSubject( QListViewItem* theItem );
 
   virtual void syncHMIWithSelection();
+
+  void emitSelectionChanged();
   
  public slots:
   void onAddToLibrary();

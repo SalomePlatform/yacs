@@ -83,8 +83,8 @@ GUI_LDFLAGS=""
 GUI_CXXFLAGS=""
 
 AC_ARG_WITH(gui,
-	    --with-salome_gui=DIR root directory path of SALOME GUI installation,
-	    SALOME_GUI_DIR="$withval",SALOME_GUI_DIR="")
+	    [  --with-gui=DIR          root directory path of SALOME GUI installation],
+	    [SALOME_GUI_DIR="$withval"],[SALOME_GUI_DIR=""])
 
 if test "x${SALOME_GUI_DIR}" = "x" ; then
   # no --with-gui-dir option used

@@ -81,7 +81,7 @@ void CORBAComponent::load()
     {
       DEBTRACE( "+++++++++++++++++" << getName() << " +++++++++++++++++" );
       orb = getSALOMERuntime()->getOrb();
-      _objComponent= orb->string_to_object(getName().c_str());
+      _objComponent= orb->string_to_object(getCompoName().c_str());
 #ifdef REFCNT
       std::cerr << "CORBAComponent::load:refCount: " <<_objComponent->_PR_getobj()->pd_refCount << std::endl;
 #endif
@@ -165,6 +165,6 @@ ComponentInstance* CORBAComponent::clone() const
 std::string CORBAComponent::getFileRepr() const
 {
   ostringstream stream;
-  stream << "<ref>" << getName() << "</ref>";
+  stream << "<ref>" << getCompoName() << "</ref>";
   return stream.str();
 }

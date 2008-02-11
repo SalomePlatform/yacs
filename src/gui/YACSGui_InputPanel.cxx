@@ -402,7 +402,8 @@ QString getText( int theStatus )
   switch (theStatus)
     {
     case UNDEFINED:    aText = "UNDEFINED";    break;
-    case READY:        aText = "READY";       break;
+    case INVALID:      aText = "INVALID";      break;
+    case READY:        aText = "READY";        break;
     case TOLOAD:       aText = "TOLOAD";       break;
     case LOADED:       aText = "LOADED";       break;
     case TOACTIVATE:   aText = "TOACTIVATE";   break;
@@ -428,7 +429,8 @@ QColor getColor( int theStatus )
   switch (theStatus)
     {
     case UNDEFINED:    aColor = Qt::lightGray;     break;
-    case READY:        aColor = Qt::gray;          break;
+    case INVALID:      aColor = Qt::red;           break;
+    case READY:        aColor = Qt::green;         break;
     case TOLOAD:       aColor = Qt::darkYellow;    break;
     case LOADED:       aColor = Qt::darkMagenta;   break;
     case TOACTIVATE:   aColor = Qt::darkCyan;      break;
@@ -1942,7 +1944,12 @@ YACS::ENGINE::ComponentInstance* YACSGui_ComponentPage::getComponent() const
 
 QString YACSGui_ComponentPage::getComponentName() const
 {
-  return ( mySComponent ? QString( mySComponent->getName() ) : QString("") );
+  return ( mySComponent ? QString( mySComponent->getComponent()->getCompoName() ) : QString("") );
+}
+
+QString YACSGui_ComponentPage::getInstanceName() const
+{
+  return ( mySComponent ? QString( mySComponent->getComponent()->getInstanceName() ) : QString("") );
 }
 
 void YACSGui_ComponentPage::setComponentType()
@@ -2011,9 +2018,7 @@ void YACSGui_ComponentPage::checkModifications( bool& theWarnToShow, bool& theTo
 
   // 1) check if the content of the page is really modified (in compare with the content of engine object)
   bool isModified = false;
-  if ( !myComponentName->currentText().isEmpty() && myComponentName->currentText().compare(getComponentName()) != 0
-       ||
-       myContainerName->currentText().compare(getContainerName()) != 0 ) isModified = true;
+  if (myContainerName->currentText().compare(getContainerName()) != 0 ) isModified = true;
     
   // 2) if yes, show a warning message: Apply or Cancel
   if ( isModified )
@@ -2041,10 +2046,6 @@ void YACSGui_ComponentPage::checkModifications( bool& theWarnToShow, bool& theTo
 
 void YACSGui_ComponentPage::onApply()
 {
-  QString aText = myComponentName->currentText();
-  if ( aText.isEmpty() ) return;
-    getComponent()->setName( aText.latin1() );
-
   setContainer();
 
   if ( mySComponent ) {
@@ -2092,28 +2093,6 @@ void YACSGui_ComponentPage::onApply()
   }
 }
 
-void YACSGui_ComponentPage::fillComponentNames()
-{
-  myComponentName->clear();
-  
-  if ( myType == CORBA ) // TODO: in case of CORBA component myComponentName control should be QLineEdit
-    myComponentName->setEnabled(false);  
-  else
-    myComponentName->setEnabled(myEditComp);
-
-  Proc* aProc = GuiContext::getCurrent()->getProc();
-  if ( !aProc ) return;
-
-  YACS::ENGINE::Catalog *aCatalog = getInputPanel()->getModule()->getCatalog();
-  if ( aCatalog )
-  {
-    map<string, YACS::ENGINE::ComponentDefinition*>::const_iterator it = aCatalog->_componentMap.begin(); 
-    map<string, YACS::ENGINE::ComponentDefinition*>::const_iterator itEnd = aCatalog->_componentMap.end(); 
-    for ( ; it != itEnd; ++it )
-      myComponentName->insertItem( QString( (*it).first ) );
-  }
-}
-
 void YACSGui_ComponentPage::fillContainerNames()
 {
   myContainerName->clear();
@@ -2132,18 +2111,18 @@ void YACSGui_ComponentPage::fillContainerNames()
 
 void YACSGui_ComponentPage::updateState()
 {
-  fillComponentNames();
-  // Set component name
-  if ( myComponentName )
-    myComponentName->setCurrentText( getComponentName() );
+  myComponentName->setText( getComponentName() );
+  myComponentName->setReadOnly(true);  
+
+  myInstanceName->setText( getInstanceName() );
+  myInstanceName->setReadOnly(true);  
   
   // Set component type
   setComponentType();
 
   // Set container
   fillContainerNames();
-  if ( myContainerName )
-    myContainerName->setCurrentText( getContainerName() );
+  myContainerName->setCurrentText( getContainerName() );
 }
 
 void YACSGui_ComponentPage::onContainerChanged( const QString& theContainerName )
@@ -2655,10 +2634,14 @@ void YACSGui_NodePage::updateBlocSize()
     if ( !aGraph ) return;
 
     Bloc* aFather = dynamic_cast<Bloc*>(aSB->getNode());
-    while ( aFather && !dynamic_cast<Proc*>(aFather) )
+    if ( !aFather ) return;
+
+    bool isNeedToArrange = aGraph->isNeededToIncreaseBlocSize(aFather);
+    while ( isNeedToArrange && aFather && !dynamic_cast<Proc*>(aFather) )
     {
       aGraph->arrangeNodesWithinBloc(aFather);
       aFather = dynamic_cast<Bloc*>(aFather->getFather());
+      isNeedToArrange = aGraph->isNeededToIncreaseBlocSize(aFather);
     }
     aGraph->getCanvas()->update();
   }
@@ -2914,6 +2897,7 @@ YACSGui_InlineNodePage::YACSGui_InlineNodePage( QWidget* theParent, const char* 
   connect( myInputPortsGroupBox, SIGNAL(Inserted( const int )),  this, SLOT(onInserted( const int )) );
   connect( myInputPortsGroupBox, SIGNAL(MovedUp( const int )),   this, SLOT(onMovedUp( const int )) );
   connect( myInputPortsGroupBox, SIGNAL(MovedDown( const int )), this, SLOT(onMovedDown( const int )) );
+  connect( myInputPortsGroupBox, SIGNAL(Added( const int )),     this, SLOT(onAdded( const int )) );
   connect( myInputPortsGroupBox, SIGNAL(Removed( const int )),   this, SLOT(onRemoved( const int )) );
 
   // Output Ports table  
@@ -2951,7 +2935,8 @@ YACSGui_InlineNodePage::YACSGui_InlineNodePage( QWidget* theParent, const char* 
   connect( myOutputPortsGroupBox, SIGNAL(Inserted( const int )),  this, SLOT(onInserted( const int )) );
   connect( myOutputPortsGroupBox, SIGNAL(MovedUp( const int )),   this, SLOT(onMovedUp( const int )) );
   connect( myOutputPortsGroupBox, SIGNAL(MovedDown( const int )), this, SLOT(onMovedDown( const int )) );
-  connect( myOutputPortsGroupBox, SIGNAL(Removed( const int )), this, SLOT(onRemoved( const int )) );
+  connect( myOutputPortsGroupBox, SIGNAL(Added( const int )),     this, SLOT(onAdded( const int )) );
+  connect( myOutputPortsGroupBox, SIGNAL(Removed( const int )),   this, SLOT(onRemoved( const int )) );
 
   connect( myNodeName, SIGNAL(textChanged( const QString& )), this, SLOT(onNodeNameChanged( const QString& )) );
   connect( mySearch, SIGNAL(returnPressed()), this, SLOT(onSearch()) );
@@ -3118,6 +3103,8 @@ void YACSGui_InlineNodePage::checkModifications()
 #else
         QString theText = myTextEdit->text();
 #endif
+        SCRUTE(theText);
+        SCRUTE(anIN->getScript());
         if (theText.compare(QString(anIN->getScript())) != 0 ) isModified = true;
       }
   // 2) if yes, show a warning message: Apply or Cancel
@@ -3494,6 +3481,21 @@ void YACSGui_InlineNodePage::onRemoved( const int theRow )
     }
 }
 
+void YACSGui_InlineNodePage::onAdded( const int theRow )
+{
+  if ( YACSGui_PlusMinusGrp* aGrpBox = ( YACSGui_PlusMinusGrp* )sender() )
+    if ( myInputPortsGroupBox == aGrpBox )
+    {
+      myInputPortsGroupBox->Table()->setDefValue( theRow, 2, "" );
+      myInputPortsGroupBox->Table()->item( theRow, 2 )->setText("");
+    }
+    else if ( myOutputPortsGroupBox == aGrpBox )
+    {
+      myOutputPortsGroupBox->Table()->setDefValue( theRow, 2, "" );
+      myOutputPortsGroupBox->Table()->item( theRow, 2 )->setText("");
+    }
+}
+
 void YACSGui_InlineNodePage::fillInputPortsTable()
 {
   if ( !getNode() ) return;
@@ -3572,7 +3574,10 @@ void YACSGui_InlineNodePage::fillInputPortsTable()
 
   // Set "Value" column read only (for linked ports)
   for ( int i = 0, n = aTable->numRows(); i < n; i++ )
+  {
+    aTable->setDefValue( i, 2, aValueTypes[i] );
     aTable->setReadOnly( i, 3, aReadOnlyFlags[ i ] );
+  }
 
   if ( !aPortNames.empty() ) myInputPortsGroupBox->EnableBtn( YACSGui_PlusMinusGrp::AllBtn );
 }
@@ -3657,7 +3662,11 @@ void YACSGui_InlineNodePage::fillOutputPortsTable()
   aTable->setStrings( 4, anIsInStudy, true );
 
   // Set "Value" column read only
-  aTable->setReadOnly( -1, 3, true );
+  for ( int i = 0, n = aTable->numRows(); i < n; i++ )
+  {
+    aTable->setDefValue( i, 2, aValueTypes[i] );
+    aTable->setReadOnly( i, 3, true );
+  }
 
   if ( !aPortNames.empty() ) myOutputPortsGroupBox->EnableBtn( YACSGui_PlusMinusGrp::AllBtn );
 }
@@ -4404,7 +4413,6 @@ bool YACSGui_InlineNodePage::isPortsModified( bool theInput )
   bool isModified = false;
   
   if ( !getNode() ) return isModified;
-
   // read data and data stream ports from the table
   YACSGui_Table* aTable = 0;
   if ( theInput ) aTable = myInputPortsGroupBox->Table();
@@ -4474,7 +4482,6 @@ bool YACSGui_InlineNodePage::isPortsModified( bool theInput )
       aRowId++;
     }
   }
-
   return isModified;
 }
 
@@ -4487,7 +4494,6 @@ YACSGui_ServiceNodePage::YACSGui_ServiceNodePage( QWidget* theParent, const char
   : ServiceNodePage( theParent, theName, theFlags ),
     YACSGui_NodePage(),
     myComponent( 0 ),
-    myMethodChanged( false ),
     mySCNode( 0 )
 {
   // the possibility to search is hided according to the Num. 14 from NEWS file
@@ -4512,9 +4518,6 @@ YACSGui_ServiceNodePage::YACSGui_ServiceNodePage( QWidget* theParent, const char
   _myTextEdit->setIndentationsUseTabs(0);
   _myTextEdit->setAutoCompletionThreshold(2);
 #endif
-
-  connect( myMethodName, SIGNAL( activated( const QString& ) ),
-	   this, SLOT( onMethodChanged( const QString& ) ) );
 
   if ( !myInputPortsGroupBox || !myOutputPortsGroupBox ) return;
 
@@ -4584,6 +4587,7 @@ YACSGui_ServiceNodePage::YACSGui_ServiceNodePage( QWidget* theParent, const char
   myProcRadioButton->setEnabled(false);
 
   connect( myNodeName, SIGNAL(textChanged( const QString& )), this, SLOT(onNodeNameChanged( const QString& )) );
+  connect( myInstanceName, SIGNAL(activated( const QString& )), this, SLOT(onInstanceNameChanged( const QString& ) ) );
   connect( myBrowseButton, SIGNAL(clicked(  )), this, SLOT(onBrowse( )) );
   connect( this, SIGNAL( enableApply( bool ) ), getInputPanel(), SLOT( onApplyEnabled( bool ) ) );
   connect( CatalogTree, SIGNAL( clicked( QListViewItem* ) ), this, SLOT( onCatalogMethodClicked( QListViewItem* ) ) );
@@ -4618,12 +4622,19 @@ void YACSGui_ServiceNodePage::setSNode( YACS::HMI::SubjectNode* theSNode )
 
 void YACSGui_ServiceNodePage::setComponent( YACS::ENGINE::ComponentInstance* theComponent )
 {
-  if ( !theComponent ) return;
-
-  std::string aComponentName = theComponent->getName();
-  if( myComponentName != aComponentName )
+  if (!theComponent) return;
+  ServiceNode* aServiceNode = dynamic_cast<ServiceNode*>(getNode());
+  if (!aServiceNode) return;
+  ComponentInstance* compo = aServiceNode->getComponent();
+  if (!compo) return;
+  
+  std::string currentInstName = compo->getInstanceName();
+  std::string anInstanceName = theComponent->getInstanceName();
+  
+  if( currentInstName != anInstanceName )
   {
-    myComponentName = aComponentName;
+    myComponentName = theComponent->getCompoName();
+    myInstanceName->setCurrentText(theComponent->getInstanceName());
     myComponent = theComponent;
     updateState();
 
@@ -4632,14 +4643,6 @@ void YACSGui_ServiceNodePage::setComponent( YACS::ENGINE::ComponentInstance* the
     if ( aCompPage )
       aCompPage->setSComponent( GuiContext::getCurrent()->_mapOfSubjectComponent[theComponent], false );
   }
-
-  if( aComponentName != "" && myComponentButton && myComponentButton->isOn() )
-    myComponentButton->setOn( false );
-}
-
-bool YACSGui_ServiceNodePage::isSelectComponent() const
-{
-  return ( myComponentButton ? myComponentButton->isOn() : false );
 }
 
 void YACSGui_ServiceNodePage::setMode( const YACSGui_InputPanel::PageMode theMode )
@@ -4653,7 +4656,6 @@ void YACSGui_ServiceNodePage::setMode( const YACSGui_InputPanel::PageMode theMod
     InPythonEditorGroupBox->hide();
     ComponentDefinitionLabel->hide();
     myComponentDefinition->hide();
-    myComponentButton->hide();
     MethodName->hide();
     myMethodName->hide();
     ExecutionGroupBox->hide();
@@ -4672,18 +4674,16 @@ void YACSGui_ServiceNodePage::setMode( const YACSGui_InputPanel::PageMode theMod
     PortListGroupBox->show();
     ComponentDefinitionLabel->show();
     myComponentDefinition->show();
-    myComponentButton->show();
     MethodName->show();
     myMethodName->show();
     getInputPanel()->onApplyEnabled(true);
   }
 
+  myMethodName->setReadOnly(true);
+
   if ( myMode == YACSGui_InputPanel::EditMode )
   {
     myNodeName->setReadOnly(false);
-    myComponentButton->show();
-    myMethodName->setEnabled(true);
-
     ExecutionGroupBox->hide();
 
     myInputPortsGroupBox->ShowBtn( YACSGui_PlusMinusGrp::UpBtn | YACSGui_PlusMinusGrp::DownBtn );
@@ -4692,9 +4692,6 @@ void YACSGui_ServiceNodePage::setMode( const YACSGui_InputPanel::PageMode theMod
   else if ( myMode == YACSGui_InputPanel::RunMode )
   {
     myNodeName->setReadOnly(true);
-    myComponentButton->hide();
-    myMethodName->setEnabled(false);
-
     ExecutionGroupBox->show();
 
     myInputPortsGroupBox->HideBtn();
@@ -4779,14 +4776,14 @@ void YACSGui_ServiceNodePage::checkModifications( bool& theWarnToShow, bool& the
   ServiceNode* aServiceNode = dynamic_cast<ServiceNode*>( getNode() );
   if ( !aServiceNode ) return;
 
-  if ( myNodeName->text().compare(getNodeName()) != 0
-       ||
-       aServiceNode->getComponent() 
-       &&
-       myComponentDefinition->text().compare(QString(aServiceNode->getComponent()->getName())) != 0
-       ||
-       myMethodName->currentText().compare(QString(aServiceNode->getMethod())) != 0
-     ) isModified = true;
+  if ( myNodeName->text().compare(getNodeName()) != 0) isModified = true;
+
+  if ( !isModified )
+  {
+    if (aServiceNode->getComponent())
+      if(QString::compare(myInstanceName->currentText(),aServiceNode->getComponent()->getInstanceName()) != 0)
+        isModified = true;
+  }
 
   if ( !isModified )
   {
@@ -5011,7 +5008,7 @@ void YACSGui_ServiceNodePage::onApply()
       }
 
       myComponentName = compo;
-      myMethodName->setCurrentText( service );
+      myMethodName->setText( service );
 
       Proc* aProc = aContext->getProc();
       if ( !aProc ) return;
@@ -5059,17 +5056,7 @@ void YACSGui_ServiceNodePage::onApply()
 	{
 	  aCreatedSNode = aBloc->addNode( aCatalog, compo, service, aName.str() );
 	  if( SubjectComposedNode* aParent = dynamic_cast<SubjectComposedNode*>(aBloc->getParent()) )
-	  {
 	    aGraph->update(aBloc->getNode(), aParent);
-	    // already done in YACSGui_BlocNode::update(...)
-	    /*Bloc* aFather = dynamic_cast<Bloc*>(aBloc->getNode());
-	    while ( aFather && !dynamic_cast<Proc*>(aFather) )
-	    {
-	      aGraph->arrangeNodesWithinBloc(aFather);
-	      aFather = dynamic_cast<Bloc*>(aFather->getFather());
-	    }
-	    aGraph->getCanvas()->update();*/
-	  }
 	}
       }
       else
@@ -5182,41 +5169,44 @@ void YACSGui_ServiceNodePage::onApply()
   if ( myNodeName )
     setNodeName( myNodeName->text() );
 
-  // Reset method
-  if ( myMethodName )
+  if ( ServiceNode* aServiceNode = dynamic_cast<ServiceNode*>( getNode() ) )
   {
-    if ( ServiceNode* aServiceNode = dynamic_cast<ServiceNode*>( getNode() ) )
-    {
-      //printf( "Component - %s\n", myComponent->getName().c_str() );
-      //printf( "Method - %s\n", myMethodName->currentText().latin1() );
-
-      SubjectComponent* aPrevSComponent = 0;
-      if ( ComponentInstance* aPrevComponent = aServiceNode->getComponent() )
-	aPrevSComponent = GuiContext::getCurrent()->_mapOfSubjectComponent[aPrevComponent];
-
-      if ( !aServiceNode->getComponent() )
+    SubjectServiceNode* aSSNode = dynamic_cast<SubjectServiceNode*>(mySNode);
+    // change component
+    if (ComponentInstance* aPrevComponent = aServiceNode->getComponent())
       {
-      	SubjectServiceNode* aSSNode = dynamic_cast<SubjectServiceNode*>(mySNode);
+	SubjectComponent* aPrevSComponent = GuiContext::getCurrent()->_mapOfSubjectComponent[aPrevComponent];
+
+        if(QString::compare(myInstanceName->currentText(),aServiceNode->getComponent()->getInstanceName()) != 0)
+          {
+            ComponentInstance* compo = 0;
+            Proc* aProc = GuiContext::getCurrent()->getProc();
+            if (aProc)
+              {
+                map<pair<string,int>,ComponentInstance*>::const_iterator it = aProc->componentInstanceMap.begin();
+                for(; it!=aProc->componentInstanceMap.end(); ++it)
+                  {
+                    ComponentInstance *inst=(*it).second;
+                    if (! QString::compare(inst->getInstanceName(), myInstanceName->currentText())) // if same instance name
+                      {
+                        compo = inst;
+                        break;
+                      }
+                  }
+              }
+            if (compo)
+              {
+                SubjectComponent* aSComp = GuiContext::getCurrent()->_mapOfSubjectComponent[compo];
+                if ( aSSNode && aSComp ) aSSNode->associateToComponent(aSComp);
+                setComponent(compo);
+              }
+          }
+      }
+    else
+      {
 	SubjectComponent* aSComp = GuiContext::getCurrent()->_mapOfSubjectComponent[myComponent];
 	if ( aSSNode && aSComp ) aSSNode->associateToComponent(aSComp);
       }
-      else if ( aServiceNode->getComponent() != myComponent )
-      {
-	aServiceNode->setComponent( myComponent );
-	if ( aPrevSComponent )
-	  aPrevSComponent->update( EDIT, REFERENCE, mySNode );
-      }
-      
-      if ( aServiceNode->getComponent()
-	   &&
-	   myMethodName->currentText().compare(QString(aServiceNode->getMethod())) != 0
-	   &&
-	   !myMethodName->currentText().isEmpty() )
-      {
-	aServiceNode->setMethod( myMethodName->currentText().latin1() );
-	myMethodChanged = true;
-      }
-    }
   }
 
   // Reset the list of input ports
@@ -5224,8 +5214,6 @@ void YACSGui_ServiceNodePage::onApply()
   
   // Reset the list of output ports
   setOutputPorts();
-
-  if ( myMethodChanged ) myMethodChanged = false;
 
   // Reset Python function/script
   string aScript = scriptText().isEmpty() ? string("") : scriptText().latin1();
@@ -5445,12 +5433,6 @@ void YACSGui_ServiceNodePage::updateState()
   }
 }
 
-void YACSGui_ServiceNodePage::onVisibilityChanged( bool visible )
-{
-  if( !visible && myComponentButton && myComponentButton->isOn() )
-    myComponentButton->setOn( false );
-}
-
 void YACSGui_ServiceNodePage::onNodeNameChanged( const QString& theName )
 {
   if ( myNodeFullName )
@@ -5461,10 +5443,28 @@ void YACSGui_ServiceNodePage::onNodeNameChanged( const QString& theName )
   }
 }
 
-void YACSGui_ServiceNodePage::onMethodChanged( const QString& theMethodName )
+void YACSGui_ServiceNodePage::onInstanceNameChanged( const QString& theInstanceName )
 {
-  if( myComponentDefinition && myMethodName )
-    updateServices( theMethodName );
+  Proc* aProc = GuiContext::getCurrent()->getProc();
+  if ( !aProc ) return;
+
+  ComponentInstance* compo = 0;
+  map<pair<string,int>,ComponentInstance*>::const_iterator it = aProc->componentInstanceMap.begin();
+  for(; it!=aProc->componentInstanceMap.end(); ++it)
+    {
+      ComponentInstance *inst=(*it).second;
+      if (! QString::compare(inst->getInstanceName(), theInstanceName)) // if same instance name
+        {
+          compo = inst;
+          break;
+        }
+    }
+  if (!compo) return;
+  
+  YACSGui_ComponentPage* aCompPage = 
+    dynamic_cast<YACSGui_ComponentPage*>( getInputPanel()->getPage( YACSGui_InputPanel::ComponentId ) );
+  if ( aCompPage )
+    aCompPage->setSComponent( GuiContext::getCurrent()->_mapOfSubjectComponent[compo], false );
 }
 
 void YACSGui_ServiceNodePage::onValueChanged( int theRow, int theCol )
@@ -5514,72 +5514,54 @@ void YACSGui_ServiceNodePage::onSearch()
 #endif
 }
 
-void YACSGui_ServiceNodePage::updateServices( const QString& theCurrent )
+void YACSGui_ServiceNodePage::updateServices()
 {
-  YACSGui_Module* aModule = getInputPanel()->getModule();
-  YACS::ENGINE::Catalog* aCatalog = aModule->getCatalog();
-  if( !aCatalog )
-    return;
-      
   if ( !myComponent )
   {
     if ( myComponentDefinition ) myComponentDefinition->clear();
     if ( myMethodName ) myMethodName->clear();
     return;
   }
-  
-  bool isForced = theCurrent.isNull();
 
   YACS::ENGINE::ServiceNode* aServiceNode = dynamic_cast<ServiceNode*>( getNode() );
-  if( !aServiceNode )
-    return;
+  if( !aServiceNode ) return;
 
   if( myComponentName.isNull() )
-    myComponentName = aServiceNode->getComponent()->getName();
+    myComponentName = aServiceNode->getComponent()->getCompoName();
 
-  if( isForced )
-  {
-    myComponentDefinition->setText( myComponentName );
-    myMethodName->clear();
-  }
+  myComponentDefinition->setText( myComponentName );
+  myMethodName->setText( aServiceNode->getMethod() );
+  fillInstanceNames();
+  myInstanceName->setCurrentText( aServiceNode->getComponent()->getInstanceName() );
 
-  QString aRefName = isForced ? QString( aServiceNode->getMethod() ) : theCurrent;
+  fillInputPortsTable( aServiceNode );
+  fillOutputPortsTable( aServiceNode );
+}
 
-  ComponentDefinition* aCompoDef = 0;
-  if ( aCatalog && aCatalog->_componentMap.count(myComponent->getName()) > 0 )
-    aCompoDef = aCatalog->_componentMap[ myComponentName.latin1() ];
-  if( !aCompoDef ) {
-    myMethodName->insertItem( aRefName );
-    fillInputPortsTable( aServiceNode );
-    fillOutputPortsTable( aServiceNode );
-    return;
-  }
-  
-  std::map<std::string,ServiceNode*> aServiceMap = aCompoDef->_serviceMap;
-  std::map<std::string,ServiceNode*>::const_iterator it = aServiceMap.begin();
-  std::map<std::string,ServiceNode*>::const_iterator itEnd = aServiceMap.end();
+void YACSGui_ServiceNodePage::fillInstanceNames()
+{
+  myInstanceName->clear();
+  YACS::ENGINE::ServiceNode* aServiceNode = dynamic_cast<ServiceNode*>( getNode() );
+  if( !aServiceNode ) return;
+  ComponentInstance* compo = aServiceNode->getComponent();
+  if (!compo) return;
 
-  int aCurrentIndex = 0;
-  YACS::ENGINE::Node* aCurrentNode = (*it).second;
+  if (compo->getKind() == "Salome")
+    myInstanceName->setEnabled(true);
+  else
+    myInstanceName->setEnabled(false);  
 
-  for( int index = 0; it != itEnd; it++, index++ )
-  {
-    std::string aService = (*it).first;
-    if( !strcmp( aRefName.latin1(), (*it).first.c_str() ) )
+  Proc* aProc = GuiContext::getCurrent()->getProc();
+  if ( !aProc ) return;
+
+  map<pair<string,int>,ComponentInstance*>::const_iterator it = aProc->componentInstanceMap.begin();
+  for(; it!=aProc->componentInstanceMap.end(); ++it)
     {
-      aCurrentIndex = index;
-      aCurrentNode = isForced ? aServiceNode : (*it).second;
+      ComponentInstance *inst=(*it).second;
+      QString aComponentName = inst->getCompoName();
+      if (! QString::compare(compo->getCompoName(), aComponentName)) // if same component name
+        myInstanceName->insertItem( QString(inst->getInstanceName()));
     }
-
-    if( isForced )
-      myMethodName->insertItem( QString( aService ) );
-  }
-
-  if( isForced )
-    myMethodName->setCurrentItem( aCurrentIndex );
-
-  fillInputPortsTable( aCurrentNode );
-  fillOutputPortsTable( aCurrentNode );
 }
 
 void YACSGui_ServiceNodePage::fillInputPortsTable( YACS::ENGINE::Node* theNode )
@@ -5667,8 +5649,11 @@ void YACSGui_ServiceNodePage::fillInputPortsTable( YACS::ENGINE::Node* theNode )
 
   // Set "Value" column read only (for linked ports)
   for ( int i = 0, n = aTable->numRows(); i < n; i++ )
+  {
+    aTable->setDefValue( i, 2, aValueTypes[i] );
     aTable->setReadOnly( i, 3, aReadOnlyFlags[ i ] );
-
+  }
+  
   if ( aPortNames.count() > 1 )
     myInputPortsGroupBox->EnableBtn( YACSGui_PlusMinusGrp::UpBtn | YACSGui_PlusMinusGrp::DownBtn );
 
@@ -5756,6 +5741,9 @@ void YACSGui_ServiceNodePage::fillOutputPortsTable( YACS::ENGINE::Node* theNode 
     aTable->setReadOnly( -1, 3, true );
   }
 
+  for ( int i = 0, n = aTable->numRows(); i < n; i++ )
+    aTable->setDefValue( i, 2, aValueTypes[i] );
+
   if ( aPortNames.count() > 1 )
     myOutputPortsGroupBox->EnableBtn( YACSGui_PlusMinusGrp::UpBtn | YACSGui_PlusMinusGrp::DownBtn );
 }
@@ -5791,7 +5779,7 @@ void YACSGui_ServiceNodePage::setInputPorts()
   ServiceNode* aNode = dynamic_cast<ServiceNode*>( getNode() );
   if ( !aNode ) return;
 
-  if ( myMethodChanged || myType != SALOMEService )
+  if ( myType != SALOMEService )
   {
     // remove old ports
     list<InPort*> anInPortsEngine = aNode->getSetOfInPort();
@@ -5811,9 +5799,9 @@ void YACSGui_ServiceNodePage::setInputPorts()
     YACS::ENGINE::Catalog* aCatalog = getInputPanel()->getModule()->getCatalog();
     if ( aCatalog && aNode->getComponent()
 	 &&
-	 aCatalog->_componentMap.count(aNode->getComponent()->getName()) )
+	 aCatalog->_componentMap.count(aNode->getComponent()->getCompoName()) )
     {
-      ComponentDefinition* aCompodef = aCatalog->_componentMap[aNode->getComponent()->getName()];
+      ComponentDefinition* aCompodef = aCatalog->_componentMap[aNode->getComponent()->getCompoName()];
       if ( aCompodef && aCompodef->_serviceMap.count(aNode->getMethod()) )
       	if ( ServiceNode* aNodeToClone = aCompodef->_serviceMap[aNode->getMethod()] )
 	{
@@ -5914,7 +5902,7 @@ void YACSGui_ServiceNodePage::setOutputPorts()
   ServiceNode* aNode = dynamic_cast<ServiceNode*>( getNode() );
   if ( !aNode ) return;
 
-  if ( myMethodChanged || myType != SALOMEService )
+  if ( myType != SALOMEService )
   {
     // remove old ports
     list<OutPort*> anOutPortsEngine = aNode->getSetOfOutPort();
@@ -5934,9 +5922,9 @@ void YACSGui_ServiceNodePage::setOutputPorts()
     YACS::ENGINE::Catalog* aCatalog = getInputPanel()->getModule()->getCatalog();
     if ( aCatalog && aNode->getComponent()
 	 &&
-	 aCatalog->_componentMap.count(aNode->getComponent()->getName()) )
+	 aCatalog->_componentMap.count(aNode->getComponent()->getCompoName()) )
     {
-      ComponentDefinition* aCompodef = aCatalog->_componentMap[aNode->getComponent()->getName()];
+      ComponentDefinition* aCompodef = aCatalog->_componentMap[aNode->getComponent()->getCompoName()];
       if ( aCompodef && aCompodef->_serviceMap.count(aNode->getMethod()) )
       	if ( ServiceNode* aNodeToClone = aCompodef->_serviceMap[aNode->getMethod()] )
 	{
@@ -6223,13 +6211,18 @@ void YACSGui_ForLoopNodePage::updateState()
 
     if( myLoopBodyNodeName )
     {
-      QString aBodyName;
       std::list<Node*> aNodes = aForLoopNode->edGetDirectDescendants();
-      std::list<Node*>::iterator aNodesIt = aNodes.begin();
-      Node* aNode = *aNodesIt;
-      if( aNode )
-	aBodyName = aNode->getName();
-      myLoopBodyNodeName->setText( aBodyName );
+      if ( !aNodes.empty() )
+      {
+	QString aBodyName;
+	
+	std::list<Node*>::iterator aNodesIt = aNodes.begin();
+	Node* aNode = *aNodesIt;
+	if( aNode )
+	  aBodyName = aNode->getName();
+	
+	myLoopBodyNodeName->setText( aBodyName );
+      }
     }
   }
 
@@ -6472,13 +6465,18 @@ void YACSGui_ForEachLoopNodePage::updateState()
 
     if( myLoopBodyNodeName )
     {
-      QString aBodyName;
       std::list<Node*> aNodes = aForEachLoopNode->edGetDirectDescendants();
-      std::list<Node*>::iterator aNodesIt = aNodes.begin();
-      Node* aNode = *aNodesIt;
-      if( aNode )
-	aBodyName = aNode->getName();
-      myLoopBodyNodeName->setText( aBodyName );
+      if ( !aNodes.empty() )
+      {
+	QString aBodyName;
+	
+	std::list<Node*>::iterator aNodesIt = aNodes.begin();
+	Node* aNode = *aNodesIt;
+	if( aNode )
+	  aBodyName = aNode->getName();
+
+	myLoopBodyNodeName->setText( aBodyName );
+      }
     }
   }
   
@@ -6703,13 +6701,18 @@ void YACSGui_WhileLoopNodePage::updateState()
 
     if( myLoopBodyNodeName )
     {
-      QString aBodyName;
       std::list<Node*> aNodes = aWhileLoopNode->edGetDirectDescendants();
-      std::list<Node*>::iterator aNodesIt = aNodes.begin();
-      Node* aNode = *aNodesIt;
-      if( aNode )
-	aBodyName = aNode->getName();
-      myLoopBodyNodeName->setText( aBodyName );
+      if ( !aNodes.empty() )
+      {
+	QString aBodyName;
+
+	std::list<Node*>::iterator aNodesIt = aNodes.begin();
+	Node* aNode = *aNodesIt;
+	if( aNode )
+	  aBodyName = aNode->getName();
+
+	myLoopBodyNodeName->setText( aBodyName );
+      }
     }
   }
   
@@ -7534,7 +7537,7 @@ void YACSGui_SwitchNodePage::setSwitchCases()
 	  if( YACS::ENGINE::ServiceNode* aServiceNode = dynamic_cast<ServiceNode*>( aChild ) )
 	  {
 	    if ( aServiceNode->getComponent() )
-	      compo = aServiceNode->getComponent()->getName();
+	      compo = aServiceNode->getComponent()->getCompoName();
 	    type = aServiceNode->getMethod();
 	  }
 	  else
@@ -7684,7 +7687,7 @@ void YACSGui_BlockNodePage::setChild( YACS::HMI::SubjectNode* theChildNode )
   myDirectChildrenGroupBox->setOffSelect();
   myDirectChildrenGroupBox->EnableBtn( YACSGui_PlusMinusGrp::SelectBtn, false );
 
-  // sets the child node name into table´s cell
+  // sets the child node name into tables cell
   QStringList aChildNames;
   aTable->strings( 0, aChildNames );
   aChildNames[aTable->currentRow()] = theChildNode->getNode()->getName();

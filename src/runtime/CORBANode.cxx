@@ -158,6 +158,8 @@ void CORBANode::execute()
                std::cerr << "(CORBA::MARSHAL: minor = " << ((CORBA::MARSHAL*)exc)->minor() << ")" << std::endl;
           }
           */
+        _errorDetails="Execution problem: the raised exception is of Type:";
+        _errorDetails += exc->_name();
         throw Exception("Execution problem");
       }
     
@@ -279,9 +281,19 @@ void SalomeNode::initService()
   Engines::Superv_Component_var compo=Engines::Superv_Component::_narrow(objComponent);
   if( CORBA::is_nil(compo) )
     {
-      throw Exception("Can't get reference to DSC object (or it was nil).");
+      std::string msg="Can't get reference to DSC object (or it was nil).";
+      _errorDetails=msg;
+      throw Exception(msg);
     }
-  compo->init_service(_method.c_str());
+  try
+    {
+      compo->init_service(_method.c_str());
+    }
+  catch(...)
+    {
+      _errorDetails="Problem in component init_service";
+      throw;
+    }
 }
 
 //! Connect the datastream ports of the component associated to the node
@@ -308,7 +320,11 @@ void SalomeNode::connectService()
           //It's only possible to connect 2 SalomeNode : try to get a SalomeNode
           SalomeNode* snode= dynamic_cast<SalomeNode*>((*iterout)->getNode());
           if(snode == 0) //don't connect, it's not a SalomeNode
-            throw Exception("Can't connect : not a SalomeNode");
+            {
+              std::string msg="Can't connect : not a SalomeNode";
+              _errorDetails=msg;
+              throw Exception(msg);
+            }
 
           CORBA::Object_var comp=((SalomeComponent*)snode->getComponent())->getCompoPtr();
           Engines::Superv_Component_var other=Engines::Superv_Component::_narrow(comp);
@@ -459,12 +475,16 @@ void SalomeNode::execute()
       }
     catch( const SALOME::SALOME_Exception& ex )
       {
-        std::string text=(const char*)ex.details.text;
-        throw Exception("Execution problem in checkInputFilesToService: " + text);
+        std::string text="Execution problem in checkInputFilesToService: ";
+        text += (const char*)ex.details.text;
+        _errorDetails=text;
+        throw Exception(text);
       }
     catch(CORBA::SystemException& ex)
       {
-        throw Exception("Execution problem: component probably does not support files ??");
+        std::string msg="Execution problem: component probably does not support files ??";
+        _errorDetails=msg;
+        throw Exception(msg);
       }
     
     //out parameters
@@ -506,8 +526,10 @@ void SalomeNode::execute()
           // It's a SystemException
           DEBTRACE( "minor code: " << sysexc->minor() );
           DEBTRACE( "completion code: " << sysexc->completed() );
-          std::string text=sysexc->_name();
-          throw Exception("Execution problem: System Exception occurred " + text);
+          std::string text="Execution problem: System Exception occurred ";
+          text +=sysexc->_name();
+          _errorDetails=text;
+          throw Exception(text);
         }
 
       // Not a System Exception
@@ -525,9 +547,13 @@ void SalomeNode::execute()
               _errorDetails=salexc->details.text;
               throw Exception("Execution problem: Salome Exception occurred" + getErrorDetails() );
             }
-          throw Exception("Execution problem: User Exception occurred");
+          std::string msg="Execution problem: User Exception occurred";
+          _errorDetails=msg;
+          throw Exception(msg);
         }
-      throw Exception("Execution problem");
+      std::string msg="Execution problem";
+      _errorDetails=msg;
+      throw Exception(msg);
     }
     
     DEBTRACE( "++++++++++++SalomeNode::outputs++++++++++++" )
@@ -595,11 +621,14 @@ void SalomeNode::execute()
     catch( const SALOME::SALOME_Exception& ex )
       {
         std::string text=(const char*)ex.details.text;
+        _errorDetails=text;
         throw Exception("Execution problem in checkOutputFilesToService: " + text);
       }
     catch(CORBA::SystemException& ex)
       {
-        throw Exception("Execution problem: component probably does not support files ?");
+        std::string msg="Execution problem: component probably does not support files ?";
+        _errorDetails=msg;
+        throw Exception(msg);
       }
   }
   //Request has been deleted (_var )

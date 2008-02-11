@@ -35,7 +35,7 @@ YACSPrs_ForEachLoopNode::YACSPrs_ForEachLoopNode( SUIT_ResourceMgr* theMgr, QCan
   YACSPrs_LoopNode(theMgr, theCanvas, theSNode, false)
 {
   //updatePorts(); // will be called in moveBy(...) function
-  moveBy(3*TITLE_HEIGHT/2, 3*TITLE_HEIGHT/2);
+  moveBy(3*TITLE_HEIGHT/2+NODEBOUNDARY_MARGIN, 3*TITLE_HEIGHT/2+NODEBOUNDARY_MARGIN);
 }
 
 /*!

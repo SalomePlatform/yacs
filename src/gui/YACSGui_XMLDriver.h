@@ -13,7 +13,7 @@ using YACS::parser;
 class YACSGui_Module;
 
 /*! 
- * Class that extends engine XML wirter capabilities by
+ * Class that extends engine XML writer capabilities by
  * adding information about node presentations to the output file.
  */
 class YACSGui_VisitorSaveSchema : public YACS::ENGINE::VisitorSaveSalomeSchema
@@ -109,7 +109,7 @@ public:
   YACSGui_Loader();
   virtual ~YACSGui_Loader();
 
-  const PrsDataMap&       getPrsData(YACS::ENGINE::Proc* proc, int&, int&);
+  const PrsDataMap&       getPrsData(YACS::ENGINE::Proc* proc, int&, int&, int&, int&, double&, double&);
   const PortLinkDataMap&  getPortLinkData(YACS::ENGINE::Proc* proc);
   const LabelLinkDataMap& getLabelLinkData(YACS::ENGINE::Proc* proc);
 
@@ -151,17 +151,27 @@ struct canvastype_parser: parser
     {
       required("width",attr);
       required("height",attr);
+      required("left",attr);
+      required("top",attr);
+      required("xscale",attr);
+      required("yscale",attr);
       for (int i = 0; attr[i]; i += 2) 
       {
 	std::cerr << attr[i] << "=" << attr[i + 1] << std::endl;
 	if(std::string(attr[i]) == "width")  width(attr[i+1]);
 	if(std::string(attr[i]) == "height") height(attr[i+1]);
+	if(std::string(attr[i]) == "left") left(attr[i+1]);
+	if(std::string(attr[i]) == "top") top(attr[i+1]);
+	if(std::string(attr[i]) == "xscale") xscale(attr[i+1]);
+	if(std::string(attr[i]) == "yscale") yscale(attr[i+1]);
       }
     }
   
   virtual void pre ()
     {
       width_ = height_ = 1;
+      left_ = top_ = 0;
+      xscale_ = yscale_ = 1;
     }
   
   virtual void width(const std::string& width)
@@ -174,7 +184,28 @@ struct canvastype_parser: parser
       height_ = QString( height ).toInt();
     }
 
-  int width_, height_;
+  virtual void left(const std::string& left)
+    {
+      left_ = QString( left ).toInt();
+    }
+  
+  virtual void top(const std::string& top)
+    {
+      top_ = QString( top ).toInt();
+    }
+
+  virtual void xscale(const std::string& xscale)
+    {
+      xscale_ = QString( xscale ).toDouble();
+    }
+  
+  virtual void yscale(const std::string& yscale)
+    {
+      yscale_ = QString( yscale ).toDouble();
+    }
+
+  int width_, height_, left_, top_;
+  double xscale_, yscale_;
 };
 
 /*! 

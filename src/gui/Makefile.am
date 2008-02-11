@@ -1,7 +1,7 @@
 
 include $(top_srcdir)/adm/unix/make_begin.am
 
-lib_LTLIBRARIES = libYACSGui.la
+lib_LTLIBRARIES = libYACS.la
 
 # Implementation files
 LIBSOURCES = \
@@ -39,8 +39,8 @@ LIBHEADERS = \
 	YACSGui_Swig.h \
 	YACSGui_Selection.h \
 	YACSGui_PlusMinusGrp.h \
-	YACSGui_Table.h
-
+	YACSGui_Table.h \
+  YACSGui_DataObject.h  YACSGui_InputPanel.h  YACSGui_LogViewer.h YACSGui_RunMode.h
 
 # MOC-generated files
 MOCSOURCES = \
@@ -75,19 +75,20 @@ foreachloopnodepage.cxx : foreachloopnodepage.h
 whileloopnodepage.cxx : whileloopnodepage.h
 switchnodepage.cxx : switchnodepage.h
 blocknodepage.cxx : blocknodepage.h
+
 UISOURCES = runmode.cxx schemapage.cxx containerpage.cxx componentpage.cxx inlinenodepage.cxx servicenodepage.cxx \
             forloopnodepage.cxx foreachloopnodepage.cxx whileloopnodepage.cxx switchnodepage.cxx blocknodepage.cxx
 
 # Resources
 LIBPOFILES = \
-	YACSGui_msg_en.po \
-	YACSGui_images.po
+	YACS_msg_en.po \
+	YACS_images.po
 
 LIBICONS = \
 	sample.png \
 	ModuleYacs.png \
 	SalomeApp.xml \
-	YACSGuiCatalog.xml \
+	YACSCatalog.xml \
 	add_in_study.png \
 	add_node.png \
 	change_informations.png \
@@ -170,19 +171,18 @@ LIBICONS = \
 POFILES += $(LIBPOFILES:%=resources/%)
 ICONS += $(LIBICONS:%=resources/%)
 
-libYACSGui_la_SOURCES = $(LIBSOURCES) $(LIBHEADERS)
-nodist_libYACSGui_la_SOURCES = $(UISOURCES) $(MOCSOURCES)
+libYACS_la_SOURCES = $(LIBSOURCES) $(LIBHEADERS) $(UISOURCES) $(MOCSOURCES)
 
 # List all generated files here
 BUILT_SOURCES = $(UISOURCES) $(MOCSOURCES) YACSGui_SwigWRAP.cxx
 
 MYSWIG_FLAGS = -noexcept -I$(srcdir)/../bases
 
-pkgpython_PYTHON = YACSGui_Swig.py \
+salomepython_PYTHON = YACSGui_Swig.py \
     yacsguiloader.py
-pkgpyexec_LTLIBRARIES = _YACSGui_Swig.la
+salomepyexec_LTLIBRARIES = _YACSGui_Swig.la
 
-YACSGui_SwigWRAP.cxx:YACSGui_Swig.i YACSGui_Swig.h
+YACSGui_SwigWRAP.cxx: YACSGui_Swig.i YACSGui_Swig.h
 	$(SWIG) $(SWIG_PYTHON_OPT) $(SWIG_PYTHON_INCLUDES) $(MYSWIG_FLAGS) -o $@ $<
 
 _YACSGui_Swig_la_SOURCES =   \
@@ -195,14 +195,14 @@ _YACSGui_Swig_la_CXXFLAGS = \
 
 _YACSGui_Swig_la_LDFLAGS  = -module
 
-_YACSGui_Swig_la_LIBADD = libYACSGui.la
+_YACSGui_Swig_la_LIBADD = libYACS.la
 
-libYACSGui_la_LDFLAGS = \
+libYACS_la_LDFLAGS = \
 	 @GRAPHVIZ_LDFLAGS@ \
 	 @GUI_LDFLAGS@ \
 	 @QT_MT_LDFLAGS@
 
-libYACSGui_la_LIBADD = \
+libYACS_la_LIBADD = \
 	../runtime/libYACSRuntimeSALOME.la \
 	../yacsloader/libYACSloader.la \
 	../prs/libYACSPrs.la \
@@ -213,7 +213,7 @@ libYACSGui_la_LIBADD = \
 	@QT_MT_LIBADD@\
 	-lQxGraph -lCAM -lsuit -lLightApp $(EXPAT_LIBS) $(LIBXML_LIBS)
 
-libYACSGui_la_CXXFLAGS = \
+libYACS_la_CXXFLAGS = \
 	$(THREAD_DEF) \
 	$(PYTHON_CPPFLAGS) \
 	$(OMNIORB_INCLUDES) \
@@ -229,5 +229,10 @@ libYACSGui_la_CXXFLAGS = \
 	-I../../idl \
 	-I../yacsorb \
 	@QT_INCLUDES@ @GUI_CXXFLAGS@ @CAS_CPPFLAGS@ @GRAPHVIZ_CPPFLAGS@ @QSCINTILLA_CCPFLAGS@
+
+EXTRA_DIST = YACSGui_Swig.i \
+ runmode.h schemapage.h containerpage.h componentpage.h inlinenodepage.h \
+ servicenodepage.h forloopnodepage.h foreachloopnodepage.h whileloopnodepage.h \
+ switchnodepage.h blocknodepage.h
 
 include $(top_srcdir)/adm/unix/make_end.am

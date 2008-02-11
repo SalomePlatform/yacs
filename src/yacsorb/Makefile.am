@@ -2,9 +2,7 @@ include $(top_srcdir)/adm/unix/make_begin.am
 
 IDL_FILES = yacs.idl
 IDL_SOURCES = yacsSK.cc
-BUILT_SOURCES = $(IDL_SOURCES) yacs_idl.py 
-
-OMNIORB_IDL+= -I$(KERNEL_ROOT_DIR)/idl/salome -I$(GUI_ROOT_DIR)/idl/salome
+BUILT_SOURCES = $(IDL_SOURCES) 
 
 lib_LTLIBRARIES = libYACSorb.la
 
@@ -16,7 +14,8 @@ libYACSorb_la_CXXFLAGS =  $(OMNIORB_CXXFLAGS)
 
 bin_PROGRAMS=yacsSrv yacs_clt
 
-yacsSrv_SOURCES = yacsSrv.cxx $(IDL_SOURCES)
+yacsSrv_SOURCES = yacsSrv.cxx 
+nodist_yacsSrv_SOURCES = $(IDL_SOURCES)
 
 if SALOME_KERNEL
 SALOME_LIBS=-L$(KERNEL_ROOT_DIR)/lib/salome -lSalomeLifeCycleCORBA -lSalomeDSCContainer
@@ -26,8 +25,8 @@ AM_CXXFLAGS= \
   -I$(KERNEL_ROOT_DIR)/include/salome \
   -I$(GUI_ROOT_DIR)/include/salome 
 
-IDLPYFLAGS  = \
-  -I$(KERNEL_ROOT_DIR)/idl/salome
+IDLCXXFLAGS = -I$(KERNEL_ROOT_DIR)/idl/salome -I$(GUI_ROOT_DIR)/idl/salome
+IDLPYFLAGS  = -I$(KERNEL_ROOT_DIR)/idl/salome
 
 yacsSrv_CXXFLAGS = -g -DYACS_PTHREAD \
   $(PYTHON_CPPFLAGS) \
@@ -50,7 +49,8 @@ yacsSrv_LDADD =  ../yacsloader/libYACSloader.la \
                $(PYTHON_LDFLAGS) \
                $(PYTHON_EXTRA_LIBS)
 
-yacs_clt_SOURCES = yacs_clt.cxx $(IDL_SOURCES)
+yacs_clt_SOURCES = yacs_clt.cxx 
+nodist_yacs_clt_SOURCES = $(IDL_SOURCES)
 
 yacs_clt_CXXFLAGS = \
   $(PYTHON_CPPFLAGS) \
@@ -73,17 +73,26 @@ yacs_clt_LDADD =  ../yacsloader/libYACSloader.la \
                $(PYTHON_LDFLAGS) \
                $(PYTHON_EXTRA_LIBS)
 
-pkgpython_PYTHON = YACSGui.py
+salomepython_PYTHON = YACS.py
+
+EXTRA_DIST = $(IDL_FILES)
 
 install-exec-local: install-pyidl
 
+uninstall-local:
+	rm -rf $(DESTDIR)$(salomepythondir)/yacs_idl.py
+	rm -rf $(DESTDIR)$(salomepythondir)/YACS_ORB
+	rm -rf $(DESTDIR)$(salomepythondir)/YACS_ORB__POA
+
 install-pyidl: $(IDL_FILES)
-	$(INSTALL) -d  $(pkgpythondir)
+	$(INSTALL) -d  $(DESTDIR)$(salomepythondir)
 	@for file in $^ dummy; do \
           if [ $$file != "dummy" ]; then \
-             $(OMNIORB_IDL) -bpython $(IDLPYFLAGS) -C$(pkgpythondir) $$file ; \
+             $(OMNIORB_IDL) -bpython $(IDLPYFLAGS) -C$(DESTDIR)$(salomepythondir) $$file ; \
           fi ; \
         done ;
 
+clean-local:
+	rm -rf yacs.hh  YACS_ORB  YACS_ORB__POA  yacsSK.cc
 
 include $(top_srcdir)/adm/unix/make_end.am

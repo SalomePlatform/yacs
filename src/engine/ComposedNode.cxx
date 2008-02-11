@@ -1314,6 +1314,7 @@ bool ComposedNode::isNameAlreadyUsed(const std::string& name) const
 
 void ComposedNode::edUpdateState()
 {
+  DEBTRACE("ComposedNode::edUpdateState(): " << _state << " " << _modified);
   YACS::StatesForNode state=YACS::READY;
 
   //update children if needed

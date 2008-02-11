@@ -419,7 +419,7 @@ void YACSGui_EditionTreeView::displayChildren( YACSGui_NodeViewItem* theNodeItem
     // Create internal links
 
     // Create "Links" label
-    YACSGui_LabelViewItem* aLinksItem = new YACSGui_LabelViewItem( theNodeItem, anOutPortItem, "Links" );
+    YACSGui_LabelViewItem* aLinksItem = new YACSGui_LabelViewItem( theNodeItem, anOutPortItem, tr( "LINKS" ) );
 
     // Control links
     QListViewItem* aControlLinkItem = 0;
@@ -1130,7 +1130,7 @@ QPopupMenu* YACSGui_EditionTreeView::contextMenuPopup( const int theType, YACS::
   case YACSGui_EditionTreeView::ComponentItem:
     {
       QPopupMenu* aCrN2Popup = new QPopupMenu( this );
-      //      aCrN2Popup->insertItem( tr("POP_SALOME_SERVICE"), myModule, SLOT(onSalomeServiceNode()) );
+      aCrN2Popup->insertItem( tr("POP_SALOME_SERVICE"), myModule, SLOT(onSalomeServiceNode()) );
       anId = aCrN2Popup->insertItem( tr("POP_SERVICE_INLINE"), myModule, SLOT(onServiceInlineNode()) );
       aCrN2Popup->setItemEnabled ( anId, false );
 
@@ -1383,18 +1383,34 @@ void YACSGui_EditionTreeView::syncPageTypeWithSelection()
       anIP->setExclusiveVisible( true,  list<int>(1,YACSGui_InputPanel::SchemaId) );
       string theErrorLog;
       Proc* aProc = getProc();
-      LinkInfo info(LinkInfo::ALL_DONT_STOP);
-      aProc->checkConsistency(info);
-      if (info.areWarningsOrErrors())
-        theErrorLog = info.getGlobalRepr();
+      // Check validity
+      if(!aProc->isValid())
+        {
+          theErrorLog="--- YACS schema is not valid ---\n\n";
+          theErrorLog += aProc->getErrorReport();
+        }
       else
-        theErrorLog = "--- No Consistency Errors ---\n";
+        {
+          // Check consistency
+          LinkInfo info(LinkInfo::ALL_DONT_STOP);
+          aProc->checkConsistency(info);
+          if (info.areWarningsOrErrors())
+            theErrorLog = info.getGlobalRepr();
+          else
+            {
+              theErrorLog = "--- No Validity Errors ---\n";
+              theErrorLog += "--- No Consistency Errors ---\n";
+            }
+        }
+
+      //Add initial logger info
       Logger* logger=getProc()->getLogger("parser");
       if (!logger->isEmpty())
         {
           theErrorLog += " --- Original file import log ---\n";
           theErrorLog += logger->getStr();  
         }
+
       aSPage->myErrorLog->setText(theErrorLog.c_str());
       anIP->show();
     }
@@ -1638,70 +1654,6 @@ void YACSGui_EditionTreeView::onSelectionChanged()
   YACSGui_InputPanel* anIP = myModule->getInputPanel();
   if ( anItem && anIP )
   {
-    // check if the component instance selection is active
-    if( ((QWidget*)anIP)->isVisible() && anIP->isVisible( YACSGui_InputPanel::ServiceNodeId ) )
-    {
-      YACSGui_ServiceNodePage* aSNPage = dynamic_cast<YACSGui_ServiceNodePage*>( anIP->getPage( YACSGui_InputPanel::ServiceNodeId ) );
-      if ( aSNPage && aSNPage->isSelectComponent() )
-      {
-	isWarn = false;
-	if ( YACSGui_ComponentViewItem* aCompItem = dynamic_cast<YACSGui_ComponentViewItem*>( anItem ) )
-	{
-	  if ( ServiceNode* sNode = dynamic_cast<ServiceNode*>(aSNPage->getNode()) )
-	  {
-	    if ( sNode->getKind() == aCompItem->getComponent()->getKind() )
-	    {
-	      aSNPage->setComponent(aCompItem->getComponent());
-	      
-	      // change selection from the component instance to the service node
-	      bool block = signalsBlocked();
-	      blockSignals( true );
-	      setSelected( aCompItem, false );
-	      QListViewItem* aSNItem = findItem( aSNPage->getNodeName(), 0 );
-	      if( aSNItem )
-		setSelected( aSNItem, true );
-	      blockSignals( block );
-	    }
-	    else setSelected( anItem, false );
-	  }
-	  else setSelected( anItem, false );
-	}
-	else if ( YACSGui_NodeViewItem* aNodeItem = dynamic_cast< YACSGui_NodeViewItem* >( anItem ) )
-	{ 
-	  if ( ServiceNode* sNode = dynamic_cast<ServiceNode*>( aNodeItem->getNode() ) )
-	  {
-	    YACS::ENGINE::ComponentInstance* aComp = sNode->getComponent();
-	    if ( aComp )
-	    {
-	      aSNPage->setComponent( aComp );
-	      
-	      // change selection from the another selected service node to the initial service node
-	      if ( aSNPage->getNode() != sNode )
-	      {
-		bool block = signalsBlocked();
-		blockSignals( true );
-		setSelected( aNodeItem, false );
-		QListViewItem* aSNItem = findItem( aSNPage->getNodeName(), 0 );
-		if( aSNItem )
-		  setSelected( aSNItem, true );
-		blockSignals( block );
-	      }
-	    }
-	    else 
-	      setSelected( anItem, false );
-	  }
-	  else 
-	    setSelected( anItem, false );
-	}
-	else
-	{ // remove selection from incompatible object (which is not component instance)
-	  setSelected( anItem, false );
-	}
-	
-	return;
-      }
-    }
-    
     // check if the case selection of switch node is active
     if( ((QWidget*)anIP)->isVisible() && anIP->isVisible( YACSGui_InputPanel::SwitchNodeId ) )
     {
@@ -1883,7 +1835,8 @@ void YACSGui_EditionTreeView::onDblClick( QListViewItem* theItem )
 	
 	setCurrentItem( original );
 	ensureItemVisible( original );
-	emit selectionChanged();
+	emitSelectionChanged();
+	//emit selectionChanged();
 	
 	break;
       }
@@ -1932,6 +1885,11 @@ void YACSGui_EditionTreeView::syncHMIWithSelection()
   myModule->updateViewer();
 }
 
+void YACSGui_EditionTreeView::emitSelectionChanged()
+{
+  emit selectionChanged();
+}
+
 //! Constructor.
 /*!
  */
@@ -1964,18 +1922,15 @@ YACSGui_RunTreeView::~YACSGui_RunTreeView()
 
 void YACSGui_RunTreeView::onMenuRequested( QListViewItem* item, const QPoint & point, int col )
 {
-  std::cerr << "YACSGui_RunTreeView::onMenuRequested: " << this << " " << item << " " << col << std::endl;
   YACSGui_Executor* anExecutor = myModule->findExecutor();
   if ( !anExecutor ) return;
 
   if (YACSGui_ComposedNodeViewItem* anItem = dynamic_cast<YACSGui_ComposedNodeViewItem*>(item) )
     {
-      std::cerr << anExecutor->getErrorDetails(anItem->getNode()) << std::endl;
       anItem->popup(anExecutor,point);
     }
   else if(YACSGui_ElementaryNodeViewItem* anItem = dynamic_cast<YACSGui_ElementaryNodeViewItem*>(item))
     {
-      std::cerr << anExecutor->getErrorDetails(anItem->getNode()) << std::endl;
       anItem->popup(anExecutor,point);
     }
 }
@@ -2153,6 +2108,13 @@ void YACSGui_RunTreeView::syncPageTypeWithSelection()
 	anIP->setOn( true, YACSGui_InputPanel::SchemaId );
 	anIP->setMode( YACSGui_InputPanel::RunMode, YACSGui_InputPanel::SchemaId );
 	anIP->setExclusiveVisible( true,  list<int>(1,YACSGui_InputPanel::SchemaId) );
+        std::string  theErrorLog;
+        YACSGui_Executor* anExecutor = myModule->findExecutor();
+        if ( anExecutor )
+          {
+            theErrorLog = anExecutor->getErrorReport(getProc());
+          }
+        aSPage->myErrorLog->setText(theErrorLog.c_str());
 	anIP->show();
       }
     }
@@ -2279,7 +2241,11 @@ void YACSGui_RunTreeView::onNotifyNodeStatus( int theNodeId, int theStatus )
 void YACSGui_RunTreeView::onNotifyStatus( int theStatus )
 {
   if ( YACSGui_ComposedNodeViewItem* aRootItem = dynamic_cast<YACSGui_ComposedNodeViewItem*>(myMapListViewItem[getProc()->getNumId()]) )
-    aRootItem->setStatus(theStatus);
+    {
+      aRootItem->setStatus(theStatus);
+      if(theStatus == YACS::FINISHED)
+        setSelected(firstChild(),true);
+    }
 }
 
 void YACSGui_RunTreeView::syncHMIWithSelection()

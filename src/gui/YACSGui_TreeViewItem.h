@@ -334,6 +334,7 @@ public:
   virtual void update(YACS::HMI::GuiEvent event, int type, YACS::HMI::Subject* son);
   
   QString name() const;
+  QString instanceName() const;
   QPixmap icon() const;
   
   YACS::ENGINE::ComponentInstance* getComponent() const;

@@ -74,7 +74,7 @@ YACSPrs_InlineNode::YACSPrs_InlineNode(SUIT_ResourceMgr* theMgr, QCanvas* theCan
 
   if ( thePortUpdate ) {
     //updatePorts(); // will be called in moveBy(...) function
-    moveBy(2*HOOKPOINT_SIZE,0);
+    moveBy(2*HOOKPOINT_SIZE+NODEBOUNDARY_MARGIN,2*HOOKPOINT_SIZE+NODEBOUNDARY_MARGIN);
   }
 
   update();

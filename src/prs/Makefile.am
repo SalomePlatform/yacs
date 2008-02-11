@@ -17,6 +17,7 @@ LIBSOURCES = \
 
 # Headers
 LIBHEADERS = \
+	YACSPrs_Def.h \
 	YACSPrs_ElementaryNode.h \
 	YACSPrs_ServiceNode.h \
 	YACSPrs_InlineNode.h \
@@ -38,6 +39,8 @@ LIBPOFILES = \
 
 LIBICONS = \
 	no_status.png \
+	ledgreen.png \
+	ledred.png \
 	disabled.png \
 	running.png \
 	waiting.png \

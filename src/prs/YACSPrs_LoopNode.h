@@ -42,6 +42,9 @@ class YACSPrs_LoopNode : public YACSPrs_InlineNode {
 
   virtual int maxWidth() const;
 
+  virtual int minX() const;
+  virtual int maxX() const;
+
   virtual QPoint getConnectionMasterPoint();
 
   // for constraint nodes' moving inside the Bloc-->

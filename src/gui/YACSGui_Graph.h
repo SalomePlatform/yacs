@@ -120,6 +120,8 @@ public:
   void                    createPrs(YACS::HMI::Subject* theSubject);
   void                    deletePrs(YACS::HMI::SubjectNode* theSubject, bool removeLabelPort = true );
 
+  bool                    isNeededToIncreaseBlocSize( YACS::ENGINE::Bloc* );
+
 private:
   YACSGui_Node*           driver( YACS::ENGINE::Node* theNode );
   void                    createLinksFromGivenOutPortPrs( YACSPrs_InOutPort* theOutPortPrs,

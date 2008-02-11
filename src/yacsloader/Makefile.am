@@ -14,6 +14,13 @@ libYACSloader_la_SOURCES =      \
 	LoadState.cxx  xmlParserBase.cxx ProcCataLoader.cxx   \
 	$(__dummy__)
 
+salomeinclude_HEADERS = \
+blocParsers.hxx  codeParsers.hxx      containerParsers.hxx  dataParsers.hxx    factory.hxx \
+linkParsers.hxx  LoadState.hxx        loopParsers.hxx       nodeParsers.hxx    outputParsers.hxx \
+parserBase.hxx   parsers.hxx          portParsers.hxx       presetParsers.hxx  ProcCataLoader.hxx \
+procParsers.hxx  propertyParsers.hxx  rootParser.hxx        switchParsers.hxx \
+typeParsers.hxx  xmlParserBase.hxx    xmlrpcParsers.hxx
+
 EXTRA_libYACSloader_la_SOURCES =  \
 	$(__dummy__)
 
@@ -105,11 +112,11 @@ BUILT_SOURCES = loaderWRAP.cxx
 
 SWIGINCLUDES=parsers.hxx LoadState.hxx xmlParserBase.hxx ProcCataLoader.hxx ../engine/engtypemaps.i ../engine/pilot.i
 
-loaderWRAP.cxx:loader.i $(SWIGINCLUDES)
-	$(SWIG) $(SWIG_PYTHON_OPT) $(SWIG_PYTHON_INCLUDES) $(MYSWIG_FLAGS) -o $@ $<
+loaderWRAP.cxx loaderWRAP.h: loader.i $(SWIGINCLUDES)
+	$(SWIG) $(SWIG_PYTHON_OPT) $(SWIG_PYTHON_INCLUDES) $(MYSWIG_FLAGS) -o loaderWRAP.cxx $(srcdir)/loader.i
 
-pkgpython_PYTHON = loader.py
-pkgpyexec_LTLIBRARIES = _loader.la
+salomepython_PYTHON = loader.py
+salomepyexec_LTLIBRARIES = _loader.la
 
 _loader_la_SOURCES =   \
 	loaderWRAP.cxx
@@ -125,5 +132,10 @@ _loader_la_CXXFLAGS = \
 _loader_la_LDFLAGS  = -module 
 
 _loader_la_LIBADD =  libYACSloader.la $(OMNIORB_LIBS)
+
+EXTRA_DIST = loader.i samples
+
+dist-hook:
+	rm -rf `find $(distdir) -name CVS`
 
 include $(top_srcdir)/adm/unix/make_end.am

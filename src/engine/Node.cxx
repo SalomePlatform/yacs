@@ -462,6 +462,7 @@ int Node::getNumId()
  */
 void Node::setState(YACS::StatesForNode theState)
 {
+  DEBTRACE("Node::setState: " << theState);
   _state = theState;
   // emit notification to all observers registered with the dispatcher on any change of the node's state
   sendEvent("status");
@@ -473,6 +474,7 @@ void Node::setState(YACS::StatesForNode theState)
  */
 void Node::sendEvent(const std::string& event)
 {
+  DEBTRACE("Node::sendEvent " << event);
   Dispatcher* disp=Dispatcher::getDispatcher();
   disp->dispatch(this,event);
 }
@@ -509,6 +511,7 @@ int Node::isValid()
  */
 void Node::edUpdateState()
 {
+  DEBTRACE("Node::edUpdateState(): " << _modified);
   _modified=0;
 }
 
@@ -545,7 +548,7 @@ std::string Node::getErrorReport()
     }
   report=report + ">\n" ;
   report=report+_errorDetails;
-  report=report+"</error>";
+  report=report+"\n</error>";
   return report;
 }
 
@@ -555,6 +558,7 @@ std::string Node::getErrorReport()
  */
 void Node::modified()
 {
+  DEBTRACE("Node::modified()");
   _modified=1;
   if(_father)
     _father->modified();

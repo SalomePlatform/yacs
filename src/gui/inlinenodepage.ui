@@ -8,7 +8,7 @@
         <rect>
             <x>0</x>
             <y>0</y>
-            <width>462</width>
+            <width>399</width>
             <height>754</height>
         </rect>
     </property>
@@ -239,7 +239,7 @@
                                                 <cstring>tab</cstring>
                                             </property>
                                             <attribute name="title">
-                                                <string>Output Ports</string>
+                                                <string>Input Ports</string>
                                             </attribute>
                                             <grid>
                                                 <property name="name">
@@ -247,7 +247,7 @@
                                                 </property>
                                                 <widget class="YACSGui_PlusMinusGrp" row="0" column="0">
                                                     <property name="name">
-                                                        <cstring>myOutputPortsGroupBox</cstring>
+                                                        <cstring>myInputPortsGroupBox</cstring>
                                                     </property>
                                                     <property name="sizePolicy">
                                                         <sizepolicy>
@@ -271,7 +271,7 @@
                                                 <cstring>tab</cstring>
                                             </property>
                                             <attribute name="title">
-                                                <string>Input Ports</string>
+                                                <string>Output Ports</string>
                                             </attribute>
                                             <grid>
                                                 <property name="name">
@@ -279,7 +279,7 @@
                                                 </property>
                                                 <widget class="YACSGui_PlusMinusGrp" row="0" column="0">
                                                     <property name="name">
-                                                        <cstring>myInputPortsGroupBox</cstring>
+                                                        <cstring>myOutputPortsGroupBox</cstring>
                                                     </property>
                                                     <property name="sizePolicy">
                                                         <sizepolicy>

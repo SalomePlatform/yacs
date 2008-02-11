@@ -60,6 +60,20 @@ libYACSRuntimeSALOME_la_SOURCES =      \
 	PyStdout.cxx                   \
 	$(__dummy__)
 
+salomeinclude_HEADERS = \
+CalStreamPort.hxx            CORBAComponent.hxx   CORBACORBAConv.hxx         CORBACppConv.hxx \
+CORBANeutralConv.hxx         CORBANode.hxx        CORBAPorts.hxx             CORBAPythonConv.hxx \
+CORBAXMLConv.hxx             CppComponent.hxx     CppContainer.hxx           CppCORBAConv.hxx \
+CppCppConv.hxx               CppNeutralConv.hxx   CppNode.hxx                CppPorts.hxx \
+CppPythonConv.hxx            CppXMLConv.hxx       NeutralCORBAConv.hxx       NeutralCppConv.hxx \
+NeutralPythonConv.hxx        NeutralXMLConv.hxx   OutNode.hxx                PresetNode.hxx \
+PresetPorts.hxx              PyStdout.hxx         PythonCORBAConv.hxx        PythonCppConv.hxx \
+PythonNeutralConv.hxx        PythonNode.hxx       PythonPorts.hxx            PythonXMLConv.hxx \
+RuntimeSALOME.hxx            SalomeComponent.hxx  SALOMEconfig.h             SalomeContainer.hxx \
+SALOMEDispatcher.hxx         SalomeProc.hxx       SalomePythonComponent.hxx  SalomePythonNode.hxx \
+SessionCataLoader.hxx        StudyNodes.hxx       StudyPorts.hxx             TypeConversions.hxx \
+VisitorSaveSalomeSchema.hxx  XMLCORBAConv.hxx     XMLCppConv.hxx             XMLNeutralConv.hxx \
+XMLNode.hxx                  XMLPorts.hxx         XMLPythonConv.hxx
 
 EXTRA_libYACSRuntimeSALOME_la_SOURCES =  \
 	$(__dummy__)
@@ -94,8 +108,8 @@ AM_CXXFLAGS = \
 
 ############################################################
 
-pkgpython_PYTHON = SALOMERuntime.py
-pkgpyexec_LTLIBRARIES = _SALOMERuntime.la
+salomepython_PYTHON = SALOMERuntime.py
+salomepyexec_LTLIBRARIES = _SALOMERuntime.la
 
 _SALOMERuntime_la_SOURCES =   \
 	SALOMERuntimeWRAP.cxx
@@ -106,8 +120,8 @@ SWIGINCLUDES= RuntimeSALOME.hxx SALOMEDispatcher.hxx SalomeProc.hxx PythonNode.h
 							CORBANode.hxx CORBAPorts.hxx TypeConversions.hxx \
 							../engine/pilot.i ../engine/engtypemaps.i
 
-SALOMERuntimeWRAP.cxx:SALOMERuntime.i $(SWIGINCLUDES)
-	$(SWIG) $(SWIG_PYTHON_OPT) $(SWIG_PYTHON_INCLUDES) $(MYSWIG_FLAGS) -o $@ $<
+SALOMERuntimeWRAP.cxx: SALOMERuntime.i $(SWIGINCLUDES)
+	$(SWIG) $(SWIG_PYTHON_OPT) $(SWIG_PYTHON_INCLUDES) $(MYSWIG_FLAGS) -o $@ $(srcdir)/SALOMERuntime.i
 
 _SALOMERuntime_la_CXXFLAGS = \
 	$(THREAD_DEF) \
@@ -123,5 +137,7 @@ _SALOMERuntime_la_CXXFLAGS = \
 _SALOMERuntime_la_LDFLAGS  = -module
 
 _SALOMERuntime_la_LIBADD = libYACSRuntimeSALOME.la 
+
+EXTRA_DIST = SALOMERuntime.i
 
 include $(top_srcdir)/adm/unix/make_end.am

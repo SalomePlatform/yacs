@@ -309,6 +309,7 @@ void SessionCataLoader::loadTypesOld(Catalog* cata)
 #endif
 
   //GEOM
+  /*
   typeMap["GEOM_Object"]=TypeCode::interfaceTc("IDL:GEOM/GEOM_Object:1.0","GEOM_Object");
   typeMap["ListOfLong"]=TypeCode::sequenceTc("ListOfLong","ListOfLong",r->_tc_int);
   typeMap["GEOM_List"]=TypeCode::interfaceTc("IDL:GEOM/GEOM_List:1.0","GEOM_List");
@@ -323,18 +324,24 @@ void SessionCataLoader::loadTypesOld(Catalog* cata)
   typeMap["GEOM_Gen"]=TypeCode::interfaceTc("IDL:GEOM/GEOM_Gen:1.0","GEOM_Gen");
   typeMap["GEOM_Object"]->incrRef();
   typeMap["GEOM_Shape"]=typeMap["GEOM_Object"];
+  */
 
   //SMESH
+  /*
   typeMap["SMESH_Mesh"]=TypeCode::interfaceTc("IDL:Mesh/SMESH_Mesh:1.0","SMESH_Mesh");
   typeMap["SMESH_Hypothesis"]=TypeCode::interfaceTc("IDL:SMESH/SMESH_Hypothesis:1.0","SMESH_Hypothesis");
+  */
 
   //MED
+  /*
   typeMap["MED"]=TypeCode::interfaceTc("IDL:SALOME_MED/MED:1.0","MED");
   typeMap["FIELD"]=TypeCode::interfaceTc("IDL:SALOME_MED/FIELD:1.0","FIELD");
   // TODO : FIELDDOUBLE inherits FIELD
   typeMap["FIELDDOUBLE"]=TypeCode::interfaceTc("IDL:SALOME_MED/FIELDDOUBLE:1.0","FIELDDOUBLE");
+  */
 
   //COMPONENT
+  /*
   typeMap["AddComponent"]=TypeCode::interfaceTc("IDL:SuperVisionTest/AddComponent:1.0","AddComponent");
   typeMap["AddComponent"]->incrRef();
   typeMap["AddInterface"]=typeMap["AddComponent"];
@@ -342,6 +349,7 @@ void SessionCataLoader::loadTypesOld(Catalog* cata)
   typeMap["AdditionComponent/Adder"]=TypeCode::interfaceTc("IDL:AdditionComponent/Adder:1.0","AdditionComponent/Adder");
   typeMap["Syr"]=TypeCode::interfaceTc("IDL:SuperVisionTest/Syr:1.0","Syr");
   typeMap["ListOfSyr"]=TypeCode::interfaceTc("IDL:SuperVisionTest/ListOfSyr:1.0","ListOfSyr");
+  */
 }
 
 void SessionCataLoader::loadCata(Catalog* cata)

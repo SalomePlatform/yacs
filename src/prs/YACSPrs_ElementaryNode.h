@@ -333,6 +333,12 @@ class YACSPrs_ElementaryNode : public QxGraph_ActiveItem,
   virtual int maxWidth() const;
   virtual int maxHeight() const;
 
+  virtual int minX() const;
+  virtual int maxX() const;
+
+  virtual int minY() const;
+  virtual int maxY() const;
+
   virtual int getTitleHeight() const { return myTitleHeight; }
   void setTitleHeight(int theTitleHeight) { myTitleHeight = theTitleHeight; }
 

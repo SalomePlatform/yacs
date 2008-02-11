@@ -10,14 +10,11 @@ SUFFIXES += .i WRAP.cxx .idl .hh SK.cc _idl.py
 .iWRAP.cxx :
 	$(SWIG) $(SWIG_PYTHON_OPT) $(SWIG_PYTHON_INCLUDES) $(MYSWIG_FLAGS) -o $@ $<
 
-.idlSK.cc:
-	$(OMNIORB_IDL) $(OMNIORB_IDLCXXFLAGS) -bcxx $<
-
-.idl.hh:
-	$(OMNIORB_IDL) $(OMNIORB_IDLCXXFLAGS) -bcxx $<
+%SK.cc %.hh:%.idl
+	$(OMNIORB_IDL) $(OMNIORB_IDLCXXFLAGS) $(IDLCXXFLAGS) -bcxx $<
 
 .idl_idl.py:
-	$(OMNIORB_IDL) -bpython $(IDLPYFLAGS) $<
+	$(OMNIORB_IDL) $(OMNIORB_IDLPYFLAGS) $(IDLPYFLAGS) $<
 
 # --------------------------------------------
 # *.h --> *_moc.cxx
@@ -26,7 +23,7 @@ SUFFIXES += .i WRAP.cxx .idl .hh SK.cc _idl.py
 SUFFIXES += .h _moc.cxx
 
 .h_moc.cxx :
-	$(MOC) -o $@ $<
+	$(MOC) -p . -o $@ $<
 
 clean-local-h2Moc :
 	rm -f *_moc.cxx

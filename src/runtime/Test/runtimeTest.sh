@@ -23,9 +23,19 @@ omniNames -start 2910 &
 pidomni=$!
 echo $pidomni
 
+#wait enough time to let omniNames start
+sleep 2
+
 ./echoSrv &
 pidecho=$!
 echo $pidecho
+
+mkdir -p lib/salome
+cp .libs/libTestComponentLocal.so lib/salome
+export TESTCOMPONENT_ROOT_DIR=`pwd`
+
+#wait enough time to let echoSrv start and register
+sleep 2
 
 ./TestRuntime
 ret=$?

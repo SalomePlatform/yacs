@@ -76,7 +76,7 @@ void SalomeComponent::load()
         }
       containerC->unLock();
       containerC->lock();//To be sure
-      const char* componentName=_name.c_str();
+      const char* componentName=_compoName.c_str();
       //char *val2=CORBA::string_dup("");
       // does not work with python components
       // does not make a strict load but a find or load component
@@ -108,7 +108,7 @@ void SalomeComponent::load()
   LCC.preSet(params);
   params.hostname="localhost";
   params.container_name ="FactoryServer";
-  _objComponent=LCC.LoadComponent(params,_name.c_str());
+  _objComponent=LCC.LoadComponent(params,_compoName.c_str());
 }
 #else
 void SalomeComponent::load()
@@ -144,7 +144,7 @@ ComponentInstance* SalomeComponent::clone() const
 std::string SalomeComponent::getFileRepr() const
 {
   ostringstream stream;
-  stream << "<component>" << getName() << "</component>";
+  stream << "<component>" << getCompoName() << "</component>";
   return stream.str();
 }
 
@@ -161,7 +161,7 @@ void SalomeComponent::setContainer(Container *cont)
   if(_container)
   {
     _container->incrRef();
-    ((SalomeContainer*)_container)->addComponentName(_name);
+    ((SalomeContainer*)_container)->addComponentName(_compoName);
   }
 }
 

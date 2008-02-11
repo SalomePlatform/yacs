@@ -87,6 +87,9 @@ class YACSPrs_BlocNode : public YACSPrs_ElementaryNode {
 
   virtual int maxWidth() const;
   virtual int maxHeight() const;
+
+  virtual int minX() const;
+  virtual int maxX() const;
   
   virtual QRect getRect() const;
   virtual QRect getTitleRect() const;

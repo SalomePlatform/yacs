@@ -37,7 +37,7 @@
 #include <sstream>
 #include <vector>
 
-#define _DEVDEBUG_
+//#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
 using namespace std;
@@ -203,6 +203,7 @@ void GuiObserver::select(bool isSelected)
 void GuiObserver::update(GuiEvent event, int type,  Subject* son)
 {
   DEBTRACE("GuiObserver::update, event not handled");
+  std::cerr << event << " " << type << std::endl;
 }
 
 // ----------------------------------------------------------------------------
@@ -250,6 +251,8 @@ SubjectNode::SubjectNode(YACS::ENGINE::Node *node, Subject *parent)
   _listSubjectODSPort.clear();
   _listSubjectLink.clear();
   _listSubjectControlLink.clear();
+  Dispatcher* d=Dispatcher::getDispatcher();
+  d->addObserver(this,node,"status");
 }
 
 /*!
@@ -258,6 +261,8 @@ SubjectNode::SubjectNode(YACS::ENGINE::Node *node, Subject *parent)
 SubjectNode::~SubjectNode()
 {
   DEBTRACE("SubjectNode::~SubjectNode " << getName());
+  Dispatcher::getDispatcher()->removeObserver(this,_node,"status");
+
   ComposedNode* father = _node->getFather();
   if (father)
     try
@@ -400,6 +405,12 @@ bool SubjectNode::setName(std::string name)
     }
   else delete command;
   return false;
+}
+void SubjectNode::notifyObserver(Node* object,const std::string& event)
+{
+  DEBTRACE("SubjectNode::notifyObserver " << object->getName() << " " << event);
+  TypeOfElem ntyp = ProcInvoc::getTypeOfNode(object);
+  update(UPDATE, ntyp , 0 );
 }
 
 SubjectInputPort* SubjectNode::addSubjectInputPort(YACS::ENGINE::InputPort *port,
@@ -985,9 +996,7 @@ void SubjectProc::loadComponents()
 	 ==
 	 GuiContext::getCurrent()->_mapOfSubjectComponent.end() )
     { // engine object for component already exists => add only a subject for it
-      int id = GuiContext::getCurrent()->getNewId();
-      pair<string,int> key = pair<string,int>((*itComp).second->getName(),id);
-      addSubjectComponent((*itComp).second, key);
+      addSubjectComponent((*itComp).second);
     }
 }
 
@@ -1011,21 +1020,15 @@ void SubjectProc::loadContainers()
 SubjectComponent* SubjectProc::addComponent(std::string name)
 {
   DEBTRACE("SubjectProc::addComponent " << name);
-  int id = GuiContext::getCurrent()->getNewId();
-  pair<string,int> key = pair<string,int>(name,id);
-  if (! GuiContext::getCurrent()->getProc()->componentInstanceMap.count(key))
+  CommandAddComponentInstance *command = new CommandAddComponentInstance(name);
+  if (command->execute())
     {
-      CommandAddComponentInstance *command = new CommandAddComponentInstance(key);
-      if (command->execute())
-        {
-          GuiContext::getCurrent()->getInvoc()->add(command);
-          ComponentInstance *compo = command->getComponentInstance();
-          SubjectComponent *son = addSubjectComponent(compo, key);
-          GuiContext::getCurrent()->getProc()->componentInstanceMap[key] = compo;
-          return son;
-        }
-      else delete command;
-   }
+      GuiContext::getCurrent()->getInvoc()->add(command);
+      ComponentInstance *compo = command->getComponentInstance();
+      SubjectComponent *son = addSubjectComponent(compo);
+      return son;
+    }
+  else delete command;
   return 0;
 }
 
@@ -1065,11 +1068,10 @@ bool SubjectProc::addDataType(YACS::ENGINE::Catalog* catalog, std::string typeNa
   return 0;
 }
 
-SubjectComponent* SubjectProc::addSubjectComponent(YACS::ENGINE::ComponentInstance* compo,
-                                                   std::pair<std::string,int> key)
+SubjectComponent* SubjectProc::addSubjectComponent(YACS::ENGINE::ComponentInstance* compo)
 {
-  DEBTRACE("SubjectProc::addSubjectComponent " << key.first << " " << key.second);
-  SubjectComponent *son = new SubjectComponent(compo, key.second, this);
+  DEBTRACE("SubjectProc::addSubjectComponent " << compo->getInstanceName());
+  SubjectComponent *son = new SubjectComponent(compo, this);
   GuiContext::getCurrent()->_mapOfSubjectComponent[compo] = son;
   update(ADD, COMPONENT, son);
   son->setContainer();
@@ -1398,21 +1400,10 @@ void SubjectServiceNode::setComponentFromCatalog(YACS::ENGINE::Catalog *catalog,
         {
           Proc* proc = GuiContext::getCurrent()->getProc();
           ComponentInstance *instance = 0;
-          SubjectComponent* subCompo = 0;
-          int id = GuiContext::getCurrent()->getNewId();
-          pair<string,int> key = pair<string,int>(compo,id);
-          if (! proc->componentInstanceMap.count(key))
-            {
-              instance = new SalomeComponent(compo);
-              proc->componentInstanceMap[key] = instance;
-              subCompo =
-                GuiContext::getCurrent()->getSubjectProc()->addSubjectComponent(instance, key);
-            }
-          else
-            {
-              instance = proc->componentInstanceMap[key];
-              subCompo = GuiContext::getCurrent()->_mapOfSubjectComponent[instance];
-            }
+          instance = new SalomeComponent(compo);
+          pair<string,int> key = pair<string,int>(compo, instance->getNumId());
+          proc->componentInstanceMap[key] = instance;
+          SubjectComponent* subCompo = GuiContext::getCurrent()->getSubjectProc()->addSubjectComponent(instance);
           assert(subCompo);
           addSubjectReference(subCompo);
           _serviceNode->setComponent(instance);
@@ -1430,17 +1421,15 @@ void SubjectServiceNode::setComponent()
   if (instance)
     {
       Proc* proc = GuiContext::getCurrent()->getProc();
-      string compo = instance->getName();
+      string compo = instance->getCompoName();
       SubjectComponent* subCompo = 0;
-      int id = GuiContext::getCurrent()->getNewId();
-      DEBTRACE("SubjectServiceNode::setComponent : id = " << id);
-      pair<string,int> key = pair<string,int>(compo,id);
       if (! GuiContext::getCurrent()->_mapOfSubjectComponent.count(instance))
         {
 	  DEBTRACE("SubjectServiceNode::setComponent : create subject for compo = " << compo.c_str());
+          pair<string,int> key = pair<string,int>(compo, instance->getNumId());
           proc->componentInstanceMap[key] = instance;
           subCompo =
-            GuiContext::getCurrent()->getSubjectProc()->addSubjectComponent(instance, key);
+            GuiContext::getCurrent()->getSubjectProc()->addSubjectComponent(instance);
         }
       else
         {
@@ -1455,15 +1444,24 @@ void SubjectServiceNode::setComponent()
 void SubjectServiceNode::associateToComponent(SubjectComponent *subcomp)
 {
   DEBTRACE("SubjectServiceNode::associateToComponent " << getName() << " " << subcomp->getName());
+  SubjectReference* oldSReference = _subjectReference;
   string aName = GuiContext::getCurrent()->getProc()->getChildName(_serviceNode);
   CommandAssociateServiceToComponent *command =
     new CommandAssociateServiceToComponent(aName, subcomp->getKey());
   if (command->execute())
     {
+      if (oldSReference) removeSubjectReference(oldSReference);
       GuiContext::getCurrent()->getInvoc()->add(command);
       addSubjectReference(subcomp);
     }
   else delete command;
+}
+
+void SubjectServiceNode::removeSubjectReference(Subject *ref)
+{
+  DEBTRACE("Subject::removeSubjectReference " << getName() << " " << ref->getName());
+  update( REMOVE, REFERENCE, ref );
+  erase( ref );
 }
 
 void SubjectServiceNode::addSubjectReference(Subject *ref)
@@ -2526,8 +2524,8 @@ std::string SubjectControlLink::getName()
 
 // ----------------------------------------------------------------------------
 
-SubjectComponent::SubjectComponent(YACS::ENGINE::ComponentInstance* component, int id, Subject *parent)
-  : Subject(parent), _compoInst(component), _id(id)
+SubjectComponent::SubjectComponent(YACS::ENGINE::ComponentInstance* component, Subject *parent)
+  : Subject(parent), _compoInst(component)
 {
   _compoInst->incrRef();
 }
@@ -2537,7 +2535,7 @@ SubjectComponent::~SubjectComponent()
   Proc* aProc = GuiContext::getCurrent()->getProc();
   if ( aProc )
   {
-    pair<string,int> key = pair<string,int>(_compoInst->getName(),_id);
+    pair<string,int> key = pair<string,int>(_compoInst->getCompoName(),_compoInst->getNumId());
     aProc->componentInstanceMap.erase(key);
     
     std::map<std::string, ServiceNode*>::iterator it = aProc->serviceMap.begin();
@@ -2566,12 +2564,13 @@ void SubjectComponent::localClean()
 
 std::string SubjectComponent::getName()
 {
-  return _compoInst->getName();
+  DEBTRACE("SubjectComponent::getName()********************************************************************************");
+  return _compoInst->getInstanceName();
 }
 
 std::pair<std::string, int> SubjectComponent::getKey()
 {
-  std::pair<std::string, int> key = std::pair<std::string, int>(_compoInst->getName(), _id);
+  std::pair<std::string, int> key = std::pair<std::string, int>(_compoInst->getCompoName(), _compoInst->getNumId());
   return key;
 }
 

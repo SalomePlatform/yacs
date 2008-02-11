@@ -77,15 +77,18 @@ public:
 	 NewExecutionId, NewBatchExecutionId, ReloadExecutionId,
 
 	 //Menu "Execute" (run gui mode)
-	 ExecuteId, ExecuteStById,ExecuteInBatchId, PauseId,
-	 ResumeId, AbortId, ResetId, SaveExecutionStateId, NewEditionId,
-	 ConnectToRunningId, ToggleStopOnErrorId,
+	 StartResumeId,
+	 /*ExecuteId, ExecuteStById,*/
+	 PauseId, /*ResumeId,*/ AbortId, ResetId,
+	 WithoutStopModeId, BreakpointsModeId, StepByStepModeId, ToggleStopOnErrorId,
+	 ExecuteInBatchId, ConnectToRunningId,
+	 SaveExecutionStateId, NewEditionId,
 	 
 
 	 // Menu "Supervisor"
          /*AddNodeId,
-	   RunDataflowId, RemoteRunDataflowId, KillDataflowId,*/ SuspendResumeDataflowId, 
-         /*ToggleStopOnErrorId, FilterNextStepsId,
+	 RunDataflowId, RemoteRunDataflowId, KillDataflowId, SuspendResumeDataflowId, 
+	 ToggleStopOnErrorId, FilterNextStepsId,
 	 AddDataflowInStudyId, ChangeInformationsId, SaveDataflowStateId, ReloadDataflowId, 
 	 */
 	 
@@ -124,9 +127,13 @@ public:
   YACSGui_Graph* displayGraph( YACS::HMI::GuiContext*,
 			       const YACSGui_Loader::PrsDataMap&,
 			       const YACSGui_Loader::PortLinkDataMap&,
-			       const YACSGui_Loader::LabelLinkDataMap&);
+			       const YACSGui_Loader::LabelLinkDataMap&,
+			       const int& = 0, const int& = 0,
+			       const double& = 1., const double& = 1. );
   YACSGui_Graph* getGraph( YACS::ENGINE::Proc* );
   YACSGui_Graph* activeGraph();
+
+  QxGraph_ViewWindow* getViewWindow( YACS::ENGINE::Proc* );
 
   QxGraph_Viewer* getViewer();
   QxGraph_Canvas* getCanvas();
@@ -160,8 +167,6 @@ public:
   YACSGui_Executor* getExecutor( YACS::ENGINE::Proc* );
   YACSGui_Executor* findExecutor();
 
-  void temporaryExport();
-
   std::string getNodeType( YACS::HMI::TypeOfElem theElemType );
 
   YACS::HMI::SubjectNode* createBody( YACS::HMI::TypeOfElem theElemType,
@@ -179,6 +184,8 @@ public slots:
   void onControlView();
   void onDataFlowView();
   void onDataStreamView();
+
+  void temporaryExport();
 
  protected:
   void createSComponent(); 
@@ -230,6 +237,7 @@ private slots:
   void onCreateExecution();
   void onCreateBatchExecution();
   void onReloadExecution();
+  void onStartResume();
   void onExecute();
   void onExecuteStBy();
   void onExecuteInBatch();
@@ -238,6 +246,9 @@ private slots:
   //void onSuspendResume();
   void onAbort();
   void onReset();
+  void onWithoutStopMode();
+  void onBreakpointsMode();
+  void onStepByStepMode();
   void onSaveExecutionState();
   void onCreateEdition();
   void onConnectToRunning();

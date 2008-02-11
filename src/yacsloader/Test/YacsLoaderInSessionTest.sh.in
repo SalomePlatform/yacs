@@ -15,6 +15,7 @@ echo $pidecho > "/tmp/YACSTEST_PidEcho"
 # --- launch unit tests
 
 export ROOT_SAMPLES=@ROOT_SRCDIR@/src/yacsloader/samples
+export TESTCOMPONENT_ROOT_DIR=@top_builddir@/src/runtime/Test
 
 ./TestYacsLoader
 ret=$?

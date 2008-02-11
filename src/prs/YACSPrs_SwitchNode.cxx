@@ -46,7 +46,7 @@ YACSPrs_SwitchNode::YACSPrs_SwitchNode( SUIT_ResourceMgr* theMgr, QCanvas* theCa
   myTitlePixmap = myMgr->loadPixmap( "YACSPrs", QObject::tr( "ICON_TITLE_RARROW" ));
   
   //updatePorts(); // will be called in moveBy(...) function
-  moveBy(2*HOOKPOINT_SIZE,2*TITLE_HEIGHT);
+  moveBy(2*HOOKPOINT_SIZE+NODEBOUNDARY_MARGIN,2*HOOKPOINT_SIZE+2*TITLE_HEIGHT+NODEBOUNDARY_MARGIN);
 }
 
 /*!

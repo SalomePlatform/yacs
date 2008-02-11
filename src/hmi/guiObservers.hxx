@@ -6,6 +6,7 @@
 #include <string>
 #include <map>
 #include <list>
+#include "Dispatcher.hxx"
 
 namespace YACS
 {
@@ -74,7 +75,7 @@ namespace YACS
     class GuiObserver;
     
     class SubjectReference;
-    class Subject
+    class Subject: public YACS::ENGINE::Observer
     {
     public:
       Subject(Subject *parent);
@@ -222,6 +223,7 @@ namespace YACS
                                                             std::string name = "");
       virtual SubjectOutputDataStreamPort* addSubjectODSPort(YACS::ENGINE::OutputDataStreamPort *port,
                                                              std::string name = "");
+      virtual void notifyObserver(YACS::ENGINE::Node* object,const std::string& event);
     protected:
       virtual void removeExternalLinks();
       YACS::ENGINE::Node *_node;
@@ -308,7 +310,7 @@ namespace YACS
     class SubjectComponent: public Subject
     {
     public:
-      SubjectComponent(YACS::ENGINE::ComponentInstance* component, int id, Subject *parent);
+      SubjectComponent(YACS::ENGINE::ComponentInstance* component, Subject *parent);
       virtual ~SubjectComponent();
       virtual std::string getName();
       virtual void setContainer();
@@ -346,8 +348,7 @@ namespace YACS
       virtual SubjectComponent* addComponent(std::string name);
       virtual SubjectContainer* addContainer(std::string name, std::string ref="");
       virtual bool addDataType(YACS::ENGINE::Catalog* catalog, std::string typeName);
-      SubjectComponent* addSubjectComponent(YACS::ENGINE::ComponentInstance* compo,
-                                            std::pair<std::string,int> key);
+      SubjectComponent* addSubjectComponent(YACS::ENGINE::ComponentInstance* compo);
       SubjectContainer* addSubjectContainer(YACS::ENGINE::Container* cont,
                                             std::string name = "");
       SubjectDataType* addSubjectDataType(YACS::ENGINE::TypeCode *type);
@@ -516,6 +517,7 @@ namespace YACS
                                            std::string service);
       virtual void setComponent();
       virtual void associateToComponent(SubjectComponent *subcomp);
+      virtual void removeSubjectReference(Subject *ref);
       virtual void addSubjectReference(Subject *ref);
       virtual SubjectReference* getSubjectReference();
       virtual void clean();

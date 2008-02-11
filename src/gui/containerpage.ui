@@ -7,14 +7,14 @@
     <property name="geometry">
         <rect>
             <x>0</x>
-            <y>4</y>
+            <y>0</y>
             <width>347</width>
             <height>426</height>
         </rect>
     </property>
     <property name="sizePolicy">
         <sizepolicy>
-            <hsizetype>5</hsizetype>
+            <hsizetype>2</hsizetype>
             <vsizetype>0</vsizetype>
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>

@@ -10,7 +10,7 @@
 #include "ServiceNode.hxx"
 
 #include <iostream>
-#define _DEVDEBUG_
+//#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
 #include <qpopupmenu.h>
@@ -449,7 +449,7 @@ void editTree::resetTreeNode(QListView *lv)
 void editTree::printName()
 {
   QListViewItem *it = lv->selectedItem();
-  if (it) DEBTRACE("my name is Bond, James Bond... "<< this)
+  if (it) DEBTRACE("my name is Bond, James Bond... "<< this);
   else DEBTRACE("nobody "<< this);
 }
 

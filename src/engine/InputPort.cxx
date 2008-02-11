@@ -71,8 +71,8 @@ void InputPort::edInit(Any *value)
   manuallySet->put((const void *) value);
   if(manuallySet!=this)
     delete manuallySet;
-  modified();
   exSaveInit();
+  modified();
 }
 
 void InputPort::edInit(const std::string& impl,const void* value)
@@ -81,8 +81,8 @@ void InputPort::edInit(const std::string& impl,const void* value)
   manuallySet->put(value);
   if(manuallySet!=this)
     delete manuallySet;
-  modified();
   exSaveInit();
+  modified();
 }
 
 //! Removes eventually previous manual initialisation.

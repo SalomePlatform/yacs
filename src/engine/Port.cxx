@@ -5,6 +5,9 @@
 using namespace YACS::ENGINE;
 using namespace std;
 
+//#define _DEVDEBUG_
+#include "YacsTrace.hxx"
+
 const char Port::NAME[]="Port";
 
 int Port::_total = 0;
@@ -30,6 +33,7 @@ string Port::getNameOfTypeOfCurrentInstance() const
 
 void Port::modified()
 {
+  DEBTRACE("Port::modified()");
   if(_node)
     _node->modified();
 }

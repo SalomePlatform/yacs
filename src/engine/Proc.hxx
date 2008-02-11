@@ -59,6 +59,11 @@ namespace YACS
 
       typedef std::map<std::string, Logger*> LoggerMap;
       LoggerMap _loggers;
+      virtual bool getEdition(){return _edition;}
+      virtual void setEdition(bool edition);
+      virtual void modified();
+    protected:
+      bool _edition;
 
     };
   }

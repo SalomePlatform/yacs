@@ -35,8 +35,11 @@ salomeinclude_HEADERS =                               \
            Thread.hxx \
            ThreadPT.hxx \
            YacsTrace.hxx \
+					 yacsconfig.h \
            $(__dummy__)
 
 AM_CXXFLAGS = $(THREAD_DEF)
+
+EXTRA_DIST=ThreadPT.cxx DrivenConditionPT.cxx  MutexPT.cxx  SemaphorePT.cxx  DynLibLoaderGNU.cxx
 
 include $(top_srcdir)/adm/unix/make_end.am

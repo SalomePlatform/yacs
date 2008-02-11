@@ -6,9 +6,9 @@
 
 export ROOT_SAMPLES=@ROOT_SRCDIR@/src/yacsloader/samples
 
-export PYTHONPATH=..:../.libs:${PYTHONPATH}
-export PYTHONPATH=../../runtime:../../runtime/.libs:${PYTHONPATH}
-export PYTHONPATH=../../engine:../../engine/.libs:${PYTHONPATH}
+export PYTHONPATH=..:../.libs:@top_srcdir@/src/yacsloader:${PYTHONPATH}
+export PYTHONPATH=../../runtime:../../runtime/.libs:@top_srcdir@/src/runtime:${PYTHONPATH}
+export PYTHONPATH=../../engine:../../engine/.libs:@top_srcdir@/src/engine:${PYTHONPATH}
 
 python  @srcdir@/testExec.py
 ret0=$?

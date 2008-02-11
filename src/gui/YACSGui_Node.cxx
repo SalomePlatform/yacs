@@ -492,10 +492,14 @@ void YACSGui_BlocNode::update(YACS::ENGINE::Node* theEngine,
       }
 
       Bloc* aFather = aBloc;
-      while ( aFather && !dynamic_cast<Proc*>(aFather) )
+      bool isNeedToArrange = true;
+      if ( !anOldChildren.empty() || aNodeSet.empty() )
+	isNeedToArrange = graph()->isNeededToIncreaseBlocSize(aFather);
+      while ( isNeedToArrange && aFather && !dynamic_cast<Proc*>(aFather) )
       {
 	graph()->arrangeNodesWithinBloc(aFather);
 	aFather = dynamic_cast<Bloc*>(aFather->getFather());
+	isNeedToArrange = graph()->isNeededToIncreaseBlocSize(aFather);
       }
       graph()->getCanvas()->update();
 
