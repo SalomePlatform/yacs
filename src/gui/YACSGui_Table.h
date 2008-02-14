@@ -23,6 +23,7 @@
 
 #include <QtxTable.h>
 #include <qvaluevector.h>
+#include <qtoolbutton.h>
 
 #include <list>
 
@@ -41,7 +42,7 @@ class YACSGui_Table : public QtxTable
 public:
   /*enum, defines types of columns
    */
-  typedef enum { String, Int, Double, Combo } CellType;
+  typedef enum { String, Int, Double, Combo, ComboSelect } CellType;
 
 public:
   YACSGui_Table( const int numRows, const int numCols, QWidget*, CellType = Int );
@@ -247,9 +248,12 @@ public:
    * Returns number of selected row
    */
   int              selectedRow() const; 
+  
+  virtual QRect    cellGeometry ( int row, int col ) const;
 
 signals:
   void             itemCreated( const int, const int );
+  void             selectButtonClicked( const int, const int );
   
 public slots:
   /*!
@@ -272,6 +276,13 @@ public slots:
    */
   virtual void insertColumns( int col, int count = 1 );
 
+  /*!
+   * Redefine this slot to show/hide the cell's selection control
+   */ 
+  virtual void setCurrentCell ( int row, int col );
+
+  void onSelectButton();
+
 protected:
   /*!
    * creates new item for tables with type,
@@ -282,6 +293,13 @@ protected:
    * Returns type of the table item 
    */
   virtual CellType   itemType( QTableItem* ) const;
+
+  virtual void endEdit( int row, int col, bool accept, bool replace );
+
+protected slots:
+  virtual void columnWidthChanged( int col );
+
+  virtual void rowHeightChanged( int row );
 
 private slots:
   /*!
@@ -311,5 +329,90 @@ private:
 
 };
 
+/*!
+ * The YACSGui_TableItem class provides the cell content for YACSGui_Table cells.
+ */
+class YACSGui_TableItem : public QTableItem
+{
+public:
+  YACSGui_TableItem( QTable*, YACSGui_Table::CellType );
+  virtual ~YACSGui_TableItem();
+
+  /*!
+   * Returns type of item 
+   */
+  YACSGui_Table::CellType  type() const;
+
+  /*!
+   * Sets text for current item
+   */
+  virtual void     setText( const QString& );
+
+  /*!
+   * This virtual function creates an editor which the user can interact with to edit the cell's contents. 
+   */
+  virtual QWidget* createEditor() const;
+
+  /*!
+   * Updates cell contents after cell editing has been finished. Retrieves values from the editor widget.
+   */
+  virtual void     setContentFromEditor( QWidget* );
+
+  /*!
+   * Returns flag read only for item.
+   */
+  bool readOnly() const;
+
+  /*!
+   * Sets flag read only for item.
+   */
+  void setReadOnly( const bool );
+
+protected:
+  bool                       myIsReadOnly;
+
+private:
+  YACSGui_Table::CellType     myType;
+};
+
+/*!
+ * The YACSGui_TableComboSelectItem class provides the cell content with combo box and selection control for YACSGui_Table cells.
+ */
+class YACSGui_TableComboSelectItem : public YACSGui_TableItem
+{
+public:
+  YACSGui_TableComboSelectItem( QTable*, bool );
+  virtual ~YACSGui_TableComboSelectItem();
+
+  /*!
+   * Sets text for current item
+   */
+  virtual void     setText( const QString& );
+
+  /*!
+   * This virtual function creates an editor which the user can interact with to edit the cell's contents. 
+   */
+  virtual QWidget* createEditor() const;
+
+  /*!
+   * Updates cell contents after cell editing has been finished. Retrieves values from the editor widget.
+   */
+  virtual void     setContentFromEditor( QWidget* );
+
+  virtual void     showEditor( bool theIsEditing = false );
+  virtual void     hideEditor();
+
+  QToolButton*     selectButton() const { return mySelectBtn; }
+
+  void             showText( QString theText );
+  
+private:
+  void             createSelectButton();
+  void             placeEditor( bool theIsEditing );
+  void             updateSelectButtonState();
+
+  QToolButton*     mySelectBtn;
+  bool             myEditable;
+};
 
 #endif

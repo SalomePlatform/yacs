@@ -20,6 +20,9 @@
 
 #include <YACSGui_Table.h>
 
+#include <SUIT_ResourceMgr.h>
+#include <SUIT_Session.h>
+
 #include <QtxIntSpinBox.h>
 #include <QtxDblSpinBox.h>
 
@@ -27,50 +30,12 @@
 #include <qlineedit.h>
 #include <qpainter.h>
 #include <qcombobox.h>
+#include <qhbox.h>
+#include <qlayout.h>
+#include <qtooltip.h>
+#include <qwhatsthis.h>
+#include <qobjectlist.h>
 
-/*!
- * The YACSGui_TableItem class provides the cell content for YACSGui_Table cells.
- */
-class YACSGui_TableItem : public QTableItem
-{
-public:
-  YACSGui_TableItem( QTable*, YACSGui_Table::CellType );
-  virtual ~YACSGui_TableItem();
-
-  /*!
-   * Returns type of item 
-   */
-  YACSGui_Table::CellType  type() const;
-
-  /*!
-   * Sets text for current item
-   */
-  virtual void     setText( const QString& );
-
-  /*!
-   * This virtual function creates an editor which the user can interact with to edit the cell's contents. 
-   */
-  virtual QWidget* createEditor() const;
-
-  /*!
-   * Updates cell contents after cell editing has been finished. Retrieves values from the editor widget.
-   */
-  virtual void     setContentFromEditor( QWidget* );
-
-  /*!
-   * Returnss flag read only for item.
-   */
-  bool readOnly() const;
-
-  /*!
-   * Sets flag read only for item.
-   */
-  void setReadOnly( const bool );
-
-private:
-  bool                       myIsReadOnly;
-  YACSGui_Table::CellType     myType;
-};
 
 /*! constructor
  */
@@ -260,6 +225,181 @@ void YACSGui_TableItem::setContentFromEditor( QWidget* w )
 
 /*! constructor
  */
+YACSGui_TableComboSelectItem::YACSGui_TableComboSelectItem( QTable* theTable, bool theEditable )
+  : YACSGui_TableItem( theTable, YACSGui_Table::ComboSelect ),
+    mySelectBtn( 0 ),
+    myEditable( theEditable )
+{
+  createSelectButton();
+}
+
+/*! Destructor
+ */
+YACSGui_TableComboSelectItem::~YACSGui_TableComboSelectItem()
+{
+}
+
+/*! Function: setText
+ */
+void YACSGui_TableComboSelectItem::setText( const QString& txt )
+{
+  YACSGui_TableItem::setText( txt );
+}
+
+/*! Function: createEditor
+ */
+QWidget* YACSGui_TableComboSelectItem::createEditor() const
+{
+  if( myIsReadOnly ) return 0;
+
+  YACSGui_Table* tab = dynamic_cast<YACSGui_Table*>( table() );
+  if( !tab ) return 0;
+
+  QComboBox* cb = new QComboBox( table()->viewport() );
+  QStringList aL = tab->Params( row(), col() );
+  if( !aL.empty() )
+  {
+    QString aDefVal;
+    if ( YACSGui_Table* aTable = dynamic_cast<YACSGui_Table*>(table()) )
+      aDefVal = aTable->defValue(row(), col());
+    int anIndex = -1;
+    
+    int id = 0;
+    for( QStringList::Iterator it = aL.begin(); it != aL.end(); it++ )
+    {
+      cb->insertItem( *it );
+      if ( !aDefVal.isEmpty() && aDefVal.compare(*it) == 0 ) anIndex = id;
+      id++;
+    }
+
+    if ( anIndex >= 0 )
+      cb->setCurrentItem( anIndex );
+    else
+    {
+      cb->setEditable(myEditable);
+      cb->setEditText(aDefVal);
+    }
+  }
+
+  if ( mySelectBtn )
+  {
+    QRect r = table()->cellGeometry( row(), col() );
+    if ( !r.size().isValid() ) {
+      table()->ensureCellVisible( row(), col() );
+      r = table()->cellGeometry( row(), col() );
+    }
+    r.setWidth( r.width() - mySelectBtn->width() );
+    
+    mySelectBtn->parentWidget()->resize( mySelectBtn->width(), r.height() );
+    table()->moveChild( mySelectBtn->parentWidget(), r.x() + r.width(), r.y() );
+    mySelectBtn->setFixedHeight( QMAX( 0, r.height() - 3 ) );
+
+    mySelectBtn->parentWidget()->show();
+  }
+
+  QWidget* res = cb;
+  if( res && tab->isEditorSync() )
+  {
+    QString sign = SIGNAL( activated( const QString& ) );
+
+    if( !sign.isEmpty() )
+      QObject::connect( res, sign, tab, SLOT( onSync() ) );
+  }
+  
+  return res;
+}
+
+/*! Function: setContentFromEditor
+ */
+void YACSGui_TableComboSelectItem::setContentFromEditor( QWidget* w )
+{
+  QString res;
+
+  QComboBox* cb = dynamic_cast<QComboBox*>( w );
+  if( cb )
+    res = cb->currentText();
+  
+  setText( res );
+}
+
+void YACSGui_TableComboSelectItem::showEditor( bool theIsEditing )
+{
+  createSelectButton();
+
+  placeEditor(theIsEditing);
+  mySelectBtn->parentWidget()->raise();
+  mySelectBtn->parentWidget()->show();
+  //table()->cellWidget(row(),col())->show();
+}
+
+void YACSGui_TableComboSelectItem::hideEditor()
+{
+  createSelectButton();
+
+  mySelectBtn->parentWidget()->hide();
+  table()->cellWidget(row(),col())->hide();
+}
+
+/*!  Call this to place/resize the item editor correctly (normally
+  call it from showEditor())
+*/
+void YACSGui_TableComboSelectItem::placeEditor( bool theIsEditing )
+{
+  createSelectButton();
+
+  QRect r = table()->cellGeometry( row(), col() );
+  if ( !r.size().isValid() ) {
+    table()->ensureCellVisible( row(), col() );
+    r = table()->cellGeometry( row(), col() );
+  }
+  
+  if ( !theIsEditing ) r.setWidth( r.width() - mySelectBtn->width() );
+    
+  mySelectBtn->parentWidget()->resize( mySelectBtn->width(), r.height() );
+  table()->moveChild( mySelectBtn->parentWidget(), r.x() + r.width(), r.y() );
+  mySelectBtn->setFixedHeight( QMAX( 0, r.height() - 3 ) );
+}
+
+void YACSGui_TableComboSelectItem::createSelectButton()
+{
+  if ( mySelectBtn ) return;
+  
+  QHBox* hbox = new QHBox( table()->viewport() );
+  hbox->setFrameStyle( QFrame::StyledPanel | QFrame::Sunken );
+  hbox->setLineWidth( 1 );
+
+  mySelectBtn = new QToolButton( hbox );
+  
+  QPixmap selectPix = SUIT_Session::session()->resourceMgr()->loadPixmap( "YACS", QObject::tr( "ICON_SELECT" ) );
+  mySelectBtn->setIconSet( selectPix );
+
+  mySelectBtn->setFixedWidth( selectPix.width() );
+  
+  mySelectBtn->setToggleButton( true );
+  
+  hbox->layout()->setAlignment( Qt::AlignRight );
+  table()->addChild( hbox );
+  hbox->hide();
+  
+  if ( YACSGui_Table* aTable = dynamic_cast<YACSGui_Table*>(table()) )
+    QObject::connect( mySelectBtn, SIGNAL( clicked() ), aTable, SLOT( onSelectButton() ) );
+  
+  QToolTip::add( mySelectBtn, QObject::tr( "Select data type in the tree view" ) );
+  QWhatsThis::add( mySelectBtn, QObject::tr( "Click this button to select data type in the tree view" ) );
+}
+
+void YACSGui_TableComboSelectItem::showText( QString theText )
+{
+  if ( myEditable )
+    if ( QComboBox* aCB = dynamic_cast<QComboBox*>(table()->cellWidget( row(), col() )) )
+    {
+      aCB->setEditable(myEditable);
+      aCB->setEditText(theText);
+    }
+}
+
+/*! constructor
+ */
 YACSGui_Table::YACSGui_Table( const int numRows, const int numCols, QWidget* parent, CellType defType )
 : QtxTable( numRows, numCols, parent ),
   myDefType( defType ),
@@ -273,6 +413,11 @@ YACSGui_Table::YACSGui_Table( const int numRows, const int numCols, QWidget* par
       aRTypes.insert( j, defType );
     myCellTypes.insert( i, aRTypes );
   }
+
+  connect( this, SIGNAL( pressed( int, int, int, const QPoint& )), 
+	   this, SLOT( onPressed( int, int, int, const QPoint& )) );
+  connect( this, SIGNAL( clicked( int, int, int, const QPoint& )), 
+	   this, SLOT( onClicked( int, int, int, const QPoint& )) );
 }
 
 /*! Destructor
@@ -474,11 +619,40 @@ void YACSGui_Table::insertRows( int row, int count )
   update();
 }
 
+/*! Function: insertRows
+ */
+void YACSGui_Table::setCurrentCell( int row, int col )
+{
+  int aRow = currentRow();
+  int aCol = currentColumn();
+  if ( aRow != row || aCol != col )
+  {
+    bool ok;
+    if ( cellType( aRow, aCol, ok ) == ComboSelect )
+      if ( YACSGui_TableComboSelectItem* anIt = dynamic_cast<YACSGui_TableComboSelectItem*>(item(currEditRow(),currEditCol())) )
+	anIt->hideEditor();
+  }
+
+  QTable::setCurrentCell ( row, col );
+}
+
+/*! Function: createItem
+ */
+void YACSGui_Table::onSelectButton()
+{
+  emit selectButtonClicked(currEditRow(),currEditCol());
+}
+
 /*! Function: createItem
  */
 QTableItem* YACSGui_Table::createItem( const int row, const int col, CellType t ) const
 {
-  YACSGui_TableItem* it = new YACSGui_TableItem( ( QTable* )this, t ); 
+  YACSGui_TableItem* it;
+  if ( t == ComboSelect )
+    it = new YACSGui_TableComboSelectItem( ( QTable* )this, true ); 
+  else
+    it = new YACSGui_TableItem( ( QTable* )this, t ); 
+  
   it->setText( defValue( row, col ) );
   return it;
 }
@@ -508,6 +682,48 @@ YACSGui_Table::CellType YACSGui_Table::itemType( QTableItem* i ) const
   YACSGui_TableItem* it = dynamic_cast<YACSGui_TableItem*>( i );
 
   return it->type();
+}
+
+/*! Function: endEdit
+ */
+void YACSGui_Table::endEdit( int row, int col, bool accept, bool replace )
+{
+  bool ok;
+  if ( cellType( currEditRow(), currEditCol(), ok ) == ComboSelect )
+    if ( YACSGui_TableComboSelectItem* anIt = dynamic_cast<YACSGui_TableComboSelectItem*>(item(currEditRow(),currEditCol())) )
+      anIt->hideEditor();
+  
+  QTable::endEdit( row, col, accept, replace );
+}
+
+/*! Function: columnWidthChanged
+ */
+void YACSGui_Table::columnWidthChanged( int col )
+{
+  QTable::columnWidthChanged(col);
+
+  if ( col <= currEditCol() )
+  {
+    bool ok;
+    if ( cellType( currEditRow(), currEditCol(), ok ) == ComboSelect )
+      if ( YACSGui_TableComboSelectItem* anIt = dynamic_cast<YACSGui_TableComboSelectItem*>(item(currEditRow(),currEditCol())) )
+	anIt->showEditor( true );
+  }
+}
+
+/*! Function: rowHeightChanged
+ */
+void YACSGui_Table::rowHeightChanged( int row )
+{
+  QTable::rowHeightChanged(row);
+
+  if ( row <= currEditRow() )
+  {
+    bool ok;
+    if ( cellType( currEditRow(), currEditCol(), ok ) == ComboSelect )
+      if ( YACSGui_TableComboSelectItem* anIt = dynamic_cast<YACSGui_TableComboSelectItem*>(item(currEditRow(),currEditCol())) )
+	anIt->showEditor( true );
+  }
 }
 
 /*! Function: doubles
@@ -858,7 +1074,7 @@ int YACSGui_Table::intValueCombo( const int col, const int row ) const
 
 /*! Function: selectedRow
  */
-int YACSGui_Table:: selectedRow() const
+int YACSGui_Table::selectedRow() const
 {
   QTableSelection sel = selection( currentSelection() );
   if ( sel.isActive() )
@@ -866,3 +1082,16 @@ int YACSGui_Table:: selectedRow() const
   return -1;
 }
 
+QRect YACSGui_Table::cellGeometry ( int row, int col ) const
+{
+  QRect aRect = QTable::cellGeometry( row, col );
+  if ( row == currEditRow() && col == currEditCol() )
+  {
+    bool ok;
+    if ( cellType( row, col, ok ) == ComboSelect )
+      if ( YACSGui_TableComboSelectItem* anIt = dynamic_cast<YACSGui_TableComboSelectItem*>(item(row,col)) )
+	aRect.setWidth( aRect.width() - anIt->selectButton()->width() );
+  }
+  
+  return aRect;
+}

@@ -65,7 +65,7 @@ class YACSGui_Observer : public YACS::ENGINE::Observer
 };
 
 
-class Observer_i : public POA_YACSGui_ORB::Observer,
+class Observer_i : public POA_YACS_ORB::Observer,
   public PortableServer::RefCountServantBase,
   public QObject
 {
@@ -77,7 +77,7 @@ class Observer_i : public POA_YACSGui_ORB::Observer,
   void notifyObserver(CORBA::Long numid, const char* event);
   void setConversion();
   void SetImpl(YACSGui_Observer* theImpl);
-  void SetRemoteProc(YACSGui_ORB::ProcExec_ptr engineProc);
+  void SetRemoteProc(YACS_ORB::ProcExec_ptr engineProc);
   int getEngineId(int guiId) { return _guiToEngineMap[guiId]; };
  protected:
   virtual bool event(QEvent *e);
@@ -85,7 +85,7 @@ class Observer_i : public POA_YACSGui_ORB::Observer,
   YACSGui_Module* _guiMod;
   YACSGui_Executor* _guiExec;
   YACS::ENGINE::Proc* _guiProc;
-  YACSGui_ORB::ProcExec_var _engineProc;
+  YACS_ORB::ProcExec_var _engineProc;
   YACSGui_Observer* myImpl;
   std::map<int, int> _guiToEngineMap;
   std::map<int, int> _engineToGuiMap;

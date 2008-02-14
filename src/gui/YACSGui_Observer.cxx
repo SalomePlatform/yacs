@@ -175,7 +175,7 @@ Observer_i::Observer_i(YACS::ENGINE::Proc* guiProc,
   _guiProc = guiProc;
   _guiMod = guiMod;
   _guiExec = guiExec;
-  _engineProc = YACSGui_ORB::ProcExec::_nil();
+  _engineProc = YACS_ORB::ProcExec::_nil();
   myImpl = 0;
 }
 
@@ -187,8 +187,8 @@ void Observer_i::setConversion()
 {
   MESSAGE("Observer_i::setConversion");
   assert(!CORBA::is_nil(_engineProc));
-  YACSGui_ORB::stringArray_var engineNames;
-  YACSGui_ORB::longArray_var engineIds;
+  YACS_ORB::stringArray_var engineNames;
+  YACS_ORB::longArray_var engineIds;
   //MESSAGE("---");
   _engineProc->getIds(engineIds.out(), engineNames.out());
   int iLength = engineIds->length();
@@ -239,7 +239,7 @@ bool Observer_i::event(QEvent *e)
 	  if ( theRunMode || aRunTV )
 	    if ((execState == YACS::WAITINGTASKS) || (execState == YACS::PAUSED))
 	      {
-		YACSGui_ORB::stringArray_var nstp = _engineProc->getTasksToLoad();
+		YACS_ORB::stringArray_var nstp = _engineProc->getTasksToLoad();
 		for (CORBA::ULong i=0; i<nstp->length(); i++)
 		  nextSteps.push_back(nstp[i].in());
 	      }
@@ -402,7 +402,7 @@ void Observer_i::SetImpl(YACSGui_Observer* theImpl)
   myImpl = theImpl;
 }
 
-void Observer_i::SetRemoteProc(YACSGui_ORB::ProcExec_ptr engineProc)
+void Observer_i::SetRemoteProc(YACS_ORB::ProcExec_ptr engineProc)
 {
-  _engineProc = YACSGui_ORB::ProcExec::_duplicate(engineProc);
+  _engineProc = YACS_ORB::ProcExec::_duplicate(engineProc);
 }

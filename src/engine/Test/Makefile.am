@@ -9,7 +9,7 @@ TestEngine_SOURCES =              \
 	engineTest.cxx
 
 TestEngine_LDADD = \
-                 ../libYACSEngine.la         \
+                 ../libYACSlibEngine.la         \
                  ../../bases/libYACSBases.la
 
 
@@ -38,7 +38,7 @@ IntegrationTestEngine_SOURCES =              \
 	RuntimeForEngineIntegrationTest.cxx
 
 IntegrationTestEngine_LDADD =                   \
-                 ../libYACSEngine.la            \
+                 ../libYACSlibEngine.la            \
                  ../../bases/libYACSBases.la
 
 IntegrationTestEngine_LDFLAGS = $(CPPUNIT_LIBS) -pthread -ldl

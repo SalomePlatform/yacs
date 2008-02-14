@@ -89,6 +89,7 @@ namespace YACS
       virtual Subject* getParent();
       virtual bool destroy(Subject *son);
       virtual void loadChildren();
+      virtual void loadLinks();
       virtual void addSubjectReference(Subject *ref);
       virtual void clean();
       void localClean();

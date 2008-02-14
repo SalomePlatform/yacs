@@ -3,15 +3,15 @@ import time
 import salome
 salome.salome_init()
 
-import YACSGui_ORB
-comp = salome.lcc.FindOrLoadComponent( "YACSContainer","YACSGui" )
-yacsgen = comp._narrow(YACSGui_ORB.YACSGui_Gen)
+import YACS_ORB
+comp = salome.lcc.FindOrLoadComponent( "YACSContainer","YACS" )
+yacsgen = comp._narrow(YACS_ORB.YACS_Gen)
 
 # -----------------------------------------------------------------------------
 # --- schema OK
 
 procEx = yacsgen.LoadProc("samples/legendre7.xml")
-procEx.setExecMode(YACSGui_ORB.CONTINUE)
+procEx.setExecMode(YACS_ORB.CONTINUE)
 procEx.Run()
 
 # --- wait until executor is paused, finished or stopped
@@ -43,7 +43,7 @@ print procEx.getInPortValue(dico["Legendre.loopIter"],"nsteps")
 # --- schema with errors (echoSrv must be launched)
 
 procEx = yacsgen.LoadProc("samples/aschema.xml")
-procEx.setExecMode(YACSGui_ORB.CONTINUE)
+procEx.setExecMode(YACS_ORB.CONTINUE)
 procEx.Run()
 
 # --- wait until executor is paused, finised or stopped
@@ -73,7 +73,7 @@ print procEx.getErrorDetails(dico["node13"])
 # --- schema with errors
 
 procEx = yacsgen.LoadProc("samples/triangle5error.xml")
-procEx.setExecMode(YACSGui_ORB.CONTINUE)
+procEx.setExecMode(YACS_ORB.CONTINUE)
 procEx.setStopOnError(1,"execError2.xml")
 #procEx.unsetStopOnError()
 procEx.Run()
@@ -95,7 +95,7 @@ procEx.saveState("res3.xml")
 
 procEx = yacsgen.LoadProc("samples/legendre7.xml")
 procEx.setListOfBreakPoints(["Legendre.loopIter.deuxIter.iter2"])
-procEx.setExecMode(YACSGui_ORB.STOPBEFORENODES)
+procEx.setExecMode(YACS_ORB.STOPBEFORENODES)
 procEx.Run()
 
 isRunning = 1
@@ -109,7 +109,7 @@ while isRunning:
 procEx.saveState("partialExec.xml")
 
 procEx = yacsgen.LoadProc("samples/legendre7.xml")
-procEx.setExecMode(YACSGui_ORB.CONTINUE)
+procEx.setExecMode(YACS_ORB.CONTINUE)
 procEx.RunFromState("partialExec.xml")
 
 isRunning = 1

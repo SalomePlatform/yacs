@@ -92,7 +92,7 @@ BUILT_SOURCES=SALOMERuntimeWRAP.cxx
 
 libYACSRuntimeSALOME_la_LIBADD = \
 	$(DSC_LIBS) $(SALOME_LIBS) $(OMNIORB_LIBS) \
-	../engine/libYACSEngine.la
+	../engine/libYACSlibEngine.la
 
 AM_CXXFLAGS = \
 	$(THREAD_DEF) \

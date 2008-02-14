@@ -2,9 +2,9 @@ include $(top_srcdir)/adm/unix/make_begin.am
 
 SUBDIRS = Plugin Test
 
-lib_LTLIBRARIES = libYACSEngine.la
+lib_LTLIBRARIES = libYACSlibEngine.la
 
-libYACSEngine_la_SOURCES =             \
+libYACSlibEngine_la_SOURCES =             \
 	TypeCode.cxx                   \
 	RefCounter.cxx                 \
 	LinkInfo.cxx                   \
@@ -76,11 +76,11 @@ WhileLoop.hxx \
 	     $(__dummy__)
 
 
-EXTRA_libYACSEngine_la_SOURCES =  \
+EXTRA_libYACSlibEngine_la_SOURCES =  \
 	$(__dummy__)
 
-libYACSEngine_la_LIBADD = ../bases/libYACSBases.la 
-libYACSEngine_la_LDFLAGS = -pthread -lpthread -ldl
+libYACSlibEngine_la_LIBADD = ../bases/libYACSBases.la 
+libYACSlibEngine_la_LDFLAGS = -pthread -lpthread -ldl
 
 AM_CXXFLAGS = $(THREAD_DEF)  \
               -I$(srcdir)/../bases
@@ -123,7 +123,7 @@ _pilot_la_CXXFLAGS = \
 
 _pilot_la_LDFLAGS  = -module
 
-_pilot_la_LIBADD = libYACSEngine.la $(OMNIORB_LIBS)
+_pilot_la_LIBADD = libYACSlibEngine.la $(OMNIORB_LIBS)
 
 pypilotWRAP.cxx pypilotWRAP.h: pypilot.i pilot.i $(SWIGINCLUDES)
 	$(SWIG) $(SWIG_PYTHON_OPT) $(SWIG_PYTHON_INCLUDES) $(MYSWIG_FLAGS) -o pypilotWRAP.cxx $(srcdir)/pypilot.i
@@ -131,7 +131,7 @@ pypilotWRAP.cxx pypilotWRAP.h: pypilot.i pilot.i $(SWIGINCLUDES)
 _pypilot_la_SOURCES =  pypilotWRAP.cxx
 _pypilot_la_CXXFLAGS =  $(THREAD_DEF) $(PYTHON_CPPFLAGS) $(OMNIORB_INCLUDES) $(OMNIORB_CXXFLAGS) -I$(srcdir)/../bases
 _pypilot_la_LDFLAGS  = -module
-_pypilot_la_LIBADD = libYACSEngine.la $(OMNIORB_LIBS)
+_pypilot_la_LIBADD = libYACSlibEngine.la $(OMNIORB_LIBS)
 
 EXTRA_DIST = pilot.i pypilot.i engtypemaps.i pypilotWRAP.h
 

@@ -23,7 +23,7 @@ TestRuntime_LDADD = \
 	$(PYTHON_LDFLAGS) \
 	$(PYTHON_EXTRA_LIBS) \
 	../libYACSRuntimeSALOME.la \
-	../../engine/libYACSEngine.la \
+	../../engine/libYACSlibEngine.la \
 	../../bases/libYACSBases.la
 
 

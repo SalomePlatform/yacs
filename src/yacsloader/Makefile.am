@@ -24,7 +24,7 @@ typeParsers.hxx  xmlParserBase.hxx    xmlrpcParsers.hxx
 EXTRA_libYACSloader_la_SOURCES =  \
 	$(__dummy__)
 
-libYACSloader_la_LIBADD = ../engine/libYACSEngine.la
+libYACSloader_la_LIBADD = ../engine/libYACSlibEngine.la
 libYACSloader_la_LDFLAGS = $(EXPAT_LIBS)
 
 AM_CXXFLAGS = \
@@ -56,7 +56,7 @@ driver_CXXFLAGS = -g -DYACS_PTHREAD \
 
 driver_LDADD = libYACSloader.la \
                ../runtime/libYACSRuntimeSALOME.la \
-               ../engine/libYACSEngine.la \
+               ../engine/libYACSlibEngine.la \
                $(SALOME_LIBS) \
                $(OMNIORB_LIBS) \
                $(PYTHON_LDFLAGS) \
@@ -77,7 +77,7 @@ resume_CXXFLAGS = -g -DYACS_PTHREAD \
 
 resume_LDADD = libYACSloader.la \
                ../runtime/libYACSRuntimeSALOME.la \
-               ../engine/libYACSEngine.la \
+               ../engine/libYACSlibEngine.la \
                $(SALOME_LIBS) \
                $(OMNIORB_LIBS) \
                $(PYTHON_LDFLAGS) \
@@ -98,7 +98,7 @@ debugger_CXXFLAGS = -g -DYACS_PTHREAD \
 
 debugger_LDADD = libYACSloader.la \
                ../runtime/libYACSRuntimeSALOME.la \
-               ../engine/libYACSEngine.la \
+               ../engine/libYACSlibEngine.la \
                $(SALOME_LIBS) \
                $(OMNIORB_LIBS) \
                $(PYTHON_LDFLAGS) \

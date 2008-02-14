@@ -65,7 +65,7 @@ libYACSPrs_la_LDFLAGS = \
 	 @GUI_LDFLAGS@ @PYTHON_LDFLAGS@ @QT_MT_LDFLAGS@
 
 libYACSPrs_la_LIBADD = \
-	../engine/libYACSEngine.la \
+	../engine/libYACSlibEngine.la \
 	../runtime/libYACSRuntimeSALOME.la \
 	../hmi/libHMI.la \
 	@QT_MT_LIBADD@ -lQxGraph

@@ -45,9 +45,9 @@ YACSGui_Executor::YACSGui_Executor(YACSGui_Module* guiMod, Proc* theProc) :
   _proc(theProc)
 {
   _localEngine = 0;
-  _engineRef = YACSGui_ORB::YACSGui_Gen::_nil();
-  _procRef = YACSGui_ORB::ProcExec::_nil();
-  _observerRef = YACSGui_ORB::Observer::_nil();
+  _engineRef = YACS_ORB::YACS_Gen::_nil();
+  _procRef = YACS_ORB::ProcExec::_nil();
+  _observerRef = YACS_ORB::Observer::_nil();
   _serv = 0;
   _isRunning = false;
   _isSuspended = false;
@@ -230,7 +230,7 @@ void YACSGui_Executor::suspendResumeDataflow()
           _procRef->resumeCurrentBreakPoint();
         }
       else
-        _procRef->setExecMode(YACSGui_ORB::STEPBYSTEP);
+        _procRef->setExecMode(YACS_ORB::STEPBYSTEP);
     }
   _isSuspended = !_isSuspended;
 }
@@ -244,7 +244,7 @@ void YACSGui_Executor::suspendDataflow()
     }
   else if (_isRunning)  // --- remote run
     {
-      _procRef->setExecMode(YACSGui_ORB::STEPBYSTEP);
+      _procRef->setExecMode(YACS_ORB::STEPBYSTEP);
     }
 }
 
@@ -287,7 +287,7 @@ void YACSGui_Executor::setStepByStepMode()
   if (running())        // --- local run
     _localEngine->setExecMode(YACS::STEPBYSTEP);
   else if (_isRunning)  // --- remote run
-    _procRef->setExecMode(YACSGui_ORB::STEPBYSTEP);
+    _procRef->setExecMode(YACS_ORB::STEPBYSTEP);
 }
 
 void YACSGui_Executor::setContinueMode()
@@ -300,7 +300,7 @@ void YACSGui_Executor::setContinueMode()
     }
   else if (_isRunning)  // --- remote run
     {
-      _procRef->setExecMode(YACSGui_ORB::CONTINUE);
+      _procRef->setExecMode(YACS_ORB::CONTINUE);
     }
 }
 
@@ -314,7 +314,7 @@ void YACSGui_Executor::setBreakpointMode()
     }
   else if (_isRunning)  // --- remote run
     {
-      _procRef->setExecMode(YACSGui_ORB::STOPBEFORENODES);
+      _procRef->setExecMode(YACS_ORB::STOPBEFORENODES);
     }
 }
 
@@ -377,7 +377,7 @@ void YACSGui_Executor::setNextStepList(std::list<std::string> nextStepList)
     }
   else if (_isRunning)  // --- remote run
     {
-      YACSGui_ORB::stringArray listOfNextStep;
+      YACS_ORB::stringArray listOfNextStep;
       listOfNextStep.length(nextStepList.size());
       int i=0;
       for (list<string>::iterator it = nextStepList.begin(); it != nextStepList.end(); ++it)
@@ -403,7 +403,7 @@ void YACSGui_Executor::_setBPList()
     }
   else if (_isRunning)  // --- remote run
     {
-      YACSGui_ORB::stringArray listOfBreakPoints;
+      YACS_ORB::stringArray listOfBreakPoints;
       listOfBreakPoints.length(_breakpointList.size());
       int i=0;
       for (list<string>::iterator it = _breakpointList.begin(); it != _breakpointList.end(); ++it)
@@ -441,14 +441,14 @@ void YACSGui_Executor::registerStatusObservers()
   _procRef->addObserver(_observerRef, _serv->getEngineId(_proc->getNumId()) , "executor"); 
 }
 
-YACSGui_ORB::executionMode YACSGui_Executor::getCurrentExecMode()
+YACS_ORB::executionMode YACSGui_Executor::getCurrentExecMode()
 {
   switch (_execMode)
     {
-    case YACS::CONTINUE: return YACSGui_ORB::CONTINUE;
-    case YACS::STEPBYSTEP: return YACSGui_ORB::STEPBYSTEP;
-    case YACS::STOPBEFORENODES: return YACSGui_ORB::STOPBEFORENODES;
-    default: return YACSGui_ORB::CONTINUE;
+    case YACS::CONTINUE: return YACS_ORB::CONTINUE;
+    case YACS::STEPBYSTEP: return YACS_ORB::STEPBYSTEP;
+    case YACS::STOPBEFORENODES: return YACS_ORB::STOPBEFORENODES;
+    default: return YACS_ORB::CONTINUE;
     }
 }
 
@@ -468,7 +468,7 @@ int YACSGui_Executor::getExecutorState()
     return YACS::FINISHED;
 }
 
-void YACSGui_Executor::setEngineRef(YACSGui_ORB::YACSGui_Gen_ptr theRef)
+void YACSGui_Executor::setEngineRef(YACS_ORB::YACS_Gen_ptr theRef)
 {
   _engineRef = theRef;
 }
@@ -481,7 +481,7 @@ std::string YACSGui_Executor::getErrorDetails(YACS::ENGINE::Node* node)
     int engineId=_serv->getEngineId(node->getNumId());
     return _procRef->getErrorDetails(engineId);
   }
-  return "No YACS Engine Observer Yet (internal logic error ?)";
+  return "---";
 }
 
 std::string YACSGui_Executor::getErrorReport(YACS::ENGINE::Node* node)
@@ -492,5 +492,5 @@ std::string YACSGui_Executor::getErrorReport(YACS::ENGINE::Node* node)
     int engineId=_serv->getEngineId(node->getNumId());
     return _procRef->getErrorReport(engineId);
   }
-  return "No YACS Engine Observer Yet (internal logic error ?)";
+  return "---";
 }

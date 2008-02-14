@@ -45,17 +45,17 @@
 // ----------------------------------------------------------------------------
 
 #ifdef SWIGPYTHON
-%typemap(out) YACSGui_ORB::Observer_ptr
+%typemap(out) YACS_ORB::Observer_ptr
 {
   $result = api->cxxObjRefToPyObjRef($1, 1);
 }
 
-%typemap(in) YACSGui_ORB::Observer_ptr
+%typemap(in) YACS_ORB::Observer_ptr
 {
   try
   {
      CORBA::Object_ptr obj = api->pyObjRefToCxxObjRef($input,1);
-     $1 = YACSGui_ORB::Observer::_narrow(obj);
+     $1 = YACS_ORB::Observer::_narrow(obj);
   }
   catch (...)
   {

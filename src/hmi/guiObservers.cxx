@@ -177,6 +177,10 @@ void Subject::loadChildren()
 {
 }
 
+void Subject::loadLinks()
+{
+}
+
 void Subject::addSubjectReference(Subject *ref)
 {
   DEBTRACE("Subject::addSubjectReference " << getName() << " " << ref->getName());
@@ -621,6 +625,7 @@ SubjectNode *SubjectComposedNode::createNode(YACS::ENGINE::Catalog *catalog,
       Node * node = command->getNode();
       SubjectNode *son = addSubjectNode(node,"",catalog,compo,type);
       son->loadChildren();
+      son->loadLinks();
       return son;
     }
   else delete command;

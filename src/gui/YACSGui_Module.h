@@ -117,7 +117,7 @@ public:
   virtual void initialize( CAM_Application* );
 
   QString engineIOR() const;
-  static YACSGui_ORB::YACSGui_Gen_ptr InitYACSGuiGen( SalomeApp_Application* );
+  static YACS_ORB::YACS_Gen_ptr InitYACSGuiGen( SalomeApp_Application* );
 
   YACSGui_DataModel* getDataModel() const;
   

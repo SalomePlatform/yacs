@@ -28,7 +28,7 @@ TestYacsLoader_LDADD = \
 	$(PYTHON_EXTRA_LIBS) \
 	../libYACSloader.la \
 	../../runtime/libYACSRuntimeSALOME.la \
-	../../engine/libYACSEngine.la \
+	../../engine/libYACSlibEngine.la \
 	../../bases/libYACSBases.la
 
 TestYacsLoader_LDFLAGS = \

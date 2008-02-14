@@ -7,7 +7,7 @@
 
   // SALOME Engine interface for execution in a SALOME Container
 
-module YACSGui_ORB
+module YACS_ORB
 {
   enum executionMode { CONTINUE, STEPBYSTEP, STOPBEFORENODES };
 
@@ -47,7 +47,7 @@ module YACSGui_ORB
     void unsetStopOnError();
   };
 
-  interface YACSGui_Gen : Engines::Component, SALOMEDS::Driver
+  interface YACS_Gen : Engines::Component, SALOMEDS::Driver
   {
     ProcExec LoadProc(in string xmlFile);
     string convertSupervFile(in string xmlFile);

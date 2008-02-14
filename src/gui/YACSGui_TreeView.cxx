@@ -1027,7 +1027,7 @@ QPopupMenu* YACSGui_EditionTreeView::contextMenuPopup( const int theType, YACS::
   int anId;
   QPopupMenu* aCrNPopup = new QPopupMenu( this );
   aCrNPopup->insertItem( tr("POP_SALOME_SERVICE"),        myModule, SLOT(onSalomeServiceNode()) );
-  aCrNPopup->insertItem( tr("POP_CORBA_SERVICE"),         myModule, SLOT(onCorbaServiceNode()) );
+//   aCrNPopup->insertItem( tr("POP_CORBA_SERVICE"),         myModule, SLOT(onCorbaServiceNode()) );
   //aCrNPopup->insertItem( tr("POP_NODENODE_SERVICE"),      myModule, SLOT(onNodeNodeServiceNode()) );
   aCrNPopup->insertItem( tr("POP_CPP"),                   myModule, SLOT(onCppNode()) );
   anId = aCrNPopup->insertItem( tr("POP_SERVICE_INLINE"), myModule, SLOT(onServiceInlineNode()) );
@@ -1073,7 +1073,7 @@ QPopupMenu* YACSGui_EditionTreeView::contextMenuPopup( const int theType, YACS::
       
       QPopupMenu* aCrNPopup = new QPopupMenu( this );
       aCrNPopup->insertItem( tr("POP_SALOME_SERVICE"), myModule, SLOT(onSalomeServiceNode()) );
-      aCrNPopup->insertItem( tr("POP_CORBA_SERVICE"), myModule, SLOT(onCorbaServiceNode()) );
+      //aCrNPopup->insertItem( tr("POP_CORBA_SERVICE"), myModule, SLOT(onCorbaServiceNode()) );
       //aCrNPopup->insertItem( tr("POP_NODENODE_SERVICE"), myModule, SLOT(onNodeNodeServiceNode()) );
       aCrNPopup->insertItem( tr("POP_CPP"), myModule, SLOT(onCppNode()) );
       anId = aCrNPopup->insertItem( tr("POP_SERVICE_INLINE"), myModule, SLOT(onServiceInlineNode()) );
@@ -1144,8 +1144,8 @@ QPopupMenu* YACSGui_EditionTreeView::contextMenuPopup( const int theType, YACS::
     break;
   case YACSGui_EditionTreeView::CorbaComponentItem:
     {
-      aPopup->insertItem( tr("POP_CREATE_CORBA_SERVICE_NODE"), myModule, SLOT(onCorbaServiceNode()) );
-      aPopup->insertSeparator();
+      //aPopup->insertItem( tr("POP_CREATE_CORBA_SERVICE_NODE"), myModule, SLOT(onCorbaServiceNode()) );
+      //aPopup->insertSeparator();
       
       anId = aPopup->insertItem( tr("POP_COPY"), this, SLOT(onCopyItem()) );
       aPopup->setItemEnabled ( anId, false );
@@ -1735,6 +1735,29 @@ void YACSGui_EditionTreeView::onSelectionChanged()
 	return;
       }
     }
+
+    // check if the data type selection is active
+    if( ((QWidget*)anIP)->isVisible()
+	&&
+	( anIP->isVisible( YACSGui_InputPanel::InlineNodeId )/* || anIP->isVisible( YACSGui_InputPanel::ServiceNodeId )*/ ) )
+    {
+      YACSGui_InlineNodePage* aSNPage = dynamic_cast<YACSGui_InlineNodePage*>( anIP->getPage( YACSGui_InputPanel::InlineNodeId ) );
+      if ( aSNPage && aSNPage->isSelectDataType() )
+      {
+       	if ( YACSGui_DataTypeItem* aDTItem = dynamic_cast<YACSGui_DataTypeItem*>( anItem ) )
+	  aSNPage->setDataType(aDTItem->getSDataType()->getTypeCode());
+	
+	bool block = signalsBlocked();
+	blockSignals( true );
+	setSelected( anItem, false );
+	QListViewItem* aSNItem = findItem( aSNPage->getNodeName(), 0 );
+	if( aSNItem )
+	  setSelected( aSNItem, true );
+	blockSignals( block );
+	
+	return;
+      }
+    }
   }
   
   if ( aSelList.size() == 0 ) // nothing selected, deselect previous
@@ -2200,7 +2223,7 @@ void YACSGui_RunTreeView::onBreakpointClicked( QListViewItem* theItem )
 
     if ( anElemNodeItem->isOn() )
     {
-      if ( anExecutor->getCurrentExecMode() == YACSGui_ORB::CONTINUE )
+      if ( anExecutor->getCurrentExecMode() == YACS_ORB::CONTINUE )
 	anExecutor->setBreakpointMode();
 
       myBreakpointSet.insert(anElemNodeItem->getNode()->getNumId());

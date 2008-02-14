@@ -287,11 +287,16 @@ void SalomeNode::initService()
     }
   try
     {
-      compo->init_service(_method.c_str());
+      CORBA::Boolean ret=compo->init_service(_method.c_str());
+      if(!ret)
+        {
+          _errorDetails="Problem with component '"+_ref+"' in init_service of service '"+ _method + "'";
+          throw Exception(_errorDetails);
+        }
     }
   catch(...)
     {
-      _errorDetails="Problem in component init_service";
+      _errorDetails="Problem with component '"+_ref+"' in init_service of service '"+ _method + "'";
       throw;
     }
 }
@@ -396,7 +401,7 @@ void SalomeNode::disconnectService()
 //! Execute the service on the component associated to the node
 void SalomeNode::execute()
 {
-  DEBTRACE( "+++++++++++++++++ SalomeNode::execute: " << getName() << " +++++++++++++++++" )
+  DEBTRACE( "+++++++++++++++++ SalomeNode::execute: " << getName() << " " << _method << " +++++++++++++++++" )
   {
     CORBA::Object_var objComponent=((SalomeComponent*)_component)->getCompoPtr();
     Engines::Component_var compo=Engines::Component::_narrow(objComponent);
@@ -406,7 +411,17 @@ void SalomeNode::execute()
     // no inout parameters
     // the return value (if any) is the first out parameter
     //
-    CORBA::Request_var req = objComponent->_request(_method.c_str());
+    CORBA::Request_var req ;
+    try
+      {
+        req = objComponent->_request(_method.c_str());
+      }
+    catch(CORBA::SystemException& ex)
+      {
+        std::string msg="component '" +_ref+ "' has no service '" + _method+ "'";
+        _errorDetails=msg;
+        throw Exception(msg);
+      }
     CORBA::NVList_ptr arguments = req->arguments() ;
 
     DEBTRACE( "+++++++++++++++++SalomeNode::inputs+++++++++++++++++" );
@@ -461,9 +476,17 @@ void SalomeNode::execute()
             InputCorbaPort *p=(InputCorbaPort *)*iter2;
             if(!p->edGetType()->isA(Runtime::_tc_file))
               continue;
-            DEBTRACE( "inport with file: " << p->getName() );
+            std::string filename=p->getName();
+            // replace ':' by '.'. Needed because port name can not contain '.'
+            string::size_type debut =filename.find_first_of(':',0);
+            while(debut != std::string::npos)
+              {
+                 filename[debut]='.';
+                 debut=filename.find_first_of(':',debut);
+              }
+            DEBTRACE( "inport with file: " << filename );
             Engines::Salome_file_var isf=compo->setInputFileToService(_method.c_str(),p->getName().c_str());
-            isf->setDistributedFile(p->getName().c_str());
+            isf->setDistributedFile(filename.c_str());
             Engines::Salome_file_ptr osf;
             CORBA::Any* any=p->getAny();
             *any >>= osf;
@@ -526,8 +549,16 @@ void SalomeNode::execute()
           // It's a SystemException
           DEBTRACE( "minor code: " << sysexc->minor() );
           DEBTRACE( "completion code: " << sysexc->completed() );
-          std::string text="Execution problem: System Exception occurred ";
-          text +=sysexc->_name();
+          std::string text="Execution problem: ";
+          std::string excname=sysexc->_name();
+          if(excname == "BAD_OPERATION")
+            {
+              text=text+"component '" +_ref+ "' has no service '" + _method+ "'";
+            }
+          else
+            {
+              text=text+"System Exception "+ excname;
+            }
           _errorDetails=text;
           throw Exception(text);
         }
@@ -607,10 +638,17 @@ void SalomeNode::execute()
             if(!p->edGetType()->isA(Runtime::_tc_file))
               continue;
             // The output port has a file object : special treatment
-            const char* filename=p->getName().c_str();
+            std::string filename=p->getName();
+            // replace ':' by '.'. Needed because port name can not contain '.'
+            string::size_type debut =filename.find_first_of(':',0);
+            while(debut != std::string::npos)
+              {
+                 filename[debut]='.';
+                 debut=filename.find_first_of(':',debut);
+              }
             DEBTRACE( "outport with file: " << filename );
-            Engines::Salome_file_var osf=compo->setOutputFileToService(_method.c_str(),filename);
-            osf->setLocalFile(filename);
+            Engines::Salome_file_var osf=compo->setOutputFileToService(_method.c_str(),p->getName().c_str());
+            osf->setLocalFile(filename.c_str());
             CORBA::Any any;
             any <<= osf;
             p->put(&any);

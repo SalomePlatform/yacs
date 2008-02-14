@@ -175,7 +175,7 @@ comments: OCC: DONE
 ----------------------------------------------------------------------------------------------------
 Num-----: 13
 priority: 0
-status--: NOK (checked on BR_DEV mergefrom_BR_PR_29jan08)
+status--: OK (checked on BR_DEV mergefrom_BR_PR_14feb08)
 description: When the bloc properties is open, there is a button to add nodes, that does not work.
 (remove seems possible)
 comments: OCC: Could you, please, provide a test scenario to reproduce
@@ -207,7 +207,7 @@ comments: OCC: DONE
 ----------------------------------------------------------------------------------------------------
 Num-----: 14
 priority: 0
-status--: NOK (checked on BR_DEV mergefrom_BR_PR_29jan08: remaining item "remote run, control")
+status--: OK (checked on BR_DEV mergefrom_BR_PR_14feb08)
 description: In general, there are too much buttons or menus that have no action, or very unclear.
 these buttons must be either removed, or grayed if they corresponds to something in development.
 comments: OCC: DONE
@@ -238,10 +238,14 @@ is possible to create a Corba service node from a Corba component
 instance selected in the edition tree view. But in such a case I have a
 question: How can I retrieve a list of services from Corba component
 instance? Is it possible?
+EDF: CORBA nodes are not a priority. SALOME node are created with the first method,
+but it is now impossible to change the method (that was too complicated and dangerous).
+It still could be use as it is for components with one method.
 7 DONE: The modes of schema execution ( without stop / breakpoints /
 step by step ) were moved to the exclusive group of toggle buttons on
 the execution toolbar. "Stop on error" toggle button is placed on the
 execution toolbar too. The "remote run, control" button was removed.
+EDF: execution mode left only in menu, not in toolbar (confusing: not an action)
 ----------------------------------------------------------------------------------------------------
 Num-----: 15 
 priority: 0
@@ -336,10 +340,11 @@ comments: OCC: DONE
 ----------------------------------------------------------------------------------------------------
 Num-----: 23 
 priority: 0
-status--: NOK
+status--: OK (checked on BR_DEV mergefrom_BR_PR_14feb08)
 description: when zoom to fit area, click in a bloc, the bloc moves instead of an aera selection,
 release the mouse button leads sometimes to abort.
 comments: OCC: DONE
+EDF: it works, but it looks like that it is not easy to do!
 ----------------------------------------------------------------------------------------------------
 Num-----: 24 
 priority: 0
@@ -355,10 +360,45 @@ comments:
 ----------------------------------------------------------------------------------------------------
 Num-----: 26 
 priority: 0
-status--: NOK
+status--: OK (checked on BR_DEV mergefrom_BR_PR_14feb08, item 4 remaining, and 5 to improve)
 description: It must be possible to use data types from other nodes already loaded, or to get them 
 from catalogs. For instance, use GEOM_Object in a python node.
 comments:
+ - 1 - the list of availables data types in ports must be updated
+with all data types already available in the data types list of the
+current schema, 
+OCC: DONE: At the current moment there are two ways to choose a port data
+type:
+1a) if the data type is a simple type the user can set it, even it is not
+publicated in the edition tree view with help of combo box
+available for the "Type" column in the edition mode;
+1b) the complex data types may be choosen with help of the selection
+control available for the "Type" column in the edition mode; in such a
+case the user can pick directly a data type in the edition tree view.
+ - 2 - by default the list contains only simple types : bool, int,
+double, string (other types are not usable in a generic form, they
+must be specialised) OCC: DONE.
+ - 3 - the data type list of the schema is automatically updated
+when importing nodes from catalogs. OCC: it is already done, because
+of the edition tree view updates on importing nodes from catalog in
+order to show all available data types inside the current schema.
+ - 4 - it should be possible also to specifically import a
+particular data type from a catalog, by means of a popup on Data Types
+Container in edition tree view.
+ - 5 - note that import node from catalog is not restricted to
+SALOME service nodes. all kind of nodes can be imported from catalogs,
+even python script nodes, taken from catalogs built apon other
+schemas.
+
+ With this approach list of data types does not grow too fast and
+the combo box could still be used (warning, complex data types have
+long names...).
+ Another possibility is to allow to pick directly a data type in a
+catalog in the port definition, but it is not possible with the combo
+box...
+EDF: 5 DONE, with a problem of canvas representation when import composed nodes, that can only
+be solved now by export and reimport the schema. The tree view for catalog from proc must reflect
+the proc schema hierarchy (otherwise there could be confusion with nodes of the same name)
 ----------------------------------------------------------------------------------------------------
 Num-----: 27 
 priority: 0
@@ -392,7 +432,7 @@ EDF: Is this working now ?
 ----------------------------------------------------------------------------------------------------
 Num-----: 1002 
 priority: 1
-status--: NOK (checked on BR_DEV mergefrom_BR_PR_8jan08)
+status--: OK (checked on BR_DEV mergefrom_BR_PR_14feb08)
 description: in create node menu, node node service is confusing. It is better to create a 
 service node, then to associate it with another node with which the component instance is shared.
 comments: OCC: DONE. There are two ways now to set component to the
@@ -409,13 +449,13 @@ It is not possible to change the component instance of node 2 to the other compo
 ----------------------------------------------------------------------------------------------------
 Num-----: 1003 
 priority: 1
-status--: NOK
+status--: OK (checked on BR_DEV mergefrom_BR_PR_14feb08)
 description: Is it possible to keep the center of the view at the same place when zooming the canvas ?
 comments: OCC: DONE
 ----------------------------------------------------------------------------------------------------
 Num-----: 1004
 priority: 1
-status--: NOK
+status--: OK ( BR_DEV mergefrom_BR_PR_14feb08 : we keep the two kinds of default containers)
 description: a default container is explicitely created when creating a component, but not when we
 import a a schema. In YACS Engine, there is an implicit default container when nothing is defined.
 There must not be two kind of default containers.
@@ -441,7 +481,7 @@ comments: EDF: Done
 ----------------------------------------------------------------------------------------------------
 Num-----: 1006 
 priority: 1
-status--: NOK
+status--: OK (checked on BR_DEV mergefrom_BR_PR_14feb08 - notes on 3,4, see above #13,#26)
 description: popup menu item missing on tree view.
 1 under Container directory: create a container definition
 2 under Nodes directory: create a node
@@ -461,38 +501,38 @@ comments:
 ----------------------------------------------------------------------------------------------------
 Num-----: 1008 
 priority: 1
-status--: NOK
+status--: OK (checked on BR_DEV mergefrom_BR_PR_14feb08)
 description: When switching from edition to execution, nodes and link arrangements are lost.
 idem for view (zoom, panning).
 comments: OCC: DONE
 ----------------------------------------------------------------------------------------------------
 Num-----: 1009
 priority: 1
-status--: NOK
+status--: OK (checked on BR_DEV mergefrom_BR_PR_14feb08)
 description: There is nothing to show the validity of a graph in edition, node by node.
 A recursive validation node by node is required in engine (will probably be developed soon).
 When this information will be available, it have to be represented in Gui (different color for items
 in tree view, for instance).
 When a node is modified, local impact on graph validity must be recomputed (Engine) and displayed
 (gui notification).
-comments:
+comments: EDF DONE
 ----------------------------------------------------------------------------------------------------
 Num-----: 1010
 priority: 1
-status--: NOK
+status--: OK (checked on BR_DEV mergefrom_BR_PR_14feb08, a little problem remains, node is not moveable)
 description: in edition, when adding a node in a block, do not reorganize automatically nodes
 (the user may prefer his own placement); do not resize the bloc, unless it is too small.
 comments: OCC: DONE
 ----------------------------------------------------------------------------------------------------
 Num-----: 1011
 priority: 1
-status--: NOK
+status--: OK (checked on BR_DEV mergefrom_BR_PR_14feb08)
 description: When adding a link between to nodes in a block, canvas is not always udpdated.
 comments: OCC: DONE
 ----------------------------------------------------------------------------------------------------
 Num-----: 1012
 priority: 1
-status--: NOK
+status--: OK
 description: in node properties, value type always set to double when clicking (must stay to its value)
 comments: OCC: DONE
 ----------------------------------------------------------------------------------------------------

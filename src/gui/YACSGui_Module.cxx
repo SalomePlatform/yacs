@@ -20,7 +20,7 @@
 
 #include <RuntimeSALOME.hxx>
 
-#include <yacs.hh>
+#include <yacsgui.hh>
 
 #include <YACSGui_Module.h>
 #include <YACSGui_Graph.h>
@@ -230,10 +230,10 @@ void YACSGui_Module::createActions()
                 tr("MEN_NEW_SALOME_SERVICE_NODE"), tr("STB_NEW_SALOME_SERVICE_NODE"), 
 		0, aDesktop, false, this, SLOT(onSalomeServiceNode()));
 
-  aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_NEW_CORBA_SERVICE_NODE"));
-  createAction( NewCorbaServiceNodeId, tr("TOP_NEW_CORBA_SERVICE_NODE"), QIconSet(aPixmap),
-                tr("MEN_NEW_CORBA_SERVICE_NODE"), tr("STB_NEW_CORBA_SERVICE_NODE"), 
-		0, aDesktop, false, this, SLOT(onCorbaServiceNode()));
+//   aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_NEW_CORBA_SERVICE_NODE"));
+//   createAction( NewCorbaServiceNodeId, tr("TOP_NEW_CORBA_SERVICE_NODE"), QIconSet(aPixmap),
+//                 tr("MEN_NEW_CORBA_SERVICE_NODE"), tr("STB_NEW_CORBA_SERVICE_NODE"), 
+// 		0, aDesktop, false, this, SLOT(onCorbaServiceNode()));
 
   aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_NEW_CPP_NODE"));
   createAction( NewCppNodeId, tr("TOP_NEW_CPP_NODE"), QIconSet(aPixmap),
@@ -293,93 +293,6 @@ void YACSGui_Module::createActions()
 		0, aDesktop, false, this, SLOT(onNodeFromLibrary()));
   action(NewFromLibraryNodeId)->setEnabled(false);
 
-  // Menu "Supervisor"
-  /*aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_SUSPEND_RESUME"));
-  createAction( SuspendResumeDataflowId, tr("TOP_SUSPEND_RESUME_DATAFLOW"), QIconSet(aPixmap),
-                tr("MEN_SUSPEND_RESUME_DATAFLOW"), tr("STB_SUSPEND_RESUME_DATAFLOW"), 
-		0, aDesktop, false, this, SLOT(onSuspendResumeDataflow()));
-
-  aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_RUN_DATAFLOW"));
-  createAction( RunDataflowId, tr("TOP_RUN_DATAFLOW"), QIconSet(aPixmap),
-                tr("MEN_RUN_DATAFLOW"), tr("STB_RUN_DATAFLOW"), 
-		0, aDesktop, false, this, SLOT(onRunDataflow()));
-  
-  aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_REMOTE_RUN_DATAFLOW"));
-  createAction( RemoteRunDataflowId, tr("TOP_REMOTE_RUN_DATAFLOW"), QIconSet(aPixmap),
-                tr("MEN_REMOTE_RUN_DATAFLOW"), tr("STB_REMOTE_RUN_DATAFLOW"), 
-		0, aDesktop, false, this, SLOT(onRemoteRunDataflow()));
-
-  aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_KILL_DATAFLOW"));
-  createAction( KillDataflowId, tr("TOP_KILL_DATAFLOW"), QIconSet(aPixmap),
-                tr("MEN_KILL_DATAFLOW"), tr("STB_KILL_DATAFLOW"), 
-		0, aDesktop, false, this, SLOT(onKillDataflow()));
-
-  aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_TOGGLESTOPONERROR"));
-  createAction( ToggleStopOnErrorId, tr("TOP_TOGGLESTOPONERROR"), QIconSet(aPixmap),
-                tr("MEN_TOGGLESTOPONERROR"), tr("STB_TOGGLESTOPONERROR"), 
-		0, aDesktop, false, this, SLOT(onToggleStopOnError()));
-
-  aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_FILTERNEXTSTEPS"));
-  createAction( FilterNextStepsId, tr("TOP_FILTERNEXTSTEPS"), QIconSet(aPixmap),
-                tr("MEN_FILTERNEXTSTEPS"), tr("STB_FILTERNEXTSTEPS"), 
-		0, aDesktop, false, this, SLOT(onFilterNextSteps()));
-  
-  aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_CHANGE_INFORMATIONS"));
-  createAction( ChangeInformationsId, tr("TOP_CHANGE_INFORMATIONS"), QIconSet(aPixmap),
-                tr("MEN_CHANGE_INFORMATIONS"), tr("STB_CHANGE_INFORMATIONS"), 
-		0, aDesktop, false, this, SLOT(onChangeInformations()));
-
-  aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_SAVEDATAFLOWSTATE"));
-  createAction( SaveDataflowStateId, tr("TOP_SAVEDATAFLOWSTATE"), QIconSet(aPixmap),
-                tr("MEN_SAVEDATAFLOWSTATE"), tr("STB_SAVEDATAFLOWSTATE"), 
-		0, aDesktop, false, this, SLOT(onSaveDataflowState()));
-
-  aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_RELOAD_DATAFLOW"));
-  createAction( ReloadDataflowId, tr("TOP_RELOAD_DATAFLOW"), QIconSet(aPixmap),
-                tr("MEN_RELOAD_DATAFLOW"), tr("STB_RELOAD_DATAFLOW"), 
-		0, aDesktop, false, this, SLOT(onReloadDataflow()));
-
-  aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_ARRANGE_NODES"));
-  createAction( ArrangeNodesId, tr("TOP_ARRANGE_NODES"), QIconSet(aPixmap),
-                tr("MEN_ARRANGE_NODES"), tr("STB_ARRANGE_NODES"), 
-		0, aDesktop, false, this, SLOT(onArrangeNodes()));
-
-  aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_REBUILD_LINKS"));
-  createAction( RebuildLinksId, tr("TOP_REBUILD_LINKS"), QIconSet(aPixmap),
-                tr("MEN_REBUILD_LINKS"), tr("STB_REBUILD_LINKS"), 
-		0, aDesktop, false, this, SLOT(onRebuildLinks()));
-
-  // Menu "Execute"
-  createAction( NewExecutionId, tr("TOP_NEW_EXECUTION"), QIconSet(),
-                tr("MEN_NEW_EXECUTION"), tr("STB_NEW_EXECUTION"), 
-		0, aDesktop, false, this, SLOT(onCreateExecution()));
-
-  createAction( ReloadExecutionId, tr("TOP_RELOAD_EXECUTION"), QIconSet(),
-                tr("MEN_RELOAD_EXECUTION"), tr("STB_RELOAD_EXECUTION"), 
-		0, aDesktop, false, this, SLOT(onReloadExecution()));
-
-   // Popup "Schema"
-  createAction( SetActiveId, tr("TOP_SET_ACTIVE"), QIconSet(),
-                tr("MEN_SET_ACTIVE"), tr("STB_SET_ACTIVE"), 
-		0, aDesktop, false, this, SLOT(onSetActive()));
-
-
-   // View mode section of "Dataflow" toolbar  
-  aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_FULL_VIEW"));
-  createAction( FullViewId, tr("TOP_FULL_VIEW"), QIconSet(aPixmap),
-                tr("MEN_FULL_VIEW"), tr("STB_FULL_VIEW"), 
-		0, aDesktop, false, this, SLOT(onFullView()));
-
-  aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_CONTROL_VIEW"));
-  createAction( ControlViewId, tr("TOP_CONTROL_VIEW"), QIconSet(aPixmap),
-                tr("MEN_CONTROL_VIEW"), tr("STB_CONTROL_VIEW"), 
-		0, aDesktop, false, this, SLOT(onControlView()));
-  
-  aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_TABLE_VIEW"));
-  createAction( TableViewId, tr("TOP_TABLE_VIEW"), QIconSet(aPixmap),
-		tr("MEN_TABLE_VIEW"), tr("STB_TABLE_VIEW"), 
-		0, aDesktop, false, this, SLOT(onTableView()));
-  */
   
   // Menu "Execute" (edit gui mode)
   aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_NEW_EXECUTION"));
@@ -403,31 +316,11 @@ void YACSGui_Module::createActions()
   createAction( StartResumeId, tr("TOP_STARTRESUME"), QIconSet(aPixmap),
                 tr("MEN_STARTRESUME"), tr("STB_STARTRESUME"), 
 		0, aDesktop, false, this, SLOT(onStartResume()));
-
-  /*aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_EXECUTE"));
-  createAction( ExecuteId, tr("TOP_EXECUTE"), QIconSet(aPixmap),
-                tr("MEN_EXECUTE"), tr("STB_EXECUTE"), 
-		0, aDesktop, false, this, SLOT(onExecute()));
-
-  aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_EXECUTE_STBY"));
-  createAction( ExecuteStById, tr("TOP_EXECUTE_STBY"), QIconSet(aPixmap),
-                tr("MEN_EXECUTE_STBY"), tr("STB_EXECUTE_STBY"), 
-		0, aDesktop, false, this, SLOT(onExecuteStBy()));*/
   
   aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_PAUSE"));
   createAction( PauseId, tr("TOP_PAUSE"), QIconSet(aPixmap),
                 tr("MEN_PAUSE"), tr("STB_PAUSE"), 
 		0, aDesktop, false, this, SLOT(onPause()));
-
-  /*aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_RESUME"));
-  createAction( ResumeId, tr("TOP_RESUME"), QIconSet(aPixmap),
-                tr("MEN_RESUME"), tr("STB_RESUME"), 
-		0, aDesktop, false, this, SLOT(onResume()));*/
-
-  /*aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_SUSPEND_RESUME"));
-  createAction( ResumeId, tr("TOP_SUSPEND_RESUME"), QIconSet(aPixmap),
-                tr("MEN_SUSPEND_RESUME"), tr("STB_SUSPEND_RESUME"), 
-		0, aDesktop, false, this, SLOT(onSuspendResume()));*/
 
   aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_ABORT"));
   createAction( AbortId, tr("TOP_ABORT"), QIconSet(aPixmap),
@@ -439,22 +332,37 @@ void YACSGui_Module::createActions()
                 tr("MEN_RESET"), tr("STB_RESET"), 
 		0, aDesktop, false, this, SLOT(onReset()));
 
-  aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_WITHOUTSTOP_MODE"));
-  createAction( WithoutStopModeId, tr("TOP_WITHOUTSTOP_MODE"), QIconSet(aPixmap),
-                tr("MEN_WITHOUTSTOP_MODE"), tr("STB_WITHOUTSTOP_MODE"), 
-		0, aDesktop, true, this, SLOT(onWithoutStopMode()));
-  action(WithoutStopModeId)->setOn(true);
-
-  aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_BREAKPOINTS_MODE"));
-  createAction( BreakpointsModeId, tr("TOP_BREAKPOINTS_MODE"), QIconSet(aPixmap),
-                tr("MEN_BREAKPOINTS_MODE"), tr("STB_BREAKPOINTS_MODE"), 
-		0, aDesktop, true, this, SLOT(onBreakpointsMode()));
-
-  aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_STEPBYSTEP_MODE"));
-  createAction( StepByStepModeId, tr("TOP_STEPBYSTEP_MODE"), QIconSet(aPixmap),
-                tr("MEN_STEPBYSTEP_MODE"), tr("STB_STEPBYSTEP_MODE"), 
-		0, aDesktop, true, this, SLOT(onStepByStepMode()));
-
+  {
+    QIconSet runws;
+    aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_WITHOUTSTOP_ACTIVE_MODE"));
+    runws.setPixmap( aPixmap, QIconSet::Automatic, QIconSet::Normal, QIconSet::On);
+    aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_WITHOUTSTOP_MODE"));
+    runws.setPixmap( aPixmap, QIconSet::Automatic, QIconSet::Normal,QIconSet::Off);
+    createAction( WithoutStopModeId, tr("TOP_WITHOUTSTOP_MODE"), runws,
+                  tr("MEN_WITHOUTSTOP_MODE"), tr("STB_WITHOUTSTOP_MODE"), 
+                  0, aDesktop, true, this, SLOT(onWithoutStopMode()));
+    action(WithoutStopModeId)->setOn(true);
+  }
+  {
+    QIconSet runws;
+    aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_BREAKPOINTS_ACTIVE_MODE"));
+    runws.setPixmap( aPixmap, QIconSet::Automatic, QIconSet::Normal, QIconSet::On);
+    aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_BREAKPOINTS_MODE"));
+    runws.setPixmap( aPixmap, QIconSet::Automatic, QIconSet::Normal,QIconSet::Off);
+    createAction( BreakpointsModeId, tr("TOP_BREAKPOINTS_MODE"), runws,
+                  tr("MEN_BREAKPOINTS_MODE"), tr("STB_BREAKPOINTS_MODE"), 
+                  0, aDesktop, true, this, SLOT(onBreakpointsMode()));
+  }
+  {
+    QIconSet runws;
+    aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_STEPBYSTEP_ACTIVE_MODE"));
+    runws.setPixmap( aPixmap, QIconSet::Automatic, QIconSet::Normal, QIconSet::On);
+    aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_STEPBYSTEP_MODE"));
+    runws.setPixmap( aPixmap, QIconSet::Automatic, QIconSet::Normal,QIconSet::Off);
+    createAction( StepByStepModeId, tr("TOP_STEPBYSTEP_MODE"), runws,
+                  tr("MEN_STEPBYSTEP_MODE"), tr("STB_STEPBYSTEP_MODE"), 
+                  0, aDesktop, true, this, SLOT(onStepByStepMode()));
+  }
   aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_TOGGLESTOPONERROR"));
   createAction( ToggleStopOnErrorId, tr("TOP_TOGGLESTOPONERROR"), QIconSet(aPixmap),
                 tr("MEN_TOGGLESTOPONERROR"), tr("STB_TOGGLESTOPONERROR"), 
@@ -544,7 +452,7 @@ void YACSGui_Module::createMenus()
   createMenu( NewCorbaComponentId, newComponentId, -1 );
   int newNodeId = createMenu( tr("MEN_NEW_NODE"), createId );
   createMenu( NewSalomeServiceNodeId, newNodeId, -1 );
-  createMenu( NewCorbaServiceNodeId, newNodeId, -1 );
+  //createMenu( NewCorbaServiceNodeId, newNodeId, -1 );
   createMenu( NewCppNodeId, newNodeId, -1 );
   createMenu( NewServiceInlineNodeId, newNodeId, -1 );
   createMenu( NewXmlNodeId, newNodeId, -1 );
@@ -564,46 +472,32 @@ void YACSGui_Module::createMenus()
   createMenu( NewBatchExecutionId, execId, -1 );
 
   //Menu "Execute" (run gui mode)
-  createMenu( StartResumeId, execId, -1 );
-  //createMenu( ExecuteId, execId, -1 );
-  //createMenu( ExecuteStById, execId, -1 );
-  createMenu( PauseId, execId, -1 );
-  //createMenu( ResumeId, execId, -1 );
-  createMenu( AbortId, execId, -1 );
-  createMenu( ResetId, execId, -1 );
-  createMenu( separator(),execId, -1 );
   createMenu( WithoutStopModeId, execId, -1 );
   createMenu( BreakpointsModeId, execId, -1 );
   createMenu( StepByStepModeId, execId, -1 );
-  createMenu( ToggleStopOnErrorId, execId, -1 );
-  //createMenu( StopOnErrorId, execId, -1 );
+
   createMenu( separator(),execId, -1 );
+
+  createMenu( ToggleStopOnErrorId, execId, -1 );
+
+  createMenu( separator(),execId, -1 );
+
+  createMenu( StartResumeId, execId, -1 );
+  createMenu( PauseId, execId, -1 );
+  createMenu( AbortId, execId, -1 );
+  createMenu( ResetId, execId, -1 );
+
+  createMenu( separator(),execId, -1 );
+
   createMenu( ExecuteInBatchId, execId, -1 );
   createMenu( ConnectToRunningId, execId, -1 );
+
   createMenu( separator(),execId, -1 );
+
   createMenu( SaveExecutionStateId, execId, -1 );
   createMenu( NewEditionId, execId, -1 );
   
-
-  /*  int supervisorId = createMenu( tr( "MEN_SUPERVISOR" ), -1, -1, 10 );
-  createMenu( separator(),             supervisorId, -1 );
-  createMenu( SuspendResumeDataflowId, supervisorId, -1 );
-  createMenu( RemoteRunDataflowId,     supervisorId, -1 );
-  createMenu( RunDataflowId,           supervisorId, -1 );
-  createMenu( KillDataflowId,          supervisorId, -1 );
-  createMenu( separator(),             supervisorId, -1 );
-  createMenu( ToggleStopOnErrorId,     supervisorId, -1 );
-  createMenu( separator(),             supervisorId, -1 );
-  createMenu( AddDataflowInStudyId,    supervisorId, -1 );
-  createMenu( ChangeInformationsId,    supervisorId, -1 );
-  createMenu( separator(),             supervisorId, -1 );
-  createMenu( SaveDataflowStateId,     supervisorId, -1 );
-  createMenu( ReloadDataflowId,        supervisorId, -1 );
-  createMenu( ArrangeNodesId,          supervisorId, -1 );
-  createMenu( RebuildLinksId,          supervisorId, -1 );
-  */
-
-      //Toolbar "Schema"
+  //Toolbar "Schema"
 
   myToolBars[SchemaTbId] = new QtxToolBar(true ,application()->desktop());
   action(NewSchemaId)->addTo(myToolBars[SchemaTbId]);
@@ -625,7 +519,7 @@ void YACSGui_Module::createMenus()
   
   myToolButtons[NewNodeBtn] = new SUIT_ToolButton(myToolBars[CreationTbId], "new_node_btn");
   myToolButtons[NewNodeBtn]->AddAction(action(NewSalomeServiceNodeId));
-  myToolButtons[NewNodeBtn]->AddAction(action(NewCorbaServiceNodeId));
+  //myToolButtons[NewNodeBtn]->AddAction(action(NewCorbaServiceNodeId));
   myToolButtons[NewNodeBtn]->AddAction(action(NewCppNodeId));
   myToolButtons[NewNodeBtn]->AddAction(action(NewServiceInlineNodeId));
   myToolButtons[NewNodeBtn]->AddAction(action(NewXmlNodeId));
@@ -645,14 +539,6 @@ void YACSGui_Module::createMenus()
   createTool( ReloadExecutionId,  executionTbId);
 
   //Toolbar "Execute" (run gui mode)
-  createTool( StartResumeId, executionTbId);
-  //createTool( ExecuteId, executionTbId);
-  //createTool( ExecuteStById,  executionTbId);
-  createTool( PauseId,  executionTbId);
-  //createTool( ResumeId,  executionTbId);
-  createTool( AbortId,  executionTbId);
-  createTool( ResetId,  executionTbId);
-  createTool( separator(),  executionTbId);
 
   QActionGroup* anExeModeGroup = new QActionGroup( application()->desktop() );
   anExeModeGroup->setExclusive( true );
@@ -660,21 +546,30 @@ void YACSGui_Module::createMenus()
   anExeModeGroup->add(action(BreakpointsModeId));
   anExeModeGroup->add(action(StepByStepModeId));
   anExeModeGroup->addTo(toolMgr()->toolBar(executionTbId));
+//   createTool( WithoutStopModeId,  executionTbId);
+//   createTool( BreakpointsModeId,  executionTbId);
+//   createTool( StepByStepModeId,  executionTbId);
 
-  createTool( WithoutStopModeId,  executionTbId);
-  createTool( BreakpointsModeId,  executionTbId);
-  createTool( StepByStepModeId,  executionTbId);
-  createTool( ToggleStopOnErrorId,  executionTbId);
-  //createTool( StopOnErrorId,  executionTbId);
+//   createTool( separator(),  executionTbId);
+
+//   createTool( ToggleStopOnErrorId,  executionTbId);
+
+//   createTool( separator(),  executionTbId);
+
+  createTool( StartResumeId, executionTbId);
+  createTool( PauseId,  executionTbId);
+  createTool( AbortId,  executionTbId);
+  createTool( ResetId,  executionTbId);
+
   createTool( separator(),  executionTbId);
 
   createTool( ExecuteInBatchId,  executionTbId);
   createTool( ConnectToRunningId, executionTbId);
+
   createTool( separator(),  executionTbId);
+
   createTool( SaveExecutionStateId,  executionTbId);
   createTool( NewEditionId,  executionTbId);
-  
-  //createTool( SuspendResumeDataflowId, executionTbId); //For testing
 
   //Toolbar "Visualization"
   int visualizationTbId = createTool( tr("TOOLBAR_VISUALIZATION") );
@@ -684,34 +579,6 @@ void YACSGui_Module::createMenus()
   createTool( DataStreamViewId, visualizationTbId);
   createTool( ArrangeNodesId, visualizationTbId);
   createTool( RebuildLinksId, visualizationTbId);
-
-  /*int dataflowTbId = createTool( tr("TOOLBAR_DATAFLOW") );
-  createTool( NewSchemaId,          dataflowTbId );
-  createTool( ModifyDataflowId,       dataflowTbId );
-  createTool( ModifySupervDataflowId, dataflowTbId );
-  createTool( ImportSchemaId,       dataflowTbId );
-  createTool( ImportSupervSchemaId, dataflowTbId );
-  createTool( ExportSchemaId,       dataflowTbId );
-  createTool( separator(),            dataflowTbId );
-  createTool( AddDataflowInStudyId,   dataflowTbId );
-  createTool( separator(),            dataflowTbId );
-  createTool( ReloadDataflowId,       dataflowTbId );
-  createTool( ArrangeNodesId,         dataflowTbId );
-  createTool( RebuildLinksId,         dataflowTbId );
-  createTool( separator(),            dataflowTbId );
-  createTool( FullViewId,             dataflowTbId );
-  createTool( ControlViewId,          dataflowTbId );
-  createTool( TableViewId,            dataflowTbId );
-  createTool( separator(),            dataflowTbId );
-  createTool( SaveDataflowStateId,    dataflowTbId );
-
-  int executionTbId = createTool( tr("TOOLBAR_EXECUTION") );
-  createTool( SuspendResumeDataflowId, executionTbId );
-  createTool( RemoteRunDataflowId,     executionTbId );
-  createTool( RunDataflowId,           executionTbId );
-  createTool( separator(),             executionTbId );
-  createTool( KillDataflowId,          executionTbId );
-  createTool( ToggleStopOnErrorId,     executionTbId );*/
 }
 
 //! Creates module popups.
@@ -884,11 +751,11 @@ QString YACSGui_Module::engineIOR() const
 //! Gets a reference to the module's engine
 /*!
  */
-YACSGui_ORB::YACSGui_Gen_ptr YACSGui_Module::InitYACSGuiGen( SalomeApp_Application* app )
+YACS_ORB::YACS_Gen_ptr YACSGui_Module::InitYACSGuiGen( SalomeApp_Application* app )
 {
   MESSAGE("YACSGui_Module::InitYACSGuiGen"); 
   Engines::Component_var comp = app->lcc()->FindOrLoad_Component( /*"YACSContainer"*/"FactoryServerPy", "YACS" );
-  YACSGui_ORB::YACSGui_Gen_ptr clr = YACSGui_ORB::YACSGui_Gen::_narrow(comp);
+  YACS_ORB::YACS_Gen_ptr clr = YACS_ORB::YACS_Gen::_narrow(comp);
   ASSERT(!CORBA::is_nil(clr));
   return clr;
 }
@@ -2159,31 +2026,31 @@ void YACSGui_Module::loadCatalog()
   YACS::YACSLoader* _loader = new YACS::YACSLoader();
   _loader->registerProcCataLoader();
 
-  SALOME_ModuleCatalog::ListOfComponents_var aComponentList = aModuleCatalog->GetComponentList();
-  long aNbComp = aComponentList->length();
-  printf("Number of components - %d\n", aNbComp);
-  for( int i = 0; i < aNbComp; i++ )
-  {
-    SALOME_ModuleCatalog::Acomponent_ptr aComponent = aModuleCatalog->GetComponent( (char*)aComponentList[i] );
-    printf("Component N%d - %s ", i, (char*)aComponent->componentusername() );
+//   SALOME_ModuleCatalog::ListOfComponents_var aComponentList = aModuleCatalog->GetComponentList();
+//   long aNbComp = aComponentList->length();
+//   printf("Number of components - %d\n", aNbComp);
+//   for( int i = 0; i < aNbComp; i++ )
+//   {
+//     SALOME_ModuleCatalog::Acomponent_ptr aComponent = aModuleCatalog->GetComponent( (char*)aComponentList[i] );
+//     printf("Component N%d - %s ", i, (char*)aComponent->componentusername() );
 
-    SALOME_ModuleCatalog::ListOfInterfaces* anInterfaceList = aComponent->GetInterfaceList();
-    long aNbInterf = anInterfaceList->length();
-    printf("(%d)\n", aNbInterf);
-    for ( int j = 0; j < aNbInterf; j++ )
-    {
-      SALOME_ModuleCatalog::DefinitionInterface* anInterface = aComponent->GetInterface( (char*)(*anInterfaceList)[j] );
-      printf("  Interface N%d - %s ", j, (char*)anInterface->interfacename );
+//     SALOME_ModuleCatalog::ListOfInterfaces* anInterfaceList = aComponent->GetInterfaceList();
+//     long aNbInterf = anInterfaceList->length();
+//     printf("(%d)\n", aNbInterf);
+//     for ( int j = 0; j < aNbInterf; j++ )
+//     {
+//       SALOME_ModuleCatalog::DefinitionInterface* anInterface = aComponent->GetInterface( (char*)(*anInterfaceList)[j] );
+//       printf("  Interface N%d - %s ", j, (char*)anInterface->interfacename );
 
-      long aNbServices = anInterface->interfaceservicelist.length();
-      printf("(%d)\n", aNbServices);
-      for ( int k = 0; k < aNbServices; k++ )
-      {
-	SALOME_ModuleCatalog::Service* Service = &(anInterface->interfaceservicelist[k]);
-	printf("    Service N%d - %s\n", k, (char*)Service->ServiceName );
-      }
-    }
-  }
+//       long aNbServices = anInterface->interfaceservicelist.length();
+//       printf("(%d)\n", aNbServices);
+//       for ( int k = 0; k < aNbServices; k++ )
+//       {
+// 	SALOME_ModuleCatalog::Service* Service = &(anInterface->interfaceservicelist[k]);
+// 	printf("    Service N%d - %s\n", k, (char*)Service->ServiceName );
+//       }
+//     }
+//   }
 }
 
 //! Create new instance of data model and return it.
@@ -2232,7 +2099,7 @@ YACS::HMI::GuiContext* YACSGui_Module::ImportProcFromFile( const QString& theFil
   SCRUTE(fromSuperv);
   if (fromSuperv)
     {
-      //YACSGui_ORB::YACSGui_Gen_ptr engineRef = InitYACSGuiGen(getApp());
+      //YACS_ORB::YACS_Gen_ptr engineRef = InitYACSGuiGen(getApp());
       try
         {
           char file[]="/tmp/XXXXXX";
@@ -2382,7 +2249,7 @@ YACSGui_Executor* YACSGui_Module::getExecutor( YACS::ENGINE::Proc* theProc )
       if ( aYACSOrbDial->exec() )
       {
 	Engines::Component_var comp = getApp()->lcc()->LoadComponent( aYACSOrbDial->getParams(), "YACS" );
-	YACSGui_ORB::YACSGui_Gen_ptr clr = YACSGui_ORB::YACSGui_Gen::_narrow(comp);
+	YACS_ORB::YACS_Gen_ptr clr = YACS_ORB::YACS_Gen::_narrow(comp);
 	ASSERT(!CORBA::is_nil(clr));
 	
 	anExecutor = new YACSGui_Executor(this, theProc);
@@ -2543,8 +2410,8 @@ void YACSGui_Module::onCreateExecution()
 
         QString tmpDir = SALOMEDS_Tool::GetTmpDir();
         QDir aTmpDir( tmpDir );
-        aTmpDir.mkdir( "YASCGui" );
-        aTmpDir.cd( "YASCGui", false );
+        aTmpDir.mkdir( "YACSGui" );
+        aTmpDir.cd( "YACSGui", false );
 
 	QDateTime curTime = QDateTime::currentDateTime();   
 	QString aRunName = aSchemaName + "-" + curTime.toString( Qt::ISODate );
@@ -2659,7 +2526,7 @@ void YACSGui_Module::onExecute()
   if (anExecutor)
     if ( anExecutor->checkEndOfDataFlow(false) ) // finished or not started
     {
-      if ( anExecutor->getCurrentExecMode() == YACSGui_ORB::STEPBYSTEP )
+      if ( anExecutor->getCurrentExecMode() == YACS_ORB::STEPBYSTEP )
 	anExecutor->setContinueMode();
       anExecutor->runDataflow(true); // remote run only
     }
@@ -3255,7 +3122,7 @@ void YACSGui_Module::setModifyActionShown(const bool on)
   setMenuShown( NewSalomePythonComponentId,on );
   setMenuShown( NewCorbaComponentId,on );
   setMenuShown( NewSalomeServiceNodeId, on );
-  setMenuShown( NewCorbaServiceNodeId, on );
+  //setMenuShown( NewCorbaServiceNodeId, on );
   setMenuShown( NewCppNodeId, on );
   setMenuShown( NewServiceInlineNodeId,on );
   setMenuShown( NewXmlNodeId,on );

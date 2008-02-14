@@ -164,11 +164,20 @@ msgstr "load_execution_state.png"
 msgid "ICON_WITHOUTSTOP_MODE"
 msgstr "run.png"
 
+msgid "ICON_WITHOUTSTOP_ACTIVE_MODE"
+msgstr "run_active.png"
+
 msgid "ICON_BREAKPOINTS_MODE"
 msgstr "breakpoints.png"
 
+msgid "ICON_BREAKPOINTS_ACTIVE_MODE"
+msgstr "breakpoints_active.png"
+
 msgid "ICON_STEPBYSTEP_MODE"
 msgstr "step_by_step.png"
+
+msgid "ICON_STEPBYSTEP_ACTIVE_MODE"
+msgstr "step_by_step_active.png"
 
 msgid "ICON_EXECUTE"
 msgstr "run.png"

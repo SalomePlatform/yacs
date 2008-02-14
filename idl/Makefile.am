@@ -15,8 +15,8 @@ install-exec-local: install-pyidl
 
 uninstall-local:
 	rm -rf $(DESTDIR)$(salomepythondir)/yacsgui_idl.py
-	rm -rf $(DESTDIR)$(salomepythondir)/YACSGui_ORB
-	rm -rf $(DESTDIR)$(salomepythondir)/YACSGui_ORB__POA
+	rm -rf $(DESTDIR)$(salomepythondir)/YACS_ORB
+	rm -rf $(DESTDIR)$(salomepythondir)/YACS_ORB__POA
 
 install-pyidl: $(IDL_FILES)
 	$(INSTALL) -d  $(DESTDIR)$(salomepythondir)
@@ -31,6 +31,6 @@ dist-hook:
 	rm -f $(distdir)/yacsgui.hh
 
 clean-local:
-	rm -rf YACSGui_ORB  YACSGui_ORB__POA yacsgui.hh  yacsgui_idl.py yacsguiSK.cc
+	rm -rf YACS_ORB  YACS_ORB__POA yacsgui.hh  yacsgui_idl.py yacsguiSK.cc
 
 include $(top_srcdir)/adm/unix/make_end.am

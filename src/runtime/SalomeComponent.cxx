@@ -95,7 +95,9 @@ void SalomeComponent::load()
       if(CORBA::is_nil(_objComponent))
         {
           containerC->unLock();
-          throw Exception("SalomeComponent::load : Error while trying to create a new component.");
+          std::string text="Error while trying to create a new component: component '"+ _compoName;
+          text=text+"' is not installed or it's a wrong name";
+          throw Exception(text);
         }
       containerC->unLock();
       return;

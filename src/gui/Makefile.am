@@ -103,7 +103,8 @@ LIBICONS = \
 	import_superv_dataflow.png \
 	insert_file.png \
 	kill.png \
-	mode_breakpoint.png \
+	breakpoints.png \
+	breakpoints_active.png \
 	mode_continue.png \
 	modify_dataflow.png \
 	modify_superv_dataflow.png \
@@ -113,8 +114,10 @@ LIBICONS = \
 	reload.png \
 	remote_run.png \
 	run.png \
+	run_active.png \
 	save_dataflow_state.png \
 	step_by_step.png \
+	step_by_step_active.png \
 	suspend_resume.png \
 	table_view.png \
 	toggle_stop_on_error.png \
@@ -208,7 +211,6 @@ libYACS_la_LIBADD = \
 	../prs/libYACSPrs.la \
 	../lineconn2d/libLineConn2d.la \
 	../hmi/libHMI.la \
-	../yacsorb/libYACSorb.la \
 	@GRAPHVIZ_LIBADD@ @QSCINTILLA_LIBADD@ \
 	@QT_MT_LIBADD@\
 	-lQxGraph -lCAM -lsuit -lLightApp $(EXPAT_LIBS) $(LIBXML_LIBS)

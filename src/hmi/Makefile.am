@@ -60,7 +60,6 @@ libHMI_la_LDFLAGS = @QT_MT_LDFLAGS@
 libHMI_la_LIBADD = \
 	../runtime/libYACSRuntimeSALOME.la \
 	../yacsloader/libYACSloader.la \
-	../yacsorb/libYACSorb.la \
 	@QT_MT_LIBADD@ \
 	$(EXPAT_LIBS) $(LIBXML_LIBS)
 

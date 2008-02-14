@@ -17,8 +17,8 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 import sys
-import YACSGui_ORB__POA
-import YACSGui_ORB
+import YACS_ORB__POA
+import YACS_ORB
 import SALOME_ComponentPy
 import SALOME_DriverPy
 
@@ -31,7 +31,7 @@ import salomeloader
 import pilot
 import traceback
 
-class proc_i(YACSGui_ORB__POA.ProcExec):
+class proc_i(YACS_ORB__POA.ProcExec):
     def __init__(self, xmlFile):
         self.l = loader.YACSLoader()
         self.e = pilot.ExecutorSwig()
@@ -122,13 +122,13 @@ class proc_i(YACSGui_ORB__POA.ProcExec):
         pass
 
     def setExecMode(self, mode):
-        if mode == YACSGui_ORB.CONTINUE:
+        if mode == YACS_ORB.CONTINUE:
             self.e.setExecMode(0)
             pass
-        if mode == YACSGui_ORB.STEPBYSTEP:
+        if mode == YACS_ORB.STEPBYSTEP:
             self.e.setExecMode(1)
             pass
-        if mode == YACSGui_ORB.STOPBEFORENODES:
+        if mode == YACS_ORB.STOPBEFORENODES:
             self.e.setExecMode(2)
             pass
         pass
@@ -167,12 +167,12 @@ class proc_i(YACSGui_ORB__POA.ProcExec):
     pass
 
 
-class YACS(YACSGui_ORB__POA.YACSGui_Gen,
+class YACS(YACS_ORB__POA.YACS_Gen,
               SALOME_ComponentPy.SALOME_ComponentPy_i,
               SALOME_DriverPy.SALOME_DriverPy_i):
     """
     To be a SALOME component, this Python class must have the component name
-    (YACS) and inherit the YACSGui_Gen class build from idl compilation
+    (YACS) and inherit the YACS_Gen class build from idl compilation
     with omniidl and also the class SALOME_ComponentPy_i which defines general
     SALOME component behaviour.
     """

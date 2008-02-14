@@ -145,13 +145,13 @@ msgid "MEN_NEW_NODE"
 msgstr "New Node"
 
 msgid "MEN_NEW_SALOME_SERVICE_NODE"
-msgstr "SALOME service"
+msgstr "From catalog"
 
 msgid "TOP_NEW_SALOME_SERVICE_NODE"
-msgstr "New SALOME service node"
+msgstr "New node from catalog"
 
 msgid "STB_NEW_SALOME_SERVICE_NODE"
-msgstr "Create new SALOME service node"
+msgstr "Create new node from catalog"
 
 msgid "MEN_NEW_CORBA_SERVICE_NODE"
 msgstr "CORBA service"
@@ -402,13 +402,13 @@ msgid "STB_SAVEDATAFLOWSTATE"
 msgstr "Save Dataflow state"
 
 msgid "MEN_TOGGLESTOPONERROR"
-msgstr "Stop on error"
+msgstr "Stop on error Option"
 
 msgid "TOP_TOGGLESTOPONERROR"
-msgstr "Stop on error"
+msgstr "Stop on error Option"
 
 msgid "STB_TOGGLESTOPONERROR"
-msgstr "Stop on error"
+msgstr "Stop on error Option"
 
 msgid "MEN_SUSPEND_RESUME_DATAFLOW"
 msgstr "Remote Run - Control"
@@ -583,28 +583,28 @@ msgid "STB_RESET"
 msgstr "Reset"
 
 msgid "TOP_WITHOUTSTOP_MODE"
-msgstr "Without stop"
+msgstr "Without stop Mode"
 
 msgid "MEN_WITHOUTSTOP_MODE"
-msgstr "Without stop"
+msgstr "Without stop Mode"
 
 msgid "STB_WITHOUTSTOP_MODE"
 msgstr "Without stop mode of schema execution"
 
 msgid "TOP_BREAKPOINTS_MODE"
-msgstr "Breakpoints"
+msgstr "Breakpoints Mode"
 
 msgid "MEN_BREAKPOINTS_MODE"
-msgstr "Breakpoints"
+msgstr "Breakpoints Mode"
 
 msgid "STB_BREAKPOINTS_MODE"
 msgstr "Breakpoints mode of schema execution"
 
 msgid "TOP_STEPBYSTEP_MODE"
-msgstr "Step by step"
+msgstr "Step by step Mode"
 
 msgid "MEN_STEPBYSTEP_MODE"
-msgstr "Step by step"
+msgstr "Step by step Mode"
 
 msgid "STB_STEPBYSTEP_MODE"
 msgstr "Step by step mode of schema execution"
@@ -792,7 +792,7 @@ msgid "POP_CREATE_CONTAINER_DEF"
 msgstr "Create a Container definition"
 
 msgid "POP_SALOME_SERVICE"
-msgstr "SALOME service"
+msgstr "From catalog"
 
 msgid "POP_CORBA_SERVICE"
 msgstr "CORBA service"

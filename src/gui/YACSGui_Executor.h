@@ -60,7 +60,7 @@ class YACSGui_Executor : public QObject, public QThread
 
   void setLoadStateFile(std::string xmlFile);
   
-  YACSGui_ORB::executionMode getCurrentExecMode();
+  YACS_ORB::executionMode getCurrentExecMode();
   int getExecutorState();
   
   void setBreakpointList(std::list<std::string> breakpointList);
@@ -72,7 +72,7 @@ class YACSGui_Executor : public QObject, public QThread
   bool isRunning() const { return _isRunning; };
   bool isStopOnError() const { return _isStopOnError; }
 
-  void setEngineRef(YACSGui_ORB::YACSGui_Gen_ptr theRef);
+  void setEngineRef(YACS_ORB::YACS_Gen_ptr theRef);
 
   //YACS::ENGINE::Executor* getLocalEngine() { return _localEngine; };
   YACS::ENGINE::Proc* getProc() { return _proc; };
@@ -85,9 +85,9 @@ class YACSGui_Executor : public QObject, public QThread
  private:
   YACS::ENGINE::Executor* _localEngine;
   YACS::ENGINE::Proc* _proc;
-  YACSGui_ORB::YACSGui_Gen_var _engineRef;
-  YACSGui_ORB::ProcExec_var _procRef;
-  YACSGui_ORB::Observer_var _observerRef;
+  YACS_ORB::YACS_Gen_var _engineRef;
+  YACS_ORB::ProcExec_var _procRef;
+  YACS_ORB::Observer_var _observerRef;
   YACS::ExecutionMode _execMode;
   Observer_i* _serv;
   YACSGui_Graph* _graph;

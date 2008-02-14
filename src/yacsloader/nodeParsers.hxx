@@ -388,6 +388,11 @@ struct servicetypeParser:public inlinetypeParser<T>
       DEBTRACE( "service_method: " << name )             
       if(this->_node==0)
         throw YACS::Exception("ServiceNode must be completely defined before defining its method");
+      if(name == "")
+      {
+        this->logError("a service name must be a non empty string");
+        return;
+      }
       this->_node->setMethod(name);
     }
 

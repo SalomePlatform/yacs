@@ -389,6 +389,12 @@ public:
                  Output, AnyOutput, OutputCorba, OutputPy, OutputXml,
 		 OutputBasicStream, OutputCalStream, OutputPalmStream, OutputDataStream } PortType;
 
+  struct SelectDataTypeFor
+  {
+    bool myIn;
+    int myRow;
+  };
+
 public:
                                       YACSGui_NodePage();
 				      ~YACSGui_NodePage();
@@ -417,6 +423,8 @@ public:
   virtual void                        notifyNodeCreateBody( YACS::HMI::Subject* theSubject ) {}
   virtual void                        notifyNodeCreateNode( YACS::HMI::Subject* theSubject ) {}
 
+  bool                                isSelectDataType();
+
 protected:
   virtual void                        updateState();
   void                                updateBlocSize();
@@ -427,6 +435,8 @@ protected:
   YACS::HMI::SubjectNode*             mySNode;
   NodeType                            myType;
   YACSGui_InputPanel::PageMode        myMode;
+
+  SelectDataTypeFor                   mySelectDataTypeFor;
 };
 
 /*
@@ -451,6 +461,8 @@ public:
   virtual void                        notifyNodeProgress();
   virtual void                        notifyInPortValues( std::map<std::string,std::string> theInPortName2Value );
   virtual void                        notifyOutPortValues( std::map<std::string,std::string> theOutPortName2Value );
+  
+  virtual void                        setDataType( YACS::ENGINE::TypeCode* theDataType );
 
   void                                checkModifications();
 
@@ -475,6 +487,7 @@ protected slots:
   void                                onMovedDown( const int theDownRow );
   void                                onAdded( const int theRow );
   void                                onRemoved( const int theRow );
+  void                                onSelectDataType( const int theRow, const int theCol );
   
 protected:
 #ifdef HAVE_QEXTSCINTILLA_H
@@ -490,13 +503,17 @@ private:
   YACS::ENGINE::TypeCode*             createTypeCode( YACS::ENGINE::DynType, YACSGui_Table*, int );
   bool                                isStored( YACS::ENGINE::Port* );
   void                                resetStoredPortsMaps();
+  void                                resetDataTypeMaps();
   void                                resetPLists();
   void                                resetIPLists();
   void                                resetOPLists();
   void                                orderPorts( bool withFilling = false );
 
-  std::map<int,YACS::ENGINE::InPort*>  myRow2StoredInPorts;
-  std::map<int,YACS::ENGINE::OutPort*> myRow2StoredOutPorts;
+  std::map<int,YACS::ENGINE::InPort*>   myRow2StoredInPorts;
+  std::map<int,YACS::ENGINE::OutPort*>  myRow2StoredOutPorts;
+  std::map<int,YACS::ENGINE::TypeCode*> myRow2DataTypeIn;
+  std::map<int,YACS::ENGINE::TypeCode*> myRow2DataTypeOut;
+
   QPtrList<YACS::ENGINE::InPort>       myIPList;
   QPtrList<YACS::ENGINE::OutPort>      myOPList;
   bool                                 myIsNeedToReorder;
@@ -563,7 +580,9 @@ private:
   void                                setInputPorts();
   void                                setOutputPorts();
   YACS::ENGINE::TypeCode*             createTypeCode( YACS::ENGINE::DynType, YACSGui_Table*, int );
-  void                                buildTree( YACS::ENGINE::Node* theNode, QListViewItem* theParent );
+  void                                buildTree( YACS::ENGINE::Node* theNode,
+                                                 QListViewItem* nodeLabel,
+                                                 QListViewItem* compoNodeLabel);
 
  protected:
 #ifdef HAVE_QEXTSCINTILLA_H
