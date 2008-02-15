@@ -142,7 +142,7 @@ bool YACSGui_DataModel::open( const QString& theFileName, CAM_Study* theStudy, Q
 	      return 0;
 	    }
 	    
-	    aProc->setName( QFileInfo(aSchemaFileName).fileName() );
+	    aProc->setName( QFileInfo(aSchemaFileName).baseName() );
 	    myObjectProcMap.insert( std::make_pair( sobj->GetID(), aProc ) );
 
 	    // create GuiContext for Proc*
@@ -234,7 +234,7 @@ void YACSGui_DataModel::createNewSchema( QString& theName, YACS::ENGINE::Proc* p
     aName = _PTR(AttributeName) ( anAttr );
     
     if ( !theName.isEmpty() )
-      aName->SetValue( QFileInfo(theName).fileName() );
+      aName->SetValue( QFileInfo(theName).baseName() );
     else
     {
       theName = generateSchemeName(aStudy, aSComp, "Schema");
@@ -273,7 +273,7 @@ void YACSGui_DataModel::createNewRun( _PTR(SObject) parent, QString& theName, YA
 
     QDateTime curTime = QDateTime::currentDateTime();
    
-    QString name = curTime.toString( Qt::ISODate );//"24/10/2007-12:00";// test time
+    QString name = curTime.toString( "yyyyMMdd_hhmmss" );//"24/10/2007-12:00";// test time
     if (parent->FindAttribute( anAttr, "AttributeName" ))
     {
       aName = _PTR(AttributeName) ( anAttr );
@@ -379,7 +379,7 @@ void YACSGui_DataModel::updateItem( YACS::ENGINE::Proc* theProc, bool theIsRecur
 	  aName = _PTR(AttributeName) ( anAttr );
 	  
 	  QString aRunName = aName->Value();
-	  int aRLength = QDateTime::currentDateTime().toString( Qt::ISODate ).length()+1;
+	  int aRLength = QDateTime::currentDateTime().toString( "yyyyMMdd_hhmmss" ).length()+1;
 	  aRunName = QString( theProc->getName() ) + aRunName.right( aRLength );
 
 	  aName->SetValue( aRunName );

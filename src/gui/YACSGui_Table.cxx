@@ -35,6 +35,7 @@
 #include <qtooltip.h>
 #include <qwhatsthis.h>
 #include <qobjectlist.h>
+#include <climits>
 
 
 /*! constructor
@@ -103,6 +104,8 @@ QWidget* YACSGui_TableItem::createEditor() const
     {
       QtxIntSpinBox* sb = new QtxIntSpinBox( 0 );
       bool ok = false;
+      sb->setMinValue(LONG_MIN);
+      sb->setMaxValue(LONG_MAX);
       int d = text().toInt( &ok );
       sb->setValue( ok ? d : 0 );
       res = sb;

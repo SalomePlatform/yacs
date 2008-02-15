@@ -2886,6 +2886,9 @@ YACSGui_InlineNodePage::YACSGui_InlineNodePage( QWidget* theParent, const char* 
   aTable->horizontalHeader()->setLabel( 1, tr( "Class" ) );
   aTable->horizontalHeader()->setLabel( 2, tr( "Type" ) );
   aTable->horizontalHeader()->setLabel( 3, tr( "Value" ) );
+  aTable->setColumnWidth(0,58);
+  aTable->setColumnWidth(1,84);
+  aTable->setColumnWidth(2,80);
   aTable->setCellType( -1, 0, YACSGui_Table::String );
   aTable->setCellType( -1, 1, YACSGui_Table::Combo );
   aTable->setCellType( -1, 2, YACSGui_Table::ComboSelect );
@@ -2920,6 +2923,9 @@ YACSGui_InlineNodePage::YACSGui_InlineNodePage( QWidget* theParent, const char* 
   aTable->horizontalHeader()->setLabel( 2, tr( "Type" ) );
   aTable->horizontalHeader()->setLabel( 3, tr( "Value" ) );
   aTable->horizontalHeader()->setLabel( 4, tr( "Is in study" ) );
+  aTable->setColumnWidth(0,58);
+  aTable->setColumnWidth(1,84);
+  aTable->setColumnWidth(2,80);
   aTable->setCellType( -1, 0, YACSGui_Table::String );
   aTable->setCellType( -1, 1, YACSGui_Table::Combo );
   aTable->setCellType( -1, 2, YACSGui_Table::ComboSelect );
@@ -4852,6 +4858,9 @@ YACSGui_ServiceNodePage::YACSGui_ServiceNodePage( QWidget* theParent, const char
   aTable->horizontalHeader()->setLabel( 1, tr( "Class" ) );
   aTable->horizontalHeader()->setLabel( 2, tr( "Type" ) );
   aTable->horizontalHeader()->setLabel( 3, tr( "Value" ) );
+  aTable->setColumnWidth(0,58);
+  aTable->setColumnWidth(1,84);
+  aTable->setColumnWidth(2,80);
   aTable->setCellType( -1, 0, YACSGui_Table::String );
   aTable->setCellType( -1, 1, YACSGui_Table::Combo );
   aTable->setCellType( -1, 2, YACSGui_Table::Combo );
@@ -4879,6 +4888,10 @@ YACSGui_ServiceNodePage::YACSGui_ServiceNodePage( QWidget* theParent, const char
   aTable->horizontalHeader()->setLabel( 2, tr( "Type" ) );
   aTable->horizontalHeader()->setLabel( 3, tr( "Value" ) );
   aTable->horizontalHeader()->setLabel( 4, tr( "Is in study" ) );
+  aTable->setColumnWidth(0,58);
+  aTable->setColumnWidth(1,84);
+  aTable->setColumnWidth(2,80);
+
   aTable->setCellType( -1, 0, YACSGui_Table::String );
   aTable->setCellType( -1, 1, YACSGui_Table::Combo );
   aTable->setCellType( -1, 2, YACSGui_Table::Combo );

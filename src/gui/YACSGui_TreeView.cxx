@@ -262,7 +262,7 @@ YACSGui_EditionTreeView::YACSGui_EditionTreeView( YACSGui_Module* theModule, YAC
   {
     setCaption( tr( "EDIT_TREE_VIEW" ) + QString( " of " ) + QString( getProc()->getName() ) );
     
-    addColumn( "Object" );
+    addColumn( "Object", 250 );
     
     fillContainerData(mySProc);
     build();
@@ -1924,8 +1924,8 @@ YACSGui_RunTreeView::YACSGui_RunTreeView( YACSGui_Module* theModule, YACS::HMI::
   {
     setCaption( tr( "RUN_TREE_VIEW" ) + QString( " of " ) + QString( getProc()->getName() ) );
 
-    addColumn( "Nodes" );
-    addColumn( "State" );
+    addColumn( "Nodes", 250 );
+    addColumn( "State", 100 );
 
     build();
 

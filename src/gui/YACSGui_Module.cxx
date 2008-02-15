@@ -2196,7 +2196,7 @@ YACS::HMI::GuiContext* YACSGui_Module::ImportProcFromFile( const QString& theFil
           //log->show();
         }
 
-      QString name = QFileInfo(theFilePath).fileName ();
+      QString name = QFileInfo(theFilePath).baseName ();
       aProc->setName( name );
 
       QxGraph_ViewWindow* aVW = createNewViewManager( theMode, aProc );
@@ -2414,7 +2414,7 @@ void YACSGui_Module::onCreateExecution()
         aTmpDir.cd( "YACSGui", false );
 
 	QDateTime curTime = QDateTime::currentDateTime();   
-	QString aRunName = aSchemaName + "-" + curTime.toString( Qt::ISODate );
+	QString aRunName = aSchemaName + "_" + curTime.toString( "yyyyMMdd_hhmmss" );
 	aRunName = aTmpDir.absFilePath(aRunName);
 	SCRUTE(aRunName.latin1());
 
@@ -2772,7 +2772,7 @@ void YACSGui_Module::onCreateEdition()
 	  if ( Proc* aProcRun = getDataModel()->getProc( sobj ) )
 	  {
 	    QDateTime curTime = QDateTime::currentDateTime();
-	    QString anEditionName = aProcRun->getName() + "-modified-" + curTime.toString( Qt::ISODate );
+	    QString anEditionName = aProcRun->getName() + "_modified_" + curTime.toString( "yyyyMMdd_hhmmss" );
 	    anEditionName = aTmpDir.absFilePath(anEditionName);
 	  
 	    if ( aRunFile.open( IO_ReadOnly ) )
@@ -3383,7 +3383,7 @@ void YACSGui_Module::temporaryExport()
   }
   
   // the temporary file name for modified schema
-  QString anEditionName = aSchemaName + "-modified";
+  QString anEditionName = aSchemaName + "_modified";
   if ( aTmpDir.exists(anEditionName) )
     aTmpDir.remove(anEditionName);
 
