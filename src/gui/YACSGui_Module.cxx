@@ -889,6 +889,28 @@ void YACSGui_Module::onCreateDataType()
   
 }
 
+//! Public slot.  Import data type from the catalog.
+/*!
+ */
+void YACSGui_Module::onImportDataType()
+{
+  if ( myInputPanel ) {
+    YACSGui_DataTypePage* aDTPage = 
+      dynamic_cast<YACSGui_DataTypePage*>( myInputPanel->getPage( YACSGui_InputPanel::DataTypeId ) );
+    if ( aDTPage )
+    {
+      list<int> aPagesIds;
+      
+      myInputPanel->setOn( true, YACSGui_InputPanel::DataTypeId );
+      myInputPanel->setMode( YACSGui_InputPanel::NewMode, YACSGui_InputPanel::DataTypeId );
+      aPagesIds.push_back(YACSGui_InputPanel::DataTypeId);
+      
+      myInputPanel->setExclusiveVisible( true, aPagesIds );
+      myInputPanel->show();
+    }
+  }
+}
+
 //! Private slot. Creates a new container.
 /*!
  */

@@ -19,6 +19,21 @@ LIBSOURCES = \
 	YACSGui_Swig.cxx \
 	YACSGui_RunMode.cxx \
 	YACSGui_InputPanel.cxx \
+	YACSGui_ContainerPage.cxx \
+	YACSGui_ComponentPage.cxx \
+	YACSGui_SchemaPage.cxx \
+	YACSGui_BlockNodePage.cxx \
+	YACSGui_NodePage.cxx \
+	YACSGui_InlineNodePage.cxx \
+	YACSGui_ServiceNodePage.cxx \
+	YACSGui_ForLoopNodePage.cxx \
+	YACSGui_ForEachLoopNodePage.cxx \
+	YACSGui_WhileLoopNodePage.cxx \
+	YACSGui_SwitchNodePage.cxx \
+	YACSGui_PropertyPage.cxx \
+	YACSGui_LinkPage.cxx \
+	YACSGui_DataTypePage.cxx \
+	YACSGui_YACSORBContainerDialog.cxx \
 	YACSGui_Selection.cxx \
 	YACSGui_PlusMinusGrp.cxx \
 	YACSGui_Table.cxx
@@ -61,7 +76,9 @@ MOCSOURCES = \
 	foreachloopnodepage_moc.cxx \
 	whileloopnodepage_moc.cxx \
 	switchnodepage_moc.cxx \
-	blocknodepage_moc.cxx
+	blocknodepage_moc.cxx \
+	datatypepage_moc.cxx \
+        datanodepage_moc.cxx
 
 # UIC-generated files
 runmode.cxx : runmode.h
@@ -75,9 +92,12 @@ foreachloopnodepage.cxx : foreachloopnodepage.h
 whileloopnodepage.cxx : whileloopnodepage.h
 switchnodepage.cxx : switchnodepage.h
 blocknodepage.cxx : blocknodepage.h
+datatypepage.cxx : datatypepage.h
+datanodepage.cxx : datanodepage.h
 
 UISOURCES = runmode.cxx schemapage.cxx containerpage.cxx componentpage.cxx inlinenodepage.cxx servicenodepage.cxx \
-            forloopnodepage.cxx foreachloopnodepage.cxx whileloopnodepage.cxx switchnodepage.cxx blocknodepage.cxx
+            forloopnodepage.cxx foreachloopnodepage.cxx whileloopnodepage.cxx switchnodepage.cxx blocknodepage.cxx \
+	    datatypepage.cxx datanodepage.cxx
 
 # Resources
 LIBPOFILES = \
@@ -235,6 +255,6 @@ libYACS_la_CXXFLAGS = \
 EXTRA_DIST = YACSGui_Swig.i \
  runmode.h schemapage.h containerpage.h componentpage.h inlinenodepage.h \
  servicenodepage.h forloopnodepage.h foreachloopnodepage.h whileloopnodepage.h \
- switchnodepage.h blocknodepage.h
+ switchnodepage.h blocknodepage.h datatypepage.h datanodepage.h
 
 include $(top_srcdir)/adm/unix/make_end.am

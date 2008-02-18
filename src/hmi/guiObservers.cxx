@@ -1058,7 +1058,7 @@ SubjectContainer* SubjectProc::addContainer(std::string name, std::string ref)
   return 0;
 }
 
-bool SubjectProc::addDataType(YACS::ENGINE::Catalog* catalog, std::string typeName)
+SubjectDataType* SubjectProc::addDataType(YACS::ENGINE::Catalog* catalog, std::string typeName)
 {
   DEBTRACE("SubjectProc::addDataType " << typeName);
   CommandAddDataTypeFromCatalog *command = new CommandAddDataTypeFromCatalog(catalog, typeName);
@@ -1109,6 +1109,8 @@ SubjectDataType* SubjectProc::addSubjectDataType(YACS::ENGINE::TypeCode *type)
       GuiContext::getCurrent()->_mapOfSubjectDataType[typeName] = son;
       update(ADD, DATATYPE, son);
     }
+  else
+    GuiContext::getCurrent()->_lastErrorMessage = "Typecode " + typeName + " already had added in proc";
   return son;
 }
 

@@ -384,7 +384,7 @@ of the edition tree view updates on importing nodes from catalog in
 order to show all available data types inside the current schema.
  - 4 - it should be possible also to specifically import a
 particular data type from a catalog, by means of a popup on Data Types
-Container in edition tree view.
+Container in edition tree view. OCC: DONE.
  - 5 - note that import node from catalog is not restricted to
 SALOME service nodes. all kind of nodes can be imported from catalogs,
 even python script nodes, taken from catalogs built apon other

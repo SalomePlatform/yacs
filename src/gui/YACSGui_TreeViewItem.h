@@ -366,7 +366,7 @@ public:
   virtual void update(YACS::HMI::GuiEvent event, int type, YACS::HMI::Subject* son);
 
   QString name() const;
-  QPixmap icon() const;
+  static QPixmap icon();
   
   YACS::HMI::SubjectDataType* getSDataType() const { return mySDataType; }
 

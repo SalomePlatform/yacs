@@ -32,6 +32,7 @@
 #include "switchnodepage.h"
 #include "blocknodepage.h"
 #include "servicenodepage.h"
+#include "datatypepage.h"
 
 #include <SalomeContainer.hxx>
 #include <ComponentInstance.hxx>
@@ -58,6 +59,15 @@ class QLineEdit;
 class QButtonGroup;
 class QComboBox;
 
+//==================================================================================================
+
+std::string portValueType( YACS::ENGINE::TypeCode* theTC );
+QString getText( int theStatus );
+QColor getColor( int theStatus );
+
+
+//==================================================================================================
+
 /*
   Class       : YACSGui_InputPanel
   Description : Dockable window containing push buttons and corresponding widgets
@@ -74,7 +84,7 @@ public:
   
   enum { ContainerId=0, ComponentId, SchemaId, InlineNodeId, ServiceNodeId,
 	 ForLoopNodeId, ForEachLoopNodeId, WhileLoopNodeId, SwitchNodeId, BlockNodeId,
-	 LinkId, LastId = LinkId };
+	 LinkId, DataTypeId, LastId = DataTypeId };
 
   typedef enum { EditMode, RunMode, NewMode } PageMode;
 
@@ -271,6 +281,8 @@ private:
   YACS::HMI::SubjectContainer*        mySContainer;
 };
 
+//==================================================================================================
+
 /*
   Class : YACSGui_ComponentPage
   Description : Page for component properties
@@ -322,6 +334,8 @@ private:
   bool                                myEditComp;
 };
 
+//==================================================================================================
+
 /*
   Class : YACSGui_SchemaPage
   Description : Page for schema properties
@@ -371,6 +385,8 @@ private:
 
   std::map<QCheckListItem*, std::string> myMapNextSteps;
 };
+
+//==================================================================================================
 
 /*
   Class : YACSGui_NodePage
@@ -438,6 +454,8 @@ protected:
 
   SelectDataTypeFor                   mySelectDataTypeFor;
 };
+
+//==================================================================================================
 
 /*
   Class : YACSGui_InlineNodePage
@@ -521,6 +539,8 @@ private:
   int                                  myIndex;
 };
 
+//==================================================================================================
+
 /*
   Class : YACSGui_ServiceNodePage
   Description : Page for SALOME and CORBA service nodes properties
@@ -600,6 +620,8 @@ private:
   int                                 myIndex;
 };
 
+//==================================================================================================
+
 /*
   Class : YACSGui_ForLoopNodePage
   Description : Page for FOR node properties
@@ -635,6 +657,8 @@ protected:
 protected slots:
   void                                onNodeNameChanged( const QString& );
 };
+
+//==================================================================================================
 
 /*
   Class : YACSGui_ForEachLoopNodePage
@@ -673,6 +697,8 @@ protected slots:
   void                                onSeqOfSamplesChanged( const QString& );
 };
 
+//==================================================================================================
+
 /*
   Class : YACSGui_WhileLoopNodePage
   Description : Page for WHILE node properties
@@ -708,6 +734,8 @@ protected:
 protected slots:
   void                                onNodeNameChanged( const QString& );
 };
+
+//==================================================================================================
 
 /*
   Class : YACSGui_SwitchNodePage
@@ -765,6 +793,8 @@ private:
   std::list<int>                        myRowsOfSelectedChildren; // for children selected from tree view
 };
 
+//==================================================================================================
+
 /*
   Class : YACSGui_BlockNodePage
   Description : Page for block node properties
@@ -819,36 +849,60 @@ private:
   std::list<int>                        myRowsOfSelectedChildren; // for children selected from tree view
 };
 
-/*class YACSGui_NodePage : public YACSGui_PropertyPage
+//=========================================================================================================
+
+/*
+  Class : YACSGui_DataTypePage
+  Description : Page for data type import
+*/
+class YACSGui_DataTypePage : public DataTypePage, public YACS::HMI::GuiObserver
 {
   Q_OBJECT
 
-public: 
-  typedef enum { SALOMEService, CORBAService, NodeNode, ServiceInline, XML,
-		 InlineFunction, InlineScript,
-		 FOR, FOREACH, WHILE, SWITCH, Block } NodeType;
-
 public:
-                                      YACSGui_NodePage( QWidget* theParent, YACSGui_Module* );
-  virtual                             ~YACSGui_NodePage();
+                                      YACSGui_DataTypePage( QWidget* theParent = 0,
+							    const char* theName = 0,
+							    WFlags theFlags = 0 );
+  virtual                             ~YACSGui_DataTypePage();
 
-  void                                setNode( YACS::ENGINE::Node* theNode );
+  virtual void                        select( bool isSelected );
+  virtual void                        update( YACS::HMI::GuiEvent event, int type, YACS::HMI::Subject* son);
+  
+  void                                setSDataType( YACS::HMI::SubjectDataType* theProc );
 
-  QString                             getNodeName() const;
-  void                                setNodeName( const QString& );
+  YACS::ENGINE::TypeCode*             getTypeCode() const;
+
+  QString                             getDataTypeName() const;
+
+  YACSGui_InputPanel*                 getInputPanel() const;
+
+  void                                setMode( const YACSGui_InputPanel::PageMode );
+
+signals:
+  void                                enableApply( bool );
 
 public slots:
   virtual void                        onApply();
 
+protected slots:
+  void                                onBrowse( );
+  void                                onCatalogDataTypeClicked( QListViewItem* );
+  void                                onCatalogChanged( int );
+
 private:
   void                                updateState();
+  void                                buildTree( YACS::ENGINE::Catalog* theTC, QListViewItem* theParent );
 
-  QLineEdit*                          myNodeName;
 
-  YACS::ENGINE::Node*                 myNode;
-  NodeType                            myType;
+  YACS::HMI::SubjectDataType*         mySDataType;
+  YACSGui_InputPanel::PageMode        myMode;
+
+  std::map<QListViewItem*,std::string>             myDataTypeMap;
+  std::map<QListViewItem*,YACS::ENGINE::TypeCode*> myProcDataTypesMap;
+  std::string                                      myProcName;
 };
-*/
+
+//=========================================================================================================
 
 /*
   Class : YACSGui_LinkPage

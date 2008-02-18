@@ -1049,6 +1049,7 @@ QPopupMenu* YACSGui_EditionTreeView::contextMenuPopup( const int theType, YACS::
     {
       anId = aPopup->insertItem( tr("POP_EDIT"), myModule, SLOT(onEditDataTypes()) );
       aPopup->setItemEnabled ( anId, false );
+      aPopup->insertItem( tr("POP_IMPORT_DATA_TYPE"), myModule, SLOT(onImportDataType()) );
     }
     break;
   case YACSGui_EditionTreeView::LabelNodesItem:

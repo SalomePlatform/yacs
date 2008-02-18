@@ -788,6 +788,9 @@ msgstr "Create a Data Type"
 msgid "POP_EDIT"
 msgstr "Edit"
 
+msgid "POP_IMPORT_DATA_TYPE"
+msgstr "Import a Data Type"
+
 msgid "POP_CREATE_CONTAINER_DEF"
 msgstr "Create a Container definition"
 
@@ -926,9 +929,13 @@ msgstr "Nodes"
 msgid "YACSGui_EditionTreeView::LINKS"
 msgstr "Links"
 
+msgid "YACSGui_ServiceNodePage::NODES"
+msgstr "Nodes"
+
 msgid "YACSGui_ServiceNodePage::COMPOSED_NODES"
 msgstr "Composed nodes"
 
-msgid "YACSGui_ServiceNodePage::NODES"
-msgstr "Nodes"
+msgid "YACSGui_DataTypePage::DATA_TYPES"
+msgstr "Data Types"
+
 

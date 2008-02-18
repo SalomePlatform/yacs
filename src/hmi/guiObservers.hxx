@@ -348,7 +348,7 @@ namespace YACS
       void loadContainers();
       virtual SubjectComponent* addComponent(std::string name);
       virtual SubjectContainer* addContainer(std::string name, std::string ref="");
-      virtual bool addDataType(YACS::ENGINE::Catalog* catalog, std::string typeName);
+      virtual SubjectDataType* addDataType(YACS::ENGINE::Catalog* catalog, std::string typeName);
       SubjectComponent* addSubjectComponent(YACS::ENGINE::ComponentInstance* compo);
       SubjectContainer* addSubjectContainer(YACS::ENGINE::Container* cont,
                                             std::string name = "");

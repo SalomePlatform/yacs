@@ -700,15 +700,12 @@ QString YACSGui_DataTypeItem::name() const
 /*!
   \brief Gets item icon
 */
-QPixmap YACSGui_DataTypeItem::icon() const
+QPixmap YACSGui_DataTypeItem::icon()
 {
   QPixmap aRes;
-  QString anIconName = QString( QObject::tr( "ICON_TEXT" ) ); 
-
-  anIconName = QString( QObject::tr( "ICON_TEXT" ) );
+  QString anIconName( QObject::tr( "ICON_TEXT" ) ); 
   
-  aRes = SUIT_Session::session()->resourceMgr()->loadPixmap(
-    "YACS", anIconName, false );
+  aRes = SUIT_Session::session()->resourceMgr()->loadPixmap("YACS", anIconName, false );
 
   return aRes;
 }

@@ -203,6 +203,7 @@ private slots:
   
   void onEditDataTypes();
   void onCreateDataType();
+  void onImportDataType();
 
   void onNewContainer();
   void onNewSalomeComponent();

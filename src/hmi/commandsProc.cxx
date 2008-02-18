@@ -272,8 +272,9 @@ bool CommandAddDataTypeFromCatalog::localExecute()
   if (proc->typeMap.count(_typeName))
     {
       DEBTRACE("typecode already existing in proc: " << _typeName);
-      GuiContext::getCurrent()->_lastErrorMessage = "typecode already existing in proc: " + _typeName;
-      return false;
+      //GuiContext::getCurrent()->_lastErrorMessage = "typecode already existing in proc: " + _typeName;
+      //return false;
+      return true;
     }
   else
     if (_catalog->_typeMap.count(_typeName))
