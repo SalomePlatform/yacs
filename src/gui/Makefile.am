@@ -240,6 +240,7 @@ libYACS_la_CXXFLAGS = \
 	$(PYTHON_CPPFLAGS) \
 	$(OMNIORB_INCLUDES) \
 	$(LIBXML_INCLUDES) \
+	$(BOOST_CPPFLAGS) \
 	-I$(KERNEL_ROOT_DIR)/include/salome \
 	-I$(srcdir)/../bases \
 	-I$(srcdir)/../engine \

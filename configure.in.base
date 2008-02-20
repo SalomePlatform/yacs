@@ -63,6 +63,7 @@ CHECK_THREAD
 AC_CHECK_OMNIORB
 AC_CHECK_EXPAT
 AC_CHECK_LIBXML
+CHECK_BOOST
 
 #Optional products
 AC_PROG_SWIG(1.3.17)
@@ -99,6 +100,7 @@ echo "Configuration Options Summary:"
 echo
 echo "Mandatory products:"
 echo "  Threads ................ : $thread_ok"
+echo "  Boost .................. : $boost_ok"
 echo "  OmniOrb (CORBA) ........ : $omniORB_ok"
 echo "  OmniOrbpy (CORBA) ...... : $omniORBpy_ok"
 echo "  Python ................. : $python_ok"
