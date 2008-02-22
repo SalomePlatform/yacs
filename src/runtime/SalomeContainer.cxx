@@ -51,6 +51,7 @@ SalomeContainer::SalomeContainer(const SalomeContainer& other):Container(other),
   _params.isMPI = other._params.isMPI;
   _params.parallelLib = CORBA::string_dup(other._params.parallelLib);
   _params.nb_component_nodes = other._params.nb_component_nodes;
+  _params.workingdir= CORBA::string_dup(other._params.workingdir);
 }
 
 SalomeContainer::~SalomeContainer()
@@ -202,6 +203,8 @@ void SalomeContainer::setProperty(const std::string& name, const std::string& va
     _params.OS = CORBA::string_dup(value.c_str());
   else if (name == "parallelLib")
     _params.parallelLib = CORBA::string_dup(value.c_str());
+  else if (name == "workingdir")
+    _params.workingdir = CORBA::string_dup(value.c_str());
   else if (name == "isMPI")
     {
       if (value == "true")

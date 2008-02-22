@@ -313,6 +313,12 @@ void SalomeNode::connectService()
   CORBA::Object_var obj = NS.Resolve("/ConnectionManager");
   Engines::ConnectionManager_var manager=Engines::ConnectionManager::_narrow(obj);
   Engines::Superv_Component_var me=Engines::Superv_Component::_narrow(objComponent);
+  if( CORBA::is_nil(me) )
+    {
+      std::string msg="Can't get reference to Engines::Superv_Component: "+getName();
+      _errorDetails=msg;
+      throw Exception(msg);
+    }
   std::list<OutputDataStreamPort *>::iterator iter;
   Engines::ConnectionManager::connectionId id;
   for(iter = _setOfOutputDataStreamPort.begin(); iter != _setOfOutputDataStreamPort.end(); iter++)
@@ -332,8 +338,65 @@ void SalomeNode::connectService()
             }
 
           CORBA::Object_var comp=((SalomeComponent*)snode->getComponent())->getCompoPtr();
+          if( CORBA::is_nil(comp))
+            {
+              std::string msg="Problem in connectService: " + snode->getName();
+              msg=msg+" Component is probably not launched. Modify your YACS file";
+              _errorDetails=msg;
+              throw Exception(msg);
+            }
+
           Engines::Superv_Component_var other=Engines::Superv_Component::_narrow(comp);
-          id=manager->connect(me,port->getName().c_str(),other,(*iterout)->getName().c_str());
+          if( CORBA::is_nil(other))
+            {
+              std::string msg="Can't connect to nil Engines::Superv_Component: " + snode->getName();
+              _errorDetails=msg;
+              throw Exception(msg);
+            }
+          try
+            {
+              id=manager->connect(me,port->getName().c_str(),other,(*iterout)->getName().c_str());
+            }
+          catch(Engines::DSC::PortNotDefined& ex)
+            {
+              std::string msg="Problem in connectService. Unknown port: "+port->getName()+" or "+(*iterout)->getName();
+              _errorDetails=msg;
+              throw Exception(msg);
+            }
+          catch(Engines::DSC::BadPortType& ex)
+            {
+              std::string msg="Problem in connectService. Type of provides port is bad. Expected: ";
+              msg=msg + ex.expected.in();
+              msg=msg + "Received: "+ex.received.in();
+              _errorDetails=msg;
+              throw Exception(msg);
+            }
+          catch(Engines::DSC::NilPort& ex)
+            {
+              std::string msg="Problem in connectService. Port is nil: "+port->getName()+" or "+(*iterout)->getName();
+              _errorDetails=msg;
+              throw Exception(msg);
+            }
+          catch( const SALOME::SALOME_Exception& ex )
+            {
+              std::string msg="Problem in connectService. ";
+              msg += ex.details.text.in();
+              msg=msg+getName()+" " + port->getName() + " " + snode->getName() + " " + (*iterout)->getName();
+              _errorDetails=msg;
+              throw Exception(msg);
+            }
+          catch(CORBA::SystemException& ex)
+            {
+              std::string msg="Problem in connectService. CORBA System exception";
+              msg=msg+getName()+" " + port->getName() + " " + snode->getName() + " " + (*iterout)->getName();
+              throw Exception(msg);
+            }
+          catch(...)
+            {
+              std::string msg="Problem in connectService. Unknown exception";
+              msg=msg+getName()+" " + port->getName() + " " + snode->getName() + " " + (*iterout)->getName();
+              throw Exception(msg);
+            }
           DEBTRACE("Connected: " <<id<<" "<<getName()<<" "<<port->getName()<<" "<<snode->getName()<<" "<<(*iterout)->getName());
           ids.push_back(id);
         }
