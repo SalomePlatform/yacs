@@ -63,8 +63,7 @@ void InputCalStreamPort::setProperty(const std::string& name, const std::string&
     setSchema(value);
   else if(name == "level")
     setLevel(value);
-  else
-    InputDataStreamPort::setProperty(name,value);
+  InputDataStreamPort::setProperty(name,value);
 }
 
 #ifdef DSC_PORTS
@@ -157,8 +156,7 @@ void OutputCalStreamPort::setProperty(const std::string& name, const std::string
     setSchema(value);
   else if(name == "level")
     setLevel(value);
-  else
-    OutputDataStreamPort::setProperty(name,value);
+  OutputDataStreamPort::setProperty(name,value);
 }
 
 std::string OutputCalStreamPort::getNameOfTypeOfCurrentInstance() const
@@ -173,7 +171,7 @@ OutputCalStreamPort *OutputCalStreamPort::clone(Node *newHelder) const
 
 bool OutputCalStreamPort::addInPort(InPort *inPort) throw(Exception)
 {
-  DEBTRACE("OutputCalStreamPort::addInPort" << InputCalStreamPort::NAME );
+  DEBTRACE("OutputCalStreamPort::addInPort " << InputCalStreamPort::NAME );
   if(inPort->getNameOfTypeOfCurrentInstance()!=InputCalStreamPort::NAME)
     {
       string what="not compatible type of port requested during building of link FROM ";
@@ -192,4 +190,16 @@ bool OutputCalStreamPort::addInPort(InPort *inPort) throw(Exception)
   return ret;
 }
 
+
+int OutputCalStreamPort::removeInPort(InPort *inPort, bool forward) throw(Exception)
+{
+  DEBTRACE("OutputCalStreamPort::removeInPort");
+  if(inPort->getNameOfTypeOfCurrentInstance()!=InputCalStreamPort::NAME && !forward)
+    {
+      string what="not compatible type of port requested during destruction of for link FROM ";
+      what+=NAME; what+=" TO "; what+=inPort->getNameOfTypeOfCurrentInstance();
+      throw Exception(what);
+    }
+  return edRemoveInputDataStreamPort(static_cast<InputDataStreamPort *>(inPort),forward);
+}
 

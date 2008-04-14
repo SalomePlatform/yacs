@@ -62,6 +62,7 @@ protected:
 class xmlParserBase
 {
 public:
+#ifndef SWIG
   static void XMLCALL start_document(void* userData);
   static void XMLCALL end_document  (void* userData);
   static void XMLCALL start_element (void* userData,
@@ -83,6 +84,7 @@ public:
   static void XMLCALL cdata_block   (void* userData,
                                      const xmlChar* value,
                                      int len);
+#endif
   static void cleanGarbage();
   static int getGarbageSize() {return _garbage.size(); };
 public:

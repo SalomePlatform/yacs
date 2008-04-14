@@ -24,6 +24,9 @@
 #include <Proc.hxx>
 #include <Node.hxx>
 
+#include <guiObservers.hxx>
+#include <guiContext.hxx>
+
 #include <QxGraph_Prs.h>
 
 #include <map>
@@ -43,22 +46,46 @@ class YACSPrs_LabelPort;
 class YACSPrs_Link;
 class YACSPrs_LabelLink;
 
+struct Agraph_t;
 class LineConn2d_Model;
 
-class YACSGui_Graph : public QxGraph_Prs
+class YACSGui_Graph : public QxGraph_Prs, public YACS::HMI::GuiObserver
 {
 public:
-  YACSGui_Graph(YACSGui_Module*, QxGraph_Canvas*, YACS::ENGINE::Proc*);
+  enum { FullId = 0, ControlId, DataflowId, DataStreamId };
+
+public:
+  YACSGui_Graph(YACSGui_Module*, QxGraph_Canvas*, YACS::HMI::GuiContext*);
   virtual ~YACSGui_Graph();
 
-  YACS::ENGINE::Proc*     getProc() const { return myProc; }
+  virtual void select(bool isSelected);
+  virtual void update(YACS::HMI::GuiEvent event, int type, YACS::HMI::Subject* son);
+
+  YACS::ENGINE::Proc*     getProc() const;
+  YACS::HMI::GuiContext*  getContext() const { return myCProc; }
   
   YACSGui_Observer*       getStatusObserver() const { return myNodeStatusObserver; }
 
   virtual void            update();
-  void                    update( YACS::ENGINE::Node* );
+  void                    update( YACS::ENGINE::Node*, YACS::HMI::SubjectComposedNode* );
   void                    update( YACSPrs_InOutPort* );
   void                    update( YACSPrs_LabelPort* );
+
+  virtual void            show( bool theWithArrange = true );
+  void                    viewModesConsistency( int theDModeFrom, int theDModeTo );
+
+  void                    createChildNodesPresentations( YACS::HMI::SubjectComposedNode* );
+
+  void                    updateNodePrs( int theNodeId, std::string thePortName, std::string thePortValue );
+
+  int                     arrangeNodesAlgo(YACS::ENGINE::Bloc* theBloc);
+  int                     arrangeNodes(YACS::ENGINE::ComposedNode* theBloc, Agraph_t* aSubGraph, int dep);
+  void                    createGraphvizNodes(YACS::ENGINE::ComposedNode* theBloc, Agraph_t* aSubGraph);
+  void                    arrangeCanvasNodes(YACS::ENGINE::ComposedNode* theBloc, Agraph_t* aSubGraph, int dep);
+  // store some functions to have possibility to arrange nodes only on the one giving level
+  int                     arrangeNodesWithinBloc(YACS::ENGINE::Bloc* theBloc);
+  void                    createGraphvizNodes(YACS::ENGINE::Bloc* theBloc, YACS::ENGINE::ComposedNode* theFather, Agraph_t* theGraph);
+  std::string             getInNodeName(YACS::ENGINE::Bloc* theBloc, YACS::ENGINE::Node* theOutNode, YACS::ENGINE::Node* theInNode);
 
   void                    rebuildLinks();
   int                     addObjectToLine2dModel(YACSPrs_ElementaryNode* theNode,
@@ -77,6 +104,7 @@ public:
 					       std::map<YACSPrs_ElementaryNode*, int>& theNodePrs2ObjId);
 
   YACSPrs_ElementaryNode* getItem( YACS::ENGINE::Node* );
+  void                    removeNode( YACS::ENGINE::Node* );
 
   YACS::ENGINE::Node*     getNodeById( const int theID ) const;
 
@@ -89,6 +117,11 @@ public:
 
   void                    registerStatusObserverWithNode(YACS::ENGINE::Node* theNode);
 
+  void                    createPrs(YACS::HMI::Subject* theSubject);
+  void                    deletePrs(YACS::HMI::SubjectNode* theSubject, bool removeLabelPort = true );
+
+  bool                    isNeededToIncreaseBlocSize( YACS::ENGINE::Bloc* );
+
 private:
   YACSGui_Node*           driver( YACS::ENGINE::Node* theNode );
   void                    createLinksFromGivenOutPortPrs( YACSPrs_InOutPort* theOutPortPrs,
@@ -97,14 +130,21 @@ private:
 private:
 
   typedef std::map<const char*, YACSGui_Node*> DriverMap;
-  typedef std::map<YACS::ENGINE::Node*, YACSPrs_ElementaryNode*> ItemMap;
+  typedef std::map<int, std::map<YACS::ENGINE::Node*, YACSPrs_ElementaryNode*> > ItemMap;
+  typedef std::map<YACS::ENGINE::Bloc*, std::list< std::pair<YACS::ENGINE::Bloc*,YACS::ENGINE::Bloc*> > > Bloc2InsideLinksMap;
   
   YACSGui_Module*         myModule;
-  YACS::ENGINE::Proc*     myProc; // graph engine
+  YACS::HMI::GuiContext*  myCProc; // context of corresponding Proc*
   DriverMap               myDrivers; // map of update drivers for specific node types
   ItemMap                 myItems; // map of graphic items for a given engine node
+  Bloc2InsideLinksMap     myBlocInsideLinks; // map of links from block to block ( BlocOut -> BlocIn ) inside a given block
 
   YACSGui_Observer*       myNodeStatusObserver;
+  Agraph_t*               _mainGraph;
+  std::multimap< YACS::ENGINE::Node*, YACS::ENGINE::Node* > _savedControlLinks;
+  int _maxdep;
+  int _bottom;
+  std::string _format;
 };
 
 #endif

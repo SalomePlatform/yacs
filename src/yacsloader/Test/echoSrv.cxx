@@ -11,6 +11,7 @@
 
 using namespace std;
 
+CORBA::ORB_var orb;
 static CORBA::Boolean bindObjectToName(CORBA::ORB_ptr, CORBA::Object_ptr,const char*);
 
 static ostream& operator<<(ostream& os, const CORBA::Exception& e)
@@ -89,6 +90,8 @@ public:
   void echoAll(CORBA::Double d,CORBA::Long l,const char * m,eo::Obj_ptr o,CORBA::Double& dd,CORBA::Long& ll,CORBA::String_out s,eo::Obj_out oo);
   void sleepLong(CORBA::Double time1,CORBA::Double& time2) ;
   virtual eo::S2* echoStruct(const eo::S2&);
+  virtual eo::S3* echoStruct2(const eo::S3&);
+  virtual void shutdown();
   virtual PortableServer::POA_ptr _default_POA();
 protected:
   int _ctr;
@@ -110,6 +113,13 @@ PortableServer::POA_ptr Echo_i::_default_POA()
   }
 }
 
+
+void Echo_i::shutdown()
+{
+  // Shutdown the ORB (but do not wait for completion).  This also
+  // causes the main thread to unblock from CORBA::ORB::run().
+  orb->shutdown(0);
+}
 
 char* Echo_i::echoString(const char* mesg)
 {
@@ -273,6 +283,7 @@ void Echo_i::sleepLong(CORBA::Double time1, CORBA::Double& time2)
   DEBTRACE("Echo_i::sleepLong stop  " << num);
   time2 = time1;
 }
+
 eo::S2* Echo_i::echoStruct(const eo::S2& s)
 {
   DEBTRACE("Echo_i::echoStruct " << s.s.x << " " << s.s.y);
@@ -281,6 +292,19 @@ eo::S2* Echo_i::echoStruct(const eo::S2& s)
   s1.y=2;
   eo::S2* s2=new eo::S2;
   s2->s=s1;
+  return s2;
+}
+
+eo::S3* Echo_i::echoStruct2(const eo::S3& s)
+{
+  DEBTRACE("Echo_i::echoStruct " << s.x << " " << s.y);
+  if( !CORBA::is_nil(s.ob) ) 
+    {
+      std::cerr << s.ob->echoLong(10) << std::endl;
+    }
+  eo::S3* s2=new eo::S3;
+  s2->x=10.;
+  s2->y=2;
   return s2;
 }
 
@@ -322,7 +346,6 @@ CORBA::Long E_i::echoLong(CORBA::Long i ){
   return j;
 }
 
-CORBA::ORB_ptr orb;
 eo::Echo_var myechoref;
 
 int main(int argc, char** argv)
@@ -338,52 +361,56 @@ int main(int argc, char** argv)
       poa_man->activate();
 
       // Create a new POA with the shortcut policy
+      /*
       CORBA::PolicyList pl2;
       pl2.length(2);
       CORBA::Any v;
       v <<= omniPolicy::LOCAL_CALLS_SHORTCUT;
       pl2[0] = orb->create_policy(omniPolicy::LOCAL_SHORTCUT_POLICY_TYPE, v);
       pl2[1] = root_poa->create_implicit_activation_policy(PortableServer::IMPLICIT_ACTIVATION);
-      PortableServer::POA_ptr shortcut_poa = root_poa->create_POA("shortcut", poa_man, pl2);
+      PortableServer::POA_var shortcut_poa = root_poa->create_POA("shortcut", poa_man, pl2);
+      */
 
       // Create and activate servant
       Echo_i* myecho = new Echo_i();
-      // Obtain a reference to the object, and print it out as a
-      // stringified IOR.
-      obj = myecho->_this();
-      CORBA::String_var sior(orb->object_to_string(obj));
-      DEBTRACE("'" << (char*)sior << "'");
-      myechoref = eo::Echo::_narrow(obj);
-
-      if( !bindObjectToName(orb, myechoref,"Echo") ) return 1;
-
+      // Obtain a reference to the object
+      CORBA::Object_var obj2 = myecho->_this();
+      myechoref = eo::Echo::_narrow(obj2);
       // Decrement the reference count of the object implementation, so
       // that it will be properly cleaned up when the POA has determined
       // that it is no longer needed.
       myecho->_remove_ref();
 
+      // print the reference as a stringified IOR.
+      CORBA::String_var sior(orb->object_to_string(obj2));
+      DEBTRACE("'" << (char*)sior << "'");
+
+      if( !bindObjectToName(orb, myechoref,"Echo") ) return 1;
+
       //create object C and register it in naming service
       C_i* myC = new C_i();
-      obj=myC->_this();
-      eo::C_var myCref=eo::C::_narrow(obj);
+      CORBA::Object_var obj3 =myC->_this();
+      eo::C_var myCref=eo::C::_narrow(obj3);
       myC->_remove_ref();
       if( !bindObjectToName(orb, myCref,"C") ) return 1;
 
       //create object D and register it in naming service
       D_i* myD = new D_i();
-      obj=myD->_this();
-      eo::D_var myDref=eo::D::_narrow(obj);
+      CORBA::Object_var obj4=myD->_this();
+      eo::D_var myDref=eo::D::_narrow(obj4);
       myD->_remove_ref();
       if( !bindObjectToName(orb, myDref,"D") ) return 1;
 
       //create object Obj and register it in naming service
       Obj_i* myObj = new Obj_i();
-      obj=myObj->_this();
-      eo::Obj_var myObjref=eo::Obj::_narrow(obj);
+      CORBA::Object_var obj5=myObj->_this();
+      eo::Obj_var myObjref=eo::Obj::_narrow(obj5);
       myObj->_remove_ref();
       if( !bindObjectToName(orb, myObjref,"Obj") ) return 1;
     }
     orb->run();
+    std::cout << "Returned from orb->run()." << std::endl;
+    orb->destroy();
   }
   catch(CORBA::SystemException&) {
     DEBTRACE("Caught CORBA::SystemException.");

@@ -24,6 +24,8 @@ namespace YACS
       PyGILState_STATE gstate_;
     };
 
+    typedef PyObject PyObj;
+
 /*! \brief Class for Python Ports
  *
  * \ingroup Ports
@@ -41,12 +43,13 @@ namespace YACS
       virtual void put(const void *data) throw(ConversionException);
       void put(PyObject *data) throw(ConversionException);
       InputPort *clone(Node *newHelder) const;
-      virtual PyObject * getPyObj() const;
+      virtual PyObj * getPyObj() const;
       void *get() const throw(Exception);
       virtual bool isEmpty();
       virtual void exSaveInit();
       virtual void exRestoreInit();
       virtual std::string dump();
+      virtual std::string typeName() {return "YACS__ENGINE__InputPyPort";}
     protected:
       PyObject* _data;
       PyObject* _initData;
@@ -62,7 +65,9 @@ namespace YACS
       void put(PyObject *data) throw(ConversionException);
       OutputPort *clone(Node *newHelder) const;
       virtual PyObject * get() const;
+      virtual PyObj * getPyObj() const;
       virtual std::string dump();
+      virtual std::string typeName() {return "YACS__ENGINE__OutputPyPort";}
     protected:
       PyObject* _data;
     };

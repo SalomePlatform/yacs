@@ -76,19 +76,28 @@ void SalomeComponent::load()
         }
       containerC->unLock();
       containerC->lock();//To be sure
-      const char* componentName=_name.c_str();
+      const char* componentName=_compoName.c_str();
       //char *val2=CORBA::string_dup("");
       // does not work with python components
       // does not make a strict load but a find or load component
       //   _objComponent=containerC->_trueCont->load_impl(componentName,val2);
       bool isLoadable = containerC->_trueCont->load_component_Library(componentName);
       if (isLoadable) 
-        _objComponent=containerC->_trueCont->create_component_instance(componentName, 0);
+	if (containerC->isAPaCOContainer()) {
+	  std::string compo_paco_name(componentName);
+	  compo_paco_name = compo_paco_name + "@PARALLEL@";
+	  char * c_paco_name = CORBA::string_dup(compo_paco_name.c_str());
+	  _objComponent=containerC->_trueCont->create_component_instance(c_paco_name, 0);
+	}
+	else
+	  _objComponent=containerC->_trueCont->create_component_instance(componentName, 0);
 
       if(CORBA::is_nil(_objComponent))
         {
           containerC->unLock();
-          throw Exception("SalomeComponent::load : Error while trying to create a new component.");
+          std::string text="Error while trying to create a new component: component '"+ _compoName;
+          text=text+"' is not installed or it's a wrong name";
+          throw Exception(text);
         }
       containerC->unLock();
       return;
@@ -101,7 +110,7 @@ void SalomeComponent::load()
   LCC.preSet(params);
   params.hostname="localhost";
   params.container_name ="FactoryServer";
-  _objComponent=LCC.LoadComponent(params,_name.c_str());
+  _objComponent=LCC.LoadComponent(params,_compoName.c_str());
 }
 #else
 void SalomeComponent::load()
@@ -137,6 +146,24 @@ ComponentInstance* SalomeComponent::clone() const
 std::string SalomeComponent::getFileRepr() const
 {
   ostringstream stream;
-  stream << "<component>" << getName() << "</component>";
+  stream << "<component>" << getCompoName() << "</component>";
   return stream.str();
 }
+
+void SalomeComponent::setContainer(Container *cont)
+{
+  if (cont == _container) return;
+
+  if(cont)
+    cont->checkCapabilityToDealWith(this);
+
+  if(_container)
+    _container->decrRef();
+  _container=cont;
+  if(_container)
+  {
+    _container->incrRef();
+    ((SalomeContainer*)_container)->addComponentName(_compoName);
+  }
+}
+

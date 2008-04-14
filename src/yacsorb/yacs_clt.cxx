@@ -1,3 +1,4 @@
+#include <Python.h>
 #include <yacs.hh>
 #include "RuntimeSALOME.hxx"
 #include "Proc.hxx"

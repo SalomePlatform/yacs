@@ -3,6 +3,7 @@
 #include "OutputPort.hxx"
 #include "InputDataStreamPort.hxx"
 #include "OutputDataStreamPort.hxx"
+#include "LinkInfo.hxx"
 #include "Runtime.hxx"
 #include "Visitor.hxx"
 #include <cassert>
@@ -266,7 +267,7 @@ void FakeNodeForLoop::finished()
   _loop->setState(YACS::DONE);
 }
 
-Loop::Loop(const Loop& other, ComposedNode *father, bool editionOnly):StaticDefinedComposedNode(other,father),_nbOfTurns(0),_nodeForNullTurnOfLoops(0)
+Loop::Loop(const Loop& other, ComposedNode *father, bool editionOnly):StaticDefinedComposedNode(other,father),_nbOfTurns(0),_nodeForNullTurnOfLoops(0),_node(0)
 {
   if(other._node)
     _node=other._node->simpleClone(this,editionOnly);
@@ -310,10 +311,13 @@ Node *Loop::edSetNode(Node *node)
           throw Exception(what);
         }
     }
+  checkNoCrossHierachyWith(node);
   StaticDefinedComposedNode::edRemoveChild(_node);
   Node *ret=_node;
   _node=node;
   _node->_father=this;
+  //set _modified flag so that edUpdateState() can refresh state
+  modified();
   return ret;
 }
 
@@ -362,16 +366,24 @@ void Loop::selectRunnableTasks(std::vector<Task *>& tasks)
 {
 }
 
-std::set<Node *> Loop::edGetDirectDescendants() const
+std::list<Node *> Loop::edGetDirectDescendants() const
 {
-  set<Node *> ret;
+  list<Node *> ret;
   if(_node)
-    ret.insert(_node);
+    ret.push_back(_node);
   return ret;
 }
 
-void Loop::checkConsistency(ComposedNode *pointOfView) const throw(Exception)
+std::list<InputPort *> Loop::getSetOfInputPort() const
 {
+  list<InputPort *> ret=StaticDefinedComposedNode::getSetOfInputPort();
+  ret.push_back(getDecisionPort());
+  return ret;
+}
+
+int Loop::getNumberOfInputPorts() const
+{
+  return StaticDefinedComposedNode::getNumberOfInputPorts()+1;
 }
 
 Node *Loop::getChildByShortName(const std::string& name) const throw(Exception)
@@ -392,7 +404,7 @@ TypeCode* Loop::MappingDS2DF(TypeCode* type) throw(Exception)
   return type;
 }
 
-void Loop::buildDelegateOf(InPort * & port, OutPort *initialStart, const std::set<ComposedNode *>& pointsOfView)
+void Loop::buildDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView)
 {
   string typeOfPortInstance=port->getNameOfTypeOfCurrentInstance();
   if(typeOfPortInstance!=InputPort::NAME or
@@ -417,7 +429,7 @@ void Loop::buildDelegateOf(InPort * & port, OutPort *initialStart, const std::se
   port=(*iter)->getInputDataStreamPort("");
 }
 
-void Loop::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::set<ComposedNode *>& pointsOfView)
+void Loop::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView)
 {
   string typeOfPortInstance=(port.first)->getNameOfTypeOfCurrentInstance();
   if(typeOfPortInstance!=OutputPort::NAME or
@@ -449,7 +461,7 @@ void Loop::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalT
   port.first=(*iter)->getOutputDataStreamPort("");
 }
 
-void Loop::getDelegateOf(InPort * & port, OutPort *initialStart, const std::set<ComposedNode *>& pointsOfView) throw(Exception)
+void Loop::getDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView) throw(Exception)
 {
   string typeOfPortInstance=port->getNameOfTypeOfCurrentInstance();
   if(typeOfPortInstance!=InputPort::NAME or
@@ -472,7 +484,7 @@ void Loop::getDelegateOf(InPort * & port, OutPort *initialStart, const std::set<
 }
 
 void Loop::getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, 
-                         const std::set<ComposedNode *>& pointsOfView) throw(Exception)
+                         const std::list<ComposedNode *>& pointsOfView) throw(Exception)
 {
   string typeOfPortInstance=(port.first)->getNameOfTypeOfCurrentInstance();
   if(typeOfPortInstance!=OutputPort::NAME or
@@ -494,7 +506,7 @@ void Loop::getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTar
     port.first=(*iter)->getOutputDataStreamPort("");
 }
 
-void Loop::releaseDelegateOf(InPort * & port, OutPort *initialStart, const std::set<ComposedNode *>& pointsOfView) throw(Exception)
+void Loop::releaseDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView) throw(Exception)
 {
   string typeOfPortInstance=port->getNameOfTypeOfCurrentInstance();
   if(typeOfPortInstance!=InputPort::NAME or
@@ -524,7 +536,7 @@ void Loop::releaseDelegateOf(InPort * & port, OutPort *initialStart, const std::
     }
 }
 
-void Loop::releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::set<ComposedNode *>& pointsOfView) throw(Exception)
+void Loop::releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(Exception)
 {
   if(portDwn==portUp)
     return ;
@@ -545,16 +557,28 @@ void Loop::checkNoCyclePassingThrough(Node *node) throw(Exception)
   //throw Exception("Loop::checkNoCyclePassingThrough : Internal error occured");
 }
 
+void Loop::checkCFLinks(const std::list<OutPort *>& starts, InputPort *end, unsigned char& alreadyFed, bool direction, LinkInfo& info) const
+{
+  Node *nodeEnd=end->getNode();
+  if(nodeEnd==this)
+    {//In this case 'end' port is a special port of this (for exemple ForLoop::_nbOfTimesPort)
+      //ASSERT(!direction) see Loop::checkControlDependancy (bw only)
+      solveObviousOrDelegateCFLinks(starts,end,alreadyFed,direction,info);
+    }
+  else
+    StaticDefinedComposedNode::checkCFLinks(starts,end,alreadyFed,direction,info);
+}
+
 /*!
  * \note : States if a DF port must be considered on an upper level in hierarchy as a DS port or not from 'pointsOfView' observers.
  * \return : 
  *            - True : a traduction DF->DS has to be done
  *            - False : no traduction needed
  */
-bool Loop::isNecessaryToBuildSpecificDelegateDF2DS(const std::set<ComposedNode *>& pointsOfView)
+bool Loop::isNecessaryToBuildSpecificDelegateDF2DS(const std::list<ComposedNode *>& pointsOfView)
 {
   bool ret=false;
-  for(set<ComposedNode *>::const_iterator iter=pointsOfView.begin();iter!=pointsOfView.end() && !ret;iter++)
+  for(list<ComposedNode *>::const_iterator iter=pointsOfView.begin();iter!=pointsOfView.end() && !ret;iter++)
     ret=(*iter)->isRepeatedUnpredictablySeveralTimes();
   return ret;
 }
@@ -577,12 +601,15 @@ bool Loop::edAddDFLink(OutPort *start, InPort *end) throw(Exception)
 /*!
  * \param os : the output stream
  */
-void Loop::writeDot(std::ostream &os)
+void Loop::writeDot(std::ostream &os) const
 {
   os << "  subgraph cluster_" << getId() << "  {\n" ;
   //only one node in a loop
-  _node->writeDot(os);
-  os << getId() << " -> " << _node->getId() << ";\n";
+  if(_node)
+    {
+      _node->writeDot(os);
+      os << getId() << " -> " << _node->getId() << ";\n";
+    }
   os << "}\n" ;
   os << getId() << "[fillcolor=\"" ;
   YACS::StatesForNode state=getEffectiveState();
@@ -595,6 +622,20 @@ void Loop::writeDot(std::ostream &os)
 void Loop::accept(Visitor *visitor)
 {
   visitor->visitLoop(this);
+}
+
+void Loop::checkControlDependancy(OutPort *start, InPort *end, bool cross,
+                                  std::map < ComposedNode *,  std::list < OutPort * >, SortHierarc >& fw,
+                                  std::vector<OutPort *>& fwCross,
+                                  std::map< ComposedNode *, std::list < OutPort *>, SortHierarc >& bw,
+                                  LinkInfo& info) const
+{
+  //First testing if end==getDecisionPort. This is the only case possible in theory.
+  if(end!=getDecisionPort())
+    return StaticDefinedComposedNode::checkControlDependancy(start,end,cross,fw,fwCross,bw,info);
+  if(cross)
+    throw Exception("Internal error occured - cross type link detected on decision port of a loop. Forbidden !");
+  fw[(ComposedNode *)this].push_back(start);
 }
 
 /*!

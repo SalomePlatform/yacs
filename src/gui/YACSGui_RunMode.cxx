@@ -1,5 +1,6 @@
 
 #include "YACSGui_RunMode.h"
+#include "YACSGui_TreeViewItem.h"
 #include "YACSGui_Executor.h"
 #include "Executor.hxx"
 #include "Proc.hxx"
@@ -15,117 +16,11 @@
 #include <set>
 #include "utilities.h"
 
+//#define _DEVDEBUG_
+#include "YacsTrace.hxx"
+
 using namespace std;
 using namespace YACS::ENGINE;
-
-
-
-ComposedNodeViewItem::ComposedNodeViewItem(QListView *parent, QString label)
-  : QListViewItem(parent, label)
-{
-  _cf = Qt::black;
-}
-
-ComposedNodeViewItem::ComposedNodeViewItem(QListViewItem *parent, QString label)
-  : QListViewItem(parent, label)
-{
-  _cf = Qt::black;
-}
-
-void ComposedNodeViewItem::paintCell( QPainter *p, const QColorGroup &cg,
-                                      int column, int width, int alignment )
-{
-  //MESSAGE("ComposedNodeViewItem::paintCell " << column);
-  QColorGroup _cg( cg );
-  QColor c = _cg.text();
-  if (column == 1) _cg.setColor( QColorGroup::Text, _cf );
-  QListViewItem::paintCell( p, _cg, column, width, alignment );
-  if (column == 1) _cg.setColor( QColorGroup::Text, c );
-}
-
-void ComposedNodeViewItem::setState(int state)
-{
-  //MESSAGE("ComposedNodeViewItem::setState");
-  _state = state;
-  switch (_state)
-    {
-    case YACS::UNDEFINED:    _cf=Qt::lightGray;       setText(1,"UNDEFINED");    repaint(); break;
-    case YACS::INITED:       _cf=Qt::gray;            setText(1,"INITED");       repaint(); break;
-    case YACS::TOLOAD:       _cf=Qt::darkYellow;      setText(1,"TOLOAD");       repaint(); break;
-    case YACS::LOADED:       _cf=Qt::darkMagenta;     setText(1,"LOADED");       repaint(); break;
-    case YACS::TOACTIVATE:   _cf=Qt::darkCyan;        setText(1,"TOACTIVATE");   repaint(); break;
-    case YACS::ACTIVATED:    _cf=Qt::darkBlue;        setText(1,"ACTIVATED");    repaint(); break;
-    case YACS::DESACTIVATED: _cf=Qt::gray;            setText(1,"DESACTIVATED"); repaint(); break;
-    case YACS::DONE:         _cf=Qt::darkGreen;       setText(1,"DONE");         repaint(); break;
-    case YACS::SUSPENDED:    _cf=Qt::gray;            setText(1,"SUSPENDED");    repaint(); break;
-    case YACS::LOADFAILED:   _cf.setHsv(320,255,255); setText(1,"LOADFAILED");   repaint(); break;
-    case YACS::EXECFAILED:   _cf.setHsv( 20,255,255); setText(1,"EXECFAILED");   repaint(); break;
-    case YACS::PAUSE:        _cf.setHsv(180,255,255); setText(1,"PAUSE");        repaint(); break;
-    case YACS::INTERNALERR:  _cf.setHsv(340,255,255); setText(1,"INTERNALERR");  repaint(); break;
-    case YACS::DISABLED:     _cf.setHsv( 40,255,255); setText(1,"DISABLED");     repaint(); break;
-    case YACS::FAILED:       _cf.setHsv( 20,255,255); setText(1,"FAILED");       repaint(); break;
-    case YACS::ERROR:        _cf.setHsv(  0,255,255); setText(1,"ERROR");        repaint(); break;
-    default:                 _cf=Qt::lightGray; repaint();
-    }
-}
-
-
-NodeViewItem::NodeViewItem(QListView *parent,
-                           const QString &text,
-                           Type tt,
-                           YACS::ENGINE::ElementaryNode *node)
-  : QCheckListItem(parent, text, tt)
-{
-  _cf = Qt::green;
-  _node = node;
-}
-
-NodeViewItem::NodeViewItem(QListViewItem *parent,
-                           const QString &text,
-                           Type tt,
-                           YACS::ENGINE::ElementaryNode *node)
-  : QCheckListItem(parent, text, tt)
-{
-  _cf = Qt::green;
-  _node = node;
-}
-
-void NodeViewItem::paintCell( QPainter *p, const QColorGroup &cg,
-                              int column, int width, int alignment )
-{
-  QColorGroup _cg( cg );
-  QColor c = _cg.text();
-  if (column == 1) _cg.setColor( QColorGroup::Text, _cf );  
-  QCheckListItem::paintCell( p, _cg, column, width, alignment );
-  if (column == 1) _cg.setColor( QColorGroup::Text, c );
-}
-
-void NodeViewItem::setState(int state)
-{
-  //MESSAGE("NodeViewItem::setState");
-  _state = state;
-  switch (_state)
-    {
-    case YACS::UNDEFINED:    _cf=Qt::lightGray;       setText(1,"UNDEFINED");    repaint(); break;
-    case YACS::INITED:       _cf=Qt::gray;            setText(1,"INITED");       repaint(); break;
-    case YACS::TOLOAD:       _cf=Qt::darkYellow;      setText(1,"TOLOAD");       repaint(); break;
-    case YACS::LOADED:       _cf=Qt::darkMagenta;     setText(1,"LOADED");       repaint(); break;
-    case YACS::TOACTIVATE:   _cf=Qt::darkCyan;        setText(1,"TOACTIVATE");   repaint(); break;
-    case YACS::ACTIVATED:    _cf=Qt::darkBlue;        setText(1,"ACTIVATED");    repaint(); break;
-    case YACS::DESACTIVATED: _cf=Qt::gray;            setText(1,"DESACTIVATED"); repaint(); break;
-    case YACS::DONE:         _cf=Qt::darkGreen;       setText(1,"DONE");         repaint(); break;
-    case YACS::SUSPENDED:    _cf=Qt::gray;            setText(1,"SUSPENDED");    repaint(); break;
-    case YACS::LOADFAILED:   _cf.setHsv(320,255,255); setText(1,"LOADFAILED");   repaint(); break;
-    case YACS::EXECFAILED:   _cf.setHsv( 20,255,255); setText(1,"EXECFAILED");   repaint(); break;
-    case YACS::PAUSE:        _cf.setHsv(180,255,255); setText(1,"PAUSE");        repaint(); break;
-    case YACS::INTERNALERR:  _cf.setHsv(340,255,255); setText(1,"INTERNALERR");  repaint(); break;
-    case YACS::DISABLED:     _cf.setHsv( 40,255,255); setText(1,"DISABLED");     repaint(); break;
-    case YACS::FAILED:       _cf.setHsv( 20,255,255); setText(1,"FAILED");       repaint(); break;
-    case YACS::ERROR:        _cf.setHsv(  0,255,255); setText(1,"ERROR");        repaint(); break;
-    default:                 _cf=Qt::lightGray; repaint();
-   }
-}
-
 
 YACSGui_RunMode::YACSGui_RunMode( YACSGui_Executor* guiExec,
                                   QWidget* parent,
@@ -143,7 +38,7 @@ YACSGui_RunMode::YACSGui_RunMode( YACSGui_Executor* guiExec,
 
 void YACSGui_RunMode::resetTreeNode()
 {
-  //MESSAGE("YACSGui_RunMode::resetTreeNode");
+  //DEBTRACE("YACSGui_RunMode::resetTreeNode");
   _proc = _guiExec->getProc();
   assert(_proc);
   
@@ -153,8 +48,8 @@ void YACSGui_RunMode::resetTreeNode()
 
   rb_modeContinue->setChecked(true);
 
-  ComposedNodeViewItem* item =  new ComposedNodeViewItem(listView_breakpoints,
-                                                         "root" );
+  YACSGui_ComposedNodeViewItem* item =  new YACSGui_ComposedNodeViewItem(listView_breakpoints,
+									 "root" );
   _mapListViewItem[_proc->getNumId()] = item;
   addTreeNode(item, (ComposedNode*)(_proc));
   listView_breakpoints->setOpen(item, true);
@@ -167,24 +62,26 @@ YACSGui_RunMode::~YACSGui_RunMode()
   qWarning("YACSGui_RunMode::~YACSGui_RunMode");
 }
 
-void YACSGui_RunMode::addTreeNode(ComposedNodeViewItem *parent,
+void YACSGui_RunMode::addTreeNode(YACSGui_ComposedNodeViewItem *parent,
                                   YACS::ENGINE::ComposedNode* father)
 {
-  set<Node *> setOfNode= father->edGetDirectDescendants();
-  for(set<Node *>::iterator iter=setOfNode.begin();iter!=setOfNode.end();iter++)
+  list<Node *> setOfNode= father->edGetDirectDescendants();
+  for(list<Node *>::iterator iter=setOfNode.begin();iter!=setOfNode.end();iter++)
     {
       if (ElementaryNode* elemNode = dynamic_cast<ElementaryNode*> (*iter) )
         {
-          NodeViewItem* item =  new NodeViewItem(parent,
-                                                 (*iter)->getQualifiedName(),
-                                                 NodeViewItem::CheckBox,
-                                                 elemNode);
+          YACSGui_ElementaryNodeViewItem* item = 
+	    new YACSGui_ElementaryNodeViewItem(parent,
+					       (*iter)->getQualifiedName(),
+					       YACSGui_ElementaryNodeViewItem::CheckBox,
+					       elemNode);
           _mapListViewItem[(*iter)->getNumId()] = item;
         }
       else
         {
-          ComposedNodeViewItem* item =  new ComposedNodeViewItem(parent,
-                                                                 (*iter)->getQualifiedName());
+          YACSGui_ComposedNodeViewItem* item = 
+	    new YACSGui_ComposedNodeViewItem(parent,
+					     (*iter)->getQualifiedName());
           _mapListViewItem[(*iter)->getNumId()] = item;
           addTreeNode(item, (ComposedNode*)(*iter));
         }
@@ -194,13 +91,20 @@ void YACSGui_RunMode::addTreeNode(ComposedNodeViewItem *parent,
 void YACSGui_RunMode::onResume()
 {
   qWarning("YACSGui_RunMode::onResume");
+  DEBTRACE(">> ::onResume begin -->");
   if (_guiExec->checkEndOfDataFlow(false))   // --- finished or not started
     {
+      DEBTRACE(">> before run");
       //resetTreeNode();
       _guiExec->runDataflow(true);           // --- remote run only
+      DEBTRACE(">> after run");
     }
-  else                                       // --- in progress (suspended or running)
+  else {                                     // --- in progress (suspended or running)
+    DEBTRACE(">> before resume");
     _guiExec->resumeDataflow();
+    DEBTRACE(">> after resume");
+  }
+  DEBTRACE(">> ::onResume end <--");
 }
 
 void YACSGui_RunMode::onPause()
@@ -223,7 +127,7 @@ void YACSGui_RunMode::onModeContinue()
   _guiExec->setContinueMode();
 //   QListViewItemIterator it( listView_breakpoints );
 //   for ( ; it.current(); ++it )
-//     if (NodeViewItem* nodeit = dynamic_cast<NodeViewItem*> (*it))
+//     if (YACSGui_ElementaryNodeViewItem* nodeit = dynamic_cast<YACSGui_ElementaryNodeViewItem*> (*it))
 //       nodeit->setEnabled(false);
 }
 
@@ -267,7 +171,7 @@ void YACSGui_RunMode::onAllNextToRun()
     {
       ((QCheckListItem*)it.current())->setOn(true);
       string nodeName = it.current()->text(0);
-      MESSAGE(nodeName);
+      DEBTRACE(nodeName);
       nextStepList.push_back(nodeName);
       ++it;
     }
@@ -290,10 +194,10 @@ void YACSGui_RunMode::onRemoveAllNextToRun()
 void YACSGui_RunMode::onBreakpointClicked(QListViewItem *item)
 {
   qWarning("YACSGui_RunMode::onBreakpointClicked");
-  NodeViewItem* elemNodeItem = dynamic_cast<NodeViewItem*>(item);
+  YACSGui_ElementaryNodeViewItem* elemNodeItem = dynamic_cast<YACSGui_ElementaryNodeViewItem*>(item);
   if (elemNodeItem)
     {
-      MESSAGE("click on node " << elemNodeItem->getNode()->getQualifiedName());
+      DEBTRACE("click on node " << elemNodeItem->getNode()->getQualifiedName());
       if (elemNodeItem->isOn())
         {
           if (rb_modeContinue->isChecked())
@@ -308,8 +212,8 @@ void YACSGui_RunMode::onBreakpointClicked(QListViewItem *item)
       list<string> breakpointList;
       for (set<int>::iterator pos = _breakpointSet.begin(); pos != _breakpointSet.end(); ++pos)
         {
-          string nodeName =_proc->getChildName(((NodeViewItem*)(_mapListViewItem[*pos]))->getNode());
-          MESSAGE(nodeName);
+          string nodeName =_proc->getChildName(((YACSGui_ElementaryNodeViewItem*)(_mapListViewItem[*pos]))->getNode());
+          DEBTRACE(nodeName);
           breakpointList.push_back(nodeName);
         }
       _guiExec->setBreakpointList(breakpointList);
@@ -320,13 +224,13 @@ void YACSGui_RunMode::onNextStepClicked(QListViewItem *item)
 {
   qWarning("YACSGui_RunMode::onNextStepClicked");
   list<string> nextStepList;
-  MESSAGE("click on node " << item->text(0));
+  DEBTRACE("click on node " << item->text(0));
   QListViewItemIterator it(listView_nextSteps);
   for ( ; it.current(); ++it )
     if (((QCheckListItem*)it.current())->isOn())
       {
         string nodeName = it.current()->text(0);
-        MESSAGE(nodeName);
+        DEBTRACE(nodeName);
         nextStepList.push_back(nodeName);
       }
   _guiExec->setNextStepList(nextStepList);
@@ -370,16 +274,16 @@ void YACSGui_RunMode::onNotifyNextSteps(std::list<std::string> nextSteps)
 
 void YACSGui_RunMode::onNotifyNodeStatus(int nodeId, int status)
 {
-  //MESSAGE("YACSGui_RunMode::onNotifyNodeStatus " << nodeId << " " << status );
+  //DEBTRACE("YACSGui_RunMode::onNotifyNodeStatus " << nodeId << " " << status );
   QListViewItem* it = _mapListViewItem[nodeId];
   if (!it) return;
-  NodeViewItem* itn = dynamic_cast<NodeViewItem*>(it);
+  YACSGui_ElementaryNodeViewItem* itn = dynamic_cast<YACSGui_ElementaryNodeViewItem*>(it);
   if (itn)
     {
       itn->setState(status);
       return;
     }
-  ComposedNodeViewItem* itc = dynamic_cast<ComposedNodeViewItem*>(it);
+  YACSGui_ComposedNodeViewItem* itc = dynamic_cast<YACSGui_ComposedNodeViewItem*>(it);
   if (itc)
     {
       itc->setState(status);

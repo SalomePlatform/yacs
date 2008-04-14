@@ -67,6 +67,8 @@ bool OutGate::edAddInGate(InGate *inGate)
     {
       inGate->edAppendPrecursor(this);
       _setOfInGate[inGate]=false;
+      modified();
+      inGate->modified();
       return true;
     }
   else
@@ -90,6 +92,8 @@ void OutGate::edRemoveInGate(InGate *inGate, bool coherenceWithInGate) throw(Exc
         _setOfInGate.erase(iter);
         if(coherenceWithInGate)
           inGate->edRemovePrecursor(this);
+        modified();
+        inGate->modified();
         break;
       }
   if(iter==_setOfInGate.end())
@@ -106,6 +110,8 @@ void OutGate::edRemoveInGateOneWay(InGate *inGate)
         _setOfInGate.erase(iter);
         inGate->edRemovePrecursor(this);
         found=true;
+        modified();
+        inGate->modified();
       }
 }
 

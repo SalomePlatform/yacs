@@ -1,0 +1,161 @@
+<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
+<class>wiNodeEdition</class>
+<widget class="QWidget">
+    <property name="name">
+        <cstring>wiNodeEdition</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>270</width>
+            <height>255</height>
+        </rect>
+    </property>
+    <property name="minimumSize">
+        <size>
+            <width>0</width>
+            <height>0</height>
+        </size>
+    </property>
+    <property name="caption">
+        <string>Node Edition</string>
+    </property>
+    <grid>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <spacer row="1" column="0">
+            <property name="name">
+                <cstring>spacer2</cstring>
+            </property>
+            <property name="orientation">
+                <enum>Vertical</enum>
+            </property>
+            <property name="sizeType">
+                <enum>Expanding</enum>
+            </property>
+            <property name="sizeHint">
+                <size>
+                    <width>21</width>
+                    <height>81</height>
+                </size>
+            </property>
+        </spacer>
+        <widget class="QLayoutWidget" row="2" column="0">
+            <property name="name">
+                <cstring>layout1</cstring>
+            </property>
+            <hbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>btApply</cstring>
+                    </property>
+                    <property name="text">
+                        <string>apply</string>
+                    </property>
+                </widget>
+                <spacer>
+                    <property name="name">
+                        <cstring>spacer1</cstring>
+                    </property>
+                    <property name="orientation">
+                        <enum>Horizontal</enum>
+                    </property>
+                    <property name="sizeType">
+                        <enum>Expanding</enum>
+                    </property>
+                    <property name="sizeHint">
+                        <size>
+                            <width>20</width>
+                            <height>20</height>
+                        </size>
+                    </property>
+                </spacer>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>btCancel</cstring>
+                    </property>
+                    <property name="text">
+                        <string>cancel edition</string>
+                    </property>
+                </widget>
+            </hbox>
+        </widget>
+        <widget class="QLayoutWidget" row="0" column="0">
+            <property name="name">
+                <cstring>layout5</cstring>
+            </property>
+            <vbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <widget class="QLabel">
+                    <property name="name">
+                        <cstring>laNodeType</cstring>
+                    </property>
+                    <property name="text">
+                        <string>node type:</string>
+                    </property>
+                </widget>
+                <widget class="QLabel">
+                    <property name="name">
+                        <cstring>liNodeType</cstring>
+                    </property>
+                    <property name="frameShape">
+                        <enum>LineEditPanel</enum>
+                    </property>
+                    <property name="frameShadow">
+                        <enum>Sunken</enum>
+                    </property>
+                    <property name="text">
+                        <string>node</string>
+                    </property>
+                </widget>
+                <widget class="QLabel">
+                    <property name="name">
+                        <cstring>laNodeName</cstring>
+                    </property>
+                    <property name="text">
+                        <string>node name:</string>
+                    </property>
+                </widget>
+                <widget class="QLineEdit">
+                    <property name="name">
+                        <cstring>liNodeName</cstring>
+                    </property>
+                </widget>
+            </vbox>
+        </widget>
+    </grid>
+</widget>
+<connections>
+    <connection>
+        <sender>btApply</sender>
+        <signal>clicked()</signal>
+        <receiver>wiNodeEdition</receiver>
+        <slot>onApply()</slot>
+    </connection>
+    <connection>
+        <sender>btCancel</sender>
+        <signal>clicked()</signal>
+        <receiver>wiNodeEdition</receiver>
+        <slot>onCancel()</slot>
+    </connection>
+    <connection>
+        <sender>liNodeName</sender>
+        <signal>textChanged(const QString&amp;)</signal>
+        <receiver>wiNodeEdition</receiver>
+        <slot>onModify(const QString&amp;)</slot>
+    </connection>
+</connections>
+<slots>
+    <slot>onApply()</slot>
+    <slot>onCancel()</slot>
+    <slot>onModify(const QString &amp;text)</slot>
+</slots>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>

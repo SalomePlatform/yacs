@@ -1,5 +1,5 @@
 #include "LinkInfo.hxx"
-#include "ComposedNode.hxx"
+#include "Switch.hxx"
 
 #include <sstream>
 
@@ -23,6 +23,7 @@ void LinkInfo::clearAll()
   _infos.clear();
   _collapse.clear();
   _errors.clear();
+  _errorsOnSwitchCases.clear();
 }
 
 void LinkInfo::startCollapseTransac()
@@ -34,10 +35,12 @@ void LinkInfo::endCollapseTransac() throw(Exception)
 {
   if(--_level==0)
     {
-      if(_levelOfInfo==ALL_STOP_ASAP or _levelOfInfo==ERR_ONLY_DONT_STOP)
-        throw Exception(getErrRepr());
       if(_levelOfInfo==ALL_STOP_ASAP)
-        throw Exception(getWarnRepr());
+        if(areWarningsOrErrors())
+          throw(getGlobalRepr());
+      else if(_levelOfInfo==WARN_ONLY_DONT_STOP)
+        if(getNumberOfWarnLinksGrp(W_ALL)!=0)
+          throw Exception(getErrRepr());
     }
 }
 
@@ -70,7 +73,15 @@ void LinkInfo::pushErrLink(OutPort *semStart, InPort *end, ErrReason reason) thr
   else
     _errors[reason].push_back(pair<OutPort *, InPort *>(semStart,end));
   if(_level==0)
-    if(_levelOfInfo==ALL_STOP_ASAP or _levelOfInfo==ERR_ONLY_DONT_STOP)
+    if(_levelOfInfo==ALL_STOP_ASAP or _levelOfInfo==WARN_ONLY_DONT_STOP)
+      throw Exception(getErrRepr());
+}
+
+void LinkInfo::pushErrSwitch(CollectorSwOutPort *collector) throw(Exception)
+{
+  _errorsOnSwitchCases.push_back(collector);
+  if(_level==0)
+    if(_levelOfInfo==ALL_STOP_ASAP or _levelOfInfo==WARN_ONLY_DONT_STOP)
       throw Exception(getErrRepr());
 }
 
@@ -124,7 +135,7 @@ std::string LinkInfo::getInfoRepr() const
   set< pair<Node *, Node *> >::const_iterator iter3;
   for(iter3=_uselessLinks.begin();iter3!=_uselessLinks.end();iter3++)
     {
-      stream << getStringReprOfI(I_USELESS) << " between \"" << _pov->getChildName((*iter3).first);
+      stream << "Useless CF link between \"" << _pov->getChildName((*iter3).first);
       stream << "\" and \"" << _pov->getChildName((*iter3).second) << "\"." << endl;
     }
   return stream.str();
@@ -161,7 +172,14 @@ std::string LinkInfo::getErrRepr() const
   for(iter2=_errors.begin();iter2!=_errors.end();iter2++)
     for(vector< pair<OutPort *,InPort *> >::const_iterator iter3=(*iter2).second.begin();iter3!=(*iter2).second.end();iter3++)
       stream << getStringReprOfE((*iter2).first) << " between \"" <<_pov->getOutPortName((*iter3).first) << "\" and \"" << _pov->getInPortName((*iter3).second) << endl;
+  for(vector<CollectorSwOutPort *>::const_iterator iter3=_errorsOnSwitchCases.begin();iter3!=_errorsOnSwitchCases.end();iter3++)
+    (*iter3)->getHumanReprOfIncompleteCases(stream);
   return stream.str();
+}
+
+bool LinkInfo::areWarningsOrErrors() const
+{
+  return (getNumberOfWarnLinksGrp(W_ALL)!=0) || (getNumberOfErrLinks(E_ALL)!=0) || !_unsetInPort.empty() || !_onlyBackDefined.empty();
 }
 
 /*!
@@ -170,7 +188,13 @@ std::string LinkInfo::getErrRepr() const
 unsigned LinkInfo::getNumberOfInfoLinks(InfoReason reason) const
 {
   if(reason==I_ALL)
-    return _infos.size()+_uselessLinks.size();
+    {
+      map<InfoReason, vector< pair<OutPort *,InPort *> > >::const_iterator iter=_infos.begin();
+      unsigned val=0;
+      for(;iter!=_infos.end();iter++)
+        val+=(*iter).second.size();
+      return val+_uselessLinks.size();
+    }
   if(reason==I_CF_USELESS)
     return _uselessLinks.size();
   else
@@ -203,11 +227,13 @@ unsigned LinkInfo::getNumberOfWarnLinksGrp(WarnReason reason) const
 unsigned LinkInfo::getNumberOfErrLinks(ErrReason reason) const
 {
   if(reason==E_ALL)
-    return _errors.size()+_onlyBackDefined.size()+_unsetInPort.size();
+    return _errors.size()+_onlyBackDefined.size()+_unsetInPort.size()+_errorsOnSwitchCases.size();
   else if(reason==E_NEVER_SET_INPUTPORT)
     return _unsetInPort.size();
   else if(reason==E_ONLY_BACKWARD_DEFINED)
     return _onlyBackDefined.size();
+  else if(reason==E_UNCOMPLETE_SW)
+    return _errorsOnSwitchCases.size();
   else
     {
       map<ErrReason, vector< pair<OutPort *,InPort *> > >::const_iterator iter=_errors.find(reason);
@@ -265,7 +291,7 @@ std::string LinkInfo::getStringReprOfI(InfoReason reason)
   switch(reason)
     {
     case I_USELESS:
-      ret="Useless CF";
+      ret="Useless DF";
       break;
     case I_BACK:
       ret="Back";

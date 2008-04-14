@@ -43,6 +43,7 @@ namespace YACS
       virtual int edGetNumberOfLinks() const;
       virtual std::set<OutPort *> edSetOutPort() const;
       virtual ~InPort();
+      virtual std::string typeName() {return "YACS__ENGINE__InPort";}
     protected:
       InPort(const InPort& other, Node *newHelder);
       InPort(const std::string& name, Node *node, TypeCode* type);

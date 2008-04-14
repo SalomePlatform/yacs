@@ -26,9 +26,16 @@
 
 #include "SUIT_ResourceMgr.h"
 
+#include <commandsProc.hxx>
+#include <guiContext.hxx>
+
 #include <qpainter.h>
 
+//#define _DEVDEBUG_
+#include "YacsTrace.hxx"
+
 using namespace YACS::ENGINE;
+using namespace YACS::HMI;
 
 void drawText4(QPainter& thePainter, const QString& theText, 
 	       const QRect& theRect, int theHAlign = Qt::AlignAuto)
@@ -66,16 +73,17 @@ void drawText4(QPainter& thePainter, const QString& theText,
  * =========================== YACSPrs_BlocNode ===========================
  !*/
 
-YACSPrs_BlocNode::YACSPrs_BlocNode(SUIT_ResourceMgr* theMgr, QCanvas* theCanvas, YACS::ENGINE::Node* theNode,
+YACSPrs_BlocNode::YACSPrs_BlocNode(SUIT_ResourceMgr* theMgr, QCanvas* theCanvas,
+				   YACS::HMI::SubjectNode* theSNode,
 				   DisplayMode theDisplayMode, int theZ,
 				   int theLeft, int theTop, int theWidth, int theHeight):
-  YACSPrs_ElementaryNode(theMgr, theCanvas, theNode),
+  YACSPrs_ElementaryNode(theMgr, theCanvas, theSNode),
   myDisplayMode(theDisplayMode)
 {
-  printf("YACSPrs_BlocNode::YACSPrs_BlocNode\n");
-  setX(theLeft);
-  setY(theTop);
-
+  DEBTRACE("YACSPrs_BlocNode::YACSPrs_BlocNode");
+  //setX(theLeft);
+  //setY(theTop);
+  
   setNodeColor(BLOCNODE_COLOR);
   setNodeSubColor(BLOCNODE_SUBCOLOR);
 
@@ -87,12 +95,13 @@ YACSPrs_BlocNode::YACSPrs_BlocNode(SUIT_ResourceMgr* theMgr, QCanvas* theCanvas,
 
   myWidth = theWidth;
   myHeight = theHeight;
+  myArea = QRect(100, 100, theWidth, theHeight);
 
   if ( myDisplayMode == Expanded )
   {
     if ( myPointMaster ) myWidth = myPointMaster->width() > theWidth ? myPointMaster->width() : theWidth;
     else myWidth = theWidth;
-    
+
     int anEmptyHeight = getTitleHeight() + getGateHeight() + 2*BLOCNODE_MARGIN;
     myHeight = ( (anEmptyHeight > theHeight) ? anEmptyHeight : theHeight);
     
@@ -102,8 +111,9 @@ YACSPrs_BlocNode::YACSPrs_BlocNode(SUIT_ResourceMgr* theMgr, QCanvas* theCanvas,
     myBoundColor = BLOCNODERECT_COLOR;
 
     setZ(theZ);
-    
+
     updateGates();
+
   }
   else
   {
@@ -114,6 +124,8 @@ YACSPrs_BlocNode::YACSPrs_BlocNode(SUIT_ResourceMgr* theMgr, QCanvas* theCanvas,
 
     // not yet implemented
   }
+
+  moveBy(2*HOOKPOINT_SIZE+NODEBOUNDARY_MARGIN,2*HOOKPOINT_SIZE+NODEBOUNDARY_MARGIN);
 }
 
 YACSPrs_BlocNode::~YACSPrs_BlocNode() 
@@ -123,35 +135,111 @@ YACSPrs_BlocNode::~YACSPrs_BlocNode()
   myChildren.clear();
 }
 
+void YACSPrs_BlocNode::update( YACS::HMI::GuiEvent event, int type, YACS::HMI::Subject* son)
+{
+  DEBTRACE(">> YACSPrs_BlocNode::update");
+  switch (event)
+  {
+  case YACS::HMI::RENAME:
+    if ( canvas() )
+    { 
+      canvas()->setChanged(getTitleRect());
+      canvas()->update();
+    }
+    break;
+  /*
+  case YACS::HMI::EDIT:
+    {
+      int anOldHeight = maxHeight();
+      updateHeight();
+
+      bool needToCanvasUpdate = true;
+      if ( anOldHeight != maxHeight() )
+      {
+	//emit portsChanged();
+
+	YACS::HMI::SubjectBloc* aParentSubj = dynamic_cast<YACS::HMI::SubjectBloc*>( getSEngine()->getParent() );
+	if ( aParentSubj && !dynamic_cast<YACS::HMI::SubjectProc*>( aParentSubj ) )
+	{
+	  aParentSubj->update( event, YACS::HMI::BLOC, getSEngine() );
+	  needToCanvasUpdate = false;
+	}
+      }
+      
+      if ( needToCanvasUpdate && canvas() )
+      { 
+	QRect aRect((int)x(),(int)y(),maxWidth(),maxHeight());
+	canvas()->setChanged(aRect);
+	canvas()->update();
+      }
+    }
+    break;
+  */
+  case ADDLINK:
+  case ADDCONTROLLINK:
+    {
+      DEBTRACE(">> In prs : ADDLINK");
+      // add link is treated in YACSGui_Graph
+    }
+    break;
+  case REMOVE:
+    switch (type)
+    {
+    case CONTROLLINK:
+      {
+	DEBTRACE(">> In prs:  REMOVE link");
+	removeLinkPrs(son);
+      }
+      break;
+    }
+    break;
+  default:
+    GuiObserver::update(event, type, son);
+  }
+}
+
 void YACSPrs_BlocNode::setChildren(std::set<YACSPrs_ElementaryNode*>& theChildren)
 { 
   if ( myDisplayMode == Expanded )
   { 
-    myChildren = theChildren;
+    std::set<YACSPrs_ElementaryNode*> aNodesToStayOnItsPlaces;
+    for ( std::set<YACSPrs_ElementaryNode*>::iterator it = theChildren.begin(); it != theChildren.end(); it++ )
+      if ( myChildren.find(*it) != myChildren.end() ) aNodesToStayOnItsPlaces.insert(*it);
+
+    //myChildren = theChildren;
+    if ( !myChildren.empty() ) myChildren.clear();
+    for ( std::set<YACSPrs_ElementaryNode*>::iterator it = theChildren.begin(); it != theChildren.end(); it++ )
+      myChildren.insert(*it);
+      
     // resize bounding rectangle if needed
     int aMaxWidth=0, aMaxHeight=0;
     int aX = (int)x();
     int aY = (int)y() + getTitleHeight();
-    bool hasBlocChild = false;
     for ( std::set<YACSPrs_ElementaryNode*>::iterator it = myChildren.begin(); it != myChildren.end(); it++ )
     {  
       if ( aMaxWidth < (*it)->maxWidth() ) aMaxWidth = (*it)->maxWidth();
       if ( aMaxHeight < (*it)->maxHeight() ) aMaxHeight = (*it)->maxHeight();
-      YACSPrs_LoopNode* aLoop = dynamic_cast<YACSPrs_LoopNode*>( *it );
-      if ( aLoop )
-	(*it)->moveBy( aX - (*it)->boundingRect().x() + (( 2*HOOKPOINT_SIZE > 3*TITLE_HEIGHT/2 ) ? ( 2*HOOKPOINT_SIZE - 3*TITLE_HEIGHT/2 ) : 0) + BLOCNODE_MARGIN, 
-		       aY - (*it)->boundingRect().y() + BLOCNODE_MARGIN );
-      else
+      
+      if ( aNodesToStayOnItsPlaces.find(*it) == aNodesToStayOnItsPlaces.end() )
       {
-	YACSPrs_BlocNode* aBloc = dynamic_cast<YACSPrs_BlocNode*>( *it );
-	if ( aBloc ) {
-	  (*it)->moveBy( aX - (*it)->boundingRect().x() + HOOKPOINTGATE_SIZE + BLOCNODE_MARGIN, aY - (*it)->boundingRect().y() + BLOCNODE_MARGIN );
-	  hasBlocChild = true;
-	}
-	else
-	  (*it)->moveBy( aX - (*it)->boundingRect().x() + 2*HOOKPOINT_SIZE + BLOCNODE_MARGIN,
+	YACSPrs_LoopNode* aLoop = dynamic_cast<YACSPrs_LoopNode*>( *it );
+	if ( aLoop )
+	  (*it)->moveBy( aX - (*it)->boundingRect().x() + 
+			 (( 2*HOOKPOINT_SIZE > 3*TITLE_HEIGHT/2 ) ? ( 2*HOOKPOINT_SIZE - 3*TITLE_HEIGHT/2 ) : 0) +
+			 BLOCNODE_MARGIN, 
 			 aY - (*it)->boundingRect().y() + BLOCNODE_MARGIN );
+	else
+	{
+	  YACSPrs_BlocNode* aBloc = dynamic_cast<YACSPrs_BlocNode*>( *it );
+	  if ( aBloc )
+	    (*it)->moveBy( aX - (*it)->boundingRect().x() + HOOKPOINTGATE_SIZE + BLOCNODE_MARGIN,
+			   aY - (*it)->boundingRect().y() + BLOCNODE_MARGIN );
+	  else
+	    (*it)->moveBy( aX - (*it)->boundingRect().x() + 2*HOOKPOINT_SIZE + BLOCNODE_MARGIN,
+			   aY - (*it)->boundingRect().y() + BLOCNODE_MARGIN );
+	}
       }
+      
       (*it)->setIsInBloc(true);
     }
     if ( aMaxWidth > myWidth ) myWidth = aMaxWidth + 2*BLOCNODE_MARGIN;
@@ -160,8 +248,8 @@ void YACSPrs_BlocNode::setChildren(std::set<YACSPrs_ElementaryNode*>& theChildre
     setZ(z());
 
     updateGates();
-    printf("Parent : %s. Number of children : %d\n",myEngine->getName().c_str(),myChildren.size());
-  }  
+    DEBTRACE("Parent : " << getEngine()->getName() << ". Number of children : " << myChildren.size());
+  } 
 }
 
 void YACSPrs_BlocNode::setCanvas(QCanvas* theCanvas)
@@ -287,7 +375,7 @@ void YACSPrs_BlocNode::resize(QPoint thePoint)
 	}
 	break;
       case 2: // top edge
-	if ( yP < minYContent() ) {
+	if ( yP < minYContent() - getTitleHeight() ) {
 	  myHeight += (int)y() - yP;
 	  setY(yP);
 	}
@@ -297,7 +385,7 @@ void YACSPrs_BlocNode::resize(QPoint thePoint)
 	  myWidth += xP - (int)x() - myWidth;
 	break;
       case 4: // bottom edge
-	if ( yP > maxYContent() && checkArea(0,0,aBottomP) )
+	if ( yP > maxYContent() + getGateHeight() && checkArea(0,0,aBottomP) )
 	  myHeight += yP - (int)y() - myHeight;
 	break;
       case 5: // left and top edges
@@ -307,7 +395,7 @@ void YACSPrs_BlocNode::resize(QPoint thePoint)
 	    myWidth += (int)x() - xP;
 	    setX(xP);
 	  }
-	  if ( yP < minYContent() ) {
+	  if ( yP < minYContent() - getTitleHeight() ) {
 	    myHeight += (int)y() - yP;
 	    setY(yP);
 	  }
@@ -318,7 +406,7 @@ void YACSPrs_BlocNode::resize(QPoint thePoint)
 	{
 	  if ( xP > maxXContent() )
 	    myWidth += xP - (int)x() - myWidth;
-	  if ( yP < minYContent() ) {
+	  if ( yP < minYContent() - getTitleHeight() ) {
 	    myHeight += (int)y() - yP;
 	    setY(yP);
 	  }
@@ -329,7 +417,7 @@ void YACSPrs_BlocNode::resize(QPoint thePoint)
 	{
 	  if ( xP > maxXContent() )
 	    myWidth += xP - (int)x() - myWidth;
-	  if ( yP > maxYContent() )
+	  if ( yP > maxYContent() + getGateHeight() )
 	    myHeight += yP - (int)y() - myHeight;
 	}
 	break;
@@ -340,7 +428,7 @@ void YACSPrs_BlocNode::resize(QPoint thePoint)
 	    myWidth += (int)x() - xP;
 	    setX(xP);
 	  }
-	  if ( yP > maxYContent() )
+	  if ( yP > maxYContent() + getGateHeight() )
 	    myHeight += yP - (int)y() - myHeight;
 	}
 	break;
@@ -348,7 +436,7 @@ void YACSPrs_BlocNode::resize(QPoint thePoint)
 	break;
       }
     QPoint aPnt = getConnectionMasterPoint();
-    myPointMaster->setCoords(aPnt.x(), aPnt.y());
+    if ( myPointMaster ) myPointMaster->setCoords(aPnt.x(), aPnt.y());
 
     updateGates();
 
@@ -384,6 +472,7 @@ int YACSPrs_BlocNode::rtti() const
 
 void YACSPrs_BlocNode::setVisible(bool b)
 {
+  DEBTRACE("YACSPrs_BlocNode::setVisible " << b);
   QCanvasPolygonalItem::setVisible(b);
 
   if ( myDisplayMode == Expanded )
@@ -405,7 +494,7 @@ void YACSPrs_BlocNode::setVisible(bool b)
   }
   
   // set visibility to master point
-  myPointMaster->setVisible(b);
+  if ( myPointMaster ) myPointMaster->setVisible(b);
   updateLabelLink();
 }
 
@@ -484,8 +573,8 @@ void YACSPrs_BlocNode::moveBy(double dx, double dy)
       aPort->moveBy(xx, yy);
   }
 
-  myPointMaster->moveBy(dx, dy);
-  if ( myLabelLink ) myLabelLink->moveByNode(this, (int)dx, (int)dy);
+  if ( myPointMaster ) myPointMaster->moveBy(dx, dy);
+  if ( myLabelLink ) myLabelLink->moveByNode(this);
   
   if ( isSelected() && canvas() && isMoving() )
   {
@@ -500,6 +589,7 @@ void YACSPrs_BlocNode::moveBy(double dx, double dy)
 
 void YACSPrs_BlocNode::setZ(double z)
 {
+  DEBTRACE("YACSPrs_BlocNode::setZ: " << z);
   QCanvasItem::setZ(z);
 
   if ( myDisplayMode == Expanded )
@@ -520,6 +610,23 @@ void YACSPrs_BlocNode::setZ(double z)
   if ( myPointMaster ) myPointMaster->setZ(z);
 }
 
+void YACSPrs_BlocNode::setX(int x)
+{
+  QCanvasPolygonalItem::setX(x);
+  myArea = boundingRect();
+}
+
+void YACSPrs_BlocNode::setY(int y)
+{
+  QCanvasPolygonalItem::setY(y);
+  myArea = boundingRect();
+}
+
+void YACSPrs_BlocNode::update()
+{
+  YACSPrs_ElementaryNode::update();
+}
+
 void YACSPrs_BlocNode::updateGates()
 {
   bool aDisp = isVisible();
@@ -538,14 +645,14 @@ void YACSPrs_BlocNode::updateGates()
     if ( myPortList.isEmpty() )
     { // create (and update)
       // input Gate
-      YACSPrs_InOutPort* anInPort = new YACSPrs_InOutPort(myMgr,canvas(),myEngine->getInGate(),this);
+      YACSPrs_InOutPort* anInPort = new YACSPrs_InOutPort(myMgr,canvas(),getEngine()->getInGate(),this);
       anInPort->setPortRect(QRect(ix, iy, aPRectWidth, PORT_HEIGHT));
       anInPort->setColor(nodeSubColor());
       anInPort->setStoreColor(nodeSubColor());
       myPortList.append(anInPort);
       
       // output Gate
-      YACSPrs_InOutPort* anOutPort = new YACSPrs_InOutPort(myMgr,canvas(),myEngine->getOutGate(),this);
+      YACSPrs_InOutPort* anOutPort = new YACSPrs_InOutPort(myMgr,canvas(),getEngine()->getOutGate(),this);
       anOutPort->setPortRect(QRect(ox, oy, aPRectWidth, PORT_HEIGHT));
       anOutPort->setColor(nodeSubColor());
       anOutPort->setStoreColor(nodeSubColor());
@@ -598,7 +705,7 @@ void YACSPrs_BlocNode::resize(int theWidth, int theHeight)
     myHeight = theHeight;
 
     QPoint aPnt = getConnectionMasterPoint();
-    myPointMaster->setCoords(aPnt.x(), aPnt.y());
+    if ( myPointMaster ) myPointMaster->setCoords(aPnt.x(), aPnt.y());
 
     updateGates();
 
@@ -618,15 +725,27 @@ void YACSPrs_BlocNode::resize(int theWidth, int theHeight)
   }
 }
 
+void YACSPrs_BlocNode::updateHeight()
+{
+  if ( myDisplayMode == Expanded )
+  { 
+    int aMinY = minYContent();
+    int aMaxY = maxYContent();
+    myHeight = aMaxY - aMinY + getTitleHeight() + getGateHeight() + (myPointMaster ? myPointMaster->height()/2 : 0 );
+   
+    resize( myWidth, myHeight );
+  }
+}
+
 int YACSPrs_BlocNode::minXContent()
 {
   if ( myDisplayMode == Expanded )
   {
-    int aMinX = (!myChildren.empty()) ? (int)((*myChildren.begin())->boundingRect().left()) : boundingRect().left() + 2*BLOCNODE_MARGIN;
+    int aMinX = (!myChildren.empty()) ? (*myChildren.begin())->minX() : boundingRect().left() + 2*BLOCNODE_MARGIN;
     for ( std::set<YACSPrs_ElementaryNode*>::iterator it = myChildren.begin(); it != myChildren.end(); it++ )
-      if ( aMinX > (*it)->boundingRect().left() ) aMinX = (int)( (*it)->boundingRect().left() );
+      if ( aMinX > (*it)->minX() ) aMinX = (*it)->minX();
     
-    aMinX -= 2*HOOKPOINT_SIZE + BLOCNODE_MARGIN;
+    aMinX -= BLOCNODE_MARGIN;
     return aMinX;
   }
   return 0;
@@ -636,11 +755,11 @@ int YACSPrs_BlocNode::maxXContent()
 {
   if ( myDisplayMode == Expanded )
   {
-    int aMaxX = (!myChildren.empty()) ? (int)((*myChildren.begin())->boundingRect().right()) : boundingRect().right() - 2*BLOCNODE_MARGIN;
+    int aMaxX = (!myChildren.empty()) ? (*myChildren.begin())->maxX() : boundingRect().right() - 2*BLOCNODE_MARGIN;
     for ( std::set<YACSPrs_ElementaryNode*>::iterator it = myChildren.begin(); it != myChildren.end(); it++ )
-      if ( aMaxX < (*it)->boundingRect().right() ) aMaxX = (int)( (*it)->boundingRect().right() );
+      if ( aMaxX < (*it)->maxX() ) aMaxX = (*it)->maxX();
     
-    aMaxX += 2*HOOKPOINT_SIZE + BLOCNODE_MARGIN;
+    aMaxX += BLOCNODE_MARGIN;
     return aMaxX;
   }
   return 0;
@@ -650,11 +769,11 @@ int YACSPrs_BlocNode::minYContent()
 {
   if ( myDisplayMode == Expanded )
   {
-    int aMinY = (!myChildren.empty()) ? (int)((*myChildren.begin())->boundingRect().top()) : (int)x();
+    int aMinY = (!myChildren.empty()) ? (*myChildren.begin())->minY() : boundingRect().top();
     for ( std::set<YACSPrs_ElementaryNode*>::iterator it = myChildren.begin(); it != myChildren.end(); it++ )
-      if ( aMinY > (*it)->boundingRect().top() ) aMinY = (int)( (*it)->boundingRect().top() );
-    
-    aMinY -= getTitleHeight() + BLOCNODE_MARGIN;
+      if ( aMinY > (*it)->minY() ) aMinY = (*it)->minY();
+
+    aMinY -= BLOCNODE_MARGIN;
     return aMinY;
   }
   return 0;
@@ -664,11 +783,11 @@ int YACSPrs_BlocNode::maxYContent()
 {
   if ( myDisplayMode == Expanded )
   {
-    int aMaxY = (!myChildren.empty()) ? (int)((*myChildren.begin())->boundingRect().bottom()) : (int)x();
+    int aMaxY = (!myChildren.empty()) ? (*myChildren.begin())->maxY() : boundingRect().bottom();
     for ( std::set<YACSPrs_ElementaryNode*>::iterator it = myChildren.begin(); it != myChildren.end(); it++ )
-      if ( aMaxY < (*it)->boundingRect().bottom() ) aMaxY = (int)( (*it)->boundingRect().bottom() );
+      if ( aMaxY < (*it)->maxY() ) aMaxY = (*it)->maxY();
     
-    aMaxY += getGateHeight() + (myPointMaster ? myPointMaster->height()/2 : 0 ) + BLOCNODE_MARGIN;
+    aMaxY += BLOCNODE_MARGIN;
     return aMaxY;
   }
   return 0;
@@ -753,6 +872,21 @@ int YACSPrs_BlocNode::maxHeight() const
   }
 }
 
+int YACSPrs_BlocNode::minX() const
+{
+  return boundingRect().left() - HOOKPOINTGATE_SIZE;
+}
+
+int YACSPrs_BlocNode::maxX() const
+{
+  return boundingRect().right() + HOOKPOINTGATE_SIZE;
+}
+
+QRect YACSPrs_BlocNode::getRect() const
+{
+  return QRect((int)x(), (int)y(), width(), height());
+}
+
 QRect YACSPrs_BlocNode::getTitleRect() const
 {
   if ( myDisplayMode == Expanded )
@@ -811,6 +945,12 @@ void YACSPrs_BlocNode::drawShape(QPainter& thePainter)
     drawFrame(thePainter);
     drawTitle(thePainter);
     drawGate(thePainter);
+
+    if ( isControlDMode() && myPointMaster)
+    {
+      myPointMaster->setVisible(false);
+      myPointMaster->setCanvas(0);
+    }
   }
   else
   { 
@@ -834,7 +974,7 @@ void YACSPrs_BlocNode::drawTitle(QPainter& thePainter)
   thePainter.drawRoundRect(aRoundRect,myXRnd,myYRnd);
 
   thePainter.setPen(Qt::white);
-  drawText4(thePainter, QString(myEngine->getName()), aRoundRect, Qt::AlignHCenter);
+  drawText4(thePainter, QString(getEngine()->getName()), aRoundRect, Qt::AlignHCenter);
 
   thePainter.setBrush(savedB);
   thePainter.setPen(savedP);

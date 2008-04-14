@@ -2,6 +2,7 @@
 import sys
 from qt import *
 from qtcanvas import *
+import math
 
 class DynamicTip( QToolTip ):
   def __init__( self, parent ):
@@ -20,12 +21,16 @@ class DynamicTip( QToolTip ):
         return
 
 class GraphViewer(QCanvasView):
-  def __init__(self,item,c,parent,name,f):
+  def __init__(self,c,parent,name,f):
     QCanvasView.__init__(self,c,parent,name,f)
-    self.item=item
     self.__moving=0
     self.__connecting=0
     self.__moving_start= 0
+    # for highlighting selections
+    self.selectPen=QPen(QColor(255,255,0),2,Qt.DashLine)
+    self.selectBrush=QBrush(Qt.red)
+    self.selectStyle = Qt.Dense5Pattern
+    self.selected=None
     self.tooltip = DynamicTip( self )
 
   def contentsMouseDoubleClickEvent(self,e): # QMouseEvent e
@@ -51,6 +56,7 @@ class GraphViewer(QCanvasView):
         if not each_item.hit(point):
           continue
       if e.button()== Qt.RightButton:
+        #Right button click
         self.__moving=0
         self.__connecting=0
         if hasattr(each_item,"popup"):
@@ -63,16 +69,23 @@ class GraphViewer(QCanvasView):
           if menu:
             menu.exec_loop( QCursor.pos() )
             self.canvas().update()
+
       elif e.button()== Qt.LeftButton:
+        #Left button click
         if self.__connecting:
+          #We are linking objects
           if hasattr(each_item,"getObj"):
             #a connection is ending
-            self.__connecting.link(each_item.getObj())
+            self.__connecting.link(each_item.getObj().item)
+            #self.__connecting.link(each_item.getObj())
             self.canvas().update()
           self.__connecting=0
         else:
+          #We are moving or selecting a composite object
+          each_item.selected()
           self.__moving=each_item
           self.__moving_start=point
+          self.canvas().update()
       return
     if e.button()== Qt.RightButton:
       menu=self.popup()
@@ -83,6 +96,35 @@ class GraphViewer(QCanvasView):
     self.__connecting=0
     QCanvasView.contentsMousePressEvent(self,e)
 
+  def selectItem(self,item):
+    #print "selectItem",item
+    if self.selected:
+      try:
+        self.deselectObj(self.selected)
+      except:
+        pass
+      self.selected=None
+    #need to find equivalent canvas item 
+    for citem in self.canvas().allItems():
+      if hasattr(citem,"item") and citem.item is item:
+        self.selected=citem
+        self.selectObj(self.selected)
+        break
+    self.canvas().update()
+
+  def selectObj(self,obj):
+    if obj:
+      obj._origPen = obj.pen()
+      obj._origBrush = obj.brush()
+      obj._origStyle = obj.brush().style()
+      obj.setPen(self.selectPen)
+      #obj.setBrush(self.selectBrush)
+
+  def deselectObj(self,obj):
+    if obj:
+      obj.setPen(obj._origPen)
+      #obj.setBrush(obj._origBrush)
+
   def popup(self):
     menu=QPopupMenu()
     caption = QLabel( "<font color=darkblue><u><b>View Menu</b></u></font>", self )
@@ -91,8 +133,8 @@ class GraphViewer(QCanvasView):
     menu.insertItem("add Node", self.addNode)
     return menu
 
-  def layout(self,rankdir):
-    print rankdir
+  #def layout(self,rankdir):
+  #  print rankdir
 
   def updateCanvas(self):
     #Par defaut, Qt n'efface pas le background. Seul repaintContents
@@ -102,7 +144,7 @@ class GraphViewer(QCanvasView):
     #self.canvas().update()
 
   def addNode(self):
-    self.item.addNode()
+    print "addNode"    
 
   def zoomIn(self):
     m = self.worldMatrix()
@@ -161,53 +203,6 @@ class ImageItem(QCanvasRectangle):
     def drawShape(self,p):
       p.drawPixmap( self.x(), self.y(), self.pixmap )
 
-
-class NodeItem(QCanvasEllipse):
-    def __init__(self,canvas):
-      QCanvasEllipse.__init__(self,6,6,canvas)
-      self.__inList=[]
-      self.__outList=[]
-      self.setPen(QPen(Qt.black))
-      self.setBrush(QBrush(Qt.red))
-      self.setZ(128)
-
-    def addInEdge(self,edge):
-      self.__inList.append(edge)
-
-    def addOutEdge(self,edge):
-      self.__outList.append(edge)
-
-    def moveBy(self,dx,dy):
-      QCanvasEllipse.moveBy(self,dx,dy)
-      for each_edge in self.__inList:
-        each_edge.setToPoint( int(self.x()), int(self.y()) )
-      for each_edge in self.__outList:
-        each_edge.setFromPoint( int(self.x()), int(self.y()) )
-
-class EdgeItem(QCanvasLine):
-    __c=0
-    def __init__(self,fromNode, toNode,canvas):
-      QCanvasLine.__init__(self,canvas)
-      self.__c=self.__c+1
-      self.setPen(QPen(Qt.black))
-      self.setBrush(QBrush(Qt.red))
-      fromNode.addOutEdge(self)
-      toNode.addInEdge(self)
-      self.setPoints(int(fromNode.x()),int(fromNode.y()), int(toNode.x()), int(toNode.y()))
-      self.setZ(127)
-
-    def setFromPoint(self,x,y):
-      self.setPoints(x,y,self.endPoint().x(),self.endPoint().y())
-
-    def setToPoint(self,x,y):
-      self.setPoints(self.startPoint().x(), self.startPoint().y(),x,y)
-
-    def count(self):
-      return self.__c
-
-    def moveBy(self,dx,dy):
-      pass
-
 class LinkItem(QCanvasLine):
   def __init__(self,fromPort, toPort,canvas):
     QCanvasLine.__init__(self,canvas)
@@ -218,15 +213,35 @@ class LinkItem(QCanvasLine):
     self.setPoints(int(fromPort.x()),int(fromPort.y()), int(toPort.x()), int(toPort.y()))
     self.setZ(min(fromPort.z(),toPort.z())-1)
     self.setVisible(True)
+    self.arrow = QCanvasPolygon(self.canvas())
+    self.arrow.setBrush(QBrush(Qt.black))
+    self.setArrow()
+    self.arrow.show()
 
   def setFromPoint(self,x,y):
     self.setPoints(x,y,self.endPoint().x(),self.endPoint().y())
+    self.setArrow()
 
   def setToPoint(self,x,y):
     self.setPoints(self.startPoint().x(), self.startPoint().y(),x,y)
+    self.setArrow()
 
   def moveBy(self,dx,dy):
     pass
+
+  def setArrow(self):
+    x1,y1=self.startPoint().x(),self.startPoint().y()
+    x2,y2=self.endPoint().x(),self.endPoint().y()
+    d=math.hypot(x2-x1,y2-y1)
+    sina=(y2-y1)/d
+    cosa=(x2-x1)/d
+    x=(x1+x2)/2.
+    y=(y1+y2)/2.
+    pa=QPointArray(3)
+    pa.setPoint(0, QPoint(x+10*cosa,y+10*sina))
+    pa.setPoint(1, QPoint(x-5*sina,y+5*cosa))
+    pa.setPoint(2, QPoint(x+5*sina,y-5*cosa))
+    self.arrow.setPoints(pa)
 
   def popup(self,canvasView):
     menu=QPopupMenu()
@@ -242,7 +257,7 @@ class LinkItem(QCanvasLine):
   def tooltip(self,view,pos):
     r = QRect(pos.x(), pos.y(), pos.x()+10, pos.y()+10)
     s = QString( "link: %d,%d" % (r.center().x(), r.center().y()) )
-    QToolTip(view).tip( r, s )
+    view.tip( r, s )
 
 class PortItem(QCanvasEllipse):
   def __init__(self,node,canvas):
@@ -280,7 +295,7 @@ class PortItem(QCanvasEllipse):
   def tooltip(self,view,pos):
     r = QRect(self.x(), self.y(), self.width(), self.height())
     s = QString( "port: %d,%d" % (r.center().x(), r.center().y()) )
-    QToolTip(view).tip( r, s )
+    view.tip( r, s )
 
 class InPortItem(PortItem):
   def __init__(self,node,canvas):
@@ -363,25 +378,32 @@ class Cell(QCanvasRectangle):
   def tooltip(self,view,pos):
     r = QRect(self.x(), self.y(), self.width(), self.height())
     s = QString( "node: %d,%d" % (r.center().x(), r.center().y()) )
-    QToolTip(view).tip( r, s )
+    view.tip( r, s )
 
   def browse(self):
     print "browse"
 
+  def selected(self):
+    print "selected"
+
 if __name__=='__main__':
   app=QApplication(sys.argv)
-  qvbox=QVBox()
-  QToolBar(qvbox,"toolbar")
+  box=QMainWindow()
+  QToolBar(box,"toolbar")
   canvas=QCanvas(800,600)
   canvas.setAdvancePeriod(30)
-  m=GraphViewer(canvas,qvbox,"example",0)
-  for x,y in ((150,150),(150,250)):
-    c=Cell(canvas)
-    c.moveBy(x,y)
-    c.show()
+  m=GraphViewer(canvas,box,"example",0)
+  box.setCentralWidget(m)
+  c1=Cell(canvas)
+  c1.moveBy(150,150)
+  c1.show()
+  c2=Cell(canvas)
+  c2.moveBy(250,150)
+  c2.show()
+  c1.outports[0].link(c2.inports[0])
 
-  qApp.setMainWidget(qvbox)
-  qvbox.show()
+  qApp.setMainWidget(box)
+  box.show()
   app.exec_loop()
 
 

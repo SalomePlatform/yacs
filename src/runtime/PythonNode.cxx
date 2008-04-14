@@ -3,6 +3,7 @@
 #include "PythonNode.hxx"
 #include "PythonPorts.hxx"
 
+#include "PyStdout.hxx"
 #include <iostream>
 #include <sstream>
 
@@ -52,6 +53,7 @@ void PythonNode::execute()
       stringstream msg;
       msg << "Impossible to set builtins" << __FILE__ << ":" << __LINE__;
       PyGILState_Release(gstate);
+      _errorDetails=msg.str();
       throw Exception(msg.str());
     }
 
@@ -80,9 +82,17 @@ void PythonNode::execute()
   DEBTRACE( "_context refcnt: " << _context->ob_refcnt );
   PyObject *res=PyRun_String(_script.c_str(),Py_file_input,_context,_context);
   DEBTRACE( "_context refcnt: " << _context->ob_refcnt );
+  fflush(stdout);
+  fflush(stderr);
   if(res == NULL)
     {
+      _errorDetails="";
+      PyObject* new_stderr = newPyStdOut(_errorDetails);
+      PySys_SetObject("stderr", new_stderr);
       PyErr_Print();
+      PySys_SetObject("stderr", PySys_GetObject("__stderr__"));
+      Py_DECREF(new_stderr);
+
       PyGILState_Release(gstate);
       throw Exception("Error during execution");
     }
@@ -102,6 +112,7 @@ void PythonNode::execute()
              PyGILState_Release(gstate);
              std::string msg="Error during execution: there is no variable ";
              msg=msg+p->getName()+" in node context";
+             _errorDetails=msg;
              throw Exception(msg);
           }
           DEBTRACE( "PyNode::outputs::ob refcnt: " << ob->ob_refcnt );
@@ -112,9 +123,10 @@ void PythonNode::execute()
           p->put(ob);
         }
     }
-  catch(ConversionException)
+  catch(ConversionException& ex)
     {
       PyGILState_Release(gstate);
+      _errorDetails=ex.what();
       throw;
     }
 
@@ -162,6 +174,7 @@ PyFuncNode::PyFuncNode(const PyFuncNode& other, ComposedNode *father):InlineFunc
     {
       stringstream msg;
       msg << "Not possible to set builtins" << __FILE__ << ":" << __LINE__;
+      _errorDetails=msg.str();
       PyGILState_Release(gstate);
       throw Exception(msg.str());
     }
@@ -180,6 +193,7 @@ PyFuncNode::PyFuncNode(const std::string& name): InlineFuncNode(name),_pyfunc(0)
     {
       stringstream msg;
       msg << "Not possible to set builtins" << __FILE__ << ":" << __LINE__;
+      _errorDetails=msg.str();
       PyGILState_Release(gstate);
       throw Exception(msg.str());
     }
@@ -215,7 +229,13 @@ void PyFuncNode::load()
   DEBTRACE( "_context refcnt: " << _context->ob_refcnt );
   if(res == NULL)
     {
+      _errorDetails="";
+      PyObject* new_stderr = newPyStdOut(_errorDetails);
+      PySys_SetObject("stderr", new_stderr);
       PyErr_Print();
+      PySys_SetObject("stderr", PySys_GetObject("__stderr__"));
+      Py_DECREF(new_stderr);
+
       PyGILState_Release(gstate);
       throw Exception("Error during execution");
       return;
@@ -225,7 +245,13 @@ void PyFuncNode::load()
   DEBTRACE( "_pyfunc refcnt: " << _pyfunc->ob_refcnt );
   if(_pyfunc == NULL)
     {
+      _errorDetails="";
+      PyObject* new_stderr = newPyStdOut(_errorDetails);
+      PySys_SetObject("stderr", new_stderr);
       PyErr_Print();
+      PySys_SetObject("stderr", PySys_GetObject("__stderr__"));
+      Py_DECREF(new_stderr);
+
       PyGILState_Release(gstate);
       throw Exception("Error during execution");
     }
@@ -273,9 +299,17 @@ void PyFuncNode::execute()
   PyObject* result = PyObject_CallObject( _pyfunc , args ) ;
   DEBTRACE( "_pyfunc refcnt: " << _pyfunc->ob_refcnt );
   Py_DECREF(args);
+  fflush(stdout);
+  fflush(stderr);
   if(result == NULL)
     {
+      _errorDetails="";
+      PyObject* new_stderr = newPyStdOut(_errorDetails);
+      PySys_SetObject("stderr", new_stderr);
       PyErr_Print();
+      PySys_SetObject("stderr", PySys_GetObject("__stderr__"));
+      Py_DECREF(new_stderr);
+
       PyGILState_Release(gstate);
       throw Exception("Error during execution");
     }
@@ -290,9 +324,11 @@ void PyFuncNode::execute()
 
   if(getNumberOfOutputPorts() != nres)
     {
+      std::string msg="Number of output arguments : Mismatch between definition and execution";
       Py_DECREF(result);
       PyGILState_Release(gstate);
-      throw Exception("Number of output arguments : Mismatch between definition and execution");
+      _errorDetails=msg;
+      throw Exception(msg);
     }
 
   pos=0;
@@ -320,10 +356,11 @@ void PyFuncNode::execute()
           pos++;
         }
     }
-  catch(ConversionException)
+  catch(ConversionException& ex)
     {
       Py_DECREF(result);
       PyGILState_Release(gstate);
+      _errorDetails=ex.what();
       throw;
     }
   DEBTRACE( "-----------------End PyFuncNode::outputs-----------------" );

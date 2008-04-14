@@ -20,6 +20,8 @@
 #ifndef YACSPRS_LINK_H
 #define YACSPRS_LINK_H
 
+#include <guiObservers.hxx>
+
 #include "QxGraph_ActiveItem.h"
 
 #include <qcanvas.h>
@@ -40,7 +42,10 @@ class YACSPrs_Link : public QObject {
   virtual ~YACSPrs_Link();
   
   void show();
+  void hide();
   void merge();
+
+  void setCanvas(QCanvas* theCanvas);
 
   std::list<QPoint> getPoints() const { return myPoints; }
   void              setPoints(std::list<QPoint> thePoints) { myPoints = thePoints; }
@@ -101,11 +106,16 @@ class YACSPrs_Link : public QObject {
   double myZ;
 };
 
-class YACSPrs_PortLink : public YACSPrs_Link {
+class YACSPrs_PortLink : public YACSPrs_Link, public YACS::HMI::GuiObserver {
 
  public:
   YACSPrs_PortLink(SUIT_ResourceMgr* theMgr, QCanvas* theCanvas, YACSPrs_InOutPort* theInputPort, YACSPrs_InOutPort* theOutputPort);
   virtual ~YACSPrs_PortLink();
+
+  virtual void select( bool isSelected );
+  virtual void update( YACS::HMI::GuiEvent event, int type, YACS::HMI::Subject* son);
+
+  YACS::HMI::Subject* getSubject() const;
 
   virtual void moveByPort(YACSPrs_Port* thePort, bool theMoveInternalLinkPoints=false, QRect theArea=QRect());
   virtual void moveByPort(YACSPrs_Port* thePort, int dx, int dy);
@@ -220,7 +230,7 @@ class YACSPrs_Edge : public QxGraph_ActiveItem, public QCanvasLine {
 
   public:
     YACSPrs_Edge(QCanvas* theCanvas, YACSPrs_Link* theLink);
-    ~YACSPrs_Edge() {}
+    ~YACSPrs_Edge();
 
     /* reimplement functions from QxGraph_ActiveItem */
     virtual bool isMoveable();
@@ -231,6 +241,7 @@ class YACSPrs_Edge : public QxGraph_ActiveItem, public QCanvasLine {
     virtual void showPopup(QWidget* theParent, QMouseEvent* theEvent, const QPoint& theMousePos = QPoint());
     virtual QString getToolTipText(const QPoint& theMousePos, QRect& theRect) const;
     virtual bool arePartsOfOtherItem(QxGraph_ActiveItem* theSecondItem);
+    void setCanvas(QCanvas* theCanvas);
 
     YACSPrs_Link* getLink() const { return myLink; }
 
@@ -244,6 +255,9 @@ class YACSPrs_Edge : public QxGraph_ActiveItem, public QCanvasLine {
     bool isMoving() const { return myMoving; }
 
     void setSelected(bool b) { mySelected = b; }
+    virtual void setArrow();
+    virtual void setVisible ( bool ) ;
+    virtual void setZ ( double z );
 
     virtual int rtti() const;
 
@@ -256,6 +270,7 @@ class YACSPrs_Edge : public QxGraph_ActiveItem, public QCanvasLine {
     YACSPrs_Point* myEndPoint;
 
     bool mySelected;
+    QCanvasPolygon* myArrow;
 };
 
 #endif

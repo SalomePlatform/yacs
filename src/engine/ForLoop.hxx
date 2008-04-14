@@ -26,12 +26,12 @@ namespace YACS
       void exUpdateState();
       void init(bool start=true);
       InputPort *edGetNbOfTimesInputPort() { return &_nbOfTimesPort; }
-      int getNumberOfInputPorts() const;
       Node *simpleClone(ComposedNode *father, bool editionOnly=true) const;
-      std::list<InputPort *> getSetOfInputPort() const;
       InputPort* getInputPort(const std::string& name) const throw(Exception);
       std::list<InputPort *> getLocalInputPorts() const;
       virtual void accept(Visitor *visitor);
+      InputPort *getDecisionPort() const { return (InputPort *)&_nbOfTimesPort; }
+      virtual std::string typeName() {return "YACS__ENGINE__ForLoop";}
     protected:
       YACS::Event updateStateOnFinishedEventFrom(Node *node);
     };

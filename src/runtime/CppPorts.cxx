@@ -2,6 +2,7 @@
 #include "TypeConversions.hxx"
 #include "CppPorts.hxx"
 #include "Node.hxx"
+#include "TypeCode.hxx"
 
 #include <iostream>
 #include <sstream>

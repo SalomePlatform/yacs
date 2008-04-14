@@ -70,6 +70,35 @@
    fun:PyObject_Realloc
 }
 
+#
+# Non-python specific leaks
+#
+
+{
+   Handle pthread issue (possibly leaked)
+   Memcheck:Leak
+   fun:calloc
+   fun:allocate_dtv
+   fun:_dl_allocate_tls_storage
+   fun:_dl_allocate_tls
+}
+
+{
+   Handle pthread issue (possibly leaked)
+   Memcheck:Leak
+   fun:calloc
+   obj:/lib/ld-2.3.6.so
+   fun:_dl_allocate_tls
+}
+
+{
+   Handle pthread issue (possibly leaked)
+   Memcheck:Leak
+   fun:memalign
+   fun:_dl_allocate_tls_storage
+   fun:_dl_allocate_tls
+}
+
 ###
 ### All the suppressions below are for errors that occur within libraries
 ### that Python uses.  The problems to not appear to be related to Python's

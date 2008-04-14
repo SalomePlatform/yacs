@@ -127,7 +127,9 @@ then
   fi
 
   CXXFLAGS_old=$CXXFLAGS
+  CPPFLAGS_old=$CPPFLAGS
   CXXFLAGS="$CXXFLAGS $QT_INCLUDES"
+  CPPFLAGS="$CPPFLAGS $QT_INCLUDES"
 
   AC_CACHE_VAL(salome_cv_lib_qt,[
     AC_TRY_LINK(
@@ -164,25 +166,50 @@ then
       AC_MSG_RESULT(QTDIR environment variable may be wrong)
     else
       AC_MSG_RESULT(yes)
-         QT_LIBS="-L$QTDIR/lib -lqt-mt"
-      QT_MT_LIBS="-L$QTDIR/lib -lqt-mt"
+      QT_LDFLAGS="-L$QTDIR/lib"
+      QT_LIBADD=" -lqt-mt"
+      QT_MT_LDFLAGS="-L$QTDIR/lib"
+      QT_MT_LIBADD=" -lqt-mt"
     fi
     # END: for CCRT
   else
     AC_MSG_RESULT(yes)
+    QT_LIBADD=" -lqt-mt"
+    QT_MT_LIBADD=" -lqt-mt"
     if test "x$QTDIR" = "x/usr"
     then
-         QT_LIBS=" -lqt-mt"
-      QT_MT_LIBS=" -lqt-mt"
+      QT_LDFLAGS=""
+      QT_MT_LDFLAGS=""
     else
-         QT_LIBS="-L$QTDIR/lib${LIB_LOCATION_SUFFIX} -lqt-mt"
-      QT_MT_LIBS="-L$QTDIR/lib${LIB_LOCATION_SUFFIX} -lqt-mt"
+         QT_LDFLAGS="-L$QTDIR/lib${LIB_LOCATION_SUFFIX}"
+      QT_MT_LDFLAGS="-L$QTDIR/lib${LIB_LOCATION_SUFFIX}"
     fi
+  fi
+
+  AC_SUBST(QSCINTILLA_CCPFLAGS)
+  AC_SUBST(QSCINTILLA_LIBADD)
+  QSCINTILLA_CCPFLAGS=""
+  QSCINTILLA_LIBADD=""
+
+  AC_LANG_CPLUSPLUS
+  CPPFLAGS="$CPPFLAGS -I$QTDIR/include/qscintilla"
+  AC_CHECK_HEADERS(qextscintilla.h, qscintilla="yes", qscintilla="no")
+  if test "x$qscintilla" = "xyes" ; then
+    QSCINTILLA_CCPFLAGS="-I$QTDIR/include/qscintilla"
+    QSCINTILLA_LIBADD="-lqscintilla"
+  else
+    CPPFLAGS="$CPPFLAGS -I/usr/include/qscintilla"
+    AC_CHECK_HEADERS(/usr/include/qscintilla/qextscintilla.h, 
+           [qscintilla="yes"; QSCINTILLA_CCPFLAGS="-I/usr/include/qscintilla"; QSCINTILLA_LIBADD="-lqscintilla"], 
+           [qscintilla="no"])
+  fi
+  if test "x$qscintilla" = "xyes" ; then
+    AC_DEFINE(HAVE_QEXTSCINTILLA_H,,[With scintilla])
   fi
 
   LIBS=$LIBS_old
   CXXFLAGS=$CXXFLAGS_old
-
+  CPPFLAGS=$CPPFLAGS_old
 fi
 
 AC_SUBST(MOC)
@@ -191,8 +218,10 @@ AC_SUBST(UIC)
 AC_SUBST(QT_ROOT)
 AC_SUBST(QT_INCLUDES)
 AC_SUBST(QT_MT_INCLUDES)
-AC_SUBST(QT_LIBS)
-AC_SUBST(QT_MT_LIBS)
+AC_SUBST(QT_LDFLAGS)
+AC_SUBST(QT_MT_LDFLAGS)
+AC_SUBST(QT_LIBADD)
+AC_SUBST(QT_MT_LIBADD)
 AC_SUBST(QT_VERS)
 
 AC_LANG_RESTORE

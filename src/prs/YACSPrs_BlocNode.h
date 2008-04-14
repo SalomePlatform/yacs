@@ -31,12 +31,14 @@ class YACSPrs_BlocNode : public YACSPrs_ElementaryNode {
  public:
   typedef enum { Collapsed, Expanded } DisplayMode;
 
-  YACSPrs_BlocNode( SUIT_ResourceMgr*, QCanvas*, YACS::ENGINE::Node*,
+  YACSPrs_BlocNode( SUIT_ResourceMgr*, QCanvas*, YACS::HMI::SubjectNode*,
 		    DisplayMode theDisplayMode=Expanded,
 		    int theZ=0,
 		    int theLeft=0, int theTop=0,
 		    int theWidth=0, int theHeight=0);
   virtual ~YACSPrs_BlocNode();
+
+  virtual void update( YACS::HMI::GuiEvent event, int type, YACS::HMI::Subject* son);
 
   DisplayMode getDisplayMode() const { return myDisplayMode; }
 
@@ -63,12 +65,16 @@ class YACSPrs_BlocNode : public YACSPrs_ElementaryNode {
   virtual QPointArray constructAreaPoints(int theW, int theH) const;
   void moveBy(double dx, double dy);
   void setZ(double z);
+  void setX(int x);
+  void setY(int y);
 
+  virtual void update();
   virtual void updateGates();
 
   virtual int width() const;
   virtual int height() const;
   void resize(int theWidth, int theHeight);
+  void updateHeight();
 
   int minXContent();
   int maxXContent();
@@ -81,7 +87,11 @@ class YACSPrs_BlocNode : public YACSPrs_ElementaryNode {
 
   virtual int maxWidth() const;
   virtual int maxHeight() const;
+
+  virtual int minX() const;
+  virtual int maxX() const;
   
+  virtual QRect getRect() const;
   virtual QRect getTitleRect() const;
   virtual QRect getGateRect() const;
 

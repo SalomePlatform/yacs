@@ -21,6 +21,9 @@ namespace YACS
     CPPUNIT_TEST(checkAny3);
     CPPUNIT_TEST(checkAny4);
     CPPUNIT_TEST(checkAny5);
+    CPPUNIT_TEST(checkAny6);
+    CPPUNIT_TEST(checkAny7);
+    CPPUNIT_TEST(checkAny8);
     CPPUNIT_TEST(checkInGateOutGate );
     CPPUNIT_TEST(checkNodePortNumber );
     CPPUNIT_TEST(checkPortTypeName );
@@ -37,6 +40,7 @@ namespace YACS
     CPPUNIT_TEST(RecursiveBlocs_multipleRecursion );
     CPPUNIT_TEST(RecursiveBlocs_removeNodes );
     CPPUNIT_TEST(cleanUp);
+    CPPUNIT_TEST(checkLogger);
     CPPUNIT_TEST_SUITE_END();
       
   public:
@@ -52,6 +56,9 @@ namespace YACS
     void checkAny3();
     void checkAny4();
     void checkAny5();
+    void checkAny6();
+    void checkAny7();
+    void checkAny8();
     void checkInGateOutGate();
     void checkNodePortNumber();
     void checkPortTypeName();
@@ -67,6 +74,7 @@ namespace YACS
     void checkRemoveNode();
     void RecursiveBlocs_multipleRecursion();
     void RecursiveBlocs_removeNodes();
+    void checkLogger();
       
   protected:
     static std::map<std::string, YACS::ENGINE::Node*> _nodeMap; 

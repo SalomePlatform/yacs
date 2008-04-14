@@ -23,11 +23,6 @@ string DataStreamPort::getNameOfTypeOfCurrentInstance() const
   return NAME;
 }
 
-bool DataStreamPort::isDifferentTypeOf(const DataPort *other) const
-{
-  return (dynamic_cast<const DataStreamPort *>(other))==0;
-}
-
 void DataStreamPort::setProperty(const std::string& name, const std::string& value)
 {
   _propertyMap[name]=value;
@@ -41,3 +36,12 @@ void DataStreamPort::initPortProperties()
 {
 }
 
+void DataStreamPort::setProperties(std::map<std::string,std::string> properties)
+{
+  _propertyMap.clear();
+  std::map<std::string,std::string>::iterator it;
+  for (it = properties.begin(); it != properties.end(); ++it)
+    {
+      setProperty((*it).first, (*it).second); // setProperty virtual and derived
+    }
+}

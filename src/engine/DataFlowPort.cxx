@@ -21,8 +21,3 @@ string DataFlowPort::getNameOfTypeOfCurrentInstance() const
 {
   return NAME;
 }
-
-bool DataFlowPort::isDifferentTypeOf(const DataPort *other) const
-{
-  return (dynamic_cast<const DataFlowPort *>(other))==0;
-}

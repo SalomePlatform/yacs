@@ -11,14 +11,19 @@
 #include "RuntimeSALOME.hxx"
 #include "SALOMEDispatcher.hxx"
 #include "Proc.hxx"
+#include "TypeCode.hxx"
 #include "WhileLoop.hxx"
 #include "ForLoop.hxx"
 #include "Bloc.hxx"
 #include "InputPort.hxx"
 #include "OutputPort.hxx"
+#include "PresetPorts.hxx"
 #include "InputDataStreamPort.hxx"
 #include "OutputDataStreamPort.hxx"
 #include "SalomeProc.hxx"
+//Catalog Loaders
+#include "SessionCataLoader.hxx"
+
 //Components
 #include "CORBAComponent.hxx"
 #include "SalomeComponent.hxx"
@@ -33,8 +38,11 @@
 #include "CORBANode.hxx"
 #include "XMLNode.hxx"
 #include "CppNode.hxx"
-#include "TypeConversions.hxx"
+#include "PresetNode.hxx"
+#include "OutNode.hxx"
+#include "StudyNodes.hxx"
 #include "SalomePythonNode.hxx"
+
 //CORBA proxy ports
 #include "CORBACORBAConv.hxx"
 #include "CORBAPythonConv.hxx"
@@ -42,6 +50,7 @@
 #include "CORBACppConv.hxx"
 #include "CORBANeutralConv.hxx"
 
+#include "TypeConversions.hxx"
 //Python proxy ports
 #include "PythonCORBAConv.hxx"
 #include "PythonXMLConv.hxx"
@@ -91,7 +100,9 @@ void RuntimeSALOME::setRuntime(long flags) // singleton creation (not thread saf
 {
   if (! Runtime::_singleton)
     {
-      Runtime::_singleton = new RuntimeSALOME(flags);
+      RuntimeSALOME* r=new RuntimeSALOME(flags);
+      Runtime::_singleton = r;
+      r->initBuiltins();
     }
   DEBTRACE("RuntimeSALOME::setRuntime() done !");
 }
@@ -109,6 +120,26 @@ RuntimeSALOME* YACS::ENGINE::getSALOMERuntime()
 RuntimeSALOME::RuntimeSALOME()
 {
   assert(0);
+}
+
+void RuntimeSALOME::initBuiltins()
+{
+  //Fill the builtin catalog with nodes specific to the runtime
+  std::map<std::string,TypeCode*>& typeMap=_builtinCatalog->_typeMap;
+  std::map<std::string,Node*>& nodeMap=_builtinCatalog->_nodeMap;
+  std::map<std::string,ComposedNode*>& composednodeMap=_builtinCatalog->_composednodeMap;
+  std::map<std::string,ComponentDefinition*>& componentMap=_builtinCatalog->_componentMap;
+  nodeMap["PyFunction"]=new PyFuncNode("PyFunction");
+  nodeMap["PyScript"]=new PythonNode("PyScript");
+  nodeMap["CORBANode"]=new CORBANode("CORBANode");
+  nodeMap["XmlNode"]=new XmlNode("XmlNode");
+  nodeMap["SalomeNode"]=new SalomeNode("SalomeNode");
+  nodeMap["CppNode"]=new CppNode("CppNode");
+  nodeMap["SalomePythonNode"]=new SalomePythonNode("SalomePythonNode");
+  nodeMap["PresetNode"]=new PresetNode("PresetNode");
+  nodeMap["OutNode"]=new OutNode("OutNode");
+  nodeMap["StudyInNode"]=new StudyInNode("StudyInNode");
+  nodeMap["StudyOutNode"]=new StudyOutNode("StudyOutNode");
 }
 
 RuntimeSALOME::RuntimeSALOME(long flags)
@@ -131,6 +162,9 @@ RuntimeSALOME::RuntimeSALOME(long flags)
   _useCpp = flags & RuntimeSALOME::UseCpp;
   _useXml = flags & RuntimeSALOME::UseXml;
 
+  /* Init libxml */
+  xmlInitParser();
+
   if (_useCpp)    _setOfImplementation.insert(CppNode::IMPL_NAME);
   if (_usePython) _setOfImplementation.insert(PythonNode::IMPL_NAME);
   if (_useCorba)  _setOfImplementation.insert(CORBANode::IMPL_NAME);
@@ -140,6 +174,13 @@ RuntimeSALOME::RuntimeSALOME(long flags)
 
 RuntimeSALOME::~RuntimeSALOME()
 {
+  DEBTRACE("RuntimeSALOME::~RuntimeSALOME");
+  // destroy catalog loader prototypes
+  std::map<std::string, CatalogLoader*>::const_iterator pt;
+  for(pt=_catalogLoaderFactoryMap.begin();pt!=_catalogLoaderFactoryMap.end();pt++)
+    {
+      delete (*pt).second;
+    }
 }
 
 //! CORBA and Python initialization
@@ -160,12 +201,20 @@ void RuntimeSALOME::init(long flags)
   bool ispyext = flags & RuntimeSALOME::IsPyExt;
   if (_useCorba)
     {
+      PortableServer::POA_var root_poa;
+      PortableServer::POAManager_var pman;
+      CORBA::Object_var obj;
       int nbargs = 0; char **args = 0;
       _orb = CORBA::ORB_init (nbargs, args);
+      obj = _orb->resolve_initial_references("RootPOA");
+      root_poa = PortableServer::POA::_narrow(obj);
+      pman = root_poa->the_POAManager();
+      pman->activate();
+
 #ifdef REFCNT
       DEBTRACE("_orb refCount: " << ((omniOrbORB*)_orb.in())->pd_refCount);
 #endif
-      CORBA::Object_var obj = _orb->resolve_initial_references("DynAnyFactory");
+      obj = _orb->resolve_initial_references("DynAnyFactory");
       _dynFactory = DynamicAny::DynAnyFactory::_narrow(obj);
     }
 
@@ -200,19 +249,19 @@ void RuntimeSALOME::init(long flags)
         }
 
       _bltins = PyEval_GetBuiltins();  /* borrowed ref */
-  
+
       if (_useCorba)
         {
 
           //init section
-          PyObject* omnipy = PyImport_ImportModule((char*)"_omnipy");
-          if (!omnipy)
+          _omnipy = PyImport_ImportModule((char*)"_omnipy");
+          if (!_omnipy)
             {
               PyErr_Print();
               PyErr_SetString(PyExc_ImportError, (char*)"Cannot import _omnipy");
               goto out;
             }
-          pyapi = PyObject_GetAttrString(omnipy, (char*)"API");
+          pyapi = PyObject_GetAttrString(_omnipy, (char*)"API");
           if (!pyapi)
             {
               goto out;
@@ -227,6 +276,10 @@ void RuntimeSALOME::init(long flags)
                              "from omniORB import any\n"
                              "orb = CORBA.ORB_init([], CORBA.ORB_ID)\n"
                              "#print sys.getrefcount(orb)\n"
+                             "try:\n"
+                             "  import SALOME\n"
+                             "except:\n"
+                             "  pass\n"
                              "\n",
                              Py_file_input,globals,globals );
           if(res == NULL)
@@ -249,6 +302,11 @@ void RuntimeSALOME::init(long flags)
         }
       out:
         PyGILState_Release(gstate); // Release the Global Interpreter Lock
+    }
+  if (_useCorba)
+    {
+      // initialize the catalogLoaderFactory map with the session one
+      _catalogLoaderFactoryMap["session"]=new SessionCataLoader;
     }
 }
 
@@ -274,6 +332,14 @@ void RuntimeSALOME::fini()
           else
             Py_DECREF(res);
         }
+      std::map<std::string,Node*>& nodeMap=_builtinCatalog->_nodeMap;
+      delete nodeMap["PyFunction"];
+      delete nodeMap["PyScript"];
+      delete nodeMap["SalomePythonNode"];
+      nodeMap.erase("PyFunction");
+      nodeMap.erase("PyScript");
+      nodeMap.erase("SalomePythonNode");
+
       Py_Finalize();
 #ifdef REFCNT
       DEBTRACE("_orb refCount: " << ((omniOrbORB*)_orb.in())->pd_refCount);
@@ -309,6 +375,37 @@ WhileLoop* RuntimeSALOME::createWhileLoop(const std::string& name)
 ForLoop* RuntimeSALOME::createForLoop(const std::string& name)
 {
   return new ForLoop(name);
+}
+
+DataNode* RuntimeSALOME::createInDataNode(const std::string& kind,const std::string& name)
+{
+  DataNode* node;
+  if(kind == "" )
+    {
+      node = new PresetNode(name);
+      return node;
+    }
+  else if(kind == "study" )
+    {
+      return new StudyInNode(name);
+    }
+  std::string msg="DataNode kind ("+kind+") unknown";
+  throw Exception(msg);
+}
+
+DataNode* RuntimeSALOME::createOutDataNode(const std::string& kind,const std::string& name)
+{
+  if(kind == "" )
+    {
+      return new OutNode(name);
+    }
+  else if(kind == "study" )
+    {
+      return new StudyOutNode(name);
+    }
+
+  std::string msg="OutDataNode kind ("+kind+") unknown";
+  throw Exception(msg);
 }
 
 InlineFuncNode* RuntimeSALOME::createFuncNode(const std::string& kind,const std::string& name)
@@ -645,7 +742,7 @@ InputPort* RuntimeSALOME::adaptNeutral(InputPort* source,
     {
       return adaptNeutralToCorba(source,type);
     }
-  else if(impl == XmlNode::IMPL_NAME)
+  else if(impl == XmlNode::IMPL_NAME )
     {
       return adaptNeutralToXml(source,type);
     }
@@ -771,7 +868,7 @@ InputPort* RuntimeSALOME::adapt(InputXmlPort* source,
     {
       return adaptXmlToCpp(source,type);
     }
-  else if(impl == XmlNode::IMPL_NAME)
+  else if(impl == XmlNode::IMPL_NAME )
     {
       return new ProxyPort(source);
     }
@@ -852,8 +949,9 @@ InputPort* RuntimeSALOME::adaptCorbaToPython(InputCorbaPort* inport,
       else
         {
           stringstream msg;
-          msg << "Cannot connect InputPyPort : incompatible objref types " << type->id() << " " << inport->edGetType()->id();
-          msg << " " << __FILE__ << ":" <<__LINE__;
+          msg << "Cannot connect Python output port  with type: " << type->id() ;
+          msg << " to CORBA input port " << inport->getName() << " with incompatible objref type: " << inport->edGetType()->id();
+          msg << " (" << __FILE__ << ":" <<__LINE__ << ")";
           throw ConversionException(msg.str());
         }
     }
@@ -887,8 +985,9 @@ InputPort* RuntimeSALOME::adaptCorbaToPython(InputCorbaPort* inport,
     }
   // Adaptation not possible
   stringstream msg;
-  msg << "Cannot connect InputCorbaPort to Python output " ;
-  msg << __FILE__ << ":" <<__LINE__;
+  msg << "Cannot connect Python output port  with type: " << type->id() ;
+  msg << " to CORBA input port " << inport->getName() << " with type: " << inport->edGetType()->id();
+  msg << " (" << __FILE__ << ":" <<__LINE__ << ")";
   throw ConversionException(msg.str());
 }
 
@@ -1012,7 +1111,7 @@ InputPort* RuntimeSALOME::adapt(InputCorbaPort* source,
     {
       return adaptCorbaToCorba(source,type);
     }
-  else if(impl == XmlNode::IMPL_NAME)
+  else if(impl == XmlNode::IMPL_NAME )
     {
       return adaptCorbaToXml(source,type);
     }
@@ -1050,8 +1149,8 @@ InputPort* RuntimeSALOME::adaptPythonToPython(InputPyPort* inport,
     }
   //output data is not convertible to input type
   stringstream msg;
-  msg << "Cannot connect 2 Python Port with non convertible types: " ;
-  msg << type->id() << " != " << inport->edGetType()->id();
+  msg << "Cannot connect Python output port  with type: " << type->id() ;
+  msg << " to Python input port " << inport->getName() << " with type: " << inport->edGetType()->id();
   msg <<  " ("<<__FILE__ << ":" << __LINE__<<")";
   throw ConversionException(msg.str());
 }
@@ -1200,8 +1299,9 @@ InputPort* RuntimeSALOME::adaptPythonToCorba(InputPyPort* inport,
     }
   // Adaptation not possible
   stringstream msg;
-  msg << "Cannot connect InputPyPort to Corba output " ;
-  msg <<  __FILE__ << ":" << __LINE__;
+  msg << "Cannot connect Corba output port with type: " << type->id() ;
+  msg << " to Python input port " << inport->getName() << " with type: " << inport->edGetType()->id();
+  msg << " ("__FILE__ << ":" << __LINE__ << ")";
   throw ConversionException(msg.str());
 }
 
@@ -1445,6 +1545,11 @@ PyObject * RuntimeSALOME::getBuiltins()
 DynamicAny::DynAnyFactory_ptr RuntimeSALOME::getDynFactory()
 {
   return _dynFactory;
+}
+
+PyObject * RuntimeSALOME::get_omnipy()
+{
+  return _omnipy;
 }
 
 omniORBpyAPI* RuntimeSALOME::getApi()

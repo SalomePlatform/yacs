@@ -37,6 +37,7 @@ namespace YACS
       bool exIsReady() const;
       std::list<OutGate *> getBackLinks();
       void setPrecursorDone(OutGate *from);
+      virtual std::string typeName() {return "YACS__ENGINE__InGate";}
     };
   }
 }

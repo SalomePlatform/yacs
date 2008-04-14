@@ -1,6 +1,7 @@
 #include "RuntimeForEngineIntegrationTest.hxx"
 #include "ComponentInstanceTest.hxx"
 #include "ToyNode.hxx"
+#include "TypeCode.hxx"
 #include <sstream>
 
 using namespace std;

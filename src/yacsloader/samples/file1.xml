@@ -1,0 +1,79 @@
+<proc>
+    <!--types -->
+
+    <!--nodes -->
+    <datanode name="a">
+       <parameter name="file1" type="file">
+         <value><objref>f.data</objref></value>
+       </parameter>
+    </datanode>
+
+    <inline name="node0" >
+      <script>
+        <code>p1="toto"</code>
+        <code>print p1</code>
+      </script>
+      <outport name="p1" type="string"/>
+    </inline>
+
+    <service name="node1" >
+        <component>HELLO</component>
+        <method>makeBanner</method>
+        <inport name="p1" type="string"/>
+        <inport name="f1" type="file"/>
+        <outport name="p1" type="string"/>
+        <outport name="f1" type="file"/>
+    </service>
+
+    <service name="node2" >
+        <component>HELLO</component>
+        <method>makeBanner</method>
+        <inport name="p1" type="string"/>
+        <inport name="f2" type="file"/>
+        <outport name="p1" type="string"/>
+        <outport name="f2" type="file"/>
+    </service>
+
+    <inline name="node3" >
+      <script>
+        <code>print "node3:",p1</code>
+      </script>
+      <inport name="p1" type="file"/>
+    </inline>
+
+    <outnode name="out" >
+      <parameter name="d1" type="string" />
+      <parameter name="f1" type="file" />
+    </outnode>
+
+    <datalink>
+        <fromnode>node2</fromnode><fromport>f2</fromport>
+        <tonode>node3</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+        <fromnode>node2</fromnode><fromport>f2</fromport>
+        <tonode>out</tonode> <toport>f1</toport>
+    </datalink>
+    <datalink>
+        <fromnode>node2</fromnode><fromport>p1</fromport>
+        <tonode>out</tonode> <toport>d1</toport>
+    </datalink>
+    <datalink>
+        <fromnode>a</fromnode><fromport>file1</fromport>
+        <tonode>node1</tonode> <toport>f1</toport>
+    </datalink>
+    <datalink>
+        <fromnode>node0</fromnode><fromport>p1</fromport>
+        <tonode>node1</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+        <fromnode>node0</fromnode><fromport>p1</fromport>
+        <tonode>node2</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+        <fromnode>node1</fromnode><fromport>f1</fromport>
+        <tonode>node2</tonode> <toport>f2</toport>
+    </datalink>
+
+
+</proc>

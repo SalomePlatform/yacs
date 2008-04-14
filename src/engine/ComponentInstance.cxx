@@ -2,6 +2,7 @@
 #include "Container.hxx"
 
 #include <iostream>
+#include <sstream>
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -10,6 +11,8 @@ using namespace YACS::ENGINE;
 using namespace std;
 
 const char ComponentInstance::KIND[]="";
+int ComponentInstance::_total = 0;
+
 
 const char ComponentInstance::NULL_FILE_REPR[]="No repr specified for ComponentInstance";
 
@@ -26,14 +29,22 @@ void ComponentInstance::setContainer(Container *cont)
     _container->incrRef();
 }
 
-ComponentInstance::ComponentInstance(const std::string& name):_name(name),_isAttachedOnCloning(false),_container(0)
+ComponentInstance::ComponentInstance(const std::string& name):_compoName(name),_isAttachedOnCloning(false),_container(0)
 {
+  _numId = _total++;
+  stringstream instName;
+  instName << _compoName << "_" << _numId;
+  _instanceName = instName.str();
 }
 
-ComponentInstance::ComponentInstance(const ComponentInstance& other):_name(other._name),
+ComponentInstance::ComponentInstance(const ComponentInstance& other):_compoName(other._compoName),
                                                                      _container(0),
                                                                      _isAttachedOnCloning(other._isAttachedOnCloning)
 {
+  _numId = _total++;
+  stringstream instName;
+  instName << _compoName << "_" << _numId;
+  _instanceName = instName.str();
   if(other._container)
     _container=other._container->clone();
 }

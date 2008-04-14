@@ -15,10 +15,12 @@
 #include "OutputDataStreamPort.hxx"
 #include "CalStreamPort.hxx"
 #include "InPort.hxx"
+#include "TypeCode.hxx"
 
 #ifdef SALOME_KERNEL
 #include "SALOME_NamingService.hxx"
 #include "SALOME_LifeCycleCORBA.hxx"
+#include "SALOME_Exception.hh"
 #endif
 
 #include <omniORB4/CORBA.h>
@@ -132,12 +134,11 @@ void CORBANode::execute()
 #ifdef REFCNT
         DEBTRACE("refcount CORBA : " << ((omni::TypeCode_base*)ob->pd_tc.in())->pd_ref_count);
 #endif
+        delete ob;
       }
 
     //return value
     req->set_return_type(CORBA::_tc_void);
-    //user exceptions
-    //req->exceptions()->add(eo::_tc_SALOME_Exception);
     
     DEBTRACE( "+++++++++++++++++CorbaNode::calculation+++++++++++++++++" << _method )
     req->invoke();
@@ -146,6 +147,20 @@ void CORBANode::execute()
       {
         DEBTRACE( "An exception was thrown!" )
         DEBTRACE( "The raised exception is of Type:" << exc->_name() )
+
+        std::cerr << "The raised exception is of Type:" << exc->_name() << std::endl;
+        /*
+        if(strcmp(exc->_name(),"MARSHAL") == 0)
+          {
+            const char* ms = ((CORBA::MARSHAL*)exc)->NP_minorString();
+            if (ms)
+               std::cerr << "(CORBA::MARSHAL: minor = " << ms << ")" << std::endl;
+            else
+               std::cerr << "(CORBA::MARSHAL: minor = " << ((CORBA::MARSHAL*)exc)->minor() << ")" << std::endl;
+          }
+          */
+        _errorDetails="Execution problem: the raised exception is of Type:";
+        _errorDetails += exc->_name();
         throw Exception("Execution problem");
       }
     
@@ -267,15 +282,30 @@ void SalomeNode::initService()
   Engines::Superv_Component_var compo=Engines::Superv_Component::_narrow(objComponent);
   if( CORBA::is_nil(compo) )
     {
-      throw Exception("Can't get reference to DSC object (or it was nil).");
+      std::string msg="Can't get reference to DSC object (or it was nil).";
+      _errorDetails=msg;
+      throw Exception(msg);
     }
-  compo->init_service(_method.c_str());
+  try
+    {
+      CORBA::Boolean ret=compo->init_service(_method.c_str());
+      if(!ret)
+        {
+          _errorDetails="Problem with component '"+_ref+"' in init_service of service '"+ _method + "'";
+          throw Exception(_errorDetails);
+        }
+    }
+  catch(...)
+    {
+      _errorDetails="Problem with component '"+_ref+"' in init_service of service '"+ _method + "'";
+      throw;
+    }
 }
 
 //! Connect the datastream ports of the component associated to the node
 void SalomeNode::connectService()
 {
-  DEBTRACE( "SalomeNode::connectService: "<<getName())
+  DEBTRACE( "SalomeNode::connectService: "<<getName());
   if(_setOfOutputDataStreamPort.size() == 0)return;
 
   CORBA::Object_var objComponent=((SalomeComponent*)_component)->getCompoPtr();
@@ -284,6 +314,12 @@ void SalomeNode::connectService()
   CORBA::Object_var obj = NS.Resolve("/ConnectionManager");
   Engines::ConnectionManager_var manager=Engines::ConnectionManager::_narrow(obj);
   Engines::Superv_Component_var me=Engines::Superv_Component::_narrow(objComponent);
+  if( CORBA::is_nil(me) )
+    {
+      std::string msg="Can't get reference to Engines::Superv_Component: "+getName();
+      _errorDetails=msg;
+      throw Exception(msg);
+    }
   std::list<OutputDataStreamPort *>::iterator iter;
   Engines::ConnectionManager::connectionId id;
   for(iter = _setOfOutputDataStreamPort.begin(); iter != _setOfOutputDataStreamPort.end(); iter++)
@@ -296,11 +332,73 @@ void SalomeNode::connectService()
           //It's only possible to connect 2 SalomeNode : try to get a SalomeNode
           SalomeNode* snode= dynamic_cast<SalomeNode*>((*iterout)->getNode());
           if(snode == 0) //don't connect, it's not a SalomeNode
-            throw Exception("Can't connect : not a SalomeNode");
+            {
+              std::string msg="Can't connect : not a SalomeNode";
+              _errorDetails=msg;
+              throw Exception(msg);
+            }
 
           CORBA::Object_var comp=((SalomeComponent*)snode->getComponent())->getCompoPtr();
+          if( CORBA::is_nil(comp))
+            {
+              std::string msg="Problem in connectService: " + snode->getName();
+              msg=msg+" Component is probably not launched. Modify your YACS file";
+              _errorDetails=msg;
+              throw Exception(msg);
+            }
+
           Engines::Superv_Component_var other=Engines::Superv_Component::_narrow(comp);
-          id=manager->connect(me,port->getName().c_str(),other,(*iterout)->getName().c_str());
+          if( CORBA::is_nil(other))
+            {
+              std::string msg="Can't connect to nil Engines::Superv_Component: " + snode->getName();
+              _errorDetails=msg;
+              throw Exception(msg);
+            }
+          try
+            {
+              id=manager->connect(me,port->getName().c_str(),other,(*iterout)->getName().c_str());
+            }
+          catch(Engines::DSC::PortNotDefined& ex)
+            {
+              std::string msg="Problem in connectService. Unknown port: "+port->getName()+" or "+(*iterout)->getName();
+              _errorDetails=msg;
+              throw Exception(msg);
+            }
+          catch(Engines::DSC::BadPortType& ex)
+            {
+              std::string msg="Problem in connectService. Type of provides port is bad. Expected: ";
+              msg=msg + ex.expected.in();
+              msg=msg + "Received: "+ex.received.in();
+              _errorDetails=msg;
+              throw Exception(msg);
+            }
+          catch(Engines::DSC::NilPort& ex)
+            {
+              std::string msg="Problem in connectService. Port is nil: "+port->getName()+" or "+(*iterout)->getName();
+              _errorDetails=msg;
+              throw Exception(msg);
+            }
+          catch( const SALOME::SALOME_Exception& ex )
+            {
+              std::string msg="Problem in connectService. ";
+              msg += ex.details.text.in();
+              msg=msg+getName()+" " + port->getName() + " " + snode->getName() + " " + (*iterout)->getName();
+              _errorDetails=msg;
+              throw Exception(msg);
+            }
+          catch(CORBA::SystemException& ex)
+            {
+              std::string msg="Problem in connectService. CORBA System exception";
+              msg=msg+getName()+" " + port->getName() + " " + snode->getName() + " " + (*iterout)->getName();
+              throw Exception(msg);
+            }
+          catch(...)
+            {
+              std::string msg="Problem in connectService. Unknown exception";
+              msg=msg+getName()+" " + port->getName() + " " + snode->getName() + " " + (*iterout)->getName();
+              throw Exception(msg);
+            }
+          DEBTRACE("Connected: " <<id<<" "<<getName()<<" "<<port->getName()<<" "<<snode->getName()<<" "<<(*iterout)->getName());
           ids.push_back(id);
         }
     }
@@ -320,7 +418,7 @@ void SalomeNode::connectService()
 //! Disconnect the datastream ports of the component associated to the node
 void SalomeNode::disconnectService()
 {
-  DEBTRACE( "SalomeNode::disconnectService: "<<getName())
+  DEBTRACE( "SalomeNode::disconnectService: "<<getName());
   if(ids.size() == 0)return;
 
   SALOME_NamingService NS(getSALOMERuntime()->getOrb()) ;
@@ -330,7 +428,35 @@ void SalomeNode::disconnectService()
   std::list<Engines::ConnectionManager::connectionId>::iterator iter;
   for(iter = ids.begin(); iter != ids.end(); iter++)
     {
-      manager->disconnect(*iter,Engines::DSC::RemovingConnection);
+      DEBTRACE("Trying to disconnect: " << *iter );
+      try
+        {
+          manager->disconnect(*iter,Engines::DSC::RemovingConnection);
+        }
+      catch(Engines::ConnectionManager::BadId& ex)
+        {
+          DEBTRACE( "Problem in disconnect: " << *iter );
+        }
+      catch(Engines::DSC::PortNotDefined& ex)
+        {
+          DEBTRACE( "Problem in disconnect: " << *iter );
+        }
+      catch(Engines::DSC::PortNotConnected& ex)
+        {
+          DEBTRACE( "Problem in disconnect: " << *iter );
+        }
+      catch(Engines::DSC::BadPortReference& ex)
+        {
+          DEBTRACE( "Problem in disconnect (Engines::DSC::BadPortReference): " << *iter );
+        }
+      catch(CORBA::SystemException& ex)
+        {
+          DEBTRACE( "Problem in disconnect (CORBA::SystemException): " << *iter );
+        }
+      catch(...)
+        {
+          DEBTRACE( "Problem in disconnect: " << *iter );
+        }
     }
   ids.clear();
 }
@@ -339,31 +465,60 @@ void SalomeNode::disconnectService()
 //! Execute the service on the component associated to the node
 void SalomeNode::execute()
 {
-  DEBTRACE( "+++++++++++++++++ SalomeNode::execute: " << getName() << " +++++++++++++++++" )
+  DEBTRACE( "+++++++++++++++++ SalomeNode::execute: " << getName() << " " << _method << " +++++++++++++++++" )
   {
     CORBA::Object_var objComponent=((SalomeComponent*)_component)->getCompoPtr();
+    Engines::Component_var compo=Engines::Component::_narrow(objComponent);
+
+    // Set component properties
+    if(_propertyMap.size() > 0)
+      {
+        Engines::FieldsDict_var dico = new Engines::FieldsDict;
+        dico->length(_propertyMap.size());
+        std::map<std::string,std::string>::const_iterator it;
+        int i=0;
+        for(it = _propertyMap.begin(); it != _propertyMap.end(); ++it)
+          {
+            dico[i].key=CORBA::string_dup(it->first.c_str());
+            dico[i].value <<=it->second.c_str();
+            i++;
+          }
+        compo->setProperties(dico);
+      }
+
     //DII request building :
     // a service gets all its in parameters first
     // then all its out parameters
     // no inout parameters
     // the return value (if any) is the first out parameter
-    // not yet user exception (only CORBA exception)
     //
-    CORBA::Request_var req = objComponent->_request(_method.c_str());
+    CORBA::Request_var req ;
+    try
+      {
+        req = objComponent->_request(_method.c_str());
+      }
+    catch(CORBA::SystemException& ex)
+      {
+        std::string msg="component '" +_ref+ "' has no service '" + _method+ "'";
+        _errorDetails=msg;
+        throw Exception(msg);
+      }
     CORBA::NVList_ptr arguments = req->arguments() ;
 
-    DEBTRACE( "+++++++++++++++++SalomeNode::inputs+++++++++++++++++" )
+    DEBTRACE( "+++++++++++++++++SalomeNode::inputs+++++++++++++++++" );
     int in_param=0;
     //in parameters
     list<InputPort *>::iterator iter2;
     for(iter2 = _setOfInputPort.begin(); iter2 != _setOfInputPort.end(); iter2++)
     {
           InputCorbaPort *p=(InputCorbaPort *)*iter2;
-          DEBTRACE( "port name: " << p->getName() )
-          DEBTRACE( "port kind: " << p->edGetType()->kind() )
+          if(p->edGetType()->isA(Runtime::_tc_file))
+            continue;
+          DEBTRACE( "port name: " << p->getName() );
+          DEBTRACE( "port kind: " << p->edGetType()->kind() );
           CORBA::Any* ob=p->getAny();
 #ifdef _DEVDEBUG_
-          CORBA::TypeCode_var tc;
+          CORBA::TypeCode_var tc=ob->type();
           switch(p->edGetType()->kind())
           {
           case Double:
@@ -392,6 +547,49 @@ void SalomeNode::execute()
           arguments->add_value( p->getName().c_str() , *ob , CORBA::ARG_IN ) ;
           in_param=in_param+1;
     }
+    //in files
+    int nfiles=0;
+    DEBTRACE("checkInputFilesToService: " << _method);
+    try
+      {
+        for(iter2 = _setOfInputPort.begin(); iter2 != _setOfInputPort.end(); iter2++)
+          {
+            InputCorbaPort *p=(InputCorbaPort *)*iter2;
+            if(!p->edGetType()->isA(Runtime::_tc_file))
+              continue;
+            std::string filename=p->getName();
+            // replace ':' by '.'. Needed because port name can not contain '.'
+            string::size_type debut =filename.find_first_of(':',0);
+            while(debut != std::string::npos)
+              {
+                 filename[debut]='.';
+                 debut=filename.find_first_of(':',debut);
+              }
+            DEBTRACE( "inport with file: " << filename );
+            Engines::Salome_file_var isf=compo->setInputFileToService(_method.c_str(),p->getName().c_str());
+            isf->setDistributedFile(filename.c_str());
+            Engines::Salome_file_ptr osf;
+            CORBA::Any* any=p->getAny();
+            *any >>= osf;
+            isf->connect(osf);
+            nfiles++;
+          }
+        if(nfiles)
+          compo->checkInputFilesToService(_method.c_str());
+      }
+    catch( const SALOME::SALOME_Exception& ex )
+      {
+        std::string text="Execution problem in checkInputFilesToService: ";
+        text += (const char*)ex.details.text;
+        _errorDetails=text;
+        throw Exception(text);
+      }
+    catch(CORBA::SystemException& ex)
+      {
+        std::string msg="Execution problem: component probably does not support files ??";
+        _errorDetails=msg;
+        throw Exception(msg);
+      }
     
     //out parameters
     DEBTRACE( "+++++++++++++++++SalomeNode::outputs+++++++++++++++++" )
@@ -401,9 +599,12 @@ void SalomeNode::execute()
           OutputCorbaPort *p=(OutputCorbaPort *)*iter;
           DEBTRACE( "port name: " << p->getName() )
           DEBTRACE( "port kind: " << p->edGetType()->kind() )
+          if(p->edGetType()->isA(Runtime::_tc_file))
+            continue;
           CORBA::Any* ob=p->getAnyOut();
           //add_value makes a copy of any. Copy will be deleted with request
           arguments->add_value( p->getName().c_str() , *ob , CORBA::ARG_OUT );
+          delete ob;
     }
 
     //return value
@@ -412,7 +613,7 @@ void SalomeNode::execute()
     //as the first out argument (don't forget to add it as the first output argument)
     req->set_return_type(CORBA::_tc_void);
     //user exceptions
-    //req->exceptions()->add(eo::_tc_SALOME_Exception);
+    req->exceptions()->add(SALOME::_tc_SALOME_Exception);
     
     DEBTRACE( "+++++++++++++++++SalomeNode::calculation+++++++++++++++++" << _method )
     req->invoke();
@@ -421,7 +622,50 @@ void SalomeNode::execute()
     {
       DEBTRACE( "An exception was thrown!" )
       DEBTRACE( "The raised exception is of Type:" << exc->_name() )
-      throw Exception("Execution problem");
+
+      CORBA::SystemException* sysexc;
+      sysexc=CORBA::SystemException::_downcast(exc);
+      if(sysexc != NULL)
+        {
+          // It's a SystemException
+          DEBTRACE( "minor code: " << sysexc->minor() );
+          DEBTRACE( "completion code: " << sysexc->completed() );
+          std::string text="Execution problem: ";
+          std::string excname=sysexc->_name();
+          if(excname == "BAD_OPERATION")
+            {
+              text=text+"component '" +_ref+ "' has no service '" + _method+ "'";
+            }
+          else
+            {
+              text=text+"System Exception "+ excname;
+            }
+          _errorDetails=text;
+          throw Exception(text);
+        }
+
+      // Not a System Exception
+      CORBA::UnknownUserException* userexc;
+      userexc=CORBA::UnknownUserException::_downcast(exc);
+      if(userexc != NULL)
+        {
+          CORBA::Any anyExcept = userexc->exception(); 
+
+          const SALOME::SALOME_Exception* salexc;
+          if(anyExcept >>= salexc)
+            {
+              DEBTRACE("SALOME_Exception: "<< salexc->details.sourceFile);
+              DEBTRACE("SALOME_Exception: "<<salexc->details.lineNumber);
+              _errorDetails=salexc->details.text;
+              throw Exception("Execution problem: Salome Exception occurred" + getErrorDetails() );
+            }
+          std::string msg="Execution problem: User Exception occurred";
+          _errorDetails=msg;
+          throw Exception(msg);
+        }
+      std::string msg="Execution problem";
+      _errorDetails=msg;
+      throw Exception(msg);
     }
     
     DEBTRACE( "++++++++++++SalomeNode::outputs++++++++++++" )
@@ -429,9 +673,11 @@ void SalomeNode::execute()
     for(iter = _setOfOutputPort.begin(); iter != _setOfOutputPort.end(); iter++)
     {
           OutputCorbaPort *p=(OutputCorbaPort *)*iter;
-          DEBTRACE( "port name: " << p->getName() )
-          DEBTRACE( "port kind: " << p->edGetType()->kind() )
-          DEBTRACE( "port number: " << out_param )
+          DEBTRACE( "port name: " << p->getName() );
+          DEBTRACE( "port kind: " << p->edGetType()->kind() );
+          DEBTRACE( "port number: " << out_param );
+          if(p->edGetType()->isA(Runtime::_tc_file))
+            continue;
           CORBA::Any *ob=arguments->item(out_param)->value();
 #ifdef _DEVDEBUG_
       switch(p->edGetType()->kind())
@@ -461,6 +707,48 @@ void SalomeNode::execute()
         p->put(ob);
         out_param=out_param+1;
     }
+
+    //Out files
+    nfiles=0;
+    DEBTRACE("checkOutputFilesToService: " << _method);
+    try
+      {
+        for(iter = _setOfOutputPort.begin(); iter != _setOfOutputPort.end(); iter++)
+          {
+            OutputCorbaPort *p=(OutputCorbaPort *)*iter;
+            if(!p->edGetType()->isA(Runtime::_tc_file))
+              continue;
+            // The output port has a file object : special treatment
+            std::string filename=p->getName();
+            // replace ':' by '.'. Needed because port name can not contain '.'
+            string::size_type debut =filename.find_first_of(':',0);
+            while(debut != std::string::npos)
+              {
+                 filename[debut]='.';
+                 debut=filename.find_first_of(':',debut);
+              }
+            DEBTRACE( "outport with file: " << filename );
+            Engines::Salome_file_var osf=compo->setOutputFileToService(_method.c_str(),p->getName().c_str());
+            osf->setLocalFile(filename.c_str());
+            CORBA::Any any;
+            any <<= osf;
+            p->put(&any);
+          }
+        if(nfiles)
+          compo->checkOutputFilesToService(_method.c_str());
+      }
+    catch( const SALOME::SALOME_Exception& ex )
+      {
+        std::string text=(const char*)ex.details.text;
+        _errorDetails=text;
+        throw Exception("Execution problem in checkOutputFilesToService: " + text);
+      }
+    catch(CORBA::SystemException& ex)
+      {
+        std::string msg="Execution problem: component probably does not support files ?";
+        _errorDetails=msg;
+        throw Exception(msg);
+      }
   }
   //Request has been deleted (_var )
   //All anys given to the request are deleted : don't forget to copy them 
@@ -483,4 +771,21 @@ ServiceNode* SalomeNode::createNode(const std::string& name)
   SalomeNode* node=new SalomeNode(name);
   node->setComponent(_component);
   return node;
+}
+
+std::string SalomeNode::getContainerLog()
+{
+  std::string msg="Component is not loaded";
+  CORBA::Object_var objComponent=((SalomeComponent*)_component)->getCompoPtr();
+  Engines::Component_var compo=Engines::Component::_narrow(objComponent);
+  if( !CORBA::is_nil(compo) )
+    {
+      Engines::Container_var cont= compo->GetContainerRef();
+      CORBA::String_var logname = cont->logfilename();
+      DEBTRACE(logname);
+      msg=logname;
+      std::string::size_type pos = msg.find(":");
+      msg=msg.substr(pos+1);
+    }
+  return msg;
 }

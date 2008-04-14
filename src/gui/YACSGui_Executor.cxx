@@ -30,6 +30,11 @@
 
 #include <qdir.h>
 
+#include <iostream> //for debug only
+
+//#define _DEVDEBUG_
+#include "YacsTrace.hxx"
+
 using namespace YACS::ENGINE;
 using namespace YACS;
 using namespace std;
@@ -43,13 +48,15 @@ YACSGui_Executor::YACSGui_Executor(YACSGui_Module* guiMod, Proc* theProc) :
   _proc(theProc)
 {
   _localEngine = 0;
-  _engineRef = YACSGui_ORB::YACSGui_Gen::_nil();
-  _procRef = YACSGui_ORB::ProcExec::_nil();
-  _observerRef = YACSGui_ORB::Observer::_nil();
+  _engineRef = YACS_ORB::YACS_Gen::_nil();
+  _procRef = YACS_ORB::ProcExec::_nil();
+  _observerRef = YACS_ORB::Observer::_nil();
   _serv = 0;
   _isRunning = false;
   _isSuspended = false;
+  _isStopOnError = false;
   _execMode = YACS::CONTINUE;
+  _loadStateFile = "";
 }
 
 //! Destructor
@@ -76,7 +83,7 @@ void YACSGui_Executor::run()
  */
 void YACSGui_Executor::runDataflow(const bool isRemoteRun)
 {
-  MESSAGE("YACSGui_Executor::runDataflow");
+  DEBTRACE("YACSGui_Executor::runDataflow");
   _isRemoteRun = isRemoteRun;
   if (!isRemoteRun)  // --- wanted local run
     {
@@ -91,7 +98,10 @@ void YACSGui_Executor::runDataflow(const bool isRemoteRun)
   else              // --- wanted run in a SALOME Container
     {
       if (CORBA::is_nil(_engineRef))
+      {
+	DEBTRACE(">> Create YACS ORB engine!");
         _engineRef = YACSGui_Module::InitYACSGuiGen(_guiMod->getApp());
+      }
 
       if (_isRunning)
         if (! checkEndOfDataFlow()) return;
@@ -101,18 +111,38 @@ void YACSGui_Executor::runDataflow(const bool isRemoteRun)
       
       if (CORBA::is_nil(_procRef))
         {
-          MESSAGE("init _procRef");
-          VisitorSaveSchema aWriter( _proc );
+          DEBTRACE("init _procRef");
+          VisitorSaveSalomeSchema aWriter( _proc );
           aWriter.openFileSchema( aFileName );
           aWriter.visitProc( _proc );
           aWriter.closeFileSchema();
           _procRef = _engineRef->LoadProc(aFileName.latin1());
           registerStatusObservers();
-          MESSAGE("_procRef _init");
+          DEBTRACE("_procRef _init");
         }
       _procRef->setExecMode(getCurrentExecMode());
       _setBPList();
-      _procRef->Run();
+      if ( _loadStateFile.empty() )
+      {
+	DEBTRACE(">> Run!");
+	cout<<">> this = "<<this<<endl<<endl;
+	_procRef->Run();
+      }
+      else
+      {
+	DEBTRACE(">> Run from STATE!");
+	try {
+	_procRef->RunFromState(_loadStateFile.c_str());
+	}
+	catch (...) {
+	  SUIT_MessageBox::error1(_guiMod->getApp()->desktop(), 
+				  tr("ERROR"), 
+				  tr("Runtime error: execution from the loaded state failed"), 
+				  tr("BUT_OK"));
+	  return;
+	}
+	cout<<">> this = "<<this<<endl<<endl;
+      }
     }
 }
 
@@ -166,7 +196,7 @@ bool YACSGui_Executor::checkEndOfDataFlow(bool display)
  */
 void YACSGui_Executor::killDataflow()
 {
-  MESSAGE("YACSGui_Executor::killDataflow");
+  DEBTRACE("YACSGui_Executor::killDataflow");
   //terminate(); // not safe!
   if (running())        // --- local run
     {
@@ -184,7 +214,7 @@ void YACSGui_Executor::killDataflow()
  */
 void YACSGui_Executor::suspendResumeDataflow()
 {
-  MESSAGE("YACSGui_Executor::suspendResumeDataflow");
+  DEBTRACE("YACSGui_Executor::suspendResumeDataflow");
   if (running())        // --- local run
     {
       if (_isSuspended)
@@ -203,27 +233,27 @@ void YACSGui_Executor::suspendResumeDataflow()
           _procRef->resumeCurrentBreakPoint();
         }
       else
-        _procRef->setExecMode(YACSGui_ORB::STEPBYSTEP);
+        _procRef->setExecMode(YACS_ORB::STEPBYSTEP);
     }
   _isSuspended = !_isSuspended;
 }
 
 void YACSGui_Executor::suspendDataflow()
 {
-  MESSAGE("YACSGui_Executor::suspendDataflow");
+  DEBTRACE("YACSGui_Executor::suspendDataflow");
   if (running())        // --- local run
     {
       _localEngine->setExecMode(YACS::STEPBYSTEP);
     }
   else if (_isRunning)  // --- remote run
     {
-      _procRef->setExecMode(YACSGui_ORB::STEPBYSTEP);
+      _procRef->setExecMode(YACS_ORB::STEPBYSTEP);
     }
 }
 
 void YACSGui_Executor::resumeDataflow()
 {
-  MESSAGE("YACSGui_Executor::ResumeDataflow");
+  DEBTRACE("YACSGui_Executor::ResumeDataflow");
   if (running())        // --- local run
     {
       _localEngine->setExecMode(_execMode);
@@ -236,9 +266,12 @@ void YACSGui_Executor::resumeDataflow()
     }
 }
 
+//! Stop dataflow.
+/*!
+ */
 void YACSGui_Executor::stopDataflow()
 {
-  MESSAGE("YACSGui_Executor::stopDataflow");
+  DEBTRACE("YACSGui_Executor::stopDataflow");
   if (running())        // --- local run
     {
       _localEngine->stopExecution();
@@ -252,21 +285,17 @@ void YACSGui_Executor::stopDataflow()
 
 void YACSGui_Executor::setStepByStepMode()
 {
-  MESSAGE("YACSGui_Executor::setStepByStepMode");
+  DEBTRACE("YACSGui_Executor::setStepByStepMode");
   _execMode = YACS::STEPBYSTEP;
   if (running())        // --- local run
-    {
-      _localEngine->setExecMode(YACS::STEPBYSTEP);
-    }
+    _localEngine->setExecMode(YACS::STEPBYSTEP);
   else if (_isRunning)  // --- remote run
-    {
-      _procRef->setExecMode(YACSGui_ORB::STEPBYSTEP);
-    }
+    _procRef->setExecMode(YACS_ORB::STEPBYSTEP);
 }
 
 void YACSGui_Executor::setContinueMode()
 {
-  MESSAGE("YACSGui_Executor::setContinueMode");
+  DEBTRACE("YACSGui_Executor::setContinueMode");
   _execMode = YACS::CONTINUE;
   if (running())        // --- local run
     {
@@ -274,13 +303,13 @@ void YACSGui_Executor::setContinueMode()
     }
   else if (_isRunning)  // --- remote run
     {
-      _procRef->setExecMode(YACSGui_ORB::CONTINUE);
+      _procRef->setExecMode(YACS_ORB::CONTINUE);
     }
 }
 
 void YACSGui_Executor::setBreakpointMode()
 {
-  MESSAGE("YACSGui_Executor::setBreakpointMode");
+  DEBTRACE("YACSGui_Executor::setBreakpointMode");
   _execMode = YACS::STOPBEFORENODES;
   if (running())        // --- local run
     {
@@ -288,33 +317,70 @@ void YACSGui_Executor::setBreakpointMode()
     }
   else if (_isRunning)  // --- remote run
     {
-      _procRef->setExecMode(YACSGui_ORB::STOPBEFORENODES);
+      _procRef->setExecMode(YACS_ORB::STOPBEFORENODES);
     }
 }
 
 void YACSGui_Executor::setStopOnError(bool aMode)
 {
-  MESSAGE("YACSGui_Executor::setStopOnError");
+  DEBTRACE("YACSGui_Executor::setStopOnError");
   if (running())        // --- local run
     {
       _localEngine->setStopOnError(aMode, "/tmp/dumpStateOnError.xml");
+      _isStopOnError = true;
     }
   else if (_isRunning)  // --- remote run
     {
       _procRef->setStopOnError(aMode, "/tmp/dumpStateOnError.xml");
+      _isStopOnError = true;
     }
+}
+
+void YACSGui_Executor::unsetStopOnError()
+{
+  DEBTRACE("YACSGui_Executor::unsetStopOnError");
+  if (running())        // --- local run
+    {
+      _localEngine->unsetStopOnError();
+      _isStopOnError = false;
+    }
+  else if (_isRunning)  // --- remote run
+    {
+      _procRef->unsetStopOnError();
+      _isStopOnError = false;
+    }
+}
+
+void YACSGui_Executor::saveState(const std::string& xmlFile)
+{
+  DEBTRACE("YACSGui_Executor::saveState");
+  bool StartFinish = (getExecutorState() == YACS::NOTYETINITIALIZED || getExecutorState() == YACS::FINISHED );
+
+  if ( running()
+       ||
+       _localEngine && (CORBA::is_nil(_procRef)) && StartFinish )        // --- local run
+    _localEngine->saveState(xmlFile);
+  else if ( _isRunning
+	    ||
+	    !_localEngine && !(CORBA::is_nil(_procRef)) && StartFinish )  // --- remote run
+    _procRef->saveState(xmlFile.c_str());
+}
+
+void YACSGui_Executor::setLoadStateFile(std::string xmlFile)
+{
+  _loadStateFile = xmlFile;
 }
 
 void YACSGui_Executor::setNextStepList(std::list<std::string> nextStepList)
 {
-  MESSAGE("YACSGui_Executor::setNextStepList");
+  DEBTRACE("YACSGui_Executor::setNextStepList");
   if (running())        // --- local run
     {
       _localEngine->setStepsToExecute(nextStepList);
     }
   else if (_isRunning)  // --- remote run
     {
-      YACSGui_ORB::stringArray listOfNextStep;
+      YACS_ORB::stringArray listOfNextStep;
       listOfNextStep.length(nextStepList.size());
       int i=0;
       for (list<string>::iterator it = nextStepList.begin(); it != nextStepList.end(); ++it)
@@ -325,7 +391,7 @@ void YACSGui_Executor::setNextStepList(std::list<std::string> nextStepList)
 
 void YACSGui_Executor::setBreakpointList(std::list<std::string> breakpointList)
 {
-  MESSAGE("YACSGui_Executor::setBreakpointList");
+  DEBTRACE("YACSGui_Executor::setBreakpointList");
   _breakpointList.clear();
   _breakpointList = breakpointList;
   _setBPList();
@@ -340,7 +406,7 @@ void YACSGui_Executor::_setBPList()
     }
   else if (_isRunning)  // --- remote run
     {
-      YACSGui_ORB::stringArray listOfBreakPoints;
+      YACS_ORB::stringArray listOfBreakPoints;
       listOfBreakPoints.length(_breakpointList.size());
       int i=0;
       for (list<string>::iterator it = _breakpointList.begin(); it != _breakpointList.end(); ++it)
@@ -351,7 +417,7 @@ void YACSGui_Executor::_setBPList()
 
 void YACSGui_Executor::registerStatusObservers()
 {
-  MESSAGE("YACSGui_Executor::registerStatusObservers");
+  DEBTRACE("YACSGui_Executor::registerStatusObservers");
   if (CORBA::is_nil(_procRef))
     {
       SUIT_MessageBox::error1(_guiMod->getApp()->desktop(), 
@@ -366,25 +432,99 @@ void YACSGui_Executor::registerStatusObservers()
       _observerRef = _serv->_this();
       _serv->SetImpl(_graph->getStatusObserver());
     }
-  MESSAGE("---");
+  DEBTRACE("---");
   _serv->SetRemoteProc(_procRef);
   _serv->setConversion();
-  MESSAGE("---");
-  std::set<Node*> aNodeSet = _proc->getAllRecursiveConstituents();
-  for ( std::set<Node*>::iterator it = aNodeSet.begin(); it != aNodeSet.end(); it++ )
+  DEBTRACE("---");
+  std::list<Node*> aNodeSet = _proc->getAllRecursiveConstituents();
+  for ( std::list<Node*>::iterator it = aNodeSet.begin(); it != aNodeSet.end(); it++ )
     {
       _procRef->addObserver(_observerRef, _serv->getEngineId((*it)->getNumId()) , "status");
     }
   _procRef->addObserver(_observerRef, _serv->getEngineId(_proc->getNumId()) , "executor"); 
 }
 
-YACSGui_ORB::executionMode YACSGui_Executor::getCurrentExecMode()
+YACS_ORB::executionMode YACSGui_Executor::getCurrentExecMode()
 {
   switch (_execMode)
     {
-    case YACS::CONTINUE: return YACSGui_ORB::CONTINUE;
-    case YACS::STEPBYSTEP: return YACSGui_ORB::STEPBYSTEP;
-    case YACS::STOPBEFORENODES: return YACSGui_ORB::STOPBEFORENODES;
-    default: return YACSGui_ORB::CONTINUE;
+    case YACS::CONTINUE: return YACS_ORB::CONTINUE;
+    case YACS::STEPBYSTEP: return YACS_ORB::STEPBYSTEP;
+    case YACS::STOPBEFORENODES: return YACS_ORB::STOPBEFORENODES;
+    default: return YACS_ORB::CONTINUE;
     }
+}
+
+int YACSGui_Executor::getExecutorState()
+{
+  if ( running()
+       ||
+       _localEngine && (CORBA::is_nil(_procRef)) )        // --- local run
+    return _localEngine->getExecutorState();
+  else if ( _isRunning
+	    ||
+	    !_localEngine && !(CORBA::is_nil(_procRef)) )  // --- remote run
+    return _procRef->getExecutorState();
+  else if ( !_localEngine && (CORBA::is_nil(_procRef)) )
+    return YACS::NOTYETINITIALIZED;
+  else if ( _localEngine && !(CORBA::is_nil(_procRef)) )
+    return YACS::FINISHED;
+}
+
+void YACSGui_Executor::setEngineRef(YACS_ORB::YACS_Gen_ptr theRef)
+{
+  _engineRef = theRef;
+}
+
+std::string YACSGui_Executor::getErrorDetails(YACS::ENGINE::Node* node)
+{
+  if (_serv)
+  {
+    //get the node engine id
+    int engineId=_serv->getEngineId(node->getNumId());
+    return _procRef->getErrorDetails(engineId);
+  }
+  return "---";
+}
+
+std::string YACSGui_Executor::getErrorReport(YACS::ENGINE::Node* node)
+{
+  if (_serv)
+  {
+    //get the node engine id
+    int engineId=_serv->getEngineId(node->getNumId());
+    return _procRef->getErrorReport(engineId);
+  }
+  return "---";
+}
+
+std::string YACSGui_Executor::getContainerLog()
+{
+  DEBTRACE("YACSGui_Executor::getContainerLog");
+  std::string msg="";
+  if (!CORBA::is_nil(_engineRef))
+    {
+      Engines::Container_var cont= _engineRef->GetContainerRef();
+      CORBA::String_var logname = cont->logfilename();
+      DEBTRACE(logname);
+      msg=logname;
+      std::string::size_type pos = msg.find(":");
+      msg=msg.substr(pos+1);
+    }
+  return msg;
+}
+
+std::string YACSGui_Executor::getContainerLog(YACS::ENGINE::Node* node)
+{
+  std::string msg;
+  if (_serv)
+    {
+      //get the node engine id
+      int engineId=_serv->getEngineId(node->getNumId());
+      CORBA::String_var logname = _procRef->getContainerLog(engineId);
+      msg=logname;
+      std::string::size_type pos = msg.find(":");
+      msg=msg.substr(pos+1);
+    }
+  return msg;
 }

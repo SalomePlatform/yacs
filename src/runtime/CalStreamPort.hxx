@@ -66,6 +66,7 @@ namespace YACS
         virtual bool addInPort(InPort *inPort) throw(Exception);
         std::string getNameOfTypeOfCurrentInstance() const;
         OutputCalStreamPort * clone(Node *newHelder) const;
+        virtual int removeInPort(InPort *inPort, bool forward) throw(Exception);
       protected:
         std::string _depend;
         std::string _schema;

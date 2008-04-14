@@ -2,6 +2,7 @@
 #include "Visitor.hxx"
 #include "Node.hxx"
 #include "Proc.hxx"
+#include "TypeCode.hxx"
 
 using namespace YACS::ENGINE;
 using namespace std;

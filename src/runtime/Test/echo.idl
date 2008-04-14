@@ -58,6 +58,7 @@ module eo{
     void echoObj2(in Obj i,out Obj j) ;
     void echoD(in D i,out D j) ;
     void echoC(in C i,out C j) ;
+    void echoObjVec(in ObjVec i,out ObjVec j) ;
     void echoObjectVec(in ObjectVec i,out ObjectVec j) ;
     void echoObjectVecVec(in ObjectVecVec i,out ObjectVecVec j) ;
     Obj echoObj(in long i,in Obj o,in long k,out Obj p);

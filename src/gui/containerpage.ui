@@ -1,0 +1,344 @@
+<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
+<class>ContainerPage</class>
+<widget class="QWidget">
+    <property name="name">
+        <cstring>ContainerPage</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>347</width>
+            <height>448</height>
+        </rect>
+    </property>
+    <property name="sizePolicy">
+        <sizepolicy>
+            <hsizetype>2</hsizetype>
+            <vsizetype>0</vsizetype>
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+    </property>
+    <property name="caption">
+        <string>Form1</string>
+    </property>
+    <property name="toolTip" stdset="0">
+        <string></string>
+    </property>
+    <grid>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <property name="margin">
+            <number>0</number>
+        </property>
+        <property name="spacing">
+            <number>0</number>
+        </property>
+        <widget class="QFrame" row="0" column="0">
+            <property name="name">
+                <cstring>ContainerFrame</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>5</hsizetype>
+                    <vsizetype>0</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>251</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="frameShape">
+                <enum>StyledPanel</enum>
+            </property>
+            <property name="frameShadow">
+                <enum>Raised</enum>
+            </property>
+            <vbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <property name="margin">
+                    <number>5</number>
+                </property>
+                <property name="spacing">
+                    <number>5</number>
+                </property>
+                <widget class="QGroupBox">
+                    <property name="name">
+                        <cstring>NameGroupBox</cstring>
+                    </property>
+                    <property name="sizePolicy">
+                        <sizepolicy>
+                            <hsizetype>5</hsizetype>
+                            <vsizetype>0</vsizetype>
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                        </sizepolicy>
+                    </property>
+                    <property name="title">
+                        <string>Basic Parameters</string>
+                    </property>
+                    <grid>
+                        <property name="name">
+                            <cstring>unnamed</cstring>
+                        </property>
+                        <widget class="QComboBox" row="2" column="1">
+                            <property name="name">
+                                <cstring>myHostName</cstring>
+                            </property>
+                            <property name="toolTip" stdset="0">
+                                <string>Host name of the computer on which the container is instanciated at execution time</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel" row="2" column="0">
+                            <property name="name">
+                                <cstring>HostName</cstring>
+                            </property>
+                            <property name="text">
+                                <string>Host:</string>
+                            </property>
+                        </widget>
+                        <widget class="QLineEdit" row="0" column="1">
+                            <property name="name">
+                                <cstring>myDefinitionName</cstring>
+                            </property>
+                            <property name="toolTip" stdset="0">
+                                <string>Name used in edition to distinguish the different containers (not used to name the containers in execution)</string>
+                            </property>
+                        </widget>
+                        <widget class="QLineEdit" row="1" column="1">
+                            <property name="name">
+                                <cstring>myExecutionName</cstring>
+                            </property>
+                            <property name="toolTip" stdset="0">
+                                <string>Container name used in execution and published in naming service under /Containers/HostName/containerName</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel" row="1" column="0">
+                            <property name="name">
+                                <cstring>ExecutionName</cstring>
+                            </property>
+                            <property name="text">
+                                <string>Instance:</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel" row="0" column="0">
+                            <property name="name">
+                                <cstring>ContainerName</cstring>
+                            </property>
+                            <property name="text">
+                                <string>Name:</string>
+                            </property>
+                        </widget>
+                    </grid>
+                </widget>
+                <widget class="QCheckBox">
+                    <property name="name">
+                        <cstring>showAdvanced</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Show Advanced parameters</string>
+                    </property>
+                </widget>
+                <widget class="QGroupBox">
+                    <property name="name">
+                        <cstring>groupBoxAdv</cstring>
+                    </property>
+                    <property name="sizePolicy">
+                        <sizepolicy>
+                            <hsizetype>5</hsizetype>
+                            <vsizetype>0</vsizetype>
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                        </sizepolicy>
+                    </property>
+                    <property name="title">
+                        <string>Advanced Parameters</string>
+                    </property>
+                    <grid>
+                        <property name="name">
+                            <cstring>unnamed</cstring>
+                        </property>
+                        <widget class="QLabel" row="1" column="0">
+                            <property name="name">
+                                <cstring>CpuClock</cstring>
+                            </property>
+                            <property name="text">
+                                <string>cpu_clock:</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel" row="3" column="0" rowspan="2" colspan="1">
+                            <property name="name">
+                                <cstring>NbNode</cstring>
+                            </property>
+                            <property name="text">
+                                <string>nb_node:</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel" row="0" column="0">
+                            <property name="name">
+                                <cstring>MemMb</cstring>
+                            </property>
+                            <property name="text">
+                                <string>mem_mb:</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel" row="5" column="0">
+                            <property name="name">
+                                <cstring>MpiUsage</cstring>
+                            </property>
+                            <property name="text">
+                                <string>MPI usage:</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel" row="6" column="0">
+                            <property name="name">
+                                <cstring>ParallelLib</cstring>
+                            </property>
+                            <property name="text">
+                                <string>Parallel Library:</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel" row="2" column="0">
+                            <property name="name">
+                                <cstring>NbProcPerNode</cstring>
+                            </property>
+                            <property name="text">
+                                <string>nb_proc_per_node:</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel" row="7" column="0">
+                            <property name="name">
+                                <cstring>NbComponentNodes</cstring>
+                            </property>
+                            <property name="text">
+                                <string>nb_component_nodes:</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel" row="8" column="0">
+                            <property name="name">
+                                <cstring>WorkingDir</cstring>
+                            </property>
+                            <property name="text">
+                                <string>working directory:</string>
+                            </property>
+                        </widget>
+                        <widget class="QLineEdit" row="8" column="1">
+                            <property name="name">
+                                <cstring>myWorkingDir</cstring>
+                            </property>
+                            <property name="readOnly">
+                                <bool>false</bool>
+                            </property>
+                            <property name="toolTip" stdset="0">
+                                <string>differents containers on the same computer must avoid to share the same working directory to avoid to write simultaneously on the same files</string>
+                            </property>
+                        </widget>
+                        <widget class="QLineEdit" row="6" column="1">
+                            <property name="name">
+                                <cstring>myParallelLib</cstring>
+                            </property>
+                            <property name="readOnly">
+                                <bool>false</bool>
+                            </property>
+                        </widget>
+                        <widget class="QComboBox" row="4" column="1" rowspan="2" colspan="1">
+                            <item>
+                                <property name="text">
+                                    <string>yes</string>
+                                </property>
+                            </item>
+                            <item>
+                                <property name="text">
+                                    <string>no</string>
+                                </property>
+                            </item>
+                            <property name="name">
+                                <cstring>myMpiUsage</cstring>
+                            </property>
+                            <property name="currentItem">
+                                <number>1</number>
+                            </property>
+                        </widget>
+                        <widget class="QSpinBox" row="7" column="1">
+                            <property name="name">
+                                <cstring>myNbComponentNodes</cstring>
+                            </property>
+                            <property name="maxValue">
+                                <number>100</number>
+                            </property>
+                            <property name="minValue">
+                                <number>0</number>
+                            </property>
+                            <property name="value">
+                                <number>0</number>
+                            </property>
+                        </widget>
+                        <widget class="QSpinBox" row="3" column="1">
+                            <property name="name">
+                                <cstring>myNbNode</cstring>
+                            </property>
+                            <property name="maxValue">
+                                <number>100</number>
+                            </property>
+                            <property name="minValue">
+                                <number>0</number>
+                            </property>
+                            <property name="value">
+                                <number>0</number>
+                            </property>
+                        </widget>
+                        <widget class="QSpinBox" row="2" column="1">
+                            <property name="name">
+                                <cstring>myNbProcPerNode</cstring>
+                            </property>
+                            <property name="maxValue">
+                                <number>100</number>
+                            </property>
+                            <property name="minValue">
+                                <number>0</number>
+                            </property>
+                            <property name="value">
+                                <number>0</number>
+                            </property>
+                        </widget>
+                        <widget class="QSpinBox" row="1" column="1">
+                            <property name="name">
+                                <cstring>myCpuClock</cstring>
+                            </property>
+                            <property name="maxValue">
+                                <number>100</number>
+                            </property>
+                            <property name="minValue">
+                                <number>0</number>
+                            </property>
+                            <property name="value">
+                                <number>0</number>
+                            </property>
+                        </widget>
+                        <widget class="QSpinBox" row="0" column="1">
+                            <property name="name">
+                                <cstring>myMemMb</cstring>
+                            </property>
+                            <property name="maxValue">
+                                <number>100</number>
+                            </property>
+                            <property name="minValue">
+                                <number>0</number>
+                            </property>
+                            <property name="value">
+                                <number>0</number>
+                            </property>
+                        </widget>
+                    </grid>
+                </widget>
+            </vbox>
+        </widget>
+    </grid>
+</widget>
+<slots>
+    <slot>onApply()</slot>
+</slots>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>

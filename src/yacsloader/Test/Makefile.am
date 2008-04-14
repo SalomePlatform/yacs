@@ -14,6 +14,7 @@ check_SCRIPTS = \
 
 bin_SCRIPTS = display.sh
 
+
 TESTS = YacsLoaderTest.sh
 TESTS_ENVIRONMENT=$(SHELL) -x
 
@@ -27,11 +28,11 @@ TestYacsLoader_LDADD = \
 	$(PYTHON_EXTRA_LIBS) \
 	../libYACSloader.la \
 	../../runtime/libYACSRuntimeSALOME.la \
-	../../engine/libYACSEngine.la \
+	../../engine/libYACSlibEngine.la \
 	../../bases/libYACSBases.la
 
 TestYacsLoader_LDFLAGS = \
-	@CPPUNIT_LIBS@ -pthread -ldl -lxml2 -lexpat
+	@CPPUNIT_LIBS@ -pthread -ldl $(EXPAT_LIBS) $(LIBXML_LIBS)
 
 TestYacsLoader_CXXFLAGS = \
 	$(THREAD_DEF) \
@@ -44,16 +45,22 @@ TestYacsLoader_CXXFLAGS = \
 	-I$(srcdir)/../../bases/Test \
 	-I$(srcdir)/../../runtime \
 	-I$(srcdir)/../../engine \
-  -I/usr/include/libxml2
+	$(LIBXML_INCLUDES)
 
 IDL_FILES = echo.idl
 IDL_SOURCES = echoSK.cc
-BUILT_SOURCES = $(IDL_SOURCES) echo_idl.py xmlrun.sh
+BUILT_SOURCES = $(IDL_SOURCES) echo_idl.py xmlrun.sh 
+
+EXTRA_DIST = $(IDL_FILES) \
+echoclt.py genPascal.py genTriangle.py testEdit.py testExec.py \
+testLoader.py        testResume.py       testSave.py     \
+waitContainers.py    xmlrun_orig.sh      YacsLoaderTest.hxx  
 
 xmlrun.sh:xmlrun_orig.sh
 	cp $(srcdir)/xmlrun_orig.sh xmlrun.sh
 
-echoSrv_SOURCES = echoSrv.cxx $(IDL_SOURCES)
+echoSrv_SOURCES = echoSrv.cxx 
+nodist_echoSrv_SOURCES = $(IDL_SOURCES)
 
 echoSrv_CXXFLAGS = \
 	-I$(srcdir)/../../bases \
@@ -66,10 +73,21 @@ echoSrv_LDFLAGS = \
 AM_CXXFLAGS = $(THREAD_DEF)
 
 install-exec-local: $(IDL_FILES)
-	$(INSTALL) -d  $(pkgpythondir)
+	$(INSTALL) -d  $(DESTDIR)$(salomepythondir)
 	ls $^ | while read file; do \
-	  $(OMNIORB_IDL) -bpython -C$(pkgpythondir) $$file ; \
+	  $(OMNIORB_IDL) -bpython -C$(DESTDIR)$(salomepythondir) $$file ; \
 	done
+
+uninstall-local:
+	rm -rf $(DESTDIR)$(salomepythondir)/echo_idl.py
+	rm -rf $(DESTDIR)$(salomepythondir)/eo
+	rm -rf $(DESTDIR)$(salomepythondir)/eo__POA
+
+clean-local:
+	rm -rf yacs* schema1_* schema2_* dump1_* dump2_* eo eo__POA dump*.xml CatalogResources.xml traceExec_*
+	rm -f samples toto titi log1 xmlrun.sh echo_idl.py echo.hh echoSK.cc g.data
+	if test -f "./bin/salome/appli_clean.sh"; then ./bin/salome/appli_clean.sh ; fi
+
 
 check-local:
 	cat /tmp/${USER}/UnitTestsResult

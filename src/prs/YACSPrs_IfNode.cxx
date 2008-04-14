@@ -27,8 +27,8 @@
 /*!
   Constructor
 */
-YACSPrs_IfNode::YACSPrs_IfNode( SUIT_ResourceMgr* theMgr, QCanvas* theCanvas, YACS::ENGINE::Node* theNode ):
-  YACSPrs_InlineNode(theMgr, theCanvas, theNode)
+YACSPrs_IfNode::YACSPrs_IfNode( SUIT_ResourceMgr* theMgr, QCanvas* theCanvas, YACS::HMI::SubjectNode* theSNode ):
+  YACSPrs_InlineNode(theMgr, theCanvas, theSNode)
 {
   setNodeColor(IFNODE_COLOR);
   setNodeSubColor(IFNODE_SUBCOLOR);

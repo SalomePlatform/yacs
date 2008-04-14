@@ -16,8 +16,9 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
-import YACSGui_ORB__POA
-import YACSGui_ORB
+import sys
+import YACS_ORB__POA
+import YACS_ORB
 import SALOME_ComponentPy
 import SALOME_DriverPy
 
@@ -28,8 +29,9 @@ import SALOMERuntime
 import loader
 import salomeloader
 import pilot
+import traceback
 
-class proc_i(YACSGui_ORB__POA.ProcExec):
+class proc_i(YACS_ORB__POA.ProcExec):
     def __init__(self, xmlFile):
         self.l = loader.YACSLoader()
         self.e = pilot.ExecutorSwig()
@@ -43,6 +45,21 @@ class proc_i(YACSGui_ORB__POA.ProcExec):
 
     def getXMLState(self, numid):
         return self.p.getXMLState(numid)
+
+    def getInPortValue(self, nodeNumid, portName):
+        return self.p.getInPortValue(nodeNumid, portName)
+
+    def getOutPortValue(self, nodeNumid, portName):
+        return self.p.getOutPortValue(nodeNumid, portName)
+
+    def getErrorDetails(self, nodeNumid):
+        return self.p.getNodeErrorDetails(nodeNumid)
+
+    def getErrorReport(self, nodeNumid):
+        return self.p.getNodeErrorReport(nodeNumid)
+
+    def getContainerLog(self, nodeNumid):
+        return self.p.getNodeContainerLog(nodeNumid)
 
     def getExecutorState(self):
         return self.e.getExecutorState()
@@ -61,7 +78,7 @@ class proc_i(YACSGui_ORB__POA.ProcExec):
     def Run(self):
         execState = self.e.getExecutorState()
         if execState >= 305:
-            # --- not clean, value from define.hxx
+            # --- not clean, value from define.hxx (YACS::FINISHED)
             self.run1.join()
             self.run1 = None
             pass
@@ -71,19 +88,50 @@ class proc_i(YACSGui_ORB__POA.ProcExec):
             pass
         pass
 
+    def RunFromState(self, xmlFile):
+        execState = self.e.getExecutorState()
+        if execState >= 305:
+            # --- not clean, value from define.hxx (YACS::FINISHED)
+            self.run1.join()
+            self.run1 = None
+            pass
+        try:
+            self.p.init()
+            self.p.exUpdateState();
+            sp = loader.stateParser()
+            sl = loader.stateLoader(sp,self.p)
+            sl.parse(xmlFile)
+        except IOError, ex:
+            print "IO Error: ", ex
+            return None
+        except ValueError,ex:
+            print "Caught ValueError Exception:",ex
+            return None
+        except pilot.Exception,ex:
+            print ex.what()
+            return None
+        except:
+            print "Unknown exception!"
+            return None
+        if self.run1 is None:
+            self.run1 = threading.Thread(None, self.e.RunPy, "CORBAExec", (self.p,0))
+            self.run1.start()
+            pass
+        pass
+    
     def addObserver(self, obs, numid, event):
         disp = SALOMERuntime.SALOMEDispatcher_getSALOMEDispatcher()
         disp.addObserver(obs, numid, event)
         pass
 
     def setExecMode(self, mode):
-        if mode == YACSGui_ORB.CONTINUE:
+        if mode == YACS_ORB.CONTINUE:
             self.e.setExecMode(0)
             pass
-        if mode == YACSGui_ORB.STEPBYSTEP:
+        if mode == YACS_ORB.STEPBYSTEP:
             self.e.setExecMode(1)
             pass
-        if mode == YACSGui_ORB.STOPBEFORENODES:
+        if mode == YACS_ORB.STOPBEFORENODES:
             self.e.setExecMode(2)
             pass
         pass
@@ -115,21 +163,25 @@ class proc_i(YACSGui_ORB__POA.ProcExec):
         self.e.setStopOnError(dumpRequested, xmlFile)
         pass
 
+    def unsetStopOnError(self):
+        self.e.unsetStopOnError()
+        pass
+
     pass
 
 
-class YACSGui(YACSGui_ORB__POA.YACSGui_Gen,
+class YACS(YACS_ORB__POA.YACS_Gen,
               SALOME_ComponentPy.SALOME_ComponentPy_i,
               SALOME_DriverPy.SALOME_DriverPy_i):
     """
     To be a SALOME component, this Python class must have the component name
-    (YACSGui) and inherit the YACSGui_Gen class build from idl compilation
+    (YACS) and inherit the YACS_Gen class build from idl compilation
     with omniidl and also the class SALOME_ComponentPy_i which defines general
     SALOME component behaviour.
     """
     def __init__ ( self, orb, poa, contID, containerName, instanceName, 
                    interfaceName ):
-        print "YACSGui.__init__: ", containerName, ';', instanceName
+        print "YACS.__init__: ", containerName, ';', instanceName
         SALOME_ComponentPy.SALOME_ComponentPy_i.__init__(self, orb, poa, contID,
                                                          containerName, instanceName,
                                                          interfaceName, 0)
@@ -151,16 +203,16 @@ class YACSGui(YACSGui_ORB__POA.YACSGui_Gen,
         try:
             procExec_i = proc_i(xmlFile)
         except IOError, ex:
-            print "IO Error: ", ex
+            print >> sys.stderr ,"IO Error: ", ex
             return None
         except ValueError,ex:
-            print "Caught ValueError Exception:",ex
+            print >> sys.stderr ,"Caught ValueError Exception:",ex
             return None
         except pilot.Exception,ex:
-            print ex.what()
+            print >> sys.stderr ,ex.what()
             return None
         except:
-            print "Unknown exception!"
+            print >> sys.stderr ,"Unknown exception!"
             return None
         procExec_o = procExec_i._this()
         return procExec_o

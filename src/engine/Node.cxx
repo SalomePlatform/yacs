@@ -18,8 +18,8 @@ const char Node::SEP_CHAR_IN_PORT[]=".";
 int Node::_total = 0;
 std::map<int,Node*> Node::idMap;
 
-Node::Node(const std::string& name):_name(name),_inGate(this),_outGate(this),_father(0),_state(YACS::INITED),
-                                    _implementation(Runtime::RUNTIME_ENGINE_INTERACTION_IMPL_NAME)
+Node::Node(const std::string& name):_name(name),_inGate(this),_outGate(this),_father(0),_state(YACS::READY),
+                                    _implementation(Runtime::RUNTIME_ENGINE_INTERACTION_IMPL_NAME),_modified(1)
 {
   // Should be protected by lock ??
   _numId = _total++;
@@ -27,8 +27,8 @@ Node::Node(const std::string& name):_name(name),_inGate(this),_outGate(this),_fa
 }
 
 Node::Node(const Node& other, ComposedNode *father):_inGate(this),_outGate(this),_name(other._name),_father(father),
-                                                   _state(YACS::INITED),_implementation(other._implementation),
-                                                    _propertyMap(other._propertyMap)
+                                                   _state(YACS::READY),_implementation(other._implementation),
+                                                    _propertyMap(other._propertyMap),_modified(other._modified)
 {
   _numId = _total++;
   idMap[_numId]=this;
@@ -51,7 +51,7 @@ void Node::init(bool start)
       exDisabledState(); // to refresh propagation of DISABLED state 
       return;
     }
-  setState(YACS::INITED);
+  setState(YACS::READY);
 }
 
 Node *Node::clone(ComposedNode *father, bool editionOnly) const
@@ -59,6 +59,29 @@ Node *Node::clone(ComposedNode *father, bool editionOnly) const
   Node *ret=simpleClone(father,editionOnly);
   ret->performDuplicationOfPlacement(*this);
   return ret;
+}
+
+//! Change the name of the node
+/*!
+ *  raise an exception if the name is already used in the scope of its father 
+ *  \param name : the new name
+ */
+void Node::setName(const std::string& name)
+{
+  if(_father)
+    {
+      if(_father->isNameAlreadyUsed(name))
+        {
+	  if ( _father->getChildByName(name) != this )
+	    {
+	      std::string what("Name "); 
+	      what+=name;
+	      what+=" already exists in the scope of "; what+=_father->getName();
+	      throw Exception(what);
+	    }
+        }
+    }
+  _name=name;
 }
 
 /**
@@ -79,13 +102,13 @@ bool Node::exIsControlReady() const
   return _inGate.exIsReady();
 }
 
+//! Update the node state
 /*!
  * \note : Update the '_state' attribute.
  *          Typically called by 'this->_inGate' when 'this->_inGate' is ready.
  *
  *          Called by InGate::exNotifyFromPrecursor 
  */
-
 void Node::exUpdateState()
 {
   if(_state==YACS::DISABLED)return;
@@ -179,14 +202,30 @@ std::list<OutPort *> Node::getSetOfOutPort() const
  * @return               ascendancy, direct father first in set.
  */
 
-std::set<ComposedNode *> Node::getAllAscendanceOf(ComposedNode *levelToStop)
+std::list<ComposedNode *> Node::getAllAscendanceOf(ComposedNode *levelToStop) const
 {
-  set<ComposedNode *> ret;
+  list<ComposedNode *> ret;
   if(this==levelToStop)
     return ret;
   for(ComposedNode *iter=_father;iter!=levelToStop && iter!=0; iter=iter->_father)
-      ret.insert(iter);
+      ret.push_back(iter);
   return ret;
+}
+
+bool Node::operator>(const Node& other) const
+{
+  const ComposedNode *iter=other._father;
+  while(iter!=0 && iter!=this)
+    iter=iter->_father;
+  return iter==this;
+}
+
+bool Node::operator<(const Node& other) const
+{
+  const ComposedNode *iter=_father;
+  while(iter!=0 && iter!=(&other))
+    iter=iter->_father;
+  return iter==(&other);
 }
 
 /**
@@ -196,7 +235,7 @@ std::set<ComposedNode *> Node::getAllAscendanceOf(ComposedNode *levelToStop)
  *  Potential problem with Ports attached to composed Nodes...
  */
 
-string Node::getImplementation()
+string Node::getImplementation() const
 {
   return _implementation;
 }
@@ -246,14 +285,14 @@ void Node::edDisconnectAllLinksWithMe()
   _outGate.edDisconnectAllLinksFromMe();
 }
 
-ComposedNode *Node::getRootNode() throw(Exception)
+ComposedNode *Node::getRootNode() const throw(Exception)
 {
   if(!_father)
     throw Exception("No root node");
   ComposedNode *iter=_father;
   while(iter->_father)
     iter=iter->_father;
-  return iter;
+  return (ComposedNode *)iter;
 }
 
 /**
@@ -284,7 +323,7 @@ ComposedNode *Node::checkHavingCommonFather(Node *node1, Node *node2) throw(Exce
   throw Exception("check failed : nodes have not the same father");
 }
 
-const std::string Node::getId()
+const std::string Node::getId() const
 {
     std::string id=getRootNode()->getName();
     if(getRootNode() != this)
@@ -308,12 +347,12 @@ void Node::setProperty(const std::string& name, const std::string& value)
  *
  * The node state is stored in a private attribute _state.
  * This state is relative to its father state : a node with a
- * TOACTIVATE state with a father node in a INITED state is not
- * to activate. Its effective state is only INITED.
+ * TOACTIVATE state with a father node in a READY state is not
+ * to activate. Its effective state is only READY.
  * This method returns the effective state of the node taking
  * into account that of its father.
  */
-YACS::StatesForNode Node::getEffectiveState()
+YACS::StatesForNode Node::getEffectiveState() const
 {
   if(!_father)   //the root node
     return _state;
@@ -327,7 +366,7 @@ YACS::StatesForNode Node::getEffectiveState()
  * \param node: the node which effective state is queried
  * \return the effective node state
  */
-YACS::StatesForNode Node::getEffectiveState(Node* node)
+YACS::StatesForNode Node::getEffectiveState(const Node* node) const
 {
   if(node->getState()==YACS::DISABLED)
     return YACS::DISABLED;
@@ -335,10 +374,10 @@ YACS::StatesForNode Node::getEffectiveState(Node* node)
   YACS::StatesForNode effectiveState=getEffectiveState();
   switch(effectiveState)
     {
-    case YACS::INITED:
-      return YACS::INITED;
+    case YACS::READY:
+      return YACS::READY;
     case YACS::TOACTIVATE:
-      return YACS::INITED;
+      return YACS::READY;
     case YACS::DISABLED:
       return YACS::DISABLED;
     case YACS::ERROR:
@@ -353,11 +392,11 @@ YACS::StatesForNode Node::getEffectiveState(Node* node)
  * \param state : the node state
  * \return the associated color
  */
-std::string Node::getColorState(YACS::StatesForNode state)
+std::string Node::getColorState(YACS::StatesForNode state) const
 {
   switch(state)
     {
-    case YACS::INITED:
+    case YACS::READY:
       return "pink";
     case YACS::TOLOAD:
       return "magenta";
@@ -386,7 +425,7 @@ std::string Node::getColorState(YACS::StatesForNode state)
 /*!
  *  \param os : the input stream
  */
-void Node::writeDot(std::ostream &os)
+void Node::writeDot(std::ostream &os) const
 {
   os << getId() << "[fillcolor=\"" ;
   YACS::StatesForNode state=getEffectiveState();
@@ -423,6 +462,7 @@ int Node::getNumId()
  */
 void Node::setState(YACS::StatesForNode theState)
 {
+  DEBTRACE("Node::setState: " << getName() << " " << theState);
   _state = theState;
   // emit notification to all observers registered with the dispatcher on any change of the node's state
   sendEvent("status");
@@ -434,6 +474,7 @@ void Node::setState(YACS::StatesForNode theState)
  */
 void Node::sendEvent(const std::string& event)
 {
+  DEBTRACE("Node::sendEvent " << event);
   Dispatcher* disp=Dispatcher::getDispatcher();
   disp->dispatch(this,event);
 }
@@ -445,4 +486,99 @@ void Node::sendEvent(const std::string& event)
 void YACS::ENGINE::StateLoader(Node* node, YACS::StatesForNode state)
 {
   node->setState(state);
+}
+
+//! indicates if the node is valid (returns 1) or not (returns 0)
+/*!
+ * This method is useful when editing a schema. It has no meaning in execution.
+ * When a node is edited, its modified method must be called so when isValid is called, its state
+ * is updated (call to edUpdateState) before returning the validity check
+ */
+int Node::isValid()
+{
+  if(_modified)
+    edUpdateState();
+  if(_state > YACS::INVALID)
+    return 1;
+  else
+    return 0;
+}
+
+//! update the status of the node
+/*!
+ * Only useful when editing a schema
+ * Do nothing in base Node : to implement in derived classes
+ */
+void Node::edUpdateState()
+{
+  DEBTRACE("Node::edUpdateState(): " << _modified);
+  _modified=0;
+}
+
+//! returns a string that contains an error report if the node is in error
+/*!
+ * 
+ */
+std::string Node::getErrorReport()
+{
+  if(getState()==YACS::DISABLED)
+    return "<error node= "+getName()+ "state= DISABLED/>\n";
+
+  YACS::StatesForNode effectiveState=getEffectiveState();
+
+  DEBTRACE("Node::getErrorReport: " << getName() << " " << effectiveState << " " << _errorDetails);
+  if(effectiveState == YACS::READY || effectiveState == YACS::DONE)
+    return "";
+
+  std::string report="<error node= " ;
+  report=report + getName() ;
+  switch(effectiveState)
+    {
+    case YACS::INVALID:
+      report=report+" state= INVALID";
+      break;
+    case YACS::ERROR:
+      report=report+" state= ERROR";
+      break;
+    case YACS::FAILED:
+      report=report+" state= FAILED";
+      break;
+    default:
+      break;
+    }
+  report=report + ">\n" ;
+  report=report+_errorDetails;
+  report=report+"\n</error>";
+  return report;
+}
+
+//! returns a string that contains the name of the container log file if it exists
+/*!
+ * Do nothing here. To subclass
+ */
+std::string Node::getContainerLog()
+{
+  return "";
+}
+
+//! Sets Node in modified state and its father if it exists
+/*!
+ * 
+ */
+void Node::modified()
+{
+  DEBTRACE("Node::modified() " << getName());
+  _modified=1;
+  if(_father)
+    _father->modified();
+}
+
+//! Put this node into TOLOAD state when possible
+/*!
+ * 
+ */
+void Node::ensureLoading()
+{
+  if(_state == YACS::READY)
+    setState(YACS::TOLOAD);
 }

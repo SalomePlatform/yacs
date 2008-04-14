@@ -12,4 +12,10 @@ libPluginSimplex_la_CXXFLAGS = $(THREAD_DEF) \
 	-I$(srcdir)/..                       \
 	-I$(srcdir)/../../bases
 
+EXTRA_DIST = \
+aleas.hxx     critere.hxx    decode.hxx         distrib.hxx  fonction.hxx \
+local.hxx     maestro.hxx    PluginSimplex.hxx  point.hxx    saclass.hxx \
+saemul.hxx    salomesup.hxx  salomevent.hxx     sasimpl.hxx  simplex.hxx \
+solution.hxx  saconst.h
+
 include $(top_srcdir)/adm/unix/make_end.am

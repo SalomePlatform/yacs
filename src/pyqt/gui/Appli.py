@@ -4,54 +4,91 @@ import sys,os
 from qt import *
 import Tree
 import PanelManager
+import BoxManager
 import Icons
 import Items
 import adapt
 import Item
+import logview
 import pilot
 import threading
 import time
+import CONNECTOR
+import catalog
+import traceback
+import glob
+
+class ErrorEvent(QCustomEvent):
+  def __init__(self,caption,msg):
+    QCustomEvent.__init__(self,8888)
+    self.caption=caption
+    self.msg=msg
+  def process(self,parent):
+    QMessageBox.warning(parent,self.caption,self.msg)
+
+class Runner(threading.Thread):
+  def __init__(self,parent,executor,proc):
+    threading.Thread.__init__(self)
+    self.parent=parent
+    self.executor=executor
+    self.proc=proc
+
+  def run(self):
+    try:
+      self.executor.RunW(self.proc,0)
+    except ValueError,ex:
+      #traceback.print_exc()
+      QApplication.postEvent(self.parent, ErrorEvent('YACS execution error',str(ex)))
 
 class Browser(QVBox):
   def __init__(self,parent,proc):
     QVBox.__init__(self,parent)
-    self.hSplitter = QSplitter(self,"hSplitter")
-    self.objectBrowser=Tree.Tree(self.hSplitter,self.onSelect)
-    pp=adapt.adapt(proc,Item.Item)
+    pp=Item.adapt(proc)
     self.proc=proc
     self.pproc=pp
+    self.hSplitter = QSplitter(self,"hSplitter")
+    self.objectBrowser=Tree.Tree(self.hSplitter,self.onSelect,self.onDblSelect)
     self.objectBrowser.additem(pp)
     self.panelManager=PanelManager.PanelManager(self.hSplitter)
+    self.panelManager.setRootItem(pp)
+    self.boxManager=BoxManager.BoxManager(self.hSplitter)
+    self.boxManager.setRootItem(pp)
+    self.selected=None
     self.executor=None
     self.resume=0
     self.thr=None
+    self.log=logview.LogView()
+
+  def view_log(self):
+    self.log.text.setText(self.proc.getLogger("parser").getStr())
+    self.log.show()
+
+  def onDblSelect(self,item):
+    #item is instance of Item.Item
+    pass
 
   def onSelect(self,item):
     #item is instance of Item.Item
     self.selected=item
-    self.panelManager.setview(item)
+
+  def customEvent(self,ev):
+    if ev.type() == 8888:
+      ev.process(self)
 
   def run(self):
     if not self.executor:
       self.executor = pilot.ExecutorSwig()
     if self.thr and self.thr.isAlive():
       return
-    #step by step execution mode
-    self.executor.setExecMode(1)
+    #continue execution mode
+    self.executor.setExecMode(0)
     #execute it in a thread
-    self.thr = threading.Thread(target=self.executor.RunW, args=(self.proc,0))
+    self.thr = Runner(self, self.executor, self.proc)
     #as a daemon (no need to join)
     self.thr.setDaemon(1)
     #start the thread
     self.thr.start()
-    self.resume=1
-    #wait pause
     time.sleep(0.1)
-    self.executor.waitPause()
-    #switch to continue execution mode
-    self.executor.setExecMode(0)
-    #resume it
-    self.executor.resumeCurrentBreakPoint()
     self.resume=0
 
   def susp(self):
@@ -64,14 +101,12 @@ class Browser(QVBox):
     if self.resume:
       #continue execution mode
       self.executor.setExecMode(0)
-      #if finished stop it
       #resume it
       self.executor.resumeCurrentBreakPoint()
       self.resume=0
     else:
       #step by step execution mode
       self.executor.setExecMode(1)
-      #self.executor.waitPause()
       self.resume=1
 
   def step(self):
@@ -81,7 +116,7 @@ class Browser(QVBox):
     if not self.thr or not self.thr.isAlive():
       #start in step by step mode
       self.executor.setExecMode(1)
-      self.thr = threading.Thread(target=self.executor.RunW, args=(self.proc,0))
+      self.thr = Runner(self, self.executor, self.proc)
       self.thr.setDaemon(1)
       self.thr.start()
       self.resume=1
@@ -90,7 +125,6 @@ class Browser(QVBox):
     #step by step execution mode
     self.resume=1
     self.executor.setExecMode(1)
-    #if finished stop it
     #resume it
     self.executor.resumeCurrentBreakPoint()
 
@@ -137,7 +171,7 @@ class Appli(QMainWindow):
     self.newAct.setStatusTip('Open an empty editor window')
     self.newAct.setWhatsThis( """<b>New</b>"""
             """<p>An empty editor window will be created.</p>""")
-    self.newAct.connect(self.newAct,SIGNAL('activated()'), self.handleFile)
+    self.newAct.connect(self.newAct,SIGNAL('activated()'), self.newProc)
     self.actions.append(self.newAct)
 
     self.prefAct=QAction('Preferences',QIconSet(Icons.get_image("configure.png")),'&Preferences...',
@@ -169,6 +203,10 @@ class Appli(QMainWindow):
     self.stopAct.setStatusTip('Stop the selected schema')
     self.actions.append(self.stopAct)
 
+    self.cataToolAct=QAction('Catalog Tool',0,self,"catatool")
+    self.cataToolAct.connect(self.cataToolAct,SIGNAL('activated()'), self.cata_tool)
+    self.actions.append(self.cataToolAct)
+
   def initMenus(self):
     menubar = self.menuBar()
 
@@ -177,6 +215,16 @@ class Appli(QMainWindow):
     self.newAct.addTo(self.fileMenu)
     self.fileMenu.insertItem("&Open", self.openFile)
     self.fileMenu.insertItem("&Open Salome", self.openSalomeFile)
+    self.loadersMenu = QPopupMenu(self)
+    self.fileMenu.insertItem("Loaders", self.loadersMenu)
+    self.loaders=[]
+    for file in glob.glob("/local/chris/SALOME2/SUPERV/YACS/BR_CC/YACS_SRC/src/pyqt/*loader.py"):
+      d,f=os.path.split(file)
+      name=f[:-9]
+      def call_loader(event,obj=self,file=file):
+        obj.openFileWithLoader(file)
+      self.loaders.append(call_loader)
+      self.loadersMenu.insertItem(name, call_loader)
     menubar.insertItem('&File',self.fileMenu)
 
     #menu settings
@@ -194,15 +242,22 @@ class Appli(QMainWindow):
     #sous menu layout
     self.layoutMenu = QPopupMenu(self)
     self.layoutMenu.insertItem("&Left Right", self.LR)
+    self.layoutMenu.insertItem("Right Left", self.RL)
+    self.layoutMenu.insertItem("Top Bottom", self.TB)
+    self.layoutMenu.insertItem("Bottom Top", self.BT)
     self.canvasMenu = QPopupMenu(self)
     self.canvasMenu.insertItem("&Zoom in", self.zoomIn)
     self.canvasMenu.insertItem("Zoom &out", self.zoomOut)
     self.canvasMenu.insertItem("Layout", self.layoutMenu)
+    self.canvasMenu.insertItem("Ortholinks", self.orthoLinks)
+    self.canvasMenu.insertItem("Clearlinks", self.clearLinks)
     self.canvasMenu.insertItem("&Update", self.updateCanvas)
     menubar.insertItem('&Canvas', self.canvasMenu)
 
     #menu window
     self.windowMenu = QPopupMenu(self)
+    self.cataToolAct.addTo(self.windowMenu)
+    self.windowMenu.insertItem("&Log", self.view_log)
     menubar.insertItem('&Window', self.windowMenu)
     self.connect(self.windowMenu, SIGNAL('aboutToShow()'), self.handleWindowMenu)
 
@@ -220,6 +275,7 @@ class Appli(QMainWindow):
     self.loader = loader.YACSLoader()
     self.executor = pilot.ExecutorSwig()
     self.salomeloader=salomeloader.SalomeLoader()
+    self.loader.registerProcCataLoader()
 
   def openSalomeFile(self):
     fn = QFileDialog.getOpenFileName(QString.null,QString.null,self)
@@ -228,6 +284,11 @@ class Appli(QMainWindow):
       return
     fileName = str(fn)
     proc=self.salomeloader.load(fileName)
+    logger=proc.getLogger("parser")
+    if logger.hasErrors():
+      self.logFile=logview.LogView()
+      self.logFile.text.setText(logger.getStr())
+      self.logFile.show()
 
     panel=Browser(self.tabWidget,proc)
     self.currentPanel=panel
@@ -241,42 +302,102 @@ class Appli(QMainWindow):
       return
     fileName = str(fn)
     proc=self.loader.load(fileName)
+    logger=proc.getLogger("parser")
+    if logger.hasErrors():
+      self.logFile=logview.LogView()
+      self.logFile.text.setText(logger.getStr())
+      self.logFile.show()
 
     panel=Browser(self.tabWidget,proc)
     self.currentPanel=panel
     self.tabWidget.addTab( panel,os.path.basename(fileName))
     self.tabWidget.showPage(panel)
 
-  def LR(self):
-    if self.currentPanel.selected and isinstance(self.currentPanel.selected,Items.ItemComposedNode):
-      self.currentPanel.selected.layout("LR")
+  def newProc(self):
+    r=pilot.getRuntime()
+    proc=r.createProc("pr")
+    panel=Browser(self.tabWidget,proc)
+    self.currentPanel=panel
+    self.tabWidget.addTab( panel,proc.getName())
+    self.tabWidget.showPage(panel)
+
+  def openFileWithLoader(self,file):
+    d,f=os.path.split(file)
+    sys.path.insert(0,d)
+    module=__import__(os.path.splitext(f)[0])
+    del sys.path[0]
+    loader=module.Loader()
+
+    fn = QFileDialog.getOpenFileName(QString.null,QString.null,self)
+    if fn.isEmpty():
+      self.statusBar().message('Loading aborted',2000)
+      return
+    fileName = str(fn)
+    proc=loader.load(fileName)
+    logger=proc.getLogger("parser")
+    if logger.hasErrors():
+      self.logFile=logview.LogView()
+      self.logFile.text.setText(logger.getStr())
+      self.logFile.show()
+
+    panel=Browser(self.tabWidget,proc)
+    self.currentPanel=panel
+    self.tabWidget.addTab( panel,os.path.basename(fileName))
+    self.tabWidget.showPage(panel)
+
+  def cata_tool(self):
+    self.catalogTool=catalog.CatalogTool(self)
+    self.catalogTool.show()
+    return
+
+  def view_log(self):
+    if self.currentPanel:
+      self.currentPanel.view_log()
+
+  def LR(self,*args ):self.rankdir("LR")
+  def RL(self,*args ):self.rankdir("RL")
+  def TB(self,*args ):self.rankdir("TB")
+  def BT(self,*args ):self.rankdir("BT")
+
+  def rankdir(self,orient):
+    if self.currentPanel and self.currentPanel.panelManager.visible:
+      self.currentPanel.panelManager.visible.layout(orient)
 
   def updateCanvas(self):
     if self.currentPanel.selected:#item selected
       if isinstance(self.currentPanel.selected,Items.ItemComposedNode):
-        #on peut updater
-        self.currentPanel.selected.editor.updateCanvas()
+        #can update
+        self.currentPanel.selected.graph.editor.updateCanvas()
 
-  def addNode(self):
-    if self.currentPanel.selected:#item selected
+  def addNode(self,node):
+    if self.currentPanel and self.currentPanel.selected:#item selected
       if isinstance(self.currentPanel.selected,Items.ItemComposedNode):
-        #on peut ajouter un noeud
-        self.currentPanel.selected.addNode()
+        #can add node
+        self.currentPanel.selected.addNode(node)
 
   def zoomIn(self):
-    if self.currentPanel.selected:#item selected
-      if isinstance(self.currentPanel.selected,Items.ItemComposedNode):
-        #on peut zoomer
-        self.currentPanel.selected.editor.zoomIn()
+    if self.currentPanel and self.currentPanel.panelManager.visible:
+      if isinstance(self.currentPanel.panelManager.visible,Items.ItemComposedNode):
+        #we can zoom
+        self.currentPanel.panelManager.visible.graph.editor.zoomIn()
 
   def zoomOut(self):
-    if self.currentPanel.selected:#item selected
-      if isinstance(self.currentPanel.selected,Items.ItemComposedNode):
-        #on peut dezoomer
-        self.currentPanel.selected.editor.zoomOut()
+    if self.currentPanel and self.currentPanel.panelManager.visible:
+      if isinstance(self.currentPanel.panelManager.visible,Items.ItemComposedNode):
+        #we can unzoom 
+        self.currentPanel.panelManager.visible.graph.editor.zoomOut()
 
-  def handleFile(self):
-    pass
+  def orthoLinks(self):
+    if self.currentPanel and self.currentPanel.panelManager.visible:
+      if isinstance(self.currentPanel.panelManager.visible,Items.ItemComposedNode):
+        #it is a composed node with a graph
+        self.currentPanel.panelManager.visible.graph.orthoLinks()
+
+  def clearLinks(self):
+    if self.currentPanel and self.currentPanel.panelManager.visible:
+      if isinstance(self.currentPanel.panelManager.visible,Items.ItemComposedNode):
+        #it is a composed node with a graph
+        self.currentPanel.panelManager.visible.graph.clearLinks()
 
   def handlePreferences(self):
     pass

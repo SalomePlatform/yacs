@@ -1,15 +1,18 @@
 # -*- coding: iso-8859-1 -*-
-"""Ce module sert pour lire un schema de calcul Salome décrit en XML.
-   et le convertir en schema de calcul YACS
+"""This module is used to parse a supervision graph Salome (XML) and convert it into
+   YACS calculation schema
 
-   Cette lecture est réalisée au moyen de la classe SalomeLoader 
-   et de sa méthode load.
-
+   This parsing is done with SalomeLoader class and its method load.
 """
 
 import sys,os
-import cElementTree as ElementTree
+try:
+  import cElementTree as ElementTree
+except ImportError:
+  import ElementTree
+
 from sets import Set
+import graph
 import pilot
 import SALOMERuntime
 
@@ -17,102 +20,31 @@ class UnknownKind(Exception):pass
 
 debug=0
 typeMap={}
+objref=None
+
+def typeName(name):
+  """Replace :: in type name by /"""
+  return "/".join(name.split("::"))
+
 streamTypes={
              '0':"Unknown",
-             '1':"CALCIUM_int",
+             '1':"CALCIUM_integer",
              '3':"CALCIUM_real",
             }
-
-#Les fonctions suivantes : invert, reachable,InducedSubgraph,write_dot,display
-#permettent de realiser des operations sur un graphe.
-#Est considere comme un graphe un objet G qui supporte les
-#operations suivantes : l'iteration sur les noeuds (for n in G parcourt
-#tous les noeuds du graphe) et l'iteration sur les suivants
-# (for v in G[n] parcourt tous les suivants du noeud n)
-def invert(G):
-  """Construit le graphe inverse de G en inversant les liens de voisinage"""
-  I={}
-  for n in G:
-    I.setdefault(n,Set())
-    for v in G[n]:
-      I.setdefault(v,Set()).add(n)
-  return I
-
-def reachable(G,n):
-  """Construit le set de noeuds atteignables depuis le noeud n
-
-     Le noeud n n'est pas dans le set retourné sauf en cas de boucles
-     Ce cas n'est pas traité ici (limitation)
-  """
-  s=G[n]
-  for v in G[n]:
-    s=s|reachable(G,v)
-  return s
-
-def InducedSubgraph(V,G,adjacency_list_type=Set):
-  """ Construit un sous graphe de G avec les noeuds contenus dans V  """
-  def neighbors(x):
-    for y in G[x]:
-      if y in V:
-        yield y
-  return dict([(x,adjacency_list_type(neighbors(x))) for x in G if x in V])
-
-def write_dot(stream,G):
-  """Ecrit la representation (au format dot) du graphe G dans le fichier stream"""
-  name="toto"
-  stream.write('digraph %s {\nnode [ style="filled" ]\n' % name)
-  for node in G :
-    try:
-      label = "%s:%s"% (node.name,node.__class__.__name__)
-    except:
-      label=str(node)
-    color='green'
-    stream.write('   %s [fillcolor="%s" label=< %s >];\n' % ( id(node), color, label))
-  for src in G:
-    for dst in G[src]:
-      stream.write('   %s -> %s;\n' % (id(src), id(dst)))
-  stream.write("}\n")
-
-def display(G,suivi="sync"):
-  """Affiche le graphe G avec l'outil dot"""
-  f=file("graph.dot", 'w')
-  write_dot(f,G)
-  f.close()
-  cmd="dot -Tpng graph.dot |display" + (suivi == "async" and "&" or "")
-  os.system(cmd)
-      
-
-def test():
-  G={
-  1:Set([2,3]),
-  2:Set([4]),
-  3:Set([5]),
-  4:Set([6]),
-  5:Set([6]),
-  6:Set(),
-  }
-  display(G)
-  I=invert(G)
-  print reachable(G,2)
-  print reachable(I,6)
-  print reachable(G,2) & reachable(I,6)
-
-#Fin des fonctions graphe
 
 currentProc=None
 
 class SalomeLoader:
-  """Loader de schéma Salome natif et convertisseur en schéma 'nouvelle formule'.
-     La méthode loadxml parse le fichier xml et retourne un objet SalomeProc 
-     natif non converti
-     La méthode load parse le fichier xml et retourne un objet représentant 
-     un schéma Salome converti (objet Proc de YACS)
+  """This class parses a Salome graph (version 3.2.x) and converts it into YACS schema.
+
+     The loadxml method parses xml file and returns a SalomeProc object
+
+     The load method calls the loadxml method and creates a YACS object of class Proc
   """
 
   def loadxml(self,filename):
     """
-       Lit un fichier XML du SUPERV de Salome et retourne la liste des 
-       procedures (instances de SalomeProc)
+       Parse a XML file from Salome SUPERV and return a list of SalomeProc objects.
     """
     tree = ElementTree.ElementTree(file=filename)
     root = tree.getroot()
@@ -120,75 +52,139 @@ class SalomeLoader:
 
     procs=[]
     if root.tag == "dataflow":
-      #un seul dataflow
+      #only one dataflow
       dataflow=root
       if debug:print dataflow
       proc=SalomeProc(dataflow)
       procs.append(proc)
     else:
-      #un ou plusieurs dataflow. Le schema contient des macros. 
-      # Toutes les macros sont
-      #décrites au meme niveau dans le fichier XML.
+      #one or more dataflows. The graph contains macros.
+      #All macros are defined at the same level in the XML file.
       for dataflow in root.findall("dataflow"):
         if debug:print dataflow
         proc=SalomeProc(dataflow)
-        if debug:print "nom du dataflow:",proc.name
+        if debug:print "dataflow name:",proc.name
         procs.append(proc)
     return procs
 
   def load(self,filename):
-    """Lit un fichier XML et convertit les procedures lues en procedures 
-       nouvelle formule
+    """Parse a SUPERV XML file (method loadxml) and return a YACS Proc object.
     """
     global currentProc
     procs=self.loadxml(filename)
-    #on récupère le schema de tete d'un coté et les éventuelles 
-    #macros de l'autre: procs[0]
+    #Split the master proc from the possible macros.
     proc=procs.pop(0)
     #proc.display()
 
-    #Enregistrement des éventuelles macros dans macro_dict
+    #Put macros in macro_dict
     macro_dict={}
     for p in procs:
       if debug:print "proc_name:",p.name,"coupled_node:",p.coupled_node
       macro_dict[p.name]=p
 
     if debug:print filename
-    yacsproc=ProcNode(proc,macro_dict)
+    yacsproc=ProcNode(proc,macro_dict,filename)
     return yacsproc.createNode()
 
+class Container:
+  """Class that defines a Salome Container"""
+  def __init__(self,mach,name):
+    self.mach=mach
+    self.name=name
+    self.components={}
+  def getName(self):
+    return self.mach+"/"+self.name
+
+_containers={}
+def getContainer(name):
+  if not name:
+    name="localhost/FactoryServer"
+  elif "/" not in name:
+    #no machine name: use localhost
+    name="localhost/"+name
+  return _containers.get(name)
+
+def addContainer(name):
+  if not name:
+    mach="localhost"
+    name="FactoryServer"
+  elif "/" not in name:
+    #no machine name: use localhost for mach
+    mach="localhost"
+  else:
+    mach,name=name.split("/")
+  c=Container(mach,name)
+  _containers[mach+"/"+name]=c
+  return c
+
 class Service:
-    """Classe pour porter les caractéristiques d'un service"""
+    """Class for Service properties"""
 class Parameter:
-    """Classe pour porter les caractéristiques d'un parametre"""
+    """Class for Parameter properties"""
 class Link:
-    """Classe pour porter les caractéristiques d'un link"""
+    """Class for Link properties"""
 class Data:
-    """Classe pour porter les caractéristiques d'un data"""
+    """Class for Data properties"""
 
 class Node:
-    """Node de calcul simple : classe de base à spécialiser """
+    """Base class for all nodes """
     label="Node: "
     def __init__(self):
-      self.links=[]    # liste pour stocker les entrees sous forme de link
-      # le link doit avoir deux attributs : from_node qui donne le node origine 
-      # et to_node qui donne le node cible
+      self.links=[]    # list to store inputs as links
+      # a link has two attributes : from_node, the starting node
+      # to_node, the end node
       self.datas=[]
-      self.inStreamLinks=[] #liste des liens dataStream associés à ce node (in)
-      self.outStreamLinks=[] #liste des liens dataStream associés à ce node (out)
+      self.inStreamLinks=[] #list of dataStream links connected to this node (in)
+      self.outStreamLinks=[] #list of dataStream links connected to this node (out)
+      self.node=None
     def createNode(self):
       raise NotImplementedError
     def getInputPort(self,p):
       return self.node.getInputPort(".".join(p.split("__")))
     def getOutputPort(self,p):
+      if not self.node:
+        self.createNode()
       return self.node.getOutputPort(".".join(p.split("__")))
     def getInputDataStreamPort(self,p):
       return self.node.getInputDataStreamPort(p)
     def getOutputDataStreamPort(self,p):
       return self.node.getOutputDataStreamPort(p)
 
+    def initPort(self,l):
+      if l.type == 7:
+        #double (CORBA::tk_double)
+        try:
+          self.getInputPort(l.tonodeparam).edInitDbl(l.value)
+        except:
+          reason="Problem in initialization, not expected type (double): %s %s" % (l.tonodeparam,l.value)
+          currentProc.getLogger("parser").error(reason,currentProc.filename,-1)
+      elif l.type == 3:
+        #int (CORBA::tk_long)
+        try:
+          self.getInputPort(l.tonodeparam).edInitInt(l.value)
+        except:
+          reason="Problem in initialization, not expected type (int): %s %s" % (l.tonodeparam,l.value)
+          currentProc.getLogger("parser").error(reason,currentProc.filename,-1)
+      elif l.type == 14:
+        #objref (CORBA::tk_objref)
+        try:
+          self.getInputPort(l.tonodeparam).edInitString(l.value)
+        except:
+          reason="Problem in initialization, not expected type (objref): %s %s" % (l.tonodeparam,l.value)
+          currentProc.getLogger("parser").error(reason,currentProc.filename,-1)
+      elif l.type == 18:
+        #string (CORBA::tk_string)
+        try:
+          self.getInputPort(l.tonodeparam).edInitString(l.value)
+        except:
+          reason="Problem in initialization, not expected type (string): %s %s" % (l.tonodeparam,l.value)
+          currentProc.getLogger("parser").error(reason,currentProc.filename,-1)
+      else:
+        reason="Problem in initialization, not expected type (%s): %s %s" % (l.type,l.tonodeparam,l.value)
+        currentProc.getLogger("parser").error(reason,currentProc.filename,-1)
+
 class InlineNode(Node):
-    """Node de calcul inline salome : fonction dans self.codes[0]"""
+    """Inline Node salome : python function in self.codes[0]"""
     def __init__(self):
       Node.__init__(self)
       self.codes=[]
@@ -204,42 +200,67 @@ class InlineNode(Node):
       for para in self.service.inParameters:
         if not typeMap.has_key(para.type):
           #create the missing type and add it in type map
-          typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[])
+          typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[objref])
+        if not currentProc.typeMap.has_key(para.type):
           currentProc.typeMap[para.type]=typeMap[para.type]
         n.edAddInputPort(para.name,typeMap[para.type])
       for para in self.service.outParameters:
         if not typeMap.has_key(para.type):
           #create the missing type and add it in type map
-          typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[])
+          typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[objref])
+        if not currentProc.typeMap.has_key(para.type):
           currentProc.typeMap[para.type]=typeMap[para.type]
         n.edAddOutputPort(para.name,typeMap[para.type])
+
+      for d in self.datas:
+        self.initPort(d)
 
       return n
 
 class ComputeNode(Node):
-    """Node de calcul pour exécuter un service Salome"""
+    """Compute Node Salome execute a component service"""
     def createNode(self):
+      if self.node:
+        return self.node
+
       r = pilot.getRuntime()
-      n=r.createCompoNode("",self.name)
-      n.setRef(self.sComponent)
+      if self.container.components.has_key(self.sComponent):
+        #a node for this component already exists
+        compo_node=self.container.components[self.sComponent]
+        #It's a node associated with another node of the same component instance
+        #It is not sure that the yacs node has been created ????
+        master_node=compo_node.createNode()
+        n=master_node.createNode(self.name)
+      else:
+        #there is no node for this component. This node is first
+        self.container.components[self.sComponent]=self
+        #There is no component instance for this node
+        n=r.createCompoNode("",self.name)
+        n.setRef(self.sComponent)
+
       n.setMethod(self.service.name)
       self.node=n
+      #set the container for the node
+      if self.container:
+        n.getComponent().setContainer(currentProc.containerMap[self.container.getName()])
 
-      #ajout des ports in et out du service
+      #add  dataflow ports in out 
       for para in self.service.inParameters:
         if not typeMap.has_key(para.type):
-          #on cree le type manquant et on l'ajoute dans la table des types
-          typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[])
+          #Create the missing type and adds it into types table
+          typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[objref])
+        if not currentProc.typeMap.has_key(para.type):
           currentProc.typeMap[para.type]=typeMap[para.type]
         n.edAddInputPort(para.name,typeMap[para.type])
       for para in self.service.outParameters:
         if not typeMap.has_key(para.type):
-          #on cree le type manquant et on l'ajoute dans la table des types
-          typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[])
+          #Create the missing type and adds it into types table
+          typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[objref])
+        if not currentProc.typeMap.has_key(para.type):
           currentProc.typeMap[para.type]=typeMap[para.type]
         pout=n.edAddOutputPort(para.name,typeMap[para.type])
 
-      #ajout des ports datastream in et out
+      #add datastream ports in and out
       for para in self.inStreams:
         if debug:print para.name,para.type,para.dependency,para.schema, para.interpolation,
         if debug:print para.extrapolation
@@ -248,61 +269,64 @@ class ComputeNode(Node):
         if debug:print para.name,para.type,para.dependency,para.values
         pout=n.edAddOutputDataStreamPort(para.name,typeMap[streamTypes[para.type]])
 
+      for d in self.datas:
+        self.initPort(d)
+
       return n
 
 class ComposedNode(Node):
-  """Node de calcul composite Salome (classe de base)"""
+  """Composed Node Salome (base class)"""
 
   def reduceLoop(self):
-    """Transforme un graphe de type Salome avec les boucles
-       a plat en un graphe hierarchique 
-       Le graphe de depart (Salome) est dans self.G.
-       On le transforme en place
+    """Transform a Salome graph with loops on one level
+       in a hierarchical graph.
+
+       The initial graph is in self.G. It is transformed in place.
     """
     G=self.G
-    if debug:display(G)
-    #calcul du graphe inverse
-    I=invert(G)
-    #display(I)
+    if debug:graph.display(G)
+    #invert the graph
+    I=graph.invert(G)
+    #graph.display(I)
 
-    #on recherche toutes les boucles et leurs noeuds internes
+    #Get all loops and their internal nodes
     loops={}
     for n in G:
       if n.kind == 4:
-        #Debut de boucle
-        loops[n]=reachable(G,n)&reachable(I,n.endloop)
+        #Beginning of loop
+        loops[n]=graph.reachable(G,n)&graph.reachable(I,n.endloop)
         n.inner_nodes=loops[n]
-        n.G=InducedSubgraph(loops[n],G)
+        n.G=graph.InducedSubgraph(loops[n],G)
 
-    if debug:print "toutes les boucles du graphe"
+    if debug:print "all loops"
     if debug:print loops
 
-    #on recherche les boucles les plus externes
+    #Get most external loops 
     outer_loops=loops.keys()
     for l in loops:
       for ll in outer_loops:
         if loops[l] < loops[ll]:
-          #boucle interne
+          #internal loop
           outer_loops.remove(l)
           ll.set_inner(l)
           break
 
-    #a la fin, les boucles restantes dans outer_loops sont les plus externes
+    #In the end all remaining loops in outer_loops are the most external
     if debug:print outer_loops
 
-    #on supprime les noeuds internes des boucles les plus externes
+    #We remove all internal nodes of most external loops 
     for l in outer_loops:
-      #on enleve les noeuds internes
+      #Remove internal nodes
       for n in loops[l]:
         del G[n]
-      #on enleve le noeud endloop
+      #Remove endloop node
       suiv=G[l.endloop]
       del G[l.endloop]
-      #on remplace les noeuds suivants de loop par ceux de endloop
+      #Replace neighbours of loop by those of endloop
       G[l]= suiv
 
-      #on tente de transformer les liens entrants et sortants sur le noeud endloop
-      #en noeuds directs. On ne traite probablement pas tous les cas.
+      #Try to transform incoming and outcoming links of endloop in incoming and 
+      #outcoming links of internal nodes. Probably not complete.
       inputs={}
       for link in l.endloop.links:
         if debug:print link.from_node,link.to_node,link.from_param,link.to_param
@@ -314,73 +338,92 @@ class ComposedNode(Node):
             link.from_node,link.from_param=inputs[link.from_param]
           if debug:print link.from_node,link.to_node,link.from_param,link.to_param
 
-      if debug:display(G)
+      if debug:graph.display(G)
 
-      #on applique le traitement de reduction aux boucles les plus externes (recursif)
+      #Apply the reduction treatment to most external loops (recurse)
       for l in outer_loops:
         l.reduceLoop()
 
   def connect_macros(self,macro_dict):
-    """Cette methode rattache les macros salome contenues dans macro_dict
-       a la procedure YACS proc
-       On est ici dans le noeud auquel on veut rattacher une des macros
-       macro_dict est un dictionnaire dont la cle est le nom de la macro
-       et la valeur est un graphe Salome (objet SalomeProc)
-       Les noeuds concernes sont les MacroNode et les SalomeProc
+    """This method connects the salome macros in macro_dict to the master YACS Proc.
+       
     """
     if debug:print "connect_macros",self.node,macro_dict
     for node in self.G:
       if isinstance(node,MacroNode):
-        #c'est une macro, il faut rattacher sa description
-        #p est le sous graphe Salome (objet SalomeProc)
-        #node est le MacroNode Salome qui utilise le sous graphe p
-        #node.node est le bloc YACS equivalent
+        #node is a macro, connect its definition to self.
+        #p is the Salome macro (class SalomeProc)
+        #node is the Salome MacroNode that has the subgraph p
+        #node.node is the YACS Bloc equivalent to node
         p=macro_dict[node.coupled_node]
         bloc=node.node
         if debug:print "macronode:",node.name,node.coupled_node,p
-        #a partir de la procédure salome a plat on cree un
-        #graphe d'exécution hiérarchique nouvelle formule
+        #Create a hierarchical graph from the salome graph
         G=p.create_graph()
         node.G=G
         for n in G:
-          #chaque noeud du graphe G cree un noeud YACS equivalent
+          #create an equivalent YACS node from each salome node
           nod=n.createNode()
           bloc.edAddChild(nod)
 
-        #on demande le rattachement des macros aux nodes du macroNode node
+        #Connect macros to node
         node.connect_macros(macro_dict)
 
-        #on ajoute les liens de controle
+        #add control links
         for n in G:
           for v in G[n]:
             bloc.edAddCFLink(n.node,v.node)
-        #on ajoute les liens de donnees et les initialisations
+        #add dataflow links and initializations
         for n in G:
-          #liens dataflow
+          #dataflow links
           for l in n.links:
             bloc.edAddLink(l.from_node.getOutputPort(l.from_param),
                         l.to_node.getInputPort(l.to_param))
-          #liens datastream
+          #datastream links
           for l in n.outStreamLinks:
             pout=l.from_node.getOutputDataStreamPort(l.from_param)
             pin=l.to_node.getInputDataStreamPort(l.to_param)
             bloc.edAddLink(pout,pin)
-          #initialisations
+          #initializations
           for l in n.datas:
             if l.type == 7:
-              #double
-              n.getInputPort(l.tonodeparam).edInitDbl(l.value)
+              #double (CORBA::tk_double)
+              try:
+                n.getInputPort(l.tonodeparam).edInitDbl(l.value)
+              except:
+                reason="Problem in initialization, not expected type (double): %s %s" % (l.tonodeparam,l.value)
+                currentProc.getLogger("parser").error(reason,currentProc.filename,-1)
             elif l.type == 3:
-              #int
-              n.getInputPort(l.tonodeparam).edInitInt(l.value)
+              #int (CORBA::tk_long)
+              try:
+                n.getInputPort(l.tonodeparam).edInitInt(l.value)
+              except:
+                reason="Problem in initialization, not expected type (int): %s %s" % (l.tonodeparam,l.value)
+                currentProc.getLogger("parser").error(reason,currentProc.filename,-1)
+            elif l.type == 14:
+              #objref (CORBA::tk_objref)
+              try:
+                n.getInputPort(l.tonodeparam).edInitString(l.value)
+              except:
+                reason="Problem in initialization, not expected type (objref): %s %s" % (l.tonodeparam,l.value)
+                currentProc.getLogger("parser").error(reason,currentProc.filename,-1)
+            elif l.type == 18:
+              #string (CORBA::tk_string)
+              try:
+                n.getInputPort(l.tonodeparam).edInitString(l.value)
+              except:
+                reason="Problem in initialization, not expected type (string): %s %s" % (l.tonodeparam,l.value)
+                currentProc.getLogger("parser").error(reason,currentProc.filename,-1)
+            else:
+              reason="Problem in initialization, not expected type (%s): %s %s" % (l.type,l.tonodeparam,l.value)
+              currentProc.getLogger("parser").error(reason,currentProc.filename,-1)
 
 class LoopNode(ComposedNode):
     """Objet qui simule le comportement d'une boucle Salome."""
     def __init__(self):
       ComposedNode.__init__(self)
       self.inner_loops=[]
-      #inner_nodes contient les noeuds internes au sens Salome (a plat
-      #avec les noeuds endloop)
+      #inner_nodes contains internal nodes as in Salome (on one level with endloop nodes)
       self.inner_nodes=[]
 
     def set_node(self,node):
@@ -389,34 +432,30 @@ class LoopNode(ComposedNode):
     def set_inner(self,loop):
       for i in self.inner_loops:
         if loop.inner_nodes < i.inner_nodes:
-          #la boucle est contenue dans i
+          #the loop is contained in i
           i.set_inner(loop)
           break
       self.inner_loops.append(loop)
 
     def createNode(self):
-      """Cree l'objet boucle equivalent
+      """Create the equivalent YACS loop and store it in attribute node
 
-         Un objet boucle Salome a n ports d'entrée et les memes ports en sortie.
-         La tete de boucle a 3 fonctions : init, next, more qui ont des signatures
-         tres voisines. init et next ont la meme signature : en entree les parametres
-         d'entree de la boucle et en sortie les parametres de sortie de la boucle c'est
-         à dire les memes qu'en entrée. more a les memes parametres d'entree et a un 
-         parametre de sortie supplementaire qui vient en premiere position. Ce 
-         parametre indique si la boucle doit etre poursuivie ou stoppée.
-         La fin de boucle a une fonction qui a la meme signature que next.
+         A Salome loop has n input ports and output ports with exactly same names.
+         The head of loop has 3 functions : init, next, more which have almost same 
+         interface. init and next have same interface : on input, input loop parameters
+         on output, output loop parameters (same as input). more has one more output parameter
+         in first place. This parameter says if the loop must go on or not.
+         The endloop has a function with the same interface as next.
 
-         Pour transformer ce type de boucle, on crée un ensemble de noeuds de calcul
-         regroupés dans un bloc. Dans ce bloc, on crée un noeud externe pour init suivi
-         d'une boucle while.
-         Ensuite on crée un bloc qui contiendra 2 noeuds (next et more) plus tous 
-         les noeuds internes de la boucle.
+         To transform this node, create a YACS Bloc. In this bloc put a node for the init function
+         and a While node. In the while put all internal nodes plus 2 nodes for the next and more 
+         functions.
       """
 
       r = pilot.getRuntime()
       bloop=r.createBloc(self.name)
 
-      #noeud init
+      #init node
       init=r.createFuncNode("","init")
       #print self.codes[0]
       init.setScript(self.codes[0])
@@ -424,13 +463,15 @@ class LoopNode(ComposedNode):
       for para in self.service.inParameters:
         if not typeMap.has_key(para.type):
           #create the missing type and add it in type map
-          typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[])
+          typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[objref])
+        if not currentProc.typeMap.has_key(para.type):
           currentProc.typeMap[para.type]=typeMap[para.type]
         init.edAddInputPort(para.name,typeMap[para.type])
       for para in self.service.outParameters:
         if not typeMap.has_key(para.type):
           #create the missing type and add it in type map
-          typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[])
+          typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[objref])
+        if not currentProc.typeMap.has_key(para.type):
           currentProc.typeMap[para.type]=typeMap[para.type]
         init.edAddOutputPort(para.name,typeMap[para.type])
       bloop.edAddChild(init)
@@ -443,7 +484,7 @@ class LoopNode(ComposedNode):
       cport=wh.edGetConditionPort()
       cport.edInitBool(True)
 
-      #noeud next
+      #next node
       next=r.createFuncNode("","next")
       #print self.codes[2]
       next.setScript(self.codes[2])
@@ -451,19 +492,21 @@ class LoopNode(ComposedNode):
       for para in self.service.inParameters:
         if not typeMap.has_key(para.type):
           #create the missing type and add it in type map
-          typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[])
+          typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[objref])
+        if not currentProc.typeMap.has_key(para.type):
           currentProc.typeMap[para.type]=typeMap[para.type]
         next.edAddInputPort(para.name,typeMap[para.type])
       for para in self.service.outParameters:
         if not typeMap.has_key(para.type):
           #create the missing type and add it in type map
-          typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[])
+          typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[objref])
+        if not currentProc.typeMap.has_key(para.type):
           currentProc.typeMap[para.type]=typeMap[para.type]
         next.edAddOutputPort(para.name,typeMap[para.type])
       blnode.edAddChild(next)
       self.next=next
 
-      #noeud more
+      #more node
       more=r.createFuncNode("","more")
       #print self.codes[1]
       more.setScript(self.codes[1])
@@ -471,14 +514,16 @@ class LoopNode(ComposedNode):
       for para in self.service.inParameters:
         if not typeMap.has_key(para.type):
           #create the missing type and add it in type map
-          typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[])
+          typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[objref])
+        if not currentProc.typeMap.has_key(para.type):
           currentProc.typeMap[para.type]=typeMap[para.type]
         more.edAddInputPort(para.name,typeMap[para.type])
       more.edAddOutputPort("DoLoop",typeMap["int"])
       for para in self.service.outParameters:
         if not typeMap.has_key(para.type):
           #create the missing type and add it in type map
-          typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[])
+          typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[objref])
+        if not currentProc.typeMap.has_key(para.type):
           currentProc.typeMap[para.type]=typeMap[para.type]
         more.edAddOutputPort(para.name,typeMap[para.type])
       blnode.edAddChild(more)
@@ -507,10 +552,13 @@ class LoopNode(ComposedNode):
 
       for n in self.G:
         for l in n.links:
-          print l.from_node.name,l.to_node.name
-          print l.from_param,l.to_param
-          blnode.edAddDFLink(l.from_node.getOutputPort(l.from_param),
+          try:
+            blnode.edAddDFLink(l.from_node.getOutputPort(l.from_param),
                              l.to_node.getInputPort(l.to_param))
+          except:
+            reason="Error while connecting output port: "+l.from_param+" from node: "+l.from_node.name
+            reason=reason+" to input port: "+l.to_param+" from node: "+l.to_node.name
+            currentProc.getLogger("parser").error(reason,currentProc.filename,-1)
 
       return bloop
 
@@ -521,8 +569,7 @@ class LoopNode(ComposedNode):
       return self.more.getOutputPort(p)
 
 class Bloc(ComposedNode):
-    """ Objet composé d'un ensemble de nodes enchaines et qui se 
-        comporte comme un node simple.
+    """ Composed node containing a set of connected nodes
     """
     label="Bloc: "
     def __init__(self):
@@ -534,119 +581,172 @@ class Bloc(ComposedNode):
       if node2 not in self.nodes:self.nodes.append(node2)
 
 class MacroNode(Bloc):
-  """Objet qui représente une Macro Salome c'est a dire un node 
-     composite avec une interface : ports in et out.
+  """Objet that represents a Salome Macro
   """
   def createNode(self):
-    """Cree l'objet correspondant a une Macro Salome : un Bloc"""
+    """Create a YACS node (Bloc) equivalent to a Salome Macro """
     r = pilot.getRuntime()
     macro=r.createBloc(self.name)
     self.node=macro
     return macro
 
 def is_loop(n):
-  """Indique si n est un node de début de boucle"""
+  """Return true if n is a head loop node"""
   return isinstance(n,LoopNode)
 
 class ProcNode(ComposedNode):
-  """Procedure YACS equivalente a une procedure Salome accompagnee
-     de ses macros
+  """Salome proc with its macros
+
+     The Salome proc is stored in attribute proc
+     The Salome macros are stored in attribute macro_dict ({})
   """
-  def __init__(self,proc,macro_dict):
+  def __init__(self,proc,macro_dict,filename):
     ComposedNode.__init__(self)
     self.proc=proc
     self.macro_dict=macro_dict
+    self.filename=filename
 
   def createNode(self):
-    """Cree l'objet YACS equivalent"""
-    global currentProc
+    """Create the YACS node (Proc) equivalent a Salome proc"""
+    global currentProc,objref
     r = pilot.getRuntime()
 
-    #create_graph retourne un graphe representatif de la
-    #procedure Salome transformee en un graphe hierarchique
+    #create_graph gives a hierarchical graph equivalent to the Salome proc
     G=self.proc.create_graph()
     self.G=G
 
-    #on utilise le graphe G pour construire la
-    #procedure YACS equivalente p
+    #Create the YACS proc with its elements (types, nodes, containers)
     p=r.createProc("pr")
     self.node=p
     currentProc=p
+    p.filename=self.filename
     typeMap["double"]=p.typeMap["double"]
+    typeMap["float"]=p.typeMap["double"]
     typeMap["int"]=p.typeMap["int"]
+    typeMap["short"]=p.typeMap["int"]
     typeMap["long"]=p.typeMap["int"]
     typeMap["string"]=p.typeMap["string"]
+    typeMap["char"]=p.typeMap["string"]
+    typeMap["boolean"]=p.typeMap["bool"]
     typeMap["bool"]=p.typeMap["bool"]
+
+    objref=p.createInterfaceTc("IDL:omg.org/CORBA/Object:1.0","Object",[])
+    typeMap["objref"]=objref
     typeMap["Unknown"]=p.createInterfaceTc("","Unknown",[])
-    typeMap["GEOM_Object"]=p.createInterfaceTc("","GEOM_Object",[])
+    typeMap["GEOM_Object"]=p.createInterfaceTc("IDL:GEOM/GEOM_Object:1.0","GEOM_Object",[objref])
     typeMap["GEOM_Shape"]=typeMap["GEOM_Object"]
-    typeMap["CALCIUM_int"]=p.createInterfaceTc("","CALCIUM_int",[])
-    typeMap["CALCIUM_real"]=p.createInterfaceTc("","CALCIUM_real",[])
+
+    typeMap["CALCIUM_integer"]=p.createInterfaceTc("IDL:Ports/Calcium_Ports/Calcium_Integer_Port:1.0","CALCIUM_integer",[])
+    typeMap["CALCIUM_real"]=p.createInterfaceTc("IDL:Ports/Calcium_Ports/Calcium_Real_Port:1.0","CALCIUM_real",[])
+    typeMap["CALCIUM_double"]=p.createInterfaceTc("IDL:Ports/Calcium_Ports/Calcium_Double_Port:1.0","CALCIUM_double",[])
+    typeMap["CALCIUM_string"]=p.createInterfaceTc("IDL:Ports/Calcium_Ports/Calcium_String_Port:1.0","CALCIUM_string",[])
+    typeMap["CALCIUM_boolean"]=p.createInterfaceTc("IDL:Ports/Calcium_Ports/Calcium_Logical_Port:1.0","CALCIUM_boolean",[])
+
+    typeMap["SuperVisionTest::Adder"]=p.createInterfaceTc("","SuperVisionTest/Adder",[objref])
+    typeMap["Adder"]=typeMap["SuperVisionTest::Adder"]
+
+    currentProc.typeMap["Object"]=typeMap["objref"]
     currentProc.typeMap["Unknown"]=typeMap["Unknown"]
     currentProc.typeMap["GEOM_Object"]=typeMap["GEOM_Object"]
     currentProc.typeMap["GEOM_Shape"]=typeMap["GEOM_Shape"]
-    currentProc.typeMap["CALCIUM_int"]=typeMap["CALCIUM_int"]
+    currentProc.typeMap["CALCIUM_integer"]=typeMap["CALCIUM_integer"]
     currentProc.typeMap["CALCIUM_real"]=typeMap["CALCIUM_real"]
 
+    #create all containers
+    for name,container in _containers.items():
+      cont=r.createContainer()
+      cont.setName(name)
+      cont.setProperty("hostname",container.mach)
+      cont.setProperty("container_name",container.name)
+      currentProc.containerMap[name]=cont
+
     for n in G:
-      #chaque noeud du graphe G cree un noeud YACS equivalent
+      #each node in G creates an equivalent YACS node.
       node=n.createNode()
       p.edAddChild(node)
 
-    #on demande le rattachement des macros aux nodes de la procédure p
+    #Connect Salome macros to nodes of proc p.
     self.connect_macros(self.macro_dict)
 
-    #on ajoute les liens de controle
+    #add control links
     for n in G:
       for v in G[n]:
         p.edAddCFLink(n.node,v.node)
 
-    #on ajoute les liens de donnees et les initialisations
+    #add dataflow links and initializations
     for n in G:
-      #liens dataflow
+      #dataflow links
       for l in n.links:
-        print l.from_node.name,l.to_node.name
-        print l.from_param,l.to_param
-        p.edAddLink(l.from_node.getOutputPort(l.from_param),
+        try:
+          p.edAddLink(l.from_node.getOutputPort(l.from_param),
                     l.to_node.getInputPort(l.to_param))
+        except:
+          reason="Error while connecting output port: "+l.from_param+" from node: "+l.from_node.name
+          reason=reason+" to input port: "+l.to_param+" from node: "+l.to_node.name
+          currentProc.getLogger("parser").error(reason,currentProc.filename,-1)
 
-      #liens datastream
+      #datastream links
       for l in n.outStreamLinks:
         pout=l.from_node.getOutputDataStreamPort(l.from_param)
         pin=l.to_node.getInputDataStreamPort(l.to_param)
         p.edAddLink(pout,pin)
-      #initialisations
+      #initializations
       for l in n.datas:
         if l.type == 7:
-          #double
-          n.getInputPort(l.tonodeparam).edInitDbl(l.value)
+          #double (CORBA::tk_double)
+          try:
+            n.getInputPort(l.tonodeparam).edInitDbl(l.value)
+          except:
+            reason="Problem in initialization, not expected type (double): %s %s" % (l.tonodeparam,l.value)
+            currentProc.getLogger("parser").error(reason,currentProc.filename,-1)
         elif l.type == 3:
-          #int
-          n.getInputPort(l.tonodeparam).edInitInt(l.value)
+          #int (CORBA::tk_long)
+          port=n.getInputPort(l.tonodeparam)
+          try:
+            port.edInitInt(l.value)
+          except:
+            reason="Problem in initialization, not expected type (int): %s %s" % (l.tonodeparam,l.value)
+            currentProc.getLogger("parser").error(reason,currentProc.filename,-1)
+        elif l.type == 14:
+          #objref (CORBA::tk_objref)
+          try:
+            n.getInputPort(l.tonodeparam).edInitString(l.value)
+          except:
+            reason="Problem in initialization, not expected type (objref): %s %s" % (l.tonodeparam,l.value)
+            currentProc.getLogger("parser").error(reason,currentProc.filename,-1)
+        elif l.type == 18:
+          #string (CORBA::tk_string)
+          try:
+            n.getInputPort(l.tonodeparam).edInitString(l.value)
+          except:
+            reason="Problem in initialization, not expected type (string): %s %s" % (l.tonodeparam,l.value)
+            currentProc.getLogger("parser").error(reason,currentProc.filename,-1)
+        else:
+          reason="Problem in initialization, not expected type (%s): %s %s" % (l.type,l.tonodeparam,l.value)
+          currentProc.getLogger("parser").error(reason,currentProc.filename,-1)
 
     return p
 
 
 class SalomeProc(ComposedNode):
-    """Objet pour décrire un schéma Salome natif avec ses liens 
-       dataflow, datastream et gate
-       L'objet est construit en parsant un fichier XML
+    """Salome proc with all its dataflow, datastream and control links
+       The object is built by parsing an XML file.
     """
     def __init__(self,dataflow):
         self.name="name"
         self.parse(dataflow)
-        #self.links : liste des liens dataflow du graphe (objets Link)
-        #self.nodes : liste des noeuds du graphe
-        #self.node_dict : le dictionnaire des noeuds (nom,node)
-        #self.datas : liste des datas du graphe
-        #chaque noeud a 2 listes de liens datastream (inStreams, outStreams)
+        #self.links : list of dataflow links (Link objects)
+        #self.nodes : list of graph nodes
+        #self.node_dict : nodes dict ({name:node})
+        #self.datas : list of graph datas 
+        #each node has 2 lists of datastream links (inStreams, outStreams)
 
     def parse(self,dataflow):
-        if debug:print "Tous les noeuds XML"
+        if debug:print "All XML nodes"
         for node in dataflow:
             if debug:print node.tag,node
 
-        #Récupération des informations du dataflow
+        #Parse dataflow info-list
         self.dataflow_info=self.parseService(dataflow.find("info-list/node/service"))
         if debug:print self.dataflow_info
         if debug:print self.dataflow_info.inParameters
@@ -658,31 +758,38 @@ class SalomeProc(ComposedNode):
         self.name=dataflow.findtext("info-list/node/node-name")
         self.coupled_node=dataflow.findtext("info-list/node/coupled-node")
 
-        if debug:print "Tous les noeuds XML dataflow/node-list"
+        if debug:print "All XML nodes dataflow/node-list"
         nodes=[]
         node_dict={}
-        #on parcourt tous les noeuds
+        #Parse all nodes
         for n in dataflow.findall('node-list/node'):
-            #n est un node de node-list
+            #n is a node-list node
             kind=n.findtext("kind")
-            comp=n.find("component-name").text
-            name=n.find("node-name").text
-            coupled_node=n.find("coupled-node").text
-            interface=n.find("interface-name").text
-            container=n.find("container").text
+            comp=n.findtext("component-name")
+            name=n.findtext("node-name")
+            coupled_node=n.findtext("coupled-node")
+            interface=n.findtext("interface-name")
+            container=n.findtext("container")
 
             #kind=1 : dataflow ?
             #kind=2 : ?
-            #kind=9 : schema avec datastream ?
+            #kind=9 : datastream graph ?
+            #kind=6 : ??
+            #kind=8 : ??
 
             if kind == "0":
-              #Il s'agit d'un service
+              #It's a service
               node=ComputeNode()
               node.kind=0
               node.sComponent = comp
               node.interface=interface
+              node.container= getContainer(container)
+              if not node.container:
+                node.container=addContainer(container)
+              if debug:print "\tcontainer",node.container
+
             elif kind == "3":
-              #il s'agit d'une fonction
+              #It's a python function
               node=InlineNode()
               node.kind=3
               codes=[]
@@ -692,9 +799,10 @@ class SalomeProc(ComposedNode):
                 codes.append(self.parsePyFunction(pyfunc))
               node.fnames=fnames
               node.codes=codes
+
             elif kind == "4":
-              #si kind vaut 4 on a une boucle : on crée un LoopNode
-              #les fonctions python (next, more, init) sont stockées dans codes
+              #It's a loop : make a LoopNode
+              #python functions (next, more, init) are found in codes
               node=LoopNode()
               node.kind=4
               codes=[]
@@ -704,8 +812,9 @@ class SalomeProc(ComposedNode):
                 codes.append(self.parsePyFunction(pyfunc))
               node.fnames=fnames
               node.codes=codes
+
             elif kind == "5":
-              #noeud de fin de boucle : on crée un InlineNode
+              #End of loop : make an InlineNode
               node=InlineNode()
               node.kind=5
               codes=[]
@@ -715,30 +824,29 @@ class SalomeProc(ComposedNode):
                 codes.append(self.parsePyFunction(pyfunc))
               node.fnames=fnames
               node.codes=codes
+
             elif kind == "10":
-              #si kind vaut 10 on a un noeud Macro : on cree un MacroNode
+              # It's a Macro node : make a MacroNode
               node=MacroNode()
               node.kind=10
             else:
               raise UnknownKind,kind
 
             node.name=name
-            node.container=container
             node.service=None
             node.coupled_node=coupled_node
-            #on stocke les noeuds dans un dictionnaire pour faciliter les recherches
+            #Put nodes in a dict to ease search
             node_dict[node.name]=node
             if debug:print "\tnode-name",node.name
             if debug:print "\tkind",node.kind,node.__class__.__name__
-            if debug:print "\tcontainer",node.container
 
             s=n.find("service")
             if s:
                 node.service=self.parseService(s)
 
 
-            #on parcourt les ports datastream
-            if debug:print "DataStream"
+            #Parse datastream ports
+            if debug:print "DataStream ports"
             inStreams=[]
             for indata in n.findall("DataStream-list/inParameter"):
                 inStreams.append(self.parseInData(indata))
@@ -756,8 +864,8 @@ class SalomeProc(ComposedNode):
 
         self.nodes=nodes
         self.node_dict=node_dict
-        #Le parcours des noeuds est fini.
-        #On parcourt les connexions dataflow et datastream
+        #Nodes parsing is finished.
+        #Parse dataflow and datastream links.
         """
         <link>
         <fromnode-name>Node_A_1</fromnode-name>
@@ -767,7 +875,7 @@ class SalomeProc(ComposedNode):
         <coord-list/>
         </link>
         """
-        if debug:print "Tous les noeuds XML dataflow/link-list"
+        if debug:print "All XML nodes dataflow/link-list"
         links=[]
         if debug:print "\t++++++++++++++++++++++++++++++++++++++++++++"
         for link in dataflow.findall('link-list/link'):
@@ -784,7 +892,7 @@ class SalomeProc(ComposedNode):
             if debug:print "\t++++++++++++++++++++++++++++++++++++++++++++"
 
         self.links=links
-        if debug:print "Tous les noeuds XML dataflow/data-list"
+        if debug:print "All XML nodes dataflow/data-list"
         datas=[]
         for data in dataflow.findall('data-list/data'):
             d=self.parseData(data)
@@ -806,7 +914,7 @@ class SalomeProc(ComposedNode):
         for inParam in s.findall("inParameter-list/inParameter"):
             p=Parameter()
             p.name=inParam.findtext("inParameter-name")
-            p.type=inParam.findtext("inParameter-type")
+            p.type=typeName(inParam.findtext("inParameter-type"))
             if debug:print "\tinParameter-name",p.name
             if debug:print "\tinParameter-type",p.type
             inParameters.append(p)
@@ -817,7 +925,7 @@ class SalomeProc(ComposedNode):
         for outParam in s.findall("outParameter-list/outParameter"):
             p=Parameter()
             p.name=outParam.findtext("outParameter-name")
-            p.type=outParam.findtext("outParameter-type")
+            p.type=typeName(outParam.findtext("outParameter-type"))
             if debug:print "\toutParameter-name",p.name
             if debug:print "\toutParameter-type",p.type
             outParameters.append(p)
@@ -841,7 +949,8 @@ class SalomeProc(ComposedNode):
         text=""
         for cdata in pyfunc.findall("PyFunc"):
             if text:text=text+'\n'
-            text=text+ cdata.text
+            if cdata.text != '?':
+              text=text+ cdata.text
         return text
 
     """<inParameter-type>1</inParameter-type>
@@ -863,7 +972,7 @@ class SalomeProc(ComposedNode):
         if debug:print d.tag,":",d
         p=Parameter()
         p.name=d.findtext("inParameter-name")
-        p.type=d.findtext("inParameter-type")
+        p.type=typeName(d.findtext("inParameter-type"))
         p.dependency=d.findtext("inParameter-dependency")
         p.schema=d.findtext("inParameter-schema")
         p.interpolation=d.findtext("inParameter-interpolation")
@@ -875,92 +984,91 @@ class SalomeProc(ComposedNode):
         if debug:print d.tag,":",d
         p=Parameter()
         p.name=d.findtext("outParameter-name")
-        p.type=d.findtext("outParameter-type")
+        p.type=typeName(d.findtext("outParameter-type"))
         p.dependency=d.findtext("outParameter-dependency")
         p.values=d.findtext("outParameter-values")
         if debug:print "\toutParameter-name",p.name
         return p
 
     def create_graph(self):
-      #un graphe est un dictionnaire dont la clé est un noeud et la valeur
-      #est la liste (en fait un set sans doublon) des noeuds voisins suivants
-      #for v in graphe (python >= 2.3): parcourt les noeuds du graphe
-      #for v in graphe[noeud] parcourt les voisins (suivants) de noeud
+      #a graph is a dict {node:neighbours}
+      #neighbours is a Set of neighbour nodes (of course)
+      #for v in graph (python >= 2.3): iterate through graph nodes 
+      #for v in graph[node] iterate through node neighbours 
       G={}
-      #on cree tous les noeuds avec un voisinage (suivants) vide
+      #create all nodes without neighbours
       for n in self.nodes:
         G[n]=Set()
 
-      #on construit le voisinage en fonction des divers liens
+      #calculate neighbours with links
       for link in self.links:
         from_node=self.node_dict[link.from_name]
         if link.from_param == "Gate" or link.to_param == "Gate":
-          #control link salome : on ajoute le noeud to_name dans les voisins
-          if debug:print "ajout control link",link.from_name,link.to_name
+          #control link salome : add to_name node to neighbours
+          if debug:print "add control link",link.from_name,link.to_name
           G[self.node_dict[link.from_name]].add(self.node_dict[link.to_name])
 
         elif from_node.outStreams_dict.has_key(link.from_param):
-          #lien datastream salome : 
-          # 1- on ajoute le lien dans les listes de liens des noeuds
-          # 2- on ajoute dans le lien des pointeurs sur les noeuds (from_node et to_node)
-          if debug:print "ajout stream link",link.from_name,link.to_name
+          # datastream link : 
+          # 1- add link in link list
+          # 2- add in link references on from_node and to_node
+          if debug:print "add stream link",link.from_name,link.to_name
           self.node_dict[link.to_name].inStreamLinks.append(link)
           self.node_dict[link.from_name].outStreamLinks.append(link)
           link.from_node=self.node_dict[link.from_name]
           link.to_node=self.node_dict[link.to_name]
 
         else:
-          #autre lien salome 
-          #si c'est un lien entre Loop node et EndOfLoop node, on l'ignore
-          #tous les autres sont conservés
+          # other salome link
+          # if link from Loop node to EndOfLoop node, we ignore it
+          # all others are kept
           from_node=self.node_dict[link.from_name]
           to_node=self.node_dict[link.to_name]
           if isinstance(to_node,LoopNode):
-            #Est-ce le lien entre EndOfLoop et Loop ? Si oui, on ne le garde pas
+            # If it's the link from EndOfLoop to Loop , we ignore it
             if to_node.coupled_node == from_node.name:
-              if debug:print "lien arriere loop:",from_node,to_node
-              #lien ignoré
+              if debug:print "backlink loop:",from_node,to_node
+              #ignored
               continue
-          if debug:print "ajout dataflow link",link.from_name,link.to_name
+          if debug:print "add dataflow link",link.from_name,link.to_name
           G[self.node_dict[link.from_name]].add(self.node_dict[link.to_name])
 
           if link.from_param != "DoLoop" and link.to_param != "DoLoop":
-            #Les liens sur parametre DoLoop servent au superviseur Salome, on les ignore
-            #on ajoute dans le lien des pointeurs sur les noeuds (from_node et to_node)
-            #on ajoute ce lien à la liste des liens du noeud cible (to) 
+            #Links on DoLoop are used by Salome supervisor. We ignore them.
+            #Add in the link references on nodes (from_node and to_node)
+            #Add this link into the list of links of to_node node.
             self.node_dict[link.to_name].links.append(link)
             link.from_node=self.node_dict[link.from_name]
             link.to_node=self.node_dict[link.to_name]
 
-          #Dans un graphe salome avec boucles, les noeuds de tete et de fin
-          #de boucle sont reliés par 2 liens de sens opposés
-          #on stocke le noeud de fin dans l'attribut endloop du noeud de tete.
+          #In a Salome graph with loops, head node and end node are connected 
+          #with 2 opposite links 
+          #Store the endloop in attribute endloop of head node.
           if link.from_param == "DoLoop" and link.to_param == "DoLoop" \
              and is_loop(self.node_dict[link.from_name]) \
              and isinstance(self.node_dict[link.to_name],InlineNode):
-            #on repère le node inline de fin de boucle en le stockant 
-            #dans l'attribut endloop du node loop
-            #self.node_dict[link.to_name] est le node de fin de boucle 
-            #de self.node_dict[link.from_name]
-            if debug:print "ajout loop",link.from_name,link.to_name
+            #Store the end loop inline node in attribute endloop
+            #self.node_dict[link.to_name] is the end node of the head loop node self.node_dict[link.from_name]
+            if debug:print "add loop",link.from_name,link.to_name
             self.node_dict[link.from_name].endloop=self.node_dict[link.to_name]
             self.node_dict[link.to_name].loop=self.node_dict[link.from_name]
 
       for data in self.datas:
+        if debug:print "datas",data
         self.node_dict[data.tonode].datas.append(data)
 
       self.G=G
 
-      #on modifie le graphe en place : 
-      # transformation des boucles a plat en graphe hierarchique
+      #Transform the graph in place
+      # Transform one level loops in hierarchical graph
       self.reduceLoop()
 
-      #on peut maintenant créer le schéma de calcul YACS
+      #Return the hierarchical graph that can be transform into YACS objects.
       return G
 
     def display(self,suivi="sync"):
-        """Visualise la procedure Salome avec dot"""
-        #pour visualiser : dot -Tpng salome.dot |display
+        """Display Salome proc with graphviz (dot file)"""
+        #to display : dot -Tpng salome.dot |display
         f=file("salome.dot", 'w')
         self.write_dot(f)
         f.close()
@@ -968,7 +1076,7 @@ class SalomeProc(ComposedNode):
         os.system(cmd)
 
     def write_dot(self,stream):
-        """Dumpe la procedure Salome dans stream au format dot"""
+        """Dump Salome proc into stream with dot format"""
         stream.write('digraph %s {\nnode [ style="filled" ]\n' % self.name)
         for node in self.nodes:
             label = "%s:%s"% (node.name,node.__class__.__name__)
@@ -982,8 +1090,8 @@ class SalomeProc(ComposedNode):
             stream.write('   %s -> %s;\n' % (id(from_node), id(to_node)))
         stream.write("}\n")
 
-if __name__ == "__main__":
 
+def main():
   import traceback
   usage ="""Usage: %s salomeFile convertedFile
     where salomeFile is the name of the input schema file (old Salome syntax)
@@ -994,7 +1102,7 @@ if __name__ == "__main__":
     convertedFile=sys.argv[2]
   except :
     print usage%(sys.argv[0])
-    sys.exit(1)
+    sys.exit(3)
 
   SALOMERuntime.RuntimeSALOME_setRuntime()
   loader=SalomeLoader()
@@ -1004,7 +1112,15 @@ if __name__ == "__main__":
     s= pilot.SchemaSave(p)
     s.save(convertedFile)
   except:
-    traceback.print_exc()
+    traceback.print_exc(file=sys.stdout)
     f=open(convertedFile,'w')
     f.write("<proc></proc>\n")
+    sys.exit(2)
 
+  logger=p.getLogger("parser")
+  if not logger.isEmpty():
+    print logger.getStr()
+    sys.exit(1)
+
+if __name__ == "__main__":
+  main()

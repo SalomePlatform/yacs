@@ -27,4 +27,6 @@ TestBases_CXXFLAGS = $(THREAD_DEF) $(CPPUNIT_INCLUDES) -I$(srcdir)/..
 
 TESTS = InitTests TestBases 
 
+EXTRA_DIST = BasicMainTest.hxx  basesTest.hxx  UnitTestsResult.hxx
+
 include $(top_srcdir)/adm/unix/make_end.am

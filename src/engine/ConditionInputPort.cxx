@@ -76,13 +76,8 @@ void ConditionInputPort::edNotifyDereferencedBy(OutPort *fromPort)
   InputPort::edNotifyDereferencedBy(fromPort);
 }
 
-void *ConditionInputPort::get() const throw(Exception)
+void *ConditionInputPort::get() const
 {
-  if(!_value)
-    {
-      std::string what="ConditionInputPort::get : no value currently in input whith name \""; what+=_name; what+="\"";
-      throw Exception(what);
-    }
   return (void *)_value;
 }
 

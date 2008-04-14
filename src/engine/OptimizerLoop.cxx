@@ -8,7 +8,7 @@ using namespace std;
 
 const char FakeNodeForOptimizerLoop::NAME[]="thisIsAFakeNode";
 
-const int OptimizerLoop::NOT_RUNNING_BRANCH_ID=-1979020617;
+const int OptimizerLoop::NOT_RUNNING_BRANCH_ID=-1973012217;
 
 const char OptimizerLoop::NAME_OF_FILENAME_INPUT[]="FileNameInitAlg";
 
@@ -295,6 +295,14 @@ std::list<InputPort *> OptimizerLoop::getSetOfInputPort() const
   return ret;
 }
 
+std::list<InputPort *> OptimizerLoop::getLocalInputPorts() const
+{
+  list<InputPort *> ret=DynParaLoop::getLocalInputPorts();
+  ret.push_back((InputPort *)&_portForInitFile);
+  ret.push_back((InputPort *)&_retPortForOutPool);
+  return ret;
+}
+
 void OptimizerLoop::selectRunnableTasks(std::vector<Task *>& tasks)
 {
 }
@@ -375,23 +383,39 @@ void OptimizerLoop::checkNoCyclePassingThrough(Node *node) throw(Exception)
 {
 }
 
-void OptimizerLoop::checkConsistency(ComposedNode *pointOfView) const throw(Exception)
-{
-}
-
-void OptimizerLoop::buildDelegateOf(InPort * & port, OutPort *initialStart, const std::set<ComposedNode *>& pointsOfView)
+void OptimizerLoop::buildDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView)
 {
   DynParaLoop::buildDelegateOf(port,initialStart,pointsOfView);
   if(port==&_retPortForOutPool)
     throw Exception("OptimizerLoop::buildDelegateOf : uncorrect OptimizerLoop link : out pool port must be linked within the scope of OptimizerLoop node it belongs to.");
 }
 
-void OptimizerLoop::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::set<ComposedNode *>& pointsOfView)
+void OptimizerLoop::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView)
 {
   DynParaLoop::buildDelegateOf(port,finalTarget,pointsOfView);
   string typeOfPortInstance=(port.first)->getNameOfTypeOfCurrentInstance();
   if(typeOfPortInstance!=OutputPort::NAME)
     throw Exception("OptimizerLoop::buildDelegateOf : not implemented for DS because not specified ");
+}
+
+void OptimizerLoop::checkControlDependancy(OutPort *start, InPort *end, bool cross,
+                                           std::map < ComposedNode *,  std::list < OutPort * >, SortHierarc >& fw,
+                                           std::vector<OutPort *>& fwCross,
+                                           std::map< ComposedNode *, std::list < OutPort *>, SortHierarc >& bw,
+                                           LinkInfo& info) const
+{
+  if(end==&_retPortForOutPool)
+    fw[(ComposedNode *)this].push_back(start);
+  else
+    DynParaLoop::checkControlDependancy(start,end,cross,fw,fwCross,bw,info);
+}
+
+void OptimizerLoop::checkCFLinks(const std::list<OutPort *>& starts, InputPort *end, unsigned char& alreadyFed, bool direction, LinkInfo& info) const
+{
+  if(end==&_retPortForOutPool)
+    solveObviousOrDelegateCFLinks(starts,end,alreadyFed,direction,info);
+  else
+    DynParaLoop::checkCFLinks(starts,end,alreadyFed,direction,info);
 }
 
 void OptimizerLoop::cleanInterceptors()
@@ -488,7 +512,11 @@ void OptimizerLoop::initInterceptors(unsigned nbOfBr)
       const set<InputPort *>& links=portC->getSetOfPhyLinks();
       for(set<InputPort *>::const_iterator iter2=links.begin();iter2!=links.end();iter2++)
         {
+#ifdef NOCOVARIANT
+          InputPort *reprCur=dynamic_cast<InputPort *>((*iter2)->getPublicRepresentant());
+#else
           InputPort *reprCur=(*iter2)->getPublicRepresentant();
+#endif
           if(!isInMyDescendance(reprCur->getNode()))
             {//here we've got an out of scope link : Let's intercept it
               if(_interceptors.find(reprCur)==_interceptors.end())

@@ -41,6 +41,7 @@ namespace YACS
       { throw Exception("Not implemented");};
       virtual void accept(Visitor *visitor);
       virtual ~InlineNode();
+      virtual std::string typeName() {return "YACS__ENGINE__InlineNode";}
     protected:
       std::string _script;
     };
@@ -72,6 +73,7 @@ namespace YACS
       virtual std::string getFname() { return _fname; }
       void accept(Visitor *visitor);
       virtual ~InlineFuncNode();
+      virtual std::string typeName() {return "YACS__ENGINE__InlineFuncNode";}
     protected:
       std::string _fname;
     };

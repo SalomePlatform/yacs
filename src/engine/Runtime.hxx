@@ -6,14 +6,14 @@
 #include<string>
 #include<set>
 #include<map>
+#include<vector>
 
 namespace YACS
 {
   namespace ENGINE
   {
     class Runtime;
-    
-    Runtime* getRuntime() throw(Exception); // singleton creation
+    Runtime* getRuntime() throw(Exception);
 
     class InputPort;
     class OutputPort;
@@ -24,6 +24,7 @@ namespace YACS
     class InlineNode;
     class InlineFuncNode;
     class ServiceNode;
+    class DataNode;
     class Container;
     class ServiceInlineNode;
     class ComponentInstance;
@@ -34,6 +35,8 @@ namespace YACS
     class TypeCode;
     class InputDataStreamPort;
     class OutputDataStreamPort;
+    class Catalog;
+    class CatalogLoader;
 
     class Runtime
     {
@@ -42,12 +45,15 @@ namespace YACS
       virtual void init() { }
       virtual void fini() { }
 
+      virtual Catalog* loadCatalog(const std::string& sourceKind,const std::string& path);
       virtual InlineFuncNode* createFuncNode(const std::string& kind,const std::string& name);
       virtual InlineNode* createScriptNode(const std::string& kind,const std::string& name);
 
       virtual ServiceNode* createRefNode(const std::string& kind,const std::string& name);
       virtual ServiceNode* createCompoNode(const std::string& kind,const std::string& name);
       virtual ServiceInlineNode *createSInlineNode(const std::string& kind, const std::string& name);
+      virtual DataNode* createInDataNode(const std::string& kind,const std::string& name);
+      virtual DataNode* createOutDataNode(const std::string& kind,const std::string& name);
 
       virtual ComponentInstance* createComponentInstance(const std::string& name,
                                                          const std::string& kind="");
@@ -79,6 +85,7 @@ namespace YACS
 
       virtual InputPort* adapt(InputPort* source, const std::string& impl, TypeCode * type) throw (ConversionException) = 0;
 
+      virtual void removeRuntime();
       virtual ~Runtime();
     public:
       static const char RUNTIME_ENGINE_INTERACTION_IMPL_NAME[];
@@ -87,12 +94,20 @@ namespace YACS
       static  YACS::ENGINE::TypeCode *_tc_bool;
       static  YACS::ENGINE::TypeCode *_tc_string;
       static  YACS::ENGINE::TypeCode *_tc_file;
+      virtual void setCatalogLoaderFactory(const std::string& name, CatalogLoader* factory);
+      std::map<std::string,CatalogLoader*> _catalogLoaderFactoryMap;
+      Catalog* getBuiltinCatalog();
+      virtual void addCatalog(Catalog* catalog);
+      virtual TypeCode* getTypeCode(const std::string& name);
+
     protected:
       static Runtime* _singleton;
-      Runtime() { }
+      Runtime();
       std::set<std::string> _setOfImplementation;
-
+      Catalog* _builtinCatalog;
+      std::vector<Catalog*> _catalogs;
     };
+
   }
 }
 #endif

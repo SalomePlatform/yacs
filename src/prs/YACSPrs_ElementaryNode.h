@@ -21,6 +21,7 @@
 
 #include <Port.hxx>
 #include <Node.hxx>
+#include <guiObservers.hxx>
 
 #include "QxGraph_ActiveItem.h"
 
@@ -92,6 +93,7 @@ class YACSPrs_Hook : public QxGraph_ActiveItem, public QCanvasEllipse
 };
 
 class YACSPrs_Link;
+class YACSPrs_PortLink;
 class YACSPrs_ElementaryNode;
 class YACSPrs_Port {
 
@@ -100,6 +102,7 @@ class YACSPrs_Port {
   ~YACSPrs_Port();
 
   std::list<YACSPrs_Link*> getLinks() const { return myLinks; }
+  YACSPrs_PortLink* getLink(YACS::HMI::Subject* theSLink);
   YACSPrs_ElementaryNode* getNode() const { return myNode; }
 
   void setCanvas(QCanvas* theCanvas);
@@ -135,6 +138,8 @@ class YACSPrs_Port {
   virtual QPoint getConnectionPoint() const = 0;
   virtual void draw(QPainter& thePainter, int theXRnd, int theYRnd) = 0;
 
+  static bool synchronize( YACSPrs_Port* port, const bool toSelect );
+
  protected:
   SUIT_ResourceMgr*     myMgr;
 
@@ -165,6 +170,7 @@ class YACSPrs_LabelPort : public YACSPrs_Port {
   ~YACSPrs_LabelPort();
 
   YACS::ENGINE::Node* getSlaveNode() const { return mySlaveNode; }
+  void setSlaveNode( YACS::ENGINE::Node* theNode ) { mySlaveNode = theNode; }
   
   void setName(QString theName) { myName = theName; }
 
@@ -184,7 +190,9 @@ class YACSPrs_LabelPort : public YACSPrs_Port {
                                      //                       the node inside the loop body for Loop)
 };
 
-class YACSPrs_InOutPort : public YACSPrs_Port {
+class YACSPrs_InOutPort : public YACSPrs_Port ,
+                          public YACS::HMI::GuiObserver
+{
 
  public:
   YACSPrs_InOutPort( SUIT_ResourceMgr*, QCanvas*, YACS::ENGINE::Port*, YACSPrs_ElementaryNode* );
@@ -196,6 +204,10 @@ class YACSPrs_InOutPort : public YACSPrs_Port {
   bool isGate() const { return myGate; }
 
   virtual void update(bool theForce = false, YACS::ENGINE::Port* theEngine = 0);
+  void updateValue( QString theValue );
+
+  // redefined from GuiObserver
+  virtual void select( bool isSelected );
 
   virtual bool isHilight() const;
   virtual bool isAlert() const;
@@ -203,6 +215,7 @@ class YACSPrs_InOutPort : public YACSPrs_Port {
   virtual QString getName() const;
   virtual QString getType(const bool forToolTip = false) const;
   virtual QString getValue(YACS::ENGINE::Port* theEngine = 0) const;
+  virtual QString getCurrentValue() const { return myValue; }
 
   virtual int getAlignment() const;
 
@@ -214,6 +227,10 @@ class YACSPrs_InOutPort : public YACSPrs_Port {
 
   virtual QPoint getConnectionPoint() const;
   virtual void draw(QPainter& thePainter, int theXRnd, int theYRnd);
+
+  YACS::HMI::Subject* getSubject() const;
+
+  static bool synchronize( YACSPrs_Port* port, const bool toSelect );
 
  private:
   YACS::ENGINE::Port*   myEngine; // port engine
@@ -229,22 +246,38 @@ class YACSPrs_InOutPort : public YACSPrs_Port {
 };
 
 class YACSPrs_LabelLink;
-class YACSPrs_ElementaryNode : public QxGraph_ActiveItem, public QCanvasPolygonalItem {
+class YACSPrs_ElementaryNode : public QxGraph_ActiveItem,
+			       public QCanvasPolygonalItem,
+			       public YACS::HMI::GuiObserver {
  public:
-  YACSPrs_ElementaryNode( SUIT_ResourceMgr*, QCanvas*, YACS::ENGINE::Node* );
+  YACSPrs_ElementaryNode( SUIT_ResourceMgr*, QCanvas*, YACS::HMI::SubjectNode* );
   virtual ~YACSPrs_ElementaryNode();
 
-  YACS::ENGINE::Node* getEngine() const { return myEngine; }
+  virtual void select( bool isSelected );
+  virtual void update( YACS::HMI::GuiEvent event, int type, YACS::HMI::Subject* son);
 
-  QPtrList<YACSPrs_Port> getPortList() const { return myPortList; }
+  YACS::ENGINE::Node* getEngine() const;
+  YACS::HMI::SubjectNode* getSEngine() const { return mySEngine; }
   
+  QPtrList<YACSPrs_Port> getPortList() const { return myPortList; }
   YACSPrs_InOutPort* getPortPrs(YACS::ENGINE::Port* thePort);
+
+  void sortPorts();
+  void moveUp(YACS::ENGINE::Port* thePort);
+  void moveDown(YACS::ENGINE::Port* thePort);
+  void addPortPrs(YACS::ENGINE::Port* thePort);
+  void removePortPrs(YACS::ENGINE::Port* thePort);
+  
+  void removeLabelPortPrs(YACSPrs_LabelPort* thePort);
+
+  void erasePortPrs(YACSPrs_Port* thePort);
 
   virtual void setCanvas(QCanvas* theCanvas);
 
   void addLabelLink(YACSPrs_LabelLink* theLink) { myLabelLink = theLink; }
   void removeLabelLink();
   void updateLabelLink();
+  void removeLinkPrs(YACS::HMI::Subject* theSLink);
   YACSPrs_LabelLink* getLabelLink() const { return myLabelLink; }
 
   /* reimplement functions from QxGraph_ActiveItem */
@@ -262,7 +295,7 @@ class YACSPrs_ElementaryNode : public QxGraph_ActiveItem, public QCanvasPolygona
   void setSelfMoving(bool b) { mySelfMoving = b; }
   bool isSelfMoving() const { return mySelfMoving; }
 
-  void setSelected(bool b) { mySelected = b; }
+  void setSelected(bool b);
   bool isSelected() const { return mySelected; }
 
   virtual int rtti() const;
@@ -279,7 +312,7 @@ class YACSPrs_ElementaryNode : public QxGraph_ActiveItem, public QCanvasPolygona
 
   virtual void update();
   virtual void updateForEachLoopBody(YACS::ENGINE::Node* theEngine=0);
-  virtual void updatePorts();
+  virtual void updatePorts(bool theForce=false);
   virtual void updateGates(bool theCreate);
 
   virtual void setNodeColor(const QColor& theColor);
@@ -299,6 +332,12 @@ class YACSPrs_ElementaryNode : public QxGraph_ActiveItem, public QCanvasPolygona
 
   virtual int maxWidth() const;
   virtual int maxHeight() const;
+
+  virtual int minX() const;
+  virtual int maxX() const;
+
+  virtual int minY() const;
+  virtual int maxY() const;
 
   virtual int getTitleHeight() const { return myTitleHeight; }
   void setTitleHeight(int theTitleHeight) { myTitleHeight = theTitleHeight; }
@@ -326,8 +365,8 @@ class YACSPrs_ElementaryNode : public QxGraph_ActiveItem, public QCanvasPolygona
 
   double getStoredPercentage() const { return myPercentage; }
 
-  virtual void    nextTimeIteration(YACS::ENGINE::Node* theEngine=0);
-  virtual double  getPercentage(YACS::ENGINE::Node* theEngine=0) const;
+  virtual void nextTimeIteration(YACS::ENGINE::Node* theEngine=0);
+  virtual int  getPercentage(YACS::ENGINE::Node* theEngine=0) const;
   
   void    updateExecTime(YACS::ENGINE::Node* theEngine=0);
   bool    isFinished() const { return myFinished; }
@@ -349,6 +388,14 @@ class YACSPrs_ElementaryNode : public QxGraph_ActiveItem, public QCanvasPolygona
   bool isCheckAreaNeeded() const { return myIsCheckAreaNeeded; }
   void setIsCheckAreaNeeded(bool theValue) { myIsCheckAreaNeeded = theValue; }
 
+  bool isFullDMode() const;
+  bool isControlDMode() const;
+
+  bool synchronize( YACSPrs_Port* port, const bool toSelect );
+
+ //signals:
+  //void portsChanged();
+
  protected:
   void draw(QPainter& thePainter);
   virtual void drawShape(QPainter& thePainter);
@@ -363,7 +410,7 @@ class YACSPrs_ElementaryNode : public QxGraph_ActiveItem, public QCanvasPolygona
 
   SUIT_ResourceMgr*   myMgr;
 
-  YACS::ENGINE::Node* myEngine; // node engine
+  YACS::HMI::SubjectNode* mySEngine; // node subject
 
   QPixmap myStatePixmap;
   //QCanvasSprite* mySprite; // for states animation
@@ -387,6 +434,9 @@ class YACSPrs_ElementaryNode : public QxGraph_ActiveItem, public QCanvasPolygona
   YACSPrs_Hook*      myPointMaster;
   YACSPrs_LabelLink* myLabelLink;
 
+  bool mySelfMoving; // field to indicate if node is moving itself
+                     // or as a content of moving Bloc node
+
   // for constraint nodes' moving inside the Bloc-->
   bool  myIsInBloc;
   QRect myArea;
@@ -409,8 +459,6 @@ class YACSPrs_ElementaryNode : public QxGraph_ActiveItem, public QCanvasPolygona
   YACSPrs_Hook* myPointOut;
 
   bool myMoving;
-  bool mySelfMoving; // field to indicate if node is moving itself
-                     // or as a content of moving Bloc node
   bool mySelected;
 
   // for update node geometry after import from XML file
@@ -424,6 +472,8 @@ class YACSPrs_ElementaryNode : public QxGraph_ActiveItem, public QCanvasPolygona
   QTime myStartTime;
   bool  myStarted;
   bool  myFinished;
+
+  int   myViewMode;
 };
 
 #endif

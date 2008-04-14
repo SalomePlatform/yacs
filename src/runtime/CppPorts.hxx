@@ -2,7 +2,6 @@
 #ifndef _CPPPORTS_HXX_
 #define _CPPPORTS_HXX_
 
-#include "Any.hxx"
 
 #include "InputPort.hxx"
 #include "OutputPort.hxx"
@@ -11,6 +10,7 @@ namespace YACS
 {
   namespace ENGINE
   {
+    class Any;
 
 /*! \brief Class for C++ Ports
  *

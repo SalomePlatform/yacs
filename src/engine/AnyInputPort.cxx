@@ -1,4 +1,5 @@
 #include "AnyInputPort.hxx"
+#include "TypeCode.hxx"
 #include <iostream>
 #include <sstream>
 
@@ -66,13 +67,8 @@ bool AnyInputPort::isEmpty()
   return !_value;
 }
 
-void *AnyInputPort::get() const throw(Exception)
+void *AnyInputPort::get() const
 {
-  if(!_value)
-    {
-      std::string what="AnyInputPort::get : no value currently in input whith name \""; what+=_name; what+="\"";
-      throw Exception(what);
-    }
   return (void *)_value;
 }
 

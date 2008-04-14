@@ -11,44 +11,9 @@
 #include <string>
 #include <set>
 
+class YACSGui_ComposedNodeViewItem;
+
 class YACSGui_Executor;
-class YACS::ENGINE::ElementaryNode;
-
-class ComposedNodeViewItem: public QListViewItem
-{
- public:
-  ComposedNodeViewItem(QListView *parent, QString label);
-  ComposedNodeViewItem(QListViewItem *parent, QString label);
-  void setState(int state);
-  virtual void paintCell( QPainter *p, const QColorGroup &cg,
-                          int column, int width, int alignment );
-
- protected:
-  int _state;
-  QColor _cf;
-};
-
-class NodeViewItem: public QCheckListItem
-{
- public:
-  NodeViewItem(QListView *parent,
-               const QString &text,
-               Type tt = RadioButtonController,
-               YACS::ENGINE::ElementaryNode *node = 0);
-  NodeViewItem(QListViewItem *parent,
-               const QString &text,
-               Type tt = RadioButtonController,
-               YACS::ENGINE::ElementaryNode *node = 0);
-  void setState(int state); 
-  virtual void paintCell( QPainter *p, const QColorGroup &cg,
-                          int column, int width, int alignment );
-  YACS::ENGINE::ElementaryNode* getNode() { return _node;};
-
- protected:
-  int _state;
-  QColor _cf;
-  YACS::ENGINE::ElementaryNode *_node;
-};
 
 class YACSGui_RunMode : public runMode
 {
@@ -83,7 +48,7 @@ public:
 
  protected:
   void resetTreeNode();
-  void addTreeNode(ComposedNodeViewItem *parent,
+  void addTreeNode(YACSGui_ComposedNodeViewItem *parent,
                    YACS::ENGINE::ComposedNode* father);
 
   YACSGui_Executor* _guiExec;

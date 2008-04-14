@@ -17,7 +17,7 @@ AC_LANG_SAVE
 AC_LANG_CPLUSPLUS
 
 AC_PATH_PROG(OMNIORB_IDL, omniidl)
-if test "xOMNIORB_IDL" = "x"
+if test "x$OMNIORB_IDL" = "x"
 then
   omniORB_ok=no
   AC_MSG_RESULT(omniORB binaries not in PATH variable)
@@ -85,19 +85,19 @@ then
   AC_LANG_CPLUSPLUS
   AC_CHECK_HEADER(CORBA.h,omniORB_ok="yes",omniORB_ok="no")
 
-dnl  CPPFLAGS=$CPPFLAGS_old
+  CPPFLAGS=$CPPFLAGS_old
 
 fi
-
-dnl omniORB_ok=yes
 
 if test "x$omniORB_ok" = "xyes" 
 then
   if test "x$OMNIORB_LIB" = "x/usr/lib"
   then
     OMNIORB_LDFLAGS=""
+    OMNIORB_RFLAGS=""
   else
     OMNIORB_LDFLAGS="-L$OMNIORB_LIB"
+    OMNIORB_RFLAGS="-R$OMNIORB_LIB"
   fi
 
   LIBS_old=$LIBS
@@ -141,6 +141,7 @@ then
   OMNIORB_LIBS="$OMNIORB_LIBS -lCOS${OMNIORB_VERSION}"
   OMNIORB_LIBS="$OMNIORB_LIBS -lCOSDynamic${OMNIORB_VERSION}"
   OMNIORB_LIBS="$OMNIORB_LIBS -lomnithread"
+  OMNIORB_LIBS="$OMNIORB_LIBS ${OMNIORB_RFLAGS}"
   if test $OMNIORB_VERSION = 3 ; then
     OMNIORB_LIBS="$OMNIORB_LIBS -ltcpwrapGK"
   fi

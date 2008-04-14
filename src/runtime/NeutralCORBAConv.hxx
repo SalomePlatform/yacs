@@ -3,12 +3,12 @@
 
 #include "ConversionException.hxx"
 #include "CORBAPorts.hxx"
-#include "Any.hxx"
 
 namespace YACS
 {
   namespace ENGINE
   {
+    class Any;
 
     // --- adaptator ports Neutral->Corba for several types
 

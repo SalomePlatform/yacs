@@ -67,7 +67,7 @@ void RuntimeTest::setUp()
   if (_ltc.size() == 0)
     {
       _ltc.push_back((TypeCodeObjref *)_tc_obj);
-      _tc_C         = TypeCode::interfaceTc("eo:C","C",_ltc);
+      _tc_C         = TypeCode::interfaceTc("IDL:eo/C:1.0","C",_ltc);
       _tc_seqC      = TypeCode::sequenceTc("eo:seqC","seqC",_tc_C);
     }
 }
@@ -205,7 +205,7 @@ void RuntimeTest::createBloc()
     bloc->edAddChild(_nodeMap["Node_0"]);
     bloc->edAddChild(_nodeMap["Node_1"]);
     {
-      set<ElementaryNode *> setelem = bloc->getRecursiveConstituents();
+      list<ElementaryNode *> setelem = bloc->getRecursiveConstituents();
       CPPUNIT_ASSERT(setelem.size() == 2);
     }
   }
@@ -248,9 +248,9 @@ void RuntimeTest::createRecursiveBlocs()
   }
 
   {
-    set<ElementaryNode *> setelem = _blocMap["Bloc_2"]->getRecursiveConstituents();
+    list<ElementaryNode *> setelem = _blocMap["Bloc_2"]->getRecursiveConstituents();
     CPPUNIT_ASSERT(setelem.size() == 4);
-    for (set<ElementaryNode*>::iterator it=setelem.begin(); it!=setelem.end(); it++)
+    for (list<ElementaryNode*>::iterator it=setelem.begin(); it!=setelem.end(); it++)
       {
         DEBTRACE("     elem name = " << (*it)->getName());
       }
@@ -729,7 +729,7 @@ void RuntimeTest::createBloc2()
         bloc->edAddChild(_nodeMap[sn]);
       }
     {
-      set<ElementaryNode *> setelem = bloc->getRecursiveConstituents();
+      list<ElementaryNode *> setelem = bloc->getRecursiveConstituents();
       CPPUNIT_ASSERT(setelem.size() == _inode - 10);
     }
   }
@@ -1496,7 +1496,6 @@ void RuntimeTest::executeCppNode()
   
   DEBTRACE("execute a CppNode with an external C++ implementation (in a dynamic library)");
   
-  setenv("TESTCOMPONENT_ROOT_DIR", LOCATION, 1);
   node = _myRuntime->createCompoNode("Cpp", "test");
   CppComponent * C = new CppComponent("TestComponent");
   node->setComponent(C);
@@ -1532,7 +1531,6 @@ void RuntimeTest::executeCppNode()
 
 void RuntimeTest::createGraphWithCppNodes()
 {
-  setenv("TESTCOMPONENT_ROOT_DIR", LOCATION, 1);
   ElementaryNode * n1, * n2;
   InputPort  *in1, *in2;
   OutputPort  *out1, *out2;

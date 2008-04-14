@@ -33,7 +33,7 @@ void XmlPython::put(const char *data) throw(ConversionException)
   DEBTRACE(data);
   xmlDocPtr doc;
   xmlNodePtr cur;
-  PyObject *ob;
+  PyObject *ob=NULL;
 {
   InterpreterUnlocker l;
   doc = xmlParseMemory(data, strlen(data));
@@ -63,6 +63,13 @@ void XmlPython::put(const char *data) throw(ConversionException)
       cur = cur->next;
     }
   xmlFreeDoc(doc);
+  if(ob==NULL)
+    {
+      stringstream msg;
+      msg << "Problem in conversion: incorrect XML value";
+      msg << " (" << __FILE__ << ":" << __LINE__ << ")";
+      throw ConversionException(msg.str());
+    }
 //  xmlCleanupParser();
 #ifdef _DEVDEBUG_
   PyObject_Print(ob,stderr,Py_PRINT_RAW);

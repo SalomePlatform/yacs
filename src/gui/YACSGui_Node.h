@@ -24,6 +24,7 @@
 #include <YACSGui_Graph.h>
 
 #include <Node.hxx>
+#include <guiObservers.hxx>
 
 class SUIT_ResourceMgr;
 
@@ -40,7 +41,7 @@ class YACSGui_Node
   YACSGui_Node(YACSGui_Graph*);
   virtual ~YACSGui_Node();
 
-  virtual void        update(YACS::ENGINE::Node*, YACSPrs_ElementaryNode*&);
+  virtual void        update(YACS::ENGINE::Node*, YACS::HMI::SubjectComposedNode*, YACSPrs_ElementaryNode*&);
 
 protected:
   YACSGui_Graph*      graph() const { return myGraph; }
@@ -60,7 +61,7 @@ class YACSGui_ServiceNode : public YACSGui_Node
   YACSGui_ServiceNode(YACSGui_Graph*);
   virtual ~YACSGui_ServiceNode();
 
-  virtual void        update(YACS::ENGINE::Node*, YACSPrs_ElementaryNode*&);
+  virtual void        update(YACS::ENGINE::Node*, YACS::HMI::SubjectComposedNode*, YACSPrs_ElementaryNode*&);
 
 };
 
@@ -74,7 +75,7 @@ class YACSGui_InlineNode : public YACSGui_Node
   YACSGui_InlineNode(YACSGui_Graph*);
   virtual ~YACSGui_InlineNode();
 
-  virtual void        update(YACS::ENGINE::Node*, YACSPrs_ElementaryNode*&);
+  virtual void        update(YACS::ENGINE::Node*, YACS::HMI::SubjectComposedNode*, YACSPrs_ElementaryNode*&);
 
 };
 
@@ -88,7 +89,7 @@ class YACSGui_IfNode : public YACSGui_Node
   YACSGui_IfNode(YACSGui_Graph*);
   virtual ~YACSGui_IfNode();
 
-  virtual void        update(YACS::ENGINE::Node*, YACSPrs_ElementaryNode*&);
+  virtual void        update(YACS::ENGINE::Node*, YACS::HMI::SubjectComposedNode*, YACSPrs_ElementaryNode*&);
 
 };
 
@@ -102,7 +103,7 @@ class YACSGui_SwitchNode : public YACSGui_Node
   YACSGui_SwitchNode(YACSGui_Graph*);
   virtual ~YACSGui_SwitchNode();
 
-  virtual void        update(YACS::ENGINE::Node*, YACSPrs_ElementaryNode*&);
+  virtual void        update(YACS::ENGINE::Node*, YACS::HMI::SubjectComposedNode*, YACSPrs_ElementaryNode*&);
 
 };
 
@@ -116,7 +117,7 @@ class YACSGui_LoopNode : public YACSGui_Node
   YACSGui_LoopNode(YACSGui_Graph*);
   virtual ~YACSGui_LoopNode();
 
-  virtual void        update(YACS::ENGINE::Node*, YACSPrs_ElementaryNode*&);
+  virtual void        update(YACS::ENGINE::Node*, YACS::HMI::SubjectComposedNode*, YACSPrs_ElementaryNode*&);
 
 };
 
@@ -130,7 +131,7 @@ class YACSGui_ForEachLoopNode : public YACSGui_Node
   YACSGui_ForEachLoopNode(YACSGui_Graph*);
   virtual ~YACSGui_ForEachLoopNode();
 
-  virtual void        update(YACS::ENGINE::Node*, YACSPrs_ElementaryNode*&);
+  virtual void        update(YACS::ENGINE::Node*, YACS::HMI::SubjectComposedNode*, YACSPrs_ElementaryNode*&);
 
 };
 
@@ -144,7 +145,7 @@ class YACSGui_BlocNode : public YACSGui_Node
   YACSGui_BlocNode(YACSGui_Graph*);
   virtual ~YACSGui_BlocNode();
 
-  virtual void        update(YACS::ENGINE::Node*, YACSPrs_ElementaryNode*&);
+  virtual void        update(YACS::ENGINE::Node*, YACS::HMI::SubjectComposedNode*, YACSPrs_ElementaryNode*&);
 
   int level(YACS::ENGINE::Node* theEngine);
 };

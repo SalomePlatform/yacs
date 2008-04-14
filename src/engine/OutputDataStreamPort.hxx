@@ -34,6 +34,7 @@ namespace YACS
       int edRemoveInputDataStreamPort(InputDataStreamPort *inPort, bool forward) throw(Exception);
       void edRemoveAllLinksLinkedWithMe() throw(Exception);
       int removeInPort(InPort *inPort, bool forward) throw(Exception);
+      virtual std::string typeName() {return "YACS__ENGINE__OutputDataStreamPort";}
     private:
       bool isAlreadyInSet(InputDataStreamPort *inPort) const;
     };

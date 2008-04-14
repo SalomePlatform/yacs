@@ -6,24 +6,44 @@
 
 export ROOT_SAMPLES=@ROOT_SRCDIR@/src/yacsloader/samples
 
-export PYTHONPATH=..:../.libs:${PYTHONPATH}
-export PYTHONPATH=../../runtime:../../runtime/.libs:${PYTHONPATH}
-export PYTHONPATH=../../engine:../../engine/.libs:${PYTHONPATH}
+export PYTHONPATH=..:../.libs:@top_srcdir@/src/yacsloader:${PYTHONPATH}
+export PYTHONPATH=../../runtime:../../runtime/.libs:@top_srcdir@/src/runtime:${PYTHONPATH}
+export PYTHONPATH=../../engine:../../engine/.libs:@top_srcdir@/src/engine:${PYTHONPATH}
 
 python  @srcdir@/testExec.py
 ret0=$?
+if [ $ret0 -gt 0 ]; then
+  echo "exec status testExec : " $ret0
+  exit $ret0
+fi
 
 python  @srcdir@/testResume.py
 ret1=$?
+if [ $ret1 -gt 0 ]; then
+  echo "exec status testResume : " $ret1
+  exit $ret1
+fi
 
 python  @srcdir@/testLoader.py
 ret2=$?
+if [ $ret2 -gt 0 ]; then
+  echo "exec status testLoader : " $ret2
+  exit $ret2
+fi
 
 python  @srcdir@/testEdit.py
 ret3=$?
+if [ $ret3 -gt 0 ]; then
+  echo "exec status testEdit : " $ret3
+  exit $ret3
+fi
 
 python  @srcdir@/testSave.py
 ret4=$?
+if [ $ret4 -gt 0 ]; then
+  echo "exec status testSave : " $ret4
+  exit $ret4
+fi
 
 let ret=$ret0+$ret1+$ret2+$ret3+$ret4
 

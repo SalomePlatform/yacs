@@ -58,8 +58,9 @@ namespace YACS
     public:
       Node *edRemoveNode();
       Node *edRemoveInitNode();
-      Node *edSetNode(Node *node);
-      Node *edSetInitNode(Node *node);
+      //Node* DISOWNnode is a SWIG notation to indicate that the ownership of the node is transfered to C++
+      Node *edSetNode(Node *DISOWNnode);
+      Node *edSetInitNode(Node *DISOWNnode);
       void init(bool start=true);
       InputPort *edGetNbOfBranchesPort() { return &_nbOfBranches; }
       int getNumberOfInputPorts() const;
@@ -73,8 +74,9 @@ namespace YACS
       //! For the moment false is returned : impovement about it coming soon.
       bool isPlacementPredictableB4Run() const;
       void edRemoveChild(Node *node) throw(Exception);
-      std::set<Node *> edGetDirectDescendants() const;
+      std::list<Node *> edGetDirectDescendants() const;
       std::list<InputPort *> getSetOfInputPort() const;
+      std::list<InputPort *> getLocalInputPorts() const;
       unsigned getNumberOfBranchesCreatedDyn() const throw(Exception);
       Node *getChildByShortName(const std::string& name) const throw(Exception);
       Node *getChildByNameExec(const std::string& name, unsigned id) const throw(Exception);
@@ -82,8 +84,14 @@ namespace YACS
       bool isMultiplicitySpecified(unsigned& value) const;
       void forceMultiplicity(unsigned value);
     protected:
-      void buildDelegateOf(InPort * & port, OutPort *initialStart, const std::set<ComposedNode *>& pointsOfView);
-      void buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::set<ComposedNode *>& pointsOfView);
+      void buildDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView);
+      void buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView);
+      void checkCFLinks(const std::list<OutPort *>& starts, InputPort *end, unsigned char& alreadyFed, bool direction, LinkInfo& info) const;
+      void checkControlDependancy(OutPort *start, InPort *end, bool cross,
+                                  std::map < ComposedNode *,  std::list < OutPort * >, SortHierarc >& fw,
+                                  std::vector<OutPort *>& fwCross,
+                                  std::map< ComposedNode *, std::list < OutPort *>, SortHierarc >& bw,
+                                  LinkInfo& info) const;
     protected:
       void cleanDynGraph();
       void prepareInputsFromOutOfScope(int branchNb);

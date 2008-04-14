@@ -8,6 +8,8 @@ namespace YACS
 {
   namespace ENGINE
   {
+    class Any;
+
     // local C++ implementation - single process
 
     class CppComponent;

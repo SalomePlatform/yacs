@@ -3,57 +3,18 @@
 \section toc Table of contents
 
   - \ref loader_intro
-  - \ref loader_programming
   - \ref loader_use
   - \ref loader_file
+  - \ref loader_programming
 
 
 \section loader_intro Introduction
 
-The yacs loader is a class that can be used to load a calculation schema
-in memory by reading and parsing a XML file describing it.
-
-\section loader_programming Programming with the yacs loader class
-
-To use the yacs loader class, first create a specific runtime (here a Salome one).
-
-Then you can create an instance of the yacsloader class and call
-the load method with the name of the XML file as argument.
-
-The call to the method will return a calculation schema (instance of the Proc class).
-
-\code
-#include "RuntimeSALOME.hxx"
-#include "parser.hxx"
-
-YACS::ENGINE::RuntimeSALOME::setRuntime();
-YACS::YACSLoader loader;
-
-YACS::ENGINE::Proc* p=loader.load("file.xml");
-
-\endcode
-
-You can then dump to a file a graphviz diagram by calling the writeDot
-method on the schema.
-
-\code
-#include <fstream>
-
-std::ofstream f("proc.dot");
-p->writeDot(f);
-f.close();
-\endcode
-
-You can display the diagram with: dot -Tpng proc.dot |display.
-
-And then execute the schema with an Executor.
-
-\code
-#include "Executor.hxx"
-
-YACS::ENGINE::Executor executor;
-executor.RunW(p);
-\endcode
+The yacsloader module provides several software elements :
+ - a C++ class that can be used to load a calculation schema in memory by reading and parsing a XML file 
+   describing it (see \ref loader_programming).
+ - an executable named driver that can be used to load and execute (see \ref loader_use) a calculation 
+   schema given as a XML file (see \ref loader_file).
 
 \section loader_use Using the yacs driver
 
@@ -88,7 +49,7 @@ To define a calculation schema, simply open a proc tag
 </proc>
 \endcode
 
-All following definitions must be put betwween these tags.
+All following definitions must be put between these tags.
 
 \subsection loader_types Defining data types
 A calculation schema is composed of interconnected calculation nodes.
@@ -635,6 +596,48 @@ A minimal but almost complete example :
         <tonode>b1.default.n2</tonode> <toport>p1</toport>
         <value><double>54</double> </value>
     </parameter>
+\endcode
+
+\section loader_programming Programming with the yacs loader class
+
+To use the yacs loader class, first create a specific runtime (here a Salome one).
+
+Then you can create an instance of the yacsloader class and call
+the load method with the name of the XML file as argument.
+
+The call to the method will return a calculation schema (instance of the Proc class).
+
+\code
+#include "RuntimeSALOME.hxx"
+#include "parser.hxx"
+
+YACS::ENGINE::RuntimeSALOME::setRuntime();
+YACS::YACSLoader loader;
+
+YACS::ENGINE::Proc* p=loader.load("file.xml");
+
+\endcode
+
+You can then dump to a file a graphviz diagram by calling the writeDot
+method on the schema.
+
+\code
+#include <fstream>
+
+std::ofstream f("proc.dot");
+p->writeDot(f);
+f.close();
+\endcode
+
+You can display the diagram with: dot -Tpng proc.dot |display.
+
+And then execute the schema with an Executor.
+
+\code
+#include "Executor.hxx"
+
+YACS::ENGINE::Executor executor;
+executor.RunW(p);
 \endcode
 
 

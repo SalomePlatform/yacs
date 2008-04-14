@@ -1,4 +1,5 @@
 #include "ToyNode.hxx"
+#include "TypeCode.hxx"
 #include <iostream>
 
 using namespace YACS::ENGINE;

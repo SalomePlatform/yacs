@@ -11,6 +11,7 @@
 #include "InlineNode.hxx"
 #include "ServiceNode.hxx"
 #include "ServiceInlineNode.hxx"
+#include "DataNode.hxx"
 
 #include "VisitorSaveState.hxx"
 
@@ -25,7 +26,7 @@ using namespace std;
 
 VisitorSaveState::VisitorSaveState(ComposedNode *root): Visitor(root)
 {
-  _nodeStateName[YACS::INITED] ="INITED";
+  _nodeStateName[YACS::READY] ="READY";
   _nodeStateName[YACS::TOLOAD] ="TOLOAD";
   _nodeStateName[YACS::LOADED] ="LOADED";
   _nodeStateName[YACS::TOACTIVATE] ="TOACTIVATE";
@@ -193,9 +194,11 @@ void VisitorSaveState::visitWhileLoop(WhileLoop *node)
   InputPort * ip = node->edGetConditionPort();
   if (ip->isEmpty())
     throw Exception("condition in WhileLoop empty, case not handled yet...");
-  Any *val = static_cast<Any*>(ip->get());
-  bool condition = val->getBoolValue();
-  _out << "    <condition>" << condition << "</condition>" << endl;
+  if ( ConditionInputPort* cip = dynamic_cast<ConditionInputPort*>(ip) )
+  {
+    bool condition = cip->getValue();
+    _out << "    <condition>" << condition << "</condition>" << endl;
+  }
 
   _out << "  </node>" << endl;
 }
@@ -237,6 +240,26 @@ void VisitorSaveState::visitServiceNode(ServiceNode *node)
 
 
 void VisitorSaveState::visitServiceInlineNode(ServiceInlineNode *node)
+{
+  visitElementaryNode(node);
+}
+
+void VisitorSaveState::visitPresetNode(DataNode *node)
+{
+  visitElementaryNode(node);
+}
+
+void VisitorSaveState::visitOutNode(DataNode *node)
+{
+  visitElementaryNode(node);
+}
+
+void VisitorSaveState::visitStudyInNode(DataNode *node)
+{
+  visitElementaryNode(node);
+}
+
+void VisitorSaveState::visitStudyOutNode(DataNode *node)
 {
   visitElementaryNode(node);
 }

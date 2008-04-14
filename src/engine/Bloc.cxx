@@ -7,13 +7,16 @@
 
 #include <iostream>
 
+//#define _DEVDEBUG_
+#include "YacsTrace.hxx"
+
 using namespace YACS::ENGINE;
 using namespace std;
 
 Bloc::Bloc(const Bloc& other, ComposedNode *father, bool editionOnly):StaticDefinedComposedNode(other,father),_fwLinks(0),_bwLinks(0)
 {
-  for(set<Node *>::const_iterator iter=other._setOfNode.begin();iter!=other._setOfNode.end();iter++)
-    _setOfNode.insert((*iter)->simpleClone(this,editionOnly));
+  for(list<Node *>::const_iterator iter=other._setOfNode.begin();iter!=other._setOfNode.end();iter++)
+    _setOfNode.push_back((*iter)->simpleClone(this,editionOnly));
   //CF Linking
   vector< pair<OutGate *, InGate *> > cfLinksToReproduce=other.getSetOfInternalCFLinks();
   vector< pair<OutGate *, InGate *> >::iterator iter1=cfLinksToReproduce.begin();
@@ -36,7 +39,7 @@ Bloc::Bloc(const std::string& name):StaticDefinedComposedNode(name),_fwLinks(0),
 
 Bloc::~Bloc()
 {
-  for(set<Node *>::iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
+  for(list<Node *>::iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
     delete *iter;
   delete _fwLinks;
   delete _bwLinks;
@@ -51,7 +54,7 @@ Bloc::~Bloc()
 void Bloc::init(bool start)
 {
   Node::init(start);
-  for(set<Node *>::iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
+  for(list<Node *>::iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
     (*iter)->init(start);
 }
 
@@ -72,7 +75,7 @@ bool Bloc::isFinished()
 int Bloc::getNumberOfCFLinks() const
 {
   int ret=0;
-  for(set<Node *>::const_iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
+  for(list<Node *>::const_iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
     ret+=(*iter)->getOutGate()->getNbOfInGatesConnected();
   return ret;
 }
@@ -95,7 +98,7 @@ void Bloc::getReadyTasks(std::vector<Task *>& tasks)
    */
   if(_state==YACS::TOACTIVATE ) setState(YACS::ACTIVATED);
   if(_state==YACS::TOACTIVATE || _state==YACS::ACTIVATED)
-    for(set<Node *>::iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
+    for(list<Node *>::iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
       (*iter)->getReadyTasks(tasks);
 }
 
@@ -112,7 +115,7 @@ void Bloc::exUpdateState()
   if(_inGate.exIsReady())
     {
       setState(YACS::TOACTIVATE);
-      for(set<Node *>::iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
+      for(list<Node *>::iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
         if((*iter)->exIsControlReady())
           (*iter)->exUpdateState();
     }
@@ -147,6 +150,8 @@ bool Bloc::edAddChild(Node *node) throw(Exception)
       string what = "Bloc::edAddChild: node is not orphan: "; what += node->getName();
       throw Exception(what);
     }
+  
+  checkNoCrossHierachyWith(node);
 
   if(isNameAlreadyUsed(node->getName()))
     {
@@ -154,10 +159,14 @@ bool Bloc::edAddChild(Node *node) throw(Exception)
       what+=" already exists in the scope of "; what+=_name;
       throw Exception(what);
     }
-
+  
   node->_father=this;
-  _setOfNode.insert(node);
+  _setOfNode.push_back(node);
+  //should we also set _modified flag for node ??
   ComposedNode *iter=node->_father;
+  //set the _modified flag so that latter on edUpdateState (eventually called by isValid) refresh state
+  //better call it at end
+  modified();
   return true;
 }
 
@@ -169,17 +178,17 @@ bool Bloc::edAddChild(Node *node) throw(Exception)
 void Bloc::edRemoveChild(Node *node) throw(Exception)
 {
   StaticDefinedComposedNode::edRemoveChild(node);
-  _setOfNode.erase(node);
-}
-
-std::set<Node *> Bloc::edGetDirectDescendants() const
-{
-  return _setOfNode;
+  list<Node *>::iterator iter=find(_setOfNode.begin(),_setOfNode.end(),node);
+  if(iter!=_setOfNode.end())
+    {
+      _setOfNode.erase(iter);
+      modified();
+    }
 }
 
 Node *Bloc::getChildByShortName(const std::string& name) const throw(Exception)
 {
-  for (set<Node *>::const_iterator iter = _setOfNode.begin(); iter != _setOfNode.end(); iter++)
+  for (list<Node *>::const_iterator iter = _setOfNode.begin(); iter != _setOfNode.end(); iter++)
     if ((*iter)->getName() == name)
       return (*iter);
   string what("node "); what+= name ; what+=" is not a child of Bloc "; what += getName();
@@ -192,7 +201,7 @@ void Bloc::selectRunnableTasks(std::vector<Task *>& tasks)
 
 bool Bloc::areAllSubNodesDone() const
 {
-  for(set<Node *>::const_iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
+  for(list<Node *>::const_iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
     {
       if((*iter)->_state == YACS::DONE)continue;
       if((*iter)->_state == YACS::DISABLED)continue;
@@ -203,7 +212,7 @@ bool Bloc::areAllSubNodesDone() const
 
 bool Bloc::areAllSubNodesFinished() const
 {
-  for(set<Node *>::const_iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
+  for(list<Node *>::const_iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
     {
       if((*iter)->_state == YACS::DONE)continue;
       if((*iter)->_state == YACS::FAILED)continue;
@@ -217,7 +226,7 @@ bool Bloc::areAllSubNodesFinished() const
 
 bool Bloc::isNameAlreadyUsed(const std::string& name) const
 {
-  for(set<Node *>::const_iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
+  for(list<Node *>::const_iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
     if((*iter)->getName()==name)
       return true;
   return false;
@@ -255,7 +264,7 @@ void Bloc::checkNoCyclePassingThrough(Node *node) throw(Exception)
 std::vector< std::pair<OutGate *, InGate *> > Bloc::getSetOfInternalCFLinks() const
 {
   vector< pair<OutGate *, InGate *> > ret;
-  for(set<Node *>::const_iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
+  for(list<Node *>::const_iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
     {
       set<InGate *> outCFLinksOfCurNode=(*iter)->_outGate.edSetInGate();
       for(set<InGate *>::iterator iter2=outCFLinksOfCurNode.begin();iter2!=outCFLinksOfCurNode.end();iter2++)
@@ -274,6 +283,7 @@ std::vector< std::pair<OutGate *, InGate *> > Bloc::getSetOfInternalCFLinks() co
  */
 YACS::Event Bloc::updateStateOnFinishedEventFrom(Node *node)
 {
+  DEBTRACE("Bloc::updateStateOnFinishedEventFrom: " << node->getName());
   //ASSERT(node->_father==this)
   if(areAllSubNodesFinished())
     {
@@ -295,7 +305,7 @@ YACS::Event Bloc::updateStateOnFinishedEventFrom(Node *node)
   catch(YACS::Exception& ex)
     {
       //The node has failed to propagate. It must be put in error
-      std::cerr << "Bloc::updateStateOnFinishedEventFrom: " << ex.what() << std::endl;
+      DEBTRACE("Bloc::updateStateOnFinishedEventFrom: " << ex.what());
       // notify the node it has failed
       node->exForwardFailed();
       setState(YACS::FAILED);
@@ -324,11 +334,11 @@ YACS::Event Bloc::updateStateOnFailedEventFrom(Node *node)
   return YACS::NOEVENT;
 }
 
-void Bloc::writeDot(std::ostream &os)
+void Bloc::writeDot(std::ostream &os) const
 {
     os << "  subgraph cluster_" << getId() << "  {\n" ;
-    set<Node *>nodes=getChildren();
-    for(set<Node *>::const_iterator iter=nodes.begin();iter!=nodes.end();iter++)
+    list<Node *>nodes=getChildren();
+    for(list<Node *>::const_iterator iter=nodes.begin();iter!=nodes.end();iter++)
     {
         (*iter)->writeDot(os);
         string p=(*iter)->getId();
@@ -365,10 +375,10 @@ void Bloc::performCFComputations(LinkInfo& info) const
   _fwLinks=new map<Node *,set<Node *> >;
   _bwLinks=new map<Node *,set<Node *> >;
   map<Node *, set<Node *> > accelStr;
-  for(set<Node *>::iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
+  for(list<Node *>::const_iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
     findAllNodesStartingFrom<true>(*iter,(*_fwLinks)[*iter],accelStr,info);
   accelStr.clear();
-  for(set<Node *>::iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
+  for(list<Node *>::const_iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
     findAllNodesStartingFrom<false>(*iter,(*_bwLinks)[*iter],accelStr,info);
 }
 
@@ -390,9 +400,9 @@ void Bloc::destructCFComputations(LinkInfo& info) const
  * \param info out parameter beeing informed about eventual errors.
  */
 void Bloc::checkControlDependancy(OutPort *start, InPort *end, bool cross,
-                                  std::map < ComposedNode *,  std::list < OutPort * > >& fw,
+                                  std::map < ComposedNode *,  std::list < OutPort * >, SortHierarc >& fw,
                                   std::vector<OutPort *>& fwCross,
-                                  std::map< ComposedNode *, std::list < OutPort *> >& bw,
+                                  std::map< ComposedNode *, std::list < OutPort *>, SortHierarc >& bw,
                                   LinkInfo& info) const
 {
   if(!cross)
@@ -443,7 +453,7 @@ bool Bloc::arePossiblyRunnableAtSameTime(Node *start, Node *end) const
  * \param alreadyFed in/out parameter. Indicates if 'end' ports is already and surely set or fed by an another port.
  * \param direction If true : forward direction else backward direction.
  */
-void Bloc::checkCFLinks(const std::list< OutPort *>& starts, InputPort *end, unsigned char& alreadyFed, bool direction, LinkInfo& info) const
+void Bloc::checkCFLinks(const std::list<OutPort *>& starts, InputPort *end, unsigned char& alreadyFed, bool direction, LinkInfo& info) const
 {
   if(alreadyFed==FREE_ST || alreadyFed==FED_ST)
     {
@@ -467,7 +477,7 @@ void Bloc::checkCFLinks(const std::list< OutPort *>& starts, InputPort *end, uns
 
 void Bloc::initComputation() const
 {
-  for(set<Node *>::iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
+  for(list<Node *>::const_iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
     {
       (*iter)->_colour=White;
       (*iter)->getInGate()->exReset();

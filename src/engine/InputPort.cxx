@@ -72,6 +72,7 @@ void InputPort::edInit(Any *value)
   if(manuallySet!=this)
     delete manuallySet;
   exSaveInit();
+  modified();
 }
 
 void InputPort::edInit(const std::string& impl,const void* value)
@@ -81,6 +82,7 @@ void InputPort::edInit(const std::string& impl,const void* value)
   if(manuallySet!=this)
     delete manuallySet;
   exSaveInit();
+  modified();
 }
 
 //! Removes eventually previous manual initialisation.
@@ -91,7 +93,7 @@ void InputPort::edRemoveManInit()
   _initValue=0;
 }
 
-//! Check basisically that this port has one chance to be specified on time. It's a necessary condition \b not \b sufficient at all.
+//! Check basically that this port has one chance to be specified on time. It's a necessary condition \b not \b sufficient at all.
 void InputPort::checkBasicConsistency() const throw(Exception)
 {
   if(!edIsManuallyInitialized() and _backLinks.size()==0 )
@@ -173,12 +175,16 @@ void ProxyPort::exSaveInit()
   _port->exSaveInit();
 }
 
+#ifdef NOCOVARIANT
+InPort *ProxyPort::getPublicRepresentant()
+#else
 InputPort *ProxyPort::getPublicRepresentant()
+#endif
 { 
   return _port->getPublicRepresentant();
 }
 
-void *ProxyPort::get() const throw(Exception)
+void *ProxyPort::get() const
 {
   return _port->get();
 }
@@ -190,5 +196,6 @@ void ProxyPort::put(const void *data) throw(ConversionException)
 
 void ProxyPort::getAllRepresentants(std::set<InPort *>& repr) const
 {
+  DEBTRACE("ProxyPort::getAllRepresentants");
   _port->getAllRepresentants(repr);
 }

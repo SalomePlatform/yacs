@@ -13,8 +13,8 @@ them in a unique dynamic library and link the modules with it.
 \section python_exception Exception wrapping
 In swig, exception can be wrapped either by declaring throw in interface
 file (.i) or by declaring an exception handler.
-A generic exception handler has been declared so throw declarations must
-be removed to not wrap exceptions two times.
+A generic exception handler has been declared and automatic generation has been 
+desactivated (SWIG option -noexcept).
 
 \section python_gil Global Interpreter Lock
 For some methods we need to release the Python GIL.

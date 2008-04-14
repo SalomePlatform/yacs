@@ -12,6 +12,8 @@
 #include <iostream>
 #include <set>
 #include <string>
+#include <sstream>
+#include <algorithm>
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -37,7 +39,7 @@ void ComposedNode::performDuplicationOfPlacement(const Node& other)
 {
   const ComposedNode &otherC=*(dynamic_cast<const ComposedNode *>(&other));
   DeploymentTree treeToDup=otherC.getDeploymentTree();
-  set< ElementaryNode * > clones=otherC.getRecursiveConstituents();
+  list< ElementaryNode * > clones=otherC.getRecursiveConstituents();
   vector<Container *> conts=treeToDup.getAllContainers();
   for(vector<Container *>::iterator iterCt=conts.begin();iterCt!=conts.end();iterCt++)
     {
@@ -53,7 +55,7 @@ void ComposedNode::performDuplicationOfPlacement(const Node& other)
           for(vector<Task *>::iterator iterT=tasks.begin();iterT!=tasks.end();iterT++)
             {
               //No risk for static cast : appendTask called by ComposedNode.
-              set< ElementaryNode * >::iterator res=clones.find((ElementaryNode *)(*iterT));
+              list< ElementaryNode * >::iterator res=find(clones.begin(),clones.end(),(ElementaryNode *)(*iterT));
               //No risk here to because called only on cloning process...
               ServiceNode *nodeC=(ServiceNode *)getChildByName(otherC.getChildName(*res));
               nodeC->setComponent(curCloned);
@@ -89,28 +91,12 @@ std::string ComposedNode::getTaskName(Task *task) const
   return getChildName(dynamic_cast<ElementaryNode *>(task));
 }
 
-bool ComposedNode::operator>(const ComposedNode& other) const
-{
-  const ComposedNode *iter=_father;
-  while(iter!=0 && iter!=&other)
-    iter=iter->_father;
-  return iter==0;
-}
-
-bool ComposedNode::operator<(const ComposedNode& other) const
-{
-  const ComposedNode *iter=other._father;
-  while(iter!=0 && iter!=this)
-    iter=iter->_father;
-  return iter==0;
-}
-
 //! Essentially for test. Use checkDeploymentTree instead to be sure that returned DeploymentTree is consistent.
 DeploymentTree ComposedNode::getDeploymentTree() const
 {
   DeploymentTree ret;
-  set< ElementaryNode * > tasks=getRecursiveConstituents();
-  for(set< ElementaryNode * >::iterator iter=tasks.begin();iter!=tasks.end();iter++)
+  list< ElementaryNode * > tasks=getRecursiveConstituents();
+  for(list< ElementaryNode * >::iterator iter=tasks.begin();iter!=tasks.end();iter++)
     ret.appendTask(*iter,(*iter)->getDynClonerIfExists(this));
   return ret;
 }
@@ -122,8 +108,8 @@ DeploymentTree ComposedNode::getDeploymentTree() const
 DeploymentTree ComposedNode::checkDeploymentTree(bool deep) const throw(Exception)
 {
   DeploymentTree ret;
-  set< ElementaryNode * > tasks=getRecursiveConstituents();
-  for(set< ElementaryNode * >::iterator iter=tasks.begin();iter!=tasks.end();iter++)
+  list< ElementaryNode * > tasks=getRecursiveConstituents();
+  for(list< ElementaryNode * >::iterator iter=tasks.begin();iter!=tasks.end();iter++)
     {
       switch(ret.appendTask(*iter,(*iter)->getDynClonerIfExists(this)))
         {
@@ -203,6 +189,7 @@ void ComposedNode::notifyFrom(const Task *sender, //* I : task emitting event
 
 bool ComposedNode::edAddLink(OutPort *start, InPort *end) throw(Exception)
 {
+  DEBTRACE("ComposedNode::edAddLink");
   set<OutPort *> represented;
 
   start->getAllRepresented(represented);
@@ -216,8 +203,8 @@ bool ComposedNode::edAddLink(OutPort *start, InPort *end) throw(Exception)
   if(start->isAlreadyLinkedWith(end))
     return false;
   ComposedNode* lwstCmnAnctr=getLowestCommonAncestor(start->getNode(),end->getNode());
-  set<ComposedNode *> allAscendanceOfNodeStart=start->getNode()->getAllAscendanceOf(lwstCmnAnctr);
-  set<ComposedNode *> allAscendanceOfNodeEnd=end->getNode()->getAllAscendanceOf(lwstCmnAnctr);
+  list<ComposedNode *> allAscendanceOfNodeStart=start->getNode()->getAllAscendanceOf(lwstCmnAnctr);
+  list<ComposedNode *> allAscendanceOfNodeEnd=end->getNode()->getAllAscendanceOf(lwstCmnAnctr);
   checkInMyDescendance(lwstCmnAnctr);
   lwstCmnAnctr->checkLinkPossibility(start,allAscendanceOfNodeStart,end,allAscendanceOfNodeEnd);
   ComposedNode *iterS;
@@ -273,6 +260,8 @@ bool ComposedNode::edAddDFLink(OutPort *start, InPort *end) throw(Exception)
     }
   if(n2 == father)
     throw Exception("Back link authorized only in special context (loop for example)");
+
+  bool ret= edAddLink(start,end);
   if(n1 != father)
     {
       //add a control link only if nodes are not in the same descendance
@@ -282,9 +271,20 @@ bool ComposedNode::edAddDFLink(OutPort *start, InPort *end) throw(Exception)
         n1=n1->getFather();
       while(n2->getFather() != father)
         n2=n2->getFather();
-      edAddCFLink(n1,n2);
+      try
+        {
+          edAddCFLink(n1,n2);
+        }
+      catch (Exception& ex)
+        {
+          // --- remove DF link already created in case of cycle dtection
+          DEBTRACE("Cycle detected, remove CF link");
+          if(start->isAlreadyLinkedWith(end))
+            edRemoveLink(start, end);
+          throw ex;          
+        }
     }
-  return edAddLink(start,end);
+  return ret;
 }
 
 //! Add a controlflow link between two control ports.
@@ -313,7 +313,17 @@ bool ComposedNode::edAddLink(OutGate *start, InGate *end) throw(Exception)
     }
   bool ret=start->edAddInGate(end);
   if(ret)
-    checkNoCyclePassingThrough(end->getNode());
+    try
+      {
+        checkNoCyclePassingThrough(end->getNode());
+      }
+    catch (Exception& ex)
+      {
+        // --- remove  created CF link in case of cycle detection
+        DEBTRACE("Cycle detected, remove CF link");
+        edRemoveCFLink(start->getNode(), end->getNode());
+        throw ex;
+      }
   return ret;
 }
 
@@ -347,30 +357,54 @@ void ComposedNode::edRemoveLink(OutPort *start, InPort *end) throw(Exception)
     throw Exception("ComposedNode::edRemoveLink : unexisting link");
   ComposedNode* lwstCmnAnctr=getLowestCommonAncestor(start->getNode(),end->getNode());
   checkInMyDescendance(lwstCmnAnctr);
-  set<ComposedNode *> allAscendanceOfNodeStart=start->getNode()->getAllAscendanceOf(lwstCmnAnctr);
-  set<ComposedNode *> allAscendanceOfNodeEnd=end->getNode()->getAllAscendanceOf(lwstCmnAnctr);
+  list<ComposedNode *> allAscendanceOfNodeStart=start->getNode()->getAllAscendanceOf(lwstCmnAnctr);
+  list<ComposedNode *> allAscendanceOfNodeEnd=end->getNode()->getAllAscendanceOf(lwstCmnAnctr);
 
   // --- Part of test if the link from 'start' to 'end' really exist particulary all eventually intermediate ports created
 
   ComposedNode *iterS=start->getNode()->_father;
   pair<OutPort *,OutPort *> currentPortO(start,start);
   vector<pair< ComposedNode * , pair < OutPort* , OutPort *> > > needsToDestroyO;
-  while(iterS!=lwstCmnAnctr)
-    {
-      OutPort *tmp=currentPortO.first;
-      iterS->getDelegateOf(currentPortO, end, allAscendanceOfNodeEnd);
-      needsToDestroyO.push_back(pair< ComposedNode * , pair < OutPort* , OutPort *> >(iterS,pair<OutPort* , OutPort *> (tmp,currentPortO.first)));
-      iterS=iterS->_father;
-    }
 
-  iterS=end->getNode()->_father;
+  Node *nodeOTemp=start->getNode();
+  if(*nodeOTemp<*lwstCmnAnctr)
+    {
+      iterS=nodeOTemp->_father;
+      while(iterS!=lwstCmnAnctr)
+	{
+	  if (!iterS)
+	    {
+	      stringstream what;
+	      what << "ComposedNode::edRemoveLink: "
+		   << start->getNode()->getName() << "." <<start->getName() << "->"
+		   << end->getNode()->getName() << "." << end->getName();
+	      throw Exception(what.str());
+	    }
+	  OutPort *tmp=currentPortO.first;
+	  iterS->getDelegateOf(currentPortO, end, allAscendanceOfNodeEnd);
+	  needsToDestroyO.push_back(pair< ComposedNode * , pair < OutPort* , OutPort *> >(iterS,pair<OutPort* , OutPort *> (tmp,currentPortO.first)));
+	  iterS=iterS->_father;
+	}
+    }
+  Node *nodeTemp=end->getNode();
   InPort * currentPortI=end;
-  while(iterS!=lwstCmnAnctr)
+  if(*nodeTemp<*lwstCmnAnctr)
     {
-      iterS->getDelegateOf(currentPortI, start, allAscendanceOfNodeStart);
-      iterS=iterS->_father;
+      iterS=nodeTemp->_father;    
+      while(iterS!=lwstCmnAnctr)
+        {
+          if (!iterS)
+            {
+              stringstream what;
+              what << "ComposedNode::edRemoveLink: "
+                   << start->getNode()->getName() << "." <<start->getName() << "->"
+                   << end->getNode()->getName() << "." << end->getName();
+              throw Exception(what.str());
+            }
+          iterS->getDelegateOf(currentPortI, start, allAscendanceOfNodeStart);
+          iterS=iterS->_father;
+        }
     }
-
   // --- End of test for evt intermediate ports created
   
   (currentPortO.first)->removeInPort(currentPortI,false);
@@ -385,12 +419,16 @@ void ComposedNode::edRemoveLink(OutPort *start, InPort *end) throw(Exception)
   vector<pair< ComposedNode * , pair < OutPort* , OutPort *> > >::reverse_iterator iter;
   for(iter=needsToDestroyO.rbegin();iter!=needsToDestroyO.rend();iter++)
     (*iter).first->releaseDelegateOf(((*iter).second).first, ((*iter).second).second, end,allAscendanceOfNodeEnd);
-  iterS=end->getNode()->_father;
-  currentPortI=end;
-  while(iterS!=lwstCmnAnctr)
+  nodeTemp=end->getNode();
+  if(*nodeTemp<*lwstCmnAnctr)
     {
-      iterS->releaseDelegateOf(currentPortI, start, allAscendanceOfNodeStart);
-      iterS=iterS->_father;
+      iterS=end->getNode()->_father;
+      currentPortI=end;
+      while(iterS!=lwstCmnAnctr)
+        {
+          iterS->releaseDelegateOf(currentPortI, start, allAscendanceOfNodeStart);
+          iterS=iterS->_father;
+        }
     }
 }
 
@@ -415,6 +453,8 @@ void ComposedNode::edRemoveChild(Node *node) throw(Exception)
     }
   node->edDisconnectAllLinksWithMe();
   node->_father = 0;
+  //set _modified flag so edUpdateState() can refresh state
+  modified();
 }
 
 //! Splits name globalName in 2 parts using separator.
@@ -488,19 +528,15 @@ void ComposedNode::checkConsistency(LinkInfo& info) const throw(Exception)
   list<InputPort *> setOfInToTest=getSetOfInputPort();
   for(list<InputPort *>::iterator iter1=setOfInToTest.begin();iter1!=setOfInToTest.end();iter1++)
     {
-      map<OutPort *,vector<OutPort *> > candidateForAdvCheck;//key is physical OutPort, value semantic OutPort behind.
+      vector<OutPort *> candidateForAdvCheck;
       set<OutPort *> outPorts=(*iter1)->edSetOutPort();
       //Filtering among outPorts, which of them, are candidates to fill *iter1 at the current scope.
       for(set<OutPort *>::iterator iter2=outPorts.begin();iter2!=outPorts.end();iter2++)
         {
-          set<OutPort *> repr;
-          (*iter2)->getAllRepresented(repr);
-          for(set<OutPort *>::iterator iter3=repr.begin();iter3!=repr.end();iter3++)
-            {
-              ComposedNode *manager=getLowestCommonAncestor((*iter3)->getNode(),(*iter1)->getNode());
-              if(isInMyDescendance(manager))
-                candidateForAdvCheck[*iter2].push_back(*iter3);
-            }
+          (*iter2)->checkConsistency(info);
+          ComposedNode *manager=getLowestCommonAncestor((*iter2)->getNode(),(*iter1)->getNode());
+          if(isInMyDescendance(manager))
+            candidateForAdvCheck.push_back(*iter2);
         }
       if(!candidateForAdvCheck.empty())
         //End of filtering. Now regarding CF constraints for the current InPutPort.
@@ -513,11 +549,30 @@ void ComposedNode::checkConsistency(LinkInfo& info) const throw(Exception)
   destructCFComputations(info);
 }
 
+/*!
+ * This method check that G1 <- G2 <- G3 <- G1 does not happened.
+ * Typically called by methods that set a hierarchy (Bloc::edAddChild, Loop::edSetNode, ...).
+ */
+void ComposedNode::checkNoCrossHierachyWith(Node *node) const throw (Exception)
+{
+  ComposedNode *nodeC=dynamic_cast<ComposedNode *>(node);
+  if(!nodeC)
+    return ;
+  list<ComposedNode *> ascendants=getAllAscendanceOf();
+  if(find(ascendants.begin(),ascendants.end(),nodeC)!=ascendants.end())
+    {
+      const char what[]="ComposedNode::checkNoCrossHierachyWith : ComposedNode with name \"";
+      string stream(what); stream+=node->getName(); stream+="\" is already in hierarchy ascendance of node with name \"";
+      stream+=_name; stream+="\" ; So it can't be now in its descendance !";
+      throw Exception(stream);
+    }
+}
+
 //! perform \b recursively all CF computations.
 void ComposedNode::performCFComputations(LinkInfo& info) const
 {
-  set<Node *> nodes=edGetDirectDescendants();
-  for(set<Node *>::iterator iter=nodes.begin();iter!=nodes.end();iter++)
+  list<Node *> nodes=edGetDirectDescendants();
+  for(list<Node *>::iterator iter=nodes.begin();iter!=nodes.end();iter++)
     if(dynamic_cast<ComposedNode *>(*iter))
       ((ComposedNode *)(*iter))->performCFComputations(info);
 }
@@ -525,38 +580,46 @@ void ComposedNode::performCFComputations(LinkInfo& info) const
 //! destroy \b recursively all results of initial computations.
 void ComposedNode::destructCFComputations(LinkInfo& info) const
 {
-  set<Node *> nodes=edGetDirectDescendants();
-  for(set<Node *>::iterator iter=nodes.begin();iter!=nodes.end();iter++)
+  list<Node *> nodes=edGetDirectDescendants();
+  for(list<Node *>::iterator iter=nodes.begin();iter!=nodes.end();iter++)
     if(dynamic_cast<ComposedNode *>(*iter))
       ((ComposedNode *)(*iter))->destructCFComputations(info);
 }
 
 /*!
+ * Returns the lowest Node (Elementary or Composed) (is sense of hierachy level ( operator< ) ) containing all 'ports'.
+ * Typically use in consistency computation.
+ * Precondition : 'ports' \b must contain at least one element. All elements of 'ports' should be in descendance of 'this'.
+ */
+Node *ComposedNode::getLowestNodeDealingAll(const std::list<OutPort *>& ports) const
+{
+  list< OutPort *>::const_iterator iter=ports.begin();
+  Node *ret=(*iter)->getNode();
+  iter++;
+  for(;iter!=ports.end();iter++)
+    {
+      Node *tmp=(*iter)->getNode();
+      if(*tmp>*ret)
+        ret=tmp;
+    }
+  return ret;
+}
+
+/*!
  * call it only for 'starts' to 'end' links \b DEALED by 'this'.
  */
-void ComposedNode::checkLinksCoherenceRegardingControl(const std::map<OutPort *, std::vector<OutPort *> >& starts, InputPort *end, LinkInfo& info) const throw(Exception)
+void ComposedNode::checkLinksCoherenceRegardingControl(const std::vector<OutPort *>& starts, InputPort *end, LinkInfo& info) const throw(Exception)
 {
-  map < ComposedNode *, list<OutPort *> > outputs;//forward link classical
+  map < ComposedNode *, list<OutPort *>, SortHierarc > outputs;//forward link classical
   vector<OutPort *> outputsCross;//forward link cross
-  map < ComposedNode *, list<OutPort *> > outputsBw;//backward
-  map<OutPort *,vector<OutPort *> >::const_iterator iter1;
-  vector<OutPort *>::const_iterator iter2;
+  map < ComposedNode *, list<OutPort *>, SortHierarc > outputsBw;//backward
+  vector<OutPort *>::const_iterator iter1;
+  //vector<DataPort *> history=((*iter1).second)[0]->calculateHistoryOfLinkWith(end);
+  //DataPort *cross=DataPort::isCrossingType(history);
   for(iter1=starts.begin();iter1!=starts.end();iter1++)
     {
-      DataPort *cross;
-      if((*iter1).second[0]==(*iter1).first)//Little optimisation. Representant (key) is equal to first value -> crossing impossible.
-        {
-          ComposedNode *manager=getLowestCommonAncestor(((*iter1).first)->getNode(),end->getNode());
-          manager->checkControlDependancy((*iter1).first, end, false, outputs, outputsCross, outputsBw, info);
-        }
-      else
-        for(iter2=(*iter1).second.begin();iter2!=(*iter1).second.end();iter2++)
-          {
-            ComposedNode *manager=getLowestCommonAncestor(((*iter1).first)->getNode(),end->getNode());
-            vector<DataPort *> history=((*iter1).second)[0]->calculateHistoryOfLinkWith(end);
-            cross=DataPort::isCrossingType(history);
-            manager->checkControlDependancy(*iter2, end, cross!=0, outputs, outputsCross, outputsBw, info);
-          }
+      ComposedNode *manager=getLowestCommonAncestor((*iter1)->getNode(),end->getNode());
+      manager->checkControlDependancy((*iter1), end, false, outputs, outputsCross, outputsBw, info);
     }
   //Ok now let's regarding outputs all combinations : (outputs.size())*(outputs.size()-1)/2
   unsigned char isAlreadyFed=FREE_ST;
@@ -568,7 +631,7 @@ void ComposedNode::checkLinksCoherenceRegardingControl(const std::map<OutPort *,
         for(vector< OutPort *>::const_iterator iter1=outputsCross.begin();iter1!=(outputsCross.end()-2);iter1++)
           info.pushErrLink(*iter1,end,E_COLLAPSE_DS);
     }
-  map < ComposedNode *, list<OutPort *> >::iterator iter3=outputs.begin();
+  map < ComposedNode *, list<OutPort *>, SortHierarc >::iterator iter3=outputs.begin();
   for(;iter3!=outputs.end();iter3++)
     ((*iter3).first)->checkCFLinks((*iter3).second,end,isAlreadyFed,true,info);
   if(isAlreadyFed==FREE_ST)
@@ -576,24 +639,55 @@ void ComposedNode::checkLinksCoherenceRegardingControl(const std::map<OutPort *,
       info.pushErrLink(0,end,E_ONLY_BACKWARD_DEFINED);
   isAlreadyFed=FREE_ST;
   //
-  map < ComposedNode *, list<OutPort *> >::reverse_iterator iter5=outputsBw.rbegin();
+  map < ComposedNode *, list<OutPort *>, SortHierarc >::reverse_iterator iter5=outputsBw.rbegin();
   for(;iter5!=outputsBw.rend();iter5++)
     ((*iter5).first)->checkCFLinks((*iter5).second,end,isAlreadyFed,false,info);
 }
 
 /*!
- * \param cross indicates if start -> end link is a DS link behind.
- * \param fw out parameter.
- * \param fwCross out parameter storing links where a cross has been detected.
- * \param bw out parameter where backward links are stored.
+ * Internal method during CF links. This méthode is in charge to statuate on links consistency in the case that no control flow defined by user
+ * is set.
  */
-void ComposedNode::checkControlDependancy(OutPort *start, InPort *end, bool cross,
-                                          std::map < ComposedNode *,  std::list < OutPort * > >& fw,
-                                          std::vector<OutPort *>& fwCross,
-                                          std::map< ComposedNode *, std::list < OutPort *> >& bw,
-                                          LinkInfo& info) const
+void ComposedNode::solveObviousOrDelegateCFLinks(const std::list<OutPort *>& starts, InputPort *end, unsigned char& alreadyFed, bool direction, LinkInfo& info) const
 {
-  throw Exception("ComposedNode::checkControlDependancy : Internal error occured - should never been called !");
+  static const char what[]="ComposedNode::solveObviousOrDelegateCFLinks : Internal error occured - uncorrect hierarchy detected !";
+  if(starts.size()==1)
+    {
+      if(alreadyFed==FREE_ST)
+        {
+          if(!direction)
+            info.pushInfoLink(*(starts.begin()),end,I_BACK);
+          alreadyFed=FED_ST;
+        }
+      else if(alreadyFed==FED_ST)
+        info.pushInfoLink(*(starts.begin()),end,direction ?  I_USELESS : I_BACK_USELESS);
+      else
+        info.pushErrLink(*(starts.begin()),end,E_COLLAPSE_DFDS);
+    }
+  else
+    {
+      Node *levelOfDecision=getLowestNodeDealingAll(starts);
+      if(levelOfDecision==this)
+        throw Exception(what);
+      if(dynamic_cast<ElementaryNode *>(levelOfDecision))
+        {
+          WarnReason reason;
+          if(alreadyFed==FREE_ST || alreadyFed==FED_ST)
+            {
+              if(alreadyFed==FREE_ST)
+                {
+                  reason=direction ? W_COLLAPSE_EL : W_BACK_COLLAPSE_EL;
+                  alreadyFed=FED_ST;
+                }
+              else
+                reason=direction ? W_COLLAPSE_EL_AND_USELESS : W_BACK_COLLAPSE_EL_AND_USELESS;
+              for(list< OutPort *>::const_iterator iter=starts.begin();iter!=starts.end();iter++)
+                info.pushWarnLink(*iter,end,reason);
+            }
+        }
+      else
+        ((ComposedNode *)levelOfDecision)->checkCFLinks(starts,end,alreadyFed,direction,info);
+    }
 }
 
 /*!
@@ -601,9 +695,30 @@ void ComposedNode::checkControlDependancy(OutPort *start, InPort *end, bool cros
  * \param alreadyFed in/out parameter. Indicates if 'end' ports is already and surely set or fed by an another port.
  * \param direction If true : forward direction else backward direction.
  */
-void ComposedNode::checkCFLinks(const std::list< OutPort *>& starts, InputPort *end, unsigned char& alreadyFed, bool direction, LinkInfo& info) const
+void ComposedNode::checkCFLinks(const std::list<OutPort *>& starts, InputPort *end, unsigned char& alreadyFed, bool direction, LinkInfo& info) const
 {
-  throw Exception("ComposedNode::checkCFLinks : Internal error occured - should never been called !");
+  static const char what[]="ComposedNode::checkCFLinks : Internal error occured - uncorrect hierarchy detected !";
+  Node *nodeEnd=isInMyDescendance(end->getNode());
+  if(!nodeEnd)
+    return solveObviousOrDelegateCFLinks(starts,end,alreadyFed,direction,info);
+  //This case is typically dedicated when direct son is ElementaryNode and self link is defined on this.
+  if(!dynamic_cast<ElementaryNode *>(nodeEnd))
+    throw Exception(what);
+  list< OutPort *>::const_iterator iter=starts.begin();
+  Node *nodeStart=(*iter)->getNode();
+  iter++;
+  if(nodeEnd!=nodeStart)
+    throw Exception(what);
+  for(;iter!=starts.end();iter++)
+    if((*iter)->getNode()!=nodeStart)
+      throw Exception(what);
+  //Ok at this step we are sure that we have back links on the same elementary node.
+  if(starts.size()>1)
+    for(iter=starts.begin();iter!=starts.end();iter++)
+      info.pushWarnLink(*iter,end,W_BACK_COLLAPSE_EL);
+  else//here no need to look at 'alreadyFed' var because it is waranteed to be equal to FREE_ST by construction.
+    info.pushInfoLink(*(starts.begin()),end,I_BACK);
+  alreadyFed=FED_ST;
 }
 
 std::vector< std::pair<InPort *, OutPort *> > ComposedNode::getSetOfLinksComingInCurrentScope() const
@@ -672,33 +787,39 @@ std::set<InPort *> ComposedNode::getAllInPortsComingFromOutsideOfCurrentScope() 
 void ComposedNode::edDisconnectAllLinksWithMe()
 {
   //CF
+  DEBTRACE("-");
   Node::edDisconnectAllLinksWithMe();
   //Leaving part
+  DEBTRACE("--");
   vector< pair<OutPort *, InPort *> > linksToDestroy=getSetOfLinksLeavingCurrentScope();
   vector< pair<OutPort *, InPort *> >::iterator iter;
   for(iter=linksToDestroy.begin();iter!=linksToDestroy.end();iter++)
-    (*iter).first->removeInPort((*iter).second,true);
+    {
+      DEBTRACE("---");
+      (*iter).first->removeInPort((*iter).second,true);
+    }
   //Arriving part
   vector< pair<InPort *, OutPort *> > linksToDestroy2=getSetOfLinksComingInCurrentScope();
   vector< pair<InPort *, OutPort *> >::iterator iter2;
   for(iter2=linksToDestroy2.begin();iter2!=linksToDestroy2.end();iter2++)
-    (*iter2).second->removeInPort((*iter2).first,true);
+    {
+      DEBTRACE("----");
+      (*iter2).second->removeInPort((*iter2).first,true);
+    }
 }
 
-ComposedNode *ComposedNode::getRootNode() throw(Exception)
+ComposedNode *ComposedNode::getRootNode() const throw(Exception)
 {
   if(!_father)
-    return this;
+    return (ComposedNode *)this;
   return Node::getRootNode();
 }
 
-bool ComposedNode::isNodeAlreadyAggregated(Node *node) const
+//! Check that Node 'node' is already a direct son of this.
+bool ComposedNode::isNodeAlreadyAggregated(const Node *node) const
 {
-  set<ComposedNode *> nodeAncestors = node->getAllAscendanceOf();
-  if ( nodeAncestors.find((ComposedNode*)this) == nodeAncestors.end() )
-    return false;
-  else
-    return true;
+  list<ComposedNode *> nodeAncestors = node->getAllAscendanceOf();
+  return find(nodeAncestors.begin(),nodeAncestors.end(),(ComposedNode *)this)!=nodeAncestors.end();
 }
 
 //! Returns the parent of a node that is the direct child of this node 
@@ -728,9 +849,9 @@ Node *ComposedNode::isInMyDescendance(Node *nodeToTest) const
     return 0;
 }
 
-string ComposedNode::getChildName(Node* node) const throw(Exception)
+string ComposedNode::getChildName(const Node* node) const throw(Exception)
 {
-  string nodeName = node->getQualifiedName();    
+  string nodeName=node->getQualifiedName();    
   if (!isNodeAlreadyAggregated(node))
     {
       if (node->getName() == "thisIsAFakeNode")
@@ -745,7 +866,7 @@ string ComposedNode::getChildName(Node* node) const throw(Exception)
         }
     }
   
-  Node *father = node->_father;
+  const Node *father = node->_father;
   while (father != this)
     {
       nodeName = father->getQualifiedName() + SEP_CHAR_BTW_LEVEL + nodeName;
@@ -842,60 +963,59 @@ ComposedNode *ComposedNode::getLowestCommonAncestor(Node *node1, Node *node2) th
   return *iter;
 }
 
-set<ElementaryNode *> ComposedNode::getRecursiveConstituents() const
+list<ElementaryNode *> ComposedNode::getRecursiveConstituents() const
 {
-  set<ElementaryNode *> ret;
-  set<Node *> setOfNode=edGetDirectDescendants();
-  for(set<Node *>::const_iterator iter=setOfNode.begin();iter!=setOfNode.end();iter++)
+  list<ElementaryNode *> ret;
+  list<Node *> setOfNode=edGetDirectDescendants();
+  for(list<Node *>::const_iterator iter=setOfNode.begin();iter!=setOfNode.end();iter++)
     {
-      set<ElementaryNode *> myCurrentSet=(*iter)->getRecursiveConstituents();
-      ret.insert(myCurrentSet.begin(),myCurrentSet.end());
+      list<ElementaryNode *> myCurrentSet=(*iter)->getRecursiveConstituents();
+      ret.insert(ret.end(),myCurrentSet.begin(),myCurrentSet.end());
     }
   return ret;
 }
 
-set<Node *> ComposedNode::getAllRecursiveConstituents()
+//! Idem getAllRecursiveNodes, but this node is NOT included.
+list<Node *> ComposedNode::getAllRecursiveConstituents()
 {
-  set<Node *> ret;
-  set<Node *> setOfNode=edGetDirectDescendants();
-  for(set<Node *>::const_iterator iter=setOfNode.begin();iter!=setOfNode.end();iter++)
+  list<Node *> ret;
+  list<Node *> setOfNode=edGetDirectDescendants();
+  for(list<Node *>::const_iterator iter=setOfNode.begin();iter!=setOfNode.end();iter++)
     {
       if ( dynamic_cast<ComposedNode*> (*iter) )
         {
-          set<Node *> myCurrentSet=((ComposedNode*)(*iter))->getAllRecursiveConstituents();
-          ret.insert(myCurrentSet.begin(),myCurrentSet.end());
-          ret.insert(*iter);
+          list<Node *> myCurrentSet=((ComposedNode*)(*iter))->getAllRecursiveConstituents();
+          ret.insert(ret.end(),myCurrentSet.begin(),myCurrentSet.end());
+          ret.push_back(*iter);
         }
       else
         {
-          set<ElementaryNode *> myCurrentSet=(*iter)->getRecursiveConstituents();
-          ret.insert(myCurrentSet.begin(),myCurrentSet.end());
+          list<ElementaryNode *> myCurrentSet=(*iter)->getRecursiveConstituents();
+          ret.insert(ret.end(),myCurrentSet.begin(),myCurrentSet.end());
         }
     }
   return ret;
 }
 
 //! Get all children nodes  elementary and composed including this node
-set<Node *> ComposedNode::getAllRecursiveNodes()
+list<Node *> ComposedNode::getAllRecursiveNodes()
 {
-  set<Node *> ret;
-  set<Node *> setOfNode=edGetDirectDescendants();
-  for(set<Node *>::iterator iter=setOfNode.begin();iter!=setOfNode.end();iter++)
+  list<Node *> ret;
+  list<Node *> setOfNode=edGetDirectDescendants();
+  for(list<Node *>::iterator iter=setOfNode.begin();iter!=setOfNode.end();iter++)
     {
       if ( dynamic_cast<ElementaryNode*> (*iter) )
         {
-          set<ElementaryNode *> myCurrentSet=(*iter)->getRecursiveConstituents();
-          ret.insert(myCurrentSet.begin(),myCurrentSet.end());
-          //ret.insert(*iter);
+          list<ElementaryNode *> myCurrentSet=(*iter)->getRecursiveConstituents();
+          ret.insert(ret.end(),myCurrentSet.begin(),myCurrentSet.end());
         }
       else
         {
-          set<Node *> myCurrentSet=((ComposedNode*)(*iter))->getAllRecursiveNodes();
-          ret.insert(myCurrentSet.begin(),myCurrentSet.end());
-          //ret.insert(*iter);
+          list<Node *> myCurrentSet=((ComposedNode*)(*iter))->getAllRecursiveNodes();
+          ret.insert(ret.end(),myCurrentSet.begin(),myCurrentSet.end());
         }
     }
-  ret.insert(this);
+  ret.push_back(this);
   return ret;
 }
 
@@ -916,27 +1036,27 @@ string ComposedNode::getOutPortName(const OutPort *outPort) const throw (Excepti
 
 int ComposedNode::getNumberOfInputPorts() const
 {
-  set<Node *> constituents=edGetDirectDescendants();
+  list<Node *> constituents=edGetDirectDescendants();
   int ret=0;
-  for(set<Node *>::iterator iter=constituents.begin();iter!=constituents.end();iter++)
+  for(list<Node *>::iterator iter=constituents.begin();iter!=constituents.end();iter++)
     ret+=(*iter)->getNumberOfInputPorts();
   return ret;
 }
 
 int ComposedNode::getNumberOfOutputPorts() const
 {
-  set<Node *> constituents=edGetDirectDescendants();
+  list<Node *> constituents=edGetDirectDescendants();
   int ret=0;
-  for(set<Node *>::iterator iter=constituents.begin();iter!=constituents.end();iter++)
+  for(list<Node *>::iterator iter=constituents.begin();iter!=constituents.end();iter++)
     ret+=(*iter)->getNumberOfOutputPorts();
   return ret;
 }
 
 list<InputPort *> ComposedNode::getSetOfInputPort() const
 {
-  set<Node *> constituents=edGetDirectDescendants();
+  list<Node *> constituents=edGetDirectDescendants();
   list<InputPort *> ret;
-  for(set<Node *>::iterator iter=constituents.begin();iter!=constituents.end();iter++)
+  for(list<Node *>::iterator iter=constituents.begin();iter!=constituents.end();iter++)
     {
       list<InputPort *> currentsPorts=(*iter)->getSetOfInputPort();
       ret.insert(ret.end(),currentsPorts.begin(),currentsPorts.end());
@@ -946,9 +1066,9 @@ list<InputPort *> ComposedNode::getSetOfInputPort() const
 
 list<OutputPort *> ComposedNode::getSetOfOutputPort() const
 {
-  set<Node *> constituents=edGetDirectDescendants();
+  list<Node *> constituents=edGetDirectDescendants();
   list<OutputPort *> ret;
-  for(set<Node *>::iterator iter=constituents.begin();iter!=constituents.end();iter++)
+  for(list<Node *>::iterator iter=constituents.begin();iter!=constituents.end();iter++)
     {
       list<OutputPort *> currentsPorts=(*iter)->getSetOfOutputPort();
       ret.insert(ret.end(),currentsPorts.begin(),currentsPorts.end());
@@ -958,9 +1078,9 @@ list<OutputPort *> ComposedNode::getSetOfOutputPort() const
 
 list<InputDataStreamPort *> ComposedNode::getSetOfInputDataStreamPort() const
 {
-  set<Node *> constituents=edGetDirectDescendants();
+  list<Node *> constituents=edGetDirectDescendants();
   list<InputDataStreamPort *> ret;
-  for(set<Node *>::iterator iter=constituents.begin();iter!=constituents.end();iter++)
+  for(list<Node *>::iterator iter=constituents.begin();iter!=constituents.end();iter++)
     {
       list<InputDataStreamPort *> currentsPorts=(*iter)->getSetOfInputDataStreamPort();
       ret.insert(ret.end(),currentsPorts.begin(),currentsPorts.end());
@@ -970,9 +1090,9 @@ list<InputDataStreamPort *> ComposedNode::getSetOfInputDataStreamPort() const
 
 list<OutputDataStreamPort *> ComposedNode::getSetOfOutputDataStreamPort() const
 {
-  set<Node *> constituents=edGetDirectDescendants();
+  list<Node *> constituents=edGetDirectDescendants();
   list<OutputDataStreamPort *> ret;
-  for(set<Node *>::iterator iter=constituents.begin();iter!=constituents.end();iter++)
+  for(list<Node *>::iterator iter=constituents.begin();iter!=constituents.end();iter++)
     {
       list<OutputDataStreamPort *> currentsPorts=(*iter)->getSetOfOutputDataStreamPort();
       ret.insert(ret.end(),currentsPorts.begin(),currentsPorts.end());
@@ -1143,14 +1263,14 @@ YACS::Event ComposedNode::updateStateOnFailedEventFrom(Node *node)
    return YACS::ABORT;
 }
 
-void ComposedNode::checkLinkPossibility(OutPort *start, const std::set<ComposedNode *>& pointsOfViewStart,
-                                        InPort *end, const std::set<ComposedNode *>& pointsOfViewEnd) throw(Exception)
+void ComposedNode::checkLinkPossibility(OutPort *start, const std::list<ComposedNode *>& pointsOfViewStart,
+                                        InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) throw(Exception)
 {
   if((dynamic_cast<DataFlowPort *>(start) or dynamic_cast<DataFlowPort *>(end))
      and (dynamic_cast<DataStreamPort *>(start) or dynamic_cast<DataStreamPort *>(end)))
     {//cross protocol required : deeper check needed
       bool isOK=false;
-      set<ComposedNode *>::iterator iter;
+      list<ComposedNode *>::const_iterator iter;
       for(iter=pointsOfViewStart.begin();iter!=pointsOfViewStart.end() and !isOK;iter++)
         isOK=(*iter)->isRepeatedUnpredictablySeveralTimes();
       for(iter=pointsOfViewEnd.begin();iter!=pointsOfViewEnd.end() and !isOK;iter++)
@@ -1160,27 +1280,27 @@ void ComposedNode::checkLinkPossibility(OutPort *start, const std::set<ComposedN
     }
 }
 
-void ComposedNode::buildDelegateOf(InPort * & port, OutPort *initialStart, const std::set<ComposedNode *>& pointsOfView)
+void ComposedNode::buildDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView)
 {
 }
 
-void ComposedNode::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::set<ComposedNode *>& pointsOfView)
+void ComposedNode::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView)
 {
 }
 
-void ComposedNode::getDelegateOf(InPort * & port, OutPort *initialStart, const std::set<ComposedNode *>& pointsOfView) throw(Exception)
+void ComposedNode::getDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView) throw(Exception)
 {
 }
 
-void ComposedNode::getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::set<ComposedNode *>& pointsOfView) throw(Exception)
+void ComposedNode::getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(Exception)
 {
 }
 
-void ComposedNode::releaseDelegateOf(InPort * & port, OutPort *initialStart, const std::set<ComposedNode *>& pointsOfView) throw(Exception)
+void ComposedNode::releaseDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView) throw(Exception)
 {
 }
 
-void ComposedNode::releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::set<ComposedNode *>& pointsOfView) throw(Exception)
+void ComposedNode::releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(Exception)
 {
 }
 
@@ -1190,8 +1310,8 @@ void ComposedNode::loaded()
 
 void ComposedNode::accept(Visitor *visitor)
 {
-  set<Node *> constituents=edGetDirectDescendants();
-  for(set<Node *>::iterator iter=constituents.begin(); iter!=constituents.end(); iter++)
+  list<Node *> constituents=edGetDirectDescendants();
+  for(list<Node *>::iterator iter=constituents.begin(); iter!=constituents.end(); iter++)
     {
       (*iter)->accept(visitor);
     }
@@ -1208,3 +1328,67 @@ std::list<OutputPort *> ComposedNode::getLocalOutputPorts() const
 {
   std::list<OutputPort *> lop; return lop; // empty list
 }
+
+bool ComposedNode::isNameAlreadyUsed(const std::string& name) const
+{
+  return false;
+}
+
+void ComposedNode::edUpdateState()
+{
+  DEBTRACE("ComposedNode::edUpdateState(): " << _state << " " << _modified);
+  YACS::StatesForNode state=YACS::READY;
+
+  //update children if needed
+  list<Node *> constituents=edGetDirectDescendants();
+  for(list<Node *>::iterator iter=constituents.begin(); iter!=constituents.end(); iter++)
+    {
+      if(!(*iter)->isValid())
+        state=YACS::INVALID;
+    }
+  if(state != _state)
+    setState(state);
+  _modified=0;
+}
+
+std::string ComposedNode::getErrorReport()
+{
+  DEBTRACE("ComposedNode::getErrorReport: " << getName() << " " << _state);
+  YACS::StatesForNode effectiveState=getEffectiveState();
+  if(effectiveState == YACS::READY || effectiveState == YACS::DONE)
+    return "";
+
+  std::string report="<error node= " + getName();
+  switch(effectiveState)
+    {
+    case YACS::INVALID:
+      report=report+" state= INVALID";
+      break;
+    case YACS::ERROR:
+      report=report+" state= ERROR";
+      break;
+    case YACS::FAILED:
+      report=report+" state= FAILED";
+      break;
+    default:
+      break;
+    }
+  report=report + ">\n" ;
+  if(_errorDetails != "")
+    report=report+_errorDetails+"\n";
+
+  list<Node *> constituents=edGetDirectDescendants();
+  for(list<Node *>::iterator iter=constituents.begin(); iter!=constituents.end(); iter++)
+    {
+      std::string rep=(*iter)->getErrorReport();
+      if(rep != "")
+        {
+          report=report+rep+"\n";
+        }
+    }
+  report=report+"</error>";
+  return report;
+}
+
+
+

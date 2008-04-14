@@ -19,43 +19,32 @@
 #ifndef YACSGui_DataObject_HeaderFile
 #define YACSGui_DataObject_HeaderFile
 
+#include <Port.hxx>
+#include <Node.hxx>
+#include <ServiceNode.hxx>
 #include <Proc.hxx>
+#include <SalomeContainer.hxx>
+#include <ComponentInstance.hxx>
 
-#include <LightApp_DataObject.h>
+//#include <LightApp_DataObject.h>
+#include <SalomeApp_DataObject.h>
+#include "SALOMEDSClient.hxx"
 
 /*!
  * YACS module data object
  */
-class YACSGui_DataObject : public virtual LightApp_DataObject
+class YACSGui_DataObject : public SalomeApp_DataObject
 {
 public:
-  YACSGui_DataObject( SUIT_DataObject*, YACS::ENGINE::Proc* = 0 );
+  //enum ObjectType { SchemaObject, RunObject, NodeObject };
+  YACSGui_DataObject( const _PTR(SObject)&, SUIT_DataObject* = 0, YACS::ENGINE::Proc*  = 0 );
   virtual ~YACSGui_DataObject();
-  
-  virtual QString entry() const;
-  
-  QString name() const;
-  QPixmap icon() const;
-    
-private:
-  YACS::ENGINE::Proc* myObject;
-};
 
-/*!
- * YACS module root object
- */
+  YACS::ENGINE::Proc* proc() const;
 
-class YACSGui_ModuleObject : public virtual YACSGui_DataObject,
-			     public virtual LightApp_ModuleObject
-{
-public:
-  YACSGui_ModuleObject ( CAM_DataModel*, SUIT_DataObject* = 0 );
-
-  virtual QString name() const;
-  virtual QString entry() const;
-  
-  QPixmap icon() const;
-  QString toolTip() const;
+protected:
+  //ObjectType myType;
+  YACS::ENGINE::Proc*   myProc;
 };
 
 #endif

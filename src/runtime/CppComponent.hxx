@@ -2,13 +2,14 @@
 #define __YACS_CppCOMPONENT__
 
 #include <string>
-#include "Any.hxx"
 #include "ComponentInstance.hxx"
 
 namespace YACS 
 {
   namespace ENGINE
   {
+
+    class Any;
 
     struct returnInfo {
          int code;

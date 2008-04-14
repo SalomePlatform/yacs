@@ -7,7 +7,7 @@
 
   // SALOME Engine interface for execution in a SALOME Container
 
-module YACSGui_ORB
+module YACS_ORB
 {
   enum executionMode { CONTINUE, STEPBYSTEP, STOPBEFORENODES };
 
@@ -23,12 +23,18 @@ module YACSGui_ORB
   {
     long getNodeState(in long numid);
     string getXMLState(in long numid);
+    string getInPortValue(in long nodeNumid, in string portName);
+    string getOutPortValue(in long nodeNumid, in string portName);
+    string getErrorDetails(in long nodeNumid);
+    string getErrorReport(in long nodeNumid);
+    string getContainerLog(in long nodeNumid);
     long getExecutorState();
     void getIds(out longArray numids,out stringArray names);
     longArray getNumIds();
     stringArray getNames();
 
     void Run();
+    void RunFromState(in string xmlfile);
     void addObserver(in Observer obs,in long numid, in string event);
     void setExecMode(in executionMode mode);
     void setListOfBreakPoints(in stringArray listOfBreakPoints);
@@ -39,9 +45,10 @@ module YACSGui_ORB
     void stopExecution();
     boolean saveState(in string xmlFile);
     void setStopOnError(in boolean dumpRequested, in string xmlFile);
+    void unsetStopOnError();
   };
 
-  interface YACSGui_Gen : Engines::Component, SALOMEDS::Driver
+  interface YACS_Gen : Engines::Component, SALOMEDS::Driver
   {
     ProcExec LoadProc(in string xmlFile);
     string convertSupervFile(in string xmlFile);

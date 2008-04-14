@@ -1,58 +1,32 @@
 // ----------------------------------------------------------------------------
 %define SALOMEDOCSTRING
-"SALOMERuntime docstring
-Implementation of nodes for SALOME platform."
+"Implementation of nodes for SALOME platform."
 %enddef
 
 %module(docstring=SALOMEDOCSTRING) SALOMERuntime
 
-%feature("autodoc", "0");
-%include std_string.i
+//work around SWIG bug #1863647
+#define PySwigIterator SALOMERuntime_PySwigIterator
+
+%feature("autodoc", "1");
+
+%include engtypemaps.i
 
 // ----------------------------------------------------------------------------
 
 %{
 #include "RuntimeSALOME.hxx"
 #include "SALOMEDispatcher.hxx"
-  
-#include <iostream>
-#include <string>
-#include <sstream>
-#include <cassert>
-#include <stdexcept>
-#include "utilities.h"
-
-using namespace std;
-using namespace YACS::ENGINE;
-
-//--- from omniORBpy.h (not present on Debian Sarge packages)
-//    (rename omniORBpyAPI in omniORBpy_API)
-struct omniORBpy_API
-{
-
-  PyObject* (*cxxObjRefToPyObjRef)(const CORBA::Object_ptr cxx_obj,
-				   CORBA::Boolean hold_lock);
-  // Convert a C++ object reference to a Python object reference.
-  // If <hold_lock> is true, caller holds the Python interpreter lock.
-
-  CORBA::Object_ptr (*pyObjRefToCxxObjRef)(PyObject* py_obj,
-					   CORBA::Boolean hold_lock);
-  // Convert a Python object reference to a C++ object reference.
-  // Raises BAD_PARAM if the Python object is not an object reference.
-  // If <hold_lock> is true, caller holds the Python interpreter lock.
-
-
-  omniORBpy_API();
-  // Constructor for the singleton. Sets up the function pointers.
-};
-
-  omniORBpy_API* api;
-
+#include "SalomeProc.hxx"
+#include "PythonNode.hxx"
+#include "PythonPorts.hxx"
+#include "CORBANode.hxx"
+#include "CORBAPorts.hxx"
+#include "TypeConversions.hxx"
+#include "TypeCode.hxx"
 %}
 
-
 // ----------------------------------------------------------------------------
-
 
 %init
 %{
@@ -61,63 +35,81 @@ struct omniORBpy_API
   PyObject* omnipy = PyImport_ImportModule((char*)"_omnipy");
   if (!omnipy)
   {
-    PyErr_SetString(PyExc_ImportError,
-		    (char*)"Cannot import _omnipy");
+    PyErr_SetString(PyExc_ImportError,(char*)"Cannot import _omnipy");
     return;
   }
   PyObject* pyapi = PyObject_GetAttrString(omnipy, (char*)"API");
-  api = (omniORBpy_API*)PyCObject_AsVoidPtr(pyapi);
+  api = (omniORBPYAPI*)PyCObject_AsVoidPtr(pyapi);
   Py_DECREF(pyapi);
 %}
 
 // ----------------------------------------------------------------------------
 
-%typemap(python,out) YACSGui_ORB::Observer_ptr
+#ifdef SWIGPYTHON
+%typemap(out) YACS_ORB::Observer_ptr
 {
-  MESSAGE("typemap out on CORBA object ptr");
-  SCRUTE($1);
   $result = api->cxxObjRefToPyObjRef($1, 1);
-  SCRUTE($result);
 }
 
-%typemap(python,in) YACSGui_ORB::Observer_ptr
+%typemap(in) YACS_ORB::Observer_ptr
 {
-  MESSAGE("typemap in on CORBA object ptr");
   try
   {
      CORBA::Object_ptr obj = api->pyObjRefToCxxObjRef($input,1);
-     $1 = YACSGui_ORB::Observer::_narrow(obj);
-     SCRUTE($1);
+     $1 = YACS_ORB::Observer::_narrow(obj);
   }
   catch (...)
   {
      PyErr_SetString(PyExc_RuntimeError, "not a valid CORBA object ptr");
+     return NULL;
   }
 }
+
+%typemap(out) YACS::ENGINE::PyObj * "Py_INCREF($1); $result = $1;";
+
+#endif
 
 // ----------------------------------------------------------------------------
 
-namespace YACS
+%import "pilot.i"
+
+%rename(getSALOMERuntime) YACS::ENGINE::getSALOMERuntime; // to suppress a 503 warning
+%ignore omniORBpyAPI;
+
+%include "RuntimeSALOME.hxx"
+%include "SALOMEDispatcher.hxx"
+%include "SalomeProc.hxx"
+%include "PythonNode.hxx"
+%include "PythonPorts.hxx"
+%include "CORBANode.hxx"
+%include "CORBAPorts.hxx"
+
+%extend YACS::ENGINE::InputCorbaPort
 {
-  namespace ENGINE
+  PyObject * getPyObj()
   {
-    class RuntimeSALOME: public Runtime
-    {
-    public:
-      static void setRuntime(bool ispyext=false); // singleton creation
-      virtual ~RuntimeSALOME(); 
-    protected:
-      RuntimeSALOME();  // singleton
-      RuntimeSALOME(bool ispyext);  // singleton
-    };
-
-    class SALOMEDispatcher: public Dispatcher
-    {
-    public:
-      void addObserver(YACSGui_ORB::Observer_ptr observer,int numid, std::string event);
-      static void setSALOMEDispatcher();
-      static SALOMEDispatcher* getSALOMEDispatcher();
-    };
-
+    CORBA::TypeCode_var tc=self->getAny()->type();
+    if (!tc->equivalent(CORBA::_tc_null))
+      return convertCorbaPyObject(self->edGetType(),self->getAny());
+    else
+      {
+        Py_INCREF(Py_None);
+        return Py_None;
+      }
   }
 }
+%extend YACS::ENGINE::OutputCorbaPort
+{
+  PyObject * getPyObj()
+  {
+    CORBA::TypeCode_var tc=self->getAny()->type();
+    if (!tc->equivalent(CORBA::_tc_null))
+      return convertCorbaPyObject(self->edGetType(),self->getAny());
+    else
+      {
+        Py_INCREF(Py_None);
+        return Py_None;
+      }
+  }
+}
+

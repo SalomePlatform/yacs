@@ -34,7 +34,7 @@ void XmlNeutral::put(const char *data) throw(ConversionException)
   DEBTRACE("XmlNeutral::put " << data);
   xmlDocPtr doc;
   xmlNodePtr cur;
-  YACS::ENGINE::Any *ob;
+  YACS::ENGINE::Any *ob=NULL;
 {
   doc = xmlParseMemory(data, strlen(data));
   if (doc == NULL )
@@ -63,7 +63,13 @@ void XmlNeutral::put(const char *data) throw(ConversionException)
       cur = cur->next;
     }
   xmlFreeDoc(doc);
-  //xmlCleanupParser();
+  if(ob==NULL)
+    {
+      stringstream msg;
+      msg << "Problem in conversion: incorrect XML value";
+      msg << " (" << __FILE__ << ":" << __LINE__ << ")";
+      throw ConversionException(msg.str());
+    }
 }
   _port->put(ob);
   ob->decrRef();

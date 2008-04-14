@@ -4,6 +4,7 @@
 #include "PythonNode.hxx"
 #include "PythonPorts.hxx"
 #include "CORBANode.hxx"
+#include "TypeCode.hxx"
 
 #include <iostream>
 #include <sstream>
@@ -34,7 +35,6 @@ SalomePythonNode::SalomePythonNode(const std::string& name): ServiceInlineNode(n
 
   //Not a bug : just because port point of view this is like PythonNode.
   _implementation = PythonNode::IMPL_NAME;
-  cerr << "SalomePythonNode::SalomePythonNode " << name << endl;
   PyGILState_STATE gstate = PyGILState_Ensure();
   _context=PyDict_New();
   if( PyDict_SetItemString( _context, "__builtins__", getSALOMERuntime()->getBuiltins() ))

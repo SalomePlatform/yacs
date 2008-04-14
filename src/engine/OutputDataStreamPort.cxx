@@ -2,7 +2,11 @@
 #include "InputDataStreamPort.hxx"
 #include "ComposedNode.hxx"
 #include "InPort.hxx"
+#include "TypeCode.hxx"
 #include <iostream>
+
+//#define _DEVDEBUG_
+#include "YacsTrace.hxx"
 
 using namespace YACS::ENGINE;
 using namespace std;
@@ -63,8 +67,17 @@ string OutputDataStreamPort::getNameOfTypeOfCurrentInstance() const
 bool OutputDataStreamPort::edAddInputDataStreamPort(InputDataStreamPort *port)
   throw(ConversionException)
 {
+  DEBTRACE("OutputDataStreamPort::edAddInputDataStreamPort");
   if(!isAlreadyInSet(port))
     {
+      if(!port->edGetType()->isAdaptable(edGetType()))
+        {
+          string what="Can not connect 2 ports with incompatible types : ";
+          what=what+ port->edGetType()->id();
+          what=what+" is not a ";
+          what=what+ edGetType()->id();
+          throw ConversionException(what);
+        }
       _setOfInputDataStreamPort.insert(port);
       return true;
     }
@@ -87,7 +100,9 @@ int OutputDataStreamPort::edRemoveInputDataStreamPort(InputDataStreamPort *inPor
       set<InputDataStreamPort *>::iterator iter=_setOfInputDataStreamPort.find(inPort);
       if(iter!=_setOfInputDataStreamPort.end())
         {
+          (*iter)->modified();
           _setOfInputDataStreamPort.erase(iter);
+          modified();
           return edGetNumberOfOutLinks();
         }
       else
@@ -97,6 +112,7 @@ int OutputDataStreamPort::edRemoveInputDataStreamPort(InputDataStreamPort *inPor
 
 bool OutputDataStreamPort::addInPort(InPort *inPort) throw(Exception)
 {
+  DEBTRACE("OutputDataStreamPort::addInPort");
   if(inPort->getNameOfTypeOfCurrentInstance()!=InputDataStreamPort::NAME)
     {
       string what="not compatible type of port requested during building of link FROM ";
@@ -117,6 +133,7 @@ void OutputDataStreamPort::edRemoveAllLinksLinkedWithMe() throw(Exception)
 
 int OutputDataStreamPort::removeInPort(InPort *inPort, bool forward) throw(Exception)
 {
+  DEBTRACE("OutputDataStreamPort::removeInPort");
   if(inPort->getNameOfTypeOfCurrentInstance()!=InputDataStreamPort::NAME && !forward)
     {
       string what="not compatible type of port requested during destruction of for link FROM ";

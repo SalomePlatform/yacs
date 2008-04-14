@@ -1,7 +1,6 @@
 #ifndef __ELEMENTARYNODE_HXX__
 #define __ELEMENTARYNODE_HXX__
 
-#include "TypeCode.hxx"
 #include "Node.hxx"
 #include "Task.hxx"
 #include "define.hxx"
@@ -11,6 +10,7 @@ namespace YACS
 {
   namespace ENGINE
   {
+    class TypeCode;
     class Port;
     class InputPort;
     class OutputPort;
@@ -39,9 +39,9 @@ namespace YACS
       YACS::StatesForNode getState() const;
       void getReadyTasks(std::vector<Task *>& tasks);
       void edRemovePort(Port *port) throw(Exception);
-      std::set<ElementaryNode *> getRecursiveConstituents() const;
+      std::list<ElementaryNode *> getRecursiveConstituents() const;
       Node *getChildByName(const std::string& name) const throw(Exception);
-      void checkBasicConsistency() const throw(Exception);
+      virtual void checkBasicConsistency() const throw(Exception);
       ComposedNode *getDynClonerIfExists(const ComposedNode *levelToStop) const;
       int getNumberOfInputPorts() const;
       int getNumberOfOutputPorts() const;
@@ -55,20 +55,31 @@ namespace YACS
       std::list<OutputPort *> getLocalOutputPorts() const { return _setOfOutputPort; }
       std::set<OutPort *> getAllOutPortsLeavingCurrentScope() const;
       std::set<InPort *> getAllInPortsComingFromOutsideOfCurrentScope() const;
+      virtual std::vector< std::pair<OutPort *, InPort *> > getSetOfLinksLeavingCurrentScope() const;
+      virtual std::vector< std::pair<InPort *, OutPort *> > getSetOfLinksComingInCurrentScope() const;
       std::list<InputDataStreamPort *> getSetOfInputDataStreamPort() const { return _setOfInputDataStreamPort; }
       std::list<OutputDataStreamPort *> getSetOfOutputDataStreamPort() const { return _setOfOutputDataStreamPort; }
       InputDataStreamPort *getInputDataStreamPort(const std::string& name) const throw(Exception);
       OutputDataStreamPort *getOutputDataStreamPort(const std::string& name) const throw(Exception);
+      virtual InputPort *createInputPort(const std::string& inputPortName, TypeCode* type);
+      virtual OutputPort *createOutputPort(const std::string& outputPortName, TypeCode* type);
+      virtual InputDataStreamPort *createInputDataStreamPort(const std::string& inputPortDSName, TypeCode* type);
+      virtual OutputDataStreamPort *createOutputDataStreamPort(const std::string& outputPortDSName, TypeCode* type);
       virtual InputPort *edAddInputPort(const std::string& inputPortName, TypeCode* type) throw(Exception);
       virtual OutputPort *edAddOutputPort(const std::string& outputPortName, TypeCode* type) throw(Exception);
       virtual InputDataStreamPort *edAddInputDataStreamPort(const std::string& inputPortDSName, TypeCode* type) throw(Exception);
       virtual OutputDataStreamPort *edAddOutputDataStreamPort(const std::string& outputPortDSName, TypeCode* type) throw(Exception);
+      virtual std::string typeName() {return "YACS__ENGINE__ElementaryNode";}
+      virtual void edUpdateState();
+      virtual void ensureLoading();
+
       //run part
       void begin();
       bool isReady();
       void finished();
       void aborted();
       void loaded();
+      virtual std::string getErrorDetails();
       virtual void initService() { }
       virtual void connectService() { }
       virtual void disconnectService() { }

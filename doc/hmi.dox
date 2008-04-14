@@ -1,0 +1,29 @@
+/*! \page gui_design GUI design
+
+
+\section Goals
+\arg Provide a general mechanism for the synchronisation of several views (tree views, 2D canvas views, edition dialogs).
+\arg Provide an interface of YACS::ENGINE for edition with a general mechanism for undo-redo.
+\arg Be as independent as possible of Qt (and SALOME), to avoid problems in Qt4 migration, and allow a potential re-use of YACS GUI outside SALOME.
+
+For the first goal, a subject/observers design pattern is used: several observers can attach or detach themselves to/from the subject. The subject send update events to the lists of observers. The subject does not know the implementation of the observers. The observers correspond to the different views in our case.
+If a selection event occurs in a view (select a node, for instance), a select event is sent to the corresponding subject. The subject sends selection events to all its observers.
+If a modification is generated in a view, (request to add a node, for example), the request is sent to the subject. The subject deals with the creation of the node, then sends update events to observers.
+
+For the second goal, a command design pattern is used: each action is stored in a command object witch provides execute() and reverse() methods. All necessary information for execute and undo the action must be stored in the command object.
+Commands are put in a stack of commands. Undo actions consists in depiling the stack.
+
+The following UML graphs corresponds approximately to the actual implementation, however, the generals principles are the same.
+
+\image html classDiagram.png "class diagram: subject/observers and command stack design patterns"
+
+The collaboration diagram below shows all the interactions between objects during a node creation. From left to right, we have 5 groups of objects, which are: YACS Engine, Commands, Subjects, and 2 Observers (a Tree View and a Canvas View). 
+
+\image html createNodeCollaboration.png "Collaboration diagram for create node"
+
+\image html sequenceCreateNode.png "Sequence diagram for create node"
+
+\image html undoCreateNodeCollaboration.png "Collaboration diagram for undo create node"
+
+*/
+

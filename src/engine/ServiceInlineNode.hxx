@@ -19,6 +19,7 @@ namespace YACS
       void setScript (const std::string &script);
       std::string getScript() const;
       void accept(Visitor *visitor);
+      virtual std::string typeName() {return "YACS__ENGINE__ServiceInlineNode";}
     protected:
       std::string _script;
     };

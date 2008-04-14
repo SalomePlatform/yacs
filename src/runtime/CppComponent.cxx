@@ -23,7 +23,7 @@ static std::ostream & operator<<(std::ostream & f, const Any & A)
        f << "(type NULL)";
     else 
        switch (t->kind()) {
-         case None :
+         case NONE :
             f << "(type None)";
             break;
          case Double :
@@ -71,7 +71,7 @@ CppComponent::CppComponent(const std::string &name) : ComponentInstance(name)
 }
 
 //! CppComponent copy constructor
-CppComponent::CppComponent(const CppComponent& other) : ComponentInstance(other._name), __run(other.__run),
+CppComponent::CppComponent(const CppComponent& other) : ComponentInstance(other._compoName), __run(other.__run),
                                                         __terminate(other.__terminate), __obj(0)
 {
   _container = getRuntime()->createContainer(CppNode::KIND);
@@ -79,7 +79,7 @@ CppComponent::CppComponent(const CppComponent& other) : ComponentInstance(other.
     _container->start();
 
   CppContainer * _containerC = dynamic_cast<CppContainer *> (_container);  
-   _containerC->createInternalInstance(_name, __obj, __run, __terminate);
+   _containerC->createInternalInstance(_compoName, __obj, __run, __terminate);
 }
 
 CppComponent::~CppComponent()
@@ -166,11 +166,11 @@ void CppComponent::load()
       containerC->unLock();
       containerC->lock();//To be sure
       
-      YACS::BASES::DynLibLoader D(_name + "Local");
+      YACS::BASES::DynLibLoader D(_compoName + "Local");
       
-      bool isLoadable = containerC->loadComponentLibrary(_name);
+      bool isLoadable = containerC->loadComponentLibrary(_compoName);
       if (isLoadable) 
-        containerC->createInternalInstance(_name, __obj, __run, __terminate);
+        containerC->createInternalInstance(_compoName, __obj, __run, __terminate);
         
       if(NULL == __obj)
         {

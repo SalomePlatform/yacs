@@ -19,7 +19,7 @@ namespace YACS
       Any *getValue() const { return _value; }
       int getIntValue() const { return _value->getIntValue(); }
       void put(Any *data);
-      void *get() const throw(Exception);
+      void *get() const;
       virtual bool isEmpty();
       void put(const void *data) throw(ConversionException);
       InputPort *clone(Node *newHelder) const;

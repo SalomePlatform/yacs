@@ -47,7 +47,7 @@ void stateParser::init(const xmlChar** p, xmlParserBase* father)
   _state = XMLNOCONTEXT;
   _father = father;
   _stackState.push(_state);
-  _nodeStateValue["INITED"] =YACS::INITED;
+  _nodeStateValue["READY"] =YACS::READY;
   _nodeStateValue["TOLOAD"] =YACS::TOLOAD;
   _nodeStateValue["LOADED"] =YACS::LOADED;
   _nodeStateValue["TOACTIVATE"] =YACS::TOACTIVATE;

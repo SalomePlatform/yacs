@@ -22,12 +22,29 @@
 #include "YACSPrs_Link.h"
 #include "YACSPrs_Def.h"
 
+#include "guiContext.hxx"
+
 #include "SUIT_ResourceMgr.h"
 #include "SUIT_Session.h"
 
 #include "CAM_Application.h"
 
+#include "InGate.hxx"
+#include "InPort.hxx"
+#include "OutGate.hxx"
+#include "OutPort.hxx"
+#include <DataStreamPort.hxx>
+
 #include <qpopupmenu.h>
+#include <math.h>
+
+//#define _DEVDEBUG_
+#include "YacsTrace.hxx"
+
+using namespace YACS::HMI;
+using namespace YACS::ENGINE;
+
+using namespace std;
 
 /*!
  * =========================== YACSPrs_Link ===========================
@@ -47,17 +64,20 @@ YACSPrs_Link::YACSPrs_Link( SUIT_ResourceMgr* theMgr, QCanvas* theCanvas ):
 
 YACSPrs_Link::~YACSPrs_Link()
 {
-  // TO DO : check commented code if link is deleted
-  //for (QCanvasItemList::Iterator it = myPrs.begin(); it != myPrs.end(); ++it) {
-    //(*it)->hide();
-    //delete *it;
-  //}
+  DEBTRACE("YACSPrs_Link::~YACSPrs_Link");
+  // remove presentation objects (points and edges)
+  for (QCanvasItemList::Iterator it = myPrs.begin(); it != myPrs.end(); ++it) {
+    (*it)->setCanvas(0);
+    delete *it;
+  }
+  myPrs.clear();
   
   myPoints.clear();
 }
 
 void YACSPrs_Link::show()
 {
+  DEBTRACE("YACSPrs_Link::show");
   if (myPrs.isEmpty()) createPrs();
 
   for (QCanvasItemList::Iterator it = myPrs.begin(); it != myPrs.end(); ++it) {
@@ -65,8 +85,19 @@ void YACSPrs_Link::show()
   }
 }
 
+void YACSPrs_Link::hide()
+{
+  DEBTRACE("YACSPrs_Link::hide");
+  if (myPrs.isEmpty()) return;
+
+  for (QCanvasItemList::Iterator it = myPrs.begin(); it != myPrs.end(); ++it) {
+    (*it)->hide();
+  }
+}
+
 void YACSPrs_Link::merge()
 {
+  DEBTRACE("YACSPrs_Link::merge");
   // save z of the link
   double aZ = ( !myPrs.isEmpty() ? myPrs.first()->z()-1 : 0 ); // the first item is a point
 
@@ -84,6 +115,15 @@ void YACSPrs_Link::merge()
   setZ(aZ);
 }
 
+void YACSPrs_Link::setCanvas(QCanvas* theCanvas)
+{
+  myCanvas = theCanvas;
+
+  // set canvas for all prs items
+  for (QCanvasItemList::Iterator it = myPrs.begin(); it != myPrs.end(); ++it)
+    (*it)->setCanvas(theCanvas);
+}
+
 void YACSPrs_Link::updatePoints(QCanvasItem* thePointItem)
 {
   if ( thePointItem == myPrs.first() || thePointItem == myPrs.last() ) return;
@@ -91,7 +131,7 @@ void YACSPrs_Link::updatePoints(QCanvasItem* thePointItem)
   YACSPrs_Point* aPoint = dynamic_cast<YACSPrs_Point*>( thePointItem );
   if ( aPoint )
   {
-    std::list<QPoint>::iterator it;
+    list<QPoint>::iterator it;
     int id = 1;
     for ( it = myPoints.begin(); it != myPoints.end(); it++, id++ )
       if ( id == aPoint->getIndex() ) {
@@ -113,7 +153,7 @@ void YACSPrs_Link::setHilighted(bool state)
       for (QCanvasItemList::Iterator it = myPrs.begin(); it != myPrs.end(); ++it) {
 	(*it)->hide(); (*it)->show();
       }
-      myCanvas->update();
+      if (myCanvas) myCanvas->update();
     }
   }
 }
@@ -130,7 +170,7 @@ void YACSPrs_Link::setSelected(bool state)
 	else if ( YACSPrs_Edge* anEdge = dynamic_cast<YACSPrs_Edge*>( *it ) ) anEdge->setSelected(state);
 	(*it)->hide(); (*it)->show();
       }
-      myCanvas->update();
+      if (myCanvas) myCanvas->update();
     }
   }
 }
@@ -164,6 +204,7 @@ void YACSPrs_Link::remove() {
 }
 
 void YACSPrs_Link::addPoint() {
+  DEBTRACE("YACSPrs_Link::addPoint");
   if ( mySelected ) setSelected(false);
 
   YACSPrs_Edge* anEdge = dynamic_cast<YACSPrs_Edge*>( mySelectedItem );
@@ -183,7 +224,7 @@ void YACSPrs_Link::addPoint() {
     if ( myPoints.empty() )
       myPoints.push_back(mySelectedPoint);
     else {
-      std::list<QPoint>::iterator it;
+      list<QPoint>::iterator it;
       int id = 0;
       for ( it = myPoints.begin(); it != myPoints.end(); it++, id++ )
       	if ( id == anIndex-1 ) break;
@@ -191,7 +232,14 @@ void YACSPrs_Link::addPoint() {
     }
 
     merge();
-    myCanvas->update();
+    if (myCanvas) myCanvas->update();
+
+    /*
+    GuiContext* aContext = GuiContext::getCurrent();
+    if ( aContext )
+      if ( aContext->getSubjectProc() )
+	aContext->getSubjectProc()->update( EDIT, DATALINK, 0 );
+    */
   }
 }
 
@@ -205,7 +253,14 @@ void YACSPrs_Link::removePoint() {
     myPoints.remove(aP);
 
     merge();
-    myCanvas->update();
+    if (myCanvas) myCanvas->update();
+
+    /*
+    GuiContext* aContext = GuiContext::getCurrent();
+    if ( aContext )
+      if ( aContext->getSubjectProc() )
+	aContext->getSubjectProc()->update( EDIT, DATALINK, 0 );
+    */
   }
 }
 
@@ -239,9 +294,18 @@ double YACSPrs_Link::getMyZ()
 
 void YACSPrs_Link::setZ(double z)
 {
+  DEBTRACE("YACSPrs_Link::setZ: " << z);
   for (QCanvasItemList::Iterator it = myPrs.begin(); it != myPrs.end(); ++it)
-    if ( dynamic_cast<YACSPrs_Point*>( *it ) ) (*it)->setZ(z+1);
-    else if ( dynamic_cast<YACSPrs_Edge*>( *it ) ) (*it)->setZ(z);
+    if ( YACSPrs_Point* pt=dynamic_cast<YACSPrs_Point*>( *it ) )
+      {
+        DEBTRACE("YACSPrs_Link::setZ: " << z);
+        pt->setZ(z+1);
+      }
+    else if (YACSPrs_Edge* ed= dynamic_cast<YACSPrs_Edge*>( *it ) ) 
+      {
+        DEBTRACE("YACSPrs_Link::setZ: " << z);
+        ed->setZ(z);
+      }
 }
 
 double YACSPrs_Link::z()
@@ -252,6 +316,7 @@ double YACSPrs_Link::z()
 
 QPoint YACSPrs_Link::getConnectionPoint(YACSPrs_Port* thePort)
 {
+  DEBTRACE("YACSPrs_Link::getConnectionPoint");
   QPoint aCP;
 
   YACSPrs_InOutPort* anIOPort = dynamic_cast<YACSPrs_InOutPort*>( thePort );
@@ -273,6 +338,7 @@ QPoint YACSPrs_Link::getConnectionPoint(YACSPrs_Port* thePort)
 
 void YACSPrs_Link::addPoint(const QPoint& thePoint, const int& theIndex)
 {
+  DEBTRACE("YACSPrs_Link::addPoint");
   YACSPrs_Point* aPoint;
   if (myPrs.empty()) {
     aPoint = new YACSPrs_Point(myCanvas, this, theIndex);
@@ -310,23 +376,101 @@ YACSPrs_PortLink::YACSPrs_PortLink( SUIT_ResourceMgr* theMgr,
 				    QCanvas* theCanvas, 
 				    YACSPrs_InOutPort* theInputPort, 
 				    YACSPrs_InOutPort* theOutputPort ):
+  GuiObserver(),
   YACSPrs_Link(theMgr, theCanvas),
   myInputPort(theInputPort),
   myOutputPort(theOutputPort)
 {
-  printf("Construct YACSPrs_PortLink\n");
+  DEBTRACE("Construct YACSPrs_PortLink");
+  //change color if datastream link
+  if ( dynamic_cast<DataStreamPort*>(theInputPort->getEngine()))
+    myColor = myMgr->colorValue("YACSGui", "stream_link_draw_color", STREAMLINKDRAW_COLOR);
+
   if (myInputPort) myInputPort->addLink(this);
   if (myOutputPort) myOutputPort->addLink(this);
+
+  // attach to HMI myself
+  Subject* aSub = getSubject();
+  if ( aSub )
+    aSub->attach( this );
 }
 
 YACSPrs_PortLink::~YACSPrs_PortLink()
 {
-  if (myInputPort) myInputPort->removeLink(this);
-  if (myOutputPort) myOutputPort->removeLink(this);
+  // detach from HMI
+  YACS::HMI::Subject* aSub = getSubject();
+  if ( aSub )
+    aSub->detach(this);
+
+  if (myInputPort) {
+    myInputPort->removeLink(this);
+    myInputPort = 0;
+  }
+  if (myOutputPort) {
+    myOutputPort->removeLink(this);
+    myOutputPort = 0;
+  }
+}
+
+void YACSPrs_PortLink::select( bool isSelected )
+{
+  DEBTRACE(">> YACSPrs_PortLink::select");
+  setSelected(isSelected);
+}
+
+void YACSPrs_PortLink::update( YACS::HMI::GuiEvent event, int type, YACS::HMI::Subject* son)
+{
+  DEBTRACE(">> YACSPrs_PortLink::update");
+}
+
+YACS::HMI::Subject* YACSPrs_PortLink::getSubject() const
+{
+  Subject* aSub = 0;
+
+  if ( !myOutputPort || !myInputPort ) return aSub;
+
+  if ( !myOutputPort->isGate() && !myInputPort->isGate() ) // data link
+  {
+    OutPort* anOP = dynamic_cast<OutPort*>( myOutputPort->getEngine() );
+    InPort* anIP = dynamic_cast<InPort*>( myInputPort->getEngine() );
+    if ( anOP && anIP )
+    {
+      GuiContext* aContext = GuiContext::getCurrent();
+      if ( aContext )
+      {
+	pair<OutPort*,InPort*> aPair(anOP,anIP);
+       	if ( aContext->_mapOfSubjectLink.find( aPair ) != aContext->_mapOfSubjectLink.end() )
+	  aSub = aContext->_mapOfSubjectLink[ aPair ];
+      }
+    }
+  }
+  else // control link
+  {
+    OutGate* anOG = dynamic_cast<OutGate*>( myOutputPort->getEngine() );
+    InGate* anIG = dynamic_cast<InGate*>( myInputPort->getEngine() );
+    if ( anOG && anIG )
+    {
+      Node* anON = anOG->getNode();
+      Node* anIN = anIG->getNode();
+      if ( anON && anIN )
+      {
+	GuiContext* aContext = GuiContext::getCurrent();
+	if ( aContext )
+	{
+	  pair<Node*,Node*> aPair(anON,anIN);
+	  if ( aContext->_mapOfSubjectControlLink.find( aPair ) != aContext->_mapOfSubjectControlLink.end() )
+	    aSub = aContext->_mapOfSubjectControlLink[ aPair ];
+	}
+      }
+    }
+  }
+
+  return aSub;
 }
 
 void YACSPrs_PortLink::moveByPort(YACSPrs_Port* thePort, bool theMoveInternalLinkPoints, QRect theArea)
 {
+  DEBTRACE("YACSPrs_PortLink::moveByPort");
   YACSPrs_InOutPort* aPort = dynamic_cast<YACSPrs_InOutPort*>( thePort );
   if ( aPort )
   {
@@ -335,10 +479,10 @@ void YACSPrs_PortLink::moveByPort(YACSPrs_Port* thePort, bool theMoveInternalLin
     if ( theMoveInternalLinkPoints )
     {
       // choose and collect only those points from myPoints, which is inside of theArea
-      std::map<int,QPoint> anIndex2MovePointMap;
+      map<int,QPoint> anIndex2MovePointMap;
       int id = 1;
-      for ( std::list<QPoint>::iterator it = myPoints.begin(); it != myPoints.end(); it++, id++)
-	if ( theArea.contains(*it,true) ) anIndex2MovePointMap.insert(std::make_pair(id,*it));
+      for ( list<QPoint>::iterator it = myPoints.begin(); it != myPoints.end(); it++, id++)
+	if ( theArea.contains(*it,true) ) anIndex2MovePointMap.insert(make_pair(id,*it));
 
       if ( !anIndex2MovePointMap.empty() )
       {
@@ -379,6 +523,7 @@ void YACSPrs_PortLink::moveByPort(YACSPrs_Port* thePort, bool theMoveInternalLin
 
 void YACSPrs_PortLink::moveByPort(YACSPrs_Port* thePort, int dx, int dy)
 {
+  DEBTRACE("YACSPrs_PortLink::moveByPort " << dx << "," << dy);
   YACSPrs_InOutPort* aPort = dynamic_cast<YACSPrs_InOutPort*>( thePort );
   if ( aPort )
   {
@@ -420,16 +565,17 @@ void YACSPrs_PortLink::remove() {
     aPort->setValue(aValue);
   }*/
 
-  myCanvas->update();
+  if (myCanvas) myCanvas->update();
 }
 
 void YACSPrs_PortLink::createPrs()
 {
+  DEBTRACE("YACSPrs_PortLink::createPrs");
   // create without internal points now
   if ( myInputPort ) addPoint(getConnectionPoint(myInputPort),0);
 
   int i = 1;
-  for ( std::list<QPoint>::iterator it = myPoints.begin(); it != myPoints.end(); it++, i++ )
+  for ( list<QPoint>::iterator it = myPoints.begin(); it != myPoints.end(); it++, i++ )
     addPoint(*it, i);
 
   if ( myOutputPort ) addPoint(getConnectionPoint(myOutputPort),myPoints.size()+1);
@@ -499,7 +645,7 @@ YACSPrs_LabelLink::YACSPrs_LabelLink( SUIT_ResourceMgr* theMgr,
   myOutputPort(theOutputPort),
   mySlaveNode(theSlaveNode)
 {
-  printf("Construct YACSPrs_LabelLink\n");
+  DEBTRACE("Construct YACSPrs_LabelLink");
   if (myOutputPort) myOutputPort->addLink(this);
   if (mySlaveNode)
   {
@@ -511,12 +657,19 @@ YACSPrs_LabelLink::YACSPrs_LabelLink( SUIT_ResourceMgr* theMgr,
 
 YACSPrs_LabelLink::~YACSPrs_LabelLink()
 {
-  if (myOutputPort) myOutputPort->removeLink(this);
-  if (mySlaveNode) mySlaveNode->removeLabelLink();
+  if (myOutputPort) {
+    myOutputPort->removeLink(this);
+    myOutputPort = 0;
+  }
+  if (mySlaveNode) {
+    mySlaveNode->removeLabelLink();
+    mySlaveNode = 0;
+  }
 }
 
 void YACSPrs_LabelLink::moveByPort(YACSPrs_Port* thePort, bool theMoveInternalLinkPoints, QRect theArea)
 {
+  DEBTRACE("YACSPrs_LabelLink::moveByPort");
   YACSPrs_LabelPort* aPort = dynamic_cast<YACSPrs_LabelPort*>( thePort );
   if ( aPort )
   {
@@ -525,10 +678,10 @@ void YACSPrs_LabelLink::moveByPort(YACSPrs_Port* thePort, bool theMoveInternalLi
     if ( theMoveInternalLinkPoints )
     {
       // choose and collect only those points from myPoints, which is inside of theArea
-      std::map<int,QPoint> anIndex2MovePointMap;
+      map<int,QPoint> anIndex2MovePointMap;
       int id = 1;
-      for ( std::list<QPoint>::iterator it = myPoints.begin(); it != myPoints.end(); it++, id++)
-	if ( theArea.contains(*it,true) ) anIndex2MovePointMap.insert(std::make_pair(id,*it));
+      for ( list<QPoint>::iterator it = myPoints.begin(); it != myPoints.end(); it++, id++)
+	if ( theArea.contains(*it,true) ) anIndex2MovePointMap.insert(make_pair(id,*it));
 
       if ( !anIndex2MovePointMap.empty() )
       {
@@ -557,6 +710,7 @@ void YACSPrs_LabelLink::moveByPort(YACSPrs_Port* thePort, bool theMoveInternalLi
 
 void YACSPrs_LabelLink::moveByPort(YACSPrs_Port* thePort, int dx, int dy)
 {
+  DEBTRACE("YACSPrs_LabelLink::moveByPort " << dx << "," << dy);
   YACSPrs_LabelPort* aPort = dynamic_cast<YACSPrs_LabelPort*>( thePort );
   if ( aPort )
   {
@@ -598,7 +752,7 @@ void YACSPrs_LabelLink::remove() {
   // TO DO : remove slave node from the switch case or loop body
 
   YACSPrs_Link::remove();
-  myCanvas->update();
+  if (myCanvas) myCanvas->update();
 }
 
 QPoint YACSPrs_LabelLink::getConnectionMasterPoint()
@@ -615,7 +769,7 @@ void YACSPrs_LabelLink::createPrs()
   if ( mySlaveNode ) addPoint(getConnectionMasterPoint(),0);
 
   int i = 1;
-  for ( std::list<QPoint>::iterator it = myPoints.begin(); it != myPoints.end(); it++, i++ )
+  for ( list<QPoint>::iterator it = myPoints.begin(); it != myPoints.end(); it++, i++ )
     addPoint(*it, i);
 
   if ( myOutputPort ) addPoint(getConnectionPoint(myOutputPort),myPoints.size()+1);
@@ -705,7 +859,16 @@ void YACSPrs_Point::select(const QPoint& theMousePos, const bool toSelect)
   hilight(theMousePos, false);
 
   if (YACSPrs_Link* aLink = getLink())
+  {
     aLink->setSelected(toSelect);
+    
+    YACSPrs_PortLink* aPLink = dynamic_cast<YACSPrs_PortLink*>(aLink);
+    if ( !aPLink ) return;
+
+    Subject* aSub = aPLink->getSubject();
+    if ( aSub )
+      aSub->select(toSelect);
+  }
 }
 
 void YACSPrs_Point::showPopup(QWidget* theParent, QMouseEvent* theEvent, const QPoint& theMousePos)
@@ -771,7 +934,7 @@ void YACSPrs_Point::moveBy(double dx, double dy)
   if (myInEdge) myInEdge->setFromPoint(this);
   if (myOutEdge) myOutEdge->setToPoint(this);
   
-  if ( getLink() && !getLink()->isEmptyPrs() ) {
+  if ( canvas() && getLink() && !getLink()->isEmptyPrs() ) {
     //resize canvas view if mouse is outside
     int w = (int)(x()+dx) + width() + GRAPH_MARGIN;
     int h = (int)(y()+dy) + height() + GRAPH_MARGIN;
@@ -799,7 +962,15 @@ YACSPrs_Edge::YACSPrs_Edge(QCanvas* theCanvas,
   myLink(theLink),
   myStartPoint(0), myEndPoint(0), mySelected(false)
 {
+  myArrow=new QCanvasPolygon(theCanvas);
   setZ(-2);
+}
+
+YACSPrs_Edge::~YACSPrs_Edge()
+{
+  DEBTRACE("YACSPrs_Edge::~YACSPrs_Edge");
+  myArrow->setCanvas(0);
+  delete myArrow;
 }
 
 bool YACSPrs_Edge::isMoveable()
@@ -826,7 +997,16 @@ void YACSPrs_Edge::select(const QPoint& theMousePos, const bool toSelect)
   hilight(theMousePos, false);
 
   if (YACSPrs_Link* aLink = getLink())
+  {
     aLink->setSelected(toSelect);
+    
+    YACSPrs_PortLink* aPLink = dynamic_cast<YACSPrs_PortLink*>(aLink);
+    if ( !aPLink ) return;
+
+    Subject* aSub = aPLink->getSubject();
+    if ( aSub )
+      aSub->select(toSelect);
+  }
 }
 
 void YACSPrs_Edge::showPopup(QWidget* theParent, QMouseEvent* theEvent, const QPoint& theMousePos)
@@ -873,23 +1053,29 @@ int YACSPrs_Edge::rtti() const
 
 void YACSPrs_Edge::setFromPoint(YACSPrs_Point* thePoint)
 {
+  DEBTRACE("YACSPrs_Edge::setFromPoint");
   myStartPoint = thePoint;
   setPoints((int)(thePoint->x()), (int)(thePoint->y()), endPoint().x(), endPoint().y());
+  setArrow();
 }
 
 void YACSPrs_Edge::setToPoint(YACSPrs_Point* thePoint)
 {
+  DEBTRACE("YACSPrs_Edge::setToPoint");
   myEndPoint = thePoint;
   setPoints(startPoint().x(), startPoint().y(), (int)(thePoint->x()), (int)(thePoint->y()));
+  setArrow();
 }
 
 void YACSPrs_Edge::setColor(const QColor& theColor)
 {
   setPen(QPen(theColor, LINKEDGE_WIDTH));
+  myArrow->setBrush(theColor);
 }
 
 void YACSPrs_Edge::moveBy(double dx, double dy)
 {
+  DEBTRACE("YACSPrs_Edge::moveBy " << dx << "," << dy);
   // for moving segment of link
   if (myStartPoint && myEndPoint) {
     myStartPoint->setMoving(true);
@@ -898,4 +1084,59 @@ void YACSPrs_Edge::moveBy(double dx, double dy)
     myEndPoint->setMoving(true);
     myEndPoint->moveBy(dx,dy);
   }
+  setArrow();
+}
+
+void YACSPrs_Edge::setZ(double z)
+{
+  DEBTRACE("YACSPrs_Edge::setZ: " << z);
+  QCanvasLine::setZ(z);
+  myArrow->setZ(z);
+}
+
+void YACSPrs_Edge::setVisible(bool on)
+{
+  DEBTRACE("YACSPrs_Edge::setVisible " << this << ","<<on);
+  QCanvasLine::setVisible(on);
+  myArrow->setVisible(on);
+}
+
+void YACSPrs_Edge::setArrow()
+{
+  DEBTRACE("YACSPrs_Edge::setArrow");
+  int x1=startPoint().x();
+  int y1=startPoint().y();
+  int x2=endPoint().x();
+  int y2=endPoint().y();
+  DEBTRACE(x1 << "," << y1 << "," << x2 << "," << y2 );
+  double d=hypot(x2-x1,y2-y1);
+  double x=(x1+x2)/2.;
+  double y=(y1+y2)/2.;
+
+  //size of arrow
+  double l=0.,e=0.;
+  double sina=0.;
+  double cosa=1.;
+  if(d > 12)
+    {
+      l=12.;
+      e=6.;
+      sina=(y2-y1)/d;
+      cosa=(x2-x1)/d;
+    }
+  DEBTRACE(x << "," << y << "," << sina << "," << cosa );
+
+  QPointArray pa=QPointArray(3);
+  pa.setPoint(0, QPoint((int)(x+l*cosa),(int)(y+l*sina)));
+  pa.setPoint(1, QPoint((int)(x-e*sina),(int)(y+e*cosa)));
+  pa.setPoint(2, QPoint((int)(x+e*sina),(int)(y-e*cosa)));
+  myArrow->setPoints(pa);
+  myArrow->setZ(z());
+}
+
+void YACSPrs_Edge::setCanvas(QCanvas* theCanvas)
+{
+  DEBTRACE("YACSPrs_Edge::setCanvas");
+  QCanvasLine::setCanvas(theCanvas);
+  myArrow->setCanvas(theCanvas);
 }

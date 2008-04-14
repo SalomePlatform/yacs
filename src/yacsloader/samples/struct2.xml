@@ -1,0 +1,102 @@
+<proc>
+    <!--types -->
+    <sequence name="dblevec" content="double"/>
+    <objref name="eo/Obj" />
+    <objref name="eo/C" >
+      <base>eo/Obj</base>
+    </objref>
+    <sequence name="objvec" content="eo/Obj"/>
+    <struct name="eo/S1" >
+      <member name="x" type="double"/>
+      <member name="y" type="int"/>
+      <member name="s" type="string"/>
+      <member name="b" type="bool"/>
+      <member name="vd" type="dblevec"/>
+    </struct>
+
+    <struct name="eo/S2" >
+      <member name="s" type="eo/S1"/>
+    </struct>
+
+    <struct name="eo/S3" >
+      <member name="x" type="double"/>
+      <member name="y" type="int"/>
+      <member name="s" type="string"/>
+      <member name="b" type="bool"/>
+      <member name="ob" type="eo/Obj"/>
+    </struct>
+    <struct name="eo/S4" >
+      <member name="x" type="double"/>
+      <member name="y" type="int"/>
+      <member name="s" type="string"/>
+      <member name="b" type="bool"/>
+      <member name="ob" type="eo/C"/>
+    </struct>
+
+    <!--nodes -->
+    <service name="corba0" >
+      <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+      <method>createObj</method>
+      <inport name="p1" type="int"/>
+      <outport name="o1" type="eo/Obj"/>
+    </service>
+
+    <service name="corba2" >
+      <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+      <method>createC</method>
+      <outport name="o1" type="eo/C"/>
+    </service>
+
+    <inline name="node0" >
+      <script>
+        <code>s1={'x':1,'y':2,'s':"coucou",'b':1,'ob':o2}</code>
+        <code>s2=[o2,o2]</code>
+      </script>
+      <inport name="o1" type="eo/Obj"/>
+      <inport name="o2" type="eo/C"/>
+      <outport name="s1" type="eo/S4"/>
+      <outport name="s2" type="objvec"/>
+    </inline>
+
+    <service name="corba1" >
+      <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+      <method>echoStruct2</method>
+      <inport name="s1" type="eo/S3"/>
+      <outport name="s1" type="eo/S3"/>
+    </service>
+
+    <service name="corba3" >
+      <ref>corbaname:rir:#test.my_context/Echo.Object</ref>
+      <method>echoObjectVec</method>
+      <inport name="s1" type="objvec"/>
+      <outport name="s1" type="objvec"/>
+    </service>
+
+    <!--parameters -->
+    <parameter>
+        <tonode>corba0</tonode> <toport>p1</toport>
+        <value><int>1</int> </value>
+    </parameter>
+
+    <!--datalinks -->
+    <datalink>
+      <fromnode>corba0</fromnode><fromport>o1</fromport>
+      <tonode>node0</tonode> <toport>o1</toport>
+    </datalink>
+
+    <datalink>
+      <fromnode>corba2</fromnode><fromport>o1</fromport>
+      <tonode>node0</tonode> <toport>o2</toport>
+    </datalink>
+
+    <datalink>
+      <fromnode>node0</fromnode><fromport>s1</fromport>
+      <tonode>corba1</tonode> <toport>s1</toport>
+    </datalink>
+
+    <datalink>
+      <fromnode>node0</fromnode><fromport>s2</fromport>
+      <tonode>corba3</tonode> <toport>s1</toport>
+    </datalink>
+
+</proc>

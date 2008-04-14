@@ -54,12 +54,15 @@ void OutputPort::put(const void *data) throw(ConversionException)
  */
 bool OutputPort::edAddInputPort(InputPort *phyPort) throw(Exception)
 {
+  DEBTRACE("OutputPort::edAddInputPort");
   if(!isAlreadyInSet(phyPort))
     {
       InputPort *pwrap = getRuntime()->adapt(phyPort,
                                              _node->getImplementation(),
                                              this->edGetType());
       _setOfInputPort.insert(pwrap);
+      modified();
+      phyPort->modified();
       return true;
     }
   else
@@ -77,22 +80,32 @@ int OutputPort::edRemoveInputPort(InputPort *inputPort, bool forward) throw(Exce
     {
       set<InPort *> s;
       inputPort->getAllRepresentants(s);
+      DEBTRACE("+++");
       for(set<InPort *>::iterator iter=s.begin();iter!=s.end();iter++)
-        _node->getRootNode()->edRemoveLink(this,*iter);
+        {
+          DEBTRACE("---");
+          _node->getRootNode()->edRemoveLink(this,*iter);
+        }
       return -1;
     }
   else
     {
+#ifdef NOCOVARIANT
+      InPort *publicRepr=inputPort->getPublicRepresentant();
+#else
       InputPort *publicRepr=inputPort->getPublicRepresentant();
+#endif
       set<InputPort *>::iterator iter;
       for(iter=_setOfInputPort.begin();iter!=_setOfInputPort.end();iter++)
         if((*iter)->getPublicRepresentant()==publicRepr)
           break;
       if(iter!=_setOfInputPort.end())
         {
+          (*iter)->modified();
           if((*iter)->isIntermediate())
             delete (*iter);
           _setOfInputPort.erase(iter);
+          modified();
           return edGetNumberOfOutLinks();
         }
       else
@@ -131,7 +144,11 @@ bool OutputPort::isAlreadyLinkedWith(InPort *with) const
 
 bool OutputPort::isAlreadyInSet(InputPort *inputPort) const
 {
+#ifdef NOCOVARIANT
+  InPort *publicRepr=inputPort->getPublicRepresentant();
+#else
   InputPort *publicRepr=inputPort->getPublicRepresentant();
+#endif
   for(set<InputPort *>::const_iterator iter=_setOfInputPort.begin();iter!=_setOfInputPort.end();iter++)
     if((*iter)->getPublicRepresentant()==publicRepr)
       return true;
@@ -143,6 +160,7 @@ bool OutputPort::isAlreadyInSet(InputPort *inputPort) const
  */
 bool OutputPort::addInPort(InPort *inPort) throw(Exception)
 {
+  DEBTRACE("OutputPort::addInPort");
   if(inPort->getNameOfTypeOfCurrentInstance()!=InputPort::NAME)
     {
       string what="not compatible type of port requested during building of link FROM ";
@@ -185,4 +203,9 @@ std::string OutputPort::dump()
 const std::set<InputPort *>& OutputPort::getSetOfPhyLinks() const
 {
   return _setOfInputPort;
+}
+
+//! Check validity of output port. Nothing on base class
+void OutputPort::checkBasicConsistency() const throw(Exception)
+{
 }

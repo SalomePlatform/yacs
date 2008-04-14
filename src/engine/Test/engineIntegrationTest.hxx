@@ -2,6 +2,7 @@
 #define __ENGINEINTEGRATIONTEST_HXX__
 
 #include <cppunit/extensions/HelperMacros.h>
+#include <list>
 
 namespace YACS
 {
@@ -15,6 +16,7 @@ namespace YACS
       CPPUNIT_TEST( testBloc1 );
       CPPUNIT_TEST( testBloc2 );
       CPPUNIT_TEST( testBloc3 );
+      CPPUNIT_TEST( testBloc4 );
       CPPUNIT_TEST( testForLoop1 );
       CPPUNIT_TEST( testForLoop2 );
       CPPUNIT_TEST( testForLoop3 );
@@ -30,6 +32,8 @@ namespace YACS
       CPPUNIT_TEST( testLinkUpdate1DS );
       CPPUNIT_TEST( testLinkUpdate2 );
       CPPUNIT_TEST( testLinkUpdate2DS );
+      CPPUNIT_TEST( testLinkUpdate3 );
+      CPPUNIT_TEST( testLinkUpdate4 );
       CPPUNIT_TEST( testInterLoopDFLink );
       CPPUNIT_TEST( deathTestForLinks );
       CPPUNIT_TEST( testForEachLoop1 );
@@ -43,6 +47,8 @@ namespace YACS
       CPPUNIT_TEST( testForDeployment2 );
       CPPUNIT_TEST( testForCheckConsistency1 );
       CPPUNIT_TEST( testForCheckConsistency2 );
+      CPPUNIT_TEST( testForCheckConsistency3 );
+      CPPUNIT_TEST( testForCheckConsistency4 );
       CPPUNIT_TEST_SUITE_END();
     public:
       void setUp();
@@ -50,6 +56,7 @@ namespace YACS
       void testBloc1();
       void testBloc2();
       void testBloc3();
+      void testBloc4();
       void testSwitch();
       void testSwitch2();
       void testSwitch3();
@@ -65,6 +72,8 @@ namespace YACS
       void testLinkUpdate1DS();
       void testLinkUpdate2();
       void testLinkUpdate2DS();
+      void testLinkUpdate3();
+      void testLinkUpdate4();
       void testInterLoopDFLink();
       void deathTestForLinks();
       void testForEachLoop1();
@@ -78,12 +87,26 @@ namespace YACS
       void testForDeployment2();
       void testForCheckConsistency1();
       void testForCheckConsistency2();
+      void testForCheckConsistency3();
+      void testForCheckConsistency4();
     protected:
+      template<class T>
+      static void checkListsEqual(const std::list<T>& setToTest1, const std::list<T>& setToTest2);
       template<class T>
       static void checkSetsEqual(const std::set<T>& setToTest1, const std::set<T>& setToTest2);
       template<class T>
       static void checkSetsNotEqual(const std::set<T *>& setToTest1, const std::set<T *>&setToTest2);
     };
+
+    template<class T>
+    void EngineIntegrationTest::checkListsEqual(const std::list<T>& setToTest1, const std::list<T>& setToTest2)
+    {
+      typename std::list<T>::iterator iter1=setToTest1.begin();
+      typename std::list<T>::iterator iter2=setToTest2.begin();
+      CPPUNIT_ASSERT_EQUAL_MESSAGE("Lists can't be equal : size different", (int)setToTest1.size(), (int)setToTest2.size());
+      for(;iter1!=setToTest1.end();iter1++,iter2++)
+        CPPUNIT_ASSERT_MESSAGE("Lists can't be equal : value different", *iter1==*iter2);
+    }
 
     template<class T>
     void EngineIntegrationTest::checkSetsEqual(const std::set<T>& setToTest1, const std::set<T>& setToTest2)

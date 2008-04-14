@@ -5,7 +5,7 @@
 #include <Python.h>
 #include <omniORB4/CORBA.h>
 #include <libxml/parser.h>
-#include "Any.hxx"
+#include <string>
 
 namespace YACS
 {
@@ -22,6 +22,7 @@ namespace YACS
       } ImplType;
 
     class TypeCode;
+    class Any;
 
     CORBA::TypeCode_ptr getCorbaTC(const TypeCode *t);
 

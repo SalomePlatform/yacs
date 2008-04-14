@@ -1,6 +1,11 @@
 #include "Proc.hxx"
+#include "ElementaryNode.hxx"
 #include "Runtime.hxx"
 #include "Container.hxx"
+#include "InputPort.hxx"
+#include "OutputPort.hxx"
+#include "TypeCode.hxx"
+#include "Logger.hxx"
 #include "Visitor.hxx"
 #include <sstream>
 #include <set>
@@ -8,10 +13,10 @@
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
-using namespace YACS::ENGINE;
 using namespace std;
+using namespace YACS::ENGINE;
 
-Proc::Proc(const std::string& name):Bloc(name)
+Proc::Proc(const std::string& name):Bloc(name),_edition(false)
 {
   Runtime *theRuntime=getRuntime();
   DEBTRACE("theRuntime->_tc_double->ref: " << theRuntime->_tc_double->getRefCnt());
@@ -33,6 +38,7 @@ Proc::Proc(const std::string& name):Bloc(name)
 
 Proc::~Proc()
 {
+  DEBTRACE("Proc::~Proc");
   //for the moment all nodes are owned, so no need to manage their destruction
   //nodeMap, inlineMap, serviceMap will be cleared automatically
   //but we need to destroy TypeCodes
@@ -44,9 +50,14 @@ Proc::~Proc()
   std::map<std::string, Container*>::const_iterator it;
   for(it=containerMap.begin();it!=containerMap.end();it++)
     ((*it).second)->decrRef();
+
+  //get rid of loggers in logger map
+  std::map<std::string, Logger*>::const_iterator lt;
+  for(lt=_loggers.begin();lt!=_loggers.end();lt++)
+    delete (*lt).second;
 }
 
-void Proc::writeDot(std::ostream &os)
+void Proc::writeDot(std::ostream &os) const
 {
   os << "digraph " << getQualifiedName() << " {\n" ;
   os << "node [ style=\"filled\" ];\n" ;
@@ -153,12 +164,97 @@ std::string Proc::getXMLState(int numId)
   return msg.str();
 }
 
+std::string Proc::getInPortValue(int nodeNumId, std::string portName)
+{
+  DEBTRACE("Proc::getInPortValue " << nodeNumId << " " << portName);
+  stringstream msg;
+  if(YACS::ENGINE::Node::idMap.count(nodeNumId) == 0)
+    {
+      msg << "<value><error>unknown node id: " << nodeNumId << "</error></value>";
+      return msg.str();
+    }
+  try
+    {
+      YACS::ENGINE::Node* node = YACS::ENGINE::Node::idMap[nodeNumId];
+      InputPort * inputPort = node->getInputPort(portName);
+      return inputPort->dump();
+    }
+  catch(YACS::Exception& ex)
+    {
+      DEBTRACE("Proc::getInPortValue " << ex.what());
+      msg << "<value><error>" << ex.what() << "</error></value>";
+      return msg.str();
+    }
+}
+
+std::string Proc::getOutPortValue(int nodeNumId, std::string portName)
+{
+  DEBTRACE("Proc::getOutPortValue " << nodeNumId << " " << portName);
+  stringstream msg;
+  if(YACS::ENGINE::Node::idMap.count(nodeNumId) == 0)
+    {
+      msg << "<value><error>unknown node id: " << nodeNumId << "</error></value>";
+      return msg.str();
+    }
+  try
+    {
+      YACS::ENGINE::Node* node = YACS::ENGINE::Node::idMap[nodeNumId];
+      OutputPort * outputPort = node->getOutputPort(portName);
+      return outputPort->dump();
+    }
+  catch(YACS::Exception& ex)
+    {
+      DEBTRACE("Proc::getOutPortValue " << ex.what());
+      msg << "<value><error>" << ex.what() << "</error></value>";
+      return msg.str();
+    }
+}
+
+std::string Proc::getNodeErrorDetails(int nodeNumId)
+{
+  DEBTRACE("Proc::getNodeErrorDetails " << nodeNumId);
+  stringstream msg;
+  if(YACS::ENGINE::Node::idMap.count(nodeNumId) == 0)
+    {
+      msg << "Unknown node id " << nodeNumId;
+      return msg.str();
+    }
+  YACS::ENGINE::Node* node = YACS::ENGINE::Node::idMap[nodeNumId];
+  return node->getErrorDetails();
+}
+
+std::string Proc::getNodeErrorReport(int nodeNumId)
+{
+  DEBTRACE("Proc::getNodeErrorReport " << nodeNumId);
+  stringstream msg;
+  if(YACS::ENGINE::Node::idMap.count(nodeNumId) == 0)
+    {
+      msg << "Unknown node id " << nodeNumId;
+      return msg.str();
+    }
+  YACS::ENGINE::Node* node = YACS::ENGINE::Node::idMap[nodeNumId];
+  return node->getErrorReport();
+}
+
+std::string Proc::getNodeContainerLog(int nodeNumId)
+{
+  DEBTRACE("Proc::getNodeContainerLog " << nodeNumId);
+  stringstream msg;
+  if(YACS::ENGINE::Node::idMap.count(nodeNumId) == 0)
+    {
+      msg << "Unknown node id " << nodeNumId;
+      return msg.str();
+    }
+  YACS::ENGINE::Node* node = YACS::ENGINE::Node::idMap[nodeNumId];
+  return node->getContainerLog();
+}
+
 std::list<int> Proc::getNumIds()
 {
-  set<YACS::ENGINE::Node *> nodes = getAllRecursiveConstituents();
+  list<YACS::ENGINE::Node *> nodes = getAllRecursiveConstituents();
   int len = nodes.size();
   list<int> numids;
-  for( set<YACS::ENGINE::Node *>::const_iterator iter = nodes.begin();
+  for( list<YACS::ENGINE::Node *>::const_iterator iter = nodes.begin();
        iter != nodes.end(); iter++)
     {
       numids.push_back((*iter)->getNumId());
@@ -169,10 +265,10 @@ std::list<int> Proc::getNumIds()
 
 std::list<std::string> Proc::getIds()
 {
-  set<YACS::ENGINE::Node *> nodes = getAllRecursiveConstituents();
+  list<YACS::ENGINE::Node *> nodes = getAllRecursiveConstituents();
   int len = nodes.size();
   list<string> ids;
-  for( set<YACS::ENGINE::Node *>::const_iterator iter = nodes.begin();
+  for( list<YACS::ENGINE::Node *>::const_iterator iter = nodes.begin();
        iter != nodes.end(); iter++)
     {
       ids.push_back(getChildName(*iter));
@@ -180,3 +276,40 @@ std::list<std::string> Proc::getIds()
   ids.push_back("_root_");
   return ids;
 }
+
+Logger *Proc::getLogger(const std::string& name)
+{
+  Logger* logger;
+  LoggerMap::const_iterator it = _loggers.find(name);
+
+  if (it != _loggers.end())
+  {
+    logger = it->second;
+  }
+  else
+  {
+    logger = new Logger(name);
+    _loggers[name]=logger;
+  }
+  return logger;
+}
+
+void Proc::setEdition(bool edition)
+{
+  DEBTRACE("Proc::setEdition: " << edition);
+  _edition=edition;
+  if(_edition)
+    edUpdateState();
+}
+//! Sets Proc in modified state and update state if in edition mode
+/*!
+ *
+ */
+void Proc::modified()
+{
+  DEBTRACE("Proc::modified() " << _edition);
+  _modified=1;
+  if(_edition)
+    edUpdateState();
+}
+

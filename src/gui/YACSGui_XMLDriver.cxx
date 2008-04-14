@@ -5,6 +5,8 @@
 #include <YACSPrs_Link.h>
 
 #include <QxGraph_Canvas.h>
+#include <QxGraph_CanvasView.h>
+#include <QxGraph_ViewWindow.h>
 
 #include <Node.hxx>
 #include <InputPort.hxx>
@@ -17,6 +19,9 @@
 
 #include <set>
 
+//#define _DEVDEBUG_
+#include "YacsTrace.hxx"
+
 using namespace YACS::ENGINE;
 using namespace std;
 
@@ -27,7 +32,7 @@ static prslinktype_parser prslink_parser;
 
 void prslinktype_parser::onStart(const XML_Char* el, const XML_Char** attr)
 {
-  std::cerr << "prslinktype_parser::onStart: " << el << std::endl;
+  DEBTRACE("prslinktype_parser::onStart: " << el );
   std::string element(el);
   parser* pp=&main_parser;
   if(element == "point") pp = &point_parser;
@@ -38,8 +43,8 @@ void prslinktype_parser::onStart(const XML_Char* el, const XML_Char** attr)
 }
 
 YACSGui_VisitorSaveSchema::YACSGui_VisitorSaveSchema(YACSGui_Module* module,
-						     ComposedNode *root)
-  : VisitorSaveSchema(root), myModule(module)
+                                                     ComposedNode *root)
+  : VisitorSaveSalomeSchema(root), myModule(module)
 {
 }
 
@@ -60,11 +65,18 @@ void YACSGui_VisitorSaveSchema::writePresentation(Proc *proc)
   if ( !aGraph || !aGraph->getCanvas() )
     return;
 
+  QxGraph_CanvasView* aCV = myModule->getViewWindow(proc)->getViewModel()->getCurrentView();
+  if ( !aCV ) return;
+
   int depth = 1;
   
   _out << indent(depth) << "<canvas";
   _out                  << " width=\""  << aGraph->getCanvas()->width() << "\"";
   _out                  << " height=\"" << aGraph->getCanvas()->height() << "\"";
+  _out                  << " left=\""   << aCV->contentsX() << "\"";
+  _out                  << " top=\""    << aCV->contentsY() << "\"";
+  _out                  << " xscale=\"" << aCV->worldMatrix().m11() << "\"";
+  _out                  << " yscale=\"" << aCV->worldMatrix().m22() << "\"";
   _out                  << "/>" << endl;
 
   set<Node*> nodeSet = getAllNodes(proc);
@@ -109,36 +121,36 @@ void YACSGui_VisitorSaveSchema::writeLinks(YACS::ENGINE::Proc *proc)
     {
       YACSPrs_InOutPort* anIOPort;
       if ( ( anIOPort = dynamic_cast<YACSPrs_InOutPort*>( aPort ) ) && !anIOPort->isInput()
-	   ||
-	   dynamic_cast<YACSPrs_LabelPort*>( aPort ) )
+           ||
+           dynamic_cast<YACSPrs_LabelPort*>( aPort ) )
       { // this port is an output port => iterates on its links
-	list<YACSPrs_Link*> aLinks = aPort->getLinks();
-	for(list<YACSPrs_Link*>::iterator itL = aLinks.begin(); itL != aLinks.end(); itL++)
-	{
-	  _out << indent(depth) << "<prslink";
-	  
-	  if ( YACSPrs_PortLink* aPL = dynamic_cast<YACSPrs_PortLink*>( *itL ) ) {
-	    _out << " fromnode=\"" << proc->getChildName( aNode )                                       << "\"";
-	    _out << " fromport=\"" << aPort->getName()                                                  << "\"";
-	    _out << " tonode=\""   << proc->getChildName( aPL->getInputPort()->getEngine()->getNode() ) << "\"";
-	    _out << " toport=\""   << aPL->getInputPort()->getName()                                    << "\"";
-	  }
-	  else if ( YACSPrs_LabelLink* aLL = dynamic_cast<YACSPrs_LabelLink*>( *itL ) ) {
-	    _out << " tonode=\""   << proc->getChildName( aLL->getSlaveNode()->getEngine() )            << "\"";
-	  }
-	  
-	  _out << ">" << endl;
-	  
-	  list<QPoint> aPoints = (*itL)->getPoints();
-	  for(list<QPoint>::iterator itP = aPoints.begin(); itP != aPoints.end(); itP++) {
-	    _out << indent(depth+1) << "<point";
-	    _out                    << " x=\"" << (*itP).x() << "\"";
-	    _out                    << " y=\"" << (*itP).y() << "\"";
-	    _out                    << "/>" << endl;
-	  }
-	  
-	  _out << indent(depth) << "</prslink>" << endl;
-	}
+        list<YACSPrs_Link*> aLinks = aPort->getLinks();
+        for(list<YACSPrs_Link*>::iterator itL = aLinks.begin(); itL != aLinks.end(); itL++)
+        {
+          _out << indent(depth) << "<prslink";
+          
+          if ( YACSPrs_PortLink* aPL = dynamic_cast<YACSPrs_PortLink*>( *itL ) ) {
+            _out << " fromnode=\"" << proc->getChildName( aNode )                                       << "\"";
+            _out << " fromport=\"" << aPort->getName()                                                  << "\"";
+            _out << " tonode=\""   << proc->getChildName( aPL->getInputPort()->getEngine()->getNode() ) << "\"";
+            _out << " toport=\""   << aPL->getInputPort()->getName()                                    << "\"";
+          }
+          else if ( YACSPrs_LabelLink* aLL = dynamic_cast<YACSPrs_LabelLink*>( *itL ) ) {
+            _out << " tonode=\""   << proc->getChildName( aLL->getSlaveNode()->getEngine() )            << "\"";
+          }
+          
+          _out << ">" << endl;
+          
+          list<QPoint> aPoints = (*itL)->getPoints();
+          for(list<QPoint>::iterator itP = aPoints.begin(); itP != aPoints.end(); itP++) {
+            _out << indent(depth+1) << "<point";
+            _out                    << " x=\"" << (*itP).x() << "\"";
+            _out                    << " y=\"" << (*itP).y() << "\"";
+            _out                    << "/>" << endl;
+          }
+          
+          _out << indent(depth) << "</prslink>" << endl;
+        }
       }
     }
   }
@@ -147,11 +159,10 @@ void YACSGui_VisitorSaveSchema::writeLinks(YACS::ENGINE::Proc *proc)
 YACSGui_Loader::YACSGui_Loader()
   : YACSLoader()
 {
-  _defaultParsersMap.clear();
-
   presentation_parser.collector_ = this;
   prslink_parser.collector_ = this;
 
+  canvas_parser.pre();
   _defaultParsersMap.insert(make_pair("canvas",&canvas_parser));
   _defaultParsersMap.insert(make_pair("presentation",&presentation_parser));
   _defaultParsersMap.insert(make_pair("point",&point_parser));
@@ -162,7 +173,10 @@ YACSGui_Loader::~YACSGui_Loader()
 {
 }
 
-const YACSGui_Loader::PrsDataMap& YACSGui_Loader::getPrsData(Proc* proc, int& width, int& height)
+const YACSGui_Loader::PrsDataMap& YACSGui_Loader::getPrsData(Proc* proc,
+                                                             int& width, int& height,
+                                                             int& left, int& top,
+                                                             double& xscale, double& yscale)
 {
   myPrsMap.clear();
 
@@ -173,6 +187,10 @@ const YACSGui_Loader::PrsDataMap& YACSGui_Loader::getPrsData(Proc* proc, int& wi
   // get information from canvastype_parser
   width  = ((canvastype_parser*)_defaultParsersMap["canvas"])->width_;
   height = ((canvastype_parser*)_defaultParsersMap["canvas"])->height_;
+  left = ((canvastype_parser*)_defaultParsersMap["canvas"])->left_;
+  top = ((canvastype_parser*)_defaultParsersMap["canvas"])->top_;
+  xscale = ((canvastype_parser*)_defaultParsersMap["canvas"])->xscale_;
+  yscale = ((canvastype_parser*)_defaultParsersMap["canvas"])->yscale_;
 
   for ( InputMap::iterator it = myInputMap.begin(); it != myInputMap.end(); it++ )
   {
@@ -240,23 +258,23 @@ void YACSGui_Loader::process(std::string theElement, bool theNewLink)
       prslinktype_parser* aP = (prslinktype_parser*)_defaultParsersMap["prslink"];
       if ( aP->type() == "portlink" )
       {
-	if ( theNewLink ) {
-	  PortLinkData aPLData(aP->fromnode_,aP->fromport_,aP->tonode_,aP->toport_);
-	  //aPLData.fillPoints(aP->points_);
-	  myInputPLList.push_back(aPLData);
-	}
-	else if ( !myInputPLList.empty() )
-	  myInputPLList.back().appendPoint(aP->points_.back());
+        if ( theNewLink ) {
+          PortLinkData aPLData(aP->fromnode_,aP->fromport_,aP->tonode_,aP->toport_);
+          //aPLData.fillPoints(aP->points_);
+          myInputPLList.push_back(aPLData);
+        }
+        else if ( !myInputPLList.empty() )
+          myInputPLList.back().appendPoint(aP->points_.back());
       }
       else if ( aP->type() == "labellink" )
       {
-	if ( theNewLink ) {
-	  LabelLinkData aLLData(aP->tonode_);
-	  //aLLData.fillPoints(aP->points_);
-	  myInputLLList.push_back(aLLData);
-	}
-	else if ( !myInputLLList.empty() )
-	  myInputLLList.back().appendPoint(aP->points_.back());
+        if ( theNewLink ) {
+          LabelLinkData aLLData(aP->tonode_);
+          //aLLData.fillPoints(aP->points_);
+          myInputLLList.push_back(aLLData);
+        }
+        else if ( !myInputLLList.empty() )
+          myInputLLList.back().appendPoint(aP->points_.back());
       }
     }
   }

@@ -58,8 +58,9 @@ void drawText2(QPainter& thePainter, const QString& theText,
 /*!
   Constructor
 */
-YACSPrs_InlineNode::YACSPrs_InlineNode(SUIT_ResourceMgr* theMgr, QCanvas* theCanvas, YACS::ENGINE::Node* theNode, const bool& thePortUpdate):
-  YACSPrs_ElementaryNode(theMgr, theCanvas, theNode)
+YACSPrs_InlineNode::YACSPrs_InlineNode(SUIT_ResourceMgr* theMgr, QCanvas* theCanvas,
+				       YACS::HMI::SubjectNode* theSNode, const bool& thePortUpdate):
+  YACSPrs_ElementaryNode(theMgr, theCanvas, theSNode)
 {
   setNodeColor(INLINENODE_COLOR);
   setNodeSubColor(INLINENODE_SUBCOLOR);
@@ -73,7 +74,7 @@ YACSPrs_InlineNode::YACSPrs_InlineNode(SUIT_ResourceMgr* theMgr, QCanvas* theCan
 
   if ( thePortUpdate ) {
     //updatePorts(); // will be called in moveBy(...) function
-    moveBy(2*HOOKPOINT_SIZE,0);
+    moveBy(2*HOOKPOINT_SIZE+NODEBOUNDARY_MARGIN,2*HOOKPOINT_SIZE+NODEBOUNDARY_MARGIN);
   }
 
   update();
@@ -107,6 +108,10 @@ QPointArray YACSPrs_InlineNode::constructAreaPoints(int theW, int theH) const
 
 int YACSPrs_InlineNode::getInfoHeight() const
 {
+  if ( isControlDMode() )
+    return getTitleHeight() + NODE_SPACE;
+  
+  // Full view by default
   return getTitleHeight() + NODE_SPACE + 
          getStatusHeight() + NODE_SPACE +
          getTimeHeight();
@@ -114,6 +119,11 @@ int YACSPrs_InlineNode::getInfoHeight() const
 
 QRect YACSPrs_InlineNode::getTitleRect() const
 {
+  if ( isControlDMode() )
+    return QRect((int)x()+NODE_MARGIN+getCorner(), (int)y()+NODE_MARGIN, 
+		 width()-2*NODE_MARGIN-getCorner(), getTitleHeight());
+
+  // Full view by default
   return QRect((int)x()+NODE_MARGIN+getCorner(), (int)y()+NODE_MARGIN, 
 	       width()-3*NODE_MARGIN-getCorner()-getPixMapWidth(), getTitleHeight());
 }
@@ -149,55 +159,70 @@ int YACSPrs_InlineNode::getCorner() const
 void YACSPrs_InlineNode::drawTitleShape(QPainter& thePainter)
 {
   // draw information: title, status, time
+  QBrush savedB = thePainter.brush();
+
   QPen savedP = thePainter.pen();
   thePainter.setPen(thePainter.brush().color().dark(140));
 
   // title
   thePainter.drawRoundRect(getTitleRect(),myXRnd,myYRnd);
-  // status
-  thePainter.drawRoundRect(getStatusRect(),myXRnd,myYRnd);
-  // time
-  thePainter.drawRoundRect(getTimeRect(),myXRnd,myYRnd);
 
-  // draw progress bar
-  thePainter.setPen(NoPen);
+  if ( isFullDMode() )
+  {
+    // status
+    thePainter.drawRoundRect(getStatusRect(),myXRnd,myYRnd);
+    // time
+    thePainter.drawRoundRect(getTimeRect(),myXRnd,myYRnd);
+    
+    // draw progress bar
+    thePainter.setPen(NoPen);
 
-  QBrush savedB = thePainter.brush();
+    //savedB = thePainter.brush();
 
-  thePainter.setBrush(savedB.color().light(130));
-  thePainter.drawRect(getWholeRect());
-  
-  if ( getPercentRect().width() > 1 ) {
-    thePainter.setBrush(savedB.color().dark(160));
-    thePainter.drawRect(getPercentRect());
+    thePainter.setBrush(savedB.color().light(130));
+    thePainter.drawRect(getWholeRect());
+    
+    if ( getPercentRect().width() > 1 ) {
+      thePainter.setBrush(savedB.color().dark(160));
+      thePainter.drawRect(getPercentRect());
+    }
+    
+    thePainter.setBrush(savedB);
   }
-
-  thePainter.setBrush(savedB);
   
   // draw texts
   thePainter.setPen(Qt::white);
 
-  drawText2(thePainter, QString(myEngine->getName()), getTitleRect(), Qt::AlignLeft);
-  drawText2(thePainter, myStatus, getStatusRect(), Qt::AlignLeft);
-  drawText2(thePainter, myTime, getTimeRect(), Qt::AlignLeft);
-  drawText2(thePainter, QString::number(( (getStoredPercentage() < 0) ? getPercentage() : getStoredPercentage() ))+QString("%"), getTimeRect(), Qt::AlignRight); // percentage
-  
+  if ( isControlDMode() )
+    drawText2(thePainter, QString(getEngine()->getName()), getTitleRect(), Qt::AlignHCenter);
+  else if ( isFullDMode() )
+  {
+    drawText2(thePainter, QString(getEngine()->getName()), getTitleRect(), Qt::AlignLeft);
+    drawText2(thePainter, myStatus, getStatusRect(), Qt::AlignLeft);
+    drawText2(thePainter, myTime, getTimeRect(), Qt::AlignLeft);
+    drawText2(thePainter, QString::number(( (getStoredPercentage() < 0) ? getPercentage() : getStoredPercentage() ), 'g', 4)+QString("%"),
+	      getTimeRect(), Qt::AlignRight); // percentage
+  }
+   
   thePainter.setPen(savedP);
 
-  // draw pixmap
-  thePainter.setBrush(NoBrush);
+  if ( isFullDMode() )
+  {
+    // draw pixmap
+    thePainter.setBrush(NoBrush);
+    
+    int aXRnd = getTitleRect().width()*myXRnd/getPixmapRect().width();
+    int aYRnd = getTitleRect().height()*myYRnd/getPixmapRect().height();
+    thePainter.drawRoundRect(getPixmapRect(),aXRnd,aYRnd);
+    QRect aPRect = getPixmapRect();
+    aPRect.setX(aPRect.x()+PIXMAP_MARGIN+2);
+    aPRect.setY(aPRect.y()+PIXMAP_MARGIN);
+    aPRect.setWidth(aPRect.width()-2*PIXMAP_MARGIN);
+    aPRect.setHeight(aPRect.height()-2*PIXMAP_MARGIN);
+    thePainter.drawPixmap(aPRect,myStatePixmap);
 
-  int aXRnd = getTitleRect().width()*myXRnd/getPixmapRect().width();
-  int aYRnd = getTitleRect().height()*myYRnd/getPixmapRect().height();
-  thePainter.drawRoundRect(getPixmapRect(),aXRnd,aYRnd);
-  QRect aPRect = getPixmapRect();
-  aPRect.setX(aPRect.x()+PIXMAP_MARGIN+2);
-  aPRect.setY(aPRect.y()+PIXMAP_MARGIN);
-  aPRect.setWidth(aPRect.width()-2*PIXMAP_MARGIN);
-  aPRect.setHeight(aPRect.height()-2*PIXMAP_MARGIN);
-  thePainter.drawPixmap(aPRect,myStatePixmap);
-
-  thePainter.setBrush(savedB);
+    thePainter.setBrush(savedB);
+  }
 }
 
 void YACSPrs_InlineNode::drawFrame(QPainter& thePainter)

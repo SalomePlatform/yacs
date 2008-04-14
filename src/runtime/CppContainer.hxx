@@ -3,10 +3,9 @@
 
 #include <map>
 #include <string>
-#include "Any.hxx"
 #include "Mutex.hxx"
-#include "CppComponent.hxx"
 #include "Container.hxx"
+#include "CppComponent.hxx"
 
 namespace YACS
 {

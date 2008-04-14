@@ -235,18 +235,9 @@ void LocalContainer::createInternalInstance(const char *name, void *&obj,
 void LocalContainer::unregisterComponentInstance(CppComponent * C)
 {
 	  _instance_mapMutex.lock(); // lock to be alone 
-	  _instance_map.erase(C->getName());
+	  _instance_map.erase(C->getCompoName());
 	  _instance_mapMutex.unlock(); // unlock
 }
-
-//=============================================================================
-/*! 
- *  load a new component class (C++ implementation)
- *  \param componentName like COMPONENT
- *                          try to load libCOMPONENTLocal.so
- *  \return true if dlopen successfull or already done, false otherwise
- */
-//=============================================================================
 
 inline void toupper (std::string & s)
 {

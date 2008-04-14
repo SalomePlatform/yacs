@@ -3,18 +3,20 @@
 
 #include <ComposedNode.hxx>
 #include <Proc.hxx>
-#include <VisitorSaveSchema.hxx>
+#include <VisitorSaveSalomeSchema.hxx>
 #include <parsers.hxx>
 
 #include <qpoint.h>
 
+using YACS::parser;
+
 class YACSGui_Module;
 
 /*! 
- * Class that extends engine XML wirter capabilities by
+ * Class that extends engine XML writer capabilities by
  * adding information about node presentations to the output file.
  */
-class YACSGui_VisitorSaveSchema : public YACS::ENGINE::VisitorSaveSchema
+class YACSGui_VisitorSaveSchema : public YACS::ENGINE::VisitorSaveSalomeSchema
 {
 public:
   YACSGui_VisitorSaveSchema(YACSGui_Module* module, YACS::ENGINE::ComposedNode *root);
@@ -44,13 +46,13 @@ public:
 
     PrsData() { x = y = z = 0.; width = height = 1.; }
     PrsData(float theX, float theY, float theZ, 
-	    float theWidth, float theHeight)
+            float theWidth, float theHeight)
       { 
-	x = theX;
+        x = theX;
         y = theY;
-	z = theZ;
-	width = theWidth;
-	height = theHeight;
+        z = theZ;
+        width = theWidth;
+        height = theHeight;
       }
   };
 
@@ -63,13 +65,13 @@ public:
     LinkData() { points = std::list<QPoint>(0); }
     void appendPoint(QPoint thePoint)
       {
-	points.push_back( thePoint );
+        points.push_back( thePoint );
       }
     void fillPoints(std::list<QPoint> theList)
       {
-	points.clear();
-	for (std::list<QPoint>::iterator it = theList.begin(); it != theList.end(); ++it)
-	  points.push_back( *it );
+        points.clear();
+        for (std::list<QPoint>::iterator it = theList.begin(); it != theList.end(); ++it)
+          points.push_back( *it );
       }
   };
 
@@ -79,12 +81,12 @@ public:
 
     PortLinkData():LinkData() { fromnode = fromport = tonode = toport = ""; }
     PortLinkData(std::string theFromnode, std::string theFromport, 
-		 std::string theTonode,   std::string theToport):LinkData()
+                 std::string theTonode,   std::string theToport):LinkData()
       {
-	fromnode = theFromnode;
-	fromport = theFromport;
-	tonode = theTonode;
-	toport = theToport;
+        fromnode = theFromnode;
+        fromport = theFromport;
+        tonode = theTonode;
+        toport = theToport;
       }
   };
 
@@ -95,7 +97,7 @@ public:
     LabelLinkData():LinkData() { slavenode = ""; }
     LabelLinkData(std::string theSlavenode):LinkData()
       {
-	slavenode = theSlavenode;
+        slavenode = theSlavenode;
       }
   };
 
@@ -107,7 +109,7 @@ public:
   YACSGui_Loader();
   virtual ~YACSGui_Loader();
 
-  const PrsDataMap&       getPrsData(YACS::ENGINE::Proc* proc, int&, int&);
+  const PrsDataMap&       getPrsData(YACS::ENGINE::Proc* proc, int&, int&, int&, int&, double&, double&);
   const PortLinkDataMap&  getPortLinkData(YACS::ENGINE::Proc* proc);
   const LabelLinkDataMap& getLabelLinkData(YACS::ENGINE::Proc* proc);
 
@@ -136,7 +138,6 @@ struct canvastype_parser: parser
 {
   virtual void onStart(const XML_Char* el, const XML_Char** attr)
     {
-      std::cerr << "canvastype_parser::onStart: " << el << std::endl;
       std::string element(el);
       parser* pp=&main_parser;
       SetUserDataAndPush(pp);
@@ -149,17 +150,26 @@ struct canvastype_parser: parser
     {
       required("width",attr);
       required("height",attr);
+      required("left",attr);
+      required("top",attr);
+      required("xscale",attr);
+      required("yscale",attr);
       for (int i = 0; attr[i]; i += 2) 
       {
-	std::cerr << attr[i] << "=" << attr[i + 1] << std::endl;
-	if(std::string(attr[i]) == "width")  width(attr[i+1]);
-	if(std::string(attr[i]) == "height") height(attr[i+1]);
+        if(std::string(attr[i]) == "width")  width(attr[i+1]);
+        if(std::string(attr[i]) == "height") height(attr[i+1]);
+        if(std::string(attr[i]) == "left") left(attr[i+1]);
+        if(std::string(attr[i]) == "top") top(attr[i+1]);
+        if(std::string(attr[i]) == "xscale") xscale(attr[i+1]);
+        if(std::string(attr[i]) == "yscale") yscale(attr[i+1]);
       }
     }
   
   virtual void pre ()
     {
       width_ = height_ = 1;
+      left_ = top_ = 0;
+      xscale_ = yscale_ = -1;
     }
   
   virtual void width(const std::string& width)
@@ -172,7 +182,28 @@ struct canvastype_parser: parser
       height_ = QString( height ).toInt();
     }
 
-  int width_, height_;
+  virtual void left(const std::string& left)
+    {
+      left_ = QString( left ).toInt();
+    }
+  
+  virtual void top(const std::string& top)
+    {
+      top_ = QString( top ).toInt();
+    }
+
+  virtual void xscale(const std::string& xscale)
+    {
+      xscale_ = QString( xscale ).toDouble();
+    }
+  
+  virtual void yscale(const std::string& yscale)
+    {
+      yscale_ = QString( yscale ).toDouble();
+    }
+
+  int width_, height_, left_, top_;
+  double xscale_, yscale_;
 };
 
 /*! 
@@ -187,7 +218,6 @@ struct presentationtype_parser: parser
 
   virtual void onStart(const XML_Char* el, const XML_Char** attr)
     {
-      std::cerr << "presentationtype_parser::onStart: " << el << std::endl;
       std::string element(el);
       parser* pp=&main_parser;
       SetUserDataAndPush(pp);
@@ -206,17 +236,16 @@ struct presentationtype_parser: parser
       required("height",attr);
       for (int i = 0; attr[i]; i += 2) 
       {
-	std::cerr << attr[i] << "=" << attr[i + 1] << std::endl;
-	if(std::string(attr[i]) == "name")   name(attr[i+1]);
-	if(std::string(attr[i]) == "x")      x(attr[i+1]);
-	if(std::string(attr[i]) == "y")      y(attr[i+1]);
-	if(std::string(attr[i]) == "z")      z(attr[i+1]);
-	if(std::string(attr[i]) == "width")  width(attr[i+1]);
-	if(std::string(attr[i]) == "height") height(attr[i+1]);
+        if(std::string(attr[i]) == "name")   name(attr[i+1]);
+        if(std::string(attr[i]) == "x")      x(attr[i+1]);
+        if(std::string(attr[i]) == "y")      y(attr[i+1]);
+        if(std::string(attr[i]) == "z")      z(attr[i+1]);
+        if(std::string(attr[i]) == "width")  width(attr[i+1]);
+        if(std::string(attr[i]) == "height") height(attr[i+1]);
       }
       
       if ( collector_ )
-	collector_->process("presentation");
+        collector_->process("presentation");
     }
 
   virtual void pre ()
@@ -270,7 +299,6 @@ struct pointtype_parser: parser
 {
   virtual void onStart(const XML_Char* el, const XML_Char** attr)
     {
-      std::cerr << "pointtype_parser::onStart: " << el << std::endl;
       std::string element(el);
       parser* pp=&main_parser;
       SetUserDataAndPush(pp);
@@ -285,9 +313,8 @@ struct pointtype_parser: parser
       required("y",attr);
       for (int i = 0; attr[i]; i += 2) 
       {
-	std::cerr << attr[i] << "=" << attr[i + 1] << std::endl;
-	if(std::string(attr[i]) == "x") x(attr[i+1]);
-	if(std::string(attr[i]) == "y") y(attr[i+1]);
+        if(std::string(attr[i]) == "x") x(attr[i+1]);
+        if(std::string(attr[i]) == "y") y(attr[i+1]);
       }
     }
   
@@ -329,7 +356,6 @@ struct prslinktype_parser: parser
     
   virtual void onEnd(const char *el,parser* child)
     {
-      std::cerr << "prslinktype_parser::onEnd: " << el << std::endl;
       std::string element(el);
       if(element == "point") point(((pointtype_parser*)child)->post());
     }
@@ -339,22 +365,21 @@ struct prslinktype_parser: parser
       required("tonode",attr);
       for (int i = 0; attr[i]; i += 2) 
       {
-	std::cerr << attr[i] << "=" << attr[i + 1] << std::endl;
-	if(std::string(attr[i]) == "fromnode") fromnode(attr[i+1]);
-	if(std::string(attr[i]) == "fromport") fromport(attr[i+1]);
-	if(std::string(attr[i]) == "tonode")   tonode(attr[i+1]);
-	if(std::string(attr[i]) == "toport")   toport(attr[i+1]);
+        if(std::string(attr[i]) == "fromnode") fromnode(attr[i+1]);
+        if(std::string(attr[i]) == "fromport") fromport(attr[i+1]);
+        if(std::string(attr[i]) == "tonode")   tonode(attr[i+1]);
+        if(std::string(attr[i]) == "toport")   toport(attr[i+1]);
       }
       
       if ( collector_ )
-	collector_->process("prslink", true);
+        collector_->process("prslink", true);
     }
 
   virtual void point(const QPoint& thePoint)
     {
       points_.push_back(thePoint);
       if ( collector_ )
-	collector_->process("prslink");
+        collector_->process("prslink");
     }
 
   virtual void pre ()
@@ -386,9 +411,9 @@ struct prslinktype_parser: parser
     {
       std::string aType = "";
       if ( fromnode_ != "" && fromport_ != "" && tonode_ != "" && toport_ != "" )
-	aType = "portlink";
+        aType = "portlink";
       else if ( fromnode_ == "" && fromport_ == "" && tonode_ != "" && toport_ == "" )
-	aType = "labellink";
+        aType = "labellink";
       return aType;
     }
 

@@ -9,9 +9,11 @@
 
 #include "RuntimeSALOME.hxx"
 #include "TypeConversions.hxx"
+#include "TypeCode.hxx"
 #include "CORBAPorts.hxx"
 #include "ServiceNode.hxx"
 #include "ComponentInstance.hxx"
+#include "SALOME_GenericObj.hh"
 
 #include <iostream>
 #include <sstream>
@@ -22,6 +24,41 @@
 using namespace YACS::ENGINE;
 using namespace std;
 
+void releaseObj(CORBA::Any& data)
+{
+  CORBA::Object_var obj;
+  if(data >>= CORBA::Any::to_object(obj))
+    {
+      SALOME::GenericObj_var gobj=SALOME::GenericObj::_narrow(obj);
+      if(!CORBA::is_nil(gobj))
+        {
+          DEBTRACE("It's a SALOME::GenericObj");
+          gobj->Destroy();
+        }
+      else
+          DEBTRACE("It's a CORBA::Object but not a SALOME::GenericObj");
+    }
+  else
+    DEBTRACE("It's not a CORBA::Object");
+}
+
+void registerObj(CORBA::Any& data)
+{
+  CORBA::Object_var obj;
+  if(data >>= CORBA::Any::to_object(obj))
+    {
+      SALOME::GenericObj_var gobj=SALOME::GenericObj::_narrow(obj);
+      if(!CORBA::is_nil(gobj))
+        {
+          DEBTRACE("It's a SALOME::GenericObj");
+          gobj->Register();
+        }
+      else
+          DEBTRACE("It's a CORBA::Object but not a SALOME::GenericObj");
+    }
+  else
+    DEBTRACE("It's not a CORBA::Object");
+}
 
 InputCorbaPort::InputCorbaPort(const std::string& name,
                                Node *node,
@@ -46,6 +83,8 @@ InputCorbaPort::InputCorbaPort(const InputCorbaPort& other, Node *newHelder):Inp
 InputCorbaPort::~InputCorbaPort()
 {
   delete _initData;
+  // Release or not release : all GenericObj are deleted when the input port is deleted
+  releaseObj(_data);
 }
 
 bool InputCorbaPort::edIsManuallyInitialized() const
@@ -93,8 +132,14 @@ void InputCorbaPort::put(CORBA::Any *data) throw (ConversionException)
 #ifdef _DEVDEBUG_
   display(data);
 #endif
+
+  releaseObj(_data);
+
   // make a copy of the any (protect against deletion of any source)
   _data=*data;
+
+  registerObj(_data);
+
 #ifdef REFCNT
   DEBTRACE("refcount CORBA : " << ((omni::TypeCode_base*)_data.pd_tc.in())->pd_ref_count);
 #endif
@@ -179,6 +224,8 @@ OutputCorbaPort::OutputCorbaPort(const OutputCorbaPort& other, Node *newHelder):
 OutputCorbaPort::~OutputCorbaPort()
 {
   DEBTRACE(getName());
+  // Release or not release : all GenericObj are deleted when the output port is deleted
+  releaseObj(_data);
 #ifdef REFCNT
   DEBTRACE("refcount CORBA : " << ((omni::TypeCode_base*)_data.pd_tc.in())->pd_ref_count);
   DEBTRACE("refcount CORBA tc_double: " << ((omni::TypeCode_base*)CORBA::_tc_double)->pd_ref_count);
@@ -199,7 +246,13 @@ void OutputCorbaPort::put(CORBA::Any *data) throw (ConversionException)
 #ifdef REFCNT
   DEBTRACE("refcount CORBA : " << ((omni::TypeCode_base*)_data.pd_tc.in())->pd_ref_count);
 #endif
+
+  releaseObj(_data);
+
   _data=*data;
+
+  //no registerObj : we steal the output reference of the node
+
 #ifdef REFCNT
   DEBTRACE("refcount CORBA : " << ((omni::TypeCode_base*)_data.pd_tc.in())->pd_ref_count);
 #endif
@@ -225,66 +278,62 @@ CORBA::Any * OutputCorbaPort::getAny()
 
 CORBA::Any * OutputCorbaPort::getAnyOut() 
 {
-  CORBA::Any* a=&_data;
+  CORBA::Any* a=new CORBA::Any;
   DynType kind=edGetType()->kind();
+  CORBA::TypeCode_var t;
 
   if(kind == Int)
     {
       a->replace(CORBA::_tc_long, (void*) 0);
     }
-    else if(kind == String)
-      {
-        a->replace(CORBA::_tc_string, (void*) 0);
-      }
-    else if(kind == Double)
-      {
-        a->replace(CORBA::_tc_double, (void*) 0);
-      }
-    else if(kind == Objref)
-      {
-        //a->replace(CORBA::_tc_Object, (void*) 0);
-        CORBA::TypeCode_var t;
-        t = getCorbaTC(edGetType());
-        a->replace(t, (void*) 0);
-      }
-    else if(kind == Sequence)
-      {
-        CORBA::TypeCode_var t;
-        t = getCorbaTC(edGetType());
-        a->replace(t, (void*) 0);
-      }
-    else if(kind == Struct)
-      {
-        CORBA::TypeCode_var t;
-        t = getCorbaTC(edGetType());
+  else if(kind == String)
+    {
+      a->replace(CORBA::_tc_string, (void*) 0);
+    }
+  else if(kind == Double)
+    {
+      a->replace(CORBA::_tc_double, (void*) 0);
+    }
+  else if(kind == Objref)
+    {
+      t = getCorbaTC(edGetType());
+      a->replace(t, (void*) 0);
+    }
+  else if(kind == Sequence)
+    {
+      t = getCorbaTC(edGetType());
+      a->replace(t, (void*) 0);
+    }
+  else if(kind == Struct)
+    {
+      t = getCorbaTC(edGetType());
 #ifdef REFCNT
   DEBTRACE("refcount CORBA : " << ((omni::TypeCode_base*)t.in())->pd_ref_count);
 #endif
-        a->replace(t, (void*) 0);
+      a->replace(t, (void*) 0);
 #ifdef REFCNT
   DEBTRACE("refcount CORBA : " << ((omni::TypeCode_base*)t.in())->pd_ref_count);
 #endif
-      }
-    else if(kind == Bool)
-      {
-        a->replace(CORBA::_tc_boolean, (void*) 0);
-      }
-    else if(kind == None)
-      {
-        stringstream msg;
-        msg << "Cannot set Any Out for None" << __FILE__ << ":" << __LINE__;
-        throw Exception(msg.str());
-      }
-    else
-      {
-        stringstream msg;
-        msg << "Cannot set Any Out for unknown type" << __FILE__
-            << ":" << __LINE__;
-        throw Exception(msg.str());
-      }
+    }
+  else if(kind == Bool)
+    {
+      a->replace(CORBA::_tc_boolean, (void*) 0);
+    }
+  else if(kind == NONE)
+    {
+      stringstream msg;
+      msg << "Cannot set Any Out for None" << __FILE__ << ":" << __LINE__;
+      throw Exception(msg.str());
+    }
+  else
+    {
+      stringstream msg;
+      msg << "Cannot set Any Out for unknown type" << __FILE__
+          << ":" << __LINE__;
+      throw Exception(msg.str());
+    }
     
-  // return a pointer to internal any reinitialized
-  DEBTRACE( "getAnyOut::_data: " << a );
+  DEBTRACE( "getAnyOut:a: " << a );
 #ifdef REFCNT
   DEBTRACE("refcount CORBA : " << ((omni::TypeCode_base*)a->pd_tc.in())->pd_ref_count);
 #endif
@@ -299,12 +348,15 @@ std::string OutputCorbaPort::dump()
   string xmldump = convertCorbaXml(edGetType(), &_data);
   return xmldump;
 }
-
-ostream& YACS::ENGINE::operator<<(ostream& os, const OutputCorbaPort& p)
-{
-  CORBA::Double l;
-  p._data>>=l;
-  os << p._name << " : " << l ;
-  return os;
-}
+namespace YACS {
+  namespace ENGINE {
+    ostream& operator<<(ostream& os, const OutputCorbaPort& p)
+    {
+      CORBA::Double l;
+      p._data>>=l;
+      os << p._name << " : " << l ;
+      return os;
+    }
+  };
+};
 

@@ -31,6 +31,7 @@ namespace YACS
       virtual ServiceNode* createNode(const std::string& name);
       virtual std::string getKind() const;
       static const char KIND[];
+      virtual std::string typeName() {return "YACS__ENGINE__CORBANode";}
     public:
       static const char IMPL_NAME[];
     };
@@ -54,12 +55,14 @@ namespace YACS
       virtual ServiceNode* createNode(const std::string& name);
       virtual std::string getKind() const;
       static const char KIND[];
+      virtual std::string typeName() {return "YACS__ENGINE__SalomeNode";}
 #ifdef DSC_PORTS
       virtual void initService();
       virtual void connectService();
       virtual void disconnectService();
       std::list<Engines::ConnectionManager::connectionId> ids;
 #endif
+      virtual std::string getContainerLog();
     };
   }
 }

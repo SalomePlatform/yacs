@@ -14,7 +14,8 @@ namespace YACS
   typedef enum
     {
       UNDEFINED    = -1,
-      INITED       = 100,
+      INVALID      =  99,
+      READY        = 100,
       TOLOAD       = 101,
       LOADED       = 102,
       TOACTIVATE   = 103,

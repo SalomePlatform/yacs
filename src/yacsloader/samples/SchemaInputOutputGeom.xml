@@ -1,0 +1,137 @@
+<?xml version='1.0'?>
+<proc>
+   <type name="Bool" kind="bool"/>
+   <type name="Double" kind="double"/>
+   <type name="Int" kind="int"/>
+   <type name="String" kind="string"/>
+   <objref name="GEOM_Object" id="IDL:GEOM/GEOM_Object:1.0"/>
+   <objref name="file" id="file"/>
+   <container name="DefaultContainer">
+      <property name="container_name" value="FactoryServer"/>
+      <property name="cpu_clock" value="0"/>
+      <property name="hostname" value="localhost"/>
+      <property name="isMPI" value="false"/>
+      <property name="mem_mb" value="0"/>
+      <property name="nb_component_nodes" value="0"/>
+      <property name="nb_node" value="0"/>
+      <property name="nb_proc_per_node" value="0"/>
+      <property name="parallelLib" value=""/>
+      <property name="workingdir" value=""/>
+   </container>
+   <datanode name="StudyInNode0" kind="study">
+      <property name="StudyID" value="1"/>
+      <parameter name="a" type="GEOM_Object" ref="/Geometry/Box_1"/>
+      <parameter name="b" type="GEOM_Object" ref="/Geometry/Sphere_1"/>
+   </datanode>
+   <inline name="PyScript0">
+      <script><code><![CDATA[x=a
+y=b
+]]></code></script>
+      <inport name="a" type="GEOM_Object"/>
+      <inport name="b" type="GEOM_Object"/>
+      <outport name="x" type="GEOM_Object"/>
+      <outport name="y" type="GEOM_Object"/>
+   </inline>
+   <service name="SalomeNode0">
+      <component>GEOM_Superv</component>
+      <load container="DefaultContainer"/>
+      <method>MakeFuse</method>
+      <inport name="theShape1" type="GEOM_Object"/>
+      <inport name="theShape2" type="GEOM_Object"/>
+      <outport name="return" type="GEOM_Object"/>
+   </service>
+   <outnode name="StudyOutNode0" kind="study">
+      <property name="StudyID" value="1"/>
+      <parameter name="a" type="GEOM_Object" ref="/Geometry/YacsFuse"/>
+   </outnode>
+   <service name="SalomeNode1">
+      <node>SalomeNode0</node>
+      <method>SetStudyID</method>
+      <inport name="theStudyID" type="Int"/>
+   </service>
+   <control> <fromnode>StudyInNode0</fromnode> <tonode>PyScript0</tonode> </control>
+   <control> <fromnode>StudyInNode0</fromnode> <tonode>SalomeNode1</tonode> </control>
+   <control> <fromnode>PyScript0</fromnode> <tonode>SalomeNode0</tonode> </control>
+   <control> <fromnode>SalomeNode0</fromnode> <tonode>StudyOutNode0</tonode> </control>
+   <control> <fromnode>SalomeNode1</fromnode> <tonode>SalomeNode0</tonode> </control>
+   <datalink control="false">
+      <fromnode>StudyInNode0</fromnode> <fromport>a</fromport>
+      <tonode>PyScript0</tonode> <toport>a</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>StudyInNode0</fromnode> <fromport>b</fromport>
+      <tonode>PyScript0</tonode> <toport>b</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>PyScript0</fromnode> <fromport>x</fromport>
+      <tonode>SalomeNode0</tonode> <toport>theShape1</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>PyScript0</fromnode> <fromport>y</fromport>
+      <tonode>SalomeNode0</tonode> <toport>theShape2</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>SalomeNode0</fromnode> <fromport>return</fromport>
+      <tonode>StudyOutNode0</tonode> <toport>a</toport>
+   </datalink>
+   <parameter>
+      <tonode>SalomeNode1</tonode><toport>theStudyID</toport>
+      <value><int>1</int></value>
+   </parameter>
+   <canvas width="2913" height="1343" left="139" top="0" xscale="0.665121" yscale="0.665121"/>
+   <presentation name="StudyInNode0" x="47" y="196" z="2" width="266" height="150"/>
+   <presentation name="PyScript0" x="395" y="66" z="2" width="266" height="150"/>
+   <presentation name="StudyOutNode0" x="1089" y="207" z="2" width="266" height="128"/>
+   <presentation name="SalomeNode0" x="743" y="174" z="2" width="266" height="194"/>
+   <presentation name="SalomeNode1" x="396" y="314" z="2" width="266" height="172"/>
+   <prslink fromnode="StudyInNode0" fromport="a" tonode="PyScript0" toport="a">
+      <point x="379" y="151"/>
+      <point x="379" y="281"/>
+      <point x="327" y="281"/>
+   </prslink>
+   <prslink fromnode="StudyInNode0" fromport="b" tonode="PyScript0" toport="b">
+      <point x="379" y="173"/>
+      <point x="360" y="173"/>
+      <point x="360" y="303"/>
+      <point x="327" y="303"/>
+   </prslink>
+   <prslink fromnode="StudyInNode0" fromport="Gate" tonode="PyScript0" toport="Gate">
+      <point x="389" y="201"/>
+      <point x="355" y="201"/>
+      <point x="355" y="331"/>
+      <point x="318" y="331"/>
+   </prslink>
+   <prslink fromnode="StudyInNode0" fromport="Gate" tonode="SalomeNode1" toport="Gate">
+      <point x="390" y="471"/>
+      <point x="390" y="331"/>
+      <point x="318" y="331"/>
+   </prslink>
+   <prslink fromnode="PyScript0" fromport="x" tonode="SalomeNode0" toport="theShape1">
+      <point x="727" y="303"/>
+      <point x="708" y="303"/>
+      <point x="708" y="151"/>
+      <point x="675" y="151"/>
+   </prslink>
+   <prslink fromnode="PyScript0" fromport="y" tonode="SalomeNode0" toport="theShape2">
+      <point x="727" y="325"/>
+      <point x="675" y="325"/>
+      <point x="675" y="173"/>
+   </prslink>
+   <prslink fromnode="SalomeNode0" fromport="return" tonode="StudyOutNode0" toport="a">
+      <point x="1073" y="292"/>
+      <point x="1023" y="292"/>
+      <point x="1023" y="303"/>
+   </prslink>
+   <prslink fromnode="SalomeNode0" fromport="Gate" tonode="StudyOutNode0" toport="Gate">
+      <point x="1083" y="320"/>
+      <point x="1050" y="320"/>
+      <point x="1050" y="353"/>
+      <point x="1014" y="353"/>
+   </prslink>
+   <prslink fromnode="SalomeNode1" fromport="Gate" tonode="SalomeNode0" toport="Gate">
+      <point x="737" y="353"/>
+      <point x="704" y="353"/>
+      <point x="704" y="471"/>
+      <point x="667" y="471"/>
+   </prslink>
+</proc>

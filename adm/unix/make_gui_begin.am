@@ -1,5 +1,7 @@
 
 # .qm translator files and icons
+POFILES =
+ICONS =
 QMFILES = $(POFILES:%.po=%.qm)
 #resourcesdir = $(pkgdatadir)/resources
 #resources_DATA = $(QMFILES) $(ICONS)

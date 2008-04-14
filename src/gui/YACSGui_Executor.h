@@ -20,8 +20,6 @@
 #ifndef YACSGui_Executor_HeaderFile
 #define YACSGui_Executor_HeaderFile
 
-#define YACS_PTHREAD //@
-
 #include <Proc.hxx>
 #include <Executor.hxx>
 
@@ -52,29 +50,46 @@ class YACSGui_Executor : public QObject, public QThread
   void suspendDataflow();
   void resumeDataflow();
   void stopDataflow();
+  
   void setStepByStepMode();
   void setContinueMode();
   void setBreakpointMode();
   void setStopOnError(bool aMode);
+  void unsetStopOnError();
+  void saveState(const std::string& xmlFile);
+
+  void setLoadStateFile(std::string xmlFile);
+  
+  YACS_ORB::executionMode getCurrentExecMode();
+  int getExecutorState();
+  
   void setBreakpointList(std::list<std::string> breakpointList);
   void setNextStepList(std::list<std::string> nextStepList);
 
   void setGraph(YACSGui_Graph* theGraph) { _graph = theGraph; }
+  YACSGui_Graph* getGraph() const { return _graph; }
   void registerStatusObservers();
-  bool isRunning() { return _isRunning; };
+  bool isRunning() const { return _isRunning; };
+  bool isStopOnError() const { return _isStopOnError; }
+
+  void setEngineRef(YACS_ORB::YACS_Gen_ptr theRef);
+
   //YACS::ENGINE::Executor* getLocalEngine() { return _localEngine; };
   YACS::ENGINE::Proc* getProc() { return _proc; };
+  std::string getErrorDetails(YACS::ENGINE::Node* node);
+  std::string getErrorReport(YACS::ENGINE::Node* node);
+  std::string getContainerLog();
+  std::string getContainerLog(YACS::ENGINE::Node* node);
  protected:
   virtual void run();
-  YACSGui_ORB::executionMode getCurrentExecMode();
   void _setBPList();
 
  private:
   YACS::ENGINE::Executor* _localEngine;
   YACS::ENGINE::Proc* _proc;
-  YACSGui_ORB::YACSGui_Gen_var _engineRef;
-  YACSGui_ORB::ProcExec_var _procRef;
-  YACSGui_ORB::Observer_var _observerRef;
+  YACS_ORB::YACS_Gen_var _engineRef;
+  YACS_ORB::ProcExec_var _procRef;
+  YACS_ORB::Observer_var _observerRef;
   YACS::ExecutionMode _execMode;
   Observer_i* _serv;
   YACSGui_Graph* _graph;
@@ -82,7 +97,9 @@ class YACSGui_Executor : public QObject, public QThread
   bool _isRemoteRun;
   bool _isRunning;
   bool _isSuspended;
+  bool _isStopOnError;
   std::list<std::string> _breakpointList;
+  std::string _loadStateFile;
 };
 
 #endif

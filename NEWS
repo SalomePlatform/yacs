@@ -1,0 +1,811 @@
+
+
+YACS GUI : list of missing functionalities and bugs
+====================================================================================================
+
+One list is initiated by EDF (problems detected by EDF), Another list can be completed by OCC 
+(problems detected by OCC). The separaration will allow an easier CVS merge.
+Each list contains numeroted items, with a description, comments from both parts,
+a priority and a status.
+The present file must be committed in CVS as often as required, in developments branchs.
+
+
+
+Problems detected by EDF
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+----------------------------------------------------------------------------------------------------
+Num ----: 1
+priority: 0
+status--: OK (checked on BR_DEV mergefrom_BR_PR_8jan08)
+description: On the launch of YACSGui, without any schema open, if we create a new schema, unless we 
+double click on schema1 in object browser, we can add nothing because no schema is selected. It is 
+not obvious and very frustrating. The must always be a schema selected.
+comments: OCC: DONE. This functionality will be available from CVS today evening.
+----------------------------------------------------------------------------------------------------
+Num-----: 2
+priority: 0
+status--: OK (checked on BR_DEV mergefrom_BR_PR_8jan08)
+description: It is possible to create builtin nodes and blocs at the root level on the schema but not
+inside a block or other composed node.
+popup must be available on the composed node representation in the tree.
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 3 
+priority: 0
+status--: OK (checked on BR_DEV mergefrom_BR_PR_10jan08)
+description: add node from catalog is missing (from session and from existing schema file).
+Must be implemented, it is the only way to add SALOME service nodes from SALOME components.
+comments: OCC: This remarks concerns to both points 3 and 4. -a- As we
+understand correctly, the only one possibility for nodes creation
+should be available within YACS module. -b- It is a creation from two
+types of catalog. -c- The type of catalog should be specified during
+SALOME service node creation process in the additional dialog box. -d- It
+is not possible to create an empty SALOME service node. -e- And it is not
+possible to create a SALOME service node from component popup menu in
+the tree view taking into account the selected component as a
+component from which a service node will be created. Is the described
+behaviour correct?
+EDF: working examples for node clone from catalog are in guidemo.
+(see editTree::ComposedNodeContextMenu in src/hmi/editTree.cxx)
+-a- prefered mode of creation = pick a node from a catalog (see -e-)
+-b,c,d- yes
+-e- I am not sure to understand: select a service from a componentinstance already in tree ?
+There could be here a shortcut but it is not a priority.
+OCC: The creation of SALOME service nodes from session catalog is done.
+EDF:
+OK for Session Catalog
+Using Catalog from existing schema file does not work.
+Example scenario:
+- Load SUPERV file salomeloader/samples/GeomGraph.xml and save it as a YACS schema.
+  This schema is runnable.
+- Create a new yacs schema, create a salome node, browse to find the saved schema. SIGSEGV
+OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 4 
+priority: 0
+status--: OK (checked on BR_DEV mergefrom_BR_PR_8jan08)
+description: in create node menu, salome service is useless (we cannot edit ports). Salome service 
+come by clone from a catalog.
+comments:
+EDF: see 3
+EDF: OK, only possible to clone a node from a catalog.
+----------------------------------------------------------------------------------------------------
+Num-----: 5 
+priority: 0
+status--: OK (checked on BR_DEV mergefrom_BR_PR_8jan08)
+description: in create node menu, CPPNode create sigsegv
+comments: OCC: This bug is not reproduced on OCC local version in
+debug mode. It is needed to check it on BR_OCC branch today evening after our
+integration.
+EDF: OK
+----------------------------------------------------------------------------------------------------
+Num-----: 6 
+priority: 0
+status--: OK  (checked on BR_DEV mergefrom_BR_PR_8jan08)(-- to check if never reproduced)
+description: Bug on bloc creation (not systematic)
+>> YACSGui_Graph::update
+Graph:  ADD node
+== aTypeName = N4YACS6ENGINE4BlocE
+th. 3050337968 - Trace /home/prascle/SALOME2/YACS/BR_OCC/YACS_SRC/src/gui/YACSGui_Graph.cxx [309] : YACSGui_Graph::update Bloc0
+YACSPrs_ElementaryNode::YACSPrs_ElementaryNode : Bloc0
+YACSPrs_BlocNode::YACSPrs_BlocNode
+terminate called after throwing an instance of 'St9bad_alloc'
+  what():  St9bad_alloc
+
+comments: OCC: Could you, please, provide a schema sample, on which
+this bug is reproduced?
+EDF:
+I generally load samples/bloc1.xml, and sometimes YACS enters in an infinite loop and consume the memory (swap).
+I can't be more precise on the conditions of occurence.
+OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 7
+priority: 0
+status--: OK (checked on BR_DEV mergefrom_BR_PR_8jan08)
+description: when creating schema from scratch, we do not have panel for node properties unless
+we load another existing schema, then come back to the first schema.
+comments: OCC: DONE. This functionality will be available from CVS today evening.
+----------------------------------------------------------------------------------------------------
+Num-----: 8 
+priority: 0
+status--: OK (checked on BR_DEV mergefrom_BR_PR_29jan08)
+description: in python node properties, the port creation works, but the other buttons (arrows...)
+have a confusing behaviour, and lead sometimes to sigsegv.
+
+comments: OCC: DONE. Debugged.
+EDF: No more SIGSEGV observed but the behaviour is strange.
+Example:
+Create a python script or function node, add 3 input dataflow ports a, b, c type int, double, string
+Try to select input c. Only one column is selected. Use the arrow up. It looks like only the selected
+column is switched with input b, not the entire line. Clik on the other items of the two lines.
+Sometimes the entire line is switched (OK) sometimes not... Confusing behaviour, not always the same.
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 9
+priority: 0
+status--: OK (checked on BR_DEV mergefrom_BR_PR_29jan08)
+description: in python node properties, changing the name leads to abort
+/home/prascle/SALOME2/YACS/BR_OCC/YACS_SRC/src/hmi/guiObservers.cxx [1038] : SubjectElementaryNode::addInputPort( 0x8552168, int, sds )
+terminate called after throwing an instance of 'YACS::Exception'
+  what():  node PyFunctiona is not a child of node bloc1.xml
+ 
+comments: OCC: Could you, please, provide a test scenario to reproduce
+this bug?
+EDF:
+launch YACSGui
+create new schema schema1
+add an inline script node
+load samples/bloc1.xml
+return to schema schema1
+in Node properties, create an inputport p and an outputport q (dataflow, double),
+change PyScript0 in PyScripta and apply:
+OCC: DONE
+EDF:
+Still observed a SIGSEGV when trying to rename a python node created following example 8 above.
+(not systematic).
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 10 
+priority: 0
+status--: OK (checked on BR_DEV mergefrom_BR_PR_8jan08)
+description: Node placement looks OK when there are no blocs, but there are problems of placement of
+nodes inside the bloc (nodes are outside). When there are two levels of blocks (see bloc1.xml),
+same problem, and the bloc in the inner level is not movable. When we move the outer bloc
+to englobe the inner bloc, the canvas flickers. The rezize of the bloc have a very strange behaviour.
+comments:  OCC: Could you, please, provide a schema sample, on which
+this bug is reproduced?
+EDF: samples/bloc1.xml
+EDF: Node placement from BR_OCC (january 7, 2008) works far better. I remove ordering in the BR_DEV
+version (january 8, 2008) because it is possible to have link loops in YACS with loop nodes. See 
+yacsloader/samples/legendre7.xml.
+----------------------------------------------------------------------------------------------------
+Num-----: 11 
+priority: 0
+status--: OK (checked on BR_DEV mergefrom_BR_PR_8jan08)
+description: after loading bschema.xml, ports are not visibles in the node properties panel
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 12 
+priority: 0
+status--: OK (checked on BR_DEV mergefrom_BR_PR_8jan08)
+description: in edition, Selection is not possible from canvas (highlight in tree, open properties...)
+and selection in tree has no action on canvas.
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 13
+priority: 0
+status--: OK (checked on BR_DEV mergefrom_BR_PR_14feb08)
+description: When the bloc properties is open, there is a button to add nodes, that does not work.
+(remove seems possible)
+comments: OCC: Could you, please, provide a test scenario to reproduce
+this bug?
+EDF:
+launch YACSGui
+create new schema schema1
+add a block
+load samples/bloc1.xml (to activate node properties)
+return to schema schema1
+in bloc properties, Direct Children + (for add node)
+a line number 1 appears in Direct Children with an empty node name
+I don't know what to do after...
+IMPORTANT NOTE: prefered way is to have a popup menu (add nodes) at bloc item in tree view (see 2).
+Either the '+' button activate the same menu, or it must be grayed or removed.
+OCC: DONE (see2)
+EDF: button '+' in bloc properties, Direct Children is still active, it is still possible to try
+to remove nodes from other buttons, with effect only on the property pannel. ==> this must be at least
+grayed or removed if inactive)
+EDF: I have finally understood the use of '+' button and selection, to move (reparent) a node,
+idem with '-' button. It is not obvious to find how it works, but it works!
+The main problem is if we forget to apply, there is no warning.
+I don't know if it is possible to have tooltips on such buttons (or other kind of help)
+comments: OCC: DONE, tooltips were added
+EDF: still problems (unnecessary warning, abort) with warnings on apply on certain cases
+scenario: Create several nodes and a block, move a node to the bloc and click on this node without apply.
+abort on OK.
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 14
+priority: 0
+status--: OK (checked on BR_DEV mergefrom_BR_PR_14feb08)
+description: In general, there are too much buttons or menus that have no action, or very unclear.
+these buttons must be either removed, or grayed if they corresponds to something in development.
+comments: OCC: DONE
+EDF: Still a list of confusing buttons or menus without effect or with an unknown behaviour...
+OCC: Could you, please, provide a list of such buttons and menus?
+EDF(PR): OK I will try to make some snapshots and mark the things I don't understand.
+EDF: Well, you already have done a lot of cleaning in the last versions. There are still a few 
+things remaining.
+1 buttons data flow view and data stream view do nothing (comment in source until implementation)
+2 idem in schema property panel
+3 menu create node/node node service does nothing (grayed or comment in source until implementation)
+4 menu create node/from library does nothing (to be removed)
+5 menu create node, from a component instance item in tree (does nothing, could be useful, to check)
+6 search in python script, property panel does not work with qscintilla. Not very useful, could be 
+  removed.
+7 in execution mode, button "remote run, control" could be removed, provided execution mode radio buttons
+  and "stop on error" check button exist somewhere (the existing button "stop on error" is not clear:
+  is it a toggle ?). It should be possible to start an execution in a mode and switch to another mode
+  at any time during the execution (step by step / breakpoints / without stop).
+EDF: 1,2,3,4,6: OK --- 5,7: NOK
+comments: OCC: 
+5 DONE: 1) It is possible now to create a Salome service node
+from a Salome component instance item selected in the edition tree
+view. In such a case, we take the first method name from the catalog"s
+service map as a default service for the created node. This method may
+be changed later with help of the property page of service node. 2) It
+is possible to create a Corba service node from a Corba component
+instance selected in the edition tree view. But in such a case I have a
+question: How can I retrieve a list of services from Corba component
+instance? Is it possible?
+EDF: CORBA nodes are not a priority. SALOME node are created with the first method,
+but it is now impossible to change the method (that was too complicated and dangerous).
+It still could be use as it is for components with one method.
+7 DONE: The modes of schema execution ( without stop / breakpoints /
+step by step ) were moved to the exclusive group of toggle buttons on
+the execution toolbar. "Stop on error" toggle button is placed on the
+execution toolbar too. The "remote run, control" button was removed.
+EDF: execution mode left only in menu, not in toolbar (confusing: not an action)
+----------------------------------------------------------------------------------------------------
+Num-----: 15 
+priority: 0
+status--: OK (checked on BR_DEV mergefrom_BR_PR_29jan08)
+description: No tree view nor canvas for salome SUPERV files 
+comments: OCC: DONE
+EDF: Loading seems OK for edition (tree view, canvas...) but execution tree view is not visible. 
+
+----------------------------------------------------------------------------------------------------
+Num-----: 16
+priority: 0
+status--: OK (checked on BR_DEV mergefrom_BR_PR_29jan08, but related bugs: 13)
+description: When editing a node (for instance a python script), if we switch on another node without 
+apply, everything is lost...
+(in guidemo, I used a qt stack of widget for properties, so each item have it's own instance. No specific
+action necessary to keep values of each widget). Either something similar is reproduced, or a state
+of modification is generated to ask for apply/cancel before switch (may be difficult to implement
+properly...)
+comments: OCC: OK, we will try to implement the second way: warn the user if he selects another object
+without applying modifications (if modifications were really done) for the current object.
+In such a case we will provide two possibilities: Apply - to apply modifications for the current object
+and switch selection to the choosen object, Cancel - to lose modifications for the current object and
+switch selection to the choosen object. Is it suitable for you?
+EDF: yes
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 17
+priority: 0
+status--: OK (checked on BR_DEV mergefrom_BR_PR_29jan08)
+description: Confusing behaviour, when switching from execution to edition and reverse.
+Example: create a new schema with 2 python script nodes, one producing to outputs double(a,b), the other
+with 2 input double (a,b) and an output double (c) (script: c=a+b), create the 2 links a->a b->b and execute.
+return to edition and create a third script node (r=p*q) and connect its inputs to outputs from the
+previous nodes.
+If you create a new execution (click on object browser, Schema1) you got the 3 nodes without the new links.
+you have first to make apply on schema properties in edition : A state of modification is needed to ask
+for apply changes before execution.
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 18
+priority: 0
+status--: OK (checked on BR_DEV mergefrom_BR_PR_29jan08)
+description: When switching from execution to edition and reverse, each execution may correspond to a modified
+schema. Now, all executions are under the same item in object browser. There is no way to retrieve a
+particular version of the schema corresponding to an execution.
+The best thing to do is to create a new schema entry in object browser at the first modification of
+an already executed schema, or, better, to force an explicit (visible) copy of an executed schema to allow
+modifications.
+comments: OCC: As we understand correctly, you want to have a possibility to open the schema corresponding
+to any run object in the edition state (i.e. to create a new schema object in the object browser,
+edition tree view and 2D view for it) to continue its modification and after that to create a new run object
+based on the modified schema and execute it taking into account the last modifications. Is it right?
+If yes, we think, that it may be done with help of e.g. "New edition" popup menu item on the run object
+in the object browser (and/or the same toolbar button, as it was done for creation of a new execution).
+EDF(PR): Yes, I think it is OK. To be complete, when a schema is executed, it must be impossible to modify
+it without copy,to keep the coherence between the schema and it's execution.
+comments: OCC: DONE
+EDF: The schema is still modifiable after execution, but it is always possible to retreive the original
+with "new edition" popup menu on execuction item (OK)
+----------------------------------------------------------------------------------------------------
+Num-----: 19
+priority: 0
+status--: OK (checked on BR_DEV mergefrom_BR_PR_10jan08)
+description: abort on switch edition, menu add node, python node:
+ Switch::getChildByShortName : no default node defined for switch of name Switch0
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 20
+priority: 0
+status--: OK (checked on BR_DEV mergefrom_BR_PR_29jan08)
+description: when export, save before execution... an incomplete schema there must be checks and warnings
+comments: EDF: the error log is given on schema item in tree
+----------------------------------------------------------------------------------------------------
+Num-----: 
+priority: 21
+status--: OK (checked on BR_DEV mergefrom_BR_PR_29jan08)
+description: when modifying 2 output ports, type double to int, in a pyscript node, only one modif
+is taken into account when apply.
+comments: OCC: Could you, please, provide a test scenario to reproduce this bug?
+EDF: For instance, create a new schema, a pyscript node, add 2 inputs ports a and b type double and apply.
+Then, change both type to int then apply, WITHOUT cliking elsewhere between the last combo box for type and
+the apply button.
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 
+priority: 22
+status--: OK (not reproduced on BR_DEV mergefrom_BR_PR_29jan08)
+description: abort on selection in canvas (after problem 21 above):
+YACSGui_TreeView.cxx 474 if ( YACSGui_ReferenceViewItem* aRefItem = dynamic_cast<YACSGui_ReferenceViewItem*>( theItem ) )
+segfault in dynamic_cast
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 23 
+priority: 0
+status--: OK (checked on BR_DEV mergefrom_BR_PR_14feb08)
+description: when zoom to fit area, click in a bloc, the bloc moves instead of an aera selection,
+release the mouse button leads sometimes to abort.
+comments: OCC: DONE
+EDF: it works, but it looks like that it is not easy to do!
+----------------------------------------------------------------------------------------------------
+Num-----: 24 
+priority: 0
+status--: OK (checked on BR_DEV mergefrom_BR_PR_29jan08)
+description: schema is not automatically checked before execution
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----: 25
+priority: 0
+status--: OK (checked on BR_DEV mergefrom_BR_PR_29jan08)
+description: DSC ports are not displayed in node properties panel (for instance samples/calcium4)
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----: 26 
+priority: 0
+status--: OK (checked on BR_DEV mergefrom_BR_PR_14feb08, item 4 remaining, and 5 to improve)
+description: It must be possible to use data types from other nodes already loaded, or to get them 
+from catalogs. For instance, use GEOM_Object in a python node.
+comments:
+ - 1 - the list of availables data types in ports must be updated
+with all data types already available in the data types list of the
+current schema, 
+OCC: DONE: At the current moment there are two ways to choose a port data
+type:
+1a) if the data type is a simple type the user can set it, even it is not
+publicated in the edition tree view with help of combo box
+available for the "Type" column in the edition mode;
+1b) the complex data types may be choosen with help of the selection
+control available for the "Type" column in the edition mode; in such a
+case the user can pick directly a data type in the edition tree view.
+ - 2 - by default the list contains only simple types : bool, int,
+double, string (other types are not usable in a generic form, they
+must be specialised) OCC: DONE.
+ - 3 - the data type list of the schema is automatically updated
+when importing nodes from catalogs. OCC: it is already done, because
+of the edition tree view updates on importing nodes from catalog in
+order to show all available data types inside the current schema.
+ - 4 - it should be possible also to specifically import a
+particular data type from a catalog, by means of a popup on Data Types
+Container in edition tree view. OCC: DONE.
+ - 5 - note that import node from catalog is not restricted to
+SALOME service nodes. all kind of nodes can be imported from catalogs,
+even python script nodes, taken from catalogs built apon other
+schemas.
+
+ With this approach list of data types does not grow too fast and
+the combo box could still be used (warning, complex data types have
+long names...).
+ Another possibility is to allow to pick directly a data type in a
+catalog in the port definition, but it is not possible with the combo
+box...
+EDF: 5 DONE, with a problem of canvas representation when import composed nodes, that can only
+be solved now by export and reimport the schema. The tree view for catalog from proc must reflect
+the proc schema hierarchy (otherwise there could be confusion with nodes of the same name)
+----------------------------------------------------------------------------------------------------
+Num-----: 27 
+priority: 0
+status--: NOK
+description: input ports must not be initialised automatically by default.
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----:  
+priority: 28
+status--: NOK
+description: data nodes in and out, study in and study out, to implement
+(to be created by the way of popup menu put in study, get from study, with path stored)
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----:  
+priority: 0
+status--: NOK
+description: 
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----: 1001 
+priority: 1
+status--: NOK
+description: only container "FactoryServerPy" works on OCN tests, instead of a C++ container. C++
+container works at EDF: There is a problem with the OCN distribution that may compromise SALOME
+Application deployement.
+comments: OCC: Could you, please, specify the launch options for YACSContainer?
+EDF: Head of BR_DEV or BR_PR works with YACSContainer at EDF (with SALOME V4.1.0rc1 ou rc2) :
+try, and please provide detailed diagnostic if it does not work on your configuration.
+EDF: Is this working now ?
+----------------------------------------------------------------------------------------------------
+Num-----: 1002 
+priority: 1
+status--: OK (checked on BR_DEV mergefrom_BR_PR_14feb08)
+description: in create node menu, node node service is confusing. It is better to create a 
+service node, then to associate it with another node with which the component instance is shared.
+comments: OCC: DONE. There are two ways now to set component to the
+SALOME service node: with help of selection control from Input Panel
+for the SALOME service node the user can set the component to the
+selected service node 1) by selection a SALOME component in the
+edition tree view, 2) by selection an another SALOME service node in
+the edition tree view.
+EDF: not clear without component instance names, it seems it does not work:
+create a new schema with to salome service nodes from AddComponent. One instance of AddComponent is
+created by default on DefaultContainer, for each node. OK.
+It is not possible to change the component instance of node 2 to the other component instance
+(selection control does nothing).
+----------------------------------------------------------------------------------------------------
+Num-----: 1003 
+priority: 1
+status--: OK (checked on BR_DEV mergefrom_BR_PR_14feb08)
+description: Is it possible to keep the center of the view at the same place when zooming the canvas ?
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 1004
+priority: 1
+status--: OK ( BR_DEV mergefrom_BR_PR_14feb08 : we keep the two kinds of default containers)
+description: a default container is explicitely created when creating a component, but not when we
+import a a schema. In YACS Engine, there is an implicit default container when nothing is defined.
+There must not be two kind of default containers.
+comments: 
+EDF: A possibility is to create explicitely a default container in YACS Engine and XML file. Not yet
+decided, nothing to do now.
+----------------------------------------------------------------------------------------------------
+Num-----: 1005
+priority: 1
+status--: OK (checked on BR_DEV mergefrom_BR_PR_29jan08)
+description: Mismatch in container names. We must distinguish:
+- the name in YACS schema and xml file, useful to distinguish process (memory context). Lets call it
+  "Definition Name".
+- the effective name of the container in execution (localhost/factoryServer) useful to retreive the
+  container with naming service, and particular to an execution. Lets call it "Execution Name".
+The term "Definition Name" and "Execution Name" are used here for explanation, they may not be the appropriate
+terms for gui.
+in tree view, container must be referenced by it's definition name (lets say A, B, C) and not by it's
+execution name (localhost/factoryServer).
+Container properties panel must give the to names. The execution name (localhost/factoryServer) and
+hostname can stay empty (resource manager job).
+comments: EDF: Done
+----------------------------------------------------------------------------------------------------
+Num-----: 1006 
+priority: 1
+status--: OK (checked on BR_DEV mergefrom_BR_PR_14feb08 - notes on 3,4, see above #13,#26)
+description: popup menu item missing on tree view.
+1 under Container directory: create a container definition
+2 under Nodes directory: create a node
+3 under Data Types directory: import a data type from catalog (required for use in a python node, for
+  instance)
+4 under a salome node, create a node (here, it is easy to define a create a node corresponding to 
+  a service of the same component instance (see 1002). 
+comments:
+EDF : 1,2 done (on BR_PR branch)
+----------------------------------------------------------------------------------------------------
+Num-----: 1007 
+priority: 1
+status--: NOK
+description: instead of having a dialog at execution to define the properties of the YACS Engine 
+container, put the parameters on the schema properties panel for execution.
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----: 1008 
+priority: 1
+status--: OK (checked on BR_DEV mergefrom_BR_PR_14feb08)
+description: When switching from edition to execution, nodes and link arrangements are lost.
+idem for view (zoom, panning).
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 1009
+priority: 1
+status--: OK (checked on BR_DEV mergefrom_BR_PR_14feb08)
+description: There is nothing to show the validity of a graph in edition, node by node.
+A recursive validation node by node is required in engine (will probably be developed soon).
+When this information will be available, it have to be represented in Gui (different color for items
+in tree view, for instance).
+When a node is modified, local impact on graph validity must be recomputed (Engine) and displayed
+(gui notification).
+comments: EDF DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 1010
+priority: 1
+status--: OK (checked on BR_DEV mergefrom_BR_PR_14feb08, a little problem remains, node is not moveable)
+description: in edition, when adding a node in a block, do not reorganize automatically nodes
+(the user may prefer his own placement); do not resize the bloc, unless it is too small.
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 1011
+priority: 1
+status--: OK (checked on BR_DEV mergefrom_BR_PR_14feb08)
+description: When adding a link between to nodes in a block, canvas is not always udpdated.
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 1012
+priority: 1
+status--: OK
+description: in node properties, value type always set to double when clicking (must stay to its value)
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 1013
+priority: 1
+status--: NOK
+description: Nodes with data stream ports must only be available by import from catalogs
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----: 
+priority: 1
+status--: NOK
+description: 
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----: 2001
+priority: 2
+status--: OK (checked on BR_DEV mergefrom_BR_PR_8jan08)
+description: control gates on tree are useless, we can use directly the node itself.
+(the idea is to have a lighter tree)
+comments: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 2002 
+priority: 2
+status--: NOK (checked on BR_DEV mergefrom_BR_PR_8jan08)
+description: Link redrawing is globally OK, but sometimes the links are not visible because very 
+near the blocs borders.
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----: 2003 
+priority: 2
+status--: NOK
+description: strange behaviour to check
+access to SALOME_ResourcesManager while browsing salome services in edition (calcium4)
+access to Subject::detach when clicking in canvas : edition widget destroyed then recreated ?
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----: 2004 
+priority: 2
+status--: NOK
+description: add a panel property on a link: information on from node and to node.
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----: 2005 
+priority: 2
+status--: NOK
+description: add a panel property on Data Types: type id, content, associated classes...
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----: 2006 
+priority: 2
+status--: NOK
+description: 
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----:  
+priority: 2
+status--: NOK
+description: 
+comments:
+----------------------------------------------------------------------------------------------------
+
+
+Problems detected by OCC
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+----------------------------------------------------------------------------------------------------
+Num-----: 1 
+priority: 0
+status--: OK
+description:
+ --	   Import test_schema.xml
+ --	   Select "psnode14" => press "Apply" in opened dialog box
+Result: Crash of application
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 2
+priority: 0
+status--: OK
+description:
+ --	   Import test_schema.xml
+ --	   Select "psnode34" => press "Apply" in opened dialog box
+Result: Fatal error (reference to object)
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 3 
+priority: 0
+status--: OK
+description:
+ --	   Import test_schema.xml
+ --	   Select "psnode33" => assign "Input Ports/p1../Value"=10, "Input Ports/obj../Value"=20
+ --	   Press "Apply" in opened dialog box
+Result: Fatal error
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 4 
+priority: 0
+status--: OK
+description: Tree View isn't updated after changing of name of SALOME
+component and old name of it is shown inspite of new name is stored in corresponding dialog box
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 5 
+priority: 0
+status--: OK
+description: 
+ --	   Import test_schema.xml
+ --	   Select "bb1" => modify its parameters as:   Case id       Node  name 
+			                                  5          psnode33
+                                                       default           n2
+                                                          7          psnode32
+ --        Press Apply button (warning message about deletion of "n2" is shown)
+ --        Press Yess button 
+Result: SIGSEGV
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 6
+priority: 0
+status--: OK
+description:
+ --	   Import test_schema.xml
+ --	   Select block node "bbb" => modify its parameters as: 
+	   �  Delete "node4" from first line
+	   �  Create new line by "+" pressing
+	   �  Add "nnode0"
+ --	   Press Apply button 
+Result: SIGSEGV
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 7 
+priority: 0
+status--: OK
+description:
+ --	   Import test_schema_last.xml
+ --	   Select node "node1" => modify its parameters as: 
+	   �  Change name
+	   �  Assign new valyes to X and Y
+ --	   Press Apply button 
+ --	   Select in 2D Viewer block node"Sb1", for which previous node belongs
+Result: SIGSEGV
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 8
+priority: 0
+status--: OK
+description:
+ --	   Import schema bloc1.xml
+ --        Select b1 node
+ --        Add empty "Direct Children" row and press Apply button
+Result: SIGSEGV
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 9
+priority: 0
+status--: OK
+description:
+ --	   Import schema bloc1.xml
+ --	   Select node1
+ --	   Add row for "Input Ports"
+ --	   Select the row
+ --	   Click "->"
+Result: SIGSEGV
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 10
+priority: 0
+status--: OK
+description:
+ --	   Import schema bloc1.xml
+ --	   Select link inside node "b1" - popup - Add Point 
+ --	   If there is no fatal error SIGSEGV after this step - try next: popup - Delete Point
+Result: SIGSEGV
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 11 
+priority: 0
+status--: OK
+description:
+ --	   Launch application
+ --	   File - New
+ --	   Activate YACS
+ --	   Import schema => the "Import Schema" dialog is opened
+Result: confusing "data" in "File name" and "Quick path" fields
+comments: OCC: DONE. Fixed in YACS module by calling SUIT_FileDlg::getFileName(...) method with
+correct arguments and setting the DATA_DIR environment variable to the directory
+with schema samples.
+----------------------------------------------------------------------------------------------------
+Num-----: 12
+priority: 0
+status--: OK
+description:
+ --	   Import schema double1.xml
+ --	   Fit all
+Result: three red broken links are in the viewer
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 13 
+priority: 0
+status--: OK, but
+description:
+ --	   Import schema bloc1.xml
+ --	   Fit all
+ --	   Select node "b1"
+ --	   Click "Apply" in the appeared "Input Panel"
+BUG: node "b2" jumps on "node1" inside the "b1"
+comments: OCC: DONE, but it is needed to avoid canvas flickers
+----------------------------------------------------------------------------------------------------
+Num-----: 14 
+priority: 0
+status--: OK
+description:
+ --	   Import forloop1.xml (any other graph)
+ --	   Delete loop node (any other node)
+ --	   Close 2D viewer
+Result: SIGSEGV
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 15
+priority: 0
+status--: OK
+description:
+ --	   Import bloc1.xml
+ --	   Select node1
+ --	   Rename node1 as node3
+ --	   Select b1 block node
+ --	   Add a new line for a new children with help of + button
+ --	   Select node3 as a new child node
+ --	   Press Apply button
+Result: SIGSEGV
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 16 
+priority: 0
+status--: OK
+description:  Show log messages (error messages during schema import) in the Message Log
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 17
+priority: 0
+status--: OK
+description:
+ --	   Import test_schema.xml
+ --	   Select bbb.b1 foreach loop node
+ --	   Delete this node
+Result: SIGSEGV
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----: 18
+priority: 0
+status--: NOK
+description: Not systematic: change (activate) 2D view with help of tabs.
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----: 19
+priority: 0
+status--: OK
+description: 
+ --	   Import, for example, fschema.xml
+ --	   Create a new execution
+ --	   First of all try to activate popup menu on the node1 item in the
+ execution tree view
+Result: SIGSEGV
+comments: OCC: DONE
+----------------------------------------------------------------------------------------------------
+Num-----:  
+priority: 0
+status--: NOK
+description: 
+comments:
+----------------------------------------------------------------------------------------------------
+Num-----:  
+priority: 0
+status--: NOK
+description: 
+comments:
+----------------------------------------------------------------------------------------------------

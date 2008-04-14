@@ -12,8 +12,8 @@
 <component-list>
         <component>
                 <!-- Component identification -->
-                <component-name>YACSGui</component-name>
-		<component-username>YACSGui TUI</component-username>
+                <component-name>YACS</component-name>
+		<component-username>YACS TUI</component-username>
                 <component-type>Data</component-type>
                 <component-author>P. RASCLE</component-author>
                 <component-version>@VERSION@</component-version>

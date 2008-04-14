@@ -2,7 +2,6 @@
 #define __OUTPUTPORT_HXX__
 
 #include "OutPort.hxx"
-#include "TypeCode.hxx"
 #include "DataFlowPort.hxx"
 #include "ConversionException.hxx"
 
@@ -38,10 +37,12 @@ namespace YACS
       bool addInPort(InPort *inPort) throw(Exception);
       void edRemoveAllLinksLinkedWithMe() throw(Exception);//entry point for forward port deletion
       virtual void exInit();
+      virtual void checkBasicConsistency() const throw(Exception);
       virtual OutputPort *clone(Node *newHelder) const = 0;
       virtual std::string dump();
 
       virtual void put(const void *data) throw(ConversionException);
+      virtual std::string typeName() {return "YACS__ENGINE__OutputPort";}
 
     protected:
       OutputPort(const OutputPort& other, Node *newHelder);

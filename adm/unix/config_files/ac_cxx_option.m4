@@ -30,7 +30,8 @@ AC_DEFUN([AC_CXX_OPTION], [
   cat > conftest.cxx <<EOF
 int main() { return 0; }
 EOF
-  $CXX $1 conftest.cxx > conftest.log 2>&1
+  $CXX -o a.out $1 conftest.cxx > conftest.log 2>&1
+  rm -f a.out
   var=`echo $1 | sed -e "s, .*$,," | sed -e "s,^-,,"`
 #CCRT  if ! grep -e $var conftest.log > /dev/null 2>&1 ; then
   if grep -e $var conftest.log > /dev/null 2>&1 ; then

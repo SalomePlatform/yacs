@@ -34,7 +34,10 @@
 
 #include "SALOME_Event.hxx"
 
+#include <guiContext.hxx>
+
 using namespace YACS::ENGINE;
+using namespace YACS::HMI;
 
 YACSGui_Swig::YACSGui_Swig()
 {
@@ -64,7 +67,7 @@ void YACSGui_Swig::createGraphPresentation( YACS::ENGINE::Proc* theProc )
 {
   // get YACSGui module
   CAM_Application* anApp = ( CAM_Application* )(SUIT_Session::session()->activeApplication());
-  YACSGui_Module* aModule = dynamic_cast<YACSGui_Module*>( anApp->module( anApp->moduleTitle( "YACSGui" ) ) );
+  YACSGui_Module* aModule = dynamic_cast<YACSGui_Module*>( anApp->module( anApp->moduleTitle( "YACS" ) ) );
   if ( !aModule ) return;
   
   // create view window for presentation of theProc
@@ -75,9 +78,11 @@ void YACSGui_Swig::createGraphPresentation( YACS::ENGINE::Proc* theProc )
   if ( aVW ) aVW->setCaption(theProc->getName().c_str());
 
   // add theProc to data model as not editable graph
-  YACSGui_DataModel* aModel = aModule->getDataModel();
+
+  /*abd
+    YACSGui_DataModel* aModel = aModule->getDataModel();
   if (aModel)
-    aModel->add(theProc, false);
+  aModel->add(theProc, false);*/
   
   // create presentation for theProc (i.e. YACSGui_Graph, presentations of graph's nodes ...) and display it
   if ( aVW )
@@ -85,6 +90,12 @@ void YACSGui_Swig::createGraphPresentation( YACS::ENGINE::Proc* theProc )
     YACSGui_Loader::PrsDataMap aPrsData;
     YACSGui_Loader::PortLinkDataMap aPortLinkData;
     YACSGui_Loader::LabelLinkDataMap aLabelLinkData;
-    aModule->displayGraph( theProc, aPrsData, aPortLinkData, aLabelLinkData );
+
+    // create GuiContext for Proc*
+    GuiContext* aCProc = new GuiContext();
+    GuiContext::setCurrent( aCProc );
+    aCProc->setProc( theProc );
+    
+    aModule->displayGraph( aCProc, aPrsData, aPortLinkData, aLabelLinkData );
   }
 }

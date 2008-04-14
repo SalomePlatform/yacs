@@ -1,0 +1,44 @@
+<proc>
+    <!--types -->
+    <objref name="GEOM/GEOM_Object"/>
+    <sequence name="dblevec" content="double"/>
+    <struct name="s1" >
+      <member name="s" type="double"/>
+    </struct>
+
+
+    <!--nodes -->
+    <datanode name="s" kind="study" >
+      <property name="StudyID" value="1" />
+      <parameter name="b" type="GEOM/GEOM_Object" ref="0:1:2:2"/>
+      <parameter name="c" type="bool" ref="/Geometry/Box_1"/>
+    </datanode>
+
+    <inline name="node0" >
+      <script>
+        <code>import GEOM</code>
+        <code>p1=p1._narrow(GEOM.GEOM_Object)</code>
+        <code>print p1</code>
+      </script>
+      <inport name="p1" type="GEOM/GEOM_Object"/>
+      <outport name="p1" type="GEOM/GEOM_Object"/>
+    </inline>
+
+    <outnode name="os" kind="study" ref="stud1.hdf" >
+      <property name="StudyID" value="3" />
+      <parameter name="b" type="GEOM/GEOM_Object" ref="/Save/x"/>
+      <!--       <parameter name="c" type="GEOM/GEOM_Object" ref="/Geometry/Box_2"/> 
+      <parameter name="b" type="GEOM/GEOM_Object" ref="0:1:1:6"/>
+      -->
+    </outnode>
+    <!-- datalink -->
+    <datalink>
+        <fromnode>s</fromnode><fromport>b</fromport>
+        <tonode>node0</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink>
+        <fromnode>node0</fromnode><fromport>p1</fromport>
+        <tonode>os</tonode> <toport>b</toport>
+    </datalink>
+
+</proc>

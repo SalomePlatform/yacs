@@ -9,7 +9,7 @@ TestEngine_SOURCES =              \
 	engineTest.cxx
 
 TestEngine_LDADD = \
-                 ../libYACSEngine.la         \
+                 ../libYACSlibEngine.la         \
                  ../../bases/libYACSBases.la
 
 
@@ -38,7 +38,7 @@ IntegrationTestEngine_SOURCES =              \
 	RuntimeForEngineIntegrationTest.cxx
 
 IntegrationTestEngine_LDADD =                   \
-                 ../libYACSEngine.la            \
+                 ../libYACSlibEngine.la            \
                  ../../bases/libYACSBases.la
 
 IntegrationTestEngine_LDFLAGS = $(CPPUNIT_LIBS) -pthread -ldl
@@ -52,5 +52,13 @@ IntegrationTestEngine_CXXFLAGS =      \
 
 
 TESTS =  TestEngine IntegrationTestEngine
+
+EXTRA_DIST = \
+ComponentInstanceTest.hxx  ContainerTest.hxx     engineIntegrationTest.hxx \
+engineTest.hxx             PluginOptEvTest1.hxx  RuntimeForEngineIntegrationTest.hxx \
+RuntimeForEngineTest.hxx   ToyNode.hxx
+
+clean-local:
+	rm -f traceExec_* dumpState.xml
 
 include $(top_srcdir)/adm/unix/make_end.am

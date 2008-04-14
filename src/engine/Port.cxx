@@ -1,8 +1,12 @@
 #include "Port.hxx"
+#include "Node.hxx"
 #include <iostream>
 
 using namespace YACS::ENGINE;
 using namespace std;
+
+//#define _DEVDEBUG_
+#include "YacsTrace.hxx"
 
 const char Port::NAME[]="Port";
 
@@ -25,4 +29,11 @@ Port::~Port()
 string Port::getNameOfTypeOfCurrentInstance() const
 {
   return NAME;
+}
+
+void Port::modified()
+{
+  DEBTRACE("Port::modified()");
+  if(_node)
+    _node->modified();
 }

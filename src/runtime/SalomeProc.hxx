@@ -20,6 +20,7 @@ namespace YACS
        virtual TypeCode * createInterfaceTc(const std::string& id, const std::string& name, 
                                     std::list<TypeCodeObjref *> ltc);
        virtual TypeCode * createStructTc(const std::string& id, const std::string& name);
+       virtual std::string typeName() {return "YACS__ENGINE__SalomeProc";}
     };
   }
 }

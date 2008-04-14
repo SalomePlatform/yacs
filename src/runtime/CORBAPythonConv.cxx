@@ -27,14 +27,9 @@ void CorbaPyDouble::put(const void *data) throw(ConversionException)
  */
 void CorbaPyDouble::put(CORBA::Any *data) throw(ConversionException)
 {
-  CORBA::Double d;
-  *data >>=d;
-  PyObject *ob;
-  {
   InterpreterUnlocker loc;
-  ob=PyFloat_FromDouble(d);
+  PyObject* ob=convertCorbaPyObject(edGetType(),data);
   DEBTRACE("ob refcnt: " << ob->ob_refcnt );
-  }
   _port->put(ob);
   Py_DECREF(ob);
 }
@@ -55,14 +50,9 @@ void CorbaPyInt::put(const void *data) throw(ConversionException)
  */
 void CorbaPyInt::put(CORBA::Any *data) throw(ConversionException)
 {
-  CORBA::Long l;
-  *data >>=l;
-  PyObject *ob;
-  {
   InterpreterUnlocker loc;
-  ob=PyLong_FromLong(l);
+  PyObject* ob=convertCorbaPyObject(edGetType(),data);
   DEBTRACE("ob refcnt: " << ob->ob_refcnt );
-  }
   _port->put(ob);
   Py_DECREF(ob);
 }
@@ -81,14 +71,9 @@ void CorbaPyString::put(const void *data) throw(ConversionException)
  */
 void CorbaPyString::put(CORBA::Any *data) throw(ConversionException)
 {
-  const char *s;
-  *data >>=s;
-  PyObject *ob;
-  {
   InterpreterUnlocker loc;
-  ob=PyString_FromString(s);
+  PyObject* ob=convertCorbaPyObject(edGetType(),data);
   DEBTRACE("ob refcnt: " << ob->ob_refcnt );
-  }
   _port->put(ob);
   Py_DECREF(ob);
 }
@@ -111,7 +96,9 @@ void CorbaPyBool::put(const void *data) throw(ConversionException)
  */
 void CorbaPyBool::put(CORBA::Any *data) throw(ConversionException)
 {
+  InterpreterUnlocker loc;
   PyObject* ob=convertCorbaPyObject(edGetType(),data);
+  DEBTRACE("ob refcnt: " << ob->ob_refcnt );
   _port->put(ob);
   Py_DECREF(ob);
 }
@@ -131,16 +118,9 @@ void CorbaPyObjref::put(const void *data) throw(ConversionException)
  */
 void CorbaPyObjref::put(CORBA::Any *data) throw(ConversionException)
 {
-  CORBA::Object_var ObjRef ;
-  *data >>= (CORBA::Any::to_object ) ObjRef ;
-  PyObject *ob;
-  {
   InterpreterUnlocker loc;
-  //hold_lock is true: caller is supposed to hold the GIL. 
-  //omniorb will not take the GIL
-  ob = getSALOMERuntime()->getApi()->cxxObjRefToPyObjRef(ObjRef, 1);
+  PyObject* ob=convertCorbaPyObject(edGetType(),data);
   DEBTRACE("ob refcnt: " << ob->ob_refcnt );
-  }
   _port->put(ob);
   Py_DECREF(ob);
 }
@@ -166,15 +146,11 @@ void CorbaPySequence::put(const void *data) throw(ConversionException)
  */
 void CorbaPySequence::put(CORBA::Any *data) throw(ConversionException)
 {
-  PyObject *ob;
-  {
   InterpreterUnlocker loc;
-  ob=convertCorbaPyObject(edGetType(),data);
+  PyObject* ob=convertCorbaPyObject(edGetType(),data);
   DEBTRACE("ob refcnt: " << ob->ob_refcnt );
   _port->put(ob);
   Py_DECREF(ob);
-  DEBTRACE("ob refcnt: " << ob->ob_refcnt );
-  }
 }
 
 //!Class to convert a CORBA::Any struct into a PyObject struct
@@ -197,13 +173,9 @@ void CorbaPyStruct::put(const void *data) throw(ConversionException)
  */
 void CorbaPyStruct::put(CORBA::Any *data) throw(ConversionException)
 {
-  PyObject *ob;
-  {
-    InterpreterUnlocker loc;
-    ob=convertCorbaPyObject(edGetType(),data);
-    DEBTRACE("ob refcnt: " << ob->ob_refcnt );
-    _port->put(ob);
-    Py_DECREF(ob);
-    DEBTRACE("ob refcnt: " << ob->ob_refcnt );
-  }
+  InterpreterUnlocker loc;
+  PyObject* ob=convertCorbaPyObject(edGetType(),data);
+  DEBTRACE("ob refcnt: " << ob->ob_refcnt );
+  _port->put(ob);
+  Py_DECREF(ob);
 }

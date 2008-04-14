@@ -18,6 +18,7 @@
 #include "InputDataStreamPort.hxx"
 #include "OutputDataStreamPort.hxx"
 #include "Container.hxx"
+#include "DataNode.hxx"
 
 #include <cassert>
 #include <iostream>
@@ -72,6 +73,7 @@ void VisitorSaveSchema::visitBloc(Bloc *node)
     _out << " state=\"disabled\">" << endl;
   else
     _out << ">" << endl;
+  writeProperties(node);
   node->ComposedNode::accept(this);
   writeControls(node);
   writeSimpleDataLinks(node);
@@ -85,6 +87,7 @@ void VisitorSaveSchema::visitElementaryNode(ElementaryNode *node)
 {
   DEBTRACE("START visitElementaryNode " << _root->getChildName(node));
   beginCase(node);
+  writeProperties(node);
   writeInputPorts(node);
   writeInputDataStreamPorts(node);
   writeOutputPorts(node);
@@ -109,6 +112,7 @@ void VisitorSaveSchema::visitForEachLoop(ForEachLoop *node)
     _out << " type=\"" << node->edGetSamplePort()->edGetType()->name() << "\"";
   _out << ">" << endl;
   
+  writeProperties(node);
   node->ComposedNode::accept(this);
   writeSimpleDataLinks(node);
   writeSimpleStreamLinks(node);
@@ -130,6 +134,7 @@ void VisitorSaveSchema::visitForLoop(ForLoop *node)
     _out << ">" << endl;
   else   
     _out << " nsteps=\"" << nsteps->getIntValue() << "\">" << endl;
+  writeProperties(node);
   node->ComposedNode::accept(this);
   writeSimpleDataLinks(node);
   writeSimpleStreamLinks(node);
@@ -148,6 +153,7 @@ void VisitorSaveSchema::visitInlineNode(InlineNode *node)
     _out << " state=\"disabled\">" << endl;
   else
     _out << ">" << endl;
+  writeProperties(node);
   _out << indent(depth+1) << "<script><code><![CDATA[";
   _out << node->getScript();
   _out << "]]></code></script>" << endl;
@@ -170,6 +176,7 @@ void VisitorSaveSchema::visitInlineFuncNode(InlineFuncNode *node)
     _out << " state=\"disabled\">" << endl;
   else
     _out << ">" << endl;
+  writeProperties(node);
   _out << indent(depth+1) << "<function name=\"" << node->getFname() << "\">" << endl;
   _out << indent(depth+2) << "<code><![CDATA[";
   _out << node->getScript();
@@ -189,6 +196,7 @@ void VisitorSaveSchema::visitLoop(Loop *node)
   DEBTRACE("START visitLoop " << _root->getChildName(node));
   beginCase(node);
   int depth = depthNode(node);
+  writeProperties(node);
   node->ComposedNode::accept(this);
   writeControls(node);
   writeSimpleDataLinks(node);
@@ -223,6 +231,7 @@ void VisitorSaveSchema::visitServiceNode(ServiceNode *node)
     _out << " state=\"disabled\">" << endl;
   else
     _out << ">" << endl;
+  writeProperties(node);
   if (node->getKind() == "XML")
     {
       _out << indent(depth+1) << "<kind>xmlsh</kind>" << endl;
@@ -231,7 +240,7 @@ void VisitorSaveSchema::visitServiceNode(ServiceNode *node)
   else
     {
       ComponentInstance *compo = node->getComponent();
-      if (_componentInstanceMap.find(compo) == _componentInstanceMap.end())
+      if (compo && (_componentInstanceMap.find(compo) == _componentInstanceMap.end()))
         {
           _out << indent(depth+1) << compo->getFileRepr() << endl;
           _componentInstanceMap[compo] = _root->getChildName(node);
@@ -273,7 +282,12 @@ void VisitorSaveSchema::visitServiceInlineNode(ServiceInlineNode *node)
     _out << " state=\"disabled\">" << endl;
   else
     _out << ">" << endl;
-  _out << indent(depth+1) << node->getComponent()->getFileRepr() << endl;
+  
+  writeProperties(node);
+  ComponentInstance *compo = node->getComponent();
+  if (compo)
+    _out << indent(depth+1) << compo->getFileRepr() << endl;
+
   _out << indent(depth+1) << "<function name=\"" << node->getMethod() << "\">" << endl;
   _out << indent(depth+2) << "<code><![CDATA[";
   _out << node->getScript();
@@ -284,6 +298,30 @@ void VisitorSaveSchema::visitServiceInlineNode(ServiceInlineNode *node)
   _out << indent(depth) << "</serviceInline>" << endl;
   endCase(node);
   DEBTRACE("END visitServiceInlineNode " << _root->getChildName(node));
+}
+
+void VisitorSaveSchema::visitPresetNode(DataNode *node)
+{
+  DEBTRACE("START visitPresetNode " << _root->getChildName(node));
+  DEBTRACE("END visitPresetNode " << _root->getChildName(node));
+}
+
+void VisitorSaveSchema::visitOutNode(DataNode *node)
+{
+  DEBTRACE("START visitOutNode " << _root->getChildName(node));
+  DEBTRACE("END visitOutNode " << _root->getChildName(node));
+}
+
+void VisitorSaveSchema::visitStudyInNode(DataNode *node)
+{
+  DEBTRACE("START visitStudyInNode " << _root->getChildName(node));
+  DEBTRACE("END visitStudyInNode " << _root->getChildName(node));
+}
+
+void VisitorSaveSchema::visitStudyOutNode(DataNode *node)
+{
+  DEBTRACE("START visitStudyOutNode " << _root->getChildName(node));
+  DEBTRACE("END visitStudyOutNode " << _root->getChildName(node));
 }
 
 
@@ -300,6 +338,7 @@ void VisitorSaveSchema::visitSwitch(Switch *node)
     _out << ">" << endl;
   else   
     _out << " select=\"" << condition->getIntValue() << "\">" << endl;
+  writeProperties(node);
   node->ComposedNode::accept(this);
   writeControls(node);
   writeSimpleDataLinks(node);
@@ -319,6 +358,7 @@ void VisitorSaveSchema::visitWhileLoop(WhileLoop *node)
     _out << " state=\"disabled\">" << endl;
   else
     _out << ">" << endl;
+  writeProperties(node);
   node->ComposedNode::accept(this);
   writeSimpleDataLinks(node);
   writeSimpleStreamLinks(node);
@@ -337,6 +377,124 @@ void VisitorSaveSchema::writeProperties(Node *node)
     {
       _out << indent(depth) << "<property name=\"" << it->first
            << "\" value=\"" << it->second << "\"/>" << endl;
+    }
+}
+
+void VisitorSaveSchema::dumpTypeCode(TypeCode* type, set<string>& typeNames,map<string, TypeCode*>& typeMap,int depth)
+{
+  DynType kind = type->kind();
+  string typeName = type->name();
+  if (typeNames.find(typeName) != typeNames.end())
+    return;
+  switch(kind)
+    {
+    case YACS::ENGINE::Double:
+      {
+        typeNames.insert(typeName);
+        _out << indent(depth) << "<type name=\"" << typeName << "\" kind=\"double\"/>" << endl;
+        break;
+      }
+    case YACS::ENGINE::Int:
+      {
+        typeNames.insert(typeName);
+        _out << indent(depth) << "<type name=\"" << typeName << "\" kind=\"int\"/>" << endl;
+        break;
+      }
+    case YACS::ENGINE::String:
+      {
+        typeNames.insert(typeName);
+        _out << indent(depth) << "<type name=\"" << typeName << "\" kind=\"string\"/>" << endl;
+        break;
+      }
+    case YACS::ENGINE::Bool:
+      {
+        typeNames.insert(typeName);
+        _out << indent(depth) << "<type name=\"" << typeName << "\" kind=\"bool\"/>" << endl;
+        break;
+      }
+    case YACS::ENGINE::Objref:
+      {
+        TypeCodeObjref *objref = dynamic_cast<TypeCodeObjref*>(type);
+        std::list<TypeCodeObjref*> listOfBases = getListOfBases(objref);
+        //try to dump base classes
+        for(std::list<TypeCodeObjref*>::iterator il=listOfBases.begin(); il != listOfBases.end(); ++il)
+          {
+            if (typeNames.find((*il)->name()) == typeNames.end())
+              dumpTypeCode((*il),typeNames,typeMap,depth);
+          }
+        //effective dump
+        typeNames.insert(typeName);
+        _out << indent(depth) << "<objref name=\"" << typeName << "\" id=\""
+             << objref->id() << "\"";
+        if (listOfBases.empty())
+          _out << "/>" << endl;
+        else
+          {
+            _out << ">" << endl;
+            for(std::list<TypeCodeObjref*>::iterator il=listOfBases.begin(); il != listOfBases.end(); ++il)
+              {
+                _out << indent(depth+1) << "<base>";
+                _out << (*il)->name();
+                _out << "</base>" << endl;
+              }
+            _out << indent(depth) << "</objref>" << endl;
+          }
+        break;
+      }
+    case YACS::ENGINE::Sequence:
+      {
+        TypeCode* content = (TypeCode*)type->contentType();
+        if (typeNames.find(content->name()) == typeNames.end())
+          {
+            //content type not dumped
+            dumpTypeCode(content,typeNames,typeMap,depth);
+          }
+        typeNames.insert(typeName);
+        _out << indent(depth) << "<sequence name=\"" << typeName << "\" content=\""
+             << content->name() <<  "\"/>" << endl;
+        break;
+      }
+    case YACS::ENGINE::Array:
+      {
+        TypeCode* content = (TypeCode*)type->contentType();
+        if (typeNames.find(content->name()) == typeNames.end())
+          {
+            //content type not dumped
+            dumpTypeCode(content,typeNames,typeMap,depth);
+          }
+        typeNames.insert(typeName);
+        _out << indent(depth) << "<array name=\"" << typeName << "\" content=\""
+             << content->name() <<  "\"/>" << endl;
+        break;
+      }
+    case YACS::ENGINE::Struct:
+      {
+        TypeCodeStruct* tcStruct = dynamic_cast<TypeCodeStruct*>(type);
+        assert(tcStruct);
+        int mbCnt = tcStruct->memberCount();
+        for (int i=0; i<mbCnt; i++)
+          {
+            TypeCode* member = tcStruct->memberType(i);
+            if (typeNames.find(member->name()) == typeNames.end())
+              {
+                //content type not dumped
+                dumpTypeCode(member,typeNames,typeMap,depth);
+              }            
+          }
+        _out << indent(depth) << "<struct name=\"" << typeName << "\">" << endl;
+        for (int i=0; i<mbCnt; i++)
+          {
+            TypeCode* member = tcStruct->memberType(i);
+            _out << indent(depth+1) << "<member name=\"" <<tcStruct->memberName(i) << "\" type=\"" << member->name() << "\"/>" << endl;
+          }
+        _out << indent(depth) << "</struct>" << endl;
+        break;
+      }
+    default:
+      {
+        string what = "wrong TypeCode: "; 
+        throw Exception(what);
+      }
     }
 }
 
@@ -360,82 +518,7 @@ void VisitorSaveSchema::writeTypeCodes(Proc *proc)
 
   for (it = typeMap.begin(); it != typeMap.end(); it++)
     {
-      DynType kind = (it->second)->kind();
-      string typeId = (it->second)->id();
-      switch(kind)
-        {
-        case YACS::ENGINE::Double:
-          {
-            if (typeNames.find(typeId) == typeNames.end())
-              {
-                typeNames.insert(typeId);
-                _out << indent(depth) << "<type name=\"" << typeId << "\" kind=\"double\"/>" << endl;
-              }
-            break;
-          }
-        case YACS::ENGINE::Int:
-          {
-            if (typeNames.find(typeId) == typeNames.end())
-              {
-                typeNames.insert(typeId);
-                _out << indent(depth) << "<type name=\"" << typeId << "\" kind=\"int\"/>" << endl;
-              }
-            break;
-          }
-        case YACS::ENGINE::String:
-          {
-            if (typeNames.find(typeId) == typeNames.end())
-              {
-                typeNames.insert(typeId);
-                _out << indent(depth) << "<type name=\"" << typeId << "\" kind=\"string\"/>" << endl;
-              }
-            break;
-          }
-        case YACS::ENGINE::Bool:
-          {
-            if (typeNames.find(typeId) == typeNames.end())
-              {
-                typeNames.insert(typeId);
-                _out << indent(depth) << "<type name=\"" << typeId << "\" kind=\"bool\"/>" << endl;
-              }
-            break;
-          }
-        case YACS::ENGINE::Objref:
-          {
-            TypeCodeObjref *objref = dynamic_cast<TypeCodeObjref*>(it->second);
-            assert(objref);
-            std::list<TypeCodeObjref*> listOfBases = getListOfBases(objref);
-            _out << indent(depth) << "<objref name=\"" << it->first << "\" id=\""
-                 << objref->id() << "\"";
-            if (listOfBases.empty())
-              _out << "/>" << endl;
-            else
-              {
-                _out << ">" << endl;
-                for(std::list<TypeCodeObjref*>::iterator il=listOfBases.begin(); il != listOfBases.end(); ++il)
-                  {
-                    _out << indent(depth+1) << "<base>";
-                    _out << (*il)->name();
-                    _out << "</base>" << endl;
-                  }
-                _out << indent(depth) << "</objref>" << endl;
-              }
-            break;
-          }
-        case YACS::ENGINE::Sequence:
-          {
-            const TypeCode* content = (it->second)->contentType();
-
-            _out << indent(depth) << "<sequence name=\"" << it->first << "\" content=\""
-                 << content->name() <<  "\"/>" << endl;
-            break;
-          }
-        default:
-          {
-            string what = "wrong TypeCode: "; 
-            throw Exception(what);
-          }
-        }
+      dumpTypeCode(it->second,typeNames,typeMap,depth);
     }
 }
 
@@ -448,6 +531,11 @@ void VisitorSaveSchema::writeContainers(Proc *proc)
     {
       string name = it->first;
       _out << indent(depth) << "<container name=\"" << name << "\">" << endl;
+      map<string, string> properties = (it->second)->getProperties();
+      map<string, string>::iterator itm;
+      for(itm = properties.begin(); itm != properties.end(); ++itm)
+        _out << indent(depth+1) << "<property name=\"" << (*itm).first
+             << "\" value=\"" << (*itm).second << "\"/>" << endl;
       _out << indent(depth) << "</container>"  << endl;
     }
 }
@@ -522,8 +610,8 @@ void VisitorSaveSchema::writeOutputDataStreamPorts(Node *node)
 void VisitorSaveSchema::writeControls(ComposedNode *node)
 {
   int depth = depthNode(node)+1;
-  set<Node*> setOfChildren =  node->edGetDirectDescendants();
-  for (set<Node*>::iterator ic = setOfChildren.begin(); ic != setOfChildren.end(); ++ic)
+  list<Node*> setOfChildren =  node->edGetDirectDescendants();
+  for (list<Node*>::iterator ic = setOfChildren.begin(); ic != setOfChildren.end(); ++ic)
     {
       // --- Control links from direct descendant to nodes inside the bloc
       set<InGate*> setOfInGates = (*ic)->getOutGate()->edSetInGate();
@@ -563,18 +651,22 @@ void VisitorSaveSchema::writeControls(ComposedNode *node)
 void VisitorSaveSchema::writeSimpleDataLinks(ComposedNode *node)
 {
   int depth = depthNode(node)+1;
-  set<Node*> setOfChildren =  node->edGetDirectDescendants();
+  list<Node*> setOfChildren =  node->edGetDirectDescendants();
 
-  set<Node*> setOfChildrenPlusSplitters = setOfChildren;
+  list<Node*> setOfChildrenPlusSplitters = setOfChildren;
 
-  for (set<Node*>::iterator ic = setOfChildren.begin(); ic != setOfChildren.end(); ++ic)
+  for (list<Node*>::iterator ic = setOfChildren.begin(); ic != setOfChildren.end(); ++ic)
     // add "splitter" node of ForEachLoop nodes to the set of children
     if ( dynamic_cast<ForEachLoop*>( *ic ) )
-      setOfChildrenPlusSplitters.insert( (*ic)->getChildByName(ForEachLoop::NAME_OF_SPLITTERNODE) );
+      {
+        Node *nodeToInsert=(*ic)->getChildByName(ForEachLoop::NAME_OF_SPLITTERNODE);
+        if(find(setOfChildrenPlusSplitters.begin(),setOfChildrenPlusSplitters.end(),nodeToInsert)==setOfChildrenPlusSplitters.end())
+          setOfChildrenPlusSplitters.push_back(nodeToInsert);
+      }
   
   // --- first pass,  write links where the input port is inside the node scope. Keep in memory others.
   
-  for (set<Node*>::iterator ic = setOfChildrenPlusSplitters.begin(); ic != setOfChildrenPlusSplitters.end(); ++ic)
+  for (list<Node*>::iterator ic = setOfChildrenPlusSplitters.begin(); ic != setOfChildrenPlusSplitters.end(); ++ic)
     {
       Node* from = *ic;
       list<OutputPort*> listOP = from->getLocalOutputPorts();
@@ -586,13 +678,13 @@ void VisitorSaveSchema::writeSimpleDataLinks(ComposedNode *node)
             {
               InPort *anIP = *iip;
               Node* to = anIP->getNode();
-              cerr << "from " << from->getName() << " outputPort " << anOP->getName()
-                   << " to " << to->getName() << " inputPort " << anIP->getName() << endl;
+              DEBTRACE("from " << from->getName() << " outputPort " << anOP->getName()
+                       << " to " << to->getName() << " inputPort " << anIP->getName() );
               Node* child = node->isInMyDescendance(to);
               if (child && (child->getNumId() != node->getNumId())
                   && (from->getNumId() != to->getNumId()))
                 {
-                  cerr << "BINGO!" << endl;
+                  DEBTRACE( "BINGO!" );
 
 		  string fromName;
 		  if ( dynamic_cast<SplitterNode*>(from) && dynamic_cast<ForEachLoop*>(from->getFather()) )
@@ -614,7 +706,7 @@ void VisitorSaveSchema::writeSimpleDataLinks(ComposedNode *node)
                 }
               else
                 { // --- store info to create the link later, given the input port
-                  cerr << "For later" << endl;
+                  DEBTRACE( "For later" );
                   struct DataLinkInfo aLink = { from, to, anOP, anIP, false };
                   _mapOfDLtoCreate.insert(make_pair(anIP->getNumId(), aLink));
                 }
@@ -668,11 +760,11 @@ void VisitorSaveSchema::writeSimpleDataLinks(ComposedNode *node)
 void VisitorSaveSchema::writeSimpleStreamLinks(ComposedNode *node)
 {
   int depth = depthNode(node)+1;
-  set<Node*> setOfChildren =  node->edGetDirectDescendants();
+  list<Node*> setOfChildren =  node->edGetDirectDescendants();
 
   // --- first pass,  write links where the input port is inside the node scope. Keep in memory others.
 
-  for (set<Node*>::iterator ic = setOfChildren.begin(); ic != setOfChildren.end(); ++ic)
+  for (list<Node*>::iterator ic = setOfChildren.begin(); ic != setOfChildren.end(); ++ic)
     {
       Node* from = *ic;
       if ( dynamic_cast<ComposedNode*>(from) ) continue;
@@ -685,13 +777,13 @@ void VisitorSaveSchema::writeSimpleStreamLinks(ComposedNode *node)
             {
               InPort *anIP = *iip;
               Node* to = anIP->getNode();
-              cerr << "from " << from->getName() << " outputPort " << anOP->getName()
-                   << " to " << to->getName() << " inputPort " << anIP->getName() << endl;
+              DEBTRACE("from " << from->getName() << " outputPort " << anOP->getName()
+                       << " to " << to->getName() << " inputPort " << anIP->getName() );
               Node* child = node->isInMyDescendance(to);
               if (child && (child->getNumId() != node->getNumId())
                   && (from->getNumId() != to->getNumId()))
                 {
-                  cerr << "BINGO!" << endl;
+                  DEBTRACE( "BINGO!" );
                   string childName = node->getChildName(to);
                   _out << indent(depth) << "<stream>" << endl;
                   _out << indent(depth+1) << "<fromnode>" << node->getChildName(from) << "</fromnode> ";
@@ -708,7 +800,7 @@ void VisitorSaveSchema::writeSimpleStreamLinks(ComposedNode *node)
 		}
               else
                 { // --- store info to create the link later, given the input port
-                  cerr << "For later" << endl;
+                  DEBTRACE("For later" );
                   struct StreamLinkInfo aLink = { from, to, anOP, anIP, false };
                   _mapOfSLtoCreate.insert(make_pair(anIP->getNumId(), aLink));
                 }
@@ -768,8 +860,8 @@ void VisitorSaveSchema::writeSimpleStreamLinks(ComposedNode *node)
 std::set<Node*> VisitorSaveSchema::getAllNodes(ComposedNode *node)
 {
   set<Node *> ret;
-  set<Node *> setOfNode = node->edGetDirectDescendants();
-  for(set<Node *>::iterator iter=setOfNode.begin();iter!=setOfNode.end();iter++)
+  list< Node *> setOfNode = node->edGetDirectDescendants();
+  for(list<Node *>::iterator iter=setOfNode.begin();iter!=setOfNode.end();iter++)
     {
       if ( dynamic_cast<ComposedNode*> (*iter) )
         {
@@ -779,12 +871,12 @@ std::set<Node*> VisitorSaveSchema::getAllNodes(ComposedNode *node)
         }
       else
         {
-          set<ElementaryNode *> myCurrentSet=(*iter)->getRecursiveConstituents();
+          list<ElementaryNode *> myCurrentSet=(*iter)->getRecursiveConstituents();
           ret.insert(myCurrentSet.begin(),myCurrentSet.end());
           ret.insert(*iter);
         }
     }
-   return ret;
+  return ret;
 }
 
 void VisitorSaveSchema::writeParameters(Proc *proc)
@@ -793,9 +885,9 @@ void VisitorSaveSchema::writeParameters(Proc *proc)
   set<Node*> nodeSet = getAllNodes(proc);
   for (set<Node*>::iterator iter = nodeSet.begin(); iter != nodeSet.end(); ++iter)
     {
-//       ElementaryNode *node = dynamic_cast<ElementaryNode*>(*iter);
-//       if (node)
-//         writeParametersNode(proc,node);
+      //       ElementaryNode *node = dynamic_cast<ElementaryNode*>(*iter);
+      //       if (node)
+      //         writeParametersNode(proc,node);
       writeParametersNode(proc,(*iter));
     }
 }

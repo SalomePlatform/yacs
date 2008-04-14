@@ -5,7 +5,6 @@
 #include "DynParaLoop.hxx"
 #include "OutputPort.hxx"
 #include "InputPort.hxx"
-#include "TypeCode.hxx"
 #include "AnyInputPort.hxx"
 
 namespace YACS
@@ -15,6 +14,8 @@ namespace YACS
     class ForEachLoop;
     class SplitterNode;
     class AnySplitOutputPort;
+    class TypeCode;
+    class TypeCodeSeq;
 
     class InterceptorInputPort : public AnyInputPort
     {
@@ -129,12 +130,12 @@ namespace YACS
       void getReadyTasks(std::vector<Task *>& tasks);
       int getNumberOfInputPorts() const;
       //
-      void checkConsistency(ComposedNode *pointOfView) const throw(Exception);
       void checkNoCyclePassingThrough(Node *node) throw(Exception);
       void selectRunnableTasks(std::vector<Task *>& tasks);
       //
       unsigned getExecCurrentId() const { return _execCurrentId; } // for update progress bar on GUI part
       std::list<InputPort *> getSetOfInputPort() const;
+      std::list<InputPort *> getLocalInputPorts() const;
       InputPort *edGetSeqOfSamplesPort() { return &_splitterNode._dataPortToDispatch; }
       InputPort *getInputPort(const std::string& name) const throw(Exception);
       OutPort *getOutPort(const std::string& name) const throw(Exception);
@@ -142,15 +143,16 @@ namespace YACS
       Node *getChildByShortName(const std::string& name) const throw(Exception);
       std::list<OutputPort *> getLocalOutputPorts() const;
       void accept(Visitor *visitor);
-      void writeDot(std::ostream &os);
+      void writeDot(std::ostream &os) const;
+      virtual std::string typeName() {return "YACS__ENGINE__ForEachLoop";}
     protected:
       Node *simpleClone(ComposedNode *father, bool editionOnly=true) const;
-      void checkLinkPossibility(OutPort *start, const std::set<ComposedNode *>& pointsOfViewStart,
-                                InPort *end, const std::set<ComposedNode *>& pointsOfViewEnd) throw(Exception);
+      void checkLinkPossibility(OutPort *start, const std::list<ComposedNode *>& pointsOfViewStart,
+                                InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) throw(Exception);
       YACS::Event updateStateOnFinishedEventFrom(Node *node);
-      void buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::set<ComposedNode *>& pointsOfView);
-      void getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::set<ComposedNode *>& pointsOfView) throw(Exception);
-      void releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::set<ComposedNode *>& pointsOfView) throw(Exception);
+      void buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView);
+      void getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(Exception);
+      void releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(Exception);
     protected:
       void cleanDynGraph();
       void pushAllSequenceValues();

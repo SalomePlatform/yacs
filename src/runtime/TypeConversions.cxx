@@ -10,8 +10,10 @@
 #include "TypeConversions.hxx"
 #include "ConversionException.hxx"
 #include "RuntimeSALOME.hxx"
+#include "Salome_file_i.hxx"
 #include "TypeCode.hxx"
 #include "Cstr2d.hxx"
+#include "SALOME_GenericObj.hh"
 
 #include <iostream>
 #include <sstream>
@@ -25,6 +27,24 @@ namespace YACS
 {
   namespace ENGINE
   {
+    std::string getImplName(ImplType impl)
+      {
+         switch(impl)
+           {
+           case CORBAImpl:
+             return "CORBA";
+           case PYTHONImpl:
+             return "PYTHON";
+           case NEUTRALImpl:
+             return "NEUTRAL";
+           case XMLImpl:
+             return "XML";
+           case CPPImpl:
+             return "CPP";
+           default:
+             return "UNKNOWN";
+           }
+      }
     /*
      * Functions to return a CORBA TypeCode equivalent to a YACS TypeCode
      */
@@ -216,7 +236,7 @@ namespace YACS
           {
             if(t1->kind() == Struct)
               {
-                if( t1->isA(t2->id()) )
+                if( t1->isA(t2) )
                   return 1;
               }
             return 0;
@@ -672,8 +692,8 @@ namespace YACS
           else
             {
               stringstream msg;
-              msg << "Problem in Python to xml conversion: kind= " << t->kind() ;
-              msg << " : " << __FILE__ << ":" << __LINE__;
+              msg << "Not a python boolean. kind=" << t->kind() ;
+              msg << " ( " << __FILE__ << ":" << __LINE__ << ")";
               throw YACS::ENGINE::ConversionException(msg.str());
             }
           return l;
@@ -690,6 +710,11 @@ namespace YACS
               return PyString_AS_STRING(o);
             }
           PyObject *pystring=PyObject_CallMethod(getSALOMERuntime()->getPyOrb(),"object_to_string","O",o);
+          if(pystring==NULL)
+            {
+              PyErr_Print();
+              throw YACS::ENGINE::ConversionException("Problem in convertToYacsObjref<PYTHONImpl");
+            }
           std::string mystr=PyString_AsString(pystring);
           Py_DECREF(pystring);
           return mystr;
@@ -700,6 +725,13 @@ namespace YACS
     {
       static inline void convert(const TypeCode *t,PyObject* o,void*,std::vector<TOUT>& v)
         {
+          if(!PySequence_Check(o))
+            {
+              stringstream msg;
+              msg << "Problem in conversion: the python object is not a sequence " << std::endl;
+              msg << " (" << __FILE__ << ":" << __LINE__ << ")";
+              throw YACS::ENGINE::ConversionException(msg.str());
+            }
           int length=PySequence_Size(o);
           DEBTRACE("length: " << length );
           v.resize(length);
@@ -798,10 +830,7 @@ namespace YACS
     {
       static inline PyObject* convert(const TypeCode *t,std::string& o)
         {
-          std::string::size_type pos=o.find_first_of(":");
-          std::string prefix=o.substr(0,pos);
-          DEBTRACE(prefix);
-          if(prefix == "file")
+          if(t->isA(Runtime::_tc_file))
             {
               //It's an objref file. Convert it specially
               return PyString_FromString(o.c_str());
@@ -841,12 +870,46 @@ namespace YACS
               msg << " (" << __FILE__ << ":" << __LINE__ << ")";
               throw YACS::ENGINE::ConversionException(msg.str());
             }
-          //hold_lock is true: caller is supposed to hold the GIL.
-          //omniorb will not take the GIL
 #ifdef REFCNT
           DEBTRACE("obref refCount: " << obref->_PR_getobj()->pd_refCount);
 #endif
+#ifdef _DEVDEBUG_
+          std::cerr << "_PD_repoId: " << obref->_PD_repoId << std::endl;
+          std::cerr << "_mostDerivedRepoId: " << obref->_PR_getobj()->_mostDerivedRepoId()  << std::endl;
+#endif
+
+          //hold_lock is true: caller is supposed to hold the GIL.
+          //omniorb will not take the GIL
           PyObject* ob= getSALOMERuntime()->getApi()->cxxObjRefToPyObjRef(obref, 1);
+
+#ifdef _DEVDEBUG_
+          PyObject_Print(ob,stderr,Py_PRINT_RAW);
+          std::cerr << std::endl;
+          std::cerr << "obref is a generic: " << obref->_is_a("IDL:SALOME/GenericObj:1.0") << std::endl;
+          PyObject_Print(getSALOMERuntime()->get_omnipy(),stderr,Py_PRINT_RAW);
+          std::cerr << std::endl;
+#endif
+
+          //ob is a CORBA::Object. Try to convert it to more specific type SALOME/GenericObj
+          if(obref->_is_a("IDL:SALOME/GenericObj:1.0"))
+            {
+              PyObject *result = PyObject_CallMethod(getSALOMERuntime()->get_omnipy(), "narrow", "Osi",ob,"IDL:SALOME/GenericObj:1.0",1);
+              if(result==NULL)
+                PyErr_Clear();//Exception during narrow. Keep ob
+              else if(result==Py_None)
+                Py_DECREF(result); //Can't narrow. Keep ob
+              else
+                {
+                  //Can narrow. Keep result
+#ifdef _DEVDEBUG_
+                  PyObject_Print(result,stderr,Py_PRINT_RAW);
+                  std::cerr << std::endl;
+#endif
+                  Py_DECREF(ob);
+                  ob=result;
+                }
+            }
+
 #ifdef REFCNT
           DEBTRACE("obref refCount: " << obref->_PR_getobj()->pd_refCount);
 #endif
@@ -905,7 +968,7 @@ namespace YACS
     {
       static inline double convert(const TypeCode *t,xmlDocPtr doc,xmlNodePtr cur)
         {
-          double d;
+          double d=0;
           cur = cur->xmlChildrenNode;
           while (cur != NULL)
             {
@@ -914,9 +977,16 @@ namespace YACS
                   //wait a double, got a double
                   xmlChar * s = NULL;
                   s = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
-                  DEBTRACE( "convertToYacsDouble " << (const char *)s );
-                  d=Cstr2d((const char *)s);
-                  xmlFree(s);
+                  if (s)
+                    {
+                      DEBTRACE( "convertToYacsDouble " << (const char *)s );
+                      d=Cstr2d((const char *)s);
+                      xmlFree(s);
+                    }
+                  else
+                    {
+                      DEBTRACE("############### workaround to improve...");
+                    }
                   return d;
                 }
               else if ((!xmlStrcmp(cur->name, (const xmlChar *)"int")))
@@ -924,16 +994,23 @@ namespace YACS
                   //wait a double, got an int
                   xmlChar * s = NULL;
                   s = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
-                  DEBTRACE( "convertToYacsDouble " << (const char *)s );
-                  d=Cstr2d((const char *)s);
-                  xmlFree(s);
+                  if (s)
+                    {
+                      DEBTRACE( "convertToYacsDouble " << (const char *)s );
+                      d=Cstr2d((const char *)s);
+                      xmlFree(s);
+                    }
+                  else
+                    {
+                      DEBTRACE("############### workaround to improve...");
+                    }
                   return d;
                 }
               cur = cur->next;
             }
           stringstream msg;
-          msg << "Problem in Xml to TOUT conversion: kind= " << t->kind() ;
-          msg << " : " << __FILE__ << ":" << __LINE__;
+          msg << "Problem in conversion from Xml to " << getImplName(IMPLOUT) << " with type:  " << t->id() ;
+          msg << " (" << __FILE__ << ":" << __LINE__ << ")";
           throw YACS::ENGINE::ConversionException(msg.str());
         }
     };
@@ -942,25 +1019,31 @@ namespace YACS
     {
       static inline long convert(const TypeCode *t,xmlDocPtr doc,xmlNodePtr cur)
         {
-          long d;
+          long d=0;
           cur = cur->xmlChildrenNode;
           while (cur != NULL)
             {
               if ((!xmlStrcmp(cur->name, (const xmlChar *)"int")))
                 {
-                  //wait a double, got an int
                   xmlChar * s = NULL;
                   s = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
-                  DEBTRACE( "convertToYacsInt " << (const char *)s );
-                  d=atol((const char *)s);
-                  xmlFree(s);
+                  if (s)
+                    {
+                      DEBTRACE( "convertToYacsInt " << (const char *)s );
+                      d=atol((const char *)s);
+                      xmlFree(s);
+                    }
+                  else
+                    {
+                      DEBTRACE("############### workaround to improve...");
+                    }
                   return d;
                 }
               cur = cur->next;
             }
           stringstream msg;
-          msg << "Problem in Xml to TOUT conversion: kind= " << t->kind() ;
-          msg << " : " << __FILE__ << ":" << __LINE__;
+          msg << "Problem in conversion from Xml to " << getImplName(IMPLOUT) << " with type:  " << t->id() ;
+          msg << " (" << __FILE__ << ":" << __LINE__ << ")";
           throw YACS::ENGINE::ConversionException(msg.str());
         }
     };
@@ -986,8 +1069,8 @@ namespace YACS
               cur = cur->next;
             }
           stringstream msg;
-          msg << "Problem in Xml to TOUT conversion: kind= " << t->kind() ;
-          msg << " : " << __FILE__ << ":" << __LINE__;
+          msg << "Problem in conversion from Xml to " << getImplName(IMPLOUT) << " with type:  " << t->id() ;
+          msg << " (" << __FILE__ << ":" << __LINE__ << ")";
           throw YACS::ENGINE::ConversionException(msg.str());
         }
     };
@@ -1004,16 +1087,24 @@ namespace YACS
                   //wait a boolean, got a boolean
                   xmlChar * s = NULL;
                   s = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
-                  DEBTRACE( "convertToYacsBool " << (const char *)s );
-                  bool ob=atoi((const char*)s)!=0;
-                  xmlFree(s);
+                  bool ob =false;
+                  if (s)
+                    {
+                      DEBTRACE( "convertToYacsBool " << (const char *)s );
+                      ob=atoi((const char*)s)!=0;
+                      xmlFree(s);
+                    }
+                  else
+                    {
+                      DEBTRACE("############### workaround to improve...");
+                    }
                   return ob;
                 }
               cur = cur->next;
             }
           stringstream msg;
-          msg << "Problem in Xml to TOUT conversion: kind= " << t->kind() ;
-          msg << " : " << __FILE__ << ":" << __LINE__;
+          msg << "Problem in conversion from Xml to " << getImplName(IMPLOUT) << " with type:  " << t->id() ;
+          msg << " (" << __FILE__ << ":" << __LINE__ << ")";
           throw YACS::ENGINE::ConversionException(msg.str());
         }
     };
@@ -1029,16 +1120,24 @@ namespace YACS
                 {
                   //we wait a objref, we have got a objref
                   xmlChar * s = NULL;
+                  std::string mystr = "";
                   s = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
-                  DEBTRACE( "convertToYacsObjref " << (const char *)s );
-                  std::string mystr((const char *)s);
-                  xmlFree(s);
+                  if (s)
+                    {
+                      DEBTRACE( "convertToYacsObjref " << (const char *)s );
+                      mystr = (const char *)s;
+                      xmlFree(s);
+                    }
+                  else
+                    {
+                      DEBTRACE("############### workaround to improve...");
+                    }
                   return mystr;
                 }
               cur = cur->next;
             }
           stringstream msg;
-          msg << "Problem in conversion: a objref is expected " ;
+          msg << "Problem in conversion from Xml to " << getImplName(IMPLOUT) << " with type:  " << t->id() ;
           msg << " (" << __FILE__ << ":" << __LINE__ << ")";
           throw YACS::ENGINE::ConversionException(msg.str());
         }
@@ -1261,7 +1360,12 @@ namespace YACS
     {
       static inline long convert(const TypeCode *t,YACS::ENGINE::Any* o,void*)
         {
-          return o->getIntValue();
+          if(o->getType()->kind()==Int)
+            return o->getIntValue();
+          stringstream msg;
+          msg << "Problem in conversion: a int is expected " ;
+          msg << " (" << __FILE__ << ":" << __LINE__ << ")";
+          throw YACS::ENGINE::ConversionException(msg.str());
         }
     };
     template <ImplType IMPLOUT, class TOUT>
@@ -1269,7 +1373,12 @@ namespace YACS
     {
       static inline std::string convert(const TypeCode *t,YACS::ENGINE::Any* o,void*)
         {
-          return o->getStringValue();
+          if(o->getType()->kind()==String)
+            return o->getStringValue();
+          stringstream msg;
+          msg << "Problem in conversion: a string is expected " ;
+          msg << " (" << __FILE__ << ":" << __LINE__ << ")";
+          throw YACS::ENGINE::ConversionException(msg.str());
         }
     };
     template <ImplType IMPLOUT, class TOUT>
@@ -1284,6 +1393,7 @@ namespace YACS
           stringstream msg;
           msg << "Problem in conversion: a bool or int is expected " ;
           msg << " (" << __FILE__ << ":" << __LINE__ << ")";
+          throw YACS::ENGINE::ConversionException(msg.str());
         }
     };
     template <ImplType IMPLOUT, class TOUT>
@@ -1291,7 +1401,12 @@ namespace YACS
     {
       static inline std::string convert(const TypeCode *t,YACS::ENGINE::Any* o,void*)
         {
-          return o->getStringValue();
+          if(o->getType()->kind()==String)
+            return o->getStringValue();
+          stringstream msg;
+          msg << "Problem in conversion: a objref(string) is expected " ;
+          msg << " (" << __FILE__ << ":" << __LINE__ << ")";
+          throw YACS::ENGINE::ConversionException(msg.str());
         }
     };
     template <ImplType IMPLOUT, class TOUT>
@@ -1412,8 +1527,12 @@ namespace YACS
       static inline long convert(const TypeCode *t,CORBA::Any* o,void*)
         {
           CORBA::Long d;
-          *o >>= d;
-          return d;
+          if(*o >>= d)
+            return d;
+          stringstream msg;
+          msg << "Problem in CORBA to TOUT conversion: kind= " << t->kind() ;
+          msg << " : " << __FILE__ << ":" << __LINE__;
+          throw YACS::ENGINE::ConversionException(msg.str());
         }
     };
     template <ImplType IMPLOUT, class TOUT>
@@ -1422,8 +1541,12 @@ namespace YACS
       static inline std::string convert(const TypeCode *t,CORBA::Any* o,void*)
         {
           const char *s;
-          *o >>=s;
-          return s;
+          if(*o >>=s)
+            return s;
+          stringstream msg;
+          msg << "Problem in CORBA to TOUT conversion: kind= " << t->kind() ;
+          msg << " : " << __FILE__ << ":" << __LINE__;
+          throw YACS::ENGINE::ConversionException(msg.str());
         }
     };
     template <ImplType IMPLOUT, class TOUT>
@@ -1445,10 +1568,26 @@ namespace YACS
     {
       static inline std::string convert(const TypeCode *t,CORBA::Any* o,void*)
         {
-          CORBA::Object_var ObjRef ;
-          *o >>= (CORBA::Any::to_object ) ObjRef ;
-          CORBA::String_var objref = getSALOMERuntime()->getOrb()->object_to_string(ObjRef);
-          return (char *)objref;
+          char file[]="/tmp/XXXXXX";
+          if(t->isA(Runtime::_tc_file))
+            {
+              Engines::Salome_file_ptr sf;
+              *o >>= sf;
+              Salome_file_i* f=new Salome_file_i();
+              mkstemp(file);
+              f->setDistributedFile(file);
+              f->connect(sf);
+              f->recvFiles();
+              delete f;
+              return file;
+            }
+          else
+            {
+              CORBA::Object_var ObjRef ;
+              *o >>= CORBA::Any::to_object(ObjRef) ;
+              CORBA::String_var objref = getSALOMERuntime()->getOrb()->object_to_string(ObjRef);
+              return (char *)objref;
+            }
         }
     };
     template <ImplType IMPLOUT, class TOUT>
@@ -1574,17 +1713,40 @@ namespace YACS
     {
       static inline CORBA::Any* convert(const TypeCode *t,std::string& o)
         {
-          /*
-          std::string::size_type pos=o.find_first_of(":");
-          std::string prefix=o.substr(0,pos);
-          DEBTRACE(prefix);
-          if(prefix == "file")
+          CORBA::Object_var obref;
+          if(t->isA(Runtime::_tc_file))
             {
               //It's an objref file. Convert it specially
+              Salome_file_i* aSalome_file = new Salome_file_i();
+              try
+                {
+                  aSalome_file->setLocalFile(o.c_str());
+                  obref = aSalome_file->_this();
+                  aSalome_file->_remove_ref();
+                }
+              catch (const SALOME::SALOME_Exception& e)
+                {
+                  stringstream msg;
+                  msg << e.details.text;
+                  msg << " : " << __FILE__ << ":" << __LINE__;
+                  throw YACS::ENGINE::ConversionException(msg.str());
+                }
             }
-            */
-          CORBA::Object_var obref =
-            getSALOMERuntime()->getOrb()->string_to_object(o.c_str());
+          else
+            {
+              try
+                {
+                  obref=getSALOMERuntime()->getOrb()->string_to_object(o.c_str());
+                }
+              catch(CORBA::Exception& ex)
+                {
+                  throw ConversionException("Can't get reference to object");
+                }
+              if( CORBA::is_nil(obref) )
+                {
+                  throw ConversionException("Can't get reference to object");
+                }
+            }
 #ifdef REFCNT
           DEBTRACE("ObjRef refCount: " << obref->_PR_getobj()->pd_refCount);
 #endif
@@ -1602,52 +1764,40 @@ namespace YACS
     {
       static inline CORBA::Any* convert(const TypeCode *t,std::vector<CORBA::Any*>& v)
         {
-          CORBA::Any *any;
-          CORBA::TypeCode_ptr seqTC;
-
-          //the equivalent CORBA TypeCode
-          seqTC=getCorbaTC(t);
-#ifdef REFCNT
-          DEBTRACE("refcount CORBA seqTC: " << ((omni::TypeCode_base*)seqTC)->pd_ref_count);
-#endif
-          DynamicAny::DynAny_ptr dynany =
-            getSALOMERuntime()->getDynFactory()->create_dyn_any_from_type_code(seqTC);
-          CORBA::release(seqTC);
-          DynamicAny::DynSequence_ptr ds =
-            DynamicAny::DynSequence::_narrow(dynany);
-          CORBA::release(dynany);
-
+          CORBA::ORB_ptr orb=getSALOMERuntime()->getOrb();
           std::vector<CORBA::Any*>::const_iterator iter;
-          DynamicAny::AnySeq as ;
-          as.length(v.size());
-          int i=0;
+
+          // Build an Any from vector v
+          int isObjref=0;
+          if(t->contentType()->kind() == Objref)
+            isObjref=1;
+
+          CORBA::TypeCode_var tc=getCorbaTC(t);
+
+          DynamicAny::DynAny_var dynany=getSALOMERuntime()->getDynFactory()->create_dyn_any_from_type_code(tc);
+          DynamicAny::DynSequence_var ds = DynamicAny::DynSequence::_narrow(dynany);
+          ds->set_length(v.size());
+
           for(iter=v.begin();iter!=v.end();iter++)
             {
-              //Can we avoid making a copy ?
+              DynamicAny::DynAny_var temp=ds->current_component();
               CORBA::Any* a=*iter;
-              as[i]=*a;
-              i++;
+              if(isObjref)
+                {
+                  CORBA::Object_var zzobj ;
+                  *a >>= CORBA::Any::to_object(zzobj) ;
+                  temp->insert_reference(zzobj);
+                }
+              else
+                temp->from_any(*a);
+
               //delete intermediate any
               delete a;
+              ds->next();
             }
-          try
-            {
-              ds->set_elements(as);
-            }
-          catch(DynamicAny::DynAny::TypeMismatch& ex)
-            {
-              throw YACS::ENGINE::ConversionException("type mismatch");
-            }
-          catch(DynamicAny::DynAny::InvalidValue& ex)
-            {
-              throw YACS::ENGINE::ConversionException("invalid value");
-            }
-          any=ds->to_any();
+
+          CORBA::Any *any=ds->to_any();
           ds->destroy();
-          CORBA::release(ds);
-#ifdef REFCNT
-          DEBTRACE("refcount CORBA seqTC: " << ((omni::TypeCode_base*)seqTC)->pd_ref_count);
-#endif
           return any;
         }
     };
@@ -1656,69 +1806,41 @@ namespace YACS
     {
       static inline CORBA::Any* convert(const TypeCode *t,std::map<std::string,CORBA::Any*>& m)
         {
-          CORBA::Any *any;
-          CORBA::TypeCode_ptr structTC;
+          CORBA::ORB_ptr orb=getSALOMERuntime()->getOrb();
 
-          //the equivalent CORBA TypeCode
-          structTC=getCorbaTC(t);
-#ifdef REFCNT
-          DEBTRACE("refcount CORBA structTC: " << ((omni::TypeCode_base*)structTC)->pd_ref_count);
-          DEBTRACE("refcount CORBA tc_double: " << ((omni::TypeCode_base*)CORBA::_tc_double)->pd_ref_count);
-#endif
           YACS::ENGINE::TypeCodeStruct* tst=(YACS::ENGINE::TypeCodeStruct*)t;
           int nMember=tst->memberCount();
           DEBTRACE("nMember="<<nMember);
-          DynamicAny::DynAny_ptr da=
-            getSALOMERuntime()->getDynFactory()->create_dyn_any_from_type_code(structTC);
-#ifdef REFCNT
-          DEBTRACE("refcount CORBA structTC: " << ((omni::TypeCode_base*)structTC)->pd_ref_count);
-          DEBTRACE("refcount CORBA tc_double: " << ((omni::TypeCode_base*)CORBA::_tc_double)->pd_ref_count);
-#endif
-          CORBA::release(structTC);
-#ifdef REFCNT
-          DEBTRACE("refcount CORBA structTC: " << ((omni::TypeCode_base*)structTC)->pd_ref_count);
-          DEBTRACE("refcount CORBA tc_double: " << ((omni::TypeCode_base*)CORBA::_tc_double)->pd_ref_count);
-#endif
-          DynamicAny::DynStruct_ptr ds=DynamicAny::DynStruct::_narrow(da);
-          CORBA::release(da);
-#ifdef REFCNT
-          DEBTRACE("refcount CORBA structTC: " << ((omni::TypeCode_base*)structTC)->pd_ref_count);
-          DEBTRACE("refcount CORBA tc_double: " << ((omni::TypeCode_base*)CORBA::_tc_double)->pd_ref_count);
-#endif
-          DynamicAny::NameValuePairSeq members;
-          members.length(nMember);
+
+          CORBA::StructMemberSeq mseq;
+          mseq.length(nMember);
           for(int i=0;i<nMember;i++)
             {
               const char * name=tst->memberName(i);
+              if(m.count(name) !=0)
+                {
+                  mseq[i].type=m[name]->type();
+                }
+            }
+          CORBA::TypeCode_var tc= orb->create_struct_tc("","",mseq);
+          DynamicAny::DynAny_var dynany=getSALOMERuntime()->getDynFactory()->create_dyn_any_from_type_code(tc);
+          DynamicAny::DynStruct_var ds = DynamicAny::DynStruct::_narrow(dynany);
+
+          for(int i=0;i<nMember;i++)
+            {
+              DynamicAny::DynAny_var temp=ds->current_component();
+              const char * name=tst->memberName(i);
               DEBTRACE("Member name="<<name);
-              //TypeCode* tm=tst->memberType(i);
               //do not test member presence : test has been done in ToYacs convertor
               CORBA::Any* a=m[name];
-              members[i].id=CORBA::string_dup(name);
-              members[i].value=*a;
+              temp->from_any(*a);
               //delete intermediate any
               delete a;
+              ds->next();
             }
-#ifdef REFCNT
-          DEBTRACE("refcount CORBA structTC: " << ((omni::TypeCode_base*)structTC)->pd_ref_count);
-          DEBTRACE("refcount CORBA tc_double: " << ((omni::TypeCode_base*)CORBA::_tc_double)->pd_ref_count);
-#endif
-          ds->set_members(members);
-#ifdef REFCNT
-          DEBTRACE("refcount CORBA structTC: " << ((omni::TypeCode_base*)structTC)->pd_ref_count);
-          DEBTRACE("refcount CORBA tc_double: " << ((omni::TypeCode_base*)CORBA::_tc_double)->pd_ref_count);
-#endif
-          any=ds->to_any();
-#ifdef REFCNT
-          DEBTRACE("refcount CORBA structTC: " << ((omni::TypeCode_base*)structTC)->pd_ref_count);
-          DEBTRACE("refcount CORBA tc_double: " << ((omni::TypeCode_base*)CORBA::_tc_double)->pd_ref_count);
-#endif
+          CORBA::Any *any=ds->to_any();
           ds->destroy();
-          CORBA::release(ds);
-#ifdef REFCNT
-          DEBTRACE("refcount CORBA structTC: " << ((omni::TypeCode_base*)structTC)->pd_ref_count);
-          DEBTRACE("refcount CORBA tc_double: " << ((omni::TypeCode_base*)CORBA::_tc_double)->pd_ref_count);
-#endif
+
           return any;
         }
     };

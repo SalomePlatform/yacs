@@ -5,6 +5,7 @@
 #include <string>
 #include <iostream>
 #include <list>
+#include <map>
 
 namespace YACS
 {
@@ -15,6 +16,8 @@ namespace YACS
     class InlineNode;
     class ServiceNode;
     class Container;
+    class ComponentInstance;
+    class Logger;
 
     class Proc: public Bloc
     {
@@ -32,19 +35,37 @@ namespace YACS
       virtual void accept(Visitor *visitor);
 
       YACS::StatesForNode getNodeState(int numId);
+      std::string getInPortValue(int nodeNumId, std::string portName);
+      std::string getOutPortValue(int nodeNumId, std::string portName);
+      std::string getNodeErrorDetails(int nodeNumId);
+      std::string getNodeErrorReport(int nodeNumId);
+      std::string getNodeContainerLog(int nodeNumId);
       std::string getXMLState(int numId);
       std::list<int> getNumIds();
       std::list<std::string> getIds();
+      virtual Logger *getLogger(const std::string& name);
 
-      virtual void writeDot(std::ostream &os);
+      virtual void writeDot(std::ostream &os) const;
       void setName(const std::string& name); // Used by GUI to display graph name
+      virtual std::string typeName() {return "YACS__ENGINE__Proc";}
+
       friend std::ostream & operator<< ( std::ostream &os, const Proc& p);
       std::map<std::string, Node*> nodeMap;
       std::map<std::string, ServiceNode*> serviceMap;
       std::map<std::string, InlineNode*> inlineMap;
       std::map<std::string, TypeCode*> typeMap;
       std::map<std::string, Container*> containerMap;
+      std::map<std::pair<std::string,int>, ComponentInstance*> componentInstanceMap;
       std::vector<std::string> names;
+
+      typedef std::map<std::string, Logger*> LoggerMap;
+      LoggerMap _loggers;
+      virtual bool getEdition(){return _edition;}
+      virtual void setEdition(bool edition);
+      virtual void modified();
+    protected:
+      bool _edition;
+
     };
   }
 }

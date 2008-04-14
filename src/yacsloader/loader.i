@@ -1,74 +1,41 @@
 // ----------------------------------------------------------------------------
 %define LOADERDOCSTRING
-"Loader docstring
-loads an XML file."
+"Module to load an calculation schema from a XML file."
 %enddef
 
 %module(docstring=LOADERDOCSTRING) loader
 
-%feature("autodoc", "0");
+//work around SWIG bug #1863647
+#define PySwigIterator loader_PySwigIterator
 
-%include std_string.i
+%feature("autodoc", "1");
+
+%include "engtypemaps.i"
 
 // ----------------------------------------------------------------------------
 
 %{
-#include <stdexcept>
-#include <iostream>
-#include <fstream>
-
-#include "Proc.hxx"
-#include "Exception.hxx"
 #include "parsers.hxx"
 #include "LoadState.hxx"
-
-using namespace YACS::ENGINE;
-using namespace std;
-
+#include "TypeCode.hxx"
 %}
 
-%exception load {
-   try {
-      $action
-   } catch(YACS::Exception& _e) {
-      PyErr_SetString(PyExc_ValueError,_e.what());
-      return NULL;
-   } catch(std::invalid_argument& _e) {
-      PyErr_SetString(PyExc_IOError ,_e.what());
-      return NULL;
-   }
-}
+%types(YACS::ENGINE::Node *);
+%types(YACS::ENGINE::InputPort *,YACS::ENGINE::OutputPort *,YACS::ENGINE::InputDataStreamPort *,YACS::ENGINE::OutputDataStreamPort *);
+%types(YACS::ENGINE::InGate *,YACS::ENGINE::OutGate *,YACS::ENGINE::InPort *,YACS::ENGINE::OutPort *,YACS::ENGINE::Port *);
 
-namespace YACS
-{
-  class YACSLoader
-  {
-    public:
-        YACSLoader();
-%feature("autodoc", "load(self, file) -> YACS::ENGINE::Proc");
-%feature("docstring") "loads a XML file which name is given by file argument" ;
-        virtual YACS::ENGINE::Proc* load(char *);
-  };
-}
+%import "pilot.i"
 
-class xmlParserBase
-{
-};
+/*
+ * Ownership section
+ */
+//Take ownership : it is not the default (constructor) as it is a factory
+%newobject YACS::YACSLoader::load;
+/*
+ * End of Ownership section
+ */
 
-namespace YACS
-{
-  namespace ENGINE
-  {
-    class stateParser: public xmlParserBase
-    {
-    };
+%include "parsers.hxx"
+%import "xmlParserBase.hxx"
+%include "LoadState.hxx"
 
-    class stateLoader: public xmlReader
-    {
-    public:
-      stateLoader(xmlParserBase* parser,
-                  YACS::ENGINE::Proc* p);
-      virtual void parse(std::string xmlState);
-    };
-  }
-}

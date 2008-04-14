@@ -50,6 +50,11 @@ void XmlNode::setScript(const std::string& script)
   _script=script;
 }
 
+std::string XmlNode::getScript() const
+{
+  return _script;
+}
+
 std::string XmlNode::getKind() const
 {
   return KIND;
@@ -96,11 +101,12 @@ void XmlNode::execute()
     run << _ref << "> stdout 2>&1 " << std::endl;
   else
     run << "../"<<_ref << "> stdout 2>&1 " << std::endl;
-  run << "cat stdout" << std::endl;
+  //run << "cat stdout" << std::endl;
   run.close();
   chmod(call.c_str(),00777);
 
-  int ret=system(call.c_str());
+  std::string call2="/bin/sh "+call;
+  int ret=system(call2.c_str());
   if(ret)
     {
       std::cerr << "Problem: " << ret << std::endl;

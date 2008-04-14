@@ -91,14 +91,20 @@ namespace YACS
       InputPort *edGetPortForInitFile() { return &_portForInitFile; }
       InputPort *getInputPort(const std::string& name) const throw(Exception);
       std::list<InputPort *> getSetOfInputPort() const;
+      std::list<InputPort *> getLocalInputPorts() const;
       void selectRunnableTasks(std::vector<Task *>& tasks);
       void getReadyTasks(std::vector<Task *>& tasks);
       YACS::Event updateStateOnFinishedEventFrom(Node *node);
       void checkNoCyclePassingThrough(Node *node) throw(Exception);
-      void checkConsistency(ComposedNode *pointOfView) const throw(Exception);
     protected:
-      void buildDelegateOf(InPort * & port, OutPort *initialStart, const std::set<ComposedNode *>& pointsOfView);
-      void buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::set<ComposedNode *>& pointsOfView);
+      void buildDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView);
+      void buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView);
+      void checkControlDependancy(OutPort *start, InPort *end, bool cross,
+                                  std::map < ComposedNode *,  std::list < OutPort * >, SortHierarc >& fw,
+                                  std::vector<OutPort *>& fwCross,
+                                  std::map< ComposedNode *, std::list < OutPort *>, SortHierarc >& bw,
+                                  LinkInfo& info) const;
+      void checkCFLinks(const std::list<OutPort *>& starts, InputPort *end, unsigned char& alreadyFed, bool direction, LinkInfo& info) const;
     protected:
       void cleanInterceptors();
       void launchMaxOfSamples(bool first);

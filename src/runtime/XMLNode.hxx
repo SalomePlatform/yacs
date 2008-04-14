@@ -19,6 +19,7 @@ namespace YACS
       virtual void load() { }
       virtual void setRef(const std::string& ref);
       virtual void setScript(const std::string& script);
+      virtual std::string getScript() const;
       virtual ServiceNode* createNode(const std::string& name) 
         { throw Exception("not implemented"); }
       virtual std::string getKind() const;

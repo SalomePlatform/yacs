@@ -21,10 +21,17 @@
 
 #include "YACSPrs_ElementaryNode.h"
 
+#include "YACSPrs_toString.h"
 #include "YACSPrs_Link.h"
 #include "YACSPrs_Def.h"
 
+#include <guiContext.hxx>
+
+#include <QxGraph_Canvas.h>
+#include <QxGraph_Prs.h>
+
 #include "SUIT_ResourceMgr.h"
+#include "SUIT_Session.h"
 
 #include <qpainter.h>
 //#include <qvaluelist.h> // for states animation
@@ -40,10 +47,16 @@
 #include <ForEachLoop.hxx> // for SeqAnyInputPort
 #include <CORBAPorts.hxx>
 #include <PythonPorts.hxx>
+#include <StudyPorts.hxx>
 #include <XMLPorts.hxx>
 #include <CalStreamPort.hxx>
+#include <commandsProc.hxx>
+
+//#define _DEVDEBUG_
+#include "YacsTrace.hxx"
 
 using namespace YACS::ENGINE;
+using namespace YACS::HMI;
 
 using namespace std;
 #include <sstream>
@@ -81,240 +94,47 @@ void drawText(QPainter& thePainter, const QString& theText,
   }
 }
 
-char * toString(CORBA::Any* theAny, QString& theRetStr)
-{
-  if ( !theAny ) theRetStr += QString("< ? >");
-  else
-  {
-    CORBA::Any anAny = *theAny;
-    if ( !anAny.value() ) theRetStr += QString("< ? >");
-    else
-    {
-      ostringstream astr;
-      const char * retstr;
-      int startstr = 0;
-      switch ( anAny.type()->kind() )
-      {
-	case CORBA::tk_string: {
-	  anAny >>= retstr;
-	  theRetStr += QString(retstr);
-	  break;
-	}
-	case CORBA::tk_long: {
-	  CORBA::Long l;
-	  anAny >>= l;
-	  astr << l << ends;
-	  theRetStr += QString(astr.str());
-	  break;
-	}
-	case CORBA::tk_double: {
-	  double d;
-	  anAny >>= d;
-	  astr << d << ends;
-	  //astr << setw(25) << setprecision(18) << d << ends;
-	  QString aRetStr = QString(astr.str());
-	  int i = 0;
-	  while ( i < (int ) theRetStr.length() && theRetStr.at(i++) == ' ' ) {
-	    startstr = i;
-	  }
-	  theRetStr += aRetStr.mid(startstr,aRetStr.length());
-	  break;
-	}
-        case CORBA::tk_sequence: {
-	  theRetStr += QString("[");
-
-	  CORBA::Long aSeqLength = 0;
-	  *(anAny.type()->parameter(1)) >>= aSeqLength;
-
-	  if ( aSeqLength == 0 )
-	  {
-	    theRetStr += QString("   ]");
-	    break;
-	  }
-	  
-	  // TO DO : implement recursion for the sequence type
-	  /*CORBA::TypeCode* aType;
-	  *(anAny.type()->parameter(0)) >>= aType;
-	  switch ( aType->kind() )
-	  {
-	    case CORBA::tk_string: {
-	      printf("StringElem\n");
-	      CORBA::StringSeq* aStringSeq;
-	      anAny >>= aStringSeq;
-	      for (int i=0; i < aSeqLength; i++)
-	      {
-		CORBA::Any anArg;
-		anArg <<= aStringSeq[i];
-		toString( &anArg, theRetStr );
-		if ( i < aSeqLength-1 ) theRetStr += QString(",");
-	      }
-	      break;
-	    }
-	    case CORBA::tk_double: {
-	      printf("DoubleElem\n");
-	      CORBA::DoubleSeq* aDoubleSeq;
-	      anAny >>= aDoubleSeq;
-	      for (int i=0; i < aSeqLength; i++)
-	      {
-		CORBA::Any anArg;
-		anArg <<= aDoubleSeq[i];
-		toString( &anArg, theRetStr );
-		if ( i < aSeqLength-1 ) theRetStr += QString(",");
-	      }
-	      break;
-	    }
-  	    case CORBA::tk_sequence: {
-	      printf("SequenceElem\n");
-	      CORBA::Any* aSequenceSeq;
-	      anAny >>= aSequenceSeq;
-	      for (int i=0; i < aSeqLength; i++)
-	      {
-		CORBA::Any anArg;
-		anArg <<= aSequenceSeq[i];
-		toString( &anArg, theRetStr );
-		if ( i < aSeqLength-1 ) theRetStr += QString(",");
-	      }
-	      break;
-	    }
-	    default: {
-	      printf("DefaultElem\n");
-	      theRetStr += QString("< ? >");
-	      break;
-	    }
-	  }*/
-	  theRetStr += QString("]");
-	  break;
-	}
-	case CORBA::tk_objref: {
-	  /*CORBA::Object_ptr obj;
-	  try {
-	    anAny >>= (CORBA::Any::to_object ) obj;
-	    theRetStr += QString( _Orb->object_to_string( obj ) );
-	  }
-	  catch ( ... ) {
-	    theRetStr += QString("object_to_string catched ");
-	  }*/
-	  theRetStr += QString("Objref");
-	  break;
-	}
-	default: {
-	  theRetStr += QString("< ? >");
-	  break;
-	}
-      }
-    }
-  }
-}
-
-void toString(PyObject* theObject, QString& theRetStr)
-{
-  if ( !theObject ) theRetStr += QString("< ? >");
-
-  ostringstream aStr;
-  if ( PyString_CheckExact(theObject) )
-    theRetStr += QString( PyString_AsString(theObject) );
-  else if ( PyLong_CheckExact(theObject) )
-  {
-    long aVal = PyLong_AsLong(theObject);
-    aStr << aVal << ends;
-    theRetStr += QString( aStr.str() );
-  }
-  else if ( PyInt_CheckExact(theObject) )
-  {
-    long aVal = PyInt_AsLong(theObject);
-    aStr << aVal << ends;
-    theRetStr += QString( aStr.str() );
-  }
-  else if ( PyBool_Check(theObject) )
-    theRetStr += QString( (theObject == Py_True) ? "true" : "false" );
-  else if ( PyFloat_CheckExact(theObject) )
-  {
-    double aVal = PyFloat_AsDouble(theObject);
-    aStr << aVal << ends;
-    theRetStr += QString( aStr.str() );
-  }
-  else if ( PyList_CheckExact(theObject) )
-  {
-    theRetStr += QString("[");
-    for (int i=0; i < PyList_Size(theObject); i++)
-    {
-      toString( PyList_GetItem(theObject, i), theRetStr );
-      if ( i < PyList_Size(theObject)-1 ) theRetStr += QString(",");
-    }
-    theRetStr += QString("]");
-  }
-  //else if ( ... ) // objref case
-  else
-    theRetStr += QString("< ? >");
-}
-
-void toString(Any* theAny, QString& theValue)
-{
-  if ( !theAny ) theValue += QString("< ? >");
-  else if ( theAny->getType() )
-  {
-    DynType aKind = theAny->getType()->kind();
-    switch (aKind)
-      {
-      case Double:
-	theValue += QString::number(theAny->getDoubleValue());
-	break;
-      case Int:
-	theValue += QString::number(theAny->getIntValue());
-	break;
-      case String:
-	theValue += QString(theAny->getStringValue());
-	break;
-      case Bool:
-	theValue += QString(theAny->getBoolValue()?"true":"false");
-	break;
-      case Objref:
-	theValue += QString("Objref"); /// ?
-	break;
-      case Sequence: {
-	SequenceAny* aSeqAny = dynamic_cast<SequenceAny*>( theAny );
-	if ( aSeqAny )
-	{
-	  theValue += QString("[");
-	  for (int i=0; i < aSeqAny->size(); i++)
-	  {
-	    toString( (*aSeqAny)[i], theValue );
-	    if ( i < aSeqAny->size()-1 ) theValue += QString(",");
-	  }
-	  theValue += QString("]");
-	}
-	break;
-      }
-      case None:
-      default:
-	theValue += QString("");
-	break;
-      }
-  }
-}
-
 /*!
  * =========================== YACSPrs_ElementaryNode ===========================
  !*/
 
-YACSPrs_ElementaryNode::YACSPrs_ElementaryNode(SUIT_ResourceMgr* theMgr, QCanvas* theCanvas, YACS::ENGINE::Node* theNode):
+YACSPrs_ElementaryNode::YACSPrs_ElementaryNode(SUIT_ResourceMgr* theMgr, QCanvas* theCanvas, YACS::HMI::SubjectNode* theSNode):
   QxGraph_ActiveItem(),
   QCanvasPolygonalItem(theCanvas),
+  GuiObserver(),
   myMgr(theMgr),
-  myEngine(theNode),
+  mySEngine(theSNode),
   myLabelLink(0),
   myHilightedPort(0),
   mySelectedPort(0)
 {
-  printf("YACSPrs_ElementaryNode::YACSPrs_ElementaryNode\n");
-  myWidth = NODE_WIDTH;
-  if (2*(PORT_WIDTH+PORT_MARGIN) > myWidth)
-    myWidth = 2*(PORT_WIDTH+PORT_MARGIN);
+  DEBTRACE("YACSPrs_ElementaryNode::YACSPrs_ElementaryNode : " << mySEngine->getName());
+  if ( mySEngine ) mySEngine->attach(this);
+
+  QxGraph_Canvas* aCanvas = dynamic_cast<QxGraph_Canvas*>(canvas());
+  if ( aCanvas && aCanvas->getPrs() )
+    myViewMode = aCanvas->getPrs()->getDMode();
+  else
+    myViewMode = 0;
+  
+  if ( isFullDMode() )
+  {
+    myWidth = NODE_WIDTH;
+    if (2*(PORT_WIDTH+PORT_MARGIN) > myWidth)
+      myWidth = 2*(PORT_WIDTH+PORT_MARGIN);
+  }
+  else if ( isControlDMode() )
+    myWidth = NODE_WIDTH/2-2;
+  else
+    myWidth = 0;
 
   myTitleHeight = TITLE_HEIGHT;
   myStatusHeight = TITLE_HEIGHT;
   myTimeHeight = TITLE_HEIGHT;
-  myPortHeight = 2*PORT_MARGIN;
+  if ( isFullDMode() )
+    myPortHeight = 2*PORT_MARGIN;
+  else
+    myPortHeight = 0;
   myGateHeight = PORT_HEIGHT + 2*PORT_MARGIN;
 
   myStoreColor = myColor = myMgr->colorValue("QxGraph", "NodeBody", NODE_COLOR);
@@ -348,7 +168,10 @@ YACSPrs_ElementaryNode::YACSPrs_ElementaryNode(SUIT_ResourceMgr* theMgr, QCanvas
   mySprite->setZ(1);
   mySprite->show();*/
 
-  myPointMaster = new YACSPrs_Hook(myMgr, canvas(), this, false, false, true);
+  if ( isFullDMode() )
+    myPointMaster = new YACSPrs_Hook(myMgr, canvas(), this, false, false, true);
+  else
+    myPointMaster = 0;
   
   setZ(2);
   //updatePorts(); // create presentations for all ports of node, 
@@ -360,10 +183,217 @@ YACSPrs_ElementaryNode::YACSPrs_ElementaryNode(SUIT_ResourceMgr* theMgr, QCanvas
 
 YACSPrs_ElementaryNode::~YACSPrs_ElementaryNode() 
 {
-  myPortList.setAutoDelete(true);
+  setCanvas(0);
+
+  myPortList.setAutoDelete(false);
+  for (YACSPrs_Port* aPort = myPortList.first(); aPort; aPort = myPortList.next())
+  {
+    if ( aPort )
+    {
+      if ( YACSPrs_InOutPort* anIOP = dynamic_cast<YACSPrs_InOutPort*>(aPort) )
+	delete anIOP;
+      else if ( YACSPrs_LabelPort* aLP = dynamic_cast<YACSPrs_LabelPort*>(aPort) )
+        delete aLP;
+    }
+  }
   myPortList.clear();
 
-  if (myPointMaster) delete myPointMaster;
+  if (myPointMaster)
+  {
+    myPointMaster = 0;
+    delete myPointMaster;
+  }
+
+  mySEngine->detach(this);
+}
+
+void YACSPrs_ElementaryNode::select( bool isSelected )
+{
+  DEBTRACE(">> YACSPrs_ElementaryNode::select " << isSelected << " " << mySEngine->getName());
+  setSelected(isSelected);
+
+  // Unselect gates. They cannot be selected/unselected in tree view
+  // so unselect them here
+  if ( !isSelected )
+  {
+    for (YACSPrs_Port* aPort = myPortList.first(); aPort; aPort = myPortList.next())
+    {
+      YACSPrs_InOutPort* anIOPort = dynamic_cast<YACSPrs_InOutPort*>( aPort );
+      if ( anIOPort &&  anIOPort->isGate() )
+        anIOPort->setSelected( false );
+    }
+  }
+}
+
+void YACSPrs_ElementaryNode::update( YACS::HMI::GuiEvent event, int type, YACS::HMI::Subject* son)
+{
+  DEBTRACE(">> YACSPrs_ElementaryNode::update");
+  switch (event)
+  {
+  case RENAME:
+    if ( canvas() )
+    { 
+      canvas()->setChanged(getTitleRect());
+      canvas()->update();
+    }
+    break;
+  case EDIT:
+    if ( isFullDMode() )
+      switch (type)
+      {
+      case INPUTPORT:
+      case OUTPUTPORT:
+      case INPUTDATASTREAMPORT:
+      case OUTPUTDATASTREAMPORT:
+	{
+	  if ( canvas() )
+	    if ( SubjectDataPort* aDP = dynamic_cast<SubjectDataPort*>(son) )
+	      if ( YACSPrs_InOutPort* aPPrs = getPortPrs(aDP->getPort()) )
+	      {
+		DEBTRACE(">> In prs : EDIT");
+		aPPrs->update();
+		canvas()->update();
+	      }
+	}
+	break;
+      default:
+	{
+	  int anOldHeight = maxHeight();
+	  updatePorts(true);
+	  
+	  bool needToCanvasUpdate = true;
+	  if ( anOldHeight != maxHeight() )
+	  {
+	    //emit portsChanged();
+	    
+	    SubjectBloc* aParentSubj = dynamic_cast<SubjectBloc*>( mySEngine->getParent() );
+	    if ( aParentSubj && !dynamic_cast<SubjectProc*>( aParentSubj ) )
+	    {
+	      aParentSubj->update( event, BLOC, mySEngine );
+	      needToCanvasUpdate = false;
+	    }
+	  }
+	  
+	  if ( needToCanvasUpdate && canvas() )
+	  { 
+	    QRect aRect((int)x(),(int)y(),maxWidth(),maxHeight());
+	    canvas()->setChanged(aRect);
+	    canvas()->update();
+	  }
+	}
+	break;
+      }
+    break;
+  case ADD:
+    if ( isFullDMode() )
+      switch (type)
+      {
+      case INPUTPORT:
+      case OUTPUTPORT:
+      case INPUTDATASTREAMPORT:
+      case OUTPUTDATASTREAMPORT:
+	{
+	  if ( SubjectDataPort* aDP = dynamic_cast<SubjectDataPort*>(son) )
+	  {
+	    DEBTRACE(">> In prs : ADD");
+	    addPortPrs(aDP->getPort());
+	  }
+	}
+	break;
+      default:
+	break;
+      }
+    break;
+  case REMOVE:
+    if ( isFullDMode() )
+      switch (type)
+      {
+      case DATALINK:
+      case CONTROLLINK:
+	{
+	  DEBTRACE(">> In prs:  REMOVE link");
+	  removeLinkPrs(son);
+	}
+	break;
+      case INPUTPORT:
+      case OUTPUTPORT:
+      case INPUTDATASTREAMPORT:
+      case OUTPUTDATASTREAMPORT:
+	{
+	  if ( SubjectDataPort* aDP = dynamic_cast<SubjectDataPort*>(son) )
+	  {
+	    DEBTRACE(">> In prs : REMOVE");
+	    removePortPrs(aDP->getPort());
+	  }
+	}
+	break;
+      default:
+	break;
+      }
+    break;
+  case UPDATE:
+    if ( isFullDMode() && canvas() )
+    {
+      DEBTRACE(">> In prs : UPDATE");
+      updatePorts();
+      canvas()->update();
+    }
+    break;
+  case UP:
+    if ( isFullDMode() )
+      switch (type)
+      {
+      case INPUTPORT:
+      case OUTPUTPORT:
+      case INPUTDATASTREAMPORT:
+      case OUTPUTDATASTREAMPORT: 
+	{
+	  if ( SubjectDataPort* aDP = dynamic_cast<SubjectDataPort*>(son) )
+	  {
+	    DEBTRACE(">> In prs : UP");
+	    moveUp(aDP->getPort());
+	  }
+	}
+	break;
+      default:
+	break;
+      }
+    break;
+  case DOWN:
+    if ( isFullDMode() )
+      switch (type)
+      {
+      case INPUTPORT:
+      case OUTPUTPORT:
+      case INPUTDATASTREAMPORT:
+      case OUTPUTDATASTREAMPORT: 
+	{
+	  if ( SubjectDataPort* aDP = dynamic_cast<SubjectDataPort*>(son) )
+	  {
+	    DEBTRACE(">> In prs : DOWN");
+	    moveDown(aDP->getPort());
+	  }
+	}
+	break;
+      default:
+	break;
+      }
+    break;
+  case ADDLINK:
+  case ADDCONTROLLINK:
+    {
+      DEBTRACE(">> In prs : ADDLINK");
+      // add link is treated in YACSGui_Graph
+    }
+    break;
+  default:
+    GuiObserver::update(event, type, son);
+  }
+}
+
+YACS::ENGINE::Node* YACSPrs_ElementaryNode::getEngine() const
+{
+  return ( mySEngine ? mySEngine->getNode() : 0 );
 }
 
 YACSPrs_InOutPort* YACSPrs_ElementaryNode::getPortPrs(YACS::ENGINE::Port* thePort)
@@ -378,8 +408,242 @@ YACSPrs_InOutPort* YACSPrs_ElementaryNode::getPortPrs(YACS::ENGINE::Port* thePor
   return aRetPort;
 }
 
+void YACSPrs_ElementaryNode::sortPorts()
+{
+  DEBTRACE("YACSPrs_ElementaryNode::sortPorts");
+  ElementaryNode* aNode = dynamic_cast<ElementaryNode*>(getEngine());
+  if ( !aNode ) return;
+
+  QPtrList<YACSPrs_Port> aSortedPortList;
+
+  list<InPort*> anInPortsEngine = aNode->getSetOfInPort();
+  list<InPort*>::iterator itIn = anInPortsEngine.begin();
+  for ( ; itIn != anInPortsEngine.end(); itIn++ )
+    aSortedPortList.append( getPortPrs(*itIn) );
+
+  list<OutPort*> anOutPortsEngine = aNode->getSetOfOutPort();
+  list<OutPort*>::iterator itOut = anOutPortsEngine.begin();
+  for ( ; itOut != anOutPortsEngine.end(); itOut++ )
+    aSortedPortList.append( getPortPrs(*itOut) );
+
+  aSortedPortList.append( getPortPrs(aNode->getInGate()) );
+  aSortedPortList.append( getPortPrs(aNode->getOutGate()) );
+
+  myPortList = aSortedPortList;
+}
+
+void YACSPrs_ElementaryNode::moveUp(YACS::ENGINE::Port* thePort)
+{
+  if ( !thePort ) return;
+
+  YACSPrs_InOutPort* aPortToMoveUp = getPortPrs(thePort);
+  int anId = myPortList.find(aPortToMoveUp);
+  if ( anId > -1 )
+  {
+    myPortList.take(anId);
+    anId--;
+    myPortList.insert(anId,aPortToMoveUp);
+  }
+}
+
+void YACSPrs_ElementaryNode::moveDown(YACS::ENGINE::Port* thePort)
+{
+  if ( !thePort ) return;
+
+  YACSPrs_InOutPort* aPortToMoveDown = getPortPrs(thePort);
+  int anId = myPortList.find(aPortToMoveDown);
+  if ( anId > -1 )
+  {
+    myPortList.take(anId);
+    anId++;
+    myPortList.insert(anId,aPortToMoveDown);
+  }
+}
+
+void YACSPrs_ElementaryNode::addPortPrs(YACS::ENGINE::Port* thePort)
+{
+  DEBTRACE("YACSPrs_ElementaryNode::addPortPrs");
+  if ( !thePort ) return;
+
+  if ( getPortPrs(thePort) ) return;
+
+  ElementaryNode* aNode = dynamic_cast<ElementaryNode*>(getEngine());
+  if ( !aNode ) return;
+
+  int anIPNum = aNode->getNumberOfInputPorts();
+  int anOPNum = aNode->getNumberOfOutputPorts();
+
+  bool isInput = true;
+  if ( dynamic_cast<OutPort*>(thePort) )
+    isInput = false;
+
+  bool aDisp = isVisible();
+  if (aDisp) hide();
+
+  QRect r = getBodyRect();
+  int aPRectWidth = (int)(r.width()/2) - 2*PORT_MARGIN;
+  if ( aPRectWidth < PORT_WIDTH ) aPRectWidth = PORT_WIDTH;
+  
+  int ix = r.x() + PORT_MARGIN + 1;
+  int iy;
+  if ( anIPNum > 1 )
+    iy = r.y() + PORT_MARGIN + (PORT_HEIGHT+PORT_SPACE)*(anIPNum-1);
+  else
+    iy = r.y() + PORT_MARGIN;
+
+  int ox = ix + aPRectWidth + 2*PORT_MARGIN;
+  int oy;
+  if ( anOPNum > 1 )
+    oy = r.y() + PORT_MARGIN + (PORT_HEIGHT+PORT_SPACE)*(anOPNum-1);
+  else
+    oy = r.y() + PORT_MARGIN;
+
+  YACSPrs_InOutPort* aPortPrs = new YACSPrs_InOutPort(myMgr, canvas(), thePort, this);
+  aPortPrs->setPortRect(QRect( (isInput ? ix : ox), 
+			       (isInput ? iy : oy),
+			       aPRectWidth,
+			       PORT_HEIGHT )); // commented
+  aPortPrs->setColor(nodeSubColor());
+  aPortPrs->setStoreColor(nodeSubColor());
+  
+  YACSPrs_InOutPort* aPort;
+  DEBTRACE(aPortPrs->getName() << "," << aPortPrs->isGate() << "," << aPortPrs->isInput());
+  for (aPort = (YACSPrs_InOutPort*)(myPortList.first()); 
+       aPort;
+       aPort = (YACSPrs_InOutPort*)(myPortList.next()))
+  {
+    if ( aPortPrs->isInput() && !aPort->isInput() )
+    { 
+      myPortList.insert( myPortList.find(aPort), aPortPrs );
+      break;
+    }
+    if ( !aPortPrs->isInput() && aPort->isGate() )
+    { 
+      myPortList.insert( myPortList.find(aPort), aPortPrs );
+      break;
+    }
+  }
+
+  if ( (isInput && anIPNum > anOPNum) || (!isInput && anIPNum < anOPNum) )
+    myPortHeight += PORT_HEIGHT+PORT_SPACE;
+  
+  updateGates(false);
+  //updatePorts();
+
+  if (myPointMaster)
+  {
+    QPoint aPnt = getConnectionMasterPoint();
+    myPointMaster->setCoords(aPnt.x(), aPnt.y());
+  }
+
+  if (aDisp) show();
+
+  if ( canvas() )
+  { 
+    canvas()->setChanged(getRect());
+    canvas()->update();
+  }
+}
+
+void YACSPrs_ElementaryNode::removePortPrs(YACS::ENGINE::Port* thePort)
+{
+  DEBTRACE("YACSPrs_ElementaryNode::removePortPrs");
+  if ( YACSPrs_InOutPort* aPort = getPortPrs(thePort) )
+  {
+    ElementaryNode* aNode = dynamic_cast<ElementaryNode*>(getEngine());
+    if ( !aNode ) return;
+    
+    int anIPNum = aNode->getNumberOfInputPorts();
+    int anOPNum = aNode->getNumberOfOutputPorts();
+
+    bool aDisp = isVisible();
+    if (aDisp) hide();
+
+    bool isInput = true;
+    if ( dynamic_cast<OutPort*>(thePort) )
+      isInput = false;
+
+    if ( ElementaryNode* aNode = dynamic_cast<ElementaryNode*>(getEngine()) )
+      if ( (isInput && anIPNum > anOPNum) || (!isInput && anIPNum < anOPNum) )
+	myPortHeight -= PORT_HEIGHT+PORT_SPACE;
+
+    myPortList.setAutoDelete(false);
+    myPortList.remove(aPort);
+    if ( mySelectedPort == aPort ) mySelectedPort = 0;
+    delete aPort;
+    
+    //updateGates(false);
+    updatePorts();
+
+    if (myPointMaster)
+    {
+      QPoint aPnt = getConnectionMasterPoint();
+      myPointMaster->setCoords(aPnt.x(), aPnt.y());
+    }
+
+    if (aDisp) show();
+
+    if ( canvas() )
+    { 
+      canvas()->setChanged(getRect());
+      canvas()->update();
+    }
+  }
+}
+
+void YACSPrs_ElementaryNode::removeLabelPortPrs(YACSPrs_LabelPort* thePort)
+{
+  DEBTRACE("YACSPrs_ElementaryNode::removeLabelPortPrs");
+  if ( !thePort ) return;
+
+  ComposedNode* aNode = dynamic_cast<ComposedNode*>(getEngine());
+  if ( !aNode ) return;
+
+  bool aDisp = isVisible();
+  if (aDisp) hide();
+
+  int anIPNum = aNode->getNumberOfInputPorts();
+  int anOPNum = aNode->getNumberOfOutputPorts();
+  if ( anOPNum > 1 && anIPNum < anOPNum )
+    myPortHeight -= PORT_HEIGHT+PORT_SPACE;
+
+  myPortList.setAutoDelete(false);
+  myPortList.remove(thePort);
+  if ( mySelectedPort == thePort ) mySelectedPort = 0;
+  delete thePort;
+    
+  updatePorts();
+
+  if (myPointMaster)
+  {
+    QPoint aPnt = getConnectionMasterPoint();
+    myPointMaster->setCoords(aPnt.x(), aPnt.y());
+  }
+
+  if (aDisp) show();
+
+  if ( canvas() )
+  { 
+    canvas()->setChanged(getRect());
+    canvas()->update();
+  }
+}
+
+void YACSPrs_ElementaryNode::erasePortPrs(YACSPrs_Port* thePort)
+{
+  DEBTRACE("YACSPrs_ElementaryNode::erasePortPrs");
+  if ( !myPortList.isEmpty() )
+  {
+    bool anADFlag = myPortList.autoDelete();
+    myPortList.setAutoDelete(false);
+    if ( myPortList.contains(thePort) ) myPortList.remove(thePort);
+    myPortList.setAutoDelete(anADFlag);
+  }
+}
+
 void YACSPrs_ElementaryNode::setCanvas(QCanvas* theCanvas)
 {
+  DEBTRACE("YACSPrs_ElementaryNode::setCanvas");
   QCanvasItem::setCanvas(theCanvas);
   
   // set canvas to all ports
@@ -410,8 +674,43 @@ void YACSPrs_ElementaryNode::updateLabelLink()
   if ( myLabelLink ) myLabelLink->moveByNode(this);
 }
 
+void YACSPrs_ElementaryNode::removeLinkPrs(YACS::HMI::Subject* theSLink)
+{
+  YACSPrs_PortLink* aLinkPrs = 0;
+
+  if ( SubjectLink* aSLink = dynamic_cast<SubjectLink*>(theSLink) )
+  { //remove data link presentation (this node is an out node for the given link)
+    if ( aSLink->getSubjectOutNode() != mySEngine ) return;
+
+    YACSPrs_InOutPort* anOPPrs =
+      dynamic_cast<YACSPrs_InOutPort*>(getPortPrs(aSLink->getSubjectOutPort()->getPort()));
+    if ( !anOPPrs ) return;
+
+    aLinkPrs = anOPPrs->getLink(aSLink);
+  }
+  else if ( SubjectControlLink* aSCLink = dynamic_cast<SubjectControlLink*>(theSLink) )
+  { //remove control link presentation (this node is an out node for the given link)
+    if ( aSCLink->getSubjectOutNode() != mySEngine ) return;
+
+    YACSPrs_InOutPort* anOPPrs =
+      dynamic_cast<YACSPrs_InOutPort*>(getPortPrs(getEngine()->getOutGate()));
+    if ( !anOPPrs ) return;
+
+    aLinkPrs = anOPPrs->getLink(aSCLink);
+  }
+
+  if ( !aLinkPrs ) return;
+  
+  aLinkPrs->setSelected(false);
+  DEBTRACE(">> Delete link presentation");
+  delete aLinkPrs;
+
+  if ( canvas() ) canvas()->update();
+}
+
 void YACSPrs_ElementaryNode::beforeMoving()
 { 
+  DEBTRACE("YACSPrs_ElementaryNode::beforeMoving");
   myZ = z();
   setMoving(true);
   setZ(myZ+100);
@@ -419,13 +718,15 @@ void YACSPrs_ElementaryNode::beforeMoving()
 
 void YACSPrs_ElementaryNode::afterMoving()
 {
+  DEBTRACE("YACSPrs_ElementaryNode::afterMoving");
   setMoving(false);
   setZFromLinks(myZ);
-  canvas()->update();
+  if ( canvas() ) canvas()->update();
 }
 
 void YACSPrs_ElementaryNode::hilight(const QPoint& theMousePos, const bool toHilight)
 {
+  //DEBTRACE("YACSPrs_ElementaryNode::hilight " << toHilight);
   // process the hilighting for node and ports
   if (toHilight) 
     {
@@ -491,6 +792,7 @@ void YACSPrs_ElementaryNode::hilight(const QPoint& theMousePos, const bool toHil
 
 void YACSPrs_ElementaryNode::select(const QPoint& theMousePos, const bool toSelect)
 {
+  DEBTRACE("YACSPrs_ElementaryNode::select " << toSelect);
   if ( toSelect ) 
   {
     // unhilight the item under the mouse cursor
@@ -510,15 +812,20 @@ void YACSPrs_ElementaryNode::select(const QPoint& theMousePos, const bool toSele
 	    {
 	      mySelectedPort->setSelected(false);
 	      mySelectedPort->setColor(mySelectedPort->storeColor(), false, true, true);
+              synchronize( mySelectedPort, false );
 	    }
 	    else
 	    {
 	      setSelected(false);
+              DEBTRACE(">>>## 4");
+	      getSEngine()->select(false);
+
 	      setNodeSubColor( myStoreSubColor, true );
 	    }
 	    aPort->setSelected(true);
 	    aPort->setColor(aPort->Color().dark(130), false, true, true);
 	    mySelectedPort = aPort;
+            synchronize( mySelectedPort, true );
 	  }
 	  break;
 	}
@@ -530,15 +837,19 @@ void YACSPrs_ElementaryNode::select(const QPoint& theMousePos, const bool toSele
       if ( mySelectedPort )
       {
 	mySelectedPort->setSelected(false);
+        synchronize( mySelectedPort, false );
 	mySelectedPort = 0;
       }
       
-      if ( myStoreSubColor.dark(130) != mySubColor )
+      //if ( myStoreSubColor.dark(130) != mySubColor )
       {
-	myStoreSubColor = mySubColor;
+	//myStoreSubColor = mySubColor;
 
 	setSelected(true);
-	setNodeSubColor( nodeSubColor().dark(130), true );
+        DEBTRACE(">>>## 5");
+	getSEngine()->select(true);
+
+	//setNodeSubColor( nodeSubColor().dark(130), true );
       }
     }
   }
@@ -547,10 +858,14 @@ void YACSPrs_ElementaryNode::select(const QPoint& theMousePos, const bool toSele
     if ( mySelectedPort ) {
       mySelectedPort->setSelected(false);
       mySelectedPort->setColor(mySelectedPort->storeColor(), false, true, true);
+      synchronize( mySelectedPort, false );
       mySelectedPort = 0;
     }
     else {
       setSelected(false);
+      DEBTRACE(">>>## 6");
+      getSEngine()->select(false);
+
       setNodeSubColor( myStoreSubColor, true );
     }
   }
@@ -580,7 +895,7 @@ QString YACSPrs_ElementaryNode::getToolTipText(const QPoint& theMousePos, QRect&
 		aText += QString(" data stream");
 	      aText += QString(" port \"") + anIOPort->getName() + QString("\", ");
 	      aText += anIOPort->getType(true) + QString(", ");
-	      aText += QString("value = ") + anIOPort->getValue();
+	      aText += QString("value = ") + anIOPort->getCurrentValue();
 	    }
 	    else
 	      aText += QString(" gate port");
@@ -619,15 +934,21 @@ int YACSPrs_ElementaryNode::rtti() const
 
 void YACSPrs_ElementaryNode::setVisible(bool b)
 {
+  DEBTRACE("YACSPrs_ElementaryNode::setVisible " << b);
   QCanvasPolygonalItem::setVisible(b);
 
   // set visibility to all ports
   YACSPrs_Port* aPort;
-  for (aPort = myPortList.first(); aPort; aPort = myPortList.next())
-    if (aPort->isVisible()) aPort->setVisible(b);
-  
+  //using iterator is more robust than using myPortList.next() when it can be called 
+  //from within a loop on myPortList
+  QPtrListIterator<YACSPrs_Port> it( myPortList );
+  while ( (aPort = it.current()) != 0 ) 
+    {
+      ++it;
+      if (aPort->isVisible()) aPort->setVisible(b);
+    }
   // set visibility to master point
-  myPointMaster->setVisible(b);
+  if ( myPointMaster ) myPointMaster->setVisible(b);
   updateLabelLink();
 
   // set visibility to in/out points
@@ -646,7 +967,7 @@ QPointArray YACSPrs_ElementaryNode::areaPoints() const
 QPointArray YACSPrs_ElementaryNode::maxAreaPoints() const
 {
   int w = width();
-  int h = maxHeight()+1; // add pen width
+  int h = height() + ( myPointMaster ? myPointMaster->height()/2 : 0 ) + 1; // add pen width
 
   return constructAreaPoints(w,h);
 }
@@ -663,6 +984,7 @@ QPointArray YACSPrs_ElementaryNode::constructAreaPoints(int theW, int theH) cons
 
 void YACSPrs_ElementaryNode::moveBy(double dx, double dy) 
 {
+  DEBTRACE("YACSPrs_ElementaryNode::moveBy " << dx << "," << dy);
   // for constraint nodes' moving inside the Bloc-->
   if ( isCheckAreaNeeded() && !checkArea(dx,dy) ) return;
   // <--
@@ -695,9 +1017,9 @@ void YACSPrs_ElementaryNode::moveBy(double dx, double dy)
   //for (aPort = myPortList.first(); aPort; aPort = myPortList.next())
   //  aPort->moveBy(xx, yy);
 
-  myPointMaster->moveBy(dx, dy);
-  if ( myLabelLink ) myLabelLink->moveByNode(this, (int)dx, (int)dy);
-
+  if ( myPointMaster ) myPointMaster->moveBy(dx, dy);
+  if ( myLabelLink ) myLabelLink->moveByNode(this);
+  
   //if (!myCellPrs) {
   //  myPointIn->moveBy(dx, dy);
   //  myPointOut->moveBy(dx, dy);
@@ -717,6 +1039,7 @@ void YACSPrs_ElementaryNode::moveBy(double dx, double dy)
 
 void YACSPrs_ElementaryNode::setZ(double z)
 {
+  DEBTRACE("YACSPrs_ElementaryNode::setZ: " << z);
   QCanvasItem::setZ(z);
 
   // update port's 
@@ -729,6 +1052,7 @@ void YACSPrs_ElementaryNode::setZ(double z)
 
 void YACSPrs_ElementaryNode::setZFromLinks(double z)
 {
+  DEBTRACE("YACSPrs_ElementaryNode::setZFromLinks: " << z);
   // find the maximum Z on all links of this node 
   double aMaxLinkZ = 0;
   YACSPrs_Port* aPort;
@@ -757,17 +1081,23 @@ void YACSPrs_ElementaryNode::setZFromLinks(double z)
  */
 void YACSPrs_ElementaryNode::update()
 {
-  if ( !myEngine ) return;
+  DEBTRACE("==> YACSPrs_ElementaryNode::update()");
+
+  if ( !getEngine() ) return;
 
   // update state
-  setState( myEngine->getState() );
+  setState( getEngine()->getState() );
 
   // update ports values
   YACSPrs_Port* aPort = 0;
   for (aPort = myPortList.first(); aPort; aPort = myPortList.next())
   {
     YACSPrs_InOutPort* anIOPort = dynamic_cast<YACSPrs_InOutPort*>( aPort );
-    if ( anIOPort && !anIOPort->isGate() ) anIOPort->update();
+    if ( anIOPort && !anIOPort->isGate() )
+    {
+      DEBTRACE("==> update port : " << aPort->getName().latin1());
+      anIOPort->update();
+    }
   }
   
   // update progress bar
@@ -775,6 +1105,8 @@ void YACSPrs_ElementaryNode::update()
 
   // update execution time
   updateExecTime();
+
+  mySEngine->update( UPDATEPROGRESS, 0, mySEngine );
 
   if ( canvas() ) {
     canvas()->setChanged(getRect());
@@ -792,7 +1124,9 @@ void YACSPrs_ElementaryNode::update()
  */
 void YACSPrs_ElementaryNode::updateForEachLoopBody(YACS::ENGINE::Node* theEngine)
 {
-  if ( !myEngine || !theEngine ) return;
+  DEBTRACE("==> YACSPrs_ElementaryNode::updateForEachLoopBody()");
+  
+  if ( !getEngine() || !theEngine ) return;
 
   // update state
   setState( theEngine->getState() );
@@ -818,41 +1152,57 @@ void YACSPrs_ElementaryNode::updateForEachLoopBody(YACS::ENGINE::Node* theEngine
 
   myPercentage = getPercentage(theEngine);
 
+  mySEngine->update( UPDATEPROGRESS, 0, mySEngine );
+
   if ( canvas() ) {
     canvas()->setChanged(getRect());
     canvas()->update();
   }
 }
 
-void YACSPrs_ElementaryNode::updatePorts()
+void YACSPrs_ElementaryNode::updatePorts(bool theForce)
 {
+  DEBTRACE("YACSPrs_ElementaryNode::updatePorts");
   bool aDisp = isVisible();
   if (aDisp) hide();
+
+  if (theForce)
+  {
+    if ( isFullDMode() )
+      myPortHeight = 2*PORT_MARGIN;
+    else
+      myPortHeight = 0;
+    myPortList.setAutoDelete(true);
+    myPortList.clear();
+  }
   
-  // iterates on all engine ports of the engine node myEngine,
+  // iterates on all engine ports of the engine node getEngine(),
   // create (if not already exists) for each engine port YACSPrs_InOutPort object and
   // set the rectangle for it
 
   bool withCreate = false;
   if ( myPortList.isEmpty() ) withCreate = true;
 
-  QRect r = getBodyRect();
-  int aPRectWidth = (int)(r.width()/2) - 2*PORT_MARGIN;
-  if ( aPRectWidth < PORT_WIDTH ) aPRectWidth = PORT_WIDTH;
-  
-  int ix = r.x() + PORT_MARGIN + 1;
-  int iy = r.y() + PORT_MARGIN;// + 1;
-  int ox = ix + aPRectWidth + 2*PORT_MARGIN;
-  int oy = r.y() + PORT_MARGIN;// + 1;
-
-  if ( withCreate )
-  { // create (and update)
-
-    // input ports
-    list<InPort*> anInPortsEngine = myEngine->getSetOfInPort();
-    list<InPort*>::iterator anInPortsIter = anInPortsEngine.begin();
-    int heightIncr = 0;
-    for( ;anInPortsIter!=anInPortsEngine.end();anInPortsIter++)
+  if ( isFullDMode() )
+  {
+    QRect r = getBodyRect();
+    int aPRectWidth = (int)(r.width()/2) - 2*PORT_MARGIN;
+    if ( aPRectWidth < PORT_WIDTH ) aPRectWidth = PORT_WIDTH;
+    
+    int ix = r.x() + PORT_MARGIN + 1;
+    int iy = r.y() + PORT_MARGIN;// + 1;
+    int ox = ix + aPRectWidth + 2*PORT_MARGIN;
+    int oy = r.y() + PORT_MARGIN;// + 1;
+    
+    if ( withCreate )
+    { // create (and update)
+      DEBTRACE("YACSPrs_ElementaryNode::updatePorts");
+      
+      // input ports
+      list<InPort*> anInPortsEngine = getEngine()->getSetOfInPort();
+      list<InPort*>::iterator anInPortsIter = anInPortsEngine.begin();
+      int heightIncr = 0;
+      for( ;anInPortsIter!=anInPortsEngine.end();anInPortsIter++)
       {
 	YACSPrs_InOutPort* anInPort = new YACSPrs_InOutPort(myMgr, canvas(), *anInPortsIter, this);
 	anInPort->setPortRect(QRect(ix, iy+heightIncr, aPRectWidth, PORT_HEIGHT));
@@ -861,12 +1211,12 @@ void YACSPrs_ElementaryNode::updatePorts()
 	myPortList.append(anInPort);
 	heightIncr += PORT_HEIGHT+PORT_SPACE;
       }
-    
-    // output ports
-    list<OutPort*> anOutPortsEngine = myEngine->getSetOfOutPort();
-    list<OutPort*>::iterator anOutPortsIter = anOutPortsEngine.begin();
-    heightIncr = 0;
-    for( ;anOutPortsIter!=anOutPortsEngine.end();anOutPortsIter++)
+      
+      // output ports
+      list<OutPort*> anOutPortsEngine = getEngine()->getSetOfOutPort();
+      list<OutPort*>::iterator anOutPortsIter = anOutPortsEngine.begin();
+      heightIncr = 0;
+      for( ;anOutPortsIter!=anOutPortsEngine.end();anOutPortsIter++)
       {
 	YACSPrs_InOutPort* anOutPort = new YACSPrs_InOutPort(myMgr, canvas(), *anOutPortsIter, this);
 	anOutPort->setPortRect(QRect(ox, oy+heightIncr, aPRectWidth, PORT_HEIGHT));
@@ -875,39 +1225,54 @@ void YACSPrs_ElementaryNode::updatePorts()
 	myPortList.append(anOutPort);
 	heightIncr += PORT_HEIGHT+PORT_SPACE;
       }
-    
-    int aPortsIncrement = 
-      anInPortsEngine.size()>anOutPortsEngine.size()?anInPortsEngine.size():anOutPortsEngine.size();
-    myPortHeight += PORT_HEIGHT*aPortsIncrement + (aPortsIncrement-1)*PORT_SPACE;
-  }
-  else
-  { // only update
-    YACSPrs_InOutPort* aPort;
-    for (aPort = (YACSPrs_InOutPort*)(myPortList.first()); 
-	 aPort && !aPort->isGate();
-	 aPort = (YACSPrs_InOutPort*)(myPortList.next()))
-    { 
-      if ( aPort->isInput() )
-      { // test input ports
-	aPort->setPortRect(QRect(ix, iy, aPRectWidth, PORT_HEIGHT), !mySelfMoving, myArea);
-	iy += PORT_HEIGHT+PORT_SPACE;
-      }
-      else
-      { // test output ports
-	aPort->setPortRect(QRect(ox, oy, aPRectWidth, PORT_HEIGHT), !mySelfMoving, myArea);
-	oy += PORT_HEIGHT+PORT_SPACE;
-      }
+      
+      int aPortsIncrement = 
+	anInPortsEngine.size()>anOutPortsEngine.size()?anInPortsEngine.size():anOutPortsEngine.size();
+      myPortHeight += PORT_HEIGHT*aPortsIncrement + (aPortsIncrement-1)*PORT_SPACE;
+    }
+    else
+    { // only update
+      YACSPrs_Port* aPort;
+      QPtrListIterator<YACSPrs_Port> it( myPortList );
+      while ( (aPort = it.current()) != 0 ) 
+        {
+          ++it;
+          DEBTRACE(aPort);
+          YACSPrs_InOutPort* anIOPort = dynamic_cast<YACSPrs_InOutPort*>( aPort );
+          if ( !anIOPort )continue;
+          DEBTRACE(anIOPort->getName()<<","<<anIOPort->isGate()<<","<<anIOPort->isInput());
+	  if ( !anIOPort->isGate() )
+	    if ( anIOPort->isInput() )
+	    { // test input ports
+              DEBTRACE(ix<<","<< iy<<","<< aPRectWidth<<","<< PORT_HEIGHT);
+	      anIOPort->setPortRect(QRect(ix, iy, aPRectWidth, PORT_HEIGHT), !mySelfMoving, myArea);
+	      iy += PORT_HEIGHT+PORT_SPACE;
+	    }
+	    else
+	    { // test output ports
+              DEBTRACE(ox<<","<< oy<<","<< aPRectWidth<<","<< PORT_HEIGHT);
+	      anIOPort->setPortRect(QRect(ox, oy, aPRectWidth, PORT_HEIGHT), !mySelfMoving, myArea);
+	      oy += PORT_HEIGHT+PORT_SPACE;
+	    }
+        }
     }
   }
-    
+
   // can update gates only after body height will be defined
   updateGates(withCreate);
 
+  if (theForce && myPointMaster)
+  {
+    QPoint aPnt = getConnectionMasterPoint();
+    myPointMaster->setCoords(aPnt.x(), aPnt.y());
+  }
+    
   if (aDisp) show();
 }
 
 void YACSPrs_ElementaryNode::updateGates(bool theCreate)
 {
+  DEBTRACE("YACSPrs_ElementaryNode::updateGates " << theCreate << "," << isVisible());
   bool aDisp = isVisible();
   if (aDisp) hide();
   
@@ -923,14 +1288,14 @@ void YACSPrs_ElementaryNode::updateGates(bool theCreate)
   if ( theCreate )
   { // create (and update)
     // input Gate
-    YACSPrs_InOutPort* anInPort = new YACSPrs_InOutPort(myMgr,canvas(),myEngine->getInGate(),this);
+    YACSPrs_InOutPort* anInPort = new YACSPrs_InOutPort(myMgr,canvas(),getEngine()->getInGate(),this);
     anInPort->setPortRect(QRect(ix, iy,	aPRectWidth, PORT_HEIGHT));
     anInPort->setColor(nodeSubColor());
     anInPort->setStoreColor(nodeSubColor());
     myPortList.append(anInPort);
 
     // output Gate
-    YACSPrs_InOutPort* anOutPort = new YACSPrs_InOutPort(myMgr,canvas(),myEngine->getOutGate(),this);
+    YACSPrs_InOutPort* anOutPort = new YACSPrs_InOutPort(myMgr,canvas(),getEngine()->getOutGate(),this);
     anOutPort->setPortRect(QRect(ox, oy, aPRectWidth, PORT_HEIGHT));
     anOutPort->setColor(nodeSubColor());
     anOutPort->setStoreColor(nodeSubColor());
@@ -939,15 +1304,23 @@ void YACSPrs_ElementaryNode::updateGates(bool theCreate)
   else
   { // only update
     YACSPrs_Port* aPort;
-    for (aPort = myPortList.first(); aPort; aPort = myPortList.next())
+    QPtrListIterator<YACSPrs_Port> it( myPortList );
+    while ( (aPort = it.current()) != 0 ) 
     { 
+      ++it;
       YACSPrs_InOutPort* anIOPort = dynamic_cast<YACSPrs_InOutPort*>( aPort );
       if ( anIOPort && anIOPort->isGate() )
       {
 	if ( anIOPort->isInput() ) // test input ports
-	  anIOPort->setPortRect(QRect(ix, iy, aPRectWidth, PORT_HEIGHT), !mySelfMoving, myArea);
+          {
+            DEBTRACE(ix<<","<< iy<<","<< aPRectWidth<<","<< PORT_HEIGHT);
+	    anIOPort->setPortRect(QRect(ix, iy, aPRectWidth, PORT_HEIGHT), !mySelfMoving, myArea);
+          }
 	else // test output ports
-	  anIOPort->setPortRect(QRect(ox, oy, aPRectWidth, PORT_HEIGHT), !mySelfMoving, myArea);
+          {
+            DEBTRACE(ox<<","<< oy<<","<< aPRectWidth<<","<< PORT_HEIGHT);
+	    anIOPort->setPortRect(QRect(ox, oy, aPRectWidth, PORT_HEIGHT), !mySelfMoving, myArea);
+          }
       }
     }
   }
@@ -1006,6 +1379,26 @@ int YACSPrs_ElementaryNode::maxWidth() const
 int YACSPrs_ElementaryNode::maxHeight() const
 { 
   return boundingRect().height() + ( myPointMaster ? myPointMaster->height()/2 : 0 );
+}
+
+int YACSPrs_ElementaryNode::minX() const
+{
+  return boundingRect().left() - 2*HOOKPOINT_SIZE;
+}
+
+int YACSPrs_ElementaryNode::maxX() const
+{
+  return boundingRect().right() + 2*HOOKPOINT_SIZE;
+}
+
+int YACSPrs_ElementaryNode::minY() const
+{
+  return boundingRect().top();
+}
+ 
+int YACSPrs_ElementaryNode::maxY() const
+{
+  return boundingRect().bottom() + (myPointMaster ? myPointMaster->height()/2 : 0 );
 }
 
 int YACSPrs_ElementaryNode::getInfoHeight() const
@@ -1090,17 +1483,17 @@ QRect YACSPrs_ElementaryNode::getGateRect() const
 void YACSPrs_ElementaryNode::nextTimeIteration(YACS::ENGINE::Node* theEngine)
 {
   bool nullifyOnToActivate = false;
-  if ( !theEngine ) theEngine = myEngine;
+  if ( !theEngine ) theEngine = getEngine();
   else nullifyOnToActivate = true;
 
   if ( theEngine
        &&
-       ( theEngine->getState() == YACS::INITED || theEngine->getEffectiveState() == YACS::INITED 
+       ( theEngine->getState() == YACS::READY /*|| theEngine->getEffectiveState() == YACS::READY*/
 	 ||
 	 ( nullifyOnToActivate && ( theEngine->getState() == YACS::TOACTIVATE || theEngine->getEffectiveState() == YACS::TOACTIVATE) ) ) )
     myTimeIteration = 0.;
   else if ( theEngine &&
-	    theEngine->getState() != YACS::INITED && theEngine->getEffectiveState() != YACS::INITED &&
+	    theEngine->getState() != YACS::READY /*&& theEngine->getEffectiveState() != YACS::READY*/ &&
 	    !myFinished ) {
     const double aGoodTime = 0.02 * 100; // estimated time to run, s
     myTimeIteration += 1./aGoodTime;
@@ -1113,25 +1506,27 @@ void YACSPrs_ElementaryNode::nextTimeIteration(YACS::ENGINE::Node* theEngine)
  *
  * \param theEngine : the engine of clone node from which we have to update presentation of this node.
  */
-double YACSPrs_ElementaryNode::getPercentage(YACS::ENGINE::Node* theEngine) const
+int YACSPrs_ElementaryNode::getPercentage(YACS::ENGINE::Node* theEngine) const
 {
   bool nullifyOnToActivate = false;
-  if ( !theEngine ) theEngine = myEngine;
+  if ( !theEngine ) theEngine = getEngine();
   else nullifyOnToActivate = true;
     
-  if ( !theEngine ) return 0.;
+  if ( !theEngine ) return 0;
 
-  if ( theEngine->getState() == YACS::INITED || theEngine->getEffectiveState() == YACS::INITED ||
+  if ( theEngine->getState() == YACS::READY || /*theEngine->getEffectiveState() == YACS::READY ||*/
        theEngine->getState() == YACS::TOLOAD || theEngine->getEffectiveState() == YACS::TOLOAD ||
        theEngine->getState() == YACS::DISABLED || theEngine->getEffectiveState() == YACS::DISABLED
        ||
        ( nullifyOnToActivate && ( theEngine->getState() == YACS::TOACTIVATE || theEngine->getEffectiveState() == YACS::TOACTIVATE) ) )
-    return 0.;
+    return 0;
+
   if ( theEngine->getState() == YACS::DONE )
-    return 100.;
+    return 100;
+
   // progress bar is manipulated at logarithmic scale:
   // iteration=1 -> 1%, iteration==goodtime -> 50%, iteration=infinite -> 99%
-  return ( 0.499 + 99. * ( myTimeIteration * myTimeIteration / ( 1. + myTimeIteration * myTimeIteration ) ) );
+  return (int)( 0.499 + 99. * ( myTimeIteration * myTimeIteration / ( 1. + myTimeIteration * myTimeIteration ) ) );
 }
 
 //! Updates execution time.
@@ -1143,7 +1538,7 @@ double YACSPrs_ElementaryNode::getPercentage(YACS::ENGINE::Node* theEngine) cons
 void YACSPrs_ElementaryNode::updateExecTime(YACS::ENGINE::Node* theEngine)
 {
   bool nullifyOnToActivate = false;
-  if ( !theEngine ) theEngine = myEngine;
+  if ( !theEngine ) theEngine = getEngine();
   else nullifyOnToActivate = true;
     
   if ( !theEngine ) return;
@@ -1154,13 +1549,13 @@ void YACSPrs_ElementaryNode::updateExecTime(YACS::ENGINE::Node* theEngine)
     return;
   }
 
-  if ( theEngine->getState() == YACS::INITED || theEngine->getEffectiveState() == YACS::INITED
+  if ( theEngine->getState() == YACS::READY /*|| theEngine->getEffectiveState() == YACS::READY*/
        ||
        ( nullifyOnToActivate && ( theEngine->getState() == YACS::TOACTIVATE || theEngine->getEffectiveState() == YACS::TOACTIVATE) ) )
   {
     myTime = QString("00:00:00");
     myStarted = false;
-    if ( theEngine->getState() == YACS::INITED ) return;
+    if ( theEngine->getState() == YACS::READY ) return;
   }
 
   if ( !myTime.compare(QString("00:00:00")) && !myStarted ) {
@@ -1169,7 +1564,7 @@ void YACSPrs_ElementaryNode::updateExecTime(YACS::ENGINE::Node* theEngine)
     myFinished = false;
   }
 
-  if ( theEngine->getState() != YACS::INITED && theEngine->getState() != YACS::DONE && 
+  if ( theEngine->getState() != YACS::READY && theEngine->getState() != YACS::DONE && 
        theEngine->getState() != YACS::FAILED && theEngine->getState() != YACS::ERROR )
   {
     int aMS = myStartTime.elapsed();
@@ -1203,9 +1598,13 @@ void YACSPrs_ElementaryNode::setState(YACS::StatesForNode theState)
 {
   switch ( theState )
     {
-    case YACS::INITED:
-      myStatus = QString("Inited");
-      myStatePixmap = myMgr->loadPixmap( "YACSPrs", QObject::tr( "ICON_STATUS_NO" ));
+    case YACS::INVALID:
+      myStatus = QString("Invalid");
+      myStatePixmap = myMgr->loadPixmap( "YACSPrs", QObject::tr( "ICON_STATUS_INVALID" ));
+      break;
+    case YACS::READY:
+      myStatus = QString("Ready");
+      myStatePixmap = myMgr->loadPixmap( "YACSPrs", QObject::tr( "ICON_STATUS_READY" ));
       break;
     case YACS::TOLOAD:
       myStatus = QString("To Load");
@@ -1268,14 +1667,23 @@ void YACSPrs_ElementaryNode::drawShape(QPainter& thePainter)
 {
   drawFrame(thePainter);
   drawTitle(thePainter);
-  drawPort(thePainter);
+
+  if ( isFullDMode() )
+    drawPort(thePainter);
+
   drawGate(thePainter);
+
+  if ( isControlDMode() && myPointMaster)
+  {
+    myPointMaster->setVisible(false);
+    myPointMaster->setCanvas(0);
+  }
 }
   
 void YACSPrs_ElementaryNode::drawTitleShape(QPainter& thePainter)
 {
   thePainter.drawRoundRect(getTitleRect(),myXRnd,myYRnd);
-  drawText(thePainter, QString(myEngine->getName()), getTitleRect(), Qt::AlignHCenter);
+  drawText(thePainter, QString(getEngine()->getName()), getTitleRect(), Qt::AlignHCenter);
 }
 
 void YACSPrs_ElementaryNode::drawTitle(QPainter& thePainter)
@@ -1316,6 +1724,10 @@ void YACSPrs_ElementaryNode::drawGate(QPainter& thePainter)
 {
   QRect aRect = getRect();
   QRect aBRect = getBodyRect();
+
+  if ( isControlDMode() )
+    thePainter.drawLine(aBRect.left(), aBRect.bottom(), aBRect.right(), aBRect.bottom());
+
   int x0 = (aRect.left() + aRect.right())/2;
   thePainter.drawLine(x0, aBRect.bottom(), x0, aRect.bottom());
 
@@ -1376,6 +1788,7 @@ void YACSPrs_ElementaryNode::setMasterPointColor(QColor theColor)
 
 bool YACSPrs_ElementaryNode::checkArea(double dx, double dy)
 {
+  DEBTRACE("YACSPrs_ElementaryNode::checkArea " << dx << "," << dy);
   // for constraint nodes' moving inside the Bloc-->
   if ( !myIsInBloc ) return true;
 
@@ -1386,6 +1799,33 @@ bool YACSPrs_ElementaryNode::checkArea(double dx, double dy)
     return true;
   return false;
   // <--
+}
+
+bool YACSPrs_ElementaryNode::isFullDMode() const
+{
+  if ( myViewMode == 0 ) return true;
+  return false;
+}
+
+bool YACSPrs_ElementaryNode::isControlDMode() const
+{
+  if ( myViewMode == 1 ) return true;
+  return false;
+}
+
+void YACSPrs_ElementaryNode::setSelected( bool b ) 
+{ 
+  mySelected = b;
+  if (mySelected)
+    setNodeSubColor( myStoreSubColor.dark(130), true );
+  else
+    setNodeSubColor( myStoreSubColor, true );
+}
+
+bool YACSPrs_ElementaryNode::synchronize( YACSPrs_Port* port, const bool toSelect )
+{
+  DEBTRACE("YACSPrs_ElementaryNode::synchronize");
+  return YACSPrs_InOutPort::synchronize( port, toSelect );
 }
 
 /*!
@@ -1408,23 +1848,62 @@ YACSPrs_Port::YACSPrs_Port( SUIT_ResourceMgr* theMgr, QCanvas* theCanvas, YACSPr
 
 YACSPrs_Port::~YACSPrs_Port()
 {
-  if (myPoint) delete myPoint;
+  DEBTRACE(">> YACSPrs_Port::~YACSPrs_Port()");
+  //if ( getNode() ) getNode()->erasePortPrs(this);
 
-  for(list<YACSPrs_Link*>::iterator it = myLinks.begin(); it != myLinks.end(); it++) {
-    if ( YACSPrs_PortLink* aPL = dynamic_cast<YACSPrs_PortLink*>( *it ) ) {
-      aPL->setInputPort(0);
-      aPL->setOutputPort(0);
-    }
-    else if ( YACSPrs_LabelLink* aLL = dynamic_cast<YACSPrs_LabelLink*>( *it ) ) {
-      aLL->setOutputPort(0);
-      aLL->setSlaveNode(0);
+  if (myPoint) 
+  {
+    delete myPoint;
+    myPoint = 0;
+  }
+
+  for(list<YACSPrs_Link*>::iterator it = myLinks.begin(); it != myLinks.end(); ++it) {
+    YACSPrs_Link* aLink = *it;
+    if( aLink )
+    {
+      if ( YACSPrs_PortLink* aPL = dynamic_cast<YACSPrs_PortLink*>( aLink ) )
+      {
+	// detach port link presentation from HMI
+	YACS::HMI::Subject* aSub = aPL->getSubject();
+	if ( aSub )
+	  aSub->detach(aPL);
+
+	if ( aPL->getInputPort() == this )
+	  aPL->setInputPort(0);
+	else if ( aPL->getOutputPort() == this )
+	  aPL->setOutputPort(0);
+
+	delete aPL;
+	aPL = 0;
+      }
+      else if ( YACSPrs_LabelLink* aLL = dynamic_cast<YACSPrs_LabelLink*>( aLink ) )
+      {
+	if ( aLL->getOutputPort() == this )
+	  aLL->setOutputPort(0);
+	delete aLL;
+	aLL = 0;
+      }
     }
   }
+  myLinks.clear();
+}
+
+YACSPrs_PortLink* YACSPrs_Port::getLink(YACS::HMI::Subject* theSLink)
+{
+  YACSPrs_PortLink* aRet = 0;
+
+  if ( !theSLink ) return aRet;
   
-  //for(list<YACSPrs_Link*>::iterator it = myLinks.begin(); it != myLinks.end(); ++it) {
-  //  delete (*it);
-  //}
-  //myLinks.clear();
+  for(list<YACSPrs_Link*>::iterator it = myLinks.begin(); it != myLinks.end(); it++)
+  {
+    YACSPrs_PortLink* aPLink = dynamic_cast<YACSPrs_PortLink*>(*it);
+    if ( !aPLink ) continue;
+
+    if ( aPLink->getSubject() == theSLink )
+      return aPLink;
+  }
+
+  return aRet;
 }
 
 void YACSPrs_Port::setCanvas(QCanvas* theCanvas)
@@ -1433,10 +1912,15 @@ void YACSPrs_Port::setCanvas(QCanvas* theCanvas)
   
   // set canvas to hook
   if (myPoint) myPoint->setCanvas(theCanvas);
+
+  // set canvas for all ports links
+  for(list<YACSPrs_Link*>::iterator it = myLinks.begin(); it != myLinks.end(); it++)
+    (*it)->setCanvas(theCanvas);
 }
 
 void YACSPrs_Port::updateLinks(bool theMoveInternalLinkPoints, QRect theArea)
 {
+  DEBTRACE("YACSPrs_Port::updateLinks");
   for(list<YACSPrs_Link*>::iterator it = myLinks.begin(); it != myLinks.end(); it++)
     (*it)->moveByPort(this, theMoveInternalLinkPoints, theArea);
 }
@@ -1448,8 +1932,18 @@ QString YACSPrs_Port::getName() const
 
 void YACSPrs_Port::setVisible(bool b)
 {
+  DEBTRACE("YACSPrs_Port::setVisible " <<b);
   if (myPoint) myPoint->setVisible(b);
-  if (b) updateLinks();
+
+  if (b)
+  {
+    updateLinks();
+    for(list<YACSPrs_Link*>::iterator it = myLinks.begin(); it != myLinks.end(); it++)
+      (*it)->show();
+  }
+  else
+    for(list<YACSPrs_Link*>::iterator it = myLinks.begin(); it != myLinks.end(); it++)
+      (*it)->hide();
 }
 
 void YACSPrs_Port::setColor(const QColor& theColor, bool theUpdatePointColor,
@@ -1478,6 +1972,7 @@ void YACSPrs_Port::moveBy(int dx, int dy)
 
 void YACSPrs_Port::setZ(double z, bool storeOldZ)
 {
+  DEBTRACE("YACSPrs_Port::setZ: " << z);
   if (myPoint) myPoint->setZ(z);
   for(list<YACSPrs_Link*>::iterator it = myLinks.begin(); it != myLinks.end(); it++) {
     if ( storeOldZ ) (*it)->setMyZ((*it)->z());
@@ -1516,6 +2011,7 @@ YACSPrs_LabelPort::~YACSPrs_LabelPort()
 
 void YACSPrs_LabelPort::setPortRect(const QRect& theRect, bool theMoveInternalLinkPoints, QRect theArea)
 {
+  DEBTRACE("YACSPrs_LabelPort::setPortRect");
   myNameRect = theRect;
   myNameRect.setWidth(theRect.width()-3);
   
@@ -1541,6 +2037,7 @@ void YACSPrs_LabelPort::setColor(const QColor& theColor, bool theUpdatePointColo
 
 void YACSPrs_LabelPort::moveBy(int dx, int dy)
 {
+  DEBTRACE("YACSPrs_LabelPort::moveBy " << dx << "," << dy);
   myNameRect.moveBy(dx, dy);
   if (myPoint) myPoint->moveBy(dx, dy);
   
@@ -1549,9 +2046,11 @@ void YACSPrs_LabelPort::moveBy(int dx, int dy)
 
 QPoint YACSPrs_LabelPort::getConnectionPoint() const
 {
+  DEBTRACE("YACSPrs_LabelPort::getConnectionPoint");
   int x, y;
   x = myNameRect.right() + PORT_MARGIN + 2 + 3*HOOKPOINT_SIZE/2;
   y = (int)(myNameRect.top() + myNameRect.bottom())/2;
+  DEBTRACE(x << "," << y);
   return QPoint(x, y);
 }
 
@@ -1591,6 +2090,7 @@ void YACSPrs_LabelPort::draw(QPainter& thePainter, int theXRnd, int theYRnd)
  !*/
 
 YACSPrs_InOutPort::YACSPrs_InOutPort( SUIT_ResourceMgr* theMgr, QCanvas* theCanvas, YACS::ENGINE::Port* thePort, YACSPrs_ElementaryNode* theNodePrs ):
+  GuiObserver(),
   YACSPrs_Port(theMgr, theCanvas, theNodePrs),
   myEngine(thePort)
 {
@@ -1613,15 +2113,32 @@ YACSPrs_InOutPort::YACSPrs_InOutPort( SUIT_ResourceMgr* theMgr, QCanvas* theCanv
   if ( !myGate ) {
     myType = getType();
     myValue = getValue();
+    DEBTRACE("Set VAL 0");
   }
 
   myColor = myMgr->colorValue( "QxGraph", "Title", TITLE_COLOR );
 
   myPoint = new YACSPrs_Hook(theMgr, theCanvas, this, myInput, myGate);
+
+  // attach to HMI myself
+  YACS::HMI::Subject* aSub = getSubject();
+  if ( aSub )
+    aSub->attach( this );
 }
 
 YACSPrs_InOutPort::~YACSPrs_InOutPort()
 {
+  DEBTRACE(">> YACSPrs_InOutPort::~YACSPrs_InOutPort() detach this from HMI");
+  // detach from HMI
+  YACS::HMI::Subject* aSub = getSubject();
+  if ( aSub )
+    aSub->detach(this);
+}
+
+void YACSPrs_InOutPort::select( bool isSelected )
+{
+  DEBTRACE(">> YACSPrs_InOutPort::select( " << isSelected );
+  setSelected( isSelected );
 }
 
 //! Updates a port presentation during execution.
@@ -1632,6 +2149,7 @@ YACSPrs_InOutPort::~YACSPrs_InOutPort()
  */
 void YACSPrs_InOutPort::update(bool theForce, YACS::ENGINE::Port* theEngine)
 {
+  DEBTRACE("YACSPrs_InOutPort::update");
   QString aNewName = getName();
   if (theForce || myName.compare(aNewName) != 0) {
     myName = aNewName;
@@ -1640,16 +2158,37 @@ void YACSPrs_InOutPort::update(bool theForce, YACS::ENGINE::Port* theEngine)
   if ( !myGate )
   {  
     QString aNewType = getType();
-    QString aNewValue = getValue(theEngine);
     if (theForce || myType.compare(aNewType) != 0) {
       myType = aNewType;
       if (myCanvas) myCanvas->setChanged(myTypeRect);
     }
-    if (theForce || myValue.compare(aNewValue) != 0) {
-      myValue = aNewValue;
-      if (myCanvas) myCanvas->setChanged(myValueRect);
+
+    if ( getNode()->getEngine()->getState() == YACS::READY || getNode()->getEngine()->getState() == YACS::INVALID) //edition
+    {
+      QString aNewValue = getValue(theEngine); // !!! during execution the value updated by events from YACSORB engine
+      if (theForce || myValue.compare(aNewValue) != 0) {
+        DEBTRACE(myValue<<","<<aNewValue);
+	myValue = aNewValue;
+	DEBTRACE("Set VAL 1");
+	if (myCanvas) myCanvas->setChanged(myValueRect);
+      }
     }
   }
+}
+
+//! Updates a port value during execution.
+/*!
+ * \param theValue : the new port value to be set for port presentation.
+ */
+void YACSPrs_InOutPort::updateValue( QString theValue )
+{
+  DEBTRACE("YACSPrs_InOutPort::updateValue");
+  if ( !myGate )
+    if ( myValue.compare(theValue) != 0 ) {
+      myValue = theValue;
+      DEBTRACE("Set VAL 2");
+      if (myCanvas) myCanvas->setChanged(myValueRect);
+    }
 }
 
 bool YACSPrs_InOutPort::isHilight() const
@@ -1738,6 +2277,7 @@ QString YACSPrs_InOutPort::getType(const bool forToolTip) const
  */
 QString YACSPrs_InOutPort::getValue(YACS::ENGINE::Port* theEngine) const
 {
+  DEBTRACE("YACSPrs_InOutPort::getValue");
   if ( !theEngine ) theEngine = myEngine;
 
   QString aValue;
@@ -1751,48 +2291,59 @@ QString YACSPrs_InOutPort::getValue(YACS::ENGINE::Port* theEngine) const
     {
       if ( SeqAnyInputPort* aSeqAnyP = dynamic_cast<SeqAnyInputPort*>(theEngine) )
       { // check if theEngine is SeqAnyInputPort
-	//printf("SeqAnyInputPort : %s\n",getName().latin1());
+        DEBTRACE("SeqAnyInputPort : " << getName().latin1());
 	anAny = aSeqAnyP->getValue();
 	if ( !anAny ) aValue = QString("[ ? ]");
 	else toString(anAny, aValue);
       }
       else if ( AnyInputPort* anAnyP = dynamic_cast<AnyInputPort*>(theEngine) )
       { // check if theEngine is AnyInputPort
-	//printf("AnyInputPort : %s\n",getName().latin1());
-	toString(anAnyP->getValue(), aValue);
+        DEBTRACE("AnyInputPort : " << getName().latin1());
+	if ( !anAnyP->edIsManuallyInitialized() )
+	  aValue = QString::number(0);
+	else
+	  toString(anAnyP->getValue(), aValue);
       }
       else if ( ConditionInputPort* aConditionP = dynamic_cast<ConditionInputPort*>(theEngine) )
       { // check if theEngine is ConditionInputPort
-	//printf("ConditionInputPort : %s\n",getName().latin1());
+        DEBTRACE("ConditionInputPort : " << getName().latin1());
 	aValue = QString( aConditionP->getValue() ? "true" : "false" );
       }
       else if ( InputCorbaPort* aCorbaP = dynamic_cast<InputCorbaPort*>(theEngine) )
       { // check if theEngine is InputCorbaPort
-	//printf("InputCorbaPort : %s\n",getName().latin1());
+        DEBTRACE("InputCorbaPort : " << getName().latin1());
+        DEBTRACE(aCorbaP->dump());
 	toString( aCorbaP->getAny(), aValue );
       }
       else if ( InputPyPort* aPyP = dynamic_cast<InputPyPort*>(theEngine) )
       { // check if theEngine is InputPyPort
-	//printf("InputPyPort : %s\n",getName().latin1());
+        DEBTRACE("InputPyPort : " << getName().latin1());
 	toString( aPyP->getPyObj(), aValue );
+      }
+      else if(InputStudyPort* aPort=dynamic_cast<InputStudyPort*>(theEngine))
+      {
+        DEBTRACE( aPort->getData());
+        aValue=aPort->getData();
       }
       else if ( InputXmlPort* aXmlP = dynamic_cast<InputXmlPort*>(theEngine) )
       { // check if theEngine is InputXmlPort
-	//printf("InputXmlPort : %s\n",getName().latin1());
+        DEBTRACE("InputXmlPort : " << getName().latin1());
+        DEBTRACE( aXmlP->dump());
+        toString(aXmlP->dump(),aXmlP->edGetType(),aValue);
       }
       else if ( InputCalStreamPort* aCalStreamP = dynamic_cast<InputCalStreamPort*>(theEngine) )
       { // check if theEngine is InputCalStreamPort
-	//printf("InputCalStreamPort : %s\n",getName().latin1());
+        DEBTRACE("InputCalStreamPort : " << getName().latin1());
 	aValue = QString("data stream");
       }
       else if ( InputDataStreamPort* aDataStreamP = dynamic_cast<InputDataStreamPort*>(theEngine) )
       { // check if theEngine is InputDataStreamPort
-	//printf("InputDataStreamPort : %s\n",getName().latin1());
+        DEBTRACE("InputDataStreamPort : " << getName().latin1());
 	aValue = QString("data stream");
       }
       else if ( InputPort* anInputP = dynamic_cast<InputPort*>(theEngine) )
       { // check if theEngine is InputPort
-	//printf("InputPort : %s\n",getName().latin1());
+        DEBTRACE("InputPort : " << getName().latin1());
       }
     }
     else
@@ -1801,36 +2352,43 @@ QString YACSPrs_InOutPort::getValue(YACS::ENGINE::Port* theEngine) const
       
       if ( AnyOutputPort* anAnyP = dynamic_cast<AnyOutputPort*>(theEngine) )
       { // check if theEngine is AnyOutputPort
-	//printf("AnyOutputPort : %s\n",getName().latin1());
+        DEBTRACE("AnyOutputPort : " << getName().latin1());
 	toString(anAnyP->getValue(), aValue);
       }
       else if ( OutputCorbaPort* aCorbaP = dynamic_cast<OutputCorbaPort*>(theEngine) )
       { // check if theEngine is OutputCorbaPort
-	//printf("OutputCorbaPort : %s\n",getName().latin1());
+        DEBTRACE("OutputCorbaPort : " << getName().latin1());
 	toString( aCorbaP->getAny(), aValue );
       }
       else if ( OutputPyPort* aPyP = dynamic_cast<OutputPyPort*>(theEngine) )
       { // check if theEngine is OutputPyPort
-	//printf("OutputPyPort : %s\n",getName().latin1());
+        DEBTRACE("OutputPyPort : " << getName().latin1());
 	toString( aPyP->get(), aValue );
+      }
+      else if(OutputStudyPort* aPort=dynamic_cast<OutputStudyPort*>(theEngine))
+      {
+        DEBTRACE( aPort->getData());
+        aValue=aPort->getData();
       }
       else if ( OutputXmlPort* aXmlP  = dynamic_cast<OutputXmlPort*>(theEngine))
       { // check if theEngine is OutputXmlPort
-	//printf("OutputXmlPort : %s\n",getName().latin1());
+        DEBTRACE("OutputXmlPort : " << getName().latin1());
+        DEBTRACE( aXmlP->dump());
+        toString(aXmlP->dump(),aXmlP->edGetType(),aValue);
       }
       else if ( OutputCalStreamPort* aCalStreamP = dynamic_cast<OutputCalStreamPort*>(theEngine) )
       { // check if theEngine is OutputCalStreamPort
-	//printf("OutputCalStreamPort : %s\n",getName().latin1());
+        DEBTRACE("OutputCalStreamPort : " << getName().latin1());
 	aValue = QString("data stream");
       }
       else if ( OutputDataStreamPort* aCalStreamP = dynamic_cast<OutputDataStreamPort*>(theEngine) )
       { // check if theEngine is OutputDataStreamPort
-	//printf("OutputDataStreamPort : %s\n",getName().latin1());
+        DEBTRACE("OutputDataStreamPort : " << getName().latin1());
 	aValue = QString("data stream");
       }
       else if ( OutputPort* anOutputP = dynamic_cast<OutputPort*>(theEngine) )
       { // check if theEngine is OutputPort
-	//printf("OutputPort : %s\n",getName().latin1());
+        DEBTRACE("OutputPort : " << getName().latin1());
       }
     }
   }
@@ -1849,9 +2407,11 @@ int YACSPrs_InOutPort::getAlignment() const
 
 void YACSPrs_InOutPort::setPortRect(const QRect& theRect, bool theMoveInternalLinkPoints, QRect theArea)
 {
+  DEBTRACE("YACSPrs_InOutPort::setPortRect " << getName());
   if ( !myGate )
   {  
     int aRectWidth = (theRect.right() - theRect.left() - 2*(PORT_SPACE))/3;
+    DEBTRACE(theRect.left()<<","<< theRect.top()<<","<<aRectWidth<<","<<PORT_HEIGHT);
     myNameRect = QRect(theRect.left(), theRect.top(),
 		       aRectWidth,PORT_HEIGHT);
     myTypeRect = QRect(myNameRect.right()+PORT_SPACE, theRect.top(),
@@ -1872,6 +2432,7 @@ void YACSPrs_InOutPort::setPortRect(const QRect& theRect, bool theMoveInternalLi
   }
 
   updateLinks(theMoveInternalLinkPoints,theArea);
+  DEBTRACE("YACSPrs_InOutPort::setPortRect after updateLinks" );
 }
 
 QRect YACSPrs_InOutPort::getPortRect() const
@@ -1885,6 +2446,7 @@ QRect YACSPrs_InOutPort::getPortRect() const
 
 void YACSPrs_InOutPort::moveBy(int dx, int dy)
 {
+  DEBTRACE("YACSPrs_InOutPort::moveBy " << dx << "," << dy);
   myNameRect.moveBy(dx, dy);
   if ( !myGate )
   {  
@@ -1898,6 +2460,7 @@ void YACSPrs_InOutPort::moveBy(int dx, int dy)
 
 void YACSPrs_InOutPort::setZ(double z, bool storeOldZ)
 {
+  DEBTRACE("YACSPrs_InOutPort::setZ: " << z);
   if (myPoint) myPoint->setZ(z);
   for(list<YACSPrs_Link*>::iterator it = myLinks.begin(); it != myLinks.end(); it++) {
     if ( storeOldZ ) (*it)->setMyZ((*it)->z());
@@ -1915,6 +2478,7 @@ void YACSPrs_InOutPort::setZ(double z, bool storeOldZ)
 
 QPoint YACSPrs_InOutPort::getConnectionPoint() const
 {
+  DEBTRACE("YACSPrs_InOutPort::getConnectionPoint");
   int x, y;
   if ( myGate )
   {
@@ -1998,6 +2562,60 @@ void YACSPrs_InOutPort::draw(QPainter& thePainter, int theXRnd, int theYRnd)
   }
 }
 
+YACS::HMI::Subject* YACSPrs_InOutPort::getSubject() const
+{
+  YACS::HMI::Subject* aSub = 0;
+
+  DataPort* aDataPort = dynamic_cast<DataPort*>( myEngine );
+  if ( aDataPort )
+  {
+    GuiContext* aContext = GuiContext::getCurrent();
+    if ( aContext )
+    {
+      if ( aContext->_mapOfSubjectDataPort.find( aDataPort ) != aContext->_mapOfSubjectDataPort.end() )
+        aSub = aContext->_mapOfSubjectDataPort[ aDataPort ];
+    }
+  }
+
+  return aSub;
+}
+
+bool YACSPrs_InOutPort::synchronize( YACSPrs_Port* port, const bool toSelect )
+{
+  DEBTRACE("YACSPrs_InOutPort::synchronize");
+  YACSPrs_InOutPort* anInOutPort = dynamic_cast< YACSPrs_InOutPort* >( port );
+  if ( !anInOutPort ) 
+    return false;
+
+  if ( !anInOutPort->isGate() )
+  {
+    YACS::HMI::Subject* aSub = anInOutPort->getSubject();
+    if ( aSub )
+    {
+      DEBTRACE(">>>## 7");
+      aSub->select( toSelect );
+      return true;
+    }
+  }
+  else 
+  {
+    // try to synchronize port with parent prs
+    YACSPrs_ElementaryNode* aNodePrs = anInOutPort->getNode();
+    if ( aNodePrs )
+    {
+      YACS::HMI::SubjectNode* aSub = aNodePrs->getSEngine();
+      if ( aSub )
+      {
+        DEBTRACE(">>>## 8");
+        aSub->select( toSelect );
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
 /*!
  * =========================== YACSPrs_Hook ===========================
  !*/
@@ -2068,6 +2686,7 @@ void YACSPrs_Hook::setCanvas(QCanvas* theCanvas)
 
 void YACSPrs_Hook::hilight(const QPoint& theMousePos, const bool toHilight)
 {
+  //DEBTRACE("YACSPrs_Hook::hilight "<< toHilight);
   if ( mySelected ) return;
 
   // process the hilighting for hook:
@@ -2110,9 +2729,9 @@ void YACSPrs_Hook::hilight(const QPoint& theMousePos, const bool toHilight)
 	}
 	else if (YACSPrs_PortLink* aPortLink =  dynamic_cast<YACSPrs_PortLink*>(aLink)) {
 	  
-	  if (aPortLink->getInputPort() != myPortPrs)
+	  if (aPortLink->getInputPort() && aPortLink->getInputPort() != myPortPrs)
 	    aPortLink->getInputPort()->GetHook()->setColor(aDefinedColor);
-	  else
+	  else if (aPortLink->getOutputPort())
 	    aPortLink->getOutputPort()->GetHook()->setColor(aDefinedColor);
 	}
       }
@@ -2123,6 +2742,7 @@ void YACSPrs_Hook::hilight(const QPoint& theMousePos, const bool toHilight)
 
 void YACSPrs_Hook::select(const QPoint& theMousePos, const bool toSelect)
 {
+  DEBTRACE("YACSPrs_Hook::select " << toSelect);
   // unhilight the item under the mouse cursor
   hilight(theMousePos, false);
 
@@ -2292,3 +2912,4 @@ void YACSPrs_Hook::drawShape(QPainter& thePainter)
     }
   }
 }
+

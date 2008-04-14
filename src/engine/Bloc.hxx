@@ -17,7 +17,7 @@ namespace YACS
     class Bloc : public StaticDefinedComposedNode
     {
     protected:
-      std::set<Node *> _setOfNode;//OWNERSHIP OF ALL NODES
+      std::list<Node *> _setOfNode;//OWNERSHIP OF ALL NODES
       //! For internal calculations
       mutable std::map<Node *,std::set<Node *> > *_fwLinks;
       //! For internal calculations
@@ -33,18 +33,20 @@ namespace YACS
       void init(bool start=true);
       void getReadyTasks(std::vector<Task *>& tasks);
       void exUpdateState();
-      bool edAddChild(Node *node) throw(Exception);
+      //Node* DISOWNnode is a SWIG notation to indicate that the ownership of the node is transfered to C++
+      bool edAddChild(Node *DISOWNnode) throw(Exception);
       void edRemoveChild(Node *node) throw(Exception);
-      std::set<Node *> getChildren() { return _setOfNode; }
-      std::set<Node *> edGetDirectDescendants() const;
+      std::list<Node *> getChildren() const { return _setOfNode; }
+      std::list<Node *> edGetDirectDescendants() const { return _setOfNode; }
       Node *getChildByShortName(const std::string& name) const throw(Exception);
       void selectRunnableTasks(std::vector<Task *>& tasks);
-      virtual void writeDot(std::ostream &os);
+      virtual void writeDot(std::ostream &os) const;
       void accept(Visitor *visitor);
       template<bool direction>
       void findAllPathsStartingFrom(Node *start, std::list< std::vector<Node *> >& vec, std::map<Node *, std::set<Node *> >& accelStr) const;
       template<bool direction>
       void findAllNodesStartingFrom(Node *start, std::set<Node *>& result, std::map<Node *, std::set<Node *> >& accelStr, LinkInfo& info) const;
+      virtual std::string typeName() {return "YACS__ENGINE__Bloc";}
     protected:
       bool areAllSubNodesFinished() const;
       bool areAllSubNodesDone() const;
@@ -57,13 +59,13 @@ namespace YACS
       void performCFComputations(LinkInfo& info) const;
       void destructCFComputations(LinkInfo& info) const;
       void checkControlDependancy(OutPort *start, InPort *end, bool cross,
-                                  std::map < ComposedNode *,  std::list < OutPort * > >& fw,
+                                  std::map < ComposedNode *,  std::list < OutPort * >, SortHierarc >& fw,
                                   std::vector<OutPort *>& fwCross,
-                                  std::map< ComposedNode *, std::list < OutPort *> >& bw,
+                                  std::map< ComposedNode *, std::list < OutPort *>, SortHierarc >& bw,
                                   LinkInfo& info) const;
       bool areLinked(Node *start, Node *end, bool fw) const;
       bool arePossiblyRunnableAtSameTime(Node *start, Node *end) const;
-      void checkCFLinks(const std::list< OutPort *>& starts, InputPort *end, unsigned char& alreadyFed, bool direction, LinkInfo& info) const;
+      void checkCFLinks(const std::list<OutPort *>& starts, InputPort *end, unsigned char& alreadyFed, bool direction, LinkInfo& info) const;
       static void verdictForOkAndUseless1(const std::map<Node *,std::list <OutPort *> >& pool, InputPort *end, const std::vector<Node *>& candidates,
                                           unsigned char& alreadyFed, bool direction, LinkInfo& info);
       static void verdictForCollapses(const std::map<Node *,std::list <OutPort *> >& pool, InputPort *end, const std::set<Node *>& candidates,

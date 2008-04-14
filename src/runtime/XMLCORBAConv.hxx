@@ -1,12 +1,14 @@
 #ifndef __XMLCORBACONV_HXX__
 #define __XMLCORBACONV_HXX__
 
-#include "CORBAPorts.hxx"
+#include "InputPort.hxx"
 
 namespace YACS
 {
   namespace ENGINE
   {
+    class InputCorbaPort;
+
     //Adaptator Ports Xml->Corba for several types
 
     class XmlCorba : public ProxyPort

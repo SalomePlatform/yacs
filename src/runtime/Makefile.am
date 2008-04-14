@@ -41,50 +41,58 @@ libYACSRuntimeSALOME_la_SOURCES =      \
 	SalomeComponent.cxx            \
 	CppComponent.cxx               \
 	CppContainer.cxx               \
-  CppCORBAConv.cxx               \
-  CppNeutralConv.cxx             \
-  CppXMLConv.cxx                 \
-  CppCppConv.cxx                 \
-  CppPythonConv.cxx              \
+	CppCORBAConv.cxx               \
+	CppNeutralConv.cxx             \
+	CppXMLConv.cxx                 \
+	CppCppConv.cxx                 \
+	CppPythonConv.cxx              \
 	CORBACppConv.cxx               \
-  NeutralCppConv.cxx             \
+	NeutralCppConv.cxx             \
 	XMLCppConv.cxx                 \
-  PythonCppConv.cxx              \
+	PythonCppConv.cxx              \
+	SessionCataLoader.cxx          \
+	PresetPorts.cxx                \
+	PresetNode.cxx                 \
+	OutNode.cxx                    \
+	StudyNodes.cxx                 \
+	StudyPorts.cxx                 \
+	VisitorSaveSalomeSchema.cxx    \
+	PyStdout.cxx                   \
 	$(__dummy__)
 
+salomeinclude_HEADERS = \
+CalStreamPort.hxx            CORBAComponent.hxx   CORBACORBAConv.hxx         CORBACppConv.hxx \
+CORBANeutralConv.hxx         CORBANode.hxx        CORBAPorts.hxx             CORBAPythonConv.hxx \
+CORBAXMLConv.hxx             CppComponent.hxx     CppContainer.hxx           CppCORBAConv.hxx \
+CppCppConv.hxx               CppNeutralConv.hxx   CppNode.hxx                CppPorts.hxx \
+CppPythonConv.hxx            CppXMLConv.hxx       NeutralCORBAConv.hxx       NeutralCppConv.hxx \
+NeutralPythonConv.hxx        NeutralXMLConv.hxx   OutNode.hxx                PresetNode.hxx \
+PresetPorts.hxx              PyStdout.hxx         PythonCORBAConv.hxx        PythonCppConv.hxx \
+PythonNeutralConv.hxx        PythonNode.hxx       PythonPorts.hxx            PythonXMLConv.hxx \
+RuntimeSALOME.hxx            SalomeComponent.hxx  SALOMEconfig.h             SalomeContainer.hxx \
+SALOMEDispatcher.hxx         SalomeProc.hxx       SalomePythonComponent.hxx  SalomePythonNode.hxx \
+SessionCataLoader.hxx        StudyNodes.hxx       StudyPorts.hxx             TypeConversions.hxx \
+VisitorSaveSalomeSchema.hxx  XMLCORBAConv.hxx     XMLCppConv.hxx             XMLNeutralConv.hxx \
+XMLNode.hxx                  XMLPorts.hxx         XMLPythonConv.hxx
 
 EXTRA_libYACSRuntimeSALOME_la_SOURCES =  \
 	$(__dummy__)
 
 if SALOME_KERNEL
 libYACSRuntimeSALOME_la_SOURCES += ../../idl/yacsguiSK.cc
-
-SALOME_IDL = \
-	$(KERNEL_ROOT_DIR)/idl/salome/SALOME_ContainerManager.idl \
-	$(KERNEL_ROOT_DIR)/idl/salome/SALOME_Component.idl \
-	$(KERNEL_ROOT_DIR)/idl/salome/SALOME_Exception.idl
-
-SALOME_INCLUDES =SALOME_ContainerManager.hh SALOME_Exception.hh SALOME_Component.hh
-SALOME_LIBS=-L$(KERNEL_ROOT_DIR)/lib@LIB_LOCATION_SUFFIX@/salome -lSalomeLifeCycleCORBA
-SALOME_INCL_PATH=-I$(KERNEL_ROOT_DIR)/include/salome $(QT_INCLUDES)
-SALOME_OMNIPY=
+SALOME_LIBS=-L$(KERNEL_ROOT_DIR)/lib$(LIB_LOCATION_SUFFIX)/salome -lSalomeLifeCycleCORBA
+SALOME_INCL_PATH=-I$(KERNEL_ROOT_DIR)/include/salome 
 endif
 
 if DSC_PORTS
-DSC_IDL = $(KERNEL_ROOT_DIR)/idl/salome/DSC_Engines.idl \
-					$(KERNEL_ROOT_DIR)/idl/salome/SALOME_Ports.idl
-DSC_INCLUDES = DSC_Engines.hh SALOME_Ports.hh
-DSC_LIBS=-L$(KERNEL_ROOT_DIR)/lib@LIB_LOCATION_SUFFIX@/salome -lSalomeDSCContainer
-DSC_INCL_PATH=-I$(KERNEL_ROOT_DIR)/include
-DSC_OMNIPY=DSC_Engines_idl.py
+DSC_LIBS=-L$(KERNEL_ROOT_DIR)/lib$(LIB_LOCATION_SUFFIX)/salome -lSalomeDSCContainer
 endif
 
-IDL_FILES=$(DSC_IDL) $(SALOME_IDL)
-BUILT_SOURCES=$(DSC_INCLUDES) $(SALOME_INCLUDES) SALOMERuntimeWRAP.cxx
+BUILT_SOURCES=SALOMERuntimeWRAP.cxx
 
 libYACSRuntimeSALOME_la_LIBADD = \
 	$(DSC_LIBS) $(SALOME_LIBS) $(OMNIORB_LIBS) \
-	../engine/libYACSEngine.la
+	../engine/libYACSlibEngine.la
 
 AM_CXXFLAGS = \
 	$(THREAD_DEF) \
@@ -93,47 +101,27 @@ AM_CXXFLAGS = \
 	-I$(OMNIORB_ROOT)/include/omniORB4/internal \
 	$(OMNIORB_CXXFLAGS) \
 	$(SALOME_INCL_PATH) \
-	$(DSC_INCL_PATH) \
 	-I$(srcdir)/../bases \
 	-I$(srcdir)/../engine \
 	-I../../idl \
-	-I/usr/include/libxml2
-
-
+	$(LIBXML_INCLUDES)
 
 ############################################################
 
-if SALOME_KERNEL
-SALOME_Component.hh:$(KERNEL_ROOT_DIR)/idl/salome/SALOME_Component.idl
-	    $(OMNIORB_IDL) $(OMNIORB_IDLCXXFLAGS) -bcxx -I$(KERNEL_ROOT_DIR)/idl/salome $<
-SALOME_Exception.hh:$(KERNEL_ROOT_DIR)/idl/salome/SALOME_Exception.idl
-	    $(OMNIORB_IDL) $(OMNIORB_IDLCXXFLAGS) -bcxx -I$(KERNEL_ROOT_DIR)/idl/salome $<
-SALOME_ContainerManager.hh:$(KERNEL_ROOT_DIR)/idl/salome/SALOME_ContainerManager.idl
-	    $(OMNIORB_IDL) $(OMNIORB_IDLCXXFLAGS) -bcxx -I$(KERNEL_ROOT_DIR)/idl/salome $<
-
-SALOME_Component_idl.py:$(KERNEL_ROOT_DIR)/idl/salome/SALOME_Component.idl
-	    $(OMNIORB_IDL) -bpython -I. -I$(KERNEL_ROOT_DIR)/idl/salome $<
-endif
-
-if DSC_PORTS
-DSC_Engines.hh:$(KERNEL_ROOT_DIR)/idl/salome/DSC_Engines.idl
-	    $(OMNIORB_IDL) $(OMNIORB_IDLCXXFLAGS) -bcxx -I$(KERNEL_ROOT_DIR)/idl $<
-SALOME_Ports.hh:$(KERNEL_ROOT_DIR)/idl/salome/SALOME_Ports.idl
-	    $(OMNIORB_IDL) $(OMNIORB_IDLCXXFLAGS) -bcxx -I$(KERNEL_ROOT_DIR)/idl $<
-
-SALOME_Ports_idl.py :$(KERNEL_ROOT_DIR)/idl/salome/SALOME_Ports.idl
-	    $(OMNIORB_IDL) -bpython -I. -I$(KERNEL_ROOT_DIR)/idl $<
-endif
-
-#################################################################
-
-pkgpython_PYTHON = SALOMERuntime.py
-pkgpyexec_LTLIBRARIES = _SALOMERuntime.la
+salomepython_PYTHON = SALOMERuntime.py
+salomepyexec_LTLIBRARIES = _SALOMERuntime.la
 
 _SALOMERuntime_la_SOURCES =   \
 	SALOMERuntimeWRAP.cxx
 
 MYSWIG_FLAGS = -noexcept -I$(srcdir)/../bases -I$(srcdir)/../engine
+
+SWIGINCLUDES= RuntimeSALOME.hxx SALOMEDispatcher.hxx SalomeProc.hxx PythonNode.hxx PythonPorts.hxx \
+							CORBANode.hxx CORBAPorts.hxx TypeConversions.hxx \
+							../engine/pilot.i ../engine/engtypemaps.i
+
+SALOMERuntimeWRAP.cxx: SALOMERuntime.i $(SWIGINCLUDES)
+	$(SWIG) $(SWIG_PYTHON_OPT) $(SWIG_PYTHON_INCLUDES) $(MYSWIG_FLAGS) -o $@ $(srcdir)/SALOMERuntime.i
 
 _SALOMERuntime_la_CXXFLAGS = \
 	$(THREAD_DEF) \
@@ -144,14 +132,12 @@ _SALOMERuntime_la_CXXFLAGS = \
 	-I$(srcdir)/../bases \
 	-I$(srcdir)/../engine \
 	-I../../idl \
-	-I/usr/include/libxml2
+	$(LIBXML_INCLUDES)
 
 _SALOMERuntime_la_LDFLAGS  = -module
 
-_SALOMERuntime_la_LIBADD = libYACSRuntimeSALOME.la \
-	../engine/libYACSEngine.la \
-	$(DSC_LIBS) $(SALOME_LIBS)  \
-	-lxml2 
+_SALOMERuntime_la_LIBADD = libYACSRuntimeSALOME.la 
 
+EXTRA_DIST = SALOMERuntime.i
 
 include $(top_srcdir)/adm/unix/make_end.am

@@ -2,6 +2,9 @@
 #include "Node.hxx"
 #include <iostream>
 
+//#define _DEVDEBUG_
+#include "YacsTrace.hxx"
+
 using namespace YACS::ENGINE;
 
 Observer::~Observer()
@@ -10,7 +13,7 @@ Observer::~Observer()
 
 void Observer::notifyObserver(Node* object, const std::string& event)
 {
-  std::cerr << "notifyObserver " << event << object << std::endl;
+  DEBTRACE("notifyObserver " << event << object );
 }
 
 Dispatcher* Dispatcher::_singleton = 0;
@@ -52,7 +55,7 @@ void Dispatcher::printObservers()
 
 void Dispatcher::dispatch(Node* object, const std::string& event)
 {
-  //std::cerr << "Dispatcher::dispatch " << event << std::endl;
+  DEBTRACE("Dispatcher::dispatch " << event );
   typedef std::set<Observer*>::iterator jt;
   std::pair<Node*,std::string> key(object,event);
   if(_observers.count(key) != 0)

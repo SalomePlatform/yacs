@@ -23,7 +23,7 @@
 
 class YACSPrs_IfNode : public YACSPrs_InlineNode {
  public:
-  YACSPrs_IfNode( SUIT_ResourceMgr*, QCanvas*, YACS::ENGINE::Node* );
+  YACSPrs_IfNode( SUIT_ResourceMgr*, QCanvas*, YACS::HMI::SubjectNode* );
   virtual ~YACSPrs_IfNode();
 
   /* reimplement functions from QxGraph_ActiveItem */

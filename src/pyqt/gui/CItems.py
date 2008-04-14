@@ -3,13 +3,43 @@ import sys,traceback
 from qt import *
 from qtcanvas import *
 import pilot
+import pypilot
+import Item
+import math
+
 dispatcher=pilot.Dispatcher.getDispatcher()
+
+class TextItem(QCanvasText):
+  """A text in a composite object"""
+  def __init__(self,obj,canvas):
+    QCanvasText.__init__(self,canvas)
+    self.obj=obj
+    self.item=None
+  def getObj(self):
+    """The composite object which contains the text"""
+    return self.obj
+  def moveBy(self,dx,dy):
+    """Request the text move by x,y"""
+    if self.obj:
+      #the text is a part of a composite object
+      self.obj.moveBy(dx,dy)
+    else:
+      #the text is independant
+      self.myMove(dx,dy)
+  def myMove(self,dx,dy):
+    """The real move"""
+    QCanvasText.moveBy(self,dx,dy)
+  def selected(self):
+    """The canvas item has been selected"""
+    if self.obj:
+      self.obj.selected()
 
 class PointItem(QCanvasEllipse):
   def __init__(self,obj,x,y,canvas):
     """Create a point contained in a composite line (obj)"""
     QCanvasEllipse.__init__(self,6,6,canvas)
     self.obj=obj
+    self.item=None
     self.inline=None
     self.outline=None
     self.setPen(QPen(Qt.black))
@@ -45,8 +75,10 @@ class PointItem(QCanvasEllipse):
 
   def handleDoubleClick(self,pos):
     self.obj.deletePoint(self,pos)
+
   #def __del__(self):
   #  print "PointItem.__del__"
+
   def clear(self):
     """To remove from canvas"""
     self.setCanvas(None)
@@ -54,11 +86,15 @@ class PointItem(QCanvasEllipse):
     self.inline=None
     self.outline=None
 
+  def selected(self):
+    """The canvas item has been selected"""
+
 class LineItem(QCanvasLine):
   """A line between 2 points"""
   def __init__(self,obj,fromPoint, toPoint,canvas):
     QCanvasLine.__init__(self,canvas)
     self.obj=obj
+    self.item=None
     self.fromPoint=fromPoint
     self.toPoint=toPoint
     self.setPen(QPen(Qt.black))
@@ -66,14 +102,35 @@ class LineItem(QCanvasLine):
     self.setPoints(int(fromPoint.x()),int(fromPoint.y()), int(toPoint.x()), int(toPoint.y()))
     self.setZ(min(fromPoint.z(),toPoint.z())-1)
     self.setVisible(True)
+    self.arrow = QCanvasPolygon(self.canvas())
+    self.arrow.setBrush(QBrush(Qt.black))
+    self.setArrow()
+    self.arrow.show()
 
   def setFromPoint(self,x,y):
     self.setPoints(x,y,self.endPoint().x(),self.endPoint().y())
+    self.setArrow()
   def setToPoint(self,x,y):
     self.setPoints(self.startPoint().x(), self.startPoint().y(),x,y)
+    self.setArrow()
   def moveBy(self,dx,dy):
     """Disable line move"""
     pass
+
+  def setArrow(self):
+    x1,y1=self.startPoint().x(),self.startPoint().y()
+    x2,y2=self.endPoint().x(),self.endPoint().y()
+    d=math.hypot(x2-x1,y2-y1)
+    sina=(y2-y1)/d
+    cosa=(x2-x1)/d
+    x=(x1+x2)/2.
+    y=(y1+y2)/2.
+    l,e=6,3 
+    pa=QPointArray(3)
+    pa.setPoint(0, QPoint(x+l*cosa,y+l*sina))
+    pa.setPoint(1, QPoint(x-e*sina,y+e*cosa))
+    pa.setPoint(2, QPoint(x+e*sina,y-e*cosa))
+    self.arrow.setPoints(pa)
 
   def getObj(self):
     """The object which contains the line"""
@@ -81,20 +138,28 @@ class LineItem(QCanvasLine):
   def handleDoubleClick(self,pos):
     #split the line
     self.obj.splitline(self,pos)
+
   #def __del__(self):
   #  print "LineItem.__del__"
+
   def clear(self):
     """To remove from canvas"""
     self.setCanvas(None)
     self.fromPoint=None
     self.toPoint=None
     self.obj=None
+    self.arrow.setCanvas(None)
+    self.arrow=None
+
+  def selected(self):
+    """The canvas item has been selected"""
 
 class LinkItem:
   def __init__(self,fromPort, toPort,canvas):
     self.fromPort=fromPort
     self.toPort=toPort
     self.canvas=canvas
+    self.item=None
     fromPort.addOutLink(self)
     toPort.addInLink(self)
     self.lines=[]
@@ -117,10 +182,18 @@ class LinkItem:
     point.clear()
     outline.clear()
 
+  def clearPoints(self):
+    #make a copy as deletePoint modify self.points
+    for point in self.points[:]:
+      self.deletePoint(point,0)
+
   def splitline(self,line,pos):
-    """Split line at position pos"""
+    self.splitLine(line,pos.x(),pos.y())
+
+  def splitLine(self,line,x,y):
+    """Split line at position x,y"""
     #The new point
-    point=PointItem(self,pos.x(),pos.y(),self.canvas)
+    point=PointItem(self,x,y,self.canvas)
     self.points.append(point)
     i=self.lines.index(line)
 
@@ -130,7 +203,7 @@ class LinkItem:
       line.toPoint.setInline(newline)
     self.lines.insert(i+1,newline)
 
-    line.setToPoint(pos.x(),pos.y())
+    line.setToPoint(x,y)
     line.toPoint=point
     point.setInline(line)
     point.setOutline(newline)
@@ -161,7 +234,9 @@ class LinkItem:
     r = QRect(pos.x(), pos.y(), pos.x()+10, pos.y()+10)
     s = QString( "link: "+self.fromPort.port.getNode().getName() +":"+self.fromPort.port.getName()+"->"+self.toPort.port.getNode().getName()+":"+self.toPort.port.getName()  )
     view.tip( r, s )
-    #QToolTip(view).tip( r, s )
+
+  def selected(self):
+    """The canvas item has been selected"""
 
 class ControlLinkItem(LinkItem):
   def tooltip(self,view,pos):
@@ -179,12 +254,17 @@ class ControlItem(QCanvasRectangle):
     self.setBrush(QBrush(Qt.red))
     self.setZ(node.z()+1)
     self.node=node
+    self.item=Item.adapt(self.port)
+
   def moveBy(self,dx,dy):
     self.node.moveBy(dx,dy)
+
   def myMove(self,dx,dy):
     QCanvasRectangle.moveBy(self,dx,dy)
+
   def getObj(self):
     return self
+
   def popup(self,canvasView):
     self.context=canvasView
     menu=QPopupMenu()
@@ -193,16 +273,32 @@ class ControlItem(QCanvasRectangle):
     menu.insertItem( caption )
     menu.insertItem("Connect", self.connect)
     return menu
+
   def connect(self):
-    print "connect",self.context
-    self.context.connecting(self)
+    print "ControlItem.connect",self.context
+    print self.port
+    item=Item.adapt(self.port)
+    print item
+    item.connect()
+    self.context.connecting(item)
+    #self.context.connecting(self)
+
   def link(self,obj):
+    #Protocol to link 2 objects (ports, at first)
+    #First, notify the canvas View (or any view that can select) we are connecting (see method connect above)
+    #Second (and last) make the link in the link method of object that was declared connecting
     print "link:",obj
+
   def tooltip(self,view,pos):
     r = QRect(pos.x(), pos.y(), self.width(), self.height())
     s = QString( "gate:")
     view.tip( r, s )
-    #QToolTip(view).tip( r, s )
+
+  def selected(self):
+    """The canvas item has been selected"""
+    #print "control port selected"
+    item=Item.adapt(self.port)
+    item.selected()
 
 class InControlItem(ControlItem):
   def __init__(self,node,port,canvas):
@@ -215,6 +311,8 @@ class InControlItem(ControlItem):
       link.setToPoint( int(self.x()), int(self.y()) )
 
   def link(self,obj):
+    #Here we create the link between self and obj.
+    #self has been declared connecting in connect method
     print "link:",obj
     if isinstance(obj,OutControlItem):
       #Connection possible
@@ -240,6 +338,8 @@ class OutControlItem(ControlItem):
       link.setFromPoint( int(self.x()), int(self.y()) )
 
   def link(self,obj):
+    #Here we create the link between self and obj.
+    #self has been declared connecting in connect method
     print "link:",obj
     if isinstance(obj,InControlItem):
       #Connection possible
@@ -254,10 +354,15 @@ class OutControlItem(ControlItem):
     view.tip( r, s )
     #QToolTip(view).tip( r, s )
 
+  def links(self):
+    return self.__outList
+
 class PortItem(QCanvasEllipse):
   def __init__(self,node,port,canvas):
     QCanvasEllipse.__init__(self,6,6,canvas)
     self.port=port
+    self.item=None
+    self.item=Item.adapt(self.port)
     self.setPen(QPen(Qt.black))
     self.setBrush(QBrush(Qt.red))
     self.setZ(node.z()+1)
@@ -282,18 +387,27 @@ class PortItem(QCanvasEllipse):
     return menu
 
   def connect(self):
-    print "connect",self.context
-    self.context.connecting(self)
+    print "PortItem.connect",self.context
+    print self.port
+    item=Item.adapt(self.port)
+    print item
+    self.context.connecting(item)
+    #self.context.connecting(self)
 
   def link(self,obj):
-    print "link:",obj
+    print "PortItem.link:",obj
 
   def tooltip(self,view,pos):
     r = QRect(pos.x(),pos.y(),self.width(), self.height())
     t=self.port.edGetType()
     s = QString( "port: " + self.port.getName() + ":" + t.name())
     view.tip( r, s )
-    #QToolTip(view).tip( r, s )
+
+  def selected(self):
+    """The canvas item has been selected"""
+    #print "port selected"
+    item=Item.adapt(self.port)
+    item.selected()
 
 class InPortItem(PortItem):
   def __init__(self,node,port,canvas):
@@ -306,6 +420,8 @@ class InPortItem(PortItem):
       link.setToPoint( int(self.x()), int(self.y()) )
 
   def link(self,obj):
+    #Here we create the link between self and obj.
+    #self has been declared connecting in connect method
     print "link:",obj
     if isinstance(obj,OutPortItem):
       #Connection possible
@@ -313,8 +429,6 @@ class InPortItem(PortItem):
 
   def addInLink(self,link):
     self.__inList.append(link)
-
-
 
 class OutPortItem(PortItem):
   def __init__(self,node,port,canvas):
@@ -327,6 +441,8 @@ class OutPortItem(PortItem):
       link.setFromPoint( int(self.x()), int(self.y()) )
 
   def link(self,obj):
+    #Here we create the link between self and obj.
+    #self has been declared connecting in connect method
     print "link:",obj
     if isinstance(obj,InPortItem):
       #Connection possible
@@ -334,6 +450,9 @@ class OutPortItem(PortItem):
 
   def addOutLink(self,link):
     self.__outList.append(link)
+
+  def links(self):
+    return self.__outList
 
 class InStreamItem(InPortItem):
   def __init__(self,node,port,canvas):
@@ -345,7 +464,7 @@ class OutStreamItem(OutPortItem):
     OutPortItem.__init__(self,node,port,canvas)
     self.setBrush(QBrush(Qt.green))
 
-class Cell(QCanvasRectangle,pilot.PyObserver):
+class Cell(QCanvasRectangle,pypilot.PyObserver):
   colors={
       "pink":Qt.cyan,
       "green":Qt.green,
@@ -360,25 +479,23 @@ class Cell(QCanvasRectangle,pilot.PyObserver):
 
   def __init__(self,node,canvas):
     QCanvasRectangle.__init__(self,canvas)
-    pilot.PyObserver.__init__(self)
+    pypilot.PyObserver.__init__(self)
+    self.inports=[]
+    self.outports=[]
     self.setSize(50,50)
     #node is an instance of YACS::ENGINE::Node
     self.node=node
+    self.item=Item.adapt(self.node)
     dispatcher.addObserver(self,node,"status")
-    self.label=QCanvasText(canvas)
+    self.label=TextItem(self,canvas)
     self.label.setText(self.node.getName())
     self.label.setFont(QFont("Helvetica",8))
     rect=self.label.boundingRect()
-    self.label.setX(self.x()+self.width()/2-rect.width()/2)
-    self.label.setY(self.y()+self.height()/2-rect.height()/2)
     self.label.setZ(self.z()+1)
+    self.label.myMove(self.x()+self.width()/2-rect.width()/2,self.y()+self.height()/2-rect.height()/2)
     color= self.colors.get(node.getColorState(node.getEffectiveState()),Qt.white)
     self.setBrush(QBrush(color))
 
-    self.inports=[]
-    self.outports=[]
-
-    liste= self.node.getSetOfInputPort()
     dy=6
     y=0
     for inport in self.node.getSetOfInputPort():
@@ -395,7 +512,6 @@ class Cell(QCanvasRectangle,pilot.PyObserver):
 
     ymax=y
 
-    liste= self.node.getSetOfOutputPort()
     dy=6
     y=0
     for outport in self.node.getSetOfOutputPort():
@@ -458,7 +574,7 @@ class Cell(QCanvasRectangle,pilot.PyObserver):
 
   def moveBy(self,dx,dy):
     QCanvasRectangle.moveBy(self,dx,dy)
-    self.label.moveBy(dx,dy)
+    self.label.myMove(dx,dy)
     for p in self.inports:
       p.myMove(dx,dy)
     for p in self.outports:
@@ -491,3 +607,9 @@ class Cell(QCanvasRectangle,pilot.PyObserver):
 
   def browse(self):
     print "browse"
+
+  def selected(self):
+    """The canvas item has been selected"""
+    #print "node selected"
+    item=Item.adapt(self.node)
+    item.selected()

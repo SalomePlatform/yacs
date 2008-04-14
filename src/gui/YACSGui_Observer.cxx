@@ -17,6 +17,7 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
+#include "YACSPrs_toString.h"
 #include "YACSGui_Observer.h"
 
 #include "YACSGui_Graph.h"
@@ -24,6 +25,8 @@
 #include "YACSGui_Executor.h"
 #include "YACSPrs_ElementaryNode.h"
 #include "YACSGui_RunMode.h"
+#include "YACSGui_TreeView.h"
+#include "YACSGui_InputPanel.h"
 
 #include "SALOME_Event.hxx"
 
@@ -36,6 +39,9 @@
 #include <list>
 #include <cassert>
 #include "utilities.h"
+
+//#define _DEVDEBUG_
+#include "YacsTrace.hxx"
 
 using namespace YACS::ENGINE;
 using namespace std;
@@ -54,23 +60,29 @@ YACSGui_Observer::YACSGui_Observer(YACSGui_Graph* theGraph):
 
 void YACSGui_Observer::notifyObserver(YACS::ENGINE::Node* object, const std::string& event)
 {
-  //MESSAGE("YACSGui_Observer::notifyObserver(YACS::ENGINE::Node* object, const std::string& event)");
+  DEBTRACE("YACSGui_Observer::notifyObserver(YACS::ENGINE::Node* object, const std::string& event)");
+  if ( !myGraph ) printf("==> null graph\n");
+
   if (event == "status")
     {
+      DEBTRACE("==> status");
       if ( myGraph && !myGraph->getItem(object) )
         {
+	  DEBTRACE("==> status 1");
           if ( dynamic_cast<YACS::ENGINE::ForEachLoop*>( object->getFather() )
                &&
                myGraph->getItem(object->getFather()) )
             {
+	      DEBTRACE("==> status 2");
               // transmit event to ForEachLoop node
               ProcessVoidEvent( new TVoidMemFunEvent<YACSPrs_ElementaryNode>( myGraph->getItem(object->getFather()), &YACSPrs_ElementaryNode::update ) );
 
               // transmit event from the last clone node to original loop body node
               if ( object == (dynamic_cast<YACS::ENGINE::ForEachLoop*>( object->getFather() ))->getNodes().back() )
                 {
-                  std::set<Node *> aChildren = dynamic_cast<YACS::ENGINE::ForEachLoop*>( object->getFather() )->edGetDirectDescendants();
-                  for(std::set<Node *>::iterator iter=aChildren.begin();iter!=aChildren.end();iter++)
+		  DEBTRACE("==> status 3");
+                  std::list<Node *> aChildren = dynamic_cast<YACS::ENGINE::ForEachLoop*>( object->getFather() )->edGetDirectDescendants();
+                  for(std::list<Node *>::iterator iter=aChildren.begin();iter!=aChildren.end();iter++)
                     if ( myGraph->getItem(*iter) )
                       ProcessVoidEvent( new TVoidMemFun1ArgEvent<YACSPrs_ElementaryNode,YACS::ENGINE::Node*>( myGraph->getItem(*iter), 
                                                                                                               &YACSPrs_ElementaryNode::updateForEachLoopBody,
@@ -80,23 +92,28 @@ void YACSGui_Observer::notifyObserver(YACS::ENGINE::Node* object, const std::str
         }
       else if ( myGraph && myGraph->getItem(object) )
         {
+	  DEBTRACE("==> status 4");
           if ( dynamic_cast<YACS::ENGINE::ForEachLoop*>( object )
                &&
                object->getState() == YACS::TOACTIVATE )
             {
+	      DEBTRACE("==> status 5");
               std::vector<Node *> aCloneNodes = dynamic_cast<YACS::ENGINE::ForEachLoop*>(object)->getNodes();
               for(std::vector<Node *>::iterator iter=aCloneNodes.begin();iter!=aCloneNodes.end();iter++)
                 myGraph->registerStatusObserverWithNode(*iter);	  
             }
           else
-            ProcessVoidEvent( new TVoidMemFunEvent<YACSPrs_ElementaryNode>( myGraph->getItem(object), &YACSPrs_ElementaryNode::update ) );
+	    {
+	      DEBTRACE("==> status 6");
+	      ProcessVoidEvent( new TVoidMemFunEvent<YACSPrs_ElementaryNode>( myGraph->getItem(object), &YACSPrs_ElementaryNode::update ) );
+	    }
         }
     }
 }
 
 void YACSGui_Observer::notifyObserver(const int theID, const std::string& theEvent) 
 {
-  //MESSAGE("YACSGui_Observer::notifyObserver(const int theID, const std::string& theEvent)");
+  DEBTRACE("YACSGui_Observer::notifyObserver(const int theID, const std::string& theEvent)");
   // Get node by its id
   YACS::ENGINE::Node* aNode = myGraph->getNodeById(theID);
   
@@ -107,7 +124,7 @@ void YACSGui_Observer::notifyObserver(const int theID, const std::string& theEve
 
 void YACSGui_Observer::notifyObserver(const std::string& theName, const std::string& theEvent)
 {
-  //MESSAGE("YACSGui_Observer::notifyObserver(const std::string& theName, const std::string& theEvent)");
+  DEBTRACE("YACSGui_Observer::notifyObserver(const std::string& theName, const std::string& theEvent)");
   // Get node by its name
   YACS::ENGINE::Node* aNode = myGraph->getNodeByName(theName);
   
@@ -122,7 +139,7 @@ void YACSGui_Observer::notifyObserver(const std::string& theName, const std::str
  */ 
 void YACSGui_Observer::setNodeState(const int theID, const int theState)
 {
-  //MESSAGE("YACSGui_Observer::setNodeState(const int theID, const int theState)");
+  DEBTRACE("YACSGui_Observer::setNodeState(const int theID, const int theState)");
   // Get node by its id
   YACS::ENGINE::Node* aNode = myGraph->getNodeById(theID);
   
@@ -137,7 +154,7 @@ void YACSGui_Observer::setNodeState(const int theID, const int theState)
  */ 
 void YACSGui_Observer::setNodeState(const std::string& theName, const int theState)
 {
-  //MESSAGE("YACSGui_Observer::setNodeState " << theName << " " << theState);
+  DEBTRACE("YACSGui_Observer::setNodeState " << theName << " " << theState);
   // Get node by its name
   YACS::ENGINE::Node* aNode = 0; 
   
@@ -158,11 +175,11 @@ Observer_i::Observer_i(YACS::ENGINE::Proc* guiProc,
                        YACSGui_Module* guiMod,
                        YACSGui_Executor* guiExec)
 {
-  //MESSAGE("Observer_i::Observer_i");
+  DEBTRACE("Observer_i::Observer_i");
   _guiProc = guiProc;
   _guiMod = guiMod;
   _guiExec = guiExec;
-  _engineProc = YACSGui_ORB::ProcExec::_nil();
+  _engineProc = YACS_ORB::ProcExec::_nil();
   myImpl = 0;
 }
 
@@ -172,11 +189,11 @@ Observer_i::~Observer_i()
 
 void Observer_i::setConversion()
 {
-  //MESSAGE("Observer_i::setConversion");
+  DEBTRACE("Observer_i::setConversion");
   assert(!CORBA::is_nil(_engineProc));
-  YACSGui_ORB::stringArray_var engineNames;
-  YACSGui_ORB::longArray_var engineIds;
-  //MESSAGE("---");
+  YACS_ORB::stringArray_var engineNames;
+  YACS_ORB::longArray_var engineIds;
+  //DEBTRACE("---");
   _engineProc->getIds(engineIds.out(), engineNames.out());
   int iLength = engineIds->length();
   int nLength = engineNames->length();
@@ -186,11 +203,11 @@ void Observer_i::setConversion()
       string aName = "";
       aName = engineNames[i];
       int iEng = engineIds[i];
-      //MESSAGE("--- " << aName << " " << iEng);
+      //DEBTRACE("--- " << aName << " " << iEng);
       if (aName != "_root_")
         {
           int iGui = _guiProc->getChildByName(aName)->getNumId();
-          //MESSAGE("---");
+          //DEBTRACE("---");
           _guiToEngineMap[iGui] = iEng;
           _engineToGuiMap[iEng] = iGui;
         }
@@ -206,7 +223,7 @@ void Observer_i::setConversion()
 //! process YACS events in main thread (see postEvent)
 bool Observer_i::event(QEvent *e)
 {
-  //MESSAGE("Observer_i::event");
+  DEBTRACE("Observer_i::event");
   if (e->type() == YACS_EVENT)
     {
       YACSEvent *ye = (YACSEvent*)e;      
@@ -216,22 +233,36 @@ bool Observer_i::event(QEvent *e)
 
       if (event == "executor") // --- Executor notification: state
         {
-          //MESSAGE("Observer_i::run executor");
+          DEBTRACE("Observer_i::run executor");
           int execState = _engineProc->getExecutorState();
+
           YACSGui_RunMode* theRunMode = _guiMod->getRunMode(_guiExec);
-          if (theRunMode)
+	  YACSGui_RunTreeView* aRunTV = dynamic_cast<YACSGui_RunTreeView*>(_guiMod->activeTreeView());
+
+	  list<string> nextSteps;
+	  if ( theRunMode || aRunTV )
+	    if ((execState == YACS::WAITINGTASKS) || (execState == YACS::PAUSED))
+	      {
+		YACS_ORB::stringArray_var nstp = _engineProc->getTasksToLoad();
+		for (CORBA::ULong i=0; i<nstp->length(); i++)
+		  nextSteps.push_back(nstp[i].in());
+	      }
+	  
+	  if ( theRunMode )
             {
               theRunMode->onNotifyStatus(execState);
-              list<string> nextSteps;
-              if ((execState == YACS::WAITINGTASKS) || (execState == YACS::PAUSED))
-                {
-                  YACSGui_ORB::stringArray_var nstp = _engineProc->getTasksToLoad();
-                  for (CORBA::ULong i=0; i<nstp->length(); i++)
-                    nextSteps.push_back(nstp[i].in());
-                }
-              theRunMode->onNotifyNextSteps(nextSteps);
+	      theRunMode->onNotifyNextSteps(nextSteps);
             }
-        }
+	  
+          if ( aRunTV )
+            {
+	      aRunTV->onNotifyStatus(execState);
+                         
+	      if ( YACSGui_InputPanel* anIP = _guiMod->getInputPanel() )
+		if ( YACSGui_SchemaPage* aSPage = dynamic_cast<YACSGui_SchemaPage*>( anIP->getPage( YACSGui_InputPanel::SchemaId ) ) )
+		  aSPage->onNotifyNextSteps(nextSteps);
+            }
+	}
       else                     // --- Node notification
         {
           if (!myImpl)
@@ -250,19 +281,121 @@ bool Observer_i::event(QEvent *e)
           
           if (event == "status") // --- Node notification: status
             {
-              //MESSAGE("Observer_i::run status");
+              DEBTRACE("Observer_i::run status");
               int aState = _engineProc->getNodeState(numid);
               if (aState < 0)
                 return true;
+
               YACSGui_RunMode* theRunMode = _guiMod->getRunMode(_guiExec);
               if (theRunMode)
                 theRunMode->onNotifyNodeStatus(iGui, aState);
+
+	      if ( YACSGui_RunTreeView* aRunTV = dynamic_cast<YACSGui_RunTreeView*>(_guiMod->activeTreeView()) )
+		aRunTV->onNotifyNodeStatus(iGui, aState);
+
+	      if ( YACSGui_InputPanel* anIP = _guiMod->getInputPanel() )
+	      {
+		anIP->onNotifyNodeStatus(iGui, aState);
+		
+		map<int, map<string, string> > aGuiNodeId2InPortsValues;
+		list<InPort*> IPs = aNode->getSetOfInPort();
+		list<InPort*>::iterator itIP = IPs.begin();
+		for ( ; itIP!=IPs.end(); itIP++ )
+		{
+		  int aEngineNodeId = numid;
+		  int aGuiNodeId = iGui;
+		  if ( dynamic_cast<ComposedNode*>(aNode) )
+		  {
+		    Node* aChildNode = (*itIP)->getNode();
+		    if ( aNode != aChildNode )
+		    { // the event is emitted for a child node of a composed node
+		      // (with numid corresponded to a composed node)
+		      aGuiNodeId = aChildNode->getNumId();
+		      aEngineNodeId = _guiToEngineMap[aGuiNodeId];
+		    }
+		  }
+		  string aDump = _engineProc->getInPortValue(aEngineNodeId,(*itIP)->getName().c_str());
+                  DEBTRACE("on status change, inport value: " << (*itIP)->getName() << " " << aDump);
+                  /*
+		  QString aValue(aDump);
+		  aValue = aValue.right(aValue.length()-(aValue.find(">",aValue.find(">")+1)+1));
+		  aValue = aValue.left(aValue.find("<"));
+		  if ( aValue.isEmpty() ) aValue = QString("< ? >");
+                  */
+		  QString aValue;
+                  toString(aDump,(*itIP)->edGetType(),aValue);
+                  DEBTRACE(aValue);
+		  
+		  if ( aGuiNodeId2InPortsValues.find(aGuiNodeId) == aGuiNodeId2InPortsValues.end() )
+		  {
+		    map<string, string> aPName2PValue;
+		    aPName2PValue.insert( make_pair((*itIP)->getName(),string(aValue.latin1())) );
+		    aGuiNodeId2InPortsValues.insert( make_pair( aGuiNodeId, aPName2PValue ) );
+		  }
+		  else
+		    aGuiNodeId2InPortsValues[aGuiNodeId].insert( make_pair((*itIP)->getName(),string(aValue.latin1()) ) );
+		  
+		  _guiMod->getGraph(_guiProc)->updateNodePrs(aGuiNodeId,
+							     (*itIP)->getName(),
+							     string(aValue.latin1()));
+		}
+		map<int, map<string, string> >::iterator itMI = aGuiNodeId2InPortsValues.begin();
+		for( ; itMI!=aGuiNodeId2InPortsValues.end(); itMI++ )
+		  anIP->onNotifyInPortValues((*itMI).first,(*itMI).second);
+
+		map<int, map<string, string> > aGuiNodeId2OutPortsValues;
+		list<OutPort*> OPs = aNode->getSetOfOutPort();
+		list<OutPort*>::iterator itOP = OPs.begin();
+		for ( ; itOP!=OPs.end(); itOP++ )
+		{
+		  int aEngineNodeId = numid;
+		  int aGuiNodeId = iGui;
+		  if ( dynamic_cast<ComposedNode*>(aNode) )
+		  {
+		    Node* aChildNode = (*itOP)->getNode();
+		    if ( aNode != aChildNode )
+		    { // the event is emitted for a child node of a composed node
+		      // (with numid corresponded to a composed node)
+		      aGuiNodeId = aChildNode->getNumId();
+		      aEngineNodeId = _guiToEngineMap[aGuiNodeId];
+		    }
+		  }
+		  string aDump = _engineProc->getOutPortValue(aEngineNodeId,(*itOP)->getName().c_str());
+                  DEBTRACE("on status change, outport value: " << (*itOP)->getName() << " " << aDump);
+                  /*
+		  QString aValue(aDump);
+		  aValue = aValue.right(aValue.length()-(aValue.find(">",aValue.find(">")+1)+1));
+		  aValue = aValue.left(aValue.find("<"));
+		  if ( aValue.isEmpty() ) aValue = QString("< ? >");
+                  */
+		  QString aValue;
+                  toString(aDump,(*itOP)->edGetType(),aValue);
+                  DEBTRACE(aValue);
+		  
+		  if ( aGuiNodeId2OutPortsValues.find(aGuiNodeId) == aGuiNodeId2OutPortsValues.end() )
+		  {
+		    map<string, string> aPName2PValue;
+		    aPName2PValue.insert( make_pair((*itOP)->getName(),string(aValue.latin1())) );
+		    aGuiNodeId2OutPortsValues.insert( make_pair( aGuiNodeId, aPName2PValue ) );
+		  }
+		  else
+		    aGuiNodeId2OutPortsValues[aGuiNodeId].insert( make_pair((*itOP)->getName(),string(aValue.latin1()) ) );
+
+		  _guiMod->getGraph(_guiProc)->updateNodePrs(aGuiNodeId,
+							     (*itOP)->getName(),
+							     string(aValue.latin1()));
+		}
+		map<int, map<string, string> >::iterator itMO = aGuiNodeId2OutPortsValues.begin();
+		for( ; itMO!=aGuiNodeId2OutPortsValues.end(); itMO++ )
+		  anIP->onNotifyOutPortValues((*itMO).first,(*itMO).second);
+	      }
+
               myImpl->setNodeState(aName, aState);
             }
         }
       return true;
     }
-  MESSAGE("--- Wrong event ---");
+  DEBTRACE("--- Wrong event ---");
   return false;
 }
 
@@ -273,7 +406,7 @@ bool Observer_i::event(QEvent *e)
  */
 void Observer_i::notifyObserver(CORBA::Long numid, const char* event)
 {
-  //MESSAGE("Observer_i::notifyObserver " << numid << " " << event );
+  DEBTRACE("Observer_i::notifyObserver " << numid << " " << event );
   pair<int,string> myEvent(numid, event);
   YACSEvent* evt = new YACSEvent(myEvent);
   QApplication::postEvent(this, evt);  // Qt will delete it when done
@@ -281,11 +414,11 @@ void Observer_i::notifyObserver(CORBA::Long numid, const char* event)
 
 void Observer_i::SetImpl(YACSGui_Observer* theImpl)
 {
-  //MESSAGE("Observer_i::SetImpl");
+  DEBTRACE("Observer_i::SetImpl");
   myImpl = theImpl;
 }
 
-void Observer_i::SetRemoteProc(YACSGui_ORB::ProcExec_ptr engineProc)
+void Observer_i::SetRemoteProc(YACS_ORB::ProcExec_ptr engineProc)
 {
-  _engineProc = YACSGui_ORB::ProcExec::_duplicate(engineProc);
+  _engineProc = YACS_ORB::ProcExec::_duplicate(engineProc);
 }

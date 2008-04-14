@@ -37,6 +37,7 @@ void InPort::edRemoveAllLinksLinkedWithMe() throw(Exception)
         _node->getRootNode()->edRemoveLink(*iter2,this);
     }
   _backLinks.clear();
+  modified();
 }
 
 //! Returns \b physical backlinks \b NOT user backlinks.
@@ -48,11 +49,13 @@ std::set<OutPort *> InPort::edSetOutPort() const
 void InPort::edNotifyReferencedBy(OutPort *fromPort)
 {
   _backLinks.insert(fromPort);
+  modified();
 }
 
 void InPort::edNotifyDereferencedBy(OutPort *fromPort)
 {
   _backLinks.erase(fromPort);
+  modified();
 }
 
 void InPort::getAllRepresentants(std::set<InPort *>& repr) const

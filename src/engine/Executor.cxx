@@ -198,8 +198,18 @@ void Executor::RunB(Scheduler *graph,int debug, bool fromScratch)
 
   if (fromScratch)
     {
-      graph->init();
-      graph->exUpdateState();
+      try
+        {
+          graph->init();
+          graph->exUpdateState();
+        }
+      catch(Exception& ex)
+        {
+          DEBTRACE("exception: "<< (ex.what()));
+          _executorState = YACS::FINISHED;
+          sendEvent("executor");
+          throw;
+        }
     }
   _executorState = YACS::INITIALISED;
   sendEvent("executor");
@@ -284,7 +294,7 @@ void Executor::RunB(Scheduler *graph,int debug, bool fromScratch)
       }
     _mutexForSchedulerUpdate.unlock();
   } // --- End of critical section
-  if ( _dumpOnErrorRequested && _errorDetected && !_isRunningunderExternalControl)
+  if ( _dumpOnErrorRequested && _errorDetected)
     {
       saveState(_dumpErrorFile);
     }
@@ -327,6 +337,20 @@ void Executor::setStopOnError(bool dumpRequested, std::string xmlFile)
     _dumpOnErrorRequested = dumpRequested;
     if (dumpRequested && xmlFile.empty())
       throw YACS::Exception("dump on error requested and no filename given for dump");
+    _mutexForSchedulerUpdate.unlock();
+    DEBTRACE("_dumpErrorFile " << _dumpErrorFile << " " << _dumpOnErrorRequested);
+  } // --- End of critical section
+}
+
+//! ask to do not stop execution on nodes found in error
+/*!
+ */
+
+void Executor::unsetStopOnError()
+{
+  { // --- Critical section
+    _mutexForSchedulerUpdate.lock();
+    _stopOnErrorRequested=false;
     _mutexForSchedulerUpdate.unlock();
   } // --- End of critical section
 }
@@ -521,7 +545,7 @@ bool Executor::setStepsToExecute(std::list<std::string> listToExecute)
 
 void Executor::waitPause()
 {
-  DEBTRACE("Executor::waitPause()");
+  DEBTRACE("Executor::waitPause()" << _executorState);
   { // --- Critical section
     _mutexForSchedulerUpdate.lock();
     _isRunningunderExternalControl=true;
@@ -578,7 +602,7 @@ bool Executor::loadState()
 }
 
 
-static int isfile(char *filename) 
+static int isfile(const char *filename) 
 {
   struct stat buf;
   if (stat(filename, &buf) != 0)
@@ -606,7 +630,8 @@ void Executor::_displayDot(Scheduler *graph)
    std::ofstream g("titi");
    ((ComposedNode*)graph)->writeDot(g);
    g.close();
-   if(isfile("display.sh"))
+   const char displayScript[]="display.sh";
+   if(isfile(displayScript))
      system("sh display.sh");
    else
      system("dot -Tpng titi|display -delay 5");
@@ -740,7 +765,10 @@ void Executor::loadTask(Task *task)
   }//End of critical section
   try
     {
+      traceExec(task, "load");
       task->load();
+      traceExec(task, "initService");
+      task->initService();
     }
   catch(Exception& ex) 
     {
@@ -773,37 +801,7 @@ void Executor::loadTask(Task *task)
 void Executor::launchTasks(std::vector<Task *>& tasks)
 {
   vector<Task *>::iterator iter;
-  //First phase, initialize the execution
-  for(iter=tasks.begin();iter!=tasks.end();iter++)
-    {
-      if((*iter)->getState() != YACS::TOACTIVATE)continue;
-      try
-        {
-          (*iter)->initService();
-          traceExec(*iter, "initService");
-        }
-      catch(Exception& ex) 
-        {
-          std::cerr << ex.what() << std::endl;
-          {//Critical section
-            _mutexForSchedulerUpdate.lock();
-            (*iter)->aborted();
-            _mainSched->notifyFrom(*iter,YACS::ABORT);
-            _mutexForSchedulerUpdate.unlock();
-          }//End of critical section
-        }
-      catch(...) 
-        {
-          std::cerr << "Problem in initService" << std::endl;
-          {//Critical section
-            _mutexForSchedulerUpdate.lock();
-            (*iter)->aborted();
-            _mainSched->notifyFrom(*iter,YACS::ABORT);
-            _mutexForSchedulerUpdate.unlock();
-          }//End of critical section
-        }
-    }
-  //Second phase, make datastream connections
+  //First phase, make datastream connections
   for(iter=tasks.begin();iter!=tasks.end();iter++)
     {
       if((*iter)->getState() != YACS::TOACTIVATE)continue;
@@ -833,12 +831,9 @@ void Executor::launchTasks(std::vector<Task *>& tasks)
           }//End of critical section
         }
     }
-  //Third phase, execute each task in a thread
+  //Second phase, execute each task in a thread
   for(iter=tasks.begin();iter!=tasks.end();iter++)
     {
-      DEBTRACE("before _semForMaxThreads.wait " << _semThreadCnt);
-      _semForMaxThreads.wait();
-      _semThreadCnt -= 1;
       launchTask(*iter);
     }
 }
@@ -856,6 +851,11 @@ void Executor::launchTask(Task *task)
 {
   DEBTRACE("Executor::launchTask(Task *task)");
   if(task->getState() != YACS::TOACTIVATE)return;
+
+  DEBTRACE("before _semForMaxThreads.wait " << _semThreadCnt);
+  _semForMaxThreads.wait();
+  _semThreadCnt -= 1;
+
   void **args=new void *[3];
   args[0]=(void *)task;
   args[1]=(void *)_mainSched;
@@ -1001,7 +1001,7 @@ void *Executor::functionForTaskExecution(void *arg)
             if (execInst->_stopOnErrorRequested)
               {
                 execInst->_execMode = YACS::STEPBYSTEP;
-                if (!execInst->_isRunningunderExternalControl) execInst->_isOKToEnd = true;
+                execInst->_isOKToEnd = true;
               }
             task->aborted();
           }

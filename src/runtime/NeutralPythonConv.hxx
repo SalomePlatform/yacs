@@ -2,13 +2,11 @@
 #define __NEUTRALPYTHONCONV_HXX__
 
 #include "PythonPorts.hxx"
-#include "Any.hxx"
 
 namespace YACS
 {
   namespace ENGINE
   {
-
     // --- adaptator ports Neutral->Python for several types
 
     class NeutralPyDouble : public ProxyPort

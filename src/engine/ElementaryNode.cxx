@@ -8,6 +8,9 @@
 #include "Visitor.hxx"
 #include <iostream>
 
+//#define _DEVDEBUG_
+#include "YacsTrace.hxx"
+
 using namespace YACS::ENGINE;
 using namespace std;
 
@@ -56,9 +59,9 @@ void ElementaryNode::init(bool start)
       return;
     }
   if(start) //complete initialization
-    setState(YACS::INITED);
+    setState(YACS::READY);
   else //partial initialization (inside a loop)
-    _state=YACS::LOADED;
+    setState(YACS::LOADED);
 }
 
 bool ElementaryNode::isDeployable() const
@@ -78,18 +81,22 @@ YACS::StatesForNode ElementaryNode::getState() const
 
 void ElementaryNode::exUpdateState()
 {
+  DEBTRACE("ElementaryNode::exUpdateState: " << getName() << " " << _state );
   if(_state==YACS::DISABLED)return;
   if(_inGate.exIsReady())
     if(areAllInputPortsValid())
-      if(_state == YACS::INITED)
-	setState(YACS::TOLOAD);
-      else
-        setState(YACS::TOACTIVATE);
+      {
+        if(_state == YACS::READY)
+          ensureLoading();
+        else if(_state == YACS::LOADED)
+          setState(YACS::TOACTIVATE);
+      }
     else
       {
         string what("ElementaryNode::exUpdateState : Invalid graph given : Node with name \"");
         what+=_name; what+="\" ready to run whereas some inputports are not set correctly\nCheck coherence DF/CF";
         setState(YACS::INTERNALERR);
+        _errorDetails=what;
         throw Exception(what);
       }
 }
@@ -136,6 +143,32 @@ std::set<InPort *> ElementaryNode::getAllInPortsComingFromOutsideOfCurrentScope(
       set<OutPort *> temp2=(*iter2)->edSetOutPort();
       if(temp2.size()!=0)
         ret.insert(*iter2);
+    }
+  return ret;
+}
+
+std::vector< std::pair<OutPort *, InPort *> > ElementaryNode::getSetOfLinksLeavingCurrentScope() const
+{
+  vector< pair<OutPort *, InPort *> > ret;
+  std::set<OutPort *> ports=getAllOutPortsLeavingCurrentScope();
+  for(set<OutPort *>::iterator iter2=ports.begin();iter2!=ports.end();iter2++)
+    {
+      set<InPort *> temp2=(*iter2)->edSetInPort();
+      for(set<InPort *>::iterator iter3=temp2.begin();iter3!=temp2.end();iter3++)
+        ret.push_back(pair<OutPort *, InPort *>(*iter2,*iter3));
+    }
+  return ret;
+}
+
+std::vector< std::pair<InPort *, OutPort *> > ElementaryNode::getSetOfLinksComingInCurrentScope() const
+{
+  vector< pair<InPort *, OutPort *> > ret;
+  set<InPort *> ports=getAllInPortsComingFromOutsideOfCurrentScope();
+  for(set<InPort *>::iterator iter2=ports.begin();iter2!=ports.end();iter2++)
+    {
+      set<OutPort *> temp2=(*iter2)->edSetOutPort();
+      for(set<OutPort *>::iterator iter3=temp2.begin();iter3!=temp2.end();iter3++)
+        ret.push_back(pair<InPort *, OutPort *>(*iter2,*iter3));
     }
   return ret;
 }
@@ -192,6 +225,7 @@ bool ElementaryNode::areAllInputPortsValid() const
 
 void ElementaryNode::getReadyTasks(std::vector<Task *>& tasks)
 {
+  DEBTRACE("ElementaryNode::getReadyTasks: " << getName() << " " << _state);
   if(_state==YACS::TOACTIVATE or _state==YACS::TOLOAD)
     tasks.push_back(this);
 }
@@ -202,6 +236,7 @@ void ElementaryNode::getReadyTasks(std::vector<Task *>& tasks)
 
 void ElementaryNode::edRemovePort(Port *port) throw(Exception)
 {
+  DEBTRACE("ElementaryNode::edRemovePort ");
   if(port->getNode()!=this)
     throw Exception("ElementaryNode::edRemovePort : Port is not held by this");
   string typeOfPortInstance=port->getNameOfTypeOfCurrentInstance();
@@ -216,16 +251,17 @@ void ElementaryNode::edRemovePort(Port *port) throw(Exception)
   else
     throw Exception("ElementaryNode::edRemovePort : unknown port type");
   delete port;
+  modified();
 }
 
 /**
  * @return a set with only this node. (Same method in composed nodes)
  */
 
-set<ElementaryNode *> ElementaryNode::getRecursiveConstituents() const
+list<ElementaryNode *> ElementaryNode::getRecursiveConstituents() const
 {
-  set<ElementaryNode *> ret;
-  ret.insert((ElementaryNode *)this);
+  list<ElementaryNode *> ret;
+  ret.push_back((ElementaryNode *)this);
   return ret;
 }
 
@@ -237,6 +273,7 @@ Node *ElementaryNode::getChildByName(const std::string& name) const throw(Except
 
 void ElementaryNode::checkBasicConsistency() const throw(Exception)
 {
+  DEBTRACE("ElementaryNode::checkBasicConsistency");
   list<InputPort *>::const_iterator iter;
   for(iter=_setOfInputPort.begin();iter!=_setOfInputPort.end();iter++)
     (*iter)->checkBasicConsistency();  
@@ -250,6 +287,11 @@ ComposedNode *ElementaryNode::getDynClonerIfExists(const ComposedNode *levelToSt
   return 0;
 }
 
+InputPort *ElementaryNode::createInputPort(const std::string& inputPortName, TypeCode* type)
+{
+  return getRuntime()->createInputPort(inputPortName, _implementation, this, type);
+}
+
 /**
  * the input port is also published recursively in ancestors because it may be visible from everywhere.
  * WARNING: CHECK CASE OF BLOC: ONLY INPUT PORTS NOT INTERNALLY CONNECTED MUST BE VISIBLE.
@@ -260,13 +302,21 @@ InputPort *ElementaryNode::edAddInputPort(const std::string& inputPortName, Type
   InputPort *ret = 0;
   if (edCheckAddPort<InputPort, TypeCode*>(inputPortName,_setOfInputPort,type))
     {
-      ret = getRuntime()->createInputPort(inputPortName, _implementation, this, type);
+      ret = createInputPort(inputPortName, type);
       _setOfInputPort.push_back(ret);
+      modified();
+      /*
       ComposedNode *iter=_father;
       while(iter)
         iter=iter->_father;
+        */
     }
   return ret;
+}
+
+OutputPort *ElementaryNode::createOutputPort(const std::string& outputPortName, TypeCode* type)
+{
+  return getRuntime()->createOutputPort(outputPortName, _implementation, this, type);
 }
 
 /**
@@ -279,13 +329,21 @@ OutputPort *ElementaryNode::edAddOutputPort(const std::string& outputPortName, T
   OutputPort *ret =0;
   if (edCheckAddPort<OutputPort, TypeCode*>(outputPortName,_setOfOutputPort,type))
     {
-      ret = getRuntime()->createOutputPort(outputPortName, _implementation, this, type);
+      ret = createOutputPort(outputPortName, type);
       _setOfOutputPort.push_back(ret);
+      modified();
+      /*
       ComposedNode *iter=_father;
       while(iter)
         iter=iter->_father;
+        */
     }
   return ret;
+}
+
+InputDataStreamPort *ElementaryNode::createInputDataStreamPort(const std::string& inputPortDSName, TypeCode* type)
+{
+  return getRuntime()->createInputDataStreamPort(inputPortDSName, this, type);
 }
 
 InputDataStreamPort *ElementaryNode::edAddInputDataStreamPort(const std::string& inputPortDSName, TypeCode* type) throw(Exception)
@@ -293,10 +351,16 @@ InputDataStreamPort *ElementaryNode::edAddInputDataStreamPort(const std::string&
   InputDataStreamPort *ret = 0;
   if (edCheckAddPort<InputDataStreamPort, TypeCode*>(inputPortDSName,_setOfInputDataStreamPort,type))
     {
-      ret = getRuntime()->createInputDataStreamPort(inputPortDSName, this, type);
+      ret = createInputDataStreamPort(inputPortDSName, type);
       _setOfInputDataStreamPort.push_back(ret);
+      modified();
     }
   return ret;
+}
+
+OutputDataStreamPort *ElementaryNode::createOutputDataStreamPort(const std::string& outputPortDSName, TypeCode* type)
+{
+  return getRuntime()->createOutputDataStreamPort(outputPortDSName, this, type);
 }
 
 OutputDataStreamPort *ElementaryNode::edAddOutputDataStreamPort(const std::string& outputPortDSName, TypeCode* type) throw(Exception)
@@ -304,8 +368,9 @@ OutputDataStreamPort *ElementaryNode::edAddOutputDataStreamPort(const std::strin
   OutputDataStreamPort *ret = 0;
   if (edCheckAddPort<OutputDataStreamPort, TypeCode*>(outputPortDSName,_setOfOutputDataStreamPort,type))
     {
-      ret = getRuntime()->createOutputDataStreamPort(outputPortDSName, this, type);
+      ret = createOutputDataStreamPort(outputPortDSName, type);
       _setOfOutputDataStreamPort.push_back(ret);
+      modified();
     }
   return ret;
 }
@@ -363,10 +428,73 @@ void ElementaryNode::aborted()
  */
 void ElementaryNode::loaded()
 {
-  setState(TOACTIVATE);
+  setState(LOADED);
+  if(_inGate.exIsReady())
+    if(areAllInputPortsValid())
+      setState(TOACTIVATE);
 }
 
 void ElementaryNode::accept(Visitor *visitor)
 {
   visitor->visitElementaryNode(this);
+}
+
+//! Give a description of error when node status is ERROR
+/*!
+ *
+ */
+std::string ElementaryNode::getErrorDetails()
+{
+  return _errorDetails;
+}
+
+void ElementaryNode::edUpdateState()
+{
+  DEBTRACE("ElementaryNode::edUpdateState: " << getName());
+  YACS::StatesForNode state=YACS::READY;
+  try
+    {
+      checkBasicConsistency();
+      _errorDetails="";
+    }
+  catch(Exception& e)
+    {
+      state=YACS::INVALID;
+      _errorDetails=e.what();
+    }
+  DEBTRACE("ElementaryNode::edUpdateState: " << _errorDetails);
+  if(state != _state)
+    setState(state);
+  _modified=0;
+}
+
+//! Put this node into TOLOAD state when possible
+/*!
+ * Can be called by another ElementaryNode that is connected to this one by a datastream link
+ * These 2 nodes must be loaded at the same time as they are coupled
+ * It's the other node which requests this node loading
+ */
+void ElementaryNode::ensureLoading()
+{
+  DEBTRACE("ElementaryNode::ensureLoading: " << getName());
+  if(_state != YACS::READY)
+    return;
+  setState(YACS::TOLOAD);
+
+  // request loading for all nodes connected to this one by datastream link
+  // Be careful that nodes can be connected in a loop. Put first this node in TOLOAD state to break the loop
+  std::list<OutputDataStreamPort *>::iterator iter;
+  for(iter = _setOfOutputDataStreamPort.begin(); iter != _setOfOutputDataStreamPort.end(); iter++)
+    {
+      OutputDataStreamPort *port=(OutputDataStreamPort *)*iter;
+      std::set<InPort *> ports=port->edSetInPort();
+      std::set<InPort *>::iterator iterout;
+      for(iterout=ports.begin();iterout != ports.end(); iterout++)
+        {
+          Node* node= (*iterout)->getNode();
+          node->ensureLoading();
+        }
+    }
+  /*
+    */
 }

@@ -1,4 +1,5 @@
 #include "ForEachLoop.hxx"
+#include "TypeCode.hxx"
 #include "Visitor.hxx"
 #include <iostream>
 #include <sstream>
@@ -89,7 +90,8 @@ int AnySplitOutputPort::removeInPort(InPort *inPort, bool forward) throw(Excepti
 {
   bool ret=OutputPort::removeInPort(inPort,forward);
   if(_repr)
-    _repr->removeInPort(_intercptr,forward);
+    if(_setOfInputPort.empty())
+      _repr->removeInPort(_intercptr,forward);
   return ret;
 }
 
@@ -414,11 +416,6 @@ int ForEachLoop::getNumberOfInputPorts() const
   return DynParaLoop::getNumberOfInputPorts()+1;
 }
 
-void ForEachLoop::checkConsistency(ComposedNode *pointOfView) const throw(Exception)
-{
-  //TO DO
-}
-
 void ForEachLoop::checkNoCyclePassingThrough(Node *node) throw(Exception)
 {
   //TO DO
@@ -431,6 +428,13 @@ void ForEachLoop::selectRunnableTasks(std::vector<Task *>& tasks)
 std::list<InputPort *> ForEachLoop::getSetOfInputPort() const
 {
   list<InputPort *> ret=DynParaLoop::getSetOfInputPort();
+  ret.push_back((InputPort *)&_splitterNode._dataPortToDispatch);
+  return ret;
+}
+
+std::list<InputPort *> ForEachLoop::getLocalInputPorts() const
+{
+  list<InputPort *> ret=DynParaLoop::getLocalInputPorts();
   ret.push_back((InputPort *)&_splitterNode._dataPortToDispatch);
   return ret;
 }
@@ -521,7 +525,7 @@ YACS::Event ForEachLoop::updateStateOnFinishedEventFrom(Node *node)
   return YACS::NOEVENT;
 }
 
-void ForEachLoop::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::set<ComposedNode *>& pointsOfView)
+void ForEachLoop::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView)
 {
   DynParaLoop::buildDelegateOf(port,finalTarget,pointsOfView);
   string typeOfPortInstance=(port.first)->getNameOfTypeOfCurrentInstance();
@@ -555,7 +559,7 @@ void ForEachLoop::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort 
     throw Exception("ForEachLoop::buildDelegateOf : not implemented for DS because not specified");
 }
 
-void ForEachLoop::getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::set<ComposedNode *>& pointsOfView) throw(Exception)
+void ForEachLoop::getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(Exception)
 {
   string typeOfPortInstance=(port.first)->getNameOfTypeOfCurrentInstance();
   if(typeOfPortInstance==OutputPort::NAME)
@@ -576,7 +580,7 @@ void ForEachLoop::getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *f
     throw Exception("ForEachLoop::getDelegateOf : not implemented because not specified");
 }
 
-void ForEachLoop::releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::set<ComposedNode *>& pointsOfView) throw(Exception)
+void ForEachLoop::releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(Exception)
 {
   string typeOfPortInstance=portDwn->getNameOfTypeOfCurrentInstance();
   if(typeOfPortInstance==OutputPort::NAME)
@@ -661,8 +665,8 @@ void ForEachLoop::createOutputOutOfScopeInterceptors(int branchNb)
     }
 }
 
-void ForEachLoop::checkLinkPossibility(OutPort *start, const std::set<ComposedNode *>& pointsOfViewStart,
-                                       InPort *end, const std::set<ComposedNode *>& pointsOfViewEnd) throw(Exception)
+void ForEachLoop::checkLinkPossibility(OutPort *start, const std::list<ComposedNode *>& pointsOfViewStart,
+                                       InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) throw(Exception)
 {
   if(isInMyDescendance(start->getNode())==_node)
     throw Exception("ForEachLoop::checkLinkPossibility : A link from work node to init node not permitted");
@@ -685,12 +689,15 @@ void ForEachLoop::accept(Visitor *visitor)
 /*!
  * \param os : the output stream
  */
-void ForEachLoop::writeDot(std::ostream &os)
+void ForEachLoop::writeDot(std::ostream &os) const
 {
   os << "  subgraph cluster_" << getId() << "  {\n" ;
   //only one node in a loop
-  _node->writeDot(os);
-  os << getId() << " -> " << _node->getId() << ";\n";
+  if(_node)
+    {
+      _node->writeDot(os);
+      os << getId() << " -> " << _node->getId() << ";\n";
+    }
   os << "}\n" ;
   os << getId() << "[fillcolor=\"" ;
   YACS::StatesForNode state=getEffectiveState();

@@ -6,6 +6,7 @@ lib_LTLIBRARIES = libYACSPrs.la
 # Implementation files
 LIBSOURCES = \
 	YACSPrs_ElementaryNode.cxx \
+	YACSPrs_toString.cxx \
 	YACSPrs_ServiceNode.cxx \
 	YACSPrs_InlineNode.cxx \
 	YACSPrs_IfNode.cxx \
@@ -17,7 +18,9 @@ LIBSOURCES = \
 
 # Headers
 LIBHEADERS = \
+	YACSPrs_Def.h \
 	YACSPrs_ElementaryNode.h \
+	YACSPrs_toString.h \
 	YACSPrs_ServiceNode.h \
 	YACSPrs_InlineNode.h \
 	YACSPrs_IfNode.h \
@@ -38,6 +41,8 @@ LIBPOFILES = \
 
 LIBICONS = \
 	no_status.png \
+	ledgreen.png \
+	ledred.png \
 	disabled.png \
 	running.png \
 	waiting.png \
@@ -49,8 +54,8 @@ LIBICONS = \
 	left_arrows.png
 
 # Add "resources" subdirectory to resource file names
-POFILES = $(LIBPOFILES:%=resources/%)
-ICONS = $(LIBICONS:%=resources/%)
+POFILES += $(LIBPOFILES:%=resources/%)
+ICONS += $(LIBICONS:%=resources/%)
 
 libYACSPrs_la_SOURCES = $(LIBSOURCES) $(LIBHEADERS)
 nodist_libYACSPrs_la_SOURCES = $(MOCSOURCES)
@@ -58,18 +63,25 @@ nodist_libYACSPrs_la_SOURCES = $(MOCSOURCES)
 # List all generated files here
 BUILT_SOURCES = $(MOCSOURCES)
 
+libYACSPrs_la_LDFLAGS = \
+	 @GUI_LDFLAGS@ @PYTHON_LDFLAGS@ @QT_MT_LDFLAGS@
+
 libYACSPrs_la_LIBADD = \
-	../engine/libYACSEngine.la \
+	../engine/libYACSlibEngine.la \
 	../runtime/libYACSRuntimeSALOME.la \
-	@QT_MT_LIBS@ @GUI_LDFLAGS@ -lQxGraph @PYTHON_LDFLAGS@
+	../hmi/libHMI.la \
+	@QT_MT_LIBADD@ -lQxGraph $(LIBXML_LIBS)
 
 libYACSPrs_la_CXXFLAGS = \
 	$(THREAD_DEF) \
 	$(PYTHON_CPPFLAGS) \
+	$(OMNIORB_INCLUDES) \
+	$(LIBXML_INCLUDES) \
 	-I$(KERNEL_ROOT_DIR)/include/salome \
 	-I$(srcdir)/../bases \
 	-I$(srcdir)/../engine \
 	-I$(srcdir)/../runtime \
+	-I$(srcdir)/../hmi \
 	@QT_INCLUDES@ @GUI_CXXFLAGS@
 
 include $(top_srcdir)/adm/unix/make_end.am
