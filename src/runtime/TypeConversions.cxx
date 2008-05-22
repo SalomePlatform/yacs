@@ -1674,7 +1674,7 @@ namespace YACS
       static inline CORBA::Any* convert(const TypeCode *t,double o)
         {
           CORBA::Any *any = new CORBA::Any();
-          *any <<= o;
+          *any <<= (CORBA::Double)o;
           return any;
         }
     };
@@ -1684,7 +1684,7 @@ namespace YACS
       static inline CORBA::Any* convert(const TypeCode *t,long o)
         {
           CORBA::Any *any = new CORBA::Any();
-          *any <<= o;
+          *any <<= (CORBA::Long)o;
           return any;
         }
     };

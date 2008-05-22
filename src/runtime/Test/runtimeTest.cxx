@@ -1103,7 +1103,7 @@ void RuntimeTest::manualInitInputPort()
     DEBTRACE("Initialize port with XML int value");
     inport->edInit("XML","<value><int>10</int></value>");
     any=((InputCorbaPort*)inport)->getAny();
-    long LL;
+    CORBA::Long LL;
     *any >>= LL;
     l = LL;
     DEBTRACE("l = " << l);

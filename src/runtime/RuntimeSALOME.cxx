@@ -225,7 +225,11 @@ void RuntimeSALOME::init(long flags)
       // Initialize Python interpreter in embedded mode
       if (!Py_IsInitialized())
         {
+#if PY_VERSION_HEX < 0x02040000 // python version earlier than 2.4.0
+          Py_Initialize(); 
+#else
           Py_InitializeEx(0); // do not install signal handlers
+#endif
           PyEval_InitThreads(); /* Create (and acquire) the interpreter lock (for threads)*/
           PyEval_SaveThread(); /* Release the thread state */
           //here we do not have the Global Interpreter Lock
