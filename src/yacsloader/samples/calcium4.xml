@@ -55,37 +55,37 @@
       <stream>
         <fromnode>crayon</fromnode> <fromport>tpi</fromport>
         <tonode>int4</tonode> <toport>tparoi</toport>
-        <property name="level" value="10"/>
+        <property name="StorageLevel" value="10"/>
       </stream>
       <stream>
         <fromnode>int4</fromnode> <fromport>tpar</fromport>
         <tonode>canal</tonode> <toport>tpi</toport>
-        <property name="level" value="10"/>
+        <property name="StorageLevel" value="10"/>
       </stream>
       <stream>
         <fromnode>canal</fromnode> <fromport>tfi</fromport>
         <tonode>crayon</tonode> <toport>tfi</toport>
-        <property name="level" value="10"/>
+        <property name="StorageLevel" value="10"/>
       </stream>
       <stream>
         <fromnode>crayon</fromnode> <fromport>tempi</fromport>
         <tonode>comb</tonode> <toport>tempi</toport>
-        <property name="level" value="10"/>
+        <property name="StorageLevel" value="10"/>
       </stream>
       <stream>
         <fromnode>comb</fromnode> <fromport>puissi</fromport>
         <tonode>crayon</tonode> <toport>puissi</toport>
-        <property name="level" value="10"/>
+        <property name="StorageLevel" value="10"/>
       </stream>
       <stream>
         <fromnode>crayon</fromnode> <fromport>iconv</fromport>
         <tonode>canal</tonode> <toport>iconv</toport>
-        <property name="level" value="10"/>
+        <property name="StorageLevel" value="10"/>
       </stream>
       <stream>
         <fromnode>crayon</fromnode> <fromport>iconv</fromport>
         <tonode>comb</tonode> <toport>iconv</toport>
-        <property name="level" value="10"/>
+        <property name="StorageLevel" value="10"/>
       </stream>
     </bloc>
 
@@ -140,47 +140,48 @@
       <stream>
         <fromnode>canal</fromnode> <fromport>rfluide</fromport>
         <tonode>crayon</tonode> <toport>rext</toport>
-        <property name="level" value="10"/>
+        <property name="StorageLevel" value="10"/>
       </stream>
       <stream>
         <fromnode>canal</fromnode> <fromport>tfluide</fromport>
         <tonode>crayon</tonode> <toport>text</toport>
-        <property name="level" value="10"/>
+        <property name="StorageLevel" value="10"/>
       </stream>
       <stream>
         <fromnode>crayon</fromnode> <fromport>rparoi</fromport>
         <tonode>canal</tonode> <toport>rparoi</toport>
-        <property name="level" value="10"/>
+        <property name="StorageLevel" value="10"/>
       </stream>
       <stream>
         <fromnode>crayon</fromnode> <fromport>tparoi</fromport>
         <tonode>int1</tonode> <toport>tparoit</toport>
-        <property name="level" value="10"/>
+        <property name="StorageLevel" value="10"/>
       </stream>
       <stream>
         <fromnode>int1</fromnode> <fromport>tpart</fromport>
         <tonode>canal</tonode> <toport>tparoi</toport>
-        <property name="level" value="10"/>
+        <property name="StorageLevel" value="10"/>
+        <property name="DateCalSchem" value="ALPHA_SCHEM"/>
       </stream>
       <stream>
         <fromnode>crayon</fromnode> <fromport>temperature</fromport>
         <tonode>int2</tonode> <toport>tparoit</toport>
-        <property name="level" value="10"/>
+        <property name="StorageLevel" value="10"/>
       </stream>
       <stream>
         <fromnode>int2</fromnode> <fromport>tpart</fromport>
         <tonode>comb</tonode> <toport>temperature</toport>
-        <property name="level" value="10"/>
+        <property name="StorageLevel" value="10"/>
       </stream>
       <stream>
         <fromnode>comb</fromnode> <fromport>puissance</fromport>
         <tonode>int3</tonode> <toport>tparoit</toport>
-        <property name="level" value="10"/>
+        <property name="StorageLevel" value="10"/>
       </stream>
       <stream>
         <fromnode>int3</fromnode> <fromport>tpart</fromport>
         <tonode>crayon</tonode> <toport>puissa</toport>
-        <property name="level" value="10"/>
+        <property name="StorageLevel" value="10"/>
       </stream>
     </bloc>
 

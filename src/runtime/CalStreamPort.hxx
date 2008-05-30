@@ -25,23 +25,34 @@ namespace YACS
         InputCalStreamPort(const std::string& name, Node *node, TypeCode* type);
         InputCalStreamPort(const InputCalStreamPort& other, Node *newHelder);
         virtual ~InputCalStreamPort();
-        void setDepend(const std::string& depend);
-        std::string getDepend(){return _depend;};
-        void setLevel(const std::string& schema);
-        void setSchema(const std::string& schema);
-        std::string getSchema(){return _schema;};
-        int getLevel(){return _level;};
         void setProperty(const std::string& name, const std::string& value);
         std::string getNameOfTypeOfCurrentInstance() const;
         InputCalStreamPort * clone(Node *newHelder) const;
 #ifdef DSC_PORTS
         virtual void initPortProperties();
 #endif
+        void setSchema(const std::string& value);
+        std::string getSchema(){return _schema;};
+        void setLevel(const std::string& value);
+        int getLevel(){return _level;};
+        void setDepend(const std::string& value);
+        std::string getDepend(){return _depend;};
+        void setDelta(const std::string& value);
+        double getDelta(){return _delta;};
+        void setAlpha(const std::string& value);
+        double getAlpha(){return _alpha;};
+        void setInterp(const std::string& value);
+        std::string getInterp(){return _interp;};
+        void setExtrap(const std::string& value);
+        std::string getExtrap(){return _extrap;};
       protected:
         std::string _depend;
         std::string _schema;
+        std::string _interp;
+        std::string _extrap;
         int _level;
         double _delta;
+        double _alpha;
     };
 
     /*! \brief Class for Output Calcium DataStream Ports
