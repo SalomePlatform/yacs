@@ -111,7 +111,12 @@ void SalomeContainer::start() throw (Exception)
 
   if (str == "") 
     {
+      //give a almost unique name to the container : Pid_Name_Addr
       std::ostringstream stream;
+      stream << getpid();
+      stream << "_";
+      stream << _name;
+      stream << "_";
       stream << (void *)(this);
       _params.container_name=CORBA::string_dup(stream.str().c_str());
     }
