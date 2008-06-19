@@ -2519,7 +2519,7 @@ LightApp_Selection* YACSGui_Module::createSelection() const
 }
 
 /*! Get selection from SALOME object browser. Get a schema name and a schema file name from selection.
- *  If the schema as already been executed and saved under a fixed name: /tmp/YACS/"aSchemaName"_modified_"USER",
+ *  If the schema as already been executed and saved under a fixed name: /tmp/YACS_"USER"/"aSchemaName"_modified,
  *  use this schema file name.
  *  
  *  Create a file run name based on current date and time.
