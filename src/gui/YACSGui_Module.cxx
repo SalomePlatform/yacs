@@ -753,6 +753,10 @@ bool YACSGui_Module::activateModule( SUIT_Study* theStudy )
 {
   DEBTRACE("YACSGui_Module::activateModule");
   bool bOk = SalomeApp_Module::activateModule( theStudy );
+
+  if ( createSComponent() )
+    updateObjBrowser();
+
   setMenuShown( true );
   setToolShown( true );
   setGuiMode(YACSGui_Module::InitMode);
@@ -2122,7 +2126,7 @@ void YACSGui_Module::createElementaryNodePrs()
 //! Create SComponent for the YACS module.
 /*!
  */
-void YACSGui_Module::createSComponent()
+bool YACSGui_Module::createSComponent()
 {
   DEBTRACE("YACSGui_Module::createSComponent");
   _PTR(Study)            aStudy = (( SalomeApp_Study* )(getApp()->activeStudy()))->studyDS();
@@ -2143,7 +2147,11 @@ void YACSGui_Module::createSComponent()
     aPixmap->SetPixMap( "YACS_MODULE_ICON" );
 
     aBuilder->DefineComponentInstance( aComponent, engineIOR() );
+
+    return true;
   }
+  
+  return false;
 }
 
 //! Load services from Module Catalog
