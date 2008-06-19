@@ -2519,7 +2519,7 @@ LightApp_Selection* YACSGui_Module::createSelection() const
 }
 
 /*! Get selection from SALOME object browser. Get a schema name and a schema file name from selection.
- *  If the schema as already been executed and saved under a fixed name: /tmp/YACS/"aSchemaName"-modified,
+ *  If the schema as already been executed and saved under a fixed name: /tmp/YACS/"aSchemaName"_modified_"USER",
  *  use this schema file name.
  *  
  *  Create a file run name based on current date and time.
@@ -2597,8 +2597,8 @@ void YACSGui_Module::onCreateExecution()
 
         QString tmpDir = SALOMEDS_Tool::GetTmpDir();
         QDir aTmpDir( tmpDir );
-        aTmpDir.mkdir( "YACSGui" );
-        aTmpDir.cd( "YACSGui", false );
+        aTmpDir.mkdir( QString("YACSGui_") + getenv("USER") );
+        aTmpDir.cd( QString("YACSGui_") + getenv("USER"), false );
 
 	QDateTime curTime = QDateTime::currentDateTime();   
 	QString aRunName = aSchemaName + "_" + curTime.toString( "yyyyMMdd_hhmmss" );
@@ -2954,8 +2954,8 @@ void YACSGui_Module::onCreateEdition()
 	  // create a new file with name FilePath+"-modified" and copy FilePath content into it
 	  QString tmpDir = SALOMEDS_Tool::GetTmpDir();
 	  QDir aTmpDir( tmpDir );
-	  aTmpDir.mkdir( "YACS" );
-	  aTmpDir.cd( "YACS", false );
+	  aTmpDir.mkdir( QString("YACS_") + getenv("USER") );
+	  aTmpDir.cd( QString("YACS_") + getenv("USER"), false );
 
 	  if ( Proc* aProcRun = getDataModel()->getProc( sobj ) )
 	  {
@@ -3584,12 +3584,12 @@ void YACSGui_Module::temporaryExport()
 
   QString aSchemaName(aSchema->getName());
 
-  QString tmpDir("/tmp/YACS");
+  QString tmpDir( QString("/tmp/YACS_") + getenv("USER") );
   QDir aTmpDir( tmpDir );
   if ( !aTmpDir.exists() )
   {
     aTmpDir = QDir("/tmp");
-    aTmpDir.mkdir( "YACS" );
+    aTmpDir.mkdir( QString("YACS_") + getenv("USER") );
     aTmpDir.cd( "YACS", false );
   }
   
