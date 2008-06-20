@@ -3590,7 +3590,7 @@ void YACSGui_Module::temporaryExport()
   {
     aTmpDir = QDir("/tmp");
     aTmpDir.mkdir( QString("YACS_") + getenv("USER") );
-    aTmpDir.cd( "YACS", false );
+    aTmpDir.cd( QString("YACS_") + getenv("USER"), false );
   }
   
   // the temporary file name for modified schema
