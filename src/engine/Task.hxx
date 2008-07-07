@@ -17,6 +17,7 @@ namespace YACS
       virtual void execute() = 0;
       virtual void load() = 0;
       virtual void loaded() = 0;
+      virtual void connected() = 0;
       virtual void initService() = 0;
       virtual void connectService() = 0;
       virtual void disconnectService() = 0;

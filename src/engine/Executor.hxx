@@ -47,6 +47,7 @@ namespace YACS
       bool _isRunningunderExternalControl;
       bool _isWaitingEventsFromRunningTasks;
       int _numberOfRunningTasks;
+      int _numberOfEndedTasks;
       int _semThreadCnt;
       YACS::ExecutorState _executorState;
       YACS::ExecutionMode _execMode;

@@ -19,7 +19,9 @@ namespace YACS
     {
     protected:
       Container();
+#ifndef SWIG
       virtual ~Container();
+#endif
     public:
       //Execution only methods
       virtual bool isAlreadyStarted() const = 0;

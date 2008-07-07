@@ -163,6 +163,7 @@ void ComposedNode::notifyFrom(const Task *sender, //* I : task emitting event
                               YACS::Event event   //* I : event emitted
                               )
 {
+  DEBTRACE("ComposedNode::notifyFrom " << event);
   ElementaryNode *taskTyped=dynamic_cast<ElementaryNode *>((Task *)sender);
   YACS::Event curEvent=event;
   Node *lminus1LevelNode=taskTyped;
@@ -1305,6 +1306,9 @@ void ComposedNode::releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *
 }
 
 void ComposedNode::loaded()
+{
+}
+void ComposedNode::connected()
 {
 }
 

@@ -62,6 +62,8 @@ void Proc::writeDot(std::ostream &os) const
   os << "digraph " << getQualifiedName() << " {\n" ;
   os << "node [ style=\"filled\" ];\n" ;
   os << "compound=true;";
+  os << "states [label=< <TABLE> <TR> <TD BGCOLOR=\"pink\" > Ready</TD> <TD BGCOLOR=\"magenta\" > Toload</TD> </TR> <TR> <TD BGCOLOR=\"magenta\" > Loaded</TD> <TD BGCOLOR=\"purple\" > Toactivate</TD> </TR> <TR> <TD BGCOLOR=\"blue\" > Activated</TD> <TD BGCOLOR=\"green\" > Done</TD> </TR> <TR> <TD BGCOLOR=\"red\" > Error</TD> <TD BGCOLOR=\"orange\" > Failed</TD> </TR> <TR> <TD BGCOLOR=\"grey\" > Disabled</TD> <TD BGCOLOR=\"white\" > Pause</TD> </TR> </TABLE>> \n shape = plaintext \n style = invis \n ];\n";
+
   Bloc::writeDot(os);
   os << "}\n" ;
 }

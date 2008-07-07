@@ -273,6 +273,7 @@ void Node::exForwardFailed()
  */
 void Node::exForwardFinished()
 {
+  DEBTRACE("Node::exForwardFinished");
   _outGate.exNotifyDone();
 }
 

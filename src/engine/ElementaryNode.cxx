@@ -422,13 +422,23 @@ void ElementaryNode::aborted()
 
 //! Notify this node that it is loaded
 /*!
- * When an elementary node has been loaded it goes to TOACTIVATE state
- * It is then ready to be executed
+ * When an elementary node has been loaded it goes to LOADED state
+ * It is then ready to be connected
  *
  */
 void ElementaryNode::loaded()
 {
   setState(LOADED);
+}
+
+//! Notify this node that it is connected
+/*!
+ * When an elementary node has been connected it goes to TOACTIVATE state
+ * It is then ready to be executed
+ *
+ */
+void ElementaryNode::connected()
+{
   if(_inGate.exIsReady())
     if(areAllInputPortsValid())
       setState(TOACTIVATE);
@@ -483,18 +493,28 @@ void ElementaryNode::ensureLoading()
 
   // request loading for all nodes connected to this one by datastream link
   // Be careful that nodes can be connected in a loop. Put first this node in TOLOAD state to break the loop
-  std::list<OutputDataStreamPort *>::iterator iter;
-  for(iter = _setOfOutputDataStreamPort.begin(); iter != _setOfOutputDataStreamPort.end(); iter++)
+  std::list<OutputDataStreamPort *>::iterator iterout;
+  for(iterout = _setOfOutputDataStreamPort.begin(); iterout != _setOfOutputDataStreamPort.end(); iterout++)
     {
-      OutputDataStreamPort *port=(OutputDataStreamPort *)*iter;
+      OutputDataStreamPort *port=(OutputDataStreamPort *)*iterout;
       std::set<InPort *> ports=port->edSetInPort();
-      std::set<InPort *>::iterator iterout;
-      for(iterout=ports.begin();iterout != ports.end(); iterout++)
+      std::set<InPort *>::iterator iter;
+      for(iter=ports.begin();iter != ports.end(); iter++)
         {
-          Node* node= (*iterout)->getNode();
+          Node* node= (*iter)->getNode();
           node->ensureLoading();
         }
     }
-  /*
-    */
+  std::list<InputDataStreamPort *>::iterator iterin;
+  for(iterin = _setOfInputDataStreamPort.begin(); iterin != _setOfInputDataStreamPort.end(); iterin++)
+    {
+      InputDataStreamPort *port=(InputDataStreamPort *)*iterin;
+      std::set<OutPort *> ports=port->edSetOutPort();
+      std::set<OutPort *>::iterator iter;
+      for(iter=ports.begin();iter != ports.end(); iter++)
+        {
+          Node* node= (*iter)->getNode();
+          node->ensureLoading();
+        }
+    }
 }

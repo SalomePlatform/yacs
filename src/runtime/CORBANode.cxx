@@ -388,14 +388,19 @@ void SalomeNode::connectService()
             }
           catch(CORBA::SystemException& ex)
             {
-              std::string msg="Problem in connectService. CORBA System exception";
-              msg=msg+getName()+" " + port->getName() + " " + snode->getName() + " " + (*iterout)->getName();
+              DEBTRACE( "minor code: " << ex.minor() );
+              DEBTRACE( "completion code: " << ex.completed() );
+              std::string msg="Problem in connectService. CORBA System exception ";
+              std::string excname=ex._name();
+              msg=msg+excname + " " +getName()+" " + port->getName() + " " + snode->getName() + " " + (*iterout)->getName();
+              _errorDetails=msg;
               throw Exception(msg);
             }
           catch(...)
             {
               std::string msg="Problem in connectService. Unknown exception";
               msg=msg+getName()+" " + port->getName() + " " + snode->getName() + " " + (*iterout)->getName();
+              _errorDetails=msg;
               throw Exception(msg);
             }
           DEBTRACE("Connected: " <<id<<" "<<getName()<<" "<<port->getName()<<" "<<snode->getName()<<" "<<(*iterout)->getName());

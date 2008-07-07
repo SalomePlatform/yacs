@@ -89,6 +89,7 @@ namespace YACS
       Node *getChildByName(const std::string& name) const throw(Exception);
       static ComposedNode *getLowestCommonAncestor(Node *node1, Node *node2) throw(Exception);
       void loaded();
+      void connected();
       void accept(Visitor *visitor);
     protected:
       struct SortHierarc

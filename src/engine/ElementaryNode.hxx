@@ -79,6 +79,7 @@ namespace YACS
       void finished();
       void aborted();
       void loaded();
+      void connected();
       virtual std::string getErrorDetails();
       virtual void initService() { }
       virtual void connectService() { }

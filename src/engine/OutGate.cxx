@@ -1,6 +1,9 @@
 #include "OutGate.hxx"
 #include "InGate.hxx"
 
+//#define _DEVDEBUG_
+#include "YacsTrace.hxx"
+
 using namespace YACS::ENGINE;
 using namespace std;
 
@@ -30,6 +33,7 @@ void OutGate::exReset()
 
 void OutGate::exNotifyDone()
 {
+  DEBTRACE("OutGate::exNotifyDone");
   for(map<InGate *, bool>::iterator iter=_setOfInGate.begin();iter!=_setOfInGate.end();iter++)
     (*iter).first->exNotifyFromPrecursor(this);
 }

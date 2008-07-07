@@ -135,6 +135,11 @@ using namespace YACS::ENGINE;
 %feature("pythonappend") YACS::ENGINE::Bloc::edRemoveChild(Node *node)%{
         args[1].thisown=1
 %}
+
+//%feature("notabstract") YACS::ENGINE::Container;
+%feature("ref")   YACS::ENGINE::Container "$this->incrRef();"
+%feature("unref") YACS::ENGINE::Container "$this->decrRef();"
+
 /*
  * End of ownership section
  */
@@ -150,6 +155,8 @@ PYEXCEPTION(YACS::ENGINE::Executor::setExecMode)
 PYEXCEPTION(YACS::ENGINE::Executor::resumeCurrentBreakPoint)
 PYEXCEPTION(YACS::ENGINE::Executor::stopExecution)
 PYEXCEPTION(YACS::ENGINE::Executor::waitPause)
+PYEXCEPTION(YACS::ENGINE::ComponentInstance::load)
+
 %include <Executor.hxx>
 
 EXCEPTION(YACS::ENGINE::ExecutorSwig::RunPy)

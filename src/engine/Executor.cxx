@@ -74,6 +74,7 @@ void Executor::RunA(Scheduler *graph,int debug, bool fromScratch)
   _execMode = YACS::CONTINUE;
   _isWaitingEventsFromRunningTasks = false;
   _numberOfRunningTasks = 0;
+  _numberOfEndedTasks=0;
   while(_toContinue)
     {
       sleepWhileNoEventsFromAnyRunningTask();
@@ -188,6 +189,7 @@ void Executor::RunB(Scheduler *graph,int debug, bool fromScratch)
     _errorDetected = false;
     _isWaitingEventsFromRunningTasks = false;
     _numberOfRunningTasks = 0;
+    _numberOfEndedTasks = 0;
     string tracefile = "traceExec_";
     tracefile += _mainSched->getName();
     _trace.open(tracefile.c_str());
@@ -804,15 +806,30 @@ void Executor::launchTasks(std::vector<Task *>& tasks)
   //First phase, make datastream connections
   for(iter=tasks.begin();iter!=tasks.end();iter++)
     {
-      if((*iter)->getState() != YACS::TOACTIVATE)continue;
+      if((*iter)->getState() != YACS::LOADED)continue;
       try
         {
           (*iter)->connectService();
           traceExec(*iter, "connectService");
+          {//Critical section
+            _mutexForSchedulerUpdate.lock();
+            (*iter)->connected();
+            _mutexForSchedulerUpdate.unlock();
+          }//End of critical section
         }
       catch(Exception& ex) 
         {
           std::cerr << ex.what() << std::endl;
+          try
+            {
+              (*iter)->disconnectService();
+              traceExec(*iter, "disconnectService");
+            }
+          catch(...) 
+            {
+              // Disconnect has failed
+              traceExec(*iter, "disconnectService failed, ABORT");
+            }
           {//Critical section
             _mutexForSchedulerUpdate.lock();
             (*iter)->aborted();
@@ -823,6 +840,16 @@ void Executor::launchTasks(std::vector<Task *>& tasks)
       catch(...) 
         {
           std::cerr << "Problem in connectService" << std::endl;
+          try
+            {
+              (*iter)->disconnectService();
+              traceExec(*iter, "disconnectService");
+            }
+          catch(...) 
+            {
+              // Disconnect has failed
+              traceExec(*iter, "disconnectService failed, ABORT");
+            }
           {//Critical section
             _mutexForSchedulerUpdate.lock();
             (*iter)->aborted();
@@ -881,11 +908,12 @@ void Executor::sleepWhileNoEventsFromAnyRunningTask()
   DEBTRACE("Executor::sleepWhileNoEventsFromAnyRunningTask()");
 //   _semForNewTasksToPerform.wait(); //----utiliser pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex);
   _mutexForSchedulerUpdate.lock();
-  if (_numberOfRunningTasks > 0)
+  if (_numberOfRunningTasks > 0 && _numberOfEndedTasks==0)
     {
       _isWaitingEventsFromRunningTasks = true;
       _condForNewTasksToPerform.wait(_mutexForSchedulerUpdate); // mutex released during wait
     }
+  _numberOfEndedTasks=0;
   _mutexForSchedulerUpdate.unlock();
   DEBTRACE("---");
 }
@@ -905,12 +933,14 @@ void Executor::notifyEndOfThread(YACS::BASES::Thread *thread)
 
 void Executor::wakeUp()
 {
-  DEBTRACE("Executor::wakeUp()");
+  DEBTRACE("Executor::wakeUp() " << _isWaitingEventsFromRunningTasks);
   if (_isWaitingEventsFromRunningTasks)
     {
       _isWaitingEventsFromRunningTasks = false;
       _condForNewTasksToPerform.notify_all();
     }
+  else
+    _numberOfEndedTasks++;
 }
 
 //! number of running tasks
