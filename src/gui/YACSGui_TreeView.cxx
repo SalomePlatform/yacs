@@ -528,12 +528,27 @@ void YACSGui_EditionTreeView::onAddToLibrary()
  */
 void YACSGui_EditionTreeView::onAddLink()
 {
+  control=true;
   if ( Subject* aSub = getSelectedSubject() )
   {
     if ( dynamic_cast<SubjectOutputPort*>(aSub) || dynamic_cast<SubjectOutputDataStreamPort*>(aSub) )
       mySelectedSubjectOutPort = static_cast<SubjectDataPort*>(aSub);
     else if (dynamic_cast<SubjectNode*>(aSub))
       mySelectedSubjectOutNode = static_cast<SubjectNode*>(aSub);
+  }
+}
+
+//! Public slot.  Adds a simple data link from the selected port / node to the other (selected later).
+/*!
+ * does not add a control link
+ */
+void YACSGui_EditionTreeView::onAddDataLink()
+{
+  control=false;
+  if ( Subject* aSub = getSelectedSubject() )
+  {
+    if ( dynamic_cast<SubjectOutputPort*>(aSub) || dynamic_cast<SubjectOutputDataStreamPort*>(aSub) )
+      mySelectedSubjectOutPort = static_cast<SubjectDataPort*>(aSub);
   }
 }
 
@@ -1232,7 +1247,10 @@ QPopupMenu* YACSGui_EditionTreeView::contextMenuPopup( const int theType, YACS::
     if ( SubjectDataPort* aSub = dynamic_cast<SubjectDataPort*>(theSub) )
     {
       if ( dynamic_cast<OutputPort*>( aSub->getPort() ) || dynamic_cast<OutputDataStreamPort*>( aSub->getPort() ) )
-      	aPopup->insertItem( tr("POP_ADDDATALINK"), this, SLOT(onAddLink()) );
+        {
+      	aPopup->insertItem( tr("POP_ADDDATAFLOWLINK"), this, SLOT(onAddLink()) );
+      	aPopup->insertItem( tr("POP_ADDDATALINK"), this, SLOT(onAddDataLink()) );
+        }
 	
     
       if ( !dynamic_cast<SubjectSalomeNode*>(aSub->getParent()) ) 
@@ -1968,7 +1986,7 @@ void YACSGui_EditionTreeView::onSelectionChanged()
 	SubjectDataPort* aSubPort = aPItem->getSPort();
 	if ( dynamic_cast<SubjectInputPort*>(aSubPort) || dynamic_cast<SubjectInputDataStreamPort*>(aSubPort) )
 	{
-	  if ( !SubjectDataPort::tryCreateLink( mySelectedSubjectOutPort, aSubPort ) )
+	  if ( !SubjectDataPort::tryCreateLink( mySelectedSubjectOutPort, aSubPort ,control) )
 	    SUIT_MessageBox::warn1(myModule->getApp()->desktop(), 
 				   tr("WARNING"), 
 				   GuiContext::getCurrent()->_lastErrorMessage,

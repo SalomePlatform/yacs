@@ -526,15 +526,15 @@ bool CommandDestroy::localReverse()
 // ----------------------------------------------------------------------------
 
 CommandAddLink::CommandAddLink(std::string outNode, std::string outPort,
-                               std::string inNode, std::string inPort)
-  : Command(), _outNode(outNode), _outPort(outPort), _inNode(inNode), _inPort(inPort)
+                               std::string inNode, std::string inPort,bool control)
+  : Command(), _outNode(outNode), _outPort(outPort), _inNode(inNode), _inPort(inPort),_control(control)
 {
-  DEBTRACE("CommandAddLink::CommandAddLink "<<outNode<<"."<<outPort<<"->"<<inNode<<"."<<inPort);
+  DEBTRACE("CommandAddLink::CommandAddLink "<<outNode<<"."<<outPort<<"->"<<inNode<<"."<<inPort<<" "<<control);
 }
 
 bool CommandAddLink::localExecute()
 {
-  DEBTRACE(_outNode<<"."<<_outPort<<"->"<<_inNode<<"."<<_inPort);
+  DEBTRACE(_outNode<<"."<<_outPort<<"->"<<_inNode<<"."<<_inPort<<" "<<_control);
   try
     {
       Proc* proc = GuiContext::getCurrent()->getProc();
@@ -546,8 +546,10 @@ bool CommandAddLink::localExecute()
       DEBTRACE(cla->getName());
       if (dynamic_cast<OutputDataStreamPort*>(outp))
         cla->edAddLink(outp,inp);
-      else
+      else if(_control)
         cla->edAddDFLink(outp,inp);
+      else
+        cla->edAddLink(outp,inp);
       return true;
     }
   catch (Exception& ex)

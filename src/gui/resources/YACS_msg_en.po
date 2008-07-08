@@ -902,6 +902,9 @@ msgstr "Create a node"
 msgid "POP_EXECUTE"
 msgstr "Execute"
 
+msgid "POP_ADDDATAFLOWLINK"
+msgstr "Add dataflow link"
+
 msgid "POP_ADDDATALINK"
 msgstr "Add data link"
 

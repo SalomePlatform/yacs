@@ -2237,7 +2237,7 @@ YACS::ENGINE::DataPort* SubjectDataPort::getPort()
   return _dataPort;
 }
 
-bool SubjectDataPort::tryCreateLink(SubjectDataPort *subOutport, SubjectDataPort *subInport)
+bool SubjectDataPort::tryCreateLink(SubjectDataPort *subOutport, SubjectDataPort *subInport,bool control)
 {
   DEBTRACE("SubjectDataPort::tryCreateLink");
   Proc *proc = GuiContext::getCurrent()->getProc();
@@ -2257,7 +2257,7 @@ bool SubjectDataPort::tryCreateLink(SubjectDataPort *subOutport, SubjectDataPort
   string inportName = subInport->getName();
   
   CommandAddLink *command = new CommandAddLink(outNodePos, outportName,
-                                               inNodePos, inportName);
+                                               inNodePos, inportName,control);
   if (command->execute())
     {
       GuiContext::getCurrent()->getInvoc()->add(command);

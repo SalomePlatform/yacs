@@ -137,7 +137,7 @@ namespace YACS
       virtual ~SubjectDataPort();
       virtual std::string getName();
       virtual YACS::ENGINE::DataPort* getPort();
-      static bool tryCreateLink(SubjectDataPort *subOutport, SubjectDataPort *subInport);
+      static bool tryCreateLink(SubjectDataPort *subOutport, SubjectDataPort *subInport,bool control=true);
       virtual void clean();
       void localClean();
       void addSubjectLink(SubjectLink* subject) { _listSubjectLink.push_back(subject); };

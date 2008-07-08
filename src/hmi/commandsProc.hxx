@@ -201,7 +201,7 @@ namespace YACS
     {
     public:
       CommandAddLink(std::string outNode, std::string outPort,
-                     std::string inNode, std::string inPort);
+                     std::string inNode, std::string inPort,bool control=true);
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
@@ -209,6 +209,7 @@ namespace YACS
       std::string _outPort;
       std::string _inNode;
       std::string _inPort;
+      bool _control;
     };
 
     class CommandAddControlLink: public Command
