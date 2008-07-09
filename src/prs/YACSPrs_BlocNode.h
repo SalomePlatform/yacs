@@ -98,6 +98,7 @@ class YACSPrs_BlocNode : public YACSPrs_ElementaryNode {
   // for constraint nodes' moving inside the Bloc-->
   QRect getAreaRect() const;
   virtual bool checkArea(double dx, double dy, QPoint thePoint=QPoint());
+  virtual void setContentMoving(bool moving){myContentMoving=moving;};
   // <--
 
   virtual QString getToolTipText(const QPoint& theMousePos, QRect& theRect) const;

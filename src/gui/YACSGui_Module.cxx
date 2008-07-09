@@ -1866,7 +1866,7 @@ YACSGui_Graph* YACSGui_Module::displayGraph( YACS::HMI::GuiContext* theCGraph,
     return aGraph;
 
   aGraph = new YACSGui_Graph( this, aCanvas, theCGraph );
-  aGraph->show();
+  aGraph->show(false); // do not arrange nodes on start
 
   // Update node geometry
   // TODO: not optimal, graph is redrawn twice - 
@@ -1886,12 +1886,16 @@ YACSGui_Graph* YACSGui_Module::displayGraph( YACS::HMI::GuiContext* theCGraph,
       if ( aBloc )
       {
 	aBloc->resize( (int)aData.width, (int)aData.height );
+        aBloc->setContentMoving(false);
       }
 
       anItem->setIsCheckAreaNeeded(false);
       anItem->move( aData.x, aData.y );
       anItem->setIsCheckAreaNeeded(true);
       anItem->setZ( aData.z );
+
+      if ( aBloc )
+        aBloc->setContentMoving(true);
     }
     needToUpdate = true;
   }
