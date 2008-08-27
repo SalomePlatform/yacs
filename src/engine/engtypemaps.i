@@ -321,6 +321,11 @@ static PyObject* convertPort(YACS::ENGINE::Port* port,int owner=0)
     }
 }
 
+%typemap(out) YACS::ENGINE::InputPort*,YACS::ENGINE::OutputPort*,YACS::ENGINE::InPort*,YACS::ENGINE::OutPort*
+{
+  $result=convertPort($1,$owner);
+}
+
 %typemap(out) std::set<YACS::ENGINE::InGate *>
 {
   int i;
