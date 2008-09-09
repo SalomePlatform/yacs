@@ -231,6 +231,14 @@ static PyObject* convertPort(YACS::ENGINE::Port* port,int owner=0)
 #endif
 
 #ifdef SWIGPYTHON
+%typemap(out) YACS::ENGINE::TypeCode*
+{
+  if(dynamic_cast<YACS::ENGINE::TypeCodeStruct *>($1))
+    $result=SWIG_NewPointerObj((void*)$1,SWIGTYPE_p_YACS__ENGINE__TypeCodeStruct,$owner);
+  else
+    $result=SWIG_NewPointerObj((void*)$1,SWIGTYPE_p_YACS__ENGINE__TypeCode,$owner);
+}
+
 %typemap(in) std::list<YACS::ENGINE::TypeCodeObjref*>
 {
   // Check if input is a list 
