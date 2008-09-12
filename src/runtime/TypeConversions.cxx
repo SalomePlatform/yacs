@@ -1963,6 +1963,47 @@ namespace YACS
       {
         return YacsConvertor<XMLImpl,xmlDocPtr,xmlNodePtr,CORBAImpl,CORBA::Any*>(t,doc,cur);
       }
+    PyObject* convertXmlStrPyObject(const TypeCode *t,std::string data)
+      {
+        xmlDocPtr doc;
+        xmlNodePtr cur;
+        PyObject *ob=NULL;
+        doc = xmlParseMemory(data.c_str(), strlen(data.c_str()));
+        if (doc == NULL )
+        {
+          std::stringstream msg;
+          msg << "Problem in conversion: XML Document not parsed successfully ";
+          msg << " (" << __FILE__ << ":" << __LINE__ << ")";
+          throw YACS::ENGINE::ConversionException(msg.str());
+        }
+        cur = xmlDocGetRootElement(doc);
+        if (cur == NULL)
+        {
+          xmlFreeDoc(doc);
+          std::stringstream msg;
+          msg << "Problem in conversion: empty XML Document";
+          msg << " (" << __FILE__ << ":" << __LINE__ << ")";
+          throw YACS::ENGINE::ConversionException(msg.str());
+        }
+        while (cur != NULL)
+        {
+          if ((!xmlStrcmp(cur->name, (const xmlChar *)"value")))
+          {
+            ob=convertXmlPyObject(t,doc,cur);
+            break;
+          }
+          cur = cur->next;
+        }
+        xmlFreeDoc(doc);
+        if(ob==NULL)
+        {
+          std::stringstream msg;
+          msg << "Problem in conversion: incorrect XML value";
+          msg << " (" << __FILE__ << ":" << __LINE__ << ")";
+          throw YACS::ENGINE::ConversionException(msg.str());
+        }
+        return ob;
+      }
     //NEUTRAL conversions
     PyObject* convertNeutralPyObject(const TypeCode *t,YACS::ENGINE::Any* data)
       {

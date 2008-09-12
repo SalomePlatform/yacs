@@ -1,6 +1,7 @@
 #include "SalomeProc.hxx"
 #include "Runtime.hxx"
 #include "TypeCode.hxx"
+#include "VisitorSaveSalomeSchema.hxx"
 #include <iostream>
 
 using namespace YACS::ENGINE;
@@ -24,4 +25,17 @@ TypeCode * SalomeProc::createStructTc(const std::string& id, const std::string& 
 SalomeProc::~SalomeProc()
 {
 }
+
+//! Save Proc in XML schema file
+/*!
+ * \param xmlSchemaFile: the file name
+ */
+void SalomeProc::saveSchema(std::string xmlSchemaFile)
+{
+  VisitorSaveSalomeSchema vss(this);
+  vss.openFileSchema(xmlSchemaFile);
+  accept(&vss);
+  vss.closeFileSchema();
+}
+
 

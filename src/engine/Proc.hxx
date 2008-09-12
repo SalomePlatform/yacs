@@ -63,6 +63,8 @@ namespace YACS
       virtual bool getEdition(){return _edition;}
       virtual void setEdition(bool edition);
       virtual void modified();
+      virtual void saveSchema(std::string xmlSchemaFile);
+      virtual void saveState(std::string xmlStateFile);
     protected:
       bool _edition;
 

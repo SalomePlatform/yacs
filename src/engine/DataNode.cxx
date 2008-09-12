@@ -7,13 +7,13 @@ namespace YACS
     DataNode::~DataNode() 
       {
       }
-    void DataNode::setData(InputPort* port,std::string& data) 
+    void DataNode::setData(InputPort* port,const std::string& data) 
       {
       }
-    void DataNode::setData(OutputPort* port,std::string& data) 
+    void DataNode::setData(OutputPort* port,const std::string& data) 
       {
       }
-    void DataNode::setRef(std::string& ref) 
+    void DataNode::setRef(const std::string& ref) 
       {
         _ref=ref;
       }

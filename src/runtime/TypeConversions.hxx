@@ -52,6 +52,7 @@ namespace YACS
     YACS::ENGINE::Any *convertPyObjectNeutral(const TypeCode *t,PyObject* ob);
 
     PyObject *convertXmlPyObject(const TypeCode * t,xmlDocPtr doc,xmlNodePtr cur );
+    PyObject *convertXmlStrPyObject(const TypeCode * t,std::string data );
     CORBA::Any *convertXmlCorba(const TypeCode * t,xmlDocPtr doc,xmlNodePtr cur );
     YACS::ENGINE::Any *convertXmlNeutral(const TypeCode * t,xmlDocPtr doc,xmlNodePtr cur );
 

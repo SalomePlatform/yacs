@@ -20,10 +20,16 @@
 #include "SalomeProc.hxx"
 #include "PythonNode.hxx"
 #include "PythonPorts.hxx"
+#include "PresetNode.hxx"
+#include "PresetPorts.hxx"
 #include "CORBANode.hxx"
 #include "CORBAPorts.hxx"
+#include "StudyNodes.hxx"
+#include "StudyPorts.hxx"
 #include "TypeConversions.hxx"
 #include "TypeCode.hxx"
+#include "VisitorSaveSalomeSchema.hxx"
+#include <sstream>
 %}
 
 // ----------------------------------------------------------------------------
@@ -81,8 +87,13 @@
 %include "SalomeProc.hxx"
 %include "PythonNode.hxx"
 %include "PythonPorts.hxx"
+%include "XMLPorts.hxx"
+%include "PresetNode.hxx"
+%include "PresetPorts.hxx"
 %include "CORBANode.hxx"
 %include "CORBAPorts.hxx"
+%include "StudyNodes.hxx"
+%include "StudyPorts.hxx"
 
 %extend YACS::ENGINE::InputCorbaPort
 {
@@ -113,3 +124,37 @@
   }
 }
 
+%extend YACS::ENGINE::OutputPresetPort
+{
+  void setDataPy(PyObject *ob)
+  {
+    std::string sss = convertPyObjectXml(self->edGetType(),ob);
+    self->setData(sss);
+  }
+
+  PyObject * getPyObj()
+  {
+    return convertXmlStrPyObject(self->edGetType(),self->getData());
+  }
+}
+%extend YACS::ENGINE::InputPresetPort
+{
+  PyObject * getPyObj()
+  {
+    return convertXmlStrPyObject(self->edGetType(),self->dump());
+  }
+}
+%extend YACS::ENGINE::InputStudyPort
+{
+  std::string getPyObj()
+  {
+    return self->getData();
+  }
+}
+%extend YACS::ENGINE::OutputStudyPort
+{
+  std::string getPyObj()
+  {
+    return self->getData();
+  }
+}

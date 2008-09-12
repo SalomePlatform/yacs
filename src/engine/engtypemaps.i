@@ -235,6 +235,10 @@ static PyObject* convertPort(YACS::ENGINE::Port* port,int owner=0)
 {
   if(dynamic_cast<YACS::ENGINE::TypeCodeStruct *>($1))
     $result=SWIG_NewPointerObj((void*)$1,SWIGTYPE_p_YACS__ENGINE__TypeCodeStruct,$owner);
+  else if(dynamic_cast<YACS::ENGINE::TypeCodeSeq *>($1))
+    $result=SWIG_NewPointerObj((void*)$1,SWIGTYPE_p_YACS__ENGINE__TypeCodeSeq,$owner);
+  else if(dynamic_cast<YACS::ENGINE::TypeCodeObjref *>($1))
+    $result=SWIG_NewPointerObj((void*)$1,SWIGTYPE_p_YACS__ENGINE__TypeCodeObjref,$owner);
   else
     $result=SWIG_NewPointerObj((void*)$1,SWIGTYPE_p_YACS__ENGINE__TypeCode,$owner);
 }

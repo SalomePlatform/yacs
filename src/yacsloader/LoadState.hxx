@@ -13,6 +13,13 @@ namespace YACS
     class Proc;
     class Runtime;
 
+    //! Load state from a file into a Proc
+    /*!
+     * \param p: the Proc
+     * \param xmlStateFile: the file name
+     */
+    void loadState(YACS::ENGINE::Proc *p,const std::string& xmlStateFile);
+
     /*! \brief class for parse an xml file, use a dedicated parser, to load a
      *  saved state of a SALOME execution.
      */

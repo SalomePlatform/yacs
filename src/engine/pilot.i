@@ -29,6 +29,7 @@
 #include "Logger.hxx"
 #include "DeploymentTree.hxx"
 #include "ComponentInstance.hxx"
+#include "DataNode.hxx"
 
 using namespace YACS::ENGINE;
 
@@ -221,6 +222,7 @@ EXCEPTION(YACS::ENGINE::ExecutorSwig::waitPause)
 %include <InputDataStreamPort.hxx>
 %include <OutputDataStreamPort.hxx>
 %include <AnyInputPort.hxx>
+%include <DataPort.hxx>
 
 %include <Node.hxx>
 %extend YACS::ENGINE::Node 
@@ -242,6 +244,7 @@ EXCEPTION(YACS::ENGINE::ExecutorSwig::waitPause)
 %include <InlineNode.hxx>
 %include <ServiceNode.hxx>
 %include <ServiceInlineNode.hxx>
+%include <DataNode.hxx>
 
 %include <ComposedNode.hxx>
 %include <StaticDefinedComposedNode.hxx>

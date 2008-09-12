@@ -77,7 +77,7 @@ void OutNode::accept(Visitor *visitor)
   visitor->visitOutNode(this);
 }
 
-void OutNode::setData(InputPort* port, std::string& data)
+void OutNode::setData(InputPort* port, const std::string& data)
 {
   InputPresetPort *inp = dynamic_cast<InputPresetPort *>(port);
   inp->setData(data);

@@ -138,13 +138,11 @@ void graphParser::onEnd   (const XML_Char* name)
       Node *node =0;
       string nodeName = it->first;
       DEBTRACE("nodeName = " << nodeName);
-      if ( _p->nodeMap.find(nodeName) != _p->nodeMap.end() )
-        node = _p->getChildByName(nodeName);
+      if(_p->getName() == nodeName)
+        node = _p;
       else
-        {
-          assert(_p->getName() == nodeName);
-          node = _p;
-        }
+        node = _p->getChildByName(nodeName);
+
       InGate* inGate = node->getInGate();
       list<OutGate*> backlinks = inGate->getBackLinks();
       for (list<OutGate*>::iterator io = backlinks.begin(); io != backlinks.end(); io++)
@@ -205,20 +203,16 @@ void nodeParser::onEnd   (const XML_Char* name)
   string nodeName = _mapAttrib["name"];
   string nodeType = _mapAttrib["type"];
   string nodeState = _mapAttrib["state"];
-  cerr << "nodeName: " << nodeName \
-       << " nodeType: " << nodeType \
-       << " nodeState: " << nodeState << endl;
+  DEBTRACE( "nodeName: " << nodeName << " nodeType: " << nodeType << " nodeState: " << nodeState );
 //   for (std::map< std::string, Node * >::iterator it=_p->nodeMap.begin(); it != _p->nodeMap.end(); it++)
 //     cerr << "nodeMap: " << it->first << endl;
   _nodeStates[nodeName] = _nodeStateValue[nodeState];
   Node *node =0;
-  if ( _p->nodeMap.find(nodeName) != _p->nodeMap.end() )
+  if(_p->getName() == nodeName)
+    node=_p;
+  else 
     node = _p->getChildByName(nodeName);
-  else
-    {
-      assert(_p->getName() == nodeName);
-      node = _p;
-    }
+
   assert(_nodeStateValue.find(nodeState) != _nodeStateValue.end());
   YACS::ENGINE::StateLoader(node, _nodeStateValue[nodeState]);
 
@@ -379,8 +373,7 @@ void portParser::addData(std::string value)
 
 void portParser::onEnd   (const XML_Char* name)
 {
-  cerr << "portName: " << _mapAttrib["name"] << endl;
-  cerr << "value: " << _data << endl;
+  DEBTRACE("portName: " << _mapAttrib["name"] << "value: " << _data );
   string nodeName = _father->getAttribute("name");
   string nodeType = _father->getAttribute("type");
   Node *node = _p->getChildByName(nodeName);
@@ -620,13 +613,13 @@ void stateLoader::parse(std::string xmlState)
 
   xmlReader::parse(xmlState);
 
-  cerr << parser->_state << endl;
+  DEBTRACE(parser->_state);
   switch (parser->_state)
     {
     case XMLNOCONTEXT:
     case XMLDONE:
       {
-        cerr << "parse OK" << endl;
+        DEBTRACE("parse OK");
         break;
       }
     case XMLFATALERROR:
@@ -644,3 +637,11 @@ void stateLoader::parse(std::string xmlState)
     }
 }
 
+void YACS::ENGINE::loadState(YACS::ENGINE::Proc *p,const std::string& xmlStateFile)
+{
+  p->init();
+  p->exUpdateState();
+  stateParser* rootParser = new stateParser();
+  stateLoader myStateLoader(rootParser, p);
+  myStateLoader.parse(xmlStateFile);
+}
