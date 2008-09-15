@@ -165,7 +165,7 @@ void graphParser::onEnd   (const XML_Char* name)
 
 void nodeParser::init(const xmlChar** p, xmlParserBase* father)
 {
-  //DEBTRACE("nodeParser::init()");
+  DEBTRACE("nodeParser::init()");
   _state = XMLINNODE;
   _father = father;
   _stackState.push(_state);
@@ -175,6 +175,7 @@ void nodeParser::init(const xmlChar** p, xmlParserBase* father)
 
 void nodeParser::onStart (const XML_Char* elem, const xmlChar** p)
 {
+  DEBTRACE("nodeParser::onStart" << elem);
   string element(elem);
   stateParser *parser = 0;
   if (element == "inputPort")      parser = new portParser();
@@ -304,7 +305,7 @@ void nodeParser::onEnd   (const XML_Char* name)
 
 void attrParser::init(const xmlChar** p, xmlParserBase* father)
 {
-  //DEBTRACE("attrParser::init()");
+  DEBTRACE("attrParser::init()");
   //_state = XMLINNODE;
   _father = father;
   _stackState.push(_state); // keep current state
@@ -337,7 +338,7 @@ void attrParser::onEnd   (const XML_Char* name)
 
 void portParser::init(const xmlChar** p, xmlParserBase* father)
 {
-  //  DEBTRACE("portParser::init()");
+  DEBTRACE("portParser::init()");
   _state = XMLINPORT;
   _father = father;
   assert( dynamic_cast<nodeParser*> (father));
@@ -348,6 +349,7 @@ void portParser::init(const xmlChar** p, xmlParserBase* father)
 
 void portParser::onStart (const XML_Char* elem, const xmlChar** p)
 {
+  DEBTRACE("portParser::onStart" << elem);
   string element(elem);
   stateParser *parser = 0;
   if      (element == "name")      parser = new attrParser();
@@ -382,7 +384,8 @@ void portParser::onEnd   (const XML_Char* name)
       ElementaryNode* eNode = dynamic_cast<ElementaryNode*>(node);
       assert(eNode);
       InputPort *port = eNode->getInputPort(_mapAttrib["name"]);
-      port->edInit("XML",_data.c_str());
+      if(_data != "")
+        port->edInit("XML",_data.c_str());
     }
   else if (nodeType == "forLoop")
     {
@@ -422,7 +425,7 @@ void portParser::onEnd   (const XML_Char* name)
 
 void valueParser::init(const xmlChar** p, xmlParserBase* father)
 {
-  //  DEBTRACE("valueParser::init()");
+  DEBTRACE("valueParser::init()");
   _state = XMLINVALUE;
   _father = father;
   _stackState.push(_state);
@@ -433,7 +436,7 @@ void valueParser::init(const xmlChar** p, xmlParserBase* father)
 void valueParser::onStart (const XML_Char* elem, const xmlChar** p)
 {
   string element(elem);
-  // cerr << "value type " << element << endl;
+  DEBTRACE("value type " << element );
   stateParser *parser = 0;
   if      (element == "data")      parser = new dataParser();
   else if (element == "array")     parser = new arrayParser();
@@ -453,7 +456,7 @@ void valueParser::addData(std::string value)
 
 void valueParser::onEnd   (const XML_Char* name)
 {
-  // cerr << _data << endl;
+  DEBTRACE( _data );
   _father->addData(_data);
   string elem = (char *) name;
   //if (elem == "value" || elem == "data" || elem == "array")
@@ -465,7 +468,7 @@ void valueParser::onEnd   (const XML_Char* name)
 
 void arrayParser::init(const xmlChar** p, xmlParserBase* father)
 {
-  // DEBTRACE("arrayParser::init()");
+  DEBTRACE("arrayParser::init()");
   _state = XMLINVALUE;
   _father = father;
   _stackState.push(_state);
@@ -476,7 +479,7 @@ void arrayParser::init(const xmlChar** p, xmlParserBase* father)
 void arrayParser::onStart (const XML_Char* elem, const xmlChar** p)
 {
   string element(elem);
-  // cerr << "array type " << element << endl;
+  DEBTRACE("array type " << element);
   stateParser *parser = 0;
   if      (element == "data")      parser = new dataParser();
   else
@@ -512,7 +515,7 @@ void arrayParser::onEnd   (const XML_Char* name)
 
 void dataParser::init(const xmlChar** p, xmlParserBase* father)
 {
-  // DEBTRACE("dataParser::init()");
+  DEBTRACE("dataParser::init()");
   _state = XMLINVALUE;
   _father = father;
   _stackState.push(_state);
@@ -523,7 +526,7 @@ void dataParser::init(const xmlChar** p, xmlParserBase* father)
 void dataParser::onStart (const XML_Char* elem, const xmlChar** p)
 {
   string element(elem);
-  // cerr << "data type " << element << endl;
+  DEBTRACE("data type " << element );
   stateParser *parser = 0;
   if      (element == "value")      parser = new valueParser();
   else
@@ -564,7 +567,7 @@ void dataParser::onEnd   (const XML_Char* name)
 
 void simpleTypeParser::init(const xmlChar** p, xmlParserBase* father)
 {
-  //  DEBTRACE("simpleTypeParser::init()");
+  DEBTRACE("simpleTypeParser::init()");
   _state = XMLINVALUE;
   _father = father;
   _stackState.push(_state);
@@ -581,17 +584,15 @@ void simpleTypeParser::onStart (const XML_Char* elem, const xmlChar** p)
 
 void simpleTypeParser::onEnd   (const XML_Char* name)
 {
-  // cerr << "simpleTypeParser::onEnd " << name << endl;
   string val = string("<") + (char*) name + ">" + _data + "</"  + (char*) name +">";
-  // cerr << val << endl;
+  DEBTRACE( val );
   _father->addData(val);
   stateParser::onEnd(name);
 }
 
 void simpleTypeParser::charData(std::string data)
 {
-  // cerr << "simple data " << data << endl;
-  _data = data;
+  _data = _data + data;
 }
 
 
@@ -607,6 +608,7 @@ stateLoader::stateLoader(xmlParserBase* parser,
 
 void stateLoader::parse(std::string xmlState)
 {
+  DEBTRACE("stateLoader::parse");
   stateParser *parser = dynamic_cast<stateParser*> (_rootParser);
   parser->setProc(_p);
   parser->setRuntime(_runtime);
@@ -639,6 +641,7 @@ void stateLoader::parse(std::string xmlState)
 
 void YACS::ENGINE::loadState(YACS::ENGINE::Proc *p,const std::string& xmlStateFile)
 {
+  DEBTRACE("YACS::ENGINE::loadState");
   p->init();
   p->exUpdateState();
   stateParser* rootParser = new stateParser();

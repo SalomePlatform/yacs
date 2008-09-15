@@ -19,6 +19,7 @@ namespace YACS
       virtual void setValue(Any *data);
       //! get the current dispatched value for update port value 
       Any* getValue() const { return _data; }
+      virtual std::string typeName() {return "YACS__ENGINE__AnyOutputPort";}
     private:
       Any* _data; // the data dispatched from port on the current moment
     private:

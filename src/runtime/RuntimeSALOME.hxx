@@ -187,6 +187,9 @@ namespace YACS
 
       virtual InputPort* adaptNeutralToCpp(InputPort* inport,
                                              TypeCode * type) throw (ConversionException);
+
+      virtual void* convertNeutral(TypeCode * type, Any *data);
+
       virtual ~RuntimeSALOME(); 
 
       CORBA::ORB_ptr getOrb();

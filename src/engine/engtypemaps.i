@@ -150,7 +150,11 @@ static PyObject* convertPort(YACS::ENGINE::Port* port,int owner=0)
     }
   else
     {
-      if(dynamic_cast<YACS::ENGINE::InputPort *>(port))
+      if(YACS::ENGINE::AnyInputPort *cport =dynamic_cast<YACS::ENGINE::AnyInputPort *>(port))
+        ob=SWIG_NewPointerObj((void*)cport,SWIGTYPE_p_YACS__ENGINE__AnyInputPort,owner);
+      else if(YACS::ENGINE::AnyOutputPort *cport =dynamic_cast<YACS::ENGINE::AnyOutputPort *>(port))
+        ob=SWIG_NewPointerObj((void*)cport,SWIGTYPE_p_YACS__ENGINE__AnyOutputPort,owner);
+      else if(dynamic_cast<YACS::ENGINE::InputPort *>(port))
         ob=SWIG_NewPointerObj((void*)port,SWIGTYPE_p_YACS__ENGINE__InputPort,owner);
       else if(dynamic_cast<YACS::ENGINE::OutputPort *>(port))
         ob=SWIG_NewPointerObj((void*)port,SWIGTYPE_p_YACS__ENGINE__OutputPort,owner);

@@ -24,6 +24,7 @@ namespace YACS
       void put(const void *data) throw(ConversionException);
       InputPort *clone(Node *newHelder) const;
       std::string dump();
+      virtual std::string typeName() {return "YACS__ENGINE__AnyInputPort";}
     protected:
       Any *_value;
     };

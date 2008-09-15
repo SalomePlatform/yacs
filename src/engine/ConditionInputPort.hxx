@@ -30,6 +30,7 @@ namespace YACS
       Any *_value;
     public:
       bool getValue() const { return (_value ? _value->getBoolValue() : false); }
+      virtual std::string typeName() {return "YACS__ENGINE__ConditionInputPort";}
     };
   }
 }

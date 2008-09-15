@@ -137,6 +137,7 @@ void InputPyPort::put(PyObject *data) throw(ConversionException)
   releasePyObj(_data);
   Py_XDECREF(_data); 
   _data = data;
+  _stringRef="";
   Py_INCREF(_data); 
   registerPyObj(_data);
   DEBTRACE( "_data refcnt: " << _data->ob_refcnt );

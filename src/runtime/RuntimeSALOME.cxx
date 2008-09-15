@@ -1561,3 +1561,14 @@ omniORBpyAPI* RuntimeSALOME::getApi()
   return _api;
 }
 
+void* RuntimeSALOME::convertNeutral(TypeCode * type, Any *data)
+{
+  if(data)
+    return (void *)convertNeutralPyObject(type,data);
+  else
+    {
+      Py_INCREF(Py_None);
+      return (void *)Py_None;
+    }
+}
+

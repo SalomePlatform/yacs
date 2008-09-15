@@ -137,6 +137,7 @@ void InputCorbaPort::put(CORBA::Any *data) throw (ConversionException)
 
   // make a copy of the any (protect against deletion of any source)
   _data=*data;
+  _stringRef="";
 
   registerObj(_data);
 

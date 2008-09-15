@@ -213,15 +213,17 @@ EXCEPTION(YACS::ENGINE::ExecutorSwig::waitPause)
       self->edInit("Python",ob);
     }
 }
+
 %template(edInitInt)       YACS::ENGINE::InputPort::edInit<int>;
 %template(edInitBool)      YACS::ENGINE::InputPort::edInit<bool>;
 %template(edInitString)    YACS::ENGINE::InputPort::edInit<std::string>;
 %template(edInitDbl)       YACS::ENGINE::InputPort::edInit<double>;
 
+%include <AnyInputPort.hxx>
+%include <ConditionInputPort.hxx>
 %include <OutputPort.hxx>
 %include <InputDataStreamPort.hxx>
 %include <OutputDataStreamPort.hxx>
-%include <AnyInputPort.hxx>
 %include <DataPort.hxx>
 
 %include <Node.hxx>
@@ -263,3 +265,28 @@ EXCEPTION(YACS::ENGINE::ExecutorSwig::waitPause)
 %include <VisitorSaveSchema.hxx>
 %include <ComponentDefinition.hxx>
 %include <Catalog.hxx>
+
+%extend YACS::ENGINE::ConditionInputPort
+{
+  bool getPyObj()
+  {
+    return self->getValue();
+  }
+}
+
+%extend YACS::ENGINE::AnyInputPort
+{
+  PyObject * getPyObj()
+  {
+    return (PyObject *)getRuntime()->convertNeutral(self->edGetType(),self->getValue());
+  }
+}
+
+%extend YACS::ENGINE::AnyOutputPort
+{
+  PyObject * getPyObj()
+  {
+    return (PyObject *)getRuntime()->convertNeutral(self->edGetType(),self->getValue());
+  }
+}
+

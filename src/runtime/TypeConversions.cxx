@@ -82,7 +82,11 @@ namespace YACS
     CORBA::TypeCode_ptr getCorbaTCObjref(const TypeCode *t)
     {
       DEBTRACE( t->name() << " " << t->shortName());
-      CORBA::TypeCode_ptr tc= getSALOMERuntime()->getOrb()->create_interface_tc(t->id(),t->shortName());
+      CORBA::TypeCode_ptr tc;
+      if(strncmp(t->id(),"python",6)==0)
+        tc= CORBA::TypeCode::_duplicate(CORBA::_tc_string);
+      else
+        tc= getSALOMERuntime()->getOrb()->create_interface_tc(t->id(),t->shortName());
 #ifdef REFCNT
       DEBTRACE("refcount CORBA tc Objref: " << ((omni::TypeCode_base*)tc)->pd_ref_count);
 #endif
@@ -383,7 +387,7 @@ namespace YACS
     template <ImplType IMPLIN,class TIN,class TIN2,ImplType IMPLOUT, class TOUT>
     struct convertToYacsObjref
     {
-      static inline std::string convert(const TypeCode *t,TIN o,TIN2 aux)
+      static inline std::string convert(const TypeCode *t,TIN o,TIN2 aux,int protocol)
         {
           stringstream msg;
           msg << "Conversion not implemented: kind= " << t->kind() << " Implementation: " << IMPLIN << " to: " << IMPLOUT;
@@ -552,7 +556,10 @@ namespace YACS
     template <ImplType IMPLIN,class TIN,class TIN2,ImplType IMPLOUT, class TOUT>
     inline TOUT convertObjref(const TypeCode *t,TIN o,TIN2 aux)
     {
-      std::string d=convertToYacsObjref<IMPLIN,TIN,TIN2,IMPLOUT,TOUT>::convert(t,o,aux);
+      int protocol=-1;
+      if(IMPLOUT==XMLImpl || IMPLOUT==NEUTRALImpl)
+        protocol=0;
+      std::string d=convertToYacsObjref<IMPLIN,TIN,TIN2,IMPLOUT,TOUT>::convert(t,o,aux,protocol);
       DEBTRACE( d );
       TOUT r=convertFromYacsObjref<IMPLOUT,TOUT>::convert(t,d);
       return r;
@@ -702,22 +709,41 @@ namespace YACS
     template <ImplType IMPLOUT, class TOUT>
     struct convertToYacsObjref<PYTHONImpl,PyObject*,void*,IMPLOUT,TOUT>
     {
-      static inline std::string convert(const TypeCode *t,PyObject* o,void*)
+      static inline std::string convert(const TypeCode *t,PyObject* o,void*,int protocol)
         {
           if (PyString_Check(o))
             {
               // the objref is used by Python as a string (prefix:value) keep it as a string
               return PyString_AS_STRING(o);
             }
-          PyObject *pystring=PyObject_CallMethod(getSALOMERuntime()->getPyOrb(),"object_to_string","O",o);
-          if(pystring==NULL)
+          if(strncmp(t->id(),"python",6)==0)
             {
-              PyErr_Print();
-              throw YACS::ENGINE::ConversionException("Problem in convertToYacsObjref<PYTHONImpl");
+              // It's a native Python object pickle it
+              PyObject* mod=PyImport_ImportModule("cPickle");
+              PyObject *pickled=PyObject_CallMethod(mod,"dumps","Oi",o,protocol);
+              Py_DECREF(mod);
+              if(pickled==NULL)
+                {
+                  PyErr_Print();
+                  throw YACS::ENGINE::ConversionException("Problem in convertToYacsObjref<PYTHONImpl");
+                }
+              std::string mystr=PyString_AsString(pickled);
+              Py_DECREF(pickled);
+              return mystr;
             }
-          std::string mystr=PyString_AsString(pystring);
-          Py_DECREF(pystring);
-          return mystr;
+          else
+            {
+              // It's a CORBA Object convert it to an IOR string
+              PyObject *pystring=PyObject_CallMethod(getSALOMERuntime()->getPyOrb(),"object_to_string","O",o);
+              if(pystring==NULL)
+                {
+                  PyErr_Print();
+                  throw YACS::ENGINE::ConversionException("Problem in convertToYacsObjref<PYTHONImpl");
+                }
+              std::string mystr=PyString_AsString(pystring);
+              Py_DECREF(pystring);
+              return mystr;
+            }
         }
     };
     template <ImplType IMPLOUT, class TOUT>
@@ -835,7 +861,21 @@ namespace YACS
               //It's an objref file. Convert it specially
               return PyString_FromString(o.c_str());
             }
-          /* another way
+          if(strncmp(t->id(),"python",6)==0)
+            {
+              //It's a python pickled object, unpickled it
+              PyObject* mod=PyImport_ImportModule("cPickle");
+              PyObject *ob=PyObject_CallMethod(mod,"loads","s",o.c_str());
+              Py_DECREF(mod);
+              if(ob==NULL)
+                {
+                  PyErr_Print();
+                  throw YACS::ENGINE::ConversionException("Problem in convertFromYacsObjref<PYTHONImpl");
+                }
+              return ob;
+            }
+
+          /* another way to convert IOR string to CORBA PyObject 
           PyObject* ob= PyObject_CallMethod(getSALOMERuntime()->getPyOrb(),"string_to_object","s",o.c_str());
           DEBTRACE( "Objref python refcnt: " << ob->ob_refcnt );
           return ob;
@@ -1111,7 +1151,7 @@ namespace YACS
     template <ImplType IMPLOUT, class TOUT>
     struct convertToYacsObjref<XMLImpl,xmlDocPtr,xmlNodePtr,IMPLOUT,TOUT>
     {
-      static inline std::string convert(const TypeCode *t,xmlDocPtr doc,xmlNodePtr cur)
+      static inline std::string convert(const TypeCode *t,xmlDocPtr doc,xmlNodePtr cur,int protocol)
         {
           cur = cur->xmlChildrenNode;
           while (cur != NULL)
@@ -1290,7 +1330,10 @@ namespace YACS
     {
       static inline std::string convert(const TypeCode *t,std::string& o)
         {
-          return "<value><objref>" + o + "</objref></value>\n";
+          if(strncmp(t->id(),"python",6)==0)
+            return "<value><objref><![CDATA[" + o + "]]></objref></value>\n";
+          else
+            return "<value><objref>" + o + "</objref></value>\n";
         }
     };
 
@@ -1399,7 +1442,7 @@ namespace YACS
     template <ImplType IMPLOUT, class TOUT>
     struct convertToYacsObjref<NEUTRALImpl,YACS::ENGINE::Any*,void*,IMPLOUT,TOUT>
     {
-      static inline std::string convert(const TypeCode *t,YACS::ENGINE::Any* o,void*)
+      static inline std::string convert(const TypeCode *t,YACS::ENGINE::Any* o,void*,int protocol)
         {
           if(o->getType()->kind()==String)
             return o->getStringValue();
@@ -1566,7 +1609,7 @@ namespace YACS
     template <ImplType IMPLOUT, class TOUT>
     struct convertToYacsObjref<CORBAImpl,CORBA::Any*,void*,IMPLOUT,TOUT>
     {
-      static inline std::string convert(const TypeCode *t,CORBA::Any* o,void*)
+      static inline std::string convert(const TypeCode *t,CORBA::Any* o,void*,int protocol)
         {
           char file[]="/tmp/XXXXXX";
           if(t->isA(Runtime::_tc_file))
@@ -1580,6 +1623,31 @@ namespace YACS
               f->recvFiles();
               delete f;
               return file;
+            }
+          else if(strncmp(t->id(),"python",6)==0)
+            {
+              const char *s;
+              if(*o >>=s)
+                {
+                  if(protocol !=0)
+                    return s;
+
+                  PyGILState_STATE gstate = PyGILState_Ensure(); 
+                  PyObject* mod=PyImport_ImportModule("cPickle");
+                  PyObject *ob=PyObject_CallMethod(mod,"loads","s",s);
+                  PyObject *pickled=PyObject_CallMethod(mod,"dumps","Oi",ob,protocol);
+                  std::string mystr=PyString_AsString(pickled);
+                  Py_DECREF(mod);
+                  Py_DECREF(ob);
+                  Py_DECREF(pickled);
+                  PyGILState_Release(gstate);
+
+                  return mystr;
+                }
+              stringstream msg;
+              msg << "Problem in CORBA (protocol python) to TOUT conversion: kind= " << t->kind() ;
+              msg << " : " << __FILE__ << ":" << __LINE__;
+              throw YACS::ENGINE::ConversionException(msg.str());
             }
           else
             {
@@ -1714,6 +1782,7 @@ namespace YACS
       static inline CORBA::Any* convert(const TypeCode *t,std::string& o)
         {
           CORBA::Object_var obref;
+
           if(t->isA(Runtime::_tc_file))
             {
               //It's an objref file. Convert it specially
@@ -1731,6 +1800,12 @@ namespace YACS
                   msg << " : " << __FILE__ << ":" << __LINE__;
                   throw YACS::ENGINE::ConversionException(msg.str());
                 }
+            }
+          else if(strncmp(t->id(),"python",6)==0)
+            {
+              CORBA::Any *any = new CORBA::Any();
+              *any <<= o.c_str();
+              return any;
             }
           else
             {
