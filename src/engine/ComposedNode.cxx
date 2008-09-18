@@ -1359,7 +1359,8 @@ std::string ComposedNode::getErrorReport()
 {
   DEBTRACE("ComposedNode::getErrorReport: " << getName() << " " << _state);
   YACS::StatesForNode effectiveState=getEffectiveState();
-  if(effectiveState == YACS::READY || effectiveState == YACS::DONE)
+
+  if(effectiveState != YACS::INVALID &&  effectiveState != YACS::ERROR && effectiveState != YACS::FAILED)
     return "";
 
   std::string report="<error node= " + getName();

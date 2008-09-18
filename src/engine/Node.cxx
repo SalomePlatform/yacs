@@ -528,7 +528,7 @@ std::string Node::getErrorReport()
   YACS::StatesForNode effectiveState=getEffectiveState();
 
   DEBTRACE("Node::getErrorReport: " << getName() << " " << effectiveState << " " << _errorDetails);
-  if(effectiveState == YACS::READY || effectiveState == YACS::DONE)
+  if(effectiveState != YACS::INVALID &&  effectiveState != YACS::ERROR && effectiveState != YACS::FAILED)
     return "";
 
   std::string report="<error node= " ;
