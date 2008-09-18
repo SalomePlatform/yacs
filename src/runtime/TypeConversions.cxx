@@ -83,7 +83,7 @@ namespace YACS
     {
       DEBTRACE( t->name() << " " << t->shortName());
       CORBA::TypeCode_ptr tc;
-      if(strncmp(t->id(),"python",6)==0)
+      if(strncmp(t->id(),"python",6)==0 || strncmp(t->id(),"json",4)==0)
         tc= CORBA::TypeCode::_duplicate(CORBA::_tc_string);
       else
         tc= getSALOMERuntime()->getOrb()->create_interface_tc(t->id(),t->shortName());
@@ -731,6 +731,26 @@ namespace YACS
               Py_DECREF(pickled);
               return mystr;
             }
+          else if(strncmp(t->id(),"json",4)==0)
+            {
+              // It's a Python  object convert it to json 
+              PyObject* mod=PyImport_ImportModule("simplejson");
+              if(mod==NULL)
+                {
+                  PyErr_Print();
+                  throw YACS::ENGINE::ConversionException("Problem in convertToYacsObjref<PYTHONImpl: no simplejson module");
+                }
+              PyObject *pickled=PyObject_CallMethod(mod,"dumps","O",o);
+              Py_DECREF(mod);
+              if(pickled==NULL)
+                {
+                  PyErr_Print();
+                  throw YACS::ENGINE::ConversionException("Problem in convertToYacsObjref<PYTHONImpl");
+                }
+              std::string mystr=PyString_AsString(pickled);
+              Py_DECREF(pickled);
+              return mystr;
+            }
           else
             {
               // It's a CORBA Object convert it to an IOR string
@@ -865,6 +885,24 @@ namespace YACS
             {
               //It's a python pickled object, unpickled it
               PyObject* mod=PyImport_ImportModule("cPickle");
+              PyObject *ob=PyObject_CallMethod(mod,"loads","s",o.c_str());
+              Py_DECREF(mod);
+              if(ob==NULL)
+                {
+                  PyErr_Print();
+                  throw YACS::ENGINE::ConversionException("Problem in convertFromYacsObjref<PYTHONImpl");
+                }
+              return ob;
+            }
+          if(strncmp(t->id(),"json",4)==0)
+            {
+              // It's a json object unpack it
+              PyObject* mod=PyImport_ImportModule("simplejson");
+              if(mod==NULL)
+                {
+                  PyErr_Print();
+                  throw YACS::ENGINE::ConversionException("Problem in convertToYacsObjref<PYTHONImpl: no simplejson module");
+                }
               PyObject *ob=PyObject_CallMethod(mod,"loads","s",o.c_str());
               Py_DECREF(mod);
               if(ob==NULL)
@@ -1330,7 +1368,7 @@ namespace YACS
     {
       static inline std::string convert(const TypeCode *t,std::string& o)
         {
-          if(strncmp(t->id(),"python",6)==0)
+          if(strncmp(t->id(),"python",6)==0 || strncmp(t->id(),"json",4)==0)
             return "<value><objref><![CDATA[" + o + "]]></objref></value>\n";
           else
             return "<value><objref>" + o + "</objref></value>\n";
@@ -1649,6 +1687,19 @@ namespace YACS
               msg << " : " << __FILE__ << ":" << __LINE__;
               throw YACS::ENGINE::ConversionException(msg.str());
             }
+          else if(strncmp(t->id(),"json",4)==0)
+            {
+              const char *s;
+              if(*o >>=s)
+                {
+                  if(protocol !=0)
+                    return s;
+                }
+              stringstream msg;
+              msg << "Problem in CORBA (protocol json) to TOUT conversion: kind= " << t->kind() ;
+              msg << " : " << __FILE__ << ":" << __LINE__;
+              throw YACS::ENGINE::ConversionException(msg.str());
+            }
           else
             {
               CORBA::Object_var ObjRef ;
@@ -1801,7 +1852,7 @@ namespace YACS
                   throw YACS::ENGINE::ConversionException(msg.str());
                 }
             }
-          else if(strncmp(t->id(),"python",6)==0)
+          else if(strncmp(t->id(),"python",6)==0 || strncmp(t->id(),"json",4)==0)
             {
               CORBA::Any *any = new CORBA::Any();
               *any <<= o.c_str();
