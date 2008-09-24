@@ -335,7 +335,7 @@ bool Observer_i::event(QEvent *e)
 		  else
 		    aGuiNodeId2InPortsValues[aGuiNodeId].insert( make_pair((*itIP)->getName(),string(aValue.latin1()) ) );
 		  
-		  _guiMod->getGraph(_guiProc)->updateNodePrs(aGuiNodeId,
+		  _guiMod->getGraph(_guiProc)->updateNodePrs(aGuiNodeId,true,
 							     (*itIP)->getName(),
 							     string(aValue.latin1()));
 		}
@@ -381,7 +381,7 @@ bool Observer_i::event(QEvent *e)
 		  else
 		    aGuiNodeId2OutPortsValues[aGuiNodeId].insert( make_pair((*itOP)->getName(),string(aValue.latin1()) ) );
 
-		  _guiMod->getGraph(_guiProc)->updateNodePrs(aGuiNodeId,
+		  _guiMod->getGraph(_guiProc)->updateNodePrs(aGuiNodeId,false,
 							     (*itOP)->getName(),
 							     string(aValue.latin1()));
 		}

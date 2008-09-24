@@ -142,7 +142,7 @@ YACSGui_ServiceNodePage::YACSGui_ServiceNodePage( QWidget* theParent, const char
   if ( !myInputPortsGroupBox || !myOutputPortsGroupBox ) return;
 
   QString aPortTypes = QString("Data Flow;Data Stream (BASIC);Data Stream (CALCIUM);Data Stream (PALM)");
-  QString aValueTypes = QString("Double;Int;String;Bool;Objref;Sequence;Array;Struct");
+  QString aValueTypes = QString("double;int;string;bool;Objref;Sequence;Array;Struct");
 
   // Input Ports table
   myInputPortsGroupBox->setTitle( tr("Input Ports") );

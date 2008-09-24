@@ -865,7 +865,6 @@ void YACSGui_Table::setStrings( const int col, const QStringList& mat, const boo
     {
       DEBTRACE(mat[ i ] << " " << i << " " << size );
       item( i, col )->setText( i<size ? mat[ i ] : QString::null );
-//      updateCell(i,col);
     }
 }
 
@@ -920,7 +919,7 @@ void YACSGui_Table::setReadOnly( const int row, const int col, const bool ro )
     {
       endEdit( r, col, false, false );
       it->setReadOnly( ro );
-      if( ro && !defValue( r, col ).isEmpty() )
+      if( ro && it->text().isEmpty() && !defValue( r, col ).isEmpty() )
 	it->setText( defValue( r, col ) );
     }
   }

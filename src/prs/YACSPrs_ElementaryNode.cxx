@@ -2113,7 +2113,7 @@ YACSPrs_InOutPort::YACSPrs_InOutPort( SUIT_ResourceMgr* theMgr, QCanvas* theCanv
   if ( !myGate ) {
     myType = getType();
     myValue = getValue();
-    DEBTRACE("Set VAL 0");
+    DEBTRACE("Set VAL 0 " << myName << " " << myValue << " " << this);
   }
 
   myColor = myMgr->colorValue( "QxGraph", "Title", TITLE_COLOR );
@@ -2149,7 +2149,7 @@ void YACSPrs_InOutPort::select( bool isSelected )
  */
 void YACSPrs_InOutPort::update(bool theForce, YACS::ENGINE::Port* theEngine)
 {
-  DEBTRACE("YACSPrs_InOutPort::update");
+  DEBTRACE("YACSPrs_InOutPort::update " << myName << " " << myValue << " " << this);
   QString aNewName = getName();
   if (theForce || myName.compare(aNewName) != 0) {
     myName = aNewName;
@@ -2169,7 +2169,7 @@ void YACSPrs_InOutPort::update(bool theForce, YACS::ENGINE::Port* theEngine)
       if (theForce || myValue.compare(aNewValue) != 0) {
         DEBTRACE(myValue<<","<<aNewValue);
 	myValue = aNewValue;
-	DEBTRACE("Set VAL 1");
+	DEBTRACE("Set VAL 1 " << myName << " " << myValue << " " << this);
 	if (myCanvas) myCanvas->setChanged(myValueRect);
       }
     }
@@ -2182,11 +2182,11 @@ void YACSPrs_InOutPort::update(bool theForce, YACS::ENGINE::Port* theEngine)
  */
 void YACSPrs_InOutPort::updateValue( QString theValue )
 {
-  DEBTRACE("YACSPrs_InOutPort::updateValue");
+  DEBTRACE("YACSPrs_InOutPort::updateValue " << theValue);
   if ( !myGate )
     if ( myValue.compare(theValue) != 0 ) {
       myValue = theValue;
-      DEBTRACE("Set VAL 2");
+      DEBTRACE("Set VAL 2 " << myName << " " << myValue << " " << this);
       if (myCanvas) myCanvas->setChanged(myValueRect);
     }
 }

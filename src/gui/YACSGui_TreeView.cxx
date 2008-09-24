@@ -2245,6 +2245,7 @@ void YACSGui_RunTreeView::addTreeNode( QListViewItem* theParent,
 
 void YACSGui_RunTreeView::syncPageTypeWithSelection()
 {
+  DEBTRACE("YACSGui_RunTreeView::syncPageTypeWithSelection");
   if ( !getProc() || !myModule ) return;
 
   YACSGui_InputPanel* anIP = myModule->getInputPanel();
@@ -2458,6 +2459,7 @@ void YACSGui_RunTreeView::syncPageTypeWithSelection()
 
 void YACSGui_RunTreeView::onSelectionChanged()
 {
+  DEBTRACE("YACSGui_RunTreeView::onSelectionChanged");
   YACSGui_InputPanel* anIP = myModule->getInputPanel();
   if ( !anIP ) return;
   list<int> anIds = anIP->getVisiblePagesIds();
@@ -2565,6 +2567,7 @@ void YACSGui_RunTreeView::onNotifyStatus( int theStatus )
 
 void YACSGui_RunTreeView::syncHMIWithSelection()
 {
+  DEBTRACE("YACSGui_RunTreeView::syncHMIWithSelection");
   // notify about selection other observers
 
   std::list<QListViewItem*> aSelList = getSelected();

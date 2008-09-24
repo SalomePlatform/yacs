@@ -975,16 +975,16 @@ msgid "DT_STRUCT"
 msgstr "Struct"
 
 msgid "DT_DOUBLE"
-msgstr "Double"
+msgstr "double"
 
 msgid "DT_INT"
-msgstr "Int"
+msgstr "int"
 
 msgid "DT_STRING"
-msgstr "String"
+msgstr "string"
 
 msgid "DT_BOOL"
-msgstr "Bool"
+msgstr "bool"
 
 msgid "YACSGui_EditionTreeView::NODES"
 msgstr "Nodes"

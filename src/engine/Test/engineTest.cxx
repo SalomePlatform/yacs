@@ -241,7 +241,7 @@ void EngineTest::checkAny2()
     }
   catch(Exception& e)
     {
-      CPPUNIT_ASSERT(std::string(e.what())=="Value is not a Double");
+      CPPUNIT_ASSERT(std::string(e.what())=="Value is not a double");
     }
   SequenceAnyPtr tmp3=SequenceAny::New(tmp->getType());
   try
@@ -251,7 +251,7 @@ void EngineTest::checkAny2()
     }
   catch(Exception& e)
     {
-      CPPUNIT_ASSERT(std::string(e.what())=="Invalid runtime of YACS::Any struct : having Int and you want Sequence");
+      CPPUNIT_ASSERT(std::string(e.what())=="Invalid runtime of YACS::Any struct : having int and you want Sequence");
     }
   CPPUNIT_ASSERT_EQUAL(0,(int)tmp3->size());
   CPPUNIT_ASSERT_EQUAL(202,(*tmp)[9]->getIntValue());
