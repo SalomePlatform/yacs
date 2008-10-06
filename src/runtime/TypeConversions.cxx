@@ -27,6 +27,22 @@ namespace YACS
 {
   namespace ENGINE
   {
+    void printbin(const std::string& bin)
+      {
+        register char c;
+        for(int i=0;i<bin.length();i++)
+          {
+            c=bin[i];
+            if (c < ' ' || c >= 0x7f) 
+              {
+                fprintf(stderr,"\\x%02x",c & 0xff);
+              }
+            else
+              fprintf(stderr,"%c",c);
+          }
+        fprintf(stderr,"\n");
+      }
+
     std::string getImplName(ImplType impl)
       {
          switch(impl)
@@ -83,7 +99,9 @@ namespace YACS
     {
       DEBTRACE( t->name() << " " << t->shortName());
       CORBA::TypeCode_ptr tc;
-      if(strncmp(t->id(),"python",6)==0 || strncmp(t->id(),"json",4)==0)
+      if(strncmp(t->id(),"python",6)==0 )
+        tc= CORBA::TypeCode::_duplicate(Engines::_tc_fileBlock);
+      else if(strncmp(t->id(),"json",4)==0)
         tc= CORBA::TypeCode::_duplicate(CORBA::_tc_string);
       else
         tc= getSALOMERuntime()->getOrb()->create_interface_tc(t->id(),t->shortName());
@@ -721,13 +739,14 @@ namespace YACS
               // It's a native Python object pickle it
               PyObject* mod=PyImport_ImportModule("cPickle");
               PyObject *pickled=PyObject_CallMethod(mod,"dumps","Oi",o,protocol);
+              DEBTRACE(PyObject_REPR(pickled) );
               Py_DECREF(mod);
               if(pickled==NULL)
                 {
                   PyErr_Print();
                   throw YACS::ENGINE::ConversionException("Problem in convertToYacsObjref<PYTHONImpl");
                 }
-              std::string mystr=PyString_AsString(pickled);
+              std::string mystr(PyString_AsString(pickled),PyString_Size(pickled));
               Py_DECREF(pickled);
               return mystr;
             }
@@ -885,7 +904,8 @@ namespace YACS
             {
               //It's a python pickled object, unpickled it
               PyObject* mod=PyImport_ImportModule("cPickle");
-              PyObject *ob=PyObject_CallMethod(mod,"loads","s",o.c_str());
+              PyObject *ob=PyObject_CallMethod(mod,"loads","s#",o.c_str(),o.length());
+              DEBTRACE(PyObject_REPR(ob));
               Py_DECREF(mod);
               if(ob==NULL)
                 {
@@ -1368,7 +1388,9 @@ namespace YACS
     {
       static inline std::string convert(const TypeCode *t,std::string& o)
         {
-          if(strncmp(t->id(),"python",6)==0 || strncmp(t->id(),"json",4)==0)
+          if(strncmp(t->id(),"python",6)==0 )
+            return "<value><objref><![CDATA[" + o + "]]></objref></value>\n";
+          else if(strncmp(t->id(),"json",4)==0)
             return "<value><objref><![CDATA[" + o + "]]></objref></value>\n";
           else
             return "<value><objref>" + o + "</objref></value>\n";
@@ -1665,15 +1687,22 @@ namespace YACS
           else if(strncmp(t->id(),"python",6)==0)
             {
               const char *s;
-              if(*o >>=s)
+              Engines::fileBlock * buffer;
+              if(*o >>=buffer)
                 {
+                  s=(const char*)buffer->get_buffer();
+
                   if(protocol !=0)
-                    return s;
+                    {
+                      std::string mystr(s,buffer->length());
+                      return mystr;
+                    }
 
                   PyGILState_STATE gstate = PyGILState_Ensure(); 
                   PyObject* mod=PyImport_ImportModule("cPickle");
-                  PyObject *ob=PyObject_CallMethod(mod,"loads","s",s);
+                  PyObject *ob=PyObject_CallMethod(mod,"loads","s#",s,buffer->length());
                   PyObject *pickled=PyObject_CallMethod(mod,"dumps","Oi",ob,protocol);
+                  DEBTRACE(PyObject_REPR(pickled));
                   std::string mystr=PyString_AsString(pickled);
                   Py_DECREF(mod);
                   Py_DECREF(ob);
@@ -1692,8 +1721,7 @@ namespace YACS
               const char *s;
               if(*o >>=s)
                 {
-                  if(protocol !=0)
-                    return s;
+                  return s;
                 }
               stringstream msg;
               msg << "Problem in CORBA (protocol json) to TOUT conversion: kind= " << t->kind() ;
@@ -1852,7 +1880,17 @@ namespace YACS
                   throw YACS::ENGINE::ConversionException(msg.str());
                 }
             }
-          else if(strncmp(t->id(),"python",6)==0 || strncmp(t->id(),"json",4)==0)
+          else if(strncmp(t->id(),"python",6)==0 )
+            {
+              CORBA::Any *any = new CORBA::Any();
+              Engines::fileBlock * buffer=new Engines::fileBlock();
+              buffer->length(o.length());
+              CORBA::Octet *buf=buffer->get_buffer();
+              memcpy(buf,o.c_str(),o.length());
+              *any <<= buffer;
+              return any;
+            }
+          else if(strncmp(t->id(),"json",4)==0)
             {
               CORBA::Any *any = new CORBA::Any();
               *any <<= o.c_str();
