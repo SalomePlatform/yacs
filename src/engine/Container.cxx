@@ -1,6 +1,9 @@
 #include "Container.hxx"
 #include "ComponentInstance.hxx"
 
+//#define _DEVDEBUG_
+#include "YacsTrace.hxx"
+
 using namespace std;
 using namespace YACS::ENGINE;
 
@@ -44,11 +47,13 @@ bool Container::isSupportingRTODefNbOfComp() const
 
 void Container::setProperty(const std::string& name, const std::string& value)
 {
+  DEBTRACE("Container::setProperty " << name << " " << value);
   _propertyMap[name]=value;
 }
 
 std::string Container::getProperty(const std::string& name)
 {
+  DEBTRACE("Container::getProperty " << name );
   return _propertyMap[name];
 }
 

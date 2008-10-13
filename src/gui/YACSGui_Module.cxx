@@ -1300,6 +1300,11 @@ void YACSGui_Module::onExportSchema()
   if ( !aProc )
     return;
 
+  //check if modifications are pending
+  YACSGui_EditionTreeView* anETV = dynamic_cast<YACSGui_EditionTreeView*>( activeTreeView() );
+  if(anETV)
+    anETV->warnAboutSelectionChanged();
+
   QString aFileName = SUIT_FileDlg::getFileName( application()->desktop(), aProc->getName(), "*.xml", tr("TLT_EXPORT_SCHEMA"), false );
   if (aFileName.isEmpty())
     return;
@@ -2568,9 +2573,12 @@ void YACSGui_Module::onCreateExecution()
         if (!aSPage) 
           return;
 
-        // --- check first the validity of the proc
+        //check if modifications are pending
+        YACSGui_EditionTreeView* anETV = dynamic_cast<YACSGui_EditionTreeView*>( activeTreeView() );
+        if(anETV)
+          anETV->warnAboutSelectionChanged();
 
-        // Check validity
+        // --- check the validity of the proc
         if(!aProc->isValid())
           {
 
