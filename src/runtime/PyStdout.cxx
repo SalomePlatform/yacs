@@ -27,7 +27,7 @@ PyStdOut_write(PyStdOut *self, PyObject *args)
   if (!PyArg_ParseTuple(args, "t#:write",&c, &l))
     return NULL;
 
-  std::cerr << c ;
+  //std::cerr << c ;
   *(self->out)=*(self->out)+c;
 
   Py_INCREF(Py_None);
