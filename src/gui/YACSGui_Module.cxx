@@ -174,9 +174,6 @@ void YACSGui_Module::initialize( CAM_Application* theApp )
   if ( theApp && theApp->desktop() )
     connect( theApp->desktop(), SIGNAL( windowActivated( SUIT_ViewWindow* ) ),
              this, SLOT(onWindowActivated( SUIT_ViewWindow* )) );
-
-  connect( getApp()->objectBrowser()->listView(), SIGNAL( doubleClicked( QListViewItem* ) ), 
-	   this,                                  SLOT  ( onDblClick( QListViewItem* ) ) );
 }
 
 //! Creates module actions.
@@ -740,7 +737,7 @@ void YACSGui_Module::windows( QMap<int, int>& mappa ) const
  */
 void YACSGui_Module::viewManagers( QStringList& lst ) const
 {
-  DEBTRACE("YACSGui_Module::viewManagers");
+  DEBTRACE("YACSGui_Module::viewManagers " << myWindowsMap.size());
   if(myWindowsMap.size()>0)
     lst.append( QxGraph_Viewer::Type() );
 }
@@ -772,6 +769,8 @@ bool YACSGui_Module::activateModule( SUIT_Study* theStudy )
 	   this,                                  SLOT  ( onExpanded( QListViewItem* ) ) );
   connect( getApp()->objectBrowser()->listView(), SIGNAL( collapsed( QListViewItem* ) ), 
 	   this,                                  SLOT  ( onCollapsed( QListViewItem* ) ) );
+  connect( getApp()->objectBrowser()->listView(), SIGNAL( doubleClicked( QListViewItem* ) ), 
+	   this,                                  SLOT  ( onDblClick( QListViewItem* ) ) );
 
   return bOk;
 }
@@ -798,10 +797,8 @@ bool YACSGui_Module::deactivateModule( SUIT_Study* theStudy )
       myTreeViews[sId]->hide();
   }
 
-  /*
   disconnect( getApp()->objectBrowser()->listView(), SIGNAL( doubleClicked( QListViewItem* ) ), 
 	      this,                                  SLOT  ( onDblClick( QListViewItem* ) ) );
-              */
 
   return SalomeApp_Module::deactivateModule( theStudy );
 }
@@ -2248,6 +2245,7 @@ YACSGui_DataModel* YACSGui_Module::getDataModel() const
 
 void YACSGui_Module::CreateNewSchema( QString& theName, YACS::ENGINE::Proc* theProc, const bool updateOB )
 {
+  DEBTRACE("YACSGui_Module::CreateNewSchema");
   YACSGui_DataModel* aModel = getDataModel();
   if (aModel)
   {
@@ -3232,6 +3230,22 @@ void YACSGui_Module::setInputPanelVisibility( const bool theOn )
 void YACSGui_Module::onSetActive()
 {
   DEBTRACE( "YACSGui_Module::onSetActive() not implemented yet" );
+}
+
+/*!
+ * protected slot when model is opened
+*/
+void YACSGui_Module::onModelOpened()
+{
+  DEBTRACE( "YACSGui_Module::onModelOpened" );
+}
+/*!
+ * protected slot when study is closed
+*/
+void YACSGui_Module::onModelClosed()
+{
+  DEBTRACE( "YACSGui_Module::onModelClosed" );
+  myWindowsMap.clear();
 }
 
 //! Public. Set gui mode by ObjectType

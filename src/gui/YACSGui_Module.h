@@ -189,6 +189,10 @@ public slots:
 
   void temporaryExport();
 
+ protected slots:
+  virtual void                        onModelOpened();
+  virtual void                        onModelClosed();
+
  protected:
   bool createSComponent(); 
   void loadCatalog();

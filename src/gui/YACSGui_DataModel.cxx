@@ -174,6 +174,13 @@ bool YACSGui_DataModel::saveAs( const QString& theFileName, CAM_Study* theStudy,
   SalomeApp_DataModel::saveAs( theFileName, theStudy, theListOfFiles );
 }
 
+bool YACSGui_DataModel::close()
+{
+  DEBTRACE("YACSGui_DataModel::close()");
+  SalomeApp_DataModel::close();
+  myObjectProcMap.clear();
+  return true;
+}
 
 QString generateSchemeName( const _PTR(Study) theStudy,
                             const _PTR(SObject) theParent,
@@ -337,6 +344,7 @@ SUIT_DataObject* YACSGui_DataModel::getDataObject( YACS::ENGINE::Proc* theProc )
   SUIT_DataObject* aRetObj = 0;
 
   YACSGui_Module* aModule = dynamic_cast<YACSGui_Module*>( module() );
+  DEBTRACE("YACSGui_DataModel::getDataObject " << theProc << " " <<aModule);
 
   if ( theProc && aModule )
   {
