@@ -250,7 +250,6 @@ template <class T>
 T whilelooptypeParser<T>::post()
     {
       DEBTRACE( "while_post" << this->_cnode->getName() )             
-      this->minchoice(t3,1);
       ENGINE::InputPort *cond=this->_cnode->edGetConditionPort();
       cond->edInit(true);
       T b=this->_cnode;
@@ -319,7 +318,6 @@ template <class T>
    T forlooptypeParser<T>::post()
     {
       DEBTRACE( "forloop_post" )             
-      this->minchoice(t3,1);
       T b=this->_cnode;
       this->_cnodes.pop_back();
       currentProc->names.pop_back();
@@ -399,7 +397,6 @@ struct foreachlooptypeParser:looptypeParser<T>
   virtual T post()
     {
       DEBTRACE("foreach_post" << this->_cnode->getName())
-      this->minchoice(t3,1);
       T b=this->_cnode;
       this->_cnodes.pop_back();
       currentProc->names.pop_back();
