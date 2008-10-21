@@ -173,7 +173,7 @@ std::string SeqAnyInputPort::dump()
 SplitterNode::SplitterNode(const std::string& name, TypeCode *typeOfData, 
                            ForEachLoop *father):ElementaryNode(name),
                                                 _dataPortToDispatch(NAME_OF_SEQUENCE_INPUT,
-                                                                    this,new TypeCodeSeq("","",typeOfData))			    
+                                                                    this,(TypeCodeSeq *)TypeCode::sequenceTc("","",typeOfData))			    
 {
   _father=father;
 }
@@ -570,7 +570,7 @@ void ForEachLoop::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort 
         }
       else
         {
-          TypeCodeSeq *newTc=new TypeCodeSeq("","",port.first->edGetType());
+          TypeCodeSeq *newTc=(TypeCodeSeq *)TypeCode::sequenceTc("","",port.first->edGetType());
           AnySplitOutputPort *newPort=new AnySplitOutputPort(getPortName(port.first),this,newTc);
           InterceptorInputPort *intercptor=new InterceptorInputPort(string("intercptr for ")+getPortName(port.first),this,port.first->edGetType());
           intercptor->setRepr(newPort);

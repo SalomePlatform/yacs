@@ -216,6 +216,12 @@ TypeCode * TypeCode::sequenceTc(const char* id,
                                  const char* name,
                                  TypeCode *content)
 {
+  std::string typname;
+  if(std::string(name)=="")
+    {
+      typname="seq"+std::string(content->name());
+      name=typname.c_str();
+    }
   return new TypeCodeSeq(id, name,content);
 };
 //! static factory of struct type given an id and a name 
