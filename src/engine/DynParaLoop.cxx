@@ -439,3 +439,12 @@ InputPort *DynParaLoop::getDynInputPortByAbsName(int branchNb, const std::string
       }
   return 0;
 }
+
+void DynParaLoop::checkBasicConsistency() const throw(Exception)
+{
+  DEBTRACE("DynParaLoop::checkBasicConsistency");
+  ComposedNode::checkBasicConsistency();
+  if(!_node)
+    throw Exception("For a dynamic loop, internal node is mandatory");
+}
+

@@ -142,6 +142,7 @@ namespace YACS
       //Node* DISOWNnode is a SWIG notation to indicate that the ownership of the node is transfered to C++
       Node *edSetNode(Node *DISOWNnode);
       Node *edRemoveNode();
+      virtual void checkBasicConsistency() const throw(Exception);
       //! Returns the port which value is used to take decision about the continuation of the loop.
       virtual InputPort *getDecisionPort() const = 0;
       void getReadyTasks(std::vector<Task *>& tasks);

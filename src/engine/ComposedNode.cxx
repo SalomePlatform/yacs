@@ -1343,6 +1343,18 @@ void ComposedNode::edUpdateState()
   DEBTRACE("ComposedNode::edUpdateState(): " << _state << " " << _modified);
   YACS::StatesForNode state=YACS::READY;
 
+  try
+    {
+      checkBasicConsistency();
+      _errorDetails="";
+    }
+  catch(Exception& e)
+    {
+      state=YACS::INVALID;
+      _errorDetails=e.what();
+    }
+  DEBTRACE("ComposedNode::edUpdateState: " << _errorDetails);
+
   //update children if needed
   list<Node *> constituents=edGetDirectDescendants();
   for(list<Node *>::iterator iter=constituents.begin(); iter!=constituents.end(); iter++)
@@ -1397,3 +1409,11 @@ std::string ComposedNode::getErrorReport()
 
 
 
+void ComposedNode::checkBasicConsistency() const throw(Exception)
+{
+  DEBTRACE("ComposedNode::checkBasicConsistency");
+  std::list<InputPort *>::const_iterator iter;
+  std::list<InputPort *> inports=getLocalInputPorts();
+  for(iter=inports.begin();iter!=inports.end();iter++)
+    (*iter)->checkBasicConsistency();
+}

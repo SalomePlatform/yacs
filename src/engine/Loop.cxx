@@ -9,6 +9,9 @@
 #include <cassert>
 #include <iostream>
 
+//#define _DEVDEBUG_
+#include "YacsTrace.hxx"
+
 using namespace YACS::ENGINE;
 using namespace std;
 
@@ -636,6 +639,14 @@ void Loop::checkControlDependancy(OutPort *start, InPort *end, bool cross,
   if(cross)
     throw Exception("Internal error occured - cross type link detected on decision port of a loop. Forbidden !");
   fw[(ComposedNode *)this].push_back(start);
+}
+
+void Loop::checkBasicConsistency() const throw(Exception)
+{
+  DEBTRACE("Loop::checkBasicConsistency");
+  ComposedNode::checkBasicConsistency();
+  if(!_node)
+    throw Exception("For a loop, internal node is mandatory");
 }
 
 /*!

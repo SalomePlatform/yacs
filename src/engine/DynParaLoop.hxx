@@ -84,6 +84,7 @@ namespace YACS
       std::vector<Node *> getNodes() const { return _execNodes; } // need to use in GUI part for adding observers for clone nodes
       bool isMultiplicitySpecified(unsigned& value) const;
       void forceMultiplicity(unsigned value);
+      virtual void checkBasicConsistency() const throw(Exception);
     protected:
       void buildDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView);
       void buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView);

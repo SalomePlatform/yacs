@@ -78,6 +78,7 @@ namespace YACS
       virtual std::vector< std::pair<InPort *, OutPort *> > getSetOfLinksComingInCurrentScope() const;
       virtual std::string typeName() {return "YACS__ENGINE__ComposedNode";}
       virtual void edUpdateState();
+      virtual void checkBasicConsistency() const throw(Exception);
       virtual std::string getErrorReport();
       //
       ComposedNode *getRootNode() const throw(Exception);
