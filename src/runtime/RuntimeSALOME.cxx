@@ -21,6 +21,7 @@
 #include "InputDataStreamPort.hxx"
 #include "OutputDataStreamPort.hxx"
 #include "SalomeProc.hxx"
+#include "PyStdout.hxx"
 //Catalog Loaders
 #include "SessionCataLoader.hxx"
 
@@ -1572,3 +1573,45 @@ void* RuntimeSALOME::convertNeutral(TypeCode * type, Any *data)
     }
 }
 
+std::string RuntimeSALOME::convertNeutralAsString(TypeCode * type, Any *data)
+{
+  PyObject* ob;
+  if(data)
+    {
+      ob=convertNeutralPyObject(type,data);
+      std::string s=convertPyObjectToString(ob);
+      Py_DECREF(ob);
+      return s;
+    }
+  else
+    {
+      return "";
+    }
+}
+
+std::string RuntimeSALOME::convertPyObjectToString(PyObject* ob)
+{
+  return YACS::ENGINE::convertPyObjectToString(ob);
+}
+
+PyObject* RuntimeSALOME::convertStringToPyObject(const std::string& s)
+{
+  PyObject* ob;
+  PyGILState_STATE gstate = PyGILState_Ensure();
+  PyObject* d=PyDict_New();
+  ob= PyRun_String( s.c_str(), Py_eval_input, d,d);
+  Py_DECREF(d);
+  if(ob==NULL)
+    {
+      //exception
+      std::string error;
+      PyObject* new_stderr = newPyStdOut(error);
+      PySys_SetObject("stderr", new_stderr);
+      PyErr_Print();
+      PySys_SetObject("stderr", PySys_GetObject("__stderr__"));
+      Py_DECREF(new_stderr);
+      throw Exception(error);
+    }
+  PyGILState_Release(gstate);
+  return ob;
+}

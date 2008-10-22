@@ -72,6 +72,11 @@ void *AnyInputPort::get() const
   return (void *)_value;
 }
 
+std::string AnyInputPort::getAsString() 
+{
+  return getRuntime()->convertNeutralAsString(edGetType(),_value);
+}
+
 void AnyInputPort::put(const void *data) throw(ConversionException)
 {
   put((Any *)data);

@@ -23,6 +23,8 @@ namespace YACS
       std::string getData();
       virtual void putIOR(const std::string& ior);
       virtual std::string dump();
+      virtual std::string getPyObj();
+      virtual std::string getAsString();
       virtual std::string typeName() {return "YACS__ENGINE__OutputStudyPort";}
     protected:
       std::string _storeData;
@@ -44,6 +46,8 @@ namespace YACS
       virtual std::string getIOR();
       virtual std::string splitXML(const std::string& s);
       virtual std::string dump();
+      virtual std::string getPyObj();
+      virtual std::string getAsString();
       virtual std::string typeName() {return "YACS__ENGINE__InputStudyPort";}
     protected:
       std::string _storeData;

@@ -168,6 +168,27 @@ CORBA::Any * InputCorbaPort::getAny()
   return &_data;
 }
 
+PyObject * InputCorbaPort::getPyObj()
+{
+  CORBA::TypeCode_var tc=getAny()->type();
+  if (!tc->equivalent(CORBA::_tc_null))
+    return convertCorbaPyObject(edGetType(),getAny());
+  else
+    {
+      Py_INCREF(Py_None);
+      return Py_None;
+    }
+}
+
+std::string InputCorbaPort::getAsString()
+{
+  PyObject* ob=getPyObj();
+  std::string s=convertPyObjectToString(ob);
+  Py_DECREF(ob);
+  return s;
+}
+
+
 //! Save the current data value for further reinitialization of the port
 /*!
  *
@@ -339,6 +360,26 @@ CORBA::Any * OutputCorbaPort::getAnyOut()
   DEBTRACE("refcount CORBA : " << ((omni::TypeCode_base*)a->pd_tc.in())->pd_ref_count);
 #endif
   return a;
+}
+
+PyObject * OutputCorbaPort::getPyObj()
+{
+  CORBA::TypeCode_var tc=getAny()->type();
+  if (!tc->equivalent(CORBA::_tc_null))
+    return convertCorbaPyObject(edGetType(),getAny());
+  else
+    {
+      Py_INCREF(Py_None);
+      return Py_None;
+    }
+}
+
+std::string OutputCorbaPort::getAsString()
+{
+  PyObject* ob=getPyObj();
+  std::string s=convertPyObjectToString(ob);
+  Py_DECREF(ob);
+  return s;
 }
 
 std::string OutputCorbaPort::dump()

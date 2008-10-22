@@ -2114,6 +2114,17 @@ namespace YACS
         return YacsConvertor<PYTHONImpl,PyObject*,void*,CORBAImpl,CORBA::Any*>(t,data,0);
       }
 
+    std::string convertPyObjectToString(PyObject* ob)
+    {
+      PyObject *s;
+      PyGILState_STATE gstate = PyGILState_Ensure(); 
+      s=PyObject_Str(ob);
+      std::string ss(PyString_AsString(s),PyString_Size(s));
+      Py_DECREF(s);
+      PyGILState_Release(gstate);
+      return ss;
+    }
+
     //XML conversions
     PyObject* convertXmlPyObject(const TypeCode *t,xmlDocPtr doc,xmlNodePtr cur)
       {

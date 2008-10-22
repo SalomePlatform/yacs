@@ -99,3 +99,9 @@ std::string ConditionInputPort::dump()
     xmldump="<value><boolean>false</boolean></value>\n";
   return xmldump;
 }
+
+std::string ConditionInputPort::getAsString()
+{
+  return (_value ? "True" : "False");
+}
+

@@ -189,6 +189,9 @@ namespace YACS
                                              TypeCode * type) throw (ConversionException);
 
       virtual void* convertNeutral(TypeCode * type, Any *data);
+      virtual std::string convertNeutralAsString(TypeCode * type, Any *data);
+      virtual std::string convertPyObjectToString(PyObject* ob);
+      virtual PyObject* convertStringToPyObject(const std::string& s);
 
       virtual ~RuntimeSALOME(); 
 

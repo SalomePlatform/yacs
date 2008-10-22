@@ -26,6 +26,7 @@ namespace YACS
       void *get() const;
       void put(const void *data) throw(ConversionException);
       std::string dump();
+      virtual std::string getAsString();
     protected:
       Any *_value;
     public:

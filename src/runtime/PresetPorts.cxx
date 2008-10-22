@@ -1,4 +1,5 @@
 
+#include "TypeConversions.hxx"
 #include "PresetPorts.hxx"
 #include "TypeCode.hxx"
 #include <iostream>
@@ -84,6 +85,20 @@ std::string OutputPresetPort::dump()
   return getData();
 }
 
+PyObject * OutputPresetPort::getPyObj()
+{
+  return convertXmlStrPyObject(edGetType(),getData());
+}
+
+std::string OutputPresetPort::getAsString()
+{
+  PyObject* ob=getPyObj();
+  std::string s=convertPyObjectToString(ob);
+  Py_DECREF(ob);
+  return s;
+}
+
+
 InputPresetPort::InputPresetPort(const std::string& name,  Node* node, TypeCode* type)
   : InputXmlPort(name, node, type),
     DataPort(name, node, type),
@@ -114,5 +129,18 @@ std::string InputPresetPort::getData()
 std::string InputPresetPort::dump()
 {
   return _data;
+}
+
+PyObject * InputPresetPort::getPyObj()
+{
+  return convertXmlStrPyObject(edGetType(),dump());
+}
+
+std::string InputPresetPort::getAsString()
+{
+  PyObject* ob=getPyObj();
+  std::string s=convertPyObjectToString(ob);
+  Py_DECREF(ob);
+  return s;
 }
 

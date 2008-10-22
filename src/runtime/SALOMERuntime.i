@@ -95,66 +95,11 @@
 %include "StudyNodes.hxx"
 %include "StudyPorts.hxx"
 
-%extend YACS::ENGINE::InputCorbaPort
-{
-  PyObject * getPyObj()
-  {
-    CORBA::TypeCode_var tc=self->getAny()->type();
-    if (!tc->equivalent(CORBA::_tc_null))
-      return convertCorbaPyObject(self->edGetType(),self->getAny());
-    else
-      {
-        Py_INCREF(Py_None);
-        return Py_None;
-      }
-  }
-}
-%extend YACS::ENGINE::OutputCorbaPort
-{
-  PyObject * getPyObj()
-  {
-    CORBA::TypeCode_var tc=self->getAny()->type();
-    if (!tc->equivalent(CORBA::_tc_null))
-      return convertCorbaPyObject(self->edGetType(),self->getAny());
-    else
-      {
-        Py_INCREF(Py_None);
-        return Py_None;
-      }
-  }
-}
-
 %extend YACS::ENGINE::OutputPresetPort
 {
   void setDataPy(PyObject *ob)
   {
     std::string sss = convertPyObjectXml(self->edGetType(),ob);
     self->setData(sss);
-  }
-
-  PyObject * getPyObj()
-  {
-    return convertXmlStrPyObject(self->edGetType(),self->getData());
-  }
-}
-%extend YACS::ENGINE::InputPresetPort
-{
-  PyObject * getPyObj()
-  {
-    return convertXmlStrPyObject(self->edGetType(),self->dump());
-  }
-}
-%extend YACS::ENGINE::InputStudyPort
-{
-  std::string getPyObj()
-  {
-    return self->getData();
-  }
-}
-%extend YACS::ENGINE::OutputStudyPort
-{
-  std::string getPyObj()
-  {
-    return self->getData();
   }
 }

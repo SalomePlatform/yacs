@@ -158,6 +158,11 @@ void *InputPyPort::get() const throw(Exception)
   return (void*) _data;
 }
 
+std::string InputPyPort::getAsString()
+{
+  return convertPyObjectToString(_data);
+}
+
 bool InputPyPort::isEmpty()
 {
   return _data == Py_None;
@@ -267,6 +272,11 @@ PyObject * OutputPyPort::get() const
 PyObject * OutputPyPort::getPyObj() const
 {
   return _data;
+}
+
+std::string OutputPyPort::getAsString()
+{
+  return convertPyObjectToString(_data);
 }
 
 std::string OutputPyPort::dump()

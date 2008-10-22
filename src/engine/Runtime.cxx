@@ -262,3 +262,18 @@ void* Runtime::convertNeutral(TypeCode * type, Any *data)
 {
   throw Exception("convertNeutral is not implemented by your runtime");
 }
+
+//! Convert a YACS::ENGINE::Any object to a string to be used in GUI for example
+/*!
+ * engine package does not provide a conversion to string. It has to be implemented in the 
+ * runtime package.
+ *
+ * \param type: the type of the object to convert
+ * \param data: the object to convert
+ * \return the string representation of the object
+ */
+std::string Runtime::convertNeutralAsString(TypeCode * type, Any *data)
+{
+  throw Exception("convertNeutralAsString is not implemented by your runtime");
+}
+

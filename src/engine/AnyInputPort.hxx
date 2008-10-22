@@ -20,6 +20,7 @@ namespace YACS
       int getIntValue() const { return _value->getIntValue(); }
       void put(Any *data);
       void *get() const;
+      virtual std::string getAsString();
       virtual bool isEmpty();
       void put(const void *data) throw(ConversionException);
       InputPort *clone(Node *newHelder) const;
