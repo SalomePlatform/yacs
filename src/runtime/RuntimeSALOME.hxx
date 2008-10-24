@@ -97,15 +97,15 @@ namespace YACS
 
       virtual InputPort* adapt(InputPort* source,
                                const std::string& impl,
-                               TypeCode * type) throw (ConversionException);
+                               TypeCode * type,bool init=false) throw (ConversionException);
 
       virtual InputPort* adaptNeutral(InputPort* source,
                                       const std::string& impl,
-                                      TypeCode * type) throw (ConversionException);
+                                      TypeCode * type,bool init) throw (ConversionException);
 
       virtual InputPort* adapt(InputCorbaPort* source,
                                const std::string& impl,
-                               TypeCode * type) throw (ConversionException);
+                               TypeCode * type,bool init) throw (ConversionException);
 
       virtual InputPort* adaptCorbaToCorba(InputCorbaPort* source,
                                            TypeCode * type) throw (ConversionException);
@@ -124,7 +124,7 @@ namespace YACS
 
       virtual InputPort* adapt(InputPyPort* source,
                                const std::string& impl,
-                               TypeCode * type) throw (ConversionException);
+                               TypeCode * type,bool init) throw (ConversionException);
 
       virtual InputPort* adaptPythonToCorba(InputPyPort* source,
                                             TypeCode * type) throw (ConversionException);
@@ -133,7 +133,7 @@ namespace YACS
                                               TypeCode * type) throw (ConversionException);
 
       virtual InputPort* adaptPythonToPython(InputPyPort* source,
-                                             TypeCode * type) throw (ConversionException);
+                                             TypeCode * type,bool init) throw (ConversionException);
       
       virtual InputPort* adaptPythonToXml(InputPyPort* source,
                                           TypeCode * type) throw (ConversionException);
@@ -143,7 +143,7 @@ namespace YACS
 
       virtual InputPort* adapt(InputCppPort* source,
                                const std::string& impl,
-                               TypeCode * type) throw (ConversionException);
+                               TypeCode * type,bool init) throw (ConversionException);
                                
       virtual InputPort* adaptCppToCorba(InputCppPort* source,
                                             TypeCode * type) throw (ConversionException);
@@ -162,7 +162,7 @@ namespace YACS
 
       virtual InputPort* adapt(InputXmlPort* source,
                                const std::string& impl,
-                               TypeCode * type) throw (ConversionException);
+                               TypeCode * type,bool init) throw (ConversionException);
 
       virtual InputPort* adaptXmlToCorba(InputXmlPort* source,
                                          TypeCode * type) throw (ConversionException);

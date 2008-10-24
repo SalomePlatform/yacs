@@ -2113,6 +2113,10 @@ namespace YACS
       {
         return YacsConvertor<PYTHONImpl,PyObject*,void*,CORBAImpl,CORBA::Any*>(t,data,0);
       }
+    PyObject* convertPyObjectPyObject(const TypeCode *t,PyObject *data)
+      {
+        return YacsConvertor<PYTHONImpl,PyObject*,void*,PYTHONImpl,PyObject*>(t,data,0);
+      }
 
     std::string convertPyObjectToString(PyObject* ob)
     {
@@ -2214,6 +2218,249 @@ namespace YACS
     CORBA::Any *convertCorbaCorba(const TypeCode *t,CORBA::Any *data)
       {
         return YacsConvertor<CORBAImpl,CORBA::Any*,void*,CORBAImpl,CORBA::Any*>(t,data,0);
+      }
+
+    //! Basic template checker from type TIN 
+    /*!
+     * This checker does nothing : throws exception
+     * It must be partially specialize for a specific type (TIN)
+     */
+    template <ImplType IMPLIN,class TIN,class TIN2>
+    static inline bool checkDouble(const TypeCode *t,TIN o,TIN2 aux)
+        {
+          stringstream msg;
+          msg << "Check not implemented for Implementation: " << IMPLIN ;
+          msg << " : " << __FILE__ << ":" << __LINE__;
+          throw YACS::ENGINE::ConversionException(msg.str());
+        }
+    template <ImplType IMPLIN,class TIN,class TIN2>
+    static inline bool checkInt(const TypeCode *t,TIN o,TIN2 aux)
+        {
+          stringstream msg;
+          msg << "Check not implemented for Implementation: " << IMPLIN ;
+          msg << " : " << __FILE__ << ":" << __LINE__;
+          throw YACS::ENGINE::ConversionException(msg.str());
+        }
+    template <ImplType IMPLIN,class TIN,class TIN2>
+    static inline bool checkBool(const TypeCode *t,TIN o,TIN2 aux)
+        {
+          stringstream msg;
+          msg << "Check not implemented for Implementation: " << IMPLIN ;
+          msg << " : " << __FILE__ << ":" << __LINE__;
+          throw YACS::ENGINE::ConversionException(msg.str());
+        }
+    template <ImplType IMPLIN,class TIN,class TIN2>
+    static inline bool checkString(const TypeCode *t,TIN o,TIN2 aux)
+        {
+          stringstream msg;
+          msg << "Check not implemented for Implementation: " << IMPLIN ;
+          msg << " : " << __FILE__ << ":" << __LINE__;
+          throw YACS::ENGINE::ConversionException(msg.str());
+        }
+    template <ImplType IMPLIN,class TIN,class TIN2>
+    static inline bool checkObjref(const TypeCode *t,TIN o,TIN2 aux)
+        {
+          stringstream msg;
+          msg << "Check not implemented for Implementation: " << IMPLIN ;
+          msg << " : " << __FILE__ << ":" << __LINE__;
+          throw YACS::ENGINE::ConversionException(msg.str());
+        }
+    template <ImplType IMPLIN,class TIN,class TIN2>
+    static inline bool checkSequence(const TypeCode *t,TIN o,TIN2 aux)
+        {
+          stringstream msg;
+          msg << "Check not implemented for Implementation: " << IMPLIN ;
+          msg << " : " << __FILE__ << ":" << __LINE__;
+          throw YACS::ENGINE::ConversionException(msg.str());
+        }
+    template <ImplType IMPLIN,class TIN,class TIN2>
+    static inline bool checkStruct(const TypeCode *t,TIN o,TIN2 aux)
+        {
+          stringstream msg;
+          msg << "Check not implemented for Implementation: " << IMPLIN ;
+          msg << " : " << __FILE__ << ":" << __LINE__;
+          throw YACS::ENGINE::ConversionException(msg.str());
+        }
+    template <ImplType IMPLIN,class TIN,class TIN2>
+    static inline bool checkArray(const TypeCode *t,TIN o,TIN2 aux)
+        {
+          stringstream msg;
+          msg << "Check not implemented for Implementation: " << IMPLIN ;
+          msg << " : " << __FILE__ << ":" << __LINE__;
+          throw YACS::ENGINE::ConversionException(msg.str());
+        }
+
+    template <ImplType IMPLIN,class TIN,class TIN2>
+    inline bool YacsChecker(const TypeCode *t,TIN o,TIN2 aux)
+      {
+         int tk=t->kind();
+         switch(t->kind())
+           {
+           case Double:
+             return checkDouble<IMPLIN,TIN,TIN2>(t,o,aux);
+           case Int:
+             return checkInt<IMPLIN,TIN,TIN2>(t,o,aux);
+           case String:
+             return checkString<IMPLIN,TIN,TIN2>(t,o,aux);
+           case Bool:
+             return checkBool<IMPLIN,TIN,TIN2>(t,o,aux);
+           case Objref:
+             return checkObjref<IMPLIN,TIN,TIN2>(t,o,aux);
+           case Sequence:
+             return checkSequence<IMPLIN,TIN,TIN2>(t,o,aux);
+           case Array:
+             return checkArray<IMPLIN,TIN,TIN2>(t,o,aux);
+           case Struct:
+             return checkStruct<IMPLIN,TIN,TIN2>(t,o,aux);
+           default:
+             break;
+           }
+         stringstream msg;
+         msg << "Check not implemented for kind= " << tk ;
+         msg << " : " << __FILE__ << ":" << __LINE__;
+         throw YACS::ENGINE::ConversionException(msg.str());
+      }
+    template<>
+    static inline bool checkDouble<PYTHONImpl,PyObject*,void*>(const TypeCode *t,PyObject* o,void* aux)
+      {
+        if (PyFloat_Check(o))
+          return true;
+        else if (PyInt_Check(o))
+          return true;
+        else if(PyLong_Check(o))
+          return true;
+        else
+          {
+            stringstream msg;
+            msg << "Not a python double ";
+            throw YACS::ENGINE::ConversionException(msg.str());
+          }
+      }
+    template<>
+    static inline bool checkInt<PYTHONImpl,PyObject*,void*>(const TypeCode *t,PyObject* o,void* aux)
+      {
+          if (PyInt_Check(o) || PyLong_Check(o))
+            return true;
+          else
+            {
+              stringstream msg;
+              msg << "Not a python integer ";
+              throw YACS::ENGINE::ConversionException(msg.str());
+            }
+      }
+    template<>
+    static inline bool checkBool<PYTHONImpl,PyObject*,void*>(const TypeCode *t,PyObject* o,void* aux)
+      {
+          if (PyBool_Check(o))
+              return true;
+          else if (PyInt_Check(o))
+              return true;
+          else if(PyLong_Check(o))
+              return true;
+          else
+            {
+              stringstream msg;
+              msg << "Not a python boolean " ;
+              throw YACS::ENGINE::ConversionException(msg.str());
+            }
+
+      }
+    template<>
+    static inline bool checkString<PYTHONImpl,PyObject*,void*>(const TypeCode *t,PyObject* o,void* aux)
+      {
+          if (PyString_Check(o))
+            return true;
+          else
+            {
+              stringstream msg;
+              msg << "Not a python string " ;
+              throw YACS::ENGINE::ConversionException(msg.str());
+            }
+      }
+    template<>
+    static inline bool checkObjref<PYTHONImpl,PyObject*,void*>(const TypeCode *t,PyObject* o,void* aux)
+      {
+          if (PyString_Check(o))
+            return true;
+          if(strncmp(t->id(),"python",6)==0) // a Python object is expected (it's always true)
+            return true;
+          else if(strncmp(t->id(),"json",4)==0) // The python object must be json pickable
+            {
+               // The python object should be json compliant (to improve)
+               return true;
+            }
+          else
+            {
+              // The python object should be a CORBA obj (to improve)
+               return true;
+            }
+      }
+    template<>
+    static inline bool checkSequence<PYTHONImpl,PyObject*,void*>(const TypeCode *t,PyObject* o,void* aux)
+      {
+        if(!PySequence_Check(o))
+          {
+            stringstream msg;
+            msg << "python object is not a sequence " ;
+            throw YACS::ENGINE::ConversionException(msg.str());
+          }
+        int length=PySequence_Size(o);
+        for(int i=0;i<length;i++)
+          {
+            PyObject *item=PySequence_ITEM(o,i);
+            try
+              {
+                YacsChecker<PYTHONImpl,PyObject*,void*>(t->contentType(),item,0);
+              }
+            catch(ConversionException& ex)
+              {
+                stringstream msg;
+                msg << ex.what() << " for sequence element " << i;
+                throw YACS::ENGINE::ConversionException(msg.str(),false);
+              }
+            Py_DECREF(item);
+          }
+        return true;
+      }
+    template<>
+    static inline bool checkStruct<PYTHONImpl,PyObject*,void*>(const TypeCode *t,PyObject* o,void* aux)
+      {
+        PyObject *value;
+        if(!PyDict_Check(o))
+          {
+            stringstream msg;
+            msg << "python object is not a dict " ;
+            throw YACS::ENGINE::ConversionException(msg.str());
+          }
+        YACS::ENGINE::TypeCodeStruct* tst=(YACS::ENGINE::TypeCodeStruct*)t;
+        int nMember=tst->memberCount();
+        for(int i=0;i<nMember;i++)
+          {
+            std::string name=tst->memberName(i);
+            TypeCode* tm=tst->memberType(i);
+            value=PyDict_GetItemString(o, name.c_str());
+            if(value==NULL)
+              {
+                stringstream msg;
+                msg << "member " << name << " not present " ;
+                throw YACS::ENGINE::ConversionException(msg.str());
+              }
+            try
+              {
+                YacsChecker<PYTHONImpl,PyObject*,void*>(tm,value,0);
+              }
+            catch(ConversionException& ex)
+              {
+                std::string s=" for struct member "+name;
+                throw YACS::ENGINE::ConversionException(ex.what()+s,false);
+              }
+          }
+        return true;
+      }
+
+    bool checkPyObject(const TypeCode *t,PyObject* ob)
+      {
+        return YacsChecker<PYTHONImpl,PyObject*,void*>(t,ob,0);
       }
   }
 }

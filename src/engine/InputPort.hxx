@@ -102,15 +102,17 @@ namespace YACS
     template<class T>
     void InputPort::edInit(T value)
     { 
-      InputPort *manuallySet=getRuntime()->adapt(this,
-                                                 Runtime::RUNTIME_ENGINE_INTERACTION_IMPL_NAME,_type);
       Any* any=AtomAny::New(value);
-      manuallySet->put((const void *) any);
-      if(manuallySet!=this)
-        delete manuallySet;
-      any->decrRef();
-      exSaveInit();
-      modified();
+      try
+      {
+        edInit(any);
+        any->decrRef();
+      }
+      catch(ConversionException&)
+      {
+        any->decrRef();
+        throw;
+      }
     }
   }
 }

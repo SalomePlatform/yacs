@@ -57,12 +57,14 @@
 #include "PythonXMLConv.hxx"
 #include "PythonCppConv.hxx"
 #include "PythonNeutralConv.hxx"
+#include "PythonInitConv.hxx"
 
 //Neutral proxy ports
 #include "NeutralCORBAConv.hxx"
 #include "NeutralPythonConv.hxx"
 #include "NeutralXMLConv.hxx"
 #include "NeutralCppConv.hxx"
+#include "NeutralInitConv.hxx"
 
 //C++ proxy ports
 #include "CppCORBAConv.hxx"
@@ -598,33 +600,34 @@ OutputDataStreamPort* RuntimeSALOME::createOutputDataStreamPort(const std::strin
  *  \param source : InputPort to be adapted
  *  \param impl : new implementation (C++, python, CORBA, XML, Neutral)
  *  \param type : data type provided by the InputPort
+ *  \param init : indicates if the adapted InputPort will be used for initialization (value true) or not (value false)
  * 
  * \return : adapted InputPort
  */
 InputPort* RuntimeSALOME::adapt(InputPort* source,
                                 const std::string& impl,
-                                TypeCode * type) throw (ConversionException)
+                                TypeCode * type,bool init) throw (ConversionException)
 {
   string imp_source=source->getNode()->getImplementation();
   if(imp_source == PythonNode::IMPL_NAME)
     {
-      return adapt((InputPyPort*)source,impl,type);
+      return adapt((InputPyPort*)source,impl,type,init);
     }
   else if(imp_source == CppNode::IMPL_NAME)
     {
-      return adapt((InputCppPort*)source,impl,type);
+      return adapt((InputCppPort*)source,impl,type,init);
     }
   else if(imp_source == CORBANode::IMPL_NAME)
     {
-      return adapt((InputCorbaPort*)source,impl,type);
+      return adapt((InputCorbaPort*)source,impl,type,init);
     }
   else if(imp_source == XmlNode::IMPL_NAME)
     {
-      return adapt((InputXmlPort*)source,impl,type);
+      return adapt((InputXmlPort*)source,impl,type,init);
     }
   else if(imp_source == Runtime::RUNTIME_ENGINE_INTERACTION_IMPL_NAME)
     {
-      return adaptNeutral(source,impl,type);
+      return adaptNeutral(source,impl,type,init);
     }
   else
     {
@@ -729,11 +732,12 @@ InputPort* RuntimeSALOME::adaptNeutralToCpp(InputPort* inport,
  *   \param source : Neutral input port to adapt to implementation impl and type type
  *   \param impl : output port implementation (C++, Python, Corba, Xml or Neutral)
  *   \param type : output port supported type
+ *   \param init : if init is true the proxy port will be used in initialization of input port (needs value check)
  *   \return       the adaptated port
  */
 InputPort* RuntimeSALOME::adaptNeutral(InputPort* source,
                                        const std::string& impl,
-                                       TypeCode * type) throw (ConversionException)
+                                       TypeCode * type,bool init) throw (ConversionException)
 {
   if(impl == CppNode::IMPL_NAME)
     {
@@ -753,7 +757,10 @@ InputPort* RuntimeSALOME::adaptNeutral(InputPort* source,
     }
   else if(impl == Runtime::RUNTIME_ENGINE_INTERACTION_IMPL_NAME)
     {
-      return new ProxyPort(source);
+      if(init)
+        return new NeutralInit(source);
+      else
+        return new ProxyPort(source);
     }
   stringstream msg;
   msg << "Cannot connect InputPort : unknown implementation " << impl;
@@ -854,12 +861,13 @@ InputPort* RuntimeSALOME::adaptXmlToNeutral(InputXmlPort* inport,
  *   \param source : input port to adapt to implementation impl and type type
  *   \param impl : output port implementation (C++, Python or Corba)
  *   \param type : output port supported type
+ *   \param init : if init is true the proxy port will be used in initialization of input port (needs value check)
  *   \return       the adaptated port
  */
 
 InputPort* RuntimeSALOME::adapt(InputXmlPort* source,
                                 const std::string& impl,
-                                TypeCode * type) throw (ConversionException)
+                                TypeCode * type,bool init) throw (ConversionException)
 {
   if(impl == CORBANode::IMPL_NAME)
     {
@@ -875,7 +883,10 @@ InputPort* RuntimeSALOME::adapt(InputXmlPort* source,
     }
   else if(impl == XmlNode::IMPL_NAME )
     {
-      return new ProxyPort(source);
+      if(init)
+        return new ProxyPort(source);
+      else
+        return new ProxyPort(source);
     }
   else if(impl == Runtime::RUNTIME_ENGINE_INTERACTION_IMPL_NAME)
     {
@@ -1097,12 +1108,13 @@ InputPort* RuntimeSALOME::adaptCorbaToNeutral(InputCorbaPort* inport,
  *   \param source : input port to adapt to implementation impl and type type
  *   \param impl : output port implementation (C++, Python or Corba)
  *   \param type : outport data type 
+ *   \param init : if init is true the proxy port will be used in initialization of input port (needs value check)
  *   \return an adaptator port which type depends on impl
  */
 
 InputPort* RuntimeSALOME::adapt(InputCorbaPort* source,
                                 const std::string& impl,
-                                TypeCode * type) throw (ConversionException)
+                                TypeCode * type,bool init) throw (ConversionException)
 {
   if(impl == CppNode::IMPL_NAME)
     {
@@ -1114,7 +1126,10 @@ InputPort* RuntimeSALOME::adapt(InputCorbaPort* source,
     }
   else if(impl == CORBANode::IMPL_NAME)
     {
-      return adaptCorbaToCorba(source,type);
+      if(init)
+        return adaptCorbaToCorba(source,type);
+      else
+        return adaptCorbaToCorba(source,type);
     }
   else if(impl == XmlNode::IMPL_NAME )
     {
@@ -1139,12 +1154,16 @@ InputPort* RuntimeSALOME::adapt(InputCorbaPort* source,
  * Only check, it's possible.
  *   \param inport : InputPort to adapt to Python type type
  *   \param type : outport data type 
+ *   \param init : if init is true the proxy port will be used in initialization of input port (needs value check)
  *   \return an adaptator port of type InputPyPort 
  */
 
 InputPort* RuntimeSALOME::adaptPythonToPython(InputPyPort* inport,
-                                              TypeCode * type) throw (ConversionException)
+                                              TypeCode * type,bool init) throw (ConversionException)
 {
+  if(init)
+    return new PyInit(inport);
+
   if(isAdaptablePyObjectPyObject(type,inport->edGetType()))
     {
       //output data is convertible to input type
@@ -1338,12 +1357,13 @@ InputPort* RuntimeSALOME::adaptPythonToXml(InputPyPort* inport,
  *   \param source : input port to adapt to implementation impl and type type
  *   \param impl : output port implementation (C++, Python or Corba)
  *   \param type : output port type
+ *   \param init : if init is true the proxy port will be used in initialization of input port (needs value check)
  *   \return     adaptated input port
  */
 
 InputPort* RuntimeSALOME::adapt(InputPyPort* source,
                                 const std::string& impl,
-                                TypeCode * type) throw (ConversionException)
+                                TypeCode * type,bool init) throw (ConversionException)
 {
   if(impl == CppNode::IMPL_NAME)
     {
@@ -1351,7 +1371,7 @@ InputPort* RuntimeSALOME::adapt(InputPyPort* source,
     }
   else if(impl == PythonNode::IMPL_NAME)
     {
-      return adaptPythonToPython(source,type);
+      return adaptPythonToPython(source,type,init);
     }
   else if(impl == CORBANode::IMPL_NAME)
     {
@@ -1488,12 +1508,13 @@ InputPort* RuntimeSALOME::adaptCppToXml(InputCppPort* inport,
  *   \param source : input port to adapt to implementation impl and type type
  *   \param impl : output port implementation (C++, Python or Corba)
  *   \param type : output port supported type
+ *   \param init : if init is true the proxy port will be used in initialization of input port (needs value check)
  *   \return       the adaptated port
  */
 
 InputPort* RuntimeSALOME::adapt(InputCppPort* source,
                                 const std::string& impl,
-                                TypeCode * type) throw (ConversionException)
+                                TypeCode * type,bool init) throw (ConversionException)
 {
   DEBTRACE("RuntimeSALOME::adapt(InputCppPort* source)");
   if(impl == CORBANode::IMPL_NAME)

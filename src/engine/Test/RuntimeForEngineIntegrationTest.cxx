@@ -53,7 +53,7 @@ OutputPort* RuntimeForEngineIntegrationTest::createOutputPort(const string& name
   throw Exception(msg.str());
 }
 
-InputPort* RuntimeForEngineIntegrationTest::adapt(InputPort* source, const string& impl,TypeCode * type) throw (ConversionException)
+InputPort* RuntimeForEngineIntegrationTest::adapt(InputPort* source, const string& impl,TypeCode * type,bool init) throw (ConversionException)
 {
   return new ProxyPort(source);
 }
