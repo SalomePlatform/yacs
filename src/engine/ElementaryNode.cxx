@@ -314,6 +314,40 @@ InputPort *ElementaryNode::edAddInputPort(const std::string& inputPortName, Type
   return ret;
 }
 
+void ElementaryNode::edOrderInputPorts(const std::list<InputPort*>& ports)
+{
+  std::set<InputPort *> s1;
+  std::set<InputPort *> s2;
+  for(list<InputPort *>::const_iterator it=_setOfInputPort.begin();it != _setOfInputPort.end();it++)
+    s1.insert(*it);
+  for(list<InputPort *>::const_iterator it=ports.begin();it != ports.end();it++)
+    s2.insert(*it);
+
+  if(s1 != s2)
+    throw Exception("ElementaryNode::edOrderInputPorts : port list must contain same ports as existing ones");
+
+  _setOfInputPort.clear();
+  for(list<InputPort *>::const_iterator it=ports.begin();it != ports.end();it++)
+    _setOfInputPort.push_back(*it);
+}
+
+void ElementaryNode::edOrderOutputPorts(const std::list<OutputPort*>& ports)
+{
+  std::set<OutputPort *> s1;
+  std::set<OutputPort *> s2;
+  for(list<OutputPort *>::const_iterator it=_setOfOutputPort.begin();it != _setOfOutputPort.end();it++)
+    s1.insert(*it);
+  for(list<OutputPort *>::const_iterator it=ports.begin();it != ports.end();it++)
+    s2.insert(*it);
+
+  if(s1 != s2)
+    throw Exception("ElementaryNode::edOrderOutputPorts : port list must contain same ports as existing ones");
+
+  _setOfOutputPort.clear();
+  for(list<OutputPort *>::const_iterator it=ports.begin();it != ports.end();it++)
+    _setOfOutputPort.push_back(*it);
+}
+
 OutputPort *ElementaryNode::createOutputPort(const std::string& outputPortName, TypeCode* type)
 {
   return getRuntime()->createOutputPort(outputPortName, _implementation, this, type);
