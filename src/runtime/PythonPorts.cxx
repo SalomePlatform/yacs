@@ -123,6 +123,9 @@ void InputPyPort::edRemoveManInit()
   Py_XDECREF(_initData);
   _initData=Py_None;
   Py_INCREF(_initData);
+  Py_XDECREF(_data);
+  _data=Py_None;
+  Py_INCREF(_data);
   InputPort::edRemoveManInit();
 }
 
