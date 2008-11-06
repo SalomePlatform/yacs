@@ -1620,6 +1620,7 @@ PyObject* RuntimeSALOME::convertStringToPyObject(const std::string& s)
   PyObject* ob;
   PyGILState_STATE gstate = PyGILState_Ensure();
   PyObject* d=PyDict_New();
+  PyDict_SetItemString(d, "__builtins__", PyEval_GetBuiltins());
   ob= PyRun_String( s.c_str(), Py_eval_input, d,d);
   Py_DECREF(d);
   if(ob==NULL)
