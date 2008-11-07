@@ -11,6 +11,7 @@
 #include "TypeConversions.hxx"
 #include "TypeCode.hxx"
 #include "CORBAPorts.hxx"
+#include "PythonPorts.hxx"
 #include "ServiceNode.hxx"
 #include "ComponentInstance.hxx"
 #include "SALOME_GenericObj.hh"
@@ -182,6 +183,7 @@ PyObject * InputCorbaPort::getPyObj()
 
 std::string InputCorbaPort::getAsString()
 {
+  InterpreterUnlocker loc;
   PyObject* ob=getPyObj();
   std::string s=convertPyObjectToString(ob);
   Py_DECREF(ob);
@@ -376,6 +378,7 @@ PyObject * OutputCorbaPort::getPyObj()
 
 std::string OutputCorbaPort::getAsString()
 {
+  InterpreterUnlocker loc;
   PyObject* ob=getPyObj();
   std::string s=convertPyObjectToString(ob);
   Py_DECREF(ob);

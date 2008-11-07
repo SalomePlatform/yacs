@@ -1,6 +1,7 @@
 
 #include "TypeConversions.hxx"
 #include "PresetPorts.hxx"
+#include "PythonPorts.hxx"
 #include "TypeCode.hxx"
 #include <iostream>
 
@@ -92,6 +93,7 @@ PyObject * OutputPresetPort::getPyObj()
 
 std::string OutputPresetPort::getAsString()
 {
+  InterpreterUnlocker loc;
   PyObject* ob=getPyObj();
   std::string s=convertPyObjectToString(ob);
   Py_DECREF(ob);
@@ -138,6 +140,7 @@ PyObject * InputPresetPort::getPyObj()
 
 std::string InputPresetPort::getAsString()
 {
+  InterpreterUnlocker loc;
   PyObject* ob=getPyObj();
   std::string s=convertPyObjectToString(ob);
   Py_DECREF(ob);
