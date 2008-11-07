@@ -87,7 +87,6 @@ static std::string t4[]={"string","objref","double","int","boolean","array","str
     }
   std::string datatypeParser::post()
     {
-      mincount("value",1);
       std::string d="<data>\n"+_data+"</data>";
       _data=_datas.back();
       _datas.pop_back();
@@ -162,7 +161,6 @@ static std::string t4[]={"string","objref","double","int","boolean","array","str
     }
   std::string structdatatypeParser::post()
     {
-      mincount("member",1);
       std::string value="<struct>"+_members+"</struct>";
       _members=_membersStack.back();
       _membersStack.pop_back();
