@@ -97,11 +97,9 @@ void Subject::localClean()
   {
     GuiObserver* anObs = (*it);
     detach(anObs);
-    /* Moved to method decrementSubjects (GuiObserver object) 
     int nbsub = anObs->getNbSubjects();
     DEBTRACE("nbSubjects=" << nbsub);
-    if (nbsub <= 0) delete anObs ;
-    */
+    if (nbsub <= 0 && anObs->isDestructible()) delete anObs ;
   }
   _setObs.clear();
 }
@@ -221,7 +219,7 @@ void Subject::addSubjectReference(Subject *ref)
 
 // ----------------------------------------------------------------------------
 
-GuiObserver::GuiObserver()
+GuiObserver::GuiObserver():_destructible(true)
 {
   DEBTRACE("GuiObserver::GuiObserver " << this);
   _subjectSet.clear();
@@ -268,10 +266,6 @@ void GuiObserver::decrementSubjects(Subject *subject)
   else
     DEBTRACE("subject " << subject << " is not a subject of observer " << this << "---------------------------");
   //DEBTRACE(this << " " << _subjectSet.size());
-
-  int nbsub = getNbSubjects();
-  DEBTRACE("nbSubjects=" << nbsub);
-  if (nbsub <= 0) delete this ;
 }
 
 /*! 

@@ -111,8 +111,10 @@ namespace YACS
       virtual void incrementSubjects(Subject *subject);
       virtual void decrementSubjects(Subject *subject);
       int getNbSubjects();
+      bool isDestructible() { return _destructible; };
     protected:
       std::set<Subject*> _subjectSet;
+      bool _destructible;
     };
     
     class SubjectReference: public Subject
