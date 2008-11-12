@@ -127,14 +127,21 @@ TypeCode * Proc::createStructTc (const std::string& id, const std::string& name)
 
 TypeCode * Proc::getTypeCode (const std::string& name)
 {
+  TypeCode* aTC=0;
   if(typeMap.count(name)==0)
+    aTC=getRuntime()->getTypeCode(name);
+  else
+    aTC=typeMap[name];
+
+  if(!aTC)
     {
       std::stringstream msg;
       msg << "Type " << name << " does not exist" ;
       msg << " (" <<__FILE__ << ":" << __LINE__ << ")";
       throw Exception(msg.str());
     }
-  return typeMap[name];
+
+  return aTC;
 }
 
 void Proc::setTypeCode (const std::string& name,TypeCode *t)
@@ -195,7 +202,7 @@ std::string Proc::getInPortValue(int nodeNumId, std::string portName)
     {
       YACS::ENGINE::Node* node = YACS::ENGINE::Node::idMap[nodeNumId];
       InputPort * inputPort = node->getInputPort(portName);
-      return inputPort->dump();
+      return inputPort->getAsString();
     }
   catch(YACS::Exception& ex)
     {
@@ -218,7 +225,7 @@ std::string Proc::getOutPortValue(int nodeNumId, std::string portName)
     {
       YACS::ENGINE::Node* node = YACS::ENGINE::Node::idMap[nodeNumId];
       OutputPort * outputPort = node->getOutputPort(portName);
-      return outputPort->dump();
+      return outputPort->getAsString();
     }
   catch(YACS::Exception& ex)
     {

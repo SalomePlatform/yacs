@@ -88,14 +88,23 @@ std::string OutputPresetPort::dump()
 
 PyObject * OutputPresetPort::getPyObj()
 {
-  return convertXmlStrPyObject(edGetType(),getData());
+  DEBTRACE(getData());
+  if(_storeData=="")
+    {
+      Py_INCREF(Py_None);
+      return Py_None;
+    }
+  else
+    return convertXmlStrPyObject(edGetType(),getData());
 }
 
 std::string OutputPresetPort::getAsString()
 {
   InterpreterUnlocker loc;
   PyObject* ob=getPyObj();
+  DEBTRACE(PyObject_Str(ob));
   std::string s=convertPyObjectToString(ob);
+  DEBTRACE(s);
   Py_DECREF(ob);
   return s;
 }
@@ -135,14 +144,23 @@ std::string InputPresetPort::dump()
 
 PyObject * InputPresetPort::getPyObj()
 {
-  return convertXmlStrPyObject(edGetType(),dump());
+  DEBTRACE(dump());
+  if(_data=="")
+    {
+      Py_INCREF(Py_None);
+      return Py_None;
+    }
+  else
+    return convertXmlStrPyObject(edGetType(),dump());
 }
 
 std::string InputPresetPort::getAsString()
 {
   InterpreterUnlocker loc;
   PyObject* ob=getPyObj();
+  DEBTRACE(PyObject_Str(ob));
   std::string s=convertPyObjectToString(ob);
+  DEBTRACE(s);
   Py_DECREF(ob);
   return s;
 }

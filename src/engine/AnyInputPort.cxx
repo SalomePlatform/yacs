@@ -91,7 +91,7 @@ std::string AnyInputPort::dump()
 {
   if(!_value)
     {
-      std::string what="AnyInputPort::get : no value currently in input whith name \""; what+=_name; what+="\"";
+      std::string what="AnyInputPort::get : no value currently in input port with name \""; what+=_name; what+="\"";
       throw Exception(what);
     }
   stringstream xmldump;

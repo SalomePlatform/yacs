@@ -150,6 +150,10 @@ long GuiContext::getNewId(YACS::HMI::TypeOfElem type)
 	case CPPNODE:	       aTemplate= QString("CppNode");           break;
 	case SALOMEPYTHONNODE: aTemplate= QString("SalomePythonNode");  break;
 	case XMLNODE:	       aTemplate= QString("XmlNode");           break;
+	case PRESETNODE:       aTemplate= QString("PresetNode");        break;
+	case OUTNODE:          aTemplate= QString("OutNode");           break;
+	case STUDYINNODE:      aTemplate= QString("StudyInNode");       break;
+	case STUDYOUTNODE:     aTemplate= QString("StudyOutNode");      break;
 	default:	                                                break;
 	}
 

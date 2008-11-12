@@ -97,15 +97,18 @@ void Subject::localClean()
   {
     GuiObserver* anObs = (*it);
     detach(anObs);
+    /* Moved to method decrementSubjects (GuiObserver object) 
     int nbsub = anObs->getNbSubjects();
     DEBTRACE("nbSubjects=" << nbsub);
     if (nbsub <= 0) delete anObs ;
+    */
   }
   _setObs.clear();
 }
 
 void Subject::attach(GuiObserver *obs)
 {
+  DEBTRACE("Subject::attach " << obs);
   _setObs.insert(obs);
   obs->incrementSubjects(this);
 }
@@ -130,7 +133,8 @@ bool Subject::setName(std::string name)
 void Subject::select(bool isSelected)
 {
   DEBTRACE("Subject::select " << isSelected << " " << this);
-  for (set<GuiObserver *>::iterator it = _setObs.begin(); it != _setObs.end(); ++it)
+  set<GuiObserver*> copySet = _setObs;
+  for (set<GuiObserver *>::iterator it = copySet.begin(); it != copySet.end(); ++it)
     {
       GuiObserver* currOb = *it;
       currOb->select(isSelected);
@@ -140,7 +144,8 @@ void Subject::select(bool isSelected)
 void Subject::update(GuiEvent event,int type, Subject* son)
 {
   DEBTRACE("Subject::update " << type << "," << event << "," << son);
-  for (set<GuiObserver *>::iterator it = _setObs.begin(); it != _setObs.end(); ++it)
+  set<GuiObserver*> copySet = _setObs;
+  for (set<GuiObserver *>::iterator it = copySet.begin(); it != copySet.end(); ++it)
     {
       DEBTRACE("Subject::update " << *it);
       (*it)->update(event, type, son);
@@ -191,6 +196,7 @@ bool Subject::destroy(Subject *son)
       if (command->execute())
         {
           DEBTRACE("Destruction done: " << toDestroy);
+          update(REMOVE,0,0);
           return true;
         }
       else delete command;
@@ -224,6 +230,9 @@ GuiObserver::GuiObserver()
 GuiObserver::~GuiObserver()
 {
   DEBTRACE("GuiObserver::~GuiObserver " << this);
+  set<Subject*> copySet = _subjectSet;
+  for (set<Subject*>::iterator it = copySet.begin(); it != copySet.end(); ++it)
+    (*it)->detach(this);
 }
 
 void GuiObserver::select(bool isSelected)
@@ -259,6 +268,10 @@ void GuiObserver::decrementSubjects(Subject *subject)
   else
     DEBTRACE("subject " << subject << " is not a subject of observer " << this << "---------------------------");
   //DEBTRACE(this << " " << _subjectSet.size());
+
+  int nbsub = getNbSubjects();
+  DEBTRACE("nbSubjects=" << nbsub);
+  if (nbsub <= 0) delete this ;
 }
 
 /*! 
@@ -1331,6 +1344,17 @@ SubjectDataPort* SubjectElementaryNode::addODSPort(YACS::ENGINE::Catalog *catalo
     }
   else delete command;
   return 0;
+}
+
+SubjectInputPort* SubjectElementaryNode::edAddInputPort(const std::string& name,YACS::ENGINE::TypeCode* type)
+{
+  InputPort* port= _elementaryNode->edAddInputPort(name,type);
+  return addSubjectInputPort(port, name);
+}
+SubjectOutputPort* SubjectElementaryNode::edAddOutputPort(const std::string& name,YACS::ENGINE::TypeCode* type)
+{
+  OutputPort* port= _elementaryNode->edAddOutputPort(name,type);
+  return addSubjectOutputPort(port, name);
 }
 
 void SubjectElementaryNode::removePort(SubjectDataPort* port)

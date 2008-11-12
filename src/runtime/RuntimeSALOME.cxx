@@ -1606,7 +1606,7 @@ std::string RuntimeSALOME::convertNeutralAsString(TypeCode * type, Any *data)
     }
   else
     {
-      return "";
+      return "None";
     }
 }
 

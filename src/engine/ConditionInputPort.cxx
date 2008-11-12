@@ -83,10 +83,14 @@ void *ConditionInputPort::get() const
 
 void ConditionInputPort::put(const void *data) throw(ConversionException)
 {
-  Any *dataCst=(Any *)data;
+  put((Any*)data);
+}
+
+void ConditionInputPort::put(Any *data) throw(ConversionException)
+{
   if(_value)
     _value->decrRef();
-  _value=dataCst;
+  _value=data;
   _value->incrRef();
 }    
 
@@ -102,6 +106,6 @@ std::string ConditionInputPort::dump()
 
 std::string ConditionInputPort::getAsString()
 {
-  return (_value ? "True" : "False");
+  return (getValue() ? "True" : "False");
 }
 

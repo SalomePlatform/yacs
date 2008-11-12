@@ -9,22 +9,24 @@ namespace YACS
   {
     class WhileLoop;
 
-    class ConditionInputPort : public InputPort // public inheritance for correct dynamic cast from Port to ConditionInputPort in GUI part
+    class ConditionInputPort : public InputPort 
     {
       friend class WhileLoop;
+    private:
       OutPort *_outOfScopeBackLink;
-
       ConditionInputPort(const std::string& name, WhileLoop *node);
       ConditionInputPort(const ConditionInputPort& other, Node *newHelder);
-      ~ConditionInputPort();
+      virtual ~ConditionInputPort();
+      InputPort *clone(Node *newHelder) const;
+    public:
       void exSaveInit();
       void exRestoreInit();
-      InputPort *clone(Node *newHelder) const;
       bool isLinkedOutOfScope() const;
       void edNotifyReferencedBy(OutPort *fromPort);
       void edNotifyDereferencedBy(OutPort *fromPort);
       void *get() const;
-      void put(const void *data) throw(ConversionException);
+      virtual void put(const void *data) throw(ConversionException);
+      void put(Any *data) throw(ConversionException);
       std::string dump();
       virtual std::string getAsString();
     protected:

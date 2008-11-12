@@ -108,8 +108,8 @@ namespace YACS
       virtual ~GuiObserver();
       virtual void select(bool isSelected);
       virtual void update(GuiEvent event, int type, Subject* son);
-      void incrementSubjects(Subject *subject);
-      void decrementSubjects(Subject *subject);
+      virtual void incrementSubjects(Subject *subject);
+      virtual void decrementSubjects(Subject *subject);
       int getNbSubjects();
     protected:
       std::set<Subject*> _subjectSet;
@@ -229,8 +229,8 @@ namespace YACS
       virtual SubjectOutputDataStreamPort* addSubjectODSPort(YACS::ENGINE::OutputDataStreamPort *port,
                                                              std::string name = "");
       virtual void notifyObserver(YACS::ENGINE::Node* object,const std::string& event);
-    protected:
       virtual void removeExternalLinks();
+    protected:
       YACS::ENGINE::Node *_node;
       std::list<SubjectInputPort*> _listSubjectInputPort;
       std::list<SubjectOutputPort*> _listSubjectOutputPort;
@@ -468,6 +468,8 @@ namespace YACS
       virtual SubjectDataPort* addOutputPort(YACS::ENGINE::Catalog *catalog, std::string type, std::string name);
       virtual SubjectDataPort* addIDSPort(YACS::ENGINE::Catalog *catalog, std::string type, std::string name);
       virtual SubjectDataPort* addODSPort(YACS::ENGINE::Catalog *catalog, std::string type, std::string name);
+      virtual SubjectInputPort* edAddInputPort(const std::string& name,YACS::ENGINE::TypeCode* type);
+      virtual SubjectOutputPort* edAddOutputPort(const std::string& name,YACS::ENGINE::TypeCode* type);
       virtual void removePort(SubjectDataPort* port);
       virtual void loadChildren();
       virtual void clean();
