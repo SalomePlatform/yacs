@@ -4,7 +4,7 @@
 # --
 # -----------------------------------------------------------------------------
 
-AC_INIT([Salome2 Project], [4.1.1], [paul.rascle@edf.fr], [SalomeYacs])
+AC_INIT([Salome2 Project], [4.1.4], [paul.rascle@edf.fr], [SalomeYacs])
 AM_INIT_AUTOMAKE([tar-pax])
 AC_CONFIG_HEADER(yacs_config.h)
 
@@ -12,7 +12,7 @@ AC_CONFIG_HEADER(yacs_config.h)
 MODULE_NAME=yacs
 AC_SUBST(MODULE_NAME)
 
-XVERSION=0x040101
+XVERSION=0x040104
 AC_SUBST(XVERSION)
 
 RELEASE=$VERSION
@@ -76,17 +76,20 @@ SWIG_ENABLE_CXX
 SWIG_PYTHON
 CHECK_CPPUNIT
 AC_CHECK_KERNEL
-CHECK_QT
-CHECK_MSG2QM
-CHECK_CAS
+#CHECK_QT
+#CHECK_MSG2QM
+#CHECK_CAS
 CHECK_HTML_GENERATORS
+
+I2_CHECK_QT4
+I2_CHECK_QSCINTILLA
 
 AM_CONDITIONAL([PYTHON_API], [test "x$swig_ok" == "xyes"])
 AM_CONDITIONAL([SALOME_KERNEL], [test "x$KERNEL_ROOT_DIR" != "x"])
 AM_CONDITIONAL([DSC_PORTS], [test -f $KERNEL_ROOT_DIR/idl/salome/DSC_Engines.idl])
 
 #CHECK_KERNEL
-CHECK_GUI(SALOME_Session_Server,SALOME_Session_Server)
+#CHECK_GUI(SALOME_Session_Server,SALOME_Session_Server)
 #CHECK_PYHELLO
 #CHECK_GEOM
 #CHECK_VISU
@@ -118,9 +121,9 @@ echo "  SALOME KERNEL .......... : $Kernel_ok"
 echo "  DSC extension .......... : $dsc_ok"
 echo "  Cppunit (make check).... : $cppunit_ok"
 echo "  Qt (salome)............. : $qt_ok"
-echo "  msq2qm ................. : $msg2qm_ok"
-echo "  SALOME GUI ............. : $SalomeGUI_ok"
-echo "  OCC..................... : $occ_ok"
+#echo "  msq2qm ................. : $msg2qm_ok"
+#echo "  SALOME GUI ............. : $SalomeGUI_ok"
+#echo "  OCC..................... : $occ_ok"
 echo
 echo "------------------------------------------------------------------------"
 echo
@@ -156,25 +159,25 @@ AC_OUTPUT([ \
   src/engine/Makefile \
   src/engine/Plugin/Makefile \
   src/engine/Test/Makefile \
-  src/gui/Makefile \
   src/hmi/Makefile \
-  src/lineconn2d/Makefile \
-  src/prs/Makefile \
   src/pyqt/Makefile \
   src/runtime/Makefile \
   src/runtime/Test/Makefile \
+  src/genericgui/Makefile \
+  src/salomewrap/Makefile \
+  src/salomegui/Makefile \
   src/salomeloader/Makefile \
   src/wrappergen/Makefile \
   src/wrappergen/src/Makefile \
   src/yacsloader/Makefile \
   src/yacsloader/Test/Makefile \
   src/yacsorb/Makefile \
-    src/yacsloader/Test/YacsLoaderTest.sh \
-    src/yacsloader/Test/YacsLoaderInSessionTest.sh \
-    src/yacsloader/Test/YacsLoaderInSessionTest2.sh \
-    src/yacsloader/Test/display.sh \
-    src/yacsloader/Test/config_appli.xml \
-    src/gui/resources/YACSCatalog.xml \
-    doc/Doxyfile \
+  src/yacsloader/Test/YacsLoaderTest.sh \
+  src/yacsloader/Test/YacsLoaderInSessionTest.sh \
+  src/yacsloader/Test/YacsLoaderInSessionTest2.sh \
+  src/yacsloader/Test/display.sh \
+  src/yacsloader/Test/config_appli.xml \
+  src/salomegui/resources/YACSCatalog.xml \
+  doc/Doxyfile \
 ])
 

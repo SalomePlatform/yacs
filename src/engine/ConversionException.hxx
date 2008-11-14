@@ -12,7 +12,7 @@ namespace YACS
     class ConversionException : public Exception
     {
     public:
-      ConversionException(const std::string& what);
+      ConversionException(const std::string& what,bool prefix=true);
       virtual ~ConversionException() throw();
     private:
       static const char TYPEOFEXCEPTION[];

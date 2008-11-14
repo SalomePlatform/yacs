@@ -13,6 +13,7 @@
 #include "SALOME_NamingService.hxx"
 #include "SALOME_LifeCycleCORBA.hxx"
 #include "SALOME_ContainerManager.hxx"
+#include "Basics_Utils.hxx"
 #include "OpUtil.hxx"
 
 #include <sstream>
@@ -98,7 +99,8 @@ void SalomeContainer::start() throw (Exception)
     {
       std::string machine(_params.hostname);
       if(machine == "" || machine == "localhost")
-        machine=GetHostname();
+        //machine=Kernel_Utils::GetHostname();
+        machine=Kernel_Utils::GetHostname();
       std::string ContainerNameInNS=ns.BuildContainerNameForNS(_params,machine.c_str());
       obj=ns.Resolve(ContainerNameInNS.c_str());
       if(!CORBA::is_nil(obj))
@@ -111,7 +113,12 @@ void SalomeContainer::start() throw (Exception)
 
   if (str == "") 
     {
+      //give a almost unique name to the container : Pid_Name_Addr
       std::ostringstream stream;
+      stream << getpid();
+      stream << "_";
+      stream << _name;
+      stream << "_";
       stream << (void *)(this);
       _params.container_name=CORBA::string_dup(stream.str().c_str());
     }

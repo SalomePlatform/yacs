@@ -31,6 +31,8 @@ namespace YACS
       virtual void exSaveInit();
       virtual void exRestoreInit();
       virtual std::string dump();
+      virtual std::string valToStr();
+      virtual void valFromStr(std::string valstr);
     protected:
       std::string _data;
       std::string _initData;
@@ -52,6 +54,8 @@ namespace YACS
       virtual const char * get() const throw (ConversionException);
       OutputPort *clone(Node *newHelder) const;
       virtual std::string dump();
+      virtual std::string valToStr();
+      virtual void valFromStr(std::string valstr);
     protected:
       std::string _data;
     };

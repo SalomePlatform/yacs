@@ -5,9 +5,10 @@ using namespace YACS::ENGINE;
 const char ConversionException::TYPEOFEXCEPTION[]="Conversion between types failed : ";
 
 
-ConversionException::ConversionException(const std::string& what):Exception(TYPEOFEXCEPTION)
+ConversionException::ConversionException(const std::string& what,bool prefix):Exception("")
 {
-  _what=TYPEOFEXCEPTION;
+  if(prefix)
+    _what=TYPEOFEXCEPTION;
   _what+=what;
 }
 

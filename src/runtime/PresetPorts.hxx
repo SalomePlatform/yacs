@@ -2,6 +2,7 @@
 #ifndef _PRESETPORTS_HXX_
 #define _PRESETPORTS_HXX_
 
+#include <Python.h>
 #include "XMLPorts.hxx"
 
 namespace YACS
@@ -24,6 +25,9 @@ namespace YACS
       std::string getData();
       virtual void checkBasicConsistency() const throw(Exception);
       virtual std::string dump();
+      virtual std::string getAsString();
+      virtual PyObject* getPyObj();
+      virtual std::string typeName() {return "YACS__ENGINE__OutputPresetPort";}
     protected:
       std::string _storeData;
     };
@@ -42,6 +46,9 @@ namespace YACS
       void setData(std::string data);
       std::string getData();
       virtual std::string dump();
+      virtual std::string getAsString();
+      virtual PyObject* getPyObj();
+      virtual std::string typeName() {return "YACS__ENGINE__InputPresetPort";}
     protected:
       std::string _storeData;
     };

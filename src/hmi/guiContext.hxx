@@ -7,8 +7,6 @@
 #include "commandsProc.hxx"
 #include "guiObservers.hxx"
 
-#include <qcanvas.h>
-#include <qwidgetstack.h>
 #include <map>
 #include <string>
 
@@ -16,14 +14,13 @@ namespace YACS
 {
   namespace HMI
   {
-//     class Subject;
 
     class GuiContext: public Subject
     {
     public:
       GuiContext();
       virtual ~GuiContext();
-      void setProc(YACS::ENGINE::Proc* proc);
+      virtual void setProc(YACS::ENGINE::Proc* proc);
       long getNewId(YACS::HMI::TypeOfElem type);
 
       inline YACS::ENGINE::Catalog* getBuiltinCatalog()        {return _builtinCatalog; };
@@ -34,15 +31,10 @@ namespace YACS
       inline YACS::ENGINE::Proc* getProc()                     {return _proc; };
       inline YACS::HMI::ProcInvoc* getInvoc()                  {return _invoc; };
       inline YACS::HMI::SubjectProc* getSubjectProc()          {return _subjectProc; };
-      inline QCanvas* getCanvas()                              {return _canvas; };
-      inline QCanvasItem* getSelectedCanvasItem()              {return _selectedCanvasItem; };
       inline long getNewId()                                   {return _numItem++; };
-      inline QWidgetStack* getWidgetStack()                    {return _widgetStack; };
       inline std::string getXMLSchema()                        {return _xmlSchema; };
       inline std::pair<std::string, std::string> getYACSCont() {return _YACSEngineContainer; }
 
-      inline void setSelectedCanvasItem(QCanvasItem *c)                    {_selectedCanvasItem = c; };
-      inline void setWidgetStack(QWidgetStack* ws)                         {_widgetStack = ws; };
       inline void setSessionCatalog(YACS::ENGINE::Catalog* cata)           {_sessionCatalog = cata; };
       inline void setProcCatalog(YACS::ENGINE::Catalog* cata)              {_procCatalog = cata; };
       inline void setCurrentCatalog(YACS::ENGINE::Catalog* cata)           {_currentCatalog = cata; };
@@ -59,6 +51,7 @@ namespace YACS
       std::map<YACS::ENGINE::ComponentInstance*, YACS::HMI::SubjectComponent*>                     _mapOfSubjectComponent;
       std::map<YACS::ENGINE::Container*, YACS::HMI::SubjectContainer*>                             _mapOfSubjectContainer;
       std::map<std::string, YACS::HMI::SubjectDataType*>                                           _mapOfSubjectDataType;
+      std::map<int,YACS::HMI::SubjectNode*>                                                        _mapOfExecSubjectNode;
       std::string _lastErrorMessage;
 
     protected:
@@ -71,9 +64,6 @@ namespace YACS
       YACS::HMI::SubjectProc *_subjectProc;
       long _numItem;
       static GuiContext* _current;
-      QCanvas *_canvas;
-      QCanvasItem *_selectedCanvasItem;
-      QWidgetStack* _widgetStack;
       std::string _xmlSchema;
       std::pair<std::string, std::string> _YACSEngineContainer; // --- <ContainerName, HostName>
 

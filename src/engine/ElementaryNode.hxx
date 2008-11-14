@@ -69,6 +69,9 @@ namespace YACS
       virtual OutputPort *edAddOutputPort(const std::string& outputPortName, TypeCode* type) throw(Exception);
       virtual InputDataStreamPort *edAddInputDataStreamPort(const std::string& inputPortDSName, TypeCode* type) throw(Exception);
       virtual OutputDataStreamPort *edAddOutputDataStreamPort(const std::string& outputPortDSName, TypeCode* type) throw(Exception);
+      virtual void edOrderInputPorts(const std::list<InputPort*>& ports);
+      virtual void edOrderOutputPorts(const std::list<OutputPort*>& ports);
+
       virtual std::string typeName() {return "YACS__ENGINE__ElementaryNode";}
       virtual void edUpdateState();
       virtual void ensureLoading();
@@ -79,6 +82,7 @@ namespace YACS
       void finished();
       void aborted();
       void loaded();
+      void connected();
       virtual std::string getErrorDetails();
       virtual void initService() { }
       virtual void connectService() { }

@@ -1,6 +1,7 @@
 #include "ForEachLoop.hxx"
 #include "TypeCode.hxx"
 #include "Visitor.hxx"
+#include "ComposedNode.hxx"
 #include <iostream>
 #include <sstream>
 
@@ -123,7 +124,8 @@ InputPort *SeqAnyInputPort::clone(Node *newHelder) const
 unsigned SeqAnyInputPort::getNumberOfElements() const
 {
   const SequenceAny * valCsted=(const SequenceAny *) _value;
-  return valCsted->size();
+  if (valCsted) return valCsted->size();
+  return 0;
 }
 
 Any *SeqAnyInputPort::getValueAtRank(int i) const
@@ -171,7 +173,7 @@ std::string SeqAnyInputPort::dump()
 SplitterNode::SplitterNode(const std::string& name, TypeCode *typeOfData, 
                            ForEachLoop *father):ElementaryNode(name),
                                                 _dataPortToDispatch(NAME_OF_SEQUENCE_INPUT,
-                                                                    this,new TypeCodeSeq("","",typeOfData))			    
+                                                                    this,(TypeCodeSeq *)TypeCode::sequenceTc("","",typeOfData))			    
 {
   _father=father;
 }
@@ -390,6 +392,10 @@ void ForEachLoop::exUpdateState()
             _nbOfEltConsumed++;
             _execNodes[i]->exUpdateState();
           }
+      if (_node) {
+	_node->setState(_execNodes[nbOfBr-1]->getState());
+	forwardExecStateToOriginalBody(_execNodes[nbOfBr-1]);
+      }
     }
 }
 
@@ -499,6 +505,21 @@ YACS::Event ForEachLoop::updateStateOnFinishedEventFrom(Node *node)
                 {
                   pushAllSequenceValues();
                   setState(YACS::DONE);
+		  
+		  if (_node)
+		    {
+		      _node->setState(YACS::DONE);
+		      
+		      ComposedNode* compNode = dynamic_cast<ComposedNode*>(_node);
+		      if (compNode)
+			{
+			  list<Node *> aChldn = compNode->getAllRecursiveConstituents();
+			  list<Node *>::iterator iter=aChldn.begin();
+			  for(;iter!=aChldn.end();iter++)
+			    (*iter)->setState(YACS::DONE);
+			}
+		    }
+		  
                   return YACS::FINISH;
                 }
               catch(YACS::Exception& ex)
@@ -518,6 +539,11 @@ YACS::Event ForEachLoop::updateStateOnFinishedEventFrom(Node *node)
           node->init(false);
           _splitterNode.putSplittedValueOnRankTo(_execCurrentId++,id,false);
           node->exUpdateState();
+	  if (_node)
+	    {
+	      _node->setState(node->getState());
+	      forwardExecStateToOriginalBody(node);
+	    }
           _nbOfEltConsumed++;
         }
       break;
@@ -544,7 +570,7 @@ void ForEachLoop::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort 
         }
       else
         {
-          TypeCodeSeq *newTc=new TypeCodeSeq("","",port.first->edGetType());
+          TypeCodeSeq *newTc=(TypeCodeSeq *)TypeCode::sequenceTc("","",port.first->edGetType());
           AnySplitOutputPort *newPort=new AnySplitOutputPort(getPortName(port.first),this,newTc);
           InterceptorInputPort *intercptor=new InterceptorInputPort(string("intercptr for ")+getPortName(port.first),this,port.first->edGetType());
           intercptor->setRepr(newPort);
@@ -598,6 +624,19 @@ void ForEachLoop::releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *f
           _intecptrsForOutGoingPorts.erase(iter2);
           delete *iter;
         }
+    }
+}
+
+void ForEachLoop::forwardExecStateToOriginalBody(Node *execNode)
+{
+  ComposedNode* compNode = dynamic_cast<ComposedNode*>(_node);
+  ComposedNode* compNodeExe = dynamic_cast<ComposedNode*>(execNode);
+  if (compNode && compNodeExe)
+    {
+      list<Node *> aChldn = compNodeExe->getAllRecursiveConstituents();
+      list<Node *>::iterator iter=aChldn.begin();
+      for(;iter!=aChldn.end();iter++)
+	compNode->getChildByName(compNodeExe->getChildName(*iter))->setState((*iter)->getState());
     }
 }
 

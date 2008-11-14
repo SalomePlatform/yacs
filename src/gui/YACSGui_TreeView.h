@@ -108,6 +108,7 @@ class YACSGui_EditionTreeView: public YACSGui_TreeView
   void onAddToLibrary();
 
   void onAddLink();
+  void onAddDataLink();
 
   void onCopyItem();
   void onPasteItem();
@@ -150,6 +151,7 @@ private:
 
   QListViewItem* myPreviousSelected;
   YACS::HMI::SubjectDataPort* mySelectedSubjectOutPort;
+  bool control;
   YACS::HMI::SubjectNode* mySelectedSubjectOutNode;    
 
   std::set< QListViewItem* > myLastSelected;

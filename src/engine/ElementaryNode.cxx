@@ -314,6 +314,40 @@ InputPort *ElementaryNode::edAddInputPort(const std::string& inputPortName, Type
   return ret;
 }
 
+void ElementaryNode::edOrderInputPorts(const std::list<InputPort*>& ports)
+{
+  std::set<InputPort *> s1;
+  std::set<InputPort *> s2;
+  for(list<InputPort *>::const_iterator it=_setOfInputPort.begin();it != _setOfInputPort.end();it++)
+    s1.insert(*it);
+  for(list<InputPort *>::const_iterator it=ports.begin();it != ports.end();it++)
+    s2.insert(*it);
+
+  if(s1 != s2)
+    throw Exception("ElementaryNode::edOrderInputPorts : port list must contain same ports as existing ones");
+
+  _setOfInputPort.clear();
+  for(list<InputPort *>::const_iterator it=ports.begin();it != ports.end();it++)
+    _setOfInputPort.push_back(*it);
+}
+
+void ElementaryNode::edOrderOutputPorts(const std::list<OutputPort*>& ports)
+{
+  std::set<OutputPort *> s1;
+  std::set<OutputPort *> s2;
+  for(list<OutputPort *>::const_iterator it=_setOfOutputPort.begin();it != _setOfOutputPort.end();it++)
+    s1.insert(*it);
+  for(list<OutputPort *>::const_iterator it=ports.begin();it != ports.end();it++)
+    s2.insert(*it);
+
+  if(s1 != s2)
+    throw Exception("ElementaryNode::edOrderOutputPorts : port list must contain same ports as existing ones");
+
+  _setOfOutputPort.clear();
+  for(list<OutputPort *>::const_iterator it=ports.begin();it != ports.end();it++)
+    _setOfOutputPort.push_back(*it);
+}
+
 OutputPort *ElementaryNode::createOutputPort(const std::string& outputPortName, TypeCode* type)
 {
   return getRuntime()->createOutputPort(outputPortName, _implementation, this, type);
@@ -422,13 +456,23 @@ void ElementaryNode::aborted()
 
 //! Notify this node that it is loaded
 /*!
- * When an elementary node has been loaded it goes to TOACTIVATE state
- * It is then ready to be executed
+ * When an elementary node has been loaded it goes to LOADED state
+ * It is then ready to be connected
  *
  */
 void ElementaryNode::loaded()
 {
   setState(LOADED);
+}
+
+//! Notify this node that it is connected
+/*!
+ * When an elementary node has been connected it goes to TOACTIVATE state
+ * It is then ready to be executed
+ *
+ */
+void ElementaryNode::connected()
+{
   if(_inGate.exIsReady())
     if(areAllInputPortsValid())
       setState(TOACTIVATE);
@@ -483,18 +527,28 @@ void ElementaryNode::ensureLoading()
 
   // request loading for all nodes connected to this one by datastream link
   // Be careful that nodes can be connected in a loop. Put first this node in TOLOAD state to break the loop
-  std::list<OutputDataStreamPort *>::iterator iter;
-  for(iter = _setOfOutputDataStreamPort.begin(); iter != _setOfOutputDataStreamPort.end(); iter++)
+  std::list<OutputDataStreamPort *>::iterator iterout;
+  for(iterout = _setOfOutputDataStreamPort.begin(); iterout != _setOfOutputDataStreamPort.end(); iterout++)
     {
-      OutputDataStreamPort *port=(OutputDataStreamPort *)*iter;
+      OutputDataStreamPort *port=(OutputDataStreamPort *)*iterout;
       std::set<InPort *> ports=port->edSetInPort();
-      std::set<InPort *>::iterator iterout;
-      for(iterout=ports.begin();iterout != ports.end(); iterout++)
+      std::set<InPort *>::iterator iter;
+      for(iter=ports.begin();iter != ports.end(); iter++)
         {
-          Node* node= (*iterout)->getNode();
+          Node* node= (*iter)->getNode();
           node->ensureLoading();
         }
     }
-  /*
-    */
+  std::list<InputDataStreamPort *>::iterator iterin;
+  for(iterin = _setOfInputDataStreamPort.begin(); iterin != _setOfInputDataStreamPort.end(); iterin++)
+    {
+      InputDataStreamPort *port=(InputDataStreamPort *)*iterin;
+      std::set<OutPort *> ports=port->edSetOutPort();
+      std::set<OutPort *>::iterator iter;
+      for(iter=ports.begin();iter != ports.end(); iter++)
+        {
+          Node* node= (*iter)->getNode();
+          node->ensureLoading();
+        }
+    }
 }

@@ -15,6 +15,7 @@ namespace YACS
     class Runtime;
     Runtime* getRuntime() throw(Exception);
 
+    class Any;
     class InputPort;
     class OutputPort;
     class ForLoop;
@@ -83,7 +84,11 @@ namespace YACS
                                                                Node * node,
                                                                TypeCode * type);
 
-      virtual InputPort* adapt(InputPort* source, const std::string& impl, TypeCode * type) throw (ConversionException) = 0;
+      virtual InputPort* adapt(InputPort* source, const std::string& impl, TypeCode * type,
+                               bool init=false) throw (ConversionException) = 0;
+
+      virtual void* convertNeutral(TypeCode * type, Any *data);
+      virtual std::string convertNeutralAsString(TypeCode * type, Any *data);
 
       virtual void removeRuntime();
       virtual ~Runtime();

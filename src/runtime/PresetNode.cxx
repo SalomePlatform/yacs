@@ -1,6 +1,6 @@
 
-#include "PresetNode.hxx"
 #include "PresetPorts.hxx"
+#include "PresetNode.hxx"
 #include "Visitor.hxx"
 
 #include <iostream>
@@ -51,7 +51,7 @@ void PresetNode::accept(Visitor *visitor)
   visitor->visitPresetNode(this);
 }
 
-void PresetNode::setData(OutputPort* port, std::string& data)
+void PresetNode::setData(OutputPort* port, const std::string& data)
 {
   OutputPresetPort *outp = dynamic_cast<OutputPresetPort *>(port);
   outp->setData(data);

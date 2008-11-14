@@ -507,15 +507,6 @@ void VisitorSaveSchema::writeTypeCodes(Proc *proc)
 
   // --- force definition of simple types first
 
-  _out << indent(depth) << "<type name=\"Bool\" kind=\"bool\"/>" << endl;
-  _out << indent(depth) << "<type name=\"Double\" kind=\"double\"/>" << endl;
-  _out << indent(depth) << "<type name=\"Int\" kind=\"int\"/>" << endl;
-  _out << indent(depth) << "<type name=\"String\" kind=\"string\"/>" << endl;
-  typeNames.insert("Bool");
-  typeNames.insert("Double");
-  typeNames.insert("Int");
-  typeNames.insert("String");
-
   for (it = typeMap.begin(); it != typeMap.end(); it++)
     {
       dumpTypeCode(it->second,typeNames,typeMap,depth);

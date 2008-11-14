@@ -355,16 +355,16 @@ void YACSGui_NodePage::setValueCellValidator( YACSGui_Table* theTable, int theRo
   DEBTRACE("YACSGui_NodePage::setValueCellValidator " << theRow);
   QString aVT = theTable->item( theRow, 2 )->text();
   //DEBTRACE(aVT.latin1());
-  if ( !aVT.compare(QString("Double")) )
+  if ( !aVT.compare(QString("double")) )
     theTable->setCellType( theRow, 3, YACSGui_Table::Double );
-  else if ( !aVT.compare(QString("Int")) )
+  else if ( !aVT.compare(QString("int")) )
     theTable->setCellType( theRow, 3, YACSGui_Table::Int );
-  else if ( !aVT.compare(QString("Bool")) )
+  else if ( !aVT.compare(QString("bool")) )
   {
     theTable->setCellType( theRow, 3, YACSGui_Table::Combo );
     theTable->setParams( theRow, 3, QString("True;False") );
   }
-  else // i.e. "String" or "Objref" or "Sequence" or "Array" or "Struct"
+  else // i.e. "string" or "Objref" or "Sequence" or "Array" or "Struct"
     theTable->setCellType( theRow, 3, YACSGui_Table::String );
 }
 

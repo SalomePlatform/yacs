@@ -107,7 +107,7 @@ void YACSGui_Executor::runDataflow(const bool isRemoteRun)
         if (! checkEndOfDataFlow()) return;
       _isRunning = true;
       //Export the proc into temporary XML file
-      QString aFileName = Qtx::tmpDir() + QDir::QDir::separator() + "tmp_" + _proc->getName();
+      QString aFileName = Qtx::tmpDir() + QDir::QDir::separator() + "tmp_" + _proc->getName() + "_" + getenv("USER");
       
       if (CORBA::is_nil(_procRef))
         {
@@ -326,12 +326,14 @@ void YACSGui_Executor::setStopOnError(bool aMode)
   DEBTRACE("YACSGui_Executor::setStopOnError");
   if (running())        // --- local run
     {
-      _localEngine->setStopOnError(aMode, "/tmp/dumpStateOnError.xml");
+      _localEngine->setStopOnError(aMode,
+				   string("/tmp/dumpStateOnError_") + getenv("USER") + string(".xml"));
       _isStopOnError = true;
     }
   else if (_isRunning)  // --- remote run
     {
-      _procRef->setStopOnError(aMode, "/tmp/dumpStateOnError.xml");
+      _procRef->setStopOnError(aMode,
+			       (string("/tmp/dumpStateOnError_") + getenv("USER") + string(".xml")).c_str());
       _isStopOnError = true;
     }
 }

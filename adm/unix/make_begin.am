@@ -4,7 +4,7 @@
 
 # Standard directory for installation
 salomeincludedir   = $(includedir)/salome
-libdir             = $(prefix)/lib@LIB_LOCATION_SUFFIX@/salome
+libdir             = $(prefix)/lib/salome
 bindir             = $(prefix)/bin/salome
 salomescriptdir    = $(bindir)
 salomepythondir    = $(pythondir)/salome
@@ -27,6 +27,3 @@ sharedpkgpythondir =$(salomepythondir)/shared_modules
 # Documentation directory
 docdir             = $(datadir)/doc/salome
 
-# Gui specific makefile variable (not needed for base, engine, runtime parts)
-# To improve
-include $(top_srcdir)/adm/unix/make_gui_begin.am

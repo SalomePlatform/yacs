@@ -71,10 +71,10 @@ itemEdition::itemEdition(Subject* subject)
       _category = "Data";
       switch (sub->getTypeCode()->kind())
         {
-        case YACS::ENGINE::Double:   _type = "Double"; break;
-        case YACS::ENGINE::Int:      _type = "Int"; break;
-        case YACS::ENGINE::String:   _type = "String"; break;
-        case YACS::ENGINE::Bool:     _type = "Bool"; break;
+        case YACS::ENGINE::Double:   _type = "double"; break;
+        case YACS::ENGINE::Int:      _type = "int"; break;
+        case YACS::ENGINE::String:   _type = "string"; break;
+        case YACS::ENGINE::Bool:     _type = "bool"; break;
         case YACS::ENGINE::Objref:   _type = "Objref"; break;
         case YACS::ENGINE::Sequence: _type = "Sequence"; break;
         case YACS::ENGINE::Array:    _type = "Array"; break;

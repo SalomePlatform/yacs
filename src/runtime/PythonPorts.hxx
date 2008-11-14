@@ -43,13 +43,18 @@ namespace YACS
       virtual void put(const void *data) throw(ConversionException);
       void put(PyObject *data) throw(ConversionException);
       InputPort *clone(Node *newHelder) const;
+      //special typedef PyObj used in SWIG to increment ref count on output
       virtual PyObj * getPyObj() const;
+      virtual std::string getAsString();
       void *get() const throw(Exception);
       virtual bool isEmpty();
       virtual void exSaveInit();
       virtual void exRestoreInit();
       virtual std::string dump();
       virtual std::string typeName() {return "YACS__ENGINE__InputPyPort";}
+      virtual std::string valToStr();
+      virtual void valFromStr(std::string valstr);
+
     protected:
       PyObject* _data;
       PyObject* _initData;
@@ -65,9 +70,13 @@ namespace YACS
       void put(PyObject *data) throw(ConversionException);
       OutputPort *clone(Node *newHelder) const;
       virtual PyObject * get() const;
+      //special typedef PyObj used in SWIG to increment ref count on output
       virtual PyObj * getPyObj() const;
+      virtual std::string getAsString();
       virtual std::string dump();
       virtual std::string typeName() {return "YACS__ENGINE__OutputPyPort";}
+      virtual std::string valToStr();
+      virtual void valFromStr(std::string valstr);
     protected:
       PyObject* _data;
     };

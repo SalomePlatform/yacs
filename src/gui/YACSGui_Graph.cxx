@@ -492,8 +492,9 @@ void YACSGui_Graph::createChildNodesPresentations( YACS::HMI::SubjectComposedNod
   }
 }
 
-void YACSGui_Graph::updateNodePrs( int theNodeId, std::string thePortName, std::string thePortValue )
+void YACSGui_Graph::updateNodePrs( int theNodeId, bool input,std::string thePortName, std::string thePortValue )
 {
+  DEBTRACE("updateNodePrs " << theNodeId << " " << thePortName << " " << thePortValue);
   if ( Node::idMap.count(theNodeId) == 0 ) return;
   Node* aNode= Node::idMap[theNodeId];
   
@@ -503,21 +504,22 @@ void YACSGui_Graph::updateNodePrs( int theNodeId, std::string thePortName, std::
     if ( aNodePrs )
     {
       Port* aPort = 0;
-      try {
-	aPort = aNode->getInPort(thePortName);
-      }
-      catch (YACS::Exception& ex) {
-	try {
-	  aPort = aNode->getOutPort(thePortName);
-	}
-	catch (YACS::Exception& ex) {
-	  SUIT_MessageBox::warn1(myModule->getApp()->desktop(), 
+      try 
+        {
+          if(input)
+            aPort = aNode->getInPort(thePortName);
+          else
+            aPort = aNode->getOutPort(thePortName);
+        }
+      catch (YACS::Exception& ex) 
+        {
+          SUIT_MessageBox::warn1(myModule->getApp()->desktop(), 
 				 QObject::tr("ERROR"), 
 				 QString("Update %1 node presentation : ").arg(aNode->getName().c_str()) + QString(ex.what()),
 				 QObject::tr("BUT_OK"));
-	  return;
-	}
-      }
+          return;
+        }
+
       if ( !aPort ) return;
 	
       if ( YACSPrs_InOutPort* aPortPrs = aNodePrs->getPortPrs(aPort) )

@@ -102,7 +102,7 @@ OutputPort* RuntimeForEngineTest::createOutputPort(const string& name, const str
   return new TestElemOutputPort(name, node, type);
 }
 
-InputPort* RuntimeForEngineTest::adapt(InputPort* source, const string& impl,TypeCode * type) throw (ConversionException)
+InputPort* RuntimeForEngineTest::adapt(InputPort* source, const string& impl,TypeCode * type,bool init) throw (ConversionException)
 {
   return new ProxyPort(source);
 }

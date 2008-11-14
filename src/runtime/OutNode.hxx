@@ -18,7 +18,7 @@ namespace YACS
       virtual void execute();
       virtual void accept(Visitor *visitor);
       virtual void checkBasicConsistency() const throw(Exception);
-      virtual void setData(InputPort* port, std::string& data);
+      virtual void setData(InputPort* port, const std::string& data);
       virtual void dump(std::ostream &os);
       virtual InputPort *createInputPort(const std::string& inputPortName, TypeCode* type);
     public:

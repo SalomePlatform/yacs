@@ -20,10 +20,16 @@
 #include "SalomeProc.hxx"
 #include "PythonNode.hxx"
 #include "PythonPorts.hxx"
+#include "PresetNode.hxx"
+#include "PresetPorts.hxx"
 #include "CORBANode.hxx"
 #include "CORBAPorts.hxx"
+#include "StudyNodes.hxx"
+#include "StudyPorts.hxx"
 #include "TypeConversions.hxx"
 #include "TypeCode.hxx"
+#include "VisitorSaveSalomeSchema.hxx"
+#include <sstream>
 %}
 
 // ----------------------------------------------------------------------------
@@ -81,35 +87,19 @@
 %include "SalomeProc.hxx"
 %include "PythonNode.hxx"
 %include "PythonPorts.hxx"
+%include "XMLPorts.hxx"
+%include "PresetNode.hxx"
+%include "PresetPorts.hxx"
 %include "CORBANode.hxx"
 %include "CORBAPorts.hxx"
+%include "StudyNodes.hxx"
+%include "StudyPorts.hxx"
 
-%extend YACS::ENGINE::InputCorbaPort
+%extend YACS::ENGINE::OutputPresetPort
 {
-  PyObject * getPyObj()
+  void setDataPy(PyObject *ob)
   {
-    CORBA::TypeCode_var tc=self->getAny()->type();
-    if (!tc->equivalent(CORBA::_tc_null))
-      return convertCorbaPyObject(self->edGetType(),self->getAny());
-    else
-      {
-        Py_INCREF(Py_None);
-        return Py_None;
-      }
+    std::string sss = convertPyObjectXml(self->edGetType(),ob);
+    self->setData(sss);
   }
 }
-%extend YACS::ENGINE::OutputCorbaPort
-{
-  PyObject * getPyObj()
-  {
-    CORBA::TypeCode_var tc=self->getAny()->type();
-    if (!tc->equivalent(CORBA::_tc_null))
-      return convertCorbaPyObject(self->edGetType(),self->getAny());
-    else
-      {
-        Py_INCREF(Py_None);
-        return Py_None;
-      }
-  }
-}
-

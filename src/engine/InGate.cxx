@@ -1,6 +1,9 @@
 #include "InGate.hxx"
 #include "Node.hxx"
 
+//#define _DEVDEBUG_
+#include "YacsTrace.hxx"
+
 using namespace YACS::ENGINE;
 using namespace std;
 
@@ -34,6 +37,7 @@ void InGate::edDisconnectAllLinksToMe()
  */
 void InGate::exNotifyFromPrecursor(OutGate *from)
 {
+  DEBTRACE("InGate::exNotifyFromPrecursor");
   map< OutGate *, bool >::iterator iter=_backLinks.find(from);
   (*iter).second=true;
   if(exIsReady())

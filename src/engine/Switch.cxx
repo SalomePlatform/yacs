@@ -650,6 +650,8 @@ YACS::StatesForNode Switch::getEffectiveState(const Node* node) const
     return YACS::READY;
   if(effectiveState==YACS::DISABLED)
     return YACS::DISABLED;
+  if(!_condition.getValue())
+    return node->getState();
   map< int , Node * >::const_iterator iter=_mapOfNode.find(_condition.getIntValue());
   if(iter!=_mapOfNode.end() && (*iter).second==node)
     return node->getState();

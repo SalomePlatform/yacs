@@ -98,10 +98,21 @@ namespace YACS
  * End of Director section
  */
 
-%types(YACS::ENGINE::InputPort *,YACS::ENGINE::OutputPort *,YACS::ENGINE::InputDataStreamPort *,YACS::ENGINE::OutputDataStreamPort *);
-%types(YACS::ENGINE::InGate *,YACS::ENGINE::OutGate *,YACS::ENGINE::InPort *,YACS::ENGINE::OutPort *,YACS::ENGINE::Port *);
+%types(YACS::ENGINE::Node *,YACS::ENGINE::Proc *,YACS::ENGINE::ForLoop *,YACS::ENGINE::Bloc *, YACS::ENGINE::Switch *);
+%types(YACS::ENGINE::WhileLoop *,YACS::ENGINE::ForEachLoop *,YACS::ENGINE::ComposedNode *,YACS::ENGINE::InlineNode *);
+%types(YACS::ENGINE::InlineFuncNode *,YACS::ENGINE::ServiceInlineNode *,YACS::ENGINE::ServiceNode *);
+%types(YACS::ENGINE::ElementaryNode *);
+
+%types(YACS::ENGINE::InputPort *,YACS::ENGINE::OutputPort *);
+%types(YACS::ENGINE::InputDataStreamPort *,YACS::ENGINE::OutputDataStreamPort *);
+%types(YACS::ENGINE::InGate *,YACS::ENGINE::OutGate *);
+%types(YACS::ENGINE::InPort *,YACS::ENGINE::OutPort *,YACS::ENGINE::Port *);
+
+%types(YACS::ENGINE::Observer *);
 
 %import "pilot.i"
+%import "Dispatcher.hxx"
+%import "Catalog.hxx"
 
 namespace YACS
 {

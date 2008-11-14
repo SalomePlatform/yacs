@@ -150,7 +150,11 @@ static PyObject* convertPort(YACS::ENGINE::Port* port,int owner=0)
     }
   else
     {
-      if(dynamic_cast<YACS::ENGINE::InputPort *>(port))
+      if(YACS::ENGINE::AnyInputPort *cport =dynamic_cast<YACS::ENGINE::AnyInputPort *>(port))
+        ob=SWIG_NewPointerObj((void*)cport,SWIGTYPE_p_YACS__ENGINE__AnyInputPort,owner);
+      else if(YACS::ENGINE::AnyOutputPort *cport =dynamic_cast<YACS::ENGINE::AnyOutputPort *>(port))
+        ob=SWIG_NewPointerObj((void*)cport,SWIGTYPE_p_YACS__ENGINE__AnyOutputPort,owner);
+      else if(dynamic_cast<YACS::ENGINE::InputPort *>(port))
         ob=SWIG_NewPointerObj((void*)port,SWIGTYPE_p_YACS__ENGINE__InputPort,owner);
       else if(dynamic_cast<YACS::ENGINE::OutputPort *>(port))
         ob=SWIG_NewPointerObj((void*)port,SWIGTYPE_p_YACS__ENGINE__OutputPort,owner);
@@ -231,6 +235,18 @@ static PyObject* convertPort(YACS::ENGINE::Port* port,int owner=0)
 #endif
 
 #ifdef SWIGPYTHON
+%typemap(out) YACS::ENGINE::TypeCode*
+{
+  if(dynamic_cast<YACS::ENGINE::TypeCodeStruct *>($1))
+    $result=SWIG_NewPointerObj((void*)$1,SWIGTYPE_p_YACS__ENGINE__TypeCodeStruct,$owner);
+  else if(dynamic_cast<YACS::ENGINE::TypeCodeSeq *>($1))
+    $result=SWIG_NewPointerObj((void*)$1,SWIGTYPE_p_YACS__ENGINE__TypeCodeSeq,$owner);
+  else if(dynamic_cast<YACS::ENGINE::TypeCodeObjref *>($1))
+    $result=SWIG_NewPointerObj((void*)$1,SWIGTYPE_p_YACS__ENGINE__TypeCodeObjref,$owner);
+  else
+    $result=SWIG_NewPointerObj((void*)$1,SWIGTYPE_p_YACS__ENGINE__TypeCode,$owner);
+}
+
 %typemap(in) std::list<YACS::ENGINE::TypeCodeObjref*>
 {
   // Check if input is a list 
@@ -319,6 +335,11 @@ static PyObject* convertPort(YACS::ENGINE::Port* port,int owner=0)
       ob=convertNode(*iL);
       PyList_SetItem($result,i,ob); 
     }
+}
+
+%typemap(out) YACS::ENGINE::InputPort*,YACS::ENGINE::OutputPort*,YACS::ENGINE::InPort*,YACS::ENGINE::OutPort*
+{
+  $result=convertPort($1,$owner);
 }
 
 %typemap(out) std::set<YACS::ENGINE::InGate *>

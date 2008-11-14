@@ -9,7 +9,7 @@
 using namespace YACS::ENGINE;
 using namespace std;
 
-const char *TypeCode::KIND_STR_REPR []={ "None", "Double", "Int", "String", "Bool", "Objref", "Sequence", "Array","Struct" };
+const char *TypeCode::KIND_STR_REPR []={ "None", "double", "int", "string", "bool", "Objref", "Sequence", "Array","Struct" };
 
 // --- TypeCode
 
@@ -67,13 +67,13 @@ const char * TypeCode::id() const throw(Exception)
   switch(_kind)
     {
     case Double:
-      return "Double";
+      return "double";
     case Int:
-      return "Int";
+      return "int";
     case String:
-      return "String";
+      return "string";
     case Bool:
-      return "Bool";
+      return "bool";
     default:
       return "";
     }
@@ -216,6 +216,12 @@ TypeCode * TypeCode::sequenceTc(const char* id,
                                  const char* name,
                                  TypeCode *content)
 {
+  std::string typname;
+  if(std::string(name)=="")
+    {
+      typname="seq"+std::string(content->name());
+      name=typname.c_str();
+    }
   return new TypeCodeSeq(id, name,content);
 };
 //! static factory of struct type given an id and a name 

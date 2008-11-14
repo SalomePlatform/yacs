@@ -189,8 +189,12 @@ public slots:
 
   void temporaryExport();
 
+ protected slots:
+  virtual void                        onModelOpened();
+  virtual void                        onModelClosed();
+
  protected:
-  void createSComponent(); 
+  bool createSComponent(); 
   void loadCatalog();
   void publishInStudy(YACSGui_Graph* theGraph); // a test function
   virtual CAM_DataModel* createDataModel();

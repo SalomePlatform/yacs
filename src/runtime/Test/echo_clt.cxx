@@ -11,7 +11,7 @@
 #include <vector>
 #include <map>
 
-#define _DEVDEBUG_
+//#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
 int main(int argc, char** argv)

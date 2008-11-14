@@ -67,20 +67,38 @@ InputPort::~InputPort()
 void InputPort::edInit(Any *value)
 {
   InputPort *manuallySet=getRuntime()->adapt(this,
-                                             Runtime::RUNTIME_ENGINE_INTERACTION_IMPL_NAME,_type);
-  manuallySet->put((const void *) value);
-  if(manuallySet!=this)
-    delete manuallySet;
+                                             Runtime::RUNTIME_ENGINE_INTERACTION_IMPL_NAME,_type,true);
+  try
+    {
+      manuallySet->put((const void *) value);
+      if(manuallySet!=this)
+        delete manuallySet;
+    }
+  catch(ConversionException&)
+    {
+      if(manuallySet!=this)
+        delete manuallySet;
+      throw;
+    }
   exSaveInit();
   modified();
 }
 
 void InputPort::edInit(const std::string& impl,const void* value)
 {
-  InputPort *manuallySet=getRuntime()->adapt(this,impl,_type);
-  manuallySet->put(value);
-  if(manuallySet!=this)
-    delete manuallySet;
+  InputPort *manuallySet=getRuntime()->adapt(this,impl,_type,true);
+  try
+    {
+      manuallySet->put(value);
+      if(manuallySet!=this)
+        delete manuallySet;
+    }
+  catch(ConversionException&)
+    {
+      if(manuallySet!=this)
+        delete manuallySet;
+      throw;
+    }
   exSaveInit();
   modified();
 }

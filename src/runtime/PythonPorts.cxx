@@ -123,6 +123,9 @@ void InputPyPort::edRemoveManInit()
   Py_XDECREF(_initData);
   _initData=Py_None;
   Py_INCREF(_initData);
+  Py_XDECREF(_data);
+  _data=Py_None;
+  Py_INCREF(_data);
   InputPort::edRemoveManInit();
 }
 
@@ -137,6 +140,7 @@ void InputPyPort::put(PyObject *data) throw(ConversionException)
   releasePyObj(_data);
   Py_XDECREF(_data); 
   _data = data;
+  _stringRef="";
   Py_INCREF(_data); 
   registerPyObj(_data);
   DEBTRACE( "_data refcnt: " << _data->ob_refcnt );
@@ -155,6 +159,11 @@ PyObject * InputPyPort::getPyObj() const
 void *InputPyPort::get() const throw(Exception)
 {
   return (void*) _data;
+}
+
+std::string InputPyPort::getAsString()
+{
+  return convertPyObjectToString(_data);
 }
 
 bool InputPyPort::isEmpty()
@@ -207,6 +216,24 @@ std::string InputPyPort::dump()
 //           << " on node " << _node->getName();
 //       throw Exception(msg.str());      
 //     }
+}
+
+std::string InputPyPort::valToStr()
+{
+  int isString = PyString_Check(getPyObj());
+  //DEBTRACE("isString=" << isString);
+  PyObject *strPyObj = PyObject_Str(getPyObj());
+  //DEBTRACE(PyString_Size(strPyObj));
+  string val = PyString_AsString(strPyObj);
+  if (isString)
+    val = "\"" + val + "\"";
+  //DEBTRACE(val);
+  Py_DECREF(strPyObj);
+  return val;
+}
+
+void InputPyPort::valFromStr(std::string valstr)
+{
 }
 
 
@@ -268,6 +295,11 @@ PyObject * OutputPyPort::getPyObj() const
   return _data;
 }
 
+std::string OutputPyPort::getAsString()
+{
+  return convertPyObjectToString(_data);
+}
+
 std::string OutputPyPort::dump()
 {
   if( _data == Py_None)
@@ -277,3 +309,14 @@ std::string OutputPyPort::dump()
   return xmldump;
 }
 
+std::string OutputPyPort::valToStr()
+{
+  PyObject *strPyObj = PyObject_Str(getPyObj());
+  string val = PyString_AsString(strPyObj);
+  Py_DECREF(strPyObj);
+  return val;
+}
+
+void OutputPyPort::valFromStr(std::string valstr)
+{
+}

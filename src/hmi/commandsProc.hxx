@@ -112,6 +112,45 @@ namespace YACS
       std::string _name;
     };
 
+    class CommandRenameContainer: public Command
+    {
+    public:
+      CommandRenameContainer(std::string oldName, std::string newName);
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      std::string _oldName;
+      std::string _newName;
+    };
+
+    class CommandRenameInDataPort: public Command
+    {
+    public:
+      CommandRenameInDataPort(std::string position,
+                              std::string oldName,
+                              std::string newName);
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      std::string _position;
+      std::string _oldName;
+      std::string _newName;
+    };
+
+    class CommandRenameOutDataPort: public Command
+    {
+    public:
+      CommandRenameOutDataPort(std::string position,
+                               std::string oldName,
+                               std::string newName);
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      std::string _position;
+      std::string _oldName;
+      std::string _newName;
+    };
+
     class CommandAddDataTypeFromCatalog: public Command
     {
     public:
@@ -197,11 +236,39 @@ namespace YACS
       YACS::ENGINE::OutputDataStreamPort *_ODSPort;
     };
 
+    class CommandSetInPortValue: public Command
+    {
+    public:
+      CommandSetInPortValue(std::string node,
+                            std::string port,
+                            std::string value);
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      std::string _node;
+      std::string _port;
+      std::string _value;
+    };
+
+    class CommandSetOutPortValue: public Command
+    {
+    public:
+      CommandSetOutPortValue(std::string node,
+                             std::string port,
+                             std::string value);
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      std::string _node;
+      std::string _port;
+      std::string _value;
+    };
+
     class CommandAddLink: public Command
     {
     public:
       CommandAddLink(std::string outNode, std::string outPort,
-                     std::string inNode, std::string inPort);
+                     std::string inNode, std::string inPort,bool control=true);
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
@@ -209,6 +276,7 @@ namespace YACS
       std::string _outPort;
       std::string _inNode;
       std::string _inPort;
+      bool _control;
     };
 
     class CommandAddControlLink: public Command

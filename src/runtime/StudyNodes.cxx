@@ -43,7 +43,7 @@ OutputPort* StudyInNode::createOutputPort(const std::string& outputPortName, Typ
   return new OutputStudyPort(outputPortName, this, type);
 }
 
-void StudyInNode::setData(OutputPort* port, std::string& data)
+void StudyInNode::setData(OutputPort* port, const std::string& data)
 {
   OutputStudyPort *outp = dynamic_cast<OutputStudyPort *>(port);
   outp->setData(data);
@@ -193,7 +193,7 @@ InputPort* StudyOutNode::createInputPort(const std::string& inputPortName, TypeC
   return new InputStudyPort(inputPortName, this, type);
 }
 
-void StudyOutNode::setData(InputPort* port, std::string& data)
+void StudyOutNode::setData(InputPort* port, const std::string& data)
 {
   InputStudyPort *inp = dynamic_cast<InputStudyPort *>(port);
   inp->setData(data);

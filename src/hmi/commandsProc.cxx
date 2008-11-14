@@ -35,6 +35,7 @@
 #include "guiContext.hxx"
 
 #include <iostream>
+#include <sstream>
 #include <string>
 
 //#define _DEVDEBUG_
@@ -252,6 +253,107 @@ bool CommandRenameNode::localReverse()
 
 // ----------------------------------------------------------------------------
 
+CommandRenameContainer::CommandRenameContainer(std::string oldName, std::string newName)
+  : Command(), _oldName(oldName), _newName(newName)
+{
+  DEBTRACE("CommandRenameContainer::CommandRenameContainer " << _oldName << " " << _newName);
+}
+
+bool CommandRenameContainer::localExecute()
+{
+  Proc* proc = GuiContext::getCurrent()->getProc();
+  Container *container = 0;
+  try
+    {
+      if (! proc->containerMap.count(_oldName)) return 0;
+      container = proc->containerMap[_oldName];
+      proc->containerMap.erase(_oldName);
+      container->setName(_newName);
+      proc->containerMap[_newName] = container;
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandRenameContainer::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      container = 0;
+    }
+  return (container != 0); 
+}
+
+bool CommandRenameContainer::localReverse()
+{
+}
+
+// ----------------------------------------------------------------------------
+
+CommandRenameInDataPort::CommandRenameInDataPort(std::string position,
+                                                 std::string oldName,
+                                                 std::string newName)
+  : Command(), _position(position), _oldName(oldName), _newName(newName)
+{
+  DEBTRACE("CommandRenameInDataPort::CommandRenameInDataPort "
+           << _position << " " << _oldName<< " " << _newName);
+}
+
+bool CommandRenameInDataPort::localExecute()
+{
+  Proc* proc = GuiContext::getCurrent()->getProc();
+  Node* node = proc;
+  try
+    {
+      if (_position != proc->getName()) node = proc->getChildByName(_position);
+      InPort * port = node->getInPort(_oldName);
+      port->setName(_newName);
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandRenameInDataPort::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      node = 0;
+    }
+  return (node != 0); 
+}
+
+bool CommandRenameInDataPort::localReverse()
+{
+}
+
+// ----------------------------------------------------------------------------
+
+CommandRenameOutDataPort::CommandRenameOutDataPort(std::string position,
+                                                   std::string oldName,
+                                                   std::string newName)
+  : Command(), _position(position), _oldName(oldName), _newName(newName)
+{
+  DEBTRACE("CommandRenameOutDataPort::CommandRenameOutDataPort "
+           << _position << " " << _oldName<< " " << _newName);
+}
+
+bool CommandRenameOutDataPort::localExecute()
+{
+  Proc* proc = GuiContext::getCurrent()->getProc();
+  Node* node = proc;
+  try
+    {
+      if (_position != proc->getName()) node = proc->getChildByName(_position);
+      OutPort * port = node->getOutPort(_oldName);
+      port->setName(_newName);
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandRenameOutDataPort::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      node = 0;
+    }
+  return (node != 0); 
+}
+
+bool CommandRenameOutDataPort::localReverse()
+{
+}
+
+// ----------------------------------------------------------------------------
+
 CommandAddDataTypeFromCatalog::CommandAddDataTypeFromCatalog(YACS::ENGINE::Catalog* catalog,
                                                              std::string typeName)
   : Command(), _catalog(catalog), _typeName(typeName)
@@ -323,7 +425,7 @@ bool CommandAddInputPortFromCatalog::localExecute()
             son = father->edAddInputPort(_name, _catalog->_typeMap[_typePort]);
           else
             {
-              DEBTRACE(_typePort << " not found in catalog");
+              DEBTRACE(_typePort << " not found in catalog " << _catalog);
               GuiContext::getCurrent()->_lastErrorMessage = _typePort + " not found in catalog";
             }
         }
@@ -524,17 +626,119 @@ bool CommandDestroy::localReverse()
 }
  
 // ----------------------------------------------------------------------------
+CommandSetInPortValue::CommandSetInPortValue(std::string node,
+                                             std::string port,
+                                             std::string value)
+  : Command(), _node(node), _port(port), _value(value)
+{
+  DEBTRACE("CommandSetInPortValue::CommandSetInPortValue " << node << " " << port << " " << value);
+}
+    
+bool CommandSetInPortValue::localExecute()
+{
+  try
+    {
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      Node* node = proc->getChildByName(_node);
+      InputPort* inp = node->getInputPort(_port);
+
+      assert(Py_IsInitialized());
+      PyGILState_STATE gstate;
+      gstate = PyGILState_Ensure();
+      PyObject *globals = PyDict_New(); // PyEval_GetGlobals();
+      PyObject *locals =  PyDict_New(); // PyEval_GetLocals();
+//       if (locals == Py_None)
+//         locals = globals;
+      DEBTRACE(_value.c_str());
+      PyObject *result = PyRun_String(_value.c_str(), Py_eval_input, globals, locals);
+      if (result == NULL)
+        {
+          PyErr_Print();
+          //Py_DECREF(result);
+          stringstream errmess;
+          errmess << "Invalid syntax: " << _value;
+          throw YACS::ENGINE::ConversionException(errmess.str()); 
+        }
+      inp->edInit("Python", result);
+      Py_DECREF(result);
+      Py_DECREF(globals);
+      Py_DECREF(locals);
+      PyGILState_Release(gstate);
+      return true;
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandSetInPortValue::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      return false;
+    }
+
+}
+
+bool CommandSetInPortValue::localReverse()
+{
+}
+
+// ----------------------------------------------------------------------------
+CommandSetOutPortValue::CommandSetOutPortValue(std::string node,
+                                               std::string port,
+                                               std::string value)
+  : Command(), _node(node), _port(port), _value(value)
+{
+  DEBTRACE("CommandSetOutPortValue::CommandSetOutPortValue " << node << " " << port << " " << value);
+}
+    
+bool CommandSetOutPortValue::localExecute()
+{
+  try
+    {
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      Node* node = proc->getChildByName(_node);
+      OutputPort* outp = node->getOutputPort(_port);
+      
+      PyObject *globals =  PyDict_New(); // PyEval_GetGlobals();
+      PyObject *locals =  PyDict_New(); // PyEval_GetLocals();
+      PyObject *result = PyRun_String(_value.c_str(), Py_eval_input, globals, locals);
+      if (result == NULL)
+        {
+          PyErr_Print();
+          //Py_DECREF(result);
+          stringstream errmess;
+          errmess << "Invalid syntax: " << _value;
+          throw YACS::ENGINE::ConversionException(errmess.str()); 
+        }
+      //outp->edInit("Python", result);
+      Py_DECREF(result);
+      Py_DECREF(globals);
+      Py_DECREF(locals);
+      throw YACS::ENGINE::ConversionException("Set value on output port not yet implemented");
+      return true;
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandSetOutPortValue::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      return false;
+    }
+
+}
+
+bool CommandSetOutPortValue::localReverse()
+{
+}
+ 
+// ----------------------------------------------------------------------------
 
 CommandAddLink::CommandAddLink(std::string outNode, std::string outPort,
-                               std::string inNode, std::string inPort)
-  : Command(), _outNode(outNode), _outPort(outPort), _inNode(inNode), _inPort(inPort)
+                               std::string inNode, std::string inPort,bool control)
+  : Command(), _outNode(outNode), _outPort(outPort), _inNode(inNode), _inPort(inPort),_control(control)
 {
-  DEBTRACE("CommandAddLink::CommandAddLink "<<outNode<<"."<<outPort<<"->"<<inNode<<"."<<inPort);
+  DEBTRACE("CommandAddLink::CommandAddLink "<<outNode<<"."<<outPort<<"->"<<inNode<<"."<<inPort<<" "<<control);
 }
 
 bool CommandAddLink::localExecute()
 {
-  DEBTRACE(_outNode<<"."<<_outPort<<"->"<<_inNode<<"."<<_inPort);
+  DEBTRACE(_outNode<<"."<<_outPort<<"->"<<_inNode<<"."<<_inPort<<" "<<_control);
   try
     {
       Proc* proc = GuiContext::getCurrent()->getProc();
@@ -546,8 +750,10 @@ bool CommandAddLink::localExecute()
       DEBTRACE(cla->getName());
       if (dynamic_cast<OutputDataStreamPort*>(outp))
         cla->edAddLink(outp,inp);
-      else
+      else if(_control)
         cla->edAddDFLink(outp,inp);
+      else
+        cla->edAddLink(outp,inp);
       return true;
     }
   catch (Exception& ex)
@@ -583,8 +789,7 @@ bool CommandAddControlLink::localExecute()
         inn = proc->getChildByName(_inNode);
       ComposedNode *cla = ComposedNode::getLowestCommonAncestor(outn,inn);
       DEBTRACE(cla->getName());
-      cla->edAddCFLink(outn,inn);
-      return true;
+      return cla->edAddCFLink(outn,inn);
     }
   catch (Exception& ex)
     {

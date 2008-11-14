@@ -85,6 +85,16 @@ std::string OutputStudyPort::dump()
   return _data;
 }
 
+std::string OutputStudyPort::getPyObj()
+{
+  return getData();
+}
+std::string OutputStudyPort::getAsString()
+{
+  return getData();
+}
+
+
 InputStudyPort::InputStudyPort(const std::string& name,  Node* node, TypeCode* type)
   : InputXmlPort(name, node, type),
     DataPort(name, node, type),
@@ -141,6 +151,14 @@ std::string InputStudyPort::dump()
   DEBTRACE( "InputStudyPort::dump " << _data );
   //return "<value><string>"+_storeData+"</string></value>";
   return _data;
+}
+std::string InputStudyPort::getPyObj()
+{
+  return getData();
+}
+std::string InputStudyPort::getAsString()
+{
+  return getData();
 }
 
 }

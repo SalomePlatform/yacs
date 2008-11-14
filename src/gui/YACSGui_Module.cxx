@@ -174,9 +174,6 @@ void YACSGui_Module::initialize( CAM_Application* theApp )
   if ( theApp && theApp->desktop() )
     connect( theApp->desktop(), SIGNAL( windowActivated( SUIT_ViewWindow* ) ),
              this, SLOT(onWindowActivated( SUIT_ViewWindow* )) );
-
-  connect( getApp()->objectBrowser()->listView(), SIGNAL( doubleClicked( QListViewItem* ) ), 
-	   this,                                  SLOT  ( onDblClick( QListViewItem* ) ) );
 }
 
 //! Creates module actions.
@@ -740,7 +737,7 @@ void YACSGui_Module::windows( QMap<int, int>& mappa ) const
  */
 void YACSGui_Module::viewManagers( QStringList& lst ) const
 {
-  DEBTRACE("YACSGui_Module::viewManagers");
+  DEBTRACE("YACSGui_Module::viewManagers " << myWindowsMap.size());
   if(myWindowsMap.size()>0)
     lst.append( QxGraph_Viewer::Type() );
 }
@@ -753,6 +750,10 @@ bool YACSGui_Module::activateModule( SUIT_Study* theStudy )
 {
   DEBTRACE("YACSGui_Module::activateModule");
   bool bOk = SalomeApp_Module::activateModule( theStudy );
+
+  if ( createSComponent() )
+    updateObjBrowser();
+
   setMenuShown( true );
   setToolShown( true );
   setGuiMode(YACSGui_Module::InitMode);
@@ -768,6 +769,8 @@ bool YACSGui_Module::activateModule( SUIT_Study* theStudy )
 	   this,                                  SLOT  ( onExpanded( QListViewItem* ) ) );
   connect( getApp()->objectBrowser()->listView(), SIGNAL( collapsed( QListViewItem* ) ), 
 	   this,                                  SLOT  ( onCollapsed( QListViewItem* ) ) );
+  connect( getApp()->objectBrowser()->listView(), SIGNAL( doubleClicked( QListViewItem* ) ), 
+	   this,                                  SLOT  ( onDblClick( QListViewItem* ) ) );
 
   return bOk;
 }
@@ -794,10 +797,8 @@ bool YACSGui_Module::deactivateModule( SUIT_Study* theStudy )
       myTreeViews[sId]->hide();
   }
 
-  /*
   disconnect( getApp()->objectBrowser()->listView(), SIGNAL( doubleClicked( QListViewItem* ) ), 
 	      this,                                  SLOT  ( onDblClick( QListViewItem* ) ) );
-              */
 
   return SalomeApp_Module::deactivateModule( theStudy );
 }
@@ -1295,6 +1296,11 @@ void YACSGui_Module::onExportSchema()
   Proc* aProc = activeGraph()->getProc();
   if ( !aProc )
     return;
+
+  //check if modifications are pending
+  YACSGui_EditionTreeView* anETV = dynamic_cast<YACSGui_EditionTreeView*>( activeTreeView() );
+  if(anETV)
+    anETV->warnAboutSelectionChanged();
 
   QString aFileName = SUIT_FileDlg::getFileName( application()->desktop(), aProc->getName(), "*.xml", tr("TLT_EXPORT_SCHEMA"), false );
   if (aFileName.isEmpty())
@@ -1862,7 +1868,7 @@ YACSGui_Graph* YACSGui_Module::displayGraph( YACS::HMI::GuiContext* theCGraph,
     return aGraph;
 
   aGraph = new YACSGui_Graph( this, aCanvas, theCGraph );
-  aGraph->show();
+  aGraph->show(false); // do not arrange nodes on start
 
   // Update node geometry
   // TODO: not optimal, graph is redrawn twice - 
@@ -1882,12 +1888,16 @@ YACSGui_Graph* YACSGui_Module::displayGraph( YACS::HMI::GuiContext* theCGraph,
       if ( aBloc )
       {
 	aBloc->resize( (int)aData.width, (int)aData.height );
+        aBloc->setContentMoving(false);
       }
 
       anItem->setIsCheckAreaNeeded(false);
       anItem->move( aData.x, aData.y );
       anItem->setIsCheckAreaNeeded(true);
       anItem->setZ( aData.z );
+
+      if ( aBloc )
+        aBloc->setContentMoving(true);
     }
     needToUpdate = true;
   }
@@ -2122,7 +2132,7 @@ void YACSGui_Module::createElementaryNodePrs()
 //! Create SComponent for the YACS module.
 /*!
  */
-void YACSGui_Module::createSComponent()
+bool YACSGui_Module::createSComponent()
 {
   DEBTRACE("YACSGui_Module::createSComponent");
   _PTR(Study)            aStudy = (( SalomeApp_Study* )(getApp()->activeStudy()))->studyDS();
@@ -2143,7 +2153,11 @@ void YACSGui_Module::createSComponent()
     aPixmap->SetPixMap( "YACS_MODULE_ICON" );
 
     aBuilder->DefineComponentInstance( aComponent, engineIOR() );
+
+    return true;
   }
+  
+  return false;
 }
 
 //! Load services from Module Catalog
@@ -2231,6 +2245,7 @@ YACSGui_DataModel* YACSGui_Module::getDataModel() const
 
 void YACSGui_Module::CreateNewSchema( QString& theName, YACS::ENGINE::Proc* theProc, const bool updateOB )
 {
+  DEBTRACE("YACSGui_Module::CreateNewSchema");
   YACSGui_DataModel* aModel = getDataModel();
   if (aModel)
   {
@@ -2511,7 +2526,7 @@ LightApp_Selection* YACSGui_Module::createSelection() const
 }
 
 /*! Get selection from SALOME object browser. Get a schema name and a schema file name from selection.
- *  If the schema as already been executed and saved under a fixed name: /tmp/YACS/"aSchemaName"-modified,
+ *  If the schema as already been executed and saved under a fixed name: /tmp/YACS_"USER"/"aSchemaName"_modified,
  *  use this schema file name.
  *  
  *  Create a file run name based on current date and time.
@@ -2556,9 +2571,12 @@ void YACSGui_Module::onCreateExecution()
         if (!aSPage) 
           return;
 
-        // --- check first the validity of the proc
+        //check if modifications are pending
+        YACSGui_EditionTreeView* anETV = dynamic_cast<YACSGui_EditionTreeView*>( activeTreeView() );
+        if(anETV)
+          anETV->warnAboutSelectionChanged();
 
-        // Check validity
+        // --- check the validity of the proc
         if(!aProc->isValid())
           {
 
@@ -2589,8 +2607,8 @@ void YACSGui_Module::onCreateExecution()
 
         QString tmpDir = SALOMEDS_Tool::GetTmpDir();
         QDir aTmpDir( tmpDir );
-        aTmpDir.mkdir( "YACSGui" );
-        aTmpDir.cd( "YACSGui", false );
+        aTmpDir.mkdir( QString("YACSGui_") + getenv("USER") );
+        aTmpDir.cd( QString("YACSGui_") + getenv("USER"), false );
 
 	QDateTime curTime = QDateTime::currentDateTime();   
 	QString aRunName = aSchemaName + "_" + curTime.toString( "yyyyMMdd_hhmmss" );
@@ -2946,8 +2964,8 @@ void YACSGui_Module::onCreateEdition()
 	  // create a new file with name FilePath+"-modified" and copy FilePath content into it
 	  QString tmpDir = SALOMEDS_Tool::GetTmpDir();
 	  QDir aTmpDir( tmpDir );
-	  aTmpDir.mkdir( "YACS" );
-	  aTmpDir.cd( "YACS", false );
+	  aTmpDir.mkdir( QString("YACS_") + getenv("USER") );
+	  aTmpDir.cd( QString("YACS_") + getenv("USER"), false );
 
 	  if ( Proc* aProcRun = getDataModel()->getProc( sobj ) )
 	  {
@@ -3212,6 +3230,22 @@ void YACSGui_Module::setInputPanelVisibility( const bool theOn )
 void YACSGui_Module::onSetActive()
 {
   DEBTRACE( "YACSGui_Module::onSetActive() not implemented yet" );
+}
+
+/*!
+ * protected slot when model is opened
+*/
+void YACSGui_Module::onModelOpened()
+{
+  DEBTRACE( "YACSGui_Module::onModelOpened" );
+}
+/*!
+ * protected slot when study is closed
+*/
+void YACSGui_Module::onModelClosed()
+{
+  DEBTRACE( "YACSGui_Module::onModelClosed" );
+  myWindowsMap.clear();
 }
 
 //! Public. Set gui mode by ObjectType
@@ -3576,13 +3610,13 @@ void YACSGui_Module::temporaryExport()
 
   QString aSchemaName(aSchema->getName());
 
-  QString tmpDir("/tmp/YACS");
+  QString tmpDir( QString("/tmp/YACS_") + getenv("USER") );
   QDir aTmpDir( tmpDir );
   if ( !aTmpDir.exists() )
   {
     aTmpDir = QDir("/tmp");
-    aTmpDir.mkdir( "YACS" );
-    aTmpDir.cd( "YACS", false );
+    aTmpDir.mkdir( QString("YACS_") + getenv("USER") );
+    aTmpDir.cd( QString("YACS_") + getenv("USER"), false );
   }
   
   // the temporary file name for modified schema

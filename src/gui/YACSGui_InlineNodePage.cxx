@@ -141,7 +141,7 @@ YACSGui_InlineNodePage::YACSGui_InlineNodePage( QWidget* theParent, const char* 
 #endif
 
   QString aPortTypes = QString("Data Flow"); //";Data Stream (BASIC);Data Stream (CALCIUM);Data Stream (PALM)");
-  QString aValueTypes = QString("Double;Int;String;Bool");
+  QString aValueTypes = QString("double;int;string;bool");
 
   // Input Ports table
   myInputPortsGroupBox->setTitle( tr("Input Ports") );
@@ -165,7 +165,7 @@ YACSGui_InlineNodePage::YACSGui_InlineNodePage( QWidget* theParent, const char* 
   aTable->setParams( 0, 2, aValueTypes );
 
   aTable->setDefValue( 0, 1, "Data Flow" );
-  aTable->setDefValue( 0, 2, "Double" );
+  aTable->setDefValue( 0, 2, "double" );
 
   aTable->setEditorSync(true);
 
@@ -207,7 +207,7 @@ YACSGui_InlineNodePage::YACSGui_InlineNodePage( QWidget* theParent, const char* 
   aTable->setParams( 0, 4, QString("Yes;No") );
 
   aTable->setDefValue( 0, 1, "Data Flow" );
-  aTable->setDefValue( 0, 2, "Double" );
+  aTable->setDefValue( 0, 2, "double" );
   aTable->setDefValue( 0, 4, QString("Yes") );
 
   aTable->setEditorSync(true);
@@ -496,7 +496,7 @@ void YACSGui_InlineNodePage::onApply()
 
   if ( myIsNeedToReorder )
   {
-    orderPorts(withFilling);
+    //orderPorts(withFilling);
     myIsNeedToReorder = false;
   }
   
@@ -989,12 +989,12 @@ void YACSGui_InlineNodePage::onAdded( const int theRow )
     if ( myInputPortsGroupBox == aGrpBox )
     {
       myInputPortsGroupBox->Table()->setDefValue( theRow, 2, "" );
-      myInputPortsGroupBox->Table()->item( theRow, 2 )->setText("Double");
+      myInputPortsGroupBox->Table()->item( theRow, 2 )->setText("double");
     }
     else if ( myOutputPortsGroupBox == aGrpBox )
     {
       myOutputPortsGroupBox->Table()->setDefValue( theRow, 2, "" );
-      myOutputPortsGroupBox->Table()->item( theRow, 2 )->setText("Double");
+      myOutputPortsGroupBox->Table()->item( theRow, 2 )->setText("double");
     }
 }
 
@@ -1544,13 +1544,22 @@ void YACSGui_InlineNodePage::setInputPorts()
 
   myInputPortsGroupBox->Table()->stopEdit(true);
 
+  YACSPrs_ElementaryNode* aCanvasNode = 0;
+  if ( myIsNeedToReorder )
+    if ( Proc* aProc = dynamic_cast<Proc*>(getNode()->getRootNode()) )
+      if ( YACSGui_Graph* aGraph = getInputPanel()->getModule()->getGraph( aProc ) )
+	aCanvasNode = aGraph->getItem(getNode());
+  
   // remove old ports
   list<InPort*> anInPortsEngine = aNode->getSetOfInPort();
   list<InPort*>::iterator anInPortsIter = anInPortsEngine.begin();
   for( ;anInPortsIter!=anInPortsEngine.end();anInPortsIter++)
-    if ( !isStored(*anInPortsIter) )
+    if ( myIsNeedToReorder || !myIsNeedToReorder && !isStored(*anInPortsIter) )
     {
       DEBTRACE("remove port " << *anInPortsIter);
+
+      if ( aCanvasNode && aCanvasNode->isVisible() ) aCanvasNode->hide();
+
       mySNode->update( REMOVE,
 		       ( dynamic_cast<InputPort*>(*anInPortsIter) ? INPUTPORT : INPUTDATASTREAMPORT ),
 		       GuiContext::getCurrent()->_mapOfSubjectDataPort[*anInPortsIter] );
@@ -1664,7 +1673,7 @@ void YACSGui_InlineNodePage::setInputPorts()
     {
       DEBTRACE("Data flow port");
       InputPort* aIDP = 0;
-      if ( myRow2StoredInPorts.find(aRowId) != myRow2StoredInPorts.end() )
+      if ( !myIsNeedToReorder && myRow2StoredInPorts.find(aRowId) != myRow2StoredInPorts.end() )
       { // ---- update port ----
         DEBTRACE("Update port");
 	if ( aIDP = dynamic_cast<InputPort*>(myRow2StoredInPorts[aRowId]) )
@@ -1770,7 +1779,7 @@ void YACSGui_InlineNodePage::setInputPorts()
     else if ( aTable->intValueCombo( 1, aRowId ) == 2 )      // Data Stream (CALCIUM) port
     {
       InputDataStreamPort* aIDSP = 0;
-      if ( myRow2StoredInPorts.find(aRowId) != myRow2StoredInPorts.end() )
+      if ( !myIsNeedToReorder && myRow2StoredInPorts.find(aRowId) != myRow2StoredInPorts.end() )
       { // ---- update port ----
         DEBTRACE("---- update port ---- " << *it);
 	if ( aIDSP = dynamic_cast<InputDataStreamPort*>(myRow2StoredInPorts[aRowId]) )
@@ -1820,6 +1829,8 @@ void YACSGui_InlineNodePage::setInputPorts()
   }
 
   //resetIPLists();
+
+  if ( aCanvasNode && !aCanvasNode->isVisible() ) aCanvasNode->show();
 }
 
 void YACSGui_InlineNodePage::setOutputPorts()
@@ -1832,12 +1843,20 @@ void YACSGui_InlineNodePage::setOutputPorts()
 
   myOutputPortsGroupBox->Table()->stopEdit(true);
 
+  YACSPrs_ElementaryNode* aCanvasNode = 0;
+  if ( myIsNeedToReorder )
+    if ( Proc* aProc = dynamic_cast<Proc*>(getNode()->getRootNode()) )
+      if ( YACSGui_Graph* aGraph = getInputPanel()->getModule()->getGraph( aProc ) )
+	aCanvasNode = aGraph->getItem(getNode());
+
   // remove old ports
   list<OutPort*> anOutPortsEngine = aNode->getSetOfOutPort();
   list<OutPort*>::iterator anOutPortsIter = anOutPortsEngine.begin();
   for( ;anOutPortsIter!=anOutPortsEngine.end();anOutPortsIter++)
-    if ( !isStored(*anOutPortsIter) )
+    if ( myIsNeedToReorder || !myIsNeedToReorder && !isStored(*anOutPortsIter) )
     {
+      if ( aCanvasNode && aCanvasNode->isVisible() ) aCanvasNode->hide();
+      
       mySNode->update( REMOVE,
 		       ( dynamic_cast<OutputPort*>(*anOutPortsIter) ? OUTPUTPORT : OUTPUTDATASTREAMPORT ),
 		       GuiContext::getCurrent()->_mapOfSubjectDataPort[*anOutPortsIter] );
@@ -1947,7 +1966,7 @@ void YACSGui_InlineNodePage::setOutputPorts()
     if ( aTable->intValueCombo( 1, aRowId ) == 0 )           // Data Flow port
     {
       OutputPort* aODP = 0;
-      if ( myRow2StoredOutPorts.find(aRowId) != myRow2StoredOutPorts.end() )
+      if ( !myIsNeedToReorder && myRow2StoredOutPorts.find(aRowId) != myRow2StoredOutPorts.end() )
       { // ---- update port ----
         DEBTRACE("---- update port ---- " << *it);
 	if ( aODP = dynamic_cast<OutputPort*>(myRow2StoredOutPorts[aRowId]) )
@@ -1993,7 +2012,7 @@ void YACSGui_InlineNodePage::setOutputPorts()
     else if ( aTable->intValueCombo( 1, aRowId ) == 2 )      // Data Stream (CALCIUM) port
     {
       OutputDataStreamPort* aODSP = 0;
-      if ( myRow2StoredOutPorts.find(aRowId) != myRow2StoredOutPorts.end() )
+      if ( !myIsNeedToReorder && myRow2StoredOutPorts.find(aRowId) != myRow2StoredOutPorts.end() )
       { // ---- update port ----
 	if ( aODSP = dynamic_cast<OutputDataStreamPort*>(myRow2StoredOutPorts[aRowId]) )
 	{
@@ -2041,6 +2060,8 @@ void YACSGui_InlineNodePage::setOutputPorts()
   }
 
   //resetOPLists();
+
+  if ( aCanvasNode && !aCanvasNode->isVisible() ) aCanvasNode->show();
 }
 
 YACS::ENGINE::TypeCode* YACSGui_InlineNodePage::createTypeCode( YACS::ENGINE::DynType theType,

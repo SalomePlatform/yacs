@@ -86,6 +86,17 @@ std::string InputXmlPort::dump()
   return _data;
 }
 
+std::string InputXmlPort::valToStr()
+{
+  return _data;
+}
+
+void InputXmlPort::valFromStr(std::string valstr)
+{
+  _data = valstr;
+}
+
+
 OutputXmlPort::OutputXmlPort(const std::string& name, Node* node, TypeCode * type)
   : OutputPort(name, node, type), DataPort(name, node, type), Port(node)
 {
@@ -121,5 +132,15 @@ OutputPort *OutputXmlPort::clone(Node *newHelder) const
 std::string OutputXmlPort::dump()
 {
   return _data;
+}
+
+std::string OutputXmlPort::valToStr()
+{
+  return _data;
+}
+
+void OutputXmlPort::valFromStr(std::string valstr)
+{
+  _data = valstr;
 }
 

@@ -31,10 +31,14 @@ namespace YACS
       void *get() const throw(Exception);
       virtual bool isEmpty();
       virtual CORBA::Any * getAny();
+      virtual std::string getAsString();
+      virtual PyObject* getPyObj();
       virtual void exSaveInit();
       virtual void exRestoreInit();
       virtual std::string dump();
       virtual std::string typeName() {return "YACS__ENGINE__InputCorbaPort";}
+      virtual std::string valToStr();
+      virtual void valFromStr(std::string valstr);
     protected:
       CORBA::Any  _data;
       CORBA::Any *  _initData;
@@ -59,8 +63,12 @@ namespace YACS
       OutputPort *clone(Node *newHelder) const;
       virtual CORBA::Any * getAny();
       virtual CORBA::Any * getAnyOut();
+      virtual std::string getAsString();
+      virtual PyObject* getPyObj();
       virtual std::string dump();
       virtual std::string typeName() {return "YACS__ENGINE__OutputCorbaPort";}
+      virtual std::string valToStr();
+      virtual void valFromStr(std::string valstr);
     protected:
       CORBA::Any  _data;
       CORBA::ORB_ptr _orb;

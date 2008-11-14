@@ -50,7 +50,7 @@ namespace YACS
       ElementaryNode* createNode(const std::string& implementation, const std::string& name) throw(Exception);
       InputPort* createInputPort(const std::string& name, const std::string& impl, Node * node, TypeCode * type);
       OutputPort* createOutputPort(const std::string& name, const std::string& impl, Node * node, TypeCode * type);
-      InputPort* adapt(InputPort* source, const std::string& impl, TypeCode * type) throw (ConversionException);
+      InputPort* adapt(InputPort* source, const std::string& impl, TypeCode * type,bool init) throw (ConversionException);
     };
   }
 }

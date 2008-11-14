@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='us-ascii' ?>
+ 
+<!-- XML component catalog -->
+<begin-catalog>
+
+<!-- Path prefix information -->
+
+<path-prefix-list>
+</path-prefix-list>
+
+<!-- Component list -->
+<component-list>
+        <component>
+                <!-- Component identification -->
+                <component-name>YACS</component-name>
+		<component-username>YACS TUI</component-username>
+                <component-type>Data</component-type>
+                <component-author>P. RASCLE</component-author>
+                <component-version>@VERSION@</component-version>
+                <component-comment>EDF - RD</component-comment>
+                <component-multistudy>1</component-multistudy>
+                <component-icone>ModuleYacs.png</component-icone>
+                <constraint>'linux' ~ OS</constraint>
+	
+	</component>
+</component-list>
+</begin-catalog>

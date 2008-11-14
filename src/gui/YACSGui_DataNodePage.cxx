@@ -158,7 +158,7 @@ YACSGui_DataNodePage::YACSGui_DataNodePage( int pageId,
     }
 
   QString aPortTypes = QString("Data Flow"); //";Data Stream (BASIC);Data Stream (CALCIUM);Data Stream (PALM)");
-  QString aValueTypes = QString("Double;Int;String;Bool");
+  QString aValueTypes = QString("double;int;string;bool");
 
   // Input Ports table
   myInputPortsGroupBox->setTitle( tr("Input Ports") );
@@ -182,7 +182,7 @@ YACSGui_DataNodePage::YACSGui_DataNodePage( int pageId,
   aTable->setParams( 0, 2, aValueTypes );
 
   aTable->setDefValue( 0, 1, "Data Flow");
-  aTable->setDefValue( 0, 2, "Double");
+  aTable->setDefValue( 0, 2, "double");
 
   aTable->setEditorSync(true);
 
@@ -224,7 +224,7 @@ YACSGui_DataNodePage::YACSGui_DataNodePage( int pageId,
   aTable->setParams( 0, 4, QString("Yes;No") );
 
   aTable->setDefValue( 0, 1, "Data Flow");
-  aTable->setDefValue( 0, 2, "Double");
+  aTable->setDefValue( 0, 2, "double");
   aTable->setDefValue( 0, 4, QString("Yes") );
 
   aTable->setEditorSync(true);
@@ -996,12 +996,12 @@ void YACSGui_DataNodePage::onAdded( const int theRow )
     if ( myInputPortsGroupBox == aGrpBox )
     {
       myInputPortsGroupBox->Table()->setDefValue( theRow, 2, "" );
-      myInputPortsGroupBox->Table()->item( theRow, 2 )->setText("Double");
+      myInputPortsGroupBox->Table()->item( theRow, 2 )->setText("double");
     }
     else if ( myOutputPortsGroupBox == aGrpBox )
     {
       myOutputPortsGroupBox->Table()->setDefValue( theRow, 2, "" );
-      myOutputPortsGroupBox->Table()->item( theRow, 2 )->setText("Double");
+      myOutputPortsGroupBox->Table()->item( theRow, 2 )->setText("double");
     }
 }
 

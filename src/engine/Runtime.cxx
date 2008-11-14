@@ -248,3 +248,32 @@ TypeCode* Runtime::getTypeCode(const std::string& name)
   return 0;
 }
 
+//! Convert a YACS::ENGINE::Any object to an external object with type type
+/*!
+ * This method is used to convert Neutral objects to script languages. For example
+ * Python language. The runtime has one external script language.
+ * The object is returned as a void * because engine knows nothing about external script language.
+ *
+ * \param type: the type of the converted object if the conversion is possible
+ * \param data: the object to convert
+ * \return the converted object
+ */
+void* Runtime::convertNeutral(TypeCode * type, Any *data)
+{
+  throw Exception("convertNeutral is not implemented by your runtime");
+}
+
+//! Convert a YACS::ENGINE::Any object to a string to be used in GUI for example
+/*!
+ * engine package does not provide a conversion to string. It has to be implemented in the 
+ * runtime package.
+ *
+ * \param type: the type of the object to convert
+ * \param data: the object to convert
+ * \return the string representation of the object
+ */
+std::string Runtime::convertNeutralAsString(TypeCode * type, Any *data)
+{
+  throw Exception("convertNeutralAsString is not implemented by your runtime");
+}
+

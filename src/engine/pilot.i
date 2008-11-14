@@ -29,6 +29,7 @@
 #include "Logger.hxx"
 #include "DeploymentTree.hxx"
 #include "ComponentInstance.hxx"
+#include "DataNode.hxx"
 
 using namespace YACS::ENGINE;
 
@@ -135,6 +136,11 @@ using namespace YACS::ENGINE;
 %feature("pythonappend") YACS::ENGINE::Bloc::edRemoveChild(Node *node)%{
         args[1].thisown=1
 %}
+
+//%feature("notabstract") YACS::ENGINE::Container;
+%feature("ref")   YACS::ENGINE::Container "$this->incrRef();"
+%feature("unref") YACS::ENGINE::Container "$this->decrRef();"
+
 /*
  * End of ownership section
  */
@@ -150,6 +156,8 @@ PYEXCEPTION(YACS::ENGINE::Executor::setExecMode)
 PYEXCEPTION(YACS::ENGINE::Executor::resumeCurrentBreakPoint)
 PYEXCEPTION(YACS::ENGINE::Executor::stopExecution)
 PYEXCEPTION(YACS::ENGINE::Executor::waitPause)
+PYEXCEPTION(YACS::ENGINE::ComponentInstance::load)
+
 %include <Executor.hxx>
 
 EXCEPTION(YACS::ENGINE::ExecutorSwig::RunPy)
@@ -205,15 +213,18 @@ EXCEPTION(YACS::ENGINE::ExecutorSwig::waitPause)
       self->edInit("Python",ob);
     }
 }
+
 %template(edInitInt)       YACS::ENGINE::InputPort::edInit<int>;
 %template(edInitBool)      YACS::ENGINE::InputPort::edInit<bool>;
 %template(edInitString)    YACS::ENGINE::InputPort::edInit<std::string>;
 %template(edInitDbl)       YACS::ENGINE::InputPort::edInit<double>;
 
+%include <AnyInputPort.hxx>
+%include <ConditionInputPort.hxx>
 %include <OutputPort.hxx>
 %include <InputDataStreamPort.hxx>
 %include <OutputDataStreamPort.hxx>
-%include <AnyInputPort.hxx>
+%include <DataPort.hxx>
 
 %include <Node.hxx>
 %extend YACS::ENGINE::Node 
@@ -235,6 +246,7 @@ EXCEPTION(YACS::ENGINE::ExecutorSwig::waitPause)
 %include <InlineNode.hxx>
 %include <ServiceNode.hxx>
 %include <ServiceInlineNode.hxx>
+%include <DataNode.hxx>
 
 %include <ComposedNode.hxx>
 %include <StaticDefinedComposedNode.hxx>
@@ -253,3 +265,28 @@ EXCEPTION(YACS::ENGINE::ExecutorSwig::waitPause)
 %include <VisitorSaveSchema.hxx>
 %include <ComponentDefinition.hxx>
 %include <Catalog.hxx>
+
+%extend YACS::ENGINE::ConditionInputPort
+{
+  bool getPyObj()
+  {
+    return self->getValue();
+  }
+}
+
+%extend YACS::ENGINE::AnyInputPort
+{
+  PyObject * getPyObj()
+  {
+    return (PyObject *)getRuntime()->convertNeutral(self->edGetType(),self->getValue());
+  }
+}
+
+%extend YACS::ENGINE::AnyOutputPort
+{
+  PyObject * getPyObj()
+  {
+    return (PyObject *)getRuntime()->convertNeutral(self->edGetType(),self->getValue());
+  }
+}
+

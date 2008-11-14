@@ -11,6 +11,7 @@
 #include "TypeConversions.hxx"
 #include "TypeCode.hxx"
 #include "CORBAPorts.hxx"
+#include "PythonPorts.hxx"
 #include "ServiceNode.hxx"
 #include "ComponentInstance.hxx"
 #include "SALOME_GenericObj.hh"
@@ -137,6 +138,7 @@ void InputCorbaPort::put(CORBA::Any *data) throw (ConversionException)
 
   // make a copy of the any (protect against deletion of any source)
   _data=*data;
+  _stringRef="";
 
   registerObj(_data);
 
@@ -166,6 +168,28 @@ CORBA::Any * InputCorbaPort::getAny()
   // --- return a pointer to internal any
   return &_data;
 }
+
+PyObject * InputCorbaPort::getPyObj()
+{
+  CORBA::TypeCode_var tc=getAny()->type();
+  if (!tc->equivalent(CORBA::_tc_null))
+    return convertCorbaPyObject(edGetType(),getAny());
+  else
+    {
+      Py_INCREF(Py_None);
+      return Py_None;
+    }
+}
+
+std::string InputCorbaPort::getAsString()
+{
+  InterpreterUnlocker loc;
+  PyObject* ob=getPyObj();
+  std::string s=convertPyObjectToString(ob);
+  Py_DECREF(ob);
+  return s;
+}
+
 
 //! Save the current data value for further reinitialization of the port
 /*!
@@ -206,6 +230,21 @@ std::string InputCorbaPort::dump()
 //           << " on node " << _node->getName();
 //       throw Exception(msg.str());      
 //     }
+}
+
+std::string InputCorbaPort::valToStr()
+{
+  int isString = PyString_Check(getPyObj());
+  PyObject *strPyObj = PyObject_Str(getPyObj());
+  string val = PyString_AsString(strPyObj);
+  if (isString)
+    val = "\"" + val + "\"";
+  Py_DECREF(strPyObj);
+  return val;
+}
+
+void InputCorbaPort::valFromStr(std::string valstr)
+{
 }
 
 OutputCorbaPort::OutputCorbaPort(const std::string& name,
@@ -340,6 +379,27 @@ CORBA::Any * OutputCorbaPort::getAnyOut()
   return a;
 }
 
+PyObject * OutputCorbaPort::getPyObj()
+{
+  CORBA::TypeCode_var tc=getAny()->type();
+  if (!tc->equivalent(CORBA::_tc_null))
+    return convertCorbaPyObject(edGetType(),getAny());
+  else
+    {
+      Py_INCREF(Py_None);
+      return Py_None;
+    }
+}
+
+std::string OutputCorbaPort::getAsString()
+{
+  InterpreterUnlocker loc;
+  PyObject* ob=getPyObj();
+  std::string s=convertPyObjectToString(ob);
+  Py_DECREF(ob);
+  return s;
+}
+
 std::string OutputCorbaPort::dump()
 {
   CORBA::TypeCode_var tc=_data.type();
@@ -359,4 +419,16 @@ namespace YACS {
     }
   };
 };
+
+std::string OutputCorbaPort::valToStr()
+{
+  PyObject *strPyObj = PyObject_Str(getPyObj());
+  string val = PyString_AsString(strPyObj);
+  Py_DECREF(strPyObj);
+  return val;
+}
+
+void OutputCorbaPort::valFromStr(std::string valstr)
+{
+}
 

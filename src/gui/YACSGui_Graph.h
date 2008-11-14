@@ -76,7 +76,7 @@ public:
 
   void                    createChildNodesPresentations( YACS::HMI::SubjectComposedNode* );
 
-  void                    updateNodePrs( int theNodeId, std::string thePortName, std::string thePortValue );
+  void                    updateNodePrs( int theNodeId, bool input,std::string thePortName, std::string thePortValue );
 
   int                     arrangeNodesAlgo(YACS::ENGINE::Bloc* theBloc);
   int                     arrangeNodes(YACS::ENGINE::ComposedNode* theBloc, Agraph_t* aSubGraph, int dep);

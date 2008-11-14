@@ -392,6 +392,8 @@ void xmlReader::parse(std::string xmlFile)
 
   xmlParseDocument(saxContext);
   _rootParser->cleanGarbage();
+  xmlFileClose(saxContext);
+  xmlFreeParserCtxt(saxContext);
   DEBTRACE("xmlParserBase::end of parse, garbage size = " << _rootParser->getGarbageSize());
 }
 #endif

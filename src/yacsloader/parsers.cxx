@@ -91,7 +91,10 @@ ENGINE::Proc* YACSLoader::load(const char * file)
           if (XML_Parse(p, Buff, len, done) == XML_STATUS_ERROR) 
             {
               if(currentProc==0)
-                break;
+                {
+                  std::cerr <<XML_ErrorString(XML_GetErrorCode(p))<<" "<<file<<" "<<XML_GetCurrentLineNumber(p)<<std::endl;
+                  break;
+                }
               YACS::ENGINE::Logger* logger=currentProc->getLogger("parser");
               logger->fatal(XML_ErrorString(XML_GetErrorCode(p)),file,XML_GetCurrentLineNumber(p));
               break;

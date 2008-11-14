@@ -163,6 +163,7 @@ void ComposedNode::notifyFrom(const Task *sender, //* I : task emitting event
                               YACS::Event event   //* I : event emitted
                               )
 {
+  DEBTRACE("ComposedNode::notifyFrom " << event);
   ElementaryNode *taskTyped=dynamic_cast<ElementaryNode *>((Task *)sender);
   YACS::Event curEvent=event;
   Node *lminus1LevelNode=taskTyped;
@@ -1307,6 +1308,9 @@ void ComposedNode::releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *
 void ComposedNode::loaded()
 {
 }
+void ComposedNode::connected()
+{
+}
 
 void ComposedNode::accept(Visitor *visitor)
 {
@@ -1339,6 +1343,18 @@ void ComposedNode::edUpdateState()
   DEBTRACE("ComposedNode::edUpdateState(): " << _state << " " << _modified);
   YACS::StatesForNode state=YACS::READY;
 
+  try
+    {
+      checkBasicConsistency();
+      _errorDetails="";
+    }
+  catch(Exception& e)
+    {
+      state=YACS::INVALID;
+      _errorDetails=e.what();
+    }
+  DEBTRACE("ComposedNode::edUpdateState: " << _errorDetails);
+
   //update children if needed
   list<Node *> constituents=edGetDirectDescendants();
   for(list<Node *>::iterator iter=constituents.begin(); iter!=constituents.end(); iter++)
@@ -1355,7 +1371,8 @@ std::string ComposedNode::getErrorReport()
 {
   DEBTRACE("ComposedNode::getErrorReport: " << getName() << " " << _state);
   YACS::StatesForNode effectiveState=getEffectiveState();
-  if(effectiveState == YACS::READY || effectiveState == YACS::DONE)
+
+  if(effectiveState != YACS::INVALID &&  effectiveState != YACS::ERROR && effectiveState != YACS::FAILED)
     return "";
 
   std::string report="<error node= " + getName();
@@ -1392,3 +1409,11 @@ std::string ComposedNode::getErrorReport()
 
 
 
+void ComposedNode::checkBasicConsistency() const throw(Exception)
+{
+  DEBTRACE("ComposedNode::checkBasicConsistency");
+  std::list<InputPort *>::const_iterator iter;
+  std::list<InputPort *> inports=getLocalInputPorts();
+  for(iter=inports.begin();iter!=inports.end();iter++)
+    (*iter)->checkBasicConsistency();
+}

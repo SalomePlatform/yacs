@@ -20,9 +20,9 @@ namespace YACS
         :ElementaryNode(other,father){ }
       DataNode(const std::string& name):ElementaryNode(name) { }
     public:
-      virtual void setData(InputPort* port ,std::string& data);
-      virtual void setData(OutputPort* port ,std::string& data);
-      virtual void setRef(std::string& ref);
+      virtual void setData(InputPort* port ,const std::string& data);
+      virtual void setData(OutputPort* port ,const std::string& data);
+      virtual void setRef(const std::string& ref);
       virtual std::string getRef();
       virtual ~DataNode();
       virtual std::string typeName() {return "YACS__ENGINE__DataNode";}

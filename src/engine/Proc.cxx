@@ -7,6 +7,8 @@
 #include "TypeCode.hxx"
 #include "Logger.hxx"
 #include "Visitor.hxx"
+#include "VisitorSaveSchema.hxx"
+#include "VisitorSaveState.hxx"
 #include <sstream>
 #include <set>
 
@@ -62,6 +64,8 @@ void Proc::writeDot(std::ostream &os) const
   os << "digraph " << getQualifiedName() << " {\n" ;
   os << "node [ style=\"filled\" ];\n" ;
   os << "compound=true;";
+  os << "states [label=< <TABLE> <TR> <TD BGCOLOR=\"pink\" > Ready</TD> <TD BGCOLOR=\"magenta\" > Toload</TD> </TR> <TR> <TD BGCOLOR=\"magenta\" > Loaded</TD> <TD BGCOLOR=\"purple\" > Toactivate</TD> </TR> <TR> <TD BGCOLOR=\"blue\" > Activated</TD> <TD BGCOLOR=\"green\" > Done</TD> </TR> <TR> <TD BGCOLOR=\"red\" > Error</TD> <TD BGCOLOR=\"orange\" > Failed</TD> </TR> <TR> <TD BGCOLOR=\"grey\" > Disabled</TD> <TD BGCOLOR=\"white\" > Pause</TD> </TR> </TABLE>> \n shape = plaintext \n style = invis \n ];\n";
+
   Bloc::writeDot(os);
   os << "}\n" ;
 }
@@ -90,12 +94,26 @@ TypeCode *Proc::createType(const std::string& name, const std::string& kind)
   return t;
 }
 
+//! Create an object reference TypeCode 
+/*!
+ * \param id: the TypeCode repository id
+ * \param name: the TypeCode name
+ * \param ltc: a liste of object reference TypeCode to use as base types for this type
+ * \return the created TypeCode
+ */
 TypeCode *Proc::createInterfaceTc(const std::string& id, const std::string& name,
                                   std::list<TypeCodeObjref *> ltc)
 {
   return TypeCode::interfaceTc(id.c_str(),name.c_str(),ltc);
 }
 
+//! Create a sequence TypeCode 
+/*!
+ * \param id: the TypeCode repository id ("" for normal use)
+ * \param name: the TypeCode name
+ * \param content: the element TypeCode 
+ * \return the created TypeCode
+ */
 TypeCode * Proc::createSequenceTc (const std::string& id, const std::string& name,
                                    TypeCode *content)
 {
@@ -109,14 +127,21 @@ TypeCode * Proc::createStructTc (const std::string& id, const std::string& name)
 
 TypeCode * Proc::getTypeCode (const std::string& name)
 {
+  TypeCode* aTC=0;
   if(typeMap.count(name)==0)
+    aTC=getRuntime()->getTypeCode(name);
+  else
+    aTC=typeMap[name];
+
+  if(!aTC)
     {
       std::stringstream msg;
       msg << "Type " << name << " does not exist" ;
       msg << " (" <<__FILE__ << ":" << __LINE__ << ")";
       throw Exception(msg.str());
     }
-  return typeMap[name];
+
+  return aTC;
 }
 
 void Proc::setTypeCode (const std::string& name,TypeCode *t)
@@ -177,7 +202,7 @@ std::string Proc::getInPortValue(int nodeNumId, std::string portName)
     {
       YACS::ENGINE::Node* node = YACS::ENGINE::Node::idMap[nodeNumId];
       InputPort * inputPort = node->getInputPort(portName);
-      return inputPort->dump();
+      return inputPort->getAsString();
     }
   catch(YACS::Exception& ex)
     {
@@ -200,7 +225,7 @@ std::string Proc::getOutPortValue(int nodeNumId, std::string portName)
     {
       YACS::ENGINE::Node* node = YACS::ENGINE::Node::idMap[nodeNumId];
       OutputPort * outputPort = node->getOutputPort(portName);
-      return outputPort->dump();
+      return outputPort->getAsString();
     }
   catch(YACS::Exception& ex)
     {
@@ -311,5 +336,29 @@ void Proc::modified()
   _modified=1;
   if(_edition)
     edUpdateState();
+}
+
+//! Save Proc in XML schema file
+/*!
+ * \param xmlSchemaFile: the file name
+ */
+void Proc::saveSchema(std::string xmlSchemaFile)
+{
+  VisitorSaveSchema vss(this);
+  vss.openFileSchema(xmlSchemaFile);
+  accept(&vss);
+  vss.closeFileSchema();
+}
+
+//! Save Proc state in XML state file
+/*!
+ * \param xmlStateFile: the file name
+ */
+void Proc::saveState(std::string xmlStateFile)
+{
+  VisitorSaveState vst(this);
+  vst.openFileDump(xmlStateFile);
+  accept(&vst);
+  vst.closeFileDump();
 }
 

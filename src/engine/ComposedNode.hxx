@@ -78,6 +78,7 @@ namespace YACS
       virtual std::vector< std::pair<InPort *, OutPort *> > getSetOfLinksComingInCurrentScope() const;
       virtual std::string typeName() {return "YACS__ENGINE__ComposedNode";}
       virtual void edUpdateState();
+      virtual void checkBasicConsistency() const throw(Exception);
       virtual std::string getErrorReport();
       //
       ComposedNode *getRootNode() const throw(Exception);
@@ -89,6 +90,7 @@ namespace YACS
       Node *getChildByName(const std::string& name) const throw(Exception);
       static ComposedNode *getLowestCommonAncestor(Node *node1, Node *node2) throw(Exception);
       void loaded();
+      void connected();
       void accept(Visitor *visitor);
     protected:
       struct SortHierarc

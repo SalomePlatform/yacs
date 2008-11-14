@@ -54,3 +54,12 @@ DataPort *DataPort::isCrossingType(const std::vector<DataPort *>& historyOfLink)
       return *iter;
   return 0;
 }
+
+//! returns port value as a string that can be used in a GUI for example
+/*!
+ * Do nothing here. To subclass
+ */
+std::string DataPort::getAsString()
+{
+  return "";
+}

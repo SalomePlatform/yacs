@@ -167,7 +167,7 @@ int AtomAny::getIntValue() const throw(Exception)
   if(_type->isA(Runtime::_tc_int))
     return _value._i;
   else
-    throw Exception("Value is not an Int");
+    throw Exception("Value is not an int");
 }
 
 bool AtomAny::getBoolValue() const throw(Exception)
@@ -175,7 +175,7 @@ bool AtomAny::getBoolValue() const throw(Exception)
   if(_type->isA(Runtime::_tc_bool))
     return _value._b;
   else
-    throw Exception("Value is not a Bool");
+    throw Exception("Value is not a bool");
 }
 
 double AtomAny::getDoubleValue() const throw(Exception)
@@ -183,7 +183,7 @@ double AtomAny::getDoubleValue() const throw(Exception)
   if(_type->isA(Runtime::_tc_double))
     return _value._d;
   else
-    throw Exception("Value is not a Double");
+    throw Exception("Value is not a double");
 }
 
 std::string AtomAny::getStringValue() const throw(Exception)
@@ -191,7 +191,7 @@ std::string AtomAny::getStringValue() const throw(Exception)
   if(_type->isA(Runtime::_tc_string))
     return string(_value._s->cStr());
   else
-    throw Exception("Value is not a String");
+    throw Exception("Value is not a string");
 }
 
 /*!

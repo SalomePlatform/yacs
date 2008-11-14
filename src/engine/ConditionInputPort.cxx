@@ -83,10 +83,14 @@ void *ConditionInputPort::get() const
 
 void ConditionInputPort::put(const void *data) throw(ConversionException)
 {
-  Any *dataCst=(Any *)data;
+  put((Any*)data);
+}
+
+void ConditionInputPort::put(Any *data) throw(ConversionException)
+{
   if(_value)
     _value->decrRef();
-  _value=dataCst;
+  _value=data;
   _value->incrRef();
 }    
 
@@ -99,3 +103,9 @@ std::string ConditionInputPort::dump()
     xmldump="<value><boolean>false</boolean></value>\n";
   return xmldump;
 }
+
+std::string ConditionInputPort::getAsString()
+{
+  return (getValue() ? "True" : "False");
+}
+

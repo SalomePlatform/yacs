@@ -1,5 +1,7 @@
 
+#include "TypeConversions.hxx"
 #include "PresetPorts.hxx"
+#include "PythonPorts.hxx"
 #include "TypeCode.hxx"
 #include <iostream>
 
@@ -84,6 +86,30 @@ std::string OutputPresetPort::dump()
   return getData();
 }
 
+PyObject * OutputPresetPort::getPyObj()
+{
+  DEBTRACE(getData());
+  if(_storeData=="")
+    {
+      Py_INCREF(Py_None);
+      return Py_None;
+    }
+  else
+    return convertXmlStrPyObject(edGetType(),getData());
+}
+
+std::string OutputPresetPort::getAsString()
+{
+  InterpreterUnlocker loc;
+  PyObject* ob=getPyObj();
+  DEBTRACE(PyObject_Str(ob));
+  std::string s=convertPyObjectToString(ob);
+  DEBTRACE(s);
+  Py_DECREF(ob);
+  return s;
+}
+
+
 InputPresetPort::InputPresetPort(const std::string& name,  Node* node, TypeCode* type)
   : InputXmlPort(name, node, type),
     DataPort(name, node, type),
@@ -114,5 +140,28 @@ std::string InputPresetPort::getData()
 std::string InputPresetPort::dump()
 {
   return _data;
+}
+
+PyObject * InputPresetPort::getPyObj()
+{
+  DEBTRACE(dump());
+  if(_data=="")
+    {
+      Py_INCREF(Py_None);
+      return Py_None;
+    }
+  else
+    return convertXmlStrPyObject(edGetType(),dump());
+}
+
+std::string InputPresetPort::getAsString()
+{
+  InterpreterUnlocker loc;
+  PyObject* ob=getPyObj();
+  DEBTRACE(PyObject_Str(ob));
+  std::string s=convertPyObjectToString(ob);
+  DEBTRACE(s);
+  Py_DECREF(ob);
+  return s;
 }
 
