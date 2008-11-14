@@ -31,6 +31,7 @@
 #include <sstream>
 #include <QDir>
 #include <QDateTime>
+#include <cstdlib>
 
 #define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -52,7 +53,10 @@ GenericGui::GenericGui(YACS::HMI::SuitWrapper* wrapper, QMainWindow *parent)
   _machineList.clear();
   _menuId = 190;
 
-  QDir::addSearchPath("icons", "share/salome/resources/yacs");
+  string iconPath = getenv("YACS_ROOT_DIR");
+  iconPath += "/share/salome/resources/yacs";
+  DEBTRACE(iconPath);
+  QDir::addSearchPath("icons", iconPath.c_str());
 
   YACS::ENGINE::RuntimeSALOME::setRuntime();
   _loader = new YACS::YACSLoader();
