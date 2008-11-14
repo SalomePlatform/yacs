@@ -60,7 +60,7 @@ YACSGui_Observer::YACSGui_Observer(YACSGui_Graph* theGraph):
 
 void YACSGui_Observer::notifyObserver(YACS::ENGINE::Node* object, const std::string& event)
 {
-  DEBTRACE("YACSGui_Observer::notifyObserver(YACS::ENGINE::Node* object, const std::string& event)");
+  DEBTRACE("YACSGui_Observer::notifyObserver " << object << ":" << event);
   if ( !myGraph ) printf("==> null graph\n");
 
   if (event == "status")
@@ -298,8 +298,12 @@ bool Observer_i::event(QEvent *e)
 		anIP->onNotifyNodeStatus(iGui, aState);
 		
 		map<int, map<string, string> > aGuiNodeId2InPortsValues;
-		list<InPort*> IPs = aNode->getSetOfInPort();
-		list<InPort*>::iterator itIP = IPs.begin();
+		list<InputPort*> IPs ;
+		if ( dynamic_cast<ComposedNode*>(aNode) )
+                  IPs=aNode->getLocalInputPorts();
+                else
+                  IPs = aNode->getSetOfInputPort();
+		list<InputPort*>::iterator itIP = IPs.begin();
 		for ( ; itIP!=IPs.end(); itIP++ )
 		{
 		  int aEngineNodeId = numid;
@@ -314,38 +318,33 @@ bool Observer_i::event(QEvent *e)
 		      aEngineNodeId = _guiToEngineMap[aGuiNodeId];
 		    }
 		  }
-		  string aDump = _engineProc->getInPortValue(aEngineNodeId,(*itIP)->getName().c_str());
-                  DEBTRACE("on status change, inport value: " << (*itIP)->getName() << " " << aDump);
-                  /*
-		  QString aValue(aDump);
-		  aValue = aValue.right(aValue.length()-(aValue.find(">",aValue.find(">")+1)+1));
-		  aValue = aValue.left(aValue.find("<"));
-		  if ( aValue.isEmpty() ) aValue = QString("< ? >");
-                  */
-		  QString aValue;
-                  toString(aDump,(*itIP)->edGetType(),aValue);
-                  DEBTRACE(aValue);
+                  std::string aValue = _engineProc->getInPortValue(aEngineNodeId,(*itIP)->getName().c_str());
+                  DEBTRACE("on status change, inport value: " << (*itIP)->getName() << " " << aValue);
 		  
 		  if ( aGuiNodeId2InPortsValues.find(aGuiNodeId) == aGuiNodeId2InPortsValues.end() )
 		  {
 		    map<string, string> aPName2PValue;
-		    aPName2PValue.insert( make_pair((*itIP)->getName(),string(aValue.latin1())) );
+		    aPName2PValue.insert( make_pair((*itIP)->getName(),aValue));
 		    aGuiNodeId2InPortsValues.insert( make_pair( aGuiNodeId, aPName2PValue ) );
 		  }
 		  else
-		    aGuiNodeId2InPortsValues[aGuiNodeId].insert( make_pair((*itIP)->getName(),string(aValue.latin1()) ) );
+		    aGuiNodeId2InPortsValues[aGuiNodeId].insert( make_pair((*itIP)->getName(),aValue));
 		  
 		  _guiMod->getGraph(_guiProc)->updateNodePrs(aGuiNodeId,true,
 							     (*itIP)->getName(),
-							     string(aValue.latin1()));
+							     aValue);
 		}
 		map<int, map<string, string> >::iterator itMI = aGuiNodeId2InPortsValues.begin();
 		for( ; itMI!=aGuiNodeId2InPortsValues.end(); itMI++ )
 		  anIP->onNotifyInPortValues((*itMI).first,(*itMI).second);
 
 		map<int, map<string, string> > aGuiNodeId2OutPortsValues;
-		list<OutPort*> OPs = aNode->getSetOfOutPort();
-		list<OutPort*>::iterator itOP = OPs.begin();
+		list<OutputPort*> OPs;
+		if ( dynamic_cast<ComposedNode*>(aNode) )
+                  OPs=aNode->getLocalOutputPorts();
+                else
+                  OPs = aNode->getSetOfOutputPort();
+		list<OutputPort*>::iterator itOP = OPs.begin();
 		for ( ; itOP!=OPs.end(); itOP++ )
 		{
 		  int aEngineNodeId = numid;
@@ -360,30 +359,21 @@ bool Observer_i::event(QEvent *e)
 		      aEngineNodeId = _guiToEngineMap[aGuiNodeId];
 		    }
 		  }
-		  string aDump = _engineProc->getOutPortValue(aEngineNodeId,(*itOP)->getName().c_str());
-                  DEBTRACE("on status change, outport value: " << (*itOP)->getName() << " " << aDump);
-                  /*
-		  QString aValue(aDump);
-		  aValue = aValue.right(aValue.length()-(aValue.find(">",aValue.find(">")+1)+1));
-		  aValue = aValue.left(aValue.find("<"));
-		  if ( aValue.isEmpty() ) aValue = QString("< ? >");
-                  */
-		  QString aValue;
-                  toString(aDump,(*itOP)->edGetType(),aValue);
-                  DEBTRACE(aValue);
+                  std::string aValue = _engineProc->getOutPortValue(aEngineNodeId,(*itOP)->getName().c_str());
+                  DEBTRACE("on status change, outport value: " << (*itOP)->getName() << " " << aValue);
 		  
 		  if ( aGuiNodeId2OutPortsValues.find(aGuiNodeId) == aGuiNodeId2OutPortsValues.end() )
 		  {
 		    map<string, string> aPName2PValue;
-		    aPName2PValue.insert( make_pair((*itOP)->getName(),string(aValue.latin1())) );
+		    aPName2PValue.insert( make_pair((*itOP)->getName(),aValue) );
 		    aGuiNodeId2OutPortsValues.insert( make_pair( aGuiNodeId, aPName2PValue ) );
 		  }
 		  else
-		    aGuiNodeId2OutPortsValues[aGuiNodeId].insert( make_pair((*itOP)->getName(),string(aValue.latin1()) ) );
+		    aGuiNodeId2OutPortsValues[aGuiNodeId].insert( make_pair((*itOP)->getName(),aValue) );
 
 		  _guiMod->getGraph(_guiProc)->updateNodePrs(aGuiNodeId,false,
 							     (*itOP)->getName(),
-							     string(aValue.latin1()));
+							     aValue);
 		}
 		map<int, map<string, string> >::iterator itMO = aGuiNodeId2OutPortsValues.begin();
 		for( ; itMO!=aGuiNodeId2OutPortsValues.end(); itMO++ )
