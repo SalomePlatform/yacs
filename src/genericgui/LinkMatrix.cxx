@@ -21,7 +21,7 @@ double LNode::distance(const LNode& o) const
 {
   int dx = _x -o._x;
   int dy = _y -o._y;
-  return sqrt(dx*dx +dy*dy);
+  return sqrt(double(dx*dx +dy*dy));
 }
 
 

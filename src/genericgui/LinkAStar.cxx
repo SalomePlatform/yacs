@@ -165,5 +165,5 @@ void LinkAStar::moveToClosedList(std::pair<int,int> pos)
 
 double LinkAStar::distance(int i1, int j1, int i2, int j2)
 {
-  return sqrt((i1-i2)*(i1-i2) + (j1-j2)*(j1-j2));
+  return sqrt(double((i1-i2)*(i1-i2) + (j1-j2)*(j1-j2)));
 }
