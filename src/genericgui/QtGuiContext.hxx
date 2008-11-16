@@ -40,6 +40,7 @@ namespace YACS
       inline QString getFileName()                               {return _fileName; };
       inline YACS::HMI::GuiExecutor* getGuiExecutor()            {return _guiExecutor; };
       inline bool isEdition()                                    {return _isEdition; };
+      inline int getStudyId()                                    {return _studyId; };
 
       inline YACS::HMI::Subject* getSelectedSubject()            {return _selectedSubject; };
 
@@ -53,6 +54,7 @@ namespace YACS
       inline void setFileName(const QString& fileName)           {_fileName = fileName; };
       inline void setGuiExecutor(YACS::HMI::GuiExecutor* guiEx)  {_guiExecutor = guiEx; };
       inline void setEdition(bool isEdition)                     {_isEdition = isEdition; };
+      inline void setStudyId(int studyId)                        {_studyId = studyId; };
 
       inline void setSelectedSubject(YACS::HMI::Subject* sub)    {_selectedSubject = sub; };
 
@@ -62,6 +64,8 @@ namespace YACS
       std::map<YACS::HMI::Subject*, YACS::HMI::SchemaItem*> _mapOfSchemaItem;
       std::map<YACS::HMI::Subject*, YACS::HMI::SceneItem*>  _mapOfSceneItem;
       std::set<YACS::HMI::Subject*> _setOfModifiedSubjects;
+
+      static std::set<QtGuiContext*> _setOfContext;
 
     protected:
       static QtGuiContext* _QtCurrent;
@@ -77,6 +81,7 @@ namespace YACS
       YACS::HMI::GuiExecutor *_guiExecutor;
       YACS::HMI::Subject* _selectedSubject;
       bool _isEdition;
+      int _studyId;
     };
 
   }

@@ -5,7 +5,7 @@
 #include "LinkInfo.hxx"
 #include "Logger.hxx"
 
-#define _DEVDEBUG_
+//#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
 #include <cassert>

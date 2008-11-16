@@ -7,6 +7,7 @@
 #include <QxScene_ViewModel.h>
 #include <QxScene_ViewWindow.h>
 #include <CAM_DataModel.h>
+#include <SUIT_Study.h>
 
 #include <cassert>
 
@@ -44,11 +45,17 @@ QxScene_ViewWindow* SalomeWrap_Module::getNewWindow(QGraphicsScene *scene)
   return aView;
 }
 
-void SalomeWrap_Module::AssociateViewToWindow(QGraphicsView* gView,
-                                              QxScene_ViewWindow* viewWindow)
+int SalomeWrap_Module::AssociateViewToWindow(QGraphicsView* gView,
+                                             QxScene_ViewWindow* viewWindow)
 {
   viewWindow->setSceneView(gView);
   viewWindow->setCentralWidget(gView);
+  return viewWindow->getViewManager()->study()->id();
+}
+
+int SalomeWrap_Module::activeStudyId()
+{
+  return getApp()->activeStudy()->id();
 }
 
 QAction* SalomeWrap_Module::wCreateAction(const int id,

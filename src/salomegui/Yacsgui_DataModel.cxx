@@ -1,7 +1,7 @@
 
 #include "Yacsgui_DataModel.hxx"
 
-#define _DEVDEBUG_
+//#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
 Yacsgui_DataModel::Yacsgui_DataModel(CAM_Module* theModule)

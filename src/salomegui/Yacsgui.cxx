@@ -25,7 +25,7 @@
 
 #include "GenericGui.hxx"
 
-#define _DEVDEBUG_
+//#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
 using namespace std;
@@ -60,6 +60,11 @@ void Yacsgui::initialize( CAM_Application* app )
                SIGNAL( doubleClicked(const QModelIndex&) ), 
                this,
                SLOT  ( onDblClick(const QModelIndex&) ) );
+
+      connect( getApp(),
+               SIGNAL(studyClosed()),
+               _genericGui,
+               SLOT  (onCleanOnExit()));
     }
   _genericGui->createActions();
   _genericGui->createMenus();

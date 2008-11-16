@@ -157,8 +157,13 @@ ItemEdition::ItemEdition(Subject* subject,
 
 ItemEdition::~ItemEdition()
 {
-  DEBTRACE("ItemEdition::~ItemEdition " << _name << " -----------------------");
-  QtGuiContext::getQtCurrent()->getStackedWidget()->removeWidget(this);
+  DEBTRACE("ItemEdition::~ItemEdition " << _name);
+  if(QtGuiContext::getQtCurrent())
+    {
+      DEBTRACE("---");
+      QtGuiContext::getQtCurrent()->getStackedWidget()->removeWidget(this);
+      DEBTRACE("---");
+    }
 }
 
 /*! used in derived nodes for synchronisation with schema model.
@@ -404,4 +409,17 @@ void ItemEdition::update(GuiEvent event, int type, Subject* son)
     default:
       DEBTRACE("ItemEdition::update(), event not handled: " << event);
     }
+}
+
+ItemEditionRoot::ItemEditionRoot(Subject* subject,
+                                 QWidget* parent,
+                                 const char* name)
+  : ItemEdition(subject, parent, name)
+{
+  DEBTRACE("ItemEditionRoot::ItemEditionRoot")
+}
+
+ItemEditionRoot::~ItemEditionRoot()
+{
+  _subjectSet.clear(); // --- avoid destruction loop on delete context
 }

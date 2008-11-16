@@ -105,6 +105,9 @@ namespace YACS
 
       YACS::HMI::GuiEditor *_guiEditor;
 
+    public slots:
+      void onCleanOnExit();
+
     protected:
       int getMenuId() { return _menuId++; }
       void createContext(YACS::ENGINE::Proc* proc,

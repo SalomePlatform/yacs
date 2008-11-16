@@ -35,6 +35,7 @@ SchemaModel::SchemaModel(YACS::HMI::Subject *context,
 SchemaModel::~SchemaModel()
 {
   DEBTRACE("SchemaModel::~SchemaModel");
+  _subjectSet.clear(); // --- avoid destruction loop on delete context
 }
 
 QModelIndex SchemaModel::index(int row, int column, const QModelIndex &parent) const

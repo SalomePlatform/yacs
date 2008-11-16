@@ -54,6 +54,7 @@ GuiContext::~GuiContext()
       delete _subjectProc;
       _subjectProc = 0;
     }
+  _current = 0;
 }
 
 void GuiContext::setProc(YACS::ENGINE::Proc* proc)

@@ -23,8 +23,10 @@ public:
 
   QxScene_ViewWindow* getNewWindow(QGraphicsScene *scene);
 
-  void AssociateViewToWindow(QGraphicsView* gView,
-                             QxScene_ViewWindow* viewWindow);
+  int AssociateViewToWindow(QGraphicsView* gView,
+                            QxScene_ViewWindow* viewWindow);
+
+  int activeStudyId();
 
   QAction* wCreateAction(const int id,
                          const QString& toolTip,

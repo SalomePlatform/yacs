@@ -26,7 +26,8 @@ namespace YACS
       ~SuitWrapper();
 
       QWidget* getNewWindow(QGraphicsScene *scene);
-      void AssociateViewToWindow(QGraphicsView* gView, QWidget* viewWindow);
+      int AssociateViewToWindow(QGraphicsView* gView, QWidget* viewWindow);
+      int activeStudyId();
 
       QAction* createAction(const int id,
                             const QString& toolTip,

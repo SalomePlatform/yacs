@@ -56,6 +56,15 @@ namespace YACS
       bool _haveScript;
     };
 
+    class ItemEditionRoot: public ItemEdition
+    {
+    public:
+      ItemEditionRoot(Subject* subject,
+                      QWidget* parent = 0,
+                      const char* name = 0);
+      virtual ~ItemEditionRoot();
+    };
+
   }
 }
 

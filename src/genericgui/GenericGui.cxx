@@ -33,7 +33,7 @@
 #include <QDateTime>
 #include <cstdlib>
 
-#define _DEVDEBUG_
+//#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
 using namespace std;
@@ -629,7 +629,8 @@ void GenericGui::createContext(YACS::ENGINE::Proc* proc,
   GraphicsView* gView = new GraphicsView(viewWindow);
   gView->setScene(scene);
   gView->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
-  _wrapper->AssociateViewToWindow(gView, viewWindow);
+  int studyId = _wrapper->AssociateViewToWindow(gView, viewWindow);
+  context->setStudyId(studyId);
   context->setScene(scene);
   context->setView(gView);
   context->setWindow(viewWindow);
@@ -661,9 +662,9 @@ void GenericGui::createContext(YACS::ENGINE::Proc* proc,
   QStackedWidget *stacked = new QStackedWidget(_dwStacked);
   _dwStacked->setWidget(stacked);
   context->setStackedWidget(stacked);
-  YACS::HMI::ItemEdition* rootEdit = new YACS::HMI::ItemEdition(context,
-                                                                stacked,
-                                                                context->getName().c_str());
+  YACS::HMI::ItemEditionRoot* rootEdit = new YACS::HMI::ItemEditionRoot(context,
+                                                                        0,
+                                                                        context->getName().c_str());
 
   QObject::connect(schemaModel,
                    SIGNAL(signalSelection(const QModelIndex &)),
@@ -1151,4 +1152,18 @@ void GenericGui::onStepByStepMode(bool checked)
   if (!QtGuiContext::getQtCurrent()) return;
   if (!QtGuiContext::getQtCurrent()->getGuiExecutor()) return;
   if (checked) QtGuiContext::getQtCurrent()->getGuiExecutor()->setStepByStepMode();
+}
+
+void GenericGui::onCleanOnExit()
+{
+  DEBTRACE("GenericGui::onCleanOnExit");
+  int studyId = _wrapper->activeStudyId();
+  set<QtGuiContext*> setcpy = QtGuiContext::_setOfContext;
+  set<QtGuiContext*>::iterator it = setcpy.begin();
+  for ( ; it != setcpy.end(); ++it)
+    if ((*it)->getStudyId() == studyId)
+      {
+        QtGuiContext::setQtCurrent(*it);
+        delete(*it);
+      }
 }
