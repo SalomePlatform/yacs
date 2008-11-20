@@ -481,6 +481,7 @@ void VisitorSaveSchema::dumpTypeCode(TypeCode* type, set<string>& typeNames,map<
                 dumpTypeCode(member,typeNames,typeMap,depth);
               }            
           }
+        typeNames.insert(typeName);
         _out << indent(depth) << "<struct name=\"" << typeName << "\">" << endl;
         for (int i=0; i<mbCnt; i++)
           {

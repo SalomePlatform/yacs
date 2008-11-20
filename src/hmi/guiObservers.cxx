@@ -85,7 +85,7 @@ void Subject::clean()
 
 /*!
  *  the local clean method of base class of subjects take care of Observers.
- *  Remaining Observers in the list are detached, if an abserver has no more
+ *  Remaining Observers in the list are detached, if an observer has no more
  *  Subject to observe, it can be deleted.
  */
 void Subject::localClean()
@@ -194,7 +194,6 @@ bool Subject::destroy(Subject *son)
       if (command->execute())
         {
           DEBTRACE("Destruction done: " << toDestroy);
-          update(REMOVE,0,0);
           return true;
         }
       else delete command;
@@ -929,7 +928,8 @@ void SubjectComposedNode::loadLinks()
         {
           Node* inNode = (*itg)->getNode();
           SubjectNode* sni = GuiContext::getCurrent()->_mapOfSubjectNode[inNode];
-          addSubjectControlLink(sno,sni);
+          if(sno && sni)
+            addSubjectControlLink(sno,sni);
         }
     }
 }
@@ -2616,16 +2616,7 @@ SubjectComponent::~SubjectComponent()
   {
     pair<string,int> key = pair<string,int>(_compoInst->getCompoName(),_compoInst->getNumId());
     aProc->componentInstanceMap.erase(key);
-    
-    std::map<std::string, ServiceNode*>::iterator it = aProc->serviceMap.begin();
-    for ( ; it!=aProc->serviceMap.end(); it++ )
-      if ( (*it).second->getComponent() == _compoInst )
-	(*it).second->setComponent(0);
-   
     GuiContext::getCurrent()->_mapOfSubjectComponent.erase(_compoInst);
-    
-    //if ( SalomeComponent* aSalomeCompo = static_cast<SalomeComponent*>(_compoInst) )
-    //delete aSalomeCompo;
   }
   _compoInst->decrRef();
 }
@@ -2639,6 +2630,31 @@ void SubjectComponent::clean()
 void SubjectComponent::localClean()
 {
   DEBTRACE("SubjectComponent::localClean ");
+  Proc* aProc = GuiContext::getCurrent()->getProc();
+  if ( aProc )
+  {
+    std::map<Node*, SubjectNode*>::iterator it = GuiContext::getCurrent()->_mapOfSubjectNode.begin();
+    std::list<SubjectNode*> services;
+    for ( ; it!=GuiContext::getCurrent()->_mapOfSubjectNode.end(); it++ )
+      {
+        if(ServiceNode* service=dynamic_cast<ServiceNode*>((*it).first))
+          {
+            if ( service->getComponent() == _compoInst )
+              {
+                services.push_back((*it).second);
+              }
+          }
+      }
+    while(!services.empty())
+      {
+        SubjectNode* son=services.front();
+        services.pop_front();
+        Subject* parent=son->getParent();
+        parent->update(REMOVE,son->getType(),son);
+        parent->erase(son);
+        parent->update(REMOVE,0,0);
+      }
+  }
 }
 
 std::string SubjectComponent::getName()
@@ -2702,19 +2718,11 @@ SubjectContainer::SubjectContainer(YACS::ENGINE::Container* container, Subject *
 
 SubjectContainer::~SubjectContainer()
 {
+  DEBTRACE("SubjectContainer::~SubjectContainer");
   Proc* aProc = GuiContext::getCurrent()->getProc();
   if ( aProc )
   {
     aProc->containerMap.erase(_container->getName());
-    
-    map<ComponentInstance*,SubjectComponent*>::iterator it = GuiContext::getCurrent()->_mapOfSubjectComponent.begin();
-    for ( ; it!=GuiContext::getCurrent()->_mapOfSubjectComponent.end(); it++ )
-      if ( (*it).first && (*it).first->getContainer() == _container )
-      {
-	(*it).first->setContainer(0);
-	GuiContext::getCurrent()->getSubjectProc()->destroy((*it).second);
-      }
-   
     GuiContext::getCurrent()->_mapOfSubjectContainer.erase(_container);
   }
 }
@@ -2745,6 +2753,27 @@ void SubjectContainer::clean()
 void SubjectContainer::localClean()
 {
   DEBTRACE("SubjectContainer::localClean ");
+  Proc* aProc = GuiContext::getCurrent()->getProc();
+  if ( aProc )
+  {
+    SubjectComponent* compo;
+    map<ComponentInstance*,SubjectComponent*>::iterator it = GuiContext::getCurrent()->_mapOfSubjectComponent.begin();
+    std::list<SubjectComponent*> compos;
+    for ( ; it!=GuiContext::getCurrent()->_mapOfSubjectComponent.end(); it++ )
+      if ( (*it).first && (*it).first->getContainer() == _container )
+      {
+        compo=(*it).second;
+	(*it).first->setContainer(0);
+        compos.push_back((*it).second);
+      }
+    while(!compos.empty())
+      {
+        compo=compos.front();
+        compos.pop_front();
+        GuiContext::getCurrent()->getSubjectProc()->update(REMOVE,compo->getType(),compo);
+        GuiContext::getCurrent()->getSubjectProc()->erase(compo);
+      }
+  }
 }
 
 std::string SubjectContainer::getName()

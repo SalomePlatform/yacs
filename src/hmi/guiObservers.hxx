@@ -7,6 +7,7 @@
 #include <map>
 #include <list>
 #include "Dispatcher.hxx"
+#include "commandsProc.hxx"
 
 namespace YACS
 {
@@ -95,6 +96,7 @@ namespace YACS
       void localClean();
       bool isDestructible() { return _destructible; };
       static void erase(Subject* sub);
+      virtual TypeOfElem getType(){return UNKNOWN;}
     protected:
       std::set<GuiObserver *> _setObs;
       Subject *_parent;
@@ -126,6 +128,7 @@ namespace YACS
       virtual Subject* getReference() const;
       virtual void clean();
       void localClean();
+      virtual TypeOfElem getType(){return REFERENCE;}
     protected:
       Subject* _reference;
     };
@@ -157,6 +160,7 @@ namespace YACS
       virtual ~SubjectInputPort();
       virtual void clean();
       void localClean();
+      virtual TypeOfElem getType(){return INPUTPORT;}
     protected:
       YACS::ENGINE::InputPort *_inputPort;
     };
@@ -168,6 +172,7 @@ namespace YACS
       virtual ~SubjectOutputPort();
       virtual void clean();
       void localClean();
+      virtual TypeOfElem getType(){return OUTPUTPORT;}
     protected:
       YACS::ENGINE::OutputPort *_outputPort;
     };
@@ -181,6 +186,7 @@ namespace YACS
       virtual std::map<std::string, std::string> getProperties();
       virtual void clean();
       void localClean();
+      virtual TypeOfElem getType(){return INPUTDATASTREAMPORT;}
     protected:
       YACS::ENGINE::InputDataStreamPort *_inputDataStreamPort;
     };
@@ -194,6 +200,7 @@ namespace YACS
       virtual std::map<std::string, std::string> getProperties();
       virtual void clean();
       void localClean();
+      virtual TypeOfElem getType(){return OUTPUTDATASTREAMPORT;}
     protected:
       YACS::ENGINE::OutputDataStreamPort *_outputDataStreamPort;
     };
@@ -294,6 +301,7 @@ namespace YACS
       virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const;
       virtual void clean();
       void localClean();
+      virtual TypeOfElem getType(){return BLOC;}
     protected:
       YACS::ENGINE::Bloc *_bloc;
       std::set<SubjectNode*> _children;
@@ -310,6 +318,7 @@ namespace YACS
       virtual void clean();
       void localClean();
       YACS::ENGINE::Container* getContainer() const;
+      virtual TypeOfElem getType(){return CONTAINER;}
     protected:
       YACS::ENGINE::Container* _container;
     };
@@ -326,6 +335,7 @@ namespace YACS
       virtual void clean();
       void localClean();
       YACS::ENGINE::ComponentInstance* getComponent() const;
+      virtual TypeOfElem getType(){return COMPONENT;}
     protected:
       int _id;
       YACS::ENGINE::ComponentInstance* _compoInst;
@@ -340,6 +350,7 @@ namespace YACS
       virtual YACS::ENGINE::TypeCode* getTypeCode();
       virtual void clean();
       void localClean();
+      virtual TypeOfElem getType(){return DATATYPE;}
     protected:
       YACS::ENGINE::TypeCode *_typeCode;
     };
@@ -362,6 +373,7 @@ namespace YACS
       void removeSubjectDataType(YACS::ENGINE::TypeCode *type);
       virtual void clean();
       void localClean();
+      virtual TypeOfElem getType(){return SALOMEPROC;}
     protected:
       YACS::ENGINE::Proc *_proc;
     };
@@ -379,6 +391,7 @@ namespace YACS
       virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const { return _body; }
       virtual void clean();
       void localClean();
+      virtual TypeOfElem getType(){return FORLOOP;}
     protected:
       YACS::ENGINE::ForLoop *_forLoop;
       SubjectNode* _body;
@@ -397,6 +410,7 @@ namespace YACS
       virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const { return _body; }
       virtual void clean();
       void localClean();
+      virtual TypeOfElem getType(){return WHILELOOP;}
     protected:
       YACS::ENGINE::WhileLoop *_whileLoop;
       SubjectNode* _body;
@@ -419,6 +433,7 @@ namespace YACS
       virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const;
       virtual void clean();
       void localClean();
+      virtual TypeOfElem getType(){return SWITCH;}
     protected:
       YACS::ENGINE::Switch *_switch;
       std::map<int, SubjectNode*> _bodyMap;
@@ -437,6 +452,7 @@ namespace YACS
       virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const { return _body; }
       virtual void clean();
       void localClean();
+      virtual TypeOfElem getType(){return FOREACHLOOP;}
     protected:
       YACS::ENGINE::ForEachLoop *_forEachLoop;
       SubjectNode* _body;
@@ -456,6 +472,7 @@ namespace YACS
       virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const { return _body; }
       virtual void clean();
       void localClean();
+      virtual TypeOfElem getType(){return OPTIMIZERLOOP;}
     protected:
       YACS::ENGINE::OptimizerLoop *_optimizerLoop;
       SubjectNode* _body;
@@ -500,6 +517,7 @@ namespace YACS
       virtual ~SubjectPythonNode();
       virtual void clean();
       void localClean();
+      virtual TypeOfElem getType(){return PYTHONNODE;}
     protected:
       YACS::ENGINE::PythonNode *_pythonNode;
     };
@@ -512,6 +530,7 @@ namespace YACS
       virtual bool setFunctionName(std::string funcName);
       virtual void clean();
       void localClean();
+      virtual TypeOfElem getType(){return PYFUNCNODE;}
     protected:
       YACS::ENGINE::PyFuncNode *_pyFuncNode;
     };
@@ -565,6 +584,7 @@ namespace YACS
       virtual ~SubjectSalomeNode();
       virtual void clean();
       void localClean();
+      virtual TypeOfElem getType(){return SALOMENODE;}
     protected:
       YACS::ENGINE::SalomeNode *_salomeNode;
     };
@@ -577,6 +597,7 @@ namespace YACS
       virtual ~SubjectSalomePythonNode();
       virtual void clean();
       void localClean();
+      virtual TypeOfElem getType(){return SALOMEPYTHONNODE;}
     protected:
       YACS::ENGINE::SalomePythonNode *_salomePythonNode;
     };
@@ -588,6 +609,7 @@ namespace YACS
       virtual ~SubjectXmlNode();
       virtual void clean();
       void localClean();
+      virtual TypeOfElem getType(){return XMLNODE;}
     protected:
       YACS::ENGINE::XmlNode *_xmlNode;
     };
@@ -600,6 +622,7 @@ namespace YACS
       virtual std::string getName();
       virtual void clean();
       void localClean();
+      virtual TypeOfElem getType(){return SPLITTERNODE;}
     protected:
       YACS::ENGINE::SplitterNode *_splitterNode;
     };
@@ -622,6 +645,7 @@ namespace YACS
       virtual ~SubjectPresetNode();
       virtual void clean();
       void localClean();
+      virtual TypeOfElem getType(){return PRESETNODE;}
     protected:
       YACS::ENGINE::PresetNode *_presetNode;
     };
@@ -633,6 +657,7 @@ namespace YACS
       virtual ~SubjectOutNode();
       virtual void clean();
       void localClean();
+      virtual TypeOfElem getType(){return OUTNODE;}
     protected:
       YACS::ENGINE::OutNode *_outNode;
     };
@@ -644,6 +669,7 @@ namespace YACS
       virtual ~SubjectStudyInNode();
       virtual void clean();
       void localClean();
+      virtual TypeOfElem getType(){return STUDYINNODE;}
     protected:
       YACS::ENGINE::StudyInNode *_studyInNode;
     };
@@ -655,6 +681,7 @@ namespace YACS
       virtual ~SubjectStudyOutNode();
       virtual void clean();
       void localClean();
+      virtual TypeOfElem getType(){return STUDYOUTNODE;}
     protected:
       YACS::ENGINE::StudyOutNode *_studyOutNode;
     };
@@ -675,6 +702,7 @@ namespace YACS
       SubjectNode* getSubjectInNode() { return _subInNode; };
       SubjectDataPort* getSubjectOutPort() { return _outPort; };
       SubjectDataPort* getSubjectInPort() { return _inPort; };
+      virtual TypeOfElem getType(){return DATALINK;}
     protected:
       SubjectNode* _subOutNode;
       SubjectDataPort* _outPort;
@@ -698,6 +726,7 @@ namespace YACS
       void localClean();
       SubjectNode* getSubjectOutNode() { return _subOutNode; };
       SubjectNode* getSubjectInNode() { return _subInNode; };
+      virtual TypeOfElem getType(){return CONTROLLINK;}
     protected:
       SubjectNode* _subOutNode;
       SubjectNode* _subInNode;

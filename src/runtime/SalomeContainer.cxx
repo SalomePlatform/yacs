@@ -92,6 +92,7 @@ void SalomeContainer::start() throw (Exception)
   Engines::ContainerManager_var contManager=Engines::ContainerManager::_narrow(obj);
 
   std::string str(_params.container_name);
+  DEBTRACE("SalomeContainer::start " << str);
   //If a container_name is given try to find an already existing container in naming service
   //If not found start a new container with the given parameters
   if (str != "")
@@ -118,6 +119,7 @@ void SalomeContainer::start() throw (Exception)
       stream << _name;
       stream << "_";
       stream << (void *)(this);
+      DEBTRACE("container_name="<<stream.str());
       _params.container_name=CORBA::string_dup(stream.str().c_str());
     }
   Engines::CompoList compolist;

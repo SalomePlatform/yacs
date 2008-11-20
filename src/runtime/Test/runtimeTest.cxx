@@ -1075,7 +1075,9 @@ void RuntimeTest::manualInitInputPort()
     CPPUNIT_ASSERT(PyFloat_AS_DOUBLE(pyob) == 10.);
 
     DEBTRACE("Initialize port with Python double value");
+    PyGILState_STATE gstate = PyGILState_Ensure();
     inport->edInit("Python",PyFloat_FromDouble(d));
+    PyGILState_Release(gstate);
     pyob=((InputPyPort*)inport)->getPyObj();
     DEBTRACE(pyob->ob_refcnt);
     CPPUNIT_ASSERT(PyFloat_AS_DOUBLE(pyob) == d);

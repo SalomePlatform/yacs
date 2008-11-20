@@ -329,6 +329,7 @@ Node *Loop::edRemoveNode()
   StaticDefinedComposedNode::edRemoveChild(_node);
   Node *ret=_node;
   _node=0;
+  modified();
   return ret;
 }
 
@@ -363,6 +364,7 @@ void Loop::edRemoveChild(Node *node) throw(Exception)
   StaticDefinedComposedNode::edRemoveChild(node);
   if(_node==node)
     _node=0;
+  modified();
 }
 
 void Loop::selectRunnableTasks(std::vector<Task *>& tasks)

@@ -507,7 +507,14 @@ bool CommandDestroy::localExecute()
   DEBTRACE("CommandDestroy::localExecute");
   try
     {
+      Subject* parent=_subject->getParent();
+      if(parent && _subject->getType() != UNKNOWN) parent->update(REMOVE,_subject->getType(),_subject);
+
       Subject::erase(_subject);
+
+      if(parent)
+        parent->update(REMOVE,0,0);
+
       _subject = 0;
       return true; 
     }
