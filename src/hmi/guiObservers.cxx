@@ -926,7 +926,7 @@ void SubjectComposedNode::removeControlLink(SubjectControlLink* link)
  * Proc is explored recursively to find the composedNodes and create the corresponding links
  * representation, from bottom to top.
  * For each composedNode, data links representation are created first and stored in a map to avoid
- * double represention. Then control links representation are created.
+ * double representation. Then control links representation are created.
  */
 void SubjectComposedNode::loadLinks()
 {

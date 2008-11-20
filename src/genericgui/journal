@@ -37,7 +37,8 @@ x gestion etude SALOME : object browser
 
 - tableau ports en edition
 - insertion, deplacement, destruction port
-- edition, destruction objet 
+- edition, destruction instance composant 
+- edition, destruction container 
 - edition, modification objet
 
 - affichage etat en execution (couleurs)
