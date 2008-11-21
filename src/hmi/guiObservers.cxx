@@ -337,6 +337,7 @@ SubjectNode::~SubjectNode()
   Dispatcher::getDispatcher()->removeObserver(this,_node,"status");
 
   ComposedNode* father = _node->getFather();
+  GuiContext::getCurrent()->_mapOfSubjectNode.erase(_node);
   if (father)
     try
       {
