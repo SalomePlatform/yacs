@@ -181,29 +181,25 @@ void GenericGui::createActions()
                                               0, _parent, false, this,  SLOT(onLoadAndRunSchema()));
 
 
-  pixmap.load("icons:remote_run.png");
-  _executeAct = _wrapper->createAction(getMenuId(), tr("Execute the schema"), QIcon(pixmap),
-                                       tr("Execute schema"), tr("Execute the schema"),
-                                       0, _parent, false, this,  SLOT(onExecute()));
+  pixmap.load("icons:suspend_resume.png");
+  _startResumeAct = _wrapper->createAction(getMenuId(), tr("Start or Resume Schema execution"), QIcon(pixmap),
+                                       tr("Start/Resume execution"), tr("Start or Resume Schema execution"),
+                                       0, _parent, false, this,  SLOT(onStartResume()));
 
   pixmap.load("icons:kill.png");
   _abortAct = _wrapper->createAction(getMenuId(), tr("Abort the current execution"), QIcon(pixmap),
                                      tr("Abort execution"), tr("Abort the current execution"),
                                      0, _parent, false, this,  SLOT(onAbort()));
-  pixmap.load("icons:suspend_resume.png");
-  _suspendResumeAct = _wrapper->createAction(getMenuId(), tr("Suspend or Resume the current execution"), QIcon(pixmap),
-                                             tr("Suspend/Resume execution"), tr("Suspend or Resume the current execution"),
-                                             0, _parent, false, this,  SLOT(onSuspendResume()));
 
   pixmap.load("icons:pause.png");
   _pauseAct = _wrapper->createAction(getMenuId(), tr("Suspend the current execution"), QIcon(pixmap),
                                      tr("Suspend execution"), tr("Suspend the current execution"),
                                      0, _parent, false, this,  SLOT(onPause()));
 
-  pixmap.load("icons:resume.png");
-  _resumeAct = _wrapper->createAction(getMenuId(), tr("Resume the current execution"), QIcon(pixmap),
-                                      tr("Resume execution"), tr("Resume the current execution"),
-                                      0, _parent, false, this,  SLOT(onResume()));
+  pixmap.load("icons:reset.png");
+  _resetAct = _wrapper->createAction(getMenuId(), tr("Reset the current execution"), QIcon(pixmap),
+                                      tr("Reset execution"), tr("Reset the current execution"),
+                                      0, _parent, false, this,  SLOT(onReset()));
 
 
 
@@ -415,11 +411,10 @@ void GenericGui::createMenus()
   _wrapper->createMenu( _runLoadedSchemaAct, aMenuId );
   _wrapper->createMenu( _loadAndRunSchemaAct, aMenuId );
   _wrapper->createMenu( _wrapper->separator(), aMenuId);
-  _wrapper->createMenu( _executeAct, aMenuId );
+  _wrapper->createMenu( _startResumeAct, aMenuId );
   _wrapper->createMenu( _abortAct, aMenuId );
-  _wrapper->createMenu( _suspendResumeAct, aMenuId );
   _wrapper->createMenu( _pauseAct, aMenuId );
-  _wrapper->createMenu( _resumeAct, aMenuId );
+  _wrapper->createMenu( _resetAct, aMenuId );
   _wrapper->createMenu( _wrapper->separator(), aMenuId);
   _wrapper->createMenu( _withoutStopModeAct, aMenuId );
   _wrapper->createMenu( _breakpointsModeAct, aMenuId );
@@ -441,11 +436,10 @@ void GenericGui::createTools()
   _wrapper->createTool( _runLoadedSchemaAct, aToolId );
   _wrapper->createTool( _loadAndRunSchemaAct, aToolId );
   _wrapper->createTool( _wrapper->separator(), aToolId );
-  _wrapper->createTool( _executeAct, aToolId );
+  _wrapper->createTool( _startResumeAct, aToolId );
   _wrapper->createTool( _abortAct, aToolId );
-  _wrapper->createTool( _suspendResumeAct, aToolId );
   _wrapper->createTool( _pauseAct, aToolId );
-  _wrapper->createTool( _resumeAct, aToolId );
+  _wrapper->createTool( _resetAct, aToolId );
   _wrapper->createTool( _wrapper->separator(), aToolId );
   _wrapper->createTool( _withoutStopModeAct, aToolId );
   _wrapper->createTool( _breakpointsModeAct, aToolId );
@@ -490,16 +484,14 @@ void GenericGui::showEditionMenus(bool show)
 void GenericGui::showExecMenus(bool show)
 {
   DEBTRACE("GenericGui::showExecMenus " << show);
-  _wrapper->setMenuShown(_executeAct, show);
-  _wrapper->setToolShown(_executeAct, show);
+  _wrapper->setMenuShown(_startResumeAct, show);
+  _wrapper->setToolShown(_startResumeAct, show);
   _wrapper->setMenuShown(_abortAct, show);
   _wrapper->setToolShown(_abortAct, show);
-  _wrapper->setMenuShown(_suspendResumeAct, show);
-  _wrapper->setToolShown(_suspendResumeAct, show);
   _wrapper->setMenuShown(_pauseAct, show);
   _wrapper->setToolShown(_pauseAct, show);
-  _wrapper->setMenuShown(_resumeAct, show);
-  _wrapper->setToolShown(_resumeAct, show);
+  _wrapper->setMenuShown(_resetAct, show);
+  _wrapper->setToolShown(_resetAct, show);
   _wrapper->setMenuShown(_withoutStopModeAct, show);
   _wrapper->setToolShown(_withoutStopModeAct, show);
   _wrapper->setMenuShown(_breakpointsModeAct, show);
@@ -906,12 +898,12 @@ void GenericGui::onLoadAndRunSchema()
 
 }
 
-void GenericGui::onExecute()
+void GenericGui::onStartResume()
 {
-  DEBTRACE("GenericGui::onExecute");
+  DEBTRACE("GenericGui::onStartResume");
   if (!QtGuiContext::getQtCurrent()) return;
   if (!QtGuiContext::getQtCurrent()->getGuiExecutor()) return;
-  QtGuiContext::getQtCurrent()->getGuiExecutor()->runDataflow();
+  QtGuiContext::getQtCurrent()->getGuiExecutor()->startResumeDataflow();
 }
 
 void GenericGui::onAbort()
@@ -922,14 +914,6 @@ void GenericGui::onAbort()
   QtGuiContext::getQtCurrent()->getGuiExecutor()->killDataflow();
 }
 
-void GenericGui::onSuspendResume()
-{
-  DEBTRACE("GenericGui::onSuspendResume");
-  if (!QtGuiContext::getQtCurrent()) return;
-  if (!QtGuiContext::getQtCurrent()->getGuiExecutor()) return;
-  QtGuiContext::getQtCurrent()->getGuiExecutor()->suspendResumeDataflow();
-}
-
 void GenericGui::onPause()
 {
   DEBTRACE("GenericGui::onPause");
@@ -938,12 +922,12 @@ void GenericGui::onPause()
   QtGuiContext::getQtCurrent()->getGuiExecutor()->suspendDataflow();
 }
 
-void GenericGui::onResume()
+void GenericGui::onReset()
 {
-  DEBTRACE("GenericGui::onResume");
+  DEBTRACE("GenericGui::onReset");
   if (!QtGuiContext::getQtCurrent()) return;
   if (!QtGuiContext::getQtCurrent()->getGuiExecutor()) return;
-  QtGuiContext::getQtCurrent()->getGuiExecutor()->resumeDataflow();
+  QtGuiContext::getQtCurrent()->getGuiExecutor()->resetDataflow();
 }
 
 void GenericGui::onEditDataTypes()

@@ -52,7 +52,7 @@ GuiExecutor::~GuiExecutor()
 }
 
 
-void GuiExecutor::runDataflow()
+void GuiExecutor::startResumeDataflow()
 {
   DEBTRACE("GuiExecutor::runDataflow");
   if (CORBA::is_nil(_engineRef))
@@ -67,8 +67,19 @@ void GuiExecutor::runDataflow()
       assert(!CORBA::is_nil(_engineRef));
     }
 
+  checkEndOfDataflow(); // --- to allow change of the _isRunning state
+
   if (_isRunning)
-    if (! checkEndOfDataFlow()) return;
+    {
+      if (_isSuspended)
+        {
+          _procRef->setExecMode(getCurrentExecMode());
+          _procRef->resumeCurrentBreakPoint();
+          _isSuspended = false;
+        }
+      return;
+    }
+
   _isRunning = true;
 
   if (CORBA::is_nil(_procRef))
@@ -102,7 +113,7 @@ void GuiExecutor::runDataflow()
     }
 }
 
-bool GuiExecutor::checkEndOfDataFlow(bool display)
+bool GuiExecutor::checkEndOfDataflow(bool display)
 {
   DEBTRACE("GuiExecutor::checkEndOfDataFlow");
   if (_isRunning)
@@ -134,24 +145,6 @@ void GuiExecutor::killDataflow()
     _procRef->stopExecution();
 }
 
-void GuiExecutor::suspendResumeDataflow()
-{
-  DEBTRACE("GuiExecutor::suspendResumeDataflow");
-  if (_isRunning)
-    {
-      if (_isSuspended)
-        {
-          _procRef->setExecMode(getCurrentExecMode());
-          _procRef->resumeCurrentBreakPoint();
-        }
-      else
-        _procRef->setExecMode(YACS_ORB::STEPBYSTEP);
-      _isSuspended = !_isSuspended;
-    }
-  else if (getExecutorState() == YACS::NOTYETINITIALIZED)
-    runDataflow();
-}
-
 void GuiExecutor::suspendDataflow()
 {
   DEBTRACE("GuiExecutor::suspendDataflow");
@@ -173,7 +166,14 @@ void GuiExecutor::stopDataflow()
 {
   DEBTRACE("GuiExecutor::stopDataflow");
   if (_isRunning)
-      _procRef->stopExecution();
+    _procRef->stopExecution();
+}
+
+void GuiExecutor::resetDataflow()
+{
+  DEBTRACE("GuiExecutor::resetDataflow");
+  if (_isRunning)
+    _procRef->stopExecution();
 }
 
   

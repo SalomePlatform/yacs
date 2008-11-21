@@ -60,11 +60,10 @@ namespace YACS
       QAction *_runLoadedSchemaAct;
       QAction *_loadAndRunSchemaAct;
 
-      QAction *_executeAct;
+      QAction *_startResumeAct;
       QAction *_abortAct;
-      QAction *_suspendResumeAct;
       QAction *_pauseAct;
-      QAction *_resumeAct;
+      QAction *_resetAct;
 
       QActionGroup *_execModeGroup;
       QAction *_withoutStopModeAct;
@@ -143,11 +142,10 @@ namespace YACS
       void onRunLoadedSchema();
       void onLoadAndRunSchema();
 
-      void onExecute();
+      void onStartResume();
       void onAbort();
-      void onSuspendResume();
       void onPause();
-      void onResume();
+      void onReset();
 
       void onWithoutStopMode(bool checked);
       void onBreakpointsMode(bool checked);
@@ -189,39 +187,6 @@ namespace YACS
       void onToggleForce2NodesLinks(bool checked);
 
       void onSelectReference();
-
-      //   void onReloadDataflow();
-      //   void onRunDataflow();
-      //   void onKillDataflow();
-      //   void onSuspendResumeDataflow();
-      //   void onFilterNextSteps();
-      //   void onSaveDataflowState();
-      //   void onCreateExecution();
-      //   void onCreateBatchExecution();
-      //   void onReloadExecution();
-      //   void onStartResume();
-      //   void onExecuteStBy();
-      //   void onExecuteInBatch();
-      //   void onReset();
-      //   void onSaveExecutionState();
-      //   void onCreateEdition();
-      //   void onConnectToRunning();
-      //   void onToggleStopOnError();
-  
-      //   void onChangeInformations();
-
-      //   void onTableView();
-
-      //   void onDblClick( QListViewItem* );
-      //   void onExpanded( QListViewItem* theItem );
-      //   void onCollapsed( QListViewItem* theItem );
-
-      //   void onApplyInputPanel( const int theId );
-
-      //   void onSetActive();
-  
-      //   void onWindowActivated( SUIT_ViewWindow* );
-      //   void onWindowClosed( SUIT_ViewWindow* );
 
     private:
     };

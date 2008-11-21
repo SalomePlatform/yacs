@@ -29,13 +29,13 @@ namespace YACS
       GuiExecutor(YACS::ENGINE::Proc* proc);
       virtual ~GuiExecutor();
 
-      void runDataflow();
-      bool checkEndOfDataFlow(bool display = true);
+      void startResumeDataflow();
+      bool checkEndOfDataflow(bool display = true);
       void killDataflow();
-      void suspendResumeDataflow();
       void suspendDataflow();
       void resumeDataflow();
       void stopDataflow();
+      void resetDataflow();
   
       void setStepByStepMode();
       void setContinueMode();
