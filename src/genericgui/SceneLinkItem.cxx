@@ -24,10 +24,10 @@ SceneLinkItem::SceneLinkItem(QGraphicsScene *scene, SceneItem *parent,
 {
   _from = from;
   _to = to;
-  _penColor     = QColor(  0,  0, 255);
-  _hiPenColor   = QColor(  0,  0, 255);
-  _brushColor   = QColor(  0,  0, 128);
-  _hiBrushColor = QColor(  0,  0,   0);
+  _penColor     = QColor(  0,  0,  96);
+  _hiPenColor   = QColor(  0,  0, 128);
+  _brushColor   = QColor(  0,  0, 192);
+  _hiBrushColor = QColor(  0,  0, 255);
   _level += 100;
   setZValue(_level);
   _lp.clear();
@@ -48,6 +48,75 @@ void SceneLinkItem::select(bool isSelected)
   SceneObserverItem::select(isSelected);
 }
 
+QRectF SceneLinkItem::boundingRect() const
+{
+  return _path.boundingRect();
+}
+
+QPainterPath SceneLinkItem::shape() const
+{
+  //DEBTRACE("SceneLinkItem::shape");
+  return _path;
+}
+
+void SceneLinkItem::setShape()
+{
+  _path = QPainterPath();
+  _path.setFillRule(Qt::WindingFill);
+  QPointF pfrom = start();
+  QPointF pto   = goal();
+  if (_nbPoints)
+    {
+      addRect(pfrom, _lp[0], _RIGHT);
+      for (int k=0; k<_nbPoints-1; k++)
+        addRect(_lp[k], _lp[k+1], _directions[k+1]);
+      addRect(_lp[_nbPoints-1], pto, _RIGHT);
+    }
+  else
+    {
+      _path.moveTo(pfrom.x() -1, pfrom.y() -1);
+      _path.lineTo(pto.x() +1, pto.y() -1);
+      _path.lineTo(pto.x() +1, pto.y() +1);
+      _path.lineTo(pfrom.x() -1, pfrom.y() +1);
+      _path.lineTo(pfrom.x() -1, pfrom.y() -1);
+    }
+}
+
+void SceneLinkItem::addRect(QPointF pfrom,
+                            QPointF pto,
+                            HMI::Direction dir)
+{
+  qreal x, y, width, height;
+  switch (dir)
+    {
+    case _UP:
+      x = pfrom.x() -1;
+      y = pfrom.y() -1;
+      width = 3;
+      height = 2 + pto.y() -pfrom.y();
+      break;
+    case _RIGHT:
+      x = pfrom.x() -1;
+      y = pfrom.y() -1;
+      width = 2 + pto.x() -pfrom.x();
+      height = 3;
+      break;
+    case _DOWN:
+      x = pto.x() -1;
+      y = pto.y() -1;
+      width = 3;
+      height = 2 + pfrom.y() -pto.y();
+      break;
+    case _LEFT:
+      x = pto.x() -1;
+      y = pto.y() -1;
+      width = 2 + pfrom.x() -pto.x();
+      height = 3;
+      break;
+    }
+  _path.addRect(x, y, width, height);
+}
+
 void SceneLinkItem::paint(QPainter *painter,
                           const QStyleOptionGraphicsItem *option,
                           QWidget *widget)
@@ -56,23 +125,9 @@ void SceneLinkItem::paint(QPainter *painter,
   painter->save();
   QPen pen;
   pen.setColor(getPenColor());
-  if (isSelected())
-    pen.setWidth(5);
-  else
-    pen.setWidth(2);
   painter->setPen(pen);
   painter->setBrush(getBrushColor());
-  QPointF pfrom = start();
-  QPointF pto   = goal();
-  if (_nbPoints)
-    {
-      painter->drawLine(pfrom,_lp[0]);
-      for (int k=0; k<_nbPoints-1; k++)
-        painter->drawLine(_lp[k], _lp[k+1]);
-      painter->drawLine(_lp[_nbPoints-1],pto);
-    }
-  else
-    painter->drawLine(pfrom, pto);
+  painter->drawPath(_path);
   painter->restore();
 }
 
@@ -151,6 +206,7 @@ void SceneLinkItem::setPath(LinkPath lp)
     }
   if (Scene::_simplifyLinks) minimizeDirectionChanges();
   if (Scene::_force2NodesLink) force2points();
+  setShape();
 }
 
 /*!

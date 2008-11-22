@@ -78,6 +78,7 @@ void GuiContext::setProc(YACS::ENGINE::Proc* proc)
   _mapOfSubjectNode[static_cast<Node*>(proc)] = _subjectProc;
   update(YACS::HMI::NEWROOT, 0, _subjectProc);
   _subjectProc->loadProc();
+  update(YACS::HMI::ENDLOAD, 0, _subjectProc);
 }
 
 long GuiContext::getNewId(YACS::HMI::TypeOfElem type)

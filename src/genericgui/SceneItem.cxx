@@ -5,6 +5,7 @@
 #include "SceneHeaderNodeItem.hxx"
 #include "SceneProcItem.hxx"
 #include "SceneComposedNodeItem.hxx"
+#include "GuiEditor.hxx"
 
 #include "QtGuiContext.hxx"
 #include "Menus.hxx"
@@ -36,10 +37,15 @@ RootSceneItem::~RootSceneItem()
 void RootSceneItem::update(GuiEvent event, int type, Subject* son)
 {
   DEBTRACE("RootSceneItem::update "<<event<<" "<<type<<" "<<son);
+  GuiEditor *guiEditor = 0;
   switch (event)
     {
     case YACS::HMI::NEWROOT:
       setNewRoot(son);
+      break;
+    case YACS::HMI::ENDLOAD:
+      guiEditor = QtGuiContext::getQtCurrent()->getGMain()->_guiEditor;
+      guiEditor->rebuildLinks();
       break;
     default:
       DEBTRACE("RootSceneItem::update(), event not handled: "<< event);

@@ -66,6 +66,7 @@ namespace YACS
 	DOWN,
         RENAME,
         NEWROOT,
+        ENDLOAD,
         ADDLINK,
         ADDCONTROLLINK,
         ADDREF,

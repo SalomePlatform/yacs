@@ -6,6 +6,7 @@
 #include "LinkMatrix.hxx"
 
 #include <QPointF>
+#include <QPainterPath>
 #include <vector>
 
 namespace YACS
@@ -32,6 +33,8 @@ namespace YACS
       virtual ~SceneLinkItem();
 
       virtual void select(bool isSelected);
+      virtual QRectF boundingRect() const;
+      virtual QPainterPath shape() const;
       virtual void paint(QPainter *painter,
                          const QStyleOptionGraphicsItem *option,
                          QWidget *widget);
@@ -42,7 +45,14 @@ namespace YACS
       virtual void force2points();
       virtual QPointF start();
       virtual QPointF goal();
+
     protected:
+      void setShape();
+      void addRect(QPointF pfrom,
+                   QPointF pto,
+                   HMI::Direction dir);
+
+      QPainterPath _path;
       ScenePortItem* _from;
       ScenePortItem* _to;
       std::vector<QPointF> _lp;

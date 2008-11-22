@@ -19,9 +19,10 @@ SceneCtrlLinkItem::SceneCtrlLinkItem(QGraphicsScene *scene, SceneItem *parent,
                                      QString label, Subject *subject)
   : SceneLinkItem(scene, parent, from, to, label, subject)
 {
-  _penColor     = QColor( 255,  0, 255);
-  _hiPenColor   = QColor( 255,  0, 255);
-  _brushColor   = QColor( 128,  0, 128);
+  _penColor     = QColor( 96,   0,  96);
+  _hiPenColor   = QColor( 128,  0, 128);
+  _brushColor   = QColor( 192,  0, 192);
+  _hiBrushColor = QColor( 255,  0, 255);
 }
 
 SceneCtrlLinkItem::~SceneCtrlLinkItem()
