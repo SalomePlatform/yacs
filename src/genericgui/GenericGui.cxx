@@ -917,15 +917,24 @@ void GenericGui::onRunLoadedSchema(bool withState)
 
   // load state if required
 
-  if (!QtGuiContext::getQtCurrent()->getGuiExecutor()) return;
-  if (!withState) return;
-  QString fn = QFileDialog::getOpenFileName( _parent,
-                                             "Choose a previous run state to load" ,
-                                             QString::null,
-                                             tr( "XML-Files (*.xml);;All Files (*)" ));
-  if (fn.isEmpty()) return;
-  DEBTRACE("run state to load: " <<fn.toStdString());
-  QtGuiContext::getQtCurrent()->getGuiExecutor()->setLoadStateFile(fn.toStdString());
+  GuiExecutor *executor = QtGuiContext::getQtCurrent()->getGuiExecutor();
+  if (!executor) return;
+  if (withState)
+    {
+      QString fn = QFileDialog::getOpenFileName( _parent,
+                                                 "Choose a previous run state to load" ,
+                                                 QString::null,
+                                                 tr( "XML-Files (*.xml);;All Files (*)" ));
+      if (!fn.isEmpty())
+        {
+          DEBTRACE("run state to load: " <<fn.toStdString());
+          executor->setLoadStateFile(fn.toStdString());
+        }
+    }
+  executor->setStepByStepMode();
+  executor->startResumeDataflow(); // --- initialise gui state
+  executor->suspendDataflow();
+  executor->setContinueMode();
 }
 
 void GenericGui::onLoadRunStateSchema()
