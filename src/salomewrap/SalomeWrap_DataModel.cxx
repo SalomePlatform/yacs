@@ -10,7 +10,7 @@
 
 #include <QFileInfo>
 
-#define _DEVDEBUG_
+//#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
 using namespace std;

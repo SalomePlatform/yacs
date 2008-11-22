@@ -83,7 +83,7 @@ class proc_i(YACS_ORB__POA.ProcExec):
             self.run1 = None
             pass
         if self.run1 is None:
-            self.run1 = threading.Thread(None, self.e.RunPy, "CORBAExec", (self.p,0))
+            self.run1 = threading.Thread(None, self.e.RunPy, "CORBAExec", (self.p,0,1,1))
             self.run1.start()
             pass
         pass
@@ -114,7 +114,7 @@ class proc_i(YACS_ORB__POA.ProcExec):
             print "Unknown exception!"
             return None
         if self.run1 is None:
-            self.run1 = threading.Thread(None, self.e.RunPy, "CORBAExec", (self.p,0))
+            self.run1 = threading.Thread(None, self.e.RunPy, "CORBAExec", (self.p,0,1,0))
             self.run1.start()
             pass
         pass

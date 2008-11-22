@@ -188,6 +188,7 @@ LIBICONS = \
 	filter_next_steps.png \
 	filter_notification.png \
 	folder_cyan.png \
+	folder_cyan_open.png \
 	full_view.png \
 	icon_down.png \
 	icon_insert.png \

@@ -175,6 +175,11 @@ void GenericGui::createActions()
                                               tr("Run Current Schema"), tr("Prepare the current edited schema for run"),
                                               0, _parent, false, this,  SLOT(onRunLoadedSchema()));
 
+  pixmap.load("icons:load_execution_state.png");
+  _loadRunStateSchemaAct = _wrapper->createAction(getMenuId(), tr("Load a previous run state for this schema, prepare to run"), QIcon(pixmap),
+                                                  tr("Load Run State"), tr("Load a previous run state for this schema, prepare to run"),
+                                                  0, _parent, false, this,  SLOT(onLoadRunStateSchema()));
+
   pixmap.load("icons:run.png");
   _loadAndRunSchemaAct = _wrapper->createAction(getMenuId(), tr("Load a schema for run"), QIcon(pixmap),
                                               tr("Load Schema to run"), tr("Load a schema for run"),
@@ -202,6 +207,16 @@ void GenericGui::createActions()
                                       0, _parent, false, this,  SLOT(onReset()));
 
 
+  pixmap.load("icons:save_dataflow_state.png");
+  _saveRunStateAct = _wrapper->createAction(getMenuId(), tr("Save the current run state"), QIcon(pixmap),
+                                            tr("Save State"), tr("Save the current run state"),
+                                            0, _parent, false, this,  SLOT(onSaveRunState()));
+
+  pixmap.load("icons:new_edition.png");
+  _newEditionAct = _wrapper->createAction(getMenuId(), tr("Edit again the current schema in a new context"), QIcon(pixmap),
+                                          tr("Edit Again"), tr("Edit again the current schema in a new context"),
+                                          0, _parent, false, this,  SLOT(onNewEdition()));
+  
 
   pixmap.load("icons:kill.png");
   _editDataTypesAct = _wrapper->createAction(getMenuId(), tr("Edit Data Types"), QIcon(pixmap),
@@ -373,6 +388,11 @@ void GenericGui::createActions()
                                               tr("mode step by step"), tr("set execution mode step by step"),
                                               0, _parent, true, this,  SLOT(onStepByStepMode(bool)));
 
+  pixmap.load("icons:toggle_stop_on_error.png");
+  _toggleStopOnErrorAct = _wrapper->createAction(getMenuId(), tr("Force stop on first error during execution"), QIcon(pixmap),
+                                              tr("stop on error"), tr("Force stop on first error during execution"),
+                                              0, _parent, true, this,  SLOT(onToggleStopOnError(bool)));
+
 
   _execModeGroup = new QActionGroup(this);
   _execModeGroup->addAction(_withoutStopModeAct);
@@ -409,6 +429,7 @@ void GenericGui::createMenus()
   _wrapper->createMenu( _exportSchemaAsAct, aMenuId );
   _wrapper->createMenu( _wrapper->separator(), aMenuId);
   _wrapper->createMenu( _runLoadedSchemaAct, aMenuId );
+  _wrapper->createMenu( _loadRunStateSchemaAct, aMenuId );
   _wrapper->createMenu( _loadAndRunSchemaAct, aMenuId );
   _wrapper->createMenu( _wrapper->separator(), aMenuId);
   _wrapper->createMenu( _startResumeAct, aMenuId );
@@ -416,9 +437,14 @@ void GenericGui::createMenus()
   _wrapper->createMenu( _pauseAct, aMenuId );
   _wrapper->createMenu( _resetAct, aMenuId );
   _wrapper->createMenu( _wrapper->separator(), aMenuId);
+  _wrapper->createMenu( _saveRunStateAct, aMenuId );
+  _wrapper->createMenu( _newEditionAct, aMenuId );
+  _wrapper->createMenu( _wrapper->separator(), aMenuId);
   _wrapper->createMenu( _withoutStopModeAct, aMenuId );
   _wrapper->createMenu( _breakpointsModeAct, aMenuId );
   _wrapper->createMenu( _stepByStepModeAct, aMenuId );
+  _wrapper->createMenu( _wrapper->separator(), aMenuId);
+  _wrapper->createMenu( _toggleStopOnErrorAct, aMenuId );
   _wrapper->createMenu( _wrapper->separator(), aMenuId);
   _wrapper->createMenu( _importCatalogAct, aMenuId );
 }
@@ -434,6 +460,7 @@ void GenericGui::createTools()
   _wrapper->createTool( _exportSchemaAsAct, aToolId );
   _wrapper->createTool( _wrapper->separator(), aToolId);
   _wrapper->createTool( _runLoadedSchemaAct, aToolId );
+  _wrapper->createTool( _loadRunStateSchemaAct, aToolId );
   _wrapper->createTool( _loadAndRunSchemaAct, aToolId );
   _wrapper->createTool( _wrapper->separator(), aToolId );
   _wrapper->createTool( _startResumeAct, aToolId );
@@ -441,9 +468,14 @@ void GenericGui::createTools()
   _wrapper->createTool( _pauseAct, aToolId );
   _wrapper->createTool( _resetAct, aToolId );
   _wrapper->createTool( _wrapper->separator(), aToolId );
+  _wrapper->createTool( _wrapper->separator(), aToolId );
+  _wrapper->createTool( _saveRunStateAct, aToolId );
+  _wrapper->createTool( _newEditionAct, aToolId );
   _wrapper->createTool( _withoutStopModeAct, aToolId );
   _wrapper->createTool( _breakpointsModeAct, aToolId );
   _wrapper->createTool( _stepByStepModeAct, aToolId );
+  _wrapper->createTool( _wrapper->separator(), aToolId );
+  _wrapper->createTool( _toggleStopOnErrorAct, aToolId );
   _wrapper->createTool( _wrapper->separator(), aToolId );
   _wrapper->createTool( _importCatalogAct, aToolId );
 }
@@ -476,6 +508,8 @@ void GenericGui::showEditionMenus(bool show)
   _wrapper->setMenuShown(_exportSchemaAsAct, show);
   _wrapper->setToolShown(_exportSchemaAsAct, show);
   _wrapper->setMenuShown(_runLoadedSchemaAct, show);
+  _wrapper->setToolShown(_loadRunStateSchemaAct, show);
+  _wrapper->setMenuShown(_loadRunStateSchemaAct, show);
   _wrapper->setToolShown(_runLoadedSchemaAct, show);
   _wrapper->setMenuShown(_importCatalogAct, show);
   _wrapper->setToolShown(_importCatalogAct, show);
@@ -492,12 +526,18 @@ void GenericGui::showExecMenus(bool show)
   _wrapper->setToolShown(_pauseAct, show);
   _wrapper->setMenuShown(_resetAct, show);
   _wrapper->setToolShown(_resetAct, show);
+  _wrapper->setMenuShown(_saveRunStateAct, show);
+  _wrapper->setToolShown(_saveRunStateAct, show);
+  _wrapper->setMenuShown(_newEditionAct, show);
+  _wrapper->setToolShown(_newEditionAct, show);
   _wrapper->setMenuShown(_withoutStopModeAct, show);
   _wrapper->setToolShown(_withoutStopModeAct, show);
   _wrapper->setMenuShown(_breakpointsModeAct, show);
   _wrapper->setToolShown(_breakpointsModeAct, show);
   _wrapper->setMenuShown(_stepByStepModeAct, show);
   _wrapper->setToolShown(_stepByStepModeAct, show);
+  _wrapper->setMenuShown(_toggleStopOnErrorAct, show);
+  _wrapper->setToolShown(_toggleStopOnErrorAct, show);
 }
 
 void GenericGui::switchContext(QWidget *view)
@@ -527,6 +567,7 @@ void GenericGui::switchContext(QWidget *view)
       showBaseMenus(true);
       showEditionMenus(false);
       showExecMenus(true);
+      _withoutStopModeAct->setChecked(true);
     }
 }
 
@@ -690,7 +731,6 @@ void GenericGui::createContext(YACS::ENGINE::Proc* proc,
   vtree->resizeColumns();
   _catalogsWidget->setMinimumWidth(0); // --- reset the constraint on width
   editTree->setMinimumHeight(0);
-
   // --- show menus
 
   if (forEdition)
@@ -702,6 +742,7 @@ void GenericGui::createContext(YACS::ENGINE::Proc* proc,
     {
       showEditionMenus(false);
       showExecMenus(true);
+      _withoutStopModeAct->setChecked(true);
     }
 }
 
@@ -759,15 +800,15 @@ QString GenericGui::getSaveFileName(const QString& fileName)
   dialog.setFilters(filters);
   dialog.selectFilter("(*.xml)");
   dialog.setDefaultSuffix("xml");
-  //dialog.setConfirmOverwrite(true); // bug Qt4.3.3
-  dialog.setConfirmOverwrite(false);  // bug Qt4.3.3
+  dialog.setConfirmOverwrite(true);
+  //dialog.setConfirmOverwrite(false);  // bug Qt4.3.3
   dialog.setAcceptMode(QFileDialog::AcceptSave);
   QString selectedFile;
   QStringList fileNames;
   fileNames.clear();
   if (bool ret = dialog.exec())
     {
-      //DEBTRACE(ret << " " << dialog.confirmOverwrite());
+      DEBTRACE(ret << " " << dialog.confirmOverwrite());
       fileNames = dialog.selectedFiles();
       if (!fileNames.isEmpty())
         selectedFile = fileNames.first();
@@ -834,7 +875,7 @@ void GenericGui::onImportCatalog()
     _catalogsWidget->addCatalogFromFile(fn.toStdString());
 }
   
-void GenericGui::onRunLoadedSchema()
+void GenericGui::onRunLoadedSchema(bool withState)
 {
   DEBTRACE("GenericGui::onRunLoadedSchema");
   if (!QtGuiContext::getQtCurrent()) return;
@@ -854,12 +895,13 @@ void GenericGui::onRunLoadedSchema()
 
   QFileInfo fo = QtGuiContext::getQtCurrent()->getFileName();
   QString procName = fo.baseName();
-  QString tmpDir = SALOMEDS_Tool::GetTmpDir().c_str();
+  //QString tmpDir = SALOMEDS_Tool::GetTmpDir().c_str();
+  QString tmpDir = "/tmp";
   QDir aTmpDir(tmpDir);
   aTmpDir.mkdir(QString("YACS_") + getenv("USER"));
   assert(aTmpDir.cd(QString("YACS_") + getenv("USER")));
   QDateTime curTime = QDateTime::currentDateTime();   
-  QString aRunName = procName + "_" + curTime.toString("yyyyMMdd_hhmmss");
+  QString aRunName = procName + "_" + curTime.toString("yyyyMMdd_hhmmss") + ".xml";
   aRunName = aTmpDir.absoluteFilePath(aRunName);
   DEBTRACE(aRunName.toStdString());
 
@@ -873,6 +915,23 @@ void GenericGui::onRunLoadedSchema()
   YACS::ENGINE::Proc *procrun = _loader->load(aRunName.toLatin1());
   createContext(procrun, QtGuiContext::getQtCurrent()->getFileName(), aRunName, false);
 
+  // load state if required
+
+  if (!QtGuiContext::getQtCurrent()->getGuiExecutor()) return;
+  if (!withState) return;
+  QString fn = QFileDialog::getOpenFileName( _parent,
+                                             "Choose a previous run state to load" ,
+                                             QString::null,
+                                             tr( "XML-Files (*.xml);;All Files (*)" ));
+  if (fn.isEmpty()) return;
+  DEBTRACE("run state to load: " <<fn.toStdString());
+  QtGuiContext::getQtCurrent()->getGuiExecutor()->setLoadStateFile(fn.toStdString());
+}
+
+void GenericGui::onLoadRunStateSchema()
+{
+  DEBTRACE("GenericGui::onLoadRunStateSchema");
+  onRunLoadedSchema(true);
 }
 
 void GenericGui::onLoadAndRunSchema()
@@ -928,6 +987,31 @@ void GenericGui::onReset()
   if (!QtGuiContext::getQtCurrent()) return;
   if (!QtGuiContext::getQtCurrent()->getGuiExecutor()) return;
   QtGuiContext::getQtCurrent()->getGuiExecutor()->resetDataflow();
+}
+
+void GenericGui::onSaveRunState()
+{
+  DEBTRACE("GenericGui::onSaveRunState");
+  if (!QtGuiContext::getQtCurrent()) return;
+  if (!QtGuiContext::getQtCurrent()->getGuiExecutor()) return;
+  QDateTime curTime = QDateTime::currentDateTime(); 
+  QFileInfo procName = QtGuiContext::getQtCurrent()->getFileName();
+  QString stateName = procName.baseName();
+  DEBTRACE(stateName.toStdString());
+  stateName += "_state_" + curTime.toString("yyyyMMdd_hhmmss") + ".xml";
+  DEBTRACE(stateName.toStdString());
+  stateName = getSaveFileName(stateName);
+  DEBTRACE(stateName.toStdString());
+  if (!stateName.isEmpty())
+    QtGuiContext::getQtCurrent()->getGuiExecutor()->saveState(stateName.toStdString());
+}
+
+void GenericGui::onNewEdition()
+{
+  DEBTRACE("GenericGui::onNewEdition");
+//   if (!QtGuiContext::getQtCurrent()) return;
+//   if (!QtGuiContext::getQtCurrent()->getGuiExecutor()) return;
+//   QtGuiContext::getQtCurrent()->getGuiExecutor()->resetDataflow();
 }
 
 void GenericGui::onEditDataTypes()
@@ -1136,6 +1220,13 @@ void GenericGui::onStepByStepMode(bool checked)
   if (!QtGuiContext::getQtCurrent()) return;
   if (!QtGuiContext::getQtCurrent()->getGuiExecutor()) return;
   if (checked) QtGuiContext::getQtCurrent()->getGuiExecutor()->setStepByStepMode();
+}
+
+void GenericGui::onToggleStopOnError(bool checked)
+{
+  DEBTRACE("GenericGui::onToggleStopOnError " << checked);
+  if (!QtGuiContext::getQtCurrent()) return;
+  if (!QtGuiContext::getQtCurrent()->getGuiExecutor()) return;
 }
 
 void GenericGui::onCleanOnExit()

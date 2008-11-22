@@ -430,6 +430,7 @@ bool GuiExecutor::event(QEvent *e)
       int iGui = _serv->_engineToGuiMap[numid];
       assert(GuiContext::getCurrent()->_mapOfExecSubjectNode.count(iGui));
       SubjectNode *snode = GuiContext::getCurrent()->_mapOfExecSubjectNode[iGui];
+      DEBTRACE("node " << snode->getName() << " state=" << state);
       snode->setExecState(state);
 
       YACS::ENGINE::Node *node = snode->getNode();

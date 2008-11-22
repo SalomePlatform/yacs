@@ -58,6 +58,7 @@ namespace YACS
       QAction *_importCatalogAct;
 
       QAction *_runLoadedSchemaAct;
+      QAction *_loadRunStateSchemaAct;
       QAction *_loadAndRunSchemaAct;
 
       QAction *_startResumeAct;
@@ -65,10 +66,15 @@ namespace YACS
       QAction *_pauseAct;
       QAction *_resetAct;
 
+      QAction *_saveRunStateAct;
+      QAction *_newEditionAct;
+
       QActionGroup *_execModeGroup;
       QAction *_withoutStopModeAct;
       QAction *_breakpointsModeAct;
       QAction *_stepByStepModeAct;
+
+      QAction *_toggleStopOnErrorAct;
 
       QAction *_editDataTypesAct;
       QAction *_createDataTypeAct;
@@ -139,18 +145,23 @@ namespace YACS
       void onExportSchemaAs();
       void onImportCatalog();
 
-      void onRunLoadedSchema();
+      void onRunLoadedSchema(bool withState = false);
+      void onLoadRunStateSchema();
       void onLoadAndRunSchema();
 
       void onStartResume();
       void onAbort();
       void onPause();
       void onReset();
+      void onSaveRunState();
+      void onNewEdition();
 
       void onWithoutStopMode(bool checked);
       void onBreakpointsMode(bool checked);
       void onStepByStepMode(bool checked);
-  
+
+      void onToggleStopOnError(bool checked);
+
       void onEditDataTypes();
       void onCreateDataType();
       void onImportDataType();
