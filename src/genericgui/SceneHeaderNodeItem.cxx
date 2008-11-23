@@ -47,11 +47,11 @@ SceneHeaderNodeItem::SceneHeaderNodeItem(QGraphicsScene *scene, SceneItem *paren
   _hasHeader = true;
   _controlIn  = new SceneCtrlInPortItem(_scene,
                                         this,
-                                        "Ctrl_IN");
+                                        "Ctrl_I");
   autoPosControl(_controlIn);
   _controlOut = new SceneCtrlOutPortItem(_scene,
                                          this,
-                                         "Ctrl_OUT");
+                                         "Ctrl_O");
   autoPosControl(_controlOut);
   _brushColor = _normalNodeBrushColor;
   _execState = YACS::UNDEFINED;

@@ -48,9 +48,9 @@ namespace YACS
 
     protected:
       void setShape();
-      void addRect(QPointF pfrom,
-                   QPointF pto,
-                   HMI::Direction dir);
+      void addArrow(QPointF pfrom,
+                    QPointF pto,
+                    HMI::Direction dir);
 
       QPainterPath _path;
       ScenePortItem* _from;

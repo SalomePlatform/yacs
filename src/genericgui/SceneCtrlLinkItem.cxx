@@ -32,13 +32,13 @@ SceneCtrlLinkItem::~SceneCtrlLinkItem()
 QPointF SceneCtrlLinkItem::start()
 {
   SceneCtrlPortItem* dpif = dynamic_cast<SceneCtrlPortItem*>(_from);
-  QPointF localFrom(dpif->getWidth()*(9.0/10), dpif->getHeight()/2);
+  QPointF localFrom(dpif->getWidth()*(9.5/10), dpif->getHeight()/2);
   return mapFromItem(dpif, localFrom);
 }
 
 QPointF SceneCtrlLinkItem::goal()
 {
   SceneCtrlPortItem* dpit = dynamic_cast<SceneCtrlPortItem*>(_to);
-  QPointF localTo(dpit->getWidth()/10, dpit->getHeight()/2);
+  QPointF localTo(dpit->getWidth()/20, dpit->getHeight()/2);
   return mapFromItem(dpit, localTo);
 }

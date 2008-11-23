@@ -22,6 +22,7 @@ SceneTextItem::SceneTextItem(QGraphicsScene *scene, SceneItem *parent,
 {
   setToolTip(label);
   DEBTRACE("SceneTextItem::SceneTextItem "<<label.toStdString()<<" "<<this<<" "<<_parent<<" "<< _level); 
+  setPos(x()+10, y());
 }
 
 SceneTextItem::~SceneTextItem()
