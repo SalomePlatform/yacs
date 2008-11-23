@@ -26,11 +26,14 @@
 #include "VisitorSaveGuiSchema.hxx"
 #include "TypeCode.hxx"
 #include "LinkInfo.hxx"
+#include "LogViewer.hxx"
 
 #include <QFileDialog>
 #include <sstream>
 #include <QDir>
 #include <QDateTime>
+#include <QMessageBox>
+
 #include <cstdlib>
 
 //#define _DEVDEBUG_
@@ -216,7 +219,29 @@ void GenericGui::createActions()
   _newEditionAct = _wrapper->createAction(getMenuId(), tr("Edit again the current schema in a new context"), QIcon(pixmap),
                                           tr("Edit Again"), tr("Edit again the current schema in a new context"),
                                           0, _parent, false, this,  SLOT(onNewEdition()));
-  
+
+
+  pixmap.load("icons:change_informations.png");
+  _getYacsContainerLogAct = _wrapper->createAction(getMenuId(), tr("get YACS container log"), QIcon(pixmap),
+                                          tr("YACS Container Log"), tr("get YACS container log"),
+                                          0, _parent, false, this,  SLOT(onGetYacsContainerLog()));
+
+  pixmap.load("icons:filter_notification.png");
+  _getErrorReportAct = _wrapper->createAction(getMenuId(), tr("get Node Error Report"), QIcon(pixmap),
+                                          tr("Node Error Report"), tr("get Node Error Report"),
+                                          0, _parent, false, this,  SLOT(onGetErrorReport()));
+
+  pixmap.load("icons:icon_text.png");
+  _getErrorDetailsAct = _wrapper->createAction(getMenuId(), tr("get Node Error Details"), QIcon(pixmap),
+                                          tr("Node Error Details"), tr("get Node Error Details"),
+                                          0, _parent, false, this,  SLOT(onGetErrorDetails()));
+
+  pixmap.load("icons:change_informations.png");
+  _getContainerLogAct = _wrapper->createAction(getMenuId(), tr("get Node Container Log"), QIcon(pixmap),
+                                          tr("Node Container Log"), tr("get Node Container Log"),
+                                          0, _parent, false, this,  SLOT(onGetContainerLog()));
+
+
 
   pixmap.load("icons:kill.png");
   _editDataTypesAct = _wrapper->createAction(getMenuId(), tr("Edit Data Types"), QIcon(pixmap),
@@ -771,10 +796,16 @@ void GenericGui::onImportSchema()
                                              tr( "XML-Files (*.xml);;All Files (*)" ));
   if ( !fn.isEmpty() )
     {
-      DEBTRACE("***************************************************************************");
       DEBTRACE("file loaded : " <<fn.toStdString());
-      DEBTRACE("***************************************************************************");
       YACS::ENGINE::Proc *proc = _loader->load(fn.toLatin1());
+      if (!proc)
+        {
+          QMessageBox msgBox(QMessageBox::Critical,
+                             "Import YACS Schema, native YACS XML format",
+                             "The file has not the native YACS XML format or is not readable.");
+          msgBox.exec();
+          return;
+        }
       YACS::ENGINE::Logger* logger= proc->getLogger("parser");
       if(!logger->isEmpty())
         {
@@ -787,6 +818,98 @@ void GenericGui::onImportSchema()
 void GenericGui::onImportSupervSchema()
 {
   DEBTRACE("GenericGui::onImportSupervSchema");
+  QString fn = QFileDialog::getOpenFileName( _parent,
+                                             "Choose a  SUPERV filename to load" ,
+                                             QString::null,
+                                             tr( "XML-Files (*.xml);;All Files (*)" ));
+  if (fn.isEmpty()) return;
+
+  DEBTRACE("file loaded : " <<fn.toStdString());
+  QString tmpFileName;
+  try
+    {
+      QString tmpDir = "/tmp";
+      QDir aTmpDir(tmpDir);
+      aTmpDir.mkdir(QString("YACS_") + getenv("USER"));
+      assert(aTmpDir.cd(QString("YACS_") + getenv("USER")));
+      QDateTime curTime = QDateTime::currentDateTime();   
+      tmpFileName = "SUPERV_import_" + curTime.toString("yyyyMMdd_hhmmss") + ".xml";
+      QString tmpOutput = "salomeloader_output";
+      tmpFileName = aTmpDir.absoluteFilePath(tmpFileName);
+      DEBTRACE(tmpFileName.toStdString());
+      
+      QString aCall = "salomeloader.sh " + fn + " " + tmpFileName + " > " + tmpOutput;
+      DEBTRACE(aCall.toStdString());
+      
+      int ret = system(aCall.toAscii());
+      if(ret != 0)
+        {
+          // --- read file with logs
+          fstream f(tmpOutput.toAscii());
+          stringstream hfile;
+          hfile << f.rdbuf();
+          f.close();
+          
+          // --- Problem in execution
+          int status=WEXITSTATUS(ret);
+          if(status == 1)
+            {
+              QString mes = "Problems in conversion: some errors but an incomplete proc has nevertheless been created.\n\n";
+              mes += QString(hfile.str().c_str());
+              QMessageBox msgBox(QMessageBox::Warning,
+                                 "Import YACS Schema, SUPERV XML format",
+                                 mes);
+              msgBox.exec();
+            }
+          else if(status == 2)
+            {
+              QString mes = "Problems in conversion: a fatal error has been encountered. The proc can't be created.\n\n";
+              mes += QString(hfile.str().c_str());
+              QMessageBox msgBox(QMessageBox::Critical,
+                                 "Import YACS Schema, SUPERV XML format",
+                                 mes);
+              msgBox.exec();
+              return;
+            }
+          else
+            {
+              DEBTRACE("Unknown problem: " << ret );
+              QMessageBox msgBox(QMessageBox::Critical,
+                                 "Import YACS Schema, SUPERV XML format",
+                                 "Unexpected exception in salomeloader.");
+              msgBox.exec();
+              return;
+            }
+        }
+    }
+  catch(...)
+    {
+      QMessageBox msgBox(QMessageBox::Critical,
+                         "Import YACS Schema, SUPERV XML format",
+                         "Unexpected exception in convertSupervFile");
+      msgBox.exec();
+      return;
+    }
+
+  fn = tmpFileName;
+  if (fn.isEmpty()) return; // must not happen
+
+  DEBTRACE("file loaded : " <<fn.toStdString());
+  YACS::ENGINE::Proc *proc = _loader->load(fn.toLatin1());
+  if (!proc)
+    {
+      QMessageBox msgBox(QMessageBox::Critical,
+                         "Import YACS Schema, SUPERV file converted in native YACS XML format",
+                         "The file has not the native YACS XML format or is not readable.");
+      msgBox.exec();
+      return;
+    }
+  YACS::ENGINE::Logger* logger= proc->getLogger("parser");
+  if(!logger->isEmpty())
+    {
+      DEBTRACE(logger->getStr());
+    }
+  createContext(proc, fn, "", true);
 }
 
 //! bug confirmOverwrite : correction Qt 4.3.5
@@ -931,10 +1054,7 @@ void GenericGui::onRunLoadedSchema(bool withState)
           executor->setLoadStateFile(fn.toStdString());
         }
     }
-  executor->setStepByStepMode();
-  executor->startResumeDataflow(); // --- initialise gui state
-  executor->suspendDataflow();
-  executor->setContinueMode();
+  executor->startResumeDataflow(true); // --- initialise gui state
 }
 
 void GenericGui::onLoadRunStateSchema()
@@ -1022,6 +1142,61 @@ void GenericGui::onNewEdition()
 //   if (!QtGuiContext::getQtCurrent()->getGuiExecutor()) return;
 //   QtGuiContext::getQtCurrent()->getGuiExecutor()->resetDataflow();
 }
+
+void GenericGui::onGetYacsContainerLog()
+{
+  DEBTRACE("GenericGui::onGetYacsContainerLog");
+  if (!QtGuiContext::getQtCurrent()) return;
+  if (!QtGuiContext::getQtCurrent()->getGuiExecutor()) return;
+  string log = QtGuiContext::getQtCurrent()->getGuiExecutor()->getContainerLog();
+  LogViewer *lv = new LogViewer("YACS Container Log", _parent);
+  lv->readFile(log);
+  lv->show();
+}
+
+void GenericGui::onGetErrorReport()
+{
+  DEBTRACE("GenericGui::onGetErrorReport");
+  if (!QtGuiContext::getQtCurrent()) return;
+  if (!QtGuiContext::getQtCurrent()->getGuiExecutor()) return;
+  Subject *sub = QtGuiContext::getQtCurrent()->getSelectedSubject();
+  SubjectElementaryNode *snode = dynamic_cast<SubjectElementaryNode*>(sub);
+  if (!snode) return;
+  string log = QtGuiContext::getQtCurrent()->getGuiExecutor()->getErrorReport(snode->getNode());
+  LogViewer *lv = new LogViewer("Node error report", _parent);
+  lv->setText(log);
+  lv->show();
+}
+
+void GenericGui::onGetErrorDetails()
+{
+  DEBTRACE("GenericGui::onGetErrorDetails");
+  if (!QtGuiContext::getQtCurrent()) return;
+  if (!QtGuiContext::getQtCurrent()->getGuiExecutor()) return;
+  Subject *sub = QtGuiContext::getQtCurrent()->getSelectedSubject();
+  SubjectElementaryNode *snode = dynamic_cast<SubjectElementaryNode*>(sub);
+  if (!snode) return;
+  string log = QtGuiContext::getQtCurrent()->getGuiExecutor()->getErrorDetails(snode->getNode());
+  LogViewer *lv = new LogViewer("Node Error Details", _parent);
+  lv->setText(log);
+  lv->show();
+}
+
+void GenericGui::onGetContainerLog()
+{
+  DEBTRACE("GenericGui::onGetContainerLog");
+  if (!QtGuiContext::getQtCurrent()) return;
+  if (!QtGuiContext::getQtCurrent()->getGuiExecutor()) return;
+  Subject *sub = QtGuiContext::getQtCurrent()->getSelectedSubject();
+  SubjectElementaryNode *snode = dynamic_cast<SubjectElementaryNode*>(sub);
+  if (!snode) return;
+  string log = QtGuiContext::getQtCurrent()->getGuiExecutor()->getContainerLog(snode->getNode());
+  LogViewer *lv = new LogViewer("Node Container Log", _parent);
+  lv->readFile(log);
+  lv->show();
+}
+
+
 
 void GenericGui::onEditDataTypes()
 {

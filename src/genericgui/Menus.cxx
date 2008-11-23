@@ -140,6 +140,8 @@ void ProcMenu::popupMenu(QWidget *caller, const QPoint &globalPos, const QString
       CNmenu->addAction(gmain->_SWITCHNodeAct);
       menu.addSeparator();
     }
+  menu.addAction(gmain->_getYacsContainerLogAct);
+  menu.addSeparator();
   menu.addAction(gmain->_computeLinkAct);
   menu.addAction(gmain->_toggleAutomaticComputeLinkAct);
   menu.addAction(gmain->_toggleSimplifyLinkAct);
@@ -236,6 +238,12 @@ void ElementaryNodeMenu::popupMenu(QWidget *caller, const QPoint &globalPos, con
   if (isEdition)
     {
       menu.addAction(gmain->_deleteItemAct);
+    }
+  else
+    {
+      menu.addAction(gmain->_getErrorReportAct);
+      menu.addAction(gmain->_getErrorDetailsAct);
+      menu.addAction(gmain->_getContainerLogAct);
     }
   menu.exec(globalPos);
 }

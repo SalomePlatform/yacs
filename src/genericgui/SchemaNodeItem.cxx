@@ -107,7 +107,7 @@ void SchemaNodeItem::update(GuiEvent event, int type, Subject* son)
 
 void SchemaNodeItem::popupMenu(QWidget *caller, const QPoint &globalPos)
 {
-  NodeMenu m;
+  ElementaryNodeMenu m;
   m.popupMenu(caller, globalPos);
 }
 

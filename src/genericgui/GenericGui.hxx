@@ -76,6 +76,11 @@ namespace YACS
 
       QAction *_toggleStopOnErrorAct;
 
+      QAction *_getYacsContainerLogAct;
+      QAction *_getErrorReportAct;
+      QAction *_getErrorDetailsAct;
+      QAction *_getContainerLogAct;
+
       QAction *_editDataTypesAct;
       QAction *_createDataTypeAct;
       QAction *_importDataTypeAct;
@@ -161,6 +166,11 @@ namespace YACS
       void onStepByStepMode(bool checked);
 
       void onToggleStopOnError(bool checked);
+
+      void onGetYacsContainerLog();
+      void onGetErrorReport();
+      void onGetErrorDetails();
+      void onGetContainerLog();
 
       void onEditDataTypes();
       void onCreateDataType();

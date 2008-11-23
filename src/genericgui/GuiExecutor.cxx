@@ -52,9 +52,9 @@ GuiExecutor::~GuiExecutor()
 }
 
 
-void GuiExecutor::startResumeDataflow()
+void GuiExecutor::startResumeDataflow(bool initialize)
 {
-  DEBTRACE("GuiExecutor::runDataflow");
+  DEBTRACE("GuiExecutor::runDataflow " << initialize);
   if (CORBA::is_nil(_engineRef))
     {
       DEBTRACE("Create YACS ORB engine!");
@@ -90,7 +90,10 @@ void GuiExecutor::startResumeDataflow()
       DEBTRACE("_procRef init");
     }
 
-  _procRef->setExecMode(getCurrentExecMode());
+  if (initialize)
+    _procRef->setExecMode(YACS_ORB::STEPBYSTEP);
+  else
+    _procRef->setExecMode(getCurrentExecMode());
   setBPList();
 
   if (_loadStateFile.empty())

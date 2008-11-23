@@ -10,6 +10,7 @@ BUILT_SOURCES =       \
   ui_FormEditTree.h   \
   ui_FormEditItem.h   \
   ui_FormSchemaView.h \
+  ui_LogViewer.h      \
   ui_TablePorts.h
 
 libGenericGui_la_SOURCES =        \
@@ -78,6 +79,8 @@ libGenericGui_la_SOURCES =        \
   ItemMimeData.cxx                \
   LinkAStar.cxx                   \
   LinkMatrix.cxx                  \
+  LogViewer.cxx                   \
+  LogViewer_moc.cxx               \
   Menus.cxx                       \
   Menus_moc.cxx                   \
   QtGuiContext.cxx                \
