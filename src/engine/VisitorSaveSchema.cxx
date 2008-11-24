@@ -232,7 +232,7 @@ void VisitorSaveSchema::visitServiceNode(ServiceNode *node)
   else
     _out << ">" << endl;
   writeProperties(node);
-  if (node->getKind() == "XML")
+  if (node->getKind() == "xmlsh")
     {
       _out << indent(depth+1) << "<kind>xmlsh</kind>" << endl;
       _out << indent(depth+1) << "<ref>" << node->getRef() << "</ref>" << endl;
