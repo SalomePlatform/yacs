@@ -94,9 +94,10 @@ void Subject::localClean()
   set<GuiObserver*>::iterator it;
   set<GuiObserver*> copySet = _setObs;
   for (it = copySet.begin(); it != copySet.end(); ++it)
+    detach(*it);
+  for (it = copySet.begin(); it != copySet.end(); ++it)
   {
     GuiObserver* anObs = (*it);
-    detach(anObs);
     int nbsub = anObs->getNbSubjects();
     DEBTRACE("nbSubjects=" << nbsub);
     if (nbsub <= 0 && anObs->isDestructible()) delete anObs ;
@@ -426,6 +427,8 @@ void SubjectNode::localClean()
 	swl->completeChildrenSubjectList( 0 );
       else if( SubjectForEachLoop* sfel = dynamic_cast<SubjectForEachLoop*>(_parent) )
 	sfel->completeChildrenSubjectList( 0 );
+      else if( SubjectSwitch* ss = dynamic_cast<SubjectSwitch*>(_parent) )
+        ss->removeNode(this);
     }
 }
 
@@ -436,6 +439,9 @@ void SubjectNode::reparent(Subject* parent)
   {
     if( SubjectBloc* sb = dynamic_cast<SubjectBloc*>(_parent) )
       sb->removeNode(this);
+    else if( SubjectSwitch* ss = dynamic_cast<SubjectSwitch*>(_parent) )
+      ss->removeNode(this);
+    _parent->update(CUT, getType() ,this);
   }
 
   // reparent
@@ -448,6 +454,7 @@ void SubjectNode::reparent(Subject* parent)
       sb->completeChildrenSubjectList(this);
     else if( SubjectSwitch* ss = dynamic_cast<SubjectSwitch*>(_parent) )
       ss->completeChildrenSubjectList(this);
+    _parent->update(PASTE, getType() ,this);
   }  
 }
 

@@ -172,7 +172,7 @@ bool CommandAddNodeFromCatalog::localExecute()
       Node* node = proc;
       if (!_position.empty()) node = proc->getChildByName(_position);
       ComposedNode* father =dynamic_cast<ComposedNode*> (node);
-      if (father)
+      if (father && _nodeToClone)
         {
           son = _nodeToClone->clone(0);
           son->setName(_name);
