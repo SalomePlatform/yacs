@@ -35,9 +35,9 @@ class proc_i(YACS_ORB__POA.ProcExec):
     def __init__(self, xmlFile):
         self.l = loader.YACSLoader()
         self.e = pilot.ExecutorSwig()
-        self.p = self.l.load(xmlFile)
         self.e.setExecMode(1) # YACS::STEPBYSTEP
         self.run1 = None
+        self.p = self.l.load(xmlFile)
         pass
 
     def getNodeState(self,numid):
@@ -202,6 +202,11 @@ class YACS(YACS_ORB__POA.YACS_Gen,
         """
         try:
             procExec_i = proc_i(xmlFile)
+            logger=procExec_i.p.getLogger("parser")
+            if not logger.isEmpty():
+              print "The imported file has errors :"
+              print logger.getStr()
+              return None
         except IOError, ex:
             print >> sys.stderr ,"IO Error: ", ex
             return None
@@ -212,7 +217,7 @@ class YACS(YACS_ORB__POA.YACS_Gen,
             print >> sys.stderr ,ex.what()
             return None
         except:
-            print >> sys.stderr ,"Unknown exception!"
+            traceback.print_exc()
             return None
         procExec_o = procExec_i._this()
         return procExec_o
