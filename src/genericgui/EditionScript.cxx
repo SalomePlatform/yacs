@@ -27,7 +27,25 @@ public:
     : QsciScintilla(parent) {};
   ~myQsciScintilla(){};
   virtual QSize sizeHint() const { return QSize(350, 150); };
+protected:
+  virtual bool event(QEvent *e);
 };
+
+bool myQsciScintilla::event(QEvent *e)
+{
+  if (e->type() == QEvent::ShortcutOverride)
+    {
+      QKeyEvent *ke = (QKeyEvent*)e;
+      if ( ((ke->modifiers() == Qt::NoModifier) || (ke->modifiers() == Qt::ShiftModifier))
+           && (ke->key() != Qt::Key_Escape))
+        {
+          e->accept();
+          return true;
+        }
+    }
+  return QsciScintilla::event(e);
+}
+
 #endif
 
 
