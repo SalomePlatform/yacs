@@ -62,6 +62,8 @@ using namespace std;
  */
 #define BLOCB 30
 
+static GVC_t* aGvc = 0;
+
 //! Auto-arrange nodes inside a schema using Graphviz C API.
 /*!
  */
@@ -75,8 +77,11 @@ int YACSGui_Graph::arrangeNodesAlgo( YACS::ENGINE::Bloc* theBloc )
 
   // ---- Create a graphviz context
 
-  aginit();
-  GVC_t* aGvc = gvContext();
+  if(!aGvc)
+    {
+      aginit();
+      aGvc = gvContext();
+    }
 
   // ---- Create a graph
 
@@ -115,6 +120,10 @@ int YACSGui_Graph::arrangeNodesAlgo( YACS::ENGINE::Bloc* theBloc )
     anAttr = agraphattr(_mainGraph, "fontsize", "24");
   agxset(_mainGraph, anAttr->index, "24");
 
+  if ( !(anAttr = agfindattr(_mainGraph, "splines")))
+    anAttr = agraphattr(_mainGraph, "splines", "");
+  agxset(_mainGraph, anAttr->index, "");
+
   // --- Initialize attributes for nodes
 
   if ( !(anAttr = agfindattr( _mainGraph->proto->n, "height")))
@@ -130,14 +139,17 @@ int YACSGui_Graph::arrangeNodesAlgo( YACS::ENGINE::Bloc* theBloc )
     anAttr = agnodeattr(_mainGraph, "fixedsize", "false" );
 
   int curdep = -1;
-  arrangeNodes(theBloc, _mainGraph, curdep);
-  createGraphvizNodes(theBloc, _mainGraph);
-  DEBTRACE("end of graphviz input");
 
   // ---- Bind graph to graphviz context - must be done before layout
   // ---- Compute a layout
   try
     {
+      arrangeNodes(theBloc, _mainGraph, curdep);
+      createGraphvizNodes(theBloc, _mainGraph);
+      DEBTRACE("end of graphviz input");
+#ifdef _DEVDEBUG_
+      agwrite(_mainGraph, stderr);
+#endif
 #ifdef HAVE_DOTNEATO_H
       gvBindContext(aGvc, _mainGraph);
       dot_layout(_mainGraph);
@@ -146,8 +158,10 @@ int YACSGui_Graph::arrangeNodesAlgo( YACS::ENGINE::Bloc* theBloc )
       //gvRenderFilename(aGvc, _mainGraph, "dot", "graph1.dot");
       DEBTRACE("compute layout");
       gvLayout(aGvc, _mainGraph, "dot");
-      //DEBTRACE("external render for test");
-      //gvRenderFilename(aGvc, _mainGraph, "dot", "graph2.dot");
+      DEBTRACE("external render for test");
+#ifdef _DEVDEBUG_
+      gvRenderFilename(aGvc, _mainGraph, "dot", "graph2.dot");
+#endif
 #endif
    }
   catch (std::exception &e)
@@ -182,7 +196,7 @@ int YACSGui_Graph::arrangeNodesAlgo( YACS::ENGINE::Bloc* theBloc )
   // ---- Free context and return number of errors
 
 #ifndef HAVE_DOTNEATO_H
-  gvFreeContext( aGvc );
+  //gvFreeContext( aGvc );
 #endif
   
   if ( dynamic_cast<Proc*>( theBloc ) )
@@ -446,7 +460,7 @@ void YACSGui_Graph::createGraphvizNodes( ComposedNode* theBloc, Agraph_t* aSubGr
             {
               Node *inNode = (*itin)->getNode();
               string inNodeName = getProc()->getChildName(inNode);
-              DEBTRACE("---control link from tail node: ---- ");
+              DEBTRACE("---control link from tail node: ---- "<<inNodeName);
               if (Node *inFather = theBloc->isInMyDescendance(inNode))
                 {
                   DEBTRACE("---edge inside the bloc");
@@ -541,7 +555,8 @@ void YACSGui_Graph::createGraphvizNodes( ComposedNode* theBloc, Agraph_t* aSubGr
         {
           DEBTRACE("------------------------------------ dummy --> " << aNode->name);
           Agnode_t* anEdgeNode = aNode;
-          Agedge_t* anEdge    = agedge( aSubGraph, dummyNode, anEdgeNode );
+          if (!dynamic_cast<Bloc*>(theBloc) && dummyNode != anEdgeNode)
+            Agedge_t* anEdge    = agedge( aSubGraph, dummyNode, anEdgeNode );
 
           // --- retreive arriving links saved previously
 
@@ -566,18 +581,48 @@ void YACSGui_Graph::createGraphvizNodes( ComposedNode* theBloc, Agraph_t* aSubGr
         }
       }
   }
+
+  //Only for Blocs create edges for out control link
+  for ( list<Node*>::iterator it = children.begin(); it != children.end(); it++ )
+    {
+      Node* outNode = *it;
+      DEBTRACE(outNode);
+      DEBTRACE(outNode->getName());
+      if (dynamic_cast<Bloc*>(outNode))
+        {
+          string outName = "dummy_" + getProc()->getChildName(outNode);
+          DEBTRACE(outName);
+          Agnode_t* aTailNode = agnode( aSubGraph, (char*)(outName.c_str()) );
+          OutGate *outGate = outNode->getOutGate();
+          set<InGate*> setOfInGate = outGate->edSetInGate();
+          set<InGate*>::const_iterator itin = setOfInGate.begin();
+          for (; itin != setOfInGate.end(); ++itin)
+            {
+              Node *inNode = (*itin)->getNode();
+              DEBTRACE(inNode);
+              DEBTRACE(inNode->getName());
+              string inName = getProc()->getChildName(inNode);
+              if (dynamic_cast<Bloc*>(inNode)) inName = "dummy_" + inName;
+              Agnode_t* aHeadNode = agnode( aSubGraph, (char*)(inName.c_str()) );
+              DEBTRACE("---control link from tail node: ---- " << outName << " to --> " << inName);
+              Agedge_t* anEdge    = agedge( aSubGraph, aTailNode, aHeadNode );
+            }
+        }
+    }
 }
 
 // store some functions to have possibility to arrange nodes only on the one giving level
 
 int YACSGui_Graph::arrangeNodesWithinBloc( Bloc* theBloc )
 {
-  //printf(">> YACSGui_Graph::arrangeNodes() method was called\n");
-
-  aginit();
+  DEBTRACE("YACSGui_Graph::arrangeNodes()");
 
   // ---- Create a graphviz context
-  GVC_t* aGvc = gvContext();
+  if(!aGvc)
+    {
+      aginit();
+      aGvc = gvContext();
+    }
 
   // ---- Create a graph
   Agraph_t* aGraph = agopen( (char*)( theBloc ? theBloc->getName().c_str() : "aGraph" ), AGDIGRAPH );
@@ -604,6 +649,10 @@ int YACSGui_Graph::arrangeNodesWithinBloc( Bloc* theBloc )
   if ( !(anAttr = agfindattr( aGraph, "rankdir" )) )
     anAttr = agraphattr( aGraph, "rankdir", "TB" );
   agxset( aGraph, anAttr->index, "LR" );
+
+  if ( !(anAttr = agfindattr(aGraph, "splines")))
+    anAttr = agraphattr(aGraph, "splines", "");
+  agxset(aGraph, anAttr->index, "");
 
   // Initialize attributes for nodes
   // 1) height attribute
@@ -646,7 +695,7 @@ int YACSGui_Graph::arrangeNodesWithinBloc( Bloc* theBloc )
   Agnode_t* aNode;
   for ( aNode = agfstnode( aGraph ); aNode; aNode = agnxtnode( aGraph, aNode) )
   {
-    //printf(">> tail node %s\n", aNode->name);
+    DEBTRACE(">> tail node "<<aNode->name);
     // lets, aNodes[i] is a tail (from) node of the link
     Agnode_t* aTailNode = aNode; //aNodes[i];
     Node* aNodeEngine = theBloc->getChildByName( string(aTailNode->name) ); //getNodeByName( string(aTailNode->name) );
@@ -741,7 +790,7 @@ int YACSGui_Graph::arrangeNodesWithinBloc( Bloc* theBloc )
     }
   }
 
-  //printf("--------------\n");
+  DEBTRACE("--------------");
 
   // ---- Bind graph to graphviz context - currently must be done before layout
 #ifdef HAVE_DOTNEATO_H
@@ -761,17 +810,16 @@ int YACSGui_Graph::arrangeNodesWithinBloc( Bloc* theBloc )
   if ( !dynamic_cast<Proc*>( theBloc ) )
   {
     // we have to resize Bloc node before layouting its internal nodes
-    //printf(">> resize Block %s\n",theBloc->getName().c_str());
+    DEBTRACE(">> resize Block "<<theBloc->getName());
     int aBBwidth = GD_bb( aGraph ).UR.x - GD_bb( aGraph ).LL.x;
     YACSPrs_BlocNode* aBlocNodePrs = dynamic_cast<YACSPrs_BlocNode*>( getItem( theBloc ) );
     if ( aBlocNodePrs )
     {
       int aXRight = aBlocNodePrs->width() + (aBBwidth - aBlocNodePrs->getAreaRect().width()) + BLOCNODE_MARGIN;
       int aYBottom = aBlocNodePrs->height() + (aBBheight - aBlocNodePrs->getAreaRect().height()) + BLOCNODE_MARGIN;
+      DEBTRACE(">> aXRight = " << aXRight << "; aYBottom = " << aYBottom);
       aBlocNodePrs->resize( aXRight,aYBottom );
-      //printf(">> aXRight = %d; aYBottom = %d\n",aXRight,aYBottom);
-      //printf(">> getAreaRect().x = %d, getAreaRect().y = %d\n",
-      //           aBlocNodePrs->getAreaRect().x(),aBlocNodePrs->getAreaRect().y());
+      DEBTRACE(">> getAreaRect().x = "<<aBlocNodePrs->getAreaRect().x()<<", getAreaRect().y = "<< aBlocNodePrs->getAreaRect().y());
       aBlocNodePrs->setZ(aBlocNodePrs->z());
     }
   }
@@ -816,7 +864,7 @@ int YACSGui_Graph::arrangeNodesWithinBloc( Bloc* theBloc )
 	{
 	  aXLeft += aBlocNodePrs->getAreaRect().x() + BLOCNODE_MARGIN/2;// + 2*HOOKPOINT_SIZE;
 	  aYTop += aBlocNodePrs->getAreaRect().y() + BLOCNODE_MARGIN/2;
-	  //printf(">> +Area : aXLeft = %d, aYTop = %d\n",aXLeft,aYTop);
+          DEBTRACE(">> +Area : aXLeft = "<<aXLeft<<", aYTop = "<<aYTop);
 	}
       }
 
@@ -827,8 +875,8 @@ int YACSGui_Graph::arrangeNodesWithinBloc( Bloc* theBloc )
       }
 
       // move presentation of the node
-      //printf(">> aNodePrs->oldX = %f, aNodePrs->oldY = %f\n",aNodePrs->x(),aNodePrs->y());
       //aNodePrs->setX( aXLeft ); aNodePrs->setY( aYTop );      
+      DEBTRACE(">> aNodePrs->oldX = "<<aNodePrs->x()<<", aNodePrs->oldY = "<<aNodePrs->y());
       aNodePrs->move( aXLeft, aYTop );
       //printf(">> height = %d, width = %d\n",aNodePrs->height(),aNodePrs->width());
 

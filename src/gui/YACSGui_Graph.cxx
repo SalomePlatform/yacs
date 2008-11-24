@@ -95,8 +95,6 @@ YACSGui_Graph::YACSGui_Graph(YACSGui_Module* theModule,
 */
 YACSGui_Graph::~YACSGui_Graph()
 {
-  if ( myCProc->getSubjectProc() ) myCProc->getSubjectProc()->detach(this);
-
   Dispatcher* aDispatcher = Dispatcher::getDispatcher();
 
   DMode2ItemList aDM = getDisplayMap();
@@ -166,6 +164,16 @@ void YACSGui_Graph::update(YACS::HMI::GuiEvent event, int type, YACS::HMI::Subje
       break;
     }
     break;
+  case CUT:
+    DEBTRACE("Graph:  CUT node");
+    if ( SubjectNode* aNode = dynamic_cast<SubjectNode*>(son) )
+      cutPrs(aNode);
+    break;
+  case PASTE:
+    DEBTRACE("Graph:  PASTE node");
+    if ( SubjectNode* aNode = dynamic_cast<SubjectNode*>(son) )
+      pastePrs(aNode);
+    break;
   case REMOVE:
     switch (type)
     {
@@ -189,13 +197,12 @@ void YACSGui_Graph::update(YACS::HMI::GuiEvent event, int type, YACS::HMI::Subje
       {
 	// remove a node item (this = schema item)
 	DEBTRACE("Graph:  REMOVE node");
-	if ( SubjectNode* aNode = dynamic_cast<SubjectNode*>(son) )
-	  deletePrs( aNode );
       }
       break;
     default:
       break;
     }
+    getCanvas()->update();
     break;
   case ADDLINK:
   case ADDCONTROLLINK:
@@ -245,7 +252,7 @@ void YACSGui_Graph::update()
 
   DEBTRACE("YACSGui_Graph::update 2");
 
-  // TODO - clean exisiting items first
+  // TODO - clean existing items first
   // ...
 
   // Iterate through Proc's nodes and create presentation items for them
@@ -359,7 +366,7 @@ void YACSGui_Graph::update(Node* theEngine, SubjectComposedNode* theParent)
     return;
 
   YACSPrs_ElementaryNode* anItem = getItem( theEngine );
-  DEBTRACE(anItem);
+  DEBTRACE("canvas item in update " << anItem);
   bool needToAddItem = false;
   if ( !anItem )     // we need to add items, which will be created in update(...) by a driver,
     needToAddItem = true; // into display map for the current display mode
@@ -381,6 +388,7 @@ void YACSGui_Graph::update(Node* theEngine, SubjectComposedNode* theParent)
  */
 void YACSGui_Graph::update( YACSPrs_InOutPort* thePort )
 {
+  DEBTRACE("YACSGui_Graph::update " << thePort);
   if ( thePort->getLinks().empty() )
   {
     string aClassName = thePort->getEngine()->getNameOfTypeOfCurrentInstance();
@@ -805,6 +813,49 @@ YACSPrs_ElementaryNode* YACSGui_Graph::getItem( YACS::ENGINE::Node* theEngine )
   return myItems[aDMode][theEngine];
 }
 
+//! Called when a Subject is detached 
+/*!
+ */
+void YACSGui_Graph::decrementSubjects(YACS::HMI::Subject *subject)
+{
+  DEBTRACE("YACSGui_Graph::decrementSubjects" << subject);
+  if ( SubjectNode* aNode = dynamic_cast<SubjectNode*>(subject) )
+    {
+      //a node is going to be deleted
+      Node* node=aNode->getNode();
+      if( YACSPrs_ElementaryNode* aPrs = getItem(node) )
+        {
+          //Remove aPrs from first BLOC parent
+          Subject* parent=subject->getParent();
+          while(parent!=0 && dynamic_cast<SubjectBloc*>(parent)==0)
+            parent=parent->getParent();
+          DEBTRACE(parent);
+          if( YACSPrs_ElementaryNode* parentPrs = getItem( dynamic_cast<SubjectNode*>(parent)->getNode() ) )
+            parentPrs->removeChildPrs(aPrs);
+          //Remove aPrs from graph
+          removeItem(aPrs);
+	  removeNode(node);
+        }
+    }
+  YACS::HMI::GuiObserver::decrementSubjects(subject);
+  return;
+}
+
+//! Remove items that are no more connected to a subject
+/*!
+ */
+void YACSGui_Graph::updatePrs()
+{
+  DEBTRACE("YACSGui_Graph::updatePrs");
+  while(!nodesToDelete.empty())
+    {
+      YACSPrs_ElementaryNode* node=nodesToDelete.front();
+      nodesToDelete.pop_front();
+      delete node;
+    }
+  getCanvas()->update();
+}
+
 void YACSGui_Graph::removeNode( YACS::ENGINE::Node* theNode )
 {
   if ( !theNode ) return;
@@ -1084,21 +1135,82 @@ void YACSGui_Graph::createPrs(YACS::HMI::Subject* theSubject)
   }
 }
 
+//! Paste prs canvas item with the defined subject 
+/*!
+ */
+void YACSGui_Graph::pastePrs(YACS::HMI::SubjectNode* theSubject)
+{
+  Node* theNode=theSubject->getNode();
+  if( YACSPrs_ElementaryNode* aPrs = getItem(theNode) )
+    {
+      DEBTRACE("Graph:  PASTE node");
+      //Search the first BLOC parent
+      Subject* parent=theSubject->getParent();
+      while(parent!=0 && dynamic_cast<SubjectBloc*>(parent)==0)
+        parent=parent->getParent();
+      DEBTRACE(parent);
+      SubjectNode* SBloc=dynamic_cast<SubjectBloc*>(parent);
+      Bloc* aBloc = dynamic_cast<Bloc*>( SBloc->getNode() );
+      if(SubjectComposedNode* Sparent=dynamic_cast<SubjectComposedNode*>(SBloc->getParent()))
+        update(aBloc,Sparent);
+    }
+}
+
+//! Remove prs canvas item with the defined subject from graph without removeItem and removeNode for CUT and PASTE
+/*!
+ */
+void YACSGui_Graph::cutPrs(YACS::HMI::SubjectNode* theSubject)
+{
+  Node* theNode=theSubject->getNode();
+  if( YACSPrs_ElementaryNode* aPrs = getItem(theNode) )
+    {
+      DEBTRACE("Graph:  CUT node");
+      //Search the first BLOC parent
+      Subject* parent=theSubject->getParent();
+      while(parent!=0 && dynamic_cast<SubjectBloc*>(parent)==0)
+        parent=parent->getParent();
+      DEBTRACE(parent);
+      if( YACSPrs_ElementaryNode* parentPrs = getItem( dynamic_cast<SubjectNode*>(parent)->getNode() ) )
+        {
+          parentPrs->removeChildPrs(aPrs);
+          aPrs->setIsInBloc(false);
+          aPrs->setSelfMoving(true);
+        }
+      if ( ComposedNode* aNodeToDelete = dynamic_cast<ComposedNode*>(theNode) )
+        {
+          //The node is a composed node
+	  if (!dynamic_cast<YACSPrs_BlocNode*>(aPrs) )
+            {
+              //But not a Bloc : cut all its children recursively (but not in Blocs)
+              list<Node*> aNodeSet = aNodeToDelete->edGetDirectDescendants();
+              for ( list<Node*>::iterator itN = aNodeSet.begin(); itN != aNodeSet.end(); itN++ )
+                {
+                  Node* node=*itN;
+	          if ( YACSPrs_ElementaryNode* aChildPrs = getItem(node) )
+	            {
+	              SubjectNode* aChildSub = aChildPrs->getSEngine();
+	              cutPrs(aChildSub);
+                    }
+                }
+            }
+        }
+      SubjectNode* SBloc=dynamic_cast<SubjectBloc*>(parent);
+      Bloc* aBloc = dynamic_cast<Bloc*>( SBloc->getNode() );
+      if(SubjectComposedNode* Sparent=dynamic_cast<SubjectComposedNode*>(SBloc->getParent()))
+        update(aBloc,Sparent);
+    }
+}
+
 //! Delete prs with the defined subject from graph
 /*!
  */
 void YACSGui_Graph::deletePrs(YACS::HMI::SubjectNode* theSubject, bool removeLabelPort )
 {
+  DEBTRACE("YACSGui_Graph::deletePrs " << theSubject);
   if ( !theSubject ) return;
 
   if( YACSPrs_ElementaryNode* aPrs = getItem( theSubject->getNode() ) )
   {
-    if ( dynamic_cast<YACSPrs_SwitchNode*>(aPrs) ||
-	 dynamic_cast<YACSPrs_BlocNode*>(aPrs) ||
-	 dynamic_cast<YACSPrs_LoopNode*>(aPrs) ||
-	 dynamic_cast<YACSPrs_ForEachLoopNode*>(aPrs) )
-      theSubject->detach(this);
-
     if ( ComposedNode* aNodeToDelete = dynamic_cast<ComposedNode*>(theSubject->getNode()) )
     {
       // remove from canvas all canvas items corresponds to the constituents of the deleted composed node
@@ -1107,57 +1219,25 @@ void YACSGui_Graph::deletePrs(YACS::HMI::SubjectNode* theSubject, bool removeLab
       {
 	if ( YACSPrs_ElementaryNode* aChildPrs = getItem(*it) )
 	{
-	  if ( dynamic_cast<YACSPrs_SwitchNode*>(aChildPrs) ||
-	       dynamic_cast<YACSPrs_BlocNode*>(aChildPrs) ||
-	       dynamic_cast<YACSPrs_LoopNode*>(aChildPrs) ||
-	       dynamic_cast<YACSPrs_ForEachLoopNode*>(aChildPrs) )
-	    aChildPrs->getSEngine()->detach(this);
-
-	  aChildPrs->hide();
-
-	  if ( !dynamic_cast<YACSPrs_BlocNode*>(aPrs) )
-	  {
-	    SubjectNode* aChildSub = aChildPrs->getSEngine();
-	    // to remove body nodes properly (with all its links), when a father loop or switch node is removed
-	    aChildSub->detach(aChildPrs);
-	    deletePrs(aChildSub);
-	    // clear the content of the property page of deleted node
-	    aChildSub->update( REMOVE, 0, 0 );
-	  }
-
+          Node* node=*it;
+	  SubjectNode* aChildSub = aChildPrs->getSEngine();
+	  deletePrs(aChildSub);
 	  removeItem(aChildPrs);
+	  removeNode(node);
 	}
-	removeNode(*it);
       }
     }
 
-    if( SubjectSwitch* aSwitch = dynamic_cast<SubjectSwitch*>( theSubject->getParent() ) )
-      aSwitch->removeNode( theSubject );
-    
-    aPrs->hide();
+    //Search the first BLOC parent
+    Subject* parent=theSubject->getParent();
+    while(parent!=0 && dynamic_cast<SubjectBloc*>(parent)==0)
+      parent=parent->getParent();
+    DEBTRACE(parent);
+
+    if( YACSPrs_ElementaryNode* parentPrs = getItem( dynamic_cast<SubjectNode*>(parent)->getNode() ) )
+      parentPrs->removeChildPrs(aPrs);
+
     removeItem( aPrs );
-    delete aPrs;
-
-    if( removeLabelPort )
-    {
-      SubjectComposedNode* aComposedNode = dynamic_cast<SubjectComposedNode*>( theSubject->getParent() );
-      if( aComposedNode && !dynamic_cast<SubjectBloc*>( aComposedNode ) )
-      {
-	if ( YACSPrs_ElementaryNode* aNodePrs = getItem( aComposedNode->getNode() ) )
-	{
-	  QPtrList<YACSPrs_Port> aPorts = aNodePrs->getPortList();
-	  for (YACSPrs_Port* aPort = aPorts.first(); aPort; aPort = aPorts.next())
-	  {
-	    if ( YACSPrs_LabelPort* aLabelPort = dynamic_cast<YACSPrs_LabelPort*>( aPort ) )
-	    {
-	      if( aLabelPort->getSlaveNode() == theSubject->getNode() )
-		aNodePrs->removeLabelPortPrs( aLabelPort );
-	    }
-	  }
-	}
-      }
-    }
-    getCanvas()->update();
   }
 }
 
@@ -1166,6 +1246,7 @@ void YACSGui_Graph::deletePrs(YACS::HMI::SubjectNode* theSubject, bool removeLab
  */
 bool YACSGui_Graph::isNeededToIncreaseBlocSize( YACS::ENGINE::Bloc* theBloc )
 {
+  DEBTRACE("YACSGui_Graph::isNeededToIncreaseBlocSize");
   bool isNeedToArrange = false;
 
   if ( theBloc )

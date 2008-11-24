@@ -100,6 +100,12 @@
 #define SPACING 5
 #define MARGIN 5
 
+#define NAMECOL 0
+#define TYPECOL 1
+#define VALUECOL 2
+#define CLASSCOL 4
+#define STUDYCOL 3
+
 using namespace YACS;
 using namespace YACS::ENGINE;
 using namespace YACS::HMI;
@@ -150,24 +156,24 @@ YACSGui_InlineNodePage::YACSGui_InlineNodePage( QWidget* theParent, const char* 
   myInputPortsGroupBox->HideBtn( YACSGui_PlusMinusGrp::SelectBtn );
   YACSGui_Table* aTable = myInputPortsGroupBox->Table();
   //aTable->setFixedHeight( 100 );
-  aTable->setNumCols( 4 );
-  aTable->horizontalHeader()->setLabel( 0, tr( "Name" ) );
-  aTable->horizontalHeader()->setLabel( 1, tr( "Class" ) );
-  aTable->horizontalHeader()->setLabel( 2, tr( "Type" ) );
-  aTable->horizontalHeader()->setLabel( 3, tr( "Value" ) );
-  aTable->setColumnWidth(0,58);
-  aTable->setColumnWidth(1,84);
-  aTable->setColumnWidth(2,80);
-  aTable->setCellType( -1, 0, YACSGui_Table::String );
-  aTable->setCellType( -1, 1, YACSGui_Table::Combo );
-  aTable->setCellType( -1, 2, YACSGui_Table::ComboSelect );
-  //aTable->setCellType( -1, 3, YACSGui_Table::??? ); depends on combo box item choosen in the "Value type" column
+  //aTable->setNumCols( 4 );
+  aTable->setNumCols( 3 );
+  aTable->horizontalHeader()->setLabel( NAMECOL, tr( "Name" ) );
+  //aTable->horizontalHeader()->setLabel( CLASSCOL, tr( "Class" ) );
+  aTable->horizontalHeader()->setLabel( TYPECOL, tr( "Type" ) );
+  aTable->horizontalHeader()->setLabel( VALUECOL, tr( "Value" ) );
+  aTable->setColumnWidth(NAMECOL,58);
+  aTable->setColumnWidth(TYPECOL,84);
+  //aTable->setColumnWidth(CLASSCOL,80);
+  aTable->setCellType( -1, NAMECOL, YACSGui_Table::String );
+  //aTable->setCellType( -1, CLASSCOL, YACSGui_Table::Combo );
+  aTable->setCellType( -1, TYPECOL, YACSGui_Table::ComboSelect );
   
-  aTable->setParams( 0, 1, aPortTypes );
-  aTable->setParams( 0, 2, aValueTypes );
+  //aTable->setParams( 0, CLASSCOL, aPortTypes );
+  aTable->setParams( 0, TYPECOL, aValueTypes );
 
-  aTable->setDefValue( 0, 1, "Data Flow" );
-  aTable->setDefValue( 0, 2, "double" );
+  //aTable->setDefValue( 0, CLASSCOL, "Data Flow" );
+  aTable->setDefValue( 0, TYPECOL, "double" );
 
   aTable->setEditorSync(true);
 
@@ -189,28 +195,28 @@ YACSGui_InlineNodePage::YACSGui_InlineNodePage( QWidget* theParent, const char* 
   myOutputPortsGroupBox->HideBtn( YACSGui_PlusMinusGrp::SelectBtn );
   aTable = myOutputPortsGroupBox->Table();
   //aTable->setFixedHeight( 100 );
-  aTable->setNumCols( 5 );
-  aTable->horizontalHeader()->setLabel( 0, tr( "Name" ) );
-  aTable->horizontalHeader()->setLabel( 1, tr( "Class" ) );
-  aTable->horizontalHeader()->setLabel( 2, tr( "Type" ) );
-  aTable->horizontalHeader()->setLabel( 3, tr( "Value" ) );
-  aTable->horizontalHeader()->setLabel( 4, tr( "Is in study" ) );
-  aTable->setColumnWidth(0,58);
-  aTable->setColumnWidth(1,84);
-  aTable->setColumnWidth(2,80);
-  aTable->setCellType( -1, 0, YACSGui_Table::String );
-  aTable->setCellType( -1, 1, YACSGui_Table::Combo );
-  aTable->setCellType( -1, 2, YACSGui_Table::ComboSelect );
-  //aTable->setCellType( -1, 3, YACSGui_Table::??? ); depends on combo box item choosen in the "Value type" column
-  aTable->setCellType( -1, 4, YACSGui_Table::Combo );
+  aTable->setNumCols( 4 );
+  aTable->horizontalHeader()->setLabel( NAMECOL, tr( "Name" ) );
+  //aTable->horizontalHeader()->setLabel( CLASSCOL, tr( "Class" ) );
+  aTable->horizontalHeader()->setLabel( TYPECOL, tr( "Type" ) );
+  aTable->horizontalHeader()->setLabel( VALUECOL, tr( "Value" ) );
+  aTable->horizontalHeader()->setLabel( STUDYCOL, tr( "Is in study" ) );
+  aTable->setColumnWidth(NAMECOL,58);
+  //aTable->setColumnWidth(CLASSCOL,84);
+  aTable->setColumnWidth(TYPECOL,80);
+  aTable->setCellType( -1, NAMECOL, YACSGui_Table::String );
+  //aTable->setCellType( -1, CLASSCOL, YACSGui_Table::Combo );
+  aTable->setCellType( -1, TYPECOL, YACSGui_Table::ComboSelect );
+  //aTable->setCellType( -1, VALUECOL, YACSGui_Table::??? ); depends on combo box item choosen in the "Value type" column
+  aTable->setCellType( -1, STUDYCOL, YACSGui_Table::Combo );
 
-  aTable->setParams( 0, 1, aPortTypes );
-  aTable->setParams( 0, 2, aValueTypes );
-  aTable->setParams( 0, 4, QString("Yes;No") );
+  //aTable->setParams( 0, CLASSCOL, aPortTypes );
+  aTable->setParams( 0, TYPECOL, aValueTypes );
+  aTable->setParams( 0, STUDYCOL, QString("Yes;No") );
 
-  aTable->setDefValue( 0, 1, "Data Flow" );
-  aTable->setDefValue( 0, 2, "double" );
-  aTable->setDefValue( 0, 4, QString("Yes") );
+  //aTable->setDefValue( 0, CLASSCOL, "Data Flow" );
+  aTable->setDefValue( 0, TYPECOL, "double" );
+  aTable->setDefValue( 0, STUDYCOL, QString("Yes") );
 
   aTable->setEditorSync(true);
 
@@ -253,6 +259,10 @@ void YACSGui_InlineNodePage::setSNode( YACS::HMI::SubjectNode* theSNode )
 
 void YACSGui_InlineNodePage::setMode( const YACSGui_InputPanel::PageMode theMode )
 {
+  DEBTRACE("YACSGui_InlineNodePage::setMode " << theMode);
+  if(myMode == theMode)
+    return;
+
   YACSGui_NodePage::setMode(theMode);
 
   if ( myMode == YACSGui_InputPanel::EditMode )
@@ -268,16 +278,16 @@ void YACSGui_InlineNodePage::setMode( const YACSGui_InputPanel::PageMode theMode
     myInputPortsGroupBox->ShowBtn();
     myInputPortsGroupBox->HideBtn( YACSGui_PlusMinusGrp::SelectBtn );
     aTable = myInputPortsGroupBox->Table();
-    aTable->setReadOnly( -1, 0, false );
-    aTable->setReadOnly( -1, 1, false );
-    aTable->setReadOnly( -1, 2, false );
+    aTable->setReadOnly( -1, NAMECOL, false );
+    aTable->setReadOnly( -1, TYPECOL, false );
+    aTable->setReadOnly( -1, VALUECOL, false );
 
     myOutputPortsGroupBox->ShowBtn();
     myOutputPortsGroupBox->HideBtn( YACSGui_PlusMinusGrp::SelectBtn );
     aTable = myOutputPortsGroupBox->Table();
-    aTable->setReadOnly( -1, 0, false );
-    aTable->setReadOnly( -1, 1, false );
-    aTable->setReadOnly( -1, 2, false );
+    aTable->setReadOnly( -1, NAMECOL, false );
+    aTable->setReadOnly( -1, TYPECOL, false );
+    aTable->setReadOnly( -1, VALUECOL, false );
 
     InPythonEditorGroupBox->show();
   } 
@@ -293,15 +303,15 @@ void YACSGui_InlineNodePage::setMode( const YACSGui_InputPanel::PageMode theMode
 
     myInputPortsGroupBox->HideBtn();
     aTable = myInputPortsGroupBox->Table();
-    aTable->setReadOnly( -1, 0, true );
-    aTable->setReadOnly( -1, 1, true );
-    aTable->setReadOnly( -1, 2, true );
+    aTable->setReadOnly( -1, NAMECOL, true );
+    aTable->setReadOnly( -1, TYPECOL, true );
+    aTable->setReadOnly( -1, VALUECOL, true );
     
     myOutputPortsGroupBox->HideBtn();
     aTable = myOutputPortsGroupBox->Table();
-    aTable->setReadOnly( -1, 0, true );
-    aTable->setReadOnly( -1, 1, true );
-    aTable->setReadOnly( -1, 2, true );
+    aTable->setReadOnly( -1, NAMECOL, true );
+    aTable->setReadOnly( -1, TYPECOL, true );
+    aTable->setReadOnly( -1, VALUECOL, true );
 
     InPythonEditorGroupBox->hide();
   }
@@ -341,7 +351,7 @@ void YACSGui_InlineNodePage::notifyInPortValues( std::map<std::string,std::strin
   QStringList aValues;
 
   QStringList aPortNames;
-  myInputPortsGroupBox->Table()->strings( 0, aPortNames );
+  myInputPortsGroupBox->Table()->strings( NAMECOL, aPortNames );
 
   for ( QStringList::Iterator it = aPortNames.begin(); it != aPortNames.end(); ++it )
   {
@@ -357,7 +367,7 @@ void YACSGui_InlineNodePage::notifyInPortValues( std::map<std::string,std::strin
   }
 
   if ( aPortNames.count() == aValues.count() )
-    myInputPortsGroupBox->Table()->setStrings( 3, aValues );
+    myInputPortsGroupBox->Table()->setStrings( VALUECOL, aValues );
 }
 
 void YACSGui_InlineNodePage::notifyOutPortValues( std::map<std::string,std::string> theOutPortName2Value )
@@ -366,7 +376,7 @@ void YACSGui_InlineNodePage::notifyOutPortValues( std::map<std::string,std::stri
   QStringList aValues;
 
   QStringList aPortNames;
-  myOutputPortsGroupBox->Table()->strings( 0, aPortNames );
+  myOutputPortsGroupBox->Table()->strings( NAMECOL, aPortNames );
 
   for ( QStringList::Iterator it = aPortNames.begin(); it != aPortNames.end(); ++it )
   {
@@ -382,7 +392,7 @@ void YACSGui_InlineNodePage::notifyOutPortValues( std::map<std::string,std::stri
   }
 
   if ( aPortNames.count() == aValues.count() )
-    myOutputPortsGroupBox->Table()->setStrings( 3, aValues );
+    myOutputPortsGroupBox->Table()->setStrings( VALUECOL, aValues );
 }
 
 void YACSGui_InlineNodePage::setDataType( YACS::ENGINE::TypeCode* theDataType )
@@ -415,14 +425,14 @@ void YACSGui_InlineNodePage::setDataType( YACS::ENGINE::TypeCode* theDataType )
   {
     // update the content of the cell according to the selected data type
     if ( YACSGui_TableComboSelectItem* aCSItem = 
-    	 dynamic_cast<YACSGui_TableComboSelectItem*>(aTable->item( mySelectDataTypeFor.myRow, 2 )) )
+    	 dynamic_cast<YACSGui_TableComboSelectItem*>(aTable->item( mySelectDataTypeFor.myRow, TYPECOL )) )
     {
       if( aCSItem->selectButton() && aCSItem->selectButton()->isOn() )
 	aCSItem->selectButton()->setOn( false );
 
       QString aTypeName(theDataType->name());
       aCSItem->showText(aTypeName);
-      aTable->setDefValue( mySelectDataTypeFor.myRow, 2, aTypeName );
+      aTable->setDefValue( mySelectDataTypeFor.myRow, TYPECOL, aTypeName );
     }
     
     mySelectDataTypeFor.myRow = -1;
@@ -464,13 +474,18 @@ void YACSGui_InlineNodePage::checkModifications()
 				tr("BUT_YES"), tr("BUT_NO"), 0, 1, 0) == 0 )
     {
       onApply();
+      if(onApplyStatus=="ERROR")
+        throw Exception("Error in checkModifications");
       if ( getInputPanel() ) getInputPanel()->emitApply(YACSGui_InputPanel::InlineNodeId);
     }
+    else
+      updateState();
 }
 
 void YACSGui_InlineNodePage::onApply()
 {
   DEBTRACE("YACSGui_InlineNodePage::onApply()");
+  onApplyStatus="OK";
   // Rename a node
   if ( myNodeName )
     setNodeName( myNodeName->text() );
@@ -502,9 +517,13 @@ void YACSGui_InlineNodePage::onApply()
     myIsNeedToReorder = false;
   }
   
-  resetStoredPortsMaps();
-  resetDataTypeMaps();
-  resetPLists();
+  if(onApplyStatus=="OK")
+    {
+      updateState();
+      resetStoredPortsMaps();
+      resetDataTypeMaps();
+      resetPLists();
+    }
 
   updateBlocSize();
 }
@@ -563,29 +582,13 @@ void YACSGui_InlineNodePage::onValueChanged( int theRow, int theCol )
   DEBTRACE("YACSGui_InlineNodePage::onValueChanged " << theRow << " " << theCol);
   if ( YACSGui_Table* aTable = ( YACSGui_Table* )sender() )
   {
-    if ( theCol == 1 ) // the port type was changed
+    if ( theCol == TYPECOL ) // the value type of the port was changed
     {
       if( aTable == myInputPortsGroupBox->Table() )
-	aTable->setReadOnly( theRow, 3, false );
-    }
-
-    if ( theCol == 2 ) // the value type of the port was changed
-    {
-      setValueCellValidator( aTable, theRow );
+        setValueCellValidator( aTable, theRow );
 
       if( aTable == myOutputPortsGroupBox->Table() )
-	aTable->setReadOnly( theRow, 3, true );
-    }
-
-    if ( theCol == 1 || theCol == 2 ) // port type or value type was changed
-    {
-      if ( myInputPortsGroupBox->Table() == aTable )
-      	if ( myRow2StoredInPorts.find(theRow) != myRow2StoredInPorts.end() )
-	  myRow2StoredInPorts.erase(theRow);
-
-      if ( myOutputPortsGroupBox->Table() == aTable )
-      	if ( myRow2StoredOutPorts.find(theRow) != myRow2StoredOutPorts.end() )
-	  myRow2StoredOutPorts.erase(theRow);
+	aTable->setReadOnly( theRow, VALUECOL, true );
     }
   }
 }
@@ -632,139 +635,79 @@ void YACSGui_InlineNodePage::onSearch()
 
 void YACSGui_InlineNodePage::onInserted( const int theRow )
 {
+  DEBTRACE("onInserted " << theRow);
   if ( YACSGui_PlusMinusGrp* aGrpBox = ( YACSGui_PlusMinusGrp* )sender() )
     if ( myInputPortsGroupBox == aGrpBox )
     {
       // change the content of myRow2StoredInPorts
-      if ( myRow2StoredInPorts.size() == 0 )
-        return;
+      //make a copy
+      map<int,InPort*> aMap=myRow2StoredInPorts;
+      myRow2StoredInPorts.clear();
 
-      if ( myRow2StoredInPorts.size() == 1 )
-      {
-	if ( theRow == 0 )
-	{
-	  InPort* aPort = myRow2StoredInPorts[0];
-	  myRow2StoredInPorts.insert( std::make_pair(1,aPort) );
-	  myRow2StoredInPorts.erase(0);
-	} 
-      }
-      else 
-      {
-	map<int,InPort*>::iterator it = myRow2StoredInPorts.end();
-	map<int,InPort*>::iterator itBeforeBegin = myRow2StoredInPorts.begin()--;
-	for ( it--; it != itBeforeBegin; it-- )
-	{
-	  int aRow = (*it).first;
-	  InPort* aPort = (*it).second;
-	  
-	  if ( aRow >= theRow )
-	  {
-	    myRow2StoredInPorts.insert( std::make_pair(aRow+1,aPort) );
-	    myRow2StoredInPorts.erase(aRow);
-	  } 
-	}
-      }
+      for (map<int,InPort*>::iterator it = aMap.begin() ; it != aMap.end(); it++ )
+        {
+          int aRow = (*it).first;
+          InPort* aPort = (*it).second;
+          if ( aRow < theRow )
+            myRow2StoredInPorts[aRow]=aPort;
+          else
+            myRow2StoredInPorts[aRow+1]=aPort;
+        }
 
       // change the content of myRow2DataTypeIn
-      if ( myRow2DataTypeIn.size() == 0 )
-        return;
+      //make a copy
+      map<int,TypeCode*> bMap=myRow2DataTypeIn;
+      myRow2DataTypeIn.clear();
 
-      if ( myRow2DataTypeIn.size() == 1 )
-      {
-	if ( theRow == 0 )
-	{
-	  TypeCode* aTC = myRow2DataTypeIn[0];
-	  myRow2DataTypeIn.insert( std::make_pair(1,aTC) );
-	  myRow2DataTypeIn.erase(0);
-	} 
-      }
-      else 
-      {
-	map<int,TypeCode*>::iterator it = myRow2DataTypeIn.end();
-	map<int,TypeCode*>::iterator itBeforeBegin = myRow2DataTypeIn.begin()--;
-	for ( it--; it != itBeforeBegin; it-- )
-	{
-	  int aRow = (*it).first;
-	  TypeCode* aTC = (*it).second;
-	  
-	  if ( aRow >= theRow )
-	  {
-	    myRow2DataTypeIn.insert( std::make_pair(aRow+1,aTC) );
-	    myRow2DataTypeIn.erase(aRow);
-	  } 
-	}
-      }
-
+      for (map<int,TypeCode*>::iterator it = bMap.begin() ; it != bMap.end(); it++ )
+        {
+          int aRow = (*it).first;
+          TypeCode* aTC = (*it).second;
+          if ( aRow < theRow )
+            myRow2DataTypeIn[aRow]=aTC;
+          else
+            myRow2DataTypeIn[aRow+1]=aTC;
+        }
       myIsNeedToReorder = true;
     }
     else if ( myOutputPortsGroupBox == aGrpBox )
     {
       // change the content of myRow2StoredOutPorts
-      if ( myRow2StoredOutPorts.size() == 0 )
-        return;
+      //make a copy
+      map<int,OutPort*> aMap=myRow2StoredOutPorts;
+      myRow2StoredOutPorts.clear();
 
-      if ( myRow2StoredOutPorts.size() == 1 )
-      {
-	if ( theRow == 0 )
-	{
-	  OutPort* aPort = myRow2StoredOutPorts[0];
-	  myRow2StoredOutPorts.insert( std::make_pair(1,aPort) );
-	  myRow2StoredOutPorts.erase(0);
-	} 
-      }
-      else
-      {
-	map<int,OutPort*>::iterator it = myRow2StoredOutPorts.end();
-	map<int,OutPort*>::iterator itBeforeBegin = myRow2StoredOutPorts.begin()--;
-	for ( it--; it != itBeforeBegin; it-- )
-	{
-	  int aRow = (*it).first;
-	  OutPort* aPort = (*it).second;
-	  
-	  if ( aRow >= theRow )
-	  {
-	    myRow2StoredOutPorts.insert( std::make_pair(aRow+1,aPort) );
-	    myRow2StoredOutPorts.erase(aRow);
-	  } 
-	}
-      }
+      for (map<int,OutPort*>::iterator it = aMap.begin() ; it != aMap.end(); it++ )
+        {
+          int aRow = (*it).first;
+          OutPort* aPort = (*it).second;
+          if ( aRow < theRow )
+            myRow2StoredOutPorts[aRow]=aPort;
+          else
+            myRow2StoredOutPorts[aRow+1]=aPort;
+        }
 
       // change the content of myRow2DataTypeOut
-      if ( myRow2DataTypeOut.size() == 0 )
-        return;
+      //make a copy
+      map<int,TypeCode*> bMap=myRow2DataTypeOut;
+      myRow2DataTypeOut.clear();
 
-      if ( myRow2DataTypeOut.size() == 1 )
-      {
-	if ( theRow == 0 )
-	{
-	  TypeCode* aTC = myRow2DataTypeOut[0];
-	  myRow2DataTypeOut.insert( std::make_pair(1,aTC) );
-	  myRow2DataTypeOut.erase(0);
-	} 
-      }
-      else
-      {
-	map<int,TypeCode*>::iterator it = myRow2DataTypeOut.end();
-	map<int,TypeCode*>::iterator itBeforeBegin = myRow2DataTypeOut.begin()--;
-	for ( it--; it != itBeforeBegin; it-- )
-	{
-	  int aRow = (*it).first;
-	  TypeCode* aTC = (*it).second;
-	  
-	  if ( aRow >= theRow )
-	  {
-	    myRow2DataTypeOut.insert( std::make_pair(aRow+1,aTC) );
-	    myRow2DataTypeOut.erase(aRow);
-	  } 
-	}
-      }
-
+      for (map<int,TypeCode*>::iterator it = bMap.begin() ; it != bMap.end(); it++ )
+        {
+          int aRow = (*it).first;
+          TypeCode* aTC = (*it).second;
+          if ( aRow < theRow )
+            myRow2DataTypeOut[aRow]=aTC;
+          else
+            myRow2DataTypeOut[aRow+1]=aTC;
+        }
       myIsNeedToReorder = true;
     }
 }
 
 void YACSGui_InlineNodePage::onMovedUp( const int theUpRow )
 {
+  DEBTRACE("YACSGui_InlineNodePage::onMovedUp " << theUpRow);
   if ( YACSGui_PlusMinusGrp* aGrpBox = ( YACSGui_PlusMinusGrp* )sender() )
     if ( myInputPortsGroupBox == aGrpBox )
     {
@@ -971,6 +914,7 @@ void YACSGui_InlineNodePage::onRemoved( const int theRow )
           myRow2StoredOutPorts[aRow]=myRow2StoredOutPorts[aRow+1];
         }
       DEBTRACE("erase last row: " << aRow);
+      myRow2StoredOutPorts.erase(aRow);
 
       // change the content of myRow2DataTypeOut
       DEBTRACE(myRow2DataTypeOut.size());
@@ -990,20 +934,25 @@ void YACSGui_InlineNodePage::onAdded( const int theRow )
   if ( YACSGui_PlusMinusGrp* aGrpBox = ( YACSGui_PlusMinusGrp* )sender() )
     if ( myInputPortsGroupBox == aGrpBox )
     {
-      myInputPortsGroupBox->Table()->setDefValue( theRow, 2, "" );
-      myInputPortsGroupBox->Table()->item( theRow, 2 )->setText("double");
+      myInputPortsGroupBox->Table()->setDefValue( theRow, TYPECOL, "" );
+      myInputPortsGroupBox->Table()->setDefValue( theRow, VALUECOL, "" );
+      myInputPortsGroupBox->Table()->item( theRow, TYPECOL )->setText("double");
+      myInputPortsGroupBox->Table()->item( theRow, VALUECOL )->setText("");
+      setValueCellValidator( myInputPortsGroupBox->Table() , theRow );
     }
     else if ( myOutputPortsGroupBox == aGrpBox )
     {
-      myOutputPortsGroupBox->Table()->setDefValue( theRow, 2, "" );
-      myOutputPortsGroupBox->Table()->item( theRow, 2 )->setText("double");
+      myOutputPortsGroupBox->Table()->setDefValue( theRow, TYPECOL, "" );
+      myOutputPortsGroupBox->Table()->item( theRow, TYPECOL )->setText("double");
+      myOutputPortsGroupBox->Table()->item( theRow, VALUECOL )->setText("");
+      myOutputPortsGroupBox->Table()->setReadOnly( theRow, VALUECOL,true );
     }
 }
 
 void YACSGui_InlineNodePage::onSelectDataType( const int theRow, const int theCol )
 {
   DEBTRACE("YACSGui_InlineNodePage::onSelectDataType");
-  if ( theCol == 2 && theRow >= 0 ) // the value type selection
+  if ( theCol == TYPECOL && theRow >= 0 ) // the value type selection
   {
     if ( YACSGui_Table* aTable = ( YACSGui_Table* )sender() )
     {
@@ -1047,14 +996,12 @@ void YACSGui_InlineNodePage::fillInputPortsTable()
   myRow2DataTypeIn.clear();
 
   QStringList aPortNames;
-  QStringList aPortTypes;
   QStringList aValueTypes;
   QStringList aValues;
 
   QValueList<bool> aReadOnlyFlags;
 
   YACSGui_Table* aTable = myInputPortsGroupBox->Table();
-  QStringList aPTCB = aTable->Params( 0, 1 );
 
   int aRowId = 0;
   list<InPort*> anInPortsEngine = getNode()->getSetOfInPort();
@@ -1069,63 +1016,44 @@ void YACSGui_InlineNodePage::fillInputPortsTable()
     // Collect port names in the list
     aPortNames.append( anInPort->getName() );
 
-    // Port type
-    if ( InputPort* anInputP = dynamic_cast<InputPort*>(anInPort) )
-    {
-      aPortTypes.append( aPTCB[0] );
-
-      int nbLinks = anInPort->edGetNumberOfLinks();
-      aReadOnlyFlags.append( nbLinks > 0 );
-    }
-    //else if ( InputBasicStreamPort* aBasicStreamP = dynamic_cast<InputBasicStreamPort*>(anInPort) )
-    //{ // there is no possibility to identify BASIC data stream port in engine now => take default value from combo box
-    //  aPortTypes.append( aPTCB[1] ); 
-    //}
-    else if ( InputCalStreamPort* aCalStreamP = dynamic_cast<InputCalStreamPort*>(anInPort) )
-    {
-      aPortTypes.append( aPTCB[2] );
-      aReadOnlyFlags.append( true );
-    }
-    //else if ( InputPalmStreamPort* aPalmStreamP = dynamic_cast<InputPalmStreamPort*>(anInPort) )
-    //{ // there is no possibility to identify PALM data stream port in engine now => take default value from combo box
-    //  aPortTypes.append( aPTCB[3] );
-    //}
-    else
-    { // take default value from combo box
-      aPortTypes.append( aPTCB[0] );
-      aReadOnlyFlags.append( true );
-    }
-
     // Value type
     aValueTypes.append( getPortType( anInPort ) );
 
     // Value
     aValues.append( getPortValue( anInPort ) );
 
+    if(anInPort->edGetNumberOfLinks() > 0)
+      aReadOnlyFlags.append( true);
+    else
+      aReadOnlyFlags.append( false);
+
     aRowId++;
   }
 
   // Fill "Port name" column
-  aTable->setStrings( 0, aPortNames, true );
+  aTable->setStrings( NAMECOL, aPortNames, true );
 
+  QStringList aIPortNames;
+  aTable->strings( NAMECOL, aIPortNames);
   // Fill "Port type" column
-  aTable->setStrings( 1, aPortTypes, true );
+  //aTable->setStrings( CLASSCOL, aPortTypes, true );
 
   // Fill "Value type" column
-  aTable->setStrings( 2, aValueTypes, true );
+  aTable->setStrings( TYPECOL, aValueTypes, true );
 
   // set validator for input cell
   for (int irow=0; irow < aTable->numRows(); irow++)
     setValueCellValidator( aTable, irow);
 
   // Fill "Value" column
-  aTable->setStrings( 3, aValues, true );
+  aTable->setStrings( VALUECOL, aValues, true );
 
   // Set "Value" column read only (for linked ports)
   for ( int i = 0, n = aTable->numRows(); i < n; i++ )
   {
-    aTable->setDefValue( i, 2, aValueTypes[i] );
-    aTable->setReadOnly( i, 3, aReadOnlyFlags[ i ] );
+    aTable->setDefValue( i, TYPECOL, aValueTypes[i] );
+    aTable->setReadOnly( i, TYPECOL, aReadOnlyFlags[ i ] );
+    aTable->setReadOnly( i, VALUECOL, aReadOnlyFlags[ i ] );
   }
 
   if ( !aPortNames.empty() ) myInputPortsGroupBox->EnableBtn( YACSGui_PlusMinusGrp::AllBtn );
@@ -1140,13 +1068,12 @@ void YACSGui_InlineNodePage::fillOutputPortsTable()
   myRow2DataTypeOut.clear();
 
   QStringList aPortNames;
-  QStringList aPortTypes;
   QStringList aValueTypes;
   QStringList aValues;
   QStringList anIsInStudy;
+  QValueList<bool> aReadOnlyFlags;
   
   YACSGui_Table* aTable = myOutputPortsGroupBox->Table();
-  QStringList aPTCB = aTable->Params( 0, 1 );
 
   int aRowId = 0;
   list<OutPort*> anOutPortsEngine = getNode()->getSetOfOutPort();
@@ -1161,63 +1088,47 @@ void YACSGui_InlineNodePage::fillOutputPortsTable()
     // Collect port names in the list
     aPortNames.append( anOutPort->getName() );
     
-    // Port type
-    if ( OutputPort* anOutputP = dynamic_cast<OutputPort*>(anOutPort) )
-    {
-      aPortTypes.append( aPTCB[0] );
-    }
-    //else if ( OutputBasicStreamPort* aBasicStreamP = dynamic_cast<OutputBasicStreamPort*>(anOutPort) )
-    //{ // there is no possibility to identify BASIC data stream port in engine now => take default value from combo box
-    //  aPortTypes.append( aPTCB[1] ); 
-    //}
-    else if ( OutputCalStreamPort* aCalStreamP = dynamic_cast<OutputCalStreamPort*>(anOutPort) )
-    {
-      aPortTypes.append( aPTCB[2] );
-    }
-    //else if ( OutputPalmStreamPort* aPalmStreamP = dynamic_cast<OutputPalmStreamPort*>(anOutPort) )
-    //{ // there is no possibility to identify PALM data stream port in engine now => take default value from combo box
-    //  aPortTypes.append( aPTCB[3] );
-    //}
-    else
-    { // take default value from combo box
-      aPortTypes.append( aPTCB[0] );
-    }
-      
     // Value type
     aValueTypes.append( getPortType( anOutPort ) );
 
     // Value
     aValues.append( getPortValue( anOutPort ) );
 
+    if(anOutPort->edGetNumberOfOutLinks() > 0)
+      aReadOnlyFlags.append( true);
+    else
+      aReadOnlyFlags.append( false);
+
     // Is in study
     // There is no a such parameter either in engine or GUI at the current moment.
     // TODO: we need to implement it at GUI side.
     // As a temporary solution we set the default value
-    anIsInStudy.append( aTable->defValue( 0, 4 ) );
+    anIsInStudy.append( aTable->defValue( 0, STUDYCOL ) );
 
     aRowId++;
   }
 
   // Fill "Port name" column
-  aTable->setStrings( 0, aPortNames, true );
+  aTable->setStrings( NAMECOL, aPortNames, true );
 
   // Fill "Port type" column
-  aTable->setStrings( 1, aPortTypes, true );
+  //aTable->setStrings( CLASSCOL, aPortTypes, true );
 
   // Fill "Value type" column
-  aTable->setStrings( 2, aValueTypes, true );
+  aTable->setStrings( TYPECOL, aValueTypes, true );
 
   // Fill "Value" column
-  aTable->setStrings( 3, aValues, true );
+  aTable->setStrings( VALUECOL, aValues, true );
 
   // Fill "Is in study" column
-  aTable->setStrings( 4, anIsInStudy, true );
+  aTable->setStrings( STUDYCOL, anIsInStudy, true );
 
   // Set "Value" column read only
   for ( int i = 0, n = aTable->numRows(); i < n; i++ )
   {
-    aTable->setDefValue( i, 2, aValueTypes[i] );
-    aTable->setReadOnly( i, 3, true );
+    aTable->setDefValue( i, TYPECOL, aValueTypes[i] );
+    aTable->setReadOnly( i, VALUECOL, true );
+    aTable->setReadOnly( i, TYPECOL, aReadOnlyFlags[ i ] );
   }
 
   if ( !aPortNames.empty() ) myOutputPortsGroupBox->EnableBtn( YACSGui_PlusMinusGrp::AllBtn );
@@ -1235,7 +1146,7 @@ QString YACSGui_InlineNodePage::getPortType( YACS::ENGINE::Port* thePort ) const
 
   if ( !aTable ) return aType;
 
-  QStringList aVTCB = aTable->Params( 0, 2 );
+  QStringList aVTCB = aTable->Params( 0, TYPECOL );
 
   if ( DataPort* aDataPort = dynamic_cast<DataPort*>(thePort) )
   {
@@ -1251,6 +1162,7 @@ QString YACSGui_InlineNodePage::getPortType( YACS::ENGINE::Port* thePort ) const
 
 bool YACSGui_InlineNodePage::isStored( YACS::ENGINE::Port* thePort )
 {
+  DEBTRACE("YACSGui_InlineNodePage::isStored " << thePort);
   if ( InPort* anIP = dynamic_cast<InPort*>(thePort) )
   {
     map<int,InPort*>::iterator it = myRow2StoredInPorts.begin();
@@ -1275,7 +1187,7 @@ void YACSGui_InlineNodePage::resetStoredPortsMaps()
   myRow2DataTypeIn.clear();
 
   QStringList aIPortNames;
-  myInputPortsGroupBox->Table()->strings( 0, aIPortNames );
+  myInputPortsGroupBox->Table()->strings( NAMECOL, aIPortNames );
 
   int aRowId = 0;
   for ( QStringList::Iterator it = aIPortNames.begin(); it != aIPortNames.end(); ++it )
@@ -1291,17 +1203,7 @@ void YACSGui_InlineNodePage::resetStoredPortsMaps()
         }
     }
     catch (YACS::Exception& ex) {
-      try {
-        if ( InputDataStreamPort* aIDSP = getNode()->getInputDataStreamPort((*it).latin1()) )
-          {
-            DEBTRACE("store port: " << aRowId << " " << aIDSP);
-            myRow2StoredInPorts[aRowId]=aIDSP;
-            myRow2DataTypeIn[aRowId]=aIDSP->edGetType();
-          }
-      }
-      catch (YACS::Exception& ex) {
         std::cerr << "INTERNAL ERROR. Unknown port " << (*it).latin1() << std::endl;
-      }
     }
     aRowId++;
   }
@@ -1310,7 +1212,7 @@ void YACSGui_InlineNodePage::resetStoredPortsMaps()
   myRow2DataTypeOut.clear();
 
   QStringList aOPortNames;
-  myOutputPortsGroupBox->Table()->strings( 0, aOPortNames );
+  myOutputPortsGroupBox->Table()->strings( NAMECOL, aOPortNames );
 
   aRowId = 0;
   for ( QStringList::Iterator it = aOPortNames.begin(); it != aOPortNames.end(); ++it )
@@ -1326,17 +1228,7 @@ void YACSGui_InlineNodePage::resetStoredPortsMaps()
         }
     }
     catch (YACS::Exception& ex) {
-      try {
-        if ( OutputDataStreamPort* aODSP = getNode()->getOutputDataStreamPort((*it).latin1()) )
-          {
-            DEBTRACE("store port: " << aRowId << " " << aODSP);
-            myRow2StoredOutPorts.insert( std::make_pair(aRowId,aODSP) );
-            myRow2DataTypeOut[aRowId]=aODSP->edGetType();
-          }
-      }
-      catch (YACS::Exception& ex) {
         std::cerr << "INTERNAL ERROR. Unknown port " << (*it).latin1() << std::endl;
-      }
     }
     aRowId++;
   }
@@ -1363,7 +1255,7 @@ void YACSGui_InlineNodePage::resetIPLists()
   myIPList.clear();
 
   QStringList aIPortNames;
-  myInputPortsGroupBox->Table()->strings( 0, aIPortNames );
+  myInputPortsGroupBox->Table()->strings( NAMECOL, aIPortNames );
 
   for ( QStringList::Iterator it = aIPortNames.begin(); it != aIPortNames.end(); ++it )
   {
@@ -1374,13 +1266,7 @@ void YACSGui_InlineNodePage::resetIPLists()
         myIPList.append(aIDP);
     }
     catch (YACS::Exception& ex) {
-      try {
-        if ( InPort* aIDSP = getNode()->getInputDataStreamPort((*it).latin1()) )
-          myIPList.append(aIDSP);
-      }
-      catch (YACS::Exception& ex) {
         std::cerr << "INTERNAL ERROR. Unknown port " << (*it).latin1() << std::endl;
-      }
     }
   }
 }
@@ -1391,7 +1277,7 @@ void YACSGui_InlineNodePage::resetOPLists()
   myOPList.clear();
 
   QStringList aOPortNames;
-  myOutputPortsGroupBox->Table()->strings( 0, aOPortNames );
+  myOutputPortsGroupBox->Table()->strings( NAMECOL, aOPortNames );
 
   for ( QStringList::Iterator it = aOPortNames.begin(); it != aOPortNames.end(); ++it )
   {
@@ -1402,13 +1288,7 @@ void YACSGui_InlineNodePage::resetOPLists()
         myOPList.append(aODP);
     }
     catch (YACS::Exception& ex) {
-      try {
-        if ( OutPort* aODSP = getNode()->getOutputDataStreamPort((*it).latin1()) )
-          myOPList.append(aODSP);
-      }
-      catch (YACS::Exception& ex) {
         std::cerr << "INTERNAL ERROR. Unknown port " << (*it).latin1() << std::endl;
-      }
     }
   }
 }
@@ -1422,7 +1302,7 @@ void YACSGui_InlineNodePage::orderPorts( bool withFilling )
   int aRowId;
 
   // order input ports according to the list of ports names in the table
-  myInputPortsGroupBox->Table()->strings( 0, aPortNames );
+  myInputPortsGroupBox->Table()->strings( NAMECOL, aPortNames );
 
   if ( withFilling || myIPList.isEmpty() )
   { // copy the list of engine ports into the ptr list
@@ -1479,7 +1359,7 @@ void YACSGui_InlineNodePage::orderPorts( bool withFilling )
   aPortNames.clear();
 
   // order output ports according to the list of ports names in the table
-  myOutputPortsGroupBox->Table()->strings( 0, aPortNames );
+  myOutputPortsGroupBox->Table()->strings( NAMECOL, aPortNames );
 
   if ( withFilling || myOPList.isEmpty() )
   { // copy the list of engine ports into the ptr list
@@ -1546,29 +1426,14 @@ void YACSGui_InlineNodePage::setInputPorts()
 
   myInputPortsGroupBox->Table()->stopEdit(true);
 
-  YACSPrs_ElementaryNode* aCanvasNode = 0;
-  if ( myIsNeedToReorder )
-    if ( Proc* aProc = dynamic_cast<Proc*>(getNode()->getRootNode()) )
-      if ( YACSGui_Graph* aGraph = getInputPanel()->getModule()->getGraph( aProc ) )
-	aCanvasNode = aGraph->getItem(getNode());
-  
   // remove old ports
   list<InPort*> anInPortsEngine = aNode->getSetOfInPort();
   list<InPort*>::iterator anInPortsIter = anInPortsEngine.begin();
   for( ;anInPortsIter!=anInPortsEngine.end();anInPortsIter++)
-    if ( myIsNeedToReorder || !myIsNeedToReorder && !isStored(*anInPortsIter) )
+    if ( !isStored(*anInPortsIter) )
     {
       DEBTRACE("remove port " << *anInPortsIter);
-
-      if ( aCanvasNode && aCanvasNode->isVisible() ) aCanvasNode->hide();
-
-      mySNode->update( REMOVE,
-		       ( dynamic_cast<InputPort*>(*anInPortsIter) ? INPUTPORT : INPUTDATASTREAMPORT ),
-		       GuiContext::getCurrent()->_mapOfSubjectDataPort[*anInPortsIter] );
       myIPList.take(myIPList.find(*anInPortsIter));
-
-      //aNode->edRemovePort(*anInPortsIter);
-      // remove port subject (and all subject links connected to this port)
       mySNode->destroy( GuiContext::getCurrent()->_mapOfSubjectDataPort[*anInPortsIter] );
     }
   
@@ -1578,16 +1443,24 @@ void YACSGui_InlineNodePage::setInputPorts()
   QStringList aPortNames;
   QStringList aValues;
 
-  aTable->strings( 0, aPortNames );
-  aTable->strings( 3, aValues );
+  aTable->strings( NAMECOL, aPortNames );
+  aTable->strings( VALUECOL, aValues );
 
-  YACS::ENGINE::Catalog* aCatalog = YACS::ENGINE::getSALOMERuntime()->getBuiltinCatalog();
+  std::list<InputPort*> myPorts;
 
   int aRowId = 0;
   for ( QStringList::Iterator it = aPortNames.begin(); it != aPortNames.end(); ++it,++aRowId)
   {
-    DEBTRACE(aRowId << " " << *it);
-    if ( (*it).isEmpty() ) continue;
+    DEBTRACE(aRowId << " port name " << *it);
+    if ( (*it).isEmpty() )
+      {
+        SUIT_MessageBox::warn1(getInputPanel()->getModule()->getApp()->desktop(),
+                               tr("WRN_WARNING"),
+                               "an input port has no name",
+                               tr("BUT_OK"));
+        onApplyStatus="ERROR";
+        continue;
+      }
 
     if ( aPortNames.contains(*it) > 1 )
     {
@@ -1600,15 +1473,16 @@ void YACSGui_InlineNodePage::setInputPorts()
                              tr("WRN_WARNING"),
                              what,
                              tr("BUT_OK"));
+      onApplyStatus="ERROR";
       continue;
     }
     
     // retrieve a type name of the input port as a string
     std::string aType = "";
 
-    if (QTableItem* anItem = aTable->item( aRowId, 2 ) )
+    if (QTableItem* anItem = aTable->item( aRowId, TYPECOL ) )
     {
-      if ( QComboBox* aCB = dynamic_cast<QComboBox*>(aTable->cellWidget( aRowId, 2 )) )
+      if ( QComboBox* aCB = dynamic_cast<QComboBox*>(aTable->cellWidget( aRowId, TYPECOL )) )
       {
 	if ( aCB->lineEdit() )
 	  aType = aCB->lineEdit()->text().latin1();
@@ -1617,98 +1491,62 @@ void YACSGui_InlineNodePage::setInputPorts()
 	aType = anItem->text().latin1();
     }
     
+    DEBTRACE(aType);
     TypeCode* aTC = 0;
-    bool toSwitch = true;
-    if ( !aType.empty() )
-    {
-      QStringList aL = aTable->Params( aRowId, 2 );
-      if ( aL.findIndex( QString(aType) ) == -1 ) toSwitch = false;
-    }
-
-    if ( toSwitch )
-    {
-      DEBTRACE("switch branch");
-      switch ( DynType(aTable->intValueCombo( 2, aRowId ) + 1) )
+    try
       {
-      case Double:
-	aType = "double";
-	break;
-      case Int:
-	aType = "int";
-	break;
-      case String:
-	aType = "string";
-	break;
-      case Bool:
-	aType = "bool";
-	break;
-      case Objref:
-	//aType = "objref";
-	break;
-      case Sequence:
-	//aType = "sequence";
-	break;
-      case Array:
-	//aType = "array";
-	break;
-      case Struct:
-	//aType = "struct";
-	break;
-      default:
-	break;
+        aTC=GuiContext::getCurrent()->getProc()->getTypeCode(aType);
       }
-    }
-    else
-    {
-      DEBTRACE("no switch branch");
-      if ( myRow2DataTypeIn.find(aRowId) != myRow2DataTypeIn.end() )
-	aTC = myRow2DataTypeIn[aRowId]->clone();
-      if ( !aTC ) 
-        {
-          std::cerr << "Problem with data types initialization" << std::endl;
-          continue;
-        }
-    }
+    catch(YACS::Exception&)
+      {
+        std::cerr << "Problem with data types initialization" << std::endl;
+        continue;
+      }
 
     GuiEvent anEvent = EDIT;
-    if ( aTable->intValueCombo( 1, aRowId ) == 0 ) // Data Flow port
-    {
       DEBTRACE("Data flow port");
       InputPort* aIDP = 0;
-      if ( !myIsNeedToReorder && myRow2StoredInPorts.find(aRowId) != myRow2StoredInPorts.end() )
+      if ( myRow2StoredInPorts.find(aRowId) != myRow2StoredInPorts.end() )
       { // ---- update port ----
         DEBTRACE("Update port");
 	if ( aIDP = dynamic_cast<InputPort*>(myRow2StoredInPorts[aRowId]) )
 	{
 	  aIDP->setName(*it);
-	  aTC = aIDP->edGetType();
-	  // EDIT event will be emitted => only update port prs
+          //change type if needed
+	  TypeCode* theTC = aIDP->edGetType();
+          if(!aTC->isEquivalent(theTC))
+            {
+	      aIDP->edSetType(aTC);
+	      aIDP->edRemoveManInit();
+            }
 	}
       }
       else
       { // ---- create port ----
         DEBTRACE("Create port");
-	if ( !toSwitch )
-	{
-	  aIDP = aNode->edAddInputPort( *it, aTC );
-	  // here we need also to create a port subject
-	  // this is a temporary solution solution, bcause of SessionCataLoader use loadTypesOld(...)
-	  // method instead of a new loadTypes(...) method => we can not retrieve all value types
-	  // from the _typeMap of the Catalog ("objref","sequence","array","struct" are not available from _typeMap now)
-	  // => we need to change SubjectNode::addSubjectInputPort(..) to public method
-	  mySNode->addSubjectInputPort( aIDP, *it );
-	}
-	else
-	{
-	  aIDP = dynamic_cast<InputPort*>( dynamic_cast<SubjectElementaryNode*>(mySNode)->addInputPort( aCatalog, aType, *it )->getPort() );
-	  aTC = aIDP->edGetType();
-	}
+        try
+          {
+            DEBTRACE(*it << " " << aTC);
+            SubjectElementaryNode* sen=dynamic_cast<SubjectElementaryNode*>(mySNode);
+            SubjectInputPort* sip=sen->edAddInputPort(*it,aTC);
+            DataPort* dp=sip->getPort();
+            aIDP=dynamic_cast<InputPort*>(dp);
+          }
+        catch(YACS::Exception& ex)
+          {
+            SUIT_MessageBox::warn1(getInputPanel()->getModule()->getApp()->desktop(), tr("WRN_WARNING"),
+                             ex.what(), tr("BUT_OK"));
+            onApplyStatus="ERROR";
+            continue;
+          }
 
-	// ADD event will be emitted from hmi after subject creation => re-create port prs
-	anEvent = ADD;
-	
 	myIPList.append(aIDP);
+        myRow2StoredInPorts[aRowId]=aIDP;
+        myRow2DataTypeIn[aRowId]=aTC;
       }
+
+      if ( aIDP )
+        myPorts.push_back(aIDP);
 
       if ( aIDP )
       {
@@ -1744,95 +1582,57 @@ void YACSGui_InlineNodePage::setInputPorts()
 	  break;
 	case Bool:
           if(aValues[aRowId] != "< ? >")
-	    aIDP->edInit( aValues[aRowId].compare( aTable->Params(aRowId,3)[0] ) ? false : true );
-	  anEvent = EDIT;
-	  break;
-	case Objref:
-	  //aIDP->edInit( "" ); // TODO : create an Any* with corresponding type and initialize with it
-	  anEvent = EDIT;
-	  break;
-	case Sequence:
-	  //aIDP->edInit( "" ); // TODO : create an Any* (i.e. SequenceAny*) with corresponding type and initialize with it
-	  anEvent = EDIT;
-	  break;
-	case Array:
-	  //aIDP->edInit( "" ); // TODO : create an Any* (i.e. ArrayAny*) with corresponding type and initialize with it
-	  anEvent = EDIT;
-	  break;
-	case Struct:
-	  //aIDP->edInit( "" ); // TODO : create an Any* with corresponding type and initialize with it
+	    aIDP->edInit( aValues[aRowId].compare( aTable->Params(aRowId,VALUECOL)[0] ) ? false : true );
 	  anEvent = EDIT;
 	  break;
 	default:
+          PyObject* ob;
+          if(aValues[aRowId].isEmpty()||aValues[aRowId] == "< ? >")
+            break;
+
+          try
+            {
+              ob=YACS::ENGINE::getSALOMERuntime()->convertStringToPyObject(aValues[aRowId]);
+            }
+          catch(Exception& ex)
+            {
+              SUIT_MessageBox::error1(getInputPanel()->getModule()->getApp()->desktop(), 
+                                      tr("ERROR"),ex.what() , tr("BUT_OK"));
+              onApplyStatus="ERROR";
+              break;
+            }
+          PyGILState_STATE gstate = PyGILState_Ensure();
+          try
+            {
+              aIDP->edInit("Python",ob);
+	      anEvent = EDIT;
+            }
+          catch(Exception& ex)
+            {
+              SUIT_MessageBox::error1(getInputPanel()->getModule()->getApp()->desktop(), 
+                                      tr("ERROR"),ex.what() , tr("BUT_OK"));
+              onApplyStatus="ERROR";
+            }
+          Py_DECREF(ob);
+          PyGILState_Release(gstate);
 	  break;
 	}
       
 	if ( anEvent == EDIT )
 	  mySNode->update( EDIT, INPUTPORT, GuiContext::getCurrent()->_mapOfSubjectDataPort[aIDP]);
-	//else if ( anEvent == ADD )
-	//  mySNode->update( ADD, INPUTPORT, GuiContext::getCurrent()->_mapOfSubjectDataPort[aIDP]);
       }
-    }
-
-    //else if ( aTable->intValueCombo( 1, aRowId ) == 1 )    // Data Stream (BASIC) port
-    //  aNode->edAddInputDataStreamPort( *it, aTC );
-    //  // TODO : initialize new created input data stream port
-
-    else if ( aTable->intValueCombo( 1, aRowId ) == 2 )      // Data Stream (CALCIUM) port
-    {
-      InputDataStreamPort* aIDSP = 0;
-      if ( !myIsNeedToReorder && myRow2StoredInPorts.find(aRowId) != myRow2StoredInPorts.end() )
-      { // ---- update port ----
-        DEBTRACE("---- update port ---- " << *it);
-	if ( aIDSP = dynamic_cast<InputDataStreamPort*>(myRow2StoredInPorts[aRowId]) )
-	{
-	  aIDSP->setName(*it);
-	  aTC = aIDSP->edGetType();
-	  // EDIT event will be emitted => only update port prs
-	}
-      }
-      else
-      { // ---- create port ----
-        DEBTRACE("---- create port ---- " << *it);
-	if ( aType.empty() )
-	{
-	  aIDSP = aNode->edAddInputDataStreamPort( *it, aTC );
-	  // here we need also to create a port subject
-	  // this is a temporary solution solution, bcause of SessionCataLoader use loadTypesOld(...)
-	  // method instead of a new loadTypes(...) method => we can not retrieve all value types
-	  // from the _typeMap of the Catalog ("objref","sequence","array","struct" are not available from _typeMap now)
-	  // => we need to change SubjectNode::addSubjectIDSPort(..) to public method
-	  mySNode->addSubjectIDSPort( aIDSP, *it );
-	}
-	else
-	{
-	  aIDSP = dynamic_cast<InputDataStreamPort*>( dynamic_cast<SubjectElementaryNode*>(mySNode)->addIDSPort( aCatalog, aType, *it )->getPort() );
-	  aTC = aIDSP->edGetType();
-	}
-
-	// ADD event will be emitted => re-create port prs
-	anEvent = ADD;
-
-	myIPList.append(aIDSP);
-      }
-
-      // TODO : initialize new created input data stream port
-
-      if ( aIDSP && anEvent == EDIT )
-	mySNode->update( EDIT, INPUTDATASTREAMPORT, GuiContext::getCurrent()->_mapOfSubjectDataPort[aIDSP]);
-      //else if ( anEvent == ADD )
-      //  mySNode->update( ADD, INPUTDATASTREAMPORT, GuiContext::getCurrent()->_mapOfSubjectDataPort[aIDSP]);
-    }
-
-    //else if ( aTable->intValueCombo( 1, aRowId ) == 3 )    // Data Stream (PALM) port
-    //  aNode->edAddInputDataStreamPort( *it, aTC );
-    //  // TODO : initialize new created input data stream port
-    
   }
 
-  //resetIPLists();
-
-  if ( aCanvasNode && !aCanvasNode->isVisible() ) aCanvasNode->show();
+  //Reorder ports
+  try
+    {
+      aNode->edOrderInputPorts(myPorts);
+      mySNode->update( UPDATE, 0, mySNode );
+    }
+  catch(YACS::Exception& ex)
+    {
+      std::cerr << ex.what() << std::endl;
+    }
 }
 
 void YACSGui_InlineNodePage::setOutputPorts()
@@ -1845,27 +1645,13 @@ void YACSGui_InlineNodePage::setOutputPorts()
 
   myOutputPortsGroupBox->Table()->stopEdit(true);
 
-  YACSPrs_ElementaryNode* aCanvasNode = 0;
-  if ( myIsNeedToReorder )
-    if ( Proc* aProc = dynamic_cast<Proc*>(getNode()->getRootNode()) )
-      if ( YACSGui_Graph* aGraph = getInputPanel()->getModule()->getGraph( aProc ) )
-	aCanvasNode = aGraph->getItem(getNode());
-
   // remove old ports
   list<OutPort*> anOutPortsEngine = aNode->getSetOfOutPort();
   list<OutPort*>::iterator anOutPortsIter = anOutPortsEngine.begin();
   for( ;anOutPortsIter!=anOutPortsEngine.end();anOutPortsIter++)
-    if ( myIsNeedToReorder || !myIsNeedToReorder && !isStored(*anOutPortsIter) )
+    if ( !isStored(*anOutPortsIter) )
     {
-      if ( aCanvasNode && aCanvasNode->isVisible() ) aCanvasNode->hide();
-      
-      mySNode->update( REMOVE,
-		       ( dynamic_cast<OutputPort*>(*anOutPortsIter) ? OUTPUTPORT : OUTPUTDATASTREAMPORT ),
-		       GuiContext::getCurrent()->_mapOfSubjectDataPort[*anOutPortsIter] );
       myOPList.take(myOPList.find(*anOutPortsIter));
-
-      //aNode->edRemovePort(*anOutPortsIter);
-      // remove port subject (and all subject links connected to this port)
       mySNode->destroy( GuiContext::getCurrent()->_mapOfSubjectDataPort[*anOutPortsIter] );
     }
   
@@ -1875,14 +1661,22 @@ void YACSGui_InlineNodePage::setOutputPorts()
   QStringList aPortNames;
   QStringList aValues;
 
-  aTable->strings( 0, aPortNames );
+  aTable->strings( NAMECOL, aPortNames );
 
-  YACS::ENGINE::Catalog* aCatalog = YACS::ENGINE::getSALOMERuntime()->getBuiltinCatalog();
+  std::list<OutputPort*> myPorts;
 
   int aRowId = 0;
-  for ( QStringList::Iterator it = aPortNames.begin(); it != aPortNames.end(); ++it )
+  for ( QStringList::Iterator it = aPortNames.begin(); it != aPortNames.end(); ++it,++aRowId )
   {
-    if ( (*it).isEmpty() ) continue;
+    if ( (*it).isEmpty() ) 
+      {
+        SUIT_MessageBox::warn1(getInputPanel()->getModule()->getApp()->desktop(),
+                               tr("WRN_WARNING"),
+                               "an output port has no name",
+                               tr("BUT_OK"));
+        onApplyStatus="ERROR";
+        continue;
+      }
 
     if ( aPortNames.contains(*it) > 1 )
     {
@@ -1895,15 +1689,16 @@ void YACSGui_InlineNodePage::setOutputPorts()
                              tr("WRN_WARNING"),
                              what,
                              tr("BUT_OK"));
+      onApplyStatus="ERROR";
       continue;
     }
     
     // retrieve a type name of the input port as a string
     std::string aType = "";
 
-    if (QTableItem* anItem = aTable->item( aRowId, 2 ) )
+    if (QTableItem* anItem = aTable->item( aRowId, TYPECOL ) )
     {
-      if ( QComboBox* aCB = dynamic_cast<QComboBox*>(aTable->cellWidget( aRowId, 2 )) )
+      if ( QComboBox* aCB = dynamic_cast<QComboBox*>(aTable->cellWidget( aRowId, TYPECOL )) )
       {
 	if ( aCB->lineEdit() )
 	  aType = aCB->lineEdit()->text().latin1();
@@ -1911,159 +1706,75 @@ void YACSGui_InlineNodePage::setOutputPorts()
       else
 	aType = anItem->text().latin1();
     }
-    
-    TypeCode* aTC = 0;
-    bool toSwitch = true;
-    if ( !aType.empty() )
-    {
-      QStringList aL = aTable->Params( aRowId, 2 );
-      if ( aL.findIndex( QString(aType) ) == -1 ) toSwitch = false;
-    }
 
-    if ( toSwitch )
-    {
-      switch ( DynType(aTable->intValueCombo( 2, aRowId ) + 1) )
+    DEBTRACE(aType);
+    TypeCode* aTC = 0;
+    try
       {
-      case Double:
-	aType = "double";
-	break;
-      case Int:
-	aType = "int";
-	break;
-      case String:
-	aType = "string";
-	break;
-      case Bool:
-	aType = "bool";
-	break;
-      case Objref:
-	//aType = "objref";
-	break;
-      case Sequence:
-	//aType = "sequence";
-	break;
-      case Array:
-	//aType = "array";
-	break;
-      case Struct:
-	//aType = "struct";
-	break;
-      default:
-	break;
+        aTC=GuiContext::getCurrent()->getProc()->getTypeCode(aType);
       }
-    }
-    else
-    {
-      if ( myRow2DataTypeOut.find(aRowId) != myRow2DataTypeOut.end() )
-	aTC = myRow2DataTypeOut[aRowId]->clone();
-      if ( !aTC ) 
-        {
-          std::cerr << "Problem with data types initialization" << std::endl;
-          aRowId++;
-          continue;
-        }
-    }
+    catch(YACS::Exception&)
+      {
+        std::cerr << "Problem with data types initialization" << std::endl;
+        continue;
+      }
     
     GuiEvent anEvent = EDIT;
-    if ( aTable->intValueCombo( 1, aRowId ) == 0 )           // Data Flow port
-    {
       OutputPort* aODP = 0;
-      if ( !myIsNeedToReorder && myRow2StoredOutPorts.find(aRowId) != myRow2StoredOutPorts.end() )
+      if ( myRow2StoredOutPorts.find(aRowId) != myRow2StoredOutPorts.end() )
       { // ---- update port ----
         DEBTRACE("---- update port ---- " << *it);
 	if ( aODP = dynamic_cast<OutputPort*>(myRow2StoredOutPorts[aRowId]) )
 	{
 	  aODP->setName(*it);
-	  aTC = aODP->edGetType();
-	  // EDIT event will be emitted => only update port prs
+          //change type if needed
+	  TypeCode* theTC = aODP->edGetType();
+          if(!aTC->isEquivalent(theTC))
+            {
+	      aODP->edSetType(aTC);
+            }
 	}
       }
       else
       { // ---- create port ----
         DEBTRACE("---- create port ---- " << *it);
-	if ( !toSwitch )
-	{
-	  aODP = aNode->edAddOutputPort( *it, aTC );
-	  // here we need also to create a port subject
-	  // this is a temporary solution solution, bcause of SessionCataLoader use loadTypesOld(...)
-	  // method instead of a new loadTypes(...) method => we can not retrieve all value types
-	  // from the _typeMap of the Catalog ("objref","sequence","array","struct" are not available from _typeMap now)
-	  // => we need to change SubjectNode::addSubjectOutputPort(..) to public method
-	  mySNode->addSubjectOutputPort( aODP, *it );
-	}
-	else
-	{
-	  aODP = dynamic_cast<OutputPort*>( dynamic_cast<SubjectElementaryNode*>(mySNode)->addOutputPort( aCatalog, aType, *it )->getPort() );
-	  aTC = aODP->edGetType();
-	}
-
-	// ADD event will be emitted from hmi after subject creation => re-create port prs
-	anEvent = ADD;
-	
+        try
+          {
+            DEBTRACE(*it << " " << aTC);
+            SubjectElementaryNode* sen=dynamic_cast<SubjectElementaryNode*>(mySNode);
+            SubjectOutputPort* sop=sen->edAddOutputPort(*it,aTC);
+            DataPort* dp=sop->getPort();
+            aODP=dynamic_cast<OutputPort*>(dp);
+          }
+        catch(YACS::Exception& ex)
+          {
+            SUIT_MessageBox::warn1(getInputPanel()->getModule()->getApp()->desktop(), tr("WRN_WARNING"),
+                             ex.what(), tr("BUT_OK"));
+            onApplyStatus="ERROR";
+            continue;
+          }
 	myOPList.append(aODP);
+        myRow2StoredOutPorts[aRowId]=aODP;
+        myRow2DataTypeOut[aRowId]=aTC;
       }
+
+      if ( aODP )
+        myPorts.push_back(aODP);
 
       if ( aODP && anEvent == EDIT )
 	mySNode->update( EDIT, OUTPUTPORT, GuiContext::getCurrent()->_mapOfSubjectDataPort[aODP]);
-      
-    }
-
-    //else if ( aTable->intValueCombo( 1, aRowId ) == 1 )    // Data Stream (BASIC) port
-    //  aNode->edAddOutputDataStreamPort( *it, aTC );
-
-    else if ( aTable->intValueCombo( 1, aRowId ) == 2 )      // Data Stream (CALCIUM) port
-    {
-      OutputDataStreamPort* aODSP = 0;
-      if ( !myIsNeedToReorder && myRow2StoredOutPorts.find(aRowId) != myRow2StoredOutPorts.end() )
-      { // ---- update port ----
-	if ( aODSP = dynamic_cast<OutputDataStreamPort*>(myRow2StoredOutPorts[aRowId]) )
-	{
-	  aODSP->setName(*it);
-	  aTC = aODSP->edGetType();
-	  // EDIT event will be emitted => only update port prs
-	}
-      }
-      else
-      { // ---- create port ----
-	if ( aType.empty() )
-	{
-	  aODSP = aNode->edAddOutputDataStreamPort( *it, aTC );
-	  // here we need also to create a port subject
-	  // this is a temporary solution solution, bcause of SessionCataLoader use loadTypesOld(...)
-	  // method instead of a new loadTypes(...) method => we can not retrieve all value types
-	  // from the _typeMap of the Catalog ("objref","sequence","array","struct" are not available from _typeMap now)
-	  // => we need to change SubjectNode::addSubjectODSPort(..) to public method
-	  mySNode->addSubjectODSPort( aODSP, *it );
-	}
-	else
-	{
-	  aODSP = dynamic_cast<OutputDataStreamPort*>( dynamic_cast<SubjectElementaryNode*>(mySNode)->addODSPort( aCatalog, aType, *it )->getPort() );
-	  aTC = aODSP->edGetType();
-	}
-
-	// ADD event will be emitted => re-create port prs
-	anEvent = ADD;
-	
-	myOPList.append(aODSP);
-      }
-
-      if ( aODSP && anEvent == EDIT )
-	mySNode->update( EDIT, OUTPUTDATASTREAMPORT, GuiContext::getCurrent()->_mapOfSubjectDataPort[aODSP]);
-      
-    }
-
-    //else if ( aTable->intValueCombo( 1, aRowId ) == 3 )    // Data Stream (PALM) port
-    //  aNode->edAddOutputDataStreamPort( *it, aTC );
-    
-    // TODO : Remember "Is in study" flag for output pirt
-    // ...
-
-    aRowId++;
   }
 
-  //resetOPLists();
-
-  if ( aCanvasNode && !aCanvasNode->isVisible() ) aCanvasNode->show();
+  //Reorder ports
+  try
+    {
+      aNode->edOrderOutputPorts(myPorts);
+      mySNode->update( UPDATE, 0, mySNode );
+    }
+  catch(YACS::Exception& ex)
+    {
+      std::cerr << ex.what() << std::endl;
+    }
 }
 
 YACS::ENGINE::TypeCode* YACSGui_InlineNodePage::createTypeCode( YACS::ENGINE::DynType theType,
@@ -2082,11 +1793,11 @@ YACS::ENGINE::TypeCode* YACSGui_InlineNodePage::createTypeCode( YACS::ENGINE::Dy
     break;
   case Objref:
     {
-      if ( theTable->intValueCombo( 1, theRowId ) == 2 ) // Data Stream (CALCIUM) port
+      if ( theTable->intValueCombo( CLASSCOL, theRowId ) == 2 ) // Data Stream (CALCIUM) port
 	aTC = new TypeCodeObjref("CALCIUM","CALCIUM");
-      else if ( theTable->intValueCombo( 1, theRowId ) == 1 ) // Data Stream (BASIC) port
+      else if ( theTable->intValueCombo( CLASSCOL, theRowId ) == 1 ) // Data Stream (BASIC) port
 	aTC = new TypeCodeObjref("BASIC","BASIC");
-      else if ( theTable->intValueCombo( 1, theRowId ) == 3 ) // Data Stream (PALM) port
+      else if ( theTable->intValueCombo( CLASSCOL, theRowId ) == 3 ) // Data Stream (PALM) port
 	aTC = new TypeCodeObjref("PALM","PALM");
       else
 	aTC = new TypeCodeObjref("","");
@@ -2139,22 +1850,18 @@ bool YACSGui_InlineNodePage::isPortsModified( bool theInput )
   aTable->stopEdit(true);
     
   QStringList aPortNames;
-  aTable->strings( 0, aPortNames );
+  aTable->strings( NAMECOL, aPortNames );
 
   if ( ( theInput ? aPortNames.count() != getNode()->getNumberOfInputPorts() :
 	            aPortNames.count() != getNode()->getNumberOfOutputPorts() ) ) isModified = true;
   else
   {
-    QStringList aPortTypes;
     QStringList aValueTypes;
     QStringList aValues;
     
-    aTable->strings( 1, aPortTypes );
-    aTable->strings( 2, aValueTypes );
-    aTable->strings( 3, aValues );
+    aTable->strings( TYPECOL, aValueTypes );
+    aTable->strings( VALUECOL, aValues );
       
-    QStringList aPTCB = aTable->Params( 0, 1 );
-    
     int aRowId = 0;
     for ( QStringList::Iterator it = aPortNames.begin(); it != aPortNames.end(); ++it )
     {
@@ -2184,19 +1891,6 @@ bool YACSGui_InlineNodePage::isPortsModified( bool theInput )
 	  break;
 	}
 	
-	// check port type
-	QString aPortType = aPTCB[0];
-	if ( dynamic_cast<DataStreamPort*>(aPort) )
-	  aPortType = aPTCB[2];
-	
-	if ( aPortType.compare(aPortTypes[aRowId]) != 0 )
-	{
-	  isModified = true;
-	  break;
-	}
-
-	//if ( !theInput ) 
-	//  TODO: compare "Is in study" fields (not yet in use)
       }
       else // this case means that we renamed any port or added a new one (i.e. check port name)
       {
@@ -2209,3 +1903,45 @@ bool YACSGui_InlineNodePage::isPortsModified( bool theInput )
   return isModified;
 }
 
+void YACSGui_InlineNodePage::setValueCellValidator( YACSGui_Table* theTable, int theRow )
+{
+  DEBTRACE("YACSGui_NodePage::setValueCellValidator " << theRow);
+  QString aVT = theTable->item( theRow, TYPECOL )->text();
+  QString aValue = theTable->item( theRow, VALUECOL )->text();
+  theTable->setDefValue( theRow, VALUECOL, aValue );
+  if ( !aVT.compare(QString("double")) )
+    theTable->setCellType( theRow, VALUECOL, YACSGui_Table::Double );
+  else if ( !aVT.compare(QString("int")) )
+    theTable->setCellType( theRow, VALUECOL, YACSGui_Table::Int );
+  else if ( !aVT.compare(QString("bool")) )
+  {
+    theTable->setCellType( theRow, VALUECOL, YACSGui_Table::Combo );
+    theTable->setParams( theRow, VALUECOL, QString("True;False") );
+  }
+  else // i.e. "string" or "Objref" or "Sequence" or "Array" or "Struct"
+    theTable->setCellType( theRow, VALUECOL, YACSGui_Table::String );
+}
+
+void YACSGui_InlineNodePage::removePort(YACS::HMI::SubjectDataPort* thePort)
+{
+  DEBTRACE("YACSGui_InlineNodePage::removePort");
+  if ( !getNode() ) return;
+  DataPort* dp=thePort->getPort();
+  YACSGui_Table* aTable = 0;
+  if(dynamic_cast<InPort*>(dp))
+    {
+      aTable = myInputPortsGroupBox->Table();
+    }
+  else
+    {
+      aTable = myOutputPortsGroupBox->Table();
+    }
+  if ( !aTable ) return;
+  QStringList aPortNames;
+  aTable->strings( NAMECOL, aPortNames );
+  int theRow;
+  theRow = aPortNames.findIndex(dp->getName());
+  DEBTRACE(theRow);
+  if(theRow==-1)return;//already removed
+  aTable->removeRow(theRow);
+}

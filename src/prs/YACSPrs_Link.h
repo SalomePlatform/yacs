@@ -184,7 +184,7 @@ class YACSPrs_Point : public QxGraph_ActiveItem, public QCanvasEllipse {
 
   public:
     YACSPrs_Point(QCanvas* theCanvas, YACSPrs_Link* theLink, const int& theIndex = -1);
-    ~YACSPrs_Point() {}
+    virtual ~YACSPrs_Point();
 
     /* reimplement functions from QxGraph_ActiveItem */
     virtual bool isMoveable();
@@ -230,7 +230,7 @@ class YACSPrs_Edge : public QxGraph_ActiveItem, public QCanvasLine {
 
   public:
     YACSPrs_Edge(QCanvas* theCanvas, YACSPrs_Link* theLink);
-    ~YACSPrs_Edge();
+    virtual ~YACSPrs_Edge();
 
     /* reimplement functions from QxGraph_ActiveItem */
     virtual bool isMoveable();

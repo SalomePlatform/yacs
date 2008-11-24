@@ -248,6 +248,10 @@ void YACSGui_TreeView::build()
 
 }
 
+void YACSGui_TreeView::removeLastSelected(YACSGui_ViewItem* v)
+{
+}
+
 //! Udates the tree view starting from the given item.
 /*!
  *  \param theItem - the item, which subtree have to be updated.
@@ -275,6 +279,7 @@ YACSGui_EditionTreeView::YACSGui_EditionTreeView( YACSGui_Module* theModule, YAC
     build();
 
     myPreviousSelected = 0;
+    itemToCheck=0;
     mySelectedSubjectOutPort = 0;
     mySelectedSubjectOutNode = 0;
 
@@ -582,7 +587,6 @@ void YACSGui_EditionTreeView::onDeleteItem()
     {
       DEBTRACE("delete data link");
       SubjectNode* aNode = aSLink->getSubjectOutNode();
-      aNode->update( REMOVE, DATALINK, aSLink );
       if ( !aSLink->getParent()->destroy( aSLink ) )
         {
           SUIT_MessageBox::warn1(myModule->getApp()->desktop(), 
@@ -599,101 +603,33 @@ void YACSGui_EditionTreeView::onDeleteItem()
     else if ( SubjectControlLink* aSCLink = dynamic_cast<SubjectControlLink*>(aSub) )
     {
       DEBTRACE("control link");
-      SubjectNode* aNode = aSCLink->getSubjectOutNode();
-      aNode->update( REMOVE, CONTROLLINK, aSCLink );
-      aSCLink->getParent()->destroy( aSCLink );
-
+      Subject* aParent = aSCLink->getParent();
+      if ( !aParent ) return;
+      aParent->destroy( aSCLink );
       myModule->temporaryExport();
     }
     else if ( SubjectDataPort* aSDPort = dynamic_cast<SubjectDataPort*>(aSub) )
     {
       DEBTRACE("port");
       Subject* aNode = aSDPort->getParent();
-      aNode->update( REMOVE, ProcInvoc::getTypeOfPort(aSDPort->getPort()), aSDPort );
+      if ( !aNode ) return;
       aNode->destroy( aSDPort );
-
       myModule->temporaryExport();
     }
     else if ( SubjectNode* aSNode = dynamic_cast<SubjectNode*>(aSub) )
     {
       DEBTRACE("node");
-      if ( !myModule ) return;
-      
-      YACSGui_Graph* aGraph = myModule->activeGraph();
-      if( !aGraph ) return;
-
       SubjectComposedNode* aSParent = dynamic_cast<SubjectComposedNode*>(aSNode->getParent());
       if ( !aSParent ) return;
-      
-      aSParent->update( REMOVE,	ProcInvoc::getTypeOfNode( aSNode->getNode() ), aSNode );
-      // clear the content of the property page of deleted node
-      aSNode->update( REMOVE, 0, 0 );
-
-      aGraph->removeNode( aSNode->getNode() );
       aSParent->destroy( aSNode );
-
       myModule->temporaryExport();
-
-      SubjectBloc* aSBloc = dynamic_cast<SubjectBloc*>(aSParent);
-      if ( aSBloc && !dynamic_cast<SubjectProc*>(aSParent) )
-      {
-	Node* aBloc = aSBloc->getNode();
-	if ( !aBloc ) return;
-	
-	SubjectComposedNode* aSBlocParent = dynamic_cast<SubjectComposedNode*>( aSBloc->getParent() );
-	if ( !aSBlocParent ) return;
-	
-	aGraph->update( aBloc, aSBlocParent );
-      }
     }
     else if ( SubjectComponent* aSComp = dynamic_cast<SubjectComponent*>(aSub) )
     {
       DEBTRACE("component");
       Subject* aProc = aSComp->getParent();
-      ComponentInstance* aComp = aSComp->getComponent();
-      if ( !aComp )
-      {
-	SUIT_MessageBox::warn1(myModule->getApp()->desktop(), 
-			       tr("WARNING"), 
-			       "The component instance is null.",
-			       tr("BUT_OK"));
-	aProc->update( REMOVE, COMPONENT, aSComp );
-	// clear the content of the property page of deleted component
-	aSComp->update( REMOVE, 0, 0 );
-
-	myModule->temporaryExport();
-
-	return;
-      }
-
-      if ( dynamic_cast<CORBAComponent*>(aComp) )
-      {
-	aProc->update( REMOVE, COMPONENT, aSComp );
-	// clear the content of the property page of deleted component
-	aSComp->update( REMOVE, 0, 0 );
-	aProc->destroy( aSComp );
-
-	myModule->temporaryExport();
-
-	return;
-      }
-
-      Container* aCont = aComp->getContainer();
-      if ( !aCont ) return;
-      
-      GuiContext* aContext = GuiContext::getCurrent();
-      if ( !aContext ) return;
-
-      SubjectContainer* aSCont = 0;
-      if ( aContext->_mapOfSubjectContainer.find(aCont) != aContext->_mapOfSubjectContainer.end() )
-        aSCont = aContext->_mapOfSubjectContainer[aCont];
-      if ( !aSCont ) return;
-
-      aSCont->update( REMOVE, COMPONENT, aSComp );
-      // clear the content of the property page of deleted component
-      aSComp->update( REMOVE, 0, 0 );
+      if ( !aProc ) return;
       aProc->destroy( aSComp );
-
       myModule->temporaryExport();
     }
     else if ( SubjectContainer* aSCont = dynamic_cast<SubjectContainer*>(aSub) )
@@ -701,15 +637,16 @@ void YACSGui_EditionTreeView::onDeleteItem()
       DEBTRACE("container");
       SubjectProc* aProc = dynamic_cast<SubjectProc*>(aSCont->getParent());
       if ( !aProc ) return;
-
-      aProc->update( REMOVE, CONTAINER, aSCont );
-      // clear the content of the property page of deleted container
-      aSCont->update( REMOVE, 0, 0 );
       aProc->destroy( aSCont );
-
       myModule->temporaryExport();
     }
   }
+}
+
+void YACSGui_EditionTreeView::removeLastSelected(YACSGui_ViewItem* v)
+{
+  DEBTRACE("YACSGui_EditionTreeView::removeLastSelected:"<<v);
+  myLastSelected.erase(v);
 }
 
 //! Public slot.  Display 2D view of the selected schema.
@@ -1781,8 +1718,9 @@ void YACSGui_EditionTreeView::syncPageTypeWithSelection()
  */
 void YACSGui_EditionTreeView::onSelectionChanged()
 {
-  DEBTRACE("YACSGui_EditionTreeView::onSelectionChanged");
+  DEBTRACE("YACSGui_EditionTreeView::onSelectionChanged" << " " << myPreviousSelected << " " << itemToCheck);
   if ( !getProc() || !myModule ) return;
+  if(itemToCheck && itemToCheck==myPreviousSelected)return;
 
   bool isNewSelection = true;
   bool isWarn = false;
@@ -1947,6 +1885,10 @@ void YACSGui_EditionTreeView::onSelectionChanged()
 
   DEBTRACE("YACSGui_EditionTreeView::onSelectionChanged");
 
+  //Check if input panel has been modified and not saved
+  QListViewItem* previousItem = myPreviousSelected;
+  QListViewItem* nextItem = anItem;
+
   if ( aSelList.size() == 0 ) // nothing selected, deselect previous
   {
     if ( myPreviousSelected )
@@ -1976,6 +1918,28 @@ void YACSGui_EditionTreeView::onSelectionChanged()
     aVItem = dynamic_cast<YACSGui_ViewItem*>(anItem);
     isWarn = true;
   }
+
+  itemToCheck=0;
+  if ( isWarn )
+    {
+      itemToCheck=previousItem;
+      try
+        {
+          warnAboutSelectionChanged();
+          itemToCheck=0;
+        }
+      catch(YACS::Exception&)
+        {
+          myPreviousSelected=previousItem;
+          if(nextItem)
+            setSelected(nextItem,false);
+          setSelected(myPreviousSelected,true);
+          itemToCheck=0;
+          return;
+        }
+    }
+  //End of check
+
   if ( aVItem )
   {
     //aVItem->getSubject()->select(anItem->isSelected());
@@ -2016,7 +1980,6 @@ void YACSGui_EditionTreeView::onSelectionChanged()
   // creation of a link <--
 
   DEBTRACE("YACSGui_EditionTreeView::onSelectionChanged");
-  if ( isWarn ) warnAboutSelectionChanged();
 
   if ( anIP ) // --- force edit mode to close the catalog, when click on tree or canvas item
     {
@@ -2481,6 +2444,10 @@ void YACSGui_RunTreeView::onSelectionChanged()
   }
   syncPageTypeWithSelection();
   syncHMIWithSelection();
+}
+void YACSGui_RunTreeView::removeLastSelected(YACSGui_ViewItem* v)
+{
+  myLastSelected.erase(v);
 }
 
 YACS::HMI::Subject* YACSGui_RunTreeView::getSubject( QListViewItem* theItem )

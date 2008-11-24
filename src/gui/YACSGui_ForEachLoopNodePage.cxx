@@ -93,6 +93,9 @@
 
 #include <sstream>
 
+//#define _DEVDEBUG_
+#include "YacsTrace.hxx"
+
 #define SPACING 5
 #define MARGIN 5
 
@@ -184,7 +187,7 @@ void YACSGui_ForEachLoopNodePage::notifyNodeProgress()
 
 void YACSGui_ForEachLoopNodePage::notifyInPortValues( std::map<std::string,std::string> theInPortName2Value )
 {
-  //printf("==> ForEachLoopNodePage : Size of theInPortName2Value : %d\n",theInPortName2Value.size());
+  DEBTRACE("YACSGui_ForEachLoopNodePage::notifyInPortValues " << theInPortName2Value.size());
 
   ForEachLoop* aForEachLoopNode = dynamic_cast<ForEachLoop*>( getNode() );
   if ( !aForEachLoopNode ) return;
@@ -219,9 +222,7 @@ void YACSGui_ForEachLoopNodePage::notifyInPortValues( std::map<std::string,std::
 
 void YACSGui_ForEachLoopNodePage::notifyOutPortValues( std::map<std::string,std::string> theOutPortName2Value )
 {
-  //printf("==> ForEachLoopNodePage : Size of theOutPortName2Value : %d\n",theOutPortName2Value.size());
-  // SmplPrt port (no gui control for it in the property page!)
-  //...
+  DEBTRACE("YACSGui_ForEachLoopNodePage::notifyOutPortValues");
 }
 
 void YACSGui_ForEachLoopNodePage::notifyNodeCreateBody( YACS::HMI::Subject* theSubject )
@@ -245,9 +246,12 @@ void YACSGui_ForEachLoopNodePage::checkModifications()
   {
     if( YACS::ENGINE::InputPort* aBranchesPort = aForEachLoopNode->edGetNbOfBranchesPort() )
     {
-      bool ok;
-      int aValue = getPortValue( aBranchesPort ).toInt( &ok );
-      if( ok && myNbBranchesInputPortValue->value() != aValue ) isModified = true;
+      QString val=getPortValue( aBranchesPort );
+      if ( !val.compare(QString("< ? >")) )
+        {
+          if(myNbBranchesInputPortValue->value() != myNbBranchesInputPortValue->minValue()) isModified = true;
+        }
+      else if(myNbBranchesInputPortValue->value() != val.toInt()) isModified = true;
     }
     if( YACS::ENGINE::InputPort* aSamplesPort = aForEachLoopNode->edGetSeqOfSamplesPort() )
       if ( myDataPortToDispatchValue->text().compare(getPortValue(aSamplesPort)) ) isModified = true;
@@ -264,12 +268,17 @@ void YACSGui_ForEachLoopNodePage::checkModifications()
 				tr("BUT_YES"), tr("BUT_NO"), 0, 1, 0) == 0 )
     {
       onApply();
-      if ( getInputPanel() ) getInputPanel()->emitApply(YACSGui_InputPanel::InlineNodeId);
+      if(onApplyStatus=="ERROR")
+        throw Exception("Error in checkModifications");
+      if ( getInputPanel() ) getInputPanel()->emitApply(YACSGui_InputPanel::ForEachLoopNodeId);
     }
+    else
+      updateState();
 }
 
 void YACSGui_ForEachLoopNodePage::onApply()
 {
+  onApplyStatus="OK";
   // Rename a node
   if ( myNodeName ) setNodeName( myNodeName->text() );
   
@@ -286,13 +295,40 @@ void YACSGui_ForEachLoopNodePage::onApply()
     if( YACS::ENGINE::InputPort* aSamplesPort = aForEachLoopNode->edGetSeqOfSamplesPort() )
     {
       QString aValue = myDataPortToDispatchValue->text();
-      aSamplesPort->edInit( aValue.latin1() );
-      mySNode->update( EDIT, INPUTPORT, GuiContext::getCurrent()->_mapOfSubjectDataPort[aSamplesPort] );
+
+      if(!aValue.isEmpty()&&aValue != "< ? >")
+        {
+          try
+            {
+              PyObject* ob=YACS::ENGINE::getSALOMERuntime()->convertStringToPyObject(aValue);
+              PyGILState_STATE gstate = PyGILState_Ensure();
+              try
+                {
+                  aSamplesPort->edInit("Python",ob);
+                }
+              catch(Exception& ex)
+                {
+                  onApplyStatus="ERROR";
+                  SUIT_MessageBox::error1(getInputPanel()->getModule()->getApp()->desktop(),
+                                          tr("ERROR"),ex.what() , tr("BUT_OK"));
+                }
+              PyGILState_Release(gstate);
+            }
+          catch(Exception& ex)
+            {
+              onApplyStatus="ERROR";
+              SUIT_MessageBox::error1(getInputPanel()->getModule()->getApp()->desktop(),
+                                      tr("ERROR"),ex.what() , tr("BUT_OK"));
+            }
+          mySNode->update( EDIT, INPUTPORT, GuiContext::getCurrent()->_mapOfSubjectDataPort[aSamplesPort] );
+        }
     }
   }
 
   // Reset the view mode
   // ...
+  if(onApplyStatus=="OK")
+    updateState();
 
   updateBlocSize();
 }
@@ -358,16 +394,5 @@ void YACSGui_ForEachLoopNodePage::onNodeNameChanged( const QString& theName )
 
 void YACSGui_ForEachLoopNodePage::onSeqOfSamplesChanged( const QString& theText )
 {
-  /*
-  QString aText = theText;
-  if( aText.left( 1 ) != "[" )
-    aText.prepend( "[" );
-    
-  if( aText.right( 1 ) != "]" )
-    aText.append( "]" );
-
-  if( aText != theText )
-    myDataPortToDispatchValue->setText( aText );
-  */
 }
 

@@ -128,8 +128,6 @@ YACSGui_DataTypePage::YACSGui_DataTypePage( QWidget* theParent, const char* theN
 YACSGui_DataTypePage::~YACSGui_DataTypePage()
 {
   if (getInputPanel()) getInputPanel()->removePage(this);
-
-  if ( mySDataType ) mySDataType->detach(this);
 }
 
 void YACSGui_DataTypePage::select( bool isSelected )

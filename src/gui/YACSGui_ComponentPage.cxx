@@ -124,8 +124,6 @@ YACSGui_ComponentPage::YACSGui_ComponentPage( QWidget* theParent, const char* th
 YACSGui_ComponentPage::~YACSGui_ComponentPage()
 {
   if (getInputPanel()) getInputPanel()->removePage(this);
-
-  if ( mySComponent ) mySComponent->detach(this);
 }
 
 void YACSGui_ComponentPage::select( bool isSelected )
@@ -282,21 +280,31 @@ void YACSGui_ComponentPage::checkModifications( bool& theWarnToShow, bool& theTo
 				  tr("BUT_YES"), tr("BUT_NO"), 0, 1, 0) == 0 )
       {
 	onApply();
+        if(onApplyStatus=="ERROR")
+          throw Exception("Error in checkModifications");
 	theToApply = true;
 	if ( getInputPanel() ) getInputPanel()->emitApply(YACSGui_InputPanel::ComponentId);
       }
       else
+      {
 	theToApply = false;
+        updateState();
+      }
     }
     else if ( theToApply )
     {
       onApply();
+      if(onApplyStatus=="ERROR")
+        throw Exception("Error in checkModifications");
       if ( getInputPanel() ) getInputPanel()->emitApply(YACSGui_InputPanel::ComponentId);
     }
+    else
+      updateState();
 }
 
 void YACSGui_ComponentPage::onApply()
 {
+  onApplyStatus="OK";
   setContainer();
 
   if ( mySComponent ) {
@@ -342,6 +350,8 @@ void YACSGui_ComponentPage::onApply()
       }
     }
   }
+  if(onApplyStatus=="OK")
+    updateState();
 }
 
 void YACSGui_ComponentPage::fillContainerNames()

@@ -41,7 +41,7 @@ class YACSPrs_Hook : public QxGraph_ActiveItem, public QCanvasEllipse
 		 const bool& theIn, const bool& theGate, const bool& theMaster=false);
     YACSPrs_Hook(SUIT_ResourceMgr* theMgr, QCanvas* theCanvas, YACSPrs_Port* thePort, 
 		 const bool& theIn, const bool& theGate, const bool& theMaster=false);
-    ~YACSPrs_Hook();
+    virtual ~YACSPrs_Hook();
 
     virtual void setCanvas(QCanvas* theCanvas);
 
@@ -99,7 +99,7 @@ class YACSPrs_Port {
 
  public:
   YACSPrs_Port( SUIT_ResourceMgr*, QCanvas*, YACSPrs_ElementaryNode*);
-  ~YACSPrs_Port();
+  virtual ~YACSPrs_Port();
 
   std::list<YACSPrs_Link*> getLinks() const { return myLinks; }
   YACSPrs_PortLink* getLink(YACS::HMI::Subject* theSLink);
@@ -167,7 +167,7 @@ class YACSPrs_LabelPort : public YACSPrs_Port {
  public:
   YACSPrs_LabelPort( SUIT_ResourceMgr*, QCanvas*, YACS::ENGINE::Node*, YACSPrs_ElementaryNode*,
 		     const bool& theSwitch=false, const int& theId=-1);
-  ~YACSPrs_LabelPort();
+  virtual ~YACSPrs_LabelPort();
 
   YACS::ENGINE::Node* getSlaveNode() const { return mySlaveNode; }
   void setSlaveNode( YACS::ENGINE::Node* theNode ) { mySlaveNode = theNode; }
@@ -196,7 +196,7 @@ class YACSPrs_InOutPort : public YACSPrs_Port ,
 
  public:
   YACSPrs_InOutPort( SUIT_ResourceMgr*, QCanvas*, YACS::ENGINE::Port*, YACSPrs_ElementaryNode* );
-  ~YACSPrs_InOutPort();
+  virtual ~YACSPrs_InOutPort();
 
   YACS::ENGINE::Port* getEngine() const { return myEngine; }
 
@@ -229,6 +229,7 @@ class YACSPrs_InOutPort : public YACSPrs_Port ,
   virtual void draw(QPainter& thePainter, int theXRnd, int theYRnd);
 
   YACS::HMI::Subject* getSubject() const;
+  virtual void                        decrementSubjects(YACS::HMI::Subject *subject);
 
   static bool synchronize( YACSPrs_Port* port, const bool toSelect );
 
@@ -248,13 +249,15 @@ class YACSPrs_InOutPort : public YACSPrs_Port ,
 class YACSPrs_LabelLink;
 class YACSPrs_ElementaryNode : public QxGraph_ActiveItem,
 			       public QCanvasPolygonalItem,
-			       public YACS::HMI::GuiObserver {
+			       public YACS::HMI::GuiObserver 
+{
  public:
   YACSPrs_ElementaryNode( SUIT_ResourceMgr*, QCanvas*, YACS::HMI::SubjectNode* );
   virtual ~YACSPrs_ElementaryNode();
 
   virtual void select( bool isSelected );
   virtual void update( YACS::HMI::GuiEvent event, int type, YACS::HMI::Subject* son);
+  virtual void                        decrementSubjects(YACS::HMI::Subject *subject);
 
   YACS::ENGINE::Node* getEngine() const;
   YACS::HMI::SubjectNode* getSEngine() const { return mySEngine; }
@@ -265,7 +268,7 @@ class YACSPrs_ElementaryNode : public QxGraph_ActiveItem,
   void sortPorts();
   void moveUp(YACS::ENGINE::Port* thePort);
   void moveDown(YACS::ENGINE::Port* thePort);
-  void addPortPrs(YACS::ENGINE::Port* thePort);
+  void addPortPrs(YACS::HMI::SubjectDataPort* subject);
   void removePortPrs(YACS::ENGINE::Port* thePort);
   
   void removeLabelPortPrs(YACSPrs_LabelPort* thePort);
@@ -313,7 +316,9 @@ class YACSPrs_ElementaryNode : public QxGraph_ActiveItem,
   virtual void update();
   virtual void updateForEachLoopBody(YACS::ENGINE::Node* theEngine=0);
   virtual void updatePorts(bool theForce=false);
+  virtual void reorderPorts();
   virtual void updateGates(bool theCreate);
+  virtual void removeChildPrs(YACSPrs_ElementaryNode* prs) {}
 
   virtual void setNodeColor(const QColor& theColor);
   virtual QColor nodeColor() const { return myColor; }

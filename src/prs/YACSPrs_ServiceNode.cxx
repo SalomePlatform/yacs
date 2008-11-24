@@ -93,6 +93,7 @@ YACSPrs_ServiceNode::YACSPrs_ServiceNode(SUIT_ResourceMgr* theMgr, QCanvas* theC
 */
 YACSPrs_ServiceNode::~YACSPrs_ServiceNode() 
 {
+  hide();
 }
 
 int YACSPrs_ServiceNode::rtti() const

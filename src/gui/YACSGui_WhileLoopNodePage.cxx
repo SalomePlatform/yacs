@@ -93,6 +93,9 @@
 
 #include <sstream>
 
+//#define _DEVDEBUG_
+#include "YacsTrace.hxx"
+
 #define SPACING 5
 #define MARGIN 5
 
@@ -181,8 +184,7 @@ void YACSGui_WhileLoopNodePage::notifyNodeProgress()
 
 void YACSGui_WhileLoopNodePage::notifyInPortValues( std::map<std::string,std::string> theInPortName2Value )
 {
-  //printf("==> WhileLoopNodePage : Size of theInPortName2Value : %d\n",theInPortName2Value.size());
-
+  DEBTRACE("YACSGui_WhileLoopNodePage::notifyInPortValues " << theInPortName2Value.size());
   WhileLoop* aWhileLoopNode = dynamic_cast<WhileLoop*>( getNode() );
   if ( !aWhileLoopNode ) return;
 
@@ -194,11 +196,7 @@ void YACSGui_WhileLoopNodePage::notifyInPortValues( std::map<std::string,std::st
     if ( !aGivenName.compare(aName) && myCondInputPortValue )
     {
       QString aValue( (*it).second );
-      int anId = 0;
-      if ( !aValue.compare(QString("< ? >")) ||
-	   aValue.compare(QString("false")) ||
-	   !aValue.toInt() )
-	anId = 1;
+      int anId = aValue == "True" ? 0 : 1;
       myCondInputPortValue->setCurrentItem(anId);
     }
   }
@@ -245,12 +243,17 @@ void YACSGui_WhileLoopNodePage::checkModifications()
 				tr("BUT_YES"), tr("BUT_NO"), 0, 1, 0) == 0 )
     {
       onApply();
-      if ( getInputPanel() ) getInputPanel()->emitApply(YACSGui_InputPanel::InlineNodeId);
+      if(onApplyStatus=="ERROR")
+        throw Exception("Error in checkModifications");
+      if ( getInputPanel() ) getInputPanel()->emitApply(YACSGui_InputPanel::WhileLoopNodeId);
     }
+    else
+      updateState();
 }
 
 void YACSGui_WhileLoopNodePage::onApply()
 {
+  onApplyStatus="OK";
   // Rename a node
   if ( myNodeName ) setNodeName( myNodeName->text() );
   
@@ -267,6 +270,8 @@ void YACSGui_WhileLoopNodePage::onApply()
   
   // Reset the view mode
   // ...
+  if(onApplyStatus=="OK")
+    updateState();
 
   updateBlocSize();
 }

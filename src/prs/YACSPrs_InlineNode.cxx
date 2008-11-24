@@ -22,6 +22,9 @@
 
 #include <qpainter.h>
 
+//#define _DEVDEBUG_
+#include "YacsTrace.hxx"
+
 void drawText2(QPainter& thePainter, const QString& theText, 
 	      const QRect& theRect, int theHAlign = Qt::AlignAuto)
 {
@@ -85,6 +88,8 @@ YACSPrs_InlineNode::YACSPrs_InlineNode(SUIT_ResourceMgr* theMgr, QCanvas* theCan
 */
 YACSPrs_InlineNode::~YACSPrs_InlineNode() 
 {
+  DEBTRACE("YACSPrs_InlineNode::~YACSPrs_InlineNode");
+  hide();
 }
 
 int YACSPrs_InlineNode::rtti() const
@@ -307,6 +312,8 @@ QString YACSPrs_InlineNode::getToolTipText(const QPoint& theMousePos, QRect& the
   
   // Return tooltip text for node
   QString aText = QString("");
+  if(!getEngine())
+    return aText;
   aText += QString("Name: %1\n").arg(getEngine()->getName());
   aText += QString("Type: %1\n").arg("Inline node");
   theRect = getTitleRect();

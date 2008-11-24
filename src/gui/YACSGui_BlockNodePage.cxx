@@ -120,7 +120,7 @@ YACSGui_BlockNodePage::YACSGui_BlockNodePage( QWidget* theParent, const char* th
     myDirectChildrenGroupBox->HideBtn( YACSGui_PlusMinusGrp::InsertBtn |
 				       YACSGui_PlusMinusGrp::UpBtn |
 				       YACSGui_PlusMinusGrp::DownBtn );
-    myDirectChildrenGroupBox->EnableBtn( YACSGui_PlusMinusGrp::SelectBtn, false );
+    myDirectChildrenGroupBox->EnableBtn( YACSGui_PlusMinusGrp::SelectBtn, true );
     YACSGui_Table* aTable = myDirectChildrenGroupBox->Table();
     aTable->setFixedHeight( 100 );
     aTable->setNumCols( 1 );
@@ -201,6 +201,7 @@ void YACSGui_BlockNodePage::setChild( YACS::HMI::SubjectNode* theChildNode )
     }
   if ( !anExist )
     myRowsOfSelectedChildren.push_back( aTable->currentRow() );
+  myDirectChildrenGroupBox->EnableBtn( YACSGui_PlusMinusGrp::SelectBtn, true );
 }
 
 bool YACSGui_BlockNodePage::isSelectChild() const
@@ -344,56 +345,26 @@ void YACSGui_BlockNodePage::checkModifications()
 				tr("BUT_YES"), tr("BUT_NO"), 0, 1, 0) == 0 )
     {
       onApply();
-      if ( getInputPanel() ) getInputPanel()->emitApply(YACSGui_InputPanel::InlineNodeId);
+      if(onApplyStatus=="ERROR")
+        throw Exception("Error in checkModifications");
+      if ( getInputPanel() ) getInputPanel()->emitApply(YACSGui_InputPanel::BlockNodeId);
     }
+    else
+      updateState();
 }
 
 void YACSGui_BlockNodePage::onApply()
 {
+  onApplyStatus="OK";
   // Rename a node
   if ( myNodeName && getNode() )
     getNode()->setName( myNodeName->text().latin1() );
 
-  // To remove a new child nodes from its old places in the tree view
-  std::list<int>::iterator it = myRowsOfSelectedChildren.begin();
-  for ( ; it != myRowsOfSelectedChildren.end(); it++ )
-  {
-    SubjectNode* aNewSelectedChild = myRow2ChildMap[*it];
-    if( !aNewSelectedChild )
-      continue;
-    Node* aNode = aNewSelectedChild->getNode();
-    try {
-      getNode()->getChildByName( aNode->getName() );
-    }
-    catch (YACS::Exception& ex) {
-      // block is not contain nodes with the same name as aNode
-      // get schema engine object
-      Proc* aProc = GuiContext::getCurrent()->getProc();
-      if ( !aProc ) return;
-      // get gui graph
-      YACSGui_Graph* aGraph = getInputPanel()->getModule()->getGraph( aProc );
-      if ( !aGraph ) return;
-
-      aNewSelectedChild->getParent()->detach(aGraph); // to remove only a node view item in the tree, node presentation is still alive
-	
-      aNewSelectedChild->getParent()->update( REMOVE,
-					      ProcInvoc::getTypeOfNode( aNewSelectedChild->getNode() ),
-					      aNewSelectedChild );
-      
-      aNewSelectedChild->getParent()->attach(aGraph); // to remove only a node view item in the tree, node presentation is still alive
-    }
-  }
-  
   // Reset the list of direct children
   setDirectChildren();
   
-  // Reset the view mode
-  // ...
-
-  mySNode->update( EDIT, 0, mySNode );
-  
-  // clear for next selections
-  myRowsOfSelectedChildren.clear();
+  if(onApplyStatus=="OK")
+    updateState();
 
   updateBlocSize();
 }
@@ -439,7 +410,11 @@ void YACSGui_BlockNodePage::updateState()
     // Fill "Node name" column
     myDirectChildrenGroupBox->Table()->setStrings( 0, aChildNames, true );
 
-    if ( !aChildNames.empty() ) myDirectChildrenGroupBox->EnableBtn( YACSGui_PlusMinusGrp::AllBtn );
+    if ( !aChildNames.empty() ) 
+      {
+        myDirectChildrenGroupBox->EnableBtn( YACSGui_PlusMinusGrp::AllBtn );
+        myDirectChildrenGroupBox->EnableBtn( YACSGui_PlusMinusGrp::SelectBtn, true );
+      }
   }
 
   // Set view mode of the given block node
@@ -621,9 +596,10 @@ void YACSGui_BlockNodePage::setDirectChildren()
       }
     if ( !isNeedToRemove ) continue;
 
+    SubjectNode* aSChild = aSNode->getChild(*aChildIter);
+    aSChild->removeExternalLinks();
     aBloc->edRemoveChild(*aChildIter); // the _father of the removed node will be 0 
     aRemovedOldChild = *aChildIter;
-    SubjectNode* aSChild = aSNode->getChild(*aChildIter);
 
     try {
       aProc->edAddChild(*aChildIter); // raise the removed child to the Proc level
@@ -637,17 +613,11 @@ void YACSGui_BlockNodePage::setDirectChildren()
 				  tr("BUT_YES"), tr("BUT_NO"), 0, 1, 1) == 0 )
       {
 	// delete the old child node
-	// 1) delete corresponding tree view item
-	aSNode->update(REMOVE, ProcInvoc::getTypeOfNode( aSChild->getNode() ), aSChild);
-	// 2) delete 2D presentation
-	aGraph->removeNode( aSChild->getNode() );
-	// 3) delete corresponding subject
 	aSNode->destroy(aSChild);
       }
       else
       {
 	aBloc->edAddChild(aRemovedOldChild);
-	updateState();
 	return;
       }
     }
@@ -671,6 +641,10 @@ void YACSGui_BlockNodePage::setDirectChildren()
     {
       if ( Bloc* aFather = dynamic_cast<Bloc*>(aChild->getFather()) )
       {
+        if(aFather==aBloc)
+          continue;
+
+        aSChild->removeExternalLinks();
 	aFather->edRemoveChild(aChild);
       
 	try {
@@ -690,9 +664,4 @@ void YACSGui_BlockNodePage::setDirectChildren()
       }
     }
   }
-  
-  if ( isNeedToUpdate ) updateState();
-     
-  // update the block node presentation
-  aGraph->update( aBloc, dynamic_cast<SubjectComposedNode*>( getSNode()->getParent() ) );
 }

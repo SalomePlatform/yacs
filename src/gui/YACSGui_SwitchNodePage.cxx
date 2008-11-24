@@ -93,6 +93,9 @@
 
 #include <sstream>
 
+//#define _DEVDEBUG_
+#include "YacsTrace.hxx"
+
 #define SPACING 5
 #define MARGIN 5
 
@@ -287,7 +290,7 @@ void YACSGui_SwitchNodePage::notifyInPortValues( std::map<std::string,std::strin
     {
       QString aValue( (*it).second );
       if ( !aValue.compare(QString("< ? >")) )
-        mySelectInputPortValue->setValue( 0 );
+        mySelectInputPortValue->setValue( mySelectInputPortValue->minValue() );
       else
         mySelectInputPortValue->setValue( aValue.toInt() );
     }
@@ -306,6 +309,7 @@ void YACSGui_SwitchNodePage::notifyNodeCreateNode( YACS::HMI::Subject* theSubjec
 
 void YACSGui_SwitchNodePage::checkModifications()
 {
+  DEBTRACE("YACSGui_SwitchNodePage::checkModifications");
   if ( !getNode() ) return;
 
   Switch* aSwitch = dynamic_cast<Switch*>(getNode());
@@ -317,9 +321,12 @@ void YACSGui_SwitchNodePage::checkModifications()
   if ( myNodeName->text().compare(getNodeName()) != 0 ) isModified = true;
   else if( YACS::ENGINE::InputPort* aPort = aSwitch->edGetConditionPort() )
   {
-    bool ok;
-    int aValue = getPortValue( aPort ).toInt( &ok );
-    if( ok && mySelectInputPortValue->value() != aValue ) isModified = true;
+    QString val=getPortValue( aPort );
+    if ( !val.compare(QString("< ? >")) )
+      {
+         if(mySelectInputPortValue->value() != mySelectInputPortValue->minValue()) isModified = true;
+      }
+    else if(mySelectInputPortValue->value() != val.toInt()) isModified = true;
   }
 
   if ( !isModified )
@@ -385,12 +392,18 @@ void YACSGui_SwitchNodePage::checkModifications()
 				tr("BUT_YES"), tr("BUT_NO"), 0, 1, 0) == 0 )
     {
       onApply();
-      if ( getInputPanel() ) getInputPanel()->emitApply(YACSGui_InputPanel::InlineNodeId);
+      if(onApplyStatus=="ERROR")
+        throw Exception("Error in checkModifications");
+      if ( getInputPanel() ) getInputPanel()->emitApply(YACSGui_InputPanel::SwitchNodeId);
     }
+    else
+      updateState();
 }
 
 void YACSGui_SwitchNodePage::onApply()
 {
+  DEBTRACE("YACSGui_SwitchNodePage::onApply");
+  onApplyStatus="OK";
   // Rename a node
   if ( myNodeName && getNode() )
     getNode()->setName( myNodeName->text().latin1() );
@@ -427,46 +440,22 @@ void YACSGui_SwitchNodePage::onApply()
 	continue; // do not remove a default node - keep it for copying
     }
 
-    try {
-      getNode()->getChildByName( aNode->getName() );
-    }
-    catch (YACS::Exception& ex) {
-      // switch is not contain nodes with the same name as aNode
-      // get schema engine object
-      Proc* aProc = GuiContext::getCurrent()->getProc();
-      if ( !aProc ) return;
-      // get gui graph
-      YACSGui_Graph* aGraph = getInputPanel()->getModule()->getGraph( aProc );
-      if ( !aGraph ) return;
-
-      aNewSelectedChild->getParent()->detach(aGraph); // to remove only a node view item in the tree, node presentation is still alive
-	
-      aNewSelectedChild->getParent()->update( REMOVE,
-					      ProcInvoc::getTypeOfNode( aNewSelectedChild->getNode() ),
-					      aNewSelectedChild );
-      
-      aNewSelectedChild->getParent()->attach(aGraph); // to remove only a node view item in the tree, node presentation is still alive
-    }
   }
   
   // Reset the list of switch cases
   setSwitchCases();
   
-  // Reset the view mode
-  // ...
-
-  mySNode->update( EDIT, 0, mySNode );
-
   updateLabelPorts();
 
-  // clear for next selections
-  myRowsOfSelectedChildren.clear();
+  if(onApplyStatus=="OK")
+    updateState();
 
   updateBlocSize();
 }
 
 void YACSGui_SwitchNodePage::updateState()
 {
+  DEBTRACE("YACSGui_SwitchNodePage::updateState");
   myRow2ChildMap.clear();
   myRowsOfSelectedChildren.clear();
 
@@ -507,10 +496,7 @@ void YACSGui_SwitchNodePage::updateState()
 	  aDefaultNode = aSwitch->getChildByShortName(Switch::DEFAULT_NODE_NAME);
 	}
 	catch (YACS::Exception& ex) {
-	  SUIT_MessageBox::warn1(getInputPanel()->getModule()->getApp()->desktop(),
-				 tr("WRN_WARNING"),
-				 QString("Switch has no a default node!"),
-				 tr("BUT_OK"));
+          //ignore it
 	}
 	
 	int aMinCaseId, aMaxCaseId;
@@ -817,20 +803,17 @@ void YACSGui_SwitchNodePage::setSwitchCases()
       aDefaultNode = aSwitch->getChildByShortName(Switch::DEFAULT_NODE_NAME);
     }
     catch (YACS::Exception& ex) {
-      SUIT_MessageBox::warn1(getInputPanel()->getModule()->getApp()->desktop(),
-			     tr("WRN_WARNING"),
-			     QString("Switch has no a default node!"),
-			     tr("BUT_OK"));
     }
     if( aDefaultNode && (*aChildIter) == aDefaultNode )
       anId = Switch::ID_FOR_DEFAULT_NODE;
     else
       anId = aSwitch->getRankOfNode( *aChildIter );
 
+    SubjectNode* aSChild = aSNode->getChild(*aChildIter);
+    aSChild->removeExternalLinks();
     //aSwitch->edRemoveChild(*aChildIter); // the _father of the removed node will be 0 
     aSwitch->edReleaseCase( anId );
     aRemovedOldChild = *aChildIter;
-    SubjectNode* aSChild = aSNode->getChild(*aChildIter);
 
     try {
       aProc->edAddChild(*aChildIter); // raise the removed child to the Proc level
@@ -844,11 +827,6 @@ void YACSGui_SwitchNodePage::setSwitchCases()
 				  tr("BUT_YES"), tr("BUT_NO"), 0, 1, 1) == 0 )
       {
 	// delete the old child node
-	// 1) delete corresponding tree view item
-	aSNode->update(REMOVE, ProcInvoc::getTypeOfNode( aSChild->getNode() ), aSChild);
-	// 2) delete 2D presentation
-	aGraph->removeNode( aSChild->getNode() );
-	// 3) delete corresponding subject
 	aSNode->destroy(aSChild);
       }
       else
@@ -872,6 +850,13 @@ void YACSGui_SwitchNodePage::setSwitchCases()
   for( ;aChildIt!=myRow2ChildMap.end();aChildIt++)
   {
     SubjectNode* aSChild = (*aChildIt).second;
+    if(!aSChild)
+      {
+        SUIT_MessageBox::error1(getInputPanel()->getModule()->getApp()->desktop(),
+                                tr("ERROR"),"incorrect node" , tr("BUT_OK"));
+        onApplyStatus="ERROR";
+      }
+
     Node* aChild = aSChild->getNode();
     if( aChild->getFather() == aSwitch )
       continue;
@@ -900,7 +885,7 @@ void YACSGui_SwitchNodePage::setSwitchCases()
 	  anId = Switch::ID_FOR_DEFAULT_NODE;
 
 	  // If the child is a default node of the another switch - just copy it to the current switch
-	  YACS::ENGINE::Catalog* catalog = YACS::ENGINE::getSALOMERuntime()->getBuiltinCatalog();
+          YACS::ENGINE::Catalog* catalog = getInputPanel()->getModule()->getCatalog();
 
 	  std::string compo;
 	  std::string type;
@@ -937,6 +922,7 @@ void YACSGui_SwitchNodePage::setSwitchCases()
 	if( anId == Switch::ID_FOR_DEFAULT_NODE )
 	  continue;
 
+        aSChild->removeExternalLinks();
 	aFather->edReleaseCase( anId );
       
 	try {
@@ -956,6 +942,7 @@ void YACSGui_SwitchNodePage::setSwitchCases()
       }
       else if ( Bloc* aFather = dynamic_cast<Bloc*>(aChild->getFather()) )
       {
+        aSChild->removeExternalLinks();
 	aFather->edRemoveChild(aChild);
       
 	try {
@@ -975,10 +962,5 @@ void YACSGui_SwitchNodePage::setSwitchCases()
       }
     }
   }
-  
-  if ( isNeedToUpdate ) updateState();
-     
-  // update the block node presentation
-  aGraph->update( aSwitch, dynamic_cast<SubjectComposedNode*>( getSNode()->getParent() ) );
 }
 

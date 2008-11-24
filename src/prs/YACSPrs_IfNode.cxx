@@ -45,6 +45,7 @@ YACSPrs_IfNode::YACSPrs_IfNode( SUIT_ResourceMgr* theMgr, QCanvas* theCanvas, YA
 */
 YACSPrs_IfNode::~YACSPrs_IfNode()
 {
+  hide();
 }
 
 int YACSPrs_IfNode::rtti() const
@@ -127,3 +128,8 @@ void YACSPrs_IfNode::drawFrame(QPainter& thePainter)
   // draw bounding nodes' polygon if node is currently selected
   if ( isSelected() ) drawBoundary(thePainter,3);
 }
+
+void YACSPrs_IfNode::reorderPorts()
+{
+}
+

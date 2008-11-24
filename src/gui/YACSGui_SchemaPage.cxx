@@ -149,8 +149,6 @@ YACSGui_SchemaPage::YACSGui_SchemaPage( QWidget* theParent, const char* theName,
 YACSGui_SchemaPage::~YACSGui_SchemaPage()
 {
   if (getInputPanel()) getInputPanel()->removePage(this);
-
-  if ( mySProc ) mySProc->detach(this);
 }
 
 void YACSGui_SchemaPage::select( bool isSelected )

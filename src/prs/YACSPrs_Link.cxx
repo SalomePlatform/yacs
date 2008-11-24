@@ -397,11 +397,7 @@ YACSPrs_PortLink::YACSPrs_PortLink( SUIT_ResourceMgr* theMgr,
 
 YACSPrs_PortLink::~YACSPrs_PortLink()
 {
-  // detach from HMI
-  YACS::HMI::Subject* aSub = getSubject();
-  if ( aSub )
-    aSub->detach(this);
-
+  DEBTRACE("YACSPrs_PortLink::~YACSPrs_PortLink");
   if (myInputPort) {
     myInputPort->removeLink(this);
     myInputPort = 0;
@@ -657,6 +653,7 @@ YACSPrs_LabelLink::YACSPrs_LabelLink( SUIT_ResourceMgr* theMgr,
 
 YACSPrs_LabelLink::~YACSPrs_LabelLink()
 {
+  DEBTRACE("YACSPrs_LabelLink::~YACSPrs_LabelLink");
   if (myOutputPort) {
     myOutputPort->removeLink(this);
     myOutputPort = 0;
@@ -838,6 +835,16 @@ YACSPrs_Point::YACSPrs_Point(QCanvas* theCanvas,
   setZ(-1);
 }
 
+YACSPrs_Point::~YACSPrs_Point()
+{
+  DEBTRACE("YACSPrs_Point::~YACSPrs_Point");
+  hide();
+  //This call to setCanvas must be done here because we need to call removeItem before
+  //  calling the destructor of QxGraph_ActiveItem.
+  //  removeItem make a dynamic_cast<QxGraph_ActiveItem*>
+  setCanvas(0);
+}
+
 bool YACSPrs_Point::isMoveable()
 {
   if ( !myInEdge || !myOutEdge ) return false;
@@ -963,14 +970,23 @@ YACSPrs_Edge::YACSPrs_Edge(QCanvas* theCanvas,
   myStartPoint(0), myEndPoint(0), mySelected(false)
 {
   myArrow=new QCanvasPolygon(theCanvas);
+  theCanvas->removeItem(myArrow);
   setZ(-2);
 }
 
 YACSPrs_Edge::~YACSPrs_Edge()
 {
   DEBTRACE("YACSPrs_Edge::~YACSPrs_Edge");
-  myArrow->setCanvas(0);
-  delete myArrow;
+  hide();
+  //This call to setCanvas must be done here because we need to call removeItem before
+  //  calling the destructor of QxGraph_ActiveItem.
+  //  removeItem make a dynamic_cast<QxGraph_ActiveItem*>
+  setCanvas(0);
+  if(myArrow)
+    {
+      delete myArrow;
+      myArrow=0;
+    }
 }
 
 bool YACSPrs_Edge::isMoveable()
@@ -1104,6 +1120,9 @@ void YACSPrs_Edge::setVisible(bool on)
 void YACSPrs_Edge::setArrow()
 {
   DEBTRACE("YACSPrs_Edge::setArrow");
+  bool aDisp = isVisible();
+  if (aDisp) hide();
+
   int x1=startPoint().x();
   int y1=startPoint().y();
   int x2=endPoint().x();
@@ -1132,6 +1151,7 @@ void YACSPrs_Edge::setArrow()
   pa.setPoint(2, QPoint((int)(x+e*sina),(int)(y-e*cosa)));
   myArrow->setPoints(pa);
   myArrow->setZ(z());
+  if (aDisp) show();
 }
 
 void YACSPrs_Edge::setCanvas(QCanvas* theCanvas)
@@ -1139,4 +1159,5 @@ void YACSPrs_Edge::setCanvas(QCanvas* theCanvas)
   DEBTRACE("YACSPrs_Edge::setCanvas");
   QCanvasLine::setCanvas(theCanvas);
   myArrow->setCanvas(theCanvas);
+  if(theCanvas)theCanvas->removeItem(myArrow);
 }

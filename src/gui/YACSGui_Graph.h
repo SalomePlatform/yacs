@@ -89,43 +89,47 @@ public:
 
   void                    rebuildLinks();
   int                     addObjectToLine2dModel(YACSPrs_ElementaryNode* theNode,
-						 LineConn2d_Model*       theLineModel,
-						 std::map<YACSPrs_ElementaryNode*, int>& theNodePrs2ObjId);
+                                                 LineConn2d_Model*       theLineModel,
+                                                 std::map<YACSPrs_ElementaryNode*, int>& theNodePrs2ObjId);
   int                     addPortToLine2dModel(YACSPrs_Port*           thePort,
-					       YACSPrs_ElementaryNode* theNode,
-					       YACSPrs_Link*           theLink,
-					       LineConn2d_Model*       theLineModel,
-					       std::map<YACSPrs_ElementaryNode*, int>& theNodePrs2ObjId,
-					       std::map<YACSPrs_Port*, int>&           thePortPrs2PortId);
+                                               YACSPrs_ElementaryNode* theNode,
+                                               YACSPrs_Link*           theLink,
+                                               LineConn2d_Model*       theLineModel,
+                                               std::map<YACSPrs_ElementaryNode*, int>& theNodePrs2ObjId,
+                                               std::map<YACSPrs_Port*, int>&           thePortPrs2PortId);
   int                     addPortToLine2dModel(YACSPrs_Hook*           theHook,
-					       YACSPrs_ElementaryNode* theNode,
-					       YACSPrs_LabelLink*      theLink,
-					       LineConn2d_Model*       theLineModel,
-					       std::map<YACSPrs_ElementaryNode*, int>& theNodePrs2ObjId);
+                                               YACSPrs_ElementaryNode* theNode,
+                                               YACSPrs_LabelLink*      theLink,
+                                               LineConn2d_Model*       theLineModel,
+                                               std::map<YACSPrs_ElementaryNode*, int>& theNodePrs2ObjId);
 
   YACSPrs_ElementaryNode* getItem( YACS::ENGINE::Node* );
   void                    removeNode( YACS::ENGINE::Node* );
+  void                    updatePrs();
 
   YACS::ENGINE::Node*     getNodeById( const int theID ) const;
 
   YACS::ENGINE::Node*     getNodeByName( const std::string theName ) const;
 
   void                    getAllBlocChildren(YACS::ENGINE::Bloc*, 
-					     std::set<YACS::ENGINE::Node*>&);
+                                             std::set<YACS::ENGINE::Node*>&);
   void                    getAllComposedNodeChildren(YACS::ENGINE::ComposedNode*, 
-						     std::set<YACS::ENGINE::Node*>&);
+                                                     std::set<YACS::ENGINE::Node*>&);
 
   void                    registerStatusObserverWithNode(YACS::ENGINE::Node* theNode);
 
   void                    createPrs(YACS::HMI::Subject* theSubject);
   void                    deletePrs(YACS::HMI::SubjectNode* theSubject, bool removeLabelPort = true );
+  void                    cutPrs(YACS::HMI::SubjectNode* theSubject);
+  void                    pastePrs(YACS::HMI::SubjectNode* theSubject);
+  virtual void            decrementSubjects(YACS::HMI::Subject *subject);
 
   bool                    isNeededToIncreaseBlocSize( YACS::ENGINE::Bloc* );
 
 private:
   YACSGui_Node*           driver( YACS::ENGINE::Node* theNode );
   void                    createLinksFromGivenOutPortPrs( YACSPrs_InOutPort* theOutPortPrs,
-							  std::set<YACS::ENGINE::InPort *> theInPorts );
+                                                          std::set<YACS::ENGINE::InPort *> theInPorts );
   
 private:
 
@@ -138,6 +142,7 @@ private:
   DriverMap               myDrivers; // map of update drivers for specific node types
   ItemMap                 myItems; // map of graphic items for a given engine node
   Bloc2InsideLinksMap     myBlocInsideLinks; // map of links from block to block ( BlocOut -> BlocIn ) inside a given block
+  std::list<YACSPrs_ElementaryNode*>             nodesToDelete;
 
   YACSGui_Observer*       myNodeStatusObserver;
   Agraph_t*               _mainGraph;

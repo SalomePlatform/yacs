@@ -122,6 +122,13 @@ YACSGui_ViewItem::YACSGui_ViewItem( QListViewItem* theParent,
 {
 }
 
+YACSGui_ViewItem::~YACSGui_ViewItem()
+{
+  DEBTRACE("YACSGui_ViewItem::~YACSGui_ViewItem");
+  if(YACSGui_TreeView* t=dynamic_cast<YACSGui_TreeView*>(listView()))
+    t->removeLastSelected(this);
+}
+
 /*!
   \brief Block actions performed in select() method. Usually this method is called 
          from select() in order to avoid circularity because of synchronization: 
@@ -179,7 +186,7 @@ void YACSGui_ViewItem::select( bool isSelected )
 
 void YACSGui_ViewItem::removeNodeItem( YACS::HMI::Subject* theSNode )
 {
-  //printf( "YACSGui_ViewItem::removeNodeItem (this=%s)\n", text(0).latin1() );
+  DEBTRACE( "YACSGui_ViewItem::removeNodeItem (this= " << text(0).latin1() );
   QListViewItem* aNodesL = this;
   if( !aNodesL->parent() )
   {
@@ -196,7 +203,7 @@ void YACSGui_ViewItem::removeNodeItem( YACS::HMI::Subject* theSNode )
     if ( aNode = dynamic_cast<YACSGui_NodeViewItem*>(aChild) )
       if ( aNode->getSNode() == theSNode )
       {
-	//printf(">> the son is found\n");
+	DEBTRACE(">> the son is found");
 	break;
       }
 
@@ -205,120 +212,8 @@ void YACSGui_ViewItem::removeNodeItem( YACS::HMI::Subject* theSNode )
 
   if ( aNode )
   {
-    if( YACS::HMI::SubjectNode* aSNode = dynamic_cast<SubjectNode*>( theSNode ) )
-    {
-      //printf( ">> remove control links\n" );
-      std::list<SubjectControlLink*> aControlLinks = aSNode->getSubjectControlLinks();
-      std::list<SubjectControlLink*>::iterator cIt = aControlLinks.begin();
-      std::list<SubjectControlLink*>::iterator cItEnd = aControlLinks.end();
-      for( ; cIt != cItEnd; cIt++ )
-      {
-	SubjectControlLink* aControlLink = *cIt;
-	if( aControlLink )
-	{
-	  Subject* aParentSNode = aControlLink->getSubjectOutNode()->getParent();
-	  aParentSNode->update( REMOVE, CONTROLLINK, aControlLink );
-	}
-      }
-
-      //printf( ">> remove data links\n" );
-      std::list<SubjectLink*> aDataLinks = aSNode->getSubjectLinks();
-      std::list<SubjectLink*>::iterator dIt = aDataLinks.begin();
-      std::list<SubjectLink*>::iterator dItEnd = aDataLinks.end();
-      for( ; dIt != dItEnd; dIt++ )
-      {
-	SubjectLink* aDataLink = *dIt;
-	if( aDataLink )
-	{
-	  Subject* aParentSNode = aDataLink->getSubjectOutNode()->getParent();
-	  aParentSNode->update( REMOVE, DATALINK, aDataLink );
-	}
-      }
-
-      //printf( ">> remove port links\n" );
-      std::list<SubjectDataPort*> aDataPorts;
-
-      std::list<SubjectInputPort*> anInputPorts = aSNode->getSubjectInputPorts();
-      for( std::list<SubjectInputPort*>::iterator pIt = anInputPorts.begin(); pIt != anInputPorts.end(); pIt++ )
-	aDataPorts.push_back( *pIt );
-
-      std::list<SubjectOutputPort*> anOutputPorts = aSNode->getSubjectOutputPorts();
-      for( std::list<SubjectOutputPort*>::iterator pIt = anOutputPorts.begin(); pIt != anOutputPorts.end(); pIt++ )
-	aDataPorts.push_back( *pIt );
-
-      std::list<SubjectInputDataStreamPort*> anInputDataStreamPorts = aSNode->getSubjectInputDataStreamPorts();
-      for( std::list<SubjectInputDataStreamPort*>::iterator pIt = anInputDataStreamPorts.begin();
-	   pIt != anInputDataStreamPorts.end(); pIt++ )
-	aDataPorts.push_back( *pIt );
-
-      std::list<SubjectOutputDataStreamPort*> anOutputDataStreamPorts = aSNode->getSubjectOutputDataStreamPorts();
-      for( std::list<SubjectOutputDataStreamPort*>::iterator pIt = anOutputDataStreamPorts.begin();
-	   pIt != anOutputDataStreamPorts.end(); pIt++ )
-	aDataPorts.push_back( *pIt );
-
-      std::list<SubjectDataPort*>::iterator dpIt = aDataPorts.begin();
-      std::list<SubjectDataPort*>::iterator dpItEnd = aDataPorts.end();
-      for( ; dpIt != dpItEnd; dpIt++ )
-      {
-	SubjectDataPort* aDataPort = *dpIt;
-	if( aDataPort )
-	{
-	  std::list<SubjectLink*> lsl = aDataPort->getListOfSubjectLink();
-	  for( std::list<SubjectLink*>::iterator it = lsl.begin(); it != lsl.end(); ++it )
-	  {
-	    SubjectLink* aLink = *it;
-	    if( aLink )
-	    {
-	      //printf( ">> link : %s\n", aLink->getName().c_str() );
-	      SubjectNode* aNode1 = aLink->getSubjectInNode();
-	      SubjectNode* aNode2 = aLink->getSubjectOutNode();
-	      //printf( ">> nodes : %s - %s\n", aNode1->getName().c_str(), aNode2->getName().c_str() );
-	      if( SubjectComposedNode* aLowestCommonAncestor =
-		  SubjectComposedNode::getLowestCommonAncestor( aNode1, aNode2 ) )
-	      {
-		//printf( ">> lowest common ancestor : %s\n", aLowestCommonAncestor->getName().c_str() );
-		aLowestCommonAncestor->update( REMOVE, DATALINK, aLink );
-	      }
-	    }
-	  }
-	}
-      }
-
-      //printf( ">> remove leaving/coming current scope links\n" );
-      std::vector< std::pair<OutPort *, InPort *> > listLeaving  = aSNode->getNode()->getSetOfLinksLeavingCurrentScope();
-      std::vector< std::pair<InPort *, OutPort *> > listIncoming = aSNode->getNode()->getSetOfLinksComingInCurrentScope();
-      std::vector< std::pair<OutPort *, InPort *> > globalList = listLeaving;
-      std::vector< std::pair<InPort *, OutPort *> >::iterator it1;
-      for (it1 = listIncoming.begin(); it1 != listIncoming.end(); ++it1)
-      {
-	std::pair<OutPort *, InPort *> outin = std::pair<OutPort *, InPort *>((*it1).second, (*it1).first);
-	globalList.push_back(outin);
-      }
-      std::vector< std::pair<OutPort *, InPort *> >::iterator it2;
-      for (it2 = globalList.begin(); it2 != globalList.end(); ++it2)
-      {
-	if (GuiContext::getCurrent()->_mapOfSubjectLink.count(*it2))
-        {
-          SubjectLink* aLink = GuiContext::getCurrent()->_mapOfSubjectLink[*it2];
-	  if( aLink )
-	  {
-	    //printf( ">> link : %s\n", aLink->getName().c_str() );
-	    SubjectNode* aNode1 = aLink->getSubjectInNode();
-	    SubjectNode* aNode2 = aLink->getSubjectOutNode();
-	    //printf( ">> nodes : %s - %s\n", aNode1->getName().c_str(), aNode2->getName().c_str() );
-	    if( SubjectComposedNode* aLowestCommonAncestor =
-		SubjectComposedNode::getLowestCommonAncestor( aNode1, aNode2 ) )
-	    {
-	      //printf( ">> lowest common ancestor : %s\n", aLowestCommonAncestor->getName().c_str() );
-	      aLowestCommonAncestor->update( REMOVE, DATALINK, aLink );
-	    }
-	  }
-	}
-      }
-    }
-
     DEBTRACE(">> delete the son item");
-    aNodesL->takeItem(aNode);
+    //aNodesL->takeItem(aNode);
     delete aNode;
     aNode = 0;
   }
@@ -358,7 +253,7 @@ void YACSGui_ViewItem::removeLinkItem( YACS::HMI::Subject* theSLink )
 	  if ( aLink->getSLink() == aSLink )
 	  {
 	    DEBTRACE(">> the data link is found");
-	    aLinksL->takeItem(aChild);
+	    //aLinksL->takeItem(aChild);
 	    delete aChild;
 	    break;
 	  }
@@ -369,7 +264,7 @@ void YACSGui_ViewItem::removeLinkItem( YACS::HMI::Subject* theSLink )
 	  if ( aCLink->getSLink() == aSCLink )
 	  {
 	    DEBTRACE(">> the control link is found");
-	    aLinksL->takeItem(aChild);
+	    //aLinksL->takeItem(aChild);
 	    delete aChild;
 	    break;
 	  }
@@ -404,6 +299,11 @@ YACSGui_LabelViewItem::YACSGui_LabelViewItem( QListViewItem* theParent,
   setPixmap( 0, icon() );
 }
  
+YACSGui_LabelViewItem::~YACSGui_LabelViewItem()
+{
+  DEBTRACE("YACSGui_LabelViewItem::~YACSGui_LabelViewItem");
+}
+
 QString YACSGui_LabelViewItem::name() const
 {
   return myName;
@@ -458,19 +358,17 @@ YACSGui_ReferenceViewItem::YACSGui_ReferenceViewItem( QListViewItem* theParent,
 
 YACSGui_ReferenceViewItem::~YACSGui_ReferenceViewItem()
 {
-  if ( mySReference ) mySReference->detach(this);
+  DEBTRACE("YACSGui_ReferenceViewItem::~YACSGui_ReferenceViewItem");
 }
 
 void YACSGui_ReferenceViewItem::select(bool isSelected)
 {
-  //printf(">> YACSGui_ReferenceViewItem::select( %d ) does nothing\n", isSelected);
   DEBTRACE(">> YACSGui_ReferenceViewItem::select( " << isSelected << " ) does nothing");
 }
 
 void YACSGui_ReferenceViewItem::update(YACS::HMI::GuiEvent event, int type, YACS::HMI::Subject* son)
 {
-  //printf(">> YACSGui_ReferenceViewItem::update\n");
-  DEBTRACE(">> YACSGui_ReferenceViewItem::update");
+  DEBTRACE(">> YACSGui_ReferenceViewItem::update:"<<type<<" "<<son);
   switch (event)
   {
   case RENAME:
@@ -586,7 +484,7 @@ YACSGui_PortViewItem::YACSGui_PortViewItem( QListViewItem* theParent,
 
 YACSGui_PortViewItem::~YACSGui_PortViewItem()
 {
-  if ( mySPort ) mySPort->detach(this);
+  DEBTRACE("YACSGui_PortViewItem::~YACSGui_PortViewItem");
 }
 
 QString YACSGui_PortViewItem::name() const
@@ -670,6 +568,7 @@ YACSGui_DataTypeItem::YACSGui_DataTypeItem( QListViewItem* theParent,
 */
 YACSGui_DataTypeItem::~YACSGui_DataTypeItem()
 {
+  DEBTRACE("YACSGui_DataTypeItem::~YACSGui_DataTypeItem");
 }
   
 /*!
@@ -679,7 +578,6 @@ void YACSGui_DataTypeItem::update( YACS::HMI::GuiEvent event,
                                    int type, 
                                    YACS::HMI::Subject* son )
 {
-  //printf(">> YACSGui_DataTypeItem::update\n");
   DEBTRACE(">> YACSGui_DataTypeItem::update");
   switch ( event )
   {
@@ -743,6 +641,7 @@ YACSGui_NodeViewItem::YACSGui_NodeViewItem( QListViewItem* theParent,
   YACSGui_ViewItem( theParent, theAfter ),
   mySNode( theSNode )
 {
+  DEBTRACE("YACSGui_NodeViewItem::YACSGui_NodeViewItem");
   if ( mySNode ) mySNode->attach(this);
 
   QString aName = name();
@@ -753,18 +652,24 @@ YACSGui_NodeViewItem::YACSGui_NodeViewItem( QListViewItem* theParent,
 
 YACSGui_NodeViewItem::~YACSGui_NodeViewItem()
 {
-  if ( mySNode ) mySNode->detach(this);
+  DEBTRACE("YACSGui_NodeViewItem::~YACSGui_NodeViewItem");
 }
 
 void YACSGui_NodeViewItem::update(YACS::HMI::GuiEvent event, int type, YACS::HMI::Subject* son)
 {
-  DEBTRACE(">> YACSGui_NodeViewItem::update");
+  DEBTRACE(">> YACSGui_NodeViewItem::update " << event << " " << type<<" "<<son);
   switch (event)
   {
+  case UPDATE:
+    DEBTRACE("NodeViewItem:  UPDATE");
+    update(true);
+    break;
   case RENAME:
+    DEBTRACE("NodeViewItem:  RENAME");
     update();
     break;
   case EDIT:
+    DEBTRACE("NodeViewItem:  EDIT");
     switch (type)
     {
     case INPUTPORT:
@@ -773,7 +678,7 @@ void YACSGui_NodeViewItem::update(YACS::HMI::GuiEvent event, int type, YACS::HMI
     case OUTPUTDATASTREAMPORT:
       {
 	// rename a port item (this = node item)
-	//printf("NodeViewItem:  EDIT port\n");
+	DEBTRACE("NodeViewItem:  EDIT port");
 	renamePortItem(son);
       }
       break;
@@ -788,7 +693,7 @@ void YACSGui_NodeViewItem::update(YACS::HMI::GuiEvent event, int type, YACS::HMI
   case ADDREF:
     {
       // add a reference item (this = node item)
-      //printf("NodeViewItem:  ADDREF\n");
+      DEBTRACE("NodeViewItem:  ADDREF");
       addReferenceItem(son);
     }
     break;
@@ -801,7 +706,7 @@ void YACSGui_NodeViewItem::update(YACS::HMI::GuiEvent event, int type, YACS::HMI
     case OUTPUTDATASTREAMPORT:
       {
 	// add a port item (this = node item)
-	//printf("NodeViewItem:  ADD port\n");
+	DEBTRACE("NodeViewItem:  ADD port");
 	addPortItem(son);
       }
       break;
@@ -823,7 +728,7 @@ void YACSGui_NodeViewItem::update(YACS::HMI::GuiEvent event, int type, YACS::HMI
     case STUDYOUTNODE:
     case XMLNODE:
       {
-	// remove a node inside a block (this = block item)
+	// add a node inside a block (this = block item)
 	DEBTRACE("NodeViewItem:  ADD");
 	addNodeItem(son);
       }
@@ -832,6 +737,68 @@ void YACSGui_NodeViewItem::update(YACS::HMI::GuiEvent event, int type, YACS::HMI
       break;
     }
     break;
+  case PASTE:
+    switch (type)
+    {
+    case BLOC:
+    case FOREACHLOOP:
+    case OPTIMIZERLOOP:
+    case FORLOOP:
+    case WHILELOOP:
+    case SWITCH:
+    case PYTHONNODE:
+    case PYFUNCNODE:
+    case CORBANODE:
+    case SALOMENODE:
+    case CPPNODE:
+    case SALOMEPYTHONNODE:
+    case PRESETNODE:
+    case OUTNODE:
+    case STUDYINNODE:
+    case STUDYOUTNODE:
+    case XMLNODE:
+      {
+	DEBTRACE("NodeViewItem:  PASTE");
+	//addNodeItem(son);
+        //Could be lighter
+        update(true);
+      }
+      break;
+    default:
+      break;
+    }
+    break;
+  case CUT:
+    switch (type)
+    {
+    case BLOC:
+    case FOREACHLOOP:
+    case OPTIMIZERLOOP:
+    case FORLOOP:
+    case WHILELOOP:
+    case SWITCH:
+    case PYTHONNODE:
+    case PYFUNCNODE:
+    case CORBANODE:
+    case SALOMENODE:
+    case CPPNODE:
+    case SALOMEPYTHONNODE:
+    case PRESETNODE:
+    case OUTNODE:
+    case STUDYINNODE:
+    case STUDYOUTNODE:
+    case XMLNODE:
+      {
+	// CUT a node inside a block (this = block item)
+	DEBTRACE("NodeViewItem:  CUT");
+	removeNodeItem(son);
+      }
+      break;
+    default:
+      break;
+    }
+    break;
+
   case REMOVE:
     switch (type)
     {
@@ -881,14 +848,14 @@ void YACSGui_NodeViewItem::update(YACS::HMI::GuiEvent event, int type, YACS::HMI
     case XMLNODE:
       {
 	// remove a node inside a block (this = block item)
-	//printf("NodeViewItem:  REMOVE\n");
+	DEBTRACE("NodeViewItem:  REMOVE");
 	removeNodeItem(son);
       }
       break;
     case REFERENCE:
       {
 	// remove a reference to a component (this = service node item)
-	//printf("NodeViewItem:  REMOVE reference\n");
+	DEBTRACE("NodeViewItem:  REMOVE reference");
 	removeReferenceItem(son);
       }
       break;
@@ -905,7 +872,7 @@ void YACSGui_NodeViewItem::update(YACS::HMI::GuiEvent event, int type, YACS::HMI
     case OUTPUTDATASTREAMPORT: 
       {
 	// move up a port item (this = node item)
-	//printf("NodeViewItem:  UP port\n");
+	DEBTRACE("NodeViewItem:  UP port\n");
 	moveUpPortItem(son);
       }
       break;
@@ -986,6 +953,7 @@ YACS::ENGINE::Node* YACSGui_NodeViewItem::getNode() const
 
 void YACSGui_NodeViewItem::update( const bool theIsRecursive )
 {
+  DEBTRACE("YACSGui_NodeViewItem::update " << theIsRecursive);
   if ( theIsRecursive ) // total update
   {
     ComposedNode* aComposedNode = dynamic_cast<ComposedNode*>( getNode() );
@@ -1008,7 +976,7 @@ void YACSGui_NodeViewItem::update( const bool theIsRecursive )
       
       // remove old child objects of this view item (this case is suitable for the elementary nodes,
       // where we delete and recreate its ports)
-      takeItem(aChild);
+      //takeItem(aChild);
       delete aChild;
       
       aChild = firstChild();
@@ -1016,41 +984,6 @@ void YACSGui_NodeViewItem::update( const bool theIsRecursive )
     
     if ( YACSGui_EditionTreeView* anETV = dynamic_cast<YACSGui_EditionTreeView*>(listView()) )
       anETV->displayChildren( this );
-
-    if ( aComposedNode )
-      if ( YACSGui_SchemaViewItem* aSchema = dynamic_cast<YACSGui_SchemaViewItem*>(listView()->firstChild()) )
-      {
-	//aSchema->update( true, 0, this );
-	
-	if ( !aChildrenToMove.empty() )
-	{ 
-	  // get the "Nodes" label view item, which is used as a parent for first level nodes
-	  YACSGui_LabelViewItem* aNodesL = 
-	    dynamic_cast<YACSGui_LabelViewItem*>(listView()->firstChild()->firstChild()->nextSibling());
-	  if ( !aNodesL || aNodesL->text(0).compare(QString("Nodes")) ) return;
-	
-	  // find the last view item under "Nodes" label
-	  YACSGui_NodeViewItem* aLast = 0;
-	  QListViewItem* aChildL = aNodesL->firstChild();
-	  while( aChildL )
-	  {
-	    if ( YACSGui_NodeViewItem* aChildLNodeItem = dynamic_cast<YACSGui_NodeViewItem*>(aChildL) )
-	      aLast = aChildLNodeItem;
-	    aChildL = aChildL->nextSibling();
-	  }
-	
-	  if ( YACSGui_EditionTreeView* anETV = dynamic_cast<YACSGui_EditionTreeView*>(listView()) )
-	  {
-	    std::list<SubjectNode*>::iterator anIt = aChildrenToMove.begin();
-	    for (; anIt != aChildrenToMove.end(); anIt++)
-	    {
-	      // create list view items after the last view item under "Nodes" label
-	      aLast = anETV->displayNodeWithPorts( aNodesL, aLast, *anIt );
-	    }
-	  }
-
-	}
-      }
   }
   
   setText( 0, name() ); // only rename
@@ -1067,7 +1000,7 @@ void YACSGui_NodeViewItem::renamePortItem( YACS::HMI::Subject* theSPort )
       if ( aPort = dynamic_cast<YACSGui_PortViewItem*>(aChild) )
 	if ( aPort->getPort() == aSPort->getPort() )
 	{
-	  //printf(">> the son is found\n");
+	  DEBTRACE(">> the son is found");
 	  break;
 	}
       
@@ -1076,7 +1009,7 @@ void YACSGui_NodeViewItem::renamePortItem( YACS::HMI::Subject* theSPort )
     
     if ( aPort )
     {
-      //printf(">> rename the son item\n");
+      DEBTRACE(">> rename the son item\n");
       aPort->setText( 0, aPort->name() );
     }
   }
@@ -1148,7 +1081,7 @@ void YACSGui_NodeViewItem::addPortItem( YACS::HMI::Subject* theSPort )
       if ( anAfterItem = dynamic_cast<YACSGui_PortViewItem*>(aChild) )
 	if ( anAfterItem->getPort() == anAfter )
 	{
-	  //printf(">> the son is found\n");
+	  DEBTRACE(">> the son is found");
 	  aPortItem->moveItem(anAfterItem);
 	  break;
 	}
@@ -1168,8 +1101,8 @@ void YACSGui_NodeViewItem::removePortItem( YACS::HMI::Subject* theSPort )
       if ( YACSGui_PortViewItem* aPort = dynamic_cast<YACSGui_PortViewItem*>(aChild) )
 	if ( aPort->getPort() == aSPort->getPort() )
 	{
-	  //printf(">> the son is found\n");
-	  takeItem(aChild);
+	  DEBTRACE(">> the son is found");
+	  //takeItem(aChild);
 	  delete aChild;
 	  break;
 	}
@@ -1181,6 +1114,7 @@ void YACSGui_NodeViewItem::removePortItem( YACS::HMI::Subject* theSPort )
 
 void YACSGui_NodeViewItem::addNodeItem( YACS::HMI::Subject* theSNode )
 {
+  DEBTRACE("YACSGui_NodeViewItem::addNodeItem:"<<theSNode);
   if ( SubjectNode* aSNode = dynamic_cast<SubjectNode*>(theSNode) )
   {
     YACSGui_NodeViewItem* aNodeItem = new YACSGui_NodeViewItem( this, 0, aSNode );
@@ -1230,7 +1164,7 @@ void YACSGui_NodeViewItem::moveDownPortItem( YACS::HMI::Subject* theSPort )
       if ( YACSGui_PortViewItem* aPort = dynamic_cast<YACSGui_PortViewItem*>(aChild) )
 	if ( aPort->getPort() == aSPort->getPort() )
 	{
-	  //printf(">> the son is found\n");
+	  DEBTRACE(">> the son is found");
 	  break;
 	}
       
@@ -1421,7 +1355,7 @@ void YACSGui_NodeViewItem::removeReferenceItem( YACS::HMI::Subject* theSRef )
 		  if ( YACSGui_ReferenceViewItem* aRefItem = dynamic_cast<YACSGui_ReferenceViewItem*>(aChild) )
 		    if ( aRefItem->getSReference() == aSRef )
 		    {
-		      aCompItem->takeItem(aChild);
+		      //aCompItem->takeItem(aChild);
 		      delete aChild;
 		      break;
 		    }
@@ -1458,7 +1392,7 @@ void YACSGui_NodeViewItem::removeReferenceItem( YACS::HMI::Subject* theSRef )
 	      if ( YACSGui_ReferenceViewItem* aRefItem = dynamic_cast<YACSGui_ReferenceViewItem*>(aChild) )
 		if ( aRefItem->getSReference() == aSRef )
 		{
-		  aCompItem->takeItem(aChild);
+		  //aCompItem->takeItem(aChild);
 		  delete aChild;
 		  break;
 		}
@@ -1544,7 +1478,7 @@ YACSGui_LinkViewItem::YACSGui_LinkViewItem( QListViewItem* theParent,
 
 YACSGui_LinkViewItem::~YACSGui_LinkViewItem()
 {
-  if ( mySLink ) mySLink->detach(this);
+  DEBTRACE("YACSGui_LinkViewItem::~YACSGui_LinkViewItem");
 }
 
 QString YACSGui_LinkViewItem::name() const
@@ -1679,7 +1613,7 @@ YACSGui_ControlLinkViewItem::YACSGui_ControlLinkViewItem( QListViewItem* thePare
   
 YACSGui_ControlLinkViewItem::~YACSGui_ControlLinkViewItem()
 {
-  if ( mySLink ) mySLink->detach(this);
+  DEBTRACE("YACSGui_ControlLinkViewItem::~YACSGui_ControlLinkViewItem");
 }
 
 QString YACSGui_ControlLinkViewItem::name() const
@@ -1788,7 +1722,7 @@ YACSGui_SchemaViewItem::YACSGui_SchemaViewItem( QListViewItem* theParent,
 
 YACSGui_SchemaViewItem::~YACSGui_SchemaViewItem()
 {
-  if ( mySProc ) mySProc->detach(this);
+  DEBTRACE("YACSGui_SchemaViewItem::~YACSGui_SchemaViewItem");
 }
 
 YACSGui_LabelViewItem* YACSGui_SchemaViewItem::buildDataTypesTree()
@@ -1848,13 +1782,76 @@ YACSGui_LabelViewItem* YACSGui_SchemaViewItem::buildDataTypesTree()
 
 void YACSGui_SchemaViewItem::update(YACS::HMI::GuiEvent event, int type, YACS::HMI::Subject* son)
 {
-  DEBTRACE(">> YACSGui_SchemaViewItem::update");
+  DEBTRACE(">> YACSGui_SchemaViewItem::update:"<<event<<" "<<type<<" "<<son);
   switch (event)
   {
   case RENAME:
+    DEBTRACE("SchemaViewItem:  RENAME");
     update();
+    break;
   case EDIT:
+    DEBTRACE("SchemaViewItem:  EDIT");
     update(true, son);
+    break;
+  case CUT:
+    switch (type)
+    {
+    case BLOC:
+    case FOREACHLOOP:
+    case OPTIMIZERLOOP:
+    case FORLOOP:
+    case WHILELOOP:
+    case SWITCH:
+    case PYTHONNODE:
+    case PYFUNCNODE:
+    case CORBANODE:
+    case SALOMENODE:
+    case CPPNODE:
+    case SALOMEPYTHONNODE:
+    case PRESETNODE:
+    case OUTNODE:
+    case STUDYINNODE:
+    case STUDYOUTNODE:
+    case XMLNODE:
+      {
+	// remove a node inside a block (this = block item)
+	DEBTRACE("NodeViewItem:  CUT");
+	removeNodeItem(son);
+      }
+      break;
+    default:
+      break;
+    }
+    break;
+  case PASTE:
+    switch (type)
+    {
+    case BLOC:
+    case FOREACHLOOP:
+    case OPTIMIZERLOOP:
+    case FORLOOP:
+    case WHILELOOP:
+    case SWITCH:
+    case PYTHONNODE:
+    case PYFUNCNODE:
+    case CORBANODE:
+    case SALOMENODE:
+    case CPPNODE:
+    case SALOMEPYTHONNODE:
+    case PRESETNODE:
+    case OUTNODE:
+    case STUDYINNODE:
+    case STUDYOUTNODE:
+    case XMLNODE:
+      {
+	// paste a node item (this = schema item)
+	DEBTRACE("SchemaViewItem:  PASTE node");
+	addNodeItem(son); //add only one node view
+        //Could be lighter
+        update(true,son);
+      }
+      break;
+    }
     break;
   case ADD:
     switch (type)
@@ -1952,6 +1949,7 @@ void YACSGui_SchemaViewItem::update(YACS::HMI::GuiEvent event, int type, YACS::H
 	DEBTRACE("SchemaViewItem:  REMOVE");
 	removeNodeItem(son);
       }
+      break;
     default:
       break;
     }
@@ -1989,6 +1987,7 @@ void YACSGui_SchemaViewItem::update( const bool theIsRecursive,
 				     YACS::HMI::Subject* theSon,
 				     YACSGui_NodeViewItem* theBlocItem )
 {
+  DEBTRACE("YACSGui_SchemaViewItem::update:"<<theIsRecursive<<" "<<theSon<<" "<<theBlocItem);
   if ( theIsRecursive ) // total update
   {
     if ( SubjectNode* aNodeSon = dynamic_cast<SubjectNode*>(theSon) ) // theSon is a node
@@ -2027,7 +2026,7 @@ void YACSGui_SchemaViewItem::update( const bool theIsRecursive,
 	  bool anIsOpen = anUpdated->isOpen();
 
 	  // remove list view item for theSon from the tree
-	  aNodesL->takeItem(anUpdated);
+	  //aNodesL->takeItem(anUpdated);
 	  delete anUpdated;
 	  
 	  // recreate list view item for theSon
@@ -2114,6 +2113,7 @@ void YACSGui_SchemaViewItem::addDataTypeItem( YACS::HMI::Subject* theSDataType )
 
 void YACSGui_SchemaViewItem::addNodeItem( YACS::HMI::Subject* theSNode )
 {
+  DEBTRACE("YACSGui_SchemaViewItem::addNodeItem:"<<theSNode);
   if ( SubjectNode* aSNode = dynamic_cast<SubjectNode*>(theSNode) )
   {
     // get the "Nodes" label view item, which is used as a parent for first level nodes
@@ -2171,7 +2171,7 @@ void YACSGui_SchemaViewItem::removeContainerItem( YACS::HMI::Subject* theSContai
       if ( YACSGui_ContainerViewItem* aCont = dynamic_cast<YACSGui_ContainerViewItem*>(aChild) )
 	if ( aCont->getSContainer() == aSContainer )
 	{
-	  aContainersL->takeItem(aChild);
+	  //aContainersL->takeItem(aChild);
 	  delete aChild;
 	  break;
 	}
@@ -2231,7 +2231,7 @@ void YACSGui_SchemaViewItem::removeDataTypeItem( YACS::HMI::Subject* theSDataTyp
 
   // remove item
   
-  aFatherItem->takeItem( toRemoveItem );
+  //aFatherItem->takeItem( toRemoveItem );
   delete toRemoveItem;
 }
 
@@ -2253,7 +2253,7 @@ void YACSGui_SchemaViewItem::removeComponentItem( YACS::HMI::Subject* theSCompon
       if ( YACSGui_ComponentViewItem* aCont = dynamic_cast<YACSGui_ComponentViewItem*>(aChild) )
 	if ( aCont->getSComponent() == aSComponent )
 	{
-	  aContainersL->takeItem(aChild);
+	  //aContainersL->takeItem(aChild);
 	  delete aChild;
 	  break;
 	}
@@ -2325,16 +2325,16 @@ YACSGui_ContainerViewItem::YACSGui_ContainerViewItem(  QListViewItem* theParent,
 
 YACSGui_ContainerViewItem::~YACSGui_ContainerViewItem()
 {
-  if ( mySContainer ) mySContainer->detach(this);
+  DEBTRACE("YACSGui_ContainerViewItem::~YACSGui_ContainerViewItem");
 }
 
 void YACSGui_ContainerViewItem::update(YACS::HMI::GuiEvent event, int type, YACS::HMI::Subject* son)
 {
-  //printf(">> YACSGui_ContainerViewItem::update\n");
-  DEBTRACE(">> YACSGui_ContainerViewItem::update");
+  DEBTRACE(">> YACSGui_ContainerViewItem::update:"<<type<<" "<<son);
   switch (event)
   {
   case RENAME:
+    DEBTRACE("ContainerViewItem:  RENAME");
     update();
     break;
   case ADD:
@@ -2343,7 +2343,7 @@ void YACSGui_ContainerViewItem::update(YACS::HMI::GuiEvent event, int type, YACS
     case COMPONENT:
       {
 	// add a component item (this = container item)
-	//printf("ContainerViewItem:  ADD component\n");
+	DEBTRACE("ContainerViewItem:  ADD component");
 	addComponentItem(son);
       }
       break;
@@ -2357,7 +2357,7 @@ void YACSGui_ContainerViewItem::update(YACS::HMI::GuiEvent event, int type, YACS
     case COMPONENT:
       {
 	// remove a component item (this = container item)
-	//printf("ContainerViewItem:  REMOVE component\n");
+	DEBTRACE("ContainerViewItem:  REMOVE component");
 	removeComponentItem(son);
       }
       break;
@@ -2392,6 +2392,7 @@ YACS::ENGINE::Container* YACSGui_ContainerViewItem::getContainer() const
 
 void YACSGui_ContainerViewItem::update( YACSGui_ComponentViewItem* theComponent )
 {
+  DEBTRACE("YACSGui_ContainerViewItem::update:"<<theComponent);
   if ( theComponent )
   {
     takeItem(theComponent);
@@ -2448,7 +2449,7 @@ void YACSGui_ContainerViewItem::removeComponentItem( YACS::HMI::Subject* theSCom
       if ( YACSGui_ComponentViewItem* aComp = dynamic_cast<YACSGui_ComponentViewItem*>(aChild) )
 	if ( aComp->getSComponent() == aSComponent )
 	{
-	  takeItem(aChild);
+	  //takeItem(aChild);
 	  delete aChild;
 	  break;
 	}
@@ -2496,13 +2497,12 @@ YACSGui_ComponentViewItem::YACSGui_ComponentViewItem( QListViewItem* theParent,
 
 YACSGui_ComponentViewItem::~YACSGui_ComponentViewItem()
 {
-  if ( mySComponent ) mySComponent->detach(this);
+  DEBTRACE("YACSGui_ComponentViewItem::~YACSGui_ComponentViewItem");
 }
 
 void YACSGui_ComponentViewItem::update(YACS::HMI::GuiEvent event, int type, YACS::HMI::Subject* son)
 {
-  //printf(">> YACSGui_ComponentViewItem::update\n");
-  DEBTRACE(">> YACSGui_ComponentViewItem::update\n");
+  DEBTRACE(">> YACSGui_ComponentViewItem::update:"<<type<<" "<<son);
   switch (event)
   {
   case RENAME:
@@ -2553,6 +2553,7 @@ YACS::ENGINE::ComponentInstance* YACSGui_ComponentViewItem::getComponent() const
 
 void YACSGui_ComponentViewItem::update( const bool theMove )
 {
+  DEBTRACE("YACSGui_ComponentViewItem::update:"<<theMove);
   if ( theMove )
   {
     // find the container view item under which this component is published now
@@ -2668,10 +2669,7 @@ YACSGui_ComposedNodeViewItem::YACSGui_ComposedNodeViewItem(QListViewItem *parent
 
 YACSGui_ComposedNodeViewItem::~YACSGui_ComposedNodeViewItem()
 {
-  // detach from HMI 
-  YACS::HMI::Subject* aSub = getSubject();
-  if ( aSub )
-    aSub->detach( this );
+  DEBTRACE("YACSGui_ComposedNodeViewItem::~YACSGui_ComposedNodeViewItem");
 }
 
 YACS::HMI::Subject* YACSGui_ComposedNodeViewItem::getSubject() const
@@ -2795,6 +2793,7 @@ QPixmap YACSGui_ComposedNodeViewItem::icon() const
 
 void YACSGui_ComposedNodeViewItem::update( const bool theIsRecursive )
 {
+  DEBTRACE("YACSGui_ComposedNodeViewItem::update:"<<theIsRecursive);
   if ( this == listView()->firstChild() )
   { // this is a root schema object
     if ( YACSGui_RunTreeView* aRTV = dynamic_cast<YACSGui_RunTreeView*>( listView() ) )
@@ -2879,10 +2878,7 @@ YACSGui_ElementaryNodeViewItem::YACSGui_ElementaryNodeViewItem(QListViewItem *pa
 
 YACSGui_ElementaryNodeViewItem::~YACSGui_ElementaryNodeViewItem()
 {
-  // detach from HMI 
-  YACS::HMI::Subject* aSub = getSubject();
-  if ( aSub )
-    aSub->detach( this );
+  DEBTRACE("YACSGui_ElementaryNodeViewItem::~YACSGui_ElementaryNodeViewItem");
 }
 
 YACS::HMI::Subject* YACSGui_ElementaryNodeViewItem::getSubject() const

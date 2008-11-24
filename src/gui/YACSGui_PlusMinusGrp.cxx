@@ -141,7 +141,6 @@ myAddBeforeRowNum( -1 )
   if ( myRemoveBtn )
     connect( myRemoveBtn, SIGNAL( clicked() ), SLOT( onRemove() ) );
 
-  connect( myTable, SIGNAL( selectionChanged() ), this, SLOT( onTableSelectionChanged() ) );
   connect( myTable, SIGNAL( currentChanged( int, int ) ), this, SLOT( onTableSelectionChanged() ) );
 }
 
@@ -294,12 +293,9 @@ void YACSGui_PlusMinusGrp::onRemove()
 void YACSGui_PlusMinusGrp::onTableSelectionChanged()
 {
   DEBTRACE("YACSGui_PlusMinusGrp::onTableSelectionChanged");
-  if ( YACSGui_Table* aTable = ( YACSGui_Table* )sender() )
-    if ( aTable == myTable && aTable->currentSelection() != -1 ) // the current selection is not empty
-    {
-      EnableBtn( AllBtn );
-      EnableBtn( SelectBtn, true );
-    }
+  EnableBtn( AllBtn );
+  if ( myTable->currentSelection() != -1 ) // the current selection is not empty
+    EnableBtn( SelectBtn, true );
 }
 
 //================================================================

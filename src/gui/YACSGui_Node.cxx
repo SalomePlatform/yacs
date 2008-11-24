@@ -143,6 +143,7 @@ void YACSGui_ServiceNode::update(YACS::ENGINE::Node* theEngine,
     {
       theItem = new YACSPrs_ServiceNode( resMgr(), graph()->getCanvas(), aSNode );
       graph()->registerStatusObserverWithNode(theEngine);
+      aSNode->attach( graph() );
     }
   }
   else
@@ -188,6 +189,7 @@ void YACSGui_InlineNode::update(YACS::ENGINE::Node* theEngine,
     if ( aINode )
     {
       theItem = new YACSPrs_InlineNode( resMgr(), graph()->getCanvas(), aINode );
+      aINode->attach( graph() );
       graph()->registerStatusObserverWithNode(theEngine);
     }
   }
@@ -234,6 +236,7 @@ void YACSGui_IfNode::update(YACS::ENGINE::Node* theEngine,
     if ( aCNode )
     {
       theItem = new YACSPrs_IfNode( resMgr(), graph()->getCanvas(), aCNode );
+      aCNode->attach( graph() );
       graph()->registerStatusObserverWithNode(theEngine);
       graph()->createChildNodesPresentations( aCNode );
     }

@@ -30,6 +30,7 @@
 
 #include <qlistview.h>
 
+class YACSGui_ViewItem;
 class YACSGui_NodeViewItem;
 class YACSGui_SchemaViewItem;
 class YACSGui_LabelViewItem;
@@ -45,7 +46,7 @@ class YACSGui_TreeView: public QListView
  public:
   YACSGui_TreeView( YACSGui_Module*, YACS::HMI::SubjectProc*, QWidget* = 0,
 		    const char* = 0, WFlags = 0 );
-  ~YACSGui_TreeView();
+  virtual ~YACSGui_TreeView();
 
   // get the list of selected objects
   std::list<QListViewItem*> getSelected();
@@ -58,6 +59,7 @@ class YACSGui_TreeView: public QListView
 
   virtual void syncPageTypeWithSelection() {}
   virtual void syncHMIWithSelection() {}
+  virtual void removeLastSelected(YACSGui_ViewItem* v);
   
  protected slots:
   virtual void onContextMenuRequested( QListViewItem*, const QPoint& ) {}
@@ -83,7 +85,7 @@ class YACSGui_EditionTreeView: public YACSGui_TreeView
  public:
   YACSGui_EditionTreeView( YACSGui_Module*, YACS::HMI::SubjectProc*, QWidget* = 0,
 			   const char* = 0, WFlags = 0 );
-  ~YACSGui_EditionTreeView();
+  virtual ~YACSGui_EditionTreeView();
 
   virtual void update( QListViewItem* theItem = 0, const bool theIsRecursive = false );
 
@@ -101,6 +103,7 @@ class YACSGui_EditionTreeView: public YACSGui_TreeView
   virtual YACS::HMI::Subject* getSubject( QListViewItem* theItem );
 
   virtual void syncHMIWithSelection();
+  virtual void removeLastSelected(YACSGui_ViewItem* v);
 
   void emitSelectionChanged();
   
@@ -150,6 +153,7 @@ private:
   Component2ServiceNodesMap myCorbaComponentData;
 
   QListViewItem* myPreviousSelected;
+  QListViewItem* itemToCheck;
   YACS::HMI::SubjectDataPort* mySelectedSubjectOutPort;
   bool control;
   YACS::HMI::SubjectNode* mySelectedSubjectOutNode;    
@@ -166,7 +170,7 @@ class YACSGui_RunTreeView: public YACSGui_TreeView
  public:
   YACSGui_RunTreeView( YACSGui_Module*, YACS::HMI::SubjectProc*, QWidget* = 0,
 		       const char* = 0, WFlags = 0 );
-  ~YACSGui_RunTreeView();
+  virtual ~YACSGui_RunTreeView();
 
   virtual void update( QListViewItem* theItem = 0, const bool theIsRecursive = false );
   virtual void update( QCheckListItem* theItem, const bool theIsRecursive = false );
@@ -175,6 +179,7 @@ class YACSGui_RunTreeView: public YACSGui_TreeView
 
   virtual void syncPageTypeWithSelection();
   virtual void syncHMIWithSelection();
+  virtual void removeLastSelected(YACSGui_ViewItem* v);
 
   virtual YACS::HMI::Subject* getSubject( QListViewItem* theItem );
     

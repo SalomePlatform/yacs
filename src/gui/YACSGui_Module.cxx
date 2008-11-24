@@ -261,22 +261,26 @@ void YACSGui_Module::createActions()
 		0, aDesktop, false, this, SLOT(onXMLNode()));
   action(NewXmlNodeId)->setEnabled(false);
 
-  aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_NEW_IN_DATANODE"));
+  aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_NEW_INLINE_SCRIPT_NODE"));
+  //aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_NEW_IN_DATANODE"));
   createAction( NewInDataNodeId, tr("TOP_NEW_IN_DATANODE"), QIconSet(aPixmap),
                 tr("MEN_NEW_IN_DATANODE"), tr("STB_NEW_IN_DATANODE"), 
 		0, aDesktop, false, this, SLOT(onInDataNode()));
 
-  aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_NEW_OUT_DATANODE"));
+  aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_NEW_INLINE_SCRIPT_NODE"));
+  //aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_NEW_OUT_DATANODE"));
   createAction( NewOutDataNodeId, tr("TOP_NEW_OUT_DATANODE"), QIconSet(aPixmap),
                 tr("MEN_NEW_OUT_DATANODE"), tr("STB_NEW_OUT_DATANODE"), 
 		0, aDesktop, false, this, SLOT(onOutDataNode()));
 
-  aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_NEW_IN_STUDYNODE"));
+  aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_NEW_INLINE_SCRIPT_NODE"));
+  //aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_NEW_IN_STUDYNODE"));
   createAction( NewInStudyNodeId, tr("TOP_NEW_IN_STUDYNODE"), QIconSet(aPixmap),
                 tr("MEN_NEW_IN_STUDYNODE"), tr("STB_NEW_IN_STUDYNODE"), 
 		0, aDesktop, false, this, SLOT(onInStudyNode()));
 
-  aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_NEW_OUT_STUDYNODE"));
+  aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_NEW_INLINE_SCRIPT_NODE"));
+  //aPixmap = aResourceMgr->loadPixmap("YACS", tr("ICON_NEW_OUT_STUDYNODE"));
   createAction( NewOutStudyNodeId, tr("TOP_NEW_OUT_STUDYNODE"), QIconSet(aPixmap),
                 tr("MEN_NEW_OUT_STUDYNODE"), tr("STB_NEW_OUT_STUDYNODE"), 
 		0, aDesktop, false, this, SLOT(onOutStudyNode()));
@@ -1300,7 +1304,16 @@ void YACSGui_Module::onExportSchema()
   //check if modifications are pending
   YACSGui_EditionTreeView* anETV = dynamic_cast<YACSGui_EditionTreeView*>( activeTreeView() );
   if(anETV)
-    anETV->warnAboutSelectionChanged();
+    {
+      try
+        {
+          anETV->warnAboutSelectionChanged();
+        }
+      catch(YACS::Exception&)
+        {
+          return;
+        }
+    }
 
   QString aFileName = SUIT_FileDlg::getFileName( application()->desktop(), aProc->getName(), "*.xml", tr("TLT_EXPORT_SCHEMA"), false );
   if (aFileName.isEmpty())
@@ -2574,7 +2587,16 @@ void YACSGui_Module::onCreateExecution()
         //check if modifications are pending
         YACSGui_EditionTreeView* anETV = dynamic_cast<YACSGui_EditionTreeView*>( activeTreeView() );
         if(anETV)
-          anETV->warnAboutSelectionChanged();
+          {
+            try
+              {
+                anETV->warnAboutSelectionChanged();
+              }
+            catch(YACS::Exception&)
+              {
+                return;
+              }
+          }
 
         // --- check the validity of the proc
         if(!aProc->isValid())
@@ -3709,20 +3731,21 @@ void YACSGui_Module::createNode( YACS::HMI::TypeOfElem theElemType, std::string 
 	string aType = getNodeType(theElemType);
 	aName << aType << GuiContext::getCurrent()->getNewId(theElemType);
 	
-	map<int, SubjectNode*> bodyMap = aSwitch->getBodyMap();
-	int aSwCase = 0;
-	if (bodyMap.empty())
-	{
-	  aSwCase = Switch::ID_FOR_DEFAULT_NODE;
-	}
-	else
-	{
-	  map<int, SubjectNode*>::reverse_iterator rit = bodyMap.rbegin();
-	  if ((*rit).first == Switch::ID_FOR_DEFAULT_NODE)
-	    aSwCase = 1;
-	  else
-	    aSwCase = (*rit).first + 1;
-	}
+        int aSwCase ;
+        map<int, SubjectNode*> bodyMap = aSwitch->getBodyMap();
+        if(bodyMap.find(Switch::ID_FOR_DEFAULT_NODE)==bodyMap.end())
+          aSwCase =Switch::ID_FOR_DEFAULT_NODE;
+        else
+          {
+            for(map<int, SubjectNode*>::const_iterator it=bodyMap.begin();it != bodyMap.end();it++)
+              {
+                aSwCase=(*it).first;
+                if(aSwCase>Switch::ID_FOR_DEFAULT_NODE)
+                  aSwCase=aSwCase+1;
+                else
+                  aSwCase=1;
+              }
+          }
 	aSwitch->addNode(aCatalog, "", aType, aName.str(), aSwCase);
 	temporaryExport();
       }
@@ -3830,14 +3853,6 @@ YACS::HMI::SubjectNode* YACSGui_Module::createBody( YACS::HMI::TypeOfElem theEle
 			       QString("Body node is already exist. Do you want to remove it?"),
 			       tr("BUT_YES"), tr("BUT_NO"), 0, 1, 1) == 1 )
       return aBodyNode;
-
-    aComposedNode->update( REMOVE,
-			   ProcInvoc::getTypeOfNode( aChildNode->getNode() ),
-			   aChildNode );
-    // clear the content of the property page of deleted node
-    aChildNode->update( REMOVE, 0, 0 );
-
-    aGraph->removeNode( aChildNode->getNode() );
 
     aComposedNode->destroy( aChildNode );
   }

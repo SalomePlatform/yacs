@@ -26,10 +26,14 @@
 
 #include "SUIT_ResourceMgr.h"
 
+#include <ElementaryNode.hxx>
+#include <ComposedNode.hxx>
+#include <Bloc.hxx>
 #include <commandsProc.hxx>
 #include <guiContext.hxx>
 
 #include <qpainter.h>
+#include <list>
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -130,9 +134,11 @@ YACSPrs_BlocNode::YACSPrs_BlocNode(SUIT_ResourceMgr* theMgr, QCanvas* theCanvas,
 
 YACSPrs_BlocNode::~YACSPrs_BlocNode() 
 {
+  DEBTRACE("YACSPrs_BlocNode::~YACSPrs_BlocNode " << this);
   for ( std::set<YACSPrs_ElementaryNode*>::iterator it = myChildren.begin(); it != myChildren.end(); it++ )
     delete (*it);
   myChildren.clear();
+  hide();
 }
 
 void YACSPrs_BlocNode::update( YACS::HMI::GuiEvent event, int type, YACS::HMI::Subject* son)
@@ -183,6 +189,7 @@ void YACSPrs_BlocNode::update( YACS::HMI::GuiEvent event, int type, YACS::HMI::S
     }
     break;
   case REMOVE:
+    DEBTRACE("BlocNode::update REMOVE");
     switch (type)
     {
     case CONTROLLINK:
@@ -198,8 +205,22 @@ void YACSPrs_BlocNode::update( YACS::HMI::GuiEvent event, int type, YACS::HMI::S
   }
 }
 
+void YACSPrs_BlocNode::decrementSubjects(Subject *subject)
+{
+  DEBTRACE("YACSPrs_BlocNode::decrementSubjects " << subject );
+  if(!myChildren.empty())
+    {
+      DEBTRACE("WARNING: a child of bloc has not been removed ");
+      myChildren.clear();
+    }
+  YACSPrs_ElementaryNode::decrementSubjects(subject);
+  return;
+}
+
 void YACSPrs_BlocNode::setChildren(std::set<YACSPrs_ElementaryNode*>& theChildren)
 { 
+  DEBTRACE("YACSPrs_BlocNode::setChildren ");
+
   if ( myDisplayMode == Expanded )
   { 
     std::set<YACSPrs_ElementaryNode*> aNodesToStayOnItsPlaces;
@@ -210,6 +231,9 @@ void YACSPrs_BlocNode::setChildren(std::set<YACSPrs_ElementaryNode*>& theChildre
     if ( !myChildren.empty() ) myChildren.clear();
     for ( std::set<YACSPrs_ElementaryNode*>::iterator it = theChildren.begin(); it != theChildren.end(); it++ )
       myChildren.insert(*it);
+
+    bool aDisp = isVisible();
+    if (aDisp) hide();
       
     // resize bounding rectangle if needed
     int aMaxWidth=0, aMaxHeight=0;
@@ -249,6 +273,7 @@ void YACSPrs_BlocNode::setChildren(std::set<YACSPrs_ElementaryNode*>& theChildre
 
     updateGates();
     DEBTRACE("Parent : " << getEngine()->getName() << ". Number of children : " << myChildren.size());
+    if (aDisp) show();
   } 
 }
 
@@ -355,6 +380,9 @@ void YACSPrs_BlocNode::beforeResizing(int theCursorType)
   
 void YACSPrs_BlocNode::resize(QPoint thePoint)
 {
+  DEBTRACE("YACSPrs_BlocNode::resize "<<thePoint.x()<<" "<<thePoint.y()<<" "<<myResizeDirection);
+  bool aDisp = isVisible();
+  if (aDisp) hide();
   if ( myDisplayMode == Expanded )
   {
     if ( !checkArea(0,0,thePoint) ) return;
@@ -440,20 +468,21 @@ void YACSPrs_BlocNode::resize(QPoint thePoint)
 
     updateGates();
 
-    if ( canvas() ) {
-      
-      QRect aChangedRect = getRect();
-      aChangedRect.setRect(aChangedRect.x()-2, aChangedRect.y()-2, 
-                           aChangedRect.width()*2/*+4*/, aChangedRect.height()*2/*+4*/);
-      canvas()->setChanged(aChangedRect);
-      canvas()->update();
-    }
-
     for ( std::set<YACSPrs_ElementaryNode*>::iterator it = myChildren.begin(); it != myChildren.end(); it++ )
       (*it)->setArea(getAreaRect());
 
     myContentMoving = true;
   }
+  if (aDisp) show();
+
+  if ( canvas() ) 
+    {
+      QRect aChangedRect = getRect();
+      aChangedRect.setRect(aChangedRect.x()-2, aChangedRect.y()-2, 
+                           aChangedRect.width()*2, aChangedRect.height()*2);
+      canvas()->setChanged(aChangedRect);
+      canvas()->update();
+    }
 }
 
 void YACSPrs_BlocNode::afterResizing()
@@ -697,9 +726,15 @@ int YACSPrs_BlocNode::height() const
 
 void YACSPrs_BlocNode::resize(int theWidth, int theHeight)
 {
+  DEBTRACE("YACSPrs_BlocNode::resize "<< theWidth<<" "<<theHeight);
+  bool aDisp = isVisible();
+  if (aDisp) hide();
   if ( myDisplayMode == Expanded )
   {
     myContentMoving = false;
+
+    if(theWidth<100)theWidth=100;
+    if(theHeight<100)theHeight=100;
 
     myWidth = theWidth;
     myHeight = theHeight;
@@ -709,20 +744,21 @@ void YACSPrs_BlocNode::resize(int theWidth, int theHeight)
 
     updateGates();
 
-    if ( canvas() ) {
-      
-      QRect aChangedRect = getRect();
-      aChangedRect.setRect(aChangedRect.x()-2, aChangedRect.y()-2, 
-                           aChangedRect.width()*2/*+4*/, aChangedRect.height()*2/*+4*/);
-      canvas()->setChanged(aChangedRect);
-      canvas()->update();
-    }
 
     for ( std::set<YACSPrs_ElementaryNode*>::iterator it = myChildren.begin(); it != myChildren.end(); it++ )
       (*it)->setArea(getAreaRect());
 
     myContentMoving = true;
   }
+  if (aDisp) show();
+  if ( canvas() ) 
+    {
+      QRect aChangedRect = getRect();
+      aChangedRect.setRect(aChangedRect.x()-2, aChangedRect.y()-2, 
+                           aChangedRect.width()*2/*+4*/, aChangedRect.height()*2/*+4*/);
+      canvas()->setChanged(aChangedRect);
+      canvas()->update();
+    }
 }
 
 void YACSPrs_BlocNode::updateHeight()
@@ -1050,3 +1086,14 @@ QString YACSPrs_BlocNode::getToolTipText(const QPoint& theMousePos, QRect& theRe
   theRect = theRect.unite(getAreaRect());
   return aText;
 }
+
+void YACSPrs_BlocNode::removeChildPrs(YACSPrs_ElementaryNode* prs)
+{
+  DEBTRACE("YACSPrs_BlocNode::removeChildPrs:"<<prs);
+  myChildren.erase(prs);
+}
+
+void YACSPrs_BlocNode::reorderPorts()
+{
+}
+

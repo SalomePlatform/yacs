@@ -232,9 +232,12 @@ void YACSGui_ForLoopNodePage::checkModifications()
   else if ( YACS::ENGINE::ForLoop* aForLoopNode = dynamic_cast<ForLoop*>( getNode() ) )
     if( YACS::ENGINE::InputPort* aPort = aForLoopNode->edGetNbOfTimesInputPort() )
     {
-      bool ok;
-      int aValue = getPortValue( aPort ).toInt( &ok );
-      if( ok && myNbTimesInputPortValue->value() != aValue ) isModified = true;
+      QString val=getPortValue( aPort );
+      if ( !val.compare(QString("< ? >")) )
+        {
+          if(myNbTimesInputPortValue->value() != myNbTimesInputPortValue->minValue()) isModified = true;
+        }
+      else if(myNbTimesInputPortValue->value() != val.toInt()) isModified = true;
     }
   
   //if ( !isModified )
@@ -248,13 +251,19 @@ void YACSGui_ForLoopNodePage::checkModifications()
 				tr("BUT_YES"), tr("BUT_NO"), 0, 1, 0) == 0 )
     {
       onApply();
-      if ( getInputPanel() ) getInputPanel()->emitApply(YACSGui_InputPanel::InlineNodeId);
+      if(onApplyStatus=="ERROR")
+        throw Exception("Error in checkModifications");
+      if ( getInputPanel() ) getInputPanel()->emitApply(YACSGui_InputPanel::ForLoopNodeId);
     }
+    else
+      updateState();
 }
 
 void YACSGui_ForLoopNodePage::onApply()
 {
   DEBTRACE("YACSGui_ForLoopNodePage::onApply");
+  onApplyStatus="OK";
+
   // Rename a node
   if ( myNodeName ) setNodeName( myNodeName->text() );
   
@@ -271,6 +280,8 @@ void YACSGui_ForLoopNodePage::onApply()
 
   // Reset the view mode
   // ...
+  if(onApplyStatus=="OK")
+    updateState();
 
   updateBlocSize();
 }

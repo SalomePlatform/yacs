@@ -116,14 +116,23 @@ using namespace std;
 YACSGui_NodePage::YACSGui_NodePage()
   : GuiObserver(),
     mySNode( 0 ),
+    myMode(YACSGui_InputPanel::RunMode),
     myType( Unknown ) //?
 {
+  _destructible=false;
   mySelectDataTypeFor.myRow = -1;
 }
 
 YACSGui_NodePage::~YACSGui_NodePage()
 {
-  if ( mySNode ) mySNode->detach(this);
+  DEBTRACE("YACSGui_NodePage::~YACSGui_NodePage");
+}
+
+void YACSGui_NodePage::decrementSubjects(YACS::HMI::Subject *subject)
+{
+  DEBTRACE("YACSGui_NodePage::decrementSubjects");
+  mySNode=0;
+  YACS::HMI::GuiObserver::decrementSubjects(subject);
 }
 
 void YACSGui_NodePage::select( bool isSelected )
@@ -150,11 +159,6 @@ void YACSGui_NodePage::update( YACS::HMI::GuiEvent event, int type, YACS::HMI::S
     break;
   case REMOVE:
     {
-      if ( !type && !son && mySNode )
-      {
-	mySNode->detach(this);
-	mySNode = 0;
-      }
     }
     break;
   case UPDATEPROGRESS:
@@ -337,8 +341,7 @@ void YACSGui_NodePage::setNodeName( const QString& theName )
                                 QObject::tr("ERROR"),
                                 ex.what(),
                                 QObject::tr("BUT_OK"));
-
-        std::cerr << ex.what() << std::endl;
+        onApplyStatus="ERROR";
         return;
       }
     mySNode->update( RENAME, 0, mySNode );
@@ -504,112 +507,15 @@ QString YACSGui_NodePage::getPortValue(YACS::ENGINE::Port* thePort) const
   DEBTRACE("YACSGui_NodePage::getPortValue" );
   QString aValue;
 
-  PortType aType = getDataPortType(thePort);
+  if(dynamic_cast<DataStreamPort*>(thePort))
+    return "data stream";
 
-  if( aType == Input )
-  {
-  }
-  else if( aType == SeqAnyInput )
-  {
-    SeqAnyInputPort* aSeqAnyP = dynamic_cast<SeqAnyInputPort*>(thePort);
-    Any* anAny = aSeqAnyP->getValue();
-    if ( !anAny ) aValue = QString("[ ? ]");
-    else toString(anAny, aValue);
-  }
-  else if( aType == AnyInput )
-  {
-    AnyInputPort* anAnyP = dynamic_cast<AnyInputPort*>(thePort);
-    toString(anAnyP->getValue(), aValue);
-  }
-  else if( aType == ConditionInput )
-  {
-    ConditionInputPort* aConditionP = dynamic_cast<ConditionInputPort*>(thePort);
-    aValue = QString( aConditionP->getValue() ? "True" : "False" );
-  }
-  else if( aType == InputCorba )
-  {
-    InputCorbaPort* aCorbaP = dynamic_cast<InputCorbaPort*>(thePort);
-    toString( aCorbaP->getAny(), aValue );
-  }
-  else if( aType == InputPy )
-  {
-    InputPyPort* aPyP = dynamic_cast<InputPyPort*>(thePort);
-    toString( aPyP->getPyObj(), aValue );
-  }
-  else if( aType == InputXml )
-  {
-    if(InputStudyPort* aPort=dynamic_cast<InputStudyPort*>(thePort))
-      {
-        DEBTRACE( aPort->getData());
-        aValue=aPort->getData();
-      }
-    else
-      {
-        InputXmlPort* aPort = dynamic_cast<InputXmlPort*>(thePort);
-        DEBTRACE( aPort->dump());
-        toString(aPort->dump(),aPort->edGetType(),aValue);
-      }
-  }
-  else if( aType == InputBasicStream )
-  {
-  }
-  else if( aType == InputCalStream )
-  {
-    aValue = QString("data stream");
-  }
-  else if( aType == InputPalmStream )
-  {
-  }
-  else if( aType == InputDataStream )
-  {
-    aValue = QString("data stream");
-  }
-  else if( aType == Output )
-  {
-  }
-  else if( aType == AnyOutput )
-  {
-    AnyOutputPort* anAnyP = dynamic_cast<AnyOutputPort*>(thePort);
-    toString(anAnyP->getValue(), aValue);
-  }
-  else if( aType == OutputCorba )
-  {
-    OutputCorbaPort* aCorbaP = dynamic_cast<OutputCorbaPort*>(thePort);
-    toString( aCorbaP->getAny(), aValue );
-  }
-  else if( aType == OutputPy )
-  {
-    OutputPyPort* aPyP = dynamic_cast<OutputPyPort*>(thePort);
-    toString( aPyP->get(), aValue );
-  }
-  else if( aType == OutputXml )
-  {
-    if(OutputStudyPort* aPort=dynamic_cast<OutputStudyPort*>(thePort))
-      {
-        DEBTRACE( aPort->getData());
-        aValue=aPort->getData();
-      }
-    else
-      {
-        OutputXmlPort* aPort = dynamic_cast<OutputXmlPort*>(thePort);
-        DEBTRACE(aPort->dump());
-        toString(aPort->dump(),aPort->edGetType(),aValue);
-      }
-  }
-  else if( aType == OutputBasicStream )
-  {
-  }
-  else if( aType == OutputCalStream )
-  {
-    aValue = QString("data stream");
-  }
-  else if( aType == OutputPalmStream )
-  {
-  }
-  else if( aType == OutputDataStream )
-  {
-    aValue = QString("data stream");
-  }
+  PortType aType = getDataPortType(thePort);
+  if(DataPort* aDataPort = dynamic_cast<DataPort*>(thePort))
+    {
+      aValue=aDataPort->getAsString();
+      if(aValue=="None") aValue="< ? >";
+    }
 
   return aValue;
 }

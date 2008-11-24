@@ -28,8 +28,14 @@
 #include <qpainter.h>
 
 #include <Switch.hxx>
+#include <commandsProc.hxx>
+#include <guiObservers.hxx>
+
+//#define _DEVDEBUG_
+#include "YacsTrace.hxx"
 
 using namespace YACS::ENGINE;
+using namespace YACS::HMI;
 
 /*!
   Constructor
@@ -54,6 +60,7 @@ YACSPrs_SwitchNode::YACSPrs_SwitchNode( SUIT_ResourceMgr* theMgr, QCanvas* theCa
 */
 YACSPrs_SwitchNode::~YACSPrs_SwitchNode()
 {
+  hide();
 }
 
 int YACSPrs_SwitchNode::rtti() const
@@ -175,7 +182,13 @@ void YACSPrs_SwitchNode::updatePorts(bool theForce)
 	  std::list<Node*>::iterator aNodesIter = aNodes.begin();
 	  
 	  // get default node
-	  Node* aDefaultNode = aSEngine->getChildByShortName(Switch::DEFAULT_NODE_NAME);
+	  Node* aDefaultNode = 0;
+
+          try
+            {
+	      aDefaultNode = aSEngine->getChildByShortName(Switch::DEFAULT_NODE_NAME);
+            }
+          catch(...){}
 	  
 	  int aMinCaseId, aMaxCaseId;
 	  aMinCaseId = aMaxCaseId = aSEngine->getRankOfNode(*aNodesIter);
@@ -372,4 +385,8 @@ void YACSPrs_SwitchNode::drawFrame(QPainter& thePainter)
 
   // draw bounding nodes' polygon if node is currently selected
   if ( isSelected() ) drawBoundary(thePainter,(isFullDMode() ? 3 : 2));
+}
+
+void YACSPrs_SwitchNode::reorderPorts()
+{
 }

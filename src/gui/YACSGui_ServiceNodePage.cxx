@@ -170,7 +170,8 @@ YACSGui_ServiceNodePage::YACSGui_ServiceNodePage( QWidget* theParent, const char
   
   myInputPortsGroupBox->HideBtn( YACSGui_PlusMinusGrp::PlusBtn | YACSGui_PlusMinusGrp::MinusBtn |
 				 YACSGui_PlusMinusGrp::InsertBtn | YACSGui_PlusMinusGrp::SelectBtn );
-  myInputPortsGroupBox->EnableBtn( YACSGui_PlusMinusGrp::UpBtn | YACSGui_PlusMinusGrp::DownBtn );
+  myInputPortsGroupBox->HideBtn( YACSGui_PlusMinusGrp::UpBtn | YACSGui_PlusMinusGrp::DownBtn );
+  //myInputPortsGroupBox->EnableBtn( YACSGui_PlusMinusGrp::UpBtn | YACSGui_PlusMinusGrp::DownBtn );
   myInputPortsGroupBox->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Expanding ) );
 
   // Output Ports table  
@@ -207,7 +208,7 @@ YACSGui_ServiceNodePage::YACSGui_ServiceNodePage( QWidget* theParent, const char
 
   myOutputPortsGroupBox->HideBtn( YACSGui_PlusMinusGrp::PlusBtn | YACSGui_PlusMinusGrp::MinusBtn |
 				  YACSGui_PlusMinusGrp::InsertBtn | YACSGui_PlusMinusGrp::SelectBtn );
-  myOutputPortsGroupBox->EnableBtn( YACSGui_PlusMinusGrp::UpBtn | YACSGui_PlusMinusGrp::DownBtn );
+  myOutputPortsGroupBox->HideBtn( YACSGui_PlusMinusGrp::UpBtn | YACSGui_PlusMinusGrp::DownBtn );
   myOutputPortsGroupBox->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Expanding ) );
 
   myProcName = "";
@@ -297,6 +298,7 @@ void YACSGui_ServiceNodePage::setMode( const YACSGui_InputPanel::PageMode theMod
     myNodeName->setText(aName.str());
     myNodeFullName->setText(aName.str());
     getInputPanel()->onApplyEnabled(false);
+    if ( mySNode ) mySNode->detach(this);
     mySNode = 0;
     updateState();
   }
@@ -320,9 +322,6 @@ void YACSGui_ServiceNodePage::setMode( const YACSGui_InputPanel::PageMode theMod
     DEBTRACE("edit mode");
     myNodeName->setReadOnly(false);
     ExecutionGroupBox->hide();
-
-    myInputPortsGroupBox->ShowBtn( YACSGui_PlusMinusGrp::UpBtn | YACSGui_PlusMinusGrp::DownBtn );
-    myOutputPortsGroupBox->ShowBtn( YACSGui_PlusMinusGrp::UpBtn | YACSGui_PlusMinusGrp::DownBtn );
   } 
   else if ( myMode == YACSGui_InputPanel::RunMode )
   {
@@ -484,6 +483,9 @@ void YACSGui_ServiceNodePage::checkModifications( bool& theWarnToShow, bool& the
 				  tr("BUT_YES"), tr("BUT_NO"), 0, 1, 0) == 0 )
       {
 	onApply();
+        if(onApplyStatus=="ERROR")
+          throw Exception("Error in checkModifications");
+
 	theToApply = true;
 	if ( getInputPanel() ) getInputPanel()->emitApply(YACSGui_InputPanel::ServiceNodeId);
       }
@@ -493,6 +495,9 @@ void YACSGui_ServiceNodePage::checkModifications( bool& theWarnToShow, bool& the
     else if ( theToApply )
     {
       onApply();
+        if(onApplyStatus=="ERROR")
+          throw Exception("Error in checkModifications");
+
       if ( getInputPanel() ) getInputPanel()->emitApply(YACSGui_InputPanel::ServiceNodeId);
     }
 }
@@ -578,6 +583,7 @@ void YACSGui_ServiceNodePage::onBrowse()
 void YACSGui_ServiceNodePage::onApply()
 {
   DEBTRACE("YACSGui_ServiceNodePage::onApply");
+  onApplyStatus="OK";
   if ( myMode == YACSGui_InputPanel::NewMode )
   {
     // --- NewMode: import a node or composed node of any type from catalog ---------
@@ -679,14 +685,17 @@ void YACSGui_ServiceNodePage::onApply()
       {
 	if ( SubjectSwitch* aSwitch = dynamic_cast<SubjectSwitch*>(mySCNode) )
 	{
+          int aSwCase =Switch::ID_FOR_DEFAULT_NODE;
 	  map<int, SubjectNode*> bodyMap = aSwitch->getBodyMap();
-	  int aSwCase = 0;
-	  if (bodyMap.empty()) aSwCase = 1;
-	  else
-	  {
-	    map<int, SubjectNode*>::reverse_iterator rit = bodyMap.rbegin();
-	    aSwCase = (*rit).first + 1;
-	  }
+          map<int, SubjectNode*>::const_iterator it=bodyMap.begin();
+          for(it=bodyMap.begin();it != bodyMap.end();it++)
+            {
+              aSwCase=(*it).first;
+              if(aSwCase>Switch::ID_FOR_DEFAULT_NODE)
+                aSwCase=aSwCase+1;
+              else
+                aSwCase=1;
+            }
 	  aCreatedSNode = aSwitch->addNode( aCatalog, compo, service, aName.str(), aSwCase);
 	}
 	else if ( SubjectForLoop* aForLoop = dynamic_cast<SubjectForLoop*>(mySCNode) )
@@ -875,6 +884,10 @@ void YACSGui_ServiceNodePage::onApply()
   if ( ServiceInlineNode* aSIN = dynamic_cast<ServiceInlineNode*>( getNode() ) ) aSIN->setScript( aScript );
   else if ( XmlNode* aXN = dynamic_cast<XmlNode*>( getNode() ) ) aXN->setScript( aScript );
 
+  if(onApplyStatus=="OK")
+    {
+      updateState();
+    }
   updateBlocSize();
 }
 
@@ -1008,11 +1021,11 @@ void YACSGui_ServiceNodePage::updateState()
     //DEBTRACE("myType == SALOMEService");
     myInputPortsGroupBox->HideBtn( YACSGui_PlusMinusGrp::PlusBtn | YACSGui_PlusMinusGrp::MinusBtn |
 				   YACSGui_PlusMinusGrp::InsertBtn | YACSGui_PlusMinusGrp::SelectBtn );
-    myInputPortsGroupBox->EnableBtn( YACSGui_PlusMinusGrp::UpBtn | YACSGui_PlusMinusGrp::DownBtn );
+    myInputPortsGroupBox->HideBtn( YACSGui_PlusMinusGrp::UpBtn | YACSGui_PlusMinusGrp::DownBtn );
 
     myOutputPortsGroupBox->HideBtn( YACSGui_PlusMinusGrp::PlusBtn | YACSGui_PlusMinusGrp::MinusBtn |
 				    YACSGui_PlusMinusGrp::InsertBtn | YACSGui_PlusMinusGrp::SelectBtn );
-    myOutputPortsGroupBox->EnableBtn( YACSGui_PlusMinusGrp::UpBtn | YACSGui_PlusMinusGrp::DownBtn );
+    myOutputPortsGroupBox->HideBtn( YACSGui_PlusMinusGrp::UpBtn | YACSGui_PlusMinusGrp::DownBtn );
   }
 
   if ( (myType == ServiceInline || myType == XMLNode) && InPythonEditorGroupBox )
@@ -1032,12 +1045,10 @@ void YACSGui_ServiceNodePage::updateState()
   if ( myInputPortsGroupBox )
   {
     myInputPortsGroupBox->Table()->setNumRows( 0 );
-    myInputPortsGroupBox->EnableBtn( YACSGui_PlusMinusGrp::UpBtn | YACSGui_PlusMinusGrp::DownBtn );
   }
   if ( myOutputPortsGroupBox )
   {
     myOutputPortsGroupBox->Table()->setNumRows( 0 );
-    myOutputPortsGroupBox->EnableBtn( YACSGui_PlusMinusGrp::UpBtn | YACSGui_PlusMinusGrp::DownBtn );
   }
   
   // Set node name
@@ -1305,10 +1316,6 @@ void YACSGui_ServiceNodePage::fillInputPortsTable( YACS::ENGINE::Node* theNode )
     aTable->setDefValue( i, 2, aValueTypes[i] );
     aTable->setReadOnly( i, 3, aReadOnlyFlags[ i ] );
   }
-  
-  if ( aPortNames.count() > 1 )
-    myInputPortsGroupBox->EnableBtn( YACSGui_PlusMinusGrp::UpBtn | YACSGui_PlusMinusGrp::DownBtn );
-
 }
 
 void YACSGui_ServiceNodePage::fillOutputPortsTable( YACS::ENGINE::Node* theNode )
@@ -1399,9 +1406,6 @@ void YACSGui_ServiceNodePage::fillOutputPortsTable( YACS::ENGINE::Node* theNode 
 
   for ( int i = 0, n = aTable->numRows(); i < n; i++ )
     aTable->setDefValue( i, 2, aValueTypes[i] );
-
-  if ( aPortNames.count() > 1 )
-    myOutputPortsGroupBox->EnableBtn( YACSGui_PlusMinusGrp::UpBtn | YACSGui_PlusMinusGrp::DownBtn );
 }
 
 QString YACSGui_ServiceNodePage::getPortType( YACS::ENGINE::Port* thePort ) const
@@ -1448,12 +1452,6 @@ void YACSGui_ServiceNodePage::setInputPorts()
     list<InPort*>::iterator anInPortsIter = anInPortsEngine.begin();
     for( ;anInPortsIter!=anInPortsEngine.end();anInPortsIter++)
     {
-      mySNode->update( REMOVE,
-		       ( dynamic_cast<InputPort*>(*anInPortsIter) ? INPUTPORT : INPUTDATASTREAMPORT ),
-		       GuiContext::getCurrent()->_mapOfSubjectDataPort[*anInPortsIter] );
-      
-      //aNode->edRemovePort(*anInPortsIter);
-      // remove port subject (and all subject links connected to this port)
       mySNode->destroy( GuiContext::getCurrent()->_mapOfSubjectDataPort[*anInPortsIter] );
     }
     
@@ -1520,12 +1518,12 @@ void YACSGui_ServiceNodePage::setInputPorts()
           std::cerr << "Qnull" << std::endl;
 #endif
 
-      if( aValues[aRowId] == "< ? >")
+      if(aValues[aRowId].isEmpty()||aValues[aRowId] == "< ? >")
         continue;
 
       // initialize new created input data port
       double d;
-      bool ok;
+      bool ok=false;
       switch ( aTC->kind() )
       {
       case Double:
@@ -1535,38 +1533,50 @@ void YACSGui_ServiceNodePage::setInputPorts()
 	break;
       case Int:
 	aIDP->edInit( aValues[aRowId].toInt() );
+        ok=true;
 	break;
       case String:
 	aIDP->edInit( aValues[aRowId].latin1() );
+        ok=true;
 	break;
       case Bool:
 	aIDP->edInit( aValues[aRowId].compare( aTable->Params(aRowId,3)[0] ) ? false : true );
-	break;
-      case Objref:
-	//aIDP->edInit( "" ); // TODO : create an Any* with corresponding type and initialize with it
-	break;
-      case Sequence:
-	//aIDP->edInit( "" ); // TODO : create an Any* (i.e. SequenceAny*) with corresponding type and initialize with it
-	break;
-      case Array:
-	//aIDP->edInit( "" ); // TODO : create an Any* (i.e. ArrayAny*) with corresponding type and initialize with it
-	break;
-      case Struct:
-	//aIDP->edInit( "" ); // TODO : create an Any* with corresponding type and initialize with it
+        ok=true;
 	break;
       default:
+          PyObject* ob;
+          try
+            {
+              ob=YACS::ENGINE::getSALOMERuntime()->convertStringToPyObject(aValues[aRowId]);
+            }
+          catch(Exception& ex)
+            {
+              SUIT_MessageBox::error1(getInputPanel()->getModule()->getApp()->desktop(),
+                                      tr("ERROR"),ex.what() , tr("BUT_OK"));
+              onApplyStatus="ERROR";
+              break;
+            }
+          PyGILState_STATE gstate = PyGILState_Ensure();
+          try
+            {
+              aIDP->edInit("Python",ob);
+              ok=true;
+            }
+          catch(Exception& ex)
+            {
+              SUIT_MessageBox::error1(getInputPanel()->getModule()->getApp()->desktop(),
+                                      tr("ERROR"),ex.what() , tr("BUT_OK"));
+              onApplyStatus="ERROR";
+            }
+          Py_DECREF(ob);
+          PyGILState_Release(gstate);
+
 	break;
       }
 
-      mySNode->update( EDIT, INPUTPORT, GuiContext::getCurrent()->_mapOfSubjectDataPort[aIDP]);
+      if(ok)
+        mySNode->update( EDIT, INPUTPORT, GuiContext::getCurrent()->_mapOfSubjectDataPort[aIDP]);
     }
-    //else if ( aTable->intValueCombo( 1, aRowId ) == 1 )    // Data Stream (BASIC) port
-    //  // TODO : set value for input data stream port
-    //else if ( aTable->intValueCombo( 1, aRowId ) == 2 )    // Data Stream (CALCIUM) port
-    //  // TODO : set value for input data stream port
-    //else if ( aTable->intValueCombo( 1, aRowId ) == 3 )    // Data Stream (PALM) port
-    //  // TODO : set value for input data stream port
-    
   }
 }
 
@@ -1587,12 +1597,6 @@ void YACSGui_ServiceNodePage::setOutputPorts()
     list<OutPort*>::iterator anOutPortsIter = anOutPortsEngine.begin();
     for( ;anOutPortsIter!=anOutPortsEngine.end();anOutPortsIter++)
     {
-      mySNode->update( REMOVE,
-		       ( dynamic_cast<OutputPort*>(*anOutPortsIter) ? OUTPUTPORT : OUTPUTDATASTREAMPORT ),
-		       GuiContext::getCurrent()->_mapOfSubjectDataPort[*anOutPortsIter] );
-      
-      //aNode->edRemovePort(*anOutPortsIter);
-      // remove port subject (and all subject links connected to this port)
       mySNode->destroy( GuiContext::getCurrent()->_mapOfSubjectDataPort[*anOutPortsIter] );
     }
     

@@ -27,6 +27,9 @@
 #include <ForLoop.hxx>
 #include <WhileLoop.hxx>
 
+//#define _DEVDEBUG_
+#include "YacsTrace.hxx"
+
 using namespace YACS::ENGINE;
 
 /*!
@@ -61,6 +64,7 @@ YACSPrs_LoopNode::YACSPrs_LoopNode( SUIT_ResourceMgr* theMgr, QCanvas* theCanvas
 */
 YACSPrs_LoopNode::~YACSPrs_LoopNode()
 {
+  hide();
 }
 
 void YACSPrs_LoopNode::select(const QPoint& theMousePos, const bool toSelect)
@@ -474,5 +478,9 @@ bool YACSPrs_LoopNode::checkArea(double dx, double dy)
 bool YACSPrs_LoopNode::synchronize( YACSPrs_Port* port, const bool toSelect )
 {
   return YACSPrs_InOutPort::synchronize( port, toSelect );
+}
+
+void YACSPrs_LoopNode::reorderPorts()
+{
 }
 

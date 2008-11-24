@@ -52,6 +52,7 @@ class YACSPrs_LoopNode : public YACSPrs_InlineNode {
   // <--
 
   bool synchronize( YACSPrs_Port* port, const bool toSelect );
+  virtual void reorderPorts();
 
  protected:
   virtual void drawPort(QPainter& thePainter);

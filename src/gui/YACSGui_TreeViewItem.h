@@ -46,6 +46,7 @@ public:
 		    QListViewItem* theAfter );
   YACSGui_ViewItem( QListViewItem* theParent, 
 		    QListViewItem* theAfter );
+  virtual ~YACSGui_ViewItem();
   
   virtual void select(bool isSelected);
   //virtual void update(YACS::HMI::GuiEvent event, int type, YACS::HMI::Subject* son);
@@ -76,6 +77,7 @@ public:
   YACSGui_LabelViewItem( QListViewItem* theParent, 
 			 QListViewItem* theAfter, 
 			 const QString theName );
+  virtual ~YACSGui_LabelViewItem();
 
   virtual void select( bool isSelected );
   

@@ -275,6 +275,7 @@ public:
   void                                setWorkingDir( const QString& );
 
   void                                checkModifications( bool& theWarnToShow, bool& theToApply );
+  std::string                         onApplyStatus;
   
 public slots:
   virtual void                        onApply();
@@ -325,6 +326,7 @@ public:
   void                                setContainer();
 
   void                                checkModifications( bool& theWarnToShow, bool& theToApply );
+  std::string                         onApplyStatus;
 
 public slots:
   virtual void                        onApply(); 
@@ -422,7 +424,7 @@ public:
 
 public:
                                       YACSGui_NodePage();
-				      ~YACSGui_NodePage();
+	virtual	                            ~YACSGui_NodePage();
 				      
   virtual void                        select( bool isSelected );
   virtual void                        update( YACS::HMI::GuiEvent event, int type, YACS::HMI::Subject* son);
@@ -439,7 +441,7 @@ public:
 
   virtual void                        setMode( const YACSGui_InputPanel::PageMode );
 
-  void                                setValueCellValidator( YACSGui_Table* theTable, int theRow );
+  virtual void                        setValueCellValidator( YACSGui_Table* theTable, int theRow );
 
   virtual void                        notifyNodeStatus( int theStatus ) {}
   virtual void                        notifyNodeProgress() {}
@@ -447,6 +449,8 @@ public:
   virtual void                        notifyOutPortValues( std::map<std::string,std::string> theOutPortName2Value ) {}
   virtual void                        notifyNodeCreateBody( YACS::HMI::Subject* theSubject ) {}
   virtual void                        notifyNodeCreateNode( YACS::HMI::Subject* theSubject ) {}
+  virtual void                        removePort(YACS::HMI::SubjectDataPort* thePort) {}
+  virtual void                        decrementSubjects(YACS::HMI::Subject *subject);
 
   bool                                isSelectDataType();
 
@@ -462,6 +466,7 @@ protected:
   YACSGui_InputPanel::PageMode        myMode;
 
   SelectDataTypeFor                   mySelectDataTypeFor;
+  std::string                         onApplyStatus;
 };
 
 //==================================================================================================
@@ -490,6 +495,8 @@ public:
   virtual void                        notifyOutPortValues( std::map<std::string,std::string> theOutPortName2Value );
   
   virtual void                        setDataType( YACS::ENGINE::TypeCode* theDataType );
+  virtual void                        setValueCellValidator( YACSGui_Table* theTable, int theRow );
+  virtual void                        removePort(YACS::HMI::SubjectDataPort* thePort);
 
   void                                checkModifications();
 
@@ -575,6 +582,7 @@ public:
   virtual void                        notifyOutPortValues( std::map<std::string,std::string> theOutPortName2Value );
   
   virtual void                        setDataType( YACS::ENGINE::TypeCode* theDataType );
+  virtual void                        setValueCellValidator( YACSGui_Table* theTable, int theRow );
 
   void                                checkModifications();
 

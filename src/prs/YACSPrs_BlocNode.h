@@ -70,6 +70,9 @@ class YACSPrs_BlocNode : public YACSPrs_ElementaryNode {
 
   virtual void update();
   virtual void updateGates();
+  virtual void reorderPorts();
+  virtual void decrementSubjects(YACS::HMI::Subject *subject);
+  virtual void removeChildPrs(YACSPrs_ElementaryNode* prs);
 
   virtual int width() const;
   virtual int height() const;

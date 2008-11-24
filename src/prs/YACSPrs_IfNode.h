@@ -34,6 +34,7 @@ class YACSPrs_IfNode : public YACSPrs_InlineNode {
   virtual QPointArray constructAreaPoints(int theW, int theH) const;
 
   virtual int getCorner() const { return 0; }
+  virtual void reorderPorts();
 
  protected:
   virtual void drawFrame(QPainter& thePainter);

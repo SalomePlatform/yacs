@@ -43,6 +43,7 @@ YACSPrs_ForEachLoopNode::YACSPrs_ForEachLoopNode( SUIT_ResourceMgr* theMgr, QCan
 */
 YACSPrs_ForEachLoopNode::~YACSPrs_ForEachLoopNode()
 {
+  hide();
 }
 
 int YACSPrs_ForEachLoopNode::rtti() const

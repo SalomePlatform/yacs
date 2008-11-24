@@ -117,6 +117,14 @@ void YACSGui_Executor::runDataflow(const bool isRemoteRun)
           aWriter.visitProc( _proc );
           aWriter.closeFileSchema();
           _procRef = _engineRef->LoadProc(aFileName.latin1());
+          if (CORBA::is_nil(_procRef))
+            {
+	      SUIT_MessageBox::error1(_guiMod->getApp()->desktop(), 
+				  tr("ERROR"), 
+				  tr("unable to create a proc : probably a loading error in YACSServer"), 
+				  tr("BUT_OK"));
+              return;
+            }
           registerStatusObservers();
           DEBTRACE("_procRef _init");
         }

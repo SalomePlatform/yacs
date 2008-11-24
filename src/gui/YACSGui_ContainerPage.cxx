@@ -123,8 +123,6 @@ YACSGui_ContainerPage::YACSGui_ContainerPage( QWidget* theParent, const char* th
 YACSGui_ContainerPage::~YACSGui_ContainerPage()
 {
   if (getInputPanel()) getInputPanel()->removePage(this);
-
-  if ( mySContainer ) mySContainer->detach(this);
 }
 
 void YACSGui_ContainerPage::select( bool isSelected )
@@ -440,17 +438,26 @@ void YACSGui_ContainerPage::checkModifications( bool& theWarnToShow, bool& theTo
 				  tr("BUT_YES"), tr("BUT_NO"), 0, 1, 0) == 0 )
       {
 	onApply();
+        if(onApplyStatus=="ERROR")
+          throw Exception("Error in checkModifications");
 	theToApply = true;
 	if ( getInputPanel() ) getInputPanel()->emitApply(YACSGui_InputPanel::ContainerId);
       }
       else
+      {
 	theToApply = false;
+        updateState();
+      }
     }
     else if ( theToApply )
     {
       onApply();
+      if(onApplyStatus=="ERROR")
+        throw Exception("Error in checkModifications");
       if ( getInputPanel() ) getInputPanel()->emitApply(YACSGui_InputPanel::ContainerId);
     }
+    else
+      updateState();
 }
 
 void YACSGui_ContainerPage::onShowAdvanced()
@@ -520,6 +527,7 @@ void YACSGui_ContainerPage::updateState()
 
 void YACSGui_ContainerPage::onApply()
 {
+  onApplyStatus=="OK";
   if ( myDefinitionName )
     if (! setDefinitionName(myDefinitionName->text().latin1()))
       if (getContainer()) myDefinitionName->setText(getContainer()->getName());
@@ -555,5 +563,7 @@ void YACSGui_ContainerPage::onApply()
     setWorkingDir(myWorkingDir->text().latin1());
 
   //mySContainer->update( EDIT, 0, mySContainer );
+  if(onApplyStatus=="OK")
+    updateState();
 }
 
