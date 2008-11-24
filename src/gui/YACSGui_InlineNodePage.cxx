@@ -33,6 +33,7 @@
 #include <YACSGui_TreeView.h>
 #include <YACSGui_TreeViewItem.h>
 #include <YACSGui_LogViewer.h>
+#include <YACSGui_QextScintilla.h>
 
 #include <YACSPrs_ElementaryNode.h>
 
@@ -123,7 +124,8 @@ YACSGui_InlineNodePage::YACSGui_InlineNodePage( QWidget* theParent, const char* 
 
   //#undef HAVE_QEXTSCINTILLA_H
 #ifdef HAVE_QEXTSCINTILLA_H
-  _myTextEdit = new QextScintilla( InPythonEditorGroupBox, "Python Editor" );
+  //  _myTextEdit = new QextScintilla( InPythonEditorGroupBox, "Python Editor" );
+  _myTextEdit = new YACSGui_QextScintilla( InPythonEditorGroupBox, "Python Editor" );
   _myTextEdit->setMinimumHeight(150);
   InPythonEditorGroupBoxLayout->insertWidget(InPythonEditorGroupBoxLayout->findWidget(myTextEdit),
                                              _myTextEdit );

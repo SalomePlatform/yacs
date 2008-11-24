@@ -37,8 +37,8 @@ LIBSOURCES = \
 	YACSGui_YACSORBContainerDialog.cxx \
 	YACSGui_Selection.cxx \
 	YACSGui_PlusMinusGrp.cxx \
-	YACSGui_Table.cxx
-
+	YACSGui_Table.cxx \
+	YACSGui_QextScintilla.cxx
 
 # Headers
 LIBHEADERS = \
@@ -79,7 +79,8 @@ MOCSOURCES = \
 	switchnodepage_moc.cxx \
 	blocknodepage_moc.cxx \
 	datatypepage_moc.cxx \
-        datanodepage_moc.cxx
+        datanodepage_moc.cxx \
+	YACSGui_QextScintilla_moc.cxx
 
 # UIC-generated files
 runmode.cxx : runmode.h
