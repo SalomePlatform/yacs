@@ -4,10 +4,11 @@
 #include "ItemMimeData.hxx"
 #include "QtGuiContext.hxx"
 #include "GuiExecutor.hxx"
+#include "Menus.hxx"
 
 //#include "commandsProc.hxx"
 #include "Node.hxx"
-#include "Menus.hxx"
+#include "Switch.hxx"
 
 #include <QIcon>
 
@@ -31,6 +32,20 @@ SchemaNodeItem::SchemaNodeItem(SchemaItem *parent, QString label, Subject* subje
       _itemCheckState.replace(YLabel, Qt::Unchecked);
       setExecState(YACS::UNDEFINED);
     }
+
+  Subject *sub = _parentItem->getSubject();
+  SubjectSwitch *sSwitch = dynamic_cast<SubjectSwitch*>(sub);
+  if (!sSwitch) return;
+
+  Switch *aSwitch = dynamic_cast<Switch*>(sSwitch->getNode());
+  assert(aSwitch);
+  SubjectNode *sNode = dynamic_cast<SubjectNode*>(_subject);
+  assert(sNode);
+  int rank = aSwitch->getRankOfNode(sNode->getNode());
+  if (rank == Switch::ID_FOR_DEFAULT_NODE)
+    _itemData.replace(YValue, "default");
+  else
+    _itemData.replace(YValue, rank);
 }
 
 SchemaNodeItem::~SchemaNodeItem()

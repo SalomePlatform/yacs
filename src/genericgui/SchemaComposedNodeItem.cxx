@@ -22,6 +22,8 @@
 #include "commandsProc.hxx"
 #include "ComposedNode.hxx"
 #include "guiObservers.hxx"
+#include "Node.hxx"
+#include "Switch.hxx"
 
 #include <QIcon>
 #include <QMimeData>
@@ -71,6 +73,20 @@ SchemaComposedNodeItem::SchemaComposedNodeItem(SchemaItem *parent, QString label
     {
       setExecState(YACS::UNDEFINED);
     }
+
+  Subject *sub = _parentItem->getSubject();
+  SubjectSwitch *sSwitch = dynamic_cast<SubjectSwitch*>(sub);
+  if (!sSwitch) return;
+
+  Switch *aSwitch = dynamic_cast<Switch*>(sSwitch->getNode());
+  assert(aSwitch);
+  SubjectNode *sNode = dynamic_cast<SubjectNode*>(_subject);
+  assert(sNode);
+  int rank = aSwitch->getRankOfNode(sNode->getNode());
+  if (rank == Switch::ID_FOR_DEFAULT_NODE)
+    _itemData.replace(YValue, "default");
+  else
+    _itemData.replace(YValue, rank);
 }
 
 SchemaComposedNodeItem::~SchemaComposedNodeItem()

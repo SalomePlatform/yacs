@@ -11,7 +11,8 @@ BUILT_SOURCES =       \
   ui_FormEditItem.h   \
   ui_FormSchemaView.h \
   ui_LogViewer.h      \
-  ui_TablePorts.h
+  ui_TablePorts.h     \
+  ui_TableSwitch.h
 
 libGenericGui_la_SOURCES =        \
   CatalogWidget.cxx               \
@@ -135,6 +136,8 @@ libGenericGui_la_SOURCES =        \
   SchemaReferenceItem_moc.cxx     \
   TablePortsEdition.cxx           \
   TablePortsEdition_moc.cxx       \
+  TableSwitch.cxx                 \
+  TableSwitch_moc.cxx             \
   TreeView.cxx                    \
   TreeView_moc.cxx                \
   ValueDelegate.cxx               \

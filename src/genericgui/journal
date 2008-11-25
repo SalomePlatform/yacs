@@ -30,6 +30,18 @@ x Model/view table (ports)
 x affichage etat en edition
 x dessins des liens de contrôle
 x gestion etude SALOME : object browser
+x design arbre (edition/execution)
+x contournement bug confirmOverwrite QFileDialog Qt 4.3.3 (corrige en 4.3.5)
+x selection lien dans canvas (shape du lien)
+x fleche sur lien
+
+- edition port presetNode (abort)
+- edition port outNode (xml)
+- edition ports studyInNode, studyOutNode (controle types possibles...)
+- edition nsteps dans forLoop
+- edition condition dans whileLoop
+- edition ForEachLoop: type, nbBranch
+- edition switch: valeurs des cas, edition select
 
 - touches raccourci actions importantes (save ou save as...)
 - <CTRL>+ et <CTRL>- pour zoom graphique
@@ -44,7 +56,7 @@ x gestion etude SALOME : object browser
 - affichage etat en execution (couleurs)
 - affichage etat schema modifie depuis derniere sauvegarde fichier
 - couleur differente des liens datastream, 
-  des liens de donnees simples (sans controle associo)
+  des liens de donnees simples (sans controle associe)
 
 - differents designs / canvas (interface generique)
 - vues differentes (expanded/collapsed, edition/execution)
@@ -53,7 +65,6 @@ x gestion etude SALOME : object browser
 - vues simplifiees d'un noeud
   (que les controles, tous les ports sans les noms, complete)
 
-- design arbre (edition/execution)
 - design panneaux (edition/execution)
 
 - drag & drop de ports pour l'ordre dans le tableau, dans la scene
@@ -66,13 +77,18 @@ x gestion etude SALOME : object browser
   la place, ou pousser le bloc ?
 - pousser les noeuds et les blocs vers le haut ou la gauche ?
 
+- clic arbre ou canvas: basculer sur l'onglet input panel
+- tentative mode execution: selectionner proc pour voir status.
+- proc menu edition: ajout action execution
+- nommer vues SALOME
+
 - creation de noeud : recadrage de la vue
 - selection : recadrage de la vue
 
 - gestion des conflits de types de meme nom et non isEquivalent,
-  maintenant: d??tect??s, marqu??s en bleu, et surcharge.
+  maintenant: detectes, marques en bleu, et surcharge.
   (alias dans typeCode pour un dump coherent)
-- commandes manquantes: renommage (cf. apr??s) set valeur port
+- commandes manquantes: renommage (cf. apres), set valeur port
 - les noeuds services peuvent recevoir des ports fichier (file) supplementaires
 
 - mode execution
@@ -90,9 +106,8 @@ x gestion etude SALOME : object browser
   (regle de correspondance de noms ? respect de l'ordre ?)
 - dessiner les liens avec des ponts quand des liens se croisent !
 - 2eme vue avec schema complet et cadre de la vue principale
-- panneau de préférences des couleurs
+- panneau de preferences des couleurs
 
-- contournement bug confirmOverwrite QFileDialog Qt 4.3.3 (corrige en 4.3.5)
 - ...
 
 PROBLEMES
@@ -112,11 +127,12 @@ x update panel node-container quand on change le container dans le panel node-co
 x update panel node-component quand on associe un composant a un nouveau container,
   avec plusieurs noeuds services associes au composant 
 x destruction proc = abort
+x etat items pas mis a jour au chargement d'un schema (noeuds invalides...)
 
-
-- menus contextuels : ports des noeuds service non destructibles
-- etat items pas mis à jour au chargement d'un schema (noeuds invalides...)
+- menu creation cpp node: supprimer
+- menus contextuels : ports des noeuds service non destructibles (arbre)
 - update etat des inputPort apres creation de lien dans tableau,  (linked, not initialized)
+
 - renommage d'un item autre que noeud non repercute:
   il manque des fonctions de renommage:
   - SubjectDataPort  --> commandRenameDataPort
@@ -133,7 +149,9 @@ x destruction proc = abort
 - renommage port
   - pas possible depuis la table des ports dans le panel node
   - interdire pour les ports de service node (desactiver dans table et port edition panel)
+
 - analyse performances vue 2D
+
 - control port : SceneItem separe mais subject = subject du node,
   selection clignote
 - couleur de selection du control port : incoherence de selection
@@ -147,6 +165,7 @@ x destruction proc = abort
 - destruction component instance : mal repercuté (arbres, map proc...)
 - caractères accentues dans script python d'un noeud python, fichier xml mal chargé
 
+- fermeture vue SALOME, object Browser pas mis a jour mais schema detruit...
 
 
 Boutons Souris et Controles

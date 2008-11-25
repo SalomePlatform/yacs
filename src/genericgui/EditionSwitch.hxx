@@ -8,6 +8,7 @@ namespace YACS
 {
   namespace HMI
   {
+    class TableSwitch;
 
     class EditionSwitch: public EditionBloc
     {
@@ -16,7 +17,10 @@ namespace YACS
                   QWidget* parent = 0,
                   const char* name = 0);
       virtual ~EditionSwitch();
-      // association case body
+      virtual void synchronize();
+      
+    protected:
+      TableSwitch *_tvSwitch;
     };
   }
 }
