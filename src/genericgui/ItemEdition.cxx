@@ -11,6 +11,7 @@
 #include "EditionForEachLoop.hxx"
 #include "EditionInputPort.hxx"
 #include "EditionLoop.hxx"
+#include "EditionWhile.hxx"
 #include "EditionOutNode.hxx"
 #include "EditionOutputPort.hxx"
 #include "EditionPresetNode.hxx"
@@ -276,80 +277,72 @@ void ItemEdition::update(GuiEvent event, int type, Subject* son)
                                          son->getName().c_str());
           break;
         case YACS::HMI::FORLOOP:
-        case YACS::HMI::WHILELOOP:
           item =  new EditionLoop(son,
                                   QtGuiContext::getQtCurrent()->getStackedWidget(),
                                   son->getName().c_str());
-
+          break;
+        case YACS::HMI::WHILELOOP:
+          item =  new EditionWhile(son,
+                                   QtGuiContext::getQtCurrent()->getStackedWidget(),
+                                   son->getName().c_str());
           break;
         case YACS::HMI::SWITCH:
           item =  new EditionSwitch(son,
                                     QtGuiContext::getQtCurrent()->getStackedWidget(),
                                     son->getName().c_str());
-
           break;
         case YACS::HMI::PYTHONNODE:
           item =  new EditionScript(son,
                                     QtGuiContext::getQtCurrent()->getStackedWidget(),
                                     son->getName().c_str());
-
           break;
         case YACS::HMI::PYFUNCNODE:
           item =  new EditionPyFunc(son,
                                     QtGuiContext::getQtCurrent()->getStackedWidget(),
                                     son->getName().c_str());
-
           break;
         case YACS::HMI::CORBANODE:
         case YACS::HMI::SALOMENODE:
           item =  new EditionSalomeNode(son,
                                         QtGuiContext::getQtCurrent()->getStackedWidget(),
                                         son->getName().c_str());
-
           break;
         case YACS::HMI::PRESETNODE:
           item =  new EditionPresetNode(son,
                                         QtGuiContext::getQtCurrent()->getStackedWidget(),
                                         son->getName().c_str());
-
           break;
         case YACS::HMI::OUTNODE:
           item =  new EditionOutNode(son,
                                      QtGuiContext::getQtCurrent()->getStackedWidget(),
                                      son->getName().c_str());
-
           break;
         case YACS::HMI::STUDYINNODE:
           item =  new EditionStudyInNode(son,
                                          QtGuiContext::getQtCurrent()->getStackedWidget(),
                                          son->getName().c_str());
-
           break;
         case YACS::HMI::STUDYOUTNODE:
           item =  new EditionStudyOutNode(son,
                                           QtGuiContext::getQtCurrent()->getStackedWidget(),
                                           son->getName().c_str());
-
           break;
         case YACS::HMI::INPUTPORT:
         case YACS::HMI::INPUTDATASTREAMPORT:
           item =  new EditionInputPort(son,
                                        QtGuiContext::getQtCurrent()->getStackedWidget(),
                                        son->getName().c_str());
-
           break;
         case YACS::HMI::OUTPUTPORT:
         case YACS::HMI::OUTPUTDATASTREAMPORT:
           item =  new EditionOutputPort(son,
                                         QtGuiContext::getQtCurrent()->getStackedWidget(),
                                         son->getName().c_str());
-
           break;
         case YACS::HMI::CONTAINER:
           item =  new EditionContainer(son,
                                        QtGuiContext::getQtCurrent()->getStackedWidget(),
                                        son->getName().c_str());
-
           break;
         case YACS::HMI::COMPONENT:
           item =  new EditionComponent(son,
@@ -361,7 +354,6 @@ void ItemEdition::update(GuiEvent event, int type, Subject* son)
           item =  new EditionDataType(son,
                                       QtGuiContext::getQtCurrent()->getStackedWidget(),
                                       son->getName().c_str());
-
           break;
         case YACS::HMI::REFERENCE:
         case YACS::HMI::CPPNODE:

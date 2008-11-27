@@ -999,6 +999,23 @@ SubjectComposedNode* SubjectComposedNode::getLowestCommonAncestor(SubjectNode* s
   return snode;
 }
 
+/*! used in derived classes using a counter, a selector, or a condition:
+ *  ForLoop, ForEachLoop, Switch, WhileLoop.
+ */
+bool SubjectComposedNode::hasValue()
+{
+  return false;
+}
+
+/*! used in derived classes using a counter, a selector, or a condition:
+ *  ForLoop, ForEachLoop, Switch, WhileLoop.
+ */
+std::string SubjectComposedNode::getValue()
+{
+  return "";
+}
+
+
 // ----------------------------------------------------------------------------
 
 SubjectBloc::SubjectBloc(YACS::ENGINE::Bloc *bloc, Subject *parent)
@@ -2005,6 +2022,31 @@ void SubjectForLoop::completeChildrenSubjectList(SubjectNode *son)
   _body = son;
 }
 
+bool SubjectForLoop::setNbSteps(std::string nbSteps)
+{
+  DEBTRACE("SubjectForLoop::setNbSteps " << nbSteps);
+  Proc *proc = GuiContext::getCurrent()->getProc();
+  CommandSetForLoopSteps *command =
+    new CommandSetForLoopSteps(proc->getChildName(getNode()), nbSteps);
+  if (command->execute())
+    {
+      GuiContext::getCurrent()->getInvoc()->add(command);
+      update(SETVALUE, 0, this);
+      return true;
+    }
+  else delete command;
+  return false;
+}
+bool SubjectForLoop::hasValue()
+{
+  return true;
+}
+
+std::string SubjectForLoop::getValue()
+{
+  return _forLoop->edGetNbOfTimesInputPort()->getAsString();
+}
+
 // ----------------------------------------------------------------------------
 
 SubjectWhileLoop::SubjectWhileLoop(YACS::ENGINE::WhileLoop *whileLoop, Subject *parent)
@@ -2046,6 +2088,32 @@ SubjectNode* SubjectWhileLoop::addNode(YACS::ENGINE::Catalog *catalog,
 void SubjectWhileLoop::completeChildrenSubjectList(SubjectNode *son)
 {
   _body = son;
+}
+
+bool SubjectWhileLoop::setCondition(std::string condition)
+{
+  DEBTRACE("SubjectWhileLoop::setCondition " << condition);
+  Proc *proc = GuiContext::getCurrent()->getProc();
+  CommandSetWhileCondition *command =
+    new CommandSetWhileCondition(proc->getChildName(getNode()), condition);
+  if (command->execute())
+    {
+      GuiContext::getCurrent()->getInvoc()->add(command);
+      update(SETVALUE, 0, this);
+      return true;
+    }
+  else delete command;
+  return false;
+}
+
+bool SubjectWhileLoop::hasValue()
+{
+  return true;
+}
+
+std::string SubjectWhileLoop::getValue()
+{
+  return _whileLoop->edGetConditionPort()->getAsString();
 }
 
 // ----------------------------------------------------------------------------
@@ -2142,6 +2210,50 @@ SubjectNode* SubjectSwitch::getChild(YACS::ENGINE::Node* node) const
   return aChild;
 }
 
+bool SubjectSwitch::setSelect(std::string select)
+{
+  DEBTRACE("SubjectSwitch::setSelect " << select);
+  Proc *proc = GuiContext::getCurrent()->getProc();
+  CommandSetSwitchSelect *command =
+    new CommandSetSwitchSelect(proc->getChildName(getNode()), select);
+  if (command->execute())
+    {
+      GuiContext::getCurrent()->getInvoc()->add(command);
+      update(SETVALUE, 0, this);
+      return true;
+    }
+  else delete command;
+  return false;
+}
+
+bool SubjectSwitch::setCase(std::string caseId, SubjectNode* snode)
+{
+  DEBTRACE("SubjectSwitch::setCase " << caseId);
+  Proc *proc = GuiContext::getCurrent()->getProc();
+  CommandSetSwitchCase *command =
+    new CommandSetSwitchCase(proc->getChildName(getNode()),
+                             proc->getChildName(snode->getNode()),
+                             caseId);
+  if (command->execute())
+    {
+      GuiContext::getCurrent()->getInvoc()->add(command);
+      update(SETCASE, 0, snode);
+      return true;
+    }
+  else delete command;
+  return false;
+}
+
+bool SubjectSwitch::hasValue()
+{
+  return true;
+}
+
+std::string SubjectSwitch::getValue()
+{
+  return _switch->edGetConditionPort()->getAsString();
+}
+
 // ----------------------------------------------------------------------------
 
 SubjectForEachLoop::SubjectForEachLoop(YACS::ENGINE::ForEachLoop *forEachLoop, Subject *parent)
@@ -2213,6 +2325,32 @@ void SubjectForEachLoop::completeChildrenSubjectList(SubjectNode *son)
     _splitter = son;
   else
     _body = son;
+}
+
+bool SubjectForEachLoop::setNbBranches(std::string nbBranches)
+{
+  DEBTRACE("SubjectForEachLoop::setNbBranches " << nbBranches);
+  Proc *proc = GuiContext::getCurrent()->getProc();
+  CommandSetForEachBranch *command =
+    new CommandSetForEachBranch(proc->getChildName(getNode()), nbBranches);
+  if (command->execute())
+    {
+      GuiContext::getCurrent()->getInvoc()->add(command);
+      update(SETVALUE, 0, this);
+      return true;
+    }
+  else delete command;
+  return false;
+}
+
+bool SubjectForEachLoop::hasValue()
+{
+  return true;
+}
+
+std::string SubjectForEachLoop::getValue()
+{
+  return _forEachLoop->getInputPort("nbBranches")->getAsString();
 }
 
 

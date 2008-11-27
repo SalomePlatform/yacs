@@ -85,6 +85,7 @@ namespace YACS
       Node *edSetDefaultNode(Node *DISOWNnode);
       Node *edReleaseDefaultNode() throw(Exception);
       Node *edReleaseCase(int caseId) throw(Exception);
+      Node *edGetNode(int caseId);
       Node *edSetNode(int caseId, Node *DISOWNnode) throw(Exception);
       void getReadyTasks(std::vector<Task *>& tasks);
       void selectRunnableTasks(std::vector<Task *>& tasks);

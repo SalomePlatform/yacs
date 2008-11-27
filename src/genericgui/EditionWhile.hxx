@@ -1,6 +1,6 @@
 
-#ifndef _EDITIONLOOP_HXX_
-#define _EDITIONLOOP_HXX_
+#ifndef _EDITIONWHILE_HXX_
+#define _EDITIONWHILE_HXX_
 
 #include "EditionNode.hxx"
 
@@ -10,23 +10,23 @@ namespace YACS
   {
     class FormLoop;
 
-    class EditionLoop: public EditionNode
+    class EditionWhile: public EditionNode
     {
       Q_OBJECT
 
     public slots:
-      virtual void onModifyNbSteps(const QString &text);
+      virtual void onModifyCondition(const QString &text);
 
     public:
-      EditionLoop(Subject* subject,
+      EditionWhile(Subject* subject,
                   QWidget* parent = 0,
                   const char* name = 0);
-      virtual ~EditionLoop();
+      virtual ~EditionWhile();
       virtual void synchronize();
       virtual void update(GuiEvent event, int type, Subject* son);
 
     protected:
-      FormLoop *_formLoop;
+      FormLoop *_formWhile;
     };
   }
 }

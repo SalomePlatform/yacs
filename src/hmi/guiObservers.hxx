@@ -74,6 +74,7 @@ namespace YACS
         REMOVECHILDREF,
         ASSOCIATE,
         SETVALUE,
+        SETCASE,
         GEOMETRY
       } GuiEvent;
     
@@ -279,6 +280,8 @@ namespace YACS
                                                 SubjectNode *sni);
       virtual void removeLink(SubjectLink* link);
       virtual void removeControlLink(SubjectControlLink* link);
+      virtual bool hasValue();
+      virtual std::string getValue();
       virtual void clean();
       void localClean();
       static SubjectComposedNode* getLowestCommonAncestor(SubjectNode* snode1, SubjectNode* snode2);
@@ -411,6 +414,9 @@ namespace YACS
 				   std::string name);
       virtual void completeChildrenSubjectList(SubjectNode *son);
       virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const { return _body; }
+      virtual bool setNbSteps(std::string nbSteps);
+      virtual bool hasValue();
+      virtual std::string getValue();
       virtual void clean();
       void localClean();
     protected:
@@ -429,6 +435,9 @@ namespace YACS
 				   std::string name);
       virtual void completeChildrenSubjectList(SubjectNode *son);
       virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const { return _body; }
+      virtual bool setCondition(std::string condition);
+      virtual bool hasValue();
+      virtual std::string getValue();
       virtual void clean();
       void localClean();
     protected:
@@ -451,6 +460,10 @@ namespace YACS
       std::map<int, SubjectNode*> getBodyMap();
       virtual void completeChildrenSubjectList(SubjectNode *son);
       virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const;
+      virtual bool setSelect(std::string select);
+      virtual bool setCase(std::string caseId, SubjectNode* snode);
+      virtual bool hasValue();
+      virtual std::string getValue();
       virtual void clean();
       void localClean();
     protected:
@@ -469,6 +482,9 @@ namespace YACS
 				   std::string name);
       virtual void completeChildrenSubjectList(SubjectNode *son);
       virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const { return _body; }
+      virtual bool setNbBranches(std::string nbBranches);
+      virtual bool hasValue();
+      virtual std::string getValue();
       virtual void clean();
       void localClean();
     protected:

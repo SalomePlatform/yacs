@@ -472,6 +472,13 @@ Node *Switch::edReleaseCase(int caseId) throw(Exception)
     }
 }
 
+Node *Switch::edGetNode(int caseId)
+{
+  if (!_mapOfNode.count(caseId)) return 0;
+  return _mapOfNode[caseId];
+}
+
+
 /*!
  * \param caseId : the case ID chosen to place 'node'
  * \param node   : the node for the specified 'caseId'

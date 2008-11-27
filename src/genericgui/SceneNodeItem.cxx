@@ -10,9 +10,12 @@
 #include "QtGuiContext.hxx"
 #include "Menus.hxx"
 
+#include "Switch.hxx"
+
 #include <QGraphicsSceneHoverEvent>
 #include <QPointF>
 
+#include <sstream>
 #include <cassert>
 
 //#define _DEVDEBUG_
@@ -47,12 +50,13 @@ SceneNodeItem::~SceneNodeItem()
 
 void SceneNodeItem::addHeader()
 {
+  DEBTRACE("SceneNodeItem::addHeader " << _label.toStdString());
   if (!_hasHeader)
     {
       _hasHeader = true;
       _header = new SceneHeaderNodeItem(_scene,
                                         this,
-                                        _label);
+                                        getHeaderLabel());
       updateState();
       QPointF topLeft(_margin + _nml, _margin + _nml);
       _header->setTopLeft(topLeft);
@@ -91,7 +95,7 @@ void SceneNodeItem::update(GuiEvent event, int type, Subject* son)
     {
     case YACS::HMI::RENAME:
       DEBTRACE("SceneNodeItem::update RENAME " << _subject->getName());
-      if (_header) _header->setText(_subject->getName().c_str());
+      if (_header) _header->setText(getHeaderLabel());
       break;
     case YACS::HMI::EDIT:
       if (_header) _header->setEdited(type);
@@ -266,4 +270,33 @@ void SceneNodeItem::setExecState(int execState)
   DEBTRACE("SceneNodeItem::setExecState " << execState);
   _execState = execState;
   if (_header) _header->setExecState(execState);
+}
+
+QString SceneNodeItem::getHeaderLabel()
+{
+  QString extLabel = _subject->getName().c_str();
+
+  SceneObserverItem *soi = 0;
+  SubjectSwitch* sswi = 0;
+
+  if ((_parent)
+      && (soi = dynamic_cast<SceneObserverItem*>(_parent))
+      && (sswi = dynamic_cast<SubjectSwitch*>(soi->getSubject())))
+    {
+      Switch *aswi = dynamic_cast<Switch*>(sswi->getNode());
+      SubjectNode *sno = dynamic_cast<SubjectNode*>(_subject);
+      int idcase = aswi->getRankOfNode(sno->getNode());
+      stringstream caseid;
+      if (idcase == Switch::ID_FOR_DEFAULT_NODE)
+        caseid << "default";
+      else
+        caseid << idcase;
+      extLabel += " (";
+      //extLabel += aswi->getCaseId(sno->getNode()).c_str();
+      extLabel += caseid.str().c_str();
+      extLabel += ")";
+      DEBTRACE(extLabel.toStdString());
+    }
+
+  return extLabel;
 }

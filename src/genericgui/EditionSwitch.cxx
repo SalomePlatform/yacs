@@ -5,8 +5,11 @@
 #include "QtGuiContext.hxx"
 #include "SchemaItem.hxx"
 
-#define _DEVDEBUG_
+//#define _DEVDEBUG_
 #include "YacsTrace.hxx"
+
+#include <cassert>
+#include <sstream>
 
 using namespace std;
 
@@ -22,6 +25,10 @@ EditionSwitch::EditionSwitch(Subject* subject,
   _wid->gridLayout1->addWidget(_tvSwitch);
   SchemaModel *model = QtGuiContext::getQtCurrent()->getSchemaModel();
   _tvSwitch->tv_nodes->setModel(model);
+  _tvSwitch->sb_select->setMinimum(INT_MIN);
+  _tvSwitch->sb_select->setMaximum(INT_MAX);
+  connect(_tvSwitch->sb_select, SIGNAL(valueChanged(const QString &)),
+          this, SLOT(onModifySelect(const QString &)));
 }
 
 EditionSwitch::~EditionSwitch()
@@ -48,5 +55,32 @@ void EditionSwitch::synchronize()
           _tvSwitch->tv_nodes->setRowHidden(row, hidden);
         }
     }
+  _subject->update(SETVALUE, 0, _subject);
 }
 
+void EditionSwitch::onModifySelect(const QString &text)
+{
+  DEBTRACE("EditionSwitch::onModifySelect " << text.toStdString());
+  SubjectSwitch *sswitch = dynamic_cast<SubjectSwitch*>(_subject);
+  assert(sswitch);
+  sswitch->setSelect(text.toStdString());
+}
+
+void EditionSwitch::update(GuiEvent event, int type, Subject* son)
+{
+  DEBTRACE("EditionSwitch::update " <<event << " " << type);
+  EditionBloc::update(event, type, son);
+  switch (event)
+    {
+    case SETVALUE:
+      SubjectComposedNode * scn = dynamic_cast<SubjectComposedNode*>(_subject);
+      string val = scn->getValue();
+      istringstream ss(val);
+      DEBTRACE(val);
+      int i = 0;
+      ss >> i;
+      DEBTRACE(i);
+      _tvSwitch->sb_select->setValue(i);
+      break;
+    }
+}

@@ -626,6 +626,7 @@ bool CommandDestroy::localReverse()
 }
  
 // ----------------------------------------------------------------------------
+
 CommandSetInPortValue::CommandSetInPortValue(std::string node,
                                              std::string port,
                                              std::string value)
@@ -680,6 +681,7 @@ bool CommandSetInPortValue::localReverse()
 }
 
 // ----------------------------------------------------------------------------
+
 CommandSetOutPortValue::CommandSetOutPortValue(std::string node,
                                                std::string port,
                                                std::string value)
@@ -727,6 +729,173 @@ bool CommandSetOutPortValue::localReverse()
 {
 }
  
+// ----------------------------------------------------------------------------
+
+CommandSetSwitchSelect::CommandSetSwitchSelect(std::string aSwitch,
+                                               std::string value)
+  : Command(), _switch(aSwitch), _value(value)
+{
+  DEBTRACE("CommandSetSwitchSelect::CommandSetSwitchSelect");
+}
+    
+bool CommandSetSwitchSelect::localExecute()
+{
+  try
+    {
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      Switch* aSwitch = dynamic_cast<Switch*>(proc->getChildByName(_switch));
+      InputPort *condPort = aSwitch->edGetConditionPort();
+      int val = atoi(_value.c_str());
+      condPort->edInit(val);
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandSetSwitchSelect::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      return false;
+    }
+}
+
+bool CommandSetSwitchSelect::localReverse()
+{
+}
+
+// ----------------------------------------------------------------------------
+
+CommandSetSwitchCase::CommandSetSwitchCase(std::string aSwitch,
+                                           std::string node,
+                                           std::string value)
+  : Command(), _switch(aSwitch), _node(node), _value(value)
+{
+  DEBTRACE("CommandSetSwitchCase::CommandSetSwitchCase");
+}
+
+bool CommandSetSwitchCase::localExecute()
+{
+  try
+    {
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      Switch* aSwitch = dynamic_cast<Switch*>(proc->getChildByName(_switch));
+      Node* node = proc->getChildByName(_node);
+      int val = atoi(_value.c_str());
+      if (aSwitch->edGetNode(val))
+        {
+          throw YACS::Exception("Set Switch Case impossible: value already used");
+        }
+      int oldVal = aSwitch->getRankOfNode(node);
+      Node *aNode = aSwitch->edReleaseCase(oldVal);
+      aNode = aSwitch->edSetNode(val, aNode);
+      return true;
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandSetSwitchCase::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      return false;
+    }
+}
+
+bool CommandSetSwitchCase::localReverse()
+{
+}
+
+// ----------------------------------------------------------------------------
+
+CommandSetForLoopSteps::CommandSetForLoopSteps(std::string forLoop,
+                                               std::string value)
+  : Command(), _forLoop(forLoop), _value(value)
+{
+  DEBTRACE("CommandSetForLoopSteps::CommandSetForLoopSteps");
+}
+
+    
+bool CommandSetForLoopSteps::localExecute()
+{
+  try
+    {
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      ForLoop* forLoop = dynamic_cast<ForLoop*>(proc->getChildByName(_forLoop));
+      InputPort *nbSteps = forLoop->edGetNbOfTimesInputPort();
+      int val = atoi(_value.c_str());
+      nbSteps->edInit(val);
+      return true;
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandSetSwitchSelect::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      return false;
+    }
+}
+
+bool CommandSetForLoopSteps::localReverse()
+{
+}
+
+// ----------------------------------------------------------------------------
+
+CommandSetWhileCondition::CommandSetWhileCondition(std::string whileLoop,
+                                                   std::string value)
+  : Command(), _whileLoop(whileLoop), _value(value)
+{
+  DEBTRACE("CommandSetWhileCondition::CommandSetWhileCondition");
+}
+
+bool CommandSetWhileCondition::localExecute()
+{
+  try
+    {
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      WhileLoop* whileLoop = dynamic_cast<WhileLoop*>(proc->getChildByName(_whileLoop));
+      InputPort *cond = whileLoop->edGetConditionPort();
+      bool val = atoi(_value.c_str());
+      cond->edInit(val);
+      return true;
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandSetSwitchSelect::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      return false;
+    }
+}
+
+bool CommandSetWhileCondition::localReverse()
+{
+}
+
+// ----------------------------------------------------------------------------
+
+CommandSetForEachBranch::CommandSetForEachBranch(std::string forEach,
+                                                 std::string value)
+  : Command(), _forEach(forEach), _value(value)
+{
+  DEBTRACE("CommandSetForEachBranch::CommandSetForEachBranch");
+}
+    
+bool CommandSetForEachBranch::localExecute()
+{
+  try
+    {
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      ForEachLoop* forEach = dynamic_cast<ForEachLoop*>(proc->getChildByName(_forEach));
+      InputPort *nbBranches = forEach->getInputPort("nbBranches");
+      int val = atoi(_value.c_str());
+      nbBranches->edInit(val);
+      return true;
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandSetSwitchSelect::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      return false;
+    }
+}
+
+bool CommandSetForEachBranch::localReverse()
+{
+}
+
 // ----------------------------------------------------------------------------
 
 CommandAddLink::CommandAddLink(std::string outNode, std::string outPort,

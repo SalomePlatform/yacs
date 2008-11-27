@@ -4,6 +4,8 @@
 
 #include "SceneObserverItem.hxx"
 
+#include <QString>
+
 namespace YACS
 {
   namespace HMI
@@ -45,6 +47,8 @@ namespace YACS
       virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
       virtual void updateState();
       virtual void setExecState(int execState);
+
+      QString getHeaderLabel();
 
       std::list<AbstractSceneItem*> _inPorts;
       std::list<AbstractSceneItem*> _outPorts;    

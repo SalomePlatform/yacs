@@ -74,6 +74,14 @@ SchemaComposedNodeItem::SchemaComposedNodeItem(SchemaItem *parent, QString label
       setExecState(YACS::UNDEFINED);
     }
 
+  SubjectComposedNode *scn = dynamic_cast<SubjectComposedNode*>(subject);
+  assert(scn);
+  if (scn->hasValue())
+    {
+      _itemData.replace(YValue, scn->getValue().c_str());
+      model->setData(modelIndex(YState), 0);
+    }
+ 
   Subject *sub = _parentItem->getSubject();
   SubjectSwitch *sSwitch = dynamic_cast<SubjectSwitch*>(sub);
   if (!sSwitch) return;
@@ -100,6 +108,7 @@ void SchemaComposedNodeItem::update(GuiEvent event, int type, Subject* son)
   SchemaModel *model = QtGuiContext::getQtCurrent()->getSchemaModel();
   SchemaItem *item = 0;
   SubjectNode *snode = 0;
+  SubjectComposedNode *scnode = 0;
   Node* node = 0;
   switch (event)
     {
@@ -215,6 +224,13 @@ void SchemaComposedNodeItem::update(GuiEvent event, int type, Subject* son)
       setExecState(type);
       model->setData(modelIndex(YState), 0);
       break;
+    case YACS::HMI::SETVALUE:
+      scnode = dynamic_cast<SubjectComposedNode*>(_subject);
+      if (scnode->hasValue())
+        {
+          _itemData.replace(YValue, scnode->getValue().c_str());
+          model->setData(modelIndex(YState), 0);
+        }
     default:
       DEBTRACE("SchemaComposedNodeItem::update(), event not handled: "<< event);
       SchemaItem::update(event, type, son);

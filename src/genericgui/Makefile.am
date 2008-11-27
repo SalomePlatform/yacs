@@ -7,8 +7,10 @@ lib_LTLIBRARIES = libGenericGui.la
 BUILT_SOURCES =       \
   ui_FormComponent.h  \
   ui_FormContainer.h  \
-  ui_FormEditTree.h   \
+  ui_FormEachLoop.h   \
   ui_FormEditItem.h   \
+  ui_FormEditTree.h   \
+  ui_FormLoop.h       \
   ui_FormSchemaView.h \
   ui_LogViewer.h      \
   ui_TablePorts.h     \
@@ -58,14 +60,20 @@ libGenericGui_la_SOURCES =        \
   EditionStudyOutNode_moc.cxx     \
   EditionSwitch.cxx               \
   EditionSwitch_moc.cxx           \
+  EditionWhile.cxx                \
+  EditionWhile_moc.cxx            \
   FormComponent.cxx               \
   FormComponent_moc.cxx           \
   FormContainer.cxx               \
   FormContainer_moc.cxx           \
+  FormEachLoop.cxx                \
+  FormEachLoop_moc.cxx            \
   FormEditItem.cxx                \
   FormEditItem_moc.cxx            \
   FormEditTree.cxx                \
   FormEditTree_moc.cxx            \
+  FormLoop.cxx                    \
+  FormLoop_moc.cxx                \
   FormSchemaView.cxx              \
   FormSchemaView_moc.cxx          \
   GenericGui.cxx                  \

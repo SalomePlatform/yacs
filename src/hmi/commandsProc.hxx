@@ -264,6 +264,68 @@ namespace YACS
       std::string _value;
     };
 
+    class CommandSetSwitchSelect: public Command
+    {
+    public:
+      CommandSetSwitchSelect(std::string aSwitch,
+                             std::string value);
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      std::string _switch;
+      std::string _value;
+    };
+
+    class CommandSetSwitchCase: public Command
+    {
+    public:
+      CommandSetSwitchCase(std::string aSwitch,
+                           std::string node,
+                           std::string value);
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      std::string _switch;
+      std::string _node;
+      std::string _value;
+    };
+
+    class CommandSetForLoopSteps: public Command
+    {
+    public:
+      CommandSetForLoopSteps(std::string forLoop,
+                             std::string value);
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      std::string _forLoop;
+      std::string _value;
+    };
+
+    class CommandSetWhileCondition: public Command
+    {
+    public:
+      CommandSetWhileCondition(std::string whileLoop,
+                               std::string value);
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      std::string _whileLoop;
+      std::string _value;
+    };
+
+    class CommandSetForEachBranch: public Command
+    {
+    public:
+      CommandSetForEachBranch(std::string forEach,
+                              std::string value);
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      std::string _forEach;
+      std::string _value;
+    };
+
     class CommandAddLink: public Command
     {
     public:
