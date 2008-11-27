@@ -781,16 +781,61 @@ ServiceNode* SalomeNode::createNode(const std::string& name)
 std::string SalomeNode::getContainerLog()
 {
   std::string msg="Component is not loaded";
-  CORBA::Object_var objComponent=((SalomeComponent*)_component)->getCompoPtr();
-  Engines::Component_var compo=Engines::Component::_narrow(objComponent);
-  if( !CORBA::is_nil(compo) )
+  try
     {
-      Engines::Container_var cont= compo->GetContainerRef();
-      CORBA::String_var logname = cont->logfilename();
-      DEBTRACE(logname);
-      msg=logname;
-      std::string::size_type pos = msg.find(":");
-      msg=msg.substr(pos+1);
+      CORBA::Object_var objComponent=((SalomeComponent*)_component)->getCompoPtr();
+      Engines::Component_var compo=Engines::Component::_narrow(objComponent);
+      if( !CORBA::is_nil(compo) )
+        {
+          Engines::Container_var cont= compo->GetContainerRef();
+          CORBA::String_var logname = cont->logfilename();
+          DEBTRACE(logname);
+          msg=logname;
+          std::string::size_type pos = msg.find(":");
+          msg=msg.substr(pos+1);
+        }
+    }
+  catch(CORBA::COMM_FAILURE& ex) 
+    {
+      msg = ":Component no longer reachable: Caught system exception COMM_FAILURE";
+      msg += " -- unable to contact the object.";
+    }
+  catch(CORBA::SystemException& ex) 
+    {
+      msg = ":Component no longer reachable: Caught a CORBA::SystemException.\n";
+      CORBA::Any tmp;
+      tmp <<= ex;
+      CORBA::TypeCode_var tc = tmp.type();
+      const char *p = tc->name();
+      if ( *p != '\0' ) 
+        msg += p;
+      else  
+        msg += tc->id();
+    }
+  catch(CORBA::Exception& ex) 
+    {
+      msg = ":Component no longer reachable: Caught CORBA::Exception.\n";
+      CORBA::Any tmp;
+      tmp <<= ex;
+      CORBA::TypeCode_var tc = tmp.type();
+      const char *p = tc->name();
+      if ( *p != '\0' ) 
+        msg += p;
+      else  
+        msg += tc->id();
+    }
+  catch(omniORB::fatalException& fe) 
+    {
+      msg = ":Component no longer reachable: Caught omniORB::fatalException.\n";
+      stringstream log;
+      log << "  file: " << fe.file() << endl;
+      log << "  line: " << fe.line() << endl;
+      log << "  mesg: " << fe.errmsg() << endl;
+      msg += log.str();
+    }
+  catch(...) 
+    {
+      msg = ":Component no longer reachable: Caught unknown exception.";
     }
   return msg;
 }
