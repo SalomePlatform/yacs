@@ -206,6 +206,7 @@ class YACS(YACS_ORB__POA.YACS_Gen,
             if not logger.isEmpty():
               print "The imported file has errors :"
               print logger.getStr()
+              sys.stdout.flush()
               return None
         except IOError, ex:
             print >> sys.stderr ,"IO Error: ", ex
