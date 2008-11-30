@@ -56,6 +56,8 @@ GenericGui::GenericGui(YACS::HMI::SuitWrapper* wrapper, QMainWindow *parent)
   _machineList.clear();
   _menuId = 190;
 
+  GuiObserver::setEventMap();
+
   string iconPath = getenv("YACS_ROOT_DIR");
   iconPath += "/share/salome/resources/yacs";
   DEBTRACE(iconPath);

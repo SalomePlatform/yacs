@@ -130,7 +130,7 @@ Subject* SchemaItem::getSubject()
 
 void SchemaItem::update(GuiEvent event, int type, Subject* son)
 {
-  //DEBTRACE("SchemaItem::update "<<event<<" "<<type<<" "<<son);
+  //DEBTRACE("SchemaItem::update "<< eventName(event) <<" "<<type<<" "<<son);
   QModelIndex index = QModelIndex();
   SchemaModel *model = QtGuiContext::getQtCurrent()->getSchemaModel();
   switch (event)
@@ -139,14 +139,14 @@ void SchemaItem::update(GuiEvent event, int type, Subject* son)
       DEBTRACE("SchemaItem::update RENAME " << _subject->getName());
       _label = _subject->getName().c_str();
       _itemData.replace(YLabel, _label);
-      model->setData(modelIndex(), 0);  // --- to emit dataChanged signal
+      model->setData(modelIndex(YLabel), 0);  // --- to emit dataChanged signal
       break;
     case EDIT:
       if (type)
         _itemBackground.replace(YLabel, model->editedBackBrush());
       else
         _itemBackground.replace(YLabel, model->stdBackBrush());
-      model->setData(modelIndex(), 0);  // --- to emit dataChanged signal
+      model->setData(modelIndex(YLabel), 0);  // --- to emit dataChanged signal
       break;
     default:
       break;
@@ -231,6 +231,11 @@ void SchemaItem::reparent(SchemaItem *parent)
   _parentItem = parent;
   if (_parentItem)
     _parentItem->appendChild(this);
+}
+
+//! used in node derived classes
+void SchemaItem::setCaseValue()
+{
 }
 
 QString SchemaItem::getMimeFormat()

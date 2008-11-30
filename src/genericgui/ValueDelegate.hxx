@@ -1,6 +1,7 @@
 #ifndef _VALUEDELEGATE_HXX
 #define _VALUEDELEGATE_HXX
 
+#include "CaseSwitch.hxx"
 
 #include <QItemDelegate>
 #include <QModelIndex>
@@ -65,7 +66,19 @@ namespace YACS
       virtual void setData(QVariant val);
     };
 
+    class CaseSwitchEditor: public CaseSwitch, public GenericEditor
+    {
+      Q_OBJECT
 
+    public:
+      CaseSwitchEditor(Subject* subject,
+                       const ValueDelegate* delegate,
+                       int column = 0,
+                       QWidget* parent = 0);
+      virtual ~CaseSwitchEditor();
+      virtual QString GetStrValue();
+      virtual void setData(QVariant val);
+    };
 
     class ValueDelegate : public QItemDelegate
     {

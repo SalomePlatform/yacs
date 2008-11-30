@@ -51,7 +51,7 @@ void SceneElementaryNodeItem::paint(QPainter *painter,
 
 void SceneElementaryNodeItem::update(GuiEvent event, int type, Subject* son)
 {
-  DEBTRACE("SceneElementaryNodeItem::update "<< event<<" "<<type<<" "<<son);
+  DEBTRACE("SceneElementaryNodeItem::update "<< eventName(event)<<" "<<type<<" "<<son);
   SceneNodeItem::update(event, type, son);
   SceneItem *item;
   switch (event)
@@ -77,16 +77,16 @@ void SceneElementaryNodeItem::update(GuiEvent event, int type, Subject* son)
           autoPosNewPort(item, _outPorts.size());
           _outPorts.push_back(item);
            break;
-        default:
-          DEBTRACE("SceneElementaryNodeItem::update() ADD, type not handled:" << type);
+//         default:
+//           DEBTRACE("SceneElementaryNodeItem::update() ADD, type not handled:" << type);
         }
       break;
     case YACS::HMI::REMOVE:
       //SceneObserverItem::update(event, type, son);
       reorganize();
       break;
-    default:
-      DEBTRACE("SceneElementaryNodeItem::update(), event not handled: << event");
+//     default:
+//       DEBTRACE("SceneElementaryNodeItem::update(), event not handled:" << eventName(event));
     }
 }
 

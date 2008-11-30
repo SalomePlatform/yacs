@@ -44,7 +44,7 @@ void EditionForEachLoop::synchronize()
 
 void EditionForEachLoop::update(GuiEvent event, int type, Subject* son)
 {
-  DEBTRACE("EditionForEachLoop::update " <<event << " " << type);
+  DEBTRACE("EditionForEachLoop::update " << eventName(event) << " " << type);
   EditionNode::update(event, type, son);
   switch (event)
     {

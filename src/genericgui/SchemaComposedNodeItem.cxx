@@ -78,23 +78,11 @@ SchemaComposedNodeItem::SchemaComposedNodeItem(SchemaItem *parent, QString label
   assert(scn);
   if (scn->hasValue())
     {
-      _itemData.replace(YValue, scn->getValue().c_str());
-      model->setData(modelIndex(YState), 0);
+      _itemData.replace(YType, scn->getValue().c_str());
+      model->setData(modelIndex(YType), 0);
     }
  
-  Subject *sub = _parentItem->getSubject();
-  SubjectSwitch *sSwitch = dynamic_cast<SubjectSwitch*>(sub);
-  if (!sSwitch) return;
-
-  Switch *aSwitch = dynamic_cast<Switch*>(sSwitch->getNode());
-  assert(aSwitch);
-  SubjectNode *sNode = dynamic_cast<SubjectNode*>(_subject);
-  assert(sNode);
-  int rank = aSwitch->getRankOfNode(sNode->getNode());
-  if (rank == Switch::ID_FOR_DEFAULT_NODE)
-    _itemData.replace(YValue, "default");
-  else
-    _itemData.replace(YValue, rank);
+  setCaseValue();
 }
 
 SchemaComposedNodeItem::~SchemaComposedNodeItem()
@@ -104,7 +92,7 @@ SchemaComposedNodeItem::~SchemaComposedNodeItem()
 
 void SchemaComposedNodeItem::update(GuiEvent event, int type, Subject* son)
 {
-  DEBTRACE("SchemaComposedNodeItem::update "<<event<<" "<<type<<" "<<son);
+  DEBTRACE("SchemaComposedNodeItem::update "<<eventName(event)<<" "<<type<<" "<<son);
   SchemaModel *model = QtGuiContext::getQtCurrent()->getSchemaModel();
   SchemaItem *item = 0;
   SubjectNode *snode = 0;
@@ -190,8 +178,8 @@ void SchemaComposedNodeItem::update(GuiEvent event, int type, Subject* son)
             _dirTypesItem->addTypeItem(son);
           }
           break;
-        default:
-          DEBTRACE("SchemaComposedNodeItem::update() ADD, type not handled:" << type);
+//         default:
+//           DEBTRACE("SchemaComposedNodeItem::update() ADD, type not handled:" << type);
         }
       break;
     case YACS::HMI::UPDATE:
@@ -203,11 +191,11 @@ void SchemaComposedNodeItem::update(GuiEvent event, int type, Subject* son)
         {
         case YACS::INVALID:
           _itemForeground.replace(YLabel, QColor("red"));
-          model->setData(modelIndex(), 0);
+          model->setData(modelIndex(YLabel), 0);
           break;
         case YACS::READY:
           _itemForeground.replace(YLabel, QColor("blue"));
-          model->setData(modelIndex(), 0);
+          model->setData(modelIndex(YLabel), 0);
               break;
         default:
           break;
@@ -228,11 +216,43 @@ void SchemaComposedNodeItem::update(GuiEvent event, int type, Subject* son)
       scnode = dynamic_cast<SubjectComposedNode*>(_subject);
       if (scnode->hasValue())
         {
-          _itemData.replace(YValue, scnode->getValue().c_str());
-          model->setData(modelIndex(YState), 0);
+          _itemData.replace(YType, scnode->getValue().c_str());
+          model->setData(modelIndex(YType), 0);
         }
+    case YACS::HMI::SETCASE:
+      {
+        SubjectSwitch *sSwitch = dynamic_cast<SubjectSwitch*>(_subject);
+        if (sSwitch)
+          {
+            Switch *aSwitch = dynamic_cast<Switch*>(sSwitch->getNode());
+            Node *node = aSwitch->edGetNode(type);
+            if (node)
+              {
+                if (GuiContext::getCurrent()->_mapOfSubjectNode.count(node))
+                  {
+                    Subject* sub = GuiContext::getCurrent()->_mapOfSubjectNode[node];
+                    if (QtGuiContext::getQtCurrent()->_mapOfSchemaItem.count(sub))
+                      {
+                        SchemaItem* item = QtGuiContext::getQtCurrent()->_mapOfSchemaItem[sub];
+                        item->setCaseValue();
+                      }
+                  }
+              }
+          }
+      }
+      break;
+    case YACS::HMI::SETSELECT:
+      {
+        SubjectSwitch *sSwitch = dynamic_cast<SubjectSwitch*>(_subject);
+        if (sSwitch && sSwitch->hasValue())
+          {
+            _itemData.replace(YType, sSwitch->getValue().c_str());
+            model->setData(modelIndex(YType), 0);
+          }
+      }
+      break;
     default:
-      DEBTRACE("SchemaComposedNodeItem::update(), event not handled: "<< event);
+      //DEBTRACE("SchemaComposedNodeItem::update(), event not handled: "<< eventName(event));
       SchemaItem::update(event, type, son);
     }
 }
@@ -255,7 +275,18 @@ void SchemaComposedNodeItem::popupMenu(QWidget *caller, const QPoint &globalPos)
 Qt::ItemFlags SchemaComposedNodeItem::flags(const QModelIndex &index)
 {
   //DEBTRACE("SchemaComposedNodeItem::flags");
-  return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled;
+  Qt::ItemFlags pflag = Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled;
+  Qt::ItemFlags flagEdit = 0;
+  int column = index.column();
+  switch (column)
+    {
+    case YValue:
+      flagEdit = Qt::ItemIsEditable; // --- port value editable in model view
+      break;     
+    }
+
+  return pflag | flagEdit;
+
 }
 
 /*!
@@ -314,4 +345,23 @@ QString SchemaComposedNodeItem::getMimeFormat()
     return "yacs/subjectNode";
   else
     return "yacs/subjectOutGate";
+}
+
+void SchemaComposedNodeItem::setCaseValue()
+{
+  Subject *sub = _parentItem->getSubject();
+  SubjectSwitch *sSwitch = dynamic_cast<SubjectSwitch*>(sub);
+  if (!sSwitch) return;
+
+  SchemaModel *model = QtGuiContext::getQtCurrent()->getSchemaModel();
+  Switch *aSwitch = dynamic_cast<Switch*>(sSwitch->getNode());
+  assert(aSwitch);
+  SubjectNode *sNode = dynamic_cast<SubjectNode*>(_subject);
+  assert(sNode);
+  int rank = aSwitch->getRankOfNode(sNode->getNode());
+  if (rank == Switch::ID_FOR_DEFAULT_NODE)
+    _itemData.replace(YValue, "default");
+  else
+    _itemData.replace(YValue, rank);
+  model->setData(modelIndex(YValue), 0);
 }

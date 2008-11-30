@@ -24,7 +24,7 @@ SchemaContainerItem::SchemaContainerItem(SchemaItem *parent, QString label, Subj
 
 void SchemaContainerItem::update(GuiEvent event, int type, Subject* son)
 {
-  DEBTRACE("SchemaContainerItem::update " << event << " " << son->getName());
+  DEBTRACE("SchemaContainerItem::update " << eventName(event) << " " << son->getName());
   //SchemaItem::update(event, type, son);
   switch (event)
     {

@@ -182,7 +182,7 @@ void SceneLinkItem::paint(QPainter *painter,
 
 void SceneLinkItem::update(GuiEvent event, int type, Subject* son)
 {
-  DEBTRACE("SceneLinkItem::update "<< event<<" "<<type<<" "<<son);
+  DEBTRACE("SceneLinkItem::update "<< eventName(event)<<" "<<type<<" "<<son);
 }
 
 void SceneLinkItem::popupMenu(QWidget *caller, const QPoint &globalPos)

@@ -80,6 +80,8 @@ ProcInvoc::ProcInvoc()
   _typeNameMap[OUTPUTPORT]           = "OUTPUTPORT";
   _typeNameMap[INPUTDATASTREAMPORT]  = "INPUTDATASTREAMPORT";
   _typeNameMap[OUTPUTDATASTREAMPORT] = "OUTPUTDATASTREAMPORT";
+  _typeNameMap[DATALINK]             = "DATALINK";
+  _typeNameMap[CONTROLLINK]          = "CONTROLLINK";
   _typeNameMap[CONTAINER]            = "CONTAINER";
   _typeNameMap[COMPONENT]            = "COMPONENT";
   _typeNameMap[REFERENCE]            = "REFERENCE";
@@ -785,6 +787,7 @@ bool CommandSetSwitchCase::localExecute()
       int oldVal = aSwitch->getRankOfNode(node);
       Node *aNode = aSwitch->edReleaseCase(oldVal);
       aNode = aSwitch->edSetNode(val, aNode);
+      DEBTRACE("CommandSetSwitchCase::localExecute OK " << val);
       return true;
     }
   catch (Exception& ex)

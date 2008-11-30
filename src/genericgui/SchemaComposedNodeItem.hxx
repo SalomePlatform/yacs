@@ -21,6 +21,7 @@ namespace YACS
       virtual void popupMenu(QWidget *caller, const QPoint &globalPos);
       virtual Qt::ItemFlags flags(const QModelIndex &index);
       virtual bool dropMimeData(const QMimeData* data, Qt::DropAction action);
+      virtual void setCaseValue();
     protected:
       virtual QString getMimeFormat();
       SchemaDirTypesItem *_dirTypesItem;

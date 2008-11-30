@@ -75,6 +75,7 @@ namespace YACS
         ASSOCIATE,
         SETVALUE,
         SETCASE,
+        SETSELECT,
         GEOMETRY
       } GuiEvent;
     
@@ -119,9 +120,12 @@ namespace YACS
       virtual void decrementSubjects(Subject *subject);
       int getNbSubjects();
       bool isDestructible() { return _destructible; };
+      static std::string eventName(GuiEvent event);
+      static void setEventMap();
     protected:
       std::set<Subject*> _subjectSet;
       bool _destructible;
+      static std::map<int, std::string> _eventNameMap;
     };
     
     class SubjectReference: public Subject

@@ -88,14 +88,14 @@ void SceneNodeItem::paint(QPainter *painter,
 
 void SceneNodeItem::update(GuiEvent event, int type, Subject* son)
 {
-  DEBTRACE("SceneNodeItem::update "<< event<<" "<<type<<" "<<son);
+  DEBTRACE("SceneNodeItem::update "<< eventName(event)<<" "<<type<<" "<<son);
   SubjectNode *snode = 0;
   Node *node = 0;
   switch (event)
     {
     case YACS::HMI::RENAME:
       DEBTRACE("SceneNodeItem::update RENAME " << _subject->getName());
-      if (_header) _header->setText(getHeaderLabel());
+      updateName();
       break;
     case YACS::HMI::EDIT:
       if (_header) _header->setEdited(type);
@@ -179,6 +179,10 @@ ScenePortItem* SceneNodeItem::getCtrlOutPortItem()
   return _header->getCtrlOutPortItem();
 }
 
+void SceneNodeItem::updateName()
+{
+  if (_header) _header->setText(getHeaderLabel());
+}
 
 QString SceneNodeItem::getMimeFormat()
 {

@@ -252,7 +252,7 @@ void ItemEdition::setEdited(bool isEdited)
 
 void ItemEdition::update(GuiEvent event, int type, Subject* son)
 {
-  DEBTRACE("ItemEdition::update " <<event << " " << type);
+  DEBTRACE("ItemEdition::update " <<eventName(event) << " " << type);
   ItemEdition *item = 0;
   switch (event)
     {
@@ -398,8 +398,8 @@ void ItemEdition::update(GuiEvent event, int type, Subject* son)
       _name = _subject->getName();
       _wid->le_name->setText(_name.c_str());
       break;
-    default:
-      DEBTRACE("ItemEdition::update(), event not handled: " << event);
+//     default:
+//       DEBTRACE("ItemEdition::update(), event not handled: " << eventName(event));
     }
 }
 

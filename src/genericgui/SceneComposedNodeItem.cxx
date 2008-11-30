@@ -15,6 +15,7 @@
 #include "guiObservers.hxx"
 #include "GuiEditor.hxx"
 #include "Scene.hxx"
+#include "Switch.hxx"
 
 #include <QPointF>
 #include <QGraphicsSceneDragDropEvent>
@@ -72,7 +73,7 @@ void SceneComposedNodeItem::paint(QPainter *painter,
 
 void SceneComposedNodeItem::update(GuiEvent event, int type, Subject* son)
 {
-  DEBTRACE("SceneComposedNodeItem::update "<< event<<" "<<type<<" "<<son);
+  DEBTRACE("SceneComposedNodeItem::update "<< eventName(event)<<" "<<type<<" "<<son);
   SceneNodeItem::update(event, type, son);
   AbstractSceneItem *item;
   switch (event)
@@ -183,8 +184,31 @@ void SceneComposedNodeItem::update(GuiEvent event, int type, Subject* son)
       //SceneObserverItem::update(event, type, son);
       reorganize();
       break;
-    default:
-      DEBTRACE("SceneComposedNodeItem::update(), event not handled: << event");
+    case YACS::HMI::SETCASE:
+      {
+        SubjectSwitch *sSwitch = dynamic_cast<SubjectSwitch*>(_subject);
+        if (sSwitch)
+          {
+            Switch *aSwitch = dynamic_cast<Switch*>(sSwitch->getNode());
+            Node *node = aSwitch->edGetNode(type);
+            if (node)
+              {
+                if (GuiContext::getCurrent()->_mapOfSubjectNode.count(node))
+                  {
+                    Subject* sub = GuiContext::getCurrent()->_mapOfSubjectNode[node];
+                    if (QtGuiContext::getQtCurrent()->_mapOfSceneItem.count(sub))
+                      {
+                        SceneItem* item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[sub];
+                        SceneNodeItem *scnode = dynamic_cast<SceneNodeItem*>(item);
+                        if (scnode) scnode->updateName();
+                      }
+                  }
+              }
+          }
+      }
+      break;
+//     default:
+//       DEBTRACE("SceneComposedNodeItem::update(), event not handled: "<< eventName(event));
     }
 }
 

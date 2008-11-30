@@ -4,6 +4,7 @@
 #include "SchemaModel.hxx"
 #include "QtGuiContext.hxx"
 #include "SchemaItem.hxx"
+#include "ValueDelegate.hxx"
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -29,6 +30,13 @@ EditionSwitch::EditionSwitch(Subject* subject,
   _tvSwitch->sb_select->setMaximum(INT_MAX);
   connect(_tvSwitch->sb_select, SIGNAL(valueChanged(const QString &)),
           this, SLOT(onModifySelect(const QString &)));
+
+  _valueDelegate = new ValueDelegate(parent);
+  _tvSwitch->tv_nodes->setItemDelegateForColumn(YValue, _valueDelegate);
+  _tvSwitch->setEditableCase(true);
+
+  connect(_valueDelegate, SIGNAL(commitData(QWidget*)),
+          this, SLOT(onCommitData(QWidget*)));
 }
 
 EditionSwitch::~EditionSwitch()
@@ -37,6 +45,7 @@ EditionSwitch::~EditionSwitch()
 
 void EditionSwitch::synchronize()
 {
+  DEBTRACE("EditionSwitch::synchronize");
   SchemaModel *model = QtGuiContext::getQtCurrent()->getSchemaModel();
   SchemaItem* schemaItem = QtGuiContext::getQtCurrent()->_mapOfSchemaItem[_subject];
   if (schemaItem)
@@ -55,7 +64,8 @@ void EditionSwitch::synchronize()
           _tvSwitch->tv_nodes->setRowHidden(row, hidden);
         }
     }
-  _subject->update(SETVALUE, 0, _subject);
+  _tvSwitch->adjustColumns();
+  _subject->update(SETSELECT, 0, _subject);
 }
 
 void EditionSwitch::onModifySelect(const QString &text)
@@ -68,19 +78,43 @@ void EditionSwitch::onModifySelect(const QString &text)
 
 void EditionSwitch::update(GuiEvent event, int type, Subject* son)
 {
-  DEBTRACE("EditionSwitch::update " <<event << " " << type);
-  EditionBloc::update(event, type, son);
+  DEBTRACE("EditionSwitch::update " <<eventName(event) << " " << type);
   switch (event)
     {
-    case SETVALUE:
-      SubjectComposedNode * scn = dynamic_cast<SubjectComposedNode*>(_subject);
-      string val = scn->getValue();
-      istringstream ss(val);
-      DEBTRACE(val);
-      int i = 0;
-      ss >> i;
-      DEBTRACE(i);
-      _tvSwitch->sb_select->setValue(i);
+
+    case SETSELECT:
+      {
+        SubjectComposedNode *scn = dynamic_cast<SubjectComposedNode*>(_subject);
+        string val = scn->getValue();
+        istringstream ss(val);
+        DEBTRACE(val);
+        int i = 0;
+        ss >> i;
+        DEBTRACE(i);
+        _tvSwitch->sb_select->setValue(i);
+      }
       break;
+    default:
+      EditionBloc::update(event, type, son);
     }
+}
+
+void EditionSwitch::onCommitData(QWidget *editor)
+{
+  DEBTRACE("EditionSwitch::onCommitData " << editor);
+  GenericEditor* gedit = dynamic_cast<GenericEditor*>(editor);
+  assert(gedit);
+  QString val = gedit->GetStrValue();
+  DEBTRACE(val.toStdString());
+  Subject *sub = gedit->getSubject();
+  assert(sub);
+  SubjectNode *snode = dynamic_cast<SubjectNode*>(sub);
+  assert(snode);
+  sub = snode->getParent();
+  SubjectSwitch *sswitch = dynamic_cast<SubjectSwitch*>(sub);
+  assert(sswitch);
+  bool isOk = sswitch->setCase(val.toStdString(), snode);
+  if (_valueDelegate)
+    _valueDelegate->setResultEditing(editor, isOk);
+
 }

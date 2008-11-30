@@ -42,6 +42,7 @@ namespace YACS
       virtual ItemMimeData* mimeData(ItemMimeData *mime);
       virtual bool dropMimeData(const QMimeData* data, Qt::DropAction action);
       virtual void reparent(SchemaItem *parent);
+      virtual void setCaseValue();
 
     protected:
       virtual QString getMimeFormat();

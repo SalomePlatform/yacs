@@ -11,6 +11,7 @@ namespace YACS
   namespace HMI
   {
     class TableSwitch;
+    class ValueDelegate;
 
     class EditionSwitch: public EditionBloc
     {
@@ -18,6 +19,7 @@ namespace YACS
 
     public slots:
       virtual void onModifySelect(const QString &text);
+      virtual void onCommitData(QWidget *editor);
 
     public:
       EditionSwitch(Subject* subject,
@@ -29,6 +31,7 @@ namespace YACS
       
     protected:
       TableSwitch *_tvSwitch;
+      ValueDelegate* _valueDelegate;
     };
   }
 }

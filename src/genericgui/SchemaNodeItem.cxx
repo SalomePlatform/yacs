@@ -6,7 +6,6 @@
 #include "GuiExecutor.hxx"
 #include "Menus.hxx"
 
-//#include "commandsProc.hxx"
 #include "Node.hxx"
 #include "Switch.hxx"
 
@@ -32,20 +31,7 @@ SchemaNodeItem::SchemaNodeItem(SchemaItem *parent, QString label, Subject* subje
       _itemCheckState.replace(YLabel, Qt::Unchecked);
       setExecState(YACS::UNDEFINED);
     }
-
-  Subject *sub = _parentItem->getSubject();
-  SubjectSwitch *sSwitch = dynamic_cast<SubjectSwitch*>(sub);
-  if (!sSwitch) return;
-
-  Switch *aSwitch = dynamic_cast<Switch*>(sSwitch->getNode());
-  assert(aSwitch);
-  SubjectNode *sNode = dynamic_cast<SubjectNode*>(_subject);
-  assert(sNode);
-  int rank = aSwitch->getRankOfNode(sNode->getNode());
-  if (rank == Switch::ID_FOR_DEFAULT_NODE)
-    _itemData.replace(YValue, "default");
-  else
-    _itemData.replace(YValue, rank);
+  setCaseValue();
 }
 
 SchemaNodeItem::~SchemaNodeItem()
@@ -55,7 +41,7 @@ SchemaNodeItem::~SchemaNodeItem()
 
 void SchemaNodeItem::update(GuiEvent event, int type, Subject* son)
 {
-  DEBTRACE("SchemaNodeItem::update "<<event<<" "<<type<<" "<<son);
+  DEBTRACE("SchemaNodeItem::update "<<eventName(event)<<" "<<type<<" "<<son);
   SchemaModel *model = QtGuiContext::getQtCurrent()->getSchemaModel();
   SchemaItem *item = 0;
   SubjectNode *snode = 0;
@@ -87,8 +73,8 @@ void SchemaNodeItem::update(GuiEvent event, int type, Subject* son)
             model->endInsertRows();
           }
           break;
-        default:
-          DEBTRACE("SchemaNodeItem::update(), ADD, type not handled: " << type);
+//         default:
+//           DEBTRACE("SchemaNodeItem::update(), ADD, type not handled: " << type);
         }
       break;
     case YACS::HMI::UPDATE:
@@ -100,11 +86,11 @@ void SchemaNodeItem::update(GuiEvent event, int type, Subject* son)
         {
         case YACS::INVALID:
           _itemForeground.replace(YLabel, QColor("red"));
-          model->setData(modelIndex(), 0);  // --- to emit dataChanged signal
+          model->setData(modelIndex(YLabel), 0);  // --- to emit dataChanged signal
           break;
         case YACS::READY:
           _itemForeground.replace(YLabel, QColor("blue"));
-          model->setData(modelIndex(), 0);
+          model->setData(modelIndex(YLabel), 0);
           break;
         default:
           break;
@@ -115,7 +101,7 @@ void SchemaNodeItem::update(GuiEvent event, int type, Subject* son)
       model->setData(modelIndex(YState), 0);
       break;
     default:
-      DEBTRACE("SchemaNodeItem::update(), event not handled: " << event);
+      //DEBTRACE("SchemaNodeItem::update(), event not handled: " << eventName(event));
       SchemaItem::update(event, type, son);
     }
 }
@@ -128,7 +114,21 @@ void SchemaNodeItem::popupMenu(QWidget *caller, const QPoint &globalPos)
 
 Qt::ItemFlags SchemaNodeItem::flags(const QModelIndex &index)
 {
-  return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled | Qt::ItemIsUserCheckable | Qt::ItemIsDropEnabled;
+  Qt::ItemFlags pflag = Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled | Qt::ItemIsUserCheckable | Qt::ItemIsDropEnabled;
+
+  Qt::ItemFlags flagEdit = 0;
+  int column = index.column();
+  switch (column)
+    {
+//     case 0:
+//       flagEdit = Qt::ItemIsEditable; // --- port name editable in model view
+//       break;
+    case YValue:
+      flagEdit = Qt::ItemIsEditable; // --- port value editable in model view
+      break;     
+    }
+
+  return pflag | flagEdit;
 }
 
 /*!
@@ -187,3 +187,21 @@ bool SchemaNodeItem::dropMimeData(const QMimeData* data, Qt::DropAction action)
   return ret;
 }
 
+void SchemaNodeItem::setCaseValue()
+{
+  Subject *sub = _parentItem->getSubject();
+  SubjectSwitch *sSwitch = dynamic_cast<SubjectSwitch*>(sub);
+  if (!sSwitch) return;
+
+  SchemaModel *model = QtGuiContext::getQtCurrent()->getSchemaModel();
+  Switch *aSwitch = dynamic_cast<Switch*>(sSwitch->getNode());
+  assert(aSwitch);
+  SubjectNode *sNode = dynamic_cast<SubjectNode*>(_subject);
+  assert(sNode);
+  int rank = aSwitch->getRankOfNode(sNode->getNode());
+  if (rank == Switch::ID_FOR_DEFAULT_NODE)
+    _itemData.replace(YValue, "default");
+  else
+    _itemData.replace(YValue, rank);
+  model->setData(modelIndex(YValue), 0);
+}

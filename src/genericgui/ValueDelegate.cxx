@@ -4,6 +4,7 @@
 #include "SchemaItem.hxx"
 #include "DataPort.hxx"
 #include "TypeCode.hxx"
+#include "Switch.hxx"
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -140,6 +141,52 @@ void IntEditor::setData(QVariant val)
 
 // -----------------------------------------------------------------------------
 
+CaseSwitchEditor::CaseSwitchEditor(Subject* subject,
+                       const ValueDelegate* delegate,
+                       int column,
+                       QWidget* parent)
+  : CaseSwitch(parent), GenericEditor()
+{
+  sb_case->setMinimum(INT_MIN);
+  sb_case->setMaximum(INT_MAX);
+  setSubject(subject);
+  setDelegate(delegate);
+  setColumn(column);
+}
+
+CaseSwitchEditor::~CaseSwitchEditor()
+{
+}
+
+QString CaseSwitchEditor::GetStrValue()
+{
+  QString str;
+  int val = sb_case->value();
+  if (_isDefault)
+    val = YACS::ENGINE::Switch::ID_FOR_DEFAULT_NODE;
+  str.setNum(val);
+  DEBTRACE(val);
+  return str;
+}
+
+void CaseSwitchEditor::setData(QVariant val)
+{
+  DEBTRACE("CaseSwitchEditor::setData");
+  if (val == "default")
+    {
+      setDefaultChecked(true);
+    }
+  else
+    {
+      setDefaultChecked(false);
+      DEBTRACE(val.canConvert<int>() << " " << val.toInt());
+      sb_case->setValue(val.toInt());
+    }
+}
+
+
+// -----------------------------------------------------------------------------
+
 ValueDelegate::ValueDelegate(QObject *parent)
   : QItemDelegate(parent)
 {
@@ -164,7 +211,12 @@ QWidget *ValueDelegate::createEditor(QWidget *parent,
   DEBTRACE(subject->getName() << " " << column);
   
   QWidget *editor = 0;
-  SubjectDataPort *sport = dynamic_cast<SubjectDataPort*>(subject);
+  SubjectDataPort *sport = 0;
+  SubjectNode *snode = 0;
+  sport = dynamic_cast<SubjectDataPort*>(subject);
+  if (!sport)
+    snode= dynamic_cast<SubjectNode*>(subject);
+
   if (sport)
     {
       YACS::ENGINE::DataPort *port = sport->getPort();
@@ -173,6 +225,14 @@ QWidget *ValueDelegate::createEditor(QWidget *parent,
       if (dt == YACS::ENGINE::Int)
         editor = new IntEditor(subject, this, column, parent);
     }
+  else if (snode)
+    {
+      SubjectSwitch *sSwitch = dynamic_cast<SubjectSwitch*>(snode->getParent());
+      if (sSwitch)
+        editor = new CaseSwitchEditor(subject, this, column, parent);
+    }
+
+
   if (!editor) editor = new GeneralEditor(subject, this, column, parent);
   return editor;
 }
@@ -189,17 +249,19 @@ void ValueDelegate::setEditorData(QWidget *editor,
   DEBTRACE("ValueDelegate::setEditorData");
   GenericEditor* gedit = dynamic_cast<GenericEditor*>(editor);
   assert(gedit);
-//   QString edited = gedit->GetStrValue();
-//   DEBTRACE(edited.toStdString());
+  QString edited = gedit->GetStrValue();
+  DEBTRACE(edited.toStdString());
   Subject *sub = gedit->getSubject();
-  if (gedit->firstSetData() && _errorMap.count(sub))
+  if (! gedit->firstSetData())    // --- editor already initialized
+    return;
+  else if (_errorMap.count(sub))  // --- initialize with previous error
     {
       string error = _errorMap[sub];
       gedit->setData(QString(error.c_str()));
       _errorMap.erase(gedit->getSubject());
       DEBTRACE("--------erase-----------");
     }
-  else
+  else                            // --- initialize with model
     gedit->setData(index.model()->data(index, Qt::DisplayRole));
 }
 
@@ -215,7 +277,7 @@ void ValueDelegate::setModelData(QWidget *editor,
   assert(gedit);
   QString value = gedit->GetStrValue();
   DEBTRACE(value.toStdString());
-  model->setData(index, value, Qt::EditRole); // real set done by update
+  //model->setData(index, value, Qt::EditRole); // real set done by update
 }
       
 void ValueDelegate::updateEditorGeometry(QWidget *editor,

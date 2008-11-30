@@ -39,6 +39,7 @@ namespace YACS
       virtual void adjustHeader();
       virtual ScenePortItem* getCtrlInPortItem();
       virtual ScenePortItem* getCtrlOutPortItem();
+      virtual void updateName();
 
     protected:
       virtual QString getMimeFormat();

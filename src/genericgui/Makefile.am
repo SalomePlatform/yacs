@@ -14,9 +14,12 @@ BUILT_SOURCES =       \
   ui_FormSchemaView.h \
   ui_LogViewer.h      \
   ui_TablePorts.h     \
-  ui_TableSwitch.h
+  ui_TableSwitch.h    \
+  ui_CaseSwitch.h
 
 libGenericGui_la_SOURCES =        \
+  CaseSwitch.cxx                  \
+  CaseSwitch_moc.cxx              \
   CatalogWidget.cxx               \
   EditionBloc.cxx                 \
   EditionBloc_moc.cxx             \

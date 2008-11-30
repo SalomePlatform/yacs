@@ -36,7 +36,7 @@ SceneObserverItem::~SceneObserverItem()
 
 void SceneObserverItem::update(GuiEvent event, int type, Subject* son)
 {
-  DEBTRACE(" SceneObserverItem::update " << event<< " " << type << " " << son);
+  DEBTRACE(" SceneObserverItem::update " << eventName(event)<< " " << type << " " << son);
 }
 
 void SceneObserverItem::select(bool isSelected)

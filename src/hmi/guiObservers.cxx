@@ -47,6 +47,8 @@ using namespace YACS;
 using namespace YACS::HMI;
 using namespace YACS::ENGINE;
 
+std::map<int, std::string> GuiObserver::_eventNameMap;
+
 // ----------------------------------------------------------------------------
 
 void Subject::erase(Subject* sub)
@@ -149,7 +151,7 @@ void Subject::select(bool isSelected)
 
 void Subject::update(GuiEvent event,int type, Subject* son)
 {
-  //DEBTRACE("Subject::update " << type << "," << event << "," << son);
+  //DEBTRACE("Subject::update " << type << "," << GuiObserver::eventName(event) << "," << son);
   set<GuiObserver*> copySet = _setObs;
   for (set<GuiObserver *>::iterator it = copySet.begin(); it != copySet.end(); ++it)
     {
@@ -250,7 +252,7 @@ void GuiObserver::select(bool isSelected)
 
 void GuiObserver::update(GuiEvent event, int type,  Subject* son)
 {
-  //DEBTRACE("GuiObserver::update, event not handled " << event << " " << type );
+  //DEBTRACE("GuiObserver::update, event not handled " << eventName(event) << " " << type );
 }
 
 /*!
@@ -288,6 +290,40 @@ void GuiObserver::decrementSubjects(Subject *subject)
 int GuiObserver::getNbSubjects()
 {
   return _subjectSet.size();
+}
+
+void GuiObserver::setEventMap()
+{
+  _eventNameMap.clear();
+  _eventNameMap[ADD]            = "ADD";
+  _eventNameMap[REMOVE]         = "REMOVE";
+  _eventNameMap[CUT]            = "CUT";
+  _eventNameMap[PASTE]          = "PASTE";
+  _eventNameMap[EDIT]           = "EDIT";
+  _eventNameMap[UPDATE]         = "UPDATE";
+  _eventNameMap[UPDATEPROGRESS] = "UPDATEPROGRESS";
+  _eventNameMap[UP]             = "UP";
+  _eventNameMap[DOWN]           = "DOWN";
+  _eventNameMap[RENAME]         = "RENAME";
+  _eventNameMap[NEWROOT]        = "NEWROOT";
+  _eventNameMap[ENDLOAD]        = "ENDLOAD";
+  _eventNameMap[ADDLINK]        = "ADDLINK";
+  _eventNameMap[ADDCONTROLLINK] = "ADDCONTROLLINK";
+  _eventNameMap[ADDREF]         = "ADDREF";
+  _eventNameMap[ADDCHILDREF]    = "ADDCHILDREF";
+  _eventNameMap[REMOVECHILDREF] = "REMOVECHILDREF";
+  _eventNameMap[ASSOCIATE]      = "ASSOCIATE";
+  _eventNameMap[SETVALUE]       = "SETVALUE";
+  _eventNameMap[SETCASE]        = "SETCASE";
+  _eventNameMap[SETSELECT]      = "SETSELECT";
+  _eventNameMap[GEOMETRY]       = "GEOMETRY";
+}
+
+std::string GuiObserver::eventName(GuiEvent event)
+{
+  if (_eventNameMap.count(event))
+    return _eventNameMap[event];
+  else return "Unknown Event";
 }
 
 // ----------------------------------------------------------------------------
@@ -2219,7 +2255,7 @@ bool SubjectSwitch::setSelect(std::string select)
   if (command->execute())
     {
       GuiContext::getCurrent()->getInvoc()->add(command);
-      update(SETVALUE, 0, this);
+      update(SETSELECT, 0, this);
       return true;
     }
   else delete command;
@@ -2230,6 +2266,13 @@ bool SubjectSwitch::setCase(std::string caseId, SubjectNode* snode)
 {
   DEBTRACE("SubjectSwitch::setCase " << caseId);
   Proc *proc = GuiContext::getCurrent()->getProc();
+
+  Switch* aSwitch = dynamic_cast<Switch*>(getNode());
+  Node* node =snode->getNode();
+  int previousRank = aSwitch->getRankOfNode(node);
+  int newRank = atoi(caseId.c_str());
+  if (previousRank == newRank) return true; // nothing to do.
+
   CommandSetSwitchCase *command =
     new CommandSetSwitchCase(proc->getChildName(getNode()),
                              proc->getChildName(snode->getNode()),
@@ -2237,7 +2280,7 @@ bool SubjectSwitch::setCase(std::string caseId, SubjectNode* snode)
   if (command->execute())
     {
       GuiContext::getCurrent()->getInvoc()->add(command);
-      update(SETCASE, 0, snode);
+      update(SETCASE, newRank, snode);
       return true;
     }
   else delete command;

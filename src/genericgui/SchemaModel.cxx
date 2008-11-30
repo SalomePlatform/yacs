@@ -172,14 +172,14 @@ Qt::ItemFlags SchemaModel::flags(const QModelIndex &index) const
 
 void SchemaModel::update(GuiEvent event, int type, Subject* son)
 {
-  DEBTRACE("SchemaModel::update "<<event<<" "<<type<<" "<<son);
+  DEBTRACE("SchemaModel::update "<<eventName(event)<<" "<<type<<" "<<son);
   switch (event)
     {
     case YACS::HMI::NEWROOT:
       setNewRoot(son);
       break;
-    default:
-      DEBTRACE("SchemaModel::update(), event not handled: "<< event);
+//     default:
+//       DEBTRACE("SchemaModel::update(), event not handled: "<< eventName(event));
     }
 }
 

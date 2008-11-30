@@ -15,6 +15,8 @@ namespace YACS
       TableSwitch(QWidget *parent = 0);
       ~TableSwitch();
 
+      virtual void setEditableCase(bool isEditable);
+      virtual void adjustColumns();
     };
   }
 }

@@ -54,6 +54,7 @@ void EditionElementaryNode::onCancel()
 
 void EditionElementaryNode::onPortIndexChanged(int index)
 {
+  DEBTRACE("EditionElementaryNode::onPortIndexChanged " << index);
   synchronize();
 }
 
