@@ -192,6 +192,6 @@ AC_OUTPUT([ \
     src/yacsloader/Test/display.sh \
     src/yacsloader/Test/config_appli.xml \
     src/gui/resources/YACSCatalog.xml \
-    doc/Doxyfile \
+    doc/ref/Doxyfile \
 ])
 

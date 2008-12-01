@@ -73,6 +73,7 @@ LIBHEADERS = \
 	YACSGui_Selection.h \
 	YACSGui_PlusMinusGrp.h \
 	YACSGui_Table.h \
+	YACSGui_QextScintilla.h \
   YACSGui_DataObject.h  YACSGui_InputPanel.h  YACSGui_LogViewer.h YACSGui_RunMode.h
 
 # MOC-generated files
