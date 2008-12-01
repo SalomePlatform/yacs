@@ -24,10 +24,10 @@ SceneLinkItem::SceneLinkItem(QGraphicsScene *scene, SceneItem *parent,
 {
   _from = from;
   _to = to;
-  _penColor     = QColor(  0,  0,  96);
-  _hiPenColor   = QColor(  0,  0, 128);
-  _brushColor   = QColor(  0,  0, 192);
-  _hiBrushColor = QColor(  0,  0, 255);
+  _penColor     = QColor(  0,   0,  96);
+  _hiPenColor   = QColor(  0,   0, 128);
+  _brushColor   = QColor(  0,   0, 192);
+  _hiBrushColor = QColor(192, 192, 255);
   _level += 100;
   setZValue(_level);
   _lp.clear();
