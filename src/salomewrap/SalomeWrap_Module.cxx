@@ -27,7 +27,11 @@ SalomeWrap_Module::SalomeWrap_Module(const char* name) :
  */
 QxScene_ViewWindow* SalomeWrap_Module::getNewWindow(QGraphicsScene *scene)
 {
-  SUIT_ViewManager *svm = getApp()->getViewManager(QxScene_Viewer::Type(), true);
+  SUIT_ViewManager *svm = 0;
+  if (_mapOfViewWindow.empty()) // --- reuse already created view manager 
+    svm = getApp()->getViewManager(QxScene_Viewer::Type(), true);
+  else
+    svm = getApp()->createViewManager(QxScene_Viewer::Type());
   SUIT_ViewWindow* svw = svm->getActiveView();
   QxScene_ViewWindow *aView = 0;
   QGraphicsScene* existingScene = 0;

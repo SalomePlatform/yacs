@@ -7,6 +7,8 @@
 #include <SalomeApp_Module.h>
 #include <SalomeApp_Application.h>
 #include <SUIT_DataBrowser.h>
+#include <SUIT_ViewManager.h>
+#include <QxScene_ViewWindow.h>
 
 #include <QFileInfo>
 
@@ -74,6 +76,10 @@ void SalomeWrap_DataModel::createNewSchema(const QString& schemaName,
   DEBTRACE("--- " << viewWindow << " "<< aSObj->GetID());
   SalomeApp_Module *mod = dynamic_cast<SalomeApp_Module*>(module());
   if (mod) mod->updateObjBrowser();
+
+  QxScene_ViewWindow *swv = dynamic_cast<QxScene_ViewWindow*>(viewWindow);
+  if (!swv) return;
+  swv->getViewManager()->setTitle(schemaName);
 }
 
 bool SalomeWrap_DataModel::renameSchema(const QString& oldName,
@@ -110,6 +116,9 @@ bool SalomeWrap_DataModel::renameSchema(const QString& oldName,
 
   SalomeApp_Module *mod = dynamic_cast<SalomeApp_Module*>(module());
   if (mod) mod->updateObjBrowser();
+
+  QxScene_ViewWindow *swv = dynamic_cast<QxScene_ViewWindow*>(viewWindow);
+  if (swv) swv->getViewManager()->setTitle(newName);
   return true;
 }
 
@@ -162,6 +171,10 @@ void SalomeWrap_DataModel::createNewRun(const QString& schemaName,
   DEBTRACE("--- " << viewWindow << " "<< aSObj->GetID());
   SalomeApp_Module *mod = dynamic_cast<SalomeApp_Module*>(module());
   if (mod) mod->updateObjBrowser();
+
+  QxScene_ViewWindow *swv = dynamic_cast<QxScene_ViewWindow*>(viewWindow);
+  if (!swv) return;
+  swv->getViewManager()->setTitle(runName);
 }
 
 void SalomeWrap_DataModel::setSelected(QWidget* viewWindow)
