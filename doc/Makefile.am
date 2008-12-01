@@ -20,6 +20,7 @@ include $(top_srcdir)/adm/unix/make_begin.am
 
 yacsdocdir=$(docdir)/gui/YACS
 
+if SPHINX_IS_OK
 yacsdoc_DATA=html/index.html
 
 SPHINXOPTS      =
@@ -67,4 +68,5 @@ uninstall-local:
 	chmod -R +w $(DESTDIR)$(yacsdocdir)
 	rm -rf $(DESTDIR)$(yacsdocdir)/*
 
+endif
 

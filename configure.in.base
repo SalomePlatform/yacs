@@ -97,6 +97,7 @@ CHECK_QT
 CHECK_MSG2QM
 CHECK_CAS
 CHECK_HTML_GENERATORS
+CHECK_SPHINX
 
 AM_CONDITIONAL([PYTHON_API], [test "x$swig_ok" == "xyes"])
 AM_CONDITIONAL([SALOME_KERNEL], [test "x$KERNEL_ROOT_DIR" != "x"])
@@ -138,6 +139,7 @@ echo "  Qt (salome)............. : $qt_ok"
 echo "  msq2qm ................. : $msg2qm_ok"
 echo "  SALOME GUI ............. : $SalomeGUI_ok"
 echo "  OCC..................... : $occ_ok"
+echo "  Sphinx ................. : $sphinx_ok"
 echo
 echo "------------------------------------------------------------------------"
 echo
