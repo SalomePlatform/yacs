@@ -25,6 +25,7 @@ using namespace YACS::HMI;
 
 QColor SceneHeaderNodeItem::_editedNodeBrushColor = QColor(255,255,190);
 QColor SceneHeaderNodeItem::_normalNodeBrushColor = QColor(230,235,255);
+QColor SceneHeaderNodeItem::_runNodeBrushColor    = QColor(205,218,255);
 QColor SceneHeaderNodeItem::_validNodeColor       = QColor(128,255,128);
 QColor SceneHeaderNodeItem::_invalidNodeColor     = QColor(255,128,128);
 
@@ -53,7 +54,10 @@ SceneHeaderNodeItem::SceneHeaderNodeItem(QGraphicsScene *scene, SceneItem *paren
                                          this,
                                          "Ctrl_O");
   autoPosControl(_controlOut);
-  _brushColor = _normalNodeBrushColor;
+  if (QtGuiContext::getQtCurrent()->isEdition())
+    _brushColor = _normalNodeBrushColor;
+  else
+    _brushColor = _runNodeBrushColor;
   _execState = YACS::UNDEFINED;
   _sc = _validNodeColor;
   _stateDef = "";
@@ -195,7 +199,12 @@ void SceneHeaderNodeItem::setEdited(bool isEdited)
   if (isEdited)
     _brushColor = _editedNodeBrushColor;
   else
-    _brushColor = _normalNodeBrushColor;
+    {
+      if (QtGuiContext::getQtCurrent()->isEdition())
+        _brushColor = _normalNodeBrushColor;
+      else
+        _brushColor = _runNodeBrushColor;
+    }
   if (isEdited != _isEdited)
     _parent->update();
   _isEdited = isEdited;

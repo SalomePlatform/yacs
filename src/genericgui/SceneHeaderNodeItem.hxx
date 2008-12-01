@@ -58,6 +58,7 @@ namespace YACS
 
       static QColor _editedNodeBrushColor;
       static QColor _normalNodeBrushColor;
+      static QColor _runNodeBrushColor;
       static QColor _validNodeColor;
       static QColor _invalidNodeColor;
     };
