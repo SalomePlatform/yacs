@@ -827,7 +827,7 @@ void Executor::launchTasks(std::vector<Task *>& tasks)
     {
       YACS::StatesForNode state=(*iter)->getState();
       traceExec(*iter, "state:"+Node::getStateName(state));
-      if(state != YACS::LOADED and state != YACS::TOACTIVATE)continue;
+      if(state != YACS::LOADED)continue;
       try
         {
           (*iter)->connectService();
