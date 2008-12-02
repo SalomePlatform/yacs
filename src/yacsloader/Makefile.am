@@ -156,11 +156,11 @@ dist-hook:
 	rm -rf `find $(distdir) -name CVS`
 
 install-data-local:
-	mkdir -p $(prefix)/share/salome/yacssamples
-	cp -rf $(srcdir)/samples/*.xml $(prefix)/share/salome/yacssamples
-	cp -rf $(srcdir)/samples/*.data $(prefix)/share/salome/yacssamples
+	$(INSTALL) -d $(DESTDIR)$(prefix)/share/salome/yacssamples
+	cp -rf $(srcdir)/samples/*.xml $(DESTDIR)$(prefix)/share/salome/yacssamples
+	cp -rf $(srcdir)/samples/*.data $(DESTDIR)$(prefix)/share/salome/yacssamples
 
 uninstall-local:
-	rm -rf $(prefix)/share/salome/yacssamples
+	rm -rf $(DESTDIR)$(prefix)/share/salome/yacssamples
 
 include $(top_srcdir)/adm/unix/make_end.am

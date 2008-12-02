@@ -61,8 +61,9 @@ clean-local:
 
 install-data-local:
 	$(INSTALL) -d $(DESTDIR)$(yacsdocdir)
-	cp -rf html/* $(DESTDIR)$(yacsdocdir)
-	cp -f latex/yacs.pdf $(DESTDIR)$(yacsdocdir)
+	if test -d "html"; then b=; else b="$(srcdir)/"; fi; \
+	cp -rf $$b"html"/* $(DESTDIR)$(yacsdocdir) ; \
+	if test -f $$b"latex"/yacs.pdf; then cp -f $$b"latex"/yacs.pdf $(DESTDIR)$(yacsdocdir) ; fi;
 
 uninstall-local:
 	chmod -R +w $(DESTDIR)$(yacsdocdir)
