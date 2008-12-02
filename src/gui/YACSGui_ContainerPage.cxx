@@ -219,7 +219,7 @@ bool YACSGui_ContainerPage::setDefinitionName( const QString& theName )
             }
         }
       }
-  if (!alreadyExists)
+  if (getContainer() and !alreadyExists)
   {
     DEBTRACE("set name " << theName.latin1());
     string oldName = getContainer()->getName();
