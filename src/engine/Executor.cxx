@@ -789,6 +789,7 @@ void Executor::loadTask(Task *task)
       task->load();
       traceExec(task, "initService");
       task->initService();
+      traceExec(task, "state:"+Node::getStateName(task->getState()));
     }
   catch(Exception& ex) 
     {
@@ -824,7 +825,9 @@ void Executor::launchTasks(std::vector<Task *>& tasks)
   //First phase, make datastream connections
   for(iter=tasks.begin();iter!=tasks.end();iter++)
     {
-      if((*iter)->getState() != YACS::LOADED)continue;
+      YACS::StatesForNode state=(*iter)->getState();
+      traceExec(*iter, "state:"+Node::getStateName(state));
+      if(state != YACS::LOADED and state != YACS::TOACTIVATE)continue;
       try
         {
           (*iter)->connectService();
@@ -895,6 +898,7 @@ void Executor::launchTasks(std::vector<Task *>& tasks)
 void Executor::launchTask(Task *task)
 {
   DEBTRACE("Executor::launchTask(Task *task)");
+  traceExec(task, "state:"+Node::getStateName(task->getState()));
   if(task->getState() != YACS::TOACTIVATE)return;
 
   DEBTRACE("before _semForMaxThreads.wait " << _semThreadCnt);

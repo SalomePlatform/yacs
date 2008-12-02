@@ -97,6 +97,7 @@ namespace YACS
       virtual YACS::StatesForNode getEffectiveState() const;
       virtual YACS::StatesForNode getEffectiveState(const Node*) const;
       std::string getColorState(YACS::StatesForNode state) const;
+      static std::string getStateName(YACS::StatesForNode state);
       InGate *getInGate() { return &_inGate; }
       OutGate *getOutGate() { return &_outGate; }
       const std::string& getName() const { return _name; }
@@ -163,6 +164,7 @@ namespace YACS
       virtual void edDisconnectAllLinksWithMe();
       static void checkValidityOfPortName(const std::string& name) throw(Exception);
       static ComposedNode *checkHavingCommonFather(Node *node1, Node *node2) throw(Exception);
+      static std::map<int, std::string> _nodeStateName;
     };
 
   }
