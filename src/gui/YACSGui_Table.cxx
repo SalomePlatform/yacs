@@ -106,8 +106,8 @@ QWidget* YACSGui_TableItem::createEditor() const
     {
       QtxIntSpinBox* sb = new QtxIntSpinBox( 0 );
       bool ok = false;
-      sb->setMinValue(LONG_MIN);
-      sb->setMaxValue(LONG_MAX);
+      sb->setMinValue(INT_MIN);
+      sb->setMaxValue(INT_MAX);
       int d = text().toInt( &ok );
       sb->setValue( ok ? d : 0 );
       res = sb;
