@@ -126,6 +126,10 @@ guidemo_LDADD = \
 	libHMI.la \
 	@QSCINTILLA_LIBADD@
 
+if SALOME_KERNEL
+guidemo_LDADD+=-L$(KERNEL_ROOT_DIR)/lib$(LIB_LOCATION_SUFFIX)/salome -lSalomeIDLKernel
+endif
+
 EXTRA_DIST = \
 browseCatalog.h  chooseName.h    commands.hxx      commandsProc.hxx  editCanvas.h \
 editTree.h       guiContext.hxx  guiObservers.hxx  nodeEdition.h \
