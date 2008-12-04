@@ -473,13 +473,12 @@ void ElementaryNode::aborted()
 
 //! Notify this node that it is loaded
 /*!
- * When an elementary node has been loaded it goes to LOADED state
- * It is then ready to be connected
+ * When an elementary node has been loaded 
+ * It is ready to be connected
  *
  */
 void ElementaryNode::loaded()
 {
-  setState(LOADED);
 }
 
 //! Notify this node that it is connected
@@ -492,7 +491,11 @@ void ElementaryNode::connected()
 {
   if(_inGate.exIsReady())
     if(areAllInputPortsValid())
-      setState(TOACTIVATE);
+      {
+        setState(TOACTIVATE);
+        return;
+      }
+  setState(LOADED);
 }
 
 void ElementaryNode::accept(Visitor *visitor)
