@@ -39,7 +39,9 @@ using YACS::BASES::Semaphore;
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
-Executor::Executor():_nbOfConcurrentThreads(0), _semForMaxThreads(50)
+int Executor::_maxThreads(50);
+
+Executor::Executor():_nbOfConcurrentThreads(0), _semForMaxThreads(_maxThreads)
 {
   _root=0;
   _toContinue = true;
@@ -50,7 +52,8 @@ Executor::Executor():_nbOfConcurrentThreads(0), _semForMaxThreads(50)
   _isRunningunderExternalControl=false;
   _executorState = YACS::NOTYETINITIALIZED;
   _execMode = YACS::CONTINUE;
-  _semThreadCnt = 50;
+  _semThreadCnt = _maxThreads;
+  DEBTRACE("Executor initialized with max threads = " << _maxThreads);
 }
 
 Executor::~Executor()
