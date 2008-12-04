@@ -802,9 +802,12 @@ void VisitorSaveSchema::writeSimpleStreamLinks(ComposedNode *node)
 
 		  std::map<std::string,std::string> aPropMap = anOP->getPropertyMap();
 		  for (std::map<std::string,std::string>::iterator itP = aPropMap.begin(); itP != aPropMap.end(); itP++)
-		    _out << indent(depth+1) << "<property name=\"" << (*itP).first << "\" value=\"" 
-			 << (*itP).second << "\"/>" << endl;
-
+                    {
+                      string notAlinkProperty = "DependencyType";
+                      if (notAlinkProperty != (*itP).first)
+                        _out << indent(depth+1) << "<property name=\"" << (*itP).first << "\" value=\"" 
+                             << (*itP).second << "\"/>" << endl;
+                    }
                   _out << indent(depth) << "</stream>" << endl;
 		}
               else
