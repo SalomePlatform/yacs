@@ -269,7 +269,7 @@ void YACSGui_Graph::arrangeCanvasNodes(YACS::ENGINE::ComposedNode* theBloc, Agra
           YACSPrs_ElementaryNode* aNodePrs = getItem(*it);
           if ( aNodePrs )
             {
-              int aXLeft = aXCenter - aNodePrs->maxWidth()/2;
+              int aXLeft = aXCenter - aNodePrs->maxWidth()/2+2*HOOKPOINT_SIZE;
               int aYTop  = aYCenter + aNodePrs->maxHeight()/2;
 
 	      if ( dynamic_cast<YACSPrs_LoopNode*>( aNodePrs ) && getDMode() == YACSGui_Graph::FullId )
@@ -448,6 +448,7 @@ void YACSGui_Graph::createGraphvizNodes( ComposedNode* theBloc, Agraph_t* aSubGr
         DEBTRACE("--tail node " << aNode->name);
         Agnode_t* aTailNode = aNode;
         Node* outNode = getProc()->getChildByName( string(aTailNode->name) );
+        if (outNode->getFather() != theBloc)continue; // Create edges only with outgoing nodes directly in bloc
 
         // --- control link from node 
         {
@@ -554,7 +555,10 @@ void YACSGui_Graph::createGraphvizNodes( ComposedNode* theBloc, Agraph_t* aSubGr
           DEBTRACE("------------------------------------ dummy --> " << aNode->name);
           Agnode_t* anEdgeNode = aNode;
           if (!dynamic_cast<Bloc*>(theBloc) && dummyNode != anEdgeNode)
-            Agedge_t* anEdge    = agedge( aSubGraph, dummyNode, anEdgeNode );
+            {
+              Agedge_t* anEdge    = agedge( aSubGraph, dummyNode, anEdgeNode );
+              DEBTRACE("-----link from " << dummyNode->name<< " to " << anEdgeNode->name);
+            }
 
           // --- retreive arriving links saved previously
 
@@ -604,6 +608,12 @@ void YACSGui_Graph::createGraphvizNodes( ComposedNode* theBloc, Agraph_t* aSubGr
               Agnode_t* aHeadNode = agnode( aSubGraph, (char*)(inName.c_str()) );
               DEBTRACE("---control link from tail node: ---- " << outName << " to --> " << inName);
               Agedge_t* anEdge    = agedge( aSubGraph, aTailNode, aHeadNode );
+            }
+          if (!dynamic_cast<Bloc*>(theBloc))
+            {
+              //If the parent is not a Bloc add an edge between parent and son
+              Agedge_t* anEdge    = agedge( aSubGraph, dummyNode, aTailNode );
+              DEBTRACE("-----link from " << dummyNode->name<< " to --> " << aTailNode->name);
             }
         }
     }
