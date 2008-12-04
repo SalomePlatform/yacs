@@ -663,6 +663,13 @@ Voici une trace pour le même exemple que ci-dessus::
   l1.node2 end execution ABORT, Error during execution
   l1.node2 disconnectService
 
+Exécution des branches concurrentes
+-------------------------------------
+YACS peut exécuter simultanément les noeuds de calcul d'un schéma.
+Cependant l'exécution simultanée d'un grand nombre de noeuds peut saturer le système.
+Il est possible de controler le nombre maximum
+d'exécutions simultanées en fixant le nombre maximum de threads utilisés avec
+la variable d'environnement YACS_MAX_THREADS. Par défaut, cette valeur vaut 50.
 
 .. _archi:
 
