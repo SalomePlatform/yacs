@@ -22,6 +22,7 @@
 
 #include <QMenu>
 #include <QHeaderView>
+#include <QToolTip>
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -75,6 +76,23 @@ void TreeView::resizeColumns()
       setColumnHidden(YState, false);
       setColumnWidth(YState, 100);
     }
+}
+
+bool TreeView::event(QEvent *event)
+{
+  if (event->type() == QEvent::ToolTip)
+    {
+      QHelpEvent *helpEvent = static_cast<QHelpEvent *>(event);
+      QModelIndex index = indexAt(helpEvent->pos());
+      if (index.isValid())
+        {
+          QString valtip = model()->data(index, Qt::ToolTipRole).toString();
+          QToolTip::showText(helpEvent->globalPos(), valtip);
+        }
+      else
+        QToolTip::hideText();
+    }
+  return QTreeView::event(event);
 }
 
 void TreeView::contextMenuEvent(QContextMenuEvent *event)

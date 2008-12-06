@@ -62,6 +62,8 @@ namespace YACS
       virtual void setCaseValue();
 
     protected:
+      virtual QVariant editionToolTip(int column) const;
+      virtual QVariant runToolTip(int column) const;
       virtual QString getMimeFormat();
       virtual void setExecState(int execState);
       QList<SchemaItem*> _childItems;
@@ -70,6 +72,7 @@ namespace YACS
       QList<QVariant> _itemForeground;
       QList<QVariant> _itemBackground;
       QList<QVariant> _itemCheckState;
+      QList<QVariant> _itemToolTip;
       QString _label;
       SchemaItem *_parentItem;
       Subject* _subject;

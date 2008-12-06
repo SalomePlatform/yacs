@@ -44,7 +44,9 @@ SchemaItem::SchemaItem(SchemaItem *parent, QString label, Subject* subject)
   _itemForeground << QVariant() << QVariant() << QVariant(); // --- 3 columns max
   _itemBackground << QVariant() << QVariant() << QVariant(); // --- 3 columns max
   _itemCheckState << QVariant() << QVariant() << QVariant(); // --- 3 columns max
+  _itemToolTip    << QVariant() << QVariant() << QVariant(); // --- 3 columns max
   _itemData.replace(YLabel, label);
+  _itemToolTip.replace(YLabel, label);
   _itemForeground.replace(YLabel, QColor("blue"));
   _itemBackground.replace(YLabel, QtGuiContext::getQtCurrent()->getSchemaModel()->stdBackBrush());
   //_itemCheckState.replace(YLabel, Qt::Unchecked); // --- only for item with checkbox
@@ -116,6 +118,11 @@ QVariant SchemaItem::data(int column, int role) const
     return _itemBackground.value(column);
   if (role == Qt::CheckStateRole)
     return _itemCheckState.value(column);
+  if (role == Qt::ToolTipRole)
+    if (QtGuiContext::getQtCurrent()->isEdition())
+      return editionToolTip(column);
+    else
+      return runToolTip(column);
   return QVariant();
 }
 
@@ -253,6 +260,19 @@ void SchemaItem::reparent(SchemaItem *parent)
 void SchemaItem::setCaseValue()
 {
 }
+
+QVariant SchemaItem::editionToolTip(int column) const
+{
+  QString val = QString("Edition: ") + _itemData.value(column).toString();
+  return val;
+}
+
+QVariant SchemaItem::runToolTip(int column) const
+{
+  QString val = QString("Execution: ") + _itemData.value(column).toString();
+  return val;
+}
+
 
 QString SchemaItem::getMimeFormat()
 {
