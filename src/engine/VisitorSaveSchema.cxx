@@ -249,7 +249,7 @@ void VisitorSaveSchema::visitServiceNode(ServiceNode *node)
   else
     _out << ">" << endl;
   writeProperties(node);
-  if (node->getKind() == "XML")
+  if (node->getKind() == "xmlsh")
     {
       _out << indent(depth+1) << "<kind>xmlsh</kind>" << endl;
       _out << indent(depth+1) << "<ref>" << node->getRef() << "</ref>" << endl;
@@ -498,6 +498,7 @@ void VisitorSaveSchema::dumpTypeCode(TypeCode* type, set<string>& typeNames,map<
                 dumpTypeCode(member,typeNames,typeMap,depth);
               }            
           }
+        typeNames.insert(typeName);
         _out << indent(depth) << "<struct name=\"" << typeName << "\">" << endl;
         for (int i=0; i<mbCnt; i++)
           {
@@ -801,9 +802,12 @@ void VisitorSaveSchema::writeSimpleStreamLinks(ComposedNode *node)
 
 		  std::map<std::string,std::string> aPropMap = anOP->getPropertyMap();
 		  for (std::map<std::string,std::string>::iterator itP = aPropMap.begin(); itP != aPropMap.end(); itP++)
-		    _out << indent(depth+1) << "<property name=\"" << (*itP).first << "\" value=\"" 
-			 << (*itP).second << "\"/>" << endl;
-
+                    {
+                      string notAlinkProperty = "DependencyType";
+                      if (notAlinkProperty != (*itP).first)
+                        _out << indent(depth+1) << "<property name=\"" << (*itP).first << "\" value=\"" 
+                             << (*itP).second << "\"/>" << endl;
+                    }
                   _out << indent(depth) << "</stream>" << endl;
 		}
               else

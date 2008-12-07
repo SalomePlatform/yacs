@@ -58,7 +58,7 @@ class TestLoader(unittest.TestCase):
       print "Caught ValueError Exception:",ex
       retex = ex
     expected="LogRecord: parser:ERROR:from node node5 does not exist in control link: node5->b2 context: b1. (samples/bid.xml:53)\n"
-    self.assert_(p.getLogger("parser").getStr() == expected, "error not found")
+    self.assert_(p.getLogger("parser").getStr() == expected, "error not found: "+p.getLogger("parser").getStr())
     pass
 
   def test3_normal(self):

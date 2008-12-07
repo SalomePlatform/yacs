@@ -102,6 +102,11 @@ void InputPort::edInit(Any *value)
   modified();
 }
 
+//! Initialize the port with an object (value) coming from a world with implementation impl
+/*!
+ *  You should be careful when using this method : the caller must set the context according to implementation
+ *  For instance, if implementation is Python, the caller must hold the Global Interpreter Lock (also known as GIL).
+ */
 void InputPort::edInit(const std::string& impl,const void* value)
 {
   InputPort *manuallySet=getRuntime()->adapt(this,impl,_type,true);

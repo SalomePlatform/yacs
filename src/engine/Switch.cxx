@@ -486,6 +486,7 @@ Node *Switch::edReleaseCase(int caseId) throw(Exception)
       Node *ret=(*iter).second;
       StaticDefinedComposedNode::edRemoveChild(ret);
       _mapOfNode.erase(iter);
+      modified();
       return ret;
     }
 }
@@ -513,10 +514,10 @@ Node *Switch::edSetNode(int caseId, Node *node) throw(Exception)
   checkNoCrossHierachyWith(node);
   node->_father=this;
   map< int , Node * >::iterator iter=_mapOfNode.find(caseId);
-  modified();
   if(iter==_mapOfNode.end())
     {
       _mapOfNode[caseId]=node;
+      modified();
       return 0;
     }
   else
@@ -525,6 +526,7 @@ Node *Switch::edSetNode(int caseId, Node *node) throw(Exception)
         {
           Node *ret=(*iter).second;
           (*iter).second=node;
+          modified();
           return ret;
         }
     }

@@ -192,7 +192,7 @@ bool CommandAddNodeFromCatalog::localExecute()
       Node* node = proc;
       if (!_position.empty()) node = proc->getChildByName(_position);
       ComposedNode* father =dynamic_cast<ComposedNode*> (node);
-      if (father)
+      if (father && _nodeToClone)
         {
           son = _nodeToClone->clone(0);
           son->setName(_name);
@@ -628,7 +628,14 @@ bool CommandDestroy::localExecute()
   DEBTRACE("CommandDestroy::localExecute");
   try
     {
+//       Subject* parent=_subject->getParent();
+//       if(parent && _subject->getType() != UNKNOWN) parent->update(REMOVE,_subject->getType(),_subject);
+
       Subject::erase(_subject);
+
+//       if(parent)
+//         parent->update(REMOVE,0,0);
+
       _subject = 0;
       return true; 
     }

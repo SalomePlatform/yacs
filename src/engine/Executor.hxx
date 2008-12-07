@@ -98,6 +98,7 @@ namespace YACS
       void setStopOnError(bool dumpRequested=false, std::string xmlFile="");
       void unsetStopOnError();
       void waitPause();
+      static int _maxThreads;
     protected:
       bool checkBreakPoints();
       void waitResume();

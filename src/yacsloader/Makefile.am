@@ -155,4 +155,12 @@ EXTRA_DIST = loader.i samples
 dist-hook:
 	rm -rf `find $(distdir) -name CVS`
 
+install-data-local:
+	$(INSTALL) -d $(DESTDIR)$(prefix)/share/salome/yacssamples
+	cp -rf $(srcdir)/samples/*.xml $(DESTDIR)$(prefix)/share/salome/yacssamples
+	cp -rf $(srcdir)/samples/*.data $(DESTDIR)$(prefix)/share/salome/yacssamples
+
+uninstall-local:
+	rm -rf $(DESTDIR)$(prefix)/share/salome/yacssamples
+
 include $(top_srcdir)/adm/unix/make_end.am

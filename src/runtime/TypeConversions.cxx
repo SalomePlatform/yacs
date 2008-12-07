@@ -677,8 +677,11 @@ namespace YACS
           else
             {
               stringstream msg;
-              msg << "Not a python double. kind=" << t->kind() ;
+              msg << "Not a python double. ";
+#ifdef _DEVDEBUG_
+              msg << "kind=" << t->kind() ;
               msg << " ( " << __FILE__ << ":" << __LINE__ << ")";
+#endif
               throw YACS::ENGINE::ConversionException(msg.str());
             }
           return x;
@@ -697,8 +700,11 @@ namespace YACS
           else
             {
               stringstream msg;
-              msg << "Not a python integer. kind=" << t->kind() ;
+              msg << "Not a python integer. ";
+#ifdef _DEVDEBUG_
+              msg << "kind=" << t->kind() ;
               msg << " ( " << __FILE__ << ":" << __LINE__ << ")";
+#endif
               throw YACS::ENGINE::ConversionException(msg.str());
             }
           return l;
@@ -709,15 +715,20 @@ namespace YACS
     {
       static inline std::string convert(const TypeCode *t,PyObject* o,void*)
         {
+          std::string s;
           if (PyString_Check(o))
-            return PyString_AS_STRING(o);
+            s= PyString_AS_STRING(o);
           else
             {
               stringstream msg;
-              msg << "Not a python string. kind=" << t->kind() ;
+              msg << "Not a python string. ";
+#ifdef _DEVDEBUG_
+              msg << "kind=" << t->kind() ;
               msg << " ( " << __FILE__ << ":" << __LINE__ << ")";
+#endif
               throw YACS::ENGINE::ConversionException(msg.str());
             }
+          return s;
         }
     };
     template <ImplType IMPLOUT, class TOUT>
@@ -735,8 +746,11 @@ namespace YACS
           else
             {
               stringstream msg;
-              msg << "Not a python boolean. kind=" << t->kind() ;
+              msg << "Not a python boolean. ";
+#ifdef _DEVDEBUG_
+              msg << "kind=" << t->kind() ;
               msg << " ( " << __FILE__ << ":" << __LINE__ << ")";
+#endif
               throw YACS::ENGINE::ConversionException(msg.str());
             }
           return l;
@@ -812,7 +826,9 @@ namespace YACS
             {
               stringstream msg;
               msg << "Problem in conversion: the python object is not a sequence " << std::endl;
-              msg << " (" << __FILE__ << ":" << __LINE__ << ")";
+#ifdef _DEVDEBUG_
+              msg << " ( " << __FILE__ << ":" << __LINE__ << ")";
+#endif
               throw YACS::ENGINE::ConversionException(msg.str());
             }
           int length=PySequence_Size(o);
@@ -827,9 +843,18 @@ namespace YACS
               std::cerr << std::endl;
 #endif
               DEBTRACE( "item refcnt: " << item->ob_refcnt );
-              TOUT ro=YacsConvertor<PYTHONImpl,PyObject*,void*,IMPLOUT,TOUT>(t->contentType(),item,0);
-              v[i]=ro;
-              Py_DECREF(item);
+              try
+                {
+                  TOUT ro=YacsConvertor<PYTHONImpl,PyObject*,void*,IMPLOUT,TOUT>(t->contentType(),item,0);
+                  v[i]=ro;
+                  Py_DECREF(item);
+                }
+              catch(ConversionException& ex)
+                {
+                  stringstream msg;
+                  msg << ex.what() << " for sequence element " << i;
+                  throw YACS::ENGINE::ConversionException(msg.str(),false);
+                }
             }
         }
     };
@@ -858,13 +883,20 @@ namespace YACS
                   std::cerr << std::endl;
 #endif
                   stringstream msg;
-                  msg << "Problem in conversion: member " << name << " not present " << endl;
-                  msg << " (" << __FILE__ << ":" << __LINE__ << ")";
+                  msg << "member " << name << " not present " ;
                   throw YACS::ENGINE::ConversionException(msg.str());
                 }
               DEBTRACE( "value refcnt: " << value->ob_refcnt );
-              TOUT ro=YacsConvertor<PYTHONImpl,PyObject*,void*,IMPLOUT,TOUT>(tm,value,0);
-              m[name]=ro;
+              try
+                {
+                  TOUT ro=YacsConvertor<PYTHONImpl,PyObject*,void*,IMPLOUT,TOUT>(tm,value,0);
+                  m[name]=ro;
+                }
+              catch(ConversionException& ex)
+                {
+                  std::string s=" for struct member "+name;
+                  throw YACS::ENGINE::ConversionException(ex.what()+s,false);
+                }
             }
         }
     };

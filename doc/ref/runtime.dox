@@ -1,0 +1,40 @@
+/*! \page runtime SALOME Runtime 
+
+\section toc Table of contents
+
+  - \ref runtime_intro
+  - \ref runtime_elements
+
+\section runtime_intro Introduction
+
+The runtime package provides implementation of %YACS generic nodes
+for SALOME platform.
+
+
+\section runtime_elements SALOME runtime nodes
+
+The SALOME runtime implements following nodes :
+
+  - function inline node in python
+  - script inline node in python
+  - component service node for SALOME components
+  - reference service node for CORBA objects
+  - reference service node for script shell with inputs/outputs in XML files
+
+
+\subsection runtime_funcnode Inline function node
+A function inline node is implemented by a Python function.
+
+\subsection runtime_scriptnode Inline script node
+A script inline node is implemented by a Python script.
+
+\subsection runtime_componentnode Component service node
+...
+
+\subsection runtime_corbanode CORBA reference service node
+...
+
+\subsection runtime_xmlnode XML reference service node
+...
+
+*/

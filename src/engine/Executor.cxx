@@ -39,7 +39,9 @@ using YACS::BASES::Semaphore;
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
-Executor::Executor():_nbOfConcurrentThreads(0), _semForMaxThreads(50)
+int Executor::_maxThreads(50);
+
+Executor::Executor():_nbOfConcurrentThreads(0), _semForMaxThreads(_maxThreads)
 {
   _root=0;
   _toContinue = true;
@@ -50,7 +52,8 @@ Executor::Executor():_nbOfConcurrentThreads(0), _semForMaxThreads(50)
   _isRunningunderExternalControl=false;
   _executorState = YACS::NOTYETINITIALIZED;
   _execMode = YACS::CONTINUE;
-  _semThreadCnt = 50;
+  _semThreadCnt = _maxThreads;
+  DEBTRACE("Executor initialized with max threads = " << _maxThreads);
 }
 
 Executor::~Executor()
@@ -777,9 +780,9 @@ void Executor::loadTask(Task *task)
 {
   DEBTRACE("Executor::loadTask(Task *task)");
   if(task->getState() != YACS::TOLOAD)return;
+  traceExec(task, "state:TOLOAD");
   {//Critical section
     _mutexForSchedulerUpdate.lock();
-    task->loaded();
     _mainSched->notifyFrom(task,YACS::START);
     _mutexForSchedulerUpdate.unlock();
   }//End of critical section
@@ -797,6 +800,7 @@ void Executor::loadTask(Task *task)
         _mutexForSchedulerUpdate.lock();
         task->aborted();
         _mainSched->notifyFrom(task,YACS::ABORT);
+        traceExec(task, "state:"+Node::getStateName(task->getState()));
         _mutexForSchedulerUpdate.unlock();
       }//End of critical section
     }
@@ -807,6 +811,7 @@ void Executor::loadTask(Task *task)
         _mutexForSchedulerUpdate.lock();
         task->aborted();
         _mainSched->notifyFrom(task,YACS::ABORT);
+        traceExec(task, "state:"+Node::getStateName(task->getState()));
         _mutexForSchedulerUpdate.unlock();
       }//End of critical section
     }
@@ -824,7 +829,8 @@ void Executor::launchTasks(std::vector<Task *>& tasks)
   //First phase, make datastream connections
   for(iter=tasks.begin();iter!=tasks.end();iter++)
     {
-      if((*iter)->getState() != YACS::LOADED)continue;
+      YACS::StatesForNode state=(*iter)->getState();
+      if(state != YACS::TOLOAD)continue;
       try
         {
           (*iter)->connectService();
@@ -875,6 +881,7 @@ void Executor::launchTasks(std::vector<Task *>& tasks)
             _mutexForSchedulerUpdate.unlock();
           }//End of critical section
         }
+      traceExec(*iter, "state:"+Node::getStateName((*iter)->getState()));
     }
   //Second phase, execute each task in a thread
   for(iter=tasks.begin();iter!=tasks.end();iter++)
@@ -896,6 +903,7 @@ void Executor::launchTask(Task *task)
 {
   DEBTRACE("Executor::launchTask(Task *task)");
   if(task->getState() != YACS::TOACTIVATE)return;
+  traceExec(task, "state:TOACTIVATE");
 
   DEBTRACE("before _semForMaxThreads.wait " << _semThreadCnt);
   _semForMaxThreads.wait();
@@ -911,12 +919,10 @@ void Executor::launchTask(Task *task)
     _mutexForSchedulerUpdate.lock();
     _numberOfRunningTasks++;
     task->begin(); //change state to ACTIVATED
-    //no more need : done when loading
-    //_mainSched->notifyFrom(task,YACS::START);
     _mutexForSchedulerUpdate.unlock();
   } // --- End of critical section
   Thread(functionForTaskExecution,args);
-  //functionForTaskExecution(args);
+  traceExec(task, "state:"+Node::getStateName(task->getState()));
 }
 
 //! wait until a running task ends

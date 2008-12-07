@@ -41,6 +41,7 @@ AC_DEFUN([I2_CHECK_QT4],
   AC_REQUIRE([AC_PROG_CXX])
   AC_REQUIRE([AC_PROG_CPP])
 
+  qt_ok=no
 
   # --- check if qt4 standard install directory is defined (with subdirectories bin lib include)
   qt4_install_path=""
@@ -237,6 +238,7 @@ AC_DEFUN([I2_CHECK_QT4],
 
     # --- after all tests are successful, we support Qt4
     WITH_QT4=1
+    qt_ok=yes
     AC_MSG_NOTICE([Qt4 support is OK])
 
   else
@@ -264,6 +266,8 @@ AC_DEFUN([I2_CHECK_QT4],
 AC_DEFUN([I2_CHECK_QSCINTILLA],
 [
   AC_REQUIRE([I2_CHECK_QT4])
+
+  qscintilla_ok=no
 
   # --- check if qsci4 includes directory is defined
   qsci4_include_path=""
@@ -339,6 +343,7 @@ AC_DEFUN([I2_CHECK_QSCINTILLA],
       AC_SUBST(qsci4_ldflags)
       AC_SUBST(qsci4_libs)
       WITH_QSCI4=1
+      qscintilla_ok=yes
       # Propagate test into atlocal
       AC_SUBST(WITH_QSCI4)
 

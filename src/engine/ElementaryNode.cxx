@@ -256,16 +256,15 @@ void ElementaryNode::edRemovePort(Port *port) throw(Exception)
 {
   DEBTRACE("ElementaryNode::edRemovePort ");
   if(port->getNode()!=this)
-    throw Exception("ElementaryNode::edRemovePort : Port is not held by this");
-  string typeOfPortInstance=port->getNameOfTypeOfCurrentInstance();
-  if(typeOfPortInstance==InputPort::NAME)
-    edRemovePortTypedFromSet<InputPort>(dynamic_cast<InputPort *>(port),_setOfInputPort);
-  else if(typeOfPortInstance==OutputPort::NAME)
-    edRemovePortTypedFromSet<OutputPort>(dynamic_cast<OutputPort *>(port),_setOfOutputPort);
-  else if(typeOfPortInstance==InputDataStreamPort::NAME)
-    edRemovePortTypedFromSet<InputDataStreamPort>(dynamic_cast<InputDataStreamPort *>(port),_setOfInputDataStreamPort);
-  else if(typeOfPortInstance==OutputDataStreamPort::NAME)
-    edRemovePortTypedFromSet<OutputDataStreamPort>(dynamic_cast<OutputDataStreamPort *>(port),_setOfOutputDataStreamPort);
+    throw Exception("ElementaryNode::edRemovePort : Port is not held by this node");
+  if(InputPort *p=dynamic_cast<InputPort *>(port))
+    edRemovePortTypedFromSet<InputPort>(p,_setOfInputPort);
+  else if(OutputPort *p=dynamic_cast<OutputPort *>(port))
+    edRemovePortTypedFromSet<OutputPort>(p,_setOfOutputPort);
+  else if(InputDataStreamPort *p=dynamic_cast<InputDataStreamPort *>(port))
+    edRemovePortTypedFromSet<InputDataStreamPort>(p,_setOfInputDataStreamPort);
+  else if(OutputDataStreamPort *p=dynamic_cast<OutputDataStreamPort *>(port))
+    edRemovePortTypedFromSet<OutputDataStreamPort>(p,_setOfOutputDataStreamPort);
   else
     throw Exception("ElementaryNode::edRemovePort : unknown port type");
   delete port;
@@ -474,13 +473,12 @@ void ElementaryNode::aborted()
 
 //! Notify this node that it is loaded
 /*!
- * When an elementary node has been loaded it goes to LOADED state
- * It is then ready to be connected
+ * When an elementary node has been loaded 
+ * It is ready to be connected
  *
  */
 void ElementaryNode::loaded()
 {
-  setState(LOADED);
 }
 
 //! Notify this node that it is connected
@@ -493,7 +491,11 @@ void ElementaryNode::connected()
 {
   if(_inGate.exIsReady())
     if(areAllInputPortsValid())
-      setState(TOACTIVATE);
+      {
+        setState(TOACTIVATE);
+        return;
+      }
+  setState(LOADED);
 }
 
 void ElementaryNode::accept(Visitor *visitor)

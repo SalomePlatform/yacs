@@ -26,9 +26,6 @@ else
   SUBDIRS = src doc Demo
 endif
 
-install-exec-hook:
-	if [ "x`uname -m`" == "xx86_64" ] ; then cd ${prefix} && ln -sf lib64 lib ; fi
-
 check-local:
 	cat /tmp/${USER}/UnitTestsResult
 

@@ -21,7 +21,7 @@
 # --
 # -----------------------------------------------------------------------------
 #
-AC_INIT([Salome2 Project], [4.1.4], [paul.rascle@edf.fr], [SalomeYacs])
+AC_INIT([Salome2 Project], [5.1.0], [paul.rascle@edf.fr], [SalomeYacs])
 AM_INIT_AUTOMAKE([tar-pax])
 AC_CONFIG_HEADER(yacs_config.h)
 
@@ -29,7 +29,7 @@ AC_CONFIG_HEADER(yacs_config.h)
 MODULE_NAME=yacs
 AC_SUBST(MODULE_NAME)
 
-XVERSION=0x040104
+XVERSION=0x050100
 AC_SUBST(XVERSION)
 
 RELEASE=$VERSION
@@ -93,10 +93,9 @@ SWIG_ENABLE_CXX
 SWIG_PYTHON
 CHECK_CPPUNIT
 AC_CHECK_KERNEL
-#CHECK_QT
 #CHECK_MSG2QM
-#CHECK_CAS
 CHECK_HTML_GENERATORS
+CHECK_SPHINX
 
 I2_CHECK_QT4
 I2_CHECK_QSCINTILLA
@@ -105,12 +104,7 @@ AM_CONDITIONAL([PYTHON_API], [test "x$swig_ok" == "xyes"])
 AM_CONDITIONAL([SALOME_KERNEL], [test "x$KERNEL_ROOT_DIR" != "x"])
 AM_CONDITIONAL([DSC_PORTS], [test -f $KERNEL_ROOT_DIR/idl/salome/DSC_Engines.idl])
 
-#CHECK_KERNEL
-#CHECK_GUI(SALOME_Session_Server,SALOME_Session_Server)
-#CHECK_PYHELLO
-#CHECK_GEOM
-#CHECK_VISU
-#CHECK_SALOME_ENV
+CHECK_GUI(SALOME_Session_Server,SALOME_Session_Server)
 
 AM_CONDITIONAL([HAS_GUI], [test "x$GUI_ROOT_DIR" != "x"])
 
@@ -137,10 +131,11 @@ echo "  swig (python wrapper)... : $swig_ok"
 echo "  SALOME KERNEL .......... : $Kernel_ok"
 echo "  DSC extension .......... : $dsc_ok"
 echo "  Cppunit (make check).... : $cppunit_ok"
-echo "  Qt (salome)............. : $qt_ok"
+echo "  Qt4 (graphic interface)  : $qt_ok"
+echo "  QScintilla ............. : $qscintilla_ok"
 #echo "  msq2qm ................. : $msg2qm_ok"
-#echo "  SALOME GUI ............. : $SalomeGUI_ok"
-#echo "  OCC..................... : $occ_ok"
+echo "  SALOME GUI ............. : $SalomeGUI_ok"
+echo "  Sphinx (user doc) ...... : $sphinx_ok"
 echo
 echo "------------------------------------------------------------------------"
 echo

@@ -1,0 +1,31 @@
+/*! \page python Python wrapping
+
+
+The main classes and methods are wrapped in Python with 
+the SWIG tool (at least version 1.3.24)
+
+\section python_modules Multi modules
+As in C++ the wrapping is split in 3 modules : engine, runtime, loader
+so that other runtime or loader can be used with the same engine.
+We need to be careful with definitions shared by the 3 modules : put
+them in a unique dynamic library and link the modules with it.
+
+\section python_exception Exception wrapping
+In swig, exception can be wrapped either by declaring throw in interface
+file (.i) or by declaring an exception handler.
+A generic exception handler has been declared and automatic generation has been 
+desactivated (SWIG option -noexcept).
+
+\section python_gil Global Interpreter Lock
+For some methods we need to release the Python GIL.
+This is done by using a swig exception handler that releases the lock
+on entry and reacquires it on exit. 
+
+\section python_ownership Ownership
+Some methods (factory mainly) don't give ownership to python. For example,
+createNode from runtime object returns a newly created node to python but
+python has not ownership so when it disappears from python, the C++ object
+is not destroyed.
+To give ownership to python we use %newobject macro.
+
+*/

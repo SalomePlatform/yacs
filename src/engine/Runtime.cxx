@@ -29,8 +29,10 @@
 #include "OutputDataStreamPort.hxx"
 #include "Catalog.hxx"
 #include "TypeCode.hxx"
+#include "Executor.hxx"
 
 #include<iostream>
+#include<cstdlib>
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -89,6 +91,13 @@ Runtime::Runtime()
   typeMap["string"]=Runtime::_tc_string;
   Runtime::_tc_file->incrRef();
   typeMap["file"]=Runtime::_tc_file;
+
+  char *maxThreadStr = getenv("YACS_MAX_THREADS");
+  if (!maxThreadStr) return;
+  int maxThreads = atoi(maxThreadStr);
+  DEBTRACE("maxThreads = " << maxThreads);
+  if (maxThreads <1) return;
+  Executor::_maxThreads = maxThreads;
 }
 
 void Runtime::removeRuntime()

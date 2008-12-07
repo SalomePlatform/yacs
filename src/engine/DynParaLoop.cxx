@@ -206,6 +206,7 @@ Node *DynParaLoop::edRemoveNode()
   ComposedNode::edRemoveChild(_node);
   Node *ret=_node;
   _node=0;
+  modified();
   return ret;
 }
 
@@ -226,6 +227,7 @@ void DynParaLoop::edRemoveChild(Node *node) throw(Exception)
     _node=0;
   if(node==_initNode)
     _initNode=0;
+  modified();
 }
 
 std::list<Node *> DynParaLoop::edGetDirectDescendants() const

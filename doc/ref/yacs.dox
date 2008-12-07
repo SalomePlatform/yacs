@@ -1,0 +1,102 @@
+//----------------------------------------------------------------------------------
+/*!
+// \file    yacs.dox
+// \author  Christian Caremoli
+// \date    2006-11
+*/
+//----------------------------------------------------------------------------------
+
+/*!
+\mainpage
+
+ \section Introduction
+
+ \b %YACS is a tool to supervise execution of complex interconnected 
+ scientific applications on computer networks and clusters. 
+ Interconnected scientific applications can be seen as a collection 
+ of computational tasks that are executed in a known order.
+
+ In %YACS such a kind of application is described by a calculation schema.
+ %A calculation schema can be defined with an XML syntax and is mainly
+ a graph of nodes that refer to computational tasks or control structures.
+ Nodes are connected by control and data flow links.
+
+ \section Features
+
+ - Build calculation schemas from XML files
+ - Execute calculation schema (batch, step by step)
+ - Can manage mainly Salome component nodes, inline python nodes but
+   also to a lesser extent : C++ component nodes, XML component nodes
+
+ \section Packages
+
+ %YACS is composed of several packages
+ - \subpage bases : common base classes (threads,...) and constants
+ - \subpage engine : calculation schema generic classes (calculation nodes, control nodes,
+   control and data flow links, ...)
+ - \subpage runtime : implementation of generic calculation nodes for Salome platform
+ - \subpage xml_loader : XML reader for generic calculation schema
+ - \subpage gui_design : Graphic User Interface design
+
+ A Python API is provided by wrapping with swig : \subpage python
+
+ \section Building
+
+ For building %YACS, you need some prerequisites
+ - g++ 4.1 or more (mandatory)
+ - libxml2 (mandatory)
+ - expat (mandatory)
+ - omniorb 4.1 or more (mandatory)
+ - python 2.3 and + (mandatory)
+ - swig 1.3.31 (mandatory)
+ - cppunits (optional, for unit tests only)
+ - Salome 4.1.x (optional)
+
+ If you want to install %YACS for SALOME, you need to set environment 
+ variable: \b KERNEL_ROOT_DIR.
+
+ If you want to install %YACS with SALOME GUI, you need to set environment 
+ variable: \b GUI_ROOT_DIR.
+
+ The building process is the traditional configure/make/make install:
+ - configure --prefix=path_to_install
+ - make
+
+ Then you can run unit tests if cppunits is installed :
+ - make check
+
+ Then you can run a small demo in Demo directory:
+ - cd Demo
+ - make
+ - launch the echoSrv server : ./echoSrv& (if the omniorb name server is not
+   running you need to launch it : omniNames -start -logdir /tmp & should be enough)
+ - run yacs supervisor with the schema.xml file : ../src/yacsloader/driver schema.xml
+
+ Finally you can install yacs:
+ - make install
+ - read the doc in doc directory
+ - go to src/yacsloader/samples directory for XML examples
+
+  \section TODOs
+
+ Many things but mainly:
+ - add resource management features
+ - add GUIs
+
+*/
+
+/*! \defgroup TypeCodes  TypeCodes
+ */
+
+/*! \defgroup Nodes  Nodes
+ */
+
+/*! \defgroup Ports  Ports
+ */
+
+/*! \defgroup AdaptorPorts AdaptorPorts
+ */
+
+/*! \defgroup Executors Executor objects
+ */
+

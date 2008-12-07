@@ -18,35 +18,97 @@
 #
 include $(top_srcdir)/adm/unix/make_begin.am
 
-html/main.html:yacs.dox
+if SPHINX_IS_OK
+
+yacsdoc_DATA=html/index.html
+html/index.html:$(RSTFILES)
+	make htm
+
+endif
+
+dev_docs: build_dev_docs install_dev_docs
+
+build_dev_docs:
 	doxygen
 
-DOXFILES= bases.dox  engine.dox  hmi.dox  python.dox  runtime.dox  yacs.dox  yacsloader.dox
+DOXFILES= bases.dox engine.dox hmi.dox python.dox runtime.dox yacs.dox yacsloader.dox
 
-EXTRA_DIST= html $(DOXFILES)
+EXTRA_DIST= html htmldev $(DOXFILES)
 
-install-data-local:html/main.html
-	$(INSTALL) -d $(DESTDIR)$(docdir)/gui/YACS;
+yacsdocdir=$(docdir)/gui/YACS
+yacsdevdocdir=$(docdir)/gui/YACS/dev
+
+SPHINXOPTS      =
+SOURCEDIR       = $(srcdir)
+SPHINXBUILD     = sphinx-build
+PAPEROPT_a4     = -D latex_paper_size=a4
+ALLSPHINXOPTS   = -d doctrees $(PAPEROPT_a4) $(SPHINXOPTS) $(SOURCEDIR)
+
+htm:
+	mkdir -p html doctrees
+	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) html
+	@echo
+	@echo "Build finished. The HTML pages are in html."
+
+latex:
+	mkdir -p latex doctrees
+	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) latex
+	@echo
+	@echo "Build finished; the LaTeX files are in latex."
+	@echo "Run \`make all-pdf' or \`make all-ps' in that directory to" \
+	      "run these through (pdf)latex."
+
+RSTFILES=          \
+advancepy.rst      \
+batch.rst          \
+calcium.rst        \
+calculator.rst     \
+console.rst        \
+cppsalome.rst      \
+dataflow.rst       \
+execpy.rst         \
+execution.rst      \
+execxml.rst        \
+gui_components.rst \
+gui.rst            \
+hxx2salome.rst     \
+index.rst          \
+integration.rst    \
+intro.rst          \
+main_menu.rst      \
+modification.rst   \
+operations.rst     \
+principes.rst      \
+progdsc.rst        \
+pysalome.rst       \
+python.rst         \
+rappels.rst        \
+representation.rst \
+schemapy.rst       \
+schemaxml.rst      \
+scratch.rst        \
+toolbars.rst       \
+yacsgen.rst
+
+EXTRA_DIST+= $(RSTFILES) images
+
+install-data-local:
+	$(INSTALL) -d $(DESTDIR)$(yacsdocdir)
 	if test -d "html"; then b=; else b="$(srcdir)/"; fi; \
-	find $$b"html" -name "*.*" -exec cp -rf {} $(DESTDIR)$(docdir)/gui/YACS ';' ; \
-  cp -rf $(DESTDIR)$(docdir)/gui/YACS/index.html $(DESTDIR)$(docdir)/gui/YACS/index.htm; \
-  cp -rf $(top_srcdir)/src/yacsloader/samples $(DESTDIR)$(docdir)/gui/YACS; \
-  rm -rf $(DESTDIR)$(docdir)/gui/YACS/samples/CVS;
+	cp -rf $$b"html"/* $(DESTDIR)$(yacsdocdir) ; \
+	if test -f $$b"latex"/yacs.pdf; then cp -f $$b"latex"/yacs.pdf $(DESTDIR)$(yacsdocdir) ; fi;
+
+install_dev_docs:
+	$(INSTALL) -d $(DESTDIR)$(yacsdevdocdir)
+	if test -d "htmldev"; then b=; else b="$(srcdir)/"; fi; \
+	find $$b"htmldev" -name "*.*" -exec cp -rf {} $(DESTDIR)$(yacsdevdocdir) ';' ; \
+ cp -rf $(top_srcdir)/src/yacsloader/samples $(DESTDIR)$(yacsdevdocdir); \
+ rm -rf $(DESTDIR)$(yacsdevdocdir)/samples/CVS;
 
 uninstall-local:
-	chmod -R +w $(DESTDIR)$(docdir)/gui/YACS
-	find $(DESTDIR)$(docdir) -name "*.html" -type f -exec rm -rf {} \;
-	find $(DESTDIR)$(docdir) -name "*.jpg" -type f -exec rm -rf {} \;
-	find $(DESTDIR)$(docdir) -name "*.map" -type f -exec rm -rf {} \;
-	find $(DESTDIR)$(docdir) -name "*.md5" -type f -exec rm -rf {} \;
-	find $(DESTDIR)$(docdir) -name "*.png" -type f -exec rm -rf {} \;
-	find $(DESTDIR)$(docdir) -name "*.gif" -type f -exec rm -rf {} \;
-	find $(DESTDIR)$(docdir) -name "*.css" -type f -exec rm -rf {} \;
-	find $(DESTDIR)$(docdir) -name "*.js*" -type f -exec rm -rf {} \;
-	find $(DESTDIR)$(docdir) -name "*.jpeg*" -type f -exec rm -rf {} \;
-	rm -rf $(DESTDIR)$(docdir)/gui/YACS/samples
-	rm -rf $(DESTDIR)$(docdir)/gui/YACS/index.htm
+	chmod -R +w $(DESTDIR)$(yacsdocdir)
+	rm -rf $(DESTDIR)$(yacsdocdir)/*
 
 clean-local:
+	-rm -rf html latex doctrees
 	if test -d "html"; then rm -rf html ; fi
-
