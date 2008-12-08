@@ -112,6 +112,8 @@ template <class T> nodetypeParser<T> nodetypeParser<T>::nodeParser;
 template <class T>
 void nodetypeParser<T>::property (const myprop& prop)
 {
+   if(this->_node==0)
+     throw YACS::Exception("Node must be completely defined before setting its properties");
   _node->setProperty(prop._name,prop._value);
 }
 
