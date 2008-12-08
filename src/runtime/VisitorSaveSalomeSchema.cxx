@@ -59,8 +59,8 @@ void VisitorSaveSalomeSchema::visitPresetNode(DataNode *node)
     _out << " state=\"disabled\">" << endl;
   else
     _out << ">" << endl;
-  writeProperties(node);
   writeDataNodeParameters(node);
+  writeProperties(node);
   _out << indent(depth) << "</datanode>" << endl;
   endCase(node);
   DEBTRACE("END visitPresetNode " << _root->getChildName(node));
@@ -78,8 +78,8 @@ void VisitorSaveSalomeSchema::visitOutNode(DataNode *node)
     _out << " state=\"disabled\">" << endl;
   else
     _out << ">" << endl;
-  writeProperties(node);
   writeOutNodeParameters(node);
+  writeProperties(node);
   _out << indent(depth) << "</outnode>" << endl;
   endCase(node);
   DEBTRACE("END visitOutNode " << _root->getChildName(node));
@@ -97,8 +97,8 @@ void VisitorSaveSalomeSchema::visitStudyInNode(DataNode *node)
     _out << " state=\"disabled\">" << endl;
   else
     _out << ">" << endl;
-  writeProperties(node);
   writeStudyInNodeParameters(node);
+  writeProperties(node);
   _out << indent(depth) << "</datanode>" << endl;
   endCase(node);
   DEBTRACE("END visitStudyInNode " << _root->getChildName(node));
@@ -116,8 +116,8 @@ void VisitorSaveSalomeSchema::visitStudyOutNode(DataNode *node)
     _out << " state=\"disabled\">" << endl;
   else
     _out << ">" << endl;
-  writeProperties(node);
   writeStudyOutNodeParameters(node);
+  writeProperties(node);
   _out << indent(depth) << "</outnode>" << endl;
   endCase(node);
   DEBTRACE("END visitStudyOutNode " << _root->getChildName(node));

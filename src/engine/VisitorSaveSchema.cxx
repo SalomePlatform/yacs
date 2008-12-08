@@ -170,10 +170,10 @@ void VisitorSaveSchema::visitInlineNode(InlineNode *node)
     _out << " state=\"disabled\">" << endl;
   else
     _out << ">" << endl;
-  writeProperties(node);
   _out << indent(depth+1) << "<script><code><![CDATA[";
   _out << node->getScript();
   _out << "]]></code></script>" << endl;
+  writeProperties(node);
   writeInputPorts(node);
   writeInputDataStreamPorts(node);
   writeOutputPorts(node);
@@ -193,12 +193,12 @@ void VisitorSaveSchema::visitInlineFuncNode(InlineFuncNode *node)
     _out << " state=\"disabled\">" << endl;
   else
     _out << ">" << endl;
-  writeProperties(node);
   _out << indent(depth+1) << "<function name=\"" << node->getFname() << "\">" << endl;
   _out << indent(depth+2) << "<code><![CDATA[";
   _out << node->getScript();
   _out << "]]></code>" << endl;
   _out << indent(depth+1) << "</function>" << endl;
+  writeProperties(node);
   writeInputPorts(node);
   writeInputDataStreamPorts(node);
   writeOutputPorts(node);
@@ -248,7 +248,6 @@ void VisitorSaveSchema::visitServiceNode(ServiceNode *node)
     _out << " state=\"disabled\">" << endl;
   else
     _out << ">" << endl;
-  writeProperties(node);
   if (node->getKind() == "xmlsh")
     {
       _out << indent(depth+1) << "<kind>xmlsh</kind>" << endl;
@@ -280,6 +279,7 @@ void VisitorSaveSchema::visitServiceNode(ServiceNode *node)
     }
   _out << indent(depth+1) << "<method>" << node->getMethod() << "</method>" << endl;
 
+  writeProperties(node);
   writeInputPorts(node);
   writeInputDataStreamPorts(node);
   writeOutputPorts(node);
@@ -300,7 +300,6 @@ void VisitorSaveSchema::visitServiceInlineNode(ServiceInlineNode *node)
   else
     _out << ">" << endl;
   
-  writeProperties(node);
   ComponentInstance *compo = node->getComponent();
   if (compo)
     _out << indent(depth+1) << compo->getFileRepr() << endl;
@@ -310,6 +309,7 @@ void VisitorSaveSchema::visitServiceInlineNode(ServiceInlineNode *node)
   _out << node->getScript();
   _out << "]]></code>" << endl;
   _out << indent(depth+1) << "</function>" << endl;
+  writeProperties(node);
   writeInputPorts(node);
   writeOutputPorts(node);
   _out << indent(depth) << "</serviceInline>" << endl;
