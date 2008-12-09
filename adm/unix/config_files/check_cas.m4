@@ -156,6 +156,17 @@ case $host_os in
 esac
   CPPFLAGS="$CPPFLAGS $CAS_CPPFLAGS"
 
+dnl test 64 bits
+case $host_os in
+   linux*)
+      if test x"$host_cpu" = x"x86_64" || test x"$host_cpu" = x"ia64" ;then 
+         CPPFLAGS="-D_OCC64 $CPPFLAGS"; 
+         CXXFLAGS="-D_OCC64 $CXXFLAGS"; 
+         CFLAGS="-D_OCC64 $CFLAGS"; 
+      fi
+      ;;
+esac
+
   echo
   echo testing config.h
 
