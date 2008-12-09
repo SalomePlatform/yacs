@@ -19,6 +19,7 @@
 #include "TypeCode.hxx"
 #include <sstream>
 #include <iostream>
+#include <cstring>
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"

@@ -23,6 +23,7 @@
 #include "Task.hxx"
 #include "define.hxx"
 #include <string>
+#include <algorithm>
 
 namespace YACS
 {

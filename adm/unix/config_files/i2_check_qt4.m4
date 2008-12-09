@@ -29,12 +29,12 @@ dnl   path given with --with-qt4 options
 dnl   presence of QTDIR variable
 dnl   /usr
 dnl usages
-dnl ../demoQt4/configure --prefix=/home/prascle/partage/maquettes/install 
-dnl ../demoQt4/configure --prefix=/home/prascle/partage/maquettes/install --with-qt4
-dnl ../demoQt4/configure --prefix=/home/prascle/partage/maquettes/install --with-qt4=/opt/qt433
-dnl ../demoQt4/configure --prefix=/home/prascle/partage/maquettes/install --with-qt4-includes=/usr/include/qt4
-dnl ../demoQt4/configure --prefix=/home/prascle/partage/maquettes/install --with-qt4-includes=/usr/include/qt4 --with-qt4-libraries=/usr/lib -with-qt4-tools=/usr/bin
-dnl ../demoQt4/configure --prefix=/home/prascle/partage/maquettes/install --without-qt4
+dnl ./configure --prefix=/home/prascle/partage/maquettes/install 
+dnl ./configure --prefix=/home/prascle/partage/maquettes/install --with-qt4
+dnl ./configure --prefix=/home/prascle/partage/maquettes/install --with-qt4=/opt/qt443
+dnl ./configure --prefix=/home/prascle/partage/maquettes/install --with-qt4-includes=/usr/include/qt4
+dnl ./configure --prefix=/home/prascle/partage/maquettes/install --with-qt4-includes=/usr/include/qt4 --with-qt4-libraries=/usr/lib -with-qt4-tools=/usr/bin
+dnl ./configure --prefix=/home/prascle/partage/maquettes/install --without-qt4
 dnl
 AC_DEFUN([I2_CHECK_QT4],
 [
@@ -191,6 +191,9 @@ AC_DEFUN([I2_CHECK_QT4],
     AC_SUBST(QT_RCC)
 
     # --- we test the header file presence and usability
+    QTINC=""
+    AC_CHECK_FILE($qt4_include_path/qt4/QtCore/qglobal.h,QTINC="/qt4",QTINC="")
+    qt4_include_path="$qt4_include_path${QTINC}"
     qt4_cppflags=""
     qt4_cppflags="${qt4_cppflags} -I$qt4_include_path/QtCore"
     qt4_cppflags="${qt4_cppflags} -I$qt4_include_path/QtGui"
@@ -253,7 +256,7 @@ AC_DEFUN([I2_CHECK_QT4],
   AM_CONDITIONAL(WITH_QT4, test $WITH_QT4 = 1)
 
   # ... and into source files
-  AC_DEFINE_UNQUOTED(HAS_QT4, $WITH_QT4, [Support for regular expression library])
+  AC_DEFINE_UNQUOTED(HAS_QT4, $WITH_QT4, [Qt4 library])
 
   # restoring saved values
   CPPFLAGS=$saved_CPPFLAGS
@@ -268,6 +271,7 @@ AC_DEFUN([I2_CHECK_QSCINTILLA],
   AC_REQUIRE([I2_CHECK_QT4])
 
   qscintilla_ok=no
+  WITH_QSCI4=0
 
   # --- check if qsci4 includes directory is defined
   qsci4_include_path=""
@@ -279,10 +283,10 @@ AC_DEFUN([I2_CHECK_QSCINTILLA],
     # --- qsci4 includes directory is defined
     if test x${qsci4_include_path} = xyes
     then
-      qsci4_include_path="/usr/include/Qsci"
+      qsci4_include_path="/usr/include${QTINC}/Qsci"
     fi
   else
-    qsci4_include_path="${QT_DIR}/include/Qsci"
+    qsci4_include_path="${QT_DIR}/include${QTINC}/Qsci"
   fi
   AC_MSG_NOTICE($qsci4_include_path)
 
@@ -357,7 +361,7 @@ AC_DEFUN([I2_CHECK_QSCINTILLA],
   AM_CONDITIONAL(WITH_QSCI4, test $WITH_QSCI4 = 1)
 
   # ... and into source files
-  AC_DEFINE_UNQUOTED(HAS_QSCI4, $WITH_QSCI4, [Support for regular expression library])
+  AC_DEFINE_UNQUOTED(HAS_QSCI4, $WITH_QSCI4, [QsciScintilla library])
 
   # restoring saved values
   CPPFLAGS=$saved_CPPFLAGS

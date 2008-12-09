@@ -19,6 +19,7 @@
 #include <iostream>
 #include <sstream>
 #include "YacsTrace.hxx"
+#include <cstdlib>
 
 void AttachDebugger()
 {

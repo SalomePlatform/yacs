@@ -21,7 +21,7 @@
 
 #include "InlineNode.hxx"
 
-#ifdef HAS_QSCI4
+#if (defined HAS_QSCI4 == 1)
 #include <qsciscintilla.h>
 #include <qscilexerpython.h>
 #endif
@@ -36,7 +36,7 @@ using namespace std;
 using namespace YACS;
 using namespace YACS::HMI;
 
-#ifdef HAS_QSCI4
+#if (defined HAS_QSCI4 == 1)
 class myQsciScintilla: public QsciScintilla
 {
 public:
@@ -81,14 +81,14 @@ EditionScript::EditionScript(Subject* subject,
   setEditablePorts(true);
 
   _haveScript = true;
-#ifdef HAS_QSCI4
+#if (defined HAS_QSCI4 == 1)
   _sci = new myQsciScintilla(this);
 #else
   _sci = new QTextEdit(this);
 #endif
   _wid->gridLayout->removeItem(_wid->spacerItem);
   _wid->gridLayout1->addWidget( _sci );
-#ifdef HAS_QSCI4
+#if (defined HAS_QSCI4 == 1)
   _sci->setUtf8(1);
   QsciLexerPython *lex = new QsciLexerPython(_sci);
   _sci->setLexer(lex);
@@ -118,7 +118,7 @@ void EditionScript::onApply()
   bool scriptEdited = false;
   if (_haveScript)
     {
-#ifdef HAS_QSCI4
+#if (defined HAS_QSCI4 == 1)
       if (_sci->isModified())
         {
           scriptEdited = true;

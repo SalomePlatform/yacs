@@ -22,6 +22,7 @@
 #include "InvalidExtractionException.hxx"
 
 #include <cstring>
+#include <cstdlib>
 
 using namespace YACS::ENGINE;
 using namespace std;

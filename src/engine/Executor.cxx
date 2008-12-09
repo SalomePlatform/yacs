@@ -28,6 +28,8 @@
 #include <fstream>
 #include <sys/stat.h>
 #include <cassert>
+#include <cstdlib>
+#include <algorithm>
 
 using namespace YACS::ENGINE;
 using namespace std;
