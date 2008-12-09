@@ -22,7 +22,7 @@
 #include "yacsconfig.h"
 #include "EditionElementaryNode.hxx"
 
-#if (defined HAS_QSCI4 == 1)
+#if HAS_QSCI4>0
 class QsciScintilla;
 #endif
 
@@ -48,7 +48,7 @@ namespace YACS
     protected:
       SubjectInlineNode *_subInlineNode;
 
-#if (defined HAS_QSCI4 == 1)
+#if HAS_QSCI4>0
       QsciScintilla* _sci;
 #else
       QTextEdit* _sci;
