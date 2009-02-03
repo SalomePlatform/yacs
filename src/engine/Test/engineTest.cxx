@@ -1,6 +1,23 @@
-
+//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 // --- include from engine first, to avoid redifinition warning _POSIX_C_SOURCE
-
+//
 #include "Bloc.hxx"
 #include "Proc.hxx"
 #include "Logger.hxx"
@@ -241,7 +258,7 @@ void EngineTest::checkAny2()
     }
   catch(Exception& e)
     {
-      CPPUNIT_ASSERT(std::string(e.what())=="Value is not a Double");
+      CPPUNIT_ASSERT(std::string(e.what())=="Value is not a double");
     }
   SequenceAnyPtr tmp3=SequenceAny::New(tmp->getType());
   try
@@ -251,7 +268,7 @@ void EngineTest::checkAny2()
     }
   catch(Exception& e)
     {
-      CPPUNIT_ASSERT(std::string(e.what())=="Invalid runtime of YACS::Any struct : having Int and you want Sequence");
+      CPPUNIT_ASSERT(std::string(e.what())=="Invalid runtime of YACS::Any struct : having int and you want Sequence");
     }
   CPPUNIT_ASSERT_EQUAL(0,(int)tmp3->size());
   CPPUNIT_ASSERT_EQUAL(202,(*tmp)[9]->getIntValue());

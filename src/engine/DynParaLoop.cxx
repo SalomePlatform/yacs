@@ -1,3 +1,21 @@
+//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 #include "DynParaLoop.hxx"
 #include "LinkInfo.hxx"
 #include "OutPort.hxx"
@@ -188,6 +206,7 @@ Node *DynParaLoop::edRemoveNode()
   ComposedNode::edRemoveChild(_node);
   Node *ret=_node;
   _node=0;
+  modified();
   return ret;
 }
 
@@ -208,6 +227,7 @@ void DynParaLoop::edRemoveChild(Node *node) throw(Exception)
     _node=0;
   if(node==_initNode)
     _initNode=0;
+  modified();
 }
 
 std::list<Node *> DynParaLoop::edGetDirectDescendants() const
@@ -439,3 +459,12 @@ InputPort *DynParaLoop::getDynInputPortByAbsName(int branchNb, const std::string
       }
   return 0;
 }
+
+void DynParaLoop::checkBasicConsistency() const throw(Exception)
+{
+  DEBTRACE("DynParaLoop::checkBasicConsistency");
+  ComposedNode::checkBasicConsistency();
+  if(!_node)
+    throw Exception("For a dynamic loop, internal node is mandatory");
+}
+

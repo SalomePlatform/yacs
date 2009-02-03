@@ -1,9 +1,28 @@
+//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 #include "Any.hxx"
 #include "Runtime.hxx"
 #include "TypeCode.hxx"
 #include "InvalidExtractionException.hxx"
 
 #include <cstring>
+#include <cstdlib>
 
 using namespace YACS::ENGINE;
 using namespace std;
@@ -167,7 +186,7 @@ int AtomAny::getIntValue() const throw(Exception)
   if(_type->isA(Runtime::_tc_int))
     return _value._i;
   else
-    throw Exception("Value is not an Int");
+    throw Exception("Value is not an int");
 }
 
 bool AtomAny::getBoolValue() const throw(Exception)
@@ -175,7 +194,7 @@ bool AtomAny::getBoolValue() const throw(Exception)
   if(_type->isA(Runtime::_tc_bool))
     return _value._b;
   else
-    throw Exception("Value is not a Bool");
+    throw Exception("Value is not a bool");
 }
 
 double AtomAny::getDoubleValue() const throw(Exception)
@@ -183,7 +202,7 @@ double AtomAny::getDoubleValue() const throw(Exception)
   if(_type->isA(Runtime::_tc_double))
     return _value._d;
   else
-    throw Exception("Value is not a Double");
+    throw Exception("Value is not a double");
 }
 
 std::string AtomAny::getStringValue() const throw(Exception)
@@ -191,7 +210,7 @@ std::string AtomAny::getStringValue() const throw(Exception)
   if(_type->isA(Runtime::_tc_string))
     return string(_value._s->cStr());
   else
-    throw Exception("Value is not a String");
+    throw Exception("Value is not a string");
 }
 
 /*!

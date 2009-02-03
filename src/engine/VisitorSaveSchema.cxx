@@ -1,4 +1,21 @@
-
+//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 #include "VisitorSaveSchema.hxx"
 
 #include "ElementaryNode.hxx"
@@ -153,10 +170,10 @@ void VisitorSaveSchema::visitInlineNode(InlineNode *node)
     _out << " state=\"disabled\">" << endl;
   else
     _out << ">" << endl;
-  writeProperties(node);
   _out << indent(depth+1) << "<script><code><![CDATA[";
   _out << node->getScript();
   _out << "]]></code></script>" << endl;
+  writeProperties(node);
   writeInputPorts(node);
   writeInputDataStreamPorts(node);
   writeOutputPorts(node);
@@ -176,12 +193,12 @@ void VisitorSaveSchema::visitInlineFuncNode(InlineFuncNode *node)
     _out << " state=\"disabled\">" << endl;
   else
     _out << ">" << endl;
-  writeProperties(node);
   _out << indent(depth+1) << "<function name=\"" << node->getFname() << "\">" << endl;
   _out << indent(depth+2) << "<code><![CDATA[";
   _out << node->getScript();
   _out << "]]></code>" << endl;
   _out << indent(depth+1) << "</function>" << endl;
+  writeProperties(node);
   writeInputPorts(node);
   writeInputDataStreamPorts(node);
   writeOutputPorts(node);
@@ -231,8 +248,7 @@ void VisitorSaveSchema::visitServiceNode(ServiceNode *node)
     _out << " state=\"disabled\">" << endl;
   else
     _out << ">" << endl;
-  writeProperties(node);
-  if (node->getKind() == "XML")
+  if (node->getKind() == "xmlsh")
     {
       _out << indent(depth+1) << "<kind>xmlsh</kind>" << endl;
       _out << indent(depth+1) << "<ref>" << node->getRef() << "</ref>" << endl;
@@ -263,6 +279,7 @@ void VisitorSaveSchema::visitServiceNode(ServiceNode *node)
     }
   _out << indent(depth+1) << "<method>" << node->getMethod() << "</method>" << endl;
 
+  writeProperties(node);
   writeInputPorts(node);
   writeInputDataStreamPorts(node);
   writeOutputPorts(node);
@@ -283,7 +300,6 @@ void VisitorSaveSchema::visitServiceInlineNode(ServiceInlineNode *node)
   else
     _out << ">" << endl;
   
-  writeProperties(node);
   ComponentInstance *compo = node->getComponent();
   if (compo)
     _out << indent(depth+1) << compo->getFileRepr() << endl;
@@ -293,6 +309,7 @@ void VisitorSaveSchema::visitServiceInlineNode(ServiceInlineNode *node)
   _out << node->getScript();
   _out << "]]></code>" << endl;
   _out << indent(depth+1) << "</function>" << endl;
+  writeProperties(node);
   writeInputPorts(node);
   writeOutputPorts(node);
   _out << indent(depth) << "</serviceInline>" << endl;
@@ -481,6 +498,7 @@ void VisitorSaveSchema::dumpTypeCode(TypeCode* type, set<string>& typeNames,map<
                 dumpTypeCode(member,typeNames,typeMap,depth);
               }            
           }
+        typeNames.insert(typeName);
         _out << indent(depth) << "<struct name=\"" << typeName << "\">" << endl;
         for (int i=0; i<mbCnt; i++)
           {
@@ -506,15 +524,6 @@ void VisitorSaveSchema::writeTypeCodes(Proc *proc)
   set<string> typeNames;
 
   // --- force definition of simple types first
-
-  _out << indent(depth) << "<type name=\"Bool\" kind=\"bool\"/>" << endl;
-  _out << indent(depth) << "<type name=\"Double\" kind=\"double\"/>" << endl;
-  _out << indent(depth) << "<type name=\"Int\" kind=\"int\"/>" << endl;
-  _out << indent(depth) << "<type name=\"String\" kind=\"string\"/>" << endl;
-  typeNames.insert("Bool");
-  typeNames.insert("Double");
-  typeNames.insert("Int");
-  typeNames.insert("String");
 
   for (it = typeMap.begin(); it != typeMap.end(); it++)
     {
@@ -793,9 +802,12 @@ void VisitorSaveSchema::writeSimpleStreamLinks(ComposedNode *node)
 
 		  std::map<std::string,std::string> aPropMap = anOP->getPropertyMap();
 		  for (std::map<std::string,std::string>::iterator itP = aPropMap.begin(); itP != aPropMap.end(); itP++)
-		    _out << indent(depth+1) << "<property name=\"" << (*itP).first << "\" value=\"" 
-			 << (*itP).second << "\"/>" << endl;
-
+                    {
+                      string notAlinkProperty = "DependencyType";
+                      if (notAlinkProperty != (*itP).first)
+                        _out << indent(depth+1) << "<property name=\"" << (*itP).first << "\" value=\"" 
+                             << (*itP).second << "\"/>" << endl;
+                    }
                   _out << indent(depth) << "</stream>" << endl;
 		}
               else

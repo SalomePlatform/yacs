@@ -1,3 +1,21 @@
+//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 #include "ComposedNode.hxx"
 #include "LinkInfo.hxx"
 #include "Container.hxx"
@@ -163,6 +181,7 @@ void ComposedNode::notifyFrom(const Task *sender, //* I : task emitting event
                               YACS::Event event   //* I : event emitted
                               )
 {
+  DEBTRACE("ComposedNode::notifyFrom " << event);
   ElementaryNode *taskTyped=dynamic_cast<ElementaryNode *>((Task *)sender);
   YACS::Event curEvent=event;
   Node *lminus1LevelNode=taskTyped;
@@ -439,6 +458,11 @@ void ComposedNode::edRemoveLink(OutGate *start, InGate *end) throw(Exception)
   if(father!=this)
     throw Exception("edRemoveLink : nodes not in direct descendance of this");
   start->edRemoveInGate(end);
+}
+
+bool ComposedNode::edAddChild(Node *DISOWNnode) throw(Exception)
+{
+  return false; // --- reimplemented in derived classes
 }
 
 //! Remove a child node.
@@ -1307,6 +1331,9 @@ void ComposedNode::releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *
 void ComposedNode::loaded()
 {
 }
+void ComposedNode::connected()
+{
+}
 
 void ComposedNode::accept(Visitor *visitor)
 {
@@ -1339,6 +1366,18 @@ void ComposedNode::edUpdateState()
   DEBTRACE("ComposedNode::edUpdateState(): " << _state << " " << _modified);
   YACS::StatesForNode state=YACS::READY;
 
+  try
+    {
+      checkBasicConsistency();
+      _errorDetails="";
+    }
+  catch(Exception& e)
+    {
+      state=YACS::INVALID;
+      _errorDetails=e.what();
+    }
+  DEBTRACE("ComposedNode::edUpdateState: " << _errorDetails);
+
   //update children if needed
   list<Node *> constituents=edGetDirectDescendants();
   for(list<Node *>::iterator iter=constituents.begin(); iter!=constituents.end(); iter++)
@@ -1355,7 +1394,8 @@ std::string ComposedNode::getErrorReport()
 {
   DEBTRACE("ComposedNode::getErrorReport: " << getName() << " " << _state);
   YACS::StatesForNode effectiveState=getEffectiveState();
-  if(effectiveState == YACS::READY || effectiveState == YACS::DONE)
+
+  if(effectiveState != YACS::INVALID &&  effectiveState != YACS::ERROR && effectiveState != YACS::FAILED)
     return "";
 
   std::string report="<error node= " + getName();
@@ -1392,3 +1432,11 @@ std::string ComposedNode::getErrorReport()
 
 
 
+void ComposedNode::checkBasicConsistency() const throw(Exception)
+{
+  DEBTRACE("ComposedNode::checkBasicConsistency");
+  std::list<InputPort *>::const_iterator iter;
+  std::list<InputPort *> inports=getLocalInputPorts();
+  for(iter=inports.begin();iter!=inports.end();iter++)
+    (*iter)->checkBasicConsistency();
+}

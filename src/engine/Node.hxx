@@ -1,3 +1,21 @@
+//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 #ifndef __NODE_HXX__
 #define __NODE_HXX__
 
@@ -79,6 +97,7 @@ namespace YACS
       virtual YACS::StatesForNode getEffectiveState() const;
       virtual YACS::StatesForNode getEffectiveState(const Node*) const;
       std::string getColorState(YACS::StatesForNode state) const;
+      static std::string getStateName(YACS::StatesForNode state);
       InGate *getInGate() { return &_inGate; }
       OutGate *getOutGate() { return &_outGate; }
       const std::string& getName() const { return _name; }
@@ -145,6 +164,7 @@ namespace YACS
       virtual void edDisconnectAllLinksWithMe();
       static void checkValidityOfPortName(const std::string& name) throw(Exception);
       static ComposedNode *checkHavingCommonFather(Node *node1, Node *node2) throw(Exception);
+      static std::map<int, std::string> _nodeStateName;
     };
 
   }

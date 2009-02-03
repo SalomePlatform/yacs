@@ -1,5 +1,23 @@
-
+//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 //#define REFCNT
+//
 #ifdef REFCNT
 #define private public
 #define protected public
@@ -24,6 +42,7 @@
 #endif
 
 #include <omniORB4/CORBA.h>
+#include <omniORB4/minorCode.h>
 #include <iostream>
 #include <set>
 #include <list>
@@ -388,14 +407,19 @@ void SalomeNode::connectService()
             }
           catch(CORBA::SystemException& ex)
             {
-              std::string msg="Problem in connectService. CORBA System exception";
-              msg=msg+getName()+" " + port->getName() + " " + snode->getName() + " " + (*iterout)->getName();
+              DEBTRACE( "minor code: " << ex.minor() );
+              DEBTRACE( "completion code: " << ex.completed() );
+              std::string msg="Problem in connectService. CORBA System exception ";
+              std::string excname=ex._name();
+              msg=msg+excname + " " +getName()+" " + port->getName() + " " + snode->getName() + " " + (*iterout)->getName();
+              _errorDetails=msg;
               throw Exception(msg);
             }
           catch(...)
             {
               std::string msg="Problem in connectService. Unknown exception";
               msg=msg+getName()+" " + port->getName() + " " + snode->getName() + " " + (*iterout)->getName();
+              _errorDetails=msg;
               throw Exception(msg);
             }
           DEBTRACE("Connected: " <<id<<" "<<getName()<<" "<<port->getName()<<" "<<snode->getName()<<" "<<(*iterout)->getName());
@@ -636,8 +660,25 @@ void SalomeNode::execute()
             {
               text=text+"component '" +_ref+ "' has no service '" + _method+ "'";
             }
+          else if(excname == "MARSHAL" && sysexc->minor() == omni::MARSHAL_PassEndOfMessage)
+            {
+              text=text+"probably an error in arguments of service '" + _method + "' from component '" +_ref+ "'";
+            }
+          else if(excname == "COMM_FAILURE" && sysexc->minor() == omni::COMM_FAILURE_UnMarshalResults)
+            {
+              text=text+"probably an error in output arguments of service '" + _method + "' from component '" +_ref+ "'";
+            }
+          else if(excname == "COMM_FAILURE" && sysexc->minor() == omni::COMM_FAILURE_UnMarshalArguments)
+            {
+              text=text+"probably an error in input arguments of service '" + _method + "' from component '" +_ref+ "'";
+            }
+          else if(excname == "COMM_FAILURE" && sysexc->minor() == omni::COMM_FAILURE_WaitingForReply)
+            {
+              text=text+"probably an error in input arguments of service '" + _method + "' from component '" +_ref+ "'";
+            }
           else
             {
+              DEBTRACE(sysexc->NP_minorString() );
               text=text+"System Exception "+ excname;
             }
           _errorDetails=text;
@@ -776,16 +817,61 @@ ServiceNode* SalomeNode::createNode(const std::string& name)
 std::string SalomeNode::getContainerLog()
 {
   std::string msg="Component is not loaded";
-  CORBA::Object_var objComponent=((SalomeComponent*)_component)->getCompoPtr();
-  Engines::Component_var compo=Engines::Component::_narrow(objComponent);
-  if( !CORBA::is_nil(compo) )
+  try
     {
-      Engines::Container_var cont= compo->GetContainerRef();
-      CORBA::String_var logname = cont->logfilename();
-      DEBTRACE(logname);
-      msg=logname;
-      std::string::size_type pos = msg.find(":");
-      msg=msg.substr(pos+1);
+      CORBA::Object_var objComponent=((SalomeComponent*)_component)->getCompoPtr();
+      Engines::Component_var compo=Engines::Component::_narrow(objComponent);
+      if( !CORBA::is_nil(compo) )
+        {
+          Engines::Container_var cont= compo->GetContainerRef();
+          CORBA::String_var logname = cont->logfilename();
+          DEBTRACE(logname);
+          msg=logname;
+          std::string::size_type pos = msg.find(":");
+          msg=msg.substr(pos+1);
+        }
+    }
+  catch(CORBA::COMM_FAILURE& ex) 
+    {
+      msg = ":Component no longer reachable: Caught system exception COMM_FAILURE";
+      msg += " -- unable to contact the object.";
+    }
+  catch(CORBA::SystemException& ex) 
+    {
+      msg = ":Component no longer reachable: Caught a CORBA::SystemException.\n";
+      CORBA::Any tmp;
+      tmp <<= ex;
+      CORBA::TypeCode_var tc = tmp.type();
+      const char *p = tc->name();
+      if ( *p != '\0' ) 
+        msg += p;
+      else  
+        msg += tc->id();
+    }
+  catch(CORBA::Exception& ex) 
+    {
+      msg = ":Component no longer reachable: Caught CORBA::Exception.\n";
+      CORBA::Any tmp;
+      tmp <<= ex;
+      CORBA::TypeCode_var tc = tmp.type();
+      const char *p = tc->name();
+      if ( *p != '\0' ) 
+        msg += p;
+      else  
+        msg += tc->id();
+    }
+  catch(omniORB::fatalException& fe) 
+    {
+      msg = ":Component no longer reachable: Caught omniORB::fatalException.\n";
+      stringstream log;
+      log << "  file: " << fe.file() << endl;
+      log << "  line: " << fe.line() << endl;
+      log << "  mesg: " << fe.errmsg() << endl;
+      msg += log.str();
+    }
+  catch(...) 
+    {
+      msg = ":Component no longer reachable: Caught unknown exception.";
     }
   return msg;
 }

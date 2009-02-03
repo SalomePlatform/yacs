@@ -1,0 +1,19 @@
+module Solveur {
+
+  struct Bord {
+    string X;
+    string Y;
+    long   n;
+  };
+  typedef sequence<Bord> seqBords;
+
+  interface FreeFem {
+    
+    void Bords(in seqBords B);
+    void Flux(in string u1, in string u2);
+
+    void Convection(in string cond_init, in double dt, in long n);
+
+  };
+
+};

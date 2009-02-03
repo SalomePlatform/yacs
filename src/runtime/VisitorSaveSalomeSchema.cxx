@@ -1,11 +1,28 @@
-
+//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
+#include "PresetPorts.hxx"
 #include "VisitorSaveSalomeSchema.hxx"
 #include "DataNode.hxx"
 #include "PresetNode.hxx"
 #include "OutNode.hxx"
 #include "StudyNodes.hxx"
 #include "ComposedNode.hxx"
-#include "PresetPorts.hxx"
 #include "StudyPorts.hxx"
 #include "TypeCode.hxx"
 
@@ -42,8 +59,8 @@ void VisitorSaveSalomeSchema::visitPresetNode(DataNode *node)
     _out << " state=\"disabled\">" << endl;
   else
     _out << ">" << endl;
-  writeProperties(node);
   writeDataNodeParameters(node);
+  writeProperties(node);
   _out << indent(depth) << "</datanode>" << endl;
   endCase(node);
   DEBTRACE("END visitPresetNode " << _root->getChildName(node));
@@ -61,8 +78,8 @@ void VisitorSaveSalomeSchema::visitOutNode(DataNode *node)
     _out << " state=\"disabled\">" << endl;
   else
     _out << ">" << endl;
-  writeProperties(node);
   writeOutNodeParameters(node);
+  writeProperties(node);
   _out << indent(depth) << "</outnode>" << endl;
   endCase(node);
   DEBTRACE("END visitOutNode " << _root->getChildName(node));
@@ -80,8 +97,8 @@ void VisitorSaveSalomeSchema::visitStudyInNode(DataNode *node)
     _out << " state=\"disabled\">" << endl;
   else
     _out << ">" << endl;
-  writeProperties(node);
   writeStudyInNodeParameters(node);
+  writeProperties(node);
   _out << indent(depth) << "</datanode>" << endl;
   endCase(node);
   DEBTRACE("END visitStudyInNode " << _root->getChildName(node));
@@ -99,8 +116,8 @@ void VisitorSaveSalomeSchema::visitStudyOutNode(DataNode *node)
     _out << " state=\"disabled\">" << endl;
   else
     _out << ">" << endl;
-  writeProperties(node);
   writeStudyOutNodeParameters(node);
+  writeProperties(node);
   _out << indent(depth) << "</outnode>" << endl;
   endCase(node);
   DEBTRACE("END visitStudyOutNode " << _root->getChildName(node));

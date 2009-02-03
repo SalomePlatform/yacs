@@ -1,0 +1,13 @@
+#include "SALOME_Component.idl"
+
+module Engines {
+
+  typedef sequence<double> vecteur;
+  
+  interface AlgLin : Component 
+  {
+    void    addvec(out vecteur C, in vecteur A, in vecteur B);
+    double  prdscl(in vecteur A, in vecteur B);
+  };
+  
+};

@@ -1,4 +1,21 @@
-
+//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 #include "xmlrpcParsers.hxx"
 #include "dataParsers.hxx"
 #include <sstream>
@@ -87,7 +104,6 @@ static std::string t4[]={"string","objref","double","int","boolean","array","str
     }
   std::string datatypeParser::post()
     {
-      mincount("value",1);
       std::string d="<data>\n"+_data+"</data>";
       _data=_datas.back();
       _datas.pop_back();
@@ -162,7 +178,6 @@ static std::string t4[]={"string","objref","double","int","boolean","array","str
     }
   std::string structdatatypeParser::post()
     {
-      mincount("member",1);
       std::string value="<struct>"+_members+"</struct>";
       _members=_membersStack.back();
       _membersStack.pop_back();

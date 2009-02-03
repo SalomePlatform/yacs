@@ -1,3 +1,21 @@
+//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 #include "Proc.hxx"
 #include "ElementaryNode.hxx"
 #include "Runtime.hxx"
@@ -7,6 +25,8 @@
 #include "TypeCode.hxx"
 #include "Logger.hxx"
 #include "Visitor.hxx"
+#include "VisitorSaveSchema.hxx"
+#include "VisitorSaveState.hxx"
 #include <sstream>
 #include <set>
 
@@ -62,6 +82,8 @@ void Proc::writeDot(std::ostream &os) const
   os << "digraph " << getQualifiedName() << " {\n" ;
   os << "node [ style=\"filled\" ];\n" ;
   os << "compound=true;";
+  os << "states [label=< <TABLE> <TR> <TD BGCOLOR=\"pink\" > Ready</TD> <TD BGCOLOR=\"magenta\" > Toload</TD> </TR> <TR> <TD BGCOLOR=\"magenta\" > Loaded</TD> <TD BGCOLOR=\"purple\" > Toactivate</TD> </TR> <TR> <TD BGCOLOR=\"blue\" > Activated</TD> <TD BGCOLOR=\"green\" > Done</TD> </TR> <TR> <TD BGCOLOR=\"red\" > Error</TD> <TD BGCOLOR=\"orange\" > Failed</TD> </TR> <TR> <TD BGCOLOR=\"grey\" > Disabled</TD> <TD BGCOLOR=\"white\" > Pause</TD> </TR> </TABLE>> \n shape = plaintext \n style = invis \n ];\n";
+
   Bloc::writeDot(os);
   os << "}\n" ;
 }
@@ -86,37 +108,77 @@ TypeCode *Proc::createType(const std::string& name, const std::string& kind)
   else
     throw Exception("Unknown kind");
 
+  if(typeMap.count(name)!=0)
+    typeMap[name]->decrRef();
+  t->incrRef();
+  typeMap[name]=t;
   t->incrRef();
   return t;
 }
 
+//! Create an object reference TypeCode 
+/*!
+ * \param id: the TypeCode repository id
+ * \param name: the TypeCode name
+ * \param ltc: a liste of object reference TypeCode to use as base types for this type
+ * \return the created TypeCode
+ */
 TypeCode *Proc::createInterfaceTc(const std::string& id, const std::string& name,
                                   std::list<TypeCodeObjref *> ltc)
 {
-  return TypeCode::interfaceTc(id.c_str(),name.c_str(),ltc);
+  TypeCode* t = TypeCode::interfaceTc(id.c_str(),name.c_str(),ltc);
+  if(typeMap.count(name)!=0)
+    typeMap[name]->decrRef();
+  typeMap[name]=t;
+  t->incrRef();
+  return t;
 }
 
+//! Create a sequence TypeCode 
+/*!
+ * \param id: the TypeCode repository id ("" for normal use)
+ * \param name: the TypeCode name
+ * \param content: the element TypeCode 
+ * \return the created TypeCode
+ */
 TypeCode * Proc::createSequenceTc (const std::string& id, const std::string& name,
                                    TypeCode *content)
 {
-  return TypeCode::sequenceTc(id.c_str(),name.c_str(),content);
+  TypeCode* t = TypeCode::sequenceTc(id.c_str(),name.c_str(),content);
+  if(typeMap.count(name)!=0)
+    typeMap[name]->decrRef();
+  typeMap[name]=t;
+  t->incrRef();
+  return t;
 }
 
 TypeCode * Proc::createStructTc (const std::string& id, const std::string& name)
 {
-  return TypeCode::structTc(id.c_str(),name.c_str());
+  TypeCode* t = TypeCode::structTc(id.c_str(),name.c_str());
+  if(typeMap.count(name)!=0)
+    typeMap[name]->decrRef();
+  typeMap[name]=t;
+  t->incrRef();
+  return t;
 }
 
 TypeCode * Proc::getTypeCode (const std::string& name)
 {
+  TypeCode* aTC=0;
   if(typeMap.count(name)==0)
+    aTC=getRuntime()->getTypeCode(name);
+  else
+    aTC=typeMap[name];
+
+  if(!aTC)
     {
       std::stringstream msg;
       msg << "Type " << name << " does not exist" ;
       msg << " (" <<__FILE__ << ":" << __LINE__ << ")";
       throw Exception(msg.str());
     }
-  return typeMap[name];
+
+  return aTC;
 }
 
 void Proc::setTypeCode (const std::string& name,TypeCode *t)
@@ -124,6 +186,7 @@ void Proc::setTypeCode (const std::string& name,TypeCode *t)
   if(typeMap.count(name)!=0)
     typeMap[name]->decrRef();
   typeMap[name]=t;
+  t->incrRef();
 }
 
 
@@ -177,7 +240,7 @@ std::string Proc::getInPortValue(int nodeNumId, std::string portName)
     {
       YACS::ENGINE::Node* node = YACS::ENGINE::Node::idMap[nodeNumId];
       InputPort * inputPort = node->getInputPort(portName);
-      return inputPort->dump();
+      return inputPort->getAsString();
     }
   catch(YACS::Exception& ex)
     {
@@ -200,7 +263,7 @@ std::string Proc::getOutPortValue(int nodeNumId, std::string portName)
     {
       YACS::ENGINE::Node* node = YACS::ENGINE::Node::idMap[nodeNumId];
       OutputPort * outputPort = node->getOutputPort(portName);
-      return outputPort->dump();
+      return outputPort->getAsString();
     }
   catch(YACS::Exception& ex)
     {
@@ -313,3 +376,43 @@ void Proc::modified()
     edUpdateState();
 }
 
+//! Save Proc in XML schema file
+/*!
+ * \param xmlSchemaFile: the file name
+ */
+void Proc::saveSchema(std::string xmlSchemaFile)
+{
+  VisitorSaveSchema vss(this);
+  vss.openFileSchema(xmlSchemaFile);
+  accept(&vss);
+  vss.closeFileSchema();
+}
+
+//! Save Proc state in XML state file
+/*!
+ * \param xmlStateFile: the file name
+ */
+void Proc::saveState(std::string xmlStateFile)
+{
+  VisitorSaveState vst(this);
+  vst.openFileDump(xmlStateFile);
+  accept(&vst);
+  vst.closeFileDump();
+}
+
+//! Create a new Container and store it in containerMap
+/*!
+ * \param name: the container name and key in containerMap
+ * \param kind: the container kind (depends on runtime)
+ * \return the created Container
+ */
+Container* Proc::createContainer(const std::string& name,const std::string& kind)
+{
+  Container* co=  getRuntime()->createContainer(kind);
+  co->setName(name);
+  if(containerMap.count(name)!=0)
+    containerMap[name]->decrRef();
+  containerMap[name]=co;
+  co->incrRef();
+  return co;
+}

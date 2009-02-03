@@ -1,3 +1,21 @@
+//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 #include "Bloc.hxx"
 #include "LinkInfo.hxx"
 #include "InputPort.hxx"
@@ -364,8 +382,16 @@ void Bloc::accept(Visitor* visitor)
 }
 
 /*!
- * Updates mutable structures _fwLinks and _bwLinks with the result of computation.
- * CPU consumer.
+ * Updates mutable structures _fwLinks and _bwLinks with the result of computation (CPU consuming method).
+ * _fwLinks is a map with a Node* as key and a set<Node*> as value. The set gives
+ * all nodes that are forwardly connected to the key node 
+ * _bwLinks is a map for backward dependencies
+ * The method is : for all CF link (n1->n2) 
+ * add n2 and _fwLinks[n2] in forward dependencies of n1 and _bwLinks[n1]
+ * add n1 and _bwLinks[n1] in backward dependencies of n2 and _fwLinks[n2]
+ * For useless links
+ * If a node is already in a forward dependency when adding and the direct link
+ * already exists so it's a useless link (see the code !)
  */
 void Bloc::performCFComputations(LinkInfo& info) const
 {
@@ -374,12 +400,70 @@ void Bloc::performCFComputations(LinkInfo& info) const
   delete _bwLinks;//Normally useless
   _fwLinks=new map<Node *,set<Node *> >;
   _bwLinks=new map<Node *,set<Node *> >;
-  map<Node *, set<Node *> > accelStr;
+
+  //a set to store all CF links : used to find fastly if two nodes are connected
+  std::set< std::pair< Node*, Node* > > links;
+
   for(list<Node *>::const_iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
-    findAllNodesStartingFrom<true>(*iter,(*_fwLinks)[*iter],accelStr,info);
-  accelStr.clear();
-  for(list<Node *>::const_iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
-    findAllNodesStartingFrom<false>(*iter,(*_bwLinks)[*iter],accelStr,info);
+    {
+      Node* n1=*iter;
+      std::set<InGate *> ingates=n1->getOutGate()->edSetInGate();
+      for(std::set<InGate *>::const_iterator it2=ingates.begin();it2!=ingates.end();it2++)
+        {
+          //CF link : n1 -> (*it2)->getNode()
+          Node* n2=(*it2)->getNode();
+          links.insert(std::pair< Node*, Node* >(n1,n2));
+          std::set<Node *> bwn1=(*_bwLinks)[n1];
+          std::set<Node *> fwn1=(*_fwLinks)[n1];
+          std::set<Node *> fwn2=(*_fwLinks)[n2];
+          std::set<Node *> bwn2=(*_bwLinks)[n2];
+          std::pair<std::set<Node*>::iterator,bool> ret;
+          for(std::set<Node *>::const_iterator iter2=bwn1.begin();iter2!=bwn1.end();iter2++)
+            {
+              for(std::set<Node *>::const_iterator it3=fwn2.begin();it3!=fwn2.end();it3++)
+                {
+                  ret=(*_fwLinks)[*iter2].insert(*it3);
+                  if(ret.second==false)
+                    {
+                      //dependency already exists (*iter2) -> (*it3) : if a direct link exists it's a useless one
+                      if(links.find(std::pair< Node*, Node* >(*iter2,*it3)) != links.end())
+                        info.pushUselessCFLink(*iter2,*it3);
+                    }
+                }
+              ret=(*_fwLinks)[*iter2].insert(n2);
+              if(ret.second==false)
+                {
+                  //dependency already exists (*iter2) -> n2 : if a direct link exists it's a useless one
+                  if(links.find(std::pair< Node*, Node* >(*iter2,n2)) != links.end())
+                    info.pushUselessCFLink(*iter2,n2);
+                }
+            }
+          for(std::set<Node *>::const_iterator it3=fwn2.begin();it3!=fwn2.end();it3++)
+            {
+              ret=(*_fwLinks)[n1].insert(*it3);
+              if(ret.second==false)
+                {
+                  //dependency already exists n1 -> *it3 : if a direct link exists it's a useless one
+                  if(links.find(std::pair< Node*, Node* >(n1,*it3)) != links.end())
+                    info.pushUselessCFLink(n1,*it3);
+                }
+            }
+          ret=(*_fwLinks)[n1].insert(n2);
+          if(ret.second==false)
+            {
+              //dependency already exists n1 -> n2 : it's a useless link
+              info.pushUselessCFLink(n1,n2);
+            }
+
+          for(std::set<Node *>::const_iterator iter2=fwn2.begin();iter2!=fwn2.end();iter2++)
+            {
+              (*_bwLinks)[*iter2].insert(bwn1.begin(),bwn1.end());
+              (*_bwLinks)[*iter2].insert(n1);
+            }
+          (*_bwLinks)[n2].insert(bwn1.begin(),bwn1.end());
+          (*_bwLinks)[n2].insert(n1);
+        }
+    }
 }
 
 void Bloc::destructCFComputations(LinkInfo& info) const

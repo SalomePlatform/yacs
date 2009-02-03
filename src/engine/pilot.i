@@ -1,3 +1,21 @@
+//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 %define DOCSTRING
 "All is needed to create and execute a calculation schema."
 %enddef
@@ -29,6 +47,7 @@
 #include "Logger.hxx"
 #include "DeploymentTree.hxx"
 #include "ComponentInstance.hxx"
+#include "DataNode.hxx"
 
 using namespace YACS::ENGINE;
 
@@ -74,11 +93,13 @@ using namespace YACS::ENGINE;
 %template()              std::pair<std::string, YACS::ENGINE::Container *>;
 %template()              std::pair<YACS::ENGINE::OutPort *,YACS::ENGINE::InPort *>;
 %template()              std::pair<YACS::ENGINE::InPort *,YACS::ENGINE::OutPort *>;
-%template(TCmap)         std::map<std::string, YACS::ENGINE::TypeCode *>;
+//%template(TCmap)         std::map<std::string, YACS::ENGINE::TypeCode *>;
+REFCOUNT_TEMPLATE(TCmap,YACS::ENGINE::TypeCode)
 %template(NODEmap)       std::map<std::string, YACS::ENGINE::Node *>;
 %template(INODEmap)      std::map<std::string, YACS::ENGINE::InlineNode *>;
 %template(SNODEmap)      std::map<std::string, YACS::ENGINE::ServiceNode *>;
-%template(CONTAINmap)    std::map<std::string, YACS::ENGINE::Container *>;
+//%template(CONTAINmap)    std::map<std::string, YACS::ENGINE::Container *>;
+REFCOUNT_TEMPLATE(CONTAINmap,YACS::ENGINE::Container)
 %template(strvec)        std::vector<std::string>;
 %template(linksvec)      std::vector< std::pair<YACS::ENGINE::OutPort *,YACS::ENGINE::InPort *> >;
 %template(linkvec)       std::vector< std::pair<YACS::ENGINE::InPort *,YACS::ENGINE::OutPort *> >;
@@ -135,6 +156,17 @@ using namespace YACS::ENGINE;
 %feature("pythonappend") YACS::ENGINE::Bloc::edRemoveChild(Node *node)%{
         args[1].thisown=1
 %}
+
+%newobject YACS::ENGINE::Proc::createContainer;
+%newobject YACS::ENGINE::Proc::createSequenceTc;
+%newobject YACS::ENGINE::Proc::createInterfaceTc;
+%newobject YACS::ENGINE::Proc::createStructTc;
+%newobject YACS::ENGINE::Proc::createType;
+
+%newobject YACS::ENGINE::TypeCode::interfaceTc;
+%newobject YACS::ENGINE::TypeCode::sequenceTc;
+%newobject YACS::ENGINE::TypeCode::structTc;
+
 /*
  * End of ownership section
  */
@@ -150,6 +182,8 @@ PYEXCEPTION(YACS::ENGINE::Executor::setExecMode)
 PYEXCEPTION(YACS::ENGINE::Executor::resumeCurrentBreakPoint)
 PYEXCEPTION(YACS::ENGINE::Executor::stopExecution)
 PYEXCEPTION(YACS::ENGINE::Executor::waitPause)
+PYEXCEPTION(YACS::ENGINE::ComponentInstance::load)
+
 %include <Executor.hxx>
 
 EXCEPTION(YACS::ENGINE::ExecutorSwig::RunPy)
@@ -205,15 +239,18 @@ EXCEPTION(YACS::ENGINE::ExecutorSwig::waitPause)
       self->edInit("Python",ob);
     }
 }
+
 %template(edInitInt)       YACS::ENGINE::InputPort::edInit<int>;
 %template(edInitBool)      YACS::ENGINE::InputPort::edInit<bool>;
 %template(edInitString)    YACS::ENGINE::InputPort::edInit<std::string>;
 %template(edInitDbl)       YACS::ENGINE::InputPort::edInit<double>;
 
+%include <AnyInputPort.hxx>
+%include <ConditionInputPort.hxx>
 %include <OutputPort.hxx>
 %include <InputDataStreamPort.hxx>
 %include <OutputDataStreamPort.hxx>
-%include <AnyInputPort.hxx>
+%include <DataPort.hxx>
 
 %include <Node.hxx>
 %extend YACS::ENGINE::Node 
@@ -235,6 +272,7 @@ EXCEPTION(YACS::ENGINE::ExecutorSwig::waitPause)
 %include <InlineNode.hxx>
 %include <ServiceNode.hxx>
 %include <ServiceInlineNode.hxx>
+%include <DataNode.hxx>
 
 %include <ComposedNode.hxx>
 %include <StaticDefinedComposedNode.hxx>
@@ -253,3 +291,28 @@ EXCEPTION(YACS::ENGINE::ExecutorSwig::waitPause)
 %include <VisitorSaveSchema.hxx>
 %include <ComponentDefinition.hxx>
 %include <Catalog.hxx>
+
+%extend YACS::ENGINE::ConditionInputPort
+{
+  bool getPyObj()
+  {
+    return self->getValue();
+  }
+}
+
+%extend YACS::ENGINE::AnyInputPort
+{
+  PyObject * getPyObj()
+  {
+    return (PyObject *)getRuntime()->convertNeutral(self->edGetType(),self->getValue());
+  }
+}
+
+%extend YACS::ENGINE::AnyOutputPort
+{
+  PyObject * getPyObj()
+  {
+    return (PyObject *)getRuntime()->convertNeutral(self->edGetType(),self->getValue());
+  }
+}
+

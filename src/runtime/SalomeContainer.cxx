@@ -1,4 +1,23 @@
+//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 //#define REFCNT
+//
 #ifdef REFCNT
 #define private public
 #define protected public
@@ -13,6 +32,7 @@
 #include "SALOME_NamingService.hxx"
 #include "SALOME_LifeCycleCORBA.hxx"
 #include "SALOME_ContainerManager.hxx"
+#include "Basics_Utils.hxx"
 #include "OpUtil.hxx"
 
 #include <sstream>
@@ -92,13 +112,15 @@ void SalomeContainer::start() throw (Exception)
   Engines::ContainerManager_var contManager=Engines::ContainerManager::_narrow(obj);
 
   std::string str(_params.container_name);
+  DEBTRACE("SalomeContainer::start " << str);
   //If a container_name is given try to find an already existing container in naming service
   //If not found start a new container with the given parameters
   if (str != "")
     {
       std::string machine(_params.hostname);
       if(machine == "" || machine == "localhost")
-        machine=GetHostname();
+        //machine=Kernel_Utils::GetHostname();
+        machine=Kernel_Utils::GetHostname();
       std::string ContainerNameInNS=ns.BuildContainerNameForNS(_params,machine.c_str());
       obj=ns.Resolve(ContainerNameInNS.c_str());
       if(!CORBA::is_nil(obj))
@@ -111,8 +133,14 @@ void SalomeContainer::start() throw (Exception)
 
   if (str == "") 
     {
+      //give a almost unique name to the container : Pid_Name_Addr
       std::ostringstream stream;
+      stream << getpid();
+      stream << "_";
+      stream << _name;
+      stream << "_";
       stream << (void *)(this);
+      DEBTRACE("container_name="<<stream.str());
       _params.container_name=CORBA::string_dup(stream.str().c_str());
     }
   Engines::CompoList compolist;

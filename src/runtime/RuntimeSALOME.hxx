@@ -1,4 +1,21 @@
-
+//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 #ifndef _RUNTIMESALOME_HXX_
 #define _RUNTIMESALOME_HXX_
 
@@ -97,15 +114,15 @@ namespace YACS
 
       virtual InputPort* adapt(InputPort* source,
                                const std::string& impl,
-                               TypeCode * type) throw (ConversionException);
+                               TypeCode * type,bool init=false) throw (ConversionException);
 
       virtual InputPort* adaptNeutral(InputPort* source,
                                       const std::string& impl,
-                                      TypeCode * type) throw (ConversionException);
+                                      TypeCode * type,bool init) throw (ConversionException);
 
       virtual InputPort* adapt(InputCorbaPort* source,
                                const std::string& impl,
-                               TypeCode * type) throw (ConversionException);
+                               TypeCode * type,bool init) throw (ConversionException);
 
       virtual InputPort* adaptCorbaToCorba(InputCorbaPort* source,
                                            TypeCode * type) throw (ConversionException);
@@ -124,7 +141,7 @@ namespace YACS
 
       virtual InputPort* adapt(InputPyPort* source,
                                const std::string& impl,
-                               TypeCode * type) throw (ConversionException);
+                               TypeCode * type,bool init) throw (ConversionException);
 
       virtual InputPort* adaptPythonToCorba(InputPyPort* source,
                                             TypeCode * type) throw (ConversionException);
@@ -133,7 +150,7 @@ namespace YACS
                                               TypeCode * type) throw (ConversionException);
 
       virtual InputPort* adaptPythonToPython(InputPyPort* source,
-                                             TypeCode * type) throw (ConversionException);
+                                             TypeCode * type,bool init) throw (ConversionException);
       
       virtual InputPort* adaptPythonToXml(InputPyPort* source,
                                           TypeCode * type) throw (ConversionException);
@@ -143,7 +160,7 @@ namespace YACS
 
       virtual InputPort* adapt(InputCppPort* source,
                                const std::string& impl,
-                               TypeCode * type) throw (ConversionException);
+                               TypeCode * type,bool init) throw (ConversionException);
                                
       virtual InputPort* adaptCppToCorba(InputCppPort* source,
                                             TypeCode * type) throw (ConversionException);
@@ -162,7 +179,7 @@ namespace YACS
 
       virtual InputPort* adapt(InputXmlPort* source,
                                const std::string& impl,
-                               TypeCode * type) throw (ConversionException);
+                               TypeCode * type,bool init) throw (ConversionException);
 
       virtual InputPort* adaptXmlToCorba(InputXmlPort* source,
                                          TypeCode * type) throw (ConversionException);
@@ -187,6 +204,12 @@ namespace YACS
 
       virtual InputPort* adaptNeutralToCpp(InputPort* inport,
                                              TypeCode * type) throw (ConversionException);
+
+      virtual void* convertNeutral(TypeCode * type, Any *data);
+      virtual std::string convertNeutralAsString(TypeCode * type, Any *data);
+      virtual std::string convertPyObjectToString(PyObject* ob);
+      virtual PyObject* convertStringToPyObject(const std::string& s);
+
       virtual ~RuntimeSALOME(); 
 
       CORBA::ORB_ptr getOrb();

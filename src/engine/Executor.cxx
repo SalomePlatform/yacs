@@ -1,3 +1,21 @@
+//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 #include "Executor.hxx"
 #include "Task.hxx"
 #include "Scheduler.hxx"
@@ -10,6 +28,8 @@
 #include <fstream>
 #include <sys/stat.h>
 #include <cassert>
+#include <cstdlib>
+#include <algorithm>
 
 using namespace YACS::ENGINE;
 using namespace std;
@@ -21,7 +41,9 @@ using YACS::BASES::Semaphore;
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
-Executor::Executor():_nbOfConcurrentThreads(0), _semForMaxThreads(50)
+int Executor::_maxThreads(50);
+
+Executor::Executor():_nbOfConcurrentThreads(0), _semForMaxThreads(_maxThreads)
 {
   _root=0;
   _toContinue = true;
@@ -32,7 +54,8 @@ Executor::Executor():_nbOfConcurrentThreads(0), _semForMaxThreads(50)
   _isRunningunderExternalControl=false;
   _executorState = YACS::NOTYETINITIALIZED;
   _execMode = YACS::CONTINUE;
-  _semThreadCnt = 50;
+  _semThreadCnt = _maxThreads;
+  DEBTRACE("Executor initialized with max threads = " << _maxThreads);
 }
 
 Executor::~Executor()
@@ -74,6 +97,7 @@ void Executor::RunA(Scheduler *graph,int debug, bool fromScratch)
   _execMode = YACS::CONTINUE;
   _isWaitingEventsFromRunningTasks = false;
   _numberOfRunningTasks = 0;
+  _numberOfEndedTasks=0;
   while(_toContinue)
     {
       sleepWhileNoEventsFromAnyRunningTask();
@@ -188,6 +212,7 @@ void Executor::RunB(Scheduler *graph,int debug, bool fromScratch)
     _errorDetected = false;
     _isWaitingEventsFromRunningTasks = false;
     _numberOfRunningTasks = 0;
+    _numberOfEndedTasks = 0;
     string tracefile = "traceExec_";
     tracefile += _mainSched->getName();
     _trace.open(tracefile.c_str());
@@ -757,9 +782,9 @@ void Executor::loadTask(Task *task)
 {
   DEBTRACE("Executor::loadTask(Task *task)");
   if(task->getState() != YACS::TOLOAD)return;
+  traceExec(task, "state:TOLOAD");
   {//Critical section
     _mutexForSchedulerUpdate.lock();
-    task->loaded();
     _mainSched->notifyFrom(task,YACS::START);
     _mutexForSchedulerUpdate.unlock();
   }//End of critical section
@@ -777,6 +802,7 @@ void Executor::loadTask(Task *task)
         _mutexForSchedulerUpdate.lock();
         task->aborted();
         _mainSched->notifyFrom(task,YACS::ABORT);
+        traceExec(task, "state:"+Node::getStateName(task->getState()));
         _mutexForSchedulerUpdate.unlock();
       }//End of critical section
     }
@@ -787,6 +813,7 @@ void Executor::loadTask(Task *task)
         _mutexForSchedulerUpdate.lock();
         task->aborted();
         _mainSched->notifyFrom(task,YACS::ABORT);
+        traceExec(task, "state:"+Node::getStateName(task->getState()));
         _mutexForSchedulerUpdate.unlock();
       }//End of critical section
     }
@@ -804,15 +831,31 @@ void Executor::launchTasks(std::vector<Task *>& tasks)
   //First phase, make datastream connections
   for(iter=tasks.begin();iter!=tasks.end();iter++)
     {
-      if((*iter)->getState() != YACS::TOACTIVATE)continue;
+      YACS::StatesForNode state=(*iter)->getState();
+      if(state != YACS::TOLOAD)continue;
       try
         {
           (*iter)->connectService();
           traceExec(*iter, "connectService");
+          {//Critical section
+            _mutexForSchedulerUpdate.lock();
+            (*iter)->connected();
+            _mutexForSchedulerUpdate.unlock();
+          }//End of critical section
         }
       catch(Exception& ex) 
         {
           std::cerr << ex.what() << std::endl;
+          try
+            {
+              (*iter)->disconnectService();
+              traceExec(*iter, "disconnectService");
+            }
+          catch(...) 
+            {
+              // Disconnect has failed
+              traceExec(*iter, "disconnectService failed, ABORT");
+            }
           {//Critical section
             _mutexForSchedulerUpdate.lock();
             (*iter)->aborted();
@@ -823,6 +866,16 @@ void Executor::launchTasks(std::vector<Task *>& tasks)
       catch(...) 
         {
           std::cerr << "Problem in connectService" << std::endl;
+          try
+            {
+              (*iter)->disconnectService();
+              traceExec(*iter, "disconnectService");
+            }
+          catch(...) 
+            {
+              // Disconnect has failed
+              traceExec(*iter, "disconnectService failed, ABORT");
+            }
           {//Critical section
             _mutexForSchedulerUpdate.lock();
             (*iter)->aborted();
@@ -830,6 +883,7 @@ void Executor::launchTasks(std::vector<Task *>& tasks)
             _mutexForSchedulerUpdate.unlock();
           }//End of critical section
         }
+      traceExec(*iter, "state:"+Node::getStateName((*iter)->getState()));
     }
   //Second phase, execute each task in a thread
   for(iter=tasks.begin();iter!=tasks.end();iter++)
@@ -851,6 +905,7 @@ void Executor::launchTask(Task *task)
 {
   DEBTRACE("Executor::launchTask(Task *task)");
   if(task->getState() != YACS::TOACTIVATE)return;
+  traceExec(task, "state:TOACTIVATE");
 
   DEBTRACE("before _semForMaxThreads.wait " << _semThreadCnt);
   _semForMaxThreads.wait();
@@ -866,12 +921,10 @@ void Executor::launchTask(Task *task)
     _mutexForSchedulerUpdate.lock();
     _numberOfRunningTasks++;
     task->begin(); //change state to ACTIVATED
-    //no more need : done when loading
-    //_mainSched->notifyFrom(task,YACS::START);
     _mutexForSchedulerUpdate.unlock();
   } // --- End of critical section
   Thread(functionForTaskExecution,args);
-  //functionForTaskExecution(args);
+  traceExec(task, "state:"+Node::getStateName(task->getState()));
 }
 
 //! wait until a running task ends
@@ -881,11 +934,12 @@ void Executor::sleepWhileNoEventsFromAnyRunningTask()
   DEBTRACE("Executor::sleepWhileNoEventsFromAnyRunningTask()");
 //   _semForNewTasksToPerform.wait(); //----utiliser pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex);
   _mutexForSchedulerUpdate.lock();
-  if (_numberOfRunningTasks > 0)
+  if (_numberOfRunningTasks > 0 && _numberOfEndedTasks==0)
     {
       _isWaitingEventsFromRunningTasks = true;
       _condForNewTasksToPerform.wait(_mutexForSchedulerUpdate); // mutex released during wait
     }
+  _numberOfEndedTasks=0;
   _mutexForSchedulerUpdate.unlock();
   DEBTRACE("---");
 }
@@ -905,12 +959,14 @@ void Executor::notifyEndOfThread(YACS::BASES::Thread *thread)
 
 void Executor::wakeUp()
 {
-  DEBTRACE("Executor::wakeUp()");
+  DEBTRACE("Executor::wakeUp() " << _isWaitingEventsFromRunningTasks);
   if (_isWaitingEventsFromRunningTasks)
     {
       _isWaitingEventsFromRunningTasks = false;
       _condForNewTasksToPerform.notify_all();
     }
+  else
+    _numberOfEndedTasks++;
 }
 
 //! number of running tasks

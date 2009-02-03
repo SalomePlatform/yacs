@@ -1,3 +1,21 @@
+//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 %define PYPILOTDOCSTRING
 "This module provides 2 classes PyObserver and PyCatalogLoader that can be subclassed in Python (uses director feature)"
 %enddef
@@ -98,10 +116,21 @@ namespace YACS
  * End of Director section
  */
 
-%types(YACS::ENGINE::InputPort *,YACS::ENGINE::OutputPort *,YACS::ENGINE::InputDataStreamPort *,YACS::ENGINE::OutputDataStreamPort *);
-%types(YACS::ENGINE::InGate *,YACS::ENGINE::OutGate *,YACS::ENGINE::InPort *,YACS::ENGINE::OutPort *,YACS::ENGINE::Port *);
+%types(YACS::ENGINE::Node *,YACS::ENGINE::Proc *,YACS::ENGINE::ForLoop *,YACS::ENGINE::Bloc *, YACS::ENGINE::Switch *);
+%types(YACS::ENGINE::WhileLoop *,YACS::ENGINE::ForEachLoop *,YACS::ENGINE::ComposedNode *,YACS::ENGINE::InlineNode *);
+%types(YACS::ENGINE::InlineFuncNode *,YACS::ENGINE::ServiceInlineNode *,YACS::ENGINE::ServiceNode *);
+%types(YACS::ENGINE::ElementaryNode *);
+
+%types(YACS::ENGINE::InputPort *,YACS::ENGINE::OutputPort *);
+%types(YACS::ENGINE::InputDataStreamPort *,YACS::ENGINE::OutputDataStreamPort *);
+%types(YACS::ENGINE::InGate *,YACS::ENGINE::OutGate *);
+%types(YACS::ENGINE::InPort *,YACS::ENGINE::OutPort *,YACS::ENGINE::Port *);
+
+%types(YACS::ENGINE::Observer *);
 
 %import "pilot.i"
+%import "Dispatcher.hxx"
+%import "Catalog.hxx"
 
 namespace YACS
 {

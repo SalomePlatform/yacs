@@ -1,3 +1,21 @@
+//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 #include "Node.hxx"
 #include "InputPort.hxx"
 #include "OutputPort.hxx"
@@ -17,6 +35,7 @@ const char Node::SEP_CHAR_IN_PORT[]=".";
 
 int Node::_total = 0;
 std::map<int,Node*> Node::idMap;
+std::map<int, std::string> Node::_nodeStateName;
 
 Node::Node(const std::string& name):_name(name),_inGate(this),_outGate(this),_father(0),_state(YACS::READY),
                                     _implementation(Runtime::RUNTIME_ENGINE_INTERACTION_IMPL_NAME),_modified(1)
@@ -273,6 +292,7 @@ void Node::exForwardFailed()
  */
 void Node::exForwardFinished()
 {
+  DEBTRACE("Node::exForwardFinished");
   _outGate.exNotifyDone();
 }
 
@@ -527,7 +547,7 @@ std::string Node::getErrorReport()
   YACS::StatesForNode effectiveState=getEffectiveState();
 
   DEBTRACE("Node::getErrorReport: " << getName() << " " << effectiveState << " " << _errorDetails);
-  if(effectiveState == YACS::READY || effectiveState == YACS::DONE)
+  if(effectiveState != YACS::INVALID &&  effectiveState != YACS::ERROR && effectiveState != YACS::FAILED)
     return "";
 
   std::string report="<error node= " ;
@@ -581,4 +601,32 @@ void Node::ensureLoading()
 {
   if(_state == YACS::READY)
     setState(YACS::TOLOAD);
+}
+
+//! Return the name of a state
+/*!
+ * 
+ */
+std::string Node::getStateName(YACS::StatesForNode state)
+{
+  static bool map_init=false; 
+  if(!map_init)
+    {
+      _nodeStateName[YACS::READY] ="READY";
+      _nodeStateName[YACS::TOLOAD] ="TOLOAD";
+      _nodeStateName[YACS::LOADED] ="LOADED";
+      _nodeStateName[YACS::TOACTIVATE] ="TOACTIVATE";
+      _nodeStateName[YACS::ACTIVATED] ="ACTIVATED";
+      _nodeStateName[YACS::DESACTIVATED] ="DESACTIVATED";
+      _nodeStateName[YACS::DONE] ="DONE";
+      _nodeStateName[YACS::SUSPENDED] ="SUSPENDED";
+      _nodeStateName[YACS::LOADFAILED] ="LOADFAILED";
+      _nodeStateName[YACS::EXECFAILED] ="EXECFAILED";
+      _nodeStateName[YACS::PAUSE] ="PAUSE";
+      _nodeStateName[YACS::INTERNALERR] ="INTERNALERR";
+      _nodeStateName[YACS::DISABLED] ="DISABLED";
+      _nodeStateName[YACS::FAILED] ="FAILED";
+      _nodeStateName[YACS::ERROR] ="ERROR";
+    }
+  return _nodeStateName[state];
 }

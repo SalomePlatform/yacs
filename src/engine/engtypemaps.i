@@ -1,3 +1,21 @@
+//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 %include std_except.i
 %include std_string.i
 %include std_map.i
@@ -150,7 +168,11 @@ static PyObject* convertPort(YACS::ENGINE::Port* port,int owner=0)
     }
   else
     {
-      if(dynamic_cast<YACS::ENGINE::InputPort *>(port))
+      if(YACS::ENGINE::AnyInputPort *cport =dynamic_cast<YACS::ENGINE::AnyInputPort *>(port))
+        ob=SWIG_NewPointerObj((void*)cport,SWIGTYPE_p_YACS__ENGINE__AnyInputPort,owner);
+      else if(YACS::ENGINE::AnyOutputPort *cport =dynamic_cast<YACS::ENGINE::AnyOutputPort *>(port))
+        ob=SWIG_NewPointerObj((void*)cport,SWIGTYPE_p_YACS__ENGINE__AnyOutputPort,owner);
+      else if(dynamic_cast<YACS::ENGINE::InputPort *>(port))
         ob=SWIG_NewPointerObj((void*)port,SWIGTYPE_p_YACS__ENGINE__InputPort,owner);
       else if(dynamic_cast<YACS::ENGINE::OutputPort *>(port))
         ob=SWIG_NewPointerObj((void*)port,SWIGTYPE_p_YACS__ENGINE__OutputPort,owner);
@@ -231,6 +253,18 @@ static PyObject* convertPort(YACS::ENGINE::Port* port,int owner=0)
 #endif
 
 #ifdef SWIGPYTHON
+%typemap(out) YACS::ENGINE::TypeCode*
+{
+  if(dynamic_cast<YACS::ENGINE::TypeCodeStruct *>($1))
+    $result=SWIG_NewPointerObj((void*)$1,SWIGTYPE_p_YACS__ENGINE__TypeCodeStruct,$owner);
+  else if(dynamic_cast<YACS::ENGINE::TypeCodeSeq *>($1))
+    $result=SWIG_NewPointerObj((void*)$1,SWIGTYPE_p_YACS__ENGINE__TypeCodeSeq,$owner);
+  else if(dynamic_cast<YACS::ENGINE::TypeCodeObjref *>($1))
+    $result=SWIG_NewPointerObj((void*)$1,SWIGTYPE_p_YACS__ENGINE__TypeCodeObjref,$owner);
+  else
+    $result=SWIG_NewPointerObj((void*)$1,SWIGTYPE_p_YACS__ENGINE__TypeCode,$owner);
+}
+
 %typemap(in) std::list<YACS::ENGINE::TypeCodeObjref*>
 {
   // Check if input is a list 
@@ -319,6 +353,11 @@ static PyObject* convertPort(YACS::ENGINE::Port* port,int owner=0)
       ob=convertNode(*iL);
       PyList_SetItem($result,i,ob); 
     }
+}
+
+%typemap(out) YACS::ENGINE::InputPort*,YACS::ENGINE::OutputPort*,YACS::ENGINE::InPort*,YACS::ENGINE::OutPort*
+{
+  $result=convertPort($1,$owner);
 }
 
 %typemap(out) std::set<YACS::ENGINE::InGate *>
@@ -442,8 +481,21 @@ static PyObject* convertPort(YACS::ENGINE::Port* port,int owner=0)
    {
       PyErr_SetString(PyExc_IOError ,_e.what());
       return NULL;
+   } catch (std::domain_error& e) {
+      SWIG_exception(SWIG_ValueError, e.what() );
+   } catch (std::overflow_error& e) {
+      SWIG_exception(SWIG_OverflowError, e.what() );
+   } catch (std::out_of_range& e) {
+      SWIG_exception(SWIG_IndexError, e.what() );
+   } catch (std::length_error& e) {
+      SWIG_exception(SWIG_IndexError, e.what() );
+   } catch (std::runtime_error& e) {
+      SWIG_exception(SWIG_RuntimeError, e.what() );
    }
    OMNIPY_CATCH_AND_HANDLE_SYSTEM_EXCEPTIONS
+   catch (std::exception& e) {
+      SWIG_exception(SWIG_SystemError, e.what() );
+   }
    catch(...) 
    {
      SWIG_exception(SWIG_UnknownError, "Unknown exception");
@@ -467,8 +519,21 @@ static PyObject* convertPort(YACS::ENGINE::Port* port,int owner=0)
    {
       PyErr_SetString(PyExc_IOError ,_e.what());
       return NULL;
+   } catch (std::domain_error& e) {
+      SWIG_exception(SWIG_ValueError, e.what() );
+   } catch (std::overflow_error& e) {
+      SWIG_exception(SWIG_OverflowError, e.what() );
+   } catch (std::out_of_range& e) {
+      SWIG_exception(SWIG_IndexError, e.what() );
+   } catch (std::length_error& e) {
+      SWIG_exception(SWIG_IndexError, e.what() );
+   } catch (std::runtime_error& e) {
+      SWIG_exception(SWIG_RuntimeError, e.what() );
    }
    OMNIPY_CATCH_AND_HANDLE_SYSTEM_EXCEPTIONS
+   catch (std::exception& e) {
+      SWIG_exception(SWIG_SystemError, e.what() );
+   }
    catch(...) 
    {
      SWIG_exception(SWIG_UnknownError, "Unknown exception");
@@ -491,8 +556,21 @@ static PyObject* convertPort(YACS::ENGINE::Port* port,int owner=0)
    {
       PyErr_SetString(PyExc_IOError ,_e.what());
       return NULL;
+   } catch (std::domain_error& e) {
+      SWIG_exception(SWIG_ValueError, e.what() );
+   } catch (std::overflow_error& e) {
+      SWIG_exception(SWIG_OverflowError, e.what() );
+   } catch (std::out_of_range& e) {
+      SWIG_exception(SWIG_IndexError, e.what() );
+   } catch (std::length_error& e) {
+      SWIG_exception(SWIG_IndexError, e.what() );
+   } catch (std::runtime_error& e) {
+      SWIG_exception(SWIG_RuntimeError, e.what() );
    }
    OMNIPY_CATCH_AND_HANDLE_SYSTEM_EXCEPTIONS
+   catch (std::exception& e) {
+      SWIG_exception(SWIG_SystemError, e.what() );
+   }
    catch(...) 
    {
      SWIG_exception(SWIG_UnknownError, "Unknown exception");
@@ -516,10 +594,13 @@ static PyObject* convertPort(YACS::ENGINE::Port* port,int owner=0)
 
 /*
  * Reference counting section
+ * reference counted objects are created with a count of 1 so we do not incrRef them on wrapping creation
+ * we only decrRef them on wrapping destruction.
+ * Do not forget to declare them new (%newobject) when they are not returned from a constructor
+ * unless they will not be decrRef on wrapping destruction
  */
-//not well understood
-//%feature("ref")   YACS::ENGINE::RefCounter  "$this->incrRef();"
-//%feature("unref") YACS::ENGINE::RefCounter  "$this->decrRef();"
+%feature("ref")   YACS::ENGINE::RefCounter  ""
+%feature("unref") YACS::ENGINE::RefCounter  "$this->decrRef();"
 /*
  * End of Reference counting section
  */
@@ -550,4 +631,77 @@ static PyObject* convertPort(YACS::ENGINE::Port* port,int owner=0)
   }
 %}
 */
+
+%define REFCOUNT_TEMPLATE(tname, T...)
+/*
+ This macro is a special wrapping for map with value type which derives from RefCounter.
+ To overload standard SWIG wrapping we define a full specialization of std::map
+ with %extend for 4 basic methods : getitem, setitem, delitem and keys.
+ Then we complete the interface by deriving the shadow wrapper from
+ the python mixin class (UserDict.DictMixin).
+ Do not forget to declare the new shadow class to SWIG with tname_swigregister(tname).
+ Objects returned by __getitem__ are declared new (%newobject) so that when destroyed they
+ call decrRef (see feature("unref") for RefCounter).
+*/
+template<>
+class std::map<std::string,T*>
+{
+public:
+%extend
+{
+  void __setitem__(const std::string& name, T* c)
+    {
+      std::map<std::string, T* >::iterator i = self->find(name);
+      if (i != self->end())
+        {
+          if(c==i->second)
+            return;
+          i->second->decrRef();
+        }
+      (*self)[name]=c;
+      c->incrRef();
+    }
+  T* __getitem__(std::string name)
+    {
+      std::map<std::string, T* >::iterator i = self->find(name);
+      if (i != self->end())
+        {
+          i->second->incrRef();
+          return i->second;
+        }
+      else
+        throw std::out_of_range("key not found");
+    }
+  void __delitem__(std::string name)
+    {
+      std::map<std::string, T* >::iterator i = self->find(name);
+      if (i != self->end()){
+        i->second->decrRef();
+        self->erase(i);
+      }
+      else
+        throw std::out_of_range("key not found");
+    }
+  PyObject* keys() {
+      int pysize = self->size();
+      PyObject* keyList = PyList_New(pysize);
+      std::map<std::string, T* >::const_iterator i = self->begin();
+      for (int j = 0; j < pysize; ++i, ++j) {
+        PyList_SET_ITEM(keyList, j, PyString_FromString(i->first.c_str()));
+      }
+      return keyList;
+    }
+}
+};
+
+%newobject std::map<std::string,T* >::__getitem__;
+%template()   std::pair<std::string, T* >;
+%template(tname)    std::map<std::string, T* >;
+%pythoncode{
+from UserDict import DictMixin
+class tname(tname,DictMixin):pass
+tname##_swigregister(tname)
+}
+%enddef
+
 

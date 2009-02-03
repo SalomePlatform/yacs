@@ -1,7 +1,25 @@
-
+//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 #include "TypeCode.hxx"
 #include <sstream>
 #include <iostream>
+#include <cstring>
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -9,7 +27,7 @@
 using namespace YACS::ENGINE;
 using namespace std;
 
-const char *TypeCode::KIND_STR_REPR []={ "None", "Double", "Int", "String", "Bool", "Objref", "Sequence", "Array","Struct" };
+const char *TypeCode::KIND_STR_REPR []={ "None", "double", "int", "string", "bool", "Objref", "Sequence", "Array","Struct" };
 
 // --- TypeCode
 
@@ -67,13 +85,13 @@ const char * TypeCode::id() const throw(Exception)
   switch(_kind)
     {
     case Double:
-      return "Double";
+      return "double";
     case Int:
-      return "Int";
+      return "int";
     case String:
-      return "String";
+      return "string";
     case Bool:
-      return "Bool";
+      return "bool";
     default:
       return "";
     }
@@ -216,6 +234,12 @@ TypeCode * TypeCode::sequenceTc(const char* id,
                                  const char* name,
                                  TypeCode *content)
 {
+  std::string typname;
+  if(std::string(name)=="")
+    {
+      typname="seq"+std::string(content->name());
+      name=typname.c_str();
+    }
   return new TypeCodeSeq(id, name,content);
 };
 //! static factory of struct type given an id and a name 

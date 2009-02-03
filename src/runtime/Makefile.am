@@ -1,4 +1,21 @@
-
+#  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+#
+#  This library is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU Lesser General Public
+#  License as published by the Free Software Foundation; either
+#  version 2.1 of the License.
+#
+#  This library is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#  Lesser General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public
+#  License along with this library; if not, write to the Free Software
+#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+#
+#  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+#
 include $(top_srcdir)/adm/unix/make_begin.am
 
 SUBDIRS = Test
@@ -23,9 +40,11 @@ libYACSRuntimeSALOME_la_SOURCES =      \
 	NeutralPythonConv.cxx          \
 	NeutralCORBAConv.cxx           \
 	NeutralXMLConv.cxx             \
+	NeutralInitConv.cxx            \
 	PythonCORBAConv.cxx            \
 	PythonNeutralConv.cxx          \
 	PythonXMLConv.cxx              \
+	PythonInitConv.cxx             \
 	PythonNode.cxx                 \
 	SalomePythonNode.cxx           \
 	SalomePythonComponent.cxx      \
@@ -73,7 +92,8 @@ RuntimeSALOME.hxx            SalomeComponent.hxx  SALOMEconfig.h             Sal
 SALOMEDispatcher.hxx         SalomeProc.hxx       SalomePythonComponent.hxx  SalomePythonNode.hxx \
 SessionCataLoader.hxx        StudyNodes.hxx       StudyPorts.hxx             TypeConversions.hxx \
 VisitorSaveSalomeSchema.hxx  XMLCORBAConv.hxx     XMLCppConv.hxx             XMLNeutralConv.hxx \
-XMLNode.hxx                  XMLPorts.hxx         XMLPythonConv.hxx
+XMLNode.hxx                  XMLPorts.hxx         XMLPythonConv.hxx          PythonInitConv.hxx \
+NeutralInitConv.hxx
 
 EXTRA_libYACSRuntimeSALOME_la_SOURCES =  \
 	$(__dummy__)
@@ -88,7 +108,9 @@ if DSC_PORTS
 DSC_LIBS=-L$(KERNEL_ROOT_DIR)/lib$(LIB_LOCATION_SUFFIX)/salome -lSalomeDSCContainer
 endif
 
-BUILT_SOURCES=SALOMERuntimeWRAP.cxx
+# --- build libYACSRuntimeSALOME library before swig libraries (problem with make -j)
+
+BUILT_SOURCES=SALOMERuntimeWRAP.cxx libYACSRuntimeSALOME.la
 
 libYACSRuntimeSALOME_la_LIBADD = \
 	$(DSC_LIBS) $(SALOME_LIBS) $(OMNIORB_LIBS) \

@@ -1,0 +1,181 @@
+<?xml version='1.0'?>
+<proc>
+   <type name="bool" kind="bool"/>
+   <sequence name="boolvec" content="bool"/>
+   <type name="double" kind="double"/>
+   <sequence name="dblevec" content="double"/>
+   <objref name="file" id="file"/>
+   <type name="int" kind="int"/>
+   <sequence name="intvec" content="int"/>
+   <type name="string" kind="string"/>
+   <sequence name="string_array" content="string"/>
+   <sequence name="stringvec" content="string"/>
+   <inline name="PyScript0">
+      <script><code><![CDATA[]]></code></script>
+      <inport name="i1" type="bool"/>
+      <inport name="i2" type="int"/>
+      <inport name="i3" type="double"/>
+      <inport name="strseq" type="string_array"/>
+      <inport name="strvec" type="stringvec"/>
+      <inport name="boolvec" type="boolvec"/>
+      <inport name="dblevec" type="dblevec"/>
+      <inport name="intvec" type="intvec"/>
+      <inport name="i0" type="string"/>
+   </inline>
+   <datanode name="PresetNode0">
+      <parameter name="o1" type="bool">
+         <value><boolean>1</boolean></value>
+      </parameter>
+      <parameter name="o2" type="int">
+         <value><int>12</int></value>
+      </parameter>
+      <parameter name="o3" type="double">
+         <value><double>123.4</double></value>
+      </parameter>
+      <parameter name="o4" type="string">
+         <value><string>aaaab</string></value>
+      </parameter>
+      <parameter name="o0" type="string_array">
+         <value><array><data>
+<value><string>a</string></value>
+<value><string>ab</string></value>
+</data></array></value>
+      </parameter>
+      <parameter name="o6" type="stringvec">
+         <value><array><data>
+<value><string>ab</string></value>
+<value><string>ac</string></value>
+</data></array></value>
+      </parameter>
+      <parameter name="o7" type="boolvec">
+         <value><array><data>
+<value><boolean>1</boolean></value>
+<value><boolean>0</boolean></value>
+<value><boolean>1</boolean></value>
+</data></array></value>
+      </parameter>
+      <parameter name="o8" type="dblevec">
+         <value><array><data>
+<value><double>12.3</double></value>
+<value><double>4.5e+08</double></value>
+</data></array></value>
+      </parameter>
+      <parameter name="o9" type="intvec">
+         <value><array><data>
+<value><int>4</int></value>
+<value><int>5</int></value>
+<value><int>7</int></value>
+</data></array></value>
+      </parameter>
+   </datanode>
+   <inline name="PyScript1">
+      <script><code><![CDATA[]]></code></script>
+      <inport name="i2" type="bool"/>
+      <inport name="i3" type="int"/>
+      <inport name="i4" type="double"/>
+      <inport name="i5" type="string"/>
+      <inport name="i10" type="string_array"/>
+      <inport name="i11" type="stringvec"/>
+      <inport name="i12" type="boolvec"/>
+      <inport name="i13" type="dblevec"/>
+      <inport name="i14" type="intvec"/>
+   </inline>
+   <control> <fromnode>PresetNode0</fromnode> <tonode>PyScript1</tonode> </control>
+   <datalink control="false">
+      <fromnode>PresetNode0</fromnode> <fromport>o1</fromport>
+      <tonode>PyScript1</tonode> <toport>i2</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>PresetNode0</fromnode> <fromport>o2</fromport>
+      <tonode>PyScript1</tonode> <toport>i3</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>PresetNode0</fromnode> <fromport>o3</fromport>
+      <tonode>PyScript1</tonode> <toport>i4</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>PresetNode0</fromnode> <fromport>o4</fromport>
+      <tonode>PyScript1</tonode> <toport>i5</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>PresetNode0</fromnode> <fromport>o0</fromport>
+      <tonode>PyScript1</tonode> <toport>i10</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>PresetNode0</fromnode> <fromport>o6</fromport>
+      <tonode>PyScript1</tonode> <toport>i11</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>PresetNode0</fromnode> <fromport>o7</fromport>
+      <tonode>PyScript1</tonode> <toport>i12</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>PresetNode0</fromnode> <fromport>o8</fromport>
+      <tonode>PyScript1</tonode> <toport>i13</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>PresetNode0</fromnode> <fromport>o9</fromport>
+      <tonode>PyScript1</tonode> <toport>i14</toport>
+   </datalink>
+   <parameter>
+      <tonode>PyScript0</tonode><toport>i1</toport>
+      <value><boolean>0</boolean></value>
+   </parameter>
+   <parameter>
+      <tonode>PyScript0</tonode><toport>i2</toport>
+      <value><int>994</int></value>
+   </parameter>
+   <parameter>
+      <tonode>PyScript0</tonode><toport>i3</toport>
+      <value><double>4.98767e+42</double></value>
+   </parameter>
+   <parameter>
+      <tonode>PyScript0</tonode><toport>strseq</toport>
+      <value><array><data>
+<value><string>aa</string></value>
+<value><string>bbb</string></value>
+<value><string>ccccc</string></value>
+<value><string>rr</string></value>
+</data></array></value>
+   </parameter>
+   <parameter>
+      <tonode>PyScript0</tonode><toport>strvec</toport>
+      <value><array><data>
+<value><string>albert</string></value>
+<value><string>londres</string></value>
+<value><string>journal</string></value>
+<value><string>tutu</string></value>
+</data></array></value>
+   </parameter>
+   <parameter>
+      <tonode>PyScript0</tonode><toport>boolvec</toport>
+      <value><array><data>
+<value><boolean>0</boolean></value>
+<value><boolean>1</boolean></value>
+<value><boolean>1</boolean></value>
+<value><boolean>0</boolean></value>
+<value><boolean>0</boolean></value>
+<value><boolean>0</boolean></value>
+</data></array></value>
+   </parameter>
+   <parameter>
+      <tonode>PyScript0</tonode><toport>dblevec</toport>
+      <value><array><data>
+<value><double>1.2</double></value>
+<value><double>-33</double></value>
+<value><double>-1870</double></value>
+</data></array></value>
+   </parameter>
+   <parameter>
+      <tonode>PyScript0</tonode><toport>intvec</toport>
+      <value><array><data>
+<value><int>12</int></value>
+<value><int>4</int></value>
+<value><int>46</int></value>
+</data></array></value>
+   </parameter>
+   <parameter>
+      <tonode>PyScript0</tonode><toport>i0</toport>
+      <value><string>c'est super! Hein, non...</string></value>
+   </parameter>
+</proc>

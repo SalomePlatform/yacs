@@ -1,4 +1,21 @@
-
+//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 #include "PythonPorts.hxx"
 #include "TypeConversions.hxx"
 #include "TypeCode.hxx"
@@ -123,6 +140,9 @@ void InputPyPort::edRemoveManInit()
   Py_XDECREF(_initData);
   _initData=Py_None;
   Py_INCREF(_initData);
+  Py_XDECREF(_data);
+  _data=Py_None;
+  Py_INCREF(_data);
   InputPort::edRemoveManInit();
 }
 
@@ -137,6 +157,7 @@ void InputPyPort::put(PyObject *data) throw(ConversionException)
   releasePyObj(_data);
   Py_XDECREF(_data); 
   _data = data;
+  _stringRef="";
   Py_INCREF(_data); 
   registerPyObj(_data);
   DEBTRACE( "_data refcnt: " << _data->ob_refcnt );
@@ -155,6 +176,11 @@ PyObject * InputPyPort::getPyObj() const
 void *InputPyPort::get() const throw(Exception)
 {
   return (void*) _data;
+}
+
+std::string InputPyPort::getAsString()
+{
+  return convertPyObjectToString(_data);
 }
 
 bool InputPyPort::isEmpty()
@@ -207,6 +233,24 @@ std::string InputPyPort::dump()
 //           << " on node " << _node->getName();
 //       throw Exception(msg.str());      
 //     }
+}
+
+std::string InputPyPort::valToStr()
+{
+  int isString = PyString_Check(getPyObj());
+  //DEBTRACE("isString=" << isString);
+  PyObject *strPyObj = PyObject_Str(getPyObj());
+  //DEBTRACE(PyString_Size(strPyObj));
+  string val = PyString_AsString(strPyObj);
+  if (isString)
+    val = "\"" + val + "\"";
+  //DEBTRACE(val);
+  Py_DECREF(strPyObj);
+  return val;
+}
+
+void InputPyPort::valFromStr(std::string valstr)
+{
 }
 
 
@@ -268,6 +312,11 @@ PyObject * OutputPyPort::getPyObj() const
   return _data;
 }
 
+std::string OutputPyPort::getAsString()
+{
+  return convertPyObjectToString(_data);
+}
+
 std::string OutputPyPort::dump()
 {
   if( _data == Py_None)
@@ -277,3 +326,14 @@ std::string OutputPyPort::dump()
   return xmldump;
 }
 
+std::string OutputPyPort::valToStr()
+{
+  PyObject *strPyObj = PyObject_Str(getPyObj());
+  string val = PyString_AsString(strPyObj);
+  Py_DECREF(strPyObj);
+  return val;
+}
+
+void OutputPyPort::valFromStr(std::string valstr)
+{
+}

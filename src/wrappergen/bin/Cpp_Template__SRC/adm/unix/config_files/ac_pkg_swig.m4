@@ -1,25 +1,37 @@
-dnl @synopsis AC_PROG_SWIG([major.minor.micro])
+dnl  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
 dnl
+dnl  This library is free software; you can redistribute it and/or
+dnl  modify it under the terms of the GNU Lesser General Public
+dnl  License as published by the Free Software Foundation; either
+dnl  version 2.1 of the License.
+dnl
+dnl  This library is distributed in the hope that it will be useful,
+dnl  but WITHOUT ANY WARRANTY; without even the implied warranty of
+dnl  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+dnl  Lesser General Public License for more details.
+dnl
+dnl  You should have received a copy of the GNU Lesser General Public
+dnl  License along with this library; if not, write to the Free Software
+dnl  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+dnl
+dnl  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+dnl
+dnl @synopsis AC_PROG_SWIG([major.minor.micro])
 dnl This macro searches for a SWIG installation on your system. If found you
 dnl should) SWIG via $(SWIG).  You can use the optional first argument to check
 dnl if the version of the available SWIG is greater than or equal to the
 dnl value of the argument.  It should have the format: N[.N[.N]] (N is a
 dnl number between 0 and 999.  Only the first N is mandatory.)
-dnl
 dnl If the version argument is given (e.g. 1.3.17), AC_PROG_SWIG checks that the
 dnl swig package is this version number or higher.
-dnl
 dnl In configure.in, use as:
-dnl
 dnl		AC_PROG_SWIG(1.3.17)
 dnl		SWIG_ENABLE_CXX
 dnl		SWIG_MULTI_MODULE_SUPPORT
 dnl		SWIG_PYTHON
-dnl
 dnl @authors Sebastian Huber <address@hidden>, Alan W. Irwin
 dnl <address@hidden>, Rafael Laboissiere <address@hidden> and
 dnl Andrew Collier <address@hidden>.
-dnl
 dnl
 AC_DEFUN([AC_PROG_SWIG],[
 	AC_PATH_PROG([SWIG],[swig])

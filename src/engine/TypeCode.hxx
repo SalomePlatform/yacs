@@ -1,3 +1,21 @@
+//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 #ifndef __TYPECODE_HXX__
 #define __TYPECODE_HXX__
 
@@ -76,7 +94,9 @@ namespace YACS
       // --- These operators are placed here to avoid them being used externally
       TypeCode(const TypeCode& tc);
       TypeCode& operator=(const TypeCode& tc);
+#ifndef SWIG
       virtual ~TypeCode();
+#endif
     protected:
       const DynType _kind;
       static const char *KIND_STR_REPR [];
@@ -119,7 +139,9 @@ namespace YACS
       virtual int isAdaptable(const TypeCode* tc) const;
       virtual int isEquivalent(const TypeCode* tc) const;
     protected:
-      ~TypeCodeObjref();
+#ifndef SWIG
+      virtual ~TypeCodeObjref();
+#endif
       TypeCodeObjref(const TypeCodeObjref& other);
     private:
       std::list<TypeCodeObjref *> _listOfBases;
@@ -150,7 +172,9 @@ namespace YACS
       virtual int isAdaptable(const TypeCode* tc) const;
       virtual int isEquivalent(const TypeCode* tc) const;
     protected:
-      ~TypeCodeSeq();
+#ifndef SWIG
+      virtual ~TypeCodeSeq();
+#endif
       TypeCodeSeq(const TypeCodeSeq& tc);
     private:
       const TypeCode  *_content;
@@ -180,7 +204,9 @@ namespace YACS
       virtual int isEquivalent(const TypeCode* tc) const;
       unsigned getSizeInByteOfAnyReprInSeq() const;
     protected:
-      ~TypeCodeArray();
+#ifndef SWIG
+      virtual ~TypeCodeArray();
+#endif
       TypeCodeArray(const TypeCodeArray& tc);
     private:
       const TypeCode  *_content;
@@ -219,7 +245,9 @@ namespace YACS
       const char*  memberName(int index) const;
       TypeCode*  memberType(int index) const;
     protected:
-      ~TypeCodeStruct();
+#ifndef SWIG
+      virtual ~TypeCodeStruct();
+#endif
       TypeCodeStruct(const TypeCodeStruct& tc);
     private:
       std::vector< std::pair<std::string,TypeCode*> > _members;

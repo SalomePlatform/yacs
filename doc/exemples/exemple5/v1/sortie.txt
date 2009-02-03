@@ -1,0 +1,10 @@
+>>> import AlgLinModule
+>>> C = AlgLinModule.alglin()
+>>> C
+<C alglin instance>
+>>> v1 = C.create_vector(10)
+>>> v2 = C.create_vector(20)
+>>> print "v1 = ", v1
+v1 =  _8116410_vecteur_p
+>>> print "v2 = ", v2
+v2 =  _80d06c8_vecteur_p

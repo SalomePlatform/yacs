@@ -1,3 +1,21 @@
+//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 #include "Switch.hxx"
 #include "Visitor.hxx"
 #include "LinkInfo.hxx"
@@ -5,6 +23,9 @@
 #include <iostream>
 #include <sstream>
 #include <cassert>
+
+//#define _DEVDEBUG_
+#include "YacsTrace.hxx"
 
 using namespace YACS::ENGINE;
 using namespace std;
@@ -468,9 +489,17 @@ Node *Switch::edReleaseCase(int caseId) throw(Exception)
       Node *ret=(*iter).second;
       StaticDefinedComposedNode::edRemoveChild(ret);
       _mapOfNode.erase(iter);
+      modified();
       return ret;
     }
 }
+
+Node *Switch::edGetNode(int caseId)
+{
+  if (!_mapOfNode.count(caseId)) return 0;
+  return _mapOfNode[caseId];
+}
+
 
 /*!
  * \param caseId : the case ID chosen to place 'node'
@@ -488,10 +517,10 @@ Node *Switch::edSetNode(int caseId, Node *node) throw(Exception)
   checkNoCrossHierachyWith(node);
   node->_father=this;
   map< int , Node * >::iterator iter=_mapOfNode.find(caseId);
-  modified();
   if(iter==_mapOfNode.end())
     {
       _mapOfNode[caseId]=node;
+      modified();
       return 0;
     }
   else
@@ -500,9 +529,24 @@ Node *Switch::edSetNode(int caseId, Node *node) throw(Exception)
         {
           Node *ret=(*iter).second;
           (*iter).second=node;
+          modified();
           return ret;
         }
     }
+}
+
+bool Switch::edAddChild(Node *node) throw(Exception)
+{
+  int aCase = 0;
+  map<int, Node*>::const_iterator it = _mapOfNode.begin();
+  for(; it != _mapOfNode.end(); ++it)
+    if ((*it).first > aCase)
+      aCase = (*it).first;
+  aCase++;
+  DEBTRACE(aCase);
+  bool ret = edSetNode(aCase, node);
+  DEBTRACE(ret);
+  return ret;
 }
 
 YACS::Event Switch::updateStateOnFinishedEventFrom(Node *node)
@@ -650,6 +694,8 @@ YACS::StatesForNode Switch::getEffectiveState(const Node* node) const
     return YACS::READY;
   if(effectiveState==YACS::DISABLED)
     return YACS::DISABLED;
+  if(!_condition.getValue())
+    return node->getState();
   map< int , Node * >::const_iterator iter=_mapOfNode.find(_condition.getIntValue());
   if(iter!=_mapOfNode.end() && (*iter).second==node)
     return node->getState();

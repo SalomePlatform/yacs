@@ -1,0 +1,294 @@
+TODO : x = resolu, - = a faire
+====
+
+x pattern sujet / observateurs
+x pattern command pour undo/redo
+x Model/view arbre (schema) avec QAbstactItemModel
+x Model/view panneau (noeud): NON, stack of widgets
+x affichage panneau objet selectionne (stack widget)
+x QScintilla / Qt4
+x Graphic/view    avec QGraphicsScene et QGraphicsItem
+x selection arbre, synchro scene
+x selection canvas, synchro arbre
+x expand automatique arbre
+x popup menu arbre
+x popup menu canvas
+x fonction de recup port.value (deballage du dump ?)
+x edition, ajout objet (Model editable)
+x drag & drop en edition
+x drag & drop type du catalogue vers arbre
+x rubriques data types, link, containers, (nodes) dans arbre
+x algorithme placement liens
+x creation de liens  a la souris dans scene et arbre en drag and drop
+x sauvegarde schema en edition
+x import catalogues depuis schemas
+x insertion dans SALOME 5
+x boutons-actions zoom, panning, cadre zone à voir, reset vue, fit all
+x proc remplit automatiquement toute la vue principale (bouton fit all)
+x bouton save ou save as au lieu de export
+x Model/view table (ports)
+x affichage etat en edition
+x dessins des liens de contrôle
+x gestion etude SALOME : object browser
+x design arbre (edition/execution)
+x contournement bug confirmOverwrite QFileDialog Qt 4.3.3 (corrige en 4.3.5)
+x selection lien dans canvas (shape du lien)
+x fleche sur lien
+x edition port presetNode (abort)
+x edition nsteps dans forLoop
+x edition condition dans whileLoop
+x edition switch: valeurs des cas, edition select
+x affichage etat en execution (couleurs)
+x nommer vues SALOME
+x mode execution, recuperer etats, update couleurs canvas, arbre
+x mode execution, connecter les check box noeuds
+x clic arbre ou canvas: basculer sur l'onglet input panel
+x menu ajout de noeud depuis catalogue: basculer sur l'onglet catalogs, tooltip
+x tentative mode execution: selectionner proc pour voir status.
+x cut past de noeud (reparent) possible pas menus cut et paste, et drag&drop avec bouton milieu
+x generalisation remontee message sur erreur commande (Message.cxx)
+x tableau ports en edition
+x insertion, deplacement, destruction port
+x algorithmes placement noeuds
+x proc menu edition: ajout action execution
+
+- sauvegarde position des noeuds dans xml, lors du passage en exec
+
+- edition port outNode (xml): definir fichier sortie
+- edition ports studyInNode, studyOutNode (controle types possibles...)
+- edition ForEachLoop: type, samples ? (nbBranch OK)
+
+- touches raccourci actions importantes (save ou save as...)
+- <CTRL>+ et <CTRL>- pour zoom graphique
+- mise en oeuvre undo/redo
+
+- edition, destruction instance composant 
+- edition, destruction container 
+- edition, modification objet
+
+- affichage etat schema modifie depuis derniere sauvegarde fichier
+- couleur differente des liens datastream, 
+  des liens de donnees simples (sans controle associe)
+
+- differents designs / canvas (interface generique)
+- vues differentes (expanded/collapsed, edition/execution)
+- collapse des noeuds composes
+- vues simplifiees d'un noeud
+  (que les controles, tous les ports sans les noms, complete)
+
+- design panneaux (edition/execution)
+
+- drag & drop de ports pour l'ordre dans le tableau, dans la scene
+- creation de liens par menu
+  distinguer les liens simples (sans contrôle)
+- deplacement de noeud a la souris: pouvoir passer par dessus un bloc
+  (pressed + touche...) transparence, finir le deplacement que s'il y a
+  la place, ou pousser le bloc ?
+- pousser les noeuds et les blocs vers le haut ou la gauche ?
+
+- creation de noeud : recadrage de la vue
+- selection : recadrage de la vue
+
+- gestion des conflits de types de meme nom et non isEquivalent,
+  maintenant: detectes, marques en bleu, et surcharge.
+  (alias dans typeCode pour un dump coherent)
+- commandes manquantes: renommage (cf. apres), set valeur port
+- les noeuds services peuvent recevoir des ports fichier (file) supplementaires
+
+- editeur de types directement en xml
+- mecanisme plugin menus/actions
+- avoir in mecanisme de highlight autre que la selection :
+  - choix d'un port dans le panneau noeud -> arbre, vue
+  - selection multiples (arbre, tableau vue) pour action groupee
+    (deplacement scene, destruction...)
+- connexion automatique de ports avec des noeuds bord à bord
+  (regle de correspondance de noms ? respect de l'ordre ?)
+- dessiner les liens avec des ponts quand des liens se croisent !
+- 2eme vue avec schema complet et cadre de la vue principale
+- panneau de preferences des couleurs
+
+- differents modes pour la creation d'instances de composant
+- selection multiple de noeuds pour les affecter a une meme instance, ou tous les noeuds d'un bloc
+- pouvoir initialiser un port dans le panneau edition du port
+
+- ...
+
+PROBLEMES : x = resolu, - = a faire
+=========
+
+x ajout de noeuds : arbres mal mis a jour.
+x ajout de noeuds dans des blocs : probleme de presentation du canvas
+x reorganisation suite a suppression: mismatch du stack widget
+x dessin des liens: probleme de detection des noeuds lors de simplifications
+x deux click de suite au meme endroit de l'arbre: toggle selection deselection
+  (pb potentiel avec popup)
+x gerer plusieurs schemas simultanement : clarifier attributs GraphicMain,
+  initialisation scenes et trees
+x chargement d'un schema: noeuds services non representes sous les instances de composant
+  dans l'arbre (pb de la creation differee container - instance composant)
+x update panel node-container quand on change le container dans le panel node-component
+x update panel node-component quand on associe un composant a un nouveau container,
+  avec plusieurs noeuds services associes au composant 
+x destruction proc = abort
+x etat items pas mis a jour au chargement d'un schema (noeuds invalides...)
+x visualisation log containers : exception component no longer reachable :
+  observable uniquement avec COMPONENT_SRC, pas a niveau (container parallele, mauvaise initilisation)
+x initialisation data node.
+x execution de switch9.xml : manque un lien, n'empeche pas l'exec, abort
+x menu creation cpp node: supprimer
+x menu destruction port : selon type de noeud
+x SubjectDataPort  --> commandRenameDataPort
+x edition des ports (nom, valeur) interdite en execution
+x interdire renommage des ports de service node dans vues schema (arbre, table)
+x interdire renommage des ports de service node (desactiver dans port edition panel)
+x component pas renommable -->  setReadOnly
+x componentInstance pas renommable -->  setReadOnly
+x type pas renommable -->  setReadOnly
+x link pas renommable -->  setReadOnly
+x menus contextuels : ports des noeuds service non destructibles (arbre)
+x renommage port pas possible depuis la table des ports dans le panel node
+x interdire renomer port avec un nom existant
+x edition valeur impossible dans arbre
+x passer script en read only en execution
+x revoir methode SubjectNode.reparent(_parent) sous forme de commande
+x renommage node pas propage dans les noeuds fils (rename or cut/paste)
+x en execution, marquer execution mode dans arbre
+
+- SIGSEV en sortie de SALOME apres destruction de la fenetre execution
+- panneau edition container, rubriue instance ? a clarifier
+- destruction d'un lien, impact sur la disposition des noeuds
+
+- execution noeud default de switch : pas marque DONE dans arbre et vue 2D
+- cut paste dans switch: valeur use case attribue automatiquement pas affiche
+- passage en execution: arbre pas toujours cree la premiere fois
+- update etat des inputPort apres creation de lien dans tableau,  (linked, not initialized)
+- import de schema CORBA (foreach_LongCorba): exception
+- chargement de schema pendant qu'un autre est running:
+  abort GuiExecutor Assertion `GuiContext::getCurrent()->_mapOfExecSubjectNode.count(iGui)' failed
+- cut paste d'un noeud pour l'enlever d'une forLoop (toujours fils de la forloop: case prise, destruction...)
+- QtGuiContext::getQtCurrent()->_mapOfEditionItem.count(_subject)' failed apres cut paste et creation de lien
+
+- renommage d'un item autre que noeud non repercute:
+  il manque des fonctions de renommage:
+- renommage container: 
+  - pas actif depuis le panel container (container, composant, service)
+  - arbre service pas a jour
+  - indicateur en edition (jaune) pas a jour dans l'arbre
+- renommage node:
+  - pas propage dans les liens (noms de liens)
+  - arbre reference service sous component pas a jour
+  - si erreur (nom existant) l'indicateur en edition (jaune) reste actif meme apres correction
+
+- analyse performances vue 2D
+
+- control port : SceneItem separe mais subject = subject du node,
+  selection clignote
+- couleur de selection du control port : incoherence de selection
+- header : idem (pas besoin de SceneItem separe)
+- deselection (click hors schema): le panneau de la stack widget reste au
+  dernier selectionne, idem pour la selection dans l'arbre
+  (avec correction SchemaItem 1.8)
+  lie au clearAndSelect dans SchemaItem::select (correction SchemaItem 1.8)
+- selection rubrique containers ou types: précédente selection reste dans canvas et edition
+- destruction component instance : mal repercuté (arbres, map proc...)
+- caractères accentues dans script python d'un noeud python, fichier xml mal chargé
+
+- fermeture vue SALOME, object Browser pas mis a jour mais schema detruit...
+
+
+Boutons Souris et Controles
+===========================
+LMB : bouton gauche
+RMB : bouton droit
+CMB : bouton central
+MR  : molette
+
+cf. QGraphicsItem::mousePressEvent ( QGraphicsSceneMouseEvent * event ) 
+    QGraphicsSceneMouseEvent::modifiers()
+
+
+- partout    : RMB             : popup menu
+  -------
+
+- Scene/vue
+  ---------
+             : menu puis LMB   : fit area, zoom , fit all
+             : MR              : zoom
+             : CMB             : deplacer la vue
+
+  - Proc     : CMB             : deplacer la vue
+
+  - Noeud    : LMB             : deplacer un noeud sur le graphe
+             : Shift LMB       : passer par dessus un noeud pour un deplacement
+             : CMB             : changer le parent d'un noeud par drag & drop vue ou arbre
+                                 
+
+  - Port     : LMB             : creer un lien par drag & drop
+
+- Arbre
+  -----
+
+  - proc     :
+
+  - bloc     : CMB             : changer le parent d'un noeud par drag & drop
+             : LMB             : creer un lien par drag & drop
+
+  - elemNode : CMB             : changer le parent d'un noeud par drag & drop
+             : LMB             : affecter a un composant / drag and drop sur arbre
+
+  - port     : LMB             : creer un lien par drag & drop
+
+  - link     :
+
+  - dataType : LMB             : definir un type de port / drag and drop sur panneau
+
+  - container:
+
+  - component: LMB             : affecter a un container / drag and drop sur arbre
+
+
+- Panneau, tableau de ports
+  -------------------------
+
+
+- Panneau, onglet catalogue
+  -------------------------
+
+  - noeud    : LMB             : ajouter un noeud /drag and drop sur vue ou arbre
+
+  - dataType : LMB             : ajouter un type de port / drag and drop sur arbre
+                               : changer un type de port / drag and drop sur panneau...
+
+Modes de representation du noeud
+================================
+
+- noeud elementaire
+  -----------------
+  - developpé, edition   : entete + ports avec nom (valeurs = tooltip ou panneau)
+  - reduit, edition      : entete + ports sans nom
+  - collapsed, edition   : entete seul (que les control link ?)
+  memes vues en execution (faut il des valeurs sur les ports ?)
+
+- noeud composé
+  -------------
+  - developpé, edition   : tout les internes de premier niveau visibles,
+                           au moins sous forme reduite
+  - macro noeud, edition : un seul macro noeud, presentation du noeud élémentaire developpé
+                           certains ports internes cachés
+                           (enrichir description IHM avec notion port privé ? ) 
+  - reduit, edition      : un seul macro noeud, presentation du noeud élémentaire réduit
+  - collapsed, édition   : entete seul
+  memes vues en execution 
+
+
+
+
+lecture ecriture des valeurs initiales des input ports :
+string au format python : a=[23,45,12.5,{"a":3,"b":[3,5]}]
+lecture : 
+passer par une methode PyObject * getPyObj() du port derive (cf. SALOMERuntime.i),
+puis print python.
+on peut ajouter 2 methodes dans le DataFlowPort :
+ recup valeur      : string fetch()
+ chargement valeur : void load(string)
+à dériver dans les ports any, python, corba

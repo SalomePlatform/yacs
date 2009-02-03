@@ -1,3 +1,21 @@
+//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 #ifndef __COMPOSEDNODE_HXX__
 #define __COMPOSEDNODE_HXX__
 
@@ -44,6 +62,9 @@ namespace YACS
       void notifyFrom(const Task *sender, YACS::Event event);
       bool edAddLink(OutPort *start, InPort *end) throw(Exception);
       virtual bool edAddDFLink(OutPort *start, InPort *end) throw(Exception);
+      //Node* DISOWNnode is a SWIG notation to indicate that the ownership of the node is transfered to C++
+      virtual bool edAddChild(Node *DISOWNnode) throw(Exception);
+      virtual void edRemoveChild(Node *node) throw(Exception);
       bool edAddLink(OutGate *start, InGate *end) throw(Exception);
       bool edAddCFLink(Node *nodeS, Node *nodeE) throw(Exception);
       void edRemoveCFLink(Node *nodeS, Node *nodeE) throw(Exception);
@@ -78,6 +99,7 @@ namespace YACS
       virtual std::vector< std::pair<InPort *, OutPort *> > getSetOfLinksComingInCurrentScope() const;
       virtual std::string typeName() {return "YACS__ENGINE__ComposedNode";}
       virtual void edUpdateState();
+      virtual void checkBasicConsistency() const throw(Exception);
       virtual std::string getErrorReport();
       //
       ComposedNode *getRootNode() const throw(Exception);
@@ -89,6 +111,7 @@ namespace YACS
       Node *getChildByName(const std::string& name) const throw(Exception);
       static ComposedNode *getLowestCommonAncestor(Node *node1, Node *node2) throw(Exception);
       void loaded();
+      void connected();
       void accept(Visitor *visitor);
     protected:
       struct SortHierarc
@@ -102,7 +125,6 @@ namespace YACS
       void edDisconnectAllLinksWithMe();
       static bool splitNamesBySep(const std::string& globalName, const char separator[],
                                   std::string& firstPart, std::string& lastPart, bool priority) throw(Exception);
-      virtual void edRemoveChild(Node *node) throw(Exception);
       virtual Node *getChildByShortName(const std::string& name) const throw(Exception) = 0;
       YACS::Event updateStateFrom(Node *node, YACS::Event event);//update the state of this. Precondition : node->_father == this
       virtual YACS::Event updateStateOnStartEventFrom(Node *node);//transition 3 doc P.R

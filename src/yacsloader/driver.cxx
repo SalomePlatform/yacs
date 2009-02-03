@@ -1,4 +1,21 @@
-
+//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 #include "yacsconfig.h"
 #include "RuntimeSALOME.hxx"
 #include "Proc.hxx"
@@ -118,6 +135,15 @@ parse_opt (int key, char *arg, struct argp_state *state)
 // Our argp parser.
 static struct argp argp = { options, parse_opt, args_doc, doc };
 
+void timer(std::string msg)
+{
+  struct timeval tv;
+  gettimeofday(&tv,NULL);
+  long t=tv.tv_sec*1000+tv.tv_usec/1000;
+  static long t0=t;
+  gettimeofday(&tv,NULL);
+  std::cerr << msg << tv.tv_sec*1000+tv.tv_usec/1000-t0 << " ms" << std::endl;
+}
 
 main (int argc, char* argv[])
 {
@@ -143,6 +169,7 @@ main (int argc, char* argv[])
   else
     cerr << endl;
 
+  timer("Starting ");
   RuntimeSALOME::setRuntime();
 
   // Try to load the session catalog if it exists
@@ -173,6 +200,7 @@ main (int argc, char* argv[])
 
   try
     {
+      timer("Elapsed time before load: ");
       Proc* p=loader.load(myArgs.args[0]);
       if(p==0)
         {
@@ -198,6 +226,7 @@ main (int argc, char* argv[])
           delete disp;
           return 1;
         }
+      timer("Elapsed time after load: ");
 
       if(!p->isValid())
         {
@@ -211,6 +240,7 @@ main (int argc, char* argv[])
           delete disp;
           return 1;
         }
+      timer("Elapsed time after validation: ");
 
       // Check consistency
       LinkInfo info(LinkInfo::ALL_DONT_STOP);
@@ -226,6 +256,7 @@ main (int argc, char* argv[])
           delete disp;
           return 1;
         }
+      timer("Elapsed time after check consistency: ");
 
       //execution
       bool isXmlSchema = (strlen(myArgs.xmlSchema) != 0);
@@ -261,6 +292,7 @@ main (int argc, char* argv[])
       executor.RunW(p,myArgs.display, fromScratch);
       cerr << "+++++++++++++++++++  end calculation  +++++++++++++++++++" << endl;
       cerr << "Proc state : " << p->getEffectiveState() << endl;
+      timer("Elapsed time after execution: ");
 
       if(p->getEffectiveState() != YACS::DONE)
         {

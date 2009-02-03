@@ -1,3 +1,21 @@
+//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 #include "ElementaryNode.hxx"
 #include "Runtime.hxx"
 #include "InputPort.hxx"
@@ -238,16 +256,15 @@ void ElementaryNode::edRemovePort(Port *port) throw(Exception)
 {
   DEBTRACE("ElementaryNode::edRemovePort ");
   if(port->getNode()!=this)
-    throw Exception("ElementaryNode::edRemovePort : Port is not held by this");
-  string typeOfPortInstance=port->getNameOfTypeOfCurrentInstance();
-  if(typeOfPortInstance==InputPort::NAME)
-    edRemovePortTypedFromSet<InputPort>(dynamic_cast<InputPort *>(port),_setOfInputPort);
-  else if(typeOfPortInstance==OutputPort::NAME)
-    edRemovePortTypedFromSet<OutputPort>(dynamic_cast<OutputPort *>(port),_setOfOutputPort);
-  else if(typeOfPortInstance==InputDataStreamPort::NAME)
-    edRemovePortTypedFromSet<InputDataStreamPort>(dynamic_cast<InputDataStreamPort *>(port),_setOfInputDataStreamPort);
-  else if(typeOfPortInstance==OutputDataStreamPort::NAME)
-    edRemovePortTypedFromSet<OutputDataStreamPort>(dynamic_cast<OutputDataStreamPort *>(port),_setOfOutputDataStreamPort);
+    throw Exception("ElementaryNode::edRemovePort : Port is not held by this node");
+  if(InputPort *p=dynamic_cast<InputPort *>(port))
+    edRemovePortTypedFromSet<InputPort>(p,_setOfInputPort);
+  else if(OutputPort *p=dynamic_cast<OutputPort *>(port))
+    edRemovePortTypedFromSet<OutputPort>(p,_setOfOutputPort);
+  else if(InputDataStreamPort *p=dynamic_cast<InputDataStreamPort *>(port))
+    edRemovePortTypedFromSet<InputDataStreamPort>(p,_setOfInputDataStreamPort);
+  else if(OutputDataStreamPort *p=dynamic_cast<OutputDataStreamPort *>(port))
+    edRemovePortTypedFromSet<OutputDataStreamPort>(p,_setOfOutputDataStreamPort);
   else
     throw Exception("ElementaryNode::edRemovePort : unknown port type");
   delete port;
@@ -312,6 +329,40 @@ InputPort *ElementaryNode::edAddInputPort(const std::string& inputPortName, Type
         */
     }
   return ret;
+}
+
+void ElementaryNode::edOrderInputPorts(const std::list<InputPort*>& ports)
+{
+  std::set<InputPort *> s1;
+  std::set<InputPort *> s2;
+  for(list<InputPort *>::const_iterator it=_setOfInputPort.begin();it != _setOfInputPort.end();it++)
+    s1.insert(*it);
+  for(list<InputPort *>::const_iterator it=ports.begin();it != ports.end();it++)
+    s2.insert(*it);
+
+  if(s1 != s2)
+    throw Exception("ElementaryNode::edOrderInputPorts : port list must contain same ports as existing ones");
+
+  _setOfInputPort.clear();
+  for(list<InputPort *>::const_iterator it=ports.begin();it != ports.end();it++)
+    _setOfInputPort.push_back(*it);
+}
+
+void ElementaryNode::edOrderOutputPorts(const std::list<OutputPort*>& ports)
+{
+  std::set<OutputPort *> s1;
+  std::set<OutputPort *> s2;
+  for(list<OutputPort *>::const_iterator it=_setOfOutputPort.begin();it != _setOfOutputPort.end();it++)
+    s1.insert(*it);
+  for(list<OutputPort *>::const_iterator it=ports.begin();it != ports.end();it++)
+    s2.insert(*it);
+
+  if(s1 != s2)
+    throw Exception("ElementaryNode::edOrderOutputPorts : port list must contain same ports as existing ones");
+
+  _setOfOutputPort.clear();
+  for(list<OutputPort *>::const_iterator it=ports.begin();it != ports.end();it++)
+    _setOfOutputPort.push_back(*it);
 }
 
 OutputPort *ElementaryNode::createOutputPort(const std::string& outputPortName, TypeCode* type)
@@ -422,16 +473,29 @@ void ElementaryNode::aborted()
 
 //! Notify this node that it is loaded
 /*!
- * When an elementary node has been loaded it goes to TOACTIVATE state
- * It is then ready to be executed
+ * When an elementary node has been loaded 
+ * It is ready to be connected
  *
  */
 void ElementaryNode::loaded()
 {
-  setState(LOADED);
+}
+
+//! Notify this node that it is connected
+/*!
+ * When an elementary node has been connected it goes to TOACTIVATE state
+ * It is then ready to be executed
+ *
+ */
+void ElementaryNode::connected()
+{
   if(_inGate.exIsReady())
     if(areAllInputPortsValid())
-      setState(TOACTIVATE);
+      {
+        setState(TOACTIVATE);
+        return;
+      }
+  setState(LOADED);
 }
 
 void ElementaryNode::accept(Visitor *visitor)
@@ -483,18 +547,28 @@ void ElementaryNode::ensureLoading()
 
   // request loading for all nodes connected to this one by datastream link
   // Be careful that nodes can be connected in a loop. Put first this node in TOLOAD state to break the loop
-  std::list<OutputDataStreamPort *>::iterator iter;
-  for(iter = _setOfOutputDataStreamPort.begin(); iter != _setOfOutputDataStreamPort.end(); iter++)
+  std::list<OutputDataStreamPort *>::iterator iterout;
+  for(iterout = _setOfOutputDataStreamPort.begin(); iterout != _setOfOutputDataStreamPort.end(); iterout++)
     {
-      OutputDataStreamPort *port=(OutputDataStreamPort *)*iter;
+      OutputDataStreamPort *port=(OutputDataStreamPort *)*iterout;
       std::set<InPort *> ports=port->edSetInPort();
-      std::set<InPort *>::iterator iterout;
-      for(iterout=ports.begin();iterout != ports.end(); iterout++)
+      std::set<InPort *>::iterator iter;
+      for(iter=ports.begin();iter != ports.end(); iter++)
         {
-          Node* node= (*iterout)->getNode();
+          Node* node= (*iter)->getNode();
           node->ensureLoading();
         }
     }
-  /*
-    */
+  std::list<InputDataStreamPort *>::iterator iterin;
+  for(iterin = _setOfInputDataStreamPort.begin(); iterin != _setOfInputDataStreamPort.end(); iterin++)
+    {
+      InputDataStreamPort *port=(InputDataStreamPort *)*iterin;
+      std::set<OutPort *> ports=port->edSetOutPort();
+      std::set<OutPort *>::iterator iter;
+      for(iter=ports.begin();iter != ports.end(); iter++)
+        {
+          Node* node= (*iter)->getNode();
+          node->ensureLoading();
+        }
+    }
 }

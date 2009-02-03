@@ -1,4 +1,21 @@
-
+//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 #include <Python.h>
 #include "commandsProc.hxx"
 
@@ -27,14 +44,18 @@
 #include "DataPort.hxx"
 #include "InputDataStreamPort.hxx"
 #include "OutputDataStreamPort.hxx"
+#include "PresetPorts.hxx"
 #include "ComponentDefinition.hxx"
 #include "SalomeContainer.hxx"
 #include "SalomeComponent.hxx"
 #include "TypeCode.hxx"
+#include "RuntimeSALOME.hxx"
+#include "TypeConversions.hxx"
 
 #include "guiContext.hxx"
 
 #include <iostream>
+#include <sstream>
 #include <string>
 
 //#define _DEVDEBUG_
@@ -79,6 +100,8 @@ ProcInvoc::ProcInvoc()
   _typeNameMap[OUTPUTPORT]           = "OUTPUTPORT";
   _typeNameMap[INPUTDATASTREAMPORT]  = "INPUTDATASTREAMPORT";
   _typeNameMap[OUTPUTDATASTREAMPORT] = "OUTPUTDATASTREAMPORT";
+  _typeNameMap[DATALINK]             = "DATALINK";
+  _typeNameMap[CONTROLLINK]          = "CONTROLLINK";
   _typeNameMap[CONTAINER]            = "CONTAINER";
   _typeNameMap[COMPONENT]            = "COMPONENT";
   _typeNameMap[REFERENCE]            = "REFERENCE";
@@ -172,7 +195,7 @@ bool CommandAddNodeFromCatalog::localExecute()
       Node* node = proc;
       if (!_position.empty()) node = proc->getChildByName(_position);
       ComposedNode* father =dynamic_cast<ComposedNode*> (node);
-      if (father)
+      if (father && _nodeToClone)
         {
           son = _nodeToClone->clone(0);
           son->setName(_name);
@@ -222,6 +245,146 @@ bool CommandAddNodeFromCatalog::localReverse()
 
 // ----------------------------------------------------------------------------
 
+CommandReparentNode::CommandReparentNode(std::string position,
+                                         std::string newParent)
+  : Command(), _position(position), _newParent(newParent)
+{
+  DEBTRACE("CommandReparentNode::CommandReparentNode " << _position << " " << _newParent);
+}
+
+bool CommandReparentNode::localExecute()
+{
+  Proc* proc = GuiContext::getCurrent()->getProc();
+  Node* node = 0;
+  try
+    {
+      if (_position == proc->getName())
+        throw YACS::Exception("Reparent the proc (main bloc) is impossible");
+      node = proc->getChildByName(_position);
+      ComposedNode *oldFather = node->getFather();
+      ComposedNode *newFather = proc;
+      Node *newF = 0;
+      if (_newParent != proc->getName())
+        {
+          newF = proc->getChildByName(_newParent);
+          newFather = dynamic_cast<ComposedNode*>(newF);
+        }
+      if (!newFather)
+        throw YACS::Exception("new parent must be a composed node");
+      if (oldFather == newFather)
+        throw YACS::Exception("no need to reparent to the same parent");
+      if (ComposedNode *cnode = dynamic_cast<ComposedNode*>(node))
+        if (cnode->isInMyDescendance(newFather))
+          throw YACS::Exception("reparent a node to one of it's children is impossible");
+      if (Loop *loop = dynamic_cast<Loop*>(newFather))
+        if (!loop->edGetDirectDescendants().empty())
+          throw YACS::Exception("Already a node in a new parent of Loop type");
+      Node *nodeSameName = 0;
+      try
+        {
+          nodeSameName = newFather->getChildByName(node->getName());
+        }
+      catch (Exception& e)
+        {
+        }
+      if (nodeSameName)
+        throw YACS::Exception("there is already a child of same name in the new parent");
+      SubjectNode * snode = GuiContext::getCurrent()->_mapOfSubjectNode[node];
+      snode->removeExternalLinks();
+      snode->removeExternalControlLinks();
+      oldFather->edRemoveChild(node);
+      newFather->edAddChild(node);
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandRenameNode::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      node = 0;
+    }
+  return (node != 0); 
+}
+
+bool CommandReparentNode::localReverse()
+{
+}
+
+// ----------------------------------------------------------------------------
+
+CommandCopyNode::CommandCopyNode(std::string position,
+                                 std::string newParent)
+  : Command(), _position(position), _newParent(newParent), _clone(0)
+{
+  DEBTRACE("CommandCopyNode::CommandCopyNode " << _position << " " << _newParent);
+}
+
+YACS::ENGINE::Node *CommandCopyNode::getNode()
+{
+  return _clone;
+}
+
+bool CommandCopyNode::localExecute()
+{
+  Proc* proc = GuiContext::getCurrent()->getProc();
+  Node* node = 0;
+  try
+    {
+      if (_position == proc->getName())
+        throw YACS::Exception("Copy the proc (main bloc) is impossible");
+      node = proc->getChildByName(_position);
+      ComposedNode *oldFather = node->getFather();
+      ComposedNode *newFather = proc;
+      Node *newF = 0;
+      if (_newParent != proc->getName())
+        {
+          newF = proc->getChildByName(_newParent);
+          newFather = dynamic_cast<ComposedNode*>(newF);
+        }
+      if (!newFather)
+        throw YACS::Exception("new parent must be a composed node");
+      if (Loop *loop = dynamic_cast<Loop*>(newFather))
+        if (!loop->edGetDirectDescendants().empty())
+          throw YACS::Exception("Already a node in a new parent of Loop type");
+      //_clone = node->clone(newFather);
+      _clone = node->clone(0);
+      if (!_clone)
+        throw YACS::Exception("Node cannot be cloned");
+      int nodeSuffix = 0;
+      bool sameName = true;
+      stringstream s;
+      do
+        {
+          s.str("");
+          s << node->getName() << nodeSuffix;
+          DEBTRACE(s.str());
+          try
+            {
+              Node *nodeSameName = newFather->getChildByName(s.str());
+            }
+          catch (Exception& e)
+            {
+              sameName = false;
+            }
+          nodeSuffix++;
+        }
+      while(sameName);
+      _clone->setName(s.str());
+      newFather->edAddChild(_clone);
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandRenameNode::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      _clone = 0;
+    }
+  return (_clone != 0); 
+}
+
+bool CommandCopyNode::localReverse()
+{
+}
+
+// ----------------------------------------------------------------------------
+
 CommandRenameNode::CommandRenameNode(std::string position, std::string name)
   : Command(), _position(position), _name(name)
 {
@@ -247,6 +410,126 @@ bool CommandRenameNode::localExecute()
 }
 
 bool CommandRenameNode::localReverse()
+{
+}
+
+// ----------------------------------------------------------------------------
+
+CommandRenameContainer::CommandRenameContainer(std::string oldName, std::string newName)
+  : Command(), _oldName(oldName), _newName(newName)
+{
+  DEBTRACE("CommandRenameContainer::CommandRenameContainer " << _oldName << " " << _newName);
+}
+
+bool CommandRenameContainer::localExecute()
+{
+  Proc* proc = GuiContext::getCurrent()->getProc();
+  Container *container = 0;
+  try
+    {
+      if (! proc->containerMap.count(_oldName)) return 0;
+      container = proc->containerMap[_oldName];
+      proc->containerMap.erase(_oldName);
+      container->setName(_newName);
+      proc->containerMap[_newName] = container;
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandRenameContainer::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      container = 0;
+    }
+  return (container != 0); 
+}
+
+bool CommandRenameContainer::localReverse()
+{
+}
+
+// ----------------------------------------------------------------------------
+
+CommandRenameInDataPort::CommandRenameInDataPort(std::string position,
+                                                 std::string oldName,
+                                                 std::string newName)
+  : Command(), _position(position), _oldName(oldName), _newName(newName)
+{
+  DEBTRACE("CommandRenameInDataPort::CommandRenameInDataPort "
+           << _position << " " << _oldName<< " " << _newName);
+}
+
+bool CommandRenameInDataPort::localExecute()
+{
+  Proc* proc = GuiContext::getCurrent()->getProc();
+  Node* node = proc;
+  try
+    {
+      if (_position != proc->getName()) node = proc->getChildByName(_position);
+      InPort * port = 0;
+
+      try
+        {
+          port = node->getInPort(_newName);
+        }
+      catch (Exception& e) {} // --- raised when no existing port with _newName
+      if (port)
+        return false; // --- there is already a port with the new name
+
+      port = node->getInPort(_oldName);
+      port->setName(_newName);
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandRenameInDataPort::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      node = 0;
+    }
+  return (node != 0); 
+}
+
+bool CommandRenameInDataPort::localReverse()
+{
+}
+
+// ----------------------------------------------------------------------------
+
+CommandRenameOutDataPort::CommandRenameOutDataPort(std::string position,
+                                                   std::string oldName,
+                                                   std::string newName)
+  : Command(), _position(position), _oldName(oldName), _newName(newName)
+{
+  DEBTRACE("CommandRenameOutDataPort::CommandRenameOutDataPort "
+           << _position << " " << _oldName<< " " << _newName);
+}
+
+bool CommandRenameOutDataPort::localExecute()
+{
+  Proc* proc = GuiContext::getCurrent()->getProc();
+  Node* node = proc;
+  try
+    {
+      if (_position != proc->getName()) node = proc->getChildByName(_position);
+      OutPort * port = 0;
+      try
+        {
+          port = node->getOutPort(_newName);
+        }
+      catch (Exception& e) {} // --- raised when no existing port with _newName
+      if (port)
+        return false; // --- there is already a port with the new name
+
+      port = node->getOutPort(_oldName);
+      port->setName(_newName);
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandRenameOutDataPort::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      node = 0;
+    }
+  return (node != 0); 
+}
+
+bool CommandRenameOutDataPort::localReverse()
 {
 }
 
@@ -311,19 +594,20 @@ YACS::ENGINE::InputPort *CommandAddInputPortFromCatalog::getInputPort()
 
 bool CommandAddInputPortFromCatalog::localExecute()
 {
+  DEBTRACE("CommandAddInputPortFromCatalog::localExecute");
   InputPort *son = 0;
   try
     {
       Proc* proc = GuiContext::getCurrent()->getProc();
       Node* node = proc->getChildByName(_node);
-      ElementaryNode* father =dynamic_cast<ElementaryNode*> (node);
+      ElementaryNode* father = dynamic_cast<ElementaryNode*>(node);
       if (father)
         {
           if (_catalog->_typeMap.count(_typePort))
             son = father->edAddInputPort(_name, _catalog->_typeMap[_typePort]);
           else
             {
-              DEBTRACE(_typePort << " not found in catalog");
+              DEBTRACE(_typePort << " not found in catalog " << _catalog);
               GuiContext::getCurrent()->_lastErrorMessage = _typePort + " not found in catalog";
             }
         }
@@ -361,6 +645,7 @@ YACS::ENGINE::OutputPort *CommandAddOutputPortFromCatalog::getOutputPort()
 
 bool CommandAddOutputPortFromCatalog::localExecute()
 {
+  DEBTRACE("CommandAddOutputPortFromCatalog::localExecute");
   OutputPort *son = 0;
   try
     {
@@ -495,6 +780,162 @@ bool CommandAddODSPortFromCatalog::localReverse()
 
 // ----------------------------------------------------------------------------
 
+/*! move up or down a port in the list of ports of a node.
+ *  if isUp = 0, move down one step, if isUp = n>0, move up n steps.
+ */
+CommandOrderInputPorts::CommandOrderInputPorts(std::string node,
+                                               std::string port,
+                                               int isUp)
+  : Command(), _node(node), _port(port), _isUp(isUp), _rank(-1)
+{
+}
+
+bool CommandOrderInputPorts::localExecute()
+{
+  DEBTRACE("CommandOrderInputPorts::localExecute " << _node << " " << _port  << " " << _isUp);
+  ElementaryNode* father = 0;
+  try
+    {
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      Node* node = proc->getChildByName(_node);
+      father = dynamic_cast<ElementaryNode*> (node);
+      if (!father) return false;
+      InputPort *portToMove = father->getInputPort(_port);
+      DEBTRACE(portToMove->getName());
+
+      list<InputPort*> plist = father->getSetOfInputPort();
+      list<InputPort*>::iterator pos = find(plist.begin(), plist.end(), portToMove);
+
+      if (_isUp)
+        {
+          if(pos == plist.begin())
+            pos=plist.end(); // --- cycle
+          else
+            do { pos--; _isUp--; } while (_isUp);
+        }
+      else
+        {
+          pos++;
+          if (pos == plist.end())
+            pos = plist.begin(); // --- cycle
+          else
+            pos++; // --- insert before the 2nd next port
+        }
+
+      InputPort *portBefore = 0;
+      if (pos != plist.end())
+        portBefore = (*pos);
+
+      plist.remove(portToMove);
+      if (portBefore)
+        {
+          DEBTRACE(portBefore->getName());
+          pos = find(plist.begin(), plist.end(), portBefore);
+          _rank = 0;
+          for (list<InputPort*>::iterator it = plist.begin(); it != pos; ++it)
+            _rank++;
+          plist.insert(pos, portToMove);
+        }
+      else
+        {
+          _rank = plist.size();
+          plist.push_back(portToMove);
+        }
+      father->edOrderInputPorts(plist);
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandOrderInputPorts::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      father = 0;
+    }
+  return (father != 0);
+}
+
+bool CommandOrderInputPorts::localReverse()
+{
+}
+
+// ----------------------------------------------------------------------------
+
+/*! move up or down a port in the list of ports of a node.
+ *  if isUp = 0, move down one step, if isUp = n>0, move up n steps.
+ */
+CommandOrderOutputPorts::CommandOrderOutputPorts(std::string node,
+                                                 std::string port,
+                                                 int isUp)
+  : Command(), _node(node), _port(port), _isUp(isUp), _rank(-1)
+{
+}
+
+bool CommandOrderOutputPorts::localExecute()
+{
+  DEBTRACE("CommandOrderOutputPorts::localExecute " << _node << " " << _port  << " " << _isUp);
+  ElementaryNode* father = 0;
+  try
+    {
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      Node* node = proc->getChildByName(_node);
+      father = dynamic_cast<ElementaryNode*> (node);
+      if (!father) return false;
+      OutputPort *portToMove = father->getOutputPort(_port);
+      DEBTRACE(portToMove->getName());
+
+      list<OutputPort*> plist = father->getSetOfOutputPort();
+      list<OutputPort*>::iterator pos = find(plist.begin(), plist.end(), portToMove);
+
+      if (_isUp)
+        {
+          if(pos == plist.begin())
+            pos=plist.end(); // --- cycle
+          else
+            do { pos--; _isUp--; } while (_isUp);
+        }
+      else
+        {
+          pos++;
+          if (pos == plist.end())
+            pos = plist.begin(); // --- cycle
+          else
+            pos++; // --- insert before the 2nd next port
+        }
+
+      OutputPort *portBefore = 0;
+      if (pos != plist.end())
+        portBefore = (*pos);
+
+      plist.remove(portToMove);
+      if (portBefore)
+        {
+          DEBTRACE(portBefore->getName());
+          pos = find(plist.begin(), plist.end(), portBefore);
+          _rank = 0;
+          for (list<OutputPort*>::iterator it = plist.begin(); it != pos; ++it)
+            _rank++;
+          plist.insert(pos, portToMove);
+        }
+      else
+        {
+          _rank = plist.size();
+          plist.push_back(portToMove);
+        }
+      father->edOrderOutputPorts(plist);
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandOrderOutputPorts::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      father = 0;
+    }
+  return (father != 0);
+}
+
+bool CommandOrderOutputPorts::localReverse()
+{
+}
+
+// ----------------------------------------------------------------------------
+
 CommandDestroy::CommandDestroy(std::string position,  Subject* subject)
   : Command(), _position(position), _subject(subject)
 {
@@ -507,7 +948,14 @@ bool CommandDestroy::localExecute()
   DEBTRACE("CommandDestroy::localExecute");
   try
     {
+//       Subject* parent=_subject->getParent();
+//       if(parent && _subject->getType() != UNKNOWN) parent->update(REMOVE,_subject->getType(),_subject);
+
       Subject::erase(_subject);
+
+//       if(parent)
+//         parent->update(REMOVE,0,0);
+
       _subject = 0;
       return true; 
     }
@@ -525,16 +973,304 @@ bool CommandDestroy::localReverse()
  
 // ----------------------------------------------------------------------------
 
-CommandAddLink::CommandAddLink(std::string outNode, std::string outPort,
-                               std::string inNode, std::string inPort)
-  : Command(), _outNode(outNode), _outPort(outPort), _inNode(inNode), _inPort(inPort)
+CommandSetInPortValue::CommandSetInPortValue(std::string node,
+                                             std::string port,
+                                             std::string value)
+  : Command(), _node(node), _port(port), _value(value)
 {
-  DEBTRACE("CommandAddLink::CommandAddLink "<<outNode<<"."<<outPort<<"->"<<inNode<<"."<<inPort);
+  DEBTRACE("CommandSetInPortValue::CommandSetInPortValue " << node << " " << port << " " << value);
+}
+    
+bool CommandSetInPortValue::localExecute()
+{
+  PyObject *result;
+  try
+    {
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      Node* node = proc->getChildByName(_node);
+      InputPort* inp = node->getInputPort(_port);
+      result = YACS::ENGINE::getSALOMERuntime()->convertStringToPyObject(_value.c_str());
+      inp->edInit("Python", result);
+      Py_DECREF(result);
+      return true;
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandSetInPortValue::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      //Py_DECREF(result);
+      return false;
+    }
+}
+
+bool CommandSetInPortValue::localReverse()
+{
+}
+
+// ----------------------------------------------------------------------------
+
+CommandSetOutPortValue::CommandSetOutPortValue(std::string node,
+                                               std::string port,
+                                               std::string value)
+  : Command(), _node(node), _port(port), _value(value)
+{
+  DEBTRACE("CommandSetOutPortValue::CommandSetOutPortValue " << node << " " << port << " " << value);
+}
+    
+bool CommandSetOutPortValue::localExecute()
+{
+  OutputPresetPort *outpp = 0;
+  DataNode *dnode = 0;
+  try
+    {
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      Node* node = proc->getChildByName(_node);
+      OutputPort* outp = node->getOutputPort(_port);
+      outpp = dynamic_cast<OutputPresetPort*>(outp);
+      dnode = dynamic_cast<DataNode*>(node);
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandSetOutPortValue::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      return false;
+    }
+
+  if (!outpp)
+    {
+      DEBTRACE("Set value on output port only possible on a presetPort");
+      GuiContext::getCurrent()->_lastErrorMessage = "Set value on output port only possible on a presetPort";
+      return false;
+    }
+
+  if (!dnode)
+    {
+      DEBTRACE("Set value on output port only possible on a dataNode");
+      GuiContext::getCurrent()->_lastErrorMessage = "Set value on output port only possible on a dataNode";
+      return false;
+    }
+
+  PyObject *result;
+  try
+    {
+      result = YACS::ENGINE::getSALOMERuntime()->convertStringToPyObject(_value.c_str());
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandSetInPortValue::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      //Py_DECREF(result);
+      return false;
+    }
+
+  string val;
+  PyGILState_STATE gstate = PyGILState_Ensure();
+  try
+    {
+      DEBTRACE(PyObject_Str(result));
+      val = convertPyObjectXml(outpp->edGetType(), result);
+      DEBTRACE(val);
+      dnode->setData(outpp, val );
+    }
+  catch (Exception& ex)
+    {
+      PyGILState_Release(gstate);
+      DEBTRACE("CommandSetOutPortValue::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      PyGILState_Release(gstate);
+      Py_DECREF(result);
+      return false;
+    }
+
+  Py_DECREF(result);
+  PyGILState_Release(gstate);
+  return true;
+}
+
+bool CommandSetOutPortValue::localReverse()
+{
+}
+ 
+// ----------------------------------------------------------------------------
+
+CommandSetSwitchSelect::CommandSetSwitchSelect(std::string aSwitch,
+                                               std::string value)
+  : Command(), _switch(aSwitch), _value(value)
+{
+  DEBTRACE("CommandSetSwitchSelect::CommandSetSwitchSelect");
+}
+    
+bool CommandSetSwitchSelect::localExecute()
+{
+  try
+    {
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      Switch* aSwitch = dynamic_cast<Switch*>(proc->getChildByName(_switch));
+      InputPort *condPort = aSwitch->edGetConditionPort();
+      int val = atoi(_value.c_str());
+      condPort->edInit(val);
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandSetSwitchSelect::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      return false;
+    }
+}
+
+bool CommandSetSwitchSelect::localReverse()
+{
+}
+
+// ----------------------------------------------------------------------------
+
+CommandSetSwitchCase::CommandSetSwitchCase(std::string aSwitch,
+                                           std::string node,
+                                           std::string value)
+  : Command(), _switch(aSwitch), _node(node), _value(value)
+{
+  DEBTRACE("CommandSetSwitchCase::CommandSetSwitchCase");
+}
+
+bool CommandSetSwitchCase::localExecute()
+{
+  try
+    {
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      Switch* aSwitch = dynamic_cast<Switch*>(proc->getChildByName(_switch));
+      Node* node = proc->getChildByName(_node);
+      int val = atoi(_value.c_str());
+      if (aSwitch->edGetNode(val))
+        {
+          throw YACS::Exception("Set Switch Case impossible: value already used");
+        }
+      int oldVal = aSwitch->getRankOfNode(node);
+      Node *aNode = aSwitch->edReleaseCase(oldVal);
+      aNode = aSwitch->edSetNode(val, aNode);
+      DEBTRACE("CommandSetSwitchCase::localExecute OK " << val);
+      return true;
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandSetSwitchCase::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      return false;
+    }
+}
+
+bool CommandSetSwitchCase::localReverse()
+{
+}
+
+// ----------------------------------------------------------------------------
+
+CommandSetForLoopSteps::CommandSetForLoopSteps(std::string forLoop,
+                                               std::string value)
+  : Command(), _forLoop(forLoop), _value(value)
+{
+  DEBTRACE("CommandSetForLoopSteps::CommandSetForLoopSteps");
+}
+
+    
+bool CommandSetForLoopSteps::localExecute()
+{
+  try
+    {
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      ForLoop* forLoop = dynamic_cast<ForLoop*>(proc->getChildByName(_forLoop));
+      InputPort *nbSteps = forLoop->edGetNbOfTimesInputPort();
+      int val = atoi(_value.c_str());
+      nbSteps->edInit(val);
+      return true;
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandSetSwitchSelect::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      return false;
+    }
+}
+
+bool CommandSetForLoopSteps::localReverse()
+{
+}
+
+// ----------------------------------------------------------------------------
+
+CommandSetWhileCondition::CommandSetWhileCondition(std::string whileLoop,
+                                                   std::string value)
+  : Command(), _whileLoop(whileLoop), _value(value)
+{
+  DEBTRACE("CommandSetWhileCondition::CommandSetWhileCondition");
+}
+
+bool CommandSetWhileCondition::localExecute()
+{
+  try
+    {
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      WhileLoop* whileLoop = dynamic_cast<WhileLoop*>(proc->getChildByName(_whileLoop));
+      InputPort *cond = whileLoop->edGetConditionPort();
+      bool val = atoi(_value.c_str());
+      cond->edInit(val);
+      return true;
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandSetSwitchSelect::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      return false;
+    }
+}
+
+bool CommandSetWhileCondition::localReverse()
+{
+}
+
+// ----------------------------------------------------------------------------
+
+CommandSetForEachBranch::CommandSetForEachBranch(std::string forEach,
+                                                 std::string value)
+  : Command(), _forEach(forEach), _value(value)
+{
+  DEBTRACE("CommandSetForEachBranch::CommandSetForEachBranch");
+}
+    
+bool CommandSetForEachBranch::localExecute()
+{
+  try
+    {
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      ForEachLoop* forEach = dynamic_cast<ForEachLoop*>(proc->getChildByName(_forEach));
+      InputPort *nbBranches = forEach->getInputPort("nbBranches");
+      int val = atoi(_value.c_str());
+      nbBranches->edInit(val);
+      return true;
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandSetSwitchSelect::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      return false;
+    }
+}
+
+bool CommandSetForEachBranch::localReverse()
+{
+}
+
+// ----------------------------------------------------------------------------
+
+CommandAddLink::CommandAddLink(std::string outNode, std::string outPort,
+                               std::string inNode, std::string inPort,bool control)
+  : Command(), _outNode(outNode), _outPort(outPort), _inNode(inNode), _inPort(inPort),_control(control)
+{
+  DEBTRACE("CommandAddLink::CommandAddLink "<<outNode<<"."<<outPort<<"->"<<inNode<<"."<<inPort<<" "<<control);
 }
 
 bool CommandAddLink::localExecute()
 {
-  DEBTRACE(_outNode<<"."<<_outPort<<"->"<<_inNode<<"."<<_inPort);
+  DEBTRACE(_outNode<<"."<<_outPort<<"->"<<_inNode<<"."<<_inPort<<" "<<_control);
   try
     {
       Proc* proc = GuiContext::getCurrent()->getProc();
@@ -546,8 +1282,10 @@ bool CommandAddLink::localExecute()
       DEBTRACE(cla->getName());
       if (dynamic_cast<OutputDataStreamPort*>(outp))
         cla->edAddLink(outp,inp);
-      else
+      else if(_control)
         cla->edAddDFLink(outp,inp);
+      else
+        cla->edAddLink(outp,inp);
       return true;
     }
   catch (Exception& ex)
@@ -583,8 +1321,7 @@ bool CommandAddControlLink::localExecute()
         inn = proc->getChildByName(_inNode);
       ComposedNode *cla = ComposedNode::getLowestCommonAncestor(outn,inn);
       DEBTRACE(cla->getName());
-      cla->edAddCFLink(outn,inn);
-      return true;
+      return cla->edAddCFLink(outn,inn);
     }
   catch (Exception& ex)
     {

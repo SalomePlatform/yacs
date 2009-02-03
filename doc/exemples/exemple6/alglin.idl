@@ -1,0 +1,11 @@
+module Distant {
+
+  typedef sequence<double> vecteur;
+  
+  interface AlgLin 
+  {
+    void    addvec(out vecteur C, in vecteur A, in vecteur B);
+    double  prdscl(in vecteur A, in vecteur B);
+  };
+  
+};

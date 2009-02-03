@@ -1,5 +1,24 @@
-
+//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
+#include "TypeConversions.hxx"
 #include "PresetPorts.hxx"
+#include "PythonPorts.hxx"
 #include "TypeCode.hxx"
 #include <iostream>
 
@@ -84,6 +103,30 @@ std::string OutputPresetPort::dump()
   return getData();
 }
 
+PyObject * OutputPresetPort::getPyObj()
+{
+  DEBTRACE(getData());
+  if(_storeData=="")
+    {
+      Py_INCREF(Py_None);
+      return Py_None;
+    }
+  else
+    return convertXmlStrPyObject(edGetType(),getData());
+}
+
+std::string OutputPresetPort::getAsString()
+{
+  InterpreterUnlocker loc;
+  PyObject* ob=getPyObj();
+  DEBTRACE(PyObject_Str(ob));
+  std::string s=convertPyObjectToString(ob);
+  DEBTRACE(s);
+  Py_DECREF(ob);
+  return s;
+}
+
+
 InputPresetPort::InputPresetPort(const std::string& name,  Node* node, TypeCode* type)
   : InputXmlPort(name, node, type),
     DataPort(name, node, type),
@@ -114,5 +157,28 @@ std::string InputPresetPort::getData()
 std::string InputPresetPort::dump()
 {
   return _data;
+}
+
+PyObject * InputPresetPort::getPyObj()
+{
+  DEBTRACE(dump());
+  if(_data=="")
+    {
+      Py_INCREF(Py_None);
+      return Py_None;
+    }
+  else
+    return convertXmlStrPyObject(edGetType(),dump());
+}
+
+std::string InputPresetPort::getAsString()
+{
+  InterpreterUnlocker loc;
+  PyObject* ob=getPyObj();
+  DEBTRACE(PyObject_Str(ob));
+  std::string s=convertPyObjectToString(ob);
+  DEBTRACE(s);
+  Py_DECREF(ob);
+  return s;
 }
 

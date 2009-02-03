@@ -1,4 +1,21 @@
-
+//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 #ifndef _COMMANDSPROC_HXX_
 #define _COMMANDSPROC_HXX_
 
@@ -101,6 +118,32 @@ namespace YACS
       YACS::ENGINE::Node *_node;
     };
 
+    class CommandReparentNode: public Command
+    {
+    public:
+      CommandReparentNode(std::string position,
+                          std::string newParent);
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      std::string _position;
+      std::string _newParent;
+    };
+
+    class CommandCopyNode: public Command
+    {
+    public:
+      CommandCopyNode(std::string position,
+                      std::string newParent);
+      YACS::ENGINE::Node *getNode();
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      std::string _position;
+      std::string _newParent;
+      YACS::ENGINE::Node *_clone;
+    };
+
     class CommandRenameNode: public Command
     {
     public:
@@ -110,6 +153,45 @@ namespace YACS
       virtual bool localReverse();
       std::string _position;
       std::string _name;
+    };
+
+    class CommandRenameContainer: public Command
+    {
+    public:
+      CommandRenameContainer(std::string oldName, std::string newName);
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      std::string _oldName;
+      std::string _newName;
+    };
+
+    class CommandRenameInDataPort: public Command
+    {
+    public:
+      CommandRenameInDataPort(std::string position,
+                              std::string oldName,
+                              std::string newName);
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      std::string _position;
+      std::string _oldName;
+      std::string _newName;
+    };
+
+    class CommandRenameOutDataPort: public Command
+    {
+    public:
+      CommandRenameOutDataPort(std::string position,
+                               std::string oldName,
+                               std::string newName);
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      std::string _position;
+      std::string _oldName;
+      std::string _newName;
     };
 
     class CommandAddDataTypeFromCatalog: public Command
@@ -197,11 +279,133 @@ namespace YACS
       YACS::ENGINE::OutputDataStreamPort *_ODSPort;
     };
 
+    class CommandOrderInputPorts: public Command
+    {
+    public:
+      CommandOrderInputPorts(std::string node,
+                             std::string port,
+                             int isUp);
+      int getRank() {return _rank; };
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      std::string _node;
+      std::string _port;
+      int _isUp;
+      int _rank;
+    };
+
+    class CommandOrderOutputPorts: public Command
+    {
+    public:
+      CommandOrderOutputPorts(std::string node,
+                              std::string port,
+                              int isUp);
+      int getRank() {return _rank; };
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      std::string _node;
+      std::string _port;
+      int _isUp;
+      int _rank;
+    };
+
+    class CommandSetInPortValue: public Command
+    {
+    public:
+      CommandSetInPortValue(std::string node,
+                            std::string port,
+                            std::string value);
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      std::string _node;
+      std::string _port;
+      std::string _value;
+    };
+
+    class CommandSetOutPortValue: public Command
+    {
+    public:
+      CommandSetOutPortValue(std::string node,
+                             std::string port,
+                             std::string value);
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      std::string _node;
+      std::string _port;
+      std::string _value;
+    };
+
+    class CommandSetSwitchSelect: public Command
+    {
+    public:
+      CommandSetSwitchSelect(std::string aSwitch,
+                             std::string value);
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      std::string _switch;
+      std::string _value;
+    };
+
+    class CommandSetSwitchCase: public Command
+    {
+    public:
+      CommandSetSwitchCase(std::string aSwitch,
+                           std::string node,
+                           std::string value);
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      std::string _switch;
+      std::string _node;
+      std::string _value;
+    };
+
+    class CommandSetForLoopSteps: public Command
+    {
+    public:
+      CommandSetForLoopSteps(std::string forLoop,
+                             std::string value);
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      std::string _forLoop;
+      std::string _value;
+    };
+
+    class CommandSetWhileCondition: public Command
+    {
+    public:
+      CommandSetWhileCondition(std::string whileLoop,
+                               std::string value);
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      std::string _whileLoop;
+      std::string _value;
+    };
+
+    class CommandSetForEachBranch: public Command
+    {
+    public:
+      CommandSetForEachBranch(std::string forEach,
+                              std::string value);
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      std::string _forEach;
+      std::string _value;
+    };
+
     class CommandAddLink: public Command
     {
     public:
       CommandAddLink(std::string outNode, std::string outPort,
-                     std::string inNode, std::string inPort);
+                     std::string inNode, std::string inPort,bool control=true);
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
@@ -209,6 +413,7 @@ namespace YACS
       std::string _outPort;
       std::string _inNode;
       std::string _inPort;
+      bool _control;
     };
 
     class CommandAddControlLink: public Command
@@ -331,68 +536,6 @@ namespace YACS
     protected:
       std::string _position;
       Subject* _subject;
-    };
-
-    class CommandDeleteNode: public Command
-    {
-    public:
-      CommandDeleteNode(std::string node);
-    protected:
-      virtual bool localExecute();
-      virtual bool localReverse();
-      std::string _node;
-    };
-
-    class CommandCutNode: public Command
-    {
-    public:
-      CommandCutNode(std::string node);
-    protected:
-      virtual bool localExecute();
-      virtual bool localReverse();
-      std::string _node;
-    };
-
-    class CommandCopyNode: public Command
-    {
-    public:
-      CommandCopyNode(std::string node);
-    protected:
-      virtual bool localExecute();
-      virtual bool localReverse();
-      std::string _node;
-    };
-
-    class CommandPasteNode: public Command
-    {
-    public:
-      CommandPasteNode(std::string position);
-    protected:
-      virtual bool localExecute();
-      virtual bool localReverse();
-      std::string _node;
-    };
-
-    class CommandDeleteInPort: public Command
-    {
-    public:
-      CommandDeleteInPort(std::string node, std::string port);
-    protected:
-      virtual bool localExecute();
-      virtual bool localReverse();
-      std::string _node;
-      std::string _port;
-    };
-
-    class CommandDeleteOutPort: public Command
-    {
-    public:
-      CommandDeleteOutPort(std::string node, std::string port);
-    protected:
-      virtual bool localExecute();
-      virtual bool localReverse();
-      std::string _node;
-      std::string _port;
     };
 
   }

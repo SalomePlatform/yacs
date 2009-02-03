@@ -1,0 +1,221 @@
+/*! \page engine Engine
+
+\section toc Table of contents
+
+  - \ref engine_intro
+  - \ref basic_concepts
+  - \ref engine_executor
+
+\section engine_intro Introduction
+
+The engine is in charge to :
+
+    - edit
+    - check consistency
+    - schedule 
+    - execute
+
+graphs of execution independently from the context (\ref engine_runtime) the graph is destined to run.
+
+\section basic_concepts Basic concepts in YACS::ENGINE
+
+The understanding of YACS::ENGINE implementation needs a good knowledge of the basic concepts (\subpage engineConcepts):
+
+- \ref engine_node
+- \ref engine_ports
+- \ref engine_links 
+- \ref engine_types
+- \ref engine_context
+- \ref engine_placement
+
+\section engine_executor Executor
+
+The executor is in charge to run a graph of execution. Executor is
+TOTALLY independant from Node and Port implementation. The only APIs seen
+from YACS::ENGINE::Executor are YACS::ENGINE::Scheduler and YACS::ENGINE::Task. So, from the Executor point of
+view, a graph of execution is a scheduler scheduling tasks.
+The responsability of executor is to launch, concurrently or not, tasks selected by
+scheduler and to
+notify to tasks and to the scheduler what it is going to do and what happend
+during tasks' execution.
+There are several launching mode in executor. Here the common modes :
+- launch tasks until scheduler declares that all is finished.
+- launch tasks until a given task is upon to be launched.
+- launch tasks one by one. (step by step)
+
+*/
+
+/*! \page engineConcepts Engine concepts
+
+\section engine_node Nodes
+
+A Node is an entity performing a treatement or job using ingoing data
+given in ingoing \ref engine_ports
+provided by other Nodes or 'manually' set and providing itself data in outgoing \ref engine_ports. A
+Node is eventually put into a scope (see \ref engine_hierarchy) in
+which all it's links with other Nodes can be performed. The most
+little scope if it exists of a Node is referenced by YACS::ENGINE::Node::_father.
+
+There are 2 types of Node : 
+
+- Node performing a job NOT splitable into several simpler jobs. In
+this case job is called task. This type of Node can be dowcasted into 
+YACS::ENGINE::ElementaryNode. That's why, YACS::ENGINE::ElementaryNode inherits from YACS::ENGINE::Task
+and YACS::ENGINE::Node.
+
+- Node performing job splittable into several jobs. This type of
+Node can be dowcasted into YACS::ENGINE::ComposedNode. As this specific
+type of Node is composed of several Nodes it is in charge of schedule
+them. That's why, YACS::ENGINE::ComposedNode inherits from YACS::ENGINE::Scheduler and YACS::ENGINE::Node.
+
+\subsection engine_hierarchy Node hierarchy
+
+- It has been called hierarchy 'MyHierarchy' of a node 'MyNode' the biggest tree which each node of
+this tree is an instance of ComposedNode and each leaves are instances
+of ElementaryNode. One of these leaves/nodes is 'MyNode'. The links between leaves/nodes nodes/nodes are
+established by the fatherness stored in each instance of Node
+(YACS::ENGINE::Node::_father). 
+- The unique node of
+this tree only linked down (with _father equal to 0) and having no
+father is called \b RootNode of 'MyHierarchy'. 
+- A \b level \b of \b hierarchy of 'MyHierarchy' is the set of node/leaf having
+the same father.
+- A \b scope of a the hierarchy 'MyHierarchy' is a subtree of
+'MyHierarchy' tree. A scope is represented by the head node of this subtree.
+
+\section engine_ports Ports
+
+A YACS::ENGINE::Port is an interface of a YACS::ENGINE::Node from the
+outside. Ports can have several semantics.
+
+- \ref engine_control_flow
+- \ref engine_data_flow
+- \ref engine_data_stream
+
+\subsection engine_control_flow Control flow
+
+The semantic of this port is to put constraints on the sequence of
+execution to synchronize nodes, on THE SAME
+LEVEL of \ref engine_hierarchy between them.
+
+\subsection engine_data_flow Data
+
+Instances of these type of ports inherits from YACS::ENGINE::DataFlowPort. 
+This type of port represents data exchange protocol performed
+physically by implementation in \ref
+engine_runtime at the end of execution an instance of an ElementaryNode. So contrary to \ref
+engine_data_stream, this data exchange protocol is performed following
+\ref engine_control_flow synchronization.
+
+\subsection engine_data_stream DataStream
+
+Instances of these type of ports inherits from
+YACS::ENGINE::DataStreamPort. DataStream ports are ports for data
+exchange NOT synchronized by \ref engine_control_flow.
+
+\section engine_links Links
+
+A link in YACS does not lie onto a C++ object. A link exists in
+YACS::ENGINE model only like
+a sorted pair (YACS::ENGINE::OutPort, YACS::ENGINE::InPort).
+The semantic of elements of pair can be different (\ref engine_data_flow
+or \ref engine_data_stream ). This pair
+is stored in both YACS::ENGINE::OutPort side and YACS::ENGINE::InPort
+side. The storage YACS::ENGINE::InPort side is only for
+edition facility (Node, Port suppression), but at execution time, only links info
+YACS::ENGINE::OutPort side is used.
+
+A link is constructed by the call to
+YACS::ENGINE::ComposedNode::edAddLink method. The instance of
+YACS::ENGINE::ComposedNode on which apply edAddLink must be so that
+inPort and OutPort are both in its scope.
+
+\subsection engine_links_cpx Point of view of engine at run time 
+
+It is important to note that a link defined by edAddLink method can
+hide potentially a serie of elementary links. This is particalary true
+when 2 dataflow ports inside 2 different loops are linked each other ;
+in this case \ref engine_data_flow / \ref engine_data_stream
+conversion is requested.
+An elementary link is a link in which the semantic of both elements in pair
+are exactly the same. So the complexity linked to modification of port
+semantic in a link is managed at edition time so that at run time only
+elementary links are seen.
+
+\section engine_types Data types
+
+YACS::ENGINE::TypeCode instances are destined to describe data
+  structure of a piece of data expected by an instance of
+  YACS::ENGINE::DataPort (for type checking at edition : static type
+  checking) or held in YACS::ENGINE::Any instance (for type checking
+  at execution : dynamic type checking).
+All data exchanged by calculation nodes through input and output
+data ports have a type. 
+
+The type is given by the port that holds the data by calling 
+its YACS::ENGINE::DataPort::edGetType() method.
+All types are instances of the YACS::ENGINE::TypeCode class or one of 
+its derived classes : YACS::ENGINE::TypeCode_objref, YACS::ENGINE::TypeCode_seq.
+
+\section engine_context Context 
+
+A context is a set of libraries allowing directly or indirectly from C++ calls to :
+
+ - launch on demand, a computation or a job specified uniquely by a
+   string of character and a list of inputs and giving in return a
+   list of data in specific data formats.
+ - handle data of these specific data formats. Each of these data
+   formats overlapping all or part of data overlapped by YACS::ENGINE::Any.
+
+Concretely it takes form of set of : 
+
+ - middlewares (CORBA, SOAP, MPI, PVM ...)
+ - high level langage interpreters (as python, perl, shell) callable
+ from C++.
+ - plateform (<a href="http://www.salome-platform.org">SALOME</a>)
+
+\section engine_runtime Runtime
+
+A runtime exists in a given \ref engine_context. A runtime is in charge to :
+
+- treat physically the basic execution of elementary tasks in a given context 
+- the traduction of data in this context. 
+- to perform the physical deployment of the execution.
+
+The runtime simply appears in engine as an interface
+that a concrete runtime must implement to be piloted by YACS::ENGINE. 
+
+\section engine_placement Deployment
+
+This the 3rd point of view of a graph of execution, after
+links between nodes (see \ref engine_links ) and hierarchy in nodes (
+\ref engine_hierarchy ).
+Deployment concept is accessible in interface YACS::ENGINE::Task with the
+concept of YACS::ENGINE::ComponentInstance and YACS::ENGINE::Container. 
+
+- a ComponentInstance is a common environement \b shared by a set of
+  YACS::ENGINE::ServiceNode. Typically ServiceNodes sharing a same
+  ComponentInstance are sharing a same state taking different form
+  (environement var and/or memory space and/or internal variables...).
+- a Container is a common process \b shared by several ComponentInstances.
+
+A task needed to be placed or deployed
+at runtime has to return something different from 0 on call to
+YACS::ENGINE::Task::getComponent(). YACS::ENGINE::ServiceNode is the
+abstract class representing all executable nodes needed to be
+deployed.
+
+It's important to note that the placement (or deployment) of
+ServiceNodes can be performed at different moment at runtime.
+
+- Either it is performed once for all YACS::ENGINE::Container before
+launching any task. This placement startegy is \b absolutly required for batch
+mode. This condition is checked by the YACS::ENGINE::Executor by
+calling YACS::ENGINE::Scheduler::isPlacementPredictableB4Run.
+- or it is done at the last moment on call of
+YACS::ENGINE::Load when execution of a ServiceNode is required by
+Executor on running process.
+
+
+
+*/

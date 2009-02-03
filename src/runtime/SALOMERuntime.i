@@ -1,4 +1,23 @@
+//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 // ----------------------------------------------------------------------------
+//
 %define SALOMEDOCSTRING
 "Implementation of nodes for SALOME platform."
 %enddef
@@ -20,10 +39,16 @@
 #include "SalomeProc.hxx"
 #include "PythonNode.hxx"
 #include "PythonPorts.hxx"
+#include "PresetNode.hxx"
+#include "PresetPorts.hxx"
 #include "CORBANode.hxx"
 #include "CORBAPorts.hxx"
+#include "StudyNodes.hxx"
+#include "StudyPorts.hxx"
 #include "TypeConversions.hxx"
 #include "TypeCode.hxx"
+#include "VisitorSaveSalomeSchema.hxx"
+#include <sstream>
 %}
 
 // ----------------------------------------------------------------------------
@@ -81,35 +106,19 @@
 %include "SalomeProc.hxx"
 %include "PythonNode.hxx"
 %include "PythonPorts.hxx"
+%include "XMLPorts.hxx"
+%include "PresetNode.hxx"
+%include "PresetPorts.hxx"
 %include "CORBANode.hxx"
 %include "CORBAPorts.hxx"
+%include "StudyNodes.hxx"
+%include "StudyPorts.hxx"
 
-%extend YACS::ENGINE::InputCorbaPort
+%extend YACS::ENGINE::OutputPresetPort
 {
-  PyObject * getPyObj()
+  void setDataPy(PyObject *ob)
   {
-    CORBA::TypeCode_var tc=self->getAny()->type();
-    if (!tc->equivalent(CORBA::_tc_null))
-      return convertCorbaPyObject(self->edGetType(),self->getAny());
-    else
-      {
-        Py_INCREF(Py_None);
-        return Py_None;
-      }
+    std::string sss = convertPyObjectXml(self->edGetType(),ob);
+    self->setData(sss);
   }
 }
-%extend YACS::ENGINE::OutputCorbaPort
-{
-  PyObject * getPyObj()
-  {
-    CORBA::TypeCode_var tc=self->getAny()->type();
-    if (!tc->equivalent(CORBA::_tc_null))
-      return convertCorbaPyObject(self->edGetType(),self->getAny());
-    else
-      {
-        Py_INCREF(Py_None);
-        return Py_None;
-      }
-  }
-}
-

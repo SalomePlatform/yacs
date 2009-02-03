@@ -1,0 +1,16 @@
+>>> import modf1
+>>> import modf2
+>>> f1 = modf1.f();
+>>> f2 = modf2.f();
+>>> f1.setCommon(2.0)
+>>> print "f1(1) = ", f1.f1(1.0)
+f1(1) =  0.5
+>>> print "avant synchronisation"
+avant synchronisation
+>>> print "f2(1) = ", f2.f2(1.0)
+f2(1) =  1.0
+>>> f2.setCommon(f1.getCommon())
+>>> print "après synchronisation"
+après synchronisation
+>>> print "f2(1) = ", f2.f2(1.0)
+f2(1) =  2.0

@@ -1,0 +1,15 @@
+>>> import AlgLinModule
+>>> n = 5
+>>> C = AlgLinModule.alglin()
+>>> v = C.create_vector(n)
+>>> print "v =", v
+v = <C vecteur instance>
+>>> print "v.n =", v.n()
+v.n = 5
+>>> x = v.x()
+>>> print x
+_811a160_double_p
+>>> print x[4]
+a
+>>> print type(x)
+<type 'string'>

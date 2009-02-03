@@ -1,0 +1,36 @@
+<ui version="4.0" >
+ <class>fm_schemaTree</class>
+ <widget class="QWidget" name="fm_schemaTree" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>425</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>Edit Tree</string>
+  </property>
+  <layout class="QGridLayout" >
+   <item row="0" column="0" >
+    <widget class="QTreeView" name="tv_schema" >
+     <property name="minimumSize" >
+      <size>
+       <width>10</width>
+       <height>10</height>
+      </size>
+     </property>
+     <property name="maximumSize" >
+      <size>
+       <width>4000</width>
+       <height>4000</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -1,3 +1,21 @@
+//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 #include "InputPort.hxx"
 #include "OutPort.hxx"
 #include "ComposedNode.hxx"
@@ -67,20 +85,43 @@ InputPort::~InputPort()
 void InputPort::edInit(Any *value)
 {
   InputPort *manuallySet=getRuntime()->adapt(this,
-                                             Runtime::RUNTIME_ENGINE_INTERACTION_IMPL_NAME,_type);
-  manuallySet->put((const void *) value);
-  if(manuallySet!=this)
-    delete manuallySet;
+                                             Runtime::RUNTIME_ENGINE_INTERACTION_IMPL_NAME,_type,true);
+  try
+    {
+      manuallySet->put((const void *) value);
+      if(manuallySet!=this)
+        delete manuallySet;
+    }
+  catch(ConversionException&)
+    {
+      if(manuallySet!=this)
+        delete manuallySet;
+      throw;
+    }
   exSaveInit();
   modified();
 }
 
+//! Initialize the port with an object (value) coming from a world with implementation impl
+/*!
+ *  You should be careful when using this method : the caller must set the context according to implementation
+ *  For instance, if implementation is Python, the caller must hold the Global Interpreter Lock (also known as GIL).
+ */
 void InputPort::edInit(const std::string& impl,const void* value)
 {
-  InputPort *manuallySet=getRuntime()->adapt(this,impl,_type);
-  manuallySet->put(value);
-  if(manuallySet!=this)
-    delete manuallySet;
+  InputPort *manuallySet=getRuntime()->adapt(this,impl,_type,true);
+  try
+    {
+      manuallySet->put(value);
+      if(manuallySet!=this)
+        delete manuallySet;
+    }
+  catch(ConversionException&)
+    {
+      if(manuallySet!=this)
+        delete manuallySet;
+      throw;
+    }
   exSaveInit();
   modified();
 }

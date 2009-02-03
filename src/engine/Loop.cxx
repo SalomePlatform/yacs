@@ -1,3 +1,21 @@
+//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 #include "Loop.hxx"
 #include "InputPort.hxx"
 #include "OutputPort.hxx"
@@ -8,6 +26,9 @@
 #include "Visitor.hxx"
 #include <cassert>
 #include <iostream>
+
+//#define _DEVDEBUG_
+#include "YacsTrace.hxx"
 
 using namespace YACS::ENGINE;
 using namespace std;
@@ -321,11 +342,17 @@ Node *Loop::edSetNode(Node *node)
   return ret;
 }
 
+bool Loop::edAddChild(Node *node) throw(Exception)
+{
+  return edSetNode(node);
+}
+
 Node *Loop::edRemoveNode()
 {
   StaticDefinedComposedNode::edRemoveChild(_node);
   Node *ret=_node;
   _node=0;
+  modified();
   return ret;
 }
 
@@ -360,6 +387,7 @@ void Loop::edRemoveChild(Node *node) throw(Exception)
   StaticDefinedComposedNode::edRemoveChild(node);
   if(_node==node)
     _node=0;
+  modified();
 }
 
 void Loop::selectRunnableTasks(std::vector<Task *>& tasks)
@@ -388,8 +416,9 @@ int Loop::getNumberOfInputPorts() const
 
 Node *Loop::getChildByShortName(const std::string& name) const throw(Exception)
 {
-  if(name==_node->getName())
-    return _node;
+  if (_node)
+    if(name==_node->getName())
+      return _node;
   string what("node "); what+= name ; what+=" is not a child of loop node "; what += getName();
   throw Exception(what);
 }
@@ -636,6 +665,14 @@ void Loop::checkControlDependancy(OutPort *start, InPort *end, bool cross,
   if(cross)
     throw Exception("Internal error occured - cross type link detected on decision port of a loop. Forbidden !");
   fw[(ComposedNode *)this].push_back(start);
+}
+
+void Loop::checkBasicConsistency() const throw(Exception)
+{
+  DEBTRACE("Loop::checkBasicConsistency");
+  ComposedNode::checkBasicConsistency();
+  if(!_node)
+    throw Exception("For a loop, internal node is mandatory");
 }
 
 /*!

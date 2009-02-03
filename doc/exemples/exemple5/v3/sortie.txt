@@ -1,0 +1,22 @@
+>>> import AlgLinModule
+>>> n = 5
+>>> C = AlgLinModule.alglin()
+>>> C
+<C alglin instance>
+>>> v1 = C.create_vector(n)
+>>> v2 = C.create_vector(n)
+>>> v1
+<C vecteur instance>
+>>> for i in range(n):
+...     v1[i] = 2*i
+...     v2[i] = i*i
+...
+>>> print "v1 =", v1
+v1 =           0          2          4          6          8
+>>> print "v2 =", v2
+v2 =           0          1          4          9         16
+>>> print v1[1]
+2
+>>> S = C.prdscl(v1, v2)
+>>> print "S = ", S
+S =  200.0

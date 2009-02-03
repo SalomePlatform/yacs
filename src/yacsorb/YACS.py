@@ -1,4 +1,4 @@
-#  Copyright (C) 2005  CEA/DEN, EDF R&D
+#  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
 #
 #  This library is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU Lesser General Public
@@ -14,7 +14,7 @@
 #  License along with this library; if not, write to the Free Software
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 #
-# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+#  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 import sys
 import YACS_ORB__POA
@@ -35,9 +35,9 @@ class proc_i(YACS_ORB__POA.ProcExec):
     def __init__(self, xmlFile):
         self.l = loader.YACSLoader()
         self.e = pilot.ExecutorSwig()
-        self.p = self.l.load(xmlFile)
         self.e.setExecMode(1) # YACS::STEPBYSTEP
         self.run1 = None
+        self.p = self.l.load(xmlFile)
         pass
 
     def getNodeState(self,numid):
@@ -83,7 +83,7 @@ class proc_i(YACS_ORB__POA.ProcExec):
             self.run1 = None
             pass
         if self.run1 is None:
-            self.run1 = threading.Thread(None, self.e.RunPy, "CORBAExec", (self.p,0))
+            self.run1 = threading.Thread(None, self.e.RunPy, "CORBAExec", (self.p,0,1,1))
             self.run1.start()
             pass
         pass
@@ -114,7 +114,7 @@ class proc_i(YACS_ORB__POA.ProcExec):
             print "Unknown exception!"
             return None
         if self.run1 is None:
-            self.run1 = threading.Thread(None, self.e.RunPy, "CORBAExec", (self.p,0))
+            self.run1 = threading.Thread(None, self.e.RunPy, "CORBAExec", (self.p,0,1,0))
             self.run1.start()
             pass
         pass
@@ -202,6 +202,12 @@ class YACS(YACS_ORB__POA.YACS_Gen,
         """
         try:
             procExec_i = proc_i(xmlFile)
+            logger=procExec_i.p.getLogger("parser")
+            if not logger.isEmpty():
+              print "The imported file has errors :"
+              print logger.getStr()
+              sys.stdout.flush()
+              return None
         except IOError, ex:
             print >> sys.stderr ,"IO Error: ", ex
             return None
@@ -212,7 +218,7 @@ class YACS(YACS_ORB__POA.YACS_Gen,
             print >> sys.stderr ,ex.what()
             return None
         except:
-            print >> sys.stderr ,"Unknown exception!"
+            traceback.print_exc()
             return None
         procExec_o = procExec_i._this()
         return procExec_o

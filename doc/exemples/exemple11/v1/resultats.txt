@@ -1,0 +1,9 @@
+>>> import modf
+>>> f = modf.f();
+>>> f.init(3.0)
+>>> print f.f1(1)
+0.333333343267
+>>> print f.f2(1)
+3.0
+>>> print f.f1(f.f2(1))
+1.0

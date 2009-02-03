@@ -1,3 +1,21 @@
+//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 #ifndef __DYNPARALOOP_HXX__
 #define __DYNPARALOOP_HXX__
 
@@ -19,6 +37,7 @@ namespace YACS
       virtual void setValue(Any *data);
       //! get the current dispatched value for update port value 
       Any* getValue() const { return _data; }
+      virtual std::string typeName() {return "YACS__ENGINE__AnyOutputPort";}
     private:
       Any* _data; // the data dispatched from port on the current moment
     private:
@@ -83,6 +102,7 @@ namespace YACS
       std::vector<Node *> getNodes() const { return _execNodes; } // need to use in GUI part for adding observers for clone nodes
       bool isMultiplicitySpecified(unsigned& value) const;
       void forceMultiplicity(unsigned value);
+      virtual void checkBasicConsistency() const throw(Exception);
     protected:
       void buildDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView);
       void buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView);
