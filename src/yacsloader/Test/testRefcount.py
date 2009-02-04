@@ -254,6 +254,6 @@ f.write("  --- TEST src/yacsloader: testRefcount.py\n")
 suite1 = unittest.makeSuite(TestContainerRef)
 suite2 = unittest.makeSuite(TestTypeCodeRef)
 suite = unittest.TestSuite((suite1, suite2))
-unittest.TextTestRunner(f, descriptions=1, verbosity=1).run(suite)
+result=unittest.TextTestRunner(f, descriptions=1, verbosity=1).run(suite)
 f.close()
-
+sys.exit(not result.wasSuccessful())

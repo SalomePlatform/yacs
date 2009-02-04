@@ -37,9 +37,12 @@ import SALOMERuntime
 
 class UnknownKind(Exception):pass
 
+#global variables
 debug=0
 typeMap={}
 objref=None
+_containers={}
+currentProc=None
 
 def typeName(name):
   """Replace :: in type name by /"""
@@ -51,7 +54,6 @@ streamTypes={
              '3':"CALCIUM_real",
             }
 
-currentProc=None
 
 class SalomeLoader:
   """This class parses a Salome graph (version 3.2.x) and converts it into YACS schema.
@@ -60,7 +62,6 @@ class SalomeLoader:
 
      The load method calls the loadxml method and creates a YACS object of class Proc
   """
-
   def loadxml(self,filename):
     """
        Parse a XML file from Salome SUPERV and return a list of SalomeProc objects.
@@ -89,7 +90,12 @@ class SalomeLoader:
   def load(self,filename):
     """Parse a SUPERV XML file (method loadxml) and return a YACS Proc object.
     """
-    global currentProc
+    global typeMap,_containers,objref,currentProc
+    typeMap.clear()
+    objref=None
+    _containers.clear()
+    currentProc=None
+
     procs=self.loadxml(filename)
     #Split the master proc from the possible macros.
     proc=procs.pop(0)
@@ -114,7 +120,6 @@ class Container:
   def getName(self):
     return self.mach+"/"+self.name
 
-_containers={}
 def getContainer(name):
   if not name:
     name="localhost/FactoryServer"

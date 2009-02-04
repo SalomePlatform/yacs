@@ -486,7 +486,8 @@ static PyObject* convertPort(YACS::ENGINE::Port* port,int owner=0)
    } catch (std::overflow_error& e) {
       SWIG_exception(SWIG_OverflowError, e.what() );
    } catch (std::out_of_range& e) {
-      SWIG_exception(SWIG_IndexError, e.what() );
+      PyErr_SetString(PyExc_KeyError,e.what());
+      return NULL;
    } catch (std::length_error& e) {
       SWIG_exception(SWIG_IndexError, e.what() );
    } catch (std::runtime_error& e) {
@@ -524,7 +525,8 @@ static PyObject* convertPort(YACS::ENGINE::Port* port,int owner=0)
    } catch (std::overflow_error& e) {
       SWIG_exception(SWIG_OverflowError, e.what() );
    } catch (std::out_of_range& e) {
-      SWIG_exception(SWIG_IndexError, e.what() );
+      PyErr_SetString(PyExc_KeyError,e.what());
+      return NULL;
    } catch (std::length_error& e) {
       SWIG_exception(SWIG_IndexError, e.what() );
    } catch (std::runtime_error& e) {
@@ -561,7 +563,8 @@ static PyObject* convertPort(YACS::ENGINE::Port* port,int owner=0)
    } catch (std::overflow_error& e) {
       SWIG_exception(SWIG_OverflowError, e.what() );
    } catch (std::out_of_range& e) {
-      SWIG_exception(SWIG_IndexError, e.what() );
+      PyErr_SetString(PyExc_KeyError,e.what());
+      return NULL;
    } catch (std::length_error& e) {
       SWIG_exception(SWIG_IndexError, e.what() );
    } catch (std::runtime_error& e) {

@@ -179,6 +179,7 @@ AC_OUTPUT([ \
   src/salomewrap/Makefile \
   src/salomegui/Makefile \
   src/salomeloader/Makefile \
+  src/salomeloader/testSalomeLoader.py \
   src/wrappergen/Makefile \
   src/wrappergen/src/Makefile \
   src/yacsloader/Makefile \

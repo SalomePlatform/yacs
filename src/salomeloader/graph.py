@@ -42,8 +42,8 @@ def invert(G):
 def reachable(G,n):
   """Construit le set de noeuds atteignables depuis le noeud n
 
-     Le noeud n n'est pas dans le set retourné sauf en cas de boucles
-     Ce cas n'est pas traité ici (limitation)
+     Le noeud n n'est pas dans le set retourne sauf en cas de boucles
+     Ce cas n'est pas traite ici (limitation)
   """
   s=G[n]
   for v in G[n]:
