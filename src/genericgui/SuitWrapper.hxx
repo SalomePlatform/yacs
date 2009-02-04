@@ -121,6 +121,7 @@ namespace YACS
       bool renameSchema(const QString& oldName,
                         const QString& newName,
                         QWidget* viewWindow);
+      bool deleteSchema(QWidget* viewWindow);
       void createNewRun(const QString& schemaName,
                         const QString& runName,
                         QWidget* refWindow,

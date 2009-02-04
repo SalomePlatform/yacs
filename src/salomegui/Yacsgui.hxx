@@ -57,6 +57,7 @@ public slots:
 protected slots:
   void onWindowActivated( SUIT_ViewWindow* svw);
   void onWindowClosed( SUIT_ViewWindow* svw);
+  void onTryClose(bool &isClosed, QxScene_ViewWindow* window);
 
 protected:
   virtual  CAM_DataModel* createDataModel();

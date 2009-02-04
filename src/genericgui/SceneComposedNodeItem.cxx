@@ -391,7 +391,7 @@ void SceneComposedNodeItem::rebuildLinks()
 //       DEBTRACE(apath.size());
       ali.item->setPath(apath);
     }
-
+  prepareGeometryChange();
 }
 
 void SceneComposedNodeItem::arrangeNodes(bool isRecursive)

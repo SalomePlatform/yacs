@@ -64,6 +64,7 @@ namespace YACS
       void showEditionMenus(bool show);
       void showExecMenus(bool show);
       void switchContext(QWidget *view);
+      bool closeContext(QWidget *view);
       void showDockWidgets(bool isVisible);
       void raiseStacked();
       CatalogWidget* getCatalogWidget() { return _catalogsWidget; };

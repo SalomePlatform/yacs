@@ -36,6 +36,7 @@ public:
   virtual bool renameSchema(const QString& oldName,
                             const QString& newName,
                             QWidget* viewWindow);
+  virtual bool deleteSchema(QWidget* viewWindow);
   virtual void createNewRun(const QString& schemaName,
                             const QString& runName,
                             QWidget* refWindow,

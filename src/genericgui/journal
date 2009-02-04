@@ -51,8 +51,7 @@ x tableau ports en edition
 x insertion, deplacement, destruction port
 x algorithmes placement noeuds
 x proc menu edition: ajout action execution
-
-- sauvegarde position des noeuds dans xml, lors du passage en exec
+x sauvegarde position des noeuds dans xml, lors du passage en exec
 
 - edition port outNode (xml): definir fichier sortie
 - edition ports studyInNode, studyOutNode (controle types possibles...)
@@ -153,6 +152,7 @@ x passer script en read only en execution
 x revoir methode SubjectNode.reparent(_parent) sous forme de commande
 x renommage node pas propage dans les noeuds fils (rename or cut/paste)
 x en execution, marquer execution mode dans arbre
+x redessiner tout de suite les liens apres mouse release ( sans devoir bouger la souris)
 
 - SIGSEV en sortie de SALOME apres destruction de la fenetre execution
 - panneau edition container, rubriue instance ? a clarifier

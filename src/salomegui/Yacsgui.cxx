@@ -160,6 +160,8 @@ void Yacsgui::onDblClick(const QModelIndex& index)
   if (!_genericGui) return;
   if (!viewWindow) return;
   DEBTRACE("--- " << viewWindow << " "  << item->entry().toStdString());
+  if (getApp()->activeModule()->moduleName().compare("YACS") != 0)
+    getApp()->activateModule("YACS");
 
   _selectFromTree = true;
   viewWindow->setFocus();
@@ -176,6 +178,15 @@ void Yacsgui::onWindowActivated( SUIT_ViewWindow* svw)
   if (getApp()->activeModule()->moduleName().compare("YACS") != 0)
     getApp()->activateModule("YACS");
 
+  disconnect(viewWindow, SIGNAL( tryClose( bool&, QxScene_ViewWindow* ) ),
+             this, SLOT(onTryClose( bool&, QxScene_ViewWindow* )) );
+  disconnect(viewWindow, SIGNAL( closing( SUIT_ViewWindow* ) ),
+             this, SLOT(onWindowClosed( SUIT_ViewWindow* )) );
+  connect(viewWindow, SIGNAL( tryClose( bool&, QxScene_ViewWindow* ) ),
+          this, SLOT(onTryClose( bool&, QxScene_ViewWindow* )) );
+  connect(viewWindow, SIGNAL( closing( SUIT_ViewWindow* ) ),
+          this, SLOT(onWindowClosed( SUIT_ViewWindow* )) );
+
   assert(_genericGui);
   _genericGui->switchContext(viewWindow);
 
@@ -188,6 +199,13 @@ void Yacsgui::onWindowActivated( SUIT_ViewWindow* svw)
 void Yacsgui::onWindowClosed( SUIT_ViewWindow* svw)
 {
   DEBTRACE("Yacsgui::onWindowClosed");
+}
+
+void Yacsgui::onTryClose(bool &isClosed, QxScene_ViewWindow* window)
+{
+  DEBTRACE("Yacsgui::onTryClose");
+  assert(_genericGui);
+  isClosed = _genericGui->closeContext(window);
 }
 
 CAM_DataModel* Yacsgui::createDataModel()

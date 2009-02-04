@@ -139,6 +139,27 @@ bool SalomeWrap_DataModel::renameSchema(const QString& oldName,
   return true;
 }
 
+bool SalomeWrap_DataModel::deleteSchema(QWidget* viewWindow)
+{
+  DEBTRACE("SalomeWrap_DataModel::deleteSchema");
+  SalomeApp_ModuleObject* aRoot = dynamic_cast<SalomeApp_ModuleObject*>(root());
+  if (!aRoot) return false;
+  if (!_viewEntryMap.count(viewWindow)) return false;
+
+  _PTR(SComponent)         aSComp(aRoot->object());
+  _PTR(Study)              aStudy = getStudy()->studyDS();
+
+  string id = _viewEntryMap[viewWindow];
+  _PTR(SObject) aSObj = aStudy->FindObjectID(id);
+
+  _PTR(StudyBuilder)       aBuilder(aStudy->NewBuilder());
+  aBuilder->RemoveObject(aSObj);
+
+  SalomeApp_Module *mod = dynamic_cast<SalomeApp_Module*>(module());
+  if (mod) mod->updateObjBrowser();
+  return true;
+}
+
 void SalomeWrap_DataModel::createNewRun(const QString& schemaName,
                                         const QString& runName,
                                         QWidget* refWindow,

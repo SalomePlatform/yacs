@@ -262,6 +262,12 @@ bool SuitWrapper::renameSchema(const QString& oldName,
   module->getDataModel()->renameSchema(oldName, newName, viewWindow);
 }
 
+bool SuitWrapper::deleteSchema(QWidget* viewWindow)
+{
+  SalomeWrap_Module* module = static_cast<SalomeWrap_Module*>(_wrapped);
+  module->getDataModel()->deleteSchema(viewWindow);
+}
+
 void SuitWrapper::createNewRun(const QString& schemaName,
                                const QString& runName,
                                QWidget* refWindow,

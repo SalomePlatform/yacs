@@ -540,7 +540,7 @@ void GenericGui::createMenus()
 
 void GenericGui::createTools()
 {
-  int aToolId = _wrapper->createTool ( tr( "TOOL_YACS" ) );
+  int aToolId = _wrapper->createTool ( tr( "YACS Toolbar" ) );
   _wrapper->createTool( _newSchemaAct, aToolId );
   _wrapper->createTool( _importSchemaAct, aToolId );
   _wrapper->createTool( _importSupervSchemaAct, aToolId );
@@ -639,10 +639,11 @@ void GenericGui::switchContext(QWidget *view)
   if (! _mapViewContext.count(view))
     {
       initialMenus();
+      _dwTree->setWidget(0);
+      _dwStacked->setWidget(0);
       return;
     }
   QtGuiContext* newContext = _mapViewContext[view];
-  QtGuiContext* oldContext = QtGuiContext::getQtCurrent();
 
   _dwTree->setWidget(newContext->getEditTree());
   _dwTree->widget()->show();
@@ -665,6 +666,35 @@ void GenericGui::switchContext(QWidget *view)
       _withoutStopModeAct->setChecked(true);
       if (_dwTree) _dwTree->setWindowTitle("Tree View: execution mode");
     }
+}
+
+bool GenericGui::closeContext(QWidget *view)
+{
+  DEBTRACE("GenericGui::closeContext");
+  if (! _mapViewContext.count(view))
+    return false;
+  QtGuiContext* context = _mapViewContext[view];
+  map<QWidget*, YACS::HMI::QtGuiContext*>::iterator it = _mapViewContext.begin();
+  QtGuiContext* newContext = 0;
+  QWidget* newView = 0;
+  for (; it != _mapViewContext.end(); ++it)
+    {
+      if ((*it).second != context)
+        {
+          newView = (*it).first;
+          newContext = (*it).second;
+          break;
+        }
+    }
+ int studyId = _wrapper->activeStudyId();
+  if (context->getStudyId() == studyId)
+    {
+      _wrapper->deleteSchema(view);
+      delete context;
+      _mapViewContext.erase(view);
+      switchContext(newView);
+    }
+  return true;
 }
 
 void GenericGui::showDockWidgets(bool isVisible)

@@ -109,7 +109,7 @@ void ComposedNodeMenu::popupMenu(QWidget *caller, const QPoint &globalPos, const
       CNmenu->addAction(gmain->_SWITCHNodeAct);
       menu.addSeparator();
     }
-  menu.addAction(gmain->_toggleSceneItemVisibleAct);
+//   menu.addAction(gmain->_toggleSceneItemVisibleAct);
   menu.addAction(gmain->_arrangeLocalNodesAct);
   menu.addAction(gmain->_arrangeRecurseNodesAct);
   menu.addSeparator();
@@ -176,7 +176,7 @@ void ProcMenu::popupMenu(QWidget *caller, const QPoint &globalPos, const QString
     }
   menu.addAction(gmain->_getYacsContainerLogAct);
   menu.addSeparator();
-  menu.addAction(gmain->_toggleSceneItemVisibleAct);
+//   menu.addAction(gmain->_toggleSceneItemVisibleAct);
   menu.addAction(gmain->_arrangeLocalNodesAct);
   menu.addAction(gmain->_arrangeRecurseNodesAct);
   menu.addSeparator();
@@ -289,8 +289,8 @@ void ElementaryNodeMenu::popupMenu(QWidget *caller, const QPoint &globalPos, con
       menu.addAction(gmain->_getErrorDetailsAct);
       menu.addAction(gmain->_getContainerLogAct);
     }
-  menu.addSeparator();
-  menu.addAction(gmain->_toggleSceneItemVisibleAct);
+//   menu.addSeparator();
+//   menu.addAction(gmain->_toggleSceneItemVisibleAct);
   menu.exec(globalPos);
 }
 

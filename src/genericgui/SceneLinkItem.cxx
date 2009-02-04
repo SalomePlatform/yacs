@@ -23,7 +23,6 @@
 #include "Scene.hxx"
 
 #include "Menus.hxx"
-// #include <QGraphicsSceneHoverEvent>
 #include <QPointF>
 
 //#define _DEVDEBUG_
