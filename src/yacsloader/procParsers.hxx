@@ -91,19 +91,18 @@ struct proctypeParser: bloctypeParser<T>
           DEBTRACE( "machine name: " << (*iter)._name )             
         }
 
-      if(currentProc->containerMap.count(t._name) == 0)
+      if(currentProc->containerMap.count(t._name) != 0 && t._name != "DefaultContainer")
         {
-          YACS::ENGINE::Container* cont=theRuntime->createContainer();
-          cont->setName(t._name);
+          std::cerr << "Warning: container " << t._name << " already defined. It will be ignored" << std::endl;
+        }
+      else
+        {
+          YACS::ENGINE::Container* cont=currentProc->createContainer(t._name);
           // Set all properties for this container
           std::map<std::string, std::string>::const_iterator pt;
           for(pt=t._props.begin();pt!=t._props.end();pt++)
             cont->setProperty((*pt).first,(*pt).second);
-          currentProc->containerMap[t._name]=cont;
-        }
-      else
-        {
-          std::cerr << "Warning: container " << t._name << " already defined. It will be ignored" << std::endl;
+          cont->decrRef();
         }
     }
 

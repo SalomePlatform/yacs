@@ -19,10 +19,20 @@
 #include "SalomeProc.hxx"
 #include "Runtime.hxx"
 #include "TypeCode.hxx"
+#include "Container.hxx"
 #include "VisitorSaveSalomeSchema.hxx"
 #include <iostream>
 
 using namespace YACS::ENGINE;
+
+SalomeProc::SalomeProc(const std::string& name):Proc(name)
+{
+  // create default container with some default properties
+  Container* cont=createContainer("DefaultContainer");
+  cont->setProperty("hostname","localhost");
+  cont->setProperty("container_name","FactoryServer");
+  cont->decrRef();
+}
 
 TypeCode * SalomeProc::createInterfaceTc(const std::string& id, const std::string& name,
                                    std::list<TypeCodeObjref *> ltc)

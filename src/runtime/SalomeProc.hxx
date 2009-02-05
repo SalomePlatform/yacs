@@ -33,7 +33,7 @@ namespace YACS
     class SalomeProc: public Proc
     {
     public:
-       SalomeProc(const std::string& name):Proc(name){};
+       SalomeProc(const std::string& name);
        virtual ~SalomeProc();
        virtual TypeCode * createInterfaceTc(const std::string& id, const std::string& name, 
                                     std::list<TypeCodeObjref *> ltc);
