@@ -22,6 +22,16 @@
 #include "ui_FormContainer.h"
 
 #include <QIcon>
+#include <map>
+#include <string>
+
+namespace YACS
+{
+  namespace ENGINE
+  {
+    class Container;
+  }
+}
 
 class FormContainer: public QWidget, public Ui::fm_container
 {
@@ -31,13 +41,33 @@ public:
   FormContainer(QWidget *parent = 0);
   virtual ~FormContainer();
 
+  void FillPanel(YACS::ENGINE::Container *container);
+  virtual void onModified();
+  virtual bool onApply();
+
 public slots:
   void on_tb_container_toggled(bool checked);
   void on_ch_advance_stateChanged(int state);
+  void onModifyName(const QString &text);
+  void onModifyHost(const QString &text);
+  void onModifyPolicy(const QString &text);
+  void onModifyWorkDir(const QString &text);
+  void onModifyContName(const QString &text);
+  void onModifyOS(const QString &text);
+  void onModifyParLib(const QString &text);
+  void onModifyIsMPI(bool isMpi);
+  void onModifyMem(const QString &text);
+  void onModifyClock(const QString &text);
+  void onModifyNodes(const QString &text);
+  void onModifyProcs(const QString &text);
+  void onModifyCompos(const QString &text);
+
 
 protected:
   bool _checked;
   bool _advanced;
+  YACS::ENGINE::Container *_container;
+  std::map<std::string, std::string> _properties;
 
 private:
 };

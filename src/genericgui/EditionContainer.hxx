@@ -41,6 +41,8 @@ namespace YACS
 
     public slots:
       virtual void fillContainerPanel();
+      virtual void onApply();
+      virtual void onCancel();
 
     protected:
       FormContainer *_wContainer;

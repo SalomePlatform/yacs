@@ -153,9 +153,13 @@ x revoir methode SubjectNode.reparent(_parent) sous forme de commande
 x renommage node pas propage dans les noeuds fils (rename or cut/paste)
 x en execution, marquer execution mode dans arbre
 x redessiner tout de suite les liens apres mouse release ( sans devoir bouger la souris)
+x editer sauvegarder les proprietes des containers
+x panneau edition container, rubrique instance:
+  a supprimer ou renommer runtime name, ou mettre dans les advanced parameters
+x gerer tous les parametres du container, verifier coherence avec la doc
 
+- mise a jour panneau container si changement container dans salomeNode
 - SIGSEV en sortie de SALOME apres destruction de la fenetre execution
-- panneau edition container, rubriue instance ? a clarifier
 - destruction d'un lien, impact sur la disposition des noeuds
 
 - execution noeud default de switch : pas marque DONE dans arbre et vue 2D

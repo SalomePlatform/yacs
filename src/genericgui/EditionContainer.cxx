@@ -23,7 +23,10 @@
 
 #include "FormContainer.hxx"
 #include "QtGuiContext.hxx"
+#include "guiObservers.hxx"
 #include "Proc.hxx"
+
+#include <cassert>
 
 using namespace std;
 
@@ -67,17 +70,26 @@ void EditionContainer::update(GuiEvent event, int type, Subject* son)
 void EditionContainer::fillContainerPanel()
 {
   DEBTRACE("EditionContainer::fillContainerPanel");
+  SubjectContainer *scont = dynamic_cast<SubjectContainer*>(_subject);
+  assert(scont);
+  _wContainer->FillPanel(scont->getContainer());
+}
 
-  _wContainer->le_name->setText(_subject->getName().c_str());
-  _wContainer->le_instance->setReadOnly(true);
+void EditionContainer::onApply()
+{
+  DEBTRACE("EditionContainer::onApply");
+  bool edited = true;
+  if (_wContainer->onApply())
+    edited = false;
+  _isEdited = _isEdited || edited;
+  ItemEdition::onApply();
+}
 
-  _wContainer->cb_host->clear();
-  _wContainer->cb_host->addItem(""); // --- when no host selected
-
-  list<string> machines = QtGuiContext::getQtCurrent()->getGMain()->getMachineList();
-  list<string>::iterator itm = machines.begin();
-  for( ; itm != machines.end(); ++itm)
-    {
-      _wContainer->cb_host->addItem(QString((*itm).c_str()));
-    }
+void EditionContainer::onCancel()
+{
+  DEBTRACE("EditionContainer::onCancel");
+  SubjectContainer *scont = dynamic_cast<SubjectContainer*>(_subject);
+  assert(scont);
+  _wContainer->FillPanel(scont->getContainer());
+  ItemEdition::onCancel();
 }

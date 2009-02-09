@@ -67,9 +67,9 @@ namespace YACS
       virtual void select(bool isSelected);
       virtual void setName(std::string name);
       virtual void update(GuiEvent event, int type, Subject* son);
+      virtual void setEdited(bool isEdited);
 
     protected:
-      virtual void setEdited(bool isEdited);
       bool _isEdited;
       bool _haveScript;
     };

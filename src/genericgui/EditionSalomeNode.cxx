@@ -167,19 +167,9 @@ void EditionSalomeNode::fillContainerPanel()
         _wComponent->cb_container->addItem( QString((*it).first.c_str()));
 
       int index = _wComponent->cb_container->findText(compoInst->getContainer()->getName().c_str());
-      _wComponent->cb_container->setCurrentIndex(index);  
+      _wComponent->cb_container->setCurrentIndex(index);
 
-      _wContainer->le_name->setText(compoInst->getContainer()->getName().c_str());
-      _wContainer->le_instance->setReadOnly(true);
-
-      _wContainer->cb_host->clear();
-      _wContainer->cb_host->addItem(""); // --- when no host selected
-      list<string> machines = QtGuiContext::getQtCurrent()->getGMain()->getMachineList();
-      list<string>::iterator itm = machines.begin();
-      for( ; itm != machines.end(); ++itm)
-        {
-          _wContainer->cb_host->addItem(QString((*itm).c_str()));
-        }
+      _wContainer->FillPanel(compoInst->getContainer());
     }
 }
 
@@ -244,4 +234,25 @@ void EditionSalomeNode::changeHost(int index)
 {
   string hostName = _wContainer->cb_host->itemText(index).toStdString();
   DEBTRACE(hostName);
+}
+
+void EditionSalomeNode::onApply()
+{
+  DEBTRACE("EditionSalomeNode::onApply");
+  bool edited = true;
+  if (_wContainer->onApply())
+    edited = false;
+  _isEdited = _isEdited || edited;
+  EditionElementaryNode::onApply();
+}
+
+void EditionSalomeNode::onCancel()
+{
+  DEBTRACE("EditionSalomeNode::onCancel");
+  ComponentInstance *compoInst = _servNode->getComponent();
+  if (compoInst)
+    {
+      _wContainer->FillPanel(compoInst->getContainer());
+    }
+  EditionElementaryNode::onApply();
 }

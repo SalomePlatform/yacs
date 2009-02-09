@@ -5,27 +5,18 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>278</width>
-    <height>548</height>
+    <width>294</width>
+    <height>673</height>
    </rect>
   </property>
   <property name="windowTitle" >
    <string>Form</string>
   </property>
-  <layout class="QGridLayout" >
-   <property name="leftMargin" >
+  <layout class="QVBoxLayout" name="verticalLayout_2" >
+   <property name="margin" >
     <number>3</number>
    </property>
-   <property name="topMargin" >
-    <number>3</number>
-   </property>
-   <property name="rightMargin" >
-    <number>3</number>
-   </property>
-   <property name="bottomMargin" >
-    <number>3</number>
-   </property>
-   <item row="0" column="0" >
+   <item>
     <layout class="QHBoxLayout" >
      <item>
       <widget class="QToolButton" name="tb_container" >
@@ -58,7 +49,7 @@
      </item>
     </layout>
    </item>
-   <item row="1" column="0" >
+   <item>
     <widget class="QFrame" name="fr_container" >
      <property name="sizePolicy" >
       <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
@@ -72,20 +63,11 @@
      <property name="frameShadow" >
       <enum>QFrame::Raised</enum>
      </property>
-     <layout class="QGridLayout" >
-      <property name="leftMargin" >
+     <layout class="QVBoxLayout" name="verticalLayout" >
+      <property name="margin" >
        <number>0</number>
       </property>
-      <property name="topMargin" >
-       <number>0</number>
-      </property>
-      <property name="rightMargin" >
-       <number>0</number>
-      </property>
-      <property name="bottomMargin" >
-       <number>0</number>
-      </property>
-      <item row="0" column="0" >
+      <item>
        <widget class="QGroupBox" name="gb_basic" >
         <property name="sizePolicy" >
          <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
@@ -97,16 +79,7 @@
          <string>Basic parameters</string>
         </property>
         <layout class="QGridLayout" >
-         <property name="leftMargin" >
-          <number>3</number>
-         </property>
-         <property name="topMargin" >
-          <number>3</number>
-         </property>
-         <property name="rightMargin" >
-          <number>3</number>
-         </property>
-         <property name="bottomMargin" >
+         <property name="margin" >
           <number>3</number>
          </property>
          <item row="0" column="0" >
@@ -124,27 +97,13 @@
           </widget>
          </item>
          <item row="1" column="0" >
-          <widget class="QLabel" name="label_3" >
-           <property name="text" >
-            <string>Instance:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1" >
-          <widget class="QLineEdit" name="le_instance" >
-           <property name="toolTip" >
-            <string>name of the container when instanciated at runtime</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0" >
           <widget class="QLabel" name="label_4" >
            <property name="text" >
             <string>Host:</string>
            </property>
           </widget>
          </item>
-         <item row="2" column="1" >
+         <item row="1" column="1" >
           <widget class="QComboBox" name="cb_host" >
            <property name="toolTip" >
             <string>name of the computer hosting container when manually set</string>
@@ -154,14 +113,14 @@
         </layout>
        </widget>
       </item>
-      <item row="1" column="0" >
+      <item>
        <widget class="QCheckBox" name="ch_advance" >
         <property name="text" >
          <string>Show Advanced parameters</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="0" >
+      <item>
        <widget class="QGroupBox" name="gb_advance" >
         <property name="sizePolicy" >
          <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
@@ -172,106 +131,135 @@
         <property name="title" >
          <string>Advanced parameters</string>
         </property>
-        <layout class="QGridLayout" >
-         <property name="leftMargin" >
+        <layout class="QGridLayout" name="gridLayout" >
+         <property name="margin" >
           <number>3</number>
          </property>
-         <property name="topMargin" >
-          <number>3</number>
-         </property>
-         <property name="rightMargin" >
-          <number>3</number>
-         </property>
-         <property name="bottomMargin" >
-          <number>3</number>
-         </property>
-         <item row="0" column="0" >
-          <widget class="QLabel" name="label_5" >
+         <item row="0" column="0" colspan="2" >
+          <widget class="QLabel" name="label_14" >
            <property name="text" >
-            <string>mem mb:</string>
+            <string>policy:</string>
            </property>
           </widget>
          </item>
-         <item row="0" column="2" >
-          <widget class="QSpinBox" name="sb_mem" >
+         <item row="0" column="2" colspan="5" >
+          <widget class="QComboBox" name="cb_policy" >
+           <property name="editable" >
+            <bool>true</bool>
+           </property>
+           <property name="maxVisibleItems" >
+            <number>3</number>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0" colspan="3" >
+          <widget class="QLabel" name="label_12" >
+           <property name="text" >
+            <string>working dir:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="3" colspan="4" >
+          <widget class="QLineEdit" name="le_workdir" />
+         </item>
+         <item row="2" column="0" colspan="4" >
+          <widget class="QLabel" name="label_3" >
+           <property name="text" >
+            <string>container name:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="5" colspan="2" >
+          <widget class="QLineEdit" name="le_contname" >
            <property name="toolTip" >
-            <string>required memory (megaBytes)</string>
+            <string>name of the container when instanciated at runtime</string>
            </property>
           </widget>
-         </item>
-         <item row="1" column="0" >
-          <widget class="QLabel" name="label_6" >
-           <property name="text" >
-            <string>cpu clock</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="2" >
-          <widget class="QSpinBox" name="sb_cpu" >
-           <property name="toolTip" >
-            <string>required cpu clock frequency (MHz)</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0" colspan="2" >
-          <widget class="QLabel" name="label_7" >
-           <property name="text" >
-            <string>nb proc per node:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="2" >
-          <widget class="QSpinBox" name="sb_procNode" />
          </item>
          <item row="3" column="0" >
-          <widget class="QLabel" name="label_8" >
+          <widget class="QLabel" name="label_13" >
            <property name="text" >
-            <string>nb nodes:</string>
+            <string>O.S.:</string>
            </property>
           </widget>
          </item>
-         <item row="3" column="2" >
-          <widget class="QSpinBox" name="sb_nbNodes" />
+         <item row="3" column="1" colspan="6" >
+          <widget class="QLineEdit" name="le_os" />
          </item>
-         <item row="4" column="0" >
-          <widget class="QLabel" name="label_9" >
+         <item row="4" column="0" colspan="7" >
+          <widget class="QCheckBox" name="ch_mpi" >
            <property name="text" >
-            <string>MPI usage:</string>
+            <string>container supports MPI</string>
            </property>
           </widget>
          </item>
-         <item row="4" column="1" colspan="2" >
-          <widget class="QComboBox" name="cb_mpi" />
-         </item>
-         <item row="5" column="0" >
+         <item row="5" column="0" colspan="4" >
           <widget class="QLabel" name="label_10" >
            <property name="text" >
             <string>Parallel library:</string>
            </property>
           </widget>
          </item>
-         <item row="5" column="1" colspan="2" >
+         <item row="5" column="4" colspan="3" >
           <widget class="QLineEdit" name="le_parallel" />
          </item>
-         <item row="6" column="0" >
+         <item row="6" column="0" colspan="6" >
+          <widget class="QLabel" name="label_5" >
+           <property name="text" >
+            <string>mem mb:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="6" >
+          <widget class="QSpinBox" name="sb_mem" >
+           <property name="toolTip" >
+            <string>required memory (megaBytes)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="0" colspan="6" >
+          <widget class="QLabel" name="label_6" >
+           <property name="text" >
+            <string>cpu clock:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="6" >
+          <widget class="QSpinBox" name="sb_cpu" >
+           <property name="toolTip" >
+            <string>required cpu clock frequency (MHz)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="8" column="0" colspan="6" >
+          <widget class="QLabel" name="label_8" >
+           <property name="text" >
+            <string>nb nodes:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="8" column="6" >
+          <widget class="QSpinBox" name="sb_nbNodes" />
+         </item>
+         <item row="9" column="0" colspan="6" >
+          <widget class="QLabel" name="label_7" >
+           <property name="text" >
+            <string>nb proc per node:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="9" column="6" >
+          <widget class="QSpinBox" name="sb_procNode" />
+         </item>
+         <item row="10" column="0" colspan="6" >
           <widget class="QLabel" name="label_11" >
            <property name="text" >
             <string>nb compo nodes:</string>
            </property>
           </widget>
          </item>
-         <item row="6" column="2" >
+         <item row="10" column="6" >
           <widget class="QSpinBox" name="sb_nbCompoNodes" />
-         </item>
-         <item row="7" column="0" >
-          <widget class="QLabel" name="label_12" >
-           <property name="text" >
-            <string>working directory:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="7" column="1" colspan="2" >
-          <widget class="QLineEdit" name="le_workdir" />
          </item>
         </layout>
        </widget>

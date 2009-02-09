@@ -58,6 +58,8 @@ namespace YACS
       virtual void changeInstance(int index);
       virtual void changeContainer(int index);
       virtual void changeHost(int index);
+      virtual void onApply();
+      virtual void onCancel();
 
     protected:
       FormComponent *_wComponent;
