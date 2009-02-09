@@ -61,6 +61,8 @@ FormContainer::FormContainer(QWidget *parent)
   sb_nbNodes->setMaximum(INT_MAX);
   sb_procNode->setMaximum(INT_MAX);
 
+  FillPanel(0); // --- set widgets before signal connexion to avoid false modif detection
+
   connect(le_name, SIGNAL(textChanged(const QString&)),
           this, SLOT(onModifyName(const QString&)));
 
@@ -108,9 +110,16 @@ FormContainer::~FormContainer()
 void FormContainer::FillPanel(YACS::ENGINE::Container *container)
 {
   _container = container;
-  le_name->setText(_container->getName().c_str());
-
-  _properties = _container->getProperties();
+  if (_container)
+    {
+      _properties = _container->getProperties();
+      le_name->setText(_container->getName().c_str());
+    }
+  else
+    {
+      _properties.clear();
+      le_name->setText("not defined");
+    }
 
   vector<string> policies;
   policies.push_back("cycl");
@@ -128,6 +137,8 @@ void FormContainer::FillPanel(YACS::ENGINE::Container *container)
             break;
           }
     }
+  else
+    cb_policy->setCurrentIndex(0);
   
   cb_host->clear();
   cb_host->addItem(""); // --- when no host selected
@@ -149,18 +160,29 @@ void FormContainer::FillPanel(YACS::ENGINE::Container *container)
           cb_host->setCurrentIndex(cb_host->count()-1);
         }
     }
+  else
+    cb_host->setCurrentIndex(0);
+
 
   if(_properties.count("workingdir"))
     le_workdir->setText(_properties["workingdir"].c_str());
+  else
+    le_workdir->setText("");
 
   if(_properties.count("container_name"))
     le_contname->setText(_properties["container_name"].c_str());
+  else
+    le_contname->setText("");
                      
   if(_properties.count("OS"))
     le_os->setText(_properties["OS"].c_str());
+  else
+    le_os->setText("");
 
   if(_properties.count("parallelLib"))
     le_parallel->setText(_properties["parallelLib"].c_str());
+  else
+    le_parallel->setText("");
 
   if(_properties.count("isMPI"))
     {
@@ -170,21 +192,34 @@ void FormContainer::FillPanel(YACS::ENGINE::Container *container)
       else
         ch_mpi->setCheckState(Qt::Checked);
     }
+  else
+    ch_mpi->setCheckState(Qt::Unchecked);
 
   if(_properties.count("mem_mb"))
     sb_mem->setValue(atoi(_properties["mem_mb"].c_str()));
+  else
+    sb_mem->setValue(0);
 
   if(_properties.count("cpu_clock"))
     sb_cpu->setValue(atoi(_properties["cpu_clock"].c_str()));
+  else
+    sb_cpu->setValue(0);
+
 
   if(_properties.count("nb_node"))
     sb_nbNodes->setValue(atoi(_properties["nb_node"].c_str()));
+  else
+    sb_nbNodes->setValue(0);
 
   if(_properties.count("nb_proc_per_node"))
     sb_procNode->setValue(atoi(_properties["nb_proc_per_node"].c_str()));
+  else
+    sb_procNode->setValue(0);
 
   if(_properties.count("nb_component_nodes"))
     sb_nbCompoNodes->setValue(atoi(_properties["nb_component_nodes"].c_str()));
+  else
+    sb_nbCompoNodes->setValue(0);
 }
 
 void FormContainer::onModified()

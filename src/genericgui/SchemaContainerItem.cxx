@@ -95,6 +95,7 @@ void SchemaContainerItem::update(GuiEvent event, int type, Subject* son)
       break;
 
     default:
+      SchemaItem::update(event, type, son);
       ;
     }
 }
