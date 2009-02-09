@@ -68,6 +68,8 @@ x sauvegarde position des noeuds dans xml, lors du passage en exec
 - affichage etat schema modifie depuis derniere sauvegarde fichier
 - couleur differente des liens datastream, 
   des liens de donnees simples (sans controle associe)
+- afficher les types de données DataStream dans arbre et edition
+- icones differentes pour edition et run dans object browser
 
 - differents designs / canvas (interface generique)
 - vues differentes (expanded/collapsed, edition/execution)
@@ -157,8 +159,12 @@ x editer sauvegarder les proprietes des containers
 x panneau edition container, rubrique instance:
   a supprimer ou renommer runtime name, ou mettre dans les advanced parameters
 x gerer tous les parametres du container, verifier coherence avec la doc
+x mise a jour panneau container si changement container dans salomeNode
+x renommage container: 
+  x pas actif depuis le panel container (container, composant, service)
+  x arbre service pas a jour
+  x indicateur en edition (jaune) pas a jour dans l'arbre
 
-- mise a jour panneau container si changement container dans salomeNode
 - SIGSEV en sortie de SALOME apres destruction de la fenetre execution
 - destruction d'un lien, impact sur la disposition des noeuds
 
@@ -174,10 +180,6 @@ x gerer tous les parametres du container, verifier coherence avec la doc
 
 - renommage d'un item autre que noeud non repercute:
   il manque des fonctions de renommage:
-- renommage container: 
-  - pas actif depuis le panel container (container, composant, service)
-  - arbre service pas a jour
-  - indicateur en edition (jaune) pas a jour dans l'arbre
 - renommage node:
   - pas propage dans les liens (noms de liens)
   - arbre reference service sous component pas a jour
