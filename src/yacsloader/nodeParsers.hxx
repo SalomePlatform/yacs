@@ -33,6 +33,7 @@
 #include "ServiceInlineNode.hxx"
 #include "Exception.hxx"
 #include "Runtime.hxx"
+#include "Container.hxx"
 #include "OutputDataStreamPort.hxx"
 #include "InputDataStreamPort.hxx"
 #include "ComponentInstance.hxx"
@@ -318,8 +319,13 @@ struct sinlinetypeParser:public inlinetypeParser<T>
         {
           if(currentProc->containerMap.count("DefaultContainer") != 0)
           {
-            //a default container is defined : use it
-            this->_node->getComponent()->setContainer(currentProc->containerMap["DefaultContainer"]);
+            //a default container is defined : use it if supported
+            try
+            {
+              currentProc->containerMap["DefaultContainer"]->checkCapabilityToDealWith(this->_node->getComponent());
+              this->_node->getComponent()->setContainer(currentProc->containerMap["DefaultContainer"]);
+            }
+            catch(YACS::Exception){}
           }
         }
       else
@@ -498,8 +504,13 @@ struct servicetypeParser:public inlinetypeParser<T>
         {
           if(currentProc->containerMap.count("DefaultContainer") != 0)
           {
-            //a default container is defined : use it
-            this->_node->getComponent()->setContainer(currentProc->containerMap["DefaultContainer"]);
+            //a default container is defined : use it if supported
+            try
+            {
+              currentProc->containerMap["DefaultContainer"]->checkCapabilityToDealWith(this->_node->getComponent());
+              this->_node->getComponent()->setContainer(currentProc->containerMap["DefaultContainer"]);
+            }
+            catch(YACS::Exception){}
           }
         }
       else
