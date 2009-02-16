@@ -313,11 +313,12 @@ struct sinlinetypeParser:public inlinetypeParser<T>
 
       if(currentProc->containerMap.count(this->_container) != 0)
         {
-          this->_node->getComponent()->setContainer(currentProc->containerMap[this->_container]);
+          if(this->_node->getComponent())
+            this->_node->getComponent()->setContainer(currentProc->containerMap[this->_container]);
         }
       else if(this->_container == "")
         {
-          if(currentProc->containerMap.count("DefaultContainer") != 0)
+          if(currentProc->containerMap.count("DefaultContainer") != 0 && this->_node->getComponent())
           {
             //a default container is defined : use it if supported
             try
@@ -498,11 +499,12 @@ struct servicetypeParser:public inlinetypeParser<T>
 
       if(currentProc->containerMap.count(this->_container) != 0)
         {
-          this->_node->getComponent()->setContainer(currentProc->containerMap[this->_container]);
+          if(this->_node->getComponent())
+            this->_node->getComponent()->setContainer(currentProc->containerMap[this->_container]);
         }
       else if(this->_container == "")
         {
-          if(currentProc->containerMap.count("DefaultContainer") != 0)
+          if(currentProc->containerMap.count("DefaultContainer") != 0 && this->_node->getComponent())
           {
             //a default container is defined : use it if supported
             try
