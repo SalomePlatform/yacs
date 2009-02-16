@@ -29,14 +29,9 @@
    <module name="GEOM"                   path="@SALOME_ROOT_DIR@/GEOM@SALOME_VERSION@"/>
    <module name="MED"                    path="@SALOME_ROOT_DIR@/MED@SALOME_VERSION@"/>
    <module name="SMESH"                  path="@SALOME_ROOT_DIR@/SMESH@SALOME_VERSION@"/>
-   <module name="SUPERV"                 path="@SALOME_ROOT_DIR@/SUPERV@SALOME_VERSION@"/>
    <module name="VISU"                   path="@SALOME_ROOT_DIR@/VISU@SALOME_VERSION@"/>
    <module name="HELLO"                  path="@SALOME_ROOT_DIR@/HELLO1@SALOME_VERSION@"/>
    <module name="PYHELLO"                path="@SALOME_ROOT_DIR@/PYHELLO1@SALOME_VERSION@"/>
-   <module name="NETGENPLUGIN" gui="no"  path="@SALOME_ROOT_DIR@/NETGENPLUGIN@SALOME_VERSION@"/>
-   <module name="COMPONENT"    gui="no"  path="@SALOME_ROOT_DIR@/COMPONENT@SALOME_VERSION@"/>
-   <module name="PYCALCULATOR" gui="no"  path="@SALOME_ROOT_DIR@/PYCALCULATOR@SALOME_VERSION@"/>
-   <module name="LIGHT"                  path="@SALOME_ROOT_DIR@/LIGHT@SALOME_VERSION@"/>
 </modules>
 <samples path="@SALOME_ROOT_DIR@/SAMPLES@SALOME_VERSION@"/>
 </application>

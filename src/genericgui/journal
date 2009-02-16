@@ -53,6 +53,7 @@ x algorithmes placement noeuds
 x proc menu edition: ajout action execution
 x sauvegarde position des noeuds dans xml, lors du passage en exec
 
+- ajouter un bouton create container dans panneau composant du noeud
 - edition port outNode (xml): definir fichier sortie
 - edition ports studyInNode, studyOutNode (controle types possibles...)
 - edition ForEachLoop: type, samples ? (nbBranch OK)

@@ -34,148 +34,249 @@ BUILT_SOURCES =       \
   ui_TableSwitch.h    \
   ui_CaseSwitch.h
 
+EXTRA_DIST =        \
+  FormComponent.ui  \
+  FormContainer.ui  \
+  FormEachLoop.ui   \
+  FormEditItem.ui   \
+  FormEditTree.ui   \
+  FormLoop.ui       \
+  FormSchemaView.ui \
+  LogViewer.ui      \
+  TablePorts.ui     \
+  TableSwitch.ui    \
+  CaseSwitch.ui
+
 libGenericGui_la_SOURCES =        \
+  CaseSwitch.hxx                  \
   CaseSwitch.cxx                  \
-  CaseSwitch_moc.cxx              \
+  CatalogWidget.hxx               \
   CatalogWidget.cxx               \
+  EditionBloc.hxx                 \
   EditionBloc.cxx                 \
-  EditionBloc_moc.cxx             \
+  EditionComponent.hxx            \
   EditionComponent.cxx            \
-  EditionComponent_moc.cxx        \
+  EditionContainer.hxx            \
   EditionContainer.cxx            \
-  EditionContainer_moc.cxx        \
+  EditionControlLink.hxx          \
   EditionControlLink.cxx          \
-  EditionControlLink_moc.cxx      \
+  EditionDataLink.hxx             \
   EditionDataLink.cxx             \
-  EditionDataLink_moc.cxx         \
+  EditionDataType.hxx             \
   EditionDataType.cxx             \
-  EditionDataType_moc.cxx         \
+  EditionElementaryNode.hxx       \
   EditionElementaryNode.cxx       \
-  EditionElementaryNode_moc.cxx   \
+  EditionForEachLoop.hxx          \
   EditionForEachLoop.cxx          \
-  EditionForEachLoop_moc.cxx      \
+  EditionInputPort.hxx            \
   EditionInputPort.cxx            \
-  EditionInputPort_moc.cxx        \
+  EditionLoop.hxx                 \
   EditionLoop.cxx                 \
-  EditionLoop_moc.cxx             \
+  EditionNode.hxx                 \
   EditionNode.cxx                 \
-  EditionNode_moc.cxx             \
+  EditionOutNode.hxx              \
   EditionOutNode.cxx              \
-  EditionOutNode_moc.cxx          \
+  EditionOutputPort.hxx           \
   EditionOutputPort.cxx           \
-  EditionOutputPort_moc.cxx       \
+  EditionPresetNode.hxx           \
   EditionPresetNode.cxx           \
-  EditionPresetNode_moc.cxx       \
+  EditionProc.hxx                 \
   EditionProc.cxx                 \
-  EditionProc_moc.cxx             \
+  EditionPyFunc.hxx               \
   EditionPyFunc.cxx               \
-  EditionPyFunc_moc.cxx           \
+  EditionSalomeNode.hxx           \
   EditionSalomeNode.cxx           \
-  EditionSalomeNode_moc.cxx       \
+  EditionScript.hxx               \
   EditionScript.cxx               \
-  EditionScript_moc.cxx           \
+  EditionStudyInNode.hxx          \
   EditionStudyInNode.cxx          \
-  EditionStudyInNode_moc.cxx      \
+  EditionStudyOutNode.hxx         \
   EditionStudyOutNode.cxx         \
-  EditionStudyOutNode_moc.cxx     \
+  EditionSwitch.hxx               \
   EditionSwitch.cxx               \
-  EditionSwitch_moc.cxx           \
+  EditionWhile.hxx                \
   EditionWhile.cxx                \
-  EditionWhile_moc.cxx            \
+  FormComponent.hxx               \
   FormComponent.cxx               \
-  FormComponent_moc.cxx           \
+  FormContainer.hxx               \
   FormContainer.cxx               \
-  FormContainer_moc.cxx           \
+  FormEachLoop.hxx                \
   FormEachLoop.cxx                \
-  FormEachLoop_moc.cxx            \
+  FormEditItem.hxx                \
   FormEditItem.cxx                \
-  FormEditItem_moc.cxx            \
+  FormEditTree.hxx                \
   FormEditTree.cxx                \
-  FormEditTree_moc.cxx            \
+  FormLoop.hxx                    \
   FormLoop.cxx                    \
-  FormLoop_moc.cxx                \
+  FormSchemaView.hxx              \
   FormSchemaView.cxx              \
-  FormSchemaView_moc.cxx          \
+  GenericGui.hxx                  \
   GenericGui.cxx                  \
-  GenericGui_moc.cxx              \
+  GraphicsView.hxx                \
   GraphicsView.cxx                \
-  GraphicsView_moc.cxx            \
+  GuiEditor.hxx                   \
   GuiEditor.cxx                   \
+  GuiExecutor.hxx                 \
   GuiExecutor.cxx                 \
+  GuiObserver_i.hxx               \
   GuiObserver_i.cxx               \
+  ItemEdition.hxx                 \
   ItemEdition.cxx                 \
-  ItemEdition_moc.cxx             \
+  ItemMimeData.hxx                \
   ItemMimeData.cxx                \
+  LinkAStar.hxx                   \
   LinkAStar.cxx                   \
+  LinkMatrix.hxx                  \
   LinkMatrix.cxx                  \
+  LogViewer.hxx                   \
   LogViewer.cxx                   \
-  LogViewer_moc.cxx               \
+  Menus.hxx                       \
   Menus.cxx                       \
-  Menus_moc.cxx                   \
+  Message.hxx                     \
   Message.cxx                     \
+  QtGuiContext.hxx                \
   QtGuiContext.cxx                \
+  SceneComposedNodeItem.hxx       \
   SceneComposedNodeItem.cxx       \
+  SceneCtrlInPortItem.hxx         \
   SceneCtrlInPortItem.cxx         \
+  SceneCtrlLinkItem.hxx           \
   SceneCtrlLinkItem.cxx           \
+  SceneCtrlOutPortItem.hxx        \
   SceneCtrlOutPortItem.cxx        \
+  SceneCtrlPortItem.hxx           \
   SceneCtrlPortItem.cxx           \
   Scene.cxx                       \
+  Scene.hxx                       \
+  SceneBlocItem.hxx               \
   SceneBlocItem.cxx               \
+  SceneDataPortItem.hxx           \
   SceneDataPortItem.cxx           \
+  SceneElementaryNodeItem.hxx     \
   SceneElementaryNodeItem.cxx     \
+  SceneHeaderItem.hxx             \
   SceneHeaderItem.cxx             \
+  SceneHeaderNodeItem.hxx         \
   SceneHeaderNodeItem.cxx         \
+  SceneInPortItem.hxx             \
   SceneInPortItem.cxx             \
+  SceneItem.hxx                   \
   SceneItem.cxx                   \
+  SceneLinkItem.hxx               \
   SceneLinkItem.cxx               \
+  SceneNodeItem.hxx               \
   SceneNodeItem.cxx               \
+  SceneObserverItem.hxx           \
   SceneObserverItem.cxx           \
+  SceneOutPortItem.hxx            \
   SceneOutPortItem.cxx            \
+  ScenePortItem.hxx               \
   ScenePortItem.cxx               \
+  SceneProcItem.hxx               \
   SceneProcItem.cxx               \
+  SceneTextItem.hxx               \
   SceneTextItem.cxx               \
+  SchemaComponentItem.hxx         \
   SchemaComponentItem.cxx         \
-  SchemaComponentItem_moc.cxx     \
+  SchemaComposedNodeItem.hxx      \
   SchemaComposedNodeItem.cxx      \
-  SchemaComposedNodeItem_moc.cxx  \
+  SchemaContainerItem.hxx         \
   SchemaContainerItem.cxx         \
-  SchemaContainerItem_moc.cxx     \
+  SchemaDataTypeItem.hxx          \
   SchemaDataTypeItem.cxx          \
-  SchemaDataTypeItem_moc.cxx      \
+  SchemaDirContainersItem.hxx     \
   SchemaDirContainersItem.cxx     \
-  SchemaDirContainersItem_moc.cxx \
+  SchemaDirLinksItem.hxx          \
   SchemaDirLinksItem.cxx          \
-  SchemaDirLinksItem_moc.cxx      \
+  SchemaDirTypesItem.hxx          \
   SchemaDirTypesItem.cxx          \
-  SchemaDirTypesItem_moc.cxx      \
+  SchemaInPortItem.hxx            \
   SchemaInPortItem.cxx            \
-  SchemaInPortItem_moc.cxx        \
+  SchemaItem.hxx                  \
   SchemaItem.cxx                  \
-  SchemaItem_moc.cxx              \
+  SchemaLinkItem.hxx              \
   SchemaLinkItem.cxx              \
-  SchemaLinkItem_moc.cxx          \
+  SchemaModel.hxx                 \
   SchemaModel.cxx                 \
-  SchemaModel_moc.cxx             \
+  SchemaNodeItem.hxx              \
   SchemaNodeItem.cxx              \
-  SchemaNodeItem_moc.cxx          \
+  SchemaOutPortItem.hxx           \
   SchemaOutPortItem.cxx           \
-  SchemaOutPortItem_moc.cxx       \
+  SchemaProcItem.hxx              \
   SchemaProcItem.cxx              \
-  SchemaProcItem_moc.cxx          \
+  SchemaReferenceItem.hxx         \
   SchemaReferenceItem.cxx         \
-  SchemaReferenceItem_moc.cxx     \
+  TablePortsEdition.hxx           \
   TablePortsEdition.cxx           \
-  TablePortsEdition_moc.cxx       \
+  TableSwitch.hxx                 \
   TableSwitch.cxx                 \
-  TableSwitch_moc.cxx             \
+  TreeView.hxx                    \
   TreeView.cxx                    \
-  TreeView_moc.cxx                \
+  ValueDelegate.hxx               \
   ValueDelegate.cxx               \
-  ValueDelegate_moc.cxx           \
+  VisitorSaveGuiSchema.hxx        \
   VisitorSaveGuiSchema.cxx        \
-  WrapGraphicsView_moc.cxx        \
-  YACSGuiLoader.cxx
+  YACSGuiLoader.hxx               \
+  YACSGuiLoader.cxx               \
+  SuitWrapper.hxx                 \
+  WrapGraphicsView.hxx
 
+nodist_libGenericGui_la_SOURCES = \
+  CaseSwitch_moc.cxx              \
+  EditionBloc_moc.cxx             \
+  EditionComponent_moc.cxx        \
+  EditionContainer_moc.cxx        \
+  EditionControlLink_moc.cxx      \
+  EditionDataLink_moc.cxx         \
+  EditionDataType_moc.cxx         \
+  EditionElementaryNode_moc.cxx   \
+  EditionForEachLoop_moc.cxx      \
+  EditionInputPort_moc.cxx        \
+  EditionLoop_moc.cxx             \
+  EditionNode_moc.cxx             \
+  EditionOutNode_moc.cxx          \
+  EditionOutputPort_moc.cxx       \
+  EditionPresetNode_moc.cxx       \
+  EditionProc_moc.cxx             \
+  EditionPyFunc_moc.cxx           \
+  EditionSalomeNode_moc.cxx       \
+  EditionScript_moc.cxx           \
+  EditionStudyInNode_moc.cxx      \
+  EditionStudyOutNode_moc.cxx     \
+  EditionSwitch_moc.cxx           \
+  EditionWhile_moc.cxx            \
+  FormComponent_moc.cxx           \
+  FormContainer_moc.cxx           \
+  FormEachLoop_moc.cxx            \
+  FormEditItem_moc.cxx            \
+  FormEditTree_moc.cxx            \
+  FormLoop_moc.cxx                \
+  FormSchemaView_moc.cxx          \
+  GenericGui_moc.cxx              \
+  GraphicsView_moc.cxx            \
+  ItemEdition_moc.cxx             \
+  LogViewer_moc.cxx               \
+  Menus_moc.cxx                   \
+  SchemaComponentItem_moc.cxx     \
+  SchemaComposedNodeItem_moc.cxx  \
+  SchemaContainerItem_moc.cxx     \
+  SchemaDataTypeItem_moc.cxx      \
+  SchemaDirContainersItem_moc.cxx \
+  SchemaDirLinksItem_moc.cxx      \
+  SchemaDirTypesItem_moc.cxx      \
+  SchemaInPortItem_moc.cxx        \
+  SchemaItem_moc.cxx              \
+  SchemaLinkItem_moc.cxx          \
+  SchemaModel_moc.cxx             \
+  SchemaNodeItem_moc.cxx          \
+  SchemaOutPortItem_moc.cxx       \
+  SchemaProcItem_moc.cxx          \
+  SchemaReferenceItem_moc.cxx     \
+  TablePortsEdition_moc.cxx       \
+  TableSwitch_moc.cxx             \
+  TreeView_moc.cxx                \
+  ValueDelegate_moc.cxx           \
+  WrapGraphicsView_moc.cxx
 
 libGenericGui_la_CXXFLAGS  = \
 	$(qt4_cppflags) \
@@ -327,7 +428,7 @@ SUFFIXES = .hxx _moc.cxx .qrc _qrc.cxx
 
 
 clean-local-qt :
-	rm -f *_moc.cxx *_qrc.cxx
+	rm -f *_moc.cxx *_qrc.cxx ui_*.h
 
 
 clean-local: clean-local-qt

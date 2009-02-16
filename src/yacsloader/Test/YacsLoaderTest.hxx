@@ -59,7 +59,7 @@ namespace YACS
     CPPUNIT_TEST(blocs);
     CPPUNIT_TEST(refcnt);
     CPPUNIT_TEST(foreachs);
-    CPPUNIT_TEST(sinlines);
+    //CPPUNIT_TEST(sinlines);
     CPPUNIT_TEST(bools);
     CPPUNIT_TEST(integers);
     CPPUNIT_TEST(doubles);

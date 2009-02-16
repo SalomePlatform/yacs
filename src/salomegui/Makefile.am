@@ -27,6 +27,7 @@ lib_LTLIBRARIES = libYACS.la
 
 dist_libYACS_la_SOURCES = \
 	Yacsgui.cxx \
+	Yacsgui_DataModel.hxx \
 	Yacsgui_DataModel.cxx
 
 # MOC pre-processing

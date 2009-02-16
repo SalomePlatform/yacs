@@ -29,3 +29,5 @@ endif
 check-local:
 	cat /tmp/${USER}/UnitTestsResult
 
+dist-hook:
+		 rm -rf `find $(distdir) -name CVS`

@@ -33,7 +33,7 @@ EXTRA_libYACSBases_la_SOURCES =
 	Semaphore.hxx SemaphorePT.cxx SemaphorePT.hxx \
 	DynLibLoader.hxx DynLibLoaderGNU.hxx          \
 	DrivenCondition.hxx DrivenConditionPT.hxx     \
-	Exception.hxx                                 \
+	Exception.hxx chrono.hxx                      \
 	$(__dummy__)
 
 salomeinclude_HEADERS =                               \
@@ -53,6 +53,7 @@ salomeinclude_HEADERS =                               \
            ThreadPT.hxx \
            YacsTrace.hxx \
            yacsconfig.h \
+           chrono.hxx \
            $(__dummy__)
 
 AM_CXXFLAGS = $(THREAD_DEF)

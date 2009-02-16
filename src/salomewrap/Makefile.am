@@ -22,7 +22,9 @@ include $(top_srcdir)/adm/unix/make_begin.am
 lib_LTLIBRARIES = libSalomeWrap.la
 
 dist_libSalomeWrap_la_SOURCES = \
+	SalomeWrap_Module.hxx \
 	SalomeWrap_Module.cxx \
+	SalomeWrap_DataModel.hxx \
 	SalomeWrap_DataModel.cxx \
 	SuitWrapper.cxx \
 	WrapGraphicsView.cxx

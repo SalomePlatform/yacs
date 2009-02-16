@@ -35,7 +35,7 @@ build_dev_docs:
 
 DOXFILES= bases.dox engine.dox hmi.dox python.dox runtime.dox yacs.dox yacsloader.dox
 
-EXTRA_DIST= html htmldev $(DOXFILES)
+EXTRA_DIST= html htmldev _static exemples $(DOXFILES)
 
 yacsdocdir=$(docdir)/gui/YACS
 yacsdevdocdir=$(docdir)/gui/YACS/dev
@@ -59,6 +59,12 @@ latex:
 	@echo "Build finished; the LaTeX files are in latex."
 	@echo "Run \`make all-pdf' or \`make all-ps' in that directory to" \
 	      "run these through (pdf)latex."
+
+html:
+		 mkdir -p $@
+
+htmldev:
+		 mkdir -p $@
 
 RSTFILES=          \
 accesCorba.rst     \
@@ -101,7 +107,18 @@ toolbars.rst       \
 yacsgen.rst
 
 
-EXTRA_DIST+= $(RSTFILES) images
+EXTRA_DIST+= $(RSTFILES) images		 
+
+EXTRA_DIST+= \
+classDiagram.png \
+conf.py \
+createNodeCollaboration.png \
+opml.dtd \
+opml.xslt \
+programingRules.sxw \
+schema.jpeg \
+sequenceCreateNode.png \
+undoCreateNodeCollaboration.png
 
 install-data-local:
 	$(INSTALL) -d $(DESTDIR)$(yacsdocdir)
