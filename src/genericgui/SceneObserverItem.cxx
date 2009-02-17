@@ -20,6 +20,7 @@
 #include "QtGuiContext.hxx"
 #include "ItemMimeData.hxx"
 #include "Scene.hxx"
+#include "SchemaItem.hxx"
 
 #include <QGraphicsSceneMouseEvent>
 #include <QApplication>
@@ -66,6 +67,19 @@ void SceneObserverItem::select(bool isSelected)
       QtGuiContext::getQtCurrent()->setSelectedSubject(_subject);
     }
   else setSelected(false);
+}
+
+QString SceneObserverItem::getToolTip()
+{
+  DEBTRACE("SceneObserverItem::getToolTip");
+  if (!_subject)
+    return _label;
+  if (! QtGuiContext::getQtCurrent()->_mapOfSchemaItem.count(_subject))
+    return _label;
+  QString val ="";
+  SchemaItem * item = QtGuiContext::getQtCurrent()->_mapOfSchemaItem[_subject];
+  val = item->data(0, Qt::ToolTipRole).toString();
+  return val;
 }
 
 void SceneObserverItem::mousePressEvent(QGraphicsSceneMouseEvent *event)

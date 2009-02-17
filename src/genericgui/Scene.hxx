@@ -40,6 +40,7 @@ namespace YACS
       bool isZooming();
       
     protected:
+      virtual void helpEvent(QGraphicsSceneHelpEvent *event);
       virtual void mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent);
       virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent);
       virtual void mouseMoveEvent(QGraphicsSceneMouseEvent* mouseEvent);

@@ -21,6 +21,7 @@
 #include "QtGuiContext.hxx"
 
 #include <QGraphicsSceneMouseEvent>
+#include <QToolTip>
 
 #include <cassert>
 #include <cmath>
@@ -59,6 +60,17 @@ void Scene::setZoom(bool zooming)
 bool Scene::isZooming()
 {
   return _zooming;
+}
+ 
+void Scene::helpEvent(QGraphicsSceneHelpEvent *event)
+{
+  DEBTRACE("Scene::helpEvent");
+  QGraphicsItem *qit = itemAt(event->scenePos());
+  SceneItem * item = dynamic_cast<SceneItem*>(qit);
+  if (item)
+    QToolTip::showText(event->screenPos(), item->getToolTip());
+  else
+    QToolTip::hideText();
 }
 
 void Scene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)

@@ -130,6 +130,7 @@ namespace YACS
       virtual void checkGeometryChange();
       virtual void popupMenu(QWidget *caller, const QPoint &globalPos);
       void setParent(SceneItem* parent);
+      virtual QString getToolTip();
 
     protected:
 //       virtual bool sceneEvent(QEvent *event);

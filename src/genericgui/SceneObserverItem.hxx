@@ -21,6 +21,8 @@
 
 #include "SceneItem.hxx"
 
+#include <QString>
+
 namespace YACS
 {
   namespace HMI
@@ -35,6 +37,7 @@ namespace YACS
       virtual void select(bool isSelected);
       virtual void activateSelection(bool selected);
       virtual Subject* getSubject();
+      virtual QString getToolTip();
     protected:
       virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
       virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *event);

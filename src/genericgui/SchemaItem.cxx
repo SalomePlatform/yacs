@@ -290,13 +290,21 @@ void SchemaItem::setCaseValue()
 
 QVariant SchemaItem::editionToolTip(int column) const
 {
-  QString val = QString("Edition: ") + _itemData.value(column).toString();
+  QString val = QString("Edition: ") + _itemData.value(0).toString();
+  QString val1 = _itemData.value(1).toString();
+  QString val2 = _itemData.value(2).toString();
+  if (!val1.isEmpty()) val += QString(" | ") + val1;
+  if (!val2.isEmpty()) val += QString(" | ") + val2;
   return val;
 }
 
 QVariant SchemaItem::runToolTip(int column) const
 {
-  QString val = QString("Execution: ") + _itemData.value(column).toString();
+  QString val = QString("Execution: ") + _itemData.value(0).toString();
+  QString val1 = _itemData.value(1).toString();
+  QString val2 = _itemData.value(2).toString();
+  if (!val1.isEmpty()) val += QString(" | ") + val1;
+  if (!val2.isEmpty()) val += QString(" | ") + val2;
   return val;
 }
 

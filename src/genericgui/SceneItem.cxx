@@ -293,6 +293,11 @@ void SceneItem::checkGeometryChange()
     }
 }
 
+QString SceneItem::getToolTip()
+{
+  return _label;
+}
+
 // /*!
 //  * When Zooming, filter all mouse events to items: 
 //  * do not work, scene do not receive...
