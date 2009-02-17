@@ -24,4 +24,19 @@ salomepython_PYTHON = salomeloader.py ElementTree.py ElementPath.py graph.py
 check-local:testSalomeLoader.py
 	python testSalomeLoader.py
 
+EXTRA_DIST = samples
+
+dist-hook:
+	rm -rf `find $(distdir) -name CVS`
+
+install-data-local:
+	$(INSTALL) -d $(DESTDIR)$(prefix)/share/salome/yacssupervsamples
+	cp -rf $(srcdir)/samples/*.xml $(DESTDIR)$(prefix)/share/salome/yacssupervsamples
+
+uninstall-local:
+	rm -rf $(DESTDIR)$(prefix)/share/salome/yacssupervsamples
+
+distclean-local:
+	rm -rf tata.xml
+
 include $(top_srcdir)/adm/unix/make_end.am
