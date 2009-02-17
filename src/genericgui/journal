@@ -52,6 +52,9 @@ x insertion, deplacement, destruction port
 x algorithmes placement noeuds
 x proc menu edition: ajout action execution
 x sauvegarde position des noeuds dans xml, lors du passage en exec
+x tooltips plus complets sur arbre et scenes
+x afficher les types de donnees DataStream dans arbre et edition -> en exec: tooltips
+x numerotation automatique objets cree tient compte des noms existant
 
 - ajouter un bouton create container dans panneau composant du noeud
 - edition port outNode (xml): definir fichier sortie
@@ -69,7 +72,6 @@ x sauvegarde position des noeuds dans xml, lors du passage en exec
 - affichage etat schema modifie depuis derniere sauvegarde fichier
 - couleur differente des liens datastream, 
   des liens de donnees simples (sans controle associe)
-- afficher les types de données DataStream dans arbre et edition
 - icones differentes pour edition et run dans object browser
 
 - differents designs / canvas (interface generique)

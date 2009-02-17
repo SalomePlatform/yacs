@@ -59,37 +59,7 @@ void GuiEditor::CreateNodeFromCatalog(const ItemMimeData* myData, SubjectCompose
   string compoName =  myData->getCompo();
   string service = myData->getType();
   DEBTRACE(compoName << "/" << service);
-  std::stringstream name;
-  name << service << GuiContext::getCurrent()->getNewId();
-  
-  int swCase = 0;
-  SubjectSwitch *aSwitch = dynamic_cast<SubjectSwitch*>(cnode);
-  if (aSwitch)
-    {
-      map<int, SubjectNode*> bodyMap = aSwitch->getBodyMap();
-      if (bodyMap.empty()) swCase = 1;
-      else
-        {
-          map<int, SubjectNode*>::reverse_iterator rit = bodyMap.rbegin();
-          swCase = (*rit).first + 1;
-        }
-      if (!aSwitch->addNode(catalog, compoName, service, name.str(), swCase))
-        Message mess;
-    }
-  else if (cnode)
-    if (! cnode->addNode(catalog, compoName, service, name.str()))
-      Message mess;
-}
-
-void GuiEditor::AddTypeFromCatalog(const ItemMimeData* myData)
-{
-  DEBTRACE("GuiEditor::AddTypeFromCatalog");
-  Catalog* catalog = myData->getCatalog();
-  DEBTRACE("catalog " << catalog);
-  string aType = myData->getType();
-  DEBTRACE(aType);
-  SubjectProc* sProc = QtGuiContext::getQtCurrent()->getSubjectProc();
-  sProc->addDataType(catalog, aType);
+  _createNode(catalog, cnode, service, compoName);
 }
 
 void GuiEditor::CreateNode(std::string typeNode)
@@ -105,33 +75,72 @@ void GuiEditor::CreateNode(std::string typeNode)
     }
   DEBTRACE(sub->getName());
 
-  YACS::HMI::SubjectComposedNode *subject = dynamic_cast< YACS::HMI::SubjectComposedNode*>(sub);
-  if (!subject)
+  YACS::HMI::SubjectComposedNode *cnode = dynamic_cast< YACS::HMI::SubjectComposedNode*>(sub);
+  if (!cnode)
     {
       DEBTRACE("GuiEditor::CreateNode : no ComposedNode selected!");
       return;
     }
 
-  std::stringstream name;
-  name << typeNode << GuiContext::getCurrent()->getNewId();
+  _createNode(catalog, cnode, typeNode, "");
+}
 
-  YACS::HMI::SubjectSwitch *aSwitch = dynamic_cast< YACS::HMI::SubjectSwitch*>(subject);
+void GuiEditor::_createNode(YACS::ENGINE::Catalog* catalog,
+                            SubjectComposedNode *cnode,
+                            std::string service,
+                            std::string compoName)
+{
+  // --- find a name not used
+
+  string name = service;
+  Node *node =cnode->getNode();
+  ComposedNode *father = dynamic_cast<ComposedNode*>(node);
+  assert(father);
+  list<Node*> children = father->edGetDirectDescendants();
+  bool nameInUse = true;
+  while (nameInUse)
+    {
+      nameInUse = false;
+      std::stringstream tryname;
+      long newid = GuiContext::getCurrent()->getNewId();
+      tryname << service << newid;
+      if (newid > 100000) break; 
+      for (list<Node*>::iterator it = children.begin(); it != children.end(); ++it)
+        {
+          if ((*it)->getName() == tryname.str())
+            nameInUse = true;
+        }
+      name = tryname.str();
+    }
+
+  int swCase = 0;
+  SubjectSwitch *aSwitch = dynamic_cast<SubjectSwitch*>(cnode);
   if (aSwitch)
     {
       map<int, SubjectNode*> bodyMap = aSwitch->getBodyMap();
-      int swCase = 0;
       if (bodyMap.empty()) swCase = 1;
       else
         {
           map<int, SubjectNode*>::reverse_iterator rit = bodyMap.rbegin();
           swCase = (*rit).first + 1;
         }
-      if (!aSwitch->addNode(catalog, "", typeNode, name.str(), swCase))
+      if (!aSwitch->addNode(catalog, compoName, service, name, swCase))
         Message mess;
     }
-  else
-    if (!subject->addNode(catalog, "", typeNode, name.str()))
+  else if (cnode)
+    if (!cnode->addNode(catalog, compoName, service, name))
       Message mess;
+}
+
+void GuiEditor::AddTypeFromCatalog(const ItemMimeData* myData)
+{
+  DEBTRACE("GuiEditor::AddTypeFromCatalog");
+  Catalog* catalog = myData->getCatalog();
+  DEBTRACE("catalog " << catalog);
+  string aType = myData->getType();
+  DEBTRACE(aType);
+  SubjectProc* sProc = QtGuiContext::getQtCurrent()->getSubjectProc();
+  sProc->addDataType(catalog, aType);
 }
 
 void GuiEditor::CreateBloc()
@@ -169,9 +178,15 @@ void GuiEditor::CreateContainer()
   DEBTRACE("GuiEditor::CreateContainer");
   SubjectProc *sproc = QtGuiContext::getQtCurrent()->getSubjectProc();
   assert(sproc);
-  std::stringstream name;
-  name << "container" << GuiContext::getCurrent()->getNewId();
-  sproc->addContainer(name.str());
+  SubjectContainer *scont = 0;
+  while (!scont)
+    {
+      std::stringstream name;
+      long newid = GuiContext::getCurrent()->getNewId();
+      if (newid > 100000) break; 
+      name << "container" << newid;
+      scont = sproc->addContainer(name.str());
+    }
 }
 
 SubjectDataPort* GuiEditor::CreateInputPort(SubjectElementaryNode* seNode, 
@@ -181,13 +196,18 @@ SubjectDataPort* GuiEditor::CreateInputPort(SubjectElementaryNode* seNode,
                                             SubjectDataPort* before)
 {
   DEBTRACE("GuiEditor::CreateInputPort");
-
-  std::stringstream aName;
+  SubjectDataPort *sdp = 0;
   if (name.empty())
-    aName << "i" << GuiContext::getCurrent()->getNewId();
+    while (!sdp)
+      {
+        std::stringstream aName;
+        long newid = GuiContext::getCurrent()->getNewId();
+        if (newid > 100000) break;
+        aName << "i" << newid;
+        sdp = seNode->addInputPort(catalog,type, aName.str());
+      }
   else
-    aName << name;
-  SubjectDataPort *sdp = seNode->addInputPort(catalog,type, aName.str());
+    sdp = seNode->addInputPort(catalog,type, name);
   if (!sdp)
     Message mess;
   return sdp;
@@ -200,13 +220,18 @@ SubjectDataPort*  GuiEditor::CreateOutputPort(SubjectElementaryNode* seNode,
                                               SubjectDataPort* before)
 {
   DEBTRACE("GuiEditor::CreateOutputPort");
-
-  std::stringstream aName;
+  SubjectDataPort *sdp = 0;
   if (name.empty())
-    aName << "o" << GuiContext::getCurrent()->getNewId();
+    while (!sdp)
+      {
+        std::stringstream aName;
+        long newid = GuiContext::getCurrent()->getNewId();
+        if (newid > 100000) break;
+        aName << "o" << newid;
+        sdp = seNode->addOutputPort(catalog,type, aName.str());
+      }
   else
-    aName << name;
-  SubjectDataPort *sdp = seNode->addOutputPort(catalog,type, aName.str());
+    sdp = seNode->addOutputPort(catalog,type, name);
   if (!sdp)
     Message mess;
   return sdp;

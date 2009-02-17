@@ -75,6 +75,12 @@ namespace YACS
 
       void rebuildLinks();
       void arrangeNodes(bool isRecursive);
+
+    protected:
+      void _createNode(YACS::ENGINE::Catalog* catalog,
+                       SubjectComposedNode *cnode,
+                       std::string service,
+                       std::string compoName);
     };
   }
 }
