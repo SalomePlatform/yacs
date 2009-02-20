@@ -126,6 +126,13 @@ void EditionSalomeNode::update(GuiEvent event, int type, Subject* son)
     } 
 }
 
+void EditionSalomeNode::synchronize()
+{
+  EditionElementaryNode::synchronize();
+  fillComponentPanel();
+  fillContainerPanel();
+}
+
 /*! must be updated when associate service to component instance, or when the list of
  *  available component instances changes.
  */

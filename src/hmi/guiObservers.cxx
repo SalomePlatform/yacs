@@ -3229,7 +3229,7 @@ void SubjectComponent::setContainer()
 
 bool SubjectComponent::associateToContainer(SubjectContainer* subcont)
 {
-  DEBTRACE("SubjectComponent::associateToContainer " << getName() << subcont->getName());
+  DEBTRACE("SubjectComponent::associateToContainer " << getName() << " " << subcont->getName());
   CommandAssociateComponentToContainer *command =
     new CommandAssociateComponentToContainer(getKey(), subcont->getName());
   if (command->execute())

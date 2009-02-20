@@ -51,6 +51,7 @@ namespace YACS
                   const char* name = 0);
       virtual ~EditionSalomeNode();
       virtual void update(GuiEvent event, int type, Subject* son);
+      virtual void synchronize();
 
     public slots:
       virtual void fillComponentPanel();
