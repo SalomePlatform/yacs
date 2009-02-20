@@ -50,7 +50,7 @@ EditionForEachLoop::~EditionForEachLoop()
 void EditionForEachLoop::onModifyNbBranches(const QString &text)
 {
   SubjectForEachLoop *sfe = dynamic_cast<SubjectForEachLoop*>(_subject);
-  assert(sfe);
+  YASSERT(sfe);
   sfe->setNbBranches(text.toStdString());
 }
 

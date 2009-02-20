@@ -171,7 +171,7 @@ qreal AbstractSceneItem::getInternHeight()
 QRectF AbstractSceneItem::childBoundingRect(AbstractSceneItem *child) const
 {
   QGraphicsItem *item = dynamic_cast<QGraphicsItem*>(child);
-  assert(item);
+  YASSERT(item);
   return (item->mapToParent(item->boundingRect())).boundingRect();
 }
 

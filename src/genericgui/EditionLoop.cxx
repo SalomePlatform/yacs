@@ -50,7 +50,7 @@ EditionLoop::~EditionLoop()
 void EditionLoop::onModifyNbSteps(const QString &text)
 {
   SubjectForLoop *sfl = dynamic_cast<SubjectForLoop*>(_subject);
-  assert(sfl);
+  YASSERT(sfl);
   sfl->setNbSteps(text.toStdString());
 }
 

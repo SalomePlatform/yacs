@@ -1123,7 +1123,7 @@ void Executor::traceExec(Task *task, const std::string& message)
 void Executor::sendEvent(const std::string& event)
 {
   Dispatcher* disp=Dispatcher::getDispatcher();
-  assert(disp);
-  assert(_root);
+  YASSERT(disp);
+  YASSERT(_root);
   disp->dispatch(_root,event);
 }

@@ -55,7 +55,7 @@ void PresetNode::execute()
   for(iter = _setOfOutputPort.begin(); iter != _setOfOutputPort.end(); iter++)
     {
       OutputPresetPort *outp = dynamic_cast<OutputPresetPort *>(*iter);
-      assert(outp);
+      YASSERT(outp);
       string data = outp->getData();
       DEBTRACE("data: " << data );
       outp->put(data.c_str());

@@ -171,7 +171,7 @@ void CatalogWidget::startDrag(Qt::DropActions supportedActions)
 {
   DEBTRACE("startDrag " << supportedActions);
   QTreeWidgetItem *item = currentItem();
-  assert(item);
+  YASSERT(item);
   QTreeWidgetItem *parent = item->parent();
   if (!parent) return;
   QTreeWidgetItem *grandPa = parent->parent();
@@ -184,7 +184,7 @@ void CatalogWidget::startDrag(Qt::DropActions supportedActions)
     cataName = grandPa->text(0).toStdString();
 
   DEBTRACE("cataName=" << cataName);
-  assert(_cataMap.count(cataName));
+  YASSERT(_cataMap.count(cataName));
   YACS::ENGINE::Catalog *catalog = _cataMap[cataName];
 
   QString mimeInfo;

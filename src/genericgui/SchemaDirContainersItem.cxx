@@ -69,9 +69,9 @@ void SchemaDirContainersItem::addComponentItem(Subject* subject)
 {
   DEBTRACE("SchemaDirContainersItem::addComponentItem");
   SubjectComponent *aSComp = dynamic_cast<SubjectComponent*>(subject);
-  assert(aSComp);
+  YASSERT(aSComp);
   ComponentInstance* component = aSComp->getComponent();
-  assert(component);
+  YASSERT(component);
 
   string contName = "DefaultContainer";
   Container *container = component->getContainer();
@@ -86,7 +86,7 @@ void SchemaDirContainersItem::addComponentItem(Subject* subject)
         }
     }
 
-  assert(_schemaContItemMap.count(contName));
+  YASSERT(_schemaContItemMap.count(contName));
   SchemaContainerItem *sci = _schemaContItemMap[contName];
   aSComp->associateToContainer(static_cast<SubjectContainer*>(sci->getSubject()));
 }

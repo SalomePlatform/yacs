@@ -71,7 +71,7 @@ void EditionContainer::fillContainerPanel()
 {
   DEBTRACE("EditionContainer::fillContainerPanel");
   SubjectContainer *scont = dynamic_cast<SubjectContainer*>(_subject);
-  assert(scont);
+  YASSERT(scont);
   _wContainer->FillPanel(scont->getContainer());
 }
 
@@ -89,7 +89,7 @@ void EditionContainer::onCancel()
 {
   DEBTRACE("EditionContainer::onCancel");
   SubjectContainer *scont = dynamic_cast<SubjectContainer*>(_subject);
-  assert(scont);
+  YASSERT(scont);
   _wContainer->FillPanel(scont->getContainer());
   ItemEdition::onCancel();
 }

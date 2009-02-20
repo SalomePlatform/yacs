@@ -81,7 +81,7 @@ void GuiExecutor::startResumeDataflow(bool initialize)
       SALOME_LifeCycleCORBA lcc(&namingService);
       Engines::Component_var comp = lcc.FindOrLoad_Component("YACSContainer", "YACS" );
       _engineRef =YACS_ORB::YACS_Gen::_narrow(comp);
-      assert(!CORBA::is_nil(_engineRef));
+      YASSERT(!CORBA::is_nil(_engineRef));
     }
 
   checkEndOfDataflow(); // --- to allow change of the _isRunning state
@@ -448,7 +448,7 @@ bool GuiExecutor::event(QEvent *e)
         return true;
       int state = _procRef->getNodeState(numid);
       int iGui = _serv->_engineToGuiMap[numid];
-      assert(GuiContext::getCurrent()->_mapOfExecSubjectNode.count(iGui));
+      YASSERT(GuiContext::getCurrent()->_mapOfExecSubjectNode.count(iGui));
       SubjectNode *snode = GuiContext::getCurrent()->_mapOfExecSubjectNode[iGui];
       DEBTRACE("node " << snode->getName() << " state=" << state);
       snode->setExecState(state);
@@ -461,7 +461,7 @@ bool GuiExecutor::event(QEvent *e)
           string val = _procRef->getInPortValue(numid, (*iti)->getName().c_str());
           DEBTRACE("node " << snode->getName() << " inport " << (*iti)->getName() 
                    << " value " << val);
-          assert(GuiContext::getCurrent()->_mapOfSubjectDataPort.count(*iti));
+          YASSERT(GuiContext::getCurrent()->_mapOfSubjectDataPort.count(*iti));
           SubjectDataPort* port = GuiContext::getCurrent()->_mapOfSubjectDataPort[*iti];
           port->setExecValue(val);
           port->update(YACS::HMI::UPDATEPROGRESS, 0, port);
@@ -473,7 +473,7 @@ bool GuiExecutor::event(QEvent *e)
           string val = _procRef->getOutPortValue(numid, (*ito)->getName().c_str());
           DEBTRACE("node " << snode->getName() << " outport " << (*ito)->getName() 
                    << " value " << val);
-          assert(GuiContext::getCurrent()->_mapOfSubjectDataPort.count(*ito));
+          YASSERT(GuiContext::getCurrent()->_mapOfSubjectDataPort.count(*ito));
           SubjectDataPort* port = GuiContext::getCurrent()->_mapOfSubjectDataPort[*ito];
           port->setExecValue(val);
           port->update(YACS::HMI::UPDATEPROGRESS, 0, port);

@@ -487,7 +487,7 @@ void VisitorSaveSchema::dumpTypeCode(TypeCode* type, set<string>& typeNames,map<
     case YACS::ENGINE::Struct:
       {
         TypeCodeStruct* tcStruct = dynamic_cast<TypeCodeStruct*>(type);
-        assert(tcStruct);
+        YASSERT(tcStruct);
         int mbCnt = tcStruct->memberCount();
         for (int i=0; i<mbCnt; i++)
           {
@@ -978,7 +978,7 @@ int VisitorSaveSchema::depthNode(Node* node)
 
 SchemaSave::SchemaSave(Proc* proc): _p(proc)
 {
-  assert(_p);
+  YASSERT(_p);
 }
 
 void SchemaSave::save(std::string xmlSchemaFile)

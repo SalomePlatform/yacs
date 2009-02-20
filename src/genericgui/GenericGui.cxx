@@ -886,7 +886,7 @@ void GenericGui::createContext(YACS::ENGINE::Proc* proc,
   // --- adjust widgets
 
   TreeView *vtree = dynamic_cast<TreeView*>(editTree->tv_schema);
-  assert(vtree);
+  YASSERT(vtree);
   vtree->resizeColumns();
   _catalogsWidget->setMinimumWidth(40); // --- reset the constraint on width
   editTree->setMinimumHeight(40);
@@ -921,7 +921,7 @@ void GenericGui::setLoadedPresentation(YACS::ENGINE::Proc* proc)
           PrsData pres = (*it).second;
           SubjectNode *snode = QtGuiContext::getQtCurrent()->_mapOfSubjectNode[node];
           SceneItem *item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[snode];
-          assert(item);
+          YASSERT(item);
           item->setPos(QPointF(pres._x, pres._y));
           item->setWidth(pres._width);
           item->setHeight(pres._height);
@@ -990,7 +990,7 @@ void GenericGui::onImportSupervSchema()
       QString tmpDir = "/tmp";
       QDir aTmpDir(tmpDir);
       aTmpDir.mkdir(QString("YACS_") + getenv("USER"));
-      assert(aTmpDir.cd(QString("YACS_") + getenv("USER")));
+      YASSERT(aTmpDir.cd(QString("YACS_") + getenv("USER")));
       QDateTime curTime = QDateTime::currentDateTime();   
       tmpFileName = "SUPERV_import_" + curTime.toString("yyyyMMdd_hhmmss") + ".xml";
       QString tmpOutput = "salomeloader_output";
@@ -1209,7 +1209,7 @@ void GenericGui::onRunLoadedSchema(bool withState)
   QString tmpDir = "/tmp";
   QDir aTmpDir(tmpDir);
   aTmpDir.mkdir(QString("YACS_") + getenv("USER"));
-  assert(aTmpDir.cd(QString("YACS_") + getenv("USER")));
+  YASSERT(aTmpDir.cd(QString("YACS_") + getenv("USER")));
   QDateTime curTime = QDateTime::currentDateTime();   
   QString aRunName = procName + "_" + curTime.toString("yyyyMMdd_hhmmss") + ".xml";
   aRunName = aTmpDir.absoluteFilePath(aRunName);
@@ -1603,7 +1603,7 @@ void GenericGui::onSelectReference()
   Subject *sub = QtGuiContext::getQtCurrent()->getSelectedSubject();
   if (!sub) return;
   SubjectReference *ref = dynamic_cast<SubjectReference*>(sub);
-  assert(ref);
+  YASSERT(ref);
   SubjectServiceNode *snode = dynamic_cast<SubjectServiceNode*>(ref->getReference());
   snode->select(true);
 }

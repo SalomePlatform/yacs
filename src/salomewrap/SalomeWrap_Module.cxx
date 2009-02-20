@@ -60,7 +60,7 @@ QxScene_ViewWindow* SalomeWrap_Module::getNewWindow(QGraphicsScene *scene)
       svw = svm->createViewWindow();
       if (svw) aView = dynamic_cast<QxScene_ViewWindow*>(svw);
     }
-  assert(aView);
+  YASSERT(aView);
   aView->setScene(scene);
   _mapOfViewWindow[scene] = aView;
   return aView;

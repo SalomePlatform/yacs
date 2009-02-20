@@ -131,7 +131,7 @@ void SceneElementaryNodeItem::reorganize()
 
   SubjectNode* snode = dynamic_cast<SubjectNode*>(_subject);
   ElementaryNode* father = dynamic_cast<ElementaryNode*>(snode->getNode());
-  assert(father);
+  YASSERT(father);
 
   list<InputPort*> plisti = father->getSetOfInputPort();
   list<InputPort*>::iterator iti = plisti.begin();

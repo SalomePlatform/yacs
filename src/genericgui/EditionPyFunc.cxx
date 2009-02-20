@@ -39,11 +39,11 @@ EditionPyFunc::EditionPyFunc(Subject* subject,
   _liFuncName = 0;
 
   _subFuncNode = dynamic_cast<SubjectPyFuncNode*>(_subject);
-  assert(_subFuncNode);
+  YASSERT(_subFuncNode);
 
   YACS::ENGINE::InlineFuncNode *pyFuncNode
     = dynamic_cast<YACS::ENGINE::InlineFuncNode*>(_subFuncNode->getNode());
-  assert(pyFuncNode);
+  YASSERT(pyFuncNode);
 
   _funcName = pyFuncNode->getFname();
   QLabel* laFuncName = new QLabel("laFuncName", this );

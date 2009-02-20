@@ -515,7 +515,7 @@ bool SubjectNode::reparent(Subject* parent)
       return false;
     }
   ComposedNode *cnp = dynamic_cast<ComposedNode*>(snp->getNode());
-  assert(cnp);
+  YASSERT(cnp);
   Proc *proc = GuiContext::getCurrent()->getProc();
 
   string position = "";
@@ -562,7 +562,7 @@ bool SubjectNode::copy(Subject* parent)
       return false;
     }
   ComposedNode *cnp = dynamic_cast<ComposedNode*>(snp->getNode());
-  assert(cnp);
+  YASSERT(cnp);
   Proc *proc = GuiContext::getCurrent()->getProc();
 
   string position = "";
@@ -741,7 +741,7 @@ bool SubjectNode::tryCreateLink(SubjectNode *subOutNode, SubjectNode *subInNode)
         {
           ancestor = ancestor->getFather();
           scla = dynamic_cast<SubjectComposedNode*>(scla->getParent());
-          assert(scla);
+          YASSERT(scla);
         }
       DEBTRACE(scla->getName());
       scla->addSubjectControlLink(subOutNode,subInNode);
@@ -773,7 +773,7 @@ void SubjectNode::removeExternalLinks()
       if (GuiContext::getCurrent()->_mapOfSubjectLink.count(*it2))
         {
           subject = GuiContext::getCurrent()->_mapOfSubjectLink[*it2];
-          assert(subject);
+          YASSERT(subject);
           DEBTRACE("link to remove " << subject->getName());
           erase(subject);
           GuiContext::getCurrent()->_mapOfSubjectLink.erase(*it2);
@@ -940,9 +940,9 @@ SubjectNode *SubjectComposedNode::addSubjectNode(YACS::ENGINE::Node * node,
       break;
     default:
       throw YACS::Exception("Not implemented");
-      //assert(0);
+      //YASSERT(0);
     }
-  assert(son);
+  YASSERT(son);
   GuiContext::getCurrent()->_mapOfSubjectNode[static_cast<Node*>(node)] = son;
   GuiContext::getCurrent()->_mapOfExecSubjectNode[node->getNumId()] = son;
   if (!name.empty()) son->setName(name);
@@ -1100,9 +1100,9 @@ void SubjectComposedNode::loadLinks()
       if (cnSon)
         {
           SubjectNode *subSon = GuiContext::getCurrent()->_mapOfSubjectNode[static_cast<Node*>(*iter)];
-          assert(subSon);
+          YASSERT(subSon);
           SubjectComposedNode *subCnSon = dynamic_cast<SubjectComposedNode*>(subSon);
-          assert (subCnSon);
+          YASSERT(subCnSon);
           subCnSon->loadLinks();
         }
     }
@@ -1496,7 +1496,7 @@ SubjectDataPort* SubjectElementaryNode::addInputPort(YACS::ENGINE::Catalog *cata
   Proc *proc = GuiContext::getCurrent()->getProc();
   string position = "";
   if (proc != dynamic_cast<Proc*>(_node)) position = proc->getChildName(_node);
-  else assert(0);
+  else YASSERT(0);
   CommandAddInputPortFromCatalog *command = new CommandAddInputPortFromCatalog(catalog,
                                                                                type,
                                                                                position,
@@ -1518,7 +1518,7 @@ SubjectDataPort* SubjectElementaryNode::addOutputPort(YACS::ENGINE::Catalog *cat
   Proc *proc = GuiContext::getCurrent()->getProc();
   string position = "";
   if (proc != dynamic_cast<Proc*>(_node)) position = proc->getChildName(_node);
-  else assert(0);
+  else YASSERT(0);
   CommandAddOutputPortFromCatalog *command = new CommandAddOutputPortFromCatalog(catalog,
                                                                                  type,
                                                                                  position,
@@ -1540,7 +1540,7 @@ SubjectDataPort* SubjectElementaryNode::addIDSPort(YACS::ENGINE::Catalog *catalo
   Proc *proc = GuiContext::getCurrent()->getProc();
   string position = "";
   if (proc != dynamic_cast<Proc*>(_node)) position = proc->getChildName(_node);
-  else assert(0);
+  else YASSERT(0);
   CommandAddIDSPortFromCatalog *command = new CommandAddIDSPortFromCatalog(catalog,
                                                                            type,
                                                                            position,
@@ -1562,7 +1562,7 @@ SubjectDataPort* SubjectElementaryNode::addODSPort(YACS::ENGINE::Catalog *catalo
   Proc *proc = GuiContext::getCurrent()->getProc();
   string position = "";
   if (proc != dynamic_cast<Proc*>(_node)) position = proc->getChildName(_node);
-  else assert(0);
+  else YASSERT(0);
   CommandAddODSPortFromCatalog *command = new CommandAddODSPortFromCatalog(catalog,
                                                                            type,
                                                                            position,
@@ -1584,7 +1584,7 @@ bool SubjectElementaryNode::OrderDataPorts(SubjectDataPort* portToMove, int isUp
   Proc *proc = GuiContext::getCurrent()->getProc();
   string position = "";
   if (proc != dynamic_cast<Proc*>(_node)) position = proc->getChildName(_node);
-  else assert(0);
+  else YASSERT(0);
 
   if (!portToMove) return false;
   string nameToMove = portToMove->getName();
@@ -1754,7 +1754,7 @@ void SubjectServiceNode::setComponentFromCatalog(YACS::ENGINE::Catalog *catalog,
           pair<string,int> key = pair<string,int>(compo, instance->getNumId());
           proc->componentInstanceMap[key] = instance;
           SubjectComponent* subCompo = GuiContext::getCurrent()->getSubjectProc()->addSubjectComponent(instance);
-          assert(subCompo);
+          YASSERT(subCompo);
           addSubjectReference(subCompo);
           _serviceNode->setComponent(instance);
           if (_subRefComponent)
@@ -1791,7 +1791,7 @@ void SubjectServiceNode::setComponent()
 	  DEBTRACE("SubjectServiceNode::setComponent : get already created subject for compo = " <<compo.c_str());
           subCompo = GuiContext::getCurrent()->_mapOfSubjectComponent[instance];
         }       
-      assert(subCompo);
+      YASSERT(subCompo);
       addSubjectReference(subCompo);
       if (_subRefComponent)
         subCompo->moveService(_subRefComponent);
@@ -2651,7 +2651,7 @@ SubjectDataPort::~SubjectDataPort()
   if (isDestructible())
     {
       Node* node = _dataPort->getNode();
-      assert(node);
+      YASSERT(node);
       ElementaryNode * father = dynamic_cast<ElementaryNode*>(node);
       if (father)
         {
@@ -2738,14 +2738,14 @@ bool SubjectDataPort::tryCreateLink(SubjectDataPort *subOutport, SubjectDataPort
 
   string outNodePos = "";
   SubjectNode *sno = dynamic_cast<SubjectNode*>(subOutport->getParent());
-  assert(sno);
+  YASSERT(sno);
   Node *outNode = sno->getNode();
   outNodePos = proc->getChildName(outNode);
   string outportName = subOutport->getName();
 
   string inNodePos = "";
   SubjectNode *sni = dynamic_cast<SubjectNode*>(subInport->getParent());
-  assert(sni);
+  YASSERT(sni);
   Node *inNode = sni->getNode();
   inNodePos = proc->getChildName(inNode);
   string inportName = subInport->getName();
@@ -2764,7 +2764,7 @@ bool SubjectDataPort::tryCreateLink(SubjectDataPort *subOutport, SubjectDataPort
         {
           ancestor = ancestor->getFather();
           scla = dynamic_cast<SubjectComposedNode*>(scla->getParent());
-          assert(scla);
+          YASSERT(scla);
         }
       DEBTRACE(scla->getName());
       scla->addSubjectLink(sno, subOutport, sni, subInport);
@@ -3047,14 +3047,14 @@ void SubjectLink::localClean()
     {
       DEBTRACE("clean link: " << _parent->getName() << " " << getName());
       SubjectComposedNode* father = dynamic_cast<SubjectComposedNode*>(_parent);
-      assert(father);
+      YASSERT(father);
       father->removeLink(this); // --- clean subjects first
       _cla = dynamic_cast<ComposedNode*>(father->getNode());
-      assert(_cla);
+      YASSERT(_cla);
       _outp = dynamic_cast<OutPort*>(_outPort->getPort());
-      assert(_outp);
+      YASSERT(_outp);
       _inp = dynamic_cast<InPort*>(_inPort->getPort());
-      assert(_inp);
+      YASSERT(_inp);
       if (isDestructible())
         _cla->edRemoveLink(_outp, _inp);
     }
@@ -3116,10 +3116,10 @@ void SubjectControlLink::localClean()
     {
       DEBTRACE("clean control link: " << _parent->getName() << " " << getName());
       SubjectComposedNode* father = dynamic_cast<SubjectComposedNode*>(_parent);
-      assert(father);
+      YASSERT(father);
       father->removeControlLink(this); // --- clean subjects first
       _cla = dynamic_cast<ComposedNode*>(father->getNode());
-      assert(_cla);
+      YASSERT(_cla);
     }
 }
 
@@ -3266,7 +3266,7 @@ void SubjectComponent::detachService(SubjectReference* reference)
 void SubjectComponent::moveService(SubjectReference* reference)
 {
   SubjectComponent* oldcomp = dynamic_cast<SubjectComponent*>(reference->getParent());
-  assert(oldcomp);
+  YASSERT(oldcomp);
 
   SubjectServiceNode* service = dynamic_cast<SubjectServiceNode*>(reference->getReference());
   oldcomp->removeSubServiceFromSet(service);
@@ -3371,7 +3371,7 @@ void SubjectContainer::detachComponent(SubjectReference* reference)
 void SubjectContainer::moveComponent(SubjectReference* reference)
 {
   SubjectContainer* oldcont = dynamic_cast<SubjectContainer*>(reference->getParent());
-  assert(oldcont);
+  YASSERT(oldcont);
   SubjectComponent* component = dynamic_cast<SubjectComponent*>(reference->getReference());
   _subComponentSet.insert(component);
   oldcont->removeSubComponentFromSet(component);

@@ -95,7 +95,7 @@ void GuiEditor::_createNode(YACS::ENGINE::Catalog* catalog,
   string name = service;
   Node *node =cnode->getNode();
   ComposedNode *father = dynamic_cast<ComposedNode*>(node);
-  assert(father);
+  YASSERT(father);
   list<Node*> children = father->edGetDirectDescendants();
   bool nameInUse = true;
   while (nameInUse)
@@ -177,7 +177,7 @@ void GuiEditor::CreateContainer()
 {
   DEBTRACE("GuiEditor::CreateContainer");
   SubjectProc *sproc = QtGuiContext::getQtCurrent()->getSubjectProc();
-  assert(sproc);
+  YASSERT(sproc);
   SubjectContainer *scont = 0;
   while (!scont)
     {

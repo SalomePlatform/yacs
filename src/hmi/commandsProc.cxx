@@ -224,7 +224,7 @@ bool CommandAddNodeFromCatalog::localExecute()
               (dynamic_cast<YACS::ENGINE::OptimizerLoop*>(father))->edSetNode(son);
               break;
             default:
-              assert(0);
+              YASSERT(0);
             }
         }
       _node = son;
@@ -1360,7 +1360,7 @@ bool CommandAddContainer::localExecute()
           if (proc->containerMap.count(_containerToClone))
             {
               Container *ref = proc->containerMap[_containerToClone];
-              assert(ref);
+              YASSERT(ref);
               container->setProperties(ref->getProperties());
             }
           else
@@ -1408,7 +1408,7 @@ bool CommandSetContainerProperties::localExecute()
       if (proc->containerMap.count(_container))
         {
           Container *ref = proc->containerMap[_container];
-          assert(ref);
+          YASSERT(ref);
           ref->setProperties(_properties);
           return true;
         }

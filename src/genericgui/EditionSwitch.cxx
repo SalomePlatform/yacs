@@ -89,7 +89,7 @@ void EditionSwitch::onModifySelect(const QString &text)
 {
   DEBTRACE("EditionSwitch::onModifySelect " << text.toStdString());
   SubjectSwitch *sswitch = dynamic_cast<SubjectSwitch*>(_subject);
-  assert(sswitch);
+  YASSERT(sswitch);
   sswitch->setSelect(text.toStdString());
 }
 
@@ -120,16 +120,16 @@ void EditionSwitch::onCommitData(QWidget *editor)
 {
   DEBTRACE("EditionSwitch::onCommitData " << editor);
   GenericEditor* gedit = dynamic_cast<GenericEditor*>(editor);
-  assert(gedit);
+  YASSERT(gedit);
   QString val = gedit->GetStrValue();
   DEBTRACE(val.toStdString());
   Subject *sub = gedit->getSubject();
-  assert(sub);
+  YASSERT(sub);
   SubjectNode *snode = dynamic_cast<SubjectNode*>(sub);
-  assert(snode);
+  YASSERT(snode);
   sub = snode->getParent();
   SubjectSwitch *sswitch = dynamic_cast<SubjectSwitch*>(sub);
-  assert(sswitch);
+  YASSERT(sswitch);
   bool isOk = sswitch->setCase(val.toStdString(), snode);
   if (_valueDelegate)
     _valueDelegate->setResultEditing(editor, isOk);

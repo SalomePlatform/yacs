@@ -146,7 +146,7 @@ void CanvasItem::select(bool isSelected)
           DEBTRACE("previous: " << citem);
           if (citem != this)
             {
-              assert(citem);
+              YASSERT(citem);
               citem->select(false);
             }
         }
@@ -192,7 +192,7 @@ int CanvasItem::getOfy()
   if (_parent)
     {
       ComposedNodeCanvasItem* parent = dynamic_cast<ComposedNodeCanvasItem*>(_parent);
-      assert(parent);
+      YASSERT(parent);
       oy = parent->getOfyChild(this);
     }
   _ofy = oy;

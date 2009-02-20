@@ -63,7 +63,7 @@ void GuiObserver_i::notifyObserver(CORBA::Long numid, const char* event)
 void GuiObserver_i::setConversion()
 {
   DEBTRACE("GuiObserver_i::setConversion");
-  assert(!CORBA::is_nil(_engineProc));
+  YASSERT(!CORBA::is_nil(_engineProc));
   YACS_ORB::stringArray_var engineNames;
   YACS_ORB::longArray_var engineIds;
   //DEBTRACE("---");

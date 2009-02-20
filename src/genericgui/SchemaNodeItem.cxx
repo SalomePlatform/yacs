@@ -100,14 +100,14 @@ void SchemaNodeItem::update(GuiEvent event, int type, Subject* son)
       break;
     case YACS::HMI::ORDER:
       {
-        assert(QtGuiContext::getQtCurrent()->_mapOfSchemaItem.count(son));
+        YASSERT(QtGuiContext::getQtCurrent()->_mapOfSchemaItem.count(son));
         //bool isInput = dynamic_cast<SubjectInputPort*>(son);
 
         snode = dynamic_cast<SubjectNode*>(_subject);
-        assert(snode);
+        YASSERT(snode);
         Node* node = snode->getNode();
         ElementaryNode* father = dynamic_cast<ElementaryNode*>(node);
-        assert(father);
+        YASSERT(father);
         int nbChildren = childCount();
 
         model->beginRemoveRows(modelIndex(), 0, nbChildren-1);
@@ -148,9 +148,9 @@ void SchemaNodeItem::update(GuiEvent event, int type, Subject* son)
       break;
     case YACS::HMI::UPDATE:
       snode = dynamic_cast<SubjectNode*>(_subject);
-      assert(snode);
+      YASSERT(snode);
       node = snode->getNode();
-      assert(node);
+      YASSERT(node);
       switch (node->getState())
         {
         case YACS::INVALID:
@@ -217,9 +217,9 @@ void SchemaNodeItem::toggleState()
   DEBTRACE("SchemaNodeItem::toggleState");
   SchemaItem::toggleState();
   GuiExecutor *guiExec = QtGuiContext::getQtCurrent()->getGuiExecutor();
-  assert(guiExec);
+  YASSERT(guiExec);
   SubjectNode *subjectNode = dynamic_cast<SubjectNode*>(getSubject());
-  assert(subjectNode);
+  YASSERT(subjectNode);
   string nodeName = QtGuiContext::getQtCurrent()->getProc()->getChildName(subjectNode->getNode());
   DEBTRACE("nodeName=" << nodeName);
 
@@ -265,9 +265,9 @@ void SchemaNodeItem::setCaseValue()
 
   SchemaModel *model = QtGuiContext::getQtCurrent()->getSchemaModel();
   Switch *aSwitch = dynamic_cast<Switch*>(sSwitch->getNode());
-  assert(aSwitch);
+  YASSERT(aSwitch);
   SubjectNode *sNode = dynamic_cast<SubjectNode*>(_subject);
-  assert(sNode);
+  YASSERT(sNode);
   int rank = aSwitch->getRankOfNode(sNode->getNode());
   if (rank == Switch::ID_FOR_DEFAULT_NODE)
     _itemData.replace(YValue, "default");

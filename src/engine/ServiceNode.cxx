@@ -134,7 +134,7 @@ void ServiceNode::setComponent(ComponentInstance* compo) throw(Exception)
           }
       _component->incrRef();
     }
-  //assert(_component);
+  //YASSERT(_component);
 }
 
 //! Associate a new component instance to this service node
@@ -153,7 +153,7 @@ void ServiceNode::setRef(const std::string& ref)
       //Don't forget to unassociate
     }
   _component= getRuntime()->createComponentInstance(ref,getKind());
-  assert(_component);
+  YASSERT(_component);
 }
 
 std::string ServiceNode::getRef()

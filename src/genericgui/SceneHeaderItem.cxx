@@ -41,7 +41,7 @@ SceneHeaderItem::SceneHeaderItem(QGraphicsScene *scene, SceneItem *parent,
                                  QString label)
   : SceneItem(scene, parent, label)
 {
-  assert(_parent);
+  YASSERT(_parent);
   _height = 25;
   _width = _parent->getInternWidth();
   _text=0;

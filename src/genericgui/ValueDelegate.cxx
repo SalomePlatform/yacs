@@ -268,7 +268,7 @@ void ValueDelegate::setEditorData(QWidget *editor,
 {
   DEBTRACE("ValueDelegate::setEditorData");
   GenericEditor* gedit = dynamic_cast<GenericEditor*>(editor);
-  assert(gedit);
+  YASSERT(gedit);
   QString edited = gedit->GetStrValue();
   DEBTRACE(edited.toStdString());
   Subject *sub = gedit->getSubject();
@@ -294,7 +294,7 @@ void ValueDelegate::setModelData(QWidget *editor,
 {
   DEBTRACE("ValueDelegate::setModelData");
   GenericEditor* gedit = dynamic_cast<GenericEditor*>(editor);
-  assert(gedit);
+  YASSERT(gedit);
   QString value = gedit->GetStrValue();
   DEBTRACE(value.toStdString());
   //model->setData(index, value, Qt::EditRole); // real set done by update
@@ -317,7 +317,7 @@ void ValueDelegate::setResultEditing(QWidget *editor, bool isOk)
 {
   DEBTRACE("ValueDelegate::setResultEditing " << isOk);
   GenericEditor* gedit = dynamic_cast<GenericEditor*>(editor);
-  assert(gedit);
+  YASSERT(gedit);
   Subject *sub = gedit->getSubject();
   string val = gedit->GetStrValue().toStdString();
   DEBTRACE(sub->getName() << " " << val);

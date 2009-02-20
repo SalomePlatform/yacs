@@ -131,7 +131,7 @@ void RuntimeSALOME::setRuntime(long flags) // singleton creation (not thread saf
 
 RuntimeSALOME* YACS::ENGINE::getSALOMERuntime()
 {
-  assert(Runtime::_singleton);
+  YASSERT(Runtime::_singleton);
   return dynamic_cast< RuntimeSALOME* >(Runtime::_singleton);
 }
 
@@ -141,7 +141,7 @@ RuntimeSALOME* YACS::ENGINE::getSALOMERuntime()
   
 RuntimeSALOME::RuntimeSALOME()
 {
-  assert(0);
+  YASSERT(0);
 }
 
 void RuntimeSALOME::initBuiltins()

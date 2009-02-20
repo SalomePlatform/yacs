@@ -41,7 +41,7 @@ EditionNode::EditionNode(Subject* subject,
     _wid->le_name->setReadOnly(false);
 
   _subjectNode = dynamic_cast<SubjectNode*>(_subject);
-  assert(_subjectNode);
+  YASSERT(_subjectNode);
 
   _le_fullName = 0;
   if (!dynamic_cast<SubjectProc*>(_subject))

@@ -170,7 +170,7 @@ ItemEdition::ItemEdition(Subject* subject,
 
   _stackId = QtGuiContext::getQtCurrent()->getStackedWidget()->addWidget(this);
   DEBTRACE("_stackId " << _stackId);
-  assert(!QtGuiContext::getQtCurrent()->_mapOfEditionItem.count(_subject));
+  YASSERT(!QtGuiContext::getQtCurrent()->_mapOfEditionItem.count(_subject));
   QtGuiContext::getQtCurrent()->_mapOfEditionItem[_subject] = _stackId;
   //QtGuiContext::getQtCurrent()->getStackedWidget()->raiseWidget(_stackId);
 }

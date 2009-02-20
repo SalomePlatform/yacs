@@ -231,7 +231,7 @@ void FormContainer::onModified()
   QStackedWidget *widStack = QtGuiContext::getQtCurrent()->getStackedWidget();
   QWidget *widget = widStack->widget(idEd);
   ItemEdition *item = dynamic_cast<ItemEdition*>(widget);
-  assert(item);
+  YASSERT(item);
   item->setEdited(true);
 }
 
@@ -255,7 +255,7 @@ void FormContainer::onModifyName(const QString &text)
   DEBTRACE("onModifyName " << text.toStdString());
   SubjectContainer *scont =
     QtGuiContext::getQtCurrent()->_mapOfSubjectContainer[_container];
-  assert(scont);
+  YASSERT(scont);
   string name = scont->getName();
   if (name != text.toStdString())
     onModified();
@@ -412,7 +412,7 @@ bool FormContainer::onApply()
 {
   SubjectContainer *scont =
     QtGuiContext::getQtCurrent()->_mapOfSubjectContainer[_container];
-  assert(scont);
+  YASSERT(scont);
   bool ret = scont->setProperties(_properties);
   DEBTRACE(ret);
   if (ret) ret = scont->setName(le_name->text().toStdString());

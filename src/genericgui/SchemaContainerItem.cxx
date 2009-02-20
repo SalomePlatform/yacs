@@ -50,7 +50,7 @@ void SchemaContainerItem::update(GuiEvent event, int type, Subject* son)
         DEBTRACE("ADDCHILDREF ");
         SchemaModel *model = QtGuiContext::getQtCurrent()->getSchemaModel();
         SubjectReference *ref = dynamic_cast<SubjectReference*>(son);
-        assert(ref);
+        YASSERT(ref);
         DEBTRACE("ADDCHILDREF " << ref->getReference()->getName());
         addComponentInstance(ref->getReference());
       }
@@ -67,7 +67,7 @@ void SchemaContainerItem::update(GuiEvent event, int type, Subject* son)
         DEBTRACE("CUT on " << getSubject()->getName());
         SchemaModel *model = QtGuiContext::getQtCurrent()->getSchemaModel();
         SubjectReference *ref = dynamic_cast<SubjectReference*>(son);
-        assert(ref);
+        YASSERT(ref);
         DEBTRACE("CUT " << ref->getReference()->getName());
         SchemaItem *toMove = QtGuiContext::getQtCurrent()->_mapOfSchemaItem[ref->getReference()];
 
@@ -83,7 +83,7 @@ void SchemaContainerItem::update(GuiEvent event, int type, Subject* son)
         DEBTRACE("PASTE on " << getSubject()->getName());
         SchemaModel *model = QtGuiContext::getQtCurrent()->getSchemaModel();
         SubjectReference *ref = dynamic_cast<SubjectReference*>(son);
-        assert(ref);
+        YASSERT(ref);
         DEBTRACE("PASTE " << ref->getReference()->getName());
         SchemaItem *toPaste = QtGuiContext::getQtCurrent()->_mapOfSchemaItem[ref->getReference()];
 

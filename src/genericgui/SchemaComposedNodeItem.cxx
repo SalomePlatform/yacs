@@ -93,7 +93,7 @@ SchemaComposedNodeItem::SchemaComposedNodeItem(SchemaItem *parent, QString label
     }
 
   SubjectComposedNode *scn = dynamic_cast<SubjectComposedNode*>(subject);
-  assert(scn);
+  YASSERT(scn);
   if (scn->hasValue())
     {
       _itemData.replace(YType, scn->getValue().c_str());
@@ -180,19 +180,19 @@ void SchemaComposedNodeItem::update(GuiEvent event, int type, Subject* son)
           break;
         case YACS::HMI::COMPONENT:
           {
-            assert(_dirContainersItem);
+            YASSERT(_dirContainersItem);
             _dirContainersItem->addComponentItem(son);
           }
           break;
         case YACS::HMI::CONTAINER:
           {
-            assert(_dirContainersItem);
+            YASSERT(_dirContainersItem);
             _dirContainersItem->addContainerItem(son);
           }
           break;
         case YACS::HMI::DATATYPE:
           {
-            assert(_dirTypesItem);
+            YASSERT(_dirTypesItem);
             _dirTypesItem->addTypeItem(son);
           }
           break;
@@ -202,9 +202,9 @@ void SchemaComposedNodeItem::update(GuiEvent event, int type, Subject* son)
       break;
     case YACS::HMI::UPDATE:
       snode = dynamic_cast<SubjectNode*>(_subject);
-      assert(snode);
+      YASSERT(snode);
       node = snode->getNode();
-      assert(node);
+      YASSERT(node);
       switch (node->getState())
         {
         case YACS::INVALID:
@@ -222,7 +222,7 @@ void SchemaComposedNodeItem::update(GuiEvent event, int type, Subject* son)
     case YACS::HMI::ADDLINK:
     case YACS::HMI::ADDCONTROLLINK:
           {
-            assert(_dirLinksItem);
+            YASSERT(_dirLinksItem);
             _dirLinksItem->addLinkItem(son);
           }
       break;
@@ -296,9 +296,9 @@ void SchemaComposedNodeItem::update(GuiEvent event, int type, Subject* son)
 std::list<YACS::ENGINE::Node*> SchemaComposedNodeItem::getDirectDescendants() const
 {
   SubjectNode* SNode = dynamic_cast<SubjectNode*>(_subject);
-  assert(SNode);
+  YASSERT(SNode);
   ComposedNode* CNode = dynamic_cast<ComposedNode*>(SNode->getNode());
-  assert(CNode);
+  YASSERT(CNode);
   return CNode->edGetDirectDescendants();
 }
 
@@ -394,9 +394,9 @@ void SchemaComposedNodeItem::setCaseValue()
 
   SchemaModel *model = QtGuiContext::getQtCurrent()->getSchemaModel();
   Switch *aSwitch = dynamic_cast<Switch*>(sSwitch->getNode());
-  assert(aSwitch);
+  YASSERT(aSwitch);
   SubjectNode *sNode = dynamic_cast<SubjectNode*>(_subject);
-  assert(sNode);
+  YASSERT(sNode);
   int rank = aSwitch->getRankOfNode(sNode->getNode());
   if (rank == Switch::ID_FOR_DEFAULT_NODE)
     _itemData.replace(YValue, "default");

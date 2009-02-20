@@ -921,7 +921,7 @@ void editTree::select()
             if (dynamic_cast<SubjectInputPort*>(sub) || dynamic_cast<SubjectInputDataStreamPort*>(sub))
               {
                 SubjectDataPort *sdp = dynamic_cast<SubjectDataPort*>(sub);
-                assert(sdp);
+                YASSERT(sdp);
                 SubjectDataPort::tryCreateLink(_selectedSubjectOutPort, sdp);
                 _selectedSubjectOutPort = 0;
               }

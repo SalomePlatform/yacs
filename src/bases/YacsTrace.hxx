@@ -19,13 +19,19 @@
 #ifndef __YACSTRACE_HXX__
 #define __YACSTRACE_HXX__
 
+#include "Exception.hxx"
 #include <iostream>
+#include <sstream>
 
 #ifdef _DEVDEBUG_
 #define DEBTRACE(msg) {std::cerr<<std::flush<<__FILE__<<" ["<<__LINE__<<"] : "<<msg<<std::endl<<std::flush;}
 #else
 #define DEBTRACE(msg)
 #endif
+
+//! YASSERT macro is always defined, used like assert, but throw a YACS::Exception instead of abort
+
+#define YASSERT(val) {if(!(val)){std::stringstream mess; mess<<__FILE__<<" ["<<__LINE__<<"] : assertion "<<#val<<" failed"; throw YACS::Exception(mess.str());}}
 
 void AttachDebugger();
 

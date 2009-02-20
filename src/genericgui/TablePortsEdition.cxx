@@ -140,7 +140,7 @@ void TablePortsEdition::upOrDown(int isUp)
     {
       Subject *sub = item->parent()->getSubject();
       SubjectElementaryNode* sen = dynamic_cast<SubjectElementaryNode*>(sub);
-      assert(sen);
+      YASSERT(sen);
       sen->OrderDataPorts(spToMove,isUp);
     }
 }
@@ -170,7 +170,7 @@ void TablePortsEdition::on_pb_insert_clicked()
 
   sub = item->parent()->getSubject();
   SubjectElementaryNode* sen = dynamic_cast<SubjectElementaryNode*>(sub);
-  assert(sen);
+  YASSERT(sen);
   ElementaryNode* father = dynamic_cast<ElementaryNode*>(sen->getNode());
 
   if (isInput)
@@ -218,7 +218,7 @@ void TablePortsEdition::on_cb_insert_activated(const QString& text)
   YACS::ENGINE::Catalog *catalog =
     QtGuiContext::getQtCurrent()->getGMain()->getCatalogWidget()->getCatalogFromType(portType);
   if (!catalog) catalog = QtGuiContext::getQtCurrent()->getCurrentCatalog();
-  assert(catalog);
+  YASSERT(catalog);
   GuiEditor *editor = QtGuiContext::getQtCurrent()->getGMain()->_guiEditor;
   SubjectDataPort * sdp = 0;
   if (_inPorts)

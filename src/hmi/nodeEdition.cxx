@@ -167,7 +167,7 @@ NodeEdition::NodeEdition(Subject* subject,
         _liFuncName->setText(_funcName);
         connect(_liFuncName, SIGNAL(textChanged(const QString&)), this, SLOT(onFuncNameModified(const QString&)));
       }
-    else assert(0);
+    else YASSERT(0);
   if (_subInlineNode = dynamic_cast<SubjectInlineNode*>(_subject))
     {
       _haveScript = true;

@@ -399,9 +399,9 @@ void SceneComposedNodeItem::arrangeNodes(bool isRecursive)
   DEBTRACE("SceneComposedItem::arrangeNodes " << isRecursive);
 
   SubjectComposedNode *scnode = dynamic_cast<SubjectComposedNode*>(getSubject());
-  assert(scnode);
+  YASSERT(scnode);
   ComposedNode *cnode = dynamic_cast<ComposedNode*>(scnode->getNode());
-  assert(cnode);
+  YASSERT(cnode);
 
   if (isRecursive)
     {

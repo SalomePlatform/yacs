@@ -51,9 +51,9 @@ void SchemaComponentItem::update(GuiEvent event, int type, Subject* son)
         DEBTRACE("ADDCHILDREF ");
         model = QtGuiContext::getQtCurrent()->getSchemaModel();
         SubjectReference *ref = dynamic_cast<SubjectReference*>(son);
-        assert(ref);
+        YASSERT(ref);
         SubjectServiceNode *service = dynamic_cast<SubjectServiceNode*>(ref->getReference());
-        assert(service);
+        YASSERT(service);
         YACS::ENGINE::Proc* proc = GuiContext::getCurrent()->getProc();
         string serviceName = proc->getChildName(service->getNode());
         DEBTRACE("ADDCHILDREF " << ref->getReference()->getName());
@@ -78,7 +78,7 @@ void SchemaComponentItem::update(GuiEvent event, int type, Subject* son)
         DEBTRACE("CUT on " << getSubject()->getName());
         SchemaModel *model = QtGuiContext::getQtCurrent()->getSchemaModel();
         SubjectReference *ref = dynamic_cast<SubjectReference*>(son);
-        assert(ref);
+        YASSERT(ref);
         DEBTRACE("CUT " << ref->getReference()->getName());
         SchemaItem *toMove = QtGuiContext::getQtCurrent()->_mapOfSchemaItem[ref];
 
@@ -94,7 +94,7 @@ void SchemaComponentItem::update(GuiEvent event, int type, Subject* son)
         DEBTRACE("PASTE on " << getSubject()->getName());
         SchemaModel *model = QtGuiContext::getQtCurrent()->getSchemaModel();
         SubjectReference *ref = dynamic_cast<SubjectReference*>(son);
-        assert(ref);
+        YASSERT(ref);
         DEBTRACE("PASTE " << ref->getReference()->getName());
         SchemaItem *toPaste = QtGuiContext::getQtCurrent()->_mapOfSchemaItem[ref];
 

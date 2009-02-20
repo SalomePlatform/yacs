@@ -83,10 +83,10 @@ EditionSalomeNode::EditionSalomeNode(Subject* subject,
   _wid->gridLayout1->addLayout(_hbl_method, _wid->gridLayout1->rowCount(), 0, 1, 1);
   _la_method->setText("Method:");
 //   SubjectServiceNode *ssn = dynamic_cast<SubjectServiceNode*>(_subject);
-//   assert(ssn);
+//   YASSERT(ssn);
   _servNode =
     dynamic_cast<YACS::ENGINE::ServiceNode*>(_subElemNode->getNode());
-  assert(_servNode);
+  YASSERT(_servNode);
   _le_method->setText((_servNode->getMethod()).c_str());
   _le_method->setReadOnly(true);
 
@@ -111,7 +111,7 @@ void EditionSalomeNode::update(GuiEvent event, int type, Subject* son)
     case ADDREF:
       DEBTRACE("ADDREF");
       subref = dynamic_cast<SubjectReference*>(son);
-      assert(subref);
+      YASSERT(subref);
       DEBTRACE(subref->getName() << " " << subref->getReference()->getName());
       fillComponentPanel();
       break;
@@ -198,7 +198,7 @@ void EditionSalomeNode::changeInstance(int index)
 
   if (newCompoInst && (newCompoInst != oldCompoInst))
     {
-      assert(GuiContext::getCurrent()->_mapOfSubjectComponent.count(newCompoInst));
+      YASSERT(GuiContext::getCurrent()->_mapOfSubjectComponent.count(newCompoInst));
       SubjectServiceNode *ssn = dynamic_cast<SubjectServiceNode*>(_subject);
       ssn->associateToComponent(GuiContext::getCurrent()->_mapOfSubjectComponent[newCompoInst]);
     }
@@ -220,13 +220,13 @@ void EditionSalomeNode::changeContainer(int index)
       DEBTRACE("-------------> not found : " << contName);
       return;
     }
-  assert(GuiContext::getCurrent()->_mapOfSubjectContainer.count(newContainer));
+  YASSERT(GuiContext::getCurrent()->_mapOfSubjectContainer.count(newContainer));
   SubjectContainer *scnt = GuiContext::getCurrent()->_mapOfSubjectContainer[newContainer];
 
   SubjectServiceNode *ssn = dynamic_cast<SubjectServiceNode*>(_subject);
   SubjectComponent *sco =
     dynamic_cast<SubjectComponent*>(ssn->getSubjectReference()->getReference());
-  assert (sco);
+  YASSERT(sco);
   sco->associateToContainer(scnt);
 }
 

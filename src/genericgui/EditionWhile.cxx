@@ -53,7 +53,7 @@ void EditionWhile::onModifyCondition(const QString &text)
 {
   DEBTRACE("EditionWhile::onModifyCondition " << text.toStdString());
   SubjectWhileLoop *swl = dynamic_cast<SubjectWhileLoop*>(_subject);
-  assert(swl);
+  YASSERT(swl);
   swl->setCondition(text.toStdString());
 }
 

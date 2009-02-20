@@ -134,13 +134,13 @@ void TreeView::onCommitData(QWidget *editor)
 {
   DEBTRACE("EditionElementaryNode::onCommitData " << editor);
   GenericEditor* gedit = dynamic_cast<GenericEditor*>(editor);
-  assert(gedit);
+  YASSERT(gedit);
   QString val = gedit->GetStrValue();
   DEBTRACE(val.toStdString());
   Subject *sub = gedit->getSubject();
-  assert(sub);
+  YASSERT(sub);
   SubjectDataPort *sdp = dynamic_cast<SubjectDataPort*>(sub);
-  assert(sdp);
+  YASSERT(sdp);
   string strval = val.toStdString();
   bool isOk = false;
 

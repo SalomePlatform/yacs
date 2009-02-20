@@ -62,10 +62,10 @@ int SuitWrapper::AssociateViewToWindow(QGraphicsView* gView, QWidget* viewWindow
 {
   SalomeWrap_Module* module = static_cast<SalomeWrap_Module*>(_wrapped);
   QxScene_ViewWindow *svw = dynamic_cast<QxScene_ViewWindow*>(viewWindow);
-  assert(svw);
+  YASSERT(svw);
   int studyId = module->AssociateViewToWindow(gView, svw);
   WrapGraphicsView* wgv = dynamic_cast<WrapGraphicsView*>(gView);
-  assert(wgv);
+  YASSERT(wgv);
   QObject::disconnect(svw->toolMgr()->action(QxScene_ViewWindow::FitAllId),
                       SIGNAL(triggered(bool)),
                       svw, SLOT(onViewFitAll()));

@@ -59,13 +59,13 @@ void VisitorSaveGuiSchema::writePresentation()
     Node* node = *iter;
     SubjectNode * snode = QtGuiContext::getQtCurrent()->_mapOfSubjectNode[node];
     SceneItem* item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[snode];
-    assert(item);
+    YASSERT(item);
     writeItem(_proc->getChildName(node), item);
   }
 
   SubjectNode * sproc = QtGuiContext::getQtCurrent()->getSubjectProc();
   SceneItem* item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[sproc];
-  assert(item);
+  YASSERT(item);
   writeItem("__ROOT__", item);
 }
 

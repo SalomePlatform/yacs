@@ -45,7 +45,7 @@ void SchemaDirTypesItem::addTypeItem(Subject* subject)
   SchemaModel *model = QtGuiContext::getQtCurrent()->getSchemaModel();
   int nbsons = childCount();
   SubjectDataType *sdt = dynamic_cast<SubjectDataType*>(subject);
-  assert(sdt);
+  YASSERT(sdt);
   model->beginInsertRows(modelIndex(), nbsons, nbsons);
   SchemaItem *item = new SchemaDataTypeItem(this,
                                             sdt->getAlias().c_str(),

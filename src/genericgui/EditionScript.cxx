@@ -75,7 +75,7 @@ EditionScript::EditionScript(Subject* subject,
   _sci = 0;
 
   _subInlineNode = dynamic_cast<SubjectInlineNode*>(_subject);
-  assert(_subInlineNode);
+  YASSERT(_subInlineNode);
 
   createTablePorts();
   setEditablePorts(true);

@@ -132,7 +132,7 @@ void VisitorSaveSalomeSchema::writeDataNodeParameters(DataNode *node)
       _out << indent(depth) << "<parameter name=\"" << (*it)->getName() << "\" type=\"" 
            << (*it)->edGetType()->name() << "\">" << endl;
       OutputPresetPort *outp = dynamic_cast<OutputPresetPort*>(*it);
-      assert(outp);
+      YASSERT(outp);
       _out << indent(depth+1) << outp->getData();
       _out << indent(depth) << "</parameter>" << endl;
     }
@@ -147,7 +147,7 @@ void VisitorSaveSalomeSchema::writeStudyInNodeParameters(DataNode *node)
       _out << indent(depth) << "<parameter name=\"" << (*it)->getName() << "\" type=\"" 
            << (*it)->edGetType()->name() << "\" ref=\"";
       OutputStudyPort *outp = dynamic_cast<OutputStudyPort*>(*it);
-      assert(outp);
+      YASSERT(outp);
       _out << outp->getData() << "\"/>" << endl;
     }
 }
@@ -172,7 +172,7 @@ void VisitorSaveSalomeSchema::writeStudyOutNodeParameters(DataNode *node)
       _out << indent(depth) << "<parameter name=\"" << (*it)->getName() << "\" type=\"" 
            << (*it)->edGetType()->name() << "\" ref=\"";
       InputStudyPort *inp = dynamic_cast<InputStudyPort*>(*it);
-      assert(inp);
+      YASSERT(inp);
       _out << inp->getData() << "\"/>" << endl;
     }
 }

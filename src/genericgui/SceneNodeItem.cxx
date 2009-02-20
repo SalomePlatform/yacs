@@ -290,9 +290,9 @@ void SceneNodeItem::adjustHeader()
  void SceneNodeItem::updateState()
 {
   SubjectNode *snode = dynamic_cast<SubjectNode*>(_subject);
-  assert(snode);
+  YASSERT(snode);
   Node *node = snode->getNode();
-  assert(node);
+  YASSERT(node);
   switch (node->getState())
     {
     case YACS::INVALID:

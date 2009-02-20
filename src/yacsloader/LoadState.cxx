@@ -231,7 +231,7 @@ void nodeParser::onEnd   (const XML_Char* name)
   else 
     node = _p->getChildByName(nodeName);
 
-  assert(_nodeStateValue.find(nodeState) != _nodeStateValue.end());
+  YASSERT(_nodeStateValue.find(nodeState) != _nodeStateValue.end());
   YACS::ENGINE::StateLoader(node, _nodeStateValue[nodeState]);
 
   if (nodeType == "forLoop")
@@ -346,7 +346,7 @@ void attrParser::charData(std::string data)
 void attrParser::onEnd   (const XML_Char* name)
 {
   // cerr << "end attrParser " << name << " " << _stackParser.size() << endl;
-  assert(_father);
+  YASSERT(_father);
   _father->setAttribute((char*)name, _attrValue);
   stateParser::onEnd(name);
 }
@@ -358,7 +358,7 @@ void portParser::init(const xmlChar** p, xmlParserBase* father)
   DEBTRACE("portParser::init()");
   _state = XMLINPORT;
   _father = father;
-  assert( dynamic_cast<nodeParser*> (father));
+  YASSERT( dynamic_cast<nodeParser*> (father));
   _stackState.push(_state);
   if (p) getAttributes(p);
 }
@@ -399,7 +399,7 @@ void portParser::onEnd   (const XML_Char* name)
   if (nodeType == "elementaryNode")
     {
       ElementaryNode* eNode = dynamic_cast<ElementaryNode*>(node);
-      assert(eNode);
+      YASSERT(eNode);
       InputPort *port = eNode->getInputPort(_mapAttrib["name"]);
       if(_data != "")
         port->edInit("XML",_data.c_str());
@@ -478,7 +478,7 @@ void valueParser::onEnd   (const XML_Char* name)
   string elem = (char *) name;
   //if (elem == "value" || elem == "data" || elem == "array")
   stateParser::onEnd(name);
-  //else assert(0); //DEBTRACE("valueParser::onEnd " << elem);
+  //else YASSERT(0); //DEBTRACE("valueParser::onEnd " << elem);
 }
 
 // ----------------------------------------------------------------------------

@@ -118,7 +118,7 @@ bool Yacsgui::deactivateModule( SUIT_Study* theStudy )
   _genericGui->showDockWidgets(false);
 
   SUIT_ViewManager *svm = getApp()->getViewManager(QxScene_Viewer::Type(), true);
-  assert(svm);
+  YASSERT(svm);
   SUIT_ViewWindow* svw = svm->getActiveView();
   QxScene_ViewWindow *aView = 0;
   if (svw) aView = dynamic_cast<QxScene_ViewWindow*>(svw);
@@ -187,7 +187,7 @@ void Yacsgui::onWindowActivated( SUIT_ViewWindow* svw)
   connect(viewWindow, SIGNAL( closing( SUIT_ViewWindow* ) ),
           this, SLOT(onWindowClosed( SUIT_ViewWindow* )) );
 
-  assert(_genericGui);
+  YASSERT(_genericGui);
   _genericGui->switchContext(viewWindow);
 
   if (_selectFromTree) return;
@@ -204,7 +204,7 @@ void Yacsgui::onWindowClosed( SUIT_ViewWindow* svw)
 void Yacsgui::onTryClose(bool &isClosed, QxScene_ViewWindow* window)
 {
   DEBTRACE("Yacsgui::onTryClose");
-  assert(_genericGui);
+  YASSERT(_genericGui);
   isClosed = _genericGui->closeContext(window);
 }
 

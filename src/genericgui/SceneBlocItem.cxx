@@ -75,9 +75,9 @@ void SceneBlocItem::arrangeChildNodes()
   DEBTRACE("SceneBlocItem::arrangeChildNodes");
 
   SubjectComposedNode *scnode = dynamic_cast<SubjectComposedNode*>(getSubject());
-  assert(scnode);
+  YASSERT(scnode);
   ComposedNode *cnode = dynamic_cast<ComposedNode*>(scnode->getNode());
-  assert(cnode);
+  YASSERT(cnode);
 
   // ---- Create a graphviz context
 
@@ -310,7 +310,7 @@ void SceneBlocItem::arrangeCanvasNodes(YACS::ENGINE::ComposedNode *cnode)
   SubjectNode* subCompo = GuiContext::getCurrent()->_mapOfSubjectNode[cnode];
   SceneItem* sci = QtGuiContext::getQtCurrent()->_mapOfSceneItem[subCompo];
   SceneComposedNodeItem *sceneCompo = dynamic_cast<SceneComposedNodeItem*>(sci);
-  assert(sceneCompo);
+  YASSERT(sceneCompo);
   qreal yHead = sceneCompo->getHeaderBottom() + sceneCompo->getMargin() + sceneCompo->getNml();
   qreal xOffset = sceneCompo->getMargin() + sceneCompo->getNml();
 
