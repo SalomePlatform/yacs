@@ -1663,12 +1663,10 @@ void GenericGui::onCleanOnExit()
 {
   DEBTRACE("GenericGui::onCleanOnExit");
   int studyId = _wrapper->activeStudyId();
-  set<QtGuiContext*> setcpy = QtGuiContext::_setOfContext;
-  set<QtGuiContext*>::iterator it = setcpy.begin();
-  for ( ; it != setcpy.end(); ++it)
-    if ((*it)->getStudyId() == studyId)
-      {
-        QtGuiContext::setQtCurrent(*it);
-        delete(*it);
-      }
+  map<QWidget*, YACS::HMI::QtGuiContext*> mapViewContextCopy = _mapViewContext;
+  map<QWidget*, YACS::HMI::QtGuiContext*>::iterator it = mapViewContextCopy.begin();
+  for (; it != mapViewContextCopy.end(); ++it)
+    {
+      closeContext((*it).first);
+    }
 }
