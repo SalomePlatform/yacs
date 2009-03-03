@@ -839,6 +839,7 @@ SubjectNode* SubjectComposedNode::addNode(YACS::ENGINE::Catalog *catalog,
 {
   DEBTRACE("SubjectComposedNode::addNode("<<catalog<<","<<compo<<","<<type<<","<<name<<")");
   SubjectNode* body = 0;
+  GuiContext::getCurrent()->_lastErrorMessage = "YACS Internal Error: SubjectComposedNode::addNode"; 
   return body;
 }
 
@@ -2214,7 +2215,11 @@ SubjectNode* SubjectForLoop::addNode(YACS::ENGINE::Catalog *catalog,
 {
   DEBTRACE("SubjectForLoop::addNode(catalog, compo, type, name)");
   SubjectNode* body = 0;
-  if (_body) return body;
+  if (_body)
+    {
+      GuiContext::getCurrent()->_lastErrorMessage = "If you need several nodes in a loop, put the nodes in a bloc"; 
+      return body;
+    }
   body = createNode(catalog, compo, type, name);
   return body;
 }
@@ -2289,7 +2294,11 @@ SubjectNode* SubjectWhileLoop::addNode(YACS::ENGINE::Catalog *catalog,
 {
   DEBTRACE("SubjectWhileLoop::addNode(catalog, compo, type, name)");
   SubjectNode* body = 0;
-  if (_body) return body;
+  if (_body)
+    {
+      GuiContext::getCurrent()->_lastErrorMessage = "If you need several nodes in a loop, put the nodes in a bloc"; 
+      return body;
+    }
   body = createNode(catalog, compo, type, name);
   return body;
 }
@@ -2370,7 +2379,11 @@ SubjectNode* SubjectSwitch::addNode(YACS::ENGINE::Catalog *catalog,
 {
   DEBTRACE("SubjectSwitch::addNode("<<catalog<<","<<compo<<","<<type<<","<<name<<","<<swCase<<","<<(int)replace<<")");
   SubjectNode* body = 0;
-  if (!replace && _bodyMap.count(swCase)) return body;
+  if (!replace && _bodyMap.count(swCase))
+    {
+      GuiContext::getCurrent()->_lastErrorMessage = "If you need several nodes in a switch case, put the nodes in a bloc"; 
+      return body;
+    }
   body = createNode(catalog, compo, type, name, swCase);
   return body;
 }
@@ -2537,7 +2550,11 @@ SubjectNode* SubjectForEachLoop::addNode(YACS::ENGINE::Catalog *catalog,
 {
   DEBTRACE("SubjectForEachLoop::addNode(catalog, compo, type, name)");
   SubjectNode* body = 0;
-  if (_body) return body;
+  if (_body)
+    {
+      GuiContext::getCurrent()->_lastErrorMessage = "If you need several nodes in a loop, put the nodes in a bloc"; 
+      return body;
+    }
   body = createNode(catalog, compo, type, name);
   return body;
 }
@@ -2626,7 +2643,11 @@ SubjectNode* SubjectOptimizerLoop::addNode(YACS::ENGINE::Catalog *catalog,
 {
   DEBTRACE("SubjectOptimizerLoop::addNode(catalog, compo, type, name)");
   SubjectNode* body = 0;
-  if (_body) return body;
+  if (_body)
+    {
+      GuiContext::getCurrent()->_lastErrorMessage = "If you need several nodes in a loop, put the nodes in a bloc"; 
+      return body;
+    }
   body = createNode(catalog, compo, type, name);
   return body;
 }
