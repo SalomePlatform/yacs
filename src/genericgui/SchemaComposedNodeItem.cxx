@@ -388,6 +388,7 @@ QString SchemaComposedNodeItem::getMimeFormat()
 
 void SchemaComposedNodeItem::setCaseValue()
 {
+  DEBTRACE("SchemaComposedNodeItem::setCaseValue");
   Subject *sub = _parentItem->getSubject();
   SubjectSwitch *sSwitch = dynamic_cast<SubjectSwitch*>(sub);
   if (!sSwitch) return;

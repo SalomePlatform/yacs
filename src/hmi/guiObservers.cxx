@@ -506,7 +506,9 @@ void SubjectNode::localClean()
 bool SubjectNode::reparent(Subject* parent)
 {
   DEBTRACE("SubjectNode::reparent");
-  Subject *sop = getParent(); // --- old parent subject
+  Subject *sub = getParent(); // --- old parent subject
+  SubjectComposedNode *sop = dynamic_cast<SubjectComposedNode*>(sub);
+  YASSERT(sop);
   SubjectComposedNode *snp = dynamic_cast<SubjectComposedNode*>(parent); // --- new parent subject
   if (!snp)
     {
@@ -1084,6 +1086,10 @@ void SubjectComposedNode::removeExternalControlLinks()
     }
 }   
 
+void SubjectComposedNode::houseKeepingAfterCutPaste(bool isCut, SubjectNode *son)
+{
+}
+
 /*!
  * loadLinks is used when an existing scheme has been loaded in memory, to create gui representation.
  * Gui representation of links is done after node representation (loadChildren).
@@ -1220,6 +1226,14 @@ SubjectNode* SubjectBloc::addNode(YACS::ENGINE::Catalog *catalog,
   DEBTRACE("SubjectBloc::addNode( " << catalog << ", " << compo << ", " << type << ", " << name << " )");
   SubjectNode* child = createNode(catalog, compo, type, name);
   return child;
+}
+
+void SubjectBloc::houseKeepingAfterCutPaste(bool isCut, SubjectNode *son)
+{
+  if (isCut)
+    removeNode(son);
+  else
+    completeChildrenSubjectList(son);
 }
 
 void SubjectBloc::completeChildrenSubjectList(SubjectNode *son)
@@ -2224,6 +2238,14 @@ SubjectNode* SubjectForLoop::addNode(YACS::ENGINE::Catalog *catalog,
   return body;
 }
 
+void SubjectForLoop::houseKeepingAfterCutPaste(bool isCut, SubjectNode *son)
+{
+  if (isCut)
+    _body = 0;
+  else
+    _body = son;
+}
+
 void SubjectForLoop::completeChildrenSubjectList(SubjectNode *son)
 {
   _body = son;
@@ -2301,6 +2323,14 @@ SubjectNode* SubjectWhileLoop::addNode(YACS::ENGINE::Catalog *catalog,
     }
   body = createNode(catalog, compo, type, name);
   return body;
+}
+
+void SubjectWhileLoop::houseKeepingAfterCutPaste(bool isCut, SubjectNode *son)
+{
+  if (isCut)
+    _body = 0;
+  else
+    _body = son;
 }
 
 void SubjectWhileLoop::completeChildrenSubjectList(SubjectNode *son)
@@ -2418,8 +2448,19 @@ std::map<int, SubjectNode*> SubjectSwitch::getBodyMap()
   return _bodyMap;
 }
 
+void SubjectSwitch::houseKeepingAfterCutPaste(bool isCut, SubjectNode *son)
+{
+  DEBTRACE("SubjectSwitch::houseKeepingAfterCutPaste");
+  if (isCut)
+    _bodyMap.erase(_switch->getRankOfNode(son->getNode()));
+  else
+    _bodyMap[_switch->getRankOfNode(son->getNode())] = son;
+}
+
+
 void SubjectSwitch::completeChildrenSubjectList(SubjectNode *son)
 {
+  DEBTRACE("SubjectSwitch::completeChildrenSubjectList");
   _bodyMap[_switch->getRankOfNode(son->getNode())] = son;
 }
 
@@ -2559,6 +2600,15 @@ SubjectNode* SubjectForEachLoop::addNode(YACS::ENGINE::Catalog *catalog,
   return body;
 }
 
+void SubjectForEachLoop::houseKeepingAfterCutPaste(bool isCut, SubjectNode *son)
+{
+  if (isCut)
+    _body = 0;
+  else
+    _body = son;
+}
+
+
 void SubjectForEachLoop::completeChildrenSubjectList(SubjectNode *son)
 {
   if ( !son )
@@ -2650,6 +2700,14 @@ SubjectNode* SubjectOptimizerLoop::addNode(YACS::ENGINE::Catalog *catalog,
     }
   body = createNode(catalog, compo, type, name);
   return body;
+}
+
+void SubjectOptimizerLoop::houseKeepingAfterCutPaste(bool isCut, SubjectNode *son)
+{
+  if (isCut)
+    _body = 0;
+  else
+    _body = son;
 }
 
 void SubjectOptimizerLoop::completeChildrenSubjectList(SubjectNode *son)

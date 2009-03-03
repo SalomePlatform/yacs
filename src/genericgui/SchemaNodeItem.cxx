@@ -259,6 +259,7 @@ bool SchemaNodeItem::dropMimeData(const QMimeData* data, Qt::DropAction action)
 
 void SchemaNodeItem::setCaseValue()
 {
+  DEBTRACE("SchemaNodeItem::setCaseValue");
   Subject *sub = _parentItem->getSubject();
   SubjectSwitch *sSwitch = dynamic_cast<SubjectSwitch*>(sub);
   if (!sSwitch) return;

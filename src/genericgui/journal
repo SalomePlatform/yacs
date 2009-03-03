@@ -167,6 +167,8 @@ x renommage container:
   x pas actif depuis le panel container (container, composant, service)
   x arbre service pas a jour
   x indicateur en edition (jaune) pas a jour dans l'arbre
+x cut paste d'un noeud pour l'enlever d'une forLoop (toujours fils de la forloop: case prise, destruction...)
+x QtGuiContext::getQtCurrent()->_mapOfEditionItem.count(_subject)' failed apres cut paste et creation de lien
 
 - SIGSEV en sortie de SALOME apres destruction de la fenetre execution
 - destruction d'un lien, impact sur la disposition des noeuds
@@ -178,8 +180,6 @@ x renommage container:
 - import de schema CORBA (foreach_LongCorba): exception
 - chargement de schema pendant qu'un autre est running:
   abort GuiExecutor Assertion `GuiContext::getCurrent()->_mapOfExecSubjectNode.count(iGui)' failed
-- cut paste d'un noeud pour l'enlever d'une forLoop (toujours fils de la forloop: case prise, destruction...)
-- QtGuiContext::getQtCurrent()->_mapOfEditionItem.count(_subject)' failed apres cut paste et creation de lien
 
 - renommage d'un item autre que noeud non repercute:
   il manque des fonctions de renommage:

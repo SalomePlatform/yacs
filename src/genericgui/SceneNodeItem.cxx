@@ -315,6 +315,7 @@ void SceneNodeItem::setExecState(int execState)
 
 QString SceneNodeItem::getHeaderLabel()
 {
+  DEBTRACE("SceneNodeItem::getHeaderLabel");
   QString extLabel = _subject->getName().c_str();
 
   SceneObserverItem *soi = 0;

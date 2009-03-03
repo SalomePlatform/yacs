@@ -319,6 +319,7 @@ namespace YACS
       virtual void removeLink(SubjectLink* link);
       virtual void removeControlLink(SubjectControlLink* link);
       virtual void removeExternalControlLinks();
+      virtual void houseKeepingAfterCutPaste(bool isCut, SubjectNode *son);
       virtual bool hasValue();
       virtual std::string getValue();
       virtual void clean();
@@ -346,6 +347,7 @@ namespace YACS
       virtual void completeChildrenSubjectList(SubjectNode *son);
       virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const;
       virtual void recursiveUpdate(GuiEvent event, int type, Subject* son);
+      virtual void houseKeepingAfterCutPaste(bool isCut, SubjectNode *son);
       virtual void clean();
       void localClean();
       virtual TypeOfElem getType(){return BLOC;}
@@ -458,6 +460,7 @@ namespace YACS
       virtual bool setNbSteps(std::string nbSteps);
       virtual bool hasValue();
       virtual std::string getValue();
+      virtual void houseKeepingAfterCutPaste(bool isCut, SubjectNode *son);
       virtual void clean();
       void localClean();
       virtual TypeOfElem getType(){return FORLOOP;}
@@ -481,6 +484,7 @@ namespace YACS
       virtual bool setCondition(std::string condition);
       virtual bool hasValue();
       virtual std::string getValue();
+      virtual void houseKeepingAfterCutPaste(bool isCut, SubjectNode *son);
       virtual void clean();
       void localClean();
       virtual TypeOfElem getType(){return WHILELOOP;}
@@ -509,6 +513,7 @@ namespace YACS
       virtual bool setCase(std::string caseId, SubjectNode* snode);
       virtual bool hasValue();
       virtual std::string getValue();
+      virtual void houseKeepingAfterCutPaste(bool isCut, SubjectNode *son);
       virtual void clean();
       void localClean();
       virtual TypeOfElem getType(){return SWITCH;}
@@ -532,6 +537,7 @@ namespace YACS
       virtual bool setNbBranches(std::string nbBranches);
       virtual bool hasValue();
       virtual std::string getValue();
+      virtual void houseKeepingAfterCutPaste(bool isCut, SubjectNode *son);
       virtual void clean();
       void localClean();
       virtual TypeOfElem getType(){return FOREACHLOOP;}
@@ -553,6 +559,7 @@ namespace YACS
       virtual void recursiveUpdate(GuiEvent event, int type, Subject* son);
       virtual void completeChildrenSubjectList(SubjectNode *son);
       virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const { return _body; }
+      virtual void houseKeepingAfterCutPaste(bool isCut, SubjectNode *son);
       virtual void clean();
       void localClean();
       virtual TypeOfElem getType(){return OPTIMIZERLOOP;}

@@ -290,10 +290,16 @@ bool CommandReparentNode::localExecute()
       if (nodeSameName)
         throw YACS::Exception("there is already a child of same name in the new parent");
       SubjectNode * snode = GuiContext::getCurrent()->_mapOfSubjectNode[node];
+      Subject *subo = GuiContext::getCurrent()->_mapOfSubjectNode[oldFather];
+      Subject *subn = GuiContext::getCurrent()->_mapOfSubjectNode[newFather];
+      SubjectComposedNode* sop = dynamic_cast<SubjectComposedNode*>(subo);
+      SubjectComposedNode* snp = dynamic_cast<SubjectComposedNode*>(subn);
       snode->removeExternalLinks();
       snode->removeExternalControlLinks();
+      sop->houseKeepingAfterCutPaste(true, snode);
       oldFather->edRemoveChild(node);
       newFather->edAddChild(node);
+      snp->houseKeepingAfterCutPaste(false, snode);
     }
   catch (Exception& ex)
     {
@@ -1136,6 +1142,7 @@ bool CommandSetSwitchCase::localExecute()
 {
   try
     {
+      DEBTRACE("CommandSetSwitchCase::localExecute");
       Proc* proc = GuiContext::getCurrent()->getProc();
       Switch* aSwitch = dynamic_cast<Switch*>(proc->getChildByName(_switch));
       Node* node = proc->getChildByName(_node);
