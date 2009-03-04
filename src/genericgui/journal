@@ -170,11 +170,12 @@ x renommage container:
 x cut paste d'un noeud pour l'enlever d'une forLoop (toujours fils de la forloop: case prise, destruction...)
 x QtGuiContext::getQtCurrent()->_mapOfEditionItem.count(_subject)' failed apres cut paste et creation de lien
 x passage en execution: arbre pas toujours cree la premiere fois
+x message incomprehensible lors de l'ajout d'un deuxieme noeud dans un forloop
+x libelle comboBox ajout de ports dans panneau edition: folklorique (newSchema_1)
 
 - SIGSEV en sortie de SALOME apres destruction de la fenetre execution
 - destruction d'un lien, impact sur la disposition des noeuds
 
-- libelle comboBox ajout de ports dans panneau edition: folklorique (newSchema_1)
 - panneau edition function Node: controler nom de fonction saisie (validation), remonter le widget
 - fermeture schema non sauvegarde : warning
 - remontee d'erreur en edition: le contenu de la log proc ne change pas, quand c'est en erreur

@@ -87,6 +87,7 @@ void EditionElementaryNode::synchronize()
       int numRows = model->rowCount(parentIndex);
       if (_tvInPorts)
         {
+          _tvInPorts->cb_insert->setCurrentIndex(0);
           _tvInPorts->setNode(_subElemNode);
           _tvInPorts->tv_ports->setRootIndex(parentIndex);
           for (int row = 0; row < numRows; ++row)
@@ -104,6 +105,7 @@ void EditionElementaryNode::synchronize()
         }
       if (_tvOutPorts)
         {
+          _tvOutPorts->cb_insert->setCurrentIndex(0);
           _tvOutPorts->setNode(_subElemNode);
           _tvOutPorts->tv_ports->setRootIndex(parentIndex);
           for (int row = 0; row < numRows; ++row)
