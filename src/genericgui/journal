@@ -169,13 +169,21 @@ x renommage container:
   x indicateur en edition (jaune) pas a jour dans l'arbre
 x cut paste d'un noeud pour l'enlever d'une forLoop (toujours fils de la forloop: case prise, destruction...)
 x QtGuiContext::getQtCurrent()->_mapOfEditionItem.count(_subject)' failed apres cut paste et creation de lien
+x passage en execution: arbre pas toujours cree la premiere fois
 
 - SIGSEV en sortie de SALOME apres destruction de la fenetre execution
 - destruction d'un lien, impact sur la disposition des noeuds
 
+- libelle comboBox ajout de ports dans panneau edition: folklorique (newSchema_1)
+- panneau edition function Node: controler nom de fonction saisie (validation), remonter le widget
+- fermeture schema non sauvegarde : warning
+- remontee d'erreur en edition: le contenu de la log proc ne change pas, quand c'est en erreur
+- remontee d'erreur en execution : log d'erreurs consolidees dans les blocs, affichee dans la proc 
+- cases a cocher link automatique peu visibles
+- verifier le python des scripts a l'edition (compiler)
+
 - execution noeud default de switch : pas marque DONE dans arbre et vue 2D
 - cut paste dans switch: valeur use case attribue automatiquement pas affiche
-- passage en execution: arbre pas toujours cree la premiere fois
 - update etat des inputPort apres creation de lien dans tableau,  (linked, not initialized)
 - import de schema CORBA (foreach_LongCorba): exception
 - chargement de schema pendant qu'un autre est running:
