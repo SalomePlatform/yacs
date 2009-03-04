@@ -765,6 +765,13 @@ void GenericGui::createContext(YACS::ENGINE::Proc* proc,
   clock_t  end_t;
   start_t = clock();
 
+
+  QWidget* central = _parent->centralWidget();
+  if (central)
+    central->setFocus();
+  else
+    DEBTRACE("No Central Widget");
+
   QString fileName;
   QWidget* refWindow = 0; // --- used only on run to refer to the schema in edition
   if (forEdition)
