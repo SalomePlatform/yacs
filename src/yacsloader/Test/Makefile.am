@@ -39,10 +39,15 @@ TestYacsLoader_SOURCES = \
 	TestYacsLoader.cxx \
 	YacsLoaderTest.cxx
 
+if SALOME_KERNEL
+SALOME_LIBS=-L$(KERNEL_ROOT_DIR)/lib$(LIB_LOCATION_SUFFIX)/salome -lSalomeLifeCycleCORBA
+endif
+
 TestYacsLoader_LDADD = \
 	$(OMNIORB_LIBS) \
 	$(PYTHON_LDFLAGS) \
 	$(PYTHON_EXTRA_LIBS) \
+	$(SALOME_LIBS) \
 	../libYACSloader.la \
 	../../runtime/libYACSRuntimeSALOME.la \
 	../../engine/libYACSlibEngine.la \
