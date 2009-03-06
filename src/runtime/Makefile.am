@@ -99,7 +99,7 @@ EXTRA_libYACSRuntimeSALOME_la_SOURCES =  \
 	$(__dummy__)
 
 if SALOME_KERNEL
-libYACSRuntimeSALOME_la_SOURCES += ../../idl/yacsguiSK.cc
+nodist_libYACSRuntimeSALOME_la_SOURCES = ../../idl/yacsguiSK.cc
 SALOME_LIBS=-L$(KERNEL_ROOT_DIR)/lib$(LIB_LOCATION_SUFFIX)/salome -lSalomeLifeCycleCORBA
 SALOME_INCL_PATH=-I$(KERNEL_ROOT_DIR)/include/salome 
 endif
@@ -144,6 +144,8 @@ SWIGINCLUDES= RuntimeSALOME.hxx SALOMEDispatcher.hxx SalomeProc.hxx PythonNode.h
 
 SALOMERuntimeWRAP.cxx: SALOMERuntime.i $(SWIGINCLUDES)
 	$(SWIG) $(SWIG_PYTHON_OPT) $(SWIG_PYTHON_INCLUDES) $(MYSWIG_FLAGS) -o $@ $(srcdir)/SALOMERuntime.i
+
+SALOMERuntime.py : SALOMERuntimeWRAP.cxx
 
 _SALOMERuntime_la_CXXFLAGS = \
 	$(THREAD_DEF) \

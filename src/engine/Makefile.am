@@ -129,6 +129,8 @@ DataStreamPort.hxx       InPort.hxx          OutGate.hxx                     Ser
 pilotWRAP.cxx:pilot.i $(SWIGINCLUDES)
 	$(SWIG) $(SWIG_PYTHON_OPT) $(SWIG_PYTHON_INCLUDES) $(MYSWIG_FLAGS) -o pilotWRAP.cxx $(srcdir)/pilot.i 
 
+pilot.py : pilotWRAP.cxx
+
 _pilot_la_SOURCES =   \
 	pilotWRAP.cxx \
 	ExecutorSwig.cxx
@@ -147,6 +149,8 @@ _pilot_la_LIBADD = libYACSlibEngine.la $(OMNIORB_LIBS)
 
 pypilotWRAP.cxx pypilotWRAP.h: pypilot.i pilot.i $(SWIGINCLUDES)
 	$(SWIG) $(SWIG_PYTHON_OPT) $(SWIG_PYTHON_INCLUDES) $(MYSWIG_FLAGS) -o pypilotWRAP.cxx $(srcdir)/pypilot.i
+
+pypilot.py : pypilotWRAP.cxx 
 
 _pypilot_la_SOURCES =  pypilotWRAP.cxx
 _pypilot_la_CXXFLAGS =  $(THREAD_DEF) $(PYTHON_CPPFLAGS) $(OMNIORB_INCLUDES) $(OMNIORB_CXXFLAGS) -I$(srcdir)/../bases

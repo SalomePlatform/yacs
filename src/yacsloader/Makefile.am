@@ -133,6 +133,8 @@ SWIGINCLUDES=parsers.hxx LoadState.hxx xmlParserBase.hxx ProcCataLoader.hxx ../e
 loaderWRAP.cxx loaderWRAP.h: loader.i $(SWIGINCLUDES)
 	$(SWIG) $(SWIG_PYTHON_OPT) $(SWIG_PYTHON_INCLUDES) $(MYSWIG_FLAGS) -o loaderWRAP.cxx $(srcdir)/loader.i
 
+loader.py : loaderWRAP.cxx
+
 salomepython_PYTHON = loader.py
 salomepyexec_LTLIBRARIES = _loader.la
 
