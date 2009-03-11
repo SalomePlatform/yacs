@@ -117,13 +117,6 @@ bool Yacsgui::deactivateModule( SUIT_Study* theStudy )
   setToolShown( false );
   _genericGui->showDockWidgets(false);
 
-  SUIT_ViewManager *svm = getApp()->getViewManager(QxScene_Viewer::Type(), true);
-  YASSERT(svm);
-  SUIT_ViewWindow* svw = svm->getActiveView();
-  QxScene_ViewWindow *aView = 0;
-  if (svw) aView = dynamic_cast<QxScene_ViewWindow*>(svw);
-  DEBTRACE("aView " << aView);
-
   return SalomeApp_Module::deactivateModule( theStudy );
 }
 
@@ -174,17 +167,18 @@ void Yacsgui::onWindowActivated( SUIT_ViewWindow* svw)
   QxScene_ViewWindow* viewWindow = dynamic_cast<QxScene_ViewWindow*>(svw);
   if (!viewWindow) return;
   DEBTRACE("viewWindow " << viewWindow);
-  DEBTRACE("activeModule()->moduleName() " << getApp()->activeModule()->moduleName().toStdString());
-  if (getApp()->activeModule()->moduleName().compare("YACS") != 0)
+  DEBTRACE("activeModule()->moduleName() " << getApp()->activeModule() ? getApp()->activeModule()->moduleName().toStdString() : "" );
+  if (getApp()->activeModule() && getApp()->activeModule()->moduleName().compare("YACS") != 0)
     getApp()->activateModule("YACS");
+
 
   disconnect(viewWindow, SIGNAL( tryClose( bool&, QxScene_ViewWindow* ) ),
              this, SLOT(onTryClose( bool&, QxScene_ViewWindow* )) );
-  disconnect(viewWindow, SIGNAL( closing( SUIT_ViewWindow* ) ),
+  disconnect(viewWindow->getViewManager(), SIGNAL( deleteView( SUIT_ViewWindow* ) ),
              this, SLOT(onWindowClosed( SUIT_ViewWindow* )) );
   connect(viewWindow, SIGNAL( tryClose( bool&, QxScene_ViewWindow* ) ),
           this, SLOT(onTryClose( bool&, QxScene_ViewWindow* )) );
-  connect(viewWindow, SIGNAL( closing( SUIT_ViewWindow* ) ),
+  connect(viewWindow->getViewManager(), SIGNAL( deleteView( SUIT_ViewWindow* ) ),
           this, SLOT(onWindowClosed( SUIT_ViewWindow* )) );
 
   YASSERT(_genericGui);

@@ -671,29 +671,26 @@ void GenericGui::switchContext(QWidget *view)
 bool GenericGui::closeContext(QWidget *view)
 {
   DEBTRACE("GenericGui::closeContext");
-  if (! _mapViewContext.count(view))
-    return false;
-  QtGuiContext* context = _mapViewContext[view];
-  map<QWidget*, YACS::HMI::QtGuiContext*>::iterator it = _mapViewContext.begin();
-  QtGuiContext* newContext = 0;
-  QWidget* newView = 0;
-  for (; it != _mapViewContext.end(); ++it)
-    {
-      if ((*it).second != context)
-        {
-          newView = (*it).first;
-          newContext = (*it).second;
-          break;
-        }
+  if (_mapViewContext.count(view)) {
+    QtGuiContext* context = _mapViewContext[view];
+    map<QWidget*, YACS::HMI::QtGuiContext*>::iterator it = _mapViewContext.begin();
+    QtGuiContext* newContext = 0;
+    QWidget* newView = 0;
+    for (; it != _mapViewContext.end(); ++it) {
+      if ((*it).second != context) {
+	newView = (*it).first;
+	newContext = (*it).second;
+	break;
+      }
     }
- int studyId = _wrapper->activeStudyId();
-  if (context->getStudyId() == studyId)
-    {
+    int studyId = _wrapper->activeStudyId();
+    if (context->getStudyId() == studyId) {
       _wrapper->deleteSchema(view);
       delete context;
       _mapViewContext.erase(view);
       switchContext(newView);
     }
+  }
   return true;
 }
 
