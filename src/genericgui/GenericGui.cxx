@@ -73,6 +73,7 @@ GenericGui::GenericGui(YACS::HMI::SuitWrapper* wrapper, QMainWindow *parent)
   _catalogsWidget = 0;
   _sessionCatalog = 0;
   _schemaCnt = 0;
+  _isSaved = false;
   _mapViewContext.clear();
   _machineList.clear();
   _menuId = 190;
@@ -104,6 +105,7 @@ GenericGui::GenericGui(YACS::HMI::SuitWrapper* wrapper, QMainWindow *parent)
               DEBTRACE("SALOME_ModuleCatalog::ModuleCatalog found");
               std::string anIOR = orb->object_to_string( aModuleCatalog );
               _sessionCatalog = runTime->loadCatalog( "session", anIOR );
+              runTime->addCatalog(_sessionCatalog);
               {
                 std::map< std::string, YACS::ENGINE::ComponentDefinition * >::iterator it;
                 for (it = _sessionCatalog->_componentMap.begin();
@@ -671,26 +673,93 @@ void GenericGui::switchContext(QWidget *view)
 bool GenericGui::closeContext(QWidget *view)
 {
   DEBTRACE("GenericGui::closeContext");
-  if (_mapViewContext.count(view)) {
-    QtGuiContext* context = _mapViewContext[view];
-    map<QWidget*, YACS::HMI::QtGuiContext*>::iterator it = _mapViewContext.begin();
-    QtGuiContext* newContext = 0;
-    QWidget* newView = 0;
-    for (; it != _mapViewContext.end(); ++it) {
-      if ((*it).second != context) {
-	newView = (*it).first;
-	newContext = (*it).second;
-	break;
+  if (! _mapViewContext.count(view))
+    return true;
+  QtGuiContext* context = _mapViewContext[view];
+
+  bool tryToSave = false;
+  if (!QtGuiContext::getQtCurrent()->_setOfModifiedSubjects.empty())
+    {
+      QMessageBox msgBox;
+      msgBox.setText("Some elements are modified and not taken into account.");
+      string info = "do you want to apply your changes ?\n";
+      info += " - Save    : do not take into account edition in progress,\n";
+      info += "             but if there are other modifications, select a file name for save\n";
+      info += " - Discard : discard all modifications and close the schema\n";
+      info += " - Cancel  : do not close the schema, return to edition";
+      msgBox.setInformativeText(info.c_str());
+      msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+      msgBox.setDefaultButton(QMessageBox::Cancel);
+      int ret = msgBox.exec();
+      switch (ret)
+        {
+      case QMessageBox::Save:
+        tryToSave = true;
+        break;
+      case QMessageBox::Discard:
+        tryToSave = false;
+        break;
+      case QMessageBox::Cancel:
+      default:
+        return false;
+       break;
       }
     }
-    int studyId = _wrapper->activeStudyId();
-    if (context->getStudyId() == studyId) {
+  else
+    if (QtGuiContext::getQtCurrent()->isNotSaved())
+      {
+        QMessageBox msgBox;
+        msgBox.setText("The schema has been modified");
+        string info = "do you want to save the schema ?\n";
+        info += " - Save    : select a file name for save\n";
+        info += " - Discard : discard all modifications and close the schema\n";
+        info += " - Cancel  : do not close the schema, return to edition";
+        msgBox.setInformativeText(info.c_str());
+        msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+        msgBox.setDefaultButton(QMessageBox::Cancel);
+        int ret = msgBox.exec();
+        switch (ret)
+          {
+          case QMessageBox::Save:
+            tryToSave = true;
+            break;
+          case QMessageBox::Discard:
+            tryToSave = false;
+            break;
+          case QMessageBox::Cancel:
+          default:
+            return false;
+            break;
+          }
+      }
+
+  if (tryToSave)
+    {
+      onExportSchemaAs();
+      if (! _isSaved) // --- probably, user has cancelled the save dialog. Do not close
+        return false;
+    }
+
+  map<QWidget*, YACS::HMI::QtGuiContext*>::iterator it = _mapViewContext.begin();
+  QtGuiContext* newContext = 0;
+  QWidget* newView = 0;
+  for (; it != _mapViewContext.end(); ++it)
+    {
+      if ((*it).second != context)
+        {
+          newView = (*it).first;
+          newContext = (*it).second;
+          break;
+        }
+    }
+ int studyId = _wrapper->activeStudyId();
+  if (context->getStudyId() == studyId)
+    {
       _wrapper->deleteSchema(view);
       delete context;
       _mapViewContext.erase(view);
       switchContext(newView);
     }
-  }
   return true;
 }
 
@@ -909,6 +978,8 @@ void GenericGui::createContext(YACS::ENGINE::Proc* proc,
       _withoutStopModeAct->setChecked(true);
       if (_dwTree) _dwTree->setWindowTitle("Tree View: execution mode");
     }
+
+  QtGuiContext::getQtCurrent()->setNotSaved(false);
 }
 
 // -----------------------------------------------------------------------------
@@ -1123,6 +1194,7 @@ void GenericGui::onExportSchema()
   aWriter.openFileSchema( fn.toStdString() );
   aWriter.visitProc();
   aWriter.closeFileSchema();
+  QtGuiContext::getQtCurrent()->setNotSaved(false);
 
   if (fn.compare(foo) && _wrapper)
     _wrapper->renameSchema(foo, fn, QtGuiContext::getQtCurrent()->getWindow());
@@ -1131,6 +1203,7 @@ void GenericGui::onExportSchema()
 void GenericGui::onExportSchemaAs()
 {
   DEBTRACE("GenericGui::onExportSchemaAs");
+  _isSaved = false;
   if (!QtGuiContext::getQtCurrent()) return;
   YACS::ENGINE::Proc* proc = QtGuiContext::getQtCurrent()->getProc();
   QString fo = QtGuiContext::getQtCurrent()->getFileName();
@@ -1145,6 +1218,8 @@ void GenericGui::onExportSchemaAs()
   aWriter.openFileSchema(fn.toStdString());
   aWriter.visitProc();
   aWriter.closeFileSchema();
+  _isSaved = true;
+  QtGuiContext::getQtCurrent()->setNotSaved(false);
 
   if (fn.compare(foo) && _wrapper)
     _wrapper->renameSchema(foo, fn, QtGuiContext::getQtCurrent()->getWindow());

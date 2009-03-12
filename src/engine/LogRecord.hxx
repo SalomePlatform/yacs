@@ -39,7 +39,7 @@ namespace YACS
       static const LogLevel DEBUG    = 10;
       static const LogLevel NOTSET   = 0;
 
-      LogRecord(const std::string& name,int level,const std::string& message, const char* file, int line);
+      LogRecord(const std::string& name,int level,const std::string& message, const std::string& file, int line);
       virtual ~LogRecord();
       /** The logger name. */
       const std::string _loggerName;
@@ -48,7 +48,7 @@ namespace YACS
       /** Level of logging record */
       int _level;
       /** filename of logging record */
-      char* _fileName;
+      std::string _fileName;
       /** line number of logging record */
       int _line;
       virtual std::string getLevelName(int level);

@@ -54,8 +54,6 @@ void EditionProc::update(GuiEvent event, int type, Subject* son)
 {
   DEBTRACE("EditionProc::update " << GuiObserver::eventName(event));
   EditionBloc::update(event, type, son);
-  YACS::ENGINE::Proc* proc = QtGuiContext::getQtCurrent()->getProc();
-  Logger* logger = 0;
   string statusLog = "";
   switch (event)
     {
@@ -64,40 +62,49 @@ void EditionProc::update(GuiEvent event, int type, Subject* son)
         _modifLog = "";
       else
         _modifLog = "--- some elements are modified and not taken into account. Confirmation or annulation required ---\n";
-      statusLog = _modifLog + _errorLog;
-      _statusLog->setText(statusLog.c_str());
-      break;
     case UPDATE:
-      if (!proc->isValid())
-        {
-          _errorLog = "--- YACS schema is not valid ---\n\n";
-          _errorLog += proc->getErrorReport();
-        }
-      else
-        {
-          // --- Check consistency
-          LinkInfo info(LinkInfo::ALL_DONT_STOP);
-          proc->checkConsistency(info);
-          if (info.areWarningsOrErrors())
-            _errorLog = info.getGlobalRepr();
-          else
-            {
-              _errorLog = "--- No Validity Errors ---\n";
-              _errorLog += "--- No Consistency Errors ---\n";
-            }
-        }
-      // --- Add initial logger info
-      logger = proc->getLogger("parser");
-      if (!logger->isEmpty())
-        {
-          _errorLog += "--- Original file import log ---\n";
-          _errorLog += logger->getStr();  
-        }
-      statusLog = _modifLog + _errorLog;
-      _statusLog->setText(statusLog.c_str());
+      synchronize();
       break;
     default:
       ;
     }
 
+}
+
+void EditionProc::synchronize()
+{
+  DEBTRACE("EditionProc::synchronize");
+  YACS::ENGINE::Proc* proc = QtGuiContext::getQtCurrent()->getProc();
+  Logger* logger = 0;
+  string statusLog = "";
+  
+  if (!proc->isValid())
+    {
+      _errorLog = "--- YACS schema is not valid ---\n\n";
+      _errorLog += proc->getErrorReport();
+      DEBTRACE(_errorLog);
+    }
+  else
+    {
+      // --- Check consistency
+      LinkInfo info(LinkInfo::ALL_DONT_STOP);
+      proc->checkConsistency(info);
+      if (info.areWarningsOrErrors())
+        _errorLog = info.getGlobalRepr();
+      else
+        {
+          _errorLog = "--- No Validity Errors ---\n";
+          _errorLog += "--- No Consistency Errors ---\n";
+        }
+      DEBTRACE(_errorLog);
+    }
+  // --- Add initial logger info
+  logger = proc->getLogger("parser");
+  if (!logger->isEmpty())
+    {
+      _errorLog += "--- Original file import log ---\n";
+      _errorLog += logger->getStr();  
+    }
+  statusLog = _modifLog + _errorLog;
+  _statusLog->setText(statusLog.c_str());
 }

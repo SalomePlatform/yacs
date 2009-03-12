@@ -167,6 +167,7 @@ namespace YACS
       int _menuId;
       int _toolId;
       int _schemaCnt;
+      bool _isSaved;
       std::list<std::string> _machineList;
 
     private slots:

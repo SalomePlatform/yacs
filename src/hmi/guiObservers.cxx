@@ -1315,7 +1315,7 @@ void SubjectProc::loadProc()
 void SubjectProc::loadComponents()
 {
   Proc* aProc = GuiContext::getCurrent()->getProc();
-  for (map<pair<string,int>, ComponentInstance*>::const_iterator itComp = aProc->componentInstanceMap.begin();
+  for (map<string, ComponentInstance*>::const_iterator itComp = aProc->componentInstanceMap.begin();
        itComp != aProc->componentInstanceMap.end(); ++itComp)
     if ( GuiContext::getCurrent()->_mapOfSubjectComponent.find((*itComp).second)
 	 ==
@@ -1766,8 +1766,7 @@ void SubjectServiceNode::setComponentFromCatalog(YACS::ENGINE::Catalog *catalog,
           Proc* proc = GuiContext::getCurrent()->getProc();
           ComponentInstance *instance = 0;
           instance = new SalomeComponent(compo);
-          pair<string,int> key = pair<string,int>(compo, instance->getNumId());
-          proc->componentInstanceMap[key] = instance;
+          proc->componentInstanceMap[instance->getInstanceName()] = instance;
           SubjectComponent* subCompo = GuiContext::getCurrent()->getSubjectProc()->addSubjectComponent(instance);
           YASSERT(subCompo);
           addSubjectReference(subCompo);
@@ -1796,8 +1795,7 @@ void SubjectServiceNode::setComponent()
       if (! GuiContext::getCurrent()->_mapOfSubjectComponent.count(instance))
         {
 	  DEBTRACE("SubjectServiceNode::setComponent : create subject for compo = " << compo.c_str());
-          pair<string,int> key = pair<string,int>(compo, instance->getNumId());
-          proc->componentInstanceMap[key] = instance;
+          proc->componentInstanceMap[instance->getInstanceName()] = instance;
           subCompo =
             GuiContext::getCurrent()->getSubjectProc()->addSubjectComponent(instance);
         }
@@ -1821,7 +1819,7 @@ bool SubjectServiceNode::associateToComponent(SubjectComponent *subcomp)
   SubjectReference* oldSReference = _subjectReference;
   string aName = GuiContext::getCurrent()->getProc()->getChildName(_serviceNode);
   CommandAssociateServiceToComponent *command =
-    new CommandAssociateServiceToComponent(aName, subcomp->getKey());
+    new CommandAssociateServiceToComponent(aName, subcomp->getName());
   if (command->execute())
     {
       GuiContext::getCurrent()->getInvoc()->add(command);
@@ -3222,8 +3220,7 @@ SubjectComponent::~SubjectComponent()
   Proc* aProc = GuiContext::getCurrent()->getProc();
   if ( aProc )
   {
-    pair<string,int> key = pair<string,int>(_compoInst->getCompoName(),_compoInst->getNumId());
-    aProc->componentInstanceMap.erase(key);
+    aProc->componentInstanceMap.erase(_compoInst->getInstanceName());
     GuiContext::getCurrent()->_mapOfSubjectComponent.erase(_compoInst);
   }
   _compoInst->decrRef();
@@ -3310,7 +3307,7 @@ bool SubjectComponent::associateToContainer(SubjectContainer* subcont)
 {
   DEBTRACE("SubjectComponent::associateToContainer " << getName() << " " << subcont->getName());
   CommandAssociateComponentToContainer *command =
-    new CommandAssociateComponentToContainer(getKey(), subcont->getName());
+    new CommandAssociateComponentToContainer(_compoInst->getInstanceName(), subcont->getName());
   if (command->execute())
     {
       GuiContext::getCurrent()->getInvoc()->add(command);

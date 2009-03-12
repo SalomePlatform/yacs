@@ -1567,8 +1567,8 @@ bool CommandAddComponentInstance::localExecute()
     {
       Proc* proc = GuiContext::getCurrent()->getProc();
       _compoInst = new SalomeComponent(_compoName);
-      pair<string,int> key = pair<string,int>(_compoName, _compoInst->getNumId());
-      proc->componentInstanceMap[key] = _compoInst;
+      proc->componentInstanceMap[_compoInst->getInstanceName()] = _compoInst;
+
       return true;
     }
   catch (Exception& ex)
@@ -1591,12 +1591,11 @@ YACS::ENGINE::ComponentInstance* CommandAddComponentInstance::getComponentInstan
   
 // ----------------------------------------------------------------------------
 
-CommandAssociateComponentToContainer::CommandAssociateComponentToContainer(std::pair<std::string,int> key,
+CommandAssociateComponentToContainer::CommandAssociateComponentToContainer(std::string instanceName,
                                                                            std::string container)
-  : Command(), _key(key), _container(container)
+  : Command(), _container(container),_instanceName(instanceName)
 {
-  DEBTRACE("CommandAssociateComponentToContainer::CommandAssociateComponentToContainer "
-           << key.first << " " << key.second << " " << container);
+  DEBTRACE("CommandAssociateComponentToContainer::CommandAssociateComponentToContainer " << instanceName << " " << container);
 }
 
 bool CommandAssociateComponentToContainer::localExecute()
@@ -1607,14 +1606,14 @@ bool CommandAssociateComponentToContainer::localExecute()
       if (proc->containerMap.count(_container))
         {
           Container *cont = proc->containerMap[_container];
-          if (proc->componentInstanceMap.count(_key))
+          if (proc->componentInstanceMap.count(_instanceName))
             {
-              ComponentInstance *compo = proc->componentInstanceMap[_key];
+              ComponentInstance *compo = proc->componentInstanceMap[_instanceName];
               compo->setContainer(cont);
               return true;
             }
           else
-            GuiContext::getCurrent()->_lastErrorMessage = "Component instance not found: " + _key.first;
+            GuiContext::getCurrent()->_lastErrorMessage = "Component instance not found: " + _instanceName;
         }
       else
         GuiContext::getCurrent()->_lastErrorMessage = "Container not found: " + _container;
@@ -1635,11 +1634,10 @@ bool CommandAssociateComponentToContainer::localReverse()
 // ----------------------------------------------------------------------------
 
 CommandAssociateServiceToComponent::CommandAssociateServiceToComponent(std::string service,
-                                                                       std::pair<std::string,int> key)
-  : Command(), _service(service), _key(key)
+                                                                       std::string instanceName)
+  : Command(), _service(service), _instanceName(instanceName)
 {
-  DEBTRACE("CommandAssociateServiceToComponent::CommandAssociateServiceToComponent "
-           << service << " " << key.first << " " << key.second);
+  DEBTRACE("CommandAssociateServiceToComponent::CommandAssociateServiceToComponent "<< service << " " <<instanceName);
 }
 
 bool CommandAssociateServiceToComponent::localExecute()
@@ -1651,14 +1649,14 @@ bool CommandAssociateServiceToComponent::localExecute()
       Node* node = proc->getChildByName(_service);
       if (ServiceNode *service = dynamic_cast<ServiceNode*>(node))
         {
-          if (proc->componentInstanceMap.count(_key))
+          if (proc->componentInstanceMap.count(_instanceName))
             {
-              ComponentInstance *compo = proc->componentInstanceMap[_key];
+              ComponentInstance *compo = proc->componentInstanceMap[_instanceName];
               service->setComponent(compo);
               return true;
             }
           else
-            GuiContext::getCurrent()->_lastErrorMessage = "Component instance not found: " + _key.first;
+            GuiContext::getCurrent()->_lastErrorMessage = "Component instance not found: " + _instanceName;
         }
       else
         GuiContext::getCurrent()->_lastErrorMessage = "Node is note a service node: " + _service;

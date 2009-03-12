@@ -145,7 +145,7 @@ void EditionSalomeNode::fillComponentPanel()
       Proc* proc = GuiContext::getCurrent()->getProc();
 
       _wComponent->cb_instance->clear();
-      map<pair<string,int>,ComponentInstance*>::const_iterator it = proc->componentInstanceMap.begin();
+      map<string,ComponentInstance*>::const_iterator it = proc->componentInstanceMap.begin();
       for(; it != proc->componentInstanceMap.end(); ++it)
         {
           ComponentInstance *inst=(*it).second;
@@ -199,8 +199,8 @@ void EditionSalomeNode::changeInstance(int index)
   Proc* proc = GuiContext::getCurrent()->getProc();
   ComponentInstance *newCompoInst = 0;
   ComponentInstance *oldCompoInst = _servNode->getComponent();
-  if (proc->componentInstanceMap.count(aKey))
-    newCompoInst = proc->componentInstanceMap[aKey];
+  if (proc->componentInstanceMap.count(instName))
+    newCompoInst = proc->componentInstanceMap[instName];
   else DEBTRACE("-------------> not found : " << instName);
 
   if (newCompoInst && (newCompoInst != oldCompoInst))

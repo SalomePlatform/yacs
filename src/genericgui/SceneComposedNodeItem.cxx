@@ -24,6 +24,7 @@
 #include "SceneInPortItem.hxx"
 #include "SceneOutPortItem.hxx"
 #include "SceneLinkItem.hxx"
+#include "SceneDSLinkItem.hxx"
 #include "SceneCtrlLinkItem.hxx"
 #include "LinkMatrix.hxx"
 #include "LinkAStar.hxx"
@@ -172,11 +173,29 @@ void SceneComposedNodeItem::update(GuiEvent event, int type, Subject* son)
               SceneItem * scin  = QtGuiContext::getQtCurrent()->_mapOfSceneItem[sinp];
               ScenePortItem* from = dynamic_cast<ScenePortItem*>(scout);
               ScenePortItem* to  = dynamic_cast<ScenePortItem*>(scin);
-              item = new SceneLinkItem(_scene,
-                                       this,
-                                       from, to,
-                                       son->getName().c_str(),
-                                       son);
+              if (dynamic_cast<SubjectInputDataStreamPort*>(sinp))
+                {
+                  item = new SceneDSLinkItem(_scene,
+                                             this,
+                                             from, to,
+                                             son->getName().c_str(),
+                                             son);
+                }
+              else
+                {
+                  item = new SceneLinkItem(_scene,
+                                           this,
+                                           from, to,
+                                           son->getName().c_str(),
+                                           son);
+                }
+              if (Scene::_autoComputeLinks && !QtGuiContext::getQtCurrent()->isLoading())
+                {
+                  YACS::HMI::SubjectProc* subproc = QtGuiContext::getQtCurrent()->getSubjectProc();
+                  SceneItem *item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[subproc];
+                  SceneComposedNodeItem *proc = dynamic_cast<SceneComposedNodeItem*>(item);
+                  proc->rebuildLinks();
+                }
             }
           break;
         }
@@ -202,6 +221,13 @@ void SceneComposedNodeItem::update(GuiEvent event, int type, Subject* son)
                                            from, to,
                                            son->getName().c_str(),
                                            son);
+              if (Scene::_autoComputeLinks && !QtGuiContext::getQtCurrent()->isLoading())
+                {
+                  YACS::HMI::SubjectProc* subproc = QtGuiContext::getQtCurrent()->getSubjectProc();
+                  SceneItem *item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[subproc];
+                  SceneComposedNodeItem *proc = dynamic_cast<SceneComposedNodeItem*>(item);
+                  proc->rebuildLinks();
+                }
             }
           break;
         }

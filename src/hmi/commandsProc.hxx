@@ -504,25 +504,25 @@ namespace YACS
     class CommandAssociateComponentToContainer: public Command
     {
     public:
-      CommandAssociateComponentToContainer(std::pair<std::string,int> key,
+      CommandAssociateComponentToContainer(std::string instanceName,
                                            std::string container);
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
-      std::pair<std::string,int>  _key;
       std::string _container;
+      std::string _instanceName;
     };
 
     class CommandAssociateServiceToComponent: public Command
     {
     public:
       CommandAssociateServiceToComponent(std::string service,
-                                         std::pair<std::string,int> key);
+                                         std::string instanceName);
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
       std::string _service;
-      std::pair<std::string,int>  _key;
+      std::string _instanceName;
     };
 
     class Subject;

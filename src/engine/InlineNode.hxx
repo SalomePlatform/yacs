@@ -87,11 +87,12 @@ namespace YACS
 /*!
  * \param fname: name of the function contained in the script to execute
  */
-      virtual void setFname(const std::string& fname) { _fname=fname; }
+      virtual void setFname(const std::string& fname);
       virtual std::string getFname() { return _fname; }
       void accept(Visitor *visitor);
       virtual ~InlineFuncNode();
       virtual std::string typeName() {return "YACS__ENGINE__InlineFuncNode";}
+      virtual void checkBasicConsistency() const throw(Exception);
     protected:
       std::string _fname;
     };

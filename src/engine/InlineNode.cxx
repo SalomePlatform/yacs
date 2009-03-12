@@ -20,6 +20,7 @@
 #include "Visitor.hxx"
 
 using namespace YACS::ENGINE;
+using namespace std;
 
 
 InlineNode::~InlineNode() { }
@@ -37,3 +38,18 @@ void InlineFuncNode::accept(Visitor *visitor)
   visitor->visitInlineFuncNode(this);
 }
 
+void InlineFuncNode::setFname(const std::string& fname)
+{
+  _fname=fname;
+  modified();
+}
+
+void InlineFuncNode::checkBasicConsistency() const throw(Exception)
+{
+  InlineNode::checkBasicConsistency();
+  if(_fname.empty() )
+     {
+       string mess = "Function name is not defined";
+       throw Exception(mess);
+     }
+}

@@ -32,10 +32,6 @@ EXTRA_DIST = $(IDL_FILES) standaloneTest.sh runtimeTest.hxx runtimeTest.sh TestC
 TESTS = runtimeTest.sh
 TESTS_ENVIRONMENT=$(SHELL) -x
 
-if SALOME_KERNEL
-SALOME_LIBS=-L$(KERNEL_ROOT_DIR)/lib$(LIB_LOCATION_SUFFIX)/salome -lSalomeLifeCycleCORBA
-endif
-
 TestRuntime_SOURCES = \
 	TestRuntime.cxx \
 	runtimeTest.cxx
@@ -44,10 +40,10 @@ TestRuntime_LDADD = \
 	$(OMNIORB_LIBS) \
 	$(PYTHON_LDFLAGS) \
 	$(PYTHON_EXTRA_LIBS) \
-	$(SALOME_LIBS) \
 	../libYACSRuntimeSALOME.la \
 	../../engine/libYACSlibEngine.la \
 	../../bases/libYACSBases.la
+
 
 TestRuntime_LDFLAGS = \
 	@CPPUNIT_LIBS@ -pthread -ldl $(LIBXML_LIBS)

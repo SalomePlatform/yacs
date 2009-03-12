@@ -16,36 +16,28 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-#ifndef _EDITIONPROC_HXX_
-#define _EDITIONPROC_HXX_
+#ifndef _SCENEDSLINKITEM_HXX_
+#define _SCENEDSLINKITEM_HXX_
 
-#include "EditionBloc.hxx"
-
-#include <QTextEdit>
-#include <string>
+#include "SceneLinkItem.hxx"
 
 namespace YACS
 {
   namespace HMI
   {
 
-    class EditionProc: public EditionBloc
+    class SceneDSLinkItem: public SceneLinkItem
     {
     public:
-      EditionProc(Subject* subject,
-                  QWidget* parent = 0,
-                  const char* name = 0);
-      virtual ~EditionProc();
-      virtual void update(GuiEvent event, int type, Subject* son);
-      virtual void synchronize();
-
-      // liste de nodes fils
+      SceneDSLinkItem(QGraphicsScene *scene, SceneItem *parent,
+                        ScenePortItem* from, ScenePortItem* to,
+                        QString label, Subject *subject);
+      virtual ~SceneDSLinkItem();
 
     protected:
-      QTextEdit *_statusLog;
-      std::string _errorLog;
-      std::string _modifLog;
+
     };
   }
 }
+
 #endif

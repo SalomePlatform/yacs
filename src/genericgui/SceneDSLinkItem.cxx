@@ -16,50 +16,27 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-#include "LogRecord.hxx"
-
-#include <sstream>
-#include <iostream>
+#include "SceneDSLinkItem.hxx"
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
+using namespace std;
 using namespace YACS::ENGINE;
+using namespace YACS::HMI;
 
-LogRecord::LogRecord(const std::string& name,int level,const std::string& message, const std::string& file, int line)
-        :_loggerName(name),_level(level),_message(message),_fileName(file),_line(line)
+SceneDSLinkItem::SceneDSLinkItem(QGraphicsScene *scene, SceneItem *parent,
+                                 ScenePortItem* from, ScenePortItem* to,
+                                 QString label, Subject *subject)
+  : SceneLinkItem(scene, parent, from, to, label, subject)
 {
+  _penColor     = QColor( 96,   96,   0);
+  _hiPenColor   = QColor( 128, 128,   0);
+  _brushColor   = QColor( 192, 192,   0);
+  _hiBrushColor = QColor( 255, 255, 192);
 }
 
-LogRecord::~LogRecord()
+SceneDSLinkItem::~SceneDSLinkItem()
 {
-}
-
-std::string LogRecord::getLevelName(int level)
-{
-  switch(level)
-    {
-    case FATAL:
-      return "FATAL";
-    case ERROR:
-      return "ERROR";
-    case WARNING:
-      return "WARNING";
-    case INFO:
-      return "INFO";
-    case DEBUG:
-      return "DEBUG";
-    default:
-      return "NOTSET";
-    }
-}
-
-std::string LogRecord::getStr()
-{
-  std::stringstream msg;
-  msg << "LogRecord: " << _loggerName << ":" << getLevelName(_level) << ":" << _message;
-  if(_fileName != "")
-    msg << " (" << _fileName << ":" << _line << ")";
-  return msg.str();
 }
 

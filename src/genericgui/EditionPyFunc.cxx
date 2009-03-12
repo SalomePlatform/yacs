@@ -19,6 +19,11 @@
 #include "EditionPyFunc.hxx"
 #include "InlineNode.hxx"
 
+#if HAS_QSCI4>0
+#include <qsciscintilla.h>
+#include <qscilexerpython.h>
+#endif
+
 #include <cassert>
 
 //#define _DEVDEBUG_
@@ -45,13 +50,21 @@ EditionPyFunc::EditionPyFunc(Subject* subject,
     = dynamic_cast<YACS::ENGINE::InlineFuncNode*>(_subFuncNode->getNode());
   YASSERT(pyFuncNode);
 
+  _wid->gridLayout1->removeWidget( _sci );
+
+  QGridLayout *glt = new QGridLayout();;
   _funcName = pyFuncNode->getFname();
   QLabel* laFuncName = new QLabel("laFuncName", this );
-  _wid->gridLayout1->addWidget( laFuncName );
+  glt->addWidget(laFuncName, 0, 0, 1, 1);
   laFuncName->setText("Function Name:");
   _liFuncName = new QLineEdit( "liFuncName", this );
-  _wid->gridLayout1->addWidget( _liFuncName );
+  glt->addWidget(_liFuncName, 0, 1, 1, 1);
   _liFuncName->setText(_funcName.c_str());
+  int rows = _wid->gridLayout1->rowCount();
+  _wid->gridLayout1->addLayout( glt , rows, 0, 1, 1);
+
+  _wid->gridLayout1->addWidget( _sci );
+
   connect(_liFuncName, SIGNAL(textChanged(const QString&)),
           this, SLOT(onFuncNameModified(const QString&)));
 }
@@ -64,6 +77,11 @@ void EditionPyFunc::onApply()
 {
   bool funcNameEdited = false;
   string funcName = _liFuncName->text().toStdString();
+  if (funcName.empty())
+    {
+      _liFuncName->setText(_funcName.c_str());
+      funcName = _funcName;
+    }
   if (funcName != _funcName)
     {
       funcNameEdited = true;

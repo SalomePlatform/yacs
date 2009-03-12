@@ -152,6 +152,8 @@ libGenericGui_la_SOURCES =        \
   SceneBlocItem.cxx               \
   SceneDataPortItem.hxx           \
   SceneDataPortItem.cxx           \
+  SceneDSLinkItem.hxx             \
+  SceneDSLinkItem.cxx             \
   SceneElementaryNodeItem.hxx     \
   SceneElementaryNodeItem.cxx     \
   SceneHeaderItem.hxx             \

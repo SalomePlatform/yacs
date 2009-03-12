@@ -17,6 +17,7 @@
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 #include "commands.hxx"
+#include "guiContext.hxx"
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -44,6 +45,7 @@ bool Command::execute()
           ret = (*it)->execute();
         }
     }
+  if (ret) GuiContext::getCurrent()->setNotSaved(true);
   return ret;
 }
 

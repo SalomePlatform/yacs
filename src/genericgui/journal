@@ -55,6 +55,7 @@ x sauvegarde position des noeuds dans xml, lors du passage en exec
 x tooltips plus complets sur arbre et scenes
 x afficher les types de donnees DataStream dans arbre et edition -> en exec: tooltips
 x numerotation automatique objets cree tient compte des noms existant
+x couleur differente des liens datastream
 
 - ajouter un bouton create container dans panneau composant du noeud
 - edition port outNode (xml): definir fichier sortie
@@ -70,8 +71,7 @@ x numerotation automatique objets cree tient compte des noms existant
 - edition, modification objet
 
 - affichage etat schema modifie depuis derniere sauvegarde fichier
-- couleur differente des liens datastream, 
-  des liens de donnees simples (sans controle associe)
+- couleur differente des liens de donnees simples (sans controle associe)
 - icones differentes pour edition et run dans object browser
 
 - differents designs / canvas (interface generique)
@@ -90,6 +90,7 @@ x numerotation automatique objets cree tient compte des noms existant
   la place, ou pousser le bloc ?
 - pousser les noeuds et les blocs vers le haut ou la gauche ?
 
+- creer le noeud sous la souris s'il y a la place
 - creation de noeud : recadrage de la vue
 - selection : recadrage de la vue
 
@@ -109,9 +110,10 @@ x numerotation automatique objets cree tient compte des noms existant
   (regle de correspondance de noms ? respect de l'ordre ?)
 - dessiner les liens avec des ponts quand des liens se croisent !
 - 2eme vue avec schema complet et cadre de la vue principale
-- panneau de preferences des couleurs
+- panneau de preferences : couleurs... (Cf. V4)
 
 - differents modes pour la creation d'instances de composant
+- option de configuration : creer un service sans changer d'instance
 - selection multiple de noeuds pour les affecter a une meme instance, ou tous les noeuds d'un bloc
 - pouvoir initialiser un port dans le panneau edition du port
 
@@ -172,16 +174,21 @@ x QtGuiContext::getQtCurrent()->_mapOfEditionItem.count(_subject)' failed apres 
 x passage en execution: arbre pas toujours cree la premiere fois
 x message incomprehensible lors de l'ajout d'un deuxieme noeud dans un forloop
 x libelle comboBox ajout de ports dans panneau edition: folklorique (newSchema_1)
+x fermeture schema non sauvegarde : dialogues de sauvegarde
+x lien nouvellement créé droit et très fin, pas toujours visible
+x panneau edition function Node: controler nom de fonction saisie (validation)
+x panneau edition function Node: remonter le nom de fonction
+x remontee d'erreur en edition: le contenu de la log proc ne change pas, quand c'est en erreur
 
 - SIGSEV en sortie de SALOME apres destruction de la fenetre execution
 - destruction d'un lien, impact sur la disposition des noeuds
 
-- panneau edition function Node: controler nom de fonction saisie (validation), remonter le widget
-- fermeture schema non sauvegarde : warning
-- remontee d'erreur en edition: le contenu de la log proc ne change pas, quand c'est en erreur
 - remontee d'erreur en execution : log d'erreurs consolidees dans les blocs, affichee dans la proc 
 - cases a cocher link automatique peu visibles
 - verifier le python des scripts a l'edition (compiler)
+- pas de tooltip quand on est sur le texte du scene item
+- tooltip curieux HEADER...
+- faire apparaitre le nom du composant quelque part sur le sceneNodeItem (tooltip ?)
 
 - execution noeud default de switch : pas marque DONE dans arbre et vue 2D
 - cut paste dans switch: valeur use case attribue automatiquement pas affiche
