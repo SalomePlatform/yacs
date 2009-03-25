@@ -145,7 +145,7 @@ _pilot_la_CXXFLAGS = \
 
 _pilot_la_LDFLAGS  = -module
 
-_pilot_la_LIBADD = libYACSlibEngine.la $(OMNIORB_LIBS)
+_pilot_la_LIBADD = $(OMNIORB_LIBS) $(PYTHON_LDFLAGS) libYACSlibEngine.la
 
 pypilotWRAP.cxx pypilotWRAP.h: pypilot.i pilot.i $(SWIGINCLUDES)
 	$(SWIG) $(SWIG_PYTHON_OPT) $(SWIG_PYTHON_INCLUDES) $(MYSWIG_FLAGS) -o pypilotWRAP.cxx $(srcdir)/pypilot.i
@@ -155,7 +155,7 @@ pypilot.py : pypilotWRAP.cxx
 _pypilot_la_SOURCES =  pypilotWRAP.cxx
 _pypilot_la_CXXFLAGS =  $(THREAD_DEF) $(PYTHON_CPPFLAGS) $(OMNIORB_INCLUDES) $(OMNIORB_CXXFLAGS) -I$(srcdir)/../bases
 _pypilot_la_LDFLAGS  = -module
-_pypilot_la_LIBADD = libYACSlibEngine.la $(OMNIORB_LIBS)
+_pypilot_la_LIBADD = $(OMNIORB_LIBS) $(PYTHON_LDFLAGS) libYACSlibEngine.la 
 
 EXTRA_DIST = pilot.i pypilot.i engtypemaps.i pypilotWRAP.h
 
