@@ -50,7 +50,8 @@ using namespace std;
 using namespace YACS::HMI;
 
 Yacsgui::Yacsgui() :
-  SalomeWrap_Module( "YACS" ) // default name
+  SalomeWrap_Module( "YACS" ), // default name
+  LightApp_Module( "YACS" )
 {
   _wrapper = 0;
   _genericGui = 0;
