@@ -26,6 +26,7 @@
 
 #include "SalomeWrap_Module.hxx"
 #include "SalomeWrap_DataModel.hxx"
+#include "SalomeWrap_Resource.hxx"
 
 #include <SalomeApp_Module.h>
 #include <QxScene_ViewManager.h>
@@ -114,6 +115,12 @@ int SuitWrapper::activeStudyId()
 {
   SalomeWrap_Module* module = dynamic_cast<SalomeWrap_Module*>(_wrapped);
   return module->activeStudyId();
+}
+
+QDockWidget* SuitWrapper::objectBrowser()
+{
+  SalomeWrap_Module* module = dynamic_cast<SalomeWrap_Module*>(_wrapped);
+  return module->objectBrowser();
 }
 
 QAction* SuitWrapper::createAction(const int id,
@@ -275,4 +282,48 @@ void SuitWrapper::createNewRun(const QString& schemaName,
 {
   SalomeWrap_Module* module = dynamic_cast<SalomeWrap_Module*>(_wrapped);
   module->getDataModel()->createNewRun(schemaName, runName, refWindow, viewWindow);
+}
+
+// Resource access
+// ===============
+
+int SuitWrapper::integerValue(const QString& name, const int def) const {
+  SalomeWrap_Module* module = dynamic_cast<SalomeWrap_Module*>(_wrapped);
+  return module->getResource()->integerValue(name, def);
+}
+
+double SuitWrapper::doubleValue(const QString& name, const double def) const {
+  SalomeWrap_Module* module = dynamic_cast<SalomeWrap_Module*>(_wrapped);
+  return module->getResource()->doubleValue(name, def);
+}
+
+bool SuitWrapper::booleanValue(const QString& name, const bool def) const {
+  SalomeWrap_Module* module = dynamic_cast<SalomeWrap_Module*>(_wrapped);
+  return module->getResource()->booleanValue(name, def);
+}
+
+QFont SuitWrapper::fontValue(const QString& name, const QFont def) const {
+  SalomeWrap_Module* module = dynamic_cast<SalomeWrap_Module*>(_wrapped);
+  return module->getResource()->fontValue(name, def);
+}
+
+QColor SuitWrapper::colorValue(const QString& name, const QColor def) const {
+  SalomeWrap_Module* module = dynamic_cast<SalomeWrap_Module*>(_wrapped);
+  return module->getResource()->colorValue(name, def);
+}
+
+QColor SuitWrapper::colorValue(const QString& name, const Qt::GlobalColor c) const {
+  QColor col(c);
+  return colorValue(name, col);
+}
+
+QColor SuitWrapper::colorValue(const QString& name, const int h, const int s, const int v) const {
+  QColor col;
+  col.setHsv(h, s, v);
+  return colorValue(name, col);
+}
+
+QString SuitWrapper::stringValue(const QString& name, const QString def) const {
+  SalomeWrap_Module* module = dynamic_cast<SalomeWrap_Module*>(_wrapped);
+  return module->getResource()->stringValue(name, def);
 }

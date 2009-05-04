@@ -18,6 +18,7 @@
 //
 #include "Scene.hxx"
 #include "SceneItem.hxx"
+#include "SceneTextItem.hxx"
 #include "QtGuiContext.hxx"
 
 #include <QGraphicsSceneMouseEvent>
@@ -35,6 +36,7 @@ using namespace YACS::HMI;
 bool Scene::_autoComputeLinks = true;
 bool Scene::_simplifyLinks = true;
 bool Scene::_force2NodesLink = true;
+bool Scene::_addRowCols = true;
 
 Scene::Scene(QObject *parent): QGraphicsScene(parent)
 {
@@ -68,9 +70,17 @@ void Scene::helpEvent(QGraphicsSceneHelpEvent *event)
   QGraphicsItem *qit = itemAt(event->scenePos());
   SceneItem * item = dynamic_cast<SceneItem*>(qit);
   if (item)
-    QToolTip::showText(event->screenPos(), item->getToolTip());
-  else
-    QToolTip::hideText();
+    {
+      QToolTip::showText(event->screenPos(), item->getToolTip());
+      return;
+    }
+  SceneTextItem * itemt = dynamic_cast<SceneTextItem*>(qit);
+  if (itemt)
+    {
+      QToolTip::showText(event->screenPos(), itemt->getToolTip());
+      return;
+    }
+  QToolTip::hideText();
 }
 
 void Scene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)

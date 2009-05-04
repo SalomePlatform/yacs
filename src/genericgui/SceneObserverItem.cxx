@@ -43,6 +43,7 @@ SceneObserverItem::SceneObserverItem(QGraphicsScene *scene, SceneItem *parent,
 {
   _subject = subject;
   _draging = false;
+  _dragModifier = false;
   _subject->attach(this);
   QtGuiContext::getQtCurrent()->_mapOfSceneItem[_subject]=this;
 }
@@ -93,6 +94,7 @@ void SceneObserverItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
         {
           setCursor(Qt::ClosedHandCursor);
           _draging = true;
+          _dragModifier= event->modifiers() & (Qt::ControlModifier | Qt::ShiftModifier);
         }
     }
 }
@@ -119,6 +121,10 @@ void SceneObserverItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
       drag->setMimeData(mime);
       mime->setSubject(_subject);
       mime->setData(getMimeFormat(), "_subject");
+      if(_dragModifier)
+        mime->setControl(false);
+      else
+        mime->setControl(true);
   
       QPixmap pixmap(34, 34);
       pixmap.fill(Qt::white);
@@ -146,6 +152,7 @@ void SceneObserverItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
       setCursor(Qt::ArrowCursor);
     }
   _draging = false;
+  _dragModifier = false;
 }
 
 void SceneObserverItem::activateSelection(bool selected)

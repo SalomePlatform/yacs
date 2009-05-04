@@ -47,6 +47,7 @@ namespace YACS
       virtual void collisionResolv(SceneItem* child, QPointF oldPos);
       virtual void rebuildLinks();
       virtual void arrangeNodes(bool isRecursive);
+      virtual void arrangeChildNodes();
     protected:
       void dragEnterEvent(QGraphicsSceneDragDropEvent *event);
       void dragLeaveEvent(QGraphicsSceneDragDropEvent *event);

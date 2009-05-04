@@ -29,8 +29,23 @@
 
 using namespace YACS::ENGINE;
 
+/*! \class YACS::ENGINE::ServiceNode
+ *  \brief Class for calculation node associated with a component service
+ *
+ * \ingroup Nodes
+ *
+ * \see InlineNode
+ * \see ElementaryNode
+ */
+
 const char ServiceNode::KIND[]="";
 
+//! Return the service node kind
+/*!
+ * A runtime can provide several implementations of a service node.
+ * Each implementation has a different kind. A ComponentInstance can be
+ * associated to a ServiceNode with the same kind.
+ */
 std::string ServiceNode::getKind() const
 {
   return KIND;
@@ -106,13 +121,17 @@ bool ServiceNode::isDeployable() const
 //! Associate an existing component instance to this service node \b AND check the consistency regarding the deployment from root node point of view.
 void ServiceNode::setComponent(ComponentInstance* compo) throw(Exception)
 {
+  DEBTRACE("ServiceNode::setComponent " << compo);
   if(compo)
-    if(compo->getKind() != this->getKind())
-      {
-        //Not allowed
-        std::string what("ServiceNode::setComponent : component instance kind not allowed ");
-        throw Exception(what);
-      }
+    {
+      DEBTRACE(compo->getInstanceName());
+      if(compo->getKind() != this->getKind())
+        {
+          //Not allowed
+          std::string what("ServiceNode::setComponent : component instance kind not allowed ");
+          throw Exception(what);
+        }
+    }
   if(_component)
     {
       //The node is already associated with a component instance
@@ -120,6 +139,8 @@ void ServiceNode::setComponent(ComponentInstance* compo) throw(Exception)
       //Don't forget to unassociate
     }
   _component=compo;
+  _ref=compo->getCompoName();
+  DEBTRACE(_component->getInstanceName());
   if(_component)
     {
       if(_father)

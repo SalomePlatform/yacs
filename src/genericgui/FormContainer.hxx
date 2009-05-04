@@ -51,6 +51,7 @@ public slots:
   void onModifyName(const QString &text);
   void onModifyHost(const QString &text);
   void onModifyPolicy(const QString &text);
+  void onModifyType(const QString &text);
   void onModifyWorkDir(const QString &text);
   void onModifyContName(const QString &text);
   void onModifyOS(const QString &text);

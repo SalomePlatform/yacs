@@ -28,13 +28,6 @@ namespace YACS
   {
     class ComponentInstance;
 
-/*! \brief Class for calculation node associated with a component service
- *
- * \ingroup Nodes
- *
- * \see InlineNode
- * \see ElementaryNode
- */
     class ServiceNode: public ElementaryNode 
     {
     protected:
@@ -53,13 +46,6 @@ namespace YACS
       virtual ServiceNode *createNode(const std::string& name) = 0;
       virtual ~ServiceNode();
       virtual void accept(Visitor *visitor);
-
-//! Return the service node kind
-/*!
- * A runtime can provide several implementations of a service node.
- * Each implementation has a different kind. A ComponentInstance can be
- * associated to a ServiceNode with the same kind.
- */
       virtual std::string getKind() const;
       static const char KIND[];
       virtual std::string typeName() {return "YACS__ENGINE__ServiceNode";}

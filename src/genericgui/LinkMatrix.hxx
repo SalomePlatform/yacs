@@ -81,6 +81,7 @@ namespace YACS
       LinkMatrix(SceneComposedNodeItem* bloc);
       virtual ~LinkMatrix();
       void compute();
+      void addRowCols();
       void explore(AbstractSceneItem *child, bool setObstacle=false);
       void defineCost(AbstractSceneItem *child);
       void getBoundingBox(SceneItem *obstacle, int margin, bool setObstacle=false);
@@ -91,6 +92,7 @@ namespace YACS
       std::list<linkdef> getListOfCtrlLinkDef();
       std::list<linkdef> getListOfDataLinkDef();
       LinkPath getPath(LNodePath lnp);
+      void incrementCost(LNodePath lnp);
 
       int cost(int i, int j) const;
       inline int imax() const { return _im; };
@@ -100,6 +102,7 @@ namespace YACS
       SceneComposedNodeItem* _bloc;
       int _im;
       int _jm;
+      double _pas;
       std::set<double> _sxm;
       std::set<double> _sym;
       std::vector<double> _xm;

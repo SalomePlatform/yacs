@@ -29,6 +29,7 @@ libYACSloader_la_SOURCES =      \
 	propertyParsers.cxx containerParsers.cxx xmlrpcParsers.cxx \
 	rootParser.cxx codeParsers.cxx \
 	LoadState.cxx  xmlParserBase.cxx ProcCataLoader.cxx   \
+	componentinstanceParsers.cxx \
 	$(__dummy__)
 
 salomeinclude_HEADERS = \
@@ -36,6 +37,7 @@ blocParsers.hxx  codeParsers.hxx      containerParsers.hxx  dataParsers.hxx    f
 linkParsers.hxx  LoadState.hxx        loopParsers.hxx       nodeParsers.hxx    outputParsers.hxx \
 parserBase.hxx   parsers.hxx          portParsers.hxx       presetParsers.hxx  ProcCataLoader.hxx \
 procParsers.hxx  propertyParsers.hxx  rootParser.hxx        switchParsers.hxx \
+	componentinstanceParsers.hxx \
 typeParsers.hxx  xmlParserBase.hxx    xmlrpcParsers.hxx
 
 EXTRA_libYACSloader_la_SOURCES =  \
@@ -151,7 +153,7 @@ _loader_la_CXXFLAGS = \
 
 _loader_la_LDFLAGS  = -module 
 
-_loader_la_LIBADD =  $(OMNIORB_LIBS) $(PYTHON_LDFLAGS) libYACSloader.la 
+_loader_la_LIBADD =  libYACSloader.la $(OMNIORB_LIBS)
 
 EXTRA_DIST = loader.i samples
 

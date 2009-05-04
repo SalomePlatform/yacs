@@ -78,6 +78,34 @@ namespace YACS
       static QColor _runNodeBrushColor;
       static QColor _validNodeColor;
       static QColor _invalidNodeColor;
+
+      static QColor _NOTYETINITIALIZED;
+      static QColor _INITIALISED;
+      static QColor _RUNNING;
+      static QColor _WAITINGTASKS;
+      static QColor _PAUSED;
+      static QColor _FINISHED;
+      static QColor _STOPPED;
+      static QColor _UNKNOWN;
+
+      static QColor _UNDEFINED;
+      static QColor _INVALID;
+      static QColor _READY;
+      static QColor _TOLOAD;
+      static QColor _LOADED;
+      static QColor _TOACTIVATE;
+      static QColor _ACTIVATED;
+      static QColor _DESACTIVATED;
+      static QColor _DONE;
+      static QColor _SUSPENDED;
+      static QColor _LOADFAILED;
+      static QColor _EXECFAILED;
+      static QColor _PAUSE;
+      static QColor _INTERNALERR;
+      static QColor _DISABLED;
+      static QColor _FAILED;
+      static QColor _ERROR;
+      static QColor _DEFAULT;
     };
   }
 }

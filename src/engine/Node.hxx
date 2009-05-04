@@ -42,18 +42,13 @@ namespace YACS
     class DynParaLoop;
     class ForEachLoop;
     class ComposedNode;
+    class Proc;
     class ElementaryNode;
     class Switch;
     class InputDataStreamPort;
     class OutputDataStreamPort;
     class Visitor;
     
-/*! \brief Base class for all nodes
- *
- * \ingroup Nodes
- *
- *
- */
     class Node
     {
       friend class Bloc;
@@ -90,6 +85,7 @@ namespace YACS
     public:
       virtual ~Node();
       virtual void init(bool start=true);
+      virtual void shutdown();
       //! \b This method \b MUST \b NEVER \b BE \b VIRTUAL
       Node *clone(ComposedNode *father, bool editionOnly=true) const;
       void setState(YACS::StatesForNode theState); // To centralize state changes
@@ -142,7 +138,10 @@ namespace YACS
       std::string getImplementation() const;
       virtual ComposedNode *getRootNode() const throw(Exception);
       virtual void setProperty(const std::string& name,const std::string& value);
+      virtual std::string getProperty(const std::string& name);
+      std::map<std::string,std::string> getProperties() { return _propertyMap; };
       virtual Node *getChildByName(const std::string& name) const throw(Exception) = 0;
+      virtual Proc *getProc();
       virtual void accept(Visitor *visitor) = 0;
       std::string getQualifiedName() const;
       int getNumId();

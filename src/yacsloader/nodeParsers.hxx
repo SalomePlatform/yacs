@@ -34,6 +34,7 @@
 #include "Exception.hxx"
 #include "Runtime.hxx"
 #include "Container.hxx"
+#include "ComponentInstance.hxx"
 #include "OutputDataStreamPort.hxx"
 #include "InputDataStreamPort.hxx"
 #include "ComponentInstance.hxx"
@@ -311,27 +312,30 @@ struct sinlinetypeParser:public inlinetypeParser<T>
       DEBTRACE( "sinline_post " << this->_node->getName() );
       if(this->_state == "disabled")this->_node->exDisabledState();
 
-      if(currentProc->containerMap.count(this->_container) != 0)
+      if(!this->_node->getComponent())
+        throw YACS::Exception("A service inline node must have a component instance");
+
+      // If the component instance has already a container don't go further
+      if(this->_node->getComponent()->getContainer())
+        return this->_node;
+
+      // Only for anonymous component instance set a container
+      if(this->_node->getComponent()->isAnonymous())
         {
-          if(this->_node->getComponent())
+          if(currentProc->containerMap.count(this->_container) != 0)
             this->_node->getComponent()->setContainer(currentProc->containerMap[this->_container]);
-        }
-      else if(this->_container == "")
-        {
-          if(currentProc->containerMap.count("DefaultContainer") != 0 && this->_node->getComponent())
-          {
-            //a default container is defined : use it if supported
-            try
+          else if(this->_container == "" && currentProc->containerMap.count("DefaultContainer") != 0)
             {
-              currentProc->containerMap["DefaultContainer"]->checkCapabilityToDealWith(this->_node->getComponent());
-              this->_node->getComponent()->setContainer(currentProc->containerMap["DefaultContainer"]);
+              //a default container is defined : use it if supported
+              try
+                {
+                  currentProc->containerMap["DefaultContainer"]->checkCapabilityToDealWith(this->_node->getComponent());
+                  this->_node->getComponent()->setContainer(currentProc->containerMap["DefaultContainer"]);
+                }
+              catch(YACS::Exception){}
             }
-            catch(YACS::Exception){}
-          }
-        }
-      else
-        {
-          std::cerr << "WARNING: Unknown container " << this->_container << " ignored" << std::endl;
+          else
+            std::cerr << "WARNING: Unknown container " << this->_container << " ignored" << std::endl;
         }
 
       return this->_node;
@@ -348,12 +352,12 @@ void inlinetypeParser<YACS::ENGINE::ServiceInlineNode*>::function (const myfunc&
   fnode=theRuntime->createSInlineNode(_kind,_name);
   fnode->setScript(f._code);
   fnode->setMethod(f._name);
+  // TODO: update with currentProc->createComponentInstance() method
   fnode->setComponent(theRuntime->createComponentInstance("PyCompo","SalomePy"));
-  //fnode->setRef("PyCompo");
   _node=fnode;
 }
 
-static std::string t2[]={"ref","node","component",""};
+static std::string t2[]={"ref","node","component","componentinstance",""};
 
 template <class T=YACS::ENGINE::ServiceNode*>
 struct servicetypeParser:public inlinetypeParser<T>
@@ -368,6 +372,7 @@ struct servicetypeParser:public inlinetypeParser<T>
       if(element == "kind")this->kind(((stringtypeParser*)child)->post());
       else if(element == "ref") ref(((stringtypeParser*)child)->post());
       else if(element == "component") component(((stringtypeParser*)child)->post());
+      else if(element == "componentinstance") componentinstance(((stringtypeParser*)child)->post());
       else if(element == "node") node(((stringtypeParser*)child)->post());
       else if(element == "method") method(((stringtypeParser*)child)->post());
       else if(element == "load") load(((loadtypeParser*)child)->post());
@@ -383,11 +388,24 @@ struct servicetypeParser:public inlinetypeParser<T>
       this->_node=theRuntime->createRefNode(this->_kind,this->_name);
       this->_node->setRef(name);
     }
+
+  virtual void componentinstance (const std::string& name)
+    {
+      DEBTRACE( "componentinstance: " << name )             
+      if(currentProc->componentInstanceMap.count(name) == 0)
+        throw YACS::Exception("Unknown ComponentInstance: "+name);
+      this->_node=theRuntime->createCompoNode(this->_kind,this->_name);
+      YACS::ENGINE::ComponentInstance* inst=currentProc->componentInstanceMap[name];
+      this->_node->setComponent(inst);
+    }
+
   virtual void component (const std::string& name)
     {
       DEBTRACE( "service_component: " << name )             
       this->_node=theRuntime->createCompoNode(this->_kind,this->_name);
-      this->_node->setRef(name);
+      YACS::ENGINE::ComponentInstance* inst=currentProc->createComponentInstance(name,"",this->_node->getKind());
+      this->_node->setComponent(inst);
+      inst->decrRef();
     }
   virtual void node (const std::string& name)
     {
@@ -427,7 +445,7 @@ struct servicetypeParser:public inlinetypeParser<T>
 
   virtual void load (const loadon& l)
     {
-      DEBTRACE( "service_load: " );
+      DEBTRACE( "service_load: " << l._container);
       this->_container=l._container;
     }
 
@@ -497,27 +515,35 @@ struct servicetypeParser:public inlinetypeParser<T>
       this->mincount("method",1);
       if(this->_state == "disabled")this->_node->exDisabledState();
 
-      if(currentProc->containerMap.count(this->_container) != 0)
+      // If the service node has no component instance don't go further return the node
+      if(!this->_node->getComponent())
+        return this->_node;
+      
+      // when container is not defined by <load container="xxx"/> but indirectly by <node>xxx</node>
+      // this->_container is not set, and there is no need to setContainer 
+      // so stop here and return the node
+      if(this->_node->getComponent()->getContainer())
+        return this->_node;
+
+      //If the component instance is anonymous set the container
+      // with the load directive or with the DefaultContainer
+      if(this->_node->getComponent()->isAnonymous())
         {
-          if(this->_node->getComponent())
+          if(currentProc->containerMap.count(this->_container) != 0)
             this->_node->getComponent()->setContainer(currentProc->containerMap[this->_container]);
-        }
-      else if(this->_container == "")
-        {
-          if(currentProc->containerMap.count("DefaultContainer") != 0 && this->_node->getComponent())
-          {
-            //a default container is defined : use it if supported
-            try
+          else if(this->_container == "" && currentProc->containerMap.count("DefaultContainer") != 0)
             {
-              currentProc->containerMap["DefaultContainer"]->checkCapabilityToDealWith(this->_node->getComponent());
-              this->_node->getComponent()->setContainer(currentProc->containerMap["DefaultContainer"]);
+              //a default container is defined : use it if supported
+              try
+                {
+                  currentProc->containerMap["DefaultContainer"]->checkCapabilityToDealWith(this->_node->getComponent());
+                  this->_node->getComponent()->setContainer(currentProc->containerMap["DefaultContainer"]);
+                }
+              catch(YACS::Exception)
+                {}
             }
-            catch(YACS::Exception){}
-          }
-        }
-      else
-        {
-          std::cerr << "WARNING: Unknown container " << this->_container << " ignored" << std::endl;
+          else
+            std::cerr << "WARNING: Unknown container " << this->_container << " ignored" << std::endl;
         }
       return this->_node;
     }
@@ -584,12 +610,14 @@ void servicetypeParser<T>::onStart(const XML_Char* el, const XML_Char** attr)
       this->maxcount("ref",1,element);
       this->maxcount("node",1,element);
       this->maxcount("component",1,element);
+      this->maxcount("componentinstance",1,element);
       this->maxcount("method",1,element);
       this->maxcount("load",1,element);
       this->maxchoice(t2,1,element);
       if(element == "kind")pp=&stringtypeParser::stringParser;
       else if(element == "ref")pp=&stringtypeParser::stringParser;
       else if(element == "component")pp=&stringtypeParser::stringParser;
+      else if(element == "componentinstance")pp=&stringtypeParser::stringParser;
       else if(element == "node")pp=&stringtypeParser::stringParser;
       else if(element == "method")pp=&stringtypeParser::stringParser;
       else if(element == "load")pp=&loadtypeParser::loadParser;

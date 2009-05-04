@@ -20,6 +20,7 @@
 #include "guiObservers.hxx"
 #include "SchemaItem.hxx"
 #include "DataPort.hxx"
+#include "StudyPorts.hxx"
 #include "TypeCode.hxx"
 #include "Switch.hxx"
 
@@ -240,9 +241,11 @@ QWidget *ValueDelegate::createEditor(QWidget *parent,
       if (sport)
         {
           YACS::ENGINE::DataPort *port = sport->getPort();
+          YACS::ENGINE::InputStudyPort* istport=dynamic_cast<YACS::ENGINE::InputStudyPort*>(port);
+          YACS::ENGINE::OutputStudyPort* ostport=dynamic_cast<YACS::ENGINE::OutputStudyPort*>(port);
           YACS::ENGINE::TypeCode *tc = port->edGetType();
           YACS::ENGINE::DynType dt = tc->kind();
-          if (dt == YACS::ENGINE::Int)
+          if (!istport && !ostport && dt == YACS::ENGINE::Int)
             editor = new IntEditor(subject, this, column, parent);
         }
       else if (snode)

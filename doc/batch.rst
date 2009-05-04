@@ -1,43 +1,39 @@
 
 .. _batch:
 
-Lancement d'une application Salomé dans un gestionnaire de Batch
+Starting a SALOME application in a batch manager
 ================================================================
 
-Cette section explique comment utiliser Salomé avec les gestionnaires
-de batch qui sont utilisés dans l'exploitation de clusteurs.
-L'objectif est de lancer une application Salomé avec un script de commande sur un clusteur à partir 
-d'une session Salomé lancée sur la machine personnelle de l'utilisateur. Le script
-contient la tâche que l'utilisateur veut que Salomé exécute. Il s'agit le plus souvent
-du lancement d'un schéma YACS.
+This section explains how Salome is used with batch managers used in the operation of clusters.  
+The objective is to run a Salome application with a command script on a cluster starting from a 
+Salome session running on the user's personal machine.  The script contains the task that the user 
+wants Salome to execute.  The most usual task is to start a YACS scheme.
 
-Principes
----------
+Principles
+-----------
+The start principle is as follows:  starting from a first Salome session, a Salome application is started 
+on a cluster using the batch manager.  Therefore there are two Salome installations:  one on the user’s machine 
+and the other on the cluster.  The user must have an account on the cluster, and must have a read/write access to it.  
+He must also have correctly configured the connection protocol from his own station, regardless of whether he uses rsh or ssh.
 
-Le principe du lancement est le suivant: depuis une première session Salomé, une application
-Salomé est lancée sur le clusteur par le biais du gestionnaire de batch. Il y a donc deux
-installations de Salomé: une sur la machine de l'utilisateur et une autre sur le clusteur.
-Sur le clusteur, l'utilisateur doit avoir un compte, y avoir accès en lecture/écriture. De plus, il doit 
-avoir configuré correctement le protocole de connexion depuis son poste, qu'il utilise rsh ou ssh.
-
-La suite de ce chapitre détaille les différentes étapes du lancement. Tout d'abord, une application Salomé 
-est lancée sur la machine de l'utilisateur avec un fichier CatalogResources.xml contenant la description 
-de la machine batch visée (voir :ref:`catalogresources_batch`). Ensuite, l'utilisateur appelle le service de Salomé pour 
-le lancement sur machine batch. Pour cela, l'utilisateur décrit les fichiers d'entrées et de sorties de l'application 
-Salomé lancée en batch ainsi que du script python à lancer (voir :ref:`service_launcher`). Ce service
-lance ensuite l'application Salomé définit dans le fichier CatalogResources.xml sur la machine batch et 
-exécute le fichier de commande python (voir :ref:`salome_clusteur_batch`).
+The remainder of this chapter describes the different run steps.  Firstly, a Salome application is run on 
+the user’s machine using a CatalogResources.xml file containing the description of the target batch 
+machine (see :ref:`catalogresources_batch`).  The user then calls the Salome service to run it on the batch machine.  
+The user does this by describing input and output files for the Salome application running in batch 
+and for the Python script to be run (see :ref:`service_launcher`).  This service then starts the Salome 
+application defined in the CatalogResources.xml file on the batch machine and executes the Python 
+command file (see :ref:`salome_clusteur_batch`).
 
 .. _catalogresources_batch:
 
-Description du clusteur par le biais du fichier CatalogResources.xml
+Description of the cluster using the CatalogResource.xml file
 --------------------------------------------------------------------
 
-Le fichier CatalogResources.xml contient la description des différentes ressources de calcul (machines) 
-distribuées que Salomé peut utiliser pour lancer ses containers. Il peut aussi contenir la description de 
-clusteurs administrés par des gestionnaires de batch.
+The CatalogResources.xml file contains the description of the different distributed calculation 
+resources (machines) that Salome can use to launch its containers.  It can also contain the description 
+of clusters administered by batch managers.
 
-Voici un exemple de description d'un clusteur:
+The following is an example of description of a cluster:
 
 ::
 
@@ -58,31 +54,25 @@ Voici un exemple de description d'un clusteur:
 	   nbOfNodes="101" 
 	   nbOfProcPerNode="2"/>
   
-Voici la description des différents champs utilisés dans un lancement batch:
+The following is the description of the different fields used when launching a batch:
+ - **hostname**:  names the cluster for Salome commands.  Warning, this name is not used to identify the cluster front end.
+ - **alias**:  names the cluster front end.  It must be possible to reach this machine name using the protocol 
+   defined in the file.  This is the machine that will be used to start the batch session.
+ - **protocol**:  fixes the connection protocol between the user session and the cluster front end.  
+   The possible choices are rsh or ssh.
+ - **userName**:  user name on the cluster.
+ - **mode**:  identifies the description of the machine as a cluster managed by a batch.  The possible choices are 
+   interactive and batch.  The batch option must be chosen for the machine to be accepted as a cluster with a batch manager.
+ - **batch**:  identifies the batch manager.  Possible choices are:  pbs, lsf or sge.
+ - **mpi**:  Salome uses mpi to Start the Salome session and containers on different calculation nodes allocated 
+   by the batch manager.  Possible choices are lam, mpich1, mpich2, openmpi, slurm and prun.  Note that some 
+   batch managers replace the mpi launcher with their own launcher for management of resources, which is the 
+   reason for the slurm and prun options.
+ - **appliPath**:  contains the path of the Salome application previously installed on the cluster.
 
-- **hostname**: nomme le clusteur pour les commandes de Salomé. Attention, ce nom n'est pas 
-  utilisé pour identifier le frontal du clusteur.
-- **alias**: nomme le frontal du clusteur. Ce nom de machine doit être atteignable par le protocole 
-  définit dans le fichier. C'est cette machine qui sera utilisé pour lancer la session batch.
-- **protocol**: fixe le protocole de connexion entre la session utilisateur et le frontal du clusteur.
-  Choix possibles: **rsh** ou **ssh**.
-- **userName**: nom de l'utilisateur sur le clusteur.
-- **mode**: identifie la description de la machine comme un clusteur géré par un batch.
-  Choix possibles: **interactive** ou **batch**. Pour que la machine soit prise en compte comme étant un clusteur
-  avec un gestionnaire de batch, il faut choisir l'option **batch**.
-- **batch**: identifie le gestionnaire de batch. Choix possibles: **pbs**, **lsf** ou **sge**.
-- **mpi**: Salomé utilise **mpi** pour lancer la session Salomé et les containers sur les différents noeuds 
-  de calcul alloués par le gestionnaire de batch. Choix possibles: **lam**, **mpich1**, **mpich2**, **openmpi**, 
-  **slurm** ou **prun**. Il faut noter que certains gestionnaires de batch remplacent le lanceur de mpi 
-  par leur propre lanceur pour la gestion des ressources, d'où les options **slurm** et **prun**.
-- **appliPath**: contient le chemin de l'application Salomé préalablement installée sur le clusteur.
-
-Il existe deux champs optionnels qui peuvent être utiles selon la configuration des clusteurs:
-
-- **batchQueue**: spécifie la queue du gestionnaire de batch à utiliser.
-- **userCommands**: permet d'insérer du code **sh** lors du lancement de Salomé. Ce code est exécuté sur tous
-  les noeuds.  
-
+There are two optional fields that can be useful depending on the configuration of clusters.
+ - **batchQueue**:  specifies the queue of the batch manager to be used
+ - **userCommands**:  to insert the sh code when salome is started.  This code is executed on all nodes.
 
 .. _service_launcher:
 

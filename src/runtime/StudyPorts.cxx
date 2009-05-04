@@ -19,7 +19,10 @@
 #include "StudyPorts.hxx"
 #include "TypeCode.hxx"
 
+#include "SALOMEDS_Attributes.hh"
+
 #include <iostream>
+#include <cstdlib>
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -29,6 +32,14 @@ namespace YACS
 {
 namespace ENGINE
 {
+
+/*! \class YACS::ENGINE::OutputStudyPort
+ *  \brief Class for Study output Ports
+ *
+ * \ingroup Ports
+ *
+ * \see StudyInNode
+ */
 
 OutputStudyPort::OutputStudyPort(const std::string& name,  Node* node, TypeCode* type)
   : OutputXmlPort(name, node, type),
@@ -42,6 +53,11 @@ OutputStudyPort::OutputStudyPort(const OutputStudyPort& other, Node *newHelder)
     DataPort(other,newHelder),
     Port(other,newHelder)
 {
+}
+
+OutputPort* OutputStudyPort::clone(Node *newHelder) const
+{
+  return new OutputStudyPort(*this,newHelder);
 }
 
 void OutputStudyPort::setData(const std::string& data)
@@ -112,6 +128,141 @@ std::string OutputStudyPort::getAsString()
   return getData();
 }
 
+void OutputStudyPort::getDataFromStudy(SALOMEDS::Study_var myStudy)
+{
+      std::string data = getData();
+      DEBTRACE("data: " << data );
+      //try an id
+      SALOMEDS::SObject_var aSO = myStudy->FindObjectID(data.c_str());
+      if(CORBA::is_nil(aSO))
+        {
+          //try a path
+          aSO=myStudy->FindObjectByPath(data.c_str());
+          if(CORBA::is_nil(aSO))
+            {
+              std::stringstream msg;
+              msg << "Execution problem: no id or path: " << data << " in study " << myStudy->StudyId();
+              throw Exception(msg.str());
+            }
+        }
+
+      CORBA::String_var path=myStudy->GetObjectPath(aSO);
+      DEBTRACE(path);
+      CORBA::String_var id=aSO->GetID();
+      DEBTRACE(id);
+      //CORBA::Object_var sobj=aSO->GetObject();
+
+      SALOMEDS::GenericAttribute_var aGAttr;
+      CORBA::String_var value;
+
+      if(edGetType()->kind()==Objref)
+        {
+          if ( aSO->FindAttribute( aGAttr, "AttributeIOR" ) )
+            {
+              SALOMEDS::AttributeIOR_var anAttr = SALOMEDS::AttributeIOR::_narrow( aGAttr );
+              value=anAttr->Value();
+              putIOR((const char*)value);
+            }
+          else
+            {
+              //Problem !!!
+              std::string error="Execution problem: no AttributeIOR in study object: ";
+              error=error+data;
+              throw Exception(error);
+            }
+        }
+      else if(edGetType()->kind()==Double )
+        {
+          if ( aSO->FindAttribute( aGAttr, "AttributeReal" ) )
+            {
+              SALOMEDS::AttributeReal_var anAttr = SALOMEDS::AttributeReal::_narrow( aGAttr );
+              CORBA::Double d=anAttr->Value();
+              std::stringstream msg;
+              msg << "<value><double>" << d << "</double></value>";
+              put(msg.str().c_str());
+            }
+          else
+            {
+              std::string error="Execution problem: no AttributeReal in study object: ";
+              throw Exception(error+data);
+            }
+        }
+      else if(edGetType()->kind()== Int)
+        {
+          if ( aSO->FindAttribute( aGAttr, "AttributeInteger" ) )
+            {
+              SALOMEDS::AttributeInteger_var anAttr = SALOMEDS::AttributeInteger::_narrow( aGAttr );
+              CORBA::Long l=anAttr->Value();
+              std::stringstream msg;
+              msg << "<value><int>" << l << "</int></value>";
+              put(msg.str().c_str());
+            }
+          else
+            {
+              std::string error="Execution problem: no AttributeInteger in study object: ";
+              throw Exception(error+data);
+            }
+        }
+      else
+        {
+          if ( aSO->FindAttribute( aGAttr, "AttributeComment" ) )
+            {
+              SALOMEDS::AttributeComment_var anAttr = SALOMEDS::AttributeComment::_narrow( aGAttr );
+              value=anAttr->Value();
+              DEBTRACE(value);
+              putIOR((const char*)value);
+            }
+          else
+            {
+              std::string error="Execution problem: no AttributeComment in study object: ";
+              throw Exception(error+data);
+            }
+        }
+}
+
+
+
+
+SALOMEDS::SObject_ptr findOrCreateSoWithName(SALOMEDS::Study_ptr study, SALOMEDS::StudyBuilder_ptr builder,
+                                             SALOMEDS::SObject_ptr sobj, const std::string& name)
+{
+  SALOMEDS::ChildIterator_var anIterator= study->NewChildIterator(sobj);
+  SALOMEDS::GenericAttribute_var anAttr;
+  SALOMEDS::AttributeName_var namAttr ;
+  SALOMEDS::SObject_var result=SALOMEDS::SObject::_nil();
+
+  for (; anIterator->More(); anIterator->Next())
+    {
+      SALOMEDS::SObject_var anObj=anIterator->Value();
+      if(anObj->FindAttribute(anAttr, "AttributeName"))
+        {
+          namAttr = SALOMEDS::AttributeName::_narrow( anAttr );
+          CORBA::String_var value=namAttr->Value();
+          if(name == (const char*)value)
+            {
+              result=anObj;
+              break;
+            }
+        }
+    }
+  if(CORBA::is_nil(result))
+    {
+      //create it
+      result = builder->NewObject( sobj );
+      anAttr=builder->FindOrCreateAttribute(result,"AttributeName");
+      namAttr = SALOMEDS::AttributeName::_narrow( anAttr );
+      namAttr->SetValue(name.c_str());
+    }
+  return result._retn();
+}
+
+/*! \class YACS::ENGINE::InputStudyPort
+ *  \brief Class for Study input Ports
+ *
+ * \ingroup Ports
+ *
+ * \see StudyOutNode
+ */
 
 InputStudyPort::InputStudyPort(const std::string& name,  Node* node, TypeCode* type)
   : InputXmlPort(name, node, type),
@@ -125,6 +276,11 @@ InputStudyPort::InputStudyPort(const InputStudyPort& other, Node *newHelder)
     DataPort(other,newHelder),
     Port(other,newHelder)
 {
+}
+
+InputPort* InputStudyPort::clone(Node *newHelder) const
+{
+  return new InputStudyPort(*this,newHelder);
 }
 
 void InputStudyPort::setData(const std::string& data)
@@ -177,6 +333,130 @@ std::string InputStudyPort::getPyObj()
 std::string InputStudyPort::getAsString()
 {
   return getData();
+}
+
+void InputStudyPort::putDataInStudy(SALOMEDS::Study_var myStudy,SALOMEDS::StudyBuilder_var aBuilder)
+{
+    SALOMEDS::GenericAttribute_var aGAttr;
+    SALOMEDS::SObject_var aSO ;
+    SALOMEDS::AttributeName_var anAttr ;
+    SALOMEDS::AttributeIOR_var iorAttr ;
+
+      std::string data = getData();
+      DEBTRACE("data: " << data );
+      //try to find an id
+      aSO = myStudy->FindObjectID(data.c_str());
+      if(CORBA::is_nil(aSO))
+        {
+          // the id does not exist. Try to create it by id
+          aSO=myStudy->CreateObjectID(data.c_str());
+          if(!CORBA::is_nil(aSO))
+            {
+              aGAttr=aBuilder->FindOrCreateAttribute(aSO,"AttributeName");
+              anAttr = SALOMEDS::AttributeName::_narrow( aGAttr );
+              anAttr->SetValue(getName().c_str());
+            }
+        }
+      if(CORBA::is_nil(aSO))
+        {
+          // try a path
+          aSO=myStudy->FindObjectByPath(data.c_str());
+        }
+      if(CORBA::is_nil(aSO))
+        {
+          //try to create it by path
+          std::string name;
+          std::string::size_type begin = data.find_first_not_of("/");
+          std::string::size_type pos=data.find_first_of("/", begin);
+          if (pos != std::string::npos)
+            name=data.substr(begin,pos-begin);
+          else
+            name=data.substr(begin);
+          std::string pname="/"+name;
+          DEBTRACE(pname);
+          aSO=myStudy->FindObjectByPath(pname.c_str());
+          if(CORBA::is_nil(aSO))
+            {
+              DEBTRACE("Create an entry " << name);
+              //create a container component
+              aSO=aBuilder->NewComponent(name.c_str());
+              if(CORBA::is_nil(aSO))
+                {
+                  std::cerr << "Execution problem: can not create component: " + name << std::endl;
+                  return;
+                }
+              aGAttr=aBuilder->FindOrCreateAttribute(aSO,"AttributeName");
+              anAttr = SALOMEDS::AttributeName::_narrow( aGAttr );
+              anAttr->SetValue(name.c_str());
+            }
+          begin=data.find_first_not_of("/",pos);
+          while (begin != std::string::npos)
+            {
+              pos = data.find_first_of("/", begin);
+              if (pos != std::string::npos)
+                name=data.substr(begin,pos-begin);
+              else
+                name=data.substr(begin);
+              aSO=findOrCreateSoWithName(myStudy,aBuilder,aSO,name);
+              begin=data.find_first_not_of("/",pos);
+            }
+        }
+      if(CORBA::is_nil(aSO))
+        {
+          std::cerr << "Execution problem: can not create id or path: " + data + " in study" << std::endl;
+          return;
+        }
+
+      std::string value;
+      SALOMEDS::AttributeComment_var commentAttr ;
+      SALOMEDS::AttributeReal_var realAttr ;
+      SALOMEDS::AttributeInteger_var intAttr ;
+      SALOMEDS::AttributeString_var stringAttr ;
+      double d;
+      long v;
+      switch(edGetType()->kind())
+        {
+           case Objref:
+             value=getIOR();
+             DEBTRACE(value);
+             aGAttr=aBuilder->FindOrCreateAttribute(aSO,"AttributeIOR");
+             iorAttr = SALOMEDS::AttributeIOR::_narrow( aGAttr );
+             iorAttr->SetValue(value.c_str());
+             break;
+           case Double:
+             value=splitXML(dump());
+             DEBTRACE(value);
+             aGAttr=aBuilder->FindOrCreateAttribute(aSO,"AttributeReal");
+             realAttr = SALOMEDS::AttributeReal::_narrow( aGAttr );
+             d=atof(value.c_str());
+             realAttr->SetValue(d);
+             break;
+           case Int:
+             value=splitXML(dump());
+             DEBTRACE(value);
+             aGAttr=aBuilder->FindOrCreateAttribute(aSO,"AttributeInteger");
+             intAttr = SALOMEDS::AttributeInteger::_narrow( aGAttr );
+             v=atol(value.c_str());
+             intAttr->SetValue(v);
+             break;
+           case String:
+           case Bool:
+             value=splitXML(dump());
+             DEBTRACE(value);
+             aGAttr=aBuilder->FindOrCreateAttribute(aSO,"AttributeComment");
+             commentAttr = SALOMEDS::AttributeComment::_narrow( aGAttr );
+             commentAttr->SetValue(value.c_str());
+             break;
+           default:
+             value=dump();
+             DEBTRACE(value);
+             aGAttr=aBuilder->FindOrCreateAttribute(aSO,"AttributeComment");
+             commentAttr = SALOMEDS::AttributeComment::_narrow( aGAttr );
+             commentAttr->SetValue(value.c_str());
+        }
+
+
+
 }
 
 }

@@ -52,10 +52,36 @@ SchemaInPortItem::SchemaInPortItem(SchemaItem *parent, QString label, Subject* s
     {
       DataPort *dport = subPort->getPort();
       TypeOfElem typort = ProcInvoc::getTypeOfPort(dport);
+      TypeOfElem typnode = ProcInvoc::getTypeOfNode(dport->getNode());
 //       _itemData.replace(YType, dport->edGetType()->getKindRepr());
       _itemData.replace(YType, dport->edGetType()->name());
       _itemForeground.replace(YType, QColor("black"));
       InputPort *inport = 0;
+
+      if(typnode==YACS::HMI::STUDYOUTNODE)
+        {
+          //It's a study out node
+          if(typort==YACS::HMI::INPUTPORT)
+            {
+              _itemDeco.replace(YLabel, QIcon("icons:in_port.png"));
+              inport = dynamic_cast<InputPort*>(dport);
+              std::string val=inport->getAsString();
+              if(val != "")
+                {
+                  _itemData.replace(YValue, val.c_str());
+                  if (inport->edGetNumberOfLinks())
+                    _itemForeground.replace(YValue, QColor("green"));
+                  else
+                    _itemForeground.replace(YValue, QColor("red"));
+                }
+              else
+                {
+                  _itemData.replace(YValue, "not initialized");
+                  _itemForeground.replace(YValue, QColor("red"));
+                }
+            }
+          return;
+        }
 
       switch (typort)
         {
@@ -102,10 +128,82 @@ void SchemaInPortItem::update(GuiEvent event, int type, Subject* son)
         SubjectInputPort *sip = dynamic_cast<SubjectInputPort*>(son);
         if (sip)
           {
-            DataFlowPort *port = dynamic_cast<DataFlowPort*>(sip->getPort());
+            InputPort* port = dynamic_cast<InputPort*>(sip->getPort());
+            TypeOfElem typnode = ProcInvoc::getTypeOfNode(port->getNode());
             DEBTRACE(port->getAsString());
-            _itemData.replace(YValue, port->getAsString().c_str());
-            _itemForeground.replace(YValue, QColor("green"));
+            if(typnode==YACS::HMI::STUDYOUTNODE)
+              {
+                if(port->getAsString().empty())
+                  {
+                    _itemData.replace(YValue, "not initialized");
+                    if (port->edGetNumberOfLinks())
+                      _itemForeground.replace(YValue, QColor("blue"));
+                    else
+                      _itemForeground.replace(YValue, QColor("red"));
+                  }
+                else
+                  {
+                    _itemData.replace(YValue, port->getAsString().c_str());
+                    if (port->edGetNumberOfLinks())
+                      _itemForeground.replace(YValue, QColor("green"));
+                    else
+                      _itemForeground.replace(YValue, QColor("red"));
+                  }
+              }
+            else
+              {
+                _itemData.replace(YValue, port->getAsString().c_str());
+                _itemForeground.replace(YValue, QColor("green"));
+              }
+            model->setData(modelIndex(YValue), 0); // --- to emit dataChanged signal
+          }
+      }
+      break;
+    case UPDATE:
+      {
+        SubjectInputPort *sip = dynamic_cast<SubjectInputPort*>(_subject);
+        if (sip)
+          {
+            InputPort* port = dynamic_cast<InputPort*>(sip->getPort());
+            TypeOfElem typnode = ProcInvoc::getTypeOfNode(port->getNode());
+            TypeOfElem typort = ProcInvoc::getTypeOfPort(port);
+            if(typnode==YACS::HMI::STUDYOUTNODE)
+              {
+                if(port->getAsString().empty())
+                  {
+                    _itemData.replace(YValue, "not initialized");
+                    if (port->edGetNumberOfLinks())
+                      _itemForeground.replace(YValue, QColor("blue"));
+                    else
+                      _itemForeground.replace(YValue, QColor("red"));
+                  }
+                else
+                  {
+                    _itemData.replace(YValue, port->getAsString().c_str());
+                    if (port->edGetNumberOfLinks())
+                      _itemForeground.replace(YValue, QColor("green"));
+                    else
+                      _itemForeground.replace(YValue, QColor("red"));
+                  }
+              }
+            else
+              {
+                if (port->edGetNumberOfLinks())
+                  {
+                    _itemData.replace(YValue, "linked");
+                    _itemForeground.replace(YValue, QColor("blue"));
+                  }
+                else if (port->edIsManuallyInitialized())
+                  {
+                    _itemData.replace(YValue, port->getAsString().c_str());
+                    _itemForeground.replace(YValue, QColor("green"));
+                  }
+                else
+                  {
+                    _itemData.replace(YValue, "not initialized");
+                    _itemForeground.replace(YValue, QColor("red"));
+                  }
+              }
             model->setData(modelIndex(YValue), 0); // --- to emit dataChanged signal
           }
       }
@@ -174,7 +272,7 @@ bool SchemaInPortItem::dropMimeData(const QMimeData* data, Qt::DropAction action
         if (!sub) break;
         SubjectDataPort* from = dynamic_cast<SubjectDataPort*>(sub);
         if (from && to)
-          if (!SubjectDataPort::tryCreateLink(from, to))
+          if (!SubjectDataPort::tryCreateLink(from, to,myData->getControl()))
             Message mess;
         break;
       }

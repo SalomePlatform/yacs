@@ -224,15 +224,6 @@ SessionCataLoader::~SessionCataLoader()
   DEBTRACE ("SessionCataLoader::~SessionCataLoader");
 }
 
-TypeCode * createInterfaceTc(const std::string& id, const std::string& name,
-                             std::list<TypeCodeObjref *> ltc)
-{
-    std::string myName;
-    if(id == "") myName = "IDL:" + name + ":1.0";
-    else myName = id;
-    return TypeCode::interfaceTc(myName.c_str(),name.c_str(),ltc);
-}
-
 void SessionCataLoader::loadTypes(Catalog* cata,SALOME_ModuleCatalog::ModuleCatalog_ptr catalog)
 {
   Runtime* r=getRuntime();
@@ -267,7 +258,7 @@ void SessionCataLoader::loadTypes(Catalog* cata,SALOME_ModuleCatalog::ModuleCata
         {
           const char* content=types_list[i].content;
           if ( typeMap.find(content) != typeMap.end() )
-            typeMap[name]=TypeCode::sequenceTc(name,name,typeMap[content]);
+            typeMap[name]=r->createSequenceTc(name,name,typeMap[content]);
           //else ignored !!
         }
       else if(types_list[i].kind == SALOME_ModuleCatalog::Array)
@@ -285,11 +276,11 @@ void SessionCataLoader::loadTypes(Catalog* cata,SALOME_ModuleCatalog::ModuleCata
                 ltc.push_back((TypeCodeObjref *)typeMap[b_name]);
               //else ignored !!!
             }
-          typeMap[name]=TypeCode::interfaceTc(id,name,ltc);
+          typeMap[name]=r->createInterfaceTc(id,name,ltc);
         }
       else if(types_list[i].kind == SALOME_ModuleCatalog::Struc)
         {
-          TypeCodeStruct* t=(TypeCodeStruct*)TypeCode::structTc("",name);
+          TypeCodeStruct* t=r->createStructTc("",name);
           for (int m=0; m< types_list[i].members.length(); m++)
             {
               const char* m_name=types_list[i].members[m].name;

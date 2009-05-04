@@ -96,9 +96,9 @@ namespace YACS
  
       CppContainer();
       virtual ~CppContainer();
-      bool isAlreadyStarted() const;
-      void start() throw (YACS::Exception);
-      std::string getPlacementId() const;
+      bool isAlreadyStarted(const ComponentInstance *inst) const;
+      void start(const ComponentInstance *inst) throw (YACS::Exception);
+      std::string getPlacementId(const ComponentInstance *inst) const;
       YACS::ENGINE::Container *clone() const;
 
       void lock();

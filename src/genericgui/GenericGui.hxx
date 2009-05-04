@@ -133,9 +133,13 @@ namespace YACS
       QAction *_arrangeLocalNodesAct;
       QAction *_arrangeRecurseNodesAct;
       QAction *_computeLinkAct;
+      QAction *_zoomToBlocAct;
+      QAction *_centerOnNodeAct;
+
       QAction *_toggleAutomaticComputeLinkAct;
       QAction *_toggleSimplifyLinkAct;
       QAction *_toggleForce2NodesLinkAct;
+      QAction *_toggleAddRowColsAct;
       QAction *_toggleSceneItemVisibleAct;
       QAction *_selectReferenceAct;
       QAction *_whatsThisAct;
@@ -237,9 +241,12 @@ namespace YACS
       void onArrangeLocalNodes();
       void onArrangeRecurseNodes();
       void onRebuildLinks();
+      void onZoomToBloc();
+      void onCenterOnNode();
       void onToggleAutomaticComputeLinks(bool checked);
       void onToggleSimplifyLinks(bool checked);
       void onToggleForce2NodesLinks(bool checked);
+      void onToggleAddRowCols(bool checked);
 
       void onToggleSceneItemVisible(bool checked);
 

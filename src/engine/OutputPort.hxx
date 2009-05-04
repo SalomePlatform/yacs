@@ -43,6 +43,7 @@ namespace YACS
       friend class OptimizerLoop;         // for interceptors
       friend class InputPort;
       friend class Runtime;               // for port creation
+      friend class ForLoop;               // for port creation
     public:
       virtual ~OutputPort();
       std::set<InPort *> edSetInPort() const;

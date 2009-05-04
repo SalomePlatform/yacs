@@ -101,7 +101,7 @@ void SceneInPortItem::dropEvent(QGraphicsSceneDragDropEvent *event)
   SubjectDataPort* from = dynamic_cast<SubjectDataPort*>(subFrom);
   SubjectDataPort* to = dynamic_cast<SubjectDataPort*>(subTo);
   if (from && to)
-    if (!SubjectDataPort::tryCreateLink(from, to))
+    if (!SubjectDataPort::tryCreateLink(from, to,myData->getControl()))
       Message mess;
 }
 

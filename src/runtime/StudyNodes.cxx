@@ -20,6 +20,8 @@
 #include "StudyNodes.hxx"
 #include "StudyPorts.hxx"
 #include "Visitor.hxx"
+#include "TypeCode.hxx"
+#include "SalomeProc.hxx"
 
 #include "SALOME_NamingService.hxx"
 #include "SALOMEDS.hh"
@@ -29,6 +31,7 @@
 #include <sstream>
 #include <string>
 #include <list>
+#include <stdlib.h>
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -91,6 +94,17 @@ void StudyInNode::execute()
       // StudyId is specified
       studyid=atoi(_propertyMap["StudyID"].c_str());
     }
+  else
+    {
+      Proc* p=getProc();
+      if(p)
+        {
+          std::string value=p->getProperty("DefaultStudyID");
+          if(!value.empty())
+            studyid= atoi(value.c_str());
+        }
+    }
+
 
   SALOMEDS::Study_var myStudy =aStudyManager->GetStudyByID(studyid);
   if(CORBA::is_nil(myStudy)) 
@@ -105,43 +119,15 @@ void StudyInNode::execute()
   for(iter = _setOfOutputPort.begin(); iter != _setOfOutputPort.end(); iter++)
     {
       OutputStudyPort *outp = dynamic_cast<OutputStudyPort *>(*iter);
-      std::string data = outp->getData();
-      DEBTRACE("data: " << data );
-      //try an id
-      SALOMEDS::SObject_var aSO = myStudy->FindObjectID(data.c_str());
-      if(CORBA::is_nil(aSO)) 
+      try
         {
-          //try a path
-          aSO=myStudy->FindObjectByPath(data.c_str());
-          if(CORBA::is_nil(aSO)) 
-            {
-              _errorDetails="Execution problem: no id or path: ";
-              _errorDetails=_errorDetails+data+" in study";
-              throw Exception(_errorDetails);
-            }
+          outp->getDataFromStudy(myStudy);
         }
-
-      CORBA::String_var path=myStudy->GetObjectPath(aSO);
-      DEBTRACE(path);
-      CORBA::String_var id=aSO->GetID();
-      DEBTRACE(id);
-      //CORBA::Object_var sobj=aSO->GetObject();
-      SALOMEDS::GenericAttribute_var aGAttr;
-
-      CORBA::String_var value;
-      if ( aSO->FindAttribute( aGAttr, "AttributeIOR" ) )
+      catch(Exception& e)
         {
-          SALOMEDS::AttributeIOR_var anAttr = SALOMEDS::AttributeIOR::_narrow( aGAttr );
-          value=anAttr->Value();
+          _errorDetails=e.what();
+          throw;
         }
-      else
-        {
-          //Problem !!!
-          _errorDetails="Execution problem: no AttributeIOR in study object: ";
-          _errorDetails=_errorDetails+data;
-          throw Exception(_errorDetails);
-        }
-      outp->putIOR((const char*)value);
     }
   DEBTRACE("+++++++ end StudyInNode::execute +++++++++++" );
 }
@@ -217,6 +203,7 @@ void StudyOutNode::setData(InputPort* port, const std::string& data)
   inp->setData(data);
 }
 
+/*
 SALOMEDS::SObject_ptr findOrCreateSoWithName(SALOMEDS::Study_ptr study, SALOMEDS::StudyBuilder_ptr builder,
                                              SALOMEDS::SObject_ptr sobj, const std::string& name)
 {
@@ -249,6 +236,7 @@ SALOMEDS::SObject_ptr findOrCreateSoWithName(SALOMEDS::Study_ptr study, SALOMEDS
     }
   return result._retn();
 }
+*/
 
 void StudyOutNode::execute()
 {
@@ -273,6 +261,16 @@ void StudyOutNode::execute()
     {
       // StudyId is specified
       studyid=atoi(_propertyMap["StudyID"].c_str());
+    }
+  else
+    {
+      Proc* p=getProc();
+      if(p)
+        {
+          std::string value=p->getProperty("DefaultStudyID");
+          if(!value.empty())
+            studyid= atoi(value.c_str());
+        }
     }
 
   SALOMEDS::Study_var myStudy =aStudyManager->GetStudyByID(studyid);
@@ -306,75 +304,7 @@ void StudyOutNode::execute()
   for(iter = _setOfInputPort.begin(); iter != _setOfInputPort.end(); iter++)
     {
       InputStudyPort *inp = dynamic_cast<InputStudyPort *>(*iter);
-      std::string data = inp->getData();
-      DEBTRACE("data: " << data );
-      //try to find an id
-      aSO = myStudy->FindObjectID(data.c_str());
-      if(CORBA::is_nil(aSO)) 
-        {
-          // the id does not exist. Try to create it by id
-          aSO=myStudy->CreateObjectID(data.c_str());
-          if(!CORBA::is_nil(aSO)) 
-            {
-              aGAttr=aBuilder->FindOrCreateAttribute(aSO,"AttributeName");
-              anAttr = SALOMEDS::AttributeName::_narrow( aGAttr );
-              anAttr->SetValue(inp->getName().c_str());
-            }
-        }
-      if(CORBA::is_nil(aSO)) 
-        {
-          // try a path
-          aSO=myStudy->FindObjectByPath(data.c_str());
-        }
-      if(CORBA::is_nil(aSO)) 
-        {
-          //try to create it by path
-          std::string name;
-          std::string::size_type begin = data.find_first_not_of("/");
-          std::string::size_type pos=data.find_first_of("/", begin);
-          if (pos != std::string::npos)
-            name=data.substr(begin,pos-begin);
-          else
-            name=data.substr(begin);
-          name="/"+name;
-          DEBTRACE(name);
-          aSO=myStudy->FindObjectByPath(name.c_str());
-          if(CORBA::is_nil(aSO)) 
-            {
-              DEBTRACE("Create an entry " << name);
-              //create a container component
-              aSO=aBuilder->NewComponent(name.c_str());
-              if(CORBA::is_nil(aSO)) 
-                {
-                  std::cerr << "Execution problem: can not create component: " + data << std::endl;
-                  continue;
-                }
-              aGAttr=aBuilder->FindOrCreateAttribute(aSO,"AttributeIOR");
-              iorAttr = SALOMEDS::AttributeIOR::_narrow( aGAttr );
-              iorAttr->SetValue(name.c_str());
-            }
-          begin=data.find_first_not_of("/",pos);
-          while (begin != std::string::npos)
-            {
-              pos = data.find_first_of("/", begin);
-              if (pos != std::string::npos)
-                name=data.substr(begin,pos-begin);
-              else
-                name=data.substr(begin);
-              aSO=findOrCreateSoWithName(myStudy,aBuilder,aSO,name);
-              begin=data.find_first_not_of("/",pos);
-            }
-        }
-      if(CORBA::is_nil(aSO)) 
-        {
-          std::cerr << "Execution problem: can not create id or path: " + data + " in study" << std::endl;
-          continue;
-        }
-      std::string value=inp->getIOR();
-      DEBTRACE(value);
-      aGAttr=aBuilder->FindOrCreateAttribute(aSO,"AttributeIOR");
-      iorAttr = SALOMEDS::AttributeIOR::_narrow( aGAttr );
-      iorAttr->SetValue(value.c_str());
+      inp->putDataInStudy(myStudy,aBuilder);
     }
 
   // save in file if ref is given

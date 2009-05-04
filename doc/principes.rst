@@ -3,24 +3,22 @@
 
 .. _principes:
 
-Principes généraux de YACS
+YACS general principles
 ===============================
-La construction d'un schéma de calcul s'appuie sur le concept de noeud de calcul.
-Un noeud de calcul représente un calcul élémentaire qui peut être l'exécution
-locale d'un script Python ou l'exécution distante d'un service de composant SALOME.
+A calculation scheme is constructed based on the calculation node concept.  
+A calculation node represents an elementary calculation that can be the local execution of a Python 
+script or the remote execution of a SALOME component service.
 
-Le schéma de calcul est un assemblage de noeuds de calcul plus ou moins complexe.
+The calculation scheme is a more or less complex assembly of calculation nodes.
 
-Cet assemblage est réalisé par connexion de ports d'entrée et de sortie de ces noeuds
-de calcul.
+This assembly is made by connecting input and output ports of these calculation nodes.
 
-Les données sont échangées entre noeuds via les ports. Elles sont typées.
+Data are exchanged between nodes through ports.  They are typed.
 
-Les noeuds composés : Bloc, Loop, Switch, permettent de modulariser un schéma de calcul 
-et de définir des processus itératifs, des calculs paramétriques ou des débranchements.
+Composite nodes:  Block, Loop, Switch are used to modularise a calculation scheme and define 
+iterative processes, parametric calculations or branches.
 
-Enfin les containers permettent de définir où seront exécutés les composants SALOME 
-(sur un réseau ou un cluster).
+Finally, containers can be used to define where SALOME components will be executed (on a network or in a cluster).
 
 .. _datatypes:
 

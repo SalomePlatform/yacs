@@ -20,23 +20,19 @@
 #define _STUDYPORTS_HXX_
 
 #include "XMLPorts.hxx"
+#include "SALOMEDS.hh"
 
 namespace YACS
 {
   namespace ENGINE
   {
 
-/*! \brief Class for Study output Ports 
- *
- * \ingroup Ports
- *
- * \see StudyInNode
- */
     class OutputStudyPort: public OutputXmlPort
     {
     public:
       OutputStudyPort(const std::string& name,  Node* node, TypeCode* type);
       OutputStudyPort(const OutputStudyPort& other, Node *newHelder);
+      OutputPort *clone(Node *newHelder) const;
       void setData(const std::string& data);
       std::string getData();
       virtual void putIOR(const std::string& ior);
@@ -44,21 +40,17 @@ namespace YACS
       virtual std::string getPyObj();
       virtual std::string getAsString();
       virtual std::string typeName() {return "YACS__ENGINE__OutputStudyPort";}
+      virtual void getDataFromStudy(SALOMEDS::Study_var myStudy);
     protected:
       std::string _storeData;
     };
 
-/*! \brief Class for Study input Ports
- *
- * \ingroup Ports
- *
- * \see StudyOutNode
- */
     class InputStudyPort: public InputXmlPort
     {
     public:
       InputStudyPort(const std::string& name,  Node* node, TypeCode* type);
       InputStudyPort(const InputStudyPort& other, Node *newHelder);
+      InputPort *clone(Node *newHelder) const;
       void setData(const std::string& data);
       std::string getData();
       virtual std::string getIOR();
@@ -67,6 +59,7 @@ namespace YACS
       virtual std::string getPyObj();
       virtual std::string getAsString();
       virtual std::string typeName() {return "YACS__ENGINE__InputStudyPort";}
+      virtual void putDataInStudy(SALOMEDS::Study_var myStudy,SALOMEDS::StudyBuilder_var aBuilder);
     protected:
       std::string _storeData;
     };

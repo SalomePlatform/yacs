@@ -57,7 +57,7 @@ x afficher les types de donnees DataStream dans arbre et edition -> en exec: too
 x numerotation automatique objets cree tient compte des noms existant
 x couleur differente des liens datastream
 
-- ajouter un bouton create container dans panneau composant du noeud
+= ajouter un bouton create container dans panneau composant du noeud
 - edition port outNode (xml): definir fichier sortie
 - edition ports studyInNode, studyOutNode (controle types possibles...)
 - edition ForEachLoop: type, samples ? (nbBranch OK)
@@ -71,7 +71,7 @@ x couleur differente des liens datastream
 - edition, modification objet
 
 - affichage etat schema modifie depuis derniere sauvegarde fichier
-- couleur differente des liens de donnees simples (sans controle associe)
+= couleur differente des liens de donnees simples (sans controle associe)
 - icones differentes pour edition et run dans object browser
 
 - differents designs / canvas (interface generique)
@@ -84,7 +84,7 @@ x couleur differente des liens datastream
 
 - drag & drop de ports pour l'ordre dans le tableau, dans la scene
 - creation de liens par menu
-  distinguer les liens simples (sans contrôle)
+x distinguer les liens simples (sans contrôle)
 - deplacement de noeud a la souris: pouvoir passer par dessus un bloc
   (pressed + touche...) transparence, finir le deplacement que s'il y a
   la place, ou pousser le bloc ?
@@ -180,14 +180,14 @@ x panneau edition function Node: controler nom de fonction saisie (validation)
 x panneau edition function Node: remonter le nom de fonction
 x remontee d'erreur en edition: le contenu de la log proc ne change pas, quand c'est en erreur
 
-- SIGSEV en sortie de SALOME apres destruction de la fenetre execution
-- destruction d'un lien, impact sur la disposition des noeuds
+= SIGSEV en sortie de SALOME apres destruction de la fenetre execution
+x destruction d'un lien, impact sur la disposition des noeuds
 
 - remontee d'erreur en execution : log d'erreurs consolidees dans les blocs, affichee dans la proc 
 - cases a cocher link automatique peu visibles
-- verifier le python des scripts a l'edition (compiler)
-- pas de tooltip quand on est sur le texte du scene item
-- tooltip curieux HEADER...
+= verifier le python des scripts a l'edition (compiler)
+= pas de tooltip quand on est sur le texte du scene item
+= tooltip curieux HEADER...
 - faire apparaitre le nom du composant quelque part sur le sceneNodeItem (tooltip ?)
 
 - execution noeud default de switch : pas marque DONE dans arbre et vue 2D

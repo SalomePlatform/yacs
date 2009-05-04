@@ -68,6 +68,7 @@ Executor::~Executor()
 /*!
  *  \param graph : schema to execute
  *  \param debug : display the graph with dot if debug == 1
+ *  \param fromScratch : if true the graph is reinitialized
  *
  *  Calls Scheduler::getNextTasks and Scheduler::selectRunnableTasks to select tasks to execute
  *  
@@ -140,7 +141,7 @@ void Executor::RunA(Scheduler *graph,int debug, bool fromScratch)
  *  To be launch in a thread (main thread controls the progression).
  *  \param graph : schema to execute
  *  \param debug : display the graph with dot if debug >0
- *  \param fromscratch : if false, state from a previous partial exection is already loaded
+ *  \param fromScratch : if false, state from a previous partial exection is already loaded
  *
  *  Calls Scheduler::getNextTasks and Scheduler::selectRunnableTasks to select tasks to execute
  *  

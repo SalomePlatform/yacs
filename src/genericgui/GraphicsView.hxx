@@ -23,6 +23,7 @@
 
 #include <QContextMenuEvent>
 #include <QAction>
+#include <QGraphicsRectItem>
 
 namespace YACS
 {
@@ -42,20 +43,26 @@ namespace YACS
       virtual void onViewZoom();
       virtual void onViewPan(); 
       virtual void onViewGlobalPan(); 
-      virtual void onViewReset(); 
+      virtual void onViewReset();
+
+      virtual void onZoomToBloc();
+      virtual void onCenterOnNode();
 
     protected:
       void contextMenuEvent(QContextMenuEvent *event);
       void mouseMoveEvent (QMouseEvent *e);
       void mousePressEvent (QMouseEvent *e);
       void mouseReleaseEvent (QMouseEvent *e);
+      virtual void wheelEvent (QWheelEvent *e);
 
       bool _zooming;
       bool _fittingArea;
       bool _panning;
       int _prevX;
+      int _prevY;
       qreal _scale;
       QPoint _prevPos;
+      QGraphicsRectItem *_rect;
     };
   }
 }

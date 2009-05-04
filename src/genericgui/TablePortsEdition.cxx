@@ -27,6 +27,9 @@
 #include "InputPort.hxx"
 #include "OutputPort.hxx"
 #include "ElementaryNode.hxx"
+#include "Scene.hxx"
+#include "SceneItem.hxx"
+#include "SceneComposedNodeItem.hxx"
 
 #include <QItemSelectionModel>
 #include <QDialog>
@@ -142,6 +145,13 @@ void TablePortsEdition::upOrDown(int isUp)
       SubjectElementaryNode* sen = dynamic_cast<SubjectElementaryNode*>(sub);
       YASSERT(sen);
       sen->OrderDataPorts(spToMove,isUp);
+      if (Scene::_autoComputeLinks)
+        {
+          YACS::HMI::SubjectProc* subproc = QtGuiContext::getQtCurrent()->getSubjectProc();
+          SceneItem *item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[subproc];
+          SceneComposedNodeItem *proc = dynamic_cast<SceneComposedNodeItem*>(item);
+          proc->rebuildLinks();
+        }
     }
 }
 

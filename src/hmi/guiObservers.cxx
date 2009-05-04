@@ -1011,13 +1011,15 @@ SubjectLink* SubjectComposedNode::addSubjectLink(SubjectNode *sno,
   spo->addSubjectLink(son);
   spi->addSubjectLink(son);
   update(ADDLINK, DATALINK, son);
+  spi->update(UPDATE, DATALINK, spo);
+  spo->update(UPDATE, DATALINK, spi);
   DEBTRACE("addSubjectLink: " << getName() << " " << son->getName());
   return son;
 }
 
 void SubjectComposedNode::removeLink(SubjectLink* link)
 {
-  DEBTRACE("removeSubjectLink: " << link->getName());
+  DEBTRACE("removeLink: " << link->getName());
 
   OutPort *outp = dynamic_cast<OutPort*>(link->getSubjectOutPort()->getPort());
   InPort  *inp  = dynamic_cast<InPort*>(link->getSubjectInPort()->getPort());
@@ -1765,12 +1767,12 @@ void SubjectServiceNode::setComponentFromCatalog(YACS::ENGINE::Catalog *catalog,
         {
           Proc* proc = GuiContext::getCurrent()->getProc();
           ComponentInstance *instance = 0;
-          instance = new SalomeComponent(compo);
-          proc->componentInstanceMap[instance->getInstanceName()] = instance;
+          instance = _serviceNode->getComponent();
+          YASSERT(instance);
+          proc->addComponentInstance(instance,"");
           SubjectComponent* subCompo = GuiContext::getCurrent()->getSubjectProc()->addSubjectComponent(instance);
           YASSERT(subCompo);
           addSubjectReference(subCompo);
-          _serviceNode->setComponent(instance);
           if (_subRefComponent)
             subCompo->moveService(_subRefComponent);
           else
@@ -1795,7 +1797,11 @@ void SubjectServiceNode::setComponent()
       if (! GuiContext::getCurrent()->_mapOfSubjectComponent.count(instance))
         {
 	  DEBTRACE("SubjectServiceNode::setComponent : create subject for compo = " << compo.c_str());
-          proc->componentInstanceMap[instance->getInstanceName()] = instance;
+          if(proc->componentInstanceMap.count(instance->getInstanceName())==0)
+            {
+              std::cerr << "PROBLEM : ComponentInstance should be registered in proc, add it " << instance->getInstanceName() << std::endl;
+              proc->componentInstanceMap[instance->getInstanceName()] = instance;
+            }
           subCompo =
             GuiContext::getCurrent()->getSubjectProc()->addSubjectComponent(instance);
         }
@@ -2845,6 +2851,32 @@ bool SubjectDataPort::tryCreateLink(SubjectDataPort *subOutport, SubjectDataPort
         }
       DEBTRACE(scla->getName());
       scla->addSubjectLink(sno, subOutport, sni, subInport);
+      // if control link, identify the nodes linked and draw the control link of not already existing
+      if (control)
+        {
+          Node *outn = sno->getNode();
+          Node *inn = sni->getNode();
+          if (!outn || !inn) return true;
+          ComposedNode* father = ComposedNode::getLowestCommonAncestor(outn,inn);
+          if(outn==father || inn==father) return true;
+          while(outn->getFather() != father)
+            outn = outn->getFather();
+          while(inn->getFather() != father)
+            inn = inn->getFather();
+          OutGate *ogate = outn->getOutGate();
+          InGate *igate = inn->getInGate();
+          if (ogate->isAlreadyInSet(igate))
+            {
+              pair<Node*,Node*> keyLink(outn,inn);
+              if (!GuiContext::getCurrent()->_mapOfSubjectControlLink.count(keyLink))
+                {
+                  SubjectNode *sfno = GuiContext::getCurrent()->_mapOfSubjectNode[outn];
+                  SubjectNode *sfni = GuiContext::getCurrent()->_mapOfSubjectNode[inn];
+                  if (!sfno || !sfni) return true;
+                  scla->addSubjectControlLink(sfno, sfni);
+                }
+            }
+        }
       return true;
     }
   else
@@ -3109,6 +3141,8 @@ SubjectLink::SubjectLink(SubjectNode* subOutNode,
 SubjectLink::~SubjectLink()
 {
   DEBTRACE("SubjectLink::~SubjectLink " << getName());
+  _inPort->update(UPDATE,DATALINK,_outPort);
+  _outPort->update(UPDATE,DATALINK,_inPort);
 }
 
 void SubjectLink::clean()

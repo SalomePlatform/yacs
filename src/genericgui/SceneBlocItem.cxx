@@ -94,53 +94,53 @@ void SceneBlocItem::arrangeChildNodes()
   // ---- Initialize and set attributes for the graph
   
   Agsym_t* attr;
-  if ( !(attr = agfindattr(_graph, "compound")))
-    attr = agraphattr(_graph, "compound", "false");
-  agxset(_graph, attr->index, "true");
+  if ( !(attr = agfindattr(_graph, (char *)"compound")))
+    attr = agraphattr(_graph, (char *)"compound", (char *)"false");
+  agxset(_graph, attr->index, (char *)"true");
 
-  if ( !(attr = agfindattr(_graph, "rankdir")))
-    attr = agraphattr(_graph, "rankdir", "TB");
-  agxset(_graph, attr->index, "LR");
+  if ( !(attr = agfindattr(_graph, (char *)"rankdir")))
+    attr = agraphattr(_graph, (char *)"rankdir", (char *)"TB");
+  agxset(_graph, attr->index, (char *)"LR");
 
-//   if ( !(attr = agfindattr(_graph, "ordering")))
-//     attr = agraphattr(_graph, "ordering", "" );
-//   agxset(_graph, attr->index, "in" );
+//   if ( !(attr = agfindattr(_graph, (char *)"ordering")))
+//     attr = agraphattr(_graph, (char *)"ordering", (char *)"" );
+//   agxset(_graph, attr->index, (char *)"in" );
   
-  if ( !(attr = agfindattr(_graph, "dpi")))
-    attr = agraphattr(_graph, "dpi", "72");
-  agxset(_graph, attr->index, "72"); // --- must be coherent with #define DPI
+  if ( !(attr = agfindattr(_graph, (char *)"dpi")))
+    attr = agraphattr(_graph, (char *)"dpi", (char *)"72");
+  agxset(_graph, attr->index, (char *)"72"); // --- must be coherent with #define DPI
 
   // --- label is used to reserve place for bloc banners (adjust size with font !)
 
-  if ( !(attr = agfindattr(_graph, "label")))
-    attr = agraphattr(_graph, "label", "label");
-  agxset(_graph, attr->index, "myLabel");
+  if ( !(attr = agfindattr(_graph, (char *)"label")))
+    attr = agraphattr(_graph, (char *)"label", (char *)"label");
+  agxset(_graph, attr->index, (char *)"myLabel");
 
-  if ( !(attr = agfindattr(_graph, "labelloc")))
-    attr = agraphattr(_graph, "labelloc", "top");
-  agxset(_graph, attr->index, "top");
+  if ( !(attr = agfindattr(_graph, (char *)"labelloc")))
+    attr = agraphattr(_graph, (char *)"labelloc", (char *)"top");
+  agxset(_graph, attr->index, (char *)"top");
 
-  if ( !(attr = agfindattr(_graph, "fontsize")))
-    attr = agraphattr(_graph, "fontsize", "24");
-  agxset(_graph, attr->index, "24");
+  if ( !(attr = agfindattr(_graph, (char *)"fontsize")))
+    attr = agraphattr(_graph, (char *)"fontsize", (char *)"24");
+  agxset(_graph, attr->index, (char *)"24");
 
-  if ( !(attr = agfindattr(_graph, "splines")))
-    attr = agraphattr(_graph, "splines", "");
-  agxset(_graph, attr->index, "");
+  if ( !(attr = agfindattr(_graph, (char *)"splines")))
+    attr = agraphattr(_graph, (char *)"splines", (char *)"");
+  agxset(_graph, attr->index, (char *)"");
 
   // --- Initialize attributes for nodes
 
-  if ( !(attr = agfindattr( _graph->proto->n, "height")))
-    attr = agnodeattr(_graph, "height", "" );
+  if ( !(attr = agfindattr( _graph->proto->n, (char *)"height")))
+    attr = agnodeattr(_graph, (char *)"height", (char *)"" );
 
-  if ( !(attr = agfindattr( _graph->proto->n, "width")))
-    attr = agnodeattr(_graph, "width", "" );
+  if ( !(attr = agfindattr( _graph->proto->n, (char *)"width")))
+    attr = agnodeattr(_graph, (char *)"width", (char *)"" );
 
-  if ( !(attr = agfindattr( _graph->proto->n, "shape")))
-    attr = agnodeattr(_graph, "shape", "" );
+  if ( !(attr = agfindattr( _graph->proto->n, (char *)"shape")))
+    attr = agnodeattr(_graph, (char *)"shape", (char *)"" );
 
-  if ( !(attr = agfindattr( _graph->proto->n, "fixedsize")))
-    attr = agnodeattr(_graph, "fixedsize", "false" );
+  if ( !(attr = agfindattr( _graph->proto->n, (char *)"fixedsize")))
+    attr = agnodeattr(_graph, (char *)"fixedsize", (char *)"false" );
 
   // ---- Bind graph to graphviz context - must be done before layout
   // ---- Compute a layout
@@ -160,7 +160,7 @@ void SceneBlocItem::arrangeChildNodes()
       //DEBTRACE("external render for test");
       //gvRenderFilename(aGvc, _mainGraph, "dot", "graph1.dot");
       DEBTRACE("compute layout");
-      gvLayout(aGvc, _graph, "dot");
+      gvLayout(aGvc, _graph, (char *)"dot");
       DEBTRACE("external render for test");
 #ifdef _DEVDEBUG_
       gvRenderFilename(aGvc, _graph, "dot", "graph2.dot");
@@ -228,10 +228,10 @@ void  SceneBlocItem::getNodesInfo(YACS::ENGINE::ComposedNode *cnode)
       width  = QString(_format.c_str()).arg(lw, 0, 'g', 3);
 
       DEBTRACE(aNode->name << " (" << nh << "," << nw << ") = (" << height.toStdString()  << " ; " << width.toStdString() <<")");
-      agxset( aNode, agfindattr(_graph->proto->n,"height")->index, (char*)(height.toAscii().data()));
-      agxset( aNode, agfindattr(_graph->proto->n,"width")->index, (char*)(width.toAscii().data()));
-      agxset( aNode, agfindattr(_graph->proto->n,"shape")->index, "box" );
-      agxset( aNode, agfindattr(_graph->proto->n,"fixedsize")->index, "true" );
+      agxset( aNode, agfindattr(_graph->proto->n,(char *)"height")->index, (char*)(height.toAscii().data()));
+      agxset( aNode, agfindattr(_graph->proto->n,(char *)"width")->index, (char*)(width.toAscii().data()));
+      agxset( aNode, agfindattr(_graph->proto->n,(char *)"shape")->index, (char *)"box" );
+      agxset( aNode, agfindattr(_graph->proto->n,(char *)"fixedsize")->index, (char *)"true" );
     }
 
   // --- Create edges (i.e. links)

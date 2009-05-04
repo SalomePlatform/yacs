@@ -47,7 +47,7 @@ void SalomePythonComponent::load()
 {
   if(_container)
     {
-      _container->start();
+      _container->start(this);
       return;
     }
   //This component has no specified container : use default container policy
@@ -64,7 +64,7 @@ bool SalomePythonComponent::isLoaded()
   if(!_container)
     return false;
   else
-    return _container->isAlreadyStarted();
+    return _container->isAlreadyStarted(this);
 }
 
 std::string SalomePythonComponent::getKind() const
@@ -103,5 +103,5 @@ std::string SalomePythonComponent::getStringValueToExportInInterp() const
   if(!_container)
     return "localhost/FactoryServer";
   else
-    return _container->getPlacementId();
+    return _container->getPlacementId(this);
 }

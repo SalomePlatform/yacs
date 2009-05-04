@@ -121,4 +121,13 @@ struct loadon
     std::string _container;
 };
 
+struct mycomponentinstance
+{
+  std::string _name;
+  std::string _kind;
+  std::string _component;
+  std::string _container;
+  std::map<std::string,std::string> _props;
+};
+
 #endif

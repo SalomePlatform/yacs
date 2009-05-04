@@ -51,7 +51,12 @@ namespace YACS
       virtual TypeCode* getTypeCode(const std::string& name);
       virtual void setTypeCode(const std::string& name,TypeCode *t);
       virtual Container* createContainer(const std::string& name,const std::string& kind="");
+      virtual ComponentInstance* createComponentInstance(const std::string& componame, 
+                                                         const std::string& name="",
+                                                         const std::string& kind="");
+      virtual void addComponentInstance(ComponentInstance* inst, const std::string& name="");
       virtual void accept(Visitor *visitor);
+      virtual Proc *getProc();
 
       YACS::StatesForNode getNodeState(int numId);
       std::string getInPortValue(int nodeNumId, std::string portName);
@@ -86,6 +91,7 @@ namespace YACS
       virtual void saveState(std::string xmlStateFile);
     protected:
       bool _edition;
+      int _compoinstctr;
 
     };
   }

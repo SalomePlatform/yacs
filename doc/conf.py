@@ -88,10 +88,9 @@ pygments_style = 'sphinx'
 # Options for HTML output
 # -----------------------
 
-# The style sheet to use for HTML and HTML Help pages. A file of that name
-# must exist either in Sphinx' static/ path, or in one of the custom paths
-# given in html_static_path.
-html_style = 'default.css'
+# The theme to use for HTML and HTML Help pages.  Major themes that come with
+# Sphinx are currently 'default' and 'sphinxdoc'.
+html_theme = 'default'
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -165,7 +164,8 @@ latex_font_size = '10pt'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, document class [howto/manual]).
 latex_documents = [
-  ('index', 'yacs.tex', 'Documentation YACS', 'C. Caremoli, N. Crouzet, P. Rascle, A. Ribes, E. Fayolle, M. Tajchman', 'manual'),
+  ('using', 'using.tex', 'YACS User Documentation', 'C. Caremoli, N. Crouzet, P. Rascle, A. Ribes, E. Fayolle, M. Tajchman', 'manual'),
+  ('integration', 'integration.tex', 'YACS Integration Documentation', 'C. Caremoli, N. Crouzet, P. Rascle, A. Ribes, E. Fayolle, M. Tajchman', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of

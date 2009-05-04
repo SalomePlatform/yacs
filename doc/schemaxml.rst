@@ -1,38 +1,33 @@
 .. _schemaxml:
 
-Définition d'un schéma de calcul au format XML
+Defining a calculation scheme in the XML format
 =================================================
-Un fichier XML qui décrit un schéma de calcul peut contenir les informations suivantes:
+An XML file that describes a calculation scheme can contain the following information:
+ - definitions of data types
+ - definitions of containers
+ - definitions of elementary calculation nodes
+ - definitions of composite nodes
+ - definitions of connections between nodes
+ - initialisations
 
-   * des définitions de types de données
-   * des définitions de containers
-   * des définitions de noeuds de calcul élémentaires
-   * des définitions de noeuds composés
-   * des définitions de connexions entre noeuds
-   * des initialisations 
+These definitions will be presented progressively. We will start with:
+ - the definition of data types
+ - the definition of a sub-set of elementary nodes
+ - the definition of non-datastream connections
+ - the definition of composite nodes
 
-La présentation de ces définitions sera faite progressivement. On commence
-dans un premier temps par :
+We will then add complements on:
+ - the definition of containers
+ - the definition of node properties
+ - the definition of datastream connections
+ - the definition of the remaining elementary nodes.
 
-  - la définition des types de données 
-  - la définition d'un sous ensemble de noeuds élémentaires
-  - la définition des connexions non datastream
-  - la définition des noeuds composés
-
-Dans un deuxième temps, on ajoute des compléments sur :
-
-  - la définition des containers
-  - la définition des propriétés de noeuds
-  - la définition des connexions datastream
-  - la définition du reste des noeuds élémentaires
-
-Un schéma de calcul est défini en utilisant le tag XML proc.
-Le schéma de calcul le plus simple est le suivant::
+A calculation scheme is defined using the XML proc tag.  The simplest calculation scheme is as follows::
 
   <proc>
   </proc>
 
-Il ne contient aucune définition et ne fait rien. 
+It contains no definition and it does nothing.
 
 Définition des types de données
 ---------------------------------

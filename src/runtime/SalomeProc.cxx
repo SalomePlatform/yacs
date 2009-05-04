@@ -22,6 +22,7 @@
 #include "Container.hxx"
 #include "VisitorSaveSalomeSchema.hxx"
 #include <iostream>
+#include <cstdlib>
 
 using namespace YACS::ENGINE;
 
@@ -66,4 +67,15 @@ void SalomeProc::saveSchema(std::string xmlSchemaFile)
   vss.closeFileSchema();
 }
 
-
+//! Get the default study id for the proc
+/*!
+ * \return the study id
+ */
+int SalomeProc::getDefaultStudyId()
+{
+  std::string value=getProperty("DefaultStudyID");
+  if(value.empty())
+    return 1;
+  else
+    return atoi(value.c_str());
+}

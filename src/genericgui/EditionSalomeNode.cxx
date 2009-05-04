@@ -114,6 +114,7 @@ void EditionSalomeNode::update(GuiEvent event, int type, Subject* son)
       YASSERT(subref);
       DEBTRACE(subref->getName() << " " << subref->getReference()->getName());
       fillComponentPanel();
+      fillContainerPanel();
       break;
 
     case ASSOCIATE:
@@ -173,10 +174,13 @@ void EditionSalomeNode::fillContainerPanel()
       for(; it != proc->containerMap.end(); ++it)
         _wComponent->cb_container->addItem( QString((*it).first.c_str()));
 
-      int index = _wComponent->cb_container->findText(compoInst->getContainer()->getName().c_str());
-      _wComponent->cb_container->setCurrentIndex(index);
-
-      _wContainer->FillPanel(compoInst->getContainer());
+      Container * cont = compoInst->getContainer();
+      if (cont)
+        {
+          int index = _wComponent->cb_container->findText(cont->getName().c_str());
+          _wComponent->cb_container->setCurrentIndex(index);
+          _wContainer->FillPanel(cont);
+        }
     }
 }
 
@@ -184,18 +188,6 @@ void EditionSalomeNode::fillContainerPanel()
 void EditionSalomeNode::changeInstance(int index)
 {
   string instName = _wComponent->cb_instance->itemText(index).toStdString();
-  int i = instName.find_last_of('_');
-  if (i<0) return;
-
-  DEBTRACE(instName << " "  << i);
-  string compoName = instName;
-  compoName.erase(i);
-  string inst = instName;
-  inst.erase(0,i+1);
-  DEBTRACE(instName << " " << compoName << " " << inst);
-  i = atoi(inst.c_str());
-  pair<string,int> aKey(compoName,i);
-
   Proc* proc = GuiContext::getCurrent()->getProc();
   ComponentInstance *newCompoInst = 0;
   ComponentInstance *oldCompoInst = _servNode->getComponent();

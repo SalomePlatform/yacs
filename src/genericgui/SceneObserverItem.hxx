@@ -45,6 +45,7 @@ namespace YACS
       virtual QString getMimeFormat();
       Subject* _subject;
       bool _draging;
+      bool _dragModifier;
     };
   }
 }

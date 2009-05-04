@@ -33,6 +33,7 @@ namespace YACS
       SchemaDirContainersItem(SchemaItem *parent, QString label, Subject* subject);
       void addContainerItem(Subject* subject);
       void addComponentItem(Subject* subject);
+      virtual void popupMenu(QWidget *caller, const QPoint &globalPos);
     protected:
       std::map<std::string, SchemaContainerItem*> _schemaContItemMap;
       std::multimap<std::string, Subject*> _waitingCompItemMap;

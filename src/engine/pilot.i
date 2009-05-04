@@ -115,6 +115,7 @@ REFCOUNT_TEMPLATE(CONTAINmap,YACS::ENGINE::Container)
 %template()              std::pair<std::string, std::string>;
 %template(propmap)       std::map<std::string, std::string>;
 
+REFCOUNT_TEMPLATE(CompoInstmap,YACS::ENGINE::ComponentInstance)
 /*
  * End of Template section
  */
@@ -175,6 +176,7 @@ REFCOUNT_TEMPLATE(CONTAINmap,YACS::ENGINE::Container)
 %include <Exception.hxx>
 %include <ConversionException.hxx>
 %include <Runtime.hxx>
+%include <PropertyInterface.hxx>
 
 PYEXCEPTION(YACS::ENGINE::Executor::RunW)
 PYEXCEPTION(YACS::ENGINE::Executor::RunB)
@@ -248,6 +250,7 @@ EXCEPTION(YACS::ENGINE::ExecutorSwig::waitPause)
 %include <AnyInputPort.hxx>
 %include <ConditionInputPort.hxx>
 %include <OutputPort.hxx>
+%include <AnyOutputPort.hxx>
 %include <InputDataStreamPort.hxx>
 %include <OutputDataStreamPort.hxx>
 %include <DataPort.hxx>

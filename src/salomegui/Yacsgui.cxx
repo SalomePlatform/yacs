@@ -67,6 +67,8 @@ void Yacsgui::initialize( CAM_Application* app )
   DEBTRACE(app << "  " << application() << " " << application()->desktop() << " " << aParent);
 
   SUIT_ResourceMgr* aResourceMgr = app->resourceMgr();
+  setResource(aResourceMgr);
+
   _wrapper = new SuitWrapper(this);
   _genericGui = new GenericGui(_wrapper, app->desktop());
 

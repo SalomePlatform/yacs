@@ -263,17 +263,21 @@ void SceneItem::checkGeometryChange()
   if (wider || (_optimize && (newWidth < _width)))
     {
       deltaW = newWidth - _width;
-      _width = newWidth;
       resize = true;
     }
   if (higher || (_optimize && (newHeight < _height)))
     {
       deltaH = newHeight - _height;
-      _height = newHeight;
       resize = true;
     }
 //   DEBTRACE("SceneItem::checkGeometryChange "<<_label.toStdString() <<
 //            " " << wider << " " << higher << " " << changeWidth <<  " " << resize);
+  if (resize)
+    { 
+      prepareGeometryChange();
+      _width = newWidth;
+      _height = newHeight;
+    }
   if (aNode)
     {
       if (changeWidth) aNode->adjustHeader();
@@ -287,15 +291,23 @@ void SceneItem::checkGeometryChange()
   if (resize)
     { 
 //       DEBTRACE("SceneItem::checkGeometryChange "<<_label.toStdString()<<" "<<_width<<" "<<_height);
-      prepareGeometryChange();
+      update();
       if (_parent)
         _parent->checkGeometryChange();
     }
 }
 
+/*! generic behaviour for headers:
+ *  obtain the tooltip from parent.
+ *  Method to be redefined in derived classes.
+ */
 QString SceneItem::getToolTip()
 {
-  return _label;
+  QString tooltip = _label;
+  SceneItem *parent = getParent();
+  if (parent)
+    tooltip = parent->getToolTip();
+  return tooltip;
 }
 
 // /*!
@@ -367,3 +379,7 @@ void SceneItem::popupMenu(QWidget *caller, const QPoint &globalPos)
   m.popupMenu(caller, globalPos);
 }
 
+void SceneItem::setEventPos(QPointF point)
+{
+  _eventPos = mapFromScene(point);
+}

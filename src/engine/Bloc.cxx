@@ -31,6 +31,12 @@
 using namespace YACS::ENGINE;
 using namespace std;
 
+/*! \class YACS::ENGINE::Bloc
+ *  \brief Composed node to group elementary and composed nodes
+ *
+ * \ingroup Nodes
+ */
+
 Bloc::Bloc(const Bloc& other, ComposedNode *father, bool editionOnly):StaticDefinedComposedNode(other,father),_fwLinks(0),_bwLinks(0)
 {
   for(list<Node *>::const_iterator iter=other._setOfNode.begin();iter!=other._setOfNode.end();iter++)
@@ -478,10 +484,13 @@ void Bloc::destructCFComputations(LinkInfo& info) const
  *  Perform updates of containers regarding attributes of link 'start' -> 'end' and check the correct linking.
  *  The output is in info struct.
  *
- * \param fw out parameter beeing append if start -> end link is a forward link \b without cross type DF/DS.
- * \param fwCross out parameter beeing append if start -> end link is a forward link \b with cross type DF/DS.
- * \param bw out parameter beeing append if start -> end link is a backward link.
- * \param info out parameter beeing informed about eventual errors.
+ * \param start : start port
+ * \param end : end port
+ * \param cross : 
+ * \param fw out parameter being append if start -> end link is a forward link \b without cross type DF/DS.
+ * \param fwCross out parameter being append if start -> end link is a forward link \b with cross type DF/DS.
+ * \param bw out parameter being append if start -> end link is a backward link.
+ * \param info out parameter being informed about eventual errors.
  */
 void Bloc::checkControlDependancy(OutPort *start, InPort *end, bool cross,
                                   std::map < ComposedNode *,  std::list < OutPort * >, SortHierarc >& fw,
@@ -510,10 +519,14 @@ void Bloc::checkControlDependancy(OutPort *start, InPort *end, bool cross,
       info.pushErrLink(start,end,E_DS_LINK_UNESTABLISHABLE);
 }
 
+//! Check if two nodes are linked
 /*!
  * 'start' and 'end' \b must be direct son of 'this'.
  * Typically used for data link.
+ * \param start : start node
+ * \param end : end node
  * \param fw indicates if it is a forward link searched (true : default value) or a backward link serach.
+ * \return if true or false
  */
 bool Bloc::areLinked(Node *start, Node *end, bool fw) const
 {
@@ -521,9 +534,13 @@ bool Bloc::areLinked(Node *start, Node *end, bool fw) const
   return nexts.find(end)!=nexts.end();
 }
 
+//! Check if two nodes can run in parallel
 /*!
  * Typically used for stream link.
  * 'start' and 'end' \b must be direct son of 'this'.
+ * \param start : start node
+ * \param end : end node
+ * \return true or false
  */
 bool Bloc::arePossiblyRunnableAtSameTime(Node *start, Node *end) const
 {
@@ -532,10 +549,13 @@ bool Bloc::arePossiblyRunnableAtSameTime(Node *start, Node *end) const
   return nexts.find(end)==nexts.end() && preds.find(end)==preds.end();
 }
 
+//! Check control flow links
 /*!
  * \param starts If different of 0, must aggregate at leat \b 1 element.
+ * \param end : end port
  * \param alreadyFed in/out parameter. Indicates if 'end' ports is already and surely set or fed by an another port.
  * \param direction If true : forward direction else backward direction.
+ * \param info : collected information
  */
 void Bloc::checkCFLinks(const std::list<OutPort *>& starts, InputPort *end, unsigned char& alreadyFed, bool direction, LinkInfo& info) const
 {
@@ -571,9 +591,15 @@ void Bloc::initComputation() const
 
 /*!
  * Part of final step for CF graph anylizing. This is the part of non collapse nodes. 
+ * \param pool :
+ * \param end :
+ * \param candidates :
  * \param alreadyFed in/out parameter. Indicates if 'end' ports is already and surely set or fed by an another port.
+ * \param direction
+ * \param info : collected information
  */
-void Bloc::verdictForOkAndUseless1(const std::map<Node *,std::list <OutPort *> >& pool, InputPort *end, const std::vector<Node *>& candidates, unsigned char& alreadyFed, 
+void Bloc::verdictForOkAndUseless1(const std::map<Node *,std::list <OutPort *> >& pool, InputPort *end, 
+                                   const std::vector<Node *>& candidates, unsigned char& alreadyFed, 
                                    bool direction, LinkInfo& info)
 {
   for(vector<Node *>::const_iterator iter=candidates.begin();iter!=candidates.end();iter++)
@@ -610,9 +636,15 @@ void Bloc::verdictForOkAndUseless1(const std::map<Node *,std::list <OutPort *> >
 
 /*!
  * Part of final step for CF graph anylizing. This is the part of collapses nodes. 
+ * \param pool :
+ * \param end :
+ * \param candidates :
  * \param alreadyFed in/out parameter. Indicates if 'end' ports is already and surely set or fed by an another port.
+ * \param direction
+ * \param info : collected information
  */
-void Bloc::verdictForCollapses(const std::map<Node *,std::list <OutPort *> >& pool, InputPort *end, const std::set<Node *>& candidates, unsigned char& alreadyFed, 
+void Bloc::verdictForCollapses(const std::map<Node *,std::list <OutPort *> >& pool, InputPort *end, 
+                               const std::set<Node *>& candidates, unsigned char& alreadyFed, 
                                bool direction, LinkInfo& info)
 {
   info.startCollapseTransac();
@@ -715,7 +747,7 @@ void Bloc::seekUseless2(std::vector<Node *>& useless2, std::set<Node *>& allNode
 /*! 
  * Internal method : Given a succeful path : updates 'fastFinder'
  */
-void Bloc::updateWithNewFind(const std::vector<Node *>& path, map<Node *, std::set<Node *> >& fastFinder)
+void Bloc::updateWithNewFind(const std::vector<Node *>& path, std::map<Node *, std::set<Node *> >& fastFinder)
 {
   if(path.size()>=3)
     {

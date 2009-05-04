@@ -72,6 +72,9 @@ FormContainer::FormContainer(QWidget *parent)
   connect(cb_policy, SIGNAL(activated(const QString&)),
           this, SLOT(onModifyPolicy(const QString&)));
 
+  connect(cb_type, SIGNAL(activated(const QString&)),
+          this, SLOT(onModifyType(const QString&)));
+
   connect(le_workdir, SIGNAL(textChanged(const QString&)),
           this, SLOT(onModifyWorkDir(const QString&)));
 
@@ -121,10 +124,19 @@ void FormContainer::FillPanel(YACS::ENGINE::Container *container)
       le_name->setText("not defined");
     }
 
+  cb_type->clear();
+  cb_type->addItem("mono");
+  cb_type->addItem("multi");
+  int i=0;
+  if(_properties.count("type") && _properties["type"]=="multi")i=1;
+  cb_type->setCurrentIndex(i);
+
   vector<string> policies;
   policies.push_back("cycl");
+  policies.push_back("altcycl");
   policies.push_back("best");
   policies.push_back("first");
+  cb_policy->clear();
   for(int i=0; i< policies.size(); i++)
     cb_policy->addItem(policies[i].c_str());
   if(_properties.count("policy"))
@@ -141,7 +153,7 @@ void FormContainer::FillPanel(YACS::ENGINE::Container *container)
     cb_policy->setCurrentIndex(0);
   
   cb_host->clear();
-  cb_host->addItem(""); // --- when no host selected
+  cb_host->addItem("automatic"); // --- when no host selected
 
   list<string> machines = QtGuiContext::getQtCurrent()->getGMain()->getMachineList();
   list<string>::iterator itm = machines.begin();
@@ -149,7 +161,7 @@ void FormContainer::FillPanel(YACS::ENGINE::Container *container)
     {
       cb_host->addItem(QString((*itm).c_str()));
     }
-  if(_properties.count("hostname"))
+  if(_properties.count("hostname") && _properties["hostname"] != "")
     {
       int index = cb_host->findText(_properties["hostname"].c_str());
       if (index >= 0)
@@ -265,12 +277,22 @@ void FormContainer::onModifyHost(const QString &text)
 {
   DEBTRACE("onModifyHost " << text.toStdString());
   if (!_container) return;
+  std::string host=text.toStdString();
+  if(host=="automatic")host="";
   map<string,string> properties = _container->getProperties();
-  if (properties["hostname"] != text.toStdString())
-    {
-      _properties["hostname"] = text.toStdString();
-      onModified();
-    }
+  _properties["hostname"] = host;
+  if (properties["hostname"] != host)
+    onModified();
+}
+
+void FormContainer::onModifyType(const QString &text)
+{
+  DEBTRACE("onModifyType " << text.toStdString());
+  if (!_container) return;
+  std::string prop=_container->getProperty("type");
+  _properties["type"] = text.toStdString();
+  if (prop != text.toStdString())
+    onModified();
 }
 
 void FormContainer::onModifyPolicy(const QString &text)
@@ -278,9 +300,9 @@ void FormContainer::onModifyPolicy(const QString &text)
   DEBTRACE("onModifyPolicy " << text.toStdString());
   if (!_container) return;
   map<string,string> properties = _container->getProperties();
+  _properties["policy"] = text.toStdString();
   if (properties["policy"] != text.toStdString())
     {
-      _properties["policy"] = text.toStdString();
       onModified();
     }
 }
@@ -290,9 +312,9 @@ void FormContainer::onModifyWorkDir(const QString &text)
   DEBTRACE("onModifyWorkDir " << text.toStdString());
   if (!_container) return;
   map<string,string> properties = _container->getProperties();
+  _properties["workingdir"] = text.toStdString();
   if (properties["workingdir"] != text.toStdString())
     {
-      _properties["workingdir"] = text.toStdString();
       onModified();
     }
 }
@@ -302,9 +324,9 @@ void FormContainer::onModifyContName(const QString &text)
   DEBTRACE("onModifyContName " << text.toStdString());
   if (!_container) return;
   map<string,string> properties = _container->getProperties();
+  _properties["container_name"] = text.toStdString();
   if (properties["container_name"] != text.toStdString())
     {
-      _properties["container_name"] = text.toStdString();
       onModified();
     }
 }
@@ -314,9 +336,9 @@ void FormContainer::onModifyOS(const QString &text)
   DEBTRACE("onModifyOS " << text.toStdString());
   if (!_container) return;
   map<string,string> properties = _container->getProperties();
+  _properties["OS"] = text.toStdString();
   if (properties["OS"] != text.toStdString())
     {
-      _properties["OS"] = text.toStdString();
       onModified();
     }
 }
@@ -326,9 +348,9 @@ void FormContainer::onModifyParLib(const QString &text)
   DEBTRACE("onModifyParLib " << text.toStdString());
   if (!_container) return;
   map<string,string> properties = _container->getProperties();
+  _properties["parallelLib"] = text.toStdString();
   if (properties["parallelLib"] != text.toStdString())
     {
-      _properties["parallelLib"] = text.toStdString();
       onModified();
     }
 }
@@ -341,9 +363,9 @@ void FormContainer::onModifyIsMPI(bool isMpi)
   if (isMpi) text = "true";
   DEBTRACE(text);
   map<string,string> properties = _container->getProperties();
+  _properties["isMPI"] = text;
   if (properties["isMPI"] != text)
     {
-      _properties["isMPI"] = text;
       onModified();
     }
 }
@@ -353,9 +375,9 @@ void FormContainer::onModifyMem(const QString &text)
   DEBTRACE("onModifyMem " << text.toStdString());
   if (!_container) return;
   map<string,string> properties = _container->getProperties();
+  _properties["mem_mb"] = text.toStdString();
   if (properties["mem_mb"] != text.toStdString())
     {
-      _properties["mem_mb"] = text.toStdString();
       onModified();
     }
 }
@@ -365,9 +387,9 @@ void FormContainer::onModifyClock(const QString &text)
   DEBTRACE("onModifyClock " << text.toStdString());
   if (!_container) return;
   map<string,string> properties = _container->getProperties();
+  _properties["cpu_clock"] = text.toStdString();
   if (properties["cpu_clock"] != text.toStdString())
     {
-      _properties["cpu_clock"] = text.toStdString();
       onModified();
     }
 }
@@ -377,9 +399,9 @@ void FormContainer::onModifyNodes(const QString &text)
   DEBTRACE("onModifyNodes " << text.toStdString());
   if (!_container) return;
   map<string,string> properties = _container->getProperties();
+  _properties["nb_node"] = text.toStdString();
   if (properties["nb_node"] != text.toStdString())
     {
-      _properties["nb_node"] = text.toStdString();
       onModified();
     }
 }
@@ -389,9 +411,9 @@ void FormContainer::onModifyProcs(const QString &text)
   DEBTRACE("onModifyProcs " << text.toStdString());
   if (!_container) return;
   map<string,string> properties = _container->getProperties();
+  _properties["nb_proc_per_node"] = text.toStdString();
   if (properties["nb_proc_per_node"] != text.toStdString())
     {
-      _properties["nb_proc_per_node"] = text.toStdString();
       onModified();
     }
 }
@@ -401,9 +423,9 @@ void FormContainer::onModifyCompos(const QString &text)
   DEBTRACE("onModifyCompo " << text.toStdString());
   if (!_container) return;
   map<string,string> properties = _container->getProperties();
+  _properties["nb_component_nodes"] = text.toStdString();
   if (properties["nb_component_nodes"] != text.toStdString())
     {
-      _properties["nb_component_nodes"] = text.toStdString();
       onModified();
     }
 }

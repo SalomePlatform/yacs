@@ -43,12 +43,12 @@ std::string ContainerTest::getPlacementInfo() const
   return stream.str();
 }
 
-bool ContainerTest::isAlreadyStarted() const
+bool ContainerTest::isAlreadyStarted(const ComponentInstance *inst) const
 {
   return _alreadyStarted;
 }
 
-void ContainerTest::start() throw(Exception)
+void ContainerTest::start(const ComponentInstance *inst) throw(Exception)
 {
   if(_alreadyStarted)
     throw Exception("ContainerTest already started !!!!");
@@ -81,12 +81,12 @@ ContainerTest2::ContainerTest2():_alreadyStarted(false),_myCounter(_counter++)
 {
 }
 
-bool ContainerTest2::isAlreadyStarted() const
+bool ContainerTest2::isAlreadyStarted(const ComponentInstance *inst) const
 {
   return _alreadyStarted;
 }
 
-void ContainerTest2::start() throw(Exception)
+void ContainerTest2::start(const ComponentInstance *inst) throw(Exception)
 {
   if(_alreadyStarted)
     throw Exception("ContainerTest already started !!!!");

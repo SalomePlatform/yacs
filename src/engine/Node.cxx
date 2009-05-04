@@ -31,6 +31,12 @@
 using namespace YACS::ENGINE;
 using namespace std;
 
+/*! \class YACS::ENGINE::Node
+ *  \brief Base class for all nodes
+ *
+ * \ingroup Nodes
+ */
+
 const char Node::SEP_CHAR_IN_PORT[]=".";
 
 int Node::_total = 0;
@@ -305,6 +311,13 @@ void Node::edDisconnectAllLinksWithMe()
   _outGate.edDisconnectAllLinksFromMe();
 }
 
+Proc *Node::getProc()
+{
+  if(!_father)
+    return 0;
+  return _father->getProc();
+}
+
 ComposedNode *Node::getRootNode() const throw(Exception)
 {
   if(!_father)
@@ -360,6 +373,12 @@ void Node::setProperty(const std::string& name, const std::string& value)
 {
     _propertyMap[name]=value;
 }
+
+std::string Node::getProperty(const std::string& name)
+{
+  return _propertyMap[name];
+}
+
 
 //! Return the node state in the context of its father
 /*!
@@ -629,4 +648,13 @@ std::string Node::getStateName(YACS::StatesForNode state)
       _nodeStateName[YACS::ERROR] ="ERROR";
     }
   return _nodeStateName[state];
+}
+
+//! Stop all pending activities of the node
+/*!
+ * This method should be called when a Proc is finished and must be deleted from the YACS server
+ */
+void Node::shutdown()
+{
+  std::cerr << "Node::shutdown" << std::endl;
 }

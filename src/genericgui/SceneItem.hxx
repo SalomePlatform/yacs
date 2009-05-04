@@ -131,6 +131,7 @@ namespace YACS
       virtual void popupMenu(QWidget *caller, const QPoint &globalPos);
       void setParent(SceneItem* parent);
       virtual QString getToolTip();
+      void setEventPos(QPointF point);
 
     protected:
 //       virtual bool sceneEvent(QEvent *event);
@@ -142,6 +143,7 @@ namespace YACS
       virtual QColor getBrushColor();
       QColor hoverColor(QColor origColor);
       bool _hover;
+      QPointF _eventPos;
     };
 
   }

@@ -19,6 +19,7 @@
 #include "SceneElementaryNodeItem.hxx"
 #include "SceneInPortItem.hxx"
 #include "SceneOutPortItem.hxx"
+#include "SceneComposedNodeItem.hxx"
 #include "guiObservers.hxx"
 #include "commandsProc.hxx"
 #include "Scene.hxx"
@@ -96,6 +97,13 @@ void SceneElementaryNodeItem::update(GuiEvent event, int type, Subject* son)
                                       son);
           autoPosNewPort(item, _inPorts.size());
           _inPorts.push_back(item);
+          if (Scene::_autoComputeLinks && !QtGuiContext::getQtCurrent()->isLoading())
+            {
+              YACS::HMI::SubjectProc* subproc = QtGuiContext::getQtCurrent()->getSubjectProc();
+              SceneItem *item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[subproc];
+              SceneComposedNodeItem *proc = dynamic_cast<SceneComposedNodeItem*>(item);
+              proc->rebuildLinks();
+            }
           break;
         case YACS::HMI::OUTPUTPORT:
         case YACS::HMI::OUTPUTDATASTREAMPORT:
@@ -105,6 +113,13 @@ void SceneElementaryNodeItem::update(GuiEvent event, int type, Subject* son)
                                        son);
           autoPosNewPort(item, _outPorts.size());
           _outPorts.push_back(item);
+          if (Scene::_autoComputeLinks && !QtGuiContext::getQtCurrent()->isLoading())
+            {
+              YACS::HMI::SubjectProc* subproc = QtGuiContext::getQtCurrent()->getSubjectProc();
+              SceneItem *item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[subproc];
+              SceneComposedNodeItem *proc = dynamic_cast<SceneComposedNodeItem*>(item);
+              proc->rebuildLinks();
+            }
            break;
 //         default:
 //           DEBTRACE("SceneElementaryNodeItem::update() ADD, type not handled:" << type);

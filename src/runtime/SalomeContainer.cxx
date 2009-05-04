@@ -44,7 +44,7 @@
 using namespace YACS::ENGINE;
 using namespace std;
 
-SalomeContainer::SalomeContainer():_trueCont(Engines::Container::_nil())
+SalomeContainer::SalomeContainer():_trueCont(Engines::Container::_nil()),_type("mono")
 {
   /* Init MachinesParameters */
   _params.container_name = "";
@@ -57,9 +57,11 @@ SalomeContainer::SalomeContainer():_trueCont(Engines::Container::_nil())
   _params.isMPI = false;
   _params.parallelLib = "";
   _params.nb_component_nodes = 0;
+  _params.workingdir= "";
+  _params.mode= "start";
 }
 
-SalomeContainer::SalomeContainer(const SalomeContainer& other):Container(other),_trueCont(Engines::Container::_nil())
+SalomeContainer::SalomeContainer(const SalomeContainer& other):Container(other),_trueCont(Engines::Container::_nil()),_type(other._type)
 {
   _params.container_name = CORBA::string_dup(other._params.container_name);
   _params.hostname = CORBA::string_dup(other._params.hostname);
@@ -72,6 +74,7 @@ SalomeContainer::SalomeContainer(const SalomeContainer& other):Container(other),
   _params.parallelLib = CORBA::string_dup(other._params.parallelLib);
   _params.nb_component_nodes = other._params.nb_component_nodes;
   _params.workingdir= CORBA::string_dup(other._params.workingdir);
+  _params.mode= CORBA::string_dup(other._params.mode);
 }
 
 SalomeContainer::~SalomeContainer()
@@ -88,101 +91,6 @@ void SalomeContainer::unLock()
   _mutex.unlock();
 }
 
-bool SalomeContainer::isAlreadyStarted() const
-{
-  if(CORBA::is_nil(_trueCont))
-    return false;
-  else
-    return true;
-}
-
-void SalomeContainer::start() throw (Exception)
-{
-  CORBA::ORB_ptr orb=getSALOMERuntime()->getOrb();
-  SALOME_NamingService ns;
-  try
-    {
-      ns.init_orb(orb);
-    }
-  catch(SALOME_Exception& e)
-    {
-      throw Exception("SalomeContainer::start : Unable to contact the SALOME Naming Service");
-    }
-  CORBA::Object_var obj=ns.Resolve(SALOME_ContainerManager::_ContainerManagerNameInNS);
-  Engines::ContainerManager_var contManager=Engines::ContainerManager::_narrow(obj);
-
-  std::string str(_params.container_name);
-  DEBTRACE("SalomeContainer::start " << str);
-  //If a container_name is given try to find an already existing container in naming service
-  //If not found start a new container with the given parameters
-  if (str != "")
-    {
-      std::string machine(_params.hostname);
-      if(machine == "" || machine == "localhost")
-        //machine=Kernel_Utils::GetHostname();
-        machine=Kernel_Utils::GetHostname();
-      std::string ContainerNameInNS=ns.BuildContainerNameForNS(_params,machine.c_str());
-      obj=ns.Resolve(ContainerNameInNS.c_str());
-      if(!CORBA::is_nil(obj))
-        {
-          std::cerr << "Container already exists: " << ContainerNameInNS << std::endl;
-          _trueCont=Engines::Container::_narrow(obj);
-          return;
-        }
-    }
-
-  if (str == "") 
-    {
-      //give a almost unique name to the container : Pid_Name_Addr
-      std::ostringstream stream;
-      stream << getpid();
-      stream << "_";
-      stream << _name;
-      stream << "_";
-      stream << (void *)(this);
-      DEBTRACE("container_name="<<stream.str());
-      _params.container_name=CORBA::string_dup(stream.str().c_str());
-    }
-  Engines::CompoList compolist;
-  compolist.length(_componentNames.size());
-  std::vector<std::string>::iterator iter;
-  for(CORBA::ULong i=0; i < _componentNames.size();i++)
-    {
-      compolist[i]=CORBA::string_dup(_componentNames[i].c_str());
-    }
-
-  try
-    { 
-      // --- GiveContainer is used in batch mode to retreive launched containers,
-      //     and is equivalent to StartContainer when not in batch.
-      std::string policy=getProperty("policy");
-      if(policy=="best")
-        _trueCont=contManager->GiveContainer(_params,Engines::P_BEST,compolist);
-      else if(policy=="first")
-        _trueCont=contManager->GiveContainer(_params,Engines::P_FIRST,compolist);
-      else
-        _trueCont=contManager->GiveContainer(_params,Engines::P_CYCL,compolist);
-    }
-  catch(CORBA::COMM_FAILURE&)
-    {
-      throw Exception("SalomeContainer::start : Unable to launch container in Salome : CORBA Comm failure detected");
-    }
-  catch(CORBA::Exception&)
-    {
-      throw Exception("SalomeContainer::start : Unable to launch container in Salome : Unexpected CORBA failure detected");
-    }
-  if(CORBA::is_nil(_trueCont))
-    throw Exception("SalomeContainer::start : Unable to launch container in Salome. Check your CatalogResources.xml file");
-
-  CORBA::String_var containerName=_trueCont->name();
-  CORBA::String_var hostName=_trueCont->getHostName();
-  std::cerr << "SalomeContainer launched : " << containerName << " " << hostName << " " << _trueCont->getPID() << std::endl;
-
-#ifdef REFCNT
-    DEBTRACE(_trueCont->_PR_getobj()->pd_refCount );
-#endif
-}
-
 Container *SalomeContainer::clone() const
 {
   if(_isAttachedOnCloning)
@@ -192,25 +100,6 @@ Container *SalomeContainer::clone() const
     }
   else
     return new SalomeContainer(*this);
-}
-
-std::string SalomeContainer::getPlacementId() const
-{
-  if(isAlreadyStarted())
-    {
-      const char *what="/";
-      char *corbaStr=_trueCont->name();
-      string ret(corbaStr);
-      CORBA::string_free(corbaStr);
-      //Salome FOREVER ...
-      std::string::size_type i=ret.find_first_of(what,0);
-      i=ret.find_first_of(what, i==std::string::npos ? i:i+1);
-      if(i!=std::string::npos)
-	return ret.substr(i+1);
-      return ret;
-    }
-  else
-    return "Not placed yet !!!";
 }
 
 void SalomeContainer::checkCapabilityToDealWith(const ComponentInstance *inst) const throw (Exception)
@@ -240,7 +129,7 @@ void SalomeContainer::setProperty(const std::string& name, const std::string& va
       else if (value == "false")
         _params.isMPI = false;
       else 
-        throw Exception("SalomeContainer::SetProperty : params.isMPI value not correct : " + value);
+        throw Exception("SalomeContainer::setProperty : params.isMPI value not correct : " + value);
     }
   else if (name == "mem_mb")
     {
@@ -272,6 +161,16 @@ void SalomeContainer::setProperty(const std::string& name, const std::string& va
       if (!(iss >> _params.nb_component_nodes))
         throw Exception("salomecontainer::setproperty : params.nb_component_nodes value not correct : " + value);
     }
+  else if (name == "type")
+    {
+      if (value == "mono")
+        _params.mode = "start";
+      else if (value == "multi")
+        _params.mode = "getorstart";
+      else 
+        throw Exception("SalomeContainer::setProperty : type value is not correct (mono or multi): " + value);
+      _type=value;
+    }
   Container::setProperty(name, value);
 }
 
@@ -288,3 +187,206 @@ void SalomeContainer::addComponentName(std::string name)
 {
   _componentNames.push_back(name);
 }
+
+//! Load a component instance in this container
+/*!
+ * \param inst the component instance to load
+ */
+CORBA::Object_ptr SalomeContainer::loadComponent(const ComponentInstance *inst)
+{
+  lock();//To be sure
+  if(!isAlreadyStarted(inst))
+    {
+      try
+        {
+          start(inst);
+        }
+      catch(Exception& e)
+        {
+          unLock();
+          throw e;
+        }
+    }
+  unLock();
+  lock();//To be sure
+  CORBA::Object_ptr objComponent=CORBA::Object::_nil();
+  std::string compoName=inst->getCompoName();
+  const char* componentName=compoName.c_str();
+  Engines::Container_var container;
+  if(_type=="multi")
+    container=_trueContainers[inst];
+  else
+    container=_trueCont;
+  bool isLoadable = container->load_component_Library(componentName);
+  if (isLoadable)
+    {
+      if (isAPaCOContainer())
+        {
+          std::string compo_paco_name(componentName);
+          char * c_paco_name = CORBA::string_dup(compo_paco_name.c_str());
+          objComponent=container->create_component_instance(c_paco_name, 0);
+        }
+      else
+        objComponent=container->create_component_instance(componentName, 0);
+    }
+
+  if(CORBA::is_nil(objComponent))
+    {
+      unLock();
+      std::string text="Error while trying to create a new component: component '"+ compoName;
+      text=text+"' is not installed or it's a wrong name";
+      throw Exception(text);
+    }
+  unLock();
+  return objComponent;
+}
+
+//! Get the container placement id for a component instance
+/*!
+ * \param inst the component instance
+ * \return the placement id
+ */
+std::string SalomeContainer::getPlacementId(const ComponentInstance *inst) const
+{
+
+  if(isAlreadyStarted(inst))
+    {
+      Engines::Container_var container=_trueCont;
+      if(_type=="multi")
+        {
+          std::map<const ComponentInstance *, Engines::Container_var>::const_iterator found = _trueContainers.find(inst);
+          container=found->second;
+        }
+      const char *what="/";
+      CORBA::String_var corbaStr=container->name();
+      string ret(corbaStr);
+
+      //Salome FOREVER ...
+      std::string::size_type i=ret.find_first_of(what,0);
+      i=ret.find_first_of(what, i==std::string::npos ? i:i+1);
+      if(i!=std::string::npos)
+	return ret.substr(i+1);
+      return ret;
+    }
+  else
+    return "Not placed yet !!!";
+}
+
+//! Check if the component instance container is already started
+/*!
+ * \param inst the component instance
+ * \return true, if the container is already started, else false
+ */
+bool SalomeContainer::isAlreadyStarted(const ComponentInstance *inst) const
+{
+  if(_type=="mono")
+    {
+      if(CORBA::is_nil(_trueCont))
+        return false;
+      else
+        return true;
+    }
+  else
+    {
+      if(_trueContainers.count(inst)==0)
+        return false;
+      else
+        return true;
+    }
+}
+
+//! Start a salome container (true salome container not yacs one) with given MachineParameters (_params)
+/*!
+ * \param inst the component instance
+ */
+void SalomeContainer::start(const ComponentInstance *inst) throw (Exception)
+{
+  CORBA::ORB_ptr orb=getSALOMERuntime()->getOrb();
+  SALOME_NamingService ns;
+  try
+    {
+      ns.init_orb(orb);
+    }
+  catch(SALOME_Exception& e)
+    {
+      throw Exception("SalomeContainer::start : Unable to contact the SALOME Naming Service");
+    }
+  CORBA::Object_var obj=ns.Resolve(SALOME_ContainerManager::_ContainerManagerNameInNS);
+  Engines::ContainerManager_var contManager=Engines::ContainerManager::_narrow(obj);
+
+  std::string str(_params.container_name);
+  DEBTRACE("SalomeContainer::start " << str <<";"<<_params.hostname<<";"<<_type);
+  //If a container_name is given try to find an already existing container in naming service
+  //If not found start a new container with the given parameters
+  if (_type=="mono" && str != "")
+    {
+      std::string machine(_params.hostname);
+      if(machine == "" || machine == "localhost")
+        //machine=Kernel_Utils::GetHostname();
+        machine=Kernel_Utils::GetHostname();
+      std::string ContainerNameInNS=ns.BuildContainerNameForNS(_params,machine.c_str());
+      obj=ns.Resolve(ContainerNameInNS.c_str());
+      if(!CORBA::is_nil(obj))
+        {
+          std::cerr << "Container already exists: " << ContainerNameInNS << std::endl;
+          _trueCont=Engines::Container::_narrow(obj);
+          _trueContainers[inst]=_trueCont;
+          return;
+        }
+    }
+
+  Engines::MachineParameters myparams=_params;
+
+  if (str == "")
+    {
+      //give a almost unique name to the container : Pid_Name_Addr
+      std::ostringstream stream;
+      stream << getpid();
+      stream << "_";
+      stream << _name;
+      stream << "_";
+      stream << (void *)(this);
+      DEBTRACE("container_name="<<stream.str());
+      myparams.container_name=CORBA::string_dup(stream.str().c_str());
+    }
+  myparams.componentList.length(_componentNames.size());
+  std::vector<std::string>::iterator iter;
+  for(CORBA::ULong i=0; i < _componentNames.size();i++)
+    {
+      myparams.componentList[i]=CORBA::string_dup(_componentNames[i].c_str());
+    }
+  myparams.policy=CORBA::string_dup(getProperty("policy").c_str());
+
+  try
+    { 
+      // --- GiveContainer is used in batch mode to retreive launched containers,
+      //     and is equivalent to StartContainer when not in batch.
+      _trueCont=contManager->GiveContainer(myparams);
+    }
+  catch(CORBA::COMM_FAILURE&)
+    {
+      throw Exception("SalomeContainer::start : Unable to launch container in Salome : CORBA Comm failure detected");
+    }
+  catch(CORBA::Exception&)
+    {
+      throw Exception("SalomeContainer::start : Unable to launch container in Salome : Unexpected CORBA failure detected");
+    }
+  if(CORBA::is_nil(_trueCont))
+    throw Exception("SalomeContainer::start : Unable to launch container in Salome. Check your CatalogResources.xml file");
+
+  _trueContainers[inst]=_trueCont;
+
+  CORBA::String_var containerName=_trueCont->name();
+  CORBA::String_var hostName=_trueCont->getHostName();
+  std::cerr << "SalomeContainer launched : " << containerName << " " << hostName << " " << _trueCont->getPID() << std::endl;
+
+#ifdef REFCNT
+    DEBTRACE(_trueCont->_PR_getobj()->pd_refCount );
+    std::map<const ComponentInstance *, Engines::Container_var >::const_iterator it;
+    for(it = _trueContainers.begin(); it != _trueContainers.end(); ++it)
+      {
+        DEBTRACE(it->second->_PR_getobj()->pd_refCount );
+      }
+#endif
+}
+

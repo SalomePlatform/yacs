@@ -22,6 +22,7 @@
 #include "QtGuiContext.hxx"
 #include "ComponentInstance.hxx"
 #include "Container.hxx"
+#include "Menus.hxx"
 
 #include <QIcon>
 #include <cassert>
@@ -40,6 +41,14 @@ SchemaDirContainersItem::SchemaDirContainersItem(SchemaItem *parent, QString lab
   _schemaContItemMap.clear();
   _waitingCompItemMap.clear();
 }
+
+void SchemaDirContainersItem::popupMenu(QWidget *caller, const QPoint &globalPos)
+{
+  ContainerDirMenu m;
+  m.popupMenu(caller, globalPos);
+}
+
+
 
 /*! When loading a schema, a container may appear after a component using this container.
  *  After creating the SchemaContainerItem, check if there are SchemaComponentItems to

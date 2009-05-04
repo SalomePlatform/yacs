@@ -65,12 +65,12 @@ void CppContainer::unLock()
   _mutex.unlock();
 }
 
-bool CppContainer::isAlreadyStarted() const
+bool CppContainer::isAlreadyStarted(const ComponentInstance *inst) const
 {
   return NULL != _trueCont;
 }
 
-void CppContainer::start() throw (YACS::Exception)
+void CppContainer::start(const ComponentInstance *inst) throw (YACS::Exception)
 {
 	_trueCont = LocalContainer::get();
 }
@@ -135,7 +135,7 @@ void CppContainer::unregisterComponentInstance(CppComponent * C)
 }
 
 
-std::string CppContainer::getPlacementId() const
+std::string CppContainer::getPlacementId(const ComponentInstance *inst) const
 {
 	return "/";
 }

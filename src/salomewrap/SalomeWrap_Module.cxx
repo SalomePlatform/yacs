@@ -18,6 +18,7 @@
 //
 #include "SalomeWrap_Module.hxx"
 #include "SalomeWrap_DataModel.hxx"
+#include "SalomeWrap_Resource.hxx"
 
 #include <SalomeApp_Application.h>
 #include <QxScene_ViewManager.h>
@@ -25,6 +26,10 @@
 #include <QxScene_ViewWindow.h>
 #include <CAM_DataModel.h>
 #include <SUIT_Study.h>
+
+#include <SUIT_DataBrowser.h>
+#include <QtxTreeView.h>
+#include <SUIT_DataObject.h>
 
 #include <cassert>
 
@@ -78,6 +83,31 @@ int SalomeWrap_Module::AssociateViewToWindow(QGraphicsView* gView,
 int SalomeWrap_Module::activeStudyId()
 {
   return getApp()->activeStudy()->id();
+}
+
+QDockWidget* SalomeWrap_Module::objectBrowser() {
+  QWidget* wid = getApp()->objectBrowser()->treeView();
+
+  if ( !wid ) {
+    return 0;
+  };
+
+  QDockWidget* dock = 0;
+  QWidget* w = wid->parentWidget();
+  while ( w && !dock ) {
+    dock = ::qobject_cast<QDockWidget*>( w );
+    w = w->parentWidget();
+  };
+
+  return dock;
+}
+
+SalomeWrap_Resource* SalomeWrap_Module::getResource() {
+  return _resource;
+}
+
+void SalomeWrap_Module::setResource(SUIT_ResourceMgr* r) {
+  _resource = new SalomeWrap_Resource(r);
 }
 
 QAction* SalomeWrap_Module::wCreateAction(const int id,

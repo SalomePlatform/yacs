@@ -35,6 +35,7 @@ namespace YACS
       static bool _autoComputeLinks;
       static bool _simplifyLinks;
       static bool _force2NodesLink;
+      static bool _addRowCols;
       
       void setZoom(bool zooming);
       bool isZooming();

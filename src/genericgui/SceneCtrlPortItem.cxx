@@ -113,6 +113,7 @@ void SceneCtrlPortItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
         {
           setCursor(Qt::ClosedHandCursor);
           _draging = true;
+          _dragModifier= event->modifiers() & Qt::ControlModifier;
         }
     }
 }
@@ -166,6 +167,7 @@ void SceneCtrlPortItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
       setCursor(Qt::ArrowCursor);
     }
   _draging = false;
+  _dragModifier= false;
 }
 
 

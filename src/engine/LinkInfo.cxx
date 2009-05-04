@@ -55,7 +55,7 @@ void LinkInfo::endCollapseTransac() throw(Exception)
     {
       if(_levelOfInfo==ALL_STOP_ASAP)
         if(areWarningsOrErrors())
-          throw(getGlobalRepr());
+          throw Exception(getGlobalRepr());
       else if(_levelOfInfo==WARN_ONLY_DONT_STOP)
         if(getNumberOfWarnLinksGrp(W_ALL)!=0)
           throw Exception(getErrRepr());

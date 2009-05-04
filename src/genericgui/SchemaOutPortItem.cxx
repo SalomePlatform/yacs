@@ -131,7 +131,8 @@ Qt::ItemFlags SchemaOutPortItem::flags(const QModelIndex &index)
     case 2:
       SubjectDataPort *sdp = dynamic_cast<SubjectDataPort*>(_subject);
       Node *node = sdp->getPort()->getNode();
-      PresetNode *pnode = dynamic_cast<PresetNode*>(node);
+      //PresetNode *pnode = dynamic_cast<PresetNode*>(node);
+      DataNode *pnode = dynamic_cast<DataNode*>(node);
       if (! pnode) break;
       flagEdit = Qt::ItemIsEditable; // --- port value editable for preset node
       break;   

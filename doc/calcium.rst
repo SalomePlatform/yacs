@@ -2,84 +2,78 @@
 .. _calcium:
 
 
-Guide de mise en oeuvre d'un couplage CALCIUM dans SALOME
+Guide for the use of CALCIUM coupling in SALOME
 ==========================================================
 
+This manual is not intended to replace the CALCIUM manual and therefore only contains a brief explanation 
+of the use of primitives, please refer to notes HI-26/03/007/A and HI-76/96/009/B for further information on this subject.
 
 
 
-
-Ce manuel ne se substitue pas au manuel CALCIUM et n'explique donc que succinctement l'utilisation des primitives, il convient de se rapporter aux notes HI-26/03/007/A et HI-76/96/009/B pour plus d'informations à ce sujet.
-
-
-
-
-
-L'évolution du produit CALCIUM vers CALCIUM dans SALOME
+Upgrade the CALCIUM product to CALCIUM in SALOME
 -------------------------------------------------------
 
+This section describes why the CALCIUM product has been upgraded to CALCIUM in SALOME.  
+After a brief presentation of the advantages and disadvantages of the existing CALCIUM product, the second section 
+presents the implementation of CALCIUM in SALOME using the DSC ports.  
+The final section describes the joint use of CALCIUM ports and the YACS supervisor.
 
+The existing CALCIUM product
+''''''''''''''''''''''''''''''
+The CALCIUM product enables fast and easy coupling of Fortran / C / C++ codes in a simple and only slightly 
+intrusive manner.  Persons responsible for codes used in coupling make a distinction between general interest 
+data by the definition of input and output connection points.  The person responsible for global coupling defines 
+the number of simultaneous executions of the different codes and transmission links between connection points of 
+these execution instances.  This description is called the coupling scheme and is stored in a coupling file.
 
-Cette section explique les raisons de l'évolution du produit CALCIUM vers CALCIUM dans SALOME. Après une brève présentation des avantages et inconvénients du produit CALCIUM existant, la deuxième section présente l'implémentation de CALCIUM dans SALOME en utilisant les ports DSC. La dernière section expose l'utilisation conjointe des ports CALCIUM et du superviseur YACS.
+Connection points are typed by simple types (integer, floating point, double, booleans, chain) and operate based 
+on the time or iterative mode.  The data produced are stamped by a date or an iteration number.  Data are 
+produced and read in codes by a call to write or read primitives.  Production is independent of requests on 
+read connection points (asynchronism).
 
-Le produit CALCIUM existant
-'''''''''''''''''''''''''''
+When data are requested for a date later than the data already produced, read instances wait on blocking read primitives 
+or receive a code indicating that there are no data in non-blocking mode.  When data are requested at a date surrounded 
+by previously produced data stamps, the reader can obtain interpolated data (L0 and L1) in time mode.  Coupling is 
+interlocked if the reader(s) is (are) waiting for data that will never be produced.  CALCIUM detects this situation 
+and proposes either that the execution of coupling should be stopped or that the requested data should be extrapolated 
+to unlock the situation.  This management depends on mode in which CALCIUM is being used (production mode or debug mode).
 
+CALCIUM has had two operating modes since its version 3.  The first called debug mode was the only mode available in 
+earlier versions, and has a coupler process through which all data pass.  In the second so-called production mode, 
+instances of codes communicate with each other directly.  In debug mode, the transfer flow is limited by the capacity 
+of the coupler network link to manage simultaneous accesses.  In this mode, the coupler must store a copy of each 
+received data so as to be able to deliver them at the required time and be capable of detecting an interlocked situation.  
+Production mode enables a data transfer with performances that are not limited by the capacity of input and output 
+links of the coupler because there is no longer a coupler.  However, this mode has the limitations that there is no 
+detection of interlocking (but a timeout is managed), step back requests are controlled locally, there is no step 
+by step execution mode and no dynamic management of coupling.
 
-
-Le produit CALCIUM permet la mise en oeuvre rapide de couplages de codes Fortran/C/C++ de façon simple et peu intrusive. Les responsables des codes intervenant dans le couplage distinguent les données d'intérêt général par la définition de points de connexion d'entrés et de sorties. Le responsable du couplage global définit le nombre d'exécutions simultanées des différents codes et les liens de transmission entre les points de connexion de ces instances d'exécution. Cette description s'appelle le schéma de couplage et est stockée dans un fichier de couplage.
-
-
-
-Les points de connexion sont typés par des types simples (entier, flottant, double, booléens, chaîne) et fonctionnent selon un mode temporel ou itératif. Les données produites sont estampillées par une date ou un numéro d'itération. La production et la lecture de données se font dans les codes respectivement par appel aux primitives d'écritures ou de lectures. La production est indépendante des demandes sur les points de connexion en lecture (asynchronisme).
-
-
-
-Lorsque des données sont demandées pour une date ultérieure aux données déjà produites, les instances lectrices attendent sur les primitives de lectures bloquantes ou reçoivent un code indiquant l'absence de donnée en mode non bloquant. Lorsque des données sont demandées à une date encadrée par les estampilles de données déjà produites, le lecteur a la possibilité d'obtenir des données interpolées (L0 et L1) en mode temporel.  S'il se trouve que le/s lecteur/s attendent des données qui ne seront jamais produites, le couplage se trouve en inter-blocage. CALCIUM détecte cette situation et propose soit de stopper l'exécution du couplage soit d'extrapoler les données demandées afin de débloquer la situation. Cette gestion dépend du mode d'utilisation de CALCIUM : mode de production ou mode debug.
-
-
-
-En effet, le produit CALCIUM possède depuis sa version 3 deux modes de fonctionnement. Le premier dit mode debug, seul mode disponible des versions antérieures, possède  un processus coupleur par lequel toutes les données transitent. Dans le second, dit mode de production, les instances de codes communiquent directement entre elles. En mode debug, le débit de transfert est limité par la capacité du lien réseau du coupleur à gérer les accès simultanés. Dans ce mode, le coupleur doit stocker une copie de chaque donnée reçue afin de pouvoir les délivrer au moment voulu et être capable de détecter une situation d'inter blocage. Le mode de production permet un transfert de données dont les performances ne sont pas limitées par la capacité des liens entrant et sortant du coupleur puisqu'il n'existe plus. Ce mode a cependant les limitations suivantes : pas de détection d'inter blocage (mais gestion d'un timeout), fonctionnement local des requêtes de retour en arrière, pas de mode d'exécution pas à pas et pas de gestion dynamique de couplage.
-
-
-
-
-
-Les ports CALCIUM dans SALOME
+CALCIUM ports in SALOME
 '''''''''''''''''''''''''''''
+Several couplings were set up during the 2004 Summer school as a result of experimental use of the existing CALCIUM 
+tool (in production mode) in SALOME.  It showed the relevance of getting datastream type ports to cohabit with 
+SALOME dataflow / control flow ports.  However, it required a specific modification located in the CALCIUM start 
+procedure and it highlighted the following limitations:
+ - the need to use a different container for each service using CALCIUM (even for services in the same 
+   component (CALCIUM is not multithread safe)).
+ - successive re-executions of coupling are difficult (need to not call MPI_FIN and problems related to the state of 
+   the MPI virtual machine)
+ - the SALOME SUPERVISOR has no control over execution of CALCIUM coupling
+ - no possible extension of transmitted CALCIUM types
+ - cohabitation of the MPI environment and the CORBA environment is sometimes difficult.
 
+The SALOME V4 KERNEL module is provided with new communication ports called DSC (Dynamic Software Component) ports 
+that components use to dynamically add / delete new interfaces accessible to everyone.  
+:ref:`progdsc` describes how these new ports are used / designed / and their usefulness.  
+There are two classes of DSC ports, firstly ports that provide an interface (provides ports), and secondly ports 
+that use the interfaces (uses ports).
 
-
-Une expérimentation d'utilisation de l'outil CALCIUM existant (en mode de production) dans SALOME a permis de mettre en place plusieurs couplages lors de l'école d'été 2004. Elle a montré la pertinence de faire cohabiter des  ports de type datastream avec les ports dataflow/control flow de SALOME. Elle a cependant nécessité une modification spécifique localisée dans la procédure de lancement CALCIUM et mis en valeur les limitations suivantes :
-
-
-
-* Nécessité d'utiliser un container différent par service utilisant CALCIUM (même pour les services d'un même composant ( CALCIUM n'est pas multithread safe )
-
-
-
-* Ré exécutions successives du couplage difficiles (nécessité de ne pas appeler MPI_FIN et problèmes liés à l'état de la machine virtuelle MPI)
-
-
-
-* Le SUPERVISEUR SALOME n'a aucun contrôle sur l'exécution du couplage CALCIUM
-
-
-
-* Pas d'extension possible des types CALCIUM transmis
-
-
-
-* Cohabitations parfois difficiles de l'environnement MPI et de l'environnement CORBA
-
-
-  
-
-Le module KERNEL de SALOME V4 est pourvu de nouveaux ports de communications appelés ports DSC (Dynamic Software Component) permettant aux composants d'ajouter/supprimer dynamiquement de nouvelles interfaces accessibles à tous. La note ..... décrit l'utilisation/conception/utilité de ces nouveaux ports. Il existe deux classes de ports DSC, les ports qui fournissent une interface (ports provides) et les ports qui utilisent des interfaces (port uses).
-
-
-
-Une implémentation de ports CALCIUM basée sur cette technologie est disponible depuis la version V4 du KERNEL de SALOME. Il est donc possible de réaliser des couplages CALCIUM par simples appels des primitives CALCIUM dans les services des composants. Cette implémentation reprend les fonctionnalités de CALCIUM dans son mode de production. L'utilisation de cette technologie nécessite uniquement le module KERNEL de SALOME. Cependant, à moins d'utiliser le superviseur YACS, l'utilisateur devra écrire un script python ou un service de composant pour charger les composants du couplage, les initialiser, connecter les différents ports, les configurer et lancer les services dans l'ordre adéquat.
+An implementation of CALCIUM ports based on this technology has been available since SALOME KERNEL version V4.  
+Therefore, CALCIUM couplings are possible simply by calling CALCIUM primitives in component services.  
+This implementation reuses CALCIUM functions in its production mode.  Use of this technology only requires 
+the SALOME KERNEL module.  However, unless the YACS supervisor is used, the user must write a python script or 
+a component service to load and initialize the coupling components, connect the different ports and configure 
+them, and start the services in the appropriate order.
 
 
 

@@ -100,7 +100,7 @@ WARN_LOGFILE           =
 # configuration options related to the input files
 #---------------------------------------------------------------------------
 INPUT                  =  \
-   @top_srcdir@/doc      \
+   @top_srcdir@/doc/ref      \
    @top_srcdir@/idl \
    @top_srcdir@/src/bases \
    @top_srcdir@/src/engine \

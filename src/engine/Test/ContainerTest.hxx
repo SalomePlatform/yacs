@@ -31,10 +31,10 @@ namespace YACS
       ContainerTest();
       std::string getPlacementInfo() const;
       // implementation of compulsary methods
-      bool isAlreadyStarted() const;
-      void start() throw(Exception);
+      bool isAlreadyStarted(const ComponentInstance *inst) const;
+      void start(const ComponentInstance *inst) throw(Exception);
       Container *clone() const;
-      std::string getPlacementId() const { return ""; }
+      std::string getPlacementId(const ComponentInstance *inst) const { return ""; }
       static void initAllContainers();
     protected:
       void checkCapabilityToDealWith(const ComponentInstance *inst) const throw(Exception);
@@ -50,10 +50,10 @@ namespace YACS
     public:
       ContainerTest2();
       // implementation of compulsary methods
-      bool isAlreadyStarted() const;
-      void start() throw(Exception);
+      bool isAlreadyStarted(const ComponentInstance *inst) const;
+      void start(const ComponentInstance *inst) throw(Exception);
       Container *clone() const;
-      std::string getPlacementId() const { return ""; }
+      std::string getPlacementId(const ComponentInstance *inst) const { return ""; }
       static void initAllContainers();
     protected:
       void checkCapabilityToDealWith(const ComponentInstance *inst) const throw(Exception);

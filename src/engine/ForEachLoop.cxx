@@ -29,6 +29,12 @@
 using namespace YACS::ENGINE;
 using namespace std;
 
+/*! \class YACS::ENGINE::ForEachLoop
+ *  \brief Loop node for parametric calculation
+ *
+ *  \ingroup Nodes
+ */
+
 const char FakeNodeForForEachLoop::NAME[]="thisIsAFakeNode";
 
 const char SplitterNode::NAME_OF_SEQUENCE_INPUT[]="SmplsCollection";
@@ -732,8 +738,7 @@ void ForEachLoop::checkLinkPossibility(OutPort *start, const std::list<ComposedN
 std::list<OutputPort *> ForEachLoop::getLocalOutputPorts() const
 {
   list<OutputPort *> ret;
-  ret.push_back(getOutputPort(NAME_OF_SPLITTED_SEQ_OUT)); // OCC : mkr : add _splittedPort to the list of output ports
-  //ret.push_back(getOutputPort(SplitterNode::NAME_OF_SEQUENCE_INPUT));
+  ret.push_back(getOutputPort(NAME_OF_SPLITTED_SEQ_OUT)); 
   return ret;
 }
 

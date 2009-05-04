@@ -147,6 +147,13 @@ void SceneComposedNodeItem::update(GuiEvent event, int type, Subject* son)
                                       son);
           _header->autoPosNewPort(item);
           _inPorts.push_back(item);
+          if (Scene::_autoComputeLinks && !QtGuiContext::getQtCurrent()->isLoading())
+            {
+              YACS::HMI::SubjectProc* subproc = QtGuiContext::getQtCurrent()->getSubjectProc();
+              SceneItem *item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[subproc];
+              SceneComposedNodeItem *proc = dynamic_cast<SceneComposedNodeItem*>(item);
+              proc->rebuildLinks();
+            }
           break;
         case YACS::HMI::OUTPUTPORT:
         case YACS::HMI::OUTPUTDATASTREAMPORT:
@@ -156,6 +163,13 @@ void SceneComposedNodeItem::update(GuiEvent event, int type, Subject* son)
                                        son);
           _header->autoPosNewPort(item);
           _outPorts.push_back(item);
+          if (Scene::_autoComputeLinks && !QtGuiContext::getQtCurrent()->isLoading())
+            {
+              YACS::HMI::SubjectProc* subproc = QtGuiContext::getQtCurrent()->getSubjectProc();
+              SceneItem *item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[subproc];
+              SceneComposedNodeItem *proc = dynamic_cast<SceneComposedNodeItem*>(item);
+              proc->rebuildLinks();
+            }
           break;
         default:
           DEBTRACE("SceneComposedNodeItem::update() ADD, type not handled:" << type);
@@ -234,7 +248,6 @@ void SceneComposedNodeItem::update(GuiEvent event, int type, Subject* son)
       break;
     case YACS::HMI::REMOVE:
       //SceneObserverItem::update(event, type, son);
-      reorganize();
       break;
     case YACS::HMI::SETCASE:
       {
@@ -292,11 +305,21 @@ void SceneComposedNodeItem::autoPosNewChild(AbstractSceneItem *item,
       DEBTRACE("childrenBox valid " << childrenBox.right() << " " << childrenBox.bottom());
     }
   if (childrenBox.isValid())
-    xLeft += childrenBox.right();
+    yTop = childrenBox.bottom() + 1.; // +1. to avoid collision with bottom (penwidth)
+    //xLeft += childrenBox.right();
   DEBTRACE("left, top " << xLeft  << " " << yTop);
   QPointF topLeft(xLeft, yTop);
   if (isNew) _children.push_back(item);
-  item->setTopLeft(topLeft);
+  if (_eventPos.isNull())
+    item->setTopLeft(topLeft);
+  else
+    {
+      item->setTopLeft(_eventPos);
+      SceneItem *it = dynamic_cast<SceneItem*>(item);
+      YASSERT(it);
+      collisionResolv(it, QPointF(0,0));
+      if (Scene::_autoComputeLinks) rebuildLinks();
+    }
 }
 
 void SceneComposedNodeItem::popupMenu(QWidget *caller, const QPoint &globalPos)
@@ -338,7 +361,6 @@ void SceneComposedNodeItem::collisionResolv(SceneItem* child, QPointF oldPos)
             {
               //DEBTRACE("collision detected with " << other->getLabel().toStdString());
               QRectF otherBR = (other->mapToParent(other->boundingRect())).boundingRect();
-              //oldPos = mapFromScene(oldPos);
               qreal oldX = oldPos.x();
               qreal oldY = oldPos.y();
               qreal newX = child->pos().x();
@@ -364,25 +386,61 @@ void SceneComposedNodeItem::collisionResolv(SceneItem* child, QPointF oldPos)
               bool blocThis = false;
               if (fromTop)
                 {
-                  //newY = otherBR.top() - child->boundingRect().height() -_margin;
                   othY = newY + child->boundingRect().height();
                   pushOther = true;
+                  other->_blocY = false;
                 }
               if (fromLeft)
                 {
-                  //newX = otherBR.left() -child->boundingRect().width() - _margin;
                   othX = newX+ child->boundingRect().width();
                   pushOther = true;
+                  other->_blocX = false;
                 }
               if (fromBottom)
                 {
-                  newY = otherBR.bottom() + 1;
-                  blocThis = true;
+                  if (other->_blocY)
+                    {
+                      newY = otherBR.bottom() + 1;
+                      blocThis = true;
+                      _blocY = true;
+                    }
+                  else
+                    {
+                      othY = newY - otherBR.height();
+                      if (othY < _margin + getHeaderBottom() + _nml)
+                        {
+                          othY = _margin + getHeaderBottom() + _nml;
+                          other->_blocY = true;
+                          newY = otherBR.bottom() + 1;
+                          _blocY = true;
+                          blocThis = true;
+                        }
+                      else
+                        pushOther = true;
+                    }
                 }
               if (fromRight)
                 {
-                  newX = otherBR.right()+ 1;
-                  blocThis = true;
+                  if (other->_blocX)
+                    {
+                      newX = otherBR.right()+ 1;
+                      blocThis = true;
+                      _blocX = true;
+                    }
+                  else
+                    {
+                      othX = newX - otherBR.width();
+                      if (othX < _margin + _nml)
+                        {
+                          othX = _margin + _nml;
+                          other->_blocX = true;
+                          newX = otherBR.right()+ 1;
+                          _blocX = true;
+                          blocThis = true;
+                        }
+                      else
+                        pushOther = true;
+                    }
                 }
               //DEBTRACE("newX=" << newX << " newY=" << newY);
               if (blocThis) child->setTopLeft(QPointF(newX, newY));
@@ -408,16 +466,17 @@ void SceneComposedNodeItem::rebuildLinks()
   for (list<linkdef>::const_iterator it = alist.begin(); it != alist.end(); ++it)
     {
       linkdef ali = *it;
-//       DEBTRACE("from("<<ali.from.first<<","<<ali.from.second
-//                <<") to ("<<ali.to.first<<","<<ali.to.second
-//                <<") " << ali.item->getLabel().toStdString());
+      DEBTRACE("from("<<ali.from.first<<","<<ali.from.second
+               <<") to ("<<ali.to.first<<","<<ali.to.second
+               <<") " << ali.item->getLabel().toStdString());
       bool isPath = astar.computePath(LNode(ali.from), LNode(ali.to));
       if (! isPath) DEBTRACE("Link Path not found !");
-      LinkPath apath = matrix.getPath(astar.givePath());
+      LNodePath ijPath = astar.givePath();
+      matrix.incrementCost(ijPath);
+      LinkPath apath = matrix.getPath(ijPath);
 //       DEBTRACE(apath.size());
       ali.item->setPath(apath);
     }
-  prepareGeometryChange();
 }
 
 void SceneComposedNodeItem::arrangeNodes(bool isRecursive)
@@ -453,6 +512,11 @@ void SceneComposedNodeItem::arrangeNodes(bool isRecursive)
     }
   else
     arrangeChildNodes();
+}
+
+void SceneComposedNodeItem::arrangeChildNodes()
+{
+  reorganize();
 }
 
 void SceneComposedNodeItem::dragEnterEvent(QGraphicsSceneDragDropEvent *event)
@@ -502,7 +566,7 @@ void SceneComposedNodeItem::dropEvent(QGraphicsSceneDragDropEvent *event)
       if (!node) return;
       SubjectComposedNode *cnode = dynamic_cast<SubjectComposedNode*>(getSubject());
       if (cnode)
-        if (node->reparent(cnode))
+        if (!node->reparent(cnode))
           Message mess;
     }
 }

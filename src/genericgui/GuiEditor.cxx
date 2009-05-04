@@ -25,6 +25,7 @@
 #include "guiObservers.hxx"
 #include "QtGuiContext.hxx"
 #include "TypeCode.hxx"
+#include "Scene.hxx"
 #include "SceneComposedNodeItem.hxx"
 #include "SceneLinkItem.hxx"
 #include "Catalog.hxx"
@@ -198,14 +199,24 @@ SubjectDataPort* GuiEditor::CreateInputPort(SubjectElementaryNode* seNode,
   DEBTRACE("GuiEditor::CreateInputPort");
   SubjectDataPort *sdp = 0;
   if (name.empty())
-    while (!sdp)
-      {
-        std::stringstream aName;
-        long newid = GuiContext::getCurrent()->getNewId();
-        if (newid > 100000) break;
-        aName << "i" << newid;
-        sdp = seNode->addInputPort(catalog,type, aName.str());
-      }
+    {
+      std::stringstream aName;
+      long newid = 0;
+      while (newid < 100000)
+        {
+          newid = GuiContext::getCurrent()->getNewId();
+          aName << "i" << newid;
+          try
+            {
+              seNode->getNode()->getInputPort(aName.str());
+            }
+          catch(Exception& ex)
+            {
+              break;
+            }
+        }
+      sdp = seNode->addInputPort(catalog,type, aName.str());
+    }
   else
     sdp = seNode->addInputPort(catalog,type, name);
   if (!sdp)
@@ -222,14 +233,24 @@ SubjectDataPort*  GuiEditor::CreateOutputPort(SubjectElementaryNode* seNode,
   DEBTRACE("GuiEditor::CreateOutputPort");
   SubjectDataPort *sdp = 0;
   if (name.empty())
-    while (!sdp)
-      {
-        std::stringstream aName;
-        long newid = GuiContext::getCurrent()->getNewId();
-        if (newid > 100000) break;
-        aName << "o" << newid;
-        sdp = seNode->addOutputPort(catalog,type, aName.str());
-      }
+    {
+      std::stringstream aName;
+      long newid = 0;
+      while (newid < 100000)
+        {
+          newid = GuiContext::getCurrent()->getNewId();
+          aName << "o" << newid;
+          try
+            {
+              seNode->getNode()->getOutputPort(aName.str());
+            }
+          catch(Exception& ex)
+            {
+              break;
+            }
+        }
+      sdp = seNode->addOutputPort(catalog,type, aName.str());
+    }
   else
     sdp = seNode->addOutputPort(catalog,type, name);
   if (!sdp)
@@ -364,4 +385,11 @@ void GuiEditor::arrangeNodes(bool isRecursive)
       return;
     }
   sci->arrangeNodes(isRecursive);
+  if (Scene::_autoComputeLinks && !QtGuiContext::getQtCurrent()->isLoading())
+    {
+      YACS::HMI::SubjectProc* subproc = QtGuiContext::getQtCurrent()->getSubjectProc();
+      SceneItem *item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[subproc];
+      SceneComposedNodeItem *proc = dynamic_cast<SceneComposedNodeItem*>(item);
+      proc->rebuildLinks();
+    }
 }

@@ -32,6 +32,14 @@
 using namespace YACS::ENGINE;
 using namespace std;
 
+/*! \class YACS::ENGINE::ElementaryNode
+ *  \brief Base class for all calculation nodes.
+ *
+ * This is an abstract class that must be specialized.
+ *
+ *  \ingroup Nodes
+ */
+
 ElementaryNode::ElementaryNode(const std::string& name):Node(name)
 {
 }

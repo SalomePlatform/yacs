@@ -74,7 +74,7 @@ void XMLCALL xmlParserBase::end_document  (void* userData)
   xmlParserBase *currentParser = static_cast<xmlParserBase *> (userData);
 }
 
-/*! callback called on start of an xml element: <name>
+/*! callback called on start of an xml element: \verbatim <name> \endverbatim
  */
 
 void XMLCALL xmlParserBase::start_element (void* userData,
@@ -90,7 +90,7 @@ void XMLCALL xmlParserBase::start_element (void* userData,
 }
 
 
-/*! callback called on end of an xml element: </name>
+/*! callback called on end of an xml element: \verbatim </name> \endverbatim
  */
 
 void XMLCALL xmlParserBase::end_element   (void* userData,
@@ -108,9 +108,9 @@ void XMLCALL xmlParserBase::end_element   (void* userData,
  }
 
 
-/*! callback called for significant characters inside tags: <tag>content</tag>
+/*! callback called for significant characters inside tags: \verbatim <tag>content</tag> \endverbatim
  *  or outside tags, like space or new line. 
- *  with expat get also the CDATA tags: <tag>![CDATA[content]]></tag>
+ *  with expat get also the CDATA tags: \verbatim <tag>![CDATA[content]]></tag> \endverbatim
  */
 
 void XMLCALL xmlParserBase::characters    (void* userData,
@@ -205,7 +205,7 @@ void XMLCALL xmlParserBase::fatal_error   (void* userData,
   va_end(args);
 }
 
-/*! callback called for CDATA inside tags: <tag>![CDATA[content]]></tag>
+/*! callback called for CDATA inside tags: \verbatim <tag>![CDATA[content]]></tag> \endverbatim
  *  used only by libxml2
  */
 

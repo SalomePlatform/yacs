@@ -35,6 +35,8 @@
 #include <QString>
 #include <set>
 
+#include <SuitWrapper.hxx>
+
 namespace YACS
 {
   namespace HMI
@@ -85,6 +87,9 @@ namespace YACS
 
       inline void setSelectedSubject(YACS::HMI::Subject* sub)    {_selectedSubject = sub; };
 
+      inline SuitWrapper* getWrapper() {return _wrapper;};
+      inline void setWrapper(SuitWrapper* w) {_wrapper = w;};
+
       inline static QtGuiContext* getQtCurrent()             {return _QtCurrent; };
       inline static void setQtCurrent(QtGuiContext* context) { _QtCurrent=context; _current=context; };
 
@@ -114,6 +119,7 @@ namespace YACS
       bool _isEdition;
       int _studyId;
       bool _isLoading;
+      SuitWrapper* _wrapper;
     };
 
   }

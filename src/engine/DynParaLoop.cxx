@@ -26,40 +26,14 @@
 using namespace std;
 using namespace YACS::ENGINE;
 
+/*! \class YACS::ENGINE::DynParaLoop
+ *  \brief Base class for dynamically (fully or semifully) built graphs.
+ *  \ingroup Nodes
+ */
+
 const char DynParaLoop::NAME_OF_SPLITTED_SEQ_OUT[]="SmplPrt";
 
 const char DynParaLoop::NAME_OF_NUMBER_OF_BRANCHES[]="nbBranches";
-
-AnyOutputPort::AnyOutputPort(const std::string& name, Node *node, TypeCode *type):OutputPort(name,node,type),
-                                                                                  DataPort(name,node,type),Port(node),_data(0)
-{
-}
-
-AnyOutputPort::AnyOutputPort(const AnyOutputPort& other, Node *newHelder):OutputPort(other,newHelder),
-                                                                          DataPort(other,newHelder),
-                                                                          Port(other,newHelder),_data(0)
-{
-}
-
-AnyOutputPort::~AnyOutputPort()
-{
-  if(_data)
-    _data->decrRef();
-}
-
-void AnyOutputPort::setValue(Any *data) 
-{
-  if(_data)
-    _data->decrRef();
-  _data = data; 
-  if(_data)
-    _data->incrRef();
-}
-
-OutputPort *AnyOutputPort::clone(Node *newHelder) const
-{
-  return new AnyOutputPort(*this,newHelder);
-}
 
 DynParaLoop::DynParaLoop(const std::string& name, TypeCode *typeOfDataSplitted):ComposedNode(name),_node(0),_initNode(0),_nbOfEltConsumed(0),
                                                                                 _nbOfBranches(NAME_OF_NUMBER_OF_BRANCHES,this,Runtime::_tc_int),
@@ -417,10 +391,13 @@ void DynParaLoop::checkCFLinks(const std::list<OutPort *>& starts, InputPort *en
 }
 
 /*!
+ * \param start : start port
+ * \param end : end port
  * \param cross indicates if start -> end link is a DS link behind.
  * \param fw out parameter.
  * \param fwCross out parameter storing links where a cross has been detected.
  * \param bw out parameter where backward links are stored.
+ * \param info : collected information
  */
 void DynParaLoop::checkControlDependancy(OutPort *start, InPort *end, bool cross,
                                          std::map < ComposedNode *,  std::list < OutPort * >, SortHierarc >& fw,
@@ -435,8 +412,9 @@ void DynParaLoop::checkControlDependancy(OutPort *start, InPort *end, bool cross
 }
 
 /*!
- * \note : For a given name 'name' of port in absolute form from this, returns the corresponding InputPort instance of the
- *         port for the branch # 'branchNb'. The port can be part of _node or _initNode if it exists (if 'initNodeAdmitted' is true).
+ * \note : For a given name 'name' of port in absolute form from this, returns the corresponding InputPort 
+ *         instance of the port for the branch # 'branchNb'. 
+ *         The port can be part of _node or _initNode if it exists (if 'initNodeAdmitted' is true).
  *         \b WARNING : no check performed on  'branchNb' value to see if it is compatible with size of '_execNodes'.
  *         This method is called to dispatch value on each InputPort linked to this->._splitterNode._splittedPort
  */

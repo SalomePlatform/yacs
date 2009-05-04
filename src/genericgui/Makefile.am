@@ -311,11 +311,13 @@ libGenericGui_la_LIBADD    = $(qt4_libs) $(qsci4_libs)\
 LIBICONS = \
 	add_in_study.png \
 	add_node.png \
+	addRowCols.png \
 	arrange_nodes.png \
 	autoComputeLink.png \
 	block_node.png \
 	breakpoints_active.png \
 	breakpoints.png \
+	centerOnNode.png \
 	change_informations.png \
 	component.png \
 	connect_to_batch_session.png \
@@ -403,7 +405,8 @@ LIBICONS = \
 	table_view.png \
 	toggle_stop_on_error.png \
 	toggleVisibility.png \
-	whatsThis.png
+	whatsThis.png \
+	zoomToBloc.png
 
 salomeresdir = $(prefix)/share/salome/resources/@MODULE_NAME@
 dist_salomeres_DATA = $(QMFILES) ${ICONS}

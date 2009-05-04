@@ -81,8 +81,8 @@ std::string CppComponent::getKind() const
 CppComponent::CppComponent(const std::string &name) : ComponentInstance(name)
 {
   _container = getRuntime()->createContainer(CppNode::KIND);
-  if (!_container->isAlreadyStarted())
-	  _container->start();
+  if (!_container->isAlreadyStarted(this))
+	  _container->start(this);
   
   CppContainer * _containerC = dynamic_cast<CppContainer *> (_container);
   _containerC->createInternalInstance(name, __obj, __run, __terminate);
@@ -93,8 +93,8 @@ CppComponent::CppComponent(const CppComponent& other) : ComponentInstance(other.
                                                         __terminate(other.__terminate), __obj(0)
 {
   _container = getRuntime()->createContainer(CppNode::KIND);
-  if (!_container->isAlreadyStarted())
-    _container->start();
+  if (!_container->isAlreadyStarted(this))
+    _container->start(this);
 
   CppContainer * _containerC = dynamic_cast<CppContainer *> (_container);  
    _containerC->createInternalInstance(_compoName, __obj, __run, __terminate);
@@ -169,11 +169,11 @@ void CppComponent::load()
       CppContainer * containerC= dynamic_cast< CppContainer *> (_container);
       
       containerC->lock();//To be sure
-      if(!_container->isAlreadyStarted())
+      if(!_container->isAlreadyStarted(this))
         {
           try
             {
-              _container->start();
+              _container->start(this);
             }
           catch(Exception& e)
             {

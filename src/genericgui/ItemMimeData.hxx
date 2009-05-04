@@ -53,6 +53,8 @@ namespace YACS
       virtual std::string getCompo() const;
       virtual std::string getType() const;
       virtual int getCase() const;
+      virtual bool getControl() const;
+      virtual void setControl(bool control);
     protected:
       Subject *_sub;
       YACS::ENGINE::Catalog *_catalog;
@@ -60,6 +62,7 @@ namespace YACS
       std::string _compoName;
       std::string _typeName;
       int _swCase;
+      bool _control;
     };
     
   }

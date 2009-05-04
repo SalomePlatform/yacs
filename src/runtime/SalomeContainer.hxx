@@ -43,14 +43,15 @@ namespace YACS
       void lock();
       //! For thread safety for concurrent load operation on same Container.
       void unLock();
-      bool isAlreadyStarted() const;
-      void start() throw (Exception);
+      bool isAlreadyStarted(const ComponentInstance *inst) const;
+      void start(const ComponentInstance *inst) throw (Exception);
       Container *clone() const;
-      std::string getPlacementId() const;
+      std::string getPlacementId(const ComponentInstance *inst) const;
       void checkCapabilityToDealWith(const ComponentInstance *inst) const throw (Exception);
       virtual void setProperty(const std::string& name, const std::string& value);
       bool isAPaCOContainer() const;
       virtual void addComponentName(std::string name);
+      virtual CORBA::Object_ptr loadComponent(const ComponentInstance *inst);
     protected:
 #ifndef SWIG
       virtual ~SalomeContainer();
@@ -60,6 +61,8 @@ namespace YACS
       YACS::BASES::Mutex _mutex;
       Engines::Container_var _trueCont;
       std::vector<std::string> _componentNames;
+      std::map<const ComponentInstance *,Engines::Container_var> _trueContainers;
+      std::string _type;
     public:
       Engines::MachineParameters _params;
     };

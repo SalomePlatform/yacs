@@ -4,31 +4,26 @@
 .. _cppsalome:
 
 ===========================================================
-Guide pour le développement d'un module SALOME en C++
+Guide for the development of a SALOME module in C++
 ===========================================================
 
-Ce document a pour objectif de décrire les différentes étapes
-du développement d'un module SALOME en C++.
-Il fait suite au document :ref:`pysalome`, qui documente le module PYHELLO, et en reprend la démarche :
-construction pas à pas d'un module HELLO.
-Comme de nombreux points ne sont pas repris, il est recommendé de lire ce
-document préalablement.
+The purpose of this document is to describe the different steps in the development of a SALOME module in C++.  
+It follows on from the :ref:`pysalome` document, that documents the PYHELLO module, and it uses the same 
+approach:  step by step construction of a HELLO module.  Since many points are not repeated, it is recommended 
+that this document should be read first.
 
-
-Les étapes de construction du module exemple
+Steps in the construction of the example module
 ====================================================
-Le composant choisi pour illustrer le processus de construction en C++
-est le même que celui choisi pour illustrer la construction du module python :
-il implémentera donc la même interface idl Corba.
-Il sera complété par un GUI graphique écrit en Qt.
+The component chosen to illustrate the C++ construction process is the same as the process chosen to illustrate 
+construction of the Python module:  therefore, it will implement the same Corba idl interface.  It will be 
+completed by a graphic GUI written in Qt.
 
-Les différentes étapes du développement seront les suivantes :
-
-  - créer une arborescence de module
-  - créer un composant SALOME chargeable par un container C++
-  - configurer le module pour que le composant soit connu de SALOME
-  - ajouter un GUI graphique
-  - rendre le composant utilisable dans le superviseur
+The various steps of the development will be as follows:
+ - create a module structure
+ - create a SALOME component that can be loaded by a C++ container
+ - configure the module so that the component is known to SALOME
+ - add a graphic GUI
+ - make the component useable in the supervisor.
 
 Création de l'arborescence du module
 =======================================

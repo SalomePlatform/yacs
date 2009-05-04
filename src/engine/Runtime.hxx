@@ -25,6 +25,7 @@
 #include<set>
 #include<map>
 #include<vector>
+#include<list>
 
 namespace YACS
 {
@@ -52,6 +53,8 @@ namespace YACS
     class ElementaryNode;
     class Node;
     class TypeCode;
+    class TypeCodeStruct;
+    class TypeCodeObjref;
     class InputDataStreamPort;
     class OutputDataStreamPort;
     class Catalog;
@@ -84,6 +87,10 @@ namespace YACS
       virtual ForEachLoop* createForEachLoop(const std::string& name,TypeCode * type);
       virtual Switch* createSwitch(const std::string& name);
 
+      virtual TypeCode * createInterfaceTc(const std::string& id, const std::string& name,
+                                            std::list<TypeCodeObjref *> ltc);
+      virtual TypeCode * createSequenceTc(const std::string& id, const std::string& name, TypeCode *content);
+      virtual TypeCodeStruct * createStructTc(const std::string& id, const std::string& name);
       
       virtual InputPort* createInputPort(const std::string& name,
                                          const std::string& impl,

@@ -83,6 +83,7 @@ namespace YACS
       virtual void dumpTypeCode(TypeCode* type, std::set<std::string>& typeNames,std::map<std::string, TypeCode*>& typeMap,int depth);
       virtual void writeTypeCodes(Proc *proc);
       virtual void writeContainers(Proc *proc);
+      virtual void writeComponentInstances(Proc *proc);
       virtual void writeInputPorts(Node *node);
       virtual void writeInputDataStreamPorts(Node *node); // OCC : mkr : add possibility to write input data stream ports
       virtual void writeOutputPorts(Node *node);

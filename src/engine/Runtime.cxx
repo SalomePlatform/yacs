@@ -80,6 +80,9 @@ Runtime::Runtime()
   _builtinCatalog->_composednodeMap["WhileLoop"]=new WhileLoop("WhileLoop");
   _builtinCatalog->_composednodeMap["ForLoop"]=new ForLoop("ForLoop");
   _builtinCatalog->_composednodeMap["ForEachLoopDouble"]=new ForEachLoop("ForEachLoopDouble",Runtime::_tc_double);
+  _builtinCatalog->_composednodeMap["ForEachLoopString"]=new ForEachLoop("ForEachLoopString",Runtime::_tc_string);
+  _builtinCatalog->_composednodeMap["ForEachLoopInt"]=new ForEachLoop("ForEachLoopInt",Runtime::_tc_int);
+  _builtinCatalog->_composednodeMap["ForEachLoopBool"]=new ForEachLoop("ForEachLoopBool",Runtime::_tc_bool);
   std::map<std::string,TypeCode*>& typeMap=_builtinCatalog->_typeMap;
   Runtime::_tc_double->incrRef();
   typeMap["double"]=Runtime::_tc_double;
@@ -122,6 +125,24 @@ Runtime::~Runtime()
     delete (*it);
   Runtime::_singleton=0;
   DEBTRACE( "Total YACS::ENGINE::Refcount: " << RefCounter::_totalCnt );
+}
+
+TypeCode * Runtime::createInterfaceTc(const std::string& id, const std::string& name,
+                                      std::list<TypeCodeObjref *> ltc)
+{
+  return TypeCode::interfaceTc(id.c_str(),name.c_str(),ltc);
+}
+
+TypeCode * Runtime::createSequenceTc(const std::string& id,
+                                     const std::string& name,
+                                     TypeCode *content)
+{
+  return TypeCode::sequenceTc(id.c_str(),name.c_str(),content);
+};
+
+TypeCodeStruct * Runtime::createStructTc(const std::string& id, const std::string& name)
+{
+  return (TypeCodeStruct *)TypeCode::structTc(id.c_str(),name.c_str());
 }
 
 DataNode* Runtime::createInDataNode(const std::string& kind,const std::string& name)

@@ -770,7 +770,7 @@ namespace YACS
             {
               // It's a native Python object pickle it
               PyObject* mod=PyImport_ImportModule("cPickle");
-              PyObject *pickled=PyObject_CallMethod(mod,"dumps","Oi",o,protocol);
+              PyObject *pickled=PyObject_CallMethod(mod,(char *)"dumps",(char *)"Oi",o,protocol);
               DEBTRACE(PyObject_REPR(pickled) );
               Py_DECREF(mod);
               if(pickled==NULL)
@@ -791,7 +791,7 @@ namespace YACS
                   PyErr_Print();
                   throw YACS::ENGINE::ConversionException("Problem in convertToYacsObjref<PYTHONImpl: no simplejson module");
                 }
-              PyObject *pickled=PyObject_CallMethod(mod,"dumps","O",o);
+              PyObject *pickled=PyObject_CallMethod(mod,(char *)"dumps",(char *)"O",o);
               Py_DECREF(mod);
               if(pickled==NULL)
                 {
@@ -805,7 +805,7 @@ namespace YACS
           else
             {
               // It's a CORBA Object convert it to an IOR string
-              PyObject *pystring=PyObject_CallMethod(getSALOMERuntime()->getPyOrb(),"object_to_string","O",o);
+              PyObject *pystring=PyObject_CallMethod(getSALOMERuntime()->getPyOrb(),(char *)"object_to_string",(char *)"O",o);
               if(pystring==NULL)
                 {
                   PyErr_Print();
@@ -954,7 +954,7 @@ namespace YACS
             {
               //It's a python pickled object, unpickled it
               PyObject* mod=PyImport_ImportModule("cPickle");
-              PyObject *ob=PyObject_CallMethod(mod,"loads","s#",o.c_str(),o.length());
+              PyObject *ob=PyObject_CallMethod(mod,(char *)"loads",(char *)"s#",o.c_str(),o.length());
               DEBTRACE(PyObject_REPR(ob));
               Py_DECREF(mod);
               if(ob==NULL)
@@ -973,7 +973,7 @@ namespace YACS
                   PyErr_Print();
                   throw YACS::ENGINE::ConversionException("Problem in convertToYacsObjref<PYTHONImpl: no simplejson module");
                 }
-              PyObject *ob=PyObject_CallMethod(mod,"loads","s",o.c_str());
+              PyObject *ob=PyObject_CallMethod(mod,(char *)"loads",(char *)"s",o.c_str());
               Py_DECREF(mod);
               if(ob==NULL)
                 {
@@ -1041,7 +1041,7 @@ namespace YACS
           //ob is a CORBA::Object. Try to convert it to more specific type SALOME/GenericObj
           if(obref->_is_a("IDL:SALOME/GenericObj:1.0"))
             {
-              PyObject *result = PyObject_CallMethod(getSALOMERuntime()->get_omnipy(), "narrow", "Osi",ob,"IDL:SALOME/GenericObj:1.0",1);
+              PyObject *result = PyObject_CallMethod(getSALOMERuntime()->get_omnipy(), (char *)"narrow", (char *)"Osi",ob,"IDL:SALOME/GenericObj:1.0",1);
               if(result==NULL)
                 PyErr_Clear();//Exception during narrow. Keep ob
               else if(result==Py_None)
@@ -1750,8 +1750,8 @@ namespace YACS
 
                   PyGILState_STATE gstate = PyGILState_Ensure(); 
                   PyObject* mod=PyImport_ImportModule("cPickle");
-                  PyObject *ob=PyObject_CallMethod(mod,"loads","s#",s,buffer->length());
-                  PyObject *pickled=PyObject_CallMethod(mod,"dumps","Oi",ob,protocol);
+                  PyObject *ob=PyObject_CallMethod(mod,(char *)"loads",(char *)"s#",s,buffer->length());
+                  PyObject *pickled=PyObject_CallMethod(mod,(char *)"dumps",(char *)"Oi",ob,protocol);
                   DEBTRACE(PyObject_REPR(pickled));
                   std::string mystr=PyString_AsString(pickled);
                   Py_DECREF(mod);

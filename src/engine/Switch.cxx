@@ -277,6 +277,12 @@ void FakeNodeForSwitch::finished()
   _sw->setState(YACS::DONE);
 }
 
+/*! \class YACS::ENGINE::Switch
+ *  \brief Control node that emulates the C switch
+ *
+ *  \ingroup Nodes
+ */
+
 Switch::Switch(const Switch& other, ComposedNode *father, bool editionOnly):StaticDefinedComposedNode(other,father),_condition(other._condition,this),
                                                                             _undispatchableNotificationNode(0)
 {

@@ -165,6 +165,17 @@ namespace YACS
                              const QString& m = "Reference Menu");
     };
 
+    class ContainerDirMenu: public MenusBase
+    {
+      Q_OBJECT
+    public:
+      ContainerDirMenu();
+      virtual ~ContainerDirMenu();
+      virtual void popupMenu(QWidget *caller,
+                             const QPoint &globalPos,
+                             const QString& m = "Containers Menu");
+    };
+
   }
 }
 

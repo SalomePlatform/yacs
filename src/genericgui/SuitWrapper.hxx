@@ -24,6 +24,7 @@
 #include <QIcon>
 #include <QObject>
 #include <QWidget>
+#include <QDockWidget>
 #include <QGraphicsScene>
 
 namespace YACS
@@ -45,6 +46,7 @@ namespace YACS
       QWidget* getNewWindow(QGraphicsScene *scene);
       int AssociateViewToWindow(QGraphicsView* gView, QWidget* viewWindow);
       int activeStudyId();
+      QDockWidget* objectBrowser();
 
       QAction* createAction(const int id,
                             const QString& toolTip,
@@ -126,6 +128,16 @@ namespace YACS
                         const QString& runName,
                         QWidget* refWindow,
                         QWidget* viewWindow);
+
+      // Resource access
+      int     integerValue( const QString& name, const int    def = 0          ) const;
+      double  doubleValue ( const QString& name, const double def = 0          ) const;
+      bool    booleanValue( const QString& name, const bool   def = false      ) const;
+      QFont   fontValue   ( const QString& name, const QFont  def = QFont()    ) const;
+      QColor  colorValue  ( const QString& name, const QColor def = QColor()   ) const;
+      QColor  colorValue  ( const QString& name, const Qt::GlobalColor c       ) const;
+      QColor  colorValue  ( const QString& name, const int h, const int s, const int v) const;
+      QString stringValue ( const QString& name, const QString def = QString() ) const;
 
     protected: 
       QObject* _wrapped; // SalomeApp_module or Standalone Application

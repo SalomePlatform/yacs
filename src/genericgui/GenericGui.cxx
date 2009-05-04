@@ -136,6 +136,7 @@ GenericGui::GenericGui(YACS::HMI::SuitWrapper* wrapper, QMainWindow *parent)
   _parent->addDockWidget(Qt::LeftDockWidgetArea, _dwTree);
   _dwStacked = new QDockWidget(_parent);
   _dwStacked->setWindowTitle("Input Panel");
+  _dwStacked->setMinimumWidth(350); // --- force a minimum until display
   _parent->addDockWidget(Qt::RightDockWidgetArea, _dwStacked);
   _dwCatalogs = new QDockWidget(_parent);
   _dwCatalogs->setWindowTitle("Catalogs");
@@ -143,9 +144,10 @@ GenericGui::GenericGui(YACS::HMI::SuitWrapper* wrapper, QMainWindow *parent)
   _catalogsWidget = new CatalogWidget(_dwCatalogs,
                                       _builtinCatalog,
                                       _sessionCatalog);
-  _catalogsWidget->setMinimumWidth(350); // --- force a minimum until display
   _dwCatalogs->setWidget(_catalogsWidget);
+
   _parent->tabifyDockWidget(_dwStacked, _dwCatalogs);
+  _parent->tabifyDockWidget(_dwTree, _wrapper->objectBrowser());
 }
 
 GenericGui::~GenericGui()
@@ -428,6 +430,16 @@ void GenericGui::createActions()
                                               tr("compute links"), tr("compute orthogonal links"),
                                               0, _parent, false, this,  SLOT(onRebuildLinks()));
 
+  pixmap.load("icons:zoomToBloc.png");
+  _zoomToBlocAct = _wrapper->createAction(getMenuId(), tr("zoom 2D view to selected bloc"), QIcon(pixmap),
+                                          tr("zoom to bloc"), tr("zoom 2D view to the selected composed node"),
+                                          0, _parent, false, this,  SLOT(onZoomToBloc()));
+
+  pixmap.load("icons:centerOnNode.png");
+  _centerOnNodeAct = _wrapper->createAction(getMenuId(), tr("center 2D view on selected node"), QIcon(pixmap),
+                                              tr("center on node"), tr("center 2D view on selected node"),
+                                              0, _parent, false, this,  SLOT(onCenterOnNode()));
+
   pixmap.load("icons:autoComputeLink.png");
   _toggleAutomaticComputeLinkAct = _wrapper->createAction(getMenuId(), tr("compute othogonal links autoamtically when nodes move"), QIcon(pixmap),
                                               tr("automatic link"), tr("compute othogonal links autoamtically when nodes move"),
@@ -446,6 +458,12 @@ void GenericGui::createActions()
                                               tr("force ortho links"), tr("force orthogonal links by adding an edge on simples links"),
                                               0, _parent, true, this,  SLOT(onToggleForce2NodesLinks(bool)));
   _toggleForce2NodesLinkAct->setChecked(true);
+
+  pixmap.load("icons:addRowCols.png");
+  _toggleAddRowColsAct = _wrapper->createAction(getMenuId(), tr("allow more path for the links, for a better separation"), QIcon(pixmap),
+                                              tr("separate links"), tr("allow more path for the links, for a better separation"),
+                                              0, _parent, true, this,  SLOT(onToggleAddRowCols(bool)));
+  _toggleAddRowColsAct->setChecked(true);
 
   pixmap.load("icons:ob_service_node.png");
   _selectReferenceAct = _wrapper->createAction(getMenuId(), tr("select reference"), QIcon(pixmap),
@@ -649,6 +667,7 @@ void GenericGui::switchContext(QWidget *view)
 
   _dwTree->setWidget(newContext->getEditTree());
   _dwTree->widget()->show();
+  _dwTree->raise();
   _dwStacked->setWidget(newContext->getStackedWidget());
 
   QtGuiContext::setQtCurrent(newContext);
@@ -676,6 +695,7 @@ bool GenericGui::closeContext(QWidget *view)
   if (! _mapViewContext.count(view))
     return true;
   QtGuiContext* context = _mapViewContext[view];
+  switchContext(view);
 
   bool tryToSave = false;
   if (!QtGuiContext::getQtCurrent()->_setOfModifiedSubjects.empty())
@@ -794,12 +814,11 @@ std::list<std::string> GenericGui::getMachineList()
   Engines::ResourcesManager_var resManager = Engines::ResourcesManager::_narrow(obj);
   if(!resManager) return _machineList;
 
-  Engines::CompoList compoList ;
   Engines::MachineParameters params;
   lcc.preSet(params);
 
   Engines::MachineList* machineList =
-    resManager->GetFittingResources(params, compoList);
+    resManager->GetFittingResources(params);
 
   for (int i = 0; i < machineList->length(); i++)
     {
@@ -854,6 +873,10 @@ void GenericGui::createContext(YACS::ENGINE::Proc* proc,
   QtGuiContext* context = new QtGuiContext(this);
   QtGuiContext::setQtCurrent(context);
 
+  // --- wrapper
+
+  context->setWrapper(_wrapper);
+
   // --- catalogs
 
   context->setEdition(forEdition);
@@ -871,6 +894,9 @@ void GenericGui::createContext(YACS::ENGINE::Proc* proc,
   gView->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
   int studyId = _wrapper->AssociateViewToWindow(gView, viewWindow);
   context->setStudyId(studyId);
+  std::ostringstream value;
+  value << studyId;
+  proc->setProperty("DefaultStudyID",value.str());
   context->setScene(scene);
   context->setView(gView);
   context->setWindow(viewWindow);
@@ -892,6 +918,7 @@ void GenericGui::createContext(YACS::ENGINE::Proc* proc,
   context->setEditTree(editTree);
   editTree->tv_schema->setModel(schemaModel);
   context->setSelectionModel(editTree->tv_schema->selectionModel());
+  _dwTree->raise();
 
   QObject::connect(editTree->tv_schema->selectionModel(),
                    SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
@@ -1659,6 +1686,18 @@ void GenericGui::onRebuildLinks()
   _guiEditor->rebuildLinks();
 }
 
+void GenericGui::onZoomToBloc()
+{
+  DEBTRACE("GenericGui::onZoomToBloc");
+  QtGuiContext::getQtCurrent()->getView()->onZoomToBloc();
+}
+
+void GenericGui::onCenterOnNode()
+{
+  DEBTRACE("GenericGui::onCenterOnNode");
+  QtGuiContext::getQtCurrent()->getView()->onCenterOnNode();
+}
+
 void GenericGui::onToggleAutomaticComputeLinks(bool checked)
 {
   Scene::_autoComputeLinks = checked;
@@ -1675,6 +1714,12 @@ void GenericGui::onToggleForce2NodesLinks(bool checked)
 {
   Scene::_force2NodesLink  = checked;
   DEBTRACE("Scene::_force2NodesLink=" << checked);
+}
+
+void GenericGui::onToggleAddRowCols(bool checked)
+{
+  Scene::_addRowCols  = checked;
+  DEBTRACE("Scene::_addRowCols=" << checked);
 }
 
 void GenericGui::onSelectReference()

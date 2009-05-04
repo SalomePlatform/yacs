@@ -33,7 +33,7 @@ dev_docs: build_dev_docs install_dev_docs
 build_dev_docs:
 	doxygen
 
-DOXFILES= bases.dox engine.dox hmi.dox python.dox runtime.dox yacs.dox yacsloader.dox
+DOXFILES= ref/bases.dox ref/engine.dox ref/hmi.dox ref/python.dox ref/runtime.dox ref/yacs.dox ref/yacsloader.dox
 
 EXTRA_DIST= html htmldev _static exemples $(DOXFILES)
 
@@ -88,7 +88,7 @@ gui.rst            \
 hxx2salome.rst     \
 index.rst          \
 integration.rst    \
-intro.rst          \
+using.rst          \
 main_menu.rst      \
 modification.rst   \
 operations.rst     \
@@ -110,15 +110,15 @@ yacsgen.rst
 EXTRA_DIST+= $(RSTFILES) images		 
 
 EXTRA_DIST+= \
-classDiagram.png \
+ref/classDiagram.png \
 conf.py \
-createNodeCollaboration.png \
+ref/createNodeCollaboration.png \
 opml.dtd \
 opml.xslt \
-programingRules.sxw \
-schema.jpeg \
-sequenceCreateNode.png \
-undoCreateNodeCollaboration.png
+ref/programingRules.sxw \
+ref/schema.jpeg \
+ref/sequenceCreateNode.png \
+ref/undoCreateNodeCollaboration.png
 
 install-data-local:
 	$(INSTALL) -d $(DESTDIR)$(yacsdocdir)

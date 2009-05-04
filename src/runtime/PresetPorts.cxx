@@ -28,6 +28,14 @@
 using namespace YACS::ENGINE;
 using namespace std;
 
+/*! \class YACS::ENGINE::OutputPresetPort
+ *  \brief Class for PRESET output Ports
+ *
+ * \ingroup Ports
+ *
+ * \see PresetNode
+ */
+
 OutputPresetPort::OutputPresetPort(const std::string& name,  Node* node, TypeCode* type)
   : OutputXmlPort(name, node, type),
     DataPort(name, node, type),
@@ -40,6 +48,11 @@ OutputPresetPort::OutputPresetPort(const OutputPresetPort& other, Node *newHelde
     DataPort(other,newHelder),
     Port(other,newHelder)
 {
+}
+
+OutputPort* OutputPresetPort::clone(Node *newHelder) const
+{
+  return new OutputPresetPort(*this,newHelder);
 }
 
 void OutputPresetPort::setData(std::string data)
@@ -126,6 +139,13 @@ std::string OutputPresetPort::getAsString()
   return s;
 }
 
+/*! \class YACS::ENGINE::InputPresetPort
+ *  \brief Class for PRESET input Ports
+ *
+ * \ingroup Ports
+ *
+ * \see OutNode
+ */
 
 InputPresetPort::InputPresetPort(const std::string& name,  Node* node, TypeCode* type)
   : InputXmlPort(name, node, type),
@@ -139,6 +159,11 @@ InputPresetPort::InputPresetPort(const InputPresetPort& other, Node *newHelder)
     DataPort(other,newHelder),
     Port(other,newHelder)
 {
+}
+
+InputPort* InputPresetPort::clone(Node *newHelder) const
+{
+  return new InputPresetPort(*this,newHelder);
 }
 
 void InputPresetPort::setData(std::string data)

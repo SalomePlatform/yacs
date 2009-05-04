@@ -20,24 +20,20 @@
 #define __FORLOOP_HXX__
 
 #include "AnyInputPort.hxx"
+#include "AnyOutputPort.hxx"
 #include "Loop.hxx"
 
 namespace YACS
 {
   namespace ENGINE
   {
-/*! \brief Class for for loop node
- *
- * \ingroup Nodes
- *
- *   This kind of loop makes a fixed number of steps and stops
- *
- */
     class ForLoop : public Loop
     {
     protected:
+      static const char NAME_OF_INDEX[];
       static const char NAME_OF_NSTEPS_NUMBER[];
       AnyInputPort _nbOfTimesPort;
+      AnyOutputPort _indexPort;
     public:
       ForLoop(const ForLoop& other, ComposedNode *father, bool editionOnly);
       ForLoop(const std::string& name);
@@ -46,12 +42,24 @@ namespace YACS
       InputPort *edGetNbOfTimesInputPort() { return &_nbOfTimesPort; }
       Node *simpleClone(ComposedNode *father, bool editionOnly=true) const;
       InputPort* getInputPort(const std::string& name) const throw(Exception);
+      OutPort *getOutPort(const std::string& name) const throw(Exception);
+      OutputPort *getOutputPort(const std::string& name) const throw(Exception);
       std::list<InputPort *> getLocalInputPorts() const;
+      std::list<OutputPort *> getLocalOutputPorts() const;
+      std::list<OutputPort *> getSetOfOutputPort() const;
       virtual void accept(Visitor *visitor);
       InputPort *getDecisionPort() const { return (InputPort *)&_nbOfTimesPort; }
+      OutputPort *edGetIndexPort() { return &_indexPort; }
       virtual std::string typeName() {return "YACS__ENGINE__ForLoop";}
     protected:
       YACS::Event updateStateOnFinishedEventFrom(Node *node);
+      void checkCFLinks(const std::list<OutPort *>& starts, InputPort *end, unsigned char& alreadyFed,
+                        bool direction, LinkInfo& info) const;
+      void checkControlDependancy(OutPort *start, InPort *end, bool cross,
+                                  std::map < ComposedNode *,  std::list < OutPort * >, SortHierarc >& fw,
+                                  std::vector<OutPort *>& fwCross,
+                                  std::map< ComposedNode *, std::list < OutPort *>, SortHierarc >& bw,
+                                  LinkInfo& info) const;
     };
   }
 }

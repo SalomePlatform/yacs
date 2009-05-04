@@ -1,7 +1,7 @@
 .. _python:
 
 ********************************************************
-Utilisation de YACS avec l'interface Python (TUI)
+Using YACS with the python interface (TUI)
 ********************************************************
 
 .. toctree::

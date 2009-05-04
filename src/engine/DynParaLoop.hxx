@@ -21,32 +21,13 @@
 
 #include "ComposedNode.hxx"
 #include "AnyInputPort.hxx"
+#include "AnyOutputPort.hxx"
 #include "OutputPort.hxx"
 
 namespace YACS
 {
   namespace ENGINE
   { 
-    class DynParaLoop;
-
-    class AnyOutputPort : public OutputPort
-    {
-      friend class DynParaLoop;
-    public:
-      //! store the current dispatched value
-      virtual void setValue(Any *data);
-      //! get the current dispatched value for update port value 
-      Any* getValue() const { return _data; }
-      virtual std::string typeName() {return "YACS__ENGINE__AnyOutputPort";}
-    private:
-      Any* _data; // the data dispatched from port on the current moment
-    private:
-      AnyOutputPort(const std::string& name, Node *node, TypeCode *type);
-      AnyOutputPort(const AnyOutputPort& other, Node *newHelder);
-      virtual ~AnyOutputPort();
-      OutputPort *clone(Node *newHelder) const;
-    };
-
     /*!
      * \brief Base class for dynamically (fully or semifully) built graphs.
      */

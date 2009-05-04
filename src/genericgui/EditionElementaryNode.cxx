@@ -200,8 +200,6 @@ void EditionElementaryNode::onCommitData(QWidget *editor)
 
   if (gedit->getColumnInSubject() == YValue)
     {
-      if (sdp->getPort()->edGetType()->kind() == YACS::ENGINE::String)
-        strval = "\"" + strval + "\"";
       DEBTRACE(strval);
        isOk = sdp->setValue(strval);
     }

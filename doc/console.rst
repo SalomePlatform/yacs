@@ -1,7 +1,7 @@
 .. _console:
 
 ************************************
-Utilisation de YACS en mode console
+Using YACS in console mode
 ************************************
 
 .. toctree::

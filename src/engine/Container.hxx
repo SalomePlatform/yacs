@@ -42,9 +42,9 @@ namespace YACS
 #endif
     public:
       //Execution only methods
-      virtual bool isAlreadyStarted() const = 0;
-      virtual void start() throw(Exception) = 0;
-      virtual std::string getPlacementId() const = 0;
+      virtual bool isAlreadyStarted(const ComponentInstance *inst) const = 0;
+      virtual void start(const ComponentInstance *inst) throw(Exception) = 0;
+      virtual std::string getPlacementId(const ComponentInstance *inst) const = 0;
       //Edition only methods
       virtual void attachOnCloning() const;
       virtual void dettachOnCloning() const;

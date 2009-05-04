@@ -61,6 +61,8 @@ namespace YACS
       virtual void updateName();
       virtual void arrangeNodes(bool isRecursive);
       virtual void arrangeChildNodes();
+      bool _blocX;
+      bool _blocY;
 
     protected:
       virtual QString getMimeFormat();

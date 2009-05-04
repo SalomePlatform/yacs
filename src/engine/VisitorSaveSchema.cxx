@@ -48,6 +48,12 @@ using namespace std;
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
+/*! \class YACS::ENGINE::VisitorSaveSchema
+ *  \brief Base class for all visitors that save a schema.
+ *
+ *  Can be specialized in runtime.
+ */
+
 VisitorSaveSchema::VisitorSaveSchema(ComposedNode *root): _root(root), Visitor(root)
 {
 }
@@ -229,6 +235,7 @@ void VisitorSaveSchema::visitProc(Proc *node)
   writeProperties(node);
   writeTypeCodes(node);
   writeContainers(node);
+  writeComponentInstances(node);
   node->ComposedNode::accept(this);
   writeControls(node);
   writeSimpleDataLinks(node);
@@ -256,7 +263,11 @@ void VisitorSaveSchema::visitServiceNode(ServiceNode *node)
   else
     {
       ComponentInstance *compo = node->getComponent();
-      if (compo && (_componentInstanceMap.find(compo) == _componentInstanceMap.end()))
+      if (compo && !compo->isAnonymous())
+        {
+          _out << indent(depth+1) << "<componentinstance>" << compo->getInstanceName() << "</componentinstance>" << endl;
+        }
+      else if (compo && (_componentInstanceMap.find(compo) == _componentInstanceMap.end()))
         {
           _out << indent(depth+1) << compo->getFileRepr() << endl;
           _componentInstanceMap[compo] = _root->getChildName(node);
@@ -397,7 +408,7 @@ void VisitorSaveSchema::writeProperties(Node *node)
     }
 }
 
-void VisitorSaveSchema::dumpTypeCode(TypeCode* type, set<string>& typeNames,map<string, TypeCode*>& typeMap,int depth)
+void VisitorSaveSchema::dumpTypeCode(TypeCode* type, std::set<std::string>& typeNames,std::map<std::string, TypeCode*>& typeMap,int depth)
 {
   DynType kind = type->kind();
   string typeName = type->name();
@@ -528,6 +539,34 @@ void VisitorSaveSchema::writeTypeCodes(Proc *proc)
   for (it = typeMap.begin(); it != typeMap.end(); it++)
     {
       dumpTypeCode(it->second,typeNames,typeMap,depth);
+    }
+}
+
+void VisitorSaveSchema::writeComponentInstances(Proc *proc)
+{
+  int depth = depthNode(proc)+1;
+  std::map<std::string, ComponentInstance*>::const_iterator it;
+  for (it = proc->componentInstanceMap.begin(); it != proc->componentInstanceMap.end(); it++)
+    {
+      string name = it->first;
+      ComponentInstance* inst=it->second;
+      if(!inst->isAnonymous())
+        {
+          _out << indent(depth) << "<componentinstance name=\"" << inst->getInstanceName() << "\">" << endl;
+          _out << indent(depth+1) << "<component>" << inst->getCompoName() << "</component>" << endl;
+
+          Container *cont = inst->getContainer();
+          if (cont)
+            _out << indent(depth+1) << "<load container=\"" << cont->getName() << "\"/>" << endl;
+
+          std::map<std::string, std::string> properties = inst->getProperties();
+          std::map<std::string, std::string>::const_iterator itm;
+          for(itm = properties.begin(); itm != properties.end(); ++itm)
+            _out << indent(depth+1) << "<property name=\"" << (*itm).first
+                 << "\" value=\"" << (*itm).second << "\"/>" << endl;
+
+          _out << indent(depth) << "</componentinstance>" << endl;
+        }
     }
 }
 

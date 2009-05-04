@@ -21,10 +21,14 @@
 #include "SceneItem.hxx"
 #include "Scene.hxx"
 #include "QtGuiContext.hxx"
+#include "guiObservers.hxx"
 
 #include <cmath>
 #include <QMenu>
 #include <QGraphicsView>
+#include <QWheelEvent>
+
+#include <cmath>
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -38,6 +42,7 @@ GraphicsView::GraphicsView(QWidget *parent)
   _zooming = false;
   _fittingArea = false;
   _panning = false;
+  _rect = 0;
   setTransformationAnchor(QGraphicsView::AnchorViewCenter);
 }
 
@@ -98,9 +103,13 @@ void GraphicsView::contextMenuEvent(QContextMenuEvent *event)
   QGraphicsItem *qgitem = itemAt(event->pos());
   if (qgitem)
     {
-      AbstractSceneItem *item = dynamic_cast<AbstractSceneItem*>(qgitem);
+      SceneItem *item = dynamic_cast<SceneItem*>(qgitem);
       if (item)
-        item->popupMenu(this, event->globalPos());
+        {
+          QPointF point = mapToScene(event->pos());
+          item->setEventPos(point);
+          item->popupMenu(this, event->globalPos());
+        }
     }
 }
 
@@ -109,11 +118,16 @@ void GraphicsView::mouseMoveEvent(QMouseEvent *e)
   WrapGraphicsView::mouseMoveEvent(e);
   if (e->buttons()==Qt::LeftButton)
     {
+      QPoint current = e->pos();
       if (_zooming)
         {
           qreal currentX = e->globalX();
-          qreal delta = currentX - _prevX;
+          qreal currentY = e->globalY();
+          qreal delta = sqrt((currentX - _prevX)*(currentX - _prevX) + (currentY - _prevY)*(currentY - _prevY));
+          if ((currentX*currentX + currentY*currentY) < (_prevX*_prevX + _prevY*_prevY))
+            delta = -delta;
           _prevX = currentX;
+          _prevY = currentY;
           //       if (delta < -30) delta = -30;
           //       if (delta >  30) delta =  30;
           double deltax = delta/900.;
@@ -124,10 +138,23 @@ void GraphicsView::mouseMoveEvent(QMouseEvent *e)
         }
       else if (_panning)
         {
-          QPoint current = e->pos();
           translate(current.x() - _prevPos.x(), current.y() - _prevPos.y());
           //DEBTRACE(current.x()<<"-"<<_prevPos.x()<<" "<<current.y()<<"-"<<_prevPos.y());
           _prevPos = current;
+        }
+      else if (_fittingArea)
+        {
+          if (!_rect)
+            {
+              _rect = scene()->addRect(QGraphicsView::mapToScene(QRect(_prevPos, current)).boundingRect());
+              _rect->setZValue(100000);
+              _rect->setParentItem(0);
+            }
+          else
+            {
+              _rect->setRect(QGraphicsView::mapToScene(QRect(_prevPos, current)).boundingRect());
+              _rect->show();
+            }
         }
     }
 }
@@ -138,6 +165,7 @@ void GraphicsView::mousePressEvent(QMouseEvent *e)
   if (_zooming)
     {
       _prevX = e->globalX();
+      _prevY = e->globalY();
     }
   else if (_fittingArea)
     {
@@ -160,10 +188,47 @@ void GraphicsView::mouseReleaseEvent(QMouseEvent *e)
     {
       _fittingArea = false;
       QPoint current = e->pos();
-      fitInView(QRect(_prevPos, current),  Qt::KeepAspectRatio);
+      fitInView(QGraphicsView::mapToScene(QRect(_prevPos, current)).boundingRect(), Qt::KeepAspectRatio);
+      if (_rect)
+        _rect->hide();
     }
 
   QTransform q = transform();
   DEBTRACE(q.m11()<<" "<<q.m12()<<" "<<q.m21()<<" "<<q.m22()<<" "<<q.dx()<<" "<<q.dy());
   WrapGraphicsView::mouseReleaseEvent(e);
+}
+
+void GraphicsView::wheelEvent(QWheelEvent *e)
+{
+  DEBTRACE("GraphicsView::wheelEvent " << e->delta());
+  double zoom = exp(0.1*e->delta()/120);
+  _scale = _scale*zoom;
+  setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+  scale(zoom,zoom);
+}
+
+void GraphicsView::onZoomToBloc()
+{
+  Subject *sub = QtGuiContext::getQtCurrent()->getSelectedSubject();
+  SubjectNode *snode = dynamic_cast<SubjectNode*>(sub);
+  if (!snode)
+    return;
+  SubjectComposedNode *scnode = dynamic_cast<SubjectComposedNode*>(sub);
+  if (!scnode)
+    scnode = dynamic_cast<SubjectComposedNode*>(snode->getParent());
+  YASSERT(scnode);
+  SceneItem *item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[scnode];
+  YASSERT(item);
+  QRectF rect = item->mapToScene(item->boundingRect().toRect()).boundingRect();
+  fitInView(rect.toRect(), Qt::KeepAspectRatio);
+}
+
+void GraphicsView::onCenterOnNode()
+{
+  Subject *sub =QtGuiContext::getQtCurrent()->getSelectedSubject();
+  SubjectNode *snode = dynamic_cast<SubjectNode*>(sub);
+  if (!snode)
+    return;
+  SceneItem *item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[sub];
+  centerOn(item);
 }

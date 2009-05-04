@@ -1,28 +1,24 @@
 .. _progdsc:
 
-Introduction au modèle de programmation DSC pour les composants Salomé
+Introduction to the DSC programming model for SALOME components
 ======================================================================
 
-Cette introduction a pour objectif de fournir les notions essentielles pour utiliser 
-l'extension DSC (Dynamic Software Component) dans des composants Salomé. Il est 
-destiné aux développeurs d'applications Salomé qui doivent intégrer des codes de 
-calculs sous la forme de composants Salomé ou de services du superviseur.
+The purpose of this introduction is to provide essential concepts about how to use the DSC (Dynamic Software Component) 
+extension in SALOME components.  It is intended for SALOME application developers who need to integrate calculation 
+codes in the form of SALOME components or supervisor services.
 
-Le principe du modèle de programmation
+The principle of the programming model
 ----------------------------------------
-
-Le modèle de programmation DSC est fourni par le noyau Salomé et est disponible 
-non seulement pour les services mais aussi pour des composants Salomé sans supervision.
-Une application Salomé qui souhaite utiliser l'extension DSC suit toujours ce principe :
-
-1. Les différents programmes, codes, services qui composent l'application déclare 
-   dans la phase d'initialisation les différents ports disponibles.
-2. Ensuite le système (par exemple YACS ou un script utilisateur) connecte les 
-   différents ports pour mettre en place les différentes communications entre les codes.
-3. Les codes sont lancés. Lorsqu'ils souhaitent utiliser un de leur port DSC, le code 
-   demande au système un pointeur vers son port. Le système vérifie alors que le port 
-   a été bien connecté et/ou bien déclaré.
-4. Les codes utilisent les ports DSC.
+The DSC programming model is provided by the SALOME kernel and is available not only for services but also for 
+SALOME components without supervision.  A SALOME application that would like to use the DSC extension always 
+follows this principle:
+ 1. The different programs, codes and services that make up the application declare the various available ports 
+    during the initialization phase.
+ 2. The system (for example YACS or a user script) then connects the different ports to set up the different 
+    communications between the codes.
+ 3. The codes are run.  When they want to use one of their DSC ports, the code asks to the system for a pointer 
+    to its port. The system then checks that the port has been properly connected and/or properly declared.
+ 4. The codes use the DCS ports.
 
 Apports de l'extension DSC
 ---------------------------------

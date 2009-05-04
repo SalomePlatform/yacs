@@ -4,52 +4,41 @@
 .. _rappels:
 
 ================================================================
-Rappels sur la plate-forme SALOME
+Reminders about the SALOME platform
 ================================================================
 
-Définitions
+Definitions
 ================================================================
 
-  - **Module SALOME** : un module SALOME est un regroupement de composants SALOME. Il réside dans un répertoire
-    dont la structure est standardisée. Ses composants sont décrits dans un fichier XML de nom <module>Catalog.xml.
-
-  - **Composant SALOME** : c'est l'équivalent SALOME d'un code de calcul. Il peut prendre la forme d'une bibliothèque dynamique ou
-    d'un module Python.
-
-  - **Service SALOME** : chaque composant a un ou plusieurs services. Un service est l'équivalent d'une subroutine Fortran, d'une
-    fonction C, d'une méthode C++ ou Python. Seuls les services de composant peuvent être couplés avec le coupleur YACS.
-    Le couplage est réalisé en connectant les ports d'entrée-sortie dont sont dotés les services.
-    Ces ports peuvent être de deux types : dataflow ou datastream.
-
-  - **Port dataflow** : un port dataflow est un point de connexion pour l'échange de données. Il a un nom qui est le
-    nom de la variable échangée, un type qui indique le type de donnée (double, long, string, ...) et un sens (entrée
-    ou sortie). On peut connecter un port dataflow entrant avec un port dataflow sortant d'un type compatible.
-    La variable portée par le port est échangée en fin de service (port sortant) et en début de service (port entrant).
-    Aucun échange de donnée n'a lieu pendant l'exécution du service.
-
-  - **Port datastream** : un port datastream permet l'échange de données pendant l'exécution. Comme un port dataflow, il
-    a un nom, un type et un sens mais il a en plus un mode de dépendance itératif (I) ou temporel (T).
-    On peut connecter un port datastream entrant uniquement avec un port datastream sortant de même type.
-    Il peut exister plusieurs classes de port datastream.
-    Ici, on ne traitera que des ports datastream CALCIUM.
-
-  - **Coupleur YACS** : c'est un module SALOME qui permet d'éditer et d'exécuter des schémas de couplage qui sont
-    principalement sous la forme d'un fichier XML. Le module fournit une interface utilisateur graphique pour
-    éditer un schéma, l'exécuter et suivre son exécution.
-
-  - **Instance de composant** : on peut avoir plusieurs exemplaires du même composant qui sont exécutés par SALOME
-    dans une même session. Pour distinguer ces exemplaires, on parle d'instance de composant. On peut faire un parallèle
-    avec les termes code de calcul (composant) et exécution (instance de composant).
-
-  - **Container** : Processus SALOME qui exécute les composants. Il a la responsabilité de charger (bibliothèque dynamique
-    ou module Python) et d'enregistrer les composants. Le choix des containers peut avoir de l'importance si on veut
-    qu'un composant ne soit pas dans le même exécutable qu'un autre.
-
-  - **Application SALOME** : ensemble de modules SALOME intégrés dans la plate-forme SALOME. Cette plate-forme
-    est batie sur les modules de base KERNEL et GUI qui fournissent les services de lancement des composants
-    et d'intégration dans l'IHM graphique. Une application SALOME fournit plusieurs scripts qui permettent
-    de lancer l'application (runAppli), de se mettre dans l'environnement de l'application (runSession) et d'autres
-    plus internes comme le lancement distant (runRemote)
+   - **SALOME module**:  a SALOME module is a group of SALOME components. It is located in a directory with a standard structure.
+     Its components are described in an XML file named <module>Catalog.xml.
+   - **SALOME component**:  this is the SALOME equivalent of a calculation code.  It may be in the form of a dynamic 
+     library or a Python module.
+   - **SALOME service**:  each component has one or several services.  A service is the equivalent of a Fortran 
+     subroutine, a C function, a C++ method or a Python method.  Only component services can be coupled with the YACS coupler.  
+     Coupling is done connecting input-output ports with which services are provided.  There are two types of these 
+     ports, dataflow and datastream.
+   - **Dataflow port**:  a dataflow port is a connection port for exchanging data.  It has a name that is the name of the 
+     exchanged variable, a type that indicates the data type (double, long, string, etc.) and a direction (input or output).  
+     An input dataflow port can be connected with an output dataflow port of a compatible type.  The variable carried by 
+     the port is exchanged at the end of the service (output port) or at the beginning of the service (input port).  
+     No data exchange takes place during execution of the service.
+   - **Datastream port**:  a datastream port is used to exchange data during execution.  Like a dataflow port, it has a name, 
+     a type and a direction but it also has an iterative (I) or time (T) dependence mode.  An input datastream port can only 
+     be connected with an output datastream port of the same type.  There may be several classes of datastream port.  
+     In this description, we only deal with CALCIUM datastream ports.
+   - **YACS coupler**:  this is a SALOME module that edits and executes coupling schemes that are mainly in the form of an 
+     XML file.  The module provides a graphic user interface to edit a scheme, to execute it and monitor its execution.
+   - **Component instance**:  there can be several copies of the same component and they can be executed by SALOME in a 
+     single session.  A distinction between these copies is made by referring to a component instance.  A parallel can be 
+     made with the terms calculation code (component) and execution (component instance).
+   - **Container**:  SALOME process that executes components.  It loads (dynamic library or Python module) and saves 
+     components.  The choice of containers may be important if it is required that one component should not be in the same 
+     executable as another.
+   - **SALOME application**:  set of SALOME modules integrated into the SALOME platform.  This platform is built on KERNEL 
+     and GUI basic modules that provide component running and integration services in the graphic MMI.  A SALOME application 
+     provides several scripts to run the application (runAppli), enter the application environment (runSession) and other 
+     more internal scripts such as remote run (runRemote).
 
 Modules et composants SALOME
 ==================================================

@@ -20,6 +20,7 @@
 #include "ElementaryNode.hxx"
 #include "Runtime.hxx"
 #include "Container.hxx"
+#include "ComponentInstance.hxx"
 #include "InputPort.hxx"
 #include "OutputPort.hxx"
 #include "TypeCode.hxx"
@@ -36,7 +37,14 @@
 using namespace std;
 using namespace YACS::ENGINE;
 
-Proc::Proc(const std::string& name):Bloc(name),_edition(false)
+/*! \class YACS::ENGINE::Proc
+ *  \brief Base class for all schema objects.
+ *
+ * This is an abstract class that must be specialized in runtime.
+ * \ingroup Nodes
+ */
+
+Proc::Proc(const std::string& name):Bloc(name),_edition(false),_compoinstctr(0)
 {
   Runtime *theRuntime=getRuntime();
   DEBTRACE("theRuntime->_tc_double->ref: " << theRuntime->_tc_double->getRefCnt());
@@ -416,3 +424,65 @@ Container* Proc::createContainer(const std::string& name,const std::string& kind
   co->incrRef();
   return co;
 }
+
+//! Add a ComponentInstance into componentInstanceMap
+/*!
+ * If the name == "", the component instance is automatically named with a unique (in the Proc) name
+ *
+ * \param inst: the component instance
+ * \param name: the component instance name
+ */
+void Proc::addComponentInstance(ComponentInstance* inst, const std::string& name)
+{
+  if(name != "")
+    {
+      inst->setName(name);
+      inst->setAnonymous(false);
+      if(componentInstanceMap.count(name)!=0)
+        componentInstanceMap[name]->decrRef();
+      componentInstanceMap[name]=inst;
+      inst->incrRef();
+    }
+  else
+    {
+      //automatic naming : componame_<_compoinstctr>
+      std::ostringstream buffer;
+      std::string instname;
+      std::string componame=inst->getCompoName();
+      while(1)
+        {
+          buffer << ++_compoinstctr;
+          instname=componame+"_"+buffer.str();
+          if(componentInstanceMap.count(instname)==0)
+            {
+              inst->setName(instname);
+              componentInstanceMap[instname]=inst;
+              inst->incrRef();
+              break;
+            }
+        }
+    }
+}
+
+//! Create a new ComponentInstance and add it into componentInstanceMap
+/*!
+ * If the name == "", the component instance is automatically named with a unique (in the Proc) name
+ *
+ * \param componame: the component name
+ * \param name: the component instance name
+ * \param kind: the component instance kind (depends on runtime)
+ * \return the created ComponentInstance
+ */
+ComponentInstance* Proc::createComponentInstance(const std::string& componame, const std::string& name,const std::string& kind)
+{
+  ComponentInstance* inst=  getRuntime()->createComponentInstance(componame,kind);
+  addComponentInstance(inst,name);
+  return inst;
+}
+
+//! Return the proc (this)
+Proc* Proc::getProc()
+{
+  return this;
+}
+

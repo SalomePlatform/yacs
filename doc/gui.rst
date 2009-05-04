@@ -1,7 +1,7 @@
 .. _gui:
 
 *******************************************************
-Utilisation de YACS avec l'interface graphique (GUI)
+Using YACS with the graphical user interface (GUI)
 *******************************************************
 
 YACS GUI description

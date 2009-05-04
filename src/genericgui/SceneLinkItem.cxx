@@ -210,6 +210,7 @@ void SceneLinkItem::popupMenu(QWidget *caller, const QPoint &globalPos)
 void SceneLinkItem::setPath(LinkPath lp)
 {
   DEBTRACE("SceneLinkItem::setPath " << lp.size());
+  prepareGeometryChange();
   _nbPoints = lp.size();
   _lp.reserve(_nbPoints+1);
   _directions.reserve(_nbPoints +2);
@@ -275,6 +276,7 @@ void SceneLinkItem::setPath(LinkPath lp)
   for (k=0; k<_nbPoints; k++)
     DEBTRACE("_lp[" << k << "](" << _lp[k].x() << "," << _lp[k].y() << ")");
   setShape();
+  SceneItem::update();
 }
 
 /*!

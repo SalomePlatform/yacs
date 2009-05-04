@@ -112,6 +112,11 @@ namespace YACS
       virtual Bloc* createBloc(const std::string& name);
       virtual Proc* createProc(const std::string& name);
 
+      virtual TypeCode * createInterfaceTc(const std::string& id, const std::string& name,
+                                            std::list<TypeCodeObjref *> ltc);
+      virtual TypeCode * createSequenceTc(const std::string& id, const std::string& name, TypeCode *content);
+      virtual TypeCodeStruct * createStructTc(const std::string& id, const std::string& name);
+
       virtual InputPort* adapt(InputPort* source,
                                const std::string& impl,
                                TypeCode * type,bool init=false) throw (ConversionException);
@@ -192,6 +197,9 @@ namespace YACS
 
       virtual InputPort* adaptXmlToNeutral(InputXmlPort* inport,
                                           TypeCode * type) throw (ConversionException);
+      virtual InputPort* adaptXmlToXml(InputXmlPort* inport,
+                                TypeCode * type,bool init) throw (ConversionException);
+
 
       virtual InputPort* adaptNeutralToXml(InputPort* inport,
                                            TypeCode * type) throw (ConversionException);

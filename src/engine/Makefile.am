@@ -23,6 +23,7 @@ SUBDIRS = Plugin Test
 lib_LTLIBRARIES = libYACSlibEngine.la
 
 libYACSlibEngine_la_SOURCES =             \
+	PropertyInterface.cxx          \
 	TypeCode.cxx                   \
 	RefCounter.cxx                 \
 	LinkInfo.cxx                   \
@@ -30,6 +31,7 @@ libYACSlibEngine_la_SOURCES =             \
 	InvalidExtractionException.cxx \
 	ConditionInputPort.cxx         \
 	AnyInputPort.cxx               \
+	AnyOutputPort.cxx              \
 	Port.cxx InGate.cxx            \
 	OutGate.cxx                    \
 	DataPort.cxx                   \
@@ -90,7 +92,7 @@ OutGate.hxx              OutPort.hxx       OutputDataStreamPort.hxx        Outpu
 Port.hxx                 Proc.hxx          RefCounter.hxx                  Runtime.hxx                    Scheduler.hxx \
 ServiceInlineNode.hxx    ServiceNode.hxx   SharedPtr.hxx                   StaticDefinedComposedNode.hxx  Switch.hxx \
 Task.hxx                 TypeCode.hxx      Visitor.hxx                     VisitorSaveSchema.hxx          VisitorSaveState.hxx \
-WhileLoop.hxx \
+WhileLoop.hxx            PropertyInterface.hxx      AnyOutputPort.hxx \
 	     $(__dummy__)
 
 
@@ -124,6 +126,7 @@ ConversionException.hxx  ForLoop.hxx         Node.hxx                        Run
 DataFlowPort.hxx         InGate.hxx          OptimizerAlg.hxx                Scheduler.hxx             WhileLoop.hxx \
 DataPort.hxx             InlineNode.hxx      OptimizerLoop.hxx               ServiceInlineNode.hxx     ComponentDefinition.hxx \
 DataStreamPort.hxx       InPort.hxx          OutGate.hxx                     ServiceNode.hxx           Catalog.hxx  \
+PropertyInterface.hxx  AnyOutputPort.hxx \
 ../bases/yacsconfig.h engtypemaps.i
 
 pilotWRAP.cxx:pilot.i $(SWIGINCLUDES)
@@ -145,7 +148,7 @@ _pilot_la_CXXFLAGS = \
 
 _pilot_la_LDFLAGS  = -module
 
-_pilot_la_LIBADD = $(OMNIORB_LIBS) $(PYTHON_LDFLAGS) libYACSlibEngine.la
+_pilot_la_LIBADD = libYACSlibEngine.la $(OMNIORB_LIBS)
 
 pypilotWRAP.cxx pypilotWRAP.h: pypilot.i pilot.i $(SWIGINCLUDES)
 	$(SWIG) $(SWIG_PYTHON_OPT) $(SWIG_PYTHON_INCLUDES) $(MYSWIG_FLAGS) -o pypilotWRAP.cxx $(srcdir)/pypilot.i
@@ -155,7 +158,7 @@ pypilot.py : pypilotWRAP.cxx
 _pypilot_la_SOURCES =  pypilotWRAP.cxx
 _pypilot_la_CXXFLAGS =  $(THREAD_DEF) $(PYTHON_CPPFLAGS) $(OMNIORB_INCLUDES) $(OMNIORB_CXXFLAGS) -I$(srcdir)/../bases
 _pypilot_la_LDFLAGS  = -module
-_pypilot_la_LIBADD = $(OMNIORB_LIBS) $(PYTHON_LDFLAGS) libYACSlibEngine.la 
+_pypilot_la_LIBADD = libYACSlibEngine.la $(OMNIORB_LIBS)
 
 EXTRA_DIST = pilot.i pypilot.i engtypemaps.i pypilotWRAP.h
 

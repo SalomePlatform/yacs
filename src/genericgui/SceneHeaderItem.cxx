@@ -90,7 +90,9 @@ void SceneHeaderItem::popupMenu(QWidget *caller, const QPoint &globalPos)
 
 void SceneHeaderItem::adjustGeometry()
 {
+  prepareGeometryChange();
   _width = _parent->getInternWidth() -1;
+  update();
 }
 
 QColor SceneHeaderItem::getPenColor()

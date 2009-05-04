@@ -25,13 +25,6 @@ namespace YACS
 {
   namespace ENGINE
   {
-/*! \brief Class for bloc node
- *
- * \ingroup Nodes
- *
- *
- * \see ComposedNode
- */
     class Bloc : public StaticDefinedComposedNode
     {
     protected:
@@ -168,7 +161,8 @@ namespace YACS
     }
 
     template<bool direction>
-    void Bloc::findAllNodesStartingFrom(Node *start, std::set<Node *>& result, std::map<Node *, std::set<Node *> >& accelStr, LinkInfo& info) const
+    void Bloc::findAllNodesStartingFrom(Node *start, std::set<Node *>& result, 
+                                        std::map<Node *, std::set<Node *> >& accelStr, LinkInfo& info) const
     {
       std::list< std::vector<Node *> > li;
       findAllPathsStartingFrom<direction>(start,li,accelStr);
@@ -181,11 +175,14 @@ namespace YACS
 
     /*!
      * Method for CF computation.DFS visitor is used.
+     * if direction is true forward visiting is performed, if false backward is performed.
      * \param start \b must be a direct descendant of 'this'.
-     * \param direction if true forward visiting is perform, false backward is used.
+     * \param vec :
+     * \param accelStr
      */
     template<bool direction>
-    void Bloc::findAllPathsStartingFrom(Node *start, std::list< std::vector<Node *> >& vec, std::map<Node *, std::set<Node *> >& accelStr) const
+    void Bloc::findAllPathsStartingFrom(Node *start, std::list< std::vector<Node *> >& vec, 
+                                        std::map<Node *, std::set<Node *> >& accelStr) const
     {
       initComputation();
       Node *current=start;

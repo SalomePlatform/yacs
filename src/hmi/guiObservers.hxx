@@ -653,6 +653,7 @@ namespace YACS
       virtual ~SubjectCORBANode();
       virtual void clean();
       void localClean();
+      virtual TypeOfElem getType(){return CORBANODE;}
     protected:
       YACS::ENGINE::CORBANode *_corbaNode;
     };
@@ -664,6 +665,7 @@ namespace YACS
       virtual ~SubjectCppNode();
       virtual void clean();
       void localClean();
+      virtual TypeOfElem getType(){return CPPNODE;}
     protected:
       YACS::ENGINE::CppNode *_cppNode;
     };

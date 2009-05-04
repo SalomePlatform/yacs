@@ -52,6 +52,7 @@ namespace YACS
       static const int _portWidth;
       static const int _portHeight;
       bool _draging;
+      bool _dragModifier;
     };
   }
 }

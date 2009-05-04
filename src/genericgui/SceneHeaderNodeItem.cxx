@@ -40,11 +40,39 @@ using namespace std;
 using namespace YACS::ENGINE;
 using namespace YACS::HMI;
 
-QColor SceneHeaderNodeItem::_editedNodeBrushColor = QColor(255,255,190);
-QColor SceneHeaderNodeItem::_normalNodeBrushColor = QColor(230,235,255);
-QColor SceneHeaderNodeItem::_runNodeBrushColor    = QColor(205,218,255);
-QColor SceneHeaderNodeItem::_validNodeColor       = QColor(128,255,128);
-QColor SceneHeaderNodeItem::_invalidNodeColor     = QColor(255,128,128);
+QColor SceneHeaderNodeItem::_editedNodeBrushColor = QColor();
+QColor SceneHeaderNodeItem::_normalNodeBrushColor = QColor();
+QColor SceneHeaderNodeItem::_runNodeBrushColor    = QColor();
+QColor SceneHeaderNodeItem::_validNodeColor       = QColor();
+QColor SceneHeaderNodeItem::_invalidNodeColor     = QColor();
+
+QColor SceneHeaderNodeItem::_NOTYETINITIALIZED    = QColor();
+QColor SceneHeaderNodeItem::_INITIALISED          = QColor();
+QColor SceneHeaderNodeItem::_RUNNING              = QColor();
+QColor SceneHeaderNodeItem::_WAITINGTASKS         = QColor();
+QColor SceneHeaderNodeItem::_PAUSED               = QColor();
+QColor SceneHeaderNodeItem::_FINISHED             = QColor();
+QColor SceneHeaderNodeItem::_STOPPED              = QColor();
+QColor SceneHeaderNodeItem::_UNKNOWN              = QColor();
+
+QColor SceneHeaderNodeItem::_UNDEFINED            = QColor();
+QColor SceneHeaderNodeItem::_INVALID              = QColor();
+QColor SceneHeaderNodeItem::_READY                = QColor();
+QColor SceneHeaderNodeItem::_TOLOAD               = QColor();
+QColor SceneHeaderNodeItem::_LOADED               = QColor();
+QColor SceneHeaderNodeItem::_TOACTIVATE           = QColor();
+QColor SceneHeaderNodeItem::_ACTIVATED            = QColor();
+QColor SceneHeaderNodeItem::_DESACTIVATED         = QColor();
+QColor SceneHeaderNodeItem::_DONE                 = QColor();
+QColor SceneHeaderNodeItem::_SUSPENDED            = QColor();
+QColor SceneHeaderNodeItem::_LOADFAILED           = QColor();
+QColor SceneHeaderNodeItem::_EXECFAILED           = QColor();
+QColor SceneHeaderNodeItem::_PAUSE                = QColor();
+QColor SceneHeaderNodeItem::_INTERNALERR          = QColor();
+QColor SceneHeaderNodeItem::_DISABLED             = QColor();
+QColor SceneHeaderNodeItem::_FAILED               = QColor();
+QColor SceneHeaderNodeItem::_ERROR                = QColor();
+QColor SceneHeaderNodeItem::_DEFAULT              = QColor();
 
 SceneHeaderNodeItem::SceneHeaderNodeItem(QGraphicsScene *scene, SceneItem *parent,
                                          QString label)
@@ -54,6 +82,44 @@ SceneHeaderNodeItem::SceneHeaderNodeItem(QGraphicsScene *scene, SceneItem *paren
   _controlIn = 0;
   _controlOut = 0;
   _label = "H_" + _label;
+
+  if (_editedNodeBrushColor == _normalNodeBrushColor) {
+    SuitWrapper* wrapper = QtGuiContext::getQtCurrent()->getWrapper();
+
+    _editedNodeBrushColor = wrapper->colorValue("STATE:EDITED"           , QColor(255, 255, 190));
+    _normalNodeBrushColor = wrapper->colorValue("STATE:NORMAL"           , QColor(230, 235, 255));
+    _runNodeBrushColor    = wrapper->colorValue("STATE:RUN"              , QColor(205, 218, 255));
+    _validNodeColor       = wrapper->colorValue("STATE:VALID"            , QColor(128, 255, 128));
+    _invalidNodeColor     = wrapper->colorValue("STATE:INVALID"          , QColor(255, 128, 128));
+
+    _NOTYETINITIALIZED    = wrapper->colorValue("STATE:NOTYETINITIALIZED",  45, 50, 255   );
+    _INITIALISED          = wrapper->colorValue("STATE:INITIALISED"      ,  90, 50, 255   );
+    _RUNNING              = wrapper->colorValue("STATE:RUNNING"          , 135, 50, 255   );
+    _WAITINGTASKS         = wrapper->colorValue("STATE:WAITINGTASKS"     , 180, 50, 255   );
+    _PAUSED               = wrapper->colorValue("STATE:PAUSED"           , 225, 50, 255   );
+    _FINISHED             = wrapper->colorValue("STATE:FINISHED"         , 270, 50, 255   );
+    _STOPPED              = wrapper->colorValue("STATE:STOPPED"          , 315, 50, 255   );
+    _UNKNOWN              = wrapper->colorValue("STATE:UNKNOWN"          , 360, 50, 255   );
+
+    _UNDEFINED            = wrapper->colorValue("STATE:UNDEFINED"        , Qt::lightGray  );
+    _INVALID              = wrapper->colorValue("STATE:INVALID"          , Qt::red        );
+    _READY                = wrapper->colorValue("STATE:READY"            , Qt::gray       );
+    _TOLOAD               = wrapper->colorValue("STATE:TOLOAD"           , Qt::darkYellow );
+    _LOADED               = wrapper->colorValue("STATE:LOADED"           , Qt::darkMagenta);
+    _TOACTIVATE           = wrapper->colorValue("STATE:TOACTIVATE"       , Qt::darkCyan   );
+    _ACTIVATED            = wrapper->colorValue("STATE:ACTIVATED"        , Qt::darkBlue   );
+    _DESACTIVATED         = wrapper->colorValue("STATE:DESACTIVATED"     , Qt::gray       );
+    _DONE                 = wrapper->colorValue("STATE:DONE"             , Qt::darkGreen  );
+    _SUSPENDED            = wrapper->colorValue("STATE:SUSPENDED"        , Qt::gray       );
+    _LOADFAILED           = wrapper->colorValue("STATE:LOADFAILED"       , 320, 255, 255  );
+    _EXECFAILED           = wrapper->colorValue("STATE:EXECFAILED"       ,  20, 255, 255  );
+    _PAUSE                = wrapper->colorValue("STATE:PAUSE"            , 180, 255, 255  );
+    _INTERNALERR          = wrapper->colorValue("STATE:INTERNALERR"      , 340, 255, 255  );
+    _DISABLED             = wrapper->colorValue("STATE:DISABLED"         ,  40, 255, 255  );
+    _FAILED               = wrapper->colorValue("STATE:FAILED"           ,  20, 255, 255  );
+    _ERROR                = wrapper->colorValue("STATE:ERROR"            ,   0, 255, 255  );
+    _DEFAULT              = wrapper->colorValue("STATE:DEFAULT"          , Qt::lightGray  );
+  };
 
   _header = new SceneHeaderItem(_scene,
                                 this,
@@ -169,9 +235,11 @@ void SceneHeaderNodeItem::popupMenu(QWidget *caller, const QPoint &globalPos)
 
 void SceneHeaderNodeItem::adjustGeometry()
 {
+  prepareGeometryChange();
   _width = _parent->getInternWidth() -1;
   if (_header) _header->adjustGeometry();
   adjustPosPorts();
+  update();
 }
 
 void SceneHeaderNodeItem::adjustPosPorts()
@@ -246,37 +314,38 @@ void SceneHeaderNodeItem::setExecState(int execState)
   if (_isProc)
     switch (_execState)
       {
-      case YACS::NOTYETINITIALIZED: _sc.setHsv( 45, 50, 255); _stateDef = "Not Yet Initialized"; break;
-      case YACS::INITIALISED:       _sc.setHsv( 90, 50, 255); _stateDef = "Initialized";         break;
-      case YACS::RUNNING:           _sc.setHsv(135, 50, 255); _stateDef = "Running";             break;
-      case YACS::WAITINGTASKS:      _sc.setHsv(180, 50, 255); _stateDef = "Waiting Tasks";       break;
-      case YACS::PAUSED:            _sc.setHsv(225, 50, 255); _stateDef = "Paused";              break;
-      case YACS::FINISHED:          _sc.setHsv(270, 50, 255); _stateDef = "Finished";            break;
-      case YACS::STOPPED:           _sc.setHsv(315, 50, 255); _stateDef = "Stopped";             break;
-      default:                      _sc.setHsv(360, 50, 255); _stateDef = "Unknown Status";
+      case YACS::NOTYETINITIALIZED: _sc = _NOTYETINITIALIZED; _stateDef = "Not Yet Initialized"; break;
+      case YACS::INITIALISED:       _sc = _INITIALISED      ; _stateDef = "Initialized"        ; break;
+      case YACS::RUNNING:           _sc = _RUNNING          ; _stateDef = "Running"            ; break;
+      case YACS::WAITINGTASKS:      _sc = _WAITINGTASKS     ; _stateDef = "Waiting Tasks"      ; break;
+      case YACS::PAUSED:            _sc = _PAUSED           ; _stateDef = "Paused"             ; break;
+      case YACS::FINISHED:          _sc = _FINISHED         ; _stateDef = "Finished"           ; break;
+      case YACS::STOPPED:           _sc = _STOPPED          ; _stateDef = "Stopped"            ; break;
+      default:                      _sc = _UNKNOWN          ; _stateDef = "Unknown Status"     ;
       }
   else
     switch (_execState)
       {
-      case YACS::UNDEFINED:    _sc=Qt::lightGray;       _stateDef = "UNDEFINED";     break;
-      case YACS::INVALID:      _sc=Qt::red;             _stateDef = "INVALID";       break;
-      case YACS::READY:        _sc=Qt::gray;            _stateDef = "READY";         break;
-      case YACS::TOLOAD:       _sc=Qt::darkYellow;      _stateDef = "TOLOAD";        break;
-      case YACS::LOADED:       _sc=Qt::darkMagenta;     _stateDef = "LOADED";        break;
-      case YACS::TOACTIVATE:   _sc=Qt::darkCyan;        _stateDef = "TOACTIVATE";    break;
-      case YACS::ACTIVATED:    _sc=Qt::darkBlue;        _stateDef = "ACTIVATED";     break;
-      case YACS::DESACTIVATED: _sc=Qt::gray;            _stateDef = "DESACTIVATED";  break;
-      case YACS::DONE:         _sc=Qt::darkGreen;       _stateDef = "DONE";          break;
-      case YACS::SUSPENDED:    _sc=Qt::gray;            _stateDef = "SUSPENDED";     break;
-      case YACS::LOADFAILED:   _sc.setHsv(320,255,255); _stateDef = "LOADFAILED";    break;
-      case YACS::EXECFAILED:   _sc.setHsv( 20,255,255); _stateDef = "EXECFAILED";    break;
-      case YACS::PAUSE:        _sc.setHsv(180,255,255); _stateDef = "PAUSE";         break;
-      case YACS::INTERNALERR:  _sc.setHsv(340,255,255); _stateDef = "INTERNALERR";   break;
-      case YACS::DISABLED:     _sc.setHsv( 40,255,255); _stateDef = "DISABLED";      break;
-      case YACS::FAILED:       _sc.setHsv( 20,255,255); _stateDef = "FAILED";        break;
-      case YACS::ERROR:        _sc.setHsv(  0,255,255); _stateDef = "ERROR";         break;
-      default:                 _sc=Qt::lightGray;       _stateDef = "---";
+      case YACS::UNDEFINED:         _sc = _UNDEFINED        ; _stateDef = "UNDEFINED"          ; break;
+      case YACS::INVALID:           _sc = _INVALID          ; _stateDef = "INVALID"            ; break;
+      case YACS::READY:             _sc = _READY            ; _stateDef = "READY"              ; break;
+      case YACS::TOLOAD:            _sc = _TOLOAD           ; _stateDef = "TOLOAD"             ; break;
+      case YACS::LOADED:            _sc = _LOADED           ; _stateDef = "LOADED"             ; break;
+      case YACS::TOACTIVATE:        _sc = _TOACTIVATE       ; _stateDef = "TOACTIVATE"         ; break;
+      case YACS::ACTIVATED:         _sc = _ACTIVATED        ; _stateDef = "ACTIVATED"          ; break;
+      case YACS::DESACTIVATED:      _sc = _DESACTIVATED     ; _stateDef = "DESACTIVATED"       ; break;
+      case YACS::DONE:              _sc = _DONE             ; _stateDef = "DONE"               ; break;
+      case YACS::SUSPENDED:         _sc = _SUSPENDED        ; _stateDef = "SUSPENDED"          ; break;
+      case YACS::LOADFAILED:        _sc = _LOADFAILED       ; _stateDef = "LOADFAILED"         ; break;
+      case YACS::EXECFAILED:        _sc = _EXECFAILED       ; _stateDef = "EXECFAILED"         ; break;
+      case YACS::PAUSE:             _sc = _PAUSE            ; _stateDef = "PAUSE"              ; break;
+      case YACS::INTERNALERR:       _sc = _INTERNALERR      ; _stateDef = "INTERNALERR"        ; break;
+      case YACS::DISABLED:          _sc = _DISABLED         ; _stateDef = "DISABLED"           ; break;
+      case YACS::FAILED:            _sc = _FAILED           ; _stateDef = "FAILED"             ; break;
+      case YACS::ERROR:             _sc = _ERROR            ; _stateDef = "ERROR"              ; break;
+      default:                      _sc = _DEFAULT          ; _stateDef = "---"                ;
       }
+  DEBTRACE("  - stateDef = " << _stateDef.toStdString());
   if(oldsc != _sc)
     _parent->update();
 }

@@ -36,7 +36,7 @@ StringOnHeap::StringOnHeap(const std::string& val):_dealloc(0),_str(strdup(val.c
 }
 
 /*! 
- * \Note : no copy is performed if a deallocator is given.
+ * \note : no copy is performed if a deallocator is given.
  * \param val     : String in C format that is NOT copied if
  *                  deAlloc != 0
  * \param deAlloc : pointer on function to deallocate val after
@@ -242,6 +242,9 @@ void AtomAny::putMyReprAtPlace(char *data) const
  *         For memory space minimal use, not all of '*this' is pushed at data location.
  *         'deepCpy' param is not used here because by definition of AtomAny deep copy is performed.
  * \param data : already allocated memory zone where to put compressed content of 'this'
+ * \param src :
+ * \param type :
+ * \param deepCpy :
  */
 void AtomAny::putReprAtPlace(char *data, const char *src, const TypeCode *type, bool deepCpy)
 {
@@ -392,7 +395,9 @@ void SeqAlloc::construct(char *pt, const Any *val)
 
 /*!
  * \note: This performs the placement new or zip info into pt.
+ * \param pt :
  * \param val     : the source from which the construction will be performed.
+ * \param tc  :
  * \param deepCpy : If true in pt place a deep copy pointed by val will be put.
  */
 void SeqAlloc::construct(char *pt, const char *val, const TypeCode *tc, bool deepCpy)

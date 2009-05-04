@@ -69,3 +69,15 @@ void SceneTextItem::popupMenu(QWidget *caller, const QPoint &globalPos)
 {
   if (_parent) _parent->popupMenu(caller, globalPos);
 }
+
+/*! generic behaviour for headers:
+ *  obtain the tooltip from parent.
+ */
+QString SceneTextItem::getToolTip()
+{
+  QString tooltip = _label;
+  SceneItem *parent = getParent();
+  if (parent)
+    tooltip = parent->getToolTip();
+  return tooltip;
+}

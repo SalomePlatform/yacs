@@ -18,21 +18,37 @@
 //
 #include "ForLoop.hxx"
 #include "Runtime.hxx"
+#include "LinkInfo.hxx"
 #include "OutputPort.hxx"
 #include "Visitor.hxx"
 #include <iostream>
 
+//#define _DEVDEBUG_
+#include "YacsTrace.hxx"
+
 using namespace YACS::ENGINE;
 using namespace std;
 
-const char ForLoop::NAME_OF_NSTEPS_NUMBER[]="nsteps";
+/*! \class YACS::ENGINE::ForLoop
+ *  \brief Class for for loop node
+ *
+ * \ingroup Nodes
+ *
+ *   This kind of loop makes a fixed number of steps and stops
+ *
+ */
 
-ForLoop::ForLoop(const std::string& name):Loop(name),_nbOfTimesPort(NAME_OF_NSTEPS_NUMBER,this,Runtime::_tc_int)
+const char ForLoop::NAME_OF_NSTEPS_NUMBER[]="nsteps";
+const char ForLoop::NAME_OF_INDEX[]="index";
+
+ForLoop::ForLoop(const std::string& name):Loop(name),_nbOfTimesPort(NAME_OF_NSTEPS_NUMBER,this,Runtime::_tc_int),
+                                                     _indexPort(NAME_OF_INDEX,this,Runtime::_tc_int)
 {
 }
 
 ForLoop::ForLoop(const ForLoop& other, ComposedNode *father, bool editionOnly):Loop(other,father,editionOnly),
-                                                                               _nbOfTimesPort(other._nbOfTimesPort,this)
+                                                                               _nbOfTimesPort(other._nbOfTimesPort,this),
+                                                                               _indexPort(other._indexPort,this)
 {
 }
 
@@ -60,6 +76,10 @@ void ForLoop::init(bool start)
 {
   Loop::init(start);
   _nbOfTimesPort.exInit(start);
+  _indexPort.exInit();
+  Any* tmp=AtomAny::New(_nbOfTurns);
+  _indexPort.put(tmp);
+  tmp->decrRef();
 }
 
 //! Update the state of the for loop
@@ -119,6 +139,9 @@ YACS::Event ForLoop::updateStateOnFinishedEventFrom(Node *node)
     }
   else
     {
+      Any* tmp=AtomAny::New(_nbOfTurns);
+      _indexPort.put(tmp);
+      tmp->decrRef();
       node->init(false);
       node->exUpdateState();
     }
@@ -136,3 +159,87 @@ std::list<InputPort *> ForLoop::getLocalInputPorts() const
   ret.push_back((InputPort *)&_nbOfTimesPort);
   return ret;
 }
+
+OutPort *ForLoop::getOutPort(const std::string& name) const throw(Exception)
+{
+  if(name==NAME_OF_INDEX)
+    return (OutPort *)&_indexPort;
+  return Loop::getOutPort(name);
+}
+
+OutputPort *ForLoop::getOutputPort(const std::string& name) const throw(Exception)
+{
+  if(name==NAME_OF_INDEX)
+    return (OutputPort *)&_indexPort;
+  return Loop::getOutputPort(name);
+}
+
+std::list<OutputPort *> ForLoop::getLocalOutputPorts() const
+{
+  list<OutputPort *> ret;
+  ret.push_back(getOutputPort(NAME_OF_INDEX)); 
+  return ret;
+}
+
+void ForLoop::checkControlDependancy(OutPort *start, InPort *end, bool cross,
+                                     std::map < ComposedNode *,  std::list < OutPort * >, SortHierarc >& fw,
+                                     std::vector<OutPort *>& fwCross,
+                                     std::map< ComposedNode *, std::list < OutPort *>, SortHierarc >& bw,
+                                     LinkInfo& info) const
+{
+  //First testing if start==indexPort. This is the only case possible in theory.
+  if(start != &_indexPort)
+    return StaticDefinedComposedNode::checkControlDependancy(start,end,cross,fw,fwCross,bw,info);
+  if(cross)
+    throw Exception("Internal error occured - cross type link detected on decision port of a loop. Forbidden !");
+  fw[(ComposedNode *)this].push_back(start);
+}
+
+void ForLoop::checkCFLinks(const std::list<OutPort *>& starts, InputPort *end, unsigned char& alreadyFed, 
+                           bool direction, LinkInfo& info) const
+{
+  const char what[]="ForLoop::checkCFLinks : internal error.";
+  Node *nodeEnd=end->getNode();
+  if(nodeEnd==this)
+    {//In this case 'end' port is a special port of this (for exemple ForLoop::_nbOfTimesPort)
+      solveObviousOrDelegateCFLinks(starts,end,alreadyFed,direction,info);
+    }
+  else if(isInMyDescendance(nodeEnd)==0)
+    {
+      solveObviousOrDelegateCFLinks(starts,end,alreadyFed,direction,info);
+    }
+  else
+    {//no forwarding here.
+      if(starts.size()!=1)
+        throw Exception(what);
+
+      Node *nodeStart=(*(starts.begin()))->getNode();
+      if(nodeStart==this)
+        {
+          // Link between the loop and the internal node
+          if(*(starts.begin())!=&_indexPort)
+            throw Exception(what);
+        }
+      else
+        {
+          // Link from internal node to internal node
+          if(nodeEnd!=nodeStart)
+            throw Exception(what);
+        }
+
+      if(alreadyFed==FREE_ST)
+        alreadyFed=FED_ST;
+      else if(alreadyFed==FED_ST)
+        {
+          info.pushInfoLink(*(starts.begin()),end,I_USELESS);
+        }
+    }
+}
+
+std::list<OutputPort *> ForLoop::getSetOfOutputPort() const
+{
+  list<OutputPort *> ret=ComposedNode::getSetOfOutputPort();
+  ret.push_back((OutputPort *)&_indexPort);
+  return ret;
+}
+

@@ -26,18 +26,12 @@ namespace YACS
 {
   namespace ENGINE
   {
-
-/*! \brief Class for PRESET output Ports 
- *
- * \ingroup Ports
- *
- * \see PresetNode
- */
     class OutputPresetPort: public OutputXmlPort
     {
     public:
       OutputPresetPort(const std::string& name,  Node* node, TypeCode* type);
       OutputPresetPort(const OutputPresetPort& other, Node *newHelder);
+      OutputPort *clone(Node *newHelder) const;
       void setData(std::string data);
       std::string getData();
       virtual void checkBasicConsistency() const throw(Exception);
@@ -49,17 +43,12 @@ namespace YACS
       std::string _storeData;
     };
 
-/*! \brief Class for PRESET input Ports
- *
- * \ingroup Ports
- *
- * \see OutNode
- */
     class InputPresetPort: public InputXmlPort
     {
     public:
       InputPresetPort(const std::string& name,  Node* node, TypeCode* type);
       InputPresetPort(const InputPresetPort& other, Node *newHelder);
+      InputPort *clone(Node *newHelder) const;
       void setData(std::string data);
       std::string getData();
       virtual std::string dump();

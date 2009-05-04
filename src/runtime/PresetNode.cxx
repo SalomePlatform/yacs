@@ -30,6 +30,12 @@
 using namespace YACS::ENGINE;
 using namespace std;
 
+/*! \class YACS::ENGINE::PresetNode
+ *  \brief Class for data in node
+ *
+ * \ingroup Nodes
+ */
+
 const char PresetNode::IMPL_NAME[]="XML";
 
 PresetNode::PresetNode(const std::string& name)

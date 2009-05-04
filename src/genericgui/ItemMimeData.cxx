@@ -100,3 +100,12 @@ int ItemMimeData::getCase() const
 {
   return _swCase;
 }
+void ItemMimeData::setControl(bool control)
+{
+  _control=control;
+}
+bool ItemMimeData::getControl() const
+{
+  return _control;
+}
+

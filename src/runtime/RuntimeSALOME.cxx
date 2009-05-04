@@ -389,6 +389,30 @@ Proc* RuntimeSALOME::createProc(const std::string& name)
   return new SalomeProc(name);
 }
 
+TypeCode * RuntimeSALOME::createInterfaceTc(const std::string& id, const std::string& name,
+                                            std::list<TypeCodeObjref *> ltc)
+{
+  std::string myName;
+  if(id == "") myName = "IDL:" + name + ":1.0";
+  else myName = id;
+  return TypeCode::interfaceTc(myName.c_str(),name.c_str(),ltc);
+}
+
+TypeCode * RuntimeSALOME::createSequenceTc(const std::string& id,
+                                           const std::string& name,
+                                           TypeCode *content)
+{
+  return TypeCode::sequenceTc(id.c_str(),name.c_str(),content);
+};
+
+TypeCodeStruct * RuntimeSALOME::createStructTc(const std::string& id, const std::string& name)
+{
+  std::string myName;
+  if(id == "") myName = "IDL:" + name + ":1.0";
+  else myName = id;
+  return (TypeCodeStruct *)TypeCode::structTc(myName.c_str(),name.c_str());
+}
+
 Bloc* RuntimeSALOME::createBloc(const std::string& name)
 {
   return new Bloc(name);
@@ -675,8 +699,11 @@ InputPort* RuntimeSALOME::adaptNeutralToCorba(InputPort* inport,
     }
   //non convertible type
   stringstream msg;
-  msg << "Cannot connect Neutral InputPort to OutputCorbaPort : " ;
-  msg << "(" <<__FILE__ << ":" <<__LINE__<< ")";
+  msg << "Cannot connect Corba output port with type: " << type->id() ;
+  msg << " to Neutral input port " << inport->getName() << " with type: " << inport->edGetType()->id();
+#ifdef _DEVDEBUG_
+  msg <<  " ("<<__FILE__ << ":" << __LINE__<<")";
+#endif
   throw ConversionException(msg.str());
 }
 
@@ -697,8 +724,11 @@ InputPort* RuntimeSALOME::adaptNeutralToPython(InputPort* inport,
     }
   //non convertible type
   stringstream msg;
-  msg << "Cannot connect Neutral InputPort to OutputPyPort : " ;
-  msg << "(" <<__FILE__ << ":" <<__LINE__<< ")";
+  msg << "Cannot connect Python output port with type: " << type->id() ;
+  msg << " to Neutral input port " << inport->getName() << " with type: " << inport->edGetType()->id();
+#ifdef _DEVDEBUG_
+  msg <<  " ("<<__FILE__ << ":" << __LINE__<<")";
+#endif
   throw ConversionException(msg.str());
 }
 
@@ -719,8 +749,11 @@ InputPort* RuntimeSALOME::adaptNeutralToXml(InputPort* inport,
     }
   //non convertible type
   stringstream msg;
-  msg << "Cannot connect Neutral InputPort to OutputXmlPort : " ;
-  msg << "(" <<__FILE__ << ":" <<__LINE__<< ")";
+  msg << "Cannot connect Xml output port with type: " << type->id() ;
+  msg << " to Neutral input port " << inport->getName() << " with type: " << inport->edGetType()->id();
+#ifdef _DEVDEBUG_
+  msg <<  " ("<<__FILE__ << ":" << __LINE__<<")";
+#endif
   throw ConversionException(msg.str());
 }
 
@@ -741,9 +774,11 @@ InputPort* RuntimeSALOME::adaptNeutralToCpp(InputPort* inport,
     }
   //non convertible type
   stringstream msg;
-  msg << "Cannot connect Neutral " << inport->edGetType()->getKindRepr() 
-      << " InputPort to " << type->getKindRepr() << " OutputCppPort : " ;
-  msg << "(" <<__FILE__ << ":" <<__LINE__<< ")";
+  msg << "Cannot connect Cpp output port with type: " << type->id() ;
+  msg << " to Neutral input port " << inport->getName() << " with type: " << inport->edGetType()->id();
+#ifdef _DEVDEBUG_
+  msg <<  " ("<<__FILE__ << ":" << __LINE__<<")";
+#endif
   throw ConversionException(msg.str());
 }
 
@@ -805,9 +840,11 @@ InputPort* RuntimeSALOME::adaptXmlToCorba(InputXmlPort* inport,
     }
   //output type is not convertible
   stringstream msg;
-  msg << "Cannot connect InputXmlPort to Corba output port " ;
-  msg << type->id() << " != " << inport->edGetType()->id();
-  msg << " ("__FILE__ << ":" << __LINE__ << ")";
+  msg << "Cannot connect Corba output port with type: " << type->id() ;
+  msg << " to Xml input port " << inport->getName() << " with type: " << inport->edGetType()->id();
+#ifdef _DEVDEBUG_
+  msg <<  " ("<<__FILE__ << ":" << __LINE__<<")";
+#endif
   throw ConversionException(msg.str());
 }
 
@@ -827,8 +864,11 @@ InputPort* RuntimeSALOME::adaptXmlToPython(InputXmlPort* inport,
     }
   //non convertible type
   stringstream msg;
-  msg << "Cannot connect Xml InputPort to OutputPyPort : " ;
-  msg << "(" <<__FILE__ << ":" <<__LINE__<< ")";
+  msg << "Cannot connect Python output port with type: " << type->id() ;
+  msg << " to Xml input port " << inport->getName() << " with type: " << inport->edGetType()->id();
+#ifdef _DEVDEBUG_
+  msg <<  " ("<<__FILE__ << ":" << __LINE__<<")";
+#endif
   throw ConversionException(msg.str());
 }
 
@@ -850,8 +890,11 @@ InputPort* RuntimeSALOME::adaptXmlToCpp(InputXmlPort* inport,
     }
   //non convertible type
   stringstream msg;
-  msg << "Cannot connect Xml InputPort to OutputCppPort : " ;
-  msg << "(" <<__FILE__ << ":" <<__LINE__<< ")";
+  msg << "Cannot connect Cpp output port with type: " << type->id() ;
+  msg << " to Xml input port " << inport->getName() << " with type: " << inport->edGetType()->id();
+#ifdef _DEVDEBUG_
+  msg <<  " ("<<__FILE__ << ":" << __LINE__<<")";
+#endif
   throw ConversionException(msg.str());
 }
 
@@ -873,6 +916,31 @@ InputPort* RuntimeSALOME::adaptXmlToNeutral(InputXmlPort* inport,
   stringstream msg;
   msg << "Cannot connect Xml InputPort to OutputNeutralPort : " ;
   msg << "(" <<__FILE__ << ":" <<__LINE__<< ")";
+  throw ConversionException(msg.str());
+}
+
+//! Adapt a XML input port to a Xml output port
+/*!
+ *   \param inport : input port to adapt to Xml type type
+ *   \param type : output port type
+ *   \param init : if init is true the proxy port will be used in initialization of input port (needs value check)
+ *   \return an adaptated input port of type Xmlxxxx
+ */
+InputPort* RuntimeSALOME::adaptXmlToXml(InputXmlPort* inport,
+                      TypeCode * type,bool init) throw (ConversionException)
+{
+  if(init)
+    return new ProxyPort(inport);
+
+  if(inport->edGetType()->isAdaptable(type))
+    return new ProxyPort(inport);
+
+  stringstream msg;
+  msg << "Cannot connect Xml output port with type: " << type->id() ;
+  msg << " to Xml input port " << inport->getName() << " with type: " << inport->edGetType()->id();
+#ifdef _DEVDEBUG_
+  msg <<  " ("<<__FILE__ << ":" << __LINE__<<")";
+#endif
   throw ConversionException(msg.str());
 }
 
@@ -903,10 +971,7 @@ InputPort* RuntimeSALOME::adapt(InputXmlPort* source,
     }
   else if(impl == XmlNode::IMPL_NAME )
     {
-      if(init)
-        return new ProxyPort(source);
-      else
-        return new ProxyPort(source);
+      return adaptXmlToXml(source,type,init);
     }
   else if(impl == Runtime::RUNTIME_ENGINE_INTERACTION_IMPL_NAME)
     {
@@ -945,8 +1010,11 @@ InputPort* RuntimeSALOME::adaptCorbaToCorba(InputCorbaPort* inport,
     }
   //outport data can not be converted
   stringstream msg;
-  msg << "Cannot connect 2 CorbaPort with non convertible types: " ;
-  msg << type->id() << " != " << inport->edGetType()->id();
+  msg << "Cannot connect Corba output port with type: " << type->id() ;
+  msg << " to CORBA input port " << inport->getName() << " with type: " << inport->edGetType()->id();
+#ifdef _DEVDEBUG_
+  msg <<  " ("<<__FILE__ << ":" << __LINE__<<")";
+#endif
   throw ConversionException(msg.str());
 }
 
@@ -985,7 +1053,7 @@ InputPort* RuntimeSALOME::adaptCorbaToPython(InputCorbaPort* inport,
       else
         {
           stringstream msg;
-          msg << "Cannot connect Python output port  with type: " << type->id() ;
+          msg << "Cannot connect Python output port with type: " << type->id() ;
           msg << " to CORBA input port " << inport->getName() << " with incompatible objref type: " << inport->edGetType()->id();
           msg << " (" << __FILE__ << ":" <<__LINE__ << ")";
           throw ConversionException(msg.str());
@@ -1021,9 +1089,11 @@ InputPort* RuntimeSALOME::adaptCorbaToPython(InputCorbaPort* inport,
     }
   // Adaptation not possible
   stringstream msg;
-  msg << "Cannot connect Python output port  with type: " << type->id() ;
+  msg << "Cannot connect Python output port with type: " << type->id() ;
   msg << " to CORBA input port " << inport->getName() << " with type: " << inport->edGetType()->id();
-  msg << " (" << __FILE__ << ":" <<__LINE__ << ")";
+#ifdef _DEVDEBUG_
+  msg <<  " ("<<__FILE__ << ":" << __LINE__<<")";
+#endif
   throw ConversionException(msg.str());
 }
 
@@ -1045,8 +1115,11 @@ InputPort* RuntimeSALOME::adaptCorbaToXml(InputCorbaPort* inport,
     }
   //output type is not convertible
   stringstream msg;
-  msg << "Cannot connect InputCorbaPort with OutputXmlPort : " ;
-  msg << __FILE__ << ":" <<__LINE__;
+  msg << "Cannot connect Xml output port with type: " << type->id() ;
+  msg << " to Corba input port " << inport->getName() << " with type: " << inport->edGetType()->id();
+#ifdef _DEVDEBUG_
+  msg <<  " ("<<__FILE__ << ":" << __LINE__<<")";
+#endif
   throw ConversionException(msg.str());
 }
 
@@ -1068,8 +1141,11 @@ InputPort* RuntimeSALOME::adaptCorbaToCpp(InputCorbaPort* inport,
     }
   //output type is not convertible
   stringstream msg;
-  msg << "Cannot connect InputCorbaPort with OutputCppPort : " ;
-  msg << __FILE__ << ":" <<__LINE__;
+  msg << "Cannot connect Cpp output port with type: " << type->id() ;
+  msg << " to Corba input port " << inport->getName() << " with type: " << inport->edGetType()->id();
+#ifdef _DEVDEBUG_
+  msg <<  " ("<<__FILE__ << ":" << __LINE__<<")";
+#endif
   throw ConversionException(msg.str());
 }
 
@@ -1118,8 +1194,11 @@ InputPort* RuntimeSALOME::adaptCorbaToNeutral(InputCorbaPort* inport,
 
   // Adaptation not possible
   stringstream msg;
-  msg << "Cannot connect InputCorbaPort to Neutral output " ;
-  msg << __FILE__ << ":" <<__LINE__;
+  msg << "Cannot connect Neutral output port with type: " << type->id() ;
+  msg << " to Corba input port " << inport->getName() << " with type: " << inport->edGetType()->id();
+#ifdef _DEVDEBUG_
+  msg <<  " ("<<__FILE__ << ":" << __LINE__<<")";
+#endif
   throw ConversionException(msg.str());
 }
 
@@ -1193,9 +1272,11 @@ InputPort* RuntimeSALOME::adaptPythonToPython(InputPyPort* inport,
     }
   //output data is not convertible to input type
   stringstream msg;
-  msg << "Cannot connect Python output port  with type: " << type->id() ;
+  msg << "Cannot connect Python output port with type: " << type->id() ;
   msg << " to Python input port " << inport->getName() << " with type: " << inport->edGetType()->id();
+#ifdef _DEVDEBUG_
   msg <<  " ("<<__FILE__ << ":" << __LINE__<<")";
+#endif
   throw ConversionException(msg.str());
 }
 
@@ -1217,8 +1298,11 @@ InputPort* RuntimeSALOME::adaptPythonToCpp(InputPyPort* inport,
     }
   //output type is not convertible
   stringstream msg;
-  msg << "Cannot connect InputPythonPort with OutputCppPort : " ;
-  msg << __FILE__ << ":" <<__LINE__;
+  msg << "Cannot connect Cpp output port with type: " << type->id() ;
+  msg << " to Python input port " << inport->getName() << " with type: " << inport->edGetType()->id();
+#ifdef _DEVDEBUG_
+  msg <<  " ("<<__FILE__ << ":" << __LINE__<<")";
+#endif
   throw ConversionException(msg.str());
 }
 
@@ -1266,9 +1350,11 @@ InputPort* RuntimeSALOME::adaptPythonToNeutral(InputPyPort* inport,
     }
   // Adaptation not possible
   stringstream msg;
-  msg << "Cannot connect InputPyPort to Neutral output " ;
-  msg << "Output typeid: " << type->id() << " Input typeid: " << inport->edGetType()->id();
-  msg << " ("__FILE__ << ":" << __LINE__ << ")";
+  msg << "Cannot connect Neutral output port with type: " << type->id() ;
+  msg << " to Python input port " << inport->getName() << " with type: " << inport->edGetType()->id();
+#ifdef _DEVDEBUG_
+  msg <<  " ("<<__FILE__ << ":" << __LINE__<<")";
+#endif
   throw ConversionException(msg.str());
 }
 
@@ -1345,7 +1431,9 @@ InputPort* RuntimeSALOME::adaptPythonToCorba(InputPyPort* inport,
   stringstream msg;
   msg << "Cannot connect Corba output port with type: " << type->id() ;
   msg << " to Python input port " << inport->getName() << " with type: " << inport->edGetType()->id();
+#ifdef _DEVDEBUG_
   msg << " ("__FILE__ << ":" << __LINE__ << ")";
+#endif
   throw ConversionException(msg.str());
 }
 
@@ -1367,8 +1455,11 @@ InputPort* RuntimeSALOME::adaptPythonToXml(InputPyPort* inport,
     }
   //non convertible type
   stringstream msg;
-  msg << "Cannot connect InputPyPort with OutputXmlPort : " ;
-  msg << "(" <<__FILE__ << ":" <<__LINE__<< ")";
+  msg << "Cannot connect Xml output port with type: " << type->id() ;
+  msg << " to Python input port " << inport->getName() << " with type: " << inport->edGetType()->id();
+#ifdef _DEVDEBUG_
+  msg <<  " ("<<__FILE__ << ":" << __LINE__<<")";
+#endif
   throw ConversionException(msg.str());
 }
 
@@ -1433,9 +1524,11 @@ InputPort* RuntimeSALOME::adaptCppToCorba(InputCppPort* inport,
     }
   //output type is not convertible
   stringstream msg;
-  msg << "Cannot connect InputCppPort to Corba output port " ;
-  msg << type->id() << " != " << inport->edGetType()->id();
-  msg << " ("__FILE__ << ":" << __LINE__ << ")";
+  msg << "Cannot connect Corba output port with type: " << type->id() ;
+  msg << " to Cpp input port " << inport->getName() << " with type: " << inport->edGetType()->id();
+#ifdef _DEVDEBUG_
+  msg <<  " ("<<__FILE__ << ":" << __LINE__<<")";
+#endif
   throw ConversionException(msg.str());
 }
 
@@ -1456,8 +1549,11 @@ InputPort* RuntimeSALOME::adaptCppToPython(InputCppPort* inport,
     }
   //output type is not convertible
   stringstream msg;
-  msg << "Cannot connect InputCppPort with OutputPythonPort : " ;
-  msg << __FILE__ << ":" <<__LINE__;
+  msg << "Cannot connect Python output port with type: " << type->id() ;
+  msg << " to Cpp input port " << inport->getName() << " with type: " << inport->edGetType()->id();
+#ifdef _DEVDEBUG_
+  msg <<  " ("<<__FILE__ << ":" << __LINE__<<")";
+#endif
   throw ConversionException(msg.str());
 }
 
@@ -1479,8 +1575,11 @@ InputPort* RuntimeSALOME::adaptCppToCpp(InputCppPort* inport,
     }
   //non convertible type
   stringstream msg;
-  msg << "Cannot connect Cpp InputPort to OutputCppPort : " ;
-  msg << "(" <<__FILE__ << ":" <<__LINE__<< ")";
+  msg << "Cannot connect Cpp output port with type: " << type->id() ;
+  msg << " to Cpp input port " << inport->getName() << " with type: " << inport->edGetType()->id();
+#ifdef _DEVDEBUG_
+  msg <<  " ("<<__FILE__ << ":" << __LINE__<<")";
+#endif
   throw ConversionException(msg.str());
 }
 
@@ -1502,24 +1601,30 @@ InputPort* RuntimeSALOME::adaptCppToNeutral(InputCppPort* inport,
     }
   //non convertible type
   stringstream msg;
-  msg << "Cannot connect Cpp InputPort to OutputNeutralPort : " ;
-  msg << "(" <<__FILE__ << ":" <<__LINE__<< ")";
+  msg << "Cannot connect Neutral output port with type: " << type->id() ;
+  msg << " to Cpp input port " << inport->getName() << " with type: " << inport->edGetType()->id();
+#ifdef _DEVDEBUG_
+  msg <<  " ("<<__FILE__ << ":" << __LINE__<<")";
+#endif
   throw ConversionException(msg.str());
 }
 
 InputPort* RuntimeSALOME::adaptCppToXml(InputCppPort* inport,
                       TypeCode * type) throw (ConversionException)
 {
-   DEBTRACE("RuntimeSALOME::adaptCppToXml(InputCppPort* inport" );
-   if(isAdaptableCppXml(type,inport->edGetType()))
-   {
+  DEBTRACE("RuntimeSALOME::adaptCppToXml(InputCppPort* inport" );
+  if(isAdaptableCppXml(type,inport->edGetType()))
+    {
       //convertible type
       return new XmlCpp(inport);
-   }
-   //non convertible type
-   stringstream msg;
-   msg << "Cannot connect InputCppPort with OutputXmlPort : " ;
-   msg << "(" <<__FILE__ << ":" <<__LINE__<< ")";
+    }
+  //non convertible type
+  stringstream msg;
+  msg << "Cannot connect Xml output port with type: " << type->id() ;
+  msg << " to Cpp input port " << inport->getName() << " with type: " << inport->edGetType()->id();
+#ifdef _DEVDEBUG_
+  msg <<  " ("<<__FILE__ << ":" << __LINE__<<")";
+#endif
    throw ConversionException(msg.str());
 }
 
@@ -1652,9 +1757,9 @@ PyObject* RuntimeSALOME::convertStringToPyObject(const std::string& s)
       //exception
       std::string error;
       PyObject* new_stderr = newPyStdOut(error);
-      PySys_SetObject("stderr", new_stderr);
+      PySys_SetObject((char *)"stderr", new_stderr);
       PyErr_Print();
-      PySys_SetObject("stderr", PySys_GetObject("__stderr__"));
+      PySys_SetObject((char *)"stderr", PySys_GetObject((char *)"__stderr__"));
       Py_DECREF(new_stderr);
       PyGILState_Release(gstate);
       throw Exception(error);

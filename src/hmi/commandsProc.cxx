@@ -44,6 +44,7 @@
 #include "DataPort.hxx"
 #include "InputDataStreamPort.hxx"
 #include "OutputDataStreamPort.hxx"
+#include "StudyPorts.hxx"
 #include "PresetPorts.hxx"
 #include "ComponentDefinition.hxx"
 #include "SalomeContainer.hxx"
@@ -609,7 +610,10 @@ bool CommandAddInputPortFromCatalog::localExecute()
       ElementaryNode* father = dynamic_cast<ElementaryNode*>(node);
       if (father)
         {
-          if (_catalog->_typeMap.count(_typePort))
+          //try proc types and then catalog if not in proc
+          if(proc->typeMap.count(_typePort))
+            son = father->edAddInputPort(_name, proc->typeMap[_typePort]);
+          else if (_catalog->_typeMap.count(_typePort))
             son = father->edAddInputPort(_name, _catalog->_typeMap[_typePort]);
           else
             {
@@ -660,7 +664,10 @@ bool CommandAddOutputPortFromCatalog::localExecute()
       ElementaryNode* father =dynamic_cast<ElementaryNode*> (node);
       if (father)
         {
-          if (_catalog->_typeMap.count(_typePort))
+          //try proc types and then catalog if not in proc
+          if(proc->typeMap.count(_typePort))
+            son = father->edAddOutputPort(_name, proc->typeMap[_typePort]);
+          else if (_catalog->_typeMap.count(_typePort))
             son = father->edAddOutputPort(_name, _catalog->_typeMap[_typePort]);
           else
             {
@@ -989,13 +996,43 @@ CommandSetInPortValue::CommandSetInPortValue(std::string node,
     
 bool CommandSetInPortValue::localExecute()
 {
-  PyObject *result;
+  InputPort* inp ;
+  InputPresetPort *inpp = 0;
+  InputStudyPort *insp = 0;
+  DataNode *dnode = 0;
   try
     {
       Proc* proc = GuiContext::getCurrent()->getProc();
       Node* node = proc->getChildByName(_node);
-      InputPort* inp = node->getInputPort(_port);
-      result = YACS::ENGINE::getSALOMERuntime()->convertStringToPyObject(_value.c_str());
+      inp = node->getInputPort(_port);
+      inpp = dynamic_cast<InputPresetPort*>(inp);
+      insp = dynamic_cast<InputStudyPort*>(inp);
+      dnode = dynamic_cast<DataNode*>(node);
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandSetInPortValue::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      return false;
+    }
+
+
+  if(insp && dnode)
+    {
+      //It's a study port
+      dnode->setData(insp, _value );
+      return true;
+    }
+
+  PyObject *result;
+  try
+    {
+      std::string strval;
+      if (inp->edGetType()->kind() == YACS::ENGINE::String)
+        strval = "\"" + _value + "\"";
+      else
+        strval = _value;
+      result = YACS::ENGINE::getSALOMERuntime()->convertStringToPyObject(strval.c_str());
       inp->edInit("Python", result);
       Py_DECREF(result);
       return true;
@@ -1026,6 +1063,7 @@ CommandSetOutPortValue::CommandSetOutPortValue(std::string node,
 bool CommandSetOutPortValue::localExecute()
 {
   OutputPresetPort *outpp = 0;
+  OutputStudyPort *outsp = 0;
   DataNode *dnode = 0;
   try
     {
@@ -1033,6 +1071,7 @@ bool CommandSetOutPortValue::localExecute()
       Node* node = proc->getChildByName(_node);
       OutputPort* outp = node->getOutputPort(_port);
       outpp = dynamic_cast<OutputPresetPort*>(outp);
+      outsp = dynamic_cast<OutputStudyPort*>(outp);
       dnode = dynamic_cast<DataNode*>(node);
     }
   catch (Exception& ex)
@@ -1042,10 +1081,10 @@ bool CommandSetOutPortValue::localExecute()
       return false;
     }
 
-  if (!outpp)
+  if (!outpp && !outsp)
     {
-      DEBTRACE("Set value on output port only possible on a presetPort");
-      GuiContext::getCurrent()->_lastErrorMessage = "Set value on output port only possible on a presetPort";
+      DEBTRACE("Set value on output port only possible on a presetPort or a studyPort");
+      GuiContext::getCurrent()->_lastErrorMessage = "Set value on output port only possible on a presetPort or a studyPort";
       return false;
     }
 
@@ -1056,16 +1095,27 @@ bool CommandSetOutPortValue::localExecute()
       return false;
     }
 
+  if(outsp)
+    {
+      //It's a study port
+      dnode->setData(outsp, _value );
+      return true;
+    }
+
   PyObject *result;
   try
     {
-      result = YACS::ENGINE::getSALOMERuntime()->convertStringToPyObject(_value.c_str());
+      std::string strval;
+      if (outpp->edGetType()->kind() == YACS::ENGINE::String)
+        strval = "\"" + _value + "\"";
+      else
+        strval = _value;
+      result = YACS::ENGINE::getSALOMERuntime()->convertStringToPyObject(strval.c_str());
     }
   catch (Exception& ex)
     {
-      DEBTRACE("CommandSetInPortValue::localExecute() : " << ex.what());
+      DEBTRACE("CommandSetOutPortValue::localExecute() : " << ex.what());
       GuiContext::getCurrent()->_lastErrorMessage = ex.what();
-      //Py_DECREF(result);
       return false;
     }
 
@@ -1080,11 +1130,10 @@ bool CommandSetOutPortValue::localExecute()
     }
   catch (Exception& ex)
     {
-      PyGILState_Release(gstate);
       DEBTRACE("CommandSetOutPortValue::localExecute() : " << ex.what());
       GuiContext::getCurrent()->_lastErrorMessage = ex.what();
-      PyGILState_Release(gstate);
       Py_DECREF(result);
+      PyGILState_Release(gstate);
       return false;
     }
 

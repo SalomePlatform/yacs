@@ -26,6 +26,8 @@ dist_libSalomeWrap_la_SOURCES = \
 	SalomeWrap_Module.cxx \
 	SalomeWrap_DataModel.hxx \
 	SalomeWrap_DataModel.cxx \
+	SalomeWrap_Resource.hxx \
+	SalomeWrap_Resource.cxx \
 	SuitWrapper.cxx \
 	WrapGraphicsView.cxx
 

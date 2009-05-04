@@ -22,6 +22,7 @@
 #include "blocParsers.hxx"
 #include "typeParsers.hxx"
 #include "containerParsers.hxx"
+#include "componentinstanceParsers.hxx"
 #include "nodeParsers.hxx"
 
 #include "Proc.hxx"
@@ -82,6 +83,43 @@ struct proctypeParser: bloctypeParser<T>
         DEBTRACE( "struct_set" );
         t->decrRef();
     }
+
+  virtual void componentinstance (const mycomponentinstance& t)
+    {
+      DEBTRACE( "componentinstance: " << t._name );
+      YACS::ENGINE::ComponentInstance* inst=currentProc->createComponentInstance(t._component,t._name,t._kind);
+
+      // Set all properties for this component instance
+      std::map<std::string, std::string>::const_iterator pt;
+      for(pt=t._props.begin();pt!=t._props.end();pt++)
+        inst->setProperty((*pt).first,(*pt).second);
+
+      //associate a container to the component instance
+      if(currentProc->containerMap.count(t._container) != 0)
+        {
+          inst->setContainer(currentProc->containerMap[t._container]);
+        }
+      else if(t._container == "")
+        {
+          if(currentProc->containerMap.count("DefaultContainer") != 0)
+          {
+            //a default container is defined : use it if supported
+            try
+            {
+              currentProc->containerMap["DefaultContainer"]->checkCapabilityToDealWith(inst);
+              inst->setContainer(currentProc->containerMap["DefaultContainer"]);
+            }
+            catch(YACS::Exception){}
+          }
+        }
+      else
+        {
+          std::cerr << "WARNING: Unknown container " << t._container << " ignored" << std::endl;
+        }
+
+      inst->decrRef();
+    }
+
   virtual void container (const mycontainer& t)
     {
       DEBTRACE( "container_set: " << t._name )             
@@ -128,6 +166,7 @@ void proctypeParser<T>::onStart(const XML_Char* el, const XML_Char** attr)
     else if(element == "objref")pp=&objtypeParser::objParser;
     else if(element == "struct")pp=&structtypeParser::structParser;
     else if(element == "container")pp=&containertypeParser::containerParser;
+    else if(element == "componentinstance")pp=&componentinstancetypeParser::componentinstanceParser;
 
     else if(element == "inline")pp=&inlinetypeParser<>::inlineParser;
     else if(element == "sinline")pp=&sinlinetypeParser<>::sinlineParser;
@@ -180,6 +219,7 @@ void proctypeParser<T>::onEnd(const char *el,parser* child)
       else if(element == "objref")objref(((objtypeParser*)child)->post());
       else if(element == "struct")struct_(((structtypeParser*)child)->post());
       else if(element == "container")container(((containertypeParser*)child)->post());
+      else if(element == "componentinstance")componentinstance(((componentinstancetypeParser*)child)->post());
 
       else if(element == "inline")this->inline_(((inlinetypeParser<>*)child)->post());
       else if(element == "sinline")this->sinline(((sinlinetypeParser<>*)child)->post());

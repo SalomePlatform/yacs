@@ -35,6 +35,12 @@ namespace YACS
   namespace ENGINE
     {
 
+/*! \class YACS::ENGINE::OutNode
+ *  \brief Class for data out node
+ *
+ * \ingroup Nodes
+ */
+
 const char OutNode::IMPL_NAME[]="XML";
 
 OutNode::OutNode(const std::string& name)

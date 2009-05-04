@@ -17,9 +17,12 @@
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 #include "LinkMatrix.hxx"
+#include "Scene.hxx"
 #include "SceneComposedNodeItem.hxx"
 #include "SceneElementaryNodeItem.hxx"
 #include "SceneHeaderItem.hxx"
+#include "SceneHeaderNodeItem.hxx"
+#include "SceneCtrlPortItem.hxx"
 #include "SceneLinkItem.hxx"
 #include "QtGuiContext.hxx"
 #include "InPort.hxx"
@@ -46,6 +49,7 @@ LinkMatrix::LinkMatrix(SceneComposedNodeItem *bloc): _bloc(bloc)
 {
   _im=0;
   _jm=0;
+  _pas=10;
   _sxm.clear();
   _sym.clear();
   _xm.clear();
@@ -64,6 +68,7 @@ void LinkMatrix::compute()
 {
   getBoundingBox(_bloc,0);
   explore(_bloc);        // --- define the boundaries _xm[i] and _ym[j]
+  if (Scene::_addRowCols) addRowCols();
   _im = _sxm.size();
   _xm.reserve(_im);
   DEBTRACE("_sxm.size()=" << _im);
@@ -111,6 +116,7 @@ std::pair<int,int> LinkMatrix::cellFrom(YACS::ENGINE::OutPort* outp)
   QRectF bb = (item->mapToScene(item->boundingRect())).boundingRect();
   qreal xp = bb.right();
   qreal yp = (bb.top() + bb.bottom())*0.5;
+  DEBTRACE("xp,yp:"<<xp<<","<<yp);
   int ifrom = -1;
   for (int i=0; i<_im-1; i++)
     if (_xm[i+1] > xp)
@@ -133,10 +139,16 @@ std::pair<int,int> LinkMatrix::cellFrom(YACS::ENGINE::OutPort* outp)
 std::pair<int,int> LinkMatrix::cellFrom(YACS::ENGINE::OutGate* outp)
 {
   SubjectNode* subNode = _context->_mapOfSubjectNode[outp->getNode()];
-  SceneItem* item = _context->_mapOfSceneItem[subNode];
+  SceneNodeItem* itemNode = dynamic_cast<SceneNodeItem*>(_context->_mapOfSceneItem[subNode]);
+  YASSERT(itemNode);
+  SceneHeaderNodeItem* itemHeader = dynamic_cast<SceneHeaderNodeItem*>(itemNode->getHeader());
+  YASSERT(itemHeader);
+  SceneCtrlPortItem *item = itemHeader->getCtrlOutPortItem();
+  YASSERT(item);
   QRectF bb = (item->mapToScene(item->boundingRect())).boundingRect();
   qreal xp = bb.right();
   qreal yp = (bb.top() + bb.bottom())*0.5;
+  DEBTRACE("xp,yp:"<<xp<<","<<yp);
   int ifrom = -1;
   for (int i=0; i<_im-1; i++)
     if (_xm[i+1] > xp)
@@ -163,6 +175,7 @@ std::pair<int,int> LinkMatrix::cellTo(YACS::ENGINE::InPort* inp)
   QRectF bb = (item->mapToScene(item->boundingRect())).boundingRect();
   qreal xp = bb.left();
   qreal yp = (bb.top() + bb.bottom())*0.5;
+  DEBTRACE("xp,yp:"<<xp<<","<<yp);
   int ito = -1;
   for (int i=0; i<_im-1; i++)
     if (_xm[i+1] > xp)
@@ -185,10 +198,16 @@ std::pair<int,int> LinkMatrix::cellTo(YACS::ENGINE::InPort* inp)
 std::pair<int,int> LinkMatrix::cellTo(YACS::ENGINE::InGate* inp)
 {
   SubjectNode* subNode = _context->_mapOfSubjectNode[inp->getNode()];
-  SceneItem* item = _context->_mapOfSceneItem[subNode];
+  SceneNodeItem* itemNode = dynamic_cast<SceneNodeItem*>(_context->_mapOfSceneItem[subNode]);
+  YASSERT(itemNode);
+  SceneHeaderNodeItem* itemHeader = dynamic_cast<SceneHeaderNodeItem*>(itemNode->getHeader());
+  YASSERT(itemHeader);
+  SceneCtrlPortItem *item = itemHeader->getCtrlInPortItem();
+  YASSERT(item);
   QRectF bb = (item->mapToScene(item->boundingRect())).boundingRect();
   qreal xp = bb.left();
   qreal yp = (bb.top() + bb.bottom())*0.5;
+  DEBTRACE("xp,yp:"<<xp<<","<<yp);
   int ito = -1;
   for (int i=0; i<_im-1; i++)
     if (_xm[i+1] > xp)
@@ -271,6 +290,19 @@ LinkPath LinkMatrix::getPath(LNodePath lnp)
   return lp;
 }
 
+void LinkMatrix::incrementCost(LNodePath lnp)
+{
+  int dim = lnp.size();  
+  LNodePath::const_iterator it = lnp.begin();
+  for (int k=0; k<dim; k++)
+    {
+      int i = it->getX();
+      int j = it->getY();
+      int ij = i*_jm +j;
+      _cost[ij]++;
+    }    
+}
+
 int LinkMatrix::cost(int i, int j) const
 {
   int ij = i*_jm +j;
@@ -333,4 +365,50 @@ void LinkMatrix::getBoundingBox(SceneItem *obstacle, int margin, bool setObstacl
       _sym.insert(bb.top()    + margin);
       _sym.insert(bb.bottom() - margin);
     }
+}
+
+void LinkMatrix::addRowCols()
+{
+  {
+    set<double> sxmCpy = _sxm;
+    if (sxmCpy.empty()) return;
+    set<double>::iterator itx = sxmCpy.begin();
+    double xmin = *itx;
+    double xmax = xmin;
+    itx++;
+    for (; itx != sxmCpy.end(); ++itx)
+      {
+        xmax = *itx;
+        int nbpas = floor((xmax -xmin)/_pas);
+        
+        if (nbpas >= 2)
+          {
+            double xpas = (xmax -xmin)/nbpas;
+            for (int i=1; i<nbpas; i++)
+              _sxm.insert(xmin +i*xpas);
+          }
+        xmin = xmax;
+      }
+  }
+  {
+    set<double> symCpy = _sym;
+    if (symCpy.empty()) return;
+    set<double>::iterator ity = symCpy.begin();
+    double ymin = *ity;
+    double ymax = ymin;
+    ity++;
+    for (; ity != symCpy.end(); ++ity)
+      {
+        ymax = *ity;
+        int nbpas = floor((ymax -ymin)/_pas);
+        
+        if (nbpas >= 2)
+          {
+            double ypas = (ymax -ymin)/nbpas;
+            for (int i=1; i<nbpas; i++)
+              _sym.insert(ymin +i*ypas);
+          }
+        ymin = ymax;
+      }
+  }
 }

@@ -495,6 +495,7 @@ TypeCodeSeq::TypeCodeSeq(const TypeCodeSeq& tc):TypeCodeComposed(tc),
  *   \param repositoryId : the given id
  *   \param name : the given name
  *   \param content : the given contained TypeCode
+ *   \param staticLgth : the length
  */
 TypeCodeArray::TypeCodeArray(const char* repositoryId,
                              const char* name, 
@@ -749,9 +750,12 @@ void TypeCodeStruct::addMember(const std::string& name,TypeCode* tc)
   _members.push_back(std::pair<std::string,TypeCode*>(name,tc));
 }
 
+//! Get typecode of struct member given its name
 /*!
  * If name is not an existing key, 0 is returned.
+ * \param name : the member name
  * \param offset : Out parameter, that specified the location of start of data discriminated by name key.
+ * \return the member TypeCode
  */
 const TypeCode *TypeCodeStruct::getMember(const std::string& name, unsigned& offset) const
 {

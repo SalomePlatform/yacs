@@ -10,56 +10,48 @@
 
 .. _yacsgen:
 
-YACSGEN : Générateur automatique de module SALOME 
+YACSGEN: SALOME module generator
 ==================================================
 
-YACSGEN est un module python (module_generator.py) qui permet de fabriquer un module
-SALOME automatiquement à partir d'une description synthétique des composants
-qu'il contiendra. Cette description est faite en langage Python.
+YACSGEN is a python package (module_generator) that automatically fabricates a SALOME module starting 
+from a synthetic description of the components that it will contain.  This description is made in the python language.
 
-Les caractéristiques de ces composants ne sont pas générales mais devraient
-faciliter l'intégration de nombreux composants de calcul scientifique.
+The characteristics of these components are not general but they should facilitate integration of many scientific 
+calculation components.
 
-Ce générateur ne prend pas en charge l'intégration d'une IHM graphique mais seulement
-la partie calcul. L'objectif principal est l'intégration d'une bibliothèque Fortran dans laquelle 
-on peut faire des appels aux ports datastream (Calcium, en particulier).
+This generator does not control integration of a graphic MMI, but simply the calculation part. The main objective 
+is to integrate a Fortran library in which calls to datastream ports (particularly Calcium) can be made.
 
-Obtenir module_generator.py
-------------------------------------------------------------
-Voir site PAL : http://pal.der.edf.fr/pal/projets/pal/superv/modulegenerator
-
-Versions et architectures supportées
+Supported versions and architectures
 -----------------------------------------------------------------
-Module_generator.py utilise des fonctionnalités de python 2.4 mais a un mode de compatibilité avec python 2.3.
-Il fonctionne sur architecture 32 bits et 64 bits (testé sur machine Aster).
+YACSGEN uses python 2.4 functions but it has a compatibility mode with python 2.3.  It runs on a 32-bit and 64-bit 
+architecture.
 
 Installation
 ----------------------------
-Il n'y a pas de procédure d'installation particulière. Il suffit de décompresser et détarrer l'archive 
-obtenue à partir du site PAL (YACSGEN-x.y.tar.gz) et d'ajouter le répertoire ainsi créé au PYTHONPATH.
+There is no particular installation procedure.  Simply decompress and detar the archive (YACSGEN-x.y.tar.gz) 
+and add the directory thus created to PYTHONPATH.
 
-Description d'un module SALOME
+Description of a SALOME module
 --------------------------------------------------------
-Un module SALOME est décrit au moyen d'instructions Python et en utilisant des définitions contenues
-dans le module Python module_generator.py.
+A SALOME module is described using Python instructions and definitions contained in the Python module_generator package.
 
-La première action à réaliser est d'importer ces définitions::
+The first action to be done is to import these definitions::
 
      from module_generator import Generator,Module,PYComponent
      from module_generator import CPPComponent,Service,F77Component
 
-Pour décrire un module SALOME, on donne son nom <nommodule>, la liste de ses composants (<liste des composants>) 
-et le nom du répertoire dans lequel il sera installé (<prefix>).
+A SALOME module is described by giving its name <modulename> together with the list of its 
+components (<components list>) and the name of the directory in which it will be installed (<prefix>).
 
-Sa description prend la forme suivante ::
+Its description is in the following form::
 
-     m=Module(<nommodule>,components=<liste des composants>,prefix=<prefix>)
+  m=Module(<modulename>,components=<components list>,prefix=<prefix>)
 
-Pour un module de nom "toto" avec un composant c1 (voir ci-dessous pour la description des composants) qui sera installé dans le
-répertoire "Install", on aura ::
+The statement for a module named "toto" with a component C1 (see below for a description of components) that 
+will be installed in the "Install" directory will be::
 
-     m=Module("toto",components=[c1],prefix="Install")
-
+  m=Module("toto",components=[c1],prefix="Install")
 
 
 Description des composants

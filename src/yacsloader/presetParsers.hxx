@@ -94,7 +94,7 @@ struct presetdatatypeParser: parser
   virtual void pre ()
   {
     DEBTRACE("presetdatatypeParser::pre");
-    _ref="";
+    _ref="undef";
     _param.clear();
   }
   virtual void value (const std::string& value)
@@ -106,7 +106,7 @@ struct presetdatatypeParser: parser
   {
     DEBTRACE("presetdatatypeParser::post");
     //a parameter can have a ref attribute OR one value element
-    if(_ref == "")
+    if(_ref == "undef")
       mincount("value",1);
     else
       _param.setProperty("value",_ref);

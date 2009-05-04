@@ -53,6 +53,8 @@ SceneNodeItem::SceneNodeItem(QGraphicsScene *scene, SceneItem *parent,
   _width = 2*ScenePortItem::getPortWidth() + 3*_margin + 2*_nml;
   _brushColor = QColor(0,0,128);
   _moving = false;
+  _blocX = false;
+  _blocY = false;
   _hasNml = true;
   _dragable = true;
   _dragButton = Qt::MidButton;
@@ -67,13 +69,23 @@ SceneNodeItem::~SceneNodeItem()
 
 void SceneNodeItem::setWidth(qreal width)
 {
-  _width = width;
-  adjustHeader();
+  if(width != _width)
+    {
+      prepareGeometryChange();
+      _width = width;
+      adjustHeader();
+      QGraphicsItem::update();
+    }
 }
 
 void SceneNodeItem::setHeight(qreal height)
 {
-  _height = height;
+  if(height != _height)
+    {
+      prepareGeometryChange();
+      _height = height;
+      QGraphicsItem::update();
+    }
 }
 
 void SceneNodeItem::addHeader()
@@ -260,10 +272,18 @@ void SceneNodeItem::mouseMoveEvent(QGraphicsSceneMouseEvent * event)
         {
           QPointF oldPos = pos();
           QPointF aPos = oldPos + event->scenePos() - event->lastScenePos();
+          if (aPos.x() > oldPos.x()) _blocX = false;
+          if (aPos.y() > oldPos.y()) _blocY = false;
           if (aPos.x() < _margin + _nml)
-            aPos.setX(_margin + _nml);
+            {
+              aPos.setX(_margin + _nml);
+              _blocX = true;
+            }
           if (aPos.y() < _margin + bloc->getHeaderBottom() + _nml)
-            aPos.setY(_margin + bloc->getHeaderBottom() + _nml);
+            {
+              aPos.setY(_margin + bloc->getHeaderBottom() + _nml);
+              _blocY = true;
+            }
           setTopLeft(aPos);
           bloc->collisionResolv(this, oldPos);
         }

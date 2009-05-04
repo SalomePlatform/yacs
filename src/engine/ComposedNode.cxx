@@ -39,6 +39,14 @@
 using namespace YACS::ENGINE;
 using namespace std;
 
+/*! \class YACS::ENGINE::ComposedNode
+ *  \brief Base class for all composed nodes.
+ *
+ * This is an abstract class that must be specialized.
+ *
+ *  \ingroup Nodes
+ */
+
 const char ComposedNode::SEP_CHAR_BTW_LEVEL[]=".";
 
 ComposedNode::ComposedNode(const std::string& name):Node(name)
@@ -714,10 +722,13 @@ void ComposedNode::solveObviousOrDelegateCFLinks(const std::list<OutPort *>& sta
     }
 }
 
+//! check control flow links
 /*!
  * \param starts If different of 0, must aggregate at leat \b 1 element.
+ * \param end :
  * \param alreadyFed in/out parameter. Indicates if 'end' ports is already and surely set or fed by an another port.
  * \param direction If true : forward direction else backward direction.
+ * \param info : informations collectedduring the check
  */
 void ComposedNode::checkCFLinks(const std::list<OutPort *>& starts, InputPort *end, unsigned char& alreadyFed, bool direction, LinkInfo& info) const
 {
@@ -728,11 +739,13 @@ void ComposedNode::checkCFLinks(const std::list<OutPort *>& starts, InputPort *e
   //This case is typically dedicated when direct son is ElementaryNode and self link is defined on this.
   if(!dynamic_cast<ElementaryNode *>(nodeEnd))
     throw Exception(what);
+
   list< OutPort *>::const_iterator iter=starts.begin();
   Node *nodeStart=(*iter)->getNode();
   iter++;
   if(nodeEnd!=nodeStart)
     throw Exception(what);
+
   for(;iter!=starts.end();iter++)
     if((*iter)->getNode()!=nodeStart)
       throw Exception(what);
@@ -1440,3 +1453,16 @@ void ComposedNode::checkBasicConsistency() const throw(Exception)
   for(iter=inports.begin();iter!=inports.end();iter++)
     (*iter)->checkBasicConsistency();
 }
+
+//! Stop all pending activities of the composed node
+/*!
+ * This method should be called when a Proc is finished and must be deleted from the YACS server
+ */
+void ComposedNode::shutdown()
+{
+  DEBTRACE("ComposedNode::shutdown");
+  list<Node *> nodes=edGetDirectDescendants();
+  for(list<Node *>::iterator iter=nodes.begin();iter!=nodes.end();iter++)
+    (*iter)->shutdown();
+}
+
