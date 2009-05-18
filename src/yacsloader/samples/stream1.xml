@@ -23,30 +23,50 @@
     <!-- types -->
     <objref name="BASIC_short"/>
     <!-- inline -->
+    <inline name="node0" >
+      <script>
+        <code>n=20</code>
+      </script>
+      <outport name="n" type="int"/>
+    </inline>
     <!-- service -->
-
     <service name="node1" >
-        <component>COMPONENT_B</component>
-        <method>S2</method>
-        <outstream name="S2_data_uses_port" type="BASIC_short"/>
+      <component>DSCCODA</component>
+      <method>trun</method>
+      <inport name="niter" type="int"/>
+      <instream name="trun_in_port" type="BASIC_short"/>
+      <outstream name="trun_out_port" type="BASIC_short"/>
     </service>
-
     <service name="node2" >
-        <component>COMPONENT_C</component>
-        <method>S3</method>
-        <instream name="S3_data_provides_port" type="BASIC_short"/>
+      <component>DSCCODB</component>
+      <method>trun</method>
+      <inport name="niter" type="int"/>
+      <instream name="trun_in_port" type="BASIC_short"/>
+      <outstream name="trun_out_port" type="BASIC_short"/>
     </service>
 
     <!--control -->
 
     <!--datalinks -->
-
+    <datalink>
+      <fromnode>node0</fromnode><fromport>n</fromport>
+      <tonode>node1</tonode> <toport>niter</toport>
+    </datalink>
+    <datalink>
+      <fromnode>node0</fromnode><fromport>n</fromport>
+      <tonode>node2</tonode> <toport>niter</toport>
+    </datalink>
     <!--parameters -->
 
     <!--stream -->
     <stream>
-        <fromnode>node1</fromnode> <fromport>S2_data_uses_port</fromport>
-        <tonode>node2</tonode> <toport>S3_data_provides_port</toport>
+      <fromnode>node1</fromnode> <fromport>trun_out_port</fromport>
+      <tonode>node2</tonode> <toport>trun_in_port</toport>
     </stream>
+    <stream>
+      <fromnode>node2</fromnode> <fromport>trun_out_port</fromport>
+      <tonode>node1</tonode> <toport>trun_in_port</toport>
+    </stream>
+
 
 </proc>
