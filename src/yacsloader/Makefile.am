@@ -153,7 +153,7 @@ _loader_la_CXXFLAGS = \
 
 _loader_la_LDFLAGS  = -module 
 
-_loader_la_LIBADD =  libYACSloader.la $(OMNIORB_LIBS)
+_loader_la_LIBADD =  $(OMNIORB_LIBS) libYACSloader.la
 
 EXTRA_DIST = loader.i samples
 
