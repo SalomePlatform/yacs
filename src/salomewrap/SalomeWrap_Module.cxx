@@ -18,7 +18,6 @@
 //
 #include "SalomeWrap_Module.hxx"
 #include "SalomeWrap_DataModel.hxx"
-#include "SalomeWrap_Resource.hxx"
 
 #include <SalomeApp_Application.h>
 #include <QxScene_ViewManager.h>
@@ -102,13 +101,6 @@ QDockWidget* SalomeWrap_Module::objectBrowser() {
   return dock;
 }
 
-SalomeWrap_Resource* SalomeWrap_Module::getResource() {
-  return _resource;
-}
-
-void SalomeWrap_Module::setResource(SUIT_ResourceMgr* r) {
-  _resource = new SalomeWrap_Resource(r);
-}
 
 QAction* SalomeWrap_Module::wCreateAction(const int id,
                                           const QString& toolTip,

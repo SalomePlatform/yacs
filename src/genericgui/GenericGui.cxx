@@ -25,6 +25,7 @@
 #include "parsers.hxx"
 #include "Logger.hxx"
 #include "YACSGuiLoader.hxx"
+#include "ComponentInstance.hxx"
 
 #include "SALOME_NamingService.hxx"
 #include "SALOME_ModuleCatalog.hxx"
@@ -45,6 +46,8 @@
 #include "TypeCode.hxx"
 #include "LinkInfo.hxx"
 #include "LogViewer.hxx"
+#include "chrono.hxx"
+#include "Resource.hxx"
 
 #include <QFileDialog>
 #include <sstream>
@@ -77,6 +80,7 @@ GenericGui::GenericGui(YACS::HMI::SuitWrapper* wrapper, QMainWindow *parent)
   _mapViewContext.clear();
   _machineList.clear();
   _menuId = 190;
+  QtGuiContext::_counters = new counters(100);
 
   GuiObserver::setEventMap();
 
@@ -148,6 +152,10 @@ GenericGui::GenericGui(YACS::HMI::SuitWrapper* wrapper, QMainWindow *parent)
 
   _parent->tabifyDockWidget(_dwStacked, _dwCatalogs);
   _parent->tabifyDockWidget(_dwTree, _wrapper->objectBrowser());
+
+  //Import user catalog
+  std::string usercata=Resource::userCatalog.toStdString();
+  _catalogsWidget->addCatalogFromFile(usercata);
 }
 
 GenericGui::~GenericGui()
@@ -289,6 +297,11 @@ void GenericGui::createActions()
   _newContainerAct = _wrapper->createAction(getMenuId(), tr("Create a New Container"), QIcon(pixmap),
                                               tr("Create Container"), tr("Create a New Container"),
                                               0, _parent, false, this,  SLOT(onNewContainer()));
+
+  pixmap.load("icons:icon_select.png");
+  _selectComponentInstanceAct = _wrapper->createAction(getMenuId(), tr("Select a Component Instance"), QIcon(pixmap),
+                                              tr("Select a Component Instance"), tr("Select a Component Instance"),
+                                              0, _parent, false, this,  SLOT(onSelectComponentInstance()));
 
   pixmap.load("icons:new_salome_component.png");
   _newSalomeComponentAct = _wrapper->createAction(getMenuId(), tr("Create a New SALOME Component"), QIcon(pixmap),
@@ -555,6 +568,11 @@ void GenericGui::createMenus()
   _wrapper->createMenu( _wrapper->separator(), aMenuId);
   _wrapper->createMenu( _importCatalogAct, aMenuId );
   _wrapper->createMenu( _wrapper->separator(), aMenuId);
+  _wrapper->createMenu( _toggleAutomaticComputeLinkAct, aMenuId );
+  _wrapper->createMenu( _toggleSimplifyLinkAct, aMenuId );
+  _wrapper->createMenu( _toggleForce2NodesLinkAct, aMenuId );
+  _wrapper->createMenu( _toggleAddRowColsAct, aMenuId );
+  _wrapper->createMenu( _wrapper->separator(), aMenuId);
   _wrapper->createMenu( _whatsThisAct, aMenuId );
 }
 
@@ -587,6 +605,11 @@ void GenericGui::createTools()
   _wrapper->createTool( _toggleStopOnErrorAct, aToolId );
   _wrapper->createTool( _wrapper->separator(), aToolId );
   _wrapper->createTool( _importCatalogAct, aToolId );
+  _wrapper->createTool( _wrapper->separator(), aToolId );
+  _wrapper->createTool( _toggleAutomaticComputeLinkAct, aToolId );
+  _wrapper->createTool( _toggleSimplifyLinkAct, aToolId );
+  //_wrapper->createTool( _toggleForce2NodesLinkAct, aToolId );
+  _wrapper->createTool( _toggleAddRowColsAct, aToolId );
   _wrapper->createTool( _wrapper->separator(), aToolId );
   _wrapper->createTool( _whatsThisAct, aToolId );
 }
@@ -626,6 +649,14 @@ void GenericGui::showEditionMenus(bool show)
   _wrapper->setToolShown(_runLoadedSchemaAct, show);
   _wrapper->setMenuShown(_importCatalogAct, show);
   _wrapper->setToolShown(_importCatalogAct, show);
+  _wrapper->setMenuShown(_toggleAutomaticComputeLinkAct, show);
+  _wrapper->setToolShown(_toggleAutomaticComputeLinkAct, show);
+  _wrapper->setMenuShown(_toggleSimplifyLinkAct, show);
+  _wrapper->setToolShown(_toggleSimplifyLinkAct, show);
+  _wrapper->setMenuShown(_toggleForce2NodesLinkAct, show);
+  //_wrapper->setToolShown(_toggleForce2NodesLinkAct, show);
+  _wrapper->setMenuShown(_toggleAddRowColsAct, show);
+  _wrapper->setToolShown(_toggleAddRowColsAct, show);
 }
 
 void GenericGui::showExecMenus(bool show)
@@ -873,16 +904,12 @@ void GenericGui::createContext(YACS::ENGINE::Proc* proc,
   QtGuiContext* context = new QtGuiContext(this);
   QtGuiContext::setQtCurrent(context);
 
-  // --- wrapper
-
-  context->setWrapper(_wrapper);
-
   // --- catalogs
 
   context->setEdition(forEdition);
   context->setSessionCatalog(_sessionCatalog);
   context->setFileName(fileName);
-  context->setCurrentCatalog(YACS::ENGINE::getSALOMERuntime()->loadCatalog("proc", fileName.toStdString()));
+  context->setCurrentCatalog(_builtinCatalog);
 
   // --- scene, viewWindow & GraphicsView
 
@@ -948,7 +975,7 @@ void GenericGui::createContext(YACS::ENGINE::Proc* proc,
     end_t = clock();
     double passe =  (end_t -start_t);
     passe = passe/CLOCKS_PER_SEC;
-    cerr <<"create context -1- : " << passe << endl;
+    DEBTRACE("create context -1- : " << passe);
     start_t = end_t;
   }
 
@@ -961,7 +988,7 @@ void GenericGui::createContext(YACS::ENGINE::Proc* proc,
     end_t = clock();
     double passe =  (end_t -start_t);
     passe = passe/CLOCKS_PER_SEC;
-    cerr <<"create context - load proc- : " << passe << endl;
+    DEBTRACE("create context - load proc- : " << passe);
     start_t = end_t;
   }
 
@@ -1013,6 +1040,7 @@ void GenericGui::createContext(YACS::ENGINE::Proc* proc,
 
 void GenericGui::setLoadedPresentation(YACS::ENGINE::Proc* proc)
 {
+  DEBTRACE("GenericGui::setLoadedPresentation");
   map<YACS::ENGINE::Node*, PrsData> presNodes = _loader->getPrsData(proc);
   if (!presNodes.empty())
     {
@@ -1028,8 +1056,8 @@ void GenericGui::setLoadedPresentation(YACS::ENGINE::Proc* proc)
           item->setWidth(pres._width);
           item->setHeight(pres._height);
         }
-      _guiEditor->rebuildLinks();
     }
+  _guiEditor->rebuildLinks();
 }
 
 // -----------------------------------------------------------------------------
@@ -1043,6 +1071,8 @@ void GenericGui::onNewSchema()
 
   YACS::ENGINE::RuntimeSALOME* runTime = YACS::ENGINE::getSALOMERuntime();
   YACS::ENGINE::Proc *proc = runTime->createProc(name.str());
+
+  _loader->reset();
 
   QString fileName = name.str().c_str();
   createContext(proc, fileName, "", true);
@@ -1514,6 +1544,16 @@ void GenericGui::onImportDataType()
   if (_dwCatalogs) _dwCatalogs->raise();
 }
 
+void GenericGui::onSelectComponentInstance()
+{
+  DEBTRACE("GenericGui::onSelectComponentInstance");
+  Subject *sub = QtGuiContext::getQtCurrent()->getSelectedSubject();
+  if (!sub) return;
+  SubjectComponent *ref = dynamic_cast<SubjectComponent*>(sub);
+  YASSERT(ref);
+  YACS::ENGINE::ComponentInstance* compo=ref->getComponent();
+  QtGuiContext::getQtCurrent()->_mapOfLastComponentInstance[compo->getCompoName()]=compo;
+}
 
 void GenericGui::onNewContainer()
 {
@@ -1623,7 +1663,13 @@ void GenericGui::onFORNode()
 void GenericGui::onFOREACHNode()
 {
   DEBTRACE("GenericGui::onFOREACHNode");
-  _guiEditor->CreateForEachLoop();
+  createForEachLoop("double");
+}
+
+void GenericGui::createForEachLoop(std::string type)
+{
+  DEBTRACE("GenericGui::createForEachLoop");
+  _guiEditor->CreateForEachLoop(type);
 }
 
 void GenericGui::onWHILENode()

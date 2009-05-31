@@ -126,7 +126,7 @@ void YacsLoaderTest::aschema()
   if (p)
     {
       CORBA::Double dval = 0;
-      char *text = "";
+      char *text = (char*)"";
       CPPUNIT_ASSERT(p->nodeMap["c0.c1.n1"]);
       *((OutputCorbaPort*)p->nodeMap["c0.c1.n1"]->getOutputPort("p1"))->getAny() >>= dval;
       PyObject *data = ((OutputPyPort*)p->nodeMap["node32"]->getOutputPort("p1"))->get();
@@ -617,11 +617,11 @@ void YacsLoaderTest::refcnt()
   ret = driverTest(p, "samples/refcnt1.xml");
   CPPUNIT_ASSERT(ret == 0);
   data = ((OutputPyPort*)p->nodeMap["b1.b.node1"]->getOutputPort("p1"))->get();
-  CPPUNIT_ASSERT_EQUAL(13, data->ob_refcnt);
+  CPPUNIT_ASSERT(data->ob_refcnt==13);
   ret = driverTest(p, "samples/refcnt2.xml");
   CPPUNIT_ASSERT(ret == 0);
   data = ((OutputPyPort*)p->nodeMap["b1.b.node1"]->getOutputPort("p1"))->get();
-  CPPUNIT_ASSERT_EQUAL(19, data->ob_refcnt);
+  CPPUNIT_ASSERT(data->ob_refcnt==19);
 }
 
 void YacsLoaderTest::foreachs()

@@ -57,6 +57,7 @@ GuiContext::GuiContext()
   _mapOfSubjectContainer.clear();
   _mapOfSubjectDataType.clear();
   _mapOfExecSubjectNode.clear();
+  _mapOfLastComponentInstance.clear();
   _lastErrorMessage ="";
   _xmlSchema ="";
   _YACSEngineContainer = pair<string, string>("YACSServer","localhost");
@@ -91,6 +92,8 @@ void GuiContext::setProc(YACS::ENGINE::Proc* proc)
   _mapOfSubjectComponent.clear();
   _mapOfSubjectContainer.clear();
   _mapOfSubjectDataType.clear();
+  _mapOfLastComponentInstance.clear();
+  _lastErrorMessage ="";
 
   _subjectProc = new SubjectProc(proc, this);
   _mapOfSubjectNode[static_cast<Node*>(proc)] = _subjectProc;

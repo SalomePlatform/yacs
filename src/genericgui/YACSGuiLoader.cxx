@@ -25,6 +25,11 @@ YACSGuiLoader::~YACSGuiLoader()
 {
 }
 
+void YACSGuiLoader::reset()
+{
+  _inputMap.clear();
+}
+
 YACS::ENGINE::Proc* YACSGuiLoader::load(const char *filename)
 {
   _inputMap.clear();
@@ -42,11 +47,19 @@ std::map<YACS::ENGINE::Node*, PrsData> YACSGuiLoader::getPrsData(YACS::ENGINE::P
     Node* node = 0;
     string name = (*it).first;
 
-    if (name != "__ROOT__")
-      node = proc->getChildByName(name);
-    else
+    if (name == "__ROOT__")
       node = proc;
-
+    else
+      {
+        try
+          {
+            node = proc->getChildByName(name);
+          }
+        catch(Exception& ex)
+          {
+            continue;
+          }
+      }
     _prsMap[node] = (*it).second;
   }
   return _prsMap;

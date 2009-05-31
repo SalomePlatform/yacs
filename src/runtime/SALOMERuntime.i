@@ -25,7 +25,11 @@
 %module(docstring=SALOMEDOCSTRING) SALOMERuntime
 
 //work around SWIG bug #1863647
+#if SWIG_VERSION >= 0x010336
+#define SwigPyIterator SALOMERuntime_PySwigIterator
+#else
 #define PySwigIterator SALOMERuntime_PySwigIterator
+#endif
 
 %feature("autodoc", "1");
 

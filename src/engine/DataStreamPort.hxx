@@ -42,7 +42,7 @@ namespace YACS
       virtual void setProperty(const std::string& name,const std::string& value);
       virtual void setProperties(std::map<std::string,std::string> properties);
       virtual std::string getProperty(const std::string& name);
-      std::map<std::string,std::string> getPropertyMap() const { return _propertyMap; }
+      std::map<std::string,std::string> getProperties() const { return _propertyMap; }
       virtual void initPortProperties();
       virtual ~DataStreamPort();
       virtual std::string typeName() {return "YACS__ENGINE__DataStreamPort";}

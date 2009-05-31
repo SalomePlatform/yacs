@@ -49,7 +49,7 @@ std::string PropertyInterface::getProperty(const std::string& name)
 
 void PropertyInterface::setProperties(std::map<std::string,std::string> properties)
 {
-  DEBTRACE("PropertyInterface::setProperties " << name );
+  DEBTRACE("PropertyInterface::setProperties " );
   _propertyMap.clear();
   std::map<std::string,std::string>::iterator it;
   for (it = properties.begin(); it != properties.end(); ++it)

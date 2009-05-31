@@ -46,6 +46,7 @@ void counters::stats()
 
 chrono::chrono(int i) : _ctr(i), _run(true)
 {
+  //DEBTRACE("chrono::chrono " << _ctr << " " << _run);
   _start = clock();    
 }
 
@@ -56,6 +57,7 @@ chrono::~chrono()
 
 void chrono::stop()
 {
+  //DEBTRACE("chrono::stop " << _ctr << " " << _run);
   if (_run)
     {
       _run = false;

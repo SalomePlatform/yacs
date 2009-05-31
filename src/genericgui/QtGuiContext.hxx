@@ -28,6 +28,7 @@
 #include "FormEditTree.hxx"
 #include "GraphicsView.hxx"
 #include "GuiExecutor.hxx"
+#include "chrono.hxx"
 #include <QGraphicsScene>
 #include <QItemSelectionModel>
 #include <QStackedWidget>
@@ -87,9 +88,6 @@ namespace YACS
 
       inline void setSelectedSubject(YACS::HMI::Subject* sub)    {_selectedSubject = sub; };
 
-      inline SuitWrapper* getWrapper() {return _wrapper;};
-      inline void setWrapper(SuitWrapper* w) {_wrapper = w;};
-
       inline static QtGuiContext* getQtCurrent()             {return _QtCurrent; };
       inline static void setQtCurrent(QtGuiContext* context) { _QtCurrent=context; _current=context; };
 
@@ -99,6 +97,8 @@ namespace YACS
       std::set<YACS::HMI::Subject*> _setOfModifiedSubjects;
 
       static std::set<QtGuiContext*> _setOfContext;
+      static counters* _counters;
+      static bool _delayCalc;
 
     protected:
       static QtGuiContext* _QtCurrent;

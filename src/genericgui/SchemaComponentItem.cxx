@@ -21,6 +21,7 @@
 #include "SchemaModel.hxx"
 #include "SchemaReferenceItem.hxx"
 #include "guiObservers.hxx"
+#include "Menus.hxx"
 
 #include <QIcon>
 #include <cassert>
@@ -110,3 +111,10 @@ void SchemaComponentItem::update(GuiEvent event, int type, Subject* son)
       ;
     }
 }
+
+void SchemaComponentItem::popupMenu(QWidget *caller, const QPoint &globalPos)
+{
+  ComponentInstanceMenu m;
+  m.popupMenu(caller, globalPos);
+}
+

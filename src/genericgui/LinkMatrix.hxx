@@ -94,7 +94,7 @@ namespace YACS
       LinkPath getPath(LNodePath lnp);
       void incrementCost(LNodePath lnp);
 
-      int cost(int i, int j) const;
+      inline int cost(int i, int j) const { return _cost[i*_jm +j]; };
       inline int imax() const { return _im; };
       inline int jmax() const { return _jm; };
       

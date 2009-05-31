@@ -97,13 +97,13 @@ parse_opt (int key, char *arg, struct argp_state *state)
       if (arg)
         myArgs->dumpErrorFile = arg;
       else
-        myArgs->dumpErrorFile = "dumpErrorState.xml";
+        myArgs->dumpErrorFile = (char *)"dumpErrorState.xml";
       break;
     case 'f':
       if (arg)
         myArgs->finalDump = arg;
       else
-        myArgs->finalDump = "finalDumpState.xml";
+        myArgs->finalDump = (char *)"finalDumpState.xml";
       break;      
     case 'l':
       myArgs->loadState = arg;
@@ -112,7 +112,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
       if (arg)
         myArgs->xmlSchema = arg;
       else
-        myArgs->xmlSchema = "saveSchema.xml";
+        myArgs->xmlSchema = (char *)"saveSchema.xml";
       break;      
 
     case ARGP_KEY_ARG:
@@ -153,10 +153,10 @@ main (int argc, char* argv[])
   myArgs.display = 0;
   myArgs.verbose = 0;
   myArgs.stop = 0;
-  myArgs.dumpErrorFile= "";
-  myArgs.finalDump = "";
-  myArgs.loadState = "";
-  myArgs.xmlSchema = "";
+  myArgs.dumpErrorFile= (char *)"";
+  myArgs.finalDump = (char *)"";
+  myArgs.loadState = (char *)"";
+  myArgs.xmlSchema = (char *)"";
 
   // Parse our arguments; every option seen by parse_opt will be reflected in arguments.
   argp_parse (&argp, argc, argv, 0, 0, &myArgs);

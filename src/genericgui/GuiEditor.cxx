@@ -21,6 +21,7 @@
 #include "RuntimeSALOME.hxx"
 #include "Proc.hxx"
 #include "Node.hxx"
+#include "ForEachLoop.hxx"
 #include "Catalog.hxx"
 #include "guiObservers.hxx"
 #include "QtGuiContext.hxx"
@@ -31,6 +32,7 @@
 #include "Catalog.hxx"
 #include "ItemMimeData.hxx"
 #include "Message.hxx"
+#include "Resource.hxx"
 
 #include <string>
 #include <sstream>
@@ -53,14 +55,14 @@ GuiEditor::~GuiEditor()
   DEBTRACE("GuiEditor::~GuiEditor");
 }
 
-void GuiEditor::CreateNodeFromCatalog(const ItemMimeData* myData, SubjectComposedNode *cnode)
+void GuiEditor::CreateNodeFromCatalog(const ItemMimeData* myData, SubjectComposedNode *cnode,bool createNewComponentInstance)
 {
   DEBTRACE("GuiEditor::CreateNodeFromCatalog");
   Catalog* catalog = myData->getCatalog();
   string compoName =  myData->getCompo();
   string service = myData->getType();
   DEBTRACE(compoName << "/" << service);
-  _createNode(catalog, cnode, service, compoName);
+  _createNode(catalog, cnode, service, compoName,createNewComponentInstance);
 }
 
 void GuiEditor::CreateNode(std::string typeNode)
@@ -83,13 +85,14 @@ void GuiEditor::CreateNode(std::string typeNode)
       return;
     }
 
-  _createNode(catalog, cnode, typeNode, "");
+  _createNode(catalog, cnode, typeNode, "", Resource::COMPONENT_INSTANCE_NEW);
 }
 
 void GuiEditor::_createNode(YACS::ENGINE::Catalog* catalog,
                             SubjectComposedNode *cnode,
                             std::string service,
-                            std::string compoName)
+                            std::string compoName,
+                            bool createNewComponentInstance)
 {
   // --- find a name not used
 
@@ -125,11 +128,11 @@ void GuiEditor::_createNode(YACS::ENGINE::Catalog* catalog,
           map<int, SubjectNode*>::reverse_iterator rit = bodyMap.rbegin();
           swCase = (*rit).first + 1;
         }
-      if (!aSwitch->addNode(catalog, compoName, service, name, swCase))
+      if (!aSwitch->addNode(catalog, compoName, service, name, createNewComponentInstance, swCase))
         Message mess;
     }
   else if (cnode)
-    if (!cnode->addNode(catalog, compoName, service, name))
+    if (!cnode->addNode(catalog, compoName, service, name, createNewComponentInstance))
       Message mess;
 }
 
@@ -156,10 +159,22 @@ void GuiEditor::CreateForLoop()
   CreateNode("ForLoop");
 }
 
-void GuiEditor::CreateForEachLoop()
+void GuiEditor::CreateForEachLoop(std::string type)
 {
   DEBTRACE("GuiEditor::CreateForEachLoop");
-  CreateNode("ForEachLoopDouble");
+  // The ForEachLoop node for datatype type must exist in builtin catalog
+  // So  create it in builtin catalog if it does not exist and datatype is loaded in the current Proc
+  YACS::ENGINE::Catalog *catalog = YACS::ENGINE::getSALOMERuntime()->getBuiltinCatalog();
+  Proc* proc = GuiContext::getCurrent()->getProc();
+  std::string typeName="ForEachLoop_"+type;
+  if (!catalog->_composednodeMap.count(typeName))
+    {
+      if(proc->typeMap.count(type))
+        {
+          catalog->_composednodeMap[typeName]=new ForEachLoop(typeName,proc->typeMap[type]);
+        }
+    }
+  CreateNode(typeName);
 }
 
 void GuiEditor::CreateWhileLoop()
@@ -355,7 +370,7 @@ void GuiEditor::PasteSubject()
 void GuiEditor::rebuildLinks()
 {
 // --- only global link redraw for now...
-  
+  DEBTRACE("GuiEditor::rebuildLinks");
   YACS::HMI::SubjectProc* subproc = QtGuiContext::getQtCurrent()->getSubjectProc();
   SceneItem *item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[subproc];
   SceneComposedNodeItem *proc = dynamic_cast<SceneComposedNodeItem*>(item);
@@ -385,11 +400,11 @@ void GuiEditor::arrangeNodes(bool isRecursive)
       return;
     }
   sci->arrangeNodes(isRecursive);
-  if (Scene::_autoComputeLinks && !QtGuiContext::getQtCurrent()->isLoading())
-    {
-      YACS::HMI::SubjectProc* subproc = QtGuiContext::getQtCurrent()->getSubjectProc();
-      SceneItem *item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[subproc];
-      SceneComposedNodeItem *proc = dynamic_cast<SceneComposedNodeItem*>(item);
-      proc->rebuildLinks();
-    }
+//   if (Scene::_autoComputeLinks && !QtGuiContext::getQtCurrent()->isLoading())
+//     {
+//       YACS::HMI::SubjectProc* subproc = QtGuiContext::getQtCurrent()->getSubjectProc();
+//       SceneItem *item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[subproc];
+//       SceneComposedNodeItem *proc = dynamic_cast<SceneComposedNodeItem*>(item);
+//       proc->rebuildLinks();
+//     }
 }

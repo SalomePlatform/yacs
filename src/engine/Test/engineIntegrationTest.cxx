@@ -35,6 +35,7 @@
 #include "Proc.hxx"
 
 #include <iostream>
+#include <string.h>
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"

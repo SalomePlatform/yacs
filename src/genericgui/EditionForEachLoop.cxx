@@ -18,6 +18,10 @@
 //
 #include "EditionForEachLoop.hxx"
 #include "FormEachLoop.hxx"
+#include "Node.hxx"
+#include "ForEachLoop.hxx"
+#include "TypeCode.hxx"
+#include "QtGuiContext.hxx"
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -29,6 +33,7 @@ using namespace std;
 
 using namespace YACS;
 using namespace YACS::HMI;
+using namespace YACS::ENGINE;
 
 EditionForEachLoop::EditionForEachLoop(Subject* subject,
                                        QWidget* parent,
@@ -39,12 +44,30 @@ EditionForEachLoop::EditionForEachLoop(Subject* subject,
   _wid->gridLayout1->addWidget(_formEachLoop);
   _formEachLoop->sb_nbranch->setMinimum(1);
   _formEachLoop->sb_nbranch->setMaximum(INT_MAX);
+  Node* node=_subjectNode->getNode();
+  ForEachLoop *fe = dynamic_cast<ForEachLoop*>(node);
+  if(fe)
+    _formEachLoop->lineEdit->setText(fe->edGetSamplePort()->edGetType()->name());
   connect(_formEachLoop->sb_nbranch, SIGNAL(valueChanged(const QString &)),
           this, SLOT(onModifyNbBranches(const QString &)));
+
+  connect(_formEachLoop->lineEdit_2, SIGNAL(editingFinished()),this,SLOT(onModifyCollection()));
+
 }
 
 EditionForEachLoop::~EditionForEachLoop()
 {
+}
+
+void EditionForEachLoop::onModifyCollection()
+{
+  bool isOk = false;
+  Node* node=_subjectNode->getNode();
+  ForEachLoop *fe = dynamic_cast<ForEachLoop*>(node);
+  InputPort* dp=fe->edGetSeqOfSamplesPort();
+  SubjectDataPort* sdp = QtGuiContext::getQtCurrent()->_mapOfSubjectDataPort[dp];
+  isOk=sdp->setValue(_formEachLoop->lineEdit_2->text().toStdString());
+  DEBTRACE(isOk);
 }
 
 void EditionForEachLoop::onModifyNbBranches(const QString &text)
@@ -74,6 +97,10 @@ void EditionForEachLoop::update(GuiEvent event, int type, Subject* son)
       ss >> i;
       DEBTRACE(i);
       _formEachLoop->sb_nbranch->setValue(i);
+
+      //smplscollection
+      InputPort* dp=_subjectNode->getNode()->getInputPort("SmplsCollection");
+      _formEachLoop->lineEdit_2->setText(dp->getAsString().c_str());
       break;
     }
 }

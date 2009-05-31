@@ -16,6 +16,9 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+#define CHRONODEF
+#include "chrono.hxx"
+
 #include "SceneBlocItem.hxx"
 #include "SceneComposedNodeItem.hxx"
 #include "SceneElementaryNodeItem.hxx"
@@ -42,6 +45,8 @@
 
 #include <cassert>
 
+#include "Resource.hxx"
+
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
@@ -54,10 +59,10 @@ SceneComposedNodeItem::SceneComposedNodeItem(QGraphicsScene *scene, SceneItem *p
   : SceneNodeItem(scene, parent, label, subject)
 {
   DEBTRACE("SceneComposedNodeItem::SceneComposedNodeItem " <<label.toStdString());
-  _brushColor   = QColor(213,213,213);
-  _hiBrushColor = QColor(225,225,225);
-  _penColor     = QColor(120,120,120);
-  _hiPenColor   = QColor( 60, 60, 60);
+  _brushColor   = Resource::ComposedNode_brush;
+  _hiBrushColor = Resource::ComposedNode_hiBrush;
+  _penColor     = Resource::ComposedNode_pen;
+  _hiPenColor   = Resource::ComposedNode_hiPen;
   _dragOver = false;
   setAcceptDrops(true);
 }
@@ -455,13 +460,22 @@ void SceneComposedNodeItem::collisionResolv(SceneItem* child, QPointF oldPos)
 
 void SceneComposedNodeItem::rebuildLinks()
 {
+  DEBTRACE("SceneComposedNodeItem::rebuildLinks " << QtGuiContext::_delayCalc);
+  if (QtGuiContext::_delayCalc)
+    return;
+  CHRONO(1);
+  CHRONO(2);
   LinkMatrix matrix(this);
   matrix.compute();
+  CHRONOSTOP(2);
+  CHRONO(3);
   list<linkdef> alist = matrix.getListOfDataLinkDef();
   list<linkdef> blist = matrix.getListOfCtrlLinkDef(); // add list operator ?
   for (list<linkdef>::const_iterator ii = blist.begin(); ii != blist.end(); ++ii)
     alist.push_back(*ii);
 
+  CHRONOSTOP(3);
+  CHRONO(4);
   LinkAStar astar(matrix);
   for (list<linkdef>::const_iterator it = alist.begin(); it != alist.end(); ++it)
     {
@@ -469,12 +483,17 @@ void SceneComposedNodeItem::rebuildLinks()
       DEBTRACE("from("<<ali.from.first<<","<<ali.from.second
                <<") to ("<<ali.to.first<<","<<ali.to.second
                <<") " << ali.item->getLabel().toStdString());
+      CHRONO(5);
       bool isPath = astar.computePath(LNode(ali.from), LNode(ali.to));
+      CHRONOSTOP(5);
+      CHRONO(6);
       if (! isPath) DEBTRACE("Link Path not found !");
       LNodePath ijPath = astar.givePath();
       matrix.incrementCost(ijPath);
       LinkPath apath = matrix.getPath(ijPath);
 //       DEBTRACE(apath.size());
+      CHRONOSTOP(6);
+      CHRONO(7);
       ali.item->setPath(apath);
     }
 }
@@ -482,6 +501,8 @@ void SceneComposedNodeItem::rebuildLinks()
 void SceneComposedNodeItem::arrangeNodes(bool isRecursive)
 {
   DEBTRACE("SceneComposedItem::arrangeNodes " << isRecursive);
+  bool isExtern = !QtGuiContext::_delayCalc;
+  QtGuiContext::_delayCalc = true; // avoid rebuildLinks
 
   SubjectComposedNode *scnode = dynamic_cast<SubjectComposedNode*>(getSubject());
   YASSERT(scnode);
@@ -512,6 +533,12 @@ void SceneComposedNodeItem::arrangeNodes(bool isRecursive)
     }
   else
     arrangeChildNodes();
+
+  if (isExtern)
+    {
+      QtGuiContext::_delayCalc = false; // allow rebuildLinks
+      rebuildLinks();
+    }
 }
 
 void SceneComposedNodeItem::arrangeChildNodes()
@@ -553,10 +580,16 @@ void SceneComposedNodeItem::dropEvent(QGraphicsSceneDragDropEvent *event)
 
   const ItemMimeData *myData = dynamic_cast<const ItemMimeData*>(event->mimeData());
   if (!myData) return;
+  setEventPos(event->scenePos());
   if (myData->hasFormat("yacs/cataService") || myData->hasFormat("yacs/cataNode"))
     {
       SubjectComposedNode *cnode = dynamic_cast<SubjectComposedNode*>(getSubject());
-      QtGuiContext::getQtCurrent()->getGMain()->_guiEditor->CreateNodeFromCatalog(myData, cnode);
+      bool createNewComponentInstance=Resource::COMPONENT_INSTANCE_NEW;
+      // by default getControl gives false. In this case we use the user preference COMPONENT_INSTANCE_NEW
+      // to create the node. If getControl gives true we invert the user preference
+      if(myData->getControl())
+        createNewComponentInstance=!Resource::COMPONENT_INSTANCE_NEW;
+      QtGuiContext::getQtCurrent()->getGMain()->_guiEditor->CreateNodeFromCatalog(myData, cnode,createNewComponentInstance);
     }
   else if(myData->hasFormat("yacs/subjectNode"))
     {
@@ -574,7 +607,7 @@ void SceneComposedNodeItem::dropEvent(QGraphicsSceneDragDropEvent *event)
 QColor SceneComposedNodeItem::getPenColor()
 {
   if (_dragOver)
-    return QColor(255,0,0);
+    return Resource::dragOver;
   if (isSelected())
     return _hiPenColor;
   else 

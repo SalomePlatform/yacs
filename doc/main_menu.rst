@@ -4,30 +4,17 @@
 Main Menu
 =========
 
-The menu bar is located on the upper part of the desktop window. Available commands depends on the current selected schema and its mode (edition, run). The menus are specific for each mode and rebuilt as soon as the user changes the current mode. Relevant commands also depends on the item selected in the schema tree view.
-
-Menu bar configurations in edition and run modes are given below.
+The menu bar is located on the upper part of the desktop window.
 
 
 
-.. image:: images/main_menu_0.jpg
+.. image:: images/main_menu_0.png
   :align: center
-  :width: 40ex
 
 
 .. centered::
-  **Main Menu in edition mode**
+  **Main Menu**
 
-
-
-
-.. image:: images/main_menu_1.jpg
-  :align: center
-  :width: 35ex
-
-
-.. centered::
-  **Main Menu in run mode**
 
 
 Let's consider the available menus in more detail.
@@ -36,200 +23,116 @@ Let's consider the available menus in more detail.
 
 File
 ----
-File menu contains standard operations for creating, opening and saving documents as well as import and export operations. The YACS GUI document is saved in a HDF file with default extension \*.hdf.
+File menu contains standard operations for creating, opening and saving documents (SALOME studies) as well as schema creation or import operations. The SALOME study is saved in a HDF file with default extension \*.hdf. YACS Schema must be saved apart in XML files.
 
 If YACS module has been loaded File menu contains the following items:
 
 
-.. image:: images/main_menu_2.jpg
+.. image:: images/main_menu_2.png
   :align: center
-  :width: 40ex
 
 
 
++ YACS:
 
-+ Import Schema:
+
+    + :ref:`create_new_schema`
 
 
 
     + :ref:`import_yacs_schema`
 
 
-    + :ref:`import_supervisor_graph`
-
-
-
-
-
-+ :ref:`export_schema`
-
-
-+ :ref:`create_new_schema`
-
-
-
 
 
 Edit
 ----
-Edit menu supports standard edition operations like copy/paste and undo/redo functionality. Cut, copy, paste, undo/redo should be available in edition mode only. ( **These items are not currently implemented, but will be available in the future version!** )
+Edit menu supports standard edition operations like copy/paste and undo/redo functionality. Cut, copy, paste, undo/redo should be available in edition mode only. ( **Cut, copy and paste are only available within context popup menus, and undo/redo are not currently implemented, but will be available in the future version!** )
 
 
 
-.. image:: images/main_menu_3.jpg
+.. image:: images/main_menu_3.png
   :align: center
-  :width: 20ex
 
 
 
-Other edition operations on different types of objects are available with help of corresponding Input Panel property pages. For more information about this topic see :ref:`edit_object` section.
+Other edition operations on different types of objects are available with help of corresponding context popup menus or Input Panel property pages. For more information about this topic see :ref:`edit_object` section.
 
-The user can :ref:`delete_object` with help of corresponding context popup menu item in the edition Tree View.
+The user can :ref:`delete_object` with help of corresponding context popup menu item in the edition Tree View or 2D view.
 
 
 View
 ----
-View menu allows maintaining visibility of the different parts of the desktop like toolbars, status bar, Object Browser, Python Console, Log Window.
+View menu allows maintaining visibility of the different parts of the desktop like toolbars, status bar, Object Browser, Tree View, Catalogs, Input Panel.
 
 
 
-.. image:: images/main_menu_4.jpg
+.. image:: images/main_menu_4.png
   :align: center
-  :width: 44ex
 
-
-.. centered::
-   **Python Console**
-
-
-.. image:: images/main_menu_5.jpg
-  :align: center
-  :width: 41ex
 
 .. centered::
   **Standard Toolbar**
 
 
-.. _create_menu:
-
-Create
-------
-Create menu contains a set of commands for creation of the YACS GUI objects. It is active only in the edition mode of a schema. Create menu contains the following items:
-
-
-
-
-+ :ref:`create_container_definition`
-
-
-+ :ref:`create_component_instance_definition`
-
-
-
-
-
-
-
-.. image:: images/main_menu_6.jpg
+.. image:: images/main_menu_5.png
   :align: center
-  :width: 58ex
+
+.. centered::
+  **Windows**
 
 
+.. _yacs_menu:
+
+YACS menu
+---------
+YACS menu contains a set of commands for creating opening and saving of YACS schemas, importing old SUPERV schemas, execute schemas, import catalogs, and set some specific behavior of 2D views. YACS menu contains the following items:
 
 
-
-
-+ :ref:`create_node`
-
-
-
-
-
-.. image:: images/main_menu_7.jpg
+.. image:: images/main_menu_6.png
   :align: center
-  :width: 48ex
 
 
-.. _execute:
-
-Execute
--------
-Execute menu contains a set of commands for execution of the YACS GUI schemas.
-
-If the current mode is the edition mode of a schema, there is only possibility to create a schema run:
++ :ref:`create_new_schema` : create a new schema from scratch
 
 
-
-.. image:: images/main_menu_8.jpg
-  :align: center
-  :width: 38ex
++ :ref:`import_yacs_schema` : load a YACS schema saved on an XML file 
 
 
++ :ref:`import_supervisor_graph` : load a SUPERV schema saved on an XML file
 
 
++ Save Schema : save in the current opened file
 
 
-+ :ref:`execute_schema`
++ :ref:`export_schema` : save with file dialog box to choose a new filename
+
+
++ :ref:`execute_schema` : switch from edition to run mode
 
 
 + :ref:`save_restore_execution_state` (from a state of execution saved previously)
 
 
-+ New Batch Execution ( **Will be available in the future version!** )
++ Load a Schema in run mode (without edition)
 
 
++ Import Catalog : to import specific data types or nodes
 
 
-
-Execute menu is active only if we are in the run mode of a schema. Execute menu contains the following items:
-
++ Automatic Links: toggle behaviour for automatic link reconstruction when 2D View layout changes
 
 
-.. image:: images/main_menu_9.jpg
-  :align: center
-  :width: 44ex
++ Simplify Links: toggle behaviour for link simplification (less segments)
 
 
++ Force Ortho Links: toggle behaviour on very simple links (2 segments becomes 3 orthogonals segments)
 
 
++ Separate Links: toggle behaviour to try to avoid or not superposition of links 
 
 
-+ Without stop Mode
-
-
-+ Breakpoints Mode
-
-
-+ Step by step Mode
-
-
-+ Stop on error Option
-
-
-+ Start/Resume
-
-
-+ Pause
-
-
-+ Abort
-
-
-+ Reset
-
-
-+ Execute in batch ( **Will be available in the future version!** )
-
-
-+ Connect to a running batch session ... ( **Will be available in the future version!** )
-
-
-+ Save execution state ...
-
-
-+ New edition
-
-
++ What's this mode : experimental, detailled help on a few items
 
 
 
@@ -239,9 +142,8 @@ Tools menu provides two standard Salome useful tools such as XML catalog generat
 
 
 
-.. image:: images/main_menu_10.jpg
+.. image:: images/main_menu_10.png
   :align: center
-  :width: 44ex
 
 
 
@@ -252,9 +154,8 @@ Window menu contains commands to arrange already opened windows in a different w
 
 
 
-.. image:: images/main_menu_11.jpg
+.. image:: images/main_menu_11.png
   :align: center
-  :width: 74ex
 
 
 
@@ -265,8 +166,7 @@ Help menu allows reading some basic information about application with help of '
 
 
 
-.. image:: images/main_menu_12.jpg
+.. image:: images/main_menu_12.png
   :align: center
-  :width: 65ex
 
 

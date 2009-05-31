@@ -11,7 +11,14 @@ The Object Browser is a reusable SALOME GUI component. All schemas created or im
 
 The SALOME Object Browser is only used to publish the run of the schema as a whole, i.e. just a name for the run, and under this name, the outputs of the run that are published in study for the use of other SALOME modules.
 
-To see an example of the Object Browser data structure refer to the :ref:`mainwindow`.
+
+.. image:: images/objectBrowser.png
+  :align: center
+
+.. centered::
+  **SALOME Object Browser tab**
+
+The Object Browser is in a tab, with tree_view: see the :ref:`mainwindow`.
 
 .. _tree_view:
 
@@ -29,9 +36,8 @@ The proposed YACS tree view organization in edition mode is shown on figure belo
 
 
 
-.. image:: images/tree_view_0.jpg
+.. image:: images/tree_view_edition.png
   :align: center
-  :width: 40ex
 
 
 
@@ -107,9 +113,8 @@ Run mode of the Tree View
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-.. image:: images/tree_view_1.jpg
+.. image:: images/tree_view_1.png
   :align: center
-  :width: 40ex
 
 
 
@@ -139,7 +144,7 @@ The user can display a presentation of the schema in the 2D Viewer based on the 
 
 
 
-.. image:: images/2d_viewer_0.jpg
+.. image:: images/2d_viewer_0.png
   :align: center
 
 
@@ -184,9 +189,8 @@ As an example, there are two property pages for inline script node on the pictur
 
 
 
-.. image:: images/input_panel_0.jpg
+.. image:: images/input_panel_0.png
   :align: center
-  :width: 47ex
 
 
 .. centered::
@@ -195,34 +199,29 @@ As an example, there are two property pages for inline script node on the pictur
 
 
 
-.. image:: images/input_panel_1.jpg
+.. image:: images/input_panel_1.png
   :align: center
-  :width: 47ex
 
 
 .. centered::
   **Node property page in run mode**
 
 
-Python Console
---------------
-The Python Console permits the user to invoke some YACS functionality from Python, for example, import XML graph with old format (SALOME Supervisor) from Python Console. Example of usage:
+
+.. _catalogs_tree_view:
+
+Catalogs Tree View
+------------------
+The Catalog tree give acces to data types and node types from several catalogs. By default, the Builtin Catalog, the Session Catalog and the
+Preference Catalog are available. Builtin Catalog provides standard data types, standard elementary node types and all the Composed Nodes types.
+Session Catalog is built with all the Module Catalogs defined in the current SALOME Session. Preference Catalog is defined in the preferences.
+Any existing YACS schema file can be imported as a catalog, to allow reutilization of data types or component definition. 
 
 
-
-.. image:: images/python_console_0.jpg
+.. image:: images/catalogs.png
   :align: center
 
 
-
-
-Log Window
-----------
-The Log Window permits the user to follow the execution process of the schema. The YACS engine console output, including error messages, is redirected to the Log Window.
-
-
-
-.. image:: images/log_window_0.jpg
-  :align: center
-
+.. centered::
+  **Catalog Tree View**
 

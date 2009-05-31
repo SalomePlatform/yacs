@@ -19,6 +19,7 @@
 #include "XMLNode.hxx"
 #include "XMLPorts.hxx"
 #include "Mutex.hxx"
+#include "TypeCode.hxx"
 
 #include <libxml/parser.h>
 #include <libxml/tree.h>

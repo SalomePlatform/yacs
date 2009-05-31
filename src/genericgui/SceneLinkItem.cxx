@@ -16,11 +16,15 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+#define CHRONODEF
+#include "chrono.hxx"
+
 #include "SceneLinkItem.hxx"
 #include "SceneDataPortItem.hxx"
 #include "SceneElementaryNodeItem.hxx"
 #include "SceneHeaderNodeItem.hxx"
 #include "Scene.hxx"
+#include "Resource.hxx"
 
 #include "Menus.hxx"
 #include <QPointF>
@@ -40,10 +44,10 @@ SceneLinkItem::SceneLinkItem(QGraphicsScene *scene, SceneItem *parent,
 {
   _from = from;
   _to = to;
-  _penColor     = QColor(  0,   0,  96);
-  _hiPenColor   = QColor(  0,   0, 128);
-  _brushColor   = QColor(  0,   0, 192);
-  _hiBrushColor = QColor(192, 192, 255);
+  _penColor     = Resource::link_draw_color;
+  _hiPenColor   = Resource::link_select_color;
+  _brushColor   = Resource::link_draw_color;
+  _hiBrushColor = Resource::link_select_color;
   _level += 100;
   setZValue(_level);
   _lp.clear();
@@ -210,6 +214,7 @@ void SceneLinkItem::popupMenu(QWidget *caller, const QPoint &globalPos)
 void SceneLinkItem::setPath(LinkPath lp)
 {
   DEBTRACE("SceneLinkItem::setPath " << lp.size());
+  CHRONO(10);
   prepareGeometryChange();
   _nbPoints = lp.size();
   _lp.reserve(_nbPoints+1);
@@ -271,7 +276,11 @@ void SceneLinkItem::setPath(LinkPath lp)
       else
         break;
     }
+  CHRONOSTOP(10);
+  CHRONO(11);
   if (Scene::_simplifyLinks) minimizeDirectionChanges();
+  CHRONOSTOP(11);
+  CHRONO(12);
   if (Scene::_force2NodesLink) force2points();
   for (k=0; k<_nbPoints; k++)
     DEBTRACE("_lp[" << k << "](" << _lp[k].x() << "," << _lp[k].y() << ")");

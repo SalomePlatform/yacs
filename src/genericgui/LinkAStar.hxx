@@ -23,6 +23,7 @@
 
 #include <map>
 #include <list>
+#include <cmath>
 
 namespace YACS
 {
@@ -62,7 +63,8 @@ namespace YACS
       void addNeighbours(std::pair<int,int> n);
       std::pair<int,int> bestNode(const LNodeMap& aList);
       void moveToClosedList(std::pair<int,int> n);
-      double distance(int i1, int j1, int i2, int j2);
+      //inline double distance(int i1, int j1, int i2, int j2) { return std::sqrt(double((i1-i2)*(i1-i2) + (j1-j2)*(j1-j2)));};
+      inline double distance(int i1, int j1, int i2, int j2) { return double((i1-i2)*(i1-i2) + (j1-j2)*(j1-j2));};
     protected:
       const LinkMatrix &_linkMatrix;
       LNodeMap _closedList;

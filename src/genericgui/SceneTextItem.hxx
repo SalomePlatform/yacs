@@ -40,7 +40,9 @@ namespace YACS
       virtual void checkGeometryChange();
       virtual void popupMenu(QWidget *caller, const QPoint &globalPos);
       virtual QString getToolTip();
+      void setEventPos(QPointF point);
     protected:
+      QPointF _eventPos;
     };
   }
 }

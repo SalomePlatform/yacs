@@ -30,6 +30,17 @@ void InlineNode::accept(Visitor *visitor)
   visitor->visitInlineNode(this);
 }
 
+//! Set the script (as a string) to execute
+/*!
+ * \param script: script to execute
+ */
+void InlineNode::setScript(const std::string& script) 
+{ 
+  _script=script; 
+  modified();
+}
+
+
 
 InlineFuncNode::~InlineFuncNode() { }
 

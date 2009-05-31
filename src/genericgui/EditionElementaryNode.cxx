@@ -140,10 +140,10 @@ bool EditionElementaryNode::hasOutputPorts()
   return true;
 }
 
-void EditionElementaryNode::createTablePorts()
+void EditionElementaryNode::createTablePorts(QLayout* layout)
 {
   _twPorts = new QTabWidget(this);
-  _wid->gridLayout1->addWidget(_twPorts);
+  layout->addWidget(_twPorts);
   SchemaModel *model = QtGuiContext::getQtCurrent()->getSchemaModel();
 
   QModelIndex schemIndex = model->index(0, 0, QModelIndex());

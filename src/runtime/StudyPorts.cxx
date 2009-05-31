@@ -18,6 +18,11 @@
 //
 #include "StudyPorts.hxx"
 #include "TypeCode.hxx"
+#include "Node.hxx"
+#include "Proc.hxx"
+#include "ComponentInstance.hxx"
+#include "SalomeComponent.hxx"
+#include "RuntimeSALOME.hxx"
 
 #include "SALOMEDS_Attributes.hh"
 
@@ -337,93 +342,146 @@ std::string InputStudyPort::getAsString()
 
 void InputStudyPort::putDataInStudy(SALOMEDS::Study_var myStudy,SALOMEDS::StudyBuilder_var aBuilder)
 {
-    SALOMEDS::GenericAttribute_var aGAttr;
-    SALOMEDS::SObject_var aSO ;
-    SALOMEDS::AttributeName_var anAttr ;
-    SALOMEDS::AttributeIOR_var iorAttr ;
+  SALOMEDS::GenericAttribute_var aGAttr;
+  SALOMEDS::SObject_var aSO ;
+  SALOMEDS::AttributeName_var anAttr ;
+  SALOMEDS::AttributeIOR_var iorAttr ;
+  SALOMEDS::SComponent_var       aFather;
 
-      std::string data = getData();
-      DEBTRACE("data: " << data );
-      //try to find an id
-      aSO = myStudy->FindObjectID(data.c_str());
-      if(CORBA::is_nil(aSO))
+  std::string data = getData();
+  DEBTRACE("data: " << data );
+  //try to find an existing id (i:j:k...)
+  aSO = myStudy->FindObjectID(data.c_str());
+  if(CORBA::is_nil(aSO))
+    {
+      // the id does not exist. Try to create it by id
+      aSO=myStudy->CreateObjectID(data.c_str());
+      if(!CORBA::is_nil(aSO))
         {
-          // the id does not exist. Try to create it by id
-          aSO=myStudy->CreateObjectID(data.c_str());
-          if(!CORBA::is_nil(aSO))
+          aGAttr=aBuilder->FindOrCreateAttribute(aSO,"AttributeName");
+          anAttr = SALOMEDS::AttributeName::_narrow( aGAttr );
+          anAttr->SetValue(getName().c_str());
+        }
+    }
+
+  if(CORBA::is_nil(aSO))
+    {
+      //try to publish the object with a given path
+      std::string name; // the component instance name
+      std::string objname; // the object name (eventually with "/")
+      std::string::size_type begin = data.find_first_not_of("/");
+      std::string::size_type pos=data.find_first_of("/", begin);
+      if (pos != std::string::npos)
+        {
+          name=data.substr(begin,pos-begin);
+          objname=data.substr(pos+1);
+        }
+      else
+        {
+          name=data.substr(begin);
+          objname="";
+        }
+      std::string pname="/"+name;
+      DEBTRACE(pname);
+      DEBTRACE(objname);
+
+      Proc* proc=getNode()->getProc();
+      if(proc->componentInstanceMap.count(name)!=0)
+        {
+          // There is a component instance with this name. Is it a Salome component or not ?
+          ComponentInstance* compo=proc->componentInstanceMap[name];
+          if(SalomeComponent* scompo=dynamic_cast<SalomeComponent*>(compo))
             {
-              aGAttr=aBuilder->FindOrCreateAttribute(aSO,"AttributeName");
-              anAttr = SALOMEDS::AttributeName::_narrow( aGAttr );
-              anAttr->SetValue(getName().c_str());
+                  //It's a Salome component, make it the right way : component name, component instance reference, ...
+              CORBA::Object_var compovar= scompo->getCompoPtr();
+              SALOMEDS::Driver_var aDriver = SALOMEDS::Driver::_narrow(compovar);
+              if ( !CORBA::is_nil( aDriver ) )
+                {
+                  //It's a Salome component that implements the Driver interface. Use it to publish in study
+                  CORBA::ORB_ptr orb;
+                  CORBA::Object_var anObject;
+                  try
+                    {
+                          orb = getSALOMERuntime()->getOrb();
+                          anObject=orb->string_to_object(getIOR().c_str());
+                    }
+                  catch ( ... ) 
+                    {
+                      std::cerr << "Execution problem: can not get the object to publish" << std::endl;
+                      return;
+                    }
+                  if ( aDriver->CanPublishInStudy( anObject ) ) 
+                    {
+                          //It's fine use the driver to publish
+                          SALOMEDS::SObject_var aTmpSO; // initialized to nil
+                          try 
+                            {
+                              aTmpSO = aDriver->PublishInStudy(myStudy, aTmpSO, anObject,objname.c_str() );
+                              return;
+                            }
+                          catch ( ... ) 
+                            {
+                              std::cerr << "Execution problem: error in PublishInStudy" << std::endl;
+                              return;
+                            }
+                    }
+                }
             }
         }
+
+      // Does component entry exist ?
+      aSO=myStudy->FindObjectByPath(pname.c_str());
       if(CORBA::is_nil(aSO))
         {
-          // try a path
-          aSO=myStudy->FindObjectByPath(data.c_str());
+          // We have not been able to publish the object with Salome Driver, make it the light way
+          aFather=aBuilder->NewComponent(name.c_str());
+          if(CORBA::is_nil(aFather))
+            {
+              std::cerr << "Execution problem: can not create component: " + name << std::endl;
+              return;
+            }
+          aGAttr=aBuilder->FindOrCreateAttribute(aFather,"AttributeName");
+          anAttr = SALOMEDS::AttributeName::_narrow( aGAttr );
+          anAttr->SetValue(name.c_str());
+          aSO=myStudy->FindObjectByPath(pname.c_str());
         }
-      if(CORBA::is_nil(aSO))
+
+      begin=data.find_first_not_of("/",pos);
+      while (begin != std::string::npos)
         {
-          //try to create it by path
-          std::string name;
-          std::string::size_type begin = data.find_first_not_of("/");
-          std::string::size_type pos=data.find_first_of("/", begin);
+          pos = data.find_first_of("/", begin);
           if (pos != std::string::npos)
             name=data.substr(begin,pos-begin);
           else
             name=data.substr(begin);
-          std::string pname="/"+name;
-          DEBTRACE(pname);
-          aSO=myStudy->FindObjectByPath(pname.c_str());
-          if(CORBA::is_nil(aSO))
-            {
-              DEBTRACE("Create an entry " << name);
-              //create a container component
-              aSO=aBuilder->NewComponent(name.c_str());
-              if(CORBA::is_nil(aSO))
-                {
-                  std::cerr << "Execution problem: can not create component: " + name << std::endl;
-                  return;
-                }
-              aGAttr=aBuilder->FindOrCreateAttribute(aSO,"AttributeName");
-              anAttr = SALOMEDS::AttributeName::_narrow( aGAttr );
-              anAttr->SetValue(name.c_str());
-            }
+          aSO=findOrCreateSoWithName(myStudy,aBuilder,aSO,name);
           begin=data.find_first_not_of("/",pos);
-          while (begin != std::string::npos)
-            {
-              pos = data.find_first_of("/", begin);
-              if (pos != std::string::npos)
-                name=data.substr(begin,pos-begin);
-              else
-                name=data.substr(begin);
-              aSO=findOrCreateSoWithName(myStudy,aBuilder,aSO,name);
-              begin=data.find_first_not_of("/",pos);
-            }
         }
-      if(CORBA::is_nil(aSO))
-        {
-          std::cerr << "Execution problem: can not create id or path: " + data + " in study" << std::endl;
-          return;
-        }
+    }
 
-      std::string value;
-      SALOMEDS::AttributeComment_var commentAttr ;
-      SALOMEDS::AttributeReal_var realAttr ;
-      SALOMEDS::AttributeInteger_var intAttr ;
-      SALOMEDS::AttributeString_var stringAttr ;
-      double d;
-      long v;
-      switch(edGetType()->kind())
-        {
-           case Objref:
+  if(CORBA::is_nil(aSO))
+    {
+      std::cerr << "Execution problem: can not create id or path: " + data + " in study" << std::endl;
+      return;
+    }
+
+  std::string value;
+  SALOMEDS::AttributeComment_var commentAttr ;
+  SALOMEDS::AttributeReal_var realAttr ;
+  SALOMEDS::AttributeInteger_var intAttr ;
+  SALOMEDS::AttributeString_var stringAttr ;
+  double d;
+  long v;
+  switch(edGetType()->kind())
+    {
+      case Objref:
              value=getIOR();
              DEBTRACE(value);
              aGAttr=aBuilder->FindOrCreateAttribute(aSO,"AttributeIOR");
              iorAttr = SALOMEDS::AttributeIOR::_narrow( aGAttr );
              iorAttr->SetValue(value.c_str());
              break;
-           case Double:
+      case Double:
              value=splitXML(dump());
              DEBTRACE(value);
              aGAttr=aBuilder->FindOrCreateAttribute(aSO,"AttributeReal");
@@ -431,7 +489,7 @@ void InputStudyPort::putDataInStudy(SALOMEDS::Study_var myStudy,SALOMEDS::StudyB
              d=atof(value.c_str());
              realAttr->SetValue(d);
              break;
-           case Int:
+      case Int:
              value=splitXML(dump());
              DEBTRACE(value);
              aGAttr=aBuilder->FindOrCreateAttribute(aSO,"AttributeInteger");
@@ -439,25 +497,22 @@ void InputStudyPort::putDataInStudy(SALOMEDS::Study_var myStudy,SALOMEDS::StudyB
              v=atol(value.c_str());
              intAttr->SetValue(v);
              break;
-           case String:
-           case Bool:
+      case String:
+      case Bool:
              value=splitXML(dump());
              DEBTRACE(value);
              aGAttr=aBuilder->FindOrCreateAttribute(aSO,"AttributeComment");
              commentAttr = SALOMEDS::AttributeComment::_narrow( aGAttr );
              commentAttr->SetValue(value.c_str());
              break;
-           default:
+      default:
              value=dump();
              DEBTRACE(value);
              aGAttr=aBuilder->FindOrCreateAttribute(aSO,"AttributeComment");
              commentAttr = SALOMEDS::AttributeComment::_narrow( aGAttr );
              commentAttr->SetValue(value.c_str());
-        }
-
-
-
+    }
 }
 
-}
-}
+} //end namespace ENGINE
+} //end namespace YACS

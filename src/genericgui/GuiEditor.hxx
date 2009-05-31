@@ -44,12 +44,13 @@ namespace YACS
       virtual ~GuiEditor();
 
       void CreateNodeFromCatalog(const ItemMimeData* myData,
-                                 SubjectComposedNode *cnode);
+                                 SubjectComposedNode *cnode,
+                                 bool createNewComponentInstance);
       void AddTypeFromCatalog(const ItemMimeData* myData);
       void CreateNode(std::string typeNode);
       void CreateBloc();
       void CreateForLoop();
-      void CreateForEachLoop();
+      void CreateForEachLoop(std::string type );
       void CreateWhileLoop();
       void CreateSwitch();
       void CreateContainer();
@@ -80,7 +81,8 @@ namespace YACS
       void _createNode(YACS::ENGINE::Catalog* catalog,
                        SubjectComposedNode *cnode,
                        std::string service,
-                       std::string compoName);
+                       std::string compoName,
+                       bool createNewComponentInstance);
     };
   }
 }

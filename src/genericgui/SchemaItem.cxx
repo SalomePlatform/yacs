@@ -18,6 +18,7 @@
 //
 #include "SchemaItem.hxx"
 #include "QtGuiContext.hxx"
+#include "Resource.hxx"
 #include "Menus.hxx"
 #include "ItemMimeData.hxx"
 
@@ -333,24 +334,24 @@ void SchemaItem::setExecState(int execState)
   QColor sc;
   switch (_execState)
     {
-    case YACS::UNDEFINED:    sc=Qt::lightGray;       stateDef = "UNDEFINED";     break;
-    case YACS::INVALID:      sc=Qt::red;             stateDef = "INVALID";       break;
-    case YACS::READY:        sc=Qt::darkGray;        stateDef = "READY";         break;
-    case YACS::TOLOAD:       sc=Qt::darkYellow;      stateDef = "TOLOAD";        break;
-    case YACS::LOADED:       sc=Qt::darkMagenta;     stateDef = "LOADED";        break;
-    case YACS::TOACTIVATE:   sc=Qt::darkCyan;        stateDef = "TOACTIVATE";    break;
-    case YACS::ACTIVATED:    sc=Qt::darkBlue;        stateDef = "ACTIVATED";     break;
-    case YACS::DESACTIVATED: sc=Qt::gray;            stateDef = "DESACTIVATED";  break;
-    case YACS::DONE:         sc=Qt::darkGreen;       stateDef = "DONE";          break;
-    case YACS::SUSPENDED:    sc=Qt::gray;            stateDef = "SUSPENDED";     break;
-    case YACS::LOADFAILED:   sc.setHsv(320,255,255); stateDef = "LOADFAILED";    break;
-    case YACS::EXECFAILED:   sc.setHsv( 20,255,255); stateDef = "EXECFAILED";    break;
-    case YACS::PAUSE:        sc.setHsv(180,255,255); stateDef = "PAUSE";         break;
-    case YACS::INTERNALERR:  sc.setHsv(340,255,255); stateDef = "INTERNALERR";   break;
-    case YACS::DISABLED:     sc.setHsv( 40,255,255); stateDef = "DISABLED";      break;
-    case YACS::FAILED:       sc.setHsv( 20,255,255); stateDef = "FAILED";        break;
-    case YACS::ERROR:        sc.setHsv(  0,255,255); stateDef = "ERROR";         break;
-    default:                 sc=Qt::lightGray;       stateDef = "---";
+      case YACS::UNDEFINED:    sc = Resource::UNDEFINED   ; stateDef = "UNDEFINED"   ; break;
+      case YACS::INVALID:      sc = Resource::INVALID     ; stateDef = "INVALID"     ; break;
+      case YACS::READY:        sc = Resource::READY       ; stateDef = "READY"       ; break;
+      case YACS::TOLOAD:       sc = Resource::TOLOAD      ; stateDef = "TOLOAD"      ; break;
+      case YACS::LOADED:       sc = Resource::LOADED      ; stateDef = "LOADED"      ; break;
+      case YACS::TOACTIVATE:   sc = Resource::TOACTIVATE  ; stateDef = "TOACTIVATE"  ; break;
+      case YACS::ACTIVATED:    sc = Resource::ACTIVATED   ; stateDef = "ACTIVATED"   ; break;
+      case YACS::DESACTIVATED: sc = Resource::DESACTIVATED; stateDef = "DESACTIVATED"; break;
+      case YACS::DONE:         sc = Resource::DONE        ; stateDef = "DONE"        ; break;
+      case YACS::SUSPENDED:    sc = Resource::SUSPENDED   ; stateDef = "SUSPENDED"   ; break;
+      case YACS::LOADFAILED:   sc = Resource::LOADFAILED  ; stateDef = "LOADFAILED"  ; break;
+      case YACS::EXECFAILED:   sc = Resource::EXECFAILED  ; stateDef = "EXECFAILED"  ; break;
+      case YACS::PAUSE:        sc = Resource::PAUSE       ; stateDef = "PAUSE"       ; break;
+      case YACS::INTERNALERR:  sc = Resource::INTERNALERR ; stateDef = "INTERNALERR" ; break;
+      case YACS::DISABLED:     sc = Resource::DISABLED    ; stateDef = "DISABLED"    ; break;
+      case YACS::FAILED:       sc = Resource::FAILED      ; stateDef = "FAILED"      ; break;
+      case YACS::ERROR:        sc = Resource::ERROR       ; stateDef = "ERROR"       ; break;
+      default:                 sc = Resource::DEFAULT     ; stateDef = "---"         ;
    }
   _itemData.replace(YState, stateDef);
   _itemForeground.replace(YState, sc);

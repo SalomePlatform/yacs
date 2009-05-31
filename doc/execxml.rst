@@ -1,28 +1,24 @@
 
 .. _execxml:
 
-Exécution d'un schéma de calcul en mode console
+Executing a calculation scheme in console mode 
 ========================================================
-Pour exécuter un schéma de calcul, au format XML, en mode console, il faut disposer d'une installation
-de SALOME bien configurée. Dans tout ce qui suit, on utilisera le mode d'exécution de SALOME
-à partir d'une `application SALOME <http://nepal.der.edf.fr/pub/SALOME_userguide/KERNEL4/doc/salome/gui/KERNEL/SALOME_Application.html>`_.
 
- 1. lancer SALOME : ./runAppli -t depuis le répertoire d'application, par exemple (on peut le faire de 
-    n'importe quel autre répertoire).
- 2. exécuter le superviseur YACS : ./runSession driver schema.xml
- 3. stopper SALOME : ./runSession shutdownSalome.py pour arrêter proprement ou ./runSession killSalome.py pour
-    un arrêt brutal
+A well-configured SALOME installation is necessary to execute a calculation scheme in the XML format in console mode.  
+SALOME execution mode from a SALOME application will be used in the remainder of this document.
 
-Il est possible de configurer une session d'exécution puis d'exécuter YACS et de stopper SALOME
-au sein de cette session en faisant :
+1.	run SALOME:  ./runAppli-t, for example from the application directory (it can be run from any other directory).
+2.	execute the YACS supervisor:  ./runSession driver schema.xml
+3.	stop SALOME:  ./runSession shutdownSalome.py for a clean stop or ./runSession killSalome.py for an immediate stop.
 
- 2. initialiser la session : ./runSession
- 3. exécuter le superviseur YACS : driver schema.xml
- 4. stopper SALOME : shutdownSalome.py ou killSalome.py
- 5. sortir de la session : CTRL+D
+Steps 2 and 3 can be done from inside a SALOME session. YACS can be executed and SALOME can be stopped within this session as follows:
 
-Le superviseur YACS en mode console (driver) accepte quelques options pour paramétrer
-son exécution::
+1.	initialise the session:  /.runSession
+2.	execute the YACS supervisor:  driver schema.xml
+3.	stop SALOME:  shutdownSalome.py or killSalome.py
+4.	exit from the session:  CTRL+D
+
+The YACS supervisor in console (driver) mode accepts a few options to set parameters for its execution::
 
    Usage: driver [OPTION...] graph.xml
    driver -- a SALOME YACS graph executor
@@ -38,29 +34,30 @@ son exécution::
          --usage                Give a short usage message
      -V, --version              Print program version
 
-Voici quelques utilisations typiques de driver.
+The following gives a few typical uses of the driver.
 
-Exécution standard
+Standard execution
 --------------------
-Lors d'une exécution standard, le superviseur lit le fichier XML qui décrit le schéma,
-l'exécute et produit un compte-rendu d'erreurs (voir :ref:`errorreport`) s'il y a lieu::
+During a standard execution, the supervisor reads the XML file that describes the scheme, executes it and then produces 
+an error report (see :ref:`errorreport`) if necessary::
 
   driver schema.xml
-  
-Exécution avec affichage des états des noeuds pendant l'exécution
+
+Execution displaying states of nodes during execution
 ----------------------------------------------------------------------
 ::
 
   driver --display=1 schema.xml
+ 
 
-Exécution avec sauvegarde de l'état final du schéma
----------------------------------------------------------
+Execution saving the final state of the scheme
+----------------------------------------------------------------------
 ::
 
   driver --dump-final=mystate.xml schema.xml
 
-Exécution avec chargement de l'état initial du schéma
----------------------------------------------------------
+Execution loading the initial state of the scheme
+----------------------------------------------------------------------
 ::
 
   driver --load-state=mystate.xml schema.xml

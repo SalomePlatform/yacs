@@ -45,3 +45,6 @@ sharedpkgpythondir =$(salomepythondir)/shared_modules
 # Documentation directory
 docdir             = $(datadir)/doc/salome
 
+# translation (*.qm) files generation (lrelease)
+%.qm: resources/%.ts
+	$(QT_DIR)/bin/lrelease $< -qm $@

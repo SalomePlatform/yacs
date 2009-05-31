@@ -23,13 +23,16 @@
 #include "TypeCode.hxx"
 #include "ComponentDefinition.hxx"
 #include "ItemMimeData.hxx"
+#include "QtGuiContext.hxx"
 
+#include <QApplication>
 #include <QMimeData>
 #include <QDrag>
 #include <QPainter>
 #include <QBitmap>
 #include <QString>
 #include <QFileInfo>
+#include <QMouseEvent>
 
 #include <cassert>
 
@@ -52,6 +55,7 @@ CatalogWidget::CatalogWidget(QWidget *parent,
   _idCatalog = 0;
   _cataMap.clear();
   _typeToCataMap.clear();
+  _dragModifier=false;
 
   setColumnCount(1);
 
@@ -66,8 +70,10 @@ CatalogWidget::CatalogWidget(QWidget *parent,
 bool CatalogWidget::addCatalogFromFile(std::string fileName)
 {
   DEBTRACE("CatalogWidget::addCatalogFromFile " << fileName);
-  Catalog *cataProc = YACS::ENGINE::getSALOMERuntime()->loadCatalog("proc", fileName);
   QFileInfo afi(fileName.c_str());
+  if(!afi.exists())
+    return false;
+  Catalog *cataProc = YACS::ENGINE::getSALOMERuntime()->loadCatalog("proc", fileName);
   string aFile = afi.fileName().toStdString();
   addCatalog(cataProc, aFile);
 }
@@ -170,6 +176,7 @@ CatalogWidget::~CatalogWidget()
 void CatalogWidget::startDrag(Qt::DropActions supportedActions)
 {
   DEBTRACE("startDrag " << supportedActions);
+  if (! QtGuiContext::getQtCurrent()->isEdition()) return;
   QTreeWidgetItem *item = currentItem();
   YASSERT(item);
   QTreeWidgetItem *parent = item->parent();
@@ -227,7 +234,25 @@ void CatalogWidget::startDrag(Qt::DropActions supportedActions)
   mime->setCataName(cataName);
   mime->setCompo(compo);
   mime->setType(definition);
+  if(_dragModifier)
+    mime->setControl(true);
+  else
+    mime->setControl(false);
+
   drag->setPixmap(pixmap);
   
   drag->exec(supportedActions);
 }
+
+void CatalogWidget::mousePressEvent(QMouseEvent  *event)
+{
+  DEBTRACE("CatalogWidget::mousePressEvent ");
+  _dragModifier= false;
+  //std::cerr << (QApplication::mouseButtons() == Qt::MidButton) << std::endl;
+  if (event->button() == Qt::LeftButton) 
+    _dragModifier= event->modifiers() & (Qt::ControlModifier | Qt::ShiftModifier);
+  else if(event->button() == Qt::MidButton)
+    _dragModifier= true;
+  QTreeWidget::mousePressEvent(event);
+}
+

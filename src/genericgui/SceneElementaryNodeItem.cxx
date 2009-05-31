@@ -30,6 +30,8 @@
 #include "QtGuiContext.hxx"
 #include "Menus.hxx"
 
+#include "Resource.hxx"
+
 #include <cassert>
 
 //#define _DEVDEBUG_
@@ -43,10 +45,10 @@ SceneElementaryNodeItem::SceneElementaryNodeItem(QGraphicsScene *scene, SceneIte
                                              QString label, Subject *subject)
   : SceneNodeItem(scene, parent, label, subject)
 {
-  _brushColor   = QColor(189,230,185);
-  _hiBrushColor = QColor(209,255,205);
-  _penColor     = QColor( 15,180,  0);
-  _hiPenColor   = QColor( 11,128,  0);
+  _brushColor   = Resource::ElementaryNode_brush;
+  _hiBrushColor = Resource::ElementaryNode_hiBrush;
+  _penColor     = Resource::ElementaryNode_pen;
+  _hiPenColor   = Resource::ElementaryNode_hiPen;
 }
 
 SceneElementaryNodeItem::~SceneElementaryNodeItem()

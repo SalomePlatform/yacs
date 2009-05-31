@@ -98,7 +98,7 @@ void CORBAComponent::load()
   CORBA::ORB_ptr orb;
   try
     {
-      DEBTRACE( "+++++++++++++++++" << getName() << " +++++++++++++++++" );
+      DEBTRACE( "+++++++++++++++++" << getCompoName() << " +++++++++++++++++" );
       orb = getSALOMERuntime()->getOrb();
       _objComponent= orb->string_to_object(getCompoName().c_str());
 #ifdef REFCNT

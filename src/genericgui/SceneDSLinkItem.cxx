@@ -17,6 +17,7 @@
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 #include "SceneDSLinkItem.hxx"
+#include "Resource.hxx"
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -30,10 +31,10 @@ SceneDSLinkItem::SceneDSLinkItem(QGraphicsScene *scene, SceneItem *parent,
                                  QString label, Subject *subject)
   : SceneLinkItem(scene, parent, from, to, label, subject)
 {
-  _penColor     = QColor( 96,   96,   0);
-  _hiPenColor   = QColor( 128, 128,   0);
-  _brushColor   = QColor( 192, 192,   0);
-  _hiBrushColor = QColor( 255, 255, 192);
+  _penColor     = Resource::stream_link_draw_color ;
+  _hiPenColor   = Resource::stream_link_select_color;
+  _brushColor   = Resource::stream_link_draw_color;
+  _hiBrushColor = Resource::stream_link_select_color;
 }
 
 SceneDSLinkItem::~SceneDSLinkItem()

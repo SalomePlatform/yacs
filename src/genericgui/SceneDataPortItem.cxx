@@ -28,6 +28,8 @@
 
 // #include <cassert>
 
+#include "Resource.hxx"
+
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
@@ -40,13 +42,13 @@ SceneDataPortItem::SceneDataPortItem(QGraphicsScene *scene, SceneItem *parent,
                                      QString label, Subject *subject)
   : SceneObserverItem(scene, parent, label, subject), ScenePortItem(label)
 {
-  _width  = _portWidth;
-  _height = _portHeight;
+  _width  = getPortWidth();
+  _height = getPortHeight();
   setText(label);
-  _brushColor   = QColor(158, 227, 151);
-  _hiBrushColor = QColor(127, 227, 116);
-  _penColor     = QColor( 15, 180,   0);
-  _hiPenColor   = QColor( 11, 128,   0);
+  _brushColor   = Resource::DataPort_brush;
+  _hiBrushColor = Resource::DataPort_hiBrush;
+  _penColor     = Resource::DataPort_pen;
+  _hiPenColor   = Resource::DataPort_hiPen;
 }
 
 SceneDataPortItem::~SceneDataPortItem()

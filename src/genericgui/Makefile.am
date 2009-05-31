@@ -134,8 +134,12 @@ libGenericGui_la_SOURCES =        \
   Menus.cxx                       \
   Message.hxx                     \
   Message.cxx                     \
+  PropertyEditor.hxx              \
+  PropertyEditor.cxx              \
   QtGuiContext.hxx                \
   QtGuiContext.cxx                \
+  Resource.hxx                    \
+  Resource.cxx                    \
   SceneComposedNodeItem.hxx       \
   SceneComposedNodeItem.cxx       \
   SceneCtrlInPortItem.hxx         \
@@ -259,6 +263,7 @@ nodist_libGenericGui_la_SOURCES = \
   ItemEdition_moc.cxx             \
   LogViewer_moc.cxx               \
   Menus_moc.cxx                   \
+  PropertyEditor_moc.cxx          \
   SchemaComponentItem_moc.cxx     \
   SchemaComposedNodeItem_moc.cxx  \
   SchemaContainerItem_moc.cxx     \

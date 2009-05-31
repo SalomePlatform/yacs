@@ -8,9 +8,8 @@ The toolbar panel contains buttons for the quick access to the often-used operat
 
 
 
-.. image:: images/main_menu_5.jpg
+.. image:: images/main_menu_5.png
   :align: center
-  :width: 41ex
 
 
 
@@ -24,9 +23,8 @@ Standard toolbar contains buttons for access to standard operations like new, op
 
 
 
-.. image:: images/toolbars_0.jpg
+.. image:: images/toolbars_0.png
   :align: center
-  :width: 17ex
 
 
 
@@ -38,155 +36,130 @@ Modules toolbar
 Module toolbar contains SALOME GUI module selector with a list of available modules and a set of toolbar buttons, one per module, 
 to activate the module.
 
-.. image:: images/toolbars_1.jpg
+.. image:: images/toolbars_1.png
   :align: center
-  :width: 33ex
 
 
 .. _schema:
 
-Schema toolbar
---------------
+YACS toolbar, no schema loaded
+------------------------------
 
-.. image:: images/toolbars_2.jpg
+.. image:: images/toolbars_2.png
   :align: center
-  :width: 19ex
 
-Schema toolbar contains functions to import and export a schema. Schema toolbar contains the following toolbar buttons:
-
-
-
-+ :ref:`create_new_schema`
-
-
-+ Import Schema
-
-
-
-    + :ref:`import_yacs_schema`
-
-
-    + :ref:`import_supervisor_graph`
+YACS toolbar contents depends on the edition or execution mode. Without any schema loaded, the toolbar is restricted to functions to import and export a schema. Schema toolbar contains the following toolbar buttons:
 
 
 
 
-
-+ :ref:`export_schema`
-
++ :ref:`create_new_schema` : create a new schema from scratch
 
 
++ :ref:`import_yacs_schema` : load a YACS schema saved on an XML file 
 
-.. _creation:
 
-Creation toolbar
-----------------
++ :ref:`import_supervisor_graph` : load a SUPERV schema saved on an XML file
 
-.. image:: images/toolbars_3.jpg
+
++ Load a Schema in run mode (without edition)
+
+
++ What's this mode : experimental, detailled help on a few items
+
+
+
+
+.. _edition_toolbar:
+
+YACS toolbar, edition mode
+------------------------------
+
+.. image:: images/toolbars_3.png
   :align: center
-  :width: 9ex
 
-Creation toolbar contains functions for creation of container, component and node objects. Creation toolbar contains the following toolbar buttons:
-
+YACS toolbar in edition mode contains functions to import and export schemas, to switch to execution mode, to import catalogs, and to adjust behaviour of the 2D view:
 
 
-
-+ :ref:`create_container_definition`
-
-
-+ :ref:`create_component_instance_definition`
++ :ref:`create_new_schema` : create a new schema from scratch
 
 
++ :ref:`import_yacs_schema` : load a YACS schema saved on an XML file 
 
 
++ :ref:`import_supervisor_graph` : load a SUPERV schema saved on an XML file
 
 
-
-.. image:: images/toolbars_4.jpg
-  :align: center
-  :width: 32ex
++ Save Schema : save in the current opened file
 
 
++ :ref:`export_schema` : save with file dialog box to choose a new filename
 
 
-
-
-+ :ref:`create_node`
-
-
-
-
-
-
-
-.. image:: images/toolbars_5.jpg
-  :align: center
-  :width: 19ex
-
-
-
-.. _execution_toolbar:
-
-Execution toolbar
------------------
-Execution toolbar provides the means to control schemas' execution process. The content of the Execution toolbar depends on the current schema mode.
-
-.. image:: images/toolbars_6.jpg
-  :align: center
-  :width: 9ex
-
-If the current mode is edition schema mode, the Execution toolbar consists of the following toolbar buttons:
-
-
-
-
-
-
-+ :ref:`execute_schema`
++ :ref:`execute_schema` : switch from edition to run mode
 
 
 + :ref:`save_restore_execution_state` (from a state of execution saved previously)
 
 
-+ New Batch Execution ( **Will be available in the future version!** )
++ Load a Schema in run mode (without edition)
+
+
++ Import Catalog : to import specific data types or nodes
+
+
++ Automatic Links: toggle behaviour for automatic link reconstruction when 2D View layout changes
+
+
++ Simplify Links: toggle behaviour for link simplification (less segments)
+
+
++ Force Ortho Links: toggle behaviour on very simple links (2 segments becomes 3 orthogonals segments)
+
+
++ Separate Links: toggle behaviour to try to avoid or not superposition of links 
+
+
++ What's this mode : experimental, detailled help on a few items
 
 
 
 
 
-In such a case there are only possibilities to create execution or load execution state. 'Load execution state' operation means loading state of schemas' execution saved previously into XML file. After that the user has a possibility to continue execution of a schema from the loaded execution state.
+.. _execution_toolbar:
 
-If a run schema mode is currently activated, the Execution toolbar looks like
+YACS toolbar, execution mode
+------------------------------
 
-
-
-.. image:: images/toolbars_7.jpg
+.. image:: images/toolbars_4.png
   :align: center
-  :width: 25ex
+
+YACS toolbar in execution mode contains functions to import and export schemas, to execute the schema, step by step, with breakpoints or straightforward, to save state of execution, to reedit the schema:
 
 
 
-Here is a list of operations available from the Execution toolbar in the run schema mode. Operations are enumerated corresponding to its positions in the toolbar.
++ :ref:`create_new_schema` : create a new schema from scratch
 
 
++ :ref:`import_yacs_schema` : load a YACS schema saved on an XML file 
+
+
++ :ref:`import_supervisor_graph` : load a SUPERV schema saved on an XML file
+
+
++ Load a Schema in run mode (without edition)
 
 
 + :ref:`Start/Resume <start_resume>`
 
 
-+ :ref:`Pause <pause_abort_reset>`
-
-
 + :ref:`Abort <pause_abort_reset>`
 
 
++ :ref:`Pause <pause_abort_reset>`
+
+
 + :ref:`Reset <pause_abort_reset>`
-
-
-+ Execute in batch ( **Will be available in the future version!** )
-
-
-+ Connect to a running batch session ... ( **Will be available in the future version!** )
 
 
 + :ref:`save_restore_execution_state`
@@ -195,41 +168,18 @@ Here is a list of operations available from the Execution toolbar in the run sch
 + :ref:`create_new_edition`
 
 
-
-.. _visualization:
-
-Visualization toolbar
----------------------
-Visualization toolbar contains functions to manage representation of a schema object and access to algorithms to simplify schemas' view (such as arrange nodes and rebuild links algorithms).
-
-.. image:: images/toolbars_8.jpg
-  :align: center
-  :width: 19ex
-
-Visualization toolbar has the same content both in the edition schema mode and run schema mode. It contains the following toolbar buttons:
++ Set/reset Execution mode without stops
 
 
++ Set/reset Execution mode with breakpoints
 
 
++ Set/reset Execution mode step by step
 
 
-+ :ref:`Full View <full_view_of_a_schema>`
++ Set/reset Stop excution on the first error
 
-
-+ :ref:`Control View <control_view_of_a_schema>`
-
-
-+ Data Flow View ( **Will be available in the future version!** )
-
-
-+ Data Stream View ( **Will be available in the future version!** )
-
-
-+ :ref:`auto-arrange_nodes`
-
-
-+ :ref:`rebuild_links`
-
-
+ 
++ What's this mode : experimental, detailled help on a few items
 
 

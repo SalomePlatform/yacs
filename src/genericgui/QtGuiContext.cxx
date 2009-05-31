@@ -26,6 +26,8 @@ using namespace YACS::ENGINE;
 using namespace YACS::HMI;
 
 QtGuiContext * QtGuiContext::_QtCurrent = 0;
+counters *QtGuiContext::_counters = 0;
+bool QtGuiContext::_delayCalc = false;
 std::set<QtGuiContext*> QtGuiContext::_setOfContext;
 
 QtGuiContext::QtGuiContext(GenericGui *gmain) : GuiContext()

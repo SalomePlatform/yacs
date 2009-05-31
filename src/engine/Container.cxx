@@ -25,7 +25,7 @@
 using namespace std;
 using namespace YACS::ENGINE;
 
-Container::Container():_isAttachedOnCloning(false)
+Container::Container():_isAttachedOnCloning(false),_proc(0)
 {
 }
 

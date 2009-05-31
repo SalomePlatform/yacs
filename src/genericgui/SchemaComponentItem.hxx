@@ -30,6 +30,7 @@ namespace YACS
     public:
       SchemaComponentItem(SchemaItem *parent, QString label, Subject* subject);
       virtual void update(GuiEvent event, int type, Subject* son);
+      virtual void popupMenu(QWidget *caller, const QPoint &globalPos);
     protected:
     };
   }

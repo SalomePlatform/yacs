@@ -34,6 +34,7 @@ namespace YACS
       PythonNode(const PythonNode& other, ComposedNode *father);
       PythonNode(const std::string& name);
       virtual ~PythonNode();
+      virtual void checkBasicConsistency() const throw(Exception);
       virtual void execute();
       virtual void load();
       PythonNode* cloneNode(const std::string& name);
@@ -52,6 +53,7 @@ namespace YACS
       PyFuncNode(const PyFuncNode& other, ComposedNode *father);
       PyFuncNode(const std::string& name);
       virtual ~PyFuncNode();
+      virtual void checkBasicConsistency() const throw(Exception);
       virtual void execute();
       virtual void load();
       PyFuncNode* cloneNode(const std::string& name);

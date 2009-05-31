@@ -162,6 +162,12 @@ void RuntimeSALOME::initBuiltins()
   nodeMap["OutNode"]=new OutNode("OutNode");
   nodeMap["StudyInNode"]=new StudyInNode("StudyInNode");
   nodeMap["StudyOutNode"]=new StudyOutNode("StudyOutNode");
+  typeMap["dblevec"]= createSequenceTc("dblevec","dblevec",_tc_double);
+  typeMap["intvec"]= createSequenceTc("intvec","intvec",_tc_int);
+  typeMap["stringvec"]= createSequenceTc("stringvec","stringvec",_tc_string);
+  typeMap["boolvec"]= createSequenceTc("boolvec","boolvec",_tc_bool);
+  std::list<TypeCodeObjref *> ltc;
+  typeMap["pyobj"]= createInterfaceTc("python:obj:1.0","pyobj",ltc);
 }
 
 RuntimeSALOME::RuntimeSALOME(long flags)

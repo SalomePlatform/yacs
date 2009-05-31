@@ -37,8 +37,10 @@ namespace YACS
       virtual void popupMenu(QWidget *caller,
                              const QPoint &globalPos,
                              const QString& m = "MenuBase");
+      virtual void addForEachMenu(QMenu *m, QActionGroup* actgroup);
     protected slots:
       void dummyAction();
+      void foreachAction(QAction*);
     protected:
       virtual void addHeader(QMenu &m, const QString &h);
       QAction *_dummyAct;
@@ -176,6 +178,16 @@ namespace YACS
                              const QString& m = "Containers Menu");
     };
 
+    class ComponentInstanceMenu: public MenusBase
+    {
+      Q_OBJECT
+    public:
+      ComponentInstanceMenu();
+      virtual ~ComponentInstanceMenu();
+      virtual void popupMenu(QWidget *caller,
+                             const QPoint &globalPos,
+                             const QString& m = "ComponentInstance Menu");
+    };
   }
 }
 

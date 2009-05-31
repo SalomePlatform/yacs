@@ -31,7 +31,7 @@ EditionOutNode::EditionOutNode(Subject* subject,
                                const char* name)
   : EditionElementaryNode(subject, parent, name)
 {
-  createTablePorts();
+  createTablePorts(_wid->gridLayout1);
   setEditablePorts(true);
 }
 

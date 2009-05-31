@@ -26,6 +26,8 @@
 
 #include <QGraphicsSceneDragDropEvent>
 
+#include "Resource.hxx"
+
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
@@ -108,7 +110,7 @@ void SceneInPortItem::dropEvent(QGraphicsSceneDragDropEvent *event)
 QColor SceneInPortItem::getPenColor()
 {
   if (_dragOver)
-    return QColor(255,0,0);
+    return Resource::dragOver;
   if (isSelected())
     return _hiPenColor;
   else 

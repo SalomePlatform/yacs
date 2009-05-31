@@ -41,19 +41,30 @@ string DataStreamPort::getNameOfTypeOfCurrentInstance() const
   return NAME;
 }
 
+//! Set a new value for a property of the port
+/*!
+ *  \param name : the name property
+ *  \param value : the value property
+ */
 void DataStreamPort::setProperty(const std::string& name, const std::string& value)
 {
   _propertyMap[name]=value;
 }
 
+//! Get the value of a property of the port
+/*!
+ *  \param name : the name property
+ *  \return  the value property
+ */
 std::string DataStreamPort::getProperty(const std::string& name)
 {
   return _propertyMap[name];
 }
-void DataStreamPort::initPortProperties()
-{
-}
 
+//! Set the values of all properties of the port
+/*!
+ *  \param properties : a map containing the values of properties
+ */
 void DataStreamPort::setProperties(std::map<std::string,std::string> properties)
 {
   _propertyMap.clear();
@@ -62,4 +73,13 @@ void DataStreamPort::setProperties(std::map<std::string,std::string> properties)
     {
       setProperty((*it).first, (*it).second); // setProperty virtual and derived
     }
+}
+
+//! Initialize port properties at the start of calculation phase
+/*!
+ *  This method is called before the execution of the parent node.
+ *  It is not used when the user sets properties
+ */
+void DataStreamPort::initPortProperties()
+{
 }

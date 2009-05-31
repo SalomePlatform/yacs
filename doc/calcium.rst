@@ -6,7 +6,7 @@ Guide for the use of CALCIUM coupling in SALOME
 ==========================================================
 
 This manual is not intended to replace the CALCIUM manual and therefore only contains a brief explanation 
-of the use of primitives, please refer to notes HI-26/03/007/A and HI-76/96/009/B for further information on this subject.
+of the use of primitives, please refer to [Calcium1]_ and [Calcium2]_ for further information on this subject.
 
 
 
@@ -54,15 +54,16 @@ Several couplings were set up during the 2004 Summer school as a result of exper
 tool (in production mode) in SALOME.  It showed the relevance of getting datastream type ports to cohabit with 
 SALOME dataflow / control flow ports.  However, it required a specific modification located in the CALCIUM start 
 procedure and it highlighted the following limitations:
- - the need to use a different container for each service using CALCIUM (even for services in the same 
-   component (CALCIUM is not multithread safe)).
- - successive re-executions of coupling are difficult (need to not call MPI_FIN and problems related to the state of 
-   the MPI virtual machine)
- - the SALOME SUPERVISOR has no control over execution of CALCIUM coupling
- - no possible extension of transmitted CALCIUM types
- - cohabitation of the MPI environment and the CORBA environment is sometimes difficult.
 
-The SALOME V4 KERNEL module is provided with new communication ports called DSC (Dynamic Software Component) ports 
+- the need to use a different container for each service using CALCIUM (even for services in the same 
+  component (CALCIUM is not multithread safe)).
+- successive re-executions of coupling are difficult (need to not call MPI_FIN and problems related to the state of 
+  the MPI virtual machine)
+- the SALOME SUPERVISOR has no control over execution of CALCIUM coupling
+- no possible extension of transmitted CALCIUM types
+- cohabitation of the MPI environment and the CORBA environment is sometimes difficult.
+
+The SALOME KERNEL module is provided with new communication ports called DSC (Dynamic Software Component) ports 
 that components use to dynamically add / delete new interfaces accessible to everyone.  
 :ref:`progdsc` describes how these new ports are used / designed / and their usefulness.  
 There are two classes of DSC ports, firstly ports that provide an interface (provides ports), and secondly ports 
@@ -76,80 +77,47 @@ a component service to load and initialize the coupling components, connect the 
 them, and start the services in the appropriate order.
 
 
-
-Les ports CALCIUM/SALOME et le superviseur YACS :
+CALCIUM / SALOME ports and the YACS supervisor
 '''''''''''''''''''''''''''''''''''''''''''''''''
+The YACS supervisor available in SALOME (since version V4.1) manages all types of DSC ports, and particularly CALCIUM  ports.  
+It relieves the user from the need to implement a script or a service to connect and configure the ports.  It checks 
+the validity of the calculation scheme and starts services in accordance with the described dependencies.  
+A calculation scheme can be created mixing datastream type ports (calcium mode), dataflow ports (arrival of data that 
+can trigger starting a service) and control flow ports (one service is started by the end of execution of another 
+service), thus creating elaborated calculation schemes.
 
+The calculation scheme thus created can be saved in the XML format.  This file represents the equivalent of the 
+CALCIUM coupling file for the link declaration and parameter setting part, ports being declared in the XML file 
+that catalogs component resources.
 
-
-Le superviseur YACS disponible depuis la version V4.1 de  SALOME gère tous types de ports DSC et en particulier les ports CALCIUM. Il décharge l'utilisateur de l'implémentation d'un script ou d'un service pour connecter et configurer les ports. Il contrôle la validité du schéma de calcul et lance les services conformément aux dépendances décrites. Il est possible de créer un schéma de calcul mixant des ports de type datastream (mode CALCIUM), dataflow (arrivée d'une donnée qui peut enclencher le démarrage d'un service) et control flow (déclenchement d'un service par la fin d'exécution d'un autre) et créer ainsi des schémas de calcul élaborés.
-
-Le schéma de calcul ainsi créé peut se sauvegarder au format XML. Ce fichier représente l'équivalent du fichier de couplage CALCIUM pour la partie déclaration et paramétrage des liens, la déclaration des ports se faisant dans le fichier XML qui catalogue les ressources du composant.
-
-
-
-
-
-
-La création d'un composant SALOME utilisant CALCIUM
+Creating a SALOME component using CALCIUM
 ---------------------------------------------------
+The use of CALCIUM in SALOME assumes that SALOME components are available offering services based on CALCIUM ports.  
+There are several choices for creating such components:
+
+- Create a SALOME module containing components for which the services have CALCIUM ports
+- Create several SALOME modules containing at least one component for which the service(s) have CALCIUM ports.
+
+Creating a SALOME module consists of structuring header, source, library and resource files in the form of a standard 
+directory structure.  It can be done from a model module (HELLO, PYHELLO), or from a module generator (for example :ref:`yacsgen`)
+
+Customisation of the SALOME component for the use of CALCIUM ports consists of:
+
+- including a file declaring DSC ports in the IDL file of the component,
+- including a file and declaring an inheritance to make our component supervisable,
+- creating CALCIUM ports used in the definition of a standard method called init_service,
+- declaration of CALCIUM ports of the component(s) in the module catalog file.
+
+By using YACSGEN, the init_service method and the XML catalog of services provided by components are generated automatically.
 
 
-
-L'utilisation de CALCIUM dans SALOME suppose l'existence de composants SALOME proposant des services à base de ports CALCIUM. Plusieurs choix sont possibles pour créer de tels composants :
-
-
-
-*   Créer un module SALOME contenant des composants dont les services ont des ports CALCIUM,
-
-
-
-*   Créer plusieurs modules SALOME contenant au moins un composant dont le/s service/s ont des ports CALCIUM.
-
-
-  
-
-La création d'un module SALOME consiste en la structuration sous forme d'une arborescence standardisée des fichiers d'entêtes, des sources, des bibliothèques et des ressources. Elle peut se faire à partir d'un module modèle (HELLO, pyHELLO) ou à partir d'un générateur de module, ModuleGenerator (cf.  http://pal.der.edf.fr/pal/projets/pal/superv/modulegenerator  ) par exemple.
-
-
-
-La personnalisation du composant SALOME pour l'utilisation de ports CALCIUM consiste-en :
-
-
-
-* l'inclusion d'un fichier déclarant les ports DSC dans le fichier IDL du composant,
-
-
-
-* l'inclusion d'un fichier et la déclaration d'un héritage pour rendre notre composant supervisable,
-
-
-
-* la création des ports CALCIUM utilisés dans la définition d'une méthode normalisée appelée init_service,
-
-
-
-* la déclaration des ports CALCIUM du/es composant/s dans le fichier catalogue du module.
-
-
-
-En utilisant le ModuleGenerator, la méthode init_service et le catalogue XML des services fournis par les composants sont générés automatiquement.
-
-
-
-
-
-La déclaration IDL des composants utilisant des ports CALCIUM
+The IDL declaration of components using CALCIUM ports
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+Since ports are dynamically declared in the init_service method, CALCIUM ports do not need to be previously declared 
+in the IDL file.  However, the DSC_Engine.idl file must be included in the components IDL file(s) to benefit from DSC ports.
 
-
-
-Les ports étant dynamiquement déclarés dans le service init_service, les ports CALCIUM n'ont pas besoin d'être préalablement déclarés dans le fichier IDL. Il faut cependant inclure le fichier DSC_Engine.idl dans le/s fichier/s IDL des composants pour bénéficier des ports DSC.
-
-
-
-Exemple du fichier CALCIUM_TESTS.idl du module CALCIUM_TEST définissant trois composants ECODE, SCODE, ESPION qui proposent chacun un unique service de lancement du code wrappé correspondant :
-
+Example of the CALCIUM_TESTS.idl file for the CALCIUM_TEST module defining the three ECODE, SCODE, ESPION components, each 
+of which offers a unique service to start up the corresponding wrapped code:
 
 ::
 
@@ -175,30 +143,17 @@ Exemple du fichier CALCIUM_TESTS.idl du module CALCIUM_TEST définissant trois c
     
     };
 
-
-La déclaration d'un composant C++ utilisant des ports CALCIUM
+Declaration of a C++ component using CALCIUM ports
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+Only one header is necessary in the case of a wrapper component (that does nothing except to call an 
+implementation of another compilation unit)::
 
+  #include “Superv_Component_i.hxx”
 
+This header file is necessary to make our component supervisable and to use DSC ports.  The component will 
+virtually inherit the Superv_Component_i class.
 
-Dans le cas d'un composant wrapper (qui ne fait qu'appeler une implémentation d'une autre unité de compilation), un seul header est nécessaire :
-
-
-
-#include "Superv_Component_i.hxx"
-
-
-
-Ce fichier d'entête est nécessaire pour rendre notre composant supervisable et pour utiliser les ports DSC. Le composant héritera virtuellement de la classe Superv_Component_i.
-
-
-
-
-
-Exemple du fichier de déclaration ECODE.hxx du composant ECODE :
-
-
-
+Example ECODE.hxx declaration file for the ECODE component:
 
 ::
 
@@ -206,18 +161,18 @@ Exemple du fichier de déclaration ECODE.hxx du composant ECODE :
     #define _ECODE_HXX_
     
     #include "Superv_Component_i.hxx"
-    //Header CORBA généré du module CALCIUM_TESTS
+    //Header CORBA generated from the CALCIUM_TESTS module
     #include "CALCIUM_TESTS.hh"
     
-    //Interface du code wrappé, ici le code C ecode
+    //Interface for the wrapped code, in this case C code ecode
     extern "C" { int ecode(void *); }
     
     class ECODE_impl :
-      public virtual POA_CALCIUM_TESTS::ECODE, //Implémente l'interface CORBA du composant ECODE
-      public virtual Superv_Component_i {                 //Rend le composant supervisable
+      public virtual POA_CALCIUM_TESTS::ECODE, //Implements the CORBA interface for the ECODE component
+      public virtual Superv_Component_i {       //Makes the component supervisable
     
     public :
-      ECODE_impl(CORBA::ORB_ptr orb,              //Constructeur classique des composants SALOME
+      ECODE_impl(CORBA::ORB_ptr orb,            //Classical SALOME component constructor
              PortableServer::POA_ptr poa,
              PortableServer::ObjectId * contId, 
              const char *instanceName, 
@@ -225,7 +180,7 @@ Exemple du fichier de déclaration ECODE.hxx du composant ECODE :
       
       virtual ~ECODE_impl();
     
-      CORBA::Boolean init_service(const char * service_name); //Initialisation du service EcodeGo()
+      CORBA::Boolean init_service(const char * service_name); //Initialisation of the service EcodeGo()
       void EcodeGo();
     };
     
@@ -241,25 +196,17 @@ Exemple du fichier de déclaration ECODE.hxx du composant ECODE :
     #endif
 
 
-
-
-
-La déclaration des ressources des composants (partie 1)
+Declaration of component resources (part 1)
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''
+Components publish signatures of their services in an XML resource file called the module catalog (or components catalog).  
+This file can be generated by YACSGEN.
 
+Extract from the CALCIUM_TESTSCatalog.xml catalog concerning the ECODE component:
 
+Our ECODE component provides a unique EcodeGo() service that has no input parameters and no output parameters.
 
-Les composants publient les signatures de leurs services dans un fichier de ressources XML appelé le catalogue du module (ou catalogue de composants). Ce fichier peut être généré par le ModuleGenerator.
+The Creating CALCIUM ports section describes how this resource file will be extended by the declaration of datastream ports.
 
-
-
-Extrait du catalogue CALCIUM_TESTSCatalog.xml concernant le composant ECODE :
-
-
-
-Notre composant ECODE fournit un unique service EcodeGo() qui n'a ni de paramètres d'entrée ni de paramètres sortie.
-
-Nous verrons dans la section création de ports CALCIUM que ce fichier de ressources sera complété de la déclaration des ports datastream.
 ::
 
     ....
@@ -286,85 +233,48 @@ Nous verrons dans la section création de ports CALCIUM que ce fichier de ressou
             </component-interface-list>
       </component>
 
-
-
-
-La définition d'un composant utilisant les ports CALCIUM
+Definition of a component using CALCIUM ports
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+The component creates the ports that it needs.  The step to create a CALCIUM port consists of calling the add_port method 
+provided by the virtual inheritance from the Superv_Component_i class.  It must be done before the service(s) that use 
+the port is (are) started.  This is why this declaration is located in the 
+standard init_service(char * name_of_service_to_be_initialised) method.  There are two methods of creating a 
+CALCIUM port, firstly the create_calcium_port method and secondly the add_port method.
 
-
-
-Le composant se charge de créer les ports dont il a besoin. L'étape de création d'un port CALCIUM consiste en l'appel de la méthode add_port fournie par l'héritage virtuel de la classe Superv_Component_i. Elle doit être effectuée avant le lancement du/des services utilisant le port. C'est la raison pour laquelle cette déclaration se trouve dans la méthode standard init_service(char * nom_du_service_a_initialiser). Il existe deux méthodes pour créer un port CALCIUM : la méthode create_calcium_port et la méthode add_port .
-
-
-
-La création de ports CALCIUM par la méthode add_port
+Creating CALCIUM ports using the add_port method
 ++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-
-
-Cette méthode est utilisée pour créer tout type de port DSC. Elle peut être utilisée pour créer les ports CALCIUM en particulier.
-
+This method is used to create any type of DSC port.  It can be used to create CALCIUM ports in particular.
 
 ::
 
-    add_port< typage_de_mon_port_fabriqué >(   "le type de port à fabriquer",
-                                "provides"|”uses”,
-                                "le nom du port")
+     add_port< typing_of_my_fabricated_port >( "the type of port to be fabricated",
+                                              "provides"|”uses”,
+                                              "the port name")
 
 
+*"the type of port to be fabricated"*:
+  This string notifies the DSC port factory in the KERNEL module about the name of the type of port 
+  to be created.  The following types are possible for CALCIUM:
+  “CALCIUM_integer”, “CALCIUM_real”, “CALCIUM_double”, “CALCIUM_logical”, “CALCIUM_complex”,
+  “CALCIUM_string”
+*“provides”|”uses”*:
+  This string indicates if it is a CALCIUM output (uses) port or an input provides port.  Note that in the DSC semantic, 
+  the provides port provides a write interface used by the uses port.
+*“the port name”*:
+  The port name corresponds to the name of the variable used in CALCIUM primitives.
+*typing_of_my_fabricated_port*:
+  This type types the pointer returned by add_port.  The objective for CALCIUM is to indicate the typing corresponding to 
+  the type name already given in the factory plus the uses or provides information:
+
+  - calcium_integer_port_provides or calcium_integer_port_uses
+  - calcium_real_port_provides or calcium_real_port_uses
+  - calcium_double_port_provides or calcium_double_port_uses
+  - calcium_string_port_provides or calcium_string_port_uses
+  - calcium_complex_port_provides or calcium_complex_port_uses
+  - calcium_logical_port_provides or calcium_logical_port_uses
 
 
-*"le type de port à fabriquer"*  :
-
-
-
-Cette chaîne indique à la fabrique de port DSC du module KERNEL le nom du type de port à créer. Pour CALCIUM, il s'agit des types :
-  
-“CALCIUM_integer”, “CALCIUM_real”, “CALCIUM_double”, “CALCIUM_logical”, “CALCIUM_complex”, “CALCIUM_string”
-  
-
-
-*"provides"|”uses”*  :
-
-
-
-Cette chaîne indique s'il s'agit d'un port CALCIUM de sortie (uses) ou d'un port d'entrée provides. Noter que dans la sémantique DSC, c'est le port provides qui fournie une interface d'écriture utilisée par le port uses.
-
-
-
-*"le nom du port"*  :
-
-
-
-Le nom du port correspond au nom de la variable utilisée dans les primitives CALCIUM.
-
-
-
-*Le typage_de_mon_port_fabriqué*  :
-
-
-
-Ce type permet de typer le pointeur retourné par add_port. En ce qui concerne CALCIUM, il s'agit d'indiquer le typage correspondant au nom de type déjà indiqué à la fabrique compléter par l'information uses ou provides :
-
-
-
-calcium_integer_port_provides ou calcium_integer_port_uses
-
-calcium_real_port_provides ou calcium_real_port_uses
-
-calcium_integer_port_provides ou calcium_integer_port_uses
-
-calcium_integer_port_provides ou calcium_integer_port_uses
-
-calcium_integer_port_provides ou calcium_integer_port_uses
-
-calcium_string_port_provides ou calcium_string_port_uses
-
-
-
-Extrait de la méthode init_service dans le fichier ECODE.cxx du composant ECODE :
-
+Extract from the init_service method in the ECODE.cxx file for the ECODE component:
 
 ::
 
@@ -404,17 +314,13 @@ Extrait de la méthode init_service dans le fichier ECODE.cxx du composant ECODE
       return rtn;
     }
 
-
-La création de ports CALCIUM par la méthode create_calcium_port
+Creating CALCIUM ports using the create_calcium_port method
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+This method is specially written for the creation of CALCIUM ports, and simplifies the creation of ports.  
+It is used by YACSGEN.  The “IN”|”OUT” parameter indicates whether it is a CALCIUM input or output port.  
+The “T”|”I” parameter indicates the port mode, time or iterative.
 
-
-
-Cette méthode écrite spécialement pour la création de ports CALCIUM simplifie la création des ports. Elle est utilisée par le ModuleGenerator. Le paramètre “IN”|”OUT” indique s'il s'agit d'un port CALCIUM d'entrée ou de sortie. Le paramètre “T”|”I” indique le mode temporel ou itératif du port.
-
-
-
-Extrait de la méthode init_service dans le fichier ECODE.cxx du composant ECODE :
+Extract from the init_service method in the ECODE.cxx file for the ECODE component:
 
 
 ::
@@ -445,22 +351,12 @@ Extrait de la méthode init_service dans le fichier ECODE.cxx du composant ECODE
      }
 
 
-
-
-
-
-
-La déclaration des ressources des composants  (partie 2)
+Declaration of component resources (part 2)
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+The XML component resource file must be completed to declare that CALCIUM ports exist in the different components.  
+YACSGEN takes account of CALCIUM ports in the generation of the module catalog.
 
-
-
-Le fichier XML de ressources des composants doit être complété pour déclarer l'existence de ports CALCIUM dans les différents composants. Le ModuleGenerator prend en compte les ports CALCIUM à la génération du catalogue du module.
-
-
-
-Extrait du catalogue CALCIUM_TESTSCatalog.xml concernant le composant ECODE :
-
+Extract from the CALCIUM_TESTSCatalog.xml catalog for the ECODE component:
 
 ::
 
@@ -485,72 +381,39 @@ Extrait du catalogue CALCIUM_TESTSCatalog.xml concernant le composant ECODE :
                         </DataStream-list>
 
 
-La configuration d'un port CALCIUM
+Configuring a CALCIUM port
 ''''''''''''''''''''''''''''''''''
+The step to configure ports uses all possible link parameter settings in the CALCIUM coupling file outside SALOME.  
+This step can be done when the port is created in the component (init_service method) by a coupling parameter 
+setting component / script, or by the YACS supervisor.  This step indicates the following characteristics 
+for each port in the provides class:
 
+- time / iteration dependency of received data:
+     TIME_DEPENDENCY or ITERATION_DEPENDENCY
+- The data storage level (size of the history stack):
+     UNLIMITED_STORAGE_LEVEL (by default) or a strictly positive integer
+- The time scheme selected to define the date used in read primitives (CPLxx) in time mode:
+ 
+   * TI_SCHEM (default value):  Values of the input variable used are taken at the time corresponding to the beginning of 
+     the current time step in the calculation (see parameter **ti** of CPLxx)
+   * TF_SCHEM:  Values of the input variable are taken at the time corresponding to the end of the current time step 
+     in the calculation (see parameter **tf** of CPLxx)
+   * ALPHA_SCHEM:  Values of the input variable are taken at an instant equal to TF * *ALPHA* + TI * (1 - *ALPHA*).  
+     *ALPHA* can be equal to values strictly between 0 and 1.  The value 0 is replaced by the TI_SCHEM option and 
+     the value 1 is replaced by the TF_SCHEM option).
 
+- The interpolation type to be used for a port in time mode:
+     L0_SCHEM, L1_SCHEM
+- The extrapolation type to be used in the case of blockage / timeout:
+     E0_SCHEM, E1_SCHEM (not yet functional)
+- The value of the DELTAT parameter that indicates if two dates are identical.
 
-L'étape de configuration des ports reprend l'ensemble des paramétrages possibles des liens du fichier de couplage de CALCIUM hors SALOME. Cette étape peut être effectuée à la création du port dans le composant (méthode init_service), par un composant/script de paramétrage du couplage ou par le superviseur YACS. Cette étape permet d'indiquer pour chaque port de classe provides les caractéristiques suivantes :
+All of the keywords used when the ports are configured are defined in the CalciumTypes C++ namespace in the CalciumTypes.hxx file.
 
-
-
-* La dépendance temporelle/itérative des données reçues :
-
-TIME_DEPENDENCY ou ITERATION_DEPENDENCY
-
-
-
-* Le niveau de stockage des données (taille de la pile de l'historique) :
-
-UNLIMITED_STORAGE_LEVEL (par défaut)
-
-ou un entier strictement positif
-
-
-
-* Le schéma temporel choisi pour définir la date utilisée dans les primitives (CPLxx) de lecture en mode temporel :
-
-
-   * TI_SCHEM  (valeur par défaut) : Les valeurs de la variable d’entrée utilisée sont prises à l’instant correspondant au début du pas de temps en cours de calcul (cf. paramètre  **ti**  de CPLxx)
-
-
-
-   * TF_SCHEM : Les valeurs de la variable d’entrée sont prises à l’instant correspondant à la fin du pas de temps en cours de calcul (cf. paramètre  **tf**  de CPLxx)
-
-
-
-   * ALPHA_SCHEM : Les valeurs de la variable d’entrée sont prises à un instant égal à TF* *ALPHA* +TI * (1 *-ALPHA* ).  *ALPHA*  peut prendre des valeurs strictement comprises entre 0 et 1. La valeur 0 est remplacée par l’option TI_SCHEM et la valeur 1 est remplacée par l’option TF_SCHEM).
-
-
-
-
-
-* Le type d'interpolation à utiliser pour un port en mode temporel :
-
-L0_SCHEM,  L1_SCHEM
-
-
-
-* Le type d'extrapolation à utiliser en cas de blocage/timeout :
-
-E0_SCHEM, E1_SCHEM (non encore fonctionnel)
-
-
-
-* La valeur du paramètre DELTAT qui indique si deux dates sont identiques.
-
-
-  
-
-L'ensemble des mots clés utilisés à la configuration des ports sont définis dans le namespace C++ CalciumTypes du fichier CalciumTypes.hxx.
-
-La configuration au moment de la création du PORT
+Configuration when the PORT is created
 +++++++++++++++++++++++++++++++++++++++++++++++++
-
-
-
-A la création d'un port, la méthode add_port renvoie un pointeur sur le port utile à sa configuration. Dans la méthode init_service, un exemple de configuration  consiste à indiquer si le port est en mode temporel ou itératif :
-
+When a port is created, the add_port method returns a pointer to the port useful to its configuration.  One example 
+configuration in the init_service method consists of indicating if the port is in time dependency or iteration dependency mode:
 
 ::
 
@@ -558,17 +421,13 @@ A la création d'un port, la méthode add_port renvoie un pointeur sur le port u
           setDependencyType(CalciumTypes::TIME_DEPENDENCY);
 
 
+The following methods are available to configure CALCIUM ports:
 
+* Set / Query the dependency type:
 
-Voici les méthodes disponibles pour configurer les ports CALCIUM :
-
-
-
-*   Positionner/Interroger le type de dépendance :
-
-
-Le type de dépendance indique au port si les données sont estampillées par une date ou (exclusif)  un numéro d'itération. Le type de dépendance est par défaut indéfini (CalciumTypes::UNDEFINED_DEPENDENCY). Il est possible d'indiquer   CalciumTypes::TIME_DEPENDENCY ou  CalciumTypes::ITERATION_DEPENDENCY.
-
+The dependency type informs the port if the data are stamped by a date or (exclusive) an iteration number.  The default 
+dependency type is undefined (CalciumTypes::UNDEFINED_DEPENDENCY).  CalciumTYpes::TIME_DEPENDENCY or 
+CalciumTypes::ITERATION_DEPENDENCY can be defined.
 
 ::
 
@@ -576,13 +435,11 @@ Le type de dépendance indique au port si les données sont estampillées par un
      DependencyType getDependencyType () const;
     
 
+* Set / Query the storage level of the data produced:
 
-*   Positionner/Interroger le niveau de stockage des données produites :
-
-
-
-Le niveau de stockage de l'historique des données produites doit être supérieur ou égale à 1. Il est par défaut illimité  ( CalciumTypes::UNLIMITED_STORAGE_LEVEL). Il peut être nécessaire de l'abaisser afin de limiter la consommation mémoire de cas de couplage présentant de nombreuses itérations.
-
+The storage level in the history of data produced must be greater than or equal to 1.  By default it is 
+unlimited (CalciumTypes::UNLIMITED_STORAGE_LEVEL).  It may have to be reduced, to limit memory consumption for the 
+case of a coupling with many iterations.
 
 ::
 
@@ -590,14 +447,9 @@ Le niveau de stockage de l'historique des données produites doit être supérie
      size_t getStorageLevel   () const;
 
   
+* Set / Query the time scheme used to define the read date:
 
-
-*   Positionner/Interroger le schéma temporel utilisé pour la définition de la date de lecture :
-
-
-
-Le schéma temporel choisi pour définir la date utilisée dans les primitives de lecture en mode temporel est défini à CalciumTypes::TI_SCHEM par défaut. Il est également possible d'indiquer CalciumTypes::TF_SCHEM ou CalciumTypes::ALPHA_SCHEM.
-
+The time scheme chosen to define the date used in read primitives in time mode is set to CalciumTypes::TI_SCHEM by default.  It is also possible to enter CalciumTypes::TF_SCHEM or CalciumTypes::ALPHA_SCHEM.
 
 ::
 
@@ -605,9 +457,7 @@ Le schéma temporel choisi pour définir la date utilisée dans les primitives d
       DateCalSchem getDateCalSchem () const;
 
   
-
-
-Si le schéma temporel utilisé est ALPHA_SCHEM, la méthode suivante permet d'indiquer la valeur d'ALPHA à utiliser. Alpha vaut zéro par défaut (équivaut à TI_SCHEM) et peut être positionné entre 0 et 1 compris.
+If the time scheme used is ALPHA_SCHEM, the next method is used to indicate the value of ALPHA to be used.  Alpha is equal to zero by default (equivalent to TI_SCHEM) and it can be set to between 0 and 1 inclusive.
 
 
 ::
@@ -616,13 +466,10 @@ Si le schéma temporel utilisé est ALPHA_SCHEM, la méthode suivante permet d'i
     double getAlpha() const ;
 
 
+* Set / Query the tolerated deviation within which two dates will be considered to be identical:
 
-
-* Positionner/Interroger l'écart toléré pour que deux dates soient considérées identiques :
-
-
-Deux dates T1 et T2 sont identiques si abs(T1-T2) < CalciumTypes::EPSILON. Epsilon vaut 1E-6 par défaut. Il est possible de le paramétrer sur chacun des ports  (0 <= deltaT <= 1).
-
+Two dates D1 and D2 are identical if abs(T1-T2) <CalciumTypes::EPSILON.  Epsilon is equal to 1E-6 by default.  
+Parameters can be set for it on each port (0 <= deltaT <= 1).
 
 ::
 
@@ -630,27 +477,18 @@ Deux dates T1 et T2 sont identiques si abs(T1-T2) < CalciumTypes::EPSILON. Epsil
       double getDeltaT() const ;
 
 
+* Set / Query the type of time interpolation to be used:
 
-
-* Positionner/Interroger le type d'interpolation temporelle à utiliser :
-
-
-Lorsque qu'une demande de lecture est formulée pour une date T qui n'a pas été produite mais encadrée par les dates T1 (min) et T2(max) pour lesquelles des données ont déjà été produites, CALCIUM réalise par défaut une interpolation linéaire CalciumTypes::L1_SCHEM. L'utilisateur peut demander une “interpolation” en escalier CalciumTypes::L0_SCHEM.
-
+When a read request is formulated for a date T that has not been produced but is surrounded by dates T1(min) and T2(max) for which data have already been produced, CALCIUM produces a CalciumTypes::L1_SCHEM linear interpolation by default.  The user can request a CalciumTypes::L0_SCHEM step “interpolation”.
 
 ::
 
       void setInterpolationSchem (InterpolationSchem interpolationSchem);
       InterpolationSchem getInterpolationSchem () const ;
 
+* Set / Query the type of the extrapolation to be used:
 
-
-
-* Positionner/Interroger le type d'extrapolation à utiliser :
-
-
-Ce paramètre permet d'indiquer si l'on veut réaliser une extrapolation pour sortir d'un cas de blocage (un port qui attend une donnée qui ne sera jamais produite). La valeur par défaut est CalciumTypes::UNDEFINED_EXTRA_SCHEM. Les valeurs possibles sont EO_SCHEM (extrapolation en escalier) ou E1_SCHEM (extrapolation linéaire).
-
+This parameter is used to indicate whether an extrapolation is required to exit from a blocking case (a port waiting for data that will never be produced).  The default value is Calcium-Types::UNDEFINED_EXTRA_SCHEM.  Possible values are EO_SCHEM (step extrapolation) or E1-SCHEM (linear extrapolation).
 
 ::
 
@@ -658,37 +496,31 @@ Ce paramètre permet d'indiquer si l'on veut réaliser une extrapolation pour so
      ExtrapolationSchem getExtrapolationSchem () const ;
 
 
-La configuration par les propriétés des ports DSC
+Configuration using properties of DSC ports
 +++++++++++++++++++++++++++++++++++++++++++++++++
+This section explains advanced use of the properties of DSC ports to perform the CALCIUM ports configuration step, it can 
+be ignored if CALCIUM ports are used in a simple manner.
 
+All DSC ports can be configured by a list of properties.  Therefore, the configuration step can be made using a CORBA call on the ports concerned.
 
+The [set|get]_property methods of DSC ports manipulate a list of pairs with a key equal to the name of the property in 
+the first position and the associated value in the second position.
 
-Cette section explique une utilisation avancée des propriétés des ports DSC pour réaliser l'étape de configuration des ports CALCIUM, elle peut être ignorée en cas d'une utilisation simple des ports CALCIUM.
+Extract from the SALOME_Component.idl file of the SALOME KERNEL:
 
-Tous les ports DSC sont configurables par une liste de propriétés. Il est donc possible d'effectuer l'étape de configuration par un appel CORBA sur les ports concernés.
-
-
-
-Les méthodes [set|get]properties des ports DSC manipulent une liste de paires avec une clé du nom de la propriété en première position et la valeur associée en seconde position :
-
-
-
-Extrait du fichier SALOME_Component.idl du KERNEL de SALOME :
 ::
 
      struct KeyValuePair  {
         string key;
         any value;
       };
-    typedef sequence<KeyValuePair> FieldsDict;
-    void setProperties(in FieldsDict dico);
-    FieldsDict getProperties();
+     typedef sequence<KeyValuePair> FieldsDict;
+     void setProperties(in FieldsDict dico);
+     FieldsDict getProperties();
 
 
 
-
-CALCIUM déclare les types suivants dans le fichier Calcium_Ports.idl du KERNEL de SALOME :
-
+CALCIUM declares the following types in the SALOME KERNEL Calcium_Ports.idl file:
 
 ::
 
@@ -699,29 +531,18 @@ CALCIUM déclare les types suivants dans le fichier Calcium_Ports.idl du KERNEL 
     enum ExtrapolationSchem  { UNDEFINED_EXTRA_SCHEM, E0_SCHEM, E1_SCHEM};
 
 
+Therefore, the recognised properties are the following pairs:
 
+- (“StorageLevel”, int > 0 )
+- (“Alpha”, 0 <= double <= 1 )
+- (“DeltaT”, 0 <= double <= 1 )
+- (“DependencyType”, enum CORBA DependencyType)
+- (“DateCalSchem”, enum CORBA DateCalSchem)
+- (“InterpolationSchem”,enum CORBA InterpolationSchem)
+- (“ExtrapolationSchem”,enum CORBA ExtrapolationSchem)
 
+Example dynamic configuration by a python script (extract from file CAS_1.py):
 
-
-Les propriétés reconnues sont donc les paires suivantes :
-  
-("StorageLevel", int > 0 )
-  
-("Alpha”, 0 <=  double <= 1 )
-  
-("DeltaT", 0 <= double <= 1 )
-  
-("DependencyType", enum CORBA DependencyType)
-  
-("DateCalSchem", enum CORBA DateCalSchem)
-  
-("InterpolationSchem",enum CORBA InterpolationSchem)
-  
-("ExtrapolationSchem",enum CORBA ExtrapolationSchem)
-
-
-
-Exemple de configuration dynamique par un script python (extrait du fichier CAS_1.py):
 ::
 
     ...
@@ -730,21 +551,21 @@ Exemple de configuration dynamique par un script python (extrait du fichier CAS_
     port1.set_property("StorageLevel",any.to_any(myAny1_1))
     
 
+The get_provides_port and set_property methods are provided by the default implementation of supervisable SALOME components.
 
-Les méthodes get_provides_port et set_properties sont fournies par l'implémentation par défaut des composants SALOME supervisable.
-
-La configuration dans le fichier XML de YACS
+The configuration in the YACS XML file
 ++++++++++++++++++++++++++++++++++++++++++++
+The YACS supervisor module is capable of importing / exporting calculation schemes in the XML format.  In particular, this 
+includes the declaration of links between the ports of the different component instances.  The YACS GUI generates all sorts of 
+calculation schemes and starts their execution.
 
+At the present time, properties cannot be added to CALCIUM ports with YACS GUI.  Therefore, they have to be added into 
+the XML file manually.  In YACS, calcium ports are configured by declaring properties on the links.
 
+Extract from the CAS_1.xml calculation scheme, first test case of CALCIUM functions:
 
-Le module superviseur YACS est capable d'importer/exporter les schémas de calcul au format XML. On y trouve en particulier la déclaration des liens entre les ports des différentes instances des composants. Le GUI de YACS permet de générer toutes sortes de schémas de calcul et d'en lancer une exécution.
+Example configuration of the ETS_DB port at a history level of 4.
 
-A l'heure actuelle le GUI de YACS 4.1.1 ne permet pas d'ajouter des propriétés aux ports CALCIUM. Il faudra donc les ajouter manuellement dans le fichier XML. Dans YACS la configuration des ports CALCIUM se fait en déclarant des propriétés sur les liens.
-
-Extrait du schéma de calcul CAS_1.xml, premier cas test des fonctionnalités CALCIUM :
-
-Exemple de configuration du port ETS_DB à un niveau d'historique de 4.
 ::
 
      <stream>
@@ -754,54 +575,37 @@ Exemple de configuration du port ETS_DB à un niveau d'historique de 4.
        </stream>
     
 
-
-Les paires (clés,valeur) utilisées pour décrire les propriétés sont celles listées dans la section précédente.
-
-Les appels aux méthodes CALCIUM
+(Keys, value) pairs used to describe properties are as listed in the previous section. 
+ 
+Calls to CALCIUM methods
 '''''''''''''''''''''''''''''''
+The CALCIUM C / C++ / Fortran API in SALOME is globally identical to the API for the CALCIUM product outside SALOME.  
+It is now also available in Python.
+
+The classical C / C++ API is extended by a zero copy version that transfers data without an intermediate copy.
+
+C++ developers can use an API more specific to C++ that proposes parameter types more adapted to the language.
+
+It is also possible to use CALCIUM DSC ports more directly with their associated CORBA types.
 
 
 
-L'API C/C++/Fortran de CALCIUM dans SALOME est globalement identique à celle du produit CALCIUM hors SALOME. Elle est désormais aussi disponible en Python.
+Classical CALCIUM calls in C / C++ / F / Python
++++++++++++++++++++++++++++++++++++++++++++++++++
+The classical CALCIUM API remains essentially the same, regardless of whether the objective is to include an existing 
+CALCIUM C / C ++ / Fortran code in the SALOME platform or to develop a new CALCIUM component.
 
-L'API classique C/C++ est étendue d'une version zéro copie qui permet le transfert de données sans recopie intermédiaire.
+The code containing CALCIUM calls is written directly in the SALOME service of the C++ component, or is accessible through a procedure call.
 
-Les développeurs C++ ont à leur disposition une API plus spécifique au C++ qui propose des paramètres de types plus adaptés au langage.
+In the first case, the code must be written in C / C++ / Python because there is no SALOME component written directly in Fortran.
 
-Il est également possible d'utiliser directement les ports DSC CALCIUM avec leurs types CORBA associés.
+In the second case, the calling service must transmit the access pointer to its component.  Unlike the CALCIUM outside 
+SALOME API, the first argument of all procedures is the pointer of the component that holds the associated ports.  
+This enables the CALCIUM library to identify the component that holds the requested ports [1]_.
 
+Extract from the implementation of the EcodeGo() (ECODE.cxx) service calling the ecode wrapped code (void* component)(Ecode.c):
 
-
-Appels CALCIUM classiques en C/C++/F/Python
-+++++++++++++++++++++++++++++++++++++++++++
-
-
-
-Qu'il s'agisse d'intégrer un code CALCIUM C/C++/Fortran existant dans la plate-forme SALOME ou de développer un nouveau composant CALCIUM, l'API classique de CALCIUM reste essentiellement la même.
-
-
-
-Le code contenant les appels CALCIUM est soit directement écrit dans le service SALOME du composant en C++, soit accessible via un appel de procédure.
-
-
-
-Dans le premier cas, le code doit être écrit en C/C++/Python car il n'existe pas de composant SALOME directement écrit en Fortran.
-
-
-
-Dans le second cas, le service appelant doit transmettre le pointeur d'accès à son composant. En effet, à la différence de l'API CALCIUM hors SALOME, toutes les procédures ont comme premier argument le pointeur du composant détenteur des ports associés. Ceci permet à la bibliothèque CALCIUM d'identifier le composant détenteur des ports demandés  [1]_  .
-
-
-
-Extrait de l'implémentation du service EcodeGo() (ECODE.cxx) appelant le code wrappé ecode(void * component) (Ecode.c) :
-
-
-
-
-
-(Ce code peut être généré par le ModuleGenerator)
-
-
+(This code can be generated by YACSGEN)
 
 
 ::
@@ -816,16 +620,11 @@ Extrait de l'implémentation du service EcodeGo() (ECODE.cxx) appelant le code w
     }
 
 
+A code already written to use CALCIUM only needs to be adapted to transmit the pointer of its component as a first 
+parameter of calls to CALCIUM procedures.  Apart from this observation, the code remains exactly the same as the 
+initial calcium code.
 
-
-
-
-Un code déjà écrit pour utiliser CALCIUM doit uniquement être adapté pour transmettre le pointeur de son composant en premier paramètre des appels aux procédures CALCIUM. En dehors de cette observation, le code reste identique au code CALCIUM initial.
-
-
-
-Extrait de l'implémentation du code source CALCIUM appelé par le service (Ecode.c) :
-
+Extract from the implementation of the calcium source code applied by the service (Ecode.c):
 
 ::
 
@@ -835,7 +634,7 @@ Extrait de l'implémentation du code source CALCIUM appelé par le service (Ecod
     int    ecode(void * component)
     {
     ...
-    /*    Connexion au coupleur */
+    /*    Connection to the coupler   */
          info = cp_cd(component,nom_instance);
     
         info=
@@ -846,17 +645,14 @@ Extrait de l'implémentation du code source CALCIUM appelé par le service (Ecod
 
 
 
+The C ecode procedure connects to the CALCIUM coupler through the cp_cd procedure and then formulates a blocking read 
+request to the ETP_EN port / connection point according to a time scheme between ti_re and tf_re.  Only one data is 
+requested, it will be stored in the EDATA_EN buffer.  The procedure finishes when the coupler is disconnected, using 
+the CP_CONT flag to indicate that any clients of ports associated with ecode will receive the most recent known value 
+if there are any new read requests.  If the CP_ARRET flag was used, any subsequent read request on the ports associated 
+with ecode() would exit in error.
 
-
-
-La procédure C ecode se connecte au coupleur CALCIUM via la procédure cp_cd puis formule une demande de lecture bloquante au port/au point de connexion ETP_EN selon un schéma temporel entre ti_re et tf_re. Une seule donnée est demandée, elle sera stockée dans le buffer EDATA_EN. La procédure se finie sur une déconnexion du coupleur en indiquant par le drapeau CP_CONT que les éventuels clients des ports associés à ecode recevront la dernière valeur connue en cas de nouvelles demandes de lecture. Si le drapeau CP_ARRET était utilisé, toute demande ultérieure de lecture sur les ports associés à ecode() sortirait en erreur.
-
-
-
-
-
-En fortran le schéma est le même, voici un extrait du fichier Ecode.f :
-
+The scheme is the same in fortran, the following is an extract from the Ecode.f file:
 
 ::
 
@@ -873,48 +669,35 @@ En fortran le schéma est le même, voici un extrait du fichier Ecode.f :
          CALL CPFIN(compo,CP_CONT, info)
 
 
-
-
-
-
-Appels CALCIUM C/C++ en mode zéro copie
+CALCIUM C/C++ calls in zero copy mode
 +++++++++++++++++++++++++++++++++++++++
+CALCIUM DSC ports of the provides type (CALCIUM entry connection points) keep the received data to be able to create the 
+requested history (unlimited by default).  When the user formulates a read for data that are already available, the port 
+copies these data into the buffer provided by the user.  An extended CALCIUM API allows the user to supply a null pointer 
+to replace the pre-allocated reception pointer, so as to obtain a pointer to the internal buffer of the CALCIUM provides 
+class port directly.  This prevents a potentially large copy, but it obliges the user to be vigilant on the following points:
 
+1. The buffer obtained must be used in read only.  Unless it is used in a particular manner, any modification to the buffer 
+   would be reflected in new read requests for the same stamp or during an interpolation calculation using this stamp.
+2. The buffer is dependent on the history level set for the port.  If the history level set for the port is such that the 
+   stamp and the associated buffer will be deleted, the user will have a pointer to an invalid buffer and its use would probably corrupt memory.
+3. Zero copy is not used on integers and booleans because these types do not exist in CORBA.
+4. The user must call the CALCIUM procedure once only to release the pointer obtained.  This releases any buffers created for 
+   cases in which a zero copy is impossible.  This also helps to count distributed references to prevent early release (not yet implemented).
 
+The zero copy API consists of calling ecp_lxx read procedures instead of their corresponding procedure cp_lxx and transferring 
+the address of a pointer for which the value is initialized to zero.
 
-Les ports DSC CALCIUM de type provides (points de connexion CALCIUM d'entrée) conservent les données reçues à concurrence de l'historique demandé (illimité par défaut). Lorsque l'utilisateur formule une lecture pour des données déjà disponibles, le port recopie ces données dans le buffer fourni par l'utilisateur. Une API CALCIUM étendue propose à l'utilisateur de fournir un pointeur nul en place du pointeur de réception pré alloué afin d'obtenir directement un pointeur sur le buffer interne du port CALCIUM de classe provides. Ceci évite une recopie de taille potentiellement importante mais impose à l'utilisateur d'être vigilant sur les points suivants :
+The write procedures API is not modified because these procedures still operate in zero copy.  If the sender and receiver 
+components are placed in the same container, a copy is triggered on reception  of data to prevent any interaction between 
+the sender's buffer and the receiver's buffer.
 
-1. Le buffer obtenu doit être utilisé en lecture seule. A moins d'une utilisation particulière, toute modification du buffer serait répercutée lors de nouvelle demandes de lecture pour la même estampille ou lors d'un calcul d'interpolation mettant cette estampille en jeu.
-
-
-
-2. Le buffer est soumis au niveau d'historique positionné pour le port. Si le niveau d'historique positionné pour le port entraîne la suppression de l'estampille et du buffer associé, l'utilisateur possédera un pointeur sur buffer invalide et son utilisation amènerait probablement à une corruption de la mémoire.
-
-
-
-3. Le zéro copie n'est pas utilisé sur les entiers et les booléens car ces types n'existent pas en CORBA.
-
-
-
-1. L'utilisateur doit appeler une seule fois la procédure CALCIUM de libération du pointeur obtenu. Ceci permet de libérer d'éventuels buffers créés pour les cas où le zéro copie n'est pas possible. Cela permet également de comptabiliser les références distribuées pour éviter une libération précoce (non encore implémenté).
-
-
-  
-
-L'API zéro copie consiste à appeler les procédures de lecture ecp_lxx en place de leur homologue cp_lxx et de passer l'adresse d'un pointeur dont la valeur est initialisée à zéro.
-
-
-
-L'API des procédures d'écriture n'est pas modifiée car ces procédures fonctionnent toujours  en zéro copie. Si les composants émetteurs et récepteurs sont placés dans le même container, une recopie est provoquée à la réception des données pour éviter toute interaction entre le buffer de l'émetteur et celui du récepteur.
-
-
-
-Extrait de l'implémentation zéro copie du code source CALCIUM appelé par le service (Ecode.c) :
+Extract from the zero copy implementation of the CALCIUM source code called by the (Ecode.c) service:
 
 
 ::
 
-        float *sav_EDATA_RE = _EDATA_RE; //Garde un ptr sur les données précédemment reçues
+        float *sav_EDATA_RE = _EDATA_RE; //keep a ptr to previously received data
         _EDATA_RE = NULL;
         ti_re = 1.1;
         tf_re = 1.2;
@@ -924,24 +707,17 @@ Extrait de l'implémentation zéro copie du code source CALCIUM appelé par le s
         tf_re = 1.0;
     
         ecp_lre_free(sav_EDATA_RE);
-               ecp_lre_free(_EDATA_RE);
+        ecp_lre_free(_EDATA_RE);
 
 
-
-
-
-
-Appels CALCIUM avec API spécifique au C++
+CALCIUM calls with API specific to C++
 +++++++++++++++++++++++++++++++++++++++++
+C++ developers can use a specific API that proposes parameters with types better adapted to the language.
 
-
-
-Les développeurs C++ ont à leur disposition une API spécifique qui propose des paramètres avec des types plus adaptés au langage.
-
-
-
-Que ce soit en écriture ou en lecture et quel que soit le type de données transmises ; les estampilles en temps sont toujours de type double et les itérations toujours de type long. Les noms de variables sont des chaînes STL. Le nom des méthodes en lecture et en écriture est le même quel que soit le type de données manipulé. Le type de données est automatiquement trouvé, mis à part les complexes les logiques et les chaînes de caractères
-
+Time stamps are always of the double type and iterations are always of the long type, regardless of whether it is in write or 
+read and regardless of the type of transmitted data.  Variable names are STL strings.  The name of read and write methods is 
+the same regardless of the type of data manipulated.  The type of data is found automatically, except for complex types, 
+logical types and character strings.
 
 ::
 
@@ -952,8 +728,6 @@ Que ce soit en écriture ou en lecture et quel que soit le type de données tran
 
 
 
-::
-
       template <typename T1, typename T2 > static void
       ecp_lecture ( Superv_Component_i & component,   int    const  & dependencyType,
                    double & ti,  double const  & tf,  long & i,
@@ -961,125 +735,83 @@ Que ce soit en écriture ou en lecture et quel que soit le type de données tran
                    size_t  & nRead,  T1 * &data )
 
 
+These methods are defined in the CalciumCxxInterface.hxx header file.  Therefore the user will include 
+the ``#include ”CalciumCxxInterface.hxx”`` directive in the code.
 
+Note:  the CalciumInterface.hxx file has to be included only once because it declares and defines C++ template methods.  
+This does not create any problem with compilation, but there is a multiple definition problem during link editing.
 
-Ces méthodes sont définies dans le fichier d'entête CalciumCxxInterface.hxx . L'utilisateur inclura donc la directive #include “CalciumCxxInterface.hxx” dans son code.
+But there is no need to specify T1 and T2 for integer, float or double CALCIUM types, because there is a write method 
+and a read method with a single template parameter that calls their corresponding methods with the constraint T1==T2==<Type of Data Used>.
 
+For complex types, the <float,cplx> instantiation has to be used and the number of complexes has to be multiplied by two to 
+transfer the bufferLength parameter.  In this case, the only difference from use of the float type is the typing of the ports 
+used, namely calcium_complex_port_provides instead of calcium_real_port_provides.
 
+Instantiation for the logical type is done with <int, bool>.
 
-Remarque : Le fichier CalciumInterface.hxx doit être inclus une fois seulement car il déclare et définit des méthodes C++ template. Cela ne pose pas de problème à la compilation mais un problème de définitions multiples à l'édition des liens.
+Instantiation for character strings is <char*, str>.  The character strings can be read without giving the maximum string 
+length parameter located in the classical C / C++ / Fortran API.
 
-
-
-Pour les types CALCIUM entier, float ou double, il n'est pas nécessaire de préciser T1 et T2 car il existe une méthode en écriture et une méthode en lecture avec un paramètre template unique qui appelle leurs homologues avec la contrainte : T1==T2==<Type Des Données Utilisé>.
-
-
-
-En ce qui concerne les complexes, il faut utiliser l'instantiation <float,cplx> et prendre à sa charge de multiplier le nombre de complexes par deux pour passer le paramètre bufferLength. Dans ce cas de figure, la seule différence par rapport à une utilisation de type float est le typage des ports utilisés calcium_complex_port_provides au lieu de calcium_real_port_provides.
-
-Pour le type logique, l'instantiation se fait avec <int, bool>.
-
-Pour les chaînes de caractères, l'instanciation est < char*, str >.  L'appel en lecture de chaînes de caractères ne nécessite pas le paramètre de longueur maximum de chaîne que l'on trouve dans l'API classique C/C++/Fortran.
-
-
-
-
-Différences par rapport au produit CALCIUM hors SALOME
+Differences from the CALCIUM product outside SALOME
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+All that are implemented are read / write procedures and connection and disconnection procedures. Erase, step back, 
+query, dynamic configuration and debugging procedures are not implemented.
+
+However, it is possible to dynamically create and connect components that read/write on ports of other component services.  
+Any SALOME service using CALCIUM ports has the privileges of a spy (in production mode).
+
+Several output ports can be connected to the same input port and one output port can be connected to several input ports.  
+The first case was not possible in CALCIUM outside SALOME.
+
+The cp_cd connection routine does not return an “instance name”.
+
+Reads/writes are implemented in blocking mode;  non-blocking mode is not yet implemented.
+
+AAAA.BBBB type global / local naming used in CALCIUM outside SALOME does not exist.  Therefore, all references to this type of name must be deleted.
+
+All ports created by the different services of a single component are visible / usable by all these services.  
+However, it is not recommended that they should be used in this way.
+
+The timeout used to detect interlocking and for extrapolation has not yet been implemented.
+
+File ports have not yet been implemented, however there are some DSC file ports in SALOME.
+
+Ports not connected do not cause any error in execution of coupling unless they are used.
+
+CALCIUM error codes returned by primitives are the same as for CALCIUM outside SALOME.  By using the specific C++ API, 
+CalciumException class exceptions (CalciumException.hxx) that contain the CALCIUM error code and an explanation message 
+can be caught.  The error code contained in the exception is obtained by calling the CalciumTypes::InfoType getInfo() method.  
+The CalciumException class also inherits from the C++ SALOME_Exception exception.
+
+A compilation option has to be used to allow C++ exceptions to pass through the C and Fortran codes called from 
+the SALOME component service.  This option for GNU compilers is -fexceptions.
+
+Logs generated by SALOME containers contain information about services using CALCIUM.  However, work remains to 
+be done to summarise this information more clearly in the form of CALCIUM trace files.
+
+Data type exchange will be extended to complex types such as MED fields or meshes.
 
 
-
-Seules les procédures de lecture/écriture ainsi que de connexion et déconnexion  sont implémentées. Les procédures d'effacement, de retour arrière, d'interrogation, de configuration dynamique et de debuggage ne sont pas implémentées.
-
-
-
-Il est cependant possible de créer et connecter dynamiquement des composants qui lisent/écrivent sur les ports d'autres services de composants. Tout service SALOME utilisant les ports CALCIUM possède en quelque sorte les privilèges d'un espion (en mode de production).
-
-
-
-Il est possible de relier plusieurs ports de sortie sur un même port d'entrée et un port de sortie à plusieurs ports d'entrée. Le premier cas n'était pas possible en CALCIUM hors SALOME.
-
-
-
-La routine de connexion cp_cd ne renvoie pas de “nom d'instance”.
-
-
-
-Les lectures/écritures sont implémentées en mode bloquant, le mode non-bloquant n'est pas encore implémenté.
-
-
-
-Le nommage global/local du type AAAA.BBBB de CALCIUM hors SALOME n'existe pas. Il faut donc supprimer toute référence à ce type de nommage.
-
-
-
-L'ensemble des ports créés par les différents services d'un même composant sont visibles/utilisables par tous ces services. Il n'est cependant pas conseillé de les utiliser de cette manière.
-
-
-
-Le timeout utilisé pour la détection d'inter blocage ainsi que l'extrapolation ne sont pas encore implémentés.
-
-
-
-Les ports fichiers ne sont pas implémentés, il existe cependant des ports DSC fichier dans SALOME.
-
-
-
-Les ports non connectés ne provoquent pas d'anomalie à l'exécution du couplage sauf s'ils sont utilisés.
-
-
-
-Les codes d'erreur CALCIUM renvoyés par les primitives sont ceux de CALCIUM hors SALOME. En utilisant l'API spécifique en C++, il est possible d'attraper les exceptions de classe CalciumException (CalciumException.hxx) qui contiennent le code d'erreur CALCIUM ainsi qu'un message explicatif. Le code d'erreur contenu dans l'exception s'obtient par appel à la méthode  CalciumTypes::InfoType getInfo()  . La classe CalciumException hérite également de l'exception C++  SALOME_Exception.
-
-
-
-Il est nécessaire d'utiliser une option de compilation pour autoriser les exceptions C++ à traverser les codes C et Fortran appelés depuis le service du composant SALOME. Pour les compilateurs GNU, cette option est -fexceptions.
-
-
-
-Les journaux générés par les containers SALOME contiennent des informations sur l'évolution des services utilisant CALCIUM. Un travail reste cependant à faire pour synthétiser plus clairement ces informations sous forme de fichiers trace CALCIUM.
-
-
-
-Il est prévu d'étendre les types de données transmis à des types complexes comme des champs ou maillages MED.
-
-
-
-
-
-Le lancement du couplage CALCIUM
+Starting CALCIUM coupling
 --------------------------------
+CALCIUM coupling can be started in three different ways.  The first is to use the SALOME KERNEL only and to manage 
+component instances by a python script.  The second is to create a component that would control coupling.  The third 
+is to use the YACS supervisor component with or without its GUI.
 
-
-
-
-
-Il est possible de lancer le couplage CALCIUM de trois manières. La première consiste à utiliser uniquement le KERNEL de SALOME et gérer les instances de composants par un script python. La seconde consiste en la création d'un composant qui piloterait le couplage. La troisième consiste à utiliser le composant superviseur YACS avec ou sans son GUI.
-
-
-
-La mise en place de l'environnement
+Setting up the environment
 '''''''''''''''''''''''''''''''''''
+Regardless of what method is chosen, the KERNEL module has to be notified about the existence of new modules to be used.  
+Only one module needs to be declared if all components are within the same module.
 
+This step is no specific to CALCIUM components, it is necessary for all SALOME components.
 
-
-Quelle que soit la méthode choisie, il est nécessaire d'indiquer au module KERNEL l'existence de nouveaux modules à utiliser. Si l'ensemble des composants est au sein d'un même module, un seul module est à déclarer.
-
-Cette étape n'est pas spécifique aux composants CALCIUM, elle est nécessaire pour tout composant SALOME.
-
-
-
-Déclaration de <mon module>_ROOT_DIR
+Declaration of <my module>_ROOT_DIR
 ++++++++++++++++++++++++++++++++++++
+The KERNEL module is based on a <my module>_ROOT_DIR variable in either a envSalome.sh shell script containing all environment 
+variables useful to SALOME or in the user console, to locate the installation directory of the <my module> module.
 
-
-
-Que ce soit dans un script shell  *envSalome.sh*  rassemblant l'ensemble des variables d'environnement utiles à SALOME ou dans la console de l'utilisateur, le module KERNEL se repose sur une variable <mon module>_ROOT_DIR pour localiser le répertoire d'installation du module <mon module>.
-
-
-
-Exemple de déclaration du module CALCIUM_TESTS en bash :
-
+Example declaration of the CALCIUM_TESTS module in bash:
 
 ::
 
@@ -1087,28 +819,17 @@ Exemple de déclaration du module CALCIUM_TESTS en bash :
     export CALCIUM_TESTS=${INSTALLROOT}/DEV/INSTALL/CALCIUM_TESTS
     
 
+The appli_gen.py tool will prepare the appropriate environment in the env.d directory for a SALOME application (see :ref:`appli`).
 
-Dans le cadre d'une application SALOME (cf. documentation en ligne du module KERNEL définissant la notion d'application), l'outil appli_gen.py préparera l'environnement adéquat dans le répertoire env.d.
-
-
-
-
-Chargement du module <mon module> au lancement de SALOME
+Loading the <my module> module when running SALOME 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+There are two solutions for loading the <my module> module when SALOME is run.
 
-
-
-Afin de charger le module <mon module> au lancement de SALOME, deux solutions existent :
-
-Déclaration dans le fichier SalomeApp.xml
+Declaration in the SalomeApp.xml file. 
 #########################################
+All that is necessary is to declare the name of its module in the modules parameter in the SalomeApp.xml file.
 
-
-
-Il suffit de déclarer le nom de son module dans le paramètre modules du fichier SalomeApp.xml.
-
-Voici un exemple pour le module CALCIUM_TESTS :
-
+The following is an example for the CALCIUM_TESTS module:
 
 ::
 
@@ -1120,36 +841,24 @@ Voici un exemple pour le module CALCIUM_TESTS :
 
 
 
-
-Utilisation de l'option –-module
+Using the --module option.  
 ################################
-
-
-
-Cette option permet de limiter le chargement des modules à la liste indiquée en ligne de commande (elle suppose que l'environnement de l'utilisateur indique la localisation des modules).
-
+This option limits loading of modules to the list indicated in the command line (it assumes that the user’s environment 
+indicates the location of the modules).
 
 ::
 
     ./runAppli  --module=YACS,CALCIUM_TESTS
 
 
-
-
-Le lancement d'un couplage simple via un script python
+Running a simple coupling through a python script
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''
+Components can be created and their ports can be connected using a Python Salome session.
+The script CAS_1.py loads instances of the ECODE, SCODE and ESPION components, connects their ports, makes the necessary 
+configurations and starts executions.
 
+The following is an extract from the CAS_1.py file:
 
-
-La création des composants et la connexion de leurs ports peuvent être effectuées via une session salome python.
-
-
-
-Le script CAS_1.py charge des instances des composants ECODE, SCODE et ESPION, connecte leurs ports, réalise les configurations nécessaires et s'occupe de lancer les exécutions.
-
-
-
-Voici un extrait du fichier CAS_1.py :
 ::
 
     
@@ -1164,20 +873,21 @@ Voici un extrait du fichier CAS_1.py :
     import threading
     from omniORB import any
     
-    #Chargement des instances de composants via le LifeCycle
+    #Load component instances through the LifeCycle 
     lcc = LifeCycleCORBA.LifeCycleCORBA()
     ecode = lcc.FindOrLoad_Component('FactoryServer3', 'ECODE')
     ecode.init_service("EcodeGo")
     scode = lcc.FindOrLoad_Component('FactoryServer4', 'SCODE')
     scode.init_service("ScodeGo")
     
-    #Affichage du contenu du Serveur de noms
-    #Obtention d'une référence au gestionnaire de connexions
+    #Display the content of the naming server
+    #Obtain a reference to the connection manager
+
     clt=orbmodule.client()
     clt.showNS()
     connection_manager = clt.Resolve("ConnectionManager")
     
-    #Création des liens CALCIUM via le gestionnaire de connexions
+    #Create CALCIUM links through the connection manager
     connection_manager.connect(scode, "STP_EN",ecode, "ETP_EN")
     connection_manager.connect(scode, "STP_RE", ecode, "ETP_RE")
     connection_manager.connect(scode, "STP_DB", ecode, "ETP_DB")
@@ -1194,8 +904,9 @@ Voici un extrait du fichier CAS_1.py :
     connection_manager.connect(scode, "STP_CX", ecode, "ETP_CX")
     connection_manager.connect(scode, "STP_CH", ecode, "ETP_CH")
     connection_manager.connect(scode, "STP_LQ", ecode, "ETP_LQ")
-    #Création et connexion de l'espion
-    #Il est possible de créer l'ESPION après le lancement des instances d'ECODE et d'SCODE, cependant les données produites avant sa connexion lui seront inconnues.
+    #Create and connect the spy (espion) 
+    #The ESPION can be created after the instances of ECODE and SCODE have been run, however
+    #data produced before the connection will be lost
     espion = lcc.FindOrLoad_Component('FactoryServer5', 'ESPION')
     espion.init_service("EspionGo")
     
@@ -1205,7 +916,7 @@ Voici un extrait du fichier CAS_1.py :
     connection_manager.connect(espion, "SIP_DB" , ecode , "EIP_DB" )
     connection_manager.connect(scode,  "SIP_DB" , espion, "EIP_DB")
     
-    #Si l'espion est lancé en dernier le CAS_1 passe mais le test 15 ne passe pas
+    #If the spy is run last, CAS_1 works but test 15 does not work
     handler3=threading.Thread(target=espion.EspionGo)
     handler3.start()
     handler=threading.Thread(target=ecode.EcodeGo)
@@ -1219,112 +930,72 @@ Voici un extrait du fichier CAS_1.py :
 
 
 
-
-Le lancement du script peut s'effectuer via la commande suivante :
-
+The script can be run using the following command:
 
 ::
 
-    ./runAppli  -t --module=YACS,CALCIUM_TESTS -u <mon chemin d'accès au module CALCIUM_TESTS installé>/CALCIUM_TESTS/lib/python2.4/site-packages/salome/CAS_1.py
+  ./runAppli -t --module=YACS,CALCIUM_TESTS -u <my access path to the installed CALCIUM_TESTS module>/CALCIUM_TESTS/lib/python2.4/site-packages/salome/CAS_1.py
 
-
-
-
-
-Le lancement du couplage via le GUI de YACS
+Running coupling through the YACS GUI
 '''''''''''''''''''''''''''''''''''''''''''
+If the module catalog contains the description of components and their services, it is easy to create a coupling scheme by 
+inserting the services of components that are to be linked.
 
+To insert a service, simply do a right click / CASE_1 / create a node / create a node from catalog / in the edit tree of the graph.
 
+Linking two ports consists of selecting the output port (in the edit tree) and then doing a right click on the /add data link/ command, and then selecting the input port.
 
-Si le catalogue du module contient la description des composants et de leurs services, il est aisé de constituer un schéma de couplage en insérant les services de composants que l'on veut lier.
+There is no consistency check on the branch of incompatible CALCIUM port types in version V4.1.1 of the YACS GUI.  However, an error will occur at the time of execution.
 
-Pour insérer un service, il suffit de cliquer droit /CAS_1/create a node/ create a node from catalog/ dans l'arbre d'édition du graphe.
+Once the scheme has been created, it can be exported in the YACS coupling scheme XML format (see toolbar).
 
-Lier deux ports consiste en la sélection du port de sortie (dans l'arbre d'édition) suivie d'un clic droit sur la commande /add data link/, puis en la sélection du port d'entrée.
-
-Dans la version V4.1.1 du GUI de YACS, il n'y a pas de contrôle de cohérence sur le branchement de type de ports CALCIUM incompatibles. Une erreur surviendra cependant à l'exécution.
-
-Une fois le schéma créé, il est possible de l'exporter au format XML de schéma de couplage YACS (cf barre outils).
-
-
-
-Voici un exemple graphique du schéma de couplage du premier cas test CALCIUM :
+The following is a graphic example of the coupling scheme for the first CALCIUM test case:
 
 .. image:: images/1000000000000780000004B0E1FC3F2E.png
   :width: 17.586cm
   :height: 10.989cm
 
-Une fois le schéma établi, il suffit de créer une exécution en cliquant droit sur /YACS/CAS_1/New Execution/. L'arbre d'étude devient arbre d'exécution où apparaît l'état des différents services. Une fois le lancement effectué (par pression sur le bouton adéquat dans la barre d'outil) les services sont dans l'état 'done' si tout s'est bien déroulé. Il est possible d'afficher le journal d'un container associé à l'exécution d'un service en cliquant droit sur le service intéressé et en sélectionnant /Node container Log/.  En cas d'erreur des rapports sont visualisables en sélectionnant /Error Details/ ou /Error Report/.
+Once the scheme has been created, all that is necessary is to create an execution by doing a right click on /YACS/CAS_1/New Execution/.  
+The study tree becomes the execution tree in which the state of the different services appears.  Once it has been 
+run (by pressing the appropriate button in the tool bar), the services are in the ‘done’ state if everything took place correctly.  
+The log of a container associated with execution of a service can be displayed by doing a right click on the service concerned 
+and selecting /Node container Log/.  If an error occurs, reports are displayed by selecting /Error Details/ or /Error Report/.
 
-Il est possible de créer autant d'exécutions que nécessaire. Une modification du schéma d'édition ne modifie pas les schémas d'exécutions existants. Il faut recréer une exécution pour lancer le schéma modifié. Pour retrouver le schéma d'édition correspondant à un schéma d'exécution il faut cliquer droit et sélectionner /New Edition/.
+As many executions as are necessary can be created.  Modifying the edit scheme does not modify existing execution schemes. 
+One execution has to be recreated to start the modified scheme.  Do a right click and select /New Edition/ in order to find 
+the edit scheme corresponding to an execution scheme again.
 
+Any container configuration is possible:
 
+1. several CALCIUM services (for one component or different components) coupled within a single container
+2. several CALCIUM services (for one component or different components) coupled within different containers
+3. an intermediate configuration between the previous two cases.
 
-Toute configuration de container est possible :
+Current limitations:
 
-1. plusieurs services CALCIUM (d'un même composant ou de composants différents) couplés au sein d'un même container
-
-
-
-2. plusieurs services CALCIUM (d'un même composant ou de composants différents) couplés au sein de containers différents
-
-
-
-3. une configuration intermédiaire des deux cas précédents.
-
-
-
-Limitations actuelles :
-
-1. Il n'est pas possible d'avoir plusieurs services d'un même composant utilisant simultanément des ports CALCIUM distincts mais de même nom.
+1. It is impossible to have several services of a single component simultaneously using distinct CALCIUM ports with the same name.
+2. It is not possible to restart the same execution because the init_service method will attempt to create existing 
+   ports (an execution has to be created or init_service has to be modified so as to memorise the creation of ports).
 
 
-
-2. Il n'est pas possible de relancer une même exécution car la méthode init_service tente de créer des ports existants (il faut recréer une exécution ou modifier init_service de façon à mémoriser la création des ports).
-
-
-
-Le lancement du couplage via YACS sans GUI
+Running coupling through YACS without GUI
 ''''''''''''''''''''''''''''''''''''''''''
+To do.
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-ANNEXE 1 : Création d'une application SALOME
+APPENDIX 1:  Creating a SALOME application
 --------------------------------------------
-
-
-
-Exemple de commande invoquée pour créer une application SALOME après adaptation du fichier config_appli.xml :
-
+Example command invoked to create a SALOME application after adapting the config_appli.xml file:
 
 ::
 
-    python DEV/INSTALL/KERNEL/bin/salome/appli_gen.py --prefix=/local/salome4.1.1_mine --config=/local/salome4.1.1/SALOME4/V4_1_1NoDebug/DEV/SRC/KERNEL_SRC_V4_1_0_maintainance/bin/config_appli.xml                   
+    python $KERNEL_ROOT_DIR/bin/salome/appli_gen.py --prefix=/local/salome4.1.1_my_appli --config=config_appli_mod.xml                   
 
 
-ANNEXE 2 : Schéma de couplage, fichier XML YACS
+
+APPENDIX 2:  Coupling scheme, YACS XML file
 -----------------------------------------------
-
-
-
-Le fichier CAS_1.xml complet du schéma de couplage du cas test CALCIUM CAS_1 (Il peut être généré par le GUI de YACS) :
-
-
+The complete CAS_1.xml file for the coupling scheme of the CALCIUM CAS_1 test case (it can be generated by the YACS GUI):
 ::
 
     <?xml version='1.0'?>
@@ -1479,12 +1150,10 @@ Le fichier CAS_1.xml complet du schéma de couplage du cas test CALCIUM CAS_1 (I
     
 
 
-ANNEXE 3 : Génération d'un module CALCIUM
+APPENDIX 3:  Generating a CALCIUM module
 -----------------------------------------
+Complete YACSGEN script to create a generated CALCIUM_TESTS module:
 
-
-
-Script ModuleGenerator complet pour créer un module CALCIUM_TESTS généré :
 ::
 
     from module_generator import Generator,Module,PYComponent,CPPComponent,Service,F77Component
@@ -1586,4 +1255,9 @@ Script ModuleGenerator complet pour créer un module CALCIUM_TESTS généré :
     ##g.install()
     ##g.make_appli("appli",restrict=["KERNEL","GUI","YACS"])
     
-.. [1]  La bibliothèque CALCIUM est partagée par plusieurs composants d'un même container, elle a donc besoin d'un pointeur sur le composant pour identifier les ports demandés.
+.. [1] The CALCIUM library is shared between several components in a single container, therefore it needs a pointer to the component to identify the requested ports.
+ 
+.. [Calcium1] EDF report HI-26/03/007/A
+.. [Calcium2] EDF report HI-76/96/009/B
+
+

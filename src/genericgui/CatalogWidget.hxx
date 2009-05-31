@@ -44,6 +44,7 @@ namespace YACS
       virtual std::map<std::string, YACS::ENGINE::Catalog*> getCataMap();
       virtual YACS::ENGINE::Catalog* getCatalog(std::string cataName);
       virtual YACS::ENGINE::Catalog* getCatalogFromType(std::string typeName);
+      virtual void mousePressEvent(QMouseEvent  *event);
 
     protected:
       virtual void addCatalog(YACS::ENGINE::Catalog* catalog,
@@ -55,6 +56,7 @@ namespace YACS
       int _idCatalog;
       std::map<std::string, YACS::ENGINE::Catalog*> _cataMap;
       std::map<std::string, YACS::ENGINE::Catalog*> _typeToCataMap;
+      bool _dragModifier;
     };
   }
 }

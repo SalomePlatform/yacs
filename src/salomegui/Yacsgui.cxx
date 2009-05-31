@@ -18,6 +18,7 @@
 //
 #include "Yacsgui.hxx"
 #include "Yacsgui_DataModel.hxx"
+#include "Yacsgui_Resource.hxx"
 
 #include <SUIT_MessageBox.h>
 #include <SUIT_ResourceMgr.h>
@@ -42,6 +43,8 @@
 #include <cassert>
 
 #include "GenericGui.hxx"
+#include "CatalogWidget.hxx"
+#include "Resource.hxx"
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -92,6 +95,25 @@ void Yacsgui::initialize( CAM_Application* app )
   _genericGui->createTools();
 
   if (createSComponent()) updateObjBrowser();
+
+  // Load SALOME module catalogs
+  QStringList appModules;
+  app->modules(appModules,false);
+  for ( QStringList::const_iterator it = appModules.begin(); it != appModules.end(); ++it )
+    {
+      QString aModule=*it;
+      QString modName = app->moduleName( aModule );                    // module name
+      if ( modName.isEmpty() ) modName = aModule;             
+      QString rootDir = QString( "%1_ROOT_DIR" ).arg( modName );       // module root dir variable
+      QString modDir  = getenv( rootDir.toLatin1().constData() );      // module root dir
+      if ( !modDir.isEmpty() ) 
+        {
+          QStringList cataLst = QStringList() << modDir << "share" << "salome" << "resources" << modName.toLower() << modName+"SchemaCatalog.xml";
+          QString cataFile = cataLst.join( QDir::separator() );          // YACS module catalog
+          if ( QFile::exists( cataFile ) ) 
+            _genericGui->getCatalogWidget()->addCatalogFromFile(cataFile.toStdString());
+        }
+    }
 }
 
 void Yacsgui::viewManagers( QStringList& list ) const
@@ -170,7 +192,7 @@ void Yacsgui::onWindowActivated( SUIT_ViewWindow* svw)
   QxScene_ViewWindow* viewWindow = dynamic_cast<QxScene_ViewWindow*>(svw);
   if (!viewWindow) return;
   DEBTRACE("viewWindow " << viewWindow);
-  DEBTRACE("activeModule()->moduleName() " << getApp()->activeModule() ? getApp()->activeModule()->moduleName().toStdString() : "" );
+  DEBTRACE("activeModule()->moduleName() " << (getApp()->activeModule() ? getApp()->activeModule()->moduleName().toStdString() : "") );
   if (getApp()->activeModule() && getApp()->activeModule()->moduleName().compare("YACS") != 0)
     getApp()->activateModule("YACS");
 
@@ -238,6 +260,30 @@ bool Yacsgui::createSComponent()
     }
   return false;
 }
+
+void Yacsgui::setResource(SUIT_ResourceMgr* r) 
+{
+  DEBTRACE("Yacsgui::setResource");
+  _myresource = new Yacsgui_Resource(r);
+  _myresource->preferencesChanged();
+}
+
+void Yacsgui::createPreferences() 
+{
+  DEBTRACE("Yacsgui::createPreferences");
+  _myresource->createPreferences(this);
+}
+
+void Yacsgui::preferencesChanged( const QString& sect, const QString& name ) 
+{
+  DEBTRACE("Yacsgui::preferencesChanged");
+  _myresource->preferencesChanged(sect, name);
+  if(name=="userCatalog")
+    {
+      _genericGui->getCatalogWidget()->addCatalogFromFile(Resource::userCatalog.toStdString());
+    }
+}
+
 
 // --- Export the module
 

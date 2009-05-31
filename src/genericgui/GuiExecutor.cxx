@@ -293,7 +293,7 @@ void GuiExecutor::setBreakpointList(std::list<std::string> breakpointList)
   setBPList();
   if ((_execMode == YACS::CONTINUE) && ! _breakpointList.empty())
     {
-      QtGuiContext::getQtCurrent()->getGMain()->_breakpointsModeAct->setChecked(true);
+      _context->getGMain()->_breakpointsModeAct->setChecked(true);
       setBreakpointMode();
     }
 }
@@ -305,7 +305,7 @@ void GuiExecutor::addBreakpoint(std::string breakpoint)
   setBPList();
   if ((_execMode == YACS::CONTINUE) && ! _breakpointList.empty())
     {
-      QtGuiContext::getQtCurrent()->getGMain()->_breakpointsModeAct->setChecked(true);
+      _context->getGMain()->_breakpointsModeAct->setChecked(true);
       setBreakpointMode();
     }
 }
@@ -438,7 +438,7 @@ bool GuiExecutor::event(QEvent *e)
           if (execState == YACS::PAUSED)
             _isSuspended = true;
         }
-      SubjectProc *sproc = GuiContext::getCurrent()->getSubjectProc();
+      SubjectProc *sproc = _context->getSubjectProc();
       sproc->setExecState(execState);
 //       theRunMode->onNotifyNextSteps(nextSteps);
     }
@@ -448,8 +448,8 @@ bool GuiExecutor::event(QEvent *e)
         return true;
       int state = _procRef->getNodeState(numid);
       int iGui = _serv->_engineToGuiMap[numid];
-      YASSERT(GuiContext::getCurrent()->_mapOfExecSubjectNode.count(iGui));
-      SubjectNode *snode = GuiContext::getCurrent()->_mapOfExecSubjectNode[iGui];
+      YASSERT(_context->_mapOfExecSubjectNode.count(iGui));
+      SubjectNode *snode = _context->_mapOfExecSubjectNode[iGui];
       DEBTRACE("node " << snode->getName() << " state=" << state);
       snode->setExecState(state);
 
@@ -461,8 +461,8 @@ bool GuiExecutor::event(QEvent *e)
           string val = _procRef->getInPortValue(numid, (*iti)->getName().c_str());
           DEBTRACE("node " << snode->getName() << " inport " << (*iti)->getName() 
                    << " value " << val);
-          YASSERT(GuiContext::getCurrent()->_mapOfSubjectDataPort.count(*iti));
-          SubjectDataPort* port = GuiContext::getCurrent()->_mapOfSubjectDataPort[*iti];
+          YASSERT(_context->_mapOfSubjectDataPort.count(*iti));
+          SubjectDataPort* port = _context->_mapOfSubjectDataPort[*iti];
           port->setExecValue(val);
           port->update(YACS::HMI::UPDATEPROGRESS, 0, port);
         }
@@ -473,8 +473,8 @@ bool GuiExecutor::event(QEvent *e)
           string val = _procRef->getOutPortValue(numid, (*ito)->getName().c_str());
           DEBTRACE("node " << snode->getName() << " outport " << (*ito)->getName() 
                    << " value " << val);
-          YASSERT(GuiContext::getCurrent()->_mapOfSubjectDataPort.count(*ito));
-          SubjectDataPort* port = GuiContext::getCurrent()->_mapOfSubjectDataPort[*ito];
+          YASSERT(_context->_mapOfSubjectDataPort.count(*ito));
+          SubjectDataPort* port = _context->_mapOfSubjectDataPort[*ito];
           port->setExecValue(val);
           port->update(YACS::HMI::UPDATEPROGRESS, 0, port);
         }

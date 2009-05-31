@@ -183,8 +183,9 @@ void SchemaNodeItem::popupMenu(QWidget *caller, const QPoint &globalPos)
 
 Qt::ItemFlags SchemaNodeItem::flags(const QModelIndex &index)
 {
-  Qt::ItemFlags pflag = Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled | Qt::ItemIsUserCheckable | Qt::ItemIsDropEnabled;
-
+  Qt::ItemFlags pflag = Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsDropEnabled;
+  if (QtGuiContext::getQtCurrent()->isEdition())
+    pflag = pflag | Qt::ItemIsDragEnabled;
   Qt::ItemFlags flagEdit = 0;
   int column = index.column();
   switch (column)

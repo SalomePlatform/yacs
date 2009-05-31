@@ -74,24 +74,26 @@ void InputCalStreamPort::setSchema(const std::string& schema)
 void InputCalStreamPort::setLevel(const std::string& value)
 {
   DEBTRACE("InputCalStreamPort::setLevel: " << value);
-  _level =atoi(value.c_str());
+  std::istringstream iss(value);
+  int temp;
+  if (!(iss >> temp)|| temp<1)
+    throw Exception("StorageLevel property must be an integer > 0");
+  _level=temp;
 }
 void InputCalStreamPort::setAlpha(const std::string& value)
 {
-  double temp=atof(value.c_str());
-  if(temp<0. || temp >1.)
-    {
-      throw Exception("Alpha property must be > 0 and < 1");
-    }
+  std::istringstream iss(value);
+  double temp;
+  if (!(iss >> temp)||temp<0. || temp >1.)
+    throw Exception("Alpha property must be a float > 0 and < 1");
   _alpha=temp;
 }
 void InputCalStreamPort::setDelta(const std::string& value)
 {
-  double temp=atof(value.c_str());
-  if(temp<0. || temp >1.)
-    {
-      throw Exception("DeltaT property must be > 0 and < 1");
-    }
+  std::istringstream iss(value);
+  double temp;
+  if (!(iss >> temp)||temp<0. || temp >1.)
+    throw Exception("DeltaT property must be > 0 and < 1");
   _delta=temp;
 }
 void InputCalStreamPort::setInterp(const std::string& value)

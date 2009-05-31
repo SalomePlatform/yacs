@@ -19,6 +19,7 @@
 #include "RuntimeSALOME.hxx"
 #include "PythonNode.hxx"
 #include "PythonPorts.hxx"
+#include "TypeCode.hxx"
 
 #include "PyStdout.hxx"
 #include <iostream>
@@ -54,6 +55,30 @@ PythonNode::~PythonNode()
   PyGILState_STATE gstate = PyGILState_Ensure();
   DEBTRACE( "_context refcnt: " << _context->ob_refcnt );
   Py_DECREF(_context);
+  PyGILState_Release(gstate);
+}
+
+void PythonNode::checkBasicConsistency() const throw(Exception)
+{
+  DEBTRACE("checkBasicConsistency");
+  InlineNode::checkBasicConsistency();
+
+  PyGILState_STATE gstate = PyGILState_Ensure();
+  PyObject* res;
+  res=Py_CompileString(_script.c_str(),getName().c_str(),Py_file_input);
+  if(res == NULL)
+    {
+      std::string error="";
+      PyObject* new_stderr = newPyStdOut(error);
+      PySys_SetObject((char*)"stderr", new_stderr);
+      PyErr_Print();
+      PySys_SetObject((char*)"stderr", PySys_GetObject((char*)"__stderr__"));
+      Py_DECREF(new_stderr);
+      PyGILState_Release(gstate);
+      throw Exception(error);
+    }
+  else
+    Py_XDECREF(res);
   PyGILState_Release(gstate);
 }
 
@@ -105,9 +130,9 @@ void PythonNode::execute()
     {
       _errorDetails="";
       PyObject* new_stderr = newPyStdOut(_errorDetails);
-      PySys_SetObject("stderr", new_stderr);
+      PySys_SetObject((char*)"stderr", new_stderr);
       PyErr_Print();
-      PySys_SetObject("stderr", PySys_GetObject("__stderr__"));
+      PySys_SetObject((char*)"stderr", PySys_GetObject((char*)"__stderr__"));
       Py_DECREF(new_stderr);
 
       PyGILState_Release(gstate);
@@ -227,6 +252,30 @@ PyFuncNode::~PyFuncNode()
   PyGILState_Release(gstate);
 }
 
+void PyFuncNode::checkBasicConsistency() const throw(Exception)
+{
+  DEBTRACE("checkBasicConsistency");
+  InlineFuncNode::checkBasicConsistency();
+
+  PyGILState_STATE gstate = PyGILState_Ensure();
+  PyObject* res;
+  res=Py_CompileString(_script.c_str(),getName().c_str(),Py_file_input);
+  if(res == NULL)
+    {
+      std::string error="";
+      PyObject* new_stderr = newPyStdOut(error);
+      PySys_SetObject((char*)"stderr", new_stderr);
+      PyErr_Print();
+      PySys_SetObject((char*)"stderr", PySys_GetObject((char*)"__stderr__"));
+      Py_DECREF(new_stderr);
+      PyGILState_Release(gstate);
+      throw Exception(error);
+    }
+  else
+    Py_XDECREF(res);
+  PyGILState_Release(gstate);
+}
+
 void PyFuncNode::load()
 {
   DEBTRACE( "---------------PyFuncNode::load function " << getName() << " ---------------" );
@@ -248,9 +297,9 @@ void PyFuncNode::load()
     {
       _errorDetails="";
       PyObject* new_stderr = newPyStdOut(_errorDetails);
-      PySys_SetObject("stderr", new_stderr);
+      PySys_SetObject((char*)"stderr", new_stderr);
       PyErr_Print();
-      PySys_SetObject("stderr", PySys_GetObject("__stderr__"));
+      PySys_SetObject((char*)"stderr", PySys_GetObject((char*)"__stderr__"));
       Py_DECREF(new_stderr);
 
       PyGILState_Release(gstate);
@@ -264,9 +313,9 @@ void PyFuncNode::load()
     {
       _errorDetails="";
       PyObject* new_stderr = newPyStdOut(_errorDetails);
-      PySys_SetObject("stderr", new_stderr);
+      PySys_SetObject((char*)"stderr", new_stderr);
       PyErr_Print();
-      PySys_SetObject("stderr", PySys_GetObject("__stderr__"));
+      PySys_SetObject((char*)"stderr", PySys_GetObject((char*)"__stderr__"));
       Py_DECREF(new_stderr);
 
       PyGILState_Release(gstate);
@@ -322,9 +371,9 @@ void PyFuncNode::execute()
     {
       _errorDetails="";
       PyObject* new_stderr = newPyStdOut(_errorDetails);
-      PySys_SetObject("stderr", new_stderr);
+      PySys_SetObject((char*)"stderr", new_stderr);
       PyErr_Print();
-      PySys_SetObject("stderr", PySys_GetObject("__stderr__"));
+      PySys_SetObject((char*)"stderr", PySys_GetObject((char*)"__stderr__"));
       Py_DECREF(new_stderr);
 
       PyGILState_Release(gstate);

@@ -52,7 +52,7 @@ namespace YACS
     protected:
       virtual bool hasInputPorts();
       virtual bool hasOutputPorts();
-      virtual void createTablePorts();
+      virtual void createTablePorts(QLayout* layout);
       SubjectElementaryNode *_subElemNode;
       QTabWidget* _twPorts;
       TablePortsEdition* _tvInPorts;

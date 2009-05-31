@@ -38,7 +38,7 @@ protected:
 };
 
 #ifdef CHRONODEF
-#define CHRONO(i) counters::_ctrs[i]._ctrNames = __FILE__; \
+#define CHRONO(i) counters::_ctrs[i]._ctrNames = (char *)__FILE__; \
   counters::_ctrs[i]._ctrLines = __LINE__; \
   chrono aChrono##i(i);
 

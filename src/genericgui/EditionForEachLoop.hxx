@@ -32,6 +32,7 @@ namespace YACS
       Q_OBJECT
 
     public slots:
+      virtual void onModifyCollection();
       virtual void onModifyNbBranches(const QString &text);
 
     public:

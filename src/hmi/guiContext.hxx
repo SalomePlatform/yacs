@@ -71,6 +71,7 @@ namespace YACS
       std::map<YACS::ENGINE::Container*, YACS::HMI::SubjectContainer*>                             _mapOfSubjectContainer;
       std::map<std::string, YACS::HMI::SubjectDataType*>                                           _mapOfSubjectDataType;
       std::map<int,YACS::HMI::SubjectNode*>                                                        _mapOfExecSubjectNode;
+      std::map<std::string, YACS::ENGINE::ComponentInstance*>                                      _mapOfLastComponentInstance;
       std::string _lastErrorMessage;
 
     protected:

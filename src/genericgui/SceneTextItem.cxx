@@ -67,6 +67,7 @@ void SceneTextItem::checkGeometryChange()
 
 void SceneTextItem::popupMenu(QWidget *caller, const QPoint &globalPos)
 {
+  DEBTRACE("SceneTextItem::popupMenu " << _parent);
   if (_parent) _parent->popupMenu(caller, globalPos);
 }
 
@@ -80,4 +81,9 @@ QString SceneTextItem::getToolTip()
   if (parent)
     tooltip = parent->getToolTip();
   return tooltip;
+}
+
+void SceneTextItem::setEventPos(QPointF point)
+{
+  _eventPos = mapFromScene(point);
 }

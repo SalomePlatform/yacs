@@ -49,8 +49,6 @@ namespace YACS
       virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
       virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
       virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
-      static const int _portWidth;
-      static const int _portHeight;
       bool _draging;
       bool _dragModifier;
     };

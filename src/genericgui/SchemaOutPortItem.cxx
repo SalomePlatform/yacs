@@ -112,7 +112,9 @@ Qt::ItemFlags SchemaOutPortItem::flags(const QModelIndex &index)
 {
   //DEBTRACE("SchemaOutPortItem::flags");
   Qt::ItemFlags pflag = Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDropEnabled;
-  if (! QtGuiContext::getQtCurrent()->isEdition())
+  if (QtGuiContext::getQtCurrent()->isEdition())
+    pflag = pflag | Qt::ItemIsDragEnabled;
+  else
     return pflag;
 
   Qt::ItemFlags flagEdit = 0;

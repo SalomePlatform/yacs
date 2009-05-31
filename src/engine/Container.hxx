@@ -30,6 +30,7 @@ namespace YACS
   namespace ENGINE
   {
     class ComponentInstance;
+    class Proc;
     /*!
      * This is an abstract class, that represents an abstract process in which ComponentInstances can be launched and run.
      */
@@ -60,10 +61,14 @@ namespace YACS
       std::string getName() const { return _name; };
       //! \b WARNING ! name is used in edition to identify different containers, it is not the runtime name of the container
       void setName(std::string name) { _name = name; };
+      void setProc(Proc* proc) { _proc = proc; };
+      Proc* getProc() { return _proc; };
+
     protected:
       std::string _name;
       mutable bool _isAttachedOnCloning;
       std::map<std::string,std::string> _propertyMap;
+      Proc* _proc;
     };
   }
 }

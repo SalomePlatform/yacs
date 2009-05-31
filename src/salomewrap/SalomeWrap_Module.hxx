@@ -32,8 +32,6 @@ class SalomeApp_Application;
 class QxScene_ViewWindow;
 
 class SalomeWrap_DataModel;
-class SalomeWrap_Resource;
-class SUIT_ResourceMgr;
 
 class SalomeWrap_Module: public SalomeApp_Module
 {
@@ -50,9 +48,6 @@ public:
   int activeStudyId();
 
   QDockWidget* objectBrowser();
-
-  SalomeWrap_Resource* getResource();
-  void setResource(SUIT_ResourceMgr* r);
 
   QAction* wCreateAction(const int id,
                          const QString& toolTip,
@@ -127,7 +122,7 @@ protected:
   virtual  CAM_DataModel* createDataModel();
 
   std::map<QGraphicsScene*, QxScene_ViewWindow*> _mapOfViewWindow;
-  SalomeWrap_Resource* _resource;
+
 };
 
 #endif

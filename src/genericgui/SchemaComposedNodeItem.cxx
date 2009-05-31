@@ -18,6 +18,7 @@
 //
 #include <Python.h>
 
+#include "Resource.hxx"
 #include "SchemaComposedNodeItem.hxx"
 #include "SchemaNodeItem.hxx"
 #include "SchemaInPortItem.hxx"
@@ -79,14 +80,6 @@ SchemaComposedNodeItem::SchemaComposedNodeItem(SchemaItem *parent, QString label
   _dirLinksItem = new SchemaDirLinksItem(this, "Links", son);
   model->endInsertRows();
 
-  if (SubjectProc* sProc = dynamic_cast<SubjectProc*>(subject))
-    {
-      Catalog* builtinCatalog = getSALOMERuntime()->getBuiltinCatalog();
-      sProc->addDataType(builtinCatalog, "bool");
-      sProc->addDataType(builtinCatalog, "int");
-      sProc->addDataType(builtinCatalog, "double");
-      sProc->addDataType(builtinCatalog, "string");
-    }
   if (!model->isEdition())
     {
       setExecState(YACS::UNDEFINED);
@@ -340,7 +333,12 @@ bool SchemaComposedNodeItem::dropMimeData(const QMimeData* data, Qt::DropAction 
     {
       ret =true;
       SubjectComposedNode *cnode = dynamic_cast<SubjectComposedNode*>(getSubject());
-      QtGuiContext::getQtCurrent()->getGMain()->_guiEditor->CreateNodeFromCatalog(myData, cnode);
+      bool createNewComponentInstance=Resource::COMPONENT_INSTANCE_NEW;
+      // by default getControl gives false. In this case we use the user preference COMPONENT_INSTANCE_NEW
+      // to create the node. If getControl gives true we invert the user preference
+      if(myData->getControl())
+        createNewComponentInstance=!Resource::COMPONENT_INSTANCE_NEW;
+      QtGuiContext::getQtCurrent()->getGMain()->_guiEditor->CreateNodeFromCatalog(myData, cnode,createNewComponentInstance);
     }
   else if(myData->hasFormat("yacs/subjectNode"))
     {

@@ -25,7 +25,11 @@
 %module(docstring=LOADERDOCSTRING) loader
 
 //work around SWIG bug #1863647
+#if SWIG_VERSION >= 0x010336
+#define SwigPyIterator loader_PySwigIterator
+#else
 #define PySwigIterator loader_PySwigIterator
+#endif
 
 %feature("autodoc", "1");
 

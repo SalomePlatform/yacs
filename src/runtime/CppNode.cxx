@@ -22,6 +22,7 @@
 #include "CppPorts.hxx"
 #include "CppContainer.hxx"
 #include "CppComponent.hxx"
+#include "TypeCode.hxx"
 
 #include <iostream>
 #include <set>

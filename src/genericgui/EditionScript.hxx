@@ -53,6 +53,7 @@ namespace YACS
 #else
       QTextEdit* _sci;
 #endif
+      QVBoxLayout* _glayout;
 
     };
   }

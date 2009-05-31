@@ -116,7 +116,7 @@ void CppComponent::run (const char * service, int nbIn, int nbOut,
     
 #ifdef _DEVDEBUG_
   std::ostringstream sDebug;
-  sDebug << _name << "::" << service << "(";
+  sDebug << getInstanceName() << "::" << service << "(";
   for (i=0; i<nbIn; i++) {
      sDebug << *(argIn[i]);
      if (i<nbIn-1)

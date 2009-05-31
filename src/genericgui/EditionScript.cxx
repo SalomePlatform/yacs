@@ -18,6 +18,7 @@
 //
 #include "EditionScript.hxx"
 #include "QtGuiContext.hxx"
+#include "Resource.hxx"
 
 #include "InlineNode.hxx"
 
@@ -25,6 +26,8 @@
 #include <qsciscintilla.h>
 #include <qscilexerpython.h>
 #endif
+
+#include <QSplitter>
 
 #include <cassert>
 
@@ -77,7 +80,21 @@ EditionScript::EditionScript(Subject* subject,
   _subInlineNode = dynamic_cast<SubjectInlineNode*>(_subject);
   YASSERT(_subInlineNode);
 
-  createTablePorts();
+  QSplitter *splitter = new QSplitter(this);
+  splitter->setOrientation(Qt::Vertical);
+  _wid->gridLayout1->addWidget(splitter);
+
+  QWidget* widg=new QWidget;
+  QVBoxLayout *layout = new QVBoxLayout;
+  widg->setLayout(layout);
+  splitter->addWidget(widg);
+
+  QWidget* window=new QWidget;
+  _glayout=new QVBoxLayout;
+  window->setLayout(_glayout);
+  splitter->addWidget(window);
+
+  createTablePorts(layout);
   setEditablePorts(true);
 
   _haveScript = true;
@@ -87,10 +104,11 @@ EditionScript::EditionScript(Subject* subject,
   _sci = new QTextEdit(this);
 #endif
   _wid->gridLayout->removeItem(_wid->spacerItem);
-  _wid->gridLayout1->addWidget( _sci );
+  _glayout->addWidget( _sci );
 #if HAS_QSCI4>0
   _sci->setUtf8(1);
   QsciLexerPython *lex = new QsciLexerPython(_sci);
+  lex->setFont(Resource::pythonfont);
   _sci->setLexer(lex);
   _sci->setBraceMatching(QsciScintilla::SloppyBraceMatch);
   _sci->setAutoIndent(1);
@@ -119,20 +137,29 @@ EditionScript::~EditionScript()
 void EditionScript::onApply()
 {
   bool scriptEdited = false;
+#if HAS_QSCI4>0
+  _sci->lexer()->setFont(Resource::pythonfont);
+#endif
   if (_haveScript)
     {
 #if HAS_QSCI4>0
       if (_sci->isModified())
         {
           scriptEdited = true;
-          bool ret = _subInlineNode->setScript(_sci->text().toStdString());
+	  std::string text=_sci->text().toStdString();
+	  if(text[text.length()-1] != '\n')
+	    text=text+'\n';
+          bool ret = _subInlineNode->setScript(text);
           if (ret) scriptEdited = false;
         }
 #else
       if (_sci->document()->isModified())
         {
           scriptEdited = true;
-          bool ret = _subInlineNode->setScript(_sci->document()->toPlainText().toStdString());
+	  std::string text=_sci->document()->toPlainText().toStdString();
+	  if(text[text.length()-1] != '\n')
+	    text=text+'\n';
+          bool ret = _subInlineNode->setScript(text);
           if (ret) scriptEdited = false;
         }
 #endif

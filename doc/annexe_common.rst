@@ -1,18 +1,13 @@
 
-Annexe : traitement des commons fortran et variables globales C/C++
-===================================================================
-
-
-Common fortran
+Appendix:  processing of fortran commons and C / C++ global variables
+========================================================================
+Fortran common
 --------------
-
-Cette section résulte de réflexions menées par Marc Boucker, Alexandre Douce,
-Céline Béchaud et l'auteur (pour plus de détails, voir [COMMON]_). On ne prétend
-pas ici présenter un état complet  des situations possibles.    Les codes
-fortran 77 que l'on veut commander depuis l'interpréteur python   ou depuis
-Corba/Salomé, définissent souvent des zones mémoires partagées  entre les
-différentes fonctions fortran, appelées "common".    Exemple :    Les fonctions
-``f1`` et ``f2`` utilisent la même zone mémoire   ``a`` dans le common ``C``.
+This section is the result of studies carried out by Marc Boucker, Alexandre Douce, Céline Béchaud and Marc Tajchman 
+(for further details, see [COMMON]_). We do not aim to present a complete state of possible situations in this description.  
+The fortran 77 codes that are to be controlled from the python interpreter or from Corba / SALOME often define memory zones 
+shared between the different fortran functions, called “common”.  
+For example, functions ``f1`` and ``f2`` use the same memory zone ``a`` in common ``C``. 
 
 .. _f1:
 
@@ -30,14 +25,11 @@ différentes fonctions fortran, appelées "common".    Exemple :    Les fonction
 .. include:: ./exemples/exemple11/v1/f2.f
    :literal:
 
-Si les deux fonctions sont contenues dans le même composant et le  common ``C``
-n'est pas utilisé par des fonctions d'autres composants,  le common n'est pas
-visible de l'extérieur du composant et "tout se  passe bien" (voir figure
-:ref:`Utilisation d'un common dans un composant <figcommon0>`).    Si le concepteur du composant veut permettre la lecture
-et/ou l'écriture  du common depuis la couche python et/ou CORBA, il pourra
-écrire facilement  des fonctions d'accès (par exemple fonctions ``setCommon`` et
-``getCommon``  dans l'exemple ci-après).
-
+If the two functions are contained in the same component and common ``C`` is not used by functions of other components, the 
+common is not visible from outside the component and “everything takes place properly” (see 
+figure :ref:`Using a common in a component <figcommon0>`).  If the component designer wants to allow common to be read or 
+written from the python and/or CORBA layer, he will easily be able to write access functions (for example ``setCommon`` and 
+``getCommon`` functions in the following example).
 
 ``common.f``
 
@@ -51,10 +43,9 @@ et/ou l'écriture  du common depuis la couche python et/ou CORBA, il pourra
    :width: 34ex
    :align: center
 
-.. centered::
-   Utilisation d'un common dans un composant
+.. centered:: Using a common in a component
 
-On donne ici un exemple d'encapsulation dans C++, puis dans python (via swig) :
+The following is an example encapsulation in C++, then in python (through swig):
 
 
 ``f.hxx``
@@ -68,19 +59,16 @@ On donne ici un exemple d'encapsulation dans C++, puis dans python (via swig) :
 .. include:: ./exemples/exemple11/v1/modf.i
    :literal:
 
-Un exemple d'utilisation :
-
+A practical example:
 
 .. include:: ./exemples/exemple11/v1/resultats.txt
    :literal:
 
-Si le common ``C`` est utilisé dans plusieurs librairies dynamiques, la gestion
-est plus délicate. De façon générale, on ne peut pas supposer que le common
-utilisé par chacune des librairies est situé à la méme adresse mémoire.    Il y
-a deux situations types que l'on peut rencontrer :
+If common ``C`` is used in several dynamic libraries, management is more difficult.  In general, it is impossible 
+to assume that the common used by each library is located at the same memory address.  There are two typical 
+situations that can arise:
 
-#. Les deux composants sont montés localement depuis un même interpréteur
-   python :
+#. The two components are installed locally from the same python interpreter:
 
      .. _figcommon1:
 
@@ -89,12 +77,11 @@ a deux situations types que l'on peut rencontrer :
         :width: 42ex
         :align: center
 
-     .. centered::
-        Utilisation d'un common partagé entre deux librairies - version locale
+     .. centered:: Using a common shared between two libraries – Local version
 
-#. Les deux composants sont montés dans des espaces mémoire  différents (sur la
-   même machine ou des machines différentes)  via le mécanisme Salomé (conteneurs)
-   :
+
+#. The two components are installed in different memory zones (on the same machine or on different machines) through 
+   the SALOME mechanism (containers):
 
      .. _figcommon2:
 
@@ -103,16 +90,13 @@ a deux situations types que l'on peut rencontrer :
         :width: 47ex
         :align: center
 
-     .. centered::
-        Utilisation d'un common partagé entre deux librairies - version distribuée
+     .. centered:: Using a common shared between two libraries – distributed version
 
-Dans les deux cas, il faut prévoir des fonctions de synchronisation  (par
-exemple en utilisant les fonctions de lecture/écriture des commons  depuis la
-couche de commande python et/ou Salomé).    L'adaptation au cas des deux
-composants locaux chargés depuis un interpréteur  python s'écrit :
-
-#. Pour le premier composant :
-
+Synchronization functions are necessary in both cases (for example using functions to read / write commons 
+from the python and/or SALOME command layer).  The adaptation to the case of two local components loaded from a 
+python interpreter is written as follows:
+ 
+#. For the first component:
 
    ``f1.hxx``
 
@@ -125,8 +109,7 @@ composants locaux chargés depuis un interpréteur  python s'écrit :
    .. include:: ./exemples/exemple11/v2/modf1.i
       :literal:
 
-#. Pour le second composant :
-
+#. For the second component:
 
    ``f2.hxx``
 
@@ -139,35 +122,27 @@ composants locaux chargés depuis un interpréteur  python s'écrit :
    .. include:: ./exemples/exemple11/v2/modf2.i
       :literal:
 
-#. Les fonctions de lecture d'écriture du common seront incorporées  dans chaque
-   composant.
+#. Read and write functions for the common will be included in each component.
 
-Un exemple d'utilisation
+
+A practical example
 
 
 .. include:: ./exemples/exemple11/v2/resultats.txt
    :literal:
 
-En résumé,     si un code existant comportant des commons doit être découpé en
-plusieurs  composants, on peut soit :
+In summary, if an existing code comprising commons has to be broken down into several components, it is possible to either:
 
-* modifier le code en enlevant les commons et en faisant transiter  les
-  informations via les listes de paramètres des fonctions;
+- modify the code by removing the commons and transferring information through lists of function parameters;
+- write functions to provide read/write access to the commons and use these read/write functions from layers higher 
+  than components, so as to synchronize the internal states of the different components.
+ 
+The first solution requires that in-depth action is taken in the fortran code, while the second requires that the 
+user explicitely synchronises commons in the different components.  It is strongly recommended that commons should not be 
+used in new fortran codes.
 
-* écrire des fonctions d'accès en lecture/écriture aux commons  et utiliser ces
-  fonctions de lecture/écriture depuis les couches  supérieures aux composant de
-  façon à synchroniser les état internes des  différents composants.
-
-La première solution demande d'intervenir en profondeur dans le code  fortran,
-la seconde exige que l'utilisateur synchronise explicitement  les commons dans
-les différents composants.    En ce qui concerne les nouveaux codes fortran, on
-déconseille vivement  l'utilisation des commons.
-
-
-Variables globales C/C++
+C/C++ global variables
 ------------------------
-
-La situation est analogue au cas des commons : chaque composant  aura son propre
-jeu de variables globales. Il faudra d'une façon  ou d'une autre assurer la
-cohérence de ces différents jeux  de variables.
+The situation is similar to the case of commons:  each component will have its own set of global variables.  
+A method is necessary to assure that these different sets of variables are consistant.
 

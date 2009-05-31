@@ -28,6 +28,7 @@
 #include "RuntimeSALOME.hxx"
 #include "SalomeContainer.hxx"
 #include "SalomeComponent.hxx"
+#include "Proc.hxx"
 
 #include "SALOME_NamingService.hxx"
 #include "SALOME_LifeCycleCORBA.hxx"
@@ -220,14 +221,23 @@ CORBA::Object_ptr SalomeContainer::loadComponent(const ComponentInstance *inst)
   bool isLoadable = container->load_component_Library(componentName);
   if (isLoadable)
     {
+      int studyid=1;
+      Proc* p=getProc();
+      if(p)
+        {
+          std::string value=p->getProperty("DefaultStudyID");
+          if(!value.empty())
+            studyid= atoi(value.c_str());
+        }
+
       if (isAPaCOContainer())
         {
           std::string compo_paco_name(componentName);
           char * c_paco_name = CORBA::string_dup(compo_paco_name.c_str());
-          objComponent=container->create_component_instance(c_paco_name, 0);
+          objComponent=container->create_component_instance(c_paco_name, studyid);
         }
       else
-        objComponent=container->create_component_instance(componentName, 0);
+        objComponent=container->create_component_instance(componentName, studyid);
     }
 
   if(CORBA::is_nil(objComponent))

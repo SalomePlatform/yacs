@@ -19,6 +19,7 @@
 #include "SchemaProcItem.hxx"
 #include "Menus.hxx"
 #include "QtGuiContext.hxx"
+#include "Resource.hxx"
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -53,14 +54,14 @@ void SchemaProcItem::setExecState(int execState)
   QColor sc;
   switch (_execState)
     {
-    case YACS::NOTYETINITIALIZED: sc.setHsv( 45, 50, 255); stateDef = "Not Yet Initialized"; break;
-    case YACS::INITIALISED:       sc.setHsv( 90, 50, 255); stateDef = "Initialized";         break;
-    case YACS::RUNNING:           sc.setHsv(135, 50, 255); stateDef = "Running";             break;
-    case YACS::WAITINGTASKS:      sc.setHsv(180, 50, 255); stateDef = "Waiting Tasks";       break;
-    case YACS::PAUSED:            sc.setHsv(225, 50, 255); stateDef = "Paused";              break;
-    case YACS::FINISHED:          sc.setHsv(270, 50, 255); stateDef = "Finished";            break;
-    case YACS::STOPPED:           sc.setHsv(315, 50, 255); stateDef = "Stopped";             break;
-    default:                      sc.setHsv(360, 50, 255); stateDef = "Unknown Status";
+    case YACS::NOTYETINITIALIZED: sc = YACS::HMI::Resource::NOTYETINITIALIZED; stateDef = "Not Yet Initialized"; break;
+    case YACS::INITIALISED:       sc = YACS::HMI::Resource::INITIALISED      ; stateDef = "Initialized";         break;
+    case YACS::RUNNING:           sc = YACS::HMI::Resource::RUNNING          ; stateDef = "Running";             break;
+    case YACS::WAITINGTASKS:      sc = YACS::HMI::Resource::WAITINGTASKS     ; stateDef = "Waiting Tasks";       break;
+    case YACS::PAUSED:            sc = YACS::HMI::Resource::PAUSED           ; stateDef = "Paused";              break;
+    case YACS::FINISHED:          sc = YACS::HMI::Resource::FINISHED         ; stateDef = "Finished";            break;
+    case YACS::STOPPED:           sc = YACS::HMI::Resource::STOPPED          ; stateDef = "Stopped";             break;
+    default:                      sc = YACS::HMI::Resource::UNKNOWN          ; stateDef = "Unknown Status";
    }
   _itemData.replace(YState, stateDef);
   _itemForeground.replace(YState, Qt::darkBlue);

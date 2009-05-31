@@ -19,6 +19,7 @@
 #include "GraphicsView.hxx"
 #include "SchemaModel.hxx"
 #include "SceneItem.hxx"
+#include "SceneTextItem.hxx"
 #include "Scene.hxx"
 #include "QtGuiContext.hxx"
 #include "guiObservers.hxx"
@@ -109,6 +110,16 @@ void GraphicsView::contextMenuEvent(QContextMenuEvent *event)
           QPointF point = mapToScene(event->pos());
           item->setEventPos(point);
           item->popupMenu(this, event->globalPos());
+        }
+      else
+        {
+          SceneTextItem *item = dynamic_cast<SceneTextItem*>(qgitem);
+          if (item)
+            {
+              QPointF point = mapToScene(event->pos());
+              item->setEventPos(point);
+              item->popupMenu(this, event->globalPos());
+            }
         }
     }
 }

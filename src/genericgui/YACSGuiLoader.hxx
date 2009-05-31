@@ -51,6 +51,7 @@ namespace YACS
     public:
       YACSGuiLoader();
       virtual ~YACSGuiLoader();
+      virtual void reset();
 
       virtual YACS::ENGINE::Proc* load (const char *filename);
       std::map<YACS::ENGINE::Node*, PrsData> getPrsData(YACS::ENGINE::Proc* proc);

@@ -94,7 +94,7 @@ EditionSalomeNode::EditionSalomeNode(Subject* subject,
 
   fillComponentPanel();
 
-  createTablePorts();
+  createTablePorts(_wid->gridLayout1);
 }
 
 EditionSalomeNode::~EditionSalomeNode()

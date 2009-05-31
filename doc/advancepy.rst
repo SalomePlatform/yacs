@@ -1,40 +1,36 @@
 
 .. _advancepy:
 
-Utilisation avancée de l'interface de programmation Python
+Advanced use of the Python programming interface
 ==========================================================================
 
-Passage d'objets Python entre noeuds de calcul
+Passing Python objects between calculation nodes
 --------------------------------------------------
-Le modèle de données standard de YACS permet d'échanger un certain nombre de types
-de données (voir :ref:`datatypes`) qui sont limités aux types supportés par CORBA.
-Le langage Python permet de manipuler des types de données qui ne sont pas gérés par YACS.
-En particulier, le dictionnaire Python avec des types de données hétérogènes n'est pas géré
-par le modèle de données de YACS.
+The YACS standard data model is used to exchange a number of data types (see :ref:`datatypes`) that are limited to 
+types supported by CORBA.  The Python language allows to manipulate data types that are not managed by YACS.  
+In particular, the Python dictionary with heterogeneous data types is not managed by the YACS data model.
 
-Il est cependant possible d'échanger des dictionnaires python entre certains types de noeuds de calcul
-en utilisant des références d'objets avec un protocole non standard. Le protocole standard est
-le protocole IDL qui correspond à une sérialisation des données gérée par CORBA.
-Il existe deux autres protocoles (python et json) qui utilisent des mécanismes de sérialisation
-non CORBA qui supportent plus de types de données dont les dictionnaires.
-Le nom du protocole apparait dans la première partie du Repositiory ID du type (avant le premier :).
+However, Python dictionaries can be exchanged between some types of calculation nodes by using object references with 
+a non-standard protocol.  The standard protocol is the IDL protocol that corresponds to serialisation of data 
+managed by CORBA.  There are two other protocols (python and json) that use non-CORBA serialisation mechanisms 
+that support more data types including dictionaries.  
+The protocol name appears in the first part of the type Repository ID (before the first :).
 
-Le protocole python
+The Python protocol
 ++++++++++++++++++++++
-Le protocole python s'appuie sur une sérialisation faite par le module cPickle (implémentation C
-du module pickle).
-Il suffit de définir un type référence d'objet avec le protocole python pour pouvoir échanger
-des objets python entre noeuds inline python et avec des composants SALOME implémentés en python.
-Les composants SALOME implémentés en python qui veulent supporter ce type d'échange doivent être
-conçus pour recevoir une chaine de caractères qui contient l'objet sérialisé. La désérialisation 
-de l'objet reste à la charge du composant. Dans l'autre sens, la sérialisation est à la charge 
-du composant qui doit retourner une chaine de caractères pour ce type d'objet.
+The Python protocol is based on serialisation done by the cPickle module (C implementation of the pickle module).  
+All that is necessary is to define an object reference type with the Python protocol so that Python objects 
+can be exchanged between Python inline nodes and with SALOME components implemented in Python.  
+SALOME components implemented in Python that are required to support this exchange type must be designed 
+to receive a character string that contains the serialised object.  The component is responsible for deserialising the object.  
+In the other direction, the component is responsible for serialising the object and must return a character string 
+for this object type.
 
-Définition du type "objet python"::
+Definition of the “Python object” type::
 
   tc1=p.createInterfaceTc("python:obj:1.0","PyObj",[])
 
-Définition de deux noeuds Python qui utilisent ce type::
+Definition of two Python nodes that use this type::
 
   n2=r.createScriptNode("","node2")
   p.edAddChild(n2)
@@ -51,7 +47,7 @@ Définition de deux noeuds Python qui utilisent ce type::
   p.edAddChild(n3)
   p.edAddDFLink(n2.getOutputPort("p1"),n3.getInputPort("p1"))
 
-Définition d'un noeud de service SALOME qui utilise ce type::
+Definition of a SALOME service node that uses this type::
 
   n1=r.createCompoNode("","node1")
   n1.setRef("compo1")
@@ -61,47 +57,42 @@ Définition d'un noeud de service SALOME qui utilise ce type::
   p.edAddChild(n1)
   p.edAddDFLink(n2.getOutputPort("p1"),n1.getInputPort("p1"))
 
-L'implémentation du composant compo1 doit prendre en charge la sérialisation/désérialisation
-comme dans l'exemple de la méthode run qui suit::
+The implementation of component compo1 must handle serialisation / deserialisation in the same 
+way as the example in the run method described below::
 
   def run(self,s):
     o=cPickle.loads(s)
     ret={'a':6, 'b':[1,2,3]}
     return cPickle.dumps(ret,-1)
  
-Le protocole json
+The json protocol
 ++++++++++++++++++++++
-Le protocole json s'appuie sur la sérialisation/désérialisation `JSON <http://www.json.org/>`_ 
-(JavaScript Object Notation) à la place de cPickle. json supporte moins de types de données
-et nécessite l'installation du module python simplejson mais il a l'avantage d'être
-plus interopérable. En particulier, il existe des librairies C++ qui sérialisent/désérialisent
-du JSON.
+The json protocol is based on `JSON <http://www.json.org/>`_ (JavaScript Object Notation) 
+serialisation / deserialisation instead of cPickle. JSON supports fewer data types and requires that 
+the simplejson Python module should be installed, but it has the advantage that it is more interoperable.  
+In particular, there are C++ libraries that serialise/deserialise the JSON.
 
-Pour utiliser ce protocole dans YACS, il suffit de remplacer python par json dans la définition
-du type. Par exemple::
+All that is necessary to use this protocol in YACS is to replace python by json in the type definition.  For example::
 
   tc1=p.createInterfaceTc("json:obj:1.0","PyObj",[])
 
-Le reste est identique sauf l'implémentation du composant qui devient en reprenant l'exemple
-ci-dessus::
+The rest is identical, except for implementation of the component that is as follows, using the same example as above::
 
   def run(self,s):
     o=simplejson.loads(s)
     ret={'a':6, 'b':[1,2,3]}
     return simplejson.dumps(ret)
 
-Définition de composants Python inline
+Definition of inline Python components
 --------------------------------------------------
-Normalement, un composant SALOME Python doit être développé en dehors de YACS soit
-à la main soit en utilisant un générateur de module SALOME comme :ref:`yacsgen`.
-Il est possible de définir un composant SALOME implémenté en Python directement
-dans un script python. Ce type de composant peut être utile dans les phases de test,
-par exemple.
+Normally, a Python SALOME component must be developed outside YACS, either manually or using a SALOME module generator 
+such as :ref:`yacsgen`.  
+A SALOME component implemented in Python can be defined directly in a Python script.  This type of component 
+can be useful in test phases, for example.
 
-La première étape consiste à compiler l'interface IDL directement dans le script python
-ce qui a pour effet de créer les modules Python CORBA nécessaires. Par exemple, voici
-comment on produit les modules CORBA compo1 et compo1__POA qui contiennent l'interface 
-base avec une seule méthode run::
+The first step consists of compiling the IDL Interface directly in the Python script, which has the effect of 
+creating the necessary CORBA Python modules.  For example, the following shows how CORBA modules compo1 and compo1_POA 
+are produced that contain the basic interface with a single run method::
 
   idlcompo="""
   #include "DSC_Engines.idl"
@@ -114,9 +105,9 @@ base avec une seule méthode run::
   """
   m=omniORB.importIDLString(idlcompo,["-I/local/chris/SALOME2/RELEASES/Install/KERNEL_V4_0/idl/salome"])
 
-La deuxième étape consiste à définir le corps du composant compo1 et donc de sa méthode run.
+The second step consists of defining the body of component compo1 and therefore its run method.
 
-Voici un exemple de définition faite dans le corps du script Python::
+The following is an example definition made in the body of the Python script::
 
   import compo1
   import compo1__POA
@@ -124,16 +115,15 @@ Voici un exemple de définition faite dans le corps du script Python::
   class compo(compo1__POA.base,dsccalcium.PyDSCComponent):
     def run(self,s):
       print "+++++++++++run+++++++++++",s
-      return "Bien recu"+s
+      return "received "+s
 
   compo1.compo1=compo
 
-Ce qui est important ici, c'est que SALOME trouve dans le module compo1, la classe de même nom
-qui représente le composant (d'où la dernière ligne).
+The important point here is that SALOME finds the class with the same name that represents the component 
+in module compo1 (which is why there is the last line).
 
-La troisième étape consiste à définir un container SALOME local au script car ce composant n'a
-d'existence que dans le script. La définition d'un container de nom "MyContainerPy" se fera
-comme suit::
+The third step consists of defining a SALOME container local to the script because this component 
+only exists in the script.  The container name “MyContainerPy” will be defined as follows::
 
   from omniORB import CORBA
   from SALOME_ContainerPy import SALOME_ContainerPy_i
@@ -143,7 +133,8 @@ comme suit::
   poaManager.activate()
   cpy_i = SALOME_ContainerPy_i(orb, poa, "MyContainerPy")
 
-en prenant bien garde à activer CORBA avec poaManager.activate().
+taking care to activate CORBA with poaManager.activate().
 
-Ensuite, il ne reste plus qu'à créer un container YACS et à y placer un noeud SALOME 
-comme pour un composant standard.
+All that is necessary afterwards is to create a YACS container and to place a SALOME node in it, in the same 
+way as for a standard component.
+

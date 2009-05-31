@@ -202,6 +202,7 @@ SALOME service
 
 **SALOME service node with sample input ports values**
 This type of node can be created with help of **From catalog** command from :ref:`create_menu` or :ref:`creation`.
+The type of service node is chosen from the catalog of services available in the list of imported catalog, in the :ref:`catalog_tree_view`.
 
 .. image:: images/functionality_list_23.jpg
   :align: center

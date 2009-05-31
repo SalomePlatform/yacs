@@ -12,16 +12,19 @@ data structure is used for schema building. Modifications are displayed on the 2
 
 Several executions (run) of the same schema can occur at the same time. Dedicated tree in run mode and 2D views are used for each run. The run tree view is used to control the execution (stop, breakpoints) and the 2D view reflects the detailed current state of execution.
 
-The Python Console and Log Window in the low part of the desktop permits the user to invoke some YACS functionality from Python (for example, import XML graph from Python - not a normal use) and to display diagnostic messages correspondingly.
+The Python Console and Log Window often present in other SALOME modules are not used in YACS, so, they are not present by default.
 
 For the quick access to basic operations the system of context-dependent popup menu is supported. Popup menu is called by click of the right button of the mouse on the selected object.
 
-The main window look & feel is presented schematically below.
+Drag and drop operations are often used in edition, between tree items and/or 2D items, for associations (link creation, for instance).
+
+The main window look & feel is presented schematically below. Note that SALOME Object browser and Schema tree view are regrouped under tabs by default.
 
 .. _mainwindow:
 
-.. figure:: images/yacs_gui_description_0.jpg
+.. figure:: images/yacs_gui_description_0.png
   :align: center
+  :width: 120ex
 
   Main Window
 

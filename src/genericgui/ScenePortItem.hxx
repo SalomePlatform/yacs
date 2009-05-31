@@ -36,8 +36,6 @@ namespace YACS
       static int getPortWidth();
       static int getPortHeight();
     protected:
-      static const int _portWidth;
-      static const int _portHeight;
       SceneTextItem* _text;
     };
   }

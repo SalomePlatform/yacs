@@ -48,6 +48,7 @@
 #include "SalomeComponent.hxx"
 #include "ComponentDefinition.hxx"
 #include "TypeCode.hxx"
+#include "RuntimeSALOME.hxx"
 
 #include "guiContext.hxx"
 
@@ -153,6 +154,22 @@ std::string Subject::getName()
 bool Subject::setName(std::string name)
 {
   return false;
+}
+
+std::map<std::string, std::string> Subject::getProperties()
+{
+  std::map<std::string, std::string> empty;
+  return empty;
+}
+
+bool Subject::setProperties(std::map<std::string, std::string> properties)
+{
+}
+
+std::vector<std::string> Subject::knownProperties()
+{
+  std::vector<std::string> empty;
+  return empty;
 }
 
 void Subject::select(bool isSelected)
@@ -837,7 +854,8 @@ void SubjectComposedNode::localClean()
 SubjectNode* SubjectComposedNode::addNode(YACS::ENGINE::Catalog *catalog,
 					  std::string compo,
 					  std::string type,
-					  std::string name)
+					  std::string name,
+                                          bool newCompoInst)
 {
   DEBTRACE("SubjectComposedNode::addNode("<<catalog<<","<<compo<<","<<type<<","<<name<<")");
   SubjectNode* body = 0;
@@ -849,6 +867,7 @@ SubjectNode *SubjectComposedNode::createNode(YACS::ENGINE::Catalog *catalog,
                                              std::string compo,
                                              std::string type,
                                              std::string name,
+                                             bool newCompoInst,
                                              int swCase)
 {
   Proc *proc = GuiContext::getCurrent()->getProc();
@@ -859,6 +878,7 @@ SubjectNode *SubjectComposedNode::createNode(YACS::ENGINE::Catalog *catalog,
                                                                      type,
                                                                      position,
                                                                      name,
+                                                                     newCompoInst,
                                                                      swCase);
   if (command->execute())
     {
@@ -1223,10 +1243,11 @@ void SubjectBloc::localClean()
 SubjectNode* SubjectBloc::addNode(YACS::ENGINE::Catalog *catalog,
 				  std::string compo,
 				  std::string type,
-				  std::string name)
+				  std::string name,
+                                  bool newCompoInst)
 {
   DEBTRACE("SubjectBloc::addNode( " << catalog << ", " << compo << ", " << type << ", " << name << " )");
-  SubjectNode* child = createNode(catalog, compo, type, name);
+  SubjectNode* child = createNode(catalog, compo, type, name, newCompoInst);
   return child;
 }
 
@@ -1301,10 +1322,29 @@ void SubjectProc::localClean()
 void SubjectProc::loadProc()
 {
   DEBTRACE("SubjectProc::loadProc "  << getName());
+  loadTypes();
   loadContainers();
   loadComponents();
   loadChildren();
   loadLinks();
+}
+
+//! Load types for a SubjectProc
+/*!
+ * This method loads (on import or on creation) all types of the builtin catalog and all types defined in the Proc
+ */
+void SubjectProc::loadTypes()
+{
+  Catalog* builtinCatalog = getSALOMERuntime()->getBuiltinCatalog();
+  std::map<std::string, TypeCode *>::iterator pt;
+  for(pt=builtinCatalog->_typeMap.begin();pt!=builtinCatalog->_typeMap.end();pt++)
+    {
+      addSubjectDataType((*pt).second , (*pt).first);
+    }
+  for(pt=_proc->typeMap.begin();pt!=_proc->typeMap.end();pt++)
+    {
+      addSubjectDataType((*pt).second , (*pt).first);
+    }
 }
 
 /*!
@@ -1319,11 +1359,15 @@ void SubjectProc::loadComponents()
   Proc* aProc = GuiContext::getCurrent()->getProc();
   for (map<string, ComponentInstance*>::const_iterator itComp = aProc->componentInstanceMap.begin();
        itComp != aProc->componentInstanceMap.end(); ++itComp)
-    if ( GuiContext::getCurrent()->_mapOfSubjectComponent.find((*itComp).second)
-	 ==
-	 GuiContext::getCurrent()->_mapOfSubjectComponent.end() )
-    { // engine object for component already exists => add only a subject for it
-      addSubjectComponent((*itComp).second);
+    {
+      GuiContext::getCurrent()->_mapOfLastComponentInstance[itComp->second->getCompoName()]=itComp->second;
+
+      if ( GuiContext::getCurrent()->_mapOfSubjectComponent.find((*itComp).second)
+	   ==
+	   GuiContext::getCurrent()->_mapOfSubjectComponent.end() )
+      { // engine object for component already exists => add only a subject for it
+        addSubjectComponent((*itComp).second);
+      }
     }
 }
 
@@ -1769,8 +1813,13 @@ void SubjectServiceNode::setComponentFromCatalog(YACS::ENGINE::Catalog *catalog,
           ComponentInstance *instance = 0;
           instance = _serviceNode->getComponent();
           YASSERT(instance);
-          proc->addComponentInstance(instance,"");
-          SubjectComponent* subCompo = GuiContext::getCurrent()->getSubjectProc()->addSubjectComponent(instance);
+          SubjectComponent* subCompo = GuiContext::getCurrent()->_mapOfSubjectComponent[instance];
+          if(!subCompo)
+            {
+              //automatic rename of the component instance by the proc
+              proc->addComponentInstance(instance,"");
+              subCompo = GuiContext::getCurrent()->getSubjectProc()->addSubjectComponent(instance);
+            }
           YASSERT(subCompo);
           addSubjectReference(subCompo);
           if (_subRefComponent)
@@ -2229,7 +2278,8 @@ void SubjectForLoop::recursiveUpdate(GuiEvent event, int type, Subject* son)
 SubjectNode* SubjectForLoop::addNode(YACS::ENGINE::Catalog *catalog,
 				     std::string compo,
 				     std::string type,
-				     std::string name)
+				     std::string name,
+                                     bool newCompoInst)
 {
   DEBTRACE("SubjectForLoop::addNode(catalog, compo, type, name)");
   SubjectNode* body = 0;
@@ -2238,7 +2288,7 @@ SubjectNode* SubjectForLoop::addNode(YACS::ENGINE::Catalog *catalog,
       GuiContext::getCurrent()->_lastErrorMessage = "If you need several nodes in a loop, put the nodes in a bloc"; 
       return body;
     }
-  body = createNode(catalog, compo, type, name);
+  body = createNode(catalog, compo, type, name, newCompoInst);
   return body;
 }
 
@@ -2316,7 +2366,8 @@ void SubjectWhileLoop::recursiveUpdate(GuiEvent event, int type, Subject* son)
 SubjectNode* SubjectWhileLoop::addNode(YACS::ENGINE::Catalog *catalog,
 				       std::string compo,
 				       std::string type,
-				       std::string name)
+				       std::string name,
+                                       bool newCompoInst)
 {
   DEBTRACE("SubjectWhileLoop::addNode(catalog, compo, type, name)");
   SubjectNode* body = 0;
@@ -2325,7 +2376,7 @@ SubjectNode* SubjectWhileLoop::addNode(YACS::ENGINE::Catalog *catalog,
       GuiContext::getCurrent()->_lastErrorMessage = "If you need several nodes in a loop, put the nodes in a bloc"; 
       return body;
     }
-  body = createNode(catalog, compo, type, name);
+  body = createNode(catalog, compo, type, name, newCompoInst);
   return body;
 }
 
@@ -2408,6 +2459,7 @@ SubjectNode* SubjectSwitch::addNode(YACS::ENGINE::Catalog *catalog,
 				    std::string compo,
 				    std::string type,
 				    std::string name,
+                                    bool newCompoInst,
 				    int swCase,
 				    bool replace)
 {
@@ -2418,7 +2470,7 @@ SubjectNode* SubjectSwitch::addNode(YACS::ENGINE::Catalog *catalog,
       GuiContext::getCurrent()->_lastErrorMessage = "If you need several nodes in a switch case, put the nodes in a bloc"; 
       return body;
     }
-  body = createNode(catalog, compo, type, name, swCase);
+  body = createNode(catalog, compo, type, name, newCompoInst, swCase);
   return body;
 }
 
@@ -2591,7 +2643,8 @@ void SubjectForEachLoop::recursiveUpdate(GuiEvent event, int type, Subject* son)
 SubjectNode* SubjectForEachLoop::addNode(YACS::ENGINE::Catalog *catalog,
 					 std::string compo,
 					 std::string type,
-					 std::string name)
+					 std::string name,
+                                         bool newCompoInst)
 {
   DEBTRACE("SubjectForEachLoop::addNode(catalog, compo, type, name)");
   SubjectNode* body = 0;
@@ -2600,7 +2653,7 @@ SubjectNode* SubjectForEachLoop::addNode(YACS::ENGINE::Catalog *catalog,
       GuiContext::getCurrent()->_lastErrorMessage = "If you need several nodes in a loop, put the nodes in a bloc"; 
       return body;
     }
-  body = createNode(catalog, compo, type, name);
+  body = createNode(catalog, compo, type, name, newCompoInst);
   return body;
 }
 
@@ -2693,7 +2746,8 @@ void SubjectOptimizerLoop::recursiveUpdate(GuiEvent event, int type, Subject* so
 SubjectNode* SubjectOptimizerLoop::addNode(YACS::ENGINE::Catalog *catalog,
 					   std::string compo,
 					   std::string type,
-					   std::string name)
+					   std::string name,
+                                           bool newCompoInst)
 {
   DEBTRACE("SubjectOptimizerLoop::addNode(catalog, compo, type, name)");
   SubjectNode* body = 0;
@@ -2702,7 +2756,7 @@ SubjectNode* SubjectOptimizerLoop::addNode(YACS::ENGINE::Catalog *catalog,
       GuiContext::getCurrent()->_lastErrorMessage = "If you need several nodes in a loop, put the nodes in a bloc"; 
       return body;
     }
-  body = createNode(catalog, compo, type, name);
+  body = createNode(catalog, compo, type, name, newCompoInst);
   return body;
 }
 
@@ -3043,7 +3097,20 @@ SubjectInputDataStreamPort::~SubjectInputDataStreamPort()
 
 std::map<std::string, std::string> SubjectInputDataStreamPort::getProperties()
 {
-  return _inputDataStreamPort->getPropertyMap();
+  return _inputDataStreamPort->getProperties();
+}
+
+std::vector<std::string> SubjectInputDataStreamPort::knownProperties()
+{
+  std::vector<std::string> props;
+  props.push_back("StorageLevel");
+  //props.push_back("DependencyType");
+  props.push_back("DateCalSchem");
+  props.push_back("Alpha");
+  props.push_back("DeltaT");
+  props.push_back("InterpolationSchem");
+  props.push_back("ExtrapolationSchem");
+  return props;
 }
 
 bool SubjectInputDataStreamPort::setProperties(std::map<std::string, std::string> properties)
@@ -3086,7 +3153,7 @@ SubjectOutputDataStreamPort::~SubjectOutputDataStreamPort()
 
 std::map<std::string, std::string> SubjectOutputDataStreamPort::getProperties()
 {
-  return _outputDataStreamPort->getPropertyMap();
+  return _outputDataStreamPort->getProperties();
 }
 
 bool SubjectOutputDataStreamPort::setProperties(std::map<std::string, std::string> properties)
@@ -3175,6 +3242,33 @@ std::string SubjectLink::getName()
 {
   return _name;
 }
+
+std::map<std::string, std::string> SubjectLink::getProperties()
+{
+  return getSubjectInPort()->getProperties();
+}
+
+std::vector<std::string> SubjectLink::knownProperties()
+{
+  return getSubjectInPort()->knownProperties();
+}
+
+bool SubjectLink::setProperties(std::map<std::string, std::string> properties)
+{
+  Proc *proc = GuiContext::getCurrent()->getProc();
+  CommandSetLinkProperties *command =
+    new CommandSetLinkProperties(proc->getChildName(getSubjectOutPort()->getPort()->getNode()), getSubjectOutPort()->getName(), 
+                                 proc->getChildName(getSubjectInPort()->getPort()->getNode()), getSubjectInPort()->getName(), 
+                                 properties);
+  if (command->execute())
+    {
+      GuiContext::getCurrent()->getInvoc()->add(command);
+      return true;
+    }
+  else delete command;
+  return false;
+}
+
 // ----------------------------------------------------------------------------
 
 SubjectControlLink::SubjectControlLink(SubjectNode* subOutNode,

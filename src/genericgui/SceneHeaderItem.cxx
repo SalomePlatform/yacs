@@ -22,6 +22,8 @@
 #include "Scene.hxx"
 #include <QGraphicsSceneMouseEvent>
 
+#include "Resource.hxx"
+
 // #include "QtGuiContext.hxx"
 // #include "Menus.hxx"
 // #include <QGraphicsSceneHoverEvent>
@@ -45,10 +47,10 @@ SceneHeaderItem::SceneHeaderItem(QGraphicsScene *scene, SceneItem *parent,
   _height = 25;
   _width = _parent->getInternWidth();
   _text=0;
-  _brushColor   = QColor(215,220,238);
-  _hiBrushColor = QColor(161,178,238);
-//   _penColor     = QColor(120,120,120);
-//   _hiPenColor   = QColor( 60, 60, 60);
+  _brushColor   = Resource::Header_brush;
+  _hiBrushColor = Resource::Header_hiBrush;
+//   _penColor     = Resource::Header_pen;
+//   _hiPenColor   = Resource::Header_hiPen;
   _hasNml = false;
 }
 

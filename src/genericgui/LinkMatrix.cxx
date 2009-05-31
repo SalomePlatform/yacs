@@ -294,19 +294,14 @@ void LinkMatrix::incrementCost(LNodePath lnp)
 {
   int dim = lnp.size();  
   LNodePath::const_iterator it = lnp.begin();
-  for (int k=0; k<dim; k++)
+  for (; it != lnp.end(); ++it)
     {
       int i = it->getX();
       int j = it->getY();
       int ij = i*_jm +j;
-      _cost[ij]++;
-    }    
-}
+      _cost[ij] += 10; // --- big cost, because distance is x2+y2
 
-int LinkMatrix::cost(int i, int j) const
-{
-  int ij = i*_jm +j;
-  return _cost[ij];
+    }    
 }
 
 

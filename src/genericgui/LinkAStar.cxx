@@ -179,8 +179,3 @@ void LinkAStar::moveToClosedList(std::pair<int,int> pos)
   if (_openList.erase(pos) == 0)
     DEBTRACE("node not in open list, can't delete");
 }
-
-double LinkAStar::distance(int i1, int j1, int i2, int j2)
-{
-  return sqrt(double((i1-i2)*(i1-i2) + (j1-j2)*(j1-j2)));
-}

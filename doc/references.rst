@@ -1,4 +1,4 @@
-Références
+References
 ==============
 
 .. [BOOST] Librairies utilitaires Boost (http://www.boost.org), interfaçage C++-python : Boost.Python (http://www.boost.org/libs/python/doc/)

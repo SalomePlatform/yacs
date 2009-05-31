@@ -22,6 +22,7 @@
 #include <set>
 #include <string>
 #include <map>
+#include <vector>
 #include <list>
 #include "Dispatcher.hxx"
 #include "commandsProc.hxx"
@@ -114,6 +115,9 @@ namespace YACS
       virtual void update(GuiEvent event, int type, Subject* son);
       virtual std::string getName();
       virtual bool setName(std::string name);
+      virtual bool setProperties(std::map<std::string, std::string> properties);
+      virtual std::map<std::string, std::string> getProperties();
+      virtual std::vector<std::string> knownProperties();
       virtual Subject* getParent();
       virtual bool destroy(Subject *son);
       virtual void loadChildren();
@@ -222,6 +226,7 @@ namespace YACS
       virtual ~SubjectInputDataStreamPort();
       virtual bool setProperties(std::map<std::string, std::string> properties);
       virtual std::map<std::string, std::string> getProperties();
+      virtual std::vector<std::string> knownProperties();
       virtual void clean();
       void localClean();
       virtual TypeOfElem getType(){return INPUTDATASTREAMPORT;}
@@ -300,7 +305,8 @@ namespace YACS
       virtual SubjectNode* addNode(YACS::ENGINE::Catalog *catalog,
 				   std::string compo,
 				   std::string type,
-				   std::string name);
+				   std::string name,
+           bool newCompoInst);
       virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const  { return 0; }
       virtual void loadChildren();
       virtual void loadLinks();
@@ -330,6 +336,7 @@ namespace YACS
                                       std::string compo,
                                       std::string type,
                                       std::string name,
+                                      bool newCompoInst,
                                       int swCase=0);
       YACS::ENGINE::ComposedNode *_composedNode;
     };
@@ -342,7 +349,8 @@ namespace YACS
       virtual SubjectNode* addNode(YACS::ENGINE::Catalog *catalog,
 				   std::string compo,
 				   std::string type,
-				   std::string name);
+				   std::string name,
+           bool newCompoInst);
       virtual void removeNode(SubjectNode* child);
       virtual void completeChildrenSubjectList(SubjectNode *son);
       virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const;
@@ -430,6 +438,7 @@ namespace YACS
       void loadProc();
       void loadComponents();
       void loadContainers();
+      void loadTypes();
       virtual SubjectComponent* addComponent(std::string name);
       virtual SubjectContainer* addContainer(std::string name, std::string ref="");
       virtual SubjectDataType* addDataType(YACS::ENGINE::Catalog* catalog, std::string typeName);
@@ -453,7 +462,8 @@ namespace YACS
       virtual SubjectNode* addNode(YACS::ENGINE::Catalog *catalog,
 				   std::string compo,
 				   std::string type,
-				   std::string name);
+				   std::string name,
+           bool newCompoInst);
       virtual void recursiveUpdate(GuiEvent event, int type, Subject* son);
       virtual void completeChildrenSubjectList(SubjectNode *son);
       virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const { return _body; }
@@ -477,7 +487,8 @@ namespace YACS
       virtual SubjectNode* addNode(YACS::ENGINE::Catalog *catalog,
 				   std::string compo,
 				   std::string type,
-				   std::string name);
+				   std::string name,
+           bool newCompoInst);
       virtual void recursiveUpdate(GuiEvent event, int type, Subject* son);
       virtual void completeChildrenSubjectList(SubjectNode *son);
       virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const { return _body; }
@@ -502,6 +513,7 @@ namespace YACS
 				   std::string compo,
 				   std::string type,
 				   std::string name,
+           bool newCompoInst,
 				   int swCase,
 				   bool replace = false);
       virtual void recursiveUpdate(GuiEvent event, int type, Subject* son);
@@ -530,7 +542,8 @@ namespace YACS
       virtual SubjectNode* addNode(YACS::ENGINE::Catalog *catalog,
 				   std::string compo,
 				   std::string type,
-				   std::string name);
+				   std::string name,
+           bool newCompoInst);
       virtual void recursiveUpdate(GuiEvent event, int type, Subject* son);
       virtual void completeChildrenSubjectList(SubjectNode *son);
       virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const { return _body; }
@@ -555,7 +568,8 @@ namespace YACS
       virtual SubjectNode* addNode(YACS::ENGINE::Catalog *catalog,
 				   std::string compo,
 				   std::string type,
-				   std::string name);
+				   std::string name,
+           bool newCompoInst);
       virtual void recursiveUpdate(GuiEvent event, int type, Subject* son);
       virtual void completeChildrenSubjectList(SubjectNode *son);
       virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const { return _body; }
@@ -795,6 +809,9 @@ namespace YACS
       SubjectNode* getSubjectInNode() { return _subInNode; };
       SubjectDataPort* getSubjectOutPort() { return _outPort; };
       SubjectDataPort* getSubjectInPort() { return _inPort; };
+      virtual bool setProperties(std::map<std::string, std::string> properties);
+      virtual std::map<std::string, std::string> getProperties();
+      virtual std::vector<std::string> knownProperties();
       virtual TypeOfElem getType(){return DATALINK;}
     protected:
       SubjectNode* _subOutNode;

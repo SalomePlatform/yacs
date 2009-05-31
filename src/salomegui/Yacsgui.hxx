@@ -20,6 +20,7 @@
 #define _YACSGUI_HXX_
 
 #include "SalomeWrap_Module.hxx"
+#include "Yacsgui_Resource.hxx"
 #include <SALOMEconfig.h>
 
 #include <QModelIndex>
@@ -40,6 +41,8 @@ class Yacsgui: public SalomeWrap_Module
 {
   Q_OBJECT
 
+  friend class Yacsgui_Resource;
+
 public:
   Yacsgui();
 
@@ -48,6 +51,9 @@ public:
   virtual QString  engineIOR() const;
 
   virtual void viewManagers( QStringList& list) const;
+  virtual void setResource(SUIT_ResourceMgr* r);
+  virtual void createPreferences();
+  virtual void preferencesChanged( const QString& sect, const QString& name );
 
 public slots:
   bool deactivateModule( SUIT_Study* theStudy);
@@ -66,6 +72,7 @@ protected:
   YACS::HMI::SuitWrapper* _wrapper;
   YACS::HMI::GenericGui* _genericGui;
   bool _selectFromTree;
+  Yacsgui_Resource* _myresource;
 };
 
 #endif

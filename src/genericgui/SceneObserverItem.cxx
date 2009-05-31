@@ -90,7 +90,7 @@ void SceneObserverItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
   if (!_scene->isZooming())
     {
       _subject->select(true);
-      if (_dragable && (event->button() == _dragButton))
+      if (_dragable && (event->button() == _dragButton) && QtGuiContext::getQtCurrent()->isEdition())
         {
           setCursor(Qt::ClosedHandCursor);
           _draging = true;

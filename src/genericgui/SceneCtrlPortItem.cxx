@@ -21,6 +21,7 @@
 #include "SceneNodeItem.hxx"
 #include "Scene.hxx"
 #include "ItemMimeData.hxx"
+#include "QtGuiContext.hxx"
 
 // #include "QtGuiContext.hxx"
 #include "Menus.hxx"
@@ -34,6 +35,8 @@
 
 // #include <cassert>
 
+#include "Resource.hxx"
+
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
@@ -41,20 +44,17 @@ using namespace std;
 using namespace YACS::ENGINE;
 using namespace YACS::HMI;
 
-const int SceneCtrlPortItem::_portWidth  = 85;
-const int SceneCtrlPortItem::_portHeight = 25;
-
 SceneCtrlPortItem::SceneCtrlPortItem(QGraphicsScene *scene, SceneItem *parent,
                                      QString label)
   : SceneItem(scene, parent, label), ScenePortItem(label)
 {
-  _width  = _portWidth;
-  _height = _portHeight;
+  _width  = getPortWidth();
+  _height = getPortHeight();
   setText(label);
-  _brushColor   = QColor(205,210,227);
-  _hiBrushColor = QColor(161,176,227);
-  _penColor     = QColor(120,120,120);
-  _hiPenColor   = QColor( 60, 60, 60);
+  _brushColor   = Resource::CtrlPort_brush;
+  _hiBrushColor = Resource::CtrlPort_hiBrush;
+  _penColor     = Resource::CtrlPort_pen;
+  _hiPenColor   = Resource::CtrlPort_hiPen;
 }
 
 SceneCtrlPortItem::~SceneCtrlPortItem()
@@ -109,7 +109,7 @@ void SceneCtrlPortItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
            << " " << acceptedMouseButtons ());
   if (!_scene->isZooming())
     {
-      if (_dragable && (event->button() == _dragButton))
+      if (_dragable && (event->button() == _dragButton) && QtGuiContext::getQtCurrent()->isEdition())
         {
           setCursor(Qt::ClosedHandCursor);
           _draging = true;
@@ -173,11 +173,11 @@ void SceneCtrlPortItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 
 int SceneCtrlPortItem::getPortWidth()
 {
-  return _portWidth;
+  return Resource::CtrlPort_Width;
 }
 
 int SceneCtrlPortItem::getPortHeight()
 {
-  return _portHeight;
+  return Resource::CtrlPort_Height;
 }
 

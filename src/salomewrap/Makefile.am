@@ -26,14 +26,13 @@ dist_libSalomeWrap_la_SOURCES = \
 	SalomeWrap_Module.cxx \
 	SalomeWrap_DataModel.hxx \
 	SalomeWrap_DataModel.cxx \
-	SalomeWrap_Resource.hxx \
-	SalomeWrap_Resource.cxx \
 	SuitWrapper.cxx \
 	WrapGraphicsView.cxx
 
 # MOC pre-processing
 MOC_FILES = \
-	SalomeWrap_Module_moc.cxx
+	SalomeWrap_Module_moc.cxx \
+    WrapGraphicsView_moc.cxx
 
 nodist_libSalomeWrap_la_SOURCES = $(MOC_FILES)
 
@@ -73,6 +72,7 @@ libSalomeWrap_la_LDFLAGS  = \
 
 libSalomeWrap_la_LIBADD  = \
 	$(qt4_libs) \
+  ../engine/libYACSlibEngine.la \
 	-lSalomeApp
 
 # resources files
@@ -81,6 +81,9 @@ libSalomeWrap_la_LIBADD  = \
 # --------------------------------------------
 # *.h --> *_moc.cxx
 # --------------------------------------------
+
+WrapGraphicsView_moc.cxx:$(srcdir)/../genericgui/WrapGraphicsView.hxx
+	$(QT_MOC) -p . -o $@ $<
 
 SUFFIXES = .hxx _moc.cxx .qrc _qrc.cxx
 

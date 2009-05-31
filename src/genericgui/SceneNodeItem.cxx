@@ -28,6 +28,7 @@
 #include "Menus.hxx"
 
 #include "Switch.hxx"
+#include "Resource.hxx"
 
 #include <QGraphicsSceneHoverEvent>
 #include <QPointF>
@@ -51,7 +52,7 @@ SceneNodeItem::SceneNodeItem(QGraphicsScene *scene, SceneItem *parent,
   _header = 0;
   _height = 50 + 2*_nml;
   _width = 2*ScenePortItem::getPortWidth() + 3*_margin + 2*_nml;
-  _brushColor = QColor(0,0,128);
+  _brushColor = Resource::Scene_pen;
   _moving = false;
   _blocX = false;
   _blocY = false;

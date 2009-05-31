@@ -32,6 +32,8 @@
 #include <cassert>
 #include <cmath>
 
+#include "Resource.hxx"
+
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
@@ -63,7 +65,7 @@ void RootSceneItem::update(GuiEvent event, int type, Subject* son)
     case YACS::HMI::ENDLOAD:
       guiEditor = QtGuiContext::getQtCurrent()->getGMain()->_guiEditor;
       GuiContext::getCurrent()->getSubjectProc()->select(true);
-      guiEditor->rebuildLinks();
+      //guiEditor->rebuildLinks();
       break;
     }
 }
@@ -92,10 +94,10 @@ AbstractSceneItem::AbstractSceneItem(QGraphicsScene *scene, SceneItem *parent,
   _nml = 5;
   _width = 6;
   _height = 4;
-  _penColor = QColor(0,0,128);
-  _hiPenColor = QColor(0,0,190);
-  _brushColor = QColor(128,128,128);
-  _hiBrushColor = QColor(190,190,190);
+  _penColor     = Resource::Scene_pen;
+  _hiPenColor   = Resource::Scene_hiPen;
+  _brushColor   = Resource::Scene_brush;
+  _hiBrushColor = Resource::Scene_hiBrush;
   _hasHeader = false;
   _hasNml= false;
   _optimize = true; // to be set individually or globally by user (shrink items)
@@ -381,5 +383,8 @@ void SceneItem::popupMenu(QWidget *caller, const QPoint &globalPos)
 
 void SceneItem::setEventPos(QPointF point)
 {
-  _eventPos = mapFromScene(point);
+  QPointF localPoint = mapFromScene(point);
+  if (localPoint.y() <= getHeaderBottom())
+    localPoint.setY(getHeaderBottom()+1);
+  _eventPos = localPoint;
 }

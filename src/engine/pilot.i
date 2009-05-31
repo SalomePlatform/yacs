@@ -24,7 +24,11 @@
 
 #ifndef SWIGIMPORTED
 //work around SWIG bug #1863647
+#if SWIG_VERSION >= 0x010336
+#define SwigPyIterator pilot_PySwigIterator
+#else
 #define PySwigIterator pilot_PySwigIterator
+#endif
 #endif
 
 %feature("autodoc", "1");

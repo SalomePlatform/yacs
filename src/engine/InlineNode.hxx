@@ -43,11 +43,7 @@ namespace YACS
         :ElementaryNode(other,father),_script(other._script) { }
       InlineNode(const std::string& name):ElementaryNode(name) { }
     public:
-//! Set the script (as a string) to execute
-/*!
- * \param script: script to execute
- */
-      virtual void setScript(const std::string& script) { _script=script; }
+      virtual void setScript(const std::string& script);
       virtual std::string getScript(){return _script;}
 
 //! Return a new InlineNode node by making a copy of this node

@@ -422,6 +422,7 @@ Container* Proc::createContainer(const std::string& name,const std::string& kind
     containerMap[name]->decrRef();
   containerMap[name]=co;
   co->incrRef();
+  co->setProc(this);
   return co;
 }
 

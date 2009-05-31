@@ -79,10 +79,10 @@ Runtime::Runtime()
   _builtinCatalog->_composednodeMap["Switch"]=new Switch("Switch");
   _builtinCatalog->_composednodeMap["WhileLoop"]=new WhileLoop("WhileLoop");
   _builtinCatalog->_composednodeMap["ForLoop"]=new ForLoop("ForLoop");
-  _builtinCatalog->_composednodeMap["ForEachLoopDouble"]=new ForEachLoop("ForEachLoopDouble",Runtime::_tc_double);
-  _builtinCatalog->_composednodeMap["ForEachLoopString"]=new ForEachLoop("ForEachLoopString",Runtime::_tc_string);
-  _builtinCatalog->_composednodeMap["ForEachLoopInt"]=new ForEachLoop("ForEachLoopInt",Runtime::_tc_int);
-  _builtinCatalog->_composednodeMap["ForEachLoopBool"]=new ForEachLoop("ForEachLoopBool",Runtime::_tc_bool);
+  _builtinCatalog->_composednodeMap["ForEachLoop_double"]=new ForEachLoop("ForEachLoop_double",Runtime::_tc_double);
+  _builtinCatalog->_composednodeMap["ForEachLoop_string"]=new ForEachLoop("ForEachLoop_string",Runtime::_tc_string);
+  _builtinCatalog->_composednodeMap["ForEachLoop_int"]=new ForEachLoop("ForEachLoop_int",Runtime::_tc_int);
+  _builtinCatalog->_composednodeMap["ForEachLoop_bool"]=new ForEachLoop("ForEachLoop_bool",Runtime::_tc_bool);
   std::map<std::string,TypeCode*>& typeMap=_builtinCatalog->_typeMap;
   Runtime::_tc_double->incrRef();
   typeMap["double"]=Runtime::_tc_double;

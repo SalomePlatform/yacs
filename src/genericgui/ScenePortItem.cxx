@@ -18,6 +18,8 @@
 //
 #include "ScenePortItem.hxx"
 
+#include "Resource.hxx"
+
 // #include "QtGuiContext.hxx"
 // #include "Menus.hxx"
 // #include <QGraphicsSceneHoverEvent>
@@ -32,9 +34,6 @@ using namespace std;
 using namespace YACS::ENGINE;
 using namespace YACS::HMI;
 
-const int ScenePortItem::_portWidth  = 100;
-const int ScenePortItem::_portHeight = 25;
-
 ScenePortItem::ScenePortItem(QString label)
 {
   _text = 0;
@@ -46,11 +45,11 @@ ScenePortItem::~ScenePortItem()
 
 int ScenePortItem::getPortWidth()
 {
-  return _portWidth;
+  return Resource::DataPort_Width;
 }
 
 int ScenePortItem::getPortHeight()
 {
-  return _portHeight;
+  return Resource::DataPort_Height;
 }
 

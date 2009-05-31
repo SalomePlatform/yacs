@@ -75,7 +75,7 @@ void VisitorSaveSchema::openFileSchema(std::string xmlSchema) throw(Exception)
       string what = "Impossible to open file for writing: " + xmlSchema;
       throw Exception(what);
     }
-  _out << "<?xml version='1.0'?>" << endl;
+  _out << "<?xml version='1.0' encoding='iso-8859-1' ?>" << endl;
   _out << "<proc>" << endl;
 }
 
@@ -606,7 +606,7 @@ void VisitorSaveSchema::writeInputDataStreamPorts(Node *node)
   list<InputDataStreamPort*> listOfInputPorts = node->getSetOfInputDataStreamPort();
   for (list<InputDataStreamPort*>::iterator it = listOfInputPorts.begin(); it != listOfInputPorts.end(); ++it)
     {
-      std::map<std::string,std::string> aPropMap = (*it)->getPropertyMap();
+      std::map<std::string,std::string> aPropMap = (*it)->getProperties();
       if ( aPropMap.empty() )
 	_out << indent(depth) << "<instream name=\"" << (*it)->getName() << "\" type=\"" 
 	     << (*it)->edGetType()->name() << "\"/>" << endl;
@@ -639,7 +639,7 @@ void VisitorSaveSchema::writeOutputDataStreamPorts(Node *node)
   list<OutputDataStreamPort*> listOfOutputPorts = node->getSetOfOutputDataStreamPort();
   for (list<OutputDataStreamPort*>::iterator it = listOfOutputPorts.begin(); it != listOfOutputPorts.end(); ++it)
     {
-      std::map<std::string,std::string> aPropMap = (*it)->getPropertyMap();
+      std::map<std::string,std::string> aPropMap = (*it)->getProperties();
       if ( aPropMap.empty() )
 	_out << indent(depth) << "<outstream name=\"" << (*it)->getName() << "\" type=\"" 
 	     << (*it)->edGetType()->name() << "\"/>" << endl;
@@ -839,7 +839,7 @@ void VisitorSaveSchema::writeSimpleStreamLinks(ComposedNode *node)
                   _out << indent(depth+1) << "<tonode>" << childName << "</tonode> ";
                   _out << "<toport>" << anIP->getName() << "</toport>" << endl;
 
-		  std::map<std::string,std::string> aPropMap = anOP->getPropertyMap();
+		  std::map<std::string,std::string> aPropMap = dynamic_cast<InputDataStreamPort*>(anIP)->getProperties();
 		  for (std::map<std::string,std::string>::iterator itP = aPropMap.begin(); itP != aPropMap.end(); itP++)
                     {
                       string notAlinkProperty = "DependencyType";
@@ -886,7 +886,7 @@ void VisitorSaveSchema::writeSimpleStreamLinks(ComposedNode *node)
                     _out << indent(depth+1) << "<tonode>" << node->getChildName(to) << "</tonode> ";
                     _out << "<toport>" << anIP->getName() << "</toport>" << endl;
 
-		    std::map<std::string,std::string> aPropMap = anOP->getPropertyMap();
+		    std::map<std::string,std::string> aPropMap = dynamic_cast<InputDataStreamPort*>(anIP)->getProperties();
 		    for (std::map<std::string,std::string>::iterator itP = aPropMap.begin(); itP != aPropMap.end(); itP++)
 		      _out << indent(depth+1) << "<property name=\"" << (*itP).first << "\" value=\"" 
 			   << (*itP).second << "\"/>" << endl;

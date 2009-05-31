@@ -17,6 +17,7 @@
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 #include "EditionDataLink.hxx"
+#include "PropertyEditor.hxx"
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -31,6 +32,12 @@ EditionDataLink::EditionDataLink(Subject* subject,
                                  const char* name)
   : ItemEdition(subject, parent, name)
 {
+  SubjectLink * sub = dynamic_cast<SubjectLink*>(_subject);
+  if(dynamic_cast<SubjectInputDataStreamPort*>(sub->getSubjectInPort()))
+    {
+      PropertyEditor* propeditor=new PropertyEditor(_subject);
+      _wid->gridLayout1->addWidget(propeditor);
+    }
 }
 
 EditionDataLink::~EditionDataLink()

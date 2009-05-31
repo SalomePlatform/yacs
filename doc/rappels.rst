@@ -40,90 +40,76 @@ Definitions
      provides several scripts to run the application (runAppli), enter the application environment (runSession) and other 
      more internal scripts such as remote run (runRemote).
 
-Modules et composants SALOME
+SALOME modules and components
 ==================================================
-Dans son principe, la plate-forme SALOME est décomposée en une plate-forme
-de base nommée module KERNEL et une collection de modules divers.
+In principle, the SALOME platform is broken down into a basic platform (composed of a KERNEL and a GUI modules) 
+and a collection of various modules.
 
-Un module est un produit compilable et installable qui se concrétise par une arborescence source qui doit
-respecter les règles générales SALOME et qui comprend une procédure de construction, installation qui
-respecte également les règles SALOME.
-Chaque module est géré en configuration dans un module CVS
-indépendant. Chaque module peut livrer des versions à son rythme dans le respect des règles de
-cohérence de SALOME. A chaque module est associée une base de tests de non régression.
+A module is a compilable and installable product that is materialised by a source tree structure that must respect 
+SALOME general rules and that includes a construction and installation procedure that also respects SALOME rules.  
+Each module is managed in configuration in an independent CVS module.  Each module can deliver versions at it own rate 
+respecting SALOME consistency rules.  A non-regression tests base is associated with each module.
 
-Un module a des dépendances avec les autres modules (utilise, est utilisé).
-Le module KERNEL constitue la base de la plate-forme SALOME. 
-Tous les autres modules dépendent du module KERNEL.
+A module has dependencies with other modules (uses, is used). The KERNEL and GUI modules makes up the base of the SALOME platform.  
+All other modules depend on these modules.
 
-===================================== ========= ============= ==================================
-Thèmes                                 Modules    Utilise          Est utilisé par
-===================================== ========= ============= ==================================
-Architecture                           KERNEL                  MED, GEOM, SMESH, VISU,YACS  
-Architecture                           MED       KERNEL         SMESH, VISU
-Géométrie                              GEOM      KERNEL         SMESH
-Maillage                               SMESH     KERNEL, MED
-Supervision                            YACS      KERNEL
-Visualisation                          VISU      KERNEL, MED
-===================================== ========= ============= ==================================
+===================================== ========= ======================= ==================================
+Theme                                  Module     Uses                       Is used by       
+===================================== ========= ======================= ==================================
+Architecture                           KERNEL                            GUI, MED, GEOM, SMESH, VISU,YACS  
+Architecture                           GUI       KERNEL                  MED, GEOM, SMESH, VISU,YACS  
+Architecture                           MED       KERNEL, GUI             SMESH, VISU
+Geometry                               GEOM      KERNEL, GUI             SMESH
+Mesh                                   SMESH     KERNEL, GUI, GEOM, MED
+Supervision                            YACS      KERNEL, GUI
+Visualization                          VISU      KERNEL, GUI, MED
+===================================== ========= ======================= ==================================
 
-Un module contient un ou plusieurs composants SALOME. Un composant SALOME est un objet CORBA qui
-respecte les règles SALOME et qui est déclaré à SALOME au moyen d'un catalogue. Un composant SALOME
-peut être doté d'une interface utilisateur graphique (GUI) qui doit elle-même respecter les règles
-SALOME.
+A module contains one or several SALOME components.  A SALOME component is a CORBA object that respects SALOME rules 
+and that is declared to SALOME using a catalog.  A SALOME component may be provided with a graphic user interface (GUI) 
+that must itself respect SALOME rules.
 
-Les containers
+Containers
 ======================
-Dans SALOME, les composants sont dynamiquement chargeables. Cette propriété est obtenu
-en utilisant un mécanisme de container. 
+In SALOME, components are dynamically loaded.  This property is obtained by using a container mechanism.
 
-Dans ses grandes lignes, un container est un serveur CORBA dont l'interface dispose 
-des méthodes nécessaires pour effectuer le chargement déchargement de l'implémentation
-d'un composant SALOME. Pour effectuer le chargement d'un composant, on appellera la méthode
-load_impl du container. 
+In general, a container is a CORBA server with an interface that is provided with methods necessary to load 
+and unload the implementation of a SALOME component.  A component is loaded by calling the container load_impl method.
 
-La mécanique de base du chargement d'un composant est dépendante du langage d'implémentation choisi.
+The basic mechanism for loading a component depends on the chosen implementation language.
 
-En C++, la plate-forme utilise le chargement dynamique de bibliothèque (dlopen) et un mécanisme de fonction 
-factory dont le nom doit être <Module>Engine_factory (par exemple GEOMEngine_factory, pour GEOM).
-Cette fonction doit retourner l'objet CORBA effectif qui est le composant SALOME.
+In C++, the platform uses dynamic library loading (dlopen) and a factory function mechanism that must be 
+named <Module>Engine_factory (for example GEOMEngine_factory, for GEOM). 
+This function must return the effective CORBA object that is the SALOME component.
 
-En Python, la plate-forme utilise le mécanisme d'import de Python (import <Module>) et instancie 
-le composant SALOME Python en utilisant une classe (ou une factory) de même nom (<Module>) pour
-ce faire.
+In Python, the platform uses the Python import mechanism (import <Module>) and instantiates the Python SALOME 
+component using a class (or a factory) with the same name (<Module>).
 
 .. _appli:
 
-Construction et utilisation d'une application SALOME
+Construction and use of a SALOME application
 =========================================================
-Ce document explique comment configurer, installer et utiliser votre propre 
-application SALOME à partir d'une liste de modules préinstallés.
+This section explains how to configure, install and use your own SALOME application starting from a list of 
+pre-installed modules (see more details in the on line documentation for the KERNEL module defining the 
+application concept).
 
-Principes
+Principles
 ------------
+A SALOME application is built up from a list of platform basic modules (GEOM, SMESH, ASTER, etc.) or users.  
+It consists of a set of shell scripts and directories used to execute the application in different contexts.
 
-Une application SALOME est construite à partir d'une liste de modules (GEOM, SMESH, ASTER...) de
-base de la plate-forme ou utilisateurs.
-Elle consiste en un jeu de scripts shell et de répertoires qui permettent d'exécuter l'application
-dans différents contextes.
+A user can define several SALOME applications.  These applications can be used from several user accounts.  
+They can use the same modules (KERNEL or other).  The SALOME application is independent of KERNEL 
+and **it must not be installed in KERNEL_ROOT_DIR**.
 
-Un utilisateur peut définir plusieurs applications SALOME. Ces applications
-sont utilisables à partir d'un même compte utilisateur. Elles peuvent utiliser
-les mêmes modules (KERNEL ou autre). L'application SALOME est indépendante de KERNEL
-et **ne doit pas être installée dans KERNEL_ROOT_DIR**.
+Prerequisites for each application may be different.
 
-Les prérequis utilisés par chaque application peuvent être différents.
+A SALOME session run from a SALOME application can be executed on several computers.
 
-Une session SALOME lancée à partir d'une application SALOME peut s'exécuter
-sur plusieurs calculateurs.
-
-Pour une installation d'application multi-machines, les modules et les prérequis
-doivent être installés sur toutes les machines impliquées. Il n'est pas nécessaire
-d'installer tous les modules sur toutes les machines à part KERNEL.
-L'utilisateur SALOME doit avoir un compte sur chaque machine. L'accès aux machines
-distantes est réalisé par rsh ou ssh. Ces accès doivent être configurés pour 
-un usage sans password. Les comptes peuvent être différents sur les différentes
-machines.
+For the installation of a multi-machine application, the modules and prerequisites must be installed on 
+all machines involved.  There is no need to install all modules on all machines except for KERNEL.  
+The SALOME user must have an account on each machine.  Remote machines are accessed by rsh or ssh.  
+These accesses must be configured for use without a password.  The accounts may be different on the different machines.
 
 .. raw:: latex
 
@@ -131,25 +117,24 @@ machines.
   \g@addto@macro\@verbatim\small
   \makeatother
 
-
-Créer une application SALOME
+Creating a SALOME application
 ------------------------------
-On crée une application SALOME avec l'outil appli_gen.py que l'on trouve dans l'installation du module KERNEL. 
-Cet outil construit l'application en partant d'un fichier de configuration au format XML qui décrit la liste
-des modules à utiliser (nom, chemin d'installation), le fichier qui positionne l'environnement 
-pour les prérequis de SALOME et optionnellement le répertoire des exemples SALOME (SAMPLES_SRC).
+A SALOME application is created using the appli_gen.py tool located in the installation of the KERNEL module.  
+This tool builds the application starting from a configuration file in the XML format that describes the list 
+of modules to be used (name, installation path), the file that sets the environment for SALOME pre-requisites 
+and optionally the SALOME examples directory (SAMPLES_SRC).
 
-La commande à utiliser est la suivante::
+The following command is used::
 
    python <KERNEL_ROOT_DIR>/bin/salome/appli_gen.py --prefix=<install directory> --config=<configuration file>
 
-où <configuration file> est le nom du fichier de configuration et <install directory> est le nom du répertoire
-dans lequel on veut créer l'application. <KERNEL_ROOT_DIR> indique le répertoire d'installation du module KERNEL.
+where <configuration file> is the name of the configuration file and <install directory> is the name of the 
+directory in which the application is to be created.  <KERNEL_ROOT_DIR> indicates the directory in which 
+the KERNEL module is installed.
 
-On peut créer le fichier de configuration en modifiant une copie du fichier ${KERNEL_ROOT_DIR}/bin/salome/config_appli.xml.
+The configuration file can be created by modifying a copy of the ${KERNEL_ROOT_DIR}/bin/salome/config_appli.xml file.
 
-
-En voici un exemple::
+For example::
 
   <application>
   <prerequisites path="/data/tmplgls/secher/SALOME_V4.1.1_MD08/env_products.sh"/>
@@ -171,38 +156,31 @@ En voici un exemple::
   <samples path="/data/SALOME_V4.1.1/SAMPLES/4.1.1/SAMPLES_SRC"/>
   </application>
 
-Quelques règles à suivre
+Some rules to be followed
 ------------------------------
+The application directory must be created on all computers on which components of this application are to be executed.  
+The simplest method is to create the application directory using the same relative path from the HOME directory on each machine.  
+If this is not wanted, then different paths can be used on different computers, but these paths will have to be specified 
+in the CatalogRessources.xml configuration file.
 
-Le répertoire d'application doit être créé sur tous les calculateurs qui devront exécuter des composants de cette application.
-La méthode la plus simple est de créer le répertoire d'application en utilisant le même chemin relatif par rapport au
-répertoire HOME sur chaque machine. Si ce n'est pas souhaité, il est possible d'utiliser des chemins différents suivant
-les calculateurs mais il faudra le préciser dans le fichier de configuration CatalogRessources.xml.
+The application directory contains scripts to initialize environment variables and to make executions.
 
-Le répertoire d'application contient des scripts pour initialiser les variables d'environnement et faire des exécutions.
+The environment is initialized by scripts placed in the env.d sub-directory.  Scripts for SALOME are created at 
+the time that the application is created but the user can add his own scripts.  All that is necessary is that 
+they have the .sh suffix.  These scripts must be installed on all machines used by the application.
 
-L'environnement est initialisé par des scripts placés dans le sous répertoire env.d. Les scripts pour SALOME sont créés
-au moment de la création de l'application mais l'utilisateur peut ajouter ses propres scripts. Il suffit qu'ils aient
-comme suffixe .sh. Ces scripts doivent être installés sur toutes les machines de l'application.
+The SALOME application provides the user with 3 execution scripts:
+ - **runAppli** runs a SALOME session (in the same way as ${KERNEL_ROOT_DIR}/bin/Salome/runSalome).
+ - **runSession** connects to a running SALOME session, in a shell with a conforming environment.  If there is no argument, the 
+   script opens an interactive shell.  If there are arguments, it executes the command supplied in the environment of the SALOME application.
+ - **runConsole** opens a python console connected to the current SALOME session.  Another option is to use RunSession and then to run Python.
 
-L'application SALOME fournit à l'utilisateur 4 scripts d'exécution :
-
-  - **runAppli** lance une session SALOME (à la manière de ${KERNEL_ROOT_DIR}/bin/salome/runSalome). 
-  - **runSession** permet de se connecter, dans un shell avec un environnement conforme, à une session SALOME lancée
-    précédemment. Sans argument, le script ouvre un shell interactif. Avec arguments, il exécute la commande
-    fournie dans l'environnement de l'application SALOME.
-  - **runConsole** ouvre une console python connectée à la session SALOME courante. Il est également possible d'utiliser
-    runSession puis de lancer python.
-
-
-Les fichiers de configuration de l'application sont :
-
-  - **SALOMEApp.xml** : ce fichier est semblable au fichier par défaut qui se trouve dans ${GUI_ROOT_DIR}/share/SALOME/resources/gui.
-    Il peut être adapté aux besoins de l'utilisateur.
-  - **CatalogRessources.xml** : ce fichier décrit tous les calculateurs que l'application peut utiliser. Le fichier initial
-    ne contient que la machine locale. L'utilisateur doit ajouter les machines à utiliser. Si on veut utiliser
-    des répertoires d'application quelconques sur les différents calculateurs, il faut préciser dans ce fichier 
-    leur localisation avec l'attribut appliPath::
+The application configuration files are:
+ - **SALOMEApp.xml**:  this file is similar to the default file located in ${GUI_ROOT_DIR}/share/SALOME/resources/gui.  
+   It can be adapted to the user’s needs.
+ - **CatalogResources.xml**:  this file describes all computers that the application might use.  The initial file only 
+   contains the local machine.  The user must add the machines to be used.  If it is required to use arbitrary 
+   application directories on the different computers, their location must be specified in this file using the appliPath attribute::
 
         appliPath="my/specific/path/on/this/computer"
 

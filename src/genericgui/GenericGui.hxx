@@ -69,6 +69,7 @@ namespace YACS
       void raiseStacked();
       CatalogWidget* getCatalogWidget() { return _catalogsWidget; };
       std::list<std::string> getMachineList();
+      void createForEachLoop(std::string type="double");
 
       QAction *_newSchemaAct;
       QAction *_importSchemaAct;
@@ -105,6 +106,7 @@ namespace YACS
       QAction *_createDataTypeAct;
       QAction *_importDataTypeAct;
       QAction *_newContainerAct;
+      QAction *_selectComponentInstanceAct;
       QAction *_newSalomeComponentAct;
       QAction *_newSalomePythonComponentAct;
       QAction *_newCorbaComponentAct;
@@ -210,6 +212,7 @@ namespace YACS
       void onImportDataType();
 
       void onNewContainer();
+      void onSelectComponentInstance();
       void onNewSalomeComponent();
       void onNewSalomePythonComponent();
       void onNewCorbaComponent();

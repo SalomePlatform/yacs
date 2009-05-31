@@ -26,13 +26,15 @@ salomeinclude_HEADERS = \
 lib_LTLIBRARIES = libYACS.la
 
 dist_libYACS_la_SOURCES = \
-	Yacsgui.cxx \
-	Yacsgui_DataModel.hxx \
-	Yacsgui_DataModel.cxx
+    Yacsgui.cxx \
+    Yacsgui_DataModel.hxx \
+    Yacsgui_Resource.cxx \
+    Yacsgui_Resource.hxx \
+    Yacsgui_DataModel.cxx
 
 # MOC pre-processing
 MOC_FILES = \
-	Yacsgui_moc.cxx
+    Yacsgui_moc.cxx
 
 nodist_libYACS_la_SOURCES = $(MOC_FILES)
 
@@ -69,16 +71,15 @@ libYACS_la_LIBADD  = \
 
 LIBICONS =  \
 	SalomeApp.xml \
+	YACSSchemaCatalog.xml \
 	YACSCatalog.xml \
 	ModuleYacs.png \
 	ExecYACS.png
 
-QMFILES =
-
-# \
-#	YACS_msg_en.qm \
-#	YACS_msg_fr.qm \
-#	YACS_icons.qm
+# resources files
+nodist_salomeres_DATA = \
+	YACS_msg_en.qm	\
+	YACS_msg_fr.qm
 
 dist_salomeres_DATA = $(QMFILES) ${ICONS}
 ICONS = $(LIBICONS:%=resources/%)

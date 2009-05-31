@@ -158,9 +158,10 @@ CommandAddNodeFromCatalog::CommandAddNodeFromCatalog(YACS::ENGINE::Catalog *cata
                                                      std::string type,
                                                      std::string position,
                                                      std::string name,
+                                                     bool newCompoInst,
                                                      int swCase)
   : Command(), _catalog(catalog), _compoName(compo), _typeName(type),
-    _position(position), _name(name), _swCase(swCase)
+    _position(position), _name(name), _newCompoInst(newCompoInst), _swCase(swCase)
 {
   _nodeToClone = 0;
   if (_compoName.empty())
@@ -200,6 +201,33 @@ bool CommandAddNodeFromCatalog::localExecute()
         {
           son = _nodeToClone->clone(0);
           son->setName(_name);
+
+          // Node creation eventually reusing old component instance
+          if (ServiceNode *service = dynamic_cast<ServiceNode*>(son))
+            {
+              ComponentInstance *compo = service->getComponent();
+              if(compo)
+                {
+                  std::string compoName=compo->getCompoName();
+                  DEBTRACE(compoName);
+                  std::string compoInstName=compo->getInstanceName();
+                  DEBTRACE(compoInstName);
+                  if(!_newCompoInst)
+                    {
+                      ComponentInstance *lastcompo = GuiContext::getCurrent()->_mapOfLastComponentInstance[compoName];
+                      DEBTRACE(lastcompo);
+                      if(lastcompo)
+                        {
+                          DEBTRACE(lastcompo->getInstanceName());
+                          service->setComponent(lastcompo); // use the last component instance of the same type and not a new instance
+                        }
+                      else
+                        GuiContext::getCurrent()->_mapOfLastComponentInstance[compoName]=compo;
+                    }
+                  else
+                    GuiContext::getCurrent()->_mapOfLastComponentInstance[compoName]=compo;
+                }
+            }
         }
       if (son)
         {
@@ -1427,6 +1455,7 @@ bool CommandAddContainer::localExecute()
         }
       _container = container;
       _container->setName(_name);
+      _container->setProc(proc);
       proc->containerMap[_name] = _container;
       return true;
     }
@@ -1515,6 +1544,47 @@ bool CommandSetDSPortProperties::localExecute()
 }
       
 bool CommandSetDSPortProperties::localReverse()
+{
+}
+
+// ----------------------------------------------------------------------------
+
+CommandSetLinkProperties::CommandSetLinkProperties(std::string startnode, std::string startport, 
+                                                   std::string endnode, std::string endport,
+                                                   std::map<std::string,std::string> properties)
+  : Command(), _startNodeName(startnode), _startPortName(startport), 
+    _endNodeName(endnode), _endPortName(endport),
+    _properties(properties)
+{
+  DEBTRACE("CommandSetLinkProperties::CommandSetLinkProperties " );
+}
+
+bool CommandSetLinkProperties::localExecute()
+{
+  try
+    {
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      Node* node;
+      DataStreamPort* DSPort = 0;
+
+      node   = proc->getChildByName(_startNodeName);
+      DSPort = node->getOutputDataStreamPort(_startPortName);
+      DSPort->setProperties(_properties);
+
+      node   = proc->getChildByName(_endNodeName);
+      DSPort = node->getInputDataStreamPort(_endPortName);
+      DSPort->setProperties(_properties);
+      return true;
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandSetDSPortProperties::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      return false;
+    }
+}
+
+bool CommandSetLinkProperties::localReverse()
 {
 }
 

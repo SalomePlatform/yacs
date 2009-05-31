@@ -102,6 +102,7 @@ namespace YACS
                                 std::string type,
                                 std::string position,
                                 std::string name,
+                                bool newCompoInst=true,
                                 int swCase =0);
       YACS::ENGINE::Node *getNode();
     protected:
@@ -114,6 +115,7 @@ namespace YACS
       std::string _typeName;
       std::string _position;
       std::string _name;
+      bool _newCompoInst;
       int _swCase;
       YACS::ENGINE::Node *_node;
     };
@@ -464,6 +466,22 @@ namespace YACS
       std::string _nodeName;
       std::string _portName;
       bool _isInport;
+      std::map<std::string,std::string> _properties;
+    };
+
+    class CommandSetLinkProperties: public Command
+    {
+    public:
+      CommandSetLinkProperties(std::string startnode, std::string startport, 
+                               std::string endnode, std::string endport,
+                               std::map<std::string,std::string> properties);
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      std::string _startNodeName;
+      std::string _startPortName;
+      std::string _endNodeName;
+      std::string _endPortName;
       std::map<std::string,std::string> _properties;
     };
 
