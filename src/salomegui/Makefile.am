@@ -72,7 +72,6 @@ libYACS_la_LIBADD  = \
 LIBICONS =  \
 	SalomeApp.xml \
 	YACSSchemaCatalog.xml \
-	YACSCatalog.xml \
 	ModuleYacs.png \
 	ExecYACS.png
 
@@ -81,9 +80,12 @@ nodist_salomeres_DATA = \
 	YACS_msg_en.qm	\
 	YACS_msg_fr.qm
 
+QMFILES = \
+	resources/YACS_msg_en.ts \
+	resources/YACS_msg_fr.ts
+
 dist_salomeres_DATA = $(QMFILES) ${ICONS}
 ICONS = $(LIBICONS:%=resources/%)
-
 
 ui_%.h: %.ui
 	$(QT_UIC) $< -o $@
