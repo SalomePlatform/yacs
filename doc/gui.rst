@@ -24,7 +24,6 @@ The main window look & feel is presented schematically below. Note that SALOME O
 
 .. figure:: images/yacs_gui_description_0.png
   :align: center
-  :width: 120ex
 
   Main Window
 

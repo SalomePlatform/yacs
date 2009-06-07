@@ -376,7 +376,7 @@ Node objects.
 |                                |             |current schema. **Warning! All links between this item and external node are lost!** |
 |                                |             |                                                                                     |
 |                                |             |**Copy** - keep a copy of the item in a temporary buffer for paste elsewhere in      |
-|                                |             | the current schema.                                                                 |
+|                                |             |the current schema.                                                                  |
 |                                |             |                                                                                     |
 |                                |             |**Paste** - paste items (if any) from the                                            |
 |                                |             |buffer into the current schema.                                                      |
@@ -389,7 +389,7 @@ Node objects.
 |                                |             |current schema. **Warning! All links between this item and external node are lost!** |
 |                                |             |                                                                                     |
 |                                |             |**Copy** - keep a copy of the item in a temporary buffer for paste elsewhere in      |
-|                                |             | the current schema.                                                                 |
+|                                |             |the current schema.                                                                  |
 |                                |             |                                                                                     |
 |                                |             |**Paste** - paste items (if any) from the                                            |
 |                                |             |buffer into the current schema.                                                      |

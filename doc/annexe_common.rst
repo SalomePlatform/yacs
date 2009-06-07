@@ -40,7 +40,6 @@ written from the python and/or CORBA layer, he will easily be able to write acce
 
 
 .. image:: images/common0.png
-   :width: 34ex
    :align: center
 
 .. centered:: Using a common in a component
@@ -74,7 +73,6 @@ situations that can arise:
 
 
      .. image:: images/common1.png
-        :width: 42ex
         :align: center
 
      .. centered:: Using a common shared between two libraries – Local version
@@ -87,7 +85,6 @@ situations that can arise:
 
 
      .. image:: images/common2.png
-        :width: 47ex
         :align: center
 
      .. centered:: Using a common shared between two libraries – distributed version

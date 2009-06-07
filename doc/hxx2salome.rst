@@ -1,17 +1,17 @@
 
 .. _hxx2salome:
 
-hxx2salome : a Salome component generator
+hxx2salome : a SALOME component generator
 ==========================================
 
 
 
-This document is the following of the HELLO component documentation [R1]_, which presented the basis for the implementation of a Salome Component, and the CALCULATOR component documentation [H1]_, which introduced the use of MED within the Salome context. These two examples showed that implementing a Salome component doesn't require much imagination, it can be done by following some predefined rules. Thus, it is possible, provided a C++ standalone component, to wrap it into a Salome Component automatically. This document presents hxx2salome, a prototype tool for automatic Salome Component generation. This tool starts from the interface of a C++ component (an .hxx file), parse the public  API , and use the type information to generate the Salome component (the  IDL  interface, and its implementation).
+This document is the following of the HELLO component documentation [R1]_, which presented the basis for the implementation of a SALOME Component, and the CALCULATOR component documentation [H1]_, which introduced the use of MED within the SALOME context. These two examples showed that implementing a SALOME component doesn't require much imagination, it can be done by following some predefined rules. Thus, it is possible, provided a C++ standalone component, to wrap it into a SALOME Component automatically. This document presents hxx2salome, a prototype tool for automatic SALOME Component generation. This tool starts from the interface of a C++ component (an .hxx file), parse the public  API , and use the type information to generate the SALOME component (the  IDL  interface, and its implementation).
 
 Getting started
 ---------------
 
-In this chapter, we will create from scratch a new Salome component that add and multiply integers, and compute a factorial. We suppose that  hxx2salome  (and the related tools  SA_new_component  and  SA_build ) have been installed in a directory called  $HXX2SALOME_ROOT_DIR , which is present in your  $PATH .
+In this chapter, we will create from scratch a new SALOME component that add and multiply integers, and compute a factorial. We suppose that  hxx2salome  (and the related tools  SA_new_component  and  SA_build ) have been installed in a directory called  $HXX2SALOME_ROOT_DIR , which is present in your  $PATH .
 
 C++ component implementation
 ''''''''''''''''''''''''''''
@@ -80,7 +80,7 @@ The   SA_new_cpp_component CALC  command has created a complete tree in director
 
 
 
-A template python test file was also generated, that can be callable both from python and from salome. You can if you wish edit it and add the tests you want:
+A template python test file was also generated, that can be callable both from python and from SALOME. You can if you wish edit it and add the tests you want:
 
 
 
@@ -150,10 +150,10 @@ It's time now to compile the component and test it. The component is built under
 
 Before testing the component from python, it was necessary to update  LD_LIBRARY_PATH  and  PYTHON_PATH  environment variables.
 
-Salome component generation
+SALOME component generation
 '''''''''''''''''''''''''''
 
-The C++ engine is finished, and tested - the final step is the integration inside salome. This is done  using  hxx2salome  tool (the options used here are explained in Chapter 8.2 – the tool also has a graphical interface):
+The C++ engine is finished, and tested - the final step is the integration inside SALOME. This is done  using  hxx2salome  tool (the options used here are explained in Chapter 8.2 – the tool also has a graphical interface):
 
 
 
@@ -170,7 +170,7 @@ The C++ engine is finished, and tested - the final step is the integration insid
 
 
 
-The component can now be used inside salome, from the python embedded console, or from Supervision.
+The component can now be used inside SALOME, from the python embedded console, or from Supervision.
 
 
 
@@ -181,7 +181,7 @@ We explain in this paragraph what is meant by “C++ component” in this docume
 
 Let's first try to define more generally what components are. They are used to deliver reusable, “off-the-shelf” software unit for incorporation into large applications (such as frameworks) : a component can be deployed independently and is subject to third-party composition. Its aim is to improve efficiency for end-users. It has specified interfaces and explicit context dependencies only.   It encapsulates small-scale abstractions within a given domain.
 
-A C++ component is a “high level” unit of reuse, based upon some source code libraries (developed in FORTRAN, C or C++). It takes the form of a C++ class. Its interface is the public API of this class, and is declared in an include file. It is designed to  collaborate  with other components . Therefore its API emphasizes the logical chains of computation a user can perform, and the data that may be exchanged with external world conform to standards (for example in the Salome context: basic types, MED types and XDATA types).
+A C++ component is a “high level” unit of reuse, based upon some source code libraries (developed in FORTRAN, C or C++). It takes the form of a C++ class. Its interface is the public API of this class, and is declared in an include file. It is designed to  collaborate  with other components . Therefore its API emphasizes the logical chains of computation a user can perform, and the data that may be exchanged with external world conform to standards (for example in the SALOME context: basic types, MED types and XDATA types).
 
 For being more concrete, let's take the (simple) example of a steady-state neutronic component developed by CEA to work in collaboration with thermal-hydraulic and fuel-pin mechanics components. The interface of this component is:
 
@@ -219,8 +219,7 @@ It emphasizes the following chain of computation:
 
 
 .. image:: images/10000000000003210000012BF34ED8EC.png
-  :width: 15.39cm
-  :height: 5.74cm
+   :align: center
 
 
 
@@ -240,10 +239,10 @@ This component was implemented with a preexisting function library, that was use
 
 
 
-Salome component architecture (insights)
+SALOME component architecture (insights)
 ----------------------------------------
 
-The Salome component architecture is based on  CORBA , and has been optimized for big data transfers. The key points of the architecture are:
+The SALOME component architecture is based on  CORBA , and has been optimized for big data transfers. The key points of the architecture are:
 
 * Distributed components with the appearance of proximity. There is no difference between local and distant objects, the network exchanges are done by the  CORBA  bus, or MPI or any other protocol, everything being totally transparent for the end user, who just has to call methods on his “apparently local” objects.
 
@@ -271,40 +270,39 @@ The components are usually developed with C++ or python – but this is not an o
 
 
 .. image:: images/100000000000030C00000270AD87A128.png
-  :width: 15cm
-  :height: 12cm
+  :align: center
 
-The low level libraries are wrapped in a high level C++ component, that is exported to Python using SWIG, and for distribution and coupling to Salome using hxx2salome. Same scripts can be use in Python or within Salome.
-
+The low level libraries are wrapped in a high level C++ component, that is exported to Python using SWIG, and for distribution and coupling to SALOME using hxx2salome. Same scripts can be use in Python or within SALOME.
 
 
 
 
-Salome Component generation
+
+SALOME Component generation
 ---------------------------
 
-In this chapter, we explain briefly the approach used to pass from a C++ component (as described in chapter 1) to a Salome component.
+In this chapter, we explain briefly the approach used to pass from a C++ component (as described in chapter 1) to a SALOME component.
 
-A Salome component is defined by its IDL interface (as explained in ...). It is then implemented using a target language, for example C++ (this step is called the IDL to C++ mapping).
+A SALOME component is defined by its IDL interface (as explained in ...). It is then implemented using a target language, for example C++ (this step is called the IDL to C++ mapping).
 
-Here we are doing the opposite! We have a C++ component with its interface (the definition of a class in a header), and we want to get a Salome component (with its IDL interface, implemented using the C++ component). For doing this, we have to invert the IDL to C++ mapping. This is not feasible in a most general way (because of course user-defined C++ types don't have their counterpart in IDL). But if we restrict the C++ type to the mapping of the  IDL  types supported by Salome, then we have a way to go back from C++ to IDL .
+Here we are doing the opposite! We have a C++ component with its interface (the definition of a class in a header), and we want to get a SALOME component (with its IDL interface, implemented using the C++ component). For doing this, we have to invert the IDL to C++ mapping. This is not feasible in a most general way (because of course user-defined C++ types don't have their counterpart in IDL). But if we restrict the C++ type to the mapping of the  IDL  types supported by SALOME, then we have a way to go back from C++ to IDL .
 
-The operations performed for the Salome component generation are summed up in the following figure:
+The operations performed for the SALOME component generation are summed up in the following figure:
 
 
 
 .. image:: images/1000000000000321000002300A9186FC.png
-  :width: 15.401cm
+  :align: center
   :height: 10.749cm
 
 
 
-After these operations, the generated files are inserted in a template Salome module (basically a clone of the  CALCULATOR  component described in ...). We obtain that way a full module ready for compiling.
+After these operations, the generated files are inserted in a template SALOME module (basically a clone of the  CALCULATOR  component described in ...). We obtain that way a full module ready for compiling.
 
 IDL definition
 --------------
 
-The   IDL  code generation is based upon the type analysis of the C++ public  API . Of course, generation can be done only if there is a  CORBA  equivalent type. This is the case for all basic types. It is also the case for the  MED  types, because a  CORBA  level was developed ( MESH ,  SUPPORT  and  FIELD  interfaces), and a Client level that allow to create local C++  MED  objects from  CORBA  objects. This last point is important for code generation, because it simplify it greatly! (The only thing to do is to create a client object and pass it to the C++  API ). The last supported types are vectors, they are treated using the Sender/Receiver mechanism of Salome, thus optimizing the data transfer.
+The   IDL  code generation is based upon the type analysis of the C++ public  API . Of course, generation can be done only if there is a  CORBA  equivalent type. This is the case for all basic types. It is also the case for the  MED  types, because a  CORBA  level was developed ( MESH ,  SUPPORT  and  FIELD  interfaces), and a Client level that allow to create local C++  MED  objects from  CORBA  objects. This last point is important for code generation, because it simplify it greatly! (The only thing to do is to create a client object and pass it to the C++  API ). The last supported types are vectors, they are treated using the Sender/Receiver mechanism of SALOME, thus optimizing the data transfer.
 
 Correspondance for parameters
 '''''''''''''''''''''''''''''
@@ -349,7 +347,7 @@ The following table resume all the supported C++ types for parameters,  and the 
 
 As we can see,  **it is very important to take great care of the qualifiers used in the C++ interface**  because they are interpreted. The determination of the  ``in/out``  qualifier of  ``IDL``  parameters is based upon the  ``const``  and reference qualifier of C++ parameters. Basic types (passed by value in C++) are considered in parameters, references to basic types are considered out parameters. For user defined types, the  ``const``  qualifier is interpreted as in parameter, and reference to pointer as out parameter.
 
-For simplification purpose, Salome doesn't allow the use of  ``IDL inout``  parameters. For this reason,  **non const pointers or references are not treated** .
+For simplification purpose, SALOME doesn't allow the use of  ``IDL inout``  parameters. For this reason,  **non const pointers or references are not treated** .
 
 Correspondance for returned type
 ''''''''''''''''''''''''''''''''
@@ -422,7 +420,7 @@ To finish, let's have a look on the IDL generated module corresponding to our ne
 IDL Implementation
 ------------------
 
-As explained in [R2]_ and [H2]_, the  IDL  implementation consists in writing a servant (an object that will perform the IDL contract). The source of this servant is composed in two files, named in Salome by convention  <module_name>.hxx  and  <module_name>.cxx . The generated code for these two files is also based upon the type analysis of the C++ public  API  : for each C++ type, we know the  IDL  type that was associated (cf. Chapter 4), and consequently the code to generate. This code follows always the same scheme. We first generate the header  <module_name>.hxx , which contains the class declaration of the servant, and is imposed by the rules of the C++ mapping of CORBA.  We then generate  <module_name>.cxx, which contains the class definition. For each method, we proceed in three steps :
+As explained in [R2]_ and [H2]_, the  IDL  implementation consists in writing a servant (an object that will perform the IDL contract). The source of this servant is composed in two files, named in SALOME by convention  <module_name>.hxx  and  <module_name>.cxx . The generated code for these two files is also based upon the type analysis of the C++ public  API  : for each C++ type, we know the  IDL  type that was associated (cf. Chapter 4), and consequently the code to generate. This code follows always the same scheme. We first generate the header  <module_name>.hxx , which contains the class declaration of the servant, and is imposed by the rules of the C++ mapping of CORBA.  We then generate  <module_name>.cxx, which contains the class definition. For each method, we proceed in three steps :
 
 * Arguments processing : conversion of the types imposed by C++ mapping rules to the type of the C++ component. Of course, this conversion is always possible, because we have restricted the C++ component type to the one for which this operation is possible!
 
@@ -540,7 +538,7 @@ The generator is a script file called  hxx2salome , written in bash, which manag
 
 
 
-* the update of Salome environment file.
+* the update of SALOME environment file.
 
 
 
@@ -574,7 +572,7 @@ After installing, you have to set the environment variable  HXXTOSALOME_ROOT_DIR
 
 You may finally also configure the hxx2salome script (it is not mandatory, but may facilitate usage). For configuring the script, you can set the two following variables defined at the beginning :
 
-* ENVIRON_FILE  : salome2 environment file used for compilation. If present, hxx2salome will propose to compile new module (by sourcing  ENVIRON_FILE  file, and executing build_configure, configure, make & make install). It will also update this file with the new environment variable necessary to run generated module. This environment file can also be passed using  **-e**  option.
+* ENVIRON_FILE  : SALOME environment file used for compilation. If present, hxx2salome will propose to compile new module (by sourcing  ENVIRON_FILE  file, and executing build_configure, configure, make & make install). It will also update this file with the new environment variable necessary to run generated module. This environment file can also be passed using  **-e**  option.
 
 
 
@@ -613,7 +611,7 @@ where the mandatory components are:
 
 
 
-* SALOMEdir  : the directory where you want to install generated Salome component.
+* SALOMEdir  : the directory where you want to install generated SALOME component.
 
 (Of course,  CPP.hxx  and  libCPP.so  have to be found in  CPPdir )
 
@@ -623,9 +621,9 @@ In addition, you can use following options to transmit information to generator:
 
 **-c**  : to compile the component after code generation,
 
-**-l** : to launch salome with the component after compilation,
+**-l** : to launch SALOME with the component after compilation,
 
-**-e**  : environment_file  : to specify an salome environment file to source (for compiling)
+**-e**  : environment_file  : to specify an SALOME environment file to source (for compiling)
 
 
 
@@ -639,8 +637,7 @@ The GUI allow you to select the arguments with a file browser – thus avoiding 
 
 
 .. image:: images/100000000000021500000199FE12879E.png
-  :width: 14.249cm
-  :height: 10.82cm
+  :align: center
 
 
 
@@ -649,11 +646,11 @@ The GUI allow you to select the arguments with a file browser – thus avoiding 
 Limitations – Advises
 ---------------------
 
-* The standalone C++ component should have a default constructor (a constructor without arguments). This is because there is no mechanism to transmit arguments from Salome to a user-defined component. If your component needs information to be valid, you have to split construction and initialization, by adding a method that does initialization.
+* The standalone C++ component should have a default constructor (a constructor without arguments). This is because there is no mechanism to transmit arguments from SALOME to a user-defined component. If your component needs information to be valid, you have to split construction and initialization, by adding a method that does initialization.
 
 
 
-* Only methods with compatible types (types listed in Chpater 5, for which a conversion from CORBA to C++ is available) are treated. If a method contains non compatible types, it is just ignored (it is not blocking, you'll just get a Salome component without the non compatibles methods).
+* Only methods with compatible types (types listed in Chapter 5, for which a conversion from CORBA to C++ is available) are treated. If a method contains non compatible types, it is just ignored (it is not blocking, you'll just get a SALOME component without the non compatibles methods).
 
 
 
@@ -661,7 +658,7 @@ Limitations – Advises
 
 
 
-* The name of the C++ component (the name of the class), which provide the name of the Salome component, should be uppercase. This strange limitation is due to Salome.
+* The name of the C++ component (the name of the class), which provide the name of the SALOME component, should be uppercase. This strange limitation is due to SALOME.
 
 
 
@@ -669,7 +666,7 @@ Limitations – Advises
 
 
 
-* The const qualifiers should be carefully analyzed, it impact the way Salome will manage memory. The critical case is if you have an internal field, and you (wrongly) return a non const pointer on it. Because the pointer is non const, it is considered that the Salome component takes ownership of the field, and consequently will delete it after usage – thus invalidating an internal pointer of your C++ component. Crash is the most frequent issue of this case...
+* The const qualifiers should be carefully analyzed, it impact the way SALOME will manage memory. The critical case is if you have an internal field, and you (wrongly) return a non const pointer on it. Because the pointer is non const, it is considered that the SALOME component takes ownership of the field, and consequently will delete it after usage – thus invalidating an internal pointer of your C++ component. Crash is the most frequent issue of this case...
 
 
 
@@ -684,8 +681,9 @@ Limitations – Advises
 
 
 
-.. [H1] The MED Calculator component (N. Crouzet) (voir :ref:`calculator`).
+.. [H1] The MED Calculator component (N. Crouzet) (see :ref:`calculator`).
 
-.. [H2] Integration de composants dans l'environnement PAL/Salome (M. Tajchman).
+.. [H2] Integration of components into the SALOME environment (M. Tajchman) (see :ref:`components`)
+
 
 

@@ -3,19 +3,19 @@
 
 .. _components:
 
-Integration of components into the Salome environment
+Integration of components into the SALOME environment
 =============================================================
 
 This document describes operations to be done to integrate codes (for example calculation codes) in the 
-Salome architecture.
+SALOME architecture.
 
 Several integration scenarios could be envisaged:
 
 - The simplest is local control of the code from a Python interpretor.  The code will only operate on one machine.
 - The next stage consists of being able to control the code locally or remotely.  The selected architecture 
   consists of presenting the code as a CORBA server [CORBA]_, capable of receiving and executing requests 
-  from CORBA clients.  Salome offers a number of services that simplify the use of CORBA.
-- Finally, actual integration into Salome consists of providing Salome with all information necessary to control 
+  from CORBA clients.  SALOME offers a number of services that simplify the use of CORBA.
+- Finally, actual integration into SALOME consists of providing SALOME with all information necessary to control 
   the code, for example from the man-machine interface or for example through supervision.
 
 Several types of situations may be envisaged, knowing that there will always be special cases that should be 

@@ -111,3 +111,4 @@ clean-local-qt :
 
 
 clean-local: clean-local-qt
+	rm -f YACS_msg_en.qm YACS_msg_fr.qm

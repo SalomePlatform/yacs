@@ -58,7 +58,7 @@ Similar modifications are made on the IDL ``FreeFem.idl`` file:
    :literal:
 
 
-Registration into the modules catalogue
+Registration into the modules catalog
 --------------------------------------------
 Before they can be used in SALOME, components must be registered in one of the SALOME modules catalogs.  This catalog is 
 distributed in several files (general catalog, user catalog).  It will be assumed that the component will be declared in 
@@ -67,9 +67,9 @@ a user's personal catalog.  The component catalog file is an XML file that conta
 #. the list of services of the component and their parameters
 #. the name of the file containing the icon of the component, version information, comments, default service, etc. (this information is optional).
 
-This catalogue can be completed by hand or a utility supplied by SALOME can be used that generates information in 
+This catalog can be completed by hand or a utility supplied by SALOME can be used that generates information in 
 point 1 above (nevertheless, this file must be edited to enter information in point 2).  This tool is available in 
-the SALOME graphic interface (``Tools->Catalog Generator`` menu) indicating the name of the catalogue (XML file) and 
+the SALOME graphic interface (``Tools->Catalog Generator`` menu) indicating the name of the catalog (XML file) and 
 the name of the IDL file of the component.
 
 C++ implementation class
@@ -177,7 +177,6 @@ and that execution of the service has actually terminated (endService).
 
 
 .. image:: images/parallele.png
-     :width: 26ex
      :align: center
 
 .. centered::

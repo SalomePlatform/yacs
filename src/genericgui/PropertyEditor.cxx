@@ -55,10 +55,10 @@ PropertyEditor::PropertyEditor(Subject* subject,QWidget *parent):QWidget(parent)
   _addAction=new QAction(QIcon("icons:icon_plus.png"),"Add Property",this);
 
   _table=new QTableWidget;
+  _table->setColumnCount(2);
   QStringList headers;
   headers << "Name" << "Value";
   _table->setHorizontalHeaderLabels(headers);
-  _table->setColumnCount(2);
   _table->verticalHeader()->hide();
   _table->setSelectionMode(QAbstractItemView::SingleSelection);
 

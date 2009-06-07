@@ -853,7 +853,7 @@ indicates the location of the modules).
 
 Running a simple coupling through a python script
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''
-Components can be created and their ports can be connected using a Python Salome session.
+Components can be created and their ports can be connected using a Python SALOME session.
 The script CAS_1.py loads instances of the ECODE, SCODE and ESPION components, connects their ports, makes the necessary 
 configurations and starts executions.
 
@@ -951,9 +951,8 @@ Once the scheme has been created, it can be exported in the YACS coupling scheme
 
 The following is a graphic example of the coupling scheme for the first CALCIUM test case:
 
-.. image:: images/1000000000000780000004B0E1FC3F2E.png
-  :width: 17.586cm
-  :height: 10.989cm
+.. image:: images/calcium1.png
+  :align: center
 
 Once the scheme has been created, all that is necessary is to create an execution by doing a right click on /YACS/CAS_1/New Execution/.  
 The study tree becomes the execution tree in which the state of the different services appears.  Once it has been 

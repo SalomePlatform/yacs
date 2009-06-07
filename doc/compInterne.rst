@@ -4,7 +4,7 @@
 Defining an internal object
 ===============================
 
-.. index:: single: objet interne
+.. index:: single: internal object
 
 In the remainder of this document, it is assumed that an **internal object** is a **C++ or python object** that provides a 
 first interface to the initial code.  The form of this object and communication between the internal object and the 
@@ -39,7 +39,6 @@ Each method in the object:
 
 
 .. image:: images/objintcpp.png
-   :width: 54ex
    :align: center
 
 .. centered:: C++ internal object
@@ -133,7 +132,6 @@ The principle of encapsulation of python functions / classes in an internal obje
 
 
   .. image:: images/objintpy.png
-     :width: 54ex
      :align: center
 
   .. centered:: Python internal object

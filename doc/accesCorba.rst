@@ -18,7 +18,6 @@ network (through CORBA) and the component user code.
 
 
   .. image:: images/accesCorbaIDL.png
-     :width: 62ex
      :align: center
 
   .. centered::   Access from CORBA
@@ -84,7 +83,6 @@ C++ server interface
 ^^^^^^^^^^^^^^^^^^^^^
 
 .. image:: images/objCorbaCpp.png
-   :width: 61ex
    :align: center
 
 .. centered::   CORBA C++ interface generation
@@ -157,7 +155,6 @@ parameter conversion phases).
 
 
   .. image:: images/objCorbapy.png
-     :width: 61ex
      :align: center
 
   .. centered::   Generation of the python CORBA interface

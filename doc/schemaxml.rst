@@ -3,6 +3,7 @@
 Defining a calculation scheme in the XML format
 =================================================
 An XML file that describes a calculation scheme can contain the following information:
+
  - definitions of data types
  - definitions of containers
  - definitions of elementary calculation nodes
@@ -11,12 +12,14 @@ An XML file that describes a calculation scheme can contain the following inform
  - initialisations
 
 These definitions will be presented progressively. We will start with:
+
  - the definition of data types
  - the definition of a sub-set of elementary nodes
  - the definition of non-datastream connections
  - the definition of composite nodes
 
 We will then add complements on:
+
  - the definition of containers
  - the definition of node properties
  - the definition of datastream connections

@@ -12,7 +12,6 @@ from a local python interpreter according to the following scheme.
 
 
 .. image:: images/accesLocal.png
-   :width: 46ex
    :align: center
 
 .. centered::   Access from a local python interpreter
@@ -54,7 +53,6 @@ process are shown diagrammatically on the following figure.
 
 
 .. image:: images/accesLocalCpp.png
-   :width: 45ex
    :align: center
 
 .. centered::   Interface through swig
