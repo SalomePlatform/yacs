@@ -72,6 +72,7 @@ libYACS_la_LIBADD  = \
 LIBICONS =  \
 	SalomeApp.xml \
 	YACSSchemaCatalog.xml \
+	YACSCatalog.xml \
 	ModuleYacs.png \
 	ExecYACS.png
 
