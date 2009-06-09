@@ -39,6 +39,10 @@
   #include <gvc.h>
 #endif
 
+#ifndef ND_coord_i
+#define ND_coord_i(n) (n)->u.coord
+#endif
+
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
