@@ -32,7 +32,7 @@
 #include "guiObservers.hxx"
 #include "Message.hxx"
 
-#define _DEVDEBUG_
+//#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
 using namespace YACS::HMI;
