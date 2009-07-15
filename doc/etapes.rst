@@ -28,7 +28,6 @@ A calculation code is integrated in the form of a component in the PAL architect
 represented by the following figure:
 
 .. image:: images/phases.png
-   :width: 56ex
    :align: center
 
 .. centered:: Component integration phases
@@ -78,9 +77,9 @@ A first work to simplify the next phases consists of presenting the initial code
     made available to users of the internal object (and that will only be visible from other methods of this object).
 
 .. index::
-      single: etat interne
+      single: internal state
       single: common fortran77
-      single: variables globales
+      single: global variables
 
 **Notes**
 
@@ -89,8 +88,8 @@ A first work to simplify the next phases consists of presenting the initial code
 3.  Attributes keep the “object memory” between 2 successive calls to object services (internal state, for example fortran77 common or C/C++ global variables [#f1]_).
 
 .. index::
-   single: service; de l'objet interne
-   single: etat interne
+   single: service; internal object
+   single: internal state
 
 The first part of the work, a design step, consists of defining the services and the internal state of this object.  In particular:
 
@@ -107,7 +106,6 @@ Depending on the case, the internal object may:
 
 
     .. image:: images/objint1.png
-         :width: 40ex
          :align: center
 
     .. centered:: Internal object encompassing the initial code
@@ -119,7 +117,6 @@ Depending on the case, the internal object may:
 
 
     .. image:: images/objint2.png
-         :width: 58ex
          :align: center
 
     .. centered:: Internal object communicating with an external code
@@ -132,7 +129,6 @@ Depending on the case, the internal object may:
 
 
     .. image:: images/objint3.png
-         :width: 36ex
          :align: center
 
     .. centered:: Initial code already in the form of an internal object
@@ -146,7 +142,6 @@ local python interpreter as shown on the following figure.
 
 
 .. image:: images/accesLocal.png
-   :width: 46ex
    :align: center
 
 .. centered:: Access from a local python interpreter
@@ -177,7 +172,6 @@ in SALOME, the different IDL files are assembled in directories seen by all CORB
 
 
 .. image:: images/accesCorba.png
-   :width: 58ex
    :align: center
 
 .. centered:: Access from CORBA
@@ -244,9 +238,7 @@ Containers and factories
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. index::
    single: container
-   single: factory
-   single: conteneur
-   single: fabrique
+   single: factory 
 
 SALOME is based on the concept of containers and factories.
 
@@ -275,7 +267,6 @@ In the current version of SALOME, an automatic restart procedure has not yet bee
 
 
 .. image:: images/conteneur.png
-   :width: 50ex
    :align: center
 
 .. centered:: Container, factory and components

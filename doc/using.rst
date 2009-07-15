@@ -12,7 +12,6 @@ a means of defining a chain or coupling of calculation codes (see :ref:`principe
 
 
 .. figure:: images/ihm.png
-   :width: 15cm
    :align: center
 
    YACS GUI

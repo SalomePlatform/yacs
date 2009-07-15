@@ -81,9 +81,12 @@ nodist_salomeres_DATA = \
 	YACS_msg_en.qm	\
 	YACS_msg_fr.qm
 
+QMFILES = \
+	resources/YACS_msg_en.ts \
+	resources/YACS_msg_fr.ts
+
 dist_salomeres_DATA = $(QMFILES) ${ICONS}
 ICONS = $(LIBICONS:%=resources/%)
-
 
 ui_%.h: %.ui
 	$(QT_UIC) $< -o $@
@@ -109,3 +112,4 @@ clean-local-qt :
 
 
 clean-local: clean-local-qt
+	rm -f YACS_msg_en.qm YACS_msg_fr.qm

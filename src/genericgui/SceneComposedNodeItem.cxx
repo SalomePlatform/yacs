@@ -488,6 +488,7 @@ void SceneComposedNodeItem::rebuildLinks()
       CHRONOSTOP(5);
       CHRONO(6);
       if (! isPath) DEBTRACE("Link Path not found !");
+      if (! isPath) continue;
       LNodePath ijPath = astar.givePath();
       matrix.incrementCost(ijPath);
       LinkPath apath = matrix.getPath(ijPath);

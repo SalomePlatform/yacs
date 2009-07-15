@@ -166,6 +166,8 @@ calculation node. These data ports are connected through the data flow.
 A calculation node may have properties. A property is a pair (name, value), where name is the name of the property and value 
 is a character string that gives its value.
 
+.. _scriptnode:
+
 Python script inline node
 ''''''''''''''''''''''''''''''
 A Python script node executes the Python code in a context in which variables are present with a value equal to the content 
@@ -175,6 +177,8 @@ same name. At the end of execution of the script, the output data ports will con
 name present in the execution context. These variables must necessarily be present.
 
 When this type of node is an internal node in a loop, the execution context is reinitialised for each iteration of the loop.
+
+.. _functionnode:
 
 Python function inline node
 ''''''''''''''''''''''''''''''
@@ -189,6 +193,8 @@ for the output ports of the same name.
 
 When this type of node is an internal node in a loop, the execution context is kept for every iteration of the loop, so 
 that variables can be reused during iterations.
+
+.. _servicenode:
 
 SALOME service node
 ''''''''''''''''''''''''''''''

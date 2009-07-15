@@ -30,7 +30,7 @@ BUILT_SOURCES = $(IDL_SOURCES) echo_idl.py xmlrun.sh echo.hh
 EXTRA_DIST = $(IDL_FILES) standaloneTest.sh runtimeTest.hxx runtimeTest.sh TestComponent.hxx xmlrun_orig.sh
 
 TESTS = runtimeTest.sh
-TESTS_ENVIRONMENT=$(SHELL) -x
+TESTS_ENVIRONMENT=LD_LIBRARY_PATH=@KERNEL_ROOT_DIR@/lib/salome:$$LD_LIBRARY_PATH $(SHELL) -x 
 
 TestRuntime_SOURCES = \
 	TestRuntime.cxx \

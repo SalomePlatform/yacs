@@ -12,9 +12,10 @@ Representation of a schema
 
 Change 2D representation of a schema
 ------------------------------------
-The schema consists of several nodes of control and computation types. These nodes have input and output data, stream and control ports. Connecting these ports by links means transferring data from output port to input port of a next node.
+The schema consists of several nodes of control and computation types. These nodes have input and output data, stream and control ports. 
+Connecting these ports by links means transferring data from output port to input port of a next node.
 
-At the current moment YACS GUI for SALOME 4.1 provides the user with two view modes of a schema.
+At the current moment YACS GUI for SALOME provides the user with only one view mode of a schema.
 
 
 .. _full_view_of_a_schema:
@@ -25,62 +26,45 @@ At the current moment YACS GUI for SALOME 4.1 provides the user with two view mo
 .. image:: images/functionality_list_77.jpg
   :align: center
 
-
 .. centered::
   **Full view of a schema**
 
 
-.. _control_view_of_a_schema:
+Within YACS module the user can zoom-in and zoom-out 2D schema presentation interactively with the mouse, 
+fit 2D presentation of a schema into 2D Viewer bounds (**Fit all** operation) and pan content of 2D Viewer (**Panning** operation) 
+interactively with the mouse. 
+These commands are accessible from :ref:`View Operations toolbar <view_operations_toolbar>`.
 
-+ **Control view.** Only control links between connected ports are shown. presentation of nodes are simplified in order to show only the name of a node and its input/output gate ports.
+The user can also use the mouse wheel button to zoom in and out and the arrow key for panning.
 
-.. image:: images/functionality_list_78.jpg
+The user can also zoom inside a composed node by using the **zoom to bloc** command from the node context menu.
+
+.. image:: images/functionality_list_77a.jpg
   :align: center
 
-
 .. centered::
-  **Control view of a schema**
+  **A zoom inside loopIter composed node**
 
-
-
-
-
-
-It's worth mentioning about two additional view modes of a schema which is planned to implement in the future version of YACS module.
-
-
-
-
-+ **Data Flow view.** Only data links between connected ports are shown.
-
-
-+ **Data Stream view.** Only stream links between connected ports are shown.
-
-
-
-
-
-To change the current view mode of the active schema the user should activate Input Panel with the :ref:`pp_for_schema`, choose **Full** or **Control** view mode inside the "View Mode" radio button group and press "Apply" button on the Input Panel. The easier way to change view mode of the active schema is to click **Full View** or **Control View**
-buttons on the :ref:`visualization`.
-
-Within YACS module the user also can zoom-in and zoom-out 2D schema presentation interactively with the mouse, fit 2D presentation of a schema into 2D Viewer bounds ("Fit all" operation) and pan content of 2D Viewer ("Panning" operation) interactively with the mouse. These commands are accessible from :ref:`View Operations toolbar <view_operations_toolbar>`.
+Use **Fit all** operation to go back to full view.
 
 .. _auto-arrange_nodes:
 
 Auto-arrange schema nodes
 -------------------------
-It is a very useful operation, because of it simplifies the schema presentation in the schema 2D Viewer and makes it easier for the user perception. This operation is applicable to the whole graph.
-
-The auto-arrange graph nodes operation can be performed with help of **Arrange nodes** command from :ref:`visualization` and is applicable to the active schema (see :ref:`set_active_schema_or_run` section). YACS module arranges graph nodes automatically with help of an algorithm bases
-on the usage of dot algorithm from Graphviz C API library.
+It is a very useful operation, because it simplifies the schema presentation in the schema 2D Viewer and makes it easier for the user perception. 
+This operation is applicable to the whole schema (**arrange nodes recursion** command from the schema context menu) or only to some parts
+of the schema (**arrange local nodes** command from a composed node context menu).
 
 .. _rebuild_links:
 
 Rebuild links between nodes
 ---------------------------
-It is a very useful operation, because of it simplifies the schema presentation in the schema 2D Viewer and makes it easier for the user perception. This operation constructs links in orthogonal mode.
+It is a very useful operation, because it simplifies the schema presentation in the schema 2D Viewer and makes it easier for the user perception. 
+This operation constructs links in orthogonal mode.
 
-The rebuild links between nodes operation can be performed with help of **Rebuild links** command from :ref:`visualization` and is applicable to the active schema (see :ref:`set_active_schema_or_run` section). YACS GUI rebuilds graph links automatically with help of LineConn2D algorithm
-already implemented by OCC.
+The rebuild links between nodes operation is performed automatically when **automatic link** option is activated in the YACS main menu or
+in the toolbar :ref:`edition_toolbar`. To force links computation, use the **compute links** command from the node context menu.
 
+The user can change the links representation with the options **simplify links** which tries to make the links as direct as possible with
+a slight CPU cost and **separate links** which tries to avoid links superposition with again a CPU cost.
 

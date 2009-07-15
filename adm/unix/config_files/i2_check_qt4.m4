@@ -67,6 +67,14 @@ AC_DEFUN([I2_CHECK_QT4],
     then
       qt4_install_path="/usr"
     else
+      if test $QTDIR = /usr/lib/qt3 ; then
+        if test -d /usr/lib/qt4 ; then
+          AC_MSG_RESULT(it is strange for a qt4 installation !)
+          AC_MSG_RESULT(/usr/lib/qt4 is present)
+          AC_MSG_RESULT(replacing QTDIR by /usr/lib/qt4)
+          QTDIR=/usr/lib/qt4
+        fi
+      fi
       qt4_install_path=$QTDIR
     fi
   fi

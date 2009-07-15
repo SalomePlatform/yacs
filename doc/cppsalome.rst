@@ -104,12 +104,12 @@ The following inclusions are necessary at the beginning of the header of our mod
 
 The SALOMEconfig.h file contains a number of definitions useful for making the code independent from 
 the version of CORBA used.  SALOME_Component_i.hxx contains the interface of the C++ implementation class of 
-the Salome basic component (idl Engines::Component).  Finally, the CORBA_SERVER_HEADER macro makes inclusion 
+the SALOME basic component (idl Engines::Component).  Finally, the CORBA_SERVER_HEADER macro makes inclusion 
 file names independent of the implementation of the CORBA ORB.
 
 The next step is to define an implementation class called HELLO, derived from POA_HELLO_ORB::HELLO_Gen (abstract class 
 generated automatically by CORBA during the compilation of the idl) and Engines_Component_i (because 
-the HELLO_Gen idl interface is derived from Engines::Component like every Salome component).  
+the HELLO_Gen idl interface is derived from Engines::Component like every SALOME component).  
 This class contains a constructor whose arguments are imposed by SALOME, a virtual destructor, and 
 a makeBanner method providing the required service::
 
@@ -209,7 +209,7 @@ Graphic interface
 Introduction
 ----------------
 To go further with the integration of our module, we will add a graphic interface (developed in Qt) that is 
-integrated into the Salome application interface (IAPP).  We will not describe operation of the Salome IAPP herein, 
+integrated into the SALOME application interface (IAPP).  We will not describe operation of the SALOME IAPP herein, 
 but in summary, the IAPP manages an event loop (mouse click, keyboard, etc.) and after processing these events 
 redirects them towards the active module (the principle is that **a single** module is active at a given moment.  
 When a module is activated, its Graphic User Interface is dynamically loaded).  
@@ -298,7 +298,7 @@ Thus, the QAD_MessageBox class is used in HELLOGUI instead of the Qt QMessageBox
 
 Management of multi-linguism
 `````````````````````````````````
-Qt provides a help tool for multi-linguism support.  This is reused in Salome.  
+Qt provides a help tool for multi-linguism support.  This is reused in SALOME.  
 The principle is simple:  all character strings that are used for menu labels and dialogs with the user 
 are encapsulated in calls to the Qt tr() (translate) function that uses a label name as its argument.  
 For example, the getText function will be used to ask the user to enter a first name, in which the first 
@@ -357,7 +357,7 @@ They are not all compulsory, but they make it easy to understand the program if 
  CORBA interface name     <Module>_Gen            HELLO_Gen             The idl compilation generates an abstract class POA_<Module>_ORB::<Module>_Gen
  Source file              <Module>.cxx            HELLO.cxx             In the /src/<Module> directory
  Implementation class     <Module>                HELLO                 This class inherits from POA_HELLO_ORB::HELLO_Gen
- Instantiation function   <Module>_Engine_factory HELLO_Engine_factory  This function is called by the Salome Container
+ Instantiation function   <Module>_Engine_factory HELLO_Engine_factory  This function is called by the SALOME Container
  Modules catalog          <Module>Catalog.xml     HELLOCatalog.xml      In /resources
  C++ library name         lib<Module>Engine       HELLO-Engine          In the /src/<Module> directory
  GUI C++ name             lib<Module>GUI          libHELLOGUI           In the /src/<Module>GUI directory
