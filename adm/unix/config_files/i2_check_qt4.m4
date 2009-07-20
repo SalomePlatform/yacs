@@ -366,6 +366,10 @@ AC_DEFUN([I2_CHECK_QSCINTILLA],
     AC_SUBST(qsci4_cppflags)
 
     # --- we test the library file presence and usability
+    if test x${qsci4_library_path} = x/usr/lib/qt4/lib
+    then
+      qsci4_library_path=/usr/lib
+    fi
     if test x${qsci4_library_path} = x/usr/lib
     then
       qsci4_ldflags=""
