@@ -108,6 +108,8 @@ CHECK_GUI(SALOME_Session_Server,SALOME_Session_Server)
 
 AM_CONDITIONAL([HAS_GUI], [test "x$GUI_ROOT_DIR" != "x"])
 
+AM_CONDITIONAL(WINDOWS, [ test ])
+
 echo
 echo
 echo
