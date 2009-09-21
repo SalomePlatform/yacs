@@ -154,12 +154,12 @@ AtomAny *AtomAny::New(char *val,Deallocator dealloc)
   return new AtomAny(val,dealloc);
 }
 
-AnyPtr AtomAny::operator[](int i) const throw(Exception)
+AnyPtr AtomAny::operator[](int i) const throw(YACS::Exception)
 {
   throw InvalidExtractionException(_type->kind(),Sequence);
 }
 
-AnyPtr AtomAny::operator[](const char *key) const throw(Exception)
+AnyPtr AtomAny::operator[](const char *key) const throw(YACS::Exception)
 {
   throw Exception("AtomAny::operator[] : try to get a part of a partitionned data whereas atomical.");
 }
@@ -181,7 +181,7 @@ bool AtomAny::operator ==(const Any& other) const
     return false;
 }
 
-int AtomAny::getIntValue() const throw(Exception)
+int AtomAny::getIntValue() const throw(YACS::Exception)
 {
   if(_type->isA(Runtime::_tc_int))
     return _value._i;
@@ -189,7 +189,7 @@ int AtomAny::getIntValue() const throw(Exception)
     throw Exception("Value is not an int");
 }
 
-bool AtomAny::getBoolValue() const throw(Exception)
+bool AtomAny::getBoolValue() const throw(YACS::Exception)
 {
   if(_type->isA(Runtime::_tc_bool))
     return _value._b;
@@ -197,7 +197,7 @@ bool AtomAny::getBoolValue() const throw(Exception)
     throw Exception("Value is not a bool");
 }
 
-double AtomAny::getDoubleValue() const throw(Exception)
+double AtomAny::getDoubleValue() const throw(YACS::Exception)
 {
   if(_type->isA(Runtime::_tc_double))
     return _value._d;
@@ -205,7 +205,7 @@ double AtomAny::getDoubleValue() const throw(Exception)
     throw Exception("Value is not a double");
 }
 
-std::string AtomAny::getStringValue() const throw(Exception)
+std::string AtomAny::getStringValue() const throw(YACS::Exception)
 {
   if(_type->isA(Runtime::_tc_string))
     return string(_value._s->cStr());
@@ -305,33 +305,33 @@ ComposedAny::ComposedAny(TypeCode* type, bool isNew):Any(type)
     _type->decrRef();
 }
 
-AnyPtr ComposedAny::operator[](const char *key) const throw(Exception)
+AnyPtr ComposedAny::operator[](const char *key) const throw(YACS::Exception)
 {
   throw Exception("AtomAny::operator[] : try to get a part of a partitionned data not localizable by a string.");
 }
 
-void ComposedAny::checkTypeOf(const Any *elem) const throw(Exception)
+void ComposedAny::checkTypeOf(const Any *elem) const throw(YACS::Exception)
 {
   if(!elem->getType()->isA(_type->contentType()))
     throw Exception("ComposedAny::checkTypeOf : invalid type.");
 }
 
-int ComposedAny::getIntValue() const throw(Exception)
+int ComposedAny::getIntValue() const throw(YACS::Exception)
 {
  throw InvalidExtractionException(_type->kind(),Runtime::_tc_int->kind());
 }
 
-bool ComposedAny::getBoolValue() const throw(Exception)
+bool ComposedAny::getBoolValue() const throw(YACS::Exception)
 {
   throw InvalidExtractionException(_type->kind(),Runtime::_tc_bool->kind());
 }
 
-double ComposedAny::getDoubleValue() const throw(Exception)
+double ComposedAny::getDoubleValue() const throw(YACS::Exception)
 {
   throw InvalidExtractionException(_type->kind(),Runtime::_tc_double->kind());
 }
 
-std::string ComposedAny::getStringValue() const throw(Exception)
+std::string ComposedAny::getStringValue() const throw(YACS::Exception)
 {
   throw InvalidExtractionException(_type->kind(),Runtime::_tc_string->kind());
 }
@@ -477,14 +477,14 @@ bool SequenceAny::operator ==(const Any& other) const
   return true;
 }
 
-void SequenceAny::setEltAtRank(int i, const Any *elem) throw(Exception)
+void SequenceAny::setEltAtRank(int i, const Any *elem) throw(YACS::Exception)
 {
   checkTypeOf(elem);
   _alloc.destroy(_alloc._start+i*_alloc._sizeOf1Elm,_type->contentType());
   _alloc.construct(_alloc._start+i*_alloc._sizeOf1Elm,elem);
 }
 
-AnyPtr SequenceAny::operator[](int i) const throw(Exception)
+AnyPtr SequenceAny::operator[](int i) const throw(YACS::Exception)
 {
   return _type->contentType()->getOrBuildAnyFromZippedData(_alloc._start+i*_alloc._sizeOf1Elm);
 }
@@ -755,7 +755,7 @@ ArrayAny::ArrayAny(const std::vector<std::string>& val):ComposedAny(new TypeCode
     }
 }
 
-void ArrayAny::setEltAtRank(int i, const Any *elem) throw(Exception)
+void ArrayAny::setEltAtRank(int i, const Any *elem) throw(YACS::Exception)
 {
   checkTypeOf(elem);
   const TypeCode *subType=_type->contentType();
@@ -774,7 +774,7 @@ bool ArrayAny::operator ==(const Any& other) const
   return true;
 }
 
-AnyPtr ArrayAny::operator[](int i) const throw(Exception)
+AnyPtr ArrayAny::operator[](int i) const throw(YACS::Exception)
 {
   const TypeCode *subType=_type->contentType();
   unsigned sizePerContent=subType->getSizeInByteOfAnyReprInSeq();
@@ -852,13 +852,13 @@ bool StructAny::operator ==(const Any& other) const
   return true;
 }
 
-AnyPtr StructAny::operator[](int i) const throw(Exception)
+AnyPtr StructAny::operator[](int i) const throw(YACS::Exception)
 {
   const char what[]="StructAny::operator[](int i) : Struct key are strings not integers.";
   throw Exception(what);
 }
 
-AnyPtr StructAny::operator[](const char *key) const throw(Exception)
+AnyPtr StructAny::operator[](const char *key) const throw(YACS::Exception)
 {
   const TypeCodeStruct *typeC=(const TypeCodeStruct *)_type;
   char *whereToGet=_data;
@@ -876,13 +876,13 @@ AnyPtr StructAny::operator[](const char *key) const throw(Exception)
   return (*iter).second->getOrBuildAnyFromZippedData(whereToGet);
 }
 
-void StructAny::setEltAtRank(int i, const Any *elem) throw(Exception)
+void StructAny::setEltAtRank(int i, const Any *elem) throw(YACS::Exception)
 {
   const char what[]="Struct key are strings not integers.";
   throw Exception(what);
 }
 
-void StructAny::setEltAtRank(const char *key, const Any *elem) throw(Exception)
+void StructAny::setEltAtRank(const char *key, const Any *elem) throw(YACS::Exception)
 {
   const TypeCodeStruct *typeC=(const TypeCodeStruct *)_type;
   unsigned offset;
