@@ -20,7 +20,10 @@ include $(top_srcdir)/adm/unix/make_begin.am
 
 AM_CXXFLAGS = $(THREAD_DEF) -I$(srcdir)/..
 
-check_PROGRAMS = InitTests TestBases
+check_PROGRAMS = InitTests
+if CPPUNIT_IS_OK
+check_PROGRAMS += TestBases
+endif
 
 lib_LTLIBRARIES = libYACSDLTest.la
 
