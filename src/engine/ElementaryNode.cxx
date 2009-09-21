@@ -137,12 +137,12 @@ int ElementaryNode::getNumberOfOutputPorts() const
   return _setOfOutputPort.size();
 }
 
-InputPort *ElementaryNode::getInputPort(const std::string& name) const throw(Exception)
+InputPort *ElementaryNode::getInputPort(const std::string& name) const throw(YACS::Exception)
 {
   return getPort<InputPort>(name,_setOfInputPort);
 }
 
-OutputPort *ElementaryNode::getOutputPort(const std::string& name) const throw(Exception)
+OutputPort *ElementaryNode::getOutputPort(const std::string& name) const throw(YACS::Exception)
 {
   return getPort<OutputPort>(name,_setOfOutputPort);
 }
@@ -199,12 +199,12 @@ std::vector< std::pair<InPort *, OutPort *> > ElementaryNode::getSetOfLinksComin
   return ret;
 }
 
-InputDataStreamPort *ElementaryNode::getInputDataStreamPort(const std::string& name) const throw(Exception)
+InputDataStreamPort *ElementaryNode::getInputDataStreamPort(const std::string& name) const throw(YACS::Exception)
 {
   return getPort<InputDataStreamPort>(name,_setOfInputDataStreamPort);
 }
 
-OutputDataStreamPort *ElementaryNode::getOutputDataStreamPort(const std::string& name) const throw(Exception)
+OutputDataStreamPort *ElementaryNode::getOutputDataStreamPort(const std::string& name) const throw(YACS::Exception)
 {
   return getPort<OutputDataStreamPort>(name,_setOfOutputDataStreamPort);
 }
@@ -252,7 +252,7 @@ bool ElementaryNode::areAllInputPortsValid() const
 void ElementaryNode::getReadyTasks(std::vector<Task *>& tasks)
 {
   DEBTRACE("ElementaryNode::getReadyTasks: " << getName() << " " << _state);
-  if(_state==YACS::TOACTIVATE or _state==YACS::TOLOAD)
+  if(_state==YACS::TOACTIVATE || _state==YACS::TOLOAD)
     tasks.push_back(this);
 }
 
@@ -260,7 +260,7 @@ void ElementaryNode::getReadyTasks(std::vector<Task *>& tasks)
  * remove port from node at edition. Ports are typed.
  */
 
-void ElementaryNode::edRemovePort(Port *port) throw(Exception)
+void ElementaryNode::edRemovePort(Port *port) throw(YACS::Exception)
 {
   DEBTRACE("ElementaryNode::edRemovePort ");
   if(port->getNode()!=this)
@@ -290,13 +290,13 @@ list<ElementaryNode *> ElementaryNode::getRecursiveConstituents() const
   return ret;
 }
 
-Node *ElementaryNode::getChildByName(const std::string& name) const throw(Exception)
+Node *ElementaryNode::getChildByName(const std::string& name) const throw(YACS::Exception)
 {
   string what("ElementaryNode does not agregate any nodes particullary node with name "); what+=name;
   throw Exception(what);
 }
 
-void ElementaryNode::checkBasicConsistency() const throw(Exception)
+void ElementaryNode::checkBasicConsistency() const throw(YACS::Exception)
 {
   DEBTRACE("ElementaryNode::checkBasicConsistency");
   list<InputPort *>::const_iterator iter;
@@ -322,7 +322,7 @@ InputPort *ElementaryNode::createInputPort(const std::string& inputPortName, Typ
  * WARNING: CHECK CASE OF BLOC: ONLY INPUT PORTS NOT INTERNALLY CONNECTED MUST BE VISIBLE.
  */
 
-InputPort *ElementaryNode::edAddInputPort(const std::string& inputPortName, TypeCode* type) throw(Exception)
+InputPort *ElementaryNode::edAddInputPort(const std::string& inputPortName, TypeCode* type) throw(YACS::Exception)
 {
   InputPort *ret = 0;
   if (edCheckAddPort<InputPort, TypeCode*>(inputPortName,_setOfInputPort,type))
@@ -383,7 +383,7 @@ OutputPort *ElementaryNode::createOutputPort(const std::string& outputPortName, 
  * for now, publication is done the same way as input ports
  */ 
 
-OutputPort *ElementaryNode::edAddOutputPort(const std::string& outputPortName, TypeCode* type) throw(Exception)
+OutputPort *ElementaryNode::edAddOutputPort(const std::string& outputPortName, TypeCode* type) throw(YACS::Exception)
 {
   OutputPort *ret =0;
   if (edCheckAddPort<OutputPort, TypeCode*>(outputPortName,_setOfOutputPort,type))
@@ -405,7 +405,7 @@ InputDataStreamPort *ElementaryNode::createInputDataStreamPort(const std::string
   return getRuntime()->createInputDataStreamPort(inputPortDSName, this, type);
 }
 
-InputDataStreamPort *ElementaryNode::edAddInputDataStreamPort(const std::string& inputPortDSName, TypeCode* type) throw(Exception)
+InputDataStreamPort *ElementaryNode::edAddInputDataStreamPort(const std::string& inputPortDSName, TypeCode* type) throw(YACS::Exception)
 {
   InputDataStreamPort *ret = 0;
   if (edCheckAddPort<InputDataStreamPort, TypeCode*>(inputPortDSName,_setOfInputDataStreamPort,type))
@@ -422,7 +422,7 @@ OutputDataStreamPort *ElementaryNode::createOutputDataStreamPort(const std::stri
   return getRuntime()->createOutputDataStreamPort(outputPortDSName, this, type);
 }
 
-OutputDataStreamPort *ElementaryNode::edAddOutputDataStreamPort(const std::string& outputPortDSName, TypeCode* type) throw(Exception)
+OutputDataStreamPort *ElementaryNode::edAddOutputDataStreamPort(const std::string& outputPortDSName, TypeCode* type) throw(YACS::Exception)
 {
   OutputDataStreamPort *ret = 0;
   if (edCheckAddPort<OutputDataStreamPort, TypeCode*>(outputPortDSName,_setOfOutputDataStreamPort,type))
@@ -438,7 +438,7 @@ OutputDataStreamPort *ElementaryNode::edAddOutputDataStreamPort(const std::strin
  * get the input port name used by the current node (see composed nodes)
  */
 
-string ElementaryNode::getInPortName(const InPort * inPort) const throw (Exception)
+string ElementaryNode::getInPortName(const InPort * inPort) const throw(YACS::Exception)
 {
   Node *node = inPort->getNode();
   if ( node != this ) 
@@ -449,7 +449,7 @@ string ElementaryNode::getInPortName(const InPort * inPort) const throw (Excepti
   return inPort->getName();
 }
 
-string ElementaryNode::getOutPortName(const OutPort *outPort) const throw (Exception)
+string ElementaryNode::getOutPortName(const OutPort *outPort) const throw(YACS::Exception)
 {
   Node *node = outPort->getNode();
   if ( node != this ) 

@@ -48,7 +48,7 @@ string OutputPort::getNameOfTypeOfCurrentInstance() const
   return NAME;
 }
 
-void OutputPort::edRemoveAllLinksLinkedWithMe() throw(Exception)
+void OutputPort::edRemoveAllLinksLinkedWithMe() throw(YACS::Exception)
 {
   set<InputPort *>::iterator iter;
   set<InputPort *> vec(_setOfInputPort);
@@ -70,7 +70,7 @@ void OutputPort::put(const void *data) throw(ConversionException)
 /**
  * check if output type is an input type and if a data converter exists before link
  */
-bool OutputPort::edAddInputPort(InputPort *phyPort) throw(Exception)
+bool OutputPort::edAddInputPort(InputPort *phyPort) throw(YACS::Exception)
 {
   DEBTRACE("OutputPort::edAddInputPort");
   if(!isAlreadyInSet(phyPort))
@@ -92,7 +92,7 @@ bool OutputPort::edAddInputPort(InputPort *phyPort) throw(Exception)
  * If 'forward' == true the forward deletion 
  * If 'forward' == false no forward deletion performed, oneway deletion without update 'inputPort' side.
  */
-int OutputPort::edRemoveInputPort(InputPort *inputPort, bool forward) throw(Exception)
+int OutputPort::edRemoveInputPort(InputPort *inputPort, bool forward) throw(YACS::Exception)
 {
   if(forward)
     {
@@ -144,7 +144,7 @@ bool OutputPort::isAlreadyLinkedWith(InPort *with) const
 {
   InPort *publicRepr=with->getPublicRepresentant();
   set<InPort *> s;
-  set<InputPort *>::iterator iter;
+  set<InputPort *>::const_iterator iter;
   for(iter=_setOfInputPort.begin();iter!=_setOfInputPort.end();iter++)
     {
     if((*iter)->getPublicRepresentant() == publicRepr)
@@ -176,7 +176,7 @@ bool OutputPort::isAlreadyInSet(InputPort *inputPort) const
 /**
  * check compatibility of port class ( an inputPort ) before trying to create the link.
  */
-bool OutputPort::addInPort(InPort *inPort) throw(Exception)
+bool OutputPort::addInPort(InPort *inPort) throw(YACS::Exception)
 {
   DEBTRACE("OutputPort::addInPort");
   if(inPort->getNameOfTypeOfCurrentInstance()!=InputPort::NAME)
@@ -191,7 +191,7 @@ bool OutputPort::addInPort(InPort *inPort) throw(Exception)
 /**
  * check compatibility of port class ( an inputPort ) before trying to remove link WITHOUT forward.
  */
-int OutputPort::removeInPort(InPort *inPort, bool forward) throw(Exception)
+int OutputPort::removeInPort(InPort *inPort, bool forward) throw(YACS::Exception)
 {
   if(inPort->getNameOfTypeOfCurrentInstance()!=InputPort::NAME && !forward)
     {
@@ -205,7 +205,7 @@ int OutputPort::removeInPort(InPort *inPort, bool forward) throw(Exception)
 std::set<InPort *> OutputPort::edSetInPort() const
 {
   set<InPort *> s;
-  for(set<InputPort *>::iterator iter=_setOfInputPort.begin();iter!=_setOfInputPort.end();iter++)
+  for(set<InputPort *>::const_iterator iter=_setOfInputPort.begin();iter!=_setOfInputPort.end();iter++)
     (*iter)->getAllRepresentants(s);
   return s;
 }
@@ -224,6 +224,6 @@ const std::set<InputPort *>& OutputPort::getSetOfPhyLinks() const
 }
 
 //! Check validity of output port. Nothing on base class
-void OutputPort::checkBasicConsistency() const throw(Exception)
+void OutputPort::checkBasicConsistency() const throw(YACS::Exception)
 {
 }

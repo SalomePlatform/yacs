@@ -167,7 +167,7 @@ void Node::exDisabledState()
   _outGate.exNotifyDisabled();
 }
 
-InPort *Node::getInPort(const std::string& name) const throw(Exception)
+InPort *Node::getInPort(const std::string& name) const throw(YACS::Exception)
 {
   InPort *ret;
   try
@@ -185,7 +185,7 @@ InPort *Node::getInPort(const std::string& name) const throw(Exception)
  * \note: Contrary to getOutputPort method, this method returns the output port at highest level, possible.
  *        That is to say in some ComposedNode, like ForEachLoop or Switch, an outport inside 'this' is seen differently than the true outport.
  */
-OutPort *Node::getOutPort(const std::string& name) const throw(Exception)
+OutPort *Node::getOutPort(const std::string& name) const throw(YACS::Exception)
 {
   OutPort *ret;
   try
@@ -318,7 +318,7 @@ Proc *Node::getProc()
   return _father->getProc();
 }
 
-ComposedNode *Node::getRootNode() const throw(Exception)
+ComposedNode *Node::getRootNode() const throw(YACS::Exception)
 {
   if(!_father)
     throw Exception("No root node");
@@ -333,7 +333,7 @@ ComposedNode *Node::getRootNode() const throw(Exception)
  * USAGE NOT CLEAR, not used so far, when are those characters set ?
  */
 
-void Node::checkValidityOfPortName(const std::string& name) throw(Exception)
+void Node::checkValidityOfPortName(const std::string& name) throw(YACS::Exception)
 {
   if(name.find(SEP_CHAR_IN_PORT, 0 )!=string::npos)
     {
@@ -346,7 +346,7 @@ void Node::checkValidityOfPortName(const std::string& name) throw(Exception)
  * @note : Check that 'node1' and 'node2' have exactly the same father
  * @exception : If 'node1' and 'node2' have NOT exactly the same father
  */
-ComposedNode *Node::checkHavingCommonFather(Node *node1, Node *node2) throw(Exception)
+ComposedNode *Node::checkHavingCommonFather(Node *node1, Node *node2) throw(YACS::Exception)
 {
   if(node1!=0 && node2!=0)
     {

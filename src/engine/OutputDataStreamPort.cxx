@@ -57,7 +57,7 @@ OutputDataStreamPort *OutputDataStreamPort::clone(Node *newHelder) const
 std::set<InPort *> OutputDataStreamPort::edSetInPort() const
 {
   set<InPort *> s;
-  for(set<InputDataStreamPort *>::iterator iter=_setOfInputDataStreamPort.begin();iter!=_setOfInputDataStreamPort.end();iter++)
+  for(set<InputDataStreamPort *>::const_iterator iter=_setOfInputDataStreamPort.begin();iter!=_setOfInputDataStreamPort.end();iter++)
     (*iter)->getAllRepresentants(s);
   return s;
 }
@@ -65,7 +65,7 @@ std::set<InPort *> OutputDataStreamPort::edSetInPort() const
 bool OutputDataStreamPort::isAlreadyLinkedWith(InPort *with) const
 {
   set<InPort *> s;
-  set<InputDataStreamPort *>::iterator iter;
+  set<InputDataStreamPort *>::const_iterator iter;
   for(iter=_setOfInputDataStreamPort.begin();iter!=_setOfInputDataStreamPort.end();iter++)
     if(*iter==with)
       return true;
@@ -103,7 +103,7 @@ bool OutputDataStreamPort::edAddInputDataStreamPort(InputDataStreamPort *port)
     return false;
 }
 
-int OutputDataStreamPort::edRemoveInputDataStreamPort(InputDataStreamPort *inPort, bool forward) throw(Exception)
+int OutputDataStreamPort::edRemoveInputDataStreamPort(InputDataStreamPort *inPort, bool forward) throw(YACS::Exception)
 {
   if(forward)
     {
@@ -128,7 +128,7 @@ int OutputDataStreamPort::edRemoveInputDataStreamPort(InputDataStreamPort *inPor
     }
 }
 
-bool OutputDataStreamPort::addInPort(InPort *inPort) throw(Exception)
+bool OutputDataStreamPort::addInPort(InPort *inPort) throw(YACS::Exception)
 {
   DEBTRACE("OutputDataStreamPort::addInPort");
   if(inPort->getNameOfTypeOfCurrentInstance()!=InputDataStreamPort::NAME)
@@ -140,7 +140,7 @@ bool OutputDataStreamPort::addInPort(InPort *inPort) throw(Exception)
   return edAddInputDataStreamPort(static_cast<InputDataStreamPort*>(inPort));
 }
 
-void OutputDataStreamPort::edRemoveAllLinksLinkedWithMe() throw(Exception)
+void OutputDataStreamPort::edRemoveAllLinksLinkedWithMe() throw(YACS::Exception)
 {
   set<InputDataStreamPort *>::iterator iter;
   set<InputDataStreamPort *> vec(_setOfInputDataStreamPort);
@@ -149,7 +149,7 @@ void OutputDataStreamPort::edRemoveAllLinksLinkedWithMe() throw(Exception)
   _setOfInputDataStreamPort.clear();
 }
 
-int OutputDataStreamPort::removeInPort(InPort *inPort, bool forward) throw(Exception)
+int OutputDataStreamPort::removeInPort(InPort *inPort, bool forward) throw(YACS::Exception)
 {
   DEBTRACE("OutputDataStreamPort::removeInPort");
   if(inPort->getNameOfTypeOfCurrentInstance()!=InputDataStreamPort::NAME && !forward)

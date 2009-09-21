@@ -99,7 +99,7 @@ void Pool::destroyCurrentCase()
  * corrupted 'this'.
  *
  */
-void Pool::checkConsistency() throw(Exception)
+void Pool::checkConsistency() throw(YACS::Exception)
 {
   // First check unicity of ids.
   std::set<int> ids;
@@ -119,7 +119,7 @@ void Pool::checkConsistency() throw(Exception)
 /*!
  * \throw See the \b throw case of pushOutSampleAt method.
  */
-void Pool::setCurrentId(int id) throw(Exception)
+void Pool::setCurrentId(int id) throw(YACS::Exception)
 {
   std::list< std::pair<int, ExpData> >::iterator iter;
   for(iter=_container.begin();iter!=_container.end();iter++)
@@ -140,7 +140,7 @@ void Pool::setCurrentId(int id) throw(Exception)
  *        has destroyed a case id different from its id.
  *
  */
-void Pool::putOutSampleAt(int id, Any *outValue) throw(Exception)
+void Pool::putOutSampleAt(int id, Any *outValue) throw(YACS::Exception)
 {
   std::list< std::pair<int, ExpData> >::iterator iter;
   for(iter=_container.begin();iter!=_container.end();iter++)

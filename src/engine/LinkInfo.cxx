@@ -49,7 +49,7 @@ void LinkInfo::startCollapseTransac()
   _level++;
 }
 
-void LinkInfo::endCollapseTransac() throw(Exception)
+void LinkInfo::endCollapseTransac() throw(YACS::Exception)
 {
   if(--_level==0)
     {
@@ -82,7 +82,7 @@ void LinkInfo::pushWarnLink(OutPort *semStart, InPort *end, WarnReason reason)
   _collapse[reason].back().push_back(pair<OutPort *,InPort *>(semStart,end));
 }
 
-void LinkInfo::pushErrLink(OutPort *semStart, InPort *end, ErrReason reason) throw(Exception)
+void LinkInfo::pushErrLink(OutPort *semStart, InPort *end, ErrReason reason) throw(YACS::Exception)
 {
   if(reason==E_NEVER_SET_INPUTPORT)
     _unsetInPort.push_back(end);
@@ -91,15 +91,15 @@ void LinkInfo::pushErrLink(OutPort *semStart, InPort *end, ErrReason reason) thr
   else
     _errors[reason].push_back(pair<OutPort *, InPort *>(semStart,end));
   if(_level==0)
-    if(_levelOfInfo==ALL_STOP_ASAP or _levelOfInfo==WARN_ONLY_DONT_STOP)
+    if(_levelOfInfo==ALL_STOP_ASAP || _levelOfInfo==WARN_ONLY_DONT_STOP)
       throw Exception(getErrRepr());
 }
 
-void LinkInfo::pushErrSwitch(CollectorSwOutPort *collector) throw(Exception)
+void LinkInfo::pushErrSwitch(CollectorSwOutPort *collector) throw(YACS::Exception)
 {
   _errorsOnSwitchCases.push_back(collector);
   if(_level==0)
-    if(_levelOfInfo==ALL_STOP_ASAP or _levelOfInfo==WARN_ONLY_DONT_STOP)
+    if(_levelOfInfo==ALL_STOP_ASAP || _levelOfInfo==WARN_ONLY_DONT_STOP)
       throw Exception(getErrRepr());
 }
 
@@ -108,7 +108,7 @@ void LinkInfo::pushUselessCFLink(Node *start, Node *end)
   _uselessLinks.insert(pair<Node *,Node *>(start,end));
 }
 
-void LinkInfo::takeDecision() const throw(Exception)
+void LinkInfo::takeDecision() const throw(YACS::Exception)
 {
   if(!_errors.empty())
     throw Exception(getErrRepr());

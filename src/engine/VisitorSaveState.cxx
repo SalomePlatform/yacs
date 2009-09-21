@@ -69,7 +69,7 @@ VisitorSaveState::~VisitorSaveState()
     }
 }
 
-void VisitorSaveState::openFileDump(std::string xmlDump) throw(Exception)
+void VisitorSaveState::openFileDump(std::string xmlDump) throw(YACS::Exception)
 {
   _out.open(xmlDump.c_str(), ios::out);
   if (!_out)

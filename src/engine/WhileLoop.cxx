@@ -79,7 +79,7 @@ Node *WhileLoop::simpleClone(ComposedNode *father, bool editionOnly) const
   return new WhileLoop(*this,father,editionOnly);
 }
 
-InputPort *WhileLoop::getInputPort(const std::string& name) const throw(Exception)
+InputPort *WhileLoop::getInputPort(const std::string& name) const throw(YACS::Exception)
 {
   if(name==NAME_OF_INPUT_CONDITION)
     return (InputPort*)&_conditionPort;
@@ -112,7 +112,7 @@ YACS::Event WhileLoop::updateStateOnFinishedEventFrom(Node *node)
 void WhileLoop::checkLinkPossibility(OutPort *start, 
                                      const std::list<ComposedNode *>& pointsOfViewStart,
                                      InPort *end, 
-                                     const std::list<ComposedNode *>& pointsOfViewEnd) throw(Exception)
+                                     const std::list<ComposedNode *>& pointsOfViewEnd) throw(YACS::Exception)
 {
   DEBTRACE("WhileLoop::checkLinkPossibility");
 }

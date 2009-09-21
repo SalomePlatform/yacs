@@ -95,7 +95,7 @@ AnySplitOutputPort::AnySplitOutputPort(const AnySplitOutputPort& other, Node *ne
 {
 }
 
-bool AnySplitOutputPort::addInPort(InPort *inPort) throw(Exception)
+bool AnySplitOutputPort::addInPort(InPort *inPort) throw(YACS::Exception)
 {
   bool ret=OutputPort::addInPort(inPort);
   if(_repr)
@@ -111,7 +111,7 @@ void AnySplitOutputPort::getAllRepresented(std::set<OutPort *>& represented) con
     _repr->getAllRepresented(represented);
 }
 
-int AnySplitOutputPort::removeInPort(InPort *inPort, bool forward) throw(Exception)
+int AnySplitOutputPort::removeInPort(InPort *inPort, bool forward) throw(YACS::Exception)
 {
   bool ret=OutputPort::removeInPort(inPort,forward);
   if(_repr)
@@ -207,7 +207,7 @@ SplitterNode::SplitterNode(const SplitterNode& other, ForEachLoop *father):Eleme
 {
 }
 
-InputPort *SplitterNode::getInputPort(const std::string& name) const throw(Exception)
+InputPort *SplitterNode::getInputPort(const std::string& name) const throw(YACS::Exception)
 {
   if(name==NAME_OF_SEQUENCE_INPUT)
     return (InputPort *)&_dataPortToDispatch;
@@ -446,7 +446,7 @@ int ForEachLoop::getNumberOfInputPorts() const
   return DynParaLoop::getNumberOfInputPorts()+1;
 }
 
-void ForEachLoop::checkNoCyclePassingThrough(Node *node) throw(Exception)
+void ForEachLoop::checkNoCyclePassingThrough(Node *node) throw(YACS::Exception)
 {
   //TO DO
 }
@@ -469,7 +469,7 @@ std::list<InputPort *> ForEachLoop::getLocalInputPorts() const
   return ret;
 }
 
-InputPort *ForEachLoop::getInputPort(const std::string& name) const throw(Exception)
+InputPort *ForEachLoop::getInputPort(const std::string& name) const throw(YACS::Exception)
 {
   if(name==SplitterNode::NAME_OF_SEQUENCE_INPUT)
     return (InputPort *)&_splitterNode._dataPortToDispatch;
@@ -477,7 +477,7 @@ InputPort *ForEachLoop::getInputPort(const std::string& name) const throw(Except
     return DynParaLoop::getInputPort(name);
 }
 
-OutputPort *ForEachLoop::getOutputPort(const std::string& name) const throw(Exception)
+OutputPort *ForEachLoop::getOutputPort(const std::string& name) const throw(YACS::Exception)
 {
   for(vector<AnySplitOutputPort *>::const_iterator iter=_outGoingPorts.begin();iter!=_outGoingPorts.end();iter++)
     {
@@ -487,7 +487,7 @@ OutputPort *ForEachLoop::getOutputPort(const std::string& name) const throw(Exce
   return DynParaLoop::getOutputPort(name);
 }
 
-OutPort *ForEachLoop::getOutPort(const std::string& name) const throw(Exception)
+OutPort *ForEachLoop::getOutPort(const std::string& name) const throw(YACS::Exception)
 {
   for(vector<AnySplitOutputPort *>::const_iterator iter=_outGoingPorts.begin();iter!=_outGoingPorts.end();iter++)
     {
@@ -497,7 +497,7 @@ OutPort *ForEachLoop::getOutPort(const std::string& name) const throw(Exception)
   return DynParaLoop::getOutPort(name);
 }
 
-Node *ForEachLoop::getChildByShortName(const std::string& name) const throw(Exception)
+Node *ForEachLoop::getChildByShortName(const std::string& name) const throw(YACS::Exception)
 {
   if(name==NAME_OF_SPLITTERNODE)
     return (Node *)&_splitterNode;
@@ -521,7 +521,7 @@ YACS::Event ForEachLoop::updateStateOnFinishedEventFrom(Node *node)
           _execIds[id]=NOT_RUNNING_BRANCH_ID;
           //analyzing if some samples are still on treatment on other branches.
           bool isFinished=true;
-          for(int i=0;i<_execIds.size() and isFinished;i++)
+          for(int i=0;i<_execIds.size() && isFinished;i++)
             isFinished=(_execIds[i]==NOT_RUNNING_BRANCH_ID);
           if(isFinished)
             {
@@ -609,7 +609,7 @@ void ForEachLoop::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort 
     throw Exception("ForEachLoop::buildDelegateOf : not implemented for DS because not specified");
 }
 
-void ForEachLoop::getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(Exception)
+void ForEachLoop::getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(YACS::Exception)
 {
   string typeOfPortInstance=(port.first)->getNameOfTypeOfCurrentInstance();
   if(typeOfPortInstance==OutputPort::NAME)
@@ -630,7 +630,7 @@ void ForEachLoop::getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *f
     throw Exception("ForEachLoop::getDelegateOf : not implemented because not specified");
 }
 
-void ForEachLoop::releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(Exception)
+void ForEachLoop::releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(YACS::Exception)
 {
   string typeOfPortInstance=portDwn->getNameOfTypeOfCurrentInstance();
   if(typeOfPortInstance==OutputPort::NAME)
@@ -729,7 +729,7 @@ void ForEachLoop::createOutputOutOfScopeInterceptors(int branchNb)
 }
 
 void ForEachLoop::checkLinkPossibility(OutPort *start, const std::list<ComposedNode *>& pointsOfViewStart,
-                                       InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) throw(Exception)
+                                       InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) throw(YACS::Exception)
 {
   if(isInMyDescendance(start->getNode())==_node)
     throw Exception("ForEachLoop::checkLinkPossibility : A link from work node to init node not permitted");

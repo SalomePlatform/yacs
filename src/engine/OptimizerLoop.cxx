@@ -67,7 +67,7 @@ void OptimizerAlgStandardized::parseFileToInit(const std::string& fileName)
   _algBehind->parseFileToInit(fileName);
 }
 
-void OptimizerAlgStandardized::initialize(const Any *input) throw (Exception)
+void OptimizerAlgStandardized::initialize(const Any *input) throw(YACS::Exception)
 {
   _algBehind->initialize(input);
 }
@@ -185,7 +185,7 @@ void FakeNodeForOptimizerLoop::finished()
 
 OptimizerLoop::OptimizerLoop(const std::string& name, const std::string& algLibWthOutExt,
                              const std::string& symbolNameToOptimizerAlgBaseInstanceFactory,
-                             bool algInitOnFile) throw(Exception)
+                             bool algInitOnFile) throw(YACS::Exception)
   try : DynParaLoop(name,Runtime::_tc_string),_loader(algLibWthOutExt),_algInitOnFile(algInitOnFile),
         _portForInitFile(NAME_OF_FILENAME_INPUT,this,Runtime::_tc_string),
         _alg(new OptimizerAlgStandardized(&_myPool,0)),_convergenceReachedWithOtherCalc(false),
@@ -295,7 +295,7 @@ int OptimizerLoop::getNumberOfInputPorts() const
   return DynParaLoop::getNumberOfInputPorts()+2;
 }
 
-InputPort *OptimizerLoop::getInputPort(const std::string& name) const throw(Exception)
+InputPort *OptimizerLoop::getInputPort(const std::string& name) const throw(YACS::Exception)
 {
   if(name==NAME_OF_FILENAME_INPUT)
     return (InputPort *)&_portForInitFile;
@@ -381,7 +381,7 @@ YACS::Event OptimizerLoop::updateStateOnFinishedEventFrom(Node *node)
       if(!val)
         {
           bool isFinished=true;
-          for(int i=0;i<_execIds.size() and isFinished;i++)
+          for(int i=0;i<_execIds.size() && isFinished;i++)
             isFinished=(_execIds[i]==NOT_RUNNING_BRANCH_ID);
           if(isFinished)
             {
@@ -397,7 +397,7 @@ YACS::Event OptimizerLoop::updateStateOnFinishedEventFrom(Node *node)
   return YACS::NOEVENT;
 }
 
-void OptimizerLoop::checkNoCyclePassingThrough(Node *node) throw(Exception)
+void OptimizerLoop::checkNoCyclePassingThrough(Node *node) throw(YACS::Exception)
 {
 }
 
@@ -497,7 +497,7 @@ void OptimizerLoop::launchMaxOfSamples(bool first)
 bool OptimizerLoop::isFullyLazy() const
 {
   bool isLazy=true;
-  for(unsigned i=0;i<_execIds.size() and isLazy;i++)
+  for(unsigned i=0;i<_execIds.size() && isLazy;i++)
     isLazy=(_execIds[i]==NOT_RUNNING_BRANCH_ID);
   return isLazy;
 }
@@ -510,7 +510,7 @@ bool OptimizerLoop::isFullyBusy(unsigned& branchId) const
 {
   bool isFinished=true;
   unsigned i;
-  for(i=0;i<_execIds.size() and isFinished;i++)
+  for(i=0;i<_execIds.size() && isFinished;i++)
     isFinished=(_execIds[i]!=NOT_RUNNING_BRANCH_ID);
   if(!isFinished)
     branchId=i-1;

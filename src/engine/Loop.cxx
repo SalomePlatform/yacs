@@ -46,7 +46,7 @@ void InputPort4DF2DS::getAllRepresentants(std::set<InPort *>& repr) const
   repr.insert(s.begin(),s.end());
 }
 
-void *InputPort4DF2DS::get() const throw(Exception)
+void *InputPort4DF2DS::get() const throw(YACS::Exception)
 {
   if(!_data)
     {
@@ -114,13 +114,13 @@ void DFToDSForLoop::getReadyTasks(std::vector<Task *>& tasks)
 {
 }
 
-InputPort *DFToDSForLoop::getInputPort(const std::string& name) const throw(Exception)
+InputPort *DFToDSForLoop::getInputPort(const std::string& name) const throw(YACS::Exception)
 {
   list<InputPort *>::const_iterator it =_setOfInputPort.begin();
   return (*it);
 }
 
-OutputDataStreamPort *DFToDSForLoop::getOutputDataStreamPort(const std::string& name) const throw(Exception)
+OutputDataStreamPort *DFToDSForLoop::getOutputDataStreamPort(const std::string& name) const throw(YACS::Exception)
 {
   list<OutputDataStreamPort *>::const_iterator it =_setOfOutputDataStreamPort.begin();
   return (*it);
@@ -213,13 +213,13 @@ void DSToDFForLoop::getReadyTasks(std::vector<Task *>& tasks)
 {
 }
 
-OutputPort *DSToDFForLoop::getOutputPort(const std::string& name) const throw(Exception)
+OutputPort *DSToDFForLoop::getOutputPort(const std::string& name) const throw(YACS::Exception)
 {
   list<OutputPort *>::const_iterator it = _setOfOutputPort.begin();
   return (*it);
 }
 
-InputDataStreamPort *DSToDFForLoop::getInputDataStreamPort(const std::string& name) const throw(Exception)
+InputDataStreamPort *DSToDFForLoop::getInputDataStreamPort(const std::string& name) const throw(YACS::Exception)
 {
   list<InputDataStreamPort *>::const_iterator it = _setOfInputDataStreamPort.begin();
   return (*it);
@@ -342,7 +342,7 @@ Node *Loop::edSetNode(Node *node)
   return ret;
 }
 
-bool Loop::edAddChild(Node *node) throw(Exception)
+bool Loop::edAddChild(Node *node) throw(YACS::Exception)
 {
   return edSetNode(node);
 }
@@ -382,7 +382,7 @@ void Loop::getReadyTasks(std::vector<Task *>& tasks)
       }
 }
 
-void Loop::edRemoveChild(Node *node) throw(Exception)
+void Loop::edRemoveChild(Node *node) throw(YACS::Exception)
 {
   StaticDefinedComposedNode::edRemoveChild(node);
   if(_node==node)
@@ -414,7 +414,7 @@ int Loop::getNumberOfInputPorts() const
   return StaticDefinedComposedNode::getNumberOfInputPorts()+1;
 }
 
-Node *Loop::getChildByShortName(const std::string& name) const throw(Exception)
+Node *Loop::getChildByShortName(const std::string& name) const throw(YACS::Exception)
 {
   if (_node)
     if(name==_node->getName())
@@ -423,12 +423,12 @@ Node *Loop::getChildByShortName(const std::string& name) const throw(Exception)
   throw Exception(what);
 }
 
-TypeCode* Loop::MappingDF2DS(TypeCode* type) throw(Exception)
+TypeCode* Loop::MappingDF2DS(TypeCode* type) throw(YACS::Exception)
 {
   return type;
 }
 
-TypeCode* Loop::MappingDS2DF(TypeCode* type) throw(Exception)
+TypeCode* Loop::MappingDS2DF(TypeCode* type) throw(YACS::Exception)
 {
   return type;
 }
@@ -436,9 +436,9 @@ TypeCode* Loop::MappingDS2DF(TypeCode* type) throw(Exception)
 void Loop::buildDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView)
 {
   string typeOfPortInstance=port->getNameOfTypeOfCurrentInstance();
-  if(typeOfPortInstance!=InputPort::NAME or
-     (typeOfPortInstance == InputPort::NAME and 
-      initialStart->getNameOfTypeOfCurrentInstance()== OutputPort::NAME and 
+  if(typeOfPortInstance!=InputPort::NAME ||
+     (typeOfPortInstance == InputPort::NAME && 
+      initialStart->getNameOfTypeOfCurrentInstance()== OutputPort::NAME && 
       !isNecessaryToBuildSpecificDelegateDF2DS(pointsOfView)) )
     return ;
   InputPort *portCasted=(InputPort *)port;
@@ -461,9 +461,9 @@ void Loop::buildDelegateOf(InPort * & port, OutPort *initialStart, const std::li
 void Loop::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView)
 {
   string typeOfPortInstance=(port.first)->getNameOfTypeOfCurrentInstance();
-  if(typeOfPortInstance!=OutputPort::NAME or
-    ( typeOfPortInstance == OutputPort::NAME and 
-      finalTarget->getNameOfTypeOfCurrentInstance()== InputPort::NAME and 
+  if(typeOfPortInstance!=OutputPort::NAME ||
+    ( typeOfPortInstance == OutputPort::NAME && 
+      finalTarget->getNameOfTypeOfCurrentInstance()== InputPort::NAME && 
       !isNecessaryToBuildSpecificDelegateDF2DS(pointsOfView)) )
     return ;
   OutPort *portCasted=port.first;
@@ -490,12 +490,12 @@ void Loop::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalT
   port.first=(*iter)->getOutputDataStreamPort("");
 }
 
-void Loop::getDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView) throw(Exception)
+void Loop::getDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView) throw(YACS::Exception)
 {
   string typeOfPortInstance=port->getNameOfTypeOfCurrentInstance();
-  if(typeOfPortInstance!=InputPort::NAME or
-     (typeOfPortInstance == InputPort::NAME and 
-      initialStart->getNameOfTypeOfCurrentInstance()== OutputPort::NAME and 
+  if(typeOfPortInstance!=InputPort::NAME ||
+     (typeOfPortInstance == InputPort::NAME && 
+      initialStart->getNameOfTypeOfCurrentInstance()== OutputPort::NAME && 
       !isNecessaryToBuildSpecificDelegateDF2DS(pointsOfView)) )
     return ;
   InputPort *portCasted=(InputPort *)port;
@@ -513,12 +513,12 @@ void Loop::getDelegateOf(InPort * & port, OutPort *initialStart, const std::list
 }
 
 void Loop::getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, 
-                         const std::list<ComposedNode *>& pointsOfView) throw(Exception)
+                         const std::list<ComposedNode *>& pointsOfView) throw(YACS::Exception)
 {
   string typeOfPortInstance=(port.first)->getNameOfTypeOfCurrentInstance();
-  if(typeOfPortInstance!=OutputPort::NAME or
-    ( typeOfPortInstance == OutputPort::NAME and 
-      finalTarget->getNameOfTypeOfCurrentInstance()== InputPort::NAME and 
+  if(typeOfPortInstance!=OutputPort::NAME ||
+    ( typeOfPortInstance == OutputPort::NAME && 
+      finalTarget->getNameOfTypeOfCurrentInstance()== InputPort::NAME && 
       !isNecessaryToBuildSpecificDelegateDF2DS(pointsOfView)) )
     return ;
   OutPort *portCasted=port.first;
@@ -535,12 +535,12 @@ void Loop::getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTar
     port.first=(*iter)->getOutputDataStreamPort("");
 }
 
-void Loop::releaseDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView) throw(Exception)
+void Loop::releaseDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView) throw(YACS::Exception)
 {
   string typeOfPortInstance=port->getNameOfTypeOfCurrentInstance();
-  if(typeOfPortInstance!=InputPort::NAME or
-    ( typeOfPortInstance == InputPort::NAME and 
-      initialStart->getNameOfTypeOfCurrentInstance()== OutputPort::NAME and 
+  if(typeOfPortInstance!=InputPort::NAME ||
+    ( typeOfPortInstance == InputPort::NAME && 
+      initialStart->getNameOfTypeOfCurrentInstance()== OutputPort::NAME && 
       !isNecessaryToBuildSpecificDelegateDF2DS(pointsOfView)) )
     return ;
   InputPort *portCasted=(InputPort *)port;
@@ -565,7 +565,7 @@ void Loop::releaseDelegateOf(InPort * & port, OutPort *initialStart, const std::
     }
 }
 
-void Loop::releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(Exception)
+void Loop::releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(YACS::Exception)
 {
   if(portDwn==portUp)
     return ;
@@ -581,7 +581,7 @@ void Loop::releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTar
     }
 }
 
-void Loop::checkNoCyclePassingThrough(Node *node) throw(Exception)
+void Loop::checkNoCyclePassingThrough(Node *node) throw(YACS::Exception)
 {
   //throw Exception("Loop::checkNoCyclePassingThrough : Internal error occured");
 }
@@ -621,7 +621,7 @@ bool Loop::isNecessaryToBuildSpecificDelegateDF2DS(const std::list<ComposedNode 
  * \param end : the InPort to connect
  * \return  true if a new link has been created, false otherwise.
  */
-bool Loop::edAddDFLink(OutPort *start, InPort *end) throw(Exception)
+bool Loop::edAddDFLink(OutPort *start, InPort *end) throw(YACS::Exception)
 {
   return edAddLink(start,end);
 }
@@ -667,7 +667,7 @@ void Loop::checkControlDependancy(OutPort *start, InPort *end, bool cross,
   fw[(ComposedNode *)this].push_back(start);
 }
 
-void Loop::checkBasicConsistency() const throw(Exception)
+void Loop::checkBasicConsistency() const throw(YACS::Exception)
 {
   DEBTRACE("Loop::checkBasicConsistency");
   ComposedNode::checkBasicConsistency();

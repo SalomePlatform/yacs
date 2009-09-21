@@ -68,7 +68,7 @@ AnyPtr TypeCode::getOrBuildAnyFromZippedData(char *data) const
   return AtomAny::getOrBuildFromData(data,this);
 }
 
-const char * TypeCode::name() const throw(Exception)
+const char * TypeCode::name() const throw(YACS::Exception)
 {
   //throw Exception("No name");
   return id();
@@ -80,7 +80,7 @@ const char * TypeCode::shortName() const
   return id();
 }
 
-const char * TypeCode::id() const throw(Exception)
+const char * TypeCode::id() const throw(YACS::Exception)
 {
   switch(_kind)
     {
@@ -97,7 +97,7 @@ const char * TypeCode::id() const throw(Exception)
     }
 }
 
-int TypeCode::isA(const char* id) const throw(Exception)
+int TypeCode::isA(const char* id) const throw(YACS::Exception)
 {
   throw Exception("Not implemented for this type");
 }
@@ -167,7 +167,7 @@ unsigned TypeCode::getSizeInByteOfAnyReprInSeq() const
     }
 }
 
-const TypeCode * TypeCode::contentType() const throw(Exception)
+const TypeCode * TypeCode::contentType() const throw(YACS::Exception)
 {
   throw Exception("No content type");
 };
@@ -301,12 +301,12 @@ AnyPtr TypeCodeObjref::getOrBuildAnyFromZippedData(char *data) const
   throw Exception("Not implemented yet : YACS::Any for objs ref");
 }
 
-const char * TypeCodeObjref::id() const throw(Exception)
+const char * TypeCodeObjref::id() const throw(YACS::Exception)
 {
   return _repoId.c_str();
 };
 
-const char * TypeCodeObjref::name() const throw(Exception)
+const char * TypeCodeObjref::name() const throw(YACS::Exception)
 {
   return _name.c_str();
 }
@@ -331,7 +331,7 @@ TypeCodeObjref::TypeCodeObjref(const char* repositoryId,
  *   \param id :  a given id
  *   \return     1 if true, 0 if false
  */
-int TypeCodeObjref::isA(const char* id) const throw(Exception)
+int TypeCodeObjref::isA(const char* id) const throw(YACS::Exception)
 {
   if(_repoId == id)return 1;
   list<TypeCodeObjref *>::const_iterator iter;
@@ -430,12 +430,12 @@ AnyPtr TypeCodeSeq::getOrBuildAnyFromZippedData(char *data) const
   return SequenceAny::getOrBuildFromData(data,this);
 }
 
-const char * TypeCodeSeq::id() const throw(Exception)
+const char * TypeCodeSeq::id() const throw(YACS::Exception)
 {
   return _repoId.c_str();
 }
 
-const char * TypeCodeSeq::name() const throw(Exception)
+const char * TypeCodeSeq::name() const throw(YACS::Exception)
 {
   return _name.c_str();
 }
@@ -444,7 +444,7 @@ const char * TypeCodeSeq::shortName() const
   return _shortName.c_str();
 }
 
-const TypeCode * TypeCodeSeq::contentType() const throw(Exception)
+const TypeCode * TypeCodeSeq::contentType() const throw(YACS::Exception)
 {
   return _content;
 }
@@ -530,12 +530,12 @@ AnyPtr TypeCodeArray::getOrBuildAnyFromZippedData(char *data) const
   return ArrayAny::getOrBuildFromData(data,this);
 }
 
-const char * TypeCodeArray::id() const throw(Exception)
+const char * TypeCodeArray::id() const throw(YACS::Exception)
 {
   return _repoId.c_str();
 }
 
-const char * TypeCodeArray::name() const throw(Exception)
+const char * TypeCodeArray::name() const throw(YACS::Exception)
 {
   return _name.c_str();
 }
@@ -549,7 +549,7 @@ unsigned TypeCodeArray::getStaticLgth() const
   return _staticLgth;
 }
 
-const TypeCode * TypeCodeArray::contentType() const throw(Exception)
+const TypeCode * TypeCodeArray::contentType() const throw(YACS::Exception)
 {
   return _content;
 }
@@ -647,12 +647,12 @@ AnyPtr TypeCodeStruct::getOrBuildAnyFromZippedData(char *data) const
   return StructAny::getOrBuildFromData(data,this);
 }
 
-const char * TypeCodeStruct::id() const throw(Exception)
+const char * TypeCodeStruct::id() const throw(YACS::Exception)
 {
   return _repoId.c_str();
 };
 
-const char * TypeCodeStruct::name() const throw(Exception)
+const char * TypeCodeStruct::name() const throw(YACS::Exception)
 {
   return _name.c_str();
 }
@@ -670,7 +670,7 @@ unsigned TypeCodeStruct::getSizeInByteOfAnyReprInSeq() const
   return ret;
 }
 
-const TypeCode *TypeCodeStruct::contentType() const throw(Exception)
+const TypeCode *TypeCodeStruct::contentType() const throw(YACS::Exception)
 {
   const char what[]="Content type is specified by giving a key.";
   throw Exception(what);
@@ -681,7 +681,7 @@ const TypeCode *TypeCodeStruct::contentType() const throw(Exception)
  *   \param id :  a given id
  *   \return     1 if true, 0 if false
  */
-int TypeCodeStruct::isA(const char* id) const throw(Exception)
+int TypeCodeStruct::isA(const char* id) const throw(YACS::Exception)
 {
   if(_repoId == id)return 1;
   return 0;

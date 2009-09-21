@@ -59,7 +59,7 @@ std::string CollectorSwOutPort::getNameOfTypeOfCurrentInstance() const
   return _className;
 }
 
-void CollectorSwOutPort::edRemoveAllLinksLinkedWithMe() throw(Exception)
+void CollectorSwOutPort::edRemoveAllLinksLinkedWithMe() throw(YACS::Exception)
 {
   map<int, OutPort *>::iterator pt;
   if(_consumer)
@@ -79,7 +79,7 @@ void CollectorSwOutPort::getAllRepresented(std::set<OutPort *>& represented) con
     ((*pt).second)->getAllRepresented(represented);
 }
 
-bool CollectorSwOutPort::addInPort(InPort *inPort) throw(Exception)
+bool CollectorSwOutPort::addInPort(InPort *inPort) throw(YACS::Exception)
 {
   if(_currentProducer)
     {//a specific link is beeing done
@@ -92,7 +92,7 @@ bool CollectorSwOutPort::addInPort(InPort *inPort) throw(Exception)
       (*iter).second->addInPort(inPort);
 }
 
-int CollectorSwOutPort::removeInPort(InPort *inPort, bool forward) throw(Exception)
+int CollectorSwOutPort::removeInPort(InPort *inPort, bool forward) throw(YACS::Exception)
 {
   if(_currentProducer)
     {
@@ -179,7 +179,7 @@ bool CollectorSwOutPort::removePotentialProducerForMaster()
   return _potentialProducers.empty();
 }
 
-bool CollectorSwOutPort::checkManagementOfPort(OutPort *port) throw(Exception)
+bool CollectorSwOutPort::checkManagementOfPort(OutPort *port) throw(YACS::Exception)
 {
   for(map<int, OutPort *>::iterator iter=_potentialProducers.begin();iter!=_potentialProducers.end();iter++)
     if((*iter).second==port)
@@ -405,7 +405,7 @@ int Switch::getNumberOfInputPorts() const
   return StaticDefinedComposedNode::getNumberOfInputPorts()+1;
 }
 
-void Switch::edRemoveChild(Node *node) throw(Exception)
+void Switch::edRemoveChild(Node *node) throw(YACS::Exception)
 {
   map< int , Node * >::iterator iter=_mapOfNode.begin();
   for(;iter!=_mapOfNode.end();iter++)
@@ -432,7 +432,7 @@ std::list<InputPort *> Switch::getLocalInputPorts() const
   ret.push_back((InputPort *)&_condition);
   return ret;
 }
-OutPort *Switch::getOutPort(const std::string& name) const throw(Exception)
+OutPort *Switch::getOutPort(const std::string& name) const throw(YACS::Exception)
 {
   for(map<InPort *, CollectorSwOutPort * >::const_iterator iter=_outPortsCollector.begin();iter!=_outPortsCollector.end();iter++)
     if(name==(*iter).second->getName())
@@ -443,14 +443,14 @@ OutPort *Switch::getOutPort(const std::string& name) const throw(Exception)
   return StaticDefinedComposedNode::getOutPort(name);
 }
 
-InputPort *Switch::getInputPort(const std::string& name) const throw(Exception)
+InputPort *Switch::getInputPort(const std::string& name) const throw(YACS::Exception)
 {
   if(name==SELECTOR_INPUTPORT_NAME)
     return (InputPort *)&_condition;
   return StaticDefinedComposedNode::getInputPort(name);
 }
 
-Node *Switch::getChildByShortName(const std::string& name) const throw(Exception)
+Node *Switch::getChildByShortName(const std::string& name) const throw(YACS::Exception)
 {
   if(name==DEFAULT_NODE_NAME)
     {
@@ -477,12 +477,12 @@ Node *Switch::edSetDefaultNode(Node *node)
   return edSetNode(ID_FOR_DEFAULT_NODE,node);
 }
 
-Node *Switch::edReleaseDefaultNode() throw(Exception)
+Node *Switch::edReleaseDefaultNode() throw(YACS::Exception)
 {
   return edReleaseCase(ID_FOR_DEFAULT_NODE);
 }
 
-Node *Switch::edReleaseCase(int caseId) throw(Exception)
+Node *Switch::edReleaseCase(int caseId) throw(YACS::Exception)
 {
   map< int , Node * >::iterator iter=_mapOfNode.find(caseId);
   if(iter==_mapOfNode.end())
@@ -514,7 +514,7 @@ Node *Switch::edGetNode(int caseId)
  *           0 is returned if caseId is a new ID.
  *  \b WARNING : 'node' is held by 'this' after call, whereas returned node is no more held. 
  */
-Node *Switch::edSetNode(int caseId, Node *node) throw(Exception)
+Node *Switch::edSetNode(int caseId, Node *node) throw(YACS::Exception)
 {
   if(!node)
     throw Exception("Switch::edSetNode : null node cannot be set as a case in switch node");
@@ -541,7 +541,7 @@ Node *Switch::edSetNode(int caseId, Node *node) throw(Exception)
     }
 }
 
-bool Switch::edAddChild(Node *node) throw(Exception)
+bool Switch::edAddChild(Node *node) throw(YACS::Exception)
 {
   int aCase = 0;
   map<int, Node*>::const_iterator it = _mapOfNode.begin();
@@ -603,13 +603,13 @@ void Switch::checkControlDependancy(OutPort *start, InPort *end, bool cross,
   throw Exception("Switch::checkControlDependancy : a link was dectected between 2 cases of a switch. Impossible !");
 }
 
-void Switch::checkNoCyclePassingThrough(Node *node) throw(Exception)
+void Switch::checkNoCyclePassingThrough(Node *node) throw(YACS::Exception)
 {
   throw Exception("Switch::checkNoCyclePassingThrough : uncorrect control flow link relative to switch");
 }
 
 void Switch::checkLinkPossibility(OutPort *start, const std::list<ComposedNode *>& pointsOfViewStart,
-                                  InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) throw(Exception)
+                                  InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) throw(YACS::Exception)
 {
   throw Exception("Switch::checkLinkPossibility : A link between 2 different cases of a same Switch requested -> Impossible");
 }
@@ -631,7 +631,7 @@ void Switch::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *fina
   port.first=newCollector;
 }
 
-void Switch::getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(Exception)
+void Switch::getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(YACS::Exception)
 {
   map<InPort *, CollectorSwOutPort * >::iterator iter=_outPortsCollector.find(finalTarget);
   if(iter==_outPortsCollector.end())
@@ -645,7 +645,7 @@ void Switch::getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalT
   port.first=(*iter).second;
 }
 
-void Switch::releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(Exception)
+void Switch::releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(YACS::Exception)
 {
   set<OutPort *> repr;
   portDwn->getAllRepresented(repr);
@@ -737,7 +737,7 @@ std::string Switch::getMyQualifiedName(const Node *directSon) const
   return id;
 }
 
-std::string Switch::getCaseId(const Node *node) const throw(Exception)
+std::string Switch::getCaseId(const Node *node) const throw(YACS::Exception)
 {
   const char sep='_';
   map<int, Node*>::const_iterator iter;

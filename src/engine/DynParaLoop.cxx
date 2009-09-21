@@ -147,21 +147,21 @@ std::list<OutputPort *> DynParaLoop::getSetOfOutputPort() const
   return ret;
 }
 
-OutPort *DynParaLoop::getOutPort(const std::string& name) const throw(Exception)
+OutPort *DynParaLoop::getOutPort(const std::string& name) const throw(YACS::Exception)
 {
   if(name==NAME_OF_SPLITTED_SEQ_OUT)
     return (OutPort *)&_splittedPort;
   return ComposedNode::getOutPort(name);
 }
 
-InputPort *DynParaLoop::getInputPort(const std::string& name) const throw(Exception)
+InputPort *DynParaLoop::getInputPort(const std::string& name) const throw(YACS::Exception)
 {
   if(name==NAME_OF_NUMBER_OF_BRANCHES)
     return (InputPort *)&_nbOfBranches;
   return ComposedNode::getInputPort(name);
 }
 
-OutputPort *DynParaLoop::getOutputPort(const std::string& name) const throw(Exception)
+OutputPort *DynParaLoop::getOutputPort(const std::string& name) const throw(YACS::Exception)
 {
   if(name==NAME_OF_SPLITTED_SEQ_OUT)
     return (OutputPort *)&_splittedPort;
@@ -194,7 +194,7 @@ Node *DynParaLoop::edRemoveInitNode()
   return ret;
 }
 
-void DynParaLoop::edRemoveChild(Node *node) throw(Exception)
+void DynParaLoop::edRemoveChild(Node *node) throw(YACS::Exception)
 {
   ComposedNode::edRemoveChild(node);
   if(node==_node)
@@ -228,7 +228,7 @@ std::list<InputPort *> DynParaLoop::getLocalInputPorts() const
   return ret;
 }
 
-unsigned DynParaLoop::getNumberOfBranchesCreatedDyn() const throw(Exception)
+unsigned DynParaLoop::getNumberOfBranchesCreatedDyn() const throw(YACS::Exception)
 {
   if(_execNodes.empty())
     throw Exception("ForEachLoop::getNumberOfBranches : No branches created dynamically ! - ForEachLoop needs to run or to be runned to call getNumberOfBranches");
@@ -236,7 +236,7 @@ unsigned DynParaLoop::getNumberOfBranchesCreatedDyn() const throw(Exception)
     return _execNodes.size();
 }
 
-Node *DynParaLoop::getChildByShortName(const std::string& name) const throw(Exception)
+Node *DynParaLoop::getChildByShortName(const std::string& name) const throw(YACS::Exception)
 {
   if(_node)
     if(name==_node->getName())
@@ -248,7 +248,7 @@ Node *DynParaLoop::getChildByShortName(const std::string& name) const throw(Exce
   throw Exception(what);
 }
 
-Node *DynParaLoop::getChildByNameExec(const std::string& name, unsigned id) const throw(Exception)
+Node *DynParaLoop::getChildByNameExec(const std::string& name, unsigned id) const throw(YACS::Exception)
 {
   if(id>=getNumberOfBranchesCreatedDyn())
     throw Exception("ForEachLoop::getChildByNameExec : invalid id - too large compared with dynamically created branches.");
@@ -438,7 +438,7 @@ InputPort *DynParaLoop::getDynInputPortByAbsName(int branchNb, const std::string
   return 0;
 }
 
-void DynParaLoop::checkBasicConsistency() const throw(Exception)
+void DynParaLoop::checkBasicConsistency() const throw(YACS::Exception)
 {
   DEBTRACE("DynParaLoop::checkBasicConsistency");
   ComposedNode::checkBasicConsistency();

@@ -73,7 +73,7 @@ bool InputPort::edIsManuallyInitialized() const
  */
 bool InputPort::edIsInitialized() const
 {
-  return (edIsManuallyInitialized() or _backLinks.size()!=0 );
+  return (edIsManuallyInitialized() || _backLinks.size()!=0 );
 }
 
 InputPort::~InputPort()
@@ -135,9 +135,9 @@ void InputPort::edRemoveManInit()
 }
 
 //! Check basically that this port has one chance to be specified on time. It's a necessary condition \b not \b sufficient at all.
-void InputPort::checkBasicConsistency() const throw(Exception)
+void InputPort::checkBasicConsistency() const throw(YACS::Exception)
 {
-  if(!edIsManuallyInitialized() and _backLinks.size()==0 )
+  if(!edIsManuallyInitialized() && _backLinks.size()==0 )
     {
       ostringstream stream;
       stream << "InputPort::checkBasicConsistency : Port " << _name << " of node with name " << _node->getName() << " neither initialized nor linked back";
@@ -172,7 +172,7 @@ ProxyPort::~ProxyPort()
     */
 }
 
-void ProxyPort::edRemoveAllLinksLinkedWithMe() throw(Exception)
+void ProxyPort::edRemoveAllLinksLinkedWithMe() throw(YACS::Exception)
 {
   _port->edRemoveAllLinksLinkedWithMe();
 }

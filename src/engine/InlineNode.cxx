@@ -55,7 +55,7 @@ void InlineFuncNode::setFname(const std::string& fname)
   modified();
 }
 
-void InlineFuncNode::checkBasicConsistency() const throw(Exception)
+void InlineFuncNode::checkBasicConsistency() const throw(YACS::Exception)
 {
   InlineNode::checkBasicConsistency();
   if(_fname.empty() )

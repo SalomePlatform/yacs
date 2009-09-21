@@ -105,7 +105,7 @@ std::set<InGate *> OutGate::edSetInGate() const
   return ret;
 }
 
-void OutGate::edRemoveInGate(InGate *inGate, bool coherenceWithInGate) throw(Exception)
+void OutGate::edRemoveInGate(InGate *inGate, bool coherenceWithInGate) throw(YACS::Exception)
 {
   map<InGate *, bool>::iterator iter;
   for(iter=_setOfInGate.begin();iter!=_setOfInGate.end();iter++)

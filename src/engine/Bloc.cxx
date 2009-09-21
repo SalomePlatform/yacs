@@ -155,7 +155,7 @@ void Bloc::exUpdateState()
  * If node name already used in bloc, throw exception.
  * Publish inputPorts in current bloc and ancestors.
  */
-bool Bloc::edAddChild(Node *node) throw(Exception)
+bool Bloc::edAddChild(Node *node) throw(YACS::Exception)
 {
   if(isNodeAlreadyAggregated(node))
     {
@@ -199,7 +199,7 @@ bool Bloc::edAddChild(Node *node) throw(Exception)
  * @exception If 'node' is NOT the son of 'this'.
  */
 
-void Bloc::edRemoveChild(Node *node) throw(Exception)
+void Bloc::edRemoveChild(Node *node) throw(YACS::Exception)
 {
   StaticDefinedComposedNode::edRemoveChild(node);
   list<Node *>::iterator iter=find(_setOfNode.begin(),_setOfNode.end(),node);
@@ -210,7 +210,7 @@ void Bloc::edRemoveChild(Node *node) throw(Exception)
     }
 }
 
-Node *Bloc::getChildByShortName(const std::string& name) const throw(Exception)
+Node *Bloc::getChildByShortName(const std::string& name) const throw(YACS::Exception)
 {
   for (list<Node *>::const_iterator iter = _setOfNode.begin(); iter != _setOfNode.end(); iter++)
     if ((*iter)->getName() == name)
@@ -273,7 +273,7 @@ bool insertNodeChildrenInSet(Node *node, std::set<Node *>& nodeSet)
  *        \b WARNING : When using this method 'node' has to be checked in order to be part of direct children of 'this'. 
  *
  */
-void Bloc::checkNoCyclePassingThrough(Node *node) throw(Exception)
+void Bloc::checkNoCyclePassingThrough(Node *node) throw(YACS::Exception)
 {
   set<Node *> currentNodesToTest;
   //don't insert node to test in set. 
