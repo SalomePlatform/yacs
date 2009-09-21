@@ -76,6 +76,7 @@ then
      CPPUNIT_LIBS_DIR="$LOCAL_LIBS_DIR"
   fi
 fi
+AM_CONDITIONAL(CPPUNIT_IS_OK, [test x"$cppunit_ok" = xyes])
 AC_LANG_RESTORE
 AC_MSG_RESULT(for cppunit: $cppunit_ok)
 
