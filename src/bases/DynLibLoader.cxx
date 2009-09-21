@@ -19,7 +19,11 @@
 #include "DynLibLoader.hxx"
 
 #if defined(YACS_PTHREAD)
+#if defined(WNT)
+#include "DynLibLoaderWin.cxx"
+#else
 #include "DynLibLoaderGNU.cxx"
+#endif
 #else
 #error
 #endif

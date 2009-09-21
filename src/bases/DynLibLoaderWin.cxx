@@ -32,12 +32,17 @@ DynLibLoaderWin::DynLibLoaderWin(const std::string& libNameWithoutExtension):_li
 DynLibLoaderWin::~DynLibLoaderWin()
 {
   if(_handleOnLoadedLib)
-    dlclose(_handleOnLoadedLib);
+    FreeLibrary(_handleOnLoadedLib);
 }
 
 bool DynLibLoaderWin::isLibFileFindable() const
 {
   return true;
+}
+
+std::string DynLibLoaderWin::getLibNameWithoutExt() const
+{
+  return _libName;
 }
 
 /*!
@@ -62,7 +67,7 @@ int DynLibLoaderWin::removeDirInSearchPath(const std::string& dirName)
   return 0;
 }
 
-void *DynLibLoaderWin::getHandleOnSymbolWithName(const std::string& symbName)
+void *DynLibLoaderWin::getHandleOnSymbolWithName(const std::string& symbName, bool stopOnError)
 {
   if(!_handleOnLoadedLib)
     if(!isLibFileFindable())
@@ -73,20 +78,46 @@ void *DynLibLoaderWin::getHandleOnSymbolWithName(const std::string& symbName)
       }
     else
       loadLib();
-  return resolveSymb(symbName);
+  return resolveSymb(symbName, stopOnError);
 }
 
-void DynLibLoaderWin::loadLib()
+bool DynLibLoaderWin::load()
 {
   std::string fullLibName(_libName);
   fullLibName+=_extForDynLib;
   _handleOnLoadedLib=LoadLibrary(fullLibName.c_str());
+  return _handleOnLoadedLib != NULL;
 }
 
-void *DynLibLoaderWin::resolveSymb(const std::string& symbName)
+bool DynLibLoaderWin::unload()
 {
-  void *ret=GetProcAddress(_handleOnLoadedLib,symbName.c_str());
-  return ret;
+  if (_handleOnLoadedLib) 
+    {
+      FreeLibrary(_handleOnLoadedLib);
+      _handleOnLoadedLib = NULL;
+    }
+  return 0;
+}
+
+bool DynLibLoaderWin::reload()
+{
+  unload();
+  return load();
+}
+
+void *DynLibLoaderWin::resolveSymb(const std::string& symbName, bool stopOnError)
+{
+  void *ret=(void*)GetProcAddress(_handleOnLoadedLib,symbName.c_str());
+  char *message="Not available here !";
+  if(stopOnError && (NULL != message))
+    {
+      std::cerr << "Error detected on symbol " << symbName << " search in library with name " << _libName << _extForDynLib;
+      std::cerr << " with the following internal message"<<  std::endl; 
+      std::cerr << message << std::endl;
+      return 0;
+    }
+  else
+    return ret;
 }
 
 const char *DynLibLoaderWin::getExtensionForDynLib()

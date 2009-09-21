@@ -21,6 +21,11 @@
 #include "YacsTrace.hxx"
 #include <cstdlib>
 
+#ifdef WNT
+#include <process.h>
+#define getpid _getpid
+#endif
+
 void AttachDebugger()
 {
   if(getenv ("YACSDEBUGGER"))

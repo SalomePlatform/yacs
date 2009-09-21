@@ -31,12 +31,21 @@ EXTRA_libYACSBases_la_SOURCES =
 	Thread.hxx ThreadPT.hxx ThreadPT.cxx          \
 	Mutex.hxx MutexPT.cxx MutexPT.hxx             \
 	Semaphore.hxx SemaphorePT.cxx SemaphorePT.hxx \
-	DynLibLoader.hxx DynLibLoaderGNU.hxx          \
+	DynLibLoader.hxx \
 	DrivenCondition.hxx DrivenConditionPT.hxx     \
 	Exception.hxx chrono.hxx                      \
 	$(__dummy__)
 
+if WINDOWS
+EXTRA_libYACSBases_la_SOURCES += DynLibLoaderWin.hxx
+else
+EXTRA_libYACSBases_la_SOURCES += DynLibLoaderGNU.hxx
+endif
+
+libYACSBases_la_LIBADD = $(PTHREAD_LIBS)
+
 salomeinclude_HEADERS =                               \
+           YACSBasesExport.hxx \
            Cstr2d.hxx \
            define.hxx \
            DrivenCondition.hxx \

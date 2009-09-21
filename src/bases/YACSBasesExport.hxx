@@ -1,4 +1,7 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,47 +19,17 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-#include "ThreadPT.hxx"
-#include "Exception.hxx"
+#ifndef _YACSBASESEXPORT_HXX_
+#define _YACSBASESEXPORT_HXX_
+
 #ifdef WNT
-#define usleep(A) _sleep(A/1000)
+#  if defined YACSBases_EXPORTS
+#    define YACSBASES_EXPORT __declspec( dllexport )
+#  else
+#    define YACSBASES_EXPORT __declspec( dllimport )
+#  endif
 #else
-#include <unistd.h>
+#  define YACSBASES_EXPORT
 #endif
 
-using namespace YACS::BASES;
-
-ThreadPT::ThreadPT(ThreadJob funcPtr, void *stack)
-{
-  int err;
-  void **stackT=(void **) stack;
-  err=pthread_create(&_threadId,0,funcPtr,stackT);
-  if(err!=0)throw Exception("Error in thread creation");
-}
-
-bool ThreadPT::operator==(const ThreadPT& other)
-{
-  return pthread_equal(_threadId, other._threadId) != 0;
-}
-
-//! Detach thread to release resources on exit
-void ThreadPT::detach()
-{
-  pthread_detach(pthread_self());
-}
-
-void ThreadPT::exit(void *what)
-{
-  pthread_exit(what);
-}
-
-void ThreadPT::join()
-{
-  void *ret;
-  pthread_join(_threadId, &ret);
-}
-
-void ThreadPT::sleep(unsigned long usec)
-{
-  usleep(usec);
-}
+#endif

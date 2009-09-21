@@ -19,6 +19,8 @@
 #ifndef __DYNLIBLOADER_HXX__
 #define __DYNLIBLOADER_HXX__
 
+#include "YACSBasesExport.hxx"
+
 #include <string>
 
 // --- Interface is:
@@ -37,13 +39,21 @@
 
 
 #if defined(YACS_PTHREAD)
+#if defined(WNT)
+#include "DynLibLoaderWin.hxx"
+#else
 #include "DynLibLoaderGNU.hxx"
+#endif
 
 namespace YACS
 {
   namespace BASES
   {
+#if defined(WNT)
+    typedef DynLibLoaderWin DynLibLoader;
+#else
     typedef DynLibLoaderGNU DynLibLoader;
+#endif
   }
 }
 
