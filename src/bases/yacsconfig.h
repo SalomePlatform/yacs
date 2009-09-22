@@ -19,7 +19,10 @@
 #ifndef __yacsconfig_h__
 #define __yacsconfig_h__
 
+#ifdef CMAKE_BUILD
+#else
 #include <yacs_config.h>
+#endif
 
 #undef PACKAGE_BUGREPORT
 #undef PACKAGE_NAME
