@@ -19,13 +19,15 @@
 #ifndef __DRIVENCONDITIONPT_HXX__
 #define __DRIVENCONDITIONPT_HXX__
 
+#include "YACSBasesExport.hxx"
+
 #include <pthread.h>
 
 namespace YACS
 {
   namespace BASES
   {
-    class DrivenConditionPT
+    class YACSBASES_EXPORT DrivenConditionPT
     {
     public:
       DrivenConditionPT();

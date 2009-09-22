@@ -19,13 +19,15 @@
 #ifndef __THREADPT_HXX__
 #define __THREADPT_HXX__
 
+#include "YACSBasesExport.hxx"
+
 #include <pthread.h>
 
 namespace YACS
 {
   namespace BASES
   {
-    class ThreadPT
+    class YACSBASES_EXPORT ThreadPT
     {
     public:
       typedef void *(*ThreadJob)(void*);

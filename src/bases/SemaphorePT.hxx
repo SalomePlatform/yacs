@@ -19,13 +19,15 @@
 #ifndef __SEMAPHOREPT_HXX__
 #define __SEMAPHOREPT_HXX__
 
+#include "YACSBasesExport.hxx"
+
 #include <semaphore.h>
 
 namespace YACS
 {
   namespace BASES
   {
-    class SemaphorePT
+    class YACSBASES_EXPORT SemaphorePT
     {
     public:
       SemaphorePT(int initValue=0);

@@ -19,6 +19,8 @@
 #ifndef __MUTEXPT_HXX__
 #define __MUTEXPT_HXX__
 
+#include "YACSBasesExport.hxx"
+
 #include <pthread.h>
 
 namespace YACS
@@ -27,7 +29,7 @@ namespace YACS
   {
     class ConditionPT;
 
-    class MutexPT
+    class YACSBASES_EXPORT MutexPT
     {
     public:
       MutexPT();
@@ -41,7 +43,7 @@ namespace YACS
 
     };
 
-    class ConditionPT
+    class YACSBASES_EXPORT ConditionPT
     {
     public:
       ConditionPT();

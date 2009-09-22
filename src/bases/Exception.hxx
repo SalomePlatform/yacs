@@ -19,12 +19,14 @@
 #ifndef __EXCEPTION_HXX__
 #define __EXCEPTION_HXX__
 
+#include "YACSBasesExport.hxx"
+
 #include <string>
 #include <exception>
 
 namespace YACS
 {
-  class Exception : public std::exception
+  class YACSBASES_EXPORT Exception : public std::exception
   {
   protected:
     std::string _what;
