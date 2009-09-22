@@ -35,6 +35,8 @@
 
 %include "engtypemaps.i"
 
+#define YACSBASES_EXPORT
+
 %{
 #include "Any.hxx"
 #include "TypeCode.hxx"
