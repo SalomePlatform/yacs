@@ -126,6 +126,7 @@ void *OptimizerAlgStandardized::threadFctForAsync(void* ownStack)
   ::YACS::BASES::DrivenCondition *cond=(::YACS::BASES::DrivenCondition *)ownStackCst[1];
   delete [] ownStackCst;
   alg->startToTakeDecision(cond);
+  return 0;
 }
 
 FakeNodeForOptimizerLoop::FakeNodeForOptimizerLoop(OptimizerLoop *loop, bool normal, unsigned reason):ElementaryNode(NAME),_loop(loop),
