@@ -88,7 +88,7 @@ void PluginOptEvTest1::takeDecision()
   _idTest++;
 }
 
-void PluginOptEvTest1::initialize(const Any *input) throw (Exception)
+void PluginOptEvTest1::initialize(const Any *input) throw(YACS::Exception)
 {
 }
 

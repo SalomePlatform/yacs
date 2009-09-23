@@ -18,7 +18,9 @@
 #
 include $(top_srcdir)/adm/unix/make_begin.am
 
+if CPPUNIT_IS_OK
 check_PROGRAMS = TestEngine IntegrationTestEngine
+endif
 
 TestEngine_SOURCES =              \
 	TestEngine.cxx            \
@@ -45,6 +47,8 @@ libPluginOptEvTest1_la_SOURCES = PluginOptEvTest1.cxx
 libPluginOptEvTest1_la_CXXFLAGS = $(THREAD_DEF) \
 	-I$(srcdir)/..                          \
 	-I$(srcdir)/../../bases
+
+libPluginOptEvTest1_la_LIBADD = ../libYACSlibEngine.la
 
 IntegrationTestEngine_SOURCES =              \
 	ToyNode.cxx                          \
