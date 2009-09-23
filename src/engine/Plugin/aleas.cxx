@@ -18,7 +18,10 @@
 //
 #include <time.h>
 #include <sys/types.h>
+#ifdef WNT
+#else
 #include <unistd.h>
+#endif
 #include <math.h>
 
 // #include "mt19937ar.h

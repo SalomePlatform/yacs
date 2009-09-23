@@ -29,6 +29,8 @@ libPluginSimplex_la_CXXFLAGS = $(THREAD_DEF) \
 	-I$(srcdir)/..                       \
 	-I$(srcdir)/../../bases
 
+libPluginSimplex_la_LIBADD = ../libYACSlibEngine.la
+
 EXTRA_DIST = \
 aleas.hxx     critere.hxx    decode.hxx         distrib.hxx  fonction.hxx \
 local.hxx     maestro.hxx    PluginSimplex.hxx  point.hxx    saclass.hxx \
