@@ -170,7 +170,7 @@ InputPort *InputCorbaPort::clone(Node *newHelder) const
   return new InputCorbaPort(*this,newHelder);
 }
 
-void *InputCorbaPort::get() const throw(Exception)
+void *InputCorbaPort::get() const throw(YACS::Exception)
 {
   return (void *)&_data;
 }

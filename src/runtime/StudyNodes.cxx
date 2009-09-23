@@ -132,7 +132,7 @@ void StudyInNode::execute()
   DEBTRACE("+++++++ end StudyInNode::execute +++++++++++" );
 }
 
-void StudyInNode::checkBasicConsistency() const throw(Exception)
+void StudyInNode::checkBasicConsistency() const throw(YACS::Exception)
 {
   DEBTRACE("StudyInNode::checkBasicConsistency");
   if (! _setOfInputPort.empty())
@@ -315,7 +315,7 @@ void StudyOutNode::execute()
   DEBTRACE("+++++++ end StudyOutNode::execute +++++++++++" );
 }
 
-void StudyOutNode::checkBasicConsistency() const throw(Exception)
+void StudyOutNode::checkBasicConsistency() const throw(YACS::Exception)
 {
   DEBTRACE("StudyOutNode::checkBasicConsistency");
   if (! _setOfOutputPort.empty())

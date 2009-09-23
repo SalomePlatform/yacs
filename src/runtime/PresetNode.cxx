@@ -80,7 +80,7 @@ void PresetNode::setData(OutputPort* port, const std::string& data)
   outp->setData(data);
 }
 
-void PresetNode::checkBasicConsistency() const throw(Exception)
+void PresetNode::checkBasicConsistency() const throw(YACS::Exception)
 {
   DEBTRACE("PresetNode::checkBasicConsistency");
   if (! _setOfInputPort.empty())

@@ -85,7 +85,7 @@ YACS::ENGINE::Any * InputCppPort::getCppObj() const
   return _data;
 }
 
-void *InputCppPort::get() const throw(Exception)
+void *InputCppPort::get() const throw(YACS::Exception)
 {
   return (void*) _data;
 }

@@ -58,7 +58,7 @@ PythonNode::~PythonNode()
   PyGILState_Release(gstate);
 }
 
-void PythonNode::checkBasicConsistency() const throw(Exception)
+void PythonNode::checkBasicConsistency() const throw(YACS::Exception)
 {
   DEBTRACE("checkBasicConsistency");
   InlineNode::checkBasicConsistency();
@@ -252,7 +252,7 @@ PyFuncNode::~PyFuncNode()
   PyGILState_Release(gstate);
 }
 
-void PyFuncNode::checkBasicConsistency() const throw(Exception)
+void PyFuncNode::checkBasicConsistency() const throw(YACS::Exception)
 {
   DEBTRACE("checkBasicConsistency");
   InlineFuncNode::checkBasicConsistency();

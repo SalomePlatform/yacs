@@ -103,7 +103,7 @@ Container *SalomeContainer::clone() const
     return new SalomeContainer(*this);
 }
 
-void SalomeContainer::checkCapabilityToDealWith(const ComponentInstance *inst) const throw (Exception)
+void SalomeContainer::checkCapabilityToDealWith(const ComponentInstance *inst) const throw(YACS::Exception)
 {
   if(inst->getKind()!=SalomeComponent::KIND)
     throw Exception("SalomeContainer::checkCapabilityToDealWith : SalomeContainer is not able to deal with this type of ComponentInstance.");
@@ -309,7 +309,7 @@ bool SalomeContainer::isAlreadyStarted(const ComponentInstance *inst) const
 /*!
  * \param inst the component instance
  */
-void SalomeContainer::start(const ComponentInstance *inst) throw (Exception)
+void SalomeContainer::start(const ComponentInstance *inst) throw(YACS::Exception)
 {
   CORBA::ORB_ptr orb=getSALOMERuntime()->getOrb();
   SALOME_NamingService ns;

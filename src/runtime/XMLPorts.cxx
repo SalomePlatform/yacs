@@ -52,7 +52,7 @@ const char *InputXmlPort::getXml() const
   return _data.c_str();
 }
 
-void *InputXmlPort::get() const throw(Exception)
+void *InputXmlPort::get() const throw(YACS::Exception)
 {
   return (void *) _data.c_str();
 }

@@ -62,7 +62,7 @@ void OutputPresetPort::setData(std::string data)
   modified();
 }
 
-void OutputPresetPort::checkBasicConsistency() const throw(Exception)
+void OutputPresetPort::checkBasicConsistency() const throw(YACS::Exception)
 {
   DEBTRACE("OutputPresetPort::checkBasicConsistency " << _storeData);
   if (_storeData.empty())

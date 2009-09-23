@@ -173,7 +173,7 @@ PyObject * InputPyPort::getPyObj() const
   return _data;
 }
 
-void *InputPyPort::get() const throw(Exception)
+void *InputPyPort::get() const throw(YACS::Exception)
 {
   return (void*) _data;
 }
