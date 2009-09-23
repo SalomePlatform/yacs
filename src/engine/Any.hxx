@@ -19,6 +19,7 @@
 #ifndef __YACSANY_HXX__
 #define __YACSANY_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "RefCounter.hxx"
 #include "Exception.hxx"
 #include "SharedPtr.hxx"
@@ -40,7 +41,7 @@ namespace YACS
     class TypeCodeStruct;
     typedef void (*Deallocator)(void *);
 
-    class StringOnHeap
+    class YACSLIBENGINES_EXPORT StringOnHeap
     {
       friend class Any;
       friend class AtomAny;
@@ -64,7 +65,7 @@ namespace YACS
      * \brief: Interface for management of storage of data formated dynamically in its TypeCode.
      *         Warning virtual inheritance on Any daughter classes NOT supported.
      */
-    class Any : public RefCounter
+    class YACSLIBENGINES_EXPORT Any : public RefCounter
     {
       friend class SeqAlloc;
       friend class ArrayAny;
@@ -94,7 +95,7 @@ namespace YACS
 
     typedef SharedPtr<AtomAny> AtomAnyPtr;
 
-    class AtomAny : public Any
+    class YACSLIBENGINES_EXPORT AtomAny : public Any
     {
       friend class TypeCode;
 
@@ -137,7 +138,7 @@ namespace YACS
       ValueContainer _value;
     };
     
-    class SeqAlloc 
+    class YACSLIBENGINES_EXPORT SeqAlloc 
     {
       friend class SequenceAny;
       
@@ -160,7 +161,7 @@ namespace YACS
       unsigned int size() const;
     };
     
-    class ComposedAny : public Any
+    class YACSLIBENGINES_EXPORT ComposedAny : public Any
     {
     public:
       virtual void setEltAtRank(int i, const Any *elem) throw(Exception) = 0;
@@ -179,7 +180,7 @@ namespace YACS
 
     typedef SharedPtr<SequenceAny> SequenceAnyPtr;
     
-    class SequenceAny : public ComposedAny
+    class YACSLIBENGINES_EXPORT SequenceAny : public ComposedAny
     {
       friend class TypeCodeSeq;
     public:
@@ -223,7 +224,7 @@ namespace YACS
     
     typedef SharedPtr<ArrayAny> ArrayAnyPtr;
 
-    class ArrayAny : public ComposedAny
+    class YACSLIBENGINES_EXPORT ArrayAny : public ComposedAny
     {
       friend class TypeCodeArray;
     public:
@@ -260,7 +261,7 @@ namespace YACS
 
     typedef SharedPtr<StructAny> StructAnyPtr;
 
-    class StructAny : public ComposedAny
+    class YACSLIBENGINES_EXPORT StructAny : public ComposedAny
     {
       friend class TypeCodeStruct;
     public:

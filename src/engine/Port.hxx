@@ -19,6 +19,8 @@
 #ifndef __PORT_HXX__
 #define __PORT_HXX__
 
+#include "YACSlibEngineExport.hxx"
+
 #include <string>
 
 namespace YACS
@@ -36,7 +38,7 @@ namespace YACS
  *
  * \ingroup Ports
  */
-    class Port
+    class YACSLIBENGINES_EXPORT Port
     {
     public:
       virtual ~Port();

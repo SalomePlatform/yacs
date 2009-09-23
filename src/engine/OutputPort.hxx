@@ -19,6 +19,7 @@
 #ifndef __OUTPUTPORT_HXX__
 #define __OUTPUTPORT_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "OutPort.hxx"
 #include "DataFlowPort.hxx"
 #include "ConversionException.hxx"
@@ -36,7 +37,7 @@ namespace YACS
     class ElementaryNode;
     class CollectorSwOutputPort;
 
-    class OutputPort : public DataFlowPort, public OutPort
+    class YACSLIBENGINES_EXPORT OutputPort : public DataFlowPort, public OutPort
     {
       friend class CollectorSwOutputPort; // for conect
       friend class ElementaryNode;        // for disconnect...

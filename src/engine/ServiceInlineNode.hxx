@@ -19,6 +19,7 @@
 #ifndef __SERVICEINLINENODE_HXX__
 #define __SERVICEINLINENODE_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "ServiceNode.hxx"
 #include <string>
 
@@ -28,7 +29,7 @@ namespace YACS
   {
     class Visitor;
     
-    class ServiceInlineNode: public ServiceNode 
+    class YACSLIBENGINES_EXPORT ServiceInlineNode: public ServiceNode 
     {
     protected:
       ServiceInlineNode(const std::string& name);

@@ -19,6 +19,7 @@
 #ifndef __NODE_HXX__
 #define __NODE_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "InGate.hxx"
 #include "OutGate.hxx"
 #include "Exception.hxx"
@@ -33,7 +34,7 @@ namespace YACS
 {
   namespace ENGINE
   {
-    void StateLoader(Node* node, YACS::StatesForNode state);
+    void YACSLIBENGINES_EXPORT StateLoader(Node* node, YACS::StatesForNode state);
     class Task;
     class InPort;
     class OutPort;
@@ -49,7 +50,7 @@ namespace YACS
     class OutputDataStreamPort;
     class Visitor;
     
-    class Node
+    class YACSLIBENGINES_EXPORT Node
     {
       friend class Bloc;
       friend class Loop;

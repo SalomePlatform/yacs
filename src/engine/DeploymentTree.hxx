@@ -19,6 +19,8 @@
 #ifndef __DEPLOYMENTTREE_HXX__
 #define __DEPLOYMENTTREE_HXX__
 
+#include "YACSlibEngineExport.hxx"
+
 #include <vector>
 
 namespace YACS
@@ -30,7 +32,7 @@ namespace YACS
     class Scheduler;
     class ComponentInstance;
 
-    class DeploymentTreeOnHeap
+    class YACSLIBENGINES_EXPORT DeploymentTreeOnHeap
     {
     public:
       DeploymentTreeOnHeap();
@@ -62,7 +64,7 @@ namespace YACS
       std::vector< std::vector< std::vector< std::pair<Task *, Scheduler * > > > > _tree;
     };
 
-    class DeploymentTree
+    class YACSLIBENGINES_EXPORT DeploymentTree
     {
     public:
       DeploymentTree();

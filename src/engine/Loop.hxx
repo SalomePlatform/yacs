@@ -19,6 +19,7 @@
 #ifndef __LOOP_HXX__
 #define __LOOP_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "StaticDefinedComposedNode.hxx"
 #include "InputDataStreamPort.hxx"
 #include "ElementaryNode.hxx"
@@ -29,14 +30,14 @@ namespace YACS
 {
   namespace ENGINE
   {
-    void NbDoneLoader(Loop* node, int val);
+    void YACSLIBENGINES_EXPORT NbDoneLoader(Loop* node, int val);
     class Loop;
     class ForLoop;
     class WhileLoop;
     class DFToDSForLoop;
     class DSToDFForLoop;
 
-    class InputPort4DF2DS : public InputPort
+    class YACSLIBENGINES_EXPORT InputPort4DF2DS : public InputPort
     {
     public:
       InputPort4DF2DS(DFToDSForLoop *node, TypeCode* type);
@@ -73,7 +74,7 @@ namespace YACS
       ~DFToDSForLoop();
     };
 
-    class OutputPort4DS2DF : public OutputPort
+    class YACSLIBENGINES_EXPORT OutputPort4DS2DF : public OutputPort
     {
     public:
       OutputPort4DS2DF(DSToDFForLoop *node, TypeCode *type);
@@ -86,7 +87,7 @@ namespace YACS
       Any *_data;
     };
     
-    class InputDataStreamPort4DS2DF : public InputDataStreamPort
+    class YACSLIBENGINES_EXPORT InputDataStreamPort4DS2DF : public InputDataStreamPort
     {
     public:
       InputDataStreamPort4DS2DF(DSToDFForLoop *node, TypeCode* type);
@@ -140,7 +141,7 @@ namespace YACS
  * \see ForLoop
  * \see WhileLoop
  */
-    class Loop : public StaticDefinedComposedNode
+    class YACSLIBENGINES_EXPORT Loop : public StaticDefinedComposedNode
     {
       friend class DSToDFForLoop;
       friend class FakeNodeForLoop;

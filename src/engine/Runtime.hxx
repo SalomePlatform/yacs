@@ -19,6 +19,7 @@
 #ifndef _RUNTIME_HXX_
 #define _RUNTIME_HXX_
 
+#include "YACSlibEngineExport.hxx"
 #include "ConversionException.hxx"
 
 #include<string>
@@ -32,7 +33,7 @@ namespace YACS
   namespace ENGINE
   {
     class Runtime;
-    Runtime* getRuntime() throw(Exception);
+    YACSLIBENGINES_EXPORT Runtime* getRuntime() throw(Exception);
 
     class Any;
     class InputPort;
@@ -60,7 +61,7 @@ namespace YACS
     class Catalog;
     class CatalogLoader;
 
-    class Runtime
+    class YACSLIBENGINES_EXPORT Runtime
     {
       friend Runtime* getRuntime() throw(Exception);
     public:

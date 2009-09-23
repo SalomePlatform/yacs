@@ -19,6 +19,8 @@
 #ifndef __PROPERTYINTERFACE_HXX__
 #define __PROPERTYINTERFACE_HXX__
 
+#include "YACSlibEngineExport.hxx"
+
 #include <map>
 #include <string>
 
@@ -26,7 +28,7 @@ namespace YACS
 {
   namespace ENGINE
   {
-    class PropertyInterface
+    class YACSLIBENGINES_EXPORT PropertyInterface
     {
     public:
       virtual void setProperty(const std::string& name,const std::string& value);

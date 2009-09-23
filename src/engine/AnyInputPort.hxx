@@ -19,14 +19,16 @@
 #ifndef __ANYINPUTPORT_HXX__
 #define __ANYINPUTPORT_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "InputPort.hxx"
+
 #include <string>
 
 namespace YACS
 {
   namespace ENGINE
   {
-    class AnyInputPort : public InputPort
+    class YACSLIBENGINES_EXPORT AnyInputPort : public InputPort
     {
     public:
       AnyInputPort(const std::string& name, Node *node, TypeCode* type);

@@ -19,6 +19,7 @@
 #ifndef __SWITCH_HXX__
 #define __SWITCH_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "StaticDefinedComposedNode.hxx"
 #include "ElementaryNode.hxx"
 #include "AnyInputPort.hxx"
@@ -32,7 +33,7 @@ namespace YACS
   {
     class Switch;
 
-    class CollectorSwOutPort : public OutPort
+    class YACSLIBENGINES_EXPORT CollectorSwOutPort : public OutPort
     {
       friend class Switch;
     private:
@@ -79,7 +80,7 @@ namespace YACS
       void finished();
     };
 
-    class Switch : public StaticDefinedComposedNode
+    class YACSLIBENGINES_EXPORT Switch : public StaticDefinedComposedNode
     {
       friend class FakeNodeForSwitch;
       friend class CollectorSwOutPort;

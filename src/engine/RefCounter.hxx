@@ -19,11 +19,13 @@
 #ifndef __REFCOUNTER_HXX__
 #define __REFCOUNTER_HXX__
 
+#include "YACSlibEngineExport.hxx"
+
 namespace YACS
 {
   namespace ENGINE
   {
-    class RefCounter
+    class YACSLIBENGINES_EXPORT RefCounter
     {
     public:
       unsigned int getRefCnt() const { return _cnt; }

@@ -19,13 +19,14 @@
 #ifndef __BLOC_HXX__
 #define __BLOC_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "StaticDefinedComposedNode.hxx"
 
 namespace YACS
 {
   namespace ENGINE
   {
-    class Bloc : public StaticDefinedComposedNode
+    class YACSLIBENGINES_EXPORT Bloc : public StaticDefinedComposedNode
     {
     protected:
       std::list<Node *> _setOfNode;//OWNERSHIP OF ALL NODES

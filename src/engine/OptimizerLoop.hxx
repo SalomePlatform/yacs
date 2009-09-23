@@ -19,6 +19,7 @@
 #ifndef __OPTIMIZERLOOP_HXX__
 #define __OPTIMIZERLOOP_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "Pool.hxx"
 #include "Thread.hxx"
 #include "DynParaLoop.hxx"
@@ -31,7 +32,7 @@ namespace YACS
 {
   namespace ENGINE
   {
-    class OptimizerAlgStandardized : public OptimizerAlgSync
+    class YACSLIBENGINES_EXPORT OptimizerAlgStandardized : public OptimizerAlgSync
     {
     private:
       ::YACS::BASES::Thread *_threadInCaseOfNotEvent;
@@ -77,7 +78,7 @@ namespace YACS
       static const unsigned char NO_ALG_INITIALIZATION = 54;
     };
 
-    class OptimizerLoop : public DynParaLoop
+    class YACSLIBENGINES_EXPORT OptimizerLoop : public DynParaLoop
     {
       friend class FakeNodeForOptimizerLoop;
       

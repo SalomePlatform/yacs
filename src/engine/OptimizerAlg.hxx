@@ -19,6 +19,7 @@
 #ifndef __OPTIMIZERALG_HXX__
 #define __OPTIMIZERALG_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "RefCounter.hxx"
 #include "Exception.hxx"
 #include "DrivenCondition.hxx"
@@ -63,7 +64,7 @@ namespace YACS
     /*!
      *  \brief Base class to implement in external dynamic lib in case of optimizer event oriented.
      */
-    class OptimizerAlgSync : public OptimizerAlgBase
+    class YACSLIBENGINES_EXPORT OptimizerAlgSync : public OptimizerAlgBase
     {
     protected:
       OptimizerAlgSync(Pool *pool);

@@ -19,6 +19,7 @@
 #ifndef __OUTPORT_HXX__
 #define __OUTPORT_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "DataPort.hxx"
 #include "Exception.hxx"
 
@@ -31,7 +32,7 @@ namespace YACS
   {
     class InPort;
     class LinkInfo;
-    class OutPort : public virtual DataPort
+    class YACSLIBENGINES_EXPORT OutPort : public virtual DataPort
     {
     protected:
       OutPort(const OutPort& other, Node *newHelder);

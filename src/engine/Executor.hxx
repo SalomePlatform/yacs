@@ -19,6 +19,7 @@
 #ifndef __EXECUTOR_HXX__
 #define __EXECUTOR_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "Mutex.hxx"
 #include "Thread.hxx"
 #include "Semaphore.hxx"
@@ -44,7 +45,7 @@ namespace YACS
  *
  *
  */
-    class Executor
+    class YACSLIBENGINES_EXPORT Executor
     {
     protected:
       Scheduler *_mainSched;

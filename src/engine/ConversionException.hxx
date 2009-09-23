@@ -19,6 +19,7 @@
 #ifndef __CONVERSIONEXCEPTION_HXX__
 #define __CONVERSIONEXCEPTION_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "Exception.hxx"
 
 #include <string>
@@ -27,7 +28,7 @@ namespace YACS
 {
   namespace ENGINE
   {    
-    class ConversionException : public Exception
+    class YACSLIBENGINES_EXPORT ConversionException : public Exception
     {
     public:
       ConversionException(const std::string& what,bool prefix=true);

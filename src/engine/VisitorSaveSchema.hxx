@@ -19,6 +19,7 @@
 #ifndef __VISITOR_SAVESCHEMA_HXX__
 #define __VISITOR_SAVESCHEMA_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "Visitor.hxx"
 #include "Exception.hxx"
 
@@ -54,7 +55,7 @@ namespace YACS
       bool toDelete;
     };
 
-    class VisitorSaveSchema: public Visitor
+    class YACSLIBENGINES_EXPORT VisitorSaveSchema: public Visitor
     {
     public:
       VisitorSaveSchema(ComposedNode *root);
@@ -109,7 +110,7 @@ namespace YACS
       std::multimap<int, StreamLinkInfo> _mapOfSLtoCreate;
     };
 
-    class SchemaSave
+    class YACSLIBENGINES_EXPORT SchemaSave
     {
     public:
       SchemaSave(Proc* proc);

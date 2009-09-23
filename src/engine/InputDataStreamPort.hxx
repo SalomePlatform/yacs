@@ -19,6 +19,7 @@
 #ifndef __INPUTDATASTREAMPORT_HXX__
 #define __INPUTDATASTREAMPORT_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "InPort.hxx"
 #include "DataStreamPort.hxx"
 
@@ -31,7 +32,7 @@ namespace YACS
      * \ingroup Ports
      *
      */
-    class InputDataStreamPort : public DataStreamPort, public InPort
+    class YACSLIBENGINES_EXPORT InputDataStreamPort : public DataStreamPort, public InPort
     {
     public:
       static const char NAME[];

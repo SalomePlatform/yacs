@@ -19,6 +19,7 @@
 #ifndef __WHILELOOP_HXX__
 #define __WHILELOOP_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "Loop.hxx"
 #include "ConditionInputPort.hxx"
 
@@ -33,7 +34,7 @@ namespace YACS
  *  This node makes steps while the condition is true
  *
  */
-    class WhileLoop : public Loop
+    class YACSLIBENGINES_EXPORT WhileLoop : public Loop
     {
     protected:
       static const char NAME_OF_INPUT_CONDITION[];

@@ -19,6 +19,7 @@
 #ifndef __TYPECODE_HXX__
 #define __TYPECODE_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "RefCounter.hxx"
 #include "Exception.hxx"
 #include "Any.hxx"
@@ -62,7 +63,7 @@ namespace YACS
  * \see TypeCodeStruct
  * \see TypeCodeArray
  */
-    class TypeCode : public RefCounter
+    class YACSLIBENGINES_EXPORT TypeCode : public RefCounter
     {
     public:
       TypeCode(DynType kind);
@@ -102,7 +103,7 @@ namespace YACS
       static const char *KIND_STR_REPR [];
     };
 
-    class TypeCodeComposed : public TypeCode
+    class YACSLIBENGINES_EXPORT TypeCodeComposed : public TypeCode
     {
     protected:
       TypeCodeComposed(const TypeCodeComposed& other);
@@ -119,7 +120,7 @@ namespace YACS
  * \ingroup TypeCodes
  *
  */
-    class TypeCodeObjref : public TypeCodeComposed
+    class YACSLIBENGINES_EXPORT TypeCodeObjref : public TypeCodeComposed
     {
       friend class Visitor;
     public:
@@ -153,7 +154,7 @@ namespace YACS
  * \ingroup TypeCodes
  *
  */
-    class TypeCodeSeq: public TypeCodeComposed
+    class YACSLIBENGINES_EXPORT TypeCodeSeq: public TypeCodeComposed
     {
     public:
       TypeCodeSeq(const char* repositoryId, const char* name, const TypeCode *content);
@@ -185,7 +186,7 @@ namespace YACS
  * \ingroup TypeCodes
  *
  */
-    class TypeCodeArray : public TypeCodeComposed
+    class YACSLIBENGINES_EXPORT TypeCodeArray : public TypeCodeComposed
     {
     public:
       TypeCodeArray(const char* repositoryId, const char* name, const TypeCode *content, unsigned staticLgth);
@@ -220,7 +221,7 @@ namespace YACS
  * \ingroup TypeCodes
  *
  */
-    class TypeCodeStruct : public TypeCodeComposed
+    class YACSLIBENGINES_EXPORT TypeCodeStruct : public TypeCodeComposed
     {
       friend class StructAny;//Access to _members attribute.
     public:

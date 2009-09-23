@@ -19,6 +19,7 @@
 #ifndef __COMPONENTINSTANCE_HXX__
 #define __COMPONENTINSTANCE_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "RefCounter.hxx"
 #include "PropertyInterface.hxx"
 
@@ -32,7 +33,7 @@ namespace YACS
     class Container;
     class ServiceNode;
 
-    class ComponentInstance : public PropertyInterface, public RefCounter
+    class YACSLIBENGINES_EXPORT ComponentInstance : public PropertyInterface, public RefCounter
     {
     protected:
       virtual ~ComponentInstance();

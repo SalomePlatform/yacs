@@ -19,6 +19,8 @@
 #ifndef _LOGGER_HXX_
 #define _LOGGER_HXX_
 
+#include "YACSlibEngineExport.hxx"
+
 #include <string>
 #include <vector>
 
@@ -31,7 +33,7 @@ namespace YACS
 /*! \brief Class for logging error messages
  *
  */
-    class Logger
+    class YACSLIBENGINES_EXPORT Logger
     {
     public:
       Logger(const std::string& name);

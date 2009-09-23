@@ -19,6 +19,7 @@
 #ifndef __FOREACHLOOP_HXX__
 #define __FOREACHLOOP_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "ElementaryNode.hxx"
 #include "DynParaLoop.hxx"
 #include "OutputPort.hxx"
@@ -70,7 +71,7 @@ namespace YACS
       OutputPort *clone(Node *newHelder) const;
     };
 
-    class SeqAnyInputPort : public AnyInputPort
+    class YACSLIBENGINES_EXPORT SeqAnyInputPort : public AnyInputPort
     {
       friend class ForEachLoop;
       friend class SplitterNode;
@@ -121,7 +122,7 @@ namespace YACS
       static const char NAME[];
     };
 
-    class ForEachLoop : public DynParaLoop
+    class YACSLIBENGINES_EXPORT ForEachLoop : public DynParaLoop
     {
       friend class SplitterNode;
       friend class FakeNodeForForEachLoop;

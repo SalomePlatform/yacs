@@ -81,6 +81,7 @@ libYACSlibEngine_la_SOURCES =             \
 	$(__dummy__)
 
 salomeinclude_HEADERS =                \
+YACSlibEngineExport.hxx \
 Any.hxx                  AnyInputPort.hxx  Bloc.hxx                        Catalog.hxx                    ComponentDefinition.hxx \
 ComponentInstance.hxx    ComposedNode.hxx  ConditionInputPort.hxx          Container.hxx                  ConversionException.hxx \
 DataFlowPort.hxx         DataNode.hxx      DataPort.hxx                    DataStreamPort.hxx             DeploymentTree.hxx \
@@ -144,11 +145,12 @@ _pilot_la_CXXFLAGS = \
 	$(PYTHON_CPPFLAGS) \
 	$(OMNIORB_INCLUDES) \
   $(OMNIORB_CXXFLAGS) \
+	-I$(srcdir) \
 	-I$(srcdir)/../bases
 
 _pilot_la_LDFLAGS  = -module
 
-_pilot_la_LIBADD = libYACSlibEngine.la $(OMNIORB_LIBS)
+_pilot_la_LIBADD = libYACSlibEngine.la $(OMNIORB_LIBS) $(PYTHON_LIBS)
 
 pypilotWRAP.cxx pypilotWRAP.h: pypilot.i pilot.i $(SWIGINCLUDES)
 	$(SWIG) $(SWIG_PYTHON_OPT) $(SWIG_PYTHON_INCLUDES) $(MYSWIG_FLAGS) -o pypilotWRAP.cxx $(srcdir)/pypilot.i
@@ -156,9 +158,9 @@ pypilotWRAP.cxx pypilotWRAP.h: pypilot.i pilot.i $(SWIGINCLUDES)
 pypilot.py : pypilotWRAP.cxx 
 
 _pypilot_la_SOURCES =  pypilotWRAP.cxx
-_pypilot_la_CXXFLAGS =  $(THREAD_DEF) $(PYTHON_CPPFLAGS) $(OMNIORB_INCLUDES) $(OMNIORB_CXXFLAGS) -I$(srcdir)/../bases
+_pypilot_la_CXXFLAGS =  $(THREAD_DEF) $(PYTHON_CPPFLAGS) $(OMNIORB_INCLUDES) $(OMNIORB_CXXFLAGS) -I$(srcdir) -I$(srcdir)/../bases
 _pypilot_la_LDFLAGS  = -module
-_pypilot_la_LIBADD = libYACSlibEngine.la $(OMNIORB_LIBS)
+_pypilot_la_LIBADD = libYACSlibEngine.la $(OMNIORB_LIBS) $(PYTHON_LIBS)
 
 EXTRA_DIST = pilot.i pypilot.i engtypemaps.i pypilotWRAP.h
 

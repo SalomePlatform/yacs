@@ -19,6 +19,8 @@
 #ifndef __COMPONENTDEFINITION_HXX__
 #define __COMPONENTDEFINITION_HXX__
 
+#include "YACSlibEngineExport.hxx"
+
 #include <map>
 #include <string>
 
@@ -32,7 +34,7 @@ namespace YACS
  *
  *
  */
-    class ComponentDefinition 
+    class YACSLIBENGINES_EXPORT ComponentDefinition 
     {
     public:
       ComponentDefinition(const std::string& name);

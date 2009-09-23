@@ -19,6 +19,7 @@
 #ifndef __CONTAINER_HXX__
 #define __CONTAINER_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "Exception.hxx"
 #include "RefCounter.hxx"
 
@@ -34,7 +35,7 @@ namespace YACS
     /*!
      * This is an abstract class, that represents an abstract process in which ComponentInstances can be launched and run.
      */
-    class Container : public RefCounter
+    class YACSLIBENGINES_EXPORT Container : public RefCounter
     {
     protected:
       Container();

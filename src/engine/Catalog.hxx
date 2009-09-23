@@ -19,6 +19,8 @@
 #ifndef __CATALOG_HXX__
 #define __CATALOG_HXX__
 
+#include "YACSlibEngineExport.hxx"
+
 #include <string>
 #include <map>
 
@@ -34,7 +36,7 @@ namespace YACS
  *
  *
  */
-    class Catalog
+    class YACSLIBENGINES_EXPORT Catalog
     {
     public:
       Catalog(const std::string& name);
@@ -54,7 +56,7 @@ namespace YACS
 /*! \brief class for YACS catalog loader.
  *
  */
-    class CatalogLoader
+    class YACSLIBENGINES_EXPORT CatalogLoader
     {
     public:
       CatalogLoader();

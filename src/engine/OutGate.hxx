@@ -19,6 +19,7 @@
 #ifndef __OUTGATE_HXX__
 #define __OUTGATE_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "Port.hxx"
 #include "Exception.hxx"
 
@@ -32,7 +33,7 @@ namespace YACS
     class InGate;
     class ElementaryNode;
     
-    class OutGate : public Port
+    class YACSLIBENGINES_EXPORT OutGate : public Port
     {
       friend class ElementaryNode;
     protected:

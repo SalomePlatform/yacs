@@ -19,6 +19,7 @@
 #ifndef __OUTPUTDATASTREAMPORT_HXX__
 #define __OUTPUTDATASTREAMPORT_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "OutPort.hxx"
 #include "DataStreamPort.hxx"
 #include "ConversionException.hxx"
@@ -32,7 +33,7 @@ namespace YACS
     class ElementaryNode;
     class InputDataStreamPort;
 
-    class OutputDataStreamPort : public DataStreamPort, public OutPort
+    class YACSLIBENGINES_EXPORT OutputDataStreamPort : public DataStreamPort, public OutPort
     {
       friend class ElementaryNode;
     protected:

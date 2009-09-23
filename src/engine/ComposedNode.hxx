@@ -19,6 +19,7 @@
 #ifndef __COMPOSEDNODE_HXX__
 #define __COMPOSEDNODE_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "Node.hxx"
 #include "Scheduler.hxx"
 
@@ -37,7 +38,7 @@ namespace YACS
     class LinkInfo;
     class ElementaryNode;
     
-    class ComposedNode : public Node, public Scheduler
+    class YACSLIBENGINES_EXPORT ComposedNode : public Node, public Scheduler
     {
       friend class Bloc;
       friend class Loop;

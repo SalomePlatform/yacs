@@ -19,6 +19,7 @@
 #ifndef __CONDITIONINPUTPORT_HXX__
 #define __CONDITIONINPUTPORT_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "InputPort.hxx"
 
 namespace YACS
@@ -27,7 +28,7 @@ namespace YACS
   {
     class WhileLoop;
 
-    class ConditionInputPort : public InputPort 
+    class YACSLIBENGINES_EXPORT ConditionInputPort : public InputPort 
     {
       friend class WhileLoop;
     private:

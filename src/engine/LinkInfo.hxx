@@ -19,6 +19,7 @@
 #ifndef __LINKINFO_HXX__
 #define __LINKINFO_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "Exception.hxx"
 
 #include <vector>
@@ -77,7 +78,7 @@ namespace YACS
     /*!
      * \brief Class that deal with list of \b semantics links for high level analysis.
      */
-    class LinkInfo
+    class YACSLIBENGINES_EXPORT LinkInfo
     {
     private:
       ComposedNode *_pov;

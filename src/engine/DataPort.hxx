@@ -19,8 +19,10 @@
 #ifndef __DATAPORT_HXX__
 #define __DATAPORT_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "Port.hxx"
 #include "Exception.hxx"
+
 #include <vector>
 
 namespace YACS
@@ -35,7 +37,7 @@ namespace YACS
         DATASTREAM
       } TypeOfChannel;
 
-    class DataPort : public virtual Port
+    class YACSLIBENGINES_EXPORT DataPort : public virtual Port
     {
     protected:
       TypeCode *_type;

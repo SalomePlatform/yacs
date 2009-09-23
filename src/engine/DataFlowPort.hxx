@@ -19,6 +19,7 @@
 #ifndef __DATAFLOWPORT_HXX__
 #define __DATAFLOWPORT_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "DataPort.hxx"
 
 #include <string>
@@ -27,7 +28,7 @@ namespace YACS
 {
   namespace ENGINE
   {
-    class DataFlowPort : public virtual DataPort
+    class YACSLIBENGINES_EXPORT DataFlowPort : public virtual DataPort
     {
     public:
       static const char NAME[];

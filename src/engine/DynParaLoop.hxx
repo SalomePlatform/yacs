@@ -19,6 +19,7 @@
 #ifndef __DYNPARALOOP_HXX__
 #define __DYNPARALOOP_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "ComposedNode.hxx"
 #include "AnyInputPort.hxx"
 #include "AnyOutputPort.hxx"
@@ -31,7 +32,7 @@ namespace YACS
     /*!
      * \brief Base class for dynamically (fully or semifully) built graphs.
      */
-    class DynParaLoop : public ComposedNode
+    class YACSLIBENGINES_EXPORT DynParaLoop : public ComposedNode
     {
     protected:
       typedef enum

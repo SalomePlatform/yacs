@@ -19,6 +19,7 @@
 #ifndef __INPUTPORT_HXX__
 #define __INPUTPORT_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "Any.hxx"
 #include "InPort.hxx"
 #include "Runtime.hxx"
@@ -38,7 +39,7 @@ namespace YACS
  * \ingroup Ports
  *
  */
-    class InputPort : public DataFlowPort, public InPort
+    class YACSLIBENGINES_EXPORT InputPort : public DataFlowPort, public InPort
     {
       friend class Runtime; // for port creation
       friend class OutPort;
@@ -89,7 +90,7 @@ namespace YACS
  * \ingroup Ports
  *
  */
-    class ProxyPort : public InputPort
+    class YACSLIBENGINES_EXPORT ProxyPort : public InputPort
     {
     public:
       ProxyPort(InputPort* p);

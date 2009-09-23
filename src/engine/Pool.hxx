@@ -19,6 +19,7 @@
 #ifndef __POOL_HXX__
 #define __POOL_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "Exception.hxx"
 
 #include <list>
@@ -30,7 +31,7 @@ namespace YACS
     class Any;
     class OptimizerLoop;
 
-    class Pool
+    class YACSLIBENGINES_EXPORT Pool
     {
       friend class OptimizerLoop;
 

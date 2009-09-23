@@ -19,7 +19,9 @@
 #ifndef __SERVICENODE_HXX__
 #define __SERVICENODE_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "ElementaryNode.hxx"
+
 #include <string>
 
 namespace YACS
@@ -28,7 +30,7 @@ namespace YACS
   {
     class ComponentInstance;
 
-    class ServiceNode: public ElementaryNode 
+    class YACSLIBENGINES_EXPORT ServiceNode: public ElementaryNode 
     {
     protected:
       ServiceNode(const std::string& name);

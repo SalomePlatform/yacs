@@ -19,6 +19,8 @@
 #ifndef __DISPATCHER_HXX__
 #define __DISPATCHER_HXX__
 
+#include "YACSlibEngineExport.hxx"
+
 #include <set>
 #include <string>
 #include <map>
@@ -39,7 +41,7 @@ namespace YACS
  * information from the emitting object.
  *
  */
-    class Observer
+    class YACSLIBENGINES_EXPORT Observer
     {
     public:
       virtual void notifyObserver(Node* object,const std::string& event);
@@ -65,7 +67,7 @@ namespace YACS
  * Limitation : emitting objects can be only Node
  *
  */
-    class Dispatcher
+    class YACSLIBENGINES_EXPORT Dispatcher
     {
     public:
       virtual void dispatch(Node* object,const std::string& event);

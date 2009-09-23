@@ -19,7 +19,9 @@
 #ifndef _PROC_HXX_
 #define _PROC_HXX_
 
+#include "YACSlibEngineExport.hxx"
 #include "Bloc.hxx"
+
 #include <string>
 #include <iostream>
 #include <list>
@@ -37,7 +39,7 @@ namespace YACS
     class ComponentInstance;
     class Logger;
 
-    class Proc: public Bloc
+    class YACSLIBENGINES_EXPORT Proc: public Bloc
     {
     public:
       Proc(const std::string& name);

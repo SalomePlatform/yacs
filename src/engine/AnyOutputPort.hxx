@@ -19,6 +19,8 @@
 #ifndef __ANYOUTPUTPORT_HXX__
 #define __ANYOUTPUTPORT_HXX__
 
+#include "YACSlibEngineExport.hxx"
+
 #include "OutputPort.hxx"
 
 namespace YACS
@@ -27,7 +29,7 @@ namespace YACS
   { 
     class Any;
 
-    class AnyOutputPort : public OutputPort
+    class YACSLIBENGINES_EXPORT AnyOutputPort : public OutputPort
     {
     public:
       AnyOutputPort(const std::string& name, Node *node, TypeCode *type);

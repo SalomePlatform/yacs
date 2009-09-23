@@ -19,6 +19,7 @@
 #ifndef __TASK_HXX__
 #define __TASK_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "define.hxx"
 
 namespace YACS
@@ -27,7 +28,7 @@ namespace YACS
   {
     class ComponentInstance;
 
-    class Task
+    class YACSLIBENGINES_EXPORT Task
     {
     public:
       virtual void begin() = 0;

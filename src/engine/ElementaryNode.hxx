@@ -19,9 +19,11 @@
 #ifndef __ELEMENTARYNODE_HXX__
 #define __ELEMENTARYNODE_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "Node.hxx"
 #include "Task.hxx"
 #include "define.hxx"
+
 #include <string>
 #include <algorithm>
 
@@ -37,7 +39,7 @@ namespace YACS
     class InputDataStreamPort;
     class OutputDataStreamPort;
 
-    class ElementaryNode : public Node, public Task
+    class YACSLIBENGINES_EXPORT ElementaryNode : public Node, public Task
     {
       friend class ComposedNode;
     protected:

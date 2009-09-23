@@ -19,6 +19,7 @@
 #ifndef __FORLOOP_HXX__
 #define __FORLOOP_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "AnyInputPort.hxx"
 #include "AnyOutputPort.hxx"
 #include "Loop.hxx"
@@ -27,7 +28,7 @@ namespace YACS
 {
   namespace ENGINE
   {
-    class ForLoop : public Loop
+    class YACSLIBENGINES_EXPORT ForLoop : public Loop
     {
     protected:
       static const char NAME_OF_INDEX[];
