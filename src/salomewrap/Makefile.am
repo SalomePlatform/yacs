@@ -39,7 +39,7 @@ nodist_libSalomeWrap_la_SOURCES = $(MOC_FILES)
 libSalomeWrap_la_CXXFLAGS = \
 	$(THREAD_DEF) \
 	$(PYTHON_CPPFLAGS) \
-	$(OMNIORB_INCLUDES) \
+	$(OMNIORB_CXXFLAGS) $(OMNIORB_INCLUDES) \
 	$(BOOST_CPPFLAGS) \
 	-I$(KERNEL_ROOT_DIR)/include/salome \
 	-I$(GUI_ROOT_DIR)/include/salome \
