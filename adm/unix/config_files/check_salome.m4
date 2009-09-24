@@ -78,10 +78,13 @@ if test -f ${KERNEL_DIR}/bin/salome/runSalome ; then
       AC_MSG_WARN("Cannot find DSC Ports module distribution")
    fi
 
+   KERNEL_LDFLAGS=-L${KERNEL_DIR}/lib${LIB_LOCATION_SUFFIX}/salome
+
    AC_SUBST(KERNEL_ROOT_DIR)
    AC_SUBST(KERNEL_SITE_DIR)
    AC_SUBST(SALOME_ROOT_DIR)
    AC_SUBST(SALOME_VERSION)
+   AC_SUBST(KERNEL_LDFLAGS)
 
 else
    AC_MSG_WARN("Cannot find compiled Kernel module distribution")
