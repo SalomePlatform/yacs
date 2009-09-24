@@ -63,6 +63,7 @@ libSalomeWrap_la_CXXFLAGS = \
 #	@GRAPHVIZ_CPPFLAGS@
 
 libSalomeWrap_la_LDFLAGS  = \
+	$(KERNEL_LDFLAGS) \
 	-L$(GUI_ROOT_DIR)/lib/salome \
 	 $(qt4_ldflags)
 
@@ -71,9 +72,10 @@ libSalomeWrap_la_LDFLAGS  = \
 #	 $(qt4_ldflags)
 
 libSalomeWrap_la_LIBADD  = \
-	$(qt4_libs) \
+	$(qt4_libs) $(QT_LIBS) $(OMNIORB_LIBS) \
   ../engine/libYACSlibEngine.la \
-	-lSalomeApp
+	-lSalomeIDLKernel \
+	-lCAM -lsuit -lLightApp -lqtx -lQxScene -lObjBrowser -lSalomeApp
 
 # resources files
 
