@@ -19,7 +19,9 @@
 #ifndef __DATANODE_HXX__
 #define __DATANODE_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "ElementaryNode.hxx"
+
 #include <string>
 
 namespace YACS
@@ -31,7 +33,7 @@ namespace YACS
  * \ingroup Nodes
  *
  */
-    class DataNode : public ElementaryNode 
+    class YACSLIBENGINES_EXPORT DataNode : public ElementaryNode 
     {
     protected:
       DataNode(const DataNode& other, ComposedNode *father)

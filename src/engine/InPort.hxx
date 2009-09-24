@@ -19,6 +19,7 @@
 #ifndef __INPORT_HXX__
 #define __INPORT_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "DataPort.hxx"
 
 #include <set>
@@ -41,7 +42,7 @@ namespace YACS
     class OutputDataStreamPort;
     class InterceptorInputPort;
 
-    class InPort : public virtual DataPort
+    class YACSLIBENGINES_EXPORT InPort : public virtual DataPort
     {
       friend class Loop;
       friend class OutPort;

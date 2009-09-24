@@ -19,6 +19,7 @@
 #ifndef __INLINENODE_HXX__
 #define __INLINENODE_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "ElementaryNode.hxx"
 #include <string>
 
@@ -36,7 +37,7 @@ namespace YACS
  * \see ServiceNode
  * \see ElementaryNode
  */
-    class InlineNode : public ElementaryNode 
+    class YACSLIBENGINES_EXPORT InlineNode : public ElementaryNode 
     {
     protected:
       InlineNode(const InlineNode& other, ComposedNode *father)
@@ -72,7 +73,7 @@ namespace YACS
  * \see ServiceNode
  * \see ElementaryNode
  */
-    class InlineFuncNode : public InlineNode
+    class YACSLIBENGINES_EXPORT InlineFuncNode : public InlineNode
     {
     protected:
       InlineFuncNode(const InlineFuncNode& other, ComposedNode *father)
