@@ -32,7 +32,7 @@ namespace YACS
   {
     class InPort;
     class LinkInfo;
-    class YACSLIBENGINES_EXPORT OutPort : public virtual DataPort
+    class YACSLIBENGINE_EXPORT OutPort : public virtual DataPort
     {
     protected:
       OutPort(const OutPort& other, Node *newHelder);

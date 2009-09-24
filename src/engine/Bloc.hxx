@@ -26,7 +26,7 @@ namespace YACS
 {
   namespace ENGINE
   {
-    class YACSLIBENGINES_EXPORT Bloc : public StaticDefinedComposedNode
+    class YACSLIBENGINE_EXPORT Bloc : public StaticDefinedComposedNode
     {
     protected:
       std::list<Node *> _setOfNode;//OWNERSHIP OF ALL NODES

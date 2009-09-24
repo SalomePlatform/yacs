@@ -19,17 +19,17 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-#ifndef _YACSLIBENGINESEXPORT_HXX_
-#define _YACSLIBENGINESEXPORT_HXX_
+#ifndef _YACSLIBENGINEEXPORT_HXX_
+#define _YACSLIBENGINEEXPORT_HXX_
 
 #ifdef WNT
 #  if defined YACSlibEngine_EXPORTS
-#    define YACSLIBENGINES_EXPORT __declspec( dllexport )
+#    define YACSLIBENGINE_EXPORT __declspec( dllexport )
 #  else
-#    define YACSLIBENGINES_EXPORT __declspec( dllimport )
+#    define YACSLIBENGINE_EXPORT __declspec( dllimport )
 #  endif
 #else
-#  define YACSLIBENGINES_EXPORT
+#  define YACSLIBENGINE_EXPORT
 #endif
 
 #endif

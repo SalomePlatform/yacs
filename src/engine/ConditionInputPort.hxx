@@ -28,7 +28,7 @@ namespace YACS
   {
     class WhileLoop;
 
-    class YACSLIBENGINES_EXPORT ConditionInputPort : public InputPort 
+    class YACSLIBENGINE_EXPORT ConditionInputPort : public InputPort 
     {
       friend class WhileLoop;
     private:

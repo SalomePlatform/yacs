@@ -33,7 +33,7 @@ namespace YACS
     class InGate;
     class ElementaryNode;
     
-    class YACSLIBENGINES_EXPORT OutGate : public Port
+    class YACSLIBENGINE_EXPORT OutGate : public Port
     {
       friend class ElementaryNode;
     protected:

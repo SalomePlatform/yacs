@@ -71,7 +71,7 @@ namespace YACS
       OutputPort *clone(Node *newHelder) const;
     };
 
-    class YACSLIBENGINES_EXPORT SeqAnyInputPort : public AnyInputPort
+    class YACSLIBENGINE_EXPORT SeqAnyInputPort : public AnyInputPort
     {
       friend class ForEachLoop;
       friend class SplitterNode;
@@ -122,7 +122,7 @@ namespace YACS
       static const char NAME[];
     };
 
-    class YACSLIBENGINES_EXPORT ForEachLoop : public DynParaLoop
+    class YACSLIBENGINE_EXPORT ForEachLoop : public DynParaLoop
     {
       friend class SplitterNode;
       friend class FakeNodeForForEachLoop;

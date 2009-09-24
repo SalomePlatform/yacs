@@ -28,7 +28,7 @@ namespace YACS
   {
     class ComponentInstance;
 
-    class YACSLIBENGINES_EXPORT Task
+    class YACSLIBENGINE_EXPORT Task
     {
     public:
       virtual void begin() = 0;

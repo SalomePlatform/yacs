@@ -37,7 +37,7 @@ namespace YACS
     class ElementaryNode;
     class CollectorSwOutputPort;
 
-    class YACSLIBENGINES_EXPORT OutputPort : public DataFlowPort, public OutPort
+    class YACSLIBENGINE_EXPORT OutputPort : public DataFlowPort, public OutPort
     {
       friend class CollectorSwOutputPort; // for conect
       friend class ElementaryNode;        // for disconnect...

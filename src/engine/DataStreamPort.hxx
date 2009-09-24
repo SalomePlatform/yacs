@@ -29,7 +29,7 @@ namespace YACS
 {
   namespace ENGINE
   {
-    class YACSLIBENGINES_EXPORT DataStreamPort : public virtual DataPort
+    class YACSLIBENGINE_EXPORT DataStreamPort : public virtual DataPort
     {
     public:
       static const char NAME[];

@@ -36,7 +36,7 @@ namespace YACS
  *
  *
  */
-    class YACSLIBENGINES_EXPORT Catalog
+    class YACSLIBENGINE_EXPORT Catalog
     {
     public:
       Catalog(const std::string& name);
@@ -56,7 +56,7 @@ namespace YACS
 /*! \brief class for YACS catalog loader.
  *
  */
-    class YACSLIBENGINES_EXPORT CatalogLoader
+    class YACSLIBENGINE_EXPORT CatalogLoader
     {
     public:
       CatalogLoader();

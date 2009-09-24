@@ -36,7 +36,7 @@
 %include "engtypemaps.i"
 
 #define YACSBASES_EXPORT
-#define YACSLIBENGINES_EXPORT
+#define YACSLIBENGINE_EXPORT
 
 %{
 #include "Any.hxx"

@@ -28,7 +28,7 @@ namespace YACS
 {
   namespace ENGINE
   {
-    class YACSLIBENGINES_EXPORT PropertyInterface
+    class YACSLIBENGINE_EXPORT PropertyInterface
     {
     public:
       virtual void setProperty(const std::string& name,const std::string& value);

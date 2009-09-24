@@ -33,7 +33,7 @@ namespace YACS
 /*! \brief Class for logging error messages
  *
  */
-    class YACSLIBENGINES_EXPORT Logger
+    class YACSLIBENGINE_EXPORT Logger
     {
     public:
       Logger(const std::string& name);

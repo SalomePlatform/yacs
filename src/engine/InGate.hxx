@@ -32,7 +32,7 @@ namespace YACS
   {
     class OutGate;
 
-    class YACSLIBENGINES_EXPORT InGate : public Port
+    class YACSLIBENGINE_EXPORT InGate : public Port
     {
       friend class Bloc;
       friend class Node;

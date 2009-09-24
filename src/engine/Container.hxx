@@ -35,7 +35,7 @@ namespace YACS
     /*!
      * This is an abstract class, that represents an abstract process in which ComponentInstances can be launched and run.
      */
-    class YACSLIBENGINES_EXPORT Container : public RefCounter
+    class YACSLIBENGINE_EXPORT Container : public RefCounter
     {
     protected:
       Container();

@@ -55,7 +55,7 @@ namespace YACS
       bool toDelete;
     };
 
-    class YACSLIBENGINES_EXPORT VisitorSaveSchema: public Visitor
+    class YACSLIBENGINE_EXPORT VisitorSaveSchema: public Visitor
     {
     public:
       VisitorSaveSchema(ComposedNode *root);
@@ -110,7 +110,7 @@ namespace YACS
       std::multimap<int, StreamLinkInfo> _mapOfSLtoCreate;
     };
 
-    class YACSLIBENGINES_EXPORT SchemaSave
+    class YACSLIBENGINE_EXPORT SchemaSave
     {
     public:
       SchemaSave(Proc* proc);

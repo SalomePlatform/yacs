@@ -30,7 +30,7 @@ namespace YACS
      * Abstract class, that factorizes all the treatments relative to resource management for ComposedNode that have
      * their connectivity fully defined before launching ; which is not always the case for classes inheriting from DynParaLoop.
      */
-    class YACSLIBENGINES_EXPORT StaticDefinedComposedNode : public ComposedNode
+    class YACSLIBENGINE_EXPORT StaticDefinedComposedNode : public ComposedNode
     {
     protected:
       StaticDefinedComposedNode(const std::string& name);

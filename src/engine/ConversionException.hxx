@@ -28,7 +28,7 @@ namespace YACS
 {
   namespace ENGINE
   {    
-    class YACSLIBENGINES_EXPORT ConversionException : public Exception
+    class YACSLIBENGINE_EXPORT ConversionException : public Exception
     {
     public:
       ConversionException(const std::string& what,bool prefix=true);

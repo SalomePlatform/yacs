@@ -33,7 +33,7 @@ namespace YACS
     class Container;
     class ServiceNode;
 
-    class YACSLIBENGINES_EXPORT ComponentInstance : public PropertyInterface, public RefCounter
+    class YACSLIBENGINE_EXPORT ComponentInstance : public PropertyInterface, public RefCounter
     {
     protected:
       virtual ~ComponentInstance();

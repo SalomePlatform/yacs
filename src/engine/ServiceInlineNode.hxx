@@ -29,7 +29,7 @@ namespace YACS
   {
     class Visitor;
     
-    class YACSLIBENGINES_EXPORT ServiceInlineNode: public ServiceNode 
+    class YACSLIBENGINE_EXPORT ServiceInlineNode: public ServiceNode 
     {
     protected:
       ServiceInlineNode(const std::string& name);

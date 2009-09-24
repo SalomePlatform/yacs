@@ -25,7 +25,7 @@ namespace YACS
 {
   namespace ENGINE
   {
-    class YACSLIBENGINES_EXPORT RefCounter
+    class YACSLIBENGINE_EXPORT RefCounter
     {
     public:
       unsigned int getRefCnt() const { return _cnt; }

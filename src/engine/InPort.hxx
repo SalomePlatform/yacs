@@ -42,7 +42,7 @@ namespace YACS
     class OutputDataStreamPort;
     class InterceptorInputPort;
 
-    class YACSLIBENGINES_EXPORT InPort : public virtual DataPort
+    class YACSLIBENGINE_EXPORT InPort : public virtual DataPort
     {
       friend class Loop;
       friend class OutPort;

@@ -39,7 +39,7 @@ namespace YACS
  * \ingroup Ports
  *
  */
-    class YACSLIBENGINES_EXPORT InputPort : public DataFlowPort, public InPort
+    class YACSLIBENGINE_EXPORT InputPort : public DataFlowPort, public InPort
     {
       friend class Runtime; // for port creation
       friend class OutPort;
@@ -90,7 +90,7 @@ namespace YACS
  * \ingroup Ports
  *
  */
-    class YACSLIBENGINES_EXPORT ProxyPort : public InputPort
+    class YACSLIBENGINE_EXPORT ProxyPort : public InputPort
     {
     public:
       ProxyPort(InputPort* p);

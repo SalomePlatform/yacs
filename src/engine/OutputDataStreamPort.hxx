@@ -33,7 +33,7 @@ namespace YACS
     class ElementaryNode;
     class InputDataStreamPort;
 
-    class YACSLIBENGINES_EXPORT OutputDataStreamPort : public DataStreamPort, public OutPort
+    class YACSLIBENGINE_EXPORT OutputDataStreamPort : public DataStreamPort, public OutPort
     {
       friend class ElementaryNode;
     protected:

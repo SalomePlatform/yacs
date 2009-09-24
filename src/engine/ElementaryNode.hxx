@@ -39,7 +39,7 @@ namespace YACS
     class InputDataStreamPort;
     class OutputDataStreamPort;
 
-    class YACSLIBENGINES_EXPORT ElementaryNode : public Node, public Task
+    class YACSLIBENGINE_EXPORT ElementaryNode : public Node, public Task
     {
       friend class ComposedNode;
     protected:

@@ -41,7 +41,7 @@ namespace YACS
  * information from the emitting object.
  *
  */
-    class YACSLIBENGINES_EXPORT Observer
+    class YACSLIBENGINE_EXPORT Observer
     {
     public:
       virtual void notifyObserver(Node* object,const std::string& event);
@@ -67,7 +67,7 @@ namespace YACS
  * Limitation : emitting objects can be only Node
  *
  */
-    class YACSLIBENGINES_EXPORT Dispatcher
+    class YACSLIBENGINE_EXPORT Dispatcher
     {
     public:
       virtual void dispatch(Node* object,const std::string& event);

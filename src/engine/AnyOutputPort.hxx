@@ -29,7 +29,7 @@ namespace YACS
   { 
     class Any;
 
-    class YACSLIBENGINES_EXPORT AnyOutputPort : public OutputPort
+    class YACSLIBENGINE_EXPORT AnyOutputPort : public OutputPort
     {
     public:
       AnyOutputPort(const std::string& name, Node *node, TypeCode *type);

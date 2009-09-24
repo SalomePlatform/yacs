@@ -32,7 +32,7 @@ namespace YACS
 {
   namespace ENGINE
   {
-    class YACSLIBENGINES_EXPORT OptimizerAlgStandardized : public OptimizerAlgSync
+    class YACSLIBENGINE_EXPORT OptimizerAlgStandardized : public OptimizerAlgSync
     {
     private:
       ::YACS::BASES::Thread *_threadInCaseOfNotEvent;
@@ -78,7 +78,7 @@ namespace YACS
       static const unsigned char NO_ALG_INITIALIZATION = 54;
     };
 
-    class YACSLIBENGINES_EXPORT OptimizerLoop : public DynParaLoop
+    class YACSLIBENGINE_EXPORT OptimizerLoop : public DynParaLoop
     {
       friend class FakeNodeForOptimizerLoop;
       

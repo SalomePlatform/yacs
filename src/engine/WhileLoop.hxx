@@ -34,7 +34,7 @@ namespace YACS
  *  This node makes steps while the condition is true
  *
  */
-    class YACSLIBENGINES_EXPORT WhileLoop : public Loop
+    class YACSLIBENGINE_EXPORT WhileLoop : public Loop
     {
     protected:
       static const char NAME_OF_INPUT_CONDITION[];

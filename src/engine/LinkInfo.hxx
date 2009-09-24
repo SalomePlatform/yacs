@@ -78,7 +78,7 @@ namespace YACS
     /*!
      * \brief Class that deal with list of \b semantics links for high level analysis.
      */
-    class YACSLIBENGINES_EXPORT LinkInfo
+    class YACSLIBENGINE_EXPORT LinkInfo
     {
     private:
       ComposedNode *_pov;

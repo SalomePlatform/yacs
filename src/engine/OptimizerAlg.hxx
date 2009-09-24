@@ -64,7 +64,7 @@ namespace YACS
     /*!
      *  \brief Base class to implement in external dynamic lib in case of optimizer event oriented.
      */
-    class YACSLIBENGINES_EXPORT OptimizerAlgSync : public OptimizerAlgBase
+    class YACSLIBENGINE_EXPORT OptimizerAlgSync : public OptimizerAlgBase
     {
     protected:
       OptimizerAlgSync(Pool *pool);

@@ -37,7 +37,7 @@ namespace YACS
         DATASTREAM
       } TypeOfChannel;
 
-    class YACSLIBENGINES_EXPORT DataPort : public virtual Port
+    class YACSLIBENGINE_EXPORT DataPort : public virtual Port
     {
     protected:
       TypeCode *_type;

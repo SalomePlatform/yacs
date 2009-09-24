@@ -31,7 +31,7 @@ namespace YACS
     class Any;
     class OptimizerLoop;
 
-    class YACSLIBENGINES_EXPORT Pool
+    class YACSLIBENGINE_EXPORT Pool
     {
       friend class OptimizerLoop;
 

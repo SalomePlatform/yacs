@@ -45,7 +45,7 @@ namespace YACS
  *
  *
  */
-    class YACSLIBENGINES_EXPORT Executor
+    class YACSLIBENGINE_EXPORT Executor
     {
     protected:
       Scheduler *_mainSched;

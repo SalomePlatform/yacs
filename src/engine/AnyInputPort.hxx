@@ -28,7 +28,7 @@ namespace YACS
 {
   namespace ENGINE
   {
-    class YACSLIBENGINES_EXPORT AnyInputPort : public InputPort
+    class YACSLIBENGINE_EXPORT AnyInputPort : public InputPort
     {
     public:
       AnyInputPort(const std::string& name, Node *node, TypeCode* type);

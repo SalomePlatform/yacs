@@ -32,7 +32,7 @@ namespace YACS
     /*!
      * \brief Base class for dynamically (fully or semifully) built graphs.
      */
-    class YACSLIBENGINES_EXPORT DynParaLoop : public ComposedNode
+    class YACSLIBENGINE_EXPORT DynParaLoop : public ComposedNode
     {
     protected:
       typedef enum

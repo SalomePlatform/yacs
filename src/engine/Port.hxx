@@ -38,7 +38,7 @@ namespace YACS
  *
  * \ingroup Ports
  */
-    class YACSLIBENGINES_EXPORT Port
+    class YACSLIBENGINE_EXPORT Port
     {
     public:
       virtual ~Port();

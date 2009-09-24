@@ -30,7 +30,7 @@ namespace YACS
   {
     class ComponentInstance;
 
-    class YACSLIBENGINES_EXPORT ServiceNode: public ElementaryNode 
+    class YACSLIBENGINE_EXPORT ServiceNode: public ElementaryNode 
     {
     protected:
       ServiceNode(const std::string& name);

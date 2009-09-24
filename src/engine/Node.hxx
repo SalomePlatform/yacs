@@ -34,7 +34,7 @@ namespace YACS
 {
   namespace ENGINE
   {
-    void YACSLIBENGINES_EXPORT StateLoader(Node* node, YACS::StatesForNode state);
+    void YACSLIBENGINE_EXPORT StateLoader(Node* node, YACS::StatesForNode state);
     class Task;
     class InPort;
     class OutPort;
@@ -50,7 +50,7 @@ namespace YACS
     class OutputDataStreamPort;
     class Visitor;
     
-    class YACSLIBENGINES_EXPORT Node
+    class YACSLIBENGINE_EXPORT Node
     {
       friend class Bloc;
       friend class Loop;

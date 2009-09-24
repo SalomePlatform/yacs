@@ -28,7 +28,7 @@ namespace YACS
 {
   namespace ENGINE
   {
-    class YACSLIBENGINES_EXPORT ForLoop : public Loop
+    class YACSLIBENGINE_EXPORT ForLoop : public Loop
     {
     protected:
       static const char NAME_OF_INDEX[];

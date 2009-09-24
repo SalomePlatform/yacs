@@ -39,7 +39,7 @@ namespace YACS
     class ComponentInstance;
     class Logger;
 
-    class YACSLIBENGINES_EXPORT Proc: public Bloc
+    class YACSLIBENGINE_EXPORT Proc: public Bloc
     {
     public:
       Proc(const std::string& name);

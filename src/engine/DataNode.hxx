@@ -33,7 +33,7 @@ namespace YACS
  * \ingroup Nodes
  *
  */
-    class YACSLIBENGINES_EXPORT DataNode : public ElementaryNode 
+    class YACSLIBENGINE_EXPORT DataNode : public ElementaryNode 
     {
     protected:
       DataNode(const DataNode& other, ComposedNode *father)

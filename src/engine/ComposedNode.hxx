@@ -38,7 +38,7 @@ namespace YACS
     class LinkInfo;
     class ElementaryNode;
     
-    class YACSLIBENGINES_EXPORT ComposedNode : public Node, public Scheduler
+    class YACSLIBENGINE_EXPORT ComposedNode : public Node, public Scheduler
     {
       friend class Bloc;
       friend class Loop;

@@ -33,7 +33,7 @@ namespace YACS
   namespace ENGINE
   {
     class Runtime;
-    YACSLIBENGINES_EXPORT Runtime* getRuntime() throw(Exception);
+    YACSLIBENGINE_EXPORT Runtime* getRuntime() throw(Exception);
 
     class Any;
     class InputPort;
@@ -61,7 +61,7 @@ namespace YACS
     class Catalog;
     class CatalogLoader;
 
-    class YACSLIBENGINES_EXPORT Runtime
+    class YACSLIBENGINE_EXPORT Runtime
     {
       friend Runtime* getRuntime() throw(Exception);
     public:

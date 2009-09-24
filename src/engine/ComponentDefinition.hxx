@@ -34,7 +34,7 @@ namespace YACS
  *
  *
  */
-    class YACSLIBENGINES_EXPORT ComponentDefinition 
+    class YACSLIBENGINE_EXPORT ComponentDefinition 
     {
     public:
       ComponentDefinition(const std::string& name);

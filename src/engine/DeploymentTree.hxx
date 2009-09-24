@@ -32,7 +32,7 @@ namespace YACS
     class Scheduler;
     class ComponentInstance;
 
-    class YACSLIBENGINES_EXPORT DeploymentTreeOnHeap
+    class YACSLIBENGINE_EXPORT DeploymentTreeOnHeap
     {
     public:
       DeploymentTreeOnHeap();
@@ -64,7 +64,7 @@ namespace YACS
       std::vector< std::vector< std::vector< std::pair<Task *, Scheduler * > > > > _tree;
     };
 
-    class YACSLIBENGINES_EXPORT DeploymentTree
+    class YACSLIBENGINE_EXPORT DeploymentTree
     {
     public:
       DeploymentTree();

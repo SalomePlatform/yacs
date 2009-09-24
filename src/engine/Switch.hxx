@@ -33,7 +33,7 @@ namespace YACS
   {
     class Switch;
 
-    class YACSLIBENGINES_EXPORT CollectorSwOutPort : public OutPort
+    class YACSLIBENGINE_EXPORT CollectorSwOutPort : public OutPort
     {
       friend class Switch;
     private:
@@ -80,7 +80,7 @@ namespace YACS
       void finished();
     };
 
-    class YACSLIBENGINES_EXPORT Switch : public StaticDefinedComposedNode
+    class YACSLIBENGINE_EXPORT Switch : public StaticDefinedComposedNode
     {
       friend class FakeNodeForSwitch;
       friend class CollectorSwOutPort;

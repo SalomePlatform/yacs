@@ -32,7 +32,7 @@ namespace YACS
      * \ingroup Ports
      *
      */
-    class YACSLIBENGINES_EXPORT InputDataStreamPort : public DataStreamPort, public InPort
+    class YACSLIBENGINE_EXPORT InputDataStreamPort : public DataStreamPort, public InPort
     {
     public:
       static const char NAME[];
