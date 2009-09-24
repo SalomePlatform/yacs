@@ -19,6 +19,7 @@
 #ifndef __VISITOR_SAVESTATE_HXX__
 #define __VISITOR_SAVESTATE_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "Visitor.hxx"
 #include "Exception.hxx"
 
@@ -30,7 +31,7 @@ namespace YACS
 {
   namespace ENGINE
   {
-    class VisitorSaveState: public Visitor
+    class YACSLIBENGINE_EXPORT VisitorSaveState: public Visitor
     {
     public:
       VisitorSaveState(ComposedNode *root);

@@ -19,13 +19,14 @@
 #ifndef __VISITORSAVESALOMESCHEMA_HXX__
 #define __VISITORSAVESALOMESCHEMA_HXX__
 
+#include "YACSRuntimeSALOMEExport.hxx"
 #include "VisitorSaveSchema.hxx"
 
 namespace YACS
 {
   namespace ENGINE
   {
-    class VisitorSaveSalomeSchema: public VisitorSaveSchema
+    class YACSRUNTIMESALOME_EXPORT VisitorSaveSalomeSchema: public VisitorSaveSchema
     {
     public:
       VisitorSaveSalomeSchema(ComposedNode *root);
