@@ -37,6 +37,8 @@
 
 // ----------------------------------------------------------------------------
 
+#define YACSLOADER_EXPORT
+
 %{
 #include "parsers.hxx"
 #include "LoadState.hxx"

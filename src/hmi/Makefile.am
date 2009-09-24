@@ -43,7 +43,7 @@ libHMI_la_LIBADD = \
 libHMI_la_CXXFLAGS = \
 	$(THREAD_DEF) \
 	$(PYTHON_CPPFLAGS) \
-	$(OMNIORB_INCLUDES) \
+	$(OMNIORB_CXXFLAGS) $(OMNIORB_INCLUDES) \
 	$(LIBXML_INCLUDES) \
 	-I$(KERNEL_ROOT_DIR)/include/salome \
 	-I$(srcdir)/../bases \
