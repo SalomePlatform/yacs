@@ -145,7 +145,7 @@ void timer(std::string msg)
   std::cerr << msg << tv.tv_sec*1000+tv.tv_usec/1000-t0 << " ms" << std::endl;
 }
 
-main (int argc, char* argv[])
+int main (int argc, char* argv[])
 {
   struct arguments myArgs;
      
