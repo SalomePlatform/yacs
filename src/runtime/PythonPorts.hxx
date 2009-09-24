@@ -21,6 +21,7 @@
 
 #include <Python.h>
 
+#include "YACSRuntimeSALOMEExport.hxx"
 #include "InputPort.hxx"
 #include "OutputPort.hxx"
 
@@ -49,7 +50,7 @@ namespace YACS
  *
  * \see PythonNode
  */
-    class InputPyPort : public InputPort
+    class YACSRUNTIMESALOME_EXPORT InputPyPort : public InputPort
     {
     public:
       InputPyPort(const std::string& name, Node * node, TypeCode * type);
@@ -77,7 +78,7 @@ namespace YACS
       PyObject* _initData;
     };
 
-    class OutputPyPort : public OutputPort
+    class YACSRUNTIMESALOME_EXPORT OutputPyPort : public OutputPort
     {
     public:
       OutputPyPort(const std::string& name, Node * node, TypeCode * type);

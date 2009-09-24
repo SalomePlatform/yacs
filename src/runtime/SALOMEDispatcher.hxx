@@ -19,6 +19,7 @@
 #ifndef __SALOMEDISPATCHER_HXX__
 #define __SALOMEDISPATCHER_HXX__
 
+#include "YACSRuntimeSALOMEExport.hxx"
 #include "Dispatcher.hxx"
 #include "yacsgui.hh"
 #include "Thread.hxx"
@@ -33,7 +34,7 @@ namespace YACS
 {
   namespace ENGINE
   {
-    class SALOMEDispatcher: public Dispatcher
+    class YACSRUNTIMESALOME_EXPORT SALOMEDispatcher: public Dispatcher
     {
     public:
       SALOMEDispatcher();

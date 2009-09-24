@@ -19,13 +19,14 @@
 #ifndef _PRESETNODE_HXX_
 #define _PRESETNODE_HXX_
 
+#include "YACSRuntimeSALOMEExport.hxx"
 #include "DataNode.hxx"
 
 namespace YACS
 {
   namespace ENGINE
   {
-    class PresetNode: public DataNode
+    class YACSRUNTIMESALOME_EXPORT PresetNode: public DataNode
     {
     protected:
       Node *simpleClone(ComposedNode *father, bool editionOnly) const;

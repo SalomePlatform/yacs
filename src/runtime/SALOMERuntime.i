@@ -35,6 +35,8 @@
 
 %include engtypemaps.i
 
+#define YACSRUNTIMESALOME_EXPORT
+
 // ----------------------------------------------------------------------------
 
 %{

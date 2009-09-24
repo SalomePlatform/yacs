@@ -19,13 +19,14 @@
 #ifndef _STUDYNODES_HXX_
 #define _STUDYNODES_HXX_
 
+#include "YACSRuntimeSALOMEExport.hxx"
 #include "DataNode.hxx"
 
 namespace YACS
 {
   namespace ENGINE
   {
-    class StudyInNode: public DataNode
+    class YACSRUNTIMESALOME_EXPORT StudyInNode: public DataNode
     {
     protected:
       Node *simpleClone(ComposedNode *father, bool editionOnly) const;
@@ -41,7 +42,7 @@ namespace YACS
     public:
       static const char IMPL_NAME[];
     };
-    class StudyOutNode: public DataNode
+    class YACSRUNTIMESALOME_EXPORT StudyOutNode: public DataNode
     {
     protected:
       Node *simpleClone(ComposedNode *father, bool editionOnly) const;

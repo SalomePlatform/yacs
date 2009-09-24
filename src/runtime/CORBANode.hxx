@@ -19,6 +19,7 @@
 #ifndef _CORBANODE_HXX_
 #define _CORBANODE_HXX_
 
+#include "YACSRuntimeSALOMEExport.hxx"
 #include "ServiceNode.hxx"
 #include "yacsconfig.h"
 #ifdef DSC_PORTS
@@ -38,7 +39,7 @@ namespace YACS
  * \see InputCorbaPort
  * \see OutputCorbaPort
  */
-    class CORBANode : public ServiceNode 
+    class YACSRUNTIMESALOME_EXPORT CORBANode : public ServiceNode 
     {
     protected:
       Node *simpleClone(ComposedNode *father, bool editionOnly) const;
@@ -61,7 +62,7 @@ namespace YACS
  * \see InputCorbaPort
  * \see OutputCorbaPort
  */
-    class SalomeNode : public ServiceNode 
+    class YACSRUNTIMESALOME_EXPORT SalomeNode : public ServiceNode 
     {
     protected:
       Node *simpleClone(ComposedNode *father, bool editionOnly) const;

@@ -80,6 +80,7 @@ libYACSRuntimeSALOME_la_SOURCES =      \
 	$(__dummy__)
 
 salomeinclude_HEADERS = \
+YACSRuntimeSALOMEExport.hxx \
 CalStreamPort.hxx            CORBAComponent.hxx   CORBACORBAConv.hxx         CORBACppConv.hxx \
 CORBANeutralConv.hxx         CORBANode.hxx        CORBAPorts.hxx             CORBAPythonConv.hxx \
 CORBAXMLConv.hxx             CppComponent.hxx     CppContainer.hxx           CppCORBAConv.hxx \
@@ -100,12 +101,12 @@ EXTRA_libYACSRuntimeSALOME_la_SOURCES =  \
 
 if SALOME_KERNEL
 nodist_libYACSRuntimeSALOME_la_SOURCES = ../../idl/yacsguiSK.cc
-SALOME_LIBS=-L$(KERNEL_ROOT_DIR)/lib$(LIB_LOCATION_SUFFIX)/salome -lSalomeLifeCycleCORBA
+SALOME_LIBS=$(KERNEL_LDFLAGS) -lSalomeLifeCycleCORBA -lSalomeIDLKernel -lSalomeNS -lSalomeContainer -lSALOMEBasics
 SALOME_INCL_PATH=-I$(KERNEL_ROOT_DIR)/include/salome 
 endif
 
 if DSC_PORTS
-DSC_LIBS=-L$(KERNEL_ROOT_DIR)/lib$(LIB_LOCATION_SUFFIX)/salome -lSalomeDSCContainer
+DSC_LIBS=$(KERNEL_LDFLAGS) -lSalomeDSCContainer
 endif
 
 # --- build libYACSRuntimeSALOME library before swig libraries (problem with make -j)
@@ -113,7 +114,7 @@ endif
 BUILT_SOURCES=SALOMERuntimeWRAP.cxx libYACSRuntimeSALOME.la
 
 libYACSRuntimeSALOME_la_LIBADD = \
-	$(DSC_LIBS) $(SALOME_LIBS) $(OMNIORB_LIBS) \
+	$(DSC_LIBS) $(SALOME_LIBS) $(OMNIORB_LIBS) $(PYTHON_LIBS) $(LIBXML_LIBS) \
 	../engine/libYACSlibEngine.la
 
 AM_CXXFLAGS = \
@@ -153,6 +154,7 @@ _SALOMERuntime_la_CXXFLAGS = \
 	$(OMNIORB_INCLUDES) \
 	$(OMNIORB_CXXFLAGS) \
 	-I$(KERNEL_ROOT_DIR)/include/salome \
+	-I$(srcdir) \
 	-I$(srcdir)/../bases \
 	-I$(srcdir)/../engine \
 	-I../../idl \

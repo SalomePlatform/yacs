@@ -19,6 +19,7 @@
 #ifndef _XMLPORTS_HXX_
 #define _XMLPORTS_HXX_
 
+#include "YACSRuntimeSALOMEExport.hxx"
 #include "InputPort.hxx"
 #include "OutputPort.hxx"
 
@@ -32,7 +33,7 @@ namespace YACS
  *
  * \see XmlNode
  */
-    class InputXmlPort : public InputPort
+    class YACSRUNTIMESALOME_EXPORT InputXmlPort : public InputPort
     {
     public:
       InputXmlPort(const std::string& name, Node* node, TypeCode * type);
@@ -61,7 +62,7 @@ namespace YACS
  *
  * \see XmlNode
  */
-    class OutputXmlPort : public OutputPort
+    class YACSRUNTIMESALOME_EXPORT OutputXmlPort : public OutputPort
     {
     public:
       OutputXmlPort(const std::string& name,  Node* node, TypeCode * type);

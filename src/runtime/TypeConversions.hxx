@@ -19,6 +19,8 @@
 #ifndef _TYPECONVERSIONS_HXX_
 #define _TYPECONVERSIONS_HXX_
 
+#include "YACSRuntimeSALOMEExport.hxx"
+
 #include <Python.h>
 #include <omniORB4/CORBA.h>
 #include <libxml/parser.h>
@@ -65,7 +67,7 @@ namespace YACS
     std::string convertCorbaXml(const TypeCode * t,CORBA::Any* ob);
 
     CORBA::Any *convertPyObjectCorba(const TypeCode *t,PyObject *ob);
-    std::string convertPyObjectXml(const TypeCode * t,PyObject* ob);
+    YACSRUNTIMESALOME_EXPORT std::string convertPyObjectXml(const TypeCode * t,PyObject* ob);
     YACS::ENGINE::Any *convertPyObjectNeutral(const TypeCode *t,PyObject* ob);
     PyObject* convertPyObjectPyObject(const TypeCode *t,PyObject *ob);
     std::string convertPyObjectToString(PyObject* ob);

@@ -20,7 +20,13 @@ include $(top_srcdir)/adm/unix/make_begin.am
 
 check_SCRIPTS = runtimeTest.sh
 
-check_PROGRAMS = TestRuntime echoSrv echo_clt
+if CPPUNIT_IS_OK
+check_PROGRAMS = TestRuntime
+else
+check_PROGRAMS =
+endif
+check_PROGRAMS += echoSrv echo_clt
+
 lib_LTLIBRARIES = libTestComponentLocal.la
 
 IDL_FILES = echo.idl
@@ -73,6 +79,7 @@ echoSrv_SOURCES = echoSrv.cxx
 nodist_echoSrv_SOURCES = $(IDL_SOURCES)
 
 echoSrv_CXXFLAGS = \
+	-I$(builddir) \
 	-I$(srcdir)/../../bases \
 	$(OMNIORB_INCLUDES) \
 	$(OMNIORB_CXXFLAGS) 
@@ -84,6 +91,7 @@ echo_clt_SOURCES = echo_clt.cxx
 nodist_echo_clt_SOURCES = $(IDL_SOURCES)
 
 echo_clt_CXXFLAGS = \
+	-I$(builddir) \
 	-I$(srcdir)/../../bases \
 	$(OMNIORB_INCLUDES) \
 	-I$(OMNIORB_ROOT)/include/omniORB4/internal \
@@ -103,6 +111,9 @@ libTestComponentLocal_la_CXXFLAGS = \
 	-I$(srcdir)/../../engine/Test
 
 libTestComponentLocal_la_LDFLAGS = -module
+
+libTestComponentLocal_la_LIBADD = \
+	../../engine/libYACSlibEngine.la
 
 clean-local:
 	rm -rf echo_idl.py* echoSK.cc echoDynSK.cc echo.hh eo eo__POA yacs* omnilog lib omniorb.cfg  traceExec_*  xmlrun.sh

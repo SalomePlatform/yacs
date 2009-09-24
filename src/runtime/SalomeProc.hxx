@@ -19,7 +19,9 @@
 #ifndef _SALOMEPROC_HXX_
 #define _SALOMEPROC_HXX_
 
+#include "YACSRuntimeSALOMEExport.hxx"
 #include "Proc.hxx"
+
 #include <string>
 #include <iostream>
 #include <list>
@@ -30,7 +32,7 @@ namespace YACS
   {
     class TypeCode;
 
-    class SalomeProc: public Proc
+    class YACSRUNTIMESALOME_EXPORT SalomeProc: public Proc
     {
     public:
        SalomeProc(const std::string& name);

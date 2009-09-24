@@ -39,6 +39,11 @@
 #include <sstream>
 #include <iostream>
 
+#ifdef WNT
+#include <process.h>
+#define getpid _getpid
+#endif
+
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 

@@ -19,6 +19,8 @@
 #ifndef _RUNTIMESALOME_HXX_
 #define _RUNTIMESALOME_HXX_
 
+#include "YACSRuntimeSALOMEExport.hxx"
+
 #include <Python.h>
 #include <omniORB4/CORBA.h>
 #include "Runtime.hxx"
@@ -53,14 +55,14 @@ namespace YACS
   {
 
     class RuntimeSALOME;
-    RuntimeSALOME* getSALOMERuntime();
+    YACSRUNTIMESALOME_EXPORT RuntimeSALOME* getSALOMERuntime();
 
     class InputCorbaPort;
     class InputPyPort;
     class InputXmlPort;
     class InputCppPort;
 
-    class RuntimeSALOME: public Runtime
+    class YACSRUNTIMESALOME_EXPORT RuntimeSALOME: public Runtime
     {
     public:
       

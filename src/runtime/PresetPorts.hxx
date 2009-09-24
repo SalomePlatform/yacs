@@ -20,13 +20,15 @@
 #define _PRESETPORTS_HXX_
 
 #include <Python.h>
+
+#include "YACSRuntimeSALOMEExport.hxx"
 #include "XMLPorts.hxx"
 
 namespace YACS
 {
   namespace ENGINE
   {
-    class OutputPresetPort: public OutputXmlPort
+    class YACSRUNTIMESALOME_EXPORT OutputPresetPort: public OutputXmlPort
     {
     public:
       OutputPresetPort(const std::string& name,  Node* node, TypeCode* type);
@@ -43,7 +45,7 @@ namespace YACS
       std::string _storeData;
     };
 
-    class InputPresetPort: public InputXmlPort
+    class YACSRUNTIMESALOME_EXPORT InputPresetPort: public InputXmlPort
     {
     public:
       InputPresetPort(const std::string& name,  Node* node, TypeCode* type);

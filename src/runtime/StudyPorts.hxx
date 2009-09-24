@@ -19,6 +19,7 @@
 #ifndef _STUDYPORTS_HXX_
 #define _STUDYPORTS_HXX_
 
+#include "YACSRuntimeSALOMEExport.hxx"
 #include "XMLPorts.hxx"
 #include "SALOMEDS.hh"
 
@@ -27,7 +28,7 @@ namespace YACS
   namespace ENGINE
   {
 
-    class OutputStudyPort: public OutputXmlPort
+    class YACSRUNTIMESALOME_EXPORT OutputStudyPort: public OutputXmlPort
     {
     public:
       OutputStudyPort(const std::string& name,  Node* node, TypeCode* type);
@@ -45,7 +46,7 @@ namespace YACS
       std::string _storeData;
     };
 
-    class InputStudyPort: public InputXmlPort
+    class YACSRUNTIMESALOME_EXPORT InputStudyPort: public InputXmlPort
     {
     public:
       InputStudyPort(const std::string& name,  Node* node, TypeCode* type);

@@ -21,8 +21,10 @@
 
 #include <omniORB4/CORBA.h>
 
+#include "YACSRuntimeSALOMEExport.hxx"
 #include "InputPort.hxx"
 #include "OutputPort.hxx"
+
 #include <string>
 
 namespace YACS
@@ -35,7 +37,7 @@ namespace YACS
  *
  * \see CORBANode
  */
-    class InputCorbaPort : public InputPort
+    class YACSRUNTIMESALOME_EXPORT InputCorbaPort : public InputPort
     {
     public:
       InputCorbaPort(const std::string& name, Node *node, TypeCode * type);
@@ -65,10 +67,10 @@ namespace YACS
 
     class OutputCorbaPort;
 
-    std::ostream & operator<<( std::ostream &os,
-                               const YACS::ENGINE::OutputCorbaPort& p);
+    YACSRUNTIMESALOME_EXPORT std::ostream & operator<<( std::ostream &os,
+							const YACS::ENGINE::OutputCorbaPort& p);
 
-    class OutputCorbaPort : public OutputPort
+    class YACSRUNTIMESALOME_EXPORT OutputCorbaPort : public OutputPort
     {
       friend std::ostream &operator<< ( std::ostream &os,
                                         const OutputCorbaPort& p);

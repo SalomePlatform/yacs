@@ -19,14 +19,16 @@
 #ifndef _PYTHONNODE_HXX_
 #define _PYTHONNODE_HXX_
 
+#include "YACSRuntimeSALOMEExport.hxx"
 #include "InlineNode.hxx"
+
 #include <Python.h>
 
 namespace YACS
 {
   namespace ENGINE
   {
-    class PythonNode : public InlineNode 
+    class YACSRUNTIMESALOME_EXPORT PythonNode : public InlineNode 
     {
     protected:
       Node *simpleClone(ComposedNode *father, bool editionOnly) const;
