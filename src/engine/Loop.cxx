@@ -108,6 +108,7 @@ DFToDSForLoop::DFToDSForLoop(Loop *loop, const std::string& name, TypeCode* type
 
 DFToDSForLoop::~DFToDSForLoop()
 {
+  edDisconnectAllLinksWithMe();
 }
 
 void DFToDSForLoop::getReadyTasks(std::vector<Task *>& tasks)
@@ -207,6 +208,7 @@ Node *DSToDFForLoop::simpleClone(ComposedNode *father, bool editionOnly) const
 
 DSToDFForLoop::~DSToDFForLoop()
 {
+  edDisconnectAllLinksWithMe();
 }
 
 void DSToDFForLoop::getReadyTasks(std::vector<Task *>& tasks)

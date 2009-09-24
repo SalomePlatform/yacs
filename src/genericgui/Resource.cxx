@@ -26,6 +26,10 @@ using namespace YACS::HMI;
 
 bool Resource::COMPONENT_INSTANCE_NEW = COMPONENTINSTANCENEW;
 QString Resource::userCatalog = USERCATALOG;
+bool Resource::addRowCols = ADDROWCOLS;
+bool Resource::autoComputeLinks = AUTOCOMPUTELINKS;
+bool Resource::simplifyLink = SIMPLIFYLINK;
+bool Resource::ensureVisibleWhenMoved = ENSUREVISIBLEWHENMOVED;
 
 // Statics for color of states
 // ---------------------------
@@ -45,24 +49,24 @@ QColor Resource::FINISHED             = FINISHED_;
 QColor Resource::STOPPED              = STOPPED_;
 QColor Resource::UNKNOWN              = UNKNOWN_;
 
-QColor Resource::UNDEFINED            = QColor();
-QColor Resource::INVALID              = QColor();
-QColor Resource::READY                = QColor();
-QColor Resource::TOLOAD               = QColor();
-QColor Resource::LOADED               = QColor();
-QColor Resource::TOACTIVATE           = QColor();
-QColor Resource::ACTIVATED            = QColor();
-QColor Resource::DESACTIVATED         = QColor();
-QColor Resource::DONE                 = QColor();
-QColor Resource::SUSPENDED            = QColor();
-QColor Resource::LOADFAILED           = QColor();
-QColor Resource::EXECFAILED           = QColor();
-QColor Resource::PAUSE                = QColor();
-QColor Resource::INTERNALERR          = QColor();
-QColor Resource::DISABLED             = QColor();
-QColor Resource::FAILED               = QColor();
-QColor Resource::ERROR                = QColor();
-QColor Resource::DEFAULT              = QColor();
+QColor Resource::UNDEFINED            = UNDEFINED_;
+QColor Resource::INVALID              = INVALID_;
+QColor Resource::READY                = READY_;
+QColor Resource::TOLOAD               = TOLOAD_;
+QColor Resource::LOADED               = LOADED_;
+QColor Resource::TOACTIVATE           = TOACTIVATE_;
+QColor Resource::ACTIVATED            = ACTIVATED_;
+QColor Resource::DESACTIVATED         = DESACTIVATED_;
+QColor Resource::DONE                 = DONE_;
+QColor Resource::SUSPENDED            = SUSPENDED_;
+QColor Resource::LOADFAILED           = LOADFAILED_;
+QColor Resource::EXECFAILED           = EXECFAILED_;
+QColor Resource::PAUSE                = PAUSE_;
+QColor Resource::INTERNALERR          = INTERNALERR_;
+QColor Resource::DISABLED             = DISABLED_;
+QColor Resource::FAILED               = FAILED_;
+QColor Resource::ERROR                = ERROR_;
+QColor Resource::DEFAULT              = DEFAULT_;
 
 // Statics for color of links
 // --------------------------
@@ -75,6 +79,8 @@ QColor Resource::stream_link_select_color  = STREAMLINK_SELECT_COLOR;
 QColor Resource::link_select_color         = LINK_SELECT_COLOR;
 QColor Resource::control_link_select_color = CTRLLINK_SELECT_COLOR;
 QColor Resource::control_link_draw_color   = CTRLLINKDRAW_COLOR;
+
+int Resource::link_pen_darkness            = LINK_PEN_DARKNESS;
 
 // Statics for color of nodes
 // --------------------------
@@ -117,5 +123,6 @@ int Resource::DataPort_Height = DataPort_Height_;
 // Constructor
 // -----------
 
-Resource::Resource() {
+Resource::Resource()
+{
 }

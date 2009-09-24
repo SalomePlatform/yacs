@@ -1266,6 +1266,8 @@ YACS::Event ComposedNode::updateStateFrom(Node *node,        //* I : node emitti
       //unexpected exception: probably a bug in engine
       //try to keep a consistent global state
       DEBTRACE( "updateStateFrom: " << ex.what() );
+      _errorDetails="Internal error: ";
+      _errorDetails=_errorDetails + ex.what();
       setState(YACS::ERROR);
       exForwardFailed();
       return YACS::ABORT;

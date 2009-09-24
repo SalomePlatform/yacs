@@ -46,7 +46,7 @@ OutputPresetPort::OutputPresetPort(const std::string& name,  Node* node, TypeCod
 OutputPresetPort::OutputPresetPort(const OutputPresetPort& other, Node *newHelder)
   : OutputXmlPort(other,newHelder),
     DataPort(other,newHelder),
-    Port(other,newHelder)
+    Port(other,newHelder),_storeData(other._storeData)
 {
 }
 
@@ -157,7 +157,7 @@ InputPresetPort::InputPresetPort(const std::string& name,  Node* node, TypeCode*
 InputPresetPort::InputPresetPort(const InputPresetPort& other, Node *newHelder)
   : InputXmlPort(other,newHelder),
     DataPort(other,newHelder),
-    Port(other,newHelder)
+    Port(other,newHelder),_storeData(other._storeData)
 {
 }
 

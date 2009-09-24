@@ -1,0 +1,38 @@
+<proc>
+    <!-- an optimizer with 3 branches with an inline python node -->
+    <!--types -->
+
+    <!--nodes -->
+    <optimizer name="b1" nbranch="4" lib="../../engine/Test/.libs/libPluginOptEvTest1" entry="PluginOptEvTest1Factory" >
+      <inline name="node2" >
+        <script >
+            <code>p1= p1+10.</code>
+            <code>print "node2:",p1</code>
+            <code>#a=p1/0</code>
+            <code>p1=5</code>
+        </script>
+        <inport name="p1" type="double"/>
+        <outport name="p1" type="int"/>
+      </inline>
+    </optimizer>
+
+    <!--control -->
+
+    <!--datalink -->
+    <datalink>
+      <fromnode>b1</fromnode><fromport>SmplPrt</fromport>
+      <tonode>b1.node2</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink control="false" >
+      <fromnode>b1.node2</fromnode><fromport>p1</fromport>
+      <tonode>b1</tonode> <toport>retPortForOutPool</toport>
+    </datalink>
+
+    <!--parameters -->
+  <parameter>
+    <tonode>b1</tonode> <toport>FileNameInitAlg</toport>
+    <value><string>coucou</string></value>
+  </parameter>
+
+
+</proc>

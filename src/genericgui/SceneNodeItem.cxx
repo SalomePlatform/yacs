@@ -23,6 +23,7 @@
 #include "SceneOutPortItem.hxx"
 #include "SceneCtrlInPortItem.hxx"
 #include "SceneCtrlOutPortItem.hxx"
+#include "SceneLinkItem.hxx"
 #include "Scene.hxx"
 #include "QtGuiContext.hxx"
 #include "Menus.hxx"
@@ -54,6 +55,7 @@ SceneNodeItem::SceneNodeItem(QGraphicsScene *scene, SceneItem *parent,
   _width = 2*ScenePortItem::getPortWidth() + 3*_margin + 2*_nml;
   _brushColor = Resource::Scene_pen;
   _moving = false;
+  _moved = false;
   _blocX = false;
   _blocY = false;
   _hasNml = true;
@@ -262,6 +264,10 @@ void SceneNodeItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
       SceneComposedNodeItem *proc = dynamic_cast<SceneComposedNodeItem*>(item);
       proc->rebuildLinks();
     }
+  if (_moved)
+    if (Resource::ensureVisibleWhenMoved)
+      QtGuiContext::getQtCurrent()->getView()->ensureVisible(this);
+  _moved = false;
 }
 
 void SceneNodeItem::mouseMoveEvent(QGraphicsSceneMouseEvent * event)
@@ -273,6 +279,8 @@ void SceneNodeItem::mouseMoveEvent(QGraphicsSceneMouseEvent * event)
         {
           QPointF oldPos = pos();
           QPointF aPos = oldPos + event->scenePos() - event->lastScenePos();
+          if (aPos != oldPos)
+            _moved = true;
           if (aPos.x() > oldPos.x()) _blocX = false;
           if (aPos.y() > oldPos.y()) _blocY = false;
           if (aPos.x() < _margin + _nml)
@@ -295,6 +303,10 @@ void SceneNodeItem::setTopLeft(QPointF topLeft)
 {
   QPointF oldPos = pos();
   setPos(topLeft);
+
+  //update links
+  updateLinks();
+
   if (_parent)
     {
       if (SceneComposedNodeItem *bloc = dynamic_cast<SceneComposedNodeItem*>(_parent))
@@ -362,4 +374,29 @@ QString SceneNodeItem::getHeaderLabel()
     }
 
   return extLabel;
+}
+
+void SceneNodeItem::updateLinks()
+{
+  //update control links
+  std::list<SubjectControlLink*> lscl=dynamic_cast<SubjectNode*>(_subject)->getSubjectControlLinks();
+  for (std::list<SubjectControlLink*>::const_iterator it = lscl.begin(); it != lscl.end(); ++it)
+    {
+      SceneLinkItem* item = dynamic_cast<SceneLinkItem*>(QtGuiContext::getQtCurrent()->_mapOfSceneItem[*it]);
+      item->updateShape();
+    }
+
+  //update data links through child items update (SceneDataPortItem)
+  updateChildItems();
+}
+
+void SceneNodeItem::updateChildItems()
+{
+  foreach (QGraphicsItem *child, childItems())
+    {
+      if (SceneItem *sci = dynamic_cast<SceneItem*>(child))
+        {
+           sci->updateChildItems();
+        }
+    }
 }

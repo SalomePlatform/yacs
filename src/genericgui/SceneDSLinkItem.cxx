@@ -31,8 +31,8 @@ SceneDSLinkItem::SceneDSLinkItem(QGraphicsScene *scene, SceneItem *parent,
                                  QString label, Subject *subject)
   : SceneLinkItem(scene, parent, from, to, label, subject)
 {
-  _penColor     = Resource::stream_link_draw_color ;
-  _hiPenColor   = Resource::stream_link_select_color;
+  _penColor     = Resource::stream_link_draw_color.darker(Resource::link_pen_darkness);
+  _hiPenColor   = Resource::stream_link_select_color.darker(Resource::link_pen_darkness);
   _brushColor   = Resource::stream_link_draw_color;
   _hiBrushColor = Resource::stream_link_select_color;
 }

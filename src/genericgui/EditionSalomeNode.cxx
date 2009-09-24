@@ -130,6 +130,8 @@ void EditionSalomeNode::update(GuiEvent event, int type, Subject* son)
 void EditionSalomeNode::synchronize()
 {
   EditionElementaryNode::synchronize();
+  _wContainer->tb_container->setChecked(FormContainer::_checked);
+  _wComponent->tb_component->setChecked(FormComponent::_checked);
   fillComponentPanel();
   fillContainerPanel();
 }

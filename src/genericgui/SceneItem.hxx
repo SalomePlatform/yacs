@@ -132,6 +132,7 @@ namespace YACS
       void setParent(SceneItem* parent);
       virtual QString getToolTip();
       void setEventPos(QPointF point);
+      virtual void updateChildItems();
 
     protected:
 //       virtual bool sceneEvent(QEvent *event);

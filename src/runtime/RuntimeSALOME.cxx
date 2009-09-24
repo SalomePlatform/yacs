@@ -168,6 +168,9 @@ void RuntimeSALOME::initBuiltins()
   typeMap["boolvec"]= createSequenceTc("boolvec","boolvec",_tc_bool);
   std::list<TypeCodeObjref *> ltc;
   typeMap["pyobj"]= createInterfaceTc("python:obj:1.0","pyobj",ltc);
+  ENGINE::TypeCodeStruct *t = createStructTc("","Engines/dataref");
+  t->addMember("ref",_tc_string);
+  typeMap["dataref"]= t;
 }
 
 RuntimeSALOME::RuntimeSALOME(long flags)

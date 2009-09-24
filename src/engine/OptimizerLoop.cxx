@@ -18,8 +18,12 @@
 //
 #include "OptimizerLoop.hxx"
 #include "OutputPort.hxx"
+#include "Visitor.hxx"
 
 #include <iostream>
+
+//#define _DEVDEBUG_
+#include "YacsTrace.hxx"
 
 using namespace YACS::ENGINE;
 using namespace std;
@@ -27,6 +31,7 @@ using namespace std;
 const char FakeNodeForOptimizerLoop::NAME[]="thisIsAFakeNode";
 
 const int OptimizerLoop::NOT_RUNNING_BRANCH_ID=-1973012217;
+const int OptimizerLoop::NOT_INITIALIZED_BRANCH_ID=-1973;
 
 const char OptimizerLoop::NAME_OF_FILENAME_INPUT[]="FileNameInitAlg";
 
@@ -59,7 +64,10 @@ void OptimizerAlgStandardized::setAlgPointer(OptimizerAlgBaseFactory algFactory)
 {
   if(_algBehind)
     _algBehind->decrRef();
-  _algBehind=algFactory(_pool);
+  if(algFactory)
+    _algBehind=algFactory(_pool);
+  else
+    _algBehind=0;
 }
 
 void OptimizerAlgStandardized::parseFileToInit(const std::string& fileName)
@@ -184,6 +192,12 @@ void FakeNodeForOptimizerLoop::finished()
   
 }
 
+/*! \class YACS::ENGINE::OptimizerLoop
+ *  \brief class to build optimization loops
+ *
+ * \ingroup Nodes
+ */
+
 OptimizerLoop::OptimizerLoop(const std::string& name, const std::string& algLibWthOutExt,
                              const std::string& symbolNameToOptimizerAlgBaseInstanceFactory,
                              bool algInitOnFile) throw(YACS::Exception)
@@ -193,10 +207,12 @@ OptimizerLoop::OptimizerLoop(const std::string& name, const std::string& algLibW
         _retPortForOutPool(NAME_OF_OUT_POOL_INPUT,this,Runtime::_tc_string),
         _nodeForSpecialCases(0),_symbol(symbolNameToOptimizerAlgBaseInstanceFactory)
 {
-  OptimizerAlgBaseFactory algFactory=(OptimizerAlgBaseFactory)_loader.getHandleOnSymbolWithName(_symbol);
-  if(!algFactory)
-    throw Exception("Problem during library loading.");
+  OptimizerAlgBaseFactory algFactory=0;
+  if(_symbol != "")
+    algFactory=(OptimizerAlgBaseFactory)_loader.getHandleOnSymbolWithName(_symbol);
   _alg->setAlgPointer(algFactory);
+  if(!algFactory)
+    return;
   _splittedPort.edSetType(_alg->getTCForIn());
   _retPortForOutPool.edSetType(_alg->getTCForOut());
 }
@@ -210,6 +226,8 @@ OptimizerLoop::OptimizerLoop(const OptimizerLoop& other, ComposedNode *father, b
 {
   OptimizerAlgBaseFactory algFactory=(OptimizerAlgBaseFactory)_loader.getHandleOnSymbolWithName(_symbol);
   _alg->setAlgPointer(algFactory);
+  if(!algFactory)
+    return;
   _splittedPort.edSetType(_alg->getTCForIn());
   _retPortForOutPool.edSetType(_alg->getTCForOut());
 }
@@ -269,7 +287,7 @@ void OptimizerLoop::exUpdateState()
         }
       for(i=0;i<nbOfBr;i++)
         {
-          _execIds[i]=NOT_RUNNING_BRANCH_ID;
+          _execIds[i]=NOT_INITIALIZED_BRANCH_ID;
           _execNodes[i]=_node->clone(this,false);
           if(_initNode)
             _execInitNodes[i]=_initNode->clone(this,false);
@@ -383,7 +401,7 @@ YACS::Event OptimizerLoop::updateStateOnFinishedEventFrom(Node *node)
         {
           bool isFinished=true;
           for(int i=0;i<_execIds.size() && isFinished;i++)
-            isFinished=(_execIds[i]==NOT_RUNNING_BRANCH_ID);
+            isFinished=(_execIds[i]==NOT_RUNNING_BRANCH_ID || _execIds[i]==NOT_INITIALIZED_BRANCH_ID);
           if(isFinished)
             {
               std::cerr <<"OptimizerLoop::updateStateOnFinishedEventFrom: Alg has not inserted more cases whereas last element has been calculated !" << std::endl;
@@ -467,6 +485,10 @@ void OptimizerLoop::launchMaxOfSamples(bool first)
   unsigned i;
   for(val=_myPool.getNextSampleWithHighestPriority(id,priority);!isFullyBusy(i) && val;val=_myPool.getNextSampleWithHighestPriority(id,priority))
     {
+      if(_execIds[i] == NOT_INITIALIZED_BRANCH_ID)
+        first=true; // node is not initialized (first pass)
+      else
+        first=false; // node is initialized (second pass)
       _execIds[i]=id;
       _myPool.markIdAsInUse(id);
       if(_initNode)
@@ -499,7 +521,7 @@ bool OptimizerLoop::isFullyLazy() const
 {
   bool isLazy=true;
   for(unsigned i=0;i<_execIds.size() && isLazy;i++)
-    isLazy=(_execIds[i]==NOT_RUNNING_BRANCH_ID);
+    isLazy=(_execIds[i]==NOT_RUNNING_BRANCH_ID || _execIds[i]==NOT_INITIALIZED_BRANCH_ID);
   return isLazy;
 }
 
@@ -512,7 +534,7 @@ bool OptimizerLoop::isFullyBusy(unsigned& branchId) const
   bool isFinished=true;
   unsigned i;
   for(i=0;i<_execIds.size() && isFinished;i++)
-    isFinished=(_execIds[i]!=NOT_RUNNING_BRANCH_ID);
+    isFinished=(_execIds[i]!=NOT_RUNNING_BRANCH_ID && _execIds[i]!=NOT_INITIALIZED_BRANCH_ID);
   if(!isFinished)
     branchId=i-1;
   return isFinished;
@@ -592,5 +614,53 @@ void OptimizerLoop::pushValueOutOfScopeForCase(unsigned branchId)
   map<InputPort *, std::vector<InputPort *> >::iterator iter;
   for(iter=_interceptors.begin();iter!=_interceptors.end();iter++)
     (*iter).first->put((*iter).second[branchId]->get());
+}
+
+void OptimizerLoop::accept(Visitor *visitor)
+{
+  visitor->visitOptimizerLoop(this);
+}
+
+//! Set the algorithm library name and factory name (symbol in library) to create the algorithm and change it if the node is not connected
+/*!
+ *   throw an exception if the node is connected
+ */
+void OptimizerLoop::setAlgorithm(const std::string& alglib, const std::string& symbol)
+{
+  if(_splittedPort.edGetNumberOfOutLinks() != 0)
+    throw Exception("The OptimizerLoop node must be disconnected before setting the algorithm");
+  if(_retPortForOutPool.edGetNumberOfLinks() != 0)
+    throw Exception("The OptimizerLoop node must be disconnected before setting the algorithm");
+
+  _symbol=symbol;
+  _loader=YACS::BASES::DynLibLoader(alglib);
+
+  OptimizerAlgBaseFactory algFactory=(OptimizerAlgBaseFactory)_loader.getHandleOnSymbolWithName(_symbol);
+  _alg->setAlgPointer(algFactory);
+  if(!algFactory)
+    return;
+  _splittedPort.edSetType(_alg->getTCForIn());
+  _retPortForOutPool.edSetType(_alg->getTCForOut());
+}
+
+//! Return the name of the algorithm library
+/*!
+ *
+ */
+std::string OptimizerLoop::getAlgLib() const
+{
+  return _loader.getLibNameWithoutExt();
+}
+
+//! Check validity for the node.
+/*!
+ *  Throw an exception if the node is not valid
+ */
+void OptimizerLoop::checkBasicConsistency() const throw(Exception)
+{
+  DEBTRACE("OptimizerLoop::checkBasicConsistency");
+  DynParaLoop::checkBasicConsistency();
+  if(!_alg->getAlg())
+    throw Exception("Problem during library loading.");
 }
 

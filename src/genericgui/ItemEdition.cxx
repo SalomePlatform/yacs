@@ -26,6 +26,7 @@
 #include "EditionDataType.hxx"
 #include "EditionElementaryNode.hxx"
 #include "EditionForEachLoop.hxx"
+#include "EditionOptimizerLoop.hxx"
 #include "EditionInputPort.hxx"
 #include "EditionLoop.hxx"
 #include "EditionWhile.hxx"
@@ -182,6 +183,7 @@ ItemEdition::~ItemEdition()
     {
       DEBTRACE("---");
       QtGuiContext::getQtCurrent()->getStackedWidget()->removeWidget(this);
+      QtGuiContext::getQtCurrent()->_mapOfEditionItem.erase(_subject);
       DEBTRACE("---");
     }
 }
@@ -308,10 +310,13 @@ void ItemEdition::update(GuiEvent event, int type, Subject* son)
                                   son->getName().c_str());
           break;
         case YACS::HMI::FOREACHLOOP:
-        case YACS::HMI::OPTIMIZERLOOP:
           item =  new EditionForEachLoop(son,
                                          QtGuiContext::getQtCurrent()->getStackedWidget(),
                                          son->getName().c_str());
+          break;
+        case YACS::HMI::OPTIMIZERLOOP:
+          item =  new EditionOptimizerLoop(son, QtGuiContext::getQtCurrent()->getStackedWidget(),
+                                           son->getName().c_str());
           break;
         case YACS::HMI::FORLOOP:
           item =  new EditionLoop(son,

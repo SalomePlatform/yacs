@@ -643,10 +643,12 @@ void ForEachLoop::releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *f
       //ASSERT(portUp==*iter.second)
       if((*iter)->decrRef())
         {
+          AnySplitOutputPort *p=*iter;
           _outGoingPorts.erase(iter);
-          delete *iter2;
+          delete p;
+          InterceptorInputPort *ip=*iter2;
           _intecptrsForOutGoingPorts.erase(iter2);
-          delete *iter;
+          delete ip;
         }
     }
 }

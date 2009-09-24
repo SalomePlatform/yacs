@@ -44,6 +44,7 @@ namespace YACS
       TypeCode *getTCForIn() const;
       TypeCode *getTCForOut() const;
       void setAlgPointer(OptimizerAlgBaseFactory algFactory);
+      OptimizerAlgBase * getAlg(){return _algBehind;};
       void parseFileToInit(const std::string& fileName);
       void initialize(const Any *input) throw (Exception);
       void takeDecision();
@@ -115,6 +116,12 @@ namespace YACS
       void getReadyTasks(std::vector<Task *>& tasks);
       YACS::Event updateStateOnFinishedEventFrom(Node *node);
       void checkNoCyclePassingThrough(Node *node) throw(Exception);
+      virtual void accept(Visitor *visitor);
+      std::string getSymbol() const { return _symbol; }
+      std::string getAlgLib() const ;
+      void setAlgorithm(const std::string& alglib,const std::string& symbol);
+      virtual void checkBasicConsistency() const throw(Exception);
+
     protected:
       void buildDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView);
       void buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView);
@@ -134,6 +141,7 @@ namespace YACS
       Node *simpleClone(ComposedNode *father, bool editionOnly=true) const;
     protected:
       static const int NOT_RUNNING_BRANCH_ID;
+      static const int NOT_INITIALIZED_BRANCH_ID;
       static const char NAME_OF_FILENAME_INPUT[];
       static const char NAME_OF_OUT_POOL_INPUT[];
     };

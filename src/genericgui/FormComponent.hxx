@@ -48,11 +48,11 @@ public:
   FormComponent(QWidget *parent = 0);
   virtual ~FormComponent();
 
+public:
+  static bool _checked;
+
 public slots:
   void on_tb_component_toggled(bool checked);
-
-protected:
-  bool _checked;
 
 private:
 };

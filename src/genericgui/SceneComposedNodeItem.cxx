@@ -483,6 +483,7 @@ void SceneComposedNodeItem::rebuildLinks()
       DEBTRACE("from("<<ali.from.first<<","<<ali.from.second
                <<") to ("<<ali.to.first<<","<<ali.to.second
                <<") " << ali.item->getLabel().toStdString());
+      if(ali.from.first<0||ali.from.second<0||ali.to.first<0||ali.to.second<0) continue;
       CHRONO(5);
       bool isPath = astar.computePath(LNode(ali.from), LNode(ali.to));
       CHRONOSTOP(5);
@@ -490,7 +491,8 @@ void SceneComposedNodeItem::rebuildLinks()
       if (! isPath) DEBTRACE("Link Path not found !");
       if (! isPath) continue;
       LNodePath ijPath = astar.givePath();
-      matrix.incrementCost(ijPath);
+      if(Scene::_addRowCols)
+        matrix.incrementCost(ijPath);
       LinkPath apath = matrix.getPath(ijPath);
 //       DEBTRACE(apath.size());
       CHRONOSTOP(6);

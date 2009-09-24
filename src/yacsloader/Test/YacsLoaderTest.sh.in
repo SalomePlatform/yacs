@@ -71,7 +71,7 @@ EOF
 
   # --- delete all the SALOME Application environment
   
-  ./bin/salome/appli_clean.sh
+  ./bin/salome/appli_clean.sh -f
 
 else
 

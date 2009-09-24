@@ -41,6 +41,7 @@ namespace YACS
       virtual void visitBloc(Bloc *node);
       virtual void visitElementaryNode(ElementaryNode *node);
       virtual void visitForEachLoop(ForEachLoop *node);
+      virtual void visitOptimizerLoop(OptimizerLoop *node);
       virtual void visitForLoop(ForLoop *node);
       virtual void visitInlineNode(InlineNode *node);
       virtual void visitInlineFuncNode(InlineFuncNode *node);

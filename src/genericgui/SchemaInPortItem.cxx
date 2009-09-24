@@ -167,6 +167,8 @@ void SchemaInPortItem::update(GuiEvent event, int type, Subject* son)
             InputPort* port = dynamic_cast<InputPort*>(sip->getPort());
             TypeOfElem typnode = ProcInvoc::getTypeOfNode(port->getNode());
             TypeOfElem typort = ProcInvoc::getTypeOfPort(port);
+            _itemData.replace(YType, port->edGetType()->name());
+            _itemForeground.replace(YType, QColor("black"));
             if(typnode==YACS::HMI::STUDYOUTNODE)
               {
                 if(port->getAsString().empty())

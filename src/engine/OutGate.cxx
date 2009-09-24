@@ -107,22 +107,20 @@ std::set<InGate *> OutGate::edSetInGate() const
 
 void OutGate::edRemoveInGate(InGate *inGate, bool coherenceWithInGate) throw(YACS::Exception)
 {
-  map<InGate *, bool>::iterator iter;
-  for(iter=_setOfInGate.begin();iter!=_setOfInGate.end();iter++)
-    if((*iter).first==inGate)
-      {
-        _setOfInGate.erase(iter);
-        if(coherenceWithInGate)
-          inGate->edRemovePrecursor(this);
-        modified();
-        inGate->modified();
-        break;
-      }
+  std::map< InGate* , bool >::iterator iter=_setOfInGate.find(inGate);
   if(iter==_setOfInGate.end())
     throw Exception("InGate not already connected to OutGate");
+  else
+    {
+      if(coherenceWithInGate)
+        inGate->edRemovePrecursor(this);
+      _setOfInGate.erase(iter);
+      inGate->modified();
+      modified();
+    }
 }
 
-//Idem OutGate::edRemoveInGateOneWay except that no exception thrown if CF not exists
+//Idem OutGate::edRemoveInGate except that no exception thrown if CF not exists
 void OutGate::edRemoveInGateOneWay(InGate *inGate)
 {
   bool found=false;

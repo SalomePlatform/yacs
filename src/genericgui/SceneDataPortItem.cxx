@@ -19,9 +19,10 @@
 #include "SceneDataPortItem.hxx"
 #include "SceneTextItem.hxx"
 #include "SceneNodeItem.hxx"
+#include "SceneLinkItem.hxx"
 #include "Scene.hxx"
 
-// #include "QtGuiContext.hxx"
+#include "QtGuiContext.hxx"
 // #include "Menus.hxx"
 // #include <QGraphicsSceneHoverEvent>
 // #include <QPointF>
@@ -99,3 +100,15 @@ SceneNodeItem* SceneDataPortItem::getParent()
     return 0;
 }
 
+void SceneDataPortItem::updateChildItems()
+{
+  if(SubjectDataPort* sdp=dynamic_cast<SubjectDataPort*>(_subject))
+    {
+      std::list<SubjectLink*> lsl=sdp->getListOfSubjectLink();
+      for (std::list<SubjectLink*>::const_iterator it = lsl.begin(); it != lsl.end(); ++it)
+        {
+          SceneLinkItem* item = dynamic_cast<SceneLinkItem*>(QtGuiContext::getQtCurrent()->_mapOfSceneItem[*it]);
+          item->updateShape();
+        }
+    }
+}

@@ -34,6 +34,7 @@
 #include "WhileLoop.hxx"
 #include "Switch.hxx"
 #include "ForEachLoop.hxx"
+#include "OptimizerLoop.hxx"
 
 #include <vector>
 #include <string>
@@ -431,6 +432,87 @@ struct foreachlooptypeParser:looptypeParser<T>
 };
 
 template <class T> foreachlooptypeParser<T> foreachlooptypeParser<T>::foreachloopParser;
+
+}
+
+namespace YACS
+{
+  // optimizer loop specialization
+
+template <class T=ENGINE::OptimizerLoop*>
+struct optimizerlooptypeParser:looptypeParser<T>
+{
+  static optimizerlooptypeParser<T> optimizerloopParser;
+
+  virtual void buildAttr(const XML_Char** attr)
+    {
+      this->required("name",attr);
+      this->required("lib",attr);
+      this->required("entry",attr);
+      for (int i = 0; attr[i]; i += 2)
+        {
+          if(std::string(attr[i]) == "name")name(attr[i+1]);
+          if(std::string(attr[i]) == "state")this->state(attr[i+1]);
+          if(std::string(attr[i]) == "nbranch")nbranch(atoi(attr[i+1]));
+          if(std::string(attr[i]) == "lib")lib(attr[i+1]);
+          if(std::string(attr[i]) == "entry")entry(attr[i+1]);
+        }
+      postAttr();
+    }
+  virtual void pre ()
+    {
+      _nbranch=0;
+      this->looptypeParser<T>::pre();
+    }
+  virtual void name (const std::string& name)
+    {
+      DEBTRACE("optimizer_name: " << name)
+      _name=name;
+      _fullname=currentProc->names.back()+name;
+    }
+  virtual void lib (const std::string& name)
+    {
+      _lib=name;
+    }
+  virtual void entry (const std::string& name)
+    {
+      _entry=name;
+    }
+  virtual void nbranch (const int& n)
+    {
+      DEBTRACE("optimizer_nbranch: " << n )
+      _nbranch=n;
+    }
+  virtual void postAttr()
+    {
+      this->_cnode=theRuntime->createOptimizerLoop(_name,_lib,_entry,true);
+      //set number of branches
+      if(_nbranch > 0)this->_cnode->edGetNbOfBranchesPort()->edInit(_nbranch);
+      this->_cnodes.push_back(this->_cnode);
+      currentProc->names.push_back(_fullname + '.');
+    }
+  virtual T post()
+    {
+      DEBTRACE("optimizer_post" << this->_cnode->getName())
+      T b=this->_cnode;
+      this->_cnodes.pop_back();
+      currentProc->names.pop_back();
+      if(this->_cnodes.size() == 0)
+        this->_cnode=0;
+      else
+        this->_cnode=this->_cnodes.back();
+      return b;
+    }
+
+  int _nbranch;
+  std::string _fullname;
+  std::string _name;
+  std::string _entry;
+  std::string _lib;
+
+};
+
+template <class T> optimizerlooptypeParser<T> optimizerlooptypeParser<T>::optimizerloopParser;
 
 }
 

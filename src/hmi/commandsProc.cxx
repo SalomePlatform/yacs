@@ -323,17 +323,26 @@ bool CommandReparentNode::localExecute()
       Subject *subn = GuiContext::getCurrent()->_mapOfSubjectNode[newFather];
       SubjectComposedNode* sop = dynamic_cast<SubjectComposedNode*>(subo);
       SubjectComposedNode* snp = dynamic_cast<SubjectComposedNode*>(subn);
+      //save existing links
+      snode->saveLinks();
       snode->removeExternalLinks();
       snode->removeExternalControlLinks();
       sop->houseKeepingAfterCutPaste(true, snode);
       oldFather->edRemoveChild(node);
       newFather->edAddChild(node);
       snp->houseKeepingAfterCutPaste(false, snode);
+      //restore links
+      snode->restoreLinks();
     }
   catch (Exception& ex)
     {
-      DEBTRACE("CommandRenameNode::localExecute() : " << ex.what());
+      DEBTRACE("CommandReparentNode::localExecute() : " << ex.what());
       GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      node = 0;
+    }
+  catch (...)
+    {
+      GuiContext::getCurrent()->_lastErrorMessage = "Unknown exception";
       node = 0;
     }
   return (node != 0); 
@@ -345,9 +354,10 @@ bool CommandReparentNode::localReverse()
 
 // ----------------------------------------------------------------------------
 
-CommandCopyNode::CommandCopyNode(std::string position,
+CommandCopyNode::CommandCopyNode(YACS::ENGINE::Proc *fromproc,
+				 std::string position,
                                  std::string newParent)
-  : Command(), _position(position), _newParent(newParent), _clone(0)
+  : Command(), _position(position), _newParent(newParent), _clone(0),_fromproc(fromproc)
 {
   DEBTRACE("CommandCopyNode::CommandCopyNode " << _position << " " << _newParent);
 }
@@ -363,9 +373,9 @@ bool CommandCopyNode::localExecute()
   Node* node = 0;
   try
     {
-      if (_position == proc->getName())
+      if (_position == _fromproc->getName())
         throw YACS::Exception("Copy the proc (main bloc) is impossible");
-      node = proc->getChildByName(_position);
+      node = _fromproc->getChildByName(_position);
       ComposedNode *oldFather = node->getFather();
       ComposedNode *newFather = proc;
       Node *newF = 0;
@@ -1325,21 +1335,50 @@ bool CommandSetForEachBranch::localExecute()
   try
     {
       Proc* proc = GuiContext::getCurrent()->getProc();
-      ForEachLoop* forEach = dynamic_cast<ForEachLoop*>(proc->getChildByName(_forEach));
-      InputPort *nbBranches = forEach->getInputPort("nbBranches");
+      Node* node=proc->getChildByName(_forEach);
+      InputPort *nbBranches = node->getInputPort("nbBranches");
       int val = atoi(_value.c_str());
       nbBranches->edInit(val);
       return true;
     }
   catch (Exception& ex)
     {
-      DEBTRACE("CommandSetSwitchSelect::localExecute() : " << ex.what());
+      DEBTRACE("CommandSetForEachBranch::localExecute() : " << ex.what());
       GuiContext::getCurrent()->_lastErrorMessage = ex.what();
       return false;
     }
 }
 
 bool CommandSetForEachBranch::localReverse()
+{
+}
+
+// ----------------------------------------------------------------------------
+
+CommandSetAlgo::CommandSetAlgo(std::string optimizer, std::string alglib, std::string symbol)
+  : Command(), _optimizer(optimizer), _alglib(alglib), _symbol(symbol)
+{
+  DEBTRACE("CommandSetAlgo::CommandSetAlgo" << _optimizer << " " << _alglib << " " << _symbol);
+}
+
+bool CommandSetAlgo::localExecute()
+{
+  try
+    {
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      OptimizerLoop* loop = dynamic_cast<OptimizerLoop*>(proc->getChildByName(_optimizer));
+      loop->setAlgorithm(_alglib,_symbol);
+      return true;
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandSetAlgo::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      return false;
+    }
+}
+
+bool CommandSetAlgo::localReverse()
 {
 }
 
@@ -1405,7 +1444,10 @@ bool CommandAddControlLink::localExecute()
         inn = proc->getChildByName(_inNode);
       ComposedNode *cla = ComposedNode::getLowestCommonAncestor(outn,inn);
       DEBTRACE(cla->getName());
-      return cla->edAddCFLink(outn,inn);
+      bool ret= cla->edAddCFLink(outn,inn);
+      if(ret==false)
+        GuiContext::getCurrent()->_lastErrorMessage = "Link already exists";
+      return ret;
     }
   catch (Exception& ex)
     {

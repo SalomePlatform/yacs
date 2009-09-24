@@ -190,7 +190,18 @@ void Subject::update(GuiEvent event,int type, Subject* son)
   for (set<GuiObserver *>::iterator it = copySet.begin(); it != copySet.end(); ++it)
     {
       //DEBTRACE("Subject::update " << *it);
-      (*it)->update(event, type, son);
+      try
+        {
+          (*it)->update(event, type, son);
+        }
+      catch(Exception& ex)
+        {
+          std::cerr << "Internal error in Subject::update: " << ex.what() << std::endl;
+        }
+      catch(...)
+        {
+          std::cerr << "Internal error in Subject::update: " << std::endl;
+        }
     }
 }
 
@@ -536,6 +547,13 @@ bool SubjectNode::reparent(Subject* parent)
   ComposedNode *cnp = dynamic_cast<ComposedNode*>(snp->getNode());
   YASSERT(cnp);
   Proc *proc = GuiContext::getCurrent()->getProc();
+  Proc *fromproc=_node->getProc();
+  if(proc != fromproc)
+    {
+      GuiContext::getCurrent()->_lastErrorMessage = "cut is not yet possible across procs";
+      DEBTRACE(GuiContext::getCurrent()->_lastErrorMessage);
+      return false;
+    }
 
   string position = "";
   if (proc != dynamic_cast<Proc*>(_node))
@@ -583,10 +601,11 @@ bool SubjectNode::copy(Subject* parent)
   ComposedNode *cnp = dynamic_cast<ComposedNode*>(snp->getNode());
   YASSERT(cnp);
   Proc *proc = GuiContext::getCurrent()->getProc();
+  Proc *fromproc=_node->getProc();
 
   string position = "";
-  if (proc != dynamic_cast<Proc*>(_node))
-    position = proc->getChildName(_node);
+  if (fromproc != dynamic_cast<Proc*>(_node))
+    position = fromproc->getChildName(_node);
   else
     position = _node->getName();
 
@@ -596,7 +615,7 @@ bool SubjectNode::copy(Subject* parent)
   else
     newParent = cnp->getName();
 
-  CommandCopyNode *command = new CommandCopyNode(position, newParent);
+  CommandCopyNode *command = new CommandCopyNode(fromproc, position, newParent);
   if (command->execute())
     {
       GuiContext::getCurrent()->getInvoc()->add(command);
@@ -624,6 +643,11 @@ YACS::ENGINE::Node* SubjectNode::getNode()
   return _node;
 }
 
+int SubjectNode::isValid()
+{
+  return _node->isValid();
+}
+
 bool SubjectNode::setName(std::string name)
 {
   DEBTRACE("SubjectNode::setName " << name);
@@ -649,6 +673,221 @@ void SubjectNode::notifyObserver(Node* object,const std::string& event)
   DEBTRACE("SubjectNode::notifyObserver " << object->getName() << " " << event);
   TypeOfElem ntyp = ProcInvoc::getTypeOfNode(object);
   update(UPDATE, ntyp , 0 );
+}
+
+void SubjectNode::saveLinks()
+{
+  DEBTRACE("SubjectNode::saveLinks");
+  loutgate= _node->getInGate()->getBackLinks();
+  singate= _node->getOutGate()->edSetInGate();
+  std::list<OutGate *>::const_iterator ito;
+  for(ito=loutgate.begin();ito != loutgate.end();ito++)
+    {
+      Node* n1=(*ito)->getNode();
+      Node* n2=_node;
+      DEBTRACE(n1->getName()<< " " << n2->getName());
+    }
+  std::set<InGate *>::const_iterator iti;
+  for(iti=singate.begin();iti != singate.end();iti++)
+    {
+      Node* n1=_node;
+      Node* n2=(*iti)->getNode();
+      DEBTRACE(n1->getName()<< " " << n2->getName());
+    }
+
+  dataLinks.clear();
+  dataflowLinks.clear();
+
+  std::vector< std::pair<OutPort *, InPort *> > listLeaving  = getNode()->getSetOfLinksLeavingCurrentScope();
+  std::vector< std::pair<OutPort *, InPort *> >::iterator it3;
+  for (it3 = listLeaving.begin(); it3 != listLeaving.end(); ++it3)
+    {
+      OutPort* p1=(*it3).first;
+      InPort* p2=(*it3).second;
+      Node* n1=p1->getNode();
+      Node* n2=p2->getNode();
+      //are nodes in sequence (control link direct or indirect) ?
+      ComposedNode* fath= ComposedNode::getLowestCommonAncestor(n1,n2);
+      if(n1 == fath ||n2 == fath)
+	{
+	  //consider it as a data only link
+          DEBTRACE("It's a data link: " << n1->getName() << "." << p1->getName() << " -> "<< n2->getName() << "." << p2->getName());
+          dataLinks.push_back(std::pair<OutPort *, InPort *>(p1,p2));
+	  continue;
+	}
+      while(n1->getFather() != fath) n1=n1->getFather();
+      while(n2->getFather() != fath) n2=n2->getFather();
+      OutGate* outg=n1->getOutGate();
+      if(!outg->isAlreadyInSet(n2->getInGate()))
+	{
+          DEBTRACE("It's a data link: "<<p1->getNode()->getName()<<"."<<p1->getName()<<" -> "<< p2->getNode()->getName()<<"."<<p2->getName());
+          dataLinks.push_back(std::pair<OutPort *, InPort *>(p1,p2));
+	}
+      else
+	{
+          DEBTRACE("It's a dataflow link: "<<p1->getNode()->getName()<<"."<<p1->getName()<<" -> "<< p2->getNode()->getName()<<"."<<p2->getName());
+	  dataflowLinks.push_back(std::pair<OutPort *, InPort *>(p1,p2));
+	}
+    }
+
+  std::vector< std::pair<InPort *, OutPort *> > listIncoming  = getNode()->getSetOfLinksComingInCurrentScope();
+  std::vector< std::pair<InPort *, OutPort *> >::iterator it4;
+  for (it4 = listIncoming.begin(); it4 != listIncoming.end(); ++it4)
+    {
+      OutPort* p1=(*it4).second;
+      InPort* p2=(*it4).first;
+      Node* n1=p1->getNode();
+      Node* n2=p2->getNode();
+      //are nodes in sequence (control link direct or indirect) ?
+      ComposedNode* fath= ComposedNode::getLowestCommonAncestor(n1,n2);
+      if(n1 == fath ||n2 == fath)
+	{
+	  //consider it as a data only link
+          DEBTRACE("It's a data link: " << n1->getName() << "." << p1->getName() << " -> "<< n2->getName() << "." << p2->getName());
+          dataLinks.push_back(std::pair<OutPort *, InPort *>(p1,p2));
+	  continue;
+	}
+      while(n1->getFather() != fath) n1=n1->getFather();
+      while(n2->getFather() != fath) n2=n2->getFather();
+      OutGate* outg=n1->getOutGate();
+      if(!outg->isAlreadyInSet(n2->getInGate()))
+	{
+          DEBTRACE("It's a data link: "<<p1->getNode()->getName()<<"."<<p1->getName()<<" -> "<< p2->getNode()->getName()<<"."<<p2->getName());
+          dataLinks.push_back(std::pair<OutPort *, InPort *>(p1,p2));
+	}
+      else
+	{
+          DEBTRACE("It's a dataflow link: "<<p1->getNode()->getName()<<"."<<p1->getName()<<" -> "<< p2->getNode()->getName()<<"."<<p2->getName());
+	  dataflowLinks.push_back(std::pair<OutPort *, InPort *>(p1,p2));
+	}
+    }
+}
+
+void SubjectNode::restoreLinks()
+{
+  DEBTRACE("SubjectNode::restoreLinks");
+  //restore simple data links
+  std::vector< std::pair<OutPort *, InPort *> >::iterator it3;
+  for (it3 = dataLinks.begin(); it3 != dataLinks.end(); ++it3)
+    {
+      OutPort* p1=(*it3).first;
+      InPort* p2=(*it3).second;
+      Node* n1=p1->getNode();
+      Node* n2=p2->getNode();
+      ComposedNode* fath= ComposedNode::getLowestCommonAncestor(n1,n2);
+      try
+	{
+          fath->edAddLink(p1,p2);
+	}
+      catch(Exception& ex)
+	{
+	  // if a link can't be restored ignore it. It's possible when a node is reparented to a foreachloop 
+          continue;
+	}
+      SubjectComposedNode *scla = dynamic_cast<SubjectComposedNode*>(GuiContext::getCurrent()->_mapOfSubjectNode[fath]);
+      SubjectNode *sno = GuiContext::getCurrent()->_mapOfSubjectNode[static_cast<Node*>(n1)];
+      SubjectNode *sni = GuiContext::getCurrent()->_mapOfSubjectNode[static_cast<Node*>(n2)];
+      SubjectDataPort *spo = GuiContext::getCurrent()->_mapOfSubjectDataPort[static_cast<DataPort*>(p1)];
+      SubjectDataPort *spi = GuiContext::getCurrent()->_mapOfSubjectDataPort[static_cast<DataPort*>(p2)];
+      scla->addSubjectLink(sno,spo,sni,spi);
+    }
+  //restore dataflow links
+  for (it3 = dataflowLinks.begin(); it3 != dataflowLinks.end(); ++it3)
+    {
+      OutPort* p1=(*it3).first;
+      InPort* p2=(*it3).second;
+      Node* n1=p1->getNode();
+      Node* n2=p2->getNode();
+      ComposedNode* fath= ComposedNode::getLowestCommonAncestor(n1,n2);
+      try
+	{
+          fath->edAddDFLink(p1,p2);
+	}
+      catch(Exception& ex)
+	{
+	  // if a link can't be restored ignore it. It's possible when a node is reparented to a foreachloop 
+          continue;
+	}
+      SubjectComposedNode *scla = dynamic_cast<SubjectComposedNode*>(GuiContext::getCurrent()->_mapOfSubjectNode[fath]);
+      SubjectNode *sno = GuiContext::getCurrent()->_mapOfSubjectNode[static_cast<Node*>(n1)];
+      SubjectNode *sni = GuiContext::getCurrent()->_mapOfSubjectNode[static_cast<Node*>(n2)];
+      SubjectDataPort *spo = GuiContext::getCurrent()->_mapOfSubjectDataPort[static_cast<DataPort*>(p1)];
+      SubjectDataPort *spi = GuiContext::getCurrent()->_mapOfSubjectDataPort[static_cast<DataPort*>(p2)];
+      scla->addSubjectLink(sno,spo,sni,spi);
+      if(n1==fath || n2==fath) continue;
+      while(n1->getFather() != fath) n1=n1->getFather();
+      while(n2->getFather() != fath) n2=n2->getFather();
+      OutGate *ogate = n1->getOutGate();
+      InGate *igate = n2->getInGate();
+      if (ogate->isAlreadyInSet(igate))
+        {
+          pair<Node*,Node*> keyLink(n1,n2);
+          if (!GuiContext::getCurrent()->_mapOfSubjectControlLink.count(keyLink))
+            {
+              SubjectNode *sfno = GuiContext::getCurrent()->_mapOfSubjectNode[static_cast<Node*>(n1)];
+              SubjectNode *sfni = GuiContext::getCurrent()->_mapOfSubjectNode[static_cast<Node*>(n2)];
+              scla->addSubjectControlLink(sfno, sfni);
+            }
+        }
+    }
+
+  //reconnect control links
+  // links from another node to this node
+  std::list<OutGate *>::const_iterator it;
+  for(it=loutgate.begin();it != loutgate.end();it++)
+    {
+      Node* n1=(*it)->getNode();
+      Node* n2=_node;
+      if(GuiContext::getCurrent()->_mapOfSubjectNode.count(n1)==0)
+	{
+	  //It's an internal node or a destroyed one : don't treat it
+	  continue;
+	}
+      ComposedNode* fath= ComposedNode::getLowestCommonAncestor(n1,n2);
+      if(n1 == fath)continue;
+      if(n2 == fath)continue;
+      //add a control link only if nodes are not in the same descendance
+      while(n1->getFather() != fath) n1=n1->getFather();
+      while(n2->getFather() != fath) n2=n2->getFather();
+      OutGate *ogate = n1->getOutGate();
+      InGate *igate = n2->getInGate();
+      if (!ogate->isAlreadyInSet(igate))
+	{
+          fath->edAddCFLink(n1,n2);
+          SubjectComposedNode *scla = dynamic_cast<SubjectComposedNode*>(GuiContext::getCurrent()->_mapOfSubjectNode[fath]);
+          SubjectNode * subOutNode = GuiContext::getCurrent()->_mapOfSubjectNode[n1];
+          SubjectNode * subInNode = GuiContext::getCurrent()->_mapOfSubjectNode[n2];
+          scla->addSubjectControlLink(subOutNode,subInNode);
+	}
+    }
+
+  std::set<InGate *>::const_iterator it2;
+  for(it2=singate.begin();it2 != singate.end();it2++)
+    {
+      Node* n1=_node;
+      Node* n2=(*it2)->getNode();
+      if(GuiContext::getCurrent()->_mapOfSubjectNode.count(n2)==0)
+	{
+	  //It's an internal node or a destroyed one : don't treat it
+	  continue;
+	}
+      ComposedNode* fath= ComposedNode::getLowestCommonAncestor(n1,n2);
+      if(n1 == fath)continue;
+      if(n2 == fath)continue;
+      //add a control link only if nodes are not in the same descendance
+      while(n1->getFather() != fath) n1=n1->getFather();
+      while(n2->getFather() != fath) n2=n2->getFather();
+      OutGate *ogate = n1->getOutGate();
+      InGate *igate = n2->getInGate();
+      if (!ogate->isAlreadyInSet(igate))
+	{
+          fath->edAddCFLink(n1,n2);
+          SubjectComposedNode *scla = dynamic_cast<SubjectComposedNode*>(GuiContext::getCurrent()->_mapOfSubjectNode[fath]);
+          SubjectNode * subOutNode = GuiContext::getCurrent()->_mapOfSubjectNode[n1];
+          SubjectNode * subInNode = GuiContext::getCurrent()->_mapOfSubjectNode[n2];
+          scla->addSubjectControlLink(subOutNode,subInNode);
+	}
+    }
 }
 
 SubjectInputPort* SubjectNode::addSubjectInputPort(YACS::ENGINE::InputPort *port,
@@ -1022,10 +1261,14 @@ SubjectLink* SubjectComposedNode::addSubjectLink(SubjectNode *sno,
                                                  SubjectDataPort *spi)
 {
   DEBTRACE("SubjectComposedNode::addSubjectLink");
-  SubjectLink *son = new SubjectLink(sno, spo, sni, spi, this);
   OutPort *outp = sno->getNode()->getOutPort(spo->getName());
   InPort *inp = sni->getNode()->getInPort(spi->getName());
   pair<OutPort*,InPort*> keyLink(outp,inp);
+  //Don't create a new subject if it already exists
+  if(GuiContext::getCurrent()->_mapOfSubjectLink.count(keyLink)!=0)
+    return GuiContext::getCurrent()->_mapOfSubjectLink[keyLink];
+
+  SubjectLink *son = new SubjectLink(sno, spo, sni, spi, this);
   GuiContext::getCurrent()->_mapOfSubjectLink[keyLink] = son;
   _listSubjectLink.push_back(son);
   spo->addSubjectLink(son);
@@ -1058,11 +1301,14 @@ void SubjectComposedNode::removeLink(SubjectLink* link)
 SubjectControlLink* SubjectComposedNode::addSubjectControlLink(SubjectNode *sno,
                                                         SubjectNode *sni)
 {
-  SubjectControlLink *son = new SubjectControlLink(sno, sni, this);
   Node *outn = sno->getNode();
   Node *inn = sni->getNode();
   pair<Node*,Node*> keyLink(outn,inn);
+  //Don't create a new subject if it already exists
+  if(GuiContext::getCurrent()->_mapOfSubjectControlLink.count(keyLink)!=0)
+    return GuiContext::getCurrent()->_mapOfSubjectControlLink[keyLink];
 
+  SubjectControlLink *son = new SubjectControlLink(sno, sni, this);
   GuiContext::getCurrent()->_mapOfSubjectControlLink[keyLink] = son;
   _listSubjectControlLink.push_back(son);
   sno->addSubjectControlLink(son);
@@ -1476,7 +1722,7 @@ SubjectDataType* SubjectProc::addSubjectDataType(YACS::ENGINE::TypeCode *type, s
       update(ADD, DATATYPE, son);
     }
   else
-    GuiContext::getCurrent()->_lastErrorMessage = "Typecode " + typeName + " already had added in proc";
+    GuiContext::getCurrent()->_lastErrorMessage = "Typecode " + typeName + " was already added in proc";
   return son;
 }
 
@@ -1713,6 +1959,17 @@ void SubjectElementaryNode::loadChildren()
   for (itods = listODSPorts.begin(); itods != listODSPorts.end(); ++itods)
     addSubjectODSPort(*itods);
 }
+
+void SubjectElementaryNode::saveLinks()
+{
+  SubjectNode::saveLinks();
+}
+
+void SubjectElementaryNode::restoreLinks()
+{
+  SubjectNode::restoreLinks();
+}
+
 
 // ----------------------------------------------------------------------------
 
@@ -2691,6 +2948,9 @@ bool SubjectForEachLoop::setNbBranches(std::string nbBranches)
   if (command->execute())
     {
       GuiContext::getCurrent()->getInvoc()->add(command);
+      InputPort *nbBranches = getNode()->getInputPort("nbBranches");
+      SubjectDataPort *spo = GuiContext::getCurrent()->_mapOfSubjectDataPort[static_cast<DataPort*>(nbBranches)];
+      spo->update(SETVALUE, 0, spo);
       update(SETVALUE, 0, this);
       return true;
     }
@@ -2760,6 +3020,25 @@ SubjectNode* SubjectOptimizerLoop::addNode(YACS::ENGINE::Catalog *catalog,
   return body;
 }
 
+bool SubjectOptimizerLoop::setNbBranches(std::string nbBranches)
+{
+  DEBTRACE("SubjectOptimizerLoop::setNbBranches " << nbBranches);
+  Proc *proc = GuiContext::getCurrent()->getProc();
+  CommandSetForEachBranch *command =
+    new CommandSetForEachBranch(proc->getChildName(getNode()), nbBranches);
+  if (command->execute())
+    {
+      GuiContext::getCurrent()->getInvoc()->add(command);
+      InputPort *nbBranches = getNode()->getInputPort("nbBranches");
+      SubjectDataPort *spo = GuiContext::getCurrent()->_mapOfSubjectDataPort[static_cast<DataPort*>(nbBranches)];
+      spo->update(SETVALUE, 0, spo);
+      update(SETVALUE, 0, this);
+      return true;
+    }
+  else delete command;
+  return false;
+}
+
 void SubjectOptimizerLoop::houseKeepingAfterCutPaste(bool isCut, SubjectNode *son)
 {
   if (isCut)
@@ -2771,6 +3050,40 @@ void SubjectOptimizerLoop::houseKeepingAfterCutPaste(bool isCut, SubjectNode *so
 void SubjectOptimizerLoop::completeChildrenSubjectList(SubjectNode *son)
 {
   _body = son;
+}
+
+bool SubjectOptimizerLoop::hasValue()
+{
+  return true;
+}
+
+std::string SubjectOptimizerLoop::getValue()
+{
+  return _optimizerLoop->getInputPort("nbBranches")->getAsString();
+}
+
+bool SubjectOptimizerLoop::setAlgorithm(const std::string& alglib,const std::string& symbol)
+{
+  DEBTRACE("SubjectOptimizerLoop::setAlgorithm " << alglib << " " << symbol);
+  Proc *proc = GuiContext::getCurrent()->getProc();
+  CommandSetAlgo *command = new CommandSetAlgo(proc->getChildName(getNode()), alglib, symbol);
+  if (command->execute())
+    {
+      GuiContext::getCurrent()->getInvoc()->add(command);
+
+      InputPort *port = getNode()->getInputPort("retPortForOutPool");
+      SubjectDataPort *spo = GuiContext::getCurrent()->_mapOfSubjectDataPort[static_cast<DataPort*>(port)];
+      spo->update(UPDATE, 0, spo);
+
+      OutputPort *oport = getNode()->getOutputPort("SmplPrt");
+      spo = GuiContext::getCurrent()->_mapOfSubjectDataPort[static_cast<DataPort*>(oport)];
+      spo->update(UPDATE, 0, spo);
+
+      update(SETVALUE, 0, this);
+      return true;
+    }
+  else delete command;
+  return false;
 }
 
 // ----------------------------------------------------------------------------
@@ -2868,6 +3181,7 @@ bool SubjectDataPort::tryCreateLink(SubjectDataPort *subOutport, SubjectDataPort
   if (outp && outp->isAlreadyLinkedWith(inp))
     {
       DEBTRACE("isAlreadyLinkedWith");
+      GuiContext::getCurrent()->_lastErrorMessage = "Ports are already linked"; 
       return false;
     }
 

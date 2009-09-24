@@ -18,6 +18,7 @@
 //
 #include "AnyOutputPort.hxx"
 #include "Any.hxx"
+#include "Runtime.hxx"
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -72,3 +73,7 @@ void AnyOutputPort::put(YACS::ENGINE::Any *data) throw(ConversionException)
   OutputPort::put(data);
 }
 
+std::string AnyOutputPort::getAsString()
+{
+  return getRuntime()->convertNeutralAsString(edGetType(),_data);
+}

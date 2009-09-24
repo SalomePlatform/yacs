@@ -141,7 +141,10 @@ void SceneObserverItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
       drag->setHotSpot(QPoint(15, 20));
       
       drag->exec();
-      setCursor(Qt::OpenHandCursor);
+      //restore non drag state
+      setCursor(Qt::ArrowCursor);
+      _draging = false;
+      _dragModifier = false;
     }
 }
 

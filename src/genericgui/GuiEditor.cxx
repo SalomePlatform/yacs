@@ -189,6 +189,12 @@ void GuiEditor::CreateSwitch()
   CreateNode("Switch");
 }
 
+void GuiEditor::CreateOptimizerLoop()
+{
+  DEBTRACE("GuiEditor::CreateOptimizerLoop");
+  CreateNode("OptimizerLoop");
+}
+
 void GuiEditor::CreateContainer()
 {
   DEBTRACE("GuiEditor::CreateContainer");

@@ -62,6 +62,7 @@ namespace YACS
       virtual void force2points();
       virtual QPointF start();
       virtual QPointF goal();
+      virtual void updateShape();
 
     protected:
       void setShape();

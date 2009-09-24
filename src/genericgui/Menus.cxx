@@ -137,6 +137,7 @@ void ComposedNodeMenu::popupMenu(QWidget *caller, const QPoint &globalPos, const
       addForEachMenu(CNmenu,&actgroup);
       CNmenu->addAction(gmain->_WHILENodeAct);
       CNmenu->addAction(gmain->_SWITCHNodeAct);
+      CNmenu->addAction(gmain->_OptimizerLoopAct);
       menu.addSeparator();
     }
 //   menu.addAction(gmain->_toggleSceneItemVisibleAct);
@@ -157,6 +158,11 @@ void ComposedNodeMenu::popupMenu(QWidget *caller, const QPoint &globalPos, const
       menu.addAction(gmain->_cutItemAct);
       menu.addAction(gmain->_copyItemAct);
       menu.addAction(gmain->_pasteItemAct);
+    }
+  else
+    {
+      menu.addAction(gmain->_getErrorReportAct);
+      menu.addAction(gmain->_getErrorDetailsAct);
     }
   menu.exec(globalPos);
 }
@@ -204,6 +210,7 @@ void ProcMenu::popupMenu(QWidget *caller, const QPoint &globalPos, const QString
       addForEachMenu(CNmenu,&actgroup);
       CNmenu->addAction(gmain->_WHILENodeAct);
       CNmenu->addAction(gmain->_SWITCHNodeAct);
+      CNmenu->addAction(gmain->_OptimizerLoopAct);
       menu.addSeparator();
       menu.addAction(gmain->_pasteItemAct);
       menu.addSeparator();
@@ -221,6 +228,11 @@ void ProcMenu::popupMenu(QWidget *caller, const QPoint &globalPos, const QString
 //   menu.addAction(gmain->_toggleSimplifyLinkAct);
 //   menu.addAction(gmain->_toggleForce2NodesLinkAct);
 //   menu.addAction(gmain->_toggleAddRowColsAct);
+  if (!isEdition)
+    {
+      menu.addAction(gmain->_getErrorReportAct);
+      menu.addAction(gmain->_getErrorDetailsAct);
+    }
   menu.exec(globalPos);
 }
 

@@ -45,6 +45,9 @@ public:
   virtual void onModified();
   virtual bool onApply();
 
+public:
+  static bool _checked;
+
 public slots:
   void on_tb_container_toggled(bool checked);
   void on_ch_advance_stateChanged(int state);
@@ -65,7 +68,6 @@ public slots:
 
 
 protected:
-  bool _checked;
   bool _advanced;
   YACS::ENGINE::Container *_container;
   std::map<std::string, std::string> _properties;

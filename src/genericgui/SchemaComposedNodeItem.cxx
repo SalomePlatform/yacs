@@ -305,12 +305,14 @@ Qt::ItemFlags SchemaComposedNodeItem::flags(const QModelIndex &index)
 {
   //DEBTRACE("SchemaComposedNodeItem::flags");
   Qt::ItemFlags pflag = Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled;
+  if (! QtGuiContext::getQtCurrent()->isEdition())
+    return pflag;
+
   Qt::ItemFlags flagEdit = 0;
   int column = index.column();
   switch (column)
     {
     case YValue:
-      flagEdit = Qt::ItemIsEditable; // --- port value editable in model view
       break;     
     }
 

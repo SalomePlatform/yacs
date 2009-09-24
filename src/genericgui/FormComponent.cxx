@@ -25,6 +25,8 @@
 
 using namespace std;
 
+bool FormComponent::_checked = false;
+
 ComboBox::ComboBox(QWidget *parent)
   : QComboBox(parent)
 {
@@ -57,15 +59,12 @@ FormComponent::FormComponent(QWidget *parent)
   cb_container = new ComboBox(fr_component);
   gridLayout3->addWidget(cb_container, 2, 1, 1, 1);
 
-  _checked = false;
   QIcon icon;
   icon.addFile("icons:icon_down.png");
   icon.addFile("icons:icon_up.png",
                 QSize(), QIcon::Normal, QIcon::On);
   tb_component->setIcon(icon);
-  on_tb_component_toggled(false);
-//   connect(tb_component, SIGNAL(toggled(bool)),
-//           this, SLOT(on_tb_component_toggled(bool)));
+  on_tb_component_toggled(FormComponent::_checked);
 }
 
 FormComponent::~FormComponent()
@@ -74,7 +73,7 @@ FormComponent::~FormComponent()
 
 void FormComponent::on_tb_component_toggled(bool checked)
 {
-  //DEBTRACE("FormComponent::on_tb_component_toggled " << checked);
+  DEBTRACE("FormComponent::on_tb_component_toggled " << checked);
   _checked = checked;
   if (_checked) fr_component->show();
   else fr_component->hide();

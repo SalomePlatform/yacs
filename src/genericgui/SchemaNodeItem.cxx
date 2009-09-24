@@ -184,17 +184,16 @@ void SchemaNodeItem::popupMenu(QWidget *caller, const QPoint &globalPos)
 Qt::ItemFlags SchemaNodeItem::flags(const QModelIndex &index)
 {
   Qt::ItemFlags pflag = Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsDropEnabled;
+  if (! QtGuiContext::getQtCurrent()->isEdition())
+    return pflag;
+
   if (QtGuiContext::getQtCurrent()->isEdition())
     pflag = pflag | Qt::ItemIsDragEnabled;
   Qt::ItemFlags flagEdit = 0;
   int column = index.column();
   switch (column)
     {
-//     case 0:
-//       flagEdit = Qt::ItemIsEditable; // --- port name editable in model view
-//       break;
     case YValue:
-      flagEdit = Qt::ItemIsEditable; // --- port value editable in model view
       break;     
     }
 

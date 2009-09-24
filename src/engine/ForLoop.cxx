@@ -142,6 +142,7 @@ YACS::Event ForLoop::updateStateOnFinishedEventFrom(Node *node)
       Any* tmp=AtomAny::New(_nbOfTurns);
       _indexPort.put(tmp);
       tmp->decrRef();
+      setState(YACS::ACTIVATED);
       node->init(false);
       node->exUpdateState();
     }

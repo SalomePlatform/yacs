@@ -62,9 +62,9 @@ namespace YACS
       void on_pb_down_clicked();
       void on_pb_insert_clicked();
       void on_pb_remove_clicked();
-      void on_cb_insert_activated(const QString& text);
-      void on_cb_insert_popupHide();
-      void on_cb_insert_popupShow();
+      void oncb_insert_activated(const QString& text);
+      void oncb_insert_popupHide();
+      void oncb_insert_popupShow();
             
     protected:
       void upOrDown(int isUp);

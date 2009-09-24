@@ -44,6 +44,7 @@ namespace YACS
 
     protected:
       FormLoop *_formLoop;
+      QLineEdit *_le_index;
     };
   }
 }

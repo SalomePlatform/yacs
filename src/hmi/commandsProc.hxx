@@ -135,7 +135,8 @@ namespace YACS
     class CommandCopyNode: public Command
     {
     public:
-      CommandCopyNode(std::string position,
+      CommandCopyNode(YACS::ENGINE::Proc* fromproc,
+                      std::string position,
                       std::string newParent);
       YACS::ENGINE::Node *getNode();
     protected:
@@ -144,6 +145,7 @@ namespace YACS
       std::string _position;
       std::string _newParent;
       YACS::ENGINE::Node *_clone;
+      YACS::ENGINE::Proc *_fromproc;
     };
 
     class CommandRenameNode: public Command
@@ -401,6 +403,18 @@ namespace YACS
       virtual bool localReverse();
       std::string _forEach;
       std::string _value;
+    };
+
+    class CommandSetAlgo: public Command
+    {
+    public:
+      CommandSetAlgo(std::string optimizer, std::string alglib, std::string symbol);
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      std::string _optimizer;
+      std::string _alglib;
+      std::string _symbol;
     };
 
     class CommandAddLink: public Command

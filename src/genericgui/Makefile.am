@@ -68,6 +68,8 @@ libGenericGui_la_SOURCES =        \
   EditionElementaryNode.cxx       \
   EditionForEachLoop.hxx          \
   EditionForEachLoop.cxx          \
+  EditionOptimizerLoop.hxx        \
+  EditionOptimizerLoop.cxx        \
   EditionInputPort.hxx            \
   EditionInputPort.cxx            \
   EditionLoop.hxx                 \
@@ -237,6 +239,7 @@ nodist_libGenericGui_la_SOURCES = \
   EditionDataType_moc.cxx         \
   EditionElementaryNode_moc.cxx   \
   EditionForEachLoop_moc.cxx      \
+  EditionOptimizerLoop_moc.cxx    \
   EditionInputPort_moc.cxx        \
   EditionLoop_moc.cxx             \
   EditionNode_moc.cxx             \

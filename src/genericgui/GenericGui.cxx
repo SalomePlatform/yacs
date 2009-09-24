@@ -81,6 +81,7 @@ GenericGui::GenericGui(YACS::HMI::SuitWrapper* wrapper, QMainWindow *parent)
   _machineList.clear();
   _menuId = 190;
   QtGuiContext::_counters = new counters(100);
+  srand((unsigned)time(0)); 
 
   GuiObserver::setEventMap();
 
@@ -164,16 +165,16 @@ GenericGui::~GenericGui()
 
 void GenericGui::createActions()
 {
-//       QAction* createAction(const int id,
-//                             const QString& toolTip,
-//                             const QIcon& icon,
-//                             const QString& menu,
-//                             const QString& status,
-//                             const int shortCut,
-//                             QObject* parent =0,
-//                             bool checkable = false,
-//                             QObject* receiver =0,
-//                             const char* member =0);
+  //       QAction* createAction(const int id,
+  //                             const QString& toolTip,
+  //                             const QIcon& icon,
+  //                             const QString& menu,
+  //                             const QString& status,
+  //                             const int shortCut,
+  //                             QObject* parent =0,
+  //                             bool checkable = false,
+  //                             QObject* receiver =0,
+  //                             const char* member =0);
 
   QPixmap pixmap;
 
@@ -204,14 +205,14 @@ void GenericGui::createActions()
 
   pixmap.load("icons:insert_file.png");
   _importCatalogAct = _wrapper->createAction(getMenuId(), tr("Import a Schema as a Catalog"), QIcon(pixmap),
-                                              tr("Import Catalog"), tr("Import a Schema as a Catalog"),
-                                              0, _parent, false, this,  SLOT(onImportCatalog()));
+                                             tr("Import Catalog"), tr("Import a Schema as a Catalog"),
+                                             0, _parent, false, this,  SLOT(onImportCatalog()));
 
 
   pixmap.load("icons:run_active.png");
   _runLoadedSchemaAct = _wrapper->createAction(getMenuId(), tr("Prepare the current edited schema for run"), QIcon(pixmap),
-                                              tr("Run Current Schema"), tr("Prepare the current edited schema for run"),
-                                              0, _parent, false, this,  SLOT(onRunLoadedSchema()));
+                                               tr("Run Current Schema"), tr("Prepare the current edited schema for run"),
+                                               0, _parent, false, this,  SLOT(onRunLoadedSchema()));
 
   pixmap.load("icons:load_execution_state.png");
   _loadRunStateSchemaAct = _wrapper->createAction(getMenuId(), tr("Load a previous run state for this schema, prepare to run"), QIcon(pixmap),
@@ -220,14 +221,14 @@ void GenericGui::createActions()
 
   pixmap.load("icons:run.png");
   _loadAndRunSchemaAct = _wrapper->createAction(getMenuId(), tr("Load a schema for run"), QIcon(pixmap),
-                                              tr("Load Schema to run"), tr("Load a schema for run"),
-                                              0, _parent, false, this,  SLOT(onLoadAndRunSchema()));
+                                                tr("Load Schema to run"), tr("Load a schema for run"),
+                                                0, _parent, false, this,  SLOT(onLoadAndRunSchema()));
 
 
   pixmap.load("icons:suspend_resume.png");
   _startResumeAct = _wrapper->createAction(getMenuId(), tr("Start or Resume Schema execution"), QIcon(pixmap),
-                                       tr("Start/Resume execution"), tr("Start or Resume Schema execution"),
-                                       0, _parent, false, this,  SLOT(onStartResume()));
+                                           tr("Start/Resume execution"), tr("Start or Resume Schema execution"),
+                                           0, _parent, false, this,  SLOT(onStartResume()));
 
   pixmap.load("icons:kill.png");
   _abortAct = _wrapper->createAction(getMenuId(), tr("Abort the current execution"), QIcon(pixmap),
@@ -241,8 +242,8 @@ void GenericGui::createActions()
 
   pixmap.load("icons:reset.png");
   _resetAct = _wrapper->createAction(getMenuId(), tr("Reset the current execution"), QIcon(pixmap),
-                                      tr("Reset execution"), tr("Reset the current execution"),
-                                      0, _parent, false, this,  SLOT(onReset()));
+                                     tr("Reset execution"), tr("Reset the current execution"),
+                                     0, _parent, false, this,  SLOT(onReset()));
 
 
   pixmap.load("icons:save_dataflow_state.png");
@@ -258,30 +259,30 @@ void GenericGui::createActions()
 
   pixmap.load("icons:change_informations.png");
   _getYacsContainerLogAct = _wrapper->createAction(getMenuId(), tr("get YACS container log"), QIcon(pixmap),
-                                          tr("YACS Container Log"), tr("get YACS container log"),
-                                          0, _parent, false, this,  SLOT(onGetYacsContainerLog()));
+                                                   tr("YACS Container Log"), tr("get YACS container log"),
+                                                   0, _parent, false, this,  SLOT(onGetYacsContainerLog()));
 
   pixmap.load("icons:filter_notification.png");
   _getErrorReportAct = _wrapper->createAction(getMenuId(), tr("get Node Error Report"), QIcon(pixmap),
-                                          tr("Node Error Report"), tr("get Node Error Report"),
-                                          0, _parent, false, this,  SLOT(onGetErrorReport()));
+                                              tr("Node Error Report"), tr("get Node Error Report"),
+                                              0, _parent, false, this,  SLOT(onGetErrorReport()));
 
   pixmap.load("icons:icon_text.png");
   _getErrorDetailsAct = _wrapper->createAction(getMenuId(), tr("get Node Error Details"), QIcon(pixmap),
-                                          tr("Node Error Details"), tr("get Node Error Details"),
-                                          0, _parent, false, this,  SLOT(onGetErrorDetails()));
+                                               tr("Node Error Details"), tr("get Node Error Details"),
+                                               0, _parent, false, this,  SLOT(onGetErrorDetails()));
 
   pixmap.load("icons:change_informations.png");
   _getContainerLogAct = _wrapper->createAction(getMenuId(), tr("get Node Container Log"), QIcon(pixmap),
-                                          tr("Node Container Log"), tr("get Node Container Log"),
-                                          0, _parent, false, this,  SLOT(onGetContainerLog()));
+                                               tr("Node Container Log"), tr("get Node Container Log"),
+                                               0, _parent, false, this,  SLOT(onGetContainerLog()));
 
 
 
   pixmap.load("icons:kill.png");
   _editDataTypesAct = _wrapper->createAction(getMenuId(), tr("Edit Data Types"), QIcon(pixmap),
-                                              tr("Edit Data Types"), tr("Edit Data Types"),
-                                              0, _parent, false, this,  SLOT(onEditDataTypes()));
+                                             tr("Edit Data Types"), tr("Edit Data Types"),
+                                             0, _parent, false, this,  SLOT(onEditDataTypes()));
 
   pixmap.load("icons:kill.png");
   _createDataTypeAct = _wrapper->createAction(getMenuId(), tr("Create Data Types"), QIcon(pixmap),
@@ -295,123 +296,127 @@ void GenericGui::createActions()
 
   pixmap.load("icons:container.png");
   _newContainerAct = _wrapper->createAction(getMenuId(), tr("Create a New Container"), QIcon(pixmap),
-                                              tr("Create Container"), tr("Create a New Container"),
-                                              0, _parent, false, this,  SLOT(onNewContainer()));
+                                            tr("Create Container"), tr("Create a New Container"),
+                                            0, _parent, false, this,  SLOT(onNewContainer()));
 
   pixmap.load("icons:icon_select.png");
   _selectComponentInstanceAct = _wrapper->createAction(getMenuId(), tr("Select a Component Instance"), QIcon(pixmap),
-                                              tr("Select a Component Instance"), tr("Select a Component Instance"),
-                                              0, _parent, false, this,  SLOT(onSelectComponentInstance()));
+                                                       tr("Select a Component Instance"), tr("Select a Component Instance"),
+                                                       0, _parent, false, this,  SLOT(onSelectComponentInstance()));
 
   pixmap.load("icons:new_salome_component.png");
   _newSalomeComponentAct = _wrapper->createAction(getMenuId(), tr("Create a New SALOME Component"), QIcon(pixmap),
-                                              tr("SALOME Component"), tr("Create a New SALOME Component"),
-                                              0, _parent, false, this,  SLOT(onNewSalomeComponent()));
+                                                  tr("SALOME Component"), tr("Create a New SALOME Component"),
+                                                  0, _parent, false, this,  SLOT(onNewSalomeComponent()));
 
   pixmap.load("icons:new_salomepy_component.png");
   _newSalomePythonComponentAct = _wrapper->createAction(getMenuId(), tr("Create a New SALOME Python Component"), QIcon(pixmap),
-                                              tr("SALOME Python Component"), tr("Create a New SALOME Python Component"),
-                                              0, _parent, false, this,  SLOT(onNewSalomePythonComponent()));
+                                                        tr("SALOME Python Component"), tr("Create a New SALOME Python Component"),
+                                                        0, _parent, false, this,  SLOT(onNewSalomePythonComponent()));
 
   pixmap.load("icons:new_corba_component.png");
   _newCorbaComponentAct = _wrapper->createAction(getMenuId(), tr("Create a New CORBA Component"), QIcon(pixmap),
-                                              tr("CORBA Component"), tr("Create a New CORBA Component"),
-                                              0, _parent, false, this,  SLOT(onNewCorbaComponent()));
+                                                 tr("CORBA Component"), tr("Create a New CORBA Component"),
+                                                 0, _parent, false, this,  SLOT(onNewCorbaComponent()));
 
   pixmap.load("icons:schema.png");
   _newSchemaAct = _wrapper->createAction(getMenuId(), tr("New Schema"), QIcon(pixmap),
-                                              tr("New Schema"), tr("New Schema"),
-                                              0, _parent, false, this,  SLOT(onNewSchema()));
+                                         tr("New Schema"), tr("New Schema"),
+                                         0, _parent, false, this,  SLOT(onNewSchema()));
 
   pixmap.load("icons:new_salome_service_node.png");
   _salomeServiceNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New SALOME Service Node"), QIcon(pixmap),
-                                              tr("SALOME Service Node"), tr("Create a New SALOME Service Node"),
-                                              0, _parent, false, this,  SLOT(onSalomeServiceNode()));
+                                                 tr("SALOME Service Node"), tr("Create a New SALOME Service Node"),
+                                                 0, _parent, false, this,  SLOT(onSalomeServiceNode()));
 
   pixmap.load("icons:new_service_inline_node.png");
   _serviceInlineNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New Inline Service Node"), QIcon(pixmap),
-                                              tr("Inline Service Node"), tr("Create a New Inline Service Node"),
-                                              0, _parent, false, this,  SLOT(onServiceInlineNode()));
+                                                 tr("Inline Service Node"), tr("Create a New Inline Service Node"),
+                                                 0, _parent, false, this,  SLOT(onServiceInlineNode()));
 
   pixmap.load("icons:new_corba_service_node.png");
   _CORBAServiceNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New CORBA Service Node"), QIcon(pixmap),
-                                              tr("CORBA Node"), tr("Create a New CORBA Service Node"),
-                                              0, _parent, false, this,  SLOT(onCORBAServiceNode()));
+                                                tr("CORBA Node"), tr("Create a New CORBA Service Node"),
+                                                0, _parent, false, this,  SLOT(onCORBAServiceNode()));
 
   pixmap.load("icons:new_nodenode_service_node.png");
   _nodeNodeServiceNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New Node referencing a Node"), QIcon(pixmap),
-                                              tr("Ref on Node"), tr("Create a New Node referencing a Node"),
-                                              0, _parent, false, this,  SLOT(onNodeNodeServiceNode()));
+                                                   tr("Ref on Node"), tr("Create a New Node referencing a Node"),
+                                                   0, _parent, false, this,  SLOT(onNodeNodeServiceNode()));
 
   pixmap.load("icons:new_cpp_node.png");
   _cppNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New C++ Node"), QIcon(pixmap),
-                                              tr("Cpp Node"), tr("Create a New C++ Node"),
-                                              0, _parent, false, this,  SLOT(onCppNode()));
+                                       tr("Cpp Node"), tr("Create a New C++ Node"),
+                                       0, _parent, false, this,  SLOT(onCppNode()));
 
   pixmap.load("icons:kill.png");
   _inDataNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New Input data Node"), QIcon(pixmap),
-                                              tr("Input Data Node"), tr("Create a New Input data Node"),
-                                              0, _parent, false, this,  SLOT(onInDataNode()));
+                                          tr("Input Data Node"), tr("Create a New Input data Node"),
+                                          0, _parent, false, this,  SLOT(onInDataNode()));
 
   pixmap.load("icons:kill.png");
   _outDataNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New Output data Node"), QIcon(pixmap),
-                                              tr("Output Data Node"), tr("Create a New Output data Node"),
-                                              0, _parent, false, this,  SLOT(onOutDataNode()));
+                                           tr("Output Data Node"), tr("Create a New Output data Node"),
+                                           0, _parent, false, this,  SLOT(onOutDataNode()));
 
   pixmap.load("icons:kill.png");
   _inStudyNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New Input Study Node"), QIcon(pixmap),
-                                              tr("Input Study Node"), tr("Create a New Input Study Node"),
-                                              0, _parent, false, this,  SLOT(onInStudyNode()));
+                                           tr("Input Study Node"), tr("Create a New Input Study Node"),
+                                           0, _parent, false, this,  SLOT(onInStudyNode()));
 
   pixmap.load("icons:kill.png");
   _outStudyNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New Output Study Node"), QIcon(pixmap),
-                                              tr("Output Study Node"), tr("Create a New Output Study Node"),
-                                              0, _parent, false, this,  SLOT(onOutStudyNode()));
+                                            tr("Output Study Node"), tr("Create a New Output Study Node"),
+                                            0, _parent, false, this,  SLOT(onOutStudyNode()));
 
   pixmap.load("icons:new_inline_script_node.png");
   _inlineScriptNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New Inline Python Script Node"), QIcon(pixmap),
-                                              tr("Inline Script Node"), tr("Create a New Inline Python Script Node"),
-                                              0, _parent, false, this,  SLOT(onInlineScriptNode()));
+                                                tr("Inline Script Node"), tr("Create a New Inline Python Script Node"),
+                                                0, _parent, false, this,  SLOT(onInlineScriptNode()));
 
   pixmap.load("icons:new_inline_function_node.png");
   _inlineFunctionNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New Inline Python Function Node"), QIcon(pixmap),
-                                              tr("Inline Function Node"), tr("Create a New Inline Python Function Node"),
-                                              0, _parent, false, this,  SLOT(onInlineFunctionNode()));
+                                                  tr("Inline Function Node"), tr("Create a New Inline Python Function Node"),
+                                                  0, _parent, false, this,  SLOT(onInlineFunctionNode()));
 
   pixmap.load("icons:new_block_node.png");
   _blockNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New Bloc Node"), QIcon(pixmap),
-                                              tr("bloc Node"), tr("Create a New Bloc Node"),
-                                              0, _parent, false, this,  SLOT(onBlockNode()));
+                                         tr("bloc Node"), tr("Create a New Bloc Node"),
+                                         0, _parent, false, this,  SLOT(onBlockNode()));
 
   pixmap.load("icons:new_for_loop_node.png");
   _FORNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New For Loop Node"), QIcon(pixmap),
-                                              tr("For Loop Node"), tr("Create a New For Loop Node"),
-                                              0, _parent, false, this,  SLOT(onFORNode()));
+                                       tr("For Loop Node"), tr("Create a New For Loop Node"),
+                                       0, _parent, false, this,  SLOT(onFORNode()));
 
   pixmap.load("icons:new_foreach_loop_node.png");
   _FOREACHNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New For Each Loop Node"), QIcon(pixmap),
-                                              tr("For Each Loop Node"), tr("Create a New For Each Loop Node"),
-                                              0, _parent, false, this,  SLOT(onFOREACHNode()));
+                                           tr("For Each Loop Node"), tr("Create a New For Each Loop Node"),
+                                           0, _parent, false, this,  SLOT(onFOREACHNode()));
 
   pixmap.load("icons:new_while_loop_node.png");
   _WHILENodeAct = _wrapper->createAction(getMenuId(), tr("Create a New While Loop Node"), QIcon(pixmap),
-                                              tr("While Loop Node"), tr("Create a New While Loop Node"),
-                                              0, _parent, false, this,  SLOT(onWHILENode()));
+                                         tr("While Loop Node"), tr("Create a New While Loop Node"),
+                                         0, _parent, false, this,  SLOT(onWHILENode()));
 
   pixmap.load("icons:new_switch_loop_node.png");
   _SWITCHNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New Switch Node"), QIcon(pixmap),
-                                              tr("Switch Node"), tr("Create a New Switch Node"),
-                                              0, _parent, false, this,  SLOT(onSWITCHNode()));
+                                          tr("Switch Node"), tr("Create a New Switch Node"),
+                                          0, _parent, false, this,  SLOT(onSWITCHNode()));
+
+  _OptimizerLoopAct = _wrapper->createAction(getMenuId(), tr("Create a New Optimizer Loop Node"), QIcon(pixmap),
+                                             tr("Optimizer Loop"), tr("Create a New Optimizer Loop"),
+                                             0, _parent, false, this,  SLOT(onOptimizerLoop()));
 
   pixmap.load("icons:new_from_library_node.png");
   _nodeFromCatalogAct = _wrapper->createAction(getMenuId(), tr("Create a New Node from Catalog, use drag and drop from catalog"), QIcon(pixmap),
-                                              tr("Node from Catalog"), tr("Create a New Node from Catalog, use drag and drop from catalog"),
-                                              0, _parent, false, this,  SLOT(onNodeFromCatalog()));
+                                               tr("Node from Catalog"), tr("Create a New Node from Catalog, use drag and drop from catalog"),
+                                               0, _parent, false, this,  SLOT(onNodeFromCatalog()));
 
   pixmap.load("icons:delete.png");
   _deleteItemAct = _wrapper->createAction(getMenuId(), tr("Delete a Schema Item"), QIcon(pixmap),
-                                              tr("Delete Item"), tr("Delete a Schema Item"),
-                                              0, _parent, false, this,  SLOT(onDeleteItem()));
+                                          tr("Delete Item"), tr("Delete a Schema Item"),
+                                          0, _parent, false, this,  SLOT(onDeleteItem()));
 
   pixmap.load("icons:cut.png");
   _cutItemAct = _wrapper->createAction(getMenuId(), tr("Cut a Schema Item"), QIcon(pixmap),
@@ -430,18 +435,18 @@ void GenericGui::createActions()
 
   pixmap.load("icons:arrange_nodes.png");
   _arrangeLocalNodesAct = _wrapper->createAction(getMenuId(), tr("arrange nodes on that bloc level, without recursion"), QIcon(pixmap),
-                                              tr("arrange local nodes"), tr("arrange nodes on that bloc level, without recursion"),
-                                              0, _parent, false, this,  SLOT(onArrangeLocalNodes()));
+                                                 tr("arrange local nodes"), tr("arrange nodes on that bloc level, without recursion"),
+                                                 0, _parent, false, this,  SLOT(onArrangeLocalNodes()));
 
   pixmap.load("icons:sample.png");
   _arrangeRecurseNodesAct = _wrapper->createAction(getMenuId(), tr("arrange nodes on that bloc level, with recursion"), QIcon(pixmap),
-                                              tr("arrange nodes recursion"), tr("arrange nodes on that bloc level, with recursion"),
-                                              0, _parent, false, this,  SLOT(onArrangeRecurseNodes()));
+                                                   tr("arrange nodes recursion"), tr("arrange nodes on that bloc level, with recursion"),
+                                                   0, _parent, false, this,  SLOT(onArrangeRecurseNodes()));
 
   pixmap.load("icons:rebuild_links.png");
   _computeLinkAct = _wrapper->createAction(getMenuId(), tr("compute orthogonal links"), QIcon(pixmap),
-                                              tr("compute links"), tr("compute orthogonal links"),
-                                              0, _parent, false, this,  SLOT(onRebuildLinks()));
+                                           tr("compute links"), tr("compute orthogonal links"),
+                                           0, _parent, false, this,  SLOT(onRebuildLinks()));
 
   pixmap.load("icons:zoomToBloc.png");
   _zoomToBlocAct = _wrapper->createAction(getMenuId(), tr("zoom 2D view to selected bloc"), QIcon(pixmap),
@@ -450,52 +455,55 @@ void GenericGui::createActions()
 
   pixmap.load("icons:centerOnNode.png");
   _centerOnNodeAct = _wrapper->createAction(getMenuId(), tr("center 2D view on selected node"), QIcon(pixmap),
-                                              tr("center on node"), tr("center 2D view on selected node"),
-                                              0, _parent, false, this,  SLOT(onCenterOnNode()));
+                                            tr("center on node"), tr("center 2D view on selected node"),
+                                            0, _parent, false, this,  SLOT(onCenterOnNode()));
 
   pixmap.load("icons:autoComputeLink.png");
-  _toggleAutomaticComputeLinkAct = _wrapper->createAction(getMenuId(), tr("compute othogonal links autoamtically when nodes move"), QIcon(pixmap),
-                                              tr("automatic link"), tr("compute othogonal links autoamtically when nodes move"),
-                                              0, _parent, true, this,  SLOT(onToggleAutomaticComputeLinks(bool)));
+  _toggleAutomaticComputeLinkAct = _wrapper->createAction(getMenuId(), tr("compute othogonal links automatically when nodes move"), QIcon(pixmap),
+                                                          tr("automatic link"), tr("compute othogonal links automatically when nodes move"),
+                                                          0, _parent, true, this,  SLOT(onToggleAutomaticComputeLinks(bool)));
 
-  _toggleAutomaticComputeLinkAct->setChecked(true);
+  _toggleAutomaticComputeLinkAct->setChecked(Resource::autoComputeLinks);
+  onToggleAutomaticComputeLinks(Resource::autoComputeLinks); // Why is this needed ?
 
   pixmap.load("icons:simplifyLink.png");
   _toggleSimplifyLinkAct = _wrapper->createAction(getMenuId(), tr("simplify links by removing unnecessary direction changes"), QIcon(pixmap),
-                                              tr("simplify links"), tr("simplify links by removing unnecessary direction changes"),
-                                              0, _parent, true, this,  SLOT(onToggleSimplifyLinks(bool)));
-  _toggleSimplifyLinkAct->setChecked(true);
+                                                  tr("simplify links"), tr("simplify links by removing unnecessary direction changes"),
+                                                  0, _parent, true, this,  SLOT(onToggleSimplifyLinks(bool)));
+  _toggleSimplifyLinkAct->setChecked(Resource::simplifyLink);
+  onToggleSimplifyLinks(Resource::simplifyLink);
 
   pixmap.load("icons:force2nodeLink.png");
   _toggleForce2NodesLinkAct = _wrapper->createAction(getMenuId(), tr("force orthogonal links by adding an edge on simples links"), QIcon(pixmap),
-                                              tr("force ortho links"), tr("force orthogonal links by adding an edge on simples links"),
-                                              0, _parent, true, this,  SLOT(onToggleForce2NodesLinks(bool)));
+                                                     tr("force ortho links"), tr("force orthogonal links by adding an edge on simples links"),
+                                                     0, _parent, true, this,  SLOT(onToggleForce2NodesLinks(bool)));
   _toggleForce2NodesLinkAct->setChecked(true);
 
   pixmap.load("icons:addRowCols.png");
   _toggleAddRowColsAct = _wrapper->createAction(getMenuId(), tr("allow more path for the links, for a better separation"), QIcon(pixmap),
-                                              tr("separate links"), tr("allow more path for the links, for a better separation"),
-                                              0, _parent, true, this,  SLOT(onToggleAddRowCols(bool)));
-  _toggleAddRowColsAct->setChecked(true);
+                                                tr("separate links"), tr("allow more path for the links, for a better separation"),
+                                                0, _parent, true, this,  SLOT(onToggleAddRowCols(bool)));
+  _toggleAddRowColsAct->setChecked(Resource::addRowCols);
+  onToggleAddRowCols(Resource::addRowCols);
 
   pixmap.load("icons:ob_service_node.png");
   _selectReferenceAct = _wrapper->createAction(getMenuId(), tr("select reference"), QIcon(pixmap),
-                                              tr("select reference"), tr("select reference"),
-                                              0, _parent, false, this,  SLOT(onSelectReference()));
+                                               tr("select reference"), tr("select reference"),
+                                               0, _parent, false, this,  SLOT(onSelectReference()));
 
   pixmap.load("icons:whatsThis.png");
   _whatsThisAct = _wrapper->createAction(getMenuId(), tr("active whatsThis Mode to get help on widgets"), QIcon(pixmap),
-                                              tr("whatsThis Mode"), tr("active whatsThis Mode to get help on widgets"),
-                                              0, _parent, false, this,  SLOT(onWhatsThis()));
+                                         tr("whatsThis Mode"), tr("active whatsThis Mode to get help on widgets"),
+                                         0, _parent, false, this,  SLOT(onWhatsThis()));
 
   pixmap.load("icons:run_active.png");
   _withoutStopModeAct = _wrapper->createAction(getMenuId(), tr("set execution mode without stop"), QIcon(pixmap),
-                                              tr("mode without stop"), tr("set execution mode without stop"),
+                                               tr("mode without stop"), tr("set execution mode without stop"),
                                                0, _parent, true, this,  SLOT(onWithoutStopMode(bool)));
 
   pixmap.load("icons:breakpoints_active.png");
   _breakpointsModeAct = _wrapper->createAction(getMenuId(), tr("set execution mode with stop on breakpoints"), QIcon(pixmap),
-                                              tr("mode breakpoints"), tr("set execution mode with stop on breakpoints"),
+                                               tr("mode breakpoints"), tr("set execution mode with stop on breakpoints"),
                                                0, _parent, true, this,  SLOT(onBreakpointsMode(bool)));
 
   pixmap.load("icons:step_by_step_active.png");
@@ -505,13 +513,13 @@ void GenericGui::createActions()
 
   pixmap.load("icons:toggle_stop_on_error.png");
   _toggleStopOnErrorAct = _wrapper->createAction(getMenuId(), tr("Force stop on first error during execution"), QIcon(pixmap),
-                                              tr("stop on error"), tr("Force stop on first error during execution"),
-                                              0, _parent, true, this,  SLOT(onToggleStopOnError(bool)));
+                                                 tr("stop on error"), tr("Force stop on first error during execution"),
+                                                 0, _parent, true, this,  SLOT(onToggleStopOnError(bool)));
 
   pixmap.load("icons:toggleVisibility.png");
   _toggleSceneItemVisibleAct = _wrapper->createAction(getMenuId(), tr("toggle 2D scene item visibility"), QIcon(pixmap),
-                                              tr("visible/hidden"), tr("toggle 2D scene item visibility"),
-                                              0, _parent, true, this,  SLOT(onToggleSceneItemVisible(bool)));
+                                                      tr("visible/hidden"), tr("toggle 2D scene item visibility"),
+                                                      0, _parent, true, this,  SLOT(onToggleSceneItemVisible(bool)));
 
 
   _execModeGroup = new QActionGroup(this);
@@ -519,15 +527,6 @@ void GenericGui::createActions()
   _execModeGroup->addAction(_breakpointsModeAct);
   _execModeGroup->addAction(_stepByStepModeAct);
   _withoutStopModeAct->setChecked(true);
-
-  /*
-  pixmap.load("icons:.png");
-  _ = _wrapper->createAction(getMenuId(), tr(""), QIcon(pixmap),
-                                              tr(""), tr(""),
-                                              0, _parent, false, this,  SLOT());
-
-  */
-
 
 }
 
@@ -581,7 +580,6 @@ void GenericGui::createTools()
   int aToolId = _wrapper->createTool ( tr( "YACS Toolbar" ) );
   _wrapper->createTool( _newSchemaAct, aToolId );
   _wrapper->createTool( _importSchemaAct, aToolId );
-  _wrapper->createTool( _importSupervSchemaAct, aToolId );
   _wrapper->createTool( _wrapper->separator(), aToolId );
   _wrapper->createTool( _exportSchemaAct, aToolId );
   _wrapper->createTool( _exportSchemaAsAct, aToolId );
@@ -629,7 +627,6 @@ void GenericGui::showBaseMenus(bool show)
   _wrapper->setMenuShown(_importSchemaAct, show);
   _wrapper->setToolShown(_importSchemaAct, show);
   _wrapper->setMenuShown(_importSupervSchemaAct, show);
-  _wrapper->setToolShown(_importSupervSchemaAct, show);
   _wrapper->setMenuShown(_loadAndRunSchemaAct, show);
   _wrapper->setToolShown(_loadAndRunSchemaAct, show);
   _wrapper->setMenuShown(_whatsThisAct, show);
@@ -686,7 +683,7 @@ void GenericGui::showExecMenus(bool show)
 
 void GenericGui::switchContext(QWidget *view)
 {
-  DEBTRACE("GenericGui::switchContext");
+  DEBTRACE("GenericGui::switchContext " << view);
   if (! _mapViewContext.count(view))
     {
       initialMenus();
@@ -729,66 +726,70 @@ bool GenericGui::closeContext(QWidget *view)
   switchContext(view);
 
   bool tryToSave = false;
-  if (!QtGuiContext::getQtCurrent()->_setOfModifiedSubjects.empty())
-    {
-      QMessageBox msgBox;
-      msgBox.setText("Some elements are modified and not taken into account.");
-      string info = "do you want to apply your changes ?\n";
-      info += " - Save    : do not take into account edition in progress,\n";
-      info += "             but if there are other modifications, select a file name for save\n";
-      info += " - Discard : discard all modifications and close the schema\n";
-      info += " - Cancel  : do not close the schema, return to edition";
-      msgBox.setInformativeText(info.c_str());
-      msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-      msgBox.setDefaultButton(QMessageBox::Cancel);
-      int ret = msgBox.exec();
-      switch (ret)
-        {
-      case QMessageBox::Save:
-        tryToSave = true;
-        break;
-      case QMessageBox::Discard:
-        tryToSave = false;
-        break;
-      case QMessageBox::Cancel:
-      default:
-        return false;
-       break;
-      }
-    }
-  else
-    if (QtGuiContext::getQtCurrent()->isNotSaved())
-      {
-        QMessageBox msgBox;
-        msgBox.setText("The schema has been modified");
-        string info = "do you want to save the schema ?\n";
-        info += " - Save    : select a file name for save\n";
-        info += " - Discard : discard all modifications and close the schema\n";
-        info += " - Cancel  : do not close the schema, return to edition";
-        msgBox.setInformativeText(info.c_str());
-        msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-        msgBox.setDefaultButton(QMessageBox::Cancel);
-        int ret = msgBox.exec();
-        switch (ret)
-          {
-          case QMessageBox::Save:
-            tryToSave = true;
-            break;
-          case QMessageBox::Discard:
-            tryToSave = false;
-            break;
-          case QMessageBox::Cancel:
-          default:
-            return false;
-            break;
-          }
-      }
 
-  if (tryToSave)
+  if (QtGuiContext::getQtCurrent()->isEdition())
     {
-      onExportSchemaAs();
-      if (! _isSaved) // --- probably, user has cancelled the save dialog. Do not close
-        return false;
+      if (!QtGuiContext::getQtCurrent()->_setOfModifiedSubjects.empty())
+        {
+          QMessageBox msgBox;
+          msgBox.setText("Some elements are modified and not taken into account.");
+          string info = "do you want to apply your changes ?\n";
+          info += " - Save    : do not take into account edition in progress,\n";
+          info += "             but if there are other modifications, select a file name for save\n";
+          info += " - Discard : discard all modifications and close the schema\n";
+          info += " - Cancel  : do not close the schema, return to edition";
+          msgBox.setInformativeText(info.c_str());
+          msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+          msgBox.setDefaultButton(QMessageBox::Cancel);
+          int ret = msgBox.exec();
+          switch (ret)
+            {
+            case QMessageBox::Save:
+              tryToSave = true;
+              break;
+            case QMessageBox::Discard:
+              tryToSave = false;
+              break;
+            case QMessageBox::Cancel:
+            default:
+              return false;
+              break;
+            }
+        }
+      else
+        if (QtGuiContext::getQtCurrent()->isNotSaved())
+          {
+            QMessageBox msgBox;
+            msgBox.setText("The schema has been modified");
+            string info = "do you want to save the schema ?\n";
+            info += " - Save    : select a file name for save\n";
+            info += " - Discard : discard all modifications and close the schema\n";
+            info += " - Cancel  : do not close the schema, return to edition";
+            msgBox.setInformativeText(info.c_str());
+            msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+            msgBox.setDefaultButton(QMessageBox::Cancel);
+            int ret = msgBox.exec();
+            switch (ret)
+              {
+              case QMessageBox::Save:
+                tryToSave = true;
+                break;
+              case QMessageBox::Discard:
+                tryToSave = false;
+                break;
+              case QMessageBox::Cancel:
+              default:
+                return false;
+                break;
+              }
+          }
+
+      if (tryToSave)
+        {
+          onExportSchemaAs();
+          if (! _isSaved) // --- probably, user has cancelled the save dialog. Do not close
+            return false;
+        }
     }
 
   map<QWidget*, YACS::HMI::QtGuiContext*>::iterator it = _mapViewContext.begin();
@@ -803,10 +804,15 @@ bool GenericGui::closeContext(QWidget *view)
           break;
         }
     }
- int studyId = _wrapper->activeStudyId();
+  int studyId = _wrapper->activeStudyId();
   if (context->getStudyId() == studyId)
     {
       _wrapper->deleteSchema(view);
+      DEBTRACE("delete context");
+      if (GuiExecutor* exec = context->getGuiExecutor())
+        {
+          exec->closeContext();
+        }
       delete context;
       _mapViewContext.erase(view);
       switchContext(newView);
@@ -1057,7 +1063,8 @@ void GenericGui::setLoadedPresentation(YACS::ENGINE::Proc* proc)
           item->setHeight(pres._height);
         }
     }
-  _guiEditor->rebuildLinks();
+  if (Scene::_autoComputeLinks)
+    _guiEditor->rebuildLinks();
 }
 
 // -----------------------------------------------------------------------------
@@ -1468,9 +1475,9 @@ void GenericGui::onSaveRunState()
 void GenericGui::onNewEdition()
 {
   DEBTRACE("GenericGui::onNewEdition");
-//   if (!QtGuiContext::getQtCurrent()) return;
-//   if (!QtGuiContext::getQtCurrent()->getGuiExecutor()) return;
-//   QtGuiContext::getQtCurrent()->getGuiExecutor()->resetDataflow();
+  //   if (!QtGuiContext::getQtCurrent()) return;
+  //   if (!QtGuiContext::getQtCurrent()->getGuiExecutor()) return;
+  //   QtGuiContext::getQtCurrent()->getGuiExecutor()->resetDataflow();
 }
 
 void GenericGui::onGetYacsContainerLog()
@@ -1490,7 +1497,7 @@ void GenericGui::onGetErrorReport()
   if (!QtGuiContext::getQtCurrent()) return;
   if (!QtGuiContext::getQtCurrent()->getGuiExecutor()) return;
   Subject *sub = QtGuiContext::getQtCurrent()->getSelectedSubject();
-  SubjectElementaryNode *snode = dynamic_cast<SubjectElementaryNode*>(sub);
+  SubjectNode *snode = dynamic_cast<SubjectNode*>(sub);
   if (!snode) return;
   string log = QtGuiContext::getQtCurrent()->getGuiExecutor()->getErrorReport(snode->getNode());
   LogViewer *lv = new LogViewer("Node error report", _parent);
@@ -1504,7 +1511,7 @@ void GenericGui::onGetErrorDetails()
   if (!QtGuiContext::getQtCurrent()) return;
   if (!QtGuiContext::getQtCurrent()->getGuiExecutor()) return;
   Subject *sub = QtGuiContext::getQtCurrent()->getSelectedSubject();
-  SubjectElementaryNode *snode = dynamic_cast<SubjectElementaryNode*>(sub);
+  SubjectNode *snode = dynamic_cast<SubjectNode*>(sub);
   if (!snode) return;
   string log = QtGuiContext::getQtCurrent()->getGuiExecutor()->getErrorDetails(snode->getNode());
   LogViewer *lv = new LogViewer("Node Error Details", _parent);
@@ -1682,6 +1689,12 @@ void GenericGui::onSWITCHNode()
 {
   DEBTRACE("GenericGui::onSWITCHNode");
   _guiEditor->CreateSwitch();
+}
+
+void GenericGui::onOptimizerLoop()
+{
+  DEBTRACE("GenericGui::onOptimizerLoop");
+  _guiEditor->CreateOptimizerLoop();
 }
 
 void GenericGui::onNodeFromCatalog()

@@ -18,7 +18,7 @@
 #
 include $(top_srcdir)/adm/unix/make_begin.am
 
-SUBDIRS = Plugin Test
+SUBDIRS = . Plugin Test
 
 lib_LTLIBRARIES = libYACSlibEngine.la
 

@@ -119,20 +119,22 @@ std::pair<int,int> LinkMatrix::cellFrom(YACS::ENGINE::OutPort* outp)
   DEBTRACE("xp,yp:"<<xp<<","<<yp);
   int ifrom = -1;
   for (int i=0; i<_im-1; i++)
-    if (_xm[i+1] > xp)
+    if (_xm[i+1] > xp && xp > _xm[i])
       {
         ifrom = i;
         break;
       }
   int jfrom = -1;
   for (int j=0; j<_jm-1; j++)
-    if (_ym[j+1] > yp)
+    if (_ym[j+1] > yp && yp > _ym[j])
       {
         jfrom = j;
         break;
       }
-  while (!cost(ifrom,jfrom)) ifrom++;  // --- from point is inside an obstacle
-  //ifrom++;
+  //if ifrom or jfrom == -1 the port is outside the matrix
+  if(ifrom < 0 || jfrom < 0)return pair<int,int>(ifrom,jfrom);
+  while (ifrom < _im && !cost(ifrom,jfrom)) ifrom++;  // --- from point is inside an obstacle
+
   return pair<int,int>(ifrom,jfrom);
 }
 
@@ -151,20 +153,22 @@ std::pair<int,int> LinkMatrix::cellFrom(YACS::ENGINE::OutGate* outp)
   DEBTRACE("xp,yp:"<<xp<<","<<yp);
   int ifrom = -1;
   for (int i=0; i<_im-1; i++)
-    if (_xm[i+1] > xp)
+    if (_xm[i+1] > xp && xp > _xm[i])
       {
         ifrom = i;
         break;
       }
   int jfrom = -1;
   for (int j=0; j<_jm-1; j++)
-    if (_ym[j+1] > yp)
+    if (_ym[j+1] > yp && yp > _ym[j])
       {
         jfrom = j;
         break;
       }
-  while (!cost(ifrom,jfrom)) ifrom++;  // --- from point is inside an obstacle
-  //ifrom++;
+  //if ifrom or jfrom == -1 the port is outside the matrix
+  if(ifrom < 0 || jfrom < 0)return pair<int,int>(ifrom,jfrom);
+  while (ifrom < _im && !cost(ifrom,jfrom)) ifrom++;  // --- from point is inside an obstacle
+
   return pair<int,int>(ifrom,jfrom);
 }
 
@@ -178,20 +182,22 @@ std::pair<int,int> LinkMatrix::cellTo(YACS::ENGINE::InPort* inp)
   DEBTRACE("xp,yp:"<<xp<<","<<yp);
   int ito = -1;
   for (int i=0; i<_im-1; i++)
-    if (_xm[i+1] > xp)
+    if (_xm[i+1] > xp && xp > _xm[i])
       {
         ito = i;
         break;
       }
   int jto = -1;
   for (int j=0; j<_jm-1; j++)
-    if (_ym[j+1] > yp)
+    if (_ym[j+1] > yp && yp > _ym[j])
       {
         jto = j;
         break;
       }
-  while (!cost(ito,jto)) ito--;  // --- from point is inside an obstacle
-  //ito--;
+  //if ito or jto == -1 the port is outside the matrix
+  if(ito < 0 || jto < 0)return pair<int,int>(ito,jto);
+  while (ito >0 && !cost(ito,jto)) ito--;  // --- to point is inside an obstacle
+
   return pair<int,int>(ito,jto);
 }
 
@@ -210,20 +216,22 @@ std::pair<int,int> LinkMatrix::cellTo(YACS::ENGINE::InGate* inp)
   DEBTRACE("xp,yp:"<<xp<<","<<yp);
   int ito = -1;
   for (int i=0; i<_im-1; i++)
-    if (_xm[i+1] > xp)
+    if (_xm[i+1] > xp && xp > _xm[i])
       {
         ito = i;
         break;
       }
   int jto = -1;
   for (int j=0; j<_jm-1; j++)
-    if (_ym[j+1] > yp)
+    if (_ym[j+1] > yp && yp > _ym[j])
       {
         jto = j;
         break;
       }
-  while (!cost(ito,jto)) ito--;  // --- from point is inside an obstacle
-  //ito--;
+  //if ito or jto == -1 the port is outside the matrix
+  if(ito < 0 || jto < 0)return pair<int,int>(ito,jto);
+  while (ito > 0 && !cost(ito,jto)) ito--;  // --- to point is inside an obstacle
+
   return pair<int,int>(ito,jto);
 }
 
@@ -275,14 +283,16 @@ LinkPath LinkMatrix::getPath(LNodePath lnp)
   LinkPath lp;
   lp.clear();
   int dim = lnp.size();  
+  //use a random coefficient between 0.25 and 0.75 to try to separate links
+  double coef=0.25+rand()%101*0.005;
   LNodePath::const_iterator it = lnp.begin();
   for (int k=0; k<dim; k++)
     {
       int i = it->getX();
       int j = it->getY();
       linkPoint a;
-      a.x = 0.5*(_xm[i] + _xm[i+1]);
-      a.y = 0.5*(_ym[j] + _ym[j+1]);
+      a.x = coef*_xm[i] + (1.-coef)*_xm[i+1];
+      a.y = coef*_ym[j] + (1.-coef)*_ym[j+1];
       lp.push_back(a);
       DEBTRACE(a.x << " " << a.y);
       ++it;

@@ -742,3 +742,18 @@ void YacsLoaderTest::datanodes()
   CPPUNIT_ASSERT(p->getEffectiveState() == YACS::DONE );
   delete p;
 }
+
+void YacsLoaderTest::optimizers()
+{
+  Proc *p = 0;
+  int ret;
+  ret = driverTest(p, "samples/optimizer1.xml");
+  CPPUNIT_ASSERT(ret == 0);
+  CPPUNIT_ASSERT(p->getEffectiveState() == YACS::DONE );
+  delete p;
+
+  ret = driverTest(p, "samples/optimizer2.xml");
+  CPPUNIT_ASSERT(ret == 0);
+  CPPUNIT_ASSERT(p->getEffectiveState() == YACS::DONE );
+  delete p;
+}

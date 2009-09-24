@@ -156,7 +156,9 @@ void SceneCtrlPortItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
       drag->setHotSpot(QPoint(15, 20));
       
       drag->exec();
-      setCursor(Qt::OpenHandCursor);
+      setCursor(Qt::ArrowCursor);
+      _draging = false;
+      _dragModifier= false;
     }
 }
 

@@ -68,6 +68,7 @@ namespace YACS
       int getNumberOfOutputPorts() const;
       unsigned getNumberOfEltsConsumed() const { return _nbOfEltConsumed; }
       std::list<OutputPort *> getSetOfOutputPort() const;
+      std::list<OutputPort *> getLocalOutputPorts() const;
       OutputPort *edGetSamplePort() { return &_splittedPort; }
       OutPort *getOutPort(const std::string& name) const throw(Exception);
       InputPort *getInputPort(const std::string& name) const throw(Exception);
@@ -75,6 +76,7 @@ namespace YACS
       //! For the moment false is returned : impovement about it coming soon.
       bool isPlacementPredictableB4Run() const;
       void edRemoveChild(Node *node) throw(Exception);
+      virtual bool edAddChild(Node *node) throw(Exception);
       std::list<Node *> edGetDirectDescendants() const;
       std::list<InputPort *> getSetOfInputPort() const;
       std::list<InputPort *> getLocalInputPorts() const;
@@ -85,6 +87,7 @@ namespace YACS
       bool isMultiplicitySpecified(unsigned& value) const;
       void forceMultiplicity(unsigned value);
       virtual void checkBasicConsistency() const throw(Exception);
+      virtual std::string getErrorReport();
     protected:
       void buildDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView);
       void buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView);

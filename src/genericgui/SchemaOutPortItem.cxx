@@ -94,6 +94,17 @@ void SchemaOutPortItem::update(GuiEvent event, int type, Subject* son)
           }
       }
       break;
+    case UPDATE:
+      {
+        SubjectOutputPort *sop = dynamic_cast<SubjectOutputPort*>(son);
+        if (sop)
+          {
+            DataFlowPort *port = dynamic_cast<DataFlowPort*>(sop->getPort());
+            _itemData.replace(YType, port->edGetType()->name());
+            _itemForeground.replace(YType, QColor("black"));
+          }
+      }
+      break;
     case UPDATEPROGRESS:
       {
         SubjectOutputPort *sip = dynamic_cast<SubjectOutputPort*>(son);

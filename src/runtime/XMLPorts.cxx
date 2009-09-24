@@ -119,7 +119,8 @@ OutputXmlPort::OutputXmlPort(const std::string& name, Node* node, TypeCode * typ
 {
 }
 
-OutputXmlPort::OutputXmlPort(const OutputXmlPort& other, Node *newHelder):OutputPort(other,newHelder),DataPort(other,newHelder),Port(other,newHelder)
+OutputXmlPort::OutputXmlPort(const OutputXmlPort& other, Node *newHelder):OutputPort(other,newHelder),DataPort(other,newHelder),
+                                                                          Port(other,newHelder),_data(other._data)
 {
 }
 

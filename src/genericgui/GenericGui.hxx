@@ -127,6 +127,7 @@ namespace YACS
       QAction *_FOREACHNodeAct;
       QAction *_WHILENodeAct;
       QAction *_SWITCHNodeAct;
+      QAction *_OptimizerLoopAct;
       QAction *_nodeFromCatalogAct;
       QAction *_deleteItemAct;
       QAction *_cutItemAct;
@@ -234,6 +235,7 @@ namespace YACS
       void onFOREACHNode();
       void onWHILENode();
       void onSWITCHNode();
+      void onOptimizerLoop();
       void onNodeFromCatalog();
 
       void onDeleteItem();

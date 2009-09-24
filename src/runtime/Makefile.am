@@ -89,7 +89,7 @@ CppPythonConv.hxx            CppXMLConv.hxx       NeutralCORBAConv.hxx       Neu
 NeutralPythonConv.hxx        NeutralXMLConv.hxx   OutNode.hxx                PresetNode.hxx \
 PresetPorts.hxx              PyStdout.hxx         PythonCORBAConv.hxx        PythonCppConv.hxx \
 PythonNeutralConv.hxx        PythonNode.hxx       PythonPorts.hxx            PythonXMLConv.hxx \
-RuntimeSALOME.hxx            SalomeComponent.hxx  SALOMEconfig.h             SalomeContainer.hxx \
+RuntimeSALOME.hxx            SalomeComponent.hxx  SalomeContainer.hxx \
 SALOMEDispatcher.hxx         SalomeProc.hxx       SalomePythonComponent.hxx  SalomePythonNode.hxx \
 SessionCataLoader.hxx        StudyNodes.hxx       StudyPorts.hxx             TypeConversions.hxx \
 VisitorSaveSalomeSchema.hxx  XMLCORBAConv.hxx     XMLCppConv.hxx             XMLNeutralConv.hxx \

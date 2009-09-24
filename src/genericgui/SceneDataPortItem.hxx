@@ -41,6 +41,7 @@ namespace YACS
                          QWidget *widget);
       virtual void update(GuiEvent event, int type, Subject* son);
       virtual SceneNodeItem* getParent();
+      virtual void updateChildItems();
     protected:
     };
   }

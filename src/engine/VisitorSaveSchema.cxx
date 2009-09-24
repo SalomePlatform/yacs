@@ -25,6 +25,7 @@
 #include "Bloc.hxx"
 #include "Proc.hxx"
 #include "ForEachLoop.hxx"
+#include "OptimizerLoop.hxx"
 #include "Loop.hxx"
 #include "ForLoop.hxx"
 #include "WhileLoop.hxx"
@@ -142,6 +143,31 @@ void VisitorSaveSchema::visitForEachLoop(ForEachLoop *node)
   _out << indent(depth) << "</foreach>" << endl;
   endCase(node);
   DEBTRACE("END visitForEachLoop " << _root->getChildName(node));
+}
+
+void VisitorSaveSchema::visitOptimizerLoop(OptimizerLoop *node)
+{
+  DEBTRACE("START visitOptimizerLoop " << _root->getChildName(node));
+  beginCase(node);
+  int depth = depthNode(node);
+
+  _out << indent(depth) << "<optimizer name=\"" << node->getName() << "\"";
+  AnyInputPort *nbranch = static_cast<AnyInputPort*>(node->edGetNbOfBranchesPort());
+  if (node->getState() == YACS::DISABLED)
+    _out << " state=\"disabled\"";
+  if (!nbranch->isEmpty())
+    _out << " nbranch=\"" << nbranch->getIntValue() << "\"";
+  _out << " lib=\"" << node->getAlgLib() << "\"";
+  _out << " entry=\"" << node->getSymbol() << "\"";
+  _out << ">" << endl;
+
+  writeProperties(node);
+  node->ComposedNode::accept(this);
+  writeSimpleDataLinks(node);
+  writeSimpleStreamLinks(node);
+  _out << indent(depth) << "</optimizer>" << endl;
+  endCase(node);
+  DEBTRACE("END visitOptimizerLoop " << _root->getChildName(node));
 }
 
 void VisitorSaveSchema::visitForLoop(ForLoop *node)

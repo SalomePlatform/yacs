@@ -56,7 +56,7 @@ OutputStudyPort::OutputStudyPort(const std::string& name,  Node* node, TypeCode*
 OutputStudyPort::OutputStudyPort(const OutputStudyPort& other, Node *newHelder)
   : OutputXmlPort(other,newHelder),
     DataPort(other,newHelder),
-    Port(other,newHelder)
+    Port(other,newHelder),_storeData(other._storeData)
 {
 }
 
@@ -279,7 +279,7 @@ InputStudyPort::InputStudyPort(const std::string& name,  Node* node, TypeCode* t
 InputStudyPort::InputStudyPort(const InputStudyPort& other, Node *newHelder)
   : InputXmlPort(other,newHelder),
     DataPort(other,newHelder),
-    Port(other,newHelder)
+    Port(other,newHelder),_storeData(other._storeData)
 {
 }
 

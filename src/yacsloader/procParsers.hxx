@@ -178,6 +178,7 @@ void proctypeParser<T>::onStart(const XML_Char* el, const XML_Char** attr)
     else if(element == "bloc")pp=&bloctypeParser<>::blocParser;
     else if(element == "forloop")pp=&forlooptypeParser<>::forloopParser;
     else if(element == "foreach")pp=&foreachlooptypeParser<>::foreachloopParser;
+    else if(element == "optimizer")pp=&optimizerlooptypeParser<>::optimizerloopParser;
     else if(element == "while")pp=&whilelooptypeParser<>::whileloopParser;
     else if(element == "switch")pp=&switchtypeParser::switchParser;
 
@@ -231,6 +232,7 @@ void proctypeParser<T>::onEnd(const char *el,parser* child)
       else if(element == "bloc")this->bloc(((bloctypeParser<>*)child)->post());
       else if(element == "forloop")this->forloop(((forlooptypeParser<>*)child)->post());
       else if(element == "foreach")this->foreach(((foreachlooptypeParser<>*)child)->post());
+      else if(element == "optimizer")this->optimizer(((optimizerlooptypeParser<>*)child)->post());
       else if(element == "while")this->while_(((whilelooptypeParser<>*)child)->post());
       else if(element == "switch")this->switch_(((switchtypeParser*)child)->post());
  

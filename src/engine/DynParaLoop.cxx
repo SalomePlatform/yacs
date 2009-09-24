@@ -147,6 +147,13 @@ std::list<OutputPort *> DynParaLoop::getSetOfOutputPort() const
   return ret;
 }
 
+std::list<OutputPort *> DynParaLoop::getLocalOutputPorts() const
+{
+  list<OutputPort *> ret=ComposedNode::getLocalOutputPorts();
+  ret.push_back((OutputPort *)&_splittedPort);
+  return ret;
+}
+
 OutPort *DynParaLoop::getOutPort(const std::string& name) const throw(YACS::Exception)
 {
   if(name==NAME_OF_SPLITTED_SEQ_OUT)
@@ -154,12 +161,6 @@ OutPort *DynParaLoop::getOutPort(const std::string& name) const throw(YACS::Exce
   return ComposedNode::getOutPort(name);
 }
 
-InputPort *DynParaLoop::getInputPort(const std::string& name) const throw(YACS::Exception)
-{
-  if(name==NAME_OF_NUMBER_OF_BRANCHES)
-    return (InputPort *)&_nbOfBranches;
-  return ComposedNode::getInputPort(name);
-}
 
 OutputPort *DynParaLoop::getOutputPort(const std::string& name) const throw(YACS::Exception)
 {
@@ -204,6 +205,11 @@ void DynParaLoop::edRemoveChild(Node *node) throw(YACS::Exception)
   modified();
 }
 
+bool DynParaLoop::edAddChild(Node *node) throw(Exception)
+{
+  return edSetNode(node);
+}
+
 std::list<Node *> DynParaLoop::edGetDirectDescendants() const
 {
   list<Node *> ret;
@@ -219,6 +225,13 @@ std::list<InputPort *> DynParaLoop::getSetOfInputPort() const
   list<InputPort *> ret=ComposedNode::getSetOfInputPort();
   ret.push_back((InputPort *)&_nbOfBranches);
   return ret;
+}
+
+InputPort *DynParaLoop::getInputPort(const std::string& name) const throw(Exception)
+{
+  if(name==NAME_OF_NUMBER_OF_BRANCHES)
+    return (InputPort *)&_nbOfBranches;
+  return ComposedNode::getInputPort(name);
 }
 
 std::list<InputPort *> DynParaLoop::getLocalInputPorts() const
@@ -444,5 +457,62 @@ void DynParaLoop::checkBasicConsistency() const throw(YACS::Exception)
   ComposedNode::checkBasicConsistency();
   if(!_node)
     throw Exception("For a dynamic loop, internal node is mandatory");
+}
+
+std::string DynParaLoop::getErrorReport()
+{
+  DEBTRACE("DynParaLoop::getErrorReport: " << getName() << " " << _state);
+  YACS::StatesForNode effectiveState=getEffectiveState();
+
+  if(effectiveState != YACS::INVALID &&  effectiveState != YACS::ERROR && effectiveState != YACS::FAILED)
+    return "";
+
+  std::string report="<error node= " + getName();
+  switch(effectiveState)
+    {
+    case YACS::INVALID:
+      report=report+" state= INVALID";
+      break;
+    case YACS::ERROR:
+      report=report+" state= ERROR";
+      break;
+    case YACS::FAILED:
+      report=report+" state= FAILED";
+      break;
+    default:
+      break;
+    }
+  report=report + ">\n" ;
+  if(_errorDetails != "")
+    report=report+_errorDetails+"\n";
+
+  if(_execNodes.empty())
+    {
+      // edition node
+      list<Node *> constituents=edGetDirectDescendants();
+      for(list<Node *>::iterator iter=constituents.begin(); iter!=constituents.end(); iter++)
+        {
+          std::string rep=(*iter)->getErrorReport();
+          if(rep != "")
+            {
+              report=report+rep+"\n";
+            }
+        }
+    }
+  else
+    {
+      // execution nodes
+      for(vector<Node *>::iterator iter=_execNodes.begin();iter!=_execNodes.end();iter++)
+        {
+          std::string rep=(*iter)->getErrorReport();
+          if(rep != "")
+            {
+              report=report+rep+"\n";
+            }
+        }
+    }
+
+  report=report+"</error>";
+  return report;
 }
 

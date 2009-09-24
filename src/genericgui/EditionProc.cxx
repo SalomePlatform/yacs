@@ -65,6 +65,16 @@ void EditionProc::update(GuiEvent event, int type, Subject* son)
     case UPDATE:
       synchronize();
       break;
+    case UPDATEPROGRESS:
+        {
+          if(type != YACS::FINISHED)break;
+          if (!QtGuiContext::getQtCurrent()) break;
+          if (!QtGuiContext::getQtCurrent()->getGuiExecutor()) break;
+          YACS::ENGINE::Proc* proc = QtGuiContext::getQtCurrent()->getProc();
+          _errorLog = QtGuiContext::getQtCurrent()->getGuiExecutor()->getErrorReport(proc);
+          _statusLog->setText(QString::fromStdString(_errorLog));
+          break;
+        }
     default:
       ;
     }
@@ -78,6 +88,8 @@ void EditionProc::synchronize()
   Logger* logger = 0;
   string statusLog = "";
   
+  if (!QtGuiContext::getQtCurrent()->isEdition())
+    return;
   if (!proc->isValid())
     {
       _errorLog = "--- YACS schema is not valid ---\n\n";

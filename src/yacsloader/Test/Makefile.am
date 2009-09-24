@@ -103,7 +103,7 @@ uninstall-local:
 clean-local:
 	rm -rf yacs* schema1_* schema2_* dump1_* dump2_* eo eo__POA dump*.xml CatalogResources.xml traceExec_*
 	rm -f samples toto titi log1 xmlrun.sh echo_idl.py echo.hh echoSK.cc g.data
-	if test -f "./bin/salome/appli_clean.sh"; then ./bin/salome/appli_clean.sh ; fi
+	if test -f "./bin/salome/appli_clean.sh"; then ./bin/salome/appli_clean.sh -f ; fi
 
 
 check-local:

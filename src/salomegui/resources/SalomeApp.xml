@@ -34,6 +34,10 @@
     <parameter name="font" value="Courier,9" />
     <parameter name="COMPONENT_INSTANCE_NEW" value="true" />
     <parameter name="userCatalog" value="YACSUserCatalog.xml" />
+    <parameter name="autoComputeLinks" value="true" />
+    <parameter name="simplifyLink" value="true" />
+    <parameter name="addRowCols" value="true" />
+    <parameter name="ensureVisibleWhenMoved" value="true" />
 
     <parameter name="editedNodeBrushColor" value="255, 255, 190" />
     <parameter name="normalNodeBrushColor" value="230, 235, 255" />
@@ -75,6 +79,7 @@
     <parameter name="stream_link_select_color"  value="255, 255, 192" />
     <parameter name="control_link_draw_color"   value="192,   0, 192" />
     <parameter name="control_link_select_color" value="255, 192, 255" />
+    <parameter name="link_pen_darkness" value="150" />
 
     <parameter name="Scene_pen"              value="  0,   0, 128" />
     <parameter name="Scene_hiPen"            value="  0,   0, 190" />

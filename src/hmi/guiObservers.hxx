@@ -67,6 +67,8 @@ namespace YACS
     class ComponentInstance;
     class Container;
     class TypeCode;
+    class OutGate;
+    class InGate;
   }
 
   namespace HMI
@@ -273,6 +275,9 @@ namespace YACS
       virtual void recursiveUpdate(GuiEvent event, int type, Subject* son);
       virtual void removeExternalLinks();
       virtual void removeExternalControlLinks();
+      virtual void saveLinks();
+      virtual void restoreLinks();
+      virtual int isValid();
       void setExecState(int execState);
       static bool tryCreateLink(SubjectNode *subOutNode, SubjectNode *subInNode);
 
@@ -295,6 +300,10 @@ namespace YACS
       std::list<SubjectLink*> _listSubjectLink;
       std::list<SubjectControlLink*> _listSubjectControlLink;
       int _execState;
+      std::list<YACS::ENGINE::OutGate *> loutgate;
+      std::set<YACS::ENGINE::InGate *> singate;
+      std::vector< std::pair<YACS::ENGINE::OutPort *, YACS::ENGINE::InPort *> > dataLinks;
+      std::vector< std::pair<YACS::ENGINE::OutPort *, YACS::ENGINE::InPort *> > dataflowLinks;
     };
     
     class SubjectComposedNode: public SubjectNode
@@ -573,10 +582,14 @@ namespace YACS
       virtual void recursiveUpdate(GuiEvent event, int type, Subject* son);
       virtual void completeChildrenSubjectList(SubjectNode *son);
       virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const { return _body; }
+      virtual bool setNbBranches(std::string nbBranches);
       virtual void houseKeepingAfterCutPaste(bool isCut, SubjectNode *son);
       virtual void clean();
       void localClean();
       virtual TypeOfElem getType(){return OPTIMIZERLOOP;}
+      virtual bool hasValue();
+      virtual std::string getValue();
+      virtual bool setAlgorithm(const std::string& alglib,const std::string& symbol);
     protected:
       YACS::ENGINE::OptimizerLoop *_optimizerLoop;
       SubjectNode* _body;
@@ -597,6 +610,8 @@ namespace YACS
       virtual void loadChildren();
       virtual void clean();
       void localClean();
+      virtual void saveLinks();
+      virtual void restoreLinks();
     protected:
       YACS::ENGINE::ElementaryNode *_elementaryNode;
     };

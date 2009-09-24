@@ -36,10 +36,11 @@ using namespace YACS;
 using namespace YACS::HMI;
 using namespace YACS::ENGINE;
 
+bool FormContainer::_checked = false;
+
 FormContainer::FormContainer(QWidget *parent)
 {
   setupUi(this);
-  _checked = false;
   _advanced = false;
   _properties.clear();
 
@@ -53,7 +54,7 @@ FormContainer::FormContainer(QWidget *parent)
   icon.addFile("icons:icon_up.png",
                 QSize(), QIcon::Normal, QIcon::On);
   tb_container->setIcon(icon);
-  on_tb_container_toggled(false);
+  on_tb_container_toggled(FormContainer::_checked);
   on_ch_advance_stateChanged(0);
 
   sb_mem->setMaximum(INT_MAX);
@@ -249,7 +250,7 @@ void FormContainer::onModified()
 
 void FormContainer::on_tb_container_toggled(bool checked)
 {
-  //DEBTRACE("FormContainer::on_tb_container_toggled " << checked);
+  DEBTRACE("FormContainer::on_tb_container_toggled " << checked);
   _checked = checked;
   if (_checked) fr_container->show();
   else fr_container->hide();

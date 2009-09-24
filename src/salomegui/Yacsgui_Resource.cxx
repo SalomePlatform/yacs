@@ -95,6 +95,10 @@ void Yacsgui_Resource::createPreferences(Yacsgui* swm)
   swm->addPreference( QObject::tr( _COMPONENT_INSTANCE_NEW ), componentGroup, LightApp_Preferences::Bool, RESOURCE_YACS, _COMPONENT_INSTANCE_NEW );
   swm->addPreference( "Python Script Font", componentGroup, LightApp_Preferences::Font, RESOURCE_YACS, "font" );
   swm->addPreference( "User catalog", componentGroup, LightApp_Preferences::File, RESOURCE_YACS, "userCatalog" );
+  swm->addPreference( "Auto Compute Links", componentGroup, LightApp_Preferences::Bool, RESOURCE_YACS, "autoComputeLinks" );
+  swm->addPreference( "Simplify Links", componentGroup, LightApp_Preferences::Bool, RESOURCE_YACS, "simplifyLink" );
+  swm->addPreference( "Better Separation for Links", componentGroup, LightApp_Preferences::Bool, RESOURCE_YACS, "addRowCols" );
+  swm->addPreference( "Ensure Node Visible When Moved", componentGroup, LightApp_Preferences::Bool, RESOURCE_YACS, "ensureVisibleWhenMoved" );
 
   // Link colors
   int linkTab = swm->addPreference( QObject::tr( "Link colors" ) );
@@ -108,6 +112,8 @@ void Yacsgui_Resource::createPreferences(Yacsgui* swm)
   swm->addPreference( QObject::tr( "Stream link select color" ),  idGroup, LightApp_Preferences::Color, RESOURCE_YACS, "stream_link_select_color" );
   swm->addPreference( QObject::tr( "Control link draw color" ),   idGroup, LightApp_Preferences::Color, RESOURCE_YACS, "control_link_draw_color" );
   swm->addPreference( QObject::tr( "Control link select color" ), idGroup, LightApp_Preferences::Color, RESOURCE_YACS, "control_link_select_color" );
+
+  swm->addPreference( QObject::tr( "link pen darkness" ),         idGroup, LightApp_Preferences::Integer, RESOURCE_YACS, "link_pen_darkness" );
 
   // --- nodes without color states ---
   int nodeTab = swm->addPreference( QObject::tr( "PREF_TAB_NODE" ) );
@@ -235,6 +241,10 @@ void Yacsgui_Resource::preferencesChanged()
   Resource::COMPONENT_INSTANCE_NEW = booleanValue(_COMPONENT_INSTANCE_NEW, COMPONENTINSTANCENEW);
   Resource::pythonfont           = fontValue( "font" ,PYTHONFONT);
   Resource::userCatalog           = stringValue( "userCatalog" ,USERCATALOG);
+  Resource::autoComputeLinks = booleanValue("autoComputeLinks", AUTOCOMPUTELINKS);
+  Resource::simplifyLink = booleanValue("simplifyLink", SIMPLIFYLINK);
+  Resource::addRowCols = booleanValue("addRowCols", ADDROWCOLS);
+  Resource::ensureVisibleWhenMoved = booleanValue("ensureVisibleWhenMoved", ENSUREVISIBLEWHENMOVED);
 
   // Color of state of nodes
   Resource::editedNodeBrushColor = colorValue(_editedNodeBrushColor, EDITEDNODEBRUSHCOLOR);
@@ -278,6 +288,8 @@ void Yacsgui_Resource::preferencesChanged()
   Resource::stream_link_select_color  = colorValue("stream_link_select_color" , STREAMLINK_SELECT_COLOR);
   Resource::control_link_draw_color   = colorValue("control_link_draw_color"  , CTRLLINKDRAW_COLOR     );
   Resource::control_link_select_color = colorValue("control_link_select_color", CTRLLINK_SELECT_COLOR  );
+
+  Resource::link_pen_darkness = integerValue("link_pen_darkness", LINK_PEN_DARKNESS  );
 
   // Color of nodes
   Resource::Scene_pen              = colorValue(_Scene_pen,               Scene_pen_             );

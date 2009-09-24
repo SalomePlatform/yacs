@@ -20,6 +20,7 @@
 #include "Bloc.hxx"
 #include "Proc.hxx"
 #include "ForEachLoop.hxx"
+#include "OptimizerLoop.hxx"
 #include "Loop.hxx"
 #include "ForLoop.hxx"
 #include "WhileLoop.hxx"
@@ -155,6 +156,20 @@ void VisitorSaveState::visitForEachLoop(ForEachLoop *node)
   if (static_cast<ComposedNode*>(node) != _root) name = _root->getChildName(node);
   DEBTRACE("VisitorSaveState::visitForEachLoop ------ " << name);
   _out << "  <node type='forEachLoop'>" << endl;
+  _out << "    <name>" << name << "</name>" << endl;
+  _out << "    <state>" << _nodeStateName[node->getState()] << "</state>" << endl;
+
+  _out << "  </node>" << endl;
+}
+
+void VisitorSaveState::visitOptimizerLoop(OptimizerLoop *node)
+{
+  node->ComposedNode::accept(this);
+  if (!_out) throw Exception("No file open for dump state");
+  string name = _root->getName();
+  if (static_cast<ComposedNode*>(node) != _root) name = _root->getChildName(node);
+  DEBTRACE("VisitorSaveState::visitOptimizerLoop ------ " << name);
+  _out << "  <node type='optimizerLoop'>" << endl;
   _out << "    <name>" << name << "</name>" << endl;
   _out << "    <state>" << _nodeStateName[node->getState()] << "</state>" << endl;
 

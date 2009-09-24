@@ -44,8 +44,8 @@ SceneLinkItem::SceneLinkItem(QGraphicsScene *scene, SceneItem *parent,
 {
   _from = from;
   _to = to;
-  _penColor     = Resource::link_draw_color;
-  _hiPenColor   = Resource::link_select_color;
+  _penColor     = Resource::link_draw_color.darker(Resource::link_pen_darkness);
+  _hiPenColor   = Resource::link_select_color.darker(Resource::link_pen_darkness);
   _brushColor   = Resource::link_draw_color;
   _hiBrushColor = Resource::link_select_color;
   _level += 100;
@@ -264,6 +264,23 @@ void SceneLinkItem::setPath(LinkPath lp)
       prevx = p.x();
       prevy = p.y();
     }
+
+  if(k==1)
+    {
+      //link should be direct (k=0) or orthogonal k>=2
+      k=2;
+      _lp[1]=_lp[0];
+      _lp[1].setY(goal().y());
+      if (goal().y() > start().y()) _directions[1] = _UP;
+      else _directions[1] = _DOWN;
+    }
+
+  if(k>2 && _directions[k-1]==_RIGHT)
+    {
+      //remove last point
+      k=k-1;
+    }
+
   _nbPoints = k;
   _lp[k-1].setY(goal().y());
   _directions[k] = _RIGHT; // --- direction from point k-1 to goal
@@ -401,6 +418,12 @@ void SceneLinkItem::minimizeDirectionChanges()
 //               DEBTRACE("("<< _lp[i].x() << "," << _lp[i].y() << ") "
 //                        << _directions[i]);
 //             }
+
+          if(newdir[newk]==_RIGHT)
+            {
+              //remove last point
+              newk=newk-1;
+            }
           _nbPoints = newk+1;
           for (int i=0; i<_nbPoints; i++)
             {
@@ -463,4 +486,22 @@ QPointF SceneLinkItem::goal()
   QPointF localTo(dpit->getWidth()/20, dpit->getHeight()/2);
   DEBTRACE("localTo(" << localTo.x() << "," << localTo.y() << ")");
   return mapFromItem(dpit, localTo);
+}
+
+void SceneLinkItem::updateShape()
+{
+  prepareGeometryChange();
+  if (_nbPoints)
+    {
+      // a path has been calculated, update it
+      QPointF pfrom = start();
+      QPointF pto   = goal();
+      _lp[0].setY(pfrom.y());
+      if(_lp[1].y() > _lp[0].y())_directions[1]=_UP;
+      else _directions[1]=_DOWN;
+      _lp[_nbPoints-1].setY(pto.y());
+      if(_lp[_nbPoints-1].y() > _lp[_nbPoints-2].y())_directions[_nbPoints-1]=_UP;
+      else _directions[_nbPoints-1]=_DOWN;
+    }
+  setShape();
 }

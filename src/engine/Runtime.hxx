@@ -40,6 +40,7 @@ namespace YACS
     class OutputPort;
     class ForLoop;
     class ForEachLoop;
+    class OptimizerLoop;
     class WhileLoop;
     class Switch;
     class InlineNode;
@@ -86,6 +87,8 @@ namespace YACS
       virtual WhileLoop* createWhileLoop(const std::string& name);
       virtual ForLoop* createForLoop(const std::string& name);
       virtual ForEachLoop* createForEachLoop(const std::string& name,TypeCode * type);
+      virtual OptimizerLoop* createOptimizerLoop(const std::string& name,const std::string& algLib,
+                                                 const std::string& factoryName,bool algInitOnFile);
       virtual Switch* createSwitch(const std::string& name);
 
       virtual TypeCode * createInterfaceTc(const std::string& id, const std::string& name,

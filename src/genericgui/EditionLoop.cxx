@@ -18,6 +18,9 @@
 //
 #include "EditionLoop.hxx"
 #include "FormLoop.hxx"
+#include "Node.hxx"
+#include "OutputPort.hxx"
+#include "QtGuiContext.hxx"
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -37,6 +40,17 @@ EditionLoop::EditionLoop(Subject* subject,
 {
   _formLoop = new FormLoop(this);
   _wid->gridLayout1->addWidget(_formLoop);
+
+  QHBoxLayout* _hbl_index = new QHBoxLayout();
+  QLabel* _la_index = new QLabel(this);
+  _hbl_index->addWidget(_la_index);
+  _la_index->setText("index:");
+  _le_index = new QLineEdit(this);
+  _le_index->setText(QString::number(0));
+  _le_index->setReadOnly(true);
+  _hbl_index->addWidget(_le_index);
+  _formLoop->gridLayout->addLayout(_hbl_index, 1, 0);
+
   _formLoop->sb_nsteps->setMinimum(0);
   _formLoop->sb_nsteps->setMaximum(INT_MAX);
   connect(_formLoop->sb_nsteps, SIGNAL(valueChanged(const QString &)),
@@ -66,14 +80,28 @@ void EditionLoop::update(GuiEvent event, int type, Subject* son)
   switch (event)
     {
     case SETVALUE:
-      SubjectComposedNode * scn = dynamic_cast<SubjectComposedNode*>(_subject);
-      string val = scn->getValue();
-      istringstream ss(val);
-      DEBTRACE(val);
-      int i = 0;
-      ss >> i;
-      DEBTRACE(i);
-      _formLoop->sb_nsteps->setValue(i);
-      break;
+      {
+        SubjectComposedNode * scn = dynamic_cast<SubjectComposedNode*>(_subject);
+        string val = scn->getValue();
+        istringstream ss(val);
+        DEBTRACE(val);
+        int i = 0;
+        ss >> i;
+        DEBTRACE(i);
+        _formLoop->sb_nsteps->setValue(i);
+
+        YACS::ENGINE::OutputPort* odp=scn->getNode()->getOutputPort("index");
+        SubjectDataPort* sodp = QtGuiContext::getQtCurrent()->_mapOfSubjectDataPort[odp];
+        _le_index->setText(QString::fromStdString(sodp->getExecValue()));
+        break;
+      }
+    case UPDATEPROGRESS:
+      {
+        SubjectComposedNode * scn = dynamic_cast<SubjectComposedNode*>(_subject);
+        YACS::ENGINE::OutputPort* odp=scn->getNode()->getOutputPort("index");
+        SubjectDataPort* sodp = QtGuiContext::getQtCurrent()->_mapOfSubjectDataPort[odp];
+        _le_index->setText(QString::fromStdString(sodp->getExecValue()));
+        break;
+      }
     }
 }

@@ -53,6 +53,7 @@ namespace YACS
       void CreateForEachLoop(std::string type );
       void CreateWhileLoop();
       void CreateSwitch();
+      void CreateOptimizerLoop();
       void CreateContainer();
 
       SubjectDataPort* CreateInputPort(SubjectElementaryNode* seNode,

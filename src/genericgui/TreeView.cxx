@@ -132,7 +132,7 @@ void TreeView::contextMenuEvent(QContextMenuEvent *event)
  */
 void TreeView::onCommitData(QWidget *editor)
 {
-  DEBTRACE("EditionElementaryNode::onCommitData " << editor);
+  DEBTRACE("TreeView::onCommitData " << editor);
   GenericEditor* gedit = dynamic_cast<GenericEditor*>(editor);
   YASSERT(gedit);
   QString val = gedit->GetStrValue();

@@ -30,6 +30,7 @@
 #include "Runtime.hxx"
 #include "ForLoop.hxx"
 #include "ForEachLoop.hxx"
+#include "OptimizerLoop.hxx"
 #include "WhileLoop.hxx"
 #include "Switch.hxx"
 #include "Bloc.hxx"
@@ -65,6 +66,7 @@ struct bloctypeParser:parser
     _orders["outnode"]=2;
     _orders["forloop"]=2;
     _orders["foreach"]=2;
+    _orders["optimizer"]=2;
     _orders["while"]=2;
     _orders["switch"]=2;
     _orders["bloc"]=2;
@@ -140,6 +142,15 @@ struct bloctypeParser:parser
       _bloc->edAddChild(b);
       std::string fullname = currentProc->names.back()+b->getName();
       currentProc->nodeMap[fullname]=b;
+    }
+  virtual void optimizer (YACS::ENGINE::OptimizerLoop* const& b)
+    {
+      DEBTRACE( "bloc_optimizer_set: " << b->getName() );
+      _bloc->edAddChild(b);
+      std::string fullname = currentProc->names.back()+b->getName();
+      currentProc->nodeMap[fullname]=b;
+      //fullname += ".splitter";
+      //currentProc->nodeMap[fullname]=b->getChildByShortName("splitter");
     }
   virtual void foreach (YACS::ENGINE::ForEachLoop* const& b)
     {
@@ -386,6 +397,7 @@ void bloctypeParser<T>::onStart(const XML_Char* el, const XML_Char** attr)
   else if(element == "bloc")pp=&bloctypeParser<>::blocParser;
   else if(element == "forloop")pp=&forlooptypeParser<>::forloopParser;
   else if(element == "foreach")pp=&foreachlooptypeParser<>::foreachloopParser;
+  else if(element == "optimizer")pp=&optimizerlooptypeParser<>::optimizerloopParser;
   else if(element == "while")pp=&whilelooptypeParser<>::whileloopParser;
   else if(element == "switch")pp=&switchtypeParser::switchParser;
 
@@ -415,6 +427,7 @@ void bloctypeParser<T>::onEnd(const char *el,parser* child)
 
   else if(element == "bloc")bloc(((bloctypeParser<>*)child)->post());
   else if(element == "forloop")forloop(((forlooptypeParser<>*)child)->post());
+  else if(element == "optimizer")optimizer(((optimizerlooptypeParser<>*)child)->post());
   else if(element == "foreach")foreach(((foreachlooptypeParser<>*)child)->post());
   else if(element == "while")while_(((whilelooptypeParser<>*)child)->post());
   else if(element == "switch")switch_(((switchtypeParser*)child)->post());

@@ -171,4 +171,5 @@ void SceneElementaryNodeItem::reorganize()
       autoPosNewPort(item, nbPorts);
       nbPorts++;
     }
+  updateLinks();
 }

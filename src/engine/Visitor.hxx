@@ -32,6 +32,7 @@ namespace YACS
     class ElementaryNode;
     class ComposedNode;
     class ForEachLoop;
+    class OptimizerLoop;
     class InlineNode;
     class InlineFuncNode;
     class Loop;
@@ -53,6 +54,7 @@ namespace YACS
       virtual void visitBloc(Bloc *node) = 0;
       virtual void visitElementaryNode(ElementaryNode *node) = 0;
       virtual void visitForEachLoop(ForEachLoop *node) = 0;
+      virtual void visitOptimizerLoop(OptimizerLoop *node) = 0;
       virtual void visitForLoop(ForLoop *node) = 0;
       virtual void visitInlineNode(InlineNode *node) = 0;
       virtual void visitInlineFuncNode(InlineFuncNode *node) = 0;

@@ -2045,6 +2045,7 @@ namespace YACS
               const char * name=tst->memberName(i);
               if(m.count(name) !=0)
                 {
+                  mseq[i].name=CORBA::string_dup(name);
                   mseq[i].type=m[name]->type();
                 }
             }

@@ -17,11 +17,30 @@
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 #include "Exception.hxx"
+#include <execinfo.h>
+#include <stdlib.h>
 
 using namespace YACS;
 
+//#define _DEVDEBUG_
+
 Exception::Exception(const std::string& what):_what(what)
 {
+#ifdef _DEVDEBUG_
+  void *array[20];
+  size_t size=10;
+  char **strings;
+  size_t i;
+
+  size = backtrace (array, 10);
+  strings = backtrace_symbols (array, size);
+
+  _what=_what+'\n';
+  for (i = 0; i < size; i++)
+     _what=_what+strings[i]+'\n';
+
+  free (strings);
+#endif
 }
 
 const char *Exception::what( void ) const throw ()

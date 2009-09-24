@@ -16,40 +16,39 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+#ifndef _EDITIONOPTIMIZERLOOP_HXX_
+#define _EDITIONOPTIMIZERLOOP_HXX_
 
-#ifndef SALOME_CONFIG_H
-#define SALOME_CONFIG_H
+#include "EditionNode.hxx"
 
-#define DEBUG
+namespace YACS
+{
+  namespace HMI
+  {
+    class FormEachLoop;
 
-#define QUOTE(x)  #x
-#define CORBA_CLIENT_HEADER(x)  QUOTE(x.hh)
-#define CORBA_SERVER_HEADER(x)  QUOTE(x.hh)
+    class EditionOptimizerLoop: public EditionNode
+    {
+      Q_OBJECT
 
-#ifndef PCLINUX
-  #define PCLINUX
-#endif
+    public slots:
+      virtual void onModifyInitFile();
+      virtual void onModifyEntry();
+      virtual void onModifyLib();
+      virtual void onModifyNbBranches(const QString &text);
 
+    public:
+      EditionOptimizerLoop(Subject* subject,
+                         QWidget* parent = 0,
+                         const char* name = 0);
+      virtual ~EditionOptimizerLoop();
+      virtual void synchronize();
+      virtual void update(GuiEvent event, int type, Subject* son);
 
-/* A path to a rcp-like command */
-#define RCP "/usr/bin/rcp"
-
-/* A path to a rm-like command */
-#define RM "/bin/rm"
-
-/* A path to a cp-like command */
-#define CP "/bin/cp"
-
-/* A path to a rsh-like command */
-#define RSH "/usr/bin/rsh"
-
-/* A path to a scp-like command */
-#define SCP "/usr/bin/scp"
-
-/* A path to a sh-like command */
-#define SH "/bin/sh"
-
-/* A path to a ssh-like command */
-#define SSH "/usr/bin/ssh"
-
+    protected:
+      FormEachLoop *_formEachLoop;
+      QLineEdit *_le_lib,*_le_entry;
+    };
+  }
+}
 #endif

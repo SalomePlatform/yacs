@@ -38,8 +38,8 @@ SceneCtrlLinkItem::SceneCtrlLinkItem(QGraphicsScene *scene, SceneItem *parent,
                                      QString label, Subject *subject)
   : SceneLinkItem(scene, parent, from, to, label, subject)
 {
-  _penColor     = Resource::control_link_draw_color;
-  _hiPenColor   = Resource::control_link_select_color;
+  _penColor     = Resource::control_link_draw_color.darker(Resource::link_pen_darkness);
+  _hiPenColor   = Resource::control_link_select_color.darker(Resource::link_pen_darkness);
   _brushColor   = Resource::control_link_draw_color;
   _hiBrushColor = Resource::control_link_select_color;
 }

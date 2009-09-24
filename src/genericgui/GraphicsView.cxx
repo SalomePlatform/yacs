@@ -172,6 +172,12 @@ void GraphicsView::mouseMoveEvent(QMouseEvent *e)
 
 void GraphicsView::mousePressEvent(QMouseEvent *e)
 {
+  DEBTRACE("GraphicsView::mousePressEvent");
+  if (QtGuiContext::getQtCurrent()->getView() != this)
+    {
+      DEBTRACE("Switch context before selection");
+      QtGuiContext::getQtCurrent()->getGMain()->switchContext(this->parentWidget());
+    }
   WrapGraphicsView::mousePressEvent(e);
   if (_zooming)
     {

@@ -17,6 +17,8 @@
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 #include "QtGuiContext.hxx"
+#include <QClipboard>
+#include "ItemMimeData.hxx"
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -81,21 +83,34 @@ void QtGuiContext::setProc(YACS::ENGINE::Proc* proc)
 
 YACS::HMI::Subject* QtGuiContext::getSubjectToPaste(bool &isCut)
 {
-  isCut = (_subjectToCut != 0);
-  if (isCut)
-    return _subjectToCut;
-  else
-    return _subjectToCopy;
+  QClipboard *clipboard = QApplication::clipboard();
+  const QMimeData * data=clipboard->mimeData();
+  const ItemMimeData* myData = dynamic_cast<const ItemMimeData*>(data);
+  Subject * sub=0;
+
+  if(myData)
+    {
+      sub=myData->getSubject();
+      isCut=myData->getControl();
+    }
+
+  return sub;
 }
 
 void QtGuiContext::setSubjectToCut(YACS::HMI::Subject* sub)
 {
-  _subjectToCut = sub;
-  _subjectToCopy = 0;
+  ItemMimeData *mime = new ItemMimeData;
+  mime->setSubject(sub);
+  mime->setControl(true);
+  QClipboard *clipboard = QApplication::clipboard();
+  clipboard->setMimeData(mime);
 }
 
 void QtGuiContext::setSubjectToCopy(YACS::HMI::Subject* sub)
 {
-  _subjectToCopy = sub;
-  _subjectToCut = 0;
+  ItemMimeData *mime = new ItemMimeData;
+  mime->setSubject(sub);
+  mime->setControl(false);
+  QClipboard *clipboard = QApplication::clipboard();
+  clipboard->setMimeData(mime);
 }

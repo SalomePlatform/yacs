@@ -61,6 +61,8 @@ namespace YACS
       virtual void updateName();
       virtual void arrangeNodes(bool isRecursive);
       virtual void arrangeChildNodes();
+      virtual void updateChildItems();
+      virtual void updateLinks();
       bool _blocX;
       bool _blocY;
 
@@ -79,6 +81,7 @@ namespace YACS
       SceneHeaderNodeItem *_header;
       int _execState;
       bool _moving;
+      bool _moved;
       QPointF _prevPos;
     };
   }

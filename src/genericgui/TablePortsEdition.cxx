@@ -86,12 +86,12 @@ TablePortsEdition::TablePortsEdition(bool inPorts, QWidget *parent)
   cb_insert->setToolTip("port creation: select a port type");
 
   connect(cb_insert, SIGNAL(popupHide()),
-          this, SLOT(on_cb_insert_popupHide()));
+          this, SLOT(oncb_insert_popupHide()));
   connect(cb_insert, SIGNAL(popupShow()),
-          this, SLOT(on_cb_insert_popupShow()));
+          this, SLOT(oncb_insert_popupShow()));
 
   connect(cb_insert, SIGNAL(activated(const QString&)),
-          this, SLOT(on_cb_insert_activated(const QString&)));
+          this, SLOT(oncb_insert_activated(const QString&)));
 }
 
 TablePortsEdition::~TablePortsEdition()
@@ -152,6 +152,11 @@ void TablePortsEdition::upOrDown(int isUp)
           SceneComposedNodeItem *proc = dynamic_cast<SceneComposedNodeItem*>(item);
           proc->rebuildLinks();
         }
+
+      QItemSelectionModel *selectionModel = tv_ports->selectionModel();
+      QModelIndex topLeft=item->modelIndex(0);
+      QItemSelection selection(topLeft, topLeft);
+      selectionModel->select(selection, QItemSelectionModel::Select);
     }
 }
 
@@ -206,9 +211,9 @@ void TablePortsEdition::on_pb_insert_clicked()
   cb_insert->showPopup();  
 }
 
-void TablePortsEdition::on_cb_insert_activated(const QString& text)
+void TablePortsEdition::oncb_insert_activated(const QString& text)
 {
-  DEBTRACE("TablePortsEdition::on_cb_insert_currentIndexChanged " << text.toStdString());
+  DEBTRACE("TablePortsEdition::oncb_insert_currentIndexChanged " << text.toStdString());
   SubjectDataPort *spBefore = 0;
   QModelIndexList items = tv_ports->selectionModel()->selection().indexes();
   QModelIndex index;
@@ -317,16 +322,16 @@ void TablePortsEdition::setEditablePorts(bool isEditable)
     }
 }
 
-void TablePortsEdition::on_cb_insert_popupHide()
+void TablePortsEdition::oncb_insert_popupHide()
 {
-  DEBTRACE("TablePortsEdition::on_cb_insert_popupHide");
+  DEBTRACE("TablePortsEdition::oncb_insert_popupHide");
   if (cb_insert->currentIndex() < 0) 
     _nbUp = 0; // --- no selection, no port creation, no move
   DEBTRACE(_nbUp);
 }
 
-void TablePortsEdition::on_cb_insert_popupShow()
+void TablePortsEdition::oncb_insert_popupShow()
 {
-  DEBTRACE("TablePortsEdition::on_cb_insert_popupShow");
+  DEBTRACE("TablePortsEdition::oncb_insert_popupShow");
 }
 

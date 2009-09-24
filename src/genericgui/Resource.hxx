@@ -102,6 +102,10 @@
 #define COMPONENTINSTANCENEW    true
 #define PYTHONFONT              QFont("Courier")
 #define USERCATALOG             "YACSUserCatalog.xml"
+#define ADDROWCOLS              true
+#define AUTOCOMPUTELINKS        true
+#define SIMPLIFYLINK            true
+#define ENSUREVISIBLEWHENMOVED  true
 
 #define EDITEDNODEBRUSHCOLOR    QColor(255, 255, 190)
 #define NORMALNODEBRUSHCOLOR    QColor(230, 235, 255)
@@ -143,6 +147,7 @@
 #define STREAMLINK_SELECT_COLOR   QColor(255, 255, 192)
 #define CTRLLINKDRAW_COLOR        QColor(192,   0, 192)
 #define CTRLLINK_SELECT_COLOR     QColor(255, 192, 255)
+#define LINK_PEN_DARKNESS         150
 
 #define Scene_pen_              QColor(  0,   0, 128)
 #define Scene_hiPen_            QColor(  0,   0, 190)
@@ -189,6 +194,10 @@ namespace YACS {
         // General resource
         static bool COMPONENT_INSTANCE_NEW;
         static QString userCatalog;
+        static bool addRowCols;
+        static bool autoComputeLinks;
+        static bool simplifyLink;
+        static bool ensureVisibleWhenMoved;
 
         // Colors of state of nodes
         static QColor editedNodeBrushColor;
@@ -235,6 +244,8 @@ namespace YACS {
         static QColor stream_link_select_color;
         static QColor control_link_draw_color;
         static QColor control_link_select_color;
+
+        static int link_pen_darkness;
 
         // Node colors
         static QColor Scene_pen;

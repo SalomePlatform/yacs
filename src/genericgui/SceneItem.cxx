@@ -289,6 +289,7 @@ void SceneItem::checkGeometryChange()
           if (SceneComposedNodeItem *bloc = dynamic_cast<SceneComposedNodeItem*>(_parent))
             bloc->collisionResolv(aNode, oldPos);
         }  
+      if (changeWidth) aNode->updateLinks();
     }
   if (resize)
     { 
@@ -388,3 +389,8 @@ void SceneItem::setEventPos(QPointF point)
     localPoint.setY(getHeaderBottom()+1);
   _eventPos = localPoint;
 }
+
+void SceneItem::updateChildItems()
+{
+}
+

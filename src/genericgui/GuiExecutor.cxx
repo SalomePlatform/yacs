@@ -68,10 +68,20 @@ GuiExecutor::~GuiExecutor()
   DEBTRACE("GuiExecutor::~GuiExecutor");
 }
 
+void GuiExecutor::closeContext()
+{
+  DEBTRACE("GuiExecutor::closeContext");
+  _context = 0;
+}
 
 void GuiExecutor::startResumeDataflow(bool initialize)
 {
   DEBTRACE("GuiExecutor::runDataflow " << initialize);
+  if (!_context)
+    {
+      DEBTRACE("context closed");
+      return;
+    }
   if (CORBA::is_nil(_engineRef))
     {
       DEBTRACE("Create YACS ORB engine!");
@@ -288,6 +298,11 @@ int GuiExecutor::getExecutorState()
 void GuiExecutor::setBreakpointList(std::list<std::string> breakpointList)
 {
   DEBTRACE("GuiExecutor::setBreakpointList");
+  if (!_context)
+    {
+      DEBTRACE("context closed");
+      return;
+    }
   _breakpointList.clear();
   _breakpointList = breakpointList;
   setBPList();
@@ -301,6 +316,11 @@ void GuiExecutor::setBreakpointList(std::list<std::string> breakpointList)
 void GuiExecutor::addBreakpoint(std::string breakpoint)
 {
   DEBTRACE("addBreakpoint " << breakpoint);
+  if (!_context)
+    {
+      DEBTRACE("context closed");
+      return;
+    }
   _breakpointList.push_back(breakpoint);
   setBPList();
   if ((_execMode == YACS::CONTINUE) && ! _breakpointList.empty())
@@ -426,6 +446,11 @@ bool GuiExecutor::event(QEvent *e)
   int numid = yev->getYACSEvent().first;
   string event = yev->getYACSEvent().second;
   DEBTRACE("<" << numid << "," << event << ">");
+  if (!_context)
+    {
+      DEBTRACE("context closed");
+      return true;
+    }
   if (event == "executor") // --- Executor notification: state
     {
       int execState = _procRef->getExecutorState();
@@ -451,7 +476,6 @@ bool GuiExecutor::event(QEvent *e)
       YASSERT(_context->_mapOfExecSubjectNode.count(iGui));
       SubjectNode *snode = _context->_mapOfExecSubjectNode[iGui];
       DEBTRACE("node " << snode->getName() << " state=" << state);
-      snode->setExecState(state);
 
       YACS::ENGINE::Node *node = snode->getNode();
       list<InputPort*> inports = node->getLocalInputPorts();
@@ -478,6 +502,7 @@ bool GuiExecutor::event(QEvent *e)
           port->setExecValue(val);
           port->update(YACS::HMI::UPDATEPROGRESS, 0, port);
         }
+      snode->setExecState(state);
    }
 
   return true;
