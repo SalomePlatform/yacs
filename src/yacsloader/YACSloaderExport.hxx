@@ -1,4 +1,7 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,32 +19,17 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-#ifndef _PARSERS_HXX_
-#define _PARSERS_HXX_
+#ifndef _YACSLOADEREXPORT_HXX_
+#define _YACSLOADEREXPORT_HXX_
 
-#include "YACSloaderExport.hxx"
-
-#include <map>
-#include <parserBase.hxx>
-
-namespace YACS
-{
-  namespace ENGINE
-  {
-    class Proc;
-  }
-
-  class YACSLOADER_EXPORT YACSLoader
-  {
-    public:
-        YACSLoader();
-        virtual ~YACSLoader();
-        virtual YACS::ENGINE::Proc* load(const char * filename);
-        void registerProcCataLoader();
-
-    protected:
-        std::map<std::string,parser*> _defaultParsersMap;
-  };
-}
+#ifdef WNT
+#  if defined YACSloader_EXPORTS
+#    define YACSLOADER_EXPORT __declspec( dllexport )
+#  else
+#    define YACSLOADER_EXPORT __declspec( dllimport )
+#  endif
+#else
+#  define YACSLOADER_EXPORT
+#endif
 
 #endif

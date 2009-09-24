@@ -19,6 +19,7 @@
 #ifndef __LOADSTATE_HXX_
 #define __LOADSTATE_HXX_
 
+#include "YACSloaderExport.hxx"
 #include "xmlParserBase.hxx"
 
 #include "define.hxx"
@@ -36,13 +37,13 @@ namespace YACS
      * \param p: the Proc
      * \param xmlStateFile: the file name
      */
-    void loadState(YACS::ENGINE::Proc *p,const std::string& xmlStateFile);
+    YACSLOADER_EXPORT void loadState(YACS::ENGINE::Proc *p,const std::string& xmlStateFile);
 
     /*! \brief class for parse an xml file, use a dedicated parser, to load a
      *  saved state of a SALOME execution.
      */
 
-    class stateLoader: public xmlReader
+    class YACSLOADER_EXPORT stateLoader: public xmlReader
     {
     public:
       stateLoader(xmlParserBase* parser,
@@ -69,7 +70,7 @@ namespace YACS
      *  defined in the xml file
      */
 
-    class stateParser: public xmlParserBase
+    class YACSLOADER_EXPORT stateParser: public xmlParserBase
     {
     public:
       static XMLReadState _state;
@@ -94,7 +95,7 @@ namespace YACS
       static std::map<std::string, YACS::StatesForNode> _nodeStates;
     };
 
-    class graphParser: public stateParser
+    class YACSLOADER_EXPORT graphParser: public stateParser
     {
     public:
       virtual void init(const xmlChar** p, xmlParserBase* father=0);
@@ -103,7 +104,7 @@ namespace YACS
     };
 
 
-    class nodeParser: public stateParser
+    class YACSLOADER_EXPORT nodeParser: public stateParser
     {
     public:
       virtual void init(const xmlChar** p, xmlParserBase* father=0);
@@ -113,7 +114,7 @@ namespace YACS
       std::string _nodeState;
     };
 
-    class attrParser: public stateParser
+    class YACSLOADER_EXPORT attrParser: public stateParser
     {
     public:
       virtual void init(const xmlChar** p, xmlParserBase* father=0);
@@ -124,7 +125,7 @@ namespace YACS
     };
 
 
-    class portParser: public stateParser
+    class YACSLOADER_EXPORT portParser: public stateParser
     {
     public:
       virtual void init(const xmlChar** p, xmlParserBase* father=0);
@@ -133,7 +134,7 @@ namespace YACS
       virtual void addData(std::string value);
     };
 
-    class valueParser: public stateParser
+    class YACSLOADER_EXPORT valueParser: public stateParser
     {
     public:
       virtual void init(const xmlChar** p, xmlParserBase* father=0);
@@ -142,7 +143,7 @@ namespace YACS
       virtual void addData(std::string value);
     };
 
-    class arrayParser: public stateParser
+    class YACSLOADER_EXPORT arrayParser: public stateParser
     {
     public:
       virtual void init(const xmlChar** p, xmlParserBase* father=0);
@@ -151,7 +152,7 @@ namespace YACS
       virtual void addData(std::string value);
     };
 
-    class dataParser: public stateParser
+    class YACSLOADER_EXPORT dataParser: public stateParser
     {
     public:
       virtual void init(const xmlChar** p, xmlParserBase* father=0);
@@ -161,7 +162,7 @@ namespace YACS
       std::list<std::string> _dataList;
     };
 
-    class simpleTypeParser: public stateParser
+    class YACSLOADER_EXPORT simpleTypeParser: public stateParser
     {
     public:
       virtual void init(const xmlChar** p, xmlParserBase* father=0);

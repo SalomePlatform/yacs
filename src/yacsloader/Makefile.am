@@ -33,6 +33,7 @@ libYACSloader_la_SOURCES =      \
 	$(__dummy__)
 
 salomeinclude_HEADERS = \
+YACSloaderExport.hxx \
 blocParsers.hxx  codeParsers.hxx      containerParsers.hxx  dataParsers.hxx    factory.hxx \
 linkParsers.hxx  LoadState.hxx        loopParsers.hxx       nodeParsers.hxx    outputParsers.hxx \
 parserBase.hxx   parsers.hxx          portParsers.hxx       presetParsers.hxx  ProcCataLoader.hxx \
@@ -57,7 +58,7 @@ AM_CXXFLAGS = \
               -I$(srcdir)/../engine
 
 if SALOME_KERNEL
-SALOME_LIBS=-L$(KERNEL_ROOT_DIR)/lib/salome -lSalomeLifeCycleCORBA
+SALOME_LIBS=$(KERNEL_LDFLAGS) -lSalomeLifeCycleCORBA
 SALOME_INCL_PATH=-I$(KERNEL_ROOT_DIR)/include/salome
 endif
 
@@ -153,7 +154,7 @@ _loader_la_CXXFLAGS = \
 
 _loader_la_LDFLAGS  = -module 
 
-_loader_la_LIBADD =  $(OMNIORB_LIBS) libYACSloader.la
+_loader_la_LIBADD =  $(OMNIORB_LIBS) $(PYTHON_LIBS) libYACSloader.la
 
 EXTRA_DIST = loader.i samples
 
