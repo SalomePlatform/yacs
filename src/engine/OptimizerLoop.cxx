@@ -656,7 +656,7 @@ std::string OptimizerLoop::getAlgLib() const
 /*!
  *  Throw an exception if the node is not valid
  */
-void OptimizerLoop::checkBasicConsistency() const throw(Exception)
+void OptimizerLoop::checkBasicConsistency() const throw(YACS::Exception)
 {
   DEBTRACE("OptimizerLoop::checkBasicConsistency");
   DynParaLoop::checkBasicConsistency();

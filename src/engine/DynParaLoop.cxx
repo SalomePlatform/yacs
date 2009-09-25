@@ -205,7 +205,7 @@ void DynParaLoop::edRemoveChild(Node *node) throw(YACS::Exception)
   modified();
 }
 
-bool DynParaLoop::edAddChild(Node *node) throw(Exception)
+bool DynParaLoop::edAddChild(Node *node) throw(YACS::Exception)
 {
   return edSetNode(node);
 }
@@ -227,7 +227,7 @@ std::list<InputPort *> DynParaLoop::getSetOfInputPort() const
   return ret;
 }
 
-InputPort *DynParaLoop::getInputPort(const std::string& name) const throw(Exception)
+InputPort *DynParaLoop::getInputPort(const std::string& name) const throw(YACS::Exception)
 {
   if(name==NAME_OF_NUMBER_OF_BRANCHES)
     return (InputPort *)&_nbOfBranches;
