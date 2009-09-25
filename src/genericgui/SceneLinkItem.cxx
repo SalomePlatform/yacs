@@ -104,7 +104,7 @@ void SceneLinkItem::setShape()
 
 void SceneLinkItem::addArrow(QPointF pfrom,
                              QPointF pto,
-                             HMI::Direction dir)
+                             YACS::HMI::Direction dir)
 {
   qreal x, y, width, height, length;
   switch (dir)

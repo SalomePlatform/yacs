@@ -98,7 +98,7 @@ void LinkMatrix::compute()
 
   for (int j=0; j<_jm; j++)
     {
-      char m[_im+1];
+      char* m = new char[_im+1];
       for (int i=0; i<_im; i++)
         if (cost(i,j))
           m[i] = ' ';
@@ -106,6 +106,7 @@ void LinkMatrix::compute()
           m[i] = 'X';
       m[_im] = 0;
       DEBTRACE(m);
+      delete [] m;
     }
 }
 

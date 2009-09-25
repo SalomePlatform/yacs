@@ -33,7 +33,7 @@ void YACSGuiLoader::reset()
 YACS::ENGINE::Proc* YACSGuiLoader::load(const char *filename)
 {
   _inputMap.clear();
-  YACS::YACSLoader::load(filename);
+  return YACS::YACSLoader::load(filename);
 }
 
 std::map<YACS::ENGINE::Node*, PrsData> YACSGuiLoader::getPrsData(YACS::ENGINE::Proc* proc)
