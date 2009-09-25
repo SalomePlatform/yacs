@@ -44,7 +44,7 @@ using namespace YACS::HMI;
  *  column 3: YValue = value
  */
 SchemaOutPortItem::SchemaOutPortItem(SchemaItem *parent, QString label, Subject* subject)
-  : SchemaItem::SchemaItem(parent, label, subject)
+  : SchemaItem(parent, label, subject)
 {
   SubjectDataPort *subPort = dynamic_cast<SubjectDataPort*>(subject);
   if (subPort)

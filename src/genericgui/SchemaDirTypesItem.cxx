@@ -34,7 +34,7 @@ using namespace YACS::ENGINE;
 using namespace YACS::HMI;
 
 SchemaDirTypesItem::SchemaDirTypesItem(SchemaItem *parent, QString label, Subject* subject)
-  : SchemaItem::SchemaItem(parent, label, subject)
+  : SchemaItem(parent, label, subject)
 {
   _itemDeco.replace(YLabel, QIcon("icons:folder_cyan.png"));
 }

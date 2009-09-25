@@ -28,7 +28,7 @@ using namespace std;
 using namespace YACS::HMI;
 
 SchemaReferenceItem::SchemaReferenceItem(SchemaItem *parent, QString label, Subject* subject)
-  : SchemaItem::SchemaItem(parent, label, subject)
+  : SchemaItem(parent, label, subject)
 {
   _itemDeco.replace(YLabel, QIcon("icons:ob_service_node.png"));
   _itemForeground.replace(YLabel,QColor("green"));

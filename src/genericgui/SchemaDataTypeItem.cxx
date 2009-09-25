@@ -25,7 +25,7 @@ using namespace std;
 using namespace YACS::HMI;
 
 SchemaDataTypeItem::SchemaDataTypeItem(SchemaItem *parent, QString label, Subject* subject)
-  : SchemaItem::SchemaItem(parent, label, subject)
+  : SchemaItem(parent, label, subject)
 {
 }
 

@@ -26,6 +26,12 @@
 #include <QPainterPath>
 #include <vector>
 
+#ifdef WNT
+#ifdef _UP
+#undef _UP
+#endif
+#endif
+
 namespace YACS
 {
   namespace HMI

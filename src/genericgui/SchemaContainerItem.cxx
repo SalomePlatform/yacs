@@ -31,7 +31,7 @@ using namespace std;
 using namespace YACS::HMI;
 
 SchemaContainerItem::SchemaContainerItem(SchemaItem *parent, QString label, Subject* subject)
-  : SchemaItem::SchemaItem(parent, label, subject)
+  : SchemaItem(parent, label, subject)
 {
   DEBTRACE("SchemaContainerItem::SchemaContainerItem " << subject->getName());
   SubjectContainer *scont = dynamic_cast<SubjectContainer*>(subject);

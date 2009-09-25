@@ -28,7 +28,7 @@ using namespace std;
 using namespace YACS::HMI;
 
 SchemaLinkItem::SchemaLinkItem(SchemaItem *parent, QString label, Subject* subject)
-  : SchemaItem::SchemaItem(parent, label, subject)
+  : SchemaItem(parent, label, subject)
 {
   _itemDeco.replace(YLabel, QIcon("icons:new_link.png"));
 }
