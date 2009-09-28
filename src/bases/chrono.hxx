@@ -1,6 +1,8 @@
 #ifndef _CHRONO_HXX_
 #define _CHRONO_HXX_
 
+#include "YACSBasesExport.hxx"
+
 #include <vector>
 #include <string>
 #include <iostream>
@@ -25,7 +27,7 @@ protected:
   int _nbChrono;
 };
 
-class chrono
+class YACSBASES_EXPORT chrono
 {
 public:
   chrono(int i);

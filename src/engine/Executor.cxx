@@ -31,6 +31,27 @@
 #include <cstdlib>
 #include <algorithm>
 
+#ifdef WNT
+#define usleep(A) _sleep(A/1000)
+#if !defined(S_ISCHR) || !defined(S_ISREG)
+#  ifndef S_IFMT
+#    ifdef _S_IFMT
+#      define S_IFMT _S_IFMT
+#      define S_IFCHR _S_IFCHR
+#      define S_IFREG _S_IFREG
+#    else
+#    ifdef __S_IFMT
+#      define S_IFMT __S_IFMT
+#      define S_IFCHR __S_IFCHR
+#      define S_IFREG __S_IFREG
+#    endif
+#    endif
+#  endif
+#  define S_ISCHR(mode) (((mode) & S_IFMT) == S_IFCHR)
+#  define S_ISREG(mode) (((mode) & S_IFMT) == S_IFREG)
+#endif
+#endif
+
 using namespace YACS::ENGINE;
 using namespace std;
 
@@ -561,6 +582,7 @@ bool Executor::setStepsToExecute(std::list<std::string> listToExecute)
       DEBTRACE("selected node to execute " << readyNode);
     }
 
+  return ret;
 }
 
 //! suspend pilot execution until Executor is in pause or waiting tasks completion mode.
@@ -617,6 +639,7 @@ bool Executor::saveState(const std::string& xmlFile)
   vst.openFileDump(xmlFile.c_str());
   _root->accept(&vst);
   vst.closeFileDump();
+  return 0;
 }
 
 //! not yet implemented
@@ -625,6 +648,7 @@ bool Executor::loadState()
 {
   DEBTRACE("Executor::loadState()");
   _isRunningunderExternalControl=true;
+  return 0;
 }
 
 
