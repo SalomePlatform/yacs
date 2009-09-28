@@ -54,6 +54,7 @@ libHMI_la_CXXFLAGS = \
 	-I../yacsorb 
 
 EXTRA_DIST = \
+HMIExport.hxx \
 commands.hxx      commandsProc.hxx \
 guiContext.hxx  guiObservers.hxx  
 
