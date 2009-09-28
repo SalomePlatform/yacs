@@ -21,7 +21,7 @@ bindir             = $(prefix)/bin/salome
 
 lib_LTLIBRARIES = libGenericGui.la
 
-BUILT_SOURCES =       \
+UIC_FILES =       \
   ui_FormComponent.h  \
   ui_FormContainer.h  \
   ui_FormEachLoop.h   \
@@ -33,6 +33,9 @@ BUILT_SOURCES =       \
   ui_TablePorts.h     \
   ui_TableSwitch.h    \
   ui_CaseSwitch.h
+
+BUILT_SOURCES =       \
+  $(UIC_FILES)
 
 EXTRA_DIST =        \
   FormComponent.ui  \
@@ -229,7 +232,7 @@ libGenericGui_la_SOURCES =        \
   SuitWrapper.hxx                 \
   WrapGraphicsView.hxx
 
-nodist_libGenericGui_la_SOURCES = \
+MOC_FILES = \
   CaseSwitch_moc.cxx              \
   EditionBloc_moc.cxx             \
   EditionComponent_moc.cxx        \
@@ -288,15 +291,22 @@ nodist_libGenericGui_la_SOURCES = \
   ValueDelegate_moc.cxx           \
   WrapGraphicsView_moc.cxx
 
+nodist_libGenericGui_la_SOURCES = \
+  $(MOC_FILES)
+
 libGenericGui_la_CXXFLAGS  = \
 	$(qt4_cppflags) \
 	$(qsci4_cppflags) \
 	$(THREAD_DEF) \
 	$(PYTHON_CPPFLAGS) \
+	$(EXPAT_INCLUDES) \
 	$(GRAPHVIZ_CPPFLAGS) \
+	$(OMNIORB_CXXFLAGS) \
 	$(OMNIORB_INCLUDES) \
 	$(LIBXML_INCLUDES) \
 	-I$(KERNEL_ROOT_DIR)/include/salome \
+	-I$(builddir) \
+	-I$(srcdir) \
 	-I$(srcdir)/../bases \
 	-I$(srcdir)/../engine \
 	-I$(srcdir)/../runtime \
