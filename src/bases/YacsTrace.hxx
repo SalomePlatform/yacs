@@ -29,6 +29,13 @@
 #define DEBTRACE(msg)
 #endif
 
+namespace YACS{
+extern int traceLevel;
+}
+
+//! YACSTRACE macro for dynamic trace: print only if YACS_TRACELEVEL environment variable is set and level is less than  its value
+#define YACSTRACE(level,msg) {if(YACS::traceLevel >=level)std::cerr<<__FILE__<<" ["<<__LINE__<<"] : "<<msg<<std::endl;}
+
 //! YASSERT macro is always defined, used like assert, but throw a YACS::Exception instead of abort
 
 #define YASSERT(val) {if(!(val)){std::stringstream mess; mess<<__FILE__<<" ["<<__LINE__<<"] : assertion "<<#val<<" failed"; throw YACS::Exception(mess.str());}}

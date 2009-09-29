@@ -26,6 +26,10 @@
 #define getpid _getpid
 #endif
 
+namespace YACS{
+    int traceLevel=0;
+}
+
 void AttachDebugger()
 {
   if(getenv ("YACSDEBUGGER"))

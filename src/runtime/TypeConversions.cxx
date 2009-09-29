@@ -957,6 +957,11 @@ namespace YACS
     {
       static inline PyObject* convert(const TypeCode *t,std::string& o)
         {
+          if(o=="")
+            {
+              Py_INCREF(Py_None);
+              return Py_None;
+            }
           if(t->isA(Runtime::_tc_file))
             {
               //It's an objref file. Convert it specially

@@ -21,6 +21,7 @@
 
 #include <QMimeData>
 #include <string>
+#include <vector>
 
 namespace YACS
 {
@@ -47,20 +48,21 @@ namespace YACS
       virtual void setCompo(std::string compo);
       virtual void setType(std::string aType);
       virtual void setCase(int aCase);
-      virtual Subject* getSubject() const;
-      virtual YACS::ENGINE::Catalog* getCatalog() const;
-      virtual std::string getCataName() const;
-      virtual std::string getCompo() const;
-      virtual std::string getType() const;
+      virtual Subject* getSubject(int i=0) const;
+      virtual YACS::ENGINE::Catalog* getCatalog(int i=0) const;
+      virtual std::string getCataName(int i=0) const;
+      virtual std::string getCompo(int i=0) const;
+      virtual std::string getType(int i=0) const;
       virtual int getCase() const;
       virtual bool getControl() const;
       virtual void setControl(bool control);
+      virtual int getDataSize() const;
     protected:
-      Subject *_sub;
-      YACS::ENGINE::Catalog *_catalog;
-      std::string _cataName;
-      std::string _compoName;
-      std::string _typeName;
+      std::vector<Subject*> _sub;
+      std::vector<YACS::ENGINE::Catalog*> _catalog;
+      std::vector<std::string> _cataName;
+      std::vector<std::string> _compoName;
+      std::vector<std::string> _typeName;
       int _swCase;
       bool _control;
     };

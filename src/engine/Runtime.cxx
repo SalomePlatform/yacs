@@ -97,6 +97,18 @@ Runtime::Runtime()
   Runtime::_tc_file->incrRef();
   typeMap["file"]=Runtime::_tc_file;
 
+  // Get dynamic trace level
+  YACS::traceLevel=0;
+  char* valenv=getenv("YACS_TRACELEVEL");
+  if(valenv)
+    {
+      std::istringstream iss(valenv);
+      int temp;
+      if (iss >> temp)
+        YACS::traceLevel=temp;
+    }
+
+  // Get max threads number
   char *maxThreadStr = getenv("YACS_MAX_THREADS");
   if (!maxThreadStr) return;
   int maxThreads = atoi(maxThreadStr);

@@ -75,7 +75,7 @@ CORBANode::CORBANode(const CORBANode& other,ComposedNode *father):ServiceNode(ot
 //! Execute the service on the component associated to the node
 void CORBANode::execute()
 {
-  DEBTRACE( "+++++++++++++ CorbaNode::execute: " << getName() << " +++++++++++++++" );
+  YACSTRACE(1, "+++++++++++++ CorbaNode::execute: " << getName() << " +++++++++++++++" );
   {
     //DII request building :
     // a service gets all its in parameters first
@@ -489,7 +489,7 @@ void SalomeNode::disconnectService()
 //! Execute the service on the component associated to the node
 void SalomeNode::execute()
 {
-  DEBTRACE( "+++++++++++++++++ SalomeNode::execute: " << getName() << " " << _method << " +++++++++++++++++" )
+  YACSTRACE(1,"+++++++++++++++++ SalomeNode::execute: " << getName() << " " << _method << " +++++++++++++++++" );
   {
     CORBA::Object_var objComponent=((SalomeComponent*)_component)->getCompoPtr();
     Engines::Component_var compo=Engines::Component::_narrow(objComponent);

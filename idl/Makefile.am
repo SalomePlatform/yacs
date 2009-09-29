@@ -28,6 +28,18 @@ IDLPYFLAGS  = -I$(KERNEL_ROOT_DIR)/idl/salome
 
 EXTRA_DIST = $(IDL_FILES)
 
+lib_LTLIBRARIES = libSalomeIDLYACS.la
+
+libSalomeIDLYACS_la_SOURCES = $(IDL_SRC)
+
+libSalomeIDLYACS_la_LIBADD = \
+	$(OMNIORB_LIBS)
+
+libSalomeIDLYACS_la_CXXFLAGS = \
+	$(OMNIORB_INCLUDES) \
+	-I$(KERNEL_ROOT_DIR)/include/salome \
+	$(OMNIORB_CXXFLAGS)
+
 install-exec-local: install-pyidl
 
 uninstall-local:

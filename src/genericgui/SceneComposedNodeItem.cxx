@@ -600,6 +600,7 @@ void SceneComposedNodeItem::dropEvent(QGraphicsSceneDragDropEvent *event)
       if (!sub) return;
       SubjectNode *node = dynamic_cast<SubjectNode*>(sub);
       if (!node) return;
+      if (dynamic_cast<SubjectProc*>(node)) return; // --- do not reparent proc !
       SubjectComposedNode *cnode = dynamic_cast<SubjectComposedNode*>(getSubject());
       if (cnode)
         if (!node->reparent(cnode))

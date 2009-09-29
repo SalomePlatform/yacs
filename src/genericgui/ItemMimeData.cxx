@@ -20,6 +20,8 @@
 #include "guiObservers.hxx"
 #include "Catalog.hxx"
 
+#include <QStringList>
+
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
@@ -29,12 +31,13 @@ using namespace YACS::HMI;
 
 ItemMimeData::ItemMimeData(): QMimeData()
 {
-  _sub = 0;
-  _catalog = 0;
+  _sub.clear();
+  _catalog.clear();
   _cataName.clear();
   _compoName.clear();
   _typeName.clear();
   _swCase=0;
+  _control=false;
 }
 
 ItemMimeData::~ItemMimeData()
@@ -43,27 +46,27 @@ ItemMimeData::~ItemMimeData()
 
 void ItemMimeData::setSubject(Subject *sub)
 {
-  _sub = sub;
+  _sub.push_back(sub);
 }
 
 void ItemMimeData::setCatalog(YACS::ENGINE::Catalog *cata)
 {
-  _catalog = cata;
+  _catalog.push_back(cata);
 }
 
 void ItemMimeData::setCataName(std::string cataName)
 {
-  _cataName = cataName;
+  _cataName.push_back(cataName);
 }
 
 void ItemMimeData::setCompo(std::string compo)
 {
-  _compoName = compo;
+  _compoName.push_back(compo);
 }
 
 void ItemMimeData::setType(std::string aType)
 {
-  _typeName = aType;
+  _typeName.push_back(aType);
 }
 
 void ItemMimeData::setCase(int aCase)
@@ -71,29 +74,34 @@ void ItemMimeData::setCase(int aCase)
   _swCase = aCase;
 }
 
-Subject* ItemMimeData::getSubject() const
+Subject* ItemMimeData::getSubject(int i) const
 {
-  return _sub;
+  YASSERT(i < _sub.size());
+  return _sub[i];
 }
 
-YACS::ENGINE::Catalog* ItemMimeData::getCatalog() const
+YACS::ENGINE::Catalog* ItemMimeData::getCatalog(int i) const
 {
-  return _catalog;
+  YASSERT(i < _catalog.size());
+  return _catalog[i];
 }
 
-std::string ItemMimeData::getCataName() const
+std::string ItemMimeData::getCataName(int i) const
 {
-  return _cataName;
+  YASSERT(i < _cataName.size());
+  return _cataName[i];
 }
 
-std::string ItemMimeData::getCompo() const
+std::string ItemMimeData::getCompo(int i) const
 {
-  return _compoName;
+  YASSERT(i < _compoName.size());
+  return _compoName[i];
 }
 
-std::string ItemMimeData::getType() const
+std::string ItemMimeData::getType(int i) const
 {
-  return _typeName;
+  YASSERT(i < _typeName.size());
+  return _typeName[i];
 }
 
 int ItemMimeData::getCase() const
@@ -109,3 +117,22 @@ bool ItemMimeData::getControl() const
   return _control;
 }
 
+int ItemMimeData::getDataSize() const
+{
+  int lg=0;
+  QStringList myFormats = formats();
+  for (int i=0; i<myFormats.size(); i++)
+    {
+      if (myFormats[i].contains("yacs/cata"))
+        {
+          lg = _cataName.size();
+          break;
+        }
+      else
+        {
+          lg = _sub.size();
+          break;
+        }
+    }
+  return lg;
+}

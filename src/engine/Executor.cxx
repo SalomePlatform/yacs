@@ -530,7 +530,7 @@ std::list<std::string> Executor::getTasksToLoad()
 bool Executor::setStepsToExecute(std::list<std::string> listToExecute)
 {
   DEBTRACE("Executor::setStepsToExecute(std::list<std::string> listToExecute)");
-  bool ret = false;
+  bool ret = true;
   vector<Task *>::iterator iter;
   vector<Task *> restrictedTasks;
   { // --- Critical section
@@ -639,7 +639,7 @@ bool Executor::saveState(const std::string& xmlFile)
   vst.openFileDump(xmlFile.c_str());
   _root->accept(&vst);
   vst.closeFileDump();
-  return 0;
+  return true;
 }
 
 //! not yet implemented
@@ -648,7 +648,7 @@ bool Executor::loadState()
 {
   DEBTRACE("Executor::loadState()");
   _isRunningunderExternalControl=true;
-  return 0;
+  return true;
 }
 
 

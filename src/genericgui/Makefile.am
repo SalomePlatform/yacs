@@ -361,7 +361,6 @@ LIBICONS = \
 	icon_minus.png \
 	icon_plus.png \
 	icon_select.png \
-	icon_select.png \
 	icon_text.png \
 	icon_up.png \
 	import_dataflow.png \

@@ -127,7 +127,7 @@ QVariant SchemaModel::data(const QModelIndex &index, int role) const
 
 QVariant SchemaModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
-  DEBTRACE("SchemaModel::headerData");
+  //DEBTRACE("SchemaModel::headerData");
   if (role != Qt::DisplayRole)
     return QVariant();
 

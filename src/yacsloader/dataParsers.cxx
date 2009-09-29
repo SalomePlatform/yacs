@@ -37,6 +37,7 @@ std::string stringtypeParser::post()
 
   double doubletypeParser::post()
     {
+      if(_content=="")return 0;
       return Cstr2d(_content.c_str());
 //       std::istringstream s(_content.c_str());
 //       double a;

@@ -103,7 +103,11 @@ std::string OutputPresetPort::getData()
           break;
         case Sequence:
         case Array:
+          value="<value><array><data>"+_storeData+"</data></array></value>";
+          break;
         case Struct:
+          value="<value><struct><data>"+_storeData+"</data></struct></value>";
+          break;
         default:
           break;
         }

@@ -58,11 +58,16 @@ GuiEditor::~GuiEditor()
 void GuiEditor::CreateNodeFromCatalog(const ItemMimeData* myData, SubjectComposedNode *cnode,bool createNewComponentInstance)
 {
   DEBTRACE("GuiEditor::CreateNodeFromCatalog");
-  Catalog* catalog = myData->getCatalog();
-  string compoName =  myData->getCompo();
-  string service = myData->getType();
-  DEBTRACE(compoName << "/" << service);
-  _createNode(catalog, cnode, service, compoName,createNewComponentInstance);
+  int nb = myData->getDataSize();
+  DEBTRACE(nb);
+  for (int i=0; i<nb; i++)
+    {
+      Catalog* catalog = myData->getCatalog(i);
+      string compoName =  myData->getCompo(i);
+      string service = myData->getType(i);
+      DEBTRACE(compoName << "/" << service);
+      _createNode(catalog, cnode, service, compoName,createNewComponentInstance);
+    }
 }
 
 void GuiEditor::CreateNode(std::string typeNode)
@@ -97,6 +102,8 @@ void GuiEditor::_createNode(YACS::ENGINE::Catalog* catalog,
   // --- find a name not used
 
   string name = service;
+  if (name == "PresetNode")
+    name = "DataIn";
   Node *node =cnode->getNode();
   ComposedNode *father = dynamic_cast<ComposedNode*>(node);
   YASSERT(father);
@@ -107,7 +114,7 @@ void GuiEditor::_createNode(YACS::ENGINE::Catalog* catalog,
       nameInUse = false;
       std::stringstream tryname;
       long newid = GuiContext::getCurrent()->getNewId();
-      tryname << service << newid;
+      tryname << name << newid;
       if (newid > 100000) break; 
       for (list<Node*>::iterator it = children.begin(); it != children.end(); ++it)
         {
@@ -139,12 +146,17 @@ void GuiEditor::_createNode(YACS::ENGINE::Catalog* catalog,
 void GuiEditor::AddTypeFromCatalog(const ItemMimeData* myData)
 {
   DEBTRACE("GuiEditor::AddTypeFromCatalog");
-  Catalog* catalog = myData->getCatalog();
-  DEBTRACE("catalog " << catalog);
-  string aType = myData->getType();
-  DEBTRACE(aType);
   SubjectProc* sProc = QtGuiContext::getQtCurrent()->getSubjectProc();
-  sProc->addDataType(catalog, aType);
+  int nb = myData->getDataSize();
+  DEBTRACE(nb);
+  for (int i=0; i<nb; i++)
+    {
+      Catalog* catalog = myData->getCatalog(i);
+      DEBTRACE("catalog " << catalog);
+      string aType = myData->getType(i);
+      DEBTRACE(aType);
+      sProc->addDataType(catalog, aType);
+    }
 }
 
 void GuiEditor::CreateBloc()

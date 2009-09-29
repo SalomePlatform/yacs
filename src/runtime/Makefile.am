@@ -100,8 +100,7 @@ EXTRA_libYACSRuntimeSALOME_la_SOURCES =  \
 	$(__dummy__)
 
 if SALOME_KERNEL
-nodist_libYACSRuntimeSALOME_la_SOURCES = ../../idl/yacsguiSK.cc
-SALOME_LIBS=$(KERNEL_LDFLAGS) -lSalomeLifeCycleCORBA -lSalomeIDLKernel -lSalomeNS -lSalomeContainer -lSALOMEBasics
+SALOME_LIBS=-L$(KERNEL_ROOT_DIR)/lib$(LIB_LOCATION_SUFFIX)/salome -lSalomeLifeCycleCORBA
 SALOME_INCL_PATH=-I$(KERNEL_ROOT_DIR)/include/salome 
 endif
 
@@ -114,7 +113,8 @@ endif
 BUILT_SOURCES=SALOMERuntimeWRAP.cxx libYACSRuntimeSALOME.la
 
 libYACSRuntimeSALOME_la_LIBADD = \
-	$(DSC_LIBS) $(SALOME_LIBS) $(OMNIORB_LIBS) $(PYTHON_LIBS) $(LIBXML_LIBS) \
+	$(DSC_LIBS) $(SALOME_LIBS) $(OMNIORB_LIBS) \
+	../../idl/libSalomeIDLYACS.la \
 	../engine/libYACSlibEngine.la
 
 AM_CXXFLAGS = \

@@ -137,7 +137,7 @@
 #define PAUSE_          QColor(0, 255, 255)
 #define INTERNALERR_    QColor(255, 0, 85)
 #define DISABLED_       QColor(255, 170, 0)
-#define FAILED_         QColor(255, 85, 0)
+#define FAILED_         QColor(170,  85, 0)
 #define ERROR_          QColor(255, 0, 0)
 #define DEFAULT_        Qt::lightGray
 

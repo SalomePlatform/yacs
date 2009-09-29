@@ -45,3 +45,4 @@ if test X"$l" != X ; then
 fi
 
 find . -name "semantic.cache" -print -exec rm {} \;
+find . -name "*.pyc" -print -exec rm {} \;

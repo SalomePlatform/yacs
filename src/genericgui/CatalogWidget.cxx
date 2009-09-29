@@ -65,6 +65,8 @@ CatalogWidget::CatalogWidget(QWidget *parent,
   setDragDropMode(QAbstractItemView::DragOnly);
   setDragEnabled(true);
   setDropIndicatorShown(true);
+
+  setSelectionMode(QAbstractItemView::ExtendedSelection);
 }
 
 bool CatalogWidget::addCatalogFromFile(std::string fileName)
@@ -176,72 +178,99 @@ CatalogWidget::~CatalogWidget()
 void CatalogWidget::startDrag(Qt::DropActions supportedActions)
 {
   DEBTRACE("startDrag " << supportedActions);
+  if (! QtGuiContext::getQtCurrent()) return;
   if (! QtGuiContext::getQtCurrent()->isEdition()) return;
-  QTreeWidgetItem *item = currentItem();
-  YASSERT(item);
-  QTreeWidgetItem *parent = item->parent();
-  if (!parent) return;
-  QTreeWidgetItem *grandPa = parent->parent();
-  if (!grandPa) return;
-  QTreeWidgetItem *grandGrandPa = grandPa->parent();
-  string cataName ="";
-  if (grandGrandPa)
-    cataName = grandGrandPa->text(0).toStdString();
-  else
-    cataName = grandPa->text(0).toStdString();
 
-  DEBTRACE("cataName=" << cataName);
-  YASSERT(_cataMap.count(cataName));
-  YACS::ENGINE::Catalog *catalog = _cataMap[cataName];
+  QDrag *drag = 0;
+  ItemMimeData *mime = 0;
+  QString theMimeInfo;
 
-  QString mimeInfo;
-  string compo = "";
-  string definition = "";
-  QPixmap pixmap;
-  if (! parent->text(0).compare("Types"))
+  QList<QTreeWidgetItem*> selectList = selectedItems();
+  for (int i=0; i<selectList.size(); i++)
     {
-      mimeInfo = "Type";
-      definition = item->text(0).toStdString();
-      pixmap.load("icons:data_link.png");
-    }
-  else if (parent->text(0).contains("Nodes"))
-    {
-      mimeInfo = "Node";
-      definition = item->text(0).toStdString();
-      pixmap.load("icons:add_node.png");
-    }
-  else if (! grandPa->text(0).compare("Components"))
-    {
-      mimeInfo = "Service";
-      definition = item->text(0).toStdString();
-      compo = parent->text(0).toStdString();
-      pixmap.load("icons:new_salome_service_node.png");
-    }
-  else
-    {
-      mimeInfo = "Component";
-      compo = item->text(0).toStdString();
-      pixmap.load("icons:component.png");
-    }
-  DEBTRACE("mimeInfo=" << mimeInfo.toStdString() << " definition=" << definition << " compo=" << compo);
-  QString mimeType = "yacs/cata" + mimeInfo;
+      QTreeWidgetItem *parent = selectList[i]->parent();
+      if (!parent) continue;
+      QTreeWidgetItem *grandPa = parent->parent();
+      if (!grandPa) continue;
+      QTreeWidgetItem *grandGrandPa = grandPa->parent();
+      string cataName ="";
+      if (grandGrandPa)
+        cataName = grandGrandPa->text(0).toStdString();
+      else
+        cataName = grandPa->text(0).toStdString();
+      DEBTRACE("cataName=" << cataName);
+      YASSERT(_cataMap.count(cataName));
+      YACS::ENGINE::Catalog *catalog = _cataMap[cataName];
 
-  QDrag *drag = new QDrag(this);
-  ItemMimeData *mime = new ItemMimeData;
-  drag->setMimeData(mime);
-  mime->setData(mimeType, mimeInfo.toAscii());
-  mime->setCatalog(catalog);
-  mime->setCataName(cataName);
-  mime->setCompo(compo);
-  mime->setType(definition);
-  if(_dragModifier)
-    mime->setControl(true);
-  else
-    mime->setControl(false);
+      QString mimeInfo;
+      string compo = "";
+      string definition = "";
+      QPixmap pixmap;
+      if (! parent->text(0).compare("Types"))
+        {
+          mimeInfo = "Type";
+          definition = selectList[i]->text(0).toStdString();
+          pixmap.load("icons:data_link.png");
+        }
+      else if (parent->text(0).contains("Nodes"))
+        {
+          mimeInfo = "Node";
+          definition = selectList[i]->text(0).toStdString();
+          pixmap.load("icons:add_node.png");
+        }
+      else if (! grandPa->text(0).compare("Components"))
+        {
+          mimeInfo = "Service";
+          definition = selectList[i]->text(0).toStdString();
+          compo = parent->text(0).toStdString();
+          pixmap.load("icons:new_salome_service_node.png");
+        }
+      else
+        {
+          mimeInfo = "Component";
+          compo = selectList[i]->text(0).toStdString();
+          pixmap.load("icons:component.png");
+        }
+      QString mimeType = "yacs/cata" + mimeInfo;
+      
+      if (!drag) // --- intialize mime data with the first selected item
+        {
+          DEBTRACE("mimeInfo=" << mimeInfo.toStdString() << " definition=" << definition << " compo=" << compo);
+          drag = new QDrag(this);
+          mime = new ItemMimeData;
+          drag->setMimeData(mime);
+          mime->setData(mimeType, mimeInfo.toAscii());
+          drag->setPixmap(pixmap);
 
-  drag->setPixmap(pixmap);
-  
-  drag->exec(supportedActions);
+          theMimeInfo = mimeInfo;
+
+          mime->setCatalog(catalog);
+          mime->setCataName(cataName);
+          mime->setCompo(compo);
+          mime->setType(definition);
+        }
+      else       // --- push only selected item of the same mimeType than the first
+        {
+          if (theMimeInfo == mimeInfo)
+            {
+              DEBTRACE("mimeInfo=" << mimeInfo.toStdString() << " definition=" << definition << " compo=" << compo);
+              mime->setCatalog(catalog);
+              mime->setCataName(cataName);
+              mime->setCompo(compo);
+              mime->setType(definition);
+            }          
+        }
+    }
+
+  if (drag)
+    {
+      if(_dragModifier)
+        mime->setControl(true);
+      else
+        mime->setControl(false);
+      
+      drag->exec(supportedActions);
+    }
 }
 
 void CatalogWidget::mousePressEvent(QMouseEvent  *event)
