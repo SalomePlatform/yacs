@@ -16,7 +16,7 @@ typedef struct acnt
   double _ctrCumul;
 } cntStruct;
 
-class counters
+class YACSBASES_EXPORT counters
 {
 public:
   static cntStruct *_ctrs;

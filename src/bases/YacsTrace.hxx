@@ -19,7 +19,9 @@
 #ifndef __YACSTRACE_HXX__
 #define __YACSTRACE_HXX__
 
+#include "YACSBasesExport.hxx"
 #include "Exception.hxx"
+
 #include <iostream>
 #include <sstream>
 
@@ -30,7 +32,7 @@
 #endif
 
 namespace YACS{
-extern int traceLevel;
+extern YACSBASES_EXPORT int traceLevel;
 }
 
 //! YACSTRACE macro for dynamic trace: print only if YACS_TRACELEVEL environment variable is set and level is less than  its value

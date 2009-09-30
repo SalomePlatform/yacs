@@ -35,18 +35,18 @@ Yacsgui_DataModel:: ~Yacsgui_DataModel()
 bool Yacsgui_DataModel::open(const QString& fileName, CAM_Study* study, QStringList listOfFiles)
 {
   DEBTRACE("Yacsgui_DataModel::open");
-  SalomeWrap_DataModel::open(fileName, study, listOfFiles);
+  return SalomeWrap_DataModel::open(fileName, study, listOfFiles);
 }
 
 bool Yacsgui_DataModel::save(QStringList& listOfFiles)
 {
   DEBTRACE("Yacsgui_DataModel::save");
-  SalomeWrap_DataModel::save(listOfFiles);
+  return SalomeWrap_DataModel::save(listOfFiles);
 }
 
 bool Yacsgui_DataModel::saveAs(const QString& fileName, CAM_Study* study, QStringList& listOfFiles)
 {
   DEBTRACE("Yacsgui_DataModel::saveAs");
-  SalomeWrap_DataModel::saveAs(fileName, study, listOfFiles);
+  return SalomeWrap_DataModel::saveAs(fileName, study, listOfFiles);
 }
 
