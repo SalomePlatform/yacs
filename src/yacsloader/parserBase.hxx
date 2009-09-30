@@ -19,6 +19,8 @@
 #ifndef _PARSERBASE_HXX_
 #define _PARSERBASE_HXX_
 
+#include "YACSloaderExport.hxx"
+
 #include <expat.h>
 #include <stack>
 #include <map>
@@ -28,7 +30,7 @@
 namespace YACS
 {
 
-struct parser
+struct YACSLOADER_EXPORT parser
 {
   static parser main_parser;
 
