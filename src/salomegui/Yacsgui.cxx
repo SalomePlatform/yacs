@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+#include "YACSExport.hxx"
 #include "Yacsgui.hxx"
 #include "Yacsgui_DataModel.hxx"
 #include "Yacsgui_Resource.hxx"
@@ -289,7 +290,7 @@ void Yacsgui::preferencesChanged( const QString& sect, const QString& name )
 
 extern "C"
 {
-  CAM_Module* createModule()
+  YACS_EXPORT CAM_Module* createModule()
   {
     return new Yacsgui();
   }

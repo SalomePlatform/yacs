@@ -19,13 +19,15 @@
 #ifndef _SALOMEWRAP_DATAMODEL_HXX_
 #define _SALOMEWRAP_DATAMODEL_HXX_
 
+#include "SalomeWrapExport.hxx"
+
 #include <SalomeApp_DataModel.h>
 
 #include <QWidget>
 #include <map>
 #include <string>
 
-class SalomeWrap_DataModel: public SalomeApp_DataModel
+class SALOMEWRAP_EXPORT SalomeWrap_DataModel: public SalomeApp_DataModel
 {
 public:
   SalomeWrap_DataModel(CAM_Module* theModule);

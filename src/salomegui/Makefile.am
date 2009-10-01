@@ -20,6 +20,7 @@ include $(top_srcdir)/adm/unix/make_begin.am
 
 # header files 
 salomeinclude_HEADERS = \
+	YACSExport.hxx \
 	Yacsgui.hxx
 
 # Libraries targets
@@ -70,12 +71,12 @@ libYACS_la_LIBADD  = \
 
 # resources files
 
-LIBICONS =  \
-	SalomeApp.xml \
-	YACSSchemaCatalog.xml \
-	YACSCatalog.xml \
-	ModuleYacs.png \
-	ExecYACS.png
+ICONS =  \
+	resources/SalomeApp.xml \
+	resources/YACSSchemaCatalog.xml \
+	resources/YACSCatalog.xml \
+	resources/ModuleYacs.png \
+	resources/ExecYACS.png
 
 # resources files
 nodist_salomeres_DATA = \
@@ -87,7 +88,6 @@ QMFILES = \
 	resources/YACS_msg_fr.ts
 
 dist_salomeres_DATA = $(QMFILES) ${ICONS}
-ICONS = $(LIBICONS:%=resources/%)
 
 ui_%.h: %.ui
 	$(QT_UIC) $< -o $@

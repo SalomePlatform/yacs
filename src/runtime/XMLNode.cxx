@@ -30,6 +30,12 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#ifdef WNT
+#include <windows.h>
+#include <io.h>
+#define chmod _chmod
+#endif
+
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
@@ -85,7 +91,13 @@ void XmlNode::execute()
   char dir[]="yacsXXXXXX";
   // add a lock around mkdtemp (seems not thread safe)
   MUTEX.lock();
+#ifdef WNT
+  char mdir [512+1];
+  GetTempPath(MAX_PATH+1, mdir);
+  CreateDirectory(mdir, NULL);
+#else
   char* mdir=mkdtemp(dir);
+#endif
   MUTEX.unlock();
   if(mdir==NULL)
     {

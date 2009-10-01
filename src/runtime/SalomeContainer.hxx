@@ -19,6 +19,7 @@
 #ifndef __SALOMECONTAINER_HXX__
 #define __SALOMECONTAINER_HXX__
 
+#include "YACSRuntimeSALOMEExport.hxx"
 #include "Container.hxx"
 #include "Mutex.hxx"
 #include <string>
@@ -33,7 +34,7 @@ namespace YACS
   {
     class SalomeComponent;
 
-    class SalomeContainer : public Container
+    class YACSRUNTIMESALOME_EXPORT SalomeContainer : public Container
     {
       friend class SalomeComponent;
     public:

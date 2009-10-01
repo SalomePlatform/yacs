@@ -19,6 +19,7 @@
 #ifndef _SALOMECOMPONENT_HXX_
 #define _SALOMECOMPONENT_HXX_
 
+#include "YACSRuntimeSALOMEExport.hxx"
 #include "ComponentInstance.hxx"
 #include <omniORB4/CORBA.h>
 
@@ -32,7 +33,7 @@ namespace YACS
  *
  *
  */
-    class SalomeComponent : public ComponentInstance
+    class YACSRUNTIMESALOME_EXPORT SalomeComponent : public ComponentInstance
     {
     public:
       SalomeComponent(const std::string& name);

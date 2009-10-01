@@ -19,6 +19,8 @@
 #ifndef _SALOMEWRAP_MODULE_HXX_
 #define _SALOMEWRAP_MODULE_HXX_
 
+#include "SalomeWrapExport.hxx"
+
 #include <SalomeApp_Module.h>
 #include <SALOMEconfig.h>
 
@@ -33,7 +35,7 @@ class QxScene_ViewWindow;
 
 class SalomeWrap_DataModel;
 
-class SalomeWrap_Module: public SalomeApp_Module
+class SALOMEWRAP_EXPORT SalomeWrap_Module: public SalomeApp_Module
 {
   Q_OBJECT
 

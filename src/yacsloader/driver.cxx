@@ -36,7 +36,11 @@
 
 #include <iostream>
 #include <fstream>
+
+#ifdef WNT
+#else
 #include <argp.h>
+#endif
 
 using YACS::YACSLoader;
 using namespace YACS::ENGINE;
@@ -50,6 +54,8 @@ const char *argp_program_bug_address ="<nepal@nepal.edf.fr>";
 static char doc[] ="driver -- a SALOME YACS graph executor";
 static char args_doc[] = "graph.xml";
 
+#ifdef WNT
+#else
 static struct argp_option options[] =
   {
     {"display",         'd', "level", 0,                   "Display dot files: 0=never to 3=very often"},
@@ -61,6 +67,7 @@ static struct argp_option options[] =
     {"save-xml-schema", 'x', "file",  OPTION_ARG_OPTIONAL, "dump xml schema"},
     { 0 }
   };
+#endif
 
 struct arguments
 {
@@ -74,9 +81,15 @@ struct arguments
   char *loadState;
 };
 
+#ifdef WNT
+static int
+#else
 static error_t
+#endif
 parse_opt (int key, char *arg, struct argp_state *state)
 {
+#ifdef WNT
+#else
   // Get the input argument from argp_parse, which we
   // know is a pointer to our arguments structure. 
   struct arguments *myArgs = (arguments*)state->input;
@@ -129,20 +142,27 @@ parse_opt (int key, char *arg, struct argp_state *state)
     default:
       return ARGP_ERR_UNKNOWN;
     }
+#endif
   return 0;
 }
 
 // Our argp parser.
+#ifdef WNT
+#else
 static struct argp argp = { options, parse_opt, args_doc, doc };
+#endif
 
 void timer(std::string msg)
 {
+#ifdef WNT
+#else
   struct timeval tv;
   gettimeofday(&tv,NULL);
   long t=tv.tv_sec*1000+tv.tv_usec/1000;
   static long t0=t;
   gettimeofday(&tv,NULL);
   std::cerr << msg << tv.tv_sec*1000+tv.tv_usec/1000-t0 << " ms" << std::endl;
+#endif
 }
 
 int main (int argc, char* argv[])
@@ -159,6 +179,8 @@ int main (int argc, char* argv[])
   myArgs.xmlSchema = (char *)"";
 
   // Parse our arguments; every option seen by parse_opt will be reflected in arguments.
+#ifdef WNT
+#else
   argp_parse (&argp, argc, argv, 0, 0, &myArgs);
     cerr << "graph = " << myArgs.args[0] 
          << " options: display=" << myArgs.display 
@@ -168,6 +190,7 @@ int main (int argc, char* argv[])
     cerr << " dumpErrorFile=" << myArgs.dumpErrorFile << endl;
   else
     cerr << endl;
+#endif
 
   timer("Starting ");
   RuntimeSALOME::setRuntime();
