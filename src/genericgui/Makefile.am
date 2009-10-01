@@ -51,6 +51,7 @@ EXTRA_DIST =        \
   CaseSwitch.ui
 
 libGenericGui_la_SOURCES =        \
+  GenericGuiExport.hxx            \
   CaseSwitch.hxx                  \
   CaseSwitch.cxx                  \
   CatalogWidget.hxx               \

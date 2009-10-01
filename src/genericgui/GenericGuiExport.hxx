@@ -1,4 +1,7 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,41 +19,17 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-#include "Exception.hxx"
-#include <stdlib.h>
+#ifndef _GENERICGUIEXPORT_HXX_
+#define _GENERICGUIEXPORT_HXX_
 
-using namespace YACS;
-
-//#define _DEVDEBUG_
-
-#ifdef _DEVDEBUG_
-#include <execinfo.h>
+#ifdef WNT
+#  if defined GenericGui_EXPORTS
+#    define GENERICGUI_EXPORT __declspec( dllexport )
+#  else
+#    define GENERICGUI_EXPORT __declspec( dllimport )
+#  endif
+#else
+#  define GENERICGUI_EXPORT
 #endif
 
-Exception::Exception(const std::string& what):_what(what)
-{
-#ifdef _DEVDEBUG_
-  void *array[20];
-  size_t size=10;
-  char **strings;
-  size_t i;
-
-  size = backtrace (array, 10);
-  strings = backtrace_symbols (array, size);
-
-  _what=_what+'\n';
-  for (i = 0; i < size; i++)
-     _what=_what+strings[i]+'\n';
-
-  free (strings);
 #endif
-}
-
-const char *Exception::what( void ) const throw ()
-{
-  return _what.c_str();
-}
-
-Exception::~Exception() throw ()
-{
-}

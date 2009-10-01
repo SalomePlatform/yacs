@@ -19,6 +19,8 @@
 #ifndef _GENERICGUI_HXX_
 #define _GENERICGUI_HXX_
 
+#include "GenericGuiExport.hxx"
+
 #include <QAction>
 #include <QActionGroup>
 #include <QObject>
@@ -48,7 +50,7 @@ namespace YACS
     class CatalogWidget;
     class YACSGuiLoader;
 
-    class GenericGui: public QObject
+    class GENERICGUI_EXPORT GenericGui: public QObject
     {
       Q_OBJECT
 

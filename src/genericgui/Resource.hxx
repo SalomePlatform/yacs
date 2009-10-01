@@ -19,6 +19,8 @@
 #ifndef _RESOURCE_HXX_
 #define _RESOURCE_HXX_
 
+#include "GenericGuiExport.hxx"
+
 #include <QColor>
 #include <QFont>
 
@@ -186,7 +188,7 @@
 
 namespace YACS {
   namespace HMI {
-    class Resource {
+    class GENERICGUI_EXPORT Resource {
       public:
         Resource();
 
