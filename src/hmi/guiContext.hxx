@@ -19,6 +19,7 @@
 #ifndef _GUICONTEXT_HXX_
 #define _GUICONTEXT_HXX_
 
+#include "HMIExport.hxx"
 #include "Proc.hxx"
 #include "Catalog.hxx"
 #include "commandsProc.hxx"
@@ -32,7 +33,7 @@ namespace YACS
   namespace HMI
   {
 
-    class GuiContext: public Subject
+    class HMI_EXPORT GuiContext: public Subject
     {
     public:
       GuiContext();

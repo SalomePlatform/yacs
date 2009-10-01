@@ -19,6 +19,7 @@
 #ifndef _COMMANDSPROC_HXX_
 #define _COMMANDSPROC_HXX_
 
+#include "HMIExport.hxx"
 #include "commands.hxx"
 
 #include <list>
@@ -82,7 +83,7 @@ namespace YACS
         UNKNOWN
       } TypeOfElem;
    
-    class ProcInvoc: public Invocator
+    class HMI_EXPORT ProcInvoc: public Invocator
     {
     public:
       ProcInvoc();

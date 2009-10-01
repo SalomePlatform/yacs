@@ -24,6 +24,7 @@
 #include <map>
 #include <vector>
 #include <list>
+#include "HMIExport.hxx"
 #include "Dispatcher.hxx"
 #include "commandsProc.hxx"
 
@@ -106,7 +107,7 @@ namespace YACS
     class GuiObserver;
     
     class SubjectReference;
-    class Subject: public YACS::ENGINE::Observer
+    class HMI_EXPORT Subject: public YACS::ENGINE::Observer
     {
     public:
       Subject(Subject *parent=0);
@@ -136,7 +137,7 @@ namespace YACS
       bool _destructible;
     };
     
-    class GuiObserver
+    class HMI_EXPORT GuiObserver
     {
     public:
       GuiObserver();
@@ -172,7 +173,7 @@ namespace YACS
 
     class SubjectLink;
     class SubjectControlLink;
-    class SubjectDataPort: public Subject
+    class HMI_EXPORT SubjectDataPort: public Subject
     {
     public:
       SubjectDataPort(YACS::ENGINE::DataPort* port, Subject *parent);
@@ -251,7 +252,7 @@ namespace YACS
     };
 
     
-    class SubjectNode: public Subject
+    class HMI_EXPORT SubjectNode: public Subject
     {
     public:
       SubjectNode(YACS::ENGINE::Node *node, Subject *parent);
@@ -374,7 +375,7 @@ namespace YACS
     };
 
     class SubjectComponent;
-    class SubjectContainer: public Subject
+    class HMI_EXPORT SubjectContainer: public Subject
     {
     public:
       SubjectContainer(YACS::ENGINE::Container* container, Subject *parent);
@@ -398,7 +399,7 @@ namespace YACS
     };
 
     class SubjectServiceNode;
-    class SubjectComponent: public Subject
+    class HMI_EXPORT SubjectComponent: public Subject
     {
     public:
       SubjectComponent(YACS::ENGINE::ComponentInstance* component, Subject *parent);
@@ -513,7 +514,7 @@ namespace YACS
       SubjectNode* _body;
     };
 
-    class SubjectSwitch: public SubjectComposedNode
+    class HMI_EXPORT SubjectSwitch: public SubjectComposedNode
     {
     public:
       SubjectSwitch(YACS::ENGINE::Switch *aSwitch, Subject *parent);
