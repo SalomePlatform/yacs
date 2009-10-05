@@ -1,0 +1,407 @@
+<?xml version='1.0' encoding='iso-8859-1' ?>
+<proc>
+   <property name="DefaultStudyID" value="1"/>
+   <type name="string" kind="string"/>
+   <struct name="Engines/dataref">
+      <member name="ref" type="string"/>
+   </struct>
+   <type name="bool" kind="bool"/>
+   <sequence name="boolvec" content="bool"/>
+   <type name="double" kind="double"/>
+   <sequence name="dblevec" content="double"/>
+   <objref name="file" id="file"/>
+   <type name="int" kind="int"/>
+   <sequence name="intvec" content="int"/>
+   <objref name="pyobj" id="python:obj:1.0"/>
+   <sequence name="stringvec" content="string"/>
+
+   <container name="DefaultContainer">
+      <property name="container_name" value="FactoryServer"/>
+      <property name="hostname" value="localhost"/>
+   </container>
+
+   <inline name="Submit">
+      <script><code><![CDATA[
+# Francis Kloss, CEA/LGLS, 2009
+# -----------------------------
+
+print "BATCH: started"
+#      --------------
+
+import os
+
+import SALOME
+import Engines
+import orbmodule
+
+print "BATCH: Submit: input ports"
+#      --------------------------
+
+print "BATCH: input port: graph       = ", graph
+print "BATCH: input port: machin      = ", machin
+print "BATCH: input port: nb. procs   = ", nprocs
+print "BATCH: input port: infiles     = ", infiles
+print "BATCH: input port: outfiles    = ", outfiles
+print "BATCH: input port: results dir = ", results_dir
+
+print "BATCH: set parameters"
+#      ---------------------
+
+data = os.environ["YACS_ROOT_DIR"] + "/share/salome/resources/yacs/"
+
+script    = data + "batch_launcher.py"
+visual_ok = data + "batch_good.jpg"
+visual_ko = data + "batch_bad.png"
+
+delai = 5
+
+print "BATCH: data      = ", data
+print "BATCH: script    = ", script
+print "BATCH: visual ok = ", visual_ok
+print "BATCH: visual ko = ", visual_ko
+print "BATCH: delai     = ", delai
+
+status = True
+
+print "BATCH: set: machine parameters"
+#      ------------------------------
+
+# container name if given else automatic
+p_name = ""
+
+# host name if given else automatic
+p_host = machin
+
+# if given list of components that could be loaded on the container
+p_components = []
+
+# if given restricted list of machines to search in
+p_machins = []
+
+# required operating system
+p_os = "Linux"
+
+# required memory size
+p_mem = 0
+
+# required frequency
+p_freq = 0
+
+# required number of proc per node
+p_procs = 8
+
+# required number of node
+p_nodes = 19
+
+# if true start a MPI container
+p_mpi = True
+
+# container working directory
+p_dir = ""
+
+# creation mode for GiveContainer:
+#   start      = creates a new container
+#   get        = try to find an existing container
+#   getorstart = use an existing container if it exists or creates a new one
+p_mode = ""
+
+# resource management policy : first, cycl, altcycl or best (can be extended)
+p_policy = ""
+
+# PaCO specific informations
+p_paco = ""
+
+# number of component nodes
+p_cpt_nodes = 0
+
+if status:
+    try:
+        params = Engines.MachineParameters(p_name, p_host, p_components, p_machins, p_os, p_mem, p_freq, p_procs, p_nodes, p_mpi, p_dir, p_mode, p_policy, p_paco, p_cpt_nodes)
+
+    except Exception, message:
+        print "BATCH: Exception: in machine parameters: ", message
+        status = False
+
+print "BATCH: set: batch parameters"
+#      ----------------------------
+
+# Where batch command will be launched and log files will be created
+batch_where = ""
+
+# Time for the batch (has to be like this : hh:mm)
+batch_time = ""
+
+# Minimum of memory needed (has to be like : 32gb or 512mb)
+batch_mem = ""
+
+# Number of processors requested
+batch_number = nprocs
+
+if status:
+    try:
+        batch_params = Engines.BatchParameters(batch_where, batch_time, batch_mem, batch_number)
+
+    except Exception, message:
+        print "BATCH: Exception: in batch parameters: ", message
+        status = False
+
+print "BATCH: submiting"
+#      ----------------
+
+if status:
+    try:
+        client = orbmodule.client()
+        obj_sl = client.Resolve("SalomeLauncher")
+        SalomeLauncher = obj_sl._narrow(Engines.SalomeLauncher)
+
+        files = [ graph ] + infiles
+        jobId = SalomeLauncher.submitSalomeJob(script, files, outfiles, batch_params, params)
+        print "BATCH: job ID = ", jobId
+
+    except Exception, message:
+        print "BATCH: Exception: in submiting: ", message
+        jobId  = None
+        status = False
+
+print "BATCH: Submit: set output port"
+#      ------------------------------
+
+state = {}
+
+state["VISUAL_OK"] = visual_ok
+state["VISUAL_KO"] = visual_ko
+state["RESULTS"  ] = results_dir
+state["DELAI"    ] = delai
+state["JOBID"    ] = jobId
+state["STATUS"   ] = status
+state["PARAMS"   ] = params
+state["LAUNCHER" ] = SalomeLauncher
+
+]]></code></script>
+      <inport  name="graph"       type="string"/>
+      <inport  name="machin"      type="string"/>
+      <inport  name="nprocs"      type="int"/>
+      <inport  name="infiles"     type="stringvec"/>
+      <inport  name="outfiles"    type="stringvec"/>
+      <inport  name="results_dir" type="string"/>
+      <outport name="state"       type="bool"/>
+   </inline>
+
+   <inline name="Pending">
+      <script><code><![CDATA[
+# Francis Kloss, CEA/LGLS, 2009
+# -----------------------------
+
+import time
+
+print "BATCH: Pending: get input port"
+#      ------------------------------
+
+delai          = state["DELAI"   ]
+jobId          = state["JOBID"   ]
+status         = state["STATUS"  ]
+params         = state["PARAMS"  ]
+SalomeLauncher = state["LAUNCHER"]
+
+print "BATCH: Waiting"
+#      --------------
+
+if status:
+    try:
+        stat = SalomeLauncher.queryJob(jobId, params)
+        print "BATCH: status = ", stat
+        while (stat == "qw"):
+            time.sleep(delai)
+            stat = SalomeLauncher.queryJob(jobId, params)
+            print "BATCH: status = ", stat
+
+    except Exception, message:
+        print "BATCH: Exception: in waiting: ", message
+        status = False
+
+print "BATCH: Pending: set output port"
+#      -------------------------------
+
+state["STATUS"] = status
+
+]]></code></script>
+      <inport  name="state" type="bool"/>
+      <outport name="state" type="bool"/>
+   </inline>
+
+   <inline name="Running">
+      <script><code><![CDATA[
+# Francis Kloss, CEA/LGLS, 2009
+# -----------------------------
+
+import time
+
+print "BATCH: Running: get input port"
+#      ------------------------------
+
+results_dir    = state["RESULTS" ]
+delai          = state["DELAI"   ]
+jobId          = state["JOBID"   ]
+status         = state["STATUS"  ]
+params         = state["PARAMS"  ]
+SalomeLauncher = state["LAUNCHER"]
+
+print "BATCH: launched"
+#      ---------------
+
+if status:
+    try:
+        stat = SalomeLauncher.queryJob(jobId, params)
+        print "BATCH: status = ", stat
+        while (stat != "e"):
+            time.sleep(delai)
+            stat = SalomeLauncher.queryJob(jobId, params)
+            print "BATCH: status = ", stat
+
+    except Exception, message:
+        print "BATCH: Exception: in waiting: ", message
+        status = False
+
+print "BATCH: get results"
+#      ------------------
+
+if status:
+    try:
+        SalomeLauncher.getResultsJob(results_dir, jobId, params)
+
+    except Exception, message:
+        print "BATCH: Exception: in get results: ", message
+        status = False
+
+print "BATCH: Running: set output ports"
+#      --------------------------------
+
+state["STATUS"] = status
+
+print "BATCH: finished"
+#      ---------------
+]]></code></script>
+      <inport  name="state"    type="bool"/>
+      <outport name="state"    type="bool"/>
+   </inline>
+
+   <inline name="Alarm">
+      <script><code><![CDATA[
+# Francis Kloss, CEA/LGLS, 2009
+# -----------------------------
+
+print "ALARM: started"
+#      --------------
+
+import os
+
+print "ALARM: get input ports"
+#      ----------------------
+
+status    = state["STATUS"   ]
+visual_ok = state["VISUAL_OK"]
+visual_ko = state["VISUAL_KO"]
+
+print "ALARM: status    = ", status
+print "ALARM: visual    = ", visual
+print "ALARM: visual ok = ", visual_ok
+print "ALARM: visual ko = ", visual_ko
+print "ALARM: good word = ", good_word
+print "ALARM: bad  word = ", bad_word
+
+cmd_visual = "display -geometry +400+200"
+cmd_sound  = "festival --tts"
+
+print "ALARM: play"
+#      -----------
+
+if status:
+    print "ALARM: job well finished"
+
+    if visual:
+        os.system(cmd_visual + " " + visual_ok + " &")
+
+    if good_word != "":
+        os.system("echo \"" + good_word + "\" | " + cmd_sound)
+else:
+    print "ALARM: job BAD finished"
+
+    if visual:
+        os.system(cmd_visual + " " + visual_ko + " &")
+
+    if bad_word != "":
+        os.system("echo \"" + bad_word + "\" | " + cmd_sound)
+
+print "ALARM: finished"
+#      ---------------
+]]></code></script>
+      <inport name="state"     type="bool"/>
+      <inport name="visual"    type="bool"/>
+      <inport name="good_word" type="string"/>
+      <inport name="bad_word"  type="string"/>
+   </inline>
+
+   <control> <fromnode>Submit</fromnode> <tonode>Pending</tonode> </control>
+   <control> <fromnode>Running</fromnode> <tonode>Alarm</tonode> </control>
+   <control> <fromnode>Pending</fromnode> <tonode>Running</tonode> </control>
+   <datalink control="false">
+      <fromnode>Submit</fromnode> <fromport>state</fromport>
+      <tonode>Pending</tonode> <toport>state</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>Running</fromnode> <fromport>state</fromport>
+      <tonode>Alarm</tonode> <toport>state</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>Pending</fromnode> <fromport>state</fromport>
+      <tonode>Running</tonode> <toport>state</toport>
+   </datalink>
+   <parameter>
+      <tonode>Submit</tonode><toport>graph</toport>
+      <value><string>/tmp/graph_user.xml</string></value>
+   </parameter>
+   <parameter>
+      <tonode>Submit</tonode><toport>machin</toport>
+      <value><string>mars</string></value>
+   </parameter>
+   <parameter>
+      <tonode>Submit</tonode><toport>nprocs</toport>
+      <value><int>1</int></value>
+   </parameter>
+   <parameter>
+      <tonode>Submit</tonode><toport>infiles</toport>
+      <value><array><data>
+      </data></array></value>
+   </parameter>
+   <parameter>
+      <tonode>Submit</tonode><toport>outfiles</toport>
+      <value><array><data>
+      </data></array></value>
+   </parameter>
+   <parameter>
+      <tonode>Submit</tonode><toport>results_dir</toport>
+      <value><string>/tmp</string></value>
+   </parameter>
+   <parameter>
+      <tonode>Alarm</tonode><toport>visual</toport>
+      <value><boolean>1</boolean></value>
+   </parameter>
+   <parameter>
+      <tonode>Alarm</tonode><toport>good_word</toport>
+      <value><string>Please, I inform you,
+that your job is well terminated,
+your results are ready to be examine,
+thank you for your attention.</string></value>
+   </parameter>
+   <parameter>
+      <tonode>Alarm</tonode><toport>bad_word</toport>
+      <value><string>Sorry to inform you,
+that your job is badly finished,
+thank you for your attention.</string></value>
+   </parameter>
+   <presentation name="Submit"   x="10"  y="85" width="230" height="260"/>
+   <presentation name="Pending"  x="255" y="85" width="230" height="110"/>
+   <presentation name="Running"  x="500" y="85" width="230" height="110"/>
+   <presentation name="Alarm"    x="745" y="85" width="230" height="200"/>
+   <presentation name="__ROOT__" x="0"   y="0"  width="980" height="350"/>
+</proc>

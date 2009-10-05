@@ -100,7 +100,8 @@ namespace YACS
         SETVALUE,
         SETCASE,
         SETSELECT,
-        GEOMETRY
+        GEOMETRY,
+        EMPHASIZE,
       } GuiEvent;
     
     class ProcInvoc;
@@ -263,7 +264,7 @@ namespace YACS
       virtual bool setName(std::string name);
       virtual YACS::ENGINE::Node* getNode();
       virtual void clean();
-      SubjectControlLink* addSubjectControlLink(SubjectControlLink *sub) { _listSubjectControlLink.push_back(sub); };
+      SubjectControlLink* addSubjectControlLink(SubjectControlLink *sub) { _listSubjectControlLink.push_back(sub); return sub; };
       void removeSubjectControlLink(SubjectControlLink* sub) { _listSubjectControlLink.remove(sub); };
       std::list<SubjectLink*> getSubjectLinks() const { return _listSubjectLink; };
       std::list<SubjectControlLink*> getSubjectControlLinks() const { return _listSubjectControlLink; };

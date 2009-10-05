@@ -81,6 +81,7 @@ void SceneDataPortItem::setText(QString label)
 void SceneDataPortItem::update(GuiEvent event, int type, Subject* son)
 {
   DEBTRACE("SceneDataPortItem::update "<< eventName(event)<<" "<<type<<" "<<son);
+  SceneObserverItem::update(event, type, son);
   switch (event)
     {
     case YACS::HMI::RENAME:

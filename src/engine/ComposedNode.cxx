@@ -677,8 +677,8 @@ void ComposedNode::checkLinksCoherenceRegardingControl(const std::vector<OutPort
 }
 
 /*!
- * Internal method during CF links. This méthode is in charge to statuate on links consistency in the case that no control flow defined by user
- * is set.
+ * Internal method during CF links. This methode is in charge to statuate on links consistency in the case 
+ * that no control flow defined by user is set.
  */
 void ComposedNode::solveObviousOrDelegateCFLinks(const std::list<OutPort *>& starts, InputPort *end, unsigned char& alreadyFed, bool direction, LinkInfo& info) const
 {

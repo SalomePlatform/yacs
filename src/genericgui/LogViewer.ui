@@ -1,24 +1,28 @@
-<ui version="4.0" >
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>logViewerDialog</class>
- <widget class="QDialog" name="logViewerDialog" >
-  <property name="geometry" >
+ <widget class="QDialog" name="logViewerDialog">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>500</width>
-    <height>400</height>
+    <width>224</width>
+    <height>324</height>
    </rect>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout" >
-   <item row="0" column="0" >
-    <widget class="QTextEdit" name="browser" />
+  <layout class="QGridLayout" name="gridLayout">
+   <property name="margin">
+    <number>2</number>
+   </property>
+   <item row="0" column="0">
+    <widget class="QTextEdit" name="browser"/>
    </item>
-   <item row="1" column="0" >
-    <widget class="QPushButton" name="pushButton" >
-     <property name="text" >
+   <item row="1" column="0">
+    <widget class="QPushButton" name="pushButton">
+     <property name="text">
       <string>close</string>
      </property>
     </widget>

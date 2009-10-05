@@ -111,6 +111,8 @@ namespace YACS
       virtual Container *createContainer(const std::string& kind="");
       virtual WhileLoop* createWhileLoop(const std::string& name);
       virtual ForLoop* createForLoop(const std::string& name);
+      virtual OptimizerLoop* createOptimizerLoop(const std::string& name,const std::string& algLib,
+                                                 const std::string& factoryName,bool algInitOnFile,const std::string& kind="");
       virtual Bloc* createBloc(const std::string& name);
       virtual Proc* createProc(const std::string& name);
 

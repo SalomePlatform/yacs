@@ -42,6 +42,7 @@ void *executorFunc(void *arg)
   Executor *myExec = (Executor *)argT[0];
   Proc *myProc = (Proc *)argT[1];
   myExec->RunB(myProc, 2);
+  return 0;
 }
 
 int

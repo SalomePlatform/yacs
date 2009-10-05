@@ -67,3 +67,23 @@ void SchemaProcItem::setExecState(int execState)
   _itemForeground.replace(YState, Qt::darkBlue);
   _itemBackground.replace(YState, sc);
 }
+
+QVariant SchemaProcItem::editionToolTip(int column) const
+{
+  QString val = QString("Edition: ") + _itemData.value(0).toString();
+  QString val1 = _itemData.value(2).toString();
+  QString val2 = QtGuiContext::getQtCurrent()->getFileName();
+  if (!val1.isEmpty()) val += QString(" | ") + val1;
+  if (!val2.isEmpty()) val += QString(" | ") + val2;
+  return val;
+}
+
+QVariant SchemaProcItem::runToolTip(int column) const
+{
+  QString val = QString("Execution: ") + _itemData.value(0).toString();
+  QString val1 = _itemData.value(2).toString();
+  QString val2 = QtGuiContext::getQtCurrent()->getFileName();
+  if (!val1.isEmpty()) val += QString(" | ") + val1;
+  if (!val2.isEmpty()) val += QString(" | ") + val2;
+  return val;
+}

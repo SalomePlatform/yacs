@@ -71,10 +71,11 @@ namespace YACS
       virtual void updateShape();
 
     protected:
-      void setShape();
+      void setShape(int thickness = 1);
       void addArrow(QPointF pfrom,
                     QPointF pto,
-                    HMI::Direction dir);
+                    HMI::Direction dir,
+                    int thickness = 1);
 
       QPainterPath _path;
       ScenePortItem* _from;

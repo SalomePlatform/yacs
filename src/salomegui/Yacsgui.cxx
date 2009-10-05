@@ -285,6 +285,10 @@ void Yacsgui::preferencesChanged( const QString& sect, const QString& name )
     }
 }
 
+void Yacsgui::loadSchema(const std::string& filename,bool edit)
+{
+  _genericGui->loadSchema(filename,edit);
+}
 
 // --- Export the module
 

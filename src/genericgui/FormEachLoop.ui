@@ -1,53 +1,63 @@
-<ui version="4.0" >
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>FormEachLoop</class>
- <widget class="QWidget" name="FormEachLoop" >
-  <property name="geometry" >
+ <widget class="QWidget" name="FormEachLoop">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>370</width>
-    <height>111</height>
+    <width>167</width>
+    <height>87</height>
    </rect>
   </property>
-  <property name="windowTitle" >
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout_2" >
-   <item row="0" column="0" >
-    <layout class="QGridLayout" name="gridLayout" >
-     <item row="0" column="0" >
-      <widget class="QLabel" name="label_2" >
-       <property name="text" >
+  <layout class="QGridLayout" name="gridLayout_2">
+   <property name="margin">
+    <number>3</number>
+   </property>
+   <item row="0" column="0">
+    <layout class="QGridLayout" name="gridLayout">
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_2">
+       <property name="text">
         <string>Input type</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="0" >
-      <widget class="QLabel" name="label" >
-       <property name="text" >
+     <item row="1" column="0">
+      <widget class="QLabel" name="label">
+       <property name="text">
         <string>Nb. branches</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="2" >
-      <widget class="QSpinBox" name="sb_nbranch" />
+     <item row="1" column="2">
+      <widget class="QSpinBox" name="sb_nbranch"/>
      </item>
-     <item row="0" column="2" >
-      <widget class="QLineEdit" name="lineEdit" >
-       <property name="readOnly" >
+     <item row="0" column="2">
+      <widget class="QLineEdit" name="lineEdit">
+       <property name="readOnly">
         <bool>true</bool>
        </property>
       </widget>
      </item>
-     <item row="2" column="0" >
-      <widget class="QLabel" name="label_3" >
-       <property name="text" >
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_3">
+       <property name="text">
         <string>SmplsCollection</string>
        </property>
       </widget>
      </item>
-     <item row="2" column="2" >
-      <widget class="QLineEdit" name="lineEdit_2" />
+     <item row="2" column="2">
+      <widget class="QLineEdit" name="lineEdit_2"/>
      </item>
     </layout>
    </item>

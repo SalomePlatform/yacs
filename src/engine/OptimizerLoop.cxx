@@ -205,16 +205,9 @@ OptimizerLoop::OptimizerLoop(const std::string& name, const std::string& algLibW
         _portForInitFile(NAME_OF_FILENAME_INPUT,this,Runtime::_tc_string),
         _alg(new OptimizerAlgStandardized(&_myPool,0)),_convergenceReachedWithOtherCalc(false),
         _retPortForOutPool(NAME_OF_OUT_POOL_INPUT,this,Runtime::_tc_string),
-        _nodeForSpecialCases(0),_symbol(symbolNameToOptimizerAlgBaseInstanceFactory)
+        _nodeForSpecialCases(0)
 {
-  OptimizerAlgBaseFactory algFactory=0;
-  if(_symbol != "")
-    algFactory=(OptimizerAlgBaseFactory)_loader.getHandleOnSymbolWithName(_symbol);
-  _alg->setAlgPointer(algFactory);
-  if(!algFactory)
-    return;
-  _splittedPort.edSetType(_alg->getTCForIn());
-  _retPortForOutPool.edSetType(_alg->getTCForOut());
+  setAlgorithm(algLibWthOutExt,symbolNameToOptimizerAlgBaseInstanceFactory);
 }
 catch(Exception& e)
 {
@@ -222,14 +215,9 @@ catch(Exception& e)
 
 OptimizerLoop::OptimizerLoop(const OptimizerLoop& other, ComposedNode *father, bool editionOnly):
   DynParaLoop(other,father,editionOnly),_algInitOnFile(other._algInitOnFile),_loader(other._loader.getLibNameWithoutExt()),_convergenceReachedWithOtherCalc(false),
-  _alg(new OptimizerAlgStandardized(&_myPool,0)),_portForInitFile(other._portForInitFile,this),_retPortForOutPool(other._retPortForOutPool,this),_nodeForSpecialCases(0),_symbol(other._symbol)
+  _alg(new OptimizerAlgStandardized(&_myPool,0)),_portForInitFile(other._portForInitFile,this),_retPortForOutPool(other._retPortForOutPool,this),_nodeForSpecialCases(0)
 {
-  OptimizerAlgBaseFactory algFactory=(OptimizerAlgBaseFactory)_loader.getHandleOnSymbolWithName(_symbol);
-  _alg->setAlgPointer(algFactory);
-  if(!algFactory)
-    return;
-  _splittedPort.edSetType(_alg->getTCForIn());
-  _retPortForOutPool.edSetType(_alg->getTCForOut());
+  setAlgorithm(other._loader.getLibNameWithoutExt(),other._symbol,false);
 }
 
 OptimizerLoop::~OptimizerLoop()
@@ -625,17 +613,22 @@ void OptimizerLoop::accept(Visitor *visitor)
 /*!
  *   throw an exception if the node is connected
  */
-void OptimizerLoop::setAlgorithm(const std::string& alglib, const std::string& symbol)
+void OptimizerLoop::setAlgorithm(const std::string& alglib, const std::string& symbol, bool checkLinks)
 {
-  if(_splittedPort.edGetNumberOfOutLinks() != 0)
-    throw Exception("The OptimizerLoop node must be disconnected before setting the algorithm");
-  if(_retPortForOutPool.edGetNumberOfLinks() != 0)
-    throw Exception("The OptimizerLoop node must be disconnected before setting the algorithm");
+  if(checkLinks)
+    {
+      if(_splittedPort.edGetNumberOfOutLinks() != 0)
+        throw Exception("The OptimizerLoop node must be disconnected before setting the algorithm");
+      if(_retPortForOutPool.edGetNumberOfLinks() != 0)
+        throw Exception("The OptimizerLoop node must be disconnected before setting the algorithm");
+    }
 
   _symbol=symbol;
   _loader=YACS::BASES::DynLibLoader(alglib);
 
-  OptimizerAlgBaseFactory algFactory=(OptimizerAlgBaseFactory)_loader.getHandleOnSymbolWithName(_symbol);
+  OptimizerAlgBaseFactory algFactory=0;
+  if(alglib!="" && _symbol!="")
+    algFactory=(OptimizerAlgBaseFactory)_loader.getHandleOnSymbolWithName(_symbol);
   _alg->setAlgPointer(algFactory);
   if(!algFactory)
     return;

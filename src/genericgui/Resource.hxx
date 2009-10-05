@@ -115,6 +115,8 @@
 #define VALIDNODECOLOR          QColor(128, 255, 128)
 #define INVALIDNODECOLOR        QColor(255, 128, 128)
 
+#define EMPHASIZEBRUSHCOLOR     QColor(  0, 255,   0)
+
 #define NOTYETINITIALIZED_      QColor(255, 243, 205)
 #define INITIALISED_            QColor(230, 255, 205)
 #define RUNNING_                QColor(205, 255, 218)
@@ -207,6 +209,8 @@ namespace YACS {
         static QColor runNodeBrushColor;
         static QColor validNodeColor;
         static QColor invalidNodeColor;
+
+        static QColor emphasizeBrushColor;
 
         static QColor NOTYETINITIALIZED;
         static QColor INITIALISED;

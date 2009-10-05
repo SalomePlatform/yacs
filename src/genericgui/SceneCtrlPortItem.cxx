@@ -109,6 +109,7 @@ void SceneCtrlPortItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
            << " " << acceptedMouseButtons ());
   if (!_scene->isZooming())
     {
+      getSubjectNode()->select(true);
       if (_dragable && (event->button() == _dragButton) && QtGuiContext::getQtCurrent()->isEdition())
         {
           setCursor(Qt::ClosedHandCursor);

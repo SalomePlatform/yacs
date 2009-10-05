@@ -270,6 +270,7 @@ bool CommandAddNodeFromCatalog::localExecute()
 
 bool CommandAddNodeFromCatalog::localReverse()
 {
+  return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -350,6 +351,7 @@ bool CommandReparentNode::localExecute()
 
 bool CommandReparentNode::localReverse()
 {
+  return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -426,6 +428,7 @@ bool CommandCopyNode::localExecute()
 
 bool CommandCopyNode::localReverse()
 {
+  return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -456,6 +459,7 @@ bool CommandRenameNode::localExecute()
 
 bool CommandRenameNode::localReverse()
 {
+  return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -489,6 +493,7 @@ bool CommandRenameContainer::localExecute()
 
 bool CommandRenameContainer::localReverse()
 {
+  return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -533,6 +538,7 @@ bool CommandRenameInDataPort::localExecute()
 
 bool CommandRenameInDataPort::localReverse()
 {
+  return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -576,6 +582,7 @@ bool CommandRenameOutDataPort::localExecute()
 
 bool CommandRenameOutDataPort::localReverse()
 {
+  return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -618,6 +625,7 @@ bool CommandAddDataTypeFromCatalog::localExecute()
 
 bool CommandAddDataTypeFromCatalog::localReverse()
 {
+  return true;
 }
 
 
@@ -673,6 +681,7 @@ bool CommandAddInputPortFromCatalog::localExecute()
 
 bool CommandAddInputPortFromCatalog::localReverse()
 {
+  return true;
 }
  
 // ----------------------------------------------------------------------------
@@ -727,6 +736,7 @@ bool CommandAddOutputPortFromCatalog::localExecute()
 
 bool CommandAddOutputPortFromCatalog::localReverse()
 {
+  return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -777,6 +787,7 @@ bool CommandAddIDSPortFromCatalog::localExecute()
 
 bool CommandAddIDSPortFromCatalog::localReverse()
 {
+  return true;
 }
  
 // ----------------------------------------------------------------------------
@@ -827,6 +838,7 @@ bool CommandAddODSPortFromCatalog::localExecute()
 
 bool CommandAddODSPortFromCatalog::localReverse()
 {
+  return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -905,6 +917,7 @@ bool CommandOrderInputPorts::localExecute()
 
 bool CommandOrderInputPorts::localReverse()
 {
+  return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -983,6 +996,7 @@ bool CommandOrderOutputPorts::localExecute()
 
 bool CommandOrderOutputPorts::localReverse()
 {
+  return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -1020,6 +1034,7 @@ bool CommandDestroy::localExecute()
 
 bool CommandDestroy::localReverse()
 {
+  return true;
 }
  
 // ----------------------------------------------------------------------------
@@ -1086,6 +1101,7 @@ bool CommandSetInPortValue::localExecute()
 
 bool CommandSetInPortValue::localReverse()
 {
+  return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -1182,6 +1198,7 @@ bool CommandSetOutPortValue::localExecute()
 
 bool CommandSetOutPortValue::localReverse()
 {
+  return true;
 }
  
 // ----------------------------------------------------------------------------
@@ -1213,6 +1230,7 @@ bool CommandSetSwitchSelect::localExecute()
 
 bool CommandSetSwitchSelect::localReverse()
 {
+  return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -1254,6 +1272,7 @@ bool CommandSetSwitchCase::localExecute()
 
 bool CommandSetSwitchCase::localReverse()
 {
+  return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -1287,6 +1306,7 @@ bool CommandSetForLoopSteps::localExecute()
 
 bool CommandSetForLoopSteps::localReverse()
 {
+  return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -1319,6 +1339,7 @@ bool CommandSetWhileCondition::localExecute()
 
 bool CommandSetWhileCondition::localReverse()
 {
+  return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -1351,6 +1372,7 @@ bool CommandSetForEachBranch::localExecute()
 
 bool CommandSetForEachBranch::localReverse()
 {
+  return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -1380,6 +1402,7 @@ bool CommandSetAlgo::localExecute()
 
 bool CommandSetAlgo::localReverse()
 {
+  return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -1421,6 +1444,7 @@ bool CommandAddLink::localExecute()
 
 bool CommandAddLink::localReverse()
 {
+  return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -1459,6 +1483,7 @@ bool CommandAddControlLink::localExecute()
 
 bool CommandAddControlLink::localReverse()
 {
+  return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -1511,6 +1536,7 @@ bool CommandAddContainer::localExecute()
 
 bool CommandAddContainer::localReverse()
 {
+  return true;
 }
 
 YACS::ENGINE::Container* CommandAddContainer::getContainer()
@@ -1552,6 +1578,7 @@ bool CommandSetContainerProperties::localExecute()
 
 bool CommandSetContainerProperties::localReverse()
 {
+  return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -1587,6 +1614,7 @@ bool CommandSetDSPortProperties::localExecute()
       
 bool CommandSetDSPortProperties::localReverse()
 {
+  return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -1628,6 +1656,7 @@ bool CommandSetLinkProperties::localExecute()
 
 bool CommandSetLinkProperties::localReverse()
 {
+  return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -1670,6 +1699,7 @@ bool CommandSetFuncNodeFunctionName::localExecute()
 
 bool CommandSetFuncNodeFunctionName::localReverse()
 {
+  return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -1712,6 +1742,7 @@ bool CommandSetInlineNodeScript::localExecute()
 
 bool CommandSetInlineNodeScript::localReverse()
 {
+  return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -1742,6 +1773,7 @@ bool CommandAddComponentInstance::localExecute()
 
 bool CommandAddComponentInstance::localReverse()
 {
+  return true;
 }
 
 YACS::ENGINE::ComponentInstance* CommandAddComponentInstance::getComponentInstance()
@@ -1790,6 +1822,7 @@ bool CommandAssociateComponentToContainer::localExecute()
 
 bool CommandAssociateComponentToContainer::localReverse()
 {
+  return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -1833,6 +1866,7 @@ bool CommandAssociateServiceToComponent::localExecute()
 
 bool CommandAssociateServiceToComponent::localReverse()
 {
+  return true;
 }
 
 // ----------------------------------------------------------------------------

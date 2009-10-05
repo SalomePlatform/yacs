@@ -54,6 +54,7 @@ public:
   virtual void setResource(SUIT_ResourceMgr* r);
   virtual void createPreferences();
   virtual void preferencesChanged( const QString& sect, const QString& name );
+  virtual void loadSchema(const std::string& filename,bool edit=true);
 
 public slots:
   bool deactivateModule( SUIT_Study* theStudy);

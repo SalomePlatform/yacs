@@ -21,6 +21,7 @@
 #include "ItemMimeData.hxx"
 #include "Scene.hxx"
 #include "SchemaItem.hxx"
+#include "Resource.hxx"
 
 #include <QGraphicsSceneMouseEvent>
 #include <QApplication>
@@ -44,6 +45,7 @@ SceneObserverItem::SceneObserverItem(QGraphicsScene *scene, SceneItem *parent,
   _subject = subject;
   _draging = false;
   _dragModifier = false;
+  _emphasized = false;
   _subject->attach(this);
   QtGuiContext::getQtCurrent()->_mapOfSceneItem[_subject]=this;
 }
@@ -56,6 +58,19 @@ SceneObserverItem::~SceneObserverItem()
 void SceneObserverItem::update(GuiEvent event, int type, Subject* son)
 {
   DEBTRACE(" SceneObserverItem::update " << eventName(event)<< " " << type << " " << son);
+  switch (event)
+    {
+    case YACS::HMI::EMPHASIZE:
+      DEBTRACE("SceneObserverItem::update EMPHASIZE " << type);
+      if (type)
+        _emphasized = true;
+      else
+        _emphasized = false;
+      QGraphicsItem::update();
+      break;
+    default:
+      ;
+    }
 }
 
 void SceneObserverItem::select(bool isSelected)
@@ -156,6 +171,19 @@ void SceneObserverItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     }
   _draging = false;
   _dragModifier = false;
+}
+
+QColor SceneObserverItem::getBrushColor()
+{
+  QColor color;
+  color = _brushColor;
+  if (isSelected())
+    color = _hiBrushColor;
+  if (_emphasized)
+    color = Resource::emphasizeBrushColor;
+  if (_hover)
+    color = hoverColor(color);
+  return color;
 }
 
 void SceneObserverItem::activateSelection(bool selected)

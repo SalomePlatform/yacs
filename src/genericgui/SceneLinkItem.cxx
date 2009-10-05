@@ -50,9 +50,11 @@ SceneLinkItem::SceneLinkItem(QGraphicsScene *scene, SceneItem *parent,
   _hiBrushColor = Resource::link_select_color;
   _level += 100;
   setZValue(_level);
+  DEBTRACE("ZValue=" << zValue());
   _lp.clear();
   _directions.clear();
   _nbPoints = 0;
+  _path = QPainterPath();
 }
 
 SceneLinkItem::~SceneLinkItem()
@@ -65,6 +67,7 @@ void SceneLinkItem::select(bool isSelected)
     setZValue(_level+100);
   else
     setZValue(_level);
+  DEBTRACE("ZValue=" << zValue());
   SceneObserverItem::select(isSelected);
 }
 
@@ -79,7 +82,7 @@ QPainterPath SceneLinkItem::shape() const
   return _path;
 }
 
-void SceneLinkItem::setShape()
+void SceneLinkItem::setShape(int thickness)
 {
   _path = QPainterPath();
   _path.setFillRule(Qt::WindingFill);
@@ -87,54 +90,55 @@ void SceneLinkItem::setShape()
   QPointF pto   = goal();
   if (_nbPoints)
     {
-      addArrow(pfrom, _lp[0], _RIGHT);
+      addArrow(pfrom, _lp[0], _RIGHT, thickness);
       for (int k=0; k<_nbPoints-1; k++)
-        addArrow(_lp[k], _lp[k+1], _directions[k+1]);
-      addArrow(_lp[_nbPoints-1], pto, _RIGHT);
+        addArrow(_lp[k], _lp[k+1], _directions[k+1], thickness);
+      addArrow(_lp[_nbPoints-1], pto, _RIGHT, thickness);
     }
   else
     {
-      _path.moveTo(pfrom.x() -1, pfrom.y() -1);
-      _path.lineTo(pto.x() +1, pto.y() -1);
-      _path.lineTo(pto.x() +1, pto.y() +1);
-      _path.lineTo(pfrom.x() -1, pfrom.y() +1);
-      _path.lineTo(pfrom.x() -1, pfrom.y() -1);
+      _path.moveTo(pfrom.x() -thickness, pfrom.y() -thickness);
+      _path.lineTo(pto.x()   +thickness, pto.y()   -thickness);
+      _path.lineTo(pto.x()   +thickness, pto.y()   +thickness);
+      _path.lineTo(pfrom.x() -thickness, pfrom.y() +thickness);
+      _path.lineTo(pfrom.x() -thickness, pfrom.y() -thickness);
     }
 }
 
 void SceneLinkItem::addArrow(QPointF pfrom,
                              QPointF pto,
-                             YACS::HMI::Direction dir)
+                             HMI::Direction dir,
+                             int thickness)
 {
   qreal x, y, width, height, length;
   switch (dir)
     {
     case _UP:
-      x = pfrom.x() -1;
-      y = pfrom.y() -1;
-      width = 3;
-      height = 2 + pto.y() -pfrom.y();
+      x = pfrom.x() -thickness;
+      y = pfrom.y() -thickness;
+      width = 3*thickness;
+      height = 2*thickness + pto.y() -pfrom.y();
       length = height;
       break;
     case _RIGHT:
-      x = pfrom.x() -1;
-      y = pfrom.y() -1;
-      width = 2 + pto.x() -pfrom.x();
-      height = 3;
+      x = pfrom.x() -thickness;
+      y = pfrom.y() -thickness;
+      width = 2*thickness + pto.x() -pfrom.x();
+      height = 3*thickness;
       length = width;
       break;
     case _DOWN:
-      x = pto.x() -1;
-      y = pto.y() -1;
-      width = 3;
-      height = 2 + pfrom.y() -pto.y();
+      x = pto.x() -thickness;
+      y = pto.y() -thickness;
+      width = 3*thickness;
+      height = 2*thickness + pfrom.y() -pto.y();
       length = height;
       break;
     case _LEFT:
-      x = pto.x() -1;
-      y = pto.y() -1;
-      width = 2 + pfrom.x() -pto.x();
-      height = 3;
+      x = pto.x() -thickness;
+      y = pto.y() -thickness;
+      width = 2*thickness + pfrom.x() -pto.x();
+      height = 3*thickness;
       length = width;
       break;
     }
@@ -142,7 +146,7 @@ void SceneLinkItem::addArrow(QPointF pfrom,
 
   if (length > 20)
     {
-      int e=5, h1=4, h2=8;
+      int e=5*thickness, h1=4*thickness, h2=8*thickness;
       switch (dir)
         {
         case _UP:
@@ -190,7 +194,7 @@ void SceneLinkItem::paint(QPainter *painter,
                           QWidget *widget)
 {
   //DEBTRACE("SceneLinkItem::paint " << _label.toStdString());
-  if (_path.isEmpty()) setShape();
+  if (_path.isEmpty()) setShape(_emphasized+1);
   painter->save();
   QPen pen;
   pen.setColor(getPenColor());
@@ -203,6 +207,29 @@ void SceneLinkItem::paint(QPainter *painter,
 void SceneLinkItem::update(GuiEvent event, int type, Subject* son)
 {
   DEBTRACE("SceneLinkItem::update "<< eventName(event)<<" "<<type<<" "<<son);
+  switch (event)
+    {
+    case YACS::HMI::EMPHASIZE:
+      DEBTRACE("SceneObserverItem::update EMPHASIZE " << type);
+      if (type)
+        {
+          _emphasized = true;
+          setZValue(_level+100);
+          DEBTRACE("ZValue=" << zValue());
+          setShape(2);
+        }
+      else
+        {
+          _emphasized = false;
+          setZValue(_level);
+          DEBTRACE("ZValue=" << zValue());
+          setShape();
+        }
+      QGraphicsItem::update();
+      break;
+    default:
+      ;
+    }
 }
 
 void SceneLinkItem::popupMenu(QWidget *caller, const QPoint &globalPos)
@@ -301,7 +328,7 @@ void SceneLinkItem::setPath(LinkPath lp)
   if (Scene::_force2NodesLink) force2points();
   for (k=0; k<_nbPoints; k++)
     DEBTRACE("_lp[" << k << "](" << _lp[k].x() << "," << _lp[k].y() << ")");
-  setShape();
+  setShape(_emphasized+1);
   SceneItem::update();
 }
 
@@ -503,5 +530,5 @@ void SceneLinkItem::updateShape()
       if(_lp[_nbPoints-1].y() > _lp[_nbPoints-2].y())_directions[_nbPoints-1]=_UP;
       else _directions[_nbPoints-1]=_DOWN;
     }
-  setShape();
+  setShape(_emphasized+1);
 }

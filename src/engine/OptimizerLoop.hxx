@@ -119,7 +119,7 @@ namespace YACS
       virtual void accept(Visitor *visitor);
       std::string getSymbol() const { return _symbol; }
       std::string getAlgLib() const ;
-      void setAlgorithm(const std::string& alglib,const std::string& symbol);
+      void setAlgorithm(const std::string& alglib,const std::string& symbol,bool checkLinks=true);
       virtual void checkBasicConsistency() const throw(Exception);
 
     protected:

@@ -96,7 +96,8 @@ void SalomeWrap_DataModel::createNewSchema(const QString& schemaName,
 
   QxScene_ViewWindow *swv = dynamic_cast<QxScene_ViewWindow*>(viewWindow);
   if (!swv) return;
-  swv->getViewManager()->setTitle(schemaName);
+  QString tabName = QFileInfo(schemaName).baseName();
+  swv->getViewManager()->setTitle(tabName);
 }
 
 bool SalomeWrap_DataModel::renameSchema(const QString& oldName,
@@ -135,7 +136,8 @@ bool SalomeWrap_DataModel::renameSchema(const QString& oldName,
   if (mod) mod->updateObjBrowser();
 
   QxScene_ViewWindow *swv = dynamic_cast<QxScene_ViewWindow*>(viewWindow);
-  if (swv) swv->getViewManager()->setTitle(newName);
+  QString tabName = QFileInfo(newName).baseName();
+  if (swv) swv->getViewManager()->setTitle(tabName);
   return true;
 }
 
@@ -212,7 +214,15 @@ void SalomeWrap_DataModel::createNewRun(const QString& schemaName,
 
   QxScene_ViewWindow *swv = dynamic_cast<QxScene_ViewWindow*>(viewWindow);
   if (!swv) return;
-  swv->getViewManager()->setTitle(runName);
+
+  int count = 0;
+  if (_runCountMap.count(schemaName.toStdString()))
+    count = ++_runCountMap[schemaName.toStdString()];
+  else
+    _runCountMap[schemaName.toStdString()] = count;
+
+  QString tabName = QFileInfo(schemaName).baseName() +QString("_run%1").arg(count);
+  swv->getViewManager()->setTitle(tabName);
 }
 
 void SalomeWrap_DataModel::setSelected(QWidget* viewWindow)

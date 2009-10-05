@@ -305,6 +305,7 @@ libGenericGui_la_CXXFLAGS  = \
 	$(OMNIORB_CXXFLAGS) \
 	$(OMNIORB_INCLUDES) \
 	$(LIBXML_INCLUDES) \
+	$(EXPAT_INCLUDES) \
 	-I$(KERNEL_ROOT_DIR)/include/salome \
 	-I$(builddir) \
 	-I$(srcdir) \
@@ -349,6 +350,7 @@ LIBICONS = \
 	data_link.png \
 	datastream_view.png \
 	delete.png \
+	emphasisLink.png \
 	execute_in_batch.png \
 	export_dataflow.png \
 	filter_next_steps.png \
@@ -357,6 +359,7 @@ LIBICONS = \
 	folder_cyan_open.png \
 	force2nodeLink.png \
 	full_view.png \
+	hideLink.png \
 	icon_down.png \
 	icon_insert.png \
 	icon_minus.png \
@@ -414,6 +417,7 @@ LIBICONS = \
 	save_dataflow.png \
 	save_dataflow_state.png \
 	schema.png \
+	showLink.png \
 	simplifyLink.png \
 	step_by_step_active.png \
 	step_by_step.png \

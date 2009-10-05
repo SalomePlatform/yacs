@@ -17,7 +17,7 @@
 #  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 if HAS_GUI
-SUBDIRS = bases engine runtime wrappergen yacsloader yacsorb salomeloader pyqt hmi salomewrap genericgui salomegui
+SUBDIRS = bases batch engine engine_swig runtime runtime_swig wrappergen yacsloader yacsloader_swig yacsorb salomeloader pyqt hmi salomewrap genericgui salomegui salomegui_swig
 else
-SUBDIRS = bases engine runtime wrappergen yacsloader yacsorb salomeloader hmi
+SUBDIRS = bases batch engine engine_swig runtime runtime_swig wrappergen yacsloader yacsloader_swig yacsorb salomeloader hmi
 endif

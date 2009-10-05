@@ -76,15 +76,15 @@ Runtime::Runtime()
   DEBTRACE( "_tc_string refcnt: " << Runtime::_tc_string->getRefCnt() );
   DEBTRACE( "_tc_file refcnt: " << Runtime::_tc_file->getRefCnt() );
   _builtinCatalog = new Catalog("builtins");
-  _builtinCatalog->_composednodeMap["Bloc"]=new Bloc("Bloc");
-  _builtinCatalog->_composednodeMap["Switch"]=new Switch("Switch");
-  _builtinCatalog->_composednodeMap["WhileLoop"]=new WhileLoop("WhileLoop");
-  _builtinCatalog->_composednodeMap["ForLoop"]=new ForLoop("ForLoop");
-  _builtinCatalog->_composednodeMap["OptimizerLoop"]=new OptimizerLoop("OptimizerLoop","","",true);
-  _builtinCatalog->_composednodeMap["ForEachLoop_double"]=new ForEachLoop("ForEachLoop_double",Runtime::_tc_double);
-  _builtinCatalog->_composednodeMap["ForEachLoop_string"]=new ForEachLoop("ForEachLoop_string",Runtime::_tc_string);
-  _builtinCatalog->_composednodeMap["ForEachLoop_int"]=new ForEachLoop("ForEachLoop_int",Runtime::_tc_int);
-  _builtinCatalog->_composednodeMap["ForEachLoop_bool"]=new ForEachLoop("ForEachLoop_bool",Runtime::_tc_bool);
+  _builtinCatalog->_composednodeMap["Bloc"]=createBloc("Bloc");
+  _builtinCatalog->_composednodeMap["Switch"]=createSwitch("Switch");
+  _builtinCatalog->_composednodeMap["WhileLoop"]=createWhileLoop("WhileLoop");
+  _builtinCatalog->_composednodeMap["ForLoop"]=createForLoop("ForLoop");
+  _builtinCatalog->_composednodeMap["OptimizerLoop"]=createOptimizerLoop("OptimizerLoop","","",true);
+  _builtinCatalog->_composednodeMap["ForEachLoop_double"]=createForEachLoop("ForEachLoop_double",Runtime::_tc_double);
+  _builtinCatalog->_composednodeMap["ForEachLoop_string"]=createForEachLoop("ForEachLoop_string",Runtime::_tc_string);
+  _builtinCatalog->_composednodeMap["ForEachLoop_int"]=createForEachLoop("ForEachLoop_int",Runtime::_tc_int);
+  _builtinCatalog->_composednodeMap["ForEachLoop_bool"]=createForEachLoop("ForEachLoop_bool",Runtime::_tc_bool);
   std::map<std::string,TypeCode*>& typeMap=_builtinCatalog->_typeMap;
   Runtime::_tc_double->incrRef();
   typeMap["double"]=Runtime::_tc_double;
@@ -235,7 +235,8 @@ ForEachLoop* Runtime::createForEachLoop(const std::string& name,TypeCode *type)
   return new ForEachLoop(name,type);
 }
 
-OptimizerLoop* Runtime::createOptimizerLoop(const std::string& name,const std::string& algLib,const std::string& factoryName,bool algInitOnFile)
+OptimizerLoop* Runtime::createOptimizerLoop(const std::string& name,const std::string& algLib,const std::string& factoryName,bool algInitOnFile,
+                                            const std::string& kind)
 {
   return new OptimizerLoop(name,algLib,factoryName,algInitOnFile);
 }

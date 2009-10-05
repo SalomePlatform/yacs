@@ -145,7 +145,7 @@ GenericGui::GenericGui(YACS::HMI::SuitWrapper* wrapper, QMainWindow *parent)
   _parent->addDockWidget(Qt::LeftDockWidgetArea, _dwTree);
   _dwStacked = new QDockWidget(_parent);
   _dwStacked->setWindowTitle("Input Panel");
-  _dwStacked->setMinimumWidth(350); // --- force a minimum until display
+  _dwStacked->setMinimumWidth(270); // --- force a minimum until display
   _parent->addDockWidget(Qt::RightDockWidgetArea, _dwStacked);
   _dwCatalogs = new QDockWidget(_parent);
   _dwCatalogs->setWindowTitle("Catalogs");
@@ -182,11 +182,11 @@ void GenericGui::createActions()
 
   QPixmap pixmap;
 
-  pixmap.load("icons:new_dataflow.png");
+  pixmap.load("icons:schema.png");
   _newSchemaAct = _wrapper->createAction(getMenuId(), tr("Create a new YACS Schema"), QIcon(pixmap),
                                          tr("New Schema"), tr("Create a new YACS Schema"),
                                          0, _parent, false, this,  SLOT(onNewSchema()));
-  
+
   pixmap.load("icons:import_dataflow.png");
   _importSchemaAct = _wrapper->createAction(getMenuId(), tr("Import a YACS Schema for edition"), QIcon(pixmap),
                                             tr("Import Schema"), tr("Import a YACS Schema for edition"),
@@ -322,11 +322,6 @@ void GenericGui::createActions()
   _newCorbaComponentAct = _wrapper->createAction(getMenuId(), tr("Create a New CORBA Component"), QIcon(pixmap),
                                                  tr("CORBA Component"), tr("Create a New CORBA Component"),
                                                  0, _parent, false, this,  SLOT(onNewCorbaComponent()));
-
-  pixmap.load("icons:schema.png");
-  _newSchemaAct = _wrapper->createAction(getMenuId(), tr("New Schema"), QIcon(pixmap),
-                                         tr("New Schema"), tr("New Schema"),
-                                         0, _parent, false, this,  SLOT(onNewSchema()));
 
   pixmap.load("icons:new_salome_service_node.png");
   _salomeServiceNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New SALOME Service Node"), QIcon(pixmap),
@@ -526,12 +521,92 @@ void GenericGui::createActions()
                                                       0, _parent, true, this,  SLOT(onToggleSceneItemVisible(bool)));
 
 
+
+  pixmap.load("icons:showLink.png");
+  _showAllLinksAct = _wrapper->createAction(getMenuId(), tr("Show all the links"), QIcon(pixmap),
+                                            tr("show all links"), tr("Show all the links"),
+                                            0, _parent, false, this,  SLOT(onShowAllLinks()));
+
+  pixmap.load("icons:hideLink.png");
+  _hideAllLinksAct = _wrapper->createAction(getMenuId(), tr("Hide all the links"), QIcon(pixmap),
+                                            tr("hide all links"), tr("Hide all the links"),
+                                            0, _parent, false, this,  SLOT(onHideAllLinks()));
+  
+
+  pixmap.load("icons:showLink.png");
+  _showOnlyPortLinksAct = _wrapper->createAction(getMenuId(), tr("Show only links from/to this port"), QIcon(pixmap),
+                                                 tr("show only links"), tr("Show only links from/to this port"),
+                                                 0, _parent, false, this,  SLOT(onShowOnlyPortLinks()));
+
+  pixmap.load("icons:showLink.png");
+  _showPortLinksAct = _wrapper->createAction(getMenuId(), tr("Show links from/to this port"), QIcon(pixmap),
+                                             tr("show links"), tr("Show links from/to this port"),
+                                             0, _parent, false, this,  SLOT(onShowPortLinks()));
+
+  pixmap.load("icons:hideLink.png");
+  _hidePortLinksAct = _wrapper->createAction(getMenuId(), tr("Hide links from/to this port"), QIcon(pixmap),
+                                             tr("hide links"), tr("Hide links from/to this port"),
+                                             0, _parent, false, this,  SLOT(onHidePortLinks()));
+  
+  
+  pixmap.load("icons:showLink.png");
+  _showOnlyCtrlLinksAct = _wrapper->createAction(getMenuId(), tr("Show only control links from/to this node"), QIcon(pixmap),
+                                                 tr("show only Control links"), tr("Show only control links from/to this node"),
+                                                 0, _parent, false, this,  SLOT(onShowOnlyCtrlLinks()));
+
+  pixmap.load("icons:showLink.png");
+  _showCtrlLinksAct = _wrapper->createAction(getMenuId(), tr("Show control links from/to this node"), QIcon(pixmap),
+                                             tr("show control links"), tr("Show control links from/to this node"),
+                                             0, _parent, false, this,  SLOT(onShowCtrlLinks()));
+
+  pixmap.load("icons:hideLink.png");
+  _hideCtrlLinksAct = _wrapper->createAction(getMenuId(), tr("Hide control links from/to this node"), QIcon(pixmap),
+                                             tr("hide control links"), tr("Hide control links from/to this node"),
+                                             0, _parent, false, this,  SLOT(onHideCtrlLinks()));
+
+  
+  pixmap.load("icons:showLink.png");
+  _showOnlyLinkAct = _wrapper->createAction(getMenuId(), tr("Show only this link"), QIcon(pixmap),
+                                            tr("show only"), tr("Show only this link"),
+                                            0, _parent, false, this,  SLOT(onShowOnlyLink()));
+
+  pixmap.load("icons:showLink.png");
+  _showLinkAct = _wrapper->createAction(getMenuId(), tr("Show this link"), QIcon(pixmap),
+                                        tr("show"), tr("Show this link"),
+                                        0, _parent, false, this,  SLOT(onShowLink()));
+  
+  pixmap.load("icons:hideLink.png");
+  _hideLinkAct = _wrapper->createAction(getMenuId(), tr("Hide this link"), QIcon(pixmap),
+                                        tr("hide"), tr("Hide this link"),
+                                        0, _parent, false, this,  SLOT(onHideLink()));
+
+
+  pixmap.load("icons:emphasisLink.png");
+  _emphasisPortLinksAct = _wrapper->createAction(getMenuId(), tr("emphasis on links from/to this port"), QIcon(pixmap),
+                                                 tr("emphasize links"), tr("emphasis on links from/to this port"),
+                                                 0, _parent, false, this,  SLOT(onEmphasisPortLinks()));
+  
+  pixmap.load("icons:emphasisLink.png");
+  _emphasisCtrlLinksAct = _wrapper->createAction(getMenuId(), tr("emphasis on control links from/to this node"), QIcon(pixmap),
+                                                 tr("emphasize control links"), tr("emphasis on control links from/to this node"),
+                                                 0, _parent, false, this,  SLOT(onEmphasisCtrlLinks()));
+  
+  pixmap.load("icons:emphasisLink.png");
+  _emphasisLinkAct = _wrapper->createAction(getMenuId(), tr("emphasis on this link"), QIcon(pixmap),
+                                            tr("emphasize"), tr("emphasis on this link"),
+                                            0, _parent, false, this,  SLOT(onEmphasisLink()));
+
+  pixmap.load("icons:deEmphasisLink.png");
+  _deEmphasizeAllAct = _wrapper->createAction(getMenuId(), tr("remove all emphasis"), QIcon(pixmap),
+                                              tr("remove all emphasis"), tr("remove all emphasis"),
+                                              0, _parent, false, this,  SLOT(onDeEmphasizeAll()));
+  
+
   _execModeGroup = new QActionGroup(this);
   _execModeGroup->addAction(_withoutStopModeAct);
   _execModeGroup->addAction(_breakpointsModeAct);
   _execModeGroup->addAction(_stepByStepModeAct);
   _withoutStopModeAct->setChecked(true);
-
 }
 
 void GenericGui::createMenus()
@@ -576,6 +651,9 @@ void GenericGui::createMenus()
   _wrapper->createMenu( _toggleForce2NodesLinkAct, aMenuId );
   _wrapper->createMenu( _toggleAddRowColsAct, aMenuId );
   _wrapper->createMenu( _wrapper->separator(), aMenuId);
+  _wrapper->createMenu( _showAllLinksAct, aMenuId );
+  _wrapper->createMenu( _hideAllLinksAct, aMenuId );
+  _wrapper->createMenu( _wrapper->separator(), aMenuId);
   _wrapper->createMenu( _whatsThisAct, aMenuId );
 }
 
@@ -613,14 +691,18 @@ void GenericGui::createTools()
   //_wrapper->createTool( _toggleForce2NodesLinkAct, aToolId );
   _wrapper->createTool( _toggleAddRowColsAct, aToolId );
   _wrapper->createTool( _wrapper->separator(), aToolId );
+  _wrapper->createTool( _showAllLinksAct, aToolId );
+  _wrapper->createTool( _hideAllLinksAct, aToolId );
+  _wrapper->createTool( _wrapper->separator(), aToolId );
   _wrapper->createTool( _whatsThisAct, aToolId );
 }
 
 void GenericGui::initialMenus()
 {
-  showBaseMenus(true);
   showEditionMenus(false);
   showExecMenus(false);
+  showCommonMenus(false);
+  showBaseMenus(true);
 }
 
 void GenericGui::showBaseMenus(bool show)
@@ -685,6 +767,15 @@ void GenericGui::showExecMenus(bool show)
   _wrapper->setToolShown(_toggleStopOnErrorAct, show);
 }
 
+void GenericGui::showCommonMenus(bool show)
+{
+  DEBTRACE("GenericGui::showCommonMenus " << show);
+  _wrapper->setMenuShown(_showAllLinksAct, show);
+  _wrapper->setToolShown(_showAllLinksAct, show);
+  _wrapper->setMenuShown(_hideAllLinksAct, show);
+  _wrapper->setToolShown(_hideAllLinksAct, show);
+}
+
 void GenericGui::switchContext(QWidget *view)
 {
   DEBTRACE("GenericGui::switchContext " << view);
@@ -706,19 +797,22 @@ void GenericGui::switchContext(QWidget *view)
 
   if (newContext->isEdition())
     {
+      showExecMenus(false);
       showBaseMenus(true);
       showEditionMenus(true);
-      showExecMenus(false);
+      showCommonMenus(true);
       if (_dwTree) _dwTree->setWindowTitle("Tree View: edition mode");
     }
   else
     {
-      showBaseMenus(true);
       showEditionMenus(false);
+      showBaseMenus(true);
       showExecMenus(true);
+      showCommonMenus(true);
       _withoutStopModeAct->setChecked(true);
       if (_dwTree) _dwTree->setWindowTitle("Tree View: execution mode");
     }
+  _dwStacked->setMinimumWidth(10);
 }
 
 bool GenericGui::closeContext(QWidget *view)
@@ -1025,20 +1119,23 @@ void GenericGui::createContext(YACS::ENGINE::Proc* proc,
   TreeView *vtree = dynamic_cast<TreeView*>(editTree->tv_schema);
   YASSERT(vtree);
   vtree->resizeColumns();
-  _catalogsWidget->setMinimumWidth(40); // --- reset the constraint on width
+  _catalogsWidget->setMinimumWidth(10); // --- reset the constraint on width
   editTree->setMinimumHeight(40);
+  _dwStacked->setMinimumWidth(10);
   // --- show menus
 
   if (forEdition)
     {
-      showEditionMenus(true);
       showExecMenus(false);
+      showEditionMenus(true);
+      showCommonMenus(true);
       if (_dwTree) _dwTree->setWindowTitle("Tree View: edition mode");
     }
   else
     {
       showEditionMenus(false);
       showExecMenus(true);
+      showCommonMenus(true);
       _withoutStopModeAct->setChecked(true);
       if (_dwTree) _dwTree->setWindowTitle("Tree View: execution mode");
     }
@@ -1087,6 +1184,24 @@ void GenericGui::onNewSchema()
 
   QString fileName = name.str().c_str();
   createContext(proc, fileName, "", true);
+}
+
+void GenericGui::loadSchema(const std::string& filename,bool edit)
+{
+  YACS::ENGINE::Proc *proc = _loader->load(filename.c_str());
+  std::cerr << proc << std::endl;
+  if (!proc)
+    return;
+  YACS::ENGINE::Logger* logger= proc->getLogger("parser");
+  if(!logger->isEmpty())
+    {
+      DEBTRACE(logger->getStr());
+    }
+  QString fn=QString::fromStdString(filename);
+  if(edit)
+    createContext(proc, fn, "", true);
+  else
+    createContext(proc, fn, fn, false);
 }
 
 void GenericGui::onImportSchema()
@@ -1846,6 +1961,244 @@ void GenericGui::onToggleSceneItemVisible(bool checked)
   item->setVisible(checked);
 }
 
+void GenericGui::displayLinks(bool isShown)
+{
+  if (!QtGuiContext::getQtCurrent()) return;
+  map<pair<YACS::ENGINE::OutPort*, YACS::ENGINE::InPort*>,YACS::HMI::SubjectLink*>::const_iterator it;
+  for (it = QtGuiContext::getQtCurrent()->_mapOfSubjectLink.begin();
+       it != QtGuiContext::getQtCurrent()->_mapOfSubjectLink.end();
+       ++it)
+    {
+      YACS::HMI::SubjectLink* sub = (*it).second;
+      if (!sub) continue;
+      SceneItem *item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[sub];
+      item->setVisible(isShown);
+    }
+}
+
+void GenericGui::displayControlLinks(bool isShown)
+{
+  if (!QtGuiContext::getQtCurrent()) return;
+  map<pair<YACS::ENGINE::Node*, YACS::ENGINE::Node*>,YACS::HMI::SubjectControlLink*>::const_iterator it;
+  for (it = QtGuiContext::getQtCurrent()->_mapOfSubjectControlLink.begin();
+       it != QtGuiContext::getQtCurrent()->_mapOfSubjectControlLink.end();
+       ++it)
+    {
+      YACS::HMI::SubjectControlLink* sub = (*it).second;
+      if (!sub) continue;
+      SceneItem *item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[sub];
+      item->setVisible(isShown);
+    }
+}
+
+void GenericGui::displayPortLinks(bool isShown)
+{
+  Subject *sub = QtGuiContext::getQtCurrent()->getSelectedSubject();
+  DEBTRACE("displayPortLinks, subject : " << sub->getName());
+  SubjectDataPort *sport = dynamic_cast<SubjectDataPort*>(sub);
+  if (sport)
+    {
+      DEBTRACE("dataPort : " << sport->getName());
+      list<SubjectLink*> linkList = sport->getListOfSubjectLink();
+      list<SubjectLink*>::const_iterator it = linkList.begin();
+      for( ; it != linkList.end(); ++it)
+        {
+          YACS::HMI::SubjectLink* sub = (*it);
+          if (!sub) continue;
+          SceneItem *item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[sub];
+          item->setVisible(isShown);
+        }
+      return;
+    }
+  SubjectNode *snode = dynamic_cast<SubjectNode*>(sub);
+  if (snode)
+    {
+      DEBTRACE("Node : " << snode->getName());
+      list<SubjectControlLink*> linkList = snode->getSubjectControlLinks();
+      list<SubjectControlLink*>::const_iterator it = linkList.begin();
+      for( ; it != linkList.end(); ++it)
+        {
+          YACS::HMI::SubjectControlLink* sub = (*it);
+          if (!sub) continue;
+          SceneItem *item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[sub];
+          item->setVisible(isShown);
+        }
+      return;
+    }
+}
+
+void GenericGui::displayALink(bool isShown)
+{
+  Subject *sub = QtGuiContext::getQtCurrent()->getSelectedSubject();
+  if (! QtGuiContext::getQtCurrent()->_mapOfSceneItem.count(sub)) return;
+  SceneItem *item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[sub];
+  item->setVisible(isShown);
+}
+
+void GenericGui::onShowAllLinks()
+{
+  DEBTRACE("GenericGui::onShowAllLinks");
+  displayLinks(true);
+  displayControlLinks(true);
+}
+
+void GenericGui::onHideAllLinks()
+{
+  DEBTRACE("GenericGui::onHideAllLinks");
+  displayLinks(false);
+  displayControlLinks(false);
+}
+
+void GenericGui::onShowOnlyPortLinks()
+{
+  DEBTRACE("GenericGui::onShowOnlyPortLinks");
+  onHideAllLinks();
+  displayPortLinks(true);
+}
+
+void GenericGui::onShowPortLinks()
+{
+  DEBTRACE("GenericGui::onShowPortLinks");
+  displayPortLinks(true);
+}
+
+void GenericGui::onHidePortLinks()
+{
+  DEBTRACE("GenericGui::onHidePortLinks");
+  displayPortLinks(false);
+}
+
+void GenericGui::onEmphasisPortLinks()
+{
+  if (!QtGuiContext::getQtCurrent()) return;
+  Subject *sub = QtGuiContext::getQtCurrent()->getSelectedSubject();
+  DEBTRACE("EmphasizePortLinks, subject : " << sub->getName());
+  if (!sub)
+    return;
+
+  SubjectDataPort *sport = dynamic_cast<SubjectDataPort*>(sub);
+  if (sport)
+    {
+      emphasizePortLink(sport, true);
+      return;
+    }
+
+  // --- if a Node, explore all data ports
+
+  SubjectNode *snode = dynamic_cast<SubjectNode*>(sub);
+  if (snode)
+    {
+      DEBTRACE("Node : " << snode->getName());
+      {
+        list<SubjectInputPort*> linkList = snode->getSubjectInputPorts();
+        list<SubjectInputPort*>::const_iterator it = linkList.begin();
+        for( ; it != linkList.end(); ++it)
+          {
+            YACS::HMI::SubjectInputPort* sub = (*it);
+            if (!sub) continue;
+            emphasizePortLink(sub, true);
+          }
+      }
+      {
+        list<SubjectOutputPort*> linkList = snode->getSubjectOutputPorts();
+        list<SubjectOutputPort*>::const_iterator it = linkList.begin();
+        for( ; it != linkList.end(); ++it)
+          {
+            YACS::HMI::SubjectOutputPort* sub = (*it);
+            if (!sub) continue;
+            emphasizePortLink(sub, true);
+          }
+      }
+      return;
+    }
+}
+
+void GenericGui::onShowOnlyCtrlLinks()
+{
+  DEBTRACE("GenericGui::onShowOnlyCtrlLinks");
+  onHideAllLinks();
+  displayPortLinks(true);
+}
+
+void GenericGui::onShowCtrlLinks()
+{
+  DEBTRACE("GenericGui::onShowCtrlLinks");
+  displayPortLinks(true);
+}
+
+void GenericGui::onHideCtrlLinks()
+{
+  DEBTRACE("GenericGui::onHideCtrlLinks");
+  displayPortLinks(false);
+}
+
+void GenericGui::onEmphasisCtrlLinks()
+{
+  DEBTRACE("GenericGui::onEmphasisCtrlLinks");
+  Subject *sub = QtGuiContext::getQtCurrent()->getSelectedSubject();
+  DEBTRACE("Emphasize Ctrl Links, subject : " << sub->getName());
+  if (!sub)
+    return;
+  SubjectNode *snode = dynamic_cast<SubjectNode*>(sub);
+  if (snode)
+    {
+      DEBTRACE("Node : " << snode->getName());
+      list<SubjectControlLink*> linkList = snode->getSubjectControlLinks();
+      list<SubjectControlLink*>::const_iterator it = linkList.begin();
+      for( ; it != linkList.end(); ++it)
+        {
+          YACS::HMI::SubjectControlLink* sub = (*it);
+          if (!sub) continue;
+          sub->update(EMPHASIZE, true, sub);
+          Subject *sin = sub->getSubjectInNode();
+          Subject *sout = sub->getSubjectOutNode();
+          sin->update(EMPHASIZE, true, sub);
+          sout->update(EMPHASIZE, true, sub);
+        }
+      return;
+    }
+}
+
+void GenericGui::onShowOnlyLink()
+{
+  DEBTRACE("GenericGui::onShowOnlyLink");
+  onHideAllLinks();
+  displayALink(true);
+}
+
+void GenericGui::onShowLink()
+{
+  DEBTRACE("GenericGui::onShowLink");
+  displayALink(true);
+}
+
+void GenericGui::onHideLink()
+{
+  DEBTRACE("GenericGui::onHideLink");
+  displayALink(false);
+}
+
+void GenericGui::onEmphasisLink()
+{
+  DEBTRACE("GenericGui::onEmphasisLink");
+  Subject *sub = QtGuiContext::getQtCurrent()->getSelectedSubject();
+  if (!sub)
+    return;
+  sub->update(EMPHASIZE, true, sub);
+}
+
+void GenericGui::onDeEmphasizeAll()
+{
+  DEBTRACE("GenericGui::onDeEmphasizeAll");
+  map<Subject*, SchemaItem*>::const_iterator it = QtGuiContext::getQtCurrent()->_mapOfSchemaItem.begin();
+  for( ; it != QtGuiContext::getQtCurrent()->_mapOfSchemaItem.end(); ++it)
+    {
+      Subject* sub = (*it).first;
+      sub->update(EMPHASIZE, false, sub);
+    }
+}
+
+
 void GenericGui::onCleanOnExit()
 {
   DEBTRACE("GenericGui::onCleanOnExit");
@@ -1855,5 +2208,22 @@ void GenericGui::onCleanOnExit()
   for (; it != mapViewContextCopy.end(); ++it)
     {
       closeContext((*it).first);
+    }
+}
+
+void GenericGui::emphasizePortLink(YACS::HMI::SubjectDataPort* sub, bool emphasize)
+{
+  DEBTRACE("dataPort : " << sub->getName());
+  list<SubjectLink*> linkList = sub->getListOfSubjectLink();
+  list<SubjectLink*>::const_iterator it = linkList.begin();
+  for( ; it != linkList.end(); ++it)
+    {
+      YACS::HMI::SubjectLink* subli = (*it);
+      if (!subli) continue;
+      subli->update(EMPHASIZE, true, sub);
+      Subject *sin = subli->getSubjectInPort();
+      Subject *sout = subli->getSubjectOutPort();
+      sin->update(EMPHASIZE, true, sub);
+      sout->update(EMPHASIZE, true, sub);
     }
 }

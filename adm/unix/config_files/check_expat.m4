@@ -20,18 +20,48 @@ AC_DEFUN([AC_CHECK_EXPAT],[
 
 AC_CHECKING(for expat)
 
-EXPAT_INCLUDES=
+CXXFLAGS_old=$CXXFLAGS
+CPPFLAGS_old=$CPPFLAGS
+
+# Custom location of expat package can be specified
+# through EXPAT_DIR variable
+if test "x$EXPAT_DIR" != "x"
+then
+  if test "x$EXPAT_DIR" = "x/usr"
+  then
+    AC_MSG_NOTICE(Trying native Expat...)
+    TMPLIBS="-lexpat $LIBS"
+  else
+    AC_MSG_NOTICE(Trying Expat from $EXPAT_DIR ...)
+    TMPLIBS="-L$EXPAT_DIR/lib -lexpat $LIBS"
+    CXXFLAGS="$CXXFLAGS -I$EXPAT_DIR/include"
+    CPPFLAGS="$CPPFLAGS -I$EXPAT_DIR/include"
+    EXPAT_INCLUDES="-I$EXPAT_DIR/include"
+  fi
+else
+  AC_MSG_NOTICE(Trying native Expat...)
+  TMPLIBS="-lexpat $LIBS"
+fi
+
 AC_CHECK_HEADER(expat.h,expat_ok="yes",expat_ok="no")
 
 if  test "x$expat_ok" = "xyes"
 then
-  EXPAT_LIBS="-lexpat"
   LIBS_old=$LIBS
-  AC_CHECK_LIB(expat,XML_ExpatVersionInfo, LIBS="-lexpat $LIBS",,)
+  LIBS=$TMPLIBS
+  AC_CHECK_LIB(expat,XML_ExpatVersionInfo,expat_ok="yes",expat_ok="no",)
   LIBS=$LIBS_old
 fi
 
+if test "x$expat_ok" = "xyes"
+then
+  EXPAT_LIBS=$TMPLIBS
+fi
+
 AC_MSG_RESULT(for expat: $expat_ok)
+
+CXXFLAGS=$CXXFLAGS_old
+CPPFLAGS=$CPPFLAGS_old
 
 AC_SUBST(EXPAT_LIBS)
 AC_SUBST(EXPAT_INCLUDES)

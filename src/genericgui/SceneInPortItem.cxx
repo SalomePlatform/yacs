@@ -123,11 +123,11 @@ QColor SceneInPortItem::getBrushColor()
     return _hiBrushColor;
 
   QColor color;
+  color = _brushColor;
   if (isSelected())
     color = _hiBrushColor;
-  else 
-    color = _brushColor;
-
+  if (_emphasized)
+    color = Resource::emphasizeBrushColor;
   if (_hover)
     color = hoverColor(color);
   return color;

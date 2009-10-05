@@ -79,7 +79,7 @@ echoSrv_SOURCES = echoSrv.cxx
 nodist_echoSrv_SOURCES = $(IDL_SOURCES)
 
 echoSrv_CXXFLAGS = \
-	-I$(builddir) \
+	-I. \
 	-I$(srcdir)/../../bases \
 	$(OMNIORB_INCLUDES) \
 	$(OMNIORB_CXXFLAGS) 
@@ -91,7 +91,7 @@ echo_clt_SOURCES = echo_clt.cxx
 nodist_echo_clt_SOURCES = $(IDL_SOURCES)
 
 echo_clt_CXXFLAGS = \
-	-I$(builddir) \
+	-I. \
 	-I$(srcdir)/../../bases \
 	$(OMNIORB_INCLUDES) \
 	-I$(OMNIORB_ROOT)/include/omniORB4/internal \

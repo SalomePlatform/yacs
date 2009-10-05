@@ -626,6 +626,8 @@ QColor SceneComposedNodeItem::getBrushColor()
   QColor color;
   if (isSelected())
     color = _hiBrushColor;
+  else if (_emphasized)
+    color = Resource::emphasizeBrushColor;
   else 
     color = _brushColor;
 

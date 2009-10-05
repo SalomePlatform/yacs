@@ -144,6 +144,8 @@ void EditionOptimizerLoop::update(GuiEvent event, int type, Subject* son)
       OptimizerLoop *ol = dynamic_cast<OptimizerLoop*>(_subjectNode->getNode());
       _le_entry->setText(QString::fromStdString(ol->getSymbol()));
       _le_lib->setText(QString::fromStdString(ol->getAlgLib()));
+      //input type name
+      _formEachLoop->lineEdit->setText(ol->edGetSamplePort()->edGetType()->name());
       break;
     }
 }

@@ -77,6 +77,7 @@ libYACSRuntimeSALOME_la_SOURCES =      \
 	StudyPorts.cxx                 \
 	VisitorSaveSalomeSchema.cxx    \
 	PyStdout.cxx                   \
+	SalomeOptimizerLoop.cxx        \
 	$(__dummy__)
 
 salomeinclude_HEADERS = \
@@ -94,7 +95,7 @@ SALOMEDispatcher.hxx         SalomeProc.hxx       SalomePythonComponent.hxx  Sal
 SessionCataLoader.hxx        StudyNodes.hxx       StudyPorts.hxx             TypeConversions.hxx \
 VisitorSaveSalomeSchema.hxx  XMLCORBAConv.hxx     XMLCppConv.hxx             XMLNeutralConv.hxx \
 XMLNode.hxx                  XMLPorts.hxx         XMLPythonConv.hxx          PythonInitConv.hxx \
-NeutralInitConv.hxx
+NeutralInitConv.hxx SalomeOptimizerLoop.hxx
 
 EXTRA_libYACSRuntimeSALOME_la_SOURCES =  \
 	$(__dummy__)
@@ -107,10 +108,6 @@ endif
 if DSC_PORTS
 DSC_LIBS=$(KERNEL_LDFLAGS) -lSalomeDSCContainer
 endif
-
-# --- build libYACSRuntimeSALOME library before swig libraries (problem with make -j)
-
-BUILT_SOURCES=SALOMERuntimeWRAP.cxx libYACSRuntimeSALOME.la
 
 libYACSRuntimeSALOME_la_LIBADD = \
 	$(DSC_LIBS) $(SALOME_LIBS) $(OMNIORB_LIBS) \
@@ -128,42 +125,5 @@ AM_CXXFLAGS = \
 	-I$(srcdir)/../engine \
 	-I../../idl \
 	$(LIBXML_INCLUDES)
-
-############################################################
-
-salomepython_PYTHON = SALOMERuntime.py
-salomepyexec_LTLIBRARIES = _SALOMERuntime.la
-
-_SALOMERuntime_la_SOURCES =   \
-	SALOMERuntimeWRAP.cxx
-
-MYSWIG_FLAGS = -noexcept -I$(srcdir)/../bases -I$(srcdir)/../engine
-
-SWIGINCLUDES= RuntimeSALOME.hxx SALOMEDispatcher.hxx SalomeProc.hxx PythonNode.hxx PythonPorts.hxx \
-							CORBANode.hxx CORBAPorts.hxx TypeConversions.hxx \
-							../engine/pilot.i ../engine/engtypemaps.i
-
-SALOMERuntimeWRAP.cxx: SALOMERuntime.i $(SWIGINCLUDES)
-	$(SWIG) $(SWIG_PYTHON_OPT) $(SWIG_PYTHON_INCLUDES) $(MYSWIG_FLAGS) -o $@ $(srcdir)/SALOMERuntime.i
-
-SALOMERuntime.py : SALOMERuntimeWRAP.cxx
-
-_SALOMERuntime_la_CXXFLAGS = \
-	$(THREAD_DEF) \
-	$(PYTHON_CPPFLAGS) \
-	$(OMNIORB_INCLUDES) \
-	$(OMNIORB_CXXFLAGS) \
-	-I$(KERNEL_ROOT_DIR)/include/salome \
-	-I$(srcdir) \
-	-I$(srcdir)/../bases \
-	-I$(srcdir)/../engine \
-	-I../../idl \
-	$(LIBXML_INCLUDES)
-
-_SALOMERuntime_la_LDFLAGS  = -module
-
-_SALOMERuntime_la_LIBADD = libYACSRuntimeSALOME.la 
-
-EXTRA_DIST = SALOMERuntime.i
 
 include $(top_srcdir)/adm/unix/make_end.am

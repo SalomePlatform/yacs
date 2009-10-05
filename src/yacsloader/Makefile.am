@@ -70,6 +70,7 @@ driver_CXXFLAGS = -g -DYACS_PTHREAD \
 							$(SALOME_INCL_PATH) \
               $(OMNIORB_INCLUDES) \
               $(OMNIORB_CXXFLAGS) \
+              $(EXPAT_INCLUDES) \
               -I$(srcdir)/../bases \
               -I$(srcdir)/../engine \
               -I$(srcdir)/../runtime
@@ -91,6 +92,7 @@ resume_CXXFLAGS = -g -DYACS_PTHREAD \
               $(PYTHON_CPPFLAGS) \
               $(OMNIORB_INCLUDES) \
               $(OMNIORB_CXXFLAGS) \
+              $(EXPAT_INCLUDES) \
               -I$(srcdir)/../bases \
               -I$(srcdir)/../engine \
               -I$(srcdir)/../runtime
@@ -112,6 +114,7 @@ debugger_CXXFLAGS = -g -DYACS_PTHREAD \
               $(PYTHON_CPPFLAGS) \
               $(OMNIORB_INCLUDES) \
               $(OMNIORB_CXXFLAGS) \
+              $(EXPAT_INCLUDES) \
               -I$(srcdir)/../bases \
               -I$(srcdir)/../engine \
               -I$(srcdir)/../runtime
@@ -126,37 +129,7 @@ debugger_LDADD = libYACSloader.la \
 
 debugger_LDFLAGS = $(PYTHON_EXTRA_LDFLAGS) -pthread $(EXPAT_LIBS) $(LIBXML_LIBS)
 
-
-SWIG_PYTHON_INCLUDES = -noexcept -I$(srcdir)/../bases -I$(srcdir)/../engine
-# --- build libYACSloader library before swig libraries (problem with make -j)
-BUILT_SOURCES = loaderWRAP.cxx libYACSloader.la
-
-SWIGINCLUDES=parsers.hxx LoadState.hxx xmlParserBase.hxx ProcCataLoader.hxx ../engine/engtypemaps.i ../engine/pilot.i
-
-loaderWRAP.cxx loaderWRAP.h: loader.i $(SWIGINCLUDES)
-	$(SWIG) $(SWIG_PYTHON_OPT) $(SWIG_PYTHON_INCLUDES) $(MYSWIG_FLAGS) -o loaderWRAP.cxx $(srcdir)/loader.i
-
-loader.py : loaderWRAP.cxx
-
-salomepython_PYTHON = loader.py
-salomepyexec_LTLIBRARIES = _loader.la
-
-_loader_la_SOURCES =   \
-	loaderWRAP.cxx
-
-_loader_la_CXXFLAGS = \
-	$(THREAD_DEF) \
-	$(PYTHON_CPPFLAGS) \
-	$(OMNIORB_INCLUDES) \
-	$(OMNIORB_CXXFLAGS) \
-	-I$(srcdir)/../bases \
-	-I$(srcdir)/../engine
-
-_loader_la_LDFLAGS  = -module 
-
-_loader_la_LIBADD =  $(OMNIORB_LIBS) $(PYTHON_LIBS) libYACSloader.la
-
-EXTRA_DIST = loader.i samples
+EXTRA_DIST = samples
 
 dist-hook:
 	rm -rf `find $(distdir) -name CVS`

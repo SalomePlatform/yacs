@@ -24,10 +24,8 @@ bin_PROGRAMS = echoSrv
 check_SCRIPTS = \
 	YacsLoaderTest.sh \
 	YacsLoaderInSessionTest.sh \
-	YacsLoaderInSessionTest2.sh \
 	display.sh \
-	waitContainers.py \
-	testExec.py
+	waitContainers.py 
 
 bin_SCRIPTS = display.sh
 
@@ -69,8 +67,7 @@ IDL_SOURCES = echoSK.cc
 BUILT_SOURCES = $(IDL_SOURCES) echo_idl.py xmlrun.sh 
 
 EXTRA_DIST = $(IDL_FILES) \
-echoclt.py genPascal.py genTriangle.py testEdit.py testExec.py \
-testLoader.py        testResume.py       testSave.py   testRefcount.py  \
+echoclt.py genPascal.py genTriangle.py  \
 waitContainers.py    xmlrun_orig.sh      YacsLoaderTest.hxx  
 
 xmlrun.sh:xmlrun_orig.sh

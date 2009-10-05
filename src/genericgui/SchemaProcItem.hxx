@@ -33,6 +33,8 @@ namespace YACS
       virtual void popupMenu(QWidget *caller, const QPoint &globalPos);
     protected:
       virtual void setExecState(int execState);
+      virtual QVariant editionToolTip(int column) const;
+      virtual QVariant runToolTip(int column) const;
     };
   }
 }

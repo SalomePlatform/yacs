@@ -40,6 +40,8 @@ QColor Resource::runNodeBrushColor    = RUNNODEBRUSHCOLOR;
 QColor Resource::validNodeColor       = VALIDNODECOLOR;
 QColor Resource::invalidNodeColor     = INVALIDNODECOLOR;
 
+QColor Resource::emphasizeBrushColor  = EMPHASIZEBRUSHCOLOR;
+
 QColor Resource::NOTYETINITIALIZED    = NOTYETINITIALIZED_;
 QColor Resource::INITIALISED          = INITIALISED_;
 QColor Resource::RUNNING              = RUNNING_;

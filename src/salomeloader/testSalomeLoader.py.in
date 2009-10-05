@@ -7,12 +7,12 @@ import os
 # --- top_srcdir is used in make distcheck
 
 sys.path.insert(0,"@srcdir@")
-sys.path.insert(0,"@top_builddir@/src/engine")
-sys.path.insert(0,"@top_builddir@/src/runtime")
-sys.path.insert(0,"@top_builddir@/src/engine/.libs")
-sys.path.insert(0,"@top_builddir@/src/runtime/.libs")
-sys.path.insert(0,"@top_srcdir@/src/engine")
-sys.path.insert(0,"@top_srcdir@/src/runtime")
+sys.path.insert(0,"@top_builddir@/src/engine_swig")
+sys.path.insert(0,"@top_builddir@/src/runtime_swig")
+sys.path.insert(0,"@top_builddir@/src/engine_swig/.libs")
+sys.path.insert(0,"@top_builddir@/src/runtime_swig/.libs")
+sys.path.insert(0,"@top_srcdir@/src/engine_swig")
+sys.path.insert(0,"@top_srcdir@/src/runtime_swig")
 
 import unittest
 import pilot

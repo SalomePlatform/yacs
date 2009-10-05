@@ -69,6 +69,7 @@ void GenericEditor::setDelegate(const ValueDelegate* delegate)
 
 QString GenericEditor::GetStrValue()
 {
+  return "";
 }
 
 Subject* GenericEditor::getSubject()

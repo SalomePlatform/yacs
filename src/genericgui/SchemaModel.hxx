@@ -80,6 +80,8 @@ namespace YACS
 
       const QBrush& stdBackBrush();
       const QBrush& editedBackBrush();
+      const QBrush& emphasizeBackBrush();
+
       virtual QMimeData* mimeData(const QModelIndexList &indexes) const;
       virtual bool dropMimeData(const QMimeData* data, Qt::DropAction action,
                                 int row, int column, const QModelIndex& parent);
@@ -101,6 +103,7 @@ namespace YACS
 
       QBrush _stdBackBrush;
       QBrush _editedBackBrush;
+      QBrush _emphasizeBackBrush;
       bool _isEdition;
     };
 

@@ -62,6 +62,9 @@ namespace YACS
       virtual void reparent(SchemaItem *parent);
       virtual void setCaseValue();
 
+      bool isEmphasized() {return _emphasized; };
+      void setEmphasize(bool emphasize) {_emphasized = emphasize; };
+
     protected:
       virtual QVariant editionToolTip(int column) const;
       virtual QVariant runToolTip(int column) const;
@@ -81,6 +84,7 @@ namespace YACS
       SchemaItem *_parentItem;
       Subject* _subject;
       int _execState;
+      bool _emphasized;
     };
 
 

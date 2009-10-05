@@ -456,6 +456,7 @@ struct optimizerlooptypeParser:looptypeParser<T>
           if(std::string(attr[i]) == "nbranch")nbranch(atoi(attr[i+1]));
           if(std::string(attr[i]) == "lib")lib(attr[i+1]);
           if(std::string(attr[i]) == "entry")entry(attr[i+1]);
+          if(std::string(attr[i]) == "kind")kind(attr[i+1]);
         }
       postAttr();
     }
@@ -483,9 +484,13 @@ struct optimizerlooptypeParser:looptypeParser<T>
       DEBTRACE("optimizer_nbranch: " << n )
       _nbranch=n;
     }
+  virtual void kind (const std::string& name)
+    {
+      _kind=name;
+    }
   virtual void postAttr()
     {
-      this->_cnode=theRuntime->createOptimizerLoop(_name,_lib,_entry,true);
+      this->_cnode=theRuntime->createOptimizerLoop(_name,_lib,_entry,true,_kind);
       //set number of branches
       if(_nbranch > 0)this->_cnode->edGetNbOfBranchesPort()->edInit(_nbranch);
       this->_cnodes.push_back(this->_cnode);
@@ -508,6 +513,7 @@ struct optimizerlooptypeParser:looptypeParser<T>
   std::string _fullname;
   std::string _name;
   std::string _entry;
+  std::string _kind;
   std::string _lib;
 
 };

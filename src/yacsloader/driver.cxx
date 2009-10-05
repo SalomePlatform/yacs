@@ -307,14 +307,17 @@ int main (int argc, char* argv[])
         else
           executor.setStopOnError(false, myArgs.dumpErrorFile);
 
-      std::ofstream f("toto");
-      p->writeDot(f);
-      f.close();
+      if(myArgs.display>0)
+        {
+          std::ofstream f("toto");
+          p->writeDot(f);
+          f.close();
+        }
 
       cerr << "+++++++++++++++++++ start calculation +++++++++++++++++++" << endl;
       executor.RunW(p,myArgs.display, fromScratch);
       cerr << "+++++++++++++++++++  end calculation  +++++++++++++++++++" << endl;
-      cerr << "Proc state : " << p->getEffectiveState() << endl;
+      cerr << "Proc state : " << Node::getStateName(p->getEffectiveState()) << endl;
       timer("Elapsed time after execution: ");
 
       if(p->getEffectiveState() != YACS::DONE)
@@ -324,9 +327,12 @@ int main (int argc, char* argv[])
           std::cerr << report << std::endl;
         }
 
-      std::ofstream g("titi");
-      p->writeDot(g);
-      g.close();
+      if(myArgs.display>0)
+        {
+          std::ofstream g("titi");
+          p->writeDot(g);
+          g.close();
+        }
 
       bool isFinalDump = (strlen(myArgs.finalDump) != 0);
       if (isFinalDump)

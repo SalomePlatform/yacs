@@ -144,6 +144,12 @@ void ComposedNodeMenu::popupMenu(QWidget *caller, const QPoint &globalPos, const
   menu.addAction(gmain->_arrangeLocalNodesAct);
   menu.addAction(gmain->_arrangeRecurseNodesAct);
   menu.addSeparator();
+  menu.addAction(gmain->_showOnlyCtrlLinksAct);
+  menu.addAction(gmain->_showCtrlLinksAct);
+  menu.addAction(gmain->_hideCtrlLinksAct);
+  menu.addAction(gmain->_emphasisPortLinksAct);
+  menu.addAction(gmain->_deEmphasizeAllAct);
+  menu.addSeparator();
   menu.addAction(gmain->_zoomToBlocAct);
   menu.addAction(gmain->_centerOnNodeAct);
   menu.addAction(gmain->_computeLinkAct);
@@ -217,6 +223,10 @@ void ProcMenu::popupMenu(QWidget *caller, const QPoint &globalPos, const QString
     }
   menu.addAction(gmain->_getYacsContainerLogAct);
   menu.addSeparator();
+  menu.addAction(gmain->_showAllLinksAct);
+  menu.addAction(gmain->_hideAllLinksAct);
+  menu.addAction(gmain->_deEmphasizeAllAct);
+  menu.addSeparator();
 //   menu.addAction(gmain->_toggleSceneItemVisibleAct);
   menu.addAction(gmain->_arrangeLocalNodesAct);
   menu.addAction(gmain->_arrangeRecurseNodesAct);
@@ -259,6 +269,12 @@ void NodeMenu::popupMenu(QWidget *caller, const QPoint &globalPos, const QString
       menu.addAction(gmain->_copyItemAct);
       menu.addAction(gmain->_pasteItemAct);
     }
+  menu.addSeparator();
+  menu.addAction(gmain->_showOnlyCtrlLinksAct);
+  menu.addAction(gmain->_showCtrlLinksAct);
+  menu.addAction(gmain->_hideCtrlLinksAct);
+  menu.addAction(gmain->_emphasisPortLinksAct);
+  menu.addAction(gmain->_deEmphasizeAllAct);
   menu.addSeparator();
   menu.addAction(gmain->_zoomToBlocAct);
   menu.addAction(gmain->_centerOnNodeAct);
@@ -304,8 +320,14 @@ void LinkMenu::popupMenu(QWidget *caller, const QPoint &globalPos, const QString
   bool isEdition = QtGuiContext::getQtCurrent()->isEdition();
   QMenu menu(m, caller);
   addHeader(menu, m);
+  menu.addAction(gmain->_showOnlyLinkAct);
+  menu.addAction(gmain->_showLinkAct);
+  menu.addAction(gmain->_hideLinkAct);
+  menu.addAction(gmain->_emphasisLinkAct);
+  menu.addAction(gmain->_deEmphasizeAllAct);
   if (isEdition)
     {
+      menu.addSeparator();
       menu.addAction(gmain->_deleteItemAct);
     }
   menu.exec(globalPos);
@@ -348,6 +370,12 @@ void ElementaryNodeMenu::popupMenu(QWidget *caller, const QPoint &globalPos, con
       menu.addAction(gmain->_getContainerLogAct);
     }
   menu.addSeparator();
+  menu.addAction(gmain->_showOnlyCtrlLinksAct);
+  menu.addAction(gmain->_showCtrlLinksAct);
+  menu.addAction(gmain->_hideCtrlLinksAct);
+  menu.addAction(gmain->_emphasisPortLinksAct);
+  menu.addAction(gmain->_deEmphasizeAllAct);
+  menu.addSeparator();
   menu.addAction(gmain->_zoomToBlocAct);
   menu.addAction(gmain->_centerOnNodeAct);
 //   menu.addSeparator();
@@ -371,6 +399,11 @@ void InPortMenu::popupMenu(QWidget *caller, const QPoint &globalPos, const QStri
   bool isEdition = QtGuiContext::getQtCurrent()->isEdition();
   QMenu menu(m, caller);
   addHeader(menu, m);
+  menu.addAction(gmain->_showOnlyPortLinksAct);
+  menu.addAction(gmain->_showPortLinksAct);
+  menu.addAction(gmain->_hidePortLinksAct);
+  menu.addAction(gmain->_emphasisPortLinksAct);
+  menu.addAction(gmain->_deEmphasizeAllAct);
   if (isEdition)
     {
       Subject* sub = QtGuiContext::getQtCurrent()->getSelectedSubject();
@@ -379,7 +412,10 @@ void InPortMenu::popupMenu(QWidget *caller, const QPoint &globalPos, const QStri
       if (sdp) parent = sdp->getPort()->getNode();
       if (parent)
         if (dynamic_cast<DataNode*>(parent) || dynamic_cast<InlineNode*>(parent))
-          menu.addAction(gmain->_deleteItemAct);
+          {
+            menu.addSeparator();
+            menu.addAction(gmain->_deleteItemAct);
+          }
     }
   menu.exec(globalPos);
 }
@@ -400,6 +436,11 @@ void OutPortMenu::popupMenu(QWidget *caller, const QPoint &globalPos, const QStr
   bool isEdition = QtGuiContext::getQtCurrent()->isEdition();
   QMenu menu(m, caller);
   addHeader(menu, m);
+  menu.addAction(gmain->_showOnlyPortLinksAct);
+  menu.addAction(gmain->_showPortLinksAct);
+  menu.addAction(gmain->_hidePortLinksAct);
+  menu.addAction(gmain->_emphasisPortLinksAct);
+  menu.addAction(gmain->_deEmphasizeAllAct);
   if (isEdition)
     {
       Subject* sub = QtGuiContext::getQtCurrent()->getSelectedSubject();
@@ -408,7 +449,10 @@ void OutPortMenu::popupMenu(QWidget *caller, const QPoint &globalPos, const QStr
       if (sdp) parent = sdp->getPort()->getNode();
       if (parent)
         if (dynamic_cast<DataNode*>(parent) || dynamic_cast<InlineNode*>(parent))
-          menu.addAction(gmain->_deleteItemAct);
+          {
+            menu.addSeparator();
+            menu.addAction(gmain->_deleteItemAct);
+          }
     }
   menu.exec(globalPos);
 }
@@ -429,8 +473,14 @@ void CtrlInPortMenu::popupMenu(QWidget *caller, const QPoint &globalPos, const Q
   bool isEdition = QtGuiContext::getQtCurrent()->isEdition();
   QMenu menu(m, caller);
   addHeader(menu, m);
+  menu.addAction(gmain->_showOnlyCtrlLinksAct);
+  menu.addAction(gmain->_showCtrlLinksAct);
+  menu.addAction(gmain->_hideCtrlLinksAct);
+  menu.addAction(gmain->_emphasisCtrlLinksAct);
+  menu.addAction(gmain->_deEmphasizeAllAct);
   if (isEdition)
     {
+      //menu.addSeparator();
       //menu.addAction(gmain->_deleteItemAct);
     }
   menu.exec(globalPos);
@@ -452,8 +502,14 @@ void CtrlOutPortMenu::popupMenu(QWidget *caller, const QPoint &globalPos, const 
   bool isEdition = QtGuiContext::getQtCurrent()->isEdition();
   QMenu menu(m, caller);
   addHeader(menu, m);
+  menu.addAction(gmain->_showOnlyCtrlLinksAct);
+  menu.addAction(gmain->_showCtrlLinksAct);
+  menu.addAction(gmain->_hideCtrlLinksAct);
+  menu.addAction(gmain->_emphasisCtrlLinksAct);
+  menu.addAction(gmain->_deEmphasizeAllAct);
   if (isEdition)
     {
+      //menu.addSeparator();
       //menu.addAction(gmain->_deleteItemAct);
     }
   menu.exec(globalPos);

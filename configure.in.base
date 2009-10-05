@@ -170,28 +170,36 @@ AC_OUTPUT([ \
   src/Makefile \
   src/bases/Makefile \
   src/bases/Test/Makefile \
+  src/batch/Makefile \
   src/engine/Makefile \
   src/engine/Plugin/Makefile \
   src/engine/Test/Makefile \
+  src/engine_swig/Makefile \
   src/hmi/Makefile \
   src/pyqt/Makefile \
   src/runtime/Makefile \
   src/runtime/Test/Makefile \
+  src/runtime_swig/Makefile \
   src/genericgui/Makefile \
   src/salomewrap/Makefile \
   src/salomegui/Makefile \
+  src/salomegui_swig/Makefile \
   src/salomeloader/Makefile \
   src/salomeloader/testSalomeLoader.py \
   src/wrappergen/Makefile \
   src/wrappergen/src/Makefile \
   src/yacsloader/Makefile \
   src/yacsloader/Test/Makefile \
-  src/yacsorb/Makefile \
   src/yacsloader/Test/YacsLoaderTest.sh \
   src/yacsloader/Test/YacsLoaderInSessionTest.sh \
-  src/yacsloader/Test/YacsLoaderInSessionTest2.sh \
   src/yacsloader/Test/display.sh \
   src/yacsloader/Test/config_appli.xml \
+  src/yacsloader_swig/Makefile \
+  src/yacsloader_swig/Test/Makefile \
+  src/yacsloader_swig/Test/YacsLoaderTest.sh \
+  src/yacsloader_swig/Test/YacsLoaderInSessionTest.sh \
+  src/yacsloader_swig/Test/config_appli.xml \
+  src/yacsorb/Makefile \
   src/salomegui/resources/YACSCatalog.xml \
   doc/Doxyfile \
 ])

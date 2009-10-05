@@ -49,6 +49,7 @@ namespace YACS
     class SuitWrapper;
     class CatalogWidget;
     class YACSGuiLoader;
+    class SubjectDataPort;
 
     class GENERICGUI_EXPORT GenericGui: public QObject
     {
@@ -65,6 +66,7 @@ namespace YACS
       void showBaseMenus(bool show);
       void showEditionMenus(bool show);
       void showExecMenus(bool show);
+      void showCommonMenus(bool show);
       void switchContext(QWidget *view);
       bool closeContext(QWidget *view);
       void showDockWidgets(bool isVisible);
@@ -72,6 +74,7 @@ namespace YACS
       CatalogWidget* getCatalogWidget() { return _catalogsWidget; };
       std::list<std::string> getMachineList();
       void createForEachLoop(std::string type="double");
+      virtual void loadSchema(const std::string& filename,bool edit=true);
 
       QAction *_newSchemaAct;
       QAction *_importSchemaAct;
@@ -148,6 +151,25 @@ namespace YACS
       QAction *_toggleSceneItemVisibleAct;
       QAction *_selectReferenceAct;
       QAction *_whatsThisAct;
+
+      QAction *_showAllLinksAct;
+      QAction *_hideAllLinksAct;
+
+      QAction *_showOnlyPortLinksAct;
+      QAction *_showPortLinksAct;
+      QAction *_hidePortLinksAct;
+      QAction *_emphasisPortLinksAct;
+
+      QAction *_showOnlyCtrlLinksAct;
+      QAction *_showCtrlLinksAct;
+      QAction *_hideCtrlLinksAct;
+      QAction *_emphasisCtrlLinksAct;
+
+      QAction *_showOnlyLinkAct;
+      QAction *_showLinkAct;
+      QAction *_hideLinkAct;
+      QAction *_emphasisLinkAct;
+      QAction *_deEmphasizeAllAct;
 
       YACS::HMI::GuiEditor *_guiEditor;
 
@@ -257,10 +279,34 @@ namespace YACS
 
       void onToggleSceneItemVisible(bool checked);
 
+      void onShowAllLinks();
+      void onHideAllLinks();
+
+      void onShowOnlyPortLinks();
+      void onShowPortLinks();
+      void onHidePortLinks();
+      void onEmphasisPortLinks();
+
+      void onShowOnlyCtrlLinks();
+      void onShowCtrlLinks();
+      void onHideCtrlLinks();
+      void onEmphasisCtrlLinks();
+
+      void onShowOnlyLink();
+      void onShowLink();
+      void onHideLink();
+      void onEmphasisLink();
+      void onDeEmphasizeAll();
+
       void onSelectReference();
       void onWhatsThis();
 
     private:
+      void displayLinks(bool isShown);
+      void displayControlLinks(bool isShown);
+      void displayPortLinks(bool isShown);
+      void displayALink(bool isShown);
+      void emphasizePortLink(YACS::HMI::SubjectDataPort* sub, bool emphasize);
     };
 
   }

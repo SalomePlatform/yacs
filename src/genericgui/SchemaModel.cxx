@@ -46,6 +46,7 @@ SchemaModel::SchemaModel(YACS::HMI::Subject *context,
   _context->attach(this);
   _stdBackBrush = QColor("white");
   _editedBackBrush = QColor("yellow");
+  _emphasizeBackBrush = QColor("magenta");
   _isEdition = true;
 }
 
@@ -238,6 +239,11 @@ const QBrush& SchemaModel::stdBackBrush()
 const QBrush& SchemaModel::editedBackBrush()
 {
   return _editedBackBrush;
+}
+
+const QBrush& SchemaModel::emphasizeBackBrush()
+{
+  return _emphasizeBackBrush;
 }
 
 void SchemaModel::setNewRoot(YACS::HMI::Subject *root)

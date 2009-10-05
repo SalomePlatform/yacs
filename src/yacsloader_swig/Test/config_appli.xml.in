@@ -1,0 +1,38 @@
+<!--
+  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+
+  This library is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public
+  License as published by the Free Software Foundation; either
+  version 2.1 of the License.
+
+  This library is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public
+  License along with this library; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+
+  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+
+-->
+<application>
+<prerequisites path="@SALOME_ROOT_DIR@/profile@SALOME_VERSION@.sh"/>
+<modules>
+   <!-- variable name <MODULE>_ROOT_DIR is built with <MODULE> == name attribute value -->
+   <!-- <MODULE>_ROOT_DIR values is set with path attribute value -->
+   <!-- attribute gui (defaults = yes) indicates if the module has a gui interface -->
+   <module name="KERNEL"       gui="no"  path="@SALOME_ROOT_DIR@/KERNEL@SALOME_VERSION@"/>
+   <module name="GUI"          gui="no"  path="@SALOME_ROOT_DIR@/GUI@SALOME_VERSION@"/>
+   <module name="GEOM"                   path="@SALOME_ROOT_DIR@/GEOM@SALOME_VERSION@"/>
+   <module name="MED"                    path="@SALOME_ROOT_DIR@/MED@SALOME_VERSION@"/>
+   <module name="SMESH"                  path="@SALOME_ROOT_DIR@/SMESH@SALOME_VERSION@"/>
+   <module name="VISU"                   path="@SALOME_ROOT_DIR@/VISU@SALOME_VERSION@"/>
+   <module name="HELLO"                  path="@SALOME_ROOT_DIR@/HELLO1@SALOME_VERSION@"/>
+   <module name="PYHELLO"                path="@SALOME_ROOT_DIR@/PYHELLO1@SALOME_VERSION@"/>
+</modules>
+<samples path="@SALOME_ROOT_DIR@/SAMPLES@SALOME_VERSION@"/>
+</application>
+

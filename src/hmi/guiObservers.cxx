@@ -164,6 +164,7 @@ std::map<std::string, std::string> Subject::getProperties()
 
 bool Subject::setProperties(std::map<std::string, std::string> properties)
 {
+  return true;
 }
 
 std::vector<std::string> Subject::knownProperties()

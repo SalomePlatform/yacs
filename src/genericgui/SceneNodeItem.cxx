@@ -132,6 +132,7 @@ void SceneNodeItem::paint(QPainter *painter,
 void SceneNodeItem::update(GuiEvent event, int type, Subject* son)
 {
   DEBTRACE("SceneNodeItem::update "<< eventName(event)<<" "<<type<<" "<<son);
+  SceneObserverItem::update(event, type, son);
   SubjectNode *snode = 0;
   Node *node = 0;
   switch (event)

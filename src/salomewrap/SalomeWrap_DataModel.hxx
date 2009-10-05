@@ -59,7 +59,7 @@ public:
 protected:
   std::map<QWidget*, std::string> _viewEntryMap;
   std::map<std::string, QWidget*> _entryViewMap;
-  
+  std::map<std::string, int> _runCountMap;
 };
 
 

@@ -33,6 +33,7 @@
 #include "TypeCode.hxx"
 #include "WhileLoop.hxx"
 #include "ForLoop.hxx"
+#include "SalomeOptimizerLoop.hxx"
 #include "Bloc.hxx"
 #include "InputPort.hxx"
 #include "OutputPort.hxx"
@@ -435,6 +436,15 @@ WhileLoop* RuntimeSALOME::createWhileLoop(const std::string& name)
 ForLoop* RuntimeSALOME::createForLoop(const std::string& name)
 {
   return new ForLoop(name);
+}
+
+OptimizerLoop* RuntimeSALOME::createOptimizerLoop(const std::string& name,const std::string& algLib,const std::string& factoryName,
+                                                  bool algInitOnFile, const std::string& kind)
+{
+  if(kind=="base")
+    return new OptimizerLoop(name,algLib,factoryName,algInitOnFile);
+  else
+    return new SalomeOptimizerLoop(name,algLib,factoryName,algInitOnFile);
 }
 
 DataNode* RuntimeSALOME::createInDataNode(const std::string& kind,const std::string& name)

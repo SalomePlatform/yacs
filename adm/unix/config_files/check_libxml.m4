@@ -31,8 +31,10 @@ then
   CXXFLAGS="$CXXFLAGS -I$LIBXML_DIR/include/libxml2"
   if test "x$LIBXML_DIR" = "x/usr"
   then
+    AC_MSG_NOTICE(Trying native Libxml2...)
     TMPLIBS="-lxml2 $LIBS"
   else
+    AC_MSG_NOTICE(Trying Libxml2 from $LIBXML_DIR ...)
     TMPLIBS="-L$LIBXML_DIR/lib -lxml2 $LIBS"
   fi
   LIBXML_INCLUDES="-I$LIBXML_DIR/include/libxml2"

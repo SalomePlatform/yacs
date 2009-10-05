@@ -42,10 +42,12 @@ namespace YACS
       virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
       virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
       virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
+      virtual QColor getBrushColor();
       virtual QString getMimeFormat();
       Subject* _subject;
       bool _draging;
       bool _dragModifier;
+      bool _emphasized;
     };
   }
 }

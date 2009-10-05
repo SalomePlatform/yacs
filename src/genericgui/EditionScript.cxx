@@ -87,11 +87,13 @@ EditionScript::EditionScript(Subject* subject,
   QWidget* widg=new QWidget;
   QVBoxLayout *layout = new QVBoxLayout;
   widg->setLayout(layout);
+  layout->setMargin(1);
   splitter->addWidget(widg);
 
   QWidget* window=new QWidget;
   _glayout=new QVBoxLayout;
   window->setLayout(_glayout);
+  _glayout->setMargin(1);
   splitter->addWidget(window);
 
   createTablePorts(layout);

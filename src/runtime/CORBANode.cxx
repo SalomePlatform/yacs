@@ -313,6 +313,7 @@ void SalomeNode::initService()
           _errorDetails="Problem with component '"+_ref+"' in init_service of service '"+ _method + "'";
           throw Exception(_errorDetails);
         }
+      //Should check that component port types are the same as those declared in the xml file 
     }
   catch(...)
     {

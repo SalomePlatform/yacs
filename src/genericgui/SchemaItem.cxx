@@ -66,6 +66,7 @@ SchemaItem::SchemaItem(SchemaItem *parent, QString label, Subject* subject)
   if (_parentItem)
     _parentItem->appendChild(this);
   _execState = YACS::UNDEFINED;
+  _emphasized = false;
 }
 
 SchemaItem::~SchemaItem()
@@ -185,6 +186,13 @@ void SchemaItem::update(GuiEvent event, int type, Subject* son)
     case EDIT:
       if (type)
         _itemBackground.replace(YLabel, model->editedBackBrush());
+      else
+        _itemBackground.replace(YLabel, model->stdBackBrush());
+      model->setData(modelIndex(YLabel), 0);  // --- to emit dataChanged signal
+      break;
+    case EMPHASIZE:
+      if (type)
+        _itemBackground.replace(YLabel, model->emphasizeBackBrush());
       else
         _itemBackground.replace(YLabel, model->stdBackBrush());
       model->setData(modelIndex(YLabel), 0);  // --- to emit dataChanged signal
