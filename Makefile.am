@@ -31,3 +31,5 @@ check-local:
 
 dist-hook:
 		 rm -rf `find $(distdir) -name CVS`
+
+EXTRA_DIST = Misc

@@ -82,7 +82,7 @@ docengine.i:$(SWIGINCLUDES)
 	(cd $(srcdir)/../engine;doxygen ../../Misc/Doxyfile)
 	python $(top_srcdir)/Misc/doxy2swig.py -n $(srcdir)/../engine/xml/index.xml docengine.i;rm -rf $(srcdir)/../engine/xml
 
-EXTRA_DIST = pilot.i pypilot.i engtypemaps.i pypilotWRAP.h
+EXTRA_DIST = ExecutorSwig.hxx pilot.i pypilot.i engtypemaps.i pypilotWRAP.h
 
 clean-local:
 	rm -f pypilot.py* pypilotWRAP.* pilot.py* pilotWRAP.* docengine.i
