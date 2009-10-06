@@ -18,6 +18,7 @@
 //
 #include "PyStdout.hxx"
 #include <structmember.h>
+#include <string>
 
 namespace YACS
 {
@@ -45,7 +46,7 @@ PyStdOut_write(PyStdOut *self, PyObject *args)
     return NULL;
 
   //std::cerr << c ;
-  *(self->out)=*(self->out)+c;
+  *(self->out)=*(self->out)+std::string(c);
 
   Py_INCREF(Py_None);
   return Py_None;

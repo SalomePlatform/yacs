@@ -25,6 +25,10 @@
 #include "Container.hxx"
 #include "CppComponent.hxx"
 
+#ifdef WNT
+#include <windows.h>
+#endif
+
 namespace YACS
 {
   namespace ENGINE
@@ -32,14 +36,22 @@ namespace YACS
   
     struct LocalLibrary {
       
+#if defined( WNT )
+      HMODULE handle;
+#else
       void * handle;
+#endif
       
       InitFunction initHandle;
       RunFunction runHandle;
       PingFunction pingHandle;
       TerminateFunction terminateHandle;
       
+#if defined( WNT )
+      LocalLibrary(HMODULE h, InitFunction i, RunFunction r, 
+#else
       LocalLibrary(void *h, InitFunction i, RunFunction r, 
+#endif
                             PingFunction p, TerminateFunction t) 
 	      : handle(h), initHandle(i), runHandle(r), 
                            pingHandle(p), terminateHandle(t) {}
