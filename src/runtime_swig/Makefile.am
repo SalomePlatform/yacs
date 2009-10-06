@@ -21,11 +21,18 @@ include $(top_srcdir)/adm/unix/make_begin.am
 salomepython_PYTHON = SALOMERuntime.py
 salomepyexec_LTLIBRARIES = _SALOMERuntime.la
 
-_SALOMERuntime_la_SOURCES =   \
+BUILT_SOURCES =   \
 	SALOMERuntimeWRAP.cxx
+
+_SALOMERuntime_la_SOURCES =   \
+	$(BUILT_SOURCES)
 
 MYSWIG_FLAGS = -noexcept -I$(srcdir)/../bases -I$(srcdir)/../engine -I$(srcdir)/../runtime \
                          -I$(srcdir)/../engine_swig -I../engine_swig
+
+if DOXYGEN_IS_OK
+MYSWIG_FLAGS += -DDOXYGEN_IS_OK
+endif
 
 RUNTIMEINCLUDES= RuntimeSALOME.hxx SALOMEDispatcher.hxx SalomeProc.hxx PythonNode.hxx PythonPorts.hxx \
 							CORBANode.hxx CORBAPorts.hxx TypeConversions.hxx

@@ -23,15 +23,21 @@ include $(top_srcdir)/adm/unix/make_begin.am
 SWIGSRC=libYACS_Swig.i
 MYSWIG_FLAGS =
 
+if DOXYGEN_IS_OK
+MYSWIG_FLAGS += -DDOXYGEN_IS_OK
+endif
+
 salomepython_PYTHON = libYACS_Swig.py
 salomepyexec_LTLIBRARIES = _libYACS_Swig.la
 
-libYACS_Swig.py: swig_wrap.cpp
+libYACS_Swig.py: libYACS_SwigWRAP.cxx
+BUILT_SOURCES = libYACS_SwigWRAP.cxx
 _libYACS_Swig_la_SOURCES        =  $(SWIGSRC) YACSGUI_Swig.cxx
-nodist__libYACS_Swig_la_SOURCES = swig_wrap.cpp
+nodist__libYACS_Swig_la_SOURCES = $(BUILT_SOURCES)
 
 _libYACS_Swig_la_CPPFLAGS =   -I$(KERNEL_ROOT_DIR)/include/salome \
                               -I$(GUI_ROOT_DIR)/include/salome \
+                              -I$(srcdir) \
                               -I$(srcdir)/../salomegui \
                               -I$(srcdir)/../salomewrap \
                               $(qt4_cppflags) $(THREAD_DEF) $(PYTHON_CPPFLAGS) $(OMNIORB_INCLUDES)
@@ -40,14 +46,14 @@ _libYACS_Swig_la_CPPFLAGS =   -I$(KERNEL_ROOT_DIR)/include/salome \
 _libYACS_Swig_la_LDFLAGS = -module
 _libYACS_Swig_la_LIBADD  = ../salomegui/libYACS.la $(PYTHON_LIBS)
 
-swig_wrap.cpp : $(SWIGSRC) YACSGUI_Swig.hxx doc.i
+libYACS_SwigWRAP.cxx : $(SWIGSRC) YACSGUI_Swig.hxx doc.i
 	$(SWIG) $(SWIG_PYTHON_OPT) $(SWIG_PYTHON_INCLUDES) $(MYSWIG_FLAGS) -o $@ $<
 
 doc.i:YACSGUI_Swig.hxx YACSGUI_Swig.cxx
 	(cd $(srcdir);doxygen ../../Misc/Doxyfile)
 	python $(top_srcdir)/Misc/doxy2swig.py -n $(srcdir)/xml/index.xml doc.i; rm -rf $(srcdir)/xml
 
-CLEANFILES = swig_wrap.cpp libYACS_Swig.py doc.i
+CLEANFILES = libYACS_SwigWRAP.cxx libYACS_Swig.py doc.i
 
 include $(top_srcdir)/adm/unix/make_end.am
 

@@ -25,6 +25,12 @@ SWIG_PYTHON_INCLUDES = -noexcept -I$(srcdir)/../bases -I$(srcdir)/../engine_swig
 
 BUILT_SOURCES = loaderWRAP.cxx 
 
+MYSWIG_FLAGS =
+
+if DOXYGEN_IS_OK
+MYSWIG_FLAGS += -DDOXYGEN_IS_OK
+endif
+
 LOADERINCLUDES=parsers.hxx LoadState.hxx xmlParserBase.hxx ProcCataLoader.hxx 
 
 SWIGINCLUDES = $(LOADERINCLUDES:%=$(top_srcdir)/src/yacsloader/%)

@@ -53,5 +53,7 @@ class PyAllowThreadsGuard {
   $action
 }
 
+#ifdef DOXYGEN_IS_OK
 %include doc.i 
+#endif
 %include "YACSGUI_Swig.hxx"

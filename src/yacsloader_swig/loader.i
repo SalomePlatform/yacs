@@ -33,7 +33,9 @@
 
 %feature("autodoc", "1");
 
+#ifdef DOXYGEN_IS_OK
 %include docyacsloader.i
+#endif
 
 %include "engtypemaps.i"
 
