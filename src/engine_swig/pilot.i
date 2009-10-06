@@ -35,7 +35,9 @@
 
 %include "engtypemaps.i"
 
+#ifdef DOXYGEN_IS_OK
 %include docengine.i
+#endif
 
 %{
 #include "Any.hxx"

@@ -21,6 +21,9 @@ include $(top_srcdir)/adm/unix/make_begin.am
 BUILT_SOURCES = pilotWRAP.cxx pypilotWRAP.cxx pypilotWRAP.h 
 
 MYSWIG_FLAGS = -noexcept -I$(srcdir)/../bases -I$(srcdir)/../engine
+if DOXYGEN_IS_OK
+MYSWIG_FLAGS += -DDOXYGEN_IS_OK
+endif
 
 salomepython_PYTHON = pilot.py pypilot.py
 salomepyexec_LTLIBRARIES = _pilot.la _pypilot.la
@@ -55,6 +58,7 @@ _pilot_la_CXXFLAGS = \
 	$(PYTHON_CPPFLAGS) \
 	$(OMNIORB_INCLUDES) \
   $(OMNIORB_CXXFLAGS) \
+	-I$(srcdir) \
 	-I$(srcdir)/../engine \
 	-I$(srcdir)/../bases
 
