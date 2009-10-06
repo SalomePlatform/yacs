@@ -31,7 +31,7 @@ using namespace std;
  */
 
 SalomeOptimizerLoop::SalomeOptimizerLoop(const std::string& name, const std::string& algLibWthOutExt,
-                                         const std::string& symbolNameToOptimizerAlgBaseInstanceFactory, bool algInitOnFile) throw(Exception) :
+                                         const std::string& symbolNameToOptimizerAlgBaseInstanceFactory, bool algInitOnFile) throw(YACS::Exception) :
                      OptimizerLoop(name,algLibWthOutExt,symbolNameToOptimizerAlgBaseInstanceFactory,algInitOnFile)
 {
 }
