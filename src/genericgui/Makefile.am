@@ -324,6 +324,7 @@ libGenericGui_la_LIBADD    = $(qt4_libs) $(qsci4_libs)\
 	../yacsloader/libYACSloader.la \
 	../salomewrap/libSalomeWrap.la \
 	../hmi/libHMI.la \
+	$(KERNEL_LDFLAGS) -lSalomeResourcesManager \
 	$(EXPAT_LIBS) $(LIBXML_LIBS) $(GRAPHVIZ_LIBADD)
 
 
