@@ -64,7 +64,7 @@ _pilot_la_CXXFLAGS = \
 
 _pilot_la_LDFLAGS  = -module
 
-_pilot_la_LIBADD = ../engine/libYACSlibEngine.la $(OMNIORB_LIBS)
+_pilot_la_LIBADD = ../engine/libYACSlibEngine.la $(OMNIORB_LIBS) $(PYTHON_LIBS)
 
 
 pypilotWRAP.cxx: pypilotWRAP.h
@@ -76,7 +76,7 @@ pypilot.py : pypilotWRAP.cxx
 _pypilot_la_SOURCES =  pypilotWRAP.cxx
 _pypilot_la_CXXFLAGS =  $(THREAD_DEF) $(PYTHON_CPPFLAGS) $(OMNIORB_INCLUDES) $(OMNIORB_CXXFLAGS) -I$(srcdir)/../engine -I$(srcdir)/../bases
 _pypilot_la_LDFLAGS  = -module
-_pypilot_la_LIBADD = ../engine/libYACSlibEngine.la $(OMNIORB_LIBS)
+_pypilot_la_LIBADD = ../engine/libYACSlibEngine.la $(OMNIORB_LIBS) $(PYTHON_LIBS)
 
 docengine.i:$(SWIGINCLUDES)
 	(cd $(srcdir)/../engine;doxygen ../../Misc/Doxyfile)

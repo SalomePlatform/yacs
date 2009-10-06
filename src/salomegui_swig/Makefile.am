@@ -40,7 +40,8 @@ _libYACS_Swig_la_CPPFLAGS =   -I$(KERNEL_ROOT_DIR)/include/salome \
                               -I$(srcdir) \
                               -I$(srcdir)/../salomegui \
                               -I$(srcdir)/../salomewrap \
-                              $(qt4_cppflags) $(THREAD_DEF) $(PYTHON_CPPFLAGS) $(OMNIORB_INCLUDES)
+                              $(qt4_cppflags) $(THREAD_DEF) $(PYTHON_CPPFLAGS) $(OMNIORB_CXXFLAGS) $(OMNIORB_INCLUDES) $(BOOST_CPPFLAGS)
+
 
 
 _libYACS_Swig_la_LDFLAGS = -module

@@ -1522,7 +1522,7 @@ SubjectNode* SubjectBloc::getChild(YACS::ENGINE::Node* node) const
 
   if (node)
   {
-    set<SubjectNode*>::iterator it = _children.begin();
+    set<SubjectNode*>::const_iterator it = _children.begin();
     for ( ; it != _children.end(); it++ )
       if ( (*it)->getNode() == node )
       {
