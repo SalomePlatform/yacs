@@ -107,7 +107,7 @@ void SceneLinkItem::setShape(int thickness)
 
 void SceneLinkItem::addArrow(QPointF pfrom,
                              QPointF pto,
-                             HMI::Direction dir,
+                             YACS::HMI::Direction dir,
                              int thickness)
 {
   qreal x, y, width, height, length;
