@@ -253,6 +253,71 @@ static PyObject* convertPort(YACS::ENGINE::Port* port,int owner=0)
 #endif
 
 #ifdef SWIGPYTHON
+
+%typecheck(SWIG_TYPECHECK_POINTER) YACS::ENGINE::Any*
+{
+  void *ptr;
+  if (SWIG_ConvertPtr($input, (void **) &ptr, $1_descriptor, 0) == 0) 
+    $1 = 1;
+  else if (PyInt_Check($input))
+    $1 = 1;
+  else if(PyFloat_Check($input))
+    $1 = 1;
+  else 
+    $1 = 0;
+}
+
+%typemap(in) YACS::ENGINE::Any* (int is_new_object)
+{
+  if ((SWIG_ConvertPtr($input,(void **) &$1, $1_descriptor,SWIG_POINTER_EXCEPTION)) == 0)
+    {
+      // It is an Any : it is converted by SWIG_ConvertPtr $input -> $1
+      is_new_object=0;
+    }
+  else if (PyInt_Check($input))
+    {
+      // It is an Int
+      $1=YACS::ENGINE::AtomAny::New((int)PyInt_AsLong($input));
+      is_new_object=1;
+    }
+  else if(PyFloat_Check($input))
+    {
+      // It is a Float
+      $1=YACS::ENGINE::AtomAny::New(PyFloat_AsDouble($input));
+      is_new_object=1;
+    }
+  else
+    {
+      // It is an error
+      PyErr_SetString(PyExc_TypeError,"not a yacs any or a convertible type");
+      return NULL;
+    }
+}
+
+%typemap(freearg) YACS::ENGINE::Any *inSample
+{
+  //a reference is taken by the routine called
+  if (!is_new_object$argnum) $1->incrRef();
+}
+
+%typemap(freearg) YACS::ENGINE::Any*
+{
+  //no reference taken by the routine called
+  if (is_new_object$argnum) $1->decrRef();
+}
+
+%typemap(out) YACS::ENGINE::Any*
+{
+  if(dynamic_cast<YACS::ENGINE::SequenceAny *>($1))
+    $result=SWIG_NewPointerObj((void*)$1,SWIGTYPE_p_YACS__ENGINE__SequenceAny,$owner);
+  else if(dynamic_cast<YACS::ENGINE::ArrayAny *>($1))
+    $result=SWIG_NewPointerObj((void*)$1,SWIGTYPE_p_YACS__ENGINE__ArrayAny,$owner);
+  else if(dynamic_cast<YACS::ENGINE::StructAny *>($1))
+    $result=SWIG_NewPointerObj((void*)$1,SWIGTYPE_p_YACS__ENGINE__StructAny,$owner);
+  else
+    $result=SWIG_NewPointerObj((void*)$1,SWIGTYPE_p_YACS__ENGINE__Any,$owner);
+}
+
 %typemap(out) YACS::ENGINE::TypeCode*
 {
   if(dynamic_cast<YACS::ENGINE::TypeCodeStruct *>($1))

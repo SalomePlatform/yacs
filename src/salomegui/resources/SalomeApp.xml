@@ -79,6 +79,7 @@
     <parameter name="stream_link_select_color"  value="255, 255, 192" />
     <parameter name="control_link_draw_color"   value="192,   0, 192" />
     <parameter name="control_link_select_color" value="255, 192, 255" />
+    <parameter name="emphasizeBrushColor"       value="  0, 255,   0" />
     <parameter name="link_pen_darkness" value="150" />
 
     <parameter name="Scene_pen"              value="  0,   0, 128" />

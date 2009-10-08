@@ -59,6 +59,7 @@ namespace YACS
       virtual TypeOfAlgInterface getType() const = 0;
       virtual void initialize(const Any *input) throw (Exception) = 0;
       virtual void finish() = 0;//! Called when optimization has succeed.
+      virtual void setPool(Pool *pool);
     };
 
     /*!

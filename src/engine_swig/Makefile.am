@@ -18,9 +18,9 @@
 #
 include $(top_srcdir)/adm/unix/make_begin.am
 
-BUILT_SOURCES = pilotWRAP.cxx pypilotWRAP.cxx pypilotWRAP.h 
+BUILT_SOURCES = pilotWRAP.cxx pypilotWRAP.cxx pypilotWRAP.h pilotWRAP.h
 
-MYSWIG_FLAGS = -noexcept -I$(srcdir)/../bases -I$(srcdir)/../engine
+MYSWIG_FLAGS = -noexcept -DYACS_PTHREAD -I$(srcdir)/../bases -I$(srcdir)/../engine
 if DOXYGEN_IS_OK
 MYSWIG_FLAGS += -DDOXYGEN_IS_OK
 endif
@@ -39,12 +39,12 @@ ConversionException.hxx  ForLoop.hxx         Node.hxx                        Run
 DataFlowPort.hxx         InGate.hxx          OptimizerAlg.hxx                Scheduler.hxx             WhileLoop.hxx \
 DataPort.hxx             InlineNode.hxx      OptimizerLoop.hxx               ServiceInlineNode.hxx     ComponentDefinition.hxx \
 DataStreamPort.hxx       InPort.hxx          OutGate.hxx                     ServiceNode.hxx           Catalog.hxx  \
-PropertyInterface.hxx  AnyOutputPort.hxx 
+PropertyInterface.hxx  AnyOutputPort.hxx Pool.hxx ../bases/DrivenCondition.hxx ../bases/DrivenConditionPT.hxx
 
 SWIGINCLUDES = $(ENGINEINCLUDES:%=$(top_srcdir)/src/engine/%) $(top_srcdir)/src/bases/yacsconfig.h ExecutorSwig.hxx
 
 pilotWRAP.cxx:pilot.i $(SWIGINCLUDES) engtypemaps.i docengine.i
-	$(SWIG) $(SWIG_PYTHON_OPT) $(SWIG_PYTHON_INCLUDES) $(MYSWIG_FLAGS) -o pilotWRAP.cxx $(srcdir)/pilot.i 
+	$(SWIG) $(SWIG_PYTHON_OPT) $(SWIG_PYTHON_INCLUDES) $(MYSWIG_FLAGS) -o pilotWRAP.cxx $(srcdir)/pilot.i
 
 pilot.py : pilotWRAP.cxx
 
@@ -67,9 +67,11 @@ _pilot_la_LDFLAGS  = -module
 _pilot_la_LIBADD = ../engine/libYACSlibEngine.la $(OMNIORB_LIBS) $(PYTHON_LIBS)
 
 
-pypilotWRAP.cxx: pypilotWRAP.h
-pypilotWRAP.h: pypilot.i pilot.i $(SWIGINCLUDES) engtypemaps.i pilotWRAP.cxx
+pypilotWRAP.cxx: pypilot.i pilot.i $(SWIGINCLUDES) engtypemaps.i pilotWRAP.cxx
 	$(SWIG) $(SWIG_PYTHON_OPT) $(SWIG_PYTHON_INCLUDES) $(MYSWIG_FLAGS) -o pypilotWRAP.cxx $(srcdir)/pypilot.i
+
+pypilotWRAP.h: pypilotWRAP.cxx
+pilotWRAP.h: pilotWRAP.cxx
 
 pypilot.py : pypilotWRAP.cxx 
 

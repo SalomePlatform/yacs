@@ -60,9 +60,9 @@ namespace YACS
       std::list< std::pair<int, ExpData> >::iterator _currentCase;
     public:
       //For algorithm use
-      int getCurrentId() const { return (*_currentCase).first; }
-      Any *getCurrentInSample() const { return (*_currentCase).second.inValue(); }
-      Any *getCurrentOutSample() const { return (*_currentCase).second.outValue(); }
+      int getCurrentId() const ;
+      Any *getCurrentInSample() const ;
+      Any *getCurrentOutSample() const ;
       void pushInSample(int id, Any *inSample, unsigned char priority = 0);
       void destroyAll();
     private:

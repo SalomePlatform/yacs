@@ -144,6 +144,7 @@ namespace YACS
       QAction *_zoomToBlocAct;
       QAction *_centerOnNodeAct;
 
+      QAction *_toggleStraightLinksAct;
       QAction *_toggleAutomaticComputeLinkAct;
       QAction *_toggleSimplifyLinkAct;
       QAction *_toggleForce2NodesLinkAct;
@@ -272,6 +273,7 @@ namespace YACS
       void onRebuildLinks();
       void onZoomToBloc();
       void onCenterOnNode();
+      void onToggleStraightLinks(bool checked);
       void onToggleAutomaticComputeLinks(bool checked);
       void onToggleSimplifyLinks(bool checked);
       void onToggleForce2NodesLinks(bool checked);

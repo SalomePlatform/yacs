@@ -57,6 +57,7 @@
 #include "TypeConversions.hxx"
 #include "TypeCode.hxx"
 #include "VisitorSaveSalomeSchema.hxx"
+#include "SalomeOptimizerLoop.hxx"
 #include <sstream>
 %}
 
@@ -124,6 +125,7 @@
 %include "CORBAPorts.hxx"
 %include "StudyNodes.hxx"
 %include "StudyPorts.hxx"
+%include "SalomeOptimizerLoop.hxx"
 
 %extend YACS::ENGINE::OutputPresetPort
 {

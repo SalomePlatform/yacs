@@ -33,6 +33,7 @@
 using namespace std;
 using namespace YACS::HMI;
 
+bool Scene::_straightLinks = false;
 bool Scene::_autoComputeLinks = true;
 bool Scene::_simplifyLinks = true;
 bool Scene::_force2NodesLink = true;

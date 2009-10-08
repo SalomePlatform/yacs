@@ -112,6 +112,7 @@ void Yacsgui_Resource::createPreferences(Yacsgui* swm)
   swm->addPreference( QObject::tr( "Stream link select color" ),  idGroup, LightApp_Preferences::Color, RESOURCE_YACS, "stream_link_select_color" );
   swm->addPreference( QObject::tr( "Control link draw color" ),   idGroup, LightApp_Preferences::Color, RESOURCE_YACS, "control_link_draw_color" );
   swm->addPreference( QObject::tr( "Control link select color" ), idGroup, LightApp_Preferences::Color, RESOURCE_YACS, "control_link_select_color" );
+  swm->addPreference( QObject::tr( "Emphasis link color" ),       idGroup, LightApp_Preferences::Color, RESOURCE_YACS, "emphasizeBrushColor" );
 
   swm->addPreference( QObject::tr( "link pen darkness" ),         idGroup, LightApp_Preferences::Integer, RESOURCE_YACS, "link_pen_darkness" );
 
@@ -288,6 +289,7 @@ void Yacsgui_Resource::preferencesChanged()
   Resource::stream_link_select_color  = colorValue("stream_link_select_color" , STREAMLINK_SELECT_COLOR);
   Resource::control_link_draw_color   = colorValue("control_link_draw_color"  , CTRLLINKDRAW_COLOR     );
   Resource::control_link_select_color = colorValue("control_link_select_color", CTRLLINK_SELECT_COLOR  );
+  Resource::emphasizeBrushColor       = colorValue("emphasizeBrushColor"      , EMPHASIZEBRUSHCOLOR    );
 
   Resource::link_pen_darkness = integerValue("link_pen_darkness", LINK_PEN_DARKNESS  );
 

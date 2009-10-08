@@ -118,6 +118,8 @@ EditionScript::EditionScript(Subject* subject,
   _sci->setIndentationGuides(1);
   _sci->setIndentationsUseTabs(0);
   _sci->setAutoCompletionThreshold(2);
+  //_sci->setMarginLineNumbers(1,true);
+  _sci->setMarginWidth(1,0);
 #endif
 
   if (!QtGuiContext::getQtCurrent()->isEdition())

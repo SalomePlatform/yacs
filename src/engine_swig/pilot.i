@@ -20,7 +20,7 @@
 "All is needed to create and execute a calculation schema."
 %enddef
 
-%module(docstring=DOCSTRING) pilot
+%module(directors="1",docstring=DOCSTRING) pilot
 
 #ifndef SWIGIMPORTED
 //work around SWIG bug #1863647
@@ -77,6 +77,7 @@ using namespace YACS::ENGINE;
 #endif
 %}
 
+%ignore YACS::ENGINE::Any::operator[];
 %ignore YACS::ENGINE::TypeCode::operator=;
 %ignore YACS::ENGINE::DeploymentTree::operator=;
 %ignore operator<<;
@@ -156,6 +157,7 @@ REFCOUNT_TEMPLATE(CompoInstmap,YACS::ENGINE::ComponentInstance)
 %newobject *::createInputDataStreamPort;
 %newobject *::createOutputDataStreamPort;
 %newobject *::clone;
+%newobject *::New;
 
 //Take ownership : transfer it from C++ (has to be completed)
 %newobject YACS::ENGINE::Loop::edRemoveNode;
@@ -181,10 +183,27 @@ REFCOUNT_TEMPLATE(CompoInstmap,YACS::ENGINE::ComponentInstance)
  * End of ownership section
  */
 
+%feature("director") YACS::ENGINE::OptimizerAlgSync;
+%feature("director") YACS::ENGINE::OptimizerAlgASync;
+%feature("nodirector") YACS::ENGINE::OptimizerAlgSync::getType;
+%feature("nodirector") YACS::ENGINE::OptimizerAlgASync::getType;
+%feature("director:except") {
+    if ($error != NULL) {
+        PyErr_Print();
+        throw YACS::Exception("exception in director");
+    }
+}
+
+
 
 %include <define.hxx>
 %include <YACSBasesExport.hxx>
 %include <Exception.hxx>
+
+PYEXCEPTION(YACS::BASES::DrivenConditionPT::wait)
+%include <DrivenConditionPT.hxx>
+%include <DrivenCondition.hxx>
+
 %include <YACSlibEngineExport.hxx>
 %include <ConversionException.hxx>
 %include <Runtime.hxx>
@@ -205,6 +224,8 @@ EXCEPTION(YACS::ENGINE::ExecutorSwig::waitPause)
 %include <ExecutorSwig.hxx>
 
 %include <RefCounter.hxx>
+
+%include <Any.hxx>
 
 %ignore YACS::ENGINE::TypeCode::getOrBuildAnyFromZippedData;
 %include <TypeCode.hxx>
@@ -306,6 +327,7 @@ EXCEPTION(YACS::ENGINE::ExecutorSwig::waitPause)
 %include <VisitorSaveSchema.hxx>
 %include <ComponentDefinition.hxx>
 %include <Catalog.hxx>
+%include <Pool.hxx>
 
 %extend YACS::ENGINE::ConditionInputPort
 {
@@ -331,3 +353,18 @@ EXCEPTION(YACS::ENGINE::ExecutorSwig::waitPause)
   }
 }
 
+%newobject YACS::ENGINE::SequenceAny::__getitem__;
+%extend YACS::ENGINE::SequenceAny
+{
+  Any* __getitem__(int i)
+  {
+    if (i < self->size())
+      {
+        AnyPtr a=(*self)[i];
+        a->incrRef();
+        return a;
+      }
+    else
+      throw std::length_error("index too large");
+  }
+}

@@ -102,6 +102,7 @@ namespace YACS
         SETSELECT,
         GEOMETRY,
         EMPHASIZE,
+        SWITCHSHAPE
       } GuiEvent;
     
     class ProcInvoc;

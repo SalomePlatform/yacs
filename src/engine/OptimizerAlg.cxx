@@ -28,6 +28,11 @@ OptimizerAlgBase::~OptimizerAlgBase()
 {
 }
 
+void OptimizerAlgBase::setPool(Pool* pool)
+{
+  _pool=pool;
+}
+
 OptimizerAlgSync::OptimizerAlgSync(Pool *pool):OptimizerAlgBase(pool)
 {
 }

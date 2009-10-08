@@ -34,7 +34,7 @@ namespace YACS
   {
     class YACSLIBENGINE_EXPORT OptimizerAlgStandardized : public OptimizerAlgSync
     {
-    private:
+    protected:
       ::YACS::BASES::Thread *_threadInCaseOfNotEvent;
       ::YACS::BASES::DrivenCondition _condition;
       OptimizerAlgBase *_algBehind;
@@ -43,14 +43,14 @@ namespace YACS
       ~OptimizerAlgStandardized();
       TypeCode *getTCForIn() const;
       TypeCode *getTCForOut() const;
-      void setAlgPointer(OptimizerAlgBaseFactory algFactory);
+      void setAlgPointer(OptimizerAlgBase* alg);
       OptimizerAlgBase * getAlg(){return _algBehind;};
       void parseFileToInit(const std::string& fileName);
       void initialize(const Any *input) throw (Exception);
       void takeDecision();
       void finish();
       void start();
-    private:
+    protected:
       static void *threadFctForAsync(void* ownStack);
     };
 
@@ -101,7 +101,7 @@ namespace YACS
     public:
       OptimizerLoop(const std::string& name, const std::string& algLibWthOutExt,
                     const std::string& symbolNameToOptimizerAlgBaseInstanceFactory,
-                    bool algInitOnFile) throw(Exception);
+                    bool algInitOnFile,bool initAlgo=true);
       OptimizerLoop(const OptimizerLoop& other, ComposedNode *father, bool editionOnly);
       ~OptimizerLoop();
       void init(bool start=true);
@@ -119,7 +119,7 @@ namespace YACS
       virtual void accept(Visitor *visitor);
       std::string getSymbol() const { return _symbol; }
       std::string getAlgLib() const ;
-      void setAlgorithm(const std::string& alglib,const std::string& symbol,bool checkLinks=true);
+      virtual void setAlgorithm(const std::string& alglib,const std::string& symbol,bool checkLinks=true);
       virtual void checkBasicConsistency() const throw(Exception);
 
     protected:

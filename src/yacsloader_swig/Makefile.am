@@ -20,7 +20,7 @@ include $(top_srcdir)/adm/unix/make_begin.am
 
 SUBDIRS = Test
 
-SWIG_PYTHON_INCLUDES = -noexcept -I$(srcdir)/../bases -I$(srcdir)/../engine_swig -I$(srcdir)/../engine \
+SWIG_PYTHON_INCLUDES = -noexcept -DYACS_PTHREAD -I$(srcdir)/../bases -I$(srcdir)/../engine_swig -I$(srcdir)/../engine \
                                  -I$(srcdir)/../yacsloader -I../engine_swig
 
 BUILT_SOURCES = loaderWRAP.cxx 

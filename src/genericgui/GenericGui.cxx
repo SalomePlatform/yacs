@@ -186,11 +186,13 @@ void GenericGui::createActions()
   _newSchemaAct = _wrapper->createAction(getMenuId(), tr("Create a new YACS Schema"), QIcon(pixmap),
                                          tr("New Schema"), tr("Create a new YACS Schema"),
                                          0, _parent, false, this,  SLOT(onNewSchema()));
+  _newSchemaAct->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_N); // --- QKeySequence::New ambiguous in SALOME
 
   pixmap.load("icons:import_dataflow.png");
   _importSchemaAct = _wrapper->createAction(getMenuId(), tr("Import a YACS Schema for edition"), QIcon(pixmap),
                                             tr("Import Schema"), tr("Import a YACS Schema for edition"),
                                             0, _parent, false, this,  SLOT(onImportSchema()));
+  _importSchemaAct->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_O); // --- QKeySequence::Open ambiguous in SALOME
   
   pixmap.load("icons:import_superv_dataflow.png");
   _importSupervSchemaAct = _wrapper->createAction(getMenuId(), tr("Import a SUPERV Schema for edition"), QIcon(pixmap),
@@ -201,11 +203,13 @@ void GenericGui::createActions()
   _exportSchemaAct = _wrapper->createAction(getMenuId(), tr("Save the current YACS Schema"), QIcon(pixmap),
                                             tr("Save Schema"), tr("Save the current YACS Schema"),
                                             0, _parent, false, this,  SLOT(onExportSchema()));
+  _exportSchemaAct->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_S); // --- QKeySequence::Save ambiguous in SALOME
   
   pixmap.load("icons:export_dataflow.png");
   _exportSchemaAsAct = _wrapper->createAction(getMenuId(), tr("Save the current YACS Schema As..."), QIcon(pixmap),
                                               tr("Save Schema As"), tr("Save the current YACS Schema As..."),
                                               0, _parent, false, this,  SLOT(onExportSchemaAs()));
+  //_exportSchemaAsAct->setShortcut(QKeySequence::SaveAs); // --- ambiguous in SALOME
 
   pixmap.load("icons:insert_file.png");
   _importCatalogAct = _wrapper->createAction(getMenuId(), tr("Import a Schema as a Catalog"), QIcon(pixmap),
@@ -416,21 +420,25 @@ void GenericGui::createActions()
   _deleteItemAct = _wrapper->createAction(getMenuId(), tr("Delete a Schema Item"), QIcon(pixmap),
                                           tr("Delete Item"), tr("Delete a Schema Item"),
                                           0, _parent, false, this,  SLOT(onDeleteItem()));
+  _deleteItemAct->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_D); // --- QKeySequence::Delete dangerous...
 
   pixmap.load("icons:cut.png");
   _cutItemAct = _wrapper->createAction(getMenuId(), tr("Cut a Schema Item"), QIcon(pixmap),
                                        tr("Cut Item"), tr("Cut a Schema Item"),
                                        0, _parent, false, this,  SLOT(onCutItem()));
+  _cutItemAct->setShortcut(QKeySequence::Cut);
 
   pixmap.load("icons:copy.png");
   _copyItemAct = _wrapper->createAction(getMenuId(), tr("Copy a Schema Item"), QIcon(pixmap),
                                         tr("Copy Item"), tr("Copy a Schema Item"),
                                         0, _parent, false, this,  SLOT(onCopyItem()));
+  _copyItemAct->setShortcut(QKeySequence::Copy);
 
   pixmap.load("icons:paste.png");
   _pasteItemAct = _wrapper->createAction(getMenuId(), tr("Paste a Schema Item"), QIcon(pixmap),
                                          tr("Paste Item"), tr("Paste a Schema Item"),
                                          0, _parent, false, this,  SLOT(onPasteItem()));
+  _pasteItemAct->setShortcut(QKeySequence::Paste);
 
   pixmap.load("icons:arrange_nodes.png");
   _arrangeLocalNodesAct = _wrapper->createAction(getMenuId(), tr("arrange nodes on that bloc level, without recursion"), QIcon(pixmap),
@@ -456,6 +464,15 @@ void GenericGui::createActions()
   _centerOnNodeAct = _wrapper->createAction(getMenuId(), tr("center 2D view on selected node"), QIcon(pixmap),
                                             tr("center on node"), tr("center 2D view on selected node"),
                                             0, _parent, false, this,  SLOT(onCenterOnNode()));
+  _centerOnNodeAct->setShortcut(QKeySequence::Find);
+
+  pixmap.load("icons:straightLink.png");
+  _toggleStraightLinksAct = _wrapper->createAction(getMenuId(), tr("draw straight or orthogonal links"), QIcon(pixmap),
+                                                   tr("straight/orthogonal"), tr("draw straight or orthogonal links"),
+                                                   0, _parent, true, this,  SLOT(onToggleStraightLinks(bool)));
+  
+  _toggleStraightLinksAct->setChecked(Resource::straightLinks);
+  onToggleStraightLinks(Resource::straightLinks);
 
   pixmap.load("icons:autoComputeLink.png");
   _toggleAutomaticComputeLinkAct = _wrapper->createAction(getMenuId(), tr("compute othogonal links automatically when nodes move"), QIcon(pixmap),
@@ -494,6 +511,7 @@ void GenericGui::createActions()
   _whatsThisAct = _wrapper->createAction(getMenuId(), tr("active whatsThis Mode to get help on widgets"), QIcon(pixmap),
                                          tr("whatsThis Mode"), tr("active whatsThis Mode to get help on widgets"),
                                          0, _parent, false, this,  SLOT(onWhatsThis()));
+  _whatsThisAct->setShortcut(QKeySequence::WhatsThis);
 
   pixmap.load("icons:run_active.png");
   _withoutStopModeAct = _wrapper->createAction(getMenuId(), tr("set execution mode without stop"), QIcon(pixmap),
@@ -646,6 +664,7 @@ void GenericGui::createMenus()
   _wrapper->createMenu( _wrapper->separator(), aMenuId);
   _wrapper->createMenu( _importCatalogAct, aMenuId );
   _wrapper->createMenu( _wrapper->separator(), aMenuId);
+  _wrapper->createMenu( _toggleStraightLinksAct, aMenuId );
   _wrapper->createMenu( _toggleAutomaticComputeLinkAct, aMenuId );
   _wrapper->createMenu( _toggleSimplifyLinkAct, aMenuId );
   _wrapper->createMenu( _toggleForce2NodesLinkAct, aMenuId );
@@ -686,6 +705,7 @@ void GenericGui::createTools()
   _wrapper->createTool( _wrapper->separator(), aToolId );
   _wrapper->createTool( _importCatalogAct, aToolId );
   _wrapper->createTool( _wrapper->separator(), aToolId );
+  _wrapper->createTool( _toggleStraightLinksAct, aToolId );
   _wrapper->createTool( _toggleAutomaticComputeLinkAct, aToolId );
   _wrapper->createTool( _toggleSimplifyLinkAct, aToolId );
   //_wrapper->createTool( _toggleForce2NodesLinkAct, aToolId );
@@ -732,14 +752,6 @@ void GenericGui::showEditionMenus(bool show)
   _wrapper->setToolShown(_runLoadedSchemaAct, show);
   _wrapper->setMenuShown(_importCatalogAct, show);
   _wrapper->setToolShown(_importCatalogAct, show);
-  _wrapper->setMenuShown(_toggleAutomaticComputeLinkAct, show);
-  _wrapper->setToolShown(_toggleAutomaticComputeLinkAct, show);
-  _wrapper->setMenuShown(_toggleSimplifyLinkAct, show);
-  _wrapper->setToolShown(_toggleSimplifyLinkAct, show);
-  _wrapper->setMenuShown(_toggleForce2NodesLinkAct, show);
-  //_wrapper->setToolShown(_toggleForce2NodesLinkAct, show);
-  _wrapper->setMenuShown(_toggleAddRowColsAct, show);
-  _wrapper->setToolShown(_toggleAddRowColsAct, show);
 }
 
 void GenericGui::showExecMenus(bool show)
@@ -770,6 +782,16 @@ void GenericGui::showExecMenus(bool show)
 void GenericGui::showCommonMenus(bool show)
 {
   DEBTRACE("GenericGui::showCommonMenus " << show);
+  _wrapper->setMenuShown(_toggleStraightLinksAct, show);
+  _wrapper->setToolShown(_toggleStraightLinksAct, show);
+  _wrapper->setMenuShown(_toggleAutomaticComputeLinkAct, show);
+  _wrapper->setToolShown(_toggleAutomaticComputeLinkAct, show);
+  _wrapper->setMenuShown(_toggleSimplifyLinkAct, show);
+  _wrapper->setToolShown(_toggleSimplifyLinkAct, show);
+  _wrapper->setMenuShown(_toggleForce2NodesLinkAct, show);
+  //_wrapper->setToolShown(_toggleForce2NodesLinkAct, show);
+  _wrapper->setMenuShown(_toggleAddRowColsAct, show);
+  _wrapper->setToolShown(_toggleAddRowColsAct, show);
   _wrapper->setMenuShown(_showAllLinksAct, show);
   _wrapper->setToolShown(_showAllLinksAct, show);
   _wrapper->setMenuShown(_hideAllLinksAct, show);
@@ -1876,6 +1898,20 @@ void GenericGui::onCenterOnNode()
   QtGuiContext::getQtCurrent()->getView()->onCenterOnNode();
 }
 
+void GenericGui::onToggleStraightLinks(bool checked)
+{
+  Scene::_straightLinks = checked;
+  DEBTRACE("Scene::_straightLinks=" << checked);
+  if (!QtGuiContext::getQtCurrent())
+    return;
+  map<Subject*, SchemaItem*>::const_iterator it = QtGuiContext::getQtCurrent()->_mapOfSchemaItem.begin();
+  for( ; it != QtGuiContext::getQtCurrent()->_mapOfSchemaItem.end(); ++it)
+    {
+      Subject* sub = (*it).first;
+      sub->update(SWITCHSHAPE, 0, 0);
+    }
+}
+
 void GenericGui::onToggleAutomaticComputeLinks(bool checked)
 {
   Scene::_autoComputeLinks = checked;
@@ -2070,6 +2106,7 @@ void GenericGui::onHidePortLinks()
 
 void GenericGui::onEmphasisPortLinks()
 {
+  DEBTRACE("GenericGui::onEmphasisPortLinks");
   if (!QtGuiContext::getQtCurrent()) return;
   Subject *sub = QtGuiContext::getQtCurrent()->getSelectedSubject();
   DEBTRACE("EmphasizePortLinks, subject : " << sub->getName());

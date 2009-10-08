@@ -74,6 +74,30 @@ bool Pool::ExpData::isLaunchable() const
   return _out==NOT_USED_NOR_COMPUTED;
 }
 
+int Pool::getCurrentId() const 
+{ 
+  if(empty())
+    throw YACS::Exception("no current case set in pool");
+  else
+    return _currentCase->first; 
+}
+Any *Pool::getCurrentInSample() const 
+{ 
+  if(empty())
+    throw YACS::Exception("no current case set in pool");
+  else
+    return (*_currentCase).second.inValue(); 
+}
+
+Any *Pool::getCurrentOutSample() const 
+{ 
+  if(empty())
+    throw YACS::Exception("no current case set in pool");
+  else
+    return (*_currentCase).second.outValue(); 
+}
+
+
 //! Push a sample. \b WARNING inSample ownership is released to current Pool instance (this) !
 void Pool::pushInSample(int id, Any *inSample, unsigned char priority)
 {

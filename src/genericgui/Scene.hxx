@@ -32,6 +32,7 @@ namespace YACS
       Scene(QObject *parent = 0);
       virtual ~Scene();
       
+      static bool _straightLinks;
       static bool _autoComputeLinks;
       static bool _simplifyLinks;
       static bool _force2NodesLink;

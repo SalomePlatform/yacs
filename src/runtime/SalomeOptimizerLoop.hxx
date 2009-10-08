@@ -25,6 +25,22 @@ namespace YACS
 {
   namespace ENGINE
   {
+    class SalomeOptimizerAlgStandardized : public OptimizerAlgStandardized
+    {
+    public:
+      SalomeOptimizerAlgStandardized(Pool *pool, OptimizerAlgBase *alg);
+      virtual ~SalomeOptimizerAlgStandardized();
+      virtual void parseFileToInit(const std::string& fileName);
+      virtual void start();
+      virtual void takeDecision();
+      virtual TypeCode *getTCForIn() const;
+      virtual TypeCode *getTCForOut() const;
+      virtual void initialize(const Any *input) throw (Exception);
+      virtual void finish();
+    private:
+      static void *threadFctForAsync(void* ownStack);
+    };
+
     class SalomeOptimizerLoop: public OptimizerLoop
     {
       protected:
@@ -32,9 +48,13 @@ namespace YACS
       public:
         SalomeOptimizerLoop(const std::string& name, const std::string& algLibWthOutExt,
                             const std::string& symbolNameToOptimizerAlgBaseInstanceFactory,
-                            bool algInitOnFile) throw(Exception);
+                            bool algInitOnFile,bool initAlgo=true);
         SalomeOptimizerLoop(const OptimizerLoop& other, ComposedNode *father, bool editionOnly);
         ~SalomeOptimizerLoop();
+        virtual void setAlgorithm(const std::string& alglib,const std::string& symbol,bool checkLinks=true);
+      protected:
+        SalomeOptimizerAlgStandardized *_pyalg;
+        OptimizerAlgStandardized *_cppalg;
     };
   }
 }

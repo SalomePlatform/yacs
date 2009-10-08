@@ -36,7 +36,8 @@ namespace YACS
       void waitForAWait();
       void notifyOneSync();
       //On slave thread
-      void wait();
+      void wait(); //wait on condition
+      void signal(); //release the condition
     private:
       pthread_cond_t _cond1;
       pthread_cond_t _cond2;

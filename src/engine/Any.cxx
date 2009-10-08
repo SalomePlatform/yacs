@@ -291,7 +291,7 @@ bool AtomAny::takeInChargeStorageOf(TypeCode *type)
 
 AtomAny::~AtomAny()
 {
-  if(_type->isA(Runtime::_tc_string))
+  if(_type->kind() == String)
     delete _value._s;
 }
 

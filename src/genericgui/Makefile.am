@@ -422,6 +422,7 @@ ICONS = \
 	resources/simplifyLink.png \
 	resources/step_by_step_active.png \
 	resources/step_by_step.png \
+	resources/straightLink.png \
 	resources/stream_link.png \
 	resources/suspend_resume.png \
 	resources/switch_node.png \

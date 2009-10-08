@@ -163,6 +163,7 @@ void RuntimeSALOME::initBuiltins()
   nodeMap["OutNode"]=new OutNode("OutNode");
   nodeMap["StudyInNode"]=new StudyInNode("StudyInNode");
   nodeMap["StudyOutNode"]=new StudyOutNode("StudyOutNode");
+  composednodeMap["OptimizerLoop"]=createOptimizerLoop("OptimizerLoop","","",true);
   typeMap["dblevec"]= createSequenceTc("dblevec","dblevec",_tc_double);
   typeMap["intvec"]= createSequenceTc("intvec","intvec",_tc_int);
   typeMap["stringvec"]= createSequenceTc("stringvec","stringvec",_tc_string);

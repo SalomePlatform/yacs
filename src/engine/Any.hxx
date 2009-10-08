@@ -84,7 +84,9 @@ namespace YACS
       virtual std::string getStringValue() const throw(Exception) = 0;
       //
     protected:
+#ifndef SWIG
       virtual ~Any();
+#endif
       Any(TypeCode* type);
       Any(const Any& other);
       virtual void putMyReprAtPlace(char *data) const = 0;

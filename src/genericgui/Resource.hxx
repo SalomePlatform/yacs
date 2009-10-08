@@ -105,6 +105,7 @@
 #define PYTHONFONT              QFont("Courier")
 #define USERCATALOG             "YACSUserCatalog.xml"
 #define ADDROWCOLS              true
+#define STRAIGHTLINKS           false
 #define AUTOCOMPUTELINKS        true
 #define SIMPLIFYLINK            true
 #define ENSUREVISIBLEWHENMOVED  true
@@ -199,6 +200,7 @@ namespace YACS {
         static bool COMPONENT_INSTANCE_NEW;
         static QString userCatalog;
         static bool addRowCols;
+        static bool straightLinks;
         static bool autoComputeLinks;
         static bool simplifyLink;
         static bool ensureVisibleWhenMoved;

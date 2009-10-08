@@ -44,10 +44,10 @@ namespace YACS
       InGate(Node *node);
       virtual ~InGate();
       std::string getNameOfTypeOfCurrentInstance() const;
-      void exNotifyFromPrecursor(OutGate *from);
+      void exNotifyFromPrecursor(OutGate *fromgate);
       std::map<OutGate *, bool>& edMapOutGate() { return _backLinks; }
-      void edAppendPrecursor(OutGate *from);
-      void edRemovePrecursor(OutGate *from);
+      void edAppendPrecursor(OutGate *fromgate);
+      void edRemovePrecursor(OutGate *fromgate);
       int getNumberOfBackLinks() const;
       void edDisconnectAllLinksToMe();
       void exNotifyFailed();
@@ -55,7 +55,7 @@ namespace YACS
       void exReset();
       bool exIsReady() const;
       std::list<OutGate *> getBackLinks();
-      void setPrecursorDone(OutGate *from);
+      void setPrecursorDone(OutGate *fromgate);
       virtual std::string typeName() {return "YACS__ENGINE__InGate";}
     };
   }

@@ -28,6 +28,7 @@
 
 #include "Menus.hxx"
 #include <QPointF>
+#include <cmath>
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -84,12 +85,15 @@ QPainterPath SceneLinkItem::shape() const
 
 void SceneLinkItem::setShape(int thickness)
 {
+  DEBTRACE("---");
   _path = QPainterPath();
   _path.setFillRule(Qt::WindingFill);
   QPointF pfrom = start();
   QPointF pto   = goal();
-  if (_nbPoints)
+  DEBTRACE(Scene::_straightLinks);
+  if (_nbPoints && !Scene::_straightLinks)
     {
+      DEBTRACE("---");
       addArrow(pfrom, _lp[0], _RIGHT, thickness);
       for (int k=0; k<_nbPoints-1; k++)
         addArrow(_lp[k], _lp[k+1], _directions[k+1], thickness);
@@ -97,11 +101,16 @@ void SceneLinkItem::setShape(int thickness)
     }
   else
     {
-      _path.moveTo(pfrom.x() -thickness, pfrom.y() -thickness);
-      _path.lineTo(pto.x()   +thickness, pto.y()   -thickness);
-      _path.lineTo(pto.x()   +thickness, pto.y()   +thickness);
-      _path.lineTo(pfrom.x() -thickness, pfrom.y() +thickness);
-      _path.lineTo(pfrom.x() -thickness, pfrom.y() -thickness);
+      DEBTRACE("---");
+      double d = std::sqrt((pto.x() - pfrom.x())*(pto.x() - pfrom.x()) + (pto.y() - pfrom.y())*(pto.y() - pfrom.y()));
+      double sina = (pto.y() - pfrom.y())/d;
+      double cosa = (pto.x() - pfrom.x())/d;
+      double ep=3.0*thickness/2.0;
+      _path.moveTo(pfrom.x() -ep*sina, pfrom.y() +ep*cosa);
+      _path.lineTo(pto.x()   -ep*sina, pto.y()   +ep*cosa);
+      _path.lineTo(pto.x()   +ep*sina, pto.y()   -ep*cosa);
+      _path.lineTo(pfrom.x() +ep*sina, pfrom.y() -ep*cosa);
+      _path.lineTo(pfrom.x() -ep*sina, pfrom.y() -ep*cosa);
     }
 }
 
@@ -225,6 +234,11 @@ void SceneLinkItem::update(GuiEvent event, int type, Subject* son)
           DEBTRACE("ZValue=" << zValue());
           setShape();
         }
+      QGraphicsItem::update();
+      break;
+    case YACS::HMI::SWITCHSHAPE:
+      DEBTRACE("SceneObserverItem::update SWITCHSHAPE");
+      setShape(_emphasized+1);
       QGraphicsItem::update();
       break;
     default:

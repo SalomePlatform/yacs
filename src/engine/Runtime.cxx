@@ -80,7 +80,6 @@ Runtime::Runtime()
   _builtinCatalog->_composednodeMap["Switch"]=createSwitch("Switch");
   _builtinCatalog->_composednodeMap["WhileLoop"]=createWhileLoop("WhileLoop");
   _builtinCatalog->_composednodeMap["ForLoop"]=createForLoop("ForLoop");
-  _builtinCatalog->_composednodeMap["OptimizerLoop"]=createOptimizerLoop("OptimizerLoop","","",true);
   _builtinCatalog->_composednodeMap["ForEachLoop_double"]=createForEachLoop("ForEachLoop_double",Runtime::_tc_double);
   _builtinCatalog->_composednodeMap["ForEachLoop_string"]=createForEachLoop("ForEachLoop_string",Runtime::_tc_string);
   _builtinCatalog->_composednodeMap["ForEachLoop_int"]=createForEachLoop("ForEachLoop_int",Runtime::_tc_int);

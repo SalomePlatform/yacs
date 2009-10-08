@@ -48,6 +48,7 @@ OptimizerAlgStandardized::~OptimizerAlgStandardized()
 {
   if(_algBehind)
     _algBehind->decrRef();
+  if(_threadInCaseOfNotEvent)delete _threadInCaseOfNotEvent;
 }
 
 TypeCode *OptimizerAlgStandardized::getTCForIn() const
@@ -60,12 +61,12 @@ TypeCode *OptimizerAlgStandardized::getTCForOut() const
   return _algBehind->getTCForOut();
 }
 
-void OptimizerAlgStandardized::setAlgPointer(OptimizerAlgBaseFactory algFactory)
+void OptimizerAlgStandardized::setAlgPointer(OptimizerAlgBase* alg)
 {
   if(_algBehind)
     _algBehind->decrRef();
-  if(algFactory)
-    _algBehind=algFactory(_pool);
+  if(alg)
+    _algBehind=alg;
   else
     _algBehind=0;
 }
@@ -195,41 +196,45 @@ void FakeNodeForOptimizerLoop::finished()
 /*! \class YACS::ENGINE::OptimizerLoop
  *  \brief class to build optimization loops
  *
- * \ingroup Nodes
+ * \ingroup ComposedNodes
  */
 
 OptimizerLoop::OptimizerLoop(const std::string& name, const std::string& algLibWthOutExt,
                              const std::string& symbolNameToOptimizerAlgBaseInstanceFactory,
-                             bool algInitOnFile) throw(YACS::Exception)
-  try : DynParaLoop(name,Runtime::_tc_string),_loader(algLibWthOutExt),_algInitOnFile(algInitOnFile),
+                             bool algInitOnFile,bool initAlgo):
+        DynParaLoop(name,Runtime::_tc_string),_loader(algLibWthOutExt),_algInitOnFile(algInitOnFile),
         _portForInitFile(NAME_OF_FILENAME_INPUT,this,Runtime::_tc_string),
-        _alg(new OptimizerAlgStandardized(&_myPool,0)),_convergenceReachedWithOtherCalc(false),
+        _alg(0),_convergenceReachedWithOtherCalc(false),
         _retPortForOutPool(NAME_OF_OUT_POOL_INPUT,this,Runtime::_tc_string),
         _nodeForSpecialCases(0)
 {
-  setAlgorithm(algLibWthOutExt,symbolNameToOptimizerAlgBaseInstanceFactory);
-}
-catch(Exception& e)
-{
+  //We need this because calling a virtual method in a constructor does not call the most derived method but the method of the class
+  //A derived class must take care to manage that 
+  if(initAlgo)
+    setAlgorithm(algLibWthOutExt,symbolNameToOptimizerAlgBaseInstanceFactory);
 }
 
 OptimizerLoop::OptimizerLoop(const OptimizerLoop& other, ComposedNode *father, bool editionOnly):
-  DynParaLoop(other,father,editionOnly),_algInitOnFile(other._algInitOnFile),_loader(other._loader.getLibNameWithoutExt()),_convergenceReachedWithOtherCalc(false),
-  _alg(new OptimizerAlgStandardized(&_myPool,0)),_portForInitFile(other._portForInitFile,this),_retPortForOutPool(other._retPortForOutPool,this),_nodeForSpecialCases(0)
+  DynParaLoop(other,father,editionOnly),_algInitOnFile(other._algInitOnFile),_loader(other._loader.getLibNameWithoutExt()),
+  _convergenceReachedWithOtherCalc(false), _alg(0),_portForInitFile(other._portForInitFile,this),
+  _retPortForOutPool(other._retPortForOutPool,this),_nodeForSpecialCases(0)
 {
-  setAlgorithm(other._loader.getLibNameWithoutExt(),other._symbol,false);
+  //Don't call setAlgorithm here because it will be called several times if the class is derived. Call it in simpleClone for cloning
 }
 
 OptimizerLoop::~OptimizerLoop()
 {
-  _alg->decrRef();
+  if(_alg)
+    _alg->decrRef();
   cleanDynGraph();
   cleanInterceptors();
 }
 
 Node *OptimizerLoop::simpleClone(ComposedNode *father, bool editionOnly) const
 {
-  return new OptimizerLoop(*this,father,editionOnly);
+  OptimizerLoop* ol=new OptimizerLoop(*this,father,editionOnly);
+  ol->setAlgorithm(_loader.getLibNameWithoutExt(),_symbol,false);
+  return ol;
 }
 
 void OptimizerLoop::init(bool start)
@@ -626,10 +631,19 @@ void OptimizerLoop::setAlgorithm(const std::string& alglib, const std::string& s
   _symbol=symbol;
   _loader=YACS::BASES::DynLibLoader(alglib);
 
+  if(_alg==0)
+    _alg=new OptimizerAlgStandardized(&_myPool,0);
+
   OptimizerAlgBaseFactory algFactory=0;
   if(alglib!="" && _symbol!="")
     algFactory=(OptimizerAlgBaseFactory)_loader.getHandleOnSymbolWithName(_symbol);
-  _alg->setAlgPointer(algFactory);
+
+  OptimizerAlgBase* alg=0;
+  if(algFactory)
+    alg=algFactory(&_myPool);
+
+  _alg->setAlgPointer(alg);
+
   if(!algFactory)
     return;
   _splittedPort.edSetType(_alg->getTCForIn());

@@ -58,3 +58,10 @@ void DrivenConditionPT::wait()
   pthread_mutex_unlock(&_mutexDesc2);
   pthread_cond_wait(&_cond1,&_mutexDesc1);
 }
+
+void DrivenConditionPT::signal()
+{
+  pthread_mutex_lock(&_mutexDesc2);
+  pthread_cond_signal(&_cond2);
+  pthread_mutex_unlock(&_mutexDesc2);
+}
