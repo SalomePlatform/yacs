@@ -43,7 +43,7 @@ namespace YACS
     /*!
      *  \brief Base class factorizing common methods for all algorithms interfaces.
      */
-    class OptimizerAlgBase : public RefCounter
+    class YACSLIBENGINE_EXPORT OptimizerAlgBase : public RefCounter
     {
     protected:
       Pool *_pool;
@@ -81,7 +81,7 @@ namespace YACS
     /*!
      *  \brief Base class to implement in external dynamic lib in case of optimizer non event oriented.
      */
-    class OptimizerAlgASync : public OptimizerAlgBase
+    class YACSLIBENGINE_EXPORT OptimizerAlgASync : public OptimizerAlgBase
     {
     protected:
       OptimizerAlgASync(Pool *pool);
