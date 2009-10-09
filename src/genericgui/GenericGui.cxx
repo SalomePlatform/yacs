@@ -1267,7 +1267,11 @@ void GenericGui::onImportSupervSchema()
   QString tmpFileName;
   try
     {
+#ifdef WNT
+      QString tmpDir = getenv("TEMP");
+#else
       QString tmpDir = "/tmp";
+#endif
       QDir aTmpDir(tmpDir);
       aTmpDir.mkdir(QString("YACS_") + getenv("USER"));
       YASSERT(aTmpDir.cd(QString("YACS_") + getenv("USER")));
@@ -1490,7 +1494,11 @@ void GenericGui::onRunLoadedSchema(bool withState)
   QFileInfo fo = QtGuiContext::getQtCurrent()->getFileName();
   QString procName = fo.baseName();
   //QString tmpDir = SALOMEDS_Tool::GetTmpDir().c_str();
+#ifdef WNT
+  QString tmpDir = getenv("TEMP");
+#else
   QString tmpDir = "/tmp";
+#endif
   QDir aTmpDir(tmpDir);
   aTmpDir.mkdir(QString("YACS_") + getenv("USER"));
   YASSERT(aTmpDir.cd(QString("YACS_") + getenv("USER")));

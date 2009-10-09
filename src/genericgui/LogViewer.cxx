@@ -43,7 +43,7 @@ void LogViewer::setText(std::string text)
 
 void LogViewer::readFile(std::string fileName)
 {
-  std::fstream f(fileName.c_str());
+  std::ifstream f(fileName.c_str());
   std::stringstream hfile;
   hfile << f.rdbuf();
   string atext = _label + "\n" + fileName + "\n\n";

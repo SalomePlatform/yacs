@@ -237,7 +237,11 @@ void GuiExecutor::setStopOnError(bool aMode)
   if (_isRunning)
     {
       _procRef->setStopOnError(aMode,
+#ifdef WNT
+			       (getenv("TEMP") + string("\\dumpStateOnError_") 
+#else
 			       (string("/tmp/dumpStateOnError_") 
+#endif
                                 + getenv("USER") + string(".xml")).c_str());
       _isStopOnError = true;
     }
