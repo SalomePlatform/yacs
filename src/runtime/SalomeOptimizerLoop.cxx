@@ -97,7 +97,7 @@ void SalomeOptimizerAlgStandardized::finish()
   OptimizerAlgStandardized::finish();
 }
 
-void SalomeOptimizerAlgStandardized::initialize(const Any *input) throw (Exception)
+void SalomeOptimizerAlgStandardized::initialize(const Any *input) throw (YACS::Exception)
 {
   GILState gs;
   OptimizerAlgStandardized::initialize(input);
