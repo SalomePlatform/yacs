@@ -19,13 +19,14 @@
 #ifndef _SALOMEOPTIMIZERLOOP_HXX_
 #define _SALOMEOPTIMIZERLOOP_HXX_
 
+#include "YACSRuntimeSALOMEExport.hxx"
 #include "OptimizerLoop.hxx"
 
 namespace YACS
 {
   namespace ENGINE
   {
-    class SalomeOptimizerAlgStandardized : public OptimizerAlgStandardized
+    class YACSRUNTIMESALOME_EXPORT SalomeOptimizerAlgStandardized : public OptimizerAlgStandardized
     {
     public:
       SalomeOptimizerAlgStandardized(Pool *pool, OptimizerAlgBase *alg);
@@ -41,7 +42,7 @@ namespace YACS
       static void *threadFctForAsync(void* ownStack);
     };
 
-    class SalomeOptimizerLoop: public OptimizerLoop
+    class YACSRUNTIMESALOME_EXPORT SalomeOptimizerLoop: public OptimizerLoop
     {
       protected:
         Node *simpleClone(ComposedNode *father, bool editionOnly) const;
