@@ -23,8 +23,10 @@ include $(top_srcdir)/adm/unix/make_begin.am
 LIBICONS = \
 	batch_launcher.py \
 	batch_graph.xml   \
-	batch_good.jpg    \
-	batch_bad.png
+        good.txt          \
+        good.wav          \
+        bad.txt           \
+        bad.wav
 
 salomeresdir = $(prefix)/share/salome/resources/@MODULE_NAME@
 

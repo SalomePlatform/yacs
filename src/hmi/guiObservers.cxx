@@ -2039,6 +2039,12 @@ void SubjectServiceNode::clean()
 void SubjectServiceNode::localClean()
 {
   DEBTRACE("SubjectServiceNode::localClean ");
+  if (_subRefComponent)
+    {
+      SubjectComponent *scomp = dynamic_cast<SubjectComponent*>(_subRefComponent->getParent());
+      if (scomp)
+        scomp->removeSubServiceFromSet(this);
+    }
   if (_subjectReference)
     {
 //       update( REMOVE, REFERENCE, _subjectReference );
