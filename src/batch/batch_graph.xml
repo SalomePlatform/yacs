@@ -30,6 +30,8 @@ print "BATCH: started"
 
 import os
 
+import loader
+
 import SALOME
 import Engines
 import orbmodule
@@ -38,29 +40,51 @@ print "BATCH: Submit: input ports"
 #      --------------------------
 
 print "BATCH: input port: graph       = ", graph
-print "BATCH: input port: machin      = ", machin
+print "BATCH: input port: machine     = ", machine
 print "BATCH: input port: infiles     = ", infiles
 print "BATCH: input port: outfiles    = ", outfiles
 print "BATCH: input port: results dir = ", results_dir
 
+status = True
+
+print "BATCH: Load graph for informations"
+#      ----------------------------------
+
+if status:
+    try:
+        yloader   = loader.YACSLoader()
+        graphy    = yloader.load(graph)
+        graphname = graphy.getName()
+
+        nprocs = 0
+        for c in graphy.containerMap.values():
+            n = c.getProperty("nb_node")
+            p = c.getProperty("nb_proc_per_node")
+            if (n=="") or (p==""):
+                nprocs += 1
+            else:
+                nprocs += int(n) * int(p)
+
+    except Exception, message:
+        print "BATCH: Exception: in load graph for informations: ", message
+        status    = False
+        graphname = "unknown"
+        nprocs    = 1
+
 print "BATCH: set parameters"
 #      ---------------------
 
-status = True
-
-# fkl à faire: ask to the graph the nprocs value
-
-nprocs = 1
 delay  = 5
 
 data = os.environ["YACS_ROOT_DIR"] + "/share/salome/resources/yacs/"
 
 script = data + "batch_launcher.py"
 
-print "BATCH: nb. procs = ", nprocs
-print "BATCH: delay     = ", delay
-print "BATCH: data      = ", data
-print "BATCH: script    = ", script
+print "BATCH: graph name = ", graphname
+print "BATCH: nb. procs  = ", nprocs
+print "BATCH: delay      = ", delay
+print "BATCH: data       = ", data
+print "BATCH: script     = ", script
 
 print "BATCH: set: machine parameters"
 #      ------------------------------
@@ -69,13 +93,13 @@ print "BATCH: set: machine parameters"
 p_name = ""
 
 # host name if given else automatic
-p_host = machin
+p_host = machine
 
 # if given list of components that could be loaded on the container
 p_components = []
 
 # if given restricted list of machines to search in
-p_machins = []
+p_machines = []
 
 # required operating system
 p_os = "Linux"
@@ -115,7 +139,7 @@ p_cpt_nodes = 0
 
 if status:
     try:
-        params = Engines.MachineParameters(p_name, p_host, p_components, p_machins, p_os, p_mem, p_freq, p_procs, p_nodes, p_mpi, p_dir, p_mode, p_policy, p_paco, p_cpt_nodes)
+        params = Engines.MachineParameters(p_name, p_host, p_components, p_machines, p_os, p_mem, p_freq, p_procs, p_nodes, p_mpi, p_dir, p_mode, p_policy, p_paco, p_cpt_nodes)
 
     except Exception, message:
         print "BATCH: Exception: in machine parameters: ", message
@@ -174,11 +198,13 @@ state["JOBID"    ] = jobId
 state["STATUS"   ] = status
 state["PARAMS"   ] = params
 state["LAUNCHER" ] = SalomeLauncher
-state["MACHIN"   ] = machin
+state["GRAPH"    ] = graph
+state["GRAPHNAME"] = graphname
+state["MACHINE"  ] = machine
 
 ]]></code></script>
       <inport  name="graph"       type="string"/>
-      <inport  name="machin"      type="string"/>
+      <inport  name="machine"     type="string"/>
       <inport  name="infiles"     type="stringvec"/>
       <inport  name="outfiles"    type="stringvec"/>
       <inport  name="results_dir" type="string"/>
@@ -297,9 +323,11 @@ import time
 print "ALARM: get input ports"
 #      ----------------------
 
-status = state["STATUS"]
-machin = state["MACHIN"]
-data   = state["DATA"  ]
+status    = state["STATUS"   ]
+graph     = state["GRAPH"    ]
+graphname = state["GRAPHNAME"]
+machine   = state["MACHINE"  ]
+data      = state["DATA"     ]
 
 print "ALARM: input port: status = ", status
 print "ALARM: input port: mail   = ", mail
@@ -327,14 +355,12 @@ fic.close()
 
 stamp = time.strftime("%a %d %b %Y %H:%M:%S")
 
-# fkl à faire: find graph name and file name of the xml file of the graph
-
 message = ""
-message = message + "Timestamp : " + stamp      + ".\n"
-message = message + "Graph name: " + "unknown"  + ".\n"
-message = message + "File  name: " + "unknown"  + ".\n"
-message = message + "Machin    : " + machin     + ".\n"
-message = message + "Message   : " + txt        + "Mister Y.B.\n"
+message = message + "Timestamp : " + stamp     + ".\n"
+message = message + "Graph name: " + graphname + ".\n"
+message = message + "File  name: " + graph     + ".\n"
+message = message + "Machine   : " + machine   + ".\n"
+message = message + "Message   : " + txt       + "Mister Y.B.\n"
 
 print "ALARM: message = ", message
 
@@ -441,7 +467,7 @@ print "ALARM: finished"
    </parameter>
 
    <parameter>
-      <tonode>Submit</tonode><toport>machin</toport>
+      <tonode>Submit</tonode><toport>machine</toport>
       <value><string>mars</string></value>
    </parameter>
 

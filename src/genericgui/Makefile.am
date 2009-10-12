@@ -414,6 +414,7 @@ ICONS = \
 	resources/run_active.png \
 	resources/run_object.png \
 	resources/run.png \
+	resources/batch.png \
 	resources/sample.png \
 	resources/save_dataflow.png \
 	resources/save_dataflow_state.png \

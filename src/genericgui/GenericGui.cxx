@@ -232,6 +232,10 @@ void GenericGui::createActions()
                                                 tr("Load Schema to run"), tr("Load a schema for run"),
                                                 0, _parent, false, this,  SLOT(onLoadAndRunSchema()));
 
+  pixmap.load("icons:batch.png");
+  _loadBatchAct = _wrapper->createAction(getMenuId(), tr("Load Batch Schema for edition"), QIcon(pixmap),
+                                         tr("Load Batch Schema"), tr("Load Batch Schema for edition"),
+                                         0, _parent, false, this,  SLOT(onBatch()));
 
   pixmap.load("icons:suspend_resume.png");
   _startResumeAct = _wrapper->createAction(getMenuId(), tr("Start or Resume Schema execution"), QIcon(pixmap),
@@ -647,6 +651,7 @@ void GenericGui::createMenus()
   _wrapper->createMenu( _runLoadedSchemaAct, aMenuId );
   _wrapper->createMenu( _loadRunStateSchemaAct, aMenuId );
   _wrapper->createMenu( _loadAndRunSchemaAct, aMenuId );
+  _wrapper->createMenu( _loadBatchAct, aMenuId );
   _wrapper->createMenu( _wrapper->separator(), aMenuId);
   _wrapper->createMenu( _startResumeAct, aMenuId );
   _wrapper->createMenu( _abortAct, aMenuId );
@@ -688,6 +693,7 @@ void GenericGui::createTools()
   _wrapper->createTool( _runLoadedSchemaAct, aToolId );
   _wrapper->createTool( _loadRunStateSchemaAct, aToolId );
   _wrapper->createTool( _loadAndRunSchemaAct, aToolId );
+  _wrapper->createTool( _loadBatchAct, aToolId );
   _wrapper->createTool( _wrapper->separator(), aToolId );
   _wrapper->createTool( _startResumeAct, aToolId );
   _wrapper->createTool( _abortAct, aToolId );
@@ -750,6 +756,8 @@ void GenericGui::showEditionMenus(bool show)
   _wrapper->setToolShown(_loadRunStateSchemaAct, show);
   _wrapper->setMenuShown(_loadRunStateSchemaAct, show);
   _wrapper->setToolShown(_runLoadedSchemaAct, show);
+  _wrapper->setMenuShown(_loadBatchAct, show);
+  _wrapper->setToolShown(_loadBatchAct, show);
   _wrapper->setMenuShown(_importCatalogAct, show);
   _wrapper->setToolShown(_importCatalogAct, show);
 }
@@ -1570,6 +1578,37 @@ void GenericGui::onLoadAndRunSchema()
       createContext(proc, fn, fn, false);
     }
 
+}
+
+void GenericGui::onBatch() {
+  DEBTRACE("GenericGui::onBatch");
+
+  // Save the current schema
+  if (!QtGuiContext::getQtCurrent()) return;
+  YACS::ENGINE::Proc* proc = QtGuiContext::getQtCurrent()->getProc();
+  VisitorSaveGuiSchema aWriter(proc);
+  aWriter.openFileSchema("/tmp/graph_user.xml");
+  aWriter.visitProc();
+  aWriter.closeFileSchema();
+
+  // Load the Batch Schema
+  QString fn = getenv("YACS_ROOT_DIR");
+  fn += "/share/salome/resources/yacs/batch_graph.xml";
+  DEBTRACE("file loaded : " << fn.toStdString());
+
+  proc = _loader->load(fn.toLatin1());
+  if (!proc) {
+    QMessageBox msgBox(QMessageBox::Critical,
+		       "Import Batch Schema, native YACS XML format",
+		       "The batch_graph.xml has not the native YACS XML format or is not readable." );
+    msgBox.exec();
+  } else {
+    YACS::ENGINE::Logger* logger= proc->getLogger("parser");
+    if(!logger->isEmpty()) {
+      DEBTRACE(logger->getStr());
+    };
+    createContext(proc, fn, "", true);
+  };
 }
 
 void GenericGui::onStartResume()

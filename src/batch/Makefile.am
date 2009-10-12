@@ -21,12 +21,14 @@ include $(top_srcdir)/adm/unix/make_begin.am
 # resources files
 
 LIBICONS = \
-	batch_launcher.py \
-	batch_graph.xml   \
-        good.txt          \
-        good.wav          \
-        bad.txt           \
-        bad.wav
+	batch_launcher.py   \
+	batch_graph.xml     \
+        good.txt            \
+        good.wav            \
+        bad.txt             \
+        bad.wav             \
+        test_hello.xml      \
+        test_calculator.xml
 
 salomeresdir = $(prefix)/share/salome/resources/@MODULE_NAME@
 

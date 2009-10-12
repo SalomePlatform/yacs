@@ -1,0 +1,186 @@
+<?xml version='1.0' encoding='iso-8859-1' ?>
+<proc>
+   <property name="DefaultStudyID" value="1"/>
+   <type name="string" kind="string"/>
+   <struct name="Engines/dataref">
+      <member name="ref" type="string"/>
+   </struct>
+   <objref name="SALOME_MED/FIELD" id="IDL:SALOME_MED/FIELD:1.0"/>
+   <objref name="SALOME_MED/FIELDDOUBLE" id="IDL:SALOME_MED/FIELDDOUBLE:1.0">
+      <base>SALOME_MED/FIELD</base>
+   </objref>
+   <type name="bool" kind="bool"/>
+   <sequence name="boolvec" content="bool"/>
+   <type name="double" kind="double"/>
+   <sequence name="dblevec" content="double"/>
+   <objref name="file" id="file"/>
+   <type name="int" kind="int"/>
+   <sequence name="intvec" content="int"/>
+   <objref name="pyobj" id="python:obj:1.0"/>
+   <sequence name="stringvec" content="string"/>
+   <container name="DefaultContainer">
+      <property name="container_name" value="FactoryServer"/>
+      <property name="hostname" value="localhost"/>
+   </container>
+   <container name="container1">
+   </container>
+   <container name="container2">
+   </container>
+   <service name="add0">
+      <component>CALCULATOR</component>
+      <load container="DefaultContainer"/>
+      <method>add</method>
+      <inport name="field1" type="SALOME_MED/FIELDDOUBLE"/>
+      <inport name="field2" type="SALOME_MED/FIELDDOUBLE"/>
+      <outport name="return" type="SALOME_MED/FIELDDOUBLE"/>
+   </service>
+   <service name="applyLin3">
+      <component>CALCULATOR</component>
+      <load container="container1"/>
+      <method>applyLin</method>
+      <inport name="field1" type="SALOME_MED/FIELDDOUBLE"/>
+      <inport name="a1" type="double"/>
+      <inport name="a2" type="double"/>
+      <outport name="return" type="SALOME_MED/FIELDDOUBLE"/>
+   </service>
+   <service name="norm25">
+      <component>CALCULATOR</component>
+      <load container="container2"/>
+      <method>norm2</method>
+      <inport name="field" type="SALOME_MED/FIELDDOUBLE"/>
+      <outport name="return" type="double"/>
+   </service>
+   <inline name="PyScript6">
+      <script><code><![CDATA[from libMEDMEM_Swig import *
+from libMedCorba_Swig import *
+
+f=open(inputFileName,'r')
+v1=float(f.readline())
+v2=float(f.readline())
+a=float(f.readline())
+b=float(f.readline())
+f.close()
+
+MedFile = "pointe.med"
+meshName = "maa1"
+myMesh = MESH(MED_DRIVER,MedFile,meshName)
+mySupport = SUPPORT(myMesh,"Support on all CELLs",MED_CELL)
+field1 = FIELDDOUBLE(mySupport,1)
+field1.setName("field1")
+field2 = FIELDDOUBLE(mySupport,1)
+field2.setName("field2")
+numberOfValue = mySupport.getNumberOfElements(MED_ALL_ELEMENTS)
+for i in range(numberOfValue):
+    field1.setValueIJ(i+1,1,v1)
+    field2.setValueIJ(i+1,1,v2)
+corbaSupport=createCorbaSupport(mySupport)
+f1=createCorbaFieldDouble(corbaSupport,field1)
+f2=createCorbaFieldDouble(corbaSupport,field2)
+]]></code></script>
+      <inport name="inputFileName" type="string"/>
+      <outport name="f1" type="SALOME_MED/FIELDDOUBLE"/>
+      <outport name="f2" type="SALOME_MED/FIELDDOUBLE"/>
+      <outport name="a" type="double"/>
+      <outport name="b" type="double"/>
+   </inline>
+   <inline name="PyScript12">
+      <script><code><![CDATA[import os
+outputFileName='result_calculator'
+f=open(outputFileName,'w')
+f.write(str(norm))
+f.close()
+]]></code></script>
+      <inport name="norm" type="double"/>
+      <outport name="outputFileName" type="string"/>
+   </inline>
+   <service name="norm20">
+      <node>add0</node>
+      <method>norm2</method>
+      <inport name="field" type="SALOME_MED/FIELDDOUBLE"/>
+      <outport name="return" type="double"/>
+   </service>
+   <service name="applyLin1">
+      <node>norm25</node>
+      <method>applyLin</method>
+      <inport name="field1" type="SALOME_MED/FIELDDOUBLE"/>
+      <inport name="a1" type="double"/>
+      <inport name="a2" type="double"/>
+      <outport name="return" type="SALOME_MED/FIELDDOUBLE"/>
+   </service>
+   <service name="norm22">
+      <node>applyLin3</node>
+      <method>norm2</method>
+      <inport name="field" type="SALOME_MED/FIELDDOUBLE"/>
+      <outport name="return" type="double"/>
+   </service>
+   <control> <fromnode>add0</fromnode> <tonode>norm20</tonode> </control>
+   <control> <fromnode>add0</fromnode> <tonode>applyLin1</tonode> </control>
+   <control> <fromnode>applyLin3</fromnode> <tonode>norm22</tonode> </control>
+   <control> <fromnode>norm25</fromnode> <tonode>PyScript12</tonode> </control>
+   <control> <fromnode>PyScript6</fromnode> <tonode>add0</tonode> </control>
+   <control> <fromnode>PyScript6</fromnode> <tonode>applyLin3</tonode> </control>
+   <control> <fromnode>norm20</fromnode> <tonode>applyLin1</tonode> </control>
+   <control> <fromnode>applyLin1</fromnode> <tonode>norm25</tonode> </control>
+   <control> <fromnode>norm22</fromnode> <tonode>applyLin1</tonode> </control>
+   <datalink control="false">
+      <fromnode>add0</fromnode> <fromport>return</fromport>
+      <tonode>applyLin1</tonode> <toport>field1</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>add0</fromnode> <fromport>return</fromport>
+      <tonode>norm20</tonode> <toport>field</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>applyLin3</fromnode> <fromport>return</fromport>
+      <tonode>norm22</tonode> <toport>field</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>norm25</fromnode> <fromport>return</fromport>
+      <tonode>PyScript12</tonode> <toport>norm</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>PyScript6</fromnode> <fromport>f1</fromport>
+      <tonode>add0</tonode> <toport>field1</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>PyScript6</fromnode> <fromport>f2</fromport>
+      <tonode>applyLin3</tonode> <toport>field1</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>PyScript6</fromnode> <fromport>f2</fromport>
+      <tonode>add0</tonode> <toport>field2</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>PyScript6</fromnode> <fromport>a</fromport>
+      <tonode>applyLin3</tonode> <toport>a1</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>PyScript6</fromnode> <fromport>b</fromport>
+      <tonode>applyLin3</tonode> <toport>a2</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>norm20</fromnode> <fromport>return</fromport>
+      <tonode>applyLin1</tonode> <toport>a1</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>applyLin1</fromnode> <fromport>return</fromport>
+      <tonode>norm25</tonode> <toport>field</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>norm22</fromnode> <fromport>return</fromport>
+      <tonode>applyLin1</tonode> <toport>a2</toport>
+   </datalink>
+   <parameter>
+      <tonode>PyScript6</tonode><toport>inputFileName</toport>
+      <value><string>input_calculator</string></value>
+   </parameter>
+   <presentation name="norm20" x="762" y="169" width="227.5" height="110"/>
+   <presentation name="add0" x="408" y="164" width="227.5" height="139"/>
+   <presentation name="applyLin3" x="388" y="375.5" width="227.5" height="168"/>
+   <presentation name="PyScript12" x="1659" y="280" width="230.5" height="110"/>
+   <presentation name="PyScript6" x="13" y="271.5" width="227.5" height="197"/>
+   <presentation name="applyLin1" x="1128" y="244" width="227.5" height="168"/>
+   <presentation name="norm22" x="776" y="382" width="227.5" height="110"/>
+   <presentation name="norm25" x="1401" y="280.5" width="227.5" height="110"/>
+   <presentation name="__ROOT__" x="0" y="0" width="1898.5" height="552.5"/>
+</proc>

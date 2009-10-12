@@ -1,0 +1,69 @@
+<?xml version='1.0' encoding='iso-8859-1' ?>
+<proc>
+   <property name="DefaultStudyID" value="1"/>
+   <type name="string" kind="string"/>
+   <struct name="Engines/dataref">
+      <member name="ref" type="string"/>
+   </struct>
+   <type name="bool" kind="bool"/>
+   <sequence name="boolvec" content="bool"/>
+   <type name="double" kind="double"/>
+   <sequence name="dblevec" content="double"/>
+   <objref name="file" id="file"/>
+   <type name="int" kind="int"/>
+   <sequence name="intvec" content="int"/>
+   <objref name="pyobj" id="python:obj:1.0"/>
+   <sequence name="stringvec" content="string"/>
+   <container name="DefaultContainer">
+      <property name="container_name" value="FactoryServer"/>
+      <property name="hostname" value="localhost"/>
+   </container>
+   <service name="makeBanner0">
+      <component>HELLO</component>
+      <load container="DefaultContainer"/>
+      <method>makeBanner</method>
+      <inport name="name" type="string"/>
+      <outport name="return" type="string"/>
+   </service>
+   <inline name="PyScript1">
+      <script><code><![CDATA[import os
+f=open(i,'r')
+o=f.readline()
+f.close()
+]]></code></script>
+      <inport name="i" type="string"/>
+      <outport name="o" type="string"/>
+   </inline>
+   <inline name="PyScript4">
+      <script><code><![CDATA[import os
+o='result_hello'
+f=open(o,'w')
+f.write(i)
+f.close()
+]]></code></script>
+      <inport name="i" type="string"/>
+      <outport name="o" type="string"/>
+   </inline>
+   <control> <fromnode>makeBanner0</fromnode> <tonode>PyScript4</tonode> </control>
+   <control> <fromnode>PyScript1</fromnode> <tonode>makeBanner0</tonode> </control>
+   <datalink control="false">
+      <fromnode>makeBanner0</fromnode> <fromport>return</fromport>
+      <tonode>PyScript4</tonode> <toport>i</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>PyScript1</fromnode> <fromport>o</fromport>
+      <tonode>makeBanner0</tonode> <toport>name</toport>
+   </datalink>
+   <parameter>
+      <tonode>makeBanner0</tonode><toport>name</toport>
+      <value><string>Bernard</string></value>
+   </parameter>
+   <parameter>
+      <tonode>PyScript1</tonode><toport>i</toport>
+      <value><string>input_hello</string></value>
+   </parameter>
+   <presentation name="makeBanner0" x="358.5" y="132.5" width="227.5" height="110"/>
+   <presentation name="PyScript4" x="677" y="134" width="227.5" height="110"/>
+   <presentation name="PyScript1" x="10" y="128" width="227.5" height="110"/>
+   <presentation name="__ROOT__" x="0" y="0" width="913.5" height="253"/>
+</proc>

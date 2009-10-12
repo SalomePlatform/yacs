@@ -86,6 +86,7 @@ namespace YACS
       QAction *_runLoadedSchemaAct;
       QAction *_loadRunStateSchemaAct;
       QAction *_loadAndRunSchemaAct;
+      QAction *_loadBatchAct;
 
       QAction *_startResumeAct;
       QAction *_abortAct;
@@ -214,6 +215,7 @@ namespace YACS
       void onRunLoadedSchema(bool withState = false);
       void onLoadRunStateSchema();
       void onLoadAndRunSchema();
+      void onBatch();
 
       void onStartResume();
       void onAbort();
