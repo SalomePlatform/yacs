@@ -662,7 +662,7 @@ void GenericGui::createMenus()
   _wrapper->createMenu( _resetAct, aMenuId );
   _wrapper->createMenu( _wrapper->separator(), aMenuId);
   _wrapper->createMenu( _saveRunStateAct, aMenuId );
-  _wrapper->createMenu( _newEditionAct, aMenuId );
+  //_wrapper->createMenu( _newEditionAct, aMenuId );
   _wrapper->createMenu( _wrapper->separator(), aMenuId);
   _wrapper->createMenu( _withoutStopModeAct, aMenuId );
   _wrapper->createMenu( _breakpointsModeAct, aMenuId );
@@ -705,7 +705,7 @@ void GenericGui::createTools()
   _wrapper->createTool( _wrapper->separator(), aToolId );
   _wrapper->createTool( _wrapper->separator(), aToolId );
   _wrapper->createTool( _saveRunStateAct, aToolId );
-  _wrapper->createTool( _newEditionAct, aToolId );
+  //_wrapper->createTool( _newEditionAct, aToolId );
   _wrapper->createTool( _withoutStopModeAct, aToolId );
   _wrapper->createTool( _breakpointsModeAct, aToolId );
   _wrapper->createTool( _stepByStepModeAct, aToolId );
@@ -778,8 +778,8 @@ void GenericGui::showExecMenus(bool show)
   _wrapper->setToolShown(_resetAct, show);
   _wrapper->setMenuShown(_saveRunStateAct, show);
   _wrapper->setToolShown(_saveRunStateAct, show);
-  _wrapper->setMenuShown(_newEditionAct, show);
-  _wrapper->setToolShown(_newEditionAct, show);
+  //_wrapper->setMenuShown(_newEditionAct, show);
+  //_wrapper->setToolShown(_newEditionAct, show);
   _wrapper->setMenuShown(_withoutStopModeAct, show);
   _wrapper->setToolShown(_withoutStopModeAct, show);
   _wrapper->setMenuShown(_breakpointsModeAct, show);
