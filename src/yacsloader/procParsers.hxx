@@ -53,6 +53,7 @@ struct proctypeParser: bloctypeParser<T>
       for (int i = 0; attr[i]; i += 2) 
         {
           if(std::string(attr[i]) == "state")this->state(attr[i+1]);
+          if(std::string(attr[i]) == "name")name(attr[i+1]);
         }
     }
   virtual void pre ()
@@ -62,6 +63,12 @@ struct proctypeParser: bloctypeParser<T>
         this->_bloc=currentProc;
         currentProc->names.push_back("");
     }
+
+  virtual void name (const std::string& name)
+    {
+      currentProc->setName(name);
+    }
+
   virtual void type (const mytype& t)
     {
         DEBTRACE( "type_set" );

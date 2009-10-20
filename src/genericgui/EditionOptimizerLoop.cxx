@@ -91,6 +91,9 @@ void EditionOptimizerLoop::onModifyInitFile()
 void EditionOptimizerLoop::onModifyEntry()
 {
   DEBTRACE("EditionOptimizerLoop::onModifyEntry");
+  OptimizerLoop *oloop = dynamic_cast<OptimizerLoop*>(_subjectNode->getNode());
+  if(oloop->getSymbol() == _le_entry->text().toStdString()) return;
+
   bool isOk = false;
   SubjectOptimizerLoop *ol = dynamic_cast<SubjectOptimizerLoop*>(_subjectNode);
   isOk=ol->setAlgorithm(_le_lib->text().toStdString(),_le_entry->text().toStdString());
@@ -101,6 +104,9 @@ void EditionOptimizerLoop::onModifyEntry()
 void EditionOptimizerLoop::onModifyLib()
 {
   DEBTRACE("EditionOptimizerLoop::onModifyLib");
+  OptimizerLoop *oloop = dynamic_cast<OptimizerLoop*>(_subjectNode->getNode());
+  if(oloop->getAlgLib() == _le_lib->text().toStdString()) return;
+
   bool isOk = false;
   SubjectOptimizerLoop *ol = dynamic_cast<SubjectOptimizerLoop*>(_subjectNode);
   isOk=ol->setAlgorithm(_le_lib->text().toStdString(),_le_entry->text().toStdString());

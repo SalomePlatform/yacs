@@ -22,6 +22,8 @@
 
 #include "RuntimeSALOME.hxx"
 #include "Proc.hxx"
+#include "InputPort.hxx"
+#include "ServiceNode.hxx"
 #include "parsers.hxx"
 #include "Logger.hxx"
 #include "YACSGuiLoader.hxx"
@@ -356,22 +358,22 @@ void GenericGui::createActions()
                                        tr("Cpp Node"), tr("Create a New C++ Node"),
                                        0, _parent, false, this,  SLOT(onCppNode()));
 
-  pixmap.load("icons:kill.png");
+  pixmap.load("icons:node.png");
   _inDataNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New Input data Node"), QIcon(pixmap),
                                           tr("Input Data Node"), tr("Create a New Input data Node"),
                                           0, _parent, false, this,  SLOT(onInDataNode()));
 
-  pixmap.load("icons:kill.png");
+  pixmap.load("icons:node.png");
   _outDataNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New Output data Node"), QIcon(pixmap),
                                            tr("Output Data Node"), tr("Create a New Output data Node"),
                                            0, _parent, false, this,  SLOT(onOutDataNode()));
 
-  pixmap.load("icons:kill.png");
+  pixmap.load("icons:node.png");
   _inStudyNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New Input Study Node"), QIcon(pixmap),
                                            tr("Input Study Node"), tr("Create a New Input Study Node"),
                                            0, _parent, false, this,  SLOT(onInStudyNode()));
 
-  pixmap.load("icons:kill.png");
+  pixmap.load("icons:node.png");
   _outStudyNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New Output Study Node"), QIcon(pixmap),
                                             tr("Output Study Node"), tr("Create a New Output Study Node"),
                                             0, _parent, false, this,  SLOT(onOutStudyNode()));
@@ -411,6 +413,7 @@ void GenericGui::createActions()
                                           tr("Switch Node"), tr("Create a New Switch Node"),
                                           0, _parent, false, this,  SLOT(onSWITCHNode()));
 
+  pixmap.load("icons:new_for_loop_node.png");
   _OptimizerLoopAct = _wrapper->createAction(getMenuId(), tr("Create a New Optimizer Loop Node"), QIcon(pixmap),
                                              tr("Optimizer Loop"), tr("Create a New Optimizer Loop"),
                                              0, _parent, false, this,  SLOT(onOptimizerLoop()));
@@ -952,8 +955,11 @@ void GenericGui::showDockWidgets(bool isVisible)
 {
   DEBTRACE("GenericGui::showDockWidgets " << isVisible);
   if (_dwTree) _dwTree->setVisible(isVisible);
+  if (_dwTree) _dwTree->toggleViewAction()->setVisible(isVisible);
   if (_dwStacked) _dwStacked->setVisible(isVisible);
+  if (_dwStacked) _dwStacked->toggleViewAction()->setVisible(isVisible);
   if (_dwCatalogs) _dwCatalogs->setVisible(isVisible);
+  if (_dwCatalogs) _dwCatalogs->toggleViewAction()->setVisible(isVisible);
 }
 
 void GenericGui::raiseStacked()
@@ -1566,25 +1572,32 @@ void GenericGui::onLoadAndRunSchema()
                                              tr( "XML-Files (*.xml);;All Files (*)" ));
   if ( !fn.isEmpty() )
     {
-      DEBTRACE("***************************************************************************");
       DEBTRACE("file loaded : " <<fn.toStdString());
-      DEBTRACE("***************************************************************************");
       YACS::ENGINE::Proc *proc = _loader->load(fn.toLatin1());
+      if (!proc)
+        {
+          QMessageBox msgBox(QMessageBox::Critical,
+                             "Import YACS Schema, native YACS XML format",
+                             "The file has not the native YACS XML format or is not readable.");
+          msgBox.exec();
+          return;
+        }
       YACS::ENGINE::Logger* logger= proc->getLogger("parser");
       if(!logger->isEmpty())
         {
           DEBTRACE(logger->getStr());
         }
-      createContext(proc, fn, fn, false);
+      createContext(proc, fn, "", true);
+      onRunLoadedSchema();
     }
-
 }
 
 void GenericGui::onBatch() {
   DEBTRACE("GenericGui::onBatch");
 
-  // Save the current schema
   if (!QtGuiContext::getQtCurrent()) return;
+
+  // Save the current schema
   YACS::ENGINE::Proc* proc = QtGuiContext::getQtCurrent()->getProc();
   VisitorSaveGuiSchema aWriter(proc);
   aWriter.openFileSchema("/tmp/graph_user.xml");
@@ -1592,11 +1605,11 @@ void GenericGui::onBatch() {
   aWriter.closeFileSchema();
 
   // Load the Batch Schema
-  QString fn = getenv("YACS_ROOT_DIR");
-  fn += "/share/salome/resources/yacs/batch_graph.xml";
-  DEBTRACE("file loaded : " << fn.toStdString());
+  QString fb = getenv("YACS_ROOT_DIR");
+  fb += "/share/salome/resources/yacs/batch_graph.xml";
+  DEBTRACE("file loaded : " << fb.toStdString());
 
-  proc = _loader->load(fn.toLatin1());
+  proc = _loader->load(fb.toLatin1());
   if (!proc) {
     QMessageBox msgBox(QMessageBox::Critical,
 		       "Import Batch Schema, native YACS XML format",
@@ -1607,7 +1620,9 @@ void GenericGui::onBatch() {
     if(!logger->isEmpty()) {
       DEBTRACE(logger->getStr());
     };
-    createContext(proc, fn, "", true);
+    QString fn = QtGuiContext::getQtCurrent()->getFileName();
+    proc->nodeMap["Submit"]->getInputPort("graphfic")->edInit(fn.toLatin1().data());
+    createContext(proc, fb, "", true);
   };
 }
 
@@ -1716,8 +1731,30 @@ void GenericGui::onGetContainerLog()
   SubjectElementaryNode *snode = dynamic_cast<SubjectElementaryNode*>(sub);
   if (!snode) return;
   string log = QtGuiContext::getQtCurrent()->getGuiExecutor()->getContainerLog(snode->getNode());
+
   LogViewer *lv = new LogViewer("Node Container Log", _parent);
-  lv->readFile(log);
+  if (log.empty())
+    {
+      string info = "\n";
+      if (dynamic_cast<YACS::ENGINE::ServiceNode*>(snode->getNode()))
+        {
+          info +="The container log of this node\n";
+          info += "is not stored in a file and \n";
+          info += "can't be displayed here, \n";
+          info += "but you can have a look at \n";
+          info += "the SALOME standard output,\n";
+          info += "on your terminal...";
+        }
+      else
+        {
+          info += "See YACS Container log \n";
+          info += "(on main proc menu) \n";
+          info += "for all inline nodes";
+        }
+      lv->setText(info);
+    }
+  else
+    lv->readFile(log);
   lv->show();
 }
 

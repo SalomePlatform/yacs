@@ -194,6 +194,7 @@ Qt::ItemFlags SchemaNodeItem::flags(const QModelIndex &index)
   switch (column)
     {
     case YValue:
+      flagEdit = Qt::ItemIsEditable; // --- item value editable in model view (for node case in switch)
       break;     
     }
 

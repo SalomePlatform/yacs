@@ -666,8 +666,9 @@ std::string OptimizerLoop::getAlgLib() const
 void OptimizerLoop::checkBasicConsistency() const throw(YACS::Exception)
 {
   DEBTRACE("OptimizerLoop::checkBasicConsistency");
-  DynParaLoop::checkBasicConsistency();
   if(!_alg->getAlg())
-    throw Exception("Problem during library loading.");
+    throw YACS::Exception("Problem during library loading: "+_errorDetails);
+
+  DynParaLoop::checkBasicConsistency();
 }
 

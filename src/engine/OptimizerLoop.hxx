@@ -117,8 +117,8 @@ namespace YACS
       YACS::Event updateStateOnFinishedEventFrom(Node *node);
       void checkNoCyclePassingThrough(Node *node) throw(Exception);
       virtual void accept(Visitor *visitor);
-      std::string getSymbol() const { return _symbol; }
-      std::string getAlgLib() const ;
+      virtual std::string getSymbol() const { return _symbol; }
+      virtual std::string getAlgLib() const ;
       virtual void setAlgorithm(const std::string& alglib,const std::string& symbol,bool checkLinks=true);
       virtual void checkBasicConsistency() const throw(Exception);
 

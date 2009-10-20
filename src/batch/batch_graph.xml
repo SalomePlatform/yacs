@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='iso-8859-1' ?>
-<proc>
+<proc name="batch_graph">
    <property name="DefaultStudyID" value="1"/>
    <type name="string" kind="string"/>
    <struct name="Engines/dataref">
@@ -39,13 +39,15 @@ import orbmodule
 print "BATCH: Submit: input ports"
 #      --------------------------
 
-print "BATCH: input port: graph       = ", graph
+print "BATCH: input port: graph file  = ", graphfic
 print "BATCH: input port: machine     = ", machine
 print "BATCH: input port: infiles     = ", infiles
 print "BATCH: input port: outfiles    = ", outfiles
 print "BATCH: input port: results dir = ", results_dir
 
 status = True
+
+graph = "/tmp/graph_user.xml"
 
 print "BATCH: Load graph for informations"
 #      ----------------------------------
@@ -80,6 +82,7 @@ data = os.environ["YACS_ROOT_DIR"] + "/share/salome/resources/yacs/"
 
 script = data + "batch_launcher.py"
 
+print "BATCH: graph      = ", graph
 print "BATCH: graph name = ", graphname
 print "BATCH: nb. procs  = ", nprocs
 print "BATCH: delay      = ", delay
@@ -198,12 +201,12 @@ state["JOBID"    ] = jobId
 state["STATUS"   ] = status
 state["PARAMS"   ] = params
 state["LAUNCHER" ] = SalomeLauncher
-state["GRAPH"    ] = graph
+state["GRAPHFIC" ] = graphfic
 state["GRAPHNAME"] = graphname
 state["MACHINE"  ] = machine
 
 ]]></code></script>
-      <inport  name="graph"       type="string"/>
+      <inport  name="graphfic"    type="string"/>
       <inport  name="machine"     type="string"/>
       <inport  name="infiles"     type="stringvec"/>
       <inport  name="outfiles"    type="stringvec"/>
@@ -324,7 +327,7 @@ print "ALARM: get input ports"
 #      ----------------------
 
 status    = state["STATUS"   ]
-graph     = state["GRAPH"    ]
+graphfic  = state["GRAPHFIC" ]
 graphname = state["GRAPHNAME"]
 machine   = state["MACHINE"  ]
 data      = state["DATA"     ]
@@ -358,7 +361,7 @@ stamp = time.strftime("%a %d %b %Y %H:%M:%S")
 message = ""
 message = message + "Timestamp : " + stamp     + ".\n"
 message = message + "Graph name: " + graphname + ".\n"
-message = message + "File  name: " + graph     + ".\n"
+message = message + "File  name: " + graphfic  + ".\n"
 message = message + "Machine   : " + machine   + ".\n"
 message = message + "Message   : " + txt       + "Mister Y.B.\n"
 
@@ -462,7 +465,7 @@ print "ALARM: finished"
    </datalink>
 
    <parameter>
-      <tonode>Submit</tonode><toport>graph</toport>
+      <tonode>Submit</tonode><toport>graphfic</toport>
       <value><string>/tmp/graph_user.xml</string></value>
    </parameter>
 

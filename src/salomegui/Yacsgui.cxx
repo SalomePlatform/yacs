@@ -62,6 +62,14 @@ Yacsgui::Yacsgui() :
   _selectFromTree = false;
 }
 
+Yacsgui::~Yacsgui()
+{
+  if ( getApp() )
+    disconnect( getApp(), SIGNAL(studyClosed()), _genericGui, SLOT  (onCleanOnExit()));
+  delete _wrapper;
+  delete _genericGui;
+}
+
 void Yacsgui::initialize( CAM_Application* app )
 {
   DEBTRACE("Yacsgui::initialize");

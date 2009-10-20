@@ -445,7 +445,7 @@ The following Makefile is one of them::
      #compiler
      FC=gfortran
      #SALOME
-     KERNEL_ROOT_DIR=/local/chris/SALOME2/RELEASES/Install/KERNEL_V4_0
+     KERNEL_ROOT_DIR=/local/chris/SALOME/RELEASES/Install/KERNEL_V5
      KERNEL_INCLUDES=-I$(KERNEL_ROOT_DIR)/include/salome
      KERNEL_LIBS= -L$(KERNEL_ROOT_DIR)/lib/salome -lCalciumC -lSalomeDSCSuperv \
                   -lSalomeDSCContainer -lSalomeDatastream -lSalomeDSCSupervBasic \
@@ -507,8 +507,8 @@ The following parameters are mandatory for this context:
 Example creation of generator:: 
 
      context={'update':1,
-              "prerequisites":"/local/cchris/.packages.d/envSalome40",
-              "kernel":"/local/chris/SALOME2/RELEASES/Install/KERNEL_V4_0"
+              "prerequisites":"/local/cchris/.packages.d/envSalome",
+              "kernel":"/local/chris/SALOME/RELEASES/Install/KERNEL_V5"
               }
      g=Generator(m,context)
 
@@ -545,8 +545,8 @@ This gives something like the following for a module with a single Fortran compo
   from module_generator import PYComponent,CPPComponent,Service,F77Component
 
   context={"update":1,
-                   "prerequisites":"/local/cchris/.packages.d/envSalome40",
-                   "kernel":"/local/chris/SALOME2/RELEASES/Install/KERNEL_V4_0"
+                   "prerequisites":"/local/cchris/.packages.d/envSalome",
+                   "kernel":"/local/chris/SALOME/RELEASES/Install/KERNEL_V5"
                  }
   c3=F77Component("compo",
                   services=[
@@ -655,7 +655,7 @@ The following is an example of a YACS file using the Fortran component defined a
   </parameter>
   <parameter>
     <tonode>pipo1</tonode> <toport>c</toport>
-    <value><string>/local/cchris/SALOME2/SUPERV/YACS/modulegen/data1</string> </value>
+    <value><string>/local/cchris/SALOME/SUPERV/YACS/modulegen/data1</string> </value>
   </parameter>
   <parameter>
     <tonode>pipo2</tonode> <toport>a</toport>
@@ -667,7 +667,7 @@ The following is an example of a YACS file using the Fortran component defined a
   </parameter>
   <parameter>
     <tonode>pipo2</tonode> <toport>c</toport>
-    <value><string>/local/cchris/SALOME2/SUPERV/YACS/modulegen/data2</string> </value>
+    <value><string>/local/cchris/SALOME/SUPERV/YACS/modulegen/data2</string> </value>
   </parameter>
 
   </proc>
@@ -881,7 +881,7 @@ The following is an example of a C++ component modified to make it a standalone 
                              ),
                             ],
          kind="exe",
-         exe_path="/local/chris/SALOME2/SUPERV/YACS/modulegen/execpp_essai/prog",
+         exe_path="/local/chris/SALOME/SUPERV/YACS/modulegen/execpp_essai/prog",
                      )
 
 The path given for **exe_path** corresponds to an executable with the following source::
@@ -927,7 +927,7 @@ The following is an example of a standalone Fortran component::
                              ),
                              ],
          kind="exe",
-         exe_path="/local/chris/SALOME2/SUPERV/YACS/modulegen/YACSGEN/fcompo/prog",
+         exe_path="/local/chris/SALOME/SUPERV/YACS/modulegen/YACSGEN/fcompo/prog",
                                      )
 
 The path given for **exe_path** corresponds to an executable with the following source::
@@ -975,7 +975,7 @@ The following is an example description of a standalone Aster component::
                  ),
          ],
          aster_dir="/aster/NEW9",
-         exe_path="/home/pora/CCAR/SALOME4/exeaster_essai",
+         exe_path="/home/pora/CCAR/SALOME5/exeaster_essai",
          asrun="/aster/ASTK/ASTK_SERV/bin/as_run",
          kind="exe",
          )
@@ -1006,7 +1006,7 @@ written as follows::
   from module_generator import ASTERComponent,Service,F77Component
 
   context={'update':1,"prerequisites":"/home/caremoli/pkg/env.sh",
-          "kernel":"/home/pora/CCAR/SALOME4/Install/KERNEL_V4_1"}
+          "kernel":"/home/pora/CCAR/SALOME5/Install/KERNEL_V5"}
 
   install_prefix="./exe_install"
   appli_dir="exe_appli"
@@ -1028,7 +1028,7 @@ written as follows::
                  ),
          ],
          aster_dir="/aster/NEW9",
-         exe_path="/home/pora/CCAR/SALOME4/exeaster_essai",
+         exe_path="/home/pora/CCAR/SALOME5/exeaster_essai",
          asrun="/aster/ASTK/ASTK_SERV/bin/as_run",
          kind="exe",
          )
@@ -1051,7 +1051,7 @@ written as follows::
                        defs="",body="",
                  ),
          ],
-           exe_path="/home/pora/CCAR/SALOME4/exeedyos_essai/prog",
+           exe_path="/home/pora/CCAR/SALOME5/exeedyos_essai/prog",
            kind="exe")
 
   g=Generator(Module("titi",components=[c1,c2],prefix=install_prefix),context)

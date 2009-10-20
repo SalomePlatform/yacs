@@ -19,6 +19,7 @@
 #include "SalomeOptimizerLoop.hxx"
 #include <Python.h>
 #include "TypeCode.hxx"
+#include "PyStdout.hxx"
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -135,14 +136,23 @@ void *SalomeOptimizerAlgStandardized::threadFctForAsync(void* ownStack)
 SalomeOptimizerLoop::SalomeOptimizerLoop(const std::string& name, const std::string& algLibWthOutExt,
                                          const std::string& symbolNameToOptimizerAlgBaseInstanceFactory, bool algInitOnFile,bool initAlgo):
                      OptimizerLoop(name,algLibWthOutExt,symbolNameToOptimizerAlgBaseInstanceFactory,algInitOnFile,false),
-                     _pyalg(0),_cppalg(0)
+                     _pyalg(0),_cppalg(0),_alglib(algLibWthOutExt)
 {
   if(initAlgo)
-    setAlgorithm(algLibWthOutExt,symbolNameToOptimizerAlgBaseInstanceFactory);
+    {
+      try
+        {
+          setAlgorithm(algLibWthOutExt,symbolNameToOptimizerAlgBaseInstanceFactory);
+        }
+      catch(YACS::Exception& e)
+        {
+          //ignore it
+        }
+    }
 }
 
-SalomeOptimizerLoop::SalomeOptimizerLoop(const OptimizerLoop& other, ComposedNode *father, bool editionOnly): 
-                     OptimizerLoop(other,father,editionOnly),_pyalg(0),_cppalg(0)
+SalomeOptimizerLoop::SalomeOptimizerLoop(const SalomeOptimizerLoop& other, ComposedNode *father, bool editionOnly): 
+                     OptimizerLoop(other,father,editionOnly),_pyalg(0),_cppalg(0),_alglib(other._alglib)
 {
 }
 
@@ -175,6 +185,7 @@ void SalomeOptimizerLoop::setAlgorithm(const std::string& alglib, const std::str
         throw Exception("The OptimizerLoop node must be disconnected before setting the algorithm");
     }
 
+  _alglib=alglib;
   _symbol=symbol;
 
   OptimizerAlgBaseFactory algFactory=0;
@@ -185,6 +196,16 @@ void SalomeOptimizerLoop::setAlgorithm(const std::string& alglib, const std::str
     {
       //if alglib extension is .py try to import the corresponding python module
       PyGILState_STATE gstate=PyGILState_Ensure();
+
+      if(_cppalg)
+        {
+          _cppalg->decrRef();
+          _cppalg=0;
+        }
+
+      if(_pyalg==0)
+        _pyalg=new SalomeOptimizerAlgStandardized(&_myPool,0);
+      _alg=_pyalg;
 
       PyObject* mainmod = PyImport_AddModule("__main__");
       PyObject* globals = PyModule_GetDict(mainmod);
@@ -211,41 +232,43 @@ void SalomeOptimizerLoop::setAlgorithm(const std::string& alglib, const std::str
 
       if(res == NULL)
         {
+          //error during import
+          _errorDetails="";
+          PyObject* new_stderr = newPyStdOut(_errorDetails);
+          PySys_SetObject((char*)"stderr", new_stderr);
           PyErr_Print();
+          PySys_SetObject((char*)"stderr", PySys_GetObject((char*)"__stderr__"));
+          Py_DECREF(new_stderr);
+          _alg->setAlgPointer(algo);
+          modified();
           PyGILState_Release(gstate);
-          throw Exception("Problem when creating the algorithm : see traceback");
+          throw YACS::Exception(_errorDetails);
         }
-
-      Py_DECREF(res);
-
-      typedef struct {
-          PyObject_HEAD
-          void *ptr;
-          void *ty;
-          int own;
-          PyObject *next;
-      } SwigPyObject;
-
-      SwigPyObject* pyalgo = (SwigPyObject*)PyDict_GetItemString(globals, "swigalgo");
-      algo=(OptimizerAlgBase*)pyalgo->ptr;
-      algo->setPool(&_myPool);
-      algo->incrRef();
-
-      if(_cppalg)
+      else
         {
-          _cppalg->decrRef();
-          _cppalg=0;
-        }
+          Py_DECREF(res);
 
-      if(_pyalg==0)
-        _pyalg=new SalomeOptimizerAlgStandardized(&_myPool,0);
-      _alg=_pyalg;
+          typedef struct {
+              PyObject_HEAD
+              void *ptr;
+              void *ty;
+              int own;
+              PyObject *next;
+          } SwigPyObject;
+
+          SwigPyObject* pyalgo = (SwigPyObject*)PyDict_GetItemString(globals, "swigalgo");
+          algo=(OptimizerAlgBase*)pyalgo->ptr;
+          algo->setPool(&_myPool);
+          algo->incrRef();
+        }
 
       _alg->setAlgPointer(algo);
 
-      if(!algo)
-        return;
-
+      if(algo)
+        {
+          _splittedPort.edSetType(_alg->getTCForIn());
+          _retPortForOutPool.edSetType(_alg->getTCForOut());
+        }
       PyGILState_Release(gstate);
     }
   else
@@ -264,18 +287,41 @@ void SalomeOptimizerLoop::setAlgorithm(const std::string& alglib, const std::str
       _alg=_cppalg;
 
       if(alglib!="" && _symbol!="")
-        algFactory=(OptimizerAlgBaseFactory)_loader.getHandleOnSymbolWithName(_symbol);
+        {
+          try
+            {
+              _errorDetails="";
+              algFactory=(OptimizerAlgBaseFactory)_loader.getHandleOnSymbolWithName(_symbol);
+            }
+          catch (YACS::Exception& e)
+            {
+              _errorDetails=e.what();
+              _alg->setAlgPointer(algo);
+              modified();
+              throw;
+            }
+        }
 
       if(algFactory)
         algo=algFactory(&_myPool);
 
       _alg->setAlgPointer(algo);
 
-      if(!algo)
-        return;
+      if(algo)
+        {
+          _splittedPort.edSetType(_alg->getTCForIn());
+          _retPortForOutPool.edSetType(_alg->getTCForOut());
+        }
     }
+  modified();
+}
 
-  _splittedPort.edSetType(_alg->getTCForIn());
-  _retPortForOutPool.edSetType(_alg->getTCForOut());
+//! Return the name of the algorithm library
+/*!
+ *
+ */
+std::string SalomeOptimizerLoop::getAlgLib() const
+{
+  return _alglib;
 }
 

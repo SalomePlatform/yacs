@@ -63,3 +63,17 @@ QPointF SceneCtrlLinkItem::goal()
   DEBTRACE("localTo(" << localTo.x() << "," << localTo.y() << ")");
   return mapFromItem(dpit, localTo);
 }
+
+QColor SceneCtrlLinkItem::getPenColor()
+{
+  _penColor     = Resource::control_link_draw_color.darker(Resource::link_pen_darkness);
+  _hiPenColor   = Resource::control_link_select_color.darker(Resource::link_pen_darkness);
+  return SceneObserverItem::getPenColor();
+}
+
+QColor SceneCtrlLinkItem::getBrushColor()
+{
+  _brushColor   = Resource::control_link_draw_color;
+  _hiBrushColor = Resource::control_link_select_color;
+  return SceneObserverItem::getBrushColor();
+}

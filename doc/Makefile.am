@@ -104,6 +104,7 @@ schemapy.rst       \
 schemaxml.rst      \
 scratch.rst        \
 toolbars.rst       \
+optimizer.rst       \
 yacsgen.rst
 
 

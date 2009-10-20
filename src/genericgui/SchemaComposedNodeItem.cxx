@@ -60,8 +60,24 @@ SchemaComposedNodeItem::SchemaComposedNodeItem(SchemaItem *parent, QString label
   : SchemaItem(parent, label, subject)
 {
   DEBTRACE("SchemaComposedNodeItem::SchemaComposedNodeItem");
-  _itemDeco.replace(YLabel, QIcon("icons:block_node.png"));
-  _dirTypesItem = 0;
+  switch (subject->getType())
+    {
+    case YACS::HMI::BLOC: 
+      _itemDeco.replace(YLabel, QIcon("icons:block_node.png"));
+      break;
+    case YACS::HMI::FORLOOP: 
+    case YACS::HMI::FOREACHLOOP: 
+    case YACS::HMI::WHILELOOP: 
+    case YACS::HMI::OPTIMIZERLOOP: 
+      _itemDeco.replace(YLabel, QIcon("icons:loop_node.png"));
+      break;
+    case YACS::HMI::SWITCH: 
+      _itemDeco.replace(YLabel, QIcon("icons:switch_node.png"));
+      break;
+    default:
+      _itemDeco.replace(YLabel, QIcon("icons:block_node.png"));
+    }
+   _dirTypesItem = 0;
   _dirContainersItem = 0;
   _dirLinksItem = 0;
   Subject *son = 0;

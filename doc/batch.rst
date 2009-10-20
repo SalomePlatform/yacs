@@ -47,7 +47,7 @@ The following is an example of description of a cluster:
 	   appliPath="/home/user/applis/batch_exemples" 
 	   batchQueue="mpi1G_5mn_4p"
 	   userCommands="ulimit -s 8192"
-	   preReqFilePath="/home/ribes/SALOME4/env-prerequis.sh" 
+	   preReqFilePath="/home/ribes/SALOME5/env-prerequis.sh" 
 	   OS="LINUX" 
 	   CPUFreqMHz="2800" 
 	   memInMB="4096" 

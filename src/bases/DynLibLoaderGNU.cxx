@@ -19,6 +19,7 @@
 #include "DynLibLoaderGNU.hxx"
 #include <iostream>
 #include <dlfcn.h>
+#include "Exception.hxx"
 
 using namespace YACS::BASES;
 
@@ -111,10 +112,9 @@ void *DynLibLoaderGNU::resolveSymb(const std::string& symbName, bool stopOnError
   char *message=dlerror();
   if(stopOnError && (NULL != message))
     {
-      std::cerr << "Error detected on symbol " << symbName << " search in library with name " << _libName << _extForDynLib;
-      std::cerr << " with the following internal message"<<  std::endl; 
-      std::cerr << message << std::endl;
-      return 0;
+      std::string error="Error detected on symbol ";
+      error=error+symbName +" search in library with name "+_libName+_extForDynLib+" with the following internal message "+message;
+      throw YACS::Exception(error);
     }
   else
     return ret;

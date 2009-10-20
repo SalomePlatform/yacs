@@ -18,6 +18,7 @@
 //
 #include "SchemaLinkItem.hxx"
 #include "Menus.hxx"
+#include "DataStreamPort.hxx"
 
 #include <QIcon>
 
@@ -30,7 +31,22 @@ using namespace YACS::HMI;
 SchemaLinkItem::SchemaLinkItem(SchemaItem *parent, QString label, Subject* subject)
   : SchemaItem(parent, label, subject)
 {
-  _itemDeco.replace(YLabel, QIcon("icons:new_link.png"));
+  switch (subject->getType())
+    {
+    case YACS::HMI::CONTROLLINK: 
+      _itemDeco.replace(YLabel, QIcon("icons:control_link.png"));
+      break;
+    case YACS::HMI::DATALINK: 
+      _itemDeco.replace(YLabel, QIcon("icons:data_link.png"));
+      if (SubjectLink *slink = dynamic_cast<SubjectLink*>(subject))
+        {
+          if (dynamic_cast<YACS::ENGINE::DataStreamPort*>(slink->getSubjectOutPort()->getPort()))
+            _itemDeco.replace(YLabel, QIcon("icons:stream_link.png"));            
+        }
+      break;
+    default:
+      _itemDeco.replace(YLabel, QIcon("icons:new_link.png"));
+    }
 }
 
 void SchemaLinkItem::update(GuiEvent event, int type, Subject* son)

@@ -22,9 +22,10 @@ The main window look & feel is presented schematically below. Note that SALOME O
 
 .. _mainwindow:
 
-.. figure:: images/yacs_gui_description_0.png
+.. image:: images/yacs_gui_description_0.png
   :align: center
 
+.. centered::
   Main Window
 
 .. raw:: LaTeX
