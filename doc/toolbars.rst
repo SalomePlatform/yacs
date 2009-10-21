@@ -8,7 +8,7 @@ The toolbar panel contains buttons for the quick access to the often-used operat
 
 
 
-.. image:: images/main_menu_5.png
+.. image:: images/main_menu_4.png
   :align: center
 
 
@@ -59,9 +59,6 @@ YACS toolbar contents depends on the edition or execution mode. Without any sche
 + :ref:`import_yacs_schema` : load a YACS schema saved on an XML file 
 
 
-+ :ref:`import_supervisor_graph` : load a SUPERV schema saved on an XML file
-
-
 + Load a Schema in run mode (without edition)
 
 
@@ -87,9 +84,6 @@ YACS toolbar in edition mode contains functions to import and export schemas, to
 + :ref:`import_yacs_schema` : load a YACS schema saved on an XML file 
 
 
-+ :ref:`import_supervisor_graph` : load a SUPERV schema saved on an XML file
-
-
 + Save Schema : save in the current opened file
 
 
@@ -105,7 +99,13 @@ YACS toolbar in edition mode contains functions to import and export schemas, to
 + Load a Schema in run mode (without edition)
 
 
++ Load a Schema to be executed on a batch system
+
+
 + Import Catalog : to import specific data types or nodes
+
+
++ Straight/Orthogonal : toggle between straight lines or orthogonal links
 
 
 + Automatic Links: toggle behaviour for automatic link reconstruction when 2D View layout changes
@@ -114,10 +114,13 @@ YACS toolbar in edition mode contains functions to import and export schemas, to
 + Simplify Links: toggle behaviour for link simplification (less segments)
 
 
-+ Force Ortho Links: toggle behaviour on very simple links (2 segments becomes 3 orthogonals segments)
-
-
 + Separate Links: toggle behaviour to try to avoid or not superposition of links 
+
+
++ Show all links: some links may have been selectively hidden
+
+
++ Hide all links
 
 
 + What's this mode : experimental, detailled help on a few items
@@ -144,9 +147,6 @@ YACS toolbar in execution mode contains functions to import and export schemas, 
 + :ref:`import_yacs_schema` : load a YACS schema saved on an XML file 
 
 
-+ :ref:`import_supervisor_graph` : load a SUPERV schema saved on an XML file
-
-
 + Load a Schema in run mode (without edition)
 
 
@@ -165,9 +165,6 @@ YACS toolbar in execution mode contains functions to import and export schemas, 
 + :ref:`save_restore_execution_state`
 
 
-+ :ref:`create_new_edition`
-
-
 + Set/reset Execution mode without stops
 
 
@@ -178,6 +175,24 @@ YACS toolbar in execution mode contains functions to import and export schemas, 
 
 
 + Set/reset Stop excution on the first error
+
+
++ Straight/Orthogonal : toggle between straight lines or orthogonal links
+
+
++ Automatic Links: toggle behaviour for automatic link reconstruction when 2D View layout changes
+
+
++ Simplify Links: toggle behaviour for link simplification (less segments)
+
+
++ Separate Links: toggle behaviour to try to avoid or not superposition of links 
+
+
++ Show all links: some links may have been selectively hidden
+
+
++ Hide all links
 
  
 + What's this mode : experimental, detailled help on a few items

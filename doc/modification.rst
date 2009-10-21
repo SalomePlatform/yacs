@@ -99,6 +99,8 @@ or from the 2D Viewer context menu. The context menu must be activated on the ch
 .. image:: images/functionality_list_19.jpg
   :align: center
 
+as a result:
+
 .. image:: images/functionality_list_18.jpg
   :align: center
 
@@ -114,6 +116,7 @@ from the 2D Viewer context menu. The context menu must be activated on the chose
 .. image:: images/functionality_list_21.jpg
   :align: center
 
+as a result:
 
 .. image:: images/functionality_list_20.jpg
   :align: center
@@ -136,6 +139,9 @@ As a result of this command call the Input Panel with catalogs' properties is di
 with the possibility to choose firstly a catalog type: **Current Session**, **Built In** or other imported catalog (i.e. to fill catalog 
 with types of nodes belonging to a predefined schema), and secondly - the type of node from the catalog to add it into the active schema. The
 **Current Session** catalog contains all SALOME components with its services.
+
+**Notes:** To add a node from catalog to the schema, drag and drop it. Multiple selection is possible in the Catalog, so you can add several
+nodes to the schema with one drag and drop.
 
 .. image:: images/functionality_list_24.jpg
   :align: center
@@ -176,6 +182,8 @@ the 2D Viewer context menu.
 .. image:: images/functionality_list_31.jpg
   :align: center
 
+as a result:
+
 .. image:: images/functionality_list_30.jpg
   :align: center
 
@@ -187,6 +195,8 @@ Tree View or in the 2D Viewer.
 
 .. image:: images/functionality_list_32.jpg
   :align: center
+
+as a result:
 
 .. image:: images/functionality_list_33.jpg
   :align: center
@@ -202,6 +212,8 @@ The node object can be created with help of **Create Node --> For Loop Node** co
 .. image:: images/functionality_list_35.jpg
   :align: center
 
+as a result:
+
 .. image:: images/functionality_list_34.jpg
   :align: center
 
@@ -214,6 +226,7 @@ Tree View or in the 2D Viewer.
 .. image:: images/functionality_list_36.jpg
   :align: center
 
+as a result:
 
 .. image:: images/functionality_list_37.jpg
   :align: center
@@ -232,6 +245,8 @@ you'll have to import it in the schema. In this case we use a double data type a
 .. image:: images/functionality_list_39.jpg
   :align: center
 
+as a result:
+
 .. image:: images/functionality_list_38.jpg
   :align: center
 
@@ -244,6 +259,7 @@ Tree View or in the 2D Viewer.
 .. image:: images/functionality_list_40.jpg
   :align: center
 
+as a result:
 
 .. image:: images/functionality_list_41.jpg
   :align: center
@@ -836,10 +852,6 @@ To perform this operation the user should select object to be deleted in the Tre
 from its context popup menu.
 
 With help of context popup menu the user can delete the following objects:
-
-+ container,
-
-+ component instance,
 
 + node,
 

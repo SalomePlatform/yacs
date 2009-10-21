@@ -25,7 +25,8 @@ File
 ----
 File menu contains standard operations for creating, opening and saving documents (SALOME studies) as well as schema creation or import operations. The SALOME study is saved in a HDF file with default extension \*.hdf. YACS Schema must be saved apart in XML files.
 
-If YACS module has been loaded File menu contains the following items:
+If YACS module has been loaded, File menu contains the following items:
+
 
 
 .. image:: images/main_menu_2.png
@@ -86,10 +87,20 @@ View menu allows maintaining visibility of the different parts of the desktop li
 
 YACS menu
 ---------
-YACS menu contains a set of commands for creating opening and saving of YACS schemas, importing old SUPERV schemas, execute schemas, import catalogs, and set some specific behavior of 2D views. YACS menu contains the following items:
+YACS menu contains a set of commands for creating opening and saving of YACS schemas, importing old SUPERV schemas, execute schemas, import catalogs, and set some specific behavior of 2D views.
+When YACS is started, YACS menu contains the following items:
 
+.. image:: images/main_menu_6a.png
+  :align: center
 
-.. image:: images/main_menu_6.png
+When the active schema is in edition mode, YACS menu contains the following items:
+
+.. image:: images/main_menu_6b.png
+  :align: center
+
+When the active schema is in execution mode, YACS menu contains the following items:
+
+.. image:: images/main_menu_6c.png
   :align: center
 
 
@@ -117,7 +128,13 @@ YACS menu contains a set of commands for creating opening and saving of YACS sch
 + Load a Schema in run mode (without edition)
 
 
++ Load a Schema to be executed on a batch system
+
+
 + Import Catalog : to import specific data types or nodes
+
+
++ Straight/Orthogonal : toggle between straight lines or orthogonal links
 
 
 + Automatic Links: toggle behaviour for automatic link reconstruction when 2D View layout changes
@@ -132,8 +149,16 @@ YACS menu contains a set of commands for creating opening and saving of YACS sch
 + Separate Links: toggle behaviour to try to avoid or not superposition of links 
 
 
++ Show all links: some links may have been selectively hidden
+
+
++ Hide all links
+
+
 + What's this mode : experimental, detailled help on a few items
 
+
++ Several actions specific to execution mode, to be detailled later.
 
 
 Tools

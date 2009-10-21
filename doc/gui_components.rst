@@ -138,6 +138,7 @@ There are three modes which are available in the run mode of the schema. They ar
 
 .. _viewer:
 
+
 2D Viewer
 ---------
 The user can display a presentation of the schema in the 2D Viewer based on the Qt drawing capabilities. The high-level 2D Viewer classes from SALOME GUI QxGraph package are used for this purpose. QxGraph classes also support interactive selection/hilighting in 2D View with the mouse.
