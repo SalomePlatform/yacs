@@ -572,7 +572,21 @@ void ComposedNode::checkConsistency(LinkInfo& info) const throw(YACS::Exception)
         }
       if(!candidateForAdvCheck.empty())
         //End of filtering. Now regarding CF constraints for the current InPutPort.
-        checkLinksCoherenceRegardingControl(candidateForAdvCheck,*iter1,info);
+        try
+          {
+            checkLinksCoherenceRegardingControl(candidateForAdvCheck,*iter1,info);
+          }
+        catch(YACS::Exception& ex)
+          {
+            std::string what=ex.what();
+            what += "\nfor input port: ";
+            what += (*iter1)->getNode()->getName();
+            what += ".";
+            what += (*iter1)->getName();
+
+            destructCFComputations(info);
+            throw YACS::Exception(what);
+          }
       else
         //No backlinks
         if(!(*iter1)->edIsManuallyInitialized())

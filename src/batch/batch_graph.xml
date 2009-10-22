@@ -343,12 +343,12 @@ print "ALARM: set parameters"
 
 if status:
     print "ALARM: job well finished"
-    colo = "green"
+    colo = "1"
     word = data + "good.txt"
     sono = data + "good.wav"
 else:
     print "ALARM: job BAD finished"
-    colo = "red"
+    colo = "0"
     word = data + "bad.txt"
     sono = data + "bad.wav"
 
@@ -380,7 +380,9 @@ print "ALARM: mail"
 
 if mail!="":
     print "ALARM: send a mail"
-    os.system("echo \"" + message + "\" | " + cmd_mail + " -s YACS_Batch " + mail)
+    cmd = "echo \"" + message + "\" | " + cmd_mail + " -s YACS_Batch " + mail
+    print "ALARM: send a mail command: ", cmd
+    os.system(cmd)
 else:
     print "ALARM: no send a mail"
 
@@ -389,7 +391,9 @@ print "ALARM: sound"
 
 if sound:
     print "ALARM: sound effect"
-    os.system(cmd_sound + " " + sono)
+    cmd = cmd_sound + " " + sono
+    print "ALARM: sound command: ", cmd
+    os.system(cmd)
 else:
     print "ALARM: no sound effect"
 
@@ -398,7 +402,9 @@ print "ALARM: speak"
 
 if speak:
     print "ALARM: speak effect"
-    os.system("( echo \"" + message + "\" | " + cmd_speak + " )&")
+    cmd = "( echo \"" + message + "\" | " + cmd_speak + " )&"
+    print "ALARM: speak command: ", cmd
+    os.system(cmd)
 else:
     print "ALARM: no speak effect"
 
@@ -407,31 +413,9 @@ print "ALARM: popup"
 
 if popup:
     print "ALARM: popup effect"
-
-    import Tkinter
-
-    r = Tkinter.Tk()
-
-    l = Tkinter.Label()
-    l.pack(side=Tkinter.TOP)
-
-    l["fg"  ] = "blue"
-    l["text"] = "From Yacs Batch"
-
-    b = Tkinter.Button()
-    b.pack(side=Tkinter.BOTTOM)
-
-    b["justify"] = Tkinter.LEFT
-    b["text"   ] = message
-    b["bg"     ] = colo
-    b["command"] = r.quit
-
-    r.geometry("+600+400")
-    r.overrideredirect(True)
-    r.mainloop()
-
-    r.destroy()
-
+    cmd = "python " + data + "batch_alarm.py " + colo + " \"" + message + "\""
+    print "ALARM: popup command: ", cmd
+    os.system(cmd)
 else:
     print "ALARM: no popup effect"
 

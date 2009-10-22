@@ -1225,7 +1225,6 @@ void GenericGui::onNewSchema()
 void GenericGui::loadSchema(const std::string& filename,bool edit)
 {
   YACS::ENGINE::Proc *proc = _loader->load(filename.c_str());
-  std::cerr << proc << std::endl;
   if (!proc)
     return;
   YACS::ENGINE::Logger* logger= proc->getLogger("parser");
@@ -1493,6 +1492,7 @@ void GenericGui::onRunLoadedSchema(bool withState)
     {
       DEBTRACE(ex.what());
       QtGuiContext::getQtCurrent()->getSubjectProc()->select(true);
+      return;
     }
   if (info.areWarningsOrErrors()) return;
  

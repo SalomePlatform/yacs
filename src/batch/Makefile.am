@@ -22,6 +22,7 @@ include $(top_srcdir)/adm/unix/make_begin.am
 
 LIBICONS = \
 	batch_launcher.py   \
+	batch_alarm.py      \
 	batch_graph.xml     \
         good.txt            \
         good.wav            \
