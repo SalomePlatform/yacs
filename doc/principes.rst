@@ -528,7 +528,7 @@ This file is in the XML format.  Each machine is described with the machine tag 
 ================================== =========================== ==============================================
 Characteristic                         XML attribute               Description
 ================================== =========================== ==============================================
-nom                                 hostname                   the complete name:  this is the key that uniquely determines the machine
+computer name                       hostname                   the complete name:  this is the key that uniquely determines the machine
                                                                (for example : "nickel.ccc.cea.fr") 
 alias                               alias                      character string to identify the machine (for example,  “pluton”)
 access protocol                     protocol                   "rsh" (default) or "ssh"

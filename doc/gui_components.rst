@@ -148,6 +148,8 @@ The user can display a presentation of the schema in the 2D Viewer based on the 
 .. image:: images/2d_viewer_0.png
   :align: center
 
+.. centered::
+  **2D Viewer**
 
 
 .. _view_operations_toolbar:

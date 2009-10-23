@@ -27,28 +27,23 @@ File menu contains standard operations for creating, opening and saving document
 
 If YACS module has been loaded, File menu contains the following items:
 
++ YACS:
+
+    + :ref:`create_new_schema`
+    + :ref:`import_yacs_schema`
 
 
 .. image:: images/main_menu_2.png
   :align: center
 
 
-
-+ YACS:
-
-
-    + :ref:`create_new_schema`
-
-
-
-    + :ref:`import_yacs_schema`
-
-
-
-
 Edit
 ----
-Edit menu supports standard edition operations like copy/paste and undo/redo functionality. Cut, copy, paste, undo/redo should be available in edition mode only. ( **Cut, copy and paste are only available within context popup menus, and undo/redo are not currently implemented, but will be available in the future version!** )
+In SALOME, Edit menu contains standard edition operations like copy/paste and undo/redo functionality. 
+In YACS module, Cut, copy and paste are available but only within context popup menus.
+Cut, copy, and paste are available in edition mode only.
+
+Undo/redo is not currently implemented, but will be available in a future version.
 
 
 
@@ -88,77 +83,61 @@ View menu allows maintaining visibility of the different parts of the desktop li
 YACS menu
 ---------
 YACS menu contains a set of commands for creating opening and saving of YACS schemas, importing old SUPERV schemas, execute schemas, import catalogs, and set some specific behavior of 2D views.
+
 When YACS is started, YACS menu contains the following items:
+
++ :ref:`create_new_schema` : create a new schema from scratch
++ :ref:`import_yacs_schema` : load a YACS schema saved on an XML file 
++ :ref:`import_supervisor_graph` : load a SUPERV schema saved on an XML file
++ Load a Schema in run mode (without edition)
++ What's this, detailled help on a few items
 
 .. image:: images/main_menu_6a.png
   :align: center
 
 When the active schema is in edition mode, YACS menu contains the following items:
 
++ :ref:`create_new_schema` : create a new schema from scratch
++ :ref:`import_yacs_schema` : load a YACS schema saved on an XML file 
++ :ref:`import_supervisor_graph` : load a SUPERV schema saved on an XML file
++ Save Schema : save in the current opened file
++ :ref:`export_schema` : save with file dialog box to choose a new filename
++ :ref:`execute_schema` : switch from edition to run mode
++ :ref:`save_restore_execution_state` (from a state of execution saved previously)
++ Load a Schema in run mode (without edition)
++ Load a Schema to be executed on a batch system
++ Import Catalog : to import specific data types or nodes
++ Straight/Orthogonal : toggle between straight lines or orthogonal links
++ Automatic Links: toggle behaviour for automatic link reconstruction when 2D View layout changes
++ Simplify Links: toggle behaviour for link simplification (less segments)
++ Force Ortho Links: toggle behaviour on very simple links (2 segments becomes 3 orthogonals segments)
++ Separate Links: toggle behaviour to try to avoid or not superposition of links 
++ Show all links: some links may have been selectively hidden
++ Hide all links
++ What's this, detailled help on a few items
+
 .. image:: images/main_menu_6b.png
   :align: center
 
 When the active schema is in execution mode, YACS menu contains the following items:
 
++ :ref:`create_new_schema` : create a new schema from scratch
++ :ref:`import_yacs_schema` : load a YACS schema saved on an XML file 
++ :ref:`import_supervisor_graph` : load a SUPERV schema saved on an XML file
++ :ref:`save_restore_execution_state` (from a state of execution saved previously)
++ Load a Schema in run mode (without edition)
++ Several actions specific to execution mode, to be detailled later.
++ Straight/Orthogonal : toggle between straight lines or orthogonal links
++ Automatic Links: toggle behaviour for automatic link reconstruction when 2D View layout changes
++ Simplify Links: toggle behaviour for link simplification (less segments)
++ Force Ortho Links: toggle behaviour on very simple links (2 segments becomes 3 orthogonals segments)
++ Separate Links: toggle behaviour to try to avoid or not superposition of links 
++ Show all links: some links may have been selectively hidden
++ Hide all links
++ What's this, detailled help on a few items
+
 .. image:: images/main_menu_6c.png
   :align: center
-
-
-+ :ref:`create_new_schema` : create a new schema from scratch
-
-
-+ :ref:`import_yacs_schema` : load a YACS schema saved on an XML file 
-
-
-+ :ref:`import_supervisor_graph` : load a SUPERV schema saved on an XML file
-
-
-+ Save Schema : save in the current opened file
-
-
-+ :ref:`export_schema` : save with file dialog box to choose a new filename
-
-
-+ :ref:`execute_schema` : switch from edition to run mode
-
-
-+ :ref:`save_restore_execution_state` (from a state of execution saved previously)
-
-
-+ Load a Schema in run mode (without edition)
-
-
-+ Load a Schema to be executed on a batch system
-
-
-+ Import Catalog : to import specific data types or nodes
-
-
-+ Straight/Orthogonal : toggle between straight lines or orthogonal links
-
-
-+ Automatic Links: toggle behaviour for automatic link reconstruction when 2D View layout changes
-
-
-+ Simplify Links: toggle behaviour for link simplification (less segments)
-
-
-+ Force Ortho Links: toggle behaviour on very simple links (2 segments becomes 3 orthogonals segments)
-
-
-+ Separate Links: toggle behaviour to try to avoid or not superposition of links 
-
-
-+ Show all links: some links may have been selectively hidden
-
-
-+ Hide all links
-
-
-+ What's this mode : experimental, detailled help on a few items
-
-
-+ Several actions specific to execution mode, to be detailled later.
 
 
 Tools

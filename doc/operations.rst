@@ -263,6 +263,8 @@ By double clic on a YACS item of the Object Browser (Schema in edition or execut
 
 When a single object is selected in the **Tree View** of a schema, its context popup menu contains all operations applicable to objects of the given type.
 
+.. _Table_2:
+
 Specific operations available in the **edition mode** for each type of objects selected in the Tree View are given in the Table 2 below.
 
 
@@ -279,7 +281,6 @@ Specific operations available in the **edition mode** for each type of objects s
 .. |data| image:: images/data_link.png
 .. |stream| image:: images/stream_link.png
 
-.. _Table_2:
 
 +--------------------------------+-------------+-------------------------------------------------------------------------------------+
 | **Selected object type**       | **Icon**    |     **Available context menu commands**                                             |

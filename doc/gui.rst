@@ -7,6 +7,14 @@ Using YACS with the graphical user interface (GUI)
 YACS GUI description
 ====================
 
+.. _mainwindow:
+
+.. image:: images/yacs_gui_description_0.png
+  :align: center
+
+.. centered::
+  Main Window
+
 The YACS GUI document contains several 2D and tree views, one of each per run of a schema. There are different view modes of the schema.
 The SALOME Object browser is only used to publish the run of the schema as a whole, and under the run, 
 the outputs of the run that are published for the use of other SALOME modules. During the schema design (edition),
@@ -25,20 +33,6 @@ Drag and drop operations are often used in edition, between tree items and/or 2D
 
 The main window look & feel is presented schematically below.
 Note that SALOME Object browser and Schema tree view are regrouped under tabs by default.
-
-
-
-.. _mainwindow:
-
-.. image:: images/yacs_gui_description_0.png
-  :align: center
-
-.. centered::
-  Main Window
-
-.. raw:: LaTeX
-
-   \clearpage
 
 .. toctree::
    :maxdepth: 1
