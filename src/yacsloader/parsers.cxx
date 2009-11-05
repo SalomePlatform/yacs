@@ -21,6 +21,7 @@
 #include <expat.h>
 #include <iostream>
 #include <stdexcept>
+#include <cstdio>
 
 #include "Runtime.hxx"
 #include "Proc.hxx"
