@@ -42,6 +42,8 @@ AC_DEFUN([I2_CHECK_QT4],
   AC_REQUIRE([AC_PROG_CPP])
 
   qt_ok=no
+  qt4_wanted=yes
+  WITH_QT4=0
 
   # --- check if qt4 standard install directory is defined (with subdirectories bin lib include)
   qt4_install_path=""
@@ -82,11 +84,18 @@ AC_DEFUN([I2_CHECK_QT4],
   # --- if qt4 standard install directory is not wanted: --without-qt4 or --with-qt4=no
   if test x${withval} = xno
   then
-    qt4_install_path=""
+    qt4_wanted=no
+    AC_MSG_NOTICE([Qt4 is not wanted, skip detection])
   fi
 
   QT_DIR=${qt4_install_path}
   AC_SUBST(QT_DIR)
+
+  # ----------------------------------------------------------------------
+  # --- only when qt4 wanted (no explicit --without-qt4 nor --with-qt4=no)
+
+  if test x${qt4_wanted} = xyes
+  then
 
   # --- check if qt4 includes directory is defined
   qt4_include_path=""
@@ -146,11 +155,6 @@ AC_DEFUN([I2_CHECK_QT4],
     fi
   fi
 
-  WITH_QT4=0
-
-  AC_MSG_NOTICE(${qt4_include_path})
-  AC_MSG_NOTICE(${qt4_library_path})
-  AC_MSG_NOTICE(${qt4_tools_path})
 
   # test if qt4 is completely defined
   qt4_defined=yes
@@ -158,16 +162,22 @@ AC_DEFUN([I2_CHECK_QT4],
   then
     qt4_defined=no
     AC_MSG_NOTICE([No Qt4 include path defined])
+  else
+    AC_MSG_NOTICE([Qt4 include path is ${qt4_include_path}])
   fi
   if test x${qt4_library_path} = x
   then
     qt4_defined=no
     AC_MSG_NOTICE([No Qt4 library path defined])
+  else
+    AC_MSG_NOTICE([Qt4 library path is ${qt4_library_path}])
   fi
   if test x${qt4_tools_path} = x
   then
     qt4_defined=no
     AC_MSG_NOTICE([No Qt4 tools path defined])
+  else
+    AC_MSG_NOTICE([Qt4 tools   path is ${qt4_tools_path}])
   fi
 
   # saving values for compilation variables
@@ -218,7 +228,7 @@ AC_DEFUN([I2_CHECK_QT4],
     AC_SUBST(qt4_cppflags)
 
     # --- we test the library file presence and usability
-    if test x${qt4_library_path} = /usr/lib
+    if test x${qt4_library_path} = x/usr/lib
     then
       qt4_ldflags=""
     else
@@ -257,6 +267,15 @@ AC_DEFUN([I2_CHECK_QT4],
     AC_MSG_NOTICE([No Qt4 support])
   fi
 
+  # restoring saved values
+  CPPFLAGS=$saved_CPPFLAGS
+  LDFLAGS=$saved_LDFLAGS
+  LIBS=$saved_LIBS
+
+  fi
+  # --- end: only when qt4 wanted (no explicit --without-qt4 nor --with-qt4=no)
+  # ----------------------------------------------------------------------
+
   # Propagate test into atlocal
   AC_SUBST(WITH_QT4)
 
@@ -266,20 +285,20 @@ AC_DEFUN([I2_CHECK_QT4],
   # ... and into source files
   AC_DEFINE_UNQUOTED(HAS_QT4, $WITH_QT4, [Qt4 library])
 
-  # restoring saved values
-  CPPFLAGS=$saved_CPPFLAGS
-  LDFLAGS=$saved_LDFLAGS
-  LIBS=$saved_LIBS
-
 ])
 
 
 AC_DEFUN([I2_CHECK_QSCINTILLA],
 [
   AC_REQUIRE([I2_CHECK_QT4])
-
   qscintilla_ok=no
   WITH_QSCI4=0
+
+  # ----------------------------------------------------------------------
+  # --- check qscintilla only when qt4 OK
+
+  if test x${WITH_QT4} = x1
+  then
 
   # --- check if qsci4 includes directory is defined
   qsci4_include_path=""
@@ -389,23 +408,30 @@ AC_DEFUN([I2_CHECK_QSCINTILLA],
       AC_SUBST(qsci4_libs)
       WITH_QSCI4=1
       qscintilla_ok=yes
-      # Propagate test into atlocal
-      AC_SUBST(WITH_QSCI4)
     fi
 
   else
     AC_MSG_NOTICE([no support for qscintilla for qt4])
   fi
 
+  # restoring saved values
+  CPPFLAGS=$saved_CPPFLAGS
+  LDFLAGS=$saved_LDFLAGS
+  LIBS=$saved_LIBS
+
+  else
+  # --- end: check qscintilla only when qt4 OK
+  # ----------------------------------------------------------------------
+    AC_MSG_NOTICE([qscintilla for qt4 not checked because Qt4 not wanted or not detected])
+  fi
+
+  # Propagate test into atlocal
+  AC_SUBST(WITH_QSCI4)
+  
   # Propagate test into Makefiles...
   AM_CONDITIONAL(WITH_QSCI4, test $WITH_QSCI4 = 1)
 
   # ... and into source files
   AC_DEFINE_UNQUOTED(HAS_QSCI4, $WITH_QSCI4, [QsciScintilla library])
-
-  # restoring saved values
-  CPPFLAGS=$saved_CPPFLAGS
-  LDFLAGS=$saved_LDFLAGS
-  LIBS=$saved_LIBS
 
 ])
