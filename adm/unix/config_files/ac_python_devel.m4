@@ -41,7 +41,7 @@ AC_DEFUN([AC_PYTHON_DEVEL],[
 	python_path=`echo $python_path | sed "s,/Python.h$,,"`
 	AC_MSG_RESULT([$python_path])
 	if test -z "$python_path" ; then
-		AC_MSG_ERROR([cannot find Python include path])
+		AC_MSG_WARN([cannot find Python include path])
 	fi
 	AC_SUBST([PYTHON_CPPFLAGS],[-I$python_path])
 
@@ -57,7 +57,7 @@ AC_DEFUN([AC_PYTHON_DEVEL],[
 	python_path=`echo $python_path | sed "s,/libpython.*$,,"`
 	AC_MSG_RESULT([$python_path])
 	if test -z "$python_path" ; then
-		AC_MSG_ERROR([cannot find Python library path])
+		AC_MSG_WARN([cannot find Python library path])
 	fi
 	AC_SUBST([PYTHON_LDFLAGS],["-L$python_path -lpython$PYTHON_VERSION"])
 	#
