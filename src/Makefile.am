@@ -18,14 +18,11 @@
 #
 
 MAIN_SUBDIRS = bases batch engine engine_swig runtime runtime_swig wrappergen yacsloader yacsloader_swig yacsorb salomeloader
-GUI_SUBDIRS = pyqt hmi salomewrap genericgui salomegui salomegui_swig
-
-SUBDIRS = $(MAIN_SUBDIRS)
 
 if WITH_QT4
 if HAS_GUI
-SUBDIRS = $(MAIN_SUBDIRS) $(GUI_SUBDIRS)
+GUI_SUBDIRS = pyqt hmi salomewrap genericgui salomegui salomegui_swig
 endif
 endif
 
-DIST_SUBDIRS = $(MAIN_SUBDIRS) $(GUI_SUBDIRS)
+SUBDIRS = $(MAIN_SUBDIRS) $(GUI_SUBDIRS)
