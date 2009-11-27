@@ -550,7 +550,13 @@ batch manager                       batch                      if the machine ha
 ================================== =========================== ==============================================
 
 The list of SALOME modules present on the machine can also be indicated.  By default, SALOME assumes that all components 
-requested by YACS are present.  Each module present is given by the module sub-tag and its moduleName attribute.
+requested by YACS are present.
+
+If only some components are available within a resource, the list of components must be specified.
+This list can be specified with the sub-tag component that has two attributes : name (the name of the component)
+and moduleName (the name of the module) that is optional. You can use also the sub-tag modules that is provided
+for compatibility with older versions. If the modules sub-tag is used, a component with the same name as
+the moduleName attribute is added to the list.
 
 The following is an example of a resource catalog::
 
@@ -563,6 +569,8 @@ The following is an example of a resource catalog::
              protocol="ssh" mode="interactif" nbOfNodes="1" nbOfProcPerNode="1" 
              appliPath="SALOME/Run">
              <modules moduleName="GEOM"/>
+             <component name="SMESH"/>
+             <component name="VISU" moduleName="VISU"/>
     </machine>
   </resources>
 
