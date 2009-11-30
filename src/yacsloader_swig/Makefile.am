@@ -58,7 +58,9 @@ _loader_la_CXXFLAGS = \
 
 _loader_la_LDFLAGS  = -module 
 
-_loader_la_LIBADD =  ../yacsloader/libYACSloader.la $(OMNIORB_LIBS) $(PYTHON_LIBS)
+_loader_la_LIBADD =  ../yacsloader/libYACSloader.la $(PYTHON_LIBS)
+
+###VSR:$(OMNIORB_LIBS) 
 
 docyacsloader.i:$(SWIGINCLUDES)
 	(cd $(srcdir)/../yacsloader;doxygen ../../Misc/Doxyfile)
