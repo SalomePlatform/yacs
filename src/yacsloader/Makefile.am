@@ -45,7 +45,7 @@ EXTRA_libYACSloader_la_SOURCES =  \
 	$(__dummy__)
 
 libYACSloader_la_LIBADD = ../engine/libYACSlibEngine.la
-libYACSloader_la_LDFLAGS = $(EXPAT_LIBS)
+libYACSloader_la_LDFLAGS = $(OMNIORB_LIBS) $(EXPAT_LIBS)
 
 AM_CXXFLAGS = \
 							$(THREAD_DEF) \
