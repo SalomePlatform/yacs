@@ -39,6 +39,7 @@ EditionLoop::EditionLoop(Subject* subject,
   : EditionNode(subject, parent, name)
 {
   _formLoop = new FormLoop(this);
+  _nbsteps = 0;
   _wid->gridLayout1->addWidget(_formLoop);
 
   QHBoxLayout* _hbl_index = new QHBoxLayout();
@@ -53,19 +54,25 @@ EditionLoop::EditionLoop(Subject* subject,
 
   _formLoop->sb_nsteps->setMinimum(0);
   _formLoop->sb_nsteps->setMaximum(INT_MAX);
-  connect(_formLoop->sb_nsteps, SIGNAL(valueChanged(const QString &)),
-          this, SLOT(onModifyNbSteps(const QString &)));
+  connect(_formLoop->sb_nsteps, SIGNAL(editingFinished()),
+          this, SLOT(onNbStepsEdited()));
 }
 
 EditionLoop::~EditionLoop()
 {
 }
 
-void EditionLoop::onModifyNbSteps(const QString &text)
+void EditionLoop::onNbStepsEdited()
 {
-  SubjectForLoop *sfl = dynamic_cast<SubjectForLoop*>(_subject);
-  YASSERT(sfl);
-  sfl->setNbSteps(text.toStdString());
+  int newval = _formLoop->sb_nsteps->value();
+  DEBTRACE("EditionLoop::onNbStepsEdited " << _nbsteps << " --> " << newval);
+  if (newval != _nbsteps)
+    {
+      SubjectForLoop *sfl = dynamic_cast<SubjectForLoop*>(_subject);
+      YASSERT(sfl);
+      QString text = _formLoop->sb_nsteps->cleanText();
+      sfl->setNbSteps(text.toStdString());
+    }
 }
 
 void EditionLoop::synchronize()
@@ -89,6 +96,7 @@ void EditionLoop::update(GuiEvent event, int type, Subject* son)
         ss >> i;
         DEBTRACE(i);
         _formLoop->sb_nsteps->setValue(i);
+        _nbsteps = i;
 
         YACS::ENGINE::OutputPort* odp=scn->getNode()->getOutputPort("index");
         SubjectDataPort* sodp = QtGuiContext::getQtCurrent()->_mapOfSubjectDataPort[odp];

@@ -583,6 +583,37 @@ A minimal switch example::
         <value><double>54</double> </value>
     </parameter>
 
+OptimizerLoop
+''''''''''''''''
+An OptimizerLoop node is defined with the **optimizer** tag.  It has a compulsory name attribute that carries the name of the node.  
+It has two other compulsory attributes (**lib** and **entry**) that define the C++ or Python plugin (parameters with same names).
+It can have the attribute **nbranch** or an input port **nbBranches** to define the number of branches of the loop.
+The OptimizerLoop ports (**nbBranches**, **FileNameInitAlg**, **SmplPrt** and **retPortForOutPool**) need not be defined as they
+are already defined at the creation of the node.
+
+A minimal OptimizerLoop example::
+
+    <optimizer name="b1" nbranch="1" lib="myalgo2.py" entry="async" >
+      <inline name="node2" >
+        <script>
+    <code><![CDATA[print "input node:",p1
+    p1=5
+    ]]></code>
+        </script>
+        <inport name="p1" type="double"/>
+        <outport name="p1" type="int"/>
+      </inline>
+    </optimizer>
+    <datalink>
+      <fromnode>b1</fromnode><fromport>SmplPrt</fromport>
+      <tonode>b1.node2</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink control="false" >
+      <fromnode>b1.node2</fromnode><fromport>p1</fromport>
+      <tonode>b1</tonode> <toport>retPortForOutPool</toport>
+    </datalink>
+
+
 
 Definition of containers
 --------------------------------

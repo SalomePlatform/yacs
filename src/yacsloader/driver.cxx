@@ -241,6 +241,12 @@ int main (int argc, char* argv[])
       //Don't execute if there are errors
       if(logger->hasErrors())
         {
+          if(!p->isValid())
+            {
+              std::string report=p->getErrorReport();
+              std::cerr << "The schema is not valid and can not be executed" << std::endl;
+              std::cerr << report << std::endl;
+            }
           delete p;
           Runtime* r=YACS::ENGINE::getRuntime();
           Dispatcher* disp=Dispatcher::getDispatcher();

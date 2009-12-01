@@ -55,6 +55,7 @@ namespace YACS
       void CreateSwitch();
       void CreateOptimizerLoop();
       void CreateContainer();
+      void CreateComponentInstance();
 
       SubjectDataPort* CreateInputPort(SubjectElementaryNode* seNode,
                                        std::string name,
@@ -74,6 +75,7 @@ namespace YACS
       void CutSubject();
       void CopySubject();
       void PasteSubject();
+      void PutSubjectInBloc();
 
       void rebuildLinks();
       void arrangeNodes(bool isRecursive);

@@ -23,6 +23,8 @@
 #include "Node.hxx"
 #include "ForEachLoop.hxx"
 #include "Catalog.hxx"
+#include "Container.hxx"
+#include "ComponentInstance.hxx"
 #include "guiObservers.hxx"
 #include "QtGuiContext.hxx"
 #include "TypeCode.hxx"
@@ -223,6 +225,24 @@ void GuiEditor::CreateContainer()
     }
 }
 
+void GuiEditor::CreateComponentInstance()
+{
+  DEBTRACE("GuiEditor::CreateComponentInstance");
+  SubjectProc *sproc = QtGuiContext::getQtCurrent()->getSubjectProc();
+  YASSERT(sproc);
+  Subject *sub = QtGuiContext::getQtCurrent()->getSelectedSubject();
+  SubjectComponent *sco = dynamic_cast<SubjectComponent*>(sub);
+  if (!sco)
+    {
+      DEBTRACE("GuiEditor::CreateComponentInstance: " << "selection is not a component");
+      return;
+    }
+  string compoName = sco->getComponent()->getCompoName();
+  string containerName = sco->getComponent()->getContainer()->getName();
+  sproc->addComponent(compoName, containerName);
+}
+
+
 SubjectDataPort* GuiEditor::CreateInputPort(SubjectElementaryNode* seNode, 
                                             std::string name,
                                             YACS::ENGINE::Catalog *catalog,
@@ -310,7 +330,6 @@ void GuiEditor::DeleteSubject()
   if (!selItem) return;
   Subject *subToRemove = selItem->getSubject();
   Subject *subParent = subToRemove->getParent();
-
   DeleteSubject(subParent, subToRemove);
 }
 
@@ -321,6 +340,7 @@ void GuiEditor::DeleteSubject(Subject* parent,
                               Subject* toRemove)
 {
   DEBTRACE("GuiEditor::DeleteSubject "<<parent->getName()<<" "<<toRemove->getName());
+  toRemove->askRegisterUndoDestroy();
   parent->destroy(toRemove);
 }
 
@@ -383,6 +403,42 @@ void GuiEditor::PasteSubject()
       return;
     }
   Message mess("Paste not possible for this kind of object");
+}
+
+void GuiEditor::PutSubjectInBloc()
+{
+  Subject *sub = QtGuiContext::getQtCurrent()->getSelectedSubject();
+  if (!sub)
+    {
+      Message mess("GuiEditor::PutSubjectInBloc : invalid selection!");
+      return;
+    }
+  if (SubjectNode *snode = dynamic_cast<SubjectNode*>(sub))
+    {
+      //Build the set of children node names
+      Node* node=snode->getNode();
+      ComposedNode* father=node->getFather();
+      std::list<Node*> children = father->edGetDirectDescendants();
+      std::set<std::string> names;
+      for (std::list<Node*>::iterator it = children.begin(); it != children.end(); ++it)
+        names.insert((*it)->getName());
+
+      std::stringstream tryname;
+      long newid=0;
+      while (newid < 100000)
+        {
+          tryname.str("");
+          tryname << "Bloc" << newid;
+          if(names.find(tryname.str()) == names.end())break;
+          newid++;
+        }
+
+      if (!snode->putInComposedNode(tryname.str(),"Bloc"))
+        Message mess;
+
+      return;
+    }
+  Message mess("Put in Bloc not possible for this kind of object");
 }
 
 void GuiEditor::rebuildLinks()

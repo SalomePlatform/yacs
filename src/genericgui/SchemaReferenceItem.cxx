@@ -18,6 +18,7 @@
 //
 #include "SchemaReferenceItem.hxx"
 #include "Menus.hxx"
+#include "QtGuiContext.hxx"
 
 #include <QIcon>
 
@@ -36,8 +37,16 @@ SchemaReferenceItem::SchemaReferenceItem(SchemaItem *parent, QString label, Subj
 
 void SchemaReferenceItem::update(GuiEvent event, int type, Subject* son)
 {
-  DEBTRACE("SchemaReferenceItem::update");
-  SchemaItem::update(event, type, son);
+  DEBTRACE("SchemaReferenceItem::update "<< eventName(event) <<" "<<type<<" "<<son);
+  if(event==RENAME)
+    {
+      SchemaModel *model = QtGuiContext::getQtCurrent()->getSchemaModel();
+      _label = son->getName().c_str();
+      _itemData.replace(YLabel, _label);
+      model->setData(modelIndex(YLabel), 0);  // --- to emit dataChanged signal
+    }
+  else
+    SchemaItem::update(event, type, son);
 }
 
 void SchemaReferenceItem::popupMenu(QWidget *caller, const QPoint &globalPos)

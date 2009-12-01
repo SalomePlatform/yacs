@@ -58,7 +58,17 @@ void SchemaContainerItem::update(GuiEvent event, int type, Subject* son)
 
     case YACS::HMI::REMOVECHILDREF:
       {
-        DEBTRACE("REMOVECHILDREF ");
+        DEBTRACE("REMOVECHILDREF on " << getSubject()->getName());
+        SchemaModel *model = QtGuiContext::getQtCurrent()->getSchemaModel();
+        SubjectReference *ref = dynamic_cast<SubjectReference*>(son);
+        YASSERT(ref);
+        DEBTRACE("REMOVECHILDREF " << ref->getReference()->getName());
+        SchemaItem *toRemove = QtGuiContext::getQtCurrent()->_mapOfSchemaItem[ref->getReference()];
+
+        int position = toRemove->row();
+        model->beginRemoveRows(modelIndex(), position, position);
+        removeChild(toRemove);
+        model->endRemoveRows();
       }
       break;
 

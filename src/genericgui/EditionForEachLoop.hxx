@@ -33,7 +33,7 @@ namespace YACS
 
     public slots:
       virtual void onModifyCollection();
-      virtual void onModifyNbBranches(const QString &text);
+      virtual void onNbBranchesEdited();
 
     public:
       EditionForEachLoop(Subject* subject,
@@ -45,6 +45,7 @@ namespace YACS
 
     protected:
       FormEachLoop *_formEachLoop;
+      int _nbBranches;
     };
   }
 }

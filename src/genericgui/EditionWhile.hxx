@@ -32,7 +32,7 @@ namespace YACS
       Q_OBJECT
 
     public slots:
-      virtual void onModifyCondition(const QString &text);
+      virtual void onConditionEdited();
 
     public:
       EditionWhile(Subject* subject,
@@ -44,6 +44,7 @@ namespace YACS
 
     protected:
       FormLoop *_formWhile;
+      bool _condition;
     };
   }
 }

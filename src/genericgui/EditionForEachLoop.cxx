@@ -41,6 +41,7 @@ EditionForEachLoop::EditionForEachLoop(Subject* subject,
   : EditionNode(subject, parent, name)
 {
   _formEachLoop = new FormEachLoop(this);
+  _nbBranches = 1;
   _wid->gridLayout1->addWidget(_formEachLoop);
   _formEachLoop->sb_nbranch->setMinimum(1);
   _formEachLoop->sb_nbranch->setMaximum(INT_MAX);
@@ -48,8 +49,8 @@ EditionForEachLoop::EditionForEachLoop(Subject* subject,
   ForEachLoop *fe = dynamic_cast<ForEachLoop*>(node);
   if(fe)
     _formEachLoop->lineEdit->setText(fe->edGetSamplePort()->edGetType()->name());
-  connect(_formEachLoop->sb_nbranch, SIGNAL(valueChanged(const QString &)),
-          this, SLOT(onModifyNbBranches(const QString &)));
+  connect(_formEachLoop->sb_nbranch, SIGNAL(editingFinished()),
+          this, SLOT(onNbBranchesEdited()));
 
   connect(_formEachLoop->lineEdit_2, SIGNAL(editingFinished()),this,SLOT(onModifyCollection()));
 
@@ -70,11 +71,17 @@ void EditionForEachLoop::onModifyCollection()
   DEBTRACE(isOk);
 }
 
-void EditionForEachLoop::onModifyNbBranches(const QString &text)
+void EditionForEachLoop::onNbBranchesEdited()
 {
-  SubjectForEachLoop *sfe = dynamic_cast<SubjectForEachLoop*>(_subject);
-  YASSERT(sfe);
-  sfe->setNbBranches(text.toStdString());
+  int newval = _formEachLoop->sb_nbranch->value();
+  DEBTRACE("EditionForEachLoop::onNbBranchesEdited " << _nbBranches << " --> " << newval);
+  if (newval != _nbBranches)
+    {
+      SubjectForEachLoop *sfe = dynamic_cast<SubjectForEachLoop*>(_subject);
+      YASSERT(sfe);
+      QString text = _formEachLoop->sb_nbranch->cleanText();
+      sfe->setNbBranches(text.toStdString());
+    }
 }
 
 void EditionForEachLoop::synchronize()
@@ -97,6 +104,7 @@ void EditionForEachLoop::update(GuiEvent event, int type, Subject* son)
       ss >> i;
       DEBTRACE(i);
       _formEachLoop->sb_nbranch->setValue(i);
+      _nbBranches = i; 
 
       //smplscollection
       InputPort* dp=_subjectNode->getNode()->getInputPort("SmplsCollection");

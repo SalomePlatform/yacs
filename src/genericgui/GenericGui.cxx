@@ -22,6 +22,8 @@
 
 #include "RuntimeSALOME.hxx"
 #include "Proc.hxx"
+#include "InputPort.hxx"
+#include "ServiceNode.hxx"
 #include "parsers.hxx"
 #include "Logger.hxx"
 #include "YACSGuiLoader.hxx"
@@ -317,8 +319,8 @@ void GenericGui::createActions()
                                                        0, _parent, false, this,  SLOT(onSelectComponentInstance()));
 
   pixmap.load("icons:new_salome_component.png");
-  _newSalomeComponentAct = _wrapper->createAction(getMenuId(), tr("Create a New SALOME Component"), QIcon(pixmap),
-                                                  tr("SALOME Component"), tr("Create a New SALOME Component"),
+  _newSalomeComponentAct = _wrapper->createAction(getMenuId(), tr("Create a New SALOME Component Instance"), QIcon(pixmap),
+                                                  tr("new Component Instance"), tr("Create a New SALOME Component Instance"),
                                                   0, _parent, false, this,  SLOT(onNewSalomeComponent()));
 
   pixmap.load("icons:new_salomepy_component.png");
@@ -356,22 +358,22 @@ void GenericGui::createActions()
                                        tr("Cpp Node"), tr("Create a New C++ Node"),
                                        0, _parent, false, this,  SLOT(onCppNode()));
 
-  pixmap.load("icons:kill.png");
+  pixmap.load("icons:node.png");
   _inDataNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New Input data Node"), QIcon(pixmap),
                                           tr("Input Data Node"), tr("Create a New Input data Node"),
                                           0, _parent, false, this,  SLOT(onInDataNode()));
 
-  pixmap.load("icons:kill.png");
+  pixmap.load("icons:node.png");
   _outDataNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New Output data Node"), QIcon(pixmap),
                                            tr("Output Data Node"), tr("Create a New Output data Node"),
                                            0, _parent, false, this,  SLOT(onOutDataNode()));
 
-  pixmap.load("icons:kill.png");
+  pixmap.load("icons:node.png");
   _inStudyNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New Input Study Node"), QIcon(pixmap),
                                            tr("Input Study Node"), tr("Create a New Input Study Node"),
                                            0, _parent, false, this,  SLOT(onInStudyNode()));
 
-  pixmap.load("icons:kill.png");
+  pixmap.load("icons:node.png");
   _outStudyNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New Output Study Node"), QIcon(pixmap),
                                             tr("Output Study Node"), tr("Create a New Output Study Node"),
                                             0, _parent, false, this,  SLOT(onOutStudyNode()));
@@ -411,6 +413,7 @@ void GenericGui::createActions()
                                           tr("Switch Node"), tr("Create a New Switch Node"),
                                           0, _parent, false, this,  SLOT(onSWITCHNode()));
 
+  pixmap.load("icons:new_for_loop_node.png");
   _OptimizerLoopAct = _wrapper->createAction(getMenuId(), tr("Create a New Optimizer Loop Node"), QIcon(pixmap),
                                              tr("Optimizer Loop"), tr("Create a New Optimizer Loop"),
                                              0, _parent, false, this,  SLOT(onOptimizerLoop()));
@@ -443,6 +446,10 @@ void GenericGui::createActions()
                                          tr("Paste Item"), tr("Paste a Schema Item"),
                                          0, _parent, false, this,  SLOT(onPasteItem()));
   _pasteItemAct->setShortcut(QKeySequence::Paste);
+
+  _putInBlocAct = _wrapper->createAction(getMenuId(), tr("Put node in block"), QIcon(pixmap),
+                                         tr("Put node in block"), tr("Put node in block"),
+                                         0, _parent, false, this,  SLOT(onPutInBloc()));
 
   pixmap.load("icons:arrange_nodes.png");
   _arrangeLocalNodesAct = _wrapper->createAction(getMenuId(), tr("arrange nodes on that bloc level, without recursion"), QIcon(pixmap),
@@ -624,6 +631,19 @@ void GenericGui::createActions()
                                               0, _parent, false, this,  SLOT(onDeEmphasizeAll()));
   
 
+  pixmap.load("icons:undo.png");
+  _undoAct = _wrapper->createAction(getMenuId(), tr("undo last action"), QIcon(pixmap),
+                                    tr("undo"), tr("undo last action"),
+                                    0, _parent, false, this,  SLOT(onUndo()));
+  _undoAct->setShortcut(QKeySequence::Undo);
+  
+  pixmap.load("icons:redo.png");
+  _redoAct = _wrapper->createAction(getMenuId(), tr("redo last action"), QIcon(pixmap),
+                                    tr("redo"), tr("redo last action"),
+                                    0, _parent, false, this,  SLOT(onRedo()));
+  _redoAct->setShortcut(QKeySequence::Redo);
+  
+
   _execModeGroup = new QActionGroup(this);
   _execModeGroup->addAction(_withoutStopModeAct);
   _execModeGroup->addAction(_breakpointsModeAct);
@@ -653,13 +673,16 @@ void GenericGui::createMenus()
   _wrapper->createMenu( _loadAndRunSchemaAct, aMenuId );
   _wrapper->createMenu( _loadBatchAct, aMenuId );
   _wrapper->createMenu( _wrapper->separator(), aMenuId);
+  _wrapper->createMenu( _undoAct, aMenuId );
+  _wrapper->createMenu( _redoAct, aMenuId );
+  _wrapper->createMenu( _wrapper->separator(), aMenuId);
   _wrapper->createMenu( _startResumeAct, aMenuId );
   _wrapper->createMenu( _abortAct, aMenuId );
   _wrapper->createMenu( _pauseAct, aMenuId );
   _wrapper->createMenu( _resetAct, aMenuId );
   _wrapper->createMenu( _wrapper->separator(), aMenuId);
   _wrapper->createMenu( _saveRunStateAct, aMenuId );
-  _wrapper->createMenu( _newEditionAct, aMenuId );
+  //_wrapper->createMenu( _newEditionAct, aMenuId );
   _wrapper->createMenu( _wrapper->separator(), aMenuId);
   _wrapper->createMenu( _withoutStopModeAct, aMenuId );
   _wrapper->createMenu( _breakpointsModeAct, aMenuId );
@@ -695,14 +718,16 @@ void GenericGui::createTools()
   _wrapper->createTool( _loadAndRunSchemaAct, aToolId );
   _wrapper->createTool( _loadBatchAct, aToolId );
   _wrapper->createTool( _wrapper->separator(), aToolId );
+  _wrapper->createTool( _undoAct, aToolId );
+  _wrapper->createTool( _redoAct, aToolId );
+  _wrapper->createTool( _wrapper->separator(), aToolId );
   _wrapper->createTool( _startResumeAct, aToolId );
   _wrapper->createTool( _abortAct, aToolId );
   _wrapper->createTool( _pauseAct, aToolId );
   _wrapper->createTool( _resetAct, aToolId );
   _wrapper->createTool( _wrapper->separator(), aToolId );
-  _wrapper->createTool( _wrapper->separator(), aToolId );
   _wrapper->createTool( _saveRunStateAct, aToolId );
-  _wrapper->createTool( _newEditionAct, aToolId );
+  //_wrapper->createTool( _newEditionAct, aToolId );
   _wrapper->createTool( _withoutStopModeAct, aToolId );
   _wrapper->createTool( _breakpointsModeAct, aToolId );
   _wrapper->createTool( _stepByStepModeAct, aToolId );
@@ -756,6 +781,10 @@ void GenericGui::showEditionMenus(bool show)
   _wrapper->setToolShown(_loadRunStateSchemaAct, show);
   _wrapper->setMenuShown(_loadRunStateSchemaAct, show);
   _wrapper->setToolShown(_runLoadedSchemaAct, show);
+  _wrapper->setMenuShown(_undoAct, show);
+  _wrapper->setToolShown(_undoAct, show);
+  _wrapper->setMenuShown(_redoAct, show);
+  _wrapper->setToolShown(_redoAct, show);
   _wrapper->setMenuShown(_loadBatchAct, show);
   _wrapper->setToolShown(_loadBatchAct, show);
   _wrapper->setMenuShown(_importCatalogAct, show);
@@ -775,8 +804,8 @@ void GenericGui::showExecMenus(bool show)
   _wrapper->setToolShown(_resetAct, show);
   _wrapper->setMenuShown(_saveRunStateAct, show);
   _wrapper->setToolShown(_saveRunStateAct, show);
-  _wrapper->setMenuShown(_newEditionAct, show);
-  _wrapper->setToolShown(_newEditionAct, show);
+  //_wrapper->setMenuShown(_newEditionAct, show);
+  //_wrapper->setToolShown(_newEditionAct, show);
   _wrapper->setMenuShown(_withoutStopModeAct, show);
   _wrapper->setToolShown(_withoutStopModeAct, show);
   _wrapper->setMenuShown(_breakpointsModeAct, show);
@@ -952,8 +981,11 @@ void GenericGui::showDockWidgets(bool isVisible)
 {
   DEBTRACE("GenericGui::showDockWidgets " << isVisible);
   if (_dwTree) _dwTree->setVisible(isVisible);
+  if (_dwTree) _dwTree->toggleViewAction()->setVisible(isVisible);
   if (_dwStacked) _dwStacked->setVisible(isVisible);
+  if (_dwStacked) _dwStacked->toggleViewAction()->setVisible(isVisible);
   if (_dwCatalogs) _dwCatalogs->setVisible(isVisible);
+  if (_dwCatalogs) _dwCatalogs->toggleViewAction()->setVisible(isVisible);
 }
 
 void GenericGui::raiseStacked()
@@ -1219,7 +1251,6 @@ void GenericGui::onNewSchema()
 void GenericGui::loadSchema(const std::string& filename,bool edit)
 {
   YACS::ENGINE::Proc *proc = _loader->load(filename.c_str());
-  std::cerr << proc << std::endl;
   if (!proc)
     return;
   YACS::ENGINE::Logger* logger= proc->getLogger("parser");
@@ -1487,6 +1518,7 @@ void GenericGui::onRunLoadedSchema(bool withState)
     {
       DEBTRACE(ex.what());
       QtGuiContext::getQtCurrent()->getSubjectProc()->select(true);
+      return;
     }
   if (info.areWarningsOrErrors()) return;
  
@@ -1566,25 +1598,32 @@ void GenericGui::onLoadAndRunSchema()
                                              tr( "XML-Files (*.xml);;All Files (*)" ));
   if ( !fn.isEmpty() )
     {
-      DEBTRACE("***************************************************************************");
       DEBTRACE("file loaded : " <<fn.toStdString());
-      DEBTRACE("***************************************************************************");
       YACS::ENGINE::Proc *proc = _loader->load(fn.toLatin1());
+      if (!proc)
+        {
+          QMessageBox msgBox(QMessageBox::Critical,
+                             "Import YACS Schema, native YACS XML format",
+                             "The file has not the native YACS XML format or is not readable.");
+          msgBox.exec();
+          return;
+        }
       YACS::ENGINE::Logger* logger= proc->getLogger("parser");
       if(!logger->isEmpty())
         {
           DEBTRACE(logger->getStr());
         }
-      createContext(proc, fn, fn, false);
+      createContext(proc, fn, "", true);
+      onRunLoadedSchema();
     }
-
 }
 
 void GenericGui::onBatch() {
   DEBTRACE("GenericGui::onBatch");
 
-  // Save the current schema
   if (!QtGuiContext::getQtCurrent()) return;
+
+  // Save the current schema
   YACS::ENGINE::Proc* proc = QtGuiContext::getQtCurrent()->getProc();
   VisitorSaveGuiSchema aWriter(proc);
   aWriter.openFileSchema("/tmp/graph_user.xml");
@@ -1592,11 +1631,11 @@ void GenericGui::onBatch() {
   aWriter.closeFileSchema();
 
   // Load the Batch Schema
-  QString fn = getenv("YACS_ROOT_DIR");
-  fn += "/share/salome/resources/yacs/batch_graph.xml";
-  DEBTRACE("file loaded : " << fn.toStdString());
+  QString fb = getenv("YACS_ROOT_DIR");
+  fb += "/share/salome/resources/yacs/batch_graph.xml";
+  DEBTRACE("file loaded : " << fb.toStdString());
 
-  proc = _loader->load(fn.toLatin1());
+  proc = _loader->load(fb.toLatin1());
   if (!proc) {
     QMessageBox msgBox(QMessageBox::Critical,
 		       "Import Batch Schema, native YACS XML format",
@@ -1607,7 +1646,9 @@ void GenericGui::onBatch() {
     if(!logger->isEmpty()) {
       DEBTRACE(logger->getStr());
     };
-    createContext(proc, fn, "", true);
+    QString fn = QtGuiContext::getQtCurrent()->getFileName();
+    proc->nodeMap["Submit"]->getInputPort("graphfic")->edInit(fn.toLatin1().data());
+    createContext(proc, fb, "", true);
   };
 }
 
@@ -1716,8 +1757,30 @@ void GenericGui::onGetContainerLog()
   SubjectElementaryNode *snode = dynamic_cast<SubjectElementaryNode*>(sub);
   if (!snode) return;
   string log = QtGuiContext::getQtCurrent()->getGuiExecutor()->getContainerLog(snode->getNode());
+
   LogViewer *lv = new LogViewer("Node Container Log", _parent);
-  lv->readFile(log);
+  if (log.empty())
+    {
+      string info = "\n";
+      if (dynamic_cast<YACS::ENGINE::ServiceNode*>(snode->getNode()))
+        {
+          info +="The container log of this node\n";
+          info += "is not stored in a file and \n";
+          info += "can't be displayed here, \n";
+          info += "but you can have a look at \n";
+          info += "the SALOME standard output,\n";
+          info += "on your terminal...";
+        }
+      else
+        {
+          info += "See YACS Container log \n";
+          info += "(on main proc menu) \n";
+          info += "for all inline nodes";
+        }
+      lv->setText(info);
+    }
+  else
+    lv->readFile(log);
   lv->show();
 }
 
@@ -1759,6 +1822,7 @@ void GenericGui::onNewContainer()
 void GenericGui::onNewSalomeComponent()
 {
   DEBTRACE("GenericGui::onNewSalomeComponent");
+  _guiEditor->CreateComponentInstance();
 }
 
 void GenericGui::onNewSalomePythonComponent()
@@ -1913,6 +1977,11 @@ void GenericGui::onPasteItem()
 {
   DEBTRACE("GenericGui::onPasteItem");
   _guiEditor->PasteSubject();
+}
+
+void GenericGui::onPutInBloc()
+{
+  _guiEditor->PutSubjectInBloc();
 }
 
 void GenericGui::onArrangeLocalNodes()
@@ -2282,6 +2351,17 @@ void GenericGui::onDeEmphasizeAll()
     }
 }
 
+void GenericGui::onUndo()
+{
+  DEBTRACE("GenericGui::onUndo");
+  QtGuiContext::getQtCurrent()->getInvoc()->undo();
+}
+
+void GenericGui::onRedo()
+{
+  DEBTRACE("GenericGui::onRedo");
+  QtGuiContext::getQtCurrent()->getInvoc()->redo();
+}
 
 void GenericGui::onCleanOnExit()
 {

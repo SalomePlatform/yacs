@@ -19,7 +19,9 @@
 #include "Bloc.hxx"
 #include "LinkInfo.hxx"
 #include "InputPort.hxx"
+#include "InputDataStreamPort.hxx"
 #include "OutputPort.hxx"
+#include "OutputDataStreamPort.hxx"
 #include "ElementaryNode.hxx"
 #include "Visitor.hxx"
 
@@ -50,7 +52,24 @@ Bloc::Bloc(const Bloc& other, ComposedNode *father, bool editionOnly):StaticDefi
   vector< pair<OutPort *, InPort *> > linksToReproduce=other.getSetOfInternalLinks();
   vector< pair<OutPort *, InPort *> >::iterator iter2=linksToReproduce.begin();
   for(;iter2!=linksToReproduce.end();iter2++)
-    edAddLink(getOutPort(other.getPortName((*iter2).first)),getInPort(other.getPortName((*iter2).second)));
+    {
+      OutPort* pout = (*iter2).first;
+      Node* nodeout = getChildByName(other.getChildName(pout->getNode()));
+      InPort* pin = (*iter2).second;
+      Node* nodein = getChildByName(other.getChildName(pin->getNode()));
+
+      if(dynamic_cast<OutputPort *>(pout))
+        pout=nodeout->getOutputPort(pout->getName());
+      else
+        pout=nodeout->getOutputDataStreamPort(pout->getName());
+
+      if(dynamic_cast<InputPort *>(pin))
+        pin=nodein->getInputPort(pin->getName());
+      else
+        pin=nodein->getInputDataStreamPort(pin->getName());
+
+      edAddLink(pout,pin);
+    }
 }
 
 //! Create a Bloc node with a given name

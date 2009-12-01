@@ -18,7 +18,7 @@ The SALOME Object Browser is only used to publish the run of the schema as a who
 .. centered::
   **SALOME Object Browser tab**
 
-The Object Browser is in a tab, with tree_view: see the :ref:`mainwindow`.
+The Object Browser is in a tab, with tree_view: see the :ref:`Main window <mainwindow>`.
 
 .. _tree_view:
 
@@ -138,15 +138,18 @@ There are three modes which are available in the run mode of the schema. They ar
 
 .. _viewer:
 
+
 2D Viewer
 ---------
-The user can display a presentation of the schema in the 2D Viewer based on the Qt drawing capabilities. The high-level 2D Viewer classes from SALOME GUI QxGraph package are used for this purpose. QxGraph classes also support interactive selection/hilighting in 2D View with the mouse, however selection capabilities will not be used in YACS GUI for SALOME 4.1.
+The user can display a presentation of the schema in the 2D Viewer based on the Qt drawing capabilities. The high-level 2D Viewer classes from SALOME GUI QxGraph package are used for this purpose. QxGraph classes also support interactive selection/hilighting in 2D View with the mouse.
 
 
 
 .. image:: images/2d_viewer_0.png
   :align: center
 
+.. centered::
+  **2D Viewer**
 
 
 .. _view_operations_toolbar:

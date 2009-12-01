@@ -49,7 +49,6 @@ QtGuiContext::QtGuiContext(GenericGui *gmain) : GuiContext()
   _subjectToCopy = 0;
   _isEdition = true;
   _studyId = 0;
-  _isLoading = false;
   _fileName = QString();
   _mapOfSchemaItem.clear();
   _mapOfSceneItem.clear();

@@ -41,3 +41,16 @@ SceneDSLinkItem::~SceneDSLinkItem()
 {
 }
 
+QColor SceneDSLinkItem::getPenColor()
+{
+  _penColor     = Resource::stream_link_draw_color.darker(Resource::link_pen_darkness);
+  _hiPenColor   = Resource::stream_link_select_color.darker(Resource::link_pen_darkness);
+  return SceneObserverItem::getPenColor();
+}
+
+QColor SceneDSLinkItem::getBrushColor()
+{
+  _brushColor   = Resource::stream_link_draw_color;
+  _hiBrushColor = Resource::stream_link_select_color;
+  return SceneObserverItem::getBrushColor();
+}

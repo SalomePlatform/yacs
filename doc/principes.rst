@@ -1,6 +1,12 @@
 
 :tocdepth: 3
 
+.. raw:: latex
+
+  \makeatletter
+  \g@addto@macro\@verbatim\small
+  \makeatother
+
 .. _principes:
 
 YACS general principles
@@ -68,6 +74,8 @@ YACS type          Base type                          CORBA Repository ID
 ================= ============================== =====================================
 FIELDDOUBLE         FIELD                           IDL:SALOME_MED/FIELDDOUBLE:1.0
 ================= ============================== =====================================
+
+.. _calciumtypes:
 
 YACS also defines types for datastream ports:
 
@@ -140,12 +148,30 @@ In general, an elementary calculation node is executed as follows:
 
 An input data port can be initialized or connected to an output data port.
 
+.. _datastreamports:
+
 Datastream ports
 ''''''''''''''''''''''''
 This type of port is used to exchange data during execution. Not all elementary nodes support this type of port.  
 For the moment, this type of port is only supported by nodes related to SALOME components.  A datastream port has a name, 
 a direction (input, output) and a type.  This type is not a data type directly but is rather the type of a CORBA object 
-that manages the data exchange (see :ref:`progDSC` for further information).
+that manages the data exchange (see :ref:`progDSC` for further information on how to implement a datastream port).
+
+It is not a simple task to implement a datastream port so SALOME provides a ready made port called CALCIUM datastream
+port. It has been designed to ease scientific code coupling. You can see more about these ports in :ref:`calcium`.
+Only a limited set of data types can be used to define these ports (see :ref:`CALCIUM types<calciumtypes>`).
+
+A CALCIUM port can be configured by way of properties. A property is a pair (name, value), where name is the name of the property and value
+is a character string that gives its value. Following is the list of properties supported by CALCIUM ports :
+
+.. tabularcolumns:: |p{2.5cm}|p{3.5cm}|L|
+
+================= ============================== =====================================
+Property name      Default value                  Description
+================= ============================== =====================================
+DependencyType     TIME_DEPENDENCY                specify if data exchanged depend on time (TIME_DEPENDENCY) or on iteration (ITERATION_DEPENDENCY)
+================= ============================== =====================================
+
 
 Elementary calculation nodes
 -------------------------------------
@@ -250,7 +276,7 @@ A Study node is used to relate the elements of a SALOME study to the data and re
 
 StudyIn node
 ++++++++++++++++++
-A StudyIn node has output data ports only.  It is used to define data in the calculation scheme originating from a SALOME study.  The associated study is given by its SALOME StudyID.
+A StudyIn node has output data ports only. It is used to define data in the calculation scheme originating from a SALOME study. The associated study is given by its SALOME StudyID.
 
 A port corresponds to data stored in the associated study.  The data has a name (the port name), a type (the port type), and a reference that gives the entry into the study.  This reference is either a SALOME Entry (for example 0:1:1:2) or a path in the SALOME study tree (for example, /Geometry/box_1).
 
@@ -286,6 +312,8 @@ In some cases (mainly loops), it is useful to be able to define dataflows withou
 as in the dataflow link.  The datalink is then used.  The definition is exactly the same as for the dataflow link.  
 The port types must be compatible (see :ref:`compatibility`).
 
+.. _datastreamlinks:
+
 Datastream links
 ''''''''''''''''''''''''''''''
 Datastream links are used to define a data stream between an output datastream port for one node and an input datastream port 
@@ -294,6 +322,25 @@ Therefore, there must not be direct or indirect control link between them.  The 
 names and input node and port names.  The definition of the datastream links may be complemented by properties that 
 define parameters of the behaviour of the DSC port that makes the data exchange (see :ref:`progDSC`).  
 The port types must be compatible (see :ref:`compatibility`).
+
+For CALCIUM datastream ports, links can be configured by way of properties that are listed here (more information about them
+can be found in :ref:`calcium`):
+
+.. tabularcolumns:: |p{3cm}|p{3cm}|L|
+
+==================== ============================== =====================================
+Property name          Default value                  Description
+==================== ============================== =====================================
+DateCalSchem           TI_SCHEM                       specify the temporal scheme (TI_SCHEM, TF_SCHEM, ALPHA_SCHEM) for ports with time dependency
+StorageLevel           infinite                       specify the maximum number of data kept in the destination port
+Alpha                  0.0                            specify the coefficient of the ALPHA_SCHEM
+DeltaT                 1.e-6                          tolerance to check if two dates are identical
+InterpolationSchem     L1_SCHEM                       specify the interpolation function (linear:L1_SCHEM or step:L0_SCHEM)
+ExtrapolationSchem     not defined                    specify the extrapolation function (E0_SCHEM or E1_SCHEM) in case of timeout (not implemented)
+==================== ============================== =====================================
+
+As for other ports, CALCIUM port types must be compatible to be connected. But they must also have the same DependencyType 
+property (see :ref:`datastreamports`).
 
 .. _compatibility:
 
@@ -401,6 +448,40 @@ If the nodes are terminal (nothing is executed from their outputs), they do not 
 Output ports used at the node output must be compatible with each other (i.e. they must be derived from a common generic 
 type that can be used by another input node).
 
+The OptimizerLoop node
+'''''''''''''''''''''''''
+This node can be used to build an optimization process.
+It has one and only one internal node as all the loop nodes. It is the internal node that is "optimized".
+The optimization algorithm must be defined by the user. The main idea behind is : the OptimizerLoop iterates until
+the user optimization algorithm says the process is ended (convergence or error). At each iteration, the 
+OptimizerLoop gives the data provided by the internal node to the algorithm. The algorithm returns a new sample
+that is given by the OptimizerLoop to the internal node and so on until the end. In most optimization processes, the sample
+is the variable (x) and the data that is returned by the internal node is the function to optimize (f(x)). Sometimes, the
+gradient is also returned.
+
+The definition of the optimization algorithm is done by way of plugin.
+The plugin can be a C++ plugin implemented in a dynamic library (.so file) or a Python plugin implemented in a Python module (.py).
+It is possible to implement two kinds of algorithm : synchronous or asynchronous.
+The implementation of an optimization algorithm as a plugin is described in :ref:`optimizationplugin`.
+
+The plugin is defined by 2 parameters :
+
+- **lib** the file name of the dynamic library or of the Python module. The name of the dynamic library must be given without
+  extension (.so) but the name of the Python must be given with extension (.py).
+- **entry**, the name of an entry point in the dynamic library or in the Python module that will return the algorithm plugin
+  factory (see :ref:`optimizationplugin` for more informations)
+
+The node has four ports:
+
+- **FileNameInitAlg**, an input port that takes the name of an initialization file
+- **SmplPrt**, an output port that gives the samples in the optimization process
+- **retPortForOutPool**, an input port that collects the results given by the internal node
+- **nbBranches**, an input port that can be used to parallelize the optimization process as in the ForEach node (number of
+  branches). Most of a time, the optimization process is sequential so the number of branches will be 1, but in some cases 
+  it is possible to parallelize the process so the number  of branches will be greater than 1.
+ 
+
+
 .. _containers:
 
 Containers
@@ -411,6 +492,8 @@ A YACS container is used to define component placement constraints without neces
 to be used or the container name.
 The YACS container has a name.  Constraints are given in the form of container properties.  
 The current list of properties is as follows:
+
+.. tabularcolumns:: |p{3cm}|p{3cm}|p{10cm}|
 
 =================== ============= =============================================
 Name                  Type            Type of constraint
@@ -440,10 +523,12 @@ The list of hardware resources (machines) known to SALOME is given in the resour
 that must be located in the directory of the SALOME application used.  
 This file is in the XML format.  Each machine is described with the machine tag that has several attributes that characterize it.
 
+.. tabularcolumns:: |p{3cm}|p{3cm}|p{10cm}|
+
 ================================== =========================== ==============================================
 Characteristic                         XML attribute               Description
 ================================== =========================== ==============================================
-nom                                 hostname                   the complete name:  this is the key that uniquely determines the machine
+computer name                       hostname                   the complete name:  this is the key that uniquely determines the machine
                                                                (for example : "nickel.ccc.cea.fr") 
 alias                               alias                      character string to identify the machine (for example,  “pluton”)
 access protocol                     protocol                   "rsh" (default) or "ssh"
@@ -465,7 +550,13 @@ batch manager                       batch                      if the machine ha
 ================================== =========================== ==============================================
 
 The list of SALOME modules present on the machine can also be indicated.  By default, SALOME assumes that all components 
-requested by YACS are present.  Each module present is given by the module sub-tag and its moduleName attribute.
+requested by YACS are present.
+
+If only some components are available within a resource, the list of components must be specified.
+This list can be specified with the sub-tag component that has two attributes : name (the name of the component)
+and moduleName (the name of the module) that is optional. You can use also the sub-tag modules that is provided
+for compatibility with older versions. If the modules sub-tag is used, a component with the same name as
+the moduleName attribute is added to the list.
 
 The following is an example of a resource catalog::
 
@@ -476,8 +567,10 @@ The following is an example of a resource catalog::
     </machine>
     <machine hostname="is111915" alias="is111915" OS="LINUX" CPUFreqMHz="2992" memInMB="1024" 
              protocol="ssh" mode="interactif" nbOfNodes="1" nbOfProcPerNode="1" 
-             appliPath="SALOME43/Run">
+             appliPath="SALOME/Run">
              <modules moduleName="GEOM"/>
+             <component name="SMESH"/>
+             <component name="VISU" moduleName="VISU"/>
     </machine>
   </resources>
 
@@ -568,10 +661,21 @@ The following shows an error report for a division by zero in a Python node cont
   </error>
   </error>
 
-Execution trace
-------------------
-An execution trace is produced for each execution in a file named traceExec_<scheme name>, in which <scheme name> 
-is the name given to the scheme.
+Execution trace files
+--------------------------
+For each execution several trace files are produced:
+
+- the ouput file of the YACS process that executes the scheme
+- a trace file that reports all the events that have occured during the execution
+- the output files of all launched containers
+
+YACS process output file
+''''''''''''''''''''''''''''''''''''''''''
+In this file you will find all the outputs of the inline nodes and error reports (:ref:`errorreport`).
+ 
+YACS events trace file
+''''''''''''''''''''''''''''''''''''''''''
+The file name is: traceExec_<scheme name>, in which <scheme name> is the name given to the scheme.
 
 Each line of the file represents an event related to a node.  It contains two character strings.  
 The first is the node name.  The second describes the event.
@@ -592,6 +696,47 @@ The following shows a trace for the same example as above::
   l1.node2 start execution
   l1.node2 end execution ABORT, Error during execution
   l1.node2 disconnectService
+
+Container output file
+''''''''''''''''''''''''''''''''''''''''''
+In this file you will find all the outputs of the SALOME components (calculation codes).
+Most of the time, the file name is : /tmp/<yacs pid>_<container name>_<container id>_<computer name>_<user name>.log, where:
+
+- <yacs pid> is the id of the YACS process
+- <container name> is the name given to the container in :ref:`containers`.
+- <container id> is an internal id for the container
+- <computer name> is the name of the computer on which the container runs
+- <user name> is the login name of the user on the container computer
+
+By default this file is put in the /tmp directory. It is possible to change that default by setting the SALOME_TMP_DIR environment
+variable to a different location.
+
+If the SALOME component uses CALCIUM datasream ports, this file will also contain a trace of all the calls
+to the CALCIUM library.
+This trace has the following form::
+
+     Elapsed time |          Request |        Container           |         Instance |             Port |                    Error | Infos
+ 348304:54:23:112 |            CP_CD | claui2c6_23164_B_0x1e00800 |    SOLIDE_inst_1 |                  |                          |
+ 348304:54:23:134 |            WRITE | claui2c6_23164_B_0x1e00800 |    SOLIDE_inst_1 |            tempi |                          | i=0
+ 348304:54:23:162 |            WRITE | claui2c6_23164_B_0x1e00800 |    SOLIDE_inst_1 |              tpi |                          | i=0
+ 348304:54:23:162 |       BEGIN_READ | claui2c6_23164_B_0x1e00800 |    SOLIDE_inst_1 |           puissi |                          | i=0
+ 348304:54:23:174 |         END_READ | claui2c6_23164_B_0x1e00800 |    SOLIDE_inst_1 |           puissi |                          | read i=0
+ 348304:54:23:174 |       BEGIN_READ | claui2c6_23164_B_0x1e00800 |    SOLIDE_inst_1 |              tfi |                          | i=0
+
+- column "Elapsed time" gives the elapsed time since a reference time that is given by the computer system (January 1, 1970 on Linux).
+  The time format is: hours:minutes:seconds:milliseconds.
+- column "Request" gives the name of the CALCIUM call.
+- column "Container" gives the container identification (<computer name>_<yacs pid>_<container name>_<container_id>)
+- column "Instance" gives the name of the SALOME component that has issued the call
+- column "Port" gives the name of the port on which the request is done
+- column "Error" gives the error description if there is one
+- column "Infos" gives more information about the request or the error 
+
+By default, the trace is produced in the container output file. It is possible to disable the trace by setting
+the DSC_TRACELEVEL environment variable to 0 (export DSC_TRACELEVEL=0, for bash shell). It is also possible to redirect
+the trace in an another file by setting the DSC_TRACE environment variable to 1 (export DSC_TRACE=1, for bash shell).
+In this case the trace is written in a file with name : $SALOME_TMP_DIR/<container identification>.tce.
+
 
 Execution of concurrent branches
 -------------------------------------

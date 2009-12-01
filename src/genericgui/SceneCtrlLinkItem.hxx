@@ -40,7 +40,8 @@ namespace YACS
       virtual QPointF start();
       virtual QPointF goal();
     protected:
-
+      virtual QColor getBrushColor();
+      virtual QColor getPenColor();
     };
   }
 }

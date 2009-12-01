@@ -22,6 +22,7 @@
 #include <stdexcept>
 #include <iostream>
 #include <cstdarg>
+#include <cstdio>
 #include <cassert>
 
 //#define _DEVDEBUG_

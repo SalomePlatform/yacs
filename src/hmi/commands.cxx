@@ -18,50 +18,112 @@
 //
 #include "commands.hxx"
 #include "guiContext.hxx"
+#include "Proc.hxx"
+#include "Catalog.hxx"
+#include "RuntimeSALOME.hxx"
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
+#include <strstream>
 
 using namespace std;
 
 using namespace YACS;
 using namespace YACS::HMI;
 
+int Invocator::_ctr = 0;
+
 Command::Command()
 {
   _subCommands.clear();
+  _normalReverse = true;
 }
 
+//! the command is executed a first time after its registration for undo redo, then on redo
+/*!
+ *  Execute may induce subcommands to be registered during its execution.
+ *  Subcommands must be deleted before redo, to be recreated by redo.
+ *  CommandDestroy is a special case, where subcommands are registered before Execute, and
+ *  undo action calls executeSubOnly instead of reverse. Subcommands pf CommandDestroy must 
+ *  not be deleted.
+ */
 bool Command::execute()
 {
+  bool commandInProgress = !GuiContext::getCurrent()->getInvoc()->isSpecialReverse();
+  if (commandInProgress)
+    GuiContext::getCurrent()->getInvoc()->_commandsInProgress.push_back(this);
+
   bool ret=true;
-  ret = localExecute();
-  if (! _subCommands.empty())
+  if (GuiContext::getCurrent()->getInvoc()->_isRedo && _normalReverse) 
     {
-      list<Command*>::iterator it;
-      for (it=_subCommands.begin(); it!=_subCommands.end(); it++)
-        {
-          if (!ret) break;
-          ret = (*it)->execute();
-        }
+      for (int i=0; i<_subCommands.size(); i++)
+        delete _subCommands[i];
+      _subCommands.clear();
     }
+  ret = localExecute();
   if (ret) GuiContext::getCurrent()->setNotSaved(true);
+
+  if (commandInProgress)
+    GuiContext::getCurrent()->getInvoc()->_commandsInProgress.pop_back();
   return ret;
 }
 
-bool Command::reverse()
+//! Reverse action: undo
+/*! Recursive reverse of sub commands then local action
+ *  @param isNormal: true for ordinary command, false for command Destroy
+ */
+bool Command::reverse(bool isNormal)
 {
   bool ret=true;
   if (! _subCommands.empty())
     {
-      list<Command*>::reverse_iterator it;
-      for (it=_subCommands.rbegin(); it!=_subCommands.rend(); it++)
+      for (int i=0; i<_subCommands.size(); i++)
         {
-          ret =(*it)->execute();
+          ret =_subCommands[i]->reverse(isNormal);
           if (!ret) break;
         }
     }
-  if (ret) ret = localReverse();
+  if (ret)
+    {
+      if (isNormal) // true for all commands but commandDestroy
+        ret = localReverse();
+      else
+        ret = localExecute(); // subCommand of command Destroy 
+    }
+  return ret;
+}
+
+//! execute only sub commands in a reverse action
+/*!
+ * for undo of commandDestroy, only sub commands of commandDestroy must be executed,
+ * via subcommand->reverse(false)
+ */
+bool Command::executeSubOnly()
+{
+  bool ret=true;
+  if (! _subCommands.empty())
+    {
+      for (int i=0; i<_subCommands.size(); i++)
+        {
+          ret =_subCommands[i]->reverse(false);
+          if (!ret) break;
+        }
+    }
+  return ret;
+}
+
+std::string Command::dump()
+{
+  return "=== generic command dump ===";
+}
+
+std::string Command::recursiveDump(int level)
+{
+  string prefix = "";
+  for (int i=0; i<level; i++) prefix += "  ";
+  string ret = prefix + dump() + "\n";
+  for (int i=0; i<_subCommands.size(); i++)
+    ret += _subCommands[i]->recursiveDump(level+1);
   return ret;
 }
 
@@ -70,36 +132,146 @@ void Command::addSubCommand(Command* command)
   _subCommands.push_back(command); 
 }
 
+
+
+
+
 Invocator::Invocator()
 {
+  _commandsDone.clear();
+  _commandsUndone.clear();
+  _commandsInProgress.clear();
+  _isRedo = false;
+  _specialReverse = false;
+  _undoCata = new YACS::ENGINE::Catalog("undoCata");
+  YACS::ENGINE::RuntimeSALOME* runTime = YACS::ENGINE::getSALOMERuntime();
+  _undoProc= runTime->createProc("undoProc");
 }
 
 void Invocator::add(Command* command)
 {
-  _commandsDone.push(command); // to do after execute ok
+  DEBTRACE("Invocator::add");
+  if (GuiContext::getCurrent()->getInvoc()->isSpecialReverse())
+    {
+      delete command;
+      return;
+    }
+  if (_commandsInProgress.empty())
+    {
+      _commandsDone.push_back(command); // --- to do after execute ok
+      _commandsUndone.clear();           // --- undone stack is no more relevant
+    }
+  else
+    {
+      DEBTRACE("addSubCommand");
+      _commandsInProgress.back()->addSubCommand(command);
+    }
 }
 
 bool Invocator::undo()
 {
+  DEBTRACE("Invocator::undo");
   bool ret = true;
+
+  {
+    stringstream ret1;
+    ret1 << "_commandsDone" << endl;
+    for (int i=0; i<_commandsDone.size(); i++)
+      ret1 << i << _commandsDone[i]->recursiveDump(2);
+    DEBTRACE(ret1.str());
+    stringstream ret2;
+    ret2 << "_commandsUndone" << endl;
+    for (int i=0; i<_commandsUndone.size(); i++)
+      ret2 << i << _commandsUndone[i]->recursiveDump(2);
+    DEBTRACE(ret2.str());
+  }
+
   if (! _commandsDone.empty())
     {
-      _commandsDone.pop();
-      ret = _commandsDone.top()->reverse();
-      _commandsUndone.push(_commandsDone.top());
+      bool isNormal = _commandsDone.back()->isNormalReverse();
+      _specialReverse = !isNormal;
+      if (isNormal)
+        ret = _commandsDone.back()->reverse(isNormal);
+      else
+        ret = _commandsDone.back()->executeSubOnly();
+      _commandsUndone.push_back(_commandsDone.back());
+      _commandsDone.pop_back();
+      _specialReverse = false;
     }
+
+  {
+    stringstream ret1;
+    ret1 << "_commandsDone" << endl;
+    for (int i=0; i<_commandsDone.size(); i++)
+      ret1 << i << _commandsDone[i]->recursiveDump(2);
+    DEBTRACE(ret1.str());
+    stringstream ret2;
+    ret2 << "_commandsUndone" << endl;
+    for (int i=0; i<_commandsUndone.size(); i++)
+      ret2 << i << _commandsUndone[i]->recursiveDump(2);
+    DEBTRACE(ret2.str());
+  }
+
   return ret;
 }
 
 bool Invocator::redo()
 {
+  DEBTRACE("Invocator::redo");
   bool ret = true;
+
+  {
+    stringstream ret1;
+    ret1 << "_commandsDone" << endl;
+    for (int i=0; i<_commandsDone.size(); i++)
+      ret1 << i << _commandsDone[i]->recursiveDump(2);
+    DEBTRACE(ret1.str());
+    stringstream ret2;
+    ret2 << "_commandsUndone" << endl;
+    for (int i=0; i<_commandsUndone.size(); i++)
+      ret2 << i << _commandsUndone[i]->recursiveDump(2);
+    DEBTRACE(ret2.str());
+  }
+
   if (! _commandsUndone.empty())
     {
-      _commandsUndone.pop();
-      ret = _commandsUndone.top()->execute();
-      _commandsDone.push(_commandsUndone.top());
+      _isRedo=true;
+      ret = _commandsUndone.back()->execute();
+      _isRedo=false;
+      _commandsDone.push_back(_commandsUndone.back());
+      _commandsUndone.pop_back();
     }
+
+  {
+    stringstream ret1;
+    ret1 << "_commandsDone" << endl;
+    for (int i=0; i<_commandsDone.size(); i++)
+      ret1 << i << _commandsDone[i]->recursiveDump(2);
+    DEBTRACE(ret1.str());
+    stringstream ret2;
+    ret2 << "_commandsUndone" << endl;
+    for (int i=0; i<_commandsUndone.size(); i++)
+      ret2 << i << _commandsUndone[i]->recursiveDump(2);
+    DEBTRACE(ret2.str());
+  }
+
   return ret;
 }
 
+std::list<std::string> Invocator::getDone()
+{
+  list<string> listDone;
+  listDone.clear();
+  for (int i=0; i<_commandsDone.size(); i++)
+    listDone.push_back(_commandsDone[i]->recursiveDump());
+  return listDone;
+}
+
+std::list<std::string> Invocator::getUndone()
+{
+  list<string> listUndone;
+  listUndone.clear();
+  for (int i=0; i<_commandsUndone.size(); i++)
+    listUndone.push_back(_commandsUndone[i]->recursiveDump());
+  return listUndone;
+}

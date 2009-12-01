@@ -30,6 +30,7 @@ namespace YACS
     public:
       SchemaDirTypesItem(SchemaItem *parent, QString label, Subject* subject);
       void addTypeItem(Subject* subject);
+      void removeTypeItem(Subject* subject);
       virtual Qt::ItemFlags flags(const QModelIndex &index);
       virtual bool dropMimeData(const QMimeData* data, Qt::DropAction action);
     protected:

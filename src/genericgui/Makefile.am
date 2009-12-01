@@ -407,6 +407,7 @@ ICONS = \
 	resources/paste.png \
 	resources/pause.png \
 	resources/rebuild_links.png \
+	resources/redo.png \
 	resources/reload.png \
 	resources/remote_run.png \
 	resources/reset.png \
@@ -430,6 +431,7 @@ ICONS = \
 	resources/table_view.png \
 	resources/toggle_stop_on_error.png \
 	resources/toggleVisibility.png \
+	resources/undo.png \
 	resources/whatsThis.png \
 	resources/zoomToBloc.png
 

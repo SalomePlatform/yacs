@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='iso-8859-1' ?>
-<proc>
+<proc name="test_hello">
    <property name="DefaultStudyID" value="1"/>
    <type name="string" kind="string"/>
    <struct name="Engines/dataref">

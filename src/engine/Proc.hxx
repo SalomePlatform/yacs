@@ -56,7 +56,9 @@ namespace YACS
       virtual ComponentInstance* createComponentInstance(const std::string& componame, 
                                                          const std::string& name="",
                                                          const std::string& kind="");
-      virtual void addComponentInstance(ComponentInstance* inst, const std::string& name="");
+      virtual void addComponentInstance(ComponentInstance* inst, const std::string& name="",bool resetCtr=false);
+      virtual void removeComponentInstance(ComponentInstance* inst);
+      virtual void removeContainer(Container* cont);
       virtual void accept(Visitor *visitor);
       virtual Proc *getProc();
 

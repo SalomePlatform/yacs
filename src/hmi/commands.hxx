@@ -20,11 +20,17 @@
 #define _COMMANDS_HXX_
 
 #include <list>
-#include <stack>
 #include <string>
+#include <vector>
 
 namespace YACS
 {
+  namespace ENGINE
+  {
+    class Proc;
+    class Catalog;
+  }
+
   namespace HMI
   {
     class Command
@@ -32,25 +38,42 @@ namespace YACS
     public:
       Command();
       virtual bool execute();
-      virtual bool reverse();
-      //virtual std::string getCommandType() = 0; // utiliser un dynamic_cast plutot
+      virtual bool reverse(bool isNormal=true);
+      virtual bool executeSubOnly();
+      virtual std::string dump();
+      std::string recursiveDump(int level =0);
       void addSubCommand(Command* command);
+      bool isNormalReverse() { return _normalReverse; };
     protected:
       virtual bool localExecute() = 0;
       virtual bool localReverse() = 0;
-      std::list<Command*> _subCommands;
+      std::vector<Command*> _subCommands;
+      bool _normalReverse;
     };
     
     class Invocator
     {
+      friend class Command;
     public:
       Invocator();
       void add(Command* command);
       bool undo();
       bool redo();
+      std::list<std::string> getDone();
+      std::list<std::string> getUndone();
+      YACS::ENGINE::Proc *getUndoProc() { return _undoProc; };
+      YACS::ENGINE::Catalog *getUndoCata() { return _undoCata; };
+      bool isSpecialReverse() { return _specialReverse; };
+      static int _ctr;
+
     protected:
-      std::stack<Command*> _commandsDone;
-      std::stack<Command*> _commandsUndone;
+      std::vector<Command*> _commandsDone;
+      std::vector<Command*> _commandsUndone;
+      std::vector<Command*> _commandsInProgress;
+      YACS::ENGINE::Proc *_undoProc;
+      YACS::ENGINE::Catalog *_undoCata;
+      bool _isRedo;
+      bool _specialReverse;
     };
   }
 }

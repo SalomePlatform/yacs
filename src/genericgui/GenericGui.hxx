@@ -139,6 +139,7 @@ namespace YACS
       QAction *_cutItemAct;
       QAction *_copyItemAct;
       QAction *_pasteItemAct;
+      QAction *_putInBlocAct;
       QAction *_arrangeLocalNodesAct;
       QAction *_arrangeRecurseNodesAct;
       QAction *_computeLinkAct;
@@ -172,6 +173,9 @@ namespace YACS
       QAction *_hideLinkAct;
       QAction *_emphasisLinkAct;
       QAction *_deEmphasizeAllAct;
+
+      QAction *_undoAct;
+      QAction *_redoAct;
 
       YACS::HMI::GuiEditor *_guiEditor;
 
@@ -269,6 +273,7 @@ namespace YACS
       void onCutItem();
       void onCopyItem();
       void onPasteItem();
+      void onPutInBloc();
 
       void onArrangeLocalNodes();
       void onArrangeRecurseNodes();
@@ -304,6 +309,9 @@ namespace YACS
 
       void onSelectReference();
       void onWhatsThis();
+
+      void onUndo();
+      void onRedo();
 
     private:
       void displayLinks(bool isShown);

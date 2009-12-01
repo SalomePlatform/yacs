@@ -88,10 +88,6 @@ At the current moment in the frames of the YACS module the user can create nodes
 
 Inline function
 ''''''''''''''''''
-**Example of inline function node with ports**:
-
-.. image:: images/functionality_list_18.jpg
-  :align: center
 
 The node object can be created with help of **Create Node --> Inline Function Node** command from the Tree View context menu
 
@@ -103,12 +99,16 @@ or from the 2D Viewer context menu. The context menu must be activated on the ch
 .. image:: images/functionality_list_19.jpg
   :align: center
 
+as a result:
+
+.. image:: images/functionality_list_18.jpg
+  :align: center
+
+.. centered::
+  **Example of inline function node with ports**
+
 Inline script
 ''''''''''''''''''
-**Example of inline script node with ports**:
-
-.. image:: images/functionality_list_20.jpg
-  :align: center
 
 The node object can be created with help of **Create Node --> Inline Script Node** command from the Tree View context menu or 
 from the 2D Viewer context menu. The context menu must be activated on the chosen parent node.
@@ -116,12 +116,16 @@ from the 2D Viewer context menu. The context menu must be activated on the chose
 .. image:: images/functionality_list_21.jpg
   :align: center
 
+as a result:
+
+.. image:: images/functionality_list_20.jpg
+  :align: center
+
+.. centered::
+  **Example of inline script node with ports**
+
 SALOME service
 ''''''''''''''''''
-**Example of service node**:
-
-.. image:: images/functionality_list_22.jpg
-  :align: center
 
 This type of node can be created with help of **Create Node -> Node from Catalog** command from the Tree View context menu 
 or from the 2D Viewer context menu.
@@ -136,6 +140,9 @@ with the possibility to choose firstly a catalog type: **Current Session**, **Bu
 with types of nodes belonging to a predefined schema), and secondly - the type of node from the catalog to add it into the active schema. The
 **Current Session** catalog contains all SALOME components with its services.
 
+**Notes:** To add a node from catalog to the schema, drag and drop it. Multiple selection is possible in the Catalog, so you can add several
+nodes to the schema with one drag and drop.
+
 .. image:: images/functionality_list_24.jpg
   :align: center
 
@@ -147,6 +154,13 @@ with types of nodes belonging to a predefined schema), and secondly - the type o
 
 .. centered::
   **Create a node from a user catalog**
+
+
+.. image:: images/functionality_list_22.jpg
+  :align: center
+
+.. centered::
+  **Example of service node**
 
 As a result of SALOME service node creation from **Current Session** catalog, the content of schema Tree View is enlarged with data types 
 used by the new node, a new node object under **newSchema_1** folder, the corresponding SALOME component instance definition and a 
@@ -161,11 +175,6 @@ reference to a new created service node under it.
 
 Block
 ''''''''''''''''''
-**Empty Block node**:
-
-.. image:: images/functionality_list_30.jpg
-  :align: center
-
 
 The node object can be created with help of **Create Node --> bloc Node** command from the Tree View context menu or from 
 the 2D Viewer context menu.
@@ -173,30 +182,43 @@ the 2D Viewer context menu.
 .. image:: images/functionality_list_31.jpg
   :align: center
 
+as a result:
+
+.. image:: images/functionality_list_30.jpg
+  :align: center
+
+.. centered::
+  **Empty Block node**
+
 Child nodes of a block node can be created with help of sub-items of **Create Node** command from block node context popup menu in the 
 Tree View or in the 2D Viewer.
 
 .. image:: images/functionality_list_32.jpg
   :align: center
 
-
-**Example of Block node with inline function node as a child node**:
+as a result:
 
 .. image:: images/functionality_list_33.jpg
   :align: center
 
+.. centered::
+  **Example of Block node with inline function node as a child node**
+
 For Loop
 ''''''''''''''''''
-
-**For Loop node without a body (i.e. new created)**:
-
-.. image:: images/functionality_list_34.jpg
-  :align: center
 
 The node object can be created with help of **Create Node --> For Loop Node** command	from the Tree View context menu or from the 2D Viewer context menu.
 
 .. image:: images/functionality_list_35.jpg
   :align: center
+
+as a result:
+
+.. image:: images/functionality_list_34.jpg
+  :align: center
+
+.. centered::
+  **For Loop node without a body (i.e. newly created)**
 
 Body node of a For Loop node can be created with help of sub-items of **Create Node** command from For Loop node context popup menu in the 
 Tree View or in the 2D Viewer.
@@ -204,6 +226,7 @@ Tree View or in the 2D Viewer.
 .. image:: images/functionality_list_36.jpg
   :align: center
 
+as a result:
 
 .. image:: images/functionality_list_37.jpg
   :align: center
@@ -212,13 +235,8 @@ Tree View or in the 2D Viewer.
   **For Loop node with inline script node as a body**
 
 
-
 ForEachLoop
 ''''''''''''''''''
-**ForEachLoop (double) node without a body (i.e. new created)**:
-
-.. image:: images/functionality_list_38.jpg
-  :align: center
 
 The node object can be created with help of sub-items of **Create Node --> ForEachLoop** command from the Tree View context menu 
 or from the 2D Viewer context menu. There is one sub-item for each data type known in the schema object. If you need another data type,
@@ -227,12 +245,21 @@ you'll have to import it in the schema. In this case we use a double data type a
 .. image:: images/functionality_list_39.jpg
   :align: center
 
+as a result:
+
+.. image:: images/functionality_list_38.jpg
+  :align: center
+
+.. centered::
+  **ForEachLoop (double) node without a body (i.e. new created)**
+
 Body node of a ForEachLoop node can be created with help of sub-items of **Create Node** command from ForEachLoop node context popup menu in the 
 Tree View or in the 2D Viewer.
 
 .. image:: images/functionality_list_40.jpg
   :align: center
 
+as a result:
 
 .. image:: images/functionality_list_41.jpg
   :align: center
@@ -241,20 +268,21 @@ Tree View or in the 2D Viewer.
 .. centered::
   **ForEachLoop node with SALOME service node as a body**
 
-
-
 While loop
 ''''''''''''''''''
-**While loop node without a body (i.e. new created)**:
 
-.. image:: images/functionality_list_42.jpg
-  :align: center
-
-The node object can be created with help of **Create Node --> While Loopi Node** command from the Tree View context menu
+The node object can be created with help of **Create Node --> While Loop Node** command from the Tree View context menu
 or from the 2D Viewer context menu.
 
 .. image:: images/functionality_list_43.jpg
   :align: center
+
+
+.. image:: images/functionality_list_42.jpg
+  :align: center
+
+.. centered::
+  **While loop node without a body (i.e. new created)**
 
 Body node of a While Loop node can be created with help of sub-items of **Create Node** command from While Loop node context popup menu in the 
 Tree View or in the 2D Viewer.
@@ -271,25 +299,23 @@ Tree View or in the 2D Viewer.
   **While Loop node with Block node as a body**
 
 
-
 Switch
 ''''''''''''''''''
-**Switch node without any cases (i.e. new created)**:
-
-.. image:: images/functionality_list_46.jpg
-  :align: center
 
 The node object can be created with help of **Create Node --> Switch Node** command from the Tree View context menu
 or from the 2D Viewer context menu.
 
-
 .. image:: images/functionality_list_47.jpg
   :align: center
 
+.. image:: images/functionality_list_46.jpg
+  :align: center
+
+.. centered::
+  **Switch node without any cases (i.e. new created)**
 
 Body node of a Switch node can be created with help of sub-items of **Create Node** command from Switch node context popup menu in the 
 Tree View or in the 2D Viewer.
-
 
 .. image:: images/functionality_list_48.jpg
   :align: center
@@ -304,14 +330,32 @@ Tree View or in the 2D Viewer.
 The number of Switch node cases can be changed with help of functionality provided by the property page of Switch node (for the sample 
 of the property page see :ref:`Property page for Switch node <pp_for_switch_node>` section).
 
+OptimizerLoop
+''''''''''''''''''
 
+The node object can be created with help of **Create Node --> Optimizer Loop** command from the Tree View context menu
+or from the 2D Viewer context menu.
+
+.. image:: images/functionality_list_47a.jpg
+  :align: center
+
+Body node of an Optimizer Loop node can be created with help of sub-items of **Create Node** command from Optimizer Loop node context popup menu in the
+Tree View or in the 2D Viewer.
+
+.. image:: images/functionality_list_47b.jpg
+  :align: center
+
+.. image:: images/functionality_list_47c.jpg
+  :align: center
+
+.. centered::
+  **Optimizer Loop with one internal python node**
+
+The parameters of the Optimizer Loop can then be modified with help of the functionality provided by the property page of Optimizer Loop node
+(see :ref:`Property page for Optimizer Loop <pp_for_optimizer_node>` section).
 
 Input data node
 ''''''''''''''''''
-**Input data node with sample ports**:
-
-.. image:: images/functionality_list_50.jpg
-  :align: center
 
 The node object can be created with help of **Create Node --> Input Data Node** command from the Tree View context menu
 or from the 2D Viewer context menu.
@@ -319,12 +363,15 @@ or from the 2D Viewer context menu.
 .. image:: images/functionality_list_51.jpg
   :align: center
 
+
+.. image:: images/functionality_list_50.jpg
+  :align: center
+
+.. centered::
+  **Input data node with sample ports**
+
 Output data node
 ''''''''''''''''''
-**Output data node with sample ports**:
-
-.. image:: images/functionality_list_52.jpg
-  :align: center
 
 The node object can be created with help of **Create Node --> Output Data Node** command from the Tree View context menu
 or from the 2D Viewer context menu.
@@ -332,12 +379,15 @@ or from the 2D Viewer context menu.
 .. image:: images/functionality_list_53.jpg
   :align: center
 
+
+.. image:: images/functionality_list_52.jpg
+  :align: center
+
+.. centered::
+  **Output data node with sample ports**
+
 Input study node
 ''''''''''''''''''
-**Input study node with sample ports**:
-
-.. image:: images/functionality_list_54.jpg
-  :align: center
 
 The node object can be created with help of **Create Node --> Input Study Node** command from the Tree View context menu
 or from the 2D Viewer context menu.
@@ -345,12 +395,15 @@ or from the 2D Viewer context menu.
 .. image:: images/functionality_list_55.jpg
   :align: center
 
+
+.. image:: images/functionality_list_54.jpg
+  :align: center
+
+.. centered::
+  **Input study node with sample ports**
+
 Output study node
 ''''''''''''''''''
-**Output study node with sample ports**:
-
-.. image:: images/functionality_list_56.jpg
-  :align: center
 
 The node object can be created with help of **Create Node --> Output Study Node** command from the Tree View context menu
 or from the 2D Viewer context menu.
@@ -358,6 +411,13 @@ or from the 2D Viewer context menu.
 .. image:: images/functionality_list_57.jpg
   :align: center
 
+
+
+.. image:: images/functionality_list_56.jpg
+  :align: center
+
+.. centered::
+  **Output study node with sample ports**
 
 As a result of node creation, YACS module creates a new node object with a default name and shows it in the Tree View (under the proper 
 parent item) and in 2D Viewer. For service nodes the reference to the created service node is also published under the corresponding 
@@ -432,6 +492,15 @@ to links' type.
 
 A new link object has a default name, which contains names of "from" and "to" nodes and ports and cannot be changed by the user 
 (see :ref:`description of link objects in the Tree View <description_of_link_objects>`).
+
+Each link has an associated property page that, in most cases, shows the link name. For datastream links (CALCIUM links), a properties
+editor allows to set and modify link properties (see :ref:`datastreamlinks`).
+
+.. image:: images/functionality_list_60b.jpg
+  :align: center
+
+.. centered::
+  datastream link properties editor
 
 The user can delete a link by choosing **Delete** command from link context popup menu in the Tree View or in the 
 2D Viewer (see :ref:`delete_object` section).
@@ -676,6 +745,26 @@ The page allows the user to:
 
 + change the case value (integer or "default") associated with child nodes.
 
+.. _pp_for_optimizer_node:
+
+Property page for Optimizer Loop node
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+The property page for **Optimizer Loop** node is shown on the figure below.
+
+.. image:: images/functionality_list_47d.jpg
+  :align: center
+
+.. centered::
+  **Property page for Optimizer Loop**
+
+The page allows the user to:
+
+- change the name of the node,
+- read the full name of the node (this field is read only and updated if the user changes the node name),
+- read the input data type (this field is read only and updated if the user changes the plugin),
+- change the number of branches
+- change the plugin : parameters lib and entry
+- change the initialization file : parameter FileNameInitAlg
 
 Property page for Input Data node
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -763,10 +852,6 @@ To perform this operation the user should select object to be deleted in the Tre
 from its context popup menu.
 
 With help of context popup menu the user can delete the following objects:
-
-+ container,
-
-+ component instance,
 
 + node,
 

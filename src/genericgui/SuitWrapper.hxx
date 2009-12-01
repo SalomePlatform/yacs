@@ -41,7 +41,7 @@ namespace YACS
       
     public:
       SuitWrapper(QObject* wrapped);
-      ~SuitWrapper();
+      virtual ~SuitWrapper();
 
       QWidget* getNewWindow(QGraphicsScene *scene);
       int AssociateViewToWindow(QGraphicsView* gView, QWidget* viewWindow);

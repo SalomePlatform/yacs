@@ -77,7 +77,6 @@ void VisitorSaveSchema::openFileSchema(std::string xmlSchema) throw(YACS::Except
       throw Exception(what);
     }
   _out << "<?xml version='1.0' encoding='iso-8859-1' ?>" << endl;
-  _out << "<proc>" << endl;
 }
 
 void VisitorSaveSchema::closeFileSchema()
@@ -257,6 +256,7 @@ void VisitorSaveSchema::visitLoop(Loop *node)
 void VisitorSaveSchema::visitProc(Proc *node)
 {
   DEBTRACE("START visitProc " << node->getName());
+  _out << "<proc name=\""<< node->getName() << "\">" << endl;
   beginCase(node);
   writeProperties(node);
   writeTypeCodes(node);

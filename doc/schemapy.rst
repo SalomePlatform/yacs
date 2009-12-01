@@ -546,6 +546,24 @@ and a script node to initialise an exchanged variable::
 
 The edGetConditionPort method can be used instead of getInputPort, to obtain the special “select” port for the Switch.
 
+OptimizerLoop
++++++++++++++++++++
+
+The following is an example of OptimizerLoop with one python script as internal node. The algorithm
+is defined by the class async in the python module myalgo2.py::
+
+  ol=r.createOptimizerLoop("ol1","myalgo2.py","async",True)
+  p.edAddChild(ol)
+  n=r.createScriptNode("","node3")
+  n.setScript("p1=3")
+  n.edAddInputPort("p1",td)
+  n.edAddOutputPort("p1",ti)
+  ol.edSetNode(n)
+  ol.getInputPort("nbBranches").edInitPy(3)
+  ol.getInputPort("FileNameInitAlg").edInitPy("coucou")
+  p.edAddLink(ol.getOutputPort("SmplPrt"),n.getInputPort("p1"))
+  p.edAddLink(n.getOutputPort("p1"),ol.getInputPort("retPortForOutPool"))
+
 Definition of containers
 ''''''''''''''''''''''''''''
 A container is defined using the runtime createContainer method and it is then given a name using its setName method.  

@@ -46,11 +46,25 @@ void SchemaDirTypesItem::addTypeItem(Subject* subject)
   int nbsons = childCount();
   SubjectDataType *sdt = dynamic_cast<SubjectDataType*>(subject);
   YASSERT(sdt);
+  DEBTRACE(nbsons);
   model->beginInsertRows(modelIndex(), nbsons, nbsons);
   SchemaItem *item = new SchemaDataTypeItem(this,
                                             sdt->getAlias().c_str(),
                                             sdt);
   model->endInsertRows();
+}
+
+void SchemaDirTypesItem::removeTypeItem(Subject* subject)
+{
+  DEBTRACE("SchemaDirTypesItem::removeTypeItem");
+  SchemaModel *model = QtGuiContext::getQtCurrent()->getSchemaModel();
+  YASSERT(QtGuiContext::getQtCurrent()->_mapOfSchemaItem.count(subject));
+  SchemaItem *toRemove = QtGuiContext::getQtCurrent()->_mapOfSchemaItem[subject];
+  int position = toRemove->row();
+  DEBTRACE(position);
+  model->beginRemoveRows(modelIndex(), position, position);
+  removeChild(toRemove);
+  model->endRemoveRows();
 }
 
 Qt::ItemFlags SchemaDirTypesItem::flags(const QModelIndex &index)

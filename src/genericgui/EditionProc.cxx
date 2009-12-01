@@ -100,13 +100,22 @@ void EditionProc::synchronize()
     {
       // --- Check consistency
       LinkInfo info(LinkInfo::ALL_DONT_STOP);
-      proc->checkConsistency(info);
-      if (info.areWarningsOrErrors())
-        _errorLog = info.getGlobalRepr();
-      else
+      _errorLog="";
+      try
         {
-          _errorLog = "--- No Validity Errors ---\n";
-          _errorLog += "--- No Consistency Errors ---\n";
+          proc->checkConsistency(info);
+          if (info.areWarningsOrErrors())
+            _errorLog += info.getGlobalRepr();
+          else
+            {
+              _errorLog += "--- No Validity Errors ---\n";
+              _errorLog += "--- No Consistency Errors ---\n";
+            }
+        }
+      catch (Exception &ex)
+        {
+          _errorLog = "--- YACS schema has consistency errors ---\n\n";
+          _errorLog += ex.what();
         }
       DEBTRACE(_errorLog);
     }

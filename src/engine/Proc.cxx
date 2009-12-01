@@ -432,8 +432,9 @@ Container* Proc::createContainer(const std::string& name,const std::string& kind
  *
  * \param inst: the component instance
  * \param name: the component instance name
+ * \param restCtr: try to reuse instance number previously released, false by default
  */
-void Proc::addComponentInstance(ComponentInstance* inst, const std::string& name)
+void Proc::addComponentInstance(ComponentInstance* inst, const std::string& name, bool resetCtr)
 {
   if(name != "")
     {
@@ -447,11 +448,13 @@ void Proc::addComponentInstance(ComponentInstance* inst, const std::string& name
   else
     {
       //automatic naming : componame_<_compoinstctr>
-      std::ostringstream buffer;
       std::string instname;
       std::string componame=inst->getCompoName();
+      if (resetCtr)
+        _compoinstctr = 0;        
       while(1)
         {
+          std::ostringstream buffer;
           buffer << ++_compoinstctr;
           instname=componame+"_"+buffer.str();
           if(componentInstanceMap.count(instname)==0)
@@ -462,6 +465,36 @@ void Proc::addComponentInstance(ComponentInstance* inst, const std::string& name
               break;
             }
         }
+    }
+}
+
+//! Remove a componentInstance from the componentInstanceMap
+/*!
+ * To be used for a componentInstance with no service nodes referenced.
+ *
+ * \param inst: the component instance
+ */
+void Proc::removeComponentInstance(ComponentInstance* inst)
+{
+  if (componentInstanceMap.count(inst->getInstanceName()))
+    {
+      componentInstanceMap.erase(inst->getInstanceName());
+      inst->decrRef();
+    }
+}
+
+//! Remove a container from the containerMap
+/*!
+ * To be used for a container with no componentInstance referenced.
+ *
+ * \param cont: the container
+ */
+void Proc::removeContainer(Container* cont)
+{
+  if (containerMap.count(cont->getName()))
+    {
+      containerMap.erase(cont->getName());
+      cont->decrRef();
     }
 }
 

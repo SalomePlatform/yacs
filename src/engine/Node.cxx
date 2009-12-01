@@ -53,7 +53,7 @@ Node::Node(const std::string& name):_name(name),_inGate(this),_outGate(this),_fa
 
 Node::Node(const Node& other, ComposedNode *father):_inGate(this),_outGate(this),_name(other._name),_father(father),
                                                    _state(YACS::READY),_implementation(other._implementation),
-                                                    _propertyMap(other._propertyMap),_modified(other._modified)
+                                                    _propertyMap(other._propertyMap),_modified(1)
 {
   _numId = _total++;
   idMap[_numId]=this;

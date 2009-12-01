@@ -136,25 +136,35 @@ void TreeView::onCommitData(QWidget *editor)
   GenericEditor* gedit = dynamic_cast<GenericEditor*>(editor);
   YASSERT(gedit);
   QString val = gedit->GetStrValue();
-  DEBTRACE(val.toStdString());
+  string strval = val.toStdString();
+  DEBTRACE(strval);
+  bool isOk = false;
+
   Subject *sub = gedit->getSubject();
   YASSERT(sub);
   SubjectDataPort *sdp = dynamic_cast<SubjectDataPort*>(sub);
-  YASSERT(sdp);
-  string strval = val.toStdString();
-  bool isOk = false;
-
-  if (gedit->getColumnInSubject() == YValue)
+  if (sdp)
     {
-      if (sdp->getPort()->edGetType()->kind() == YACS::ENGINE::String)
-        strval = "\"" + strval + "\"";
-      DEBTRACE(strval);
-       isOk = sdp->setValue(strval);
+      if (gedit->getColumnInSubject() == YValue)
+        {
+          if (sdp->getPort()->edGetType()->kind() == YACS::ENGINE::String)
+            strval = "\"" + strval + "\"";
+          DEBTRACE(strval);
+          isOk = sdp->setValue(strval);
+        }
+      else // --- YLabel
+        {
+          isOk = sdp->setName(strval);
+        }
     }
-
-  else // --- YLabel
+  else
     {
-      isOk = sdp->setName(strval);
+      SubjectNode *snode = dynamic_cast<SubjectNode*>(sub);
+      YASSERT(snode);
+      sub = snode->getParent();
+      SubjectSwitch *sswitch = dynamic_cast<SubjectSwitch*>(sub);
+      YASSERT(sswitch);
+      isOk = sswitch->setCase(strval, snode);
     }
 
   if (_valueDelegate)

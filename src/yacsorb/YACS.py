@@ -47,10 +47,18 @@ class proc_i(YACS_ORB__POA.ProcExec):
         return self.p.getXMLState(numid)
 
     def getInPortValue(self, nodeNumid, portName):
+      try:
         return self.p.getInPortValue(nodeNumid, portName)
+      except:
+        traceback.print_exc()
+        return ""
 
     def getOutPortValue(self, nodeNumid, portName):
+      try:
         return self.p.getOutPortValue(nodeNumid, portName)
+      except:
+        traceback.print_exc()
+        return ""
 
     def getErrorDetails(self, nodeNumid):
         return self.p.getNodeErrorDetails(nodeNumid)

@@ -137,23 +137,23 @@ The configuration file can be created by modifying a copy of the ${KERNEL_ROOT_D
 For example::
 
   <application>
-  <prerequisites path="/data/tmplgls/secher/SALOME_V4.1.1_MD08/env_products.sh"/>
+  <prerequisites path="/data/tmplgls/secher/SALOME_V5/env_products.sh"/>
   <modules>
      <!-- variable name <MODULE>_ROOT_DIR is built with <MODULE> == name attribute value -->
      <!-- <MODULE>_ROOT_DIR values is set with path attribute value -->
      <!-- attribute gui (defaults = yes) indicates if the module has a gui interface -->
-     <module name="KERNEL"       gui="no"  path="/data/SALOME_V4.1.1/KERNEL_INSTALL"/>
-     <module name="GUI"          gui="no"  path="/data/SALOME_V4.1.1/GUI_4.1.1"/>
-     <module name="MED"                    path="/data/SALOME_V4.1.1/MED_4.1.1"/>
-     <module name="GEOM"                   path="/data/SALOME_V4.1.1/GEOM_4.1.1"/>
-     <module name="SMESH"                  path="/data/SALOME_V4.1.1/SMESH_4.1.1"/>
-     <module name="YACS"                   path="/data/SALOME_V4.1.1/YACS_4.1.1"/>
-     <module name="VISU"                   path="/data/SALOME_V4.1.1/VISU_4.1.1"/>
-     <module name="HELLO"                  path="/data/SALOME_V4.1.1/HELLO1_4.1.1"/>
-     <module name="PYHELLO"                path="/data/SALOME_V4.1.1PYHELLO1_4.1.1"/>
-     <module name="NETGENPLUGIN"           path="/data/SALOME_V4.1.1/NETGENPLUGIN_4.1.1"/>
+     <module name="KERNEL"       gui="no"  path="/data/SALOME_V5/KERNEL_INSTALL"/>
+     <module name="GUI"          gui="no"  path="/data/SALOME_V5/GUI_5"/>
+     <module name="MED"                    path="/data/SALOME_V5/MED_5"/>
+     <module name="GEOM"                   path="/data/SALOME_V5/GEOM_5"/>
+     <module name="SMESH"                  path="/data/SALOME_V5/SMESH_5"/>
+     <module name="YACS"                   path="/data/SALOME_V5/YACS_5"/>
+     <module name="VISU"                   path="/data/SALOME_V5/VISU_5"/>
+     <module name="HELLO"                  path="/data/SALOME_V5/HELLO1_5"/>
+     <module name="PYHELLO"                path="/data/SALOME_V5PYHELLO1_5"/>
+     <module name="NETGENPLUGIN"           path="/data/SALOME_V5/NETGENPLUGIN_5"/>
   </modules>
-  <samples path="/data/SALOME_V4.1.1/SAMPLES/4.1.1/SAMPLES_SRC"/>
+  <samples path="/data/SALOME_V5/SAMPLES/SAMPLES_SRC"/>
   </application>
 
 Some rules to be followed

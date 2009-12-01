@@ -546,3 +546,18 @@ void SceneLinkItem::updateShape()
     }
   setShape(_emphasized+1);
 }
+
+QColor SceneLinkItem::getPenColor()
+{
+  _penColor     = Resource::link_draw_color.darker(Resource::link_pen_darkness);
+  _hiPenColor   = Resource::link_select_color.darker(Resource::link_pen_darkness);
+  return SceneObserverItem::getPenColor();
+}
+
+QColor SceneLinkItem::getBrushColor()
+{
+  _brushColor   = Resource::link_draw_color;
+  _hiBrushColor = Resource::link_select_color;
+  return SceneObserverItem::getBrushColor();
+}
+

@@ -50,12 +50,14 @@ namespace YACS
         SalomeOptimizerLoop(const std::string& name, const std::string& algLibWthOutExt,
                             const std::string& symbolNameToOptimizerAlgBaseInstanceFactory,
                             bool algInitOnFile,bool initAlgo=true);
-        SalomeOptimizerLoop(const OptimizerLoop& other, ComposedNode *father, bool editionOnly);
+        SalomeOptimizerLoop(const SalomeOptimizerLoop& other, ComposedNode *father, bool editionOnly);
         ~SalomeOptimizerLoop();
         virtual void setAlgorithm(const std::string& alglib,const std::string& symbol,bool checkLinks=true);
+        virtual std::string getAlgLib() const ;
       protected:
         SalomeOptimizerAlgStandardized *_pyalg;
         OptimizerAlgStandardized *_cppalg;
+        std::string _alglib;
     };
   }
 }

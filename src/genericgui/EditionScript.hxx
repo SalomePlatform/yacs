@@ -44,6 +44,7 @@ namespace YACS
                   QWidget* parent = 0,
                   const char* name = 0);
       virtual ~EditionScript();
+      virtual void synchronize();
 
     protected:
       SubjectInlineNode *_subInlineNode;

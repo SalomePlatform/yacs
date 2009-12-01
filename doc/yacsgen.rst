@@ -45,6 +45,10 @@ The first action to be done is to import these definitions::
      from module_generator import Generator,Module,PYComponent
      from module_generator import CPPComponent,Service,F77Component
 
+If you want to import all definitions, you can do that::
+
+     from module_generator import *
+
 A SALOME module is described by giving its name <modulename> together with the list of its 
 components (<components list>) and the name of the directory in which it will be installed (<prefix>).
 
@@ -52,10 +56,10 @@ Its description is in the following form::
 
   m=Module(<modulename>,components=<components list>,prefix=<prefix>)
 
-The statement for a module named "toto" with a component C1 (see below for a description of components) that 
+The statement for a module named "mymodule" with a component C1 (see below for a description of components) that 
 will be installed in the "Install" directory will be::
 
-  m=Module("toto",components=[c1],prefix="Install")
+  m=Module("mymodule",components=[c1],prefix="Install")
 
 Description of components
 ------------------------------------------------
@@ -84,6 +88,7 @@ The only possible types for dataflow ports for the moment are:
 - double:  scalar equivalent to a C double
 - long:  scalar equivalent to a C long
 - string:  equivalent to a C char* (character string with arbitrary length)
+- file: a file object
 - dblevec:  doubles vector
 - stringvec:  strings vector
 - intvec:  longs vector
@@ -106,8 +111,8 @@ type will have the following description::
                                ]
                      )
 
-c1 is an intermediate Python variable that will be used to describe the list of components of a module:  
-  (components=[c1]) for a module with a single component.
+c1 is an intermediate Python variable that will be used to describe the list of components of a 
+module: (components=[c1]) for a module with a single component.
 
 In fact, this component is not particularly useful because during execution, it will take a double at the input to the 
 execution and will provide a double at the output from the execution, but it does nothing in the meantime.  
@@ -298,7 +303,8 @@ Python component
 ++++++++++++++++++++++++++++++++++++++++
 A Python component is also described like a C++ component.  The only differences are in the Python object to be used to 
 define it:  PYComponent instead of CPPComponent and in the content of the **defs** and **body** attributes that must contain 
-Python code and not C++ (warning with indentation, it is not automatically handled).
+Python code and not C++ (warning with indentation, the indentation of the complete block of code is automatically handled
+but not the internal indentation of the block).
 
 Example Python component::
 
@@ -445,7 +451,7 @@ The following Makefile is one of them::
      #compiler
      FC=gfortran
      #SALOME
-     KERNEL_ROOT_DIR=/local/chris/SALOME2/RELEASES/Install/KERNEL_V4_0
+     KERNEL_ROOT_DIR=/local/chris/SALOME/RELEASES/Install/KERNEL_V5
      KERNEL_INCLUDES=-I$(KERNEL_ROOT_DIR)/include/salome
      KERNEL_LIBS= -L$(KERNEL_ROOT_DIR)/lib/salome -lCalciumC -lSalomeDSCSuperv \
                   -lSalomeDSCContainer -lSalomeDatastream -lSalomeDSCSupervBasic \
@@ -488,8 +494,7 @@ The component uses the **aster_dir** attribute to locate the origin file.
 
 Supported Aster versions
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-YACSGEN can function with Aster 9.0 and 9.2 (probably with 9.1 but it has not been tested) and
-higher versions.
+YACSGEN can function with Aster 9 and higher versions.
 
 SALOME module generator
 -----------------------------------------------------------
@@ -507,8 +512,8 @@ The following parameters are mandatory for this context:
 Example creation of generator:: 
 
      context={'update':1,
-              "prerequisites":"/local/cchris/.packages.d/envSalome40",
-              "kernel":"/local/chris/SALOME2/RELEASES/Install/KERNEL_V4_0"
+              "prerequisites":"/local/cchris/.packages.d/envSalome",
+              "kernel":"/local/chris/SALOME/RELEASES/Install/KERNEL_V5"
               }
      g=Generator(m,context)
 
@@ -529,7 +534,7 @@ These commands do not use any parameters except for make_appli that uses 3 param
 - **appliname**:  the name of the directory that will contain the SALOME application
 - **restrict**:  a list of SALOME module names to put into the application.  By default, make_appli puts all SALOME modules 
   that it can detect into the application (neighbour directories of KERNEL with the same suffix as KERNEL.  If the directory 
-  of the KERNEL module is called KERNEL_V41, then it will use GUI_V41, GEOM_V41, etc.). If restrict is provided, make_appli will 
+  of the KERNEL module is called KERNEL_V5, then it will use GUI_V5, GEOM_V5, etc.). If restrict is provided, make_appli will 
   only use the modules listed.
 - **altmodules**:  a dictionary of other modules.  The key gives the name of the module.  The corresponding value gives the path 
   of the module installation directory.  For example ``altmodules={"mymodule":"/local/chris/amodule"}``
@@ -545,8 +550,8 @@ This gives something like the following for a module with a single Fortran compo
   from module_generator import PYComponent,CPPComponent,Service,F77Component
 
   context={"update":1,
-                   "prerequisites":"/local/cchris/.packages.d/envSalome40",
-                   "kernel":"/local/chris/SALOME2/RELEASES/Install/KERNEL_V4_0"
+                   "prerequisites":"/local/cchris/.packages.d/envSalome",
+                   "kernel":"/local/chris/SALOME/RELEASES/Install/KERNEL_V5"
                  }
   c3=F77Component("compo",
                   services=[
@@ -564,7 +569,7 @@ This gives something like the following for a module with a single Fortran compo
                   libs="-L/local/chris/modulegen/YACSGEN/fcompo -lfcompo"
                   rlibs="-Wl,--rpath -Wl,/local/chris/modulegen/YACSGEN/fcompo")
 
-  m=Module("toto",components=[c1],prefix="Install")
+  m=Module("mymodule",components=[c1],prefix="Install")
   g=Generator(m,context)
   g.generate()
   g.bootstrap()
@@ -577,7 +582,7 @@ If this description is in the mymodule.py file, all that is required is to execu
 
    python mymodule.py
 
-which has the effect of creating the module source directory (toto_SRC), the module installation directory (Install) and a 
+which has the effect of creating the module source directory (mymodule_SRC), the module installation directory (Install) and a 
 SALOME application directory (appli).
 
 Obviously, it must be possible to import the **module_generator** package either while being in the current directory or in the PYTHONPATH.
@@ -655,7 +660,7 @@ The following is an example of a YACS file using the Fortran component defined a
   </parameter>
   <parameter>
     <tonode>pipo1</tonode> <toport>c</toport>
-    <value><string>/local/cchris/SALOME2/SUPERV/YACS/modulegen/data1</string> </value>
+    <value><string>/local/cchris/SALOME/SUPERV/YACS/modulegen/data1</string> </value>
   </parameter>
   <parameter>
     <tonode>pipo2</tonode> <toport>a</toport>
@@ -667,7 +672,7 @@ The following is an example of a YACS file using the Fortran component defined a
   </parameter>
   <parameter>
     <tonode>pipo2</tonode> <toport>c</toport>
-    <value><string>/local/cchris/SALOME2/SUPERV/YACS/modulegen/data2</string> </value>
+    <value><string>/local/cchris/SALOME/SUPERV/YACS/modulegen/data2</string> </value>
   </parameter>
 
   </proc>
@@ -881,7 +886,7 @@ The following is an example of a C++ component modified to make it a standalone 
                              ),
                             ],
          kind="exe",
-         exe_path="/local/chris/SALOME2/SUPERV/YACS/modulegen/execpp_essai/prog",
+         exe_path="/local/SALOME/execpp/prog",
                      )
 
 The path given for **exe_path** corresponds to an executable with the following source::
@@ -927,7 +932,7 @@ The following is an example of a standalone Fortran component::
                              ),
                              ],
          kind="exe",
-         exe_path="/local/chris/SALOME2/SUPERV/YACS/modulegen/YACSGEN/fcompo/prog",
+         exe_path="/local/SALOME/fcompo/prog",
                                      )
 
 The path given for **exe_path** corresponds to an executable with the following source::
@@ -948,13 +953,11 @@ It cannot be replaced by a script, unless the installation is modified.
 
 Standalone Aster component
 ++++++++++++++++++++++++++++++++++++++++
-Slightly more work is necessary for an Aster component.  Four attributes have to be specified:
+Slightly more work is necessary for an Aster component.  Three attributes have to be specified:
 
 - the **aster_dir** attribute:  that gives the path of the *Code_Aster* installation
 - the **kind** attribute:  with the “exe” value
-- the **asrun** attribute:  that gives the access path to the as_run launcher
-- the **exe_path** attribute:  that gives the path of the DIRECTORY in which the generator will produce several files 
-  that will be used to start execution of *Code_Aster*.
+- the **exe_path** attribute:  that gives the path of the shell script that will be used when the component is started
 
 The following is an example description of a standalone Aster component::
 
@@ -975,27 +978,11 @@ The following is an example description of a standalone Aster component::
                  ),
          ],
          aster_dir="/aster/NEW9",
-         exe_path="/home/pora/CCAR/SALOME4/exeaster_essai",
-         asrun="/aster/ASTK/ASTK_SERV/bin/as_run",
          kind="exe",
+         exe_path="/home/SALOME5/exeaster",
          )
 
-The generator produces the following files in the **exe_path** directory:
-
-- **aster_component.py**:  that is the python executable that replaces the E_SUPERV.py standard executable.  It should not be modified
-- **E_SUPERV.py**:  a modification to the original file contained in ``bibpyt/Execution``.  It should not be modified.
-- **config.txt**:  the config.txt file for the *Code_Aster* installation, modified to change the python executable (ARGPYT).  
-  It can be modified except ARGPYT.
-- **profile.sh**:  a copy of the profile.sh file of the *Code_Aster* installation (to make it work).
-- **caster.comm**:  a startup command file that only contains the DEBUT command in PAR_LOT=”NON” mode.  It should not be modified.
-- **make_etude.export**:  A simplified as_run command file.  It is completed dynamically when starting to redirect 
-  files 6, 8 and 9 in REP/messages, REP/resu and RE/erre.  REP is the execution directory of the standalone component 
-  named:  <component>_inst_<N>.  <N> is an execution number that begins at 1.  <component> is the component name (caster in the example).  
-  This file can be modified particularly if Aster commands have been modified or added.
-
-Although the execution is started with a command file (caster.comm), the “effective” command file always has to be specified 
-in the XML coupling file. The only difference with a component in the form of a library is that this last command file 
-MUST NOT contain the DEBUT command (otherwise unexplainable crash).
+The “effective” command file always has to be specified in the XML coupling file. 
 
 Example coupling with standalone components
 ++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1005,8 +992,8 @@ written as follows::
   from module_generator import Generator,Module
   from module_generator import ASTERComponent,Service,F77Component
 
-  context={'update':1,"prerequisites":"/home/caremoli/pkg/env.sh",
-          "kernel":"/home/pora/CCAR/SALOME4/Install/KERNEL_V4_1"}
+  context={'update':1,"prerequisites":"/home/SALOME5/env.sh",
+          "kernel":"/home/SALOME5/Install/KERNEL_V5"}
 
   install_prefix="./exe_install"
   appli_dir="exe_appli"
@@ -1027,13 +1014,12 @@ written as follows::
                               ("bb","CALCIUM_double","I")],
                  ),
          ],
-         aster_dir="/aster/NEW9",
-         exe_path="/home/pora/CCAR/SALOME4/exeaster_essai",
-         asrun="/aster/ASTK/ASTK_SERV/bin/as_run",
          kind="exe",
+         aster_dir="/aster/NEW9",
+         exe_path="/home/SALOME5/exeaster",
          )
 
-  c2=F77Component("cedyos",services=[
+  c2=F77Component("cfort",services=[
           Service("s1",inport=[("a","double"),("b","long"),
                                ("c","string")],
                        outport=[("d","double"),("e","long"),
@@ -1051,10 +1037,10 @@ written as follows::
                        defs="",body="",
                  ),
          ],
-           exe_path="/home/pora/CCAR/SALOME4/exeedyos_essai/prog",
+           exe_path="/home/SALOME5/fcompo/prog",
            kind="exe")
 
-  g=Generator(Module("titi",components=[c1,c2],prefix=install_prefix),context)
+  g=Generator(Module("astmod",components=[c1,c2],prefix=install_prefix),context)
   g.generate()
   g.bootstrap()
   g.configure()
@@ -1063,5 +1049,5 @@ written as follows::
   g.make_appli(appli_dir,restrict=["KERNEL","YACS"])
 
 The corresponding xml coupling file and Aster command file may be viewed in the distribution (Examples/ast2 directory).  
-The complementary implantation elements are located in the fcompo directory (cedyos component) and in the myaster directory (caster component).
+The complementary implantation elements are located in the fcompo directory (cfort component) and in the myaster directory (caster component).
 

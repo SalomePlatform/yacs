@@ -104,7 +104,7 @@ YACS module writes description of a schema and its child objects into an XML fil
 
 Open/Save a study
 -----------------
-The user can start his work with the saved earlier study document. To open a saved study, the user has to activate common SALOME 4 GUI operation with help of **Open** command from :ref:`file` or **Open document** toolbar button on the :ref:`standard`. SALOME unpacks YACS XML files from the study. YACS module reads them and re-
+The user can start his work with the saved earlier study document. To open a saved study, the user has to activate common SALOME GUI operation with help of **Open** command from :ref:`file` or **Open document** toolbar button on the :ref:`standard`. SALOME unpacks YACS XML files from the study. YACS module reads them and re-
 creates the study structure. If XML files in a study have incorrect structure, YACS GUI says that the loaded study is incomplete by showing an error message.
 
 
@@ -263,6 +263,8 @@ By double clic on a YACS item of the Object Browser (Schema in edition or execut
 
 When a single object is selected in the **Tree View** of a schema, its context popup menu contains all operations applicable to objects of the given type.
 
+.. _Table_2:
+
 Specific operations available in the **edition mode** for each type of objects selected in the Tree View are given in the Table 2 below.
 
 
@@ -279,7 +281,6 @@ Specific operations available in the **edition mode** for each type of objects s
 .. |data| image:: images/data_link.png
 .. |stream| image:: images/stream_link.png
 
-.. _Table_2:
 
 +--------------------------------+-------------+-------------------------------------------------------------------------------------+
 | **Selected object type**       | **Icon**    |     **Available context menu commands**                                             |

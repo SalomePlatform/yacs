@@ -138,6 +138,17 @@ EditionScript::~EditionScript()
 {
 }
 
+void EditionScript::synchronize()
+{
+  EditionElementaryNode::synchronize();
+  YACS::ENGINE::InlineNode* pyNode = dynamic_cast<YACS::ENGINE::InlineNode*>(_subInlineNode->getNode());
+  YASSERT(pyNode);
+  disconnect(_sci, SIGNAL(textChanged()), this, SLOT(onScriptModified()));
+  _sci->clear();
+  _sci->append(pyNode->getScript().c_str());
+  connect(_sci, SIGNAL(textChanged()), this, SLOT(onScriptModified()));
+}
+
 void EditionScript::onApply()
 {
   bool scriptEdited = false;

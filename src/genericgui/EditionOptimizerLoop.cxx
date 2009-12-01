@@ -42,6 +42,7 @@ EditionOptimizerLoop::EditionOptimizerLoop(Subject* subject,
   : EditionNode(subject, parent, name)
 {
   _formEachLoop = new FormEachLoop(this);
+  _nbBranches = 1;
   _wid->gridLayout1->addWidget(_formEachLoop);
   _formEachLoop->sb_nbranch->setMinimum(1);
   _formEachLoop->sb_nbranch->setMaximum(INT_MAX);
@@ -49,8 +50,8 @@ EditionOptimizerLoop::EditionOptimizerLoop(Subject* subject,
   OptimizerLoop *ol = dynamic_cast<OptimizerLoop*>(node);
   if(ol)
     _formEachLoop->lineEdit->setText(ol->edGetSamplePort()->edGetType()->name());
-  connect(_formEachLoop->sb_nbranch, SIGNAL(valueChanged(const QString &)),
-          this, SLOT(onModifyNbBranches(const QString &)));
+  connect(_formEachLoop->sb_nbranch, SIGNAL(editingFinished()),
+          this, SLOT(onNbBranchesEdited()));
 
   _formEachLoop->label_3->setText("FileNameInitAlg");
   connect(_formEachLoop->lineEdit_2, SIGNAL(editingFinished()),this,SLOT(onModifyInitFile()));
@@ -91,6 +92,9 @@ void EditionOptimizerLoop::onModifyInitFile()
 void EditionOptimizerLoop::onModifyEntry()
 {
   DEBTRACE("EditionOptimizerLoop::onModifyEntry");
+  OptimizerLoop *oloop = dynamic_cast<OptimizerLoop*>(_subjectNode->getNode());
+  if(oloop->getSymbol() == _le_entry->text().toStdString()) return;
+
   bool isOk = false;
   SubjectOptimizerLoop *ol = dynamic_cast<SubjectOptimizerLoop*>(_subjectNode);
   isOk=ol->setAlgorithm(_le_lib->text().toStdString(),_le_entry->text().toStdString());
@@ -101,6 +105,9 @@ void EditionOptimizerLoop::onModifyEntry()
 void EditionOptimizerLoop::onModifyLib()
 {
   DEBTRACE("EditionOptimizerLoop::onModifyLib");
+  OptimizerLoop *oloop = dynamic_cast<OptimizerLoop*>(_subjectNode->getNode());
+  if(oloop->getAlgLib() == _le_lib->text().toStdString()) return;
+
   bool isOk = false;
   SubjectOptimizerLoop *ol = dynamic_cast<SubjectOptimizerLoop*>(_subjectNode);
   isOk=ol->setAlgorithm(_le_lib->text().toStdString(),_le_entry->text().toStdString());
@@ -109,11 +116,17 @@ void EditionOptimizerLoop::onModifyLib()
   DEBTRACE(isOk);
 }
 
-void EditionOptimizerLoop::onModifyNbBranches(const QString &text)
+void EditionOptimizerLoop::onNbBranchesEdited()
 {
-  SubjectOptimizerLoop *sol = dynamic_cast<SubjectOptimizerLoop*>(_subject);
-  YASSERT(sol);
-  sol->setNbBranches(text.toStdString());
+  int newval = _formEachLoop->sb_nbranch->value();
+  DEBTRACE("EditionOptimizerLoop::onNbBranchesEdited " << _nbBranches << " --> " << newval);
+  if (newval != _nbBranches)
+    {
+      SubjectOptimizerLoop *sol = dynamic_cast<SubjectOptimizerLoop*>(_subject);
+      YASSERT(sol);
+      QString text = _formEachLoop->sb_nbranch->cleanText();
+      sol->setNbBranches(text.toStdString());
+    }
 }
 
 void EditionOptimizerLoop::synchronize()
@@ -136,6 +149,7 @@ void EditionOptimizerLoop::update(GuiEvent event, int type, Subject* son)
       ss >> i;
       DEBTRACE(i);
       _formEachLoop->sb_nbranch->setValue(i);
+      _nbBranches = i;
 
       //init file
       InputPort* dp=_subjectNode->getNode()->getInputPort("FileNameInitAlg");

@@ -37,24 +37,30 @@ EditionWhile::EditionWhile(Subject* subject,
   : EditionNode(subject, parent, name)
 {
   _formWhile = new FormLoop(this);
+  _condition = 0;
   _wid->gridLayout1->addWidget(_formWhile);
   _formWhile->sb_nsteps->setMinimum(0);
   _formWhile->sb_nsteps->setMaximum(1);
   _formWhile->label->setText("Condition");
-  connect(_formWhile->sb_nsteps, SIGNAL(valueChanged(const QString &)),
-          this, SLOT(onModifyCondition(const QString &)));
+  connect(_formWhile->sb_nsteps, SIGNAL(editingFinished()),
+          this, SLOT(onConditionEdited()));
 }
 
 EditionWhile::~EditionWhile()
 {
 }
 
-void EditionWhile::onModifyCondition(const QString &text)
+void EditionWhile::onConditionEdited()
 {
-  DEBTRACE("EditionWhile::onModifyCondition " << text.toStdString());
-  SubjectWhileLoop *swl = dynamic_cast<SubjectWhileLoop*>(_subject);
-  YASSERT(swl);
-  swl->setCondition(text.toStdString());
+  int newval = _formWhile->sb_nsteps->value();
+  DEBTRACE("EditionWhile::onConditionEdited " << _condition << " --> " << newval);
+  if (newval != _condition)
+    {
+      SubjectWhileLoop *swl = dynamic_cast<SubjectWhileLoop*>(_subject);
+      YASSERT(swl);
+      QString text = _formWhile->sb_nsteps->cleanText();
+      swl->setCondition(text.toStdString());
+    }
 }
 
 void EditionWhile::synchronize()
@@ -79,6 +85,7 @@ void EditionWhile::update(GuiEvent event, int type, Subject* son)
       ss >> i;
       DEBTRACE(i);
       _formWhile->sb_nsteps->setValue(i);
+      _condition = i;
       break;
     }
 }

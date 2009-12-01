@@ -45,6 +45,7 @@ class Yacsgui: public SalomeWrap_Module
 
 public:
   Yacsgui();
+  virtual ~Yacsgui();
 
   void initialize( CAM_Application* app);
   void windows( QMap<int, int>& theMap) const;

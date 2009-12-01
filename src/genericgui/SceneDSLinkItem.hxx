@@ -35,7 +35,8 @@ namespace YACS
       virtual ~SceneDSLinkItem();
 
     protected:
-
+      virtual QColor getBrushColor();
+      virtual QColor getPenColor();
     };
   }
 }

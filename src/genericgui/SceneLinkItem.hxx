@@ -76,6 +76,8 @@ namespace YACS
                     QPointF pto,
                     HMI::Direction dir,
                     int thickness = 1);
+      virtual QColor getBrushColor();
+      virtual QColor getPenColor();
 
       QPainterPath _path;
       ScenePortItem* _from;

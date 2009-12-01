@@ -10,10 +10,10 @@ The YACS module can be used to build and execute calculation schemes.  A calcula
 assembly of calculation components (SALOME components or calculation codes).  Therefore, a calculation scheme provides 
 a means of defining a chain or coupling of calculation codes (see :ref:`principes`).
 
-
-.. figure:: images/ihm.png
+.. image:: images/ihm.png
    :align: center
 
+.. centered::
    YACS GUI
 
 A calculation scheme can be built either using a graphic tool (see :ref:`gui`), 
@@ -51,4 +51,5 @@ generates the necessary SALOME embedment starting from a brief description of th
    console
    python
    batch
+   optimizer
 

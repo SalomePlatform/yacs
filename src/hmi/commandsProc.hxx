@@ -46,6 +46,15 @@ namespace YACS
 
   namespace HMI
   {
+    class SubjectNode;
+    class SubjectInputPort;
+    class SubjectOutputPort;
+    class SubjectInputDataStreamPort;
+    class SubjectOutputDataStreamPort;
+    class SubjectLink;
+    class SubjectControlLink;
+    class SubjectContainer;
+    class SubjectComponent;
 
     typedef enum
       {
@@ -106,11 +115,12 @@ namespace YACS
                                 bool newCompoInst=true,
                                 int swCase =0);
       YACS::ENGINE::Node *getNode();
+      YACS::HMI::SubjectNode *getSubjectNode();
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
+      virtual std::string dump();
       YACS::ENGINE::Catalog* _catalog;
-      YACS::ENGINE::Node *_nodeToClone;
       TypeOfElem  _typeNode;
       std::string _compoName;
       std::string _typeName;
@@ -119,6 +129,7 @@ namespace YACS
       bool _newCompoInst;
       int _swCase;
       YACS::ENGINE::Node *_node;
+      YACS::HMI::SubjectNode *_snode;
     };
 
     class CommandReparentNode: public Command
@@ -129,8 +140,26 @@ namespace YACS
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
+      virtual std::string dump();
       std::string _position;
       std::string _newParent;
+      std::string _oldParent;
+      std::string _newpos;
+    };
+
+    class CommandPutInComposedNode: public Command
+    {
+    public:
+      CommandPutInComposedNode(std::string position,
+                        std::string newParent,std::string type);
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      virtual std::string dump();
+      std::string _position;
+      std::string _newParent;
+      std::string _type;
+      std::string _newpos;
     };
 
     class CommandCopyNode: public Command
@@ -143,8 +172,10 @@ namespace YACS
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
+      virtual std::string dump();
       std::string _position;
       std::string _newParent;
+      std::string _newName;
       YACS::ENGINE::Node *_clone;
       YACS::ENGINE::Proc *_fromproc;
     };
@@ -156,8 +187,11 @@ namespace YACS
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
+      virtual std::string dump();
       std::string _position;
       std::string _name;
+      std::string _oldName;
+      std::string _newpos;
     };
 
     class CommandRenameContainer: public Command
@@ -167,6 +201,7 @@ namespace YACS
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
+      virtual std::string dump();
       std::string _oldName;
       std::string _newName;
     };
@@ -176,13 +211,15 @@ namespace YACS
     public:
       CommandRenameInDataPort(std::string position,
                               std::string oldName,
-                              std::string newName);
+                              std::string newName, TypeOfElem portType);
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
+      virtual std::string dump();
       std::string _position;
       std::string _oldName;
       std::string _newName;
+      TypeOfElem _portType;
     };
 
     class CommandRenameOutDataPort: public Command
@@ -190,13 +227,15 @@ namespace YACS
     public:
       CommandRenameOutDataPort(std::string position,
                                std::string oldName,
-                               std::string newName);
+                               std::string newName, TypeOfElem portType);
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
+      virtual std::string dump();
       std::string _position;
       std::string _oldName;
       std::string _newName;
+      TypeOfElem _portType;
     };
 
     class CommandAddDataTypeFromCatalog: public Command
@@ -208,6 +247,7 @@ namespace YACS
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
+      virtual std::string dump();
       YACS::ENGINE::Catalog* _catalog;
       std::string _typeName;
     };
@@ -220,14 +260,17 @@ namespace YACS
                                      std::string node,
                                      std::string name);
       YACS::ENGINE::InputPort *getInputPort();
+      SubjectInputPort* getSubjectInputPort();
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
+      virtual std::string dump();
       YACS::ENGINE::Catalog* _catalog;
       std::string _typePort;
       std::string _node;
       std::string _name;
       YACS::ENGINE::InputPort *_inputPort;
+      SubjectInputPort* _sip;
     };
 
     class CommandAddOutputPortFromCatalog: public Command
@@ -238,14 +281,17 @@ namespace YACS
                                       std::string node,
                                       std::string name);
       YACS::ENGINE::OutputPort *getOutputPort();
+      SubjectOutputPort* getSubjectOutputPort();
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
+      virtual std::string dump();
       YACS::ENGINE::Catalog* _catalog;
       std::string _typePort;
       std::string _node;
       std::string _name;
       YACS::ENGINE::OutputPort *_outputPort;
+      SubjectOutputPort* _sop;
     };
 
     class CommandAddIDSPortFromCatalog: public Command
@@ -256,14 +302,17 @@ namespace YACS
                                    std::string node,
                                    std::string name);
       YACS::ENGINE::InputDataStreamPort *getIDSPort();
+      SubjectInputDataStreamPort* getSubjectIDSPort();
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
+      virtual std::string dump();
       YACS::ENGINE::Catalog* _catalog;
       std::string _typePort;
       std::string _node;
       std::string _name;
       YACS::ENGINE::InputDataStreamPort *_IDSPort;
+      SubjectInputDataStreamPort* _sip;
     };
 
     class CommandAddODSPortFromCatalog: public Command
@@ -274,14 +323,17 @@ namespace YACS
                                    std::string node,
                                    std::string name);
       YACS::ENGINE::OutputDataStreamPort *getODSPort();
+      SubjectOutputDataStreamPort* getSubjectODSPort();
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
+      virtual std::string dump();
       YACS::ENGINE::Catalog* _catalog;
       std::string _typePort;
       std::string _node;
       std::string _name;
       YACS::ENGINE::OutputDataStreamPort *_ODSPort;
+      SubjectOutputDataStreamPort* _sop;
     };
 
     class CommandOrderInputPorts: public Command
@@ -294,6 +346,7 @@ namespace YACS
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
+      virtual std::string dump();
       std::string _node;
       std::string _port;
       int _isUp;
@@ -310,6 +363,7 @@ namespace YACS
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
+      virtual std::string dump();
       std::string _node;
       std::string _port;
       int _isUp;
@@ -325,9 +379,11 @@ namespace YACS
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
+      virtual std::string dump();
       std::string _node;
       std::string _port;
       std::string _value;
+      std::string _oldValue;
     };
 
     class CommandSetOutPortValue: public Command
@@ -339,9 +395,11 @@ namespace YACS
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
+      virtual std::string dump();
       std::string _node;
       std::string _port;
       std::string _value;
+      std::string _oldValue;
     };
 
     class CommandSetSwitchSelect: public Command
@@ -352,8 +410,10 @@ namespace YACS
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
+      virtual std::string dump();
       std::string _switch;
       std::string _value;
+      std::string _oldValue;
     };
 
     class CommandSetSwitchCase: public Command
@@ -365,9 +425,12 @@ namespace YACS
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
+      virtual std::string dump();
       std::string _switch;
       std::string _node;
+      std::string _oldNode;
       std::string _value;
+      int _oldValue;
     };
 
     class CommandSetForLoopSteps: public Command
@@ -378,8 +441,10 @@ namespace YACS
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
+      virtual std::string dump();
       std::string _forLoop;
       std::string _value;
+      int _oldValue;
     };
 
     class CommandSetWhileCondition: public Command
@@ -390,8 +455,10 @@ namespace YACS
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
+      virtual std::string dump();
       std::string _whileLoop;
       std::string _value;
+      bool _oldValue;
     };
 
     class CommandSetForEachBranch: public Command
@@ -402,8 +469,10 @@ namespace YACS
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
+      virtual std::string dump();
       std::string _forEach;
       std::string _value;
+      int _oldValue;
     };
 
     class CommandSetAlgo: public Command
@@ -413,24 +482,31 @@ namespace YACS
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
+      virtual std::string dump();
       std::string _optimizer;
       std::string _alglib;
       std::string _symbol;
+      std::string _oldAlglib;
+      std::string _oldSymbol;
     };
 
     class CommandAddLink: public Command
     {
     public:
-      CommandAddLink(std::string outNode, std::string outPort,
-                     std::string inNode, std::string inPort,bool control=true);
+      CommandAddLink(std::string outNode, std::string outPort, TypeOfElem outPortType,
+                     std::string inNode, std::string inPort, TypeOfElem inPortType, bool control=true);
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
+      virtual std::string dump();
       std::string _outNode;
       std::string _outPort;
+      TypeOfElem _outPortType;
       std::string _inNode;
       std::string _inPort;
+      TypeOfElem _inPortType;
       bool _control;
+      bool _controlCreatedWithDF;
     };
 
     class CommandAddControlLink: public Command
@@ -440,6 +516,7 @@ namespace YACS
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
+      virtual std::string dump();
       std::string _outNode;
       std::string _inNode;
     };
@@ -449,13 +526,14 @@ namespace YACS
     public:
       CommandAddContainer(std::string name,
                           std::string refContainer ="");
-      virtual YACS::ENGINE::Container* getContainer();
+      SubjectContainer* getSubjectContainer() { return _subcont; };
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
+      virtual std::string dump();
       std::string _name;
       std::string _containerToClone;
-      YACS::ENGINE::Container* _container;
+      SubjectContainer *_subcont;
     };
 
     class CommandSetContainerProperties: public Command
@@ -466,8 +544,10 @@ namespace YACS
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
+      virtual std::string dump();
       std::string _container;
       std::map<std::string,std::string> _properties;
+      std::map<std::string,std::string> _oldProp;
     };
 
     class CommandSetDSPortProperties: public Command
@@ -478,10 +558,12 @@ namespace YACS
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
+      virtual std::string dump();
       std::string _nodeName;
       std::string _portName;
       bool _isInport;
       std::map<std::string,std::string> _properties;
+      std::map<std::string,std::string> _oldProp;
     };
 
     class CommandSetLinkProperties: public Command
@@ -493,11 +575,13 @@ namespace YACS
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
+      virtual std::string dump();
       std::string _startNodeName;
       std::string _startPortName;
       std::string _endNodeName;
       std::string _endPortName;
       std::map<std::string,std::string> _properties;
+      std::map<std::string,std::string> _oldProp;
     };
 
     class CommandSetFuncNodeFunctionName: public Command
@@ -507,8 +591,10 @@ namespace YACS
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
+      virtual std::string dump();
       std::string _nodeName;
       std::string _funcName;
+      std::string _oldName;
     };
 
     class CommandSetInlineNodeScript: public Command
@@ -518,20 +604,27 @@ namespace YACS
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
+      virtual std::string dump();
       std::string _nodeName;
       std::string _script;
+      std::string _oldScript;
     };
 
     class CommandAddComponentInstance: public Command
     {
     public:
-      CommandAddComponentInstance(std::string compoName);
-      virtual YACS::ENGINE::ComponentInstance* getComponentInstance();
+      CommandAddComponentInstance(std::string compoName,
+                                  std::string container,
+                                  std::string name ="");
+      SubjectComponent* getSubjectComponent() {return _subcompo; };
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
+      virtual std::string dump();
       std::string _compoName;
-      YACS::ENGINE::ComponentInstance *_compoInst;
+      std::string _container;
+      std::string _name;
+      SubjectComponent *_subcompo;
     };
 
     class CommandAssociateComponentToContainer: public Command
@@ -542,8 +635,10 @@ namespace YACS
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
+      virtual std::string dump();
       std::string _container;
       std::string _instanceName;
+      std::string _oldcont;
     };
 
     class CommandAssociateServiceToComponent: public Command
@@ -554,21 +649,53 @@ namespace YACS
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
+      virtual std::string dump();
       std::string _service;
       std::string _instanceName;
+      std::string _oldInstance;
     };
+
+    class CommandAddComponentFromCatalog: public Command
+    {
+    public:
+      CommandAddComponentFromCatalog(YACS::ENGINE::Catalog* catalog,
+                                     std::string position,
+                                     std::string compo,
+                                     std::string service);
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      virtual std::string dump();
+      YACS::ENGINE::Catalog* _catalog;
+      std::string _position;
+      std::string _compo;
+      std::string _service;
+      std::string _nameInProc;
+      bool _createdInstance;
+    };
+
 
     class Subject;
     class CommandDestroy: public Command
     {
     public:
-      CommandDestroy(std::string position, Subject* subject);
+      CommandDestroy(TypeOfElem elemType,
+                     std::string startnode, std::string startport, 
+                     std::string endnode, std::string endport);
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
+      virtual std::string dump();
     protected:
-      std::string _position;
-      Subject* _subject;
+      TypeOfElem _elemType;
+      std::string _startnode;
+      std::string _startport; 
+      std::string _endnode;
+      std::string _endport;
+
+//       std::string _position;
+//       Subject* _subject;
+//       std::string _name;
     };
 
   }

@@ -35,7 +35,7 @@ namespace YACS
       virtual void onModifyInitFile();
       virtual void onModifyEntry();
       virtual void onModifyLib();
-      virtual void onModifyNbBranches(const QString &text);
+      virtual void onNbBranchesEdited();
 
     public:
       EditionOptimizerLoop(Subject* subject,
@@ -48,6 +48,7 @@ namespace YACS
     protected:
       FormEachLoop *_formEachLoop;
       QLineEdit *_le_lib,*_le_entry;
+      int _nbBranches;
     };
   }
 }

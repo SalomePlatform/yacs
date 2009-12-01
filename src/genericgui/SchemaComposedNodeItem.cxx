@@ -60,8 +60,24 @@ SchemaComposedNodeItem::SchemaComposedNodeItem(SchemaItem *parent, QString label
   : SchemaItem(parent, label, subject)
 {
   DEBTRACE("SchemaComposedNodeItem::SchemaComposedNodeItem");
-  _itemDeco.replace(YLabel, QIcon("icons:block_node.png"));
-  _dirTypesItem = 0;
+  switch (subject->getType())
+    {
+    case YACS::HMI::BLOC: 
+      _itemDeco.replace(YLabel, QIcon("icons:block_node.png"));
+      break;
+    case YACS::HMI::FORLOOP: 
+    case YACS::HMI::FOREACHLOOP: 
+    case YACS::HMI::WHILELOOP: 
+    case YACS::HMI::OPTIMIZERLOOP: 
+      _itemDeco.replace(YLabel, QIcon("icons:loop_node.png"));
+      break;
+    case YACS::HMI::SWITCH: 
+      _itemDeco.replace(YLabel, QIcon("icons:switch_node.png"));
+      break;
+    default:
+      _itemDeco.replace(YLabel, QIcon("icons:block_node.png"));
+    }
+   _dirTypesItem = 0;
   _dirContainersItem = 0;
   _dirLinksItem = 0;
   Subject *son = 0;
@@ -189,10 +205,21 @@ void SchemaComposedNodeItem::update(GuiEvent event, int type, Subject* son)
             _dirTypesItem->addTypeItem(son);
           }
           break;
-//         default:
-//           DEBTRACE("SchemaComposedNodeItem::update() ADD, type not handled:" << type);
         }
       break;
+
+    case YACS::HMI::REMOVE:
+      switch (type)
+        {
+        case YACS::HMI::DATATYPE:
+          {
+            YASSERT(_dirTypesItem);
+            _dirTypesItem->removeTypeItem(son);
+          }
+          break;
+        }
+      break;
+
     case YACS::HMI::UPDATE:
       snode = dynamic_cast<SubjectNode*>(_subject);
       YASSERT(snode);

@@ -53,6 +53,7 @@ namespace YACS
       inline std::string getXMLSchema()                        {return _xmlSchema; };
       inline std::pair<std::string, std::string> getYACSCont() {return _YACSEngineContainer; }
       inline bool isNotSaved()                                 {return _isNotSaved; };
+      inline bool isLoading()                                  {return _isLoading; };
 
       inline void setSessionCatalog(YACS::ENGINE::Catalog* cata)           {_sessionCatalog = cata; };
       inline void setProcCatalog(YACS::ENGINE::Catalog* cata)              {_procCatalog = cata; };
@@ -60,6 +61,7 @@ namespace YACS
       inline void setXMLSchema(std::string xmlSchema)                      {_xmlSchema = xmlSchema; };
       inline void setYACSContainer(std::pair<std::string, std::string> yc) {_YACSEngineContainer = yc; };
       inline void setNotSaved(bool isNotSaved)                             {_isNotSaved = isNotSaved; };
+      inline void setLoading(bool isLoading)                               {_isLoading = isLoading; };
 
       inline static GuiContext* getCurrent()             {return _current; };
       inline static void setCurrent(GuiContext* context) { _current=context; };
@@ -85,6 +87,7 @@ namespace YACS
       YACS::HMI::SubjectProc *_subjectProc;
       long _numItem;
       bool _isNotSaved;
+      bool _isLoading;
       static GuiContext* _current;
       std::string _xmlSchema;
       std::pair<std::string, std::string> _YACSEngineContainer; // --- <ContainerName, HostName>

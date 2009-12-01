@@ -32,7 +32,7 @@ namespace YACS
       Q_OBJECT
 
     public slots:
-      virtual void onModifyNbSteps(const QString &text);
+      virtual void onNbStepsEdited();
 
     public:
       EditionLoop(Subject* subject,
@@ -45,6 +45,7 @@ namespace YACS
     protected:
       FormLoop *_formLoop;
       QLineEdit *_le_index;
+      int _nbsteps;
     };
   }
 }

@@ -164,6 +164,7 @@ void ComposedNodeMenu::popupMenu(QWidget *caller, const QPoint &globalPos, const
       menu.addAction(gmain->_cutItemAct);
       menu.addAction(gmain->_copyItemAct);
       menu.addAction(gmain->_pasteItemAct);
+      menu.addAction(gmain->_putInBlocAct);
     }
   else
     {
@@ -362,6 +363,7 @@ void ElementaryNodeMenu::popupMenu(QWidget *caller, const QPoint &globalPos, con
       menu.addAction(gmain->_cutItemAct);
       menu.addAction(gmain->_copyItemAct);
       menu.addAction(gmain->_pasteItemAct);
+      menu.addAction(gmain->_putInBlocAct);
     }
   else
     {
@@ -577,6 +579,7 @@ void ComponentInstanceMenu::popupMenu(QWidget *caller, const QPoint &globalPos, 
   if (isEdition)
     {
       menu.addAction(gmain->_selectComponentInstanceAct);
+      menu.addAction(gmain->_newSalomeComponentAct);
     }
   menu.exec(globalPos);
 }

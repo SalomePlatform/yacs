@@ -48,6 +48,7 @@ GuiContext::GuiContext()
   _subjectProc = 0;
   _numItem = 0;
   _isNotSaved = false;
+  _isLoading = false;
 
   _mapOfSubjectNode.clear();
   _mapOfSubjectDataPort.clear();
