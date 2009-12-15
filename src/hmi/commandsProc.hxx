@@ -680,8 +680,8 @@ namespace YACS
     {
     public:
       CommandDestroy(TypeOfElem elemType,
-                     std::string startnode, std::string startport, 
-                     std::string endnode, std::string endport);
+                     std::string startnode, std::string startport, TypeOfElem startportType,
+                     std::string endnode, std::string endport, TypeOfElem endportType);
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
@@ -690,8 +690,10 @@ namespace YACS
       TypeOfElem _elemType;
       std::string _startnode;
       std::string _startport; 
+      TypeOfElem _startportType;
       std::string _endnode;
       std::string _endport;
+      TypeOfElem _endportType;
 
 //       std::string _position;
 //       Subject* _subject;

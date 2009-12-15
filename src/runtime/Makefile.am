@@ -47,6 +47,7 @@ libYACSRuntimeSALOME_la_SOURCES =      \
 	PythonInitConv.cxx             \
 	PythonNode.cxx                 \
 	SalomePythonNode.cxx           \
+	DistributedPythonNode.cxx      \
 	SalomePythonComponent.cxx      \
 	SalomeContainer.cxx            \
 	PythonPorts.cxx                \
@@ -95,7 +96,7 @@ SALOMEDispatcher.hxx         SalomeProc.hxx       SalomePythonComponent.hxx  Sal
 SessionCataLoader.hxx        StudyNodes.hxx       StudyPorts.hxx             TypeConversions.hxx \
 VisitorSaveSalomeSchema.hxx  XMLCORBAConv.hxx     XMLCppConv.hxx             XMLNeutralConv.hxx \
 XMLNode.hxx                  XMLPorts.hxx         XMLPythonConv.hxx          PythonInitConv.hxx \
-NeutralInitConv.hxx SalomeOptimizerLoop.hxx
+NeutralInitConv.hxx SalomeOptimizerLoop.hxx DistributedPythonNode.hxx
 
 EXTRA_libYACSRuntimeSALOME_la_SOURCES =  \
 	$(__dummy__)

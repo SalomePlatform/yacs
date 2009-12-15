@@ -63,6 +63,7 @@
 #include "OutNode.hxx"
 #include "StudyNodes.hxx"
 #include "SalomePythonNode.hxx"
+#include "DistributedPythonNode.hxx"
 
 //CORBA proxy ports
 #include "CORBACORBAConv.hxx"
@@ -487,6 +488,8 @@ InlineFuncNode* RuntimeSALOME::createFuncNode(const std::string& kind,const std:
       node = new PyFuncNode(name);
       return node;
     }
+  if(kind == DistributedPythonNode::KIND)
+    return new DistributedPythonNode(name);
   std::string msg="FuncNode kind ("+kind+") unknown";
   throw Exception(msg);
 }

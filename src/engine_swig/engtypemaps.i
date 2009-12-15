@@ -66,6 +66,7 @@ catch (const CORBA::SystemException& ex) { \
 #include "ComposedNode.hxx"
 #include "ServiceNode.hxx"
 #include "ServiceInlineNode.hxx"
+#include "ServerNode.hxx"
 #include "Proc.hxx"
 #include "Bloc.hxx"
 #include "ForLoop.hxx"
@@ -131,6 +132,8 @@ static PyObject* convertNode(YACS::ENGINE::Node* node,int owner=0)
         ob=SWIG_NewPointerObj((void*)node,SWIGTYPE_p_YACS__ENGINE__ServiceInlineNode,owner);
       else if(dynamic_cast<YACS::ENGINE::ServiceNode *>(node))
         ob=SWIG_NewPointerObj((void*)node,SWIGTYPE_p_YACS__ENGINE__ServiceNode,owner);
+      else if(dynamic_cast<YACS::ENGINE::ServerNode *>(node))
+        ob=SWIG_NewPointerObj((void*)node,SWIGTYPE_p_YACS__ENGINE__ServerNode,owner);
       else if(dynamic_cast<YACS::ENGINE::ElementaryNode *>(node))
         ob=SWIG_NewPointerObj((void*)node,SWIGTYPE_p_YACS__ENGINE__ElementaryNode,owner);
       else
@@ -378,6 +381,11 @@ static PyObject* convertPort(YACS::ENGINE::Port* port,int owner=0)
 }
 
 %typemap(out) YACS::ENGINE::InlineNode*
+{
+  $result=convertNode($1,$owner);
+}
+
+%typemap(out) YACS::ENGINE::InlineFuncNode*
 {
   $result=convertNode($1,$owner);
 }

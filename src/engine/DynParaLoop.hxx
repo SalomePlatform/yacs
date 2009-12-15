@@ -103,6 +103,8 @@ namespace YACS
       void putValueOnBranch(Any *val, unsigned branchId, bool first);
       TypeOfNode getIdentityOfNotifyerNode(const Node *node, unsigned& id);
       InputPort *getDynInputPortByAbsName(int branchNb, const std::string& name, bool initNodeAdmitted);
+      virtual void forwardExecStateToOriginalBody(Node *execNode);
+      virtual YACS::Event updateStateOnFailedEventFrom(Node *node);
     };
   }
 }

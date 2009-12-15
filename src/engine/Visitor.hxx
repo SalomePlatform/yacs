@@ -39,6 +39,7 @@ namespace YACS
     class ForLoop;
     class Proc;
     class ServiceNode;
+    class ServerNode;
     class ServiceInlineNode;
     class DataNode;
     class Switch;
@@ -61,6 +62,7 @@ namespace YACS
       virtual void visitLoop(Loop *node) = 0;
       virtual void visitProc(Proc *node) = 0;
       virtual void visitServiceNode(ServiceNode *node) = 0;
+      virtual void visitServerNode(ServerNode *node) = 0;
       virtual void visitServiceInlineNode(ServiceInlineNode *node) = 0;
       virtual void visitSwitch(Switch *node) = 0;
       virtual void visitWhileLoop(WhileLoop *node) = 0;

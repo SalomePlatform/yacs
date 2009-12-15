@@ -50,6 +50,7 @@ libYACSlibEngine_la_SOURCES =             \
 	ComposedNode.cxx               \
 	InlineNode.cxx                 \
 	ServiceNode.cxx                \
+	ServerNode.cxx                 \
 	ServiceInlineNode.cxx          \
 	StaticDefinedComposedNode.cxx  \
 	Bloc.cxx                       \
@@ -93,7 +94,7 @@ OutGate.hxx              OutPort.hxx       OutputDataStreamPort.hxx        Outpu
 Port.hxx                 Proc.hxx          RefCounter.hxx                  Runtime.hxx                    Scheduler.hxx \
 ServiceInlineNode.hxx    ServiceNode.hxx   SharedPtr.hxx                   StaticDefinedComposedNode.hxx  Switch.hxx \
 Task.hxx                 TypeCode.hxx      Visitor.hxx                     VisitorSaveSchema.hxx          VisitorSaveState.hxx \
-WhileLoop.hxx            PropertyInterface.hxx      AnyOutputPort.hxx \
+WhileLoop.hxx            PropertyInterface.hxx      AnyOutputPort.hxx  ServerNode.hxx \
 	     $(__dummy__)
 
 

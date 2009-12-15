@@ -643,6 +643,16 @@ void GenericGui::createActions()
                                     0, _parent, false, this,  SLOT(onRedo()));
   _redoAct->setShortcut(QKeySequence::Redo);
   
+  pixmap.load("icons:undo.png");
+  _showUndoAct = _wrapper->createAction(getMenuId(), tr("show undo commands"), QIcon(pixmap),
+                                        tr("show undo"), tr("show undo commands"),
+                                        0, _parent, false, this,  SLOT(onShowUndo()));
+  
+  pixmap.load("icons:redo.png");
+  _showRedoAct = _wrapper->createAction(getMenuId(), tr("show redo commands"), QIcon(pixmap),
+                                        tr("show redo"), tr("show redo commands"),
+                                        0, _parent, false, this,  SLOT(onShowRedo()));
+  
 
   _execModeGroup = new QActionGroup(this);
   _execModeGroup->addAction(_withoutStopModeAct);
@@ -675,6 +685,8 @@ void GenericGui::createMenus()
   _wrapper->createMenu( _wrapper->separator(), aMenuId);
   _wrapper->createMenu( _undoAct, aMenuId );
   _wrapper->createMenu( _redoAct, aMenuId );
+  _wrapper->createMenu( _showUndoAct, aMenuId );
+  _wrapper->createMenu( _showRedoAct, aMenuId );
   _wrapper->createMenu( _wrapper->separator(), aMenuId);
   _wrapper->createMenu( _startResumeAct, aMenuId );
   _wrapper->createMenu( _abortAct, aMenuId );
@@ -785,6 +797,8 @@ void GenericGui::showEditionMenus(bool show)
   _wrapper->setToolShown(_undoAct, show);
   _wrapper->setMenuShown(_redoAct, show);
   _wrapper->setToolShown(_redoAct, show);
+  _wrapper->setMenuShown(_showUndoAct, show);
+  _wrapper->setMenuShown(_showRedoAct, show);
   _wrapper->setMenuShown(_loadBatchAct, show);
   _wrapper->setToolShown(_loadBatchAct, show);
   _wrapper->setMenuShown(_importCatalogAct, show);
@@ -1011,17 +1025,17 @@ std::list<std::string> GenericGui::getMachineList()
   Engines::ResourcesManager_var resManager = Engines::ResourcesManager::_narrow(obj);
   if(!resManager) return _machineList;
 
-  Engines::MachineParameters params;
+  Engines::ResourceParameters params;
   lcc.preSet(params);
 
-  Engines::MachineList* machineList =
+  Engines::ResourceList* resourceList =
     resManager->GetFittingResources(params);
 
-  for (int i = 0; i < machineList->length(); i++)
-    {
-      const char* aMachine = (*machineList)[i];
-      _machineList.push_back(aMachine);
-    }
+  for (int i = 0; i < resourceList->length(); i++)
+  {
+    const char* aResource = (*resourceList)[i];
+    _machineList.push_back(aResource);
+  }
 
   return _machineList;
 }
@@ -2361,6 +2375,16 @@ void GenericGui::onRedo()
 {
   DEBTRACE("GenericGui::onRedo");
   QtGuiContext::getQtCurrent()->getInvoc()->redo();
+}
+
+void GenericGui::onShowUndo()
+{
+  _guiEditor->showUndo(_parent);
+}
+
+void GenericGui::onShowRedo()
+{
+  _guiEditor->showRedo(_parent);
 }
 
 void GenericGui::onCleanOnExit()

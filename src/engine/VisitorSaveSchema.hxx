@@ -72,6 +72,7 @@ namespace YACS
       virtual void visitLoop(Loop *node);
       virtual void visitProc(Proc *node);
       virtual void visitServiceNode(ServiceNode *node);
+      virtual void visitServerNode(ServerNode *node);
       virtual void visitServiceInlineNode(ServiceInlineNode *node);
       virtual void visitSwitch(Switch *node);
       virtual void visitWhileLoop(WhileLoop *node);

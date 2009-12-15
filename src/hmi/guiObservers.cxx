@@ -241,6 +241,8 @@ bool Subject::destroy(Subject *son)
   string endnode = "";
   string startport = "";
   string endport = "";
+  TypeOfElem startportType;
+  TypeOfElem endportType;
 
   if (dynamic_cast<SubjectProc*>(son))
     startnode = proc->getName();
@@ -256,6 +258,7 @@ bool Subject::destroy(Subject *son)
           SubjectNode *subNodep = dynamic_cast<SubjectNode*>(son->getParent());
           startnode = proc->getChildName(subNodep->getNode());
           startport = son->getName();
+          startportType = son->getType();
         }
       else if (SubjectLink* slink = dynamic_cast<SubjectLink*>(son))
         {
@@ -263,6 +266,8 @@ bool Subject::destroy(Subject *son)
           endnode = proc->getChildName(slink->getSubjectInNode()->getNode());
           startport = slink->getSubjectOutPort()->getName();
           endport = slink->getSubjectInPort()->getName();
+          startportType = slink->getSubjectOutPort()->getType();
+          endportType = slink->getSubjectInPort()->getType();
        }
       else if (SubjectControlLink* sclink = dynamic_cast<SubjectControlLink*>(son))
         {
@@ -273,7 +278,7 @@ bool Subject::destroy(Subject *son)
     }
   if (son->isDestructible())
     {
-      CommandDestroy* command = new CommandDestroy(son->getType(), startnode, startport, endnode, endport);
+      CommandDestroy* command = new CommandDestroy(son->getType(), startnode, startport, startportType, endnode, endport, endportType);
       if (command->execute())
         {
           DEBTRACE("Destruction done: " << toDestroy);

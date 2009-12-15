@@ -58,6 +58,7 @@
 #include "TypeCode.hxx"
 #include "VisitorSaveSalomeSchema.hxx"
 #include "SalomeOptimizerLoop.hxx"
+#include "DistributedPythonNode.hxx"
 #include <sstream>
 %}
 
@@ -126,6 +127,7 @@
 %include "StudyNodes.hxx"
 %include "StudyPorts.hxx"
 %include "SalomeOptimizerLoop.hxx"
+%include "DistributedPythonNode.hxx"
 
 %extend YACS::ENGINE::OutputPresetPort
 {

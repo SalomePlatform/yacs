@@ -21,6 +21,7 @@
 #include "ElementaryNode.hxx"
 #include "InlineNode.hxx"
 #include "ServiceNode.hxx"
+#include "ServerNode.hxx"
 #include "ServiceInlineNode.hxx"
 #include "Bloc.hxx"
 #include "Proc.hxx"
@@ -324,6 +325,43 @@ void VisitorSaveSchema::visitServiceNode(ServiceNode *node)
   _out << indent(depth) << "</service>" << endl;
   endCase(node);
   DEBTRACE("END visitServiceNode " << _root->getChildName(node));
+}
+
+void VisitorSaveSchema::visitServerNode(ServerNode *node)
+{
+  DEBTRACE("START visitServerNode " << _root->getChildName(node));
+  beginCase(node);
+  int depth = depthNode(node);
+  _out << indent(depth) << "<server name=\"" << node->getName() << "\"";
+  if (node->getState() == YACS::DISABLED)
+    _out << " state=\"disabled\">" << endl;
+  else
+    _out << ">" << endl;
+  Container *cont = node->getContainer();
+  map<string, Container*>::const_iterator it;
+  for (it = _containerMap.begin(); it != _containerMap.end(); ++it)
+    {
+      if (it->second == cont) break;
+    }
+  if (it != _containerMap.end())
+    _out << indent(depth+1) << "<loadcontainer>" << it->first << "</loadcontainer>" << endl;
+  /*else
+    {
+      _out << indent(depth+1) << "<node>" << _contnentInstanceMap[cont] << "</node>" << endl;
+      }*/
+  _out << indent(depth+1) << "<method>" << node->getFname() << "</method>" << endl;
+  _out << indent(depth+2) << "<script><code><![CDATA[";
+  _out << node->getScript();
+  _out << "]]></code></script>" << endl;
+  //_out << indent(depth+1) << "</function>" << endl;
+  writeProperties(node);
+  writeInputPorts(node);
+  writeInputDataStreamPorts(node);
+  writeOutputPorts(node);
+  writeOutputDataStreamPorts(node);
+  _out << indent(depth) << "</server>" << endl;
+  endCase(node);
+  DEBTRACE("END visitServerNode " << _root->getChildName(node));
 }
 
 void VisitorSaveSchema::visitServiceInlineNode(ServiceInlineNode *node)

@@ -66,13 +66,11 @@ void YACS_Swig::activate(const std::string& module)
 
 void YACS_Swig::real_activate(const std::string& module)
 {
-  std::cerr << "YACS_Swig::real_activate" << std::endl;
   SalomeApp_Application* app = dynamic_cast<SalomeApp_Application*>(SUIT_Session::session()->activeApplication());
   if (!app) return;
   SalomeApp_Study* ActiveStudy = dynamic_cast<SalomeApp_Study*>(app->activeStudy());
   if (!ActiveStudy) return;
-  std::cerr << "YACS_Swig::real_activate before activateModule" << std::endl;
-  app->activateModule( "YACS" );
+  app->activateModule(QString::fromStdString(module));
 }
 
 //! Load a schema in edit mode or in run mode
@@ -82,7 +80,6 @@ void YACS_Swig::real_activate(const std::string& module)
  */
 void YACS_Swig::loadSchema(const std::string& filename,bool edit)
 {
-  std::cerr << "YACS_Swig::loadSchema" << std::endl;
   class TEvent: public SALOME_Event
   {
     YACS_Swig* _obj;
@@ -95,7 +92,6 @@ void YACS_Swig::loadSchema(const std::string& filename,bool edit)
 	ed=edit;
       };
       virtual void Execute() {
-	std::cerr << "Execute " << _obj << std::endl;
 	_obj->real_loadSchema(fn,ed);
       };
   };
@@ -104,7 +100,6 @@ void YACS_Swig::loadSchema(const std::string& filename,bool edit)
 
 void YACS_Swig::real_loadSchema(const std::string& filename,bool edit)
 {
-  std::cerr << "YACS_Swig::real_loadSchema" << std::endl;
   SalomeApp_Application* app = dynamic_cast<SalomeApp_Application*>(SUIT_Session::session()->activeApplication());
   if (!app) return;
   app->activateModule( "YACS" );

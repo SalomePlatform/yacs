@@ -28,6 +28,7 @@
 #include "InputPort.hxx"
 #include "InlineNode.hxx"
 #include "ServiceNode.hxx"
+#include "ServerNode.hxx"
 #include "ServiceInlineNode.hxx"
 #include "DataNode.hxx"
 
@@ -270,6 +271,10 @@ void VisitorSaveState::visitServiceNode(ServiceNode *node)
   visitElementaryNode(node);
 }
 
+void VisitorSaveState::visitServerNode(ServerNode *node)
+{
+  visitElementaryNode(node);
+}
 
 void VisitorSaveState::visitServiceInlineNode(ServiceInlineNode *node)
 {

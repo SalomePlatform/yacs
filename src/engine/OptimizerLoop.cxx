@@ -185,12 +185,12 @@ void FakeNodeForOptimizerLoop::execute()
 
 void FakeNodeForOptimizerLoop::aborted()
 {
-  _loop->_state=YACS::ERROR;
+  _loop->setState(YACS::ERROR);
 }
 
 void FakeNodeForOptimizerLoop::finished()
 {
-  
+  _loop->setState(YACS::DONE);
 }
 
 /*! \class YACS::ENGINE::OptimizerLoop
@@ -252,7 +252,7 @@ void OptimizerLoop::exUpdateState()
     return;
   if(_inGate.exIsReady())
     {
-      _state=YACS::TOACTIVATE;
+      setState(YACS::TOACTIVATE);
       //internal graph update
       int i;
       int nbOfBr=_nbOfBranches.getIntValue();
@@ -383,7 +383,21 @@ YACS::Event OptimizerLoop::updateStateOnFinishedEventFrom(Node *node)
           _execIds[id]=NOT_RUNNING_BRANCH_ID;
           if(!isFullyLazy())// This case happens when the hand is returned to continue, whereas some other are working in parallel for nothing.
             _convergenceReachedWithOtherCalc=true;
-          _state=YACS::DONE;
+          setState(YACS::DONE);
+          //update internal node (definition node) state
+          if (_node)
+            {
+              _node->setState(YACS::DONE);
+              ComposedNode* compNode = dynamic_cast<ComposedNode*>(_node);
+              if (compNode)
+                {
+                  std::list<Node *> aChldn = compNode->getAllRecursiveConstituents();
+                  std::list<Node *>::iterator iter=aChldn.begin();
+                  for(;iter!=aChldn.end();iter++)
+                    (*iter)->setState(YACS::DONE);
+                }
+            }
+
           return YACS::FINISH;
         }
       _execIds[id]=NOT_RUNNING_BRANCH_ID;
@@ -398,8 +412,8 @@ YACS::Event OptimizerLoop::updateStateOnFinishedEventFrom(Node *node)
           if(isFinished)
             {
               std::cerr <<"OptimizerLoop::updateStateOnFinishedEventFrom: Alg has not inserted more cases whereas last element has been calculated !" << std::endl;
+              setState(YACS::ERROR);
               exForwardFailed();
-              _state=YACS::INTERNALERR;
               return YACS::FINISH;
             }
           return YACS::NOEVENT;

@@ -29,6 +29,7 @@ UIC_FILES =       \
   ui_FormEditTree.h   \
   ui_FormLoop.h       \
   ui_FormSchemaView.h \
+  ui_FormUndoRedo.h   \
   ui_LogViewer.h      \
   ui_TablePorts.h     \
   ui_TableSwitch.h    \
@@ -45,6 +46,7 @@ EXTRA_DIST =        \
   FormEditTree.ui   \
   FormLoop.ui       \
   FormSchemaView.ui \
+  FormUndoRedo.ui   \
   LogViewer.ui      \
   TablePorts.ui     \
   TableSwitch.ui    \
@@ -116,6 +118,8 @@ libGenericGui_la_SOURCES =        \
   FormLoop.cxx                    \
   FormSchemaView.hxx              \
   FormSchemaView.cxx              \
+  FormUndoRedo.hxx                \
+  FormUndoRedo.cxx                \
   GenericGui.hxx                  \
   GenericGui.cxx                  \
   GraphicsView.hxx                \
@@ -265,6 +269,7 @@ MOC_FILES = \
   FormEditTree_moc.cxx            \
   FormLoop_moc.cxx                \
   FormSchemaView_moc.cxx          \
+  FormUndoRedo_moc.cxx            \
   GenericGui_moc.cxx              \
   GraphicsView_moc.cxx            \
   ItemEdition_moc.cxx             \

@@ -24,7 +24,7 @@
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
-#include <strstream>
+#include <sstream>
 
 using namespace std;
 

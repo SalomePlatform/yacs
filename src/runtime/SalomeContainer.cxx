@@ -52,35 +52,42 @@ using namespace std;
 
 SalomeContainer::SalomeContainer():_trueCont(Engines::Container::_nil()),_type("mono")
 {
-  /* Init MachinesParameters */
+  /* Init ContainerParameters */
   _params.container_name = "";
-  _params.hostname = "";
-  _params.OS = "";
-  _params.mem_mb = 0;
-  _params.cpu_clock = 0;
-  _params.nb_proc_per_node = 0;
-  _params.nb_node = 0;
+  _params.mode= "start";
+  _params.workingdir= "";
+  _params.nb_proc = 0;
   _params.isMPI = false;
   _params.parallelLib = "";
-  _params.nb_component_nodes = 0;
-  _params.workingdir= "";
-  _params.mode= "start";
+
+  _params.resource_params.name = "";
+  _params.resource_params.hostname = "";
+  _params.resource_params.OS = "";
+  _params.resource_params.nb_proc = 0;
+  _params.resource_params.mem_mb = 0;
+  _params.resource_params.cpu_clock = 0;
+  _params.resource_params.nb_node = 0;
+  _params.resource_params.nb_proc_per_node = 0;
+  _params.resource_params.policy = "";
 }
 
 SalomeContainer::SalomeContainer(const SalomeContainer& other):Container(other),_trueCont(Engines::Container::_nil()),_type(other._type)
 {
   _params.container_name = CORBA::string_dup(other._params.container_name);
-  _params.hostname = CORBA::string_dup(other._params.hostname);
-  _params.OS = CORBA::string_dup(other._params.OS);
-  _params.mem_mb = other._params.mem_mb;
-  _params.cpu_clock = other._params.cpu_clock;
-  _params.nb_proc_per_node = other._params.nb_proc_per_node;
-  _params.nb_node = other._params.nb_node;
+  _params.mode= CORBA::string_dup(other._params.mode);
+  _params.workingdir= CORBA::string_dup(other._params.workingdir);
+  _params.nb_proc = other._params.nb_proc;
   _params.isMPI = other._params.isMPI;
   _params.parallelLib = CORBA::string_dup(other._params.parallelLib);
-  _params.nb_component_nodes = other._params.nb_component_nodes;
-  _params.workingdir= CORBA::string_dup(other._params.workingdir);
-  _params.mode= CORBA::string_dup(other._params.mode);
+
+  _params.resource_params.name = CORBA::string_dup(other._params.resource_params.name);
+  _params.resource_params.hostname = CORBA::string_dup(other._params.resource_params.hostname);
+  _params.resource_params.OS = CORBA::string_dup(other._params.resource_params.OS);
+  _params.resource_params.nb_proc = other._params.resource_params.nb_proc;
+  _params.resource_params.mem_mb = other._params.resource_params.mem_mb;
+  _params.resource_params.cpu_clock = other._params.resource_params.cpu_clock;
+  _params.resource_params.nb_node = other._params.resource_params.nb_node;
+  _params.resource_params.nb_proc_per_node = other._params.resource_params.nb_proc_per_node;
 }
 
 SalomeContainer::~SalomeContainer()
@@ -117,76 +124,74 @@ void SalomeContainer::checkCapabilityToDealWith(const ComponentInstance *inst) c
 void SalomeContainer::setProperty(const std::string& name, const std::string& value)
 {
   DEBTRACE("SalomeContainer::setProperty : " << name << " ; " << value);
-  
+   
+  // Container Part
   if (name == "container_name")
     _params.container_name = CORBA::string_dup(value.c_str());
-  else if (name == "hostname")
-    _params.hostname = CORBA::string_dup(value.c_str());
-  else if (name == "OS")
-    _params.OS = CORBA::string_dup(value.c_str());
-  else if (name == "parallelLib")
-    _params.parallelLib = CORBA::string_dup(value.c_str());
+  else if (name == "type")
+  {
+    if (value == "mono")
+      _params.mode = "start";
+    else if (value == "multi")
+      _params.mode = "getorstart";
+    else 
+      throw Exception("SalomeContainer::setProperty : type value is not correct (mono or multi): " + value);
+    _type=value;
+  }
   else if (name == "workingdir")
     _params.workingdir = CORBA::string_dup(value.c_str());
+  else if (name == "nb_component_nodes") // TODO - TO Change.... in two nb_proc
+  {
+    std::istringstream iss(value);
+    if (!(iss >> _params.nb_proc))
+      throw Exception("salomecontainer::setproperty : params.nb_component_nodes value not correct : " + value);
+    if (!(iss >> _params.resource_params.nb_proc))
+      throw Exception("salomecontainer::setproperty : params.nb_component_nodes value not correct : " + value);
+  }
   else if (name == "isMPI")
-    {
-      if (value == "true")
-        _params.isMPI = true;
-      else if (value == "false")
-        _params.isMPI = false;
-      else 
-        throw Exception("SalomeContainer::setProperty : params.isMPI value not correct : " + value);
-    }
-  else if (name == "mem_mb")
-    {
-      std::istringstream iss(value);
-      if (!(iss >> _params.mem_mb))
-        throw Exception("salomecontainer::setproperty : params.mem_mb value not correct : " + value);
-    }
-  else if (name == "cpu_clock")
-    {
-      std::istringstream iss(value);
-      if (!(iss >> _params.cpu_clock))
-        throw Exception("salomecontainer::setproperty : params.cpu_clock value not correct : " + value);
-    }
-  else if (name == "nb_proc_per_node")
-    {
-      std::istringstream iss(value);
-      if (!(iss >> _params.nb_proc_per_node))
-        throw Exception("salomecontainer::setproperty : params.nb_proc_per_node value not correct : " + value);
-    }
-  else if (name == "nb_node")
-    {
-      std::istringstream iss(value);
-      if (!(iss >> _params.nb_node))
-        throw Exception("salomecontainer::setproperty : params.nb_node value not correct : " + value);
-    }
-  else if (name == "nb_component_nodes")
-    {
-      std::istringstream iss(value);
-      if (!(iss >> _params.nb_component_nodes))
-        throw Exception("salomecontainer::setproperty : params.nb_component_nodes value not correct : " + value);
-    }
-  else if (name == "type")
-    {
-      if (value == "mono")
-        _params.mode = "start";
-      else if (value == "multi")
-        _params.mode = "getorstart";
-      else 
-        throw Exception("SalomeContainer::setProperty : type value is not correct (mono or multi): " + value);
-      _type=value;
-    }
-  Container::setProperty(name, value);
-}
+  {
+    if (value == "true")
+      _params.isMPI = true;
+    else if (value == "false")
+      _params.isMPI = false;
+    else 
+      throw Exception("SalomeContainer::setProperty : params.isMPI value not correct : " + value);
+  }
+  else if (name == "parallelLib")
+    _params.parallelLib = CORBA::string_dup(value.c_str());
 
-bool SalomeContainer::isAPaCOContainer() const
-{
-  bool result = false;
-  string parallelLib(_params.parallelLib);
-  if (parallelLib != "")
-    result = true;
-  return result;
+  // Resource part
+  else if (name == "name")
+    _params.resource_params.name = CORBA::string_dup(value.c_str());
+  else if (name == "hostname")
+    _params.resource_params.hostname = CORBA::string_dup(value.c_str());
+  else if (name == "OS")
+    _params.resource_params.OS = CORBA::string_dup(value.c_str());
+  else if (name == "mem_mb")
+  {
+    std::istringstream iss(value);
+    if (!(iss >> _params.resource_params.mem_mb))
+      throw Exception("salomecontainer::setproperty : params.mem_mb value not correct : " + value);
+  }
+  else if (name == "cpu_clock")
+  {
+    std::istringstream iss(value);
+    if (!(iss >> _params.resource_params.cpu_clock))
+      throw Exception("salomecontainer::setproperty : params.cpu_clock value not correct : " + value);
+  }
+  else if (name == "nb_node")
+  {
+    std::istringstream iss(value);
+    if (!(iss >> _params.resource_params.nb_node))
+      throw Exception("salomecontainer::setproperty : params.nb_node value not correct : " + value);
+  }
+  else if (name == "nb_proc_per_node")
+  {
+    std::istringstream iss(value);
+    if (!(iss >> _params.resource_params.nb_proc_per_node))
+      throw Exception("salomecontainer::setproperty : params.nb_proc_per_node value not correct : " + value);
+  }
+  Container::setProperty(name, value);
 }
 
 void SalomeContainer::addComponentName(std::string name)
@@ -234,15 +239,7 @@ CORBA::Object_ptr SalomeContainer::loadComponent(const ComponentInstance *inst)
           if(!value.empty())
             studyid= atoi(value.c_str());
         }
-
-      if (isAPaCOContainer())
-        {
-          std::string compo_paco_name(componentName);
-          char * c_paco_name = CORBA::string_dup(compo_paco_name.c_str());
-          objComponent=container->create_component_instance(c_paco_name, studyid);
-        }
-      else
-        objComponent=container->create_component_instance(componentName, studyid);
+      objComponent=container->create_component_instance(componentName, studyid);
     }
 
   if(CORBA::is_nil(objComponent))
@@ -310,7 +307,28 @@ bool SalomeContainer::isAlreadyStarted(const ComponentInstance *inst) const
     }
 }
 
-//! Start a salome container (true salome container not yacs one) with given MachineParameters (_params)
+Engines::Container_ptr SalomeContainer::getContainerPtr(const ComponentInstance *inst) const
+{
+  if(_type=="mono")
+    {
+      if(CORBA::is_nil(_trueCont))
+        return Engines::Container::_nil();
+      else
+        return Engines::Container::_duplicate(_trueCont);
+    }
+  else
+    {
+      if(_trueContainers.count(inst)==0)
+        return Engines::Container::_nil();
+      else
+        {
+          std::map<const ComponentInstance *,Engines::Container_var>::const_iterator iter=_trueContainers.find(inst);
+          return Engines::Container::_duplicate(iter->second);
+        }
+    }
+}
+
+//! Start a salome container (true salome container not yacs one) with given ContainerParameters (_params)
 /*!
  * \param inst the component instance
  */
@@ -335,7 +353,7 @@ void SalomeContainer::start(const ComponentInstance *inst) throw(YACS::Exception
   //If not found start a new container with the given parameters
   if (_type=="mono" && str != "")
     {
-      std::string machine(_params.hostname);
+      std::string machine(_params.resource_params.hostname);
       if(machine == "" || machine == "localhost")
         //machine=Kernel_Utils::GetHostname();
         machine=Kernel_Utils::GetHostname();
@@ -350,27 +368,27 @@ void SalomeContainer::start(const ComponentInstance *inst) throw(YACS::Exception
         }
     }
 
-  Engines::MachineParameters myparams=_params;
+  Engines::ContainerParameters myparams=_params;
 
   if (str == "")
-    {
-      //give a almost unique name to the container : Pid_Name_Addr
-      std::ostringstream stream;
-      stream << getpid();
-      stream << "_";
-      stream << _name;
-      stream << "_";
-      stream << (void *)(this);
-      DEBTRACE("container_name="<<stream.str());
-      myparams.container_name=CORBA::string_dup(stream.str().c_str());
-    }
-  myparams.componentList.length(_componentNames.size());
+  {
+    //give a almost unique name to the container : Pid_Name_Addr
+    std::ostringstream stream;
+    stream << getpid();
+    stream << "_";
+    stream << _name;
+    stream << "_";
+    stream << (void *)(this);
+    DEBTRACE("container_name="<<stream.str());
+    myparams.container_name=CORBA::string_dup(stream.str().c_str());
+  }
+  myparams.resource_params.componentList.length(_componentNames.size());
   std::vector<std::string>::iterator iter;
   for(CORBA::ULong i=0; i < _componentNames.size();i++)
-    {
-      myparams.componentList[i]=CORBA::string_dup(_componentNames[i].c_str());
-    }
-  myparams.policy=CORBA::string_dup(getProperty("policy").c_str());
+  {
+    myparams.resource_params.componentList[i]=CORBA::string_dup(_componentNames[i].c_str());
+  }
+  myparams.resource_params.policy=CORBA::string_dup(getProperty("policy").c_str());
 
   try
     { 

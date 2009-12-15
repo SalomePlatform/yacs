@@ -308,6 +308,7 @@ EXCEPTION(YACS::ENGINE::ExecutorSwig::waitPause)
 %include <InlineNode.hxx>
 %include <ServiceNode.hxx>
 %include <ServiceInlineNode.hxx>
+%include <ServerNode.hxx>
 %include <DataNode.hxx>
 
 %include <ComposedNode.hxx>

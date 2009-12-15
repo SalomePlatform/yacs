@@ -1161,6 +1161,7 @@ bool CommandAddInputPortFromCatalog::localExecute()
       YASSERT(GuiContext::getCurrent()->_mapOfSubjectNode.count(node));
       SubjectNode *snode = GuiContext::getCurrent()->_mapOfSubjectNode[node];
       _sip = snode->addSubjectInputPort(son, _name);
+      snode->update(SYNCHRO,0,0); // when output port tab in node edition is visible
     }
   catch (Exception& ex)
     {
@@ -1260,6 +1261,7 @@ bool CommandAddOutputPortFromCatalog::localExecute()
       YASSERT(GuiContext::getCurrent()->_mapOfSubjectNode.count(node));
       SubjectNode *snode = GuiContext::getCurrent()->_mapOfSubjectNode[node];
       _sop = snode->addSubjectOutputPort(son, _name);
+      snode->update(SYNCHRO,0,0); // when input port tab in node edition is visible
     }
   catch (Exception& ex)
     {
@@ -1818,10 +1820,10 @@ bool CommandOrderOutputPorts::localReverse()
 // ----------------------------------------------------------------------------
 
 CommandDestroy::CommandDestroy(TypeOfElem elemType,
-                               std::string startnode, std::string startport, 
-                               std::string endnode, std::string endport)
+                               std::string startnode, std::string startport, TypeOfElem startportType,
+                               std::string endnode, std::string endport, TypeOfElem endportType)
   : Command(), _elemType(elemType), _startnode(startnode), _startport(startport),
-    _endnode(endnode), _endport(endport)
+    _endnode(endnode), _endport(endport), _startportType(startportType), _endportType(endportType)
 {
   DEBTRACE("CommandDestroy::CommandDestroy");
   _normalReverse = false;
@@ -1873,19 +1875,33 @@ bool CommandDestroy::localExecute()
           }
           break;
         case INPUTPORT:
+          {
+            Node* node = proc->getChildByName(_startnode);
+            InPort* inp = node->getInputPort(_startport);
+            YASSERT(GuiContext::getCurrent()->_mapOfSubjectDataPort.count(inp));
+            subject = GuiContext::getCurrent()->_mapOfSubjectDataPort[inp];
+          }
+          break;
         case INPUTDATASTREAMPORT:
           {
             Node* node = proc->getChildByName(_startnode);
-            InPort* inp = node->getInPort(_startport);
+            InPort* inp = node->getInputDataStreamPort(_startport);
             YASSERT(GuiContext::getCurrent()->_mapOfSubjectDataPort.count(inp));
             subject = GuiContext::getCurrent()->_mapOfSubjectDataPort[inp];
           }
           break;
         case OUTPUTPORT:
+          {
+            Node* node = proc->getChildByName(_startnode);
+            OutPort* outp = node->getOutputPort(_startport);
+            YASSERT(GuiContext::getCurrent()->_mapOfSubjectDataPort.count(outp));
+            subject = GuiContext::getCurrent()->_mapOfSubjectDataPort[outp];
+          }
+          break;
         case OUTPUTDATASTREAMPORT:
           {
             Node* node = proc->getChildByName(_startnode);
-            OutPort* outp = node->getOutPort(_startport);
+            OutPort* outp = node->getOutputDataStreamPort(_startport);
             YASSERT(GuiContext::getCurrent()->_mapOfSubjectDataPort.count(outp));
             subject = GuiContext::getCurrent()->_mapOfSubjectDataPort[outp];
           }
@@ -1894,8 +1910,20 @@ bool CommandDestroy::localExecute()
           {
             Node* outn = proc->getChildByName(_startnode);
             Node* inn = proc->getChildByName(_endnode);
-            OutPort* outp = outn->getOutPort(_startport);
-            InPort* inp = inn->getInPort(_endport);
+
+            OutPort* outp;
+            InPort* inp;
+
+            if(_startportType == OUTPUTPORT)
+              outp = outn->getOutputPort(_startport);
+            else
+              outp = outn->getOutputDataStreamPort(_startport);
+
+            if(_endportType == INPUTPORT)
+              inp = inn->getInputPort(_endport);
+            else
+              inp = inn->getInputDataStreamPort(_endport);
+
             pair<OutPort*,InPort*> keymap = pair<OutPort*,InPort*>(outp,inp);
             YASSERT(GuiContext::getCurrent()->_mapOfSubjectLink.count(keymap));
             subject = GuiContext::getCurrent()->_mapOfSubjectLink[keymap];
@@ -1999,7 +2027,7 @@ bool CommandSetInPortValue::localExecute()
       if (_oldValue == "None") _oldValue = "";
       DEBTRACE("old value="<< _oldValue);
       std::string strval;
-      if (inp->edGetType()->kind() == YACS::ENGINE::String)
+      if (inp->edGetType()->kind() == YACS::ENGINE::String || inp->edGetType()->isA(Runtime::_tc_file))
         strval = "\"" + _value + "\"";
       else
         strval = _value;
@@ -2064,7 +2092,7 @@ bool CommandSetInPortValue::localReverse()
       if (!_oldValue.empty())
         {
           std::string strval;
-          if (inp->edGetType()->kind() == YACS::ENGINE::String)
+          if (inp->edGetType()->kind() == YACS::ENGINE::String || inp->edGetType()->isA(Runtime::_tc_file))
             strval = "\"" + _oldValue + "\"";
           else
             strval = _oldValue;
@@ -2157,7 +2185,7 @@ bool CommandSetOutPortValue::localExecute()
       if (_oldValue == "None") _oldValue = "";
       DEBTRACE("old value="<< _oldValue);
       std::string strval;
-      if (outpp->edGetType()->kind() == YACS::ENGINE::String)
+      if (outpp->edGetType()->kind() == YACS::ENGINE::String || outpp->edGetType()->isA(Runtime::_tc_file))
         strval = "\"" + _value + "\"";
       else
         strval = _value;
@@ -2253,7 +2281,7 @@ bool CommandSetOutPortValue::localReverse()
       if (!_oldValue.empty())
         {
           std::string strval;
-          if (outpp->edGetType()->kind() == YACS::ENGINE::String)
+          if (outpp->edGetType()->kind() == YACS::ENGINE::String || outpp->edGetType()->isA(Runtime::_tc_file))
             strval = "\"" + _value + "\"";
           else
             strval = _value;
@@ -2743,14 +2771,16 @@ bool CommandAddLink::localExecute()
       // --- is a control link already existing ?
       bool preexistingControl = false;
       {
-        ComposedNode* father = ComposedNode::getLowestCommonAncestor(outn,inn);
-        if(outn==father || inn==father) return true;
-        while(outn->getFather() != father)
-          outn = outn->getFather();
-        while(inn->getFather() != father)
-          inn = inn->getFather();
-        OutGate *ogate = outn->getOutGate();
-        InGate *igate = inn->getInGate();
+        Node* outn2=outn;
+        Node* inn2=inn;
+        ComposedNode* father = ComposedNode::getLowestCommonAncestor(outn2,inn2);
+        if(outn2==father || inn2==father) return true;
+        while(outn2->getFather() != father)
+          outn2 = outn2->getFather();
+        while(inn2->getFather() != father)
+          inn2 = inn2->getFather();
+        OutGate *ogate = outn2->getOutGate();
+        InGate *igate = inn2->getInGate();
         if (ogate->isAlreadyInSet(igate))
           preexistingControl = true;
       }
@@ -2830,8 +2860,16 @@ bool CommandAddLink::localReverse()
       Proc* proc = GuiContext::getCurrent()->getProc();
       Node* outn = proc->getChildByName(_outNode);
       Node* inn = proc->getChildByName(_inNode);
-      OutPort* outp = outn->getOutPort(_outPort);
-      InPort* inp = inn->getInPort(_inPort);
+      OutPort* outp;
+      InPort* inp;
+      if(_outPortType == OUTPUTPORT)
+        outp = outn->getOutputPort(_outPort);
+      else
+        outp = outn->getOutputDataStreamPort(_outPort);
+      if(_inPortType == INPUTPORT)
+        inp = inn->getInputPort(_inPort);
+      else
+        inp = inn->getInputDataStreamPort(_inPort);
       YASSERT(GuiContext::getCurrent()->_mapOfSubjectLink.count(pair<OutPort*,InPort*>(outp,inp)));
       slink = GuiContext::getCurrent()->_mapOfSubjectLink[pair<OutPort*,InPort*>(outp,inp)];
       if (_controlCreatedWithDF)

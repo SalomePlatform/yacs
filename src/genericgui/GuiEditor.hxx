@@ -20,6 +20,7 @@
 #define _GUIEDITOR_HXX_
 
 
+#include <QWidget>
 #include <string>
 
 namespace YACS
@@ -79,6 +80,8 @@ namespace YACS
 
       void rebuildLinks();
       void arrangeNodes(bool isRecursive);
+      void showUndo(QWidget *parent = 0);
+      void showRedo(QWidget *parent = 0);
 
     protected:
       void _createNode(YACS::ENGINE::Catalog* catalog,

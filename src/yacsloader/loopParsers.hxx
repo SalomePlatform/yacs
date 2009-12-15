@@ -56,6 +56,7 @@ struct looptypeParser:parser
   virtual void inline_ (ENGINE::InlineNode* const& n);
   virtual void sinline (ENGINE::ServiceInlineNode* const& n);
   virtual void service (ENGINE::ServiceNode* const& n);
+  virtual void server (ENGINE::ServerNode* const& n);
   virtual void node (ENGINE::InlineNode* const& n);
   virtual void forloop (ENGINE::ForLoop* const& b);
   virtual void foreach (ENGINE::ForEachLoop* const& b);
@@ -75,7 +76,7 @@ namespace YACS
   // A loop can contain forloop, whileloop or foreachloop
   // We must respect the order : definition of loop, then while, for, .. and then onStart, onEnd for loop !!!
   //
-  static std::string t3[]={"inline","sinline","service","node","forloop","foreach","while","switch","bloc",""};
+  static std::string t3[]={"inline","sinline","service","server","node","forloop","foreach","while","switch","bloc",""};
 
 template <class T>
 void looptypeParser<T>::buildAttr(const XML_Char** attr)
@@ -136,6 +137,15 @@ void looptypeParser<T>::service (ENGINE::ServiceNode* const& n)
       std::string fullname=currentProc->names.back()+ n->getName();
       currentProc->nodeMap[fullname]=n;
       currentProc->serviceMap[fullname]=n;
+    }
+template <class T>
+void looptypeParser<T>::server (ENGINE::ServerNode* const& n)
+    {
+      DEBTRACE( "loop_server" << n->getName() )             
+      _cnode->edSetNode(n);
+      std::string fullname=currentProc->names.back()+ n->getName();
+      currentProc->nodeMap[fullname]=n;
+      currentProc->inlineMap[fullname]=n;
     }
 template <class T>
 void looptypeParser<T>::node (ENGINE::InlineNode* const& n)
@@ -536,6 +546,7 @@ void looptypeParser<T>::onStart(const XML_Char* el, const XML_Char** attr)
   this->maxcount("inline",1,element);
   this->maxcount("sinline",1,element);
   this->maxcount("service",1,element);
+  this->maxcount("server",1,element);
   this->maxcount("node",1,element);
   this->maxcount("forloop",1,element);
   this->maxcount("foreach",1,element);
@@ -548,6 +559,7 @@ void looptypeParser<T>::onStart(const XML_Char* el, const XML_Char** attr)
   else if(element == "inline")pp=&inlinetypeParser<>::inlineParser;
   else if(element == "sinline")pp=&sinlinetypeParser<>::sinlineParser;
   else if(element == "service")pp=&servicetypeParser<>::serviceParser;
+  else if(element == "server")pp=&servertypeParser<>::serverParser;
   else if(element == "node")pp=&nodetypeParser<>::nodeParser;
 
   else if(element == "forloop")pp=&forlooptypeParser<>::forloopParser;
@@ -571,6 +583,7 @@ void looptypeParser<T>::onEnd(const char *el,parser* child)
   else if(element == "inline")inline_(((inlinetypeParser<>*)child)->post());
   else if(element == "sinline")sinline(((sinlinetypeParser<>*)child)->post());
   else if(element == "service")service(((servicetypeParser<>*)child)->post());
+  else if(element == "server")server(((servertypeParser<>*)child)->post());
   else if(element == "node")node(((nodetypeParser<>*)child)->post());
 
   else if(element == "forloop")forloop(((forlooptypeParser<>*)child)->post());

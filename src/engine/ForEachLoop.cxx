@@ -197,7 +197,7 @@ std::string SeqAnyInputPort::dump()
 SplitterNode::SplitterNode(const std::string& name, TypeCode *typeOfData, 
                            ForEachLoop *father):ElementaryNode(name),
                                                 _dataPortToDispatch(NAME_OF_SEQUENCE_INPUT,
-                                                                    this,(TypeCodeSeq *)TypeCode::sequenceTc("","",typeOfData))			    
+                                                                    this,(TypeCodeSeq *)TypeCode::sequenceTc("","",typeOfData))
 {
   _father=father;
 }
@@ -380,7 +380,7 @@ void ForEachLoop::exUpdateState()
         {
           for(i=0;i<nbOfBr;i++)
             {
-              DEBTRACE( "-------------- 1" );
+              DEBTRACE( "-------------- 1 " << i << " " << _execCurrentId);
               _execIds[i]=_execCurrentId;
               DEBTRACE( "-------------- 2" );
               _execNodes[i]=_node->clone(this,false);
@@ -416,10 +416,8 @@ void ForEachLoop::exUpdateState()
             _nbOfEltConsumed++;
             _execNodes[i]->exUpdateState();
           }
-      if (_node) {
-	_node->setState(_execNodes[nbOfBr-1]->getState());
-	forwardExecStateToOriginalBody(_execNodes[nbOfBr-1]);
-      }
+
+      forwardExecStateToOriginalBody(_execNodes[nbOfBr-1]);
     }
 }
 
@@ -505,8 +503,16 @@ Node *ForEachLoop::getChildByShortName(const std::string& name) const throw(YACS
     return DynParaLoop::getChildByShortName(name);
 }
 
+//! Method used to notify the node that a child node has finished
+/*!
+ * Update the current state and return the change state
+ *
+ *  \param node : the child node that has finished
+ *  \return the state change
+ */
 YACS::Event ForEachLoop::updateStateOnFinishedEventFrom(Node *node)
 {
+  DEBTRACE("updateStateOnFinishedEventFrom " << node->getName() << " " << node->getState());
   unsigned int id;
   switch(getIdentityOfNotifyerNode(node,id))
     {
@@ -529,21 +535,21 @@ YACS::Event ForEachLoop::updateStateOnFinishedEventFrom(Node *node)
                 {
                   pushAllSequenceValues();
                   setState(YACS::DONE);
-		  
-		  if (_node)
-		    {
-		      _node->setState(YACS::DONE);
-		      
-		      ComposedNode* compNode = dynamic_cast<ComposedNode*>(_node);
-		      if (compNode)
-			{
-			  list<Node *> aChldn = compNode->getAllRecursiveConstituents();
-			  list<Node *>::iterator iter=aChldn.begin();
-			  for(;iter!=aChldn.end();iter++)
-			    (*iter)->setState(YACS::DONE);
-			}
-		    }
-		  
+  
+                  if (_node)
+                    {
+                      _node->setState(YACS::DONE);
+     
+                      ComposedNode* compNode = dynamic_cast<ComposedNode*>(_node);
+                      if (compNode)
+                        {
+                          std::list<Node *> aChldn = compNode->getAllRecursiveConstituents();
+                          std::list<Node *>::iterator iter=aChldn.begin();
+                          for(;iter!=aChldn.end();iter++)
+                            (*iter)->setState(YACS::DONE);
+                        }
+                    }
+  
                   return YACS::FINISH;
                 }
               catch(YACS::Exception& ex)
@@ -557,18 +563,18 @@ YACS::Event ForEachLoop::updateStateOnFinishedEventFrom(Node *node)
                 }
             }
         }
-      else
-        {//more elements to do
+      else if(_state == YACS::ACTIVATED)
+        {//more elements to do and loop still activated
           _execIds[id]=_execCurrentId;
           node->init(false);
           _splitterNode.putSplittedValueOnRankTo(_execCurrentId++,id,false);
           node->exUpdateState();
-	  if (_node)
-	    {
-	      _node->setState(node->getState());
-	      forwardExecStateToOriginalBody(node);
-	    }
+          forwardExecStateToOriginalBody(node);
           _nbOfEltConsumed++;
+        }
+      else
+        {//elements to process and loop no more activated
+          DEBTRACE("foreach loop state " << _state);
         }
       break;
     }
@@ -650,19 +656,6 @@ void ForEachLoop::releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *f
           _intecptrsForOutGoingPorts.erase(iter2);
           delete ip;
         }
-    }
-}
-
-void ForEachLoop::forwardExecStateToOriginalBody(Node *execNode)
-{
-  ComposedNode* compNode = dynamic_cast<ComposedNode*>(_node);
-  ComposedNode* compNodeExe = dynamic_cast<ComposedNode*>(execNode);
-  if (compNode && compNodeExe)
-    {
-      list<Node *> aChldn = compNodeExe->getAllRecursiveConstituents();
-      list<Node *>::iterator iter=aChldn.begin();
-      for(;iter!=aChldn.end();iter++)
-	compNode->getChildByName(compNodeExe->getChildName(*iter))->setState((*iter)->getState());
     }
 }
 

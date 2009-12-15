@@ -35,6 +35,7 @@
 #include "ItemMimeData.hxx"
 #include "Message.hxx"
 #include "Resource.hxx"
+#include "FormUndoRedo.hxx"
 
 #include <string>
 #include <sstream>
@@ -482,3 +483,18 @@ void GuiEditor::arrangeNodes(bool isRecursive)
 //       proc->rebuildLinks();
 //     }
 }
+
+void GuiEditor::showUndo(QWidget *parent)
+{
+  FormUndoRedo *undo = new FormUndoRedo(parent);
+  undo->tabWidget->setCurrentWidget(undo->undoTab);
+  undo->exec();
+}
+
+void GuiEditor::showRedo(QWidget *parent)
+{
+  FormUndoRedo *redo = new FormUndoRedo(parent);
+  redo->tabWidget->setCurrentWidget(redo->redoTab);
+  redo->exec();
+}
+

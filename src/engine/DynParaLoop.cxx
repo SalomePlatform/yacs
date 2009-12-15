@@ -98,6 +98,7 @@ void DynParaLoop::init(bool start)
       string what("DynParaLoop::init : no node specified for ForEachLoop with name "); what +=_name;
       throw Exception(what);
     }
+  _node->init(start);
   _nbOfBranches.exInit(start);
   _splittedPort.exInit();
   _nbOfEltConsumed=0;
@@ -514,5 +515,42 @@ std::string DynParaLoop::getErrorReport()
 
   report=report+"</error>";
   return report;
+}
+
+void DynParaLoop::forwardExecStateToOriginalBody(Node *execNode)
+{
+  if(!_node)
+    return;
+  _node->setState(execNode->getState());
+  _node->setErrorDetails(execNode->getErrorDetails());
+
+  ComposedNode* compNode = dynamic_cast<ComposedNode*>(_node);
+  ComposedNode* compNodeExe = dynamic_cast<ComposedNode*>(execNode);
+  if (compNode && compNodeExe)
+    {
+      list<Node *> aChldn = compNodeExe->getAllRecursiveConstituents();
+      list<Node *>::iterator iter=aChldn.begin();
+      for(;iter!=aChldn.end();iter++)
+        {
+          Node* node=compNode->getChildByName(compNodeExe->getChildName(*iter));
+          node->setState((*iter)->getState());
+          node->setErrorDetails((*iter)->getErrorDetails());
+        }
+    }
+}
+
+//! Method used to notify the node that a child node has failed
+/*!
+ * Update the current state and return the change state
+ *
+ *  \param node : the child node that has failed
+ *  \return the state change
+ */
+YACS::Event DynParaLoop::updateStateOnFailedEventFrom(Node *node)
+{
+  DEBTRACE("DynParaLoop::updateStateOnFailedEventFrom " << node->getName());
+  setState(YACS::FAILED);
+  forwardExecStateToOriginalBody(node);
+  return YACS::ABORT;
 }
 

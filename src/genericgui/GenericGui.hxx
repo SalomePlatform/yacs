@@ -176,6 +176,8 @@ namespace YACS
 
       QAction *_undoAct;
       QAction *_redoAct;
+      QAction *_showUndoAct;
+      QAction *_showRedoAct;
 
       YACS::HMI::GuiEditor *_guiEditor;
 
@@ -312,6 +314,8 @@ namespace YACS
 
       void onUndo();
       void onRedo();
+      void onShowUndo();
+      void onShowRedo();
 
     private:
       void displayLinks(bool isShown);

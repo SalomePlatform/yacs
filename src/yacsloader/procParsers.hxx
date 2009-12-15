@@ -178,6 +178,7 @@ void proctypeParser<T>::onStart(const XML_Char* el, const XML_Char** attr)
     else if(element == "inline")pp=&inlinetypeParser<>::inlineParser;
     else if(element == "sinline")pp=&sinlinetypeParser<>::sinlineParser;
     else if(element == "service")pp=&servicetypeParser<>::serviceParser;
+    else if(element == "server")pp=&servertypeParser<>::serverParser;
     else if(element == "node")pp=&nodetypeParser<>::nodeParser;
     else if(element == "datanode")pp=&presettypeParser<>::presetParser;
     else if(element == "outnode")pp=&outnodetypeParser<>::outnodeParser;
@@ -232,6 +233,7 @@ void proctypeParser<T>::onEnd(const char *el,parser* child)
       else if(element == "inline")this->inline_(((inlinetypeParser<>*)child)->post());
       else if(element == "sinline")this->sinline(((sinlinetypeParser<>*)child)->post());
       else if(element == "service")this->service(((servicetypeParser<>*)child)->post());
+      else if(element == "server")this->server(((servertypeParser<>*)child)->post());
       else if(element == "node")this->node(((nodetypeParser<>*)child)->post());
       else if(element == "datanode")this->preset(((presettypeParser<>*)child)->post());
       else if(element == "outnode")this->outnode(((outnodetypeParser<>*)child)->post());
