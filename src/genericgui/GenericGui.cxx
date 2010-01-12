@@ -1660,8 +1660,8 @@ void GenericGui::onBatch() {
     if(!logger->isEmpty()) {
       DEBTRACE(logger->getStr());
     };
-    QString fn = QtGuiContext::getQtCurrent()->getFileName();
-    proc->nodeMap["Submit"]->getInputPort("graphfic")->edInit(fn.toLatin1().data());
+//     QString fn = QtGuiContext::getQtCurrent()->getFileName();
+//     proc->nodeMap["Submit"]->getInputPort("graphfic")->edInit(fn.toLatin1().data());
     createContext(proc, fb, "", true);
   };
 }

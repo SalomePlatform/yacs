@@ -22,8 +22,8 @@
 
    <inline name="Submit">
       <script><code><![CDATA[
-# Francis Kloss, CEA/LGLS, 2009
-# -----------------------------
+# Francis Kloss, Bernard Secher, CEA/LGLS, 2010
+# ---------------------------------------------
 
 print "BATCH: started"
 #      --------------
@@ -39,8 +39,8 @@ import orbmodule
 print "BATCH: Submit: input ports"
 #      --------------------------
 
-print "BATCH: input port: graph file  = ", graphfic
 print "BATCH: input port: machine     = ", machine
+print "BATCH: input port: hostname    = ", hostname
 print "BATCH: input port: infiles     = ", infiles
 print "BATCH: input port: outfiles    = ", outfiles
 print "BATCH: input port: results dir = ", results_dir
@@ -76,99 +76,85 @@ if status:
 print "BATCH: set parameters"
 #      ---------------------
 
-delay  = 5
+delay  = 1
 
 data = os.environ["YACS_ROOT_DIR"] + "/share/salome/resources/yacs/"
-
-script = data + "batch_launcher.py"
 
 print "BATCH: graph      = ", graph
 print "BATCH: graph name = ", graphname
 print "BATCH: nb. procs  = ", nprocs
 print "BATCH: delay      = ", delay
 print "BATCH: data       = ", data
-print "BATCH: script     = ", script
 
-print "BATCH: set: machine parameters"
-#      ------------------------------
+print "BATCH: set: resource parameters"
+#      -------------------------------
 
-# container name if given else automatic
-p_name = ""
+# machine name if given else automatic
+r_name = machine
 
 # host name if given else automatic
-p_host = machine
-
-# if given list of components that could be loaded on the container
-p_components = []
-
-# if given restricted list of machines to search in
-p_machines = []
+r_hostname = hostname
 
 # required operating system
-p_os = "Linux"
+r_os = ""
+
+# if given list of components that could be loaded on the container
+r_componentList = []
+
+# required number of proc
+r_nb_proc = nprocs
 
 # required memory size
-p_mem = 0
+r_mem_mb = 0
 
 # required frequency
-p_freq = 0
-
-# required number of proc per node
-p_procs = 8
+r_cpu_clock = 0
 
 # required number of node
-p_nodes = 19
+r_nb_node = 0
 
-# if true start a MPI container
-p_mpi = True
-
-# container working directory
-p_dir = ""
-
-# creation mode for GiveContainer:
-#   start      = creates a new container
-#   get        = try to find an existing container
-#   getorstart = use an existing container if it exists or creates a new one
-p_mode = ""
+# required number of proc per node
+r_nb_proc_per_node = 0
 
 # resource management policy : first, cycl, altcycl or best (can be extended)
-p_policy = ""
+r_policy = ""
 
-# PaCO specific informations
-p_paco = ""
-
-# number of component nodes
-p_cpt_nodes = 0
+# resource list
+r_resList = []
 
 if status:
     try:
-        params = Engines.MachineParameters(p_name, p_host, p_components, p_machines, p_os, p_mem, p_freq, p_procs, p_nodes, p_mpi, p_dir, p_mode, p_policy, p_paco, p_cpt_nodes)
+        params = Engines.ResourceParameters(r_name, r_hostname, r_os, r_componentList, r_nb_proc, r_mem_mb, r_cpu_clock, r_nb_node, r_nb_proc_per_node , r_policy, r_resList)
 
     except Exception, message:
-        print "BATCH: Exception: in machine parameters: ", message
+        print "BATCH: Exception: in resource parameters: ", message
         status = False
 
-print "BATCH: set: batch parameters"
-#      ----------------------------
+print "BATCH: set: job parameters"
+#      --------------------------
 
-# Where batch command will be launched and log files will be created
-batch_where = ""
+# Job Type - Must be equal "yacs_file"
+j_job_type = "yacs_file"
 
-# Time for the batch (has to be like this : hh:mm)
-batch_time = ""
+# graph file name
+j_job_file = graph
 
-# Minimum of memory needed (has to be like : 32gb or 512mb)
-batch_mem = ""
-
-# Number of processors requested
-batch_number = nprocs
+j_env_file = ""
+j_in_files = infiles
+j_out_files = outfiles
+j_work_directory = ""
+j_local_directory = ""
+j_result_directory = results_dir
+j_maximum_duration = ""
+j_resource_required = params
+j_queue = ""
 
 if status:
     try:
-        batch_params = Engines.BatchParameters(batch_where, batch_time, batch_mem, batch_number)
+        job_params = Engines.JobParameters(j_job_type, j_job_file, j_env_file, j_in_files, j_out_files, j_work_directory, j_local_directory, j_result_directory, j_maximum_duration, j_resource_required, j_queue)
 
     except Exception, message:
-        print "BATCH: Exception: in batch parameters: ", message
+        print "BATCH: Exception: in job parameters: ", message
         status = False
 
 print "BATCH: submiting"
@@ -180,9 +166,9 @@ if status:
         obj_sl = client.Resolve("SalomeLauncher")
         SalomeLauncher = obj_sl._narrow(Engines.SalomeLauncher)
 
-        files = [ graph ] + infiles
-        jobId = SalomeLauncher.submitSalomeJob(script, files, outfiles, batch_params, params)
+        jobId = SalomeLauncher.createJob(job_params)
         print "BATCH: job ID = ", jobId
+        SalomeLauncher.launchJob(jobId)
 
     except Exception, message:
         print "BATCH: Exception: in submiting: ", message
@@ -195,19 +181,18 @@ print "BATCH: Submit: set output port"
 state = {}
 
 state["DATA"     ] = data
-state["RESULTS"  ] = results_dir
 state["DELAY"    ] = delay
 state["JOBID"    ] = jobId
 state["STATUS"   ] = status
-state["PARAMS"   ] = params
 state["LAUNCHER" ] = SalomeLauncher
-state["GRAPHFIC" ] = graphfic
+state["GRAPH"    ] = graph
 state["GRAPHNAME"] = graphname
 state["MACHINE"  ] = machine
+state["HOSTNAME" ] = hostname
 
 ]]></code></script>
-      <inport  name="graphfic"    type="string"/>
       <inport  name="machine"     type="string"/>
+      <inport  name="hostname"    type="string"/>
       <inport  name="infiles"     type="stringvec"/>
       <inport  name="outfiles"    type="stringvec"/>
       <inport  name="results_dir" type="string"/>
@@ -227,7 +212,6 @@ print "BATCH: Pending: get input port"
 delay          = state["DELAY"   ]
 jobId          = state["JOBID"   ]
 status         = state["STATUS"  ]
-params         = state["PARAMS"  ]
 SalomeLauncher = state["LAUNCHER"]
 
 print "BATCH: Waiting"
@@ -235,11 +219,11 @@ print "BATCH: Waiting"
 
 if status:
     try:
-        stat = SalomeLauncher.queryJob(jobId, params)
+        stat = SalomeLauncher.getJobState(jobId)
         print "BATCH: status = ", stat
-        while (stat == "qw"):
+        while (stat == "CREATED" or stat == "QUEUED" ):
             time.sleep(delay)
-            stat = SalomeLauncher.queryJob(jobId, params)
+            stat = SalomeLauncher.getJobState(jobId)
             print "BATCH: status = ", stat
 
     except Exception, message:
@@ -266,11 +250,9 @@ import time
 print "BATCH: Running: get input port"
 #      ------------------------------
 
-results_dir    = state["RESULTS" ]
 delay          = state["DELAY"   ]
 jobId          = state["JOBID"   ]
 status         = state["STATUS"  ]
-params         = state["PARAMS"  ]
 SalomeLauncher = state["LAUNCHER"]
 
 print "BATCH: launched"
@@ -278,11 +260,11 @@ print "BATCH: launched"
 
 if status:
     try:
-        stat = SalomeLauncher.queryJob(jobId, params)
+        stat = SalomeLauncher.getJobState(jobId)
         print "BATCH: status = ", stat
-        while (stat != "e"):
+        while (stat == "RUNNING"):
             time.sleep(delay)
-            stat = SalomeLauncher.queryJob(jobId, params)
+            stat = SalomeLauncher.getJobState(jobId)
             print "BATCH: status = ", stat
 
     except Exception, message:
@@ -294,7 +276,10 @@ print "BATCH: get results"
 
 if status:
     try:
-        SalomeLauncher.getResultsJob(results_dir, jobId, params)
+        if(stat == "FINISHED" ):    
+          SalomeLauncher.getJobResults(jobId,"")
+        else:
+          SalomeLauncher.removeJob(jobId)
 
     except Exception, message:
         print "BATCH: Exception: in get results: ", message
@@ -327,9 +312,10 @@ print "ALARM: get input ports"
 #      ----------------------
 
 status    = state["STATUS"   ]
-graphfic  = state["GRAPHFIC" ]
+graph     = state["GRAPH"    ]
 graphname = state["GRAPHNAME"]
 machine   = state["MACHINE"  ]
+hostname  = state["HOSTNAME" ]
 data      = state["DATA"     ]
 
 print "ALARM: input port: status = ", status
@@ -361,8 +347,9 @@ stamp = time.strftime("%a %d %b %Y %H:%M:%S")
 message = ""
 message = message + "Timestamp : " + stamp     + ".\n"
 message = message + "Graph name: " + graphname + ".\n"
-message = message + "File  name: " + graphfic  + ".\n"
+message = message + "File  name: " + graph     + ".\n"
 message = message + "Machine   : " + machine   + ".\n"
+message = message + "Hostname  : " + hostname  + ".\n"
 message = message + "Message   : " + txt       + "Mister Y.B.\n"
 
 print "ALARM: message = ", message
@@ -449,13 +436,13 @@ print "ALARM: finished"
    </datalink>
 
    <parameter>
-      <tonode>Submit</tonode><toport>graphfic</toport>
-      <value><string>/tmp/graph_user.xml</string></value>
+      <tonode>Submit</tonode><toport>machine</toport>
+      <value><string>titane</string></value>
    </parameter>
 
    <parameter>
-      <tonode>Submit</tonode><toport>machine</toport>
-      <value><string>mars</string></value>
+      <tonode>Submit</tonode><toport>hostname</toport>
+      <value><string>titane.ccc.cea.fr</string></value>
    </parameter>
 
    <parameter>
