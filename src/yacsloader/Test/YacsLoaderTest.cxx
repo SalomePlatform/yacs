@@ -29,6 +29,8 @@
 
 #include <iostream>
 #include <fstream>
+#include <stdlib.h>
+#include <unistd.h>
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -166,13 +168,21 @@ void YacsLoaderTest::cschema()
 #ifdef SALOME_KERNEL
   if (p)
     {
-      CORBA::Double dval = 0;
-      const char *text = "";
-      *((OutputCorbaPort*)p->nodeMap["node1"]->getOutputPort("p1"))->getAny() >>= text;
-      CPPUNIT_ASSERT_EQUAL(string("Hello coucou!"), string(text) );
-      text = "";
-      *((OutputCorbaPort*)p->nodeMap["node2"]->getOutputPort("p1"))->getAny() >>= text;
-      CPPUNIT_ASSERT_EQUAL(string("Hello Hello coucou!!"), string(text) );
+      if(getenv("PYHELLO_ROOT_DIR"))
+        {
+          std::string hellodir(getenv("PYHELLO_ROOT_DIR"));
+          hellodir=hellodir+"/share/salome/resources/pyhello";
+          if(access(hellodir.c_str(),F_OK) == 0)
+            {
+              CORBA::Double dval = 0;
+              const char *text = "";
+              *((OutputCorbaPort*)p->nodeMap["node1"]->getOutputPort("p1"))->getAny() >>= text;
+              CPPUNIT_ASSERT_EQUAL(string("Hello coucou!"), string(text) );
+              text = "";
+              *((OutputCorbaPort*)p->nodeMap["node2"]->getOutputPort("p1"))->getAny() >>= text;
+              CPPUNIT_ASSERT_EQUAL(string("Hello Hello coucou!!"), string(text) );
+            }
+        }
       delete p;
     }
 #endif
@@ -188,16 +198,24 @@ void YacsLoaderTest::dschema()
 #ifdef SALOME_KERNEL
   if (p)
     {
-      CORBA::Double dval = 0;
-      const char *text = "";
-      *((OutputCorbaPort*)p->nodeMap["node1"]->getOutputPort("p1"))->getAny() >>= text;
-      CPPUNIT_ASSERT_EQUAL(string("Hello coucou!"), string(text) );
-      text = "";
-      *((OutputCorbaPort*)p->nodeMap["node2"]->getOutputPort("p1"))->getAny() >>= text;
-      CPPUNIT_ASSERT_EQUAL(string("Hello Hello coucou!!"), string(text) );
-      text = "";
-      *((OutputCorbaPort*)p->nodeMap["node3"]->getOutputPort("p1"))->getAny() >>= text;
-      CPPUNIT_ASSERT_EQUAL( string("Hello Hello coucou!!"), string(text));
+      if(getenv("PYHELLO_ROOT_DIR"))
+        {
+          std::string hellodir(getenv("PYHELLO_ROOT_DIR"));
+          hellodir=hellodir+"/share/salome/resources/pyhello";
+          if(access(hellodir.c_str(),F_OK) == 0)
+            {
+              CORBA::Double dval = 0;
+              const char *text = "";
+              *((OutputCorbaPort*)p->nodeMap["node1"]->getOutputPort("p1"))->getAny() >>= text;
+              CPPUNIT_ASSERT_EQUAL(string("Hello coucou!"), string(text) );
+              text = "";
+              *((OutputCorbaPort*)p->nodeMap["node2"]->getOutputPort("p1"))->getAny() >>= text;
+              CPPUNIT_ASSERT_EQUAL(string("Hello Hello coucou!!"), string(text) );
+              text = "";
+              *((OutputCorbaPort*)p->nodeMap["node3"]->getOutputPort("p1"))->getAny() >>= text;
+              CPPUNIT_ASSERT_EQUAL( string("Hello Hello coucou!!"), string(text));
+            }
+        }
       delete p;
     }
 #endif
@@ -339,9 +357,6 @@ void YacsLoaderTest::forloop3()
   CPPUNIT_ASSERT(p != 0);
   if (p)
     {
-//       PyObject *data = ((OutputPyPort*)p->nodeMap["node2"]->getOutputPort("p1"))->get();
-//       char *text = PyString_AsString(data);;
-//       CPPUNIT_ASSERT_EQUAL(string(text), string("coucoucoucoucoucoucoucou"));
       delete p;
     }
 }
@@ -355,9 +370,6 @@ void YacsLoaderTest::forloop4()
   CPPUNIT_ASSERT(p != 0);
   if (p)
     {
-//       PyObject *data = ((OutputPyPort*)p->nodeMap["node2"]->getOutputPort("p1"))->get();
-//       char *text = PyString_AsString(data);;
-//       CPPUNIT_ASSERT_EQUAL(string(text), string("coucoucoucoucoucoucoucou"));
       delete p;
     }
 }
@@ -371,9 +383,6 @@ void YacsLoaderTest::forloop5()
   CPPUNIT_ASSERT(p != 0);
   if (p)
     {
-//       PyObject *data = ((OutputPyPort*)p->nodeMap["node2"]->getOutputPort("p1"))->get();
-//       char *text = PyString_AsString(data);;
-//       CPPUNIT_ASSERT_EQUAL(string(text), string("coucoucoucoucoucoucoucou"));
       delete p;
     }
 }
@@ -387,9 +396,6 @@ void YacsLoaderTest::forloop6()
   CPPUNIT_ASSERT(p != 0);
   if (p)
     {
-//       PyObject *data = ((OutputPyPort*)p->nodeMap["node2"]->getOutputPort("p1"))->get();
-//       char *text = PyString_AsString(data);;
-//       CPPUNIT_ASSERT_EQUAL(string(text), string("coucoucoucoucoucoucoucou"));
       delete p;
     }
 }
@@ -404,9 +410,6 @@ void YacsLoaderTest::forloop7()
   CPPUNIT_ASSERT(p != 0);
   if (p)
     {
-//       PyObject *data = ((OutputPyPort*)p->nodeMap["node2"]->getOutputPort("p1"))->get();
-//       char *text = PyString_AsString(data);;
-//       CPPUNIT_ASSERT_EQUAL(string(text), string("coucoucoucoucoucoucoucou"));
       delete p;
     }
 }
@@ -420,9 +423,6 @@ void YacsLoaderTest::switch1()
   CPPUNIT_ASSERT(p != 0);
   if (p)
     {
-//       PyObject *data = ((OutputPyPort*)p->nodeMap["node2"]->getOutputPort("p1"))->get();
-//       char *text = PyString_AsString(data);;
-//       CPPUNIT_ASSERT_EQUAL(string(text), string("coucoucoucoucoucoucoucou"));
       delete p;
     }
 }
@@ -436,9 +436,6 @@ void YacsLoaderTest::switch2()
   CPPUNIT_ASSERT(p != 0);
   if (p)
     {
-//       PyObject *data = ((OutputPyPort*)p->nodeMap["node2"]->getOutputPort("p1"))->get();
-//       char *text = PyString_AsString(data);;
-//       CPPUNIT_ASSERT_EQUAL(string(text), string("coucoucoucoucoucoucoucou"));
       delete p;
     }
 }
@@ -452,9 +449,6 @@ void YacsLoaderTest::switch3()
   CPPUNIT_ASSERT(p != 0);
   if (p)
     {
-//       PyObject *data = ((OutputPyPort*)p->nodeMap["node2"]->getOutputPort("p1"))->get();
-//       char *text = PyString_AsString(data);;
-//       CPPUNIT_ASSERT_EQUAL(string(text), string("coucoucoucoucoucoucoucou"));
       delete p;
     }
 }
@@ -468,9 +462,6 @@ void YacsLoaderTest::switch4()
   CPPUNIT_ASSERT(p != 0);
   if (p)
     {
-//       PyObject *data = ((OutputPyPort*)p->nodeMap["node2"]->getOutputPort("p1"))->get();
-//       char *text = PyString_AsString(data);;
-//       CPPUNIT_ASSERT_EQUAL(string(text), string("coucoucoucoucoucoucoucou"));
       delete p;
     }
 }
@@ -484,9 +475,6 @@ void YacsLoaderTest::switch5()
   CPPUNIT_ASSERT(p != 0);
   if (p)
     {
-//       PyObject *data = ((OutputPyPort*)p->nodeMap["node2"]->getOutputPort("p1"))->get();
-//       char *text = PyString_AsString(data);;
-//       CPPUNIT_ASSERT_EQUAL(string(text), string("coucoucoucoucoucoucoucou"));
       delete p;
     }
 }
@@ -500,9 +488,6 @@ void YacsLoaderTest::switch6()
   CPPUNIT_ASSERT(p != 0);
   if (p)
     {
-//       PyObject *data = ((OutputPyPort*)p->nodeMap["node2"]->getOutputPort("p1"))->get();
-//       char *text = PyString_AsString(data);;
-//       CPPUNIT_ASSERT_EQUAL(string(text), string("coucoucoucoucoucoucoucou"));
       delete p;
     }
 }
@@ -516,9 +501,6 @@ void YacsLoaderTest::switch7()
   CPPUNIT_ASSERT(p != 0);
   if (p)
     {
-//       PyObject *data = ((OutputPyPort*)p->nodeMap["node2"]->getOutputPort("p1"))->get();
-//       char *text = PyString_AsString(data);;
-//       CPPUNIT_ASSERT_EQUAL(string(text), string("coucoucoucoucoucoucoucou"));
       delete p;
     }
 }
@@ -532,9 +514,6 @@ void YacsLoaderTest::switch8()
   CPPUNIT_ASSERT(p != 0);
   if (p)
     {
-//       PyObject *data = ((OutputPyPort*)p->nodeMap["node2"]->getOutputPort("p1"))->get();
-//       char *text = PyString_AsString(data);;
-//       CPPUNIT_ASSERT_EQUAL(string(text), string("coucoucoucoucoucoucoucou"));
       delete p;
     }
 }
@@ -548,9 +527,6 @@ void YacsLoaderTest::switch9()
   CPPUNIT_ASSERT(p != 0);
   if (p)
     {
-//       PyObject *data = ((OutputPyPort*)p->nodeMap["node2"]->getOutputPort("p1"))->get();
-//       char *text = PyString_AsString(data);;
-//       CPPUNIT_ASSERT_EQUAL(string(text), string("coucoucoucoucoucoucoucou"));
       delete p;
     }
 }
@@ -564,9 +540,6 @@ void YacsLoaderTest::whiles()
   CPPUNIT_ASSERT(p != 0);
   if (p)
     {
-//       PyObject *data = ((OutputPyPort*)p->nodeMap["node2"]->getOutputPort("p1"))->get();
-//       char *text = PyString_AsString(data);;
-//       CPPUNIT_ASSERT_EQUAL(string(text), string("coucoucoucoucoucoucoucou"));
       delete p;
     }
   ret = driverTest(p, "samples/while2.xml");
@@ -584,9 +557,6 @@ void YacsLoaderTest::forwhile1()
   CPPUNIT_ASSERT(p != 0);
   if (p)
     {
-//       PyObject *data = ((OutputPyPort*)p->nodeMap["node2"]->getOutputPort("p1"))->get();
-//       char *text = PyString_AsString(data);;
-//       CPPUNIT_ASSERT_EQUAL(string(text), string("coucoucoucoucoucoucoucou"));
       delete p;
     }
 }

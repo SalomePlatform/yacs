@@ -61,12 +61,13 @@ _SALOMERuntime_la_LDFLAGS  = -module
 _SALOMERuntime_la_LIBADD = ../runtime/libYACSRuntimeSALOME.la 
 
 docruntime.i:$(SWIGINCLUDES)
-	(cd $(srcdir)/../runtime;doxygen ../../Misc/Doxyfile)
-	python $(top_srcdir)/Misc/doxy2swig.py -n $(srcdir)/../runtime/xml/index.xml docruntime.i;rm -rf $(srcdir)/../runtime/xml
+	DOXSRCDIR=$(top_srcdir)/src/runtime doxygen $(top_srcdir)/Misc/Doxyfile
+	$(PYTHON) $(top_srcdir)/Misc/doxy2swig.py -n xml/index.xml docruntime.i
 
 EXTRA_DIST = SALOMERuntime.i
 
 clean-local:
-	rm -f SALOMERuntime.py*  SALOMERuntimeWRAP.cxx
+	rm -f SALOMERuntime.py*  SALOMERuntimeWRAP.cxx docruntime.i SALOMERuntimeWRAP.h
+	rm -rf xml
 
 include $(top_srcdir)/adm/unix/make_end.am

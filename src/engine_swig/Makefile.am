@@ -81,11 +81,13 @@ _pypilot_la_LDFLAGS  = -module
 _pypilot_la_LIBADD = ../engine/libYACSlibEngine.la $(OMNIORB_LIBS) $(PYTHON_LIBS)
 
 docengine.i:$(SWIGINCLUDES)
-	(cd $(srcdir)/../engine;doxygen ../../Misc/Doxyfile)
-	python $(top_srcdir)/Misc/doxy2swig.py -n $(srcdir)/../engine/xml/index.xml docengine.i;rm -rf $(srcdir)/../engine/xml
+	DOXSRCDIR=$(top_srcdir)/src/engine doxygen $(top_srcdir)/Misc/Doxyfile
+	$(PYTHON) $(top_srcdir)/Misc/doxy2swig.py -n xml/index.xml docengine.i
 
 EXTRA_DIST = ExecutorSwig.hxx pilot.i pypilot.i engtypemaps.i pypilotWRAP.h
 
 clean-local:
 	rm -f pypilot.py* pypilotWRAP.* pilot.py* pilotWRAP.* docengine.i
+	rm -rf xml
+
 include $(top_srcdir)/adm/unix/make_end.am

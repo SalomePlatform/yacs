@@ -51,10 +51,16 @@ libYACS_SwigWRAP.cxx : $(SWIGSRC) YACSGUI_Swig.hxx doc.i
 	$(SWIG) $(SWIG_PYTHON_OPT) $(SWIG_PYTHON_INCLUDES) $(MYSWIG_FLAGS) -o $@ $<
 
 doc.i:YACSGUI_Swig.hxx YACSGUI_Swig.cxx
-	(cd $(srcdir);doxygen ../../Misc/Doxyfile)
-	python $(top_srcdir)/Misc/doxy2swig.py -n $(srcdir)/xml/index.xml doc.i; rm -rf $(srcdir)/xml
+	DOXSRCDIR=$(srcdir) doxygen $(top_srcdir)/Misc/Doxyfile
+	$(PYTHON) $(top_srcdir)/Misc/doxy2swig.py -n xml/index.xml doc.i
+
+EXTRA_DIST = YACSGUI_Swig.hxx
 
 CLEANFILES = libYACS_SwigWRAP.cxx libYACS_Swig.py doc.i
+
+clean-local:
+	rm -f libYACS_Swig.py*
+	rm -rf xml
 
 include $(top_srcdir)/adm/unix/make_end.am
 

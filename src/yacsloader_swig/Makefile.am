@@ -61,12 +61,13 @@ _loader_la_LDFLAGS  = -module
 _loader_la_LIBADD =  ../yacsloader/libYACSloader.la $(OMNIORB_LIBS) $(PYTHON_LIBS)
 
 docyacsloader.i:$(SWIGINCLUDES)
-	(cd $(srcdir)/../yacsloader;doxygen ../../Misc/Doxyfile)
-	python $(top_srcdir)/Misc/doxy2swig.py -n $(srcdir)/../yacsloader/xml/index.xml docyacsloader.i;rm -rf $(srcdir)/../yacsloader/xml
+	DOXSRCDIR=$(top_srcdir)/src/yacsloader doxygen $(top_srcdir)/Misc/Doxyfile
+	$(PYTHON) $(top_srcdir)/Misc/doxy2swig.py -n xml/index.xml docyacsloader.i
 
 EXTRA_DIST = loader.i
 
 clean-local:
-	rm -f loader.py*  loaderWRAP.cxx docyacsloader.i
+	rm -f loader.py*  loaderWRAP.cxx docyacsloader.i loaderWRAP.h
+	rm -rf xml
 
 include $(top_srcdir)/adm/unix/make_end.am

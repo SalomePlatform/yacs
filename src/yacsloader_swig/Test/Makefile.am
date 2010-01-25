@@ -34,4 +34,6 @@ clean-local:
 check-local:
 	cat /tmp/${USER}/UnitTestsResult
 
+EXTRA_DIST = testEdit.py  testExec.py  testLoader.py  testRefcount.py  testResume.py  testSave.py
+
 include $(top_srcdir)/adm/unix/make_end.am
