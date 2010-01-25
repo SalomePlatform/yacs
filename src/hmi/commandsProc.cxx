@@ -607,7 +607,7 @@ bool CommandPutInComposedNode::localReverse()
 // ----------------------------------------------------------------------------
 
 CommandCopyNode::CommandCopyNode(YACS::ENGINE::Proc *fromproc,
-				 std::string position,
+                                 std::string position,
                                  std::string newParent)
   : Command(), _fromproc(fromproc), _position(position), _newParent(newParent), _newName(""), _clone(0)
 {
@@ -1906,7 +1906,7 @@ bool CommandDestroy::localExecute()
             subject = GuiContext::getCurrent()->_mapOfSubjectDataPort[outp];
           }
           break;
-	case DATALINK:
+        case DATALINK:
           {
             Node* outn = proc->getChildByName(_startnode);
             Node* inn = proc->getChildByName(_endnode);
@@ -1929,7 +1929,7 @@ bool CommandDestroy::localExecute()
             subject = GuiContext::getCurrent()->_mapOfSubjectLink[keymap];
           }
           break;
-	case CONTROLLINK:
+        case CONTROLLINK:
           {
             Node* outn = proc->getChildByName(_startnode);
             Node* inn = proc->getChildByName(_endnode);
@@ -2774,15 +2774,19 @@ bool CommandAddLink::localExecute()
         Node* outn2=outn;
         Node* inn2=inn;
         ComposedNode* father = ComposedNode::getLowestCommonAncestor(outn2,inn2);
-        if(outn2==father || inn2==father) return true;
-        while(outn2->getFather() != father)
-          outn2 = outn2->getFather();
-        while(inn2->getFather() != father)
-          inn2 = inn2->getFather();
-        OutGate *ogate = outn2->getOutGate();
-        InGate *igate = inn2->getInGate();
-        if (ogate->isAlreadyInSet(igate))
+        if(outn2==father || inn2==father)
           preexistingControl = true;
+        else
+          {
+            while(outn2->getFather() != father)
+              outn2 = outn2->getFather();
+            while(inn2->getFather() != father)
+              inn2 = inn2->getFather();
+            OutGate *ogate = outn2->getOutGate();
+            InGate *igate = inn2->getInGate();
+            if (ogate->isAlreadyInSet(igate))
+              preexistingControl = true;
+          }
       }
 
       if(_outPortType == OUTPUTPORT)
