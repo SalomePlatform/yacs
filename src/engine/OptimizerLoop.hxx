@@ -121,6 +121,7 @@ namespace YACS
       virtual std::string getAlgLib() const ;
       virtual void setAlgorithm(const std::string& alglib,const std::string& symbol,bool checkLinks=true);
       virtual void checkBasicConsistency() const throw(Exception);
+      virtual std::string typeName() {return "YACS__ENGINE__OptimizerLoop";}
 
     protected:
       void buildDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView);

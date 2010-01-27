@@ -54,6 +54,7 @@ namespace YACS
         ~SalomeOptimizerLoop();
         virtual void setAlgorithm(const std::string& alglib,const std::string& symbol,bool checkLinks=true);
         virtual std::string getAlgLib() const ;
+        virtual std::string typeName() {return "YACS__ENGINE__SalomeOptimizerLoop";}
       protected:
         SalomeOptimizerAlgStandardized *_pyalg;
         OptimizerAlgStandardized *_cppalg;

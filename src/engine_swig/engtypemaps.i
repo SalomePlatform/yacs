@@ -395,6 +395,11 @@ static PyObject* convertPort(YACS::ENGINE::Port* port,int owner=0)
   $result=convertNode($1,$owner);
 }
 
+%typemap(out) YACS::ENGINE::OptimizerLoop*
+{
+  $result=convertNode($1,$owner);
+}
+
 %typemap(out) YACS::ENGINE::Proc*
 {
   $result=convertNode($1,$owner);
