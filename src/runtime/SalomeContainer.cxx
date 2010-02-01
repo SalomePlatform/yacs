@@ -145,8 +145,7 @@ void SalomeContainer::setProperty(const std::string& name, const std::string& va
     std::istringstream iss(value);
     if (!(iss >> _params.nb_proc))
       throw Exception("salomecontainer::setproperty : params.nb_component_nodes value not correct : " + value);
-    if (!(iss >> _params.resource_params.nb_proc))
-      throw Exception("salomecontainer::setproperty : params.nb_component_nodes value not correct : " + value);
+    _params.resource_params.nb_proc=_params.nb_proc;
   }
   else if (name == "isMPI")
   {
