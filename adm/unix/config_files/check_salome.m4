@@ -109,6 +109,7 @@ AC_REQUIRE([AC_LINKER_OPTIONS])dnl
 AC_CHECKING(for $2 $1 )
 
 SalomeGUI_ok=no
+HAS_GUI=0
 
 GUI_LDFLAGS=""
 GUI_CXXFLAGS=""
@@ -136,6 +137,7 @@ fi
 
 if test -f ${SALOME_GUI_DIR}/bin/salome/$1 ; then
   SalomeGUI_ok=yes
+  HAS_GUI=1
   AC_MSG_RESULT(Using SALOME GUI distribution in ${SALOME_GUI_DIR})
 
   if test "x${GUI_ROOT_DIR}" == "x" ; then
@@ -154,6 +156,15 @@ else
 fi
   
 AC_MSG_RESULT(for $2: ${SalomeGUI_ok})
+
+# Propagate test into atlocal
+AC_SUBST(HAS_GUI)
+
+# Propagate test into Makefiles...
+AM_CONDITIONAL(HAS_GUI, test $HAS_GUI = 1)
+
+# ... and into source files
+AC_DEFINE_UNQUOTED(WITH_GUI, $HAS_GUI, [SALOME GUI])
  
 ])dnl
 

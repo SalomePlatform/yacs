@@ -28,6 +28,7 @@ dnl qt4 is searched in the following order
 dnl   path given with --with-qt4 options
 dnl   presence of QTDIR variable
 dnl   /usr
+dnl when HAS_GUI is false (no salome gui) and nothing is said for qt4, qt4 is not checked
 dnl usages
 dnl ./configure --prefix=/home/prascle/partage/maquettes/install 
 dnl ./configure --prefix=/home/prascle/partage/maquettes/install --with-qt4
@@ -62,22 +63,30 @@ AC_DEFUN([I2_CHECK_QT4],
     fi
   fi
 
-  # --- if qt4 standard install directory is not defined: QTDIR value if defined, or /usr
+  # --- if qt4 standard install directory is not defined
+  #       if HAS_GUI= 0: Qt4 not wanted
+  #       else: QTDIR value if defined, or /usr
   if test x${withval} = xnotset
   then
-    if test -z $QTDIR
+    if test x${HAS_GUI} = x0
     then
-      qt4_install_path="/usr"
+      qt4_wanted=no
+      AC_MSG_NOTICE([SALOME GUI not present, Qt4 not specified, skip detection])
     else
-      if test $QTDIR = /usr/lib/qt3 ; then
-        if test -d /usr/lib/qt4 ; then
-          AC_MSG_RESULT(it is strange for a qt4 installation !)
-          AC_MSG_RESULT(/usr/lib/qt4 is present)
-          AC_MSG_RESULT(replacing QTDIR by /usr/lib/qt4)
-          QTDIR=/usr/lib/qt4
+      if test -z $QTDIR
+      then
+        qt4_install_path="/usr"
+      else
+        if test $QTDIR = /usr/lib/qt3 ; then
+          if test -d /usr/lib/qt4 ; then
+            AC_MSG_RESULT(it is strange for a qt4 installation !)
+            AC_MSG_RESULT(/usr/lib/qt4 is present)
+            AC_MSG_RESULT(replacing QTDIR by /usr/lib/qt4)
+            QTDIR=/usr/lib/qt4
+          fi
         fi
+        qt4_install_path=$QTDIR
       fi
-      qt4_install_path=$QTDIR
     fi
   fi
   
