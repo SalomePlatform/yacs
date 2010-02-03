@@ -293,7 +293,10 @@ void DynParaLoop::cleanDynGraph()
 void DynParaLoop::prepareInputsFromOutOfScope(int branchNb)
 {
   set< InPort * > portsToSetVals=getAllInPortsComingFromOutsideOfCurrentScope();
-  portsToSetVals.erase(&_nbOfBranches);//_nbOfBranches inport is not a candidate of dynamically duplicated inport.
+  // local input ports are not candidates for dynamically duplicated inport.
+  list<InputPort *> localPorts = getLocalInputPorts();
+  for(list<InputPort *>::iterator iter = localPorts.begin() ; iter != localPorts.end() ; iter++)
+    portsToSetVals.erase(*iter);
   for(set< InPort * >::iterator iter=portsToSetVals.begin();iter!=portsToSetVals.end();iter++)
     {
       InputPort *curPortCasted=(InputPort *) *iter;//Cast granted by ForEachLoop::buildDelegateOf(InPort)
