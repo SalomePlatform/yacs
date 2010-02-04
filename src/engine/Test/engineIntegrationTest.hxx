@@ -67,6 +67,7 @@ namespace YACS
       CPPUNIT_TEST( testForCheckConsistency2 );
       CPPUNIT_TEST( testForCheckConsistency3 );
       CPPUNIT_TEST( testForCheckConsistency4 );
+      CPPUNIT_TEST( testRemoveRuntime );
       CPPUNIT_TEST_SUITE_END();
     public:
       void setUp();
@@ -107,6 +108,7 @@ namespace YACS
       void testForCheckConsistency2();
       void testForCheckConsistency3();
       void testForCheckConsistency4();
+      void testRemoveRuntime();
     protected:
       template<class T>
       static void checkListsEqual(const std::list<T>& setToTest1, const std::list<T>& setToTest2);

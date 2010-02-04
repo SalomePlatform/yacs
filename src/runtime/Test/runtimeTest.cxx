@@ -252,7 +252,7 @@ void RuntimeTest::createRecursiveBlocs()
 {
   DEBTRACE(" --- recursive blocs, check constituants" );
 
-  // --- Bloc_2 with Bloc_1 and Bloc_2
+  // --- Bloc_2 with Bloc_0, Bloc_1 and Node_3
   {
     ostringstream ss;
     ss << "Bloc_" << _ibloc++;
@@ -1510,7 +1510,6 @@ void RuntimeTest::executeCppNode()
   
   u->decrRef();
   v->decrRef();
-  w->decrRef();
   
   delete node;
   
@@ -1519,6 +1518,7 @@ void RuntimeTest::executeCppNode()
   node = _myRuntime->createCompoNode("Cpp", "test");
   CppComponent * C = new CppComponent("TestComponent");
   node->setComponent(C);
+  C->decrRef();
   node->setMethod("f");
   
   in  = node->edAddInputPort("in",  _tc_double);
@@ -1543,7 +1543,6 @@ void RuntimeTest::executeCppNode()
   
   u->decrRef();
   v->decrRef();
-  w->decrRef();
   
   delete node;
   
@@ -1560,6 +1559,7 @@ void RuntimeTest::createGraphWithCppNodes()
    
   CppComponent *C = new CppComponent("TestComponent"); 
   ((CppNode *) n1)->setComponent(C);
+  C->decrRef();
   ((CppNode *) n1)->setMethod("f");
   in1  = n1->edAddInputPort("i",  _tc_double);
   out1  = n1->edAddOutputPort("o",  _tc_double);
@@ -1600,6 +1600,16 @@ void RuntimeTest::classTeardown()
   if (endTests) return;
   
   endTests = true;
+
+  delete _blocMap["Bloc_3"];
+  delete _blocMap["Bloc_2"];
+  delete _nodeMap["Node_4"];
+  delete _nodeMap["Node_5"];
+  delete _nodeMap["Node_6"];
+  delete _nodeMap["Node_7"];
+  delete _nodeMap["Node_8"];
+  delete _nodeMap["Node_9"];
+
   _tc_seqC->decrRef();
   _tc_C->decrRef();
   list<TypeCodeObjref *>::iterator i;
@@ -1617,5 +1627,7 @@ void RuntimeTest::classTeardown()
   _tc_seqlong->decrRef();
   _tc_string->decrRef();
 
+  _myRuntime->fini();
   delete _myRuntime;
 }
+

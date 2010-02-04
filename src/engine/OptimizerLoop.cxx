@@ -159,17 +159,11 @@ Node *FakeNodeForOptimizerLoop::simpleClone(ComposedNode *father, bool editionOn
 void FakeNodeForOptimizerLoop::exForwardFailed()
 {
   _loop->exForwardFailed();
-  FakeNodeForOptimizerLoop *normallyThis=_loop->_nodeForSpecialCases;
-  _loop->_nodeForSpecialCases=0;
-  delete normallyThis;
 }
 
 void FakeNodeForOptimizerLoop::exForwardFinished()
 {
   _loop->exForwardFinished();
-  FakeNodeForOptimizerLoop *normallyThis=_loop->_nodeForSpecialCases;
-  _loop->_nodeForSpecialCases=0;
-  delete normallyThis;
 }
 
 void FakeNodeForOptimizerLoop::execute()

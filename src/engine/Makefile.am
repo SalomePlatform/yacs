@@ -79,6 +79,8 @@ libYACSlibEngine_la_SOURCES =             \
 	Catalog.cxx                    \
 	ComponentDefinition.cxx        \
 	DataNode.cxx                   \
+	Task.cxx                       \
+	Scheduler.cxx                  \
 	$(__dummy__)
 
 salomeinclude_HEADERS =                \

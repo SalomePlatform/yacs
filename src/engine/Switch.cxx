@@ -245,17 +245,11 @@ Node *FakeNodeForSwitch::simpleClone(ComposedNode *father, bool editionOnly) con
 void FakeNodeForSwitch::exForwardFailed()
 {
   _sw->exForwardFailed();
-  FakeNodeForSwitch *normallyThis=_sw->_undispatchableNotificationNode;
-  _sw->_undispatchableNotificationNode=0;
-  delete normallyThis;
 }
 
 void FakeNodeForSwitch::exForwardFinished()
 { 
   _sw->exForwardFinished(); 
-  FakeNodeForSwitch *normallyThis=_sw->_undispatchableNotificationNode;
-  _sw->_undispatchableNotificationNode=0;
-  delete normallyThis;
 }
 
 void FakeNodeForSwitch::execute()
@@ -302,6 +296,8 @@ Switch::Switch(const std::string& name):StaticDefinedComposedNode(name),_conditi
 
 Switch::~Switch()
 {
+  if(_undispatchableNotificationNode)delete _undispatchableNotificationNode;
+
   for(map< int , Node * >::iterator iter=_mapOfNode.begin();iter!=_mapOfNode.end();iter++)
     delete (*iter).second;
   for(map<InPort *, CollectorSwOutPort * >::iterator iter2=_outPortsCollector.begin();iter2!=_outPortsCollector.end();iter2++)

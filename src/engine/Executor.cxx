@@ -917,6 +917,12 @@ void Executor::launchTasks(std::vector<Task *>& tasks)
     }
 }
 
+struct threadargs {
+  Task *task;
+  Scheduler *sched;
+  Executor *execInst;
+};
+
 //! Execute a Task in a thread
 /*!
  *  \param task  : Task to execute
@@ -929,6 +935,7 @@ void Executor::launchTasks(std::vector<Task *>& tasks)
 void Executor::launchTask(Task *task)
 {
   DEBTRACE("Executor::launchTask(Task *task)");
+  struct threadargs *args;
   if(task->getState() != YACS::TOACTIVATE)return;
   traceExec(task, "state:TOACTIVATE");
 
@@ -936,10 +943,11 @@ void Executor::launchTask(Task *task)
   _semForMaxThreads.wait();
   _semThreadCnt -= 1;
 
-  void **args=new void *[3];
-  args[0]=(void *)task;
-  args[1]=(void *)_mainSched;
-  args[2]=(void *)this;
+  args= new threadargs;
+  args->task = task;
+  args->sched = _mainSched;
+  args->execInst = this;
+
   traceExec(task, "launch");
 
   { // --- Critical section
@@ -1023,11 +1031,13 @@ int Executor::getNbOfThreads()
 void *Executor::functionForTaskExecution(void *arg)
 {
   DEBTRACE("Executor::functionForTaskExecution(void *arg)");
-  void **argT=(void **)arg;
-  Task *task=(Task *)argT[0];
-  Scheduler *sched=(Scheduler *)argT[1];
-  Executor *execInst=(Executor *)argT[2];
-  delete [] argT;
+
+  struct threadargs *args = (struct threadargs *) arg;
+  Task *task=args->task;
+  Scheduler *sched=args->sched;
+  Executor *execInst=args->execInst;
+  delete args;
+
   Thread::detach();
 
   // Execute task

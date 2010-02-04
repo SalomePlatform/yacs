@@ -45,6 +45,7 @@ namespace YACS
       virtual YACS::StatesForNode getState() const = 0;
       virtual void finished() = 0;
       virtual void aborted() = 0;
+      virtual ~Task();
     };
   }
 }

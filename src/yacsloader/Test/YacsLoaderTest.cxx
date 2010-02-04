@@ -319,7 +319,46 @@ void YacsLoaderTest::schema2()
         *((OutputCorbaPort*)p->nodeMap["node63"]->getOutputPort("p1"))->getAny() >>= dval;
         CPPUNIT_ASSERT_DOUBLES_EQUAL(25., dval, 1.E-12);
       }
-      delete p;
+      try
+        {
+          delete p;
+        }
+      catch (YACS::Exception& e)
+        {
+          DEBTRACE("YACS exception caught: ");
+          DEBTRACE(e.what());
+        }
+      catch (const std::ios_base::failure&)
+        {
+          DEBTRACE("io failure");
+        }
+      catch(CORBA::SystemException& ex)
+        {
+          DEBTRACE("Caught a CORBA::SystemException.");
+          CORBA::Any tmp;
+          tmp <<= ex;
+          CORBA::TypeCode_var tc = tmp.type();
+          const char *p = tc->name();
+          if ( *p != '\0' )
+            {
+              DEBTRACE(p);
+            }
+          else
+            {
+              DEBTRACE(tc->id());
+            }
+        }
+      catch(omniORB::fatalException& fe)
+        {
+          DEBTRACE("Caught omniORB::fatalException:" );
+          DEBTRACE("  file: " << fe.file());
+          DEBTRACE("  line: " << fe.line());
+          DEBTRACE("  mesg: " << fe.errmsg());
+        }
+      catch(...)
+        {
+          DEBTRACE("unknown exception");
+        }
     }
 }
 

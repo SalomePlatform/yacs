@@ -265,17 +265,11 @@ Node *FakeNodeForForEachLoop::simpleClone(ComposedNode *father, bool editionOnly
 void FakeNodeForForEachLoop::exForwardFailed()
 {
   _loop->exForwardFailed();
-  FakeNodeForForEachLoop *normallyThis=_loop->_nodeForSpecialCases;
-  _loop->_nodeForSpecialCases=0;
-  delete normallyThis;
 }
 
 void FakeNodeForForEachLoop::exForwardFinished()
 { 
   _loop->exForwardFinished();
-  FakeNodeForForEachLoop *normallyThis=_loop->_nodeForSpecialCases;
-  _loop->_nodeForSpecialCases=0;
-  delete normallyThis;
 }
 
 void FakeNodeForForEachLoop::execute()

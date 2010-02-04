@@ -69,6 +69,7 @@ namespace YACS
     CPPUNIT_TEST(convertPorts );
     CPPUNIT_TEST(executeCppNode );
     CPPUNIT_TEST(createGraphWithCppNodes );
+    CPPUNIT_TEST(classTeardown );
     CPPUNIT_TEST_SUITE_END();
     
   public:

@@ -258,17 +258,11 @@ Node *FakeNodeForLoop::simpleClone(ComposedNode *father, bool editionOnly) const
 void FakeNodeForLoop::exForwardFailed()
 {
   _loop->exForwardFailed();
-  FakeNodeForLoop *normallyThis=_loop->_nodeForNullTurnOfLoops;
-  _loop->_nodeForNullTurnOfLoops=0;
-  delete normallyThis;
 }
 
 void FakeNodeForLoop::exForwardFinished()
 { 
   _loop->exForwardFinished();
-  FakeNodeForLoop *normallyThis=_loop->_nodeForNullTurnOfLoops;
-  _loop->_nodeForNullTurnOfLoops=0;
-  delete normallyThis;
 }
 
 void FakeNodeForLoop::execute()
@@ -303,7 +297,7 @@ Loop::Loop(const std::string& name):StaticDefinedComposedNode(name),_node(0),_nb
 Loop::~Loop()
 {
   delete _node;
-  delete _nodeForNullTurnOfLoops;
+  if(_nodeForNullTurnOfLoops)delete _nodeForNullTurnOfLoops;
   for(set<DSToDFForLoop *>::iterator iter1=_inputsTraducer.begin();iter1!=_inputsTraducer.end();iter1++)
     delete (*iter1);
   for(set<DFToDSForLoop *>::iterator iter2=_outputsTraducer.begin();iter2!=_outputsTraducer.end();iter2++)

@@ -3223,3 +3223,9 @@ void EngineIntegrationTest::testForCheckConsistency4()
   CPPUNIT_ASSERT(1==info.getNumberOfErrLinks(E_UNCOMPLETE_SW));
   delete graph;
 }
+
+void EngineIntegrationTest::testRemoveRuntime()
+{
+  Runtime* r=YACS::ENGINE::getRuntime();
+  delete r;
+}
