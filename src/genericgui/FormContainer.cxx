@@ -240,9 +240,8 @@ void FormContainer::onModified()
   DEBTRACE("FormContainer::onModified");
   Subject *sub = QtGuiContext::getQtCurrent()->getSelectedSubject();
   if (!sub) return;
-  int idEd = QtGuiContext::getQtCurrent()->_mapOfEditionItem[sub];
-  QStackedWidget *widStack = QtGuiContext::getQtCurrent()->getStackedWidget();
-  QWidget *widget = widStack->widget(idEd);
+  YASSERT(QtGuiContext::getQtCurrent()->_mapOfEditionItem.count(sub));
+  QWidget *widget = QtGuiContext::getQtCurrent()->_mapOfEditionItem[sub];
   ItemEdition *item = dynamic_cast<ItemEdition*>(widget);
   YASSERT(item);
   item->setEdited(true);

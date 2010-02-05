@@ -71,10 +71,13 @@ std::map<int, std::string> GuiObserver::_eventNameMap;
 
 void Subject::erase(Subject* sub, Command *command, bool post)
 {
+  Subject* parent =sub->getParent();
   sub->clean(command);
   delete sub;
   if (!post) // --- avoid recursion in erase, see cleanPostErase
     GuiContext::getCurrent()->getSubjectProc()->cleanPostErase();
+  if (parent)
+    parent->select(true);
 }
 
 // ----------------------------------------------------------------------------
@@ -1783,7 +1786,10 @@ void SubjectProc::cleanPostErase()
 {
   DEBTRACE("SubjectProc::cleanPostErase");
   for (int i=0; i<_postEraseList.size(); i++)
-    erase(_postEraseList[i],0, true); // --- true: do not call recursively erase
+    {
+      DEBTRACE("cleanPostErase " << _postEraseList[i]->getName());
+      erase(_postEraseList[i],0, true); // --- true: do not call recursively erase
+    }
   _postEraseList.clear();
 }
 
@@ -4102,7 +4108,7 @@ void SubjectComponent::clean(Command *command)
 
 void SubjectComponent::localclean(Command *command)
 {
-  DEBTRACE("SubjectComponent::localClean ");
+  DEBTRACE("SubjectComponent::localClean " << this);
   Proc* aProc = GuiContext::getCurrent()->getProc();
   if ( aProc )
   {
@@ -4127,6 +4133,13 @@ void SubjectComponent::localclean(Command *command)
         parent->erase(son);
         parent->update(REMOVE,0,0);
       }
+      
+    Container* container = _compoInst->getContainer();
+    if (!container) return;
+    SubjectContainer *subContainer;
+    YASSERT(GuiContext::getCurrent()->_mapOfSubjectContainer.count(container));
+    subContainer = GuiContext::getCurrent()->_mapOfSubjectContainer[container];
+    subContainer->removeSubComponentFromSet(this);
   }
 }
 

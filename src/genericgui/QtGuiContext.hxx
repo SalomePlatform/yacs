@@ -91,7 +91,7 @@ namespace YACS
 
       std::map<YACS::HMI::Subject*, YACS::HMI::SchemaItem*> _mapOfSchemaItem;
       std::map<YACS::HMI::Subject*, YACS::HMI::SceneItem*>  _mapOfSceneItem;
-      std::map<YACS::HMI::Subject*, int> _mapOfEditionItem;
+      std::map<YACS::HMI::Subject*, QWidget*> _mapOfEditionItem;
       std::set<YACS::HMI::Subject*> _setOfModifiedSubjects;
 
       static std::set<QtGuiContext*> _setOfContext;
