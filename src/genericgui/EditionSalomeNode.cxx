@@ -48,9 +48,9 @@ EditionSalomeNode::EditionSalomeNode(Subject* subject,
   _wContainer = new FormContainer(this);
   _wid->gridLayout1->addWidget(_wContainer);
 
-  connect(_wContainer->cb_host, SIGNAL(mousePressed()),
+  connect(_wContainer->cb_resource, SIGNAL(mousePressed()),
           this, SLOT(fillContainerPanel()));
-  connect(_wContainer->cb_host, SIGNAL(activated(int)),
+  connect(_wContainer->cb_resource, SIGNAL(activated(int)),
           this, SLOT(changeHost(int)));
   connect(_wContainer->tb_container, SIGNAL(toggled(bool)),
           this, SLOT(fillContainerPanel())); // --- to update display of current selection
@@ -233,7 +233,7 @@ void EditionSalomeNode::changeContainer(int index)
 
 void EditionSalomeNode::changeHost(int index)
 {
-  string hostName = _wContainer->cb_host->itemText(index).toStdString();
+  string hostName = _wContainer->cb_resource->itemText(index).toStdString();
   DEBTRACE(hostName);
 }
 
