@@ -41,7 +41,7 @@ EditionContainer::EditionContainer(Subject* subject,
 {
   _wContainer = new FormContainer(this);
   _wid->gridLayout1->addWidget(_wContainer);
-  connect(_wContainer->cb_host, SIGNAL(mousePressed()),
+  connect(_wContainer->cb_resource, SIGNAL(mousePressed()),
           this, SLOT(fillContainerPanel()));
   connect(_wContainer->tb_container, SIGNAL(toggled(bool)),
           this, SLOT(fillContainerPanel())); // --- to update display of current selection
