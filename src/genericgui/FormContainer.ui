@@ -100,14 +100,14 @@
          <item row="1" column="0">
           <widget class="QLabel" name="label_4">
            <property name="text">
-            <string>Host:</string>
+            <string>Resource:</string>
            </property>
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="QComboBox" name="cb_host">
+          <widget class="QComboBox" name="cb_resource">
            <property name="toolTip">
-            <string>name of the computer hosting container when manually set</string>
+            <string>name of the resource hosting container when manually set</string>
            </property>
           </widget>
          </item>
