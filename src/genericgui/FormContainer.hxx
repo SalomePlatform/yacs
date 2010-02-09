@@ -52,7 +52,7 @@ public slots:
   void on_tb_container_toggled(bool checked);
   void on_ch_advance_stateChanged(int state);
   void onModifyName(const QString &text);
-  void onModifyHost(const QString &text);
+  void onModifyResource(const QString &text);
   void onModifyPolicy(const QString &text);
   void onModifyType(const QString &text);
   void onModifyWorkDir(const QString &text);

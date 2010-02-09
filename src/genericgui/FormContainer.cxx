@@ -44,10 +44,10 @@ FormContainer::FormContainer(QWidget *parent)
   _advanced = false;
   _properties.clear();
 
-  gridLayout->removeWidget(cb_host);
-  delete cb_host;
-  cb_host = new ComboBox(gb_basic);
-  gridLayout->addWidget(cb_host, 1, 1, 1, 1);
+  gridLayout->removeWidget(cb_resource);
+  delete cb_resource;
+  cb_resource = new ComboBox(gb_basic);
+  gridLayout->addWidget(cb_resource, 1, 1, 1, 1);
 
   QIcon icon;
   icon.addFile("icons:icon_down.png");
@@ -67,8 +67,8 @@ FormContainer::FormContainer(QWidget *parent)
   connect(le_name, SIGNAL(textChanged(const QString&)),
           this, SLOT(onModifyName(const QString&)));
 
-  connect(cb_host, SIGNAL(activated(const QString&)),
-          this, SLOT(onModifyHost(const QString&)));
+  connect(cb_resource, SIGNAL(activated(const QString&)),
+          this, SLOT(onModifyResource(const QString&)));
 
   connect(cb_policy, SIGNAL(activated(const QString&)),
           this, SLOT(onModifyPolicy(const QString&)));
@@ -153,28 +153,28 @@ void FormContainer::FillPanel(YACS::ENGINE::Container *container)
   else
     cb_policy->setCurrentIndex(0);
   
-  cb_host->clear();
-  cb_host->addItem("automatic"); // --- when no host selected
+  cb_resource->clear();
+  cb_resource->addItem("automatic"); // --- when no host selected
 
   list<string> machines = QtGuiContext::getQtCurrent()->getGMain()->getMachineList();
   list<string>::iterator itm = machines.begin();
   for( ; itm != machines.end(); ++itm)
     {
-      cb_host->addItem(QString((*itm).c_str()));
+      cb_resource->addItem(QString((*itm).c_str()));
     }
-  if(_properties.count("hostname") && _properties["hostname"] != "")
+  if(_properties.count("name") && _properties["name"] != "")
     {
-      int index = cb_host->findText(_properties["hostname"].c_str());
+      int index = cb_resource->findText(_properties["name"].c_str());
       if (index >= 0)
-        cb_host->setCurrentIndex(index);
+        cb_resource->setCurrentIndex(index);
       else
         {
-          cb_host->addItem(_properties["hostname"].c_str());
-          cb_host->setCurrentIndex(cb_host->count()-1);
+          cb_resource->addItem(_properties["name"].c_str());
+          cb_resource->setCurrentIndex(cb_resource->count()-1);
         }
     }
   else
-    cb_host->setCurrentIndex(0);
+    cb_resource->setCurrentIndex(0);
 
 
   if(_properties.count("workingdir"))
@@ -273,15 +273,15 @@ void FormContainer::onModifyName(const QString &text)
     onModified();
 }
 
-void FormContainer::onModifyHost(const QString &text)
+void FormContainer::onModifyResource(const QString &text)
 {
-  DEBTRACE("onModifyHost " << text.toStdString());
+  DEBTRACE("onModifyResource " << text.toStdString());
   if (!_container) return;
-  std::string host=text.toStdString();
-  if(host=="automatic")host="";
+  std::string resource=text.toStdString();
+  if(resource=="automatic")resource="";
   map<string,string> properties = _container->getProperties();
-  _properties["hostname"] = host;
-  if (properties["hostname"] != host)
+  _properties["name"] = resource;
+  if (properties["name"] != resource)
     onModified();
 }
 
