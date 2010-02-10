@@ -361,11 +361,29 @@ YACS::Event OptimizerLoop::updateStateOnFinishedEventFrom(Node *node)
       _nbOfEltConsumed++;
       break;
     case WORK_NODE:
-      if(_state==YACS::DONE)//This case happend when alg has reached its convergence whereas other calculations still compute.
-        {
-          if(isFullyLazy())
-            _condForCompletenessB4Relaunch.wait();
-          return YACS::NOEVENT;
+      if(_convergenceReachedWithOtherCalc)
+        { //This case happens when alg has reached its convergence whereas other calculations still compute
+          _execIds[id]=NOT_RUNNING_BRANCH_ID;
+          if(!isFullyLazy())
+            return YACS::NOEVENT;
+          else
+            {
+              setState(YACS::DONE);
+              //update internal node (definition node) state
+              if (_node)
+                {
+                  _node->setState(YACS::DONE);
+                  ComposedNode* compNode = dynamic_cast<ComposedNode*>(_node);
+                  if (compNode)
+                    {
+                      std::list<Node *> aChldn = compNode->getAllRecursiveConstituents();
+                      std::list<Node *>::iterator iter=aChldn.begin();
+                      for(;iter!=aChldn.end();iter++)
+                        (*iter)->setState(YACS::DONE);
+                    }
+                }
+              return YACS::FINISH;
+            }
         }
       _myPool.putOutSampleAt(_execIds[id],_interceptorsForOutPool[id]->getValue());
       _myPool.setCurrentId(_execIds[id]);
@@ -375,8 +393,11 @@ YACS::Event OptimizerLoop::updateStateOnFinishedEventFrom(Node *node)
         {
           pushValueOutOfScopeForCase(id);
           _execIds[id]=NOT_RUNNING_BRANCH_ID;
-          if(!isFullyLazy())// This case happens when the hand is returned to continue, whereas some other are working in parallel for nothing.
-            _convergenceReachedWithOtherCalc=true;
+          if(!isFullyLazy())
+            {// This case happens when the hand is returned to continue, whereas some other are working in parallel for nothing.
+              _convergenceReachedWithOtherCalc=true;
+              return YACS::NOEVENT;
+            }
           setState(YACS::DONE);
           //update internal node (definition node) state
           if (_node)
@@ -458,15 +479,6 @@ void OptimizerLoop::checkCFLinks(const std::list<OutPort *>& starts, InputPort *
 
 void OptimizerLoop::cleanInterceptors()
 {
-  //the destruction of interceptors whereas some running nodes can push value on them can lead to SIG SEGV.
-  if(!_execNodes.empty())
-    {
-      if(_convergenceReachedWithOtherCalc)
-        {
-          cout << "Waiting completion of last other useless cases." << endl;
-          _condForCompletenessB4Relaunch.waitForAWait();
-        }
-    }
   // At this point all garanties taken let's clean all.
   map<InputPort *,vector<InputPort *> >::iterator iter=_interceptors.begin();
   for(;iter!=_interceptors.end();iter++)

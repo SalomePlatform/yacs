@@ -68,7 +68,7 @@ namespace YACS
     CPPUNIT_TEST(structs);
     CPPUNIT_TEST(cpps);
     CPPUNIT_TEST(datanodes);
-    //CPPUNIT_TEST(optimizers);
+    CPPUNIT_TEST(optimizers);
     CPPUNIT_TEST_SUITE_END();
       
   public:

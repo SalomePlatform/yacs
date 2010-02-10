@@ -300,8 +300,13 @@ void Executor::RunB(Scheduler *graph,int debug, bool fromScratch)
       { // --- Critical section
         DEBTRACE("---");
         _mutexForSchedulerUpdate.lock();
-        _toContinue = !graph->isFinished();
+        //It is possible that the graph is finished but it remains running tasks (it's an error but we must take it into account)
+        if(_numberOfRunningTasks == 0)
+          _toContinue = !graph->isFinished();
 
+        DEBTRACE("_numberOfRunningTasks: " << _numberOfRunningTasks);
+        DEBTRACE("_numberOfEndedTasks: " << _numberOfEndedTasks);
+        DEBTRACE("_toContinue: " << _toContinue);
         if(_toContinue && numberAllTasks==0)
           {
             //Problem : no running tasks and no task to launch ??
