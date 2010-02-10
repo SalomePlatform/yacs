@@ -50,6 +50,7 @@
 #include "LogViewer.hxx"
 #include "chrono.hxx"
 #include "Resource.hxx"
+#include "Message.hxx"
 
 #include <QFileDialog>
 #include <sstream>
@@ -2368,13 +2369,17 @@ void GenericGui::onDeEmphasizeAll()
 void GenericGui::onUndo()
 {
   DEBTRACE("GenericGui::onUndo");
-  QtGuiContext::getQtCurrent()->getInvoc()->undo();
+  if (QtGuiContext::getQtCurrent()->_setOfModifiedSubjects.empty())
+    QtGuiContext::getQtCurrent()->getInvoc()->undo();
+  else Message("undo not possible when there are local modifications not confirmed");
 }
 
 void GenericGui::onRedo()
 {
   DEBTRACE("GenericGui::onRedo");
-  QtGuiContext::getQtCurrent()->getInvoc()->redo();
+  if (QtGuiContext::getQtCurrent()->_setOfModifiedSubjects.empty())
+    QtGuiContext::getQtCurrent()->getInvoc()->redo();
+  else Message("redo not possible when there are local modifications not confirmed");
 }
 
 void GenericGui::onShowUndo()

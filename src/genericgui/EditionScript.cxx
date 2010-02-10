@@ -140,17 +140,22 @@ EditionScript::~EditionScript()
 
 void EditionScript::synchronize()
 {
+  DEBTRACE("EditionScript::synchronize " << this->_isEdited);
   EditionElementaryNode::synchronize();
   YACS::ENGINE::InlineNode* pyNode = dynamic_cast<YACS::ENGINE::InlineNode*>(_subInlineNode->getNode());
   YASSERT(pyNode);
   disconnect(_sci, SIGNAL(textChanged()), this, SLOT(onScriptModified()));
-  _sci->clear();
-  _sci->append(pyNode->getScript().c_str());
+  if (!_isEdited)
+  {
+    _sci->clear();
+    _sci->append(pyNode->getScript().c_str());
+  }
   connect(_sci, SIGNAL(textChanged()), this, SLOT(onScriptModified()));
 }
 
 void EditionScript::onApply()
 {
+  DEBTRACE("EditionScript::onApply");
   bool scriptEdited = false;
 #if HAS_QSCI4>0
   _sci->lexer()->setFont(Resource::pythonfont);
@@ -161,9 +166,9 @@ void EditionScript::onApply()
       if (_sci->isModified())
         {
           scriptEdited = true;
-	  std::string text=_sci->text().toStdString();
-	  if(text[text.length()-1] != '\n')
-	    text=text+'\n';
+          std::string text=_sci->text().toStdString();
+          if(text[text.length()-1] != '\n')
+            text=text+'\n';
           bool ret = _subInlineNode->setScript(text);
           if (ret) scriptEdited = false;
         }
@@ -171,9 +176,9 @@ void EditionScript::onApply()
       if (_sci->document()->isModified())
         {
           scriptEdited = true;
-	  std::string text=_sci->document()->toPlainText().toStdString();
-	  if(text[text.length()-1] != '\n')
-	    text=text+'\n';
+          std::string text=_sci->document()->toPlainText().toStdString();
+          if(text[text.length()-1] != '\n')
+            text=text+'\n';
           bool ret = _subInlineNode->setScript(text);
           if (ret) scriptEdited = false;
         }
@@ -193,5 +198,7 @@ void EditionScript::onCancel()
 
 void EditionScript::onScriptModified()
 {
+  DEBTRACE("EditionScript::onScriptModified");
+  _isEdited = true;
   setEdited(true);
 }

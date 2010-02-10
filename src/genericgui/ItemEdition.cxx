@@ -226,7 +226,7 @@ void ItemEdition::onApply()
         }
     }
   DEBTRACE(_isEdited << " " << nameEdited);
-  _isEdited = _isEdited || nameEdited;
+  _isEdited = nameEdited;
   setEdited(_isEdited);
 }
 
@@ -244,6 +244,7 @@ void ItemEdition::onModifyName(const QString &text)
 
 void ItemEdition::setEdited(bool isEdited)
 {
+  DEBTRACE("ItemEdition::setEdited " << isEdited);
   if (isEdited)
     {
       QtGuiContext::getQtCurrent()->_setOfModifiedSubjects.insert(_subject);
