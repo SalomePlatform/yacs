@@ -1118,7 +1118,8 @@ SubjectInputPort* SubjectNode::addSubjectInputPort(YACS::ENGINE::InputPort *port
   if (!name.empty()) son->setName(name);
   update(ADD, INPUTPORT ,son);
   YACS::ENGINE::TypeCode *typcod = port->edGetType();
-  GuiContext::getCurrent()->getSubjectProc()->addComSubjectDataType(typcod, typcod->name());
+  if (!GuiContext::getCurrent()->getSubjectProc()->addComSubjectDataType(typcod, typcod->name()))
+    GuiContext::getCurrent()->getSubjectProc()->addSubjectDataType(typcod, typcod->name());  // --- new type of forEachLoop
   return son;
 }
 
