@@ -29,9 +29,9 @@
     <parameter name="YACSPrs" value="${YACS_ROOT_DIR}/share/salome/resources/yacs"/>
     <parameter name="YACS" value="${YACS_ROOT_DIR}/share/salome/resources/yacs"/>
   </section>
-  <section name="HELP_YACS">
-    <parameter name="sub_menu" value="%1"/>
-    <parameter name="YACS User's Documentation" value="${YACS_ROOT_DIR}/share/doc/salome/gui/YACS/index.html"/>
+  <section name="yacs_help">
+    <parameter name="sub_menu"     value="%1 module"/>
+    <parameter name="User's Guide" value="${YACS_ROOT_DIR}/share/doc/salome/gui/YACS/index.html"/>
   </section>
   <section name="YACS" >
     <!-- Module preferences -->
@@ -42,7 +42,7 @@
     <parameter name="simplifyLink" value="true" />
     <parameter name="addRowCols" value="true" />
     <parameter name="ensureVisibleWhenMoved" value="true" />
-    <parameter name="documentation" value="HELP_YACS"/>
+    <parameter name="documentation" value="yacs_help"/>
 
     <parameter name="editedNodeBrushColor" value="255, 255, 190" />
     <parameter name="normalNodeBrushColor" value="230, 235, 255" />
