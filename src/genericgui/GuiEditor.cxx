@@ -36,6 +36,7 @@
 #include "Message.hxx"
 #include "Resource.hxx"
 #include "FormUndoRedo.hxx"
+#include <QMessageBox>
 
 #include <string>
 #include <sstream>
@@ -140,6 +141,31 @@ void GuiEditor::_createNode(YACS::ENGINE::Catalog* catalog,
         }
       if (!aSwitch->addNode(catalog, compoName, service, name, createNewComponentInstance, swCase))
         Message mess;
+    }
+  else if (cnode && (dynamic_cast<SubjectBloc*>(cnode) == 0) && cnode->getChild() != 0)
+    {
+      // loop with a body : can't add a node
+      QMessageBox msgBox;
+      std::string msg;
+      msg="This loop has already a body. It is not possible to add directly another node\n";
+      msg=msg+"Do you want to put the existing node in a bloc and add the new node in this bloc ?\n";
+      msgBox.setText(msg.c_str());
+      msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No );
+      msgBox.setDefaultButton(QMessageBox::No);
+      int ret = msgBox.exec();
+      if(ret == QMessageBox::Yes)
+        {
+          // User wants to put body node in bloc
+          if (cnode->getChild()->putInComposedNode("Bloc1","Bloc"))
+            {
+              //the bloc has been successfully created. Add the new node
+              SubjectBloc* newbloc = dynamic_cast<SubjectBloc*>(cnode->getChild());
+              if (!newbloc->addNode(catalog, compoName, service, name, createNewComponentInstance))
+                Message mess;
+            }
+          else
+            Message mess;
+        }
     }
   else if (cnode)
     if (!cnode->addNode(catalog, compoName, service, name, createNewComponentInstance))
