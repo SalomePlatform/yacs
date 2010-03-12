@@ -132,7 +132,8 @@ install-data-local:
 	$(INSTALL) -d $(DESTDIR)$(yacsdocdir)
 	if test -d "html"; then b=; else b="$(srcdir)/"; fi; \
 	cp -rf $$b"html"/* $(DESTDIR)$(yacsdocdir) ; \
-	if test -f $$b"latex"/yacs.pdf; then cp -f $$b"latex"/yacs.pdf $(DESTDIR)$(yacsdocdir) ; fi;
+	if test -f $$b"latex"/using.pdf; then cp -f $$b"latex"/using.pdf $(DESTDIR)$(yacsdocdir) ; fi; \
+	if test -f $$b"latex"/integration.pdf; then cp -f $$b"latex"/integration.pdf $(DESTDIR)$(yacsdocdir) ; fi;
 
 install_dev_docs:
 	$(INSTALL) -d $(DESTDIR)$(yacsdevdocdir)
