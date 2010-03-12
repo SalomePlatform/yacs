@@ -558,7 +558,9 @@ and moduleName (the name of the module) that is optional. You can use also the s
 for compatibility with older versions. If the modules sub-tag is used, a component with the same name as
 the moduleName attribute is added to the list.
 
-The following is an example of a resource catalog::
+The following is an example of a resource catalog:
+
+.. code-block:: xml
 
   <!DOCTYPE ResourcesCatalog>
   <resources>
@@ -648,7 +650,9 @@ encountered.  For a service node, it will be either the content of a SALOME exce
 Composite nodes produce a composite report contained in a tag with the same name (error) with the same two node and state 
 attributes.  The tag contains all error reports for erroneous child  nodes.
 
-The following shows an error report for a division by zero in a Python node contained in a loop::
+The following shows an error report for a division by zero in a Python node contained in a loop:
+
+.. code-block:: xml
 
   <error node= proc state= FAILED>
   <error node= l1 state= FAILED>

@@ -73,6 +73,8 @@ advancepy.rst      \
 annexe_common.rst  \
 batch.rst          \
 calcium.rst        \
+calciumapi.rst        \
+calciummod.rst        \
 calculator.rst     \
 compInterne.rst   \
 components.rst  \

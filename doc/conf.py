@@ -129,7 +129,7 @@ html_static_path = ['_static']
 #html_additional_pages = {}
 
 # If false, no module index is generated.
-html_use_modindex = False
+#html_use_modindex = True 
 
 # If false, no index is generated.
 #html_use_index = True

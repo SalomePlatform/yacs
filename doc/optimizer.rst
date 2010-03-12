@@ -31,7 +31,9 @@ In Python you need to implement another method:
 
 C++ plugin example
 ''''''''''''''''''''
-Here is a small example of a C++ synchronous algorithm ::
+Here is a small example of a C++ synchronous algorithm :
+
+.. code-block:: cpp
 
   #include "OptimizerAlg.hxx"
 

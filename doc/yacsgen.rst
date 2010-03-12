@@ -217,7 +217,7 @@ Adding includes
 """"""""""""""""""""""""""""""""""""""""""""""""""""
 Includes will be added using the **defs** attribute.  For example::
 
-   defs="#include "myinclude.h"
+   defs="""#include "myinclude.h" """
 
 The includes path will be specified in the **includes** attribute of the component in the following form::
 
@@ -421,7 +421,9 @@ It is essential for calls to subprograms CPLxx and CPExx that will be used in th
 
 The other two commands do not have any keyword and they retrieve the identifier from the COMMON.
 
-The operators will be written as follows (without the declarations)::
+The operators will be written as follows (without the declarations):
+
+.. code-block:: fortran
 
           SUBROUTINE OP0189 ( IER )
     C     COMMANDE:  LECTURE_FORCE
@@ -446,7 +448,9 @@ The operators will be written as follows (without the declarations)::
 
 Finally, an astermodule.so dynamic library must be constructed, and all necessary Python modules must be placed in a directory 
 that will be indicated in the **python_path** attribute.  Different methods can be used to obtain this result.  
-The following Makefile is one of them::
+The following Makefile is one of them:
+
+.. code-block:: make
 
      #compiler
      FC=gfortran
@@ -597,7 +601,9 @@ A YACS coupling file is an XML file that describes how SALOME components previou
 
 See :ref:`schemaxml` for documentation about how to write a YACS XML file.
 
-The following is an example of a YACS file using the Fortran component defined above::
+The following is an example of a YACS file using the Fortran component defined above:
+
+.. code-block:: xml
 
   <proc>
   <container name="A"> </container>
@@ -704,14 +710,18 @@ There are many coupling outputs:
 - container outputs:  these outputs are located in the /tmp directory with a name constructed based on the container name read 
   in the coupler output.
 
-**Warning**:  when the application is stopped, the containers are killed, and this can cause information losses in their output files.
+.. warning::
+
+   when the application is stopped, the containers are killed, and this can cause information losses in their output files.
 
 The working directory
 ++++++++++++++++++++++++++++++++++++++
 Each component instance is hosted in a container.  Therefore all instances hosted in a container are executed in the same 
 directory, which is the container directory.  Starting from version 4.1.1 of SALOME, the working directory of a container 
 can be specified in the coupling file.  All that is necessary is to add the **workingdir** property to the container.  
-The following gives a few examples::
+The following gives a few examples:
+
+.. code-block:: xml
 
    <container name="A">
      <property name="workingdir" value="/home/user/w1"/>
@@ -732,7 +742,9 @@ Files management
 ++++++++++++++++++++++++++++
 Components are dynamic libraries or Python modules, and they cannot be run in shell scripts.  For components that use input and 
 output files, “files” ports can be specified in the coupling file through which file transfers will be made and appropriate 
-local names will be given.  For example, a service that uses an input file a and produces an output file b will be declared as follows::
+local names will be given.  For example, a service that uses an input file a and produces an output file b will be declared as follows:
+
+.. code-block:: xml
 
     <service name="pipo1">
       <component>caster</component>
@@ -742,7 +754,9 @@ local names will be given.  For example, a service that uses an input file a and
     </service>
 
 These ports can be initialised or connected to other “files” ports like ordinary ports.  For example, initialisation for the input 
-file will be in the following form::
+file will be in the following form:
+
+.. code-block:: xml
 
     <parameter>
       <tonode>pipo1</tonode> <toport>a</toport>
@@ -750,7 +764,9 @@ file will be in the following form::
     </parameter>
 
 It is impossible to initialise an output file port directly.  A special node has to be used that collects outputs.  
-A “dataout” node and the link between node “pipo1” and node “dataout” will be created::
+A “dataout” node and the link between node “pipo1” and node “dataout” will be created:
+
+.. code-block:: xml
 
     <outnode name="dataout" >
       <parameter name="f1" type="file" ref="myfile"/>
@@ -760,10 +776,12 @@ A “dataout” node and the link between node “pipo1” and node “dataout�
        <tonode>dataout</tonode> <toport>f1</toport>
     </datalink>
 
-**WARNING**:  it is impossible to use the “.” character in port names.  This prevents the use of names such as fort.8 that are 
-fairly frequent.  There is a simple workaround solution, which is to replace the “.” by the “:”character (therefore fort:8 in 
-our example) to obtain the expected result.  
-Obviously, names containing the “:” characters cannot be used.  They must be very rare.
+.. warning::
+
+   it is impossible to use the “.” character in port names.  This prevents the use of names such as fort.8 that are 
+   fairly frequent.  There is a simple workaround solution, which is to replace the “.” by the “:”character (therefore fort:8 in 
+   our example) to obtain the expected result.  
+   Obviously, names containing the “:” characters cannot be used.  They must be very rare.
 
 .. _execaster:
 
@@ -778,7 +796,9 @@ There are a few unusual features when executing an Aster component that are pres
 
 The following is a simplified example of a YACS scheme comprising a calculation node that should execute service s1 of 
 the caster component (type Aster) with an environment variable, a mail file, a comm file and command line parameters.  
-A more complete example is given in the directory Examples/ast1 in the distribution::
+A more complete example is given in the directory Examples/ast1 in the distribution:
+
+.. code-block:: xml
 
     <service name="pipo1" >
       <component>caster</component>
@@ -840,14 +860,18 @@ Brief example of .comm::
 Before values of command line parameters can be specified, a component must have been created with a “string” type port named “argv”.  
 A value then has to be given to this port.  In this case, we modify the tools directory path using the **rep_outils** parameter.
 
-A mesh file (.mail) is specified to an Aster component by adding a file port to the calculation node::
+A mesh file (.mail) is specified to an Aster component by adding a file port to the calculation node:
+
+.. code-block:: xml
 
       <inport name="fort:20" type="file"/>
 
 The name of this file port must be the same as the local file name as expected by Aster.  Usually, Aster uses 
 the fort.20 file as an input to LIRE_MAILLAGE.  As mentioned above, the dot in fort.20 cannot be used in a port 
 name, and therefore it will be given the name fort:20.  A value will then have to be given to this port that will 
-correspond to the path of the file to be used.  This is done by a parameter directive::
+correspond to the path of the file to be used.  This is done by a parameter directive:
+
+.. code-block:: xml
 
     <parameter>
        <tonode>pipo1</tonode> <toport>fort:20</toport>
@@ -889,7 +913,9 @@ The following is an example of a C++ component modified to make it a standalone 
          exe_path="/local/SALOME/execpp/prog",
                      )
 
-The path given for **exe_path** corresponds to an executable with the following source::
+The path given for **exe_path** corresponds to an executable with the following source:
+
+.. code-block:: cpp
 
    #include "compo1.hxx"
 
@@ -902,7 +928,9 @@ The path given for **exe_path** corresponds to an executable with the following 
 It must be compiled and linked using the compo1.hxx include and the libcompo1Exelib.so library that are given 
 in the installation of the module generated in include/salome and in lib/salome respectively.  
 
-**Note**: the SALOME module must be generated before compiling and linking the standalone component.
+.. note::
+
+   the SALOME module must be generated before compiling and linking the standalone component.
  
 A more complete example is given in the distribution sources in the Examples/cpp2 directory.
 
@@ -935,7 +963,9 @@ The following is an example of a standalone Fortran component::
          exe_path="/local/SALOME/fcompo/prog",
                                      )
 
-The path given for **exe_path** corresponds to an executable with the following source::
+The path given for **exe_path** corresponds to an executable with the following source:
+
+.. code-block:: fortran
 
        PROGRAM P
        CALL YACSINIT()

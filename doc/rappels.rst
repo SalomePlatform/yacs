@@ -124,7 +124,9 @@ This tool builds the application starting from a configuration file in the XML f
 of modules to be used (name, installation path), the file that sets the environment for SALOME pre-requisites 
 and optionally the SALOME examples directory (SAMPLES_SRC).
 
-The following command is used::
+The following command is used:
+
+.. code-block:: sh
 
    python <KERNEL_ROOT_DIR>/bin/salome/appli_gen.py --prefix=<install directory> --config=<configuration file>
 
@@ -134,7 +136,9 @@ the KERNEL module is installed.
 
 The configuration file can be created by modifying a copy of the ${KERNEL_ROOT_DIR}/bin/salome/config_appli.xml file.
 
-For example::
+For example:
+
+.. code-block:: xml
 
   <application>
   <prerequisites path="/data/tmplgls/secher/SALOME_V5/env_products.sh"/>

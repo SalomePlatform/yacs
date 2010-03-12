@@ -35,7 +35,7 @@ of clusters administered by batch managers.
 
 The following is an example of description of a cluster:
 
-::
+.. code-block:: xml
 
   <machine hostname="clusteur1" 
 	   alias="frontal.com" 

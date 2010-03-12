@@ -146,7 +146,9 @@ of which offers a unique service to start up the corresponding wrapped code:
 Declaration of a C++ component using CALCIUM ports
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 Only one header is necessary in the case of a wrapper component (that does nothing except to call an 
-implementation of another compilation unit)::
+implementation of another compilation unit):
+
+.. code-block:: cpp
 
   #include “Superv_Component_i.hxx”
 
@@ -155,7 +157,7 @@ virtually inherit the Superv_Component_i class.
 
 Example ECODE.hxx declaration file for the ECODE component:
 
-::
+.. code-block:: cpp
 
     #ifndef _ECODE_HXX_
     #define _ECODE_HXX_
@@ -207,7 +209,7 @@ Our ECODE component provides a unique EcodeGo() service that has no input parame
 
 The Creating CALCIUM ports section describes how this resource file will be extended by the declaration of datastream ports.
 
-::
+.. code-block:: xml
 
     ....
       <component>
@@ -245,7 +247,7 @@ Creating CALCIUM ports using the add_port method
 ++++++++++++++++++++++++++++++++++++++++++++++++++++
 This method is used to create any type of DSC port.  It can be used to create CALCIUM ports in particular.
 
-::
+.. code-block:: cpp
 
      add_port< typing_of_my_fabricated_port >( "the type of port to be fabricated",
                                               "provides"|”uses”,
@@ -276,7 +278,7 @@ This method is used to create any type of DSC port.  It can be used to create CA
 
 Extract from the init_service method in the ECODE.cxx file for the ECODE component:
 
-::
+.. code-block:: cpp
 
     CORBA::Boolean ECODE_impl::init_service(const char * service_name) {
     
@@ -323,7 +325,7 @@ The “T”|”I” parameter indicates the port mode, time or iterative.
 Extract from the init_service method in the ECODE.cxx file for the ECODE component:
 
 
-::
+.. code-block:: cpp
 
     ECODE_i::init_service(const char * service_name) {
        CORBA::Boolean rtn = false;
@@ -358,7 +360,7 @@ YACSGEN takes account of CALCIUM ports in the generation of the module catalog.
 
 Extract from the CALCIUM_TESTSCatalog.xml catalog for the ECODE component:
 
-::
+.. code-block:: xml
 
     .....           
                         <DataStream-list>
@@ -415,7 +417,7 @@ Configuration when the PORT is created
 When a port is created, the add_port method returns a pointer to the port useful to its configuration.  One example 
 configuration in the init_service method consists of indicating if the port is in time dependency or iteration dependency mode:
 
-::
+.. code-block:: cpp
 
       add_port<calcium_integer_port_provides>("CALCIUM_integer","provides","ETP_EN")->
           setDependencyType(CalciumTypes::TIME_DEPENDENCY);
@@ -429,9 +431,9 @@ The dependency type informs the port if the data are stamped by a date or (exclu
 dependency type is undefined (CalciumTypes::UNDEFINED_DEPENDENCY).  CalciumTYpes::TIME_DEPENDENCY or 
 CalciumTypes::ITERATION_DEPENDENCY can be defined.
 
-::
+.. code-block:: cpp
 
-     void                      setDependencyType (DependencyType dependencyType);
+     void setDependencyType (DependencyType dependencyType);
      DependencyType getDependencyType () const;
     
 
@@ -441,7 +443,7 @@ The storage level in the history of data produced must be greater than or equal 
 unlimited (CalciumTypes::UNLIMITED_STORAGE_LEVEL).  It may have to be reduced, to limit memory consumption for the 
 case of a coupling with many iterations.
 
-::
+.. code-block:: cpp
 
      void   setStorageLevel   (size_t storageLevel);
      size_t getStorageLevel   () const;
@@ -451,7 +453,7 @@ case of a coupling with many iterations.
 
 The time scheme chosen to define the date used in read primitives in time mode is set to CalciumTypes::TI_SCHEM by default.  It is also possible to enter CalciumTypes::TF_SCHEM or CalciumTypes::ALPHA_SCHEM.
 
-::
+.. code-block:: cpp
 
       void                  setDateCalSchem   (DateCalSchem   dateCalSchem);
       DateCalSchem getDateCalSchem () const;
@@ -460,7 +462,7 @@ The time scheme chosen to define the date used in read primitives in time mode i
 If the time scheme used is ALPHA_SCHEM, the next method is used to indicate the value of ALPHA to be used.  Alpha is equal to zero by default (equivalent to TI_SCHEM) and it can be set to between 0 and 1 inclusive.
 
 
-::
+.. code-block:: cpp
 
     void     setAlpha(double alpha);
     double getAlpha() const ;
@@ -471,7 +473,7 @@ If the time scheme used is ALPHA_SCHEM, the next method is used to indicate the 
 Two dates D1 and D2 are identical if abs(T1-T2) <CalciumTypes::EPSILON.  Epsilon is equal to 1E-6 by default.  
 Parameters can be set for it on each port (0 <= deltaT <= 1).
 
-::
+.. code-block:: cpp
 
       void     setDeltaT(double deltaT );
       double getDeltaT() const ;
@@ -481,7 +483,7 @@ Parameters can be set for it on each port (0 <= deltaT <= 1).
 
 When a read request is formulated for a date T that has not been produced but is surrounded by dates T1(min) and T2(max) for which data have already been produced, CALCIUM produces a CalciumTypes::L1_SCHEM linear interpolation by default.  The user can request a CalciumTypes::L0_SCHEM step “interpolation”.
 
-::
+.. code-block:: cpp
 
       void setInterpolationSchem (InterpolationSchem interpolationSchem);
       InterpolationSchem getInterpolationSchem () const ;
@@ -490,7 +492,7 @@ When a read request is formulated for a date T that has not been produced but is
 
 This parameter is used to indicate whether an extrapolation is required to exit from a blocking case (a port waiting for data that will never be produced).  The default value is Calcium-Types::UNDEFINED_EXTRA_SCHEM.  Possible values are EO_SCHEM (step extrapolation) or E1-SCHEM (linear extrapolation).
 
-::
+.. code-block:: cpp
 
      void setExtrapolationSchem (ExtrapolationSchem extrapolationSchem);
      ExtrapolationSchem getExtrapolationSchem () const ;
@@ -543,7 +545,7 @@ Therefore, the recognised properties are the following pairs:
 
 Example dynamic configuration by a python script (extract from file CAS_1.py):
 
-::
+.. code-block:: python
 
     ...
     port1=ecode.get_provides_port("ETS_DB",0);
@@ -566,7 +568,7 @@ Extract from the CAS_1.xml calculation scheme, first test case of CALCIUM functi
 
 Example configuration of the ETS_DB port at a history level of 4.
 
-::
+.. code-block:: xml
 
      <stream>
           <fromnode>SCODE</fromnode> <fromport>STS_DB</fromport>
@@ -581,6 +583,14 @@ Calls to CALCIUM methods
 '''''''''''''''''''''''''''''''
 The CALCIUM C / C++ / Fortran API in SALOME is globally identical to the API for the CALCIUM product outside SALOME.  
 It is now also available in Python.
+
+The documentation for C, Fortran and Python API can be found in the following chapters.
+
+.. toctree::
+   :maxdepth: 1
+
+   calciumapi.rst
+   calciummod.rst
 
 The classical C / C++ API is extended by a zero copy version that transfers data without an intermediate copy.
 
@@ -608,7 +618,7 @@ Extract from the implementation of the EcodeGo() (ECODE.cxx) service calling the
 (This code can be generated by YACSGEN)
 
 
-::
+.. code-block:: cpp
 
     void ECODE_impl::EcodeGo() {
       Superv_Component_i * component = dynamic_cast<Superv_Component_i*>(this);
@@ -626,7 +636,7 @@ initial calcium code.
 
 Extract from the implementation of the calcium source code applied by the service (Ecode.c):
 
-::
+.. code-block:: c
 
     ...
     #include <calcium.h>
@@ -635,10 +645,9 @@ Extract from the implementation of the calcium source code applied by the servic
     {
     ...
     /*    Connection to the coupler   */
-         info = cp_cd(component,nom_instance);
+        info = cp_cd(component,nom_instance);
     
-        info=
-               cp_len(component,CP_TEMPS,&ti_re,&tf_re,&i,"ETP_EN",1,&n,EDATA_EN);
+        info= cp_len(component,CP_TEMPS,&ti_re,&tf_re,&i,"ETP_EN",1,&n,EDATA_EN);
     ...
         info = cp_fin(component,CP_CONT);
     }
@@ -654,19 +663,18 @@ with ecode() would exit in error.
 
 The scheme is the same in fortran, the following is an extract from the Ecode.f file:
 
-::
+.. code-block:: fortran
 
         SUBROUTINE ECODE(compo)
-        INCLUDE "calcium.hf"
-    ...
-         INTEGER                  compo
-    ...
+        INCLUDE 'calcium.hf'
+        INTEGER compo
+        ----
         CALL CPCD(compo,nom_instance, info)
-    ...
-        CALL CPLEN(compo,CP_TEMPS,ti_re,tf_re,i,'ETP_EN',1,n,EDATA_EN
-         .             ,info)
-    ...
-         CALL CPFIN(compo,CP_CONT, info)
+        ----
+        CALL CPLEN(compo,CP_TEMPS,ti_re,tf_re,i,'ETP_EN',1,n,EDATA_EN,info)
+        ----
+        CALL CPFIN(compo,CP_CONT, info)
+        ----
 
 
 CALCIUM C/C++ calls in zero copy mode
@@ -695,7 +703,7 @@ the sender's buffer and the receiver's buffer.
 Extract from the zero copy implementation of the CALCIUM source code called by the (Ecode.c) service:
 
 
-::
+.. code-block:: c
 
         float *sav_EDATA_RE = _EDATA_RE; //keep a ptr to previously received data
         _EDATA_RE = NULL;
@@ -719,7 +727,7 @@ read and regardless of the type of transmitted data.  Variable names are STL str
 the same regardless of the type of data manipulated.  The type of data is found automatically, except for complex types, 
 logical types and character strings.
 
-::
+.. code-block:: cpp
 
       template <typename T1, typename T2> static void
       ecp_ecriture ( Superv_Component_i & component,  int const  & dependencyType,
@@ -808,7 +816,7 @@ variables useful to SALOME or in the user console, to locate the installation di
 
 Example declaration of the CALCIUM_TESTS module in bash:
 
-::
+.. code-block:: sh
 
     INSTALLROOT="/local/salome/SALOME5/V5NoDebug"
     export CALCIUM_TESTS=${INSTALLROOT}/DEV/INSTALL/CALCIUM_TESTS
@@ -826,7 +834,7 @@ All that is necessary is to declare the name of its module in the modules parame
 
 The following is an example for the CALCIUM_TESTS module:
 
-::
+.. code-block:: xml
 
      <section name="launch">
      ....
@@ -841,7 +849,7 @@ Using the --module option.
 This option limits loading of modules to the list indicated in the command line (it assumes that the user’s environment 
 indicates the location of the modules).
 
-::
+.. code-block:: sh
 
     ./runAppli  --module=YACS,CALCIUM_TESTS
 
@@ -854,7 +862,7 @@ configurations and starts executions.
 
 The following is an extract from the CAS_1.py file:
 
-::
+.. code-block:: python
 
     
     import LifeCycleCORBA
@@ -927,7 +935,7 @@ The following is an extract from the CAS_1.py file:
 
 The script can be run using the following command:
 
-::
+.. code-block:: sh
 
   ./runAppli -t --module=YACS,CALCIUM_TESTS -u <my access path to the installed CALCIUM_TESTS module>/CALCIUM_TESTS/lib/python2.4/site-packages/salome/CAS_1.py
 
@@ -990,7 +998,9 @@ The timeout can be specified by setting the environment variable DSC_TIMEOUT (ex
 It must be set before launching a SALOME session and is therefore globally used for all the calculations in the session. 
  
 It is also possible to specify a timeout in the XML coupling file by way of a service node property (DSC_TIMEOUT) as in
-the following example::
+the following example:
+
+.. code-block:: xml
 
       <service name="canal" >
         <component>FLUIDE</component>
@@ -1010,7 +1020,7 @@ APPENDIX 1:  Creating a SALOME application
 --------------------------------------------
 Example command invoked to create a SALOME application after adapting the config_appli.xml file:
 
-::
+.. code-block:: sh
 
     python $KERNEL_ROOT_DIR/bin/salome/appli_gen.py --prefix=/local/salome5_my_appli --config=config_appli_mod.xml                   
 
@@ -1019,7 +1029,8 @@ Example command invoked to create a SALOME application after adapting the config
 APPENDIX 2:  Coupling scheme, YACS XML file
 -----------------------------------------------
 The complete CAS_1.xml file for the coupling scheme of the CALCIUM CAS_1 test case (it can be generated by the YACS GUI):
-::
+
+.. code-block:: xml
 
     <?xml version='1.0'?>
     <proc>
@@ -1177,7 +1188,7 @@ APPENDIX 3:  Generating a CALCIUM module
 -----------------------------------------
 Complete YACSGEN script to create a generated CALCIUM_TESTS module:
 
-::
+.. code-block:: python
 
     from module_generator import Generator,Module,PYComponent,CPPComponent,Service,F77Component
     context={"update":1,
@@ -1203,12 +1214,12 @@ Complete YACSGEN script to create a generated CALCIUM_TESTS module:
         ("ETS_EN","CALCIUM_integer","T"),
         ("ETS_DB","CALCIUM_double","T") ],
                 outstream=[],
-                defs="extern \"C\" {\n\
-    int ecode(void *); \n\
-    }",
-                body="\
-                ecode(component);\
-                "
+                defs="""extern "C" {
+    int ecode(void *);
+    }""",
+                body="""
+                ecode(component);
+                """
                 ,),
         ],
                     libs="",
@@ -1234,12 +1245,12 @@ Complete YACSGEN script to create a generated CALCIUM_TESTS module:
         ("STS_EN","CALCIUM_integer","T"),
         ("STS_DB","CALCIUM_double","T"),
         ("SIP_DB2","CALCIUM_double","I") ],
-                defs="extern \"C\" {\n\
-    int scode(void *); \n\
-    }",
-                body="\
-                scode(component);\
-                "
+                defs="""extern "C" {
+    int scode(void *);
+    }""",
+                body="""
+                scode(component);
+                """
                 ,),
         ],
                     libs="",
@@ -1255,12 +1266,12 @@ Complete YACSGEN script to create a generated CALCIUM_TESTS module:
                 outstream=[           
         ("STP_DB2","CALCIUM_double","T"),
         ("SIP_DB","CALCIUM_double","I") ],
-                defs="extern \"C\" {\n\
-    int espion(void *); \n\
-    }",
-                body="\
-                espion(component);\
-                "
+                defs="""extern "C" {
+    int espion(void *);
+    }""",
+                body="""
+                espion(component);
+                """
                 ,),
         ],
                     libs="",
