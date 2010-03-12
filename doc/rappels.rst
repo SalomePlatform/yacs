@@ -128,7 +128,8 @@ The following command is used:
 
 .. code-block:: sh
 
-   python <KERNEL_ROOT_DIR>/bin/salome/appli_gen.py --prefix=<install directory> --config=<configuration file>
+   python <KERNEL_ROOT_DIR>/bin/salome/appli_gen.py --prefix=<install directory> \
+                               --config=<configuration file>
 
 where <configuration file> is the name of the configuration file and <install directory> is the name of the 
 directory in which the application is to be created.  <KERNEL_ROOT_DIR> indicates the directory in which 
@@ -143,9 +144,11 @@ For example:
   <application>
   <prerequisites path="/data/tmplgls/secher/SALOME_V5/env_products.sh"/>
   <modules>
-     <!-- variable name <MODULE>_ROOT_DIR is built with <MODULE> == name attribute value -->
+     <!-- variable name <MODULE>_ROOT_DIR is built 
+          with <MODULE> == name attribute value -->
      <!-- <MODULE>_ROOT_DIR values is set with path attribute value -->
-     <!-- attribute gui (defaults = yes) indicates if the module has a gui interface -->
+     <!-- attribute gui (defaults = yes) indicates if the module 
+                                          has a gui interface -->
      <module name="KERNEL"       gui="no"  path="/data/SALOME_V5/KERNEL_INSTALL"/>
      <module name="GUI"          gui="no"  path="/data/SALOME_V5/GUI_5"/>
      <module name="MED"                    path="/data/SALOME_V5/MED_5"/>

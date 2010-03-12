@@ -39,7 +39,8 @@ Here is a small example of a C++ synchronous algorithm :
 
   extern "C"
   {
-    YACS::ENGINE::OptimizerAlgBase *PluginOptEvTest1Factory(YACS::ENGINE::Pool *pool);
+    YACS::ENGINE::OptimizerAlgBase 
+             *PluginOptEvTest1Factory(YACS::ENGINE::Pool *pool);
   }
 
   class PluginOptEvTest1 : public YACS::ENGINE::OptimizerAlgSync
@@ -62,7 +63,8 @@ Here is a small example of a C++ synchronous algorithm :
 
   using namespace YACS::ENGINE;
 
-  PluginOptEvTest1::PluginOptEvTest1(Pool *pool):OptimizerAlgSync(pool),_tcIn(0),_tcOut(0),_idTest(0)
+  PluginOptEvTest1::PluginOptEvTest1(Pool *pool):OptimizerAlgSync(pool),
+                                           _tcIn(0),_tcOut(0),_idTest(0)
   {
     _tcIn=new TypeCode(Double);
     _tcOut=new TypeCode(Int);
@@ -172,7 +174,8 @@ Here, the same example of a synchronous algorithm in Python ::
       """Called on initialization. Do nothing here"""
 
     def parseFileToInit(self,fileName):
-      """Routine to read and parse an init file given by the OptimizerLoop. Do nothing here"""
+      """Routine to read and parse an init file given by the 
+         OptimizerLoop. Do nothing here"""
 
     def start(self):
       """Update _pool attribute before performing anything."""
@@ -182,7 +185,8 @@ Here, the same example of a synchronous algorithm in Python ::
 
     def takeDecision(self):
       """ _pool->getCurrentId gives the id at the origin of this call.
-          Perform the job of analysing to know what new jobs to do (_pool->pushInSample)
+          Perform the job of analysing to know what new jobs 
+	  to do (_pool->pushInSample)
           or in case of convergence _pool->destroyAll
       """
       currentId=self.pool.getCurrentId()
@@ -253,7 +257,8 @@ Here is an example of an asynchronous algorithm implemented in Python ::
       return self.tout
 
     def parseFileToInit(self,fileName):
-      """Routine to read and parse an init file given by the OptimizerLoop. Do nothing here"""
+      """Routine to read and parse an init file given by the 
+         OptimizerLoop. Do nothing here"""
 
     def startToTakeDecision(self,condition):
       """Routine to pilot the algo"""

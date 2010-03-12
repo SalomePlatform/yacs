@@ -103,7 +103,8 @@ are produced that contain the basic interface with a single run method::
     };
   };
   """
-  m=omniORB.importIDLString(idlcompo,["-I/local/chris/SALOME/RELEASES/Install/KERNEL_V5/idl/salome"])
+  m=omniORB.importIDLString(idlcompo,
+                  ["-I/local/chris/SALOME/Install/KERNEL_V5/idl/salome"])
 
 The second step consists of defining the body of component compo1 and therefore its run method.
 

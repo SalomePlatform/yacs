@@ -228,8 +228,8 @@ you could write a function as follows. Connection and disconnection must be done
      af[0]=4.3
      info = calcium.cp_edb(compo,calcium.CP_TEMPS,0.,0,"outa",10,af);
      tf=1.;
-     # import 10 integer values at interval time (0.,1.) on port ina (by default it is imported
-     # at the start time 0.)
+     # import 10 integer values at interval time (0.,1.) on port ina 
+     # (by default it is imported at the start time 0.)
      ai=numpy.zeros(10,'i')
      info,t,i,n = calcium.cp_len(compo,calcium.CP_TEMPS,0., 1.,0,"ina",10,ai);
      # disconnect 

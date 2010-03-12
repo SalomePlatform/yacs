@@ -170,11 +170,14 @@ Example ECODE.hxx declaration file for the ECODE component:
     extern "C" { int ecode(void *); }
     
     class ECODE_impl :
-      public virtual POA_CALCIUM_TESTS::ECODE, //Implements the CORBA interface for the ECODE component
-      public virtual Superv_Component_i {       //Makes the component supervisable
+      //Implements the CORBA interface for the ECODE component
+      public virtual POA_CALCIUM_TESTS::ECODE,
+      //Makes the component supervisable
+      public virtual Superv_Component_i {
     
     public :
-      ECODE_impl(CORBA::ORB_ptr orb,            //Classical SALOME component constructor
+      //Classical SALOME component constructor
+      ECODE_impl(CORBA::ORB_ptr orb,
              PortableServer::POA_ptr poa,
              PortableServer::ObjectId * contId, 
              const char *instanceName, 
@@ -182,7 +185,8 @@ Example ECODE.hxx declaration file for the ECODE component:
       
       virtual ~ECODE_impl();
     
-      CORBA::Boolean init_service(const char * service_name); //Initialisation of the service EcodeGo()
+      //Initialisation of the service EcodeGo()
+      CORBA::Boolean init_service(const char * service_name);
       void EcodeGo();
     };
     
@@ -584,13 +588,7 @@ Calls to CALCIUM methods
 The CALCIUM C / C++ / Fortran API in SALOME is globally identical to the API for the CALCIUM product outside SALOME.  
 It is now also available in Python.
 
-The documentation for C, Fortran and Python API can be found in the following chapters.
-
-.. toctree::
-   :maxdepth: 1
-
-   calciumapi.rst
-   calciummod.rst
+See :ref:`calciumapi` for C and Fortran API documentation and :mod:`calcium` for Python API documentation.
 
 The classical C / C++ API is extended by a zero copy version that transfers data without an intermediate copy.
 
@@ -860,7 +858,7 @@ Components can be created and their ports can be connected using a Python SALOME
 The script CAS_1.py loads instances of the ECODE, SCODE and ESPION components, connects their ports, makes the necessary 
 configurations and starts executions.
 
-The following is an extract from the CAS_1.py file:
+The following is an extract from the CAS_1.py file that can be found in <path to CALCIUM_TESTS module>/CALCIUM_TESTS/lib/python2.4/site-packages/salome:
 
 .. code-block:: python
 
@@ -908,8 +906,8 @@ The following is an extract from the CAS_1.py file:
     connection_manager.connect(scode, "STP_CH", ecode, "ETP_CH")
     connection_manager.connect(scode, "STP_LQ", ecode, "ETP_LQ")
     #Create and connect the spy (espion) 
-    #The ESPION can be created after the instances of ECODE and SCODE have been run, however
-    #data produced before the connection will be lost
+    #The ESPION can be created after the instances of ECODE and SCODE have been run,
+    #however data produced before the connection will be lost
     espion = lcc.FindOrLoad_Component('FactoryServer5', 'ESPION')
     espion.init_service("EspionGo")
     
@@ -937,7 +935,7 @@ The script can be run using the following command:
 
 .. code-block:: sh
 
-  ./runAppli -t --module=YACS,CALCIUM_TESTS -u <my access path to the installed CALCIUM_TESTS module>/CALCIUM_TESTS/lib/python2.4/site-packages/salome/CAS_1.py
+  ./runAppli -t --module=YACS,CALCIUM_TESTS -u CAS_1.py
 
 Running coupling through the YACS GUI
 '''''''''''''''''''''''''''''''''''''''''''
@@ -1022,7 +1020,8 @@ Example command invoked to create a SALOME application after adapting the config
 
 .. code-block:: sh
 
-    python $KERNEL_ROOT_DIR/bin/salome/appli_gen.py --prefix=/local/salome5_my_appli --config=config_appli_mod.xml                   
+    python $KERNEL_ROOT_DIR/bin/salome/appli_gen.py --prefix=/local/salome5_my_appli \
+                                                    --config=config_appli_mod.xml                   
 
 
 
@@ -1038,12 +1037,18 @@ The complete CAS_1.xml file for the coupling scheme of the CALCIUM CAS_1 test ca
        <type name="Double" kind="double"/>
        <type name="Int" kind="int"/>
        <type name="String" kind="string"/>
-       <objref name="CALCIUM_complex" id="IDL:Ports/Calcium_Ports/Calcium_Complex_Port:1.0"/>
-       <objref name="CALCIUM_double" id="IDL:Ports/Calcium_Ports/Calcium_Double_Port:1.0"/>
-       <objref name="CALCIUM_integer" id="IDL:Ports/Calcium_Ports/Calcium_Integer_Port:1.0"/>
-       <objref name="CALCIUM_logical" id="IDL:Ports/Calcium_Ports/Calcium_Logical_Port:1.0"/>
-       <objref name="CALCIUM_real" id="IDL:Ports/Calcium_Ports/Calcium_Real_Port:1.0"/>
-       <objref name="CALCIUM_string" id="IDL:Ports/Calcium_Ports/Calcium_String_Port:1.0"/>
+       <objref name="CALCIUM_complex"
+               id="IDL:Ports/Calcium_Ports/Calcium_Complex_Port:1.0"/>
+       <objref name="CALCIUM_double"
+               id="IDL:Ports/Calcium_Ports/Calcium_Double_Port:1.0"/>
+       <objref name="CALCIUM_integer"
+               id="IDL:Ports/Calcium_Ports/Calcium_Integer_Port:1.0"/>
+       <objref name="CALCIUM_logical"
+               id="IDL:Ports/Calcium_Ports/Calcium_Logical_Port:1.0"/>
+       <objref name="CALCIUM_real" 
+               id="IDL:Ports/Calcium_Ports/Calcium_Real_Port:1.0"/>
+       <objref name="CALCIUM_string"
+               id="IDL:Ports/Calcium_Ports/Calcium_String_Port:1.0"/>
        <objref name="file" id="file"/>
        <container name="DefaultContainer">
           <property name="container_name" value=""/>
@@ -1190,7 +1195,8 @@ Complete YACSGEN script to create a generated CALCIUM_TESTS module:
 
 .. code-block:: python
 
-    from module_generator import Generator,Module,PYComponent,CPPComponent,Service,F77Component
+    from module_generator import Generator,Module,Service
+    from module_generator import PYComponent,CPPComponent,F77Component
     context={"update":1,
              "prerequisites":"/local/salome5/SALOME5/V5NoDebug/prerequis-V5NoDebug.sh",
              "kernel":"/local/salome5/SALOME5/V5NoDebug/DEV/INSTALL/KERNEL/"

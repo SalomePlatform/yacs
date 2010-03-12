@@ -173,7 +173,8 @@ These other predefined types are contained in module catalogs such as GEOM or SM
 The following code sequence is used to obtain an image of SALOME catalogs in YACS::
 
   try:
-    cata=r.loadCatalog("session","corbaname::localhost:2810/NameService#Kernel.dir/ModulCatalog.object")
+    cata=r.loadCatalog("session",
+           "corbaname::localhost:2810/NameService#Kernel.dir/ModulCatalog.object")
   except CORBA.TRANSIENT,ex:
     print "Unable to contact server:",ex
   except CORBA.SystemException,ex:

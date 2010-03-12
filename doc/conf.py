@@ -23,7 +23,7 @@ import sys, os
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = []
+extensions = ['rst2pdf.pdfbuilder']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -184,3 +184,23 @@ latex_documents = [
 
 # If false, no module index is generated.
 latex_use_modindex = False
+
+#Options for rst2pdf output (through reportlab)
+pdf_documents = [
+  ('using', 'using', 'YACS User Documentation', 'C. Caremoli, N. Crouzet, P. Rascle, A. Ribes, E. Fayolle, M. Tajchman'),
+  ('integration', 'integration', 'YACS Integration Documentation', 'C. Caremoli, N. Crouzet, P. Rascle, A. Ribes, E. Fayolle, M. Tajchman'),
+]
+
+# A comma-separated list of custom stylesheets.
+pdf_stylesheets = ['sphinx']
+
+# Create a compressed PDF
+# Use True/False or 1/0
+#pdf_compressed = False
+
+# A colon-separated list of folders to search for fonts. Example:
+# pdf_font_path = ['/usr/share/fonts', '/usr/share/texmf-dist/fonts/']
+
+# Language to be used for hyphenation support
+#pdf_language = "en_US"
+

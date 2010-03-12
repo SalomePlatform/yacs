@@ -278,8 +278,10 @@ The following example will be used to specify these final concepts::
      c3=F77Component("compo3",
                      services=[
                                Service("s1",
-                                       inport=[("a","double"),("b","long"),("c","string")],
-                                       outport=[("d","double"),("e","long"),("f","string")],
+                                       inport=[("a","double"),("b","long"),
+				               ("c","string")],
+                                       outport=[("d","double"),("e","long"),
+				                ("f","string")],
                                        instream=[("a","CALCIUM_double","T"),
                                                  ("b","CALCIUM_double","I")],
                                        outstream=[("ba","CALCIUM_double","T"),
@@ -362,7 +364,8 @@ ports, one output dataflow port, 7 input datastream ports and one output datastr
     c1=ASTERComponent("caster",
                       services=[
                                 Service("s1",
-                                        inport=[("a","double"),("b","long"),("c","string")],
+                                        inport=[("a","double"),("b","long"),
+					        ("c","string")],
                                         outport=[("d","double")],
                                         instream=[("aa","CALCIUM_double","T"),
                                                   ("ab","CALCIUM_double","I"),
@@ -560,8 +563,11 @@ This gives something like the following for a module with a single Fortran compo
   c3=F77Component("compo",
                   services=[
                             Service("s1",
-                                    inport=[("a","double"),("b","long"),("c","string")],
-                                    outport=[("d","double"),("e","long"),("f","string")],
+                                    inport=[("a","double"),
+				            ("b","long"),
+					    ("c","string")],
+                                    outport=[("d","double"),("e","long"),
+				             ("f","string")],
                                     instream=[("a","CALCIUM_double","T"),
                                               ("b","CALCIUM_double","I")],
                                     outstream=[("ba","CALCIUM_double","T"),
@@ -841,7 +847,9 @@ A more complete example is given in the directory Examples/ast1 in the distribut
 
     <parameter>
        <tonode>pipo1</tonode> <toport>fort:20</toport>
-       <value><objref>/local/chris/ASTER/instals/NEW9/astest/forma01a.mmed</objref> </value>
+       <value>
+         <objref>/local/chris/ASTER/instals/NEW9/astest/forma01a.mmed</objref>
+       </value>
     </parameter>
 
 Firstly, the command set has to be specified.  As mentioned above (:ref:`aster`), an additional “jdc” “string” type port 
@@ -875,7 +883,9 @@ correspond to the path of the file to be used.  This is done by a parameter dire
 
     <parameter>
        <tonode>pipo1</tonode> <toport>fort:20</toport>
-       <value><objref>/local/chris/ASTER/instals/NEW9/astest/forma01a.mmed</objref> </value>
+       <value>
+         <objref>/local/chris/ASTER/instals/NEW9/astest/forma01a.mmed</objref>
+       </value>
     </parameter>
 
 Environment variables are specified by using properties of the calculation node.  In this case, we define 

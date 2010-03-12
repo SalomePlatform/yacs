@@ -564,11 +564,15 @@ The following is an example of a resource catalog:
 
   <!DOCTYPE ResourcesCatalog>
   <resources>
-    <machine hostname="is111790" alias="is111790" OS="LINUX" CPUFreqMHz="2992" memInMB="1024" 
-             protocol="rsh" mode="interactif" nbOfNodes="1" nbOfProcPerNode="1" >
+    <machine hostname="is111790" alias="is111790" 
+             OS="LINUX" CPUFreqMHz="2992" memInMB="1024" 
+             protocol="rsh" mode="interactif" 
+	     nbOfNodes="1" nbOfProcPerNode="1" >
     </machine>
-    <machine hostname="is111915" alias="is111915" OS="LINUX" CPUFreqMHz="2992" memInMB="1024" 
-             protocol="ssh" mode="interactif" nbOfNodes="1" nbOfProcPerNode="1" 
+    <machine hostname="is111915" alias="is111915" 
+             OS="LINUX" CPUFreqMHz="2992" memInMB="1024" 
+             protocol="ssh" mode="interactif" 
+	     nbOfNodes="1" nbOfProcPerNode="1" 
              appliPath="SALOME/Run">
              <modules moduleName="GEOM"/>
              <component name="SMESH"/>
@@ -719,13 +723,13 @@ If the SALOME component uses CALCIUM datasream ports, this file will also contai
 to the CALCIUM library.
 This trace has the following form::
 
-     Elapsed time |          Request |        Container           |         Instance |             Port |                    Error | Infos
- 348304:54:23:112 |            CP_CD | claui2c6_23164_B_0x1e00800 |    SOLIDE_inst_1 |                  |                          |
- 348304:54:23:134 |            WRITE | claui2c6_23164_B_0x1e00800 |    SOLIDE_inst_1 |            tempi |                          | i=0
- 348304:54:23:162 |            WRITE | claui2c6_23164_B_0x1e00800 |    SOLIDE_inst_1 |              tpi |                          | i=0
- 348304:54:23:162 |       BEGIN_READ | claui2c6_23164_B_0x1e00800 |    SOLIDE_inst_1 |           puissi |                          | i=0
- 348304:54:23:174 |         END_READ | claui2c6_23164_B_0x1e00800 |    SOLIDE_inst_1 |           puissi |                          | read i=0
- 348304:54:23:174 |       BEGIN_READ | claui2c6_23164_B_0x1e00800 |    SOLIDE_inst_1 |              tfi |                          | i=0
+ Elapsed time |    Request |  Container         |   Instance | Port | Error | Infos
+ 34:54:23:112 |      CP_CD | clic6_23_B_0x1e080 | SOL_inst_1 |      |       |
+ 34:54:23:134 |      WRITE | clic6_23_B_0x1e080 | SOL_inst_1 | temp |       | i=0
+ 34:54:23:162 |      WRITE | clic6_23_B_0x1e080 | SOL_inst_1 |  tpi |       | i=0
+ 34:54:23:162 | BEGIN_READ | clic6_23_B_0x1e080 | SOL_inst_1 | puis |       | i=0
+ 34:54:23:174 |   END_READ | clic6_23_B_0x1e080 | SOL_inst_1 | puis |       | read i=0
+ 34:54:23:174 | BEGIN_READ | clic6_23_B_0x1e080 | SOL_inst_1 |  tfi |       | i=0
 
 - column "Elapsed time" gives the elapsed time since a reference time that is given by the computer system (January 1, 1970 on Linux).
   The time format is: hours:minutes:seconds:milliseconds.

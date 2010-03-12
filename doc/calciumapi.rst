@@ -1,5 +1,5 @@
 
-.. _calciumlib:
+.. _calciumapi:
 
 ==========================================================
 CALCIUM C and Fortran coupling library
@@ -135,19 +135,19 @@ The available port types are :
 
 **Fortran:**
 
-.. function:: CALL CPERE(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, REAL*4 var_real,       INTEGER info)
-.. function:: CALL CPEDB(LONGP compo, INTEGER dep, REAL*8 td, INTEGER i, nm_var, INTEGER n, REAL*8 var_double,     INTEGER info)
-.. function:: CALL CPECP(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, REAL*4 var_complex,    INTEGER info)
-.. function:: CALL CPEEN(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, INTEGER var_integer,   INTEGER info)
-.. function:: CALL CPELG(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, INTEGER*8 var_long,    INTEGER info)
+.. function:: CALL CPERE(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, REAL*4 var_real,      INTEGER info)
+.. function:: CALL CPEDB(LONGP compo, INTEGER dep, REAL*8 td, INTEGER i, nm_var, INTEGER n, REAL*8 var_double,    INTEGER info)
+.. function:: CALL CPECP(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, REAL*4 var_complex,   INTEGER info)
+.. function:: CALL CPEEN(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, INTEGER var_integer,  INTEGER info)
+.. function:: CALL CPELG(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, INTEGER*8 var_long,   INTEGER info)
 
                can only be used on 64 bits architecture.
-.. function:: CALL CPELN(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, INTEGER*8 var_long,    INTEGER info)
+.. function:: CALL CPELN(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, INTEGER*8 var_long,   INTEGER info)
 
                can only be used on 64 bits architecture.
-.. function:: CALL CPEIN(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, INTEGER*4 var_int,     INTEGER info)
-.. function:: CALL CPELO(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, INTEGER*4 var_boolean, INTEGER info)
-.. function:: CALL CPECH(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, var_string,            INTEGER info)
+.. function:: CALL CPEIN(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, INTEGER*4 var_int,    INTEGER info)
+.. function:: CALL CPELO(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, INTEGER*4 var_boolean,INTEGER info)
+.. function:: CALL CPECH(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, var_string,           INTEGER info)
 
    :param compo: component address
    :type compo: long
@@ -226,19 +226,19 @@ and the second (cp_lln) is working with CALCIUM_long port type.
 
 **Fortran:**
 
-.. function:: CALL CPLRE(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var, INTEGER len, INTEGER n, REAL*4 var_real,       INTEGER info)
-.. function:: CALL CPLDB(LONGP compo, INTEGER dep, REAL*8 tid, tf, INTEGER i, nm_var, INTEGER len, INTEGER n, REAL*8 var_double,     INTEGER info)
-.. function:: CALL CPLCP(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var, INTEGER len, INTEGER n, REAL*4 var_complex,    INTEGER info)
-.. function:: CALL CPLEN(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var, INTEGER len, INTEGER n, INTEGER var_integer,   INTEGER info)
-.. function:: CALL CPLLG(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var, INTEGER len, INTEGER n, INTEGER*8 var_long,    INTEGER info)
+.. function:: CALL CPLRE(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var,INTEGER len, INTEGER n,REAL*4 var_real,      INTEGER info)
+.. function:: CALL CPLDB(LONGP compo, INTEGER dep, REAL*8 tid, tf, INTEGER i, nm_var,INTEGER len, INTEGER n,REAL*8 var_double,    INTEGER info)
+.. function:: CALL CPLCP(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var,INTEGER len, INTEGER n,REAL*4 var_complex,   INTEGER info)
+.. function:: CALL CPLEN(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var,INTEGER len, INTEGER n,INTEGER var_integer,  INTEGER info)
+.. function:: CALL CPLLG(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var,INTEGER len, INTEGER n,INTEGER*8 var_long,   INTEGER info)
 
                can only be used on 64 bits architecture.
-.. function:: CALL CPLLN(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var, INTEGER len, INTEGER n, INTEGER*8 var_long,    INTEGER info)
+.. function:: CALL CPLLN(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var,INTEGER len, INTEGER n,INTEGER*8 var_long,   INTEGER info)
 
                can only be used on 64 bits architecture.
-.. function:: CALL CPLIN(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var, INTEGER len, INTEGER n, INTEGER*4 var_int,     INTEGER info)
-.. function:: CALL CPLLO(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var, INTEGER len, INTEGER n, INTEGER*4 var_boolean, INTEGER info)
-.. function:: CALL CPLCH(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var, INTEGER len, INTEGER n, var_string,            INTEGER info)
+.. function:: CALL CPLIN(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var,INTEGER len, INTEGER n,INTEGER*4 var_int,    INTEGER info)
+.. function:: CALL CPLLO(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var,INTEGER len, INTEGER n,INTEGER*4 var_boolean,INTEGER info)
+.. function:: CALL CPLCH(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var,INTEGER len, INTEGER n,var_string,           INTEGER info)
 
    :param compo: component address
    :type compo: long
@@ -339,7 +339,8 @@ you could write a function as follows. Connection and disconnection must be done
      // export 10 double values at time 0. on port outa
      info = cp_edb(compo,CP_TEMPS,td,i,"outa",n,af);
      tf=1.;
-     // import 10 integer values at interval time (0.,1.) on port ina (by default, it is imported at start time 0.) 
+     // import 10 integer values at interval time (0.,1.) on port ina 
+     // (by default, it is imported at start time 0.) 
      info = cp_len(compo,CP_TEMPS,&td,&tf,&i,"ina",n,&nval,ai);
      // disconnect 
      info = cp_fin(compo,CP_CONT);

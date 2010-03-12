@@ -183,7 +183,8 @@ Specifically, a HELLO_ORB python module containing a classe_objref_HELLO_Gen is 
 C++ module from Python.  To put this into application, we run SALOME in TUI mode::
 
     cd $HELLO_ROOT_DIR/bin/salome
-    python -i runSalome.py --modules=HELLO --xterm --logger --containers=cpp,python --killall
+    python -i runSalome.py --modules=HELLO --xterm --logger --containers=cpp,python \
+                           --killall
 
 We import the LifeCycle module from the Python window, and use its services to load our component into the FactoryServer C++ container::
 
@@ -232,7 +233,9 @@ There are several possibilities available:
 
     <menu-item label-id="File" item-id="1" pos-id="">
       <submenu label-id="Hello" item-id="19" pos-id="8">
-        <popup-item item-id="190" pos-id="" label-id="MyNewItem" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+        <popup-item item-id="190" pos-id="" label-id="MyNewItem" 
+	            icon-id="" tooltip-id="" accel-id="" toggle-id="" 
+		    execute-action=""/>
       </submenu>
     </menu-item>
 
@@ -240,7 +243,9 @@ There are several possibilities available:
 
     <menubar>
      <menu-item label-id="HELLO" item-id="90" pos-id="3">
-      <popup-item item-id="901" label-id="Get banner" icon-id="" tooltip-id="Get HELLO banner" accel-id="" toggle-id="" execute-action=""/>
+      <popup-item item-id="901" label-id="Get banner" icon-id="" 
+                  tooltip-id="Get HELLO banner" accel-id="" 
+		  toggle-id="" execute-action=""/>
      </menu-item>
     </menubar>
 
