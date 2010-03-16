@@ -59,6 +59,10 @@ SceneComposedNodeItem::SceneComposedNodeItem(QGraphicsScene *scene, SceneItem *p
   : SceneNodeItem(scene, parent, label, subject)
 {
   DEBTRACE("SceneComposedNodeItem::SceneComposedNodeItem " <<label.toStdString());
+
+  _width  = 2*Resource::Corner_Margin + 2*Resource::DataPort_Width + Resource::Space_Margin;
+  _height = Resource::Header_Height + Resource::DataPort_Height + Resource::Corner_Margin;
+
   _brushColor   = Resource::ComposedNode_brush;
   _hiBrushColor = Resource::ComposedNode_hiBrush;
   _penColor     = Resource::ComposedNode_pen;
@@ -77,6 +81,8 @@ QRectF SceneComposedNodeItem::childrenBoundingRect() const
   if (_header) ChildrenBRect = _header->getMinimalBoundingRect();
   for (list<AbstractSceneItem*>::const_iterator it=_children.begin(); it!=_children.end(); ++it)
     ChildrenBRect = ChildrenBRect.united(childBoundingRect(*it));
+  ChildrenBRect.setWidth (ChildrenBRect.width()  + Resource::Border_Margin);
+  ChildrenBRect.setHeight(ChildrenBRect.height() + Resource::Border_Margin);
   return ChildrenBRect;
 }
 
@@ -85,14 +91,16 @@ void SceneComposedNodeItem::paint(QPainter *painter,
                           QWidget *widget)
 {
   //DEBTRACE("SceneComposedNodeItem::paint " << _label.toStdString());
+
+  if (!isExpanded()) {
+    _width  = 2*Resource::Corner_Margin + 2*Resource::DataPort_Width + Resource::Space_Margin;
+    _height = getHeaderBottom() + Resource::Corner_Margin;
+  };
+
   painter->save();
-  painter->setBrush(QBrush(Qt::NoBrush));
-  painter->setPen(QPen(Qt::NoPen));
-  painter->drawRect(QRectF(0, 0, _width, _height));
   painter->setPen(getPenColor());
   painter->setBrush(getBrushColor());
-  painter->drawRect(QRectF(_nml, _nml,
-                           _width-2*_nml, _height-2*_nml));
+  painter->drawRect(QRectF(Resource::Border_Margin, Resource::Border_Margin, _width - 2*Resource::Border_Margin, _height - 2*Resource::Border_Margin));
   painter->restore();
 }
 
@@ -300,9 +308,12 @@ void SceneComposedNodeItem::autoPosNewChild(AbstractSceneItem *item,
                                             const std::list<AbstractSceneItem*> alreadySet,
                                             bool isNew)
 {
+  SceneItem *it = dynamic_cast<SceneItem*>(item);
+  YASSERT(it);
+
   QRectF childrenBox;
-  qreal xLeft = _margin + _nml;
-  qreal yTop  = getHeaderBottom() + _margin + _nml;
+  qreal xLeft = Resource::Corner_Margin;
+  qreal yTop  = getHeaderBottom() + Resource::Space_Margin;
   for (list<AbstractSceneItem*>::const_iterator it=alreadySet.begin(); it!=alreadySet.end(); ++it)
     {
       childrenBox = childrenBox.united(childBoundingRect(*it));
@@ -311,20 +322,19 @@ void SceneComposedNodeItem::autoPosNewChild(AbstractSceneItem *item,
     }
   if (childrenBox.isValid())
     yTop = childrenBox.bottom() + 1.; // +1. to avoid collision with bottom (penwidth)
-    //xLeft += childrenBox.right();
+  //xLeft += childrenBox.right();
   DEBTRACE("left, top " << xLeft  << " " << yTop);
   QPointF topLeft(xLeft, yTop);
   if (isNew) _children.push_back(item);
-  if (_eventPos.isNull())
+  if (_eventPos.isNull()) {
+    //DEBTRACE("_eventPos.isNull");
     item->setTopLeft(topLeft);
-  else
-    {
-      item->setTopLeft(_eventPos);
-      SceneItem *it = dynamic_cast<SceneItem*>(item);
-      YASSERT(it);
-      collisionResolv(it, QPointF(0,0));
-      if (Scene::_autoComputeLinks) rebuildLinks();
-    }
+  } else {
+    //DEBTRACE("_eventPos " << _eventPos.x() << " " << _eventPos.y());
+    item->setTopLeft(_eventPos);
+    collisionResolv(it, QPointF(0, 0));
+    if (Scene::_autoComputeLinks) rebuildLinks();
+  }
 }
 
 void SceneComposedNodeItem::popupMenu(QWidget *caller, const QPoint &globalPos)
@@ -341,6 +351,68 @@ std::list<AbstractSceneItem*> SceneComposedNodeItem::getChildren()
 void SceneComposedNodeItem::removeChildFromList(AbstractSceneItem* child)
 {
   _children.remove(child);
+}
+
+void SceneComposedNodeItem::reorganizeShrinkExpand() {
+  bool se = isExpanded();
+
+  //update control links
+  std::list<SubjectControlLink*> lscl=dynamic_cast<SubjectNode*>(_subject)->getSubjectControlLinks();
+  for (std::list<SubjectControlLink*>::const_iterator it = lscl.begin(); it != lscl.end(); ++it) {
+    SceneLinkItem* lk = dynamic_cast<SceneLinkItem*>(QtGuiContext::getQtCurrent()->_mapOfSceneItem[*it]);
+
+    bool b1 = true, b2 = true;
+
+    SceneNodeItem* no = lk->getFromNode();
+    if (no) {
+      SceneComposedNodeItem* scni = dynamic_cast<SceneComposedNodeItem*>(no);
+      if (scni) {
+	b1 = scni!=this;
+      };
+    };
+
+    no = lk->getToNode();
+    if (no) {
+      SceneComposedNodeItem* scni = dynamic_cast<SceneComposedNodeItem*>(no);
+      if (scni) {
+	b2 = scni!=this;
+      };
+    };
+
+    if (b1 && b2) {
+      if (se) {
+	lk->show();
+      } else {
+	lk->hide();
+      };
+    };
+  };
+
+  for (list<AbstractSceneItem*>::const_iterator it=_children.begin(); it!=_children.end(); ++it) {
+    SceneItem* item = dynamic_cast<SceneItem*>(*it);
+    if (se) {
+      item->show();
+    } else {
+      item->hide();
+    };
+    item->shrinkExpandLink(se);
+  };
+
+  if (!se) {
+    _width  = 2*Resource::Corner_Margin + 2*Resource::DataPort_Width + Resource::Space_Margin;
+    _height = getHeaderBottom() + Resource::Corner_Margin;
+  };
+
+  adjustHeader();
+}
+
+void SceneComposedNodeItem::shrinkExpandLink(bool se) {
+  se = se and isExpanded();
+  foreach (QGraphicsItem *child, childItems()) {
+    if (SceneItem *sci = dynamic_cast<SceneItem*>(child)) {
+      sci->shrinkExpandLink(se);
+    };
+  };
 }
 
 void SceneComposedNodeItem::reorganize()
@@ -412,9 +484,9 @@ void SceneComposedNodeItem::collisionResolv(SceneItem* child, QPointF oldPos)
                   else
                     {
                       othY = newY - otherBR.height();
-                      if (othY < _margin + getHeaderBottom() + _nml)
+                      if ( othY < Resource::Space_Margin + getHeaderBottom() )
                         {
-                          othY = _margin + getHeaderBottom() + _nml;
+                          othY = Resource::Space_Margin + getHeaderBottom();
                           other->_blocY = true;
                           newY = otherBR.bottom() + 1;
                           _blocY = true;
@@ -435,9 +507,9 @@ void SceneComposedNodeItem::collisionResolv(SceneItem* child, QPointF oldPos)
                   else
                     {
                       othX = newX - otherBR.width();
-                      if (othX < _margin + _nml)
+                      if (othX < Resource::Space_Margin)
                         {
-                          othX = _margin + _nml;
+                          othX = Resource::Space_Margin;
                           other->_blocX = true;
                           newX = otherBR.right()+ 1;
                           _blocX = true;
@@ -504,7 +576,8 @@ void SceneComposedNodeItem::rebuildLinks()
 void SceneComposedNodeItem::arrangeNodes(bool isRecursive)
 {
   DEBTRACE("SceneComposedItem::arrangeNodes " << isRecursive);
-  bool isExtern = !QtGuiContext::_delayCalc;
+
+ bool isExtern = !QtGuiContext::_delayCalc;
   QtGuiContext::_delayCalc = true; // avoid rebuildLinks
 
   SubjectComposedNode *scnode = dynamic_cast<SubjectComposedNode*>(getSubject());

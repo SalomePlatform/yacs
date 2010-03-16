@@ -33,6 +33,7 @@ namespace YACS
   namespace HMI
   {
     class SceneItem;
+    class SceneNodeItem;
 
     class VisitorSaveGuiSchema : public YACS::ENGINE::VisitorSaveSalomeSchema
     {
@@ -44,7 +45,7 @@ namespace YACS
       
     protected:
       virtual void writePresentation();
-      virtual void writeItem(std::string name, SceneItem* item);
+      virtual void writeItem(std::string name, SceneNodeItem* item);
       YACS::ENGINE::Proc* _proc;
     };
 

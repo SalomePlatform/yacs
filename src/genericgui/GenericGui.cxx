@@ -41,6 +41,7 @@
 #include "Scene.hxx"
 #include "GenericGui.hxx"
 #include "SceneItem.hxx"
+#include "SceneNodeItem.hxx"
 #include "ItemEdition.hxx"
 #include "CatalogWidget.hxx"
 #include "TreeView.hxx"
@@ -477,6 +478,11 @@ void GenericGui::createActions()
                                             tr("center on node"), tr("center 2D view on selected node"),
                                             0, _parent, false, this,  SLOT(onCenterOnNode()));
   _centerOnNodeAct->setShortcut(QKeySequence::Find);
+
+  pixmap.load("icons:shrinkExpand.png");
+  _shrinkExpand = _wrapper->createAction(getMenuId(), tr("shrink or expand the selected node"), QIcon(pixmap),
+                                            tr("shrink/expand"), tr("shrink or expand the selected node"),
+                                            0, _parent, false, this,  SLOT(onShrinkExpand()));
 
   pixmap.load("icons:straightLink.png");
   _toggleStraightLinksAct = _wrapper->createAction(getMenuId(), tr("draw straight or orthogonal links"), QIcon(pixmap),
@@ -1225,6 +1231,7 @@ void GenericGui::createContext(YACS::ENGINE::Proc* proc,
 void GenericGui::setLoadedPresentation(YACS::ENGINE::Proc* proc)
 {
   DEBTRACE("GenericGui::setLoadedPresentation");
+  QtGuiContext::getQtCurrent()->setLoadingPresentation(true);
   map<YACS::ENGINE::Node*, PrsData> presNodes = _loader->getPrsData(proc);
   if (!presNodes.empty())
     {
@@ -1236,13 +1243,18 @@ void GenericGui::setLoadedPresentation(YACS::ENGINE::Proc* proc)
           SubjectNode *snode = QtGuiContext::getQtCurrent()->_mapOfSubjectNode[node];
           SceneItem *item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[snode];
           YASSERT(item);
-          item->setPos(QPointF(pres._x, pres._y));
-          item->setWidth(pres._width);
-          item->setHeight(pres._height);
+          SceneNodeItem *inode = dynamic_cast<SceneNodeItem*>(item);
+          YASSERT(inode);
+          inode->setPos(QPointF(pres._x, pres._y));
+          inode->setWidth(pres._width);
+          inode->setHeight(pres._height);
+          inode->setExpanded(pres._expanded);
+          if (!pres._expanded) inode->reorganizeShrinkExpand();
         }
     }
   if (Scene::_autoComputeLinks)
     _guiEditor->rebuildLinks();
+  QtGuiContext::getQtCurrent()->setLoadingPresentation(false);
 }
 
 // -----------------------------------------------------------------------------
@@ -2027,6 +2039,11 @@ void GenericGui::onCenterOnNode()
 {
   DEBTRACE("GenericGui::onCenterOnNode");
   QtGuiContext::getQtCurrent()->getView()->onCenterOnNode();
+}
+
+void GenericGui::onShrinkExpand() {
+  DEBTRACE("GenericGui::onShrinkExpand");
+  _guiEditor->shrinkExpand();
 }
 
 void GenericGui::onToggleStraightLinks(bool checked)

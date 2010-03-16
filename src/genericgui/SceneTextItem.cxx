@@ -23,6 +23,8 @@
 // #include <QGraphicsSceneHoverEvent>
 #include <QPointF>
 
+#include "Resource.hxx"
+
 // #include <cassert>
 
 //#define _DEVDEBUG_
@@ -34,12 +36,12 @@ using namespace YACS::HMI;
 
 
 SceneTextItem::SceneTextItem(QGraphicsScene *scene, SceneItem *parent,
-                             QString label)
-  : QGraphicsTextItem(label, parent), AbstractSceneItem(scene, parent, label)
+                             QString label, bool center )
+  : QGraphicsTextItem(parent), AbstractSceneItem(scene, parent, label)
 {
   setToolTip(label);
+  _center = center;
   DEBTRACE("SceneTextItem::SceneTextItem "<<label.toStdString()<<" "<<this<<" "<<_parent<<" "<< _level); 
-  setPos(x()+10, y());
 }
 
 SceneTextItem::~SceneTextItem()
@@ -55,10 +57,24 @@ void SceneTextItem::paint(QPainter *painter,
            QWidget *widget)
 {
   QGraphicsTextItem::paint(painter, option, widget);
+
+  int dx, fl;
+  if (_center) {
+    dx = 0;
+    fl = Qt::AlignCenter;
+  } else {
+    dx = Resource::Text_DX;
+    fl = Qt::AlignLeft | Qt::AlignVCenter;
+  };
+  painter->drawText(dx, 0, _parent->getWidth()-dx*2, _parent->getHeight(), fl, _label);
 }
 
 void SceneTextItem::setTopLeft(QPointF topLeft)
 {
+}
+
+void SceneTextItem::setPlainTextTrunc(QString label) {
+  _label = label;
 }
 
 void SceneTextItem::checkGeometryChange()

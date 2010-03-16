@@ -46,6 +46,7 @@ namespace YACS
       } Direction;
 
     class ScenePortItem;
+    class SceneNodeItem;
 
     class SceneLinkItem: public SceneObserverItem
     {
@@ -69,6 +70,8 @@ namespace YACS
       virtual QPointF start();
       virtual QPointF goal();
       virtual void updateShape();
+      virtual SceneNodeItem* getFromNode();
+      virtual SceneNodeItem* getToNode();
 
     protected:
       void setShape(int thickness = 1);

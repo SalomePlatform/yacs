@@ -63,6 +63,7 @@ namespace YACS
       inline YACS::HMI::GuiExecutor* getGuiExecutor()            {return _guiExecutor; };
       inline bool isEdition()                                    {return _isEdition; };
       inline int getStudyId()                                    {return _studyId; };
+      inline bool isLoadingPresentation()                        {return _isLoadingPresentation; };
 
       YACS::HMI::Subject* getSubjectToPaste(bool &isCut);
 
@@ -80,6 +81,7 @@ namespace YACS
       inline void setGuiExecutor(YACS::HMI::GuiExecutor* guiEx)  {_guiExecutor = guiEx; };
       inline void setEdition(bool isEdition)                     {_isEdition = isEdition; };
       inline void setStudyId(int studyId)                        {_studyId = studyId; };
+      inline void setLoadingPresentation(bool isLoadpres)        {_isLoadingPresentation = isLoadpres; };
 
       void setSubjectToCut(YACS::HMI::Subject* sub);
       void setSubjectToCopy(YACS::HMI::Subject* sub);
@@ -115,6 +117,7 @@ namespace YACS
       YACS::HMI::Subject* _subjectToCut;
       YACS::HMI::Subject* _subjectToCopy;
       bool _isEdition;
+      bool _isLoadingPresentation;
       int _studyId;
       SuitWrapper* _wrapper;
     };

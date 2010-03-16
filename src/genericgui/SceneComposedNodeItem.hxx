@@ -44,6 +44,8 @@ namespace YACS
       virtual std::list<AbstractSceneItem*> getChildren();
       virtual void removeChildFromList(AbstractSceneItem* child);
       virtual void reorganize();
+      virtual void reorganizeShrinkExpand();
+      virtual void shrinkExpandLink(bool se);
       virtual void collisionResolv(SceneItem* child, QPointF oldPos);
       virtual void rebuildLinks();
       virtual void arrangeNodes(bool isRecursive);

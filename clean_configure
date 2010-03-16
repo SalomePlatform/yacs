@@ -47,3 +47,4 @@ fi
 find . -name "semantic.cache" -print -exec rm {} \;
 find . -name "*.pyc" -print -exec rm {} \;
 rm -f src/salomegui_swig/doc.i
+rm -f adm/unix/config_files/l*.m4

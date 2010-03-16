@@ -21,6 +21,7 @@
 #include "QtGuiContext.hxx"
 #include "guiObservers.hxx"
 #include "SceneItem.hxx"
+#include "SceneNodeItem.hxx"
 
 #include <cassert>
 
@@ -60,23 +61,28 @@ void VisitorSaveGuiSchema::writePresentation()
     SubjectNode * snode = QtGuiContext::getQtCurrent()->_mapOfSubjectNode[node];
     SceneItem* item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[snode];
     YASSERT(item);
-    writeItem(_proc->getChildName(node), item);
+    SceneNodeItem* inode = dynamic_cast<SceneNodeItem*>(item);
+    YASSERT(inode);
+    writeItem(_proc->getChildName(node), inode);
   }
 
   SubjectNode * sproc = QtGuiContext::getQtCurrent()->getSubjectProc();
   SceneItem* item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[sproc];
   YASSERT(item);
-  writeItem("__ROOT__", item);
+  SceneNodeItem* inode = dynamic_cast<SceneNodeItem*>(item);
+  YASSERT(inode);
+  writeItem("__ROOT__", inode);
 }
 
- void VisitorSaveGuiSchema::writeItem(std::string name, SceneItem* item)
+ void VisitorSaveGuiSchema::writeItem(std::string name, SceneNodeItem* item)
 {
   int depth = 1;
   _out << indent(depth) << "<presentation";
-  _out                  << " name=\""  << name               << "\"";
-  _out                  << " x=\""     << item->x()          << "\"";
-  _out                  << " y=\""     << item->y()          << "\"";
-  _out                  << " width=\"" << item->getWidth()   << "\"";
-  _out                  << " height=\""<< item->getHeight()  << "\"";
+  _out                  << " name=\""    << name               << "\"";
+  _out                  << " x=\""       << item->x()          << "\"";
+  _out                  << " y=\""       << item->y()          << "\"";
+  _out                  << " width=\""   << item->getWidth()   << "\"";
+  _out                  << " height=\""  << item->getHeight()  << "\"";
+  _out                  << " expanded=\""<< item->isExpanded() << "\"";
   _out                  << "/>" << endl;
 }

@@ -67,7 +67,6 @@ namespace YACS
 
       virtual void setTopLeft(QPointF topLeft) = 0;
       virtual int getLevel();
-      virtual qreal getMargin();
       virtual void checkGeometryChange() = 0;
       virtual void reorganize();
       virtual QString getLabel();
@@ -77,13 +76,9 @@ namespace YACS
       virtual qreal getHeight();
       virtual void setWidth(qreal width);
       virtual void setHeight(qreal height);
-      virtual qreal getInternWidth();
-      virtual qreal getInternHeight();
       virtual void popupMenu(QWidget *caller, const QPoint &globalPos) = 0;
       virtual void activateSelection(bool selected);
       virtual void setGeometryOptimization(bool optimize);
-      inline bool hasNml() { return _hasNml; };
-      inline qreal getNml() { return _hasNml*_nml; };
       inline SceneItem* getParent() { return _parent; };
 
     protected:
@@ -93,16 +88,14 @@ namespace YACS
       YACS::HMI::Scene *_scene;
       QString _label;
       int _level;
-      qreal _margin;
-      qreal _nml;
       qreal _width;
       qreal _height;
+      qreal _incHeight;
       QColor _penColor;
       QColor _brushColor;
       QColor _hiPenColor;
       QColor _hiBrushColor;
       bool _hasHeader;
-      bool _hasNml;
       bool _optimize;
       bool _dragable;
       enum Qt::MouseButton _dragButton;
@@ -133,6 +126,7 @@ namespace YACS
       virtual QString getToolTip();
       void setEventPos(QPointF point);
       virtual void updateChildItems();
+      virtual void shrinkExpandLink(bool se);
 
     protected:
 //       virtual bool sceneEvent(QEvent *event);

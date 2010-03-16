@@ -72,8 +72,8 @@ void YACSGuiLoader::process(std::string theElement, bool theNewLink)
     if ( _defaultParsersMap["presentation"] )
     {
       presentationtype_parser* aP = (presentationtype_parser*)_defaultParsersMap["presentation"];
-      _inputMap[aP->name_] = PrsData(aP->x_, aP->y_, aP->width_, aP->height_);
-      DEBTRACE(aP->name_ << " " << aP->x_ << " " << aP->y_ << " " <<  aP->width_ << " " << aP->height_);
+      _inputMap[aP->name_] = PrsData(aP->x_, aP->y_, aP->width_, aP->height_, aP->expanded_);
+      DEBTRACE(aP->name_ << " " << aP->x_ << " " << aP->y_ << " " <<  aP->width_ << " " << aP->height_ << " " << aP->expanded_);
     }
   }
 }

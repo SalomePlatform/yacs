@@ -21,6 +21,7 @@
 
 #include "SceneLinkItem.hxx"
 #include "SceneDataPortItem.hxx"
+#include "SceneCtrlPortItem.hxx"
 #include "SceneElementaryNodeItem.hxx"
 #include "SceneHeaderNodeItem.hxx"
 #include "Scene.hxx"
@@ -561,3 +562,22 @@ QColor SceneLinkItem::getBrushColor()
   return SceneObserverItem::getBrushColor();
 }
 
+// Get the node at the "from" place of the link
+SceneNodeItem* SceneLinkItem::getFromNode() {
+  SceneCtrlPortItem* p = dynamic_cast<SceneCtrlPortItem*>(_from);
+  if (p) {
+    return(p->getParentNode());
+  } else {
+    return(NULL);
+  };
+}
+
+// Get the node at the "to" place of the link
+SceneNodeItem* SceneLinkItem::getToNode() {
+  SceneCtrlPortItem* p = dynamic_cast<SceneCtrlPortItem*>(_to);
+  if (p) {
+    return(p->getParentNode());
+  } else {
+    return(NULL);
+  };
+}

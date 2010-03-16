@@ -29,7 +29,7 @@ namespace YACS
     {
     public:
       SceneTextItem(QGraphicsScene *scene, SceneItem *parent,
-                    QString label);
+                    QString label, bool center=false );
       virtual ~SceneTextItem();
       virtual QRectF boundingRect() const;
       virtual void paint(QPainter *painter,
@@ -37,12 +37,14 @@ namespace YACS
                          QWidget *widget);
 
       virtual void setTopLeft(QPointF topLeft);
+      virtual void setPlainTextTrunc(QString label);
       virtual void checkGeometryChange();
       virtual void popupMenu(QWidget *caller, const QPoint &globalPos);
       virtual QString getToolTip();
       void setEventPos(QPointF point);
     protected:
       QPointF _eventPos;
+      bool _center;
     };
   }
 }

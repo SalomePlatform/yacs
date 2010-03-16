@@ -77,7 +77,7 @@ namespace YACS
       void CopySubject();
       void PasteSubject();
       void PutSubjectInBloc();
-
+      void shrinkExpand();
       void rebuildLinks();
       void arrangeNodes(bool isRecursive);
       void showUndo(QWidget *parent = 0);

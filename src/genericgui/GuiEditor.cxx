@@ -339,6 +339,38 @@ SubjectDataPort*  GuiEditor::CreateOutputPort(SubjectElementaryNode* seNode,
 }
 
 /*!
+ * Subject shrink or expand, command from popup menu: needs a valid selection
+ */
+void GuiEditor::shrinkExpand() {
+  DEBTRACE("GuiEditor::shrinkExpand");
+
+  Subject* sub = QtGuiContext::getQtCurrent()->getSelectedSubject();
+  if (!sub) {
+    DEBTRACE("GuiEditor::shrinkExpand : invalid selection!");
+    return;
+  };
+
+  if (! QtGuiContext::getQtCurrent()->_mapOfSceneItem.count(sub)) {
+    DEBTRACE("GuiEditor::shrinkExpand: no scene item corresponding to this subject");
+    return;
+  };
+
+  SceneItem* item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[sub];
+  SceneNodeItem *sni = dynamic_cast<SceneNodeItem*>(item);
+  if (!sni) {
+    DEBTRACE("GuiEditor::shrinkExpand: no scene node item corresponding to this subject");
+    return;
+  };
+
+  if (sni->isExpanded()) {
+    sni->setExpanded(false);
+  } else {
+    sni->setExpanded(true);
+  };
+  sni->reorganizeShrinkExpand();
+}
+
+/*!
  * Subject destruction, command from popup menu: needs a valid selection
  */
 void GuiEditor::DeleteSubject()

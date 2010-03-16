@@ -45,6 +45,10 @@ SceneElementaryNodeItem::SceneElementaryNodeItem(QGraphicsScene *scene, SceneIte
                                              QString label, Subject *subject)
   : SceneNodeItem(scene, parent, label, subject)
 {
+  _maxPorts = 0;
+  _width  = 2*Resource::Corner_Margin + 2*Resource::DataPort_Width + Resource::Space_Margin;
+  _height = Resource::Header_Height + Resource::Border_Margin;
+
   _brushColor   = Resource::ElementaryNode_brush;
   _hiBrushColor = Resource::ElementaryNode_hiBrush;
   _penColor     = Resource::ElementaryNode_pen;
@@ -71,13 +75,13 @@ void SceneElementaryNodeItem::paint(QPainter *painter,
 {
   //DEBTRACE("SceneElementaryNodeItem::paint");
   painter->save();
-  painter->setBrush(QBrush(Qt::NoBrush));
-  painter->setPen(QPen(Qt::NoPen));
-  painter->drawRect(QRectF(0, 0, _width, _height));
-  painter->setPen(getPenColor());
+  QPen pen(getPenColor());
+  pen.setWidth(Resource::Thickness);
+  painter->setPen(pen);
   painter->setBrush(getBrushColor());
-  painter->drawRect(QRectF(_nml, _nml,
-                           _width-2*_nml, _height-2*_nml));
+  int w = _width  - 2*Resource::Border_Margin;
+  int h = _height - 2*Resource::Border_Margin;
+  painter->drawRect(QRectF(Resource::Border_Margin, Resource::Border_Margin, w, h));
   painter->restore();
 }
 
@@ -136,10 +140,53 @@ void SceneElementaryNodeItem::update(GuiEvent event, int type, Subject* son)
     }
 }
 
+void SceneElementaryNodeItem::autoPosNewPort(AbstractSceneItem *item, int nbPorts) {
+  SceneInPortItem*   inPortItem = dynamic_cast<SceneInPortItem*>(item);
+  SceneOutPortItem* outPortItem = dynamic_cast<SceneOutPortItem*>(item);
+
+  if (isExpanded()) {
+    qreal x;
+    if (inPortItem) {
+      x = Resource::Corner_Margin;
+      inPortItem->show();
+    } else {
+      x = Resource::Corner_Margin + Resource::DataPort_Width + Resource::Space_Margin;
+      outPortItem->show();
+    };
+    qreal y = Resource::Header_Height + nbPorts * (Resource::DataPort_Height + Resource::Space_Margin);
+
+    if (_maxPorts <= nbPorts) {
+      _maxPorts = nbPorts+1;
+      _height  = Resource::Header_Height + Resource::Border_Margin;
+      _height += _maxPorts * (Resource::DataPort_Height + Resource::Space_Margin);
+      _incHeight = _height; // must just be more than the actual increment of height
+      DEBTRACE("SceneElementaryNodeItem::autoPosNewPort _height=" << _height);
+    };
+
+    item->setTopLeft(QPointF(x, y));
+
+  } else {
+    _height = Resource::Header_Height + Resource::Border_Margin;
+    qreal y = Resource::Corner_Margin;
+    if (inPortItem) {
+      item->setTopLeft(QPointF(Resource::Corner_Margin, y));
+      inPortItem->hide();
+    } else {
+      item->setTopLeft(QPointF(Resource::Corner_Margin + Resource::DataPort_Width + Resource::Space_Margin, y));
+      outPortItem->hide();
+    };
+  };
+}
+
 void SceneElementaryNodeItem::popupMenu(QWidget *caller, const QPoint &globalPos)
 {
   ElementaryNodeMenu m;
   m.popupMenu(caller, globalPos);
+}
+
+void SceneElementaryNodeItem::reorganizeShrinkExpand()
+{
+  reorganize();
 }
 
 void SceneElementaryNodeItem::reorganize()
@@ -149,6 +196,8 @@ void SceneElementaryNodeItem::reorganize()
   SubjectNode* snode = dynamic_cast<SubjectNode*>(_subject);
   ElementaryNode* father = dynamic_cast<ElementaryNode*>(snode->getNode());
   YASSERT(father);
+
+  _maxPorts = 0;
 
   list<InputPort*> plisti = father->getSetOfInputPort();
   list<InputPort*>::iterator iti = plisti.begin();

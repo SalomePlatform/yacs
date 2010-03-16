@@ -44,26 +44,29 @@ namespace YACS
       virtual qreal getHeaderBottom() const;
       virtual void autoPosControl(AbstractSceneItem *item);
       virtual void autoPosNewPort(AbstractSceneItem *item);
+      virtual void reorganizePorts(bool se);
       virtual void popupMenu(QWidget *caller, const QPoint &globalPos);
       virtual void adjustGeometry();
       virtual void adjustPosPorts();
       virtual QRectF getMinimalBoundingRect() const;
-      virtual void adaptComposedNode(qreal deltaY);
+      virtual void adaptComposedNode(SceneItem* port, qreal deltaY);
       virtual void setEdited(bool isEdited);
       virtual void setValid(bool isValid);
       virtual void setExecState(int execState);
       virtual SceneCtrlPortItem* getCtrlInPortItem();
       virtual SceneCtrlPortItem* getCtrlOutPortItem();
+      QColor getValidColor();
 
     protected:
       virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
-      QColor getValidColor(bool isValid);
+      virtual void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
 
       SceneHeaderItem *_header;
       SceneCtrlPortItem *_controlIn;
       SceneCtrlPortItem *_controlOut;
       std::list<SceneInPortItem*> _inPorts;
       std::list<SceneOutPortItem*> _outPorts;
+      int _maxPorts;
 
       QColor _sc;
       QString _stateDef;

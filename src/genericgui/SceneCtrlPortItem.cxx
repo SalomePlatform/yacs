@@ -19,6 +19,7 @@
 #include "SceneCtrlPortItem.hxx"
 #include "SceneTextItem.hxx"
 #include "SceneNodeItem.hxx"
+#include "SceneHeaderNodeItem.hxx"
 #include "Scene.hxx"
 #include "ItemMimeData.hxx"
 #include "QtGuiContext.hxx"
@@ -48,9 +49,9 @@ SceneCtrlPortItem::SceneCtrlPortItem(QGraphicsScene *scene, SceneItem *parent,
                                      QString label)
   : SceneItem(scene, parent, label), ScenePortItem(label)
 {
-  _width  = getPortWidth();
-  _height = getPortHeight();
   setText(label);
+  _width        = Resource::CtrlPort_Width;
+  _height       = Resource::CtrlPort_Height;
   _brushColor   = Resource::CtrlPort_brush;
   _hiBrushColor = Resource::CtrlPort_hiBrush;
   _penColor     = Resource::CtrlPort_pen;
@@ -67,9 +68,14 @@ void SceneCtrlPortItem::paint(QPainter *painter,
 {
   //DEBTRACE("ScenePortItem::paint");
   painter->save();
-  painter->setPen(getPenColor());
-  painter->setBrush(getBrushColor());
-  painter->drawRoundRect(QRectF(0, 0, _width, _height), 33*_height/_width, 33);
+
+  QPen pen(getPenColor());
+  pen.setWidth(Resource::Thickness);
+  painter->setPen(pen);
+  SceneHeaderNodeItem* hd = dynamic_cast<SceneHeaderNodeItem*>(_parent);
+  painter->setBrush(hd->getValidColor());
+  painter->drawRoundedRect(QRectF(0, 0, Resource::CtrlPort_Width, Resource::CtrlPort_Height), Resource::Radius, Resource::Radius);
+
   painter->restore();
 }
 
@@ -78,9 +84,7 @@ void SceneCtrlPortItem::setText(QString label)
   if (!_text)
     _text = new SceneTextItem(_scene,
                               this,
-                              label);
-  else
-    _text->setPlainText(label);
+                              label, true );
 }
 
 SceneNodeItem* SceneCtrlPortItem::getParentNode()
@@ -172,15 +176,3 @@ void SceneCtrlPortItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
   _draging = false;
   _dragModifier= false;
 }
-
-
-int SceneCtrlPortItem::getPortWidth()
-{
-  return Resource::CtrlPort_Width;
-}
-
-int SceneCtrlPortItem::getPortHeight()
-{
-  return Resource::CtrlPort_Height;
-}
-

@@ -93,11 +93,6 @@
 
 #define __dragOver       "dragOver"
 
-#define _CtrlPort_Width  "CtrlPort_Width"
-#define _CtrlPort_Height "CtrlPort_Height"
-#define _DataPort_Width  "DataPort_Width"
-#define _DataPort_Height "DataPort_Height"
-
 // Default values
 // --------------
 
@@ -180,11 +175,6 @@
 #define DataPort_hiPen_         QColor( 11, 128,   0)
 
 #define dragOver_               QColor(255,   0,   0)
-
-#define CtrlPort_Width_   85
-#define CtrlPort_Height_  25
-#define DataPort_Width_  100
-#define DataPort_Height_  25
 
 // Define Resource class
 // ---------------------
@@ -288,6 +278,20 @@ namespace YACS {
         static int CtrlPort_Height;
         static int DataPort_Width;
         static int DataPort_Height;
+
+        static int Thickness;
+
+        static int Border_Margin;
+        static int Space_Margin;
+
+        static int Line_Space;
+        static int Line_Width;
+
+        static int Text_DX;
+
+        static int Corner_Margin;
+        static int Header_Height;
+        static int Radius;
     };
   }
 }

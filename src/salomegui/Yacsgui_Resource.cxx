@@ -159,14 +159,6 @@ void Yacsgui_Resource::createPreferences(Yacsgui* swm)
   swm->addPreference( QObject::tr( "High pen"   ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _CtrlPort_hiPen   );
   swm->addPreference( QObject::tr( "High brush" ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _CtrlPort_hiBrush );
 
-  int prec = swm->addPreference( QObject::tr( "Width" ), nodeSubtab, LightApp_Preferences::IntSpin, RESOURCE_YACS, _CtrlPort_Width );
-  swm->setPreferenceProperty(prec, "min",   5);
-  swm->setPreferenceProperty(prec, "max", 300);
-
-  prec = swm->addPreference( QObject::tr( "Height" ), nodeSubtab, LightApp_Preferences::IntSpin, RESOURCE_YACS, _CtrlPort_Height );
-  swm->setPreferenceProperty(prec, "min",  5);
-  swm->setPreferenceProperty(prec, "max", 80);
-
   nodeSubtab = swm->addPreference( QObject::tr( "PREF_GROUP_PORT" ), nodeTab );
   swm->setPreferenceProperty(nodeSubtab , "columns", 2);
 
@@ -174,14 +166,6 @@ void Yacsgui_Resource::createPreferences(Yacsgui* swm)
   swm->addPreference( QObject::tr( "Brush"      ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _DataPort_brush   );
   swm->addPreference( QObject::tr( "High pen"   ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _DataPort_hiPen   );
   swm->addPreference( QObject::tr( "High brush" ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _DataPort_hiBrush );
-
-  prec = swm->addPreference( QObject::tr( "Width" ), nodeSubtab, LightApp_Preferences::IntSpin, RESOURCE_YACS, _DataPort_Width );
-  swm->setPreferenceProperty(prec, "min",   5);
-  swm->setPreferenceProperty(prec, "max", 300);
-
-  prec = swm->addPreference( QObject::tr( "Height" ), nodeSubtab, LightApp_Preferences::IntSpin, RESOURCE_YACS, _DataPort_Height );
-  swm->setPreferenceProperty(prec, "min",  5);
-  swm->setPreferenceProperty(prec, "max", 80);
 
   nodeSubtab = swm->addPreference( QObject::tr( "PREF_GROUP_DRAG" ), nodeTab );
   swm->setPreferenceProperty(nodeSubtab, "columns", 1);
@@ -320,12 +304,6 @@ void Yacsgui_Resource::preferencesChanged()
   Resource::DataPort_hiPen         = colorValue(_DataPort_hiPen,          DataPort_hiPen_        );
 
   Resource::dragOver               = colorValue(__dragOver,               dragOver_              );
-
-  // Parameter of nodes
-  Resource::CtrlPort_Width  = integerValue(_CtrlPort_Width , CtrlPort_Width_ );
-  Resource::CtrlPort_Height = integerValue(_CtrlPort_Height, CtrlPort_Height_);
-  Resource::DataPort_Width  = integerValue(_DataPort_Width , DataPort_Width_ );
-  Resource::DataPort_Height = integerValue(_DataPort_Height, DataPort_Height_);
 }
 
 void Yacsgui_Resource::preferencesChanged( const QString& sect, const QString& name ) 

@@ -61,8 +61,12 @@ namespace YACS
       virtual void updateName();
       virtual void arrangeNodes(bool isRecursive);
       virtual void arrangeChildNodes();
+      virtual void reorganizeShrinkExpand();
       virtual void updateChildItems();
+      virtual void shrinkExpandLink(bool se);
       virtual void updateLinks();
+      virtual bool isExpanded();
+      virtual void setExpanded(bool e);
       bool _blocX;
       bool _blocY;
 
@@ -71,6 +75,7 @@ namespace YACS
       virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
       virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
       virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
+      virtual void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
       virtual void updateState();
       virtual void setExecState(int execState);
 
@@ -83,6 +88,7 @@ namespace YACS
       bool _moving;
       bool _moved;
       QPointF _prevPos;
+      bool _expanded;
     };
   }
 }

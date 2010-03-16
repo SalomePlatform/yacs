@@ -42,6 +42,7 @@ namespace YACS
       virtual void update(GuiEvent event, int type, Subject* son);
       virtual SceneNodeItem* getParent();
       virtual void updateChildItems();
+      virtual void shrinkExpandLink(bool se);
     protected:
     };
   }

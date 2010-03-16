@@ -344,6 +344,7 @@ ICONS = \
 	resources/breakpoints_active.png \
 	resources/breakpoints.png \
 	resources/centerOnNode.png \
+	resources/shrinkExpand.png \
 	resources/change_informations.png \
 	resources/component.png \
 	resources/connect_to_batch_session.png \

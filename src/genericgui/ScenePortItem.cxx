@@ -42,14 +42,3 @@ ScenePortItem::ScenePortItem(QString label)
 ScenePortItem::~ScenePortItem()
 {
 }
-
-int ScenePortItem::getPortWidth()
-{
-  return Resource::DataPort_Width;
-}
-
-int ScenePortItem::getPortHeight()
-{
-  return Resource::DataPort_Height;
-}
-

@@ -39,8 +39,11 @@ namespace YACS
                          QWidget *widget);
       virtual void update(GuiEvent event, int type, Subject* son);
       virtual void popupMenu(QWidget *caller, const QPoint &globalPos);
+      virtual void autoPosNewPort(AbstractSceneItem *item, int nbPorts);
       virtual void reorganize();
+      virtual void reorganizeShrinkExpand();
     protected:
+      int _maxPorts;
 
     };
   }

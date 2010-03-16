@@ -223,6 +223,10 @@ void SalomeWrap_DataModel::createNewRun(const QString& schemaName,
 
   QString tabName = QFileInfo(schemaName).baseName() +QString("_run%1").arg(count);
   swv->getViewManager()->setTitle(tabName);
+
+  QPixmap pixmap;
+  pixmap.load("icons:run_active.png");
+  swv->getViewManager()->setIcon(pixmap);
 }
 
 void SalomeWrap_DataModel::setSelected(QWidget* viewWindow)

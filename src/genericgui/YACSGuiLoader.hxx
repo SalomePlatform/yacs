@@ -23,22 +23,26 @@ namespace YACS
     {
       float _x, _y;
       float _width, _height;
+      bool _expanded;
       
       PrsData()
       {
         _x = _y = 0;
         _width = _height = 1.;
+        _expanded = true;
       }
       
       PrsData(float x,
               float y, 
               float width,
-              float height)
+              float height,
+              bool expanded)
       { 
         _x = x;
         _y = y;
         _width = width;
         _height = height;
+        _expanded = expanded;
       }
     };
     
@@ -71,6 +75,7 @@ namespace YACS
       std::string name_;
       float x_, y_;
       float width_, height_;
+      bool expanded_;
       
       YACSGuiLoader* collector_;
 
@@ -96,6 +101,7 @@ namespace YACS
         required("y",attr);
         required("width",attr);
         required("height",attr);
+        //required("expanded", attr);
         for (int i = 0; attr[i]; i += 2) 
           {
             if(std::string(attr[i]) == "name")   name(attr[i+1]);
@@ -103,6 +109,7 @@ namespace YACS
             if(std::string(attr[i]) == "y")      y(attr[i+1]);
             if(std::string(attr[i]) == "width")  width(attr[i+1]);
             if(std::string(attr[i]) == "height") height(attr[i+1]);
+            if(std::string(attr[i]) == "expanded") expanded(attr[i+1]);
           }
         
         if ( collector_ )
@@ -114,6 +121,7 @@ namespace YACS
         name_ = "";
         x_ = y_ = 0.;
         width_ = height_ = 1;
+        expanded_ = true;
       }
       
       virtual void name(const std::string& name)
@@ -140,7 +148,12 @@ namespace YACS
       {
         height_ = QString(height.c_str()).toFloat();
       }
-    };
+       
+      virtual void expanded(const std::string& expanded)
+      {
+        expanded_ = QString(expanded.c_str()).toInt();
+      }
+   };
 
 
   }

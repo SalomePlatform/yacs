@@ -42,8 +42,6 @@ namespace YACS
                          QWidget *widget);
       virtual SceneNodeItem* getParentNode();
       SubjectNode* getSubjectNode();
-      static int getPortWidth();
-      static int getPortHeight();
     protected:
       virtual QString getMimeFormat();
       virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);

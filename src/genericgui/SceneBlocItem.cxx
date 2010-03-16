@@ -43,6 +43,8 @@
 #define ND_coord_i(n) (n)->u.coord
 #endif
 
+#include "Resource.hxx"
+
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
@@ -315,8 +317,8 @@ void SceneBlocItem::arrangeCanvasNodes(YACS::ENGINE::ComposedNode *cnode)
   SceneItem* sci = QtGuiContext::getQtCurrent()->_mapOfSceneItem[subCompo];
   SceneComposedNodeItem *sceneCompo = dynamic_cast<SceneComposedNodeItem*>(sci);
   YASSERT(sceneCompo);
-  qreal yHead = sceneCompo->getHeaderBottom() + sceneCompo->getMargin() + sceneCompo->getNml();
-  qreal xOffset = sceneCompo->getMargin() + sceneCompo->getNml();
+  qreal yHead = sceneCompo->getHeaderBottom() + Resource::Space_Margin;
+  qreal xOffset = Resource::Space_Margin;
 
   list<Node*> children = cnode->edGetDirectDescendants();
   for (list<Node*>::iterator it = children.begin(); it != children.end(); ++it)

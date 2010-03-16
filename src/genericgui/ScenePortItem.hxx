@@ -33,8 +33,6 @@ namespace YACS
       ScenePortItem(QString label);
       virtual ~ScenePortItem();
       virtual void setText(QString label)=0;
-      static int getPortWidth();
-      static int getPortHeight();
     protected:
       SceneTextItem* _text;
     };
