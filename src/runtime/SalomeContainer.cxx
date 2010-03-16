@@ -202,7 +202,7 @@ void SalomeContainer::addComponentName(std::string name)
 /*!
  * \param inst the component instance to load
  */
-CORBA::Object_ptr SalomeContainer::loadComponent(const ComponentInstance *inst)
+CORBA::Object_ptr SalomeContainer::loadComponent(ComponentInstance *inst)
 {
   lock();//To be sure
   if(!isAlreadyStarted(inst))
@@ -238,7 +238,19 @@ CORBA::Object_ptr SalomeContainer::loadComponent(const ComponentInstance *inst)
           if(!value.empty())
             studyid= atoi(value.c_str());
         }
-      objComponent=container->create_component_instance(componentName, studyid);
+      // prepare component instance properties
+      Engines::FieldsDict_var env = new Engines::FieldsDict;
+      std::map<std::string, std::string> properties = inst->getProperties();
+      std::map<std::string, std::string>::const_iterator itm;
+      env->length(properties.size());
+      int item=0;
+      for(itm = properties.begin(); itm != properties.end(); ++itm, item++)
+        {
+          env[item].key= CORBA::string_dup(itm->first.c_str());
+          env[item].value <<= itm->second.c_str();
+        }
+
+      objComponent=container->create_component_instance_env(componentName, studyid, env);
     }
 
   if(CORBA::is_nil(objComponent))

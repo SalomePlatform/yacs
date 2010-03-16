@@ -52,7 +52,7 @@ namespace YACS
       void checkCapabilityToDealWith(const ComponentInstance *inst) const throw (Exception);
       virtual void setProperty(const std::string& name, const std::string& value);
       virtual void addComponentName(std::string name);
-      virtual CORBA::Object_ptr loadComponent(const ComponentInstance *inst);
+      virtual CORBA::Object_ptr loadComponent(ComponentInstance *inst);
     protected:
 #ifndef SWIG
       virtual ~SalomeContainer();
