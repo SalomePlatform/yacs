@@ -68,7 +68,9 @@ void TreeView::setModel(QAbstractItemModel *model)
 
 void TreeView::viewSelection(const QModelIndex &ind)
 {
-  scrollTo(ind);
+  QModelIndex ind0 = ind.sibling(ind.row(), 0);
+  //DEBTRACE("TreeView::viewSelection " << ind.row() << " " << ind.column() << " / " << ind0.row() << " " << ind0.column());
+  scrollTo(ind0);
 }
 
 void TreeView::resizeColumns()
