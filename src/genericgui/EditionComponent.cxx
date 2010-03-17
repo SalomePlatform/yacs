@@ -17,6 +17,7 @@
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 #include "EditionComponent.hxx"
+#include "PropertyEditor.hxx"
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -31,9 +32,17 @@ EditionComponent::EditionComponent(Subject* subject,
                                    const char* name)
   : ItemEdition(subject, parent, name)
 {
+  _propeditor=new PropertyEditor(_subject);
+  _wid->gridLayout1->addWidget(_propeditor);
 }
 
 EditionComponent::~EditionComponent()
 {
 }
 
+void EditionComponent::update(GuiEvent event, int type, Subject* son)
+{
+  DEBTRACE("EditionComponent::update " <<eventName(event) << " " << type);
+  if(event == SETVALUE)
+    _propeditor->update();
+}

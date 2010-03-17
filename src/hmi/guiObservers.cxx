@@ -4255,6 +4255,23 @@ void SubjectComponent::notifyServicesChange(GuiEvent event, int type, Subject* s
     }
 }
 
+bool SubjectComponent::setProperties(std::map<std::string, std::string> properties)
+{
+  CommandSetComponentInstanceProperties *command = new CommandSetComponentInstanceProperties(getName(), properties);
+  if (command->execute())
+    {
+      GuiContext::getCurrent()->getInvoc()->add(command);
+      return true;
+    }
+  else delete command;
+  return false;
+}
+
+std::map<std::string, std::string> SubjectComponent::getProperties()
+{
+  return _compoInst->getProperties();
+}
+
 // ----------------------------------------------------------------------------
 
 SubjectContainer::SubjectContainer(YACS::ENGINE::Container* container, Subject *parent)

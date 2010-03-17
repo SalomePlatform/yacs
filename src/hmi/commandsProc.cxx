@@ -3073,6 +3073,78 @@ bool CommandAddContainer::localReverse()
 
 // ----------------------------------------------------------------------------
 
+CommandSetComponentInstanceProperties::CommandSetComponentInstanceProperties(std::string compoinstance,
+                                                                             std::map<std::string,std::string> properties)
+  : Command(), _compoinstance(compoinstance), _properties(properties)
+{
+  DEBTRACE("CommandSetComponentInstanceProperties::CommandSetComponentInstanceProperties " << compoinstance);
+  _oldProp.clear();
+}
+
+std::string CommandSetComponentInstanceProperties::dump()
+{
+  string ret ="CommandSetComponentInstanceProperties " + _compoinstance;
+  return ret;
+}
+
+bool CommandSetComponentInstanceProperties::localExecute()
+{
+  DEBTRACE("CommandSetComponentInstanceProperties::localExecute");
+  try
+    {
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      if (proc->componentInstanceMap.count(_compoinstance))
+        {
+          ComponentInstance *ref = proc->componentInstanceMap[_compoinstance];
+          YASSERT(ref);
+          _oldProp = ref->getProperties();
+          _oldAnon = ref->isAnonymous();
+          ref->setProperties(_properties);
+          ref->setAnonymous(false);
+          SubjectComponent* subcompo = GuiContext::getCurrent()->_mapOfSubjectComponent[ref];
+          subcompo->update(SETVALUE, 0, subcompo);
+          return true;
+        }
+      GuiContext::getCurrent()->_lastErrorMessage = "compoinstance not found: " + _compoinstance;
+      return false;
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandSetComponentInstanceProperties::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      return false;
+    }
+}
+
+bool CommandSetComponentInstanceProperties::localReverse()
+{
+  DEBTRACE("CommandSetComponentInstanceProperties::localReverse");
+  try
+    {
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      if (proc->componentInstanceMap.count(_compoinstance))
+        {
+          ComponentInstance *ref = proc->componentInstanceMap[_compoinstance];
+          YASSERT(ref);
+          ref->setProperties(_oldProp);
+          ref->setAnonymous(_oldAnon);
+          SubjectComponent* subcompo = GuiContext::getCurrent()->_mapOfSubjectComponent[ref];
+          subcompo->update(SETVALUE, 0, subcompo);
+          return true;
+        }
+      GuiContext::getCurrent()->_lastErrorMessage = "compoinstance not found: " + _compoinstance;
+      return false;
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandSetComponentInstanceProperties::localReverse() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      return false;
+    }
+}
+
+// ----------------------------------------------------------------------------
+
 CommandSetContainerProperties::CommandSetContainerProperties(std::string container,
                                                              std::map<std::string,std::string> properties)
   : Command(), _container(container), _properties(properties)
@@ -3227,16 +3299,21 @@ bool CommandSetLinkProperties::localExecute()
     {
       Proc* proc = GuiContext::getCurrent()->getProc();
       Node* node;
-      DataStreamPort* DSPort = 0;
+      InputDataStreamPort* inDSPort = 0;
+      OutputDataStreamPort* outDSPort = 0;
 
       node   = proc->getChildByName(_startNodeName);
-      DSPort = node->getOutputDataStreamPort(_startPortName);
-      DSPort->setProperties(_properties);
+      outDSPort = node->getOutputDataStreamPort(_startPortName);
+      outDSPort->setProperties(_properties);
 
       node   = proc->getChildByName(_endNodeName);
-      DSPort = node->getInputDataStreamPort(_endPortName);
-      _oldProp = DSPort->getProperties();
-      DSPort->setProperties(_properties);
+      inDSPort = node->getInputDataStreamPort(_endPortName);
+      _oldProp = inDSPort->getProperties();
+      inDSPort->setProperties(_properties);
+
+      std::pair<OutPort*,InPort*> keymap = std::pair<OutPort*,InPort*>(outDSPort,inDSPort);
+      SubjectLink* subject = GuiContext::getCurrent()->_mapOfSubjectLink[keymap];
+      subject->update(SETVALUE, 0, subject);
       return true;
     }
   catch (Exception& ex)
@@ -3254,15 +3331,20 @@ bool CommandSetLinkProperties::localReverse()
     {
       Proc* proc = GuiContext::getCurrent()->getProc();
       Node* node;
-      DataStreamPort* DSPort = 0;
+      InputDataStreamPort* inDSPort = 0;
+      OutputDataStreamPort* outDSPort = 0;
 
       node   = proc->getChildByName(_startNodeName);
-      DSPort = node->getOutputDataStreamPort(_startPortName);
-      DSPort->setProperties(_properties);
+      outDSPort = node->getOutputDataStreamPort(_startPortName);
+      outDSPort->setProperties(_properties);
 
       node   = proc->getChildByName(_endNodeName);
-      DSPort = node->getInputDataStreamPort(_endPortName);
-      DSPort->setProperties(_oldProp);
+      inDSPort = node->getInputDataStreamPort(_endPortName);
+      inDSPort->setProperties(_oldProp);
+
+      std::pair<OutPort*,InPort*> keymap = std::pair<OutPort*,InPort*>(outDSPort,inDSPort);
+      SubjectLink* subject = GuiContext::getCurrent()->_mapOfSubjectLink[keymap];
+      subject->update(SETVALUE, 0, subject);
       return true;
     }
   catch (Exception& ex)

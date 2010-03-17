@@ -246,6 +246,7 @@ CORBA::Object_ptr SalomeContainer::loadComponent(ComponentInstance *inst)
       int item=0;
       for(itm = properties.begin(); itm != properties.end(); ++itm, item++)
         {
+          DEBTRACE("envname="<<itm->first<<" envvalue="<< itm->second);
           env[item].key= CORBA::string_dup(itm->first.c_str());
           env[item].value <<= itm->second.c_str();
         }
@@ -359,14 +360,13 @@ void SalomeContainer::start(const ComponentInstance *inst) throw(YACS::Exception
   Engines::ContainerManager_var contManager=Engines::ContainerManager::_narrow(obj);
 
   std::string str(_params.container_name);
-  DEBTRACE("SalomeContainer::start " << str <<";"<<_params.hostname<<";"<<_type);
+  DEBTRACE("SalomeContainer::start " << str <<";"<<_params.resource_params.hostname <<";"<<_type);
   //If a container_name is given try to find an already existing container in naming service
   //If not found start a new container with the given parameters
   if (_type=="mono" && str != "")
     {
       std::string machine(_params.resource_params.hostname);
       if(machine == "" || machine == "localhost")
-        //machine=Kernel_Utils::GetHostname();
         machine=Kernel_Utils::GetHostname();
       std::string ContainerNameInNS=ns.BuildContainerNameForNS(_params,machine.c_str());
       obj=ns.Resolve(ContainerNameInNS.c_str());

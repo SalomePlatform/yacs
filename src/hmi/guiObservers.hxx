@@ -442,6 +442,8 @@ namespace YACS
       virtual void detachService(SubjectServiceNode* service);
       virtual void moveService(SubjectReference* reference);
       virtual void removeSubServiceFromSet(SubjectServiceNode *service);
+      virtual bool setProperties(std::map<std::string, std::string> properties);
+      virtual std::map<std::string, std::string> getProperties();
       virtual void notifyServicesChange(GuiEvent event, int type, Subject* son);
       virtual std::pair<std::string, int> getKey();
       virtual void clean(Command *command=0);

@@ -35,8 +35,8 @@ EditionDataLink::EditionDataLink(Subject* subject,
   SubjectLink * sub = dynamic_cast<SubjectLink*>(_subject);
   if(dynamic_cast<SubjectInputDataStreamPort*>(sub->getSubjectInPort()))
     {
-      PropertyEditor* propeditor=new PropertyEditor(_subject);
-      _wid->gridLayout1->addWidget(propeditor);
+      _propeditor=new PropertyEditor(_subject);
+      _wid->gridLayout1->addWidget(_propeditor);
     }
 }
 
@@ -44,3 +44,9 @@ EditionDataLink::~EditionDataLink()
 {
 }
 
+void EditionDataLink::update(GuiEvent event, int type, Subject* son)
+{
+  DEBTRACE("EditionDataLink::update " <<eventName(event) << " " << type);
+  if(event == SETVALUE && _propeditor)
+    _propeditor->update();
+}

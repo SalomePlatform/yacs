@@ -25,6 +25,7 @@ namespace YACS
 {
   namespace HMI
   {
+    class PropertyEditor;
 
     class EditionComponent: public ItemEdition
     {
@@ -33,6 +34,9 @@ namespace YACS
                   QWidget* parent = 0,
                   const char* name = 0);
       virtual ~EditionComponent();
+      virtual void update(GuiEvent event, int type, Subject* son);
+    protected:
+      PropertyEditor* _propeditor;
     };
   }
 }

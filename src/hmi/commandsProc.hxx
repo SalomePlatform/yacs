@@ -550,6 +550,21 @@ namespace YACS
       std::map<std::string,std::string> _oldProp;
     };
 
+    class CommandSetComponentInstanceProperties: public Command
+    {
+    public:
+      CommandSetComponentInstanceProperties(std::string compoinstance,
+                                            std::map<std::string,std::string> properties);
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      virtual std::string dump();
+      std::string _compoinstance;
+      std::map<std::string,std::string> _properties;
+      std::map<std::string,std::string> _oldProp;
+      bool _oldAnon;
+    };
+
     class CommandSetDSPortProperties: public Command
     {
     public:
