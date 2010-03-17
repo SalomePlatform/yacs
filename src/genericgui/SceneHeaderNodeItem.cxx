@@ -104,7 +104,28 @@ void SceneHeaderNodeItem::paint(QPainter *painter,
   int h = Resource::CtrlPort_Height;
   pen.setWidth(Resource::Thickness);
   painter->setPen(pen);
-  painter->setBrush(getBrushColor());
+  
+  SceneNodeItem* father = dynamic_cast<SceneNodeItem*>(_parent);
+  bool expanded = (father && father->isExpanded());
+  QColor baseColor = getBrushColor();
+  if (expanded)
+    painter->setBrush(baseColor);
+  else
+    {
+       int h, s, v, a, h2;
+       baseColor.getHsv(&h, &s, &v, &a);
+       DEBTRACE("h="<<h<<" s="<<s<<" v="<<v);
+       h2 = h+60;
+       if (h>359) h2 = h2-359;
+       QLinearGradient gradient;
+       gradient.setCoordinateMode(QGradient::ObjectBoundingMode);
+       gradient.setColorAt(0, baseColor.darker(200));
+       //gradient.setColorAt(1, baseColor.lighter(150));
+       //gradient.setColorAt(0, QColor::fromHsv(h-60, s, v, a));
+       gradient.setColorAt(1, QColor::fromHsv(h2, s, v, a));
+       QBrush brush(gradient);
+       painter->setBrush(brush);
+    }
   painter->drawRoundedRect(QRect(x, y, w, h), Resource::Radius, Resource::Radius);
 
   painter->restore();

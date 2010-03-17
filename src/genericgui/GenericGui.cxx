@@ -2430,10 +2430,10 @@ void GenericGui::emphasizePortLink(YACS::HMI::SubjectDataPort* sub, bool emphasi
     {
       YACS::HMI::SubjectLink* subli = (*it);
       if (!subli) continue;
-      subli->update(EMPHASIZE, true, sub);
+      subli->update(EMPHASIZE, emphasize, sub);
       Subject *sin = subli->getSubjectInPort();
       Subject *sout = subli->getSubjectOutPort();
-      sin->update(EMPHASIZE, true, sub);
-      sout->update(EMPHASIZE, true, sub);
+      sin->update(EMPHASIZE, emphasize, sub);
+      sout->update(EMPHASIZE, emphasize, sub);
     }
 }
