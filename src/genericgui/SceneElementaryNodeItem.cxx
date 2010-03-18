@@ -199,8 +199,8 @@ void SceneElementaryNodeItem::reorganize()
 
   _maxPorts = 0;
 
-  list<InputPort*> plisti = father->getSetOfInputPort();
-  list<InputPort*>::iterator iti = plisti.begin();
+  list<InPort*> plisti = father->getSetOfInPort();
+  list<InPort*>::iterator iti = plisti.begin();
   int nbPorts = 0;
   for (; iti != plisti.end(); ++iti)
     {
@@ -210,8 +210,8 @@ void SceneElementaryNodeItem::reorganize()
       nbPorts++;
     }
 
-  list<OutputPort*> plisto = father->getSetOfOutputPort();
-  list<OutputPort*>::iterator ito = plisto.begin();
+  list<OutPort*> plisto = father->getSetOfOutPort();
+  list<OutPort*>::iterator ito = plisto.begin();
   nbPorts = 0;
   for (; ito != plisto.end(); ++ito)
     {
