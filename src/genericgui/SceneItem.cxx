@@ -177,6 +177,7 @@ SceneItem::SceneItem(QGraphicsScene *scene, SceneItem *parent,
   : QGraphicsItem(parent), AbstractSceneItem(scene, parent, label)
 {
   _hover = false;
+  _ancestorShrinked = false;
   setToolTip(_label);
   DEBTRACE("SceneItem::SceneItem "<<label.toStdString()<<" "<<this<<" "<<_parent<<" "<< _level); 
   setFlag(QGraphicsItem::ItemIsSelectable);
@@ -413,5 +414,10 @@ void SceneItem::updateChildItems()
 }
 
 void SceneItem::shrinkExpandLink(bool se)
+{
+}
+
+
+void SceneItem::shrinkExpandRecursive(bool expanded, bool fromHere)
 {
 }

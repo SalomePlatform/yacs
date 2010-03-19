@@ -127,6 +127,7 @@ namespace YACS
       void setEventPos(QPointF point);
       virtual void updateChildItems();
       virtual void shrinkExpandLink(bool se);
+      virtual void shrinkExpandRecursive(bool expanded, bool fromHere);
 
     protected:
 //       virtual bool sceneEvent(QEvent *event);
@@ -138,6 +139,7 @@ namespace YACS
       virtual QColor getBrushColor();
       QColor hoverColor(QColor origColor);
       bool _hover;
+      bool _ancestorShrinked;
       QPointF _eventPos;
     };
 

@@ -23,12 +23,14 @@ namespace YACS
     {
       float _x, _y;
       float _width, _height;
+      float _expx, _expy;
       bool _expanded;
       
       PrsData()
       {
         _x = _y = 0;
         _width = _height = 1.;
+        _expx = _expy = 0;
         _expanded = true;
       }
       
@@ -36,12 +38,16 @@ namespace YACS
               float y, 
               float width,
               float height,
+              float expx,
+              float expy,
               bool expanded)
       { 
         _x = x;
         _y = y;
         _width = width;
         _height = height;
+        _expx = expx;
+        _expy = expy;
         _expanded = expanded;
       }
     };
@@ -75,6 +81,7 @@ namespace YACS
       std::string name_;
       float x_, y_;
       float width_, height_;
+      float expx_, expy_;
       bool expanded_;
       
       YACSGuiLoader* collector_;
@@ -109,6 +116,8 @@ namespace YACS
             if(std::string(attr[i]) == "y")      y(attr[i+1]);
             if(std::string(attr[i]) == "width")  width(attr[i+1]);
             if(std::string(attr[i]) == "height") height(attr[i+1]);
+            if(std::string(attr[i]) == "expx")     expx(attr[i+1]);
+            if(std::string(attr[i]) == "expy")     expy(attr[i+1]);
             if(std::string(attr[i]) == "expanded") expanded(attr[i+1]);
           }
         
@@ -121,6 +130,7 @@ namespace YACS
         name_ = "";
         x_ = y_ = 0.;
         width_ = height_ = 1;
+        expx_ = expy_ = 0.;
         expanded_ = true;
       }
       
@@ -149,6 +159,16 @@ namespace YACS
         height_ = QString(height.c_str()).toFloat();
       }
        
+      virtual void expx(const std::string& x)
+      {
+        expx_ = QString(x.c_str()).toFloat();
+      }
+      
+      virtual void expy(const std::string& y)
+      {
+        expy_ = QString(y.c_str()).toFloat();
+      }
+      
       virtual void expanded(const std::string& expanded)
       {
         expanded_ = QString(expanded.c_str()).toInt();

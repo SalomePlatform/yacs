@@ -141,10 +141,12 @@ void SceneElementaryNodeItem::update(GuiEvent event, int type, Subject* son)
 }
 
 void SceneElementaryNodeItem::autoPosNewPort(AbstractSceneItem *item, int nbPorts) {
+  DEBTRACE("SceneElementaryNodeItem::autoPosNewPort "<< _label.toStdString());
   SceneInPortItem*   inPortItem = dynamic_cast<SceneInPortItem*>(item);
   SceneOutPortItem* outPortItem = dynamic_cast<SceneOutPortItem*>(item);
 
-  if (isExpanded()) {
+  bool toShow = (!_ancestorShrinked && isExpanded());
+  if (toShow) {
     qreal x;
     if (inPortItem) {
       x = Resource::Corner_Margin;
@@ -186,6 +188,30 @@ void SceneElementaryNodeItem::popupMenu(QWidget *caller, const QPoint &globalPos
 
 void SceneElementaryNodeItem::reorganizeShrinkExpand()
 {
+  DEBTRACE("SceneElementaryNodeItem::reorganizeShrinkExpand " << isExpanded() << " "  << _label.toStdString());
+  shrinkExpandRecursive(isExpanded(), true);
+  if (Scene::_autoComputeLinks)
+    {
+      SubjectProc* subproc = QtGuiContext::getQtCurrent()->getSubjectProc();
+      SceneItem *item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[subproc];
+      SceneComposedNodeItem *proc = dynamic_cast<SceneComposedNodeItem*>(item);
+      proc->rebuildLinks();
+    }
+}
+
+void SceneElementaryNodeItem::shrinkExpandRecursive(bool expanded, bool fromHere)
+{
+  DEBTRACE("SceneElementaryNodeItem::shrinkExpandRecursive " << expanded << " " << fromHere << " " << _label.toStdString());
+  if (expanded)
+    _ancestorShrinked = false;
+  else
+    _ancestorShrinked = true;
+
+  if (!fromHere && !expanded) // shrink of ancestor
+    setPos(0 ,0);
+  if (fromHere || expanded) // (expand or shrink of this) or (expand ancestor)
+    setPos(_expandedPos);
+
   reorganize();
 }
 

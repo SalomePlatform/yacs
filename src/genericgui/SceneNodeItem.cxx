@@ -66,6 +66,9 @@ SceneNodeItem::SceneNodeItem(QGraphicsScene *scene, SceneItem *parent,
   _dragButton = Qt::MidButton;
   _execState = YACS::UNDEFINED;
   _expanded = true;
+  _expandedPos = QPointF(0,0);
+  _expandedWidth = _width;
+  _expandedHeight = _height;
 }
 
 SceneNodeItem::~SceneNodeItem()
@@ -80,6 +83,7 @@ void SceneNodeItem::setWidth(qreal width)
     {
       prepareGeometryChange();
       _width = width;
+      _expandedWidth = _width;
       adjustHeader();
       QGraphicsItem::update();
     }
@@ -91,6 +95,7 @@ void SceneNodeItem::setHeight(qreal height)
     {
       prepareGeometryChange();
       _height = height;
+      _expandedHeight = _height;
       QGraphicsItem::update();
     }
 }
@@ -306,6 +311,7 @@ void SceneNodeItem::setTopLeft(QPointF topLeft)
         bloc->collisionResolv(this, oldPos);
       _parent->checkGeometryChange();
     }
+  _expandedPos = pos();
 }
 
 void SceneNodeItem::adjustHeader()
@@ -444,3 +450,19 @@ bool SceneNodeItem::isExpanded() {
 void SceneNodeItem::setExpanded(bool e) {
   _expanded = e;
 }
+
+void SceneNodeItem::setExpandedPos(QPointF epos)
+{
+  _expandedPos = epos;
+}
+
+qreal SceneNodeItem::getExpandedX()
+{
+  return _expandedPos.x();
+}
+
+qreal SceneNodeItem::getExpandedY()
+{
+  return _expandedPos.y();
+}
+

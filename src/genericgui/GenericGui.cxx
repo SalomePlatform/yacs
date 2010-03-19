@@ -1246,6 +1246,7 @@ void GenericGui::setLoadedPresentation(YACS::ENGINE::Proc* proc)
           SceneNodeItem *inode = dynamic_cast<SceneNodeItem*>(item);
           YASSERT(inode);
           inode->setPos(QPointF(pres._x, pres._y));
+          inode->setExpandedPos(QPointF(pres._x, pres._y));
           inode->setWidth(pres._width);
           inode->setHeight(pres._height);
           inode->setExpanded(pres._expanded);

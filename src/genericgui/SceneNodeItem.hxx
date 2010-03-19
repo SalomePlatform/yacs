@@ -68,6 +68,9 @@ namespace YACS
       virtual void updateLinks();
       virtual bool isExpanded();
       virtual void setExpanded(bool e);
+      virtual void setExpandedPos(QPointF epos);
+      virtual qreal getExpandedX();
+      virtual qreal getExpandedY();
       bool _blocX;
       bool _blocY;
 
@@ -88,8 +91,11 @@ namespace YACS
       int _execState;
       bool _moving;
       bool _moved;
-      QPointF _prevPos;
       bool _expanded;
+      QPointF _prevPos;
+      QPointF _expandedPos;
+      qreal _expandedWidth;
+      qreal _expandedHeight;
     };
   }
 }
