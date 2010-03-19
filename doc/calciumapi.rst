@@ -13,6 +13,7 @@ Presentation is done in the following order:
 - functions to connect and disconnect
 - functions to export data
 - functions to import data
+- functions to erase data
 - examples
 - error codes
 
@@ -288,6 +289,49 @@ and the second (cp_lln) is working with CALCIUM_long port type.
    with the default option (--with-cal_int=int)
 
 See :ref:`fortran64bits` for more details.
+
+Functions to erase data
+==========================
+The functions cp_fini and cp_fint are used to request that all values of the specified 
+variable defined for iteration number or time before a given one be erased.
+
+**C:**
+
+.. cfunction:: int info = cp_fini(long *compo, char *nm_var, int i)
+
+   Erase all values of port nm_var before iteration i
+
+**Fortran:**
+
+.. function:: call cpfini(compo, nm_var, i, info)
+
+   :param compo: component address
+   :type compo: long
+   :param nm_var: port name
+   :type nm_var: string
+   :param i: iteration number
+   :type i: int
+   :param info: error code 
+   :type info: int, return
+
+**C:**
+
+.. cfunction:: int info = cp_fint(long *compo, char *nm_var, float t)
+
+   Erase all values of port nm_var before time t
+
+**Fortran:**
+
+.. function:: call cpfint(compo, nm_var, t, info)
+
+   :param compo: component address
+   :type compo: long
+   :param nm_var: port name
+   :type nm_var: string
+   :param t: time
+   :type t: float
+   :param info: error code 
+   :type info: int, return
 
 Examples
 ===========

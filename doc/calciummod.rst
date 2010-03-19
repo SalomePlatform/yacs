@@ -15,6 +15,7 @@ Presentation is done in the following order:
 - functions to connect and disconnect
 - functions to export data
 - functions to import data
+- functions to erase data
 - example
 
 Constants
@@ -209,6 +210,37 @@ Functions to import data
    :type ii: int
    :param n: effective number of imported values (<= len)
    :type n: int
+
+Functions to erase data
+==========================
+The functions cp_fini and cp_fint are used to request that all values of the specified
+variable defined for iteration number or time before a given one be erased.
+
+.. function:: calcium.cp_fini(compo, nm_var, i) -> info
+
+   Erase all values of port nm_var before iteration i
+
+   :param compo: component reference
+   :type compo: SALOME component object
+   :param nm_var: port name
+   :type nm_var: string
+   :param i: iteration number
+   :type i: int
+   :param info: error code
+   :type info: int, return
+
+.. function:: calcium.cp_fint(compo, nm_var, t) -> info
+
+   Erase all values of port nm_var before time t
+
+   :param compo: component reference
+   :type compo: SALOME component object
+   :param nm_var: port name
+   :type nm_var: string
+   :param t: time
+   :type t: float
+   :param info: error code
+   :type info: int, return
 
 Example
 ========
