@@ -64,6 +64,7 @@ namespace YACS
       virtual void reorganizeShrinkExpand();
       virtual void updateChildItems();
       virtual void shrinkExpandLink(bool se);
+      virtual void showOutScopeLinks();
       virtual void updateLinks();
       virtual bool isExpanded();
       virtual void setExpanded(bool e);

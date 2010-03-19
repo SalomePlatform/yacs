@@ -29,6 +29,8 @@
 #include "QtGuiContext.hxx"
 #include "Menus.hxx"
 #include "GuiEditor.hxx"
+#include "InPort.hxx"
+#include "OutPort.hxx"
 
 #include "Switch.hxx"
 #include "Resource.hxx"
@@ -39,6 +41,7 @@
 #include <cmath>
 #include <sstream>
 #include <cassert>
+#include <vector>
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -400,6 +403,32 @@ void SceneNodeItem::shrinkExpandLink(bool se)
            sci->shrinkExpandLink(se);
         }
     }
+}
+
+void SceneNodeItem::showOutScopeLinks()
+{
+  SubjectNode *snode = dynamic_cast<SubjectNode*>(_subject);
+  YASSERT(snode);
+  Node *node = snode->getNode();
+  YASSERT(node);
+  vector<pair<OutPort *, InPort *> > listLeaving  = node->getSetOfLinksLeavingCurrentScope();
+  vector<pair<InPort *, OutPort *> > listIncoming = node->getSetOfLinksComingInCurrentScope();
+  vector<pair<OutPort *, InPort *> > outScope = listLeaving;
+  vector<pair<InPort *, OutPort *> >::iterator it1;
+  for (it1 = listIncoming.begin(); it1 != listIncoming.end(); ++it1)
+    {
+      pair<OutPort *, InPort *> outin = pair<OutPort *, InPort *>((*it1).second, (*it1).first);
+      outScope.push_back(outin);
+    }
+  vector<pair<OutPort*, InPort*> >::const_iterator it = outScope.begin();
+  for( ; it != outScope.end(); ++it)
+  {
+    YASSERT(QtGuiContext::getQtCurrent()->_mapOfSubjectLink.count(*it));
+    SubjectLink* slink = QtGuiContext::getQtCurrent()->_mapOfSubjectLink[*it];
+    YASSERT(QtGuiContext::getQtCurrent()->_mapOfSceneItem.count(slink));
+    SceneItem *item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[slink];
+    item->show();
+  }
 }
 
 // Say if the node is expanded
