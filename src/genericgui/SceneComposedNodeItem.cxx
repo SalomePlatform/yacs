@@ -64,6 +64,7 @@ SceneComposedNodeItem::SceneComposedNodeItem(QGraphicsScene *scene, SceneItem *p
   _height = Resource::Header_Height + Resource::DataPort_Height + Resource::Corner_Margin;
 
   _brushColor   = Resource::ComposedNode_brush;
+  _brushColor   = _brushColor.darker(100 +5*_level);
   _hiBrushColor = Resource::ComposedNode_hiBrush;
   _penColor     = Resource::ComposedNode_pen;
   _hiPenColor   = Resource::ComposedNode_hiPen;
@@ -326,15 +327,20 @@ void SceneComposedNodeItem::autoPosNewChild(AbstractSceneItem *item,
   DEBTRACE("left, top " << xLeft  << " " << yTop);
   QPointF topLeft(xLeft, yTop);
   if (isNew) _children.push_back(item);
-  if (_eventPos.isNull()) {
-    //DEBTRACE("_eventPos.isNull");
-    item->setTopLeft(topLeft);
-  } else {
-    //DEBTRACE("_eventPos " << _eventPos.x() << " " << _eventPos.y());
-    item->setTopLeft(_eventPos);
-    collisionResolv(it, QPointF(0, 0));
-    if (Scene::_autoComputeLinks) rebuildLinks();
-  }
+  if (_eventPos.isNull())
+    {
+      //DEBTRACE("_eventPos.isNull");
+      item->setTopLeft(topLeft);
+    }
+  else
+    {
+      //DEBTRACE("_eventPos " << _eventPos.x() << " " << _eventPos.y());
+      item->setTopLeft(_eventPos);
+    }
+  collisionResolv(it, -it->boundingRect().bottomRight()); // as if the new item was coming from top left (previous position outside)
+  if (Scene::_autoComputeLinks) rebuildLinks();
+  _eventPos.setX(0);
+  _eventPos.setY(0);
 }
 
 void SceneComposedNodeItem::popupMenu(QWidget *caller, const QPoint &globalPos)
