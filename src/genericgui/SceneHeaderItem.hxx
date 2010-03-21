@@ -39,7 +39,7 @@ namespace YACS
                          QWidget *widget);
       virtual void setText(QString label);
       virtual void popupMenu(QWidget *caller, const QPoint &globalPos);
-      virtual void adjustGeometry();
+      virtual void adjustGeometry(bool fromHere);
 
     protected:
       virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);

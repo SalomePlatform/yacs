@@ -314,9 +314,9 @@ void SceneNodeItem::setTopLeft(QPointF topLeft)
   _expandedPos = pos();
 }
 
-void SceneNodeItem::adjustHeader()
+void SceneNodeItem::adjustHeader(bool fromHere)
 {
-  if (_header) _header->adjustGeometry();
+  if (_header) _header->adjustGeometry(fromHere);
 }
 
  void SceneNodeItem::updateState()

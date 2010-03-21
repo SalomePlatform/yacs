@@ -181,35 +181,39 @@ void SceneHeaderNodeItem::autoPosNewPort(AbstractSceneItem *item)
   adaptComposedNode(dynamic_cast<SceneItem*>(item), deltaY);
 }
 
-void SceneHeaderNodeItem::reorganizePorts(bool se)
+void SceneHeaderNodeItem::reorganizePorts(bool expanded, bool fromHere)
 {
-  DEBTRACE("SceneHeaderNodeItem::reorganizePorts() " << _label.toStdString());
+  DEBTRACE("SceneHeaderNodeItem::reorganizePorts() " << expanded << " " <<  fromHere << " " << _label.toStdString());
 
   qreal yTop;
-  std::list<SceneInPortItem*>::iterator iti = _inPorts.begin();
+  qreal href = Resource::Header_Height;
+  bool isShown = expanded || fromHere; // otherwise shrink from ancestor
+  if (!isShown) href = Resource::Corner_Margin;
+
+std::list<SceneInPortItem*>::iterator iti = _inPorts.begin();
   int nbPorts = 0;
   for (; iti != _inPorts.end(); ++iti)
     {
-      yTop = Resource::Header_Height + nbPorts * (Resource::DataPort_Height + Resource::Space_Margin);
+      yTop = href + nbPorts * (Resource::DataPort_Height + Resource::Space_Margin);
       QPointF topLeft(Resource::Corner_Margin, yTop);
       (*iti)->setTopLeft(topLeft);
-      nbPorts++;
+      if (isShown) nbPorts++; // otherwise (shrink from ancestor) put all ports at the same position
     }
 
   std::list<SceneOutPortItem*>::iterator ito = _outPorts.begin();
   nbPorts = 0;
   qreal xLeft;
-  if (se) {
+  if (expanded) {
     xLeft = _parent->getWidth() - Resource::Corner_Margin - Resource::DataPort_Width;
   } else {
     xLeft = Resource::Corner_Margin + Resource::DataPort_Width + Resource::Space_Margin;
   };
   for (; ito != _outPorts.end(); ++ito)
     {
-      yTop = Resource::Header_Height + nbPorts * (Resource::DataPort_Height + Resource::Space_Margin);
+      yTop = href + nbPorts * (Resource::DataPort_Height + Resource::Space_Margin);
       QPointF topLeft(xLeft, yTop);
       (*ito)->setTopLeft(topLeft);
-      nbPorts++;
+      if (isShown) nbPorts++; // otherwise (shrink from ancestor) put all ports at the same position
     }
   //updateLinks();
 }
@@ -221,27 +225,28 @@ void SceneHeaderNodeItem::popupMenu(QWidget *caller, const QPoint &globalPos)
 //   m.popupMenu(caller, globalPos);
 }
 
-void SceneHeaderNodeItem::adjustGeometry()
+void SceneHeaderNodeItem::adjustGeometry(bool fromHere)
 {
   DEBTRACE("SceneHeaderNodeItem::adjustGeometry() " << _label.toStdString());
   prepareGeometryChange();
   _width = _parent->getWidth();
-  if (_header) _header->adjustGeometry();
-  adjustPosPorts();
+  if (_header) _header->adjustGeometry(fromHere);
+  adjustPosPorts(fromHere);
   update();
 }
 
-void SceneHeaderNodeItem::adjustPosPorts()
+void SceneHeaderNodeItem::adjustPosPorts(bool fromHere)
 {
   SceneNodeItem* father = dynamic_cast<SceneNodeItem*>(_parent);
-  bool se = father? father->isExpanded(): true;
+  YASSERT(father);
+  bool se = father->isExpanded();
+  bool expanded = se && !father->isAncestorShrinked();
   if (_controlOut) {
     int x = Resource::Corner_Margin + 2*Resource::DataPort_Width + Resource::Space_Margin;
     if (se && (_parent->getWidth() > (x+Resource::Corner_Margin))) x = _parent->getWidth() - Resource::Corner_Margin;
     _controlOut->setTopLeft(QPointF(x - Resource::CtrlPort_Width, Resource::Corner_Margin));
   };
-
-  reorganizePorts(se);
+  reorganizePorts(expanded, fromHere);
 }
 
 QRectF SceneHeaderNodeItem::getMinimalBoundingRect() const

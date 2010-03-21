@@ -433,7 +433,10 @@ void SceneComposedNodeItem::shrinkExpandRecursive(bool expanded, bool fromHere)
       _expandedWidth = _width;
       _expandedHeight = _height;
       _width  = 2*Resource::Corner_Margin + 2*Resource::DataPort_Width + Resource::Space_Margin;
-      _height = getHeaderBottom() + Resource::Corner_Margin;
+      if (fromHere)
+        _height = getHeaderBottom() + Resource::Corner_Margin;
+      else
+        _height = Resource::Header_Height + Resource::Corner_Margin;
     }
   
   if (!fromHere && !expanded) // shrink of ancestor
@@ -441,7 +444,7 @@ void SceneComposedNodeItem::shrinkExpandRecursive(bool expanded, bool fromHere)
   if (fromHere || expanded) // (expand or shrink of this) or (expand ancestor)
     setPos(_expandedPos);
   
-  adjustHeader();
+  adjustHeader(fromHere);
 }
 
 void SceneComposedNodeItem::shrinkExpandLink(bool se) {

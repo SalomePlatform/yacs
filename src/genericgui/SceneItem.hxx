@@ -128,6 +128,7 @@ namespace YACS
       virtual void updateChildItems();
       virtual void shrinkExpandLink(bool se);
       virtual void shrinkExpandRecursive(bool expanded, bool fromHere);
+      bool isAncestorShrinked() { return _ancestorShrinked; };
 
     protected:
 //       virtual bool sceneEvent(QEvent *event);

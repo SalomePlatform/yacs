@@ -55,7 +55,7 @@ namespace YACS
       virtual void removeOutPortFromList(AbstractSceneItem* outPort);
       virtual void setMoving(bool moving);
       virtual void setTopLeft(QPointF topLeft);
-      virtual void adjustHeader();
+      virtual void adjustHeader(bool fromHere = true);
       virtual ScenePortItem* getCtrlInPortItem();
       virtual ScenePortItem* getCtrlOutPortItem();
       virtual void updateName();
