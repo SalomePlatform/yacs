@@ -658,3 +658,11 @@ void Node::shutdown()
 {
   std::cerr << "Node::shutdown" << std::endl;
 }
+
+//! Clean the node in case of not clean exit
+/*!
+ * This method should be called on a control-C or sigterm
+ */
+void Node::cleanNodes()
+{
+}

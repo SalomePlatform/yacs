@@ -34,6 +34,7 @@
 #include "CalStreamPort.hxx"
 #include "InPort.hxx"
 #include "TypeCode.hxx"
+#include "Mutex.hxx"
 
 #ifdef SALOME_KERNEL
 #include "SALOME_NamingService.hxx"
@@ -52,6 +53,8 @@
 
 using namespace YACS::ENGINE;
 using namespace std;
+
+static YACS::BASES::Mutex MUTEX;
 
 const char CORBANode::IMPL_NAME[]="CORBA";
 const char CORBANode::KIND[]="CORBA";
@@ -444,7 +447,13 @@ void SalomeNode::connectService()
 void SalomeNode::disconnectService()
 {
   DEBTRACE( "SalomeNode::disconnectService: "<<getName());
-  if(ids.size() == 0)return;
+  // in some rare cases, disconnectService can be called from 2 different threads
+  MUTEX.lock();
+  if(ids.size() == 0)
+    {
+      MUTEX.unlock();
+      return;
+    }
 
   SALOME_NamingService NS(getSALOMERuntime()->getOrb()) ;
   SALOME_LifeCycleCORBA LCC(&NS) ;
@@ -484,7 +493,14 @@ void SalomeNode::disconnectService()
         }
     }
   ids.clear();
+  MUTEX.unlock();
 }
+
+void SalomeNode::cleanNodes()
+{
+  disconnectService();
+}
+
 #endif
 
 //! Execute the service on the component associated to the node

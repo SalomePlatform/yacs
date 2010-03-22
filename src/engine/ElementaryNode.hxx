@@ -109,6 +109,8 @@ namespace YACS
       virtual void connectService() { }
       virtual void disconnectService() { }
       virtual void load() { }
+      virtual void getCoupledTasks(std::set<Task*>& coupledSet);
+      virtual void getCoupledNodes(std::set<Task*>& coupledSet);
       void accept(Visitor *visitor);
     protected:
       void edDisconnectAllLinksWithMe();

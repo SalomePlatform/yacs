@@ -158,6 +158,8 @@ namespace YACS
       virtual std::string getErrorReport();
       virtual std::string getContainerLog();
       virtual void ensureLoading();
+      virtual void getCoupledNodes(std::set<Task*>& coupledNodes){};
+      virtual void cleanNodes();
     protected:
       virtual void exForwardFailed();
       virtual void exForwardFinished();

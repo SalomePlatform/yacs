@@ -1482,3 +1482,14 @@ void ComposedNode::shutdown()
     (*iter)->shutdown();
 }
 
+//! Clean the composed node in case of not clean exit
+/*!
+ * This method should be called on a control-c or sigterm
+ */
+void ComposedNode::cleanNodes()
+{
+  DEBTRACE("ComposedNode::cleanNodes");
+  list<Node *> nodes=edGetDirectDescendants();
+  for(list<Node *>::iterator iter=nodes.begin();iter!=nodes.end();iter++)
+    (*iter)->cleanNodes();
+}

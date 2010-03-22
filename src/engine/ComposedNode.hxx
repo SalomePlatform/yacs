@@ -115,6 +115,7 @@ namespace YACS
       void loaded();
       void connected();
       void accept(Visitor *visitor);
+      virtual void cleanNodes();
     protected:
       struct SortHierarc
       {

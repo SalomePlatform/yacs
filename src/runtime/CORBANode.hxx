@@ -79,6 +79,7 @@ namespace YACS
       virtual void initService();
       virtual void connectService();
       virtual void disconnectService();
+      virtual void cleanNodes();
       std::list<Engines::ConnectionManager::connectionId> ids;
 #endif
       virtual std::string getContainerLog();

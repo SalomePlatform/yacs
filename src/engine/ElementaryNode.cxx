@@ -580,3 +580,31 @@ void ElementaryNode::ensureLoading()
         }
     }
 }
+
+//! Calls getCoupledNodes for Task interface
+void ElementaryNode::getCoupledTasks(std::set<Task*>& coupledSet)
+{
+  getCoupledNodes(coupledSet);
+}
+
+//! Put all nodes that are coupled to this node in coupledSet
+void ElementaryNode::getCoupledNodes(std::set<Task*>& coupledSet)
+{
+  if(coupledSet.find(this) != coupledSet.end())return;
+
+  coupledSet.insert(this);
+
+  std::list<OutputDataStreamPort *>::iterator iterout;
+  for(iterout = _setOfOutputDataStreamPort.begin(); iterout != _setOfOutputDataStreamPort.end(); iterout++)
+    {
+      OutputDataStreamPort *port=(OutputDataStreamPort *)*iterout;
+      std::set<InPort *> ports=port->edSetInPort();
+      std::set<InPort *>::iterator iter;
+      for(iter=ports.begin();iter != ports.end(); iter++)
+        {
+          Node* node= (*iter)->getNode();
+          node->getCoupledNodes(coupledSet);
+        }
+    }
+}
+

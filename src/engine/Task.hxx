@@ -21,6 +21,7 @@
 
 #include "YACSlibEngineExport.hxx"
 #include "define.hxx"
+#include <set>
 
 namespace YACS
 {
@@ -40,6 +41,7 @@ namespace YACS
       virtual void initService() = 0;
       virtual void connectService() = 0;
       virtual void disconnectService() = 0;
+      virtual void getCoupledTasks(std::set<Task*>& coupledSet) = 0;
       virtual bool isDeployable() const = 0;
       virtual ComponentInstance *getComponent() = 0;
       virtual YACS::StatesForNode getState() const = 0;

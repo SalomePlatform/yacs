@@ -36,6 +36,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <signal.h>
 
 #ifdef WNT
 #else
@@ -165,6 +166,31 @@ void timer(std::string msg)
 #endif
 }
 
+Proc* p=0;
+
+
+void Handler(int theSigId)
+{
+  if(p)
+    p->cleanNodes();
+  _exit(1);
+}
+
+#ifndef WNT
+typedef void (*sighandler_t)(int);
+sighandler_t setsig(int sig, sighandler_t handler)
+{
+  struct sigaction context, ocontext;
+  context.sa_handler = handler;
+  sigemptyset(&context.sa_mask);
+  context.sa_flags = 0;
+  if (sigaction(sig, &context, &ocontext) == -1)
+    return SIG_ERR;
+  return ocontext.sa_handler;
+}
+#endif
+
+
 int main (int argc, char* argv[])
 {
   struct arguments myArgs;
@@ -190,6 +216,11 @@ int main (int argc, char* argv[])
     cerr << " dumpErrorFile=" << myArgs.dumpErrorFile << endl;
   else
     cerr << endl;
+#endif
+
+#ifndef WNT
+  setsig(SIGINT,&Handler);
+  setsig(SIGTERM,&Handler);
 #endif
 
   timer("Starting ");
@@ -224,7 +255,7 @@ int main (int argc, char* argv[])
   try
     {
       timer("Elapsed time before load: ");
-      Proc* p=loader.load(myArgs.args[0]);
+      p=loader.load(myArgs.args[0]);
       if(p==0)
         {
           std::cerr << "The imported file is probably not a YACS schema file" << std::endl;

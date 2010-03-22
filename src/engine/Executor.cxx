@@ -119,6 +119,7 @@ void Executor::RunA(Scheduler *graph,int debug, bool fromScratch)
   _execMode = YACS::CONTINUE;
   _isWaitingEventsFromRunningTasks = false;
   _numberOfRunningTasks = 0;
+  _runningTasks.clear();
   _numberOfEndedTasks=0;
   while(_toContinue)
     {
@@ -234,6 +235,7 @@ void Executor::RunB(Scheduler *graph,int debug, bool fromScratch)
     _errorDetected = false;
     _isWaitingEventsFromRunningTasks = false;
     _numberOfRunningTasks = 0;
+    _runningTasks.clear();
     _numberOfEndedTasks = 0;
     string tracefile = "traceExec_";
     tracefile += _mainSched->getName();
@@ -913,8 +915,38 @@ void Executor::launchTasks(std::vector<Task *>& tasks)
             _mutexForSchedulerUpdate.unlock();
           }//End of critical section
         }
+      if((*iter)->getState() == YACS::ERROR)
+        {
+          //try to put all coupled tasks in error
+          std::set<Task*> coupledSet;
+          (*iter)->getCoupledTasks(coupledSet);
+          for (std::set<Task*>::iterator it = coupledSet.begin(); it != coupledSet.end(); ++it)
+            {
+              Task* t=*it;
+              if(t == *iter)continue;
+              if(t->getState() == YACS::ERROR)continue;
+              try
+                {
+                  t->disconnectService();
+                  traceExec(t, "disconnectService");
+                }
+              catch(...)
+                {
+                  // Disconnect has failed
+                  traceExec(t, "disconnectService failed, ABORT");
+                }
+              {//Critical section
+                _mutexForSchedulerUpdate.lock();
+                t->aborted();
+                _mainSched->notifyFrom(t,YACS::ABORT);
+                _mutexForSchedulerUpdate.unlock();
+              }//End of critical section
+              traceExec(t, "state:"+Node::getStateName(t->getState()));
+            }
+        }
       traceExec(*iter, "state:"+Node::getStateName((*iter)->getState()));
     }
+
   //Second phase, execute each task in a thread
   for(iter=tasks.begin();iter!=tasks.end();iter++)
     {
@@ -945,6 +977,35 @@ void Executor::launchTask(Task *task)
   traceExec(task, "state:TOACTIVATE");
 
   DEBTRACE("before _semForMaxThreads.wait " << _semThreadCnt);
+  if(_semThreadCnt == 0)
+    {
+      //check if we have enough threads to run
+      std::set<Task*> tmpSet=_runningTasks;
+      std::set<Task*>::iterator it = tmpSet.begin();
+      std::string status="running";
+      std::set<Task*> coupledSet;
+      while( it != tmpSet.end() )
+        {
+          Task* tt=*it;
+          coupledSet.clear();
+          tt->getCoupledTasks(coupledSet);
+          status="running";
+          for (std::set<Task*>::iterator iter = coupledSet.begin(); iter != coupledSet.end(); ++iter)
+            {
+              if((*iter)->getState() == YACS::TOACTIVATE)status="toactivate";
+              tmpSet.erase(*iter);
+            }
+          if(status=="running")break;
+          it = tmpSet.begin();
+        }
+
+      if(status=="toactivate")
+        {
+          std::cerr << "WARNING: maybe you need more threads to run your schema (current value="<< _maxThreads << ")" << std::endl;
+          std::cerr << "If it is the case, set the YACS_MAX_THREADS environment variable to a bigger value (export YACS_MAX_THREADS=xxx)" << std::endl;
+        }
+    }
+
   _semForMaxThreads.wait();
   _semThreadCnt -= 1;
 
@@ -958,6 +1019,7 @@ void Executor::launchTask(Task *task)
   { // --- Critical section
     _mutexForSchedulerUpdate.lock();
     _numberOfRunningTasks++;
+    _runningTasks.insert(task);
     task->begin(); //change state to ACTIVATED
     _mutexForSchedulerUpdate.unlock();
   } // --- End of critical section
@@ -1074,6 +1136,7 @@ void *Executor::functionForTaskExecution(void *arg)
   // Disconnect task
   try
     {
+      DEBTRACE("task->disconnectService()");
       task->disconnectService();
       execInst->traceExec(task, "disconnectService");
     }
@@ -1117,6 +1180,7 @@ void *Executor::functionForTaskExecution(void *arg)
         std::cerr << "Notification failed" << std::endl;
       }
     execInst->_numberOfRunningTasks--;
+    execInst->_runningTasks.erase(task);
     DEBTRACE("_numberOfRunningTasks: " << execInst->_numberOfRunningTasks 
              << " _execMode: " << execInst->_execMode
              << " _executorState: " << execInst->_executorState);

@@ -28,6 +28,7 @@
 
 #include <list>
 #include <vector>
+#include <set>
 #include <string>
 #include <fstream>
 
@@ -66,6 +67,7 @@ namespace YACS
       bool _isRunningunderExternalControl;
       bool _isWaitingEventsFromRunningTasks;
       int _numberOfRunningTasks;
+      std::set<Task *> _runningTasks; 
       int _numberOfEndedTasks;
       int _semThreadCnt;
       YACS::ExecutorState _executorState;
