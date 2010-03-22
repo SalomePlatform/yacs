@@ -1844,6 +1844,7 @@ bool CommandDestroy::localExecute()
     {
       Proc* proc = GuiContext::getCurrent()->getProc();
       Subject *subject = 0;
+      Subject *father  = 0;
       switch (_elemType)
         {
         case SALOMEPROC:
@@ -1880,6 +1881,7 @@ bool CommandDestroy::localExecute()
             InPort* inp = node->getInputPort(_startport);
             YASSERT(GuiContext::getCurrent()->_mapOfSubjectDataPort.count(inp));
             subject = GuiContext::getCurrent()->_mapOfSubjectDataPort[inp];
+	    father  = subject->getParent();
           }
           break;
         case INPUTDATASTREAMPORT:
@@ -1888,6 +1890,7 @@ bool CommandDestroy::localExecute()
             InPort* inp = node->getInputDataStreamPort(_startport);
             YASSERT(GuiContext::getCurrent()->_mapOfSubjectDataPort.count(inp));
             subject = GuiContext::getCurrent()->_mapOfSubjectDataPort[inp];
+	    father  = subject->getParent();
           }
           break;
         case OUTPUTPORT:
@@ -1896,6 +1899,7 @@ bool CommandDestroy::localExecute()
             OutPort* outp = node->getOutputPort(_startport);
             YASSERT(GuiContext::getCurrent()->_mapOfSubjectDataPort.count(outp));
             subject = GuiContext::getCurrent()->_mapOfSubjectDataPort[outp];
+	    father  = subject->getParent();
           }
           break;
         case OUTPUTDATASTREAMPORT:
@@ -1904,6 +1908,7 @@ bool CommandDestroy::localExecute()
             OutPort* outp = node->getOutputDataStreamPort(_startport);
             YASSERT(GuiContext::getCurrent()->_mapOfSubjectDataPort.count(outp));
             subject = GuiContext::getCurrent()->_mapOfSubjectDataPort[outp];
+	    father  = subject->getParent();
           }
           break;
         case DATALINK:
@@ -1948,6 +1953,7 @@ bool CommandDestroy::localExecute()
         }
       YASSERT(subject);
       Subject::erase(subject);
+      if (father) father->update(REMOVE, 0, 0);
       //subject->update(REMOVE, 0, 0);
       subject = 0;
       return true; 
