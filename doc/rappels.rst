@@ -122,7 +122,7 @@ Creating a SALOME application
 A SALOME application is created using the appli_gen.py tool located in the installation of the KERNEL module.  
 This tool builds the application starting from a configuration file in the XML format that describes the list 
 of modules to be used (name, installation path), the file that sets the environment for SALOME pre-requisites 
-and optionally the SALOME examples directory (SAMPLES_SRC).
+and optionally the SALOME examples directory (SAMPLES_SRC) and a catalog of resources.
 
 The following command is used:
 
@@ -142,7 +142,8 @@ For example:
 .. code-block:: xml
 
   <application>
-  <prerequisites path="/data/tmplgls/secher/SALOME_V5/env_products.sh"/>
+  <prerequisites path="/data/SALOME_V5/env_products.sh"/>
+  <resources path="myCata.xml"/>
   <modules>
      <!-- variable name <MODULE>_ROOT_DIR is built 
           with <MODULE> == name attribute value -->
