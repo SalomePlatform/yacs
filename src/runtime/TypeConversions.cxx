@@ -816,7 +816,7 @@ namespace YACS
             }
           else
             {
-              // It's a CORBA Object convert it to an IOR string
+              // It should be a CORBA Object convert it to an IOR string
               PyObject *pystring=PyObject_CallMethod(getSALOMERuntime()->getPyOrb(),(char *)"object_to_string",(char *)"O",o);
               if(pystring==NULL)
                 {

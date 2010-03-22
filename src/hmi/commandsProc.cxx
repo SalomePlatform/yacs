@@ -2021,6 +2021,7 @@ bool CommandSetInPortValue::localExecute()
     }
 
   PyObject *result;
+  PyGILState_STATE gstate = PyGILState_Ensure();
   try
     {
       _oldValue = inp->getAsString();
@@ -2034,12 +2035,15 @@ bool CommandSetInPortValue::localExecute()
       result = YACS::ENGINE::getSALOMERuntime()->convertStringToPyObject(strval.c_str());
       inp->edInit("Python", result);
       Py_DECREF(result);
+
+      PyGILState_Release(gstate);
       sinp->update(SETVALUE, 0, sinp);
       return true;
     }
   catch (Exception& ex)
     {
       DEBTRACE("CommandSetInPortValue::localExecute() : " << ex.what());
+      PyGILState_Release(gstate);
       GuiContext::getCurrent()->_lastErrorMessage = ex.what();
       //Py_DECREF(result);
       return false;
