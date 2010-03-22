@@ -216,6 +216,9 @@ Functions to erase data
 The functions cp_fini and cp_fint are used to request that all values of the specified
 variable defined for iteration number or time before a given one be erased.
 
+The functions cp_effi and cp_efft are used to request that all values of the specified
+variable defined for iteration number or time after a given one be erased.
+
 .. function:: calcium.cp_fini(compo, nm_var, i) -> info
 
    Erase all values of port nm_var before iteration i
@@ -232,6 +235,32 @@ variable defined for iteration number or time before a given one be erased.
 .. function:: calcium.cp_fint(compo, nm_var, t) -> info
 
    Erase all values of port nm_var before time t
+
+   :param compo: component reference
+   :type compo: SALOME component object
+   :param nm_var: port name
+   :type nm_var: string
+   :param t: time
+   :type t: float
+   :param info: error code
+   :type info: int, return
+
+.. function:: calcium.cp_effi(compo, nm_var, i) -> info
+
+   Erase all values of port nm_var after iteration i
+
+   :param compo: component reference
+   :type compo: SALOME component object
+   :param nm_var: port name
+   :type nm_var: string
+   :param i: iteration number
+   :type i: int
+   :param info: error code
+   :type info: int, return
+
+.. function:: calcium.cp_efft(compo, nm_var, t) -> info
+
+   Erase all values of port nm_var after time t
 
    :param compo: component reference
    :type compo: SALOME component object

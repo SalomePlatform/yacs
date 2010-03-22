@@ -295,6 +295,9 @@ Functions to erase data
 The functions cp_fini and cp_fint are used to request that all values of the specified 
 variable defined for iteration number or time before a given one be erased.
 
+The functions cp_effi and cp_efft are used to request that all values of the specified 
+variable defined for iteration number or time after a given one be erased.
+
 **C:**
 
 .. cfunction:: int info = cp_fini(long *compo, char *nm_var, int i)
@@ -331,6 +334,44 @@ variable defined for iteration number or time before a given one be erased.
    :param t: time
    :type t: float
    :param info: error code 
+   :type info: int, return
+
+**C:**
+
+.. cfunction:: int info = cp_effi(long *compo, char *nm_var, int i)
+
+   Erase all values of port nm_var after iteration i
+
+**Fortran:**
+
+.. function:: call cpfini(compo, nm_var, i, info)
+
+   :param compo: component address
+   :type compo: long
+   :param nm_var: port name
+   :type nm_var: string
+   :param i: iteration number
+   :type i: int
+   :param info: error code
+   :type info: int, return
+
+**C:**
+
+.. cfunction:: int info = cp_efft(long *compo, char *nm_var, float t)
+
+   Erase all values of port nm_var after time t
+
+**Fortran:**
+
+.. function:: call cpfint(compo, nm_var, t, info)
+
+   :param compo: component address
+   :type compo: long
+   :param nm_var: port name
+   :type nm_var: string
+   :param t: time
+   :type t: float
+   :param info: error code
    :type info: int, return
 
 Examples
