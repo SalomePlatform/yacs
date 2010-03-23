@@ -75,6 +75,7 @@ void SceneHeaderItem::setText(QString label)
     _text = new SceneTextItem(_scene,
                               this,
                               label);
+    _text->setPlainTextTrunc(label);                     
 }
 
 void SceneHeaderItem::popupMenu(QWidget *caller, const QPoint &globalPos)
