@@ -97,6 +97,8 @@ GenericGui::GenericGui(YACS::HMI::SuitWrapper* wrapper, QMainWindow *parent)
   iconPath += "/share/salome/resources/yacs";
   DEBTRACE(iconPath);
   QDir::addSearchPath("icons", iconPath.c_str());
+  
+  _guiEditor = new GuiEditor();
 
   YACS::ENGINE::RuntimeSALOME::setRuntime();
   _loader = new YACSGuiLoader();
@@ -1446,7 +1448,9 @@ QString GenericGui::getSaveFileName(const QString& fileName)
       if (!fileNames.isEmpty())
         selectedFile = fileNames.first();
     }
-  return selectedFile;
+  QString filteredName = _guiEditor->asciiFilter(selectedFile);
+  DEBTRACE(filteredName.toStdString());
+  return filteredName;
 }
 
 void GenericGui::onExportSchema()

@@ -21,6 +21,7 @@
 
 
 #include <QWidget>
+#include <QString>
 #include <string>
 
 namespace YACS
@@ -82,6 +83,7 @@ namespace YACS
       void arrangeNodes(bool isRecursive);
       void showUndo(QWidget *parent = 0);
       void showRedo(QWidget *parent = 0);
+      QString asciiFilter(const QString & name);
 
     protected:
       void _createNode(YACS::ENGINE::Catalog* catalog,
@@ -89,6 +91,7 @@ namespace YACS
                        std::string service,
                        std::string compoName,
                        bool createNewComponentInstance);
+      std::string _table;
     };
   }
 }

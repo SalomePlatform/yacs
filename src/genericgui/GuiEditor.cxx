@@ -51,7 +51,27 @@ using namespace YACS::HMI;
 
 GuiEditor::GuiEditor()
 {
+  // approximative conversion from latin1 to US ascii (removing accentuation)
   DEBTRACE("GuiEditor::GuiEditor");
+  _table    = "________________"  ; //   0 -  15
+  _table   += "________________"  ; //  16 -  31
+  _table   += " !\"#$%&'()*+,-./" ; //  32 -  47
+  _table   += "0123456789:;<=>?"  ; //  48 -  63
+  _table   += "@ABCDEFGHIJKLMNO"  ; //  64 -  79
+  _table   += "PQRSTUVWXYZ[\\]^_" ; //  80 -  95
+  _table   += "`abcdefghijklmno"  ; //  96 - 111
+  _table   += "pqrstuvwxyz{|}~_"  ; // 112 - 127
+  _table   += "________________"  ; // 128 - 143
+  _table   += "________________"  ; // 144 - 159
+  _table   += "_icLoY|-_ca-__r-" ;  // 160 - 175
+  _table   += "-_23'u_..10\"___?" ;  // 176 - 191
+  _table   += "AAAAAAACEEEEIIII"  ; // 192 - 207
+  _table   += "DNOOOOOx0UUUUYPB"  ; // 208 - 223
+  _table   += "aaaaaaaceeeeiiii"  ; // 224 - 239
+  _table   += "onooooo-0uuuuypy"  ; // 240 - 255
+  //_table[167] = char(167); // '§'
+  //_table[176] = char(176); // '°'
+  DEBTRACE(_table.size() << " " << _table);
 }
 
 GuiEditor::~GuiEditor()
@@ -557,3 +577,20 @@ void GuiEditor::showRedo(QWidget *parent)
   redo->exec();
 }
 
+/*! Replace accentuated characters from latin1 to US ascii equivalent without accent.
+*   I did not found anything to do that in Qt...
+*/
+QString GuiEditor::asciiFilter(const QString & name)
+{
+  DEBTRACE(name.toStdString());
+  string aName = name.toAscii().data();
+  DEBTRACE(aName);
+  for (int i=0; i < aName.size(); i++)
+    {
+      int v = (unsigned char)(aName[i]);
+      DEBTRACE(v << " " << _table[v]);
+      aName[i] = _table[v];
+    }
+  DEBTRACE(aName);
+  return aName.c_str();
+}
