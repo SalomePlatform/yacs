@@ -94,6 +94,7 @@ void SceneDataPortItem::update(GuiEvent event, int type, Subject* son)
     {
     case YACS::HMI::RENAME:
       _text->setPlainTextTrunc(son->getName().c_str());
+      QGraphicsItem::update();
       break;
     case YACS::HMI::REMOVE:
       SceneObserverItem::update(event, type, son);
