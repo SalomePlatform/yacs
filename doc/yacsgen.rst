@@ -19,7 +19,7 @@ from a synthetic description of the components that it will contain.  This descr
 The characteristics of these components are not general but they should facilitate integration of many scientific 
 calculation components.
 
-This generator does not control integration of a graphic MMI, but simply the calculation part. The main objective 
+This generator does not control integration of a GUI, but simply the calculation part. The main objective 
 is to integrate a Fortran library in which calls to datastream ports (particularly Calcium) can be made.
 
 How to get it
@@ -33,7 +33,7 @@ architecture.
 
 Installation
 ----------------------------
-If you get the source archive, simply decompress and detar the archive (YACSGEN-x.y.tar.gz) 
+If you get the source archive, simply decompress and untar the archive (YACSGEN-x.y.tar.gz) 
 and add the directory thus created to PYTHONPATH.
 
 Description of a SALOME module
@@ -143,7 +143,7 @@ These attributes must be lists of triplets with the following elements:
 2.  the port type
 3.  the time (“T”) or iteration (“I”) dependency mode (refer to :ref:`calcium` for further details)
 
-Possible types are “CALCIUM_double”, “CALCIUM_integer”, “CALCIUM_real”, “CALCIUM_string”, “CALCIUM_logical” and “CALCIUM_complex”.
+Possible types are “CALCIUM_double”, “CALCIUM_integer”, "CALCIUM_long", “CALCIUM_real”, “CALCIUM_string”, “CALCIUM_logical” and “CALCIUM_complex”.
 
 The description for an input datastream port and an output port in time dependency becomes::
 
@@ -298,6 +298,57 @@ The Fortran “compo3” component has dataflow and datastream ports like the C+
 that contains the Fortran entry point *s1* will be linked by means of the **libs** and **rlibs** attributes of the description.  
 The Fortran component also supports the **includes** and **sources** attributes.
  
+The Fortran subroutine with name **s1** must have a signature with a first argument that is used to transmit the address of
+the component and all following arguments that are used to transmit the values of the inport and outport ports. The instream and 
+outstream ports are managed internally to the subroutine through calls to the CALCIUM API with the address of the component
+as first argument.
+
+An example of subroutine for the above definition follows:
+
+.. code-block:: fortran
+
+       SUBROUTINE S1(compo,A,B,C,D,E,F)
+   C  implementation of service s1 with inport a,b,c and outport d,e,f and stream ports
+       include 'calcium.hf'
+       integer compo
+       real*8 a,d
+       integer b,e
+       character*(*) c,f
+
+       CALL cpldb(COMPO,CP_TEMPS,t0,t1,iter,'aa',1,n,ss,info)
+       CALL cpldb(COMPO,CP_ITERATION,t0,t1,iter,'ab',1,n,zz,info)
+       CALL cplen(COMPO,CP_ITERATION,t0,t1,iter,'ac',1,n,zn,info)
+       CALL cplre(COMPO,CP_ITERATION,t0,t1,iter,'ad',1,n,yr,info)
+       CALL cplch(COMPO,CP_ITERATION,t0,t1,iter,'ae',1,n,tch,info)
+       CALL cplcp(COMPO,CP_ITERATION,t0,t1,iter,'af',1,n,tcp,info)
+       CALL cpllo(COMPO,CP_ITERATION,t0,t1,iter,'ag',3,n,tlo,info)
+
+       CALL cpeDB(COMPO,CP_TEMPS,t0,1,'ba',1,tt,info)
+       CALL cpeDB(COMPO,CP_ITERATION,t0,1,'bb',1,tp,info)
+
+       d=4.5
+       e=3
+       f="zzzzzzzzzzzzzzz"
+
+       END
+
+As a special case, since version 5.1.4, the first argument (address of the component) is not included, if there is no
+instream and outstream ports.
+
+Same example without stream ports:
+
+.. code-block:: fortran
+
+       SUBROUTINE S1(A,B,C,D,E,F)
+   C  implementation of service s1 with inport a,b,c and outport d,e,f
+       real*8 a,d
+       integer b,e
+       character*(*) c,f
+       d=4.5
+       e=3
+       f="zzzzzzzzzzzzzzz"
+       END
+
 A piece of C++ code can be added before the call to the Fortran entry point.  This piece of code must be put into the **body** 
 attribute with any definitions in **defs**.  In this case, we use the “c” input dataflow variable to change the directory with the call to chdir.
 
@@ -551,16 +602,20 @@ Fabrication of the SALOME module
 The module will be fabricated by executing a Python file that contains its description, by inputting data into the generator  
 and generator commands.
 
-This gives something like the following for a module with a single Fortran component::
+This gives something like the following for a module with a single Fortran component:
+
+.. code-block:: python
 
   from module_generator import Generator,Module
   from module_generator import PYComponent,CPPComponent,Service,F77Component
 
   context={"update":1,
-                   "prerequisites":"/local/cchris/.packages.d/envSalome",
-                   "kernel":"/local/chris/SALOME/RELEASES/Install/KERNEL_V5"
-                 }
-  c3=F77Component("compo",
+           "prerequisites":"/local/cchris/.packages.d/envSalome",
+           "kernel":"/local/chris/SALOME/RELEASES/Install/KERNEL_V5"
+          }
+
+
+  c1=F77Component("compo",
                   services=[
                             Service("s1",
                                     inport=[("a","double"),
@@ -576,7 +631,7 @@ This gives something like the following for a module with a single Fortran compo
                                     body="chdir(c);"
                                    ),
                            ],
-                  libs="-L/local/chris/modulegen/YACSGEN/fcompo -lfcompo"
+                  libs="-L/local/chris/modulegen/YACSGEN/fcompo -lfcompo",
                   rlibs="-Wl,--rpath -Wl,/local/chris/modulegen/YACSGEN/fcompo")
 
   m=Module("mymodule",components=[c1],prefix="Install")
