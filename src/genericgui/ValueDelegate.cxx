@@ -23,6 +23,7 @@
 #include "StudyPorts.hxx"
 #include "TypeCode.hxx"
 #include "Switch.hxx"
+#include "ItemEdition.hxx"
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -123,6 +124,40 @@ void GeneralEditor::setData(QVariant val)
   DEBTRACE(val.canConvert<QString>());
   DEBTRACE(val.toString().toStdString());
   setText(val.toString());
+}
+
+// -----------------------------------------------------------------------------
+
+NameEditor::NameEditor(Subject* subject,
+                       const ValueDelegate* delegate,
+                       int column,
+                       QWidget * parent)
+  : QLineEdit(parent), GenericEditor()
+{
+  DEBTRACE("NameEditor::NameEditor");
+  setDelegate(delegate);
+  setSubject(subject);
+  setColumn(column);
+}
+
+NameEditor::~NameEditor()
+{
+}
+
+QString NameEditor::GetStrValue()
+{
+  DEBTRACE("Name::GetStrValue " << text().toStdString());
+  string filtered = ItemEdition::filterName(text().toStdString());
+  return filtered.c_str();
+}
+
+void NameEditor::setData(QVariant val)
+{
+  DEBTRACE("NameEditor::setData " << this);
+  DEBTRACE(val.canConvert<QString>());
+  DEBTRACE(val.toString().toStdString());
+  string filtered = ItemEdition::filterName(val.toString().toStdString());
+  setText(filtered.c_str());
 }
 
 // -----------------------------------------------------------------------------
@@ -255,6 +290,13 @@ QWidget *ValueDelegate::createEditor(QWidget *parent,
           if (sSwitch)
             editor = new CaseSwitchEditor(subject, this, column, parent);
         }
+    }
+
+  if (column == YLabel)
+    {
+      sport = dynamic_cast<SubjectDataPort*>(subject);      
+      if (sport)
+        editor = new NameEditor(subject, this, column, parent);
     }
 
   if (!editor) editor = new GeneralEditor(subject, this, column, parent);

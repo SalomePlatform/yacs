@@ -214,6 +214,7 @@ void ItemEdition::onApply()
 {
   DEBTRACE("onApply");
   string name = _wid->le_name->text().toStdString();
+  name = filterName(name);
   bool nameEdited = false;
   if (name != _name)
     {
@@ -235,6 +236,23 @@ void ItemEdition::onCancel()
   DEBTRACE("onCancel");
   _wid->le_name->setText(_name.c_str());
   setEdited(false);
+}
+
+std::string ItemEdition::filterName(const std::string& name)
+{
+  string nameFiltered;
+  nameFiltered = "";
+  for (int i= 0; i< name.size(); i++)
+    {
+      unsigned char a = (unsigned char)(name[i]);
+      if (   ((a >= '0') && (a <= '9'))
+          || ((a >= 'A') && (a <= 'Z'))
+          || ((a >= 'a') && (a <= 'z'))
+          || ( a == '_'))
+        nameFiltered += a;
+    }
+  DEBTRACE(name << " " << nameFiltered);
+  return nameFiltered;
 }
 
 void ItemEdition::onModifyName(const QString &text)

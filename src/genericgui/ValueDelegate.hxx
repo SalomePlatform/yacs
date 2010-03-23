@@ -70,6 +70,20 @@ namespace YACS
       virtual void setData(QVariant val);
     };
 
+    class NameEditor: public QLineEdit, public GenericEditor
+    {
+      Q_OBJECT
+      
+    public:
+      NameEditor(Subject* subject,
+                 const ValueDelegate* delegate,
+                 int column = 0,
+                 QWidget* parent = 0);
+      virtual ~NameEditor();
+      virtual QString GetStrValue();
+      virtual void setData(QVariant val);
+    };
+
     class IntEditor: public QSpinBox, public GenericEditor
     {
       Q_OBJECT

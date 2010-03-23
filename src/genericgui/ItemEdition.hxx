@@ -20,7 +20,7 @@
 #define _ITEMEDITION_HXX_
 
 #include <QTextEdit>
-
+#include <string>
 #include "guiObservers.hxx"
 
 #include "FormEditItem.hxx"
@@ -68,6 +68,7 @@ namespace YACS
       virtual void setName(std::string name);
       virtual void update(GuiEvent event, int type, Subject* son);
       virtual void setEdited(bool isEdited);
+      static std::string filterName(const std::string& name);
 
     protected:
       bool _isEdited;
