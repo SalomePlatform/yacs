@@ -73,5 +73,9 @@
         <source>PREF_GROUP_DRAG</source>
         <translation>Dragging</translation>
     </message>
+    <message>
+        <source>COMPONENT_INSTANCE_NEW</source>
+        <translation>Create a component instance for each new service node</translation>
+    </message>
 </context>
 </TS>

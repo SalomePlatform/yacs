@@ -73,5 +73,9 @@
         <source>PREF_GROUP_DRAG</source>
         <translation>Dragging</translation>
     </message>
+    <message>
+        <source>COMPONENT_INSTANCE_NEW</source>
+        <translation>Creation d'une instance de composant pour chaque nouveau noeud de service</translation>
+    </message>
 </context>
 </TS>
