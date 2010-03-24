@@ -470,8 +470,7 @@ bool GuiExecutor::event(QEvent *e)
             _isSuspended = true;
         }
       SubjectProc *sproc = _context->getSubjectProc();
-      sproc->setExecState(execState);
-//       theRunMode->onNotifyNextSteps(nextSteps);
+      sproc->update(YACS::HMI::UPDATEPROGRESS, execState, sproc);
     }
   else // --- Node notification
     {
@@ -508,7 +507,7 @@ bool GuiExecutor::event(QEvent *e)
           port->setExecValue(val);
           port->update(YACS::HMI::UPDATEPROGRESS, 0, port);
         }
-      snode->setExecState(state);
+      snode->update(YACS::HMI::UPDATEPROGRESS, state, snode);
    }
 
   return true;
