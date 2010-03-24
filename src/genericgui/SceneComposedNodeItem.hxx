@@ -51,6 +51,7 @@ namespace YACS
       virtual void rebuildLinks();
       virtual void arrangeNodes(bool isRecursive);
       virtual void arrangeChildNodes();
+      virtual void adjustColors();
     protected:
       void dragEnterEvent(QGraphicsSceneDragDropEvent *event);
       void dragLeaveEvent(QGraphicsSceneDragDropEvent *event);

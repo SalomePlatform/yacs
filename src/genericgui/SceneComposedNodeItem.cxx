@@ -63,11 +63,10 @@ SceneComposedNodeItem::SceneComposedNodeItem(QGraphicsScene *scene, SceneItem *p
   _width  = 2*Resource::Corner_Margin + 2*Resource::DataPort_Width + Resource::Space_Margin;
   _height = Resource::Header_Height + Resource::DataPort_Height + Resource::Corner_Margin;
 
-  _brushColor   = Resource::ComposedNode_brush;
-  _brushColor   = _brushColor.darker(100 +5*_level);
   _hiBrushColor = Resource::ComposedNode_hiBrush;
   _penColor     = Resource::ComposedNode_pen;
   _hiPenColor   = Resource::ComposedNode_hiPen;
+  adjustColors();
   _dragOver = false;
   setAcceptDrops(true);
 }
@@ -75,6 +74,16 @@ SceneComposedNodeItem::SceneComposedNodeItem(QGraphicsScene *scene, SceneItem *p
 SceneComposedNodeItem::~SceneComposedNodeItem()
 {
 }
+
+void SceneComposedNodeItem::adjustColors()
+{
+  _brushColor = Resource::ComposedNode_brush.darker(100 +5*_level);
+  for (list<AbstractSceneItem*>::const_iterator it=_children.begin(); it!=_children.end(); ++it)
+    {
+      if (SceneComposedNodeItem *scnode = dynamic_cast<SceneComposedNodeItem*>(*it))
+        scnode->adjustColors();
+    }
+ }
 
 QRectF SceneComposedNodeItem::childrenBoundingRect() const
 {
@@ -296,6 +305,9 @@ void SceneComposedNodeItem::update(GuiEvent event, int type, Subject* son)
       {
         SceneItem * sinode  = QtGuiContext::getQtCurrent()->_mapOfSceneItem[son];
         sinode->setParent(this);
+        sinode->setLevel();
+        if (SceneComposedNodeItem *scnode = dynamic_cast<SceneComposedNodeItem*>(sinode))
+          scnode->adjustColors();
         autoPosNewChild(sinode, _children, true);
       }
       break;

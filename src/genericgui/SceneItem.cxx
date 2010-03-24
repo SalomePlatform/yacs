@@ -117,6 +117,16 @@ int AbstractSceneItem::getLevel()
   return  _level;
 }
 
+void AbstractSceneItem::setLevel()
+{
+  if (_parent) 
+    _level = _parent->getLevel() +1;
+  if (SceneItem *item = dynamic_cast<SceneItem*>(this))
+    foreach (QGraphicsItem *child, item->childItems())
+      if (AbstractSceneItem *sci = dynamic_cast<AbstractSceneItem*>(child))
+        sci->setLevel();
+}
+
 void AbstractSceneItem::reorganize()
 {
 }

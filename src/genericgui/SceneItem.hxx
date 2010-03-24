@@ -66,7 +66,8 @@ namespace YACS
                          QWidget *widget) = 0;
 
       virtual void setTopLeft(QPointF topLeft) = 0;
-      virtual int getLevel();
+      int getLevel();
+      void setLevel();
       virtual void checkGeometryChange() = 0;
       virtual void reorganize();
       virtual QString getLabel();
