@@ -397,6 +397,7 @@ void GuiEditor::shrinkExpand() {
 void GuiEditor::DeleteSubject()
 {
   DEBTRACE("GuiEditor::DeleteSubject");
+  if (!QtGuiContext::getQtCurrent()->isEdition()) return;
   QModelIndexList selList
     = QtGuiContext::getQtCurrent()->getSelectionModel()->selectedIndexes();
   if (selList.isEmpty())
@@ -420,6 +421,7 @@ void GuiEditor::DeleteSubject(Subject* parent,
                               Subject* toRemove)
 {
   DEBTRACE("GuiEditor::DeleteSubject "<<parent->getName()<<" "<<toRemove->getName());
+  if (!QtGuiContext::getQtCurrent()->isEdition()) return;
   toRemove->askRegisterUndoDestroy();
   parent->destroy(toRemove);
 }
@@ -427,6 +429,7 @@ void GuiEditor::DeleteSubject(Subject* parent,
 void GuiEditor::CutSubject()
 {
   DEBTRACE("GuiEditor::CutSubject");
+  if (!QtGuiContext::getQtCurrent()->isEdition()) return;
   Subject *sub = QtGuiContext::getQtCurrent()->getSelectedSubject();
   if (!sub)
     {
@@ -440,6 +443,7 @@ void GuiEditor::CutSubject()
 void GuiEditor::CopySubject()
 {
   DEBTRACE("GuiEditor::CopySubject");
+  if (!QtGuiContext::getQtCurrent()->isEdition()) return;
   Subject *sub = QtGuiContext::getQtCurrent()->getSelectedSubject();
   if (!sub)
     {
@@ -453,6 +457,7 @@ void GuiEditor::CopySubject()
 void GuiEditor::PasteSubject()
 {
   DEBTRACE("GuiEditor::PasteSubject");
+  if (!QtGuiContext::getQtCurrent()->isEdition()) return;
   Subject *newParent = QtGuiContext::getQtCurrent()->getSelectedSubject();
   if (!newParent)
     {
