@@ -55,6 +55,11 @@ using namespace YACS::ENGINE;
 using namespace std;
 
 static YACS::BASES::Mutex MUTEX;
+struct Lock
+{
+  Lock(){MUTEX.lock();};
+  ~Lock(){MUTEX.unlock();};
+};
 
 const char CORBANode::IMPL_NAME[]="CORBA";
 const char CORBANode::KIND[]="CORBA";
@@ -448,12 +453,10 @@ void SalomeNode::disconnectService()
 {
   DEBTRACE( "SalomeNode::disconnectService: "<<getName());
   // in some rare cases, disconnectService can be called from 2 different threads
-  MUTEX.lock();
+  Lock lock;
+
   if(ids.size() == 0)
-    {
-      MUTEX.unlock();
-      return;
-    }
+    return;
 
   SALOME_NamingService NS(getSALOMERuntime()->getOrb()) ;
   SALOME_LifeCycleCORBA LCC(&NS) ;
@@ -493,7 +496,6 @@ void SalomeNode::disconnectService()
         }
     }
   ids.clear();
-  MUTEX.unlock();
 }
 
 void SalomeNode::cleanNodes()
