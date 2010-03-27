@@ -692,7 +692,7 @@ void SceneComposedNodeItem::arrangeNodes(bool isRecursive)
               SceneItem* sci = QtGuiContext::getQtCurrent()->_mapOfSceneItem[sn];
               if (sci) scni = dynamic_cast<SceneComposedNodeItem*>(sci);
             }
-          if (scni)
+          if (scni && (scni->getShownState() == expandShown))
             {
               DEBTRACE("call arrangeNode on child " << (*it)->getName());
               scni->arrangeNodes(isRecursive);

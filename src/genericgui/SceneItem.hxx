@@ -73,8 +73,8 @@ namespace YACS
       virtual QString getLabel();
       virtual void addHeader();
       virtual qreal getHeaderBottom();
-      virtual qreal getWidth();
-      virtual qreal getHeight();
+      qreal getWidth();
+      qreal getHeight();
       virtual void setWidth(qreal width);
       virtual void setHeight(qreal height);
       virtual void popupMenu(QWidget *caller, const QPoint &globalPos) = 0;
