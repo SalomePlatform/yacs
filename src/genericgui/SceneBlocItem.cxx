@@ -334,6 +334,8 @@ void SceneBlocItem::arrangeCanvasNodes(YACS::ENGINE::ComposedNode *cnode)
       qreal halfHeight = sci->boundingRect().height()/2.;
 
       sci->setPos(xOffset + xCenter -halfWidth, yHead + yCenter -halfHeight);
+      SceneNodeItem *scni = dynamic_cast<SceneNodeItem*>(sci);
+      if (scni) scni->setExpandedPos(QPointF(xOffset + xCenter -halfWidth, yHead + yCenter -halfHeight));
     }
   sceneCompo->checkGeometryChange();
   if (Scene::_autoComputeLinks)
