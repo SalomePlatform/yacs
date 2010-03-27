@@ -128,7 +128,7 @@ namespace YACS
       void setEventPos(QPointF point);
       virtual void updateChildItems();
       virtual void shrinkExpandLink(bool se);
-      virtual void shrinkExpandRecursive(bool expanded, bool fromHere);
+      virtual void shrinkExpandRecursive(bool isExpanding, bool fromHere);
       bool isAncestorShrinked() { return _ancestorShrinked; };
 
     protected:

@@ -44,10 +44,10 @@ namespace YACS
       virtual qreal getHeaderBottom() const;
       virtual void autoPosControl(AbstractSceneItem *item);
       virtual void autoPosNewPort(AbstractSceneItem *item);
-      virtual void reorganizePorts(bool expanded, bool fromHere);
+      virtual void reorganizePorts(shownState ss);
       virtual void popupMenu(QWidget *caller, const QPoint &globalPos);
-      virtual void adjustGeometry(bool fromHere);
-      virtual void adjustPosPorts(bool fromHere);
+      virtual void adjustGeometry();
+      virtual void adjustPosPorts();
       virtual QRectF getMinimalBoundingRect() const;
       virtual void adaptComposedNode(SceneItem* port, qreal deltaY);
       virtual void setEdited(bool isEdited);

@@ -145,7 +145,7 @@ void SceneElementaryNodeItem::autoPosNewPort(AbstractSceneItem *item, int nbPort
   SceneInPortItem*   inPortItem = dynamic_cast<SceneInPortItem*>(item);
   SceneOutPortItem* outPortItem = dynamic_cast<SceneOutPortItem*>(item);
 
-  bool toShow = (!_ancestorShrinked && isExpanded());
+  bool toShow = (_shownState == expandShown);
   if (toShow) {
     qreal x;
     if (inPortItem) {
@@ -199,17 +199,31 @@ void SceneElementaryNodeItem::reorganizeShrinkExpand()
     }
 }
 
-void SceneElementaryNodeItem::shrinkExpandRecursive(bool expanded, bool fromHere)
+void SceneElementaryNodeItem::shrinkExpandRecursive(bool isExpanding, bool fromHere)
 {
-  DEBTRACE("SceneElementaryNodeItem::shrinkExpandRecursive " << expanded << " " << fromHere << " " << _label.toStdString());
-  if (expanded)
-    _ancestorShrinked = false;
+  DEBTRACE("SceneElementaryNodeItem::shrinkExpandRecursive " << isExpanding << " " << fromHere << " "  << isExpanded() << " " << _label.toStdString());
+  if (isExpanding)
+    {
+      _ancestorShrinked = false;
+      if (isExpanded())
+        _shownState = expandShown;
+      else
+        _shownState = shrinkShown;
+    }
   else
-    _ancestorShrinked = true;
+    {
+      if (fromHere)
+        _shownState = shrinkShown;
+      else
+        {
+          _ancestorShrinked = true;
+          _shownState = shrinkHidden;
+        }
+    }
 
-  if (!fromHere && !expanded) // shrink of ancestor
+  if (_shownState == shrinkHidden) // shrink of ancestor
     setPos(0 ,0);
-  if (fromHere || expanded) // (expand or shrink of this) or (expand ancestor)
+  else
     setPos(_expandedPos);
 
   reorganize();

@@ -45,7 +45,7 @@ namespace YACS
       virtual void removeChildFromList(AbstractSceneItem* child);
       virtual void reorganize();
       virtual void reorganizeShrinkExpand();
-      virtual void shrinkExpandRecursive(bool expanded, bool fromHere);
+      virtual void shrinkExpandRecursive(bool isExpanding, bool fromHere);
       virtual void shrinkExpandLink(bool se);
       virtual void collisionResolv(SceneItem* child, QPointF oldPos);
       virtual void rebuildLinks();

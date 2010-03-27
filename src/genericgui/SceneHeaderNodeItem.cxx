@@ -181,13 +181,13 @@ void SceneHeaderNodeItem::autoPosNewPort(AbstractSceneItem *item)
   adaptComposedNode(dynamic_cast<SceneItem*>(item), deltaY);
 }
 
-void SceneHeaderNodeItem::reorganizePorts(bool expanded, bool fromHere)
+void SceneHeaderNodeItem::reorganizePorts(shownState ss)
 {
-  DEBTRACE("SceneHeaderNodeItem::reorganizePorts() " << expanded << " " <<  fromHere << " " << _label.toStdString());
+  DEBTRACE("SceneHeaderNodeItem::reorganizePorts() " << ss << " " << _label.toStdString());
 
   qreal yTop;
   qreal href = Resource::Header_Height;
-  bool isShown = expanded || fromHere; // otherwise shrink from ancestor
+  bool isShown = (ss != shrinkHidden);
   if (!isShown) href = Resource::Corner_Margin;
 
 std::list<SceneInPortItem*>::iterator iti = _inPorts.begin();
@@ -203,7 +203,7 @@ std::list<SceneInPortItem*>::iterator iti = _inPorts.begin();
   std::list<SceneOutPortItem*>::iterator ito = _outPorts.begin();
   nbPorts = 0;
   qreal xLeft;
-  if (expanded) {
+  if (ss == expandShown) {
     xLeft = _parent->getWidth() - Resource::Corner_Margin - Resource::DataPort_Width;
   } else {
     xLeft = Resource::Corner_Margin + Resource::DataPort_Width + Resource::Space_Margin;
@@ -225,28 +225,29 @@ void SceneHeaderNodeItem::popupMenu(QWidget *caller, const QPoint &globalPos)
 //   m.popupMenu(caller, globalPos);
 }
 
-void SceneHeaderNodeItem::adjustGeometry(bool fromHere)
+void SceneHeaderNodeItem::adjustGeometry()
 {
   DEBTRACE("SceneHeaderNodeItem::adjustGeometry() " << _label.toStdString());
   prepareGeometryChange();
   _width = _parent->getWidth();
-  if (_header) _header->adjustGeometry(fromHere);
-  adjustPosPorts(fromHere);
+  if (_header) _header->adjustGeometry();
+  adjustPosPorts();
   update();
 }
 
-void SceneHeaderNodeItem::adjustPosPorts(bool fromHere)
+void SceneHeaderNodeItem::adjustPosPorts()
 {
   SceneNodeItem* father = dynamic_cast<SceneNodeItem*>(_parent);
   YASSERT(father);
-  bool se = father->isExpanded();
-  bool expanded = se && !father->isAncestorShrinked();
-  if (_controlOut) {
-    int x = Resource::Corner_Margin + 2*Resource::DataPort_Width + Resource::Space_Margin;
-    if (se && (_parent->getWidth() > (x+Resource::Corner_Margin))) x = _parent->getWidth() - Resource::Corner_Margin;
+  shownState ss = father->getShownState();
+  if (_controlOut)
+    {
+      int x = Resource::Corner_Margin + 2*Resource::DataPort_Width + Resource::Space_Margin;
+      if ((ss == expandShown)  && (_parent->getWidth() > (x + Resource::Corner_Margin)))
+        x = _parent->getWidth() - Resource::Corner_Margin;
     _controlOut->setTopLeft(QPointF(x - Resource::CtrlPort_Width, Resource::Corner_Margin));
   };
-  reorganizePorts(expanded, fromHere);
+  reorganizePorts(ss);
 }
 
 QRectF SceneHeaderNodeItem::getMinimalBoundingRect() const

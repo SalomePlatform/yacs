@@ -42,7 +42,7 @@ namespace YACS
       virtual void autoPosNewPort(AbstractSceneItem *item, int nbPorts);
       virtual void reorganize();
       virtual void reorganizeShrinkExpand();
-      virtual void shrinkExpandRecursive(bool expanded, bool fromHere);
+      virtual void shrinkExpandRecursive(bool isExpanding, bool fromHere);
     protected:
       int _maxPorts;
 

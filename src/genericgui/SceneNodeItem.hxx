@@ -27,6 +27,13 @@ namespace YACS
 {
   namespace HMI
   {
+    typedef enum
+      {
+        expandShown,
+        shrinkShown,
+        shrinkHidden
+      } shownState;
+    
     class SceneHeaderItem;
     class SceneHeaderNodeItem;
     class SceneComposedNodeItem;
@@ -55,7 +62,7 @@ namespace YACS
       virtual void removeOutPortFromList(AbstractSceneItem* outPort);
       virtual void setMoving(bool moving);
       virtual void setTopLeft(QPointF topLeft);
-      virtual void adjustHeader(bool fromHere = true);
+      virtual void adjustHeader();
       virtual ScenePortItem* getCtrlInPortItem();
       virtual ScenePortItem* getCtrlOutPortItem();
       virtual void updateName();
@@ -71,6 +78,8 @@ namespace YACS
       virtual void setExpandedPos(QPointF epos);
       virtual qreal getExpandedX();
       virtual qreal getExpandedY();
+      void setExpandedWH() {_expandedWidth = _width; _expandedHeight = _height; };
+      shownState getShownState() {return _shownState; };
       bool _blocX;
       bool _blocY;
 
@@ -96,6 +105,7 @@ namespace YACS
       QPointF _expandedPos;
       qreal _expandedWidth;
       qreal _expandedHeight;
+      shownState _shownState;
     };
   }
 }

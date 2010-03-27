@@ -69,6 +69,7 @@ SceneNodeItem::SceneNodeItem(QGraphicsScene *scene, SceneItem *parent,
   _expandedPos = QPointF(0,0);
   _expandedWidth = _width;
   _expandedHeight = _height;
+  _shownState = expandShown;
 }
 
 SceneNodeItem::~SceneNodeItem()
@@ -314,9 +315,9 @@ void SceneNodeItem::setTopLeft(QPointF topLeft)
   _expandedPos = pos();
 }
 
-void SceneNodeItem::adjustHeader(bool fromHere)
+void SceneNodeItem::adjustHeader()
 {
-  if (_header) _header->adjustGeometry(fromHere);
+  if (_header) _header->adjustGeometry();
 }
 
  void SceneNodeItem::updateState()

@@ -319,6 +319,8 @@ void SceneItem::checkGeometryChange()
       if (_parent)
         _parent->checkGeometryChange();
     }
+  if(resize && aNode)
+      aNode->setExpandedWH();
 }
 
 /*! generic behaviour for headers:
@@ -428,6 +430,6 @@ void SceneItem::shrinkExpandLink(bool se)
 }
 
 
-void SceneItem::shrinkExpandRecursive(bool expanded, bool fromHere)
+void SceneItem::shrinkExpandRecursive(bool isExpanding, bool fromHere)
 {
 }

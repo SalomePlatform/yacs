@@ -83,7 +83,7 @@ void SceneHeaderItem::popupMenu(QWidget *caller, const QPoint &globalPos)
   if (_parent) _parent->popupMenu(caller, globalPos);
 }
 
-void SceneHeaderItem::adjustGeometry(bool fromHere)
+void SceneHeaderItem::adjustGeometry()
 {
   prepareGeometryChange();
   _width = _parent->getWidth() - 2*Resource::Corner_Margin - 2*Resource::Space_Margin - 2*Resource::CtrlPort_Width;

@@ -373,7 +373,7 @@ void SceneComposedNodeItem::removeChildFromList(AbstractSceneItem* child)
 
 void SceneComposedNodeItem::reorganizeShrinkExpand() {
   DEBTRACE("SceneComposedNodeItem::reorganizeShrinkExpand " << _expanded << " " << _label.toStdString());
-  bool se = isExpanded();
+  bool isExpanding = isExpanded();
 
   //update control links
   std::list<SubjectControlLink*> lscl=dynamic_cast<SubjectNode*>(_subject)->getSubjectControlLinks();
@@ -399,7 +399,7 @@ void SceneComposedNodeItem::reorganizeShrinkExpand() {
     };
 
     if (b1 && b2) {
-      if (se) {
+      if (isExpanding) {
 	lk->show();
       } else {
 	lk->hide();
@@ -407,7 +407,7 @@ void SceneComposedNodeItem::reorganizeShrinkExpand() {
     };
   };
 
-  shrinkExpandRecursive(se, true);
+  shrinkExpandRecursive(isExpanding, true);
   if (Scene::_autoComputeLinks)
     {
       SubjectProc* subproc = QtGuiContext::getQtCurrent()->getSubjectProc();
@@ -417,46 +417,85 @@ void SceneComposedNodeItem::reorganizeShrinkExpand() {
     }
 }
 
-void SceneComposedNodeItem::shrinkExpandRecursive(bool expanded, bool fromHere)
+void SceneComposedNodeItem::shrinkExpandRecursive(bool isExpanding, bool fromHere)
 {
-  DEBTRACE("SceneComposedNodeItem::shrinkExpandRecursive " << expanded << " " << fromHere << " " << _label.toStdString());
-  if (expanded)
-    _ancestorShrinked = false;
-  else
-    _ancestorShrinked = true;
-  for (list<AbstractSceneItem*>::const_iterator it=_children.begin(); it!=_children.end(); ++it)
-  {
-    SceneItem* item = dynamic_cast<SceneItem*>(*it);
-    item->shrinkExpandRecursive(expanded && isExpanded(), false);
-    if (expanded)
-      item->show();
-    else 
-      item->hide();
-    item->shrinkExpandLink(expanded);  
-  }
+  DEBTRACE("SceneComposedNodeItem::shrinkExpandRecursive " << isExpanding << " " << fromHere << " " << isExpanded() << " " << _label.toStdString());
   
-  if (expanded)
-    {
-      _width = _expandedWidth;
-      _height = _expandedHeight;
-    }
-  else
-    {
-      _expandedWidth = _width;
-      _expandedHeight = _height;
-      _width  = 2*Resource::Corner_Margin + 2*Resource::DataPort_Width + Resource::Space_Margin;
+  if (!isExpanding)
+    { // ---collapsing: hide first children , then resize
+      for (list<AbstractSceneItem*>::const_iterator it=_children.begin(); it!=_children.end(); ++it)
+        {
+          SceneItem* item = dynamic_cast<SceneItem*>(*it);
+          item->shrinkExpandRecursive(false, false);
+          item->hide();  
+          DEBTRACE("------------------------------- Hide " << item->getLabel().toStdString());
+          item->shrinkExpandLink(false);  
+        }
+
+      if (_shownState == expandShown)
+        {
+           _expandedWidth = _width;
+           _expandedHeight = _height;
+        }
+
       if (fromHere)
+        {
+          _shownState = shrinkShown;
+        }
+      else
+        {
+          _ancestorShrinked = true;
+          _shownState = shrinkHidden;
+        }
+
+      _width  = 2*Resource::Corner_Margin + 2*Resource::DataPort_Width + Resource::Space_Margin;
+      if (_shownState == shrinkShown)
         _height = getHeaderBottom() + Resource::Corner_Margin;
       else
         _height = Resource::Header_Height + Resource::Corner_Margin;
+      
+      if (_shownState == shrinkHidden) // shrink of ancestor
+        setPos(0 ,0);
+      else
+        setPos(_expandedPos);
+      adjustHeader();
     }
-  
-  if (!fromHere && !expanded) // shrink of ancestor
-    setPos(0 ,0);
-  if (fromHere || expanded) // (expand or shrink of this) or (expand ancestor)
-    setPos(_expandedPos);
-  
-  adjustHeader(fromHere);
+  else
+    { // --- expanding: resize, then show children
+      _ancestorShrinked = false;
+      if (isExpanded())
+        {
+          _width = _expandedWidth;
+          _height = _expandedHeight;
+          _shownState = expandShown;
+        }
+      else
+        {
+          _shownState = shrinkShown;
+          _width  = 2*Resource::Corner_Margin + 2*Resource::DataPort_Width + Resource::Space_Margin;
+          _height = getHeaderBottom() + Resource::Corner_Margin;
+        }
+
+      setPos(_expandedPos);
+      adjustHeader();
+      
+      for (list<AbstractSceneItem*>::const_iterator it=_children.begin(); it!=_children.end(); ++it)
+        {
+          SceneItem* item = dynamic_cast<SceneItem*>(*it);
+          item->shrinkExpandRecursive(isExpanded(), false); 
+          if (isExpanded())
+            {
+              item->show();  
+              DEBTRACE("------------------------------- Show " << item->getLabel().toStdString());
+            }
+          else
+            {
+              item->hide();  
+              DEBTRACE("------------------------------- Hide " << item->getLabel().toStdString());
+            }
+          item->shrinkExpandLink(fromHere);  
+        }
+    }
 }
 
 void SceneComposedNodeItem::shrinkExpandLink(bool se) {
