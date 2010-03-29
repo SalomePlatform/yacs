@@ -43,6 +43,7 @@ namespace YACS
       virtual void reorganize();
       virtual void reorganizeShrinkExpand();
       virtual void shrinkExpandRecursive(bool isExpanding, bool fromHere);
+      virtual void setShownState(shownState ss);
     protected:
       int _maxPorts;
 

@@ -78,13 +78,16 @@ void VisitorSaveGuiSchema::writePresentation()
 {
   int depth = 1;
   _out << indent(depth) << "<presentation";
-  _out                  << " name=\""    << name                 << "\"";
-  _out                  << " x=\""       << item->x()            << "\"";
-  _out                  << " y=\""       << item->y()            << "\"";
-  _out                  << " width=\""   << item->getWidth()     << "\"";
-  _out                  << " height=\""  << item->getHeight()    << "\"";
-  _out                  << " expanded=\""<< item->isExpanded()   << "\"";
-  _out                  << " expx=\""    << item->getExpandedX() << "\"";
-  _out                  << " expy=\""    << item->getExpandedY() << "\"";
+  _out                  << " name=\""       << name                      << "\"";
+  _out                  << " x=\""          << item->x()                 << "\"";
+  _out                  << " y=\""          << item->y()                 << "\"";
+  _out                  << " width=\""      << item->getWidth()          << "\"";
+  _out                  << " height=\""     << item->getHeight()         << "\"";
+  _out                  << " expanded=\""   << item->isExpanded()        << "\"";
+  _out                  << " expx=\""       << item->getExpandedX()      << "\"";
+  _out                  << " expy=\""       << item->getExpandedY()      << "\"";
+  _out                  << " expWidth=\""   << item->getExpandedWidth()  << "\"";
+  _out                  << " expHeight=\""  << item->getExpandedHeight() << "\"";
+  _out                  << " shownState=\"" << item->getShownState()     << "\"";
   _out                  << "/>" << endl;
 }

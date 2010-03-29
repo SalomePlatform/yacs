@@ -519,6 +519,22 @@ void SceneComposedNodeItem::reorganize()
     }
 }
 
+void SceneComposedNodeItem::setShownState(shownState ss)
+{
+  _shownState = ss;
+  if (_shownState == shrinkHidden)
+    {
+      _ancestorShrinked = true;
+      hide();
+    }
+  else
+    {
+      _ancestorShrinked = false;
+      show();
+    }
+  adjustHeader();
+}
+
 void SceneComposedNodeItem::collisionResolv(SceneItem* child, QPointF oldPos)
 {
   //DEBTRACE("SceneComposedNodeItem::collisionResolv " << _label.toStdString());

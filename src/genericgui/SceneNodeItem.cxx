@@ -438,32 +438,7 @@ void SceneNodeItem::showOutScopeLinks()
   }
 }
 
-// Say if the node is expanded
-// ---------------------------
-
-bool SceneNodeItem::isExpanded() {
-  return _expanded;
-}
-
-// Set expanded state
-// ------------------
-
-void SceneNodeItem::setExpanded(bool e) {
-  _expanded = e;
-}
-
-void SceneNodeItem::setExpandedPos(QPointF epos)
+void SceneNodeItem::setShownState(shownState ss)
 {
-  _expandedPos = epos;
+  _shownState = ss;
 }
-
-qreal SceneNodeItem::getExpandedX()
-{
-  return _expandedPos.x();
-}
-
-qreal SceneNodeItem::getExpandedY()
-{
-  return _expandedPos.y();
-}
-

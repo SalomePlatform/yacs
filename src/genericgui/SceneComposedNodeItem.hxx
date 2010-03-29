@@ -52,6 +52,7 @@ namespace YACS
       virtual void arrangeNodes(bool isRecursive);
       virtual void arrangeChildNodes();
       virtual void adjustColors();
+      virtual void setShownState(shownState ss);
     protected:
       void dragEnterEvent(QGraphicsSceneDragDropEvent *event);
       void dragLeaveEvent(QGraphicsSceneDragDropEvent *event);

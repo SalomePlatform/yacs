@@ -42,6 +42,7 @@
 #include "GenericGui.hxx"
 #include "SceneItem.hxx"
 #include "SceneNodeItem.hxx"
+#include "SceneComposedNodeItem.hxx"
 #include "ItemEdition.hxx"
 #include "CatalogWidget.hxx"
 #include "TreeView.hxx"
@@ -1248,11 +1249,12 @@ void GenericGui::setLoadedPresentation(YACS::ENGINE::Proc* proc)
           SceneNodeItem *inode = dynamic_cast<SceneNodeItem*>(item);
           YASSERT(inode);
           inode->setPos(QPointF(pres._x, pres._y));
-          inode->setExpandedPos(QPointF(pres._x, pres._y));
           inode->setWidth(pres._width);
           inode->setHeight(pres._height);
           inode->setExpanded(pres._expanded);
-          if (!pres._expanded) inode->reorganizeShrinkExpand();
+          inode->setExpandedPos(QPointF(pres._expx, pres._expy));
+          inode->setExpandedWH(pres._expWidth, pres._expHeight);
+          inode->setShownState(shownState(pres._shownState));
         }
     }
   if (Scene::_autoComputeLinks)

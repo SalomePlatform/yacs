@@ -24,14 +24,18 @@ namespace YACS
       float _x, _y;
       float _width, _height;
       float _expx, _expy;
+      float _expWidth, _expHeight;
       bool _expanded;
+      int _shownState;
       
       PrsData()
       {
         _x = _y = 0;
         _width = _height = 1.;
         _expx = _expy = 0;
+        _expWidth = _expHeight = 0;
         _expanded = true;
+        _shownState = 0;
       }
       
       PrsData(float x,
@@ -40,7 +44,10 @@ namespace YACS
               float height,
               float expx,
               float expy,
-              bool expanded)
+              float expWidth,
+              float expHeight,
+              bool expanded,
+              int shownState)
       { 
         _x = x;
         _y = y;
@@ -48,7 +55,10 @@ namespace YACS
         _height = height;
         _expx = expx;
         _expy = expy;
+        _expWidth = expWidth;
+        _expHeight = expHeight;
         _expanded = expanded;
+        _shownState = shownState;
       }
     };
     
@@ -82,7 +92,9 @@ namespace YACS
       float x_, y_;
       float width_, height_;
       float expx_, expy_;
+      float expWidth_, expHeight_;
       bool expanded_;
+      int shownState_;
       
       YACSGuiLoader* collector_;
 
@@ -111,14 +123,17 @@ namespace YACS
         //required("expanded", attr);
         for (int i = 0; attr[i]; i += 2) 
           {
-            if(std::string(attr[i]) == "name")   name(attr[i+1]);
-            if(std::string(attr[i]) == "x")      x(attr[i+1]);
-            if(std::string(attr[i]) == "y")      y(attr[i+1]);
-            if(std::string(attr[i]) == "width")  width(attr[i+1]);
-            if(std::string(attr[i]) == "height") height(attr[i+1]);
-            if(std::string(attr[i]) == "expx")     expx(attr[i+1]);
-            if(std::string(attr[i]) == "expy")     expy(attr[i+1]);
-            if(std::string(attr[i]) == "expanded") expanded(attr[i+1]);
+            if(std::string(attr[i]) == "name")       name(attr[i+1]);
+            if(std::string(attr[i]) == "x")          x(attr[i+1]);
+            if(std::string(attr[i]) == "y")          y(attr[i+1]);
+            if(std::string(attr[i]) == "width")      width(attr[i+1]);
+            if(std::string(attr[i]) == "height")     height(attr[i+1]);
+            if(std::string(attr[i]) == "expx")       expx(attr[i+1]);
+            if(std::string(attr[i]) == "expy")       expy(attr[i+1]);
+            if(std::string(attr[i]) == "expWidth")   expWidth(attr[i+1]);
+            if(std::string(attr[i]) == "expHeight")  expHeight(attr[i+1]);
+            if(std::string(attr[i]) == "expanded")   expanded(attr[i+1]);
+            if(std::string(attr[i]) == "shownState") shownState(attr[i+1]);
           }
         
         if ( collector_ )
@@ -132,6 +147,7 @@ namespace YACS
         width_ = height_ = 1;
         expx_ = expy_ = 0.;
         expanded_ = true;
+        shownState_ = 0;
       }
       
       virtual void name(const std::string& name)
@@ -169,9 +185,24 @@ namespace YACS
         expy_ = QString(y.c_str()).toFloat();
       }
       
+      virtual void expWidth(const std::string& x)
+      {
+        expWidth_ = QString(x.c_str()).toFloat();
+      }
+      
+      virtual void expHeight(const std::string& y)
+      {
+        expHeight_ = QString(y.c_str()).toFloat();
+      }
+      
       virtual void expanded(const std::string& expanded)
       {
         expanded_ = QString(expanded.c_str()).toInt();
+      }
+      
+      virtual void shownState(const std::string& shownState)
+      {
+        shownState_ = QString(shownState.c_str()).toInt();
       }
    };
 

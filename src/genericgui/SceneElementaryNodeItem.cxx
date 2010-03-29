@@ -262,3 +262,20 @@ void SceneElementaryNodeItem::reorganize()
     }
   updateLinks();
 }
+
+void SceneElementaryNodeItem::setShownState(shownState ss)
+{
+  _shownState = ss;
+  if (_shownState == shrinkHidden)
+    {
+      _ancestorShrinked = true;
+      hide();
+    }
+  else
+    {
+      _ancestorShrinked = false;
+      show();
+    }
+  reorganize();
+}
+
