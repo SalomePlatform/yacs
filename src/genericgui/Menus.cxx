@@ -360,6 +360,13 @@ void ElementaryNodeMenu::popupMenu(QWidget *caller, const QPoint &globalPos, con
 //           menu.addAction(gmain->_newContainerAct);
 //           menu.addSeparator();
 //         }
+      Subject* sub = QtGuiContext::getQtCurrent()->getSelectedSubject();
+      SubjectInlineNode *sin = dynamic_cast<SubjectInlineNode*>(sub);
+      if(sin && !sin->isValid())
+        {
+          menu.addAction(gmain->_getErrorReportAct);
+          menu.addSeparator();
+        }
       menu.addAction(gmain->_deleteItemAct);
       menu.addAction(gmain->_cutItemAct);
       menu.addAction(gmain->_copyItemAct);
