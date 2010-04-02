@@ -23,12 +23,13 @@
 
 #include <Python.h>
 #include <omniORB4/CORBA.h>
+#include "YACSRuntimeSALOMEExport.hxx"
 
 namespace YACS
 {
   namespace ENGINE
   {
-    class DistributedPythonNode : public ServerNode
+    class YACSRUNTIMESALOME_EXPORT DistributedPythonNode : public ServerNode
     {   
     protected:
       Node *simpleClone(ComposedNode *father, bool editionOnly) const;

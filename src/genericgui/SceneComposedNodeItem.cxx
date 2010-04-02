@@ -500,7 +500,7 @@ void SceneComposedNodeItem::shrinkExpandRecursive(bool isExpanding, bool fromHer
 
 void SceneComposedNodeItem::shrinkExpandLink(bool se) {
   DEBTRACE("SceneComposedNodeItem::shrinkExpandLink " << se << " "  << _label.toStdString());
-  se = se and isExpanded();
+  se = se && isExpanded();
   foreach (QGraphicsItem *child, childItems()) {
     if (SceneItem *sci = dynamic_cast<SceneItem*>(child)) {
       sci->shrinkExpandLink(se);

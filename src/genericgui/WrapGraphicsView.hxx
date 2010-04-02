@@ -19,6 +19,8 @@
 #ifndef _WRAPGRAPHICSVIEW_HXX_
 #define _WRAPGRAPHICSVIEW_HXX_
 
+#include "SalomeWrapExport.hxx"
+
 #include <QGraphicsView>
 #include <QContextMenuEvent>
 
@@ -26,7 +28,7 @@ namespace YACS
 {
   namespace HMI
   {
-    class WrapGraphicsView: public QGraphicsView
+    class SALOMEWRAP_EXPORT WrapGraphicsView: public QGraphicsView
     {
       Q_OBJECT
 
