@@ -319,6 +319,7 @@ libGenericGui_la_CXXFLAGS  = \
 	-I$(srcdir)/../runtime \
 	-I$(srcdir)/../yacsloader \
 	-I$(srcdir)/../hmi \
+	-I$(srcdir)/../salomewrap \
 	-I../../idl \
 	-I../yacsorb 
 

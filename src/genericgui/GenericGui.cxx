@@ -1300,10 +1300,22 @@ void GenericGui::loadSchema(const std::string& filename,bool edit)
 void GenericGui::onImportSchema()
 {
   DEBTRACE("GenericGui::onImportSchema");
-  QString fn = QFileDialog::getOpenFileName( _parent,
-                                             "Choose a filename to load" ,
-                                             QString::null,
-                                             tr( "XML-Files (*.xml);;All Files (*)" ));
+  QFileDialog dialog(_parent,
+                     "Choose a filename to load" ,
+                     QString::null,
+                     tr( "XML-Files (*.xml);;All Files (*)" ));
+
+  dialog.setHistory(_wrapper->getQuickDirList());
+
+  QString fn;
+  QStringList fileNames;
+  if (dialog.exec())
+    {
+      fileNames = dialog.selectedFiles();
+      if (!fileNames.isEmpty())
+        fn = fileNames.first();
+    }
+
   if ( !fn.isEmpty() )
     {
       DEBTRACE("file loaded : " <<fn.toStdString());
@@ -1328,10 +1340,22 @@ void GenericGui::onImportSchema()
 void GenericGui::onImportSupervSchema()
 {
   DEBTRACE("GenericGui::onImportSupervSchema");
-  QString fn = QFileDialog::getOpenFileName( _parent,
-                                             "Choose a  SUPERV filename to load" ,
-                                             QString::null,
-                                             tr( "XML-Files (*.xml);;All Files (*)" ));
+  QFileDialog dialog(_parent,
+                     "Choose a  SUPERV filename to load" ,
+                     QString::null,
+                     tr( "XML-Files (*.xml);;All Files (*)" ));
+
+  dialog.setHistory(_wrapper->getQuickDirList());
+
+  QString fn;
+  QStringList fileNames;
+  if (dialog.exec())
+    {
+      fileNames = dialog.selectedFiles();
+      if (!fileNames.isEmpty())
+        fn = fileNames.first();
+    }
+
   if (fn.isEmpty()) return;
 
   DEBTRACE("file loaded : " <<fn.toStdString());
@@ -1510,10 +1534,22 @@ void GenericGui::onExportSchemaAs()
 void GenericGui::onImportCatalog()
 {
   DEBTRACE("GenericGui::onImportCatalog");
-  QString fn = QFileDialog::getOpenFileName( _parent,
-                                             "Choose a YACS Schema to load as a Catalog" ,
-                                             QString::null,
-                                             tr( "XML-Files (*.xml);;All Files (*)" ));
+  QFileDialog dialog(_parent,
+                     "Choose a YACS Schema to load as a Catalog" ,
+                     QString::null,
+                     tr( "XML-Files (*.xml);;All Files (*)" ));
+
+  dialog.setHistory(_wrapper->getQuickDirList());
+
+  QString fn;
+  QStringList fileNames;
+  if (dialog.exec())
+    {
+      fileNames = dialog.selectedFiles();
+      if (!fileNames.isEmpty())
+        fn = fileNames.first();
+    }
+
   if ( !fn.isEmpty() )
     _catalogsWidget->addCatalogFromFile(fn.toStdString());
 }

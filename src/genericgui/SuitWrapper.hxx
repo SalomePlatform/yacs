@@ -130,6 +130,7 @@ namespace YACS
                         const QString& runName,
                         QWidget* refWindow,
                         QWidget* viewWindow);
+      QStringList getQuickDirList();
 
     protected: 
       QObject* _wrapped; // SalomeApp_module or Standalone Application
