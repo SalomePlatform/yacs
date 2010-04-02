@@ -24,6 +24,12 @@
 #include "PyStdout.hxx"
 #include <iostream>
 #include <sstream>
+#include <fstream>
+
+#ifdef WNT
+#include <process.h>
+#define getpid _getpid
+#endif
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -122,7 +128,25 @@ void PythonNode::execute()
   DEBTRACE( "----------------PyNode::calculation---------------" );
   DEBTRACE(  _script );
   DEBTRACE( "_context refcnt: " << _context->ob_refcnt );
-  PyObject *res=PyRun_String(_script.c_str(),Py_file_input,_context,_context);
+
+  std::ostringstream stream;
+  stream << "/tmp/PythonNode_";
+  stream << getpid();
+
+  PyObject* code=Py_CompileString(_script.c_str(), stream.str().c_str(), Py_file_input);
+  if(code == NULL)
+    {
+      _errorDetails="";
+      PyObject* new_stderr = newPyStdOut(_errorDetails);
+      PySys_SetObject((char*)"stderr", new_stderr);
+      PyErr_Print();
+      PySys_SetObject((char*)"stderr", PySys_GetObject((char*)"__stderr__"));
+      Py_DECREF(new_stderr);
+      PyGILState_Release(gstate);
+      throw Exception("Error during execution");
+    }
+  PyObject *res = PyEval_EvalCode((PyCodeObject *)code, _context, _context);
+  Py_DECREF(code);
   DEBTRACE( "_context refcnt: " << _context->ob_refcnt );
   fflush(stdout);
   fflush(stderr);
@@ -131,6 +155,12 @@ void PythonNode::execute()
       _errorDetails="";
       PyObject* new_stderr = newPyStdOut(_errorDetails);
       PySys_SetObject((char*)"stderr", new_stderr);
+      ofstream errorfile(stream.str().c_str());
+      if (errorfile.is_open())
+        {
+          errorfile << _script;
+          errorfile.close();
+        }
       PyErr_Print();
       PySys_SetObject((char*)"stderr", PySys_GetObject((char*)"__stderr__"));
       Py_DECREF(new_stderr);
@@ -291,13 +321,38 @@ void PyFuncNode::load()
 #endif
   PyGILState_STATE gstate = PyGILState_Ensure();
   DEBTRACE( "_context refcnt: " << _context->ob_refcnt );
-  PyObject *res=PyRun_String(_script.c_str(),Py_file_input,_context,_context);
+
+  std::ostringstream stream;
+  stream << "/tmp/PythonNode_";
+  stream << getpid();
+
+  PyObject* code=Py_CompileString(_script.c_str(), stream.str().c_str(), Py_file_input);
+  if(code == NULL)
+    {
+      _errorDetails="";
+      PyObject* new_stderr = newPyStdOut(_errorDetails);
+      PySys_SetObject((char*)"stderr", new_stderr);
+      PyErr_Print();
+      PySys_SetObject((char*)"stderr", PySys_GetObject((char*)"__stderr__"));
+      Py_DECREF(new_stderr);
+      PyGILState_Release(gstate);
+      throw Exception("Error during execution");
+    }
+  PyObject *res = PyEval_EvalCode((PyCodeObject *)code, _context, _context);
+  Py_DECREF(code);
+
   DEBTRACE( "_context refcnt: " << _context->ob_refcnt );
   if(res == NULL)
     {
       _errorDetails="";
       PyObject* new_stderr = newPyStdOut(_errorDetails);
       PySys_SetObject((char*)"stderr", new_stderr);
+      ofstream errorfile(stream.str().c_str());
+      if (errorfile.is_open())
+        {
+          errorfile << _script;
+          errorfile.close();
+        }
       PyErr_Print();
       PySys_SetObject((char*)"stderr", PySys_GetObject((char*)"__stderr__"));
       Py_DECREF(new_stderr);
@@ -372,6 +427,15 @@ void PyFuncNode::execute()
       _errorDetails="";
       PyObject* new_stderr = newPyStdOut(_errorDetails);
       PySys_SetObject((char*)"stderr", new_stderr);
+      std::ostringstream stream;
+      stream << "/tmp/PythonNode_";
+      stream << getpid();
+      ofstream errorfile(stream.str().c_str());
+      if (errorfile.is_open())
+        {
+          errorfile << _script;
+          errorfile.close();
+        }
       PyErr_Print();
       PySys_SetObject((char*)"stderr", PySys_GetObject((char*)"__stderr__"));
       Py_DECREF(new_stderr);
