@@ -19,8 +19,6 @@
 #ifndef _SUITWRAPPER_HXX_
 #define _SUITWRAPPER_HXX_
 
-#include "SalomeWrapExport.hxx"
-
 #include <QAction>
 #include <QString>
 #include <QIcon>
@@ -38,7 +36,7 @@ namespace YACS
 
     //! wrapping for SalomeApp_Module
 
-    class SALOMEWRAP_EXPORT SuitWrapper
+    class SuitWrapper
     {
       
     public:
