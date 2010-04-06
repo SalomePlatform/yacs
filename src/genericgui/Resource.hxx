@@ -104,6 +104,7 @@
 #define AUTOCOMPUTELINKS        true
 #define SIMPLIFYLINK            true
 #define ENSUREVISIBLEWHENMOVED  true
+#define TABPANELSUP             true
 
 #define EDITEDNODEBRUSHCOLOR    QColor(255, 255, 190)
 #define NORMALNODEBRUSHCOLOR    QColor(230, 235, 255)
@@ -292,6 +293,8 @@ namespace YACS {
         static int Corner_Margin;
         static int Header_Height;
         static int Radius;
+
+        static bool tabPanelsUp;
     };
   }
 }

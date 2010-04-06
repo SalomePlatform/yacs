@@ -42,6 +42,7 @@
     <parameter name="simplifyLink" value="true" />
     <parameter name="addRowCols" value="true" />
     <parameter name="ensureVisibleWhenMoved" value="true" />
+    <parameter name="tabPanelsUp" value="true" />
     <parameter name="documentation" value="yacs_help"/>
 
     <parameter name="editedNodeBrushColor" value="255, 255, 190" />

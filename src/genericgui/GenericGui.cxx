@@ -164,6 +164,7 @@ GenericGui::GenericGui(YACS::HMI::SuitWrapper* wrapper, QMainWindow *parent)
 
   _parent->tabifyDockWidget(_dwStacked, _dwCatalogs);
   _parent->tabifyDockWidget(_dwTree, _wrapper->objectBrowser());
+  _parent->setTabPosition(Qt::AllDockWidgetAreas, Resource::tabPanelsUp? QTabWidget::North: QTabWidget::South);
 
   //Import user catalog
   std::string usercata=Resource::userCatalog.toStdString();

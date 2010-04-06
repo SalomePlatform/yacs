@@ -99,6 +99,7 @@ void Yacsgui_Resource::createPreferences(Yacsgui* swm)
   swm->addPreference( "Simplify Links", componentGroup, LightApp_Preferences::Bool, RESOURCE_YACS, "simplifyLink" );
   swm->addPreference( "Better Separation for Links", componentGroup, LightApp_Preferences::Bool, RESOURCE_YACS, "addRowCols" );
   swm->addPreference( "Ensure Node Visible When Moved", componentGroup, LightApp_Preferences::Bool, RESOURCE_YACS, "ensureVisibleWhenMoved" );
+  swm->addPreference( "Tabified Panels Up", componentGroup, LightApp_Preferences::Bool, RESOURCE_YACS, "tabPanelsUp" );
 
   // Link colors
   int linkTab = swm->addPreference( QObject::tr( "Link colors" ) );
@@ -230,6 +231,7 @@ void Yacsgui_Resource::preferencesChanged()
   Resource::simplifyLink = booleanValue("simplifyLink", SIMPLIFYLINK);
   Resource::addRowCols = booleanValue("addRowCols", ADDROWCOLS);
   Resource::ensureVisibleWhenMoved = booleanValue("ensureVisibleWhenMoved", ENSUREVISIBLEWHENMOVED);
+  Resource::tabPanelsUp = booleanValue("tabPanelsUp", TABPANELSUP);
 
   // Color of state of nodes
   Resource::editedNodeBrushColor = colorValue(_editedNodeBrushColor, EDITEDNODEBRUSHCOLOR);

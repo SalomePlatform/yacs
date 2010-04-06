@@ -137,6 +137,8 @@ int Resource::Corner_Margin   = ( Resource::Border_Margin + Resource::Space_Marg
 int Resource::Header_Height   = ( Resource::Corner_Margin + Resource::CtrlPort_Height + Resource::Line_Space + Resource::Line_Width + Resource::Line_Space );
 int Resource::Radius          =  3;
 
+bool Resource::tabPanelsUp = TABPANELSUP;
+
 // Constructor
 // -----------
 
