@@ -1818,11 +1818,19 @@ void GenericGui::onGetErrorDetails()
 {
   DEBTRACE("GenericGui::onGetErrorDetails");
   if (!QtGuiContext::getQtCurrent()) return;
-  if (!QtGuiContext::getQtCurrent()->getGuiExecutor()) return;
   Subject *sub = QtGuiContext::getQtCurrent()->getSelectedSubject();
   SubjectNode *snode = dynamic_cast<SubjectNode*>(sub);
   if (!snode) return;
-  string log = QtGuiContext::getQtCurrent()->getGuiExecutor()->getErrorDetails(snode->getNode());
+  string log;
+  if (QtGuiContext::getQtCurrent()->getGuiExecutor())
+    {
+      log = QtGuiContext::getQtCurrent()->getGuiExecutor()->getErrorDetails(snode->getNode());
+    }
+  else
+    {
+      log = snode->getNode()->getErrorDetails();
+    }
+
   LogViewer *lv = new LogViewer("Node Error Details", _parent);
   lv->setText(log);
   lv->show();

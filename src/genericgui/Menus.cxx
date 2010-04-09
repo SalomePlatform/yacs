@@ -166,6 +166,15 @@ void ComposedNodeMenu::popupMenu(QWidget *caller, const QPoint &globalPos, const
       menu.addAction(gmain->_copyItemAct);
       menu.addAction(gmain->_pasteItemAct);
       menu.addAction(gmain->_putInBlocAct);
+
+      Subject* sub = QtGuiContext::getQtCurrent()->getSelectedSubject();
+      SubjectNode *sin = dynamic_cast<SubjectNode*>(sub);
+      if(sin && !sin->isValid())
+        {
+          menu.addSeparator();
+          menu.addAction(gmain->_getErrorReportAct);
+          menu.addAction(gmain->_getErrorDetailsAct);
+        }
     }
   else
     {
@@ -361,7 +370,7 @@ void ElementaryNodeMenu::popupMenu(QWidget *caller, const QPoint &globalPos, con
 //           menu.addSeparator();
 //         }
       Subject* sub = QtGuiContext::getQtCurrent()->getSelectedSubject();
-      SubjectInlineNode *sin = dynamic_cast<SubjectInlineNode*>(sub);
+      SubjectNode *sin = dynamic_cast<SubjectNode*>(sub);
       if(sin && !sin->isValid())
         {
           menu.addAction(gmain->_getErrorReportAct);
