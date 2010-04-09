@@ -227,9 +227,13 @@ CORBA::Object_ptr SalomeContainer::loadComponent(ComponentInstance *inst)
     container=_trueContainers[inst];
   else
     container=_trueCont;
-  bool isLoadable = container->load_component_Library(componentName);
+
+  char* reason;
+
+  bool isLoadable = container->load_component_Library(componentName, reason);
   if (isLoadable)
     {
+      CORBA::string_free(reason);
       int studyid=1;
       Proc* p=getProc();
       if(p)
@@ -251,7 +255,7 @@ CORBA::Object_ptr SalomeContainer::loadComponent(ComponentInstance *inst)
           env[item].value <<= itm->second.c_str();
         }
 
-      objComponent=container->create_component_instance_env(componentName, studyid, env);
+      objComponent=container->create_component_instance_env(componentName, studyid, env, reason);
     }
 
   if(CORBA::is_nil(objComponent))
@@ -259,6 +263,9 @@ CORBA::Object_ptr SalomeContainer::loadComponent(ComponentInstance *inst)
       unLock();
       std::string text="Error while trying to create a new component: component '"+ compoName;
       text=text+"' is not installed or it's a wrong name";
+      text += '\n';
+      text += reason;
+      CORBA::string_free(reason);
       throw Exception(text);
     }
   unLock();
