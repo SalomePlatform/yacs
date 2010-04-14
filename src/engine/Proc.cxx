@@ -258,6 +258,48 @@ std::string Proc::getInPortValue(int nodeNumId, std::string portName)
     }
 }
 
+std::string Proc::setInPortValue(std::string nodeName, std::string portName, std::string value)
+{
+  DEBTRACE("Proc::setInPortValue " << nodeName << " " << portName << " " << value);
+
+  try
+    {
+      YACS::ENGINE::Node* node = YACS::ENGINE::Proc::nodeMap[nodeName];
+      YACS::ENGINE::InputPort* inputPort = node->getInputPort(portName);
+
+      switch (inputPort->edGetType()->kind())
+        {
+          case Double:
+            {
+              double val = atof(value.c_str());
+              inputPort->edInit(val);
+            }
+          case Int:
+            {
+              int val = atoi(value.c_str());
+              inputPort->edInit(val);
+            }
+          case String:
+            inputPort->edInit(value.c_str());
+          case Bool:
+            {
+              bool val = (! value.compare("False") ) && (! value.compare("0") );
+              inputPort->edInit(val);
+            }
+          default:
+            DEBTRACE("Proc::setInPortValue: filtered type: " << inputPort->edGetType()->kind());
+        }
+      return value;
+    }
+  catch(YACS::Exception& ex)
+    {
+      DEBTRACE("Proc::setInPortValue " << ex.what());
+      stringstream msg;
+      msg << "<value><error>" << ex.what() << "</error></value>";
+      return msg.str();
+    }
+}
+
 std::string Proc::getOutPortValue(int nodeNumId, std::string portName)
 {
   DEBTRACE("Proc::getOutPortValue " << nodeNumId << " " << portName);

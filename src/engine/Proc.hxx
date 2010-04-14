@@ -64,6 +64,7 @@ namespace YACS
 
       YACS::StatesForNode getNodeState(int numId);
       std::string getInPortValue(int nodeNumId, std::string portName);
+      std::string setInPortValue(std::string nodeName, std::string portName, std::string value);
       std::string getOutPortValue(int nodeNumId, std::string portName);
       std::string getNodeErrorDetails(int nodeNumId);
       std::string getNodeErrorReport(int nodeNumId);

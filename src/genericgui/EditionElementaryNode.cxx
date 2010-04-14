@@ -20,6 +20,7 @@
 #include "ValueDelegate.hxx"
 #include "QtGuiContext.hxx"
 
+#include "Proc.hxx"
 #include "Port.hxx"
 #include "DataPort.hxx"
 #include "TypeCode.hxx"
@@ -202,6 +203,9 @@ void EditionElementaryNode::onCommitData(QWidget *editor)
     {
       DEBTRACE(strval);
        isOk = sdp->setValue(strval);
+
+      GuiExecutor* executor = QtGuiContext::getQtCurrent()->getGuiExecutor();
+      if (executor) executor->setInPortValue(sdp->getPort(), strval);
     }
 
   else // --- YLabel

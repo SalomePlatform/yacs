@@ -444,6 +444,22 @@ std::string GuiExecutor::getContainerLog(YACS::ENGINE::Node* node)
   return msg;
 }
 
+void GuiExecutor::setInPortValue(YACS::ENGINE::DataPort* port, std::string value)
+{
+  DEBTRACE("GuiExecutor::setInPortValue");
+
+  YACS::ENGINE::Node* node = port->getNode();
+  YACS::ENGINE::ComposedNode* rootNode = node->getRootNode();
+
+  std::string nodeName;
+  if(rootNode == node)
+    nodeName = node->getName();
+  else
+    nodeName = rootNode->getChildName(node);
+
+  std::string msg = _procRef->setInPortValue(nodeName.c_str(), port->getName().c_str(), value.c_str());
+}
+
 bool GuiExecutor::event(QEvent *e)
 {
   DEBTRACE("GuiExecutor::event");

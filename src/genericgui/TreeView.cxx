@@ -153,6 +153,9 @@ void TreeView::onCommitData(QWidget *editor)
             strval = "\"" + strval + "\"";
           DEBTRACE(strval);
           isOk = sdp->setValue(strval);
+
+          GuiExecutor* executor = QtGuiContext::getQtCurrent()->getGuiExecutor();
+          if (executor) executor->setInPortValue(sdp->getPort(), strval);
         }
       else // --- YLabel
         {

@@ -42,6 +42,7 @@ module YACS_ORB
     long getNodeState(in long numid);
     string getXMLState(in long numid);
     string getInPortValue(in long nodeNumid, in string portName);
+    string setInPortValue(in string nodeName, in string portName, in string value);
     string getOutPortValue(in long nodeNumid, in string portName);
     string getErrorDetails(in long nodeNumid);
     string getErrorReport(in long nodeNumid);

@@ -53,6 +53,13 @@ class proc_i(YACS_ORB__POA.ProcExec):
         traceback.print_exc()
         return ""
 
+    def setInPortValue(self, nodeName, portName, value):
+      try:
+        return self.p.setInPortValue(nodeName, portName, value)
+      except:
+        traceback.print_exc()
+        return ""
+
     def getOutPortValue(self, nodeNumid, portName):
       try:
         return self.p.getOutPortValue(nodeNumid, portName)

@@ -34,6 +34,7 @@ namespace YACS
   {
     class Proc;
     class Node;
+    class DataPort;
   }
 
   namespace HMI
@@ -73,6 +74,8 @@ namespace YACS
       void addBreakpoint(std::string breakpoint);
       void removeBreakpoint(std::string breakpoint);
       void setNextStepList(std::list<std::string> nextStepList);
+
+      void setInPortValue(YACS::ENGINE::DataPort* port, std::string value);
 
       void registerStatusObservers();
       bool isRunning() const { return _isRunning; };
