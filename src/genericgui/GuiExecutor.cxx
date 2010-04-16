@@ -119,6 +119,8 @@ void GuiExecutor::startResumeDataflow(bool initialize)
       DEBTRACE("_procRef init");
     }
 
+  YASSERT(!CORBA::is_nil(_procRef));
+
   if (initialize)
     _procRef->setExecMode(YACS_ORB::STEPBYSTEP);
   else
@@ -136,12 +138,12 @@ void GuiExecutor::startResumeDataflow(bool initialize)
       try
         {
           _procRef->RunFromState(_loadStateFile.c_str());
-	}
+        }
       catch (...)
         {
           DEBTRACE("Runtime error: execution from the loaded state failed")
-	  return;
-	}
+          return;
+        }
     }
 }
 

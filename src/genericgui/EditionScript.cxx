@@ -85,9 +85,9 @@ EditionScript::EditionScript(Subject* subject,
   _wid->gridLayout1->addWidget(splitter);
 
   QWidget* widg=new QWidget;
-  QVBoxLayout *layout = new QVBoxLayout;
-  widg->setLayout(layout);
-  layout->setMargin(1);
+  _portslayout = new QVBoxLayout;
+  widg->setLayout(_portslayout);
+  _portslayout->setMargin(1);
   splitter->addWidget(widg);
 
   QWidget* window=new QWidget;
@@ -96,7 +96,7 @@ EditionScript::EditionScript(Subject* subject,
   _glayout->setMargin(1);
   splitter->addWidget(window);
 
-  createTablePorts(layout);
+  createTablePorts(_portslayout);
   setEditablePorts(true);
 
   _haveScript = true;

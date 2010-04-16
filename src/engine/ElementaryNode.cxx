@@ -100,6 +100,11 @@ ComponentInstance *ElementaryNode::getComponent()
   return 0;
 }
 
+Container *ElementaryNode::getContainer()
+{
+  return 0;
+}
+
 YACS::StatesForNode ElementaryNode::getState() const
 {
   return Node::getState();

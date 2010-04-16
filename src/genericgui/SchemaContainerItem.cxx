@@ -20,6 +20,7 @@
 #include "QtGuiContext.hxx"
 #include "SchemaModel.hxx"
 #include "SchemaComponentItem.hxx"
+#include "Menus.hxx"
 
 #include <QIcon>
 #include <cassert>
@@ -121,3 +122,8 @@ void SchemaContainerItem::addComponentInstance(Subject* subject)
                                                       subject);
   model->endInsertRows();
 }
+
+void SchemaContainerItem::popupMenu(QWidget *caller, const QPoint &globalPos)
+{
+}
+

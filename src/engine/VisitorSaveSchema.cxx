@@ -220,7 +220,10 @@ void VisitorSaveSchema::visitInlineFuncNode(InlineFuncNode *node)
   DEBTRACE("START visitInlineFuncNode " << _root->getChildName(node));
   beginCase(node);
   int depth = depthNode(node);
-  _out << indent(depth) << "<inline name=\"" << node->getName() << "\"";
+  if(node->getExecutionMode()=="local")
+    _out << indent(depth) << "<inline name=\"" << node->getName() << "\"";
+  else
+    _out << indent(depth) << "<remote name=\"" << node->getName() << "\"";
   if (node->getState() == YACS::DISABLED)
     _out << " state=\"disabled\">" << endl;
   else
@@ -230,12 +233,21 @@ void VisitorSaveSchema::visitInlineFuncNode(InlineFuncNode *node)
   _out << node->getScript();
   _out << "]]></code>" << endl;
   _out << indent(depth+1) << "</function>" << endl;
+
+  //add load container if node is remote
+  Container *cont = node->getContainer();
+  if (cont)
+    _out << indent(depth+1) << "<load container=\"" << cont->getName() << "\"/>" << endl;
+
   writeProperties(node);
   writeInputPorts(node);
   writeInputDataStreamPorts(node);
   writeOutputPorts(node);
   writeOutputDataStreamPorts(node);
-  _out << indent(depth) << "</inline>" << endl;
+  if(node->getExecutionMode()=="local")
+    _out << indent(depth) << "</inline>" << endl;
+  else
+    _out << indent(depth) << "</remote>" << endl;
   endCase(node);
   DEBTRACE("END visitInlineFuncNode " << _root->getChildName(node));
 }
@@ -310,9 +322,13 @@ void VisitorSaveSchema::visitServiceNode(ServiceNode *node)
                 _out << indent(depth+1) << "<load container=\"" << it->first << "\"/>" << endl;
             }
         }
-      else
+      else if(compo)
         {
           _out << indent(depth+1) << "<node>" << _componentInstanceMap[compo] << "</node>" << endl;
+        }
+      else
+        {
+          _out << indent(depth+1) << "<component>" << "UNKNOWN" << "</component>" << endl;
         }
     }
   _out << indent(depth+1) << "<method>" << node->getMethod() << "</method>" << endl;

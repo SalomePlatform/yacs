@@ -57,6 +57,7 @@ namespace YACS
       void init(bool start=true);
       bool isDeployable() const;
       ComponentInstance *getComponent();
+      Container *getContainer();
       YACS::StatesForNode getState() const;
       void getReadyTasks(std::vector<Task *>& tasks);
       void edRemovePort(Port *port) throw(Exception);

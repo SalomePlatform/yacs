@@ -112,6 +112,21 @@ SceneNodeItem* SceneDataPortItem::getParent()
 
 void SceneDataPortItem::updateChildItems()
 {
+  DEBTRACE("SceneDataPortItem::updateChildItems " << _label.toStdString());
+  if(SubjectDataPort* sdp=dynamic_cast<SubjectDataPort*>(_subject))
+    {
+      std::list<SubjectLink*> lsl=sdp->getListOfSubjectLink();
+      for (std::list<SubjectLink*>::const_iterator it = lsl.begin(); it != lsl.end(); ++it)
+        {
+          SceneLinkItem* item = dynamic_cast<SceneLinkItem*>(QtGuiContext::getQtCurrent()->_mapOfSceneItem[*it]);
+          item->updateShape();
+        }
+    }
+}
+
+void SceneDataPortItem::updateLinks()
+{
+  DEBTRACE("SceneDataPortItem::updateLinks " << _label.toStdString());
   if(SubjectDataPort* sdp=dynamic_cast<SubjectDataPort*>(_subject))
     {
       std::list<SubjectLink*> lsl=sdp->getListOfSubjectLink();
@@ -131,11 +146,11 @@ void SceneDataPortItem::shrinkExpandLink(bool se)
       for (std::list<SubjectLink*>::const_iterator it = lsl.begin(); it != lsl.end(); ++it)
         {
           SceneLinkItem* item = dynamic_cast<SceneLinkItem*>(QtGuiContext::getQtCurrent()->_mapOfSceneItem[*it]);
-	  if (se) {
-	    item->show();
-	  } else {
-	    item->hide();
-	  };
+          if (se) {
+            item->show();
+          } else {
+            item->hide();
+          };
         }
     }
 }

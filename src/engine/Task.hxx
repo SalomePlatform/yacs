@@ -28,6 +28,7 @@ namespace YACS
   namespace ENGINE
   {
     class ComponentInstance;
+    class Container;
 
     class YACSLIBENGINE_EXPORT Task
     {
@@ -44,6 +45,7 @@ namespace YACS
       virtual void getCoupledTasks(std::set<Task*>& coupledSet) = 0;
       virtual bool isDeployable() const = 0;
       virtual ComponentInstance *getComponent() = 0;
+      virtual Container *getContainer() = 0;
       virtual YACS::StatesForNode getState() const = 0;
       virtual void finished() = 0;
       virtual void aborted() = 0;

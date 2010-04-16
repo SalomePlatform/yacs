@@ -1261,6 +1261,14 @@ void GenericGui::setLoadedPresentation(YACS::ENGINE::Proc* proc)
     }
   if (Scene::_autoComputeLinks)
     _guiEditor->rebuildLinks();
+  else
+    {
+      YACS::HMI::SubjectProc* subproc = QtGuiContext::getQtCurrent()->getSubjectProc();
+      SceneItem *item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[subproc];
+      SceneComposedNodeItem *proc = dynamic_cast<SceneComposedNodeItem*>(item);
+      proc->updateLinks();
+    }
+
   QtGuiContext::getQtCurrent()->setLoadingPresentation(false);
 }
 

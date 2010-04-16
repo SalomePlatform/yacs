@@ -21,6 +21,8 @@
 
 #include "YACSRuntimeSALOMEExport.hxx"
 #include "InlineNode.hxx"
+#include <SALOMEconfig.h>
+#include CORBA_CLIENT_HEADER(SALOME_PyNode)
 
 #include <Python.h>
 
@@ -58,11 +60,19 @@ namespace YACS
       virtual void checkBasicConsistency() const throw(Exception);
       virtual void execute();
       virtual void load();
+      virtual void loadRemote();
+      virtual void loadLocal();
+      virtual void executeRemote();
+      virtual void executeLocal();
+      std::string getContainerLog();
       PyFuncNode* cloneNode(const std::string& name);
       virtual std::string typeName() {return "YACS__ENGINE__PyFuncNode";}
     protected:
       PyObject* _context;
       PyObject* _pyfunc;
+      PyObject* _pyfuncSer;
+      PyObject* _pyfuncUnser;
+      Engines::PyNode_var _pynode;
     };
   }
 }

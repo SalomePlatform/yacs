@@ -38,6 +38,8 @@ EXTRA_DIST = $(IDL_FILES) standaloneTest.sh runtimeTest.hxx runtimeTest.sh TestC
 TESTS = runtimeTest.sh
 TESTS_ENVIRONMENT=LD_LIBRARY_PATH=@KERNEL_ROOT_DIR@/lib/salome:$$LD_LIBRARY_PATH $(SHELL) -x 
 
+SALOME_INCL_PATH=-I$(KERNEL_ROOT_DIR)/include/salome
+
 TestRuntime_SOURCES = \
 	TestRuntime.cxx \
 	runtimeTest.cxx
@@ -60,6 +62,7 @@ TestRuntime_CXXFLAGS = \
 	$(PYTHON_CPPFLAGS) \
         $(OMNIORB_INCLUDES) \
         $(OMNIORB_CXXFLAGS) \
+	$(SALOME_INCL_PATH) \
 	-I.. \
 	-I$(srcdir)/.. \
 	-I$(srcdir)/../../bases \

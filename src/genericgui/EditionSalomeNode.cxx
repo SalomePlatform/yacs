@@ -23,6 +23,7 @@
 #include "ComponentInstance.hxx"
 #include "QtGuiContext.hxx"
 #include "Container.hxx"
+#include "Message.hxx"
 
 #include <cassert>
 #include <map>
@@ -201,7 +202,8 @@ void EditionSalomeNode::changeInstance(int index)
     {
       YASSERT(GuiContext::getCurrent()->_mapOfSubjectComponent.count(newCompoInst));
       SubjectServiceNode *ssn = dynamic_cast<SubjectServiceNode*>(_subject);
-      ssn->associateToComponent(GuiContext::getCurrent()->_mapOfSubjectComponent[newCompoInst]);
+      if(!ssn->associateToComponent(GuiContext::getCurrent()->_mapOfSubjectComponent[newCompoInst]))
+        Message mess;
     }
 }
 

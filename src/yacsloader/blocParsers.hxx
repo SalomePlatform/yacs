@@ -23,6 +23,11 @@
 #include "linkParsers.hxx"
 #include "xmlrpcParsers.hxx"
 #include "nodeParsers.hxx"
+#include "inlineParsers.hxx"
+#include "remoteParsers.hxx"
+#include "serverParsers.hxx"
+#include "sinlineParsers.hxx"
+#include "serviceParsers.hxx"
 
 
 #include "Proc.hxx"
@@ -61,6 +66,7 @@ struct bloctypeParser:parser
     _orders["inline"]=2;
     _orders["service"]=2;
     _orders["server"]=2;
+    _orders["remote"]=2;
     _orders["sinline"]=2;
     _orders["node"]=2;
     _orders["datanode"]=2;
@@ -127,6 +133,14 @@ struct bloctypeParser:parser
       std::string fullname = currentProc->names.back()+n->getName();
       currentProc->nodeMap[fullname]=n;
       currentProc->serviceMap[fullname]=n;
+    }
+  virtual void remote (YACS::ENGINE::InlineNode* const& n)
+    {
+      DEBTRACE( "bloc_remote_set: " << n->getName() )             
+      _bloc->edAddChild(n);
+      std::string fullname = currentProc->names.back()+n->getName();
+      currentProc->nodeMap[fullname]=n;
+      currentProc->inlineMap[fullname]=n;
     }
   virtual void server (YACS::ENGINE::ServerNode* const& n)
     {
@@ -400,6 +414,7 @@ void bloctypeParser<T>::onStart(const XML_Char* el, const XML_Char** attr)
   else if(element == "sinline")pp=&sinlinetypeParser<>::sinlineParser;
   else if(element == "service")pp=&servicetypeParser<>::serviceParser;
   else if(element == "server")pp=&servertypeParser<>::serverParser;
+  else if(element == "remote")pp=&remotetypeParser<>::remoteParser;
   else if(element == "node")pp=&nodetypeParser<>::nodeParser;
   else if(element == "datanode")pp=&presettypeParser<>::presetParser;
   else if(element == "outnode")pp=&outnodetypeParser<>::outnodeParser;
@@ -432,6 +447,7 @@ void bloctypeParser<T>::onEnd(const char *el,parser* child)
   else if(element == "sinline")sinline(((sinlinetypeParser<>*)child)->post());
   else if(element == "service")service(((servicetypeParser<>*)child)->post());
   else if(element == "server")server(((servertypeParser<>*)child)->post());
+  else if(element == "remote")remote(((remotetypeParser<>*)child)->post());
   else if(element == "node")node(((nodetypeParser<>*)child)->post());
   else if(element == "datanode")preset(((presettypeParser<>*)child)->post());
   else if(element == "outnode")outnode(((outnodetypeParser<>*)child)->post());

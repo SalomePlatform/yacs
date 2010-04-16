@@ -3586,6 +3586,173 @@ bool CommandAddComponentInstance::localReverse()
     }
 }
 
+// ----------------------------------------------------------------------------
+CommandSetExecutionMode::CommandSetExecutionMode(std::string nodeName, std::string mode)
+  : Command(), _mode(mode),_nodeName(nodeName)
+{
+  DEBTRACE("CommandSetExecutionMode::CommandSetExecutionMode " << nodeName << " " << mode);
+  _oldmode = "local";
+}
+
+std::string CommandSetExecutionMode::dump()
+{
+  string ret ="CommandSetExecutionMode " + _mode + " " + _nodeName;
+  return ret;
+}
+
+bool CommandSetExecutionMode::localExecute()
+{
+  DEBTRACE("CommandSetExecutionMode::localExecute");
+  try
+    {
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      Node* node = proc->getChildByName(_nodeName);
+      if (YACS::ENGINE::InlineFuncNode* funcNode = dynamic_cast<YACS::ENGINE::InlineFuncNode*>(node))
+        {
+          _oldmode = funcNode->getExecutionMode();
+          funcNode->setExecutionMode(_mode);
+          SubjectNode* snode = GuiContext::getCurrent()->_mapOfSubjectNode[funcNode];
+          snode->update(UPDATE, 0, 0);
+          return true;
+        }
+      else
+        {
+          GuiContext::getCurrent()->_lastErrorMessage = "node is not an InlineFuncNode: " + _nodeName;
+          return false;
+        }
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandSetExecutionMode::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      return false;
+    }
+}
+
+bool CommandSetExecutionMode::localReverse()
+{
+  DEBTRACE("CommandSetExecutionMode::localReverse");
+  try
+    {
+      if (_oldmode == _mode) return true;
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      Node* node = proc->getChildByName(_nodeName);
+      if (YACS::ENGINE::InlineFuncNode* funcNode = dynamic_cast<YACS::ENGINE::InlineFuncNode*>(node))
+        {
+          funcNode->setExecutionMode(_oldmode);
+          SubjectNode* snode = GuiContext::getCurrent()->_mapOfSubjectNode[funcNode];
+          snode->update(UPDATE, 0, 0);
+          return true;
+        }
+      else
+        {
+          GuiContext::getCurrent()->_lastErrorMessage = "node is not an InlineFuncNode: " + _nodeName;
+          return false;
+        }
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandSetExecutionMode::localReverse() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      return false;
+    }
+  return true;
+}
+
+
+// ----------------------------------------------------------------------------
+
+CommandSetContainer::CommandSetContainer(std::string nodeName, std::string container)
+  : Command(), _container(container),_nodeName(nodeName)
+{
+  DEBTRACE("CommandSetContainer::CommandSetContainer " << nodeName << " " << container);
+  _oldcont = "DefaultContainer";
+}
+
+std::string CommandSetContainer::dump()
+{
+  string ret ="CommandSetContainer " + _container + " " + _nodeName;
+  return ret;
+}
+
+bool CommandSetContainer::localExecute()
+{
+  DEBTRACE("CommandSetContainer::localExecute");
+  try
+    {
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      if (proc->containerMap.count(_container))
+        {
+          Container *cont = proc->containerMap[_container];
+          Node* node = proc->getChildByName(_nodeName);
+          if (YACS::ENGINE::InlineFuncNode* funcNode = dynamic_cast<YACS::ENGINE::InlineFuncNode*>(node))
+            {
+              Container* oldcont = funcNode->getContainer();
+              if(oldcont)
+                _oldcont = funcNode->getContainer()->getName();
+              funcNode->setContainer(cont);
+              SubjectNode* snode = GuiContext::getCurrent()->_mapOfSubjectNode[funcNode];
+              SubjectContainer *subcont = GuiContext::getCurrent()->_mapOfSubjectContainer[cont];
+              snode->update(ASSOCIATE, 0, subcont);
+              return true;
+            }
+          else
+            {
+              GuiContext::getCurrent()->_lastErrorMessage = "node is not an InlineFuncNode: " + _nodeName;
+              return false;
+            }
+        }
+      else
+        GuiContext::getCurrent()->_lastErrorMessage = "Container not found: " + _container;
+      return false;
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandSetContainer::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      return false;
+    }
+}
+
+bool CommandSetContainer::localReverse()
+{
+  DEBTRACE("CommandSetContainer::localReverse");
+  try
+    {
+      if (_oldcont == _container) return true;
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      if (proc->containerMap.count(_oldcont))
+        {
+          Container *cont = proc->containerMap[_oldcont];
+          Node* node = proc->getChildByName(_nodeName);
+          if (YACS::ENGINE::InlineFuncNode* funcNode = dynamic_cast<YACS::ENGINE::InlineFuncNode*>(node))
+            {
+              funcNode->setContainer(cont);
+              SubjectNode* snode = GuiContext::getCurrent()->_mapOfSubjectNode[funcNode];
+              SubjectContainer *subcont = GuiContext::getCurrent()->_mapOfSubjectContainer[cont];
+              snode->update(ASSOCIATE, 0, subcont);
+              return true;
+            }
+          else
+            {
+              GuiContext::getCurrent()->_lastErrorMessage = "node is not an InlineFuncNode: " + _nodeName;
+              return false;
+            }
+        }
+      else
+        GuiContext::getCurrent()->_lastErrorMessage = "Container not found: " + _oldcont;
+      return false;
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandSetContainer::localReverse() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      return false;
+    }
+  return true;
+}
+
+
   
 // ----------------------------------------------------------------------------
 
@@ -3746,7 +3913,7 @@ bool CommandAssociateServiceToComponent::localExecute()
             GuiContext::getCurrent()->_lastErrorMessage = "Component instance not found: " + _instanceName;
         }
       else
-        GuiContext::getCurrent()->_lastErrorMessage = "Node is note a service node: " + _service;
+        GuiContext::getCurrent()->_lastErrorMessage = "Node is not a service node: " + _service;
       return false;
     }
   catch (Exception& ex)

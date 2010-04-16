@@ -132,12 +132,10 @@ void ServiceNode::setComponent(ComponentInstance* compo) throw(YACS::Exception)
           throw Exception(what);
         }
     }
-  if(_component)
-    {
-      //The node is already associated with a component instance
-      _component->decrRef();
-      //Don't forget to unassociate
-    }
+
+  ComponentInstance* oldcompo=_component;
+  std::string oldref=_ref;
+
   _component=compo;
   _ref=compo->getCompoName();
   DEBTRACE(_component->getInstanceName());
@@ -150,12 +148,16 @@ void ServiceNode::setComponent(ComponentInstance* compo) throw(YACS::Exception)
           }
         catch(Exception& e)
           {
-            _component=0;
+            // Impossible to associate compo to this node. Keep the old component instance and throws exception
+            _component=oldcompo;
+            _ref=oldref;
             throw e;
           }
       _component->incrRef();
     }
-  //YASSERT(_component);
+
+  if(oldcompo)
+    oldcompo->decrRef();
 }
 
 //! Associate a new component instance to this service node

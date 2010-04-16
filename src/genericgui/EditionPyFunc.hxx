@@ -20,6 +20,8 @@
 #define _EDITIONPYFUNC_HXX_
 
 #include "EditionScript.hxx"
+#include "FormComponent.hxx"
+#include <QRadioButton>
 
 namespace YACS
 {
@@ -33,17 +35,29 @@ namespace YACS
       virtual void onApply();
       virtual void onCancel();
       virtual void onFuncNameModified(const QString &text);
+      virtual void on_tb_options_toggled(bool checked);
+      virtual void on_remote_toggled(bool checked);
+      virtual void fillContainerPanel();
+      virtual void changeContainer(int);
+      virtual void update(GuiEvent event, int type, Subject* son);
 
     public:
       EditionPyFunc(Subject* subject,
-                  QWidget* parent = 0,
-                  const char* name = 0);
+                    QWidget* parent = 0,
+                    const char* name = 0);
       virtual ~EditionPyFunc();
 
     protected:
       SubjectPyFuncNode* _subFuncNode;
       std::string _funcName;
       QLineEdit* _liFuncName;
+      bool _checked;
+      bool _remote;
+      QFrame *fr_options;
+      QFrame *fr_container;
+      ComboBox* cb_container;
+      QRadioButton* radiolocal;
+      QRadioButton* radioremote;
     };
   }
 }

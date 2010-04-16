@@ -396,7 +396,7 @@ void SceneNodeItem::updateChildItems()
     {
       if (SceneItem *sci = dynamic_cast<SceneItem*>(child))
         {
-           sci->updateChildItems();
+           sci->updateLinks();
         }
     }
 }

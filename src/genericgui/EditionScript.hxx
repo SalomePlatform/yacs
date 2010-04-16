@@ -55,7 +55,7 @@ namespace YACS
       QTextEdit* _sci;
 #endif
       QVBoxLayout* _glayout;
-
+      QVBoxLayout* _portslayout;
     };
   }
 }

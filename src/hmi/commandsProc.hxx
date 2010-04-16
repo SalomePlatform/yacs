@@ -642,6 +642,32 @@ namespace YACS
       SubjectComponent *_subcompo;
     };
 
+    class CommandSetExecutionMode: public Command
+    {
+    public:
+      CommandSetExecutionMode(std::string nodeName, std::string mode);
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      virtual std::string dump();
+      std::string _mode;
+      std::string _nodeName;
+      std::string _oldmode;
+    };
+
+    class CommandSetContainer: public Command
+    {
+    public:
+      CommandSetContainer(std::string nodeName, std::string container);
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      virtual std::string dump();
+      std::string _container;
+      std::string _nodeName;
+      std::string _oldcont;
+    };
+
     class CommandAssociateComponentToContainer: public Command
     {
     public:

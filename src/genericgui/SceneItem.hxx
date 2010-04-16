@@ -127,6 +127,7 @@ namespace YACS
       virtual QString getToolTip();
       void setEventPos(QPointF point);
       virtual void updateChildItems();
+      virtual void updateLinks();
       virtual void shrinkExpandLink(bool se);
       virtual void shrinkExpandRecursive(bool isExpanding, bool fromHere);
       bool isAncestorShrinked() { return _ancestorShrinked; };

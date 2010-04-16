@@ -1923,6 +1923,8 @@ SubjectContainer* SubjectProc::addSubjectContainer(YACS::ENGINE::Container* cont
 {
   DEBTRACE("SubjectProc::addSubjectContainer " << name);
   SubjectContainer *son = new SubjectContainer(cont, this);
+  // In edition mode do not clone containers
+  cont->attachOnCloning();
   GuiContext::getCurrent()->_mapOfSubjectContainer[cont] = son;
   update(ADD, CONTAINER, son);
   return son;
@@ -2342,7 +2344,7 @@ void SubjectServiceNode::setComponent()
       SubjectComponent* subCompo = 0;
       if (! GuiContext::getCurrent()->_mapOfSubjectComponent.count(instance))
         {
-	  DEBTRACE("SubjectServiceNode::setComponent : create subject for compo = " << compo.c_str());
+          DEBTRACE("SubjectServiceNode::setComponent : create subject for compo = " << compo.c_str());
           if(proc->componentInstanceMap.count(instance->getInstanceName())==0)
             {
               std::cerr << "PROBLEM : ComponentInstance should be registered in proc, add it " << instance->getInstanceName() << std::endl;
@@ -2463,6 +2465,40 @@ void SubjectPyFuncNode::clean(Command *command)
 void SubjectPyFuncNode::localclean(Command *command)
 {
   DEBTRACE("SubjectPyFuncNode::localClean ");
+}
+
+bool SubjectPyFuncNode::setExecutionMode(const std::string& mode)
+{
+  DEBTRACE("SubjectPyFuncNode::setExecutionMode ");
+  Proc *proc = GuiContext::getCurrent()->getProc();
+
+  CommandSetExecutionMode *command = new CommandSetExecutionMode(proc->getChildName(_node), mode);
+  if (command->execute())
+    {
+      if (!GuiContext::getCurrent()->isLoading()) // do not register command when loading a schema
+        GuiContext::getCurrent()->getInvoc()->add(command);
+      else delete command;
+      return true;
+    }
+  else delete command;
+  return false;
+}
+
+bool SubjectPyFuncNode::setContainer(SubjectContainer* scont)
+{
+  DEBTRACE("SubjectPyFuncNode::setContainer ");
+  Proc *proc = GuiContext::getCurrent()->getProc();
+
+  CommandSetContainer *command = new CommandSetContainer(proc->getChildName(_node), scont->getName());
+  if (command->execute())
+    {
+      if (!GuiContext::getCurrent()->isLoading()) // do not register command when loading a schema
+        GuiContext::getCurrent()->getInvoc()->add(command);
+      else delete command;
+      return true;
+    }
+  else delete command;
+  return false;
 }
 
 
