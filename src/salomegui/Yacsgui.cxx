@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+#include <Python.h>
 #include "YACSExport.hxx"
 #include "Yacsgui.hxx"
 #include "Yacsgui_DataModel.hxx"
@@ -139,6 +140,22 @@ bool Yacsgui::activateModule( SUIT_Study* theStudy )
   setMenuShown( true );
   setToolShown( true );
   _genericGui->showDockWidgets(true);
+
+  // import Python module that manages YACS plugins (need to be here because SalomePyQt API uses active module)
+  PyGILState_STATE gstate = PyGILState_Ensure();
+  PyObject* pluginsmanager=PyImport_ImportModule((char*)"salome_pluginsmanager");
+  if(pluginsmanager==NULL)
+    PyErr_Print();
+  else
+    {
+      PyObject* result=PyObject_CallMethod( pluginsmanager, (char*)"initialize", (char*)"isss",1,"yacs","YACS","Plugins");
+      if(result==NULL)
+        PyErr_Print();
+      Py_XDECREF(result);
+    }
+  PyGILState_Release(gstate);
+  // end of YACS plugins loading
+
 
   return bOk;
 }
