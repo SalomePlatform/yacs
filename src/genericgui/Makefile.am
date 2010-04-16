@@ -233,9 +233,7 @@ libGenericGui_la_SOURCES =        \
   VisitorSaveGuiSchema.hxx        \
   VisitorSaveGuiSchema.cxx        \
   YACSGuiLoader.hxx               \
-  YACSGuiLoader.cxx               \
-  SuitWrapper.hxx                 \
-  WrapGraphicsView.hxx
+  YACSGuiLoader.cxx
 
 MOC_FILES = \
   CaseSwitch_moc.cxx              \
@@ -294,8 +292,7 @@ MOC_FILES = \
   TablePortsEdition_moc.cxx       \
   TableSwitch_moc.cxx             \
   TreeView_moc.cxx                \
-  ValueDelegate_moc.cxx           \
-  WrapGraphicsView_moc.cxx
+  ValueDelegate_moc.cxx
 
 nodist_libGenericGui_la_SOURCES = \
   $(MOC_FILES)

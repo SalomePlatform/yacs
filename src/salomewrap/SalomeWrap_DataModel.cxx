@@ -17,7 +17,6 @@
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 #include "SalomeWrap_DataModel.hxx"
-#include "guiContext.hxx"
 
 #include <SalomeApp_DataObject.h>
 #include <SalomeApp_Study.h>
@@ -33,7 +32,6 @@
 #include "YacsTrace.hxx"
 
 using namespace std;
-using namespace YACS::HMI;
 
 SalomeWrap_DataModel::SalomeWrap_DataModel(CAM_Module* theModule)
   : SalomeApp_DataModel(theModule)
