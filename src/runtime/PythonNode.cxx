@@ -33,6 +33,10 @@
 #define getpid _getpid
 #endif
 
+#if PY_VERSION_HEX < 0x02050000 
+typedef int Py_ssize_t;
+#endif
+
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
