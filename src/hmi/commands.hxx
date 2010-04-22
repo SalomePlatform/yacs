@@ -19,6 +19,7 @@
 #ifndef _COMMANDS_HXX_
 #define _COMMANDS_HXX_
 
+#include "HMIExport.hxx"
 #include <list>
 #include <string>
 #include <vector>
@@ -51,7 +52,7 @@ namespace YACS
       bool _normalReverse;
     };
     
-    class Invocator
+    class HMI_EXPORT Invocator
     {
       friend class Command;
     public:
