@@ -30,7 +30,13 @@
 #include <iostream>
 #include <fstream>
 #include <stdlib.h>
+#ifdef WNT
+#include <io.h>
+#define F_OK 0
+#define access _access
+#else
 #include <unistd.h>
+#endif
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"

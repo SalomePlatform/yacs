@@ -52,9 +52,10 @@ TestYacsLoader_LDFLAGS = \
 TestYacsLoader_CXXFLAGS = \
 	$(THREAD_DEF) \
 	$(CPPUNIT_INCLUDES) \
+	$(EXPAT_INCLUDES) \
 	$(PYTHON_CPPFLAGS) \
-  $(OMNIORB_INCLUDES) \
-  $(OMNIORB_CCXFLAGS) \
+	$(OMNIORB_INCLUDES) \
+	$(OMNIORB_CXXFLAGS) \
 	-I$(srcdir)/.. \
 	-I$(srcdir)/../../bases \
 	-I$(srcdir)/../../bases/Test \
@@ -77,12 +78,13 @@ echoSrv_SOURCES = echoSrv.cxx
 nodist_echoSrv_SOURCES = $(IDL_SOURCES)
 
 echoSrv_CXXFLAGS = \
+	-I$(builddir) \
 	-I$(srcdir)/../../bases \
 	$(OMNIORB_INCLUDES) \
 	$(OMNIORB_CXXFLAGS) 
 
 echoSrv_LDFLAGS = \
-	$(OMNIORB_LIBS)
+	$(OMNIORB_LIBS) $(PTHREAD_LIBS)
 
 AM_CXXFLAGS = $(THREAD_DEF)
 

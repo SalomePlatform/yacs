@@ -18,7 +18,12 @@
 //
 #include <time.h>
 #include <pthread.h>
+#ifdef WNT
+#include <windows.h>
+#define sleep _sleep
+#else
 #include <unistd.h>
+#endif
 
 #include <echo.hh>
 
