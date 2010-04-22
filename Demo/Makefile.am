@@ -18,11 +18,12 @@
 #
 include $(top_srcdir)/adm/unix/make_begin.am
 
+IDL_FILES = echo.idl
 BUILT_SOURCES = echoSK.cc schema.xml xmlrpcprog.py
 bin_PROGRAMS=echoSrvDemo 
 echoSrvDemo_SOURCES = echoSrv.cxx 
 nodist_echoSrvDemo_SOURCES = echoSK.cc
-echoSrvDemo_CXXFLAGS = $(OMNIORB_INCLUDES) $(OMNIORB_CXXFLAGS) 
+echoSrvDemo_CXXFLAGS = -I$(builddir) $(OMNIORB_INCLUDES) $(OMNIORB_CXXFLAGS) 
 echoSrvDemo_LDFLAGS = $(OMNIORB_LIBS)
 AM_CXXFLAGS = $(THREAD_DEF)
 
