@@ -23,11 +23,12 @@
 #define _YACSBASESEXPORT_HXX_
 
 #ifdef WNT
-#  if defined YACSBases_EXPORTS
-#    define YACSBASES_EXPORT __declspec( dllexport )
-#  else
-#    define YACSBASES_EXPORT __declspec( dllimport )
-#  endif
+// #  if defined YACSBases_EXPORTS
+// #    define YACSBASES_EXPORT __declspec( dllexport )
+// #  else
+// #    define YACSBASES_EXPORT __declspec( dllimport )
+// #  endif
+#  define YACSBASES_EXPORT    // noinst ...
 #else
 #  define YACSBASES_EXPORT
 #endif
