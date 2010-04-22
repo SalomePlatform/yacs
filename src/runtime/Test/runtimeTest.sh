@@ -43,7 +43,7 @@ echo $pidomni
 #wait enough time to let omniNames start
 sleep 2
 
-./echoSrv &
+./runtimeTestEchoSrv &
 pidecho=$!
 echo $pidecho
 
@@ -51,7 +51,7 @@ mkdir -p lib/salome
 cp .libs/libTestComponentLocal.so lib/salome
 export TESTCOMPONENT_ROOT_DIR=`pwd`
 
-#wait enough time to let echoSrv start and register
+#wait enough time to let runtimeTestEchoSrv start and register
 sleep 2
 
 ./TestRuntime

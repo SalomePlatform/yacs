@@ -25,7 +25,7 @@ check_PROGRAMS = TestRuntime
 else
 check_PROGRAMS =
 endif
-check_PROGRAMS += echoSrv echo_clt
+check_PROGRAMS += runtimeTestEchoSrv echo_clt
 
 lib_LTLIBRARIES = libTestComponentLocal.la
 
@@ -78,16 +78,16 @@ xmlrun.sh:${srcdir}/xmlrun_orig.sh
 echoDynSK.cc echoSK.cc echo.hh:echo.idl
 	$(OMNIORB_IDL) $(OMNIORB_IDLCXXFLAGS) -bcxx -Wba $<
 
-echoSrv_SOURCES = echoSrv.cxx 
-nodist_echoSrv_SOURCES = $(IDL_SOURCES)
+runtimeTestEchoSrv_SOURCES = echoSrv.cxx 
+nodist_runtimeTestEchoSrv_SOURCES = $(IDL_SOURCES)
 
-echoSrv_CXXFLAGS = \
+runtimeTestEchoSrv_CXXFLAGS = \
 	-I. \
 	-I$(srcdir)/../../bases \
 	$(OMNIORB_INCLUDES) \
 	$(OMNIORB_CXXFLAGS) 
 
-echoSrv_LDFLAGS = \
+runtimeTestEchoSrv_LDFLAGS = \
 	$(OMNIORB_LIBS)
 
 echo_clt_SOURCES = echo_clt.cxx 

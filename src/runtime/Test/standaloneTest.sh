@@ -17,7 +17,7 @@
 #
 #  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
-killall -9 omniNames echoSrv
+killall -9 omniNames runtimeTestEchoSrv
 
 BASEREP=`pwd`
 OMNIORB_CONFIG=${BASEREP}/omniorb.cfg
@@ -45,7 +45,7 @@ omniNames -start 2910 &
 pidomni=$!
 echo $pidomni
 
-./echoSrv &
+./runtimeTestEchoSrv &
 pidecho=$!
 echo $pidecho
 
