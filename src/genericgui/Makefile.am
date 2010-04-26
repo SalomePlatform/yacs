@@ -310,7 +310,7 @@ libGenericGui_la_CXXFLAGS  = \
 	$(LIBXML_INCLUDES) \
 	$(EXPAT_INCLUDES) \
 	-I$(KERNEL_ROOT_DIR)/include/salome \
-	-I$(builddir) \
+	-I. \
 	-I$(srcdir) \
 	-I$(srcdir)/../bases \
 	-I$(srcdir)/../engine \

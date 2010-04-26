@@ -79,7 +79,7 @@ echoSrv_SOURCES = echoSrv.cxx
 nodist_echoSrv_SOURCES = $(IDL_SOURCES)
 
 echoSrv_CXXFLAGS = \
-	-I$(builddir) \
+	-I. \
 	-I$(srcdir)/../../bases \
 	$(OMNIORB_INCLUDES) \
 	$(OMNIORB_CXXFLAGS) 
