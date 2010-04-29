@@ -74,7 +74,7 @@ TestRuntime_CXXFLAGS = \
 	-DLOCATION="\"@prefix@\"" -DYACS_PTHREAD
 
 xmlrun.sh:${srcdir}/xmlrun_orig.sh
-	cp $(srcdir)/xmlrun_orig.sh xmlrun.sh
+	cp -f $(srcdir)/xmlrun_orig.sh xmlrun.sh
 
 echoDynSK.cc echoSK.cc echo.hh:echo.idl
 	$(OMNIORB_IDL) $(OMNIORB_IDLCXXFLAGS) -bcxx -Wba $<
