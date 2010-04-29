@@ -235,7 +235,7 @@ void SceneItem::paint(QPainter *painter,
 
 void SceneItem::setTopLeft(QPointF topLeft)
 {
-  setPos(trunc(topLeft.x()), trunc(topLeft.y()));
+  setPos(int(topLeft.x()), int(topLeft.y()));
   if (_parent)
     _parent->checkGeometryChange();
 }
