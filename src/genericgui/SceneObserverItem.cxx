@@ -91,7 +91,7 @@ QString SceneObserverItem::getToolTip()
   DEBTRACE("SceneObserverItem::getToolTip");
   if (!_subject)
     return _label;
-  if (! QtGuiContext::getQtCurrent()->_mapOfSchemaItem.count(_subject))
+  if ( !QtGuiContext::getQtCurrent() || !QtGuiContext::getQtCurrent()->_mapOfSchemaItem.count(_subject))
     return _label;
   QString val ="";
   SchemaItem * item = QtGuiContext::getQtCurrent()->_mapOfSchemaItem[_subject];

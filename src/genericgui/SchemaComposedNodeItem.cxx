@@ -333,7 +333,7 @@ Qt::ItemFlags SchemaComposedNodeItem::flags(const QModelIndex &index)
 {
   //DEBTRACE("SchemaComposedNodeItem::flags");
   Qt::ItemFlags pflag = Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled;
-  if (! QtGuiContext::getQtCurrent()->isEdition())
+  if (!QtGuiContext::getQtCurrent() || !QtGuiContext::getQtCurrent()->isEdition())
     return pflag;
 
   Qt::ItemFlags flagEdit = 0;

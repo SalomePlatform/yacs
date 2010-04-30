@@ -50,6 +50,9 @@ Command::Command()
  */
 bool Command::execute()
 {
+  if ( !GuiContext::getCurrent() || !GuiContext::getCurrent()->getInvoc() )
+    return false;
+
   bool commandInProgress = !GuiContext::getCurrent()->getInvoc()->isSpecialReverse();
   if (commandInProgress)
     GuiContext::getCurrent()->getInvoc()->_commandsInProgress.push_back(this);
