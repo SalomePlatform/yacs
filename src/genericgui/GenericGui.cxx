@@ -149,13 +149,16 @@ GenericGui::GenericGui(YACS::HMI::SuitWrapper* wrapper, QMainWindow *parent)
     }
 
   _dwTree = new QDockWidget(_parent);
+  _dwTree->setVisible(false);
   _dwTree->setWindowTitle("Tree View: edition mode");
   _parent->addDockWidget(Qt::LeftDockWidgetArea, _dwTree);
   _dwStacked = new QDockWidget(_parent);
+  _dwStacked->setVisible(false);
   _dwStacked->setWindowTitle("Input Panel");
   _dwStacked->setMinimumWidth(270); // --- force a minimum until display
   _parent->addDockWidget(Qt::RightDockWidgetArea, _dwStacked);
   _dwCatalogs = new QDockWidget(_parent);
+  _dwCatalogs->setVisible(false);
   _dwCatalogs->setWindowTitle("Catalogs");
   _parent->addDockWidget(Qt::RightDockWidgetArea, _dwCatalogs);
   _catalogsWidget = new CatalogWidget(_dwCatalogs,
