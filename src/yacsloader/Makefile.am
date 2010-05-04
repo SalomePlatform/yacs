@@ -38,9 +38,9 @@ YACSloaderExport.hxx \
 blocParsers.hxx  codeParsers.hxx      containerParsers.hxx  dataParsers.hxx    factory.hxx \
 linkParsers.hxx  LoadState.hxx        loopParsers.hxx       nodeParsers.hxx    outputParsers.hxx \
 parserBase.hxx   parsers.hxx          portParsers.hxx       presetParsers.hxx  ProcCataLoader.hxx \
-procParsers.hxx  propertyParsers.hxx  rootParser.hxx        switchParsers.hxx \
-	componentinstanceParsers.hxx \
-typeParsers.hxx  xmlParserBase.hxx    xmlrpcParsers.hxx
+procParsers.hxx  propertyParsers.hxx  rootParser.hxx        switchParsers.hxx  inlineParsers.hxx \
+componentinstanceParsers.hxx          remoteParsers.hxx     serverParsers.hxx  serviceParsers.hxx \
+typeParsers.hxx  xmlParserBase.hxx    xmlrpcParsers.hxx     sinlineParsers.hxx
 
 EXTRA_libYACSloader_la_SOURCES =  \
 	$(__dummy__)
@@ -130,7 +130,7 @@ debugger_LDADD = libYACSloader.la \
 
 debugger_LDFLAGS = $(PYTHON_EXTRA_LDFLAGS) -pthread $(EXPAT_LIBS) $(LIBXML_LIBS)
 
-EXTRA_DIST = samples
+EXTRA_DIST = samples schema.xsd
 
 dist-hook:
 	rm -rf `find $(distdir) -name CVS`

@@ -33,4 +33,11 @@ check-local:
 dist-hook:
 		 rm -rf `find $(distdir) -name CVS`
 
-EXTRA_DIST = Misc
+EXTRA_DIST = Misc \
+             build_cmake \
+	     build_cmake.bat \
+	     build_configure \
+	     clean_configure \
+	     configure.in.base \
+	     rfind
+

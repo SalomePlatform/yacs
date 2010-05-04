@@ -120,6 +120,6 @@ libTestComponentLocal_la_LIBADD = \
 	../../engine/libYACSlibEngine.la
 
 clean-local:
-	rm -rf echo_idl.py* echoSK.cc echoDynSK.cc echo.hh eo eo__POA yacs* omnilog lib omniorb.cfg  traceExec_*  xmlrun.sh
+	rm -rf echo_idl.py* echoSK.cc echoDynSK.cc echo.hh eo eo__POA yacs* omnilog lib omniorb.cfg  traceExec_*  xmlrun.sh UnitTestsResult
 
 include $(top_srcdir)/adm/unix/make_end.am
