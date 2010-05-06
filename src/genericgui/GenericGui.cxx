@@ -1333,7 +1333,14 @@ void GenericGui::onImportSchema()
   if ( !fn.isEmpty() )
     {
       DEBTRACE("file loaded : " <<fn.toStdString());
-      YACS::ENGINE::Proc *proc = _loader->load(fn.toLatin1());
+      YACS::ENGINE::Proc *proc = 0;
+
+      try {
+         proc = _loader->load(fn.toLatin1());
+      }
+      catch (...) {
+      }
+      
       if (!proc)
         {
           QMessageBox msgBox(QMessageBox::Critical,
@@ -1683,7 +1690,14 @@ void GenericGui::onLoadAndRunSchema()
   if ( !fn.isEmpty() )
     {
       DEBTRACE("file loaded : " <<fn.toStdString());
-      YACS::ENGINE::Proc *proc = _loader->load(fn.toLatin1());
+      YACS::ENGINE::Proc *proc =0;
+      
+      try {
+         proc = _loader->load(fn.toLatin1());
+      }
+      catch (...) {
+      }
+      
       if (!proc)
         {
           QMessageBox msgBox(QMessageBox::Critical,
