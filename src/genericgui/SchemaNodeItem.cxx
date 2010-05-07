@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "SchemaNodeItem.hxx"
 #include "SchemaInPortItem.hxx"
 #include "SchemaOutPortItem.hxx"
@@ -184,7 +185,7 @@ void SchemaNodeItem::popupMenu(QWidget *caller, const QPoint &globalPos)
 Qt::ItemFlags SchemaNodeItem::flags(const QModelIndex &index)
 {
   Qt::ItemFlags pflag = Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsDropEnabled;
-  if (! QtGuiContext::getQtCurrent()->isEdition())
+  if ( !QtGuiContext::getQtCurrent() || !QtGuiContext::getQtCurrent()->isEdition())
     return pflag;
 
   if (QtGuiContext::getQtCurrent()->isEdition())

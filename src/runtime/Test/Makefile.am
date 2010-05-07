@@ -1,4 +1,4 @@
-#  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+#  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 #
 #  This library is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 #
 #  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+
 include $(top_srcdir)/adm/unix/make_begin.am
 
 check_SCRIPTS = runtimeTest.sh
@@ -25,7 +26,7 @@ check_PROGRAMS = TestRuntime
 else
 check_PROGRAMS =
 endif
-check_PROGRAMS += echoSrv echo_clt
+check_PROGRAMS += runtimeTestEchoSrv echo_clt
 
 lib_LTLIBRARIES = libTestComponentLocal.la
 
@@ -73,21 +74,21 @@ TestRuntime_CXXFLAGS = \
 	-DLOCATION="\"@prefix@\"" -DYACS_PTHREAD
 
 xmlrun.sh:${srcdir}/xmlrun_orig.sh
-	cp $(srcdir)/xmlrun_orig.sh xmlrun.sh
+	cp -f $(srcdir)/xmlrun_orig.sh xmlrun.sh
 
 echoDynSK.cc echoSK.cc echo.hh:echo.idl
 	$(OMNIORB_IDL) $(OMNIORB_IDLCXXFLAGS) -bcxx -Wba $<
 
-echoSrv_SOURCES = echoSrv.cxx 
-nodist_echoSrv_SOURCES = $(IDL_SOURCES)
+runtimeTestEchoSrv_SOURCES = echoSrv.cxx 
+nodist_runtimeTestEchoSrv_SOURCES = $(IDL_SOURCES)
 
-echoSrv_CXXFLAGS = \
+runtimeTestEchoSrv_CXXFLAGS = \
 	-I. \
 	-I$(srcdir)/../../bases \
 	$(OMNIORB_INCLUDES) \
 	$(OMNIORB_CXXFLAGS) 
 
-echoSrv_LDFLAGS = \
+runtimeTestEchoSrv_LDFLAGS = \
 	$(OMNIORB_LIBS)
 
 echo_clt_SOURCES = echo_clt.cxx 
@@ -119,6 +120,6 @@ libTestComponentLocal_la_LIBADD = \
 	../../engine/libYACSlibEngine.la
 
 clean-local:
-	rm -rf echo_idl.py* echoSK.cc echoDynSK.cc echo.hh eo eo__POA yacs* omnilog lib omniorb.cfg  traceExec_*  xmlrun.sh
+	rm -rf echo_idl.py* echoSK.cc echoDynSK.cc echo.hh eo eo__POA yacs* omnilog lib omniorb.cfg  traceExec_*  xmlrun.sh UnitTestsResult
 
 include $(top_srcdir)/adm/unix/make_end.am

@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "commands.hxx"
 #include "guiContext.hxx"
 #include "Proc.hxx"
@@ -49,6 +50,9 @@ Command::Command()
  */
 bool Command::execute()
 {
+  if ( !GuiContext::getCurrent() || !GuiContext::getCurrent()->getInvoc() )
+    return false;
+
   bool commandInProgress = !GuiContext::getCurrent()->getInvoc()->isSpecialReverse();
   if (commandInProgress)
     GuiContext::getCurrent()->getInvoc()->_commandsInProgress.push_back(this);

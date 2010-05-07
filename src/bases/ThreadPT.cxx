@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,10 +16,12 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "ThreadPT.hxx"
 #include "Exception.hxx"
 #ifdef WNT
-#define usleep(A) _sleep(A/1000)
+#include <windows.h>
+#define usleep(A) Sleep(A/1000)
 #else
 #include <unistd.h>
 #endif

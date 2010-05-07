@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,9 +16,11 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef _COMMANDS_HXX_
 #define _COMMANDS_HXX_
 
+#include "HMIExport.hxx"
 #include <list>
 #include <string>
 #include <vector>
@@ -51,7 +53,7 @@ namespace YACS
       bool _normalReverse;
     };
     
-    class Invocator
+    class HMI_EXPORT Invocator
     {
       friend class Command;
     public:

@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include <Python.h>
 #include "SALOME_ResourcesManager.hxx"
 #include "SALOME_LifeCycleCORBA.hxx"
@@ -148,13 +149,16 @@ GenericGui::GenericGui(YACS::HMI::SuitWrapper* wrapper, QMainWindow *parent)
     }
 
   _dwTree = new QDockWidget(_parent);
+  _dwTree->setVisible(false);
   _dwTree->setWindowTitle("Tree View: edition mode");
   _parent->addDockWidget(Qt::LeftDockWidgetArea, _dwTree);
   _dwStacked = new QDockWidget(_parent);
+  _dwStacked->setVisible(false);
   _dwStacked->setWindowTitle("Input Panel");
   _dwStacked->setMinimumWidth(270); // --- force a minimum until display
   _parent->addDockWidget(Qt::RightDockWidgetArea, _dwStacked);
   _dwCatalogs = new QDockWidget(_parent);
+  _dwCatalogs->setVisible(false);
   _dwCatalogs->setWindowTitle("Catalogs");
   _parent->addDockWidget(Qt::RightDockWidgetArea, _dwCatalogs);
   _catalogsWidget = new CatalogWidget(_dwCatalogs,
@@ -1329,7 +1333,14 @@ void GenericGui::onImportSchema()
   if ( !fn.isEmpty() )
     {
       DEBTRACE("file loaded : " <<fn.toStdString());
-      YACS::ENGINE::Proc *proc = _loader->load(fn.toLatin1());
+      YACS::ENGINE::Proc *proc = 0;
+
+      try {
+         proc = _loader->load(fn.toLatin1());
+      }
+      catch (...) {
+      }
+      
       if (!proc)
         {
           QMessageBox msgBox(QMessageBox::Critical,
@@ -1679,7 +1690,14 @@ void GenericGui::onLoadAndRunSchema()
   if ( !fn.isEmpty() )
     {
       DEBTRACE("file loaded : " <<fn.toStdString());
-      YACS::ENGINE::Proc *proc = _loader->load(fn.toLatin1());
+      YACS::ENGINE::Proc *proc =0;
+      
+      try {
+         proc = _loader->load(fn.toLatin1());
+      }
+      catch (...) {
+      }
+      
       if (!proc)
         {
           QMessageBox msgBox(QMessageBox::Critical,

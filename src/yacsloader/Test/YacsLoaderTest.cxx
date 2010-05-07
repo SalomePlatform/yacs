@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "yacsconfig.h"
 #include "RuntimeSALOME.hxx"
 #include "PythonPorts.hxx"
@@ -30,7 +31,13 @@
 #include <iostream>
 #include <fstream>
 #include <stdlib.h>
+#ifdef WNT
+#include <io.h>
+#define F_OK 0
+#define access _access
+#else
 #include <unistd.h>
+#endif
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"

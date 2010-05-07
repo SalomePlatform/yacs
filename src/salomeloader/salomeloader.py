@@ -1,4 +1,5 @@
-#  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+# -*- coding: iso-8859-1 -*-
+#  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 #
 #  This library is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU Lesser General Public
@@ -16,8 +17,7 @@
 #
 #  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
-# -*- coding: iso-8859-1 -*-
-#
+
 """This module is used to parse a supervision graph Salome (XML) and convert it into
    YACS calculation schema
 

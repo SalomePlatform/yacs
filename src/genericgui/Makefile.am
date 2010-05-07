@@ -1,4 +1,4 @@
-#  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+#  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 #
 #  This library is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 #
 #  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+
 libdir             = $(prefix)/lib/salome
 bindir             = $(prefix)/bin/salome
 
@@ -309,7 +310,7 @@ libGenericGui_la_CXXFLAGS  = \
 	$(LIBXML_INCLUDES) \
 	$(EXPAT_INCLUDES) \
 	-I$(KERNEL_ROOT_DIR)/include/salome \
-	-I$(builddir) \
+	-I. \
 	-I$(srcdir) \
 	-I$(srcdir)/../bases \
 	-I$(srcdir)/../engine \

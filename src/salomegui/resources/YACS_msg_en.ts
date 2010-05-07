@@ -1,6 +1,6 @@
 <!DOCTYPE TS><TS>
 <!--
-  Copyright (C) 2005-2008  OPEN CASCADE
+  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
