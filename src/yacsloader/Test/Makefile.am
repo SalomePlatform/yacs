@@ -73,7 +73,7 @@ echoclt.py genPascal.py genTriangle.py  \
 waitContainers.py    xmlrun_orig.sh      YacsLoaderTest.hxx  
 
 xmlrun.sh:xmlrun_orig.sh
-	cp $(srcdir)/xmlrun_orig.sh xmlrun.sh
+	cp -f $(srcdir)/xmlrun_orig.sh xmlrun.sh
 
 echoSrv_SOURCES = echoSrv.cxx 
 nodist_echoSrv_SOURCES = $(IDL_SOURCES)
