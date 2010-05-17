@@ -1,4 +1,4 @@
-#  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+#  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 #
 #  This library is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 #
 #  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+
 import sys
 import YACS_ORB__POA
 import YACS_ORB
@@ -49,6 +50,13 @@ class proc_i(YACS_ORB__POA.ProcExec):
     def getInPortValue(self, nodeNumid, portName):
       try:
         return self.p.getInPortValue(nodeNumid, portName)
+      except:
+        traceback.print_exc()
+        return ""
+
+    def setInPortValue(self, nodeName, portName, value):
+      try:
+        return self.p.setInPortValue(nodeName, portName, value)
       except:
         traceback.print_exc()
         return ""

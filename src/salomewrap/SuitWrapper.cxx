@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 /*!
  *  only one declaration in src/genericgui,
  *  implementations in salomewrap and standalonegui
@@ -28,6 +29,9 @@
 #include "SalomeWrap_DataModel.hxx"
 
 #include <SalomeApp_Module.h>
+#include "SUIT_Session.h"
+#include "SUIT_ResourceMgr.h"
+
 #include <QxScene_ViewManager.h>
 #include <QxScene_ViewModel.h>
 #include <QxScene_ViewWindow.h>
@@ -281,4 +285,13 @@ void SuitWrapper::createNewRun(const QString& schemaName,
 {
   SalomeWrap_Module* module = dynamic_cast<SalomeWrap_Module*>(_wrapped);
   module->getDataModel()->createNewRun(schemaName, runName, refWindow, viewWindow);
+}
+
+QStringList SuitWrapper::getQuickDirList()
+{
+  QStringList dirList;
+  SUIT_ResourceMgr* resMgr = SUIT_Session::session()->resourceMgr();
+  if ( resMgr )
+    dirList = resMgr->stringValue( "FileDlg", "QuickDirList" ).split( ';', QString::SkipEmptyParts );
+  return dirList;
 }

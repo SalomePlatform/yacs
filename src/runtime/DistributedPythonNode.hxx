@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef __DISTRIBUTEDPYTHONNODE_HXX__
 #define __DISTRIBUTEDPYTHONNODE_HXX__
 
@@ -23,12 +24,13 @@
 
 #include <Python.h>
 #include <omniORB4/CORBA.h>
+#include "YACSRuntimeSALOMEExport.hxx"
 
 namespace YACS
 {
   namespace ENGINE
   {
-    class DistributedPythonNode : public ServerNode
+    class YACSRUNTIMESALOME_EXPORT DistributedPythonNode : public ServerNode
     {   
     protected:
       Node *simpleClone(ComposedNode *father, bool editionOnly) const;

@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //#define REFCNT
 //
 #ifdef REFCNT
@@ -202,7 +203,7 @@ void SalomeContainer::addComponentName(std::string name)
 /*!
  * \param inst the component instance to load
  */
-CORBA::Object_ptr SalomeContainer::loadComponent(const ComponentInstance *inst)
+CORBA::Object_ptr SalomeContainer::loadComponent(ComponentInstance *inst)
 {
   lock();//To be sure
   if(!isAlreadyStarted(inst))
@@ -227,9 +228,13 @@ CORBA::Object_ptr SalomeContainer::loadComponent(const ComponentInstance *inst)
     container=_trueContainers[inst];
   else
     container=_trueCont;
-  bool isLoadable = container->load_component_Library(componentName);
+
+  char* reason;
+
+  bool isLoadable = container->load_component_Library(componentName, reason);
   if (isLoadable)
     {
+      CORBA::string_free(reason);
       int studyid=1;
       Proc* p=getProc();
       if(p)
@@ -238,7 +243,20 @@ CORBA::Object_ptr SalomeContainer::loadComponent(const ComponentInstance *inst)
           if(!value.empty())
             studyid= atoi(value.c_str());
         }
-      objComponent=container->create_component_instance(componentName, studyid);
+      // prepare component instance properties
+      Engines::FieldsDict_var env = new Engines::FieldsDict;
+      std::map<std::string, std::string> properties = inst->getProperties();
+      std::map<std::string, std::string>::const_iterator itm;
+      env->length(properties.size());
+      int item=0;
+      for(itm = properties.begin(); itm != properties.end(); ++itm, item++)
+        {
+          DEBTRACE("envname="<<itm->first<<" envvalue="<< itm->second);
+          env[item].key= CORBA::string_dup(itm->first.c_str());
+          env[item].value <<= itm->second.c_str();
+        }
+
+      objComponent=container->create_component_instance_env(componentName, studyid, env, reason);
     }
 
   if(CORBA::is_nil(objComponent))
@@ -246,6 +264,9 @@ CORBA::Object_ptr SalomeContainer::loadComponent(const ComponentInstance *inst)
       unLock();
       std::string text="Error while trying to create a new component: component '"+ compoName;
       text=text+"' is not installed or it's a wrong name";
+      text += '\n';
+      text += reason;
+      CORBA::string_free(reason);
       throw Exception(text);
     }
   unLock();
@@ -347,14 +368,13 @@ void SalomeContainer::start(const ComponentInstance *inst) throw(YACS::Exception
   Engines::ContainerManager_var contManager=Engines::ContainerManager::_narrow(obj);
 
   std::string str(_params.container_name);
-  DEBTRACE("SalomeContainer::start " << str <<";"<<_params.hostname<<";"<<_type);
+  DEBTRACE("SalomeContainer::start " << str <<";"<<_params.resource_params.hostname <<";"<<_type);
   //If a container_name is given try to find an already existing container in naming service
   //If not found start a new container with the given parameters
   if (_type=="mono" && str != "")
     {
       std::string machine(_params.resource_params.hostname);
       if(machine == "" || machine == "localhost")
-        //machine=Kernel_Utils::GetHostname();
         machine=Kernel_Utils::GetHostname();
       std::string ContainerNameInNS=ns.BuildContainerNameForNS(_params,machine.c_str());
       obj=ns.Resolve(ContainerNameInNS.c_str());

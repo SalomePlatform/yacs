@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef _VALUEDELEGATE_HXX
 #define _VALUEDELEGATE_HXX
 
@@ -66,6 +67,20 @@ namespace YACS
                     int column = 0,
                     QWidget* parent = 0);
       virtual ~GeneralEditor();
+      virtual QString GetStrValue();
+      virtual void setData(QVariant val);
+    };
+
+    class NameEditor: public QLineEdit, public GenericEditor
+    {
+      Q_OBJECT
+      
+    public:
+      NameEditor(Subject* subject,
+                 const ValueDelegate* delegate,
+                 int column = 0,
+                 QWidget* parent = 0);
+      virtual ~NameEditor();
       virtual QString GetStrValue();
       virtual void setData(QVariant val);
     };

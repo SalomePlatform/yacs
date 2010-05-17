@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef _GUIOBSERVERS_HXX_
 #define _GUIOBSERVERS_HXX_
 
@@ -442,6 +443,8 @@ namespace YACS
       virtual void detachService(SubjectServiceNode* service);
       virtual void moveService(SubjectReference* reference);
       virtual void removeSubServiceFromSet(SubjectServiceNode *service);
+      virtual bool setProperties(std::map<std::string, std::string> properties);
+      virtual std::map<std::string, std::string> getProperties();
       virtual void notifyServicesChange(GuiEvent event, int type, Subject* son);
       virtual std::pair<std::string, int> getKey();
       virtual void clean(Command *command=0);
@@ -689,6 +692,8 @@ namespace YACS
       virtual void clean(Command *command=0);
       void localclean(Command *command=0);
       virtual TypeOfElem getType(){return PYFUNCNODE;}
+      virtual bool setContainer(SubjectContainer* scont);
+      virtual bool setExecutionMode(const std::string& mode);
     protected:
       YACS::ENGINE::PyFuncNode *_pyFuncNode;
     };

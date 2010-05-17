@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef _GUIEXECUTOR_HXX_
 #define _GUIEXECUTOR_HXX_
 
@@ -34,6 +35,7 @@ namespace YACS
   {
     class Proc;
     class Node;
+    class DataPort;
   }
 
   namespace HMI
@@ -73,6 +75,8 @@ namespace YACS
       void addBreakpoint(std::string breakpoint);
       void removeBreakpoint(std::string breakpoint);
       void setNextStepList(std::list<std::string> nextStepList);
+
+      void setInPortValue(YACS::ENGINE::DataPort* port, std::string value);
 
       void registerStatusObservers();
       bool isRunning() const { return _isRunning; };

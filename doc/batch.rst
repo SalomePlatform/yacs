@@ -35,7 +35,7 @@ of clusters administered by batch managers.
 
 The following is an example of description of a cluster:
 
-::
+.. code-block:: xml
 
   <machine hostname="clusteur1" 
 	   alias="frontal.com" 
@@ -94,15 +94,20 @@ Its interface is as follows:
 			  in FilesList filesToExport,
 			  in FilesList filesToImport,
 			  in BatchParameters batch_params,
-			  in MachineParameters params ) raises (SALOME::SALOME_Exception);
+			  in MachineParameters params ) 
+			                    raises (SALOME::SALOME_Exception);
 
-    string queryJob ( in long jobId, in MachineParameters params ) raises (SALOME::SALOME_Exception);
-    void   deleteJob( in long jobId, in MachineParameters params ) raises (SALOME::SALOME_Exception);
+    string queryJob ( in long jobId, in MachineParameters params ) 
+                                            raises (SALOME::SALOME_Exception);
+    void   deleteJob( in long jobId, in MachineParameters params ) 
+                                            raises (SALOME::SALOME_Exception);
 
-    void getResultsJob( in string directory, in long jobId, in MachineParameters params ) 
-         raises (SALOME::SALOME_Exception);
+    void getResultsJob( in string directory, in long jobId, 
+                        in MachineParameters params ) 
+			                    raises (SALOME::SALOME_Exception);
 
-    boolean testBatch(in MachineParameters params) raises (SALOME::SALOME_Exception);
+    boolean testBatch(in MachineParameters params) 
+                                            raises (SALOME::SALOME_Exception);
 
     void Shutdown();
     long getPID();
@@ -131,10 +136,12 @@ The following is an example using this method:
   filesToExport = []
   filesToImport = ['/home/user/applis/batch_exemples/filename']
   batch_params = Engines.BatchParameters('', '00:05:00', '', 4)
-  params = Engines.MachineParameters('','clusteur1','','','','',[],'',0,0,1,1,0,'prun','lsf','','',4)
+  params = Engines.MachineParameters('','clusteur1','','','','',[],'',0,0,1,1,0,
+                                     'prun','lsf','','',4)
 
   # Using submitSalomeJob          
-  jobId = cm.submitSalomeJob(script, filesToExport, filesToImport, batch_params, params)
+  jobId = cm.submitSalomeJob(script, filesToExport, filesToImport, 
+                             batch_params, params)
 
 The following is a description of the different arguments of **submitSalomeJob**:
 

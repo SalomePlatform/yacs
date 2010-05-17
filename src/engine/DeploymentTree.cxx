@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,11 +16,15 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "DeploymentTree.hxx"
 #include "ComponentInstance.hxx"
 #include "Container.hxx"
 #include "Scheduler.hxx"
 #include "Task.hxx"
+
+//#define _DEVDEBUG_
+#include "YacsTrace.hxx"
 
 using namespace std;
 using namespace YACS::ENGINE;
@@ -48,49 +52,80 @@ void DeploymentTreeOnHeap::incrRef() const
 
 unsigned char DeploymentTreeOnHeap::appendTask(Task *task, Scheduler *cloner)
 {
+  DEBTRACE( "DeploymentTreeOnHeap::appendTask: " << task );
   if(!task)
     return DeploymentTree::NULL_TASK;
   if(!task->isDeployable())//Task not needed to be placed.
     return DeploymentTree::NOT_DEPLOYABLE_TASK;
   ComponentInstance *ci=task->getComponent();
-  if(!ci)//Task is not attached to a Component -> not needed to be placed.
+  Container *cont=task->getContainer();
+  DEBTRACE( "DeploymentTreeOnHeap::appendTask component: " << ci );
+  DEBTRACE( "DeploymentTreeOnHeap::appendTask container: " << cont );
+  if(!ci && !cont)//Task is not attached to a Component or a Container -> not needed to be placed.
     {
       _freePlacableTasks.push_back(pair<Task *,Scheduler *>(task,cloner));
       return DeploymentTree::DEPLOYABLE_BUT_NOT_SPECIFIED;
     }
-  Container *cont=ci->getContainer();
+  if(ci)
+    cont=ci->getContainer();
+  DEBTRACE( "DeploymentTreeOnHeap::appendTask container: " << cont );
+
+  // an iterator for Container level
   vector< vector< vector< pair<Task *, Scheduler *> > > >::iterator iter1;
+  // an iterator for Component instance level
   vector< vector< pair<Task *, Scheduler * > > >::iterator iter2;
+  // an iterator for a vector of tasks with same container and component instance
   vector< pair<Task *, Scheduler *> >::iterator iter3;
+
+  // search an existing vector of tasks with container == cont
   for(iter1=_tree.begin();iter1!=_tree.end();iter1++)
-    if(((*iter1)[0][0]).first->getComponent()->getContainer()==cont)
-      break;
+    {
+      if(((*iter1)[0][0]).first->getComponent())
+        {
+          if(((*iter1)[0][0]).first->getComponent()->getContainer()==cont)
+            break;
+        }
+      else if(((*iter1)[0][0]).first->getContainer() == cont)
+        break;
+    }
   if(iter1==_tree.end())
     {
+      // the vector does not exist : create it
+      DEBTRACE("create a vector of vector of tasks for container " << cont);
       _tree.push_back(vector< vector< pair< Task *, Scheduler *> > >());
       iter1=_tree.end();
       iter1--;
     }
+
+  // search a vector of tasks with component instance == ci
   for(iter2=(*iter1).begin();iter2!=(*iter1).end();iter2++)
     if(((*iter2)[0]).first->getComponent()==ci)
       break;
   if(iter2==(*iter1).end())
     {
+      // the vector does not exist : create it
+      DEBTRACE("create a vector of tasks for component instance " << ci);
       (*iter1).push_back(vector< pair< Task *, Scheduler *> >());
       iter2=(*iter1).end();
       iter2--;
     }
+
+  // search the task in the vector. If it exists return 
   for(iter3=(*iter2).begin();iter3!=(*iter2).end();iter3++)
     if((*iter3).first==task)
       return DeploymentTree::ALREADY_IN_TREE;
+
+  // if the task is not in the vector add it under condition
   if(!isConsistentTaskRegardingShCompInst(*iter2,cloner))
     return DeploymentTree::DUP_TASK_NOT_COMPATIBLE_WITH_EXISTING_TREE;
+  DEBTRACE("add task to vector of tasks " << task);
   (*iter2).push_back(pair<Task *,Scheduler *>(task,cloner));
   return DeploymentTree::APPEND_OK;
 }
 
 unsigned DeploymentTreeOnHeap::getNumberOfCTDefContainer() const
 {
+  DEBTRACE("getNumberOfCTDefContainer ");
   vector< vector< vector< pair<Task *, Scheduler *> > > >::const_iterator iter1;
   vector< vector< pair<Task *, Scheduler * > > >::const_iterator iter2;
   vector< pair<Task *, Scheduler *> >::const_iterator iter3;
@@ -131,6 +166,7 @@ unsigned DeploymentTreeOnHeap::getNumberOfCTDefContainer() const
 
 unsigned DeploymentTreeOnHeap::getNumberOfRTODefContainer() const
 {
+  DEBTRACE("getNumberOfRTODefContainer");
   vector< vector< vector< pair<Task *, Scheduler *> > > >::const_iterator iter1;
   vector< vector< pair<Task *, Scheduler * > > >::const_iterator iter2;
   vector< pair<Task *, Scheduler *> >::const_iterator iter3;
@@ -159,6 +195,7 @@ unsigned DeploymentTreeOnHeap::getNumberOfRTODefContainer() const
 
 unsigned DeploymentTreeOnHeap::getNumberOfCTDefComponentInstances() const
 {
+  DEBTRACE("getNumberOfCTDefComponentInstances");
   vector< vector< vector< pair<Task *, Scheduler *> > > >::const_iterator iter1;
   vector< vector< pair<Task *, Scheduler * > > >::const_iterator iter2;
   vector< pair<Task *, Scheduler *> >::const_iterator iter3;
@@ -173,7 +210,7 @@ unsigned DeploymentTreeOnHeap::getNumberOfCTDefComponentInstances() const
         if(isCTDefSurely)
           ret++;
         else
-          if(((*iter2)[0].first)->getComponent()->isAttachedOnCloning())
+          if(((*iter2)[0].first)->getComponent() && ((*iter2)[0].first)->getComponent()->isAttachedOnCloning())
             ret++;
       }
   return ret;
@@ -181,6 +218,7 @@ unsigned DeploymentTreeOnHeap::getNumberOfCTDefComponentInstances() const
 
 unsigned DeploymentTreeOnHeap::getNumberOfRTODefComponentInstances() const
 {
+  DEBTRACE("getNumberOfRTODefComponentInstances");
   vector< vector< vector< pair<Task *, Scheduler *> > > >::const_iterator iter1;
   vector< vector< pair<Task *, Scheduler * > > >::const_iterator iter2;
   vector< pair<Task *, Scheduler *> >::const_iterator iter3;
@@ -203,12 +241,18 @@ std::vector<Container *> DeploymentTreeOnHeap::getAllContainers() const
   vector<Container *> ret;
   vector< vector< vector< pair<Task *, Scheduler *> > > >::const_iterator iter1;
   for(iter1=_tree.begin();iter1!=_tree.end();iter1++)
-    ret.push_back(((*iter1)[0][0].first)->getComponent()->getContainer());
+    {
+      if(((*iter1)[0][0].first)->getComponent())
+        ret.push_back(((*iter1)[0][0].first)->getComponent()->getContainer());
+      else
+        ret.push_back(((*iter1)[0][0].first)->getContainer());
+    }
   return ret;
 }
 
 std::vector<Container *> DeploymentTreeOnHeap::getAllCTDefContainers() const
 {
+  DEBTRACE("getAllCTDefContainers");
   vector<Container *> ret;
   vector< vector< vector< pair<Task *, Scheduler *> > > >::const_iterator iter1;
   vector< vector< pair<Task *, Scheduler * > > >::const_iterator iter2;
@@ -243,6 +287,7 @@ std::vector<Container *> DeploymentTreeOnHeap::getAllCTDefContainers() const
 
 std::vector<Container *> DeploymentTreeOnHeap::getAllRTODefContainers() const
 {
+  DEBTRACE("getAllRTODefContainers");
   vector< vector< vector< pair<Task *, Scheduler *> > > >::const_iterator iter1;
   vector< vector< pair<Task *, Scheduler * > > >::const_iterator iter2;
   vector< pair<Task *, Scheduler *> >::const_iterator iter3;
@@ -269,6 +314,24 @@ std::vector<Container *> DeploymentTreeOnHeap::getAllRTODefContainers() const
   return ret;
 }
 
+std::vector<Task *> DeploymentTreeOnHeap::getTasksLinkedToContainer(Container *cont) const
+{
+  vector< vector< vector< pair<Task *, Scheduler *> > > >::const_iterator iter1;
+  vector< vector< pair<Task *, Scheduler * > > >::const_iterator iter2;
+  vector< pair<Task *, Scheduler *> >::const_iterator iter3;
+  
+  std::vector<Task *> ret;
+  for(iter1=_tree.begin();iter1!=_tree.end();iter1++)
+    {
+      if(((*iter1)[0][0].first)->getContainer()==cont)
+        for(iter2=(*iter1).begin();iter2!=(*iter1).end();iter2++)
+          if(((*iter2)[0].first)->getComponent()==0)
+            for(iter3=(*iter2).begin();iter3!=(*iter2).end();iter3++)
+              ret.push_back((*iter3).first);
+    }
+  return ret;
+}
+
 std::vector<Task *> DeploymentTreeOnHeap::getTasksLinkedToComponent(ComponentInstance *comp) const
 {
   vector< vector< vector< pair<Task *, Scheduler *> > > >::const_iterator iter1;
@@ -290,14 +353,21 @@ std::vector<ComponentInstance *> DeploymentTreeOnHeap::getComponentsLinkedToCont
   vector< vector< vector< pair<Task *, Scheduler *> > > >::const_iterator iter1;
   vector< vector< pair<Task *, Scheduler * > > >::const_iterator iter2;
   for(iter1=_tree.begin();iter1!=_tree.end();iter1++)
-    if(((*iter1)[0][0].first)->getComponent()->getContainer()==cont)
-      for(iter2=(*iter1).begin();iter2!=(*iter1).end();iter2++)
-        ret.push_back(((*iter2)[0].first)->getComponent());
+    {
+      if(((*iter1)[0][0].first)->getComponent())
+        {
+          if(((*iter1)[0][0].first)->getComponent()->getContainer()==cont)
+            for(iter2=(*iter1).begin();iter2!=(*iter1).end();iter2++)
+              ret.push_back(((*iter2)[0].first)->getComponent());
+        }
+    }
+    
   return ret;
 }
 
 bool DeploymentTreeOnHeap::presenceOfDefaultContainer() const
 {
+  DEBTRACE("presenceOfDefaultContainer");
   vector< vector< vector< pair<Task *, Scheduler *> > > >::const_iterator iter1;
   for(iter1=_tree.begin();iter1!=_tree.end();iter1++)
     if(!((*iter1)[0][0].first)->getComponent()->getContainer())
@@ -324,7 +394,10 @@ bool DeploymentTreeOnHeap::isConsistentTaskRegardingShCompInst(std::vector< std:
   if(!coexistenceOfDifferentSched)
     return true;
   //In this case the component is duplicated on cloning raising on runtime on different policy (schedulers) than other tasks in tasksSharingSameCompInst
-  return (tasksSharingSameCompInst[0].first)->getComponent()->isAttachedOnCloning();
+  if((tasksSharingSameCompInst[0].first)->getComponent())
+    return (tasksSharingSameCompInst[0].first)->getComponent()->isAttachedOnCloning();
+  else
+    return (tasksSharingSameCompInst[0].first)->getContainer()->isAttachedOnCloning();
 }
 
 DeploymentTree::DeploymentTree():_treeHandle(0)
@@ -428,6 +501,13 @@ std::vector<Container *> DeploymentTree::getAllRTODefContainers() const
   if(_treeHandle)
     return _treeHandle->getAllRTODefContainers();
   return vector<Container *>();
+}
+
+std::vector<Task *> DeploymentTree::getTasksLinkedToContainer(Container *cont) const
+{
+  if(_treeHandle)
+    return _treeHandle->getTasksLinkedToContainer(cont);
+  return vector<Task *>();
 }
 
 std::vector<Task *> DeploymentTree::getTasksLinkedToComponent(ComponentInstance *comp) const

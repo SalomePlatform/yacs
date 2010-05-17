@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef _GENERICGUI_HXX_
 #define _GENERICGUI_HXX_
 
@@ -145,6 +146,7 @@ namespace YACS
       QAction *_computeLinkAct;
       QAction *_zoomToBlocAct;
       QAction *_centerOnNodeAct;
+      QAction *_shrinkExpand;
 
       QAction *_toggleStraightLinksAct;
       QAction *_toggleAutomaticComputeLinkAct;
@@ -282,6 +284,7 @@ namespace YACS
       void onRebuildLinks();
       void onZoomToBloc();
       void onCenterOnNode();
+      void onShrinkExpand();
       void onToggleStraightLinks(bool checked);
       void onToggleAutomaticComputeLinks(bool checked);
       void onToggleSimplifyLinks(bool checked);

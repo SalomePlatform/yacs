@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef _SCHEMACONTAINERITEM_HXX_
 #define _SCHEMACONTAINERITEM_HXX_
 
@@ -31,6 +32,7 @@ namespace YACS
       SchemaContainerItem(SchemaItem *parent, QString label, Subject* subject);
       virtual void update(GuiEvent event, int type, Subject* son);
       void addComponentInstance(Subject* subject);
+      void popupMenu(QWidget *caller, const QPoint &globalPos);
     protected:
     };
   }

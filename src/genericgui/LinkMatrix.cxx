@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "LinkMatrix.hxx"
 #include "Scene.hxx"
 #include "SceneComposedNodeItem.hxx"
@@ -120,14 +121,14 @@ std::pair<int,int> LinkMatrix::cellFrom(YACS::ENGINE::OutPort* outp)
   DEBTRACE("xp,yp:"<<xp<<","<<yp);
   int ifrom = -1;
   for (int i=0; i<_im-1; i++)
-    if (_xm[i+1] > xp && xp > _xm[i])
+    if (_xm[i+1] >= xp && xp > _xm[i])
       {
         ifrom = i;
         break;
       }
   int jfrom = -1;
   for (int j=0; j<_jm-1; j++)
-    if (_ym[j+1] > yp && yp > _ym[j])
+    if (_ym[j+1] >= yp && yp > _ym[j])
       {
         jfrom = j;
         break;
@@ -154,14 +155,14 @@ std::pair<int,int> LinkMatrix::cellFrom(YACS::ENGINE::OutGate* outp)
   DEBTRACE("xp,yp:"<<xp<<","<<yp);
   int ifrom = -1;
   for (int i=0; i<_im-1; i++)
-    if (_xm[i+1] > xp && xp > _xm[i])
+    if (_xm[i+1] >= xp && xp > _xm[i])
       {
         ifrom = i;
         break;
       }
   int jfrom = -1;
   for (int j=0; j<_jm-1; j++)
-    if (_ym[j+1] > yp && yp > _ym[j])
+    if (_ym[j+1] >= yp && yp > _ym[j])
       {
         jfrom = j;
         break;
@@ -183,14 +184,14 @@ std::pair<int,int> LinkMatrix::cellTo(YACS::ENGINE::InPort* inp)
   DEBTRACE("xp,yp:"<<xp<<","<<yp);
   int ito = -1;
   for (int i=0; i<_im-1; i++)
-    if (_xm[i+1] > xp && xp > _xm[i])
+    if (_xm[i+1] >= xp && xp > _xm[i])
       {
         ito = i;
         break;
       }
   int jto = -1;
   for (int j=0; j<_jm-1; j++)
-    if (_ym[j+1] > yp && yp > _ym[j])
+    if (_ym[j+1] >= yp && yp > _ym[j])
       {
         jto = j;
         break;
@@ -217,14 +218,14 @@ std::pair<int,int> LinkMatrix::cellTo(YACS::ENGINE::InGate* inp)
   DEBTRACE("xp,yp:"<<xp<<","<<yp);
   int ito = -1;
   for (int i=0; i<_im-1; i++)
-    if (_xm[i+1] > xp && xp > _xm[i])
+    if (_xm[i+1] >= xp && xp > _xm[i])
       {
         ito = i;
         break;
       }
   int jto = -1;
   for (int j=0; j<_jm-1; j++)
-    if (_ym[j+1] > yp && yp > _ym[j])
+    if (_ym[j+1] >= yp && yp > _ym[j])
       {
         jto = j;
         break;
@@ -291,9 +292,21 @@ LinkPath LinkMatrix::getPath(LNodePath lnp)
     {
       int i = it->getX();
       int j = it->getY();
+      DEBTRACE("i, j: " << i << " " << j << " Xmax, Ymax: " << _im << " " << _jm);
       linkPoint a;
-      a.x = coef*_xm[i] + (1.-coef)*_xm[i+1];
-      a.y = coef*_ym[j] + (1.-coef)*_ym[j+1];
+
+      if ( (i+1)==_im ) {
+	a.x = _xm[i];
+      } else {
+	a.x = coef*_xm[i] + (1.-coef)*_xm[i+1];
+      };
+
+      if ( (j+1)==_jm ) {
+	a.y = _ym[j];
+      } else {
+	a.y = coef*_ym[j] + (1.-coef)*_ym[j+1];
+      };
+
       lp.push_back(a);
       DEBTRACE(a.x << " " << a.y);
       ++it;

@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,11 +16,13 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #define CHRONODEF
 #include "chrono.hxx"
 
 #include "SceneLinkItem.hxx"
 #include "SceneDataPortItem.hxx"
+#include "SceneCtrlPortItem.hxx"
 #include "SceneElementaryNodeItem.hxx"
 #include "SceneHeaderNodeItem.hxx"
 #include "Scene.hxx"
@@ -561,3 +563,22 @@ QColor SceneLinkItem::getBrushColor()
   return SceneObserverItem::getBrushColor();
 }
 
+// Get the node at the "from" place of the link
+SceneNodeItem* SceneLinkItem::getFromNode() {
+  SceneCtrlPortItem* p = dynamic_cast<SceneCtrlPortItem*>(_from);
+  if (p) {
+    return(p->getParentNode());
+  } else {
+    return(NULL);
+  };
+}
+
+// Get the node at the "to" place of the link
+SceneNodeItem* SceneLinkItem::getToNode() {
+  SceneCtrlPortItem* p = dynamic_cast<SceneCtrlPortItem*>(_to);
+  if (p) {
+    return(p->getParentNode());
+  } else {
+    return(NULL);
+  };
+}

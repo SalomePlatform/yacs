@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef _PROC_HXX_
 #define _PROC_HXX_
 
@@ -64,6 +65,7 @@ namespace YACS
 
       YACS::StatesForNode getNodeState(int numId);
       std::string getInPortValue(int nodeNumId, std::string portName);
+      std::string setInPortValue(std::string nodeName, std::string portName, std::string value);
       std::string getOutPortValue(int nodeNumId, std::string portName);
       std::string getNodeErrorDetails(int nodeNumId);
       std::string getNodeErrorReport(int nodeNumId);

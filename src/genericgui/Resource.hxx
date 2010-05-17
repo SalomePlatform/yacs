@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef _RESOURCE_HXX_
 #define _RESOURCE_HXX_
 
@@ -93,11 +94,6 @@
 
 #define __dragOver       "dragOver"
 
-#define _CtrlPort_Width  "CtrlPort_Width"
-#define _CtrlPort_Height "CtrlPort_Height"
-#define _DataPort_Width  "DataPort_Width"
-#define _DataPort_Height "DataPort_Height"
-
 // Default values
 // --------------
 
@@ -109,6 +105,7 @@
 #define AUTOCOMPUTELINKS        true
 #define SIMPLIFYLINK            true
 #define ENSUREVISIBLEWHENMOVED  true
+#define TABPANELSUP             true
 
 #define EDITEDNODEBRUSHCOLOR    QColor(255, 255, 190)
 #define NORMALNODEBRUSHCOLOR    QColor(230, 235, 255)
@@ -180,11 +177,6 @@
 #define DataPort_hiPen_         QColor( 11, 128,   0)
 
 #define dragOver_               QColor(255,   0,   0)
-
-#define CtrlPort_Width_   85
-#define CtrlPort_Height_  25
-#define DataPort_Width_  100
-#define DataPort_Height_  25
 
 // Define Resource class
 // ---------------------
@@ -288,6 +280,22 @@ namespace YACS {
         static int CtrlPort_Height;
         static int DataPort_Width;
         static int DataPort_Height;
+
+        static int Thickness;
+
+        static int Border_Margin;
+        static int Space_Margin;
+
+        static int Line_Space;
+        static int Line_Width;
+
+        static int Text_DX;
+
+        static int Corner_Margin;
+        static int Header_Height;
+        static int Radius;
+
+        static bool tabPanelsUp;
     };
   }
 }

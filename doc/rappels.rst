@@ -122,11 +122,14 @@ Creating a SALOME application
 A SALOME application is created using the appli_gen.py tool located in the installation of the KERNEL module.  
 This tool builds the application starting from a configuration file in the XML format that describes the list 
 of modules to be used (name, installation path), the file that sets the environment for SALOME pre-requisites 
-and optionally the SALOME examples directory (SAMPLES_SRC).
+and optionally the SALOME examples directory (SAMPLES_SRC) and a catalog of resources.
 
-The following command is used::
+The following command is used:
 
-   python <KERNEL_ROOT_DIR>/bin/salome/appli_gen.py --prefix=<install directory> --config=<configuration file>
+.. code-block:: sh
+
+   python <KERNEL_ROOT_DIR>/bin/salome/appli_gen.py --prefix=<install directory> \
+                               --config=<configuration file>
 
 where <configuration file> is the name of the configuration file and <install directory> is the name of the 
 directory in which the application is to be created.  <KERNEL_ROOT_DIR> indicates the directory in which 
@@ -134,14 +137,19 @@ the KERNEL module is installed.
 
 The configuration file can be created by modifying a copy of the ${KERNEL_ROOT_DIR}/bin/salome/config_appli.xml file.
 
-For example::
+For example:
+
+.. code-block:: xml
 
   <application>
-  <prerequisites path="/data/tmplgls/secher/SALOME_V5/env_products.sh"/>
+  <prerequisites path="/data/SALOME_V5/env_products.sh"/>
+  <resources path="myCata.xml"/>
   <modules>
-     <!-- variable name <MODULE>_ROOT_DIR is built with <MODULE> == name attribute value -->
+     <!-- variable name <MODULE>_ROOT_DIR is built 
+          with <MODULE> == name attribute value -->
      <!-- <MODULE>_ROOT_DIR values is set with path attribute value -->
-     <!-- attribute gui (defaults = yes) indicates if the module has a gui interface -->
+     <!-- attribute gui (defaults = yes) indicates if the module 
+                                          has a gui interface -->
      <module name="KERNEL"       gui="no"  path="/data/SALOME_V5/KERNEL_INSTALL"/>
      <module name="GUI"          gui="no"  path="/data/SALOME_V5/GUI_5"/>
      <module name="MED"                    path="/data/SALOME_V5/MED_5"/>

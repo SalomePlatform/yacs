@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "SceneHeaderItem.hxx"
 #include "SceneHeaderNodeItem.hxx"
 #include "SceneTextItem.hxx"
@@ -44,14 +45,13 @@ SceneHeaderItem::SceneHeaderItem(QGraphicsScene *scene, SceneItem *parent,
   : SceneItem(scene, parent, label)
 {
   YASSERT(_parent);
-  _height = 25;
-  _width = _parent->getInternWidth();
+  _width  = 2*Resource::DataPort_Width - 2*Resource::CtrlPort_Width - Resource::Space_Margin;
+  _height = Resource::CtrlPort_Height;
   _text=0;
   _brushColor   = Resource::Header_brush;
   _hiBrushColor = Resource::Header_hiBrush;
-//   _penColor     = Resource::Header_pen;
-//   _hiPenColor   = Resource::Header_hiPen;
-  _hasNml = false;
+  _penColor     = Resource::Header_pen;
+  _hiPenColor   = Resource::Header_hiPen;
 }
 
 SceneHeaderItem::~SceneHeaderItem()
@@ -68,11 +68,6 @@ void SceneHeaderItem::paint(QPainter *painter,
                             QWidget *widget)
 {
 //   DEBTRACE("SceneHeaderItem::paint");
-  painter->save();
-  painter->setPen(getPenColor());
-  painter->setBrush(getBrushColor());
-  painter->drawRoundRect(QRectF(0, 0, _width, _height), 33*_height/_width, 33);
-  painter->restore();
 }
 
 void SceneHeaderItem::setText(QString label)
@@ -81,8 +76,7 @@ void SceneHeaderItem::setText(QString label)
     _text = new SceneTextItem(_scene,
                               this,
                               label);
-  else
-    _text->setPlainText(label);
+    _text->setPlainTextTrunc(label);                     
 }
 
 void SceneHeaderItem::popupMenu(QWidget *caller, const QPoint &globalPos)
@@ -93,7 +87,7 @@ void SceneHeaderItem::popupMenu(QWidget *caller, const QPoint &globalPos)
 void SceneHeaderItem::adjustGeometry()
 {
   prepareGeometryChange();
-  _width = _parent->getInternWidth() -1;
+  _width = _parent->getWidth() - 2*Resource::Corner_Margin - 2*Resource::Space_Margin - 2*Resource::CtrlPort_Width;
   update();
 }
 
@@ -110,8 +104,8 @@ QColor color = _penColor;
 QColor SceneHeaderItem::getBrushColor()
 {
   QColor color = _brushColor;
-  if (dynamic_cast<SceneHeaderNodeItem*>(getParent()))
-    if (getParent()->getParent()->isSelected())
+  if (dynamic_cast<SceneHeaderNodeItem*>(this))
+    if (getParent()->isSelected())
       color = _hiBrushColor;
   if (_hover)
     color = hoverColor(color);

@@ -140,8 +140,10 @@ with the possibility to choose firstly a catalog type: **Current Session**, **Bu
 with types of nodes belonging to a predefined schema), and secondly - the type of node from the catalog to add it into the active schema. The
 **Current Session** catalog contains all SALOME components with its services.
 
-**Notes:** To add a node from catalog to the schema, drag and drop it. Multiple selection is possible in the Catalog, so you can add several
-nodes to the schema with one drag and drop.
+.. note::
+
+   To add a node from catalog to the schema, drag and drop it. Multiple selection is possible in the Catalog, so you can add several
+   nodes to the schema with one drag and drop.
 
 .. image:: images/functionality_list_24.jpg
   :align: center

@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "SceneBlocItem.hxx"
 #include "Scene.hxx"
 #include "Menus.hxx"
@@ -42,6 +43,8 @@
 #ifndef ND_coord_i
 #define ND_coord_i(n) (n)->u.coord
 #endif
+
+#include "Resource.hxx"
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -315,8 +318,8 @@ void SceneBlocItem::arrangeCanvasNodes(YACS::ENGINE::ComposedNode *cnode)
   SceneItem* sci = QtGuiContext::getQtCurrent()->_mapOfSceneItem[subCompo];
   SceneComposedNodeItem *sceneCompo = dynamic_cast<SceneComposedNodeItem*>(sci);
   YASSERT(sceneCompo);
-  qreal yHead = sceneCompo->getHeaderBottom() + sceneCompo->getMargin() + sceneCompo->getNml();
-  qreal xOffset = sceneCompo->getMargin() + sceneCompo->getNml();
+  qreal yHead = sceneCompo->getHeaderBottom() + Resource::Space_Margin;
+  qreal xOffset = Resource::Space_Margin;
 
   list<Node*> children = cnode->edGetDirectDescendants();
   for (list<Node*>::iterator it = children.begin(); it != children.end(); ++it)
@@ -332,6 +335,8 @@ void SceneBlocItem::arrangeCanvasNodes(YACS::ENGINE::ComposedNode *cnode)
       qreal halfHeight = sci->boundingRect().height()/2.;
 
       sci->setPos(xOffset + xCenter -halfWidth, yHead + yCenter -halfHeight);
+      SceneNodeItem *scni = dynamic_cast<SceneNodeItem*>(sci);
+      if (scni) scni->setExpandedPos(QPointF(xOffset + xCenter -halfWidth, yHead + yCenter -halfHeight));
     }
   sceneCompo->checkGeometryChange();
   if (Scene::_autoComputeLinks)

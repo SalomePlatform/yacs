@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef __DEPLOYMENTTREE_HXX__
 #define __DEPLOYMENTTREE_HXX__
 
@@ -51,6 +52,7 @@ namespace YACS
       std::vector<Container *> getAllCTDefContainers() const;
       std::vector<Container *> getAllRTODefContainers() const;
       std::vector<Task *> getTasksLinkedToComponent(ComponentInstance *comp) const;
+      std::vector<Task *> getTasksLinkedToContainer(Container *cont) const;
       std::vector<ComponentInstance *> getComponentsLinkedToContainer(Container *cont) const;
       //
       bool presenceOfDefaultContainer() const;
@@ -83,6 +85,7 @@ namespace YACS
       std::vector<Container *> getAllCTDefContainers() const;
       std::vector<Container *> getAllRTODefContainers() const;
       std::vector<Task *> getTasksLinkedToComponent(ComponentInstance *comp) const;
+      std::vector<Task *> getTasksLinkedToContainer(Container *cont) const;
       std::vector<ComponentInstance *> getComponentsLinkedToContainer(Container *cont) const;
       //
       bool isNull() const;

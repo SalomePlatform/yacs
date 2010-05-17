@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include <Python.h>
 #include "SALOME_LifeCycleCORBA.hxx"
 #include "SALOME_NamingService.hxx"
@@ -119,6 +120,8 @@ void GuiExecutor::startResumeDataflow(bool initialize)
       DEBTRACE("_procRef init");
     }
 
+  YASSERT(!CORBA::is_nil(_procRef));
+
   if (initialize)
     _procRef->setExecMode(YACS_ORB::STEPBYSTEP);
   else
@@ -136,12 +139,12 @@ void GuiExecutor::startResumeDataflow(bool initialize)
       try
         {
           _procRef->RunFromState(_loadStateFile.c_str());
-	}
+        }
       catch (...)
         {
           DEBTRACE("Runtime error: execution from the loaded state failed")
-	  return;
-	}
+          return;
+        }
     }
 }
 
@@ -444,6 +447,22 @@ std::string GuiExecutor::getContainerLog(YACS::ENGINE::Node* node)
   return msg;
 }
 
+void GuiExecutor::setInPortValue(YACS::ENGINE::DataPort* port, std::string value)
+{
+  DEBTRACE("GuiExecutor::setInPortValue");
+
+  YACS::ENGINE::Node* node = port->getNode();
+  YACS::ENGINE::ComposedNode* rootNode = node->getRootNode();
+
+  std::string nodeName;
+  if(rootNode == node)
+    nodeName = node->getName();
+  else
+    nodeName = rootNode->getChildName(node);
+
+  std::string msg = _procRef->setInPortValue(nodeName.c_str(), port->getName().c_str(), value.c_str());
+}
+
 bool GuiExecutor::event(QEvent *e)
 {
   DEBTRACE("GuiExecutor::event");
@@ -470,8 +489,7 @@ bool GuiExecutor::event(QEvent *e)
             _isSuspended = true;
         }
       SubjectProc *sproc = _context->getSubjectProc();
-      sproc->setExecState(execState);
-//       theRunMode->onNotifyNextSteps(nextSteps);
+      sproc->update(YACS::HMI::UPDATEPROGRESS, execState, sproc);
     }
   else // --- Node notification
     {
@@ -508,7 +526,7 @@ bool GuiExecutor::event(QEvent *e)
           port->setExecValue(val);
           port->update(YACS::HMI::UPDATEPROGRESS, 0, port);
         }
-      snode->setExecState(state);
+      snode->update(YACS::HMI::UPDATEPROGRESS, state, snode);
    }
 
   return true;

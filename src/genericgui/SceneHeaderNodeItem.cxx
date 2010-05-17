@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "SceneHeaderNodeItem.hxx"
 #include "SceneComposedNodeItem.hxx"
 #include "SceneProcItem.hxx"
@@ -26,6 +27,7 @@
 #include "Scene.hxx"
 
 #include "QtGuiContext.hxx"
+#include "GuiEditor.hxx"
 #include "Resource.hxx"
 #include "Menus.hxx"
 #include <QGraphicsSceneHoverEvent>
@@ -45,27 +47,26 @@ SceneHeaderNodeItem::SceneHeaderNodeItem(QGraphicsScene *scene, SceneItem *paren
                                          QString label)
   : SceneHeaderItem(scene, parent, label)
 {
+  _width  = 2*Resource::Corner_Margin + 2*Resource::DataPort_Width + Resource::Space_Margin;
+  _height = Resource::Header_Height;
+  _maxPorts = 0;
+
   _header = 0;
   _controlIn = 0;
   _controlOut = 0;
   _label = "H_" + _label;
-
-  _header = new SceneHeaderItem(_scene,
-                                this,
-                                "header_"+_label);
-  _header->setText(label);
-
-  QPointF topLeft(_margin, _margin);
-  _header->setTopLeft(topLeft);
   _hasHeader = true;
-  _controlIn  = new SceneCtrlInPortItem(_scene,
-                                        this,
-                                        "Ctrl_I");
-  autoPosControl(_controlIn);
-  _controlOut = new SceneCtrlOutPortItem(_scene,
-                                         this,
-                                         "Ctrl_O");
-  autoPosControl(_controlOut);
+
+  _controlIn = new SceneCtrlInPortItem(_scene, this, "in");
+  _controlIn->setTopLeft(QPointF(Resource::Corner_Margin, Resource::Corner_Margin));
+
+  _header = new SceneHeaderItem(_scene, this, "header_"+_label);
+  _header->setText(label);
+  _header->setTopLeft(QPointF(Resource::Corner_Margin + Resource::CtrlPort_Width + Resource::Space_Margin, Resource::Corner_Margin));
+
+  _controlOut = new SceneCtrlOutPortItem(_scene, this, "out");
+  _controlOut->setTopLeft(QPointF(Resource::Corner_Margin + 2*Resource::DataPort_Width + Resource::Space_Margin - Resource::CtrlPort_Width, Resource::Corner_Margin));
+
   if (QtGuiContext::getQtCurrent()->isEdition())
     _brushColor = Resource::normalNodeBrushColor;
   else
@@ -86,16 +87,48 @@ void SceneHeaderNodeItem::paint(QPainter *painter,
                                 const QStyleOptionGraphicsItem *option,
                                 QWidget *widget)
 {
-//   DEBTRACE("SceneHeaderNodeItem::paint");
+  //DEBTRACE("SceneHeaderNodeItem::paint");
   painter->save();
-  painter->setPen(getPenColor());
-  painter->setBrush(getBrushColor());
-  painter->drawRect(QRectF(0, 0, _width, _height));
-  painter->setBrush(getValidColor(_isValid));
-  painter->drawEllipse(QRectF((_width - SceneCtrlPortItem::getPortHeight())/2,
-                              getHeaderBottom() + _margin,
-                              SceneCtrlPortItem::getPortHeight(),
-                              SceneCtrlPortItem::getPortHeight()));
+
+  int x = Resource::Border_Margin + 1;
+  int y = Resource::Header_Height - Resource::Line_Space;
+  int w = Resource::Corner_Margin + 2*Resource::DataPort_Width + 2*Resource::Space_Margin;
+  if (_parent->getWidth() > w) w = _parent->getWidth() - Resource::Border_Margin;
+  QPen pen(getPenColor());
+  pen.setWidth(Resource::Line_Width);
+  painter->setPen(pen);
+  painter->drawLine(x, y, w, y);
+
+  x = Resource::Corner_Margin + Resource::CtrlPort_Width + Resource::Space_Margin;
+  y = Resource::Corner_Margin;
+  w = w - 2*Resource::CtrlPort_Width - 3*Resource::Space_Margin - Resource::Corner_Margin;
+  int h = Resource::CtrlPort_Height;
+  pen.setWidth(Resource::Thickness);
+  painter->setPen(pen);
+  
+  SceneNodeItem* father = dynamic_cast<SceneNodeItem*>(_parent);
+  bool expanded = (father && father->isExpanded());
+  QColor baseColor = getBrushColor();
+  if (expanded)
+    painter->setBrush(baseColor);
+  else
+    {
+       int h, s, v, a, h2;
+       baseColor.getHsv(&h, &s, &v, &a);
+       DEBTRACE("h="<<h<<" s="<<s<<" v="<<v);
+       h2 = h+60;
+       if (h>359) h2 = h2-359;
+       QLinearGradient gradient;
+       gradient.setCoordinateMode(QGradient::ObjectBoundingMode);
+       gradient.setColorAt(0, baseColor.darker(200));
+       //gradient.setColorAt(1, baseColor.lighter(150));
+       //gradient.setColorAt(0, QColor::fromHsv(h-60, s, v, a));
+       gradient.setColorAt(1, QColor::fromHsv(h2, s, v, a));
+       QBrush brush(gradient);
+       painter->setBrush(brush);
+    }
+  painter->drawRoundedRect(QRect(x, y, w, h), Resource::Radius, Resource::Radius);
+
   painter->restore();
 }
 
@@ -106,53 +139,84 @@ void SceneHeaderNodeItem::setText(QString label)
 
 qreal SceneHeaderNodeItem::getHeaderBottom() const
 {
-  qreal bottom = 0;
-  if (_hasHeader)
-    bottom = childBoundingRect(_header).bottom();
-  return bottom;
+  if (_hasHeader) {
+    return Resource::Header_Height + _maxPorts * (Resource::DataPort_Height + Resource::Space_Margin);
+  } else {
+    return 0;
+  };
 }
 
 void SceneHeaderNodeItem::autoPosControl(AbstractSceneItem *item)
 {
-  SceneCtrlInPortItem* inPortItem = dynamic_cast<SceneCtrlInPortItem*>(item);
-  bool isInPort = inPortItem;
-
-  qreal xLeft = _margin;
-  if (!isInPort) xLeft += getInternWidth() - SceneCtrlPortItem::getPortWidth();
-
-  qreal yTop  = getHeaderBottom() + _margin;
-
-  //DEBTRACE("left, top " << xLeft  << " " << yTop);
-  QPointF topLeft(xLeft, yTop);
-  item->setTopLeft(topLeft);
-  //adaptComposedNode(getHeaderBottom() + _margin);
 }
 
 void SceneHeaderNodeItem::autoPosNewPort(AbstractSceneItem *item)
 {
+  DEBTRACE("SceneHeaderNodeItem::autoPosNewPort");
   SceneInPortItem* inPortItem = dynamic_cast<SceneInPortItem*>(item);
-  bool isInPort = (inPortItem != 0);
 
-  int nbPorts = 0;
-  qreal xLeft = _margin;
-  if (!isInPort)
-    {
-      xLeft += getInternWidth() - ScenePortItem::getPortWidth() -1;
-      nbPorts = _outPorts.size();
-      _outPorts.push_back(dynamic_cast<SceneOutPortItem*>(item));
-    }
-  else
-    {
-      nbPorts = _inPorts.size();
-      _inPorts.push_back(inPortItem);
-    }
-  qreal yTop  = getHeaderBottom() +ScenePortItem::getPortHeight() + 2*_margin;
-  qreal deltaY = ScenePortItem::getPortHeight() + _margin;
+  int nbPorts;
+  qreal xLeft;
+  if (inPortItem) {
+    xLeft = Resource::Corner_Margin;
+    nbPorts = _inPorts.size();
+    _inPorts.push_back(inPortItem);
+  } else {
+    if (_parent->getWidth() > (2*Resource::Corner_Margin + 2*Resource::DataPort_Width + Resource::Space_Margin)) {
+      xLeft = _parent->getWidth() - Resource::Corner_Margin - Resource::DataPort_Width;
+    } else {
+      xLeft = Resource::Corner_Margin + Resource::DataPort_Width + Resource::Space_Margin;
+    };
+    nbPorts = _outPorts.size();
+    _outPorts.push_back(dynamic_cast<SceneOutPortItem*>(item));
+  };
+  qreal yTop   = Resource::Header_Height;
+  qreal deltaY = Resource::DataPort_Height + Resource::Space_Margin;
   yTop += nbPorts * deltaY;
+  if (nbPorts >=_maxPorts) {
+    _maxPorts = nbPorts+1;
+  };
   //DEBTRACE("left, top " << xLeft  << " " << yTop);
   QPointF topLeft(xLeft, yTop);
   item->setTopLeft(topLeft);
-  adaptComposedNode(deltaY);
+  adaptComposedNode(dynamic_cast<SceneItem*>(item), deltaY);
+}
+
+void SceneHeaderNodeItem::reorganizePorts(shownState ss)
+{
+  DEBTRACE("SceneHeaderNodeItem::reorganizePorts() " << ss << " " << _label.toStdString());
+
+  qreal yTop;
+  qreal href = Resource::Header_Height;
+  bool isShown = (ss != shrinkHidden);
+  if (!isShown) href = Resource::Corner_Margin;
+
+std::list<SceneInPortItem*>::iterator iti = _inPorts.begin();
+  int nbPorts = 0;
+  for (; iti != _inPorts.end(); ++iti)
+    {
+      yTop = href + nbPorts * (Resource::DataPort_Height + Resource::Space_Margin);
+      QPointF topLeft(Resource::Corner_Margin, yTop);
+      (*iti)->setTopLeft(topLeft);
+      if (isShown) nbPorts++; // otherwise (shrink from ancestor) put all ports at the same position
+    }
+
+  std::list<SceneOutPortItem*>::iterator ito = _outPorts.begin();
+  nbPorts = 0;
+  qreal xLeft;
+  if (ss == expandShown) {
+    xLeft = _parent->getWidth() - Resource::Corner_Margin - Resource::DataPort_Width;
+  } else {
+    xLeft = Resource::Corner_Margin + Resource::DataPort_Width + Resource::Space_Margin;
+  };
+  for (; ito != _outPorts.end(); ++ito)
+    {
+      yTop = href + nbPorts * (Resource::DataPort_Height + Resource::Space_Margin);
+      QPointF topLeft(xLeft, yTop);
+      (*ito)->setTopLeft(topLeft);
+      if (isShown) nbPorts++; // otherwise (shrink from ancestor) put all ports at the same position
+    }
+  //updateLinks();
 }
 
 void SceneHeaderNodeItem::popupMenu(QWidget *caller, const QPoint &globalPos)
@@ -164,8 +228,9 @@ void SceneHeaderNodeItem::popupMenu(QWidget *caller, const QPoint &globalPos)
 
 void SceneHeaderNodeItem::adjustGeometry()
 {
+  DEBTRACE("SceneHeaderNodeItem::adjustGeometry() " << _label.toStdString());
   prepareGeometryChange();
-  _width = _parent->getInternWidth() -1;
+  _width = _parent->getWidth();
   if (_header) _header->adjustGeometry();
   adjustPosPorts();
   update();
@@ -173,36 +238,38 @@ void SceneHeaderNodeItem::adjustGeometry()
 
 void SceneHeaderNodeItem::adjustPosPorts()
 {
-  if (_controlOut) autoPosControl(_controlOut);
+  SceneNodeItem* father = dynamic_cast<SceneNodeItem*>(_parent);
+  YASSERT(father);
+  shownState ss = father->getShownState();
+  if (_controlOut)
+    {
+      int x = Resource::Corner_Margin + 2*Resource::DataPort_Width + Resource::Space_Margin;
+      if ((ss == expandShown)  && (_parent->getWidth() > (x + Resource::Corner_Margin)))
+        x = _parent->getWidth() - Resource::Corner_Margin;
+    _controlOut->setTopLeft(QPointF(x - Resource::CtrlPort_Width, Resource::Corner_Margin));
+  };
+  reorganizePorts(ss);
 }
 
 QRectF SceneHeaderNodeItem::getMinimalBoundingRect() const
 {
-  qreal width = 3*_margin;
-  if (_inPorts.size())
-    width += ScenePortItem::getPortWidth();
-  else
-    width += SceneCtrlPortItem::getPortWidth()
-      + SceneCtrlPortItem::getPortHeight() + 2*_margin;
-  if (_outPorts.size())
-    width += ScenePortItem::getPortWidth();
-  else
-    width += SceneCtrlPortItem::getPortWidth();
-  qreal height = getHeaderBottom() + ScenePortItem::getPortHeight() + 2*_margin;
-  int nbPorts = _inPorts.size();
+  qreal width  = 2*Resource::Corner_Margin + 2*Resource::DataPort_Width + Resource::Space_Margin;
+  qreal height = Resource::Header_Height + Resource::Border_Margin;
+  int nbPorts  = _inPorts.size();
   if (_outPorts.size() > nbPorts) nbPorts = _outPorts.size();
-  if (nbPorts) height += nbPorts*(ScenePortItem::getPortHeight() + _margin);
+  if (nbPorts) height += nbPorts*(Resource::DataPort_Height + Resource::Space_Margin);
   //DEBTRACE(nbPorts << " " << width << " " << height);
   return QRectF(x(), y(), width, height);
 }
 
-void SceneHeaderNodeItem::adaptComposedNode(qreal deltaY)
+void SceneHeaderNodeItem::adaptComposedNode(SceneItem* port, qreal deltaY)
 {
+  DEBTRACE("SceneHeaderNodeItem::adaptComposedNode " << deltaY);
   QPointF oldPos(x(),y() - deltaY);
   if (_parent)
     {
       if (SceneComposedNodeItem *bloc = dynamic_cast<SceneComposedNodeItem*>(_parent))
-        bloc->collisionResolv(this, oldPos);
+        bloc->collisionResolv(port, oldPos);
       //_parent->checkGeometryChange();
     }
 }
@@ -296,9 +363,14 @@ void SceneHeaderNodeItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
   event->ignore();
 }
 
-QColor SceneHeaderNodeItem::getValidColor(bool isValid)
+void SceneHeaderNodeItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 {
-  if (isValid)
+  event->ignore();
+}
+
+QColor SceneHeaderNodeItem::getValidColor()
+{
+  if (_isValid)
     return _sc;
   else
     return Resource::invalidNodeColor;

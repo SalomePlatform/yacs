@@ -25,7 +25,9 @@ We will then add complements on:
  - the definition of datastream connections
  - the definition of the remaining elementary nodes.
 
-A calculation scheme is defined using the XML proc tag.  The simplest calculation scheme is as follows::
+A calculation scheme is defined using the XML proc tag.  The simplest calculation scheme is as follows:
+
+.. code-block:: xml
 
   <proc>
   </proc>
@@ -35,7 +37,9 @@ It contains no definition and it does nothing.
 Definition of data types
 ---------------------------------
 It is impossible to define basic types other than existing types.  All basic types are predefined by YACS.  
-However, aliases can be defined.  For example, an alias for the double type can be written::
+However, aliases can be defined.  For example, an alias for the double type can be written:
+
+.. code-block:: xml
 
   <type name="mydble" kind="double"/>
 
@@ -43,12 +47,16 @@ we can then write mydble instead of double.
 
 Object reference
 '''''''''''''''''''''
-The simplest way of defining an object reference type is::
+The simplest way of defining an object reference type is:
+
+.. code-block:: xml
 
   <objref name="mesh"/>
 
 The name attribute of the objref tag gives the name of the new type.  
-The complete form to define this type would be::
+The complete form to define this type would be:
+
+.. code-block:: xml
 
   <objref name="mesh" id="IDL:mesh:1.0/>
 
@@ -56,13 +64,17 @@ where id is the CORBA repository id of the corresponding SALOME object.  This at
 that is IDL:<type name>:1.0.
 
 All that is necessary to define an object reference type derived from another type is to add the name of the basic type(s).
-For example, for a derived mesh type, we can write::
+For example, for a derived mesh type, we can write:
+
+.. code-block:: xml
 
   <objref name="refinedmesh">
     <base>mesh</base>
   </objref>
 
-If there are several basic types, we will write::
+If there are several basic types, we will write:
+
+.. code-block:: xml
 
   <objref name="refinedmesh">
     <base>mesh</base>
@@ -70,30 +82,40 @@ If there are several basic types, we will write::
   </objref>
 
 As for CORBA, we can use namespaces to define types.  
-For example, if the SALOME mesh type is defined in the myns namespace, we will write::
+For example, if the SALOME mesh type is defined in the myns namespace, we will write:
+
+.. code-block:: xml
 
   <objref name="myns/mesh"/>
 
 Sequence
 ''''''''''
-To define a double sequence, we will write::
+To define a double sequence, we will write:
+
+.. code-block:: xml
 
   <sequence name="myseqdble" content="double"/>
 
 All attributes of the sequence tag are compulsory.  The name attribute gives the name of the new type.  
 The content attribute gives the name of the type of elements in the sequence.  
-A sequence of sequences can be defined by::
+A sequence of sequences can be defined by:
+
+.. code-block:: xml
 
   <sequence name="myseqseqdble" content="myseqdble"/>
 
-We can also define a sequence of object references by::
+We can also define a sequence of object references by:
+
+.. code-block:: xml
 
   <sequence name="myseqmesh" content="refinedmesh"/>
  
 Structure
 '''''''''''''
 A structure is defined using a struct tag with member sub-tags for the definition of structure members.  
-The following is an example definition::
+The following is an example definition:
+
+.. code-block:: xml
 
     <struct name="S1" >
       <member name="x" type="double"/>
@@ -111,7 +133,9 @@ Definition of elementary calculation nodes
 Python script node
 '''''''''''''''''''''
 A Python script inline node is defined using the inline tag with the script sub-tag as in 
-the following example::
+the following example:
+
+.. code-block:: xml
 
     <inline name="node1" >
       <script>
@@ -123,7 +147,9 @@ the following example::
 The name attribute (compulsory) of the inline tag is the node name. The Python script is given using the code sub-tag.  As many code 
 lines as necessary are added.  A CDATA section can be used if the script contains unusual characters.  This also makes it possible 
 to assure that only one code tag is used for a complete script.  
-For example::
+For example:
+
+.. code-block:: xml
 
   <script>
     <code><![CDATA[a=0
@@ -138,7 +164,9 @@ with the outport sub-tag.  This tag has two compulsory attributes:  name that gi
 data type.  This type must already be defined.  
 To add an input data port, the import tag will be used instead of the output tag.
 
-An example node with input and output ports::
+An example node with input and output ports:
+
+.. code-block:: xml
 
          <inline name="node1" >
            <script>
@@ -152,7 +180,9 @@ The node now receives p1 as the input variable, adds 10 to it and exports it as 
 
 Python function node
 ''''''''''''''''''''''''
-A Python function node is defined using the inline tag and the function sub-tag as in the following example::
+A Python function node is defined using the inline tag and the function sub-tag as in the following example:
+
+.. code-block:: xml
 
     <inline name="node1" >
       <function name="f">
@@ -172,7 +202,9 @@ SALOME service node
 ''''''''''''''''''''''''
 As stated in :ref:`principes`, there are two ways of describing a SALOME service node.
 
-The first definition form uses the service tag and the component and method sub-tags as in the following example::
+The first definition form uses the service tag and the component and method sub-tags as in the following example:
+
+.. code-block:: xml
 
     <service name="node4" >
       <component>AddComponent</component>
@@ -187,7 +219,9 @@ The compulsory name attribute of the service tag gives the node name.  The compo
 component to be used and method gives the name of the service to be executed.  The objective in this case is to execute 
 the AddComponent (Add component) service that is located in SALOME example components.
 
-The second definition form uses the service tag and the node and method sub-tags as in the following example::
+The second definition form uses the service tag and the node and method sub-tags as in the following example:
+
+.. code-block:: xml
 
   <service name="node5" >
     <node>node4</node>
@@ -204,7 +238,9 @@ In all cases, the name that will be used is the relative node name, considering 
 
 Control link
 ''''''''''''''''''
-A control link is defined using the control tag as in the following example::
+A control link is defined using the control tag as in the following example:
+
+.. code-block:: xml
 
  <control> 
    <fromnode>node1</fromnode> 
@@ -215,7 +251,9 @@ The fromnode sub-tag gives the name of the node that will be executed before the
 
 Dataflow link
 ''''''''''''''''
-A dataflow link is defined using the datalink tag as in the following example::
+A dataflow link is defined using the datalink tag as in the following example:
+
+.. code-block:: xml
 
   <datalink> 
     <fromnode>node1</fromnode> <fromport>p1</fromport>
@@ -229,14 +267,18 @@ variable p1 of node node1 will be sent to node node2 and used as an input variab
 Data link
 ''''''''''
 A data link is defined using the same datalink tag, but adding the control attribute and setting the value equal to false.
-Example::
+Example:
+
+.. code-block:: xml
 
   <datalink control="false"> 
     <fromnode>node1</fromnode> <fromport>p1</fromport>
     <tonode>node2</tonode> <toport>p1</toport>
   </datalink>
 
-Therefore the above dataflow link can also be written as follows::
+Therefore the above dataflow link can also be written as follows:
+
+.. code-block:: xml
 
   <control> 
     <fromnode>node1</fromnode> 
@@ -255,7 +297,9 @@ An input data port can be initialised with constants by using the parameter tag,
 The toport tag gives the name of the input port of the node with the name tonode to be initialised.  
 The initialisation constant is given by the value tag. 
 The constant is encoded using the XML-RPC coding convention (http://www.xmlrpc.com/).
-Example initialisation::
+Example initialisation:
+
+.. code-block:: xml
 
     <parameter>
       <tonode>node1</tonode> <toport>p1</toport>
@@ -274,28 +318,30 @@ double 23.                      ``<double>23</double>``
 integer 0                      ``<int>0</int>``
 boolean true                   ``<boolean>1</boolean>``
 file                           ``<objref>/tmp/forma01a.med</objref>``
-list of integers               :: 
+list of integers               .. code-block:: xml 
 
-                               <array> <data>
-                               <value><int>1</int> </value>
-                               <value><int>0</int> </value>
-                               </data> </array>
-structure (2 members)          ::
+                                 <array> <data>
+                                 <value><int>1</int> </value>
+                                 <value><int>0</int> </value>
+                                 </data> </array>
+structure (2 members)          .. code-block:: xml
 
-                               <struct> 
-                               <member> <name>s</name>
-                               <value><int>1</int> </value>
-                               </member>
-                               <member> <name>t</name>
-                               <value><int>1</int> </value>
-                               </member>
-                               </struct>
+                                 <struct> 
+                                 <member> <name>s</name>
+                                 <value><int>1</int> </value>
+                                 </member>
+                                 <member> <name>t</name>
+                                 <value><int>1</int> </value>
+                                 </member>
+                                 </struct>
 
 ============================ ==============================================
 
 First example starting from previous elements
 ------------------------------------------------------
-A complete calculation scheme can be defined with definitions of nodes, connections and initialisations. ::
+A complete calculation scheme can be defined with definitions of nodes, connections and initialisations.
+
+.. code-block:: xml
 
   <proc>
     <inline name="node1" >
@@ -354,7 +400,9 @@ All the previous definition elements (except for data types) can be put into a B
 A Block can be created simply by using a bloc tag with a compulsory name attribute, the name of which will be the block name.  
 The next step is to add definitions in this tag to obtain a composite node that is a Block.
 
-The following is an example of a Block that uses part of the above example::
+The following is an example of a Block that uses part of the above example:
+
+.. code-block:: xml
 
   <bloc name="b">
     <inline name="node1" >
@@ -393,7 +441,9 @@ use the value given in its input port named nsteps.  The forloop tag must contai
 that can be an elementary node or a composite node.  Forloops can be nested on several levels, for example.  If we would like to have 
 more than one calculation node in the ForLoop, a Block will have to be used as the internal node.
 
-Consider an example::
+Consider an example:
+
+.. code-block:: xml
 
     <forloop name="l1" nsteps="5">
       <inline name="node2" >
@@ -410,7 +460,9 @@ The rules to be respected to create links are the same as for the blocks.  To ma
 to connect an output port of an internal node with an input port of this internal node.  This is done using a data link that is 
 defined in the context of the Forloop node.
 
-The following example applies to looping on port p1::
+The following example applies to looping on port p1:
+
+.. code-block:: xml
 
   <forloop name="l1" nsteps="5">
       <inline name="node2" >
@@ -426,7 +478,9 @@ The following example applies to looping on port p1::
       </datalink>
   </forloop>
 
-If the number of steps in the loop is calculated, the nsteps input port of the loop will be used as in the following example::
+If the number of steps in the loop is calculated, the nsteps input port of the loop will be used as in the following example:
+
+.. code-block:: xml
 
     <inline name="n" >
       <script>
@@ -458,7 +512,9 @@ WhileLoop
 A WhileLoop is defined using the while tag.  It has a single compulsory attribute “name”, that carries the node name.  
 The input port with name “condition” must be connected for the loop to be valid.
 
-The following is an example of a While loop that increments the variable p1 until it exceeds the value 40::
+The following is an example of a While loop that increments the variable p1 until it exceeds the value 40:
+
+.. code-block:: xml
 
   <while name="l1" >
     <bloc name="b">
@@ -496,7 +552,9 @@ nbranch is used to fix the number of parallel branches that the loop will manage
 data port of the loop named "nbBranches" must be connected.  
 The foreach tag must contain the definition of one and only one internal node (elementary or composite).
 
-The following is a minimal example of the ForEach loop::
+The following is a minimal example of the ForEach loop:
+
+.. code-block:: xml
 
     <inline name="node0" >
       <script>
@@ -545,7 +603,9 @@ A Switch node is defined with the switch tag.  It has a single compulsory name a
 Each case is defined with the case sub-tag.  The default case is defined with the default sub-tag.  
 The case tag has a compulsory id attribute that must be an integer.  The default tag has no attribute.
 
-A minimal switch example::
+A minimal switch example:
+
+.. code-block:: xml
 
     <inline name="n" >
         <script>
@@ -591,7 +651,9 @@ It can have the attribute **nbranch** or an input port **nbBranches** to define 
 The OptimizerLoop ports (**nbBranches**, **FileNameInitAlg**, **SmplPrt** and **retPortForOutPool**) need not be defined as they
 are already defined at the creation of the node.
 
-A minimal OptimizerLoop example::
+A minimal OptimizerLoop example:
+
+.. code-block:: xml
 
     <optimizer name="b1" nbranch="1" lib="myalgo2.py" entry="async" >
       <inline name="node2" >
@@ -623,7 +685,9 @@ Constraints on placement of the container are specified using properties defined
 This tag has two compulsory attributes, the name and the value, that give the name of the constraint and its value in the 
 form of a character string.
 
-The following is an example of a container defined by the graphic user interface::
+The following is an example of a container defined by the graphic user interface:
+
+.. code-block:: xml
 
    <container name="DefaultContainer">
      <property name="container_name" value="FactoryServer"/>
@@ -642,7 +706,9 @@ Once containers have been defined, SALOME components can be placed on this conta
 This information simply has to be added into the definition of the SALOME service node using the load sub-tag.  
 This tag has a single compulsory attribute named container that gives the name of the container on which the SALOME component will be located.
 
-If the SALOME service defined above is to be placed on the DefaultContainer container, we will write::
+If the SALOME service defined above is to be placed on the DefaultContainer container, we will write:
+
+.. code-block:: xml
 
     <service name="node4" >
       <component>AddComponent</component>
@@ -662,7 +728,9 @@ However, they will only really be useful for SALOME service nodes.
 A property is defined by adding a property sub-tag in the definition of a node.  
 The property tag has 2 compulsory attributes, name and value, that carry the name of the property and its value in the form of a character string.
 
-Example with a SALOME service node::
+Example with a SALOME service node:
+
+.. code-block:: xml
 
     <service name="node4" >
       <component>AddComponent</component>
@@ -687,7 +755,9 @@ The property sub-tag is used with its two attributes name and value to define a 
 See :ref:`calcium` for a list of possible properties.
 
 The following gives an example definition of the SALOME service node with datastream ports.  It is the DSCCODC component 
-that can be found in the DSCCODES module in the EXAMPLES base.  Datastream ports are of the integer type with time dependence. ::
+that can be found in the DSCCODES module in the EXAMPLES base.  Datastream ports are of the integer type with time dependence.
+
+.. code-block:: xml
 
     <service name="node1" >
       <component>DSCCODC</component>
@@ -710,7 +780,7 @@ The following is a more complete example with parameters set for datastream link
 integer type datastream ports with time dependency (TIME_DEPENDENCY).  
 The datastream connections use an explicit time scheme (TI_SCHEM).
 
-::
+.. code-block:: xml
 
     <service name="node1" >
       <component>DSCCODC</component>
@@ -757,7 +827,9 @@ It is defined using the same sub-tags as for the Python function node:  function
 and outport to define its input and output data ports.  
 The placement on a container is defined using the load sub-tag as for the SALOME service node.
 
-The following is an example of a call to the PYHELLO component from a SalomePython node::
+The following is an example of a call to the PYHELLO component from a SalomePython node:
+
+.. code-block:: xml
 
     <sinline name="node1" >
       <function name="f">
@@ -788,7 +860,9 @@ Node data are defined using the parameter sub-tag.  This tag has two compulsory 
 the data name and its type respectively.  The initial value of the data is supplied by the value sub-tag of the parameter tag 
 using the XML-RPC coding (see :ref:`initialisation`).
 
-The following is an example of a DataIn node that defines two double type data (b and c) and a file type data (f)::
+The following is an example of a DataIn node that defines two double type data (b and c) and a file type data (f):
+
+.. code-block:: xml
 
     <datanode name="a">
       <parameter name="f" type="file">
@@ -809,7 +883,9 @@ name given by the attribute.  Otherwise, the file will be a temporary file usual
 
 The following is an example of a DataOut node that defines 5 results (a, b, c, d, f) of different types (double, int, 
 string, doubles vector, file) and writes the corresponding values in the g.data file.  
-The result file will be copied into the local file myfile::
+The result file will be copied into the local file myfile:
+
+.. code-block:: xml
 
         <outnode name="out" ref="g.data">
           <parameter name="a" type="double" />
@@ -830,7 +906,9 @@ path in the study tree structure.
 
 The following is an example of a StudyIn node that defines 2 data (b and c) with types GEOM_Object and Boolean.  It is assumed 
 that SALOME has loaded the study (with StudyID 1) into memory.  Data b is referenced by a SALOME Entry.  
-The data c is referenced by a path in the study tree structure. ::
+The data c is referenced by a path in the study tree structure.
+
+.. code-block:: xml
 
     <datanode name="s" kind="study" >
       <property name="StudyID" value="1" />
@@ -850,7 +928,9 @@ give the data name and type respectively.  The ref attribute gives the entry int
 a path in the study tree structure.
 
 The following gives an example of the StudyOut node that defines 2 results (a and b) of the GEOM_Object type.  The study used has 
-the studyId 1.  The complete study is saved in the study1.hdf file at the end of the calculation::
+the studyId 1.  The complete study is saved in the study1.hdf file at the end of the calculation:
+
+.. code-block:: xml
 
    <outnode name="o" kind="study" ref="stud1.hdf">
      <property name="StudyID" value="1"/>

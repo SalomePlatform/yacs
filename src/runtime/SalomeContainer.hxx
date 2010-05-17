@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef __SALOMECONTAINER_HXX__
 #define __SALOMECONTAINER_HXX__
 
@@ -52,7 +53,7 @@ namespace YACS
       void checkCapabilityToDealWith(const ComponentInstance *inst) const throw (Exception);
       virtual void setProperty(const std::string& name, const std::string& value);
       virtual void addComponentName(std::string name);
-      virtual CORBA::Object_ptr loadComponent(const ComponentInstance *inst);
+      virtual CORBA::Object_ptr loadComponent(ComponentInstance *inst);
     protected:
 #ifndef SWIG
       virtual ~SalomeContainer();

@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,10 +16,12 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "EditionElementaryNode.hxx"
 #include "ValueDelegate.hxx"
 #include "QtGuiContext.hxx"
 
+#include "Proc.hxx"
 #include "Port.hxx"
 #include "DataPort.hxx"
 #include "TypeCode.hxx"
@@ -202,6 +204,9 @@ void EditionElementaryNode::onCommitData(QWidget *editor)
     {
       DEBTRACE(strval);
        isOk = sdp->setValue(strval);
+
+      GuiExecutor* executor = QtGuiContext::getQtCurrent()->getGuiExecutor();
+      if (executor) executor->setInPortValue(sdp->getPort(), strval);
     }
 
   else // --- YLabel

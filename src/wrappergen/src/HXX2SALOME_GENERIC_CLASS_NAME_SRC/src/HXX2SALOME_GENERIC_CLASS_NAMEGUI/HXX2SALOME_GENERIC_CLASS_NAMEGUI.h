@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  HXX2SALOME_GENERIC_CLASS_NAMEGUI : HXX2SALOME_GENERIC_CLASS_NAME component GUI implemetation 
 //
 #ifndef _HXX2SALOME_GENERIC_CLASS_NAMEGUI_H_

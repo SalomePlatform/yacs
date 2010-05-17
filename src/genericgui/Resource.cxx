@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -115,13 +115,29 @@ QColor Resource::DataPort_hiPen         = DataPort_hiPen_;
 
 QColor Resource::dragOver               = dragOver_;
 
-// Statics for node parameters
-// ---------------------------
+// Statics for geometry values for nodes
+// -------------------------------------
 
-int Resource::CtrlPort_Width  = CtrlPort_Width_ ;
-int Resource::CtrlPort_Height = CtrlPort_Height_;
-int Resource::DataPort_Width  = DataPort_Width_ ;
-int Resource::DataPort_Height = DataPort_Height_;
+int Resource::CtrlPort_Width  = 24;
+int Resource::CtrlPort_Height = 20;
+int Resource::DataPort_Width  = 72;
+int Resource::DataPort_Height = 25;
+
+int Resource::Thickness       =  1;
+
+int Resource::Border_Margin   =  4;
+int Resource::Space_Margin    =  2;
+
+int Resource::Line_Space      =  2;
+int Resource::Line_Width      =  2;
+
+int Resource::Text_DX         =  3;
+
+int Resource::Corner_Margin   = ( Resource::Border_Margin + Resource::Space_Margin );
+int Resource::Header_Height   = ( Resource::Corner_Margin + Resource::CtrlPort_Height + Resource::Line_Space + Resource::Line_Width + Resource::Line_Space );
+int Resource::Radius          =  3;
+
+bool Resource::tabPanelsUp = TABPANELSUP;
 
 // Constructor
 // -----------

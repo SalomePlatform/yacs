@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "Node.hxx"
 #include "InputPort.hxx"
 #include "OutputPort.hxx"
@@ -657,4 +658,12 @@ std::string Node::getStateName(YACS::StatesForNode state)
 void Node::shutdown()
 {
   std::cerr << "Node::shutdown" << std::endl;
+}
+
+//! Clean the node in case of not clean exit
+/*!
+ * This method should be called on a control-C or sigterm
+ */
+void Node::cleanNodes()
+{
 }

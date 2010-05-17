@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef _SWITCHPARSERS_HXX_
 #define _SWITCHPARSERS_HXX_
 
@@ -61,6 +62,7 @@ struct casetypeParser:parser
   virtual void sinline (ENGINE::ServiceInlineNode* const& n);
   virtual void service (ENGINE::ServiceNode* const& n);
   virtual void server (ENGINE::ServerNode* const& n);
+  virtual void remote (ENGINE::InlineNode* const& n);
   virtual void node (ENGINE::InlineNode* const& n);
   virtual void forloop (ENGINE::ForLoop* const& n);
   virtual void foreach (ENGINE::ForEachLoop* const& n);
@@ -105,7 +107,7 @@ struct switchtypeParser:parser
 namespace YACS
 {
 
-  static std::string switch_t3[]={"inline","sinline","service","server","node","forloop","foreach","while","switch","bloc",""};
+  static std::string switch_t3[]={"inline","sinline","service","server", "remote", "node","forloop","foreach","while","switch","bloc",""};
 
   void casetypeParser::buildAttr(const XML_Char** attr)
     {
@@ -160,6 +162,13 @@ namespace YACS
       currentProc->serviceMap[fullname]=n;
     }
   void casetypeParser::server (ENGINE::ServerNode* const& n)
+    {
+      _cnode=n;
+      std::string fullname=currentProc->names.back()+ n->getName();
+      currentProc->nodeMap[fullname]=n;
+      currentProc->inlineMap[fullname]=n;
+    }
+  void casetypeParser::remote (ENGINE::InlineNode* const& n)
     {
       _cnode=n;
       std::string fullname=currentProc->names.back()+ n->getName();
@@ -324,6 +333,7 @@ void casetypeParser::onStart(const XML_Char* el, const XML_Char** attr)
   this->maxcount("sinline",1,element);
   this->maxcount("service",1,element);
   this->maxcount("server",1,element);
+  this->maxcount("remote",1,element);
   this->maxcount("node",1,element);
   this->maxcount("forloop",1,element);
   this->maxcount("foreach",1,element);
@@ -337,6 +347,7 @@ void casetypeParser::onStart(const XML_Char* el, const XML_Char** attr)
   else if(element == "sinline")pp=&sinlinetypeParser<>::sinlineParser;
   else if(element == "service")pp=&servicetypeParser<>::serviceParser;
   else if(element == "server")pp=&servertypeParser<>::serverParser;
+  else if(element == "remote")pp=&remotetypeParser<>::remoteParser;
   else if(element == "node")pp=&nodetypeParser<>::nodeParser;
   else if(element == "forloop")pp=&forlooptypeParser<>::forloopParser;
   else if(element == "foreach")pp=&foreachlooptypeParser<>::foreachloopParser;
@@ -358,6 +369,7 @@ void casetypeParser::onEnd(const char *el,parser* child)
   else if(element == "sinline")sinline(((sinlinetypeParser<>*)child)->post());
   else if(element == "service")service(((servicetypeParser<>*)child)->post());
   else if(element == "server")server(((servertypeParser<>*)child)->post());
+  else if(element == "remote")remote(((remotetypeParser<>*)child)->post());
   else if(element == "node")node(((nodetypeParser<>*)child)->post());
   else if(element == "forloop")forloop(((forlooptypeParser<>*)child)->post());
   else if(element == "foreach")foreach(((foreachlooptypeParser<>*)child)->post());

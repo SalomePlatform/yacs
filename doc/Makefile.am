@@ -1,4 +1,4 @@
-#  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+#  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 #
 #  This library is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 #
 #  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+
 include $(top_srcdir)/adm/unix/make_begin.am
 
 .PHONY : latex
@@ -60,6 +61,11 @@ latex:
 	@echo "Run \`make all-pdf' or \`make all-ps' in that directory to" \
 	      "run these through (pdf)latex."
 
+pdf:
+	$(SPHINXBUILD) -b pdf $(ALLSPHINXOPTS) pdf
+	@echo
+	@echo "Build finished. The pdf documents are in pdf."
+
 html:
 		 mkdir -p $@
 
@@ -73,6 +79,8 @@ advancepy.rst      \
 annexe_common.rst  \
 batch.rst          \
 calcium.rst        \
+calciumapi.rst        \
+calciummod.rst        \
 calculator.rst     \
 compInterne.rst   \
 components.rst  \
@@ -125,7 +133,8 @@ install-data-local:
 	$(INSTALL) -d $(DESTDIR)$(yacsdocdir)
 	if test -d "html"; then b=; else b="$(srcdir)/"; fi; \
 	cp -rf $$b"html"/* $(DESTDIR)$(yacsdocdir) ; \
-	if test -f $$b"latex"/yacs.pdf; then cp -f $$b"latex"/yacs.pdf $(DESTDIR)$(yacsdocdir) ; fi;
+	if test -f $$b"latex"/using.pdf; then cp -f $$b"latex"/using.pdf $(DESTDIR)$(yacsdocdir) ; fi; \
+	if test -f $$b"latex"/integration.pdf; then cp -f $$b"latex"/integration.pdf $(DESTDIR)$(yacsdocdir) ; fi;
 
 install_dev_docs:
 	$(INSTALL) -d $(DESTDIR)$(yacsdevdocdir)

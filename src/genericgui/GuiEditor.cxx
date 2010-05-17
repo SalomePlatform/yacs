@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include <Python.h>
 #include "GuiEditor.hxx"
 #include "RuntimeSALOME.hxx"
@@ -36,6 +37,7 @@
 #include "Message.hxx"
 #include "Resource.hxx"
 #include "FormUndoRedo.hxx"
+#include <QMessageBox>
 
 #include <string>
 #include <sstream>
@@ -50,7 +52,27 @@ using namespace YACS::HMI;
 
 GuiEditor::GuiEditor()
 {
+  // approximative conversion from latin1 to US ascii (removing accentuation)
   DEBTRACE("GuiEditor::GuiEditor");
+  _table    = "________________"  ; //   0 -  15
+  _table   += "________________"  ; //  16 -  31
+  _table   += " !\"#$%&'()*+,-./" ; //  32 -  47
+  _table   += "0123456789:;<=>?"  ; //  48 -  63
+  _table   += "@ABCDEFGHIJKLMNO"  ; //  64 -  79
+  _table   += "PQRSTUVWXYZ[\\]^_" ; //  80 -  95
+  _table   += "`abcdefghijklmno"  ; //  96 - 111
+  _table   += "pqrstuvwxyz{|}~_"  ; // 112 - 127
+  _table   += "________________"  ; // 128 - 143
+  _table   += "________________"  ; // 144 - 159
+  _table   += "_icLoY|-_ca-__r-" ;  // 160 - 175
+  _table   += "-_23'u_..10\"___?" ;  // 176 - 191
+  _table   += "AAAAAAACEEEEIIII"  ; // 192 - 207
+  _table   += "DNOOOOOx0UUUUYPB"  ; // 208 - 223
+  _table   += "aaaaaaaceeeeiiii"  ; // 224 - 239
+  _table   += "onooooo-0uuuuypy"  ; // 240 - 255
+  //_table[167] = char(167); // '§'
+  //_table[176] = char(176); // '°'
+  DEBTRACE(_table.size() << " " << _table);
 }
 
 GuiEditor::~GuiEditor()
@@ -140,6 +162,31 @@ void GuiEditor::_createNode(YACS::ENGINE::Catalog* catalog,
         }
       if (!aSwitch->addNode(catalog, compoName, service, name, createNewComponentInstance, swCase))
         Message mess;
+    }
+  else if (cnode && (dynamic_cast<SubjectBloc*>(cnode) == 0) && cnode->getChild() != 0)
+    {
+      // loop with a body : can't add a node
+      QMessageBox msgBox;
+      std::string msg;
+      msg="This loop has already a body. It is not possible to add directly another node\n";
+      msg=msg+"Do you want to put the existing node in a bloc and add the new node in this bloc ?\n";
+      msgBox.setText(msg.c_str());
+      msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No );
+      msgBox.setDefaultButton(QMessageBox::No);
+      int ret = msgBox.exec();
+      if(ret == QMessageBox::Yes)
+        {
+          // User wants to put body node in bloc
+          if (cnode->getChild()->putInComposedNode("Bloc1","Bloc"))
+            {
+              //the bloc has been successfully created. Add the new node
+              SubjectBloc* newbloc = dynamic_cast<SubjectBloc*>(cnode->getChild());
+              if (!newbloc->addNode(catalog, compoName, service, name, createNewComponentInstance))
+                Message mess;
+            }
+          else
+            Message mess;
+        }
     }
   else if (cnode)
     if (!cnode->addNode(catalog, compoName, service, name, createNewComponentInstance))
@@ -313,11 +360,45 @@ SubjectDataPort*  GuiEditor::CreateOutputPort(SubjectElementaryNode* seNode,
 }
 
 /*!
+ * Subject shrink or expand, command from popup menu: needs a valid selection
+ */
+void GuiEditor::shrinkExpand() {
+  DEBTRACE("GuiEditor::shrinkExpand");
+
+  Subject* sub = QtGuiContext::getQtCurrent()->getSelectedSubject();
+  if (!sub) {
+    DEBTRACE("GuiEditor::shrinkExpand : invalid selection!");
+    return;
+  };
+
+  if (! QtGuiContext::getQtCurrent()->_mapOfSceneItem.count(sub)) {
+    DEBTRACE("GuiEditor::shrinkExpand: no scene item corresponding to this subject");
+    return;
+  };
+
+  SceneItem* item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[sub];
+  SceneNodeItem *sni = dynamic_cast<SceneNodeItem*>(item);
+  if (!sni) {
+    DEBTRACE("GuiEditor::shrinkExpand: no scene node item corresponding to this subject");
+    return;
+  };
+
+  if (sni->isExpanded()) {
+    sni->setExpanded(false);
+  } else {
+    sni->setExpanded(true);
+  };
+  sni->reorganizeShrinkExpand();
+  sni->showOutScopeLinks();
+}
+
+/*!
  * Subject destruction, command from popup menu: needs a valid selection
  */
 void GuiEditor::DeleteSubject()
 {
   DEBTRACE("GuiEditor::DeleteSubject");
+  if (!QtGuiContext::getQtCurrent()->isEdition()) return;
   QModelIndexList selList
     = QtGuiContext::getQtCurrent()->getSelectionModel()->selectedIndexes();
   if (selList.isEmpty())
@@ -341,6 +422,7 @@ void GuiEditor::DeleteSubject(Subject* parent,
                               Subject* toRemove)
 {
   DEBTRACE("GuiEditor::DeleteSubject "<<parent->getName()<<" "<<toRemove->getName());
+  if (!QtGuiContext::getQtCurrent()->isEdition()) return;
   toRemove->askRegisterUndoDestroy();
   parent->destroy(toRemove);
 }
@@ -348,6 +430,7 @@ void GuiEditor::DeleteSubject(Subject* parent,
 void GuiEditor::CutSubject()
 {
   DEBTRACE("GuiEditor::CutSubject");
+  if (!QtGuiContext::getQtCurrent()->isEdition()) return;
   Subject *sub = QtGuiContext::getQtCurrent()->getSelectedSubject();
   if (!sub)
     {
@@ -361,6 +444,7 @@ void GuiEditor::CutSubject()
 void GuiEditor::CopySubject()
 {
   DEBTRACE("GuiEditor::CopySubject");
+  if (!QtGuiContext::getQtCurrent()->isEdition()) return;
   Subject *sub = QtGuiContext::getQtCurrent()->getSelectedSubject();
   if (!sub)
     {
@@ -374,6 +458,7 @@ void GuiEditor::CopySubject()
 void GuiEditor::PasteSubject()
 {
   DEBTRACE("GuiEditor::PasteSubject");
+  if (!QtGuiContext::getQtCurrent()->isEdition()) return;
   Subject *newParent = QtGuiContext::getQtCurrent()->getSelectedSubject();
   if (!newParent)
     {
@@ -498,3 +583,20 @@ void GuiEditor::showRedo(QWidget *parent)
   redo->exec();
 }
 
+/*! Replace accentuated characters from latin1 to US ascii equivalent without accent.
+*   I did not found anything to do that in Qt...
+*/
+QString GuiEditor::asciiFilter(const QString & name)
+{
+  DEBTRACE(name.toStdString());
+  string aName = name.toAscii().data();
+  DEBTRACE(aName);
+  for (int i=0; i < aName.size(); i++)
+    {
+      int v = (unsigned char)(aName[i]);
+      DEBTRACE(v << " " << _table[v]);
+      aName[i] = _table[v];
+    }
+  DEBTRACE(aName);
+  return aName.c_str();
+}

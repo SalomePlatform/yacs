@@ -19,7 +19,7 @@ from a synthetic description of the components that it will contain.  This descr
 The characteristics of these components are not general but they should facilitate integration of many scientific 
 calculation components.
 
-This generator does not control integration of a graphic MMI, but simply the calculation part. The main objective 
+This generator does not control integration of a GUI, but simply the calculation part. The main objective 
 is to integrate a Fortran library in which calls to datastream ports (particularly Calcium) can be made.
 
 How to get it
@@ -33,7 +33,7 @@ architecture.
 
 Installation
 ----------------------------
-If you get the source archive, simply decompress and detar the archive (YACSGEN-x.y.tar.gz) 
+If you get the source archive, simply decompress and untar the archive (YACSGEN-x.y.tar.gz) 
 and add the directory thus created to PYTHONPATH.
 
 Description of a SALOME module
@@ -143,7 +143,7 @@ These attributes must be lists of triplets with the following elements:
 2.  the port type
 3.  the time (“T”) or iteration (“I”) dependency mode (refer to :ref:`calcium` for further details)
 
-Possible types are “CALCIUM_double”, “CALCIUM_integer”, “CALCIUM_real”, “CALCIUM_string”, “CALCIUM_logical” and “CALCIUM_complex”.
+Possible types are “CALCIUM_double”, “CALCIUM_integer”, "CALCIUM_long", “CALCIUM_real”, “CALCIUM_string”, “CALCIUM_logical” and “CALCIUM_complex”.
 
 The description for an input datastream port and an output port in time dependency becomes::
 
@@ -217,7 +217,7 @@ Adding includes
 """"""""""""""""""""""""""""""""""""""""""""""""""""
 Includes will be added using the **defs** attribute.  For example::
 
-   defs="#include "myinclude.h"
+   defs="""#include "myinclude.h" """
 
 The includes path will be specified in the **includes** attribute of the component in the following form::
 
@@ -278,8 +278,10 @@ The following example will be used to specify these final concepts::
      c3=F77Component("compo3",
                      services=[
                                Service("s1",
-                                       inport=[("a","double"),("b","long"),("c","string")],
-                                       outport=[("d","double"),("e","long"),("f","string")],
+                                       inport=[("a","double"),("b","long"),
+				               ("c","string")],
+                                       outport=[("d","double"),("e","long"),
+				                ("f","string")],
                                        instream=[("a","CALCIUM_double","T"),
                                                  ("b","CALCIUM_double","I")],
                                        outstream=[("ba","CALCIUM_double","T"),
@@ -296,6 +298,57 @@ The Fortran “compo3” component has dataflow and datastream ports like the C+
 that contains the Fortran entry point *s1* will be linked by means of the **libs** and **rlibs** attributes of the description.  
 The Fortran component also supports the **includes** and **sources** attributes.
  
+The Fortran subroutine with name **s1** must have a signature with a first argument that is used to transmit the address of
+the component and all following arguments that are used to transmit the values of the inport and outport ports. The instream and 
+outstream ports are managed internally to the subroutine through calls to the CALCIUM API with the address of the component
+as first argument.
+
+An example of subroutine for the above definition follows:
+
+.. code-block:: fortran
+
+       SUBROUTINE S1(compo,A,B,C,D,E,F)
+   C  implementation of service s1 with inport a,b,c and outport d,e,f and stream ports
+       include 'calcium.hf'
+       integer compo
+       real*8 a,d
+       integer b,e
+       character*(*) c,f
+
+       CALL cpldb(COMPO,CP_TEMPS,t0,t1,iter,'aa',1,n,ss,info)
+       CALL cpldb(COMPO,CP_ITERATION,t0,t1,iter,'ab',1,n,zz,info)
+       CALL cplen(COMPO,CP_ITERATION,t0,t1,iter,'ac',1,n,zn,info)
+       CALL cplre(COMPO,CP_ITERATION,t0,t1,iter,'ad',1,n,yr,info)
+       CALL cplch(COMPO,CP_ITERATION,t0,t1,iter,'ae',1,n,tch,info)
+       CALL cplcp(COMPO,CP_ITERATION,t0,t1,iter,'af',1,n,tcp,info)
+       CALL cpllo(COMPO,CP_ITERATION,t0,t1,iter,'ag',3,n,tlo,info)
+
+       CALL cpeDB(COMPO,CP_TEMPS,t0,1,'ba',1,tt,info)
+       CALL cpeDB(COMPO,CP_ITERATION,t0,1,'bb',1,tp,info)
+
+       d=4.5
+       e=3
+       f="zzzzzzzzzzzzzzz"
+
+       END
+
+As a special case, since version 5.1.4, the first argument (address of the component) is not included, if there is no
+instream and outstream ports.
+
+Same example without stream ports:
+
+.. code-block:: fortran
+
+       SUBROUTINE S1(A,B,C,D,E,F)
+   C  implementation of service s1 with inport a,b,c and outport d,e,f
+       real*8 a,d
+       integer b,e
+       character*(*) c,f
+       d=4.5
+       e=3
+       f="zzzzzzzzzzzzzzz"
+       END
+
 A piece of C++ code can be added before the call to the Fortran entry point.  This piece of code must be put into the **body** 
 attribute with any definitions in **defs**.  In this case, we use the “c” input dataflow variable to change the directory with the call to chdir.
 
@@ -362,7 +415,8 @@ ports, one output dataflow port, 7 input datastream ports and one output datastr
     c1=ASTERComponent("caster",
                       services=[
                                 Service("s1",
-                                        inport=[("a","double"),("b","long"),("c","string")],
+                                        inport=[("a","double"),("b","long"),
+					        ("c","string")],
                                         outport=[("d","double")],
                                         instream=[("aa","CALCIUM_double","T"),
                                                   ("ab","CALCIUM_double","I"),
@@ -421,7 +475,9 @@ It is essential for calls to subprograms CPLxx and CPExx that will be used in th
 
 The other two commands do not have any keyword and they retrieve the identifier from the COMMON.
 
-The operators will be written as follows (without the declarations)::
+The operators will be written as follows (without the declarations):
+
+.. code-block:: fortran
 
           SUBROUTINE OP0189 ( IER )
     C     COMMANDE:  LECTURE_FORCE
@@ -446,7 +502,9 @@ The operators will be written as follows (without the declarations)::
 
 Finally, an astermodule.so dynamic library must be constructed, and all necessary Python modules must be placed in a directory 
 that will be indicated in the **python_path** attribute.  Different methods can be used to obtain this result.  
-The following Makefile is one of them::
+The following Makefile is one of them:
+
+.. code-block:: make
 
      #compiler
      FC=gfortran
@@ -544,20 +602,27 @@ Fabrication of the SALOME module
 The module will be fabricated by executing a Python file that contains its description, by inputting data into the generator  
 and generator commands.
 
-This gives something like the following for a module with a single Fortran component::
+This gives something like the following for a module with a single Fortran component:
+
+.. code-block:: python
 
   from module_generator import Generator,Module
   from module_generator import PYComponent,CPPComponent,Service,F77Component
 
   context={"update":1,
-                   "prerequisites":"/local/cchris/.packages.d/envSalome",
-                   "kernel":"/local/chris/SALOME/RELEASES/Install/KERNEL_V5"
-                 }
-  c3=F77Component("compo",
+           "prerequisites":"/local/cchris/.packages.d/envSalome",
+           "kernel":"/local/chris/SALOME/RELEASES/Install/KERNEL_V5"
+          }
+
+
+  c1=F77Component("compo",
                   services=[
                             Service("s1",
-                                    inport=[("a","double"),("b","long"),("c","string")],
-                                    outport=[("d","double"),("e","long"),("f","string")],
+                                    inport=[("a","double"),
+				            ("b","long"),
+					    ("c","string")],
+                                    outport=[("d","double"),("e","long"),
+				             ("f","string")],
                                     instream=[("a","CALCIUM_double","T"),
                                               ("b","CALCIUM_double","I")],
                                     outstream=[("ba","CALCIUM_double","T"),
@@ -566,7 +631,7 @@ This gives something like the following for a module with a single Fortran compo
                                     body="chdir(c);"
                                    ),
                            ],
-                  libs="-L/local/chris/modulegen/YACSGEN/fcompo -lfcompo"
+                  libs="-L/local/chris/modulegen/YACSGEN/fcompo -lfcompo",
                   rlibs="-Wl,--rpath -Wl,/local/chris/modulegen/YACSGEN/fcompo")
 
   m=Module("mymodule",components=[c1],prefix="Install")
@@ -597,7 +662,9 @@ A YACS coupling file is an XML file that describes how SALOME components previou
 
 See :ref:`schemaxml` for documentation about how to write a YACS XML file.
 
-The following is an example of a YACS file using the Fortran component defined above::
+The following is an example of a YACS file using the Fortran component defined above:
+
+.. code-block:: xml
 
   <proc>
   <container name="A"> </container>
@@ -704,14 +771,18 @@ There are many coupling outputs:
 - container outputs:  these outputs are located in the /tmp directory with a name constructed based on the container name read 
   in the coupler output.
 
-**Warning**:  when the application is stopped, the containers are killed, and this can cause information losses in their output files.
+.. warning::
+
+   when the application is stopped, the containers are killed, and this can cause information losses in their output files.
 
 The working directory
 ++++++++++++++++++++++++++++++++++++++
 Each component instance is hosted in a container.  Therefore all instances hosted in a container are executed in the same 
 directory, which is the container directory.  Starting from version 4.1.1 of SALOME, the working directory of a container 
 can be specified in the coupling file.  All that is necessary is to add the **workingdir** property to the container.  
-The following gives a few examples::
+The following gives a few examples:
+
+.. code-block:: xml
 
    <container name="A">
      <property name="workingdir" value="/home/user/w1"/>
@@ -732,7 +803,9 @@ Files management
 ++++++++++++++++++++++++++++
 Components are dynamic libraries or Python modules, and they cannot be run in shell scripts.  For components that use input and 
 output files, “files” ports can be specified in the coupling file through which file transfers will be made and appropriate 
-local names will be given.  For example, a service that uses an input file a and produces an output file b will be declared as follows::
+local names will be given.  For example, a service that uses an input file a and produces an output file b will be declared as follows:
+
+.. code-block:: xml
 
     <service name="pipo1">
       <component>caster</component>
@@ -742,7 +815,9 @@ local names will be given.  For example, a service that uses an input file a and
     </service>
 
 These ports can be initialised or connected to other “files” ports like ordinary ports.  For example, initialisation for the input 
-file will be in the following form::
+file will be in the following form:
+
+.. code-block:: xml
 
     <parameter>
       <tonode>pipo1</tonode> <toport>a</toport>
@@ -750,7 +825,9 @@ file will be in the following form::
     </parameter>
 
 It is impossible to initialise an output file port directly.  A special node has to be used that collects outputs.  
-A “dataout” node and the link between node “pipo1” and node “dataout” will be created::
+A “dataout” node and the link between node “pipo1” and node “dataout” will be created:
+
+.. code-block:: xml
 
     <outnode name="dataout" >
       <parameter name="f1" type="file" ref="myfile"/>
@@ -760,10 +837,12 @@ A “dataout” node and the link between node “pipo1” and node “dataout�
        <tonode>dataout</tonode> <toport>f1</toport>
     </datalink>
 
-**WARNING**:  it is impossible to use the “.” character in port names.  This prevents the use of names such as fort.8 that are 
-fairly frequent.  There is a simple workaround solution, which is to replace the “.” by the “:”character (therefore fort:8 in 
-our example) to obtain the expected result.  
-Obviously, names containing the “:” characters cannot be used.  They must be very rare.
+.. warning::
+
+   it is impossible to use the “.” character in port names.  This prevents the use of names such as fort.8 that are 
+   fairly frequent.  There is a simple workaround solution, which is to replace the “.” by the “:”character (therefore fort:8 in 
+   our example) to obtain the expected result.  
+   Obviously, names containing the “:” characters cannot be used.  They must be very rare.
 
 .. _execaster:
 
@@ -778,7 +857,9 @@ There are a few unusual features when executing an Aster component that are pres
 
 The following is a simplified example of a YACS scheme comprising a calculation node that should execute service s1 of 
 the caster component (type Aster) with an environment variable, a mail file, a comm file and command line parameters.  
-A more complete example is given in the directory Examples/ast1 in the distribution::
+A more complete example is given in the directory Examples/ast1 in the distribution:
+
+.. code-block:: xml
 
     <service name="pipo1" >
       <component>caster</component>
@@ -821,7 +902,9 @@ A more complete example is given in the directory Examples/ast1 in the distribut
 
     <parameter>
        <tonode>pipo1</tonode> <toport>fort:20</toport>
-       <value><objref>/local/chris/ASTER/instals/NEW9/astest/forma01a.mmed</objref> </value>
+       <value>
+         <objref>/local/chris/ASTER/instals/NEW9/astest/forma01a.mmed</objref>
+       </value>
     </parameter>
 
 Firstly, the command set has to be specified.  As mentioned above (:ref:`aster`), an additional “jdc” “string” type port 
@@ -840,18 +923,24 @@ Brief example of .comm::
 Before values of command line parameters can be specified, a component must have been created with a “string” type port named “argv”.  
 A value then has to be given to this port.  In this case, we modify the tools directory path using the **rep_outils** parameter.
 
-A mesh file (.mail) is specified to an Aster component by adding a file port to the calculation node::
+A mesh file (.mail) is specified to an Aster component by adding a file port to the calculation node:
+
+.. code-block:: xml
 
       <inport name="fort:20" type="file"/>
 
 The name of this file port must be the same as the local file name as expected by Aster.  Usually, Aster uses 
 the fort.20 file as an input to LIRE_MAILLAGE.  As mentioned above, the dot in fort.20 cannot be used in a port 
 name, and therefore it will be given the name fort:20.  A value will then have to be given to this port that will 
-correspond to the path of the file to be used.  This is done by a parameter directive::
+correspond to the path of the file to be used.  This is done by a parameter directive:
+
+.. code-block:: xml
 
     <parameter>
        <tonode>pipo1</tonode> <toport>fort:20</toport>
-       <value><objref>/local/chris/ASTER/instals/NEW9/astest/forma01a.mmed</objref> </value>
+       <value>
+         <objref>/local/chris/ASTER/instals/NEW9/astest/forma01a.mmed</objref>
+       </value>
     </parameter>
 
 Environment variables are specified by using properties of the calculation node.  In this case, we define 
@@ -889,7 +978,9 @@ The following is an example of a C++ component modified to make it a standalone 
          exe_path="/local/SALOME/execpp/prog",
                      )
 
-The path given for **exe_path** corresponds to an executable with the following source::
+The path given for **exe_path** corresponds to an executable with the following source:
+
+.. code-block:: cpp
 
    #include "compo1.hxx"
 
@@ -902,7 +993,9 @@ The path given for **exe_path** corresponds to an executable with the following 
 It must be compiled and linked using the compo1.hxx include and the libcompo1Exelib.so library that are given 
 in the installation of the module generated in include/salome and in lib/salome respectively.  
 
-**Note**: the SALOME module must be generated before compiling and linking the standalone component.
+.. note::
+
+   the SALOME module must be generated before compiling and linking the standalone component.
  
 A more complete example is given in the distribution sources in the Examples/cpp2 directory.
 
@@ -935,7 +1028,9 @@ The following is an example of a standalone Fortran component::
          exe_path="/local/SALOME/fcompo/prog",
                                      )
 
-The path given for **exe_path** corresponds to an executable with the following source::
+The path given for **exe_path** corresponds to an executable with the following source:
+
+.. code-block:: fortran
 
        PROGRAM P
        CALL YACSINIT()

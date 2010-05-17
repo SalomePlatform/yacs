@@ -64,8 +64,10 @@ VERSION.in is used to document the module, it must give its version and its comp
 incompatibilities with other modules.  Therefore, it is strongly recommended but is not essential for operation.  
 The runAppli.in and runSalome.py files are not essential but make the example easier to use.
 
-**Warning**:  the files of the basic platform (KERNEL) must not be copied to initialise a module tree structure.  
-It is usually preferable to copy files from another module such as GEOM or MED.
+.. warning::
+
+   the files of the basic platform (KERNEL) must not be copied to initialise a module tree structure.  
+   It is usually preferable to copy files from another module such as GEOM or MED.
 
 Implementation of automake, configure
 --------------------------------------
@@ -177,10 +179,12 @@ This command will not function unless the following environment variables have p
    export KERNEL_ROOT_DIR=<KERNEL installation path>
    export PYHELLO_ROOT_DIR=<PYHELLO installation path>
 
-**Warning**:  it is possible that the SALOME run will not reach the end.  In some circumstances, the time to 
-start CORBA servers may be long and could exceed the timeout.  If the reason for 
-this is that the time to load dynamic libraries is long, it is possible that a second run immediately 
-afterwards will be successful.
+.. warning::
+
+   it is possible that the SALOME run will not reach the end.  In some circumstances, the time to 
+   start CORBA servers may be long and could exceed the timeout.  If the reason for 
+   this is that the time to load dynamic libraries is long, it is possible that a second run immediately 
+   afterwards will be successful.
  
 Loading the example component
 ------------------------------------

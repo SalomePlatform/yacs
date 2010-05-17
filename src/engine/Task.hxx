@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,17 +16,20 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef __TASK_HXX__
 #define __TASK_HXX__
 
 #include "YACSlibEngineExport.hxx"
 #include "define.hxx"
+#include <set>
 
 namespace YACS
 {
   namespace ENGINE
   {
     class ComponentInstance;
+    class Container;
 
     class YACSLIBENGINE_EXPORT Task
     {
@@ -40,8 +43,10 @@ namespace YACS
       virtual void initService() = 0;
       virtual void connectService() = 0;
       virtual void disconnectService() = 0;
+      virtual void getCoupledTasks(std::set<Task*>& coupledSet) = 0;
       virtual bool isDeployable() const = 0;
       virtual ComponentInstance *getComponent() = 0;
+      virtual Container *getContainer() = 0;
       virtual YACS::StatesForNode getState() const = 0;
       virtual void finished() = 0;
       virtual void aborted() = 0;

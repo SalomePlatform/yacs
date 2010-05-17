@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "SchemaInPortItem.hxx"
 #include "ItemMimeData.hxx"
 #include "QtGuiContext.hxx"
@@ -228,8 +229,6 @@ Qt::ItemFlags SchemaInPortItem::flags(const QModelIndex &index)
 {
   //DEBTRACE("SchemaInPortItem::flags");
   Qt::ItemFlags pflag = Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDropEnabled;
-  if (! QtGuiContext::getQtCurrent()->isEdition())
-    return pflag;
 
   Qt::ItemFlags flagEdit = 0;
   int column = index.column();
@@ -240,7 +239,8 @@ Qt::ItemFlags SchemaInPortItem::flags(const QModelIndex &index)
         SubjectDataPort *sdp = dynamic_cast<SubjectDataPort*>(_subject);
         Node *parent = sdp->getPort()->getNode();
         if (parent)
-          if (dynamic_cast<DataNode*>(parent) || dynamic_cast<InlineNode*>(parent))
+          if ( (dynamic_cast<DataNode*>(parent) || dynamic_cast<InlineNode*>(parent)) &&
+               QtGuiContext::getQtCurrent()->isEdition() )
             flagEdit = Qt::ItemIsEditable; // --- port name editable
       }
       break;

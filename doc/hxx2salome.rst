@@ -25,7 +25,8 @@ The first thing to do is to implement the C++ engine that will perform the servi
     
     $ SA_new_cpp_component  CALC
     $ ls CALC_CPP_SRC/
-    adm  archive  AUTHORS  build_configure  ChangeLog  configure.in.base  Makefile.am  NEWS  README  rfind  root_clean  src
+    adm  archive  AUTHORS  build_configure  ChangeLog  configure.in.base
+    Makefile.am  NEWS  README  rfind  root_clean  src
     
 
 
@@ -160,7 +161,8 @@ The C++ engine is finished, and tested - the final step is the integration insid
 ::
 
     
-    hxx2salome -c -e ${INTEGRATION_ROOT}/my_env_products.sh instalDir/CALC_CPP_INSTALL CALC.hxx libCALCCXX.so ${INTEGRATION_ROOT}
+    hxx2salome -c -e ${INTEGRATION_ROOT}/my_env_products.sh instalDir/CALC_CPP_INSTALL \
+                CALC.hxx libCALCCXX.so ${INTEGRATION_ROOT}
        ...
     $ source ${INTEGRATION_ROOT}/my_env_products.sh
     $ runSalome –-modules=CALC   # launch salome with CALC compo

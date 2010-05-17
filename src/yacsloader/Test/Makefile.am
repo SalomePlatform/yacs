@@ -1,4 +1,4 @@
-#  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+#  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 #
 #  This library is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 #
 #  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+
 include $(top_srcdir)/adm/unix/make_begin.am
 
 check_PROGRAMS = TestYacsLoader echoSrv
@@ -52,9 +53,10 @@ TestYacsLoader_LDFLAGS = \
 TestYacsLoader_CXXFLAGS = \
 	$(THREAD_DEF) \
 	$(CPPUNIT_INCLUDES) \
+	$(EXPAT_INCLUDES) \
 	$(PYTHON_CPPFLAGS) \
-  $(OMNIORB_INCLUDES) \
-  $(OMNIORB_CCXFLAGS) \
+	$(OMNIORB_INCLUDES) \
+	$(OMNIORB_CXXFLAGS) \
 	-I$(srcdir)/.. \
 	-I$(srcdir)/../../bases \
 	-I$(srcdir)/../../bases/Test \
@@ -77,12 +79,13 @@ echoSrv_SOURCES = echoSrv.cxx
 nodist_echoSrv_SOURCES = $(IDL_SOURCES)
 
 echoSrv_CXXFLAGS = \
+	-I. \
 	-I$(srcdir)/../../bases \
 	$(OMNIORB_INCLUDES) \
 	$(OMNIORB_CXXFLAGS) 
 
 echoSrv_LDFLAGS = \
-	$(OMNIORB_LIBS)
+	$(OMNIORB_LIBS) $(PTHREAD_LIBS)
 
 AM_CXXFLAGS = $(THREAD_DEF)
 

@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //#define REFCNT
 //
 #ifdef REFCNT
@@ -816,7 +817,7 @@ namespace YACS
             }
           else
             {
-              // It's a CORBA Object convert it to an IOR string
+              // It should be a CORBA Object convert it to an IOR string
               PyObject *pystring=PyObject_CallMethod(getSALOMERuntime()->getPyOrb(),(char *)"object_to_string",(char *)"O",o);
               if(pystring==NULL)
                 {
@@ -1019,6 +1020,11 @@ namespace YACS
             {
               DEBTRACE( "Can't get reference to object." );
               throw ConversionException("Can't get reference to object");
+            }
+
+          if(obref->_non_existent())
+            {
+              throw ConversionException("non_existent object");
             }
 
           if( CORBA::is_nil(obref) )
@@ -1638,6 +1644,42 @@ namespace YACS
     {
       static inline YACS::ENGINE::Any* convert(const TypeCode *t,std::string& o)
         {
+          //Check if objref is a GenericObj and register it if it is the case (workaround for bad management of GenericObj)
+          if(o=="" || (t->isA(Runtime::_tc_file)) || (strncmp(t->id(),"python",6)==0) || (strncmp(t->id(),"json",4)==0))
+            return YACS::ENGINE::AtomAny::New(o);
+
+          //Objref CORBA. prefix=IOR,corbaname,corbaloc
+          CORBA::Object_var obref;
+          try
+            {
+              obref = getSALOMERuntime()->getOrb()->string_to_object(o.c_str());
+            }
+          catch(CORBA::Exception& ex)
+            {
+              throw ConversionException("Can't get reference to object");
+            }
+          if(obref->_non_existent())
+            throw ConversionException("non_existent object");
+          if( CORBA::is_nil(obref) )
+            throw ConversionException("Can't get reference to object");
+          if(!obref->_is_a(t->id()))
+            {
+              stringstream msg;
+              msg << "Problem in conversion: an objref " << t->id() << " is expected " << endl;
+              msg << "An objref of type " << obref->_PD_repoId << " is given " << endl;
+              msg << " (" << __FILE__ << ":" << __LINE__ << ")";
+              throw YACS::ENGINE::ConversionException(msg.str());
+            }
+
+          SALOME::GenericObj_var gobj=SALOME::GenericObj::_narrow(obref);
+          if(!CORBA::is_nil(gobj))
+            {
+              DEBTRACE("It's a SALOME::GenericObj register it");
+              gobj->Register();
+            }
+          else
+              DEBTRACE("It's a CORBA::Object but not a SALOME::GenericObj");
+
           return YACS::ENGINE::AtomAny::New(o);
         }
     };

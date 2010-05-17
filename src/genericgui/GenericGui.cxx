@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include <Python.h>
 #include "SALOME_ResourcesManager.hxx"
 #include "SALOME_LifeCycleCORBA.hxx"
@@ -41,6 +42,8 @@
 #include "Scene.hxx"
 #include "GenericGui.hxx"
 #include "SceneItem.hxx"
+#include "SceneNodeItem.hxx"
+#include "SceneComposedNodeItem.hxx"
 #include "ItemEdition.hxx"
 #include "CatalogWidget.hxx"
 #include "TreeView.hxx"
@@ -96,6 +99,8 @@ GenericGui::GenericGui(YACS::HMI::SuitWrapper* wrapper, QMainWindow *parent)
   iconPath += "/share/salome/resources/yacs";
   DEBTRACE(iconPath);
   QDir::addSearchPath("icons", iconPath.c_str());
+  
+  _guiEditor = new GuiEditor();
 
   YACS::ENGINE::RuntimeSALOME::setRuntime();
   _loader = new YACSGuiLoader();
@@ -144,13 +149,16 @@ GenericGui::GenericGui(YACS::HMI::SuitWrapper* wrapper, QMainWindow *parent)
     }
 
   _dwTree = new QDockWidget(_parent);
+  _dwTree->setVisible(false);
   _dwTree->setWindowTitle("Tree View: edition mode");
   _parent->addDockWidget(Qt::LeftDockWidgetArea, _dwTree);
   _dwStacked = new QDockWidget(_parent);
+  _dwStacked->setVisible(false);
   _dwStacked->setWindowTitle("Input Panel");
   _dwStacked->setMinimumWidth(270); // --- force a minimum until display
   _parent->addDockWidget(Qt::RightDockWidgetArea, _dwStacked);
   _dwCatalogs = new QDockWidget(_parent);
+  _dwCatalogs->setVisible(false);
   _dwCatalogs->setWindowTitle("Catalogs");
   _parent->addDockWidget(Qt::RightDockWidgetArea, _dwCatalogs);
   _catalogsWidget = new CatalogWidget(_dwCatalogs,
@@ -160,7 +168,9 @@ GenericGui::GenericGui(YACS::HMI::SuitWrapper* wrapper, QMainWindow *parent)
 
   _parent->tabifyDockWidget(_dwStacked, _dwCatalogs);
   _parent->tabifyDockWidget(_dwTree, _wrapper->objectBrowser());
-
+#if QT_VERSION >= 0x040500
+  _parent->setTabPosition(Qt::AllDockWidgetAreas, Resource::tabPanelsUp? QTabWidget::North: QTabWidget::South);
+#endif
   //Import user catalog
   std::string usercata=Resource::userCatalog.toStdString();
   _catalogsWidget->addCatalogFromFile(usercata);
@@ -477,6 +487,11 @@ void GenericGui::createActions()
                                             tr("center on node"), tr("center 2D view on selected node"),
                                             0, _parent, false, this,  SLOT(onCenterOnNode()));
   _centerOnNodeAct->setShortcut(QKeySequence::Find);
+
+  pixmap.load("icons:shrinkExpand.png");
+  _shrinkExpand = _wrapper->createAction(getMenuId(), tr("shrink or expand the selected node"), QIcon(pixmap),
+                                            tr("shrink/expand"), tr("shrink or expand the selected node"),
+                                            0, _parent, false, this,  SLOT(onShrinkExpand()));
 
   pixmap.load("icons:straightLink.png");
   _toggleStraightLinksAct = _wrapper->createAction(getMenuId(), tr("draw straight or orthogonal links"), QIcon(pixmap),
@@ -1225,6 +1240,7 @@ void GenericGui::createContext(YACS::ENGINE::Proc* proc,
 void GenericGui::setLoadedPresentation(YACS::ENGINE::Proc* proc)
 {
   DEBTRACE("GenericGui::setLoadedPresentation");
+  QtGuiContext::getQtCurrent()->setLoadingPresentation(true);
   map<YACS::ENGINE::Node*, PrsData> presNodes = _loader->getPrsData(proc);
   if (!presNodes.empty())
     {
@@ -1236,13 +1252,28 @@ void GenericGui::setLoadedPresentation(YACS::ENGINE::Proc* proc)
           SubjectNode *snode = QtGuiContext::getQtCurrent()->_mapOfSubjectNode[node];
           SceneItem *item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[snode];
           YASSERT(item);
-          item->setPos(QPointF(pres._x, pres._y));
-          item->setWidth(pres._width);
-          item->setHeight(pres._height);
+          SceneNodeItem *inode = dynamic_cast<SceneNodeItem*>(item);
+          YASSERT(inode);
+          inode->setPos(QPointF(pres._x, pres._y));
+          inode->setWidth(pres._width);
+          inode->setHeight(pres._height);
+          inode->setExpanded(pres._expanded);
+          inode->setExpandedPos(QPointF(pres._expx, pres._expy));
+          inode->setExpandedWH(pres._expWidth, pres._expHeight);
+          inode->setShownState(shownState(pres._shownState));
         }
     }
   if (Scene::_autoComputeLinks)
     _guiEditor->rebuildLinks();
+  else
+    {
+      YACS::HMI::SubjectProc* subproc = QtGuiContext::getQtCurrent()->getSubjectProc();
+      SceneItem *item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[subproc];
+      SceneComposedNodeItem *proc = dynamic_cast<SceneComposedNodeItem*>(item);
+      proc->updateLinks();
+    }
+
+  QtGuiContext::getQtCurrent()->setLoadingPresentation(false);
 }
 
 // -----------------------------------------------------------------------------
@@ -1283,14 +1314,33 @@ void GenericGui::loadSchema(const std::string& filename,bool edit)
 void GenericGui::onImportSchema()
 {
   DEBTRACE("GenericGui::onImportSchema");
-  QString fn = QFileDialog::getOpenFileName( _parent,
-                                             "Choose a filename to load" ,
-                                             QString::null,
-                                             tr( "XML-Files (*.xml);;All Files (*)" ));
+  QFileDialog dialog(_parent,
+                     "Choose a filename to load" ,
+                     QString::null,
+                     tr( "XML-Files (*.xml);;All Files (*)" ));
+
+  dialog.setHistory(_wrapper->getQuickDirList());
+
+  QString fn;
+  QStringList fileNames;
+  if (dialog.exec())
+    {
+      fileNames = dialog.selectedFiles();
+      if (!fileNames.isEmpty())
+        fn = fileNames.first();
+    }
+
   if ( !fn.isEmpty() )
     {
       DEBTRACE("file loaded : " <<fn.toStdString());
-      YACS::ENGINE::Proc *proc = _loader->load(fn.toLatin1());
+      YACS::ENGINE::Proc *proc = 0;
+
+      try {
+         proc = _loader->load(fn.toLatin1());
+      }
+      catch (...) {
+      }
+      
       if (!proc)
         {
           QMessageBox msgBox(QMessageBox::Critical,
@@ -1311,10 +1361,22 @@ void GenericGui::onImportSchema()
 void GenericGui::onImportSupervSchema()
 {
   DEBTRACE("GenericGui::onImportSupervSchema");
-  QString fn = QFileDialog::getOpenFileName( _parent,
-                                             "Choose a  SUPERV filename to load" ,
-                                             QString::null,
-                                             tr( "XML-Files (*.xml);;All Files (*)" ));
+  QFileDialog dialog(_parent,
+                     "Choose a  SUPERV filename to load" ,
+                     QString::null,
+                     tr( "XML-Files (*.xml);;All Files (*)" ));
+
+  dialog.setHistory(_wrapper->getQuickDirList());
+
+  QString fn;
+  QStringList fileNames;
+  if (dialog.exec())
+    {
+      fileNames = dialog.selectedFiles();
+      if (!fileNames.isEmpty())
+        fn = fileNames.first();
+    }
+
   if (fn.isEmpty()) return;
 
   DEBTRACE("file loaded : " <<fn.toStdString());
@@ -1433,7 +1495,9 @@ QString GenericGui::getSaveFileName(const QString& fileName)
       if (!fileNames.isEmpty())
         selectedFile = fileNames.first();
     }
-  return selectedFile;
+  QString filteredName = _guiEditor->asciiFilter(selectedFile);
+  DEBTRACE(filteredName.toStdString());
+  return filteredName;
 }
 
 void GenericGui::onExportSchema()
@@ -1491,10 +1555,22 @@ void GenericGui::onExportSchemaAs()
 void GenericGui::onImportCatalog()
 {
   DEBTRACE("GenericGui::onImportCatalog");
-  QString fn = QFileDialog::getOpenFileName( _parent,
-                                             "Choose a YACS Schema to load as a Catalog" ,
-                                             QString::null,
-                                             tr( "XML-Files (*.xml);;All Files (*)" ));
+  QFileDialog dialog(_parent,
+                     "Choose a YACS Schema to load as a Catalog" ,
+                     QString::null,
+                     tr( "XML-Files (*.xml);;All Files (*)" ));
+
+  dialog.setHistory(_wrapper->getQuickDirList());
+
+  QString fn;
+  QStringList fileNames;
+  if (dialog.exec())
+    {
+      fileNames = dialog.selectedFiles();
+      if (!fileNames.isEmpty())
+        fn = fileNames.first();
+    }
+
   if ( !fn.isEmpty() )
     _catalogsWidget->addCatalogFromFile(fn.toStdString());
 }
@@ -1614,7 +1690,14 @@ void GenericGui::onLoadAndRunSchema()
   if ( !fn.isEmpty() )
     {
       DEBTRACE("file loaded : " <<fn.toStdString());
-      YACS::ENGINE::Proc *proc = _loader->load(fn.toLatin1());
+      YACS::ENGINE::Proc *proc =0;
+      
+      try {
+         proc = _loader->load(fn.toLatin1());
+      }
+      catch (...) {
+      }
+      
       if (!proc)
         {
           QMessageBox msgBox(QMessageBox::Critical,
@@ -1739,11 +1822,19 @@ void GenericGui::onGetErrorReport()
 {
   DEBTRACE("GenericGui::onGetErrorReport");
   if (!QtGuiContext::getQtCurrent()) return;
-  if (!QtGuiContext::getQtCurrent()->getGuiExecutor()) return;
   Subject *sub = QtGuiContext::getQtCurrent()->getSelectedSubject();
   SubjectNode *snode = dynamic_cast<SubjectNode*>(sub);
   if (!snode) return;
-  string log = QtGuiContext::getQtCurrent()->getGuiExecutor()->getErrorReport(snode->getNode());
+  string log;
+  if (QtGuiContext::getQtCurrent()->getGuiExecutor())
+    {
+      log = QtGuiContext::getQtCurrent()->getGuiExecutor()->getErrorReport(snode->getNode());
+    }
+  else
+    {
+      log = snode->getNode()->getErrorReport();
+    }
+
   LogViewer *lv = new LogViewer("Node error report", _parent);
   lv->setText(log);
   lv->show();
@@ -1753,11 +1844,19 @@ void GenericGui::onGetErrorDetails()
 {
   DEBTRACE("GenericGui::onGetErrorDetails");
   if (!QtGuiContext::getQtCurrent()) return;
-  if (!QtGuiContext::getQtCurrent()->getGuiExecutor()) return;
   Subject *sub = QtGuiContext::getQtCurrent()->getSelectedSubject();
   SubjectNode *snode = dynamic_cast<SubjectNode*>(sub);
   if (!snode) return;
-  string log = QtGuiContext::getQtCurrent()->getGuiExecutor()->getErrorDetails(snode->getNode());
+  string log;
+  if (QtGuiContext::getQtCurrent()->getGuiExecutor())
+    {
+      log = QtGuiContext::getQtCurrent()->getGuiExecutor()->getErrorDetails(snode->getNode());
+    }
+  else
+    {
+      log = snode->getNode()->getErrorDetails();
+    }
+
   LogViewer *lv = new LogViewer("Node Error Details", _parent);
   lv->setText(log);
   lv->show();
@@ -2027,6 +2126,11 @@ void GenericGui::onCenterOnNode()
 {
   DEBTRACE("GenericGui::onCenterOnNode");
   QtGuiContext::getQtCurrent()->getView()->onCenterOnNode();
+}
+
+void GenericGui::onShrinkExpand() {
+  DEBTRACE("GenericGui::onShrinkExpand");
+  _guiEditor->shrinkExpand();
 }
 
 void GenericGui::onToggleStraightLinks(bool checked)
@@ -2413,10 +2517,10 @@ void GenericGui::emphasizePortLink(YACS::HMI::SubjectDataPort* sub, bool emphasi
     {
       YACS::HMI::SubjectLink* subli = (*it);
       if (!subli) continue;
-      subli->update(EMPHASIZE, true, sub);
+      subli->update(EMPHASIZE, emphasize, sub);
       Subject *sin = subli->getSubjectInPort();
       Subject *sout = subli->getSubjectOutPort();
-      sin->update(EMPHASIZE, true, sub);
-      sout->update(EMPHASIZE, true, sub);
+      sin->update(EMPHASIZE, emphasize, sub);
+      sout->update(EMPHASIZE, emphasize, sub);
     }
 }

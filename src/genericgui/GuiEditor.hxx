@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,11 +16,13 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef _GUIEDITOR_HXX_
 #define _GUIEDITOR_HXX_
 
 
 #include <QWidget>
+#include <QString>
 #include <string>
 
 namespace YACS
@@ -77,11 +79,12 @@ namespace YACS
       void CopySubject();
       void PasteSubject();
       void PutSubjectInBloc();
-
+      void shrinkExpand();
       void rebuildLinks();
       void arrangeNodes(bool isRecursive);
       void showUndo(QWidget *parent = 0);
       void showRedo(QWidget *parent = 0);
+      QString asciiFilter(const QString & name);
 
     protected:
       void _createNode(YACS::ENGINE::Catalog* catalog,
@@ -89,6 +92,7 @@ namespace YACS
                        std::string service,
                        std::string compoName,
                        bool createNewComponentInstance);
+      std::string _table;
     };
   }
 }

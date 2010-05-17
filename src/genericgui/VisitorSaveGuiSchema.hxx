@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef _VISITORSAVEGUISCHEMA_HXX_
 #define _VISITORSAVEGUISCHEMA_HXX_
 
@@ -33,6 +34,7 @@ namespace YACS
   namespace HMI
   {
     class SceneItem;
+    class SceneNodeItem;
 
     class VisitorSaveGuiSchema : public YACS::ENGINE::VisitorSaveSalomeSchema
     {
@@ -44,7 +46,7 @@ namespace YACS
       
     protected:
       virtual void writePresentation();
-      virtual void writeItem(std::string name, SceneItem* item);
+      virtual void writeItem(std::string name, SceneNodeItem* item);
       YACS::ENGINE::Proc* _proc;
     };
 

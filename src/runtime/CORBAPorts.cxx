@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //#define REFCNT
 //
 #ifdef REFCNT
@@ -33,6 +34,7 @@
 #include "ServiceNode.hxx"
 #include "ComponentInstance.hxx"
 #include "SALOME_GenericObj.hh"
+#include "Mutex.hxx"
 
 #include <iostream>
 #include <sstream>
@@ -42,6 +44,19 @@
 
 using namespace YACS::ENGINE;
 using namespace std;
+
+static YACS::BASES::Mutex MUTEXI;
+struct LockI
+{
+  LockI(){MUTEXI.lock();};
+  ~LockI(){MUTEXI.unlock();};
+};
+static YACS::BASES::Mutex MUTEXO;
+struct LockO
+{
+  LockO(){MUTEXO.lock();};
+  ~LockO(){MUTEXO.unlock();};
+};
 
 void releaseObj(CORBA::Any& data)
 {
@@ -150,6 +165,7 @@ void InputCorbaPort::put(CORBA::Any *data) throw (ConversionException)
 #ifdef REFCNT
   DEBTRACE("refcount CORBA : " << ((omni::TypeCode_base*)data->pd_tc.in())->pd_ref_count);
 #endif
+  LockI lock;
 #ifdef _DEVDEBUG_
   display(data);
 #endif
@@ -191,6 +207,7 @@ CORBA::Any * InputCorbaPort::getAny()
 
 PyObject * InputCorbaPort::getPyObj()
 {
+  LockI lock;
   CORBA::TypeCode_var tc=getAny()->type();
   if (!tc->equivalent(CORBA::_tc_null))
     return convertCorbaPyObject(edGetType(),getAny());
@@ -299,6 +316,8 @@ void OutputCorbaPort::put(const void *data) throw (ConversionException)
 void OutputCorbaPort::put(CORBA::Any *data) throw (ConversionException)
 {
   InputPort *p;
+
+  {  LockO lock;
 #ifdef REFCNT
   DEBTRACE("refcount CORBA : " << ((omni::TypeCode_base*)data->pd_tc.in())->pd_ref_count);
 #endif
@@ -311,6 +330,7 @@ void OutputCorbaPort::put(CORBA::Any *data) throw (ConversionException)
   _data=*data;
 
   //no registerObj : we steal the output reference of the node
+  }
 
 #ifdef REFCNT
   DEBTRACE("refcount CORBA : " << ((omni::TypeCode_base*)_data.pd_tc.in())->pd_ref_count);
@@ -401,6 +421,7 @@ CORBA::Any * OutputCorbaPort::getAnyOut()
 
 PyObject * OutputCorbaPort::getPyObj()
 {
+  LockO lock;
   CORBA::TypeCode_var tc=getAny()->type();
   if (!tc->equivalent(CORBA::_tc_null))
     return convertCorbaPyObject(edGetType(),getAny());

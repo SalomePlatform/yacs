@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef _SCENECOMPOSEDNODEITEM_HXX_
 #define _SCENECOMPOSEDNODEITEM_HXX_
 
@@ -44,10 +45,15 @@ namespace YACS
       virtual std::list<AbstractSceneItem*> getChildren();
       virtual void removeChildFromList(AbstractSceneItem* child);
       virtual void reorganize();
+      virtual void reorganizeShrinkExpand();
+      virtual void shrinkExpandRecursive(bool isExpanding, bool fromHere);
+      virtual void shrinkExpandLink(bool se);
       virtual void collisionResolv(SceneItem* child, QPointF oldPos);
       virtual void rebuildLinks();
       virtual void arrangeNodes(bool isRecursive);
       virtual void arrangeChildNodes();
+      virtual void adjustColors();
+      virtual void setShownState(shownState ss);
     protected:
       void dragEnterEvent(QGraphicsSceneDragDropEvent *event);
       void dragLeaveEvent(QGraphicsSceneDragDropEvent *event);

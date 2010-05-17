@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,8 +16,8 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "SalomeWrap_DataModel.hxx"
-#include "guiContext.hxx"
 
 #include <SalomeApp_DataObject.h>
 #include <SalomeApp_Study.h>
@@ -33,7 +33,6 @@
 #include "YacsTrace.hxx"
 
 using namespace std;
-using namespace YACS::HMI;
 
 SalomeWrap_DataModel::SalomeWrap_DataModel(CAM_Module* theModule)
   : SalomeApp_DataModel(theModule)
@@ -223,6 +222,10 @@ void SalomeWrap_DataModel::createNewRun(const QString& schemaName,
 
   QString tabName = QFileInfo(schemaName).baseName() +QString("_run%1").arg(count);
   swv->getViewManager()->setTitle(tabName);
+
+  QPixmap pixmap;
+  pixmap.load("icons:run_active.png");
+  swv->getViewManager()->setIcon(pixmap);
 }
 
 void SalomeWrap_DataModel::setSelected(QWidget* viewWindow)

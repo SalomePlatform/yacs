@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef __ELEMENTARYNODE_HXX__
 #define __ELEMENTARYNODE_HXX__
 
@@ -57,6 +58,7 @@ namespace YACS
       void init(bool start=true);
       bool isDeployable() const;
       ComponentInstance *getComponent();
+      Container *getContainer();
       YACS::StatesForNode getState() const;
       void getReadyTasks(std::vector<Task *>& tasks);
       void edRemovePort(Port *port) throw(Exception);
@@ -109,6 +111,8 @@ namespace YACS
       virtual void connectService() { }
       virtual void disconnectService() { }
       virtual void load() { }
+      virtual void getCoupledTasks(std::set<Task*>& coupledSet);
+      virtual void getCoupledNodes(std::set<Task*>& coupledSet);
       void accept(Visitor *visitor);
     protected:
       void edDisconnectAllLinksWithMe();

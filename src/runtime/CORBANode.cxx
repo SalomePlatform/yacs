@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //#define REFCNT
 //
 #ifdef REFCNT
@@ -34,6 +35,7 @@
 #include "CalStreamPort.hxx"
 #include "InPort.hxx"
 #include "TypeCode.hxx"
+#include "Mutex.hxx"
 
 #ifdef SALOME_KERNEL
 #include "SALOME_NamingService.hxx"
@@ -52,6 +54,13 @@
 
 using namespace YACS::ENGINE;
 using namespace std;
+
+static YACS::BASES::Mutex MUTEX;
+struct Lock
+{
+  Lock(){MUTEX.lock();};
+  ~Lock(){MUTEX.unlock();};
+};
 
 const char CORBANode::IMPL_NAME[]="CORBA";
 const char CORBANode::KIND[]="CORBA";
@@ -444,7 +453,11 @@ void SalomeNode::connectService()
 void SalomeNode::disconnectService()
 {
   DEBTRACE( "SalomeNode::disconnectService: "<<getName());
-  if(ids.size() == 0)return;
+  // in some rare cases, disconnectService can be called from 2 different threads
+  Lock lock;
+
+  if(ids.size() == 0)
+    return;
 
   SALOME_NamingService NS(getSALOMERuntime()->getOrb()) ;
   SALOME_LifeCycleCORBA LCC(&NS) ;
@@ -485,6 +498,12 @@ void SalomeNode::disconnectService()
     }
   ids.clear();
 }
+
+void SalomeNode::cleanNodes()
+{
+  disconnectService();
+}
+
 #endif
 
 //! Execute the service on the component associated to the node

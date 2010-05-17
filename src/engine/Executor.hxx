@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef __EXECUTOR_HXX__
 #define __EXECUTOR_HXX__
 
@@ -28,6 +29,7 @@
 
 #include <list>
 #include <vector>
+#include <set>
 #include <string>
 #include <fstream>
 
@@ -66,6 +68,7 @@ namespace YACS
       bool _isRunningunderExternalControl;
       bool _isWaitingEventsFromRunningTasks;
       int _numberOfRunningTasks;
+      std::set<Task *> _runningTasks; 
       int _numberOfEndedTasks;
       int _semThreadCnt;
       YACS::ExecutorState _executorState;

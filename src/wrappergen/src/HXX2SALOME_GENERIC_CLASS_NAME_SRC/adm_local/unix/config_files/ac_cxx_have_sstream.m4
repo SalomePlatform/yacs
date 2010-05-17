@@ -1,4 +1,4 @@
-dnl  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+dnl  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 dnl
 dnl  This library is free software; you can redistribute it and/or
 dnl  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@ dnl  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 dnl
 dnl  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 dnl
+
 dnl @synopsis AC_CXX_HAVE_SSTREAM
 dnl If the C++ library has a working stringstream, define HAVE_SSTREAM.
 dnl @author Ben Stanley

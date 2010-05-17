@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,12 +16,14 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "ComposedNode.hxx"
 #include "LinkInfo.hxx"
 #include "Container.hxx"
 #include "InputPort.hxx"
 #include "OutputPort.hxx"
 #include "ServiceNode.hxx"
+#include "InlineNode.hxx"
 #include "DataFlowPort.hxx"
 #include "DataStreamPort.hxx"
 #include "ElementaryNode.hxx"
@@ -67,12 +69,15 @@ void ComposedNode::performDuplicationOfPlacement(const Node& other)
   DeploymentTree treeToDup=otherC.getDeploymentTree();
   list< ElementaryNode * > clones=otherC.getRecursiveConstituents();
   vector<Container *> conts=treeToDup.getAllContainers();
+  //iterate on all containers
   for(vector<Container *>::iterator iterCt=conts.begin();iterCt!=conts.end();iterCt++)
     {
       vector<ComponentInstance *> comps=treeToDup.getComponentsLinkedToContainer(*iterCt);
       Container *contCloned=0;
       if((*iterCt))
         contCloned=(*iterCt)->clone();
+
+      //iterate on all component instances linked to the container
       for(vector<ComponentInstance *>::iterator iterCp=comps.begin();iterCp!=comps.end();iterCp++)
         {
           vector<Task *> tasks=treeToDup.getTasksLinkedToComponent(*iterCp);
@@ -88,6 +93,17 @@ void ComposedNode::performDuplicationOfPlacement(const Node& other)
             }
           curCloned->decrRef();
         }
+
+      // iterate on all tasks linked to the container
+      vector<Task *> tasks=treeToDup.getTasksLinkedToContainer(*iterCt);
+      for(vector<Task *>::iterator iterT=tasks.begin();iterT!=tasks.end();iterT++)
+        {
+          std::list< ElementaryNode * >::iterator res=find(clones.begin(),clones.end(),(ElementaryNode *)(*iterT));
+          InlineFuncNode *nodeC=(InlineFuncNode *)getChildByName(otherC.getChildName(*res));
+          nodeC->setContainer(contCloned);
+        }
+
+      // ended with current container
       if(contCloned)
         contCloned->decrRef();
     }
@@ -142,18 +158,18 @@ DeploymentTree ComposedNode::checkDeploymentTree(bool deep) const throw(YACS::Ex
         case DeploymentTree::DUP_TASK_NOT_COMPATIBLE_WITH_EXISTING_TREE:
           {
             string what("ComposedNode::checkDeploymentTree : ServiceNode with name \""); what+=(*iter)->getName();
-            what+="\" coexists in a component with an another Task which context is incorrect with it.";
+            what+="\" coexists in a component with an another Task which context is incompatible with it.";
             throw Exception(what);
           }
-          case DeploymentTree::DEPLOYABLE_BUT_NOT_SPECIFIED :
-            {
-              if(deep)
-                {
-                  string what("ComposedNode::checkDeploymentTree : ServiceNode with name \""); what+=(*iter)->getName();
-                  what+="\" is deployable but no component is specified on it.";
-                  throw Exception(what);
-                }
-            }
+        case DeploymentTree::DEPLOYABLE_BUT_NOT_SPECIFIED :
+          {
+            if(deep)
+              {
+                string what("ComposedNode::checkDeploymentTree : ServiceNode with name \""); what+=(*iter)->getName();
+                what+="\" is deployable but no component is specified on it.";
+                throw Exception(what);
+              }
+          }
         }
     }
   return ret;
@@ -1482,3 +1498,14 @@ void ComposedNode::shutdown()
     (*iter)->shutdown();
 }
 
+//! Clean the composed node in case of not clean exit
+/*!
+ * This method should be called on a control-c or sigterm
+ */
+void ComposedNode::cleanNodes()
+{
+  DEBTRACE("ComposedNode::cleanNodes");
+  list<Node *> nodes=edGetDirectDescendants();
+  for(list<Node *>::iterator iter=nodes.begin();iter!=nodes.end();iter++)
+    (*iter)->cleanNodes();
+}

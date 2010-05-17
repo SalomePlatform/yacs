@@ -1,4 +1,4 @@
-#  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+#  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 #
 #  This library is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 #
 #  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+
 libdir             = $(prefix)/lib/salome
 bindir             = $(prefix)/bin/salome
 
@@ -233,9 +234,7 @@ libGenericGui_la_SOURCES =        \
   VisitorSaveGuiSchema.hxx        \
   VisitorSaveGuiSchema.cxx        \
   YACSGuiLoader.hxx               \
-  YACSGuiLoader.cxx               \
-  SuitWrapper.hxx                 \
-  WrapGraphicsView.hxx
+  YACSGuiLoader.cxx
 
 MOC_FILES = \
   CaseSwitch_moc.cxx              \
@@ -294,8 +293,7 @@ MOC_FILES = \
   TablePortsEdition_moc.cxx       \
   TableSwitch_moc.cxx             \
   TreeView_moc.cxx                \
-  ValueDelegate_moc.cxx           \
-  WrapGraphicsView_moc.cxx
+  ValueDelegate_moc.cxx
 
 nodist_libGenericGui_la_SOURCES = \
   $(MOC_FILES)
@@ -312,13 +310,14 @@ libGenericGui_la_CXXFLAGS  = \
 	$(LIBXML_INCLUDES) \
 	$(EXPAT_INCLUDES) \
 	-I$(KERNEL_ROOT_DIR)/include/salome \
-	-I$(builddir) \
+	-I. \
 	-I$(srcdir) \
 	-I$(srcdir)/../bases \
 	-I$(srcdir)/../engine \
 	-I$(srcdir)/../runtime \
 	-I$(srcdir)/../yacsloader \
 	-I$(srcdir)/../hmi \
+	-I$(srcdir)/../salomewrap \
 	-I../../idl \
 	-I../yacsorb 
 
@@ -344,6 +343,7 @@ ICONS = \
 	resources/breakpoints_active.png \
 	resources/breakpoints.png \
 	resources/centerOnNode.png \
+	resources/shrinkExpand.png \
 	resources/change_informations.png \
 	resources/component.png \
 	resources/connect_to_batch_session.png \

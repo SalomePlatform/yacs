@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "ElementaryNode.hxx"
 #include "Runtime.hxx"
 #include "InputPort.hxx"
@@ -96,6 +97,11 @@ bool ElementaryNode::isDeployable() const
 }
 
 ComponentInstance *ElementaryNode::getComponent()
+{
+  return 0;
+}
+
+Container *ElementaryNode::getContainer()
 {
   return 0;
 }
@@ -580,3 +586,31 @@ void ElementaryNode::ensureLoading()
         }
     }
 }
+
+//! Calls getCoupledNodes for Task interface
+void ElementaryNode::getCoupledTasks(std::set<Task*>& coupledSet)
+{
+  getCoupledNodes(coupledSet);
+}
+
+//! Put all nodes that are coupled to this node in coupledSet
+void ElementaryNode::getCoupledNodes(std::set<Task*>& coupledSet)
+{
+  if(coupledSet.find(this) != coupledSet.end())return;
+
+  coupledSet.insert(this);
+
+  std::list<OutputDataStreamPort *>::iterator iterout;
+  for(iterout = _setOfOutputDataStreamPort.begin(); iterout != _setOfOutputDataStreamPort.end(); iterout++)
+    {
+      OutputDataStreamPort *port=(OutputDataStreamPort *)*iterout;
+      std::set<InPort *> ports=port->edSetInPort();
+      std::set<InPort *>::iterator iter;
+      for(iter=ports.begin();iter != ports.end(); iter++)
+        {
+          Node* node= (*iter)->getNode();
+          node->getCoupledNodes(coupledSet);
+        }
+    }
+}
+

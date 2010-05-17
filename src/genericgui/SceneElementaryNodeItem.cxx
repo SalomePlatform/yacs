@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "SceneElementaryNodeItem.hxx"
 #include "SceneInPortItem.hxx"
 #include "SceneOutPortItem.hxx"
@@ -45,6 +46,10 @@ SceneElementaryNodeItem::SceneElementaryNodeItem(QGraphicsScene *scene, SceneIte
                                              QString label, Subject *subject)
   : SceneNodeItem(scene, parent, label, subject)
 {
+  _maxPorts = 0;
+  _width  = 2*Resource::Corner_Margin + 2*Resource::DataPort_Width + Resource::Space_Margin;
+  _height = Resource::Header_Height + Resource::Border_Margin;
+
   _brushColor   = Resource::ElementaryNode_brush;
   _hiBrushColor = Resource::ElementaryNode_hiBrush;
   _penColor     = Resource::ElementaryNode_pen;
@@ -71,13 +76,13 @@ void SceneElementaryNodeItem::paint(QPainter *painter,
 {
   //DEBTRACE("SceneElementaryNodeItem::paint");
   painter->save();
-  painter->setBrush(QBrush(Qt::NoBrush));
-  painter->setPen(QPen(Qt::NoPen));
-  painter->drawRect(QRectF(0, 0, _width, _height));
-  painter->setPen(getPenColor());
+  QPen pen(getPenColor());
+  pen.setWidth(Resource::Thickness);
+  painter->setPen(pen);
   painter->setBrush(getBrushColor());
-  painter->drawRect(QRectF(_nml, _nml,
-                           _width-2*_nml, _height-2*_nml));
+  int w = _width  - 2*Resource::Border_Margin;
+  int h = _height - 2*Resource::Border_Margin;
+  painter->drawRect(QRectF(Resource::Border_Margin, Resource::Border_Margin, w, h));
   painter->restore();
 }
 
@@ -136,10 +141,93 @@ void SceneElementaryNodeItem::update(GuiEvent event, int type, Subject* son)
     }
 }
 
+void SceneElementaryNodeItem::autoPosNewPort(AbstractSceneItem *item, int nbPorts) {
+  DEBTRACE("SceneElementaryNodeItem::autoPosNewPort "<< _label.toStdString());
+  SceneInPortItem*   inPortItem = dynamic_cast<SceneInPortItem*>(item);
+  SceneOutPortItem* outPortItem = dynamic_cast<SceneOutPortItem*>(item);
+
+  bool toShow = (_shownState == expandShown);
+  if (toShow) {
+    qreal x;
+    if (inPortItem) {
+      x = Resource::Corner_Margin;
+      inPortItem->show();
+    } else {
+      x = Resource::Corner_Margin + Resource::DataPort_Width + Resource::Space_Margin;
+      outPortItem->show();
+    };
+    qreal y = Resource::Header_Height + nbPorts * (Resource::DataPort_Height + Resource::Space_Margin);
+
+    if (_maxPorts <= nbPorts) {
+      _maxPorts = nbPorts+1;
+      _height  = Resource::Header_Height + Resource::Border_Margin;
+      _height += _maxPorts * (Resource::DataPort_Height + Resource::Space_Margin);
+      _incHeight = _height; // must just be more than the actual increment of height
+      DEBTRACE("SceneElementaryNodeItem::autoPosNewPort _height=" << _height);
+    };
+
+    item->setTopLeft(QPointF(x, y));
+
+  } else {
+    _height = Resource::Header_Height + Resource::Border_Margin;
+    qreal y = Resource::Corner_Margin;
+    if (inPortItem) {
+      item->setTopLeft(QPointF(Resource::Corner_Margin, y));
+      inPortItem->hide();
+    } else {
+      item->setTopLeft(QPointF(Resource::Corner_Margin + Resource::DataPort_Width + Resource::Space_Margin, y));
+      outPortItem->hide();
+    };
+  };
+}
+
 void SceneElementaryNodeItem::popupMenu(QWidget *caller, const QPoint &globalPos)
 {
   ElementaryNodeMenu m;
   m.popupMenu(caller, globalPos);
+}
+
+void SceneElementaryNodeItem::reorganizeShrinkExpand()
+{
+  DEBTRACE("SceneElementaryNodeItem::reorganizeShrinkExpand " << isExpanded() << " "  << _label.toStdString());
+  shrinkExpandRecursive(isExpanded(), true);
+  if (Scene::_autoComputeLinks)
+    {
+      SubjectProc* subproc = QtGuiContext::getQtCurrent()->getSubjectProc();
+      SceneItem *item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[subproc];
+      SceneComposedNodeItem *proc = dynamic_cast<SceneComposedNodeItem*>(item);
+      proc->rebuildLinks();
+    }
+}
+
+void SceneElementaryNodeItem::shrinkExpandRecursive(bool isExpanding, bool fromHere)
+{
+  DEBTRACE("SceneElementaryNodeItem::shrinkExpandRecursive " << isExpanding << " " << fromHere << " "  << isExpanded() << " " << _label.toStdString());
+  if (isExpanding)
+    {
+      _ancestorShrinked = false;
+      if (isExpanded())
+        _shownState = expandShown;
+      else
+        _shownState = shrinkShown;
+    }
+  else
+    {
+      if (fromHere)
+        _shownState = shrinkShown;
+      else
+        {
+          _ancestorShrinked = true;
+          _shownState = shrinkHidden;
+        }
+    }
+
+  if (_shownState == shrinkHidden) // shrink of ancestor
+    setPos(0 ,0);
+  else
+    setPos(_expandedPos);
+
+  reorganize();
 }
 
 void SceneElementaryNodeItem::reorganize()
@@ -150,8 +238,10 @@ void SceneElementaryNodeItem::reorganize()
   ElementaryNode* father = dynamic_cast<ElementaryNode*>(snode->getNode());
   YASSERT(father);
 
-  list<InputPort*> plisti = father->getSetOfInputPort();
-  list<InputPort*>::iterator iti = plisti.begin();
+  _maxPorts = 0;
+
+  list<InPort*> plisti = father->getSetOfInPort();
+  list<InPort*>::iterator iti = plisti.begin();
   int nbPorts = 0;
   for (; iti != plisti.end(); ++iti)
     {
@@ -161,8 +251,8 @@ void SceneElementaryNodeItem::reorganize()
       nbPorts++;
     }
 
-  list<OutputPort*> plisto = father->getSetOfOutputPort();
-  list<OutputPort*>::iterator ito = plisto.begin();
+  list<OutPort*> plisto = father->getSetOfOutPort();
+  list<OutPort*>::iterator ito = plisto.begin();
   nbPorts = 0;
   for (; ito != plisto.end(); ++ito)
     {
@@ -173,3 +263,20 @@ void SceneElementaryNodeItem::reorganize()
     }
   updateLinks();
 }
+
+void SceneElementaryNodeItem::setShownState(shownState ss)
+{
+  _shownState = ss;
+  if (_shownState == shrinkHidden)
+    {
+      _ancestorShrinked = true;
+      hide();
+    }
+  else
+    {
+      _ancestorShrinked = false;
+      show();
+    }
+  reorganize();
+}
+

@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "TreeView.hxx"
 #include "SchemaItem.hxx"
 #include "QtGuiContext.hxx"
@@ -68,7 +69,9 @@ void TreeView::setModel(QAbstractItemModel *model)
 
 void TreeView::viewSelection(const QModelIndex &ind)
 {
-  scrollTo(ind);
+  QModelIndex ind0 = ind.sibling(ind.row(), 0);
+  //DEBTRACE("TreeView::viewSelection " << ind.row() << " " << ind.column() << " / " << ind0.row() << " " << ind0.column());
+  scrollTo(ind0);
 }
 
 void TreeView::resizeColumns()
@@ -151,6 +154,9 @@ void TreeView::onCommitData(QWidget *editor)
             strval = "\"" + strval + "\"";
           DEBTRACE(strval);
           isOk = sdp->setValue(strval);
+
+          GuiExecutor* executor = QtGuiContext::getQtCurrent()->getGuiExecutor();
+          if (executor) executor->setInPortValue(sdp->getPort(), strval);
         }
       else // --- YLabel
         {

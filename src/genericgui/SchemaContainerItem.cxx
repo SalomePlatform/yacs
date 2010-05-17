@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,10 +16,12 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "SchemaContainerItem.hxx"
 #include "QtGuiContext.hxx"
 #include "SchemaModel.hxx"
 #include "SchemaComponentItem.hxx"
+#include "Menus.hxx"
 
 #include <QIcon>
 #include <cassert>
@@ -121,3 +123,8 @@ void SchemaContainerItem::addComponentInstance(Subject* subject)
                                                       subject);
   model->endInsertRows();
 }
+
+void SchemaContainerItem::popupMenu(QWidget *caller, const QPoint &globalPos)
+{
+}
+

@@ -1,3 +1,22 @@
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
+
 #include "Yacsgui_Resource.hxx"
 #include "Resource.hxx"
 #include "Yacsgui.hxx"
@@ -99,6 +118,7 @@ void Yacsgui_Resource::createPreferences(Yacsgui* swm)
   swm->addPreference( "Simplify Links", componentGroup, LightApp_Preferences::Bool, RESOURCE_YACS, "simplifyLink" );
   swm->addPreference( "Better Separation for Links", componentGroup, LightApp_Preferences::Bool, RESOURCE_YACS, "addRowCols" );
   swm->addPreference( "Ensure Node Visible When Moved", componentGroup, LightApp_Preferences::Bool, RESOURCE_YACS, "ensureVisibleWhenMoved" );
+  swm->addPreference( "Tabified Panels Up", componentGroup, LightApp_Preferences::Bool, RESOURCE_YACS, "tabPanelsUp" );
 
   // Link colors
   int linkTab = swm->addPreference( QObject::tr( "Link colors" ) );
@@ -159,14 +179,6 @@ void Yacsgui_Resource::createPreferences(Yacsgui* swm)
   swm->addPreference( QObject::tr( "High pen"   ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _CtrlPort_hiPen   );
   swm->addPreference( QObject::tr( "High brush" ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _CtrlPort_hiBrush );
 
-  int prec = swm->addPreference( QObject::tr( "Width" ), nodeSubtab, LightApp_Preferences::IntSpin, RESOURCE_YACS, _CtrlPort_Width );
-  swm->setPreferenceProperty(prec, "min",   5);
-  swm->setPreferenceProperty(prec, "max", 300);
-
-  prec = swm->addPreference( QObject::tr( "Height" ), nodeSubtab, LightApp_Preferences::IntSpin, RESOURCE_YACS, _CtrlPort_Height );
-  swm->setPreferenceProperty(prec, "min",  5);
-  swm->setPreferenceProperty(prec, "max", 80);
-
   nodeSubtab = swm->addPreference( QObject::tr( "PREF_GROUP_PORT" ), nodeTab );
   swm->setPreferenceProperty(nodeSubtab , "columns", 2);
 
@@ -174,14 +186,6 @@ void Yacsgui_Resource::createPreferences(Yacsgui* swm)
   swm->addPreference( QObject::tr( "Brush"      ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _DataPort_brush   );
   swm->addPreference( QObject::tr( "High pen"   ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _DataPort_hiPen   );
   swm->addPreference( QObject::tr( "High brush" ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _DataPort_hiBrush );
-
-  prec = swm->addPreference( QObject::tr( "Width" ), nodeSubtab, LightApp_Preferences::IntSpin, RESOURCE_YACS, _DataPort_Width );
-  swm->setPreferenceProperty(prec, "min",   5);
-  swm->setPreferenceProperty(prec, "max", 300);
-
-  prec = swm->addPreference( QObject::tr( "Height" ), nodeSubtab, LightApp_Preferences::IntSpin, RESOURCE_YACS, _DataPort_Height );
-  swm->setPreferenceProperty(prec, "min",  5);
-  swm->setPreferenceProperty(prec, "max", 80);
 
   nodeSubtab = swm->addPreference( QObject::tr( "PREF_GROUP_DRAG" ), nodeTab );
   swm->setPreferenceProperty(nodeSubtab, "columns", 1);
@@ -246,6 +250,7 @@ void Yacsgui_Resource::preferencesChanged()
   Resource::simplifyLink = booleanValue("simplifyLink", SIMPLIFYLINK);
   Resource::addRowCols = booleanValue("addRowCols", ADDROWCOLS);
   Resource::ensureVisibleWhenMoved = booleanValue("ensureVisibleWhenMoved", ENSUREVISIBLEWHENMOVED);
+  Resource::tabPanelsUp = booleanValue("tabPanelsUp", TABPANELSUP);
 
   // Color of state of nodes
   Resource::editedNodeBrushColor = colorValue(_editedNodeBrushColor, EDITEDNODEBRUSHCOLOR);
@@ -320,12 +325,6 @@ void Yacsgui_Resource::preferencesChanged()
   Resource::DataPort_hiPen         = colorValue(_DataPort_hiPen,          DataPort_hiPen_        );
 
   Resource::dragOver               = colorValue(__dragOver,               dragOver_              );
-
-  // Parameter of nodes
-  Resource::CtrlPort_Width  = integerValue(_CtrlPort_Width , CtrlPort_Width_ );
-  Resource::CtrlPort_Height = integerValue(_CtrlPort_Height, CtrlPort_Height_);
-  Resource::DataPort_Width  = integerValue(_DataPort_Width , DataPort_Width_ );
-  Resource::DataPort_Height = integerValue(_DataPort_Height, DataPort_Height_);
 }
 
 void Yacsgui_Resource::preferencesChanged( const QString& sect, const QString& name ) 

@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include <Python.h>
 #include "commandsProc.hxx"
 
@@ -1844,6 +1845,7 @@ bool CommandDestroy::localExecute()
     {
       Proc* proc = GuiContext::getCurrent()->getProc();
       Subject *subject = 0;
+      Subject *father  = 0;
       switch (_elemType)
         {
         case SALOMEPROC:
@@ -1880,6 +1882,7 @@ bool CommandDestroy::localExecute()
             InPort* inp = node->getInputPort(_startport);
             YASSERT(GuiContext::getCurrent()->_mapOfSubjectDataPort.count(inp));
             subject = GuiContext::getCurrent()->_mapOfSubjectDataPort[inp];
+	    father  = subject->getParent();
           }
           break;
         case INPUTDATASTREAMPORT:
@@ -1888,6 +1891,7 @@ bool CommandDestroy::localExecute()
             InPort* inp = node->getInputDataStreamPort(_startport);
             YASSERT(GuiContext::getCurrent()->_mapOfSubjectDataPort.count(inp));
             subject = GuiContext::getCurrent()->_mapOfSubjectDataPort[inp];
+	    father  = subject->getParent();
           }
           break;
         case OUTPUTPORT:
@@ -1896,6 +1900,7 @@ bool CommandDestroy::localExecute()
             OutPort* outp = node->getOutputPort(_startport);
             YASSERT(GuiContext::getCurrent()->_mapOfSubjectDataPort.count(outp));
             subject = GuiContext::getCurrent()->_mapOfSubjectDataPort[outp];
+	    father  = subject->getParent();
           }
           break;
         case OUTPUTDATASTREAMPORT:
@@ -1904,6 +1909,7 @@ bool CommandDestroy::localExecute()
             OutPort* outp = node->getOutputDataStreamPort(_startport);
             YASSERT(GuiContext::getCurrent()->_mapOfSubjectDataPort.count(outp));
             subject = GuiContext::getCurrent()->_mapOfSubjectDataPort[outp];
+	    father  = subject->getParent();
           }
           break;
         case DATALINK:
@@ -1948,6 +1954,7 @@ bool CommandDestroy::localExecute()
         }
       YASSERT(subject);
       Subject::erase(subject);
+      if (father) father->update(REMOVE, 0, 0);
       //subject->update(REMOVE, 0, 0);
       subject = 0;
       return true; 
@@ -2021,6 +2028,7 @@ bool CommandSetInPortValue::localExecute()
     }
 
   PyObject *result;
+  PyGILState_STATE gstate = PyGILState_Ensure();
   try
     {
       _oldValue = inp->getAsString();
@@ -2034,12 +2042,15 @@ bool CommandSetInPortValue::localExecute()
       result = YACS::ENGINE::getSALOMERuntime()->convertStringToPyObject(strval.c_str());
       inp->edInit("Python", result);
       Py_DECREF(result);
+
+      PyGILState_Release(gstate);
       sinp->update(SETVALUE, 0, sinp);
       return true;
     }
   catch (Exception& ex)
     {
       DEBTRACE("CommandSetInPortValue::localExecute() : " << ex.what());
+      PyGILState_Release(gstate);
       GuiContext::getCurrent()->_lastErrorMessage = ex.what();
       //Py_DECREF(result);
       return false;
@@ -3073,6 +3084,78 @@ bool CommandAddContainer::localReverse()
 
 // ----------------------------------------------------------------------------
 
+CommandSetComponentInstanceProperties::CommandSetComponentInstanceProperties(std::string compoinstance,
+                                                                             std::map<std::string,std::string> properties)
+  : Command(), _compoinstance(compoinstance), _properties(properties)
+{
+  DEBTRACE("CommandSetComponentInstanceProperties::CommandSetComponentInstanceProperties " << compoinstance);
+  _oldProp.clear();
+}
+
+std::string CommandSetComponentInstanceProperties::dump()
+{
+  string ret ="CommandSetComponentInstanceProperties " + _compoinstance;
+  return ret;
+}
+
+bool CommandSetComponentInstanceProperties::localExecute()
+{
+  DEBTRACE("CommandSetComponentInstanceProperties::localExecute");
+  try
+    {
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      if (proc->componentInstanceMap.count(_compoinstance))
+        {
+          ComponentInstance *ref = proc->componentInstanceMap[_compoinstance];
+          YASSERT(ref);
+          _oldProp = ref->getProperties();
+          _oldAnon = ref->isAnonymous();
+          ref->setProperties(_properties);
+          ref->setAnonymous(false);
+          SubjectComponent* subcompo = GuiContext::getCurrent()->_mapOfSubjectComponent[ref];
+          subcompo->update(SETVALUE, 0, subcompo);
+          return true;
+        }
+      GuiContext::getCurrent()->_lastErrorMessage = "compoinstance not found: " + _compoinstance;
+      return false;
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandSetComponentInstanceProperties::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      return false;
+    }
+}
+
+bool CommandSetComponentInstanceProperties::localReverse()
+{
+  DEBTRACE("CommandSetComponentInstanceProperties::localReverse");
+  try
+    {
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      if (proc->componentInstanceMap.count(_compoinstance))
+        {
+          ComponentInstance *ref = proc->componentInstanceMap[_compoinstance];
+          YASSERT(ref);
+          ref->setProperties(_oldProp);
+          ref->setAnonymous(_oldAnon);
+          SubjectComponent* subcompo = GuiContext::getCurrent()->_mapOfSubjectComponent[ref];
+          subcompo->update(SETVALUE, 0, subcompo);
+          return true;
+        }
+      GuiContext::getCurrent()->_lastErrorMessage = "compoinstance not found: " + _compoinstance;
+      return false;
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandSetComponentInstanceProperties::localReverse() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      return false;
+    }
+}
+
+// ----------------------------------------------------------------------------
+
 CommandSetContainerProperties::CommandSetContainerProperties(std::string container,
                                                              std::map<std::string,std::string> properties)
   : Command(), _container(container), _properties(properties)
@@ -3227,16 +3310,21 @@ bool CommandSetLinkProperties::localExecute()
     {
       Proc* proc = GuiContext::getCurrent()->getProc();
       Node* node;
-      DataStreamPort* DSPort = 0;
+      InputDataStreamPort* inDSPort = 0;
+      OutputDataStreamPort* outDSPort = 0;
 
       node   = proc->getChildByName(_startNodeName);
-      DSPort = node->getOutputDataStreamPort(_startPortName);
-      DSPort->setProperties(_properties);
+      outDSPort = node->getOutputDataStreamPort(_startPortName);
+      outDSPort->setProperties(_properties);
 
       node   = proc->getChildByName(_endNodeName);
-      DSPort = node->getInputDataStreamPort(_endPortName);
-      _oldProp = DSPort->getProperties();
-      DSPort->setProperties(_properties);
+      inDSPort = node->getInputDataStreamPort(_endPortName);
+      _oldProp = inDSPort->getProperties();
+      inDSPort->setProperties(_properties);
+
+      std::pair<OutPort*,InPort*> keymap = std::pair<OutPort*,InPort*>(outDSPort,inDSPort);
+      SubjectLink* subject = GuiContext::getCurrent()->_mapOfSubjectLink[keymap];
+      subject->update(SETVALUE, 0, subject);
       return true;
     }
   catch (Exception& ex)
@@ -3254,15 +3342,20 @@ bool CommandSetLinkProperties::localReverse()
     {
       Proc* proc = GuiContext::getCurrent()->getProc();
       Node* node;
-      DataStreamPort* DSPort = 0;
+      InputDataStreamPort* inDSPort = 0;
+      OutputDataStreamPort* outDSPort = 0;
 
       node   = proc->getChildByName(_startNodeName);
-      DSPort = node->getOutputDataStreamPort(_startPortName);
-      DSPort->setProperties(_properties);
+      outDSPort = node->getOutputDataStreamPort(_startPortName);
+      outDSPort->setProperties(_properties);
 
       node   = proc->getChildByName(_endNodeName);
-      DSPort = node->getInputDataStreamPort(_endPortName);
-      DSPort->setProperties(_oldProp);
+      inDSPort = node->getInputDataStreamPort(_endPortName);
+      inDSPort->setProperties(_oldProp);
+
+      std::pair<OutPort*,InPort*> keymap = std::pair<OutPort*,InPort*>(outDSPort,inDSPort);
+      SubjectLink* subject = GuiContext::getCurrent()->_mapOfSubjectLink[keymap];
+      subject->update(SETVALUE, 0, subject);
       return true;
     }
   catch (Exception& ex)
@@ -3494,6 +3587,173 @@ bool CommandAddComponentInstance::localReverse()
     }
 }
 
+// ----------------------------------------------------------------------------
+CommandSetExecutionMode::CommandSetExecutionMode(std::string nodeName, std::string mode)
+  : Command(), _mode(mode),_nodeName(nodeName)
+{
+  DEBTRACE("CommandSetExecutionMode::CommandSetExecutionMode " << nodeName << " " << mode);
+  _oldmode = "local";
+}
+
+std::string CommandSetExecutionMode::dump()
+{
+  string ret ="CommandSetExecutionMode " + _mode + " " + _nodeName;
+  return ret;
+}
+
+bool CommandSetExecutionMode::localExecute()
+{
+  DEBTRACE("CommandSetExecutionMode::localExecute");
+  try
+    {
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      Node* node = proc->getChildByName(_nodeName);
+      if (YACS::ENGINE::InlineFuncNode* funcNode = dynamic_cast<YACS::ENGINE::InlineFuncNode*>(node))
+        {
+          _oldmode = funcNode->getExecutionMode();
+          funcNode->setExecutionMode(_mode);
+          SubjectNode* snode = GuiContext::getCurrent()->_mapOfSubjectNode[funcNode];
+          snode->update(UPDATE, 0, 0);
+          return true;
+        }
+      else
+        {
+          GuiContext::getCurrent()->_lastErrorMessage = "node is not an InlineFuncNode: " + _nodeName;
+          return false;
+        }
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandSetExecutionMode::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      return false;
+    }
+}
+
+bool CommandSetExecutionMode::localReverse()
+{
+  DEBTRACE("CommandSetExecutionMode::localReverse");
+  try
+    {
+      if (_oldmode == _mode) return true;
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      Node* node = proc->getChildByName(_nodeName);
+      if (YACS::ENGINE::InlineFuncNode* funcNode = dynamic_cast<YACS::ENGINE::InlineFuncNode*>(node))
+        {
+          funcNode->setExecutionMode(_oldmode);
+          SubjectNode* snode = GuiContext::getCurrent()->_mapOfSubjectNode[funcNode];
+          snode->update(UPDATE, 0, 0);
+          return true;
+        }
+      else
+        {
+          GuiContext::getCurrent()->_lastErrorMessage = "node is not an InlineFuncNode: " + _nodeName;
+          return false;
+        }
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandSetExecutionMode::localReverse() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      return false;
+    }
+  return true;
+}
+
+
+// ----------------------------------------------------------------------------
+
+CommandSetContainer::CommandSetContainer(std::string nodeName, std::string container)
+  : Command(), _container(container),_nodeName(nodeName)
+{
+  DEBTRACE("CommandSetContainer::CommandSetContainer " << nodeName << " " << container);
+  _oldcont = "DefaultContainer";
+}
+
+std::string CommandSetContainer::dump()
+{
+  string ret ="CommandSetContainer " + _container + " " + _nodeName;
+  return ret;
+}
+
+bool CommandSetContainer::localExecute()
+{
+  DEBTRACE("CommandSetContainer::localExecute");
+  try
+    {
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      if (proc->containerMap.count(_container))
+        {
+          Container *cont = proc->containerMap[_container];
+          Node* node = proc->getChildByName(_nodeName);
+          if (YACS::ENGINE::InlineFuncNode* funcNode = dynamic_cast<YACS::ENGINE::InlineFuncNode*>(node))
+            {
+              Container* oldcont = funcNode->getContainer();
+              if(oldcont)
+                _oldcont = funcNode->getContainer()->getName();
+              funcNode->setContainer(cont);
+              SubjectNode* snode = GuiContext::getCurrent()->_mapOfSubjectNode[funcNode];
+              SubjectContainer *subcont = GuiContext::getCurrent()->_mapOfSubjectContainer[cont];
+              snode->update(ASSOCIATE, 0, subcont);
+              return true;
+            }
+          else
+            {
+              GuiContext::getCurrent()->_lastErrorMessage = "node is not an InlineFuncNode: " + _nodeName;
+              return false;
+            }
+        }
+      else
+        GuiContext::getCurrent()->_lastErrorMessage = "Container not found: " + _container;
+      return false;
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandSetContainer::localExecute() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      return false;
+    }
+}
+
+bool CommandSetContainer::localReverse()
+{
+  DEBTRACE("CommandSetContainer::localReverse");
+  try
+    {
+      if (_oldcont == _container) return true;
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      if (proc->containerMap.count(_oldcont))
+        {
+          Container *cont = proc->containerMap[_oldcont];
+          Node* node = proc->getChildByName(_nodeName);
+          if (YACS::ENGINE::InlineFuncNode* funcNode = dynamic_cast<YACS::ENGINE::InlineFuncNode*>(node))
+            {
+              funcNode->setContainer(cont);
+              SubjectNode* snode = GuiContext::getCurrent()->_mapOfSubjectNode[funcNode];
+              SubjectContainer *subcont = GuiContext::getCurrent()->_mapOfSubjectContainer[cont];
+              snode->update(ASSOCIATE, 0, subcont);
+              return true;
+            }
+          else
+            {
+              GuiContext::getCurrent()->_lastErrorMessage = "node is not an InlineFuncNode: " + _nodeName;
+              return false;
+            }
+        }
+      else
+        GuiContext::getCurrent()->_lastErrorMessage = "Container not found: " + _oldcont;
+      return false;
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandSetContainer::localReverse() : " << ex.what());
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      return false;
+    }
+  return true;
+}
+
+
   
 // ----------------------------------------------------------------------------
 
@@ -3654,7 +3914,7 @@ bool CommandAssociateServiceToComponent::localExecute()
             GuiContext::getCurrent()->_lastErrorMessage = "Component instance not found: " + _instanceName;
         }
       else
-        GuiContext::getCurrent()->_lastErrorMessage = "Node is note a service node: " + _service;
+        GuiContext::getCurrent()->_lastErrorMessage = "Node is not a service node: " + _service;
       return false;
     }
   catch (Exception& ex)

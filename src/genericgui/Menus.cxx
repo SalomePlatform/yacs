@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "Menus.hxx"
 #include "QtGuiContext.hxx"
 #include "guiObservers.hxx"
@@ -152,6 +153,7 @@ void ComposedNodeMenu::popupMenu(QWidget *caller, const QPoint &globalPos, const
   menu.addSeparator();
   menu.addAction(gmain->_zoomToBlocAct);
   menu.addAction(gmain->_centerOnNodeAct);
+  menu.addAction(gmain->_shrinkExpand);
   menu.addAction(gmain->_computeLinkAct);
 //   menu.addAction(gmain->_toggleAutomaticComputeLinkAct);
 //   menu.addAction(gmain->_toggleSimplifyLinkAct);
@@ -165,6 +167,15 @@ void ComposedNodeMenu::popupMenu(QWidget *caller, const QPoint &globalPos, const
       menu.addAction(gmain->_copyItemAct);
       menu.addAction(gmain->_pasteItemAct);
       menu.addAction(gmain->_putInBlocAct);
+
+      Subject* sub = QtGuiContext::getQtCurrent()->getSelectedSubject();
+      SubjectNode *sin = dynamic_cast<SubjectNode*>(sub);
+      if(sin && !sin->isValid())
+        {
+          menu.addSeparator();
+          menu.addAction(gmain->_getErrorReportAct);
+          menu.addAction(gmain->_getErrorDetailsAct);
+        }
     }
   else
     {
@@ -359,6 +370,13 @@ void ElementaryNodeMenu::popupMenu(QWidget *caller, const QPoint &globalPos, con
 //           menu.addAction(gmain->_newContainerAct);
 //           menu.addSeparator();
 //         }
+      Subject* sub = QtGuiContext::getQtCurrent()->getSelectedSubject();
+      SubjectNode *sin = dynamic_cast<SubjectNode*>(sub);
+      if(sin && !sin->isValid())
+        {
+          menu.addAction(gmain->_getErrorReportAct);
+          menu.addSeparator();
+        }
       menu.addAction(gmain->_deleteItemAct);
       menu.addAction(gmain->_cutItemAct);
       menu.addAction(gmain->_copyItemAct);
@@ -380,6 +398,7 @@ void ElementaryNodeMenu::popupMenu(QWidget *caller, const QPoint &globalPos, con
   menu.addSeparator();
   menu.addAction(gmain->_zoomToBlocAct);
   menu.addAction(gmain->_centerOnNodeAct);
+  menu.addAction(gmain->_shrinkExpand);
 //   menu.addSeparator();
 //   menu.addAction(gmain->_toggleSceneItemVisibleAct);
   menu.exec(globalPos);

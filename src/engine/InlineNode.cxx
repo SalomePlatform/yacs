@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,8 +16,11 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "InlineNode.hxx"
 #include "Visitor.hxx"
+#include "Container.hxx"
+#include <iostream>
 
 using namespace YACS::ENGINE;
 using namespace std;
@@ -41,8 +44,11 @@ void InlineNode::setScript(const std::string& script)
 }
 
 
-
-InlineFuncNode::~InlineFuncNode() { }
+InlineFuncNode::~InlineFuncNode()
+{ 
+  if(_container)
+    _container->decrRef();
+}
 
 void InlineFuncNode::accept(Visitor *visitor)
 {
@@ -64,3 +70,50 @@ void InlineFuncNode::checkBasicConsistency() const throw(YACS::Exception)
        throw Exception(mess);
      }
 }
+
+void InlineFuncNode::setExecutionMode(const std::string& mode)
+{
+  if(mode == _mode)return;
+  if(mode == "local"||mode == "remote")
+    {
+      _mode=mode;
+      modified();
+    }
+}
+
+std::string InlineFuncNode::getExecutionMode()
+{
+  return _mode;
+}
+
+Container* InlineFuncNode::getContainer()
+{
+  return _container;
+}
+
+void InlineFuncNode::setContainer(Container* cont)
+{
+  if (cont == _container) return;
+  if(_container)
+    _container->decrRef();
+  _container=cont;
+  if(_container)
+    _container->incrRef();
+}
+
+void InlineFuncNode::performDuplicationOfPlacement(const Node& other)
+{
+  const InlineFuncNode &otherC=*(dynamic_cast<const InlineFuncNode *>(&other));
+  //if other has no container don't clone: this will not have one
+  if(otherC._container)
+    _container=otherC._container->clone();
+}
+
+bool InlineFuncNode::isDeployable() const
+{
+  if(_mode=="remote")
+    return true;
+  else
+    return false;
+}
+

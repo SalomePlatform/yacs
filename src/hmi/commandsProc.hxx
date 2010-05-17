@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef _COMMANDSPROC_HXX_
 #define _COMMANDSPROC_HXX_
 
@@ -550,6 +551,21 @@ namespace YACS
       std::map<std::string,std::string> _oldProp;
     };
 
+    class CommandSetComponentInstanceProperties: public Command
+    {
+    public:
+      CommandSetComponentInstanceProperties(std::string compoinstance,
+                                            std::map<std::string,std::string> properties);
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      virtual std::string dump();
+      std::string _compoinstance;
+      std::map<std::string,std::string> _properties;
+      std::map<std::string,std::string> _oldProp;
+      bool _oldAnon;
+    };
+
     class CommandSetDSPortProperties: public Command
     {
     public:
@@ -625,6 +641,32 @@ namespace YACS
       std::string _container;
       std::string _name;
       SubjectComponent *_subcompo;
+    };
+
+    class CommandSetExecutionMode: public Command
+    {
+    public:
+      CommandSetExecutionMode(std::string nodeName, std::string mode);
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      virtual std::string dump();
+      std::string _mode;
+      std::string _nodeName;
+      std::string _oldmode;
+    };
+
+    class CommandSetContainer: public Command
+    {
+    public:
+      CommandSetContainer(std::string nodeName, std::string container);
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      virtual std::string dump();
+      std::string _container;
+      std::string _nodeName;
+      std::string _oldcont;
     };
 
     class CommandAssociateComponentToContainer: public Command

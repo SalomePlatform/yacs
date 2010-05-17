@@ -1,5 +1,5 @@
 #!/bin/sh
-#  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+#  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 #
 #  This library is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU Lesser General Public
@@ -17,6 +17,7 @@
 #
 #  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+
 BASEREP=`pwd`
 OMNIORB_CONFIG=${BASEREP}/omniorb.cfg
 OMNINAMES_LOGDIR=${BASEREP}/omnilog
@@ -43,7 +44,7 @@ echo $pidomni
 #wait enough time to let omniNames start
 sleep 2
 
-./echoSrv &
+./runtimeTestEchoSrv &
 pidecho=$!
 echo $pidecho
 
@@ -51,7 +52,7 @@ mkdir -p lib/salome
 cp .libs/libTestComponentLocal.so lib/salome
 export TESTCOMPONENT_ROOT_DIR=`pwd`
 
-#wait enough time to let echoSrv start and register
+#wait enough time to let runtimeTestEchoSrv start and register
 sleep 2
 
 ./TestRuntime

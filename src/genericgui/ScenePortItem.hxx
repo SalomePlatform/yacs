@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef _SCENEPORTITEM_HXX_
 #define _SCENEPORTITEM_HXX_
 
@@ -33,8 +34,6 @@ namespace YACS
       ScenePortItem(QString label);
       virtual ~ScenePortItem();
       virtual void setText(QString label)=0;
-      static int getPortWidth();
-      static int getPortHeight();
     protected:
       SceneTextItem* _text;
     };

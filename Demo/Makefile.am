@@ -1,4 +1,4 @@
-#  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+#  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 #
 #  This library is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU Lesser General Public
@@ -16,13 +16,15 @@
 #
 #  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+
 include $(top_srcdir)/adm/unix/make_begin.am
 
+IDL_FILES = echo.idl
 BUILT_SOURCES = echoSK.cc schema.xml xmlrpcprog.py
 bin_PROGRAMS=echoSrvDemo 
 echoSrvDemo_SOURCES = echoSrv.cxx 
 nodist_echoSrvDemo_SOURCES = echoSK.cc
-echoSrvDemo_CXXFLAGS = $(OMNIORB_INCLUDES) $(OMNIORB_CXXFLAGS) 
+echoSrvDemo_CXXFLAGS = -I. $(OMNIORB_INCLUDES) $(OMNIORB_CXXFLAGS) 
 echoSrvDemo_LDFLAGS = $(OMNIORB_LIBS)
 AM_CXXFLAGS = $(THREAD_DEF)
 

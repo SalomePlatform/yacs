@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "yacsconfig.h"
 #include "RuntimeSALOME.hxx"
 #include "Proc.hxx"
@@ -36,6 +37,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <signal.h>
 
 #ifdef WNT
 #else
@@ -165,6 +167,31 @@ void timer(std::string msg)
 #endif
 }
 
+Proc* p=0;
+
+
+void Handler(int theSigId)
+{
+  if(p)
+    p->cleanNodes();
+  _exit(1);
+}
+
+#ifndef WNT
+typedef void (*sighandler_t)(int);
+sighandler_t setsig(int sig, sighandler_t handler)
+{
+  struct sigaction context, ocontext;
+  context.sa_handler = handler;
+  sigemptyset(&context.sa_mask);
+  context.sa_flags = 0;
+  if (sigaction(sig, &context, &ocontext) == -1)
+    return SIG_ERR;
+  return ocontext.sa_handler;
+}
+#endif
+
+
 int main (int argc, char* argv[])
 {
   struct arguments myArgs;
@@ -190,6 +217,11 @@ int main (int argc, char* argv[])
     cerr << " dumpErrorFile=" << myArgs.dumpErrorFile << endl;
   else
     cerr << endl;
+#endif
+
+#ifndef WNT
+  setsig(SIGINT,&Handler);
+  setsig(SIGTERM,&Handler);
 #endif
 
   timer("Starting ");
@@ -224,7 +256,7 @@ int main (int argc, char* argv[])
   try
     {
       timer("Elapsed time before load: ");
-      Proc* p=loader.load(myArgs.args[0]);
+      p=loader.load(myArgs.args[0]);
       if(p==0)
         {
           std::cerr << "The imported file is probably not a YACS schema file" << std::endl;

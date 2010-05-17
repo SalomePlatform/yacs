@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,9 +16,19 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "AnyOutputPort.hxx"
 #include "Any.hxx"
 #include "Runtime.hxx"
+#include "Mutex.hxx"
+
+static YACS::BASES::Mutex MUTEX;
+struct Lock
+{
+  Lock(){MUTEX.lock();};
+  ~Lock(){MUTEX.unlock();};
+};
+
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -65,15 +75,18 @@ void AnyOutputPort::put(const void *data) throw(ConversionException)
 
 void AnyOutputPort::put(YACS::ENGINE::Any *data) throw(ConversionException)
 {
+  {  Lock lock;
   if(_data)
     _data->decrRef();
   _data = data;
   if(_data)
     _data->incrRef();
+  }
   OutputPort::put(data);
 }
 
 std::string AnyOutputPort::getAsString()
 {
+  Lock lock;
   return getRuntime()->convertNeutralAsString(edGetType(),_data);
 }

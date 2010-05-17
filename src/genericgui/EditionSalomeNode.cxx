@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "EditionSalomeNode.hxx"
 #include "FormComponent.hxx"
 #include "FormContainer.hxx"
@@ -23,6 +24,7 @@
 #include "ComponentInstance.hxx"
 #include "QtGuiContext.hxx"
 #include "Container.hxx"
+#include "Message.hxx"
 
 #include <cassert>
 #include <map>
@@ -201,7 +203,8 @@ void EditionSalomeNode::changeInstance(int index)
     {
       YASSERT(GuiContext::getCurrent()->_mapOfSubjectComponent.count(newCompoInst));
       SubjectServiceNode *ssn = dynamic_cast<SubjectServiceNode*>(_subject);
-      ssn->associateToComponent(GuiContext::getCurrent()->_mapOfSubjectComponent[newCompoInst]);
+      if(!ssn->associateToComponent(GuiContext::getCurrent()->_mapOfSubjectComponent[newCompoInst]))
+        Message mess;
     }
 }
 

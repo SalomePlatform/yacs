@@ -36,4 +36,6 @@ codes in Fortran, C, Python and that use CALCIUM datastream ports, that is not p
    hxx2salome
    progdsc
    calcium
+   calciumapi
+   calciummod
    yacsgen

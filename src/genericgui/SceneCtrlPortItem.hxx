@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef _SCENECTRLPORTITEM_HXX_
 #define _SCENECTRLPORTITEM_HXX_
 
@@ -42,8 +43,6 @@ namespace YACS
                          QWidget *widget);
       virtual SceneNodeItem* getParentNode();
       SubjectNode* getSubjectNode();
-      static int getPortWidth();
-      static int getPortHeight();
     protected:
       virtual QString getMimeFormat();
       virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);

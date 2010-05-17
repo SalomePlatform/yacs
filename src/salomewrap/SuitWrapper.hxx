@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,8 +16,11 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef _SUITWRAPPER_HXX_
 #define _SUITWRAPPER_HXX_
+
+#include "SalomeWrapExport.hxx"
 
 #include <QAction>
 #include <QString>
@@ -36,7 +39,7 @@ namespace YACS
 
     //! wrapping for SalomeApp_Module
 
-    class SuitWrapper
+    class SALOMEWRAP_EXPORT SuitWrapper
     {
       
     public:
@@ -128,6 +131,7 @@ namespace YACS
                         const QString& runName,
                         QWidget* refWindow,
                         QWidget* viewWindow);
+      QStringList getQuickDirList();
 
     protected: 
       QObject* _wrapped; // SalomeApp_module or Standalone Application

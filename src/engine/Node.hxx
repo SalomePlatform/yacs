@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef __NODE_HXX__
 #define __NODE_HXX__
 
@@ -158,6 +159,8 @@ namespace YACS
       virtual std::string getErrorReport();
       virtual std::string getContainerLog();
       virtual void ensureLoading();
+      virtual void getCoupledNodes(std::set<Task*>& coupledNodes){};
+      virtual void cleanNodes();
     protected:
       virtual void exForwardFailed();
       virtual void exForwardFinished();

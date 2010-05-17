@@ -1,4 +1,4 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef _EDITIONDATALINK_HXX_
 #define _EDITIONDATALINK_HXX_
 
@@ -25,6 +26,7 @@ namespace YACS
 {
   namespace HMI
   {
+    class PropertyEditor;
 
     class EditionDataLink: public ItemEdition
     {
@@ -33,7 +35,10 @@ namespace YACS
                   QWidget* parent = 0,
                   const char* name = 0);
       virtual ~EditionDataLink();
+      virtual void update(GuiEvent event, int type, Subject* son);
       // informations
+    protected:
+      PropertyEditor* _propeditor;
     };
   }
 }

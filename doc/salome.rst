@@ -80,29 +80,25 @@ Making conforming with the component IDL
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Proceed as follows to adapt the standard CORBA / C++ implementation classes (as seen in the previous chapter):
 
-#. Insert the ``SALOMEconfig.h`` file::
+#. Insert the ``SALOMEconfig.h`` file that contains a number of useful definitions to make the code of the implementation
+   class independent from the CORBA version used::
 
-             #include <SALOMEconfig.h>
+            #include <SALOMEconfig.h>
 
-    The ``SALOMEconfig.h`` file contains a number of useful definitions to make the code of the implementation 
-    class independent from the CORBA version used.
+#. then insert the ``SALOME_Component_i.hxx`` file that contains the interface of the C++ implementation class of the SALOME basic component::
 
-#. then insert the ``SALOME_Component_i.hxx`` file::
-
-             #include "SALOME_Component_i.hxx"
-
-    that contains the interface of the C++ implementation class of the SALOME basic component.
+            #include "SALOME_Component_i.hxx"
 
 #. for the CORBA class that is implemented, add the following line::
 
-             #include CORBA_SERVER_HEADER(A)
+            #include CORBA_SERVER_HEADER(A)
 
-    ``CORBA_SERVER_HEADER`` is a macro defined in ``SALOMEconfig.h`` that makes CORBA inclusion file names independent 
-    from the CORBA implementation used.
+   ``CORBA_SERVER_HEADER`` is a macro defined in ``SALOMEconfig.h`` that makes CORBA inclusion file names independent 
+   from the CORBA implementation used.
 
 #. for each CORBA class used in the implementation class, add the following line::
 
-            #include CORBA_CLIENT_HEADER(<nom de la classe CORBA>)
+            #include CORBA_CLIENT_HEADER(<CORBA class name>)
 
    ``CORBA_CLIENT_HEADER`` is a macro defined in ``SALOMEconfig.h`` that makes CORBA inclusion file names independent 
    from the CORBA implementation used.
