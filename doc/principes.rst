@@ -834,7 +834,7 @@ Goals of Graphic User Interface design are the following:
       For this goal, a subject/observers design pattern is used: several observers can attach or detach themselves to/from the subject.  
       The subject send update events to the lists of observers and does not know the implementation of the observers.  The observers 
       correspond to the different views in case of YACS.
-    * Provide an interface of Engine for edition with a general mechanism for undo-redo (in a future version!).
+    * Provide an interface of Engine for edition with a general mechanism for undo-redo.
     * Be as independent as possible of Qt (and SALOME) to allow a potential re-use of YACS GUI outside SALOME.
 
 
