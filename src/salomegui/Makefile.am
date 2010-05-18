@@ -56,6 +56,8 @@ libYACS_la_CXXFLAGS = \
 	-I$(srcdir)/../hmi \
 	-I$(srcdir)/../salomewrap \
 	-I$(srcdir)/../genericgui \
+	-I../genericgui \
+	-I../../idl \
 	$(qt4_cppflags) \
 	$(qsci4_cppflags) \
 	@GRAPHVIZ_CPPFLAGS@
