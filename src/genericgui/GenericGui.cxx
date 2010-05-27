@@ -193,479 +193,390 @@ void GenericGui::createActions()
   //                             QObject* receiver =0,
   //                             const char* member =0);
 
-  QPixmap pixmap;
-
-  pixmap.load("icons:schema.png");
-  _newSchemaAct = _wrapper->createAction(getMenuId(), tr("Create a new YACS Schema"), QIcon(pixmap),
+  _newSchemaAct = _wrapper->createAction(getMenuId(), tr("Create a new YACS Schema"), QIcon("icons:schema.png"),
                                          tr("New Schema"), tr("Create a new YACS Schema"),
                                          0, _parent, false, this,  SLOT(onNewSchema()));
   _newSchemaAct->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_N); // --- QKeySequence::New ambiguous in SALOME
 
-  pixmap.load("icons:import_dataflow.png");
-  _importSchemaAct = _wrapper->createAction(getMenuId(), tr("Import a YACS Schema for edition"), QIcon(pixmap),
+  _importSchemaAct = _wrapper->createAction(getMenuId(), tr("Import a YACS Schema for edition"), QIcon("icons:import_dataflow.png"),
                                             tr("Import Schema"), tr("Import a YACS Schema for edition"),
                                             0, _parent, false, this,  SLOT(onImportSchema()));
   _importSchemaAct->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_O); // --- QKeySequence::Open ambiguous in SALOME
   
-  pixmap.load("icons:import_superv_dataflow.png");
-  _importSupervSchemaAct = _wrapper->createAction(getMenuId(), tr("Import a SUPERV Schema for edition"), QIcon(pixmap),
+  _importSupervSchemaAct = _wrapper->createAction(getMenuId(), tr("Import a SUPERV Schema for edition"), QIcon("icons:import_superv_dataflow.png"),
                                                   tr("Import SUPERV Schema"), tr("Import a SUPERV Schema for edition"),
                                                   0, _parent, false, this,  SLOT(onImportSupervSchema()));
   
-  pixmap.load("icons:save_dataflow.png");
-  _exportSchemaAct = _wrapper->createAction(getMenuId(), tr("Save the current YACS Schema"), QIcon(pixmap),
+  _exportSchemaAct = _wrapper->createAction(getMenuId(), tr("Save the current YACS Schema"), QIcon("icons:save_dataflow.png"),
                                             tr("Save Schema"), tr("Save the current YACS Schema"),
                                             0, _parent, false, this,  SLOT(onExportSchema()));
   _exportSchemaAct->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_S); // --- QKeySequence::Save ambiguous in SALOME
   
-  pixmap.load("icons:export_dataflow.png");
-  _exportSchemaAsAct = _wrapper->createAction(getMenuId(), tr("Save the current YACS Schema As..."), QIcon(pixmap),
+  _exportSchemaAsAct = _wrapper->createAction(getMenuId(), tr("Save the current YACS Schema As..."), QIcon("icons:export_dataflow.png"),
                                               tr("Save Schema As"), tr("Save the current YACS Schema As..."),
                                               0, _parent, false, this,  SLOT(onExportSchemaAs()));
   //_exportSchemaAsAct->setShortcut(QKeySequence::SaveAs); // --- ambiguous in SALOME
 
-  pixmap.load("icons:insert_file.png");
-  _importCatalogAct = _wrapper->createAction(getMenuId(), tr("Import a Schema as a Catalog"), QIcon(pixmap),
+  _importCatalogAct = _wrapper->createAction(getMenuId(), tr("Import a Schema as a Catalog"), QIcon("icons:insert_file.png"),
                                              tr("Import Catalog"), tr("Import a Schema as a Catalog"),
                                              0, _parent, false, this,  SLOT(onImportCatalog()));
 
 
-  pixmap.load("icons:run_active.png");
-  _runLoadedSchemaAct = _wrapper->createAction(getMenuId(), tr("Prepare the current edited schema for run"), QIcon(pixmap),
+  _runLoadedSchemaAct = _wrapper->createAction(getMenuId(), tr("Prepare the current edited schema for run"), QIcon("icons:run_active.png"),
                                                tr("Run Current Schema"), tr("Prepare the current edited schema for run"),
                                                0, _parent, false, this,  SLOT(onRunLoadedSchema()));
 
-  pixmap.load("icons:load_execution_state.png");
-  _loadRunStateSchemaAct = _wrapper->createAction(getMenuId(), tr("Load a previous run state for this schema, prepare to run"), QIcon(pixmap),
+  _loadRunStateSchemaAct = _wrapper->createAction(getMenuId(), tr("Load a previous run state for this schema, prepare to run"), QIcon("icons:load_execution_state.png"),
                                                   tr("Load Run State"), tr("Load a previous run state for this schema, prepare to run"),
                                                   0, _parent, false, this,  SLOT(onLoadRunStateSchema()));
 
-  pixmap.load("icons:run.png");
-  _loadAndRunSchemaAct = _wrapper->createAction(getMenuId(), tr("Load a schema for run"), QIcon(pixmap),
+  _loadAndRunSchemaAct = _wrapper->createAction(getMenuId(), tr("Load a schema for run"), QIcon("icons:run.png"),
                                                 tr("Load Schema to run"), tr("Load a schema for run"),
                                                 0, _parent, false, this,  SLOT(onLoadAndRunSchema()));
 
-  pixmap.load("icons:batch.png");
-  _loadBatchAct = _wrapper->createAction(getMenuId(), tr("Load Batch Schema for edition"), QIcon(pixmap),
+  _loadBatchAct = _wrapper->createAction(getMenuId(), tr("Load Batch Schema for edition"), QIcon("icons:batch.png"),
                                          tr("Load Batch Schema"), tr("Load Batch Schema for edition"),
                                          0, _parent, false, this,  SLOT(onBatch()));
 
-  pixmap.load("icons:suspend_resume.png");
-  _startResumeAct = _wrapper->createAction(getMenuId(), tr("Start or Resume Schema execution"), QIcon(pixmap),
+  _startResumeAct = _wrapper->createAction(getMenuId(), tr("Start or Resume Schema execution"), QIcon("icons:suspend_resume.png"),
                                            tr("Start/Resume execution"), tr("Start or Resume Schema execution"),
                                            0, _parent, false, this,  SLOT(onStartResume()));
 
-  pixmap.load("icons:kill.png");
-  _abortAct = _wrapper->createAction(getMenuId(), tr("Abort the current execution"), QIcon(pixmap),
+  _abortAct = _wrapper->createAction(getMenuId(), tr("Abort the current execution"), QIcon("icons:kill.png"),
                                      tr("Abort execution"), tr("Abort the current execution"),
                                      0, _parent, false, this,  SLOT(onAbort()));
 
-  pixmap.load("icons:pause.png");
-  _pauseAct = _wrapper->createAction(getMenuId(), tr("Suspend the current execution"), QIcon(pixmap),
+  _pauseAct = _wrapper->createAction(getMenuId(), tr("Suspend the current execution"), QIcon("icons:pause.png"),
                                      tr("Suspend execution"), tr("Suspend the current execution"),
                                      0, _parent, false, this,  SLOT(onPause()));
 
-  pixmap.load("icons:reset.png");
-  _resetAct = _wrapper->createAction(getMenuId(), tr("Reset the current execution"), QIcon(pixmap),
+  _resetAct = _wrapper->createAction(getMenuId(), tr("Reset the current execution"), QIcon("icons:reset.png"),
                                      tr("Reset execution"), tr("Reset the current execution"),
                                      0, _parent, false, this,  SLOT(onReset()));
 
 
-  pixmap.load("icons:save_dataflow_state.png");
-  _saveRunStateAct = _wrapper->createAction(getMenuId(), tr("Save the current run state"), QIcon(pixmap),
+  _saveRunStateAct = _wrapper->createAction(getMenuId(), tr("Save the current run state"), QIcon("icons:save_dataflow_state.png"),
                                             tr("Save State"), tr("Save the current run state"),
                                             0, _parent, false, this,  SLOT(onSaveRunState()));
 
-  pixmap.load("icons:new_edition.png");
-  _newEditionAct = _wrapper->createAction(getMenuId(), tr("Edit again the current schema in a new context"), QIcon(pixmap),
+  _newEditionAct = _wrapper->createAction(getMenuId(), tr("Edit again the current schema in a new context"), QIcon("icons:new_edition.png"),
                                           tr("Edit Again"), tr("Edit again the current schema in a new context"),
                                           0, _parent, false, this,  SLOT(onNewEdition()));
 
 
-  pixmap.load("icons:change_informations.png");
-  _getYacsContainerLogAct = _wrapper->createAction(getMenuId(), tr("get YACS container log"), QIcon(pixmap),
+  _getYacsContainerLogAct = _wrapper->createAction(getMenuId(), tr("get YACS container log"), QIcon("icons:change_informations.png"),
                                                    tr("YACS Container Log"), tr("get YACS container log"),
                                                    0, _parent, false, this,  SLOT(onGetYacsContainerLog()));
 
-  pixmap.load("icons:filter_notification.png");
-  _getErrorReportAct = _wrapper->createAction(getMenuId(), tr("get Node Error Report"), QIcon(pixmap),
+  _getErrorReportAct = _wrapper->createAction(getMenuId(), tr("get Node Error Report"), QIcon("icons:filter_notification.png"),
                                               tr("Node Error Report"), tr("get Node Error Report"),
                                               0, _parent, false, this,  SLOT(onGetErrorReport()));
 
-  pixmap.load("icons:icon_text.png");
-  _getErrorDetailsAct = _wrapper->createAction(getMenuId(), tr("get Node Error Details"), QIcon(pixmap),
+  _getErrorDetailsAct = _wrapper->createAction(getMenuId(), tr("get Node Error Details"), QIcon("icons:icon_text.png"),
                                                tr("Node Error Details"), tr("get Node Error Details"),
                                                0, _parent, false, this,  SLOT(onGetErrorDetails()));
 
-  pixmap.load("icons:change_informations.png");
-  _getContainerLogAct = _wrapper->createAction(getMenuId(), tr("get Node Container Log"), QIcon(pixmap),
+  _getContainerLogAct = _wrapper->createAction(getMenuId(), tr("get Node Container Log"), QIcon("icons:change_informations.png"),
                                                tr("Node Container Log"), tr("get Node Container Log"),
                                                0, _parent, false, this,  SLOT(onGetContainerLog()));
 
 
 
-  pixmap.load("icons:kill.png");
-  _editDataTypesAct = _wrapper->createAction(getMenuId(), tr("Edit Data Types"), QIcon(pixmap),
+  _editDataTypesAct = _wrapper->createAction(getMenuId(), tr("Edit Data Types"), QIcon("icons:kill.png"),
                                              tr("Edit Data Types"), tr("Edit Data Types"),
                                              0, _parent, false, this,  SLOT(onEditDataTypes()));
 
-  pixmap.load("icons:kill.png");
-  _createDataTypeAct = _wrapper->createAction(getMenuId(), tr("Create Data Types"), QIcon(pixmap),
+  _createDataTypeAct = _wrapper->createAction(getMenuId(), tr("Create Data Types"), QIcon("icons:kill.png"),
                                               tr("Create Data Types"), tr("Create Data Types"),
                                               0, _parent, false, this,  SLOT(onCreateDataType()));
 
-  pixmap.load("icons:folder_cyan.png");
-  _importDataTypeAct = _wrapper->createAction(getMenuId(), tr("Import Data Types, use drag and drop from catalog"), QIcon(pixmap),
+  _importDataTypeAct = _wrapper->createAction(getMenuId(), tr("Import Data Types, use drag and drop from catalog"), QIcon("icons:folder_cyan.png"),
                                               tr("Import Data Types"), tr("Import Data Types, use drag and drop from catalog"),
                                               0, _parent, false, this,  SLOT(onImportDataType()));
 
-  pixmap.load("icons:container.png");
-  _newContainerAct = _wrapper->createAction(getMenuId(), tr("Create a New Container"), QIcon(pixmap),
+  _newContainerAct = _wrapper->createAction(getMenuId(), tr("Create a New Container"), QIcon("icons:container.png"),
                                             tr("Create Container"), tr("Create a New Container"),
                                             0, _parent, false, this,  SLOT(onNewContainer()));
 
-  pixmap.load("icons:icon_select.png");
-  _selectComponentInstanceAct = _wrapper->createAction(getMenuId(), tr("Select a Component Instance"), QIcon(pixmap),
+  _selectComponentInstanceAct = _wrapper->createAction(getMenuId(), tr("Select a Component Instance"), QIcon("icons:icon_select.png"),
                                                        tr("Select a Component Instance"), tr("Select a Component Instance"),
                                                        0, _parent, false, this,  SLOT(onSelectComponentInstance()));
 
-  pixmap.load("icons:new_salome_component.png");
-  _newSalomeComponentAct = _wrapper->createAction(getMenuId(), tr("Create a New SALOME Component Instance"), QIcon(pixmap),
+  _newSalomeComponentAct = _wrapper->createAction(getMenuId(), tr("Create a New SALOME Component Instance"), QIcon("icons:new_salome_component.png"),
                                                   tr("new Component Instance"), tr("Create a New SALOME Component Instance"),
                                                   0, _parent, false, this,  SLOT(onNewSalomeComponent()));
 
-  pixmap.load("icons:new_salomepy_component.png");
-  _newSalomePythonComponentAct = _wrapper->createAction(getMenuId(), tr("Create a New SALOME Python Component"), QIcon(pixmap),
+  _newSalomePythonComponentAct = _wrapper->createAction(getMenuId(), tr("Create a New SALOME Python Component"), QIcon("icons:new_salomepy_component.png"),
                                                         tr("SALOME Python Component"), tr("Create a New SALOME Python Component"),
                                                         0, _parent, false, this,  SLOT(onNewSalomePythonComponent()));
 
-  pixmap.load("icons:new_corba_component.png");
-  _newCorbaComponentAct = _wrapper->createAction(getMenuId(), tr("Create a New CORBA Component"), QIcon(pixmap),
+  _newCorbaComponentAct = _wrapper->createAction(getMenuId(), tr("Create a New CORBA Component"), QIcon("icons:new_corba_component.png"),
                                                  tr("CORBA Component"), tr("Create a New CORBA Component"),
                                                  0, _parent, false, this,  SLOT(onNewCorbaComponent()));
 
-  pixmap.load("icons:new_salome_service_node.png");
-  _salomeServiceNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New SALOME Service Node"), QIcon(pixmap),
+  _salomeServiceNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New SALOME Service Node"), QIcon("icons:new_salome_service_node.png"),
                                                  tr("SALOME Service Node"), tr("Create a New SALOME Service Node"),
                                                  0, _parent, false, this,  SLOT(onSalomeServiceNode()));
 
-  pixmap.load("icons:new_service_inline_node.png");
-  _serviceInlineNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New Inline Service Node"), QIcon(pixmap),
+  _serviceInlineNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New Inline Service Node"), QIcon("icons:new_service_inline_node.png"),
                                                  tr("Inline Service Node"), tr("Create a New Inline Service Node"),
                                                  0, _parent, false, this,  SLOT(onServiceInlineNode()));
 
-  pixmap.load("icons:new_corba_service_node.png");
-  _CORBAServiceNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New CORBA Service Node"), QIcon(pixmap),
+  _CORBAServiceNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New CORBA Service Node"), QIcon("icons:new_corba_service_node.png"),
                                                 tr("CORBA Node"), tr("Create a New CORBA Service Node"),
                                                 0, _parent, false, this,  SLOT(onCORBAServiceNode()));
 
-  pixmap.load("icons:new_nodenode_service_node.png");
-  _nodeNodeServiceNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New Node referencing a Node"), QIcon(pixmap),
+  _nodeNodeServiceNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New Node referencing a Node"), QIcon("icons:new_nodenode_service_node.png"),
                                                    tr("Ref on Node"), tr("Create a New Node referencing a Node"),
                                                    0, _parent, false, this,  SLOT(onNodeNodeServiceNode()));
 
-  pixmap.load("icons:new_cpp_node.png");
-  _cppNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New C++ Node"), QIcon(pixmap),
+  _cppNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New C++ Node"), QIcon("icons:new_cpp_node.png"),
                                        tr("Cpp Node"), tr("Create a New C++ Node"),
                                        0, _parent, false, this,  SLOT(onCppNode()));
 
-  pixmap.load("icons:node.png");
-  _inDataNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New Input data Node"), QIcon(pixmap),
+  _inDataNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New Input data Node"), QIcon("icons:node.png"),
                                           tr("Input Data Node"), tr("Create a New Input data Node"),
                                           0, _parent, false, this,  SLOT(onInDataNode()));
 
-  pixmap.load("icons:node.png");
-  _outDataNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New Output data Node"), QIcon(pixmap),
+  _outDataNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New Output data Node"), QIcon("icons:node.png"),
                                            tr("Output Data Node"), tr("Create a New Output data Node"),
                                            0, _parent, false, this,  SLOT(onOutDataNode()));
 
-  pixmap.load("icons:node.png");
-  _inStudyNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New Input Study Node"), QIcon(pixmap),
+  _inStudyNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New Input Study Node"), QIcon("icons:node.png"),
                                            tr("Input Study Node"), tr("Create a New Input Study Node"),
                                            0, _parent, false, this,  SLOT(onInStudyNode()));
 
-  pixmap.load("icons:node.png");
-  _outStudyNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New Output Study Node"), QIcon(pixmap),
+  _outStudyNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New Output Study Node"), QIcon("icons:node.png"),
                                             tr("Output Study Node"), tr("Create a New Output Study Node"),
                                             0, _parent, false, this,  SLOT(onOutStudyNode()));
 
-  pixmap.load("icons:new_inline_script_node.png");
-  _inlineScriptNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New Inline Python Script Node"), QIcon(pixmap),
+  _inlineScriptNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New Inline Python Script Node"), QIcon("icons:new_inline_script_node.png"),
                                                 tr("Inline Script Node"), tr("Create a New Inline Python Script Node"),
                                                 0, _parent, false, this,  SLOT(onInlineScriptNode()));
 
-  pixmap.load("icons:new_inline_function_node.png");
-  _inlineFunctionNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New Inline Python Function Node"), QIcon(pixmap),
+  _inlineFunctionNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New Inline Python Function Node"), QIcon("icons:new_inline_function_node.png"),
                                                   tr("Inline Function Node"), tr("Create a New Inline Python Function Node"),
                                                   0, _parent, false, this,  SLOT(onInlineFunctionNode()));
 
-  pixmap.load("icons:new_block_node.png");
-  _blockNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New Bloc Node"), QIcon(pixmap),
+  _blockNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New Bloc Node"), QIcon("icons:new_block_node.png"),
                                          tr("bloc Node"), tr("Create a New Bloc Node"),
                                          0, _parent, false, this,  SLOT(onBlockNode()));
 
-  pixmap.load("icons:new_for_loop_node.png");
-  _FORNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New For Loop Node"), QIcon(pixmap),
+  _FORNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New For Loop Node"), QIcon("icons:new_for_loop_node.png"),
                                        tr("For Loop Node"), tr("Create a New For Loop Node"),
                                        0, _parent, false, this,  SLOT(onFORNode()));
 
-  pixmap.load("icons:new_foreach_loop_node.png");
-  _FOREACHNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New For Each Loop Node"), QIcon(pixmap),
+  _FOREACHNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New For Each Loop Node"), QIcon("icons:new_foreach_loop_node.png"),
                                            tr("For Each Loop Node"), tr("Create a New For Each Loop Node"),
                                            0, _parent, false, this,  SLOT(onFOREACHNode()));
 
-  pixmap.load("icons:new_while_loop_node.png");
-  _WHILENodeAct = _wrapper->createAction(getMenuId(), tr("Create a New While Loop Node"), QIcon(pixmap),
+  _WHILENodeAct = _wrapper->createAction(getMenuId(), tr("Create a New While Loop Node"), QIcon("icons:new_while_loop_node.png"),
                                          tr("While Loop Node"), tr("Create a New While Loop Node"),
                                          0, _parent, false, this,  SLOT(onWHILENode()));
 
-  pixmap.load("icons:new_switch_loop_node.png");
-  _SWITCHNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New Switch Node"), QIcon(pixmap),
+  _SWITCHNodeAct = _wrapper->createAction(getMenuId(), tr("Create a New Switch Node"), QIcon("icons:new_switch_loop_node.png"),
                                           tr("Switch Node"), tr("Create a New Switch Node"),
                                           0, _parent, false, this,  SLOT(onSWITCHNode()));
 
-  pixmap.load("icons:new_for_loop_node.png");
-  _OptimizerLoopAct = _wrapper->createAction(getMenuId(), tr("Create a New Optimizer Loop Node"), QIcon(pixmap),
+  _OptimizerLoopAct = _wrapper->createAction(getMenuId(), tr("Create a New Optimizer Loop Node"), QIcon("icons:new_for_loop_node.png"),
                                              tr("Optimizer Loop"), tr("Create a New Optimizer Loop"),
                                              0, _parent, false, this,  SLOT(onOptimizerLoop()));
 
-  pixmap.load("icons:new_from_library_node.png");
-  _nodeFromCatalogAct = _wrapper->createAction(getMenuId(), tr("Create a New Node from Catalog, use drag and drop from catalog"), QIcon(pixmap),
+  _nodeFromCatalogAct = _wrapper->createAction(getMenuId(), tr("Create a New Node from Catalog, use drag and drop from catalog"), QIcon("icons:new_from_library_node.png"),
                                                tr("Node from Catalog"), tr("Create a New Node from Catalog, use drag and drop from catalog"),
                                                0, _parent, false, this,  SLOT(onNodeFromCatalog()));
 
-  pixmap.load("icons:delete.png");
-  _deleteItemAct = _wrapper->createAction(getMenuId(), tr("Delete a Schema Item"), QIcon(pixmap),
+  _deleteItemAct = _wrapper->createAction(getMenuId(), tr("Delete a Schema Item"), QIcon("icons:delete.png"),
                                           tr("Delete Item"), tr("Delete a Schema Item"),
                                           0, _parent, false, this,  SLOT(onDeleteItem()));
   _deleteItemAct->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_D); // --- QKeySequence::Delete dangerous...
 
-  pixmap.load("icons:cut.png");
-  _cutItemAct = _wrapper->createAction(getMenuId(), tr("Cut a Schema Item"), QIcon(pixmap),
+  _cutItemAct = _wrapper->createAction(getMenuId(), tr("Cut a Schema Item"), QIcon("icons:cut.png"),
                                        tr("Cut Item"), tr("Cut a Schema Item"),
                                        0, _parent, false, this,  SLOT(onCutItem()));
   _cutItemAct->setShortcut(QKeySequence::Cut);
 
-  pixmap.load("icons:copy.png");
-  _copyItemAct = _wrapper->createAction(getMenuId(), tr("Copy a Schema Item"), QIcon(pixmap),
+  _copyItemAct = _wrapper->createAction(getMenuId(), tr("Copy a Schema Item"), QIcon("icons:copy.png"),
                                         tr("Copy Item"), tr("Copy a Schema Item"),
                                         0, _parent, false, this,  SLOT(onCopyItem()));
   _copyItemAct->setShortcut(QKeySequence::Copy);
 
-  pixmap.load("icons:paste.png");
-  _pasteItemAct = _wrapper->createAction(getMenuId(), tr("Paste a Schema Item"), QIcon(pixmap),
+  _pasteItemAct = _wrapper->createAction(getMenuId(), tr("Paste a Schema Item"), QIcon("icons:paste.png"),
                                          tr("Paste Item"), tr("Paste a Schema Item"),
                                          0, _parent, false, this,  SLOT(onPasteItem()));
   _pasteItemAct->setShortcut(QKeySequence::Paste);
 
-  _putInBlocAct = _wrapper->createAction(getMenuId(), tr("Put node in block"), QIcon(pixmap),
+  _putInBlocAct = _wrapper->createAction(getMenuId(), tr("Put node in block"), QIcon("icons:paste.png"),
                                          tr("Put node in block"), tr("Put node in block"),
                                          0, _parent, false, this,  SLOT(onPutInBloc()));
 
-  pixmap.load("icons:arrange_nodes.png");
-  _arrangeLocalNodesAct = _wrapper->createAction(getMenuId(), tr("arrange nodes on that bloc level, without recursion"), QIcon(pixmap),
+  _arrangeLocalNodesAct = _wrapper->createAction(getMenuId(), tr("arrange nodes on that bloc level, without recursion"), QIcon("icons:arrange_nodes.png"),
                                                  tr("arrange local nodes"), tr("arrange nodes on that bloc level, without recursion"),
                                                  0, _parent, false, this,  SLOT(onArrangeLocalNodes()));
 
-  pixmap.load("icons:sample.png");
-  _arrangeRecurseNodesAct = _wrapper->createAction(getMenuId(), tr("arrange nodes on that bloc level, with recursion"), QIcon(pixmap),
+  _arrangeRecurseNodesAct = _wrapper->createAction(getMenuId(), tr("arrange nodes on that bloc level, with recursion"), QIcon("icons:sample.png"),
                                                    tr("arrange nodes recursion"), tr("arrange nodes on that bloc level, with recursion"),
                                                    0, _parent, false, this,  SLOT(onArrangeRecurseNodes()));
 
-  pixmap.load("icons:rebuild_links.png");
-  _computeLinkAct = _wrapper->createAction(getMenuId(), tr("compute orthogonal links"), QIcon(pixmap),
+  _computeLinkAct = _wrapper->createAction(getMenuId(), tr("compute orthogonal links"), QIcon("icons:rebuild_links.png"),
                                            tr("compute links"), tr("compute orthogonal links"),
                                            0, _parent, false, this,  SLOT(onRebuildLinks()));
 
-  pixmap.load("icons:zoomToBloc.png");
-  _zoomToBlocAct = _wrapper->createAction(getMenuId(), tr("zoom 2D view to selected bloc"), QIcon(pixmap),
+  _zoomToBlocAct = _wrapper->createAction(getMenuId(), tr("zoom 2D view to selected bloc"), QIcon("icons:zoomToBloc.png"),
                                           tr("zoom to bloc"), tr("zoom 2D view to the selected composed node"),
                                           0, _parent, false, this,  SLOT(onZoomToBloc()));
 
-  pixmap.load("icons:centerOnNode.png");
-  _centerOnNodeAct = _wrapper->createAction(getMenuId(), tr("center 2D view on selected node"), QIcon(pixmap),
+  _centerOnNodeAct = _wrapper->createAction(getMenuId(), tr("center 2D view on selected node"), QIcon("icons:centerOnNode.png"),
                                             tr("center on node"), tr("center 2D view on selected node"),
                                             0, _parent, false, this,  SLOT(onCenterOnNode()));
   _centerOnNodeAct->setShortcut(QKeySequence::Find);
 
-  pixmap.load("icons:shrinkExpand.png");
-  _shrinkExpand = _wrapper->createAction(getMenuId(), tr("shrink or expand the selected node"), QIcon(pixmap),
+  _shrinkExpand = _wrapper->createAction(getMenuId(), tr("shrink or expand the selected node"), QIcon("icons:shrinkExpand.png"),
                                             tr("shrink/expand"), tr("shrink or expand the selected node"),
                                             0, _parent, false, this,  SLOT(onShrinkExpand()));
 
-  pixmap.load("icons:straightLink.png");
-  _toggleStraightLinksAct = _wrapper->createAction(getMenuId(), tr("draw straight or orthogonal links"), QIcon(pixmap),
+  _toggleStraightLinksAct = _wrapper->createAction(getMenuId(), tr("draw straight or orthogonal links"), QIcon("icons:straightLink.png"),
                                                    tr("straight/orthogonal"), tr("draw straight or orthogonal links"),
                                                    0, _parent, true, this,  SLOT(onToggleStraightLinks(bool)));
   
   _toggleStraightLinksAct->setChecked(Resource::straightLinks);
   onToggleStraightLinks(Resource::straightLinks);
 
-  pixmap.load("icons:autoComputeLink.png");
-  _toggleAutomaticComputeLinkAct = _wrapper->createAction(getMenuId(), tr("compute othogonal links automatically when nodes move"), QIcon(pixmap),
+  _toggleAutomaticComputeLinkAct = _wrapper->createAction(getMenuId(), tr("compute othogonal links automatically when nodes move"), QIcon("icons:autoComputeLink.png"),
                                                           tr("automatic link"), tr("compute othogonal links automatically when nodes move"),
                                                           0, _parent, true, this,  SLOT(onToggleAutomaticComputeLinks(bool)));
 
   _toggleAutomaticComputeLinkAct->setChecked(Resource::autoComputeLinks);
   onToggleAutomaticComputeLinks(Resource::autoComputeLinks); // Why is this needed ?
 
-  pixmap.load("icons:simplifyLink.png");
-  _toggleSimplifyLinkAct = _wrapper->createAction(getMenuId(), tr("simplify links by removing unnecessary direction changes"), QIcon(pixmap),
+  _toggleSimplifyLinkAct = _wrapper->createAction(getMenuId(), tr("simplify links by removing unnecessary direction changes"), QIcon("icons:simplifyLink.png"),
                                                   tr("simplify links"), tr("simplify links by removing unnecessary direction changes"),
                                                   0, _parent, true, this,  SLOT(onToggleSimplifyLinks(bool)));
   _toggleSimplifyLinkAct->setChecked(Resource::simplifyLink);
   onToggleSimplifyLinks(Resource::simplifyLink);
 
-  pixmap.load("icons:force2nodeLink.png");
-  _toggleForce2NodesLinkAct = _wrapper->createAction(getMenuId(), tr("force orthogonal links by adding an edge on simples links"), QIcon(pixmap),
+  _toggleForce2NodesLinkAct = _wrapper->createAction(getMenuId(), tr("force orthogonal links by adding an edge on simples links"), QIcon("icons:force2nodeLink.png"),
                                                      tr("force ortho links"), tr("force orthogonal links by adding an edge on simples links"),
                                                      0, _parent, true, this,  SLOT(onToggleForce2NodesLinks(bool)));
   _toggleForce2NodesLinkAct->setChecked(true);
 
-  pixmap.load("icons:addRowCols.png");
-  _toggleAddRowColsAct = _wrapper->createAction(getMenuId(), tr("allow more path for the links, for a better separation"), QIcon(pixmap),
+  _toggleAddRowColsAct = _wrapper->createAction(getMenuId(), tr("allow more path for the links, for a better separation"), QIcon("icons:addRowCols.png"),
                                                 tr("separate links"), tr("allow more path for the links, for a better separation"),
                                                 0, _parent, true, this,  SLOT(onToggleAddRowCols(bool)));
   _toggleAddRowColsAct->setChecked(Resource::addRowCols);
   onToggleAddRowCols(Resource::addRowCols);
 
-  pixmap.load("icons:ob_service_node.png");
-  _selectReferenceAct = _wrapper->createAction(getMenuId(), tr("select reference"), QIcon(pixmap),
+  _selectReferenceAct = _wrapper->createAction(getMenuId(), tr("select reference"), QIcon("icons:ob_service_node.png"),
                                                tr("select reference"), tr("select reference"),
                                                0, _parent, false, this,  SLOT(onSelectReference()));
 
-  pixmap.load("icons:whatsThis.png");
-  _whatsThisAct = _wrapper->createAction(getMenuId(), tr("active whatsThis Mode to get help on widgets"), QIcon(pixmap),
+  _whatsThisAct = _wrapper->createAction(getMenuId(), tr("active whatsThis Mode to get help on widgets"), QIcon("icons:whatsThis.png"),
                                          tr("whatsThis Mode"), tr("active whatsThis Mode to get help on widgets"),
                                          0, _parent, false, this,  SLOT(onWhatsThis()));
   _whatsThisAct->setShortcut(QKeySequence::WhatsThis);
 
-  pixmap.load("icons:run_active.png");
-  _withoutStopModeAct = _wrapper->createAction(getMenuId(), tr("set execution mode without stop"), QIcon(pixmap),
+  _withoutStopModeAct = _wrapper->createAction(getMenuId(), tr("set execution mode without stop"), QIcon("icons:run_active.png"),
                                                tr("mode without stop"), tr("set execution mode without stop"),
                                                0, _parent, true, this,  SLOT(onWithoutStopMode(bool)));
 
-  pixmap.load("icons:breakpoints_active.png");
-  _breakpointsModeAct = _wrapper->createAction(getMenuId(), tr("set execution mode with stop on breakpoints"), QIcon(pixmap),
+  _breakpointsModeAct = _wrapper->createAction(getMenuId(), tr("set execution mode with stop on breakpoints"), QIcon("icons:breakpoints_active.png"),
                                                tr("mode breakpoints"), tr("set execution mode with stop on breakpoints"),
                                                0, _parent, true, this,  SLOT(onBreakpointsMode(bool)));
 
-  pixmap.load("icons:step_by_step_active.png");
-  _stepByStepModeAct = _wrapper->createAction(getMenuId(), tr("set execution mode step by step"), QIcon(pixmap),
+  _stepByStepModeAct = _wrapper->createAction(getMenuId(), tr("set execution mode step by step"), QIcon("icons:step_by_step_active.png"),
                                               tr("mode step by step"), tr("set execution mode step by step"),
                                               0, _parent, true, this,  SLOT(onStepByStepMode(bool)));
 
-  pixmap.load("icons:toggle_stop_on_error.png");
-  _toggleStopOnErrorAct = _wrapper->createAction(getMenuId(), tr("Force stop on first error during execution"), QIcon(pixmap),
+  _toggleStopOnErrorAct = _wrapper->createAction(getMenuId(), tr("Force stop on first error during execution"), QIcon("icons:toggle_stop_on_error.png"),
                                                  tr("stop on error"), tr("Force stop on first error during execution"),
                                                  0, _parent, true, this,  SLOT(onToggleStopOnError(bool)));
 
-  pixmap.load("icons:toggleVisibility.png");
-  _toggleSceneItemVisibleAct = _wrapper->createAction(getMenuId(), tr("toggle 2D scene item visibility"), QIcon(pixmap),
+  _toggleSceneItemVisibleAct = _wrapper->createAction(getMenuId(), tr("toggle 2D scene item visibility"), QIcon("icons:toggleVisibility.png"),
                                                       tr("visible/hidden"), tr("toggle 2D scene item visibility"),
                                                       0, _parent, true, this,  SLOT(onToggleSceneItemVisible(bool)));
 
 
 
-  pixmap.load("icons:showLink.png");
-  _showAllLinksAct = _wrapper->createAction(getMenuId(), tr("Show all the links"), QIcon(pixmap),
+  _showAllLinksAct = _wrapper->createAction(getMenuId(), tr("Show all the links"), QIcon("icons:showLink.png"),
                                             tr("show all links"), tr("Show all the links"),
                                             0, _parent, false, this,  SLOT(onShowAllLinks()));
 
-  pixmap.load("icons:hideLink.png");
-  _hideAllLinksAct = _wrapper->createAction(getMenuId(), tr("Hide all the links"), QIcon(pixmap),
+  _hideAllLinksAct = _wrapper->createAction(getMenuId(), tr("Hide all the links"), QIcon("icons:hideLink.png"),
                                             tr("hide all links"), tr("Hide all the links"),
                                             0, _parent, false, this,  SLOT(onHideAllLinks()));
   
 
-  pixmap.load("icons:showLink.png");
-  _showOnlyPortLinksAct = _wrapper->createAction(getMenuId(), tr("Show only links from/to this port"), QIcon(pixmap),
+  _showOnlyPortLinksAct = _wrapper->createAction(getMenuId(), tr("Show only links from/to this port"), QIcon("icons:showLink.png"),
                                                  tr("show only links"), tr("Show only links from/to this port"),
                                                  0, _parent, false, this,  SLOT(onShowOnlyPortLinks()));
 
-  pixmap.load("icons:showLink.png");
-  _showPortLinksAct = _wrapper->createAction(getMenuId(), tr("Show links from/to this port"), QIcon(pixmap),
+  _showPortLinksAct = _wrapper->createAction(getMenuId(), tr("Show links from/to this port"), QIcon("icons:showLink.png"),
                                              tr("show links"), tr("Show links from/to this port"),
                                              0, _parent, false, this,  SLOT(onShowPortLinks()));
 
-  pixmap.load("icons:hideLink.png");
-  _hidePortLinksAct = _wrapper->createAction(getMenuId(), tr("Hide links from/to this port"), QIcon(pixmap),
+  _hidePortLinksAct = _wrapper->createAction(getMenuId(), tr("Hide links from/to this port"), QIcon("icons:hideLink.png"),
                                              tr("hide links"), tr("Hide links from/to this port"),
                                              0, _parent, false, this,  SLOT(onHidePortLinks()));
   
   
-  pixmap.load("icons:showLink.png");
-  _showOnlyCtrlLinksAct = _wrapper->createAction(getMenuId(), tr("Show only control links from/to this node"), QIcon(pixmap),
+  _showOnlyCtrlLinksAct = _wrapper->createAction(getMenuId(), tr("Show only control links from/to this node"), QIcon("icons:showLink.png"),
                                                  tr("show only Control links"), tr("Show only control links from/to this node"),
                                                  0, _parent, false, this,  SLOT(onShowOnlyCtrlLinks()));
 
-  pixmap.load("icons:showLink.png");
-  _showCtrlLinksAct = _wrapper->createAction(getMenuId(), tr("Show control links from/to this node"), QIcon(pixmap),
+  _showCtrlLinksAct = _wrapper->createAction(getMenuId(), tr("Show control links from/to this node"), QIcon("icons:showLink.png"),
                                              tr("show control links"), tr("Show control links from/to this node"),
                                              0, _parent, false, this,  SLOT(onShowCtrlLinks()));
 
-  pixmap.load("icons:hideLink.png");
-  _hideCtrlLinksAct = _wrapper->createAction(getMenuId(), tr("Hide control links from/to this node"), QIcon(pixmap),
+  _hideCtrlLinksAct = _wrapper->createAction(getMenuId(), tr("Hide control links from/to this node"), QIcon("icons:hideLink.png"),
                                              tr("hide control links"), tr("Hide control links from/to this node"),
                                              0, _parent, false, this,  SLOT(onHideCtrlLinks()));
 
   
-  pixmap.load("icons:showLink.png");
-  _showOnlyLinkAct = _wrapper->createAction(getMenuId(), tr("Show only this link"), QIcon(pixmap),
+  _showOnlyLinkAct = _wrapper->createAction(getMenuId(), tr("Show only this link"), QIcon("icons:showLink.png"),
                                             tr("show only"), tr("Show only this link"),
                                             0, _parent, false, this,  SLOT(onShowOnlyLink()));
 
-  pixmap.load("icons:showLink.png");
-  _showLinkAct = _wrapper->createAction(getMenuId(), tr("Show this link"), QIcon(pixmap),
+  _showLinkAct = _wrapper->createAction(getMenuId(), tr("Show this link"), QIcon("icons:showLink.png"),
                                         tr("show"), tr("Show this link"),
                                         0, _parent, false, this,  SLOT(onShowLink()));
   
-  pixmap.load("icons:hideLink.png");
-  _hideLinkAct = _wrapper->createAction(getMenuId(), tr("Hide this link"), QIcon(pixmap),
+  _hideLinkAct = _wrapper->createAction(getMenuId(), tr("Hide this link"), QIcon("icons:hideLink.png"),
                                         tr("hide"), tr("Hide this link"),
                                         0, _parent, false, this,  SLOT(onHideLink()));
 
 
-  pixmap.load("icons:emphasisLink.png");
-  _emphasisPortLinksAct = _wrapper->createAction(getMenuId(), tr("emphasis on links from/to this port"), QIcon(pixmap),
+  _emphasisPortLinksAct = _wrapper->createAction(getMenuId(), tr("emphasis on links from/to this port"), QIcon("icons:emphasisLink.png"),
                                                  tr("emphasize links"), tr("emphasis on links from/to this port"),
                                                  0, _parent, false, this,  SLOT(onEmphasisPortLinks()));
   
-  pixmap.load("icons:emphasisLink.png");
-  _emphasisCtrlLinksAct = _wrapper->createAction(getMenuId(), tr("emphasis on control links from/to this node"), QIcon(pixmap),
+  _emphasisCtrlLinksAct = _wrapper->createAction(getMenuId(), tr("emphasis on control links from/to this node"), QIcon("icons:emphasisLink.png"),
                                                  tr("emphasize control links"), tr("emphasis on control links from/to this node"),
                                                  0, _parent, false, this,  SLOT(onEmphasisCtrlLinks()));
   
-  pixmap.load("icons:emphasisLink.png");
-  _emphasisLinkAct = _wrapper->createAction(getMenuId(), tr("emphasis on this link"), QIcon(pixmap),
+  _emphasisLinkAct = _wrapper->createAction(getMenuId(), tr("emphasis on this link"), QIcon("icons:emphasisLink.png"),
                                             tr("emphasize"), tr("emphasis on this link"),
                                             0, _parent, false, this,  SLOT(onEmphasisLink()));
 
-  pixmap.load("icons:deEmphasisLink.png");
-  _deEmphasizeAllAct = _wrapper->createAction(getMenuId(), tr("remove all emphasis"), QIcon(pixmap),
+  _deEmphasizeAllAct = _wrapper->createAction(getMenuId(), tr("remove all emphasis"), QIcon("icons:deEmphasisLink.png"),
                                               tr("remove all emphasis"), tr("remove all emphasis"),
                                               0, _parent, false, this,  SLOT(onDeEmphasizeAll()));
   
 
-  pixmap.load("icons:undo.png");
-  _undoAct = _wrapper->createAction(getMenuId(), tr("undo last action"), QIcon(pixmap),
+  _undoAct = _wrapper->createAction(getMenuId(), tr("undo last action"), QIcon("icons:undo.png"),
                                     tr("undo"), tr("undo last action"),
                                     0, _parent, false, this,  SLOT(onUndo()));
   _undoAct->setShortcut(QKeySequence::Undo);
   
-  pixmap.load("icons:redo.png");
-  _redoAct = _wrapper->createAction(getMenuId(), tr("redo last action"), QIcon(pixmap),
+  _redoAct = _wrapper->createAction(getMenuId(), tr("redo last action"), QIcon("icons:redo.png"),
                                     tr("redo"), tr("redo last action"),
                                     0, _parent, false, this,  SLOT(onRedo()));
   _redoAct->setShortcut(QKeySequence::Redo);
   
-  pixmap.load("icons:undo.png");
-  _showUndoAct = _wrapper->createAction(getMenuId(), tr("show undo commands"), QIcon(pixmap),
+  _showUndoAct = _wrapper->createAction(getMenuId(), tr("show undo commands"), QIcon("icons:undo.png"),
                                         tr("show undo"), tr("show undo commands"),
                                         0, _parent, false, this,  SLOT(onShowUndo()));
   
-  pixmap.load("icons:redo.png");
-  _showRedoAct = _wrapper->createAction(getMenuId(), tr("show redo commands"), QIcon(pixmap),
+  _showRedoAct = _wrapper->createAction(getMenuId(), tr("show redo commands"), QIcon("icons:redo.png"),
                                         tr("show redo"), tr("show redo commands"),
                                         0, _parent, false, this,  SLOT(onShowRedo()));
   
