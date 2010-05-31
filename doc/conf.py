@@ -179,7 +179,11 @@ latex_documents = [
 #latex_use_parts = False
 
 # Additional stuff for the LaTeX preamble.
-#latex_preamble = ''
+latex_preamble = """
+\RecustomVerbatimEnvironment
+ {Verbatim}{Verbatim}
+ {fontsize=\scriptsize}
+"""
 
 # Documents to append as an appendix to all manuals.
 #latex_appendices = []

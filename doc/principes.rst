@@ -1,12 +1,6 @@
 
 :tocdepth: 3
 
-.. raw:: latex
-
-  \makeatletter
-  \g@addto@macro\@verbatim\small
-  \makeatother
-
 .. _principes:
 
 YACS general principles

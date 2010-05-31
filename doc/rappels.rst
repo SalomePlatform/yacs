@@ -111,12 +111,6 @@ all machines involved.  There is no need to install all modules on all machines 
 The SALOME user must have an account on each machine.  Remote machines are accessed by rsh or ssh.  
 These accesses must be configured for use without a password.  The accounts may be different on the different machines.
 
-.. raw:: latex
-
-  \makeatletter
-  \g@addto@macro\@verbatim\small
-  \makeatother
-
 Creating a SALOME application
 ------------------------------
 A SALOME application is created using the appli_gen.py tool located in the installation of the KERNEL module.  
