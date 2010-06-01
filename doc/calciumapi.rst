@@ -17,7 +17,7 @@ Presentation is done in the following order:
 - examples
 - error codes
 
-Fichiers include
+Include files
 ====================
 All constants used with the coupling library are defined in an include file.
 

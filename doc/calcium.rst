@@ -10,7 +10,7 @@ and :ref:`calciummod` for reference guide),
 please refer to [Calcium1]_ and [Calcium2]_ for further information on this subject.
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
    calciumyacs
    calciumapi
