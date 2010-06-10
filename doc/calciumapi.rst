@@ -17,7 +17,7 @@ Presentation is done in the following order:
 - examples
 - error codes
 
-Fichiers include
+Include files
 ====================
 All constants used with the coupling library are defined in an include file.
 
@@ -51,7 +51,7 @@ Functions to connect and disconnect
 
 **Fortran:**
 
-.. function:: call cpcd(compo, instance_name, info)
+.. cfunction:: call cpcd(compo, instance_name, info)
 
    :param compo: component address
    :type compo: long
@@ -69,7 +69,7 @@ Functions to connect and disconnect
 
 **Fortran:**
 
-.. function:: call cpfin(compo, directive, info)
+.. cfunction:: call cpfin(compo, directive, info)
 
    :param compo: component address
    :type compo: long
@@ -136,19 +136,19 @@ The available port types are :
 
 **Fortran:**
 
-.. function:: CALL CPERE(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, REAL*4 var_real,      INTEGER info)
-.. function:: CALL CPEDB(LONGP compo, INTEGER dep, REAL*8 td, INTEGER i, nm_var, INTEGER n, REAL*8 var_double,    INTEGER info)
-.. function:: CALL CPECP(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, REAL*4 var_complex,   INTEGER info)
-.. function:: CALL CPEEN(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, INTEGER var_integer,  INTEGER info)
-.. function:: CALL CPELG(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, INTEGER*8 var_long,   INTEGER info)
+.. cfunction:: CALL CPERE(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, REAL*4 var_real,      INTEGER info)
+.. cfunction:: CALL CPEDB(LONGP compo, INTEGER dep, REAL*8 td, INTEGER i, nm_var, INTEGER n, REAL*8 var_double,    INTEGER info)
+.. cfunction:: CALL CPECP(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, REAL*4 var_complex,   INTEGER info)
+.. cfunction:: CALL CPEEN(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, INTEGER var_integer,  INTEGER info)
+.. cfunction:: CALL CPELG(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, INTEGER*8 var_long,   INTEGER info)
 
                can only be used on 64 bits architecture.
-.. function:: CALL CPELN(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, INTEGER*8 var_long,   INTEGER info)
+.. cfunction:: CALL CPELN(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, INTEGER*8 var_long,   INTEGER info)
 
                can only be used on 64 bits architecture.
-.. function:: CALL CPEIN(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, INTEGER*4 var_int,    INTEGER info)
-.. function:: CALL CPELO(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, INTEGER*4 var_boolean,INTEGER info)
-.. function:: CALL CPECH(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, var_string,           INTEGER info)
+.. cfunction:: CALL CPEIN(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, INTEGER*4 var_int,    INTEGER info)
+.. cfunction:: CALL CPELO(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, INTEGER*4 var_boolean,INTEGER info)
+.. cfunction:: CALL CPECH(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, var_string,           INTEGER info)
 
    :param compo: component address
    :type compo: long
@@ -227,19 +227,19 @@ and the second (cp_lln) is working with CALCIUM_long port type.
 
 **Fortran:**
 
-.. function:: CALL CPLRE(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var,INTEGER len, INTEGER n,REAL*4 var_real,      INTEGER info)
-.. function:: CALL CPLDB(LONGP compo, INTEGER dep, REAL*8 tid, tf, INTEGER i, nm_var,INTEGER len, INTEGER n,REAL*8 var_double,    INTEGER info)
-.. function:: CALL CPLCP(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var,INTEGER len, INTEGER n,REAL*4 var_complex,   INTEGER info)
-.. function:: CALL CPLEN(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var,INTEGER len, INTEGER n,INTEGER var_integer,  INTEGER info)
-.. function:: CALL CPLLG(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var,INTEGER len, INTEGER n,INTEGER*8 var_long,   INTEGER info)
+.. cfunction:: CALL CPLRE(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var,INTEGER len, INTEGER n,REAL*4 var_real,      INTEGER info)
+.. cfunction:: CALL CPLDB(LONGP compo, INTEGER dep, REAL*8 tid, tf, INTEGER i, nm_var,INTEGER len, INTEGER n,REAL*8 var_double,    INTEGER info)
+.. cfunction:: CALL CPLCP(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var,INTEGER len, INTEGER n,REAL*4 var_complex,   INTEGER info)
+.. cfunction:: CALL CPLEN(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var,INTEGER len, INTEGER n,INTEGER var_integer,  INTEGER info)
+.. cfunction:: CALL CPLLG(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var,INTEGER len, INTEGER n,INTEGER*8 var_long,   INTEGER info)
 
                can only be used on 64 bits architecture.
-.. function:: CALL CPLLN(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var,INTEGER len, INTEGER n,INTEGER*8 var_long,   INTEGER info)
+.. cfunction:: CALL CPLLN(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var,INTEGER len, INTEGER n,INTEGER*8 var_long,   INTEGER info)
 
                can only be used on 64 bits architecture.
-.. function:: CALL CPLIN(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var,INTEGER len, INTEGER n,INTEGER*4 var_int,    INTEGER info)
-.. function:: CALL CPLLO(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var,INTEGER len, INTEGER n,INTEGER*4 var_boolean,INTEGER info)
-.. function:: CALL CPLCH(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var,INTEGER len, INTEGER n,var_string,           INTEGER info)
+.. cfunction:: CALL CPLIN(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var,INTEGER len, INTEGER n,INTEGER*4 var_int,    INTEGER info)
+.. cfunction:: CALL CPLLO(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var,INTEGER len, INTEGER n,INTEGER*4 var_boolean,INTEGER info)
+.. cfunction:: CALL CPLCH(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var,INTEGER len, INTEGER n,var_string,           INTEGER info)
 
    :param compo: component address
    :type compo: long
@@ -306,7 +306,7 @@ variable defined for iteration number or time after a given one be erased.
 
 **Fortran:**
 
-.. function:: call cpfini(compo, nm_var, i, info)
+.. cfunction:: call cpfini(compo, nm_var, i, info)
 
    :param compo: component address
    :type compo: long
@@ -325,7 +325,7 @@ variable defined for iteration number or time after a given one be erased.
 
 **Fortran:**
 
-.. function:: call cpfint(compo, nm_var, t, info)
+.. cfunction:: call cpfint(compo, nm_var, t, info)
 
    :param compo: component address
    :type compo: long
@@ -344,7 +344,7 @@ variable defined for iteration number or time after a given one be erased.
 
 **Fortran:**
 
-.. function:: call cpfini(compo, nm_var, i, info)
+.. cfunction:: call cpfini(compo, nm_var, i, info)
 
    :param compo: component address
    :type compo: long
@@ -363,7 +363,7 @@ variable defined for iteration number or time after a given one be erased.
 
 **Fortran:**
 
-.. function:: call cpfint(compo, nm_var, t, info)
+.. cfunction:: call cpfint(compo, nm_var, t, info)
 
    :param compo: component address
    :type compo: long

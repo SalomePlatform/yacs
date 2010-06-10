@@ -65,7 +65,7 @@ Dimensions of drawing area occupied by a graph, positions and dimensions of node
 
 Import SALOME Supervisor graph
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-This operation is intended for importing an XML files containing description of calculation schema and having logical structure adopted by existing SALOME 4 Supervisor module. The command **Import Schema --> SUPERV XML** is available from :ref:`file` or from the corresponding toolbar button on the :ref:`schema`. On this command
+This operation is intended for importing an XML files containing description of calculation schema and having logical structure adopted by existing SALOME 4 Supervisor module. The command **Import Schema --> SUPERV XML** is available from :ref:`file`. On this command
 call a standard open file dialog box appears and lets user to select desirable SUPERV XML file.
 
 

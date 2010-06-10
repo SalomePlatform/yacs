@@ -19,7 +19,9 @@
 
 include $(top_srcdir)/adm/unix/make_begin.am
 
+if CPPUNIT_IS_OK
 SUBDIRS = Test
+endif
 
 bin_PROGRAMS=driver debugger resume
 

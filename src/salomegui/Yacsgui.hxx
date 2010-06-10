@@ -25,6 +25,7 @@
 #include <SALOMEconfig.h>
 
 #include <QModelIndex>
+#include <map>
 
 namespace YACS
 {
@@ -32,6 +33,7 @@ namespace YACS
   {
     class GenericGui;
     class SuitWrapper;
+    class QtGuiContext;
   }
 }
 
@@ -57,12 +59,13 @@ public:
   virtual void createPreferences();
   virtual void preferencesChanged( const QString& sect, const QString& name );
   virtual void loadSchema(const std::string& filename,bool edit=true);
-
+  virtual void studyActivated();
+  
 public slots:
   bool deactivateModule( SUIT_Study* theStudy);
   bool activateModule( SUIT_Study* theStudy);
   void onDblClick(const QModelIndex& index);
-
+  
 protected slots:
   void onWindowActivated( SUIT_ViewWindow* svw);
   void onWindowClosed( SUIT_ViewWindow* svw);
@@ -76,6 +79,8 @@ protected:
   YACS::HMI::GenericGui* _genericGui;
   bool _selectFromTree;
   Yacsgui_Resource* _myresource;
+  std::map<int, YACS::HMI::QtGuiContext*> _studyContextMap;
+  static int _oldStudyId;
 };
 
 #endif

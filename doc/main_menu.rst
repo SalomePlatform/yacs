@@ -40,10 +40,8 @@ If YACS module has been loaded, File menu contains the following items:
 Edit
 ----
 In SALOME, Edit menu contains standard edition operations like copy/paste and undo/redo functionality. 
-In YACS module, Cut, copy and paste are available but only within context popup menus.
-Cut, copy, and paste are available in edition mode only.
-
-Undo/redo is not currently implemented, but will be available in a future version.
+In YACS module, Cut, copy and paste are available but only within context popup menus. Undo/redo are also available, in YACS menu and toolbar.
+Cut, copy, paste and undo/redo are available in edition mode only.
 
 
 
@@ -106,6 +104,10 @@ When the active schema is in edition mode, YACS menu contains the following item
 + :ref:`save_restore_execution_state` (from a state of execution saved previously)
 + Load a Schema in run mode (without edition)
 + Load a Schema to be executed on a batch system
++ Undo last edition (modification of nodes positions in 2D view are not undoable)
++ Redo last edition
++ Show the stack of undoable edition actions
++ Show the stack of redoable edition actions
 + Import Catalog : to import specific data types or nodes
 + Straight/Orthogonal : toggle between straight lines or orthogonal links
 + Automatic Links: toggle behaviour for automatic link reconstruction when 2D View layout changes
