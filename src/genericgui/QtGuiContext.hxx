@@ -20,6 +20,7 @@
 #ifndef _QTGUICONTEXT_HXX_
 #define _QTGUICONTEXT_HXX_
 
+#include "GenericGuiExport.hxx"
 #include "guiContext.hxx"
 #include "SchemaModel.hxx"
 #include "SchemaItem.hxx"
@@ -43,7 +44,7 @@ namespace YACS
 {
   namespace HMI
   {
-    class QtGuiContext: public GuiContext
+    class GENERICGUI_EXPORT QtGuiContext: public GuiContext
     {
     public:
       QtGuiContext(YACS::HMI::GenericGui* gmain);

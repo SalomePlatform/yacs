@@ -1,13 +1,6 @@
 
 :tocdepth: 3
 
-.. raw:: latex
-
-  \makeatletter
-  \g@addto@macro\@verbatim\small
-  \makeatother
-
-
 .. _yacsgen:
 
 YACSGEN: SALOME module generator
@@ -1145,4 +1138,206 @@ written as follows::
 
 The corresponding xml coupling file and Aster command file may be viewed in the distribution (Examples/ast2 directory).  
 The complementary implantation elements are located in the fcompo directory (cfort component) and in the myaster directory (caster component).
+
+Reference guide 
+-----------------------------------------------------------------
+
+.. module:: module_generator
+   :synopsis: YACSGEN interface 
+
+The python module :mod:`module_generator` defines classes which can be used to define a SALOME module, its components and
+generates a SALOME source module, its installation and a SALOME application including this module and
+other preexisting SALOME modules like GEOM, SMESH or others.
+
+The module provides the following classes:
+
+.. class:: Service(name[, inport[, outport[, instream[, outstream[, body=""[, defs=""]]]]]])
+
+   A :class:`Service` instance represents a component service with dataflow and datastream ports.
+   The parameter *name* gives the name of the service.
+   The parameter *inport* gives the list of input dataflow ports.
+   The parameter *outport* gives the list of output dataflow ports. An input or output dataflow port is defined 
+   by a 2-tuple (port name, data type name). The list of possible data types is: "double", "long", "string",
+   "dblevec", "stringvec", "intvec", "file" and "pyobj" only for Python services.
+   The parameter *instream* gives the list of input datastream ports.
+   The parameter *outstream* gives the list of output datastream ports. An input or output datastream port is defined 
+   by a 3-tuple (port name, data type name, mode name). The list of possible data types is: "CALCIUM_double", "CALCIUM_integer",
+   "CALCIUM_real", "CALCIUM_string", "CALCIUM_complex", "CALCIUM_logical", "CALCIUM_long". The mode can be "I" (iterative mode)
+   or "T" (temporal mode).
+   The parameter *defs* is a string that gives the source code to insert in the definition section of the component. It can be C++ includes
+   or Python imports.
+   The parameter *defs* is a string that gives the source code to insert in the service call. It can be any C++ 
+   or Python code that fits well in the body of the service method.
+
+   For example, the following call defines a minimal Python service with one input dataflow port (name "a", type double) 
+   and one input datastream port::
+
+      >>> s1 = module_generator.Service('myservice', inport=[("a","double"),], 
+                                        instream=[("aa","CALCIUM_double","I")],
+					body="print a")
+
+.. class:: CPPComponent(name[, services[, kind="lib"[, libs=""[, rlibs=""[, includes=""[, exe_path[, sources[, inheritedclass=""[, compodefs=""]]]]]]]]])
+
+   A :class:`CPPComponent` instance represents a C++ SALOME component with services given as a list of :class:`Service`
+   instances with the parameter *services*.
+   The parameter *name* gives the name of the component.
+   If the optional *kind* parameter is given and has the value "exe", the component will be built as a standalone
+   component (executable or shell script). The default is to build the component as a dynamic library.
+   The parameter *libs* gives all the libraries options to add when linking the generated component (-L...).
+   The parameter *rlibs* gives all the runtime libraries options to add when linking the generated component (-R...).
+   The parameter *includes* gives all the include options to add when compiling the generated component (-I...).
+   The parameter *sources* gives all the external source files to add in the compilation step (list of paths).
+   The parameter *exe_path* is only used when kind is "exe" and gives the path to the standalone component.
+   The parameter *compodefs* can be used to add extra definition code in the component for example when using a base class
+   to define the component class by deriving it (see *inheritedclass* parameter)
+   The parameter *inheritedclass* can be used to define a base class for the component. The base class can be defined in external
+   source or with the *compodefs* parameter. The value of the *inheritedclass* parameter is the name of the base class.
+
+
+   For example, the following call defines a standalone component named "mycompo" with one service s1 (it must have been defined before)::
+   
+      >>> c1 = module_generator.CPPComponent('mycompo', services=[s1,], kind="exe", 
+                                             exe_path="./launch.sh")
+
+.. class:: PYComponent(name[, services[, kind="lib"[, sources[, python_path[, inheritedclass=""[, compodefs=""]]]]]])
+
+   A :class:`PYComponent` instance represents a Python SALOME component with services given as a list of :class:`Service`
+   instances with the parameter *services*.
+   The parameter *name* gives the name of the component.
+   If the optional *kind* parameter is given and has the value "exe", the component will be built as a standalone
+   component (python executable). The default is to build the component as a python module.
+   The parameter *sources* gives all the external Python source files to add in the component directory (list of paths).
+   If the optional *python_path* parameter is given (as a list of paths), all the paths are added to the python path (sys.path).
+   The parameter *compodefs* can be used to add extra definition code in the component for example when using a base class
+   to define the component class by deriving it (see *inheritedclass* parameter)
+   The parameter *inheritedclass* can be used to define a base class for the component. The base class can be defined in external
+   source or with the *compodefs* parameter. The value of the *inheritedclass* parameter is the name of the base class.
+
+   For example, the following call defines a Python component named "mycompo" with one service s1 (it must have been defined before)::
+   
+      >>> c1 = module_generator.PYComponent('mycompo', services=[s1,], 
+                                                       python_path="apath")
+
+
+.. class:: F77Component(name[, services[, kind="lib"[, libs=""[, rlibs=""[, exe_path[, sources]]]]]])
+
+   A :class:`F77Component` instance represents a Fortran SALOME component with services given as a list of :class:`Service`
+   instances with the parameter *services*.
+   The parameter *name* gives the name of the component.
+   If the optional *kind* parameter is given and has the value "exe", the component will be built as a standalone
+   component (executable or shell script). The default is to build the component as a dynamic library.
+   The parameter *libs* gives all the libraries options to add when linking the generated component (-L...).
+   The parameter *rlibs* gives all the runtime libraries options to add when linking the generated component (-R...).
+   The parameter *sources* gives all the external source files to add in the compilation step (list of paths).
+   The parameter *exe_path* is only used when kind is "exe" and gives the path to the standalone component.
+
+   For example, the following call defines a Fortran component named "mycompo" with one service s1 (it must have been defined before). 
+   This component is implemented as a dynamic library linked with a user's library "mylib"::
+   
+      >>> c1 = module_generator.F77Component('mycompo', services=[s1,], 
+                                                       libs="-lmylib -Lmydir")
+
+.. class:: ASTERComponent(name[, services[, kind="lib"[, libs=""[, rlibs=""[, exe_path[, aster_dir[, python_path[, argv]]]]]]]])
+
+   A :class:`ASTERComponent` instance represents an ASTER SALOME component (special component for Code_Aster that is a mix of 
+   Fortran and Python code) with services given as a list of :class:`Service` instances with the parameter *services*.
+   The parameter *name* gives the name of the component.
+   If the optional *kind* parameter is given and has the value "exe", the component will be built as a standalone
+   component (executable or shell script). The default is to build the component as a dynamic library.
+   The parameter *libs* gives all the libraries options to add when linking the generated component (-L...).
+   The parameter *rlibs* gives all the runtime libraries options to add when linking the generated component (-R...).
+   The parameter *exe_path* is only used when kind is "exe" and gives the path to the standalone component.
+   The parameter *aster_dir* is a string that gives the Code_Aster installation directory.
+   If the optional *python_path* parameter is given (as a list of paths), all the paths are added to the python path (sys.path).
+   The parameter *argv* is a list of strings that gives the command line parameters for Code_Aster. This parameter is only useful when
+   kind is "lib".
+
+   For example, the following call defines a Code_Aster component named "mycompo" with one service s1 (it must have been defined before). 
+   This standalone component takes some command line arguments::
+
+      >>> c1 = module_generator.ASTERComponent('mycompo', services=[s1,], kind="exe", 
+                                                          exe_path="launch.sh", 
+							  argv=["-memjeveux","4"])
+
+.. class:: Module(name[, components[, prefix=""[, layout="multidir"]]])
+
+   A :class:`Module` instance represents a SALOME module that contains components given as a list of 
+   component instances (:class:`CPPComponent` or :class:`PYComponent` or :class:`F77Component` or :class:`ASTERComponent`)
+   with the parameter *components*.
+   The parameter *name* gives the name of the module. The SALOME source module
+   will be located in the <name_SRC> directory.
+   The parameter *prefix* is the path of the installation directory.
+   If the optional *layout* parameter is given and has the value "monodir", all components
+   will be generated in a single directory. The default is to generate each component in its
+   own directory.
+
+   For example, the following call defines a module named "mymodule" with 2 components c1 and c2  (they must have been
+   defined before) that will be installed in the "install" directory::
+
+      >>> m = module_generator.Module('mymodule', components=[c1,c2], 
+                                                  prefix="./install")
+
+
+.. class:: Generator(module[, context])
+
+   A :class:`Generator` instance take a :class:`Module` instance as its first parameter and can be used to generate the
+   SALOME source module, builds it, installs it and includes it in a SALOME application.
+
+   The parameter *module* gives the :class:`Module` instance that will be used for the generation.
+   If the optional *context* parameter is given (a dict), its content is used to specify the prerequisites
+   environment file (key *"prerequisites"*) and the SALOME KERNEL installation directory (key *"kernel"*).
+
+   For example, the following call creates a generator for the module m::
+
+      >>> g = module_generator.Generator(m,context)
+
+
+   .. method:: generate()
+
+   Generate a SALOME source module
+
+   .. method:: bootstrap()
+
+   Execute the first build step (bootstrap autotools)
+
+   .. method:: configure()
+
+   Execute the second build step (configure)
+
+   .. method:: make()
+
+   Execute the third build step (compile and link)
+
+   .. method:: install()
+
+   Execute the installation step
+
+   .. method:: make_appli(appliname[, restrict[, altmodules[, resources]]])
+
+   Create a SALOME application containing the module and preexisting SALOME modules.
+   The parameter *appliname* is a string that gives the name of the application (directory path where the application
+   will be installed).
+   If the optional *restrict* parameter (a list of module names) is given only those SALOME modules will be included in the
+   application. The default is to include all modules that are located in the same directory as the KERNEL module and have
+   the same suffix (for example, if KERNEL directory is KERNEL_V5 and GEOM directory is GEOM_V5, GEOM module is automatically
+   included except if restrict is used).
+   The parameter *altmodules* can be used to add SALOME modules that cannot be managed with the precedent rule. This parameter
+   is a dict with a module name as the key and the installation path as the value.
+   The parameter *resources* can be used to define an alternative resources catalog (path of the file).
+
+   For example, the following calls create a SALOME application with external modules and resources catalog in "appli" directory::
+
+     g=Generator(m,context)
+     g.generate()
+     g.bootstrap()
+     g.configure()
+     g.make()
+     g.install()
+     g.make_appli("appli", restrict=["KERNEL"], altmodules={"GUI":GUI_ROOT_DIR, "YACS":YACS_ROOT_DIR}, 
+                           resources="myresources.xml")
+
+
+
+
+
 

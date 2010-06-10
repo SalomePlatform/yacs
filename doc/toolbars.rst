@@ -102,6 +102,12 @@ YACS toolbar in edition mode contains functions to import and export schemas, to
 + Load a Schema to be executed on a batch system
 
 
++ Undo last edition (modification of nodes positions in 2D view are not undoable)
+
+
++ Redo last edition
+
+
 + Import Catalog : to import specific data types or nodes
 
 

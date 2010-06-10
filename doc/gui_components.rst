@@ -181,7 +181,7 @@ The 2D Viewer has its own View Operations toolbar, which contains buttons for th
 
 Input Panel
 -----------
-The properties of each object type, such as container, component, schema, node and link (for the future version!), are displayed within the Input Panel placed in the right part of the desktop.
+The properties of each object type, such as container, component, schema, node and link, are displayed within the Input Panel placed in the right part of the desktop.
 
 The Input Panel is a dock window and consists of the several property pages. Each property page allows seeing or modifying the properties of the object with the certain type (see :ref:`edit_object` section). The user can see property pages of the several types of objects at the same time (for example, property page for a service node and for a container).
 The selection of an object either in the Tree View or 2D Viewer will display its property page in the Input Panel.

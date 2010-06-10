@@ -645,7 +645,7 @@ The GUI allow you to select the arguments with a file browser – thus avoiding 
 
 
 
-Limitations – Advises
+Limitations – Advice
 ---------------------
 
 * The standalone C++ component should have a default constructor (a constructor without arguments). This is because there is no mechanism to transmit arguments from SALOME to a user-defined component. If your component needs information to be valid, you have to split construction and initialization, by adding a method that does initialization.
