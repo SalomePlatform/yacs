@@ -1157,8 +1157,9 @@ The module provides the following classes:
    The parameter *name* gives the name of the service.
    The parameter *inport* gives the list of input dataflow ports.
    The parameter *outport* gives the list of output dataflow ports. An input or output dataflow port is defined 
-   by a 2-tuple (port name, data type name). The list of possible data types is: "double", "long", "string",
-   "dblevec", "stringvec", "intvec", "file" and "pyobj" only for Python services.
+   by a 2-tuple (port name, data type name). The list of supported basic data types is: "double", "long", "string",
+   "dblevec", "stringvec", "intvec", "file" and "pyobj" only for Python services. Depending on the implementation
+   language, it is also possible to use some types from SALOME modules (see :ref:`yacstypes`).
    The parameter *instream* gives the list of input datastream ports.
    The parameter *outstream* gives the list of output datastream ports. An input or output datastream port is defined 
    by a 3-tuple (port name, data type name, mode name). The list of possible data types is: "CALCIUM_double", "CALCIUM_integer",
@@ -1337,6 +1338,32 @@ The module provides the following classes:
                            resources="myresources.xml")
 
 
+.. _yacstypes:
+
+Supported SALOME types
+----------------------------
+
+======================= =========================== =========================== ===================== ==========================
+   SALOME module            YACS type name            IDL type name              Implementation          Comment
+======================= =========================== =========================== ===================== ==========================
+   GEOM                  GEOM_Object                 GEOM::GEOM_Object             C++, Python
+   SMESH                 SMESH_Mesh                  SMESH::SMESH_Mesh             C++, Python
+   SMESH                 SMESH_Hypothesis            SMESH::SMESH_Hypothesis       C++, Python
+   MED                   SALOME_MED/MED              SALOME_MED::MED               C++, Python
+   MED                   SALOME_MED/MESH             SALOME_MED::MESH              C++, Python
+   MED                   SALOME_MED/SUPPORT          SALOME_MED::SUPPORT           C++, Python
+   MED                   SALOME_MED/FIELD            SALOME_MED::FIELD             C++, Python
+   MED                   SALOME_MED/FIELDDOUBLE      SALOME_MED::FIELDDOUBLE       C++, Python
+   MED                   SALOME_MED/FIELDINT         SALOME_MED::FIELDINT          C++, Python
+   KERNEL                double                      double                      C++, Python, F77
+   KERNEL                long                        long                        C++, Python, F77
+   KERNEL                string                      string                      C++, Python, F77
+   KERNEL                dblevec                     dblevec                     C++, Python, F77       list of double
+   KERNEL                stringvec                   stringvec                   C++, Python, F77       list of string
+   KERNEL                intvec                      intvec                      C++, Python, F77       list of long  
+   KERNEL                pyobj                                                   Python                 a pickled python object   
+   KERNEL                file                                                    C++, Python, F77       to transfer a file
+======================= =========================== =========================== ===================== ==========================
 
 
 
