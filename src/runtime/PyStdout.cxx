@@ -60,8 +60,8 @@ static PyMethodDef PyStdOut_methods[] = {
 };
 
 static PyMemberDef PyStdOut_memberlist[] = {
-  {"softspace", T_INT,  offsetof(PyStdOut, softspace), 0,
-   "flag indicating that a space needs to be printed; used by print"},
+  {(char*)"softspace", T_INT,  offsetof(PyStdOut, softspace), 0,
+   (char*)"flag indicating that a space needs to be printed; used by print"},
   {NULL} /* Sentinel */
 };
 
