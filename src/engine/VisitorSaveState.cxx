@@ -178,6 +178,11 @@ void VisitorSaveState::visitOptimizerLoop(OptimizerLoop *node)
   _out << "  </node>" << endl;
 }
 
+void VisitorSaveState::visitDynParaLoop(DynParaLoop *node)
+{
+  node->ComposedNode::accept(this);
+}
+
 void VisitorSaveState::visitLoop(Loop *node)
 {
   node->ComposedNode::accept(this);

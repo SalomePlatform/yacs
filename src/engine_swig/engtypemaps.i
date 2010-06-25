@@ -267,6 +267,8 @@ static PyObject* convertPort(YACS::ENGINE::Port* port,int owner=0)
     $1 = 1;
   else if(PyFloat_Check($input))
     $1 = 1;
+  else if (PyString_Check($input))
+    $1 = 1;
   else 
     $1 = 0;
 }
@@ -289,6 +291,41 @@ static PyObject* convertPort(YACS::ENGINE::Port* port,int owner=0)
       // It is a Float
       $1=YACS::ENGINE::AtomAny::New(PyFloat_AsDouble($input));
       is_new_object=1;
+    }
+  else if(PyString_Check($input))
+    {
+      // It is a Float
+      $1=YACS::ENGINE::AtomAny::New(PyString_AsString($input));
+      is_new_object=1;
+    }
+  else
+    {
+      // It is an error
+      PyErr_SetString(PyExc_TypeError,"not a yacs any or a convertible type");
+      return NULL;
+    }
+}
+
+%typemap(directorout) YACS::ENGINE::Any*
+{
+  if ((SWIG_ConvertPtr($1,(void **) &$result, $1_descriptor,SWIG_POINTER_EXCEPTION)) == 0)
+    {
+      // It is an Any : it is converted by SWIG_ConvertPtr $input -> $1
+    }
+  else if (PyInt_Check($1))
+    {
+      // It is an Int
+      $result=YACS::ENGINE::AtomAny::New((int)PyInt_AsLong($1));
+    }
+  else if(PyFloat_Check($1))
+    {
+      // It is a Float
+      $result=YACS::ENGINE::AtomAny::New(PyFloat_AsDouble($1));
+    }
+  else if(PyString_Check($1))
+    {
+      // It is a String
+      $result=YACS::ENGINE::AtomAny::New(PyString_AsString($1));
     }
   else
     {

@@ -16,39 +16,21 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-
-#ifndef __DRIVENCONDITION_HXX__
-#define __DRIVENCONDITION_HXX__
-
-// --- Interface is:
-
-// class DrivenCondition
-//     {
-//     public:
-//       DrivenCondition();
-//       ~DrivenCondition();
-//       //On master thread
-//       void waitForAWait();
-//       void notifyOneSync();
-//       //On slave thread
-//       void wait();
-// };
-
+#ifndef __ALTERNATETHREAD_HXX__
+#define __ALTERNATETHREAD_HXX__
 
 #if defined(YACS_PTHREAD)
-#include "DrivenConditionPT.hxx"
+#include "AlternateThreadPT.hxx"
 
 namespace YACS
 {
   namespace BASES
   {
-    typedef DrivenConditionPT DrivenCondition;
+    typedef AlternateThreadPT AlternateThread;
   }
 }
 #else
 #error
 #endif
 
-
 #endif
-

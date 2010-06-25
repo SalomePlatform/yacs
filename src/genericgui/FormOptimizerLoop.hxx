@@ -16,29 +16,23 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+#ifndef _FORMOPTIMIZERLOOP_HXX_
+#define _FORMOPTIMIZERLOOP_HXX_
 
-#ifndef _SALOMEOPTIMIZERLOOP_HXX_
-#define _SALOMEOPTIMIZERLOOP_HXX_
-
-#include "YACSRuntimeSALOMEExport.hxx"
-#include "OptimizerLoop.hxx"
+#include "ui_FormOptimizerLoop.h"
 
 namespace YACS
 {
-  namespace ENGINE
+  namespace HMI
   {
-    class YACSRUNTIMESALOME_EXPORT SalomeOptimizerLoop: public OptimizerLoop
+    class FormOptimizerLoop: public QWidget, public Ui::FormOptimizerLoop
     {
-      protected:
-        Node *simpleClone(ComposedNode *father, bool editionOnly) const;
-        virtual void loadAlgorithm();
-      public:
-        SalomeOptimizerLoop(const std::string& name, const std::string& algLibWthOutExt,
-                            const std::string& symbolNameToOptimizerAlgBaseInstanceFactory,
-                            bool algInitOnFile,bool initAlgo=true);
-        SalomeOptimizerLoop(const SalomeOptimizerLoop& other, ComposedNode *father, bool editionOnly);
-        ~SalomeOptimizerLoop();
-        virtual std::string typeName() {return "YACS__ENGINE__SalomeOptimizerLoop";}
+      Q_OBJECT
+
+    public:
+      FormOptimizerLoop(QWidget *parent = 0);
+      ~FormOptimizerLoop();
+
     };
   }
 }

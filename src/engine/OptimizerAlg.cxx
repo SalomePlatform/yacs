@@ -18,7 +18,9 @@
 //
 
 #include "OptimizerAlg.hxx"
+#include "Runtime.hxx"
 
+using namespace YACS::BASES;
 using namespace YACS::ENGINE;
 
 OptimizerAlgBase::OptimizerAlgBase(Pool *pool):_pool(pool)
@@ -29,23 +31,104 @@ OptimizerAlgBase::~OptimizerAlgBase()
 {
 }
 
+void OptimizerAlgBase::parseFileToInit(const std::string& fileName)
+{
+}
+
+void OptimizerAlgBase::initialize(const Any *input) throw (Exception)
+{
+}
+
+void OptimizerAlgBase::finish()
+{
+}
+
+TypeCode * OptimizerAlgBase::getTCForAlgoInit() const
+{
+  return Runtime::_tc_string;
+}
+
+TypeCode * OptimizerAlgBase::getTCForAlgoResult() const
+{
+  return Runtime::_tc_string;
+}
+
+Any * OptimizerAlgBase::getAlgoResult()
+{
+  return NULL;
+}
+
+TypeCode * OptimizerAlgBase::getTCForInProxy() const
+{
+  return getTCForIn();
+}
+
+TypeCode * OptimizerAlgBase::getTCForOutProxy() const
+{
+  return getTCForOut();
+}
+
+TypeCode * OptimizerAlgBase::getTCForAlgoInitProxy() const
+{
+  return getTCForAlgoInit();
+}
+
+TypeCode * OptimizerAlgBase::getTCForAlgoResultProxy() const
+{
+  return getTCForAlgoResult();
+}
+
+void OptimizerAlgBase::parseFileToInitProxy(const std::string& fileName)
+{
+  parseFileToInit(fileName);
+}
+
+void OptimizerAlgBase::initializeProxy(const Any *input) throw (Exception)
+{
+  initialize(input);
+}
+
+void OptimizerAlgBase::startProxy()
+{
+  start();
+}
+
+void OptimizerAlgBase::takeDecisionProxy()
+{
+  takeDecision();
+}
+
+void OptimizerAlgBase::finishProxy()
+{
+  finish();
+  _errorMessage = "";
+}
+
+Any * OptimizerAlgBase::getAlgoResultProxy()
+{
+  return getAlgoResult();
+}
+
 void OptimizerAlgBase::setPool(Pool* pool)
 {
   _pool=pool;
 }
 
-OptimizerAlgSync::OptimizerAlgSync(Pool *pool):OptimizerAlgBase(pool)
+bool OptimizerAlgBase::hasError() const
 {
+  return (_errorMessage.length() > 0);
 }
 
-OptimizerAlgSync::~OptimizerAlgSync()
+const std::string & OptimizerAlgBase::getError() const
 {
+  return _errorMessage;
 }
 
-TypeOfAlgInterface OptimizerAlgSync::getType() const
-{ 
-  return EVENT_ORIENTED; 
+void OptimizerAlgBase::setError(const std::string & message)
+{
+  _errorMessage = (message.length() > 0) ? message : "Unknown error";
 }
+
 
 OptimizerAlgASync::OptimizerAlgASync(Pool *pool):OptimizerAlgBase(pool)
 {
@@ -55,7 +138,24 @@ OptimizerAlgASync::~OptimizerAlgASync()
 {
 }
 
-TypeOfAlgInterface OptimizerAlgASync::getType() const
-{ 
-  return NOT_EVENT_ORIENTED;
+void OptimizerAlgASync::finishProxy()
+{
+  terminateSlaveThread();
+  OptimizerAlgBase::finishProxy();
+}
+
+void OptimizerAlgASync::takeDecision()
+{
+  signalSlaveAndWait();
+}
+
+void OptimizerAlgASync::start()
+{
+  AlternateThread::start();
+}
+
+void OptimizerAlgASync::run()
+{
+  startToTakeDecision();
+  _pool->destroyAll();
 }

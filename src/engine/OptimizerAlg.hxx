@@ -20,27 +20,19 @@
 #ifndef __OPTIMIZERALG_HXX__
 #define __OPTIMIZERALG_HXX__
 
+#include <string>
+
 #include "YACSlibEngineExport.hxx"
 #include "RefCounter.hxx"
 #include "Exception.hxx"
-#include "DrivenCondition.hxx"
-
-#include <string>
+#include "AlternateThread.hxx"
+#include "Pool.hxx"
+#include "TypeCode.hxx"
 
 namespace YACS
 {
   namespace ENGINE
   {
-    class Any;
-    class Pool;
-    class TypeCode;
-
-    typedef enum
-      {
-        EVENT_ORIENTED = 26,
-        NOT_EVENT_ORIENTED = 28
-      } TypeOfAlgInterface;
-
     /*!
      *  \brief Base class factorizing common methods for all algorithms interfaces.
      */
@@ -48,51 +40,78 @@ namespace YACS
     {
     protected:
       Pool *_pool;
+      std::string _errorMessage;
+
     protected:
       OptimizerAlgBase(Pool *pool);
       virtual ~OptimizerAlgBase();
-    public:
+
+      // Methods to implement in real algorithm classes. These methods shall be called
+      // only through proxy methods.
       //! returns typecode of type expected as Input. OwnerShip of returned pointer is held by this.
       virtual TypeCode *getTCForIn() const = 0;
       //! returns typecode of type expected as Output. OwnerShip of returned pointer is held by this.
       virtual TypeCode *getTCForOut() const = 0;
-      virtual void parseFileToInit(const std::string& fileName) = 0;
-      virtual TypeOfAlgInterface getType() const = 0;
-      virtual void initialize(const Any *input) throw (Exception) = 0;
-      virtual void finish() = 0;//! Called when optimization has succeed.
-      virtual void setPool(Pool *pool);
-    };
-
-    /*!
-     *  \brief Base class to implement in external dynamic lib in case of optimizer event oriented.
-     */
-    class YACSLIBENGINE_EXPORT OptimizerAlgSync : public OptimizerAlgBase
-    {
-    protected:
-      OptimizerAlgSync(Pool *pool);
-    public:
-      TypeOfAlgInterface getType() const;
-      virtual ~OptimizerAlgSync();
+      //! returns typecode of type expected for algo initialization. OwnerShip of returned pointer is held by this.
+      virtual TypeCode *getTCForAlgoInit() const;
+      //! returns typecode of type expected as algo result. OwnerShip of returned pointer is held by this.
+      virtual TypeCode *getTCForAlgoResult() const;
+      virtual void parseFileToInit(const std::string& fileName);
+      virtual void initialize(const Any *input) throw (Exception);
       virtual void start() = 0;//! Update _pool attribute before performing anything.
       virtual void takeDecision() = 0;//! _pool->getCurrentId gives the \b id at the origin of this call.
                                       //! Perform the job of analysing to know what new jobs to do (_pool->pushInSample)
                                       //! or in case of convergence _pool->destroyAll
+      virtual void finish();//! Called when optimization has succeed.
+      virtual Any * getAlgoResult();
+
+    public:
+      // Proxy methods to encapsulate the call to real methods
+      virtual TypeCode *getTCForInProxy() const;
+      virtual TypeCode *getTCForOutProxy() const;
+      virtual TypeCode *getTCForAlgoInitProxy() const;
+      virtual TypeCode *getTCForAlgoResultProxy() const;
+      virtual void parseFileToInitProxy(const std::string& fileName);
+      virtual void initializeProxy(const Any *input) throw (Exception);
+      virtual void startProxy();
+      virtual void takeDecisionProxy();
+      virtual void finishProxy();
+      virtual Any * getAlgoResultProxy();
+
+      // Utility methods
+      virtual void setPool(Pool *pool);
+      virtual bool hasError() const;
+      virtual const std::string & getError() const;
+      virtual void setError(const std::string & message);
+
     };
+
+    typedef OptimizerAlgBase OptimizerAlgSync;
 
     /*!
      *  \brief Base class to implement in external dynamic lib in case of optimizer non event oriented.
      */
-    class YACSLIBENGINE_EXPORT OptimizerAlgASync : public OptimizerAlgBase
+    class YACSLIBENGINE_EXPORT OptimizerAlgASync : public OptimizerAlgBase,
+                                                   public YACS::BASES::AlternateThread
     {
     protected:
       OptimizerAlgASync(Pool *pool);
     public:
-      TypeOfAlgInterface getType() const;
       virtual ~OptimizerAlgASync();
-      virtual void startToTakeDecision(::YACS::BASES::DrivenCondition *condition) = 0;//! _pool->getCurrentId gives the \b id at the origin of this call.
+      virtual void finishProxy();//! Called when optimization has succeed.
+
+    protected:
+      virtual void start();//! Update _pool attribute before performing anything.
+      virtual void takeDecision();//! _pool->getCurrentId gives the \b id at the origin of this call.
+                                  //! Perform the job of analysing to know what new jobs to do (_pool->pushInSample)
+                                  //! or in case of convergence _pool->destroyAll
+      virtual void run();
+
+      //! _pool->getCurrentId gives the \b id at the origin of this call.
       //! Perform the job between 2 'condition->wait()' of analysing to know what new jobs to do
       //! (_pool->pushInSample) or in case of convergence _pool->destroyAll
       //! WARNING ! 'condition->wait()' must be called before any analyse of Pool.
+      virtual void startToTakeDecision()=0;
     };
 
     typedef OptimizerAlgBase *(*OptimizerAlgBaseFactory)(Pool *pool);

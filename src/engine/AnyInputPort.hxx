@@ -22,6 +22,7 @@
 
 #include "YACSlibEngineExport.hxx"
 #include "InputPort.hxx"
+#include "Mutex.hxx"
 
 #include <string>
 
@@ -32,7 +33,7 @@ namespace YACS
     class YACSLIBENGINE_EXPORT AnyInputPort : public InputPort
     {
     public:
-      AnyInputPort(const std::string& name, Node *node, TypeCode* type);
+      AnyInputPort(const std::string& name, Node *node, TypeCode* type, bool canBeNull = false);
       AnyInputPort(const  AnyInputPort& other, Node *newHelder);
       virtual ~AnyInputPort();
       void exSaveInit();
@@ -49,6 +50,8 @@ namespace YACS
       virtual std::string typeName() {return "YACS__ENGINE__AnyInputPort";}
     protected:
       Any *_value;
+    private:
+      YACS::BASES::Mutex _mutex;
     };
   }
 }

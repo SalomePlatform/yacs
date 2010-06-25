@@ -16,11 +16,21 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+#include "FormOptimizerLoop.hxx"
 
-#include "DrivenCondition.hxx"
+//#define _DEVDEBUG_
+#include "YacsTrace.hxx"
 
-#if defined(YACS_PTHREAD)
-#include "DrivenConditionPT.cxx"
-#else
-#error
-#endif
+using namespace std;
+using namespace YACS::HMI;
+
+FormOptimizerLoop::FormOptimizerLoop(QWidget *parent)
+{
+  DEBTRACE("FormOptimizerLoop::FormOptimizerLoop");
+  setupUi(this);
+}
+
+FormOptimizerLoop::~FormOptimizerLoop()
+{
+  DEBTRACE("FormOptimizerLoop::~FormOptimizerLoop");
+}

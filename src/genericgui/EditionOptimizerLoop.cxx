@@ -18,7 +18,7 @@
 //
 
 #include "EditionOptimizerLoop.hxx"
-#include "FormEachLoop.hxx"
+#include "FormOptimizerLoop.hxx"
 #include "Node.hxx"
 #include "OptimizerLoop.hxx"
 #include "TypeCode.hxx"
@@ -28,7 +28,6 @@
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
-#include <cassert>
 #include <sstream>
 
 using namespace std;
@@ -42,38 +41,20 @@ EditionOptimizerLoop::EditionOptimizerLoop(Subject* subject,
                                        const char* name)
   : EditionNode(subject, parent, name)
 {
-  _formEachLoop = new FormEachLoop(this);
+  _formOptimizerLoop = new FormOptimizerLoop(this);
   _nbBranches = 1;
-  _wid->gridLayout1->addWidget(_formEachLoop);
-  _formEachLoop->sb_nbranch->setMinimum(1);
-  _formEachLoop->sb_nbranch->setMaximum(INT_MAX);
-  Node* node=_subjectNode->getNode();
-  OptimizerLoop *ol = dynamic_cast<OptimizerLoop*>(node);
-  if(ol)
-    _formEachLoop->lineEdit->setText(ol->edGetSamplePort()->edGetType()->name());
-  connect(_formEachLoop->sb_nbranch, SIGNAL(editingFinished()),
+  _wid->gridLayout1->addWidget(_formOptimizerLoop);
+  _formOptimizerLoop->sb_nbranch->setMinimum(1);
+  _formOptimizerLoop->sb_nbranch->setMaximum(INT_MAX);
+
+  connect(_formOptimizerLoop->sb_nbranch, SIGNAL(editingFinished()),
           this, SLOT(onNbBranchesEdited()));
-
-  _formEachLoop->label_3->setText("FileNameInitAlg");
-  connect(_formEachLoop->lineEdit_2, SIGNAL(editingFinished()),this,SLOT(onModifyInitFile()));
-
-  QLabel* la_lib = new QLabel(this);
-  la_lib->setText("lib");
-  _formEachLoop->gridLayout->addWidget(la_lib, 3, 0);
-  _le_lib = new QLineEdit(this);
-  if(ol)
-    _le_lib->setText(QString::fromStdString(ol->getAlgLib()));
-  _formEachLoop->gridLayout->addWidget(_le_lib, 3, 2);
-
-  QLabel* la_entry = new QLabel(this);
-  la_entry->setText("entry");
-  _formEachLoop->gridLayout->addWidget(la_entry, 4, 0);
-  _le_entry = new QLineEdit(this);
-  if(ol)
-    _le_entry->setText(QString::fromStdString(ol->getSymbol()));
-  _formEachLoop->gridLayout->addWidget(_le_entry, 4, 2);
-  connect(_le_entry, SIGNAL(editingFinished()),this,SLOT(onModifyEntry()));
-  connect(_le_lib, SIGNAL(editingFinished()),this,SLOT(onModifyLib()));
+  connect(_formOptimizerLoop->lineEdit_initValue, SIGNAL(editingFinished()),
+          this, SLOT(onModifyInitFile()));
+  connect(_formOptimizerLoop->lineEdit_entry, SIGNAL(editingFinished()),
+          this, SLOT(onModifyEntry()));
+  connect(_formOptimizerLoop->lineEdit_lib, SIGNAL(editingFinished()),
+          this, SLOT(onModifyLib()));
 }
 
 EditionOptimizerLoop::~EditionOptimizerLoop()
@@ -85,47 +66,52 @@ void EditionOptimizerLoop::onModifyInitFile()
   bool isOk = false;
   Node* node=_subjectNode->getNode();
   OptimizerLoop *ol = dynamic_cast<OptimizerLoop*>(node);
-  InputPort* dp=ol->getInputPort("FileNameInitAlg");
+  InputPort * dp = ol->edGetAlgoInitPort();
   SubjectDataPort* sdp = QtGuiContext::getQtCurrent()->_mapOfSubjectDataPort[dp];
-  isOk=sdp->setValue(_formEachLoop->lineEdit_2->text().toStdString());
+  isOk=sdp->setValue(_formOptimizerLoop->lineEdit_initValue->text().toStdString());
   DEBTRACE(isOk);
 }
+
 void EditionOptimizerLoop::onModifyEntry()
 {
   DEBTRACE("EditionOptimizerLoop::onModifyEntry");
   OptimizerLoop *oloop = dynamic_cast<OptimizerLoop*>(_subjectNode->getNode());
-  if(oloop->getSymbol() == _le_entry->text().toStdString()) return;
+  if (oloop->getSymbol() == _formOptimizerLoop->lineEdit_entry->text().toStdString()) return;
 
   bool isOk = false;
   SubjectOptimizerLoop *ol = dynamic_cast<SubjectOptimizerLoop*>(_subjectNode);
-  isOk=ol->setAlgorithm(_le_lib->text().toStdString(),_le_entry->text().toStdString());
+  isOk=ol->setAlgorithm(_formOptimizerLoop->lineEdit_lib->text().toStdString(),
+                        _formOptimizerLoop->lineEdit_entry->text().toStdString());
   if(!isOk)
     Message mess;
   DEBTRACE(isOk);
 }
+
 void EditionOptimizerLoop::onModifyLib()
 {
   DEBTRACE("EditionOptimizerLoop::onModifyLib");
   OptimizerLoop *oloop = dynamic_cast<OptimizerLoop*>(_subjectNode->getNode());
-  if(oloop->getAlgLib() == _le_lib->text().toStdString()) return;
+  if(oloop->getAlgLib() == _formOptimizerLoop->lineEdit_lib->text().toStdString()) return;
 
   bool isOk = false;
   SubjectOptimizerLoop *ol = dynamic_cast<SubjectOptimizerLoop*>(_subjectNode);
-  isOk=ol->setAlgorithm(_le_lib->text().toStdString(),_le_entry->text().toStdString());
-  if(!isOk)
+  isOk=ol->setAlgorithm(_formOptimizerLoop->lineEdit_lib->text().toStdString(),
+                        _formOptimizerLoop->lineEdit_entry->text().toStdString());
+  if (!isOk and !_formOptimizerLoop->lineEdit_lib->text().isEmpty() and
+      !_formOptimizerLoop->lineEdit_entry->text().isEmpty())
     Message mess;
   DEBTRACE(isOk);
 }
 
 void EditionOptimizerLoop::onNbBranchesEdited()
 {
-  int newval = _formEachLoop->sb_nbranch->value();
+  int newval = _formOptimizerLoop->sb_nbranch->value();
   DEBTRACE("EditionOptimizerLoop::onNbBranchesEdited " << _nbBranches << " --> " << newval);
   if (newval != _nbBranches)
     {
       SubjectOptimizerLoop *sol = dynamic_cast<SubjectOptimizerLoop*>(_subject);
       YASSERT(sol);
-      QString text = _formEachLoop->sb_nbranch->cleanText();
+      QString text = _formOptimizerLoop->sb_nbranch->cleanText();
       sol->setNbBranches(text.toStdString());
     }
 }
@@ -142,6 +128,7 @@ void EditionOptimizerLoop::update(GuiEvent event, int type, Subject* son)
   switch (event)
     {
     case SETVALUE:
+      // Nb branches
       SubjectComposedNode * scn = dynamic_cast<SubjectComposedNode*>(_subject);
       string val = scn->getValue();
       istringstream ss(val);
@@ -149,18 +136,24 @@ void EditionOptimizerLoop::update(GuiEvent event, int type, Subject* son)
       int i = 0;
       ss >> i;
       DEBTRACE(i);
-      _formEachLoop->sb_nbranch->setValue(i);
+      _formOptimizerLoop->sb_nbranch->setValue(i);
       _nbBranches = i;
 
-      //init file
-      InputPort* dp=_subjectNode->getNode()->getInputPort("FileNameInitAlg");
-      _formEachLoop->lineEdit_2->setText(dp->getAsString().c_str());
-      //algo lib
-      OptimizerLoop *ol = dynamic_cast<OptimizerLoop*>(_subjectNode->getNode());
-      _le_entry->setText(QString::fromStdString(ol->getSymbol()));
-      _le_lib->setText(QString::fromStdString(ol->getAlgLib()));
-      //input type name
-      _formEachLoop->lineEdit->setText(ol->edGetSamplePort()->edGetType()->name());
+      OptimizerLoop * ol = dynamic_cast<OptimizerLoop *>(_subjectNode->getNode());
+
+      // Algo init value
+      InputPort * dp = ol->edGetAlgoInitPort();
+      _formOptimizerLoop->lineEdit_initValue->setText(dp->getAsString().c_str());
+
+      // Algo library and entry
+      _formOptimizerLoop->lineEdit_entry->setText(QString::fromStdString(ol->getSymbol()));
+      _formOptimizerLoop->lineEdit_lib->setText(QString::fromStdString(ol->getAlgLib()));
+
+      // Type names
+      _formOptimizerLoop->label_evalSampleType->setText(ol->edGetSamplePort()->edGetType()->name());
+      _formOptimizerLoop->label_evalResultType->setText(ol->edGetPortForOutPool()->edGetType()->name());
+      _formOptimizerLoop->label_algoInitType->setText(ol->edGetAlgoInitPort()->edGetType()->name());
+      _formOptimizerLoop->label_algoResultType->setText(ol->edGetAlgoResultPort()->edGetType()->name());
       break;
     }
 }

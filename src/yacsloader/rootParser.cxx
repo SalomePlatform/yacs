@@ -16,8 +16,12 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+#include "rootParser.hxx"
 
-#include "rootParser.hxx" 
+// Uncomment the following line to activate devdebug traces for ALL parsers defined in hxx files
+//#define _DEVDEBUG_
+#include "YacsTrace.hxx"
+
 #include "procParsers.hxx" 
 
 namespace YACS

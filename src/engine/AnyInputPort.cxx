@@ -23,24 +23,25 @@
 #include <sstream>
 #include "Mutex.hxx"
 
-static YACS::BASES::Mutex MUTEX;
-struct Lock
-{
-  Lock(){MUTEX.lock();};
-  ~Lock(){MUTEX.unlock();};
-};
-
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
 using namespace YACS::ENGINE;
 using namespace std;
 
-AnyInputPort::AnyInputPort(const std::string& name, Node *node, TypeCode* type):InputPort(name,node,type),DataPort(name,node,type),Port(node),_value(0)
+AnyInputPort::AnyInputPort(const std::string& name, Node *node, TypeCode* type, bool canBeNull)
+  : InputPort(name, node, type, canBeNull),
+    DataPort(name, node, type),
+    Port(node),
+    _value(0)
 {
 }
 
-AnyInputPort::AnyInputPort(const  AnyInputPort& other, Node *newHelder):InputPort(other,newHelder),DataPort(other,newHelder),Port(other,newHelder),_value(0)
+AnyInputPort::AnyInputPort(const AnyInputPort& other, Node *newHelder)
+  : InputPort(other, newHelder),
+    DataPort(other, newHelder),
+    Port(other, newHelder),
+    _value(0)
 {
   if(other._value)
     _value=other._value->clone();
@@ -82,12 +83,14 @@ void AnyInputPort::exRestoreInit()
 
 void AnyInputPort::put(Any *data)
 {
-  Lock lock;
-   if(_value)
+  YACS::BASES::Lock lock(&_mutex);
+  if(_value)
     _value->decrRef();
   _value=data;
-  _value->incrRef();
-  DEBTRACE("value ref count: " << _value->getRefCnt());
+  if (_value) {
+    _value->incrRef();
+    DEBTRACE("value ref count: " << _value->getRefCnt());
+  }
 }
 
 bool AnyInputPort::isEmpty()
@@ -100,9 +103,9 @@ void *AnyInputPort::get() const
   return (void *)_value;
 }
 
-std::string AnyInputPort::getAsString() 
+std::string AnyInputPort::getAsString()
 {
-  Lock lock;
+  YACS::BASES::Lock lock(&_mutex);
   return getRuntime()->convertNeutralAsString(edGetType(),_value);
 }
 

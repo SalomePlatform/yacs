@@ -26,7 +26,7 @@ namespace YACS
 {
   namespace HMI
   {
-    class FormEachLoop;
+    class FormOptimizerLoop;
 
     class EditionOptimizerLoop: public EditionNode
     {
@@ -47,8 +47,7 @@ namespace YACS
       virtual void update(GuiEvent event, int type, Subject* son);
 
     protected:
-      FormEachLoop *_formEachLoop;
-      QLineEdit *_le_lib,*_le_entry;
+      FormOptimizerLoop *_formOptimizerLoop;
       int _nbBranches;
     };
   }

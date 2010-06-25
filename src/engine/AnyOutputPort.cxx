@@ -20,15 +20,6 @@
 #include "AnyOutputPort.hxx"
 #include "Any.hxx"
 #include "Runtime.hxx"
-#include "Mutex.hxx"
-
-static YACS::BASES::Mutex MUTEX;
-struct Lock
-{
-  Lock(){MUTEX.lock();};
-  ~Lock(){MUTEX.unlock();};
-};
-
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -75,18 +66,19 @@ void AnyOutputPort::put(const void *data) throw(ConversionException)
 
 void AnyOutputPort::put(YACS::ENGINE::Any *data) throw(ConversionException)
 {
-  {  Lock lock;
-  if(_data)
-    _data->decrRef();
-  _data = data;
-  if(_data)
-    _data->incrRef();
+  { 
+    YACS::BASES::Lock lock(&_mutex);
+    if(_data)
+      _data->decrRef();
+    _data = data;
+    if(_data)
+      _data->incrRef();
   }
   OutputPort::put(data);
 }
 
 std::string AnyOutputPort::getAsString()
 {
-  Lock lock;
+  YACS::BASES::Lock lock(&_mutex);
   return getRuntime()->convertNeutralAsString(edGetType(),_data);
 }

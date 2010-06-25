@@ -138,7 +138,7 @@ void VisitorSaveSchema::visitForEachLoop(ForEachLoop *node)
   _out << ">" << endl;
   
   writeProperties(node);
-  node->ComposedNode::accept(this);
+  node->DynParaLoop::accept(this);
   writeSimpleDataLinks(node);
   writeSimpleStreamLinks(node);
   _out << indent(depth) << "</foreach>" << endl;
@@ -163,12 +163,35 @@ void VisitorSaveSchema::visitOptimizerLoop(OptimizerLoop *node)
   _out << ">" << endl;
 
   writeProperties(node);
-  node->ComposedNode::accept(this);
+  node->DynParaLoop::accept(this);
   writeSimpleDataLinks(node);
   writeSimpleStreamLinks(node);
   _out << indent(depth) << "</optimizer>" << endl;
   endCase(node);
   DEBTRACE("END visitOptimizerLoop " << _root->getChildName(node));
+}
+
+void VisitorSaveSchema::visitDynParaLoop(DynParaLoop *node)
+{
+  DEBTRACE("START visitDynParaLoop " << _root->getChildName(node));
+  int depth = depthNode(node);
+  if (node->getInitNode() != NULL)
+    {
+      _out << indent(depth+1) << "<initnode>" << endl;
+      node->getInitNode()->accept(this);
+      _out << indent(depth+1) << "</initnode>" << endl;
+    }
+  if (node->getExecNode() != NULL)
+    {
+      node->getExecNode()->accept(this);
+    }
+  if (node->getFinalizeNode() != NULL)
+    {
+      _out << indent(depth+1) << "<finalizenode>" << endl;
+      node->getFinalizeNode()->accept(this);
+      _out << indent(depth+1) << "</finalizenode>" << endl;
+    }
+  DEBTRACE("END visitDynParaLoop " << _root->getChildName(node));
 }
 
 void VisitorSaveSchema::visitForLoop(ForLoop *node)

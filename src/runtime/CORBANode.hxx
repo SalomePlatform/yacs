@@ -22,6 +22,7 @@
 
 #include "YACSRuntimeSALOMEExport.hxx"
 #include "ServiceNode.hxx"
+#include "Mutex.hxx"
 #include "yacsconfig.h"
 #ifdef DSC_PORTS
 #include "DSC_Engines.hh"
@@ -84,6 +85,8 @@ namespace YACS
       std::list<Engines::ConnectionManager::connectionId> ids;
 #endif
       virtual std::string getContainerLog();
+    private:
+      YACS::BASES::Mutex _mutex;
     };
   }
 }

@@ -20,6 +20,9 @@
 #include "containerParsers.hxx"
 #include "propertyParsers.hxx"
 
+//#define _DEVDEBUG_
+#include "YacsTrace.hxx"
+
 namespace YACS
 {
   containertypeParser containertypeParser::containerParser;

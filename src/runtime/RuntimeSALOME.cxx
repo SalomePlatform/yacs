@@ -444,10 +444,10 @@ ForLoop* RuntimeSALOME::createForLoop(const std::string& name)
 OptimizerLoop* RuntimeSALOME::createOptimizerLoop(const std::string& name,const std::string& algLib,const std::string& factoryName,
                                                   bool algInitOnFile, const std::string& kind)
 {
-  if(kind=="base")
-    return new OptimizerLoop(name,algLib,factoryName,algInitOnFile);
-  else
-    return new SalomeOptimizerLoop(name,algLib,factoryName,algInitOnFile);
+  OptimizerLoop * ol = (kind == "base") ? new OptimizerLoop(name,algLib,factoryName,algInitOnFile) :
+                                          new SalomeOptimizerLoop(name,algLib,factoryName,algInitOnFile);
+  ol->edGetNbOfBranchesPort()->edInit(1);
+  return ol;
 }
 
 DataNode* RuntimeSALOME::createInDataNode(const std::string& kind,const std::string& name)

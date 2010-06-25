@@ -80,6 +80,7 @@ libYACSRuntimeSALOME_la_SOURCES =      \
 	VisitorSaveSalomeSchema.cxx    \
 	PyStdout.cxx                   \
 	SalomeOptimizerLoop.cxx        \
+	PyOptimizerAlg.cxx             \
 	$(__dummy__)
 
 salomeinclude_HEADERS = \
@@ -97,7 +98,7 @@ SALOMEDispatcher.hxx         SalomeProc.hxx       SalomePythonComponent.hxx  Sal
 SessionCataLoader.hxx        StudyNodes.hxx       StudyPorts.hxx             TypeConversions.hxx \
 VisitorSaveSalomeSchema.hxx  XMLCORBAConv.hxx     XMLCppConv.hxx             XMLNeutralConv.hxx \
 XMLNode.hxx                  XMLPorts.hxx         XMLPythonConv.hxx          PythonInitConv.hxx \
-NeutralInitConv.hxx SalomeOptimizerLoop.hxx DistributedPythonNode.hxx
+NeutralInitConv.hxx      SalomeOptimizerLoop.hxx  DistributedPythonNode.hxx  PyOptimizerAlg.hxx
 
 EXTRA_libYACSRuntimeSALOME_la_SOURCES =  \
 	$(__dummy__)

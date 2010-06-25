@@ -23,7 +23,7 @@
 "Implementation of nodes for SALOME platform."
 %enddef
 
-%module(docstring=SALOMEDOCSTRING) SALOMERuntime
+%module(directors="1",docstring=SALOMEDOCSTRING) SALOMERuntime
 
 //work around SWIG bug #1863647
 #if SWIG_VERSION >= 0x010336
@@ -60,6 +60,8 @@
 #include "VisitorSaveSalomeSchema.hxx"
 #include "SalomeOptimizerLoop.hxx"
 #include "DistributedPythonNode.hxx"
+#include "PyOptimizerAlg.hxx"
+#include "PyStdout.hxx"
 #include <sstream>
 %}
 
@@ -138,3 +140,59 @@
     self->setData(sss);
   }
 }
+
+
+// Define the methods that can (default) or cannot (nodirector) be overloaded in Python
+%feature("director") YACS::ENGINE::PyOptimizerAlgBase;
+%feature("nodirector") YACS::ENGINE::PyOptimizerAlgBase::getTCForInProxy;
+%feature("nodirector") YACS::ENGINE::PyOptimizerAlgBase::getTCForOutProxy;
+%feature("nodirector") YACS::ENGINE::PyOptimizerAlgBase::parseFileToInitProxy;
+%feature("nodirector") YACS::ENGINE::PyOptimizerAlgBase::initializeProxy;
+%feature("nodirector") YACS::ENGINE::PyOptimizerAlgBase::startProxy;
+%feature("nodirector") YACS::ENGINE::PyOptimizerAlgBase::takeDecisionProxy;
+%feature("nodirector") YACS::ENGINE::PyOptimizerAlgBase::finishProxy;
+%feature("nodirector") YACS::ENGINE::PyOptimizerAlgBase::hasError;
+%feature("nodirector") YACS::ENGINE::PyOptimizerAlgBase::getError;
+%feature("nodirector") YACS::ENGINE::PyOptimizerAlgBase::setError;
+%feature("nodirector") YACS::ENGINE::PyOptimizerAlgBase::getTCForAlgoInitProxy;
+%feature("nodirector") YACS::ENGINE::PyOptimizerAlgBase::getTCForAlgoResultProxy;
+%feature("nodirector") YACS::ENGINE::PyOptimizerAlgBase::getAlgoResultProxy;
+
+%feature("director") YACS::ENGINE::PyOptimizerAlgASync;
+%feature("nodirector") YACS::ENGINE::PyOptimizerAlgASync::getTCForInProxy;
+%feature("nodirector") YACS::ENGINE::PyOptimizerAlgASync::getTCForOutProxy;
+%feature("nodirector") YACS::ENGINE::PyOptimizerAlgASync::parseFileToInitProxy;
+%feature("nodirector") YACS::ENGINE::PyOptimizerAlgASync::initializeProxy;
+%feature("nodirector") YACS::ENGINE::PyOptimizerAlgASync::startProxy;
+%feature("nodirector") YACS::ENGINE::PyOptimizerAlgASync::takeDecisionProxy;
+%feature("nodirector") YACS::ENGINE::PyOptimizerAlgASync::finishProxy;
+%feature("nodirector") YACS::ENGINE::PyOptimizerAlgASync::hasError;
+%feature("nodirector") YACS::ENGINE::PyOptimizerAlgASync::getError;
+%feature("nodirector") YACS::ENGINE::PyOptimizerAlgASync::setError;
+%feature("nodirector") YACS::ENGINE::PyOptimizerAlgASync::signalMasterAndWait;
+%feature("nodirector") YACS::ENGINE::PyOptimizerAlgASync::signalSlaveAndWait;
+%feature("nodirector") YACS::ENGINE::PyOptimizerAlgASync::start;
+%feature("nodirector") YACS::ENGINE::PyOptimizerAlgASync::takeDecision;
+%feature("nodirector") YACS::ENGINE::PyOptimizerAlgASync::run;
+%feature("nodirector") YACS::ENGINE::PyOptimizerAlgASync::getTCForAlgoInitProxy;
+%feature("nodirector") YACS::ENGINE::PyOptimizerAlgASync::getTCForAlgoResultProxy;
+%feature("nodirector") YACS::ENGINE::PyOptimizerAlgASync::getAlgoResultProxy;
+
+%feature("director:except") {
+    if ($error != NULL) {
+        std::string errorMessage;
+        PyObject* new_stderr = YACS::ENGINE::newPyStdOut(errorMessage);
+        PySys_SetObject((char*)"stderr", new_stderr);
+        PyErr_Print();
+        PySys_SetObject((char*)"stderr", PySys_GetObject((char*)"__stderr__"));
+        Py_DECREF(new_stderr);
+        throw YACS::Exception(errorMessage);
+    }
+}
+
+// Warning: as PyOptimizerAlgSync is only a typedef in PyOptimizerAlg.hxx, we have to
+// directly rename PyOptimizerAlgBase in OptimizerAlgSync. If someday PyOptimizerAlgSync
+// becomes a real derived class, this will have to be changed.
+%rename(OptimizerAlgSync) YACS::ENGINE::PyOptimizerAlgBase;
+%rename(OptimizerAlgASync) YACS::ENGINE::PyOptimizerAlgASync;
+%include "PyOptimizerAlg.hxx"

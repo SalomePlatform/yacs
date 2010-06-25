@@ -22,7 +22,6 @@
 #include "CppContainer.hxx"
 #include "TypeCode.hxx"
 #include "CppNode.hxx"
-#include "DynLibLoader.hxx"
 
 using namespace YACS::ENGINE;
  
@@ -184,8 +183,6 @@ void CppComponent::load()
         }
       containerC->unLock();
       containerC->lock();//To be sure
-      
-      YACS::BASES::DynLibLoader D(_compoName + "Local");
       
       bool isLoadable = containerC->loadComponentLibrary(_compoName);
       if (isLoadable) 
