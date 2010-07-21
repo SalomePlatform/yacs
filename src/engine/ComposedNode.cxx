@@ -605,7 +605,7 @@ void ComposedNode::checkConsistency(LinkInfo& info) const throw(YACS::Exception)
           }
       else
         //No backlinks
-        if(!(*iter1)->canBeNull() and !(*iter1)->edIsManuallyInitialized())
+        if(!(*iter1)->canBeNull() && !(*iter1)->edIsManuallyInitialized())
           info.pushErrLink(0,*iter1,E_NEVER_SET_INPUTPORT);
     }
   destructCFComputations(info);

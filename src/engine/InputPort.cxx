@@ -147,7 +147,7 @@ void InputPort::edRemoveManInit()
 //! Check basically that this port has one chance to be specified on time. It's a necessary condition \b not \b sufficient at all.
 void InputPort::checkBasicConsistency() const throw(YACS::Exception)
 {
-  if(!_canBeNull and !edIsManuallyInitialized() and _backLinks.size()==0 )
+  if(!_canBeNull && !edIsManuallyInitialized() && _backLinks.size()==0 )
     {
       ostringstream stream;
       stream << "InputPort::checkBasicConsistency : Port " << _name << " of node with name " << _node->getName() << " neither initialized nor linked back";

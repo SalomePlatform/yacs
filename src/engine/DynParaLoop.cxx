@@ -75,17 +75,17 @@ Node *DynParaLoop::edSetNode(Node *node)
 //! This method is used to factorize methods edSetNode, edSetInitNode and edSetFinalizeNode
 Node * DynParaLoop::checkConsistencyAndSetNode(Node* &nodeToReplace, Node* node)
 {
-  if (node == NULL or nodeToReplace == node)
+  if (node == NULL || nodeToReplace == node)
     return 0;
   if (node->_father)
     throw Exception(string("Can't set node: node ") + node->getName() + " is not orphan.");
-  if (_node and _node != nodeToReplace and _node->getName() == node->getName())
+  if (_node && _node != nodeToReplace && _node->getName() == node->getName())
     throw Exception(string("Can't set node: node ") + node->getName() +
                     " has the same name than exec node already in " + _name + ".");
-  if (_initNode and _initNode != nodeToReplace and _initNode->getName() == node->getName())
+  if (_initNode && _initNode != nodeToReplace && _initNode->getName() == node->getName())
     throw Exception(string("Can't set node: node ") + node->getName() +
                     " has the same name than init node already in " + _name + ".");
-  if (_finalizeNode and _finalizeNode != nodeToReplace and _finalizeNode->getName() == node->getName())
+  if (_finalizeNode && _finalizeNode != nodeToReplace && _finalizeNode->getName() == node->getName())
     throw Exception(string("Can't set node: node ") + node->getName() +
                     " has the same name than finalize node already in " + _name + ".");
   checkNoCrossHierachyWith(node);
@@ -164,7 +164,7 @@ std::list<OutputPort *> DynParaLoop::getLocalOutputPorts() const
 
 OutPort *DynParaLoop::getOutPort(const std::string& name) const throw(YACS::Exception)
 {
-  if (name == NAME_OF_SPLITTED_SEQ_OUT or name == OLD_NAME_OF_SPLITTED_SEQ_OUT)
+  if (name == NAME_OF_SPLITTED_SEQ_OUT || name == OLD_NAME_OF_SPLITTED_SEQ_OUT)
     return (OutPort *)&_splittedPort;
   return ComposedNode::getOutPort(name);
 }
@@ -172,7 +172,7 @@ OutPort *DynParaLoop::getOutPort(const std::string& name) const throw(YACS::Exce
 
 OutputPort *DynParaLoop::getOutputPort(const std::string& name) const throw(YACS::Exception)
 {
-  if (name == NAME_OF_SPLITTED_SEQ_OUT or name == OLD_NAME_OF_SPLITTED_SEQ_OUT)
+  if (name == NAME_OF_SPLITTED_SEQ_OUT || name == OLD_NAME_OF_SPLITTED_SEQ_OUT)
     return (OutputPort *)&_splittedPort;
   return ComposedNode::getOutputPort(name);
 }
@@ -269,11 +269,11 @@ unsigned DynParaLoop::getNumberOfBranchesCreatedDyn() const throw(YACS::Exceptio
 
 Node *DynParaLoop::getChildByShortName(const std::string& name) const throw(YACS::Exception)
 {
-  if (_node and name == _node->getName())
+  if (_node && name == _node->getName())
     return _node;
-  if (_initNode and name == _initNode->getName())
+  if (_initNode && name == _initNode->getName())
     return  _initNode;
-  if (_finalizeNode and name == _finalizeNode->getName())
+  if (_finalizeNode && name == _finalizeNode->getName())
     return  _finalizeNode;
   std::string what("node "); what+= name ; what+=" is not a child of DynParaLoop node "; what += getName();
   throw Exception(what);
@@ -283,11 +283,11 @@ Node *DynParaLoop::getChildByNameExec(const std::string& name, unsigned id) cons
 {
   if(id>=getNumberOfBranchesCreatedDyn())
     throw Exception("ForEachLoop::getChildByNameExec : invalid id - too large compared with dynamically created branches.");
-  if (_node and name == _node->getName())
+  if (_node && name == _node->getName())
     return _execNodes[id];
-  if (_initNode and name == _initNode->getName())
+  if (_initNode && name == _initNode->getName())
     return _execInitNodes[id];
-  if (_finalizeNode and name == _finalizeNode->getName())
+  if (_finalizeNode && name == _finalizeNode->getName())
     return _execFinalizeNodes[id];
   std::string what("node "); what+= name ; what+=" is not a child of DynParaLoop node "; what += getName();
   throw Exception(what);

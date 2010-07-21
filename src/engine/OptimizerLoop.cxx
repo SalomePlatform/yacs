@@ -166,7 +166,7 @@ void OptimizerLoop::exUpdateState()
 
           // Initialize and launch the algorithm
           _alg->initializeProxy(_algoInitPort.getValue());
-          if (_algoInitPort.edGetType()->isEquivalent(Runtime::_tc_string) and
+          if (_algoInitPort.edGetType()->isEquivalent(Runtime::_tc_string) &&
               _algoInitPort.getValue() != NULL)
             _alg->parseFileToInitProxy(_algoInitPort.getValue()->getStringValue());
           _alg->startProxy();
@@ -251,9 +251,9 @@ int OptimizerLoop::getNumberOfInputPorts() const
 
 InputPort *OptimizerLoop::getInputPort(const std::string& name) const throw(YACS::Exception)
 {
-  if (name == NAME_OF_ALGO_INIT_PORT or name == OLD_NAME_OF_FILENAME_INPUT)
+  if (name == NAME_OF_ALGO_INIT_PORT || name == OLD_NAME_OF_FILENAME_INPUT)
     return (InputPort *)&_algoInitPort;
-  else if (name == NAME_OF_OUT_POOL_INPUT or name == OLD_NAME_OF_OUT_POOL_INPUT)
+  else if (name == NAME_OF_OUT_POOL_INPUT || name == OLD_NAME_OF_OUT_POOL_INPUT)
     return (InputPort *)&_retPortForOutPool;
   else
     return DynParaLoop::getInputPort(name);
@@ -506,7 +506,7 @@ void OptimizerLoop::launchMaxOfSamples(bool first)
   Any *val;
   unsigned i;
   for (val = _myPool.getNextSampleWithHighestPriority(id, priority);
-       !isFullyBusy(i) and val;
+       !isFullyBusy(i) && val;
        val = _myPool.getNextSampleWithHighestPriority(id, priority))
     {
       if(_execIds[i] == NOT_INITIALIZED_BRANCH_ID)
@@ -515,7 +515,7 @@ void OptimizerLoop::launchMaxOfSamples(bool first)
         first=false; // node is initialized (second pass)
       _execIds[i]=id;
       _myPool.markIdAsInUse(id);
-      if(_initNode and !_initNodeUpdated[i])
+      if(_initNode && !_initNodeUpdated[i])
         {
           putValueOnBranch(val,i,first);
           _execInitNodes[i]->exUpdateState();
@@ -646,9 +646,9 @@ void OptimizerLoop::setAlgorithm(const std::string& alglib, const std::string& s
 {
   if(checkLinks)
     {
-      if (_splittedPort.edGetNumberOfOutLinks() != 0 or
-          _retPortForOutPool.edGetNumberOfLinks() != 0 or
-          _algoInitPort.edGetNumberOfLinks() != 0 or
+      if (_splittedPort.edGetNumberOfOutLinks() != 0 ||
+          _retPortForOutPool.edGetNumberOfLinks() != 0 ||
+          _algoInitPort.edGetNumberOfLinks() != 0 ||
           _algoResultPort.edGetNumberOfOutLinks() != 0)
         throw Exception("The OptimizerLoop node must be disconnected before setting the algorithm");
     }

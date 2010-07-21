@@ -64,7 +64,7 @@ void AlternateThreadPT::start()
 void AlternateThreadPT::terminateSlaveThread()
 {
   // This method must not be called by the slave thread
-  YASSERT(_threadStatus == UNEXISTING or pthread_self() != _threadId)
+  YASSERT(_threadStatus == UNEXISTING || !pthread_equal(pthread_self(), _threadId))
 
   switch (_threadStatus) {
     case UNEXISTING:
@@ -105,7 +105,7 @@ void AlternateThreadPT::terminateSlaveThread()
 
 void AlternateThreadPT::signalSlaveAndWait()
 {
-  YASSERT(pthread_self() != _threadId)
+  YASSERT(!pthread_equal(pthread_self(), _threadId))
   DEBTRACE("Master signaling slave and waiting");
   signalAndWait();
   DEBTRACE("Master running again");
@@ -113,7 +113,7 @@ void AlternateThreadPT::signalSlaveAndWait()
 
 void AlternateThreadPT::signalMasterAndWait()
 {
-  YASSERT(pthread_self() == _threadId)
+  YASSERT(pthread_equal(pthread_self(), _threadId))
   DEBTRACE("Slave signaling master and waiting");
   signalAndWait();
   DEBTRACE("Slave running again");
@@ -121,7 +121,7 @@ void AlternateThreadPT::signalMasterAndWait()
 
 void AlternateThreadPT::signalAndWait()
 {
-  YASSERT(_threadStatus == NORMAL_CYCLE or _threadStatus == TERMINATION_REQUESTED)
+  YASSERT(_threadStatus == NORMAL_CYCLE || _threadStatus == TERMINATION_REQUESTED)
   YASSERT(pthread_cond_signal(&_pingPongCond) == 0)
   YASSERT(pthread_cond_wait(&_pingPongCond, &_pingPongMutex) == 0)
 }

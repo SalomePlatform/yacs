@@ -445,7 +445,7 @@ struct dynparalooptypeParser:looptypeParser<T>
       std::string element(el);
       this->maxcount("initnode",1,element);
       this->maxcount("finalizenode",1,element);
-      if (element == "initnode" or element == "finalizenode")
+      if (element == "initnode" || element == "finalizenode")
         {
           parser* pp = &pseudocomposednodetypeParser<>::pseudocomposednodeParser;
           this->SetUserDataAndPush(pp);

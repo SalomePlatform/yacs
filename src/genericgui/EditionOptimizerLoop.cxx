@@ -97,7 +97,7 @@ void EditionOptimizerLoop::onModifyLib()
   SubjectOptimizerLoop *ol = dynamic_cast<SubjectOptimizerLoop*>(_subjectNode);
   isOk=ol->setAlgorithm(_formOptimizerLoop->lineEdit_lib->text().toStdString(),
                         _formOptimizerLoop->lineEdit_entry->text().toStdString());
-  if (!isOk and !_formOptimizerLoop->lineEdit_lib->text().isEmpty() and
+  if (!isOk && !_formOptimizerLoop->lineEdit_lib->text().isEmpty() &&
       !_formOptimizerLoop->lineEdit_entry->text().isEmpty())
     Message mess;
   DEBTRACE(isOk);

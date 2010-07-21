@@ -19,6 +19,7 @@
 #ifndef __PYOPTIMIZERALG_HXX__
 #define __PYOPTIMIZERALG_HXX__
 
+#include "YACSRuntimeSALOMEExport.hxx"
 #include "OptimizerAlg.hxx"
 
 namespace YACS
@@ -28,7 +29,7 @@ namespace YACS
     /*!
      *  \brief Base class factorizing common methods for python algorithms interfaces.
      */
-    class YACSLIBENGINE_EXPORT PyOptimizerAlgBase : public OptimizerAlgBase
+    class YACSRUNTIMESALOME_EXPORT PyOptimizerAlgBase : public OptimizerAlgBase
     {
     public:
       virtual ~PyOptimizerAlgBase();
@@ -54,8 +55,8 @@ namespace YACS
      *  \brief Base class to implement in external dynamic lib or external python module
      *  in case of a non event oriented optimizer using Python code.
      */
-    class YACSLIBENGINE_EXPORT PyOptimizerAlgASync : public PyOptimizerAlgBase,
-                                                     public YACS::BASES::AlternateThread
+    class YACSRUNTIMESALOME_EXPORT PyOptimizerAlgASync : public PyOptimizerAlgBase,
+                                                         public YACS::BASES::AlternateThread
     {
     public:
       virtual ~PyOptimizerAlgASync();
