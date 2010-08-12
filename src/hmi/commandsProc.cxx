@@ -377,6 +377,9 @@ bool CommandReparentNode::localExecute()
       if (Loop *loop = dynamic_cast<Loop*>(newFather))
         if (!loop->edGetDirectDescendants().empty())
           throw YACS::Exception("Already a node in a new parent of Loop type");
+      if (DynParaLoop * dpl = dynamic_cast<DynParaLoop*>(newFather))
+        if (dpl->getExecNode() != NULL)
+          throw YACS::Exception("Already an execution node in the new parent of type dynamic loop");
       Node *nodeSameName = 0;
       try
         {

@@ -505,25 +505,11 @@ SubjectNode::~SubjectNode()
   if (father)
     try
       {
-        Bloc *bloc = dynamic_cast<Bloc*>(father);
-        if (bloc) bloc->edRemoveChild(_node);
-        else
+        // Remove child except if it's the splitter node of a ForEachLoop
+        if (dynamic_cast<ForEachLoop*>(father) == NULL ||
+            getName() != ForEachLoop::NAME_OF_SPLITTERNODE)
           {
-            Loop *loop = dynamic_cast<Loop*>(father);
-            if (loop) loop->edRemoveChild(_node);
-            else
-              {
-		ForEachLoop *feloop = dynamic_cast<ForEachLoop*>(father);
-		if (feloop && getName() != ForEachLoop::NAME_OF_SPLITTERNODE) {
-		  DEBTRACE("SubjectNode::localClean: remove for each loop body");
-		  feloop->edRemoveChild(_node);
-		}
-		else
-		  {
-		    Switch *aSwitch = dynamic_cast<Switch*>(father);
-		    if (aSwitch) aSwitch->edRemoveChild(_node);
-		  }
-              }
+            father->edRemoveChild(_node);
           }
       }
     catch (YACS::Exception &e)
@@ -593,8 +579,8 @@ void SubjectNode::localclean(Command *command)
 	sfl->completeChildrenSubjectList( 0 );
       else if( SubjectWhileLoop* swl = dynamic_cast<SubjectWhileLoop*>(_parent) )
 	swl->completeChildrenSubjectList( 0 );
-      else if( SubjectForEachLoop* sfel = dynamic_cast<SubjectForEachLoop*>(_parent) )
-	sfel->completeChildrenSubjectList( 0 );
+      else if( SubjectDynParaLoop* sdpl = dynamic_cast<SubjectDynParaLoop*>(_parent) )
+        sdpl->removeNode(this);
       else if( SubjectSwitch* ss = dynamic_cast<SubjectSwitch*>(_parent) )
         ss->removeNode(this);
     }
@@ -3189,10 +3175,146 @@ std::string SubjectSwitch::getValue()
 
 // ----------------------------------------------------------------------------
 
-SubjectForEachLoop::SubjectForEachLoop(YACS::ENGINE::ForEachLoop *forEachLoop, Subject *parent)
-  : SubjectComposedNode(forEachLoop, parent), _forEachLoop(forEachLoop)
+SubjectDynParaLoop::SubjectDynParaLoop(YACS::ENGINE::DynParaLoop * dynParaLoop, Subject * parent)
+  : SubjectComposedNode(dynParaLoop, parent), _dynParaLoop(dynParaLoop)
 {
-  _body = 0;
+  _subjectExecNode = NULL;
+  _subjectInitNode = NULL;
+  _subjectFinalizeNode = NULL;
+}
+
+SubjectDynParaLoop::~SubjectDynParaLoop()
+{
+  DEBTRACE("SubjectDynParaLoop::~SubjectDynParaLoop " << getName());
+}
+
+void SubjectDynParaLoop::recursiveUpdate(GuiEvent event, int type, Subject * son)
+{
+  update(event, type, son);
+  if (_subjectExecNode)
+    _subjectExecNode->recursiveUpdate(event, type, son);
+  if (_subjectInitNode)
+    _subjectInitNode->recursiveUpdate(event, type, son);
+  if (_subjectFinalizeNode)
+    _subjectFinalizeNode->recursiveUpdate(event, type, son);
+}
+
+SubjectNode * SubjectDynParaLoop::addNode(YACS::ENGINE::Catalog * catalog,
+                                          std::string compo,
+                                          std::string type,
+                                          std::string name,
+                                          bool newCompoInst)
+{
+  DEBTRACE("SubjectDynParaLoop::addNode(catalog, compo, type, name)");
+  if (_subjectExecNode)
+    {
+      GuiContext::getCurrent()->_lastErrorMessage = "If you need several nodes in a loop, "
+                                                    "put the nodes in a bloc";
+      return NULL;
+    }
+  return createNode(catalog, compo, type, name, newCompoInst);
+}
+
+void SubjectDynParaLoop::houseKeepingAfterCutPaste(bool isCut, SubjectNode * son)
+{
+  if (isCut)
+    removeNode(son);
+  else
+    _subjectExecNode = son;
+}
+
+void SubjectDynParaLoop::clean(Command * command)
+{
+  if (_askRegisterUndo)
+    {
+      _askRegisterUndo = false;
+      registerUndoDestroy();
+    }
+  localclean(command);
+  SubjectComposedNode::clean(command);
+}
+
+void SubjectDynParaLoop::localclean(Command * command)
+{
+  DEBTRACE("SubjectDynParaLoop::localClean ");
+  if (_subjectExecNode)
+    {
+      DEBTRACE(_subjectExecNode->getName());
+      erase(_subjectExecNode);
+    }
+  if (_subjectInitNode)
+    {
+      DEBTRACE(_subjectInitNode->getName());
+      erase(_subjectInitNode);
+    }
+  if (_subjectFinalizeNode)
+    {
+      DEBTRACE(_subjectFinalizeNode->getName());
+      erase(_subjectFinalizeNode);
+    }
+}
+
+void SubjectDynParaLoop::completeChildrenSubjectList(SubjectNode * son)
+{
+  YASSERT(son);
+  if (son->getNode() == _dynParaLoop->getExecNode())
+    _subjectExecNode = son;
+  else if (son->getNode() == _dynParaLoop->getInitNode())
+    _subjectInitNode = son;
+  else if (son->getNode() == _dynParaLoop->getFinalizeNode())
+    _subjectFinalizeNode = son;
+  else
+    YASSERT(false);
+}
+
+void SubjectDynParaLoop::removeNode(SubjectNode * child)
+{
+  YASSERT(child);
+  if (child == _subjectExecNode)
+    _subjectExecNode = NULL;
+  else if (child == _subjectInitNode)
+    _subjectInitNode = NULL;
+  else if (child == _subjectFinalizeNode)
+    _subjectFinalizeNode = NULL;
+  else
+    YASSERT(false);
+}
+
+SubjectNode * SubjectDynParaLoop::getChild(YACS::ENGINE::Node * node) const
+{
+  return _subjectExecNode;
+}
+
+bool SubjectDynParaLoop::setNbBranches(std::string nbBranches)
+{
+  DEBTRACE("SubjectDynParaLoop::setNbBranches " << nbBranches);
+  Proc * proc = GuiContext::getCurrent()->getProc();
+  CommandSetForEachBranch * command =
+    new CommandSetForEachBranch(proc->getChildName(getNode()), nbBranches);
+  if (command->execute())
+    {
+      GuiContext::getCurrent()->getInvoc()->add(command);
+      return true;
+    }
+  else delete command;
+  return false;
+}
+
+bool SubjectDynParaLoop::hasValue()
+{
+  return true;
+}
+
+std::string SubjectDynParaLoop::getValue()
+{
+  return _dynParaLoop->edGetNbOfBranchesPort()->getAsString();
+}
+
+// ----------------------------------------------------------------------------
+
+SubjectForEachLoop::SubjectForEachLoop(YACS::ENGINE::ForEachLoop *forEachLoop, Subject *parent)
+  : SubjectDynParaLoop(forEachLoop, parent), _forEachLoop(forEachLoop)
+{
   _splitter = 0;
 }
 
@@ -3212,7 +3334,7 @@ void SubjectForEachLoop::clean(Command *command)
   if (_splitter) aSplitterEngine = _splitter->getNode();
 
   localclean(command);
-  SubjectComposedNode::clean(command);
+  SubjectDynParaLoop::clean(command);
 
   if (_forEachLoop && aSplitterEngine)
     {
@@ -3224,11 +3346,6 @@ void SubjectForEachLoop::clean(Command *command)
 void SubjectForEachLoop::localclean(Command *command)
 {
   DEBTRACE("SubjectForEachLoop::localClean ");
-  if (_body)
-    {
-      DEBTRACE(_body->getName());
-      erase(_body);
-    }
   if (_splitter)
     {
       DEBTRACE(_splitter->getName());
@@ -3236,88 +3353,20 @@ void SubjectForEachLoop::localclean(Command *command)
     }
 }
 
-void SubjectForEachLoop::recursiveUpdate(GuiEvent event, int type, Subject* son)
-{
-  update(event, type, son);
-  if (_body)
-    _body->recursiveUpdate(event, type, son);
-}
-
-SubjectNode* SubjectForEachLoop::addNode(YACS::ENGINE::Catalog *catalog,
-					 std::string compo,
-					 std::string type,
-					 std::string name,
-                                         bool newCompoInst)
-{
-  DEBTRACE("SubjectForEachLoop::addNode(catalog, compo, type, name)");
-  SubjectNode* body = 0;
-  if (_body)
-    {
-      GuiContext::getCurrent()->_lastErrorMessage = "If you need several nodes in a loop, put the nodes in a bloc"; 
-      return body;
-    }
-  body = createNode(catalog, compo, type, name, newCompoInst);
-  return body;
-}
-
-void SubjectForEachLoop::houseKeepingAfterCutPaste(bool isCut, SubjectNode *son)
-{
-  if (isCut)
-    _body = 0;
-  else
-    _body = son;
-}
-
-
 void SubjectForEachLoop::completeChildrenSubjectList(SubjectNode *son)
 {
-  if ( !son )
-  {
-    _body = son;
-    return;
-  }
-
-  string name = son->getName();
-  DEBTRACE("SubjectForEachLoop::completeChildrenSubjectList " << name);
-  if (name == ForEachLoop::NAME_OF_SPLITTERNODE)
+  if (son && son->getName() == ForEachLoop::NAME_OF_SPLITTERNODE)
     _splitter = son;
   else
-    _body = son;
+    SubjectDynParaLoop::completeChildrenSubjectList(son);
 }
-
-bool SubjectForEachLoop::setNbBranches(std::string nbBranches)
-{
-  DEBTRACE("SubjectForEachLoop::setNbBranches " << nbBranches);
-  Proc *proc = GuiContext::getCurrent()->getProc();
-  CommandSetForEachBranch *command =
-    new CommandSetForEachBranch(proc->getChildName(getNode()), nbBranches);
-  if (command->execute())
-    {
-      GuiContext::getCurrent()->getInvoc()->add(command);
-      return true;
-    }
-  else delete command;
-  return false;
-}
-
-bool SubjectForEachLoop::hasValue()
-{
-  return true;
-}
-
-std::string SubjectForEachLoop::getValue()
-{
-  return _forEachLoop->getInputPort("nbBranches")->getAsString();
-}
-
 
 // ----------------------------------------------------------------------------
 
 SubjectOptimizerLoop::SubjectOptimizerLoop(YACS::ENGINE::OptimizerLoop *optimizerLoop,
                                            Subject *parent)
-  : SubjectComposedNode(optimizerLoop, parent), _optimizerLoop(optimizerLoop)
+  : SubjectDynParaLoop(optimizerLoop, parent), _optimizerLoop(optimizerLoop)
 {
-  _body = 0;
 }
 
 SubjectOptimizerLoop::~SubjectOptimizerLoop()
@@ -3333,76 +3382,12 @@ void SubjectOptimizerLoop::clean(Command *command)
       registerUndoDestroy();
     }
   localclean(command);
-  SubjectComposedNode::clean(command);
+  SubjectDynParaLoop::clean(command);
 }
 
 void SubjectOptimizerLoop::localclean(Command *command)
 {
   DEBTRACE("SubjectOptimizerLoop::localClean ");
-  if (_body)
-    erase(_body);
-}
-
-void SubjectOptimizerLoop::recursiveUpdate(GuiEvent event, int type, Subject* son)
-{
-  update(event, type, son);
-  if (_body)
-    _body->recursiveUpdate(event, type, son);
-}
-
-SubjectNode* SubjectOptimizerLoop::addNode(YACS::ENGINE::Catalog *catalog,
-					   std::string compo,
-					   std::string type,
-					   std::string name,
-                                           bool newCompoInst)
-{
-  DEBTRACE("SubjectOptimizerLoop::addNode(catalog, compo, type, name)");
-  SubjectNode* body = 0;
-  if (_body)
-    {
-      GuiContext::getCurrent()->_lastErrorMessage = "If you need several nodes in a loop, put the nodes in a bloc"; 
-      return body;
-    }
-  body = createNode(catalog, compo, type, name, newCompoInst);
-  return body;
-}
-
-bool SubjectOptimizerLoop::setNbBranches(std::string nbBranches)
-{
-  DEBTRACE("SubjectOptimizerLoop::setNbBranches " << nbBranches);
-  Proc *proc = GuiContext::getCurrent()->getProc();
-  CommandSetForEachBranch *command =
-    new CommandSetForEachBranch(proc->getChildName(getNode()), nbBranches);
-  if (command->execute())
-    {
-      GuiContext::getCurrent()->getInvoc()->add(command);
-      return true;
-    }
-  else delete command;
-  return false;
-}
-
-void SubjectOptimizerLoop::houseKeepingAfterCutPaste(bool isCut, SubjectNode *son)
-{
-  if (isCut)
-    _body = 0;
-  else
-    _body = son;
-}
-
-void SubjectOptimizerLoop::completeChildrenSubjectList(SubjectNode *son)
-{
-  _body = son;
-}
-
-bool SubjectOptimizerLoop::hasValue()
-{
-  return true;
-}
-
-std::string SubjectOptimizerLoop::getValue()
-{
-  return _optimizerLoop->getInputPort("nbBranches")->getAsString();
 }
 
 bool SubjectOptimizerLoop::setAlgorithm(const std::string& alglib,const std::string& symbol)
