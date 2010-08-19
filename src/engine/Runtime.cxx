@@ -135,8 +135,8 @@ Runtime::~Runtime()
   Runtime::_tc_bool->decrRef();
   Runtime::_tc_string->decrRef();
   Runtime::_tc_file->decrRef();
-  for(std::vector<Catalog *>::const_iterator it=_catalogs.begin();it !=_catalogs.end();it++)
-    delete (*it);
+  for(std::vector<Catalog *>::iterator it=_catalogs.begin();it !=_catalogs.end();it++)
+    (*it)->decrRef();
   Runtime::_singleton=0;
   DEBTRACE( "Total YACS::ENGINE::Refcount: " << RefCounter::_totalCnt );
 }
@@ -298,6 +298,7 @@ Catalog* Runtime::getBuiltinCatalog()
 void Runtime::addCatalog(Catalog* catalog)
 {
   _catalogs.push_back(catalog);
+  catalog->incrRef();
 }
 
 //! Get a typecode by its name from runtime catalogs
