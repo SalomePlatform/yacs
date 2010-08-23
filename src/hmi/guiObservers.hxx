@@ -619,6 +619,7 @@ namespace YACS
       SubjectForEachLoop(YACS::ENGINE::ForEachLoop *forEachLoop, Subject *parent);
       virtual ~SubjectForEachLoop();
       virtual void completeChildrenSubjectList(SubjectNode *son);
+      virtual void removeNode(SubjectNode * child);
       virtual void clean(Command *command=0);
       void localclean(Command *command=0);
       virtual TypeOfElem getType(){return FOREACHLOOP;}

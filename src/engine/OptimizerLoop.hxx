@@ -67,8 +67,6 @@ namespace YACS
       OptimizerAlgBase *_alg;
       AnyInputPort _retPortForOutPool;
       std::vector<bool> _initNodeUpdated;
-      int _initializingCounter;
-      int _unfinishedCounter;
       bool _convergenceReachedWithOtherCalc;
       FakeNodeForOptimizerLoop *_nodeForSpecialCases;
       std::vector<AnyInputPort *> _interceptorsForOutPool;

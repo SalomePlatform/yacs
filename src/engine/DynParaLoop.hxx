@@ -54,6 +54,8 @@ namespace YACS
       std::vector<Node *> _execNodes;
       std::vector<Node *> _execInitNodes;
       std::vector<Node *> _execFinalizeNodes;
+      int _initializingCounter;
+      int _unfinishedCounter;
     protected:
       static const char NAME_OF_SPLITTED_SEQ_OUT[];
       static const char OLD_NAME_OF_SPLITTED_SEQ_OUT[];

@@ -3361,6 +3361,16 @@ void SubjectForEachLoop::completeChildrenSubjectList(SubjectNode *son)
     SubjectDynParaLoop::completeChildrenSubjectList(son);
 }
 
+void SubjectForEachLoop::removeNode(SubjectNode * child)
+{
+  YASSERT(child);
+  if (child->getName() == ForEachLoop::NAME_OF_SPLITTERNODE)
+    _splitter = NULL;
+  else {
+    SubjectDynParaLoop::removeNode(child);
+  }
+}
+
 // ----------------------------------------------------------------------------
 
 SubjectOptimizerLoop::SubjectOptimizerLoop(YACS::ENGINE::OptimizerLoop *optimizerLoop,
