@@ -126,6 +126,10 @@ namespace YACS
       void pushValueOutOfScopeForCase(unsigned branchId);
       Node *simpleClone(ComposedNode *father, bool editionOnly=true) const;
       virtual void loadAlgorithm();
+
+    private:
+      TypeCode * checkTypeCode(TypeCode * tc, const char * portName);
+
     protected:
       static const int NOT_RUNNING_BRANCH_ID;
       static const int NOT_INITIALIZED_BRANCH_ID;

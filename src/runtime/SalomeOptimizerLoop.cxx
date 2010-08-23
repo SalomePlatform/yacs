@@ -41,14 +41,14 @@ SalomeOptimizerLoop::SalomeOptimizerLoop(const std::string& name, const std::str
 {
   if(initAlgo)
     {
-      try
-        {
+      //try
+      //  {
           setAlgorithm(algLibWthOutExt,symbolNameToOptimizerAlgBaseInstanceFactory);
-        }
-      catch(YACS::Exception& e)
-        {
+      //  }
+      //catch(YACS::Exception& e)
+      //  {
           //ignore it
-        }
+      //  }
     }
 }
 

@@ -1215,6 +1215,10 @@ InputPort* RuntimeSALOME::adaptCorbaToNeutral(InputCorbaPort* inport,
           throw ConversionException(msg.str());
         }
     }
+  else if(inport->edGetType()->kind() == Struct)
+    {
+      if(isAdaptableCorbaNeutral(type,inport->edGetType())) return new NeutralCorbaStruct(inport);
+    }
 
   // Adaptation not possible
   stringstream msg;

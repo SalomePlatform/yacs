@@ -670,13 +670,24 @@ void OptimizerLoop::setAlgorithm(const std::string& alglib, const std::string& s
       _algoInitPort.put((Any *)NULL);
 
       // Change the type of the ports
-      _splittedPort.edSetType(_alg->getTCForInProxy());
-      _retPortForOutPool.edSetType(_alg->getTCForOutProxy());
-      _algoInitPort.edSetType(_alg->getTCForAlgoInitProxy());
-      _algoResultPort.edSetType(_alg->getTCForAlgoResultProxy());
+      _splittedPort.edSetType(checkTypeCode(_alg->getTCForInProxy(), NAME_OF_SPLITTED_SEQ_OUT));
+      _retPortForOutPool.edSetType(checkTypeCode(_alg->getTCForOutProxy(), NAME_OF_OUT_POOL_INPUT));
+      _algoInitPort.edSetType(checkTypeCode(_alg->getTCForAlgoInitProxy(), NAME_OF_ALGO_INIT_PORT));
+      _algoResultPort.edSetType(checkTypeCode(_alg->getTCForAlgoResultProxy(), NAME_OF_ALGO_RESULT_PORT));
     }
 
   modified();
+}
+
+TypeCode * OptimizerLoop::checkTypeCode(TypeCode * tc, const char * portName)
+{
+  if (tc == NULL) {
+    ostringstream errorMsg;
+    errorMsg << "The algorithm specified for OptimizerLoop node \"" << getName() <<
+                "\" provided an invalid type for port \"" << portName << "\"";
+    throw Exception(errorMsg.str());
+  }
+  return tc;
 }
 
 //! Load the algorithm from the dynamic library
