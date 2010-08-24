@@ -236,9 +236,9 @@ ForEachLoop* Runtime::createForEachLoop(const std::string& name,TypeCode *type)
 }
 
 OptimizerLoop* Runtime::createOptimizerLoop(const std::string& name,const std::string& algLib,const std::string& factoryName,bool algInitOnFile,
-                                            const std::string& kind)
+                                            const std::string& kind, Proc * procForTypes)
 {
-  return new OptimizerLoop(name,algLib,factoryName,algInitOnFile);
+  return new OptimizerLoop(name,algLib,factoryName,algInitOnFile, true, procForTypes);
 }
 
 InputDataStreamPort* Runtime::createInputDataStreamPort(const std::string& name,Node *node,TypeCode *type)

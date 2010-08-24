@@ -33,6 +33,8 @@ namespace YACS
 {
   namespace ENGINE
   {
+    class Proc;
+
     /*!
      *  \brief Base class factorizing common methods for all algorithms interfaces.
      */
@@ -40,6 +42,7 @@ namespace YACS
     {
     protected:
       Pool *_pool;
+      Proc * _proc;
       std::string _errorMessage;
 
     protected:
@@ -80,6 +83,8 @@ namespace YACS
 
       // Utility methods
       virtual void setPool(Pool *pool);
+      virtual void setProc(Proc * proc);
+      virtual Proc * getProc();
       virtual bool hasError() const;
       virtual const std::string & getError() const;
       virtual void setError(const std::string & message);

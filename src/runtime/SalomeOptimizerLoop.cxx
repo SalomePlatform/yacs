@@ -36,14 +36,15 @@ using namespace std;
  */
 
 SalomeOptimizerLoop::SalomeOptimizerLoop(const std::string& name, const std::string& algLibWthOutExt,
-                                         const std::string& symbolNameToOptimizerAlgBaseInstanceFactory, bool algInitOnFile,bool initAlgo):
+                                         const std::string& symbolNameToOptimizerAlgBaseInstanceFactory,
+                                         bool algInitOnFile,bool initAlgo, Proc * procForTypes):
                      OptimizerLoop(name,algLibWthOutExt,symbolNameToOptimizerAlgBaseInstanceFactory,algInitOnFile,false)
 {
   if(initAlgo)
     {
       //try
       //  {
-          setAlgorithm(algLibWthOutExt,symbolNameToOptimizerAlgBaseInstanceFactory);
+          setAlgorithm(algLibWthOutExt, symbolNameToOptimizerAlgBaseInstanceFactory, true, procForTypes);
       //  }
       //catch(YACS::Exception& e)
       //  {

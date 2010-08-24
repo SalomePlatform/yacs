@@ -23,7 +23,7 @@
 using namespace YACS::BASES;
 using namespace YACS::ENGINE;
 
-OptimizerAlgBase::OptimizerAlgBase(Pool *pool):_pool(pool)
+OptimizerAlgBase::OptimizerAlgBase(Pool *pool):_pool(pool), _proc(NULL)
 {
 }
 
@@ -112,6 +112,16 @@ Any * OptimizerAlgBase::getAlgoResultProxy()
 void OptimizerAlgBase::setPool(Pool* pool)
 {
   _pool=pool;
+}
+
+void OptimizerAlgBase::setProc(Proc * proc)
+{
+  _proc = proc;
+}
+
+Proc * OptimizerAlgBase::getProc()
+{
+  return _proc;
 }
 
 bool OptimizerAlgBase::hasError() const

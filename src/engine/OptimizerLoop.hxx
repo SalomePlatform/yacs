@@ -76,7 +76,7 @@ namespace YACS
     public:
       OptimizerLoop(const std::string& name, const std::string& algLibWthOutExt,
                     const std::string& symbolNameToOptimizerAlgBaseInstanceFactory,
-                    bool algInitOnFile,bool initAlgo=true);
+                    bool algInitOnFile,bool initAlgo=true, Proc * procForTypes = NULL);
       OptimizerLoop(const OptimizerLoop& other, ComposedNode *father, bool editionOnly);
       ~OptimizerLoop();
       void init(bool start=true);
@@ -96,7 +96,8 @@ namespace YACS
       virtual void accept(Visitor *visitor);
       virtual std::string getSymbol() const { return _symbol; }
       virtual std::string getAlgLib() const ;
-      virtual void setAlgorithm(const std::string& alglib,const std::string& symbol,bool checkLinks=true);
+      virtual void setAlgorithm(const std::string& alglib,const std::string& symbol,
+                                bool checkLinks=true, Proc * procForTypes = NULL);
       virtual void checkBasicConsistency() const throw(Exception);
       virtual std::string typeName() {return "YACS__ENGINE__OptimizerLoop";}
       int getNumberOfOutputPorts() const;

@@ -99,7 +99,7 @@ void FakeNodeForOptimizerLoop::finished()
 
 OptimizerLoop::OptimizerLoop(const std::string& name, const std::string& algLibWthOutExt,
                              const std::string& symbolNameToOptimizerAlgBaseInstanceFactory,
-                             bool algInitOnFile,bool initAlgo):
+                             bool algInitOnFile,bool initAlgo, Proc * procForTypes):
         DynParaLoop(name,Runtime::_tc_string),_algInitOnFile(algInitOnFile),_alglib(algLibWthOutExt),
         _algoInitPort(NAME_OF_ALGO_INIT_PORT, this, Runtime::_tc_string, true),
         _loader(NULL),_alg(0),_convergenceReachedWithOtherCalc(false),
@@ -109,7 +109,7 @@ OptimizerLoop::OptimizerLoop(const std::string& name, const std::string& algLibW
   //We need this because calling a virtual method in a constructor does not call the most derived method but the method of the class
   //A derived class must take care to manage that 
   if(initAlgo)
-    setAlgorithm(algLibWthOutExt,symbolNameToOptimizerAlgBaseInstanceFactory);
+    setAlgorithm(algLibWthOutExt,symbolNameToOptimizerAlgBaseInstanceFactory, procForTypes);
 }
 
 OptimizerLoop::OptimizerLoop(const OptimizerLoop& other, ComposedNode *father, bool editionOnly):
@@ -642,7 +642,8 @@ void OptimizerLoop::accept(Visitor *visitor)
 /*!
  *   throw an exception if the node is connected
  */
-void OptimizerLoop::setAlgorithm(const std::string& alglib, const std::string& symbol, bool checkLinks)
+void OptimizerLoop::setAlgorithm(const std::string& alglib, const std::string& symbol,
+                                 bool checkLinks, Proc * procForTypes)
 {
   if(checkLinks)
     {
@@ -665,6 +666,8 @@ void OptimizerLoop::setAlgorithm(const std::string& alglib, const std::string& s
 
   if(_alg)
     {
+      _alg->setProc((procForTypes == NULL) ? getProc() : procForTypes);
+
       // Delete the values in the input ports if they were initialized
       _retPortForOutPool.put((Any *)NULL);
       _algoInitPort.put((Any *)NULL);

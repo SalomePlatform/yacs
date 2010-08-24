@@ -442,10 +442,10 @@ ForLoop* RuntimeSALOME::createForLoop(const std::string& name)
 }
 
 OptimizerLoop* RuntimeSALOME::createOptimizerLoop(const std::string& name,const std::string& algLib,const std::string& factoryName,
-                                                  bool algInitOnFile, const std::string& kind)
+                                                  bool algInitOnFile, const std::string& kind, Proc * procForTypes)
 {
-  OptimizerLoop * ol = (kind == "base") ? new OptimizerLoop(name,algLib,factoryName,algInitOnFile) :
-                                          new SalomeOptimizerLoop(name,algLib,factoryName,algInitOnFile);
+  OptimizerLoop * ol = (kind == "base") ? new OptimizerLoop(name,algLib,factoryName,algInitOnFile, true, procForTypes) :
+                                          new SalomeOptimizerLoop(name,algLib,factoryName,algInitOnFile, true, procForTypes);
   ol->edGetNbOfBranchesPort()->edInit(1);
   return ol;
 }

@@ -35,7 +35,7 @@ namespace YACS
       public:
         SalomeOptimizerLoop(const std::string& name, const std::string& algLibWthOutExt,
                             const std::string& symbolNameToOptimizerAlgBaseInstanceFactory,
-                            bool algInitOnFile,bool initAlgo=true);
+                            bool algInitOnFile,bool initAlgo=true, Proc * procForTypes = NULL);
         SalomeOptimizerLoop(const SalomeOptimizerLoop& other, ComposedNode *father, bool editionOnly);
         ~SalomeOptimizerLoop();
         virtual std::string typeName() {return "YACS__ENGINE__SalomeOptimizerLoop";}

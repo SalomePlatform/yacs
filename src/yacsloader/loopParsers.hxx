@@ -629,7 +629,7 @@ struct optimizerlooptypeParser:dynparalooptypeParser<T>
     }
   virtual void postAttr()
     {
-      this->_cnode=theRuntime->createOptimizerLoop(_name,_lib,_entry,true,_kind);
+      this->_cnode=theRuntime->createOptimizerLoop(_name,_lib,_entry,true,_kind, currentProc);
       //set number of branches
       if(_nbranch > 0)this->_cnode->edGetNbOfBranchesPort()->edInit(_nbranch);
       this->_cnodes.push_back(this->_cnode);
