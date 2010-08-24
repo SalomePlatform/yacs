@@ -47,6 +47,7 @@ AnyOutputPort::~AnyOutputPort()
 //! store the current dispatched value
 void AnyOutputPort::setValue(Any *data) 
 {
+  YACS::BASES::Lock lock(&_mutex);
   if(_data)
     _data->decrRef();
   _data = data; 
@@ -66,14 +67,7 @@ void AnyOutputPort::put(const void *data) throw(ConversionException)
 
 void AnyOutputPort::put(YACS::ENGINE::Any *data) throw(ConversionException)
 {
-  { 
-    YACS::BASES::Lock lock(&_mutex);
-    if(_data)
-      _data->decrRef();
-    _data = data;
-    if(_data)
-      _data->incrRef();
-  }
+  setValue(data);
   OutputPort::put(data);
 }
 
