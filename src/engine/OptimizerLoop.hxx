@@ -84,6 +84,7 @@ namespace YACS
       int getNumberOfInputPorts() const;
       InputPort *edGetPortForOutPool() { return &_retPortForOutPool; }
       InputPort *edGetAlgoInitPort() { return &_algoInitPort; }
+      InputPort *edGetPortForInitFile();
       OutputPort *edGetAlgoResultPort() { return &_algoResultPort; }
       InputPort *getInputPort(const std::string& name) const throw(Exception);
       std::list<InputPort *> getSetOfInputPort() const;

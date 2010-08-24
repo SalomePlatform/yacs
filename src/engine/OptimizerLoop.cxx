@@ -781,3 +781,10 @@ OutputPort * OptimizerLoop::getOutputPort(const std::string& name) const throw(Y
   return (name == NAME_OF_ALGO_RESULT_PORT) ? (OutputPort *)&_algoResultPort :
                                               DynParaLoop::getOutputPort(name);
 }
+
+InputPort * OptimizerLoop::edGetPortForInitFile()
+{
+  cerr << "Warning: method OptimizerLoop::edGetPortForInitFile() is deprecated, "
+          "use OptimizerLoop::edGetAlgoInitPort() instead" << endl;
+  return edGetAlgoInitPort();
+}
