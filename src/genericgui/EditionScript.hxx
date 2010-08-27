@@ -39,6 +39,7 @@ namespace YACS
       virtual void onApply();
       virtual void onCancel();
       virtual void onScriptModified();
+      virtual void onEdit();
 
     public:
       EditionScript(Subject* subject,
@@ -57,6 +58,7 @@ namespace YACS
 #endif
       QVBoxLayout* _glayout;
       QVBoxLayout* _portslayout;
+      QPushButton* _editor;
     };
   }
 }

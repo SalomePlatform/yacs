@@ -113,6 +113,7 @@ void Yacsgui_Resource::createPreferences(Yacsgui* swm)
 
   swm->addPreference( QObject::tr( _COMPONENT_INSTANCE_NEW ), componentGroup, LightApp_Preferences::Bool, RESOURCE_YACS, _COMPONENT_INSTANCE_NEW );
   swm->addPreference( "Python Script Font", componentGroup, LightApp_Preferences::Font, RESOURCE_YACS, "font" );
+  swm->addPreference( "Python External Editor", componentGroup, LightApp_Preferences::String, RESOURCE_YACS, "pythonExternalEditor" );
   swm->addPreference( "User catalog", componentGroup, LightApp_Preferences::File, RESOURCE_YACS, "userCatalog" );
   swm->addPreference( "Auto Compute Links", componentGroup, LightApp_Preferences::Bool, RESOURCE_YACS, "autoComputeLinks" );
   swm->addPreference( "Simplify Links", componentGroup, LightApp_Preferences::Bool, RESOURCE_YACS, "simplifyLink" );
@@ -245,6 +246,7 @@ void Yacsgui_Resource::preferencesChanged()
   // General resource
   Resource::COMPONENT_INSTANCE_NEW = booleanValue(_COMPONENT_INSTANCE_NEW, COMPONENTINSTANCENEW);
   Resource::pythonfont           = fontValue( "font" ,PYTHONFONT);
+  Resource::pythonExternalEditor   = stringValue( "pythonExternalEditor" ,PYTHONEXTERNALEDITOR);
   Resource::userCatalog           = stringValue( "userCatalog" ,USERCATALOG);
   Resource::autoComputeLinks = booleanValue("autoComputeLinks", AUTOCOMPUTELINKS);
   Resource::simplifyLink = booleanValue("simplifyLink", SIMPLIFYLINK);

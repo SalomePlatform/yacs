@@ -26,6 +26,7 @@ using namespace YACS::HMI;
 
 bool Resource::COMPONENT_INSTANCE_NEW = COMPONENTINSTANCENEW;
 QString Resource::userCatalog = USERCATALOG;
+QString Resource::pythonExternalEditor = PYTHONEXTERNALEDITOR;
 bool Resource::addRowCols = ADDROWCOLS;
 bool Resource::straightLinks = STRAIGHTLINKS;
 bool Resource::autoComputeLinks = AUTOCOMPUTELINKS;

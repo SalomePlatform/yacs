@@ -99,6 +99,7 @@
 
 #define COMPONENTINSTANCENEW    true
 #define PYTHONFONT              QFont("Courier")
+#define PYTHONEXTERNALEDITOR    ""
 #define USERCATALOG             "YACSUserCatalog.xml"
 #define ADDROWCOLS              true
 #define STRAIGHTLINKS           false
@@ -191,6 +192,7 @@ namespace YACS {
         // General resource
         static bool COMPONENT_INSTANCE_NEW;
         static QString userCatalog;
+        static QString pythonExternalEditor;
         static bool addRowCols;
         static bool straightLinks;
         static bool autoComputeLinks;
