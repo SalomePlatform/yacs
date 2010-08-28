@@ -23,7 +23,12 @@
 #include "Container.hxx"
 #include "ComponentInstance.hxx"
 #include "ServiceNode.hxx"
+#include "InlineNode.hxx"
+#include "ElementaryNode.hxx"
 #include "Visitor.hxx"
+
+#include <list>
+#include <vector>
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -669,6 +674,8 @@ vector<Node *> DynParaLoop::cloneAndPlaceNodesCoherently(const vector<Node *> & 
 
   DEBTRACE("Placing nodes...")
   vector<Container *> conts=treeToDup.getAllContainers();
+
+  //iterate on all containers
   for(vector<Container *>::iterator iterCt=conts.begin();iterCt!=conts.end();iterCt++)
     {
       DEBTRACE("Container " << ((*iterCt)?(*iterCt)->getName():"NULL"))
@@ -676,6 +683,8 @@ vector<Node *> DynParaLoop::cloneAndPlaceNodesCoherently(const vector<Node *> & 
       Container *contCloned=0;
       if((*iterCt))
         contCloned=(*iterCt)->clone();
+
+      //iterate on all component instances linked to the container
       for(vector<ComponentInstance *>::iterator iterCp=comps.begin();iterCp!=comps.end();iterCp++)
         {
           DEBTRACE("Component " << (*iterCp)->getCompoName())
@@ -714,6 +723,43 @@ vector<Node *> DynParaLoop::cloneAndPlaceNodesCoherently(const vector<Node *> & 
             }
           curCloned->decrRef();
         }
+
+      // iterate on all tasks linked to the container
+      vector<Task *> tasks=treeToDup.getTasksLinkedToContainer(*iterCt);
+      for(vector<Task *>::iterator iterT=tasks.begin();iterT!=tasks.end();iterT++)
+        {
+          DEBTRACE("Task " << ((ElementaryNode *)(*iterT))->getName())
+          int i = 0;
+          ElementaryNode * origElemNode = NULL;
+          for (i=0 ; i<origNodes.size() ; i++)
+            if (origNodes[i] != NULL)
+              {
+                DEBTRACE("Looking in original node " << i)
+                list<ElementaryNode *>::iterator res=find(origElemNodeList[i].begin(),
+                                                          origElemNodeList[i].end(),
+                                                          (ElementaryNode *)(*iterT));
+                if (res != origElemNodeList[i].end()) 
+                  {
+                    origElemNode = *res;
+                    break;
+                  }
+              }
+          YASSERT(origElemNode != NULL)
+          DEBTRACE("Found task in node " << i)
+          InlineFuncNode * nodeC = NULL;
+          if (origNodes[i] == origElemNode)
+            {
+              nodeC = (InlineFuncNode *)clones[i];
+            }
+          else
+            {
+              string childName = ((ComposedNode *)origNodes[i])->getChildName(origElemNode);
+              nodeC = (InlineFuncNode *)clones[i]->getChildByName(childName);
+            }
+          nodeC->setContainer(contCloned);
+        }
+
+      // ended with current container
       if(contCloned)
         contCloned->decrRef();
     }

@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='iso-8859-1' ?>
+<proc name="newSchema_1">
+   <property name="DefaultStudyID" value="1"/>
+
+   <container name="DefaultContainer">
+      <property name="container_name" value="FactoryServer"/>
+      <property name="name" value="localhost"/>
+   </container>
+
+   <container name="container0">
+   </container>
+   <container name="container1">
+   </container>
+
+<remote name="PyFunction3">
+    <function name="f">
+            <code><![CDATA[import time
+
+def f():
+    for n in xrange(15):
+      print time.time()
+      time.sleep(1)
+    
+]]></code>
+     </function>
+     <load container="container0"/>
+</remote>
+<remote name="PyFunction4">
+    <function name="f">
+            <code><![CDATA[import time
+def f():
+    for n in xrange(15):
+      print time.time()
+      time.sleep(1)
+]]></code>
+     </function>
+     <load container="container1"/>
+</remote>
+
+</proc>

@@ -1,0 +1,49 @@
+<?xml version='1.0' encoding='iso-8859-1' ?>
+<proc name="TestDistPython2">
+   <container name="cont1">
+   </container>
+
+   <remote name="Node6">
+     <function name="ff2">
+<code><![CDATA[
+def ff2(x,a):
+  print "coucou, x=",x
+  print "coucou, a=",a
+  return x+" OK ca marche"+str(a),2*a+4.7
+]]></code>
+  </function>
+     <load container="cont1" />
+     <inport name="x" type="string"/>
+     <inport name="a" type="double"/>
+     <outport name="y" type="string"/>
+     <outport name="z" type="double"/>
+   </remote>
+
+      <inline name="node2" >
+      <script><code><![CDATA[
+print "dans node2 p1=",p1
+print "dans node2 p2=",p2
+]]></code></script>
+        <inport name="p1" type="string"/>
+        <inport name="p2" type="double"/>
+      </inline>
+
+   <datalink >
+      <fromnode>Node6</fromnode> <fromport>y</fromport>
+      <tonode>node2</tonode> <toport>p1</toport>
+   </datalink>
+   <datalink >
+      <fromnode>Node6</fromnode> <fromport>z</fromport>
+      <tonode>node2</tonode> <toport>p2</toport>
+   </datalink>
+
+   <parameter>
+      <tonode>Node6</tonode><toport>x</toport>
+      <value><string>ab</string></value>
+   </parameter>
+   <parameter>
+      <tonode>Node6</tonode><toport>a</toport>
+      <value><double>3.14</double></value>
+   </parameter>
+
+</proc>
