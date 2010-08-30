@@ -97,6 +97,7 @@ void PythonNode::checkBasicConsistency() const throw(YACS::Exception)
 
 void PythonNode::load()
 {
+  DEBTRACE( "---------------PyNode::load function---------------" );
 }
 
 void PythonNode::execute()
@@ -319,6 +320,7 @@ void PyFuncNode::checkBasicConsistency() const throw(YACS::Exception)
 
 void PyFuncNode::load()
 {
+  DEBTRACE( "---------------PyfuncNode::load function---------------" );
   if(_mode=="remote")
     loadRemote();
   else

@@ -344,6 +344,7 @@ void Switch::exUpdateState()
 
 void Switch::init(bool start)
 {
+  DEBTRACE("Switch::init " << start);
   StaticDefinedComposedNode::init(start);
   int i=0;
   for(map< int , Node * >::iterator iter=_mapOfNode.begin();iter!=_mapOfNode.end();iter++, i++)
