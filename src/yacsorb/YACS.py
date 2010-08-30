@@ -39,6 +39,7 @@ class proc_i(YACS_ORB__POA.ProcExec):
         self.e.setExecMode(1) # YACS::STEPBYSTEP
         self.run1 = None
         self.p = self.l.load(xmlFile)
+        self.xmlFile=xmlFile
         pass
 
     def getNodeState(self,numid):
@@ -91,23 +92,26 @@ class proc_i(YACS_ORB__POA.ProcExec):
     def getNames(self):
         return self.p.getIds()
 
+    def runProc(self,debug, isPyThread, fromscratch):
+      print "**************************Begin schema execution %s**************************" % self.xmlFile
+      self.e.RunPy(self.p,debug, isPyThread, fromscratch)
+      print "**************************End schema execution %s****************************" % self.xmlFile
+
     def Run(self):
         execState = self.e.getExecutorState()
-        if execState >= 305:
-            # --- not clean, value from define.hxx (YACS::FINISHED)
+        if execState >= pilot.FINISHED:
             self.run1.join()
             self.run1 = None
             pass
         if self.run1 is None:
-            self.run1 = threading.Thread(None, self.e.RunPy, "CORBAExec", (self.p,0,1,1))
+            self.run1 = threading.Thread(None, self.runProc, "CORBAExec", (0,1,1))
             self.run1.start()
             pass
         pass
 
     def RunFromState(self, xmlFile):
         execState = self.e.getExecutorState()
-        if execState >= 305:
-            # --- not clean, value from define.hxx (YACS::FINISHED)
+        if execState >= pilot.FINISHED:
             self.run1.join()
             self.run1 = None
             pass
@@ -130,7 +134,7 @@ class proc_i(YACS_ORB__POA.ProcExec):
             print "Unknown exception!"
             return None
         if self.run1 is None:
-            self.run1 = threading.Thread(None, self.e.RunPy, "CORBAExec", (self.p,0,1,0))
+            self.run1 = threading.Thread(None, self.runProc, "CORBAExec", (0,1,0))
             self.run1.start()
             pass
         pass

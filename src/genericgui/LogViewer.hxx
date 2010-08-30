@@ -32,9 +32,22 @@ public:
   LogViewer(std::string label, QWidget *parent = 0);
   virtual ~LogViewer();
   void setText(std::string text);
-  void readFile(std::string fileName);
+  virtual void readFile(std::string fileName);
 protected:
   std::string _label;
+};
+
+class ContainerLogViewer: public LogViewer
+{
+  Q_OBJECT
+
+public slots:
+  virtual void onNext();
+  virtual void onPrevious();
+
+public:
+  ContainerLogViewer(std::string label, QWidget *parent = 0);
+  virtual void readFile(std::string fileName);
 };
 
 #endif

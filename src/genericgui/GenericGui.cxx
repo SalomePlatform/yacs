@@ -1813,7 +1813,7 @@ void GenericGui::onGetYacsContainerLog()
   if (!QtGuiContext::getQtCurrent()) return;
   if (!QtGuiContext::getQtCurrent()->getGuiExecutor()) return;
   string log = QtGuiContext::getQtCurrent()->getGuiExecutor()->getContainerLog();
-  LogViewer *lv = new LogViewer("YACS Container Log", _parent);
+  ContainerLogViewer *lv = new ContainerLogViewer("YACS Container Log", _parent);
   lv->readFile(log);
   lv->show();
 }
