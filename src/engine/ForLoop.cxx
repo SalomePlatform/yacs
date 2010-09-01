@@ -75,6 +75,7 @@ InputPort* ForLoop::getInputPort(const std::string& name) const throw(YACS::Exce
  */
 void ForLoop::init(bool start)
 {
+  DEBTRACE("ForLoop::init " << start);
   Loop::init(start);
   _nbOfTimesPort.exInit(start);
   _indexPort.exInit();
@@ -91,6 +92,7 @@ void ForLoop::init(bool start)
  */
 void ForLoop::exUpdateState()
 {
+  DEBTRACE("ForLoop::exUpdateState " << getName() << " " << _state);
   if(_state == YACS::DISABLED)
     return;
   if(_inGate.exIsReady())
@@ -133,6 +135,7 @@ void ForLoop::exUpdateState()
  */
 YACS::Event ForLoop::updateStateOnFinishedEventFrom(Node *node)
 {
+  DEBTRACE("ForLoop::updateStateOnFinishedEventFrom " << node->getName());
   if((++_nbOfTurns)>=_nbOfTimesPort.getIntValue())
     {
       setState(YACS::DONE);
@@ -144,8 +147,8 @@ YACS::Event ForLoop::updateStateOnFinishedEventFrom(Node *node)
       _indexPort.put(tmp);
       tmp->decrRef();
       setState(YACS::ACTIVATED);
-      node->init(false);
-      node->exUpdateState();
+      _node->init(false);
+      _node->exUpdateState();
     }
   return YACS::NOEVENT;
 }

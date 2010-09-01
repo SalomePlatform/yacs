@@ -107,7 +107,9 @@ namespace YACS
       Node *edReleaseCase(int caseId) throw(Exception);
       Node *edGetNode(int caseId);
       Node *edSetNode(int caseId, Node *DISOWNnode) throw(Exception);
+      void edChangeCase(int oldCase, int newCase);
       virtual bool edAddChild(Node *DISOWNnode) throw(Exception);
+      int getMaxCase();
       void getReadyTasks(std::vector<Task *>& tasks);
       void selectRunnableTasks(std::vector<Task *>& tasks);
       std::list<Node *> edGetDirectDescendants() const;
