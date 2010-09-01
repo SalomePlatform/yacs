@@ -73,10 +73,10 @@ void SceneHeaderItem::paint(QPainter *painter,
 void SceneHeaderItem::setText(QString label)
 {
   if (!_text)
-    _text = new SceneTextItem(_scene,
-                              this,
-                              label);
+    _text = new SceneTextItem(_scene, this, label);
+  else
     _text->setPlainTextTrunc(label);                     
+  QGraphicsItem::update();
 }
 
 void SceneHeaderItem::popupMenu(QWidget *caller, const QPoint &globalPos)

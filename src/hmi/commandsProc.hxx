@@ -168,7 +168,8 @@ namespace YACS
     public:
       CommandCopyNode(YACS::ENGINE::Proc* fromproc,
                       std::string position,
-                      std::string newParent);
+                      std::string newParent,
+                      int acase=0);
       YACS::ENGINE::Node *getNode();
     protected:
       virtual bool localExecute();
@@ -177,6 +178,7 @@ namespace YACS
       std::string _position;
       std::string _newParent;
       std::string _newName;
+      int         _case;
       YACS::ENGINE::Node *_clone;
       YACS::ENGINE::Proc *_fromproc;
     };

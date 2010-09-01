@@ -213,19 +213,21 @@ void SceneComposedNodeItem::update(GuiEvent event, int type, Subject* son)
               ScenePortItem* to  = dynamic_cast<ScenePortItem*>(scin);
               if (dynamic_cast<SubjectInputDataStreamPort*>(sinp))
                 {
-                  item = new SceneDSLinkItem(_scene,
+                  SceneDSLinkItem* item = new SceneDSLinkItem(_scene,
                                              this,
                                              from, to,
                                              son->getName().c_str(),
                                              son);
+                  item->updateShape();
                 }
               else
                 {
-                  item = new SceneLinkItem(_scene,
+                  SceneLinkItem* item = new SceneLinkItem(_scene,
                                            this,
                                            from, to,
                                            son->getName().c_str(),
                                            son);
+                  item->updateShape();
                 }
               if (Scene::_autoComputeLinks && !QtGuiContext::getQtCurrent()->isLoading())
                 {
@@ -254,11 +256,12 @@ void SceneComposedNodeItem::update(GuiEvent event, int type, Subject* son)
               ScenePortItem* from = nodefrom->getCtrlOutPortItem();
               ScenePortItem* to = nodeto->getCtrlInPortItem();
               if (!to || !from) DEBTRACE("CONTROLLINK problem -----------------");
-              item = new SceneCtrlLinkItem(_scene,
+              SceneCtrlLinkItem* item = new SceneCtrlLinkItem(_scene,
                                            this,
                                            from, to,
                                            son->getName().c_str(),
                                            son);
+              item->updateShape();
               if (Scene::_autoComputeLinks && !QtGuiContext::getQtCurrent()->isLoading())
                 {
                   YACS::HMI::SubjectProc* subproc = QtGuiContext::getQtCurrent()->getSubjectProc();
@@ -817,5 +820,19 @@ QColor SceneComposedNodeItem::getBrushColor()
   if (_hover)
     color = hoverColor(color);
   return color;
+}
+
+void SceneComposedNodeItem::updateChildItems()
+{
+  SceneNodeItem::updateChildItems();
+  if(!_header)
+    return;
+  foreach (QGraphicsItem *child, _header->childItems())
+    {
+      if (SceneItem *sci = dynamic_cast<SceneItem*>(child))
+        {
+           sci->updateLinks();
+        }
+    }
 }
 

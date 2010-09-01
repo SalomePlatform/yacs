@@ -55,7 +55,7 @@ GuiObserver_i::~GuiObserver_i()
 
 void GuiObserver_i::notifyObserver(CORBA::Long numid, const char* event)
 {
-  DEBTRACE("GuiObserver_i::notifyObserver");
+  DEBTRACE("GuiObserver_i::notifyObserver " << numid << " " << event);
   pair<int,string> myEvent(numid, event);
   YACSEvent* evt = new YACSEvent(myEvent);
   QApplication::postEvent(_impl, evt);  // Qt will delete it when done

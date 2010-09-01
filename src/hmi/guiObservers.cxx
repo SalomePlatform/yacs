@@ -77,8 +77,6 @@ void Subject::erase(Subject* sub, Command *command, bool post)
   delete sub;
   if (!post) // --- avoid recursion in erase, see cleanPostErase
     GuiContext::getCurrent()->getSubjectProc()->cleanPostErase();
-  if (parent)
-    parent->select(true);
 }
 
 // ----------------------------------------------------------------------------
@@ -254,8 +252,8 @@ bool Subject::destroy(Subject *son)
     {
       if (SubjectNode *subNode = dynamic_cast<SubjectNode*>(son))
         {
-	  if (subNode->getNode()->getFather() )
-	    startnode = proc->getChildName(subNode->getNode());
+          if (subNode->getNode()->getFather() )
+            startnode = proc->getChildName(subNode->getNode());
         }
       else if (dynamic_cast<SubjectDataPort*>(son))
         {
@@ -574,11 +572,11 @@ void SubjectNode::localclean(Command *command)
   if (_parent)
     {
       if( SubjectBloc* sb = dynamic_cast<SubjectBloc*>(_parent) )
-	sb->removeNode(this);
+        sb->removeNode(this);
       else if( SubjectForLoop* sfl = dynamic_cast<SubjectForLoop*>(_parent) )
-	sfl->completeChildrenSubjectList( 0 );
+        sfl->completeChildrenSubjectList( 0 );
       else if( SubjectWhileLoop* swl = dynamic_cast<SubjectWhileLoop*>(_parent) )
-	swl->completeChildrenSubjectList( 0 );
+        swl->completeChildrenSubjectList( 0 );
       else if( SubjectDynParaLoop* sdpl = dynamic_cast<SubjectDynParaLoop*>(_parent) )
         sdpl->removeNode(this);
       else if( SubjectSwitch* ss = dynamic_cast<SubjectSwitch*>(_parent) )
@@ -609,9 +607,16 @@ void SubjectNode::registerUndoDestroy()
   string position = proc->getName();
   if (proc != dynamic_cast<Proc*>(_node->getFather())) position = proc->getChildName(_node->getFather());
 
+  int swCase=0;
+  if (Switch* aswitch = dynamic_cast<Switch*>(_node->getFather()))
+    {
+      //the node is in a switch, save the case
+      swCase=aswitch->getRankOfNode(_node);
+    }
+
   CommandCopyNode *command = new CommandCopyNode(undoProc,
                                                  undoProc->getChildName(clone),
-                                                 position);
+                                                 position, swCase);
   GuiContext::getCurrent()->getInvoc()->add(command);
 
   // --- identify all the children service node
@@ -895,25 +900,25 @@ void SubjectNode::saveLinks()
       //are nodes in sequence (control link direct or indirect) ?
       ComposedNode* fath= ComposedNode::getLowestCommonAncestor(n1,n2);
       if(n1 == fath ||n2 == fath)
-	{
-	  //consider it as a data only link
+        {
+          //consider it as a data only link
           DEBTRACE("It's a data link: " << n1->getName() << "." << p1->getName() << " -> "<< n2->getName() << "." << p2->getName());
           dataLinks.push_back(std::pair<OutPort *, InPort *>(p1,p2));
-	  continue;
-	}
+          continue;
+        }
       while(n1->getFather() != fath) n1=n1->getFather();
       while(n2->getFather() != fath) n2=n2->getFather();
       OutGate* outg=n1->getOutGate();
       if(!outg->isAlreadyInSet(n2->getInGate()))
-	{
+        {
           DEBTRACE("It's a data link: "<<p1->getNode()->getName()<<"."<<p1->getName()<<" -> "<< p2->getNode()->getName()<<"."<<p2->getName());
           dataLinks.push_back(std::pair<OutPort *, InPort *>(p1,p2));
-	}
+        }
       else
-	{
+        {
           DEBTRACE("It's a dataflow link: "<<p1->getNode()->getName()<<"."<<p1->getName()<<" -> "<< p2->getNode()->getName()<<"."<<p2->getName());
-	  dataflowLinks.push_back(std::pair<OutPort *, InPort *>(p1,p2));
-	}
+          dataflowLinks.push_back(std::pair<OutPort *, InPort *>(p1,p2));
+        }
     }
 
   std::vector< std::pair<InPort *, OutPort *> > listIncoming  = getNode()->getSetOfLinksComingInCurrentScope();
@@ -927,25 +932,25 @@ void SubjectNode::saveLinks()
       //are nodes in sequence (control link direct or indirect) ?
       ComposedNode* fath= ComposedNode::getLowestCommonAncestor(n1,n2);
       if(n1 == fath ||n2 == fath)
-	{
-	  //consider it as a data only link
+        {
+          //consider it as a data only link
           DEBTRACE("It's a data link: " << n1->getName() << "." << p1->getName() << " -> "<< n2->getName() << "." << p2->getName());
           dataLinks.push_back(std::pair<OutPort *, InPort *>(p1,p2));
-	  continue;
-	}
+          continue;
+        }
       while(n1->getFather() != fath) n1=n1->getFather();
       while(n2->getFather() != fath) n2=n2->getFather();
       OutGate* outg=n1->getOutGate();
       if(!outg->isAlreadyInSet(n2->getInGate()))
-	{
+        {
           DEBTRACE("It's a data link: "<<p1->getNode()->getName()<<"."<<p1->getName()<<" -> "<< p2->getNode()->getName()<<"."<<p2->getName());
           dataLinks.push_back(std::pair<OutPort *, InPort *>(p1,p2));
-	}
+        }
       else
-	{
+        {
           DEBTRACE("It's a dataflow link: "<<p1->getNode()->getName()<<"."<<p1->getName()<<" -> "<< p2->getNode()->getName()<<"."<<p2->getName());
-	  dataflowLinks.push_back(std::pair<OutPort *, InPort *>(p1,p2));
-	}
+          dataflowLinks.push_back(std::pair<OutPort *, InPort *>(p1,p2));
+        }
     }
 }
 
@@ -962,14 +967,14 @@ void SubjectNode::restoreLinks()
       Node* n2=p2->getNode();
       ComposedNode* fath= ComposedNode::getLowestCommonAncestor(n1,n2);
       try
-	{
+        {
           fath->edAddLink(p1,p2);
-	}
+        }
       catch(Exception& ex)
-	{
-	  // if a link can't be restored ignore it. It's possible when a node is reparented to a foreachloop 
+        {
+          // if a link can't be restored ignore it. It's possible when a node is reparented to a foreachloop 
           continue;
-	}
+        }
       SubjectComposedNode *scla = dynamic_cast<SubjectComposedNode*>(GuiContext::getCurrent()->_mapOfSubjectNode[fath]);
       SubjectNode *sno = GuiContext::getCurrent()->_mapOfSubjectNode[static_cast<Node*>(n1)];
       SubjectNode *sni = GuiContext::getCurrent()->_mapOfSubjectNode[static_cast<Node*>(n2)];
@@ -986,14 +991,14 @@ void SubjectNode::restoreLinks()
       Node* n2=p2->getNode();
       ComposedNode* fath= ComposedNode::getLowestCommonAncestor(n1,n2);
       try
-	{
+        {
           fath->edAddDFLink(p1,p2);
-	}
+        }
       catch(Exception& ex)
-	{
-	  // if a link can't be restored ignore it. It's possible when a node is reparented to a foreachloop 
+        {
+          // if a link can't be restored ignore it. It's possible when a node is reparented to a foreachloop 
           continue;
-	}
+        }
       SubjectComposedNode *scla = dynamic_cast<SubjectComposedNode*>(GuiContext::getCurrent()->_mapOfSubjectNode[fath]);
       SubjectNode *sno = GuiContext::getCurrent()->_mapOfSubjectNode[static_cast<Node*>(n1)];
       SubjectNode *sni = GuiContext::getCurrent()->_mapOfSubjectNode[static_cast<Node*>(n2)];
@@ -1025,10 +1030,10 @@ void SubjectNode::restoreLinks()
       Node* n1=(*it)->getNode();
       Node* n2=_node;
       if(GuiContext::getCurrent()->_mapOfSubjectNode.count(n1)==0)
-	{
-	  //It's an internal node or a destroyed one : don't treat it
-	  continue;
-	}
+        {
+          //It's an internal node or a destroyed one : don't treat it
+          continue;
+        }
       ComposedNode* fath= ComposedNode::getLowestCommonAncestor(n1,n2);
       if(n1 == fath)continue;
       if(n2 == fath)continue;
@@ -1038,13 +1043,13 @@ void SubjectNode::restoreLinks()
       OutGate *ogate = n1->getOutGate();
       InGate *igate = n2->getInGate();
       if (!ogate->isAlreadyInSet(igate))
-	{
+        {
           fath->edAddCFLink(n1,n2);
           SubjectComposedNode *scla = dynamic_cast<SubjectComposedNode*>(GuiContext::getCurrent()->_mapOfSubjectNode[fath]);
           SubjectNode * subOutNode = GuiContext::getCurrent()->_mapOfSubjectNode[n1];
           SubjectNode * subInNode = GuiContext::getCurrent()->_mapOfSubjectNode[n2];
           scla->addSubjectControlLink(subOutNode,subInNode);
-	}
+        }
     }
 
   std::set<InGate *>::const_iterator it2;
@@ -1053,10 +1058,10 @@ void SubjectNode::restoreLinks()
       Node* n1=_node;
       Node* n2=(*it2)->getNode();
       if(GuiContext::getCurrent()->_mapOfSubjectNode.count(n2)==0)
-	{
-	  //It's an internal node or a destroyed one : don't treat it
-	  continue;
-	}
+        {
+          //It's an internal node or a destroyed one : don't treat it
+          continue;
+        }
       ComposedNode* fath= ComposedNode::getLowestCommonAncestor(n1,n2);
       if(n1 == fath)continue;
       if(n2 == fath)continue;
@@ -1066,13 +1071,13 @@ void SubjectNode::restoreLinks()
       OutGate *ogate = n1->getOutGate();
       InGate *igate = n2->getInGate();
       if (!ogate->isAlreadyInSet(igate))
-	{
+        {
           fath->edAddCFLink(n1,n2);
           SubjectComposedNode *scla = dynamic_cast<SubjectComposedNode*>(GuiContext::getCurrent()->_mapOfSubjectNode[fath]);
           SubjectNode * subOutNode = GuiContext::getCurrent()->_mapOfSubjectNode[n1];
           SubjectNode * subInNode = GuiContext::getCurrent()->_mapOfSubjectNode[n2];
           scla->addSubjectControlLink(subOutNode,subInNode);
-	}
+        }
     }
 }
 
@@ -1288,9 +1293,9 @@ void SubjectComposedNode::localclean(Command *command)
 }
 
 SubjectNode* SubjectComposedNode::addNode(YACS::ENGINE::Catalog *catalog,
-					  std::string compo,
-					  std::string type,
-					  std::string name,
+                                          std::string compo,
+                                          std::string type,
+                                          std::string name,
                                           bool newCompoInst)
 {
   DEBTRACE("SubjectComposedNode::addNode("<<catalog<<","<<compo<<","<<type<<","<<name<<")");
@@ -1429,8 +1434,8 @@ void SubjectComposedNode::loadChildren()
     {
       try
         {
-	  SubjectNode * son = addSubjectNode(*iter);
-	  son->loadChildren();
+          SubjectNode * son = addSubjectNode(*iter);
+          son->loadChildren();
         }
       catch(YACS::Exception& ex)
         {
@@ -1686,9 +1691,9 @@ void SubjectBloc::localclean(Command *command)
 }
 
 SubjectNode* SubjectBloc::addNode(YACS::ENGINE::Catalog *catalog,
-				  std::string compo,
-				  std::string type,
-				  std::string name,
+                                  std::string compo,
+                                  std::string type,
+                                  std::string name,
                                   bool newCompoInst)
 {
   DEBTRACE("SubjectBloc::addNode( " << catalog << ", " << compo << ", " << type << ", " << name << " )");
@@ -1724,8 +1729,8 @@ SubjectNode* SubjectBloc::getChild(YACS::ENGINE::Node* node) const
     for ( ; it != _children.end(); it++ )
       if ( (*it)->getNode() == node )
       {
-	aChild = (*it);
-	break;
+        aChild = (*it);
+        break;
       }
   }
 
@@ -1825,8 +1830,8 @@ void SubjectProc::loadComponents()
       GuiContext::getCurrent()->_mapOfLastComponentInstance[itComp->second->getCompoName()]=itComp->second;
 
       if ( GuiContext::getCurrent()->_mapOfSubjectComponent.find((*itComp).second)
-	   ==
-	   GuiContext::getCurrent()->_mapOfSubjectComponent.end() )
+           ==
+           GuiContext::getCurrent()->_mapOfSubjectComponent.end() )
       { // engine object for component already exists => add only a subject for it
         addSubjectComponent((*itComp).second);
       }
@@ -1844,8 +1849,8 @@ void SubjectProc::loadContainers()
   for (map<string, Container*>::const_iterator itCont = aProc->containerMap.begin();
        itCont != aProc->containerMap.end(); ++itCont)
     if ( GuiContext::getCurrent()->_mapOfSubjectContainer.find((*itCont).second)
-	 ==
-	 GuiContext::getCurrent()->_mapOfSubjectContainer.end() )
+         ==
+         GuiContext::getCurrent()->_mapOfSubjectContainer.end() )
       // engine object for container already exists => add only a subject for it
       addSubjectContainer((*itCont).second, (*itCont).second->getName());
 }
@@ -1871,7 +1876,7 @@ SubjectContainer* SubjectProc::addContainer(std::string name, std::string ref)
       CommandAddContainer *command = new CommandAddContainer(name,ref);
       if (command->execute())
         {
-	  GuiContext::getCurrent()->getInvoc()->add(command);
+          GuiContext::getCurrent()->getInvoc()->add(command);
           return command->getSubjectContainer();
         }
       else
@@ -2342,7 +2347,7 @@ void SubjectServiceNode::setComponent()
         }
       else
         {
-	  DEBTRACE("SubjectServiceNode::setComponent : get already created subject for compo = " <<compo.c_str());
+          DEBTRACE("SubjectServiceNode::setComponent : get already created subject for compo = " <<compo.c_str());
           subCompo = GuiContext::getCurrent()->_mapOfSubjectComponent[instance];
         }       
       YASSERT(subCompo);
@@ -2854,9 +2859,9 @@ void SubjectForLoop::recursiveUpdate(GuiEvent event, int type, Subject* son)
 }
 
 SubjectNode* SubjectForLoop::addNode(YACS::ENGINE::Catalog *catalog,
-				     std::string compo,
-				     std::string type,
-				     std::string name,
+                                     std::string compo,
+                                     std::string type,
+                                     std::string name,
                                      bool newCompoInst)
 {
   DEBTRACE("SubjectForLoop::addNode("<<catalog<<","<<compo<<","<<type<<","<<name<<")");
@@ -2946,9 +2951,9 @@ void SubjectWhileLoop::recursiveUpdate(GuiEvent event, int type, Subject* son)
 }
 
 SubjectNode* SubjectWhileLoop::addNode(YACS::ENGINE::Catalog *catalog,
-				       std::string compo,
-				       std::string type,
-				       std::string name,
+                                       std::string compo,
+                                       std::string type,
+                                       std::string name,
                                        bool newCompoInst)
 {
   DEBTRACE("SubjectWhileLoop::addNode(catalog, compo, type, name)");
@@ -3042,12 +3047,12 @@ void SubjectSwitch::recursiveUpdate(GuiEvent event, int type, Subject* son)
 }
 
 SubjectNode* SubjectSwitch::addNode(YACS::ENGINE::Catalog *catalog,
-				    std::string compo,
-				    std::string type,
-				    std::string name,
+                                    std::string compo,
+                                    std::string type,
+                                    std::string name,
                                     bool newCompoInst,
-				    int swCase,
-				    bool replace)
+                                    int swCase,
+                                    bool replace)
 {
   DEBTRACE("SubjectSwitch::addNode("<<catalog<<","<<compo<<","<<type<<","<<name<<","<<swCase<<","<<(int)replace<<")");
   SubjectNode* body = 0;
@@ -3072,9 +3077,9 @@ void SubjectSwitch::removeNode(SubjectNode* son)
     {
       if ( (*it).second == son )
       {
-	isFound = true;
-	id = (*it).first;
-	break;
+        isFound = true;
+        id = (*it).first;
+        break;
       }
     }
     if (isFound)
@@ -3116,8 +3121,8 @@ SubjectNode* SubjectSwitch::getChild(YACS::ENGINE::Node* node) const
     for (it = _bodyMap.begin(); it != _bodyMap.end(); ++it)
       if ( (*it).second->getNode() == node )
       {
-	aChild = (*it).second;
-	break;
+        aChild = (*it).second;
+        break;
       }
   }
 
@@ -3627,6 +3632,12 @@ void SubjectDataPort::registerUndoDestroy()
     GuiContext::getCurrent()->getInvoc()->add(command);
   if (comm2)
     GuiContext::getCurrent()->getInvoc()->add(comm2);
+  //save links
+  list<SubjectLink*> lsl = getListOfSubjectLink();
+  for (list<SubjectLink*>::iterator it = lsl.begin(); it != lsl.end(); ++it)
+    {
+      (*it)->registerUndoDestroy();
+    }
 }
 
 
@@ -4204,10 +4215,10 @@ void SubjectComponent::setContainer()
     {
       SubjectContainer *subContainer;
       if (GuiContext::getCurrent()->_mapOfSubjectContainer.count(container))
-	subContainer = GuiContext::getCurrent()->_mapOfSubjectContainer[container];
+        subContainer = GuiContext::getCurrent()->_mapOfSubjectContainer[container];
       else
-	subContainer = 
-	  GuiContext::getCurrent()->getSubjectProc()->addSubjectContainer(container, container->getName());
+        subContainer = 
+          GuiContext::getCurrent()->getSubjectProc()->addSubjectContainer(container, container->getName());
       addSubjectReference(subContainer);
       if (_subRefContainer)
         subContainer->moveComponent(_subRefContainer);
@@ -4325,8 +4336,8 @@ SubjectContainer::~SubjectContainer()
     for ( ; it!=mapOfSubjectComponentCpy.end(); it++ )
       if ( (*it).first && (*it).first->getContainer() == _container )
       {
-	(*it).first->setContainer(0);
-	GuiContext::getCurrent()->getSubjectProc()->destroy((*it).second);
+        (*it).first->setContainer(0);
+        GuiContext::getCurrent()->getSubjectProc()->destroy((*it).second);
       }
 
     GuiContext::getCurrent()->_mapOfSubjectContainer.erase(_container);
@@ -4442,7 +4453,7 @@ void SubjectContainer::localclean(Command *command)
       if ( (*it).first && (*it).first->getContainer() == _container )
       {
         compo=(*it).second;
-	(*it).first->setContainer(0);
+        (*it).first->setContainer(0);
         compos.push_back((*it).second);
       }
     while(!compos.empty())
