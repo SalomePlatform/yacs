@@ -680,13 +680,13 @@ void GenericGui::createActions()
 void GenericGui::createMenus()
 {
   int aMenuId;
-  aMenuId = _wrapper->createMenu( "File", -1, -1 );
+  aMenuId = _wrapper->createMenu( tr( "File" ), -1, -1 );
   _wrapper->createMenu( _wrapper->separator(), aMenuId, -1, 10 );
-  aMenuId = _wrapper->createMenu( "YACS" , aMenuId, -1, 10 );
+  aMenuId = _wrapper->createMenu( "YACS", aMenuId, -1, 10 );
   _wrapper->createMenu( _newSchemaAct, aMenuId );
   _wrapper->createMenu( _importSchemaAct, aMenuId );
 
-  aMenuId = _wrapper->createMenu( tr( "YACS" ), -1, -1, 30 );
+  aMenuId = _wrapper->createMenu( "YACS", -1, -1, 30 );
   _wrapper->createMenu( _newSchemaAct, aMenuId );//, 10
   _wrapper->createMenu( _importSchemaAct, aMenuId );
   _wrapper->createMenu( _importSupervSchemaAct, aMenuId );

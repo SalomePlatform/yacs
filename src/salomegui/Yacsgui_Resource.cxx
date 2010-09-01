@@ -107,11 +107,11 @@ void Yacsgui_Resource::createPreferences(Yacsgui* swm)
 {
   DEBTRACE("createPreferences");
   // --- General tab ---
-  int genTab = swm->addPreference( QObject::tr( "PREF_TAB_GENERAL" ) );
+  int genTab = swm->addPreference( Yacsgui::tr( "PREF_TAB_GENERAL" ) );
 
-  int componentGroup = swm->addPreference( QObject::tr( "PREF_GROUP_COMPONENT" ), genTab );
+  int componentGroup = swm->addPreference( Yacsgui::tr( "PREF_GROUP_COMPONENT" ), genTab );
 
-  swm->addPreference( QObject::tr( _COMPONENT_INSTANCE_NEW ), componentGroup, LightApp_Preferences::Bool, RESOURCE_YACS, _COMPONENT_INSTANCE_NEW );
+  swm->addPreference( Yacsgui::tr( _COMPONENT_INSTANCE_NEW ), componentGroup, LightApp_Preferences::Bool, RESOURCE_YACS, _COMPONENT_INSTANCE_NEW );
   swm->addPreference( "Python Script Font", componentGroup, LightApp_Preferences::Font, RESOURCE_YACS, "font" );
   swm->addPreference( "Python External Editor", componentGroup, LightApp_Preferences::String, RESOURCE_YACS, "pythonExternalEditor" );
   swm->addPreference( "User catalog", componentGroup, LightApp_Preferences::File, RESOURCE_YACS, "userCatalog" );
@@ -122,119 +122,119 @@ void Yacsgui_Resource::createPreferences(Yacsgui* swm)
   swm->addPreference( "Tabified Panels Up", componentGroup, LightApp_Preferences::Bool, RESOURCE_YACS, "tabPanelsUp" );
 
   // Link colors
-  int linkTab = swm->addPreference( QObject::tr( "Link colors" ) );
+  int linkTab = swm->addPreference( Yacsgui::tr( "Link colors" ) );
 
-  int idGroup = swm->addPreference( QObject::tr( "PREF_GROUP_GENERAL" ), linkTab );
+  int idGroup = swm->addPreference( Yacsgui::tr( "PREF_GROUP_GENERAL" ), linkTab );
   swm->setPreferenceProperty( idGroup, "columns", 1 );
 
-  swm->addPreference( QObject::tr( "Link draw color" ),           idGroup, LightApp_Preferences::Color, RESOURCE_YACS, "link_draw_color" );
-  swm->addPreference( QObject::tr( "Link select color" ),         idGroup, LightApp_Preferences::Color, RESOURCE_YACS, "link_select_color" );
-  swm->addPreference( QObject::tr( "Stream link draw color" ),    idGroup, LightApp_Preferences::Color, RESOURCE_YACS, "stream_link_draw_color" );
-  swm->addPreference( QObject::tr( "Stream link select color" ),  idGroup, LightApp_Preferences::Color, RESOURCE_YACS, "stream_link_select_color" );
-  swm->addPreference( QObject::tr( "Control link draw color" ),   idGroup, LightApp_Preferences::Color, RESOURCE_YACS, "control_link_draw_color" );
-  swm->addPreference( QObject::tr( "Control link select color" ), idGroup, LightApp_Preferences::Color, RESOURCE_YACS, "control_link_select_color" );
-  swm->addPreference( QObject::tr( "Emphasis link color" ),       idGroup, LightApp_Preferences::Color, RESOURCE_YACS, "emphasizeBrushColor" );
+  swm->addPreference( Yacsgui::tr( "Link draw color" ),           idGroup, LightApp_Preferences::Color, RESOURCE_YACS, "link_draw_color" );
+  swm->addPreference( Yacsgui::tr( "Link select color" ),         idGroup, LightApp_Preferences::Color, RESOURCE_YACS, "link_select_color" );
+  swm->addPreference( Yacsgui::tr( "Stream link draw color" ),    idGroup, LightApp_Preferences::Color, RESOURCE_YACS, "stream_link_draw_color" );
+  swm->addPreference( Yacsgui::tr( "Stream link select color" ),  idGroup, LightApp_Preferences::Color, RESOURCE_YACS, "stream_link_select_color" );
+  swm->addPreference( Yacsgui::tr( "Control link draw color" ),   idGroup, LightApp_Preferences::Color, RESOURCE_YACS, "control_link_draw_color" );
+  swm->addPreference( Yacsgui::tr( "Control link select color" ), idGroup, LightApp_Preferences::Color, RESOURCE_YACS, "control_link_select_color" );
+  swm->addPreference( Yacsgui::tr( "Emphasis link color" ),       idGroup, LightApp_Preferences::Color, RESOURCE_YACS, "emphasizeBrushColor" );
 
-  swm->addPreference( QObject::tr( "link pen darkness" ),         idGroup, LightApp_Preferences::Integer, RESOURCE_YACS, "link_pen_darkness" );
+  swm->addPreference( Yacsgui::tr( "link pen darkness" ),         idGroup, LightApp_Preferences::Integer, RESOURCE_YACS, "link_pen_darkness" );
 
   // --- nodes without color states ---
-  int nodeTab = swm->addPreference( QObject::tr( "PREF_TAB_NODE" ) );
+  int nodeTab = swm->addPreference( Yacsgui::tr( "PREF_TAB_NODE" ) );
 
-  int nodeSubtab = swm->addPreference( QObject::tr( "PREF_GROUP_SCENE" ), nodeTab );
+  int nodeSubtab = swm->addPreference( Yacsgui::tr( "PREF_GROUP_SCENE" ), nodeTab );
   swm->setPreferenceProperty(nodeSubtab , "columns", 2);
 
-  swm->addPreference( QObject::tr( "Pen"        ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _Scene_pen     );
-  swm->addPreference( QObject::tr( "Brush"      ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _Scene_brush   );
-  swm->addPreference( QObject::tr( "High pen"   ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _Scene_hiPen   );
-  swm->addPreference( QObject::tr( "High brush" ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _Scene_hiBrush );
+  swm->addPreference( Yacsgui::tr( "Pen"        ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _Scene_pen     );
+  swm->addPreference( Yacsgui::tr( "Brush"      ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _Scene_brush   );
+  swm->addPreference( Yacsgui::tr( "High pen"   ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _Scene_hiPen   );
+  swm->addPreference( Yacsgui::tr( "High brush" ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _Scene_hiBrush );
 
-  nodeSubtab = swm->addPreference( QObject::tr( "PREF_GROUP_BLOC" ), nodeTab );
+  nodeSubtab = swm->addPreference( Yacsgui::tr( "PREF_GROUP_BLOC" ), nodeTab );
   swm->setPreferenceProperty(nodeSubtab , "columns", 2);
 
-  swm->addPreference( QObject::tr( "Pen"        ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _ComposedNode_pen     );
-  swm->addPreference( QObject::tr( "Brush"      ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _ComposedNode_brush   );
-  swm->addPreference( QObject::tr( "High pen"   ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _ComposedNode_hiPen   );
-  swm->addPreference( QObject::tr( "High brush" ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _ComposedNode_hiBrush );
+  swm->addPreference( Yacsgui::tr( "Pen"        ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _ComposedNode_pen     );
+  swm->addPreference( Yacsgui::tr( "Brush"      ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _ComposedNode_brush   );
+  swm->addPreference( Yacsgui::tr( "High pen"   ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _ComposedNode_hiPen   );
+  swm->addPreference( Yacsgui::tr( "High brush" ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _ComposedNode_hiBrush );
 
-  nodeSubtab = swm->addPreference( QObject::tr( "PREF_GROUP_NODE" ), nodeTab );
+  nodeSubtab = swm->addPreference( Yacsgui::tr( "PREF_GROUP_NODE" ), nodeTab );
   swm->setPreferenceProperty(nodeSubtab , "columns", 2);
 
-  swm->addPreference( QObject::tr( "Pen"        ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _ElementaryNode_pen     );
-  swm->addPreference( QObject::tr( "Brush"      ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _ElementaryNode_brush   );
-  swm->addPreference( QObject::tr( "High pen"   ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _ElementaryNode_hiPen   );
-  swm->addPreference( QObject::tr( "High brush" ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _ElementaryNode_hiBrush );
+  swm->addPreference( Yacsgui::tr( "Pen"        ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _ElementaryNode_pen     );
+  swm->addPreference( Yacsgui::tr( "Brush"      ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _ElementaryNode_brush   );
+  swm->addPreference( Yacsgui::tr( "High pen"   ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _ElementaryNode_hiPen   );
+  swm->addPreference( Yacsgui::tr( "High brush" ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _ElementaryNode_hiBrush );
 
-  nodeSubtab = swm->addPreference( QObject::tr( "PREF_GROUP_HEADER" ), nodeTab );
+  nodeSubtab = swm->addPreference( Yacsgui::tr( "PREF_GROUP_HEADER" ), nodeTab );
   swm->setPreferenceProperty(nodeSubtab , "columns", 2);
 
-  swm->addPreference( QObject::tr( "Pen"        ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _Header_pen     );
-  swm->addPreference( QObject::tr( "Brush"      ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _Header_brush   );
-  swm->addPreference( QObject::tr( "High pen"   ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _Header_hiPen   );
-  swm->addPreference( QObject::tr( "High brush" ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _Header_hiBrush );
+  swm->addPreference( Yacsgui::tr( "Pen"        ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _Header_pen     );
+  swm->addPreference( Yacsgui::tr( "Brush"      ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _Header_brush   );
+  swm->addPreference( Yacsgui::tr( "High pen"   ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _Header_hiPen   );
+  swm->addPreference( Yacsgui::tr( "High brush" ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _Header_hiBrush );
 
-  nodeSubtab = swm->addPreference( QObject::tr( "PREF_GROUP_CONTROL" ), nodeTab );
+  nodeSubtab = swm->addPreference( Yacsgui::tr( "PREF_GROUP_CONTROL" ), nodeTab );
   swm->setPreferenceProperty(nodeSubtab , "columns", 2);
 
-  swm->addPreference( QObject::tr( "Pen"        ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _CtrlPort_pen     );
-  swm->addPreference( QObject::tr( "Brush"      ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _CtrlPort_brush   );
-  swm->addPreference( QObject::tr( "High pen"   ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _CtrlPort_hiPen   );
-  swm->addPreference( QObject::tr( "High brush" ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _CtrlPort_hiBrush );
+  swm->addPreference( Yacsgui::tr( "Pen"        ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _CtrlPort_pen     );
+  swm->addPreference( Yacsgui::tr( "Brush"      ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _CtrlPort_brush   );
+  swm->addPreference( Yacsgui::tr( "High pen"   ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _CtrlPort_hiPen   );
+  swm->addPreference( Yacsgui::tr( "High brush" ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _CtrlPort_hiBrush );
 
-  nodeSubtab = swm->addPreference( QObject::tr( "PREF_GROUP_PORT" ), nodeTab );
+  nodeSubtab = swm->addPreference( Yacsgui::tr( "PREF_GROUP_PORT" ), nodeTab );
   swm->setPreferenceProperty(nodeSubtab , "columns", 2);
 
-  swm->addPreference( QObject::tr( "Pen"        ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _DataPort_pen     );
-  swm->addPreference( QObject::tr( "Brush"      ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _DataPort_brush   );
-  swm->addPreference( QObject::tr( "High pen"   ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _DataPort_hiPen   );
-  swm->addPreference( QObject::tr( "High brush" ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _DataPort_hiBrush );
+  swm->addPreference( Yacsgui::tr( "Pen"        ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _DataPort_pen     );
+  swm->addPreference( Yacsgui::tr( "Brush"      ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _DataPort_brush   );
+  swm->addPreference( Yacsgui::tr( "High pen"   ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _DataPort_hiPen   );
+  swm->addPreference( Yacsgui::tr( "High brush" ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _DataPort_hiBrush );
 
-  nodeSubtab = swm->addPreference( QObject::tr( "PREF_GROUP_DRAG" ), nodeTab );
+  nodeSubtab = swm->addPreference( Yacsgui::tr( "PREF_GROUP_DRAG" ), nodeTab );
   swm->setPreferenceProperty(nodeSubtab, "columns", 1);
 
-  swm->addPreference( QObject::tr( "On dragging"), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, __dragOver );
+  swm->addPreference( Yacsgui::tr( "On dragging"), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, __dragOver );
 
   // --- Color of state of nodes ---
-  int stateTab = swm->addPreference( QObject::tr( "PREF_TAB_STATE" ) );
+  int stateTab = swm->addPreference( Yacsgui::tr( "PREF_TAB_STATE" ) );
 
-  int editGroup = swm->addPreference( QObject::tr( "PREF_GROUP_EDIT" ), stateTab );
+  int editGroup = swm->addPreference( Yacsgui::tr( "PREF_GROUP_EDIT" ), stateTab );
   swm->setPreferenceProperty( editGroup, "columns", 1 );
 
-  swm->addPreference( QObject::tr( _editedNodeBrushColor ), editGroup, LightApp_Preferences::Color, RESOURCE_YACS, _editedNodeBrushColor );
-  swm->addPreference( QObject::tr( _normalNodeBrushColor ), editGroup, LightApp_Preferences::Color, RESOURCE_YACS, _normalNodeBrushColor );
-  swm->addPreference( QObject::tr( _runNodeBrushColor    ), editGroup, LightApp_Preferences::Color, RESOURCE_YACS, _runNodeBrushColor    );
-  swm->addPreference( QObject::tr( _validNodeColor       ), editGroup, LightApp_Preferences::Color, RESOURCE_YACS, _validNodeColor       );
-  swm->addPreference( QObject::tr( _invalidNodeColor     ), editGroup, LightApp_Preferences::Color, RESOURCE_YACS, _invalidNodeColor     );
+  swm->addPreference( Yacsgui::tr( _editedNodeBrushColor ), editGroup, LightApp_Preferences::Color, RESOURCE_YACS, _editedNodeBrushColor );
+  swm->addPreference( Yacsgui::tr( _normalNodeBrushColor ), editGroup, LightApp_Preferences::Color, RESOURCE_YACS, _normalNodeBrushColor );
+  swm->addPreference( Yacsgui::tr( _runNodeBrushColor    ), editGroup, LightApp_Preferences::Color, RESOURCE_YACS, _runNodeBrushColor    );
+  swm->addPreference( Yacsgui::tr( _validNodeColor       ), editGroup, LightApp_Preferences::Color, RESOURCE_YACS, _validNodeColor       );
+  swm->addPreference( Yacsgui::tr( _invalidNodeColor     ), editGroup, LightApp_Preferences::Color, RESOURCE_YACS, _invalidNodeColor     );
 
-  int runGroup = swm->addPreference( QObject::tr( "PREF_GROUP_RUN" ), stateTab );
+  int runGroup = swm->addPreference( Yacsgui::tr( "PREF_GROUP_RUN" ), stateTab );
   swm->setPreferenceProperty( runGroup, "columns", 2 );
 
-  swm->addPreference( QObject::tr( _NOTYETINITIALIZED ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _NOTYETINITIALIZED );
-  swm->addPreference( QObject::tr( _INITIALISED       ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _INITIALISED       );
-  swm->addPreference( QObject::tr( _RUNNING           ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _RUNNING           );
-  swm->addPreference( QObject::tr( _WAITINGTASKS      ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _WAITINGTASKS      );
-  swm->addPreference( QObject::tr( _PAUSED            ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _PAUSED            );
-  swm->addPreference( QObject::tr( _FINISHED          ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _FINISHED          );
-  swm->addPreference( QObject::tr( _STOPPED           ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _STOPPED           );
-  swm->addPreference( QObject::tr( _UNKNOWN           ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _UNKNOWN           );
+  swm->addPreference( Yacsgui::tr( _NOTYETINITIALIZED ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _NOTYETINITIALIZED );
+  swm->addPreference( Yacsgui::tr( _INITIALISED       ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _INITIALISED       );
+  swm->addPreference( Yacsgui::tr( _RUNNING           ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _RUNNING           );
+  swm->addPreference( Yacsgui::tr( _WAITINGTASKS      ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _WAITINGTASKS      );
+  swm->addPreference( Yacsgui::tr( _PAUSED            ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _PAUSED            );
+  swm->addPreference( Yacsgui::tr( _FINISHED          ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _FINISHED          );
+  swm->addPreference( Yacsgui::tr( _STOPPED           ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _STOPPED           );
+  swm->addPreference( Yacsgui::tr( _UNKNOWN           ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _UNKNOWN           );
 
-  swm->addPreference( QObject::tr( _UNDEFINED         ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _UNDEFINED         );
-  swm->addPreference( QObject::tr( _INVALID           ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _INVALID           );
-  swm->addPreference( QObject::tr( _READY             ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _READY             );
-  swm->addPreference( QObject::tr( _TOLOAD            ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _TOLOAD            );
-  swm->addPreference( QObject::tr( _LOADED            ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _LOADED            );
-  swm->addPreference( QObject::tr( _TOACTIVATE        ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _TOACTIVATE        );
-  swm->addPreference( QObject::tr( _ACTIVATED         ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _ACTIVATED         );
-  swm->addPreference( QObject::tr( _DESACTIVATED      ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _DESACTIVATED      );
-  swm->addPreference( QObject::tr( _DONE              ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _DONE              );
-  swm->addPreference( QObject::tr( _SUSPENDED         ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _SUSPENDED         );
-  swm->addPreference( QObject::tr( _LOADFAILED        ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _LOADFAILED        );
-  swm->addPreference( QObject::tr( _EXECFAILED        ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _EXECFAILED        );
-  swm->addPreference( QObject::tr( _PAUSE             ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _PAUSE             );
-  swm->addPreference( QObject::tr( _INTERNALERR       ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _INTERNALERR       );
-  swm->addPreference( QObject::tr( _DISABLED          ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _DISABLED          );
-  swm->addPreference( QObject::tr( _FAILED            ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _FAILED            );
-  swm->addPreference( QObject::tr( _ERROR             ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _ERROR             );
-  swm->addPreference( QObject::tr( _DEFAULT           ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _DEFAULT           );
+  swm->addPreference( Yacsgui::tr( _UNDEFINED         ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _UNDEFINED         );
+  swm->addPreference( Yacsgui::tr( _INVALID           ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _INVALID           );
+  swm->addPreference( Yacsgui::tr( _READY             ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _READY             );
+  swm->addPreference( Yacsgui::tr( _TOLOAD            ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _TOLOAD            );
+  swm->addPreference( Yacsgui::tr( _LOADED            ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _LOADED            );
+  swm->addPreference( Yacsgui::tr( _TOACTIVATE        ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _TOACTIVATE        );
+  swm->addPreference( Yacsgui::tr( _ACTIVATED         ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _ACTIVATED         );
+  swm->addPreference( Yacsgui::tr( _DESACTIVATED      ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _DESACTIVATED      );
+  swm->addPreference( Yacsgui::tr( _DONE              ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _DONE              );
+  swm->addPreference( Yacsgui::tr( _SUSPENDED         ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _SUSPENDED         );
+  swm->addPreference( Yacsgui::tr( _LOADFAILED        ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _LOADFAILED        );
+  swm->addPreference( Yacsgui::tr( _EXECFAILED        ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _EXECFAILED        );
+  swm->addPreference( Yacsgui::tr( _PAUSE             ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _PAUSE             );
+  swm->addPreference( Yacsgui::tr( _INTERNALERR       ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _INTERNALERR       );
+  swm->addPreference( Yacsgui::tr( _DISABLED          ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _DISABLED          );
+  swm->addPreference( Yacsgui::tr( _FAILED            ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _FAILED            );
+  swm->addPreference( Yacsgui::tr( _ERROR             ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _ERROR             );
+  swm->addPreference( Yacsgui::tr( _DEFAULT           ), runGroup, LightApp_Preferences::Color, RESOURCE_YACS, _DEFAULT           );
 }
 
 void Yacsgui_Resource::preferencesChanged()
