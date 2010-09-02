@@ -319,6 +319,17 @@ void DynParaLoop::cleanDynGraph()
 void DynParaLoop::prepareInputsFromOutOfScope(int branchNb)
 {
   set< InPort * > portsToSetVals=getAllInPortsComingFromOutsideOfCurrentScope();
+
+  // This tweak is to fix problems with nested dynamic loops where links are not cloned properly
+  list<InPort *> temp = getSetOfInPort();
+  for(list<InPort *>::iterator iter2=temp.begin();iter2!=temp.end();iter2++)
+    {
+      if ((*iter2)->edSetOutPort().size() == 1 && *(*iter2)->edSetOutPort().begin() == NULL)
+        {
+          portsToSetVals.insert(*iter2);
+        }
+    }
+
   // local input ports are not candidates for dynamically duplicated inport.
   list<InputPort *> localPorts = getLocalInputPorts();
   for(list<InputPort *>::iterator iter = localPorts.begin() ; iter != localPorts.end() ; iter++)
