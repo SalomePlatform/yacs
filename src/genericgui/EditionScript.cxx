@@ -59,13 +59,8 @@ bool myQsciScintilla::event(QEvent *e)
 {
   if (e->type() == QEvent::ShortcutOverride)
     {
-      QKeyEvent *ke = (QKeyEvent*)e;
-      if ( ((ke->modifiers() == Qt::NoModifier) || (ke->modifiers() == Qt::ShiftModifier))
-           && (ke->key() != Qt::Key_Escape))
-        {
-          e->accept();
-          return true;
-        }
+      e->accept();
+      return true;
     }
   return QsciScintilla::event(e);
 }
@@ -132,6 +127,7 @@ EditionScript::EditionScript(Subject* subject,
   _sci->setAutoCompletionThreshold(2);
   //_sci->setMarginLineNumbers(1,true);
   _sci->setMarginWidth(1,0);
+  _sci->setFolding(QsciScintilla::PlainFoldStyle);
 #endif
 
   if (!QtGuiContext::getQtCurrent()->isEdition())
