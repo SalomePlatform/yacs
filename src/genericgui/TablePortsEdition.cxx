@@ -70,6 +70,18 @@ void YComboBox::showPopup()
   emit popupShow();
 }
 
+void YComboBox::keyPressEvent(QKeyEvent *e)
+{
+  //accept all key events but do nothing to avoid creating ports with keys
+}
+
+#ifndef QT_NO_WHEELEVENT
+void YComboBox::wheelEvent(QWheelEvent *e)
+{
+  //idem
+}
+#endif
+
 
 TablePortsEdition::TablePortsEdition(bool inPorts, QWidget *parent)
 {
@@ -214,7 +226,7 @@ void TablePortsEdition::on_pb_insert_clicked()
 
 void TablePortsEdition::oncb_insert_activated(const QString& text)
 {
-  DEBTRACE("TablePortsEdition::oncb_insert_currentIndexChanged " << text.toStdString());
+  DEBTRACE("TablePortsEdition::oncb_insert_activated " << text.toStdString());
   SubjectDataPort *spBefore = 0;
   QModelIndexList items = tv_ports->selectionModel()->selection().indexes();
   QModelIndex index;

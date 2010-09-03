@@ -42,6 +42,12 @@ namespace YACS
       virtual void hidePopup();
       virtual void showPopup();
 
+    protected:
+      void keyPressEvent(QKeyEvent *e);
+#ifndef QT_NO_WHEELEVENT
+      void wheelEvent(QWheelEvent *e);
+#endif
+
     signals:
       void popupHide();
       void popupShow();
