@@ -110,6 +110,7 @@ void Yacsgui_Resource::createPreferences(Yacsgui* swm)
   int genTab = swm->addPreference( Yacsgui::tr( "PREF_TAB_GENERAL" ) );
 
   int presentationGroup = swm->addPreference( "Presentation", genTab );
+  swm->setPreferenceProperty(presentationGroup , "columns", 2);
 
   swm->addPreference( "Auto Compute Links", presentationGroup, LightApp_Preferences::Bool, RESOURCE_YACS, "autoComputeLinks" );
   swm->addPreference( "Simplify Links", presentationGroup, LightApp_Preferences::Bool, RESOURCE_YACS, "simplifyLink" );
