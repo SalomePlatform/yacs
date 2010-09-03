@@ -109,19 +109,40 @@ void Yacsgui_Resource::createPreferences(Yacsgui* swm)
   // --- General tab ---
   int genTab = swm->addPreference( Yacsgui::tr( "PREF_TAB_GENERAL" ) );
 
+  int presentationGroup = swm->addPreference( "Presentation", genTab );
+
+  swm->addPreference( "Auto Compute Links", presentationGroup, LightApp_Preferences::Bool, RESOURCE_YACS, "autoComputeLinks" );
+  swm->addPreference( "Simplify Links", presentationGroup, LightApp_Preferences::Bool, RESOURCE_YACS, "simplifyLink" );
+  swm->addPreference( "Better Separation for Links", presentationGroup, LightApp_Preferences::Bool, RESOURCE_YACS, "addRowCols" );
+  swm->addPreference( "Ensure Node Visible When Moved", presentationGroup, LightApp_Preferences::Bool, RESOURCE_YACS, "ensureVisibleWhenMoved" );
+  swm->addPreference( "Tabified Panels Up", presentationGroup, LightApp_Preferences::Bool, RESOURCE_YACS, "tabPanelsUp" );
+  int priority = swm->addPreference( "DockWidget priority", presentationGroup, LightApp_Preferences::Selector, RESOURCE_YACS, "dockWidgetPriority" );
+
+  QStringList priorityList;
+  priorityList.append( "Horizontal" );
+  priorityList.append( "Vertical" );
+
+  QList<QVariant> indexesList;
+  indexesList.append(0);
+  indexesList.append(1);
+
+  swm->setPreferenceProperty( priority, "strings", priorityList );
+  swm->setPreferenceProperty( priority, "indexes", indexesList );
+
+  int pythonGroup = swm->addPreference( "Python", genTab );
+
+  swm->addPreference( "Python Script Font", pythonGroup, LightApp_Preferences::Font, RESOURCE_YACS, "font" );
+  swm->addPreference( "Python External Editor", pythonGroup, LightApp_Preferences::String, RESOURCE_YACS, "pythonExternalEditor" );
+
+  int catalogGroup = swm->addPreference( "Catalogs", genTab );
+
+  swm->addPreference( "User catalog", catalogGroup, LightApp_Preferences::File, RESOURCE_YACS, "userCatalog" );
+
   int componentGroup = swm->addPreference( Yacsgui::tr( "PREF_GROUP_COMPONENT" ), genTab );
 
   swm->addPreference( Yacsgui::tr( _COMPONENT_INSTANCE_NEW ), componentGroup, LightApp_Preferences::Bool, RESOURCE_YACS, _COMPONENT_INSTANCE_NEW );
-  swm->addPreference( "Python Script Font", componentGroup, LightApp_Preferences::Font, RESOURCE_YACS, "font" );
-  swm->addPreference( "Python External Editor", componentGroup, LightApp_Preferences::String, RESOURCE_YACS, "pythonExternalEditor" );
-  swm->addPreference( "User catalog", componentGroup, LightApp_Preferences::File, RESOURCE_YACS, "userCatalog" );
-  swm->addPreference( "Auto Compute Links", componentGroup, LightApp_Preferences::Bool, RESOURCE_YACS, "autoComputeLinks" );
-  swm->addPreference( "Simplify Links", componentGroup, LightApp_Preferences::Bool, RESOURCE_YACS, "simplifyLink" );
-  swm->addPreference( "Better Separation for Links", componentGroup, LightApp_Preferences::Bool, RESOURCE_YACS, "addRowCols" );
-  swm->addPreference( "Ensure Node Visible When Moved", componentGroup, LightApp_Preferences::Bool, RESOURCE_YACS, "ensureVisibleWhenMoved" );
-  swm->addPreference( "Tabified Panels Up", componentGroup, LightApp_Preferences::Bool, RESOURCE_YACS, "tabPanelsUp" );
 
-  // Link colors
+  // Link colors tab
   int linkTab = swm->addPreference( Yacsgui::tr( "Link colors" ) );
 
   int idGroup = swm->addPreference( Yacsgui::tr( "PREF_GROUP_GENERAL" ), linkTab );
@@ -137,7 +158,7 @@ void Yacsgui_Resource::createPreferences(Yacsgui* swm)
 
   swm->addPreference( Yacsgui::tr( "link pen darkness" ),         idGroup, LightApp_Preferences::Integer, RESOURCE_YACS, "link_pen_darkness" );
 
-  // --- nodes without color states ---
+  // --- node colors tab ---
   int nodeTab = swm->addPreference( Yacsgui::tr( "PREF_TAB_NODE" ) );
 
   int nodeSubtab = swm->addPreference( Yacsgui::tr( "PREF_GROUP_SCENE" ), nodeTab );
@@ -193,7 +214,7 @@ void Yacsgui_Resource::createPreferences(Yacsgui* swm)
 
   swm->addPreference( Yacsgui::tr( "On dragging"), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, __dragOver );
 
-  // --- Color of state of nodes ---
+  // --- Color of state of nodes tab ---
   int stateTab = swm->addPreference( Yacsgui::tr( "PREF_TAB_STATE" ) );
 
   int editGroup = swm->addPreference( Yacsgui::tr( "PREF_GROUP_EDIT" ), stateTab );
@@ -253,6 +274,7 @@ void Yacsgui_Resource::preferencesChanged()
   Resource::addRowCols = booleanValue("addRowCols", ADDROWCOLS);
   Resource::ensureVisibleWhenMoved = booleanValue("ensureVisibleWhenMoved", ENSUREVISIBLEWHENMOVED);
   Resource::tabPanelsUp = booleanValue("tabPanelsUp", TABPANELSUP);
+  Resource::dockWidgetPriority   = integerValue( "dockWidgetPriority" , DOCKWIDGETPRIORITY);
 
   // Color of state of nodes
   Resource::editedNodeBrushColor = colorValue(_editedNodeBrushColor, EDITEDNODEBRUSHCOLOR);

@@ -32,6 +32,7 @@ bool Resource::straightLinks = STRAIGHTLINKS;
 bool Resource::autoComputeLinks = AUTOCOMPUTELINKS;
 bool Resource::simplifyLink = SIMPLIFYLINK;
 bool Resource::ensureVisibleWhenMoved = ENSUREVISIBLEWHENMOVED;
+int Resource::dockWidgetPriority = DOCKWIDGETPRIORITY;
 
 // Statics for color of states
 // ---------------------------

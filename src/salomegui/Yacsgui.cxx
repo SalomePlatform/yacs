@@ -144,6 +144,15 @@ bool Yacsgui::activateModule( SUIT_Study* theStudy )
   DEBTRACE("Yacsgui::activateModule");
   bool bOk = SalomeApp_Module::activateModule( theStudy );
 
+  QMainWindow* parent = application()->desktop();
+  if(Resource::dockWidgetPriority)
+    {
+      parent->setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
+      parent->setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
+      parent->setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
+      parent->setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
+    }
+
   setMenuShown( true );
   setToolShown( true );
   _genericGui->showDockWidgets(true);
@@ -170,6 +179,12 @@ bool Yacsgui::activateModule( SUIT_Study* theStudy )
 bool Yacsgui::deactivateModule( SUIT_Study* theStudy )
 {
   DEBTRACE("Yacsgui::deactivateModule");
+
+  QMainWindow* parent = application()->desktop();
+  parent->setCorner(Qt::TopLeftCorner, Qt::TopDockWidgetArea);
+  parent->setCorner(Qt::BottomLeftCorner, Qt::BottomDockWidgetArea);
+  parent->setCorner(Qt::TopRightCorner, Qt::TopDockWidgetArea);
+  parent->setCorner(Qt::BottomRightCorner, Qt::BottomDockWidgetArea);
 
   setMenuShown( false );
   setToolShown( false );

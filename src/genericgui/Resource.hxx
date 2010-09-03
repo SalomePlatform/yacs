@@ -107,6 +107,7 @@
 #define SIMPLIFYLINK            true
 #define ENSUREVISIBLEWHENMOVED  true
 #define TABPANELSUP             true
+#define DOCKWIDGETPRIORITY      0
 
 #define EDITEDNODEBRUSHCOLOR    QColor(255, 255, 190)
 #define NORMALNODEBRUSHCOLOR    QColor(230, 235, 255)
@@ -198,6 +199,7 @@ namespace YACS {
         static bool autoComputeLinks;
         static bool simplifyLink;
         static bool ensureVisibleWhenMoved;
+        static int  dockWidgetPriority;
 
         // Colors of state of nodes
         static QColor editedNodeBrushColor;
