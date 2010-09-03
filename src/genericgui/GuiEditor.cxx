@@ -134,11 +134,12 @@ void GuiEditor::_createNode(YACS::ENGINE::Catalog* catalog,
   YASSERT(father);
   list<Node*> children = father->edGetDirectDescendants();
   bool nameInUse = true;
+  std::stringstream tryname;
   while (nameInUse)
     {
       nameInUse = false;
-      std::stringstream tryname;
       long newid = GuiContext::getCurrent()->getNewId();
+      tryname.str("");
       tryname << name << newid;
       if (newid > 100000) break; 
       for (list<Node*>::iterator it = children.begin(); it != children.end(); ++it)
@@ -146,8 +147,8 @@ void GuiEditor::_createNode(YACS::ENGINE::Catalog* catalog,
           if ((*it)->getName() == tryname.str())
             nameInUse = true;
         }
-      name = tryname.str();
     }
+  name = tryname.str();
 
   int swCase = 0;
   SubjectSwitch *aSwitch = dynamic_cast<SubjectSwitch*>(cnode);
@@ -268,6 +269,7 @@ void GuiEditor::CreateContainer()
       std::stringstream name;
       long newid = GuiContext::getCurrent()->getNewId();
       if (newid > 100000) break; 
+      name.str("");
       name << "container" << newid;
       scont = sproc->addContainer(name.str());
     }
@@ -306,6 +308,7 @@ SubjectDataPort* GuiEditor::CreateInputPort(SubjectElementaryNode* seNode,
       while (newid < 100000)
         {
           newid = GuiContext::getCurrent()->getNewId();
+          aName.str("");
           aName << "i" << newid;
           try
             {
@@ -340,6 +343,7 @@ SubjectDataPort*  GuiEditor::CreateOutputPort(SubjectElementaryNode* seNode,
       while (newid < 100000)
         {
           newid = GuiContext::getCurrent()->getNewId();
+          aName.str("");
           aName << "o" << newid;
           try
             {
