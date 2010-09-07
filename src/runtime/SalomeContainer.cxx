@@ -369,25 +369,15 @@ void SalomeContainer::start(const ComponentInstance *inst) throw(YACS::Exception
 
   std::string str(_params.container_name);
   DEBTRACE("SalomeContainer::start " << str <<";"<<_params.resource_params.hostname <<";"<<_type);
+
+  Engines::ContainerParameters myparams=_params;
+
   //If a container_name is given try to find an already existing container in naming service
   //If not found start a new container with the given parameters
   if (_type=="mono" && str != "")
     {
-      std::string machine(_params.resource_params.hostname);
-      if(machine == "" || machine == "localhost")
-        machine=Kernel_Utils::GetHostname();
-      std::string ContainerNameInNS=ns.BuildContainerNameForNS(_params,machine.c_str());
-      obj=ns.Resolve(ContainerNameInNS.c_str());
-      if(!CORBA::is_nil(obj))
-        {
-          std::cerr << "Container already exists: " << ContainerNameInNS << std::endl;
-          _trueCont=Engines::Container::_narrow(obj);
-          _trueContainers[inst]=_trueCont;
-          return;
-        }
+      myparams.mode="getorstart";
     }
-
-  Engines::ContainerParameters myparams=_params;
 
   if (str == "")
   {
@@ -414,6 +404,13 @@ void SalomeContainer::start(const ComponentInstance *inst) throw(YACS::Exception
       // --- GiveContainer is used in batch mode to retreive launched containers,
       //     and is equivalent to StartContainer when not in batch.
       _trueCont=contManager->GiveContainer(myparams);
+    }
+  catch( const SALOME::SALOME_Exception& ex )
+    {
+      std::string msg="SalomeContainer::start : Unable to launch container in Salome : ";
+      msg += '\n';
+      msg += ex.details.text.in();
+      throw Exception(msg);
     }
   catch(CORBA::COMM_FAILURE&)
     {
