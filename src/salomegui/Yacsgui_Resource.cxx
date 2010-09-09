@@ -210,6 +210,14 @@ void Yacsgui_Resource::createPreferences(Yacsgui* swm)
   swm->addPreference( Yacsgui::tr( "High pen"   ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _DataPort_hiPen   );
   swm->addPreference( Yacsgui::tr( "High brush" ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _DataPort_hiBrush );
 
+  nodeSubtab = swm->addPreference( "Datastream port", nodeTab );
+  swm->setPreferenceProperty(nodeSubtab , "columns", 2);
+
+  swm->addPreference( Yacsgui::tr( "Pen"        ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _DataStreamPort_pen     );
+  swm->addPreference( Yacsgui::tr( "Brush"      ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _DataStreamPort_brush   );
+  swm->addPreference( Yacsgui::tr( "High pen"   ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _DataStreamPort_hiPen   );
+  swm->addPreference( Yacsgui::tr( "High brush" ), nodeSubtab, LightApp_Preferences::Color, RESOURCE_YACS, _DataStreamPort_hiBrush );
+
   nodeSubtab = swm->addPreference( Yacsgui::tr( "PREF_GROUP_DRAG" ), nodeTab );
   swm->setPreferenceProperty(nodeSubtab, "columns", 1);
 
@@ -348,6 +356,10 @@ void Yacsgui_Resource::preferencesChanged()
   Resource::DataPort_hiBrush       = colorValue(_DataPort_hiBrush,        DataPort_hiBrush_      );
   Resource::DataPort_pen           = colorValue(_DataPort_pen,            DataPort_pen_          );
   Resource::DataPort_hiPen         = colorValue(_DataPort_hiPen,          DataPort_hiPen_        );
+  Resource::DataStreamPort_brush   = colorValue(_DataStreamPort_brush,    DataStreamPort_brush_  );
+  Resource::DataStreamPort_hiBrush = colorValue(_DataStreamPort_hiBrush,  DataStreamPort_hiBrush_);
+  Resource::DataStreamPort_pen     = colorValue(_DataStreamPort_pen,      DataStreamPort_pen_    );
+  Resource::DataStreamPort_hiPen   = colorValue(_DataStreamPort_hiPen,    DataStreamPort_hiPen_  );
 
   Resource::dragOver               = colorValue(__dragOver,               dragOver_              );
 }

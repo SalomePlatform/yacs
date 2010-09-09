@@ -112,6 +112,10 @@
     <parameter name="DataPort_hiBrush"       value="127, 227, 116" />
     <parameter name="DataPort_pen"           value=" 15, 180,   0" />
     <parameter name="DataPort_hiPen"         value=" 11, 128,   0" />
+    <parameter name="DataStreamPort_brush"         value="158, 227, 151" />
+    <parameter name="DataStreamPort_hiBrush"       value="127, 227, 116" />
+    <parameter name="DataStreamPort_pen"           value=" 15, 180,   0" />
+    <parameter name="DataStreamPort_hiPen"         value=" 11, 128,   0" />
 
     <parameter name="dragOver"               value="255,   0,   0" />
 

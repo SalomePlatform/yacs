@@ -49,7 +49,7 @@
     </message>
     <message>
         <source>PREF_GROUP_PORT</source>
-        <translation>Port</translation>
+        <translation>Dataflow Port</translation>
     </message>
     <message>
         <source>PREF_GROUP_DRAG</source>

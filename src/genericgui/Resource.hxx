@@ -91,6 +91,10 @@
 #define _DataPort_hiBrush       "DataPort_hiBrush"
 #define _DataPort_pen           "DataPort_pen"
 #define _DataPort_hiPen         "DataPort_hiPen"
+#define _DataStreamPort_brush         "DataStreamPort_brush"
+#define _DataStreamPort_hiBrush       "DataStreamPort_hiBrush"
+#define _DataStreamPort_pen           "DataStreamPort_pen"
+#define _DataStreamPort_hiPen         "DataStreamPort_hiPen"
 
 #define __dragOver       "dragOver"
 
@@ -177,6 +181,10 @@
 #define DataPort_hiBrush_       QColor(127, 227, 116)
 #define DataPort_pen_           QColor( 15, 180,   0)
 #define DataPort_hiPen_         QColor( 11, 128,   0)
+#define DataStreamPort_brush_   QColor(158, 227, 151)
+#define DataStreamPort_hiBrush_ QColor(127, 227, 116)
+#define DataStreamPort_pen_     QColor( 15, 180,   0)
+#define DataStreamPort_hiPen_   QColor( 11, 128,   0)
 
 #define dragOver_               QColor(255,   0,   0)
 
@@ -276,6 +284,10 @@ namespace YACS {
         static QColor DataPort_hiBrush;
         static QColor DataPort_pen;
         static QColor DataPort_hiPen;
+        static QColor DataStreamPort_brush;
+        static QColor DataStreamPort_hiBrush;
+        static QColor DataStreamPort_pen;
+        static QColor DataStreamPort_hiPen;
 
         static QColor dragOver;
 

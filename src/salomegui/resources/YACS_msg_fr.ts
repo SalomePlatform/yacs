@@ -33,7 +33,7 @@
     </message>
     <message>
         <source>PREF_GROUP_BLOC</source>
-        <translation>Bloque</translation>
+        <translation>Bloc</translation>
     </message>
     <message>
         <source>PREF_GROUP_NODE</source>
@@ -49,7 +49,7 @@
     </message>
     <message>
         <source>PREF_GROUP_PORT</source>
-        <translation>Port</translation>
+        <translation>Port Dataflow</translation>
     </message>
     <message>
         <source>PREF_GROUP_DRAG</source>
@@ -175,7 +175,7 @@
     </message>
     <message>
         <source>Import a Schema as a Catalog</source>
-        <translation>Importer un schéma en tant qu&apos;un catalogue</translation>
+        <translation>Importer un schéma en tant que catalogue</translation>
     </message>
     <message>
         <source>Import Catalog</source>
@@ -263,11 +263,11 @@
     </message>
     <message>
         <source>get YACS container log</source>
-        <translation>obtenir un protocole du conteneur YACS</translation>
+        <translation>obtenir le journal du conteneur YACS</translation>
     </message>
     <message>
         <source>YACS Container Log</source>
-        <translation>Protocole du conteneur YACS</translation>
+        <translation>Journal du conteneur YACS</translation>
     </message>
     <message>
         <source>get Node Error Report</source>
@@ -287,11 +287,11 @@
     </message>
     <message>
         <source>get Node Container Log</source>
-        <translation>obtenir le protocole du conteneur du noeud </translation>
+        <translation>obtenir le journal du conteneur du noeud </translation>
     </message>
     <message>
         <source>Node Container Log</source>
-        <translation>Protocole du conteneur des noeuds</translation>
+        <translation>Journal du conteneur des noeuds</translation>
     </message>
     <message>
         <source>Edit Data Types</source>
@@ -303,7 +303,7 @@
     </message>
     <message>
         <source>Import Data Types, use drag and drop from catalog</source>
-        <translation>Importer les types de données utiliser glissement déplacement du catalogue</translation>
+        <translation>Importer les types de données, utiliser glisser déposer à partir du catalogue</translation>
     </message>
     <message>
         <source>Import Data Types</source>
@@ -323,11 +323,11 @@
     </message>
     <message>
         <source>Create a New SALOME Component Instance</source>
-        <translation>Créer une nouvelle instance du Composant Salomé</translation>
+        <translation>Créer une nouvelle instance de Composant Salomé</translation>
     </message>
     <message>
         <source>new Component Instance</source>
-        <translation>nouvelle instance du composant</translation>
+        <translation>nouvelle instance de composant</translation>
     </message>
     <message>
         <source>Create a New SALOME Python Component</source>
@@ -439,91 +439,91 @@
     </message>
     <message>
         <source>bloc Node</source>
-        <translation>bloc Noeud</translation>
+        <translation>Noeud bloc</translation>
     </message>
     <message>
         <source>Create a New For Loop Node</source>
-        <translation>Créer un nouveau noeud de la boucle</translation>
+        <translation>Créer un noeud boucle for</translation>
     </message>
     <message>
         <source>For Loop Node</source>
-        <translation>Pour le noeud de la boulce</translation>
+        <translation>Noeud boucle for</translation>
     </message>
     <message>
         <source>Create a New For Each Loop Node</source>
-        <translation>Créer un nouveau noeud à chaque boucle</translation>
+        <translation>Créer un noeud boucle For Each</translation>
     </message>
     <message>
         <source>For Each Loop Node</source>
-        <translation>Pour chaque noeud de la boucle</translation>
+        <translation>Noeud boucle For Each</translation>
     </message>
     <message>
         <source>Create a New While Loop Node</source>
-        <translation>Créer un nouveau noeud de la boucle tant que</translation>
+        <translation>Créer un noeud boucle tant que</translation>
     </message>
     <message>
         <source>While Loop Node</source>
-        <translation>Noeud de boucle tant que</translation>
+        <translation>Noeud boucle tant que</translation>
     </message>
     <message>
         <source>Create a New Switch Node</source>
-        <translation>Créer un nouveau noeud de commutation</translation>
+        <translation>Créer un noeud Switch</translation>
     </message>
     <message>
         <source>Switch Node</source>
-        <translation>Commuter un noeud</translation>
+        <translation>Noeud Switch</translation>
     </message>
     <message>
         <source>Create a New Optimizer Loop Node</source>
-        <translation>Créer un nouveau noeud optimisateur de la boucle</translation>
+        <translation>Créer un noeud boucle d'optimisation</translation>
     </message>
     <message>
         <source>Optimizer Loop</source>
-        <translation>Boucle d&apos;Optimisateur</translation>
+        <translation>Boucle d&apos;optimisation</translation>
     </message>
     <message>
         <source>Create a New Optimizer Loop</source>
-        <translation>Créer une nouvelle boucle optimisateur</translation>
+        <translation>Créer une boucle d'optimisation</translation>
     </message>
     <message>
         <source>Create a New Node from Catalog, use drag and drop from catalog</source>
-        <translation>Créer un nouveau noeud du catalogue en glissant déplaçant de ce catalogue</translation>
+        <translation>Créer un noeud à partir du catalogue, utiliser glisser déposer</translation>
     </message>
     <message>
         <source>Node from Catalog</source>
-        <translation>Noeud du Catalogue</translation>
+        <translation>Noeud à partir du Catalogue</translation>
     </message>
     <message>
         <source>Delete a Schema Item</source>
-        <translation>Supprimer un article du schéma</translation>
+        <translation>Supprimer un élément du schéma</translation>
     </message>
     <message>
         <source>Delete Item</source>
-        <translation>Supprimer un article</translation>
+        <translation>Supprimer un élément</translation>
     </message>
     <message>
         <source>Cut a Schema Item</source>
-        <translation>Couper un article du schéma</translation>
+        <translation>Couper un élément du schéma</translation>
     </message>
     <message>
         <source>Cut Item</source>
-        <translation>Couper un article</translation>
+        <translation>Couper un élément</translation>
     </message>
     <message>
         <source>Copy a Schema Item</source>
-        <translation>Copier un article du schéma</translation>
+        <translation>Copier un élément du schéma</translation>
     </message>
     <message>
         <source>Copy Item</source>
-        <translation>Copier un article</translation>
+        <translation>Copier un élément</translation>
     </message>
     <message>
         <source>Paste a Schema Item</source>
-        <translation>Coller un article du schéma</translation>
+        <translation>Coller un élément du schéma</translation>
     </message>
     <message>
         <source>Paste Item</source>
-        <translation>Coller un article</translation>
+        <translation>Coller un élément</translation>
     </message>
     <message>
         <source>Put node in block</source>
@@ -627,7 +627,7 @@
     </message>
     <message>
         <source>active whatsThis Mode to get help on widgets</source>
-        <translation>Le mode qu&apos;est-ce-que-c&apos;est est actif pour obtenir des références sur les objets fenêtres actuels</translation>
+        <translation>Activer le mode qu&apos;est-ce-que-c&apos;est pour obtenir de l'aide</translation>
     </message>
     <message>
         <source>whatsThis Mode</source>
@@ -635,7 +635,7 @@
     </message>
     <message>
         <source>set execution mode without stop</source>
-        <translation>ctiver le mode d&apos;exécution sans arrêt</translation>
+        <translation>activer le mode d&apos;exécution sans arrêt</translation>
     </message>
     <message>
         <source>mode without stop</source>
@@ -667,7 +667,7 @@
     </message>
     <message>
         <source>toggle 2D scene item visibility</source>
-        <translation>Rendre visible un article de scène 2D</translation>
+        <translation>Rendre visible un élément de scène 2D</translation>
     </message>
     <message>
         <source>visible/hidden</source>

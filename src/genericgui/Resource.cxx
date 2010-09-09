@@ -114,6 +114,10 @@ QColor Resource::DataPort_brush         = DataPort_brush_;
 QColor Resource::DataPort_hiBrush       = DataPort_hiBrush_;
 QColor Resource::DataPort_pen           = DataPort_pen_;
 QColor Resource::DataPort_hiPen         = DataPort_hiPen_;
+QColor Resource::DataStreamPort_brush         = DataStreamPort_brush_;
+QColor Resource::DataStreamPort_hiBrush       = DataStreamPort_hiBrush_;
+QColor Resource::DataStreamPort_pen           = DataStreamPort_pen_;
+QColor Resource::DataStreamPort_hiPen         = DataStreamPort_hiPen_;
 
 QColor Resource::dragOver               = dragOver_;
 
