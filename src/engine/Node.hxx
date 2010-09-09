@@ -50,7 +50,13 @@ namespace YACS
     class InputDataStreamPort;
     class OutputDataStreamPort;
     class Visitor;
-    
+
+    class NodeStateNameMap : public std::map<YACS::StatesForNode, std::string>
+    {
+    public:
+      NodeStateNameMap();
+    };
+
     class YACSLIBENGINE_EXPORT Node
     {
       friend class Bloc;
@@ -167,7 +173,6 @@ namespace YACS
       virtual void edDisconnectAllLinksWithMe();
       static void checkValidityOfPortName(const std::string& name) throw(Exception);
       static ComposedNode *checkHavingCommonFather(Node *node1, Node *node2) throw(Exception);
-      static std::map<int, std::string> _nodeStateName;
     };
 
   }
