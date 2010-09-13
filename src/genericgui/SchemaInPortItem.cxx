@@ -245,7 +245,8 @@ Qt::ItemFlags SchemaInPortItem::flags(const QModelIndex &index)
       }
       break;
     case 2:
-      flagEdit = Qt::ItemIsEditable; // --- port value editable      
+      if (!_isDataStream)
+        flagEdit = Qt::ItemIsEditable; // --- port value editable      
     }
   return pflag | flagEdit;
 }
