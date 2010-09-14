@@ -331,7 +331,7 @@ void GenericGui::createActions()
 
   pixmap.load("icons:new_salome_component.png");
   _newSalomeComponentAct = _wrapper->createAction(getMenuId(), tr("Create a New SALOME Component Instance"), QIcon(pixmap),
-                                                  tr("new Component Instance"), tr("Create a New SALOME Component Instance"),
+                                                  tr("Create Component Instance"), tr("Create a New SALOME Component Instance"),
                                                   0, _parent, false, this,  SLOT(onNewSalomeComponent()));
 
   pixmap.load("icons:new_salomepy_component.png");
