@@ -428,7 +428,8 @@ void GuiEditor::DeleteSubject(Subject* parent,
   DEBTRACE("GuiEditor::DeleteSubject "<<parent->getName()<<" "<<toRemove->getName());
   if (!QtGuiContext::getQtCurrent()->isEdition()) return;
   toRemove->askRegisterUndoDestroy();
-  parent->destroy(toRemove);
+  if(!parent->destroy(toRemove))
+    Message mess;
 }
 
 void GuiEditor::CutSubject()

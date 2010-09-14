@@ -603,3 +603,26 @@ void ComponentInstanceMenu::popupMenu(QWidget *caller, const QPoint &globalPos, 
   menu.exec(globalPos);
 }
 
+//=======================================================================================
+
+ContainerMenu::ContainerMenu() : MenusBase()
+{
+}
+
+ContainerMenu::~ContainerMenu()
+{
+}
+
+void ContainerMenu::popupMenu(QWidget *caller, const QPoint &globalPos, const QString& m)
+{
+  GenericGui *gmain = QtGuiContext::getQtCurrent()->getGMain();
+  bool isEdition = QtGuiContext::getQtCurrent()->isEdition();
+  QMenu menu(m, caller);
+  addHeader(menu, m);
+  if (isEdition)
+    {
+      menu.addAction(gmain->_deleteItemAct);
+    }
+  menu.exec(globalPos);
+}
+

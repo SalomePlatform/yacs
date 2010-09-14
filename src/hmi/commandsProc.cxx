@@ -1979,6 +1979,11 @@ bool CommandDestroy::localExecute()
           }
           break;
         case CONTAINER:
+          {
+            Container *container = proc->containerMap[_startnode];
+            subject = GuiContext::getCurrent()->_mapOfSubjectContainer[container];
+            break;
+          }
         case COMPONENT:
         case REFERENCE:
         case DATATYPE:

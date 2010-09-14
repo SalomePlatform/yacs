@@ -126,5 +126,7 @@ void SchemaContainerItem::addComponentInstance(Subject* subject)
 
 void SchemaContainerItem::popupMenu(QWidget *caller, const QPoint &globalPos)
 {
+  ContainerMenu m;
+  m.popupMenu(caller, globalPos);
 }
 

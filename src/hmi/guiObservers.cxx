@@ -270,13 +270,31 @@ bool Subject::destroy(Subject *son)
           endport = slink->getSubjectInPort()->getName();
           startportType = slink->getSubjectOutPort()->getType();
           endportType = slink->getSubjectInPort()->getType();
-       }
+        }
       else if (SubjectControlLink* sclink = dynamic_cast<SubjectControlLink*>(son))
         {
           startnode = proc->getChildName(sclink->getSubjectOutNode()->getNode());
           endnode = proc->getChildName(sclink->getSubjectInNode()->getNode());
-       }
-      else throw Exception("No command Destroy for that type");
+        }
+      else if (SubjectContainer* scont = dynamic_cast<SubjectContainer*>(son))
+        {
+          if(scont->getName() == "DefaultContainer")
+            {
+              GuiContext::getCurrent()->_lastErrorMessage = "You can't delete the default container";
+              return false;
+            }
+          if(scont->isUsed())
+            {
+              GuiContext::getCurrent()->_lastErrorMessage = "You can't delete a container that contains components";
+              return false;
+            }
+          startnode = scont->getName();
+        }
+      else
+        {
+          GuiContext::getCurrent()->_lastErrorMessage = "No command Destroy for that type";
+          return false;
+        }
     }
   if (son->isDestructible())
     {
@@ -4476,6 +4494,13 @@ std::string SubjectContainer::getName()
 YACS::ENGINE::Container* SubjectContainer::getContainer() const
 {
   return _container;
+}
+
+void SubjectContainer::registerUndoDestroy()
+{
+  DEBTRACE("SubjectContainer::registerUndoDestroy");
+  Command *command = new CommandAddContainer(getName(),"");
+  GuiContext::getCurrent()->getInvoc()->add(command);
 }
 
 // ----------------------------------------------------------------------------

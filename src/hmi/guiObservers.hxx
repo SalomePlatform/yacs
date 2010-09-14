@@ -424,6 +424,7 @@ namespace YACS
       YACS::ENGINE::Container* getContainer() const;
       bool isUsed() {return !_subComponentSet.empty(); };
       virtual TypeOfElem getType(){return CONTAINER;}
+      void registerUndoDestroy();
     protected:
       YACS::ENGINE::Container* _container;
       std::set<SubjectComponent*> _subComponentSet;
