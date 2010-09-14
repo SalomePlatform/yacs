@@ -108,7 +108,7 @@ void EditionSalomeNode::update(GuiEvent event, int type, Subject* son)
   DEBTRACE("EditionSalomeNode::update ");
   EditionElementaryNode::update(event, type, son);
   SubjectReference* subref= 0;
-   switch (event)
+  switch (event)
     {
     case ADDREF:
       DEBTRACE("ADDREF");
