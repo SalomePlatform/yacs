@@ -146,6 +146,7 @@ Invocator::Invocator()
   _commandsUndone.clear();
   _commandsInProgress.clear();
   _isRedo = false;
+  _isUndo = false;
   _specialReverse = false;
   _undoCata = new YACS::ENGINE::Catalog("undoCata");
   YACS::ENGINE::RuntimeSALOME* runTime = YACS::ENGINE::getSALOMERuntime();
@@ -155,6 +156,8 @@ Invocator::Invocator()
 void Invocator::add(Command* command)
 {
   DEBTRACE("Invocator::add");
+  if(_isUndo)
+    return;
   if (GuiContext::getCurrent()->getInvoc()->isSpecialReverse())
     {
       delete command;
@@ -194,10 +197,12 @@ bool Invocator::undo()
     {
       bool isNormal = _commandsDone.back()->isNormalReverse();
       _specialReverse = !isNormal;
+      _isUndo=true;
       if (isNormal)
         ret = _commandsDone.back()->reverse(isNormal);
       else
         ret = _commandsDone.back()->executeSubOnly();
+      _isUndo=false;
       _commandsUndone.push_back(_commandsDone.back());
       _commandsDone.pop_back();
       _specialReverse = false;

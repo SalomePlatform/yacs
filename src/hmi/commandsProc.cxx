@@ -3943,6 +3943,7 @@ bool CommandAssociateServiceToComponent::localExecute()
                   SubjectComponent* oldcomp = dynamic_cast<SubjectComponent*>(ssnode->_subRefComponent->getParent());
                   YASSERT(oldcomp);
                   _oldInstance = oldcomp->getName();
+                  _oldcont = oldcomp->getComponent()->getContainer()->getName();
                   subCompo->moveService(ssnode->_subRefComponent);
                 }
               else
@@ -3975,31 +3976,43 @@ bool CommandAssociateServiceToComponent::localReverse()
       Node* node = proc->getChildByName(_service);
       if (ServiceNode *service = dynamic_cast<ServiceNode*>(node))
         {
-          if (proc->componentInstanceMap.count(_oldInstance))
+          ComponentInstance *compo;
+          if (!proc->componentInstanceMap.count(_oldInstance))
             {
-              DEBTRACE(_oldInstance);
-              ComponentInstance *compo = proc->componentInstanceMap[_oldInstance];
-              service->setComponent(compo);
-
-              YASSERT(GuiContext::getCurrent()->_mapOfSubjectNode.count(service));
-              SubjectNode* snode = GuiContext::getCurrent()->_mapOfSubjectNode[service];
-              SubjectServiceNode *ssnode = dynamic_cast<SubjectServiceNode*>(snode);
-              YASSERT(ssnode);
-              YASSERT(GuiContext::getCurrent()->_mapOfSubjectComponent.count(compo));
-              SubjectComponent *subCompo = GuiContext::getCurrent()->_mapOfSubjectComponent[compo];
-              snode->addSubjectReference(subCompo);
-              if (ssnode->_subRefComponent)
-                subCompo->moveService(ssnode->_subRefComponent);
-              else
-                ssnode->_subRefComponent = subCompo->attachService(ssnode);
-
-              return true;
+              //component instance does not exist anymore recreate it
+              ComponentInstance *oldcompo = service->getComponent();
+              compo = oldcompo->clone();
+              compo->setName(_oldInstance);
+              proc->addComponentInstance(compo, _oldInstance);
+              Container *cont = proc->containerMap[_oldcont];
+              compo->setContainer(cont);
+              SubjectProc *sproc = GuiContext::getCurrent()->getSubjectProc();
+              sproc->addSubjectComponent(compo);
             }
           else
-            GuiContext::getCurrent()->_lastErrorMessage = "Component instance not found: " + _instanceName;
+            {
+              compo = proc->componentInstanceMap[_oldInstance];
+            }
+
+          DEBTRACE(_oldInstance);
+          service->setComponent(compo);
+
+          YASSERT(GuiContext::getCurrent()->_mapOfSubjectNode.count(service));
+          SubjectNode* snode = GuiContext::getCurrent()->_mapOfSubjectNode[service];
+          SubjectServiceNode *ssnode = dynamic_cast<SubjectServiceNode*>(snode);
+          YASSERT(ssnode);
+          YASSERT(GuiContext::getCurrent()->_mapOfSubjectComponent.count(compo));
+          SubjectComponent *subCompo = GuiContext::getCurrent()->_mapOfSubjectComponent[compo];
+          snode->addSubjectReference(subCompo);
+          if (ssnode->_subRefComponent)
+            subCompo->moveService(ssnode->_subRefComponent);
+          else
+            ssnode->_subRefComponent = subCompo->attachService(ssnode);
+
+          return true;
         }
       else
-        GuiContext::getCurrent()->_lastErrorMessage = "Node is note a service node: " + _service;
+        GuiContext::getCurrent()->_lastErrorMessage = "Node is not a service node: " + _service;
       return false;
     }
   catch (Exception& ex)

@@ -697,6 +697,7 @@ namespace YACS
       std::string _service;
       std::string _instanceName;
       std::string _oldInstance;
+      std::string _oldcont;
     };
 
     class CommandAddComponentFromCatalog: public Command

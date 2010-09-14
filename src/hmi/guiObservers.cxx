@@ -4279,6 +4279,8 @@ void SubjectComponent::moveService(SubjectReference* reference)
   oldcomp->update(CUT, SALOMENODE, reference);
   reference->reparent(this);
   update(PASTE, SALOMENODE, reference);
+  if (!oldcomp->hasServices())
+    Subject::erase(oldcomp);
 }
 
 void SubjectComponent::removeSubServiceFromSet(SubjectServiceNode *service)
