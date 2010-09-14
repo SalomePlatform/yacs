@@ -21,6 +21,7 @@
 #define _YACSWIDGETS_HXX_
 
 #include <QTableView>
+#include <QKeyEvent>
 
 namespace YACS
 {
@@ -33,6 +34,8 @@ namespace YACS
       YTableView(QWidget *parent = 0);
     protected:
       QModelIndex moveCursor(CursorAction cursorAction,Qt::KeyboardModifiers modifiers);
+      void keyPressEvent( QKeyEvent *event );
+      bool event(QEvent *e);
     };
   }
 }

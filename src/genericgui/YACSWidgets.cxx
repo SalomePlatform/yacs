@@ -18,6 +18,8 @@
 //
 
 #include "YACSWidgets.hxx"
+#include <QApplication>
+#include <QClipboard>
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -27,6 +29,30 @@ using namespace YACS::HMI;
 YTableView::YTableView(QWidget *parent)
   : QTableView(parent)
 {
+}
+
+bool YTableView::event(QEvent *e)
+{
+  if (e->type() == QEvent::ShortcutOverride)
+    {
+      e->accept();
+      return true;
+    }
+  return QTableView::event(e);
+}
+
+void YTableView::keyPressEvent( QKeyEvent *event )
+{
+  if (event->modifiers() & Qt::ControlModifier && event->key() == Qt::Key_C)
+    {
+      QApplication::clipboard()->setText( currentIndex().data().toString() );
+    }
+  else if (event->modifiers() & Qt::ControlModifier && event->key() == Qt::Key_V)
+    {
+      model()->setData( currentIndex(), QApplication::clipboard()->text() );
+    }
+  else 
+    QTableView::keyPressEvent(event);
 }
 
 QModelIndex YTableView::moveCursor(CursorAction cursorAction,Qt::KeyboardModifiers modifiers)
