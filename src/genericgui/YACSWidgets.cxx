@@ -41,20 +41,6 @@ bool YTableView::event(QEvent *e)
   return QTableView::event(e);
 }
 
-void YTableView::keyPressEvent( QKeyEvent *event )
-{
-  if (event->modifiers() & Qt::ControlModifier && event->key() == Qt::Key_C)
-    {
-      QApplication::clipboard()->setText( currentIndex().data().toString() );
-    }
-  else if (event->modifiers() & Qt::ControlModifier && event->key() == Qt::Key_V)
-    {
-      model()->setData( currentIndex(), QApplication::clipboard()->text() );
-    }
-  else 
-    QTableView::keyPressEvent(event);
-}
-
 QModelIndex YTableView::moveCursor(CursorAction cursorAction,Qt::KeyboardModifiers modifiers)
 {
   QModelIndex ix = currentIndex();
