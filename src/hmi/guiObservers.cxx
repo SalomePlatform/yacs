@@ -2359,9 +2359,37 @@ void SubjectServiceNode::setComponent()
             {
               std::cerr << "PROBLEM : ComponentInstance should be registered in proc, add it " << instance->getInstanceName() << std::endl;
               proc->componentInstanceMap[instance->getInstanceName()] = instance;
+              Container* cont=instance->getContainer();
+              //check if the associated container is consistent with containerMap
+              if(cont)
+                if (proc->containerMap.count(cont->getName()) == 0)
+                  {
+                    //container exists but is not in containerMap. Clone it, it's probably the result of copy paste from outside the proc
+                    Container* newcont;
+                    if(cont->isAttachedOnCloning())
+                      {
+                        cont->dettachOnCloning();
+                        newcont=cont->clone();
+                        cont->attachOnCloning();
+                        newcont->attachOnCloning();
+                      }
+                    else
+                      newcont=cont->clone();
+
+                    proc->containerMap[cont->getName()]=newcont;
+                    instance->setContainer(newcont);
+                    GuiContext::getCurrent()->getSubjectProc()->addSubjectContainer(newcont, newcont->getName());
+                  }
+                else
+                  {
+                    if(cont != proc->containerMap[cont->getName()])
+                      {
+                        //the associated container is not the same as the one in containerMap: use the containerMap one
+                        instance->setContainer(proc->containerMap[cont->getName()]);
+                      }
+                  }
             }
-          subCompo =
-            GuiContext::getCurrent()->getSubjectProc()->addSubjectComponent(instance);
+          subCompo = GuiContext::getCurrent()->getSubjectProc()->addSubjectComponent(instance);
         }
       else
         {
