@@ -33,6 +33,7 @@ bool Resource::autoComputeLinks = AUTOCOMPUTELINKS;
 bool Resource::simplifyLink = SIMPLIFYLINK;
 bool Resource::ensureVisibleWhenMoved = ENSUREVISIBLEWHENMOVED;
 int Resource::dockWidgetPriority = DOCKWIDGETPRIORITY;
+QFont  Resource::pythonfont = PYTHONFONT;
 
 // Statics for color of states
 // ---------------------------
@@ -76,8 +77,6 @@ QColor Resource::DEFAULT              = DEFAULT_;
 // Statics for color of links
 // --------------------------
 
-QFont  Resource::pythonfont = PYTHONFONT;
-
 QColor Resource::link_draw_color           = LINKDRAW_COLOR;
 QColor Resource::stream_link_draw_color    = STREAMLINKDRAW_COLOR;
 QColor Resource::stream_link_select_color  = STREAMLINK_SELECT_COLOR;
@@ -86,6 +85,8 @@ QColor Resource::control_link_select_color = CTRLLINK_SELECT_COLOR;
 QColor Resource::control_link_draw_color   = CTRLLINKDRAW_COLOR;
 
 int Resource::link_pen_darkness            = LINK_PEN_DARKNESS;
+int Resource::link_separation_weight       = LINK_SEPARATION_WEIGHT;
+double Resource::link_thickness            = LINK_THICKNESS;
 
 // Statics for color of nodes
 // --------------------------

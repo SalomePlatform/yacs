@@ -158,6 +158,8 @@ void Yacsgui_Resource::createPreferences(Yacsgui* swm)
   swm->addPreference( Yacsgui::tr( "Emphasis link color" ),       idGroup, LightApp_Preferences::Color, RESOURCE_YACS, "emphasizeBrushColor" );
 
   swm->addPreference( Yacsgui::tr( "link pen darkness" ),         idGroup, LightApp_Preferences::Integer, RESOURCE_YACS, "link_pen_darkness" );
+  swm->addPreference( Yacsgui::tr( "link thickness" ),         idGroup, LightApp_Preferences::Double, RESOURCE_YACS, "link_thickness" );
+  swm->addPreference( Yacsgui::tr( "link separation weight" ),    idGroup, LightApp_Preferences::Integer, RESOURCE_YACS, "link_separation_weight" );
 
   // --- node colors tab ---
   int nodeTab = swm->addPreference( Yacsgui::tr( "PREF_TAB_NODE" ) );
@@ -330,6 +332,8 @@ void Yacsgui_Resource::preferencesChanged()
   Resource::emphasizeBrushColor       = colorValue("emphasizeBrushColor"      , EMPHASIZEBRUSHCOLOR    );
 
   Resource::link_pen_darkness = integerValue("link_pen_darkness", LINK_PEN_DARKNESS  );
+  Resource::link_separation_weight = integerValue("link_separation_weight", LINK_SEPARATION_WEIGHT  );
+  Resource::link_thickness = doubleValue("link_thickness", LINK_THICKNESS  );
 
   // Color of nodes
   Resource::Scene_pen              = colorValue(_Scene_pen,               Scene_pen_             );

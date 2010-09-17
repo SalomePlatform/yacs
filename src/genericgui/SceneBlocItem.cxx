@@ -90,6 +90,9 @@ void SceneBlocItem::arrangeChildNodes()
 
   if(!aGvc)
     {
+      DEBTRACE(setlocale(LC_ALL,NULL));
+      //Graphviz is sensitive to locale : set the mimimal one ("C")for numeric
+      setlocale(LC_NUMERIC, "C");
       aginit();
       aGvc = gvContext();
     }
@@ -170,7 +173,7 @@ void SceneBlocItem::arrangeChildNodes()
       gvLayout(aGvc, _graph, (char *)"dot");
       DEBTRACE("external render for test");
 #ifdef _DEVDEBUG_
-      gvRenderFilename(aGvc, _graph, "dot", "graph2.dot");
+      gvRenderFilename(aGvc, _graph, (char *)"dot", (char *)"graph2.dot");
 #endif
 #endif
    }

@@ -25,6 +25,7 @@
 #include <map>
 #include <list>
 #include <cmath>
+#include <stdlib.h>
 
 namespace YACS
 {
@@ -65,7 +66,9 @@ namespace YACS
       std::pair<int,int> bestNode(const LNodeMap& aList);
       void moveToClosedList(std::pair<int,int> n);
       //inline double distance(int i1, int j1, int i2, int j2) { return std::sqrt(double((i1-i2)*(i1-i2) + (j1-j2)*(j1-j2)));};
-      inline double distance(int i1, int j1, int i2, int j2) { return double((i1-i2)*(i1-i2) + (j1-j2)*(j1-j2));};
+      //inline double distance(int i1, int j1, int i2, int j2) { return double((i1-i2)*(i1-i2) + (j1-j2)*(j1-j2));};
+      //manhattan distance is better for 4 connected cells
+      inline double distance(int i1, int j1, int i2, int j2) { return abs(i1-i2)+abs(j1-j2);};
     protected:
       const LinkMatrix &_linkMatrix;
       LNodeMap _closedList;

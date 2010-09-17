@@ -156,6 +156,8 @@
 #define CTRLLINKDRAW_COLOR        QColor(192,   0, 192)
 #define CTRLLINK_SELECT_COLOR     QColor(255, 192, 255)
 #define LINK_PEN_DARKNESS         150
+#define LINK_THICKNESS            1.0
+#define LINK_SEPARATION_WEIGHT    10
 
 #define Scene_pen_              QColor(  0,   0, 128)
 #define Scene_hiPen_            QColor(  0,   0, 190)
@@ -258,6 +260,8 @@ namespace YACS {
         static QColor control_link_select_color;
 
         static int link_pen_darkness;
+        static int link_separation_weight;
+        static double link_thickness;
 
         // Node colors
         static QColor Scene_pen;
