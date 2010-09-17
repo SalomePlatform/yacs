@@ -52,3 +52,23 @@ EditionInputPort::~EditionInputPort()
 {
 }
 
+void EditionInputPort::select(bool isSelected)
+{
+  DEBTRACE("EditionInputPort::select " << isSelected);
+  if (isSelected)
+    {
+      Subject *snode = _subject->getParent();
+      if (snode)
+        {
+          QWidget *widget = QtGuiContext::getQtCurrent()->_mapOfEditionItem[snode];
+          ItemEdition *item = dynamic_cast<ItemEdition*>(widget);
+          item->synchronize();
+          QtGuiContext::getQtCurrent()->getStackedWidget()->setCurrentWidget(widget);
+        }
+      else
+        {
+          synchronize();
+          QtGuiContext::getQtCurrent()->getStackedWidget()->setCurrentWidget(this);
+        }
+    }
+}

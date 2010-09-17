@@ -34,6 +34,7 @@ namespace YACS
                   QWidget* parent = 0,
                   const char* name = 0);
       virtual ~EditionInputPort();
+      virtual void select(bool isSelected);
       // changement de type ?
       // edition valeur initiale
     };
