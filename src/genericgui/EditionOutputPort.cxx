@@ -59,6 +59,11 @@ void EditionOutputPort::select(bool isSelected)
       Subject *snode = _subject->getParent();
       if (snode)
         {
+          if(QtGuiContext::getQtCurrent()->_mapOfEditionItem.count(snode) == 0)
+            {
+              //panel is not created. Force its creation
+              update(YACS::HMI::ADD,snode->getType(),snode);
+            }
           QWidget *widget = QtGuiContext::getQtCurrent()->_mapOfEditionItem[snode];
           ItemEdition *item = dynamic_cast<ItemEdition*>(widget);
           item->synchronize();
