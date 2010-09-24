@@ -157,6 +157,7 @@
 %feature("nodirector") YACS::ENGINE::PyOptimizerAlgBase::getTCForAlgoInitProxy;
 %feature("nodirector") YACS::ENGINE::PyOptimizerAlgBase::getTCForAlgoResultProxy;
 %feature("nodirector") YACS::ENGINE::PyOptimizerAlgBase::getAlgoResultProxy;
+%feature("nodirector") YACS::ENGINE::PyOptimizerAlgBase::setProc;
 
 %feature("director") YACS::ENGINE::PyOptimizerAlgASync;
 %feature("nodirector") YACS::ENGINE::PyOptimizerAlgASync::getTCForInProxy;
@@ -177,6 +178,7 @@
 %feature("nodirector") YACS::ENGINE::PyOptimizerAlgASync::getTCForAlgoInitProxy;
 %feature("nodirector") YACS::ENGINE::PyOptimizerAlgASync::getTCForAlgoResultProxy;
 %feature("nodirector") YACS::ENGINE::PyOptimizerAlgASync::getAlgoResultProxy;
+%feature("nodirector") YACS::ENGINE::PyOptimizerAlgASync::setProc;
 
 %feature("director:except") {
     if ($error != NULL) {
