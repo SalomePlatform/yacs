@@ -1233,6 +1233,13 @@ void GenericGui::createContext(YACS::ENGINE::Proc* proc,
     }
 
   QtGuiContext::getQtCurrent()->setNotSaved(false);
+  {
+    end_t = clock();
+    double passe =  (end_t -start_t);
+    passe = passe/CLOCKS_PER_SEC;
+    DEBTRACE("create context - end - : " << passe);
+    start_t = end_t;
+  }
 }
 
 // -----------------------------------------------------------------------------
@@ -1313,6 +1320,9 @@ void GenericGui::loadSchema(const std::string& filename,bool edit)
 
 void GenericGui::onImportSchema()
 {
+  clock_t  start_t;
+  clock_t  end_t;
+  start_t = clock();
   DEBTRACE("GenericGui::onImportSchema");
   QFileDialog dialog(_parent,
                      "Choose a filename to load" ,
@@ -1341,6 +1351,14 @@ void GenericGui::onImportSchema()
       catch (...) {
       }
       
+      {
+        end_t = clock();
+        double passe =  (end_t -start_t);
+        passe = passe/CLOCKS_PER_SEC;
+        DEBTRACE("load xml file : " << passe);
+        start_t = end_t;
+      }
+
       if (!proc)
         {
           QMessageBox msgBox(QMessageBox::Critical,

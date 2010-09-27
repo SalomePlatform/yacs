@@ -80,6 +80,9 @@ SceneBlocItem::~SceneBlocItem()
 void SceneBlocItem::arrangeChildNodes()
 {
   DEBTRACE("SceneBlocItem::arrangeChildNodes");
+  clock_t start_t, end_t;
+  start_t = clock();
+
 
   SubjectComposedNode *scnode = dynamic_cast<SubjectComposedNode*>(getSubject());
   YASSERT(scnode);
@@ -187,6 +190,13 @@ void SceneBlocItem::arrangeChildNodes()
       DEBTRACE("Unknown Exception Graphviz layout ");
       return;
     }
+  {
+    end_t = clock();
+    double passe =  (end_t -start_t);
+    passe = passe/CLOCKS_PER_SEC;
+    DEBTRACE("graphviz : " << passe);
+    start_t = end_t;
+  }
   DEBTRACE("start of display");
   // ---- layout Canvas nodes recursively
 
@@ -212,6 +222,13 @@ void SceneBlocItem::arrangeChildNodes()
 #endif
 
   // --- update scene
+  {
+    end_t = clock();
+    double passe =  (end_t -start_t);
+    passe = passe/CLOCKS_PER_SEC;
+    DEBTRACE("display : " << passe);
+    start_t = end_t;
+  }
 }
 
 void  SceneBlocItem::getNodesInfo(YACS::ENGINE::ComposedNode *cnode)
