@@ -865,7 +865,7 @@ void Executor::launchTasks(std::vector<Task *>& tasks)
   for(iter=tasks.begin();iter!=tasks.end();iter++)
     {
       YACS::StatesForNode state=(*iter)->getState();
-      if(state != YACS::TOLOAD)continue;
+      if(state != YACS::TOLOAD && state != YACS::TORECONNECT)continue;
       try
         {
           (*iter)->connectService();
