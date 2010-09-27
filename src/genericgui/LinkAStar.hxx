@@ -23,6 +23,7 @@
 #include "LinkMatrix.hxx"
 
 #include <map>
+#include <queue>
 #include <list>
 #include <cmath>
 #include <stdlib.h>
@@ -53,6 +54,17 @@ namespace YACS
 
     typedef std::map<std::pair<int,int>, LCostNode> LNodeMap;
 
+    struct Cost
+      {
+        Cost(double f,std::pair<int,int> p):F(f),pos(p) {};
+        double F;
+        std::pair<int,int> pos;
+        bool operator<(const Cost& a) const
+          {
+            return (a.F <= F);
+          }
+      };
+
     class LinkAStar
     {
     public:
@@ -75,6 +87,7 @@ namespace YACS
       LNodeMap _openList;
       LNode _from;
       LNode _to;
+      std::priority_queue<Cost> _pq;
     };
 
   }
