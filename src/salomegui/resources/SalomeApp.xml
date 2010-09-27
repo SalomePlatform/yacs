@@ -39,8 +39,8 @@
     <parameter name="COMPONENT_INSTANCE_NEW" value="true" />
     <parameter name="userCatalog" value="YACSUserCatalog.xml" />
     <parameter name="autoComputeLinks" value="true" />
-    <parameter name="simplifyLink" value="true" />
-    <parameter name="addRowCols" value="true" />
+    <parameter name="simplifyLink" value="false" />
+    <parameter name="addRowCols" value="false" />
     <parameter name="ensureVisibleWhenMoved" value="true" />
     <parameter name="tabPanelsUp" value="true" />
     <parameter name="documentation" value="yacs_help"/>
