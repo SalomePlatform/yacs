@@ -394,6 +394,7 @@ void GuiEditor::shrinkExpand() {
   };
   sni->reorganizeShrinkExpand();
   sni->showOutScopeLinks();
+  sni->updateLinks();
 }
 
 /*!
