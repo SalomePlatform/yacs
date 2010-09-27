@@ -1490,12 +1490,13 @@ void ComposedNode::checkBasicConsistency() const throw(YACS::Exception)
 /*!
  * This method should be called when a Proc is finished and must be deleted from the YACS server
  */
-void ComposedNode::shutdown()
+void ComposedNode::shutdown(int level)
 {
+  if(level==0)return;
   DEBTRACE("ComposedNode::shutdown");
   list<Node *> nodes=edGetDirectDescendants();
   for(list<Node *>::iterator iter=nodes.begin();iter!=nodes.end();iter++)
-    (*iter)->shutdown();
+    (*iter)->shutdown(level);
 }
 
 //! Clean the composed node in case of not clean exit

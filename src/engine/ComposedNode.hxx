@@ -55,7 +55,7 @@ namespace YACS
       virtual ~ComposedNode();
       bool isFinished();
       void init(bool start=true);
-      virtual void shutdown();
+      virtual void shutdown(int level);
       std::string getName() const;
       std::string getTaskName(Task *task) const;
       DeploymentTree getDeploymentTree() const;

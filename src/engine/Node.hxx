@@ -93,7 +93,7 @@ namespace YACS
     public:
       virtual ~Node();
       virtual void init(bool start=true);
-      virtual void shutdown();
+      virtual void shutdown(int level);
       //! \b This method \b MUST \b NEVER \b BE \b VIRTUAL
       Node *clone(ComposedNode *father, bool editionOnly=true) const;
       void setState(YACS::StatesForNode theState); // To centralize state changes

@@ -67,6 +67,7 @@ static struct argp_option options[] =
     {"dump-final",      'f', "file",  OPTION_ARG_OPTIONAL, "dump final state"},
     {"load-state",      'l', "file",  0,                   "Load State from a previous partial execution"},
     {"save-xml-schema", 'x', "file",  OPTION_ARG_OPTIONAL, "dump xml schema"},
+    {"shutdown",        't', "level", 1,                   "Shutdown the schema: 0=no shutdown to 2=full shutdown"},
     { 0 }
   };
 #endif
@@ -81,6 +82,7 @@ struct arguments
   char *finalDump;
   char *xmlSchema;
   char *loadState;
+  int shutdown;
 };
 
 #ifdef WNT
@@ -100,6 +102,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
     {
     case 'd':
       myArgs->display = atoi(arg);
+      break;
+    case 't':
+      myArgs->shutdown = atoi(arg);
       break;
     case 'v':
       myArgs->verbose = 1;
@@ -204,6 +209,7 @@ int main (int argc, char* argv[])
   myArgs.finalDump = (char *)"";
   myArgs.loadState = (char *)"";
   myArgs.xmlSchema = (char *)"";
+  myArgs.shutdown = 1;
 
   // Parse our arguments; every option seen by parse_opt will be reflected in arguments.
 #ifdef WNT
@@ -379,6 +385,10 @@ int main (int argc, char* argv[])
           vst.openFileDump(myArgs.finalDump);
           p->accept(&vst);
           vst.closeFileDump();
+        }
+      if(myArgs.shutdown < 3)
+        {
+          p->shutdown(myArgs.shutdown);
         }
       delete p;
       Runtime* r=YACS::ENGINE::getRuntime();

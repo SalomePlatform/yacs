@@ -660,9 +660,9 @@ std::string Node::getStateName(YACS::StatesForNode state)
 /*!
  * This method should be called when a Proc is finished and must be deleted from the YACS server
  */
-void Node::shutdown()
+void Node::shutdown(int level)
 {
-  std::cerr << "Node::shutdown" << std::endl;
+  if(level==0)return;
 }
 
 //! Clean the node in case of not clean exit
