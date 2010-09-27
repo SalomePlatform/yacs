@@ -66,6 +66,7 @@ QtGuiContext::~QtGuiContext()
   _invoc = 0;
   if (_subjectProc)
     {
+      _proc->setEdition(false);
       _subjectProc->clean();
       delete _subjectProc;
       _subjectProc = 0;
