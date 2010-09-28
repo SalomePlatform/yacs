@@ -42,12 +42,6 @@ PyOptimizerAlgBase::~PyOptimizerAlgBase()
 {
 }
 
-void PyOptimizerAlgBase::parseFileToInitProxy(const std::string& fileName)
-{
-  GILState gs;
-  OptimizerAlgBase::parseFileToInitProxy(fileName);
-}
-
 void PyOptimizerAlgBase::startProxy()
 {
   GILState gs;

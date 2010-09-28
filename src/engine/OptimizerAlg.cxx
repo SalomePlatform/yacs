@@ -31,10 +31,6 @@ OptimizerAlgBase::~OptimizerAlgBase()
 {
 }
 
-void OptimizerAlgBase::parseFileToInit(const std::string& fileName)
-{
-}
-
 void OptimizerAlgBase::initialize(const Any *input) throw (YACS::Exception)
 {
 }
@@ -76,11 +72,6 @@ TypeCode * OptimizerAlgBase::getTCForAlgoInitProxy() const
 TypeCode * OptimizerAlgBase::getTCForAlgoResultProxy() const
 {
   return getTCForAlgoResult();
-}
-
-void OptimizerAlgBase::parseFileToInitProxy(const std::string& fileName)
-{
-  parseFileToInit(fileName);
 }
 
 void OptimizerAlgBase::initializeProxy(const Any *input) throw (YACS::Exception)

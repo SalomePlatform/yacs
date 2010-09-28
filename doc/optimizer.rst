@@ -20,7 +20,6 @@ must be implemented and some optional methods (in C++ and in Python):
 - **getTCForIn**, this method must return the YACS type of the input port of the internal node
 - **getTCForOut**, this method must return the YACS type of the output port of the internal node
 - **initialize** (optional), this method is called during the algorithm initialization
-- **parseFileToInit** (optional), this method is called during the algorithm initialization with a file name as argument. This file can be used by the algorithm.
 - **start**, this method is called at the beginning of iterations
 - **takeDecision**, this method is called at each iteration
 - **finish** (optional), this method is called to finish the algorithm at the end of the iteration process
@@ -57,7 +56,6 @@ Here is a small example of a C++ synchronous algorithm:
       virtual ~OptimizerAlgSyncExample();
       TypeCode *getTCForIn() const;
       TypeCode *getTCForOut() const;
-      void parseFileToInit(const std::string& fileName);
       void start();
       void takeDecision();
       void initialize(const Any *input) throw(YACS::Exception);
@@ -87,11 +85,6 @@ Here is a small example of a C++ synchronous algorithm:
   TypeCode * OptimizerAlgSyncExample::getTCForOut() const
   {
     return _tcOut;
-  }
-  
-  //! Optional method to initialize the algorithm from a file
-  void OptimizerAlgSyncExample::parseFileToInit(const std::string& fileName)
-  {
   }
   
   //! Start to fill the pool with samples to evaluate
@@ -194,10 +187,6 @@ Here, the same example of a synchronous algorithm in Python::
     def initialize(self,input):
       """Optional method called on initialization. Do nothing here"""
   
-    def parseFileToInit(self,fileName):
-      """Optional method to read and parse an init file given by the
-         OptimizerLoop. Do nothing here"""
-  
     def start(self):
       """Start to fill the pool with samples to evaluate."""
       self.iter=0
@@ -243,7 +232,6 @@ must be implemented and some optional methods (in C++ and in Python):
 - **getTCForIn**, this method must return the YACS type of the input port of the internal node
 - **getTCForOut**, this method must return the YACS type of the output port of the internal node
 - **initialize** (optional), this method is called during the algorithm initialization
-- **parseFileToInit** (optional), this method is called during the algorithm initialization with a file name as argument. This file can be used by the algorithm.
 - **startToTakeDecision**, this method is called to start the iteration process in a separate thread. It is the body of the algorithm.
 - **finish** (optional), this method is called to finish the algorithm at the end of the iteration process
 

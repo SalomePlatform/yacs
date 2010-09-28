@@ -84,7 +84,6 @@ namespace YACS
       int getNumberOfInputPorts() const;
       InputPort *edGetPortForOutPool() { return &_retPortForOutPool; }
       InputPort *edGetAlgoInitPort() { return &_algoInitPort; }
-      InputPort *edGetPortForInitFile();
       OutputPort *edGetAlgoResultPort() { return &_algoResultPort; }
       InputPort *getInputPort(const std::string& name) const throw(Exception);
       std::list<InputPort *> getSetOfInputPort() const;
@@ -134,9 +133,7 @@ namespace YACS
       static const int NOT_RUNNING_BRANCH_ID;
       static const int NOT_INITIALIZED_BRANCH_ID;
       static const char NAME_OF_ALGO_INIT_PORT[];
-      static const char OLD_NAME_OF_FILENAME_INPUT[];
       static const char NAME_OF_OUT_POOL_INPUT[];
-      static const char OLD_NAME_OF_OUT_POOL_INPUT[];
       static const char NAME_OF_ALGO_RESULT_PORT[];
     };
   }

@@ -38,7 +38,6 @@ namespace YACS
       virtual TypeCode *getTCForOutProxy() const;
       virtual TypeCode *getTCForAlgoInitProxy() const;
       virtual TypeCode *getTCForAlgoResultProxy() const;
-      virtual void parseFileToInitProxy(const std::string& fileName);
       virtual void initializeProxy(const Any *input) throw (Exception);
       virtual void startProxy();
       virtual void takeDecisionProxy();

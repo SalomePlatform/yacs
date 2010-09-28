@@ -35,9 +35,7 @@ const int OptimizerLoop::NOT_RUNNING_BRANCH_ID=-1973012217;
 const int OptimizerLoop::NOT_INITIALIZED_BRANCH_ID=-1973;
 
 const char OptimizerLoop::NAME_OF_ALGO_INIT_PORT[] = "algoInit";
-const char OptimizerLoop::OLD_NAME_OF_FILENAME_INPUT[] = "FileNameInitAlg"; // For backward compatibility with 5.1.4
 const char OptimizerLoop::NAME_OF_OUT_POOL_INPUT[] = "evalResults";
-const char OptimizerLoop::OLD_NAME_OF_OUT_POOL_INPUT[]="retPortForOutPool"; // For backward compatibility with 5.1.4
 const char OptimizerLoop::NAME_OF_ALGO_RESULT_PORT[] = "algoResults";
 
 
@@ -166,9 +164,6 @@ void OptimizerLoop::exUpdateState()
 
           // Initialize and launch the algorithm
           _alg->initializeProxy(_algoInitPort.getValue());
-          if (_algoInitPort.edGetType()->isEquivalent(Runtime::_tc_string) &&
-              _algoInitPort.getValue() != NULL)
-            _alg->parseFileToInitProxy(_algoInitPort.getValue()->getStringValue());
           _alg->startProxy();
           if (_alg->hasError()) {
             string error = _alg->getError();
@@ -251,9 +246,9 @@ int OptimizerLoop::getNumberOfInputPorts() const
 
 InputPort *OptimizerLoop::getInputPort(const std::string& name) const throw(YACS::Exception)
 {
-  if (name == NAME_OF_ALGO_INIT_PORT || name == OLD_NAME_OF_FILENAME_INPUT)
+  if (name == NAME_OF_ALGO_INIT_PORT)
     return (InputPort *)&_algoInitPort;
-  else if (name == NAME_OF_OUT_POOL_INPUT || name == OLD_NAME_OF_OUT_POOL_INPUT)
+  else if (name == NAME_OF_OUT_POOL_INPUT)
     return (InputPort *)&_retPortForOutPool;
   else
     return DynParaLoop::getInputPort(name);
@@ -783,11 +778,4 @@ OutputPort * OptimizerLoop::getOutputPort(const std::string& name) const throw(Y
 {
   return (name == NAME_OF_ALGO_RESULT_PORT) ? (OutputPort *)&_algoResultPort :
                                               DynParaLoop::getOutputPort(name);
-}
-
-InputPort * OptimizerLoop::edGetPortForInitFile()
-{
-  cerr << "Warning: method OptimizerLoop::edGetPortForInitFile() is deprecated, "
-          "use OptimizerLoop::edGetAlgoInitPort() instead" << endl;
-  return edGetAlgoInitPort();
 }

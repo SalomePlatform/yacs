@@ -40,17 +40,17 @@
 
     <!--datalink -->
     <datalink>
-      <fromnode>b1</fromnode><fromport>SmplPrt</fromport>
+      <fromnode>b1</fromnode><fromport>evalSamples</fromport>
       <tonode>b1.node2</tonode> <toport>p1</toport>
     </datalink>
     <datalink control="false" >
       <fromnode>b1.node2</fromnode><fromport>p1</fromport>
-      <tonode>b1</tonode> <toport>retPortForOutPool</toport>
+      <tonode>b1</tonode> <toport>evalResults</toport>
     </datalink>
 
     <!--parameters -->
   <parameter>
-    <tonode>b1</tonode> <toport>FileNameInitAlg</toport>
+    <tonode>b1</tonode> <toport>algoInit</toport>
     <value><string>coucou</string></value>
   </parameter>
 

@@ -59,7 +59,6 @@ namespace YACS
       virtual TypeCode *getTCForAlgoInit() const;
       //! returns typecode of type expected as algo result. OwnerShip of returned pointer is held by this.
       virtual TypeCode *getTCForAlgoResult() const;
-      virtual void parseFileToInit(const std::string& fileName);
       virtual void initialize(const Any *input) throw (Exception);
       virtual void start() = 0;//! Update _pool attribute before performing anything.
       virtual void takeDecision() = 0;//! _pool->getCurrentId gives the \b id at the origin of this call.
@@ -74,7 +73,6 @@ namespace YACS
       virtual TypeCode *getTCForOutProxy() const;
       virtual TypeCode *getTCForAlgoInitProxy() const;
       virtual TypeCode *getTCForAlgoResultProxy() const;
-      virtual void parseFileToInitProxy(const std::string& fileName);
       virtual void initializeProxy(const Any *input) throw (Exception);
       virtual void startProxy();
       virtual void takeDecisionProxy();

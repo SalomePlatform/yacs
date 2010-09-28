@@ -146,7 +146,6 @@
 %feature("director") YACS::ENGINE::PyOptimizerAlgBase;
 %feature("nodirector") YACS::ENGINE::PyOptimizerAlgBase::getTCForInProxy;
 %feature("nodirector") YACS::ENGINE::PyOptimizerAlgBase::getTCForOutProxy;
-%feature("nodirector") YACS::ENGINE::PyOptimizerAlgBase::parseFileToInitProxy;
 %feature("nodirector") YACS::ENGINE::PyOptimizerAlgBase::initializeProxy;
 %feature("nodirector") YACS::ENGINE::PyOptimizerAlgBase::startProxy;
 %feature("nodirector") YACS::ENGINE::PyOptimizerAlgBase::takeDecisionProxy;
@@ -162,7 +161,6 @@
 %feature("director") YACS::ENGINE::PyOptimizerAlgASync;
 %feature("nodirector") YACS::ENGINE::PyOptimizerAlgASync::getTCForInProxy;
 %feature("nodirector") YACS::ENGINE::PyOptimizerAlgASync::getTCForOutProxy;
-%feature("nodirector") YACS::ENGINE::PyOptimizerAlgASync::parseFileToInitProxy;
 %feature("nodirector") YACS::ENGINE::PyOptimizerAlgASync::initializeProxy;
 %feature("nodirector") YACS::ENGINE::PyOptimizerAlgASync::startProxy;
 %feature("nodirector") YACS::ENGINE::PyOptimizerAlgASync::takeDecisionProxy;

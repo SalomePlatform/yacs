@@ -2587,7 +2587,7 @@ void EngineIntegrationTest::testForOptimizerLoop1()
   graph->edAddLink(o1,i2);
   graph->edAddLink(n1->edGetNbOfInputsOutputPort(),opt->edGetPortForOutPool());
   opt->edGetNbOfBranchesPort()->edInit(2);
-  opt->edGetPortForInitFile()->edInit("toto");
+  opt->edGetAlgoInitPort()->edInit("toto");
   Executor exe;
   graph->checkConsistency(info);
   CPPUNIT_ASSERT(!info.areWarningsOrErrors());
@@ -2639,7 +2639,7 @@ void EngineIntegrationTest::testForOptimizerLoop2()
   graph->edAddLink(o1,i2);
   graph->edAddLink(n1->edGetNbOfInputsOutputPort(),opt->edGetPortForOutPool());
   opt->edGetNbOfBranchesPort()->edInit(2);
-  opt->edGetPortForInitFile()->edInit("toto");
+  opt->edGetAlgoInitPort()->edInit("toto");
   Executor exe;
   graph->checkConsistency(info);
   CPPUNIT_ASSERT(!info.areWarningsOrErrors());
