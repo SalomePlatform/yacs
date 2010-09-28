@@ -168,6 +168,7 @@ void EditionSalomeNode::fillComponentPanel()
 
 void EditionSalomeNode::fillContainerPanel()
 {
+  DEBTRACE("EditionSalomeNode::fillContainerPanel");
   ComponentInstance *compoInst = _servNode->getComponent();
   if (compoInst)
     {

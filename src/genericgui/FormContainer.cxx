@@ -45,11 +45,6 @@ FormContainer::FormContainer(QWidget *parent)
   _advanced = false;
   _properties.clear();
 
-  gridLayout->removeWidget(cb_resource);
-  delete cb_resource;
-  cb_resource = new ComboBox(gb_basic);
-  gridLayout->addWidget(cb_resource, 1, 1, 1, 1);
-
   QIcon icon;
   icon.addFile("icons:icon_down.png");
   icon.addFile("icons:icon_up.png",
@@ -62,6 +57,9 @@ FormContainer::FormContainer(QWidget *parent)
   sb_cpu->setMaximum(INT_MAX);
   sb_nbNodes->setMaximum(INT_MAX);
   sb_procNode->setMaximum(INT_MAX);
+  sb_nbprocpar->setMaximum(INT_MAX);
+  sb_nbproc->setMaximum(INT_MAX);
+  
 
   FillPanel(0); // --- set widgets before signal connexion to avoid false modif detection
 
@@ -77,6 +75,12 @@ FormContainer::FormContainer(QWidget *parent)
   connect(cb_type, SIGNAL(activated(const QString&)),
           this, SLOT(onModifyType(const QString&)));
 
+  connect(cb_mode, SIGNAL(activated(const QString&)),
+          this, SLOT(onModifyMode(const QString&)));
+
+  connect(cb_parallel, SIGNAL(activated(const QString&)),
+          this, SLOT(onModifyParLib(const QString&)));
+
   connect(le_workdir, SIGNAL(textChanged(const QString&)),
           this, SLOT(onModifyWorkDir(const QString&)));
 
@@ -86,8 +90,14 @@ FormContainer::FormContainer(QWidget *parent)
   connect(le_os, SIGNAL(textChanged(const QString&)),
           this, SLOT(onModifyOS(const QString&)));
 
-  connect(le_parallel, SIGNAL(textChanged(const QString&)),
-          this, SLOT(onModifyParLib(const QString&)));
+  connect(le_hostname, SIGNAL(textChanged(const QString&)),
+          this, SLOT(onModifyHostName(const QString&)));
+
+  connect(le_compolist, SIGNAL(textChanged(const QString&)),
+          this, SLOT(onModifyCompoList(const QString&)));
+
+  connect(le_resourceList, SIGNAL(textChanged(const QString&)),
+          this, SLOT(onModifyResourceList(const QString&)));
 
   connect(ch_mpi, SIGNAL(clicked(bool)),
           this, SLOT(onModifyIsMPI(bool)));
@@ -104,8 +114,11 @@ FormContainer::FormContainer(QWidget *parent)
   connect(sb_procNode, SIGNAL(valueChanged(const QString&)),
           this, SLOT(onModifyProcs(const QString&)));
 
-  connect(sb_nbCompoNodes, SIGNAL(valueChanged(const QString&)),
-          this, SLOT(onModifyCompos(const QString&)));
+  connect(sb_nbprocpar, SIGNAL(valueChanged(const QString&)),
+          this, SLOT(onModifyProcPar(const QString&)));
+
+  connect(sb_nbproc, SIGNAL(valueChanged(const QString&)),
+          this, SLOT(onModifyProcRes(const QString&)));
 }
 
 FormContainer::~FormContainer()
@@ -133,6 +146,26 @@ void FormContainer::FillPanel(YACS::ENGINE::Container *container)
   if(_properties.count("type") && _properties["type"]=="multi")i=1;
   cb_type->setCurrentIndex(i);
 
+  vector<string> modes;
+  modes.push_back("start");
+  modes.push_back("get");
+  modes.push_back("getorstart");
+  cb_mode->clear();
+  for(int i=0; i< modes.size(); i++)
+    cb_mode->addItem(modes[i].c_str());
+  if(_properties.count("container_mode"))
+    {
+      int i=0;
+      for(i=0; i< modes.size(); i++)
+        if(modes[i] == _properties["container_mode"])
+          {
+            cb_mode->setCurrentIndex(i);
+            break;
+          }
+    }
+  else
+    cb_mode->setCurrentIndex(0);
+
   vector<string> policies;
   policies.push_back("cycl");
   policies.push_back("altcycl");
@@ -153,6 +186,25 @@ void FormContainer::FillPanel(YACS::ENGINE::Container *container)
     }
   else
     cb_policy->setCurrentIndex(0);
+
+  vector<string> parlibs;
+  parlibs.push_back("MPI");
+  parlibs.push_back("dummy");
+  cb_parallel->clear();
+  for(int i=0; i< parlibs.size(); i++)
+    cb_parallel->addItem(parlibs[i].c_str());
+  if(_properties.count("parallelLib"))
+    {
+      int i=0;
+      for(i=0; i< parlibs.size(); i++)
+        if(parlibs[i] == _properties["parallelLib"])
+          {
+            cb_parallel->setCurrentIndex(i);
+            break;
+          }
+    }
+  else
+    cb_parallel->setCurrentIndex(0);
   
   cb_resource->clear();
   cb_resource->addItem("automatic"); // --- when no host selected
@@ -193,10 +245,20 @@ void FormContainer::FillPanel(YACS::ENGINE::Container *container)
   else
     le_os->setText("");
 
-  if(_properties.count("parallelLib"))
-    le_parallel->setText(_properties["parallelLib"].c_str());
+  if(_properties.count("hostname"))
+    le_hostname->setText(_properties["hostname"].c_str());
   else
-    le_parallel->setText("");
+    le_hostname->setText("");
+
+  if(_properties.count("component_list"))
+    le_compolist->setText(_properties["component_list"].c_str());
+  else
+    le_compolist->setText("");
+
+  if(_properties.count("resource_list"))
+    le_resourceList->setText(_properties["resource_list"].c_str());
+  else
+    le_resourceList->setText("");
 
   if(_properties.count("isMPI"))
     {
@@ -230,10 +292,15 @@ void FormContainer::FillPanel(YACS::ENGINE::Container *container)
   else
     sb_procNode->setValue(0);
 
-  if(_properties.count("nb_component_nodes"))
-    sb_nbCompoNodes->setValue(atoi(_properties["nb_component_nodes"].c_str()));
+  if(_properties.count("nb_parallel_procs"))
+    sb_nbprocpar->setValue(atoi(_properties["nb_parallel_procs"].c_str()));
   else
-    sb_nbCompoNodes->setValue(0);
+    sb_nbprocpar->setValue(0);
+
+  if(_properties.count("nb_resource_procs"))
+    sb_nbproc->setValue(atoi(_properties["nb_resource_procs"].c_str()));
+  else
+    sb_nbproc->setValue(0);
 }
 
 void FormContainer::onModified()
@@ -252,15 +319,15 @@ void FormContainer::on_tb_container_toggled(bool checked)
 {
   DEBTRACE("FormContainer::on_tb_container_toggled " << checked);
   _checked = checked;
-  if (_checked) fr_container->show();
-  else fr_container->hide();
+  if (_checked) gb_basic->show();
+  else gb_basic->hide();
 }
 
 void FormContainer::on_ch_advance_stateChanged(int state)
 {
-  //DEBTRACE("FormContainer::on_ch_advance_stateChanged " << state);
-  if (state) gb_advance->show();
-  else gb_advance->hide();
+  DEBTRACE("FormContainer::on_ch_advance_stateChanged " << state);
+  if (state) tw_advance->show();
+  else tw_advance->hide();
 }
 
 void FormContainer::onModifyName(const QString &text)
@@ -284,6 +351,32 @@ void FormContainer::onModifyResource(const QString &text)
   _properties["name"] = resource;
   if (properties["name"] != resource)
     onModified();
+  if (resource=="")
+  {
+    le_hostname->setEnabled(true);
+    le_os->setEnabled(true);
+    sb_nbproc->setEnabled(true);
+    sb_mem->setEnabled(true);
+    sb_cpu->setEnabled(true);
+    sb_nbNodes->setEnabled(true);
+    sb_procNode->setEnabled(true);
+    cb_policy->setEnabled(true);
+    le_compolist->setEnabled(true);
+    le_resourceList->setEnabled(true);
+  }
+  else
+  {
+    le_hostname->setEnabled(false);
+    le_os->setEnabled(false);
+    sb_nbproc->setEnabled(false);
+    sb_mem->setEnabled(false);
+    sb_cpu->setEnabled(false);
+    sb_nbNodes->setEnabled(false);
+    sb_procNode->setEnabled(false);
+    cb_policy->setEnabled(false);
+    le_compolist->setEnabled(false);
+    le_resourceList->setEnabled(false);
+  }
 }
 
 void FormContainer::onModifyType(const QString &text)
@@ -430,6 +523,84 @@ void FormContainer::onModifyCompos(const QString &text)
       onModified();
     }
 }
+
+void FormContainer::onModifyMode(const QString &text)
+{
+  DEBTRACE("onModifyMode "  << text.toStdString());
+  map<string,string> properties = _container->getProperties();
+  _properties["container_mode"] = text.toStdString();
+  if (properties["container_mode"] != text.toStdString())
+    {
+      onModified();
+    }
+}
+
+void FormContainer::onModifyProcPar(const QString &text)
+{
+  DEBTRACE("onModifyProcPar "  << text.toStdString());
+  map<string,string> properties = _container->getProperties();
+  _properties["nb_parallel_procs"] = text.toStdString();
+  if (properties["nb_parallel_procs"] != text.toStdString())
+    {
+      onModified();
+    }
+}
+
+void FormContainer::onModifyResourceName(const QString &text)
+{
+  DEBTRACE("onModifyResourceName "  << text.toStdString());
+  map<string,string> properties = _container->getProperties();
+  _properties["resource_name"] = text.toStdString();
+  if (properties["resource_name"] != text.toStdString())
+    {
+      onModified();
+    }
+}
+
+void FormContainer::onModifyHostName(const QString &text)
+{
+  DEBTRACE("onModifyHostName "  << text.toStdString());
+  map<string,string> properties = _container->getProperties();
+  _properties["hostname"] = text.toStdString();
+  if (properties["hostname"] != text.toStdString())
+    {
+      onModified();
+    }
+}
+
+void FormContainer::onModifyProcRes(const QString &text)
+{
+  DEBTRACE("onModifyProcRes "  << text.toStdString());
+  map<string,string> properties = _container->getProperties();
+  _properties["nb_resource_procs"] = text.toStdString();
+  if (properties["nb_resource_procs"] != text.toStdString())
+    {
+      onModified();
+    }
+}
+
+void FormContainer::onModifyCompoList(const QString &text)
+{
+  DEBTRACE("onModifyCompoList "  << text.toStdString());
+  map<string,string> properties = _container->getProperties();
+  _properties["component_list"] = text.toStdString();
+  if (properties["component_list"] != text.toStdString())
+    {
+      onModified();
+    }
+}
+
+void FormContainer::onModifyResourceList(const QString &text)
+{
+  DEBTRACE("onModifyResourceList "  << text.toStdString());
+  map<string,string> properties = _container->getProperties();
+  _properties["resource_list"] = text.toStdString();
+  if (properties["resource_list"] != text.toStdString())
+    {
+      onModified();
+    }
+}
+
 
 bool FormContainer::onApply()
 {
