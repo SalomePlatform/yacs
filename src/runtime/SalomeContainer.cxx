@@ -51,7 +51,7 @@
 using namespace YACS::ENGINE;
 using namespace std;
 
-SalomeContainer::SalomeContainer():_trueCont(Engines::Container::_nil()),_type("mono")
+SalomeContainer::SalomeContainer():_trueCont(Engines::Container::_nil()),_type("mono"),_shutdownLevel(999)
 {
   /* Init ContainerParameters */
   _params.container_name = "";
@@ -72,7 +72,8 @@ SalomeContainer::SalomeContainer():_trueCont(Engines::Container::_nil()),_type("
   _params.resource_params.policy = "";
 }
 
-SalomeContainer::SalomeContainer(const SalomeContainer& other):Container(other),_trueCont(Engines::Container::_nil()),_type(other._type)
+SalomeContainer::SalomeContainer(const SalomeContainer& other):Container(other),_trueCont(Engines::Container::_nil()),_type(other._type),
+                                                                                _shutdownLevel(other._shutdownLevel)
 {
   _params.container_name = CORBA::string_dup(other._params.container_name);
   _params.mode= CORBA::string_dup(other._params.mode);
@@ -205,6 +206,7 @@ void SalomeContainer::addComponentName(std::string name)
  */
 CORBA::Object_ptr SalomeContainer::loadComponent(ComponentInstance *inst)
 {
+  DEBTRACE("SalomeContainer::loadComponent ");
   lock();//To be sure
   if(!isAlreadyStarted(inst))
     {
@@ -297,7 +299,7 @@ std::string SalomeContainer::getPlacementId(const ComponentInstance *inst) const
       std::string::size_type i=ret.find_first_of(what,0);
       i=ret.find_first_of(what, i==std::string::npos ? i:i+1);
       if(i!=std::string::npos)
-	return ret.substr(i+1);
+        return ret.substr(i+1);
       return ret;
     }
   else
@@ -372,6 +374,10 @@ void SalomeContainer::start(const ComponentInstance *inst) throw(YACS::Exception
 
   Engines::ContainerParameters myparams=_params;
 
+  bool namedContainer=false;
+  if(str != "")
+    namedContainer=true;
+
   //If a container_name is given try to find an already existing container in naming service
   //If not found start a new container with the given parameters
   if (_type=="mono" && str != "")
@@ -390,7 +396,9 @@ void SalomeContainer::start(const ComponentInstance *inst) throw(YACS::Exception
     stream << (void *)(this);
     DEBTRACE("container_name="<<stream.str());
     myparams.container_name=CORBA::string_dup(stream.str().c_str());
+    _shutdownLevel=1;
   }
+
   myparams.resource_params.componentList.length(_componentNames.size());
   std::vector<std::string>::iterator iter;
   for(CORBA::ULong i=0; i < _componentNames.size();i++)
@@ -399,27 +407,65 @@ void SalomeContainer::start(const ComponentInstance *inst) throw(YACS::Exception
   }
   myparams.resource_params.policy=CORBA::string_dup(getProperty("policy").c_str());
 
-  try
-    { 
-      // --- GiveContainer is used in batch mode to retreive launched containers,
-      //     and is equivalent to StartContainer when not in batch.
-      _trueCont=contManager->GiveContainer(myparams);
-    }
-  catch( const SALOME::SALOME_Exception& ex )
+  _trueCont=Engines::Container::_nil();
+  if(namedContainer && _shutdownLevel==999)
     {
-      std::string msg="SalomeContainer::start : Unable to launch container in Salome : ";
-      msg += '\n';
-      msg += ex.details.text.in();
-      throw Exception(msg);
+      //Make this only the first time start is called (_shutdownLevel==999)
+      //If the container is named, first try to get an existing container
+      //If there is an existing container use it and set the shutdown level to 3
+      //If there is no existing container, try to launch a new one and set the shutdown level to 2
+      myparams.mode="get";
+      try
+        { 
+          _trueCont=contManager->GiveContainer(myparams);
+        }
+      catch( const SALOME::SALOME_Exception& ex )
+        {
+          std::string msg="SalomeContainer::start : no existing container : ";
+          msg += '\n';
+          msg += ex.details.text.in();
+          DEBTRACE( msg );
+        }
+      catch(...)
+        {
+        }
+
+      if(!CORBA::is_nil(_trueCont))
+        {
+          _shutdownLevel=3;
+          DEBTRACE( "container found: " << str << " " << _shutdownLevel );
+        }
+      else
+        {
+          _shutdownLevel=2;
+          myparams.mode="start";
+          DEBTRACE( "container not found: " << str << " " << _shutdownLevel);
+        }
     }
-  catch(CORBA::COMM_FAILURE&)
-    {
-      throw Exception("SalomeContainer::start : Unable to launch container in Salome : CORBA Comm failure detected");
-    }
-  catch(CORBA::Exception&)
-    {
-      throw Exception("SalomeContainer::start : Unable to launch container in Salome : Unexpected CORBA failure detected");
-    }
+
+  if(CORBA::is_nil(_trueCont))
+    try
+      { 
+        // --- GiveContainer is used in batch mode to retreive launched containers,
+        //     and is equivalent to StartContainer when not in batch.
+        _trueCont=contManager->GiveContainer(myparams);
+      }
+    catch( const SALOME::SALOME_Exception& ex )
+      {
+        std::string msg="SalomeContainer::start : Unable to launch container in Salome : ";
+        msg += '\n';
+        msg += ex.details.text.in();
+        throw Exception(msg);
+      }
+    catch(CORBA::COMM_FAILURE&)
+      {
+        throw Exception("SalomeContainer::start : Unable to launch container in Salome : CORBA Comm failure detected");
+      }
+    catch(CORBA::Exception&)
+      {
+        throw Exception("SalomeContainer::start : Unable to launch container in Salome : Unexpected CORBA failure detected");
+      }
+
   if(CORBA::is_nil(_trueCont))
     throw Exception("SalomeContainer::start : Unable to launch container in Salome. Check your CatalogResources.xml file");
 
@@ -439,3 +485,52 @@ void SalomeContainer::start(const ComponentInstance *inst) throw(YACS::Exception
 #endif
 }
 
+void SalomeContainer::shutdown(int level)
+{
+  DEBTRACE("SalomeContainer::shutdown: " << _name << "," << level << "," << _shutdownLevel);
+  if(level < _shutdownLevel)
+    return;
+
+  _shutdownLevel=999;
+  //shutdown the SALOME containers
+  if(_type=="multi")
+    {
+      std::map<const ComponentInstance *, Engines::Container_var >::const_iterator it;
+      for(it = _trueContainers.begin(); it != _trueContainers.end(); ++it)
+        {
+          try
+            {
+              DEBTRACE("shutdown SALOME container: " );
+              CORBA::String_var containerName=it->second->name();
+              DEBTRACE(containerName);
+              it->second->Shutdown();
+              std::cerr << "shutdown SALOME container: " << containerName << std::endl;
+            }
+          catch(CORBA::Exception&)
+            {
+              DEBTRACE("Unexpected CORBA failure detected." );
+            }
+          catch(...)
+            {
+              DEBTRACE("Unknown exception ignored." );
+            }
+        }
+      _trueContainers.clear();
+    }
+  else
+    {
+      try
+        {
+          DEBTRACE("shutdown SALOME container: " );
+          CORBA::String_var containerName=_trueCont->name();
+          DEBTRACE(containerName);
+          _trueCont->Shutdown();
+          std::cerr << "shutdown SALOME container: " << containerName << std::endl;
+        }
+      catch(...)
+        {
+          DEBTRACE("Unknown exception ignored." );
+        }
+      _trueCont=Engines::Container::_nil();
+    }
+}

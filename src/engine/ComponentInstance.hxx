@@ -63,6 +63,7 @@ namespace YACS
       virtual ComponentInstance *clone() const = 0;
       virtual std::string getKind() const;
       static const char KIND[];
+      virtual void shutdown(int level);
     protected:
       //! \b WARNING : _compoName identify only the component type.
       std::string _compoName;

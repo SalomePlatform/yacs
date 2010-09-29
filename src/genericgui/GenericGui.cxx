@@ -302,6 +302,10 @@ void GenericGui::createActions()
                                                tr("Node Container Log"), tr("get Node Container Log"),
                                                0, _parent, false, this,  SLOT(onGetContainerLog()));
 
+  pixmap.load("icons:kill.png");
+  _shutdownProcAct = _wrapper->createAction(getMenuId(), tr("Shutdown Proc"), QIcon(pixmap),
+                                             tr("Shutdown Proc"), tr("Shutdown Proc"),
+                                             0, _parent, false, this,  SLOT(onShutdownProc()));
 
 
   pixmap.load("icons:kill.png");
@@ -1916,7 +1920,13 @@ void GenericGui::onGetContainerLog()
   lv->show();
 }
 
-
+void GenericGui::onShutdownProc()
+{
+  DEBTRACE("GenericGui::onShutdownProc");
+  if (!QtGuiContext::getQtCurrent()) return;
+  if (!QtGuiContext::getQtCurrent()->getGuiExecutor()) return;
+  QtGuiContext::getQtCurrent()->getGuiExecutor()->shutdownProc();
+}
 
 void GenericGui::onEditDataTypes()
 {

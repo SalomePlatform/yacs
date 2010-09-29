@@ -48,6 +48,7 @@ module YACS_ORB
     string getErrorDetails(in long nodeNumid);
     string getErrorReport(in long nodeNumid);
     string getContainerLog(in long nodeNumid);
+    void shutdownProc(in long level);
     long getExecutorState();
     void getIds(out longArray numids,out stringArray names);
     longArray getNumIds();

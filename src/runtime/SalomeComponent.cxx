@@ -31,6 +31,9 @@
 #include <iostream>
 #include <sstream>
 
+//#define _DEVDEBUG_
+#include "YacsTrace.hxx"
+
 using namespace YACS::ENGINE;
 using namespace std;
 
@@ -147,3 +150,9 @@ void SalomeComponent::setContainer(Container *cont)
   }
 }
 
+void SalomeComponent::shutdown(int level)
+{
+  DEBTRACE("SalomeComponent::shutdown " << level);
+  if(_container)
+    _container->shutdown(level);
+}

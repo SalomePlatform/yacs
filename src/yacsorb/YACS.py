@@ -78,6 +78,9 @@ class proc_i(YACS_ORB__POA.ProcExec):
     def getContainerLog(self, nodeNumid):
         return self.p.getNodeContainerLog(nodeNumid)
 
+    def shutdownProc(self, level):
+        return self.p.shutdown(level)
+
     def getExecutorState(self):
         return self.e.getExecutorState()
 

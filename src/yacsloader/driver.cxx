@@ -386,7 +386,7 @@ int main (int argc, char* argv[])
           p->accept(&vst);
           vst.closeFileDump();
         }
-      if(myArgs.shutdown < 3)
+      if(myArgs.shutdown < 999)
         {
           p->shutdown(myArgs.shutdown);
         }

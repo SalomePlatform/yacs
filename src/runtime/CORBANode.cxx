@@ -887,3 +887,10 @@ std::string SalomeNode::getContainerLog()
     }
   return msg;
 }
+
+void SalomeNode::shutdown(int level)
+{
+  DEBTRACE("SalomeNode::shutdown " << level);
+  if(_component)
+    _component->shutdown(level);
+}

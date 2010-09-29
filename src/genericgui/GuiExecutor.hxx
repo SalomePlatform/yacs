@@ -88,6 +88,9 @@ namespace YACS
       std::string getErrorReport(YACS::ENGINE::Node* node);
       std::string getContainerLog();
       std::string getContainerLog(YACS::ENGINE::Node* node);
+      void shutdownProc();
+      void setShutdownLevel(int level){_shutdownLevel=level;}
+      int getShutdownLevel(){return _shutdownLevel;}
 
       virtual bool event(QEvent *e);
 
@@ -107,6 +110,7 @@ namespace YACS
       bool _isRunning;
       bool _isSuspended;
       bool _isStopOnError;
+      int _shutdownLevel;
 
       std::list<std::string> _breakpointList;
       std::string _loadStateFile;

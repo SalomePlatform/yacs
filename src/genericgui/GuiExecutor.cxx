@@ -58,6 +58,7 @@ GuiExecutor::GuiExecutor(YACS::ENGINE::Proc* proc)
   _isRunning = false;
   _isSuspended = false;
   _isStopOnError = false;
+  _shutdownLevel=1;
 
   _loadStateFile = "";
   _breakpointList.clear();
@@ -445,6 +446,14 @@ std::string GuiExecutor::getContainerLog(YACS::ENGINE::Node* node)
       msg=msg.substr(pos+1);
     }
   return msg;
+}
+
+void GuiExecutor::shutdownProc()
+{
+  DEBTRACE("GuiExecutor::shutdownProc " << _shutdownLevel << "," << _isRunning);
+  checkEndOfDataflow();
+  if (!_isRunning)
+    _procRef->shutdownProc(_shutdownLevel);
 }
 
 void GuiExecutor::setInPortValue(YACS::ENGINE::DataPort* port, std::string value)

@@ -254,6 +254,7 @@ void ProcMenu::popupMenu(QWidget *caller, const QPoint &globalPos, const QString
     {
       menu.addAction(gmain->_getErrorReportAct);
       menu.addAction(gmain->_getErrorDetailsAct);
+      menu.addAction(gmain->_shutdownProcAct);
     }
   menu.exec(globalPos);
 }
