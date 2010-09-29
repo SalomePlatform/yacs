@@ -426,7 +426,7 @@ An input data port of the ForEach node named “SmplsCollection” receives the 
 This data collection is typed.  The data type on which the loop iterates is unique.  The number of parallel branches managed 
 by the loop is fixed by a parameter of the loop (input port named "nbBranches").  
 If the collection size is 100 and this parameter is fixed at 25, the loop will execute 4 packets of 25 calculations in parallel.  
-The internal node can access the current iteration of the data collection through the output data port from the loop named “SmplPrt”.
+The internal node can access the current iteration of the data collection through the output data port from the loop named “evalSamples”.
 
 Typed data collections can be constructed at the output from the loop.  All that is necessary is to connect an output data 
 port of the internal node to an input data port of a node outside the loop. The loop automatically constructs the data collection.
@@ -465,15 +465,16 @@ The plugin is defined by 2 parameters :
 - **entry**, the name of an entry point in the dynamic library or in the Python module that will return the algorithm plugin
   factory (see :ref:`optimizationplugin` for more informations)
 
-The node has four ports:
+The node has five ports:
 
-- **FileNameInitAlg**, an input port that takes the name of an initialization file
-- **SmplPrt**, an output port that gives the samples in the optimization process
-- **retPortForOutPool**, an input port that collects the results given by the internal node
+- **algoInit**, an input port that takes an object used for the initialization of the algorithm
+- **evalSamples**, an output port that gives the samples in the optimization process
+- **evalResults**, an input port that collects the results given by the internal node
 - **nbBranches**, an input port that can be used to parallelize the optimization process as in the ForEach node (number of
   branches). Most of a time, the optimization process is sequential so the number of branches will be 1, but in some cases 
   it is possible to parallelize the process so the number  of branches will be greater than 1.
- 
+- **algoResults**, an output port that gives the results of the optimization algorithm
+
 
 
 .. _containers:

@@ -481,7 +481,7 @@ ForEach loop
 A ForEach node is basically defined in the same way as any other loop node.  There are several differences.  
 The node is created with the createForEachLoop method that has an additional argument, namely the data type managed by the ForEach.  
 The number of ForEach branches is specified with the “nbBranches” port.  The collection on which the ForEach iterates is managed by 
-connection of the “SmplPrt” and “SmplsCollection” ports.
+connection of the “evalSamples” and “SmplsCollection” ports.
 
 The following is an example definition of the ForEach node with a Python script internal node that increments 
 the element of the collection by 3::
@@ -493,14 +493,14 @@ the element of the collection by 3::
   n.edAddInputPort("p1",td)
   n.edAddOutputPort("p1",td)
   fe.edSetNode(n)
-  p.edAddLink(fe.getOutputPort("SmplPrt"),n.getInputPort("p1"))
+  p.edAddLink(fe.getOutputPort("evalSamples"),n.getInputPort("p1"))
   fe.getInputPort("nbBranches").edInitPy(3)
   fe.getInputPort("SmplsCollection").edInitPy([2.,3.,4.])
 
 Special ports for the ForEach can be obtained using the following methods instead of getInputPort and getOutputPort:
 
 - edGetNbOfBranchesPort for the “nbBranches” port
-- edGetSamplePort for the “SmplPrt” port
+- edGetSamplePort for the “evalSamples” port
 - edGetSeqOfSamplesPort for the “SmplsCollection” port
 
 Switch
@@ -561,9 +561,9 @@ is defined by the class async in the python module myalgo2.py::
   n.edAddOutputPort("p1",ti)
   ol.edSetNode(n)
   ol.getInputPort("nbBranches").edInitPy(3)
-  ol.getInputPort("FileNameInitAlg").edInitPy("coucou")
-  p.edAddLink(ol.getOutputPort("SmplPrt"),n.getInputPort("p1"))
-  p.edAddLink(n.getOutputPort("p1"),ol.getInputPort("retPortForOutPool"))
+  ol.getInputPort("algoInit").edInitPy("coucou")
+  p.edAddLink(ol.getOutputPort("evalSamples"),n.getInputPort("p1"))
+  p.edAddLink(n.getOutputPort("p1"),ol.getInputPort("evalResults"))
 
 Definition of containers
 ''''''''''''''''''''''''''''

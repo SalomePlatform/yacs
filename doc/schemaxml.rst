@@ -585,7 +585,7 @@ The following is a minimal example of the ForEach loop:
       <tonode>b1</tonode> <toport>SmplsCollection</toport>
     </datalink>
     <datalink>
-      <fromnode>b1</fromnode><fromport>SmplPrt</fromport>
+      <fromnode>b1</fromnode><fromport>evalSamples</fromport>
       <tonode>b1.node2</tonode> <toport>p1</toport>
     </datalink>
     <datalink>
@@ -648,7 +648,7 @@ OptimizerLoop
 An OptimizerLoop node is defined with the **optimizer** tag.  It has a compulsory name attribute that carries the name of the node.  
 It has two other compulsory attributes (**lib** and **entry**) that define the C++ or Python plugin (parameters with same names).
 It can have the attribute **nbranch** or an input port **nbBranches** to define the number of branches of the loop.
-The OptimizerLoop ports (**nbBranches**, **FileNameInitAlg**, **SmplPrt** and **retPortForOutPool**) need not be defined as they
+The OptimizerLoop ports (**nbBranches**, **algoInit**, **evalSamples**, **evalResults** and **algoResults**) need not be defined as they
 are already defined at the creation of the node.
 
 A minimal OptimizerLoop example:
@@ -667,12 +667,12 @@ A minimal OptimizerLoop example:
       </inline>
     </optimizer>
     <datalink>
-      <fromnode>b1</fromnode><fromport>SmplPrt</fromport>
+      <fromnode>b1</fromnode><fromport>evalSamples</fromport>
       <tonode>b1.node2</tonode> <toport>p1</toport>
     </datalink>
     <datalink control="false" >
       <fromnode>b1.node2</fromnode><fromport>p1</fromport>
-      <tonode>b1</tonode> <toport>retPortForOutPool</toport>
+      <tonode>b1</tonode> <toport>evalResults</toport>
     </datalink>
 
 

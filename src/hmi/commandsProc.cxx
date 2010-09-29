@@ -2739,11 +2739,11 @@ bool CommandSetAlgo::localExecute()
       loop->setAlgorithm(_alglib,_symbol);
       _oldAlglib = _alglib;
       _oldSymbol = _symbol;
-      InputPort *port = loop->getInputPort("retPortForOutPool");
+      InputPort *port = loop->edGetPortForOutPool();
       YASSERT(GuiContext::getCurrent()->_mapOfSubjectDataPort.count(static_cast<DataPort*>(port)));
       SubjectDataPort *spo = GuiContext::getCurrent()->_mapOfSubjectDataPort[static_cast<DataPort*>(port)];
       spo->update(UPDATE, 0, spo);
-      OutputPort *oport = loop->getOutputPort("SmplPrt");
+      OutputPort *oport = loop->edGetSamplePort();
       YASSERT(GuiContext::getCurrent()->_mapOfSubjectDataPort.count(static_cast<DataPort*>(oport)));
       spo = GuiContext::getCurrent()->_mapOfSubjectDataPort[static_cast<DataPort*>(oport)];
       spo->update(UPDATE, 0, spo);
@@ -2768,11 +2768,11 @@ bool CommandSetAlgo::localReverse()
       Proc* proc = GuiContext::getCurrent()->getProc();
       OptimizerLoop* loop = dynamic_cast<OptimizerLoop*>(proc->getChildByName(_optimizer));
       loop->setAlgorithm(_oldAlglib,_oldSymbol);
-      InputPort *port = loop->getInputPort("retPortForOutPool");
+      InputPort *port = loop->edGetPortForOutPool();
       YASSERT(GuiContext::getCurrent()->_mapOfSubjectDataPort.count(static_cast<DataPort*>(port)));
       SubjectDataPort *spo = GuiContext::getCurrent()->_mapOfSubjectDataPort[static_cast<DataPort*>(port)];
       spo->update(UPDATE, 0, spo);
-      OutputPort *oport = loop->getOutputPort("SmplPrt");
+      OutputPort *oport = loop->edGetSamplePort();
       YASSERT(GuiContext::getCurrent()->_mapOfSubjectDataPort.count(static_cast<DataPort*>(oport)));
       spo = GuiContext::getCurrent()->_mapOfSubjectDataPort[static_cast<DataPort*>(oport)];
       spo->update(UPDATE, 0, spo);

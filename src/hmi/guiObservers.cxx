@@ -3766,14 +3766,9 @@ bool SubjectInputPort::setValue(std::string value)
 SubjectOutputPort::SubjectOutputPort(YACS::ENGINE::OutputPort *port, Subject *parent)
   : SubjectDataPort(port, parent), _outputPort(port)
 {
-  Node *node = _outputPort->getNode();
-  if (ForEachLoop* foreach = dynamic_cast<ForEachLoop*>(node))
+  if (DynParaLoop* dynloop = dynamic_cast<DynParaLoop*>(_outputPort->getNode()))
     {
-      if (_outputPort->getName() == "SmplPrt") _destructible = false;
-    }
-  else if (OptimizerLoop* optil = dynamic_cast<OptimizerLoop*>(node))
-    {
-      if (_outputPort->getName() == "SmplPrt") _destructible = false;
+      if (_outputPort == dynloop->edGetSamplePort()) _destructible = false;
     }
 }
 
