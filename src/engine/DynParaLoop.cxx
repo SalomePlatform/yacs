@@ -798,3 +798,17 @@ Node * DynParaLoop::getFinalizeNode()
 {
   return _finalizeNode;
 }
+
+void DynParaLoop::shutdown(int level)
+{
+  if(level==0)return;
+  if(!_node) return;
+
+  std::vector<Node *>::iterator iter;
+  for (iter=_execNodes.begin() ; iter!=_execNodes.end() ; iter++)
+    (*iter)->shutdown(level);
+  for (iter=_execInitNodes.begin() ; iter!=_execInitNodes.end() ; iter++)
+    (*iter)->shutdown(level);
+  for (iter=_execFinalizeNodes.begin() ; iter!=_execFinalizeNodes.end() ; iter++)
+    (*iter)->shutdown(level);
+}

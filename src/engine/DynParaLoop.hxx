@@ -123,6 +123,7 @@ namespace YACS
       std::vector<Node *> cloneAndPlaceNodesCoherently(const std::vector<Node *> & origNodes);
       Node * checkConsistencyAndSetNode(Node* &nodeToReplace, Node* DISOWNnode);
       Node * removeNode(Node* &nodeToRemove);
+      virtual void shutdown(int level);
     };
   }
 }
