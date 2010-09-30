@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>284</width>
-    <height>609</height>
+    <height>655</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -133,7 +133,7 @@
       <item row="4" column="0" colspan="2">
        <widget class="QTabWidget" name="tw_advance">
         <property name="currentIndex">
-         <number>1</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="tab">
          <attribute name="title">
@@ -466,17 +466,7 @@
             </property>
            </widget>
           </item>
-          <item row="8" column="1" colspan="2">
-           <widget class="ComboBox" name="cb_policy">
-            <property name="editable">
-             <bool>false</bool>
-            </property>
-            <property name="maxVisibleItems">
-             <number>3</number>
-            </property>
-           </widget>
-          </item>
-          <item row="9" column="0" colspan="2">
+          <item row="9" column="0" colspan="3">
            <widget class="QLineEdit" name="le_compolist">
             <property name="toolTip">
              <string>example: GEOM, SMESH</string>
@@ -496,10 +486,20 @@
             </property>
            </widget>
           </item>
-          <item row="11" column="0" colspan="2">
+          <item row="11" column="0" colspan="3">
            <widget class="QLineEdit" name="le_resourceList">
             <property name="toolTip">
              <string>example: machine1, machine2</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="1" colspan="2">
+           <widget class="ComboBox" name="cb_policy">
+            <property name="editable">
+             <bool>false</bool>
+            </property>
+            <property name="maxVisibleItems">
+             <number>3</number>
             </property>
            </widget>
           </item>
