@@ -67,7 +67,7 @@ static struct argp_option options[] =
     {"dump-final",      'f', "file",  OPTION_ARG_OPTIONAL, "dump final state"},
     {"load-state",      'l', "file",  0,                   "Load State from a previous partial execution"},
     {"save-xml-schema", 'x', "file",  OPTION_ARG_OPTIONAL, "dump xml schema"},
-    {"shutdown",        't', "level", 1,                   "Shutdown the schema: 0=no shutdown to 2=full shutdown"},
+    {"shutdown",        't', "level", 1,                   "Shutdown the schema: 0=no shutdown to 3=full shutdown"},
     { 0 }
   };
 #endif
