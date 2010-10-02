@@ -86,7 +86,7 @@ void ForLoop::init(bool start)
 
 //! Update the state of the for loop
 /*!
- * If the inGate port is ready goes to YACS::TOACTIVATE state
+ * If the inGate port is ready goes to YACS::ACTIVATED state
  * If the steps number is 0, create an special internal node
  *
  */
@@ -97,7 +97,7 @@ void ForLoop::exUpdateState()
     return;
   if(_inGate.exIsReady())
     {
-      setState(YACS::TOACTIVATE);
+      setState(YACS::ACTIVATED);
       _node->exUpdateState();
       if(_nbOfTimesPort.isEmpty())
         {

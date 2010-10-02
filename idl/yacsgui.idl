@@ -56,6 +56,7 @@ module YACS_ORB
 
     void Run();
     void RunFromState(in string xmlfile);
+    void RestartFromState(in string xmlfile);
     void addObserver(in Observer obs,in long numid, in string event);
     void setExecMode(in executionMode mode);
     void setListOfBreakPoints(in stringArray listOfBreakPoints);

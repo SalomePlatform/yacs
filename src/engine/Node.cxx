@@ -672,3 +672,22 @@ void Node::shutdown(int level)
 void Node::cleanNodes()
 {
 }
+
+//! Reset the node state depending on the parameter level
+void Node::resetState(int level)
+{
+  if(_state==YACS::ERROR || _state==YACS::FAILED)
+    {
+      setState(YACS::READY);
+      InGate* inGate = getInGate();
+      std::list<OutGate*> backlinks = inGate->getBackLinks();
+      for (std::list<OutGate*>::iterator io = backlinks.begin(); io != backlinks.end(); io++)
+        {
+          Node* fromNode = (*io)->getNode();
+          if(fromNode->getState() == YACS::DONE)
+            {
+              inGate->setPrecursorDone(*io);
+            }
+        }
+    }
+}

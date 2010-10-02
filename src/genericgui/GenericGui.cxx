@@ -266,8 +266,8 @@ void GenericGui::createActions()
                                      0, _parent, false, this,  SLOT(onPause()));
 
   pixmap.load("icons:reset.png");
-  _resetAct = _wrapper->createAction(getMenuId(), tr("Reset the current execution"), QIcon(pixmap),
-                                     tr("Reset execution"), tr("Reset the current execution"),
+  _resetAct = _wrapper->createAction(getMenuId(), tr("Reset error nodes and restart the current execution"), QIcon(pixmap),
+                                     tr("Restart execution"), tr("Restart the current execution with reset of error nodes"),
                                      0, _parent, false, this,  SLOT(onReset()));
 
 

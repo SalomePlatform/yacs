@@ -208,8 +208,16 @@ void GuiExecutor::stopDataflow()
 void GuiExecutor::resetDataflow()
 {
   DEBTRACE("GuiExecutor::resetDataflow");
-  if (_isRunning)
-    _procRef->stopExecution();
+  //update _isRunning
+  checkEndOfDataflow();
+
+  if (!_isRunning)
+    {
+      _isRunning = true;
+      _procRef->setExecMode(YACS_ORB::STEPBYSTEP);
+      //full reset: set all nodes in error to READY state and start execution
+      _procRef->RestartFromState("");
+    }
 }
 
   

@@ -410,7 +410,7 @@ void ForEachLoop::exUpdateState()
           throw;
         }
 
-      setState(YACS::TOACTIVATE); // move the calling of setState method there for adding observers for clone nodes in GUI part
+      setState(YACS::ACTIVATED); // move the calling of setState method there for adding observers for clone nodes in GUI part
 
       //let's go
       for(i=0;i<nbOfBr;i++)
@@ -433,6 +433,7 @@ void ForEachLoop::getReadyTasks(std::vector<Task *>& tasks)
 {
   if(!_node)
     return;
+  if(_state==YACS::TOACTIVATE) setState(YACS::ACTIVATED);
   if(_state==YACS::TOACTIVATE || _state==YACS::ACTIVATED)
     {
       if(_nodeForSpecialCases)

@@ -319,7 +319,7 @@ void Switch::exUpdateState()
     return;
   if(_inGate.exIsReady())
     {
-      setState(YACS::TOACTIVATE);
+      setState(YACS::ACTIVATED);
       if(_condition.isEmpty())
         _undispatchableNotificationNode=new FakeNodeForSwitch(this,false,true);
       else

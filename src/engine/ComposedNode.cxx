@@ -1510,3 +1510,18 @@ void ComposedNode::cleanNodes()
   for(list<Node *>::iterator iter=nodes.begin();iter!=nodes.end();iter++)
     (*iter)->cleanNodes();
 }
+
+//! Reset the state of the node and its children depending on the parameter level
+void ComposedNode::resetState(int level)
+{
+  if(level==0)return;
+
+  DEBTRACE("ComposedNode::resetState");
+  if(_state==YACS::ERROR || _state==YACS::FAILED)
+    {
+      Node::resetState(level);
+      std::list<Node *> nodes=edGetDirectDescendants();
+      for(std::list<Node *>::iterator iter=nodes.begin();iter!=nodes.end();iter++)
+        (*iter)->resetState(level);
+    }
+}

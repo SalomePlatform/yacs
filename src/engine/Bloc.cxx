@@ -156,9 +156,10 @@ void Bloc::getReadyTasks(std::vector<Task *>& tasks)
 void Bloc::exUpdateState()
 {
   if(_state == YACS::DISABLED)return;
+  if(_state == YACS::DONE)return;
   if(_inGate.exIsReady())
     {
-      setState(YACS::TOACTIVATE);
+      setState(YACS::ACTIVATED);
       for(list<Node *>::iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
         if((*iter)->exIsControlReady())
           (*iter)->exUpdateState();

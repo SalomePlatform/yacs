@@ -68,6 +68,7 @@ static struct argp_option options[] =
     {"load-state",      'l', "file",  0,                   "Load State from a previous partial execution"},
     {"save-xml-schema", 'x', "file",  OPTION_ARG_OPTIONAL, "dump xml schema"},
     {"shutdown",        't', "level", 1,                   "Shutdown the schema: 0=no shutdown to 3=full shutdown"},
+    {"reset",           'r', "level", 0,                   "Reset the schema before execution: 0=nothing, 1=reset error nodes to ready state"},
     { 0 }
   };
 #endif
@@ -83,6 +84,7 @@ struct arguments
   char *xmlSchema;
   char *loadState;
   int shutdown;
+  int reset;
 };
 
 #ifdef WNT
@@ -105,6 +107,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
       break;
     case 't':
       myArgs->shutdown = atoi(arg);
+      break;
+    case 'r':
+      myArgs->reset = atoi(arg);
       break;
     case 'v':
       myArgs->verbose = 1;
@@ -210,6 +215,7 @@ int main (int argc, char* argv[])
   myArgs.loadState = (char *)"";
   myArgs.xmlSchema = (char *)"";
   myArgs.shutdown = 1;
+  myArgs.reset = 0;
 
   // Parse our arguments; every option seen by parse_opt will be reflected in arguments.
 #ifdef WNT
@@ -343,6 +349,11 @@ int main (int argc, char* argv[])
           stateParser* rootParser = new stateParser();
           stateLoader myStateLoader(rootParser, p);
           myStateLoader.parse(myArgs.loadState);
+          if(myArgs.reset>0)
+            {
+              p->resetState(myArgs.reset);
+              p->exUpdateState();
+            }
         }
 
       if (myArgs.stop)

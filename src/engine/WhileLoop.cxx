@@ -52,7 +52,7 @@ void WhileLoop::exUpdateState()
     return;
   if(_inGate.exIsReady())
     {
-      setState(YACS::TOACTIVATE);
+      setState(YACS::ACTIVATED);
       _node->exUpdateState();
       if(_conditionPort.isLinkedOutOfScope())
         if(_conditionPort.isEmpty())

@@ -56,6 +56,7 @@ namespace YACS
       bool isFinished();
       void init(bool start=true);
       virtual void shutdown(int level);
+      virtual void resetState(int level);
       std::string getName() const;
       std::string getTaskName(Task *task) const;
       DeploymentTree getDeploymentTree() const;
