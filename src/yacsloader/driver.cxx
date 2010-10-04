@@ -178,12 +178,28 @@ void timer(std::string msg)
 }
 
 Proc* p=0;
-
+static struct arguments myArgs;
 
 void Handler(int theSigId)
 {
   if(p)
-    p->cleanNodes();
+    {
+      p->cleanNodes();
+      //if requested save state
+      bool isFinalDump = (strlen(myArgs.finalDump) != 0);
+      if (isFinalDump)
+        {
+          YACS::ENGINE::VisitorSaveState vst(p);
+          vst.openFileDump(myArgs.finalDump);
+          p->accept(&vst);
+          vst.closeFileDump();
+        }
+      //if requested shutdown schema
+      if(myArgs.shutdown < 999)
+        {
+          p->shutdown(myArgs.shutdown);
+        }
+    }
   _exit(1);
 }
 
@@ -204,7 +220,6 @@ sighandler_t setsig(int sig, sighandler_t handler)
 
 int main (int argc, char* argv[])
 {
-  struct arguments myArgs;
      
   // Default values.
   myArgs.display = 0;
