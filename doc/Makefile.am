@@ -56,10 +56,9 @@ htm:
 latex:
 	mkdir -p latex doctrees
 	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) latex
-	@echo
-	@echo "Build finished; the LaTeX files are in latex."
-	@echo "Run \`make all-pdf' or \`make all-ps' in that directory to" \
-	      "run these through (pdf)latex."
+	@echo "Running LaTeX files through pdflatex..."
+	make -C latex all-pdf
+	@echo "pdflatex finished; the PDF files are in latex."
 
 pdf:
 	$(SPHINXBUILD) -b pdf $(ALLSPHINXOPTS) pdf
