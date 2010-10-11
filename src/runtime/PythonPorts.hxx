@@ -43,6 +43,25 @@ namespace YACS
       PyGILState_STATE gstate_;
     };
 
+    class InterpreterSaveThread {
+    public:
+      inline InterpreterSaveThread() {
+        tstate_ = PyEval_SaveThread();
+      }
+      inline ~InterpreterSaveThread() {
+        PyEval_RestoreThread(tstate_);
+      }
+      inline void lock() {
+        PyEval_RestoreThread(tstate_);
+      }
+      inline void unlock() {
+        tstate_ = PyEval_SaveThread();
+      }
+    private:
+      PyThreadState* tstate_;
+    };
+
+
     typedef PyObject PyObj;
 
 /*! \brief Class for Python Ports

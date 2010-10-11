@@ -20,6 +20,7 @@
 #include "PythonCppConv.hxx"
 #include "TypeConversions.hxx"
 #include "RuntimeSALOME.hxx"
+#include "PythonPorts.hxx"
 
 #include <iostream>
 
@@ -52,6 +53,7 @@ namespace YACS
       YACS::ENGINE::Any *a;
       //Do not need to take the Python GIL as put is called from Python node
       a = convertPyObjectCpp(edGetType(), data);
+      YACS::ENGINE::InterpreterSaveThread _loc;
       DEBTRACE( "before put refcnt: " << a->getRefCnt() );
       _port->put(a);
       //_port has called incRef

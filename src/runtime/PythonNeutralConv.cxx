@@ -19,6 +19,7 @@
 
 #include "TypeConversions.hxx"
 #include "PythonNeutralConv.hxx"
+#include "PythonPorts.hxx"
 
 #include <iostream>
 #include <sstream>
@@ -52,6 +53,7 @@ void PyNeutral::put(PyObject *data) throw(ConversionException)
   YACS::ENGINE::Any *ob;
   //Do not need to take the Python GIL as put is called from Python node
   ob=convertPyObjectNeutral(edGetType(),data);
+  YACS::ENGINE::InterpreterSaveThread _loc;
   DEBTRACE( "before put refcnt: " << ob->getRefCnt() );
   _port->put(ob);
   //_port has called incRef
