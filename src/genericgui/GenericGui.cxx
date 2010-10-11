@@ -2244,6 +2244,10 @@ void GenericGui::onToggleStopOnError(bool checked)
   DEBTRACE("GenericGui::onToggleStopOnError " << checked);
   if (!QtGuiContext::getQtCurrent()) return;
   if (!QtGuiContext::getQtCurrent()->getGuiExecutor()) return;
+  if(checked)
+    QtGuiContext::getQtCurrent()->getGuiExecutor()->setStopOnError(false);
+  else
+    QtGuiContext::getQtCurrent()->getGuiExecutor()->unsetStopOnError();
 }
 
 void GenericGui::onToggleSceneItemVisible(bool checked)
