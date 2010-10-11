@@ -210,6 +210,9 @@ void GuiExecutor::resetDataflow()
   DEBTRACE("GuiExecutor::resetDataflow");
   //update _isRunning
   checkEndOfDataflow();
+  if (_isRunning)
+    _procRef->stopExecution();
+  checkEndOfDataflow();
 
   if (!_isRunning)
     {
