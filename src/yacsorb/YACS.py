@@ -235,7 +235,7 @@ class YACS(YACS_ORB__POA.YACS_Gen,
     with omniidl and also the class SALOME_ComponentPy_i which defines general
     SALOME component behaviour.
     """
-    def __init__ ( self, orb, poa, contID, containerName, instanceName, 
+    def __init__ ( self, orb, poa, contID, containerName, instanceName,
                    interfaceName ):
         print "YACS.__init__: ", containerName, ';', instanceName
         SALOME_ComponentPy.SALOME_ComponentPy_i.__init__(self, orb, poa, contID,
@@ -246,10 +246,18 @@ class YACS(YACS_ORB__POA.YACS_Gen,
         # --- store a naming service interface instance in _naming_service atribute
         self._naming_service = SALOME_ComponentPy.SALOME_NamingServicePy_i( self._orb )
 
-        
         SALOMERuntime.RuntimeSALOME_setRuntime(1)
         SALOMERuntime.SALOMEDispatcher_setSALOMEDispatcher()
-        pass
+        r=pilot.getRuntime()
+
+        try:
+          #try to load SALOME module catalogs
+          modul_catalog = self._naming_service.Resolve("/Kernel/ModulCatalog")
+          ior= orb.object_to_string(modul_catalog)
+          cata=r.loadCatalog("session",ior)
+          r.addCatalog(cata)
+        except :
+          pass
 
     def LoadProc(self,xmlFile):
         """
