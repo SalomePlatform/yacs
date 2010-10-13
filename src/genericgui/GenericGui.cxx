@@ -1378,6 +1378,18 @@ void GenericGui::onImportSchema()
         }
       createContext(proc, fn, "", true);
     }
+  
+  //rnv: To fix the TC5.1.5: Bad schema representation
+  //rnv: Arrange nodes after import of the schema
+  YACS::HMI::SubjectProc* subproc = QtGuiContext::getQtCurrent()->getSubjectProc();
+  if(subproc) {
+    SceneItem *item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[subproc];
+    if(item) {
+      SceneComposedNodeItem *scene = dynamic_cast<SceneComposedNodeItem*>(item);
+      if(scene)
+	scene->arrangeNodes(true);
+    }
+  }
 }
 
 void GenericGui::onImportSupervSchema()
