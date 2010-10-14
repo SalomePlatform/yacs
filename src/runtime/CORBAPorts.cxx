@@ -49,8 +49,15 @@ void releaseObj(CORBA::Any& data)
   CORBA::Object_var obj;
   if(data >>= CORBA::Any::to_object(obj))
     {
-      if(obj->_non_existent())return;
-      SALOME::GenericObj_var gobj=SALOME::GenericObj::_narrow(obj);
+      SALOME::GenericObj_var gobj;
+      try
+        {
+          gobj=SALOME::GenericObj::_narrow(obj);
+        }
+      catch(const CORBA::SystemException& )
+        {
+          return;
+        }
       if(!CORBA::is_nil(gobj))
         {
           DEBTRACE("It's a SALOME::GenericObj");
@@ -68,8 +75,15 @@ void registerObj(CORBA::Any& data)
   CORBA::Object_var obj;
   if(data >>= CORBA::Any::to_object(obj))
     {
-      if(obj->_non_existent())return;
-      SALOME::GenericObj_var gobj=SALOME::GenericObj::_narrow(obj);
+      SALOME::GenericObj_var gobj;
+      try
+        {
+          gobj=SALOME::GenericObj::_narrow(obj);
+        }
+      catch(const CORBA::SystemException& )
+        {
+          return;
+        }
       if(!CORBA::is_nil(gobj))
         {
           DEBTRACE("It's a SALOME::GenericObj");
