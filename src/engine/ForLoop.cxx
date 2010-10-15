@@ -51,6 +51,17 @@ ForLoop::ForLoop(const ForLoop& other, ComposedNode *father, bool editionOnly):L
                                                                                _nbOfTimesPort(other._nbOfTimesPort,this),
                                                                                _indexPort(other._indexPort,this)
 {
+  //Copy Data linking
+  std::vector< std::pair<OutPort *, InPort *> > linksToReproduce=other.getSetOfInternalLinks();
+  std::vector< std::pair<OutPort *, InPort *> >::iterator iter=linksToReproduce.begin();
+  for(;iter!=linksToReproduce.end();++iter)
+    {
+      OutPort* pout = (*iter).first;
+      //ignore datastream links
+      if(!dynamic_cast<OutputPort *>(pout))continue;
+      InPort* pin = (*iter).second;
+      edAddLink(getOutPort(other.getPortName(pout)),getInPort(other.getPortName(pin)));
+    }
 }
 
 Node *ForLoop::simpleClone(ComposedNode *father, bool editionOnly) const

@@ -38,6 +38,17 @@ WhileLoop::WhileLoop(const std::string& name):Loop(name),_conditionPort(NAME_OF_
 WhileLoop::WhileLoop(const WhileLoop& other, ComposedNode *father, bool editionOnly):Loop(other,father,editionOnly),
                                                                                      _conditionPort(other._conditionPort,this)
 {
+  //Copy Data linking
+  std::vector< std::pair<OutPort *, InPort *> > linksToReproduce=other.getSetOfInternalLinks();
+  std::vector< std::pair<OutPort *, InPort *> >::iterator iter=linksToReproduce.begin();
+  for(;iter!=linksToReproduce.end();++iter)
+    {
+      OutPort* pout = (*iter).first;
+      //ignore datastream links
+      if(!dynamic_cast<OutputPort *>(pout))continue;
+      InPort* pin = (*iter).second;
+      edAddLink(getOutPort(other.getPortName(pout)),getInPort(other.getPortName(pin)));
+    }
 }
 
 void WhileLoop::init(bool start)

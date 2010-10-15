@@ -80,7 +80,6 @@ void ConditionInputPort::edNotifyReferencedBy(OutPort *fromPort)
       if(_outOfScopeBackLink)
         throw Exception("ConditionInputPort::edNotifyReferenced : already linked from outside");
       _outOfScopeBackLink=fromPort;
-      return ;
     }
   InputPort::edNotifyReferencedBy(fromPort);
 }
