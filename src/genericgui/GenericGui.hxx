@@ -328,6 +328,7 @@ namespace YACS
       void displayPortLinks(bool isShown);
       void displayALink(bool isShown);
       void emphasizePortLink(YACS::HMI::SubjectDataPort* sub, bool emphasize);
+      void arrangeNodes();
     };
 
   }
