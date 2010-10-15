@@ -49,7 +49,7 @@ Its description is in the following form::
 
   m=Module(<modulename>,components=<components list>,prefix=<prefix>)
 
-The statement for a module named "mymodule" with a component C1 (see below for a description of components) that 
+The statement for a module named "mymodule" with a component c1 (see below for a description of components) that 
 will be installed in the "Install" directory will be::
 
   m=Module("mymodule",components=[c1],prefix="Install")
@@ -272,9 +272,9 @@ The following example will be used to specify these final concepts::
                      services=[
                                Service("s1",
                                        inport=[("a","double"),("b","long"),
-				               ("c","string")],
+                                               ("c","string")],
                                        outport=[("d","double"),("e","long"),
-				                ("f","string")],
+                                                ("f","string")],
                                        instream=[("a","CALCIUM_double","T"),
                                                  ("b","CALCIUM_double","I")],
                                        outstream=[("ba","CALCIUM_double","T"),
@@ -409,7 +409,7 @@ ports, one output dataflow port, 7 input datastream ports and one output datastr
                       services=[
                                 Service("s1",
                                         inport=[("a","double"),("b","long"),
-					        ("c","string")],
+                                                ("c","string")],
                                         outport=[("d","double")],
                                         instream=[("aa","CALCIUM_double","T"),
                                                   ("ab","CALCIUM_double","I"),
@@ -612,10 +612,10 @@ This gives something like the following for a module with a single Fortran compo
                   services=[
                             Service("s1",
                                     inport=[("a","double"),
-				            ("b","long"),
-					    ("c","string")],
+                                            ("b","long"),
+                                            ("c","string")],
                                     outport=[("d","double"),("e","long"),
-				             ("f","string")],
+                                             ("f","string")],
                                     instream=[("a","CALCIUM_double","T"),
                                               ("b","CALCIUM_double","I")],
                                     outstream=[("ba","CALCIUM_double","T"),
@@ -1138,6 +1138,209 @@ written as follows::
 
 The corresponding xml coupling file and Aster command file may be viewed in the distribution (Examples/ast2 directory).  
 The complementary implantation elements are located in the fcompo directory (cfort component) and in the myaster directory (caster component).
+
+Miscellaneous
+-----------------------------------------------------------------
+YACSGEN is mainly targeted to the integration of Python, C++ or Fortran calculation codes.
+Nevertheless, if you want to generate a complete module with GUI, documentation and persistence,
+there are some minimal options to do that.
+
+Add a GUI
+++++++++++++++++++++++++++++++++++++++++
+It is possible to add a C++ or a Python GUI to the module with the *gui* parameter of the module.
+This parameter must be a list of file names. These files can be source files (\*.cxx, \*.hxx or \*.h for C++, \*.py for python),
+image files (\*.png, ...) and qt designer files (\*.ui). You can't mix python and C++ source files.
+In C++, include files with .h extension are processed with the moc qt tool.
+
+Here is an excerpt from pygui1 example that shows how to add a python GUI to a module::
+
+  modul=Module("pycompos",components=[c1],prefix="./install",
+                          gui=["pycomposGUI.py","demo.ui","*.png"],
+              )
+
+The GUI is implemented in the pycomposGUI.py (that must be named <module name>GUI.py) python module. It uses a qt designer
+file demo.ui that is dynamically loaded and several images in PNG files.
+
+Here is an excerpt from cppgui1 example that shows how to add a C++ GUI to a module::
+
+  modul=Module("cppcompos",components=[c1],prefix="./install",
+                           gui=["cppcomposGUI.cxx","cppcomposGUI.h","demo.ui","*.png"],
+              )
+
+The C++ GUI is very similar to the python GUI except that the cppcomposGUI.h file is processed by the moc and the demo.ui
+is processed by the uic qt tool.
+
+By default, a Makefile.am and a SalomeApp.xml files are generated but you can put your own Makefile.am or SalomeApp.xml
+in the list to override this default.
+
+Add an online documentation
+++++++++++++++++++++++++++++++++++++++++
+It is possible to add an online documentation that is made with the sphinx tool (http://sphinx.pocoo.org). You need a well installed
+sphinx tool (1.0.x or 0.6.x).
+To add a documentation use the *doc* parameter of the module. It must be a list of file names. These files can be text files
+(name with extension .rst) in the reStructured format (see http://docutils.sourceforge.net/) and image files (\*.png, ...).
+The main file must be named index.rst.
+
+By default, a sphinx configuration file conf.py and a Makefile.am are generated but you can put your own Makefile.am or conf.py
+in the list to override this default.
+
+Here is an excerpt from pygui1 example that shows how to add a documentation to a module::
+
+  modul=Module("pycompos",components=[c1],prefix="./install",
+                          doc=["*.rst","*.png"],
+              )
+
+.. warning::
+
+   The online documentation will only appear in the SALOME GUI, if your module has a minimal GUI but not if it has no GUI.
+
+Add extra methods to your components
+++++++++++++++++++++++++++++++++++++++++
+If you have a C++ or Python class or some methods that you want to add to your components, it is possible to do that by
+using the *compodefs* and *inheritedclass* parameters of the component (:class:`module_generator.CPPComponent` or
+:class:`module_generator.PYComponent`).
+
+The *inheritedclass* parameter gives the name of the class that will be included in the parent classes of the component and
+the *compodefs* parameter is a fragment of code that will be inserted in the definition section of the component. It can be used
+to add definitions such as include or even a complete class.
+
+Here is an excerpt from pygui1 example that shows how to add a method named createObject to the component pycompos::
+
+  compodefs=r"""
+  class A:
+    def createObject( self, study, name ):
+      "Create object.  "
+      builder = study.NewBuilder()
+      father = study.FindComponent( "pycompos" )
+      if father is None:
+        father = builder.NewComponent( "pycompos" )
+      attr = builder.FindOrCreateAttribute( father, "AttributeName" )
+      attr.SetValue( "pycompos" )
+      object  = builder.NewObject( father )
+      attr    = builder.FindOrCreateAttribute( object, "AttributeName" )
+      attr.SetValue( name )
+  """
+
+  c1=PYComponent("pycompos",services=[
+                 Service("s1",inport=[("a","double"),("b","double")],
+                              outport=[("c","double"),("d","double")],
+                        ),
+                                     ],
+                 compodefs=compodefs,
+                 inheritedclass="A",
+                )
+
+.. note::
+
+   If you have special characters in your code fragments such as backslash, think about using python raw strings (r"...")
+
+For a C++ component, the method is exactly the same. There is only one case that can be handled in Python with this method and not in C++.
+It's when you want to redefine one of the component methods (DumpPython, for example). In this case, adding a class in the inheritance tree
+does not override the default implementation. So, for this special case, there is another parameter (*addmethods*) that is a code
+fragment that will be included in the component class to effectively redefine the method.
+
+Here is an excerpt from cppgui1 example that shows how to redefine the DumpPython method in a C++ component::
+
+  compomethods=r"""
+  Engines::TMPFile* DumpPython(CORBA::Object_ptr theStudy, CORBA::Boolean isPublished,
+                               CORBA::Boolean& isValidScript)
+  {
+    SALOMEDS::Study_var aStudy = SALOMEDS::Study::_narrow(theStudy);
+    if(CORBA::is_nil(aStudy))
+      return new Engines::TMPFile(0);
+    SALOMEDS::SObject_var aSO = aStudy->FindComponent("cppcompos");
+    if(CORBA::is_nil(aSO))
+       return new Engines::TMPFile(0);
+    std::string Script = "import cppcompos_ORB\n";
+    Script += "import salome\n";
+    Script += "compo = salome.lcc.FindOrLoadComponent('FactoryServer','cppcompos')\n";
+    Script += "def RebuildData(theStudy):\n";
+    Script += "  compo.SetCurrentStudy(theStudy)\n";
+    const char* aScript=Script.c_str();
+    char* aBuffer = new char[strlen(aScript)+1];
+    strcpy(aBuffer, aScript);
+    CORBA::Octet* anOctetBuf =  (CORBA::Octet*)aBuffer;
+    int aBufferSize = strlen(aBuffer)+1;
+    Engines::TMPFile_var aStreamFile = new Engines::TMPFile(aBufferSize, aBufferSize, anOctetBuf, 1);
+    isValidScript = true;
+    return aStreamFile._retn();
+  }
+  """
+
+  c1=CPPComponent("cppcompos",services=[ Service("s1",
+                                                 inport=[("a","double"),("b","double")],
+                                                 outport=[("c","double")],
+                                                ),
+                                       ],
+                  addedmethods=compomethods,
+                 )
+
+
+Add extra idl corba interfaces to your components
+++++++++++++++++++++++++++++++++++++++++++++++++++++++
+If you want to add pure CORBA methods (not SALOME services) to your components or even complete IDL interface (SALOMEDS::Driver, for
+example), you can do that by using the *idls*, *interfacedefs* and *inheritedinterface* parameters of the component.
+
+The *idls* parameter must be a list of CORBA idl file names. The *inheritedinterface* parameter gives the name of the CORBA
+interface that will be included in the parent interfaces of the component interface. The *interfacedefs* parameter is a fragment
+of code that will be inserted in the idl file of the module. It can be used to add definitions such as include or even a complete interface.
+
+Here is an excerpt from pygui1 example that shows how to add the SALOMEDS::Driver interface (with its default
+implementation from SALOME KERNEL) and an extra method (createObject) to a python component::
+
+  idldefs="""
+  #include "myinterface.idl"
+  """
+
+  compodefs=r"""
+  import SALOME_DriverPy
+
+  class A(SALOME_DriverPy.SALOME_DriverPy_i):
+    def __init__(self):
+      SALOME_DriverPy.SALOME_DriverPy_i.__init__(self,"pycompos")
+      return
+
+    def createObject( self, study, name ):
+      "Create object.  "
+      builder = study.NewBuilder()
+      father = study.FindComponent( "pycompos" )
+      if father is None:
+        father = builder.NewComponent( "pycompos" )
+        attr = builder.FindOrCreateAttribute( father, "AttributeName" )
+        attr.SetValue( "pycompos" )
+
+      object  = builder.NewObject( father )
+      attr    = builder.FindOrCreateAttribute( object, "AttributeName" )
+      attr.SetValue( name )
+  """
+
+  c1=PYComponent("pycompos",services=[ Service("s1",
+                                               inport=[("a","double"),("b","double")],
+                                               outport=[("c","double"),("d","double")],
+                                              ),
+                                     ],
+              idls=["*.idl"],
+              interfacedefs=idldefs,
+              inheritedinterface="Idl_A",
+              compodefs=compodefs,
+              inheritedclass="A",
+         )
+
+The idl file names can contain shell-style wildcards that are accepted by the python glob module. Here, there is only
+one file (myinterface.idl) that contains the definition of interface Idl_A::
+
+  #include "SALOMEDS.idl"
+  #include "SALOME_Exception.idl"
+
+  interface Idl_A : SALOMEDS::Driver
+  {
+    void createObject(in SALOMEDS::Study theStudy, in string name) raises (SALOME::SALOME_Exception);
+  };
+
+In this simple case, it is also possible to include directly the content of the file with the *interfacedefs* parameter.
+
+For a C++ component, the method is exactly the same, except that there is no default implementation of the Driver interface
+so you have to implement it.
 
 Reference guide 
 -----------------------------------------------------------------
