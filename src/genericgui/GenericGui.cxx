@@ -1346,6 +1346,11 @@ void GenericGui::onImportSchema()
 
   if ( !fn.isEmpty() )
     {
+      // add ".xml" suffix
+      QFileInfo fi(fn);
+      if (!fi.exists() && fi.suffix() != "xml")
+	fn += ".xml";
+
       DEBTRACE("file loaded : " <<fn.toStdString());
       YACS::ENGINE::Proc *proc = 0;
 
@@ -1400,6 +1405,11 @@ void GenericGui::onImportSupervSchema()
     }
 
   if (fn.isEmpty()) return;
+
+  // add ".xml" suffix
+  QFileInfo fi(fn);
+  if (!fi.exists() && fi.suffix() != "xml")
+    fn += ".xml";
 
   DEBTRACE("file loaded : " <<fn.toStdString());
   QString tmpFileName;
@@ -1711,6 +1721,11 @@ void GenericGui::onLoadAndRunSchema()
                                              tr( "XML-Files (*.xml);;All Files (*)" ));
   if ( !fn.isEmpty() )
     {
+      // add ".xml" suffix
+      QFileInfo fi(fn);
+      if (!fi.exists() && fi.suffix() != "xml")
+	fn += ".xml";
+
       DEBTRACE("file loaded : " <<fn.toStdString());
       YACS::ENGINE::Proc *proc =0;
       
