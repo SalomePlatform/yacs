@@ -1377,9 +1377,6 @@ void GenericGui::onImportSchema()
           DEBTRACE(logger->getStr());
         }
       createContext(proc, fn, "", true);
-      //rnv: To fix the TC5.1.5: Bad schema representation
-      //rnv: Arrange nodes after import of the schema
-      arrangeNodes();
     }
 }
 
@@ -1494,9 +1491,6 @@ void GenericGui::onImportSupervSchema()
       DEBTRACE(logger->getStr());
     }
   createContext(proc, fn, "", true);
-  //rnv: To fix the TC5.1.5: Bad schema representation
-  //rnv: Arrange nodes after import of the schema
-  arrangeNodes();
 }
 
 //! bug confirmOverwrite : correction Qt 4.3.5
@@ -1740,11 +1734,7 @@ void GenericGui::onLoadAndRunSchema()
           DEBTRACE(logger->getStr());
         }
       createContext(proc, fn, "", true);
-      //rnv: To fix the TC5.1.5: Bad schema representation
-      //rnv: Arrange nodes after import of the schema
-      arrangeNodes();
       onRunLoadedSchema();
-      arrangeNodes();
     }
 }
 
@@ -2565,16 +2555,4 @@ void GenericGui::emphasizePortLink(YACS::HMI::SubjectDataPort* sub, bool emphasi
       sin->update(EMPHASIZE, emphasize, sub);
       sout->update(EMPHASIZE, emphasize, sub);
     }
-}
-
-void GenericGui::arrangeNodes() {
-  YACS::HMI::SubjectProc* subproc = QtGuiContext::getQtCurrent()->getSubjectProc();
-  if(subproc) {
-    SceneItem *item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[subproc];
-    if(item) {
-      SceneComposedNodeItem *scene = dynamic_cast<SceneComposedNodeItem*>(item);
-      if(scene)
-	scene->arrangeNodes(true);
-    }
-  }
 }
