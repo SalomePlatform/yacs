@@ -1349,7 +1349,7 @@ void GenericGui::onImportSchema()
       // add ".xml" suffix
       QFileInfo fi(fn);
       if (!fi.exists() && fi.suffix() != "xml")
-	fn += ".xml";
+        fn += ".xml";
 
       DEBTRACE("file loaded : " <<fn.toStdString());
       YACS::ENGINE::Proc *proc = 0;
@@ -1724,7 +1724,7 @@ void GenericGui::onLoadAndRunSchema()
       // add ".xml" suffix
       QFileInfo fi(fn);
       if (!fi.exists() && fi.suffix() != "xml")
-	fn += ".xml";
+        fn += ".xml";
 
       DEBTRACE("file loaded : " <<fn.toStdString());
       YACS::ENGINE::Proc *proc =0;
@@ -1772,17 +1772,14 @@ void GenericGui::onBatch() {
 
   proc = _loader->load(fb.toLatin1());
   if (!proc) {
-    QMessageBox msgBox(QMessageBox::Critical,
-		       "Import Batch Schema, native YACS XML format",
-		       "The batch_graph.xml has not the native YACS XML format or is not readable." );
+    QMessageBox msgBox(QMessageBox::Critical, "Import Batch Schema, native YACS XML format",
+                       "The batch_graph.xml has not the native YACS XML format or is not readable." );
     msgBox.exec();
   } else {
     YACS::ENGINE::Logger* logger= proc->getLogger("parser");
     if(!logger->isEmpty()) {
       DEBTRACE(logger->getStr());
     };
-//     QString fn = QtGuiContext::getQtCurrent()->getFileName();
-//     proc->nodeMap["Submit"]->getInputPort("graphfic")->edInit(fn.toLatin1().data());
     createContext(proc, fb, "", true);
   };
 }

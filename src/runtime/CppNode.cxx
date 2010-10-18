@@ -102,14 +102,14 @@ void CppNode::execute()
         }
       
       if (_component) 
-	{
-	  CppComponent * _componentC = dynamic_cast<CppComponent *>(_component);
-	  if (!_componentC)
-	    throw YACS::Exception("CppNode::execute : bad type of component");
-	  _componentC->run(_method.c_str(), nIn, nOut, In, Out);
+        {
+          CppComponent * _componentC = dynamic_cast<CppComponent *>(_component);
+          if (!_componentC)
+            throw YACS::Exception("CppNode::execute : bad type of component");
+          _componentC->run(_method.c_str(), nIn, nOut, In, Out);
         }
       else if (_run)
-	_run(nIn, nOut, In, Out);
+        _run(nIn, nOut, In, Out);
       
       //output parameters
       std::list<OutputPort *>::iterator iter2;

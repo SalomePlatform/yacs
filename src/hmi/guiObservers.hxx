@@ -85,11 +85,11 @@ namespace YACS
         PASTE,
         ORDER,
         EDIT,
-	UPDATE,
-	UPDATEPROGRESS,
+        UPDATE,
+        UPDATEPROGRESS,
         SYNCHRO,
-	UP,
-	DOWN,
+        UP,
+        DOWN,
         RENAME,
         NEWROOT,
         ENDLOAD,
@@ -343,10 +343,10 @@ namespace YACS
       SubjectComposedNode(YACS::ENGINE::ComposedNode *composedNode, Subject *parent);
       virtual ~SubjectComposedNode();
       virtual SubjectNode* addNode(YACS::ENGINE::Catalog *catalog,
-				   std::string compo,
-				   std::string type,
-				   std::string name,
-           bool newCompoInst);
+                                   std::string compo,
+                                   std::string type,
+                                   std::string name,
+                                   bool newCompoInst);
       virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const  { return 0; }
       virtual void loadChildren();
       virtual void loadLinks();
@@ -387,10 +387,10 @@ namespace YACS
       SubjectBloc(YACS::ENGINE::Bloc *bloc, Subject *parent);
       virtual ~SubjectBloc();
       virtual SubjectNode* addNode(YACS::ENGINE::Catalog *catalog,
-				   std::string compo,
-				   std::string type,
-				   std::string name,
-           bool newCompoInst);
+                                   std::string compo,
+                                   std::string type,
+                                   std::string name,
+                                   bool newCompoInst);
       virtual void removeNode(SubjectNode* child);
       virtual void completeChildrenSubjectList(SubjectNode *son);
       virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const;
@@ -513,10 +513,10 @@ namespace YACS
       SubjectForLoop(YACS::ENGINE::ForLoop *forLoop, Subject *parent);
       virtual ~SubjectForLoop();
       virtual SubjectNode* addNode(YACS::ENGINE::Catalog *catalog,
-				   std::string compo,
-				   std::string type,
-				   std::string name,
-           bool newCompoInst);
+                                   std::string compo,
+                                   std::string type,
+                                   std::string name,
+                                   bool newCompoInst);
       virtual void recursiveUpdate(GuiEvent event, int type, Subject* son);
       virtual void completeChildrenSubjectList(SubjectNode *son);
       virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const { return _body; }
@@ -538,10 +538,10 @@ namespace YACS
       SubjectWhileLoop(YACS::ENGINE::WhileLoop *whileLoop, Subject *parent);
       virtual ~SubjectWhileLoop();
       virtual SubjectNode* addNode(YACS::ENGINE::Catalog *catalog,
-				   std::string compo,
-				   std::string type,
-				   std::string name,
-           bool newCompoInst);
+                                   std::string compo,
+                                   std::string type,
+                                   std::string name,
+                                   bool newCompoInst);
       virtual void recursiveUpdate(GuiEvent event, int type, Subject* son);
       virtual void completeChildrenSubjectList(SubjectNode *son);
       virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const { return _body; }
@@ -563,12 +563,12 @@ namespace YACS
       SubjectSwitch(YACS::ENGINE::Switch *aSwitch, Subject *parent);
       virtual ~SubjectSwitch();
       virtual SubjectNode* addNode(YACS::ENGINE::Catalog *catalog,
-				   std::string compo,
-				   std::string type,
-				   std::string name,
-           bool newCompoInst,
-				   int swCase,
-				   bool replace = false);
+                                   std::string compo,
+                                   std::string type,
+                                   std::string name,
+                                   bool newCompoInst,
+                                   int swCase,
+                                   bool replace = false);
       virtual void recursiveUpdate(GuiEvent event, int type, Subject* son);
       virtual void removeNode(SubjectNode* son);
       std::map<int, SubjectNode*> getBodyMap();

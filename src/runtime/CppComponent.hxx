@@ -45,7 +45,7 @@ namespace YACS
 
         CppComponent(const std::string & name);
         CppComponent(void * obj, RunFunction r, TerminateFunction t, 
-		               const std::string & name) 
+                     const std::string & name) 
              : __obj(obj), __run(r), __terminate(t), ComponentInstance(name) {}
         CppComponent(const CppComponent& other);
         virtual ~CppComponent();

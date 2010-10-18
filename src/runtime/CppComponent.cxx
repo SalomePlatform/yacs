@@ -57,16 +57,16 @@ static std::ostream & operator<<(std::ostream & f, const Any & A)
             f << "(type Bool) " << A.getBoolValue();
             break;
          case Objref :
-	    f << "(type Objref)";
+            f << "(type Objref)";
             break;
          case Sequence :
-	    f << "(type Sequence) ";
-	    {
+            f << "(type Sequence) ";
+            {
               int i;
-	      const SequenceAny * sA = dynamic_cast<const SequenceAny *>(&A);
-	      for (i=0; i<sA->size(); i++)
-		      f << " " << *((*sA)[i]);
-	    }
+              const SequenceAny * sA = dynamic_cast<const SequenceAny *>(&A);
+              for (i=0; i<sA->size(); i++)
+                f << " " << *((*sA)[i]);
+            }
             break;
        }
     return f;
@@ -82,7 +82,7 @@ CppComponent::CppComponent(const std::string &name) : ComponentInstance(name)
 {
   _container = getRuntime()->createContainer(CppNode::KIND);
   if (!_container->isAlreadyStarted(this))
-	  _container->start(this);
+    _container->start(this);
   
   CppContainer * _containerC = dynamic_cast<CppContainer *> (_container);
   _containerC->createInternalInstance(name, __obj, __run, __terminate);
@@ -105,11 +105,11 @@ CppComponent::~CppComponent()
     DEBTRACE("CppComponent::~CppComponent()");
     if (__terminate) __terminate(&__obj);
     if (_container)
-    	((CppContainer *) _container)->unregisterComponentInstance(this);
+      ((CppContainer *) _container)->unregisterComponentInstance(this);
 }
 
 void CppComponent::run (const char * service, int nbIn, int nbOut,
-				                 Any ** argIn, Any ** argOut) throw (YACS::Exception)
+                        Any ** argIn, Any ** argOut) throw (YACS::Exception)
 {
   int i;
   returnInfo return_code;
@@ -161,11 +161,11 @@ bool CppComponent::isLoaded()
 void CppComponent::load()
 {
    if (!_container) {
-	   _container = getRuntime()->createContainer(CppNode::KIND);
+     _container = getRuntime()->createContainer(CppNode::KIND);
    }
    
    if(_container) {
-		
+
       CppContainer * containerC= dynamic_cast< CppContainer *> (_container);
       
       containerC->lock();//To be sure
@@ -196,7 +196,7 @@ void CppComponent::load()
       containerC->unLock();
       return;
     }
-	
+
 }
 
 ServiceNode* CppComponent::createNode(const std::string& name)

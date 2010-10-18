@@ -69,12 +69,12 @@ namespace YACS
       
       enum 
       {
-	      IsPyExt = 1,
+        IsPyExt = 1,
         UsePython = 2,
-	      UseCorba = 4,
-	      UseXml = 8,
-	      UseCpp = 16,
-	      UseSalome = 32
+        UseCorba = 4,
+        UseXml = 8,
+        UseCpp = 16,
+        UseSalome = 32
       } FLAGS;
 
       static void setRuntime(long flags = UsePython+UseCorba+UseXml+UseCpp+UseSalome); // singleton creation

@@ -63,33 +63,33 @@ namespace YACS
       xmlNodePtr cur;
       Any *ob=NULL;
       {
-	doc = xmlParseMemory(data, strlen(data));
-	if (doc == NULL )
-	  {
-	    stringstream msg;
-	    msg << "Problem in conversion: XML Document not parsed successfully ";
-	    msg << " (" << __FILE__ << ":" << __LINE__ << ")";
-	    throw ConversionException(msg.str());
-	  }
-	cur = xmlDocGetRootElement(doc);
-	if (cur == NULL)
-	  {
-	    xmlFreeDoc(doc);
-	    stringstream msg;
-	    msg << "Problem in conversion: empty XML Document";
-	    msg << " (" << __FILE__ << ":" << __LINE__ << ")";
-	    throw ConversionException(msg.str());
-	  }
-	while (cur != NULL)
-	  {
-	    if ((!xmlStrcmp(cur->name, (const xmlChar *)"value")))
-	      {
-		ob=convertXmlCpp(edGetType(),doc,cur);
-		break;
-	      }
-	    cur = cur->next;
-	  }
-	xmlFreeDoc(doc);
+        doc = xmlParseMemory(data, strlen(data));
+        if (doc == NULL )
+          {
+            stringstream msg;
+            msg << "Problem in conversion: XML Document not parsed successfully ";
+            msg << " (" << __FILE__ << ":" << __LINE__ << ")";
+            throw ConversionException(msg.str());
+          }
+        cur = xmlDocGetRootElement(doc);
+        if (cur == NULL)
+          {
+            xmlFreeDoc(doc);
+            stringstream msg;
+            msg << "Problem in conversion: empty XML Document";
+            msg << " (" << __FILE__ << ":" << __LINE__ << ")";
+            throw ConversionException(msg.str());
+          }
+        while (cur != NULL)
+          {
+            if ((!xmlStrcmp(cur->name, (const xmlChar *)"value")))
+              {
+                ob=convertXmlCpp(edGetType(),doc,cur);
+                break;
+              }
+            cur = cur->next;
+          }
+        xmlFreeDoc(doc);
         if(ob==NULL)
           {
             stringstream msg;
