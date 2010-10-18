@@ -1391,7 +1391,14 @@ void RuntimeTest::convertPorts()
               }
 
             DEBTRACE("Put a " << type[jtype] << " double (" << d0 << ") in " << s);
-            pwrap->put(v);
+            if (jtype == 2) 
+              {
+                PyGILState_STATE gstate = PyGILState_Ensure();
+                pwrap->put(v);
+                PyGILState_Release(gstate);
+              }
+            else
+              pwrap->put(v);
             cerr << endl;
 
             switch (itype)
