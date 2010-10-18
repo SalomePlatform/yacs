@@ -56,10 +56,8 @@ ForLoop::ForLoop(const ForLoop& other, ComposedNode *father, bool editionOnly):L
   std::vector< std::pair<OutPort *, InPort *> >::iterator iter=linksToReproduce.begin();
   for(;iter!=linksToReproduce.end();++iter)
     {
-      OutPort* pout = (*iter).first;
-      //ignore datastream links
-      if(!dynamic_cast<OutputPort *>(pout))continue;
-      InPort* pin = (*iter).second;
+      OutPort* pout = iter->first;
+      InPort* pin = iter->second;
       edAddLink(getOutPort(other.getPortName(pout)),getInPort(other.getPortName(pin)));
     }
 }
