@@ -76,6 +76,7 @@ namespace YACS
       std::list<std::string> getMachineList();
       void createForEachLoop(std::string type="double");
       virtual void loadSchema(const std::string& filename,bool edit=true);
+      virtual void onHelpContextModule( const QString&, const QString&, const QString& = QString() );
 
       QAction *_newSchemaAct;
       QAction *_importSchemaAct;

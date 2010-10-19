@@ -29,6 +29,7 @@
 #include "SalomeWrap_DataModel.hxx"
 
 #include <SalomeApp_Module.h>
+#include <SalomeApp_Application.h>
 #include "SUIT_Session.h"
 #include "SUIT_ResourceMgr.h"
 
@@ -295,3 +296,11 @@ QStringList SuitWrapper::getQuickDirList()
     dirList = resMgr->stringValue( "FileDlg", "QuickDirList" ).split( ';', QString::SkipEmptyParts );
   return dirList;
 }
+
+void SuitWrapper::onHelpContextModule( const QString& theComponentName, const QString& theFileName, const QString& theContext )
+{
+  LightApp_Application* app = (LightApp_Application*)( SUIT_Session::session()->activeApplication() );
+  if(app)
+    app->onHelpContextModule( theComponentName, theFileName, theContext );
+}
+

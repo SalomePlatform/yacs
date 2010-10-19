@@ -2568,3 +2568,8 @@ void GenericGui::emphasizePortLink(YACS::HMI::SubjectDataPort* sub, bool emphasi
       sout->update(EMPHASIZE, emphasize, sub);
     }
 }
+
+void GenericGui::onHelpContextModule( const QString& theComponentName, const QString& theFileName, const QString& theContext)
+{
+  _wrapper->onHelpContextModule(theComponentName,theFileName,theContext);
+}

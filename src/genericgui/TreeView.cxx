@@ -98,6 +98,13 @@ void TreeView::resizeColumns()
 
 bool TreeView::event(QEvent *event)
 {
+  if (event->type() == QEvent::WhatsThisClicked)
+    {
+      QWhatsThisClickedEvent* clicked = static_cast<QWhatsThisClickedEvent*>(event);
+      QtGuiContext::getQtCurrent()->getGMain()->onHelpContextModule("YACS",clicked->href());
+      return true; // what's this remains open if true is returned
+    }
+
   if (event->type() == QEvent::ToolTip)
     {
       QHelpEvent *helpEvent = static_cast<QHelpEvent *>(event);
