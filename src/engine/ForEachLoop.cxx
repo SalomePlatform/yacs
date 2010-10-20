@@ -810,3 +810,13 @@ void ForEachLoop::writeDot(std::ostream &os) const
   os << "\" label=\"" << "Loop:" ;
   os << getName() <<"\"];\n";
 }
+
+//! Reset the state of the node and its children depending on the parameter level
+void ForEachLoop::resetState(int level)
+{
+  if(level==0)return;
+  DynParaLoop::resetState(level);
+  _execCurrentId=0;
+  //Note: cleanDynGraph is not a virtual method (must be called from ForEachLoop object) 
+  cleanDynGraph();
+}
