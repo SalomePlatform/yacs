@@ -60,15 +60,15 @@ static char args_doc[] = "graph.xml";
 #else
 static struct argp_option options[] =
   {
-    {"display",         'd', "level", 0,                   "Display dot files: 0=never to 3=very often"},
+    {"display",         'd', "level", 0,                   "Display dot files: 0=never to 3=very often (default 0)"},
     {"verbose",         'v', 0,       0,                   "Produce verbose output" },
     {"stop-on-error",   's', 0,       0,                   "Stop on first error" },
     {"dump-on-error",   'e', "file",  OPTION_ARG_OPTIONAL, "Stop on first error and dump state"},
     {"dump-final",      'f', "file",  OPTION_ARG_OPTIONAL, "dump final state"},
     {"load-state",      'l', "file",  0,                   "Load State from a previous partial execution"},
     {"save-xml-schema", 'x', "file",  OPTION_ARG_OPTIONAL, "dump xml schema"},
-    {"shutdown",        't', "level", 1,                   "Shutdown the schema: 0=no shutdown to 3=full shutdown"},
-    {"reset",           'r', "level", 0,                   "Reset the schema before execution: 0=nothing, 1=reset error nodes to ready state"},
+    {"shutdown",        't', "level", 0,                   "Shutdown the schema: 0=no shutdown to 3=full shutdown (default 1)"},
+    {"reset",           'r', "level", 0,                   "Reset the schema before execution: 0=nothing, 1=reset error nodes to ready state (default 0)"},
     { 0 }
   };
 #endif
@@ -236,14 +236,16 @@ int main (int argc, char* argv[])
 #ifdef WNT
 #else
   argp_parse (&argp, argc, argv, 0, 0, &myArgs);
-    cerr << "graph = " << myArgs.args[0] 
-         << " options: display=" << myArgs.display 
-         << " verbose="<<myArgs.verbose
-         << " stop-on-error=" << myArgs.stop;
+  std::cerr << "graph = " << myArgs.args[0];
+  std::cerr << " options: display=" << myArgs.display;
+  std::cerr << " verbose="<<myArgs.verbose;
+  std::cerr << " stop-on-error=" << myArgs.stop;
+  std::cerr << " shutdown=" << myArgs.shutdown;
+  std::cerr << " reset=" << myArgs.reset;
   if (myArgs.stop)
-    cerr << " dumpErrorFile=" << myArgs.dumpErrorFile << endl;
+    std::cerr << " dumpErrorFile=" << myArgs.dumpErrorFile << std::endl;
   else
-    cerr << endl;
+    std::cerr << std::endl;
 #endif
 
 #ifndef WNT
