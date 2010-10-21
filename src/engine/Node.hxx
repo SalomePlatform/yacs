@@ -51,7 +51,7 @@ namespace YACS
     class OutputDataStreamPort;
     class Visitor;
 
-    class NodeStateNameMap : public std::map<YACS::StatesForNode, std::string>
+    class YACSLIBENGINE_EXPORT NodeStateNameMap : public std::map<YACS::StatesForNode, std::string>
     {
     public:
       NodeStateNameMap();
