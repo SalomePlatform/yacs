@@ -20,19 +20,24 @@ Steps 2 and 3 can be done from inside a SALOME session. YACS can be executed and
 
 The YACS supervisor in console (driver) mode accepts a few options to set parameters for its execution::
 
-   Usage: driver [OPTION...] graph.xml
-   driver -- a SALOME YACS graph executor
+  Usage: driver [OPTION...] graph.xml
+  driver -- a SALOME YACS graph executor
 
-     -d, --display=level        Display dot files: 0=never to 3=very often
-     -e, --dump-on-error[=file] Stop on first error and dump state
-     -f, --dump-final[=file]    dump final state
-     -l, --load-state=file      Load State from a previous partial execution
-     -s, --stop-on-error        Stop on first error
-     -v, --verbose              Produce verbose output
-     -x, --save-xml-schema[=file]   dump xml schema
-     -?, --help                 Give this help list
-         --usage                Give a short usage message
-     -V, --version              Print program version
+    -d, --display=level        Display dot files: 0=never to 3=very often
+                               (default 0)
+    -e, --dump-on-error[=file] Stop on first error and dump state
+    -f, --dump-final[=file]    dump final state
+    -l, --load-state=file      Load State from a previous partial execution
+    -r, --reset=level          Reset the schema before execution: 0=nothing,
+                               1=reset error nodes to ready state (default 0)
+    -s, --stop-on-error        Stop on first error
+    -t, --shutdown=level       Shutdown the schema: 0=no shutdown to 3=full
+                               shutdown (default 1)
+    -v, --verbose              Produce verbose output
+    -x, --save-xml-schema[=file]   dump xml schema
+    -?, --help                 Give this help list
+        --usage                Give a short usage message
+    -V, --version              Print program version
 
 The following gives a few typical uses of the driver.
 
@@ -62,3 +67,14 @@ Execution loading the initial state of the scheme
 
   driver --load-state=mystate.xml schema.xml
 
+Execution without shutdown of servers
+---------------------------------------------
+::
+
+  driver --shutdown=0 schema.xml
+
+Restart a schema with reset of nodes in error
+----------------------------------------------------------------------
+::
+
+  driver --reset=1 --load-state=mystate.xml schema.xml
