@@ -66,7 +66,6 @@ public slots:
   void onModifyNodes(const QString &text);
   void onModifyProcs(const QString &text);
   void onModifyCompos(const QString &text);
-  void onModifyMode(const QString &text);
   void onModifyProcPar(const QString &text);
   void onModifyResourceName(const QString &text);
   void onModifyHostName(const QString &text);

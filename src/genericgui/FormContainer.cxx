@@ -75,9 +75,6 @@ FormContainer::FormContainer(QWidget *parent)
   connect(cb_type, SIGNAL(activated(const QString&)),
           this, SLOT(onModifyType(const QString&)));
 
-  connect(cb_mode, SIGNAL(activated(const QString&)),
-          this, SLOT(onModifyMode(const QString&)));
-
   connect(cb_parallel, SIGNAL(activated(const QString&)),
           this, SLOT(onModifyParLib(const QString&)));
 
@@ -142,29 +139,13 @@ void FormContainer::FillPanel(YACS::ENGINE::Container *container)
   cb_type->clear();
   cb_type->addItem("mono");
   cb_type->addItem("multi");
-  int i=0;
-  if(_properties.count("type") && _properties["type"]=="multi")i=1;
-  cb_type->setCurrentIndex(i);
-
-  vector<string> modes;
-  modes.push_back("start");
-  modes.push_back("get");
-  modes.push_back("getorstart");
-  cb_mode->clear();
-  for(int i=0; i< modes.size(); i++)
-    cb_mode->addItem(modes[i].c_str());
-  if(_properties.count("container_mode"))
-    {
-      int i=0;
-      for(i=0; i< modes.size(); i++)
-        if(modes[i] == _properties["container_mode"])
-          {
-            cb_mode->setCurrentIndex(i);
-            break;
-          }
-    }
+  if(_properties.count("type") && _properties["type"]=="multi")
+  {
+    cb_type->setCurrentIndex(1);
+    cb_mode->setText("multi");
+  }
   else
-    cb_mode->setCurrentIndex(0);
+    cb_mode->setText("mono");
 
   vector<string> policies;
   policies.push_back("cycl");
@@ -385,6 +366,10 @@ void FormContainer::onModifyType(const QString &text)
   if (!_container) return;
   std::string prop=_container->getProperty("type");
   _properties["type"] = text.toStdString();
+  if (_properties["type"] == "mono")
+    cb_mode->setText("mono");
+  else
+    cb_mode->setText("multi");
   if (prop != text.toStdString())
     onModified();
 }
@@ -519,17 +504,6 @@ void FormContainer::onModifyCompos(const QString &text)
   map<string,string> properties = _container->getProperties();
   _properties["nb_component_nodes"] = text.toStdString();
   if (properties["nb_component_nodes"] != text.toStdString())
-    {
-      onModified();
-    }
-}
-
-void FormContainer::onModifyMode(const QString &text)
-{
-  DEBTRACE("onModifyMode "  << text.toStdString());
-  map<string,string> properties = _container->getProperties();
-  _properties["container_mode"] = text.toStdString();
-  if (properties["container_mode"] != text.toStdString())
     {
       onModified();
     }
