@@ -70,6 +70,7 @@ SalomeContainer::SalomeContainer():_trueCont(Engines::Container::_nil()),_type("
   _params.resource_params.nb_node = 0;
   _params.resource_params.nb_proc_per_node = 0;
   _params.resource_params.policy = "";
+  // By default, componentList and resList length is 0
 }
 
 SalomeContainer::SalomeContainer(const SalomeContainer& other):Container(other),_trueCont(Engines::Container::_nil()),_type(other._type),
@@ -90,6 +91,19 @@ SalomeContainer::SalomeContainer(const SalomeContainer& other):Container(other),
   _params.resource_params.cpu_clock = other._params.resource_params.cpu_clock;
   _params.resource_params.nb_node = other._params.resource_params.nb_node;
   _params.resource_params.nb_proc_per_node = other._params.resource_params.nb_proc_per_node;
+  _params.resource_params.policy = CORBA::string_dup(other._params.resource_params.policy);
+
+  _params.resource_params.componentList.length(other._params.resource_params.componentList.length());
+  for(CORBA::ULong i=0; i < other._params.resource_params.componentList.length(); i++)
+  {
+    _params.resource_params.componentList[i]=CORBA::string_dup(other._params.resource_params.componentList[i]);
+  }
+
+  _params.resource_params.resList.length(other._params.resource_params.resList.length());
+  for(CORBA::ULong i=0; i < other._params.resource_params.resList.length(); i++)
+  {
+    _params.resource_params.resList[i]=CORBA::string_dup(other._params.resource_params.resList[i]);
+  }
 }
 
 SalomeContainer::~SalomeContainer()
@@ -142,12 +156,11 @@ void SalomeContainer::setProperty(const std::string& name, const std::string& va
   }
   else if (name == "workingdir")
     _params.workingdir = CORBA::string_dup(value.c_str());
-  else if (name == "nb_component_nodes") // TODO - TO Change.... in two nb_proc
+  else if (name == "nb_parallel_procs")
   {
     std::istringstream iss(value);
     if (!(iss >> _params.nb_proc))
-      throw Exception("salomecontainer::setproperty : params.nb_component_nodes value not correct : " + value);
-    _params.resource_params.nb_proc=_params.nb_proc;
+      throw Exception("salomecontainer::setproperty : params.nb_proc value not correct : " + value);
   }
   else if (name == "isMPI")
   {
@@ -168,17 +181,23 @@ void SalomeContainer::setProperty(const std::string& name, const std::string& va
     _params.resource_params.hostname = CORBA::string_dup(value.c_str());
   else if (name == "OS")
     _params.resource_params.OS = CORBA::string_dup(value.c_str());
+  else if (name == "nb_resource_procs")
+  {
+    std::istringstream iss(value);
+    if (!(iss >> _params.resource_params.nb_proc))
+      throw Exception("salomecontainer::setproperty : params.resource_params.nb_proc value not correct : " + value);
+  }
   else if (name == "mem_mb")
   {
     std::istringstream iss(value);
     if (!(iss >> _params.resource_params.mem_mb))
-      throw Exception("salomecontainer::setproperty : params.mem_mb value not correct : " + value);
+      throw Exception("salomecontainer::setproperty : params.resource_params.mem_mb value not correct : " + value);
   }
   else if (name == "cpu_clock")
   {
     std::istringstream iss(value);
     if (!(iss >> _params.resource_params.cpu_clock))
-      throw Exception("salomecontainer::setproperty : params.cpu_clock value not correct : " + value);
+      throw Exception("salomecontainer::setproperty : params.resource_params.cpu_clock value not correct : " + value);
   }
   else if (name == "nb_node")
   {
@@ -192,6 +211,69 @@ void SalomeContainer::setProperty(const std::string& name, const std::string& va
     if (!(iss >> _params.resource_params.nb_proc_per_node))
       throw Exception("salomecontainer::setproperty : params.nb_proc_per_node value not correct : " + value);
   }
+  else if (name == "policy")
+    _params.resource_params.policy = CORBA::string_dup(value.c_str());
+  else if (name == "component_list")
+  {
+    std::string clean_value(value);
+
+    // Step 1: remove blanks
+    while(clean_value.find(" ") != std::string::npos)
+      clean_value = clean_value.erase(clean_value.find(" "), 1);
+
+    // Step 2: get values
+    while(!clean_value.empty())
+    {
+      std::string result("");
+      std::string::size_type loc = clean_value.find(",", 0);
+      if (loc != std::string::npos)
+      {
+        result = clean_value.substr(0, loc);
+        clean_value = clean_value.erase(0, loc+1);
+      }
+      else
+      {
+        result = clean_value;
+        clean_value.erase();
+      }
+      if (result != "," && result != "")
+      {
+        addToComponentList(result);
+      }
+    }
+
+  }
+  else if (name == "resource_list")
+  {
+    std::string clean_value(value);
+
+    // Step 1: remove blanks
+    while(clean_value.find(" ") != std::string::npos)
+      clean_value = clean_value.erase(clean_value.find(" "), 1);
+
+    // Step 2: get values
+    while(!clean_value.empty())
+    {
+      std::string result("");
+      std::string::size_type loc = clean_value.find(",", 0);
+      if (loc != std::string::npos)
+      {
+        result = clean_value.substr(0, loc);
+        clean_value = clean_value.erase(0, loc+1);
+      }
+      else
+      {
+        result = clean_value;
+        clean_value.erase();
+      }
+      if (result != "," && result != "")
+      {
+        addToResourceList(result);
+      }
+    }
+
+  }
+  // End
   Container::setProperty(name, value);
 }
 
@@ -372,7 +454,11 @@ void SalomeContainer::start(const ComponentInstance *inst) throw(YACS::Exception
   std::string str(_params.container_name);
   DEBTRACE("SalomeContainer::start " << str <<";"<<_params.resource_params.hostname <<";"<<_type);
 
-  Engines::ContainerParameters myparams=_params;
+  // Finalize parameters with components found in the container
+  std::vector<std::string>::iterator iter;
+  for(CORBA::ULong i=0; i < _componentNames.size();i++)
+    addToComponentList(_componentNames[i]);
+  Engines::ContainerParameters myparams = _params;
 
   bool namedContainer=false;
   if(str != "")
@@ -398,14 +484,6 @@ void SalomeContainer::start(const ComponentInstance *inst) throw(YACS::Exception
     myparams.container_name=CORBA::string_dup(stream.str().c_str());
     _shutdownLevel=1;
   }
-
-  myparams.resource_params.componentList.length(_componentNames.size());
-  std::vector<std::string>::iterator iter;
-  for(CORBA::ULong i=0; i < _componentNames.size();i++)
-  {
-    myparams.resource_params.componentList[i]=CORBA::string_dup(_componentNames[i].c_str());
-  }
-  myparams.resource_params.policy=CORBA::string_dup(getProperty("policy").c_str());
 
   _trueCont=Engines::Container::_nil();
   if(namedContainer && _shutdownLevel==999)
@@ -533,4 +611,38 @@ void SalomeContainer::shutdown(int level)
         }
       _trueCont=Engines::Container::_nil();
     }
+}
+
+void
+SalomeContainer::addToComponentList(const std::string & name)
+{
+  // Search if name is already in the list
+  for (CORBA::ULong i = 0; i < _params.resource_params.componentList.length(); i++)
+  {
+    std::string component_name = _params.resource_params.componentList[i].in();
+    if (component_name == name)
+      return;
+  }
+
+  // Add name to list
+  CORBA::ULong lgth = _params.resource_params.componentList.length();
+  _params.resource_params.componentList.length(lgth + 1);
+  _params.resource_params.componentList[lgth] = CORBA::string_dup(name.c_str());
+}
+
+void
+SalomeContainer::addToResourceList(const std::string & name)
+{
+  // Search if name is already in the list
+  for (CORBA::ULong i = 0; i < _params.resource_params.resList.length(); i++)
+  {
+    std::string component_name = _params.resource_params.resList[i].in();
+    if (component_name == name)
+      return;
+  }
+
+  // Add name to list
+  CORBA::ULong lgth = _params.resource_params.resList.length();
+  _params.resource_params.resList.length(lgth + 1);
+  _params.resource_params.resList[lgth] = CORBA::string_dup(name.c_str());
 }

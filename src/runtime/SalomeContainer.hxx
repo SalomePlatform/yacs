@@ -55,6 +55,9 @@ namespace YACS
       virtual void addComponentName(std::string name);
       virtual CORBA::Object_ptr loadComponent(ComponentInstance *inst);
       virtual void shutdown(int level);
+      // Helper methods
+      void addToComponentList(const std::string & name);
+      void addToResourceList(const std::string & name);
     protected:
 #ifndef SWIG
       virtual ~SalomeContainer();
