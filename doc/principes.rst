@@ -200,7 +200,11 @@ When this type of node is an internal node in a loop, the execution context is r
 
 This type of node is executed in the YACS process. It can not be executed in remote processes.
 
-To create this type of node from the GUI see :ref:`inline_script`.
+To create this type of node:
+
+- from the GUI, see :ref:`inline_script`
+- in a XML file, see :ref:`xml_script_node`
+- from python interface, see :ref:`pyscript`
 
 .. _functionnode:
 
@@ -220,7 +224,11 @@ that variables can be reused during iterations.
 
 Unlike script inline node, this type of node can be executed in remote processes (but only YACS containers :ref:`containers`).
 
-To create this type of node from the GUI see :ref:`inline_function`.
+To create this type of node:
+
+- from the GUI, see :ref:`inline_function`
+- in a XML file, see :ref:`xml_function_node`
+- from python interface, see :ref:`pyfunc`
 
 .. _servicenode:
 
@@ -247,7 +255,11 @@ on the default container of the SALOME platform:  FactoryServer container on the
 
 The properties of a SALOME service node are converted into environment variables when the service is executed.
 
-To create this type of node from the GUI see :ref:`salome_service`.
+To create this type of node:
+
+- from the GUI, see :ref:`salome_service`
+- in a XML file, see :ref:`xml_service_node`
+- from python interface, see :ref:`pyservice`
 
 SalomePython node
 ''''''''''''''''''''''''''''''
@@ -268,11 +280,23 @@ DataIn node
 ++++++++++++++++++
 A DataIn node has output data ports only that are used to define input data for the calculation scheme. These data have a name (the port name), a type (the port type) and an initial value.
 
+To create this type of node:
+
+- from the GUI, see :ref:`datain_node`
+- in a XML file, see :ref:`xml_datain`
+- from python interface, see :ref:`py_datain`
+
 DataOut node
 ++++++++++++++++++
 A DataOut node only has input data ports that are used to store output results from the calculation scheme.  These results have a name (the port name) and a type (the port type).  If the result is a file, a name can be given to the file into which the result file will be copied.
 
 All values of node results can be saved in a file at the end of the calculation.
+
+To create this type of node:
+
+- from the GUI, see :ref:`dataout_node`
+- in a XML file, see :ref:`xml_dataout`
+- from python interface, see :ref:`py_dataout`
 
 Study nodes
 ''''''''''''''''''''''''''''''
@@ -284,6 +308,12 @@ A StudyIn node has output data ports only. It is used to define data in the calc
 
 A port corresponds to data stored in the associated study.  The data has a name (the port name), a type (the port type), and a reference that gives the entry into the study.  This reference is either a SALOME Entry (for example 0:1:1:2) or a path in the SALOME study tree (for example, /Geometry/box_1).
 
+To create this type of node:
+
+- from the GUI, see :ref:`studyin_node`
+- in a XML file, see :ref:`xml_studyin`
+- from python interface, see :ref:`py_studyin`
+
 StudyOut node
 ++++++++++++++++++
 A StudyOut node only has input data ports.  It is used to store results in a SALOME study.  The associated study is given by its SALOME StudyID.
@@ -291,6 +321,12 @@ A StudyOut node only has input data ports.  It is used to store results in a SAL
 A port corresponds to a result to be stored in an associated study.  The result has a name (the port name), a type (the port type), and a reference that gives the entry into the study.  This reference is either a SALOME Entry (for example 0:1:1:2) or a path in the SALOME study tree (for example, /Geometry/box_1).
 
 The associated study may be saved in a file at the end of the calculation.
+
+To create this type of node:
+
+- from the GUI, see :ref:`studyout_node`
+- in a XML file, see :ref:`xml_studyout`
+- from python interface, see :ref:`py_studyout`
 
 Connections
 -----------------
@@ -414,6 +450,12 @@ It is provided with a single input control port and a single output control port
 Consequently, two blocks connected through a dataflow data link will be executed in sequence, all nodes in the 
 first block will be executed before starting the second block.
 
+To create this type of node:
+
+- from the GUI, see :ref:`block_node`
+- in a XML file, see :ref:`xml_block`
+- from python interface, see :ref:`py_block`
+
 The ForLoop node
 '''''''''''''''''''''
 A loop is used to make iterations on an internal node.  
@@ -423,10 +465,22 @@ A ForLoop loop executes the internal node a fixed number of times.  This number 
 named “nsteps” or by a parameter of the loop of the same name. The current step number is accessible through
 an output port of the loop named "index".
 
+To create this type of node:
+
+- from the GUI, see :ref:`forloop_node`
+- in a XML file, see :ref:`xml_forloop`
+- from python interface, see :ref:`py_forloop`
+
 The While node
 ''''''''''''''''''''
 A While loop executes the internal node as long as a condition is true.  
 The value of the condition is given by a data port of the loop named “condition”.
+
+To create this type of node:
+
+- from the GUI, see :ref:`whileloop_node`
+- in a XML file, see :ref:`xml_whileloop`
+- from python interface, see :ref:`py_whileloop`
 
 The ForEach node
 ''''''''''''''''''''''
@@ -441,6 +495,12 @@ The internal node can access the current iteration of the data collection throug
 Typed data collections can be constructed at the output from the loop.  All that is necessary is to connect an output data 
 port of the internal node to an input data port of a node outside the loop. The loop automatically constructs the data collection.
 
+To create this type of node:
+
+- from the GUI, see :ref:`foreachloop_node`
+- in a XML file, see :ref:`xml_foreachloop`
+- from python interface, see :ref:`py_foreachloop`
+
 The Switch node
 ''''''''''''''''''''''
 The Switch node performs the conditional execution (among N) of a node (composite, elementary).  
@@ -451,6 +511,12 @@ The switch condition is given by an input data port of the Switch node named “
 If the nodes are terminal (nothing is executed from their outputs), they do not need to have compatible outputs.  
 Output ports used at the node output must be compatible with each other (i.e. they must be derived from a common generic 
 type that can be used by another input node).
+
+To create this type of node:
+
+- from the GUI, see :ref:`switch_node`
+- in a XML file, see :ref:`xml_switch`
+- from python interface, see :ref:`py_switch`
 
 The OptimizerLoop node
 '''''''''''''''''''''''''
@@ -484,6 +550,12 @@ The node has five ports:
   branches). Most of a time, the optimization process is sequential so the number of branches will be 1, but in some cases 
   it is possible to parallelize the process so the number  of branches will be greater than 1.
 - **algoResults**, an output port that gives the results of the optimization algorithm
+
+To create this type of node:
+
+- from the GUI, see :ref:`optimizerloop_node`
+- in a XML file, see :ref:`xml_optimizerloop`
+- from python interface, see :ref:`py_optimizerloop`
 
 
 

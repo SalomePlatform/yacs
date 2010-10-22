@@ -186,6 +186,8 @@ reference to a new created service node under it.
 
 Now, if you want to modify the settings of this node, use the associated panel :ref:`pp_for_salome_node`.
 
+.. _block_node:
+
 Block
 ''''''''''''''''''
 
@@ -217,6 +219,8 @@ as a result:
 .. centered::
   **Example of Block node with inline function node as a child node**
 
+.. _forloop_node:
+
 For Loop
 ''''''''''''''''''
 
@@ -247,6 +251,7 @@ as a result:
 .. centered::
   **For Loop node with inline script node as a body**
 
+.. _foreachloop_node:
 
 ForEachLoop
 ''''''''''''''''''
@@ -281,6 +286,8 @@ as a result:
 .. centered::
   **ForEachLoop node with SALOME service node as a body**
 
+.. _whileloop_node:
+
 While loop
 ''''''''''''''''''
 
@@ -311,6 +318,7 @@ Tree View or in the 2D Viewer.
 .. centered::
   **While Loop node with Block node as a body**
 
+.. _switch_node:
 
 Switch
 ''''''''''''''''''
@@ -343,6 +351,8 @@ Tree View or in the 2D Viewer.
 The number of Switch node cases can be changed with help of functionality provided by the property page of Switch node (for the sample 
 of the property page see :ref:`Property page for Switch node <pp_for_switch_node>` section).
 
+.. _optimizerloop_node:
+
 OptimizerLoop
 ''''''''''''''''''
 
@@ -367,9 +377,10 @@ Tree View or in the 2D Viewer.
 The parameters of the Optimizer Loop can then be modified with help of the functionality provided by the property page of Optimizer Loop node
 (see :ref:`Property page for Optimizer Loop <pp_for_optimizer_node>` section).
 
+.. _datain_node:
+
 Input data node
 ''''''''''''''''''
-
 The node object can be created with help of **Create Node --> Input Data Node** command from the Tree View context menu
 or from the 2D Viewer context menu.
 
@@ -382,6 +393,8 @@ or from the 2D Viewer context menu.
 
 .. centered::
   **Input data node with sample ports**
+
+.. _dataout_node:
 
 Output data node
 ''''''''''''''''''
@@ -399,6 +412,8 @@ or from the 2D Viewer context menu.
 .. centered::
   **Output data node with sample ports**
 
+.. _studyin_node:
+
 Input study node
 ''''''''''''''''''
 
@@ -415,6 +430,8 @@ or from the 2D Viewer context menu.
 .. centered::
   **Input study node with sample ports**
 
+.. _studyout_node:
+
 Output study node
 ''''''''''''''''''
 
@@ -423,8 +440,6 @@ or from the 2D Viewer context menu.
 
 .. image:: images/functionality_list_57.jpg
   :align: center
-
-
 
 .. image:: images/functionality_list_56.jpg
   :align: center
@@ -439,7 +454,6 @@ NNN is the smallest integer that produces a unique node name not yet in use.
 
 The user can delete the created node by choosing **Delete** command from node context popup menu in the Tree View or in the 2D Viewer 
 (see :ref:`delete_object` section).
-
 
 .. image:: images/functionality_list_58.jpg
   :align: center

@@ -255,6 +255,14 @@ The following is a complete example for the definition of a function node that i
   n2.edAddInputPort("p1",td)
   n2.edAddOutputPort("p1",td)
 
+If you want to execute your function node on a remote container, you have to set the execution mode of the node to **remote**
+and to assign a container (see :ref:`py_container` to define a container) to the node as in the following example::
+
+  n2.setExecutionMode("remote")
+  n2.setContainer(cont1)
+
+.. _pyservice:
+
 SALOME service node
 ++++++++++++++++++++++++++
 There are two definition forms for a SALOME service node.
@@ -403,6 +411,8 @@ will appear as follows::
 Definition of composite nodes
 '''''''''''''''''''''''''''''''''
 
+.. _py_block:
+
 Block
 +++++++
 A block is defined using the runtime createBloc method transferring the Block name to it as an argument.  The node is then 
@@ -426,6 +436,8 @@ Repeating a part of the example above, we will get::
   n2.edAddOutputPort("p1",ti)
   b.edAddCFLink(n1,n2)
   b.edAddDFLink(n1.getOutputPort("p1"),n2.getInputPort("p1"))
+
+.. _py_forloop:
 
 ForLoop
 ++++++++
@@ -456,6 +468,8 @@ The following is a small example definition of a node inside a loop::
   n1.edAddInputPort("p1",ti)
   n1.edAddOutputPort("p1",ti)
 
+.. _py_whileloop:
+
 WhileLoop
 ++++++++++
 WhileLoop node is defined in practically the same way as a ForLoop node.  The only differences apply to creation and assignment 
@@ -475,6 +489,8 @@ The condition is initialised to True and is then changed to False by the interna
   p.edAddLink(n.getOutputPort("p1"),cport)
 
 There is a special method for obtaining the loop “condition” port:  edGetConditionPort.
+
+.. _py_foreachloop:
 
 ForEach loop
 ++++++++++++++++
@@ -502,6 +518,8 @@ Special ports for the ForEach can be obtained using the following methods instea
 - edGetNbOfBranchesPort for the “nbBranches” port
 - edGetSamplePort for the “evalSamples” port
 - edGetSeqOfSamplesPort for the “SmplsCollection” port
+
+.. _py_switch:
 
 Switch
 ++++++++
@@ -547,6 +565,8 @@ and a script node to initialise an exchanged variable::
 
 The edGetConditionPort method can be used instead of getInputPort, to obtain the special “select” port for the Switch.
 
+.. _py_optimizerloop:
+
 OptimizerLoop
 +++++++++++++++++++
 
@@ -564,6 +584,8 @@ is defined by the class async in the python module myalgo2.py::
   ol.getInputPort("algoInit").edInitPy("coucou")
   p.edAddLink(ol.getOutputPort("evalSamples"),n.getInputPort("p1"))
   p.edAddLink(n.getOutputPort("p1"),ol.getInputPort("evalResults"))
+
+.. _py_container:
 
 Definition of containers
 ''''''''''''''''''''''''''''
@@ -668,6 +690,8 @@ The following is an example similar to that given in :ref:`schemaxml`::
   n2.edAddInputPort("p1",ts)
   n2.getComponent().setContainer(c1)
 
+.. _py_datain:
+
 DataIn node
 +++++++++++++++
 A DataIn node is defined using the runtime createInDataNode method.  It uses two arguments, the first of which must be “” and 
@@ -690,6 +714,8 @@ The following is an example of the DataIn node that defines 2 double type data (
 A value can be directly assigned to a data with a Python object, using the setDataPy method.  Example for a sequence::
 
   pout.setDataPy([1.,5.])
+
+.. _py_dataout:
 
 DataOut node
 +++++++++++++++++
@@ -714,6 +740,8 @@ The result file will be copied into the local file myfile::
   pin=n.edAddInputPort('f',tf)
   pin.setData("monfich")
 
+.. _py_studyin:
+
 StudyIn node
 ++++++++++++++
 A StudyIn node is defined using the runtime createInDataNode method.  It uses two arguments, the first of which must be “study” 
@@ -734,6 +762,8 @@ study tree structure::
   pout.setData("0:1:1:1")
   pout=n.edAddOutputPort('b',tgeom)
   pout.setData("/Geometry/Sphere_1")
+
+.. _py_studyout:
 
 StudyOut node
 ++++++++++++++
