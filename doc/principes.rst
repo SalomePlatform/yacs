@@ -198,6 +198,10 @@ name present in the execution context. These variables must necessarily be prese
 
 When this type of node is an internal node in a loop, the execution context is reinitialised for each iteration of the loop.
 
+This type of node is executed in the YACS process. It can not be executed in remote processes.
+
+To create this type of node from the GUI see :ref:`inline_script`.
+
 .. _functionnode:
 
 Python function inline node
@@ -213,6 +217,10 @@ for the output ports of the same name.
 
 When this type of node is an internal node in a loop, the execution context is kept for every iteration of the loop, so 
 that variables can be reused during iterations.
+
+Unlike script inline node, this type of node can be executed in remote processes (but only YACS containers :ref:`containers`).
+
+To create this type of node from the GUI see :ref:`inline_function`.
 
 .. _servicenode:
 
@@ -238,6 +246,8 @@ This is only possible with the first node definition form. If no placement infor
 on the default container of the SALOME platform:  FactoryServer container on the local machine.
 
 The properties of a SALOME service node are converted into environment variables when the service is executed.
+
+To create this type of node from the GUI see :ref:`salome_service`.
 
 SalomePython node
 ''''''''''''''''''''''''''''''

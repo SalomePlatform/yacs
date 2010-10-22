@@ -86,6 +86,8 @@ YACS module provides the user with a specific GUI command for creation of each t
 
 At the current moment in the frames of the YACS module the user can create nodes of the following types:
 
+.. _inline_function:
+
 Inline function
 ''''''''''''''''''
 
@@ -107,6 +109,10 @@ as a result:
 .. centered::
   **Example of inline function node with ports**
 
+Now, if you want to modify the settings of this node, use the associated panel :ref:`pp_for_inline_node`.
+
+.. _inline_script:
+
 Inline script
 ''''''''''''''''''
 
@@ -123,6 +129,10 @@ as a result:
 
 .. centered::
   **Example of inline script node with ports**
+
+Now, if you want to modify the settings of this node, use the associated panel :ref:`pp_for_inline_node`.
+
+.. _salome_service:
 
 SALOME service
 ''''''''''''''''''
@@ -174,6 +184,7 @@ reference to a new created service node under it.
 .. centered::
   **Tree View after SALOME service node creation**
 
+Now, if you want to modify the settings of this node, use the associated panel :ref:`pp_for_salome_node`.
 
 Block
 ''''''''''''''''''
@@ -590,6 +601,8 @@ Property page for node
 ~~~~~~~~~~~~~~~~~~~~~~
 The content of the property page for node depends on the type of the node. Here are property page configurations for the different types of nodes.
 
+.. _pp_for_inline_node:
+
 Property page for inline nodes
 '''''''''''''''''''''''''''''''''
 
@@ -620,6 +633,18 @@ The pages allow the user to:
 
 + enter or modify a source code of Python function or script in the built-in Python code editor (syntax highlighting, text selection, 
   cut/copy/paste mechanism).
+
++ generate a template of the python function with the **Template** button when all ports are defined and the function name is set.
+
++ edit the python code with an external editor (**External Editor** button, if set in :ref:`user preferences <set_user_preferences>`).
+
+An inline function node can be executed in a remote container by setting its execution mode to **Remote** and selecting a container 
+in the containers list.
+
+.. image:: images/functionality_list_65b.jpg
+  :align: center
+
+.. _pp_for_salome_node:
 
 Property page for SALOME service
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''

@@ -7,28 +7,19 @@ Activate YACS module
 --------------------
 To work with YACS module the user can activate it in two ways:
 
-
-
-
 #. by activating YACS item in :ref:`modules`,
-
 
 #. by click YACS toolbar button on :ref:`modules`.
 
+For the correct activation of YACS module it is necessary to install YACS GUI libraries and set YACS_ROOT_DIR environment variable 
+pointed to the directory with installed binaries.
 
-
-
-
-For the correct activation of YACS module it is necessary to install YACS GUI libraries and set YACS_ROOT_DIR environment variable pointed to the directory with installed binaries.
-
-If there is no any study opened/created, during the YACS module activation the user has possibility to choose between opening an existing study and creating a new one. When YACS module has been activated, YACS GUI :ref:`main_menu` and :ref:`toolbars` corresponding to the state when no calculation schema is being edited or run are shown:
-
-
+If there is no any study opened/created, during the YACS module activation the user has possibility to choose between opening 
+an existing study and creating a new one. When YACS module has been activated, YACS GUI :ref:`main_menu` and :ref:`toolbars` 
+corresponding to the state when no calculation schema is being edited or run are shown:
 
 .. image:: images/functionality_list_0.png
   :align: center
-
-
 
 In such a case there are only possibilities for the user to create or import (YACS or SUPERV XML) a schema.
 
@@ -37,15 +28,16 @@ In such a case there are only possibilities for the user to create or import (YA
 
 Import/Export a schema
 ----------------------
-To display either in :ref:`viewer` or in the :ref:`object_browser` and :ref:`tree_view` and edit a schema the user can import the schemas' XML file. The modified schema object can be saved into the specified XML file with help of :ref:`export_schema` YACS GUI command.
+To display either in :ref:`viewer` or in the :ref:`object_browser` and :ref:`tree_view` and edit a schema the user 
+can import the schemas' XML file. The modified schema object can be saved into the specified XML file with 
+help of :ref:`export_schema` YACS GUI command.
 
 .. _import_yacs_schema:
 
 Import YACS calculation schema
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The command **Import Schema --> YACS XML** is accessible from :ref:`file` or from the corresponding toolbar button on the :ref:`schema`. On this command call a standard open file dialog box appears and lets user to select desirable YACS XML file.
-
-
+The command **Import Schema --> YACS XML** is accessible from :ref:`file` or from the corresponding toolbar button 
+on the :ref:`schema`. On this command call a standard open file dialog box appears and lets user to select desirable YACS XML file.
 
 .. image:: images/functionality_list_1.png
   :align: center
@@ -53,22 +45,23 @@ The command **Import Schema --> YACS XML** is accessible from :ref:`file` or fro
 .. centered::
   **Import YACS XML schema dialog**
 
-
 Imported schema is shown as an entry in :ref:`object_browser`.
 
-If a selected YACS XML file has incorrect structure, a part of a schema that has been imported successfully (before an error occurred) will be represented in :ref:`object_browser` and :ref:`viewer` and the user will be able to work with it. YACS GUI shows an error message with error description in such a
-case.
+If a selected YACS XML file has incorrect structure, a part of a schema that has been imported successfully (before an error occurred) 
+will be represented in :ref:`object_browser` and :ref:`viewer` and the user will be able to work with it. YACS GUI shows an error 
+message with error description in such a case.
 
-Dimensions of drawing area occupied by a graph, positions and dimensions of node presentations, positions of internal link points and type of :ref:`change_2d_representation_schema` is retrieved from YACS XML file in order to correct 2D representation of the schema in the 2D Viewer.
+Dimensions of drawing area occupied by a graph, positions and dimensions of node presentations, positions of internal link points 
+and type of :ref:`change_2d_representation_schema` is retrieved from YACS XML file in order to correct 2D representation of the 
+schema in the 2D Viewer.
 
 .. _import_supervisor_graph:
 
 Import SALOME Supervisor graph
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-This operation is intended for importing an XML files containing description of calculation schema and having logical structure adopted by existing SALOME 4 Supervisor module. The command **Import Schema --> SUPERV XML** is available from :ref:`file`. On this command
+This operation is intended for importing an XML files containing description of calculation schema and having logical structure 
+adopted by old SALOME 4 Supervisor module. The command **Import Schema --> SUPERV XML** is available from :ref:`file`. On this command
 call a standard open file dialog box appears and lets user to select desirable SUPERV XML file.
-
-
 
 .. image:: images/functionality_list_2.png
   :align: center
@@ -79,7 +72,9 @@ call a standard open file dialog box appears and lets user to select desirable S
 
 Imported schema is shown as an entry in Object Browser.
 
-If a selected SUPERV XML file has incorrect structure, a part of a schema that has been imported successfully (before an error occurred) will be represented in Object Browser and 2D Viewer and the user will be able to work with it. YACS GUI shows an error message with error description in such a case.
+If a selected SUPERV XML file has incorrect structure, a part of a schema that has been imported successfully (before an error occurred) 
+will be represented in Object Browser and 2D Viewer and the user will be able to work with it. YACS GUI shows an error message with 
+error description in such a case.
 
 After importing of the SUPERV XML file has been completed a 2D representation of the schema (nodes and links) is displayed in the 2D Viewer.
 
@@ -87,10 +82,9 @@ After importing of the SUPERV XML file has been completed a 2D representation of
 
 Export a schema to a file
 ~~~~~~~~~~~~~~~~~~~~~~~~~
-If user wants to store modifications done in the existing schema or save a new created graph into the YACS XML file, it is needed to make the schema active and choose the **Export schema** command from :ref:`file` or the corresponding toolbar button on the :ref:`edition_toolbar`. As a result a standard save file dialog appears and lets
-user to input or select desirable YACS XML file name to export the active schema in it.
-
-
+If user wants to store modifications done in the existing schema or save a new created graph into the YACS XML file, it is needed to make 
+the schema active and choose the **Export schema** command from :ref:`file` or the corresponding toolbar button on the :ref:`edition_toolbar`. 
+As a result a standard save file dialog appears and lets user input or select desirable YACS XML file name to export the active schema in it.
 
 .. image:: images/functionality_list_3.png
   :align: center
@@ -98,16 +92,15 @@ user to input or select desirable YACS XML file name to export the active schema
 .. centered::
   **Export schema dialog**
 
-
-YACS module writes description of a schema and its child objects into an XML file. Additionally, schema 2D presentation data is saved in new created XML file.
-
+YACS module writes description of a schema and its child objects into an XML file. Additionally, schema 2D presentation data is saved 
+in new created XML file.
 
 Open/Save a study
 -----------------
-The user can start his work with the saved earlier study document. To open a saved study, the user has to activate common SALOME GUI operation with help of **Open** command from :ref:`file` or **Open document** toolbar button on the :ref:`standard`. SALOME unpacks YACS XML files from the study. YACS module reads them and re-
-creates the study structure. If XML files in a study have incorrect structure, YACS GUI says that the loaded study is incomplete by showing an error message.
-
-
+The user can start his work with the saved earlier study document. To open a saved study, the user has to activate common SALOME GUI 
+operation with help of **Open** command from :ref:`file` or **Open document** toolbar button on the :ref:`standard`. SALOME unpacks 
+YACS XML files from the study. YACS module reads them and recreates the study structure. If XML files in a study have incorrect 
+structure, YACS GUI says that the loaded study is incomplete by showing an error message.
 
 .. image:: images/functionality_list_4.png
   :align: center
@@ -115,10 +108,9 @@ creates the study structure. If XML files in a study have incorrect structure, Y
 .. centered::
   **Open a study dialog**
 
-
-If the user finished his work, he can save a study for the future by calling **Save** command from :ref:`file` or **Save document** toolbar button on the :ref:`standard`. YACS module stores all schemas from the current study to XML files, which are then packed into a single HDF5 study file by SALOME.
-
-
+If the user has finished his work, he can save a study by calling **Save** command from :ref:`file` or **Save document** toolbar button 
+on the :ref:`standard`. YACS module stores all schemas from the current study to XML files, which are then packed into a single HDF5 study 
+file by SALOME.
 
 .. image:: images/functionality_list_5.png
   :align: center
@@ -126,35 +118,24 @@ If the user finished his work, he can save a study for the future by calling **S
 .. centered::
   **Save a study dialog**
 
-
 .. _set_user_preferences:
 
 Set user preferences
 --------------------
 In the frames of the YACS module the user has a possibility to set his own preferences. The preferences are regrouped in four tabs:
 
++ General: Font for Python script, user catalog loaded by default, external python editor if needed, arrangement mode for widgets, various options 
+  for the display of links and the creation mode for service nodes.
++ Links colors
++ Nodes and ports colors
++ Node States Colors: in edition and execution
 
+These preferences can be set by the user with help of standard SALOME GUI operation of
+editing preferences: **Preferences ...** command from :ref:`file`.
 
-+ General: Font for Python script, user catalog loaded by default
-
-
-+ Links Colors
-
-
-+ Nodes Colors
-
-
-+ Node States Colors: in edition and in execution
-
-
-
-
-
-These preferences can be set by the user with help of standard SALOME 5 GUI operation of editing preferences: **Preferences ...** command from :ref:`file`.
-
-After the user have changed the preferences in the Preferences dialog box for YACS module, the system applies the new values of preferences to relevant objects either immediately, or only to new instance of the object are loaded and, at least, when the schema or the study is saved and reopened.
-
-
+After the user has changed the preferences in the Preferences dialog box for YACS module, the system applies the new values of 
+preferences to relevant objects either immediately, or only to new instance of objects and, at least, when 
+the schema or the study is saved and reopened.
 
 .. image:: images/functionality_list_6.png
   :align: center
@@ -162,17 +143,11 @@ After the user have changed the preferences in the Preferences dialog box for YA
 .. centered::
   **Preferences dialog for YACS module, General tab**
 
-
-
-
 .. image:: images/functionality_list_6a.png
   :align: center
 
 .. centered::
   **Preferences dialog for YACS module, Link Color tab**
-
-
-
 
 .. image:: images/functionality_list_6b.png
   :align: center
@@ -180,20 +155,16 @@ After the user have changed the preferences in the Preferences dialog box for YA
 .. centered::
   **Preferences dialog for YACS module, Nodes tab**
 
-
-
-
 .. image:: images/functionality_list_6c.png
   :align: center
 
 .. centered::
   **Preferences dialog for YACS module, Node States tab**
 
-
 Select an object
 ----------------
-Object Browser, Tree View and 2D Viewer provides user with the possibility to select an object. The user can select objects in 2D Viewer or Tree View. Synchronisation beetwen Tree View, 2D Viewer and Input Panel is automatic.
-
+Object Browser, Tree View and 2D Viewer provides user with the possibility to select an object. The user can select objects 
+in 2D Viewer or Tree View. Synchronisation beetwen Tree View, 2D Viewer and Input Panel is automatic.
 
 .. image:: images/functionality_list_7.png
   :align: center
@@ -201,22 +172,19 @@ Object Browser, Tree View and 2D Viewer provides user with the possibility to se
 .. centered::
   **Port selection**
 
-
-In 2D Viewer the user can select/hilight nodes, ports and links. In the Tree View the user can select containers definitions, component instances definitions, nodes, ports, data types and links.
+In 2D Viewer the user can select/highlight nodes, ports and links. In the Tree View the user can select containers definitions, component 
+instances definitions, nodes, ports, data types and links.
 
 Today, YACS module supports only single selection, i.e. the user clicks on a single object with the mouse.
 
-
-
-
-The 2D Viewer displays selected/hilighted objects in a distinctive way that allows the user to identify the selected/hilighted objects easily.
+The 2D Viewer displays selected/highlighted objects in a distinctive way that allows the user to identify the selected/highlighted objects easily.
 
 The system state after interactive selection depends on the type of selected object(s):
 
-
-
-
-+ **A single editable object is selected:** Input Panel is shown and contains property pages for the selected object and in some cases for its parent objects in a schema hierarchy. For instance, if an inline script node is selected either in 2D Viewer or in the Tree View, the property page for the selected node will be displayed in the Input Panel.
++ **A single editable object is selected:** Input Panel is shown and contains property pages for the selected object and in some 
+  cases for its parent objects in a schema hierarchy. For instance, if an inline script node is selected either in 2D Viewer or in 
+  the Tree View, the property page for the selected node will be displayed in the Input Panel.
+  If the user selects SALOME service node, property pages for node, its component and container will be shown in the Input Panel.
 
 .. image:: images/functionality_list_8.png
   :align: center
@@ -224,49 +192,37 @@ The system state after interactive selection depends on the type of selected obj
 .. centered::
   **Node selection**
 
-If the user selects SALOME service node, property pages for node, its component and container will be shown in the Input Panel.
-
-
 + **A single object that has no editable properties is selected:** Input Panel remains inchanged, with the previous selection.
-
-
-
-
 
 .. _activate_context_popup_menu:
 
 Activate context popup menu
 ---------------------------
-In the YACS module the user can perform a set of operations on the different types of objects shown in the Object Browser and Tree View of the schema with help of context popup menu. For this purpose, the user has to click the right mouse button in the Object Browser or in the Tree View of the schema to select the object and choose needed menu item from context popup menu, which contains commands
-applicable to the current selection. For empty selection, only commands applicable to the window (Object Browser, schema Tree View or 2D Viewer) in general are shown in context menu:
-
-
-
+In the YACS module the user can perform a set of operations on the different types of objects shown in the Object Browser and Tree 
+View of the schema with help of context popup menu. For this purpose, the user has to click the right mouse button in the Object Browser 
+or in the Tree View of the schema to select the object and choose needed menu item from context popup menu, which contains commands
+applicable to the current selection. For empty selection, only commands applicable to the window (Object Browser, schema Tree View 
+or 2D Viewer) in general are shown in context menu:
 
 + Object Browser: **Refresh** and **Find** operations are available.
 
-
 + Schema Tree View: not applicable, there is always an item selected.
-
 
 + 2D Viewer: nothing.
 
+When a single object is selected in the **Object Browser**, its context popup menu contains all operations applicable to objects of 
+the given type. Additionally, it contains **Expand all** command for expanding all collapsed items in the selected objects' sub-tree. 
+There are currently no specific operation for YACS items in Object Browser popup menus.
 
+By double click on a YACS item of the Object Browser (Schema in edition or execution), YACS switches to the corresponding context and 
+synchronizes all corresponding views (Tree View, 2D View, Input Panel). Switching context is also possible via 2D Views tabs.
 
-
-
-When a single object is selected in the **Object Browser**, its context popup menu contains all operations applicable to objects of the given type. Additionally, it contains **Expand all** command for expanding all collapsed items in the selected objects' sub-tree. There are currently no specific operation for YACS items in Object Browser popup menus.
-
-By double clic on a YACS item of the Object Browser (Schema in edition or execution), YACS switches to the corresponding context and synchronizes all corresponding views (Tree View, 2D View, Input Panel). Switching context is also possible via 2D Views tabs.
-
-
-
-When a single object is selected in the **Tree View** of a schema, its context popup menu contains all operations applicable to objects of the given type.
+When a single object is selected in the **Tree View** of a schema, its context popup menu contains all operations applicable to objects 
+of the given type.
 
 .. _Table_2:
 
 Specific operations available in the **edition mode** for each type of objects selected in the Tree View are given in the Table 2 below.
-
 
 .. |schema| image:: images/schema.png
 .. |container| image:: images/container.png
@@ -497,10 +453,12 @@ The popup menus available on the objects selected in the Tree View or 2D View of
 
 Set active schema or run of a schema
 ------------------------------------
-Active schema is a YACS schema from the current study that is used implicitly in all YACS GUI operations working with a schema. Typically, a study can contain several YACS schemas and several executions (run) for a schema. For some YACS GUI operations such as creation of a node, it is convenient to add a new object (node) to the currently active schema.
+Active schema is a YACS schema from the current study that is used implicitly in all YACS GUI operations working with a schema. 
+Typically, a study can contain several YACS schemas and several executions (run) for a schema. For some YACS GUI operations such as 
+creation of a node, it is convenient to add a new object (node) to the currently active schema.
 
-YACS GUI allows the user to set a schema/run as active by double click on the schema/run object in the Object Browser or by switching between 2D Viewers showing different schemas/runs.
+YACS GUI allows the user to set a schema/run as active by double click on the schema/run object in the Object Browser or by switching 
+between 2D Viewers showing different schemas/runs.
 
 The active schema is used in creation/execution operations.
-
 
