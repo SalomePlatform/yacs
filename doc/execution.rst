@@ -47,9 +47,9 @@ corresponding button on :ref:`execution_toolbar`. This same command resumes sche
 .. _pause_abort_reset:
 
 The user can pause execution of a schema with help of **Suspend execution** item from YACS main menu :ref:`yacs_menu` or corresponding button 
-on :ref:`execution_toolbar`. By analogy, **Abort execution** and **Reset execution** commands can be activated either from YACS
+on :ref:`execution_toolbar`. By analogy, **Abort execution** and **Restart execution** commands can be activated either from YACS
 main menu or Execution toolbar. **Abort execution** command kills execution of a schema, and
-**Reset execution** command resets nodes statuses and ports values to the initial ones as they were before the execution process.
+**Restart execution** command restart execution after having reset nodes terminated with error to initial state.
 
 In the frames of YACS GUI a preliminary step of checking schemas' validity before creating a schema run is performed. The user is 
 informed by the system about all problems detected by this operation.

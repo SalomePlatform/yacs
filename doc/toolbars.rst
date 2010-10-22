@@ -165,7 +165,7 @@ YACS toolbar in execution mode contains functions to import and export schemas, 
 + :ref:`Pause <pause_abort_reset>`
 
 
-+ :ref:`Reset <pause_abort_reset>`
++ :ref:`Restart <pause_abort_reset>`
 
 
 + :ref:`save_restore_execution_state`
@@ -180,7 +180,7 @@ YACS toolbar in execution mode contains functions to import and export schemas, 
 + Set/reset Execution mode step by step
 
 
-+ Set/reset Stop excution on the first error
++ Set/reset Stop execution on the first error
 
 
 + Straight/Orthogonal : toggle between straight lines or orthogonal links
