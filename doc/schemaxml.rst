@@ -778,6 +778,22 @@ Example with a SALOME service node:
 
 In the case of a SALOME service node, the property is transmitted to the component and by default is set as an environment variable.
 
+.. _xml_active_study:
+
+Active study
+--------------
+To execute a schema in the context of a SALOME study, you have to set the **DefaultStudyID** property of the schema.
+
+Example to execute the schema in the study with studyId 5:
+
+.. code-block:: xml
+
+  <proc name="myschema">
+     <property name="DefaultStudyID" value="5"/>
+     ...
+  </proc>
+
+
 Datastream connections
 ----------------------------
 Datastream connections are only possible for SALOME service nodes, as we have seen in :ref:`principes`.  Firstly, datastream ports 

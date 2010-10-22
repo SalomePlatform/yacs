@@ -714,6 +714,16 @@ that is not a genuine node.  If it is said that block “b” in the previous ex
 value of 1 and a default case, then the absolute name of node “n” in the case 1 will be “c.b.p1_n” and the absolute name of the node in 
 the default case will be “c.b.default_n”.
 
+Active study
+--------------
+A schema can be executed without using the SALOME study manager. But when a schema must be executed in the context
+of a SALOME study, it is possible to specify the studyId to use.
+
+The way to do that is to set the schema property **DefaultStudyID** to the study id.
+
+In the GUI, this is set automatically to the current active studyId.
+For execution in console mode, see :ref:`xml_active_study`
+
 .. _errorreport:
 
 Error report
