@@ -59,7 +59,6 @@ informed by the system about all problems detected by this operation.
 .. image:: images/functionality_list_79.jpg
   :align: center
 
-
 .. centered::
   **An example result of checking schemas' validity before create a schema run**
 
@@ -248,6 +247,20 @@ To continue the execution later from saved state the user can restore execution 
 help from the :ref:`execution_toolbar`.
 
 By default the **Save State** and **Load execution state** commands are applicable to the active schema.
+
+.. _shutdown:
+
+Schema shutdown
+--------------------
+In GUI, shutdown must be explicitly requested by the user by using the context menu of the schema (**Shutdown Proc** entry).
+
+.. image:: images/functionality_list_82c.jpg
+  :align: center
+
+The shutdown level can be changed in the schema property page with the shutdown level combobox.
+
+.. image:: images/functionality_list_64a.jpg
+  :align: center
 
 .. _create_new_edition:
 

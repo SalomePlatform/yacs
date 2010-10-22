@@ -830,6 +830,23 @@ However, simultaneous execution of a large number of nodes can saturate the syst
 The maximum number of simultaneous executions can be controlled by fixing the maximum number of threads used with the 
 YACS_MAX_THREADS environment variable. By default, this value is equal to 50.
 
+Schema shutdown
+-----------------
+When YACS executes a schema, it starts new containers or uses existing containers. When the execution is finished, YACS can shutdown (or stop)
+containers but the user can control how these containers are shutdown.
+
+There are several level of shutdown:
+
+- level 0: nothing is shutdown
+- level 1: shutdown all new containers not named by the user
+- level 2: same as level 1 plus all new containers named by the user
+- level 3: same as level 2 plus all existing containers used by the schema
+
+To shutdown a schema:
+
+- from GUI, see :ref:`shutdown`
+- from console, see :ref:`xml_shutdown`
+
 .. _archi:
 
 YACS general architecture

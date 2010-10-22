@@ -67,11 +67,17 @@ Execution loading the initial state of the scheme
 
   driver --load-state=mystate.xml schema.xml
 
-Execution without shutdown of servers
+.. _xml_shutdown:
+
+How to configure schema shutdown
 ---------------------------------------------
-::
+No shutdown::
 
   driver --shutdown=0 schema.xml
+
+Full shutdown::
+
+  driver --shutdown=3 schema.xml
 
 Restart a schema with reset of nodes in error
 ----------------------------------------------------------------------
