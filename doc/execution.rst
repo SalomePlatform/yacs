@@ -130,6 +130,12 @@ For SALOME nodes, the **Node Container Log** command shows the associated contai
 Lastly, the **YACS container log** command from the schema context menu shows the log of the YACS server where the user can find information
 to solve problems encountered during the execution.
 
+.. image:: images/functionality_list_82b.jpg
+  :align: center
+
+.. centered::
+  **YACS container log**
+
 .. _save_restore_execution_state:
 
 Save/Restore execution state
