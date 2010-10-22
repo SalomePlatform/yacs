@@ -133,7 +133,7 @@
       <item row="4" column="0" colspan="2">
        <widget class="QTabWidget" name="tw_advance">
         <property name="currentIndex">
-         <number>0</number>
+         <number>1</number>
         </property>
         <widget class="QWidget" name="tab">
          <attribute name="title">
@@ -462,7 +462,7 @@
              </sizepolicy>
             </property>
             <property name="text">
-             <string>Component list</string>
+             <string>Component list:</string>
             </property>
            </widget>
           </item>
@@ -482,7 +482,7 @@
              </sizepolicy>
             </property>
             <property name="text">
-             <string>Restricted resource list</string>
+             <string>Restricted resource list:</string>
             </property>
            </widget>
           </item>
