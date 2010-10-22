@@ -166,7 +166,7 @@ void FormContainer::FillPanel(YACS::ENGINE::Container *container)
           }
     }
   else
-    cb_policy->setCurrentIndex(0);
+    cb_policy->setCurrentIndex(1);
 
   vector<string> parlibs;
   parlibs.push_back("MPI");
