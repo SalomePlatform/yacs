@@ -23,6 +23,7 @@
 #include "TypeCode.hxx"
 #include "Container.hxx"
 #include "VisitorSaveSalomeSchema.hxx"
+#include "Basics_Utils.hxx"
 #include <iostream>
 #include <cstdlib>
 
@@ -32,7 +33,7 @@ SalomeProc::SalomeProc(const std::string& name):Proc(name)
 {
   // create default container with some default properties
   Container* cont=createContainer("DefaultContainer");
-  cont->setProperty("name","localhost");
+  cont->setProperty("name",Kernel_Utils::GetHostname());
   cont->setProperty("container_name","FactoryServer");
   cont->decrRef();
 }
