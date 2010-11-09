@@ -591,8 +591,10 @@ The property page for SALOME components is shown on the figure below.
 .. centered::
   **Property page for SALOME component instance definition**
 
-In the Input Panel for SALOME component instances the user can only see the name of the selected component object. 
+In the Input Panel for SALOME component instances the user can see the name of the selected component object. 
 This field is not editable and use only to provide information about component name.
+It is also possible to change the associated container (container: combobox) and to add properties to the component instance. 
+These properties are converted to environment variables when the schema is executed.
 
 .. _pp_for_schema:
 
