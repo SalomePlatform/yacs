@@ -434,3 +434,8 @@ void SchemaComposedNodeItem::setCaseValue()
     _itemData.replace(YValue, rank);
   model->setData(modelIndex(YValue), 0);
 }
+
+QVariant SchemaComposedNodeItem::editionWhatsThis(int column) const
+{
+  return "<p>To edit the node properties, select the node and use the input panel. <a href=\"modification.html#property-page-for-block-node\">More...</a></p>";
+}

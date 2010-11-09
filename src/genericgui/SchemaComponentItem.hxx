@@ -33,6 +33,7 @@ namespace YACS
       virtual void update(GuiEvent event, int type, Subject* son);
       virtual void popupMenu(QWidget *caller, const QPoint &globalPos);
     protected:
+      virtual QVariant editionWhatsThis(int column) const;
     };
   }
 }

@@ -100,3 +100,10 @@ void SchemaDirContainersItem::addComponentItem(Subject* subject)
   SchemaContainerItem *sci = _schemaContItemMap[contName];
   aSComp->associateToContainer(static_cast<SubjectContainer*>(sci->getSubject()));
 }
+
+QVariant SchemaDirContainersItem::editionWhatsThis(int column) const
+{
+  return "<p>Containers used in this schema appears in this folder.\n" \
+      "You can add containers by using the context menu (entry \"Create container\") " \
+      "and then edit its properties in the input panel. <a href=\"modification.html#property-page-for-container\">More...</a></p>";
+}

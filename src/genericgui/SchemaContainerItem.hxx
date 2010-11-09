@@ -34,6 +34,7 @@ namespace YACS
       void addComponentInstance(Subject* subject);
       void popupMenu(QWidget *caller, const QPoint &globalPos);
     protected:
+      virtual QVariant editionWhatsThis(int column) const;
     };
   }
 }

@@ -65,8 +65,8 @@ void SchemaLinkItem::popupMenu(QWidget *caller, const QPoint &globalPos)
 
 QVariant SchemaLinkItem::editionWhatsThis(int column) const
 {
-return "Links between ports or nodes under that block level appears in this folder.\n" \
+return "<p>Links between ports or nodes under that block level appears in this folder.\n" \
   "You can add data links (between ports) and control links (between nodes) " \
   "by drag from origin (out node or out port) to destination (in node or in port) " \
-  "either in 2D graphic view or tree view.";
+  "either in 2D graphic view or tree view. <a href=\"modification.html#create-a-link\">More...</a></p>";
 }

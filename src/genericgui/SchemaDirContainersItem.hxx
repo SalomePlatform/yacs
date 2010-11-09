@@ -36,6 +36,7 @@ namespace YACS
       void addComponentItem(Subject* subject);
       virtual void popupMenu(QWidget *caller, const QPoint &globalPos);
     protected:
+      virtual QVariant editionWhatsThis(int column) const;
       std::map<std::string, SchemaContainerItem*> _schemaContItemMap;
       std::multimap<std::string, Subject*> _waitingCompItemMap;
     };

@@ -281,5 +281,5 @@ void SchemaNodeItem::setCaseValue()
 
 QVariant SchemaNodeItem::editionWhatsThis(int column) const
 {
-  return "To edit the node properties, select the node and use the input panel.\n";
+  return "<p>To edit the node properties, select the node and use the input panel. <a href=\"modification.html#property-page-for-node\">More...</a></p>";
 }
