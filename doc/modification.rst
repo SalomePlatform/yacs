@@ -572,8 +572,11 @@ The property page for container definition is shown on the figure below.
 
 The property page for container allows to modify the name and a set of machine parameters of the selected container object. 
 At the beginning, machine parameters are initialized with the default values.
-For most parameters, the default values can be used. The user can select a host from a list obtained with help of SALOME resource manager
-or use the **automatic** option to let SALOME selects computers.
+For most parameters, the default values can be used. The user can select a resource from a list obtained with help of SALOME resource manager
+or use the **automatic** option to let SALOME selects computers. The user can only modify resource parameters (Resource tab) 
+when the **automatic** option has been choosen. In that case, resource parameters are constraints used by the resource manager
+to select the best resource for the container. In the other case (specific resource selected), the resource parameters come 
+from the resource manager, are the effective ones and are only displayed.
 
 The user can apply modifications to the selected container object by pressing **Apply** button. In such a case YACS module changes 
 properties of the selected container definition according to new values from the Input Panel and updates the Tree View if it is needed.
