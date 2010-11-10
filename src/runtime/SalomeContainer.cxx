@@ -646,3 +646,42 @@ SalomeContainer::addToResourceList(const std::string & name)
   _params.resource_params.resList.length(lgth + 1);
   _params.resource_params.resList[lgth] = CORBA::string_dup(name.c_str());
 }
+
+std::map<std::string,std::string> SalomeContainer::getResourceProperties(const std::string& name)
+{
+  std::map<std::string,std::string> properties;
+
+  YACS::ENGINE::RuntimeSALOME* runTime = YACS::ENGINE::getSALOMERuntime();
+  CORBA::ORB_ptr orb = runTime->getOrb();
+  if (!orb) return properties;
+  SALOME_NamingService namingService(orb);
+  SALOME_LifeCycleCORBA lcc(&namingService);
+  CORBA::Object_var obj = namingService.Resolve(SALOME_ResourcesManager::_ResourcesManagerNameInNS);
+  if (CORBA::is_nil(obj)) return properties;
+  Engines::ResourcesManager_var resManager = Engines::ResourcesManager::_narrow(obj);
+  if (CORBA::is_nil(resManager)) return properties;
+
+  std::ostringstream value;
+  Engines::ResourceDefinition_var resource_definition = resManager->GetResourceDefinition(name.c_str());
+  properties["hostname"]=resource_definition->hostname.in();
+  properties["OS"]=resource_definition->OS.in();
+  value.str(""); value << resource_definition->mem_mb;
+  properties["mem_mb"]=value.str();
+  value.str(""); value << resource_definition->cpu_clock;
+  properties["cpu_clock"]=value.str();
+  value.str(""); value << resource_definition->nb_node;
+  properties["nb_node"]=value.str();
+  value.str(""); value << resource_definition->nb_proc_per_node;
+  properties["nb_proc_per_node"]=value.str();
+  /*
+  properties["component_list"]="";
+  for(CORBA::ULong i=0; i < resource_definition->componentList.length(); i++)
+    {
+      if(i > 0)
+        properties["component_list"]=properties["component_list"]+",";
+      properties["component_list"]=properties["component_list"]+resource_definition->componentList[i].in();
+    }
+    */
+
+  return properties;
+}

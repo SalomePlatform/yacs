@@ -58,6 +58,7 @@ namespace YACS
       // Helper methods
       void addToComponentList(const std::string & name);
       void addToResourceList(const std::string & name);
+      virtual std::map<std::string,std::string> getResourceProperties(const std::string& name);
     protected:
 #ifndef SWIG
       virtual ~SalomeContainer();
