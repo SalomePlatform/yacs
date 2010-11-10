@@ -27,6 +27,7 @@
             <code><![CDATA[import time
 
 def f(i5):
+    print my_container
     print "nouvelle branche avec ", i5
     for n in xrange(15):
       print time.time()
@@ -45,7 +46,7 @@ def f(i5):
    </inline>
    <control> <fromnode>PyScript2</fromnode> <tonode>ForEachLoop_int1</tonode> </control>
    <datalink control="false">
-      <fromnode>ForEachLoop_int1</fromnode> <fromport>SmplPrt</fromport>
+      <fromnode>ForEachLoop_int1</fromnode> <fromport>evalSamples</fromport>
       <tonode>ForEachLoop_int1.PyFunction3</tonode> <toport>i5</toport>
    </datalink>
    <datalink control="false">
@@ -56,8 +57,8 @@ def f(i5):
       <tonode>ForEachLoop_int1</tonode><toport>nbBranches</toport>
       <value><int>2</int></value>
    </parameter>
-   <presentation name="ForEachLoop_int1.PyFunction3" x="38.5" y="115" width="158" height="63" expanded="1" expx="38.5" expy="115" expWidth="158" expHeight="63" shownState="0"/>
-   <presentation name="ForEachLoop_int1" x="260.5" y="144.5" width="200.5" height="182" expanded="1" expx="260.5" expy="144.5" expWidth="200.5" expHeight="182" shownState="0"/>
+   <presentation name="ForEachLoop_int1" x="260.5" y="144.5" width="200.5" height="183" expanded="1" expx="260.5" expy="144.5" expWidth="200.5" expHeight="183" shownState="0"/>
+   <presentation name="ForEachLoop_int1.PyFunction3" x="38.5" y="116" width="158" height="63" expanded="1" expx="38.5" expy="116" expWidth="158" expHeight="63" shownState="0"/>
    <presentation name="PyScript2" x="41" y="71" width="158" height="63" expanded="1" expx="41" expy="71" expWidth="158" expHeight="63" shownState="0"/>
-   <presentation name="__ROOT__" x="0" y="0" width="465" height="330.5" expanded="1" expx="0" expy="0" expWidth="465" expHeight="330.5" shownState="0"/>
+   <presentation name="__ROOT__" x="0" y="0" width="465" height="331.5" expanded="1" expx="0" expy="0" expWidth="465" expHeight="331.5" shownState="0"/>
 </proc>
