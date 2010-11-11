@@ -246,8 +246,7 @@ AC_DEFUN([I2_CHECK_QT4],
     fi
 
     AC_MSG_NOTICE([checking whether link with qt4 is working])
-    qt4_lib_name=QtGui
-    qt4_libs="-l$qt4_lib_name"
+    qt4_libs="-lQtCore -lQtGui"
     LDFLAGS="${LDFLAGS} ${qt4_ldflags}"
     LIBS="${LIBS} ${qt4_libs}"
     AC_LANG_PUSH(C++)

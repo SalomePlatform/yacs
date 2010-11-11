@@ -136,7 +136,7 @@ void parser::checkOrder(std::string& el)
   if(_orders[el] < _orderState)
     {
       std::string msg="unexpected "+el+" element (wrong order)";
-      throw YACS::Exception::Exception(msg);
+      throw YACS::Exception(msg);
     }
   else if(_orders[el] > _orderState)
     {
@@ -152,7 +152,7 @@ void parser::maxcount(std::string name, int max, std::string& el)
       std::stringstream msg;
       msg <<"unexpected "+name+" element (count="<<(*_counts)[name];
       msg <<" > maxOccurs=" << max << ")";
-      throw YACS::Exception::Exception(msg.str());
+      throw YACS::Exception(msg.str());
     }
 }
 
@@ -163,7 +163,7 @@ void parser::mincount(std::string name,int min )
       std::stringstream msg;
       msg<<"expected "+name+" element (count="<<(*_counts)[name];
       msg << " < minOccurs=" << min << ")";
-      throw YACS::Exception::Exception(msg.str());
+      throw YACS::Exception(msg.str());
     }
 }
 
@@ -180,7 +180,7 @@ void parser::maxchoice(std::string *names, int max, std::string& el)
     {
       std::stringstream msg;
       msg<<"unexpected "+el+" element (choice count="<<ncount<<" > maxOccurs=" << max << ")";
-      throw YACS::Exception::Exception(msg.str());
+      throw YACS::Exception(msg.str());
     }
 }
 
@@ -204,7 +204,7 @@ void parser::minchoice(std::string *names, int min)
           ++i;
         }
       msg << "(choice count="<<ncount<<" < minOccurs=" << min << ")";
-      throw YACS::Exception::Exception(msg.str());
+      throw YACS::Exception(msg.str());
     }
 }
 
@@ -214,7 +214,7 @@ void parser::required(const std::string& name, const XML_Char** attr)
     {
       if(name == std::string(attr[i]))return;
     }
-  throw YACS::Exception::Exception("Attribute: "+name+" is required");
+  throw YACS::Exception("Attribute: "+name+" is required");
 }
 
 void parser::buildAttr(const XML_Char** attr)

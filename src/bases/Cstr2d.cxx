@@ -39,7 +39,7 @@ double Cstr2d(const char* s)
     {
       std::stringstream msg;
       msg << "problem in conversion from string to double: " << s ;
-      throw YACS::Exception::Exception(msg.str());
+      throw YACS::Exception(msg.str());
     }
   return d;
 }
