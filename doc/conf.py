@@ -166,8 +166,8 @@ latex_font_size = '10pt'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, document class [howto/manual]).
 latex_documents = [
-  ('using', 'using.tex', 'YACS User Documentation', 'C. Caremoli, N. Crouzet, P. Rascle, A. Ribes, E. Fayolle, M. Tajchman', 'manual'),
-  ('integration', 'integration.tex', 'YACS Integration Documentation', 'C. Caremoli, N. Crouzet, P. Rascle, A. Ribes, E. Fayolle, M. Tajchman', 'manual'),
+  ('using', 'using.tex', 'YACS User Documentation', r'C. Caremoli, N. Crouzet, E. Fayolle,\\P. Rascle, A. Ribes, M. Tajchman', 'manual'),
+  ('integration', 'integration.tex', 'YACS Integration Documentation', r'C. Caremoli, N. Crouzet, E. Fayolle,\\P. Rascle, A. Ribes, M. Tajchman', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of

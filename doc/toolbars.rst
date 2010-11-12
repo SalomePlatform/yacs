@@ -62,7 +62,7 @@ YACS toolbar contents depends on the edition or execution mode. Without any sche
 + Load a Schema in run mode (without edition)
 
 
-+ What's this mode : experimental, detailled help on a few items
++ What's this mode : detailled help on a few items
 
 
 
@@ -129,7 +129,7 @@ YACS toolbar in edition mode contains functions to import and export schemas, to
 + Hide all links
 
 
-+ What's this mode : experimental, detailled help on a few items
++ What's this mode : detailled help on a few items
 
 
 
@@ -201,6 +201,6 @@ YACS toolbar in execution mode contains functions to import and export schemas, 
 + Hide all links
 
  
-+ What's this mode : experimental, detailled help on a few items
++ What's this mode : detailled help on a few items
 
 

@@ -79,11 +79,11 @@ and unload the implementation of a SALOME component.  A component is loaded by c
 The basic mechanism for loading a component depends on the chosen implementation language.
 
 In C++, the platform uses dynamic library loading (dlopen) and a factory function mechanism that must be 
-named <Module>Engine_factory (for example GEOMEngine_factory, for GEOM). 
+named <Component>Engine_factory (for example GEOMEngine_factory, for GEOM component type). 
 This function must return the effective CORBA object that is the SALOME component.
 
-In Python, the platform uses the Python import mechanism (import <Module>) and instantiates the Python SALOME 
-component using a class (or a factory) with the same name (<Module>).
+In Python, the platform uses the Python import mechanism (import <Component>) and instantiates the Python SALOME 
+component using a class (or a factory) with the same name (<Component>).
 
 .. _appli:
 

@@ -78,15 +78,16 @@ advancepy.rst      \
 annexe_common.rst  \
 batch.rst          \
 calcium.rst        \
-calciumapi.rst        \
-calciummod.rst        \
+calciumyacs.rst    \
+calciumapi.rst     \
+calciummod.rst     \
 calculator.rst     \
-compInterne.rst   \
-components.rst  \
+compInterne.rst    \
+components.rst     \
 console.rst        \
 cppsalome.rst      \
 dataflow.rst       \
-etapes.rst   \
+etapes.rst         \
 execpy.rst         \
 execution.rst      \
 execxml.rst        \
@@ -104,14 +105,14 @@ progdsc.rst        \
 pysalome.rst       \
 python.rst         \
 rappels.rst        \
-references.rst  \
+references.rst     \
 representation.rst \
-salome.rst   \
+salome.rst         \
 schemapy.rst       \
 schemaxml.rst      \
 scratch.rst        \
 toolbars.rst       \
-optimizer.rst       \
+optimizer.rst      \
 yacsgen.rst
 
 

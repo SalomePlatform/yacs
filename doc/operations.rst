@@ -241,7 +241,7 @@ Specific operations available in the **edition mode** for each type of objects s
 +--------------------------------+-------------+-------------------------------------------------------------------------------------+
 | **Selected object type**       | **Icon**    |     **Available context menu commands**                                             |
 +================================+=============+=====================================================================================+
-|Schema                          | |schema|    |                                                                                     |
+|Schema                          | |block|     |                                                                                     |
 |                                |             |**Run Current Schema** - execute the selected schema, i.e. create a run              |
 |                                |             |schema object.                                                                       |
 |                                |             |                                                                                     |
@@ -387,7 +387,7 @@ The popup menus available on the objects selected in the Tree View or 2D View of
 +--------------------------------+-------------+-------------------------------------------------------------------------------------+
 | **Selected object type**       | **Icon**    |     **Available context menu commands**                                             |
 +================================+=============+=====================================================================================+
-|Schema                          | |schema|    |                                                                                     |
+|Schema                          | |block|     |                                                                                     |
 |                                |             |                                                                                     |
 |                                |             |**YACS Container log** - in Execution, shows the YACS Container Log, useful for      |
 |                                |             |Python Nodes prints.                                                                 |

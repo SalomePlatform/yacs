@@ -180,7 +180,7 @@ If a second service has to be added for the component, simply add another servic
 In this description, a second service name “serv2” has been added with 2 input dataflow ports (a and b) and an output dataflow port (c).  
 The service is reduced to its simplest expression:  it returns the product of its 2 inputs.
 
-Assemble with external libraries
+Link with external libraries
 """"""""""""""""""""""""""""""""""""""""""""""""""""
 We have seen that the **defs** and **body** attributes are sufficient to define the body of the service but it is often more practical 
 to use external libraries rather than put everything into these 2 attributes. This is possible provided that everything necessary 
@@ -349,8 +349,10 @@ Python component
 ++++++++++++++++++++++++++++++++++++++++
 A Python component is also described like a C++ component.  The only differences are in the Python object to be used to 
 define it:  PYComponent instead of CPPComponent and in the content of the **defs** and **body** attributes that must contain 
-Python code and not C++ (warning with indentation, the indentation of the complete block of code is automatically handled
-but not the internal indentation of the block).
+Python code and not C++.
+
+.. warning::
+   The indentation of the complete block of code is automatically handled but not the internal indentation of the block.
 
 Example Python component::
 
@@ -429,8 +431,9 @@ ports, one output dataflow port, 7 input datastream ports and one output datastr
                             "-rep_outils","/local/chris/ASTER/instals/outils"],
                      )
 
-Caution, do not use the name “aster” for the component because this name is reserved for the *Code_Aster* python module.  
-If the name “aster” is used, the behaviour will be completely erratic.
+.. warning::
+   Do not use the name “aster” for the component because this name is reserved for the *Code_Aster* python module.  
+   If the name “aster” is used, the behaviour will be completely erratic.
 
 Although its description is very similar to the behaviour of a Python component, there is an important difference in use.  
 The Aster component needs the description of a command set to run.  This command set is transferred to each service of the 
@@ -442,10 +445,11 @@ The command supervisor has been integrated into a SALOME component and the varia
 during execution of the command set.  Similarly, values for output dataflow ports are defined by values of variables derived 
 from execution of the command set.
 
-**Caution with the execution mode**.  The command supervisor has 2 execution modes (PAR_LOT=”OUI” or PAR_LOT=”NON” that are 
-specified in the DEBUT command) (PAR_LOT = BY_BATCH).  In PAR_LOT=”OUI” mode, it is compulsory to terminate the command set 
-with a FIN (END) command which has the effect of interrupting execution.  This is not the preferred method of operation with YACS.  
-It is preferable to use PAR_LOT=”NON” mode without adding the FIN command, which avoids interrupting the execution prematurely.
+.. warning::
+   **Beware with the execution mode**.  The command supervisor has 2 execution modes (PAR_LOT=”OUI” or PAR_LOT=”NON” that are 
+   specified in the DEBUT command) (PAR_LOT = BY_BATCH).  In PAR_LOT=”OUI” mode, it is compulsory to terminate the command set 
+   with a FIN (END) command which has the effect of interrupting execution.  This is not the preferred method of operation with YACS.  
+   It is preferable to use PAR_LOT=”NON” mode without adding the FIN command, which avoids interrupting the execution prematurely.
 
 Dynamically importable Aster module and link with YACS
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -765,8 +769,7 @@ There are many coupling outputs:
   in the coupler output.
 
 .. warning::
-
-   when the application is stopped, the containers are killed, and this can cause information losses in their output files.
+   When the application is stopped, the containers are killed, and this can cause information losses in their output files.
 
 The working directory
 ++++++++++++++++++++++++++++++++++++++
@@ -831,8 +834,7 @@ A “dataout” node and the link between node “pipo1” and node “dataout�
     </datalink>
 
 .. warning::
-
-   it is impossible to use the “.” character in port names.  This prevents the use of names such as fort.8 that are 
+   It is impossible to use the “.” character in port names.  This prevents the use of names such as fort.8 that are 
    fairly frequent.  There is a simple workaround solution, which is to replace the “.” by the “:”character (therefore fort:8 in 
    our example) to obtain the expected result.  
    Obviously, names containing the “:” characters cannot be used.  They must be very rare.
@@ -1191,7 +1193,6 @@ Here is an excerpt from pygui1 example that shows how to add a documentation to 
               )
 
 .. warning::
-
    The online documentation will only appear in the SALOME GUI, if your module has a minimal GUI but not if it has no GUI.
 
 Add extra methods to your components

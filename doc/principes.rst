@@ -118,7 +118,7 @@ and type “ListOfLong”.  “ListOfLong” itself is a sequence of “int”.
 Ports
 -------------
 A port can be considered as an interface of a node with the exterior.  There are three types of port:  control ports, 
-data ports and data stream ports.  Each has different semantics.
+data ports and datastream ports.  Each has different semantics.
  
 Control ports
 ''''''''''''''''''''''''
@@ -564,8 +564,8 @@ To create this type of node:
 Containers
 ---------------------
 The SALOME platform executes its components after loading them in containers.  A SALOME container is a process managed 
-by the platform that may be executed on any known machine.
-A YACS container is used to define component placement constraints without necessarily precisely defining the machine 
+by the platform that may be executed on any known resource.
+A YACS container is used to define component placement constraints without necessarily precisely defining the resource 
 to be used or the container name.
 The YACS container has a name.  Constraints are given in the form of container properties.  
 The current list of properties is as follows:
@@ -575,44 +575,47 @@ The current list of properties is as follows:
 =================== ============= =============================================
 Name                  Type            Type of constraint
 =================== ============= =============================================
-policy               "best",       Choose the best or the first or the next in 
-                     "first" or    the list of machines, once other criteria  
-                     "cycl"        have been applied. By default, YACS uses the “cycl” policy
-                                   that selects the next machine in the list of known machines
+name                  string       if given imposes the resource to use. If not given, the resource manager will try
+                                   to find the best resource according to the constraints given by the other attributes.
 container_name        string       if given imposes the SALOME container name
-hostname              string       if given imposes the machine
-OS                    string       if given restricts the choice of the OS
-parallelLib           string       ??
-workingdir            string      if given specifies the execution directory.  
-                                  By default, the YACS run directory will be used 
-                                  on the local machine and the $HOME directory will be used on remote machines.
+hostname              string       if given imposes the machine (constraint used if name is not given)
+policy               "best",       Choose the best or the first or the next in 
+                     "first" or    the list of resources, once other criteria  
+                     "cycl"        have been applied. By default, YACS uses the “altcycl” policy
+                     "altcycl"     that selects the next resource in the list of known resources (constraint used if name is not given)
+OS                    string       if given restricts the choice of the OS (constraint used if name is not given)
+workingdir            string       if given specifies the execution directory.  
+                                   By default, the YACS run directory will be used 
+                                   on the local machine and the $HOME directory will be used on remote machines.
 isMPI                 bool         indicates if the container has to support MPI
-mem_mb                int          minimum requested memory size
-cpu_clock             int          minimum requested CPU speed
-nb_proc_per_node      int          ??
-nb_node               int          ??
+mem_mb                int          minimum requested memory size (constraint used if name is not given)
+cpu_clock             int          minimum requested CPU speed (constraint used if name is not given)
+nb_proc_per_node      int          number of processors by node (constraint used if name is not given)
+nb_node               int          number of nodes (constraint used if name is not given)
 nb_component_nodes    int          ??
+parallelLib           string       ??
 =================== ============= =============================================
 
-The hardware resources catalog
+The resources catalog
 ''''''''''''''''''''''''''''''''''''''''''
-The list of hardware resources (machines) known to SALOME is given in the resources catalog, the CatalogResources.xml file 
+The list of resources (machines and SALOME installations) known to SALOME is given in the resources catalog, the CatalogResources.xml file 
 that must be located in the directory of the SALOME application used.  
-This file is in the XML format.  Each machine is described with the machine tag that has several attributes that characterize it.
+This file is in the XML format.  Each resource is described with the **machine** tag that has several attributes that characterize it.
 
 .. tabularcolumns:: |p{3cm}|p{3cm}|p{10cm}|
 
 ================================== =========================== ==============================================
 Characteristic                         XML attribute               Description
 ================================== =========================== ==============================================
-computer name                       hostname                   the complete name:  this is the key that uniquely determines the machine
+resource name                       name                       the resource name
+computer name                       hostname                   the complete machine name:  this is the key that uniquely determines the machine
                                                                (for example : "nickel.ccc.cea.fr") 
 alias                               alias                      character string to identify the machine (for example,  “pluton”)
 access protocol                     protocol                   "rsh" (default) or "ssh"
 access type                         mode                       interactive "i" or batch "b". By default "i"
-user name                           userName                   user to be used to connect to the machine 
+user name                           userName                   user name to be used to connect to the machine 
 operating system                    OS
-central memory size                 memInMB
+memory size                         memInMB
 clock frequency                     CPUFreqMHz
 Number of nodes                     nbOfNodes
 Number of processors per node       nbOfProcPerNode
@@ -626,13 +629,13 @@ batch manager                       batch                      if the machine ha
                                                                No default.
 ================================== =========================== ==============================================
 
-The list of SALOME modules present on the machine can also be indicated.  By default, SALOME assumes that all components 
+The list of SALOME modules of the resource can also be indicated.  By default, SALOME assumes that all components 
 requested by YACS are present.
 
 If only some components are available within a resource, the list of components must be specified.
-This list can be specified with the sub-tag component that has two attributes : name (the name of the component)
-and moduleName (the name of the module) that is optional. You can use also the sub-tag modules that is provided
-for compatibility with older versions. If the modules sub-tag is used, a component with the same name as
+This list can be specified with the sub-tag **component** that has two attributes : **name** (the name of the component)
+and **moduleName** (the name of the module) that is optional. You can use also the sub-tag **modules** that is provided
+for compatibility with older versions. If the **modules** sub-tag is used, a component with the same name as
 the moduleName attribute is added to the list.
 
 The following is an example of a resource catalog:
