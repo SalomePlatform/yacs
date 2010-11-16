@@ -220,13 +220,38 @@ void FormContainer::FillPanel(YACS::ENGINE::Container *container)
         }
       else
         {
-          //the resource has not been found: use automatic
-          cb_resource->setCurrentIndex(0);
+          //the resource has not been found: add a false item
+          std::string item="Unknown resource ("+_properties["name"]+")";
+          cb_resource->addItem(item.c_str());
+          cb_resource->setCurrentIndex(cb_resource->count()-1);
         }
     }
   else
     cb_resource->setCurrentIndex(0);
   updateResource(resource);
+
+  if (!QtGuiContext::getQtCurrent()->isEdition())
+    {
+      //if the schema is in execution do not allow editing
+      le_name->setReadOnly(true);
+      cb_type->setEnabled(false);
+      cb_parallel->setEnabled(false);
+      le_workdir->setReadOnly(true);
+      le_contname->setReadOnly(true);
+      ch_mpi->setEnabled(false);
+      sb_nbprocpar->setReadOnly(true);
+      cb_resource->setEnabled(false);
+      le_hostname->setEnabled(false);
+      le_os->setEnabled(false);
+      sb_nbproc->setEnabled(false);
+      sb_mem->setEnabled(false);
+      sb_cpu->setEnabled(false);
+      sb_nbNodes->setEnabled(false);
+      sb_procNode->setEnabled(false);
+      cb_policy->setEnabled(false);
+      le_compolist->setEnabled(false);
+      le_resourceList->setEnabled(false);
+    }
 }
 
 void FormContainer::onModified()
