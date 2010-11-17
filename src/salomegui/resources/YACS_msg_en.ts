@@ -67,5 +67,9 @@
         <source>ERROR</source>
         <translation>ERROR</translation>
     </message>
+    <message>
+        <source>YACS_PLUGINS</source>
+        <translation>Plugins</translation>
+    </message>  
 </context>
 </TS>

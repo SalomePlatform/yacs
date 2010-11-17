@@ -123,6 +123,10 @@
         <source>ERROR</source>
         <translation>ERROR</translation>
     </message>
+    <message>
+        <source>YACS_PLUGINS</source>
+        <translation>Extensions</translation>
+    </message>       
 </context>
 <context>
     <name>YACS::HMI::ComposedNodeMenu</name>
