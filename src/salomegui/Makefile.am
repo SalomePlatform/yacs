@@ -64,11 +64,12 @@ libYACS_la_CXXFLAGS = \
 
 libYACS_la_LDFLAGS  = \
 	 @GRAPHVIZ_LDFLAGS@ \
-	 -L$(GUI_ROOT_DIR)/lib/salome -lEvent -L$(KERNEL_ROOT_DIR)/lib/salome \
+	 -L$(GUI_ROOT_DIR)/lib/salome -L$(KERNEL_ROOT_DIR)/lib/salome \
 	 $(qt4_ldflags) $(qsci4_ldflags)
 
 libYACS_la_LIBADD  = \
 	../genericgui/libGenericGui.la \
+	-lEvent \
 	$(qt4_libs) $(qsci4_libs) \
 	-lSalomeApp
 

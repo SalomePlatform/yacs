@@ -50,6 +50,7 @@ namespace YACS
       virtual void shrinkExpandLink(bool se);
       virtual void collisionResolv(SceneItem* child, QPointF oldPos);
       virtual void rebuildLinks();
+      virtual void updateChildItems();
       virtual void arrangeNodes(bool isRecursive);
       virtual void arrangeChildNodes();
       virtual void adjustColors();

@@ -753,8 +753,8 @@ length parameter located in the classical C / C++ / Fortran API.
 
 Differences from the CALCIUM product outside SALOME
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
-All that are implemented are read / write procedures and connection and disconnection procedures. Erase, step back, 
-query, dynamic configuration and debugging procedures are not implemented.
+All that are implemented are read / write procedures and connection/disconnection procedures. Step back, query, dynamic 
+configuration and debugging procedures are not implemented.
 
 However, it is possible to dynamically create and connect components that read/write on ports of other component services.  
 Any SALOME service using CALCIUM ports has the privileges of a spy (in production mode).
@@ -763,8 +763,6 @@ Several output ports can be connected to the same input port and one output port
 The first case was not possible in CALCIUM outside SALOME.
 
 Reads/writes are implemented in blocking mode;  non-blocking mode is not yet implemented.
-
-AAAA.BBBB type global / local naming used in CALCIUM outside SALOME does not exist.  Therefore, all references to this type of name must be deleted.
 
 All ports created by the different services of a single component are visible / usable by all these services.  
 However, it is not recommended that they should be used in this way.

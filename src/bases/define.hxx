@@ -45,6 +45,7 @@ namespace YACS
       LOADFAILED   = 108,
       EXECFAILED   = 109,
       PAUSE        = 110,
+      TORECONNECT  = 111,
       INTERNALERR  = 666,
       DISABLED     = 777,
       FAILED       = 888,

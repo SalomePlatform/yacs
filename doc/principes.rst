@@ -118,7 +118,7 @@ and type “ListOfLong”.  “ListOfLong” itself is a sequence of “int”.
 Ports
 -------------
 A port can be considered as an interface of a node with the exterior.  There are three types of port:  control ports, 
-data ports and data stream ports.  Each has different semantics.
+data ports and datastream ports.  Each has different semantics.
  
 Control ports
 ''''''''''''''''''''''''
@@ -198,6 +198,14 @@ name present in the execution context. These variables must necessarily be prese
 
 When this type of node is an internal node in a loop, the execution context is reinitialised for each iteration of the loop.
 
+This type of node is executed in the YACS process. It can not be executed in remote processes.
+
+To create this type of node:
+
+- from the GUI, see :ref:`inline_script`
+- in a XML file, see :ref:`xml_script_node`
+- from python interface, see :ref:`pyscript`
+
 .. _functionnode:
 
 Python function inline node
@@ -213,6 +221,14 @@ for the output ports of the same name.
 
 When this type of node is an internal node in a loop, the execution context is kept for every iteration of the loop, so 
 that variables can be reused during iterations.
+
+Unlike script inline node, this type of node can be executed in remote processes (but only YACS containers :ref:`containers`).
+
+To create this type of node:
+
+- from the GUI, see :ref:`inline_function`
+- in a XML file, see :ref:`xml_function_node`
+- from python interface, see :ref:`pyfunc`
 
 .. _servicenode:
 
@@ -239,6 +255,12 @@ on the default container of the SALOME platform:  FactoryServer container on the
 
 The properties of a SALOME service node are converted into environment variables when the service is executed.
 
+To create this type of node:
+
+- from the GUI, see :ref:`salome_service`
+- in a XML file, see :ref:`xml_service_node`
+- from python interface, see :ref:`pyservice`
+
 SalomePython node
 ''''''''''''''''''''''''''''''
 A SalomePython node is a Python function node to which YACS provides the information necessary to run SALOME 
@@ -258,11 +280,23 @@ DataIn node
 ++++++++++++++++++
 A DataIn node has output data ports only that are used to define input data for the calculation scheme. These data have a name (the port name), a type (the port type) and an initial value.
 
+To create this type of node:
+
+- from the GUI, see :ref:`datain_node`
+- in a XML file, see :ref:`xml_datain`
+- from python interface, see :ref:`py_datain`
+
 DataOut node
 ++++++++++++++++++
 A DataOut node only has input data ports that are used to store output results from the calculation scheme.  These results have a name (the port name) and a type (the port type).  If the result is a file, a name can be given to the file into which the result file will be copied.
 
 All values of node results can be saved in a file at the end of the calculation.
+
+To create this type of node:
+
+- from the GUI, see :ref:`dataout_node`
+- in a XML file, see :ref:`xml_dataout`
+- from python interface, see :ref:`py_dataout`
 
 Study nodes
 ''''''''''''''''''''''''''''''
@@ -274,6 +308,12 @@ A StudyIn node has output data ports only. It is used to define data in the calc
 
 A port corresponds to data stored in the associated study.  The data has a name (the port name), a type (the port type), and a reference that gives the entry into the study.  This reference is either a SALOME Entry (for example 0:1:1:2) or a path in the SALOME study tree (for example, /Geometry/box_1).
 
+To create this type of node:
+
+- from the GUI, see :ref:`studyin_node`
+- in a XML file, see :ref:`xml_studyin`
+- from python interface, see :ref:`py_studyin`
+
 StudyOut node
 ++++++++++++++++++
 A StudyOut node only has input data ports.  It is used to store results in a SALOME study.  The associated study is given by its SALOME StudyID.
@@ -281,6 +321,12 @@ A StudyOut node only has input data ports.  It is used to store results in a SAL
 A port corresponds to a result to be stored in an associated study.  The result has a name (the port name), a type (the port type), and a reference that gives the entry into the study.  This reference is either a SALOME Entry (for example 0:1:1:2) or a path in the SALOME study tree (for example, /Geometry/box_1).
 
 The associated study may be saved in a file at the end of the calculation.
+
+To create this type of node:
+
+- from the GUI, see :ref:`studyout_node`
+- in a XML file, see :ref:`xml_studyout`
+- from python interface, see :ref:`py_studyout`
 
 Connections
 -----------------
@@ -404,6 +450,12 @@ It is provided with a single input control port and a single output control port
 Consequently, two blocks connected through a dataflow data link will be executed in sequence, all nodes in the 
 first block will be executed before starting the second block.
 
+To create this type of node:
+
+- from the GUI, see :ref:`block_node`
+- in a XML file, see :ref:`xml_block`
+- from python interface, see :ref:`py_block`
+
 The ForLoop node
 '''''''''''''''''''''
 A loop is used to make iterations on an internal node.  
@@ -413,10 +465,22 @@ A ForLoop loop executes the internal node a fixed number of times.  This number 
 named “nsteps” or by a parameter of the loop of the same name. The current step number is accessible through
 an output port of the loop named "index".
 
+To create this type of node:
+
+- from the GUI, see :ref:`forloop_node`
+- in a XML file, see :ref:`xml_forloop`
+- from python interface, see :ref:`py_forloop`
+
 The While node
 ''''''''''''''''''''
 A While loop executes the internal node as long as a condition is true.  
 The value of the condition is given by a data port of the loop named “condition”.
+
+To create this type of node:
+
+- from the GUI, see :ref:`whileloop_node`
+- in a XML file, see :ref:`xml_whileloop`
+- from python interface, see :ref:`py_whileloop`
 
 The ForEach node
 ''''''''''''''''''''''
@@ -426,10 +490,16 @@ An input data port of the ForEach node named “SmplsCollection” receives the 
 This data collection is typed.  The data type on which the loop iterates is unique.  The number of parallel branches managed 
 by the loop is fixed by a parameter of the loop (input port named "nbBranches").  
 If the collection size is 100 and this parameter is fixed at 25, the loop will execute 4 packets of 25 calculations in parallel.  
-The internal node can access the current iteration of the data collection through the output data port from the loop named “SmplPrt”.
+The internal node can access the current iteration of the data collection through the output data port from the loop named “evalSamples”.
 
 Typed data collections can be constructed at the output from the loop.  All that is necessary is to connect an output data 
 port of the internal node to an input data port of a node outside the loop. The loop automatically constructs the data collection.
+
+To create this type of node:
+
+- from the GUI, see :ref:`foreachloop_node`
+- in a XML file, see :ref:`xml_foreachloop`
+- from python interface, see :ref:`py_foreachloop`
 
 The Switch node
 ''''''''''''''''''''''
@@ -441,6 +511,12 @@ The switch condition is given by an input data port of the Switch node named “
 If the nodes are terminal (nothing is executed from their outputs), they do not need to have compatible outputs.  
 Output ports used at the node output must be compatible with each other (i.e. they must be derived from a common generic 
 type that can be used by another input node).
+
+To create this type of node:
+
+- from the GUI, see :ref:`switch_node`
+- in a XML file, see :ref:`xml_switch`
+- from python interface, see :ref:`py_switch`
 
 The OptimizerLoop node
 '''''''''''''''''''''''''
@@ -465,15 +541,22 @@ The plugin is defined by 2 parameters :
 - **entry**, the name of an entry point in the dynamic library or in the Python module that will return the algorithm plugin
   factory (see :ref:`optimizationplugin` for more informations)
 
-The node has four ports:
+The node has five ports:
 
-- **FileNameInitAlg**, an input port that takes the name of an initialization file
-- **SmplPrt**, an output port that gives the samples in the optimization process
-- **retPortForOutPool**, an input port that collects the results given by the internal node
+- **algoInit**, an input port that takes an object used for the initialization of the algorithm
+- **evalSamples**, an output port that gives the samples in the optimization process
+- **evalResults**, an input port that collects the results given by the internal node
 - **nbBranches**, an input port that can be used to parallelize the optimization process as in the ForEach node (number of
   branches). Most of a time, the optimization process is sequential so the number of branches will be 1, but in some cases 
   it is possible to parallelize the process so the number  of branches will be greater than 1.
- 
+- **algoResults**, an output port that gives the results of the optimization algorithm
+
+To create this type of node:
+
+- from the GUI, see :ref:`optimizerloop_node`
+- in a XML file, see :ref:`xml_optimizerloop`
+- from python interface, see :ref:`py_optimizerloop`
+
 
 
 .. _containers:
@@ -481,8 +564,8 @@ The node has four ports:
 Containers
 ---------------------
 The SALOME platform executes its components after loading them in containers.  A SALOME container is a process managed 
-by the platform that may be executed on any known machine.
-A YACS container is used to define component placement constraints without necessarily precisely defining the machine 
+by the platform that may be executed on any known resource.
+A YACS container is used to define component placement constraints without necessarily precisely defining the resource 
 to be used or the container name.
 The YACS container has a name.  Constraints are given in the form of container properties.  
 The current list of properties is as follows:
@@ -492,44 +575,47 @@ The current list of properties is as follows:
 =================== ============= =============================================
 Name                  Type            Type of constraint
 =================== ============= =============================================
-policy               "best",       Choose the best or the first or the next in 
-                     "first" or    the list of machines, once other criteria  
-                     "cycl"        have been applied. By default, YACS uses the “cycl” policy
-                                   that selects the next machine in the list of known machines
+name                  string       if given imposes the resource to use. If not given, the resource manager will try
+                                   to find the best resource according to the constraints given by the other attributes.
 container_name        string       if given imposes the SALOME container name
-hostname              string       if given imposes the machine
-OS                    string       if given restricts the choice of the OS
-parallelLib           string       ??
-workingdir            string      if given specifies the execution directory.  
-                                  By default, the YACS run directory will be used 
-                                  on the local machine and the $HOME directory will be used on remote machines.
+hostname              string       if given imposes the machine (constraint used if name is not given)
+policy               "best",       Choose the best or the first or the next in 
+                     "first" or    the list of resources, once other criteria  
+                     "cycl"        have been applied. By default, YACS uses the “altcycl” policy
+                     "altcycl"     that selects the next resource in the list of known resources (constraint used if name is not given)
+OS                    string       if given restricts the choice of the OS (constraint used if name is not given)
+workingdir            string       if given specifies the execution directory.  
+                                   By default, the YACS run directory will be used 
+                                   on the local machine and the $HOME directory will be used on remote machines.
 isMPI                 bool         indicates if the container has to support MPI
-mem_mb                int          minimum requested memory size
-cpu_clock             int          minimum requested CPU speed
-nb_proc_per_node      int          ??
-nb_node               int          ??
+mem_mb                int          minimum requested memory size (constraint used if name is not given)
+cpu_clock             int          minimum requested CPU speed (constraint used if name is not given)
+nb_proc_per_node      int          number of processors by node (constraint used if name is not given)
+nb_node               int          number of nodes (constraint used if name is not given)
 nb_component_nodes    int          ??
+parallelLib           string       ??
 =================== ============= =============================================
 
-The hardware resources catalog
+The resources catalog
 ''''''''''''''''''''''''''''''''''''''''''
-The list of hardware resources (machines) known to SALOME is given in the resources catalog, the CatalogResources.xml file 
+The list of resources (machines and SALOME installations) known to SALOME is given in the resources catalog, the CatalogResources.xml file 
 that must be located in the directory of the SALOME application used.  
-This file is in the XML format.  Each machine is described with the machine tag that has several attributes that characterize it.
+This file is in the XML format.  Each resource is described with the **machine** tag that has several attributes that characterize it.
 
 .. tabularcolumns:: |p{3cm}|p{3cm}|p{10cm}|
 
 ================================== =========================== ==============================================
 Characteristic                         XML attribute               Description
 ================================== =========================== ==============================================
-computer name                       hostname                   the complete name:  this is the key that uniquely determines the machine
+resource name                       name                       the resource name
+computer name                       hostname                   the complete machine name:  this is the key that uniquely determines the machine
                                                                (for example : "nickel.ccc.cea.fr") 
 alias                               alias                      character string to identify the machine (for example,  “pluton”)
 access protocol                     protocol                   "rsh" (default) or "ssh"
 access type                         mode                       interactive "i" or batch "b". By default "i"
-user name                           userName                   user to be used to connect to the machine 
+user name                           userName                   user name to be used to connect to the machine 
 operating system                    OS
-central memory size                 memInMB
+memory size                         memInMB
 clock frequency                     CPUFreqMHz
 Number of nodes                     nbOfNodes
 Number of processors per node       nbOfProcPerNode
@@ -543,13 +629,13 @@ batch manager                       batch                      if the machine ha
                                                                No default.
 ================================== =========================== ==============================================
 
-The list of SALOME modules present on the machine can also be indicated.  By default, SALOME assumes that all components 
+The list of SALOME modules of the resource can also be indicated.  By default, SALOME assumes that all components 
 requested by YACS are present.
 
 If only some components are available within a resource, the list of components must be specified.
-This list can be specified with the sub-tag component that has two attributes : name (the name of the component)
-and moduleName (the name of the module) that is optional. You can use also the sub-tag modules that is provided
-for compatibility with older versions. If the modules sub-tag is used, a component with the same name as
+This list can be specified with the sub-tag **component** that has two attributes : **name** (the name of the component)
+and **moduleName** (the name of the module) that is optional. You can use also the sub-tag **modules** that is provided
+for compatibility with older versions. If the **modules** sub-tag is used, a component with the same name as
 the moduleName attribute is added to the list.
 
 The following is an example of a resource catalog:
@@ -630,6 +716,16 @@ There is an exception to this rule that concerns the Switch node.  In this case,
 that is not a genuine node.  If it is said that block “b” in the previous example is a switch that has a case with a 
 value of 1 and a default case, then the absolute name of node “n” in the case 1 will be “c.b.p1_n” and the absolute name of the node in 
 the default case will be “c.b.default_n”.
+
+Active study
+--------------
+A schema can be executed without using the SALOME study manager. But when a schema must be executed in the context
+of a SALOME study, it is possible to specify the studyId to use.
+
+The way to do that is to set the schema property **DefaultStudyID** to the study id.
+
+In the GUI, this is set automatically to the current active studyId.
+For execution in console mode, see :ref:`xml_active_study`
 
 .. _errorreport:
 
@@ -746,6 +842,23 @@ YACS can execute calculation nodes of a scheme simultaneously.
 However, simultaneous execution of a large number of nodes can saturate the system.  
 The maximum number of simultaneous executions can be controlled by fixing the maximum number of threads used with the 
 YACS_MAX_THREADS environment variable. By default, this value is equal to 50.
+
+Schema shutdown
+-----------------
+When YACS executes a schema, it starts new containers or uses existing containers. When the execution is finished, YACS can shutdown (or stop)
+containers but the user can control how these containers are shutdown.
+
+There are several level of shutdown:
+
+- level 0: nothing is shutdown
+- level 1: shutdown all new containers not named by the user
+- level 2: same as level 1 plus all new containers named by the user
+- level 3: same as level 2 plus all existing containers used by the schema
+
+To shutdown a schema:
+
+- from GUI, see :ref:`shutdown`
+- from console, see :ref:`xml_shutdown`
 
 .. _archi:
 

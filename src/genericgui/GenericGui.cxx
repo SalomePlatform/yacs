@@ -250,8 +250,8 @@ void GenericGui::createActions()
                                      tr("Suspend execution"), tr("Suspend the current execution"),
                                      0, _parent, false, this,  SLOT(onPause()));
 
-  _resetAct = _wrapper->createAction(getMenuId(), tr("Reset the current execution"), QIcon("icons:reset.png"),
-                                     tr("Reset execution"), tr("Reset the current execution"),
+  _resetAct = _wrapper->createAction(getMenuId(), tr("Reset error nodes and restart the current execution"), QIcon("icons:reset.png"),
+                                     tr("Restart execution"), tr("Restart the current execution with reset of error nodes"),
                                      0, _parent, false, this,  SLOT(onReset()));
 
 
@@ -280,6 +280,9 @@ void GenericGui::createActions()
                                                tr("Node Container Log"), tr("get Node Container Log"),
                                                0, _parent, false, this,  SLOT(onGetContainerLog()));
 
+  _shutdownProcAct = _wrapper->createAction(getMenuId(), tr("Shutdown Proc"), QIcon("icons:kill.png"),
+                                             tr("Shutdown Proc"), tr("Shutdown Proc"),
+                                             0, _parent, false, this,  SLOT(onShutdownProc()));
 
 
   _editDataTypesAct = _wrapper->createAction(getMenuId(), tr("Edit Data Types"), QIcon("icons:kill.png"),
@@ -303,7 +306,7 @@ void GenericGui::createActions()
                                                        0, _parent, false, this,  SLOT(onSelectComponentInstance()));
 
   _newSalomeComponentAct = _wrapper->createAction(getMenuId(), tr("Create a New SALOME Component Instance"), QIcon("icons:new_salome_component.png"),
-                                                  tr("new Component Instance"), tr("Create a New SALOME Component Instance"),
+                                                  tr("Create Component Instance"), tr("Create a New SALOME Component Instance"),
                                                   0, _parent, false, this,  SLOT(onNewSalomeComponent()));
 
   _newSalomePythonComponentAct = _wrapper->createAction(getMenuId(), tr("Create a New SALOME Python Component"), QIcon("icons:new_salomepy_component.png"),
@@ -591,13 +594,13 @@ void GenericGui::createActions()
 void GenericGui::createMenus()
 {
   int aMenuId;
-  aMenuId = _wrapper->createMenu( "File", -1, -1 );
+  aMenuId = _wrapper->createMenu( tr( "File" ), -1, -1 );
   _wrapper->createMenu( _wrapper->separator(), aMenuId, -1, 10 );
-  aMenuId = _wrapper->createMenu( "YACS" , aMenuId, -1, 10 );
+  aMenuId = _wrapper->createMenu( "YACS", aMenuId, -1, 10 );
   _wrapper->createMenu( _newSchemaAct, aMenuId );
   _wrapper->createMenu( _importSchemaAct, aMenuId );
 
-  aMenuId = _wrapper->createMenu( tr( "YACS" ), -1, -1, 30 );
+  aMenuId = _wrapper->createMenu( "YACS", -1, -1, 30 );
   _wrapper->createMenu( _newSchemaAct, aMenuId );//, 10
   _wrapper->createMenu( _importSchemaAct, aMenuId );
   _wrapper->createMenu( _importSupervSchemaAct, aMenuId );
@@ -1144,6 +1147,13 @@ void GenericGui::createContext(YACS::ENGINE::Proc* proc,
     }
 
   QtGuiContext::getQtCurrent()->setNotSaved(false);
+  {
+    end_t = clock();
+    double passe =  (end_t -start_t);
+    passe = passe/CLOCKS_PER_SEC;
+    DEBTRACE("create context - end - : " << passe);
+    start_t = end_t;
+  }
 }
 
 // -----------------------------------------------------------------------------
@@ -1224,6 +1234,9 @@ void GenericGui::loadSchema(const std::string& filename,bool edit)
 
 void GenericGui::onImportSchema()
 {
+  clock_t  start_t;
+  clock_t  end_t;
+  start_t = clock();
   DEBTRACE("GenericGui::onImportSchema");
   QFileDialog dialog(_parent,
                      "Choose a filename to load" ,
@@ -1243,6 +1256,11 @@ void GenericGui::onImportSchema()
 
   if ( !fn.isEmpty() )
     {
+      // add ".xml" suffix
+      QFileInfo fi(fn);
+      if (!fi.exists() && fi.suffix() != "xml")
+        fn += ".xml";
+
       DEBTRACE("file loaded : " <<fn.toStdString());
       YACS::ENGINE::Proc *proc = 0;
 
@@ -1252,6 +1270,14 @@ void GenericGui::onImportSchema()
       catch (...) {
       }
       
+      {
+        end_t = clock();
+        double passe =  (end_t -start_t);
+        passe = passe/CLOCKS_PER_SEC;
+        DEBTRACE("load xml file : " << passe);
+        start_t = end_t;
+      }
+
       if (!proc)
         {
           QMessageBox msgBox(QMessageBox::Critical,
@@ -1290,14 +1316,21 @@ void GenericGui::onImportSupervSchema()
 
   if (fn.isEmpty()) return;
 
+  // add ".xml" suffix
+  QFileInfo fi(fn);
+  if (!fi.exists() && fi.suffix() != "xml")
+    fn += ".xml";
+
   DEBTRACE("file loaded : " <<fn.toStdString());
   QString tmpFileName;
   try
     {
 #ifdef WNT
       QString tmpDir = getenv("TEMP");
+	  QString fileExt = "bat";
 #else
       QString tmpDir = "/tmp";
+	  QString fileExt = "sh";
 #endif
       QDir aTmpDir(tmpDir);
       aTmpDir.mkdir(QString("YACS_") + getenv("USER"));
@@ -1308,7 +1341,7 @@ void GenericGui::onImportSupervSchema()
       tmpFileName = aTmpDir.absoluteFilePath(tmpFileName);
       DEBTRACE(tmpFileName.toStdString());
       
-      QString aCall = "salomeloader.sh " + fn + " " + tmpFileName + " > " + tmpOutput;
+      QString aCall = "salomeloader."+ fileExt+ " "+ fn + " " + tmpFileName + " > " + tmpOutput;
       DEBTRACE(aCall.toStdString());
       
       int ret = system(aCall.toAscii());
@@ -1600,6 +1633,11 @@ void GenericGui::onLoadAndRunSchema()
                                              tr( "XML-Files (*.xml);;All Files (*)" ));
   if ( !fn.isEmpty() )
     {
+      // add ".xml" suffix
+      QFileInfo fi(fn);
+      if (!fi.exists() && fi.suffix() != "xml")
+        fn += ".xml";
+
       DEBTRACE("file loaded : " <<fn.toStdString());
       YACS::ENGINE::Proc *proc =0;
       
@@ -1646,17 +1684,14 @@ void GenericGui::onBatch() {
 
   proc = _loader->load(fb.toLatin1());
   if (!proc) {
-    QMessageBox msgBox(QMessageBox::Critical,
-		       "Import Batch Schema, native YACS XML format",
-		       "The batch_graph.xml has not the native YACS XML format or is not readable." );
+    QMessageBox msgBox(QMessageBox::Critical, "Import Batch Schema, native YACS XML format",
+                       "The batch_graph.xml has not the native YACS XML format or is not readable." );
     msgBox.exec();
   } else {
     YACS::ENGINE::Logger* logger= proc->getLogger("parser");
     if(!logger->isEmpty()) {
       DEBTRACE(logger->getStr());
     };
-//     QString fn = QtGuiContext::getQtCurrent()->getFileName();
-//     proc->nodeMap["Submit"]->getInputPort("graphfic")->edInit(fn.toLatin1().data());
     createContext(proc, fb, "", true);
   };
 }
@@ -1724,7 +1759,7 @@ void GenericGui::onGetYacsContainerLog()
   if (!QtGuiContext::getQtCurrent()) return;
   if (!QtGuiContext::getQtCurrent()->getGuiExecutor()) return;
   string log = QtGuiContext::getQtCurrent()->getGuiExecutor()->getContainerLog();
-  LogViewer *lv = new LogViewer("YACS Container Log", _parent);
+  ContainerLogViewer *lv = new ContainerLogViewer("YACS Container Log", _parent);
   lv->readFile(log);
   lv->show();
 }
@@ -1809,7 +1844,13 @@ void GenericGui::onGetContainerLog()
   lv->show();
 }
 
-
+void GenericGui::onShutdownProc()
+{
+  DEBTRACE("GenericGui::onShutdownProc");
+  if (!QtGuiContext::getQtCurrent()) return;
+  if (!QtGuiContext::getQtCurrent()->getGuiExecutor()) return;
+  QtGuiContext::getQtCurrent()->getGuiExecutor()->shutdownProc();
+}
 
 void GenericGui::onEditDataTypes()
 {
@@ -2127,6 +2168,10 @@ void GenericGui::onToggleStopOnError(bool checked)
   DEBTRACE("GenericGui::onToggleStopOnError " << checked);
   if (!QtGuiContext::getQtCurrent()) return;
   if (!QtGuiContext::getQtCurrent()->getGuiExecutor()) return;
+  if(checked)
+    QtGuiContext::getQtCurrent()->getGuiExecutor()->setStopOnError(false);
+  else
+    QtGuiContext::getQtCurrent()->getGuiExecutor()->unsetStopOnError();
 }
 
 void GenericGui::onToggleSceneItemVisible(bool checked)
@@ -2434,4 +2479,9 @@ void GenericGui::emphasizePortLink(YACS::HMI::SubjectDataPort* sub, bool emphasi
       sin->update(EMPHASIZE, emphasize, sub);
       sout->update(EMPHASIZE, emphasize, sub);
     }
+}
+
+void GenericGui::onHelpContextModule( const QString& theComponentName, const QString& theFileName, const QString& theContext)
+{
+  _wrapper->onHelpContextModule(theComponentName,theFileName,theContext);
 }

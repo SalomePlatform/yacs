@@ -27,7 +27,6 @@
 #include "YacsTrace.hxx"
 
 using namespace std;
-//using namespace YACS::ENGINE;
 using namespace YACS::HMI;
 
 
@@ -49,7 +48,7 @@ LinkAStar::LinkAStar(const LinkMatrix& linkMatrix) : _linkMatrix(linkMatrix), _f
 {
   _closedList.clear();
   _openList.clear();
-
+  _pq=std::priority_queue<Cost>();
 }
 
 LinkAStar::~LinkAStar()
@@ -60,6 +59,7 @@ bool LinkAStar::computePath(LNode from, LNode to)
 {
   _closedList.clear();
   _openList.clear();
+  _pq=std::priority_queue<Cost>();
   _from = from;
   _to = to;
   bool isPath = false;
@@ -151,11 +151,13 @@ void LinkAStar::addNeighbours(std::pair<int,int> currentNode)
               if (tmp.getFCost() < _openList[pos].getFCost())
                 {
                   _openList[pos] = tmp; // --- new path better, update node
+                  _pq.push(Cost(tmp.getFCost(),pos));
                 }
             }
           else
             {
               _openList[pos] = tmp; // --- add node
+              _pq.push(Cost(tmp.getFCost(),pos));
             }
         }
     }
@@ -163,14 +165,13 @@ void LinkAStar::addNeighbours(std::pair<int,int> currentNode)
  
 std::pair<int,int> LinkAStar::bestNode(const LNodeMap& aList)
 {
-  double fCost = (aList.begin()->second).getFCost();
-  pair<int, int> pos = aList.begin()->first;
-  for (LNodeMap::const_iterator it = aList.begin(); it != aList.end(); ++it)
-    if ((it->second).getFCost() < fCost)
-      {
-        fCost = (it->second).getFCost();
-        pos = it->first;
-      }
+  std::pair<int, int> pos;
+  do
+    {
+      pos=_pq.top().pos;
+      _pq.pop();
+    }
+  while(aList.count(pos)==0);
   return pos;
 }
 

@@ -119,3 +119,7 @@ void SchemaComponentItem::popupMenu(QWidget *caller, const QPoint &globalPos)
   m.popupMenu(caller, globalPos);
 }
 
+QVariant SchemaComponentItem::editionWhatsThis(int column) const
+{
+  return "<p>To edit the component instance properties, select the component instance and use the input panel. <a href=\"modification.html#property-page-for-component-instance-definition\">More...</a></p>";
+}

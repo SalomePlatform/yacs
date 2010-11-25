@@ -19,6 +19,8 @@
 
 #include "EditionPyFunc.hxx"
 #include "InlineNode.hxx"
+#include "InputPort.hxx"
+#include "OutputPort.hxx"
 #include "QtGuiContext.hxx"
 #include "Container.hxx"
 
@@ -105,6 +107,9 @@ EditionPyFunc::EditionPyFunc(Subject* subject,
   _liFuncName = new QLineEdit( "liFuncName", this );
   glt->addWidget(_liFuncName, 0, 1, 1, 1);
   _liFuncName->setText(_funcName.c_str());
+  QPushButton* gener_template = new QPushButton("Template",this);
+  connect(gener_template,SIGNAL(clicked()),this, SLOT(onTemplate()));
+  glt->addWidget(gener_template, 0, 2, 1, 1);
   _glayout->addLayout( glt , 1);
 
   _glayout->addWidget( _sci );
@@ -266,5 +271,35 @@ void EditionPyFunc::update(GuiEvent event, int type, Subject* son)
 
       fillContainerPanel();
     }
+}
+
+void EditionPyFunc::onTemplate()
+{
+  if(_funcName=="")return;
+
+  ElementaryNode* node = dynamic_cast<ElementaryNode*>(_subFuncNode->getNode());
+
+  std::string text;
+  text = "def " + _funcName + "(";
+
+  std::list<InputPort*> iplist = node->getSetOfInputPort();
+  std::list<InputPort*>::iterator ipos = iplist.begin();
+  for (; ipos != iplist.end(); ipos++)
+    {
+      text = text + (*ipos)->getName() + ",";
+    }
+  text = text + "):\n";
+  text = text + "  return ";
+
+  std::list<OutputPort*> oplist = node->getSetOfOutputPort();
+  std::list<OutputPort*>::iterator opos = oplist.begin();
+  for (; opos != oplist.end(); opos++)
+    {
+      text = text + (*opos)->getName() + ",";
+    }
+  text[text.length()-1]=' ';
+  text = text + "\n";
+  _sci->append(text.c_str());
+  onApply();
 }
 

@@ -54,10 +54,10 @@ namespace YACS
       LocalLibrary(void *h, InitFunction i, RunFunction r, 
 #endif
                             PingFunction p, TerminateFunction t) 
-	      : handle(h), initHandle(i), runHandle(r), 
+        : handle(h), initHandle(i), runHandle(r), 
                            pingHandle(p), terminateHandle(t) {}
       LocalLibrary() 
-	      : handle(NULL), initHandle(NULL), runHandle(NULL), 
+        : handle(NULL), initHandle(NULL), runHandle(NULL), 
                               pingHandle(NULL), terminateHandle(NULL) {}
                               
       bool good() {
@@ -80,7 +80,7 @@ namespace YACS
                                         bool forcedLoad = false);
       CppComponent * createComponentInstance(const char * componentName);
       void createInternalInstance(const char * componentName, 
-    		                      void *& obj, RunFunction &r, TerminateFunction &t);
+                                  void *& obj, RunFunction &r, TerminateFunction &t);
      void unLoadComponentLibrary(const std::string & aCompName);
       void unregisterComponentInstance(CppComponent * C);
                   
@@ -121,7 +121,7 @@ namespace YACS
       bool loadComponentLibrary(const std::string & componentName) throw (YACS::Exception);
       CppComponent * createComponentInstance(const std::string & componentName, int studyID = 0);
       void createInternalInstance(const std::string & componentName, 
-    		                      void *& obj, RunFunction &r, TerminateFunction &t);
+                                  void *& obj, RunFunction &r, TerminateFunction &t);
       void unregisterComponentInstance(CppComponent * C);
       
      protected:

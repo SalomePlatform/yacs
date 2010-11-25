@@ -91,6 +91,10 @@
 #define _DataPort_hiBrush       "DataPort_hiBrush"
 #define _DataPort_pen           "DataPort_pen"
 #define _DataPort_hiPen         "DataPort_hiPen"
+#define _DataStreamPort_brush         "DataStreamPort_brush"
+#define _DataStreamPort_hiBrush       "DataStreamPort_hiBrush"
+#define _DataStreamPort_pen           "DataStreamPort_pen"
+#define _DataStreamPort_hiPen         "DataStreamPort_hiPen"
 
 #define __dragOver       "dragOver"
 
@@ -99,6 +103,7 @@
 
 #define COMPONENTINSTANCENEW    true
 #define PYTHONFONT              QFont("Courier")
+#define PYTHONEXTERNALEDITOR    ""
 #define USERCATALOG             "YACSUserCatalog.xml"
 #define ADDROWCOLS              true
 #define STRAIGHTLINKS           false
@@ -106,6 +111,7 @@
 #define SIMPLIFYLINK            true
 #define ENSUREVISIBLEWHENMOVED  true
 #define TABPANELSUP             true
+#define DOCKWIDGETPRIORITY      0
 
 #define EDITEDNODEBRUSHCOLOR    QColor(255, 255, 190)
 #define NORMALNODEBRUSHCOLOR    QColor(230, 235, 255)
@@ -150,6 +156,8 @@
 #define CTRLLINKDRAW_COLOR        QColor(192,   0, 192)
 #define CTRLLINK_SELECT_COLOR     QColor(255, 192, 255)
 #define LINK_PEN_DARKNESS         150
+#define LINK_THICKNESS            1.0
+#define LINK_SEPARATION_WEIGHT    10
 
 #define Scene_pen_              QColor(  0,   0, 128)
 #define Scene_hiPen_            QColor(  0,   0, 190)
@@ -175,6 +183,10 @@
 #define DataPort_hiBrush_       QColor(127, 227, 116)
 #define DataPort_pen_           QColor( 15, 180,   0)
 #define DataPort_hiPen_         QColor( 11, 128,   0)
+#define DataStreamPort_brush_   QColor(158, 227, 151)
+#define DataStreamPort_hiBrush_ QColor(127, 227, 116)
+#define DataStreamPort_pen_     QColor( 15, 180,   0)
+#define DataStreamPort_hiPen_   QColor( 11, 128,   0)
 
 #define dragOver_               QColor(255,   0,   0)
 
@@ -191,11 +203,13 @@ namespace YACS {
         // General resource
         static bool COMPONENT_INSTANCE_NEW;
         static QString userCatalog;
+        static QString pythonExternalEditor;
         static bool addRowCols;
         static bool straightLinks;
         static bool autoComputeLinks;
         static bool simplifyLink;
         static bool ensureVisibleWhenMoved;
+        static int  dockWidgetPriority;
 
         // Colors of state of nodes
         static QColor editedNodeBrushColor;
@@ -246,6 +260,8 @@ namespace YACS {
         static QColor control_link_select_color;
 
         static int link_pen_darkness;
+        static int link_separation_weight;
+        static double link_thickness;
 
         // Node colors
         static QColor Scene_pen;
@@ -272,6 +288,10 @@ namespace YACS {
         static QColor DataPort_hiBrush;
         static QColor DataPort_pen;
         static QColor DataPort_hiPen;
+        static QColor DataStreamPort_brush;
+        static QColor DataStreamPort_hiBrush;
+        static QColor DataStreamPort_pen;
+        static QColor DataStreamPort_hiPen;
 
         static QColor dragOver;
 

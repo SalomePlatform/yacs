@@ -32,6 +32,7 @@ namespace YACS
   { 
     /*!
      * \brief Base class for dynamically (fully or semifully) built graphs.
+     * \ingroup Nodes
      */
     class YACSLIBENGINE_EXPORT DynParaLoop : public ComposedNode
     {
@@ -39,19 +40,25 @@ namespace YACS
       typedef enum
         {
           INIT_NODE = 5,
-          WORK_NODE = 6
+          WORK_NODE = 6,
+          FINALIZE_NODE = 7
       } TypeOfNode;
     protected:
       Node *_node;
       Node *_initNode;
+      Node *_finalizeNode;
       unsigned _nbOfEltConsumed;
       std::vector<int> _execIds;
       AnyInputPort _nbOfBranches;
       AnyOutputPort _splittedPort;
       std::vector<Node *> _execNodes;
       std::vector<Node *> _execInitNodes;
+      std::vector<Node *> _execFinalizeNodes;
+      int _initializingCounter;
+      int _unfinishedCounter;
     protected:
       static const char NAME_OF_SPLITTED_SEQ_OUT[];
+      static const char OLD_NAME_OF_SPLITTED_SEQ_OUT[];
       static const char NAME_OF_NUMBER_OF_BRANCHES[];
     protected:
       DynParaLoop(const std::string& name, TypeCode *typeOfDataSplitted);
@@ -60,9 +67,12 @@ namespace YACS
     public:
       Node *edRemoveNode();
       Node *edRemoveInitNode();
+      Node *edRemoveFinalizeNode();
       //Node* DISOWNnode is a SWIG notation to indicate that the ownership of the node is transfered to C++
       Node *edSetNode(Node *DISOWNnode);
       Node *edSetInitNode(Node *DISOWNnode);
+      Node *edSetFinalizeNode(Node *DISOWNnode);
+      virtual bool edAddDFLink(OutPort *start, InPort *end) throw(Exception);
       void init(bool start=true);
       InputPort *edGetNbOfBranchesPort() { return &_nbOfBranches; }
       int getNumberOfInputPorts() const;
@@ -89,6 +99,10 @@ namespace YACS
       void forceMultiplicity(unsigned value);
       virtual void checkBasicConsistency() const throw(Exception);
       virtual std::string getErrorReport();
+      void accept(Visitor *visitor);
+      Node * getInitNode();
+      Node * getExecNode();
+      Node * getFinalizeNode();
     protected:
       void buildDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView);
       void buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView);
@@ -106,6 +120,10 @@ namespace YACS
       InputPort *getDynInputPortByAbsName(int branchNb, const std::string& name, bool initNodeAdmitted);
       virtual void forwardExecStateToOriginalBody(Node *execNode);
       virtual YACS::Event updateStateOnFailedEventFrom(Node *node);
+      std::vector<Node *> cloneAndPlaceNodesCoherently(const std::vector<Node *> & origNodes);
+      Node * checkConsistencyAndSetNode(Node* &nodeToReplace, Node* DISOWNnode);
+      Node * removeNode(Node* &nodeToRemove);
+      virtual void shutdown(int level);
     };
   }
 }

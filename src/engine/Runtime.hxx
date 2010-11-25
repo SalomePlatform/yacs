@@ -89,7 +89,8 @@ namespace YACS
       virtual ForLoop* createForLoop(const std::string& name);
       virtual ForEachLoop* createForEachLoop(const std::string& name,TypeCode * type);
       virtual OptimizerLoop* createOptimizerLoop(const std::string& name,const std::string& algLib,
-                                                 const std::string& factoryName,bool algInitOnFile,const std::string& kind="");
+                                                 const std::string& factoryName,bool algInitOnFile,
+                                                 const std::string& kind="", Proc * procForTypes = NULL);
       virtual Switch* createSwitch(const std::string& name);
 
       virtual TypeCode * createInterfaceTc(const std::string& id, const std::string& name,

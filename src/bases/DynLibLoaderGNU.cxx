@@ -87,7 +87,15 @@ bool DynLibLoaderGNU::load()
 {
   std::string fullLibName(_libName);
   fullLibName+=_extForDynLib;
+  dlerror();
   _handleOnLoadedLib=dlopen(fullLibName.c_str(),RTLD_LAZY | RTLD_GLOBAL);
+  char *message=dlerror();
+  if (message != NULL)
+    {
+      std::string error = "Error while trying to load library with name " + fullLibName +
+                          " with the following internal message: " + message;
+      throw YACS::Exception(error);
+    }
   return _handleOnLoadedLib != NULL;
 }
 

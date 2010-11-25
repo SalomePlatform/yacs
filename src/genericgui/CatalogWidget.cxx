@@ -278,10 +278,7 @@ void CatalogWidget::mousePressEvent(QMouseEvent  *event)
 {
   DEBTRACE("CatalogWidget::mousePressEvent ");
   _dragModifier= false;
-  //std::cerr << (QApplication::mouseButtons() == Qt::MidButton) << std::endl;
-  if (event->button() == Qt::LeftButton) 
-    _dragModifier= event->modifiers() & (Qt::ControlModifier | Qt::ShiftModifier);
-  else if(event->button() == Qt::MidButton)
+  if(event->button() == Qt::MidButton)
     _dragModifier= true;
   QTreeWidget::mousePressEvent(event);
 }

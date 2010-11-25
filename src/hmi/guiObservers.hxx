@@ -38,6 +38,7 @@ namespace YACS
     class Bloc;
     class Proc;
     class ForLoop;
+    class DynParaLoop;
     class ForEachLoop;
     class WhileLoop;
     class Switch;
@@ -84,11 +85,11 @@ namespace YACS
         PASTE,
         ORDER,
         EDIT,
-	UPDATE,
-	UPDATEPROGRESS,
+        UPDATE,
+        UPDATEPROGRESS,
         SYNCHRO,
-	UP,
-	DOWN,
+        UP,
+        DOWN,
         RENAME,
         NEWROOT,
         ENDLOAD,
@@ -342,10 +343,10 @@ namespace YACS
       SubjectComposedNode(YACS::ENGINE::ComposedNode *composedNode, Subject *parent);
       virtual ~SubjectComposedNode();
       virtual SubjectNode* addNode(YACS::ENGINE::Catalog *catalog,
-				   std::string compo,
-				   std::string type,
-				   std::string name,
-           bool newCompoInst);
+                                   std::string compo,
+                                   std::string type,
+                                   std::string name,
+                                   bool newCompoInst);
       virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const  { return 0; }
       virtual void loadChildren();
       virtual void loadLinks();
@@ -386,10 +387,10 @@ namespace YACS
       SubjectBloc(YACS::ENGINE::Bloc *bloc, Subject *parent);
       virtual ~SubjectBloc();
       virtual SubjectNode* addNode(YACS::ENGINE::Catalog *catalog,
-				   std::string compo,
-				   std::string type,
-				   std::string name,
-           bool newCompoInst);
+                                   std::string compo,
+                                   std::string type,
+                                   std::string name,
+                                   bool newCompoInst);
       virtual void removeNode(SubjectNode* child);
       virtual void completeChildrenSubjectList(SubjectNode *son);
       virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const;
@@ -423,6 +424,7 @@ namespace YACS
       YACS::ENGINE::Container* getContainer() const;
       bool isUsed() {return !_subComponentSet.empty(); };
       virtual TypeOfElem getType(){return CONTAINER;}
+      void registerUndoDestroy();
     protected:
       YACS::ENGINE::Container* _container;
       std::set<SubjectComponent*> _subComponentSet;
@@ -511,10 +513,10 @@ namespace YACS
       SubjectForLoop(YACS::ENGINE::ForLoop *forLoop, Subject *parent);
       virtual ~SubjectForLoop();
       virtual SubjectNode* addNode(YACS::ENGINE::Catalog *catalog,
-				   std::string compo,
-				   std::string type,
-				   std::string name,
-           bool newCompoInst);
+                                   std::string compo,
+                                   std::string type,
+                                   std::string name,
+                                   bool newCompoInst);
       virtual void recursiveUpdate(GuiEvent event, int type, Subject* son);
       virtual void completeChildrenSubjectList(SubjectNode *son);
       virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const { return _body; }
@@ -536,10 +538,10 @@ namespace YACS
       SubjectWhileLoop(YACS::ENGINE::WhileLoop *whileLoop, Subject *parent);
       virtual ~SubjectWhileLoop();
       virtual SubjectNode* addNode(YACS::ENGINE::Catalog *catalog,
-				   std::string compo,
-				   std::string type,
-				   std::string name,
-           bool newCompoInst);
+                                   std::string compo,
+                                   std::string type,
+                                   std::string name,
+                                   bool newCompoInst);
       virtual void recursiveUpdate(GuiEvent event, int type, Subject* son);
       virtual void completeChildrenSubjectList(SubjectNode *son);
       virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const { return _body; }
@@ -561,12 +563,12 @@ namespace YACS
       SubjectSwitch(YACS::ENGINE::Switch *aSwitch, Subject *parent);
       virtual ~SubjectSwitch();
       virtual SubjectNode* addNode(YACS::ENGINE::Catalog *catalog,
-				   std::string compo,
-				   std::string type,
-				   std::string name,
-           bool newCompoInst,
-				   int swCase,
-				   bool replace = false);
+                                   std::string compo,
+                                   std::string type,
+                                   std::string name,
+                                   bool newCompoInst,
+                                   int swCase,
+                                   bool replace = false);
       virtual void recursiveUpdate(GuiEvent event, int type, Subject* son);
       virtual void removeNode(SubjectNode* son);
       std::map<int, SubjectNode*> getBodyMap();
@@ -585,56 +587,59 @@ namespace YACS
       std::map<int, SubjectNode*> _bodyMap;
     };
 
-    class SubjectForEachLoop: public SubjectComposedNode
+    class SubjectDynParaLoop: public SubjectComposedNode
+    {
+    public:
+      SubjectDynParaLoop(YACS::ENGINE::DynParaLoop * dynParaLoop, Subject * parent);
+      virtual ~SubjectDynParaLoop();
+      virtual SubjectNode * addNode(YACS::ENGINE::Catalog * catalog,
+                                    std::string compo,
+                                    std::string type,
+                                    std::string name,
+                                    bool newCompoInst);
+      virtual void recursiveUpdate(GuiEvent event, int type, Subject * son);
+      virtual void completeChildrenSubjectList(SubjectNode * son);
+      virtual void removeNode(SubjectNode * child);
+      virtual SubjectNode * getChild(YACS::ENGINE::Node * node = NULL) const;
+      virtual bool setNbBranches(std::string nbBranches);
+      virtual bool hasValue();
+      virtual std::string getValue();
+      virtual void houseKeepingAfterCutPaste(bool isCut, SubjectNode * son);
+      virtual void clean(Command * command = NULL);
+      void localclean(Command * command = NULL);
+    protected:
+      YACS::ENGINE::DynParaLoop * _dynParaLoop;
+      SubjectNode * _subjectExecNode;
+      SubjectNode * _subjectInitNode;
+      SubjectNode * _subjectFinalizeNode;
+    };
+
+    class SubjectForEachLoop: public SubjectDynParaLoop
     {
     public:
       SubjectForEachLoop(YACS::ENGINE::ForEachLoop *forEachLoop, Subject *parent);
       virtual ~SubjectForEachLoop();
-      virtual SubjectNode* addNode(YACS::ENGINE::Catalog *catalog,
-				   std::string compo,
-				   std::string type,
-				   std::string name,
-           bool newCompoInst);
-      virtual void recursiveUpdate(GuiEvent event, int type, Subject* son);
       virtual void completeChildrenSubjectList(SubjectNode *son);
-      virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const { return _body; }
-      virtual bool setNbBranches(std::string nbBranches);
-      virtual bool hasValue();
-      virtual std::string getValue();
-      virtual void houseKeepingAfterCutPaste(bool isCut, SubjectNode *son);
+      virtual void removeNode(SubjectNode * child);
       virtual void clean(Command *command=0);
       void localclean(Command *command=0);
       virtual TypeOfElem getType(){return FOREACHLOOP;}
     protected:
       YACS::ENGINE::ForEachLoop *_forEachLoop;
-      SubjectNode* _body;
       SubjectNode* _splitter;
     };
 
-    class SubjectOptimizerLoop: public SubjectComposedNode
+    class SubjectOptimizerLoop: public SubjectDynParaLoop
     {
     public:
       SubjectOptimizerLoop(YACS::ENGINE::OptimizerLoop *optimizerLoop, Subject *parent);
       virtual ~SubjectOptimizerLoop();
-      virtual SubjectNode* addNode(YACS::ENGINE::Catalog *catalog,
-				   std::string compo,
-				   std::string type,
-				   std::string name,
-           bool newCompoInst);
-      virtual void recursiveUpdate(GuiEvent event, int type, Subject* son);
-      virtual void completeChildrenSubjectList(SubjectNode *son);
-      virtual SubjectNode* getChild(YACS::ENGINE::Node* node=0) const { return _body; }
-      virtual bool setNbBranches(std::string nbBranches);
-      virtual void houseKeepingAfterCutPaste(bool isCut, SubjectNode *son);
       virtual void clean(Command *command=0);
       void localclean(Command *command=0);
       virtual TypeOfElem getType(){return OPTIMIZERLOOP;}
-      virtual bool hasValue();
-      virtual std::string getValue();
       virtual bool setAlgorithm(const std::string& alglib,const std::string& symbol);
     protected:
       YACS::ENGINE::OptimizerLoop *_optimizerLoop;
-      SubjectNode* _body;
     };
 
     class SubjectElementaryNode: public SubjectNode

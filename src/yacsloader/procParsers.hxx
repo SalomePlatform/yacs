@@ -209,7 +209,7 @@ void proctypeParser<T>::onStart(const XML_Char* el, const XML_Char** attr)
               }
             else
               {
-                std::cerr << "There is no parser for this element type. It will be ignored!" << std::endl;
+                std::cerr << "There is no parser for this element type. It will be ignored! " << element << std::endl;
               }
           }
       }

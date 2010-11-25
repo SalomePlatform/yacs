@@ -26,11 +26,14 @@ using namespace YACS::HMI;
 
 bool Resource::COMPONENT_INSTANCE_NEW = COMPONENTINSTANCENEW;
 QString Resource::userCatalog = USERCATALOG;
+QString Resource::pythonExternalEditor = PYTHONEXTERNALEDITOR;
 bool Resource::addRowCols = ADDROWCOLS;
 bool Resource::straightLinks = STRAIGHTLINKS;
 bool Resource::autoComputeLinks = AUTOCOMPUTELINKS;
 bool Resource::simplifyLink = SIMPLIFYLINK;
 bool Resource::ensureVisibleWhenMoved = ENSUREVISIBLEWHENMOVED;
+int Resource::dockWidgetPriority = DOCKWIDGETPRIORITY;
+QFont  Resource::pythonfont = PYTHONFONT;
 
 // Statics for color of states
 // ---------------------------
@@ -74,8 +77,6 @@ QColor Resource::DEFAULT              = DEFAULT_;
 // Statics for color of links
 // --------------------------
 
-QFont  Resource::pythonfont = PYTHONFONT;
-
 QColor Resource::link_draw_color           = LINKDRAW_COLOR;
 QColor Resource::stream_link_draw_color    = STREAMLINKDRAW_COLOR;
 QColor Resource::stream_link_select_color  = STREAMLINK_SELECT_COLOR;
@@ -84,6 +85,8 @@ QColor Resource::control_link_select_color = CTRLLINK_SELECT_COLOR;
 QColor Resource::control_link_draw_color   = CTRLLINKDRAW_COLOR;
 
 int Resource::link_pen_darkness            = LINK_PEN_DARKNESS;
+int Resource::link_separation_weight       = LINK_SEPARATION_WEIGHT;
+double Resource::link_thickness            = LINK_THICKNESS;
 
 // Statics for color of nodes
 // --------------------------
@@ -112,6 +115,10 @@ QColor Resource::DataPort_brush         = DataPort_brush_;
 QColor Resource::DataPort_hiBrush       = DataPort_hiBrush_;
 QColor Resource::DataPort_pen           = DataPort_pen_;
 QColor Resource::DataPort_hiPen         = DataPort_hiPen_;
+QColor Resource::DataStreamPort_brush         = DataStreamPort_brush_;
+QColor Resource::DataStreamPort_hiBrush       = DataStreamPort_hiBrush_;
+QColor Resource::DataStreamPort_pen           = DataStreamPort_pen_;
+QColor Resource::DataStreamPort_hiPen         = DataStreamPort_hiPen_;
 
 QColor Resource::dragOver               = dragOver_;
 

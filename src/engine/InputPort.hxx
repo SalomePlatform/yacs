@@ -78,12 +78,14 @@ namespace YACS
       virtual std::string dump();
       virtual void setStringRef(std::string strRef);
       virtual std::string typeName() {return "YACS__ENGINE__InputPort";}
+      bool canBeNull() const;
     protected:
       InputPort(const InputPort& other, Node *newHelder);
-      InputPort(const std::string& name, Node *node, TypeCode* type);
+      InputPort(const std::string& name, Node *node, TypeCode* type, bool canBeNull = false);
     protected:
       Any *_initValue;
       std::string _stringRef;
+      bool _canBeNull;
     };
 
 /*! \brief Base class for Proxy Input Ports

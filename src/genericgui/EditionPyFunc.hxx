@@ -41,6 +41,7 @@ namespace YACS
       virtual void fillContainerPanel();
       virtual void changeContainer(int);
       virtual void update(GuiEvent event, int type, Subject* son);
+      virtual void onTemplate();
 
     public:
       EditionPyFunc(Subject* subject,

@@ -23,9 +23,6 @@
 #include "parserBase.hxx"
 #include "factory.hxx"
 
-//#define _DEVDEBUG_
-#include "YacsTrace.hxx"
-
 namespace YACS
 {
 

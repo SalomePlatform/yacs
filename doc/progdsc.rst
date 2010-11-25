@@ -202,7 +202,7 @@ This method is implemented as follows:
 
  // Create the provides port
  _Ex_Hello_port = new HelloWorld_i();
- _Ex_Hello_port_properties = PortProperties_i();
+ _Ex_Hello_port_properties = new PortProperties_i();
 
  // Save the provides port
  add_provides_port(_Ex_Hello_port->_this(), 

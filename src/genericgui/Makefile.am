@@ -34,7 +34,8 @@ UIC_FILES =       \
   ui_LogViewer.h      \
   ui_TablePorts.h     \
   ui_TableSwitch.h    \
-  ui_CaseSwitch.h
+  ui_CaseSwitch.h     \
+  ui_FormOptimizerLoop.h
 
 BUILT_SOURCES =       \
   $(UIC_FILES)
@@ -51,7 +52,8 @@ EXTRA_DIST =        \
   LogViewer.ui      \
   TablePorts.ui     \
   TableSwitch.ui    \
-  CaseSwitch.ui
+  CaseSwitch.ui     \
+  FormOptimizerLoop.ui
 
 libGenericGui_la_SOURCES =        \
   GenericGuiExport.hxx            \
@@ -117,6 +119,8 @@ libGenericGui_la_SOURCES =        \
   FormEditTree.cxx                \
   FormLoop.hxx                    \
   FormLoop.cxx                    \
+  FormOptimizerLoop.hxx           \
+  FormOptimizerLoop.cxx           \
   FormSchemaView.hxx              \
   FormSchemaView.cxx              \
   FormUndoRedo.hxx                \
@@ -233,6 +237,8 @@ libGenericGui_la_SOURCES =        \
   ValueDelegate.cxx               \
   VisitorSaveGuiSchema.hxx        \
   VisitorSaveGuiSchema.cxx        \
+  YACSWidgets.hxx                 \
+  YACSWidgets.cxx                 \
   YACSGuiLoader.hxx               \
   YACSGuiLoader.cxx
 
@@ -267,6 +273,7 @@ MOC_FILES = \
   FormEditItem_moc.cxx            \
   FormEditTree_moc.cxx            \
   FormLoop_moc.cxx                \
+  FormOptimizerLoop_moc.cxx       \
   FormSchemaView_moc.cxx          \
   FormUndoRedo_moc.cxx            \
   GenericGui_moc.cxx              \
@@ -293,6 +300,7 @@ MOC_FILES = \
   TablePortsEdition_moc.cxx       \
   TableSwitch_moc.cxx             \
   TreeView_moc.cxx                \
+  YACSWidgets_moc.cxx             \
   ValueDelegate_moc.cxx
 
 nodist_libGenericGui_la_SOURCES = \

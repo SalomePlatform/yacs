@@ -213,19 +213,21 @@ void SceneComposedNodeItem::update(GuiEvent event, int type, Subject* son)
               ScenePortItem* to  = dynamic_cast<ScenePortItem*>(scin);
               if (dynamic_cast<SubjectInputDataStreamPort*>(sinp))
                 {
-                  item = new SceneDSLinkItem(_scene,
+                  SceneDSLinkItem* item = new SceneDSLinkItem(_scene,
                                              this,
                                              from, to,
                                              son->getName().c_str(),
                                              son);
+                  item->updateShape();
                 }
               else
                 {
-                  item = new SceneLinkItem(_scene,
+                  SceneLinkItem* item = new SceneLinkItem(_scene,
                                            this,
                                            from, to,
                                            son->getName().c_str(),
                                            son);
+                  item->updateShape();
                 }
               if (Scene::_autoComputeLinks && !QtGuiContext::getQtCurrent()->isLoading())
                 {
@@ -254,11 +256,12 @@ void SceneComposedNodeItem::update(GuiEvent event, int type, Subject* son)
               ScenePortItem* from = nodefrom->getCtrlOutPortItem();
               ScenePortItem* to = nodeto->getCtrlInPortItem();
               if (!to || !from) DEBTRACE("CONTROLLINK problem -----------------");
-              item = new SceneCtrlLinkItem(_scene,
+              SceneCtrlLinkItem* item = new SceneCtrlLinkItem(_scene,
                                            this,
                                            from, to,
                                            son->getName().c_str(),
                                            son);
+              item->updateShape();
               if (Scene::_autoComputeLinks && !QtGuiContext::getQtCurrent()->isLoading())
                 {
                   YACS::HMI::SubjectProc* subproc = QtGuiContext::getQtCurrent()->getSubjectProc();
@@ -351,7 +354,7 @@ void SceneComposedNodeItem::autoPosNewChild(AbstractSceneItem *item,
       item->setTopLeft(_eventPos);
     }
   collisionResolv(it, -it->boundingRect().bottomRight()); // as if the new item was coming from top left (previous position outside)
-  if (Scene::_autoComputeLinks) rebuildLinks();
+  if (Scene::_autoComputeLinks && !QtGuiContext::getQtCurrent()->isLoading()) rebuildLinks();
   _eventPos.setX(0);
   _eventPos.setY(0);
 }
@@ -387,7 +390,7 @@ void SceneComposedNodeItem::reorganizeShrinkExpand() {
     if (no) {
       SceneComposedNodeItem* scni = dynamic_cast<SceneComposedNodeItem*>(no);
       if (scni) {
-	b1 = scni!=this;
+        b1 = scni!=this;
       };
     };
 
@@ -395,15 +398,15 @@ void SceneComposedNodeItem::reorganizeShrinkExpand() {
     if (no) {
       SceneComposedNodeItem* scni = dynamic_cast<SceneComposedNodeItem*>(no);
       if (scni) {
-	b2 = scni!=this;
+        b2 = scni!=this;
       };
     };
 
     if (b1 && b2) {
       if (isExpanding) {
-	lk->show();
+        lk->show();
       } else {
-	lk->hide();
+        lk->hide();
       };
     };
   };
@@ -464,22 +467,7 @@ void SceneComposedNodeItem::shrinkExpandRecursive(bool isExpanding, bool fromHer
   else
     { // --- expanding: resize, then show children
       _ancestorShrinked = false;
-      if (isExpanded())
-        {
-          _width = _expandedWidth;
-          _height = _expandedHeight;
-          _shownState = expandShown;
-        }
-      else
-        {
-          _shownState = shrinkShown;
-          _width  = 2*Resource::Corner_Margin + 2*Resource::DataPort_Width + Resource::Space_Margin;
-          _height = getHeaderBottom() + Resource::Corner_Margin;
-        }
 
-      setPos(_expandedPos);
-      adjustHeader();
-      
       for (list<AbstractSceneItem*>::const_iterator it=_children.begin(); it!=_children.end(); ++it)
         {
           SceneItem* item = dynamic_cast<SceneItem*>(*it);
@@ -496,6 +484,21 @@ void SceneComposedNodeItem::shrinkExpandRecursive(bool isExpanding, bool fromHer
             }
           item->shrinkExpandLink(fromHere);  
         }
+
+      if (isExpanded())
+        {
+          _width = _expandedWidth;
+          _height = _expandedHeight;
+          _shownState = expandShown;
+        }
+      else
+        {
+          _shownState = shrinkShown;
+          _width  = 2*Resource::Corner_Margin + 2*Resource::DataPort_Width + Resource::Space_Margin;
+          _height = getHeaderBottom() + Resource::Corner_Margin;
+        }
+      setPos(_expandedPos);
+      adjustHeader();
     }
 }
 
@@ -687,7 +690,7 @@ void SceneComposedNodeItem::arrangeNodes(bool isRecursive)
 {
   DEBTRACE("SceneComposedItem::arrangeNodes " << isRecursive);
 
- bool isExtern = !QtGuiContext::_delayCalc;
+  bool isExtern = !QtGuiContext::_delayCalc;
   QtGuiContext::_delayCalc = true; // avoid rebuildLinks
 
   SubjectComposedNode *scnode = dynamic_cast<SubjectComposedNode*>(getSubject());
@@ -723,7 +726,8 @@ void SceneComposedNodeItem::arrangeNodes(bool isRecursive)
   if (isExtern)
     {
       QtGuiContext::_delayCalc = false; // allow rebuildLinks
-      rebuildLinks();
+      if (Scene::_autoComputeLinks)
+        rebuildLinks();
     }
 }
 
@@ -817,5 +821,19 @@ QColor SceneComposedNodeItem::getBrushColor()
   if (_hover)
     color = hoverColor(color);
   return color;
+}
+
+void SceneComposedNodeItem::updateChildItems()
+{
+  SceneNodeItem::updateChildItems();
+  if(!_header)
+    return;
+  foreach (QGraphicsItem *child, _header->childItems())
+    {
+      if (SceneItem *sci = dynamic_cast<SceneItem*>(child))
+        {
+           sci->updateLinks();
+        }
+    }
 }
 

@@ -22,6 +22,7 @@
 #include "QtGuiContext.hxx"
 #include "LinkInfo.hxx"
 #include "Logger.hxx"
+#include <QComboBox>
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -44,6 +45,26 @@ EditionProc::EditionProc(Subject* subject,
   _wid->gridLayout1->addWidget(_statusLog);
   _errorLog = "";
   _modifLog = "";
+
+  if (!QtGuiContext::getQtCurrent()->isEdition())
+    {
+      QHBoxLayout* hbox = new QHBoxLayout();
+      QLabel* la = new QLabel("Shutdown level:",this);
+      QComboBox* cb = new QComboBox(this);
+      cb->addItem("0",0 );
+      cb->addItem("1",1 );
+      cb->addItem("2",2 );
+      cb->addItem("3",3 );
+      int level=1;
+      if (QtGuiContext::getQtCurrent()->getGuiExecutor())
+        level=QtGuiContext::getQtCurrent()->getGuiExecutor()->getShutdownLevel();
+      DEBTRACE(level);
+      cb->setCurrentIndex(level);
+      connect(cb, SIGNAL(currentIndexChanged(int)), this, SLOT(onLevelChange(int)));
+      hbox->addWidget(la);
+      hbox->addWidget(cb);
+      _wid->gridLayout1->addLayout(hbox,3,0);
+    }
 }
 
 EditionProc::~EditionProc()
@@ -129,4 +150,11 @@ void EditionProc::synchronize()
     }
   statusLog = _modifLog + _errorLog;
   _statusLog->setText(statusLog.c_str());
+}
+
+void EditionProc::onLevelChange(int index)
+{
+  DEBTRACE("EditionProc::onLevelChange " << index);
+  if (QtGuiContext::getQtCurrent()->getGuiExecutor())
+    QtGuiContext::getQtCurrent()->getGuiExecutor()->setShutdownLevel(index);
 }

@@ -80,7 +80,7 @@ bool CppContainer::isAlreadyStarted(const ComponentInstance *inst) const
 
 void CppContainer::start(const ComponentInstance *inst) throw (YACS::Exception)
 {
-	_trueCont = LocalContainer::get();
+  _trueCont = LocalContainer::get();
 }
 
 Container *CppContainer::clone() const
@@ -122,7 +122,7 @@ CppComponent * CppContainer::createComponentInstance(const std::string & compone
 }
 
 void CppContainer::createInternalInstance(const std::string & name, void *&obj, 
-		                                    RunFunction &r, TerminateFunction &t)
+                                          RunFunction &r, TerminateFunction &t)
 {
    DEBTRACE("CppContainer::createInternalInstance");
    if (_trueCont)
@@ -145,7 +145,7 @@ void CppContainer::unregisterComponentInstance(CppComponent * C)
 
 std::string CppContainer::getPlacementId(const ComponentInstance *inst) const
 {
-	return "/";
+  return "/";
 }
 
 void CppContainer::checkCapabilityToDealWith(const ComponentInstance *inst) const throw(YACS::Exception)
@@ -187,9 +187,9 @@ void LocalContainer::destroy()
     std::multimap<std::string, CppComponent *>::iterator iI, iJ;
     for (iI=_instance_map.begin(); iI != _instance_map.end(); iI = iJ)
     {
-    	iJ = iI++;
-    	iI->second->setContainer(NULL);
-        delete iI->second;
+      iJ = iI++;
+      iI->second->setContainer(NULL);
+      delete iI->second;
     }
     _instance_map.clear();
     _instance_mapMutex.unlock(); // unlock
@@ -237,7 +237,7 @@ CppComponent * LocalContainer::createComponentInstance(const char * name)
 }
 
 void LocalContainer::createInternalInstance(const char *name, void *&obj, 
-		                                    RunFunction &r, TerminateFunction &t)
+                                            RunFunction &r, TerminateFunction &t)
 {
   LocalLibrary L;
 
@@ -260,9 +260,9 @@ void LocalContainer::createInternalInstance(const char *name, void *&obj,
 
 void LocalContainer::unregisterComponentInstance(CppComponent * C)
 {
-	  _instance_mapMutex.lock(); // lock to be alone 
-	  _instance_map.erase(C->getCompoName());
-	  _instance_mapMutex.unlock(); // unlock
+    _instance_mapMutex.lock(); // lock to be alone 
+    _instance_map.erase(C->getCompoName());
+    _instance_mapMutex.unlock(); // unlock
 }
 
 inline void toupper (std::string & s)

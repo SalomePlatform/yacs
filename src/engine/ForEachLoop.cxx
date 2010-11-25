@@ -368,6 +368,14 @@ void ForEachLoop::exUpdateState()
       prepareSequenceValues(nbOfElts);
       if(_initNode)
         _execInitNodes.resize(nbOfBr);
+      _initializingCounter = 0;
+      if (_finalizeNode)
+        _execFinalizeNodes.resize(nbOfBr);
+
+      vector<Node *> origNodes;
+      origNodes.push_back(_initNode);
+      origNodes.push_back(_node);
+      origNodes.push_back(_finalizeNode);
 
       //Conversion exceptions can be thrown by createOutputOutOfScopeInterceptors 
       //so catch them to control errors
@@ -378,10 +386,12 @@ void ForEachLoop::exUpdateState()
               DEBTRACE( "-------------- 1 " << i << " " << _execCurrentId);
               _execIds[i]=_execCurrentId;
               DEBTRACE( "-------------- 2" );
-              _execNodes[i]=_node->clone(this,false);
-              DEBTRACE( "-------------- 3" );
+              vector<Node *> clonedNodes = cloneAndPlaceNodesCoherently(origNodes);
               if(_initNode)
-                _execInitNodes[i]=_initNode->clone(this,false);
+                _execInitNodes[i] = clonedNodes[0];
+              _execNodes[i] = clonedNodes[1];
+              if(_finalizeNode)
+                _execFinalizeNodes[i] = clonedNodes[2];
               DEBTRACE( "-------------- 4" );
               prepareInputsFromOutOfScope(i);
               DEBTRACE( "-------------- 5" );
@@ -400,12 +410,15 @@ void ForEachLoop::exUpdateState()
           throw;
         }
 
-      setState(YACS::TOACTIVATE); // move the calling of setState method there for adding observers for clone nodes in GUI part
+      setState(YACS::ACTIVATED); // move the calling of setState method there for adding observers for clone nodes in GUI part
 
       //let's go
       for(i=0;i<nbOfBr;i++)
         if(_initNode)
-          _execInitNodes[i]->exUpdateState();
+          {
+            _execInitNodes[i]->exUpdateState();
+            _initializingCounter++;
+          }
         else
           {
             _nbOfEltConsumed++;
@@ -420,6 +433,7 @@ void ForEachLoop::getReadyTasks(std::vector<Task *>& tasks)
 {
   if(!_node)
     return;
+  if(_state==YACS::TOACTIVATE) setState(YACS::ACTIVATED);
   if(_state==YACS::TOACTIVATE || _state==YACS::ACTIVATED)
     {
       if(_nodeForSpecialCases)
@@ -427,10 +441,13 @@ void ForEachLoop::getReadyTasks(std::vector<Task *>& tasks)
           _nodeForSpecialCases->getReadyTasks(tasks);
           return ;
         }
-      for(vector<Node *>::iterator iter=_execNodes.begin();iter!=_execNodes.end();iter++)
+      vector<Node *>::iterator iter;
+      for (iter=_execNodes.begin() ; iter!=_execNodes.end() ; iter++)
         (*iter)->getReadyTasks(tasks);
-      for(vector<Node *>::iterator iter2=_execInitNodes.begin();iter2!=_execInitNodes.end();iter2++)
-        (*iter2)->getReadyTasks(tasks);
+      for (iter=_execInitNodes.begin() ; iter!=_execInitNodes.end() ; iter++)
+        (*iter)->getReadyTasks(tasks);
+      for (iter=_execFinalizeNodes.begin() ; iter!=_execFinalizeNodes.end() ; iter++)
+        (*iter)->getReadyTasks(tasks);
     }
 }
 
@@ -514,6 +531,8 @@ YACS::Event ForEachLoop::updateStateOnFinishedEventFrom(Node *node)
     case INIT_NODE:
       _execNodes[id]->exUpdateState();
       _nbOfEltConsumed++;
+      _initializingCounter--;
+      if (_initializingCounter == 0) _initNode->setState(DONE);
       break;
     case WORK_NODE:
       storeOutValsInSeqForOutOfScopeUse(_execIds[id],id);
@@ -529,7 +548,6 @@ YACS::Event ForEachLoop::updateStateOnFinishedEventFrom(Node *node)
               try 
                 {
                   pushAllSequenceValues();
-                  setState(YACS::DONE);
   
                   if (_node)
                     {
@@ -544,8 +562,26 @@ YACS::Event ForEachLoop::updateStateOnFinishedEventFrom(Node *node)
                             (*iter)->setState(YACS::DONE);
                         }
                     }
-  
-                  return YACS::FINISH;
+
+                  if (_finalizeNode == NULL)
+                    {
+                      // No finalize node, we just finish the loop at the end of exec nodes execution
+                      setState(YACS::DONE);
+                      return YACS::FINISH;
+                    }
+                  else
+                    {
+                      // Run the finalize nodes, the loop will be done only when they all finish
+                      _unfinishedCounter = 0;  // This counter indicates how many branches are not finished
+                      for (int i=0 ; i<_execIds.size() ; i++)
+                        {
+                          YASSERT(_execIds[i] == NOT_RUNNING_BRANCH_ID);
+                          DEBTRACE("Launching finalize node for branch " << i);
+                          _execFinalizeNodes[i]->exUpdateState();
+                          _unfinishedCounter++;
+                        }
+                      return YACS::NOEVENT;
+                    }
                 }
               catch(YACS::Exception& ex)
                 {
@@ -572,6 +608,23 @@ YACS::Event ForEachLoop::updateStateOnFinishedEventFrom(Node *node)
           DEBTRACE("foreach loop state " << _state);
         }
       break;
+    case FINALIZE_NODE:
+    {
+      DEBTRACE("Finalize node finished on branch " << id);
+      _unfinishedCounter--;
+      DEBTRACE(_unfinishedCounter << " finalize nodes still running");
+      if (_unfinishedCounter == 0)
+        {
+          _finalizeNode->setState(YACS::DONE);
+          setState(YACS::DONE);
+          return YACS::FINISH;
+        }
+      else
+        return YACS::NOEVENT;
+      break;
+    }
+    default:
+      YASSERT(false);
     }
   return YACS::NOEVENT;
 }
@@ -756,4 +809,14 @@ void ForEachLoop::writeDot(std::ostream &os) const
   os << getColorState(state);
   os << "\" label=\"" << "Loop:" ;
   os << getName() <<"\"];\n";
+}
+
+//! Reset the state of the node and its children depending on the parameter level
+void ForEachLoop::resetState(int level)
+{
+  if(level==0)return;
+  DynParaLoop::resetState(level);
+  _execCurrentId=0;
+  //Note: cleanDynGraph is not a virtual method (must be called from ForEachLoop object) 
+  cleanDynGraph();
 }

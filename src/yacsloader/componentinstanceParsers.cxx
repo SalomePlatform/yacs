@@ -22,6 +22,9 @@
 #include "dataParsers.hxx"
 #include "propertyParsers.hxx"
 
+//#define _DEVDEBUG_
+#include "YacsTrace.hxx"
+
 namespace YACS
 {
   componentinstancetypeParser componentinstancetypeParser::componentinstanceParser;

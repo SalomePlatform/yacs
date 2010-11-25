@@ -49,6 +49,12 @@ namespace YACS
   {
     typedef MutexPT Mutex;
     typedef ConditionPT Condition;
+    struct Lock
+    {
+      YACS::BASES::Mutex * _mutex;
+      Lock(YACS::BASES::Mutex * mutex) : _mutex(mutex) {_mutex->lock();};
+      ~Lock() {_mutex->unlock();};
+    };
   }
 }
 #else

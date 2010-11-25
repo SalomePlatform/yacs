@@ -43,6 +43,7 @@ namespace YACS
       virtual void setCaseValue();
     protected:
       virtual QString getMimeFormat();
+      virtual QVariant editionWhatsThis(int column) const;
       SchemaDirTypesItem *_dirTypesItem;
       SchemaDirContainersItem *_dirContainersItem;
       SchemaDirLinksItem *_dirLinksItem;

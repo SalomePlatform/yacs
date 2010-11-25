@@ -76,6 +76,7 @@ namespace YACS
       std::list<std::string> getMachineList();
       void createForEachLoop(std::string type="double");
       virtual void loadSchema(const std::string& filename,bool edit=true);
+      virtual void onHelpContextModule( const QString&, const QString&, const QString& = QString() );
 
       QAction *_newSchemaAct;
       QAction *_importSchemaAct;
@@ -108,6 +109,7 @@ namespace YACS
       QAction *_getErrorReportAct;
       QAction *_getErrorDetailsAct;
       QAction *_getContainerLogAct;
+      QAction *_shutdownProcAct;
 
       QAction *_editDataTypesAct;
       QAction *_createDataTypeAct;
@@ -242,6 +244,7 @@ namespace YACS
       void onGetErrorReport();
       void onGetErrorDetails();
       void onGetContainerLog();
+      void onShutdownProc();
 
       void onEditDataTypes();
       void onCreateDataType();

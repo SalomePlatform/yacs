@@ -25,6 +25,7 @@
 #include "YACSRuntimeSALOMEExport.hxx"
 #include "InputPort.hxx"
 #include "OutputPort.hxx"
+#include "Mutex.hxx"
 
 #include <string>
 
@@ -64,12 +65,14 @@ namespace YACS
       CORBA::Any  _data;
       CORBA::Any *  _initData;
       CORBA::ORB_ptr _orb;
+    private:
+      YACS::BASES::Mutex _mutex;
     };
 
     class OutputCorbaPort;
 
-    YACSRUNTIMESALOME_EXPORT std::ostream & operator<<( std::ostream &os,
-							const YACS::ENGINE::OutputCorbaPort& p);
+    YACSRUNTIMESALOME_EXPORT std::ostream & operator<<(std::ostream &os,
+                                                       const YACS::ENGINE::OutputCorbaPort& p);
 
     class YACSRUNTIMESALOME_EXPORT OutputCorbaPort : public OutputPort
     {
@@ -93,6 +96,8 @@ namespace YACS
     protected:
       CORBA::Any  _data;
       CORBA::ORB_ptr _orb;
+    private:
+      YACS::BASES::Mutex _mutex;
     };
 
 

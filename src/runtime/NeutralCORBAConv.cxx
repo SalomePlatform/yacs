@@ -140,3 +140,26 @@ void NeutralCorbaObjref::put(YACS::ENGINE::Any *data) throw(ConversionException)
   //delete Any that has been allocated by convertNeutralCorba
   delete a;
 }
+
+
+NeutralCorbaStruct::NeutralCorbaStruct(InputCorbaPort* p)
+  : ProxyPort(p), DataPort(p->getName(), p->getNode(), p->edGetType()), Port(p->getNode())
+{
+}
+
+void NeutralCorbaStruct::put(const void *data) throw(ConversionException)
+{
+  put((YACS::ENGINE::Any *)data);
+}
+
+//!Convert a Neutral::Any struct to CORBA::Any* struct
+/*!
+ *   \param data : Neutral::Any object
+ */
+void NeutralCorbaStruct::put(YACS::ENGINE::Any *data) throw(ConversionException)
+{
+  CORBA::Any *a =convertNeutralCorba(edGetType(),data);
+  _port->put(a);
+  //delete Any that has been allocated by convertNeutralCorba
+  delete a;
+}

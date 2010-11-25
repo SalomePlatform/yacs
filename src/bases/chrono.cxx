@@ -19,7 +19,7 @@
 
 #include "chrono.hxx"
 
-#define _DEVDEBUG_
+//#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
 using namespace std;
@@ -54,9 +54,9 @@ void counters::stats()
   for (int i=0; i < _nbChrono; i++)
     if (_ctrs[i]._ctrOccur)
       {
-        DEBTRACE("Compteur[" << i << "]: "<< _ctrs[i]._ctrNames << "[" << _ctrs[i]._ctrLines << "]");
-        DEBTRACE("  " << _ctrs[i]._ctrOccur);
-        DEBTRACE("  " << _ctrs[i]._ctrCumul);
+        std::cerr << "Compteur[" << i << "]: "<< _ctrs[i]._ctrNames << "[" << _ctrs[i]._ctrLines << "]" << std::endl;
+        std::cerr << "  " << _ctrs[i]._ctrOccur << std::endl;
+        std::cerr << "  " << _ctrs[i]._ctrCumul << std::endl;
       }
 }
 

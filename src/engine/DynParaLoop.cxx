@@ -20,6 +20,15 @@
 #include "DynParaLoop.hxx"
 #include "LinkInfo.hxx"
 #include "OutPort.hxx"
+#include "Container.hxx"
+#include "ComponentInstance.hxx"
+#include "ServiceNode.hxx"
+#include "InlineNode.hxx"
+#include "ElementaryNode.hxx"
+#include "Visitor.hxx"
+
+#include <list>
+#include <vector>
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -27,18 +36,15 @@
 using namespace std;
 using namespace YACS::ENGINE;
 
-/*! \class YACS::ENGINE::DynParaLoop
- *  \brief Base class for dynamically (fully or semifully) built graphs.
- *  \ingroup Nodes
- */
-
-const char DynParaLoop::NAME_OF_SPLITTED_SEQ_OUT[]="SmplPrt";
+const char DynParaLoop::NAME_OF_SPLITTED_SEQ_OUT[] = "evalSamples";
+const char DynParaLoop::OLD_NAME_OF_SPLITTED_SEQ_OUT[] = "SmplPrt"; // For backward compatibility with 5.1.4
 
 const char DynParaLoop::NAME_OF_NUMBER_OF_BRANCHES[]="nbBranches";
 
-DynParaLoop::DynParaLoop(const std::string& name, TypeCode *typeOfDataSplitted):ComposedNode(name),_node(0),_initNode(0),_nbOfEltConsumed(0),
-                                                                                _nbOfBranches(NAME_OF_NUMBER_OF_BRANCHES,this,Runtime::_tc_int),
-                                                                                _splittedPort(NAME_OF_SPLITTED_SEQ_OUT,this,typeOfDataSplitted)
+DynParaLoop::DynParaLoop(const std::string& name, TypeCode *typeOfDataSplitted)
+  : ComposedNode(name),_node(0),_initNode(0),_finalizeNode(0),_nbOfEltConsumed(0),
+    _nbOfBranches(NAME_OF_NUMBER_OF_BRANCHES,this,Runtime::_tc_int),
+    _splittedPort(NAME_OF_SPLITTED_SEQ_OUT,this,typeOfDataSplitted)
 {
 }
 
@@ -46,17 +52,20 @@ DynParaLoop::~DynParaLoop()
 {
   delete _node;
   delete _initNode;
+  delete _finalizeNode;
 }
 
-DynParaLoop::DynParaLoop(const DynParaLoop& other, ComposedNode *father, bool editionOnly):ComposedNode(other,father),
-                                                                                           _nbOfBranches(other._nbOfBranches,this),
-                                                                                           _splittedPort(other._splittedPort,this),
-                                                                                           _node(0),_initNode(0),_nbOfEltConsumed(0)
+DynParaLoop::DynParaLoop(const DynParaLoop& other, ComposedNode *father, bool editionOnly)
+  : ComposedNode(other,father), _nbOfBranches(other._nbOfBranches,this),
+    _splittedPort(other._splittedPort,this), _node(0), _initNode(0), _finalizeNode(0),
+    _nbOfEltConsumed(0)
 {
   if(other._node)
     _node=other._node->clone(this,editionOnly);
   if(other._initNode)
     _initNode=other._initNode->clone(this,editionOnly);
+  if(other._finalizeNode)
+    _finalizeNode = other._finalizeNode->clone(this,editionOnly);
   const AnyOutputPort& startOfLinksToReproduce=other._splittedPort;
   set<InPort *> endsOfLinksToReproduce=startOfLinksToReproduce.edSetInPort();
   for(set<InPort *>::iterator iter=endsOfLinksToReproduce.begin();iter!=endsOfLinksToReproduce.end();iter++)
@@ -65,28 +74,31 @@ DynParaLoop::DynParaLoop(const DynParaLoop& other, ComposedNode *father, bool ed
 
 Node *DynParaLoop::edSetNode(Node *node)
 {
-  if(_node==node)
+  return checkConsistencyAndSetNode(_node, node);
+}
+
+//! This method is used to factorize methods edSetNode, edSetInitNode and edSetFinalizeNode
+Node * DynParaLoop::checkConsistencyAndSetNode(Node* &nodeToReplace, Node* node)
+{
+  if (node == NULL || nodeToReplace == node)
     return 0;
-  if(node)
-    {
-      if(node->_father)
-        {
-          std::string what = "DynParaLoop::edSetNode: node "; what += node->getName(); what += " is not orphan ! "; 
-          throw Exception(what);
-        }
-      if(_initNode)
-        if(_initNode->getName()==node->getName())
-          {
-            std::string what = "DynParaLoop::edSetNode: node "; what += node->getName(); what += " has the same name than init node already in "; what+=_name; what+="! "; 
-            throw Exception(what);
-          }
-    }
+  if (node->_father)
+    throw Exception(string("Can't set node: node ") + node->getName() + " is not orphan.");
+  if (_node && _node != nodeToReplace && _node->getName() == node->getName())
+    throw Exception(string("Can't set node: node ") + node->getName() +
+                    " has the same name than exec node already in " + _name + ".");
+  if (_initNode && _initNode != nodeToReplace && _initNode->getName() == node->getName())
+    throw Exception(string("Can't set node: node ") + node->getName() +
+                    " has the same name than init node already in " + _name + ".");
+  if (_finalizeNode && _finalizeNode != nodeToReplace && _finalizeNode->getName() == node->getName())
+    throw Exception(string("Can't set node: node ") + node->getName() +
+                    " has the same name than finalize node already in " + _name + ".");
   checkNoCrossHierachyWith(node);
-  ComposedNode::edRemoveChild(_node);
-  Node *ret=_node;
-  _node=node;
-  _node->_father=this;
-  //set _modified flag so that edUpdateState can refresh state
+  ComposedNode::edRemoveChild(nodeToReplace);
+  Node * ret = nodeToReplace;
+  nodeToReplace = node;
+  nodeToReplace->_father = this;
+  // set _modified flag so that edUpdateState can refresh state
   modified();
   return ret;
 }
@@ -100,6 +112,8 @@ void DynParaLoop::init(bool start)
       throw Exception(what);
     }
   _node->init(start);
+  if (_initNode) _initNode->init(start);
+  if (_finalizeNode) _finalizeNode->init(start);
   _nbOfBranches.exInit(start);
   _splittedPort.exInit();
   _nbOfEltConsumed=0;
@@ -107,29 +121,26 @@ void DynParaLoop::init(bool start)
 
 Node *DynParaLoop::edSetInitNode(Node *node)
 {
-  if(_initNode==node)
-    return 0;
-  if(node)
-    {
-      if(node->_father)
-        {
-          std::string what = "DynParaLoop::edSetInitNode : node "; what += node->getName(); what += " is not orphan ! "; 
-          throw Exception(what);
-        }
-      if(_node)
-        if(_node->getName()==node->getName())
-          {
-            std::string what = "DynParaLoop::edSetInitNode : node "; what += node->getName(); what += " has the same name than node already in "; what+=_name; what+="! ";
-            throw Exception(what);
-          }
-    }
-  checkNoCrossHierachyWith(node);
-  edRemoveChild(_initNode);
-  Node *ret=_initNode;
-  _initNode=node;
-  _initNode->_father=this;
-  modified();
-  return ret;
+  return checkConsistencyAndSetNode(_initNode, node);
+}
+
+Node * DynParaLoop::edSetFinalizeNode(Node * node)
+{
+  return checkConsistencyAndSetNode(_finalizeNode, node);
+}
+
+//! Connect an OutPort to an InPort and add control link if necessary
+/*!
+ * Connect the ports with a data link (edAddLink)
+ * In a Loop don't add control flow link : use this only to add data back links
+ *
+ * \param start : the OutPort to connect
+ * \param end : the InPort to connect
+ * \return  true if a new link has been created, false otherwise.
+ */
+bool DynParaLoop::edAddDFLink(OutPort *start, InPort *end) throw(YACS::Exception)
+{
+  return edAddLink(start,end);
 }
 
 int DynParaLoop::getNumberOfInputPorts() const
@@ -158,7 +169,7 @@ std::list<OutputPort *> DynParaLoop::getLocalOutputPorts() const
 
 OutPort *DynParaLoop::getOutPort(const std::string& name) const throw(YACS::Exception)
 {
-  if(name==NAME_OF_SPLITTED_SEQ_OUT)
+  if (name == NAME_OF_SPLITTED_SEQ_OUT || name == OLD_NAME_OF_SPLITTED_SEQ_OUT)
     return (OutPort *)&_splittedPort;
   return ComposedNode::getOutPort(name);
 }
@@ -166,7 +177,7 @@ OutPort *DynParaLoop::getOutPort(const std::string& name) const throw(YACS::Exce
 
 OutputPort *DynParaLoop::getOutputPort(const std::string& name) const throw(YACS::Exception)
 {
-  if(name==NAME_OF_SPLITTED_SEQ_OUT)
+  if (name == NAME_OF_SPLITTED_SEQ_OUT || name == OLD_NAME_OF_SPLITTED_SEQ_OUT)
     return (OutputPort *)&_splittedPort;
   return ComposedNode::getOutputPort(name);
 }
@@ -178,23 +189,29 @@ bool DynParaLoop::isPlacementPredictableB4Run() const
 
 Node *DynParaLoop::edRemoveNode()
 {
-  if(!_node)
-    return 0;
-  ComposedNode::edRemoveChild(_node);
-  Node *ret=_node;
-  _node=0;
+  return removeNode(_node);
+}
+
+//! This method is used to factorize methods edRemoveNode, edRemoveInitNode and edRemoveFinalizeNode
+Node * DynParaLoop::removeNode(Node* &nodeToRemove)
+{
+  if (!nodeToRemove)
+    return NULL;
+  ComposedNode::edRemoveChild(nodeToRemove);
+  Node * ret = nodeToRemove;
+  nodeToRemove = NULL;
   modified();
   return ret;
 }
 
 Node *DynParaLoop::edRemoveInitNode()
 {
-  if(!_initNode)
-    return 0;
-  ComposedNode::edRemoveChild(_initNode);
-  Node *ret=_initNode;
-  _initNode=0;
-  return ret;
+  return removeNode(_initNode);
+}
+
+Node * DynParaLoop::edRemoveFinalizeNode()
+{
+  return removeNode(_finalizeNode);
 }
 
 void DynParaLoop::edRemoveChild(Node *node) throw(YACS::Exception)
@@ -204,6 +221,8 @@ void DynParaLoop::edRemoveChild(Node *node) throw(YACS::Exception)
     _node=0;
   if(node==_initNode)
     _initNode=0;
+  if(node==_finalizeNode)
+    _finalizeNode=0;
   modified();
 }
 
@@ -219,6 +238,8 @@ std::list<Node *> DynParaLoop::edGetDirectDescendants() const
     ret.push_back(_node);
   if(_initNode)
     ret.push_back(_initNode);
+  if(_finalizeNode)
+    ret.push_back(_finalizeNode);
   return ret;
 }
 
@@ -253,12 +274,12 @@ unsigned DynParaLoop::getNumberOfBranchesCreatedDyn() const throw(YACS::Exceptio
 
 Node *DynParaLoop::getChildByShortName(const std::string& name) const throw(YACS::Exception)
 {
-  if(_node)
-    if(name==_node->getName())
-      return _node;
-  if(_initNode)
-    if(name==_initNode->getName())
-      return  _initNode;
+  if (_node && name == _node->getName())
+    return _node;
+  if (_initNode && name == _initNode->getName())
+    return  _initNode;
+  if (_finalizeNode && name == _finalizeNode->getName())
+    return  _finalizeNode;
   std::string what("node "); what+= name ; what+=" is not a child of DynParaLoop node "; what += getName();
   throw Exception(what);
 }
@@ -267,24 +288,28 @@ Node *DynParaLoop::getChildByNameExec(const std::string& name, unsigned id) cons
 {
   if(id>=getNumberOfBranchesCreatedDyn())
     throw Exception("ForEachLoop::getChildByNameExec : invalid id - too large compared with dynamically created branches.");
-  if(_node)
-    if(name==_node->getName())
-      return _execNodes[id];
-  if(_initNode)
-    if(name==_initNode->getName())
-      return  _execInitNodes[id];
+  if (_node && name == _node->getName())
+    return _execNodes[id];
+  if (_initNode && name == _initNode->getName())
+    return _execInitNodes[id];
+  if (_finalizeNode && name == _finalizeNode->getName())
+    return _execFinalizeNodes[id];
   std::string what("node "); what+= name ; what+=" is not a child of DynParaLoop node "; what += getName();
   throw Exception(what);
 }
 
 void DynParaLoop::cleanDynGraph()
 {
-  for(vector<Node *>::iterator iter=_execNodes.begin();iter!=_execNodes.end();iter++)
+  vector<Node *>::iterator iter;
+  for(iter=_execNodes.begin() ; iter!=_execNodes.end() ; iter++)
     delete *iter;
   _execNodes.clear();
-  for(vector<Node *>::iterator iter2=_execInitNodes.begin();iter2!=_execInitNodes.end();iter2++)
-    delete *iter2;
-  _execNodes.clear();
+  for(iter=_execInitNodes.begin() ; iter!=_execInitNodes.end() ; iter++)
+    delete *iter;
+  _execInitNodes.clear();
+  for(iter=_execFinalizeNodes.begin() ; iter!=_execFinalizeNodes.end() ; iter++)
+    delete *iter;
+  _execFinalizeNodes.clear();
 }
 
 /*!
@@ -294,6 +319,17 @@ void DynParaLoop::cleanDynGraph()
 void DynParaLoop::prepareInputsFromOutOfScope(int branchNb)
 {
   set< InPort * > portsToSetVals=getAllInPortsComingFromOutsideOfCurrentScope();
+
+  // This tweak is to fix problems with nested dynamic loops where links are not cloned properly
+  list<InPort *> temp = getSetOfInPort();
+  for(list<InPort *>::iterator iter2=temp.begin();iter2!=temp.end();iter2++)
+    {
+      if ((*iter2)->edSetOutPort().size() == 1 && *(*iter2)->edSetOutPort().begin() == NULL)
+        {
+          portsToSetVals.insert(*iter2);
+        }
+    }
+
   // local input ports are not candidates for dynamically duplicated inport.
   list<InputPort *> localPorts = getLocalInputPorts();
   for(list<InputPort *>::iterator iter = localPorts.begin() ; iter != localPorts.end() ; iter++)
@@ -328,7 +364,7 @@ void DynParaLoop::putValueOnBranch(Any *val, unsigned branchId, bool first)
           InputPort *traducer=getRuntime()->adapt(portOnGivenBranch,
                                                   Runtime::RUNTIME_ENGINE_INTERACTION_IMPL_NAME,_splittedPort.edGetType());
           traducer->put((const void *)val);
-	  isDispatched = true;
+          isDispatched = true;
           if(traducer!=portOnGivenBranch)
             delete traducer;
         }
@@ -343,14 +379,19 @@ void DynParaLoop::putValueOnBranch(Any *val, unsigned branchId, bool first)
 
 DynParaLoop::TypeOfNode DynParaLoop::getIdentityOfNotifyerNode(const Node *node, unsigned& id)
 {
+  vector<Node *>::iterator iter;
   id=0;
-  for(vector<Node *>::iterator iter=_execNodes.begin();iter!=_execNodes.end();iter++,id++)
-    if(*iter==node)
+  for (iter=_execNodes.begin() ; iter!=_execNodes.end() ; iter++,id++)
+    if (*iter==node)
       return WORK_NODE;
   id=0;
-  for(vector<Node *>::iterator iter2=_execInitNodes.begin();iter2!=_execInitNodes.end();iter2++,id++)
-    if(*iter2==node)
+  for (iter=_execInitNodes.begin() ; iter!=_execInitNodes.end() ; iter++,id++)
+    if (*iter==node)
       return INIT_NODE;
+  id=0;
+  for (iter=_execFinalizeNodes.begin() ; iter!=_execFinalizeNodes.end() ; iter++,id++)
+    if (*iter==node)
+      return FINALIZE_NODE;
 }
 
 bool DynParaLoop::isMultiplicitySpecified(unsigned& value) const
@@ -507,7 +548,23 @@ std::string DynParaLoop::getErrorReport()
   else
     {
       // execution nodes
+      for(vector<Node *>::iterator iter=_execInitNodes.begin();iter!=_execInitNodes.end();iter++)
+        {
+          std::string rep=(*iter)->getErrorReport();
+          if(rep != "")
+            {
+              report=report+rep+"\n";
+            }
+        }
       for(vector<Node *>::iterator iter=_execNodes.begin();iter!=_execNodes.end();iter++)
+        {
+          std::string rep=(*iter)->getErrorReport();
+          if(rep != "")
+            {
+              report=report+rep+"\n";
+            }
+        }
+      for(vector<Node *>::iterator iter=_execFinalizeNodes.begin();iter!=_execFinalizeNodes.end();iter++)
         {
           std::string rep=(*iter)->getErrorReport();
           if(rep != "")
@@ -523,12 +580,34 @@ std::string DynParaLoop::getErrorReport()
 
 void DynParaLoop::forwardExecStateToOriginalBody(Node *execNode)
 {
-  if(!_node)
-    return;
-  _node->setState(execNode->getState());
-  _node->setErrorDetails(execNode->getErrorDetails());
+  unsigned int id;
+  Node * origNode = NULL;
+  switch (getIdentityOfNotifyerNode(execNode,id))
+    {
+    case INIT_NODE:
+    {
+      origNode = _initNode;
+      break;
+    }
+    case WORK_NODE:
+    {
+      origNode = _node;
+      break;
+    }
+    case FINALIZE_NODE:
+    {
+      origNode = _finalizeNode;
+      break;
+    }
+    default:
+      YASSERT(false)
+    }
 
-  ComposedNode* compNode = dynamic_cast<ComposedNode*>(_node);
+  YASSERT(origNode != NULL)
+  origNode->setState(execNode->getState());
+  origNode->setErrorDetails(execNode->getErrorDetails());
+
+  ComposedNode* compNode = dynamic_cast<ComposedNode*>(origNode);
   ComposedNode* compNodeExe = dynamic_cast<ComposedNode*>(execNode);
   if (compNode && compNodeExe)
     {
@@ -555,6 +634,181 @@ YACS::Event DynParaLoop::updateStateOnFailedEventFrom(Node *node)
   DEBTRACE("DynParaLoop::updateStateOnFailedEventFrom " << node->getName());
   setState(YACS::FAILED);
   forwardExecStateToOriginalBody(node);
+  unsigned int id;
+  switch (getIdentityOfNotifyerNode(node,id))
+    {
+    case INIT_NODE:
+    {
+      _node->setState(YACS::FAILED);
+      if (_finalizeNode != NULL) _finalizeNode->setState(YACS::FAILED);
+      break;
+    }
+    case WORK_NODE:
+    {
+      if (_finalizeNode != NULL) _finalizeNode->setState(YACS::FAILED);
+      break;
+    }
+    }
   return YACS::ABORT;
 }
 
+//! Clone nodes and make their placement consistent with the placement of the original ones.
+/*!
+ *  For instance, if two original nodes are placed on a component comp1 in a container cont1
+ *  and a third one is placed on a component comp2 in the container cont1, the clones of the two
+ *  first nodes will be placed on a component comp3 in a container cont2 and the third clone
+ *  will be placed on a component comp4 in the container cont2.
+ */
+vector<Node *> DynParaLoop::cloneAndPlaceNodesCoherently(const vector<Node *> & origNodes)
+{
+  DEBTRACE("Begin cloneAndPlaceNodesCoherently")
+  vector<Node *> clones;
+  DeploymentTree treeToDup;
+  vector<list<ElementaryNode *> > origElemNodeList;
+  for (int i=0 ; i<origNodes.size() ; i++)
+    {
+      DEBTRACE("Cloning node " << i)
+      if (origNodes[i] == NULL)
+        {
+          clones.push_back(NULL);
+          origElemNodeList.push_back(list<ElementaryNode *>());
+        }
+      else
+        {
+          clones.push_back(origNodes[i]->simpleClone(this, false));
+          list<ElementaryNode *> tasks = origNodes[i]->getRecursiveConstituents();
+          origElemNodeList.push_back(tasks);
+          for (list< ElementaryNode *>::iterator iter=tasks.begin() ; iter!=tasks.end() ; iter++)
+            treeToDup.appendTask(*iter, (*iter)->getDynClonerIfExists(this));
+        }
+    }
+
+  DEBTRACE("Placing nodes...")
+  vector<Container *> conts=treeToDup.getAllContainers();
+
+  //iterate on all containers
+  for(vector<Container *>::iterator iterCt=conts.begin();iterCt!=conts.end();iterCt++)
+    {
+      DEBTRACE("Container " << ((*iterCt)?(*iterCt)->getName():"NULL"))
+      vector<ComponentInstance *> comps=treeToDup.getComponentsLinkedToContainer(*iterCt);
+      Container *contCloned=0;
+      if((*iterCt))
+        contCloned=(*iterCt)->clone();
+
+      //iterate on all component instances linked to the container
+      for(vector<ComponentInstance *>::iterator iterCp=comps.begin();iterCp!=comps.end();iterCp++)
+        {
+          DEBTRACE("Component " << (*iterCp)->getCompoName())
+          vector<Task *> tasks=treeToDup.getTasksLinkedToComponent(*iterCp);
+          ComponentInstance *curCloned=(*iterCp)->clone();
+          curCloned->setContainer(contCloned);
+          for(vector<Task *>::iterator iterT=tasks.begin();iterT!=tasks.end();iterT++)
+            {
+              DEBTRACE("Task " << ((ElementaryNode *)(*iterT))->getName())
+              int i = 0;
+              ElementaryNode * origElemNode = NULL;
+              for (i=0 ; i<origNodes.size() ; i++)
+                if (origNodes[i] != NULL)
+                  {
+                    DEBTRACE("Looking in original node " << i)
+                    list<ElementaryNode *>::iterator res=find(origElemNodeList[i].begin(),
+                                                              origElemNodeList[i].end(),
+                                                              (ElementaryNode *)(*iterT));
+                    if (res != origElemNodeList[i].end()) {
+                      origElemNode = *res;
+                      break;
+                    }
+                  }
+
+              YASSERT(origElemNode != NULL)
+              DEBTRACE("Found task in node " << i)
+              ServiceNode * nodeC = NULL;
+              if (origNodes[i] == origElemNode)
+                nodeC = (ServiceNode *)clones[i];
+              else
+                {
+                  string childName = ((ComposedNode *)origNodes[i])->getChildName(origElemNode);
+                  nodeC = (ServiceNode *)clones[i]->getChildByName(childName);
+                }
+              nodeC->setComponent(curCloned);
+            }
+          curCloned->decrRef();
+        }
+
+      // iterate on all tasks linked to the container
+      vector<Task *> tasks=treeToDup.getTasksLinkedToContainer(*iterCt);
+      for(vector<Task *>::iterator iterT=tasks.begin();iterT!=tasks.end();iterT++)
+        {
+          DEBTRACE("Task " << ((ElementaryNode *)(*iterT))->getName())
+          int i = 0;
+          ElementaryNode * origElemNode = NULL;
+          for (i=0 ; i<origNodes.size() ; i++)
+            if (origNodes[i] != NULL)
+              {
+                DEBTRACE("Looking in original node " << i)
+                list<ElementaryNode *>::iterator res=find(origElemNodeList[i].begin(),
+                                                          origElemNodeList[i].end(),
+                                                          (ElementaryNode *)(*iterT));
+                if (res != origElemNodeList[i].end()) 
+                  {
+                    origElemNode = *res;
+                    break;
+                  }
+              }
+          YASSERT(origElemNode != NULL)
+          DEBTRACE("Found task in node " << i)
+          InlineFuncNode * nodeC = NULL;
+          if (origNodes[i] == origElemNode)
+            {
+              nodeC = (InlineFuncNode *)clones[i];
+            }
+          else
+            {
+              string childName = ((ComposedNode *)origNodes[i])->getChildName(origElemNode);
+              nodeC = (InlineFuncNode *)clones[i]->getChildByName(childName);
+            }
+          nodeC->setContainer(contCloned);
+        }
+
+      // ended with current container
+      if(contCloned)
+        contCloned->decrRef();
+    }
+
+  DEBTRACE("End cloneAndPlaceNodesCoherently")
+  return clones;
+}
+
+void DynParaLoop::accept(Visitor *visitor)
+{
+  visitor->visitDynParaLoop(this);
+}
+
+Node * DynParaLoop::getInitNode()
+{
+  return _initNode;
+}
+
+Node * DynParaLoop::getExecNode()
+{
+  return _node;
+}
+
+Node * DynParaLoop::getFinalizeNode()
+{
+  return _finalizeNode;
+}
+
+void DynParaLoop::shutdown(int level)
+{
+  if(level==0)return;
+  if(!_node) return;
+
+  std::vector<Node *>::iterator iter;
+  for (iter=_execNodes.begin() ; iter!=_execNodes.end() ; iter++)
+    (*iter)->shutdown(level);
+  for (iter=_execInitNodes.begin() ; iter!=_execInitNodes.end() ; iter++)
+    (*iter)->shutdown(level);
+  for (iter=_execFinalizeNodes.begin() ; iter!=_execFinalizeNodes.end() ; iter++)
+    (*iter)->shutdown(level);
+}

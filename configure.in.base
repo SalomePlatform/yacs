@@ -22,7 +22,7 @@
 # --
 # -----------------------------------------------------------------------------
 #
-AC_INIT([Salome2 Project], [6.1.0], [paul.rascle@edf.fr], [SalomeYacs])
+AC_INIT([Salome2 Project], [6.2.0], [paul.rascle@edf.fr], [SalomeYacs])
 AM_INIT_AUTOMAKE([tar-pax])
 AC_CONFIG_HEADER(yacs_config.h)
 
@@ -30,7 +30,7 @@ AC_CONFIG_HEADER(yacs_config.h)
 MODULE_NAME=yacs
 AC_SUBST(MODULE_NAME)
 
-XVERSION=0x060100
+XVERSION=0x060200
 AC_SUBST(XVERSION)
 
 RELEASE=$VERSION

@@ -98,6 +98,19 @@ Any *Pool::getCurrentOutSample() const
     return (*_currentCase).second.outValue(); 
 }
 
+Any *Pool::getOutSample(int id)
+{
+  if(empty())
+    throw YACS::Exception("no current case set in pool");
+
+  std::list< std::pair<int, ExpData> >::iterator iter;
+  for(iter=_container.begin();iter!=_container.end();iter++)
+    if((*iter).first==id)
+        return (*iter).second.outValue();
+  if(iter==_container.end())
+    throw YACS::Exception("no current case set in pool");
+}
+
 
 //! Push a sample. \b WARNING inSample ownership is released to current Pool instance (this) !
 void Pool::pushInSample(int id, Any *inSample, unsigned char priority)

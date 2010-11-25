@@ -34,7 +34,6 @@
 #include "ServiceNode.hxx"
 #include "ComponentInstance.hxx"
 #include "SALOME_GenericObj.hh"
-#include "Mutex.hxx"
 
 #include <iostream>
 #include <sstream>
@@ -45,26 +44,20 @@
 using namespace YACS::ENGINE;
 using namespace std;
 
-static YACS::BASES::Mutex MUTEXI;
-struct LockI
-{
-  LockI(){MUTEXI.lock();};
-  ~LockI(){MUTEXI.unlock();};
-};
-static YACS::BASES::Mutex MUTEXO;
-struct LockO
-{
-  LockO(){MUTEXO.lock();};
-  ~LockO(){MUTEXO.unlock();};
-};
-
 void releaseObj(CORBA::Any& data)
 {
   CORBA::Object_var obj;
   if(data >>= CORBA::Any::to_object(obj))
     {
-      if(obj->_non_existent())return;
-      SALOME::GenericObj_var gobj=SALOME::GenericObj::_narrow(obj);
+      SALOME::GenericObj_var gobj;
+      try
+        {
+          gobj=SALOME::GenericObj::_narrow(obj);
+        }
+      catch(const CORBA::SystemException& )
+        {
+          return;
+        }
       if(!CORBA::is_nil(gobj))
         {
           DEBTRACE("It's a SALOME::GenericObj");
@@ -82,8 +75,15 @@ void registerObj(CORBA::Any& data)
   CORBA::Object_var obj;
   if(data >>= CORBA::Any::to_object(obj))
     {
-      if(obj->_non_existent())return;
-      SALOME::GenericObj_var gobj=SALOME::GenericObj::_narrow(obj);
+      SALOME::GenericObj_var gobj;
+      try
+        {
+          gobj=SALOME::GenericObj::_narrow(obj);
+        }
+      catch(const CORBA::SystemException& )
+        {
+          return;
+        }
       if(!CORBA::is_nil(gobj))
         {
           DEBTRACE("It's a SALOME::GenericObj");
@@ -165,7 +165,7 @@ void InputCorbaPort::put(CORBA::Any *data) throw (ConversionException)
 #ifdef REFCNT
   DEBTRACE("refcount CORBA : " << ((omni::TypeCode_base*)data->pd_tc.in())->pd_ref_count);
 #endif
-  LockI lock;
+  YACS::BASES::Lock lock(&_mutex);
 #ifdef _DEVDEBUG_
   display(data);
 #endif
@@ -207,7 +207,7 @@ CORBA::Any * InputCorbaPort::getAny()
 
 PyObject * InputCorbaPort::getPyObj()
 {
-  LockI lock;
+  YACS::BASES::Lock lock(&_mutex);
   CORBA::TypeCode_var tc=getAny()->type();
   if (!tc->equivalent(CORBA::_tc_null))
     return convertCorbaPyObject(edGetType(),getAny());
@@ -317,19 +317,20 @@ void OutputCorbaPort::put(CORBA::Any *data) throw (ConversionException)
 {
   InputPort *p;
 
-  {  LockO lock;
+  {  
+    YACS::BASES::Lock lock(&_mutex);
 #ifdef REFCNT
-  DEBTRACE("refcount CORBA : " << ((omni::TypeCode_base*)data->pd_tc.in())->pd_ref_count);
+    DEBTRACE("refcount CORBA : " << ((omni::TypeCode_base*)data->pd_tc.in())->pd_ref_count);
 #endif
 #ifdef REFCNT
-  DEBTRACE("refcount CORBA : " << ((omni::TypeCode_base*)_data.pd_tc.in())->pd_ref_count);
+    DEBTRACE("refcount CORBA : " << ((omni::TypeCode_base*)_data.pd_tc.in())->pd_ref_count);
 #endif
 
-  releaseObj(_data);
+    releaseObj(_data);
 
-  _data=*data;
+    _data=*data;
 
-  //no registerObj : we steal the output reference of the node
+    //no registerObj : we steal the output reference of the node
   }
 
 #ifdef REFCNT
@@ -421,7 +422,7 @@ CORBA::Any * OutputCorbaPort::getAnyOut()
 
 PyObject * OutputCorbaPort::getPyObj()
 {
-  LockO lock;
+  YACS::BASES::Lock lock(&_mutex);
   CORBA::TypeCode_var tc=getAny()->type();
   if (!tc->equivalent(CORBA::_tc_null))
     return convertCorbaPyObject(edGetType(),getAny());

@@ -138,7 +138,7 @@ void VisitorSaveSchema::visitForEachLoop(ForEachLoop *node)
   _out << ">" << endl;
   
   writeProperties(node);
-  node->ComposedNode::accept(this);
+  node->DynParaLoop::accept(this);
   writeSimpleDataLinks(node);
   writeSimpleStreamLinks(node);
   _out << indent(depth) << "</foreach>" << endl;
@@ -163,12 +163,35 @@ void VisitorSaveSchema::visitOptimizerLoop(OptimizerLoop *node)
   _out << ">" << endl;
 
   writeProperties(node);
-  node->ComposedNode::accept(this);
+  node->DynParaLoop::accept(this);
   writeSimpleDataLinks(node);
   writeSimpleStreamLinks(node);
   _out << indent(depth) << "</optimizer>" << endl;
   endCase(node);
   DEBTRACE("END visitOptimizerLoop " << _root->getChildName(node));
+}
+
+void VisitorSaveSchema::visitDynParaLoop(DynParaLoop *node)
+{
+  DEBTRACE("START visitDynParaLoop " << _root->getChildName(node));
+  int depth = depthNode(node);
+  if (node->getInitNode() != NULL)
+    {
+      _out << indent(depth+1) << "<initnode>" << endl;
+      node->getInitNode()->accept(this);
+      _out << indent(depth+1) << "</initnode>" << endl;
+    }
+  if (node->getExecNode() != NULL)
+    {
+      node->getExecNode()->accept(this);
+    }
+  if (node->getFinalizeNode() != NULL)
+    {
+      _out << indent(depth+1) << "<finalizenode>" << endl;
+      node->getFinalizeNode()->accept(this);
+      _out << indent(depth+1) << "</finalizenode>" << endl;
+    }
+  DEBTRACE("END visitDynParaLoop " << _root->getChildName(node));
 }
 
 void VisitorSaveSchema::visitForLoop(ForLoop *node)
@@ -689,17 +712,17 @@ void VisitorSaveSchema::writeInputDataStreamPorts(Node *node)
     {
       std::map<std::string,std::string> aPropMap = (*it)->getProperties();
       if ( aPropMap.empty() )
-	_out << indent(depth) << "<instream name=\"" << (*it)->getName() << "\" type=\"" 
-	     << (*it)->edGetType()->name() << "\"/>" << endl;
+        _out << indent(depth) << "<instream name=\"" << (*it)->getName() << "\" type=\"" 
+             << (*it)->edGetType()->name() << "\"/>" << endl;
       else
-	{
-	  _out << indent(depth) << "<instream name=\"" << (*it)->getName() << "\" type=\"" 
-	       << (*it)->edGetType()->name() << "\">" << endl;
-	  for (std::map<std::string,std::string>::iterator itP = aPropMap.begin(); itP != aPropMap.end(); itP++)
-	    _out << indent(depth+1) << "<property name=\"" << (*itP).first << "\" value=\"" 
-		 << (*itP).second << "\"/>" << endl;
-	  _out << indent(depth) << "</instream>" << endl;
-	}
+        {
+          _out << indent(depth) << "<instream name=\"" << (*it)->getName() << "\" type=\"" 
+               << (*it)->edGetType()->name() << "\">" << endl;
+          for (std::map<std::string,std::string>::iterator itP = aPropMap.begin(); itP != aPropMap.end(); itP++)
+            _out << indent(depth+1) << "<property name=\"" << (*itP).first << "\" value=\"" 
+                 << (*itP).second << "\"/>" << endl;
+          _out << indent(depth) << "</instream>" << endl;
+        }
     }
 }
 
@@ -722,17 +745,17 @@ void VisitorSaveSchema::writeOutputDataStreamPorts(Node *node)
     {
       std::map<std::string,std::string> aPropMap = (*it)->getProperties();
       if ( aPropMap.empty() )
-	_out << indent(depth) << "<outstream name=\"" << (*it)->getName() << "\" type=\"" 
-	     << (*it)->edGetType()->name() << "\"/>" << endl;
+        _out << indent(depth) << "<outstream name=\"" << (*it)->getName() << "\" type=\"" 
+             << (*it)->edGetType()->name() << "\"/>" << endl;
       else
-	{
-	  _out << indent(depth) << "<outstream name=\"" << (*it)->getName() << "\" type=\"" 
-	       << (*it)->edGetType()->name() << "\">" << endl;
-	  for (std::map<std::string,std::string>::iterator itP = aPropMap.begin(); itP != aPropMap.end(); itP++)
-	    _out << indent(depth+1) << "<property name=\"" << (*itP).first << "\" value=\"" 
-		 << (*itP).second << "\"/>" << endl;
-	  _out << indent(depth) << "</outstream>" << endl;
-	}
+        {
+          _out << indent(depth) << "<outstream name=\"" << (*it)->getName() << "\" type=\"" 
+               << (*it)->edGetType()->name() << "\">" << endl;
+          for (std::map<std::string,std::string>::iterator itP = aPropMap.begin(); itP != aPropMap.end(); itP++)
+            _out << indent(depth+1) << "<property name=\"" << (*itP).first << "\" value=\"" 
+                 << (*itP).second << "\"/>" << endl;
+          _out << indent(depth) << "</outstream>" << endl;
+        }
     }
 }
 
@@ -815,17 +838,17 @@ void VisitorSaveSchema::writeSimpleDataLinks(ComposedNode *node)
                 {
                   DEBTRACE( "BINGO!" );
 
-		  string fromName;
-		  if ( dynamic_cast<SplitterNode*>(from) && dynamic_cast<ForEachLoop*>(from->getFather()) )
-		    fromName = from->getFather()->getName();
-		  else
-		    fromName = node->getChildName(from);
+                  string fromName;
+                  if ( dynamic_cast<SplitterNode*>(from) && dynamic_cast<ForEachLoop*>(from->getFather()) )
+                    fromName = from->getFather()->getName();
+                  else
+                    fromName = node->getChildName(from);
 
-		  string childName;
-		  if ( dynamic_cast<SplitterNode*>(to) && dynamic_cast<ForEachLoop*>(to->getFather()) )
-		    childName = node->getChildName(to->getFather());
-		  else
-		    childName = node->getChildName(to);
+                  string childName;
+                  if ( dynamic_cast<SplitterNode*>(to) && dynamic_cast<ForEachLoop*>(to->getFather()) )
+                    childName = node->getChildName(to->getFather());
+                  else
+                    childName = node->getChildName(to);
                   _out << indent(depth) << "<datalink control=\"false\">" << endl;
                   _out << indent(depth+1) << "<fromnode>" << fromName << "</fromnode> ";
                   _out << "<fromport>" << anOP->getName() << "</fromport>" << endl;
@@ -920,8 +943,8 @@ void VisitorSaveSchema::writeSimpleStreamLinks(ComposedNode *node)
                   _out << indent(depth+1) << "<tonode>" << childName << "</tonode> ";
                   _out << "<toport>" << anIP->getName() << "</toport>" << endl;
 
-		  std::map<std::string,std::string> aPropMap = dynamic_cast<InputDataStreamPort*>(anIP)->getProperties();
-		  for (std::map<std::string,std::string>::iterator itP = aPropMap.begin(); itP != aPropMap.end(); itP++)
+                  std::map<std::string,std::string> aPropMap = dynamic_cast<InputDataStreamPort*>(anIP)->getProperties();
+                  for (std::map<std::string,std::string>::iterator itP = aPropMap.begin(); itP != aPropMap.end(); itP++)
                     {
                       string notAlinkProperty = "DependencyType";
                       if (notAlinkProperty != (*itP).first)
@@ -929,7 +952,7 @@ void VisitorSaveSchema::writeSimpleStreamLinks(ComposedNode *node)
                              << (*itP).second << "\"/>" << endl;
                     }
                   _out << indent(depth) << "</stream>" << endl;
-		}
+                }
               else
                 { // --- store info to create the link later, given the input port
                   DEBTRACE("For later" );
@@ -937,7 +960,7 @@ void VisitorSaveSchema::writeSimpleStreamLinks(ComposedNode *node)
                   _mapOfSLtoCreate.insert(make_pair(anIP->getNumId(), aLink));
                 }
             }
-	}
+        }
     }
 
   // --- second pass, retreive links where the output port is inside the scope.
@@ -967,10 +990,10 @@ void VisitorSaveSchema::writeSimpleStreamLinks(ComposedNode *node)
                     _out << indent(depth+1) << "<tonode>" << node->getChildName(to) << "</tonode> ";
                     _out << "<toport>" << anIP->getName() << "</toport>" << endl;
 
-		    std::map<std::string,std::string> aPropMap = dynamic_cast<InputDataStreamPort*>(anIP)->getProperties();
-		    for (std::map<std::string,std::string>::iterator itP = aPropMap.begin(); itP != aPropMap.end(); itP++)
-		      _out << indent(depth+1) << "<property name=\"" << (*itP).first << "\" value=\"" 
-			   << (*itP).second << "\"/>" << endl;
+                    std::map<std::string,std::string> aPropMap = dynamic_cast<InputDataStreamPort*>(anIP)->getProperties();
+                    for (std::map<std::string,std::string>::iterator itP = aPropMap.begin(); itP != aPropMap.end(); itP++)
+                      _out << indent(depth+1) << "<property name=\"" << (*itP).first << "\" value=\"" 
+                           << (*itP).second << "\"/>" << endl;
 
                     _out << indent(depth) << "</stream>" << endl;
                   }

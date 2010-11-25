@@ -49,7 +49,7 @@ Its description is in the following form::
 
   m=Module(<modulename>,components=<components list>,prefix=<prefix>)
 
-The statement for a module named "mymodule" with a component C1 (see below for a description of components) that 
+The statement for a module named "mymodule" with a component c1 (see below for a description of components) that 
 will be installed in the "Install" directory will be::
 
   m=Module("mymodule",components=[c1],prefix="Install")
@@ -180,7 +180,7 @@ If a second service has to be added for the component, simply add another servic
 In this description, a second service name “serv2” has been added with 2 input dataflow ports (a and b) and an output dataflow port (c).  
 The service is reduced to its simplest expression:  it returns the product of its 2 inputs.
 
-Assemble with external libraries
+Link with external libraries
 """"""""""""""""""""""""""""""""""""""""""""""""""""
 We have seen that the **defs** and **body** attributes are sufficient to define the body of the service but it is often more practical 
 to use external libraries rather than put everything into these 2 attributes. This is possible provided that everything necessary 
@@ -272,9 +272,9 @@ The following example will be used to specify these final concepts::
                      services=[
                                Service("s1",
                                        inport=[("a","double"),("b","long"),
-				               ("c","string")],
+                                               ("c","string")],
                                        outport=[("d","double"),("e","long"),
-				                ("f","string")],
+                                                ("f","string")],
                                        instream=[("a","CALCIUM_double","T"),
                                                  ("b","CALCIUM_double","I")],
                                        outstream=[("ba","CALCIUM_double","T"),
@@ -349,8 +349,10 @@ Python component
 ++++++++++++++++++++++++++++++++++++++++
 A Python component is also described like a C++ component.  The only differences are in the Python object to be used to 
 define it:  PYComponent instead of CPPComponent and in the content of the **defs** and **body** attributes that must contain 
-Python code and not C++ (warning with indentation, the indentation of the complete block of code is automatically handled
-but not the internal indentation of the block).
+Python code and not C++.
+
+.. warning::
+   The indentation of the complete block of code is automatically handled but not the internal indentation of the block.
 
 Example Python component::
 
@@ -409,7 +411,7 @@ ports, one output dataflow port, 7 input datastream ports and one output datastr
                       services=[
                                 Service("s1",
                                         inport=[("a","double"),("b","long"),
-					        ("c","string")],
+                                                ("c","string")],
                                         outport=[("d","double")],
                                         instream=[("aa","CALCIUM_double","T"),
                                                   ("ab","CALCIUM_double","I"),
@@ -429,8 +431,9 @@ ports, one output dataflow port, 7 input datastream ports and one output datastr
                             "-rep_outils","/local/chris/ASTER/instals/outils"],
                      )
 
-Caution, do not use the name “aster” for the component because this name is reserved for the *Code_Aster* python module.  
-If the name “aster” is used, the behaviour will be completely erratic.
+.. warning::
+   Do not use the name “aster” for the component because this name is reserved for the *Code_Aster* python module.  
+   If the name “aster” is used, the behaviour will be completely erratic.
 
 Although its description is very similar to the behaviour of a Python component, there is an important difference in use.  
 The Aster component needs the description of a command set to run.  This command set is transferred to each service of the 
@@ -442,10 +445,11 @@ The command supervisor has been integrated into a SALOME component and the varia
 during execution of the command set.  Similarly, values for output dataflow ports are defined by values of variables derived 
 from execution of the command set.
 
-**Caution with the execution mode**.  The command supervisor has 2 execution modes (PAR_LOT=”OUI” or PAR_LOT=”NON” that are 
-specified in the DEBUT command) (PAR_LOT = BY_BATCH).  In PAR_LOT=”OUI” mode, it is compulsory to terminate the command set 
-with a FIN (END) command which has the effect of interrupting execution.  This is not the preferred method of operation with YACS.  
-It is preferable to use PAR_LOT=”NON” mode without adding the FIN command, which avoids interrupting the execution prematurely.
+.. warning::
+   **Beware with the execution mode**.  The command supervisor has 2 execution modes (PAR_LOT=”OUI” or PAR_LOT=”NON” that are 
+   specified in the DEBUT command) (PAR_LOT = BY_BATCH).  In PAR_LOT=”OUI” mode, it is compulsory to terminate the command set 
+   with a FIN (END) command which has the effect of interrupting execution.  This is not the preferred method of operation with YACS.  
+   It is preferable to use PAR_LOT=”NON” mode without adding the FIN command, which avoids interrupting the execution prematurely.
 
 Dynamically importable Aster module and link with YACS
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -612,10 +616,10 @@ This gives something like the following for a module with a single Fortran compo
                   services=[
                             Service("s1",
                                     inport=[("a","double"),
-				            ("b","long"),
-					    ("c","string")],
+                                            ("b","long"),
+                                            ("c","string")],
                                     outport=[("d","double"),("e","long"),
-				             ("f","string")],
+                                             ("f","string")],
                                     instream=[("a","CALCIUM_double","T"),
                                               ("b","CALCIUM_double","I")],
                                     outstream=[("ba","CALCIUM_double","T"),
@@ -765,8 +769,7 @@ There are many coupling outputs:
   in the coupler output.
 
 .. warning::
-
-   when the application is stopped, the containers are killed, and this can cause information losses in their output files.
+   When the application is stopped, the containers are killed, and this can cause information losses in their output files.
 
 The working directory
 ++++++++++++++++++++++++++++++++++++++
@@ -831,8 +834,7 @@ A “dataout” node and the link between node “pipo1” and node “dataout�
     </datalink>
 
 .. warning::
-
-   it is impossible to use the “.” character in port names.  This prevents the use of names such as fort.8 that are 
+   It is impossible to use the “.” character in port names.  This prevents the use of names such as fort.8 that are 
    fairly frequent.  There is a simple workaround solution, which is to replace the “.” by the “:”character (therefore fort:8 in 
    our example) to obtain the expected result.  
    Obviously, names containing the “:” characters cannot be used.  They must be very rare.
@@ -1139,204 +1141,257 @@ written as follows::
 The corresponding xml coupling file and Aster command file may be viewed in the distribution (Examples/ast2 directory).  
 The complementary implantation elements are located in the fcompo directory (cfort component) and in the myaster directory (caster component).
 
+Miscellaneous
+-----------------------------------------------------------------
+YACSGEN is mainly targeted to the integration of Python, C++ or Fortran calculation codes.
+Nevertheless, if you want to generate a complete module with GUI, documentation and persistence,
+there are some minimal options to do that.
+
+Add a GUI
+++++++++++++++++++++++++++++++++++++++++
+It is possible to add a C++ or a Python GUI to the module with the *gui* parameter of the module.
+This parameter must be a list of file names. These files can be source files (\*.cxx, \*.hxx or \*.h for C++, \*.py for python),
+image files (\*.png, ...) and qt designer files (\*.ui). You can't mix python and C++ source files.
+In C++, include files with .h extension are processed with the moc qt tool.
+
+Here is an excerpt from pygui1 example that shows how to add a python GUI to a module::
+
+  modul=Module("pycompos",components=[c1],prefix="./install",
+                          gui=["pycomposGUI.py","demo.ui","*.png"],
+              )
+
+The GUI is implemented in the pycomposGUI.py (that must be named <module name>GUI.py) python module. It uses a qt designer
+file demo.ui that is dynamically loaded and several images in PNG files.
+
+Here is an excerpt from cppgui1 example that shows how to add a C++ GUI to a module::
+
+  modul=Module("cppcompos",components=[c1],prefix="./install",
+                           gui=["cppcomposGUI.cxx","cppcomposGUI.h","demo.ui","*.png"],
+              )
+
+The C++ GUI is very similar to the python GUI except that the cppcomposGUI.h file is processed by the moc and the demo.ui
+is processed by the uic qt tool.
+
+By default, a Makefile.am and a SalomeApp.xml files are generated but you can put your own Makefile.am or SalomeApp.xml
+in the list to override this default.
+
+Add an online documentation
+++++++++++++++++++++++++++++++++++++++++
+It is possible to add an online documentation that is made with the sphinx tool (http://sphinx.pocoo.org). You need a well installed
+sphinx tool (1.0.x or 0.6.x).
+To add a documentation use the *doc* parameter of the module. It must be a list of file names. These files can be text files
+(name with extension .rst) in the reStructured format (see http://docutils.sourceforge.net/) and image files (\*.png, ...).
+The main file must be named index.rst.
+
+By default, a sphinx configuration file conf.py and a Makefile.am are generated but you can put your own Makefile.am or conf.py
+in the list to override this default.
+
+Here is an excerpt from pygui1 example that shows how to add a documentation to a module::
+
+  modul=Module("pycompos",components=[c1],prefix="./install",
+                          doc=["*.rst","*.png"],
+              )
+
+.. warning::
+   The online documentation will only appear in the SALOME GUI, if your module has a minimal GUI but not if it has no GUI.
+
+Add extra methods to your components
+++++++++++++++++++++++++++++++++++++++++
+If you have a C++ or Python class or some methods that you want to add to your components, it is possible to do that by
+using the *compodefs* and *inheritedclass* parameters of the component (:class:`module_generator.CPPComponent` or
+:class:`module_generator.PYComponent`).
+
+The *inheritedclass* parameter gives the name of the class that will be included in the parent classes of the component and
+the *compodefs* parameter is a fragment of code that will be inserted in the definition section of the component. It can be used
+to add definitions such as include or even a complete class.
+
+Here is an excerpt from pygui1 example that shows how to add a method named createObject to the component pycompos::
+
+  compodefs=r"""
+  class A:
+    def createObject( self, study, name ):
+      "Create object.  "
+      builder = study.NewBuilder()
+      father = study.FindComponent( "pycompos" )
+      if father is None:
+        father = builder.NewComponent( "pycompos" )
+      attr = builder.FindOrCreateAttribute( father, "AttributeName" )
+      attr.SetValue( "pycompos" )
+      object  = builder.NewObject( father )
+      attr    = builder.FindOrCreateAttribute( object, "AttributeName" )
+      attr.SetValue( name )
+  """
+
+  c1=PYComponent("pycompos",services=[
+                 Service("s1",inport=[("a","double"),("b","double")],
+                              outport=[("c","double"),("d","double")],
+                        ),
+                                     ],
+                 compodefs=compodefs,
+                 inheritedclass="A",
+                )
+
+.. note::
+
+   If you have special characters in your code fragments such as backslash, think about using python raw strings (r"...")
+
+For a C++ component, the method is exactly the same. There is only one case that can be handled in Python with this method and not in C++.
+It's when you want to redefine one of the component methods (DumpPython, for example). In this case, adding a class in the inheritance tree
+does not override the default implementation. So, for this special case, there is another parameter (*addmethods*) that is a code
+fragment that will be included in the component class to effectively redefine the method.
+
+Here is an excerpt from cppgui1 example that shows how to redefine the DumpPython method in a C++ component::
+
+  compomethods=r"""
+  Engines::TMPFile* DumpPython(CORBA::Object_ptr theStudy, CORBA::Boolean isPublished,
+                               CORBA::Boolean& isValidScript)
+  {
+    SALOMEDS::Study_var aStudy = SALOMEDS::Study::_narrow(theStudy);
+    if(CORBA::is_nil(aStudy))
+      return new Engines::TMPFile(0);
+    SALOMEDS::SObject_var aSO = aStudy->FindComponent("cppcompos");
+    if(CORBA::is_nil(aSO))
+       return new Engines::TMPFile(0);
+    std::string Script = "import cppcompos_ORB\n";
+    Script += "import salome\n";
+    Script += "compo = salome.lcc.FindOrLoadComponent('FactoryServer','cppcompos')\n";
+    Script += "def RebuildData(theStudy):\n";
+    Script += "  compo.SetCurrentStudy(theStudy)\n";
+    const char* aScript=Script.c_str();
+    char* aBuffer = new char[strlen(aScript)+1];
+    strcpy(aBuffer, aScript);
+    CORBA::Octet* anOctetBuf =  (CORBA::Octet*)aBuffer;
+    int aBufferSize = strlen(aBuffer)+1;
+    Engines::TMPFile_var aStreamFile = new Engines::TMPFile(aBufferSize, aBufferSize, anOctetBuf, 1);
+    isValidScript = true;
+    return aStreamFile._retn();
+  }
+  """
+
+  c1=CPPComponent("cppcompos",services=[ Service("s1",
+                                                 inport=[("a","double"),("b","double")],
+                                                 outport=[("c","double")],
+                                                ),
+                                       ],
+                  addedmethods=compomethods,
+                 )
+
+
+Add extra idl corba interfaces to your components
+++++++++++++++++++++++++++++++++++++++++++++++++++++++
+If you want to add pure CORBA methods (not SALOME services) to your components or even complete IDL interface (SALOMEDS::Driver, for
+example), you can do that by using the *idls*, *interfacedefs* and *inheritedinterface* parameters of the component.
+
+The *idls* parameter must be a list of CORBA idl file names. The *inheritedinterface* parameter gives the name of the CORBA
+interface that will be included in the parent interfaces of the component interface. The *interfacedefs* parameter is a fragment
+of code that will be inserted in the idl file of the module. It can be used to add definitions such as include or even a complete interface.
+
+Here is an excerpt from pygui1 example that shows how to add the SALOMEDS::Driver interface (with its default
+implementation from SALOME KERNEL) and an extra method (createObject) to a python component::
+
+  idldefs="""
+  #include "myinterface.idl"
+  """
+
+  compodefs=r"""
+  import SALOME_DriverPy
+
+  class A(SALOME_DriverPy.SALOME_DriverPy_i):
+    def __init__(self):
+      SALOME_DriverPy.SALOME_DriverPy_i.__init__(self,"pycompos")
+      return
+
+    def createObject( self, study, name ):
+      "Create object.  "
+      builder = study.NewBuilder()
+      father = study.FindComponent( "pycompos" )
+      if father is None:
+        father = builder.NewComponent( "pycompos" )
+        attr = builder.FindOrCreateAttribute( father, "AttributeName" )
+        attr.SetValue( "pycompos" )
+
+      object  = builder.NewObject( father )
+      attr    = builder.FindOrCreateAttribute( object, "AttributeName" )
+      attr.SetValue( name )
+  """
+
+  c1=PYComponent("pycompos",services=[ Service("s1",
+                                               inport=[("a","double"),("b","double")],
+                                               outport=[("c","double"),("d","double")],
+                                              ),
+                                     ],
+              idls=["*.idl"],
+              interfacedefs=idldefs,
+              inheritedinterface="Idl_A",
+              compodefs=compodefs,
+              inheritedclass="A",
+         )
+
+The idl file names can contain shell-style wildcards that are accepted by the python glob module. Here, there is only
+one file (myinterface.idl) that contains the definition of interface Idl_A::
+
+  #include "SALOMEDS.idl"
+  #include "SALOME_Exception.idl"
+
+  interface Idl_A : SALOMEDS::Driver
+  {
+    void createObject(in SALOMEDS::Study theStudy, in string name) raises (SALOME::SALOME_Exception);
+  };
+
+In this simple case, it is also possible to include directly the content of the file with the *interfacedefs* parameter.
+
+For a C++ component, the method is exactly the same, except that there is no default implementation of the Driver interface
+so you have to implement it.
+
 Reference guide 
 -----------------------------------------------------------------
 
-.. module:: module_generator
+.. automodule:: module_generator
    :synopsis: YACSGEN interface 
-
-The python module :mod:`module_generator` defines classes which can be used to define a SALOME module, its components and
-generates a SALOME source module, its installation and a SALOME application including this module and
-other preexisting SALOME modules like GEOM, SMESH or others.
 
 The module provides the following classes:
 
-.. class:: Service(name[, inport[, outport[, instream[, outstream[, body=""[, defs=""]]]]]])
+.. autoclass:: Service
 
-   A :class:`Service` instance represents a component service with dataflow and datastream ports.
-   The parameter *name* gives the name of the service.
-   The parameter *inport* gives the list of input dataflow ports.
-   The parameter *outport* gives the list of output dataflow ports. An input or output dataflow port is defined 
-   by a 2-tuple (port name, data type name). The list of possible data types is: "double", "long", "string",
-   "dblevec", "stringvec", "intvec", "file" and "pyobj" only for Python services.
-   The parameter *instream* gives the list of input datastream ports.
-   The parameter *outstream* gives the list of output datastream ports. An input or output datastream port is defined 
-   by a 3-tuple (port name, data type name, mode name). The list of possible data types is: "CALCIUM_double", "CALCIUM_integer",
-   "CALCIUM_real", "CALCIUM_string", "CALCIUM_complex", "CALCIUM_logical", "CALCIUM_long". The mode can be "I" (iterative mode)
-   or "T" (temporal mode).
-   The parameter *defs* is a string that gives the source code to insert in the definition section of the component. It can be C++ includes
-   or Python imports.
-   The parameter *defs* is a string that gives the source code to insert in the service call. It can be any C++ 
-   or Python code that fits well in the body of the service method.
+.. autoclass:: CPPComponent
 
-   For example, the following call defines a minimal Python service with one input dataflow port (name "a", type double) 
-   and one input datastream port::
+.. autoclass:: PYComponent
 
-      >>> s1 = module_generator.Service('myservice', inport=[("a","double"),], 
-                                        instream=[("aa","CALCIUM_double","I")],
-					body="print a")
+.. autoclass:: F77Component
 
-.. class:: CPPComponent(name[, services[, kind="lib"[, libs=""[, rlibs=""[, includes=""[, exe_path[, sources[, inheritedclass=""[, compodefs=""]]]]]]]]])
+.. autoclass:: ASTERComponent
 
-   A :class:`CPPComponent` instance represents a C++ SALOME component with services given as a list of :class:`Service`
-   instances with the parameter *services*.
-   The parameter *name* gives the name of the component.
-   If the optional *kind* parameter is given and has the value "exe", the component will be built as a standalone
-   component (executable or shell script). The default is to build the component as a dynamic library.
-   The parameter *libs* gives all the libraries options to add when linking the generated component (-L...).
-   The parameter *rlibs* gives all the runtime libraries options to add when linking the generated component (-R...).
-   The parameter *includes* gives all the include options to add when compiling the generated component (-I...).
-   The parameter *sources* gives all the external source files to add in the compilation step (list of paths).
-   The parameter *exe_path* is only used when kind is "exe" and gives the path to the standalone component.
-   The parameter *compodefs* can be used to add extra definition code in the component for example when using a base class
-   to define the component class by deriving it (see *inheritedclass* parameter)
-   The parameter *inheritedclass* can be used to define a base class for the component. The base class can be defined in external
-   source or with the *compodefs* parameter. The value of the *inheritedclass* parameter is the name of the base class.
+.. autoclass:: Module
 
+.. autoclass:: Generator
+    :members: generate, bootstrap, configure, make, install, make_appli
 
-   For example, the following call defines a standalone component named "mycompo" with one service s1 (it must have been defined before)::
-   
-      >>> c1 = module_generator.CPPComponent('mycompo', services=[s1,], kind="exe", 
-                                             exe_path="./launch.sh")
+.. _yacstypes:
 
-.. class:: PYComponent(name[, services[, kind="lib"[, sources[, python_path[, inheritedclass=""[, compodefs=""]]]]]])
+Supported SALOME types
+----------------------------
 
-   A :class:`PYComponent` instance represents a Python SALOME component with services given as a list of :class:`Service`
-   instances with the parameter *services*.
-   The parameter *name* gives the name of the component.
-   If the optional *kind* parameter is given and has the value "exe", the component will be built as a standalone
-   component (python executable). The default is to build the component as a python module.
-   The parameter *sources* gives all the external Python source files to add in the component directory (list of paths).
-   If the optional *python_path* parameter is given (as a list of paths), all the paths are added to the python path (sys.path).
-   The parameter *compodefs* can be used to add extra definition code in the component for example when using a base class
-   to define the component class by deriving it (see *inheritedclass* parameter)
-   The parameter *inheritedclass* can be used to define a base class for the component. The base class can be defined in external
-   source or with the *compodefs* parameter. The value of the *inheritedclass* parameter is the name of the base class.
-
-   For example, the following call defines a Python component named "mycompo" with one service s1 (it must have been defined before)::
-   
-      >>> c1 = module_generator.PYComponent('mycompo', services=[s1,], 
-                                                       python_path="apath")
-
-
-.. class:: F77Component(name[, services[, kind="lib"[, libs=""[, rlibs=""[, exe_path[, sources]]]]]])
-
-   A :class:`F77Component` instance represents a Fortran SALOME component with services given as a list of :class:`Service`
-   instances with the parameter *services*.
-   The parameter *name* gives the name of the component.
-   If the optional *kind* parameter is given and has the value "exe", the component will be built as a standalone
-   component (executable or shell script). The default is to build the component as a dynamic library.
-   The parameter *libs* gives all the libraries options to add when linking the generated component (-L...).
-   The parameter *rlibs* gives all the runtime libraries options to add when linking the generated component (-R...).
-   The parameter *sources* gives all the external source files to add in the compilation step (list of paths).
-   The parameter *exe_path* is only used when kind is "exe" and gives the path to the standalone component.
-
-   For example, the following call defines a Fortran component named "mycompo" with one service s1 (it must have been defined before). 
-   This component is implemented as a dynamic library linked with a user's library "mylib"::
-   
-      >>> c1 = module_generator.F77Component('mycompo', services=[s1,], 
-                                                       libs="-lmylib -Lmydir")
-
-.. class:: ASTERComponent(name[, services[, kind="lib"[, libs=""[, rlibs=""[, exe_path[, aster_dir[, python_path[, argv]]]]]]]])
-
-   A :class:`ASTERComponent` instance represents an ASTER SALOME component (special component for Code_Aster that is a mix of 
-   Fortran and Python code) with services given as a list of :class:`Service` instances with the parameter *services*.
-   The parameter *name* gives the name of the component.
-   If the optional *kind* parameter is given and has the value "exe", the component will be built as a standalone
-   component (executable or shell script). The default is to build the component as a dynamic library.
-   The parameter *libs* gives all the libraries options to add when linking the generated component (-L...).
-   The parameter *rlibs* gives all the runtime libraries options to add when linking the generated component (-R...).
-   The parameter *exe_path* is only used when kind is "exe" and gives the path to the standalone component.
-   The parameter *aster_dir* is a string that gives the Code_Aster installation directory.
-   If the optional *python_path* parameter is given (as a list of paths), all the paths are added to the python path (sys.path).
-   The parameter *argv* is a list of strings that gives the command line parameters for Code_Aster. This parameter is only useful when
-   kind is "lib".
-
-   For example, the following call defines a Code_Aster component named "mycompo" with one service s1 (it must have been defined before). 
-   This standalone component takes some command line arguments::
-
-      >>> c1 = module_generator.ASTERComponent('mycompo', services=[s1,], kind="exe", 
-                                                          exe_path="launch.sh", 
-							  argv=["-memjeveux","4"])
-
-.. class:: Module(name[, components[, prefix=""[, layout="multidir"]]])
-
-   A :class:`Module` instance represents a SALOME module that contains components given as a list of 
-   component instances (:class:`CPPComponent` or :class:`PYComponent` or :class:`F77Component` or :class:`ASTERComponent`)
-   with the parameter *components*.
-   The parameter *name* gives the name of the module. The SALOME source module
-   will be located in the <name_SRC> directory.
-   The parameter *prefix* is the path of the installation directory.
-   If the optional *layout* parameter is given and has the value "monodir", all components
-   will be generated in a single directory. The default is to generate each component in its
-   own directory.
-
-   For example, the following call defines a module named "mymodule" with 2 components c1 and c2  (they must have been
-   defined before) that will be installed in the "install" directory::
-
-      >>> m = module_generator.Module('mymodule', components=[c1,c2], 
-                                                  prefix="./install")
-
-
-.. class:: Generator(module[, context])
-
-   A :class:`Generator` instance take a :class:`Module` instance as its first parameter and can be used to generate the
-   SALOME source module, builds it, installs it and includes it in a SALOME application.
-
-   The parameter *module* gives the :class:`Module` instance that will be used for the generation.
-   If the optional *context* parameter is given (a dict), its content is used to specify the prerequisites
-   environment file (key *"prerequisites"*) and the SALOME KERNEL installation directory (key *"kernel"*).
-
-   For example, the following call creates a generator for the module m::
-
-      >>> g = module_generator.Generator(m,context)
-
-
-   .. method:: generate()
-
-   Generate a SALOME source module
-
-   .. method:: bootstrap()
-
-   Execute the first build step (bootstrap autotools)
-
-   .. method:: configure()
-
-   Execute the second build step (configure)
-
-   .. method:: make()
-
-   Execute the third build step (compile and link)
-
-   .. method:: install()
-
-   Execute the installation step
-
-   .. method:: make_appli(appliname[, restrict[, altmodules[, resources]]])
-
-   Create a SALOME application containing the module and preexisting SALOME modules.
-   The parameter *appliname* is a string that gives the name of the application (directory path where the application
-   will be installed).
-   If the optional *restrict* parameter (a list of module names) is given only those SALOME modules will be included in the
-   application. The default is to include all modules that are located in the same directory as the KERNEL module and have
-   the same suffix (for example, if KERNEL directory is KERNEL_V5 and GEOM directory is GEOM_V5, GEOM module is automatically
-   included except if restrict is used).
-   The parameter *altmodules* can be used to add SALOME modules that cannot be managed with the precedent rule. This parameter
-   is a dict with a module name as the key and the installation path as the value.
-   The parameter *resources* can be used to define an alternative resources catalog (path of the file).
-
-   For example, the following calls create a SALOME application with external modules and resources catalog in "appli" directory::
-
-     g=Generator(m,context)
-     g.generate()
-     g.bootstrap()
-     g.configure()
-     g.make()
-     g.install()
-     g.make_appli("appli", restrict=["KERNEL"], altmodules={"GUI":GUI_ROOT_DIR, "YACS":YACS_ROOT_DIR}, 
-                           resources="myresources.xml")
-
-
+======================= =========================== =========================== ===================== ==========================
+   SALOME module            YACS type name            IDL type name              Implementation          Comment
+======================= =========================== =========================== ===================== ==========================
+   GEOM                  GEOM_Object                 GEOM::GEOM_Object             C++, Python
+   SMESH                 SMESH_Mesh                  SMESH::SMESH_Mesh             C++, Python
+   SMESH                 SMESH_Hypothesis            SMESH::SMESH_Hypothesis       C++, Python
+   MED                   SALOME_MED/MED              SALOME_MED::MED               C++, Python
+   MED                   SALOME_MED/MESH             SALOME_MED::MESH              C++, Python
+   MED                   SALOME_MED/SUPPORT          SALOME_MED::SUPPORT           C++, Python
+   MED                   SALOME_MED/FIELD            SALOME_MED::FIELD             C++, Python
+   MED                   SALOME_MED/FIELDDOUBLE      SALOME_MED::FIELDDOUBLE       C++, Python
+   MED                   SALOME_MED/FIELDINT         SALOME_MED::FIELDINT          C++, Python
+   KERNEL                double                      double                      C++, Python, F77
+   KERNEL                long                        long                        C++, Python, F77
+   KERNEL                string                      string                      C++, Python, F77
+   KERNEL                dblevec                     dblevec                     C++, Python, F77       list of double
+   KERNEL                stringvec                   stringvec                   C++, Python, F77       list of string
+   KERNEL                intvec                      intvec                      C++, Python, F77       list of long  
+   KERNEL                pyobj                                                   Python                 a pickled python object   
+   KERNEL                file                                                    C++, Python, F77       to transfer a file
+======================= =========================== =========================== ===================== ==========================
 
 
 

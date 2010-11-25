@@ -65,6 +65,8 @@ namespace YACS
       void setName(std::string name) { _name = name; };
       void setProc(Proc* proc) { _proc = proc; };
       Proc* getProc() { return _proc; };
+      virtual void shutdown(int level);
+      virtual std::map<std::string,std::string> getResourceProperties(const std::string& name) { return _propertyMap; };
 
     protected:
       std::string _name;

@@ -25,6 +25,7 @@ import SALOME_DriverPy
 
 import threading
 import tempfile
+import os
 
 import SALOMERuntime
 import loader
@@ -39,6 +40,7 @@ class proc_i(YACS_ORB__POA.ProcExec):
         self.e.setExecMode(1) # YACS::STEPBYSTEP
         self.run1 = None
         self.p = self.l.load(xmlFile)
+        self.xmlFile=xmlFile
         pass
 
     def getNodeState(self,numid):
@@ -77,6 +79,9 @@ class proc_i(YACS_ORB__POA.ProcExec):
     def getContainerLog(self, nodeNumid):
         return self.p.getNodeContainerLog(nodeNumid)
 
+    def shutdownProc(self, level):
+        return self.p.shutdown(level)
+
     def getExecutorState(self):
         return self.e.getExecutorState()
 
@@ -91,50 +96,85 @@ class proc_i(YACS_ORB__POA.ProcExec):
     def getNames(self):
         return self.p.getIds()
 
+    def runProc(self,debug, isPyThread, fromscratch):
+      print "**************************Begin schema execution %s**************************" % self.xmlFile
+      self.e.RunPy(self.p,debug, isPyThread, fromscratch)
+      print "**************************End schema execution %s****************************" % self.xmlFile
+
     def Run(self):
-        execState = self.e.getExecutorState()
-        if execState >= 305:
-            # --- not clean, value from define.hxx (YACS::FINISHED)
+        if self.run1 is not None:
+          execState = self.e.getExecutorState()
+          if execState >= pilot.FINISHED:
             self.run1.join()
             self.run1 = None
-            pass
+
         if self.run1 is None:
-            self.run1 = threading.Thread(None, self.e.RunPy, "CORBAExec", (self.p,0,1,1))
+            self.run1 = threading.Thread(None, self.runProc, "CORBAExec", (0,1,1))
             self.run1.start()
-            pass
-        pass
 
     def RunFromState(self, xmlFile):
-        execState = self.e.getExecutorState()
-        if execState >= 305:
-            # --- not clean, value from define.hxx (YACS::FINISHED)
+        """Start an execution from the state given by the file xmlFile
+           If xmlFile == "", start execution from the current state
+        """
+        if self.run1 is not None:
+          execState = self.e.getExecutorState()
+          if execState >= pilot.FINISHED:
             self.run1.join()
             self.run1 = None
-            pass
-        try:
+
+        if xmlFile:
+          try:
             self.p.init()
             self.p.exUpdateState();
             sp = loader.stateParser()
             sl = loader.stateLoader(sp,self.p)
             sl.parse(xmlFile)
-        except IOError, ex:
+          except IOError, ex:
             print "IO Error: ", ex
-            return None
-        except ValueError,ex:
+            return
+          except ValueError,ex:
             print "Caught ValueError Exception:",ex
-            return None
-        except pilot.Exception,ex:
+            return
+          except pilot.Exception,ex:
             print ex.what()
-            return None
-        except:
+            return
+          except:
             print "Unknown exception!"
-            return None
+            return
+
         if self.run1 is None:
-            self.run1 = threading.Thread(None, self.e.RunPy, "CORBAExec", (self.p,0,1,0))
+            self.run1 = threading.Thread(None, self.runProc, "CORBAExec", (0,1,0))
             self.run1.start()
+
+    def RestartFromState(self, xmlFile):
+        """Reset the procedure state to ready state for all nodes in error
+           if xmlFile exists first try to load the state from this file.
+           then start execution
+        """
+        if self.run1 is not None:
+          execState = self.e.getExecutorState()
+          if execState >= pilot.FINISHED:
+            self.run1.join()
+            self.run1 = None
+          else:
+            return
+
+        try:
+          if os.path.exists(xmlFile):
+            self.p.init()
+            sp = loader.stateParser()
+            sl = loader.stateLoader(sp,self.p)
+            sl.parse(xmlFile)
+
+          self.p.resetState(1)
+          self.p.exUpdateState();
+        except:
             pass
-        pass
-    
+
+        if self.run1 is None:
+            self.run1 = threading.Thread(None, self.runProc, "CORBAExec", (0,1,0))
+            self.run1.start()
+
     def addObserver(self, obs, numid, event):
         disp = SALOMERuntime.SALOMEDispatcher_getSALOMEDispatcher()
         disp.addObserver(obs, numid, event)
@@ -195,7 +235,7 @@ class YACS(YACS_ORB__POA.YACS_Gen,
     with omniidl and also the class SALOME_ComponentPy_i which defines general
     SALOME component behaviour.
     """
-    def __init__ ( self, orb, poa, contID, containerName, instanceName, 
+    def __init__ ( self, orb, poa, contID, containerName, instanceName,
                    interfaceName ):
         print "YACS.__init__: ", containerName, ';', instanceName
         SALOME_ComponentPy.SALOME_ComponentPy_i.__init__(self, orb, poa, contID,
@@ -206,10 +246,18 @@ class YACS(YACS_ORB__POA.YACS_Gen,
         # --- store a naming service interface instance in _naming_service atribute
         self._naming_service = SALOME_ComponentPy.SALOME_NamingServicePy_i( self._orb )
 
-        
         SALOMERuntime.RuntimeSALOME_setRuntime(1)
         SALOMERuntime.SALOMEDispatcher_setSALOMEDispatcher()
-        pass
+        r=pilot.getRuntime()
+
+        try:
+          #try to load SALOME module catalogs
+          modul_catalog = self._naming_service.Resolve("/Kernel/ModulCatalog")
+          ior= orb.object_to_string(modul_catalog)
+          cata=r.loadCatalog("session",ior)
+          r.addCatalog(cata)
+        except :
+          pass
 
     def LoadProc(self,xmlFile):
         """

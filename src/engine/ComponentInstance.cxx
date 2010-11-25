@@ -126,3 +126,7 @@ string ComponentInstance::getKind() const
 {
   return KIND;
 }
+
+void ComponentInstance::shutdown(int level)
+{
+}

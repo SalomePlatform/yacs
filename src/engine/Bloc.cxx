@@ -44,32 +44,21 @@ Bloc::Bloc(const Bloc& other, ComposedNode *father, bool editionOnly):StaticDefi
 {
   for(list<Node *>::const_iterator iter=other._setOfNode.begin();iter!=other._setOfNode.end();iter++)
     _setOfNode.push_back((*iter)->simpleClone(this,editionOnly));
+
   //CF Linking
   vector< pair<OutGate *, InGate *> > cfLinksToReproduce=other.getSetOfInternalCFLinks();
   vector< pair<OutGate *, InGate *> >::iterator iter1=cfLinksToReproduce.begin();
   for(;iter1!=cfLinksToReproduce.end();iter1++)
     edAddCFLink(getChildByName(other.getChildName((*iter1).first->getNode())),getChildByName(other.getChildName((*iter1).second->getNode())));
+
   //Data + DataStream linking
   vector< pair<OutPort *, InPort *> > linksToReproduce=other.getSetOfInternalLinks();
   vector< pair<OutPort *, InPort *> >::iterator iter2=linksToReproduce.begin();
   for(;iter2!=linksToReproduce.end();iter2++)
     {
-      OutPort* pout = (*iter2).first;
-      Node* nodeout = getChildByName(other.getChildName(pout->getNode()));
-      InPort* pin = (*iter2).second;
-      Node* nodein = getChildByName(other.getChildName(pin->getNode()));
-
-      if(dynamic_cast<OutputPort *>(pout))
-        pout=nodeout->getOutputPort(pout->getName());
-      else
-        pout=nodeout->getOutputDataStreamPort(pout->getName());
-
-      if(dynamic_cast<InputPort *>(pin))
-        pin=nodein->getInputPort(pin->getName());
-      else
-        pin=nodein->getInputDataStreamPort(pin->getName());
-
-      edAddLink(pout,pin);
+      OutPort* pout = iter2->first;
+      InPort* pin = iter2->second;
+      edAddLink(getOutPort(other.getPortName(pout)),getInPort(other.getPortName(pin)));
     }
 }
 
@@ -156,9 +145,10 @@ void Bloc::getReadyTasks(std::vector<Task *>& tasks)
 void Bloc::exUpdateState()
 {
   if(_state == YACS::DISABLED)return;
+  if(_state == YACS::DONE)return;
   if(_inGate.exIsReady())
     {
-      setState(YACS::TOACTIVATE);
+      setState(YACS::ACTIVATED);
       for(list<Node *>::iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
         if((*iter)->exIsControlReady())
           (*iter)->exUpdateState();

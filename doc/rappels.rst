@@ -36,7 +36,7 @@ Definitions
      components.  The choice of containers may be important if it is required that one component should not be in the same 
      executable as another.
    - **SALOME application**:  set of SALOME modules integrated into the SALOME platform.  This platform is built on KERNEL 
-     and GUI basic modules that provide component running and integration services in the graphic MMI.  A SALOME application 
+     and GUI basic modules that provide component running and integration services in the graphic user interface.  A SALOME application 
      provides several scripts to run the application (runAppli), enter the application environment (runSession) and other 
      more internal scripts such as remote run (runRemote).
 
@@ -79,11 +79,11 @@ and unload the implementation of a SALOME component.  A component is loaded by c
 The basic mechanism for loading a component depends on the chosen implementation language.
 
 In C++, the platform uses dynamic library loading (dlopen) and a factory function mechanism that must be 
-named <Module>Engine_factory (for example GEOMEngine_factory, for GEOM). 
+named <Component>Engine_factory (for example GEOMEngine_factory, for GEOM component type). 
 This function must return the effective CORBA object that is the SALOME component.
 
-In Python, the platform uses the Python import mechanism (import <Module>) and instantiates the Python SALOME 
-component using a class (or a factory) with the same name (<Module>).
+In Python, the platform uses the Python import mechanism (import <Component>) and instantiates the Python SALOME 
+component using a class (or a factory) with the same name (<Component>).
 
 .. _appli:
 
@@ -152,7 +152,7 @@ For example:
      <module name="YACS"                   path="/data/SALOME_V5/YACS_5"/>
      <module name="VISU"                   path="/data/SALOME_V5/VISU_5"/>
      <module name="HELLO"                  path="/data/SALOME_V5/HELLO1_5"/>
-     <module name="PYHELLO"                path="/data/SALOME_V5PYHELLO1_5"/>
+     <module name="PYHELLO"                path="/data/SALOME_V5/PYHELLO1_5"/>
      <module name="NETGENPLUGIN"           path="/data/SALOME_V5/NETGENPLUGIN_5"/>
   </modules>
   <samples path="/data/SALOME_V5/SAMPLES/SAMPLES_SRC"/>
@@ -175,7 +175,7 @@ The SALOME application provides the user with 3 execution scripts:
  - **runAppli** runs a SALOME session (in the same way as ${KERNEL_ROOT_DIR}/bin/Salome/runSalome).
  - **runSession** connects to a running SALOME session, in a shell with a conforming environment.  If there is no argument, the 
    script opens an interactive shell.  If there are arguments, it executes the command supplied in the environment of the SALOME application.
- - **runConsole** opens a python console connected to the current SALOME session.  Another option is to use RunSession and then to run Python.
+ - **runConsole** opens a python console connected to the current SALOME session.  Another option is to use **runSession** and then to run Python.
 
 The application configuration files are:
  - **SALOMEApp.xml**:  this file is similar to the default file located in ${GUI_ROOT_DIR}/share/SALOME/resources/gui.  
@@ -184,8 +184,40 @@ The application configuration files are:
    contains the local machine.  The user must add the machines to be used.  If it is required to use arbitrary 
    application directories on the different computers, their location must be specified in this file using the appliPath attribute::
 
-        appliPath="my/specific/path/on/this/computer"
+        appliPath="/my/specific/path/on/this/computer"
 
+Configuring a SALOME application for remote components
+----------------------------------------------------------
+If you have a multi-machine application, it is possible that some modules (and components) are only available on remote
+computers. In this case, you need to configure your application for this situation by using the **update_catalogs.py** script provided by the
+SALOME application.
+
+The first thing to do is to create a file named **CatalogResources.base.xml** that will contain all information about your multi-machine
+configuration.
+
+Example of **CatalogResources.base.xml** file:
+
+.. code-block:: xml
+
+  <!DOCTYPE ResourcesCatalog>
+  <resources>
+     <machine name="res1" hostname="localhost" >
+        <component name="GEOM_Superv" moduleName="GEOM"/>
+	<modules moduleName="YACS"/>
+     </machine>
+
+     <machine name="res2" hostname="computer1" userName="user" protocol="ssh" appliPath="/home/user/SALOME514/appli_V5_1_4" >
+        <modules moduleName="AddComponent"/>
+     </machine>
+  </resources>
+
+In this file, we say that we have 2 resources **res1** and **res2** on localhost and computer1. On the remote machine, we give
+the SALOME application path and we give, for each resource, the list of available components or modules : GEOM_Superv and YACS on localhost
+and AddComponent on computer1.
+
+Starting from this file, the **update_catalogs.py** script gets all remote catalogs, puts them in local directories (remote_catalogs/<resource name>),
+builds an updated **CatalogResource.xml** file and adds a new environment variable (**SALOME_CATALOGS_PATH** in env.d/configRemote.sh) to the
+SALOME application. With these 3 elements the application is now correctly configured for a multi-machine use.
 
 
 

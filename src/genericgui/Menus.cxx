@@ -254,6 +254,7 @@ void ProcMenu::popupMenu(QWidget *caller, const QPoint &globalPos, const QString
     {
       menu.addAction(gmain->_getErrorReportAct);
       menu.addAction(gmain->_getErrorDetailsAct);
+      menu.addAction(gmain->_shutdownProcAct);
     }
   menu.exec(globalPos);
 }
@@ -599,6 +600,29 @@ void ComponentInstanceMenu::popupMenu(QWidget *caller, const QPoint &globalPos, 
     {
       menu.addAction(gmain->_selectComponentInstanceAct);
       menu.addAction(gmain->_newSalomeComponentAct);
+    }
+  menu.exec(globalPos);
+}
+
+//=======================================================================================
+
+ContainerMenu::ContainerMenu() : MenusBase()
+{
+}
+
+ContainerMenu::~ContainerMenu()
+{
+}
+
+void ContainerMenu::popupMenu(QWidget *caller, const QPoint &globalPos, const QString& m)
+{
+  GenericGui *gmain = QtGuiContext::getQtCurrent()->getGMain();
+  bool isEdition = QtGuiContext::getQtCurrent()->isEdition();
+  QMenu menu(m, caller);
+  addHeader(menu, m);
+  if (isEdition)
+    {
+      menu.addAction(gmain->_deleteItemAct);
     }
   menu.exec(globalPos);
 }

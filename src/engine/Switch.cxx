@@ -314,11 +314,12 @@ Node *Switch::simpleClone(ComposedNode *father, bool editionOnly) const
 
 void Switch::exUpdateState()
 {
+  DEBTRACE("Switch::exUpdateState " << _state);
   if(_state == YACS::DISABLED)
     return;
   if(_inGate.exIsReady())
     {
-      setState(YACS::TOACTIVATE);
+      setState(YACS::ACTIVATED);
       if(_condition.isEmpty())
         _undispatchableNotificationNode=new FakeNodeForSwitch(this,false,true);
       else
@@ -344,6 +345,7 @@ void Switch::exUpdateState()
 
 void Switch::init(bool start)
 {
+  DEBTRACE("Switch::init " << start);
   StaticDefinedComposedNode::init(start);
   int i=0;
   for(map< int , Node * >::iterator iter=_mapOfNode.begin();iter!=_mapOfNode.end();iter++, i++)
@@ -377,7 +379,7 @@ void Switch::getReadyTasks(std::vector<Task *>& tasks)
             (*iter).second->getReadyTasks(tasks);//Default Node is returned
           else
             if(_undispatchableNotificationNode)
-          _undispatchableNotificationNode->getReadyTasks(tasks);
+              _undispatchableNotificationNode->getReadyTasks(tasks);
             else
               throw Exception("Switch::getReadyTasks : internal error");
         }
@@ -538,14 +540,45 @@ Node *Switch::edSetNode(int caseId, Node *node) throw(YACS::Exception)
     }
 }
 
-bool Switch::edAddChild(Node *node) throw(YACS::Exception)
+//! Change the case of a node
+/*!
+ *  \param oldCase : the case value to change
+ *  \param newCase : the new value to set
+ *  raise an exception if the old case does not exist or if the new case already exists
+ */
+void Switch::edChangeCase(int oldCase, int newCase)
+{
+  std::map< int , Node * >::iterator iter=_mapOfNode.find(oldCase);
+  if(iter==_mapOfNode.end())
+    {
+      //the case does not exists
+      throw Exception("Switch::edChangeCase : case does not exist");
+    }
+  iter=_mapOfNode.find(newCase);
+  if(iter != _mapOfNode.end())
+    {
+      //the new case exists
+      throw Exception("Switch::edChangeCase : new case exists");
+    }
+  Node* node=_mapOfNode[oldCase];
+  _mapOfNode.erase(oldCase);
+  _mapOfNode[newCase]=node;
+  modified();
+}
+
+int Switch::getMaxCase()
 {
   int aCase = 0;
   map<int, Node*>::const_iterator it = _mapOfNode.begin();
   for(; it != _mapOfNode.end(); ++it)
     if ((*it).first > aCase)
       aCase = (*it).first;
-  aCase++;
+  return aCase;
+}
+
+bool Switch::edAddChild(Node *node) throw(YACS::Exception)
+{
+  int aCase = getMaxCase() + 1;
   DEBTRACE(aCase);
   bool ret = edSetNode(aCase, node);
   DEBTRACE(ret);
@@ -697,13 +730,8 @@ YACS::StatesForNode Switch::getEffectiveState(const Node* node) const
     return YACS::READY;
   if(effectiveState==YACS::DISABLED)
     return YACS::DISABLED;
-  if(!_condition.getValue())
-    return node->getState();
-  map< int , Node * >::const_iterator iter=_mapOfNode.find(_condition.getIntValue());
-  if(iter!=_mapOfNode.end() && (*iter).second==node)
-    return node->getState();
-  else
-    return YACS::READY;
+
+  return node->getState();
 }
 YACS::StatesForNode Switch::getEffectiveState() const
 {

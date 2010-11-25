@@ -321,6 +321,7 @@ bool CommandAddNodeFromCatalog::localReverse()
       if (father)
         {
           DEBTRACE("REMOVE");
+          father->select(true);
           father->update(REMOVE,0,0);
         }
       return true;
@@ -377,6 +378,9 @@ bool CommandReparentNode::localExecute()
       if (Loop *loop = dynamic_cast<Loop*>(newFather))
         if (!loop->edGetDirectDescendants().empty())
           throw YACS::Exception("Already a node in a new parent of Loop type");
+      if (DynParaLoop * dpl = dynamic_cast<DynParaLoop*>(newFather))
+        if (dpl->getExecNode() != NULL)
+          throw YACS::Exception("Already an execution node in the new parent of type dynamic loop");
       Node *nodeSameName = 0;
       try
         {
@@ -537,6 +541,7 @@ bool CommandPutInComposedNode::localExecute()
       //refresh all views
       scomposednode->update(PASTE, ProcInvoc::getTypeOfNode(node), snode);
       snode->recursiveUpdate(RENAME, 0, snode);
+      snode->select(true);
     }
   catch (Exception& ex)
     {
@@ -596,6 +601,7 @@ bool CommandPutInComposedNode::localReverse()
       GuiContext::getCurrent()->getSubjectProc()->update(CUT, ProcInvoc::getTypeOfNode(node), snode);
       sogp->update(PASTE, ProcInvoc::getTypeOfNode(node), snode);
       snode->recursiveUpdate(RENAME, 0, snode);
+      snode->select(true);
     }
   catch (Exception& ex)
     {
@@ -609,8 +615,9 @@ bool CommandPutInComposedNode::localReverse()
 
 CommandCopyNode::CommandCopyNode(YACS::ENGINE::Proc *fromproc,
                                  std::string position,
-                                 std::string newParent)
-  : Command(), _fromproc(fromproc), _position(position), _newParent(newParent), _newName(""), _clone(0)
+                                 std::string newParent,
+                                 int swCase)
+  : Command(), _fromproc(fromproc), _position(position), _newParent(newParent), _newName(""), _clone(0), _case(swCase)
 {
   DEBTRACE("CommandCopyNode::CommandCopyNode " << _position << " " << _newParent);
 }
@@ -676,7 +683,24 @@ bool CommandCopyNode::localExecute()
       while(sameName);
       _clone->setName(s.str());
       _newName = _clone->getName();
-      newFather->edAddChild(_clone);
+
+      if (YACS::ENGINE::Switch* theswitch = dynamic_cast<YACS::ENGINE::Switch*>(newFather))
+        {
+          DEBTRACE("father is a switch " << newFather->getName());
+          int theCase=_case;
+          if(theswitch->edGetNode(_case))
+            {
+              //the case is already used. Try another one
+              theCase=theswitch->getMaxCase()+1;
+            }
+          theswitch->edSetNode(theCase,_clone);
+        }
+      else
+        newFather->edAddChild(_clone);
+
+      _newName = _clone->getQualifiedName();
+      DEBTRACE(_newName);
+
       SubjectNode *sub = GuiContext::getCurrent()->_mapOfSubjectNode[newFather];
       SubjectComposedNode *snp = dynamic_cast<SubjectComposedNode*>(sub);
       SubjectNode *son = snp->addSubjectNode(_clone);
@@ -699,6 +723,8 @@ bool CommandCopyNode::localReverse()
     {
       Proc* proc = GuiContext::getCurrent()->getProc();
       string nodeName = _newParent + "." + _newName;
+      if (_newParent == proc->getName())
+        nodeName = _newName;
       DEBTRACE(nodeName);
       _clone = proc->getChildByName(nodeName);
 
@@ -710,6 +736,7 @@ bool CommandCopyNode::localReverse()
       if (father)
         {
           DEBTRACE("REMOVE");
+          father->select(true);
           father->update(REMOVE,0,0);
         }
       return true;
@@ -1196,6 +1223,7 @@ bool CommandAddInputPortFromCatalog::localReverse()
       if (father)
         {
           DEBTRACE("REMOVE");
+          father->select(true);
           father->update(REMOVE,0,0);
         }
       return true;
@@ -1296,6 +1324,7 @@ bool CommandAddOutputPortFromCatalog::localReverse()
       if (father)
         {
           DEBTRACE("REMOVE");
+          father->select(true);
           father->update(REMOVE,0,0);
         }
       return true;
@@ -1393,6 +1422,7 @@ bool CommandAddIDSPortFromCatalog::localReverse()
       if (father)
         {
           DEBTRACE("REMOVE");
+          father->select(true);
           father->update(REMOVE,0,0);
         }
       return true;
@@ -1490,6 +1520,7 @@ bool CommandAddODSPortFromCatalog::localReverse()
       if (father)
         {
           DEBTRACE("REMOVE");
+          father->select(true);
           father->update(REMOVE,0,0);
         }
       return true;
@@ -1874,6 +1905,7 @@ bool CommandDestroy::localExecute()
             if (!_startnode.empty()) node = proc->getChildByName(_startnode);
             YASSERT(GuiContext::getCurrent()->_mapOfSubjectNode.count(node));
             subject = GuiContext::getCurrent()->_mapOfSubjectNode[node];
+            father  = subject->getParent();
           }
           break;
         case INPUTPORT:
@@ -1882,7 +1914,7 @@ bool CommandDestroy::localExecute()
             InPort* inp = node->getInputPort(_startport);
             YASSERT(GuiContext::getCurrent()->_mapOfSubjectDataPort.count(inp));
             subject = GuiContext::getCurrent()->_mapOfSubjectDataPort[inp];
-	    father  = subject->getParent();
+            father  = subject->getParent();
           }
           break;
         case INPUTDATASTREAMPORT:
@@ -1891,7 +1923,7 @@ bool CommandDestroy::localExecute()
             InPort* inp = node->getInputDataStreamPort(_startport);
             YASSERT(GuiContext::getCurrent()->_mapOfSubjectDataPort.count(inp));
             subject = GuiContext::getCurrent()->_mapOfSubjectDataPort[inp];
-	    father  = subject->getParent();
+            father  = subject->getParent();
           }
           break;
         case OUTPUTPORT:
@@ -1900,7 +1932,7 @@ bool CommandDestroy::localExecute()
             OutPort* outp = node->getOutputPort(_startport);
             YASSERT(GuiContext::getCurrent()->_mapOfSubjectDataPort.count(outp));
             subject = GuiContext::getCurrent()->_mapOfSubjectDataPort[outp];
-	    father  = subject->getParent();
+            father  = subject->getParent();
           }
           break;
         case OUTPUTDATASTREAMPORT:
@@ -1909,7 +1941,7 @@ bool CommandDestroy::localExecute()
             OutPort* outp = node->getOutputDataStreamPort(_startport);
             YASSERT(GuiContext::getCurrent()->_mapOfSubjectDataPort.count(outp));
             subject = GuiContext::getCurrent()->_mapOfSubjectDataPort[outp];
-	    father  = subject->getParent();
+            father  = subject->getParent();
           }
           break;
         case DATALINK:
@@ -1933,6 +1965,7 @@ bool CommandDestroy::localExecute()
             pair<OutPort*,InPort*> keymap = pair<OutPort*,InPort*>(outp,inp);
             YASSERT(GuiContext::getCurrent()->_mapOfSubjectLink.count(keymap));
             subject = GuiContext::getCurrent()->_mapOfSubjectLink[keymap];
+            father  = subject->getParent();
           }
           break;
         case CONTROLLINK:
@@ -1942,9 +1975,15 @@ bool CommandDestroy::localExecute()
             pair<Node*,Node*> keymap = pair<Node*,Node*>(outn,inn);
             YASSERT(GuiContext::getCurrent()->_mapOfSubjectControlLink.count(keymap));
             subject = GuiContext::getCurrent()->_mapOfSubjectControlLink[keymap];
+            father  = subject->getParent();
           }
           break;
         case CONTAINER:
+          {
+            Container *container = proc->containerMap[_startnode];
+            subject = GuiContext::getCurrent()->_mapOfSubjectContainer[container];
+            break;
+          }
         case COMPONENT:
         case REFERENCE:
         case DATATYPE:
@@ -1954,8 +1993,11 @@ bool CommandDestroy::localExecute()
         }
       YASSERT(subject);
       Subject::erase(subject);
-      if (father) father->update(REMOVE, 0, 0);
-      //subject->update(REMOVE, 0, 0);
+      if (father) 
+        {
+          father->select(true);
+          father->update(REMOVE, 0, 0);
+        }
       subject = 0;
       return true; 
     }
@@ -2425,8 +2467,7 @@ bool CommandSetSwitchCase::localExecute()
           throw YACS::Exception("Set Switch Case impossible: value already used");
         }
       int oldVal = aSwitch->getRankOfNode(node);
-      Node *aNode = aSwitch->edReleaseCase(oldVal);
-      aNode = aSwitch->edSetNode(val, aNode); // --- returns 0 because no older node on that case
+      aSwitch->edChangeCase(oldVal,val);
       _oldValue = oldVal;
       _oldNode = proc->getChildName(node);
       DEBTRACE("CommandSetSwitchCase::localExecute OK " << val);
@@ -2434,6 +2475,7 @@ bool CommandSetSwitchCase::localExecute()
       SubjectNode *ssw = GuiContext::getCurrent()->_mapOfSubjectNode[aSwitch];
       SubjectNode *snode = GuiContext::getCurrent()->_mapOfSubjectNode[node];
       ssw->update(SETCASE, val, snode);
+      snode->recursiveUpdate(RENAME, 0, snode);
       return true;
     }
   catch (Exception& ex)
@@ -2459,13 +2501,13 @@ bool CommandSetSwitchCase::localReverse()
           throw YACS::Exception("Set Switch Case impossible: value already used");
         }
       int oldVal = aSwitch->getRankOfNode(node);
-      Node *aNode = aSwitch->edReleaseCase(oldVal);
-      aNode = aSwitch->edSetNode(val, aNode);
+      aSwitch->edChangeCase(oldVal,val);
       DEBTRACE("CommandSetSwitchCase::localReverse OK " << val);
       YASSERT(GuiContext::getCurrent()->_mapOfSubjectNode.count(aSwitch));
       SubjectNode *ssw = GuiContext::getCurrent()->_mapOfSubjectNode[aSwitch];
       SubjectNode *snode = GuiContext::getCurrent()->_mapOfSubjectNode[node];
       ssw->update(SETCASE, val, snode);
+      snode->recursiveUpdate(RENAME, 0, snode);
       return true;
     }
   catch (Exception& ex)
@@ -2697,11 +2739,11 @@ bool CommandSetAlgo::localExecute()
       loop->setAlgorithm(_alglib,_symbol);
       _oldAlglib = _alglib;
       _oldSymbol = _symbol;
-      InputPort *port = loop->getInputPort("retPortForOutPool");
+      InputPort *port = loop->edGetPortForOutPool();
       YASSERT(GuiContext::getCurrent()->_mapOfSubjectDataPort.count(static_cast<DataPort*>(port)));
       SubjectDataPort *spo = GuiContext::getCurrent()->_mapOfSubjectDataPort[static_cast<DataPort*>(port)];
       spo->update(UPDATE, 0, spo);
-      OutputPort *oport = loop->getOutputPort("SmplPrt");
+      OutputPort *oport = loop->edGetSamplePort();
       YASSERT(GuiContext::getCurrent()->_mapOfSubjectDataPort.count(static_cast<DataPort*>(oport)));
       spo = GuiContext::getCurrent()->_mapOfSubjectDataPort[static_cast<DataPort*>(oport)];
       spo->update(UPDATE, 0, spo);
@@ -2726,11 +2768,11 @@ bool CommandSetAlgo::localReverse()
       Proc* proc = GuiContext::getCurrent()->getProc();
       OptimizerLoop* loop = dynamic_cast<OptimizerLoop*>(proc->getChildByName(_optimizer));
       loop->setAlgorithm(_oldAlglib,_oldSymbol);
-      InputPort *port = loop->getInputPort("retPortForOutPool");
+      InputPort *port = loop->edGetPortForOutPool();
       YASSERT(GuiContext::getCurrent()->_mapOfSubjectDataPort.count(static_cast<DataPort*>(port)));
       SubjectDataPort *spo = GuiContext::getCurrent()->_mapOfSubjectDataPort[static_cast<DataPort*>(port)];
       spo->update(UPDATE, 0, spo);
-      OutputPort *oport = loop->getOutputPort("SmplPrt");
+      OutputPort *oport = loop->edGetSamplePort();
       YASSERT(GuiContext::getCurrent()->_mapOfSubjectDataPort.count(static_cast<DataPort*>(oport)));
       spo = GuiContext::getCurrent()->_mapOfSubjectDataPort[static_cast<DataPort*>(oport)];
       spo->update(UPDATE, 0, spo);
@@ -2899,6 +2941,7 @@ bool CommandAddLink::localReverse()
       if (father)
         {
           DEBTRACE("REMOVE");
+          father->select(true);
           father->update(REMOVE,0,0);
         }
       if (!sclink)
@@ -2909,6 +2952,7 @@ bool CommandAddLink::localReverse()
       if (father)
         {
           DEBTRACE("REMOVE");
+          father->select(true);
           father->update(REMOVE,0,0);
         }
       return true;
@@ -2990,6 +3034,7 @@ bool CommandAddControlLink::localReverse()
       if (father)
         {
           DEBTRACE("REMOVE");
+          father->select(true);
           father->update(REMOVE,0,0);
         }
       return true;
@@ -3903,6 +3948,7 @@ bool CommandAssociateServiceToComponent::localExecute()
                   SubjectComponent* oldcomp = dynamic_cast<SubjectComponent*>(ssnode->_subRefComponent->getParent());
                   YASSERT(oldcomp);
                   _oldInstance = oldcomp->getName();
+                  _oldcont = oldcomp->getComponent()->getContainer()->getName();
                   subCompo->moveService(ssnode->_subRefComponent);
                 }
               else
@@ -3935,31 +3981,43 @@ bool CommandAssociateServiceToComponent::localReverse()
       Node* node = proc->getChildByName(_service);
       if (ServiceNode *service = dynamic_cast<ServiceNode*>(node))
         {
-          if (proc->componentInstanceMap.count(_oldInstance))
+          ComponentInstance *compo;
+          if (!proc->componentInstanceMap.count(_oldInstance))
             {
-              DEBTRACE(_oldInstance);
-              ComponentInstance *compo = proc->componentInstanceMap[_oldInstance];
-              service->setComponent(compo);
-
-              YASSERT(GuiContext::getCurrent()->_mapOfSubjectNode.count(service));
-              SubjectNode* snode = GuiContext::getCurrent()->_mapOfSubjectNode[service];
-              SubjectServiceNode *ssnode = dynamic_cast<SubjectServiceNode*>(snode);
-              YASSERT(ssnode);
-              YASSERT(GuiContext::getCurrent()->_mapOfSubjectComponent.count(compo));
-              SubjectComponent *subCompo = GuiContext::getCurrent()->_mapOfSubjectComponent[compo];
-              snode->addSubjectReference(subCompo);
-              if (ssnode->_subRefComponent)
-                subCompo->moveService(ssnode->_subRefComponent);
-              else
-                ssnode->_subRefComponent = subCompo->attachService(ssnode);
-
-              return true;
+              //component instance does not exist anymore recreate it
+              ComponentInstance *oldcompo = service->getComponent();
+              compo = oldcompo->clone();
+              compo->setName(_oldInstance);
+              proc->addComponentInstance(compo, _oldInstance);
+              Container *cont = proc->containerMap[_oldcont];
+              compo->setContainer(cont);
+              SubjectProc *sproc = GuiContext::getCurrent()->getSubjectProc();
+              sproc->addSubjectComponent(compo);
             }
           else
-            GuiContext::getCurrent()->_lastErrorMessage = "Component instance not found: " + _instanceName;
+            {
+              compo = proc->componentInstanceMap[_oldInstance];
+            }
+
+          DEBTRACE(_oldInstance);
+          service->setComponent(compo);
+
+          YASSERT(GuiContext::getCurrent()->_mapOfSubjectNode.count(service));
+          SubjectNode* snode = GuiContext::getCurrent()->_mapOfSubjectNode[service];
+          SubjectServiceNode *ssnode = dynamic_cast<SubjectServiceNode*>(snode);
+          YASSERT(ssnode);
+          YASSERT(GuiContext::getCurrent()->_mapOfSubjectComponent.count(compo));
+          SubjectComponent *subCompo = GuiContext::getCurrent()->_mapOfSubjectComponent[compo];
+          snode->addSubjectReference(subCompo);
+          if (ssnode->_subRefComponent)
+            subCompo->moveService(ssnode->_subRefComponent);
+          else
+            ssnode->_subRefComponent = subCompo->attachService(ssnode);
+
+          return true;
         }
       else
-        GuiContext::getCurrent()->_lastErrorMessage = "Node is note a service node: " + _service;
+        GuiContext::getCurrent()->_lastErrorMessage = "Node is not a service node: " + _service;
       return false;
     }
   catch (Exception& ex)

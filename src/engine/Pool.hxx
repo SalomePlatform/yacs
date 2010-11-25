@@ -64,6 +64,7 @@ namespace YACS
       int getCurrentId() const ;
       Any *getCurrentInSample() const ;
       Any *getCurrentOutSample() const ;
+      Any *getOutSample(int id);
       void pushInSample(int id, Any *inSample, unsigned char priority = 0);
       void destroyAll();
     private:

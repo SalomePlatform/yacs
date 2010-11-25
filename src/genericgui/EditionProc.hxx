@@ -32,6 +32,11 @@ namespace YACS
 
     class EditionProc: public EditionBloc
     {
+      Q_OBJECT
+
+    public slots:
+      virtual void onLevelChange(int index);
+
     public:
       EditionProc(Subject* subject,
                   QWidget* parent = 0,

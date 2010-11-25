@@ -56,10 +56,9 @@ htm:
 latex:
 	mkdir -p latex doctrees
 	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) latex
-	@echo
-	@echo "Build finished; the LaTeX files are in latex."
-	@echo "Run \`make all-pdf' or \`make all-ps' in that directory to" \
-	      "run these through (pdf)latex."
+	@echo "Running LaTeX files through pdflatex..."
+	make -C latex all-pdf
+	@echo "pdflatex finished; the PDF files are in latex."
 
 pdf:
 	$(SPHINXBUILD) -b pdf $(ALLSPHINXOPTS) pdf
@@ -79,15 +78,16 @@ advancepy.rst      \
 annexe_common.rst  \
 batch.rst          \
 calcium.rst        \
-calciumapi.rst        \
-calciummod.rst        \
+calciumyacs.rst    \
+calciumapi.rst     \
+calciummod.rst     \
 calculator.rst     \
-compInterne.rst   \
-components.rst  \
+compInterne.rst    \
+components.rst     \
 console.rst        \
 cppsalome.rst      \
 dataflow.rst       \
-etapes.rst   \
+etapes.rst         \
 execpy.rst         \
 execution.rst      \
 execxml.rst        \
@@ -105,14 +105,14 @@ progdsc.rst        \
 pysalome.rst       \
 python.rst         \
 rappels.rst        \
-references.rst  \
+references.rst     \
 representation.rst \
-salome.rst   \
+salome.rst         \
 schemapy.rst       \
 schemaxml.rst      \
 scratch.rst        \
 toolbars.rst       \
-optimizer.rst       \
+optimizer.rst      \
 yacsgen.rst
 
 

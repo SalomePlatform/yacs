@@ -33,16 +33,25 @@ using namespace std;
 
 const char InputPort::NAME[]="InputPort";
 
-InputPort::InputPort(const InputPort& other, Node *newHelder):DataFlowPort(other,newHelder),InPort(other,newHelder),
-                                                              DataPort(other,newHelder),Port(other,newHelder),
-                                                              _initValue(0)
+InputPort::InputPort(const InputPort& other, Node *newHelder)
+  : DataFlowPort(other, newHelder),
+    InPort(other, newHelder),
+    DataPort(other, newHelder),
+    Port(other, newHelder),
+    _initValue(0),
+    _canBeNull(other._canBeNull)
 {
   if(other._initValue)
     _initValue=other._initValue->clone();
 }
 
-InputPort::InputPort(const std::string& name, Node *node, TypeCode* type)
-  : DataFlowPort(name,node,type), InPort(name,node,type),DataPort(name,node,type),Port(node), _initValue(0)
+InputPort::InputPort(const std::string& name, Node *node, TypeCode* type, bool canBeNull)
+  : DataFlowPort(name, node, type),
+    InPort(name, node, type),
+    DataPort(name, node, type),
+    Port(node),
+    _initValue(0),
+    _canBeNull(canBeNull)
 {
 }
 
@@ -138,7 +147,7 @@ void InputPort::edRemoveManInit()
 //! Check basically that this port has one chance to be specified on time. It's a necessary condition \b not \b sufficient at all.
 void InputPort::checkBasicConsistency() const throw(YACS::Exception)
 {
-  if(!edIsManuallyInitialized() && _backLinks.size()==0 )
+  if(!_canBeNull && !edIsManuallyInitialized() && _backLinks.size()==0 )
     {
       ostringstream stream;
       stream << "InputPort::checkBasicConsistency : Port " << _name << " of node with name " << _node->getName() << " neither initialized nor linked back";
@@ -155,6 +164,11 @@ std::string InputPort::dump()
 void InputPort::setStringRef(std::string strRef)
 {
   _stringRef = strRef;
+}
+
+bool InputPort::canBeNull() const
+{
+  return _canBeNull;
 }
 
 ProxyPort::ProxyPort(InputPort* p):InputPort("Convertor", p->getNode(), p->edGetType()),DataPort("Convertor", p->getNode(), p->edGetType()),

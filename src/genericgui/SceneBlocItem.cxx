@@ -80,6 +80,9 @@ SceneBlocItem::~SceneBlocItem()
 void SceneBlocItem::arrangeChildNodes()
 {
   DEBTRACE("SceneBlocItem::arrangeChildNodes");
+  clock_t start_t, end_t;
+  start_t = clock();
+
 
   SubjectComposedNode *scnode = dynamic_cast<SubjectComposedNode*>(getSubject());
   YASSERT(scnode);
@@ -90,6 +93,9 @@ void SceneBlocItem::arrangeChildNodes()
 
   if(!aGvc)
     {
+      DEBTRACE(setlocale(LC_ALL,NULL));
+      //Graphviz is sensitive to locale : set the mimimal one ("C")for numeric
+      setlocale(LC_NUMERIC, "C");
       aginit();
       aGvc = gvContext();
     }
@@ -170,7 +176,7 @@ void SceneBlocItem::arrangeChildNodes()
       gvLayout(aGvc, _graph, (char *)"dot");
       DEBTRACE("external render for test");
 #ifdef _DEVDEBUG_
-      gvRenderFilename(aGvc, _graph, "dot", "graph2.dot");
+      gvRenderFilename(aGvc, _graph, (char *)"dot", (char *)"graph2.dot");
 #endif
 #endif
    }
@@ -184,6 +190,13 @@ void SceneBlocItem::arrangeChildNodes()
       DEBTRACE("Unknown Exception Graphviz layout ");
       return;
     }
+  {
+    end_t = clock();
+    double passe =  (end_t -start_t);
+    passe = passe/CLOCKS_PER_SEC;
+    DEBTRACE("graphviz : " << passe);
+    start_t = end_t;
+  }
   DEBTRACE("start of display");
   // ---- layout Canvas nodes recursively
 
@@ -209,6 +222,13 @@ void SceneBlocItem::arrangeChildNodes()
 #endif
 
   // --- update scene
+  {
+    end_t = clock();
+    double passe =  (end_t -start_t);
+    passe = passe/CLOCKS_PER_SEC;
+    DEBTRACE("display : " << passe);
+    start_t = end_t;
+  }
 }
 
 void  SceneBlocItem::getNodesInfo(YACS::ENGINE::ComposedNode *cnode)

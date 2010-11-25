@@ -44,6 +44,7 @@ namespace YACS
        virtual std::string typeName() {return "YACS__ENGINE__SalomeProc";}
        virtual void saveSchema(std::string xmlSchemaFile);
        virtual int getDefaultStudyId();
+       virtual void init(bool start=true);
     };
   }
 }

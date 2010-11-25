@@ -149,14 +149,14 @@ void DistributedPythonNode::execute()
     Engines::pickledArgs *resultCorba;
     try
       {
-	resultCorba=pn->execute(getFname().c_str(),*serializationInputCorba);
+        resultCorba=pn->execute(getFname().c_str(),*serializationInputCorba);
       }
     catch(...)
       {
-	std::string msg="Exception on remote python invocation";
-	PyGILState_Release(gstate);
-	_errorDetails=msg;
-	throw Exception(msg);
+        std::string msg="Exception on remote python invocation";
+        PyGILState_Release(gstate);
+        _errorDetails=msg;
+        throw Exception(msg);
       }
     DEBTRACE( "-----------------DistributedPythonNode end of remote python invocation-----------------" );
     //
@@ -180,36 +180,36 @@ void DistributedPythonNode::execute()
     
     if(getNumberOfOutputPorts() != nres)
       {
-	std::string msg="Number of output arguments : Mismatch between definition and execution";
-	Py_DECREF(finalResult);
-	PyGILState_Release(gstate);
-	_errorDetails=msg;
-	throw Exception(msg);
+        std::string msg="Number of output arguments : Mismatch between definition and execution";
+        Py_DECREF(finalResult);
+        PyGILState_Release(gstate);
+        _errorDetails=msg;
+        throw Exception(msg);
       }
     
     pos=0;
     list<OutputPort *>::iterator iter;
     try
       {
-	for(iter = _setOfOutputPort.begin(); iter != _setOfOutputPort.end(); iter++)
-	  {
-	    OutputPyPort *p=(OutputPyPort *)*iter;
-	    DEBTRACE( "port name: " << p->getName() );
-	    DEBTRACE( "port kind: " << p->edGetType()->kind() );
-	    DEBTRACE( "port pos : " << pos );
-	    if(PyTuple_Check(finalResult))ob=PyTuple_GetItem(finalResult,pos) ;
-	    else ob=finalResult;
-	    DEBTRACE( "ob refcnt: " << ob->ob_refcnt );
-	    p->put(ob);
-	    pos++;
-	  }
+        for(iter = _setOfOutputPort.begin(); iter != _setOfOutputPort.end(); iter++)
+          {
+            OutputPyPort *p=(OutputPyPort *)*iter;
+            DEBTRACE( "port name: " << p->getName() );
+            DEBTRACE( "port kind: " << p->edGetType()->kind() );
+            DEBTRACE( "port pos : " << pos );
+            if(PyTuple_Check(finalResult))ob=PyTuple_GetItem(finalResult,pos) ;
+            else ob=finalResult;
+            DEBTRACE( "ob refcnt: " << ob->ob_refcnt );
+            p->put(ob);
+            pos++;
+          }
       }
     catch(ConversionException& ex)
       {
-	Py_DECREF(finalResult);
-	PyGILState_Release(gstate);
-	_errorDetails=ex.what();
-	throw;
+        Py_DECREF(finalResult);
+        PyGILState_Release(gstate);
+        _errorDetails=ex.what();
+        throw;
       }
     PyGILState_Release(gstate);
   }

@@ -61,45 +61,96 @@ The description of each object type is given in the table below.
 .. |stream| image:: images/stream_link.png
 
 
-============================================================= ======================================= =====================================
-**Object**                                                              **Icon**                          **Description** 
-============================================================= ======================================= =====================================
-Schema_Name [note_]                                             |schema|                               A schema object, which has the same name as a name of loaded XML file of a graph, or 'Schema1', 'Schema2', etc. if this is a new created schema. The corresponding object is published as SObject in Object Browser for normal operation of SALOMEDS study persistence. The study persistence consists in saving the xml file of the schema. 
+==================================== ======================================= =======================================================
+**Object**                                     **Icon**                          **Description** 
+==================================== ======================================= =======================================================
+Schema_Name [note_]                     |block|                                A schema object, which has the same name as a name of 
+                                                                               loaded XML file of a graph, or 
+                                                                               'Schema1', 'Schema2', etc. if this is a new 
+                                                                               created schema. The corresponding object is 
+                                                                               published as SObject in Object Browser for 
+                                                                               normal operation of SALOMEDS study persistence.
+                                                                               The study persistence consists in saving the xml file 
+                                                                               of the schema. 
+                                                                               The list of nodes included into the edited
+                                                                               schema is represented.
 
-Data Types                                                                                             A folder under which a list of data types defined in the schema is represented. 
-Simple                                                                                                 A folder under which simple data types (Double, Int, String, Bool) are published. 
-Objref                                                                                                 A folder under which object reference data types are published. Objref data type is a predefined YACS data type for reference objects. It is obtained from a Catalog of Data Types. 
-Sequence                                                                                               A folder under which sequence data types are published. Sequence data type is a predefined YACS data type for sequence objects. 
-Array                                                                                                  A folder under which array data types are published. Array data type is a predefined YACS data type for array objects. 
-Struct                                                                                                 A folder under which struct data types are published. Struct data type is a predefined YACS data type for struct objects. 
-Nodes                                                                                                  A folder under which a list of nodes included into the edited schema is represented.
+Types                                                                          A folder under which a list of data types 
+                                                                               defined in the schema is represented. 
 
-Block_Name [note_]                                               |block|                               A block node object. This object is published as a label under the schema/another composed node object in which it includes. A block node object is created when the corresponding schema object containing this block node is imported or a new block node is created inside this schema. 
+Block_Name [note_]                      |block|                                A block node object. This object is published as a 
+                                                                               label under the schema/another composed node object 
+                                                                               in which it includes. A block node object is created 
+                                                                               when the corresponding schema object containing this 
+                                                                               block node is imported or a new block node is created 
+                                                                               inside this schema. 
 
-Loop_Name [note_]                                                |loop|                                A loop node object. This object is published as a label under the schema/another composed node object in which it includes. A loop node object is created when the corresponding schema object containing this loop node is imported or a new loop node is created inside this schema. 
-Switch_Name [note_]                                              |switch|                              A switch node object. This object is published as a label under the schema/another composed node object in which it includes. A switch node object is created when the corresponding schema object containing this switch node is imported or a new switch node is created inside this schema. 
-Node_Name [note_]                                                |node|                                An elementary node object. This object is published as a label under the schema or composed node object in which it includes. An elementary node object is created when the corresponding schema object containing this node is imported or a new elementary node is created inside this schema. 
-Input_Port_Name                                                  |inport|                              An input port object. It is published in the edition tree view under the node which is belong to. 
-Output_Port_Name                                                 |outport|                             An output port object. It is published in the edition tree view under the node which is belong to. 
-============================================================= ======================================= =====================================
+Loop_Name [note_]                       |loop|                                 A loop node object. This object is published as a label 
+                                                                               under the schema/another composed node object in which it 
+                                                                               includes. A loop node object is created when the 
+                                                                               corresponding schema object containing this loop node is 
+                                                                               imported or a new loop node is created inside this schema. 
+
+Switch_Name [note_]                     |switch|                               A switch node object. This object is published as a label 
+                                                                               under the schema/another composed node object in which it 
+                                                                               includes. A switch node object is created when the 
+                                                                               corresponding schema object containing this switch node 
+                                                                               is imported or a new switch node is created inside 
+                                                                               this schema. 
+
+Node_Name [note_]                       |node|                                 An elementary node object. This object is published as a 
+                                                                               label under the schema or composed node object in which 
+                                                                               it includes. An elementary node object is created when 
+                                                                               the corresponding schema object containing this node is 
+                                                                               imported or a new elementary node is created inside 
+                                                                               this schema. 
+
+Input_Port_Name                         |inport|                               An input port object. It is published in the edition tree 
+                                                                               view under the node which is belong to. 
+
+Output_Port_Name                        |outport|                              An output port object. It is published in the edition tree 
+                                                                               view under the node which is belong to. 
+==================================== ======================================= =======================================================
 
 .. _description_of_link_objects:
 
 Links, containers and components table.
 
-============================================================= ======================================= =====================================
-**Object**                                                              **Icon**                          **Description** 
-============================================================= ======================================= =====================================
-Links                                                                                                  A folder under which links are published. Links internal to a block (composed node) are represented under the block. Three kinds of links (control, dataflow, datastream) can be put directly into the 'Links' folder under the block if they exist. **NB!** A link is called internal to a block if it has its input and output on nodes inside the block. These concept and representation is convenient for cut and paste operations of block. 
-Node_From_Name --> Node_To_Name                                  |control|                             A control link object with a symbolic name. This object is published as a label under the corresponding 'Links' folder. 
-Node_From_Name.Port_From_Name --> Node_To_Name.Port_To_Name      |data|                                A data link object with a symbolic name. This object is published as a label under the corresponding 'Links' folder. 
-Node_From_Name.Port_From_Name --> Node_To_Name.Port_To_Name      |stream|                              A datastream link object with a symbolic name. This object is published as a label under the corresponding 'Links' folder. 
-Containers                                                                                             A folder under which a set of containers referenced from the currently edited schema is represented. 
-Container_Name [note_]                                           |container|                           A container definition (not instanciated during the edition). This object is published as a label under Containers parent object, and gives acces by the corresponding property page to its properties (cf. SALOME life cycle CORBA & Container manager). 
-SALOME_Component_Name [note_]                                    |component|                           A SALOME component instance definition (not instanciated during the edition). This object is published as a label under the container definition in which it includes. 
-CORBA_Component_Name [note_]                                     |component|                           A CORBA component object, which has the same name as a name of created component. This object is published as a label under the 'Containers' folder directly. 
-\*Node_Name                                                                                            A reference to the service node published above. This object is published under the component object from which its service is taken.
-============================================================= ======================================= =====================================
+======================================= ======================================= ==============================================================================
+**Object**                                       **Icon**                                **Description** 
+======================================= ======================================= ==============================================================================
+Links                                                                            A folder under which links are published. Links internal to a 
+                                                                                 block (composed node) are represented under the block. Three kinds 
+									         of links (control, dataflow, datastream) can be put directly into 
+									         the 'Links' folder under the block if they exist. 
+									         **NB!** A link is called internal to a block if it has its input and 
+									         output on nodes inside the block. These concept and representation 
+									         is convenient for cut and paste operations of block. 
+
+Node_From -->> Node_To                      |control|                            A control link object with a symbolic name. This object is published as 
+                                                                                 a label under the corresponding 'Links' folder. 
+
+Node.Port_From -> Node.Port_To              |data|                               A data link object with a symbolic name. This object is published as 
+                                                                                 a label under the corresponding 'Links' folder. 
+
+Node.Port_From -> Node.Port_To              |stream|                             A datastream link object with a symbolic name. This object is published as 
+                                                                                 a label under the corresponding 'Links' folder. 
+
+Containers                                                                       A folder under which a set of containers referenced from the currently 
+                                                                                 edited schema is represented. 
+
+Container_Name [note_]                      |container|                          A container definition (not instanciated during the edition). This object 
+                                                                                 is published as a label under Containers parent object, and gives access 
+										 by the corresponding property page to its properties (cf. SALOME life 
+										 cycle CORBA & Container manager). 
+
+SALOME_Component_Name [note_]               |component|                          A SALOME component instance definition (not instanciated during the edition). 
+                                                                                 This object is published as a label under the container definition in which 
+										 it includes. 
+
+\*Node_Name                                                                      A reference to the service node published above. This object is published 
+                                                                                 under the component object from which its service is taken.
+======================================= ======================================= ==============================================================================
 
 .. _note:
 

@@ -442,12 +442,12 @@ ForLoop* RuntimeSALOME::createForLoop(const std::string& name)
 }
 
 OptimizerLoop* RuntimeSALOME::createOptimizerLoop(const std::string& name,const std::string& algLib,const std::string& factoryName,
-                                                  bool algInitOnFile, const std::string& kind)
+                                                  bool algInitOnFile, const std::string& kind, Proc * procForTypes)
 {
-  if(kind=="base")
-    return new OptimizerLoop(name,algLib,factoryName,algInitOnFile);
-  else
-    return new SalomeOptimizerLoop(name,algLib,factoryName,algInitOnFile);
+  OptimizerLoop * ol = (kind == "base") ? new OptimizerLoop(name,algLib,factoryName,algInitOnFile, true, procForTypes) :
+                                          new SalomeOptimizerLoop(name,algLib,factoryName,algInitOnFile, true, procForTypes);
+  ol->edGetNbOfBranchesPort()->edInit(1);
+  return ol;
 }
 
 DataNode* RuntimeSALOME::createInDataNode(const std::string& kind,const std::string& name)
@@ -1214,6 +1214,10 @@ InputPort* RuntimeSALOME::adaptCorbaToNeutral(InputCorbaPort* inport,
           msg << __FILE__ << ":" <<__LINE__;
           throw ConversionException(msg.str());
         }
+    }
+  else if(inport->edGetType()->kind() == Struct)
+    {
+      if(isAdaptableCorbaNeutral(type,inport->edGetType())) return new NeutralCorbaStruct(inport);
     }
 
   // Adaptation not possible

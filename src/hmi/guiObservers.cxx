@@ -77,8 +77,6 @@ void Subject::erase(Subject* sub, Command *command, bool post)
   delete sub;
   if (!post) // --- avoid recursion in erase, see cleanPostErase
     GuiContext::getCurrent()->getSubjectProc()->cleanPostErase();
-  if (parent)
-    parent->select(true);
 }
 
 // ----------------------------------------------------------------------------
@@ -254,8 +252,8 @@ bool Subject::destroy(Subject *son)
     {
       if (SubjectNode *subNode = dynamic_cast<SubjectNode*>(son))
         {
-	  if (subNode->getNode()->getFather() )
-	    startnode = proc->getChildName(subNode->getNode());
+          if (subNode->getNode()->getFather() )
+            startnode = proc->getChildName(subNode->getNode());
         }
       else if (dynamic_cast<SubjectDataPort*>(son))
         {
@@ -272,13 +270,31 @@ bool Subject::destroy(Subject *son)
           endport = slink->getSubjectInPort()->getName();
           startportType = slink->getSubjectOutPort()->getType();
           endportType = slink->getSubjectInPort()->getType();
-       }
+        }
       else if (SubjectControlLink* sclink = dynamic_cast<SubjectControlLink*>(son))
         {
           startnode = proc->getChildName(sclink->getSubjectOutNode()->getNode());
           endnode = proc->getChildName(sclink->getSubjectInNode()->getNode());
-       }
-      else throw Exception("No command Destroy for that type");
+        }
+      else if (SubjectContainer* scont = dynamic_cast<SubjectContainer*>(son))
+        {
+          if(scont->getName() == "DefaultContainer")
+            {
+              GuiContext::getCurrent()->_lastErrorMessage = "You can't delete the default container";
+              return false;
+            }
+          if(scont->isUsed())
+            {
+              GuiContext::getCurrent()->_lastErrorMessage = "You can't delete a container that contains components";
+              return false;
+            }
+          startnode = scont->getName();
+        }
+      else
+        {
+          GuiContext::getCurrent()->_lastErrorMessage = "No command Destroy for that type";
+          return false;
+        }
     }
   if (son->isDestructible())
     {
@@ -505,25 +521,11 @@ SubjectNode::~SubjectNode()
   if (father)
     try
       {
-        Bloc *bloc = dynamic_cast<Bloc*>(father);
-        if (bloc) bloc->edRemoveChild(_node);
-        else
+        // Remove child except if it's the splitter node of a ForEachLoop
+        if (dynamic_cast<ForEachLoop*>(father) == NULL ||
+            getName() != ForEachLoop::NAME_OF_SPLITTERNODE)
           {
-            Loop *loop = dynamic_cast<Loop*>(father);
-            if (loop) loop->edRemoveChild(_node);
-            else
-              {
-		ForEachLoop *feloop = dynamic_cast<ForEachLoop*>(father);
-		if (feloop && getName() != ForEachLoop::NAME_OF_SPLITTERNODE) {
-		  DEBTRACE("SubjectNode::localClean: remove for each loop body");
-		  feloop->edRemoveChild(_node);
-		}
-		else
-		  {
-		    Switch *aSwitch = dynamic_cast<Switch*>(father);
-		    if (aSwitch) aSwitch->edRemoveChild(_node);
-		  }
-              }
+            father->edRemoveChild(_node);
           }
       }
     catch (YACS::Exception &e)
@@ -588,13 +590,13 @@ void SubjectNode::localclean(Command *command)
   if (_parent)
     {
       if( SubjectBloc* sb = dynamic_cast<SubjectBloc*>(_parent) )
-	sb->removeNode(this);
+        sb->removeNode(this);
       else if( SubjectForLoop* sfl = dynamic_cast<SubjectForLoop*>(_parent) )
-	sfl->completeChildrenSubjectList( 0 );
+        sfl->completeChildrenSubjectList( 0 );
       else if( SubjectWhileLoop* swl = dynamic_cast<SubjectWhileLoop*>(_parent) )
-	swl->completeChildrenSubjectList( 0 );
-      else if( SubjectForEachLoop* sfel = dynamic_cast<SubjectForEachLoop*>(_parent) )
-	sfel->completeChildrenSubjectList( 0 );
+        swl->completeChildrenSubjectList( 0 );
+      else if( SubjectDynParaLoop* sdpl = dynamic_cast<SubjectDynParaLoop*>(_parent) )
+        sdpl->removeNode(this);
       else if( SubjectSwitch* ss = dynamic_cast<SubjectSwitch*>(_parent) )
         ss->removeNode(this);
     }
@@ -623,9 +625,16 @@ void SubjectNode::registerUndoDestroy()
   string position = proc->getName();
   if (proc != dynamic_cast<Proc*>(_node->getFather())) position = proc->getChildName(_node->getFather());
 
+  int swCase=0;
+  if (Switch* aswitch = dynamic_cast<Switch*>(_node->getFather()))
+    {
+      //the node is in a switch, save the case
+      swCase=aswitch->getRankOfNode(_node);
+    }
+
   CommandCopyNode *command = new CommandCopyNode(undoProc,
                                                  undoProc->getChildName(clone),
-                                                 position);
+                                                 position, swCase);
   GuiContext::getCurrent()->getInvoc()->add(command);
 
   // --- identify all the children service node
@@ -909,25 +918,25 @@ void SubjectNode::saveLinks()
       //are nodes in sequence (control link direct or indirect) ?
       ComposedNode* fath= ComposedNode::getLowestCommonAncestor(n1,n2);
       if(n1 == fath ||n2 == fath)
-	{
-	  //consider it as a data only link
+        {
+          //consider it as a data only link
           DEBTRACE("It's a data link: " << n1->getName() << "." << p1->getName() << " -> "<< n2->getName() << "." << p2->getName());
           dataLinks.push_back(std::pair<OutPort *, InPort *>(p1,p2));
-	  continue;
-	}
+          continue;
+        }
       while(n1->getFather() != fath) n1=n1->getFather();
       while(n2->getFather() != fath) n2=n2->getFather();
       OutGate* outg=n1->getOutGate();
       if(!outg->isAlreadyInSet(n2->getInGate()))
-	{
+        {
           DEBTRACE("It's a data link: "<<p1->getNode()->getName()<<"."<<p1->getName()<<" -> "<< p2->getNode()->getName()<<"."<<p2->getName());
           dataLinks.push_back(std::pair<OutPort *, InPort *>(p1,p2));
-	}
+        }
       else
-	{
+        {
           DEBTRACE("It's a dataflow link: "<<p1->getNode()->getName()<<"."<<p1->getName()<<" -> "<< p2->getNode()->getName()<<"."<<p2->getName());
-	  dataflowLinks.push_back(std::pair<OutPort *, InPort *>(p1,p2));
-	}
+          dataflowLinks.push_back(std::pair<OutPort *, InPort *>(p1,p2));
+        }
     }
 
   std::vector< std::pair<InPort *, OutPort *> > listIncoming  = getNode()->getSetOfLinksComingInCurrentScope();
@@ -941,25 +950,25 @@ void SubjectNode::saveLinks()
       //are nodes in sequence (control link direct or indirect) ?
       ComposedNode* fath= ComposedNode::getLowestCommonAncestor(n1,n2);
       if(n1 == fath ||n2 == fath)
-	{
-	  //consider it as a data only link
+        {
+          //consider it as a data only link
           DEBTRACE("It's a data link: " << n1->getName() << "." << p1->getName() << " -> "<< n2->getName() << "." << p2->getName());
           dataLinks.push_back(std::pair<OutPort *, InPort *>(p1,p2));
-	  continue;
-	}
+          continue;
+        }
       while(n1->getFather() != fath) n1=n1->getFather();
       while(n2->getFather() != fath) n2=n2->getFather();
       OutGate* outg=n1->getOutGate();
       if(!outg->isAlreadyInSet(n2->getInGate()))
-	{
+        {
           DEBTRACE("It's a data link: "<<p1->getNode()->getName()<<"."<<p1->getName()<<" -> "<< p2->getNode()->getName()<<"."<<p2->getName());
           dataLinks.push_back(std::pair<OutPort *, InPort *>(p1,p2));
-	}
+        }
       else
-	{
+        {
           DEBTRACE("It's a dataflow link: "<<p1->getNode()->getName()<<"."<<p1->getName()<<" -> "<< p2->getNode()->getName()<<"."<<p2->getName());
-	  dataflowLinks.push_back(std::pair<OutPort *, InPort *>(p1,p2));
-	}
+          dataflowLinks.push_back(std::pair<OutPort *, InPort *>(p1,p2));
+        }
     }
 }
 
@@ -976,14 +985,14 @@ void SubjectNode::restoreLinks()
       Node* n2=p2->getNode();
       ComposedNode* fath= ComposedNode::getLowestCommonAncestor(n1,n2);
       try
-	{
+        {
           fath->edAddLink(p1,p2);
-	}
+        }
       catch(Exception& ex)
-	{
-	  // if a link can't be restored ignore it. It's possible when a node is reparented to a foreachloop 
+        {
+          // if a link can't be restored ignore it. It's possible when a node is reparented to a foreachloop 
           continue;
-	}
+        }
       SubjectComposedNode *scla = dynamic_cast<SubjectComposedNode*>(GuiContext::getCurrent()->_mapOfSubjectNode[fath]);
       SubjectNode *sno = GuiContext::getCurrent()->_mapOfSubjectNode[static_cast<Node*>(n1)];
       SubjectNode *sni = GuiContext::getCurrent()->_mapOfSubjectNode[static_cast<Node*>(n2)];
@@ -1000,14 +1009,14 @@ void SubjectNode::restoreLinks()
       Node* n2=p2->getNode();
       ComposedNode* fath= ComposedNode::getLowestCommonAncestor(n1,n2);
       try
-	{
+        {
           fath->edAddDFLink(p1,p2);
-	}
+        }
       catch(Exception& ex)
-	{
-	  // if a link can't be restored ignore it. It's possible when a node is reparented to a foreachloop 
+        {
+          // if a link can't be restored ignore it. It's possible when a node is reparented to a foreachloop 
           continue;
-	}
+        }
       SubjectComposedNode *scla = dynamic_cast<SubjectComposedNode*>(GuiContext::getCurrent()->_mapOfSubjectNode[fath]);
       SubjectNode *sno = GuiContext::getCurrent()->_mapOfSubjectNode[static_cast<Node*>(n1)];
       SubjectNode *sni = GuiContext::getCurrent()->_mapOfSubjectNode[static_cast<Node*>(n2)];
@@ -1039,10 +1048,10 @@ void SubjectNode::restoreLinks()
       Node* n1=(*it)->getNode();
       Node* n2=_node;
       if(GuiContext::getCurrent()->_mapOfSubjectNode.count(n1)==0)
-	{
-	  //It's an internal node or a destroyed one : don't treat it
-	  continue;
-	}
+        {
+          //It's an internal node or a destroyed one : don't treat it
+          continue;
+        }
       ComposedNode* fath= ComposedNode::getLowestCommonAncestor(n1,n2);
       if(n1 == fath)continue;
       if(n2 == fath)continue;
@@ -1052,13 +1061,13 @@ void SubjectNode::restoreLinks()
       OutGate *ogate = n1->getOutGate();
       InGate *igate = n2->getInGate();
       if (!ogate->isAlreadyInSet(igate))
-	{
+        {
           fath->edAddCFLink(n1,n2);
           SubjectComposedNode *scla = dynamic_cast<SubjectComposedNode*>(GuiContext::getCurrent()->_mapOfSubjectNode[fath]);
           SubjectNode * subOutNode = GuiContext::getCurrent()->_mapOfSubjectNode[n1];
           SubjectNode * subInNode = GuiContext::getCurrent()->_mapOfSubjectNode[n2];
           scla->addSubjectControlLink(subOutNode,subInNode);
-	}
+        }
     }
 
   std::set<InGate *>::const_iterator it2;
@@ -1067,10 +1076,10 @@ void SubjectNode::restoreLinks()
       Node* n1=_node;
       Node* n2=(*it2)->getNode();
       if(GuiContext::getCurrent()->_mapOfSubjectNode.count(n2)==0)
-	{
-	  //It's an internal node or a destroyed one : don't treat it
-	  continue;
-	}
+        {
+          //It's an internal node or a destroyed one : don't treat it
+          continue;
+        }
       ComposedNode* fath= ComposedNode::getLowestCommonAncestor(n1,n2);
       if(n1 == fath)continue;
       if(n2 == fath)continue;
@@ -1080,13 +1089,13 @@ void SubjectNode::restoreLinks()
       OutGate *ogate = n1->getOutGate();
       InGate *igate = n2->getInGate();
       if (!ogate->isAlreadyInSet(igate))
-	{
+        {
           fath->edAddCFLink(n1,n2);
           SubjectComposedNode *scla = dynamic_cast<SubjectComposedNode*>(GuiContext::getCurrent()->_mapOfSubjectNode[fath]);
           SubjectNode * subOutNode = GuiContext::getCurrent()->_mapOfSubjectNode[n1];
           SubjectNode * subInNode = GuiContext::getCurrent()->_mapOfSubjectNode[n2];
           scla->addSubjectControlLink(subOutNode,subInNode);
-	}
+        }
     }
 }
 
@@ -1302,9 +1311,9 @@ void SubjectComposedNode::localclean(Command *command)
 }
 
 SubjectNode* SubjectComposedNode::addNode(YACS::ENGINE::Catalog *catalog,
-					  std::string compo,
-					  std::string type,
-					  std::string name,
+                                          std::string compo,
+                                          std::string type,
+                                          std::string name,
                                           bool newCompoInst)
 {
   DEBTRACE("SubjectComposedNode::addNode("<<catalog<<","<<compo<<","<<type<<","<<name<<")");
@@ -1443,8 +1452,8 @@ void SubjectComposedNode::loadChildren()
     {
       try
         {
-	  SubjectNode * son = addSubjectNode(*iter);
-	  son->loadChildren();
+          SubjectNode * son = addSubjectNode(*iter);
+          son->loadChildren();
         }
       catch(YACS::Exception& ex)
         {
@@ -1700,9 +1709,9 @@ void SubjectBloc::localclean(Command *command)
 }
 
 SubjectNode* SubjectBloc::addNode(YACS::ENGINE::Catalog *catalog,
-				  std::string compo,
-				  std::string type,
-				  std::string name,
+                                  std::string compo,
+                                  std::string type,
+                                  std::string name,
                                   bool newCompoInst)
 {
   DEBTRACE("SubjectBloc::addNode( " << catalog << ", " << compo << ", " << type << ", " << name << " )");
@@ -1738,8 +1747,8 @@ SubjectNode* SubjectBloc::getChild(YACS::ENGINE::Node* node) const
     for ( ; it != _children.end(); it++ )
       if ( (*it)->getNode() == node )
       {
-	aChild = (*it);
-	break;
+        aChild = (*it);
+        break;
       }
   }
 
@@ -1839,8 +1848,8 @@ void SubjectProc::loadComponents()
       GuiContext::getCurrent()->_mapOfLastComponentInstance[itComp->second->getCompoName()]=itComp->second;
 
       if ( GuiContext::getCurrent()->_mapOfSubjectComponent.find((*itComp).second)
-	   ==
-	   GuiContext::getCurrent()->_mapOfSubjectComponent.end() )
+           ==
+           GuiContext::getCurrent()->_mapOfSubjectComponent.end() )
       { // engine object for component already exists => add only a subject for it
         addSubjectComponent((*itComp).second);
       }
@@ -1858,8 +1867,8 @@ void SubjectProc::loadContainers()
   for (map<string, Container*>::const_iterator itCont = aProc->containerMap.begin();
        itCont != aProc->containerMap.end(); ++itCont)
     if ( GuiContext::getCurrent()->_mapOfSubjectContainer.find((*itCont).second)
-	 ==
-	 GuiContext::getCurrent()->_mapOfSubjectContainer.end() )
+         ==
+         GuiContext::getCurrent()->_mapOfSubjectContainer.end() )
       // engine object for container already exists => add only a subject for it
       addSubjectContainer((*itCont).second, (*itCont).second->getName());
 }
@@ -1885,7 +1894,7 @@ SubjectContainer* SubjectProc::addContainer(std::string name, std::string ref)
       CommandAddContainer *command = new CommandAddContainer(name,ref);
       if (command->execute())
         {
-	  GuiContext::getCurrent()->getInvoc()->add(command);
+          GuiContext::getCurrent()->getInvoc()->add(command);
           return command->getSubjectContainer();
         }
       else
@@ -2350,13 +2359,41 @@ void SubjectServiceNode::setComponent()
             {
               std::cerr << "PROBLEM : ComponentInstance should be registered in proc, add it " << instance->getInstanceName() << std::endl;
               proc->componentInstanceMap[instance->getInstanceName()] = instance;
+              Container* cont=instance->getContainer();
+              //check if the associated container is consistent with containerMap
+              if(cont)
+                if (proc->containerMap.count(cont->getName()) == 0)
+                  {
+                    //container exists but is not in containerMap. Clone it, it's probably the result of copy paste from outside the proc
+                    Container* newcont;
+                    if(cont->isAttachedOnCloning())
+                      {
+                        cont->dettachOnCloning();
+                        newcont=cont->clone();
+                        cont->attachOnCloning();
+                        newcont->attachOnCloning();
+                      }
+                    else
+                      newcont=cont->clone();
+
+                    proc->containerMap[cont->getName()]=newcont;
+                    instance->setContainer(newcont);
+                    GuiContext::getCurrent()->getSubjectProc()->addSubjectContainer(newcont, newcont->getName());
+                  }
+                else
+                  {
+                    if(cont != proc->containerMap[cont->getName()])
+                      {
+                        //the associated container is not the same as the one in containerMap: use the containerMap one
+                        instance->setContainer(proc->containerMap[cont->getName()]);
+                      }
+                  }
             }
-          subCompo =
-            GuiContext::getCurrent()->getSubjectProc()->addSubjectComponent(instance);
+          subCompo = GuiContext::getCurrent()->getSubjectProc()->addSubjectComponent(instance);
         }
       else
         {
-	  DEBTRACE("SubjectServiceNode::setComponent : get already created subject for compo = " <<compo.c_str());
+          DEBTRACE("SubjectServiceNode::setComponent : get already created subject for compo = " <<compo.c_str());
           subCompo = GuiContext::getCurrent()->_mapOfSubjectComponent[instance];
         }       
       YASSERT(subCompo);
@@ -2868,9 +2905,9 @@ void SubjectForLoop::recursiveUpdate(GuiEvent event, int type, Subject* son)
 }
 
 SubjectNode* SubjectForLoop::addNode(YACS::ENGINE::Catalog *catalog,
-				     std::string compo,
-				     std::string type,
-				     std::string name,
+                                     std::string compo,
+                                     std::string type,
+                                     std::string name,
                                      bool newCompoInst)
 {
   DEBTRACE("SubjectForLoop::addNode("<<catalog<<","<<compo<<","<<type<<","<<name<<")");
@@ -2960,9 +2997,9 @@ void SubjectWhileLoop::recursiveUpdate(GuiEvent event, int type, Subject* son)
 }
 
 SubjectNode* SubjectWhileLoop::addNode(YACS::ENGINE::Catalog *catalog,
-				       std::string compo,
-				       std::string type,
-				       std::string name,
+                                       std::string compo,
+                                       std::string type,
+                                       std::string name,
                                        bool newCompoInst)
 {
   DEBTRACE("SubjectWhileLoop::addNode(catalog, compo, type, name)");
@@ -3056,12 +3093,12 @@ void SubjectSwitch::recursiveUpdate(GuiEvent event, int type, Subject* son)
 }
 
 SubjectNode* SubjectSwitch::addNode(YACS::ENGINE::Catalog *catalog,
-				    std::string compo,
-				    std::string type,
-				    std::string name,
+                                    std::string compo,
+                                    std::string type,
+                                    std::string name,
                                     bool newCompoInst,
-				    int swCase,
-				    bool replace)
+                                    int swCase,
+                                    bool replace)
 {
   DEBTRACE("SubjectSwitch::addNode("<<catalog<<","<<compo<<","<<type<<","<<name<<","<<swCase<<","<<(int)replace<<")");
   SubjectNode* body = 0;
@@ -3086,9 +3123,9 @@ void SubjectSwitch::removeNode(SubjectNode* son)
     {
       if ( (*it).second == son )
       {
-	isFound = true;
-	id = (*it).first;
-	break;
+        isFound = true;
+        id = (*it).first;
+        break;
       }
     }
     if (isFound)
@@ -3130,8 +3167,8 @@ SubjectNode* SubjectSwitch::getChild(YACS::ENGINE::Node* node) const
     for (it = _bodyMap.begin(); it != _bodyMap.end(); ++it)
       if ( (*it).second->getNode() == node )
       {
-	aChild = (*it).second;
-	break;
+        aChild = (*it).second;
+        break;
       }
   }
 
@@ -3189,10 +3226,146 @@ std::string SubjectSwitch::getValue()
 
 // ----------------------------------------------------------------------------
 
-SubjectForEachLoop::SubjectForEachLoop(YACS::ENGINE::ForEachLoop *forEachLoop, Subject *parent)
-  : SubjectComposedNode(forEachLoop, parent), _forEachLoop(forEachLoop)
+SubjectDynParaLoop::SubjectDynParaLoop(YACS::ENGINE::DynParaLoop * dynParaLoop, Subject * parent)
+  : SubjectComposedNode(dynParaLoop, parent), _dynParaLoop(dynParaLoop)
 {
-  _body = 0;
+  _subjectExecNode = NULL;
+  _subjectInitNode = NULL;
+  _subjectFinalizeNode = NULL;
+}
+
+SubjectDynParaLoop::~SubjectDynParaLoop()
+{
+  DEBTRACE("SubjectDynParaLoop::~SubjectDynParaLoop " << getName());
+}
+
+void SubjectDynParaLoop::recursiveUpdate(GuiEvent event, int type, Subject * son)
+{
+  update(event, type, son);
+  if (_subjectExecNode)
+    _subjectExecNode->recursiveUpdate(event, type, son);
+  if (_subjectInitNode)
+    _subjectInitNode->recursiveUpdate(event, type, son);
+  if (_subjectFinalizeNode)
+    _subjectFinalizeNode->recursiveUpdate(event, type, son);
+}
+
+SubjectNode * SubjectDynParaLoop::addNode(YACS::ENGINE::Catalog * catalog,
+                                          std::string compo,
+                                          std::string type,
+                                          std::string name,
+                                          bool newCompoInst)
+{
+  DEBTRACE("SubjectDynParaLoop::addNode(catalog, compo, type, name)");
+  if (_subjectExecNode)
+    {
+      GuiContext::getCurrent()->_lastErrorMessage = "If you need several nodes in a loop, "
+                                                    "put the nodes in a bloc";
+      return NULL;
+    }
+  return createNode(catalog, compo, type, name, newCompoInst);
+}
+
+void SubjectDynParaLoop::houseKeepingAfterCutPaste(bool isCut, SubjectNode * son)
+{
+  if (isCut)
+    removeNode(son);
+  else
+    _subjectExecNode = son;
+}
+
+void SubjectDynParaLoop::clean(Command * command)
+{
+  if (_askRegisterUndo)
+    {
+      _askRegisterUndo = false;
+      registerUndoDestroy();
+    }
+  localclean(command);
+  SubjectComposedNode::clean(command);
+}
+
+void SubjectDynParaLoop::localclean(Command * command)
+{
+  DEBTRACE("SubjectDynParaLoop::localClean ");
+  if (_subjectExecNode)
+    {
+      DEBTRACE(_subjectExecNode->getName());
+      erase(_subjectExecNode);
+    }
+  if (_subjectInitNode)
+    {
+      DEBTRACE(_subjectInitNode->getName());
+      erase(_subjectInitNode);
+    }
+  if (_subjectFinalizeNode)
+    {
+      DEBTRACE(_subjectFinalizeNode->getName());
+      erase(_subjectFinalizeNode);
+    }
+}
+
+void SubjectDynParaLoop::completeChildrenSubjectList(SubjectNode * son)
+{
+  YASSERT(son);
+  if (son->getNode() == _dynParaLoop->getExecNode())
+    _subjectExecNode = son;
+  else if (son->getNode() == _dynParaLoop->getInitNode())
+    _subjectInitNode = son;
+  else if (son->getNode() == _dynParaLoop->getFinalizeNode())
+    _subjectFinalizeNode = son;
+  else
+    YASSERT(false);
+}
+
+void SubjectDynParaLoop::removeNode(SubjectNode * child)
+{
+  YASSERT(child);
+  if (child == _subjectExecNode)
+    _subjectExecNode = NULL;
+  else if (child == _subjectInitNode)
+    _subjectInitNode = NULL;
+  else if (child == _subjectFinalizeNode)
+    _subjectFinalizeNode = NULL;
+  else
+    YASSERT(false);
+}
+
+SubjectNode * SubjectDynParaLoop::getChild(YACS::ENGINE::Node * node) const
+{
+  return _subjectExecNode;
+}
+
+bool SubjectDynParaLoop::setNbBranches(std::string nbBranches)
+{
+  DEBTRACE("SubjectDynParaLoop::setNbBranches " << nbBranches);
+  Proc * proc = GuiContext::getCurrent()->getProc();
+  CommandSetForEachBranch * command =
+    new CommandSetForEachBranch(proc->getChildName(getNode()), nbBranches);
+  if (command->execute())
+    {
+      GuiContext::getCurrent()->getInvoc()->add(command);
+      return true;
+    }
+  else delete command;
+  return false;
+}
+
+bool SubjectDynParaLoop::hasValue()
+{
+  return true;
+}
+
+std::string SubjectDynParaLoop::getValue()
+{
+  return _dynParaLoop->edGetNbOfBranchesPort()->getAsString();
+}
+
+// ----------------------------------------------------------------------------
+
+SubjectForEachLoop::SubjectForEachLoop(YACS::ENGINE::ForEachLoop *forEachLoop, Subject *parent)
+  : SubjectDynParaLoop(forEachLoop, parent), _forEachLoop(forEachLoop)
+{
   _splitter = 0;
 }
 
@@ -3212,7 +3385,7 @@ void SubjectForEachLoop::clean(Command *command)
   if (_splitter) aSplitterEngine = _splitter->getNode();
 
   localclean(command);
-  SubjectComposedNode::clean(command);
+  SubjectDynParaLoop::clean(command);
 
   if (_forEachLoop && aSplitterEngine)
     {
@@ -3224,11 +3397,6 @@ void SubjectForEachLoop::clean(Command *command)
 void SubjectForEachLoop::localclean(Command *command)
 {
   DEBTRACE("SubjectForEachLoop::localClean ");
-  if (_body)
-    {
-      DEBTRACE(_body->getName());
-      erase(_body);
-    }
   if (_splitter)
     {
       DEBTRACE(_splitter->getName());
@@ -3236,88 +3404,30 @@ void SubjectForEachLoop::localclean(Command *command)
     }
 }
 
-void SubjectForEachLoop::recursiveUpdate(GuiEvent event, int type, Subject* son)
-{
-  update(event, type, son);
-  if (_body)
-    _body->recursiveUpdate(event, type, son);
-}
-
-SubjectNode* SubjectForEachLoop::addNode(YACS::ENGINE::Catalog *catalog,
-					 std::string compo,
-					 std::string type,
-					 std::string name,
-                                         bool newCompoInst)
-{
-  DEBTRACE("SubjectForEachLoop::addNode(catalog, compo, type, name)");
-  SubjectNode* body = 0;
-  if (_body)
-    {
-      GuiContext::getCurrent()->_lastErrorMessage = "If you need several nodes in a loop, put the nodes in a bloc"; 
-      return body;
-    }
-  body = createNode(catalog, compo, type, name, newCompoInst);
-  return body;
-}
-
-void SubjectForEachLoop::houseKeepingAfterCutPaste(bool isCut, SubjectNode *son)
-{
-  if (isCut)
-    _body = 0;
-  else
-    _body = son;
-}
-
-
 void SubjectForEachLoop::completeChildrenSubjectList(SubjectNode *son)
 {
-  if ( !son )
-  {
-    _body = son;
-    return;
-  }
-
-  string name = son->getName();
-  DEBTRACE("SubjectForEachLoop::completeChildrenSubjectList " << name);
-  if (name == ForEachLoop::NAME_OF_SPLITTERNODE)
+  if (son && son->getName() == ForEachLoop::NAME_OF_SPLITTERNODE)
     _splitter = son;
   else
-    _body = son;
+    SubjectDynParaLoop::completeChildrenSubjectList(son);
 }
 
-bool SubjectForEachLoop::setNbBranches(std::string nbBranches)
+void SubjectForEachLoop::removeNode(SubjectNode * child)
 {
-  DEBTRACE("SubjectForEachLoop::setNbBranches " << nbBranches);
-  Proc *proc = GuiContext::getCurrent()->getProc();
-  CommandSetForEachBranch *command =
-    new CommandSetForEachBranch(proc->getChildName(getNode()), nbBranches);
-  if (command->execute())
-    {
-      GuiContext::getCurrent()->getInvoc()->add(command);
-      return true;
-    }
-  else delete command;
-  return false;
+  YASSERT(child);
+  if (child->getName() == ForEachLoop::NAME_OF_SPLITTERNODE)
+    _splitter = NULL;
+  else {
+    SubjectDynParaLoop::removeNode(child);
+  }
 }
-
-bool SubjectForEachLoop::hasValue()
-{
-  return true;
-}
-
-std::string SubjectForEachLoop::getValue()
-{
-  return _forEachLoop->getInputPort("nbBranches")->getAsString();
-}
-
 
 // ----------------------------------------------------------------------------
 
 SubjectOptimizerLoop::SubjectOptimizerLoop(YACS::ENGINE::OptimizerLoop *optimizerLoop,
                                            Subject *parent)
-  : SubjectComposedNode(optimizerLoop, parent), _optimizerLoop(optimizerLoop)
+  : SubjectDynParaLoop(optimizerLoop, parent), _optimizerLoop(optimizerLoop)
 {
-  _body = 0;
 }
 
 SubjectOptimizerLoop::~SubjectOptimizerLoop()
@@ -3333,76 +3443,12 @@ void SubjectOptimizerLoop::clean(Command *command)
       registerUndoDestroy();
     }
   localclean(command);
-  SubjectComposedNode::clean(command);
+  SubjectDynParaLoop::clean(command);
 }
 
 void SubjectOptimizerLoop::localclean(Command *command)
 {
   DEBTRACE("SubjectOptimizerLoop::localClean ");
-  if (_body)
-    erase(_body);
-}
-
-void SubjectOptimizerLoop::recursiveUpdate(GuiEvent event, int type, Subject* son)
-{
-  update(event, type, son);
-  if (_body)
-    _body->recursiveUpdate(event, type, son);
-}
-
-SubjectNode* SubjectOptimizerLoop::addNode(YACS::ENGINE::Catalog *catalog,
-					   std::string compo,
-					   std::string type,
-					   std::string name,
-                                           bool newCompoInst)
-{
-  DEBTRACE("SubjectOptimizerLoop::addNode(catalog, compo, type, name)");
-  SubjectNode* body = 0;
-  if (_body)
-    {
-      GuiContext::getCurrent()->_lastErrorMessage = "If you need several nodes in a loop, put the nodes in a bloc"; 
-      return body;
-    }
-  body = createNode(catalog, compo, type, name, newCompoInst);
-  return body;
-}
-
-bool SubjectOptimizerLoop::setNbBranches(std::string nbBranches)
-{
-  DEBTRACE("SubjectOptimizerLoop::setNbBranches " << nbBranches);
-  Proc *proc = GuiContext::getCurrent()->getProc();
-  CommandSetForEachBranch *command =
-    new CommandSetForEachBranch(proc->getChildName(getNode()), nbBranches);
-  if (command->execute())
-    {
-      GuiContext::getCurrent()->getInvoc()->add(command);
-      return true;
-    }
-  else delete command;
-  return false;
-}
-
-void SubjectOptimizerLoop::houseKeepingAfterCutPaste(bool isCut, SubjectNode *son)
-{
-  if (isCut)
-    _body = 0;
-  else
-    _body = son;
-}
-
-void SubjectOptimizerLoop::completeChildrenSubjectList(SubjectNode *son)
-{
-  _body = son;
-}
-
-bool SubjectOptimizerLoop::hasValue()
-{
-  return true;
-}
-
-std::string SubjectOptimizerLoop::getValue()
-{
-  return _optimizerLoop->getInputPort("nbBranches")->getAsString();
 }
 
 bool SubjectOptimizerLoop::setAlgorithm(const std::string& alglib,const std::string& symbol)
@@ -3632,6 +3678,12 @@ void SubjectDataPort::registerUndoDestroy()
     GuiContext::getCurrent()->getInvoc()->add(command);
   if (comm2)
     GuiContext::getCurrent()->getInvoc()->add(comm2);
+  //save links
+  list<SubjectLink*> lsl = getListOfSubjectLink();
+  for (list<SubjectLink*>::iterator it = lsl.begin(); it != lsl.end(); ++it)
+    {
+      (*it)->registerUndoDestroy();
+    }
 }
 
 
@@ -3714,14 +3766,9 @@ bool SubjectInputPort::setValue(std::string value)
 SubjectOutputPort::SubjectOutputPort(YACS::ENGINE::OutputPort *port, Subject *parent)
   : SubjectDataPort(port, parent), _outputPort(port)
 {
-  Node *node = _outputPort->getNode();
-  if (ForEachLoop* foreach = dynamic_cast<ForEachLoop*>(node))
+  if (DynParaLoop* dynloop = dynamic_cast<DynParaLoop*>(_outputPort->getNode()))
     {
-      if (_outputPort->getName() == "SmplPrt") _destructible = false;
-    }
-  else if (OptimizerLoop* optil = dynamic_cast<OptimizerLoop*>(node))
-    {
-      if (_outputPort->getName() == "SmplPrt") _destructible = false;
+      if (_outputPort == dynloop->edGetSamplePort()) _destructible = false;
     }
 }
 
@@ -4209,10 +4256,10 @@ void SubjectComponent::setContainer()
     {
       SubjectContainer *subContainer;
       if (GuiContext::getCurrent()->_mapOfSubjectContainer.count(container))
-	subContainer = GuiContext::getCurrent()->_mapOfSubjectContainer[container];
+        subContainer = GuiContext::getCurrent()->_mapOfSubjectContainer[container];
       else
-	subContainer = 
-	  GuiContext::getCurrent()->getSubjectProc()->addSubjectContainer(container, container->getName());
+        subContainer = 
+          GuiContext::getCurrent()->getSubjectProc()->addSubjectContainer(container, container->getName());
       addSubjectReference(subContainer);
       if (_subRefContainer)
         subContainer->moveComponent(_subRefContainer);
@@ -4273,6 +4320,8 @@ void SubjectComponent::moveService(SubjectReference* reference)
   oldcomp->update(CUT, SALOMENODE, reference);
   reference->reparent(this);
   update(PASTE, SALOMENODE, reference);
+  if (!oldcomp->hasServices())
+    Subject::erase(oldcomp);
 }
 
 void SubjectComponent::removeSubServiceFromSet(SubjectServiceNode *service)
@@ -4330,8 +4379,8 @@ SubjectContainer::~SubjectContainer()
     for ( ; it!=mapOfSubjectComponentCpy.end(); it++ )
       if ( (*it).first && (*it).first->getContainer() == _container )
       {
-	(*it).first->setContainer(0);
-	GuiContext::getCurrent()->getSubjectProc()->destroy((*it).second);
+        (*it).first->setContainer(0);
+        GuiContext::getCurrent()->getSubjectProc()->destroy((*it).second);
       }
 
     GuiContext::getCurrent()->_mapOfSubjectContainer.erase(_container);
@@ -4447,7 +4496,7 @@ void SubjectContainer::localclean(Command *command)
       if ( (*it).first && (*it).first->getContainer() == _container )
       {
         compo=(*it).second;
-	(*it).first->setContainer(0);
+        (*it).first->setContainer(0);
         compos.push_back((*it).second);
       }
     while(!compos.empty())
@@ -4468,6 +4517,13 @@ std::string SubjectContainer::getName()
 YACS::ENGINE::Container* SubjectContainer::getContainer() const
 {
   return _container;
+}
+
+void SubjectContainer::registerUndoDestroy()
+{
+  DEBTRACE("SubjectContainer::registerUndoDestroy");
+  Command *command = new CommandAddContainer(getName(),"");
+  GuiContext::getCurrent()->getInvoc()->add(command);
 }
 
 // ----------------------------------------------------------------------------

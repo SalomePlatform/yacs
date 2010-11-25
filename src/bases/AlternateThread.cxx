@@ -16,36 +16,12 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+#include "AlternateThread.hxx"
 
-#ifndef __DRIVENCONDITIONPT_HXX__
-#define __DRIVENCONDITIONPT_HXX__
+#if defined(YACS_PTHREAD)
 
-#include "YACSBasesExport.hxx"
+#include "AlternateThreadPT.cxx"
 
-#include <pthread.h>
-
-namespace YACS
-{
-  namespace BASES
-  {
-    class YACSBASES_EXPORT DrivenConditionPT
-    {
-    public:
-      DrivenConditionPT();
-      ~DrivenConditionPT();
-      //On master thread
-      void waitForAWait();
-      void notifyOneSync();
-      //On slave thread
-      void wait(); //wait on condition
-      void signal(); //release the condition
-    private:
-      pthread_cond_t _cond1;
-      pthread_cond_t _cond2;
-      pthread_mutex_t _mutexDesc1;
-      pthread_mutex_t _mutexDesc2;
-    };
-  }
-}
-
+#else
+#error
 #endif

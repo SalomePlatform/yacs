@@ -54,6 +54,11 @@ namespace YACS
       virtual void setProperty(const std::string& name, const std::string& value);
       virtual void addComponentName(std::string name);
       virtual CORBA::Object_ptr loadComponent(ComponentInstance *inst);
+      virtual void shutdown(int level);
+      // Helper methods
+      void addToComponentList(const std::string & name);
+      void addToResourceList(const std::string & name);
+      virtual std::map<std::string,std::string> getResourceProperties(const std::string& name);
     protected:
 #ifndef SWIG
       virtual ~SalomeContainer();
@@ -65,6 +70,7 @@ namespace YACS
       std::vector<std::string> _componentNames;
       std::map<const ComponentInstance *,Engines::Container_var> _trueContainers;
       std::string _type;
+      int _shutdownLevel;
     public:
       Engines::ContainerParameters _params;
     };

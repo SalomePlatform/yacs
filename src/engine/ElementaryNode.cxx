@@ -75,6 +75,8 @@ ElementaryNode::~ElementaryNode()
 
 void ElementaryNode::init(bool start)
 {
+  DEBTRACE("ElementaryNode::init " << getName() << " " << start << " " << _state);
+
   for(list<OutputPort *>::iterator iter=_setOfOutputPort.begin();iter!=_setOfOutputPort.end();iter++)
     (*iter)->exInit();
   for(list<InputPort *>::iterator iter2=_setOfInputPort.begin();iter2!=_setOfInputPort.end();iter2++)
@@ -87,8 +89,8 @@ void ElementaryNode::init(bool start)
     }
   if(start) //complete initialization
     setState(YACS::READY);
-  else //partial initialization (inside a loop)
-    setState(YACS::LOADED);
+  else if(_state > YACS::LOADED)//partial initialization (inside a loop)
+    setState(YACS::TORECONNECT);
 }
 
 bool ElementaryNode::isDeployable() const
@@ -258,7 +260,7 @@ bool ElementaryNode::areAllInputPortsValid() const
 void ElementaryNode::getReadyTasks(std::vector<Task *>& tasks)
 {
   DEBTRACE("ElementaryNode::getReadyTasks: " << getName() << " " << _state);
-  if(_state==YACS::TOACTIVATE || _state==YACS::TOLOAD)
+  if(_state==YACS::TOACTIVATE || _state==YACS::TOLOAD || _state==YACS::TORECONNECT)
     tasks.push_back(this);
 }
 

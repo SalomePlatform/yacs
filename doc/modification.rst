@@ -86,6 +86,8 @@ YACS module provides the user with a specific GUI command for creation of each t
 
 At the current moment in the frames of the YACS module the user can create nodes of the following types:
 
+.. _inline_function:
+
 Inline function
 ''''''''''''''''''
 
@@ -107,6 +109,10 @@ as a result:
 .. centered::
   **Example of inline function node with ports**
 
+Now, if you want to modify the settings of this node, use the associated panel :ref:`pp_for_inline_node`.
+
+.. _inline_script:
+
 Inline script
 ''''''''''''''''''
 
@@ -123,6 +129,10 @@ as a result:
 
 .. centered::
   **Example of inline script node with ports**
+
+Now, if you want to modify the settings of this node, use the associated panel :ref:`pp_for_inline_node`.
+
+.. _salome_service:
 
 SALOME service
 ''''''''''''''''''
@@ -174,6 +184,9 @@ reference to a new created service node under it.
 .. centered::
   **Tree View after SALOME service node creation**
 
+Now, if you want to modify the settings of this node, use the associated panel :ref:`pp_for_salome_node`.
+
+.. _block_node:
 
 Block
 ''''''''''''''''''
@@ -206,6 +219,8 @@ as a result:
 .. centered::
   **Example of Block node with inline function node as a child node**
 
+.. _forloop_node:
+
 For Loop
 ''''''''''''''''''
 
@@ -236,6 +251,7 @@ as a result:
 .. centered::
   **For Loop node with inline script node as a body**
 
+.. _foreachloop_node:
 
 ForEachLoop
 ''''''''''''''''''
@@ -270,6 +286,8 @@ as a result:
 .. centered::
   **ForEachLoop node with SALOME service node as a body**
 
+.. _whileloop_node:
+
 While loop
 ''''''''''''''''''
 
@@ -300,6 +318,7 @@ Tree View or in the 2D Viewer.
 .. centered::
   **While Loop node with Block node as a body**
 
+.. _switch_node:
 
 Switch
 ''''''''''''''''''
@@ -332,6 +351,8 @@ Tree View or in the 2D Viewer.
 The number of Switch node cases can be changed with help of functionality provided by the property page of Switch node (for the sample 
 of the property page see :ref:`Property page for Switch node <pp_for_switch_node>` section).
 
+.. _optimizerloop_node:
+
 OptimizerLoop
 ''''''''''''''''''
 
@@ -356,9 +377,10 @@ Tree View or in the 2D Viewer.
 The parameters of the Optimizer Loop can then be modified with help of the functionality provided by the property page of Optimizer Loop node
 (see :ref:`Property page for Optimizer Loop <pp_for_optimizer_node>` section).
 
+.. _datain_node:
+
 Input data node
 ''''''''''''''''''
-
 The node object can be created with help of **Create Node --> Input Data Node** command from the Tree View context menu
 or from the 2D Viewer context menu.
 
@@ -371,6 +393,8 @@ or from the 2D Viewer context menu.
 
 .. centered::
   **Input data node with sample ports**
+
+.. _dataout_node:
 
 Output data node
 ''''''''''''''''''
@@ -388,6 +412,8 @@ or from the 2D Viewer context menu.
 .. centered::
   **Output data node with sample ports**
 
+.. _studyin_node:
+
 Input study node
 ''''''''''''''''''
 
@@ -404,6 +430,8 @@ or from the 2D Viewer context menu.
 .. centered::
   **Input study node with sample ports**
 
+.. _studyout_node:
+
 Output study node
 ''''''''''''''''''
 
@@ -412,8 +440,6 @@ or from the 2D Viewer context menu.
 
 .. image:: images/functionality_list_57.jpg
   :align: center
-
-
 
 .. image:: images/functionality_list_56.jpg
   :align: center
@@ -428,7 +454,6 @@ NNN is the smallest integer that produces a unique node name not yet in use.
 
 The user can delete the created node by choosing **Delete** command from node context popup menu in the Tree View or in the 2D Viewer 
 (see :ref:`delete_object` section).
-
 
 .. image:: images/functionality_list_58.jpg
   :align: center
@@ -547,8 +572,11 @@ The property page for container definition is shown on the figure below.
 
 The property page for container allows to modify the name and a set of machine parameters of the selected container object. 
 At the beginning, machine parameters are initialized with the default values.
-For most parameters, the default values can be used. The user can select a host from a list obtained with help of SALOME resource manager
-or use the **automatic** option to let SALOME selects computers.
+For most parameters, the default values can be used. The user can select a resource from a list obtained with help of SALOME resource manager
+or use the **automatic** option to let SALOME selects computers. The user can only modify resource parameters (Resource tab) 
+when the **automatic** option has been choosen. In that case, resource parameters are constraints used by the resource manager
+to select the best resource for the container. In the other case (specific resource selected), the resource parameters come 
+from the resource manager, are the effective ones and are only displayed.
 
 The user can apply modifications to the selected container object by pressing **Apply** button. In such a case YACS module changes 
 properties of the selected container definition according to new values from the Input Panel and updates the Tree View if it is needed.
@@ -566,8 +594,10 @@ The property page for SALOME components is shown on the figure below.
 .. centered::
   **Property page for SALOME component instance definition**
 
-In the Input Panel for SALOME component instances the user can only see the name of the selected component object. 
+In the Input Panel for SALOME component instances the user can see the name of the selected component object. 
 This field is not editable and use only to provide information about component name.
+It is also possible to change the associated container (container: combobox) and to add properties to the component instance. 
+These properties are converted to environment variables when the schema is executed.
 
 .. _pp_for_schema:
 
@@ -589,6 +619,8 @@ The property page for schema is shown on the figure below.
 Property page for node
 ~~~~~~~~~~~~~~~~~~~~~~
 The content of the property page for node depends on the type of the node. Here are property page configurations for the different types of nodes.
+
+.. _pp_for_inline_node:
 
 Property page for inline nodes
 '''''''''''''''''''''''''''''''''
@@ -620,6 +652,18 @@ The pages allow the user to:
 
 + enter or modify a source code of Python function or script in the built-in Python code editor (syntax highlighting, text selection, 
   cut/copy/paste mechanism).
+
++ generate a template of the python function with the **Template** button when all ports are defined and the function name is set.
+
++ edit the python code with an external editor (**External Editor** button, if set in :ref:`user preferences <set_user_preferences>`).
+
+An inline function node can be executed in a remote container by setting its execution mode to **Remote** and selecting a container 
+in the containers list.
+
+.. image:: images/functionality_list_65b.jpg
+  :align: center
+
+.. _pp_for_salome_node:
 
 Property page for SALOME service
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''

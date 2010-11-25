@@ -84,7 +84,7 @@ PropertyEditor::PropertyEditor(Subject* subject,QWidget *parent):QWidget(parent)
   layout->addWidget(_bar);
   layout->addWidget(_table);
   setLayout(layout);
-  layout->setSizeConstraint(QLayout::SetFixedSize);
+//  layout->setSizeConstraint(QLayout::SetFixedSize);
 
   update();
   updateMenu();

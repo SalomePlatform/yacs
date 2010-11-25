@@ -39,8 +39,8 @@
     <parameter name="COMPONENT_INSTANCE_NEW" value="true" />
     <parameter name="userCatalog" value="YACSUserCatalog.xml" />
     <parameter name="autoComputeLinks" value="true" />
-    <parameter name="simplifyLink" value="true" />
-    <parameter name="addRowCols" value="true" />
+    <parameter name="simplifyLink" value="false" />
+    <parameter name="addRowCols" value="false" />
     <parameter name="ensureVisibleWhenMoved" value="true" />
     <parameter name="tabPanelsUp" value="true" />
     <parameter name="documentation" value="yacs_help"/>
@@ -86,7 +86,9 @@
     <parameter name="control_link_draw_color"   value="192,   0, 192" />
     <parameter name="control_link_select_color" value="255, 192, 255" />
     <parameter name="emphasizeBrushColor"       value="  0, 255,   0" />
-    <parameter name="link_pen_darkness" value="150" />
+    <parameter name="link_pen_darkness"         value="150" />
+    <parameter name="link_thickness"            value="1" />
+    <parameter name="link_separation_weight"    value="10" />
 
     <parameter name="Scene_pen"              value="  0,   0, 128" />
     <parameter name="Scene_hiPen"            value="  0,   0, 190" />
@@ -112,6 +114,10 @@
     <parameter name="DataPort_hiBrush"       value="127, 227, 116" />
     <parameter name="DataPort_pen"           value=" 15, 180,   0" />
     <parameter name="DataPort_hiPen"         value=" 11, 128,   0" />
+    <parameter name="DataStreamPort_brush"         value="158, 227, 151" />
+    <parameter name="DataStreamPort_hiBrush"       value="127, 227, 116" />
+    <parameter name="DataStreamPort_pen"           value=" 15, 180,   0" />
+    <parameter name="DataStreamPort_hiPen"         value=" 11, 128,   0" />
 
     <parameter name="dragOver"               value="255,   0,   0" />
 

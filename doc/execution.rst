@@ -47,9 +47,9 @@ corresponding button on :ref:`execution_toolbar`. This same command resumes sche
 .. _pause_abort_reset:
 
 The user can pause execution of a schema with help of **Suspend execution** item from YACS main menu :ref:`yacs_menu` or corresponding button 
-on :ref:`execution_toolbar`. By analogy, **Abort execution** and **Reset execution** commands can be activated either from YACS
+on :ref:`execution_toolbar`. By analogy, **Abort execution** and **Restart execution** commands can be activated either from YACS
 main menu or Execution toolbar. **Abort execution** command kills execution of a schema, and
-**Reset execution** command resets nodes statuses and ports values to the initial ones as they were before the execution process.
+**Restart execution** command restart execution after having reset nodes terminated with error to initial state.
 
 In the frames of YACS GUI a preliminary step of checking schemas' validity before creating a schema run is performed. The user is 
 informed by the system about all problems detected by this operation.
@@ -58,7 +58,6 @@ informed by the system about all problems detected by this operation.
 
 .. image:: images/functionality_list_79.jpg
   :align: center
-
 
 .. centered::
   **An example result of checking schemas' validity before create a schema run**
@@ -129,6 +128,12 @@ For SALOME nodes, the **Node Container Log** command shows the associated contai
 
 Lastly, the **YACS container log** command from the schema context menu shows the log of the YACS server where the user can find information
 to solve problems encountered during the execution.
+
+.. image:: images/functionality_list_82b.jpg
+  :align: center
+
+.. centered::
+  **YACS container log**
 
 .. _save_restore_execution_state:
 
@@ -242,6 +247,20 @@ To continue the execution later from saved state the user can restore execution 
 help from the :ref:`execution_toolbar`.
 
 By default the **Save State** and **Load execution state** commands are applicable to the active schema.
+
+.. _shutdown:
+
+Schema shutdown
+--------------------
+In GUI, shutdown must be explicitly requested by the user by using the context menu of the schema (**Shutdown Proc** entry).
+
+.. image:: images/functionality_list_82c.jpg
+  :align: center
+
+The shutdown level can be changed in the schema property page with the shutdown level combobox.
+
+.. image:: images/functionality_list_64a.jpg
+  :align: center
 
 .. _create_new_edition:
 

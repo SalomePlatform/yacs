@@ -97,6 +97,7 @@ void PythonNode::checkBasicConsistency() const throw(YACS::Exception)
 
 void PythonNode::load()
 {
+  DEBTRACE( "---------------PyNode::load function---------------" );
 }
 
 void PythonNode::execute()
@@ -319,6 +320,7 @@ void PyFuncNode::checkBasicConsistency() const throw(YACS::Exception)
 
 void PyFuncNode::load()
 {
+  DEBTRACE( "---------------PyfuncNode::load function---------------" );
   if(_mode=="remote")
     loadRemote();
   else
@@ -539,6 +541,7 @@ void PyFuncNode::executeRemote()
       PyGILState_Release(gstate);
       throw Exception("DistributedPythonNode problem in python pickle");
     }
+  PyGILState_Release(gstate);
 
   Engines::pickledArgs_var serializationInputCorba=new Engines::pickledArgs;
   serializationInputCorba->length(len);
@@ -560,7 +563,6 @@ void PyFuncNode::executeRemote()
       msg += '\n';
       msg += ex.details.text.in();
       _errorDetails=msg;
-      PyGILState_Release(gstate);
       throw Exception(msg);
     }
   DEBTRACE( "-----------------end of remote python invocation-----------------" );
@@ -571,6 +573,8 @@ void PyFuncNode::executeRemote()
   resultCorbaC[resultCorba->length()]='\0';
   for(int i=0;i<resultCorba->length();i++)
     resultCorbaC[i]=resultCorba[i];
+
+  gstate = PyGILState_Ensure();
 
   PyObject* resultPython=PyString_FromStringAndSize(resultCorbaC,resultCorba->length());
   delete [] resultCorbaC;

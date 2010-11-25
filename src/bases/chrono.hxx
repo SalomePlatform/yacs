@@ -26,6 +26,10 @@
 #include <string>
 #include <iostream>
 #include <ctime>
+#ifdef WIN32
+#else
+#include <sys/time.h>
+#endif
 
 typedef struct acnt
 {
@@ -57,6 +61,18 @@ protected:
   int _ctr;
   clock_t _start, _end;
 };
+
+static long tcount=0;
+static long cumul;
+#ifdef WIN32
+static time_t tv;
+#else
+static timeval tv;
+#endif
+#define START_TIMING gettimeofday(&tv,0);long tt0=tv.tv_usec+tv.tv_sec*1000000;
+#define END_TIMING(NUMBER) \
+  tcount=tcount+1;gettimeofday(&tv,0);cumul=cumul+tv.tv_usec+tv.tv_sec*1000000 -tt0; \
+  if(tcount==NUMBER){ std::cerr << __FILE__<<":"<<__LINE__<<" temps CPU(mus): "<<cumul<< std::endl; tcount=0 ;cumul=0; }
 
 #ifdef CHRONODEF
 #define CHRONO(i) counters::_ctrs[i]._ctrNames = (char *)__FILE__; \

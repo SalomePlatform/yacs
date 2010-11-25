@@ -21,6 +21,7 @@
 #define __CATALOG_HXX__
 
 #include "YACSlibEngineExport.hxx"
+#include "RefCounter.hxx"
 
 #include <string>
 #include <map>
@@ -37,7 +38,7 @@ namespace YACS
  *
  *
  */
-    class YACSLIBENGINE_EXPORT Catalog
+    class YACSLIBENGINE_EXPORT Catalog : public RefCounter
     {
     public:
       Catalog(const std::string& name);

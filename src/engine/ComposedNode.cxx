@@ -414,20 +414,20 @@ void ComposedNode::edRemoveLink(OutPort *start, InPort *end) throw(YACS::Excepti
     {
       iterS=nodeOTemp->_father;
       while(iterS!=lwstCmnAnctr)
-	{
-	  if (!iterS)
-	    {
-	      stringstream what;
-	      what << "ComposedNode::edRemoveLink: "
-		   << start->getNode()->getName() << "." <<start->getName() << "->"
-		   << end->getNode()->getName() << "." << end->getName();
-	      throw Exception(what.str());
-	    }
-	  OutPort *tmp=currentPortO.first;
-	  iterS->getDelegateOf(currentPortO, end, allAscendanceOfNodeEnd);
-	  needsToDestroyO.push_back(pair< ComposedNode * , pair < OutPort* , OutPort *> >(iterS,pair<OutPort* , OutPort *> (tmp,currentPortO.first)));
-	  iterS=iterS->_father;
-	}
+        {
+          if (!iterS)
+            {
+              stringstream what;
+              what << "ComposedNode::edRemoveLink: "
+                   << start->getNode()->getName() << "." <<start->getName() << "->"
+                   << end->getNode()->getName() << "." << end->getName();
+              throw Exception(what.str());
+            }
+          OutPort *tmp=currentPortO.first;
+          iterS->getDelegateOf(currentPortO, end, allAscendanceOfNodeEnd);
+          needsToDestroyO.push_back(pair< ComposedNode * , pair < OutPort* , OutPort *> >(iterS,pair<OutPort* , OutPort *> (tmp,currentPortO.first)));
+          iterS=iterS->_father;
+        }
     }
   Node *nodeTemp=end->getNode();
   InPort * currentPortI=end;
@@ -605,7 +605,7 @@ void ComposedNode::checkConsistency(LinkInfo& info) const throw(YACS::Exception)
           }
       else
         //No backlinks
-        if(!(*iter1)->edIsManuallyInitialized())
+        if(!(*iter1)->canBeNull() && !(*iter1)->edIsManuallyInitialized())
           info.pushErrLink(0,*iter1,E_NEVER_SET_INPUTPORT);
     }
   destructCFComputations(info);
@@ -1490,12 +1490,13 @@ void ComposedNode::checkBasicConsistency() const throw(YACS::Exception)
 /*!
  * This method should be called when a Proc is finished and must be deleted from the YACS server
  */
-void ComposedNode::shutdown()
+void ComposedNode::shutdown(int level)
 {
+  if(level==0)return;
   DEBTRACE("ComposedNode::shutdown");
   list<Node *> nodes=edGetDirectDescendants();
   for(list<Node *>::iterator iter=nodes.begin();iter!=nodes.end();iter++)
-    (*iter)->shutdown();
+    (*iter)->shutdown(level);
 }
 
 //! Clean the composed node in case of not clean exit
@@ -1508,4 +1509,19 @@ void ComposedNode::cleanNodes()
   list<Node *> nodes=edGetDirectDescendants();
   for(list<Node *>::iterator iter=nodes.begin();iter!=nodes.end();iter++)
     (*iter)->cleanNodes();
+}
+
+//! Reset the state of the node and its children depending on the parameter level
+void ComposedNode::resetState(int level)
+{
+  if(level==0)return;
+
+  DEBTRACE("ComposedNode::resetState");
+  if(_state==YACS::ERROR || _state==YACS::FAILED)
+    {
+      Node::resetState(level);
+      std::list<Node *> nodes=edGetDirectDescendants();
+      for(std::list<Node *>::iterator iter=nodes.begin();iter!=nodes.end();iter++)
+        (*iter)->resetState(level);
+    }
 }

@@ -51,6 +51,15 @@ ForLoop::ForLoop(const ForLoop& other, ComposedNode *father, bool editionOnly):L
                                                                                _nbOfTimesPort(other._nbOfTimesPort,this),
                                                                                _indexPort(other._indexPort,this)
 {
+  //Copy Data linking
+  std::vector< std::pair<OutPort *, InPort *> > linksToReproduce=other.getSetOfInternalLinks();
+  std::vector< std::pair<OutPort *, InPort *> >::iterator iter=linksToReproduce.begin();
+  for(;iter!=linksToReproduce.end();++iter)
+    {
+      OutPort* pout = iter->first;
+      InPort* pin = iter->second;
+      edAddLink(getOutPort(other.getPortName(pout)),getInPort(other.getPortName(pin)));
+    }
 }
 
 Node *ForLoop::simpleClone(ComposedNode *father, bool editionOnly) const
@@ -75,6 +84,7 @@ InputPort* ForLoop::getInputPort(const std::string& name) const throw(YACS::Exce
  */
 void ForLoop::init(bool start)
 {
+  DEBTRACE("ForLoop::init " << start);
   Loop::init(start);
   _nbOfTimesPort.exInit(start);
   _indexPort.exInit();
@@ -85,17 +95,18 @@ void ForLoop::init(bool start)
 
 //! Update the state of the for loop
 /*!
- * If the inGate port is ready goes to YACS::TOACTIVATE state
+ * If the inGate port is ready goes to YACS::ACTIVATED state
  * If the steps number is 0, create an special internal node
  *
  */
 void ForLoop::exUpdateState()
 {
+  DEBTRACE("ForLoop::exUpdateState " << getName() << " " << _state);
   if(_state == YACS::DISABLED)
     return;
   if(_inGate.exIsReady())
     {
-      setState(YACS::TOACTIVATE);
+      setState(YACS::ACTIVATED);
       _node->exUpdateState();
       if(_nbOfTimesPort.isEmpty())
         {
@@ -133,6 +144,7 @@ void ForLoop::exUpdateState()
  */
 YACS::Event ForLoop::updateStateOnFinishedEventFrom(Node *node)
 {
+  DEBTRACE("ForLoop::updateStateOnFinishedEventFrom " << node->getName());
   if((++_nbOfTurns)>=_nbOfTimesPort.getIntValue())
     {
       setState(YACS::DONE);
@@ -144,8 +156,8 @@ YACS::Event ForLoop::updateStateOnFinishedEventFrom(Node *node)
       _indexPort.put(tmp);
       tmp->decrRef();
       setState(YACS::ACTIVATED);
-      node->init(false);
-      node->exUpdateState();
+      _node->init(false);
+      _node->exUpdateState();
     }
   return YACS::NOEVENT;
 }

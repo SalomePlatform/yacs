@@ -5,10 +5,16 @@
   The YACS User Guide 
 ###############################
 
+There is an increasing need for multidisciplinary parametric simulations in various research and engineering fields. 
+Examples are fluid-structure interaction and thermal coupling.
+The simulation tools have become very sophisticated in their own domains, so multidisciplinary simulation can be achieved 
+by coupling the existing codes.
+
+YACS is a tool for managing multidisciplinary simulations through calculation schemes.
 
 The YACS module can be used to build and execute calculation schemes.  A calculation scheme is a more or less complex 
-assembly of calculation components (SALOME components or calculation codes).  Therefore, a calculation scheme provides 
-a means of defining a chain or coupling of calculation codes (see :ref:`principes`).
+assembly of calculation components (SALOME components or calculation codes or python scripts).
+Therefore, a calculation scheme provides a means of defining a chain or coupling of calculation codes (see :ref:`principes`).
 
 .. image:: images/ihm.png
    :align: center

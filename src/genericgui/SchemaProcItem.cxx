@@ -88,3 +88,8 @@ QVariant SchemaProcItem::runToolTip(int column) const
   if (!val2.isEmpty()) val += QString(" | ") + val2;
   return val;
 }
+
+QVariant SchemaProcItem::editionWhatsThis(int column) const
+{
+    return "<p>To edit the schema properties, select the schema and use the input panel. <a href=\"modification.html#property-page-for-schema\">More...</a></p>";
+}

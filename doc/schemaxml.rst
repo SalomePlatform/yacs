@@ -130,6 +130,8 @@ The struct tag has a compulsory "name" attribute that gives the name of the type
 
 Definition of elementary calculation nodes
 -----------------------------------------------
+.. _xml_script_node:
+
 Python script node
 '''''''''''''''''''''
 A Python script inline node is defined using the inline tag with the script sub-tag as in 
@@ -178,6 +180,8 @@ An example node with input and output ports:
 
 The node now receives p1 as the input variable, adds 10 to it and exports it as an output variable.
 
+.. _xml_function_node:
+
 Python function node
 ''''''''''''''''''''''''
 A Python function node is defined using the inline tag and the function sub-tag as in the following example:
@@ -197,6 +201,24 @@ A Python function node is defined using the inline tag and the function sub-tag 
 The name attribute (compulsory) of the inline tag is the node name.  The only difference from the Python script node is in 
 the execution part (function tag instead of the script tag).  The function tag has a compulsory name attribute that gives 
 the name of the function to be executed.  The body of the function is given with code tags as for the script.
+
+If you want to execute your function node on a remote container, you have to change the tag from **inline** to **remote**
+and to add a tag **load** in the definition of the node as in the following example: 
+
+.. code-block:: xml
+
+    <remote name="node1" >
+      <function name="f">
+        <code>def f(p1):</code>
+        <code>  p1=p1+10</code>
+        <code>  return p1</code>
+      </function>
+      <load container="cont1" />
+      <inport name="p1" type="int"/>
+      <outport name="p1" type="int"/>
+    </remote>
+
+.. _xml_service_node:
 
 SALOME service node
 ''''''''''''''''''''''''
@@ -394,6 +416,8 @@ Definition of composite nodes
 -----------------------------------
 The next step is to define composite nodes, either to modularise the scheme (Block) or to introduce control structures (Loop, Switch).
 
+.. _xml_block:
+
 Block
 ''''''''
 All the previous definition elements (except for data types) can be put into a Block node.  
@@ -432,6 +456,8 @@ A few rules have to be respected:
 
 - a control link crossing a block boundary cannot be created
 - input and output data links crossing the boundary can be created provided that a context sensitive naming system is used (see :ref:`nommage`)
+
+.. _xml_forloop:
 
 ForLoop
 '''''''''''
@@ -507,6 +533,8 @@ If the number of steps in the loop is calculated, the nsteps input port of the l
 Finally, if the internal node needs to known the current step of the loop it can use the loop output port
 named "index".
 
+.. _xml_whileloop:
+
 WhileLoop
 ''''''''''''
 A WhileLoop is defined using the while tag.  It has a single compulsory attribute “name”, that carries the node name.  
@@ -543,6 +571,8 @@ The following is an example of a While loop that increments the variable p1 unti
   </parameter>
 
 Obviously, nested while loops can be defined.
+
+.. _xml_foreachloop:
 
 ForEach loop
 ''''''''''''''''
@@ -585,7 +615,7 @@ The following is a minimal example of the ForEach loop:
       <tonode>b1</tonode> <toport>SmplsCollection</toport>
     </datalink>
     <datalink>
-      <fromnode>b1</fromnode><fromport>SmplPrt</fromport>
+      <fromnode>b1</fromnode><fromport>evalSamples</fromport>
       <tonode>b1.node2</tonode> <toport>p1</toport>
     </datalink>
     <datalink>
@@ -596,6 +626,8 @@ The following is a minimal example of the ForEach loop:
 A first Python script node constructs a list of doubles.  This list will be used by the ForEach loop to iterate (connection 
 to the SmplsCollection input port).  The internal node of the loop is a Python function node that adds 10 to the element that it processes.  
 Finally, the results are collected and received by the Python node node1 in the form of a list of doubles.
+
+.. _xml_switch:
 
 Switch
 ''''''''''
@@ -643,12 +675,14 @@ A minimal switch example:
         <value><double>54</double> </value>
     </parameter>
 
+.. _xml_optimizerloop:
+
 OptimizerLoop
 ''''''''''''''''
 An OptimizerLoop node is defined with the **optimizer** tag.  It has a compulsory name attribute that carries the name of the node.  
 It has two other compulsory attributes (**lib** and **entry**) that define the C++ or Python plugin (parameters with same names).
 It can have the attribute **nbranch** or an input port **nbBranches** to define the number of branches of the loop.
-The OptimizerLoop ports (**nbBranches**, **FileNameInitAlg**, **SmplPrt** and **retPortForOutPool**) need not be defined as they
+The OptimizerLoop ports (**nbBranches**, **algoInit**, **evalSamples**, **evalResults** and **algoResults**) need not be defined as they
 are already defined at the creation of the node.
 
 A minimal OptimizerLoop example:
@@ -667,12 +701,12 @@ A minimal OptimizerLoop example:
       </inline>
     </optimizer>
     <datalink>
-      <fromnode>b1</fromnode><fromport>SmplPrt</fromport>
+      <fromnode>b1</fromnode><fromport>evalSamples</fromport>
       <tonode>b1.node2</tonode> <toport>p1</toport>
     </datalink>
     <datalink control="false" >
       <fromnode>b1.node2</fromnode><fromport>p1</fromport>
-      <tonode>b1</tonode> <toport>retPortForOutPool</toport>
+      <tonode>b1</tonode> <toport>evalResults</toport>
     </datalink>
 
 
@@ -743,6 +777,22 @@ Example with a SALOME service node:
     </service>
 
 In the case of a SALOME service node, the property is transmitted to the component and by default is set as an environment variable.
+
+.. _xml_active_study:
+
+Active study
+--------------
+To execute a schema in the context of a SALOME study, you have to set the **DefaultStudyID** property of the schema.
+
+Example to execute the schema in the study with studyId 5:
+
+.. code-block:: xml
+
+  <proc name="myschema">
+     <property name="DefaultStudyID" value="5"/>
+     ...
+  </proc>
+
 
 Datastream connections
 ----------------------------
@@ -853,6 +903,8 @@ The following is an example of a call to the PYHELLO component from a SalomePyth
 The PYHELLO component will be placed on container A.  YACS selects the container.  The result of the choice is accessible 
 in the python __container_from_YACS__ variable and is used by the node to load the component using the SALOME LifeCycle.
 
+.. _xml_datain:
+
 Datain node
 ''''''''''''''''
 This type of node is defined with the datanode tag.  It has a compulsory attribute name that carries the node name.  
@@ -871,6 +923,8 @@ The following is an example of a DataIn node that defines two double type data (
       <parameter name="b" type="double" ><value><double>5.</double></value></parameter>
       <parameter name="c" type="double" ><value><double>-1.</double></value></parameter>
     </datanode>
+
+.. _xml_dataout:
 
 DataOut node
 ''''''''''''''''
@@ -895,6 +949,8 @@ The result file will be copied into the local file myfile:
           <parameter name="f" type="file" ref="myfile"/>
         </outnode>
 
+.. _xml_studyin:
+
 StudyIn node
 '''''''''''''''
 This type of node is defined as a DataIn node with the datanode tag.  All that is necessary is to add the kind attribute 
@@ -915,6 +971,8 @@ The data c is referenced by a path in the study tree structure.
       <parameter name="b" type="GEOM/GEOM_Object" ref="0:1:2:2"/>
       <parameter name="c" type="bool" ref="/Geometry/Box_1"/>
     </datanode>
+
+.. _xml_studyout:
 
 StudyOut node
 ''''''''''''''''''

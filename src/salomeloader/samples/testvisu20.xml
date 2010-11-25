@@ -204,6 +204,8 @@
       <PyFunc><![CDATA[    else :     ]]></PyFunc>
       <PyFunc><![CDATA[        index = max  ]]></PyFunc>
       <PyFunc><![CDATA[    print "---- Init ",index,min,max,aVisu,aView,myResult,x1 ]]></PyFunc>
+      <PyFunc><![CDATA[    aView.Register() ]]></PyFunc>
+      <PyFunc><![CDATA[    myResult.Register() ]]></PyFunc>
       <PyFunc><![CDATA[    return index,min,max,aVisu,aView,myResult,x1  ]]></PyFunc>     </PyFunction>
      <PyFunction>
 <FuncName>More</FuncName>
@@ -213,6 +215,8 @@
       <PyFunc><![CDATA[    else :       ]]></PyFunc>
       <PyFunc><![CDATA[        DoLoop = 0       ]]></PyFunc>
       <PyFunc><![CDATA[    print "---- More",index,min,max,aVisu,aView,myResult,x1 ]]></PyFunc>
+      <PyFunc><![CDATA[    aView.Register() ]]></PyFunc>
+      <PyFunc><![CDATA[    myResult.Register() ]]></PyFunc>
       <PyFunc><![CDATA[    return DoLoop,index,min,max,aVisu,aView,myResult,x1   ]]></PyFunc>     </PyFunction>
      <PyFunction>
 <FuncName>Next</FuncName>
@@ -220,6 +224,8 @@
       <PyFunc><![CDATA[    index = index + 1 ]]></PyFunc>
       <PyFunc><![CDATA[    x1=x1+1.0 ]]></PyFunc>
       <PyFunc><![CDATA[    print "---- Next",index,min,max,aVisu,aView,myResult,x1   ]]></PyFunc>
+      <PyFunc><![CDATA[    aView.Register() ]]></PyFunc>
+      <PyFunc><![CDATA[    myResult.Register() ]]></PyFunc>
       <PyFunc><![CDATA[    return index,min,max,aVisu,aView,myResult,x1   ]]></PyFunc>     </PyFunction>    </PyFunction-list>
     <creation-date>8/4/2005 - 14:3:47</creation-date>
     <lastmodification-date>8/4/2005 - 14:3:47</lastmodification-date>
@@ -350,6 +356,7 @@
       <PyFunc><![CDATA[    print "----- Display 6"                         ]]></PyFunc>
       <PyFunc><![CDATA[    theResult=aResult                           ]]></PyFunc>
       <PyFunc><![CDATA[    #time.sleep(2)                   ]]></PyFunc>
+      <PyFunc><![CDATA[    theResult.Register() ]]></PyFunc>
       <PyFunc><![CDATA[    return theResult                    ]]></PyFunc>
       </PyFunction>    </PyFunction-list>
     <creation-date>8/4/2005 - 14:3:47</creation-date>

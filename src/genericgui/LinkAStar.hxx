@@ -23,8 +23,10 @@
 #include "LinkMatrix.hxx"
 
 #include <map>
+#include <queue>
 #include <list>
 #include <cmath>
+#include <stdlib.h>
 
 namespace YACS
 {
@@ -52,6 +54,17 @@ namespace YACS
 
     typedef std::map<std::pair<int,int>, LCostNode> LNodeMap;
 
+    struct Cost
+      {
+        Cost(double f,std::pair<int,int> p):F(f),pos(p) {};
+        double F;
+        std::pair<int,int> pos;
+        bool operator<(const Cost& a) const
+          {
+            return (a.F <= F);
+          }
+      };
+
     class LinkAStar
     {
     public:
@@ -65,13 +78,16 @@ namespace YACS
       std::pair<int,int> bestNode(const LNodeMap& aList);
       void moveToClosedList(std::pair<int,int> n);
       //inline double distance(int i1, int j1, int i2, int j2) { return std::sqrt(double((i1-i2)*(i1-i2) + (j1-j2)*(j1-j2)));};
-      inline double distance(int i1, int j1, int i2, int j2) { return double((i1-i2)*(i1-i2) + (j1-j2)*(j1-j2));};
+      //inline double distance(int i1, int j1, int i2, int j2) { return double((i1-i2)*(i1-i2) + (j1-j2)*(j1-j2));};
+      //manhattan distance is better for 4 connected cells
+      inline double distance(int i1, int j1, int i2, int j2) { return abs(i1-i2)+abs(j1-j2);};
     protected:
       const LinkMatrix &_linkMatrix;
       LNodeMap _closedList;
       LNodeMap _openList;
       LNode _from;
       LNode _to;
+      std::priority_queue<Cost> _pq;
     };
 
   }

@@ -20,6 +20,7 @@
 #include "TypeConversions.hxx"
 #include "PythonXMLConv.hxx"
 #include "Node.hxx"
+#include "PythonPorts.hxx"
 
 #include <iostream>
 
@@ -52,5 +53,6 @@ void PyXml::put(PyObject *data) throw(ConversionException)
 {
   DEBTRACE("PyXml::put" );
   std::string sss = convertPyObjectXml(edGetType(),data);
+  YACS::ENGINE::InterpreterSaveThread _loc;
   ((InputXmlPort*)_port)->put((const char*)sss.c_str());
 }

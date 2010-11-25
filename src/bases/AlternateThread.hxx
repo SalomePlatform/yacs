@@ -16,11 +16,21 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-
-#include "DrivenCondition.hxx"
+#ifndef __ALTERNATETHREAD_HXX__
+#define __ALTERNATETHREAD_HXX__
 
 #if defined(YACS_PTHREAD)
-#include "DrivenConditionPT.cxx"
+#include "AlternateThreadPT.hxx"
+
+namespace YACS
+{
+  namespace BASES
+  {
+    typedef AlternateThreadPT AlternateThread;
+  }
+}
 #else
 #error
+#endif
+
 #endif

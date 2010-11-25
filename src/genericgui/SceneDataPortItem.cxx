@@ -24,20 +24,11 @@
 #include "Scene.hxx"
 
 #include "QtGuiContext.hxx"
-// #include "Menus.hxx"
-// #include <QGraphicsSceneHoverEvent>
-// #include <QPointF>
-
-// #include <cassert>
 
 #include "Resource.hxx"
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
-
-#include <QPushButton>
-#include <QStyleOptionButton>
-#include <QStylePainter>
 
 using namespace std;
 using namespace YACS::ENGINE;
@@ -51,10 +42,23 @@ SceneDataPortItem::SceneDataPortItem(QGraphicsScene *scene, SceneItem *parent,
   setText(label);
   _width        = Resource::DataPort_Width;
   _height       = Resource::DataPort_Height;
-  _brushColor   = Resource::DataPort_brush;
-  _hiBrushColor = Resource::DataPort_hiBrush;
-  _penColor     = Resource::DataPort_pen;
-  _hiPenColor   = Resource::DataPort_hiPen;
+  switch (getSubject()->getType())
+    {
+    case INPUTPORT:
+    case OUTPUTPORT:
+      _brushColor   = Resource::DataPort_brush;
+      _hiBrushColor = Resource::DataPort_hiBrush;
+      _penColor     = Resource::DataPort_pen;
+      _hiPenColor   = Resource::DataPort_hiPen;
+      break;
+    case INPUTDATASTREAMPORT:
+    case OUTPUTDATASTREAMPORT:
+      _brushColor   = Resource::DataStreamPort_brush;
+      _hiBrushColor = Resource::DataStreamPort_hiBrush;
+      _penColor     = Resource::DataStreamPort_pen;
+      _hiPenColor   = Resource::DataStreamPort_hiPen;
+      break;
+    }
 }
 
 SceneDataPortItem::~SceneDataPortItem()

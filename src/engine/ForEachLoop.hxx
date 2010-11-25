@@ -165,6 +165,7 @@ namespace YACS
       void accept(Visitor *visitor);
       void writeDot(std::ostream &os) const;
       virtual std::string typeName() {return "YACS__ENGINE__ForEachLoop";}
+      virtual void resetState(int level);
     protected:
       Node *simpleClone(ComposedNode *father, bool editionOnly=true) const;
       void checkLinkPossibility(OutPort *start, const std::list<ComposedNode *>& pointsOfViewStart,

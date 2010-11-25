@@ -97,7 +97,11 @@ else
   GRAPHVIZHOME=$GRAPHVIZ_PREFIX
 
   GRAPHVIZ_CPPFLAGS="-I${GRAPHVIZHOME}/include/graphviz"
-  GRAPHVIZ_LDFLAGS="-L${GRAPHVIZHOME}/lib -L${GRAPHVIZHOME}/lib/graphviz"
+  if test "x$GRAPHVIZHOME" = "x/usr" ; then
+    GRAPHVIZ_LDFLAGS="-L${GRAPHVIZHOME}/lib/graphviz"
+  else
+    GRAPHVIZ_LDFLAGS="-L${GRAPHVIZHOME}/lib -L${GRAPHVIZHOME}/lib/graphviz"
+  fi
 fi
 dnl AC_SUBST(DOT)
 CPPFLAGS_old=$CPPFLAGS

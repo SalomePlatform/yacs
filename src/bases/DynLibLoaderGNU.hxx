@@ -48,6 +48,11 @@ namespace YACS
     private:
       void loadLib() { load(); }//! load lib without regarding that _libName is reachable
       void *resolveSymb(const std::string& symbName, bool stopOnError);
+
+      // Forbid the use of copy constructor and assignment operator to avoid messing up
+      // with the library handle
+      DynLibLoaderGNU(const DynLibLoaderGNU & orig) {}
+      DynLibLoaderGNU& operator=(const DynLibLoaderGNU & orig) { return *this; }
     };
   }
 }

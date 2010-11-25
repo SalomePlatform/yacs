@@ -85,3 +85,7 @@ void Container::setProperties(std::map<std::string,std::string> properties)
       setProperty((*it).first, (*it).second); // setProperty virtual and derived
     }
 }
+
+void Container::shutdown(int level)
+{
+}

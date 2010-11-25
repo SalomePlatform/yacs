@@ -69,12 +69,12 @@ namespace YACS
       
       enum 
       {
-	      IsPyExt = 1,
+        IsPyExt = 1,
         UsePython = 2,
-	      UseCorba = 4,
-	      UseXml = 8,
-	      UseCpp = 16,
-	      UseSalome = 32
+        UseCorba = 4,
+        UseXml = 8,
+        UseCpp = 16,
+        UseSalome = 32
       } FLAGS;
 
       static void setRuntime(long flags = UsePython+UseCorba+UseXml+UseCpp+UseSalome); // singleton creation
@@ -113,7 +113,8 @@ namespace YACS
       virtual WhileLoop* createWhileLoop(const std::string& name);
       virtual ForLoop* createForLoop(const std::string& name);
       virtual OptimizerLoop* createOptimizerLoop(const std::string& name,const std::string& algLib,
-                                                 const std::string& factoryName,bool algInitOnFile,const std::string& kind="");
+                                                 const std::string& factoryName,bool algInitOnFile,
+                                                 const std::string& kind="", Proc * procForTypes = NULL);
       virtual Bloc* createBloc(const std::string& name);
       virtual Proc* createProc(const std::string& name);
 

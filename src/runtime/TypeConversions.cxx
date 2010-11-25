@@ -1600,6 +1600,23 @@ namespace YACS
             }
         }
     };
+    template <ImplType IMPLOUT, class TOUT>
+    struct convertToYacsStruct<NEUTRALImpl,YACS::ENGINE::Any*,void*,IMPLOUT,TOUT>
+    {
+      static inline void convert(const TypeCode *t,YACS::ENGINE::Any* o,void*,std::map<std::string,TOUT>& m)
+        {
+          StructAny * sdata = dynamic_cast<StructAny *>(o);
+          YASSERT(sdata != NULL);
+          const TypeCodeStruct * tst = dynamic_cast<const TypeCodeStruct *>(t);
+          YASSERT(tst != NULL);
+          for (int i=0 ; i<tst->memberCount() ; i++)
+            {
+              string name = tst->memberName(i);
+              TOUT ro=YacsConvertor<NEUTRALImpl,YACS::ENGINE::Any*,void*,IMPLOUT,TOUT>(tst->memberType(i),(*sdata)[name.c_str()],0);
+              m[name]=ro;
+            }
+        }
+    };
     /* End of ToYacs Convertor for NEUTRALImpl */
 
     //! FromYacs Convertor for NEUTRALImpl
@@ -1699,6 +1716,22 @@ namespace YACS
               (*iter)->decrRef();
             }
           DEBTRACE( "refcnt: " << any->getRefCnt() );
+          return any;
+        }
+    };
+
+    template <>
+    struct convertFromYacsStruct<NEUTRALImpl,YACS::ENGINE::Any*>
+    {
+      static inline YACS::ENGINE::Any* convert(const TypeCode *t,std::map<std::string,YACS::ENGINE::Any*>& m)
+        {
+          StructAny * any = StructAny::New((TypeCodeStruct *)t);
+          std::map<std::string,YACS::ENGINE::Any*>::const_iterator it;
+          for (it=m.begin() ; it!=m.end() ; it++)
+            {
+              any->setEltAtRank(it->first.c_str(), it->second);
+              it->second->decrRef();
+            }
           return any;
         }
     };

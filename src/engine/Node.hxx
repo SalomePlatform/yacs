@@ -50,7 +50,13 @@ namespace YACS
     class InputDataStreamPort;
     class OutputDataStreamPort;
     class Visitor;
-    
+
+    class YACSLIBENGINE_EXPORT NodeStateNameMap : public std::map<YACS::StatesForNode, std::string>
+    {
+    public:
+      NodeStateNameMap();
+    };
+
     class YACSLIBENGINE_EXPORT Node
     {
       friend class Bloc;
@@ -87,7 +93,8 @@ namespace YACS
     public:
       virtual ~Node();
       virtual void init(bool start=true);
-      virtual void shutdown();
+      virtual void shutdown(int level);
+      virtual void resetState(int level);
       //! \b This method \b MUST \b NEVER \b BE \b VIRTUAL
       Node *clone(ComposedNode *father, bool editionOnly=true) const;
       void setState(YACS::StatesForNode theState); // To centralize state changes
@@ -167,7 +174,6 @@ namespace YACS
       virtual void edDisconnectAllLinksWithMe();
       static void checkValidityOfPortName(const std::string& name) throw(Exception);
       static ComposedNode *checkHavingCommonFather(Node *node1, Node *node2) throw(Exception);
-      static std::map<int, std::string> _nodeStateName;
     };
 
   }

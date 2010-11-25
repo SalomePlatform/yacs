@@ -107,12 +107,21 @@ void SceneLinkItem::setShape(int thickness)
       double d = std::sqrt((pto.x() - pfrom.x())*(pto.x() - pfrom.x()) + (pto.y() - pfrom.y())*(pto.y() - pfrom.y()));
       double sina = (pto.y() - pfrom.y())/d;
       double cosa = (pto.x() - pfrom.x())/d;
-      double ep=3.0*thickness/2.0;
+      double ep=3.0*thickness/2.0 * Resource::link_thickness;
       _path.moveTo(pfrom.x() -ep*sina, pfrom.y() +ep*cosa);
       _path.lineTo(pto.x()   -ep*sina, pto.y()   +ep*cosa);
       _path.lineTo(pto.x()   +ep*sina, pto.y()   -ep*cosa);
       _path.lineTo(pfrom.x() +ep*sina, pfrom.y() -ep*cosa);
       _path.lineTo(pfrom.x() -ep*sina, pfrom.y() -ep*cosa);
+      //arrow
+      double x=(pto.x() + pfrom.x())/2.;
+      double y=(pto.y() + pfrom.y())/2.;
+      double l=8*ep;
+      double e=4*ep;
+      _path.moveTo(x+l*cosa,y+l*sina);
+      _path.lineTo(x+e*sina,y-e*cosa);
+      _path.lineTo(x-e*sina,y+e*cosa);
+      _path.lineTo(x+l*cosa,y+l*sina);
     }
 }
 
@@ -122,34 +131,35 @@ void SceneLinkItem::addArrow(QPointF pfrom,
                              int thickness)
 {
   qreal x, y, width, height, length;
+  double ep=thickness * Resource::link_thickness;
   switch (dir)
     {
     case _UP:
-      x = pfrom.x() -thickness;
-      y = pfrom.y() -thickness;
-      width = 3*thickness;
-      height = 2*thickness + pto.y() -pfrom.y();
+      x = pfrom.x() -ep;
+      y = pfrom.y() -ep;
+      width = 3*ep;
+      height = 2*ep + pto.y() -pfrom.y();
       length = height;
       break;
     case _RIGHT:
-      x = pfrom.x() -thickness;
-      y = pfrom.y() -thickness;
-      width = 2*thickness + pto.x() -pfrom.x();
-      height = 3*thickness;
+      x = pfrom.x() -ep;
+      y = pfrom.y() -ep;
+      width = 2*ep + pto.x() -pfrom.x();
+      height = 3*ep;
       length = width;
       break;
     case _DOWN:
-      x = pto.x() -thickness;
-      y = pto.y() -thickness;
-      width = 3*thickness;
-      height = 2*thickness + pfrom.y() -pto.y();
+      x = pto.x() -ep;
+      y = pto.y() -ep;
+      width = 3*ep;
+      height = 2*ep + pfrom.y() -pto.y();
       length = height;
       break;
     case _LEFT:
-      x = pto.x() -thickness;
-      y = pto.y() -thickness;
-      width = 2*thickness + pfrom.x() -pto.x();
-      height = 3*thickness;
+      x = pto.x() -ep;
+      y = pto.y() -ep;
+      width = 2*ep + pfrom.x() -pto.x();
+      height = 3*ep;
       length = width;
       break;
     }
@@ -157,7 +167,7 @@ void SceneLinkItem::addArrow(QPointF pfrom,
 
   if (length > 20)
     {
-      int e=5*thickness, h1=4*thickness, h2=8*thickness;
+      int e=5*ep, h1=4*ep, h2=8*ep;
       switch (dir)
         {
         case _UP:

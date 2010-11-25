@@ -21,7 +21,7 @@
 "All is needed to create and execute a calculation schema."
 %enddef
 
-%module(directors="1",docstring=DOCSTRING) pilot
+%module(docstring=DOCSTRING) pilot
 
 #ifndef SWIGIMPORTED
 //work around SWIG bug #1863647
@@ -184,27 +184,10 @@ REFCOUNT_TEMPLATE(CompoInstmap,YACS::ENGINE::ComponentInstance)
  * End of ownership section
  */
 
-%feature("director") YACS::ENGINE::OptimizerAlgSync;
-%feature("director") YACS::ENGINE::OptimizerAlgASync;
-%feature("nodirector") YACS::ENGINE::OptimizerAlgSync::getType;
-%feature("nodirector") YACS::ENGINE::OptimizerAlgASync::getType;
-%feature("director:except") {
-    if ($error != NULL) {
-        PyErr_Print();
-        throw YACS::Exception("exception in director");
-    }
-}
-
-
 
 %include <define.hxx>
 %include <YACSBasesExport.hxx>
 %include <Exception.hxx>
-
-PYEXCEPTION(YACS::BASES::DrivenConditionPT::wait)
-%include <DrivenConditionPT.hxx>
-%include <DrivenCondition.hxx>
-
 %include <YACSlibEngineExport.hxx>
 %include <ConversionException.hxx>
 %include <Runtime.hxx>
@@ -322,7 +305,6 @@ EXCEPTION(YACS::ENGINE::ExecutorSwig::waitPause)
 %include <DynParaLoop.hxx>
 %include <WhileLoop.hxx>
 %include <ForEachLoop.hxx>
-%include <OptimizerAlg.hxx>
 %include <OptimizerLoop.hxx>
 %include <Switch.hxx>
 %include <Visitor.hxx>
@@ -330,6 +312,14 @@ EXCEPTION(YACS::ENGINE::ExecutorSwig::waitPause)
 %include <ComponentDefinition.hxx>
 %include <Catalog.hxx>
 %include <Pool.hxx>
+
+%include <AlternateThread.hxx>
+%include <AlternateThreadPT.hxx>
+
+// Ignore class OptimizerAlgASync to avoid confusion with class
+// OptimizerAlgASync in module SALOMERuntime
+%ignore YACS::ENGINE::OptimizerAlgASync;
+%include <OptimizerAlg.hxx>
 
 %extend YACS::ENGINE::ConditionInputPort
 {

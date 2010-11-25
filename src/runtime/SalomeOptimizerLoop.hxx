@@ -27,39 +27,18 @@ namespace YACS
 {
   namespace ENGINE
   {
-    class YACSRUNTIMESALOME_EXPORT SalomeOptimizerAlgStandardized : public OptimizerAlgStandardized
-    {
-    public:
-      SalomeOptimizerAlgStandardized(Pool *pool, OptimizerAlgBase *alg);
-      virtual ~SalomeOptimizerAlgStandardized();
-      virtual void parseFileToInit(const std::string& fileName);
-      virtual void start();
-      virtual void takeDecision();
-      virtual TypeCode *getTCForIn() const;
-      virtual TypeCode *getTCForOut() const;
-      virtual void initialize(const Any *input) throw (Exception);
-      virtual void finish();
-    private:
-      static void *threadFctForAsync(void* ownStack);
-    };
-
     class YACSRUNTIMESALOME_EXPORT SalomeOptimizerLoop: public OptimizerLoop
     {
       protected:
         Node *simpleClone(ComposedNode *father, bool editionOnly) const;
+        virtual void loadAlgorithm();
       public:
         SalomeOptimizerLoop(const std::string& name, const std::string& algLibWthOutExt,
                             const std::string& symbolNameToOptimizerAlgBaseInstanceFactory,
-                            bool algInitOnFile,bool initAlgo=true);
+                            bool algInitOnFile,bool initAlgo=true, Proc * procForTypes = NULL);
         SalomeOptimizerLoop(const SalomeOptimizerLoop& other, ComposedNode *father, bool editionOnly);
         ~SalomeOptimizerLoop();
-        virtual void setAlgorithm(const std::string& alglib,const std::string& symbol,bool checkLinks=true);
-        virtual std::string getAlgLib() const ;
         virtual std::string typeName() {return "YACS__ENGINE__SalomeOptimizerLoop";}
-      protected:
-        SalomeOptimizerAlgStandardized *_pyalg;
-        OptimizerAlgStandardized *_cppalg;
-        std::string _alglib;
     };
   }
 }

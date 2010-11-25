@@ -189,6 +189,17 @@ namespace YACS
                              const QPoint &globalPos,
                              const QString& m = "ComponentInstance Menu");
     };
+
+    class ContainerMenu: public MenusBase
+    {
+      Q_OBJECT
+    public:
+      ContainerMenu();
+      virtual ~ContainerMenu();
+      virtual void popupMenu(QWidget *caller,
+                             const QPoint &globalPos,
+                             const QString& m = "Container Menu");
+    };
   }
 }
 

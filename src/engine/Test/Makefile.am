@@ -35,7 +35,7 @@ TestEngine_LDADD = \
 
 TestEngine_LDFLAGS = $(CPPUNIT_LIBS) -pthread -ldl
 
-TestEngine_CXXFLAGS = \
+TestEngine_CXXFLAGS = $(THREAD_DEF) \
 	$(CPPUNIT_INCLUDES)           \
 	-I$(srcdir)/..                \
 	-I$(srcdir)/../../bases       \

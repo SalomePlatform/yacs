@@ -51,7 +51,7 @@
 using namespace YACS::ENGINE;
 using namespace std;
 
-SalomeContainer::SalomeContainer():_trueCont(Engines::Container::_nil()),_type("mono")
+SalomeContainer::SalomeContainer():_trueCont(Engines::Container::_nil()),_type("mono"),_shutdownLevel(999)
 {
   /* Init ContainerParameters */
   _params.container_name = "";
@@ -70,9 +70,11 @@ SalomeContainer::SalomeContainer():_trueCont(Engines::Container::_nil()),_type("
   _params.resource_params.nb_node = 0;
   _params.resource_params.nb_proc_per_node = 0;
   _params.resource_params.policy = "";
+  // By default, componentList and resList length is 0
 }
 
-SalomeContainer::SalomeContainer(const SalomeContainer& other):Container(other),_trueCont(Engines::Container::_nil()),_type(other._type)
+SalomeContainer::SalomeContainer(const SalomeContainer& other):Container(other),_trueCont(Engines::Container::_nil()),_type(other._type),
+                                                                                _shutdownLevel(other._shutdownLevel)
 {
   _params.container_name = CORBA::string_dup(other._params.container_name);
   _params.mode= CORBA::string_dup(other._params.mode);
@@ -89,6 +91,19 @@ SalomeContainer::SalomeContainer(const SalomeContainer& other):Container(other),
   _params.resource_params.cpu_clock = other._params.resource_params.cpu_clock;
   _params.resource_params.nb_node = other._params.resource_params.nb_node;
   _params.resource_params.nb_proc_per_node = other._params.resource_params.nb_proc_per_node;
+  _params.resource_params.policy = CORBA::string_dup(other._params.resource_params.policy);
+
+  _params.resource_params.componentList.length(other._params.resource_params.componentList.length());
+  for(CORBA::ULong i=0; i < other._params.resource_params.componentList.length(); i++)
+  {
+    _params.resource_params.componentList[i]=CORBA::string_dup(other._params.resource_params.componentList[i]);
+  }
+
+  _params.resource_params.resList.length(other._params.resource_params.resList.length());
+  for(CORBA::ULong i=0; i < other._params.resource_params.resList.length(); i++)
+  {
+    _params.resource_params.resList[i]=CORBA::string_dup(other._params.resource_params.resList[i]);
+  }
 }
 
 SalomeContainer::~SalomeContainer()
@@ -141,12 +156,11 @@ void SalomeContainer::setProperty(const std::string& name, const std::string& va
   }
   else if (name == "workingdir")
     _params.workingdir = CORBA::string_dup(value.c_str());
-  else if (name == "nb_component_nodes") // TODO - TO Change.... in two nb_proc
+  else if (name == "nb_parallel_procs")
   {
     std::istringstream iss(value);
     if (!(iss >> _params.nb_proc))
-      throw Exception("salomecontainer::setproperty : params.nb_component_nodes value not correct : " + value);
-    _params.resource_params.nb_proc=_params.nb_proc;
+      throw Exception("salomecontainer::setproperty : params.nb_proc value not correct : " + value);
   }
   else if (name == "isMPI")
   {
@@ -167,17 +181,23 @@ void SalomeContainer::setProperty(const std::string& name, const std::string& va
     _params.resource_params.hostname = CORBA::string_dup(value.c_str());
   else if (name == "OS")
     _params.resource_params.OS = CORBA::string_dup(value.c_str());
+  else if (name == "nb_resource_procs")
+  {
+    std::istringstream iss(value);
+    if (!(iss >> _params.resource_params.nb_proc))
+      throw Exception("salomecontainer::setproperty : params.resource_params.nb_proc value not correct : " + value);
+  }
   else if (name == "mem_mb")
   {
     std::istringstream iss(value);
     if (!(iss >> _params.resource_params.mem_mb))
-      throw Exception("salomecontainer::setproperty : params.mem_mb value not correct : " + value);
+      throw Exception("salomecontainer::setproperty : params.resource_params.mem_mb value not correct : " + value);
   }
   else if (name == "cpu_clock")
   {
     std::istringstream iss(value);
     if (!(iss >> _params.resource_params.cpu_clock))
-      throw Exception("salomecontainer::setproperty : params.cpu_clock value not correct : " + value);
+      throw Exception("salomecontainer::setproperty : params.resource_params.cpu_clock value not correct : " + value);
   }
   else if (name == "nb_node")
   {
@@ -191,6 +211,69 @@ void SalomeContainer::setProperty(const std::string& name, const std::string& va
     if (!(iss >> _params.resource_params.nb_proc_per_node))
       throw Exception("salomecontainer::setproperty : params.nb_proc_per_node value not correct : " + value);
   }
+  else if (name == "policy")
+    _params.resource_params.policy = CORBA::string_dup(value.c_str());
+  else if (name == "component_list")
+  {
+    std::string clean_value(value);
+
+    // Step 1: remove blanks
+    while(clean_value.find(" ") != std::string::npos)
+      clean_value = clean_value.erase(clean_value.find(" "), 1);
+
+    // Step 2: get values
+    while(!clean_value.empty())
+    {
+      std::string result("");
+      std::string::size_type loc = clean_value.find(",", 0);
+      if (loc != std::string::npos)
+      {
+        result = clean_value.substr(0, loc);
+        clean_value = clean_value.erase(0, loc+1);
+      }
+      else
+      {
+        result = clean_value;
+        clean_value.erase();
+      }
+      if (result != "," && result != "")
+      {
+        addToComponentList(result);
+      }
+    }
+
+  }
+  else if (name == "resource_list")
+  {
+    std::string clean_value(value);
+
+    // Step 1: remove blanks
+    while(clean_value.find(" ") != std::string::npos)
+      clean_value = clean_value.erase(clean_value.find(" "), 1);
+
+    // Step 2: get values
+    while(!clean_value.empty())
+    {
+      std::string result("");
+      std::string::size_type loc = clean_value.find(",", 0);
+      if (loc != std::string::npos)
+      {
+        result = clean_value.substr(0, loc);
+        clean_value = clean_value.erase(0, loc+1);
+      }
+      else
+      {
+        result = clean_value;
+        clean_value.erase();
+      }
+      if (result != "," && result != "")
+      {
+        addToResourceList(result);
+      }
+    }
+
+  }
+  // End
   Container::setProperty(name, value);
 }
 
@@ -205,6 +288,7 @@ void SalomeContainer::addComponentName(std::string name)
  */
 CORBA::Object_ptr SalomeContainer::loadComponent(ComponentInstance *inst)
 {
+  DEBTRACE("SalomeContainer::loadComponent ");
   lock();//To be sure
   if(!isAlreadyStarted(inst))
     {
@@ -297,7 +381,7 @@ std::string SalomeContainer::getPlacementId(const ComponentInstance *inst) const
       std::string::size_type i=ret.find_first_of(what,0);
       i=ret.find_first_of(what, i==std::string::npos ? i:i+1);
       if(i!=std::string::npos)
-	return ret.substr(i+1);
+        return ret.substr(i+1);
       return ret;
     }
   else
@@ -369,25 +453,23 @@ void SalomeContainer::start(const ComponentInstance *inst) throw(YACS::Exception
 
   std::string str(_params.container_name);
   DEBTRACE("SalomeContainer::start " << str <<";"<<_params.resource_params.hostname <<";"<<_type);
+
+  // Finalize parameters with components found in the container
+  std::vector<std::string>::iterator iter;
+  for(CORBA::ULong i=0; i < _componentNames.size();i++)
+    addToComponentList(_componentNames[i]);
+  Engines::ContainerParameters myparams = _params;
+
+  bool namedContainer=false;
+  if(str != "")
+    namedContainer=true;
+
   //If a container_name is given try to find an already existing container in naming service
   //If not found start a new container with the given parameters
   if (_type=="mono" && str != "")
     {
-      std::string machine(_params.resource_params.hostname);
-      if(machine == "" || machine == "localhost")
-        machine=Kernel_Utils::GetHostname();
-      std::string ContainerNameInNS=ns.BuildContainerNameForNS(_params,machine.c_str());
-      obj=ns.Resolve(ContainerNameInNS.c_str());
-      if(!CORBA::is_nil(obj))
-        {
-          std::cerr << "Container already exists: " << ContainerNameInNS << std::endl;
-          _trueCont=Engines::Container::_narrow(obj);
-          _trueContainers[inst]=_trueCont;
-          return;
-        }
+      myparams.mode="getorstart";
     }
-
-  Engines::ContainerParameters myparams=_params;
 
   if (str == "")
   {
@@ -400,29 +482,68 @@ void SalomeContainer::start(const ComponentInstance *inst) throw(YACS::Exception
     stream << (void *)(this);
     DEBTRACE("container_name="<<stream.str());
     myparams.container_name=CORBA::string_dup(stream.str().c_str());
+    _shutdownLevel=1;
   }
-  myparams.resource_params.componentList.length(_componentNames.size());
-  std::vector<std::string>::iterator iter;
-  for(CORBA::ULong i=0; i < _componentNames.size();i++)
-  {
-    myparams.resource_params.componentList[i]=CORBA::string_dup(_componentNames[i].c_str());
-  }
-  myparams.resource_params.policy=CORBA::string_dup(getProperty("policy").c_str());
 
-  try
-    { 
-      // --- GiveContainer is used in batch mode to retreive launched containers,
-      //     and is equivalent to StartContainer when not in batch.
-      _trueCont=contManager->GiveContainer(myparams);
-    }
-  catch(CORBA::COMM_FAILURE&)
+  _trueCont=Engines::Container::_nil();
+  if(namedContainer && _shutdownLevel==999)
     {
-      throw Exception("SalomeContainer::start : Unable to launch container in Salome : CORBA Comm failure detected");
+      //Make this only the first time start is called (_shutdownLevel==999)
+      //If the container is named, first try to get an existing container
+      //If there is an existing container use it and set the shutdown level to 3
+      //If there is no existing container, try to launch a new one and set the shutdown level to 2
+      myparams.mode="get";
+      try
+        { 
+          _trueCont=contManager->GiveContainer(myparams);
+        }
+      catch( const SALOME::SALOME_Exception& ex )
+        {
+          std::string msg="SalomeContainer::start : no existing container : ";
+          msg += '\n';
+          msg += ex.details.text.in();
+          DEBTRACE( msg );
+        }
+      catch(...)
+        {
+        }
+
+      if(!CORBA::is_nil(_trueCont))
+        {
+          _shutdownLevel=3;
+          DEBTRACE( "container found: " << str << " " << _shutdownLevel );
+        }
+      else
+        {
+          _shutdownLevel=2;
+          myparams.mode="start";
+          DEBTRACE( "container not found: " << str << " " << _shutdownLevel);
+        }
     }
-  catch(CORBA::Exception&)
-    {
-      throw Exception("SalomeContainer::start : Unable to launch container in Salome : Unexpected CORBA failure detected");
-    }
+
+  if(CORBA::is_nil(_trueCont))
+    try
+      { 
+        // --- GiveContainer is used in batch mode to retreive launched containers,
+        //     and is equivalent to StartContainer when not in batch.
+        _trueCont=contManager->GiveContainer(myparams);
+      }
+    catch( const SALOME::SALOME_Exception& ex )
+      {
+        std::string msg="SalomeContainer::start : Unable to launch container in Salome : ";
+        msg += '\n';
+        msg += ex.details.text.in();
+        throw Exception(msg);
+      }
+    catch(CORBA::COMM_FAILURE&)
+      {
+        throw Exception("SalomeContainer::start : Unable to launch container in Salome : CORBA Comm failure detected");
+      }
+    catch(CORBA::Exception&)
+      {
+        throw Exception("SalomeContainer::start : Unable to launch container in Salome : Unexpected CORBA failure detected");
+      }
+
   if(CORBA::is_nil(_trueCont))
     throw Exception("SalomeContainer::start : Unable to launch container in Salome. Check your CatalogResources.xml file");
 
@@ -442,3 +563,125 @@ void SalomeContainer::start(const ComponentInstance *inst) throw(YACS::Exception
 #endif
 }
 
+void SalomeContainer::shutdown(int level)
+{
+  DEBTRACE("SalomeContainer::shutdown: " << _name << "," << level << "," << _shutdownLevel);
+  if(level < _shutdownLevel)
+    return;
+
+  _shutdownLevel=999;
+  //shutdown the SALOME containers
+  if(_type=="multi")
+    {
+      std::map<const ComponentInstance *, Engines::Container_var >::const_iterator it;
+      for(it = _trueContainers.begin(); it != _trueContainers.end(); ++it)
+        {
+          try
+            {
+              DEBTRACE("shutdown SALOME container: " );
+              CORBA::String_var containerName=it->second->name();
+              DEBTRACE(containerName);
+              it->second->Shutdown();
+              std::cerr << "shutdown SALOME container: " << containerName << std::endl;
+            }
+          catch(CORBA::Exception&)
+            {
+              DEBTRACE("Unexpected CORBA failure detected." );
+            }
+          catch(...)
+            {
+              DEBTRACE("Unknown exception ignored." );
+            }
+        }
+      _trueContainers.clear();
+    }
+  else
+    {
+      try
+        {
+          DEBTRACE("shutdown SALOME container: " );
+          CORBA::String_var containerName=_trueCont->name();
+          DEBTRACE(containerName);
+          _trueCont->Shutdown();
+          std::cerr << "shutdown SALOME container: " << containerName << std::endl;
+        }
+      catch(...)
+        {
+          DEBTRACE("Unknown exception ignored." );
+        }
+      _trueCont=Engines::Container::_nil();
+    }
+}
+
+void
+SalomeContainer::addToComponentList(const std::string & name)
+{
+  // Search if name is already in the list
+  for (CORBA::ULong i = 0; i < _params.resource_params.componentList.length(); i++)
+  {
+    std::string component_name = _params.resource_params.componentList[i].in();
+    if (component_name == name)
+      return;
+  }
+
+  // Add name to list
+  CORBA::ULong lgth = _params.resource_params.componentList.length();
+  _params.resource_params.componentList.length(lgth + 1);
+  _params.resource_params.componentList[lgth] = CORBA::string_dup(name.c_str());
+}
+
+void
+SalomeContainer::addToResourceList(const std::string & name)
+{
+  // Search if name is already in the list
+  for (CORBA::ULong i = 0; i < _params.resource_params.resList.length(); i++)
+  {
+    std::string component_name = _params.resource_params.resList[i].in();
+    if (component_name == name)
+      return;
+  }
+
+  // Add name to list
+  CORBA::ULong lgth = _params.resource_params.resList.length();
+  _params.resource_params.resList.length(lgth + 1);
+  _params.resource_params.resList[lgth] = CORBA::string_dup(name.c_str());
+}
+
+std::map<std::string,std::string> SalomeContainer::getResourceProperties(const std::string& name)
+{
+  std::map<std::string,std::string> properties;
+
+  YACS::ENGINE::RuntimeSALOME* runTime = YACS::ENGINE::getSALOMERuntime();
+  CORBA::ORB_ptr orb = runTime->getOrb();
+  if (!orb) return properties;
+  SALOME_NamingService namingService(orb);
+  SALOME_LifeCycleCORBA lcc(&namingService);
+  CORBA::Object_var obj = namingService.Resolve(SALOME_ResourcesManager::_ResourcesManagerNameInNS);
+  if (CORBA::is_nil(obj)) return properties;
+  Engines::ResourcesManager_var resManager = Engines::ResourcesManager::_narrow(obj);
+  if (CORBA::is_nil(resManager)) return properties;
+
+  std::ostringstream value;
+  Engines::ResourceDefinition_var resource_definition = resManager->GetResourceDefinition(name.c_str());
+  properties["hostname"]=resource_definition->hostname.in();
+  properties["OS"]=resource_definition->OS.in();
+  value.str(""); value << resource_definition->mem_mb;
+  properties["mem_mb"]=value.str();
+  value.str(""); value << resource_definition->cpu_clock;
+  properties["cpu_clock"]=value.str();
+  value.str(""); value << resource_definition->nb_node;
+  properties["nb_node"]=value.str();
+  value.str(""); value << resource_definition->nb_proc_per_node;
+  properties["nb_proc_per_node"]=value.str();
+  /*
+  properties["component_list"]="";
+  for(CORBA::ULong i=0; i < resource_definition->componentList.length(); i++)
+    {
+      if(i > 0)
+        properties["component_list"]=properties["component_list"]+",";
+      properties["component_list"]=properties["component_list"]+resource_definition->componentList[i].in();
+    }
+    */
+
+  return properties;
+}

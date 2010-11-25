@@ -52,3 +52,58 @@ void LogViewer::readFile(std::string fileName)
   browser->setText(qtext + hfile.str().c_str());
   f.close();
 }
+
+ContainerLogViewer::ContainerLogViewer(std::string label, QWidget *parent):LogViewer(label,parent)
+{
+  gridLayout->removeWidget(browser);
+  gridLayout->addWidget(browser, 0, 0, 1, 3);
+
+  QPushButton* next = new QPushButton("next execution",this);
+  gridLayout->addWidget(next, 1, 1, 1, 1);
+  connect(next,SIGNAL(clicked()),this, SLOT(onNext()));
+  QPushButton* previous = new QPushButton("previous execution",this);
+  gridLayout->addWidget(previous, 1, 2, 1, 1);
+  connect(previous,SIGNAL(clicked()),this, SLOT(onPrevious()));
+}
+
+void ContainerLogViewer::readFile(std::string fileName)
+{
+  LogViewer::readFile(fileName);
+  //move cursor to the end
+  QTextCursor cursor=browser->textCursor();
+  cursor.movePosition(QTextCursor::End, QTextCursor::MoveAnchor);
+  browser->setTextCursor(cursor);
+}
+
+//go to next begin execution schema
+void ContainerLogViewer::onNext()
+{
+  QTextCursor orig = browser->textCursor();
+  QTextCursor find_result = browser->document()->find("**************************Begin schema execution", orig);
+
+  if(find_result.isNull())
+    {
+      //Try to find from the beginning
+      find_result = browser->document()->find("**************************Begin schema execution",0);
+    }
+
+  if(!find_result.isNull())
+    browser->setTextCursor(find_result);
+}
+
+//go to previous begin execution schema
+void ContainerLogViewer::onPrevious()
+{
+  QTextCursor orig = browser->textCursor();
+  QTextCursor find_result = browser->document()->find("**************************Begin schema execution",
+                                                      orig, QTextDocument::FindBackward);
+  if(find_result.isNull())
+    {
+      //Try to find from the end
+      find_result = browser->document()->find("**************************Begin schema execution",
+                                              browser->document()->characterCount()-1, QTextDocument::FindBackward);
+    }
+
+  if(!find_result.isNull())
+    browser->setTextCursor(find_result);
+}

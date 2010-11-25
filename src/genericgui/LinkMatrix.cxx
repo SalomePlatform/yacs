@@ -28,6 +28,7 @@
 #include "QtGuiContext.hxx"
 #include "InPort.hxx"
 #include "OutPort.hxx"
+#include "Resource.hxx"
 
 #include <cmath>
 
@@ -286,7 +287,8 @@ LinkPath LinkMatrix::getPath(LNodePath lnp)
   lp.clear();
   int dim = lnp.size();  
   //use a random coefficient between 0.25 and 0.75 to try to separate links
-  double coef=0.25+rand()%101*0.005;
+  double coef=-0.25+rand()%101*0.005;
+  coef=0.5 + coef* Resource::link_separation_weight/10.;
   LNodePath::const_iterator it = lnp.begin();
   for (int k=0; k<dim; k++)
     {
@@ -296,15 +298,15 @@ LinkPath LinkMatrix::getPath(LNodePath lnp)
       linkPoint a;
 
       if ( (i+1)==_im ) {
-	a.x = _xm[i];
+        a.x = _xm[i];
       } else {
-	a.x = coef*_xm[i] + (1.-coef)*_xm[i+1];
+        a.x = coef*_xm[i] + (1.-coef)*_xm[i+1];
       };
 
       if ( (j+1)==_jm ) {
-	a.y = _ym[j];
+        a.y = _ym[j];
       } else {
-	a.y = coef*_ym[j] + (1.-coef)*_ym[j+1];
+        a.y = coef*_ym[j] + (1.-coef)*_ym[j+1];
       };
 
       lp.push_back(a);
@@ -323,7 +325,7 @@ void LinkMatrix::incrementCost(LNodePath lnp)
       int i = it->getX();
       int j = it->getY();
       int ij = i*_jm +j;
-      _cost[ij] += 10; // --- big cost, because distance is x2+y2
+      _cost[ij] += Resource::link_separation_weight; // --- big cost, because distance is x2+y2
 
     }    
 }

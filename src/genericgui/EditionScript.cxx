@@ -29,6 +29,9 @@
 #endif
 
 #include <QSplitter>
+#include <QTemporaryFile>
+#include <QTextStream>
+#include <QProcess>
 
 #include <cassert>
 
@@ -56,13 +59,8 @@ bool myQsciScintilla::event(QEvent *e)
 {
   if (e->type() == QEvent::ShortcutOverride)
     {
-      QKeyEvent *ke = (QKeyEvent*)e;
-      if ( ((ke->modifiers() == Qt::NoModifier) || (ke->modifiers() == Qt::ShiftModifier))
-           && (ke->key() != Qt::Key_Escape))
-        {
-          e->accept();
-          return true;
-        }
+      e->accept();
+      return true;
     }
   return QsciScintilla::event(e);
 }
@@ -107,7 +105,15 @@ EditionScript::EditionScript(Subject* subject,
   _sci = new QTextEdit(this);
 #endif
   _wid->gridLayout->removeItem(_wid->spacerItem);
+
+  _editor = new QPushButton("External Editor", this);
+  connect(_editor, SIGNAL(clicked()), this, SLOT(onEdit()));
+  if(!Resource::pythonExternalEditor.isEmpty())
+    {
+      _glayout->addWidget( _editor );
+    }
   _glayout->addWidget( _sci );
+
 #if HAS_QSCI4>0
   _sci->setUtf8(1);
   QsciLexerPython *lex = new QsciLexerPython(_sci);
@@ -121,6 +127,7 @@ EditionScript::EditionScript(Subject* subject,
   _sci->setAutoCompletionThreshold(2);
   //_sci->setMarginLineNumbers(1,true);
   _sci->setMarginWidth(1,0);
+  _sci->setFolding(QsciScintilla::PlainFoldStyle);
 #endif
 
   if (!QtGuiContext::getQtCurrent()->isEdition())
@@ -161,6 +168,19 @@ void EditionScript::onApply()
 #if HAS_QSCI4>0
   _sci->lexer()->setFont(Resource::pythonfont);
 #endif
+
+  if(Resource::pythonExternalEditor.isEmpty())
+    {
+      _editor->hide();
+      _glayout->removeWidget(_editor);
+    }
+  else
+    {
+      _editor->show();
+      if(_glayout->itemAt(0)->widget() != _editor)
+        _glayout->insertWidget ( 0, _editor );
+    }
+
   if (_haveScript)
     {
 #if HAS_QSCI4>0
@@ -202,4 +222,35 @@ void EditionScript::onScriptModified()
   DEBTRACE("EditionScript::onScriptModified");
   _isEdited = true;
   setEdited(true);
+}
+
+void EditionScript::onEdit()
+{
+  DEBTRACE("EditionScript::onEdit");
+  QTemporaryFile outFile;
+  if (!outFile.open())
+    return;
+  QString fileName = outFile.fileName();
+  QTextStream out(&outFile);
+#if HAS_QSCI4>0
+  out << _sci->text();
+#else
+  out << _sci->toPlainText();
+#endif
+  outFile.close();
+
+  QStringList options=Resource::pythonExternalEditor.split(" ");
+  QString prog=options.takeAt(0);
+  QProcess::execute(prog, QStringList() << options << fileName);
+
+  QFile inFile(fileName);
+  if (!inFile.open(QIODevice::ReadOnly))
+    return;
+  QTextStream in(&inFile);
+#if HAS_QSCI4>0
+  _sci->setText(in.readAll());
+#else
+  _sci->setPlainText(in.readAll());
+#endif
+  onApply();
 }

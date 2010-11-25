@@ -126,5 +126,11 @@ void SchemaContainerItem::addComponentInstance(Subject* subject)
 
 void SchemaContainerItem::popupMenu(QWidget *caller, const QPoint &globalPos)
 {
+  ContainerMenu m;
+  m.popupMenu(caller, globalPos);
 }
 
+QVariant SchemaContainerItem::editionWhatsThis(int column) const
+{
+  return "<p>To edit the container properties, select the container and use the input panel. <a href=\"modification.html#property-page-for-container\">More...</a></p>";
+}

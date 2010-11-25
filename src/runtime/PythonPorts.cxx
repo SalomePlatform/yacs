@@ -181,7 +181,13 @@ void *InputPyPort::get() const throw(YACS::Exception)
 
 std::string InputPyPort::getAsString()
 {
-  return convertPyObjectToString(_data);
+  std::string ret;
+  //protect _data against modification or delete in another thread
+  PyObject* data=_data;
+  Py_INCREF(data);
+  ret = convertPyObjectToString(data);
+  Py_XDECREF(data);
+  return ret;
 }
 
 bool InputPyPort::isEmpty()
@@ -315,7 +321,13 @@ PyObject * OutputPyPort::getPyObj() const
 
 std::string OutputPyPort::getAsString()
 {
-  return convertPyObjectToString(_data);
+  std::string ret;
+  //protect _data against modification or delete in another thread
+  PyObject* data=_data;
+  Py_INCREF(data); 
+  ret = convertPyObjectToString(data);
+  Py_XDECREF(data); 
+  return ret;
 }
 
 std::string OutputPyPort::dump()

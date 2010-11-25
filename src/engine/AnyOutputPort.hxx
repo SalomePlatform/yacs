@@ -21,8 +21,8 @@
 #define __ANYOUTPUTPORT_HXX__
 
 #include "YACSlibEngineExport.hxx"
-
 #include "OutputPort.hxx"
+#include "Mutex.hxx"
 
 namespace YACS
 {
@@ -47,6 +47,7 @@ namespace YACS
       Any* _data; // the data dispatched from port on the current moment
     private:
       OutputPort *clone(Node *newHelder) const;
+      YACS::BASES::Mutex _mutex;
     };
   }
 }

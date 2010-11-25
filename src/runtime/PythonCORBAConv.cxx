@@ -29,6 +29,7 @@
 #include "PythonCORBAConv.hxx"
 #include "TypeConversions.hxx"
 #include "RuntimeSALOME.hxx"
+#include "PythonPorts.hxx"
 
 #include <iostream>
 
@@ -53,6 +54,7 @@ void PyCorbaInt::put(const void *data)  throw(ConversionException)
 void PyCorbaInt::put(PyObject *data)  throw(ConversionException)
 {
   CORBA::Any *a= convertPyObjectCorba(_port->edGetType(),data);
+  YACS::ENGINE::InterpreterSaveThread _loc;
   _port->put(a);
   delete a;
 }
@@ -77,6 +79,7 @@ void PyCorbaBool::put(const void *data)  throw(ConversionException)
 void PyCorbaBool::put(PyObject *data)  throw(ConversionException)
 {
   CORBA::Any *a= convertPyObjectCorba(_port->edGetType(),data);
+  YACS::ENGINE::InterpreterSaveThread _loc;
   _port->put(a);
   //delete Any that has been allocated by convertPyObjectCorba
   delete a;
@@ -95,6 +98,7 @@ void PyCorbaString::put(const void *data)  throw(ConversionException)
 void PyCorbaString::put(PyObject *data)  throw(ConversionException)
 {
   CORBA::Any *a= convertPyObjectCorba(_port->edGetType(),data);
+  YACS::ENGINE::InterpreterSaveThread _loc;
   _port->put(a);
   delete a;
 }
@@ -113,6 +117,7 @@ void PyCorbaDouble::put(const void *data)  throw(ConversionException)
 void PyCorbaDouble::put(PyObject *data)  throw(ConversionException)
 {
   CORBA::Any *a= convertPyObjectCorba(_port->edGetType(),data);
+  YACS::ENGINE::InterpreterSaveThread _loc;
   _port->put(a);
   delete a;
 }
@@ -144,6 +149,7 @@ void PyCorbaSequence::put(PyObject *data)  throw(ConversionException)
   std::cerr << std::endl;
 #endif
   CORBA::Any *a= convertPyObjectCorba(_port->edGetType(),data);
+  YACS::ENGINE::InterpreterSaveThread _loc;
   _port->put(a);
 #ifdef REFCNT
   DEBTRACE("refcount CORBA seqTC: " << ((omni::TypeCode_base*)a->pd_tc.in())->pd_ref_count);
@@ -185,6 +191,7 @@ void PyCorbaObjref::put(PyObject *data)  throw(ConversionException)
   std::cerr << std::endl;
 #endif
   CORBA::Any *a= convertPyObjectCorba(_port->edGetType(),data);
+  YACS::ENGINE::InterpreterSaveThread _loc;
   _port->put(a);
   delete a;
 }
@@ -215,6 +222,7 @@ void PyCorbaStruct::put(PyObject *data)  throw(ConversionException)
   std::cerr << std::endl;
 #endif
   CORBA::Any *a= convertPyObjectCorba(_port->edGetType(),data);
+  YACS::ENGINE::InterpreterSaveThread _loc;
   _port->put(a);
 #ifdef REFCNT
   DEBTRACE("refcount CORBA structTC: " << ((omni::TypeCode_base*)a->pd_tc.in())->pd_ref_count);

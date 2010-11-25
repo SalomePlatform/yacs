@@ -34,6 +34,7 @@ namespace YACS
     class ComposedNode;
     class ForEachLoop;
     class OptimizerLoop;
+    class DynParaLoop;
     class InlineNode;
     class InlineFuncNode;
     class Loop;
@@ -57,6 +58,7 @@ namespace YACS
       virtual void visitElementaryNode(ElementaryNode *node) = 0;
       virtual void visitForEachLoop(ForEachLoop *node) = 0;
       virtual void visitOptimizerLoop(OptimizerLoop *node) = 0;
+      virtual void visitDynParaLoop(DynParaLoop *node) = 0;
       virtual void visitForLoop(ForLoop *node) = 0;
       virtual void visitInlineNode(InlineNode *node) = 0;
       virtual void visitInlineFuncNode(InlineFuncNode *node) = 0;

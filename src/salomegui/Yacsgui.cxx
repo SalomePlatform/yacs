@@ -144,6 +144,15 @@ bool Yacsgui::activateModule( SUIT_Study* theStudy )
   DEBTRACE("Yacsgui::activateModule");
   bool bOk = SalomeApp_Module::activateModule( theStudy );
 
+  QMainWindow* parent = application()->desktop();
+  if(Resource::dockWidgetPriority)
+    {
+      parent->setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
+      parent->setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
+      parent->setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
+      parent->setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
+    }
+
   setMenuShown( true );
   setToolShown( true );
   _genericGui->showDockWidgets(true);
@@ -155,7 +164,7 @@ bool Yacsgui::activateModule( SUIT_Study* theStudy )
     PyErr_Print();
   else
     {
-      PyObject* result=PyObject_CallMethod( pluginsmanager, (char*)"initialize", (char*)"isss",1,"yacs","YACS","Plugins");
+      PyObject* result=PyObject_CallMethod( pluginsmanager, (char*)"initialize", (char*)"isss",1,"yacs","YACS",tr("YACS_PLUGINS").toStdString().c_str());
       if(result==NULL)
         PyErr_Print();
       Py_XDECREF(result);
@@ -170,6 +179,12 @@ bool Yacsgui::activateModule( SUIT_Study* theStudy )
 bool Yacsgui::deactivateModule( SUIT_Study* theStudy )
 {
   DEBTRACE("Yacsgui::deactivateModule");
+
+  QMainWindow* parent = application()->desktop();
+  parent->setCorner(Qt::TopLeftCorner, Qt::TopDockWidgetArea);
+  parent->setCorner(Qt::BottomLeftCorner, Qt::BottomDockWidgetArea);
+  parent->setCorner(Qt::TopRightCorner, Qt::TopDockWidgetArea);
+  parent->setCorner(Qt::BottomRightCorner, Qt::BottomDockWidgetArea);
 
   setMenuShown( false );
   setToolShown( false );

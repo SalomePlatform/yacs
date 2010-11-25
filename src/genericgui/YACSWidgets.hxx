@@ -17,38 +17,27 @@
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-#ifndef __DRIVENCONDITION_HXX__
-#define __DRIVENCONDITION_HXX__
+#ifndef _YACSWIDGETS_HXX_
+#define _YACSWIDGETS_HXX_
 
-// --- Interface is:
-
-// class DrivenCondition
-//     {
-//     public:
-//       DrivenCondition();
-//       ~DrivenCondition();
-//       //On master thread
-//       void waitForAWait();
-//       void notifyOneSync();
-//       //On slave thread
-//       void wait();
-// };
-
-
-#if defined(YACS_PTHREAD)
-#include "DrivenConditionPT.hxx"
+#include <QTableView>
+#include <QKeyEvent>
 
 namespace YACS
 {
-  namespace BASES
+  namespace HMI
   {
-    typedef DrivenConditionPT DrivenCondition;
+    class YTableView: public QTableView
+    {
+      Q_OBJECT
+    public:
+      YTableView(QWidget *parent = 0);
+    protected:
+      QModelIndex moveCursor(CursorAction cursorAction,Qt::KeyboardModifiers modifiers);
+      bool event(QEvent *e);
+    };
   }
 }
-#else
-#error
-#endif
 
 
 #endif
-

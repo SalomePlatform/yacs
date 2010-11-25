@@ -622,6 +622,8 @@ TypeCodeStruct::TypeCodeStruct(const char* repositoryId,
 
 TypeCodeStruct::~TypeCodeStruct()
 {
+  for(vector< pair<string,TypeCode*> >::iterator iter=_members.begin();iter!=_members.end();iter++)
+    (*iter).second->decrRef();
 }
 
 TypeCode *TypeCodeStruct::clone() const
@@ -751,6 +753,7 @@ void TypeCodeStruct::addMember(const std::string& name,TypeCode* tc)
         throw Exception("Struct member " + name + " already defined");
     }
   _members.push_back(std::pair<std::string,TypeCode*>(name,tc));
+  tc->incrRef();
 }
 
 //! Get typecode of struct member given its name

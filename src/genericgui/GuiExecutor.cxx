@@ -58,6 +58,7 @@ GuiExecutor::GuiExecutor(YACS::ENGINE::Proc* proc)
   _isRunning = false;
   _isSuspended = false;
   _isStopOnError = false;
+  _shutdownLevel=1;
 
   _loadStateFile = "";
   _breakpointList.clear();
@@ -207,8 +208,19 @@ void GuiExecutor::stopDataflow()
 void GuiExecutor::resetDataflow()
 {
   DEBTRACE("GuiExecutor::resetDataflow");
+  //update _isRunning
+  checkEndOfDataflow();
   if (_isRunning)
     _procRef->stopExecution();
+  checkEndOfDataflow();
+
+  if (!_isRunning)
+    {
+      _isRunning = true;
+      _procRef->setExecMode(YACS_ORB::STEPBYSTEP);
+      //full reset: set all nodes in error to READY state and start execution
+      _procRef->RestartFromState("");
+    }
 }
 
   
@@ -241,13 +253,11 @@ void GuiExecutor::setStopOnError(bool aMode)
   DEBTRACE("GuiExecutor::setStopOnError " << aMode);
   if (_isRunning)
     {
-      _procRef->setStopOnError(aMode,
 #ifdef WNT
-			       (getenv("TEMP") + string("\\dumpStateOnError_") 
+      _procRef->setStopOnError(aMode, (getenv("TEMP") + string("\\dumpStateOnError_") + getenv("USER") + string(".xml")).c_str());
 #else
-			       (string("/tmp/dumpStateOnError_") 
+      _procRef->setStopOnError(aMode, (string("/tmp/dumpStateOnError_") + getenv("USER") + string(".xml")).c_str());
 #endif
-                                + getenv("USER") + string(".xml")).c_str());
       _isStopOnError = true;
     }
 }
@@ -445,6 +455,14 @@ std::string GuiExecutor::getContainerLog(YACS::ENGINE::Node* node)
       msg=msg.substr(pos+1);
     }
   return msg;
+}
+
+void GuiExecutor::shutdownProc()
+{
+  DEBTRACE("GuiExecutor::shutdownProc " << _shutdownLevel << "," << _isRunning);
+  checkEndOfDataflow();
+  if (!_isRunning)
+    _procRef->shutdownProc(_shutdownLevel);
 }
 
 void GuiExecutor::setInPortValue(YACS::ENGINE::DataPort* port, std::string value)

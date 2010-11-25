@@ -58,7 +58,7 @@ void YACS_Swig::activate(const std::string& module)
     public:
       TEvent(YACS_Swig* obj,const std::string& module) {_obj=obj;_module=module;};
       virtual void Execute() {
-	_obj->real_activate(_module);
+        _obj->real_activate(_module);
       };
   };
   ProcessVoidEvent(new TEvent(this,module));
@@ -87,12 +87,12 @@ void YACS_Swig::loadSchema(const std::string& filename,bool edit)
     bool ed;
     public:
       TEvent(YACS_Swig* obj,const std::string& filename,bool edit) {
-	_obj=obj;
-	fn=filename;
-	ed=edit;
+        _obj=obj;
+        fn=filename;
+        ed=edit;
       };
       virtual void Execute() {
-	_obj->real_loadSchema(fn,ed);
+        _obj->real_loadSchema(fn,ed);
       };
   };
   ProcessVoidEvent(new TEvent(this,filename,edit));

@@ -865,7 +865,7 @@ void Executor::launchTasks(std::vector<Task *>& tasks)
   for(iter=tasks.begin();iter!=tasks.end();iter++)
     {
       YACS::StatesForNode state=(*iter)->getState();
-      if(state != YACS::TOLOAD)continue;
+      if(state != YACS::TOLOAD && state != YACS::TORECONNECT)continue;
       try
         {
           (*iter)->connectService();
@@ -975,7 +975,6 @@ void Executor::launchTask(Task *task)
   DEBTRACE("Executor::launchTask(Task *task)");
   struct threadargs *args;
   if(task->getState() != YACS::TOACTIVATE)return;
-  traceExec(task, "state:TOACTIVATE");
 
   DEBTRACE("before _semForMaxThreads.wait " << _semThreadCnt);
   if(_semThreadCnt == 0)
@@ -1025,7 +1024,6 @@ void Executor::launchTask(Task *task)
     _mutexForSchedulerUpdate.unlock();
   } // --- End of critical section
   Thread(functionForTaskExecution,args);
-  traceExec(task, "state:"+Node::getStateName(task->getState()));
 }
 
 //! wait until a running task ends
@@ -1105,6 +1103,7 @@ void *Executor::functionForTaskExecution(void *arg)
   Scheduler *sched=args->sched;
   Executor *execInst=args->execInst;
   delete args;
+  execInst->traceExec(task, "state:"+Node::getStateName(task->getState()));
 
   Thread::detach();
 
@@ -1165,6 +1164,7 @@ void *Executor::functionForTaskExecution(void *arg)
               }
             task->aborted();
           }
+        execInst->traceExec(task, "state:"+Node::getStateName(task->getState()));
         sched->notifyFrom(task,ev);
       }
     catch(Exception& ex)

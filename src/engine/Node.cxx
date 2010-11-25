@@ -42,7 +42,26 @@ const char Node::SEP_CHAR_IN_PORT[]=".";
 
 int Node::_total = 0;
 std::map<int,Node*> Node::idMap;
-std::map<int, std::string> Node::_nodeStateName;
+
+NodeStateNameMap::NodeStateNameMap()
+{
+  insert(make_pair(YACS::READY, "READY"));
+  insert(make_pair(YACS::TOLOAD, "TOLOAD"));
+  insert(make_pair(YACS::LOADED, "LOADED"));
+  insert(make_pair(YACS::TOACTIVATE, "TOACTIVATE"));
+  insert(make_pair(YACS::ACTIVATED, "ACTIVATED"));
+  insert(make_pair(YACS::DESACTIVATED, "DESACTIVATED"));
+  insert(make_pair(YACS::DONE, "DONE"));
+  insert(make_pair(YACS::SUSPENDED, "SUSPENDED"));
+  insert(make_pair(YACS::LOADFAILED, "LOADFAILED"));
+  insert(make_pair(YACS::EXECFAILED, "EXECFAILED"));
+  insert(make_pair(YACS::PAUSE, "PAUSE"));
+  insert(make_pair(YACS::INTERNALERR, "INTERNALERR"));
+  insert(make_pair(YACS::DISABLED, "DISABLED"));
+  insert(make_pair(YACS::FAILED, "FAILED"));
+  insert(make_pair(YACS::ERROR, "ERROR"));
+}
+
 
 Node::Node(const std::string& name):_name(name),_inGate(this),_outGate(this),_father(0),_state(YACS::READY),
                                     _implementation(Runtime::RUNTIME_ENGINE_INTERACTION_IMPL_NAME),_modified(1)
@@ -98,13 +117,13 @@ void Node::setName(const std::string& name)
     {
       if(_father->isNameAlreadyUsed(name))
         {
-	  if ( _father->getChildByName(name) != this )
-	    {
-	      std::string what("Name "); 
-	      what+=name;
-	      what+=" already exists in the scope of "; what+=_father->getName();
-	      throw Exception(what);
-	    }
+          if ( _father->getChildByName(name) != this )
+            {
+              std::string what("Name "); 
+              what+=name;
+              what+=" already exists in the scope of "; what+=_father->getName();
+              throw Exception(what);
+            }
         }
     }
   _name=name;
@@ -567,7 +586,8 @@ std::string Node::getErrorReport()
   YACS::StatesForNode effectiveState=getEffectiveState();
 
   DEBTRACE("Node::getErrorReport: " << getName() << " " << effectiveState << " " << _errorDetails);
-  if(effectiveState != YACS::INVALID &&  effectiveState != YACS::ERROR && effectiveState != YACS::FAILED)
+  if(effectiveState != YACS::INVALID &&  effectiveState != YACS::ERROR && 
+     effectiveState != YACS::FAILED && effectiveState != YACS::INTERNALERR)
     return "";
 
   std::string report="<error node= " ;
@@ -582,6 +602,9 @@ std::string Node::getErrorReport()
       break;
     case YACS::FAILED:
       report=report+" state= FAILED";
+      break;
+    case YACS::INTERNALERR:
+      report=report+" state= INTERNALERR";
       break;
     default:
       break;
@@ -629,35 +652,17 @@ void Node::ensureLoading()
  */
 std::string Node::getStateName(YACS::StatesForNode state)
 {
-  static bool map_init=false; 
-  if(!map_init)
-    {
-      _nodeStateName[YACS::READY] ="READY";
-      _nodeStateName[YACS::TOLOAD] ="TOLOAD";
-      _nodeStateName[YACS::LOADED] ="LOADED";
-      _nodeStateName[YACS::TOACTIVATE] ="TOACTIVATE";
-      _nodeStateName[YACS::ACTIVATED] ="ACTIVATED";
-      _nodeStateName[YACS::DESACTIVATED] ="DESACTIVATED";
-      _nodeStateName[YACS::DONE] ="DONE";
-      _nodeStateName[YACS::SUSPENDED] ="SUSPENDED";
-      _nodeStateName[YACS::LOADFAILED] ="LOADFAILED";
-      _nodeStateName[YACS::EXECFAILED] ="EXECFAILED";
-      _nodeStateName[YACS::PAUSE] ="PAUSE";
-      _nodeStateName[YACS::INTERNALERR] ="INTERNALERR";
-      _nodeStateName[YACS::DISABLED] ="DISABLED";
-      _nodeStateName[YACS::FAILED] ="FAILED";
-      _nodeStateName[YACS::ERROR] ="ERROR";
-    }
-  return _nodeStateName[state];
+  static NodeStateNameMap nodeStateNameMap;
+  return nodeStateNameMap[state];
 }
 
 //! Stop all pending activities of the node
 /*!
  * This method should be called when a Proc is finished and must be deleted from the YACS server
  */
-void Node::shutdown()
+void Node::shutdown(int level)
 {
-  std::cerr << "Node::shutdown" << std::endl;
+  if(level==0)return;
 }
 
 //! Clean the node in case of not clean exit
@@ -666,4 +671,23 @@ void Node::shutdown()
  */
 void Node::cleanNodes()
 {
+}
+
+//! Reset the node state depending on the parameter level
+void Node::resetState(int level)
+{
+  if(_state==YACS::ERROR || _state==YACS::FAILED)
+    {
+      setState(YACS::READY);
+      InGate* inGate = getInGate();
+      std::list<OutGate*> backlinks = inGate->getBackLinks();
+      for (std::list<OutGate*>::iterator io = backlinks.begin(); io != backlinks.end(); io++)
+        {
+          Node* fromNode = (*io)->getNode();
+          if(fromNode->getState() == YACS::DONE)
+            {
+              inGate->setPrecursorDone(*io);
+            }
+        }
+    }
 }

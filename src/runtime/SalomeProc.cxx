@@ -17,11 +17,13 @@
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
+#include <Python.h>
 #include "SalomeProc.hxx"
 #include "Runtime.hxx"
 #include "TypeCode.hxx"
 #include "Container.hxx"
 #include "VisitorSaveSalomeSchema.hxx"
+#include "Basics_Utils.hxx"
 #include <iostream>
 #include <cstdlib>
 
@@ -31,7 +33,7 @@ SalomeProc::SalomeProc(const std::string& name):Proc(name)
 {
   // create default container with some default properties
   Container* cont=createContainer("DefaultContainer");
-  cont->setProperty("name","localhost");
+  cont->setProperty("name",Kernel_Utils::GetHostname());
   cont->setProperty("container_name","FactoryServer");
   cont->decrRef();
 }
@@ -79,4 +81,19 @@ int SalomeProc::getDefaultStudyId()
     return 1;
   else
     return atoi(value.c_str());
+}
+
+//! Initialise the proc
+void SalomeProc::init(bool start)
+{
+  std::string value=getProperty("DefaultStudyID");
+  if(!value.empty())
+    {
+      //initialise Python module salome with the study id given by value
+      std::string cmd="import salome;salome.salome_init("+value+")";
+      PyGILState_STATE gstate = PyGILState_Ensure(); // acquire the Global Interpreter Lock
+      PyRun_SimpleString(cmd.c_str());
+      PyGILState_Release(gstate); // Release the Global Interpreter Lock
+    }
+  Proc::init(start);
 }

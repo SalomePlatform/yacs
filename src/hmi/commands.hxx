@@ -75,6 +75,7 @@ namespace YACS
       YACS::ENGINE::Proc *_undoProc;
       YACS::ENGINE::Catalog *_undoCata;
       bool _isRedo;
+      bool _isUndo;
       bool _specialReverse;
     };
   }
