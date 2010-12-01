@@ -1267,7 +1267,7 @@ void RuntimeTest::manualGetOutputs()
 
   PyObject *ob=((OutputPyPort*)_nodeMap["Node_11"]->getOutputPort("c"))->get();
   DEBTRACE("ob refcnt: " << ob->ob_refcnt);
-  PyObject_Print(ob,stdout,Py_PRINT_RAW);
+  //PyObject_Print(ob,stdout,Py_PRINT_RAW);
 
   //   DEBTRACE("a: " << &a);
   //   DEBTRACE("a.value(): " << a.value());
