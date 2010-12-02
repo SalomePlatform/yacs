@@ -26,6 +26,8 @@
 pidecho=$!
 echo $pidecho > "/tmp/YACSTEST_PidEcho"
 
+python @srcdir@/waitContainers.py
+
 # --- launch unit tests
 
 export ROOT_SAMPLES=@ROOT_SRCDIR@/src/yacsloader/samples
