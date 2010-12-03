@@ -1267,11 +1267,11 @@ void RuntimeTest::manualGetOutputs()
 
   PyObject *ob=((OutputPyPort*)_nodeMap["Node_11"]->getOutputPort("c"))->get();
   DEBTRACE("ob refcnt: " << ob->ob_refcnt);
-#ifdef _DEVDEBUG_
   std::cerr << "Output port Node_11.c: ";
+  PyGILState_STATE gstate = PyGILState_Ensure();
   PyObject_Print(ob,stderr,Py_PRINT_RAW);
+  PyGILState_Release(gstate);
   std::cerr << std::endl;
-#endif
 
   //   DEBTRACE("a: " << &a);
   //   DEBTRACE("a.value(): " << a.value());
