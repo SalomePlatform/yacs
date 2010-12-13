@@ -1376,6 +1376,11 @@ InputPort* RuntimeSALOME::adaptPythonToNeutral(InputPyPort* inport,
           throw ConversionException(msg.str());
         }
     }
+  else if(inport->edGetType()->kind() == Struct)
+    {
+      if(isAdaptablePyObjectNeutral(type,inport->edGetType())) return new NeutralPyStruct(inport);
+    }
+
   // Adaptation not possible
   stringstream msg;
   msg << "Cannot connect Neutral output port with type: " << type->id() ;

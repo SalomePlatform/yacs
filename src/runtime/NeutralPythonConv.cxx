@@ -147,4 +147,21 @@ void NeutralPySequence::put(YACS::ENGINE::Any *data) throw(ConversionException)
   DEBTRACE( "ob refcnt: " << ob->ob_refcnt );
 }
 
+void NeutralPyStruct::put(const void *data) throw(ConversionException)
+{
+  put((YACS::ENGINE::Any *)data);
+}
 
+//!Convert a Neutral::Any Struct to a PyObject Struct
+/*!
+ *   \param data : Neutral::Any object
+ */
+void NeutralPyStruct::put(YACS::ENGINE::Any *data) throw(ConversionException)
+{
+  InterpreterUnlocker loc;
+  PyObject* ob=convertNeutralPyObject(edGetType(),data);
+  DEBTRACE( "ob refcnt: " << ob->ob_refcnt );
+  _port->put(ob);
+  Py_DECREF(ob);
+  DEBTRACE( "ob refcnt: " << ob->ob_refcnt );
+}

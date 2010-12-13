@@ -81,6 +81,15 @@ namespace YACS
       virtual void put(const void *data) throw(ConversionException);
       void put(YACS::ENGINE::Any *data) throw(ConversionException);
     };
+
+    class NeutralPyStruct : public ProxyPort
+    {
+    public:
+      NeutralPyStruct(InputPyPort* p)
+        : ProxyPort(p), DataPort(p->getName(), p->getNode(), p->edGetType()), Port(p->getNode()) {}
+      virtual void put(const void *data) throw(ConversionException);
+      void put(YACS::ENGINE::Any *data) throw(ConversionException);
+    };
   }
 }
 #endif
