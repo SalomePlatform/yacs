@@ -31,7 +31,10 @@ check-local:
 	cat /tmp/${USER}/UnitTestsResult
 
 dist-hook:
-		 rm -rf `find $(distdir) -name CVS`
+	rm -rf `find $(distdir) -name CVS`
+
+dev_docs:
+	(cd doc && $(MAKE) $(AM_MAKEFLAGS) dev_docs)
 
 EXTRA_DIST = Misc \
              build_cmake \
