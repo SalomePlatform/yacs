@@ -86,7 +86,7 @@ driver_LDADD = libYACSloader.la \
                $(PYTHON_LDFLAGS) \
                $(PYTHON_EXTRA_LIBS) 
 
-driver_LDFLAGS = $(PYTHON_EXTRA_LDFLAGS) -pthread $(EXPAT_LIBS) $(LIBXML_LIBS)
+driver_LDFLAGS = $(PYTHON_EXTRA_LDFLAGS) -pthread $(LIBXML_LIBS) $(EXPAT_LIBS)
 
 
 resume_SOURCES = resume.cxx
@@ -108,7 +108,7 @@ resume_LDADD = libYACSloader.la \
                $(PYTHON_LDFLAGS) \
                $(PYTHON_EXTRA_LIBS) 
 
-resume_LDFLAGS = $(PYTHON_EXTRA_LDFLAGS) -pthread $(EXPAT_LIBS) $(LIBXML_LIBS)
+resume_LDFLAGS = $(PYTHON_EXTRA_LDFLAGS) -pthread $(LIBXML_LIBS) $(EXPAT_LIBS)
 
 
 debugger_SOURCES = debugger.cxx 
@@ -130,7 +130,7 @@ debugger_LDADD = libYACSloader.la \
                $(PYTHON_LDFLAGS) \
                $(PYTHON_EXTRA_LIBS) 
 
-debugger_LDFLAGS = $(PYTHON_EXTRA_LDFLAGS) -pthread $(EXPAT_LIBS) $(LIBXML_LIBS)
+debugger_LDFLAGS = $(PYTHON_EXTRA_LDFLAGS) -pthread $(LIBXML_LIBS) $(EXPAT_LIBS)
 
 EXTRA_DIST = samples schema.xsd
 
