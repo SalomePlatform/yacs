@@ -303,7 +303,7 @@ bool Yacsgui::createSComponent()
       
       anAttr = aBuilder->FindOrCreateAttribute(aComponent, "AttributePixMap");
       _PTR(AttributePixMap) aPixmap(anAttr);
-      aPixmap->SetPixMap("share/salome/resources/yacs/ModuleYacs.png");
+      aPixmap->SetPixMap("ModuleYacs.png");
       
       aBuilder->DefineComponentInstance(aComponent, getApp()->defaultEngineIOR().toStdString());
 
