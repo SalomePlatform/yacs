@@ -1460,6 +1460,8 @@ void GenericGui::onExportSchema()
   if (fn.isEmpty()) return;
 
   DEBTRACE("GenericGui::onExportSchema: " << fn.toStdString());
+  //to be sure that all pending changes are effective
+  _parent->setFocus();
   QtGuiContext::getQtCurrent()->setFileName(fn);
   VisitorSaveGuiSchema aWriter(proc);
   aWriter.openFileSchema( fn.toStdString() );
