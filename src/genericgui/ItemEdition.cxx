@@ -275,7 +275,7 @@ void ItemEdition::setEdited(bool isEdited)
     {
       QtGuiContext::getQtCurrent()->_setOfModifiedSubjects.erase(_subject);
       _subject->update(EDIT, 0, _subject);
-      if (QtGuiContext::getQtCurrent()->getSubjectProc())
+      if (QtGuiContext::getQtCurrent()->_setOfModifiedSubjects.empty() && QtGuiContext::getQtCurrent()->getSubjectProc())
         QtGuiContext::getQtCurrent()->getSubjectProc()->update(EDIT, 0, _subject);
     }
 
