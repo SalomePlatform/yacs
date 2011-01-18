@@ -448,6 +448,15 @@ void FormContainer::onModifyResource(const QString &text)
   _properties["name"] = resource;
   if (properties["name"] != resource)
     {
+      // reset resource properties
+      _properties.erase("hostname");
+      _properties.erase("OS");
+      _properties.erase("nb_resource_procs");
+      _properties.erase("mem_mb");
+      _properties.erase("cpu_clock");
+      _properties.erase("nb_node");
+      _properties.erase("nb_proc_per_node");
+      _properties.erase("policy");
       onModified();
       updateResource(resource);
     }
@@ -550,6 +559,7 @@ void FormContainer::onModifyMem(const QString &text)
   if (!_container) return;
   if(_properties.count("name") && _properties["name"] != "")return; //do not modify resource parameter when specific resource is set
   map<string,string> properties = _container->getProperties();
+  if(properties.count("mem_mb")==0 )properties["mem_mb"]="0"; //default value
   _properties["mem_mb"] = text.toStdString();
   if (properties["mem_mb"] != text.toStdString())
     {
@@ -563,6 +573,7 @@ void FormContainer::onModifyClock(const QString &text)
   if (!_container) return;
   if(_properties.count("name") && _properties["name"] != "")return; //do not modify resource parameter when specific resource is set
   map<string,string> properties = _container->getProperties();
+  if(properties.count("cpu_clock")==0 )properties["cpu_clock"]="0"; //default value
   _properties["cpu_clock"] = text.toStdString();
   if (properties["cpu_clock"] != text.toStdString())
     {
@@ -576,6 +587,7 @@ void FormContainer::onModifyNodes(const QString &text)
   if (!_container) return;
   if(_properties.count("name") && _properties["name"] != "")return; //do not modify resource parameter when specific resource is set
   map<string,string> properties = _container->getProperties();
+  if(properties.count("nb_node")==0 )properties["nb_node"]="0"; //default value
   _properties["nb_node"] = text.toStdString();
   if (properties["nb_node"] != text.toStdString())
     {
@@ -589,6 +601,7 @@ void FormContainer::onModifyProcs(const QString &text)
   if (!_container) return;
   if(_properties.count("name") && _properties["name"] != "")return; //do not modify resource parameter when specific resource is set
   map<string,string> properties = _container->getProperties();
+  if(properties.count("nb_proc_per_node")==0 )properties["nb_proc_per_node"]="0"; //default value
   _properties["nb_proc_per_node"] = text.toStdString();
   if (properties["nb_proc_per_node"] != text.toStdString())
     {
@@ -652,6 +665,7 @@ void FormContainer::onModifyProcRes(const QString &text)
   if (!_container) return;
   if(_properties.count("name") && _properties["name"] != "")return; //do not modify resource parameter when specific resource is set
   map<string,string> properties = _container->getProperties();
+  if(properties.count("nb_resource_procs")==0 )properties["nb_resource_procs"]="0"; //default value
   _properties["nb_resource_procs"] = text.toStdString();
   if (properties["nb_resource_procs"] != text.toStdString())
     {
