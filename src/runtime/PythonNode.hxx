@@ -65,6 +65,7 @@ namespace YACS
       virtual void loadLocal();
       virtual void executeRemote();
       virtual void executeLocal();
+      virtual void shutdown(int level);
       std::string getContainerLog();
       PyFuncNode* cloneNode(const std::string& name);
       virtual std::string typeName() {return "YACS__ENGINE__PyFuncNode";}

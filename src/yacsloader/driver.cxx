@@ -444,7 +444,7 @@ int main (int argc, char* argv[])
     }
   catch(CORBA::SystemException& ex) 
     {
-      cerr << "Caught a CORBA::SystemException." ;
+      cerr << "Caught a CORBA::SystemException.:" << __FILE__ << ":" << __LINE__ << ":" ;
       CORBA::Any tmp;
       tmp <<= ex;
       CORBA::TypeCode_var tc = tmp.type();

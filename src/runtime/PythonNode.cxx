@@ -799,3 +799,16 @@ std::string PyFuncNode::getContainerLog()
     }
   return msg;
 }
+
+void PyFuncNode::shutdown(int level)
+{
+  DEBTRACE("PyFuncNode::shutdown " << level);
+  if(_mode=="local")return;
+  if(_container)
+    {
+      if(!CORBA::is_nil(_pynode)) _pynode->Destroy();
+      _pynode=Engines::PyNode::_nil();
+      _container->shutdown(level);
+    }
+}
+
