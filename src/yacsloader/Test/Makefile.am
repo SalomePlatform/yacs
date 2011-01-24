@@ -64,13 +64,25 @@ TestYacsLoader_CXXFLAGS = \
 	-I$(srcdir)/../../engine \
 	$(LIBXML_INCLUDES)
 
+check_LTLIBRARIES = libTestOptLoop.la
+libTestOptLoop_la_SOURCES  = OptimizerAlgSyncExample.cxx OptimizerAlgASyncExample.cxx
+libTestOptLoop_la_CXXFLAGS = \
+    -I$(srcdir)/../../bases \
+    -I$(srcdir)/../../engine \
+    $(THREAD_DEF)
+libTestOptLoop_la_LDFLAGS  = -rpath /nowhere  # trick to force libtool to create a shared lib 
+libTestOptLoop_la_LIBADD   = ../../engine/libYACSlibEngine.la
+
+check_SCRIPTS += algosyncexample.py algoasyncexample.py
+
 IDL_FILES = echo.idl
 IDL_SOURCES = echoSK.cc
 BUILT_SOURCES = $(IDL_SOURCES) echo_idl.py xmlrun.sh 
 
 EXTRA_DIST = $(IDL_FILES) \
 echoclt.py genPascal.py genTriangle.py  \
-waitContainers.py    xmlrun_orig.sh      YacsLoaderTest.hxx  
+waitContainers.py    xmlrun_orig.sh      YacsLoaderTest.hxx  \
+algosyncexample.py algoasyncexample.py
 
 xmlrun.sh:xmlrun_orig.sh
 	cp -f $(srcdir)/xmlrun_orig.sh xmlrun.sh

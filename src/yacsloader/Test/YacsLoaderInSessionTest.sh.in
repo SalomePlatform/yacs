@@ -30,6 +30,12 @@ python @srcdir@/waitContainers.py
 pidecho=$!
 echo $pidecho > "/tmp/YACSTEST_PidEcho"
 
+# Environment variables needed for the optimizer loop tests
+export LD_LIBRARY_PATH=@builddir@/.libs:$LD_LIBRARY_PATH
+export PYTHONPATH=@top_builddir@/src/engine_swig:@top_builddir@/src/engine_swig/.libs:$PYTHONPATH
+export PYTHONPATH=@top_builddir@/src/runtime_swig:@top_builddir@/src/runtime_swig/.libs:$PYTHONPATH
+export PYTHONPATH=@srcdir@:$PYTHONPATH
+
 # --- launch unit tests
 
 export ROOT_SAMPLES=@ROOT_SRCDIR@/src/yacsloader/samples

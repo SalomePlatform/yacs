@@ -1,0 +1,49 @@
+<?xml version='1.0' encoding='iso-8859-1' ?>
+<proc name="newSchema_1">
+   <property name="DefaultStudyID" value="1"/>
+   <type name="string" kind="string"/>
+   <struct name="Engines/dataref">
+      <member name="ref" type="string"/>
+   </struct>
+   <type name="bool" kind="bool"/>
+   <sequence name="boolvec" content="bool"/>
+   <type name="double" kind="double"/>
+   <sequence name="dblevec" content="double"/>
+   <objref name="file" id="file"/>
+   <type name="int" kind="int"/>
+   <sequence name="intvec" content="int"/>
+   <objref name="pyobj" id="python:obj:1.0"/>
+   <sequence name="stringvec" content="string"/>
+   <container name="DefaultContainer">
+      <property name="container_name" value="FactoryServer"/>
+      <property name="name" value="localhost"/>
+   </container>
+   <optimizer name="OptimizerLoop0" nbranch="4" lib="algosyncexample.py" entry="myalgosync">
+      <inline name="PyFunction0">
+         <function name="myfunc">
+            <code><![CDATA[def myfunc(inputValue):
+    outputValue = int(inputValue*3+5)
+    print "Received", inputValue, ", returning", outputValue
+    return outputValue
+]]></code>
+         </function>
+         <inport name="inputValue" type="double"/>
+         <outport name="outputValue" type="int"/>
+      </inline>
+   </optimizer>
+   <datalink control="false">
+      <fromnode>OptimizerLoop0</fromnode> <fromport>evalSamples</fromport>
+      <tonode>OptimizerLoop0.PyFunction0</tonode> <toport>inputValue</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>OptimizerLoop0.PyFunction0</fromnode> <fromport>outputValue</fromport>
+      <tonode>OptimizerLoop0</tonode> <toport>evalResults</toport>
+   </datalink>
+   <parameter>
+      <tonode>OptimizerLoop0</tonode><toport>nbBranches</toport>
+      <value><int>4</int></value>
+   </parameter>
+   <presentation name="OptimizerLoop0.PyFunction0" x="6" y="111.5" width="158" height="63" expanded="1" expx="6" expy="111.5" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="OptimizerLoop0" x="6" y="34" width="168" height="178.5" expanded="1" expx="6" expy="34" expWidth="168" expHeight="178.5" shownState="0"/>
+   <presentation name="__ROOT__" x="0" y="0" width="178" height="216.5" expanded="1" expx="0" expy="0" expWidth="178" expHeight="216.5" shownState="0"/>
+</proc>
