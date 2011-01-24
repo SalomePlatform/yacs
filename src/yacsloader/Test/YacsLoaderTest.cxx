@@ -661,6 +661,9 @@ void YacsLoaderTest::foreachs()
   ret = driverTest(p, "samples/foreach6.xml");
   CPPUNIT_ASSERT(ret == 0);
   CPPUNIT_ASSERT(p->getEffectiveState() == YACS::DONE );
+  ret = driverTest(p, "samples/foreach7.xml"); //needs GEOM_Superv component
+  CPPUNIT_ASSERT(ret == 0);
+  CPPUNIT_ASSERT(p->getEffectiveState() == YACS::DONE );
 }
 
 void YacsLoaderTest::sinlines()

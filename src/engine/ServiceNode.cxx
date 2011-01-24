@@ -113,6 +113,13 @@ ComponentInstance *ServiceNode::getComponent()
   return _component;
 }
 
+//! Return the associated container
+Container *ServiceNode::getContainer()
+{
+  if(_component)return _component->getContainer();
+  return 0;
+}
+
 //! By definition of ServiceNode class.
 bool ServiceNode::isDeployable() const
 {

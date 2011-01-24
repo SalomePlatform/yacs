@@ -66,8 +66,6 @@ unsigned char DeploymentTreeOnHeap::appendTask(Task *task, Scheduler *cloner)
       _freePlacableTasks.push_back(pair<Task *,Scheduler *>(task,cloner));
       return DeploymentTree::DEPLOYABLE_BUT_NOT_SPECIFIED;
     }
-  if(ci)
-    cont=ci->getContainer();
   DEBTRACE( "DeploymentTreeOnHeap::appendTask container: " << cont );
 
   // an iterator for Container level
@@ -80,12 +78,8 @@ unsigned char DeploymentTreeOnHeap::appendTask(Task *task, Scheduler *cloner)
   // search an existing vector of tasks with container == cont
   for(iter1=_tree.begin();iter1!=_tree.end();iter1++)
     {
-      if(((*iter1)[0][0]).first->getComponent())
-        {
-          if(((*iter1)[0][0]).first->getComponent()->getContainer()==cont)
-            break;
-        }
-      else if(((*iter1)[0][0]).first->getContainer() == cont)
+      Task* task=(*iter1)[0][0].first;
+      if(task->getContainer() == cont)
         break;
     }
   if(iter1==_tree.end())
@@ -141,10 +135,12 @@ unsigned DeploymentTreeOnHeap::getNumberOfCTDefContainer() const
               isCTDefSurely2=false;
           if(isCTDefSurely2)
             isCTDefSurely1=true;
-          else
+          else if(((*iter2)[0].first)->getComponent())
             isCTDefSurely1=(((*iter2)[0].first)->getComponent()->isAttachedOnCloning());
+          else
+            isCTDefSurely1=false;
         }
-      Container *cont=((*iter1)[0][0].first)->getComponent()->getContainer();
+      Container *cont=((*iter1)[0][0].first)->getContainer();
       if(isCTDefSurely1)
         {
           if(cont)
@@ -181,13 +177,16 @@ unsigned DeploymentTreeOnHeap::getNumberOfRTODefContainer() const
             if((*iter3).second==0)
               isRTODefSurely2=false;
           if(isRTODefSurely2)
-            isRTODefSurely1=!(((*iter2)[0].first)->getComponent()->isAttachedOnCloning());
+            if(((*iter2)[0].first)->getComponent())
+              isRTODefSurely1=!(((*iter2)[0].first)->getComponent()->isAttachedOnCloning());
+            else
+              isRTODefSurely1=false;
           else
             isRTODefSurely1=false;
         }
       if(isRTODefSurely1)
-        if(((*iter1)[0][0].first)->getComponent()->getContainer())
-          if(!((*iter1)[0][0].first)->getComponent()->getContainer()->isAttachedOnCloning())
+        if(((*iter1)[0][0].first)->getContainer())
+          if(!((*iter1)[0][0].first)->getContainer()->isAttachedOnCloning())
             ret++;
     }
   return ret;
@@ -230,7 +229,7 @@ unsigned DeploymentTreeOnHeap::getNumberOfRTODefComponentInstances() const
         for(iter3=(*iter2).begin();iter3!=(*iter2).end() && !isRTODef;iter3++)
           if((*iter3).second!=0)
             isRTODef=true;
-        if(isRTODef && !((*iter2)[0].first)->getComponent()->isAttachedOnCloning())
+        if(isRTODef && ((*iter2)[0].first)->getComponent() && !((*iter2)[0].first)->getComponent()->isAttachedOnCloning())
           ret++;
       }
   return ret;
@@ -242,10 +241,8 @@ std::vector<Container *> DeploymentTreeOnHeap::getAllContainers() const
   vector< vector< vector< pair<Task *, Scheduler *> > > >::const_iterator iter1;
   for(iter1=_tree.begin();iter1!=_tree.end();iter1++)
     {
-      if(((*iter1)[0][0].first)->getComponent())
-        ret.push_back(((*iter1)[0][0].first)->getComponent()->getContainer());
-      else
-        ret.push_back(((*iter1)[0][0].first)->getContainer());
+      Task* task=(*iter1)[0][0].first;
+      ret.push_back(task->getContainer());
     }
   return ret;
 }
@@ -268,10 +265,12 @@ std::vector<Container *> DeploymentTreeOnHeap::getAllCTDefContainers() const
               isCTDefSurely2=false;
           if(isCTDefSurely2)
             isCTDefSurely1=true;
-          else
+          else if(((*iter2)[0].first)->getComponent())
             isCTDefSurely1=(((*iter2)[0].first)->getComponent()->isAttachedOnCloning());
+          else
+            isCTDefSurely1=false;
         }
-      Container *cont=((*iter1)[0][0].first)->getComponent()->getContainer();
+      Container *cont=((*iter1)[0][0].first)->getContainer();
       if(isCTDefSurely1)
         {
           if(cont)
@@ -302,14 +301,22 @@ std::vector<Container *> DeploymentTreeOnHeap::getAllRTODefContainers() const
             if((*iter3).second==0)
               isRTODefSurely2=false;
           if(isRTODefSurely2)
-            isRTODefSurely1=!(((*iter2)[0].first)->getComponent()->isAttachedOnCloning());
+            {
+              if(((*iter2)[0].first)->getComponent())
+                isRTODefSurely1=!(((*iter2)[0].first)->getComponent()->isAttachedOnCloning());
+              else
+                isRTODefSurely1=false;
+            }
           else
             isRTODefSurely1=false;
         }
       if(isRTODefSurely1)
-        if(((*iter1)[0][0].first)->getComponent()->getContainer())
-          if(!((*iter1)[0][0].first)->getComponent()->getContainer()->isAttachedOnCloning())
-            ret.push_back(((*iter1)[0][0].first)->getComponent()->getContainer());
+        {
+          Container* cont= (*iter1)[0][0].first->getContainer();
+          if(cont)
+            if(!cont->isAttachedOnCloning())
+              ret.push_back(cont);
+        }
     }
   return ret;
 }
@@ -349,16 +356,25 @@ std::vector<Task *> DeploymentTreeOnHeap::getTasksLinkedToComponent(ComponentIns
 
 std::vector<ComponentInstance *> DeploymentTreeOnHeap::getComponentsLinkedToContainer(Container *cont) const
 {
+  DEBTRACE("DeploymentTreeOnHeap::getComponentsLinkedToContainer ");
   vector<ComponentInstance *> ret;
   vector< vector< vector< pair<Task *, Scheduler *> > > >::const_iterator iter1;
   vector< vector< pair<Task *, Scheduler * > > >::const_iterator iter2;
-  for(iter1=_tree.begin();iter1!=_tree.end();iter1++)
+  //iterate on containers
+  for(iter1=_tree.begin();iter1!=_tree.end();++iter1)
     {
-      if(((*iter1)[0][0].first)->getComponent())
+      //iterate on components
+      for(iter2=(*iter1).begin();iter2!=(*iter1).end();++iter2)
         {
-          if(((*iter1)[0][0].first)->getComponent()->getContainer()==cont)
-            for(iter2=(*iter1).begin();iter2!=(*iter1).end();iter2++)
-              ret.push_back(((*iter2)[0].first)->getComponent());
+          ComponentInstance *compo=(*iter2)[0].first->getComponent();
+          if(compo)
+            {
+              //it's a real component, add it if its container is the right one
+              if(compo->getContainer()==cont)
+                ret.push_back(compo);
+              else
+                break;
+            }
         }
     }
     
@@ -370,7 +386,7 @@ bool DeploymentTreeOnHeap::presenceOfDefaultContainer() const
   DEBTRACE("presenceOfDefaultContainer");
   vector< vector< vector< pair<Task *, Scheduler *> > > >::const_iterator iter1;
   for(iter1=_tree.begin();iter1!=_tree.end();iter1++)
-    if(!((*iter1)[0][0].first)->getComponent()->getContainer())
+    if(!((*iter1)[0][0].first)->getContainer())
       return true;
   return false;
 }

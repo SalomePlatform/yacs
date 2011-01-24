@@ -670,11 +670,13 @@ vector<Node *> DynParaLoop::cloneAndPlaceNodesCoherently(const vector<Node *> & 
       DEBTRACE("Cloning node " << i)
       if (origNodes[i] == NULL)
         {
+          DEBTRACE("Cloning node " << i << ", NULL" )
           clones.push_back(NULL);
           origElemNodeList.push_back(list<ElementaryNode *>());
         }
       else
         {
+          DEBTRACE("Cloning node " << i << "," << origNodes[i]->getName())
           clones.push_back(origNodes[i]->simpleClone(this, false));
           list<ElementaryNode *> tasks = origNodes[i]->getRecursiveConstituents();
           origElemNodeList.push_back(tasks);
@@ -701,6 +703,7 @@ vector<Node *> DynParaLoop::cloneAndPlaceNodesCoherently(const vector<Node *> & 
           DEBTRACE("Component " << (*iterCp)->getCompoName())
           vector<Task *> tasks=treeToDup.getTasksLinkedToComponent(*iterCp);
           ComponentInstance *curCloned=(*iterCp)->clone();
+          DEBTRACE("Assign container " << (*iterCp)->getCompoName())
           curCloned->setContainer(contCloned);
           for(vector<Task *>::iterator iterT=tasks.begin();iterT!=tasks.end();iterT++)
             {
@@ -730,6 +733,7 @@ vector<Node *> DynParaLoop::cloneAndPlaceNodesCoherently(const vector<Node *> & 
                   string childName = ((ComposedNode *)origNodes[i])->getChildName(origElemNode);
                   nodeC = (ServiceNode *)clones[i]->getChildByName(childName);
                 }
+              DEBTRACE("Assign component: " << (*iterCp)->getCompoName() << "," << nodeC->getName())
               nodeC->setComponent(curCloned);
             }
           curCloned->decrRef();
@@ -767,6 +771,7 @@ vector<Node *> DynParaLoop::cloneAndPlaceNodesCoherently(const vector<Node *> & 
               string childName = ((ComposedNode *)origNodes[i])->getChildName(origElemNode);
               nodeC = (InlineFuncNode *)clones[i]->getChildByName(childName);
             }
+          DEBTRACE("Assign container " << nodeC->getName() << "," << contCloned->getName())
           nodeC->setContainer(contCloned);
         }
 
