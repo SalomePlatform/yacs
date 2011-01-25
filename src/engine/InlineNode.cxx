@@ -22,6 +22,9 @@
 #include "Container.hxx"
 #include <iostream>
 
+#define _DEVDEBUG_
+#include "YacsTrace.hxx"
+
 using namespace YACS::ENGINE;
 using namespace std;
 
@@ -71,7 +74,7 @@ void InlineFuncNode::checkBasicConsistency() const throw(YACS::Exception)
      }
 }
 
-void InlineFuncNode::setExecutionMode(const std::string& mode)
+void InlineNode::setExecutionMode(const std::string& mode)
 {
   if(mode == _mode)return;
   if(mode == "local"||mode == "remote")
@@ -81,17 +84,17 @@ void InlineFuncNode::setExecutionMode(const std::string& mode)
     }
 }
 
-std::string InlineFuncNode::getExecutionMode()
+std::string InlineNode::getExecutionMode()
 {
   return _mode;
 }
 
-Container* InlineFuncNode::getContainer()
+Container* InlineNode::getContainer()
 {
   return _container;
 }
 
-void InlineFuncNode::setContainer(Container* cont)
+void InlineNode::setContainer(Container* cont)
 {
   if (cont == _container) return;
   if(_container)
@@ -101,15 +104,15 @@ void InlineFuncNode::setContainer(Container* cont)
     _container->incrRef();
 }
 
-void InlineFuncNode::performDuplicationOfPlacement(const Node& other)
+void InlineNode::performDuplicationOfPlacement(const Node& other)
 {
-  const InlineFuncNode &otherC=*(dynamic_cast<const InlineFuncNode *>(&other));
+  const InlineNode &otherC=*(dynamic_cast<const InlineNode *>(&other));
   //if other has no container don't clone: this will not have one
   if(otherC._container)
     _container=otherC._container->clone();
 }
 
-bool InlineFuncNode::isDeployable() const
+bool InlineNode::isDeployable() const
 {
   if(_mode=="remote")
     return true;

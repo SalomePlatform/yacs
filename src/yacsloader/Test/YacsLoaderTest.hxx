@@ -70,6 +70,7 @@ namespace YACS
     CPPUNIT_TEST(cpps);
     CPPUNIT_TEST(datanodes);
     CPPUNIT_TEST(optimizers);
+    CPPUNIT_TEST(pyremotes);
     CPPUNIT_TEST_SUITE_END();
       
   public:
@@ -118,6 +119,7 @@ namespace YACS
     void cpps();
     void datanodes();
     void optimizers();
+    void pyremotes();
      
   protected:
       

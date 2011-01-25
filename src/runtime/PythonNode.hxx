@@ -42,12 +42,21 @@ namespace YACS
       virtual void checkBasicConsistency() const throw(Exception);
       virtual void execute();
       virtual void load();
+      virtual void loadRemote();
+      virtual void loadLocal();
+      virtual void executeRemote();
+      virtual void executeLocal();
+      virtual void shutdown(int level);
+      std::string getContainerLog();
       PythonNode* cloneNode(const std::string& name);
       static const char KIND[];
       static const char IMPL_NAME[];
       virtual std::string typeName() {return "YACS__ENGINE__PythonNode";}
     protected:
       PyObject* _context;
+      PyObject* _pyfuncSer;
+      PyObject* _pyfuncUnser;
+      Engines::PyScriptNode_var _pynode;
     };
 
     class PyFuncNode : public InlineFuncNode 

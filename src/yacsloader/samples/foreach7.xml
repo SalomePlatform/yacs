@@ -23,10 +23,6 @@
    <container name="container0">
    </container>
    <container name="container8">
-      <property name="container_name" value=""/>
-      <property name="hostname" value=""/>
-      <property name="nb_node" value="0"/>
-      <property name="nb_proc_per_node" value="0"/>
    </container>
    <foreach name="ForEachLoop_pyobj0" type="pyobj">
       <bloc name="Bloc1">

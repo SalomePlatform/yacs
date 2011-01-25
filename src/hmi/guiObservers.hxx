@@ -672,6 +672,8 @@ namespace YACS
       virtual std::string getScript();
       virtual void clean(Command *command=0);
       void localclean(Command *command=0);
+      virtual bool setContainer(SubjectContainer* scont);
+      virtual bool setExecutionMode(const std::string& mode);
     protected:
       YACS::ENGINE::InlineNode *_inlineNode;
     };
@@ -697,8 +699,6 @@ namespace YACS
       virtual void clean(Command *command=0);
       void localclean(Command *command=0);
       virtual TypeOfElem getType(){return PYFUNCNODE;}
-      virtual bool setContainer(SubjectContainer* scont);
-      virtual bool setExecutionMode(const std::string& mode);
     protected:
       YACS::ENGINE::PyFuncNode *_pyFuncNode;
     };

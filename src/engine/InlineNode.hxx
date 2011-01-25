@@ -28,6 +28,8 @@ namespace YACS
 {
   namespace ENGINE
   {
+    class Container;
+
 /*! \brief Class for calculation node (script) inlined (and executed) in the schema
  *
  * \ingroup Nodes
@@ -42,8 +44,8 @@ namespace YACS
     {
     protected:
       InlineNode(const InlineNode& other, ComposedNode *father)
-        :ElementaryNode(other,father),_script(other._script) { }
-      InlineNode(const std::string& name):ElementaryNode(name) { }
+        :ElementaryNode(other,father),_script(other._script),_mode(other._mode),_container(0) { }
+      InlineNode(const std::string& name):ElementaryNode(name),_mode("local"),_container(0) { }
     public:
       virtual void setScript(const std::string& script);
       virtual std::string getScript(){return _script;}
@@ -58,8 +60,16 @@ namespace YACS
       virtual void accept(Visitor *visitor);
       virtual ~InlineNode();
       virtual std::string typeName() {return "YACS__ENGINE__InlineNode";}
+      virtual void setExecutionMode(const std::string& mode);
+      virtual std::string getExecutionMode();
+      virtual void setContainer(Container* container);
+      virtual Container* getContainer();
+      void performDuplicationOfPlacement(const Node& other);
+      bool isDeployable() const;
     protected:
       std::string _script;
+      std::string _mode;
+      Container* _container;
     };
 
 /*! \brief Class for calculation node (function) inlined (and executed) in the schema
@@ -74,14 +84,12 @@ namespace YACS
  * \see ServiceNode
  * \see ElementaryNode
  */
-    class Container;
-
     class YACSLIBENGINE_EXPORT InlineFuncNode : public InlineNode
     {
     protected:
       InlineFuncNode(const InlineFuncNode& other, ComposedNode *father)
-        :InlineNode(other,father),_fname(other._fname),_mode(other._mode),_container(0) { }
-      InlineFuncNode(const std::string& name):InlineNode(name),_mode("local"),_container(0) { }
+        :InlineNode(other,father),_fname(other._fname) { }
+      InlineFuncNode(const std::string& name):InlineNode(name) { }
     public:
 //! Set the function name to use in node execution
 /*!
@@ -93,16 +101,8 @@ namespace YACS
       virtual ~InlineFuncNode();
       virtual std::string typeName() {return "YACS__ENGINE__InlineFuncNode";}
       virtual void checkBasicConsistency() const throw(Exception);
-      virtual void setExecutionMode(const std::string& mode);
-      virtual std::string getExecutionMode();
-      virtual void setContainer(Container* container);
-      virtual Container* getContainer();
-      void performDuplicationOfPlacement(const Node& other);
-      bool isDeployable() const;
     protected:
       std::string _fname;
-      std::string _mode;
-      Container* _container;
     };
   }
 }

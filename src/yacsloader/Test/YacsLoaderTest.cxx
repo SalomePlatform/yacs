@@ -796,3 +796,21 @@ void YacsLoaderTest::optimizers()
   CPPUNIT_ASSERT(p->getEffectiveState() == YACS::DONE );
   delete p;
 }
+
+void YacsLoaderTest::pyremotes()
+{
+  Proc *p = 0;
+  int ret;
+  ret = driverTest(p, "samples/pyremote1.xml");
+  CPPUNIT_ASSERT(ret == 0);
+  CPPUNIT_ASSERT(p->getEffectiveState() == YACS::DONE );
+  ret = driverTest(p, "samples/pyremote2.xml");
+  CPPUNIT_ASSERT(ret == 0);
+  CPPUNIT_ASSERT(p->getEffectiveState() == YACS::DONE );
+  ret = driverTest(p, "samples/pyremote3.xml");
+  CPPUNIT_ASSERT(ret == 0);
+  CPPUNIT_ASSERT(p->getEffectiveState() == YACS::DONE );
+  ret = driverTest(p, "samples/pyremote4.xml");
+  CPPUNIT_ASSERT(ret == 0);
+  CPPUNIT_ASSERT(p->getEffectiveState() == YACS::DONE );
+}

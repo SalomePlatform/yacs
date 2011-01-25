@@ -36,11 +36,6 @@ namespace YACS
       virtual void onApply();
       virtual void onCancel();
       virtual void onFuncNameModified(const QString &text);
-      virtual void on_tb_options_toggled(bool checked);
-      virtual void on_remote_toggled(bool checked);
-      virtual void fillContainerPanel();
-      virtual void changeContainer(int);
-      virtual void update(GuiEvent event, int type, Subject* son);
       virtual void onTemplate();
 
     public:
@@ -53,13 +48,6 @@ namespace YACS
       SubjectPyFuncNode* _subFuncNode;
       std::string _funcName;
       QLineEdit* _liFuncName;
-      bool _checked;
-      bool _remote;
-      QFrame *fr_options;
-      QFrame *fr_container;
-      ComboBox* cb_container;
-      QRadioButton* radiolocal;
-      QRadioButton* radioremote;
     };
   }
 }

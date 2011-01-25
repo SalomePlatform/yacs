@@ -221,7 +221,10 @@ void VisitorSaveSchema::visitInlineNode(InlineNode *node)
   DEBTRACE("START visitInlineNode " << _root->getChildName(node));
   beginCase(node);
   int depth = depthNode(node);
-  _out << indent(depth) << "<inline name=\"" << node->getName() << "\"";
+  if(node->getExecutionMode()=="local")
+    _out << indent(depth) << "<inline name=\"" << node->getName() << "\"";
+  else
+    _out << indent(depth) << "<remote name=\"" << node->getName() << "\"";
   if (node->getState() == YACS::DISABLED)
     _out << " state=\"disabled\">" << endl;
   else
@@ -229,12 +232,23 @@ void VisitorSaveSchema::visitInlineNode(InlineNode *node)
   _out << indent(depth+1) << "<script><code><![CDATA[";
   _out << node->getScript();
   _out << "]]></code></script>" << endl;
+
+  //add load container if node is remote
+  Container *cont = node->getContainer();
+  if (cont)
+    _out << indent(depth+1) << "<load container=\"" << cont->getName() << "\"/>" << endl;
+
   writeProperties(node);
   writeInputPorts(node);
   writeInputDataStreamPorts(node);
   writeOutputPorts(node);
   writeOutputDataStreamPorts(node);
-  _out << indent(depth) << "</inline>" << endl;
+
+  if(node->getExecutionMode()=="local")
+    _out << indent(depth) << "</inline>" << endl;
+  else
+    _out << indent(depth) << "</remote>" << endl;
+
   endCase(node);
   DEBTRACE("END visitInlineNode " << _root->getChildName(node));
 }
@@ -268,10 +282,12 @@ void VisitorSaveSchema::visitInlineFuncNode(InlineFuncNode *node)
   writeInputDataStreamPorts(node);
   writeOutputPorts(node);
   writeOutputDataStreamPorts(node);
+
   if(node->getExecutionMode()=="local")
     _out << indent(depth) << "</inline>" << endl;
   else
     _out << indent(depth) << "</remote>" << endl;
+
   endCase(node);
   DEBTRACE("END visitInlineFuncNode " << _root->getChildName(node));
 }

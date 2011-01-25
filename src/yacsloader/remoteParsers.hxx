@@ -28,7 +28,7 @@ extern YACS::ENGINE::Runtime* theRuntime;
 namespace YACS
 {
 
-template <class T=YACS::ENGINE::InlineFuncNode*>
+template <class T=YACS::ENGINE::InlineNode*>
 struct remotetypeParser:public inlinetypeParser<T>
 {
   static remotetypeParser<T> remoteParser;
@@ -40,6 +40,7 @@ struct remotetypeParser:public inlinetypeParser<T>
       std::string element(el);
       if(element == "kind")this->kind(((stringtypeParser*)child)->post()); // inherited
       else if(element == "function")this->function(((functypeParser*)child)->post());
+      else if(element == "script")this->script(((codetypeParser*)child)->post());
       else if(element == "load") this->load(((loadtypeParser*)child)->post());
       else if(element == "property")this->property(((propertytypeParser*)child)->post());
       else if(element == "inport") this->inport(((inporttypeParser<myinport>*)child)->post());
@@ -61,6 +62,16 @@ struct remotetypeParser:public inlinetypeParser<T>
       fnode->setFname(f._name);
       fnode->setExecutionMode("remote");
       this->_node=fnode;
+    }
+
+  void script (const myfunc& f)
+    {
+      DEBTRACE( "remote_script: " << f._code )
+      YACS::ENGINE::InlineNode *node;
+      node=theRuntime->createScriptNode(this->_kind,this->_name);
+      node->setScript(f._code);
+      node->setExecutionMode("remote");
+      this->_node=node;
     }
 
   virtual T post()
@@ -96,11 +107,14 @@ void remotetypeParser<T>::onStart(const XML_Char* el, const XML_Char** attr)
   parser* pp=&parser::main_parser;
   this->maxcount("kind",1,element);
   this->maxcount("function",1,element);
+  this->maxcount("script",1,element);
   this->maxcount("load",1,element);
+  this->maxchoice(t1,1,element);
 
   if(element == "kind")pp=&stringtypeParser::stringParser;
   else if(element == "load")pp=&loadtypeParser::loadParser;
   else if(element == "function")pp=&functypeParser::funcParser;
+  else if(element == "script")pp=&codetypeParser::codeParser;
   else if(element == "property")pp=&propertytypeParser::propertyParser;
   else if(element == "inport")pp=&inporttypeParser<>::inportParser;
   else if(element == "outport")pp=&outporttypeParser<>::outportParser;

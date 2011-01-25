@@ -2259,6 +2259,40 @@ void SubjectInlineNode::localclean(Command *command)
   DEBTRACE("SubjectInlineNode::localClean ");
 }
 
+bool SubjectInlineNode::setExecutionMode(const std::string& mode)
+{
+  DEBTRACE("SubjectInlineNode::setExecutionMode ");
+  Proc *proc = GuiContext::getCurrent()->getProc();
+
+  CommandSetExecutionMode *command = new CommandSetExecutionMode(proc->getChildName(_node), mode);
+  if (command->execute())
+    {
+      if (!GuiContext::getCurrent()->isLoading()) // do not register command when loading a schema
+        GuiContext::getCurrent()->getInvoc()->add(command);
+      else delete command;
+      return true;
+    }
+  else delete command;
+  return false;
+}
+
+bool SubjectInlineNode::setContainer(SubjectContainer* scont)
+{
+  DEBTRACE("SubjectInlineNode::setContainer ");
+  Proc *proc = GuiContext::getCurrent()->getProc();
+
+  CommandSetContainer *command = new CommandSetContainer(proc->getChildName(_node), scont->getName());
+  if (command->execute())
+    {
+      if (!GuiContext::getCurrent()->isLoading()) // do not register command when loading a schema
+        GuiContext::getCurrent()->getInvoc()->add(command);
+      else delete command;
+      return true;
+    }
+  else delete command;
+  return false;
+}
+
 
 // ----------------------------------------------------------------------------
 
@@ -2504,41 +2538,6 @@ void SubjectPyFuncNode::localclean(Command *command)
 {
   DEBTRACE("SubjectPyFuncNode::localClean ");
 }
-
-bool SubjectPyFuncNode::setExecutionMode(const std::string& mode)
-{
-  DEBTRACE("SubjectPyFuncNode::setExecutionMode ");
-  Proc *proc = GuiContext::getCurrent()->getProc();
-
-  CommandSetExecutionMode *command = new CommandSetExecutionMode(proc->getChildName(_node), mode);
-  if (command->execute())
-    {
-      if (!GuiContext::getCurrent()->isLoading()) // do not register command when loading a schema
-        GuiContext::getCurrent()->getInvoc()->add(command);
-      else delete command;
-      return true;
-    }
-  else delete command;
-  return false;
-}
-
-bool SubjectPyFuncNode::setContainer(SubjectContainer* scont)
-{
-  DEBTRACE("SubjectPyFuncNode::setContainer ");
-  Proc *proc = GuiContext::getCurrent()->getProc();
-
-  CommandSetContainer *command = new CommandSetContainer(proc->getChildName(_node), scont->getName());
-  if (command->execute())
-    {
-      if (!GuiContext::getCurrent()->isLoading()) // do not register command when loading a schema
-        GuiContext::getCurrent()->getInvoc()->add(command);
-      else delete command;
-      return true;
-    }
-  else delete command;
-  return false;
-}
-
 
 // ----------------------------------------------------------------------------
 

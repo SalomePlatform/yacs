@@ -3653,17 +3653,17 @@ bool CommandSetExecutionMode::localExecute()
     {
       Proc* proc = GuiContext::getCurrent()->getProc();
       Node* node = proc->getChildByName(_nodeName);
-      if (YACS::ENGINE::InlineFuncNode* funcNode = dynamic_cast<YACS::ENGINE::InlineFuncNode*>(node))
+      if (YACS::ENGINE::InlineNode* pyNode = dynamic_cast<YACS::ENGINE::InlineNode*>(node))
         {
-          _oldmode = funcNode->getExecutionMode();
-          funcNode->setExecutionMode(_mode);
-          SubjectNode* snode = GuiContext::getCurrent()->_mapOfSubjectNode[funcNode];
+          _oldmode = pyNode->getExecutionMode();
+          pyNode->setExecutionMode(_mode);
+          SubjectNode* snode = GuiContext::getCurrent()->_mapOfSubjectNode[pyNode];
           snode->update(UPDATE, 0, 0);
           return true;
         }
       else
         {
-          GuiContext::getCurrent()->_lastErrorMessage = "node is not an InlineFuncNode: " + _nodeName;
+          GuiContext::getCurrent()->_lastErrorMessage = "node is not an InlineNode: " + _nodeName;
           return false;
         }
     }
@@ -3683,16 +3683,16 @@ bool CommandSetExecutionMode::localReverse()
       if (_oldmode == _mode) return true;
       Proc* proc = GuiContext::getCurrent()->getProc();
       Node* node = proc->getChildByName(_nodeName);
-      if (YACS::ENGINE::InlineFuncNode* funcNode = dynamic_cast<YACS::ENGINE::InlineFuncNode*>(node))
+      if (YACS::ENGINE::InlineNode* pyNode = dynamic_cast<YACS::ENGINE::InlineNode*>(node))
         {
-          funcNode->setExecutionMode(_oldmode);
-          SubjectNode* snode = GuiContext::getCurrent()->_mapOfSubjectNode[funcNode];
+          pyNode->setExecutionMode(_oldmode);
+          SubjectNode* snode = GuiContext::getCurrent()->_mapOfSubjectNode[pyNode];
           snode->update(UPDATE, 0, 0);
           return true;
         }
       else
         {
-          GuiContext::getCurrent()->_lastErrorMessage = "node is not an InlineFuncNode: " + _nodeName;
+          GuiContext::getCurrent()->_lastErrorMessage = "node is not an InlineNode: " + _nodeName;
           return false;
         }
     }
@@ -3731,20 +3731,20 @@ bool CommandSetContainer::localExecute()
         {
           Container *cont = proc->containerMap[_container];
           Node* node = proc->getChildByName(_nodeName);
-          if (YACS::ENGINE::InlineFuncNode* funcNode = dynamic_cast<YACS::ENGINE::InlineFuncNode*>(node))
+          if (YACS::ENGINE::InlineNode* pyNode = dynamic_cast<YACS::ENGINE::InlineNode*>(node))
             {
-              Container* oldcont = funcNode->getContainer();
+              Container* oldcont = pyNode->getContainer();
               if(oldcont)
-                _oldcont = funcNode->getContainer()->getName();
-              funcNode->setContainer(cont);
-              SubjectNode* snode = GuiContext::getCurrent()->_mapOfSubjectNode[funcNode];
+                _oldcont = pyNode->getContainer()->getName();
+              pyNode->setContainer(cont);
+              SubjectNode* snode = GuiContext::getCurrent()->_mapOfSubjectNode[pyNode];
               SubjectContainer *subcont = GuiContext::getCurrent()->_mapOfSubjectContainer[cont];
               snode->update(ASSOCIATE, 0, subcont);
               return true;
             }
           else
             {
-              GuiContext::getCurrent()->_lastErrorMessage = "node is not an InlineFuncNode: " + _nodeName;
+              GuiContext::getCurrent()->_lastErrorMessage = "node is not an InlineNode: " + _nodeName;
               return false;
             }
         }
@@ -3771,17 +3771,17 @@ bool CommandSetContainer::localReverse()
         {
           Container *cont = proc->containerMap[_oldcont];
           Node* node = proc->getChildByName(_nodeName);
-          if (YACS::ENGINE::InlineFuncNode* funcNode = dynamic_cast<YACS::ENGINE::InlineFuncNode*>(node))
+          if (YACS::ENGINE::InlineNode* pyNode = dynamic_cast<YACS::ENGINE::InlineNode*>(node))
             {
-              funcNode->setContainer(cont);
-              SubjectNode* snode = GuiContext::getCurrent()->_mapOfSubjectNode[funcNode];
+              pyNode->setContainer(cont);
+              SubjectNode* snode = GuiContext::getCurrent()->_mapOfSubjectNode[pyNode];
               SubjectContainer *subcont = GuiContext::getCurrent()->_mapOfSubjectContainer[cont];
               snode->update(ASSOCIATE, 0, subcont);
               return true;
             }
           else
             {
-              GuiContext::getCurrent()->_lastErrorMessage = "node is not an InlineFuncNode: " + _nodeName;
+              GuiContext::getCurrent()->_lastErrorMessage = "node is not an InlineNode: " + _nodeName;
               return false;
             }
         }
