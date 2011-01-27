@@ -62,6 +62,7 @@ protected:
   clock_t _start, _end;
 };
 
+#ifndef START_TIMING
 static long tcount=0;
 static long cumul;
 #ifdef WIN32
@@ -73,6 +74,7 @@ static timeval tv;
 #define END_TIMING(NUMBER) \
   tcount=tcount+1;gettimeofday(&tv,0);cumul=cumul+tv.tv_usec+tv.tv_sec*1000000 -tt0; \
   if(tcount==NUMBER){ std::cerr << __FILE__<<":"<<__LINE__<<" temps CPU(mus): "<<cumul<< std::endl; tcount=0 ;cumul=0; }
+#endif
 
 #ifdef CHRONODEF
 #define CHRONO(i) counters::_ctrs[i]._ctrNames = (char *)__FILE__; \
