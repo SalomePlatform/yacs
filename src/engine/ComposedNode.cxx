@@ -796,8 +796,13 @@ std::vector< std::pair<InPort *, OutPort *> > ComposedNode::getSetOfLinksComingI
     {
       set<OutPort *> temp2=(*iter2)->edSetOutPort();
       for(set<OutPort *>::iterator iter3=temp2.begin();iter3!=temp2.end();iter3++)
-        if(!isInMyDescendance((*iter3)->getNode()))
-          ret.push_back(pair<InPort *, OutPort *>(*iter2,*iter3));
+        {
+          if(isInMyDescendance((*iter3)->getNode()))continue;
+          std::set<OutPort *> trueOutPorts;
+          (*iter3)->getAllRepresented(trueOutPorts);
+          for(std::set<OutPort *>::iterator iter4=trueOutPorts.begin();iter4!=trueOutPorts.end();++iter4)
+            ret.push_back(pair<InPort *, OutPort *>(*iter2,*iter4));
+        }
     }
   return ret;
 }
