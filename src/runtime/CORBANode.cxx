@@ -672,6 +672,11 @@ void SalomeNode::execute()
             {
               text=text+"component '" +_ref+ "' has no service '" + _method+ "'";
             }
+          else if(excname == "BAD_PARAM")
+            {
+              text=text+"A parameter (input or output) passed to the call is out of range or otherwise considered illegal.\n";
+              text=text+"Minor code: "+sysexc->NP_minorString();
+            }
           else if(excname == "MARSHAL" && sysexc->minor() == omni::MARSHAL_PassEndOfMessage)
             {
               text=text+"probably an error in arguments of service '" + _method + "' from component '" +_ref+ "'";

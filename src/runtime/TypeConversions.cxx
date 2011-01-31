@@ -128,7 +128,7 @@ namespace YACS
 
     CORBA::TypeCode_ptr getCorbaTCObjref(const TypeCode *t)
     {
-      DEBTRACE( t->name() << " " << t->shortName());
+      DEBTRACE( t->name() << " " << t->shortName() << " " << t->id());
       CORBA::TypeCode_ptr tc;
       if(strncmp(t->id(),"python",6)==0 )
         tc= CORBA::TypeCode::_duplicate(Engines::_tc_fileBlock);
@@ -2088,6 +2088,7 @@ namespace YACS
             {
               DynamicAny::DynAny_var temp=ds->current_component();
               CORBA::Any* a=*iter;
+              //It seems that from_any does not support inherited objref: convert to CORBA::Object and insert reference
               if(isObjref)
                 {
                   CORBA::Object_var zzobj ;
@@ -2118,18 +2119,7 @@ namespace YACS
           int nMember=tst->memberCount();
           DEBTRACE("nMember="<<nMember);
 
-          CORBA::StructMemberSeq mseq;
-          mseq.length(nMember);
-          for(int i=0;i<nMember;i++)
-            {
-              const char * name=tst->memberName(i);
-              if(m.count(name) !=0)
-                {
-                  mseq[i].name=CORBA::string_dup(name);
-                  mseq[i].type=m[name]->type();
-                }
-            }
-          CORBA::TypeCode_var tc= orb->create_struct_tc("","",mseq);
+          CORBA::TypeCode_var tc=getCorbaTC(t);
           DynamicAny::DynAny_var dynany=getSALOMERuntime()->getDynFactory()->create_dyn_any_from_type_code(tc);
           DynamicAny::DynStruct_var ds = DynamicAny::DynStruct::_narrow(dynany);
 
@@ -2140,7 +2130,19 @@ namespace YACS
               DEBTRACE("Member name="<<name);
               //do not test member presence : test has been done in ToYacs convertor
               CORBA::Any* a=m[name];
-              temp->from_any(*a);
+              //It seems that from_any does not support inherited objref: convert to CORBA::Object and insert reference
+              CORBA::TypeCode_var atc = tc->member_type(i);
+              if(atc->kind()==CORBA::tk_objref)
+                {
+                  //special treatment for objref
+                  CORBA::Object_var zzobj ;
+                  *a >>= CORBA::Any::to_object(zzobj) ;
+                  temp->insert_reference(zzobj);
+                }
+              else
+                {
+                  temp->from_any(*a);
+                }
               //delete intermediate any
               delete a;
               ds->next();
