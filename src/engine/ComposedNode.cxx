@@ -1521,8 +1521,8 @@ void ComposedNode::resetState(int level)
 {
   if(level==0)return;
 
-  DEBTRACE("ComposedNode::resetState");
-  if(_state==YACS::ERROR || _state==YACS::FAILED)
+  DEBTRACE("ComposedNode::resetState " << level << "," << _state);
+  if( _state==YACS::ERROR || _state==YACS::FAILED || _state==YACS::ACTIVATED )
     {
       Node::resetState(level);
       std::list<Node *> nodes=edGetDirectDescendants();

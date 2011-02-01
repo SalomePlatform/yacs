@@ -1618,6 +1618,8 @@ void GenericGui::onRunLoadedSchema(bool withState)
         }
     }
   executor->startResumeDataflow(true); // --- initialise gui state
+  if(_toggleStopOnErrorAct->isChecked())
+    executor->setStopOnError(false);
 }
 
 void GenericGui::onLoadRunStateSchema()

@@ -676,6 +676,7 @@ void Node::cleanNodes()
 //! Reset the node state depending on the parameter level
 void Node::resetState(int level)
 {
+  DEBTRACE("Node::resetState " << getName() << "," << level << "," << _state);
   if(_state==YACS::ERROR || _state==YACS::FAILED)
     {
       setState(YACS::READY);
