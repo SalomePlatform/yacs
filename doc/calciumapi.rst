@@ -1,6 +1,7 @@
 
 .. _calciumapi:
 
+
 ==========================================================
 CALCIUM C and Fortran coupling library
 ==========================================================
@@ -40,18 +41,20 @@ These constants are:
 - Disconnection modes (CP_CONT or CP_ARRET)
 
 
+.. default-domain:: c
+
 Functions to connect and disconnect
 ===============================================
 
 **C:**
 
-.. cfunction:: int info = cp_cd(long *compo, char *instance_name)
+.. function:: int info = cp_cd(long *compo, char *instance_name)
 
    Initialize the connection with YACS.
 
 **Fortran:**
 
-.. cfunction:: call cpcd(compo, instance_name, info)
+.. function:: call cpcd(compo, instance_name, info)
 
    :param compo: component address
    :type compo: long
@@ -63,13 +66,13 @@ Functions to connect and disconnect
 
 **C:**
 
-.. cfunction:: int info = cp_fin(long *compo, int directive)
+.. function:: int info = cp_fin(long *compo, int directive)
 
    Close the connection with YACS.
 
 **Fortran:**
 
-.. cfunction:: call cpfin(compo, directive, info)
+.. function:: call cpfin(compo, directive, info)
 
    :param compo: component address
    :type compo: long
@@ -109,46 +112,46 @@ The available port types are :
  
 **C:**
 
-.. cfunction:: int info = cp_ere(long *compo, int dep, float t, int i, char *nm_var, int n, float *var_real)
+.. function:: int info = cp_ere(long *compo, int dep, float t, int i, char *nm_var, int n, float *var_real)
 
         for single precision floating point values (C float type and CALCIUM_float port type)
-.. cfunction:: int info = cp_edb(long *compo, int dep, double td, int i, char *nm_var, int n, double *var_double)
+.. function:: int info = cp_edb(long *compo, int dep, double td, int i, char *nm_var, int n, double *var_double)
 
         for double precision floating point values (C double type and CALCIUM_double port type)
-.. cfunction:: int info = cp_ecp(long *compo, int dep, float t, int i, char *nm_var, int n, float *var_complex)
+.. function:: int info = cp_ecp(long *compo, int dep, float t, int i, char *nm_var, int n, float *var_complex)
 
         for complex values (C float type and CALCIUM_complex port type)
-.. cfunction:: int info = cp_een(long *compo, int dep, float t, int i, char *nm_var, int n, int *var_integer)
+.. function:: int info = cp_een(long *compo, int dep, float t, int i, char *nm_var, int n, int *var_integer)
 
         for integer values (C int type and CALCIUM_integer port type)
-.. cfunction:: int info = cp_elg(long *compo, int dep, float t, int i, char *nm_var, int n, long *var_long)
+.. function:: int info = cp_elg(long *compo, int dep, float t, int i, char *nm_var, int n, long *var_long)
 
         for integer values (C long type and CALCIUM_integer port type)
-.. cfunction:: int info = cp_eln(long *compo, int dep, float t, int i, char *nm_var, int n, long *var_long)
+.. function:: int info = cp_eln(long *compo, int dep, float t, int i, char *nm_var, int n, long *var_long)
 
         for integer values (C long type and CALCIUM_long port type)
-.. cfunction:: int info = cp_elo(long *compo, int dep, float t, int i, char *nm_var, int n, int *var_boolean)
+.. function:: int info = cp_elo(long *compo, int dep, float t, int i, char *nm_var, int n, int *var_boolean)
 
         for boolean values (C int type and CALCIUM_logical port type)
-.. cfunction:: int info = cp_ech(long *compo, int dep, float t, int i, char *nm_var, int n, char **var_string, int strSize)
+.. function:: int info = cp_ech(long *compo, int dep, float t, int i, char *nm_var, int n, char **var_string, int strSize)
 
         for string values (C char* type and CALCIUM_string port type)
 
 **Fortran:**
 
-.. cfunction:: CALL CPERE(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, REAL*4 var_real,      INTEGER info)
-.. cfunction:: CALL CPEDB(LONGP compo, INTEGER dep, REAL*8 td, INTEGER i, nm_var, INTEGER n, REAL*8 var_double,    INTEGER info)
-.. cfunction:: CALL CPECP(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, REAL*4 var_complex,   INTEGER info)
-.. cfunction:: CALL CPEEN(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, INTEGER var_integer,  INTEGER info)
-.. cfunction:: CALL CPELG(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, INTEGER*8 var_long,   INTEGER info)
+.. function:: CALL CPERE(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, REAL*4 var_real,      INTEGER info)
+.. function:: CALL CPEDB(LONGP compo, INTEGER dep, REAL*8 td, INTEGER i, nm_var, INTEGER n, REAL*8 var_double,    INTEGER info)
+.. function:: CALL CPECP(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, REAL*4 var_complex,   INTEGER info)
+.. function:: CALL CPEEN(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, INTEGER var_integer,  INTEGER info)
+.. function:: CALL CPELG(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, INTEGER*8 var_long,   INTEGER info)
 
                can only be used on 64 bits architecture.
-.. cfunction:: CALL CPELN(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, INTEGER*8 var_long,   INTEGER info)
+.. function:: CALL CPELN(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, INTEGER*8 var_long,   INTEGER info)
 
                can only be used on 64 bits architecture.
-.. cfunction:: CALL CPEIN(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, INTEGER*4 var_int,    INTEGER info)
-.. cfunction:: CALL CPELO(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, INTEGER*4 var_boolean,INTEGER info)
-.. cfunction:: CALL CPECH(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, var_string,           INTEGER info)
+.. function:: CALL CPEIN(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, INTEGER*4 var_int,    INTEGER info)
+.. function:: CALL CPELO(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, INTEGER*4 var_boolean,INTEGER info)
+.. function:: CALL CPECH(LONGP compo, INTEGER dep, REAL*4 t,  INTEGER i, nm_var, INTEGER n, var_string,           INTEGER info)
 
    :param compo: component address
    :type compo: long
@@ -216,30 +219,30 @@ and the second (cp_lln) is working with CALCIUM_long port type.
 
 **C:**
 
-.. cfunction:: int info = cp_lre(long *compo, int dep, float *ti, float *tf, int *i, char *nm_var, int len, int *n, float *var_real)
-.. cfunction:: int info = cp_ldb(long *compo, int dep, double *tid, double *tfd, int *i, char *nm_var, int len, int *n, double *var_double)
-.. cfunction:: int info = cp_lcp(long *compo, int dep, float *ti, float *tf, int *i, char *nm_var, int len, int *n, float *var_complex)
-.. cfunction:: int info = cp_len(long *compo, int dep, float *ti, float *tf, int *i, char *nm_var, int len, int *n, int *var_integer)
-.. cfunction:: int info = cp_llg(long *compo, int dep, float *ti, float *tf, int *i, char *nm_var, int len, int *n, long *var_long)
-.. cfunction:: int info = cp_lln(long *compo, int dep, float *ti, float *tf, int *i, char *nm_var, int len, int *n, long *var_long)
-.. cfunction:: int info = cp_llo(long *compo, int dep, float *ti, float *tf, int *i, char *nm_var, int len, int *n, int *var_boolean)
-.. cfunction:: int info = cp_lch(long *compo, int dep, float *ti, float *tf, int *i, char *nm_var, int len, int *n, char **var_string, int strSize)
+.. function:: int info = cp_lre(long *compo, int dep, float *ti, float *tf, int *i, char *nm_var, int len, int *n, float *var_real)
+.. function:: int info = cp_ldb(long *compo, int dep, double *tid, double *tfd, int *i, char *nm_var, int len, int *n, double *var_double)
+.. function:: int info = cp_lcp(long *compo, int dep, float *ti, float *tf, int *i, char *nm_var, int len, int *n, float *var_complex)
+.. function:: int info = cp_len(long *compo, int dep, float *ti, float *tf, int *i, char *nm_var, int len, int *n, int *var_integer)
+.. function:: int info = cp_llg(long *compo, int dep, float *ti, float *tf, int *i, char *nm_var, int len, int *n, long *var_long)
+.. function:: int info = cp_lln(long *compo, int dep, float *ti, float *tf, int *i, char *nm_var, int len, int *n, long *var_long)
+.. function:: int info = cp_llo(long *compo, int dep, float *ti, float *tf, int *i, char *nm_var, int len, int *n, int *var_boolean)
+.. function:: int info = cp_lch(long *compo, int dep, float *ti, float *tf, int *i, char *nm_var, int len, int *n, char **var_string, int strSize)
 
 **Fortran:**
 
-.. cfunction:: CALL CPLRE(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var,INTEGER len, INTEGER n,REAL*4 var_real,      INTEGER info)
-.. cfunction:: CALL CPLDB(LONGP compo, INTEGER dep, REAL*8 tid, tf, INTEGER i, nm_var,INTEGER len, INTEGER n,REAL*8 var_double,    INTEGER info)
-.. cfunction:: CALL CPLCP(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var,INTEGER len, INTEGER n,REAL*4 var_complex,   INTEGER info)
-.. cfunction:: CALL CPLEN(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var,INTEGER len, INTEGER n,INTEGER var_integer,  INTEGER info)
-.. cfunction:: CALL CPLLG(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var,INTEGER len, INTEGER n,INTEGER*8 var_long,   INTEGER info)
+.. function:: CALL CPLRE(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var,INTEGER len, INTEGER n,REAL*4 var_real,      INTEGER info)
+.. function:: CALL CPLDB(LONGP compo, INTEGER dep, REAL*8 tid, tf, INTEGER i, nm_var,INTEGER len, INTEGER n,REAL*8 var_double,    INTEGER info)
+.. function:: CALL CPLCP(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var,INTEGER len, INTEGER n,REAL*4 var_complex,   INTEGER info)
+.. function:: CALL CPLEN(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var,INTEGER len, INTEGER n,INTEGER var_integer,  INTEGER info)
+.. function:: CALL CPLLG(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var,INTEGER len, INTEGER n,INTEGER*8 var_long,   INTEGER info)
 
                can only be used on 64 bits architecture.
-.. cfunction:: CALL CPLLN(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var,INTEGER len, INTEGER n,INTEGER*8 var_long,   INTEGER info)
+.. function:: CALL CPLLN(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var,INTEGER len, INTEGER n,INTEGER*8 var_long,   INTEGER info)
 
                can only be used on 64 bits architecture.
-.. cfunction:: CALL CPLIN(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var,INTEGER len, INTEGER n,INTEGER*4 var_int,    INTEGER info)
-.. cfunction:: CALL CPLLO(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var,INTEGER len, INTEGER n,INTEGER*4 var_boolean,INTEGER info)
-.. cfunction:: CALL CPLCH(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var,INTEGER len, INTEGER n,var_string,           INTEGER info)
+.. function:: CALL CPLIN(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var,INTEGER len, INTEGER n,INTEGER*4 var_int,    INTEGER info)
+.. function:: CALL CPLLO(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var,INTEGER len, INTEGER n,INTEGER*4 var_boolean,INTEGER info)
+.. function:: CALL CPLCH(LONGP compo, INTEGER dep, REAL*4 ti,  tf, INTEGER i, nm_var,INTEGER len, INTEGER n,var_string,           INTEGER info)
 
    :param compo: component address
    :type compo: long
@@ -300,13 +303,13 @@ variable defined for iteration number or time after a given one be erased.
 
 **C:**
 
-.. cfunction:: int info = cp_fini(long *compo, char *nm_var, int i)
+.. function:: int info = cp_fini(long *compo, char *nm_var, int i)
 
    Erase all values of port nm_var before iteration i
 
 **Fortran:**
 
-.. cfunction:: call cpfini(compo, nm_var, i, info)
+.. function:: call cpfini(compo, nm_var, i, info)
 
    :param compo: component address
    :type compo: long
@@ -319,13 +322,13 @@ variable defined for iteration number or time after a given one be erased.
 
 **C:**
 
-.. cfunction:: int info = cp_fint(long *compo, char *nm_var, float t)
+.. function:: int info = cp_fint(long *compo, char *nm_var, float t)
 
    Erase all values of port nm_var before time t
 
 **Fortran:**
 
-.. cfunction:: call cpfint(compo, nm_var, t, info)
+.. function:: call cpfint(compo, nm_var, t, info)
 
    :param compo: component address
    :type compo: long
@@ -338,13 +341,13 @@ variable defined for iteration number or time after a given one be erased.
 
 **C:**
 
-.. cfunction:: int info = cp_effi(long *compo, char *nm_var, int i)
+.. function:: int info = cp_effi(long *compo, char *nm_var, int i)
 
    Erase all values of port nm_var after iteration i
 
 **Fortran:**
 
-.. cfunction:: call cpfini(compo, nm_var, i, info)
+.. function:: call cpfini(compo, nm_var, i, info)
 
    :param compo: component address
    :type compo: long
@@ -357,13 +360,13 @@ variable defined for iteration number or time after a given one be erased.
 
 **C:**
 
-.. cfunction:: int info = cp_efft(long *compo, char *nm_var, float t)
+.. function:: int info = cp_efft(long *compo, char *nm_var, float t)
 
    Erase all values of port nm_var after time t
 
 **Fortran:**
 
-.. cfunction:: call cpfint(compo, nm_var, t, info)
+.. function:: call cpfint(compo, nm_var, t, info)
 
    :param compo: component address
    :type compo: long

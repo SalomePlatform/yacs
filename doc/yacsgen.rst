@@ -1343,6 +1343,54 @@ In this simple case, it is also possible to include directly the content of the 
 For a C++ component, the method is exactly the same, except that there is no default implementation of the Driver interface
 so you have to implement it.
 
+Add YACS type definition to YACSGEN
+++++++++++++++++++++++++++++++++++++++++++++++++++++++
+If you define a port, you need to give a type name. YACSGEN knows about a limited set of types (see :ref:`yacstypes`).
+If you want to add more types either because they have been forgotten or you want to use one from a new module, it is possible
+to add them with the function :func:`module_generator.add_type`. This function can also overload an existing type.
+
+For example, to overload the definition of type GEOM_Object in GEOM module::
+
+    from module_generator import add_type
+    add_type("GEOM_Object", "GEOM::GEOM_Object_ptr", "GEOM::GEOM_Object_out", "GEOM", "GEOM::GEOM_Object","GEOM::GEOM_Object_ptr")
+
+Add YACS module definition to YACSGEN
+++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Now if you want to add a new type from a new module (unknown to YACSGEN), you need to add a module definition to YACSGEN.
+You can add it with the function :func:`module_generator.add_module`. This function can also overload the definition
+of an existing module.
+
+For example, to overload the definition of module GEOM::
+
+    from module_generator import add_module
+
+    idldefs="""
+    #include "GEOM_Gen.idl"
+    """
+
+    makefiledefs="""
+    #module GEOM
+    GEOM_IDL_INCLUDES = -I$(GEOM_ROOT_DIR)/idl/salome
+    GEOM_INCLUDES= -I$(GEOM_ROOT_DIR)/include/salome
+    GEOM_IDL_LIBS= -L$(GEOM_ROOT_DIR)/lib/salome -lSalomeIDLGEOM
+    GEOM_LIBS= -L$(GEOM_ROOT_DIR)/lib/salome
+    SALOME_LIBS += ${GEOM_LIBS}
+    SALOME_IDL_LIBS += ${GEOM_IDL_LIBS}
+    SALOME_INCLUDES += ${GEOM_INCLUDES}
+    IDL_INCLUDES += ${GEOM_IDL_INCLUDES}
+    """
+
+    configdefs="""
+    if test "x${GEOM_ROOT_DIR}" != "x" && test -d ${GEOM_ROOT_DIR} ; then
+      AC_MSG_RESULT(Using GEOM installation in ${GEOM_ROOT_DIR})
+    else
+      AC_MSG_ERROR([Cannot find module GEOM. Have you set GEOM_ROOT_DIR ?],1)
+    fi
+    """
+
+    add_module("GEOM",idldefs,makefiledefs,configdefs)
+
+
 Reference guide 
 -----------------------------------------------------------------
 
@@ -1366,33 +1414,41 @@ The module provides the following classes:
 .. autoclass:: Generator
     :members: generate, bootstrap, configure, make, install, make_appli
 
+.. autofunction:: add_type
+
+.. autofunction:: add_module
+
 .. _yacstypes:
 
 Supported SALOME types
 ----------------------------
 
-======================= =========================== =========================== ===================== ==========================
-   SALOME module            YACS type name            IDL type name              Implementation          Comment
-======================= =========================== =========================== ===================== ==========================
-   GEOM                  GEOM_Object                 GEOM::GEOM_Object             C++, Python
-   SMESH                 SMESH_Mesh                  SMESH::SMESH_Mesh             C++, Python
-   SMESH                 SMESH_Hypothesis            SMESH::SMESH_Hypothesis       C++, Python
-   MED                   SALOME_MED/MED              SALOME_MED::MED               C++, Python
-   MED                   SALOME_MED/MESH             SALOME_MED::MESH              C++, Python
-   MED                   SALOME_MED/SUPPORT          SALOME_MED::SUPPORT           C++, Python
-   MED                   SALOME_MED/FIELD            SALOME_MED::FIELD             C++, Python
-   MED                   SALOME_MED/FIELDDOUBLE      SALOME_MED::FIELDDOUBLE       C++, Python
-   MED                   SALOME_MED/FIELDINT         SALOME_MED::FIELDINT          C++, Python
-   KERNEL                double                      double                      C++, Python, F77
-   KERNEL                long                        long                        C++, Python, F77
-   KERNEL                string                      string                      C++, Python, F77
-   KERNEL                dblevec                     dblevec                     C++, Python, F77       list of double
-   KERNEL                stringvec                   stringvec                   C++, Python, F77       list of string
-   KERNEL                intvec                      intvec                      C++, Python, F77       list of long  
-   KERNEL                pyobj                                                   Python                 a pickled python object   
-   KERNEL                file                                                    C++, Python, F77       to transfer a file
-======================= =========================== =========================== ===================== ==========================
-
-
-
+======================= =============================== ================================ ===================== ==========================
+   SALOME module            YACS type name                    IDL type name                  Implementation          Comment
+======================= =============================== ================================ ===================== ==========================
+   GEOM                  GEOM_Object                     GEOM::GEOM_Object                C++, Python
+   SMESH                 SMESH_Mesh                      SMESH::SMESH_Mesh                C++, Python
+   SMESH                 SMESH_Hypothesis                SMESH::SMESH_Hypothesis          C++, Python
+   MED                   SALOME_MED/MED                  SALOME_MED::MED                  C++, Python
+   MED                   SALOME_MED/MESH                 SALOME_MED::MESH                 C++, Python
+   MED                   SALOME_MED/SUPPORT              SALOME_MED::SUPPORT              C++, Python
+   MED                   SALOME_MED/FIELD                SALOME_MED::FIELD                C++, Python
+   MED                   SALOME_MED/FIELDDOUBLE          SALOME_MED::FIELDDOUBLE          C++, Python
+   MED                   SALOME_MED/FIELDINT             SALOME_MED::FIELDINT             C++, Python
+   KERNEL                double                          double                           C++, Python, F77
+   KERNEL                long                            long                             C++, Python, F77
+   KERNEL                string                          string                           C++, Python, F77
+   KERNEL                dblevec                         dblevec                          C++, Python, F77       list of double
+   KERNEL                stringvec                       stringvec                        C++, Python, F77       list of string
+   KERNEL                intvec                          intvec                           C++, Python, F77       list of long  
+   KERNEL                pyobj                                                            Python                 a pickled python object   
+   KERNEL                file                                                             C++, Python, F77       to transfer a file
+   KERNEL                SALOME_TYPES/Parameter          SALOME_TYPES::Parameter          C++, Python
+   KERNEL                SALOME_TYPES/ParameterList      SALOME_TYPES::ParameterList      C++, Python
+   KERNEL                SALOME_TYPES/Value              SALOME_TYPES::Value              C++, Python
+   KERNEL                SALOME_TYPES/VarList            SALOME_TYPES::VarList            C++, Python
+   KERNEL                SALOME_TYPES/ValueList          SALOME_TYPES::ValueList          C++, Python
+   KERNEL                SALOME_TYPES/ParametricInput    SALOME_TYPES::ParametricInput    C++, Python
+   KERNEL                SALOME_TYPES/ParametricOutput   SALOME_TYPES::ParametricOutput   C++, Python
+======================= =============================== ================================ ===================== ==========================
 
