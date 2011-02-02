@@ -338,26 +338,32 @@ void ForEachLoop::init(bool start)
 
 void ForEachLoop::exUpdateState()
 {
+  DEBTRACE("ForEachLoop::exUpdateState");
   if(_state == YACS::DISABLED)
     return;
   if(_inGate.exIsReady())
     {
-      //setState(YACS::TOACTIVATE); // call this method below
       //internal graph update
       int i;
       int nbOfBr=_nbOfBranches.getIntValue();
       int nbOfElts=_splitterNode.getNumberOfElements();
+
+      DEBTRACE("nbOfElts=" << nbOfElts);
+      DEBTRACE("nbOfBr=" << nbOfBr);
+
       if(nbOfElts==0)
         {
           prepareSequenceValues(0);
           delete _nodeForSpecialCases;
           _nodeForSpecialCases=new FakeNodeForForEachLoop(this,true);
+          setState(YACS::ACTIVATED);
           return ;
         }
       if(nbOfBr<=0)
         {
           delete _nodeForSpecialCases;
           _nodeForSpecialCases=new FakeNodeForForEachLoop(this,getAllOutPortsLeavingCurrentScope().empty());
+          setState(YACS::ACTIVATED);
           return ;
         }
       if(nbOfBr>nbOfElts)
