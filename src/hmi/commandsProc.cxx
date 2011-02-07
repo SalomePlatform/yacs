@@ -69,6 +69,28 @@ using namespace YACS;
 using namespace YACS::ENGINE;
 using namespace YACS::HMI;
 
+
+static std::map<int, std::string> createErrorMsgMap()
+{
+  std::map<int, std::string> m;
+  m[1] = "\nUse the [Ctrl] Drag_N_Drop method if you want to create a input/output link without the associated control link";
+  return m;
+}
+
+std::map<int, std::string> ErrorMsg = createErrorMsgMap();
+
+void setErrorMsg(YACS::Exception& ex)
+{
+  DEBTRACE("errorNumber= "<<ex.errNumber);
+  if(ex.errNumber > 0 && ErrorMsg.count(ex.errNumber) != 0)
+    {
+      DEBTRACE(ErrorMsg[ex.errNumber]);
+      GuiContext::getCurrent()->_lastErrorMessage = ex.what() + ErrorMsg[ex.errNumber];
+    }
+  else
+    GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+}
+
 std::map<int, std::string> ProcInvoc::_typeNameMap;
 
 // ----------------------------------------------------------------------------
@@ -288,7 +310,7 @@ bool CommandAddNodeFromCatalog::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandAddNode::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       if (son) delete son;
       _node = 0;
     }
@@ -329,7 +351,7 @@ bool CommandAddNodeFromCatalog::localReverse()
   catch (Exception& ex)
     {
       DEBTRACE("CommandAddNodeFromCatalog::localReverse(): " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
 }
@@ -417,7 +439,7 @@ bool CommandReparentNode::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandReparentNode::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       node = 0;
     }
   catch (...)
@@ -467,7 +489,7 @@ bool CommandReparentNode::localReverse()
   catch (Exception& ex)
     {
       DEBTRACE("CommandReparentNode::localReverse() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       node = 0;
     }
   catch (...)
@@ -546,7 +568,7 @@ bool CommandPutInComposedNode::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandPutInComposedNode::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       node = 0;
     }
   catch (...)
@@ -606,7 +628,7 @@ bool CommandPutInComposedNode::localReverse()
   catch (Exception& ex)
     {
       DEBTRACE("CommandPutInComposedNode::localReverse() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       node = 0;
     }      
   return (node != 0);
@@ -710,7 +732,7 @@ bool CommandCopyNode::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandCopyNode::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       _clone = 0;
     }
   return (_clone != 0); 
@@ -744,7 +766,7 @@ bool CommandCopyNode::localReverse()
   catch (Exception& ex)
     {
       DEBTRACE("CommandCopyNode::localReverse(): " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
   return true;
@@ -787,7 +809,7 @@ bool CommandRenameNode::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandRenameNode::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       node = 0;
     }
   return (node != 0); 
@@ -810,7 +832,7 @@ bool CommandRenameNode::localReverse()
   catch (Exception& ex)
     {
       DEBTRACE("CommandRenameNode::localReverse() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       node = 0;
     }
   return (node != 0); 
@@ -850,7 +872,7 @@ bool CommandRenameContainer::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandRenameContainer::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       container = 0;
     }
   return (container != 0); 
@@ -876,7 +898,7 @@ bool CommandRenameContainer::localReverse()
   catch (Exception& ex)
     {
       DEBTRACE("CommandRenameContainer::localReverse() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       container = 0;
     }
   return (container != 0); 
@@ -932,7 +954,7 @@ bool CommandRenameInDataPort::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandRenameInDataPort::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       node = 0;
     }
   return (node != 0); 
@@ -971,7 +993,7 @@ bool CommandRenameInDataPort::localReverse()
   catch (Exception& ex)
     {
       DEBTRACE("CommandRenameInDataPort::localReverse() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       node = 0;
     }
   return (node != 0); 
@@ -1026,7 +1048,7 @@ bool CommandRenameOutDataPort::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandRenameOutDataPort::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       node = 0;
     }
   return (node != 0); 
@@ -1064,7 +1086,7 @@ bool CommandRenameOutDataPort::localReverse()
   catch (Exception& ex)
     {
       DEBTRACE("CommandRenameOutDataPort::localReverse() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       node = 0;
     }
   return (node != 0); 
@@ -1129,7 +1151,7 @@ bool CommandAddDataTypeFromCatalog::localReverse()
   catch (Exception& ex)
     {
       DEBTRACE("CommandAddDataTypeFromCatalog::localReverse(): " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return 0;
     }
 }
@@ -1194,7 +1216,7 @@ bool CommandAddInputPortFromCatalog::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandAddInputPortFromCatalog::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       if (son) delete son;
       _inputPort = 0;
     }
@@ -1231,7 +1253,7 @@ bool CommandAddInputPortFromCatalog::localReverse()
   catch (Exception& ex)
     {
       DEBTRACE("CommandAddInputPortFromCatalog::localReverse(): " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
 }
@@ -1295,7 +1317,7 @@ bool CommandAddOutputPortFromCatalog::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandAddOutputPortFromCatalog::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       if (son) delete son;
       _outputPort = 0;
     }
@@ -1332,7 +1354,7 @@ bool CommandAddOutputPortFromCatalog::localReverse()
   catch (Exception& ex)
     {
       DEBTRACE("CommandAddOutputPortFromCatalog::localReverse(): " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
 }
@@ -1393,7 +1415,7 @@ bool CommandAddIDSPortFromCatalog::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandAddIDSPortFromCatalog::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       if (son) delete son;
       _IDSPort = 0;
     }
@@ -1430,7 +1452,7 @@ bool CommandAddIDSPortFromCatalog::localReverse()
   catch (Exception& ex)
     {
       DEBTRACE("CommandAddIDSPortFromCatalog::localReverse(): " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
 }
@@ -1491,7 +1513,7 @@ bool CommandAddODSPortFromCatalog::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandAddODSPortFromCatalog::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       if (son) delete son;
       _ODSPort = 0;
     }
@@ -1528,7 +1550,7 @@ bool CommandAddODSPortFromCatalog::localReverse()
   catch (Exception& ex)
     {
       DEBTRACE("CommandAddODSPortFromCatalog::localReverse(): " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
 }
@@ -1616,7 +1638,7 @@ bool CommandOrderInputPorts::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandOrderInputPorts::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       father = 0;
     }
   return (father != 0);
@@ -1685,7 +1707,7 @@ bool CommandOrderInputPorts::localReverse()
   catch (Exception& ex)
     {
       DEBTRACE("CommandOrderInputPorts::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       father = 0;
     }
   return (father != 0);
@@ -1774,7 +1796,7 @@ bool CommandOrderOutputPorts::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandOrderOutputPorts::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       father = 0;
     }
   return (father != 0);
@@ -1843,7 +1865,7 @@ bool CommandOrderOutputPorts::localReverse()
   catch (Exception& ex)
     {
       DEBTRACE("CommandOrderOutputPorts::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       father = 0;
     }
   return (father != 0);
@@ -2004,7 +2026,7 @@ bool CommandDestroy::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandDestroy::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
 }
@@ -2055,7 +2077,7 @@ bool CommandSetInPortValue::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandSetInPortValue::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
 
@@ -2092,9 +2114,9 @@ bool CommandSetInPortValue::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandSetInPortValue::localExecute() : " << ex.what());
-      PyGILState_Release(gstate);
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
       //Py_DECREF(result);
+      PyGILState_Release(gstate);
+      setErrorMsg(ex);
       return false;
     }
 }
@@ -2121,7 +2143,7 @@ bool CommandSetInPortValue::localReverse()
   catch (Exception& ex)
     {
       DEBTRACE("CommandSetInPortValue::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
 
@@ -2137,6 +2159,7 @@ bool CommandSetInPortValue::localReverse()
     }
 
   PyObject *result = Py_None;
+  PyGILState_STATE gstate = PyGILState_Ensure();
   try
     {
       _value = inp->getAsString();
@@ -2153,14 +2176,16 @@ bool CommandSetInPortValue::localReverse()
         }
       inp->edInit("Python", result);
       Py_DECREF(result);
+      PyGILState_Release(gstate);
       sinp->update(SETVALUE, 0, sinp);
       return true;
     }
   catch (Exception& ex)
     {
       DEBTRACE("CommandSetInPortValue::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
       //Py_DECREF(result);
+      PyGILState_Release(gstate);
+      setErrorMsg(ex);
       return false;
     }
 }
@@ -2203,7 +2228,7 @@ bool CommandSetOutPortValue::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandSetOutPortValue::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
 
@@ -2247,7 +2272,7 @@ bool CommandSetOutPortValue::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandSetOutPortValue::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
 
@@ -2264,7 +2289,7 @@ bool CommandSetOutPortValue::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandSetOutPortValue::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       Py_DECREF(result);
       PyGILState_Release(gstate);
       return false;
@@ -2296,7 +2321,7 @@ bool CommandSetOutPortValue::localReverse()
   catch (Exception& ex)
     {
       DEBTRACE("CommandSetOutPortValue::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
 
@@ -2344,7 +2369,7 @@ bool CommandSetOutPortValue::localReverse()
   catch (Exception& ex)
     {
       DEBTRACE("CommandSetOutPortValue::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
 
@@ -2361,7 +2386,7 @@ bool CommandSetOutPortValue::localReverse()
   catch (Exception& ex)
     {
       DEBTRACE("CommandSetOutPortValue::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       Py_DECREF(result);
       PyGILState_Release(gstate);
       return false;
@@ -2407,7 +2432,7 @@ bool CommandSetSwitchSelect::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandSetSwitchSelect::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
 }
@@ -2429,7 +2454,7 @@ bool CommandSetSwitchSelect::localReverse()
   catch (Exception& ex)
     {
       DEBTRACE("CommandSetSwitchSelect::localReverse() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
 }
@@ -2481,7 +2506,7 @@ bool CommandSetSwitchCase::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandSetSwitchCase::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
 }
@@ -2513,7 +2538,7 @@ bool CommandSetSwitchCase::localReverse()
   catch (Exception& ex)
     {
       DEBTRACE("CommandSetSwitchCase::localReverse() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
 }
@@ -2554,8 +2579,8 @@ bool CommandSetForLoopSteps::localExecute()
     }
   catch (Exception& ex)
     {
-      DEBTRACE("CommandSetSwitchSelect::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      DEBTRACE("CommandSetForLoopSteps::localExecute() : " << ex.what());
+      setErrorMsg(ex);
       return false;
     }
 }
@@ -2577,8 +2602,8 @@ bool CommandSetForLoopSteps::localReverse()
     }
   catch (Exception& ex)
     {
-      DEBTRACE("CommandSetSwitchSelect::localReverse() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      DEBTRACE("CommandSetForLoopSteps::localReverse() : " << ex.what());
+      setErrorMsg(ex);
       return false;
     }
 }
@@ -2617,8 +2642,8 @@ bool CommandSetWhileCondition::localExecute()
     }
   catch (Exception& ex)
     {
-      DEBTRACE("CommandSetSwitchSelect::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      DEBTRACE("CommandSetWhileCondition::localExecute() : " << ex.what());
+      setErrorMsg(ex);
       return false;
     }
 }
@@ -2639,8 +2664,8 @@ bool CommandSetWhileCondition::localReverse()
     }
   catch (Exception& ex)
     {
-      DEBTRACE("CommandSetSwitchSelect::localReverse() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      DEBTRACE("CommandSetWhileCondition::localReverse() : " << ex.what());
+      setErrorMsg(ex);
       return false;
     }
 }
@@ -2683,7 +2708,7 @@ bool CommandSetForEachBranch::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandSetForEachBranch::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
 }
@@ -2708,7 +2733,7 @@ bool CommandSetForEachBranch::localReverse()
   catch (Exception& ex)
     {
       DEBTRACE("CommandSetForEachBranch::localReverse() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
 }
@@ -2755,7 +2780,7 @@ bool CommandSetAlgo::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandSetAlgo::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
 }
@@ -2784,7 +2809,7 @@ bool CommandSetAlgo::localReverse()
   catch (Exception& ex)
     {
       DEBTRACE("CommandSetAlgo::localReverse() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
   return true;
@@ -2902,7 +2927,7 @@ bool CommandAddLink::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandAddLink::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
 }
@@ -2960,7 +2985,7 @@ bool CommandAddLink::localReverse()
   catch (Exception& ex)
     {
       DEBTRACE("CommandAddLink::localReverse(): " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
 }
@@ -3011,7 +3036,7 @@ bool CommandAddControlLink::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandAddControlLink::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
 }
@@ -3042,7 +3067,7 @@ bool CommandAddControlLink::localReverse()
   catch (Exception& ex)
     {
       DEBTRACE("CommandAddControlLink::localReverse(): " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
 }
@@ -3099,7 +3124,7 @@ bool CommandAddContainer::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandAddContainer::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
 }
@@ -3122,7 +3147,7 @@ bool CommandAddContainer::localReverse()
   catch (Exception& ex)
     {
       DEBTRACE("CommandAddContainer::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
 }
@@ -3167,7 +3192,7 @@ bool CommandSetComponentInstanceProperties::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandSetComponentInstanceProperties::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
 }
@@ -3194,7 +3219,7 @@ bool CommandSetComponentInstanceProperties::localReverse()
   catch (Exception& ex)
     {
       DEBTRACE("CommandSetComponentInstanceProperties::localReverse() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
 }
@@ -3235,7 +3260,7 @@ bool CommandSetContainerProperties::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandSetContainerProperties::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
 }
@@ -3259,7 +3284,7 @@ bool CommandSetContainerProperties::localReverse()
   catch (Exception& ex)
     {
       DEBTRACE("CommandSetContainerProperties::localReverse() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
 }
@@ -3301,7 +3326,7 @@ bool CommandSetDSPortProperties::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandSetDSPortProperties::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
 }
@@ -3324,7 +3349,7 @@ bool CommandSetDSPortProperties::localReverse()
   catch (Exception& ex)
     {
       DEBTRACE("CommandSetDSPortProperties::localReverse() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
 }
@@ -3375,7 +3400,7 @@ bool CommandSetLinkProperties::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandSetDSPortProperties::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
 }
@@ -3406,7 +3431,7 @@ bool CommandSetLinkProperties::localReverse()
   catch (Exception& ex)
     {
       DEBTRACE("CommandSetDSPortProperties::localReverse() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
 }
@@ -3453,7 +3478,7 @@ bool CommandSetFuncNodeFunctionName::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandSetFuncNodeFunctionName::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }  
 }
@@ -3479,7 +3504,7 @@ bool CommandSetFuncNodeFunctionName::localReverse()
   catch (Exception& ex)
     {
       DEBTRACE("CommandSetFuncNodeFunctionName::localReverse() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }  
 }
@@ -3529,7 +3554,7 @@ bool CommandSetInlineNodeScript::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandSetInlineNodeScript::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }  
 }
@@ -3558,7 +3583,7 @@ bool CommandSetInlineNodeScript::localReverse()
   catch (Exception& ex)
     {
       DEBTRACE("CommandSetInlineNodeScript::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }  
 }
@@ -3600,7 +3625,7 @@ bool CommandAddComponentInstance::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandAddComponentInstance::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
 }
@@ -3627,7 +3652,7 @@ bool CommandAddComponentInstance::localReverse()
   catch (Exception& ex)
     {
       DEBTRACE("CommandAddComponentInstance::localReverse() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
 }
@@ -3670,7 +3695,7 @@ bool CommandSetExecutionMode::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandSetExecutionMode::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
 }
@@ -3699,7 +3724,7 @@ bool CommandSetExecutionMode::localReverse()
   catch (Exception& ex)
     {
       DEBTRACE("CommandSetExecutionMode::localReverse() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
   return true;
@@ -3755,7 +3780,7 @@ bool CommandSetContainer::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandSetContainer::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
 }
@@ -3792,7 +3817,7 @@ bool CommandSetContainer::localReverse()
   catch (Exception& ex)
     {
       DEBTRACE("CommandSetContainer::localReverse() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
   return true;
@@ -3855,7 +3880,7 @@ bool CommandAssociateComponentToContainer::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandAssociateComponentToContainer::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
 }
@@ -3898,7 +3923,7 @@ bool CommandAssociateComponentToContainer::localReverse()
   catch (Exception& ex)
     {
       DEBTRACE("CommandAssociateComponentToContainer::localReverse() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
   return true;
@@ -3966,7 +3991,7 @@ bool CommandAssociateServiceToComponent::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandAssociateServiceToComponent::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
 }
@@ -4023,7 +4048,7 @@ bool CommandAssociateServiceToComponent::localReverse()
   catch (Exception& ex)
     {
       DEBTRACE("CommandAssociateServiceToComponent::localReverse() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }
 }
@@ -4093,7 +4118,7 @@ bool CommandAddComponentFromCatalog::localExecute()
   catch (Exception& ex)
     {
       DEBTRACE("CommandAddComponentFromCatalog::localExecute() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }      
 }
@@ -4136,7 +4161,7 @@ bool CommandAddComponentFromCatalog::localReverse()
   catch (Exception& ex)
     {
       DEBTRACE("CommandAddComponentFromCatalog::localReverse() : " << ex.what());
-      GuiContext::getCurrent()->_lastErrorMessage = ex.what();
+      setErrorMsg(ex);
       return false;
     }      
 }

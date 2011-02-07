@@ -345,7 +345,7 @@ bool ComposedNode::edAddLink(OutGate *start, InGate *end) throw(YACS::Exception)
   Node* n1=start->getNode();
   Node* n2=end->getNode();
   if(n1==n2)
-    throw Exception("ComposedNode::edAddLink: can not add a control link to a node with itself");
+    throw Exception("ComposedNode::edAddLink: can not add a control link to a node with itself",1);
   ComposedNode* father=checkHavingCommonFather(start->getNode(),end->getNode());
   if(father==0)
     throw Exception("ComposedNode::edAddLink: Trying to add CF link on orphan nodes.");

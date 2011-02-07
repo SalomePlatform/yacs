@@ -292,7 +292,7 @@ void Bloc::checkNoCyclePassingThrough(Node *node) throw(YACS::Exception)
   insertNodeChildrenInSet(node,currentNodesToTest);
   //try to insert node
   if(!(currentNodesToTest.insert(node)).second)
-    throw Exception("Cycle has been detected");
+    throw Exception("Cycle has been detected",1);
 }
 
 std::vector< std::pair<OutGate *, InGate *> > Bloc::getSetOfInternalCFLinks() const

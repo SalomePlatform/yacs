@@ -28,7 +28,7 @@ using namespace YACS;
 #include <execinfo.h>
 #endif
 
-Exception::Exception(const std::string& what):_what(what)
+Exception::Exception(const std::string& what,int errNumber):_what(what),errNumber(errNumber)
 {
 #ifdef _DEVDEBUG_
   void *array[20];

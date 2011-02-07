@@ -32,9 +32,10 @@ namespace YACS
   protected:
     std::string _what;
   public:
-    Exception(const std::string& what);
+    Exception(const std::string& what,int errNumber=0);
     const char *what( void ) const throw ();
     virtual ~Exception() throw ();
+    int errNumber;
   };
 }
 
