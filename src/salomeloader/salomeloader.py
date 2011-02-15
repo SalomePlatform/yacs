@@ -30,7 +30,8 @@ try:
 except ImportError:
   import ElementTree
 
-from sets import Set
+#from sets import Set
+Set=set
 import graph
 import pilot
 import SALOMERuntime

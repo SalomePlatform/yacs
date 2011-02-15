@@ -28,7 +28,8 @@
 """
 
 import os
-from sets import Set
+#from sets import Set
+Set=set
 
 def invert(G):
   """Construit le graphe inverse de G en inversant les liens de voisinage"""
