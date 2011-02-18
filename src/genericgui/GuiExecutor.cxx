@@ -564,3 +564,88 @@ void GuiExecutor::setBPList()
   }
 }
 
+YACS::ExecutorState GuiExecutor::updateSchema(string jobState)
+{
+  YACS::ExecutorState execState = YACS::NOTYETINITIALIZED;
+
+  if (CORBA::is_nil(_engineRef))
+    {
+      DEBTRACE("Create YACS ORB engine!");
+      YACS::ENGINE::RuntimeSALOME* runTime = YACS::ENGINE::getSALOMERuntime();
+      CORBA::ORB_ptr orb = runTime->getOrb();
+      SALOME_NamingService namingService(orb);
+      SALOME_LifeCycleCORBA lcc(&namingService);
+      ostringstream containerName;
+      containerName << "localhost/YACSContainer" << QtGuiContext::getQtCurrent()->getStudyId();
+      Engines::Component_var comp = lcc.FindOrLoad_Component(containerName.str().c_str(), "YACS" );
+      _engineRef =YACS_ORB::YACS_Gen::_narrow(comp);
+      YASSERT(!CORBA::is_nil(_engineRef));
+    }
+
+  if (CORBA::is_nil(_procRef))
+    {
+      DEBTRACE("init _procRef");
+      _procRef = _engineRef->LoadProc(_context->getFileName().toAscii());
+      registerStatusObservers();
+      DEBTRACE("_procRef init");
+    }
+
+  YASSERT(!CORBA::is_nil(_procRef));
+
+  int numid;
+  int state;
+  std::list<Node*> aNodeSet = _proc->getAllRecursiveConstituents();
+  for ( std::list<Node*>::iterator it = aNodeSet.begin(); it != aNodeSet.end(); it++ ){
+
+    numid = (*it)->getNumId();
+
+    state = _proc->getNodeState(numid);
+    int iGui = _serv->_engineToGuiMap[numid-3];
+    YASSERT(_context->_mapOfExecSubjectNode.count(iGui));
+    SubjectNode *snode = _context->_mapOfExecSubjectNode[iGui];
+
+    YACS::ENGINE::Node *node = snode->getNode();
+    list<InputPort*> inports = node->getLocalInputPorts();
+    list<InputPort*>::iterator iti = inports.begin();
+    for ( ; iti != inports.end(); ++iti)
+      {
+        string val = _proc->getInPortValue(numid, (*iti)->getName().c_str());
+        YASSERT(_context->_mapOfSubjectDataPort.count(*iti));
+        SubjectDataPort* port = _context->_mapOfSubjectDataPort[*iti];
+        port->setExecValue(val);
+        port->update(YACS::HMI::UPDATEPROGRESS, 0, port);
+      }
+    list<OutputPort*> outports = node->getLocalOutputPorts();
+    list<OutputPort*>::iterator ito = outports.begin();
+    for ( ; ito != outports.end(); ++ito)
+      {
+        string val = _proc->getOutPortValue(numid, (*ito)->getName().c_str());
+        YASSERT(_context->_mapOfSubjectDataPort.count(*ito));
+        SubjectDataPort* port = _context->_mapOfSubjectDataPort[*ito];
+        port->setExecValue(val);
+        port->update(YACS::HMI::UPDATEPROGRESS, 0, port);
+      }
+    snode->update(YACS::HMI::UPDATEPROGRESS, state, snode);
+  }
+  state = _proc->getRootNode()->getEffectiveState();
+  switch(state){
+  case YACS::LOADED:
+  case YACS::ACTIVATED:
+    if(jobState!="RUNNING")
+      execState = YACS::FINISHED;
+    else
+      execState = YACS::RUNNING;
+    break;
+  case YACS::FAILED:
+  case YACS::DONE:
+    execState = YACS::FINISHED;
+    break;
+  case YACS::SUSPENDED:
+    execState = YACS::PAUSED;
+    break;
+  }
+  SubjectProc *sproc = _context->getSubjectProc();
+  sproc->update(YACS::HMI::UPDATEPROGRESS, execState, sproc);
+
+  return execState;
+}

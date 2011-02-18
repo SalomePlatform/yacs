@@ -91,6 +91,8 @@ namespace YACS
       void shutdownProc();
       void setShutdownLevel(int level){_shutdownLevel=level;}
       int getShutdownLevel(){return _shutdownLevel;}
+      
+      YACS::ExecutorState updateSchema(std::string jobState);
 
       virtual bool event(QEvent *e);
 

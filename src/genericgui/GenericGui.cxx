@@ -54,6 +54,7 @@
 #include "chrono.hxx"
 #include "Resource.hxx"
 #include "Message.hxx"
+#include "ListJobs_GUI.hxx"
 
 #include <QFileDialog>
 #include <sstream>
@@ -90,6 +91,7 @@ GenericGui::GenericGui(YACS::HMI::SuitWrapper* wrapper, QMainWindow *parent)
   _mapViewContext.clear();
   _machineList.clear();
   _menuId = 190;
+  _BJLdialog = NULL;
   QtGuiContext::_counters = new counters(100);
   srand((unsigned)time(0)); 
 
@@ -178,6 +180,7 @@ GenericGui::GenericGui(YACS::HMI::SuitWrapper* wrapper, QMainWindow *parent)
 
 GenericGui::~GenericGui()
 {
+  if(_BJLdialog) delete _BJLdialog;
 }
 
 void GenericGui::createActions()
@@ -234,9 +237,9 @@ void GenericGui::createActions()
                                                 tr("Load Schema to run"), tr("Load a schema for run"),
                                                 0, _parent, false, this,  SLOT(onLoadAndRunSchema()));
 
-  _loadBatchAct = _wrapper->createAction(getMenuId(), tr("Load Batch Schema for edition"), QIcon("icons:batch.png"),
-                                         tr("Load Batch Schema"), tr("Load Batch Schema for edition"),
-                                         0, _parent, false, this,  SLOT(onBatch()));
+  _chooseBatchJobAct = _wrapper->createAction(getMenuId(), tr("Choose Batch Job for watch"), QIcon("icons:batch.png"),
+                                         tr("Choose Batch Job for watch"), tr("Choose Batch Job for watch"),
+                                         0, _parent, false, this,  SLOT(onChooseBatchJob()));
 
   _startResumeAct = _wrapper->createAction(getMenuId(), tr("Start or Resume Schema execution"), QIcon("icons:suspend_resume.png"),
                                            tr("Start/Resume execution"), tr("Start or Resume Schema execution"),
@@ -611,7 +614,7 @@ void GenericGui::createMenus()
   _wrapper->createMenu( _runLoadedSchemaAct, aMenuId );
   _wrapper->createMenu( _loadRunStateSchemaAct, aMenuId );
   _wrapper->createMenu( _loadAndRunSchemaAct, aMenuId );
-  _wrapper->createMenu( _loadBatchAct, aMenuId );
+  _wrapper->createMenu( _chooseBatchJobAct, aMenuId );
   _wrapper->createMenu( _wrapper->separator(), aMenuId);
   _wrapper->createMenu( _undoAct, aMenuId );
   _wrapper->createMenu( _redoAct, aMenuId );
@@ -658,7 +661,7 @@ void GenericGui::createTools()
   _wrapper->createTool( _runLoadedSchemaAct, aToolId );
   _wrapper->createTool( _loadRunStateSchemaAct, aToolId );
   _wrapper->createTool( _loadAndRunSchemaAct, aToolId );
-  _wrapper->createTool( _loadBatchAct, aToolId );
+  _wrapper->createTool( _chooseBatchJobAct, aToolId );
   _wrapper->createTool( _wrapper->separator(), aToolId );
   _wrapper->createTool( _undoAct, aToolId );
   _wrapper->createTool( _redoAct, aToolId );
@@ -708,6 +711,8 @@ void GenericGui::showBaseMenus(bool show)
   _wrapper->setMenuShown(_importSupervSchemaAct, show);
   _wrapper->setMenuShown(_loadAndRunSchemaAct, show);
   _wrapper->setToolShown(_loadAndRunSchemaAct, show);
+  _wrapper->setMenuShown(_chooseBatchJobAct, show);
+  _wrapper->setToolShown(_chooseBatchJobAct, show);
   _wrapper->setMenuShown(_whatsThisAct, show);
   _wrapper->setToolShown(_whatsThisAct, show);
 }
@@ -729,8 +734,6 @@ void GenericGui::showEditionMenus(bool show)
   _wrapper->setToolShown(_redoAct, show);
   _wrapper->setMenuShown(_showUndoAct, show);
   _wrapper->setMenuShown(_showRedoAct, show);
-  _wrapper->setMenuShown(_loadBatchAct, show);
-  _wrapper->setToolShown(_loadBatchAct, show);
   _wrapper->setMenuShown(_importCatalogAct, show);
   _wrapper->setToolShown(_importCatalogAct, show);
 }
@@ -1669,35 +1672,16 @@ void GenericGui::onLoadAndRunSchema()
     }
 }
 
-void GenericGui::onBatch() {
-  DEBTRACE("GenericGui::onBatch");
+void GenericGui::onChooseBatchJob() {
+  DEBTRACE("GenericGui::onChooseBatchJob");
 
-  if (!QtGuiContext::getQtCurrent()) return;
+  // Show the Batch Jobs list
+  if(_BJLdialog) delete _BJLdialog;
+  _BJLdialog = new BatchJobsListDialog("Select one Batch Job to watch",this);
+  _BJLdialog->show();
+  _BJLdialog->move(300,200);
+  _BJLdialog->resize(450,200);
 
-  // Save the current schema
-  YACS::ENGINE::Proc* proc = QtGuiContext::getQtCurrent()->getProc();
-  VisitorSaveGuiSchema aWriter(proc);
-  aWriter.openFileSchema("/tmp/graph_user.xml");
-  aWriter.visitProc();
-  aWriter.closeFileSchema();
-
-  // Load the Batch Schema
-  QString fb = getenv("YACS_ROOT_DIR");
-  fb += "/share/salome/resources/yacs/batch_graph.xml";
-  DEBTRACE("file loaded : " << fb.toStdString());
-
-  proc = _loader->load(fb.toLatin1());
-  if (!proc) {
-    QMessageBox msgBox(QMessageBox::Critical, "Import Batch Schema, native YACS XML format",
-                       "The batch_graph.xml has not the native YACS XML format or is not readable." );
-    msgBox.exec();
-  } else {
-    YACS::ENGINE::Logger* logger= proc->getLogger("parser");
-    if(!logger->isEmpty()) {
-      DEBTRACE(logger->getStr());
-    };
-    createContext(proc, fb, "", true);
-  };
 }
 
 void GenericGui::onStartResume()

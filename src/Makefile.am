@@ -17,7 +17,7 @@
 #  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-MAIN_SUBDIRS = bases batch engine engine_swig runtime runtime_swig wrappergen yacsloader yacsloader_swig yacsorb salomeloader
+MAIN_SUBDIRS = bases engine engine_swig runtime runtime_swig wrappergen yacsloader yacsloader_swig yacsorb salomeloader
 
 if WITH_QT4
 if HAS_GUI

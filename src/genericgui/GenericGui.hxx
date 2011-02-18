@@ -51,6 +51,7 @@ namespace YACS
     class CatalogWidget;
     class YACSGuiLoader;
     class SubjectDataPort;
+    class BatchJobsListDialog;
 
     class GENERICGUI_EXPORT GenericGui: public QObject
     {
@@ -77,9 +78,15 @@ namespace YACS
       void createForEachLoop(std::string type="double");
       virtual void loadSchema(const std::string& filename,bool edit=true);
       virtual void onHelpContextModule( const QString&, const QString&, const QString& = QString() );
+      void createContext(YACS::ENGINE::Proc* proc,
+                         const QString& schemaName,
+                         const QString& runName,
+                         bool forEdition);
+      YACSGuiLoader *getLoader() { return _loader; };
 
       QAction *_newSchemaAct;
       QAction *_importSchemaAct;
+      QAction *_chooseBatchJobAct;
       QAction *_importSupervSchemaAct;
       QAction *_exportSchemaAct;
       QAction *_exportSchemaAsAct;
@@ -88,7 +95,6 @@ namespace YACS
       QAction *_runLoadedSchemaAct;
       QAction *_loadRunStateSchemaAct;
       QAction *_loadAndRunSchemaAct;
-      QAction *_loadBatchAct;
 
       QAction *_startResumeAct;
       QAction *_abortAct;
@@ -184,17 +190,13 @@ namespace YACS
       QAction *_showRedoAct;
 
       YACS::HMI::GuiEditor *_guiEditor;
+      void setLoadedPresentation(YACS::ENGINE::Proc* proc);
 
     public slots:
       void onCleanOnExit();
 
     protected:
       int getMenuId() { return _menuId++; }
-      void createContext(YACS::ENGINE::Proc* proc,
-                         const QString& schemaName,
-                         const QString& runName,
-                         bool forEdition);
-      void setLoadedPresentation(YACS::ENGINE::Proc* proc);
       QString getSaveFileName(const QString& fileName = QString());
 
       YACSGuiLoader *_loader;
@@ -203,6 +205,7 @@ namespace YACS
       QDockWidget* _dwTree;
       QDockWidget* _dwStacked;
       QDockWidget* _dwCatalogs;
+      BatchJobsListDialog* _BJLdialog;
       YACS::ENGINE::Catalog* _builtinCatalog;
       YACS::ENGINE::Catalog* _sessionCatalog;
       CatalogWidget* _catalogsWidget;
@@ -217,6 +220,7 @@ namespace YACS
 
       void onNewSchema();
       void onImportSchema();
+      void onChooseBatchJob();
       void onImportSupervSchema();
       void onExportSchema();
       void onExportSchemaAs();
@@ -225,7 +229,6 @@ namespace YACS
       void onRunLoadedSchema(bool withState = false);
       void onLoadRunStateSchema();
       void onLoadAndRunSchema();
-      void onBatch();
 
       void onStartResume();
       void onAbort();

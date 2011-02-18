@@ -33,6 +33,7 @@
 #ifdef SALOME_KERNEL
 #include "SALOME_NamingService.hxx"
 #include "SALOME_ModuleCatalog.hh"
+#include "Basics_Utils.hxx"
 #endif
 
 #include <iostream>
@@ -65,6 +66,7 @@ static struct argp_option options[] =
     {"stop-on-error",   's', 0,       0,                   "Stop on first error" },
     {"dump-on-error",   'e', "file",  OPTION_ARG_OPTIONAL, "Stop on first error and dump state"},
     {"dump-final",      'f', "file",  OPTION_ARG_OPTIONAL, "dump final state"},
+    {"dump",            'g', "nbsec", OPTION_ARG_OPTIONAL, "dump state"},
     {"load-state",      'l', "file",  0,                   "Load State from a previous partial execution"},
     {"save-xml-schema", 'x', "file",  OPTION_ARG_OPTIONAL, "dump xml schema"},
     {"shutdown",        't', "level", 0,                   "Shutdown the schema: 0=no shutdown to 3=full shutdown (default 1)"},
@@ -81,11 +83,18 @@ struct arguments
   int stop;
   char *dumpErrorFile;
   char *finalDump;
+  int dump;
   char *xmlSchema;
   char *loadState;
   int shutdown;
   int reset;
 };
+
+typedef struct {
+  int nbsec;
+  string dumpFile;
+  string lockFile;
+} thread_st;
 
 #ifdef WNT
 static int
@@ -129,6 +138,12 @@ parse_opt (int key, char *arg, struct argp_state *state)
         myArgs->finalDump = arg;
       else
         myArgs->finalDump = (char *)"finalDumpState.xml";
+      break;      
+    case 'g':
+      if (arg)
+        myArgs->dump = atoi(arg);
+      else
+        myArgs->dump = 60;
       break;      
     case 'l':
       myArgs->loadState = arg;
@@ -203,6 +218,25 @@ void Handler(int theSigId)
   _exit(1);
 }
 
+void * dumpState(void *arg)
+{
+  thread_st *st = (thread_st*)arg;
+  YACS::StatesForNode state = p->getEffectiveState();
+  while((state != YACS::DONE) && (state != YACS::LOADFAILED) && (state != YACS::EXECFAILED) && (state != YACS::INTERNALERR) && (state != YACS::DISABLED) && (state != YACS::FAILED) && (state != YACS::ERROR)){
+    sleep(st->nbsec);
+    string cmd = "touch " + st->lockFile;
+    system(cmd.c_str());
+    YACS::ENGINE::VisitorSaveState vst(p);
+    vst.openFileDump(st->dumpFile);
+    p->accept(&vst);
+    vst.closeFileDump();
+    cmd = "rm -f " + st->lockFile;
+    system(cmd.c_str());
+    state = p->getEffectiveState();
+  }
+  delete st;
+}
+
 #ifndef WNT
 typedef void (*sighandler_t)(int);
 sighandler_t setsig(int sig, sighandler_t handler)
@@ -227,6 +261,7 @@ int main (int argc, char* argv[])
   myArgs.stop = 0;
   myArgs.dumpErrorFile= (char *)"";
   myArgs.finalDump = (char *)"";
+  myArgs.dump = 0;
   myArgs.loadState = (char *)"";
   myArgs.xmlSchema = (char *)"";
   myArgs.shutdown = 1;
@@ -386,6 +421,18 @@ int main (int argc, char* argv[])
           f.close();
         }
 
+      bool isDump = (myArgs.dump != 0);
+      pthread_t th;
+      if (isDump)
+        {
+          thread_st *st = new thread_st;
+          st->nbsec = myArgs.dump;
+          st->dumpFile = string("dumpState_") + myArgs.args[0];
+          string rootFile = st->dumpFile.substr(0,st->dumpFile.find("."));
+          st->lockFile = rootFile + ".lock";
+          pthread_create(&th,NULL,&dumpState,(void*)st);
+        }
+
       cerr << "+++++++++++++++++++ start calculation +++++++++++++++++++" << endl;
       executor.RunW(p,myArgs.display, fromScratch);
       cerr << "+++++++++++++++++++  end calculation  +++++++++++++++++++" << endl;
@@ -404,6 +451,11 @@ int main (int argc, char* argv[])
           std::ofstream g("titi");
           p->writeDot(g);
           g.close();
+        }
+
+      if (isDump)
+        {
+          pthread_join(th,NULL);
         }
 
       bool isFinalDump = (strlen(myArgs.finalDump) != 0);

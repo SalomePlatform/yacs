@@ -143,6 +143,8 @@ libGenericGui_la_SOURCES =        \
   LinkAStar.cxx                   \
   LinkMatrix.hxx                  \
   LinkMatrix.cxx                  \
+  ListJobs_GUI.hxx		  \
+  ListJobs_GUI.cxx                \
   LogViewer.hxx                   \
   LogViewer.cxx                   \
   Menus.hxx                       \
@@ -279,6 +281,7 @@ MOC_FILES = \
   GenericGui_moc.cxx              \
   GraphicsView_moc.cxx            \
   ItemEdition_moc.cxx             \
+  ListJobs_GUI_moc.cxx            \
   LogViewer_moc.cxx               \
   Menus_moc.cxx                   \
   PropertyEditor_moc.cxx          \

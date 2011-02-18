@@ -171,7 +171,6 @@ AC_OUTPUT([ \
   src/Makefile \
   src/bases/Makefile \
   src/bases/Test/Makefile \
-  src/batch/Makefile \
   src/engine/Makefile \
   src/engine/Plugin/Makefile \
   src/engine/Test/Makefile \
