@@ -51,7 +51,6 @@ enable_production=AC_ENABLE_PRODUCTION_DEFAULT)dnl
 AC_CXX_OPTION(-Wno-deprecated,CXXFLAGS)
 AC_CXX_OPTION(-Wparentheses,CXXFLAGS)
 AC_CXX_OPTION(-Wreturn-type,CXXFLAGS)
-AC_CXX_OPTION(-Wmissing-declarations,CXXFLAGS)
 AC_CXX_OPTION(-fmessage-length=0,CXXFLAGS)
 AC_CXX_OPTION(-Wunused,CXXFLAGS)
 AC_CXX_OPTION(-pipe,CXXFLAGS)

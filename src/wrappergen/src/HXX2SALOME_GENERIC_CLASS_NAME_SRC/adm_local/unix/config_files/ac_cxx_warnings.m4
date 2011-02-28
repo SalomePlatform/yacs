@@ -24,6 +24,5 @@ AC_DEFUN([AC_CXX_WARNINGS],[
   AC_CXX_OPTION(-Wno-deprecated,CXXFLAGS)
   AC_CXX_OPTION(-Wparentheses,CXXFLAGS)
   AC_CXX_OPTION(-Wreturn-type,CXXFLAGS)
-  AC_CXX_OPTION(-Wmissing-declarations,CXXFLAGS)
   AC_CXX_OPTION(-Wunused,CXXFLAGS)
 ])
