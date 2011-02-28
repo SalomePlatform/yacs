@@ -103,13 +103,13 @@ The following inclusions are necessary at the beginning of the header of our mod
     #include "SALOME_Component_i.hxx"
 
 The SALOMEconfig.h file contains a number of definitions useful for making the code independent from 
-the version of CORBA used.  SALOME_Component_i.hxx contains the interface of the C++ implementation class of 
-the SALOME basic component (idl Engines::Component).  Finally, the CORBA_SERVER_HEADER macro makes inclusion 
-file names independent of the implementation of the CORBA ORB.
+the version of CORBA used. SALOME_Component_i.hxx contains the interface of the C++ implementation class 
+of the SALOME basic component (idl Engines::EngineComponent). Finally, the CORBA_SERVER_HEADER macro 
+makes inclusion file names independent of the implementation of the CORBA ORB.
 
 The next step is to define an implementation class called HELLO, derived from POA_HELLO_ORB::HELLO_Gen (abstract class 
 generated automatically by CORBA during the compilation of the idl) and Engines_Component_i (because 
-the HELLO_Gen idl interface is derived from Engines::Component like every SALOME component).  
+the HELLO_Gen idl interface is derived from Engines::EngineComponent like every SALOME component).  
 This class contains a constructor whose arguments are imposed by SALOME, a virtual destructor, and 
 a makeBanner method providing the required service::
 
@@ -194,7 +194,8 @@ We import the LifeCycle module from the Python window, and use its services to l
     >>> hello = lcc.FindOrLoadComponent("FactoryServer", "HELLO")
 
 HELLO_ORB has to be imported before FindOrLoadComponent is called, so that a typed object can be 
-returned (“narrowing” operation). Otherwise, the returned object is generic of the Engines:Component type.  
+returned (“narrowing” operation). Otherwise, the returned object is generic of the 
+Engines::EngineComponent type.  
 Let us check that hello object is correctly typed, and we will call the makeBanner service::
 
     >>> print hello

@@ -15,7 +15,6 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
 
 #include <Python.h>
 #include "SALOME_LifeCycleCORBA.hxx"
@@ -93,7 +92,7 @@ void GuiExecutor::startResumeDataflow(bool initialize)
       SALOME_LifeCycleCORBA lcc(&namingService);
       ostringstream containerName;
       containerName << "localhost/YACSContainer" << QtGuiContext::getQtCurrent()->getStudyId();
-      Engines::Component_var comp = lcc.FindOrLoad_Component(containerName.str().c_str(), "YACS" );
+      Engines::EngineComponent_var comp = lcc.FindOrLoad_Component(containerName.str().c_str(), "YACS" );
       _engineRef =YACS_ORB::YACS_Gen::_narrow(comp);
       YASSERT(!CORBA::is_nil(_engineRef));
     }
@@ -577,7 +576,7 @@ YACS::ExecutorState GuiExecutor::updateSchema(string jobState)
       SALOME_LifeCycleCORBA lcc(&namingService);
       ostringstream containerName;
       containerName << "localhost/YACSContainer" << QtGuiContext::getQtCurrent()->getStudyId();
-      Engines::Component_var comp = lcc.FindOrLoad_Component(containerName.str().c_str(), "YACS" );
+      Engines::EngineComponent_var comp = lcc.FindOrLoad_Component(containerName.str().c_str(), "YACS" );
       _engineRef =YACS_ORB::YACS_Gen::_narrow(comp);
       YASSERT(!CORBA::is_nil(_engineRef));
     }

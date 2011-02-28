@@ -15,7 +15,6 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
 
 #ifndef __YACSGUI_IDL__
 #define __YACSGUI_IDL__
@@ -70,7 +69,7 @@ module YACS_ORB
     void unsetStopOnError();
   };
 
-  interface YACS_Gen : Engines::Component, SALOMEDS::Driver
+  interface YACS_Gen : Engines::EngineComponent, SALOMEDS::Driver
   {
     ProcExec LoadProc(in string xmlFile);
     string convertSupervFile(in string xmlFile);
@@ -78,4 +77,4 @@ module YACS_ORB
 
 };
 
-#endif 
+#endif

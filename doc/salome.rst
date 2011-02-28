@@ -24,13 +24,13 @@ Principle
 The IDL description is similar to the description of a standard CORBA component with the following special features:
 
 - the component must form part of the basic ``Engines`` module (CORBA)
-- the component must inherit from the SALOME basic component:  ``Engines::Component`` (defined in the IDL ``“SALOME_Component.idl”`` file)
+- the component must inherit from the SALOME basic component:  ``Engines::EngineComponent`` (defined in the IDL ``“SALOME_Component.idl”`` file)
 - the services of the component may have ``in``, ``out`` parameters and /or a return value, but no ``inout`` parameters.
 
 **Notes**
 
 #.  The ``Engines`` module includes all SALOME components other than the SALOME central components
-#.  The ``Engines::Component`` basic component avoids the need to redefine common services (stop, restart, etc.) for each 
+#.  The ``Engines::EngineComponent`` basic component avoids the need to redefine common services (stop, restart, etc.) for each 
     component added to the system
 #.  This is not a limitation, an ``inout`` parameter can be decoupled into an ``in`` parameter and an ``out`` 
     parameter (in any case, this is the form in which python clients will see it).

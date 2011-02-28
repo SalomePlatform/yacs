@@ -98,8 +98,7 @@ and install all the generated files in the right module installation directories
 to be modified to reach this goal.
 
 The idl file itself must define a CORBA module for which the name must be different from the module 
-name to avoid name conflicts and define a CORBA interface that is derived at least from the Component interface 
-of the Engines module.  
+name to avoid name conflicts and define a CORBA interface that is derived at least from the EngineComponent interface of the Engines module.  
 The name of the CORBA module will be PYHELLO_ORB and the name of the interface will be PYHELLO_Gen.
 
 The src directory

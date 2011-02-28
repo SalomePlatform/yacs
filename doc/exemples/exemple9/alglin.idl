@@ -4,7 +4,7 @@ module Engines {
 
   typedef sequence<double> vecteur;
   
-  interface AlgLin : Component 
+  interface AlgLin : EngineComponent
   {
     void    addvec(out vecteur C, in vecteur A, in vecteur B);
     double  prdscl(in vecteur A, in vecteur B);

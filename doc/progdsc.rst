@@ -147,7 +147,7 @@ The first step is to define interfaces of the component and the port interface:
 The IDL file comprises firstly the declaration of the provides port interface that the component will provide.  
 In this case it is the HelloWorld interface.  This interface is a classical CORBA interface.  On the other hand, this 
 interface must inherit from Ports::Port if it is to be a DSC port.  The Ex_Serveur component is also declared 
-as a CORBA interface that inherits from the Engines::DSC interface instead of Engines::Component.  
+as a CORBA interface that inherits from the Engines::DSC interface instead of Engines::EngineComponent.  
 Note that the provides port does not appear in the IDL definition of the component.  The port is added and 
 declared in implementation sources of the component.  It is added dynamically when the component is executed.
  
@@ -354,11 +354,12 @@ The following is the IDL definition of the two components:
   };
 
 In order to declare a component that will contain services using DSC ports, the component must inherit 
-from the Engines::Superv_Component interface and no longer from the Engines::Component interface.  In addition 
-to adding the DSC interface to the component, Engines::Superv_Component adds the init_service() method that 
-the supervisor calls before the service is executed.  The purpose of this method is to enable the service designer 
-to initialise ports for the service for connection before the service is actually started.  
-init_service() performs the same function as register_ports() in the previous examples.
+from the Engines::Superv_Component interface and no longer from the Engines::EngineComponent interface. 
+In addition to adding the DSC interface to the component, Engines::Superv_Component adds the 
+init_service() method that the supervisor calls before the service is executed. The purpose of this 
+method is to enable the service designer to initialise ports for the service for connection before 
+the service is actually started. init_service() performs the same function as register_ports() in 
+the previous examples.
 
 The next step is to implement these two components.  The first difference from a classical component is that it 
 must inherit from the Superv_Component_i class. It must also implement the init_service() method.

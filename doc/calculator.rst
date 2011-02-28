@@ -102,7 +102,7 @@ The chosen methods demonstrate the use of MED fields ( FIELDDOUBLE  interface) a
     {
       /*! \brief Interface of the %CALCULATOR component
        */
-      interface CALCULATOR_Gen : Engines::Component
+      interface CALCULATOR_Gen : Engines::EngineComponent
       {
          /*!
              Calculate the maximum relative difference of field with the previous one.
@@ -182,7 +182,7 @@ The main points to note are:
 
 
 
-* the inclusion of   SALOME_Component.idl   and   SALOME_Exception.idl  files, necessary for each SALOME component (the CALCULATOR interface inherit from  Engines::Component  to benefit common services),
+* the inclusion of   SALOME_Component.idl   and   SALOME_Exception.idl  files, necessary for each SALOME component (the CALCULATOR interface inherit from  Engines::EngineComponent  to benefit common services),
 
 
 

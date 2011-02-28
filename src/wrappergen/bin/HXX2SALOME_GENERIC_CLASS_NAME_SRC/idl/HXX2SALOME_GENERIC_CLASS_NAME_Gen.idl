@@ -15,7 +15,6 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
 
 #ifndef __HXX2SALOME_GENERIC_CLASS_NAME_GEN_hxx2salome__
 #define __HXX2SALOME_GENERIC_CLASS_NAME_GEN_hxx2salome__
@@ -29,11 +28,10 @@ module HXX2SALOME_GENERIC_CLASS_NAME_ORB
 {
   /*! \brief Interface of the %HXX2SALOME_GENERIC_CLASS_NAME component
    */
-  interface HXX2SALOME_GENERIC_CLASS_NAME_Gen : Engines::Component, SALOME::MultiCommClass
+  interface HXX2SALOME_GENERIC_CLASS_NAME_Gen : Engines::EngineComponent, SALOME::MultiCommClass
   {
 HXX2SALOME_IDL_CODE
   };
 };
 
 #endif
-

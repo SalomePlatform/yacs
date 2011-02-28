@@ -866,7 +866,7 @@ YACS general architecture
 ------------------------------
 
 YACS module implements API of a full SALOME module only for the schema execution.  The schema edition is done in the GUI process alone.  
-For execution, YACS has a CORBA servant that implements Engines::Component CORBA interface (see SALOME KERNEL IDL interfaces).  
+For execution, YACS has a CORBA servant that implements Engines::EngineComponent CORBA interface (see SALOME KERNEL IDL interfaces).  
 YACS GUI and YACS CORBA engine share YACS core libraries (engine and runtime): GUI uses them at schema design time, then a schema XML 
 file is saved and passed to YACS CORBA API, and finally YACS core libraries execute the schema at YACS CORBA server side.
 
@@ -943,5 +943,4 @@ Goals of Graphic User Interface design are the following:
       correspond to the different views in case of YACS.
     * Provide an interface of Engine for edition with a general mechanism for undo-redo.
     * Be as independent as possible of Qt (and SALOME) to allow a potential re-use of YACS GUI outside SALOME.
-
 

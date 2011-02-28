@@ -15,7 +15,6 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
 
 //#define REFCNT
 //
@@ -504,7 +503,7 @@ void SalomeNode::execute()
   YACSTRACE(1,"+++++++++++++++++ SalomeNode::execute: " << getName() << " " << _method << " +++++++++++++++++" );
   {
     CORBA::Object_var objComponent=((SalomeComponent*)_component)->getCompoPtr();
-    Engines::Component_var compo=Engines::Component::_narrow(objComponent);
+    Engines::EngineComponent_var compo=Engines::EngineComponent::_narrow(objComponent);
 
     // Set component properties
     if(_propertyMap.size() > 0)
@@ -837,7 +836,7 @@ std::string SalomeNode::getContainerLog()
   try
     {
       CORBA::Object_var objComponent=((SalomeComponent*)_component)->getCompoPtr();
-      Engines::Component_var compo=Engines::Component::_narrow(objComponent);
+      Engines::EngineComponent_var compo=Engines::EngineComponent::_narrow(objComponent);
       if( !CORBA::is_nil(compo) )
         {
           Engines::Container_var cont= compo->GetContainerRef();

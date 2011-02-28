@@ -15,7 +15,6 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
 
 #include "HXX2SALOME_GENERIC_CLASS_NAMEGUI.h"
 
@@ -52,7 +51,7 @@ HXX2SALOME_GENERIC_CLASS_NAMEGUI::HXX2SALOME_GENERIC_CLASS_NAMEGUI() :
 // Gets a reference to the module's engine
 HXX2SALOME_GENERIC_CLASS_NAME_ORB::HXX2SALOME_GENERIC_CLASS_NAME_Gen_ptr HXX2SALOME_GENERIC_CLASS_NAMEGUI::InitHXX2SALOME_GENERIC_CLASS_NAMEGen( SalomeApp_Application* app )
 {
-  Engines::Component_var comp = app->lcc()->FindOrLoad_Component( "FactoryServer",COMPONENT_NAME );
+  Engines::EngineComponent_var comp = app->lcc()->FindOrLoad_Component( "FactoryServer",COMPONENT_NAME );
   HXX2SALOME_GENERIC_CLASS_NAME_ORB::HXX2SALOME_GENERIC_CLASS_NAME_Gen_ptr clr = HXX2SALOME_GENERIC_CLASS_NAME_ORB::HXX2SALOME_GENERIC_CLASS_NAME_Gen::_narrow(comp);
   ASSERT(!CORBA::is_nil(clr));
   return clr;

@@ -401,7 +401,7 @@ To finish, let's have a look on the IDL generated module corresponding to our ne
 
     module CoreComponent_ORB
     {
-      interface CoreComponent_Gen : Engines::Component,
+      interface CoreComponent_Gen : Engines::EngineComponent,
                                     SALOME::MultiCommClass
       {
            void start();
@@ -686,6 +686,4 @@ Limitations – Advice
 .. [H1] The MED Calculator component (N. Crouzet) (see :ref:`calculator`).
 
 .. [H2] Integration of components into the SALOME environment (M. Tajchman) (see :ref:`components`)
-
-
 
