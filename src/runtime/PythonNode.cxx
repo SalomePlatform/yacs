@@ -503,7 +503,7 @@ void PythonNode::shutdown(int level)
   if(_mode=="local")return;
   if(_container)
     {
-      if(!CORBA::is_nil(_pynode)) _pynode->Destroy();
+      if(!CORBA::is_nil(_pynode)) _pynode->UnRegister();
       _pynode=Engines::PyScriptNode::_nil();
       _container->shutdown(level);
     }
@@ -584,7 +584,7 @@ PyFuncNode::~PyFuncNode()
   PyGILState_Release(gstate);
   if(!CORBA::is_nil(_pynode))
     {
-      _pynode->Destroy();
+      _pynode->UnRegister();
     }
 }
 
@@ -1098,7 +1098,7 @@ void PyFuncNode::shutdown(int level)
   if(_mode=="local")return;
   if(_container)
     {
-      if(!CORBA::is_nil(_pynode)) _pynode->Destroy();
+      if(!CORBA::is_nil(_pynode)) _pynode->UnRegister();
       _pynode=Engines::PyNode::_nil();
       _container->shutdown(level);
     }

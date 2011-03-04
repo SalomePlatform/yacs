@@ -61,7 +61,7 @@ void releaseObj(CORBA::Any& data)
       if(!CORBA::is_nil(gobj))
         {
           DEBTRACE("It's a SALOME::GenericObj");
-          gobj->Destroy();
+          gobj->UnRegister();
         }
       else
           DEBTRACE("It's a CORBA::Object but not a SALOME::GenericObj");
