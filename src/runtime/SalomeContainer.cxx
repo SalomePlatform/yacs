@@ -330,6 +330,12 @@ CORBA::Object_ptr SalomeContainer::loadComponent(ComponentInstance *inst)
       // prepare component instance properties
       Engines::FieldsDict_var env = new Engines::FieldsDict;
       std::map<std::string, std::string> properties = inst->getProperties();
+      if(p)
+        {
+          std::map<std::string,std::string> procMap=p->getProperties();
+          properties.insert(procMap.begin(),procMap.end());
+        }
+
       std::map<std::string, std::string>::const_iterator itm;
       env->length(properties.size());
       int item=0;

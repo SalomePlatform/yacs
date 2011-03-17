@@ -396,9 +396,27 @@ void Node::setProperty(const std::string& name, const std::string& value)
 
 std::string Node::getProperty(const std::string& name)
 {
-  return _propertyMap[name];
+  std::map<std::string,std::string>::iterator it=_propertyMap.find(name);
+
+  if(it != _propertyMap.end())
+    return it->second;
+  else if(_father)
+    return _father->getProperty(name);
+  else
+    return "";
 }
 
+std::map<std::string,std::string> Node::getProperties()
+{
+  std::map<std::string,std::string> amap=_propertyMap;
+  if(_father)
+    {
+      std::map<std::string,std::string> fatherMap=_father->getProperties();
+      amap.insert(fatherMap.begin(),fatherMap.end());
+    }
+
+  return amap;
+}
 
 //! Return the node state in the context of its father
 /*!

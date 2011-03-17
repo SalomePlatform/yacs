@@ -506,13 +506,14 @@ void SalomeNode::execute()
     Engines::EngineComponent_var compo=Engines::EngineComponent::_narrow(objComponent);
 
     // Set component properties
-    if(_propertyMap.size() > 0)
+    std::map<std::string,std::string> amap=getProperties();
+    if(amap.size() > 0)
       {
         Engines::FieldsDict_var dico = new Engines::FieldsDict;
-        dico->length(_propertyMap.size());
+        dico->length(amap.size());
         std::map<std::string,std::string>::const_iterator it;
         int i=0;
-        for(it = _propertyMap.begin(); it != _propertyMap.end(); ++it)
+        for(it = amap.begin(); it != amap.end(); ++it)
           {
             dico[i].key=CORBA::string_dup(it->first.c_str());
             dico[i].value <<=it->second.c_str();

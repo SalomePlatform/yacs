@@ -90,10 +90,10 @@ void StudyInNode::execute()
     }
 
   int studyid=1;
-  if (_propertyMap.find("StudyID") != _propertyMap.end())
+  if (getProperty("StudyID") != "")
     {
       // StudyId is specified
-      studyid=atoi(_propertyMap["StudyID"].c_str());
+      studyid=atoi(getProperty("StudyID").c_str());
     }
   else
     {
@@ -258,10 +258,10 @@ void StudyOutNode::execute()
     }
 
   int studyid=1;
-  if (_propertyMap.find("StudyID") != _propertyMap.end())
+  if (getProperty("StudyID") != "")
     {
       // StudyId is specified
-      studyid=atoi(_propertyMap["StudyID"].c_str());
+      studyid=atoi(getProperty("StudyID").c_str());
     }
   else
     {
