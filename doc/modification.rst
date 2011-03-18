@@ -613,6 +613,8 @@ The property page for schema is shown on the figure below.
 .. centered::
   **Property page for schema**
 
+It is possible to add properties to the schema. 
+These are properties for all the nodes defined in the schema.
 
 .. _pp_for_node:
 
@@ -657,7 +659,7 @@ The pages allow the user to:
 
 + edit the python code with an external editor (**External Editor** button, if set in :ref:`user preferences <set_user_preferences>`).
 
-An inline function node can be executed in a remote container by setting its execution mode to **Remote** and selecting a container 
+An inline node can be executed in a remote container by setting its execution mode to **Remote** and selecting a container 
 in the containers list.
 
 .. image:: images/functionality_list_65b.jpg
@@ -695,6 +697,8 @@ The page allows the user to:
 
 + change values of input ports, if it is not linked,
 
++ change or add properties
+
 Property page for Block node
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 The property page for **Block** node is shown on the figure below.
@@ -710,6 +714,8 @@ The page allows the user to :
 + change the name of the node,
 
 + read the full name of the node (this field is read only and updated if the user changes the node name),
+
++ change or add properties. These are properties for all the nodes defined in the Block.
 
 Property page for For Loop node
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''

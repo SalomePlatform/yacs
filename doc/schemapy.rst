@@ -236,6 +236,12 @@ type input port p1 and a double type output port p1::
 Our node is now fully defined with its name, script, ports and context.  It retrieves the double in the input port p1, adds 2.5 to it 
 and puts the result into the output port p1.
 
+If you want to execute your script node on a remote container, you have to set the execution mode of the node to **remote**
+and to assign a container (see :ref:`py_container` to define a container) to the node as in the following example::
+
+  n.setExecutionMode("remote")
+  n.setContainer(cont1)
+
 .. _pyfunc:
 
 Python function node

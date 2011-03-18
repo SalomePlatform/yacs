@@ -172,7 +172,7 @@ Elementary calculation nodes
 An elementary calculation node represents a particular calculation function (for example multiplication of 2 matrices).  
 Every calculation node has a type. There can be one node type that executes a service of a SALOME component and another 
 node type that executes a piece of Python script.  
-Elementary calculation nodes are distributed into two categories: inline nodes that are executed locally in the YACS coupler, 
+Elementary calculation nodes are distributed into two categories: inline nodes that are executed mainly in the YACS coupler, 
 and service nodes that are executed remotely and correspond to the use of SALOME components.
 
 Every calculation node has a name used as an identifier. This identifier must be unique in its definition context. A context is 
@@ -198,7 +198,8 @@ name present in the execution context. These variables must necessarily be prese
 
 When this type of node is an internal node in a loop, the execution context is reinitialised for each iteration of the loop.
 
-This type of node is executed in the YACS process. It can not be executed in remote processes.
+This type of node is executed mainly in the YACS process but it can be executed in remote 
+processes (but only in YACS containers :ref:`containers`).
 
 To create this type of node:
 
@@ -222,7 +223,8 @@ for the output ports of the same name.
 When this type of node is an internal node in a loop, the execution context is kept for every iteration of the loop, so 
 that variables can be reused during iterations.
 
-Unlike script inline node, this type of node can be executed in remote processes (but only YACS containers :ref:`containers`).
+This type of node is executed mainly in the YACS process but it can be executed in remote 
+processes (but only in YACS containers :ref:`containers`).
 
 To create this type of node:
 
@@ -253,7 +255,9 @@ Placement of the SALOME service can be managed by the same name to denote the YA
 This is only possible with the first node definition form. If no placement information is given, the service will be placed 
 on the default container of the SALOME platform:  FactoryServer container on the local machine.
 
-The properties of a SALOME service node are converted into environment variables when the service is executed.
+The properties of a SALOME service node are converted into environment variables when the service is executed and can be retrieved
+in the component with the method getProperties that returns an Engines::FieldsDict struct. The retrieved properties are the
+properties of the node completed by the properties of the including Blocs.
 
 To create this type of node:
 
@@ -449,6 +453,9 @@ A calculation scheme is a Bloc.  The Bloc is manipulated in a manner similar to 
 It is provided with a single input control port and a single output control port.  
 Consequently, two blocks connected through a dataflow data link will be executed in sequence, all nodes in the 
 first block will be executed before starting the second block.
+
+A Bloc node may have properties. A property is a pair (name, value), where name is the name of the property and value 
+is a character string that gives its value. The properties of a Bloc are inherited by the nodes in the Bloc.
 
 To create this type of node:
 

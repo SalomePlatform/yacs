@@ -180,6 +180,20 @@ An example node with input and output ports:
 
 The node now receives p1 as the input variable, adds 10 to it and exports it as an output variable.
 
+If you want to execute your script node on a remote container, you have to change the tag from **inline** to **remote**
+and to add a tag **load** in the definition of the node as in the following example: 
+
+.. code-block:: xml
+
+         <remote name="node1" >
+           <script>
+             <code>p1=p1+10</code>
+           </script>
+           <load container="cont1" />
+           <inport name="p1" type="int"/>
+           <outport name="p1" type="int"/>
+         </remote>
+
 .. _xml_function_node:
 
 Python function node
