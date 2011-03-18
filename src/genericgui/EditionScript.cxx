@@ -106,8 +106,14 @@ EditionScript::EditionScript(Subject* subject,
   icon.addFile("icons:icon_up.png", QSize(), QIcon::Normal, QIcon::On);
   tb_options->setIcon(icon);
   hboxLayout->addWidget(tb_options);
+
   QLabel* label = new QLabel("Execution Mode");
+  QFont font;
+  font.setBold(true);
+  font.setWeight(75);
+  label->setFont(font);
   hboxLayout->addWidget(label);
+
   _portslayout->addLayout(hboxLayout);
 
   fr_options = new QFrame();

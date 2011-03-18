@@ -18,6 +18,7 @@
 //
 
 #include "EditionSalomeNode.hxx"
+#include "PropertyEditor.hxx"
 #include "FormComponent.hxx"
 #include "FormContainer.hxx"
 #include "ServiceNode.hxx"
@@ -44,6 +45,10 @@ EditionSalomeNode::EditionSalomeNode(Subject* subject,
                                      const char* name)
   : EditionElementaryNode(subject, parent, name)
 {
+
+  // --- create property editor panel
+  _propeditor=new PropertyEditor(_subject);
+  _wid->gridLayout1->addWidget(_propeditor);
 
   // --- create container and component panels
 
@@ -122,6 +127,10 @@ void EditionSalomeNode::update(GuiEvent event, int type, Subject* son)
     case ASSOCIATE:
       DEBTRACE("ASSOCIATE");       
       fillContainerPanel();
+      break;
+
+    case SETVALUE:
+      _propeditor->update();
       break;
 
     default:

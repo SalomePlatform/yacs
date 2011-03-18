@@ -18,6 +18,7 @@
 //
 
 #include "EditionBloc.hxx"
+#include "PropertyEditor.hxx"
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -32,9 +33,18 @@ EditionBloc::EditionBloc(Subject* subject,
                          const char* name)
   : EditionNode(subject, parent, name)
 {
+  _propeditor=new PropertyEditor(_subject);
+  _wid->gridLayout1->addWidget(_propeditor);
 }
 
 EditionBloc::~EditionBloc()
 {
+}
+
+void EditionBloc::update(GuiEvent event, int type, Subject* son)
+{
+  DEBTRACE("EditionBloc::update " <<eventName(event) << " " << type);
+  if(event == SETVALUE)
+    _propeditor->update();
 }
 

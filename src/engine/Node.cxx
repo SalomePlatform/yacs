@@ -418,6 +418,12 @@ std::map<std::string,std::string> Node::getProperties()
   return amap;
 }
 
+void Node::setProperties(std::map<std::string,std::string> properties)
+{
+  _propertyMap.clear();
+  _propertyMap=properties;
+}
+
 //! Return the node state in the context of its father
 /*!
  * \return the effective node state

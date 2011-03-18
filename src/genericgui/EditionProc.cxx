@@ -63,7 +63,7 @@ EditionProc::EditionProc(Subject* subject,
       connect(cb, SIGNAL(currentIndexChanged(int)), this, SLOT(onLevelChange(int)));
       hbox->addWidget(la);
       hbox->addWidget(cb);
-      _wid->gridLayout1->addLayout(hbox,3,0);
+      _wid->gridLayout1->addLayout(hbox,4,0);
     }
 }
 

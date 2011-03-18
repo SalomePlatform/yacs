@@ -1278,6 +1278,27 @@ void SubjectNode::removeExternalControlLinks()
     }
 }
 
+std::map<std::string, std::string> SubjectNode::getProperties()
+{
+  return _node->getPropertyMap();
+}
+
+bool SubjectNode::setProperties(std::map<std::string, std::string> properties)
+{
+  Proc *proc = GuiContext::getCurrent()->getProc();
+  string position = "";
+  if (proc != dynamic_cast<Proc*>(_node)) position = proc->getChildName(_node);
+
+  CommandSetNodeProperties *command = new CommandSetNodeProperties(position, properties);
+  if (command->execute())
+    {
+      GuiContext::getCurrent()->getInvoc()->add(command);
+      return true;
+    }
+  else delete command;
+  return false;
+}
+
 // ----------------------------------------------------------------------------
 
 SubjectComposedNode::SubjectComposedNode(YACS::ENGINE::ComposedNode *composedNode,

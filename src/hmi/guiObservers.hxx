@@ -285,6 +285,8 @@ namespace YACS
       friend class CommandAddODSPortFromCatalog;
       SubjectNode(YACS::ENGINE::Node *node, Subject *parent);
       virtual ~SubjectNode();
+      virtual bool setProperties(std::map<std::string, std::string> properties);
+      virtual std::map<std::string, std::string> getProperties();
       virtual bool reparent(Subject* parent);
       virtual bool copy(Subject* parent);
       virtual std::string getName();

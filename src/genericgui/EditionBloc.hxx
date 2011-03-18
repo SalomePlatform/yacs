@@ -26,6 +26,7 @@ namespace YACS
 {
   namespace HMI
   {
+    class PropertyEditor;
 
     class EditionBloc: public EditionNode
     {
@@ -34,7 +35,10 @@ namespace YACS
                   QWidget* parent = 0,
                   const char* name = 0);
       virtual ~EditionBloc();
+      virtual void update(GuiEvent event, int type, Subject* son);
       // liste de nodes fils
+    protected:
+      PropertyEditor* _propeditor;
     };
   }
 }

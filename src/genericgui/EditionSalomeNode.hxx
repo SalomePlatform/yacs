@@ -37,6 +37,7 @@ namespace YACS
 
   namespace HMI
   {
+    class PropertyEditor;
       // ports en cablage plus initialisation seulement
       // choix de l'instance de composant
       // panneau depliable instance de composant
@@ -64,6 +65,7 @@ namespace YACS
       virtual void onCancel();
 
     protected:
+      PropertyEditor* _propeditor;
       FormComponent *_wComponent;
       FormContainer *_wContainer;
       QHBoxLayout *_hbl_method;

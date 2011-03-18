@@ -66,12 +66,27 @@ PropertyEditor::PropertyEditor(Subject* subject,QWidget *parent):QWidget(parent)
   connect(_table, SIGNAL(itemChanged(QTableWidgetItem *)),this, SLOT(onItemChanged(QTableWidgetItem *)));
   connect(_removeAction, SIGNAL(triggered()), this, SLOT(onRemoveProperty()));
 
-  _bar=new QToolBar();
+  QHBoxLayout* hboxLayout = new QHBoxLayout();
+  hboxLayout->setMargin(0);
+  QToolButton* tb_options = new QToolButton();
+  tb_options->setCheckable(true);
+  QIcon icon;
+  icon.addFile("icons:icon_down.png");
+  icon.addFile("icons:icon_up.png", QSize(), QIcon::Normal, QIcon::On);
+  tb_options->setIcon(icon);
+  hboxLayout->addWidget(tb_options);
+  connect(tb_options, SIGNAL(toggled(bool)), this, SLOT(on_tb_options_toggled(bool)));
 
   QLabel* label=new QLabel("Properties     ");
-  _bar->addWidget(label);
-  QToolButton* button;
-  button=new QToolButton();
+  QFont font;
+  font.setBold(true);
+  font.setWeight(75);
+  label->setFont(font);
+  hboxLayout->addWidget(label);
+
+  _bar=new QToolBar();
+
+  QToolButton* button=new QToolButton();
   button->setDefaultAction(_addAction);
   button->setPopupMode(QToolButton::InstantPopup);
   _bar->addWidget(button);
@@ -79,12 +94,16 @@ PropertyEditor::PropertyEditor(Subject* subject,QWidget *parent):QWidget(parent)
   button=new QToolButton();
   button->setDefaultAction(_removeAction);
   _bar->addWidget(button);
+  hboxLayout->addWidget(_bar);
 
   QVBoxLayout *layout = new QVBoxLayout;
-  layout->addWidget(_bar);
+  layout->setMargin(0);
+  layout->addLayout(hboxLayout);
   layout->addWidget(_table);
   setLayout(layout);
-//  layout->setSizeConstraint(QLayout::SetFixedSize);
+
+  _table->hide();
+  _bar->hide();
 
   update();
   updateMenu();
@@ -236,3 +255,19 @@ void PropertyEditor::setProperties()
   if(!ret)
      Message mess;
 }
+
+void PropertyEditor::on_tb_options_toggled(bool checked)
+{
+  DEBTRACE("PropertyEditor::on_tb_options_toggled " << checked);
+  if(checked)
+    {
+      _table->show();
+      _bar->show();
+    }
+  else
+    {
+      _table->hide();
+      _bar->hide();
+    }
+}
+

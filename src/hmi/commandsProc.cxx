@@ -3154,6 +3154,78 @@ bool CommandAddContainer::localReverse()
 
 // ----------------------------------------------------------------------------
 
+CommandSetNodeProperties::CommandSetNodeProperties(std::string position, std::map<std::string,std::string> properties)
+  : Command(), _position(position), _properties(properties)
+{
+  DEBTRACE("CommandSetNodeProperties::CommandSetNodeProperties " << position);
+  _oldProp.clear();
+}
+
+std::string CommandSetNodeProperties::dump()
+{
+  string ret ="CommandSetNodeProperties " + _position;
+  return ret;
+}
+
+bool CommandSetNodeProperties::localExecute()
+{
+  DEBTRACE("CommandSetNodeProperties::localExecute");
+  try
+    {
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      Node* node = proc;
+
+      if (!_position.empty()) node = proc->getChildByName(_position);
+
+      if (node)
+        {
+          _oldProp = node->getPropertyMap();
+          node->setProperties(_properties);
+          SubjectNode *snode = GuiContext::getCurrent()->_mapOfSubjectNode[node];
+          snode->update(SETVALUE, 0, snode);
+          return true;
+        }
+      GuiContext::getCurrent()->_lastErrorMessage = "node not found: " + _position;
+      return false;
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandSetNodeProperties::localExecute() : " << ex.what());
+      setErrorMsg(ex);
+      return false;
+    }
+}
+
+bool CommandSetNodeProperties::localReverse()
+{
+  DEBTRACE("CommandSetNodeProperties::localReverse");
+  try
+    {
+      Proc* proc = GuiContext::getCurrent()->getProc();
+      Node* node = proc;
+
+      if (!_position.empty()) node = proc->getChildByName(_position);
+
+      if (node)
+        {
+          node->setProperties(_oldProp);
+          SubjectNode *snode = GuiContext::getCurrent()->_mapOfSubjectNode[node];
+          snode->update(SETVALUE, 0, snode);
+          return true;
+        }
+      GuiContext::getCurrent()->_lastErrorMessage = "node not found: " + _position;
+      return false;
+    }
+  catch (Exception& ex)
+    {
+      DEBTRACE("CommandSetNodeProperties::localReverse() : " << ex.what());
+      setErrorMsg(ex);
+      return false;
+    }
+}
+
+// ----------------------------------------------------------------------------
+
 CommandSetComponentInstanceProperties::CommandSetComponentInstanceProperties(std::string compoinstance,
                                                                              std::map<std::string,std::string> properties)
   : Command(), _compoinstance(compoinstance), _properties(properties)

@@ -47,6 +47,7 @@ namespace YACS
         virtual void onAddProperty(QAction* action);
         virtual void onRemoveProperty();
         virtual void onItemChanged(QTableWidgetItem * item);
+        virtual void on_tb_options_toggled(bool checked);
 
       protected:
        Subject* _subject;

@@ -553,6 +553,20 @@ namespace YACS
       std::map<std::string,std::string> _oldProp;
     };
 
+    class CommandSetNodeProperties: public Command
+    {
+    public:
+      CommandSetNodeProperties(std::string position,
+                                    std::map<std::string,std::string> properties);
+    protected:
+      virtual bool localExecute();
+      virtual bool localReverse();
+      virtual std::string dump();
+      std::string _position;
+      std::map<std::string,std::string> _properties;
+      std::map<std::string,std::string> _oldProp;
+    };
+
     class CommandSetComponentInstanceProperties: public Command
     {
     public:
