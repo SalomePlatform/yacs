@@ -360,3 +360,14 @@ EXCEPTION(YACS::ENGINE::ExecutorSwig::waitPause)
       throw std::length_error("index too large");
   }
 }
+
+%newobject YACS::ENGINE::StructAny::__getitem__;
+%extend YACS::ENGINE::StructAny
+{
+  Any* __getitem__(const char * key)
+  {
+    AnyPtr a=(*self)[key];
+    a->incrRef();
+    return a;
+  }
+}
