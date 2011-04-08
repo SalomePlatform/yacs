@@ -104,7 +104,7 @@ EXTRA_libYACSRuntimeSALOME_la_SOURCES =  \
 	$(__dummy__)
 
 if SALOME_KERNEL
-SALOME_LIBS=$(KERNEL_LDFLAGS) -lSalomeLifeCycleCORBA -lSalomeIDLKernel -lSalomeNS -lSalomeContainer -lSALOMEBasics -lSalomeResourcesManager -lOpUtil -lSALOMELocalTrace -lRegistry -lSalomeNotification -lResourcesManager -lSalomeHDFPersist
+SALOME_LIBS=$(KERNEL_LDFLAGS) -lSalomeLifeCycleCORBA -lSalomeIDLKernel -lSalomeNS -lSalomeContainer -lSALOMEBasics -lSalomeResourcesManager -lOpUtil -lSALOMELocalTrace -lRegistry -lSalomeNotification -lResourcesManager -lSalomeHDFPersist -lSalomeGenericObj
 SALOME_INCL_PATH=-I$(KERNEL_ROOT_DIR)/include/salome 
 endif
 
