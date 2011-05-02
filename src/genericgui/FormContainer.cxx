@@ -151,7 +151,7 @@ void FormContainer::FillPanel(YACS::ENGINE::Container *container)
 
   vector<string> parlibs;
   parlibs.push_back("");
-  parlibs.push_back("MPI");
+  parlibs.push_back("Mpi");
   parlibs.push_back("Dummy");
   cb_parallel->clear();
   for(int i=0; i< parlibs.size(); i++)
