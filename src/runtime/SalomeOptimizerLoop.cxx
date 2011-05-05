@@ -65,7 +65,13 @@ SalomeOptimizerLoop::~SalomeOptimizerLoop()
 Node *SalomeOptimizerLoop::simpleClone(ComposedNode *father, bool editionOnly) const
 {
   SalomeOptimizerLoop* sol=new SalomeOptimizerLoop(*this,father,editionOnly);
-  sol->setAlgorithm(_alglib,_symbol,false);
+  // TODO: Remove this const_cast (find a better design to get the type codes from the original node)
+  Proc * procForTypes = sol->getProc();
+  if (procForTypes == NULL) {
+    const Proc * origProc = getProc();
+    procForTypes = const_cast<Proc *>(origProc);
+  }
+  sol->setAlgorithm(_alglib, _symbol, false, procForTypes);
   return sol;
 }
 

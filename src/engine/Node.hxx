@@ -153,6 +153,7 @@ namespace YACS
       virtual void setProperties(std::map<std::string,std::string> properties);
       virtual Node *getChildByName(const std::string& name) const throw(Exception) = 0;
       virtual Proc *getProc();
+      virtual const Proc *getProc() const;
       virtual void accept(Visitor *visitor) = 0;
       std::string getQualifiedName() const;
       int getNumId();

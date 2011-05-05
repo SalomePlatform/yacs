@@ -563,3 +563,8 @@ Proc* Proc::getProc()
   return this;
 }
 
+//! Return the proc (this)
+const Proc * Proc::getProc() const
+{
+  return this;
+}

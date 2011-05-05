@@ -132,7 +132,13 @@ OptimizerLoop::~OptimizerLoop()
 Node *OptimizerLoop::simpleClone(ComposedNode *father, bool editionOnly) const
 {
   OptimizerLoop* ol=new OptimizerLoop(*this,father,editionOnly);
-  ol->setAlgorithm(_alglib,_symbol,false);
+  // TODO: Remove this const_cast (find a better design to get the type codes from the original node)
+  Proc * procForTypes = ol->getProc();
+  if (procForTypes == NULL) {
+    const Proc * origProc = getProc();
+    procForTypes = const_cast<Proc *>(origProc);
+  }
+  ol->setAlgorithm(_alglib, _symbol, false, procForTypes);
   return ol;
 }
 

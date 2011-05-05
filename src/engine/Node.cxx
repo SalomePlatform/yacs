@@ -338,6 +338,13 @@ Proc *Node::getProc()
   return _father->getProc();
 }
 
+const Proc * Node::getProc() const
+{
+  if(!_father)
+    return 0;
+  return _father->getProc();
+}
+
 ComposedNode *Node::getRootNode() const throw(YACS::Exception)
 {
   if(!_father)

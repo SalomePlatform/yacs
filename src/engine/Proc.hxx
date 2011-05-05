@@ -62,6 +62,7 @@ namespace YACS
       virtual void removeContainer(Container* cont);
       virtual void accept(Visitor *visitor);
       virtual Proc *getProc();
+      virtual const Proc * getProc() const;
 
       YACS::StatesForNode getNodeState(int numId);
       std::string getInPortValue(int nodeNumId, std::string portName);
