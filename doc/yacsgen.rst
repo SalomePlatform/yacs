@@ -1445,10 +1445,11 @@ Supported SALOME types
    KERNEL                file                                                             C++, Python, F77       to transfer a file
    KERNEL                SALOME_TYPES/Parameter          SALOME_TYPES::Parameter          C++, Python
    KERNEL                SALOME_TYPES/ParameterList      SALOME_TYPES::ParameterList      C++, Python
-   KERNEL                SALOME_TYPES/Value              SALOME_TYPES::Value              C++, Python
+   KERNEL                SALOME_TYPES/Variable           SALOME_TYPES::Variable           C++, Python
+   KERNEL                SALOME_TYPES/VariableSequence   SALOME_TYPES::VariableSequence   C++, Python
+   KERNEL                SALOME_TYPES/StateSequence      SALOME_TYPES::StateSequence      C++, Python
+   KERNEL                SALOME_TYPES/TimeSequence       SALOME_TYPES::TimeSequence       C++, Python
    KERNEL                SALOME_TYPES/VarList            SALOME_TYPES::VarList            C++, Python
-   KERNEL                SALOME_TYPES/ValueList          SALOME_TYPES::ValueList          C++, Python
    KERNEL                SALOME_TYPES/ParametricInput    SALOME_TYPES::ParametricInput    C++, Python
    KERNEL                SALOME_TYPES/ParametricOutput   SALOME_TYPES::ParametricOutput   C++, Python
 ======================= =============================== ================================ ===================== ==========================
-
