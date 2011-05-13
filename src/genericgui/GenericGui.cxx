@@ -71,7 +71,7 @@
 #define WEXITSTATUS(w)  ((int) ((w) & 0x40000000))
 #endif
 
-//#define _DEVDEBUG_
+#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
 using namespace std;
@@ -821,9 +821,9 @@ void GenericGui::switchContext(QWidget *view)
   _dwStacked->setMinimumWidth(10);
 }
 
-bool GenericGui::closeContext(QWidget *view)
+bool GenericGui::closeContext(QWidget *view, bool onExit)
 {
-  DEBTRACE("GenericGui::closeContext");
+  DEBTRACE("GenericGui::closeContext " << onExit);
   if (! _mapViewContext.count(view))
     return true;
   QtGuiContext* context = _mapViewContext[view];
@@ -840,11 +840,20 @@ bool GenericGui::closeContext(QWidget *view)
           string info = "do you want to apply your changes ?\n";
           info += " - Save    : do not take into account edition in progress,\n";
           info += "             but if there are other modifications, select a file name for save\n";
-          info += " - Discard : discard all modifications and close the schema\n";
-          info += " - Cancel  : do not close the schema, return to edition";
+          info += " - Discard : discard all modifications and close the schema";
+          if (!onExit)
+            info += "\n - Cancel  : do not close the schema, return to edition";
           msgBox.setInformativeText(info.c_str());
-          msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-          msgBox.setDefaultButton(QMessageBox::Cancel);
+          if (!onExit)
+            {
+              msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+              msgBox.setDefaultButton(QMessageBox::Cancel);
+            }
+          else
+            {
+              msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard);
+              msgBox.setDefaultButton(QMessageBox::Save);
+            }
           int ret = msgBox.exec();
           switch (ret)
             {
@@ -856,6 +865,7 @@ bool GenericGui::closeContext(QWidget *view)
               break;
             case QMessageBox::Cancel:
             default:
+              DEBTRACE("Cancel or default");
               return false;
               break;
             }
@@ -867,11 +877,20 @@ bool GenericGui::closeContext(QWidget *view)
             msgBox.setText("The schema has been modified");
             string info = "do you want to save the schema ?\n";
             info += " - Save    : select a file name for save\n";
-            info += " - Discard : discard all modifications and close the schema\n";
-            info += " - Cancel  : do not close the schema, return to edition";
+            info += " - Discard : discard all modifications and close the schema";
+            if (!onExit)
+              info += "\n - Cancel  : do not close the schema, return to edition";
             msgBox.setInformativeText(info.c_str());
-            msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-            msgBox.setDefaultButton(QMessageBox::Cancel);
+            if (!onExit)
+              {
+                msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+                msgBox.setDefaultButton(QMessageBox::Cancel);
+              }
+            else
+              {
+                msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard);
+                msgBox.setDefaultButton(QMessageBox::Save);
+              }
             int ret = msgBox.exec();
             switch (ret)
               {
@@ -882,6 +901,7 @@ bool GenericGui::closeContext(QWidget *view)
                 tryToSave = false;
                 break;
               case QMessageBox::Cancel:
+                DEBTRACE("Cancel or default");
               default:
                 return false;
                 break;
@@ -2448,7 +2468,7 @@ void GenericGui::onCleanOnExit()
   map<QWidget*, YACS::HMI::QtGuiContext*>::iterator it = mapViewContextCopy.begin();
   for (; it != mapViewContextCopy.end(); ++it)
     {
-      closeContext((*it).first);
+      closeContext((*it).first, true);
     }
 }
 
