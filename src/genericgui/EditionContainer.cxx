@@ -19,13 +19,14 @@
 
 #include "EditionContainer.hxx"
 
-//#define _DEVDEBUG_
+#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
 #include "FormContainer.hxx"
 #include "QtGuiContext.hxx"
 #include "guiObservers.hxx"
 #include "Proc.hxx"
+#include "Message.hxx"
 
 #include <cassert>
 
@@ -80,8 +81,13 @@ void EditionContainer::onApply()
 {
   DEBTRACE("EditionContainer::onApply");
   bool edited = true;
-  if (_wContainer->onApply())
-    edited = false;
+  if (!_wContainer->onApply())
+    {
+      _isEdited = true;
+      Message mess(GuiContext::getCurrent()->_lastErrorMessage);
+      return;
+    }
+  edited = false;
   _isEdited = _isEdited || edited;
   ItemEdition::onApply();
 }

@@ -861,6 +861,11 @@ bool CommandRenameContainer::localExecute()
     {
       YASSERT(proc->containerMap.count(_oldName));
       container = proc->containerMap[_oldName];
+      if (proc->containerMap.count(_newName))
+        {
+          GuiContext::getCurrent()->_lastErrorMessage = "Container name already existing";
+          return 0;
+        }
       proc->containerMap.erase(_oldName);
       container->setName(_newName);
       proc->containerMap[_newName] = container;
