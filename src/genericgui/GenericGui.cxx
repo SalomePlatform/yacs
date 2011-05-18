@@ -1697,7 +1697,7 @@ void GenericGui::onChooseBatchJob() {
 
   // Show the Batch Jobs list
   if(_BJLdialog) delete _BJLdialog;
-  _BJLdialog = new BatchJobsListDialog("Select one Batch Job to watch",this);
+  _BJLdialog = new BatchJobsListDialog(tr("Select one Batch Job to watch"),this);
   _BJLdialog->show();
   _BJLdialog->move(300,200);
   _BJLdialog->resize(450,200);
