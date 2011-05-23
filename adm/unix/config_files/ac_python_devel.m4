@@ -68,7 +68,6 @@
 
 #serial 8
 
-AU_ALIAS([AC_PYTHON_DEVEL], [AX_PYTHON_DEVEL])
 AC_DEFUN([AX_PYTHON_DEVEL],[
 	#
 	# Allow the use of a (user set) custom python version
@@ -323,3 +322,4 @@ EOD`
 	# all done!
 	#
 ])
+AC_DEFUN([AC_PYTHON_DEVEL], [AX_PYTHON_DEVEL])
