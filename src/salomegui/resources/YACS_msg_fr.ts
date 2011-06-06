@@ -4,6 +4,14 @@
 <context>
     <name>@default</name>
     <message>
+        <source>Choose Batch Job for watch</source>
+        <translation>Choisir le job batch à surveiller</translation>
+    </message>
+    <message>
+        <source>Select one Batch Job to watch</source>
+        <translation>Sélectionner le job batch à surveiller</translation>
+    </message>
+    <message>
         <source>PREF_TAB_GENERAL</source>
         <translation>Général</translation>
     </message>

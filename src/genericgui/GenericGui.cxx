@@ -1,20 +1,20 @@
-//  Copyright (C) 2006-2010  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2011  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
 #include <Python.h>
@@ -71,7 +71,7 @@
 #define WEXITSTATUS(w)  ((int) ((w) & 0x40000000))
 #endif
 
-//#define _DEVDEBUG_
+#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
 using namespace std;
@@ -821,9 +821,9 @@ void GenericGui::switchContext(QWidget *view)
   _dwStacked->setMinimumWidth(10);
 }
 
-bool GenericGui::closeContext(QWidget *view)
+bool GenericGui::closeContext(QWidget *view, bool onExit)
 {
-  DEBTRACE("GenericGui::closeContext");
+  DEBTRACE("GenericGui::closeContext " << onExit);
   if (! _mapViewContext.count(view))
     return true;
   QtGuiContext* context = _mapViewContext[view];
@@ -840,11 +840,20 @@ bool GenericGui::closeContext(QWidget *view)
           string info = "do you want to apply your changes ?\n";
           info += " - Save    : do not take into account edition in progress,\n";
           info += "             but if there are other modifications, select a file name for save\n";
-          info += " - Discard : discard all modifications and close the schema\n";
-          info += " - Cancel  : do not close the schema, return to edition";
+          info += " - Discard : discard all modifications and close the schema";
+          if (!onExit)
+            info += "\n - Cancel  : do not close the schema, return to edition";
           msgBox.setInformativeText(info.c_str());
-          msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-          msgBox.setDefaultButton(QMessageBox::Cancel);
+          if (!onExit)
+            {
+              msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+              msgBox.setDefaultButton(QMessageBox::Cancel);
+            }
+          else
+            {
+              msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard);
+              msgBox.setDefaultButton(QMessageBox::Save);
+            }
           int ret = msgBox.exec();
           switch (ret)
             {
@@ -856,6 +865,7 @@ bool GenericGui::closeContext(QWidget *view)
               break;
             case QMessageBox::Cancel:
             default:
+              DEBTRACE("Cancel or default");
               return false;
               break;
             }
@@ -867,11 +877,20 @@ bool GenericGui::closeContext(QWidget *view)
             msgBox.setText("The schema has been modified");
             string info = "do you want to save the schema ?\n";
             info += " - Save    : select a file name for save\n";
-            info += " - Discard : discard all modifications and close the schema\n";
-            info += " - Cancel  : do not close the schema, return to edition";
+            info += " - Discard : discard all modifications and close the schema";
+            if (!onExit)
+              info += "\n - Cancel  : do not close the schema, return to edition";
             msgBox.setInformativeText(info.c_str());
-            msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-            msgBox.setDefaultButton(QMessageBox::Cancel);
+            if (!onExit)
+              {
+                msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+                msgBox.setDefaultButton(QMessageBox::Cancel);
+              }
+            else
+              {
+                msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard);
+                msgBox.setDefaultButton(QMessageBox::Save);
+              }
             int ret = msgBox.exec();
             switch (ret)
               {
@@ -882,6 +901,7 @@ bool GenericGui::closeContext(QWidget *view)
                 tryToSave = false;
                 break;
               case QMessageBox::Cancel:
+                DEBTRACE("Cancel or default");
               default:
                 return false;
                 break;
@@ -1677,7 +1697,7 @@ void GenericGui::onChooseBatchJob() {
 
   // Show the Batch Jobs list
   if(_BJLdialog) delete _BJLdialog;
-  _BJLdialog = new BatchJobsListDialog("Select one Batch Job to watch",this);
+  _BJLdialog = new BatchJobsListDialog(tr("Select one Batch Job to watch"),this);
   _BJLdialog->show();
   _BJLdialog->move(300,200);
   _BJLdialog->resize(450,200);
@@ -2448,7 +2468,7 @@ void GenericGui::onCleanOnExit()
   map<QWidget*, YACS::HMI::QtGuiContext*>::iterator it = mapViewContextCopy.begin();
   for (; it != mapViewContextCopy.end(); ++it)
     {
-      closeContext((*it).first);
+      closeContext((*it).first, true);
     }
 }
 
