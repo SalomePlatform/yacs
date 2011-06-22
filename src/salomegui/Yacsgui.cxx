@@ -80,6 +80,7 @@ Yacsgui::~Yacsgui()
 void Yacsgui::initialize( CAM_Application* app )
 {
   DEBTRACE("Yacsgui::initialize");
+  _currentSVW = 0;
   SalomeApp_Module::initialize( app );
 
   QWidget* aParent = application()->desktop();
@@ -152,7 +153,6 @@ bool Yacsgui::activateModule( SUIT_Study* theStudy )
       parent->setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
       parent->setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
     }
-
   setMenuShown( true );
   setToolShown( true );
   _genericGui->showDockWidgets(true);
@@ -172,6 +172,8 @@ bool Yacsgui::activateModule( SUIT_Study* theStudy )
   PyGILState_Release(gstate);
   // end of YACS plugins loading
 
+  if (_currentSVW)
+    onWindowActivated(_currentSVW);
 
   return bOk;
 }
@@ -240,7 +242,12 @@ void Yacsgui::onWindowActivated( SUIT_ViewWindow* svw)
 {
   DEBTRACE("Yacsgui::onWindowActivated");
   QxScene_ViewWindow* viewWindow = dynamic_cast<QxScene_ViewWindow*>(svw);
-  if (!viewWindow) return;
+  _currentSVW = svw;
+  if (!viewWindow)
+    {
+      _currentSVW = 0; // switch to another module
+      return;
+    }
   DEBTRACE("viewWindow " << viewWindow);
   DEBTRACE("activeModule()->moduleName() " << (getApp()->activeModule() ? getApp()->activeModule()->moduleName().toStdString() : "") );
   if (getApp()->activeModule() && getApp()->activeModule()->moduleName().compare("YACS") != 0)

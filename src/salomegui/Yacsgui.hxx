@@ -79,6 +79,7 @@ protected:
   YACS::HMI::GenericGui* _genericGui;
   bool _selectFromTree;
   Yacsgui_Resource* _myresource;
+  SUIT_ViewWindow* _currentSVW;
   std::map<int, YACS::HMI::QtGuiContext*> _studyContextMap;
   static int _oldStudyId;
 };

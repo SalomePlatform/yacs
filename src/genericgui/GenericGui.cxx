@@ -71,7 +71,7 @@
 #define WEXITSTATUS(w)  ((int) ((w) & 0x40000000))
 #endif
 
-#define _DEVDEBUG_
+//#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
 using namespace std;
