@@ -65,6 +65,7 @@ public slots:
   bool deactivateModule( SUIT_Study* theStudy);
   bool activateModule( SUIT_Study* theStudy);
   void onDblClick(const QModelIndex& index);
+  void onCleanOnExit();
   
 protected slots:
   void onWindowActivated( SUIT_ViewWindow* svw);

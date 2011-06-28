@@ -72,7 +72,7 @@ Yacsgui::Yacsgui() :
 Yacsgui::~Yacsgui()
 {
   if ( getApp() )
-    disconnect( getApp(), SIGNAL(studyClosed()), _genericGui, SLOT  (onCleanOnExit()));
+    disconnect( getApp(), SIGNAL(studyClosed()), this, SLOT  (onCleanOnExit()));
   delete _wrapper;
   delete _genericGui;
 }
@@ -104,7 +104,7 @@ void Yacsgui::initialize( CAM_Application* app )
 
       connect( getApp(),
                SIGNAL(studyClosed()),
-               _genericGui,
+               this,
                SLOT  (onCleanOnExit()));
     }
   _genericGui->createActions();
@@ -276,6 +276,8 @@ void Yacsgui::onWindowActivated( SUIT_ViewWindow* svw)
 void Yacsgui::onWindowClosed( SUIT_ViewWindow* svw)
 {
   DEBTRACE("Yacsgui::onWindowClosed");
+  if ( svw && svw == _currentSVW )
+    _currentSVW = 0;
 }
 
 void Yacsgui::onTryClose(bool &isClosed, QxScene_ViewWindow* window)
@@ -366,6 +368,13 @@ void Yacsgui::studyActivated()
 void Yacsgui::loadSchema(const std::string& filename,bool edit)
 {
   _genericGui->loadSchema(filename,edit);
+}
+
+void Yacsgui::onCleanOnExit()
+{
+  if ( _genericGui )
+    _genericGui->onCleanOnExit();
+  _currentSVW = 0;
 }
 
 // --- Export the module
