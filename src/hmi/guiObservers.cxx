@@ -4428,6 +4428,8 @@ bool SubjectContainer::setProperties(std::map<std::string, std::string> properti
 bool SubjectContainer::setName(std::string name)
 {
   DEBTRACE("SubjectContainer::setName " << name);
+  if (name == getName())
+    return true;
   CommandRenameContainer* command = new CommandRenameContainer(getName(), name);
   if (command->execute())
     {
