@@ -911,7 +911,7 @@ bool GenericGui::closeContext(QWidget *view, bool onExit)
       if (tryToSave)
         {
           onExportSchemaAs();
-          if (! _isSaved) // --- probably, user has cancelled the save dialog. Do not close
+          if ((!onExit) && (!_isSaved)) // --- probably, user has cancelled the save dialog. Do not close
             return false;
         }
     }
@@ -1504,7 +1504,7 @@ void GenericGui::onExportSchemaAs()
   YACS::ENGINE::Proc* proc = QtGuiContext::getQtCurrent()->getProc();
   QString fo = QtGuiContext::getQtCurrent()->getFileName();
   QString foo = fo;
-  if (fo.startsWith("newShema_")) fo.clear();
+  if (fo.startsWith("newSchema_")) fo.clear();
   QString fn = getSaveFileName(fo);
   if (fn.isEmpty()) return;
 
