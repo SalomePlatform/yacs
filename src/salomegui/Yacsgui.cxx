@@ -72,7 +72,7 @@ Yacsgui::Yacsgui() :
 Yacsgui::~Yacsgui()
 {
   if ( getApp() )
-    disconnect( getApp(), SIGNAL(studyClosed()), _genericGui, SLOT  (onCleanOnExit()));
+    disconnect( getApp(), SIGNAL(studyClosed()), this, SLOT  (onCleanOnExit()));
   delete _wrapper;
   delete _genericGui;
 }
@@ -80,6 +80,7 @@ Yacsgui::~Yacsgui()
 void Yacsgui::initialize( CAM_Application* app )
 {
   DEBTRACE("Yacsgui::initialize");
+  _currentSVW = 0;
   SalomeApp_Module::initialize( app );
 
   QWidget* aParent = application()->desktop();
@@ -103,7 +104,7 @@ void Yacsgui::initialize( CAM_Application* app )
 
       connect( getApp(),
                SIGNAL(studyClosed()),
-               _genericGui,
+               this,
                SLOT  (onCleanOnExit()));
     }
   _genericGui->createActions();
@@ -152,7 +153,6 @@ bool Yacsgui::activateModule( SUIT_Study* theStudy )
       parent->setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
       parent->setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
     }
-
   setMenuShown( true );
   setToolShown( true );
   _genericGui->showDockWidgets(true);
@@ -172,6 +172,8 @@ bool Yacsgui::activateModule( SUIT_Study* theStudy )
   PyGILState_Release(gstate);
   // end of YACS plugins loading
 
+  if (_currentSVW)
+    onWindowActivated(_currentSVW);
 
   return bOk;
 }
@@ -240,7 +242,12 @@ void Yacsgui::onWindowActivated( SUIT_ViewWindow* svw)
 {
   DEBTRACE("Yacsgui::onWindowActivated");
   QxScene_ViewWindow* viewWindow = dynamic_cast<QxScene_ViewWindow*>(svw);
-  if (!viewWindow) return;
+  _currentSVW = svw;
+  if (!viewWindow)
+    {
+      _currentSVW = 0; // switch to another module
+      return;
+    }
   DEBTRACE("viewWindow " << viewWindow);
   DEBTRACE("activeModule()->moduleName() " << (getApp()->activeModule() ? getApp()->activeModule()->moduleName().toStdString() : "") );
   if (getApp()->activeModule() && getApp()->activeModule()->moduleName().compare("YACS") != 0)
@@ -269,6 +276,8 @@ void Yacsgui::onWindowActivated( SUIT_ViewWindow* svw)
 void Yacsgui::onWindowClosed( SUIT_ViewWindow* svw)
 {
   DEBTRACE("Yacsgui::onWindowClosed");
+  if ( svw && svw == _currentSVW )
+    _currentSVW = 0;
 }
 
 void Yacsgui::onTryClose(bool &isClosed, QxScene_ViewWindow* window)
@@ -359,6 +368,13 @@ void Yacsgui::studyActivated()
 void Yacsgui::loadSchema(const std::string& filename,bool edit)
 {
   _genericGui->loadSchema(filename,edit);
+}
+
+void Yacsgui::onCleanOnExit()
+{
+  if ( _genericGui )
+    _genericGui->onCleanOnExit();
+  _currentSVW = 0;
 }
 
 // --- Export the module

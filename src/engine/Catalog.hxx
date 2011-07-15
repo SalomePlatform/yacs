@@ -50,6 +50,7 @@ namespace YACS
       std::map<std::string,ComponentDefinition*> _componentMap;
       std::map<std::string,Node*> _nodeMap;
       std::map<std::string,ComposedNode*> _composednodeMap;
+      Node* getNodeFromNodeMap(std::string name) {return _nodeMap[name];}
     protected:
       std::string _name;
       std::string _errors;

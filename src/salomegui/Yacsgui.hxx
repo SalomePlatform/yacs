@@ -65,6 +65,7 @@ public slots:
   bool deactivateModule( SUIT_Study* theStudy);
   bool activateModule( SUIT_Study* theStudy);
   void onDblClick(const QModelIndex& index);
+  void onCleanOnExit();
   
 protected slots:
   void onWindowActivated( SUIT_ViewWindow* svw);
@@ -79,6 +80,7 @@ protected:
   YACS::HMI::GenericGui* _genericGui;
   bool _selectFromTree;
   Yacsgui_Resource* _myresource;
+  SUIT_ViewWindow* _currentSVW;
   std::map<int, YACS::HMI::QtGuiContext*> _studyContextMap;
   static int _oldStudyId;
 };
