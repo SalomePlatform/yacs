@@ -19,7 +19,6 @@
 
 #include <iostream>
 #include <fstream>
-#include <libgen.h>
 
 #include "ListJobs_GUI.hxx"
 #include "RuntimeSALOME.hxx"
@@ -183,8 +182,7 @@ void BatchJobsListDialog::userOK() {
   // get job file name
   Engines::JobParameters* jobParam = _salome_launcher->getJobParameters(_id);
   _jobFile = CORBA::string_dup(jobParam->job_file);
-  string dsf = string("/tmp/") + getenv("USER") + string("/dumpState_") + basename((char*)_jobFile.toStdString().c_str());
-  _dumpStateFile = dsf.c_str();
+  _dumpStateFile = QString("/tmp/%1/dumpState_%2").arg(getenv("USER")).arg(QFileInfo(_jobFile).baseName());
 
   // stop first timer and hide window
   _timer1->stop();
@@ -232,7 +230,7 @@ void BatchJobsListDialog::get_dump_file()
   // get batch job state
   string jobState = _salome_launcher->getJobState(_id);
   // get dump state remote file
-  bool ret = _salome_launcher->getJobDumpState(_id,dirname((char*)_dumpStateFile.toStdString().c_str()));
+  bool ret = _salome_launcher->getJobDumpState(_id, QFileInfo(_dumpStateFile).absolutePath().toLatin1().constData());
   if(ret){
     // replace objref by string in dump state file
     filterDumpStateFile();
@@ -250,8 +248,7 @@ void BatchJobsListDialog::get_dump_file()
 // filtering of _jobFile to replace objref by string
 void BatchJobsListDialog::filterJobFile()
 {
-  string fjf = string("/tmp/") + getenv("USER") + string("/") + basename((char*)_jobFile.toStdString().c_str());
-  _filteredJobFile = fjf.c_str();
+  _filteredJobFile = QString("/tmp/%1/%2").arg(getenv("USER")).arg(QFileInfo(_jobFile).baseName());
   // reading input file
   ifstream infile(_jobFile.toStdString().c_str());
   if(!infile){
@@ -297,8 +294,7 @@ void BatchJobsListDialog::filterJobFile()
 void BatchJobsListDialog::filterDumpStateFile()
 {
   string buffer;
-  string fdsf = string("/tmp/") + getenv("USER") + string("/filtered_") + basename((char*)_dumpStateFile.toStdString().c_str());
-  _filteredDumpStateFile = fdsf.c_str();
+  _filteredDumpStateFile = QString("/tmp/%1/filtered_%2").arg(getenv("USER")).arg(QFileInfo(_dumpStateFile).baseName());
   ifstream infile(_dumpStateFile.toStdString().c_str());
   if(!infile){
     string errmsg = "File " + _dumpStateFile.toStdString() + " doesn't exist!!";

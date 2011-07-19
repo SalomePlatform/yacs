@@ -223,7 +223,11 @@ void * dumpState(void *arg)
   thread_st *st = (thread_st*)arg;
   YACS::StatesForNode state = p->getEffectiveState();
   while((state != YACS::DONE) && (state != YACS::LOADFAILED) && (state != YACS::EXECFAILED) && (state != YACS::INTERNALERR) && (state != YACS::DISABLED) && (state != YACS::FAILED) && (state != YACS::ERROR)){
+#ifdef WIN32
+    Sleep(st->nbsec);
+#else 
     sleep(st->nbsec);
+#endif
     string cmd = "touch " + st->lockFile;
     system(cmd.c_str());
     YACS::ENGINE::VisitorSaveState vst(p);
@@ -235,9 +239,10 @@ void * dumpState(void *arg)
     state = p->getEffectiveState();
   }
   delete st;
+  return NULL;
 }
 
-#ifndef WNT
+#ifndef WIN32
 typedef void (*sighandler_t)(int);
 sighandler_t setsig(int sig, sighandler_t handler)
 {
