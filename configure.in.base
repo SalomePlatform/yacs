@@ -30,7 +30,9 @@ AC_CONFIG_HEADER(yacs_config.h)
 MODULE_NAME=yacs
 AC_SUBST(MODULE_NAME)
 
-XVERSION=0x050106
+SHORT_VERSION=`echo $VERSION | awk -F. '{printf("%d.%d",$1,$2)}'`
+AC_SUBST(SHORT_VERSION)
+XVERSION=`echo $VERSION | awk -F. '{printf("0x%02x%02x%02x",$1,$2,$3)}'`
 AC_SUBST(XVERSION)
 
 RELEASE=$VERSION
@@ -201,5 +203,6 @@ AC_OUTPUT([ \
   src/yacsorb/Makefile \
   src/salomegui/resources/YACSCatalog.xml \
   doc/Doxyfile \
+  doc/conf.py \
 ])
 

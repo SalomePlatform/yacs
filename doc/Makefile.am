@@ -36,7 +36,7 @@ build_dev_docs:
 
 DOXFILES= ref/bases.dox ref/engine.dox ref/hmi.dox ref/python.dox ref/runtime.dox ref/yacs.dox ref/yacsloader.dox
 
-EXTRA_DIST= html htmldev _static exemples $(DOXFILES)
+EXTRA_DIST= _static exemples $(DOXFILES)
 
 yacsdocdir=$(docdir)/gui/YACS
 yacsdevdocdir=$(docdir)/gui/YACS/dev
@@ -49,19 +49,19 @@ ALLSPHINXOPTS   = -d doctrees $(PAPEROPT_a4) $(SPHINXOPTS) $(SOURCEDIR)
 
 htm:
 	mkdir -p html doctrees
-	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) html
+	$(SPHINXBUILD) -c $(top_builddir)/doc -b html $(ALLSPHINXOPTS) html
 	@echo
 	@echo "Build finished. The HTML pages are in html."
 
 latex:
 	mkdir -p latex doctrees
-	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) latex
+	$(SPHINXBUILD) -c $(top_builddir)/doc -b latex $(ALLSPHINXOPTS) latex
 	@echo "Running LaTeX files through pdflatex..."
 	make -C latex all-pdf
 	@echo "pdflatex finished; the PDF files are in latex."
 
 pdf:
-	$(SPHINXBUILD) -b pdf $(ALLSPHINXOPTS) pdf
+	$(SPHINXBUILD) -c $(top_builddir)/doc -b pdf $(ALLSPHINXOPTS) pdf
 	@echo
 	@echo "Build finished. The pdf documents are in pdf."
 
@@ -120,7 +120,6 @@ EXTRA_DIST+= $(RSTFILES) images
 
 EXTRA_DIST+= \
 ref/classDiagram.png \
-conf.py \
 ref/createNodeCollaboration.png \
 opml.dtd \
 opml.xslt \
@@ -140,8 +139,8 @@ install_dev_docs:
 	$(INSTALL) -d $(DESTDIR)$(yacsdevdocdir)
 	if test -d "htmldev"; then b=; else b="$(srcdir)/"; fi; \
 	find $$b"htmldev" -name "*.*" -exec cp -rf {} $(DESTDIR)$(yacsdevdocdir) ';' ; \
- cp -rf $(top_srcdir)/src/yacsloader/samples $(DESTDIR)$(yacsdevdocdir); \
- rm -rf $(DESTDIR)$(yacsdevdocdir)/samples/CVS;
+	cp -rf $(top_srcdir)/src/yacsloader/samples $(DESTDIR)$(yacsdevdocdir); \
+	rm -rf $(DESTDIR)$(yacsdevdocdir)/samples/CVS;
 
 uninstall-local:
 	chmod -R +w $(DESTDIR)$(yacsdocdir)
@@ -150,3 +149,9 @@ uninstall-local:
 clean-local:
 	-rm -rf html latex doctrees
 	if test -d "html"; then rm -rf html ; fi
+
+dist-hook:
+	if test -d "html"; then b=; else b="$(srcdir)/"; fi; \
+	if test -d $$b"html"; then cp -rf $$b"html" $(distdir) ; fi; \
+	if test -d "htmldev"; then b=; else b="$(srcdir)/"; fi; \
+	if test -d $$b"htmldev"; then cp -rf $$b"htmldev" $(distdir) ; fi
