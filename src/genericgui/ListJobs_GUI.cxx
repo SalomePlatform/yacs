@@ -182,7 +182,7 @@ void BatchJobsListDialog::userOK() {
   // get job file name
   Engines::JobParameters* jobParam = _salome_launcher->getJobParameters(_id);
   _jobFile = CORBA::string_dup(jobParam->job_file);
-  _dumpStateFile = QString("/tmp/%1/dumpState_%2").arg(getenv("USER")).arg(QFileInfo(_jobFile).baseName());
+  _dumpStateFile = QString("/tmp/%1/dumpState_%2.xml").arg(getenv("USER")).arg(QFileInfo(_jobFile).baseName());
 
   // stop first timer and hide window
   _timer1->stop();
@@ -294,7 +294,7 @@ void BatchJobsListDialog::filterJobFile()
 void BatchJobsListDialog::filterDumpStateFile()
 {
   string buffer;
-  _filteredDumpStateFile = QString("/tmp/%1/filtered_%2").arg(getenv("USER")).arg(QFileInfo(_dumpStateFile).baseName());
+  _filteredDumpStateFile = QString("/tmp/%1/filtered_%2.xml").arg(getenv("USER")).arg(QFileInfo(_dumpStateFile).baseName());
   ifstream infile(_dumpStateFile.toStdString().c_str());
   if(!infile){
     string errmsg = "File " + _dumpStateFile.toStdString() + " doesn't exist!!";
