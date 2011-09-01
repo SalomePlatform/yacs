@@ -248,7 +248,7 @@ void BatchJobsListDialog::get_dump_file()
 // filtering of _jobFile to replace objref by string
 void BatchJobsListDialog::filterJobFile()
 {
-  _filteredJobFile = QString("/tmp/%1/%2").arg(getenv("USER")).arg(QFileInfo(_jobFile).baseName());
+  _filteredJobFile = QString("/tmp/%1/%2.xml").arg(getenv("USER")).arg(QFileInfo(_jobFile).baseName());
   // reading input file
   ifstream infile(_jobFile.toStdString().c_str());
   if(!infile){
