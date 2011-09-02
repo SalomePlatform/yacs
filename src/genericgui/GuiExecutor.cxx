@@ -568,30 +568,6 @@ YACS::ExecutorState GuiExecutor::updateSchema(string jobState)
 {
   YACS::ExecutorState execState = YACS::NOTYETINITIALIZED;
 
-  if (CORBA::is_nil(_engineRef))
-    {
-      DEBTRACE("Create YACS ORB engine!");
-      YACS::ENGINE::RuntimeSALOME* runTime = YACS::ENGINE::getSALOMERuntime();
-      CORBA::ORB_ptr orb = runTime->getOrb();
-      SALOME_NamingService namingService(orb);
-      SALOME_LifeCycleCORBA lcc(&namingService);
-      ostringstream containerName;
-      containerName << "localhost/YACSContainer" << QtGuiContext::getQtCurrent()->getStudyId();
-      Engines::EngineComponent_var comp = lcc.FindOrLoad_Component(containerName.str().c_str(), "YACS" );
-      _engineRef =YACS_ORB::YACS_Gen::_narrow(comp);
-      YASSERT(!CORBA::is_nil(_engineRef));
-    }
-
-  if (CORBA::is_nil(_procRef))
-    {
-      DEBTRACE("init _procRef");
-      _procRef = _engineRef->LoadProc(_context->getFileName().toAscii());
-      registerStatusObservers();
-      DEBTRACE("_procRef init");
-    }
-
-  YASSERT(!CORBA::is_nil(_procRef));
-
   int numid;
   int state;
   std::list<Node*> aNodeSet = _proc->getAllRecursiveConstituents();
@@ -600,9 +576,7 @@ YACS::ExecutorState GuiExecutor::updateSchema(string jobState)
     numid = (*it)->getNumId();
 
     state = _proc->getNodeState(numid);
-    int iGui = _serv->_engineToGuiMap[numid-3];
-    YASSERT(_context->_mapOfExecSubjectNode.count(iGui));
-    SubjectNode *snode = _context->_mapOfExecSubjectNode[iGui];
+    SubjectNode *snode = _context->_mapOfExecSubjectNode[numid];
 
     YACS::ENGINE::Node *node = snode->getNode();
     list<InputPort*> inports = node->getLocalInputPorts();
