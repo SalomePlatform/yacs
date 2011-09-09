@@ -23,6 +23,7 @@
 #include "TypeCode.hxx"
 #include "Container.hxx"
 #include "SalomeContainer.hxx"
+#include "ConversionException.hxx"
 
 #include "PyStdout.hxx"
 #include <iostream>
@@ -320,6 +321,16 @@ void PythonNode::executeRemote()
   PyTuple_SetItem(args,0,resultPython);
   PyObject *finalResult=PyObject_CallObject(_pyfuncUnser,args);
   Py_DECREF(args);
+
+  if (finalResult == NULL)
+  {
+    std::stringstream msg;
+    msg << "Conversion with pickle of output ports failed !";
+    msg << " : " << __FILE__ << ":" << __LINE__;
+    PyGILState_Release(gstate);
+    _errorDetails=msg.str();
+    throw YACS::ENGINE::ConversionException(msg.str());
+  }
 
   DEBTRACE( "-----------------PythonNode::outputs-----------------" );
   int nres=1;

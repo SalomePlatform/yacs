@@ -43,6 +43,16 @@ string                for character strings
 file                  for files
 ================= =====================================
 
+Python generic type
+...................
+
+YACS adds a special type for exchanging generic Python objects between Python inline nodes (See :ref:`scriptnode` 
+and :ref:`functionnode`). The type is named **pyobj** and uses the pickle module to exchange Python objects.
+Consequently only Python objects that are pickable could be used for YACS **pyobj** ports.
+
+It's forbidden to define the object's type into the node, it should be defined in an external Python module. To avoid
+problems with YACS, you should add the module into your **PYTHONPATH** before launching SALOME.
+
 Object references
 ''''''''''''''''''''''''''
 Object references are used to type CORBA objects managed by SALOME components. In general, these types 
