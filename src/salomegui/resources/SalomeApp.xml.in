@@ -23,6 +23,7 @@
     <!-- Major module parameters -->
     <parameter name="name" value="YACS"/>
     <parameter name="icon" value="ModuleYacs.png"/>
+    <parameter name="YACS_VERSION" value="@VERSION@"/>
   </section>
   <section name="resources">
     <!-- Module resources -->

@@ -201,6 +201,7 @@ AC_OUTPUT([ \
   src/yacsloader_swig/Test/config_appli.xml \
   src/yacsorb/Makefile \
   src/salomegui/resources/YACSCatalog.xml \
+  src/salomegui/resources/SalomeApp.xml \
   doc/Doxyfile \
   doc/conf.py \
 ])

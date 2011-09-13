@@ -76,7 +76,7 @@ libYACS_la_LIBADD  = \
 # resources files
 
 ICONS =  \
-	resources/SalomeApp.xml \
+	$(top_builddir)/src/salomegui/resources/SalomeApp.xml \
 	resources/YACSSchemaCatalog.xml \
 	resources/YACSCatalog.xml \
 	resources/ModuleYacs.png \
