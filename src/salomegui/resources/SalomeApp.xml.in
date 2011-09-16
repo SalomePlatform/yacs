@@ -23,16 +23,16 @@
     <!-- Major module parameters -->
     <parameter name="name" value="YACS"/>
     <parameter name="icon" value="ModuleYacs.png"/>
-    <parameter name="YACS_VERSION" value="@VERSION@"/>
+    <parameter name="version" value="@VERSION@"/>
   </section>
   <section name="resources">
     <!-- Module resources -->
-    <parameter name="YACSPrs" value="${YACS_ROOT_DIR}/share/salome/resources/yacs"/>
-    <parameter name="YACS" value="${YACS_ROOT_DIR}/share/salome/resources/yacs"/>
+    <parameter name="YACSPrs" value="%YACS_ROOT_DIR%/share/salome/resources/yacs"/>
+    <parameter name="YACS" value="%YACS_ROOT_DIR%/share/salome/resources/yacs"/>
   </section>
   <section name="yacs_help">
     <parameter name="sub_menu"     value="%1 module"/>
-    <parameter name="User's Guide" value="${YACS_ROOT_DIR}/share/doc/salome/gui/YACS/index.html"/>
+    <parameter name="User's Guide" value="%YACS_ROOT_DIR%/share/doc/salome/gui/YACS/index.html"/>
   </section>
   <section name="YACS" >
     <!-- Module preferences -->
