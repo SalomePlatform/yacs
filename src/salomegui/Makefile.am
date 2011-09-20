@@ -76,7 +76,6 @@ libYACS_la_LIBADD  = \
 # resources files
 
 ICONS =  \
-	$(top_builddir)/src/salomegui/resources/SalomeApp.xml \
 	resources/YACSSchemaCatalog.xml \
 	resources/YACSCatalog.xml \
 	resources/ModuleYacs.png \
@@ -85,7 +84,8 @@ ICONS =  \
 # resources files
 nodist_salomeres_DATA = \
 	YACS_msg_en.qm	\
-	YACS_msg_fr.qm
+	YACS_msg_fr.qm  \
+	resources/SalomeApp.xml
 
 QMFILES = \
 	resources/YACS_msg_en.ts \
