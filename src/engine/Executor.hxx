@@ -32,6 +32,7 @@
 #include <set>
 #include <string>
 #include <fstream>
+#include <ctime>
 
 namespace YACS
 {
@@ -80,6 +81,7 @@ namespace YACS
       std::list< YACS::BASES::Thread * > _groupOfAllThreadsCreated;
       std::ofstream _trace;
       std::string _dumpErrorFile;
+      timeval _start;      
     public:
       Executor();
       ~Executor();

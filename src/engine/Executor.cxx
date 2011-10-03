@@ -28,7 +28,7 @@
 #include <iostream>
 #include <fstream>
 #include <sys/stat.h>
-#include <cassert>
+#include <sys/time.h>
 #include <cstdlib>
 #include <algorithm>
 
@@ -241,6 +241,7 @@ void Executor::RunB(Scheduler *graph,int debug, bool fromScratch)
     string tracefile = "traceExec_";
     tracefile += _mainSched->getName();
     _trace.open(tracefile.c_str());
+    gettimeofday(&_start, NULL);
     _mutexForSchedulerUpdate.unlock();
   } // --- End of critical section
 
@@ -1215,8 +1216,11 @@ void *Executor::functionForTaskExecution(void *arg)
 void Executor::traceExec(Task *task, const std::string& message)
 {
   string nodeName = _mainSched->getTaskName(task);
+  timeval now;
+  gettimeofday(&now, NULL);
+  double elapse = (now.tv_sec - _start.tv_sec) + double(now.tv_usec - _start.tv_usec)/1000000.0;
   _mutexForTrace.lock();
-  _trace << nodeName << " " << message << endl;
+  _trace << elapse << " " << nodeName << " " << message << endl;
   _trace << flush;
   _mutexForTrace.unlock();
 }
