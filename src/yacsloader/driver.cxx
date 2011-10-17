@@ -71,6 +71,7 @@ static struct argp_option options[] =
     {"save-xml-schema", 'x', "file",  OPTION_ARG_OPTIONAL, "dump xml schema"},
     {"shutdown",        't', "level", 0,                   "Shutdown the schema: 0=no shutdown to 3=full shutdown (default 1)"},
     {"reset",           'r', "level", 0,                   "Reset the schema before execution: 0=nothing, 1=reset error nodes to ready state (default 0)"},
+    {"kill-port",       'k', "port",  0,                   "Kill Salome application running on the specified port if the driver process is killed (with SIGINT or SIGTERM)"},
     { 0 }
   };
 #endif
@@ -88,6 +89,7 @@ struct arguments
   char *loadState;
   int shutdown;
   int reset;
+  int killPort;
 };
 
 typedef struct {
@@ -154,6 +156,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
       else
         myArgs->xmlSchema = (char *)"saveSchema.xml";
       break;      
+    case 'k':
+      myArgs->killPort = atoi(arg);
+      break;
 
     case ARGP_KEY_ARG:
       if (state->arg_num >=1) // Too many arguments.
@@ -215,6 +220,16 @@ void Handler(int theSigId)
           p->shutdown(myArgs.shutdown);
         }
     }
+  if (myArgs.killPort)
+    {
+      ostringstream command;
+      command << "killSalomeWithPort.py " << myArgs.killPort;
+      int status = system(command.str().c_str());
+      if (status == 0)
+        cerr << "Salome application on port " << myArgs.killPort << " is killed" << endl;
+      else
+        cerr << "Error: Can't kill Salome application on port " << myArgs.killPort << endl;
+    }
   _exit(1);
 }
 
@@ -271,6 +286,7 @@ int main (int argc, char* argv[])
   myArgs.xmlSchema = (char *)"";
   myArgs.shutdown = 1;
   myArgs.reset = 0;
+  myArgs.killPort = 0;
 
   // Parse our arguments; every option seen by parse_opt will be reflected in arguments.
 #ifdef WNT
@@ -282,6 +298,8 @@ int main (int argc, char* argv[])
   std::cerr << " stop-on-error=" << myArgs.stop;
   std::cerr << " shutdown=" << myArgs.shutdown;
   std::cerr << " reset=" << myArgs.reset;
+  if (myArgs.killPort)
+    std::cerr << " kill-port=" << myArgs.killPort;
   if (myArgs.stop)
     std::cerr << " dumpErrorFile=" << myArgs.dumpErrorFile << std::endl;
   else
