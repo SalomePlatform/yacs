@@ -48,6 +48,7 @@ namespace YACS
       virtual bool isAlreadyStarted(const ComponentInstance *inst) const = 0;
       virtual void start(const ComponentInstance *inst) throw(Exception) = 0;
       virtual std::string getPlacementId(const ComponentInstance *inst) const = 0;
+      virtual std::string getFullPlacementId(const ComponentInstance *inst) const = 0;
       //Edition only methods
       virtual void attachOnCloning() const;
       virtual void dettachOnCloning() const;

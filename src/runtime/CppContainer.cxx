@@ -148,6 +148,11 @@ std::string CppContainer::getPlacementId(const ComponentInstance *inst) const
   return "/";
 }
 
+std::string CppContainer::getFullPlacementId(const ComponentInstance *inst) const
+{
+  return "/";
+}
+
 void CppContainer::checkCapabilityToDealWith(const ComponentInstance *inst) const throw(YACS::Exception)
 {
   if(inst->getKind()!=CppComponent::KIND)

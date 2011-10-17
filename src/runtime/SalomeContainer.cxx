@@ -394,6 +394,30 @@ std::string SalomeContainer::getPlacementId(const ComponentInstance *inst) const
     return "Not placed yet !!!";
 }
 
+//! Get the container full path for a component instance
+/*!
+ * \param inst the component instance
+ * \return the full placement id
+ */
+std::string SalomeContainer::getFullPlacementId(const ComponentInstance *inst) const
+{
+
+  if(isAlreadyStarted(inst))
+    {
+      Engines::Container_var container=_trueCont;
+      if(_type=="multi")
+        {
+          std::map<const ComponentInstance *, Engines::Container_var>::const_iterator found = _trueContainers.find(inst);
+          container=found->second;
+        }
+      CORBA::String_var corbaStr=container->name();
+      string ret(corbaStr);
+      return ret;
+    }
+  else
+    return "Not_placed_yet";
+}
+
 //! Check if the component instance container is already started
 /*!
  * \param inst the component instance

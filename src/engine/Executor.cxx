@@ -21,6 +21,8 @@
 #include "Task.hxx"
 #include "Scheduler.hxx"
 #include "Dispatcher.hxx"
+#include "Container.hxx"
+#include "ComponentInstance.hxx"
 
 #include "VisitorSaveState.hxx"
 #include "ComposedNode.hxx"
@@ -1216,11 +1218,21 @@ void *Executor::functionForTaskExecution(void *arg)
 void Executor::traceExec(Task *task, const std::string& message)
 {
   string nodeName = _mainSched->getTaskName(task);
+  Container *cont = task->getContainer();
+  string containerName = "---";
+  string placement = "---";
+  if (cont)
+    {
+      containerName = cont->getName();
+      ComponentInstance *compo = task->getComponent();
+      if (compo)
+        placement = cont->getFullPlacementId(compo);
+    }
   timeval now;
   gettimeofday(&now, NULL);
   double elapse = (now.tv_sec - _start.tv_sec) + double(now.tv_usec - _start.tv_usec)/1000000.0;
   _mutexForTrace.lock();
-  _trace << elapse << " " << nodeName << " " << message << endl;
+  _trace << elapse << " " << containerName << " " << placement << " " << nodeName << " " << message << endl;
   _trace << flush;
   _mutexForTrace.unlock();
 }

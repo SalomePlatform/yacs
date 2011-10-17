@@ -112,6 +112,7 @@ namespace YACS
       bool isAlreadyStarted(const ComponentInstance *inst) const;
       void start(const ComponentInstance *inst) throw (YACS::Exception);
       std::string getPlacementId(const ComponentInstance *inst) const;
+      std::string getFullPlacementId(const ComponentInstance *inst) const;
       YACS::ENGINE::Container *clone() const;
 
       void lock();

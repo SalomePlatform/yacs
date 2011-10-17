@@ -50,6 +50,7 @@ namespace YACS
       void start(const ComponentInstance *inst) throw (Exception);
       Container *clone() const;
       std::string getPlacementId(const ComponentInstance *inst) const;
+      std::string getFullPlacementId(const ComponentInstance *inst) const;
       void checkCapabilityToDealWith(const ComponentInstance *inst) const throw (Exception);
       virtual void setProperty(const std::string& name, const std::string& value);
       virtual void addComponentName(std::string name);
