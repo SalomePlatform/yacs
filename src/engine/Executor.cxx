@@ -1225,8 +1225,8 @@ void Executor::traceExec(Task *task, const std::string& message)
     {
       containerName = cont->getName();
       ComponentInstance *compo = task->getComponent();
-      if (compo)
-        placement = cont->getFullPlacementId(compo);
+      //if (compo)
+      placement = cont->getFullPlacementId(compo);
     }
   timeval now;
   gettimeofday(&now, NULL);
