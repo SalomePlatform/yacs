@@ -36,6 +36,7 @@ namespace YACS
       void start(const ComponentInstance *inst) throw(Exception);
       Container *clone() const;
       std::string getPlacementId(const ComponentInstance *inst) const { return ""; }
+      std::string getFullPlacementId(const ComponentInstance *inst) const { return ""; }
       static void initAllContainers();
     protected:
       void checkCapabilityToDealWith(const ComponentInstance *inst) const throw(Exception);
@@ -55,6 +56,7 @@ namespace YACS
       void start(const ComponentInstance *inst) throw(Exception);
       Container *clone() const;
       std::string getPlacementId(const ComponentInstance *inst) const { return ""; }
+      std::string getFullPlacementId(const ComponentInstance *inst) const { return ""; }
       static void initAllContainers();
     protected:
       void checkCapabilityToDealWith(const ComponentInstance *inst) const throw(Exception);
