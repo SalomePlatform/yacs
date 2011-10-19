@@ -410,9 +410,16 @@ std::string SalomeContainer::getFullPlacementId(const ComponentInstance *inst) c
           std::map<const ComponentInstance *, Engines::Container_var>::const_iterator found = _trueContainers.find(inst);
           container=found->second;
         }
-      CORBA::String_var corbaStr=container->name();
-      string ret(corbaStr);
-      return ret;
+      try
+        {
+          CORBA::String_var corbaStr=container->name();
+          string ret(corbaStr);
+          return ret;
+        }
+      catch(...)
+        {
+          return "Unknown_placement";
+        }
     }
   else
     return "Not_placed_yet";
