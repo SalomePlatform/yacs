@@ -250,9 +250,8 @@ void Yacsgui::onWindowActivated( SUIT_ViewWindow* svw)
     }
   DEBTRACE("viewWindow " << viewWindow);
   DEBTRACE("activeModule()->moduleName() " << (getApp()->activeModule() ? getApp()->activeModule()->moduleName().toStdString() : "") );
-  if (getApp()->activeModule() && getApp()->activeModule()->moduleName().compare("YACS") != 0)
-    getApp()->activateModule("YACS");
-
+  if (!getApp()->activeModule() || getApp()->activeModule()->moduleName() != "YACS")
+    if ( !getApp()->activateModule("YACS") ) return;
 
   disconnect(viewWindow, SIGNAL( tryClose( bool&, QxScene_ViewWindow* ) ),
              this, SLOT(onTryClose( bool&, QxScene_ViewWindow* )) );
