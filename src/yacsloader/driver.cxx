@@ -462,11 +462,17 @@ int main (int argc, char* argv[])
       cerr << "Proc state : " << Node::getStateName(p->getEffectiveState()) << endl;
       timer("Elapsed time after execution: ");
 
+      // Return 0 if SCHEMA OK
+      // Return 1 for YACS ERROR (EXCEPTION NOT CATCHED)
+      // Return 2 for YACS SCHEMA ERROR/FAILED
+      int return_value = 0;
+
       if(p->getEffectiveState() != YACS::DONE)
         {
           std::string report=p->getErrorReport();
           std::cerr << "Execution has ended in error" << std::endl;
           std::cerr << report << std::endl;
+          return_value = 2;
         }
 
       if(myArgs.display>0)
@@ -499,7 +505,7 @@ int main (int argc, char* argv[])
       r->fini();
       delete r;
       delete disp;
-      return 0;
+      return return_value;
     }
   catch (YACS::Exception& e)
     {
