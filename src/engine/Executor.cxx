@@ -30,7 +30,10 @@
 #include <iostream>
 #include <fstream>
 #include <sys/stat.h>
+#ifndef WIN32
 #include <sys/time.h>
+#endif
+
 #include <cstdlib>
 #include <algorithm>
 
@@ -243,7 +246,12 @@ void Executor::RunB(Scheduler *graph,int debug, bool fromScratch)
     string tracefile = "traceExec_";
     tracefile += _mainSched->getName();
     _trace.open(tracefile.c_str());
+#ifdef WIN32
+   _start = timeGetTime();
+#else
     gettimeofday(&_start, NULL);
+#endif
+
     _mutexForSchedulerUpdate.unlock();
   } // --- End of critical section
 
@@ -1228,9 +1236,14 @@ void Executor::traceExec(Task *task, const std::string& message)
       //if (compo)
       placement = cont->getFullPlacementId(compo);
     }
+#ifdef WIN32
+  DWORD now = timeGetTime();
+  double elapse = (now - _start)/1000.0;
+#else
   timeval now;
   gettimeofday(&now, NULL);
   double elapse = (now.tv_sec - _start.tv_sec) + double(now.tv_usec - _start.tv_usec)/1000000.0;
+#endif
   _mutexForTrace.lock();
   _trace << elapse << " " << containerName << " " << placement << " " << nodeName << " " << message << endl;
   _trace << flush;

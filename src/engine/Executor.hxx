@@ -27,6 +27,10 @@
 #include "Exception.hxx"
 #include "define.hxx"
 
+#ifdef WIN32
+#include <windows.h>
+#pragma comment(lib,"winmm.lib")
+#endif
 #include <list>
 #include <vector>
 #include <set>
@@ -81,7 +85,11 @@ namespace YACS
       std::list< YACS::BASES::Thread * > _groupOfAllThreadsCreated;
       std::ofstream _trace;
       std::string _dumpErrorFile;
-      timeval _start;      
+#ifdef WIN32
+	  DWORD _start;
+#else
+      timeval _start;
+#endif
     public:
       Executor();
       ~Executor();
