@@ -29,6 +29,7 @@
 #include <SUIT_ViewManager.h>
 #include <SUIT_ViewWindow.h>
 #include <SalomeApp_Application.h>
+#include <SalomeApp_Engine_i.hxx>
 #include <QxScene_ViewManager.h>
 #include <QxScene_ViewModel.h>
 #include <QxScene_ViewWindow.h>
@@ -210,7 +211,8 @@ void Yacsgui::windows( QMap<int, int>& theMap ) const
 QString  Yacsgui::engineIOR() const
 {
   DEBTRACE("Yacsgui::engineIOR");
-  return getApp()->defaultEngineIOR();
+  QString anEngineIOR = SalomeApp_Engine_i::EngineIORForComponent( "YACS", true ).c_str();
+  return anEngineIOR;
 }
 
 void Yacsgui::onDblClick(const QModelIndex& index)
@@ -313,7 +315,7 @@ bool Yacsgui::createSComponent()
       _PTR(AttributePixMap) aPixmap(anAttr);
       aPixmap->SetPixMap("ModuleYacs.png");
       
-      aBuilder->DefineComponentInstance(aComponent, getApp()->defaultEngineIOR().toStdString());
+      aBuilder->DefineComponentInstance(aComponent, engineIOR().toLatin1().constData());
 
       return true;
     }
