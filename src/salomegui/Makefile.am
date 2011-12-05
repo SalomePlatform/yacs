@@ -71,7 +71,7 @@ libYACS_la_LIBADD  = \
 	../genericgui/libGenericGui.la \
 	-lEvent \
 	$(qt4_libs) $(qsci4_libs) \
-	-lSalomeApp
+	-lSalomeApp -lSalomeSession
 
 # resources files
 
