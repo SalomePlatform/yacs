@@ -170,6 +170,10 @@ void RuntimeSALOME::initBuiltins()
   typeMap["intvec"]= createSequenceTc("intvec","intvec",_tc_int);
   typeMap["stringvec"]= createSequenceTc("stringvec","stringvec",_tc_string);
   typeMap["boolvec"]= createSequenceTc("boolvec","boolvec",_tc_bool);
+  typeMap["seqdblevec"]= createSequenceTc("seqdblevec","seqdblevec",typeMap["dblevec"]);
+  typeMap["seqintvec"]= createSequenceTc("seqintvec","seqintvec",typeMap["intvec"]);
+  typeMap["seqstringvec"]= createSequenceTc("seqstringvec","seqstringvec",typeMap["stringvec"]);
+  typeMap["seqboolvec"]= createSequenceTc("seqboolvec","seqboolvec",typeMap["boolvec"]);
   std::list<TypeCodeObjref *> ltc;
   typeMap["pyobj"]= createInterfaceTc("python:obj:1.0","pyobj",ltc);
   ENGINE::TypeCodeStruct *t = createStructTc("","Engines/dataref");
