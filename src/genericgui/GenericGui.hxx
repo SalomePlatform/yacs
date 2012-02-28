@@ -76,7 +76,7 @@ namespace YACS
       CatalogWidget* getCatalogWidget() { return _catalogsWidget; };
       std::list<std::string> getMachineList();
       void createForEachLoop(std::string type="double");
-      virtual void loadSchema(const std::string& filename,bool edit=true);
+      virtual void loadSchema(const std::string& filename,bool edit=true, bool arrangeLocalNodes=false);
       virtual void onHelpContextModule( const QString&, const QString&, const QString& = QString() );
       void createContext(YACS::ENGINE::Proc* proc,
                          const QString& schemaName,

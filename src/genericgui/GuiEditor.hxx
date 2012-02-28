@@ -82,6 +82,7 @@ namespace YACS
       void shrinkExpand();
       void rebuildLinks();
       void arrangeNodes(bool isRecursive);
+      void arrangeProc();
       void showUndo(QWidget *parent = 0);
       void showRedo(QWidget *parent = 0);
       QString asciiFilter(const QString & name);

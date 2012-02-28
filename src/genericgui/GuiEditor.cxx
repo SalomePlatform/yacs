@@ -575,6 +575,14 @@ void GuiEditor::arrangeNodes(bool isRecursive)
 //     }
 }
 
+void GuiEditor::arrangeProc()
+{
+  YACS::HMI::SubjectProc* subproc = QtGuiContext::getQtCurrent()->getSubjectProc();
+  SceneItem *item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[subproc];
+  SceneComposedNodeItem *proc = dynamic_cast<SceneComposedNodeItem*>(item);
+  proc->arrangeNodes(true);
+}
+
 void GuiEditor::showUndo(QWidget *parent)
 {
   FormUndoRedo *undo = new FormUndoRedo(parent);

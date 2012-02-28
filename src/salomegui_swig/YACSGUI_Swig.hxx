@@ -29,8 +29,8 @@ public:
   virtual ~YACS_Swig();
   virtual void activate(const std::string& module="YACS");
   virtual void real_activate(const std::string& module);
-  virtual void loadSchema(const std::string& filename,bool edit=true);
-  virtual void real_loadSchema(const std::string& filename,bool edit);
+  virtual void loadSchema(const std::string& filename,bool edit=true, bool arrangeLocalNodes=false);
+  virtual void real_loadSchema(const std::string& filename,bool edit, bool arrangeLocalNodes);
 };
 
 #endif // YACSGUI_SWIG_HXX

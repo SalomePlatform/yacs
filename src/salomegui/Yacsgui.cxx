@@ -366,9 +366,9 @@ void Yacsgui::studyActivated()
   _oldStudyId = newStudyId;
 }
 
-void Yacsgui::loadSchema(const std::string& filename,bool edit)
+void Yacsgui::loadSchema(const std::string& filename,bool edit, bool arrangeLocalNodes)
 {
-  _genericGui->loadSchema(filename,edit);
+  _genericGui->loadSchema(filename,edit,arrangeLocalNodes);
 }
 
 void Yacsgui::onCleanOnExit()

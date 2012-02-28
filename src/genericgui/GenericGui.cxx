@@ -1238,7 +1238,7 @@ void GenericGui::onNewSchema()
   createContext(proc, fileName, "", true);
 }
 
-void GenericGui::loadSchema(const std::string& filename,bool edit)
+void GenericGui::loadSchema(const std::string& filename,bool edit, bool arrangeLocalNodes)
 {
   YACS::ENGINE::Proc *proc = _loader->load(filename.c_str());
   if (!proc)
@@ -1253,6 +1253,10 @@ void GenericGui::loadSchema(const std::string& filename,bool edit)
     createContext(proc, fn, "", true);
   else
     createContext(proc, fn, fn, false);
+  if (arrangeLocalNodes)
+  {
+    _guiEditor->arrangeProc();
+  }
 }
 
 void GenericGui::onImportSchema()

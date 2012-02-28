@@ -78,27 +78,29 @@ void YACS_Swig::real_activate(const std::string& module)
  * \param filename the schema file to load
  * \param edit the loading mode. true for edition (default), false for run
  */
-void YACS_Swig::loadSchema(const std::string& filename,bool edit)
+void YACS_Swig::loadSchema(const std::string& filename,bool edit, bool arrangeLocalNodes)
 {
   class TEvent: public SALOME_Event
   {
     YACS_Swig* _obj;
     std::string fn;
     bool ed;
+    bool ar;
     public:
-      TEvent(YACS_Swig* obj,const std::string& filename,bool edit) {
+      TEvent(YACS_Swig* obj,const std::string& filename,bool edit,bool arrangeLocalNodes) {
         _obj=obj;
         fn=filename;
         ed=edit;
+        ar=arrangeLocalNodes;
       };
       virtual void Execute() {
-        _obj->real_loadSchema(fn,ed);
+        _obj->real_loadSchema(fn,ed,ar);
       };
   };
-  ProcessVoidEvent(new TEvent(this,filename,edit));
+  ProcessVoidEvent(new TEvent(this,filename,edit,arrangeLocalNodes));
 }
 
-void YACS_Swig::real_loadSchema(const std::string& filename,bool edit)
+void YACS_Swig::real_loadSchema(const std::string& filename,bool edit, bool arrangeLocalNodes)
 {
   SalomeApp_Application* app = dynamic_cast<SalomeApp_Application*>(SUIT_Session::session()->activeApplication());
   if (!app) return;
@@ -106,5 +108,5 @@ void YACS_Swig::real_loadSchema(const std::string& filename,bool edit)
   CAM_Module* module = app->module("YACS");
   Yacsgui* appMod = dynamic_cast<Yacsgui*>(module);
   if (appMod)
-    appMod->loadSchema(filename,edit);
+    appMod->loadSchema(filename,edit,arrangeLocalNodes);
 }

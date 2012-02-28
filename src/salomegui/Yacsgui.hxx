@@ -58,7 +58,7 @@ public:
   virtual void setResource(SUIT_ResourceMgr* r);
   virtual void createPreferences();
   virtual void preferencesChanged( const QString& sect, const QString& name );
-  virtual void loadSchema(const std::string& filename,bool edit=true);
+  virtual void loadSchema(const std::string& filename,bool edit=true, bool arrangeLocalNodes=false);
   virtual void studyActivated();
   
 public slots:
