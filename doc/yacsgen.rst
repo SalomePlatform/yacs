@@ -21,13 +21,13 @@ It is a module (named YACSGEN) in the SALOME CVS TOOLS base that is distributed 
 
 Supported versions and architectures
 -----------------------------------------------------------------
-YACSGEN uses python 2.4 functions but it has a compatibility mode with python 2.3.  It runs on a 32-bit and 64-bit 
+YACSGEN needs a Python version  >= 2.4  and < 3.0.  It runs on a 32-bit and 64-bit 
 architecture.
 
 Installation
 ----------------------------
 If you get the source archive, simply decompress and untar the archive (YACSGEN-x.y.tar.gz) 
-and add the directory thus created to PYTHONPATH.
+and add the directory thus created to PYTHONPATH. YACSGEN is also provided with binaries installation of SALOME.
 
 Description of a SALOME module
 --------------------------------------------------------
