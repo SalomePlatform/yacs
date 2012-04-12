@@ -33,7 +33,7 @@
     </inline>
 
     <service name="node1" >
-        <component>HELLO</component>
+        <component>PYHELLO</component>
         <method>makeBanner</method>
         <load container="B"/>
         <inport name="p1" type="double"/>

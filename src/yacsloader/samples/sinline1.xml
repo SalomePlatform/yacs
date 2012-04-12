@@ -53,7 +53,7 @@
         <code>  param['hostname']=machine</code>
         <code>  param['container_name']=container</code>
         <code>  compo=salome.lcc.LoadComponent(param, "HELLO")</code>
-        <code>  print compo.makeBanner(p1)</code>
+        <code>  print compo.hello(salome.myStudy, p1)</code>
         <code>  print p1</code>
       </function>
       <load container="A"/>
@@ -89,7 +89,7 @@
         <code>  param['hostname']=machine</code>
         <code>  param['container_name']=container</code>
         <code>  compo=salome.lcc.LoadComponent(param, "HELLO")</code>
-        <code>  print compo.makeBanner(p1)</code>
+        <code>  print compo.hello(salome.myStudy, p1)</code>
         <code>  print p1</code>
       </function>
       <inport name="p1" type="string"/>
