@@ -301,6 +301,8 @@ bool CommandAddNodeFromCatalog::localExecute()
             }
         }
       _node = son;
+      if (!_node)
+        throw YACS::Exception("node from catalog is not correct: check if catalog is up to date!");
 
       SubjectComposedNode *sfather = dynamic_cast<SubjectComposedNode*>(GuiContext::getCurrent()->_mapOfSubjectNode[father]);
       _snode= sfather->addSubjectNode(_node, "", _catalog, _compoName, _typeName);
