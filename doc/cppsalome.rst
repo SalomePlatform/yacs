@@ -193,7 +193,7 @@ In makefile, some targets have to be defined::
 Review each of these targets
 
 - salomeinclude_HEADERS contains the header files.
-- lib_LTLIBRARIES contains the normalized name (lib<Nom_Module>Engine.la) the name of the library, LIB_SRC defines the name of source files, and VPATH defines the directories in which they can be found.
+- lib_LTLIBRARIES contains the normalized name (lib<Nom_Module>Engine.la) of the library, LIB_SRC defines the name of source files, and VPATH defines the directories in which they can be found.
 - The path for the include files used has to be added to CPPFLAGS (SALOME.config.h, SALOME_Component_i.hxx and utilities.h are located in ${KERNEL_ROOT_DIR}/include/salome).
 - The HELLO class uses lib libraries (for Engines_Component_i) and libOptUtil (for PortableServer and Salome_Exception).  Therefore, the name of these libraries and their path in LDFLAGS will be indicated.  Other libraries are often useful, for example libsalomeDS if persistence is implemented, or libSalomeNS if the naming service is used.
 
@@ -267,7 +267,7 @@ dialog boxes and other such staff.
 These files provide a description (internationalization) of GUI
 resources of the HELLO module. HELLO_msg_en.ts provides an English
 translation of the string resources used in a module (there can be also
-transltation files for other languages, for instance French; these files
+translation files for other languages, for instance French; these files
 are distinguished by the language suffix). HELLO_icons.ts
 defines images and icons resources used within the GUI library of
 HELLO module. Please refer to Qt linguist documentation for more
