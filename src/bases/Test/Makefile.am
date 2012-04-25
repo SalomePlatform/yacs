@@ -46,7 +46,10 @@ TestBases_LDFLAGS = $(CPPUNIT_LIBS) -pthread -ldl
 
 TestBases_CXXFLAGS = $(THREAD_DEF) $(CPPUNIT_INCLUDES) -I$(srcdir)/..
 
-TESTS = InitTests TestBases 
+TESTS = InitTests
+if CPPUNIT_IS_OK
+TESTS += TestBases 
+endif
 
 EXTRA_DIST = BasicMainTest.hxx  basesTest.hxx  UnitTestsResult.hxx
 

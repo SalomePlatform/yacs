@@ -36,7 +36,9 @@ BUILT_SOURCES = $(IDL_SOURCES) echo_idl.py xmlrun.sh echo.hh
 
 EXTRA_DIST = $(IDL_FILES) standaloneTest.sh runtimeTest.hxx runtimeTest.sh TestComponent.hxx xmlrun_orig.sh
 
+if CPPUNIT_IS_OK
 TESTS = runtimeTest.sh
+endif
 TESTS_ENVIRONMENT=LD_LIBRARY_PATH=@KERNEL_ROOT_DIR@/lib/salome:$$LD_LIBRARY_PATH $(SHELL) -x 
 
 SALOME_INCL_PATH=-I$(KERNEL_ROOT_DIR)/include/salome

@@ -19,7 +19,9 @@
 
 include $(top_srcdir)/adm/unix/make_begin.am
 
+if CPPUNIT_IS_OK
 SUBDIRS = Test
+endif
 
 SWIG_PYTHON_INCLUDES = -noexcept -DYACS_PTHREAD -I$(srcdir)/../bases -I$(srcdir)/../engine_swig -I$(srcdir)/../engine \
                                  -I$(srcdir)/../yacsloader -I../engine_swig

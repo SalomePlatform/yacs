@@ -73,7 +73,9 @@ IntegrationTestEngine_CXXFLAGS =      \
 	-I$(srcdir)/../../bases/Test
 
 
+if CPPUNIT_IS_OK
 TESTS =  TestEngine IntegrationTestEngine
+endif
 
 EXTRA_DIST = \
 ComponentInstanceTest.hxx  ContainerTest.hxx     engineIntegrationTest.hxx \
