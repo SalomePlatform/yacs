@@ -303,6 +303,12 @@ void OptimizerLoop::getReadyTasks(std::vector<Task *>& tasks)
 
 YACS::Event OptimizerLoop::updateStateOnFinishedEventFrom(Node *node)
 {
+  if (getState() == YACS::FAILED)
+    {
+      // This happens when a valid computation on a branch finishes after an error on another branch.
+      // In this case we just ignore the new result because the algorithm has already been terminated.
+      return YACS::NOEVENT;
+    }
   unsigned int id;
   switch(getIdentityOfNotifyerNode(node,id))
     {
