@@ -101,7 +101,7 @@
     </message>
     <message>
         <source>Emphasis link color</source>
-        <translation>Couleur desliens accentués</translation>
+        <translation>Couleur des liens accentués</translation>
     </message>
     <message>
         <source>link pen darkness</source>
@@ -134,7 +134,7 @@
     <message>
         <source>YACS_PLUGINS</source>
         <translation>Extensions</translation>
-    </message>       
+    </message>
 </context>
 <context>
     <name>YACS::HMI::ComposedNodeMenu</name>
@@ -235,11 +235,11 @@
     </message>
     <message>
         <source>Abort the current execution</source>
-        <translation>Terminer l&apos;execution du schéma actuel</translation>
+        <translation>Terminer l&apos;exécution du schéma actuel</translation>
     </message>
     <message>
         <source>Abort execution</source>
-        <translation>Terminer l&apos;execution du schéma</translation>
+        <translation>Terminer l&apos;exécution du schéma</translation>
     </message>
     <message>
         <source>Suspend the current execution</source>
@@ -435,7 +435,7 @@
     </message>
     <message>
         <source>Inline Script Node</source>
-        <translation>Noueud de script inline</translation>
+        <translation>Noeud de script inline</translation>
     </message>
     <message>
         <source>Create a New Inline Python Function Node</source>
@@ -487,7 +487,7 @@
     </message>
     <message>
         <source>Create a New Optimizer Loop Node</source>
-        <translation>Créer un noeud boucle d'optimisation</translation>
+        <translation>Créer un noeud boucle d&apos;optimisation</translation>
     </message>
     <message>
         <source>Optimizer Loop</source>
@@ -495,7 +495,7 @@
     </message>
     <message>
         <source>Create a New Optimizer Loop</source>
-        <translation>Créer une boucle d'optimisation</translation>
+        <translation>Créer une boucle d&apos;optimisation</translation>
     </message>
     <message>
         <source>Create a New Node from Catalog, use drag and drop from catalog</source>
@@ -575,7 +575,7 @@
     </message>
     <message>
         <source>zoom 2D view to the selected composed node</source>
-        <translation>Centrer la scène 2D au noeud composè choisi</translation>
+        <translation>Centrer la scène 2D au noeud composé choisi</translation>
     </message>
     <message>
         <source>center 2D view on selected node</source>
@@ -639,7 +639,7 @@
     </message>
     <message>
         <source>active whatsThis Mode to get help on widgets</source>
-        <translation>Activer le mode qu&apos;est-ce-que-c&apos;est pour obtenir de l'aide</translation>
+        <translation>Activer le mode qu&apos;est-ce-que-c&apos;est pour obtenir de l&apos;aide</translation>
     </message>
     <message>
         <source>whatsThis Mode</source>
