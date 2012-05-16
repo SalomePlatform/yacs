@@ -175,7 +175,6 @@ void PythonNode::loadRemote()
                               "\n"
                               "def unPickleForDistPyth2009(st):\n"
                               "  args=cPickle.loads(st)\n"
-                              "  print args\n"
                               "  return args\n";
   PyObject *res=PyRun_String(picklizeScript,Py_file_input,_context,_context);
   if(res == NULL)
