@@ -1,4 +1,4 @@
-# Copyright (C) 2006-2011  CEA/DEN, EDF R&D
+# Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -46,7 +46,10 @@ TestBases_LDFLAGS = $(CPPUNIT_LIBS) -pthread -ldl
 
 TestBases_CXXFLAGS = $(THREAD_DEF) $(CPPUNIT_INCLUDES) -I$(srcdir)/..
 
-TESTS = InitTests TestBases 
+TESTS = InitTests
+if CPPUNIT_IS_OK
+TESTS += TestBases 
+endif
 
 EXTRA_DIST = BasicMainTest.hxx  basesTest.hxx  UnitTestsResult.hxx
 

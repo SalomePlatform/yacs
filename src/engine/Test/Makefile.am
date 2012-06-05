@@ -1,4 +1,4 @@
-# Copyright (C) 2006-2011  CEA/DEN, EDF R&D
+# Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -73,7 +73,9 @@ IntegrationTestEngine_CXXFLAGS =      \
 	-I$(srcdir)/../../bases/Test
 
 
+if CPPUNIT_IS_OK
 TESTS =  TestEngine IntegrationTestEngine
+endif
 
 EXTRA_DIST = \
 ComponentInstanceTest.hxx  ContainerTest.hxx     engineIntegrationTest.hxx \

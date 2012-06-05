@@ -1,4 +1,4 @@
-// Copyright (C) 2006-2011  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -874,6 +874,7 @@ bool GenericGui::closeContext(QWidget *view, bool onExit)
         if (QtGuiContext::getQtCurrent()->isNotSaved())
           {
             QMessageBox msgBox;
+            msgBox.setWindowTitle("Close the active schema");
             msgBox.setText("The schema has been modified");
             string info = "do you want to save the schema ?\n";
             info += " - Save    : select a file name for save\n";

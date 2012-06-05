@@ -1,4 +1,4 @@
-# Copyright (C) 2006-2011  CEA/DEN, EDF R&D
+# Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,9 @@
 
 include $(top_srcdir)/adm/unix/make_begin.am
 
+if CPPUNIT_IS_OK
 SUBDIRS = Test
+endif
 
 SWIG_PYTHON_INCLUDES = -noexcept -DYACS_PTHREAD -I$(srcdir)/../bases -I$(srcdir)/../engine_swig -I$(srcdir)/../engine \
                                  -I$(srcdir)/../yacsloader -I../engine_swig

@@ -1,4 +1,4 @@
-// Copyright (C) 2006-2011  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -303,6 +303,12 @@ void OptimizerLoop::getReadyTasks(std::vector<Task *>& tasks)
 
 YACS::Event OptimizerLoop::updateStateOnFinishedEventFrom(Node *node)
 {
+  if (getState() == YACS::FAILED)
+    {
+      // This happens when a valid computation on a branch finishes after an error on another branch.
+      // In this case we just ignore the new result because the algorithm has already been terminated.
+      return YACS::NOEVENT;
+    }
   unsigned int id;
   switch(getIdentityOfNotifyerNode(node,id))
     {

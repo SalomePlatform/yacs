@@ -1,5 +1,5 @@
 <!--
-  Copyright (C) 2006-2011  CEA/DEN, EDF R&D
+  Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -53,7 +53,7 @@
         <code>  param['hostname']=machine</code>
         <code>  param['container_name']=container</code>
         <code>  compo=salome.lcc.LoadComponent(param, "HELLO")</code>
-        <code>  print compo.makeBanner(p1)</code>
+        <code>  print compo.hello(salome.myStudy, p1)</code>
         <code>  print p1</code>
       </function>
       <load container="A"/>
@@ -89,7 +89,7 @@
         <code>  param['hostname']=machine</code>
         <code>  param['container_name']=container</code>
         <code>  compo=salome.lcc.LoadComponent(param, "HELLO")</code>
-        <code>  print compo.makeBanner(p1)</code>
+        <code>  print compo.hello(salome.myStudy, p1)</code>
         <code>  print p1</code>
       </function>
       <inport name="p1" type="string"/>

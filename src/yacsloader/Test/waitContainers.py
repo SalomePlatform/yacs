@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (C) 2006-2011  CEA/DEN, EDF R&D
+# Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -20,7 +20,8 @@
 
 import os
 import orbmodule
+import salome_utils	
 clt = orbmodule.client()
-FactoryContainer = "/Containers/" + os.environ["NSHOST"] + "/FactoryServer"
+FactoryContainer = "/Containers/" + salome_utils.getShortHostName() + "/FactoryServer"
 clt.waitNS(FactoryContainer)
 

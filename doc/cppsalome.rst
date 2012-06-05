@@ -23,7 +23,7 @@ The various steps of the development will be as follows:
  - create a SALOME component that can be loaded by a C++ container
  - configure the module so that the component is known to SALOME
  - add a graphic GUI
- - make the component useable in the supervisor.
+ - make the component useable in the YACS module.
 
 Creating the module tree structure
 =======================================
@@ -68,7 +68,7 @@ IDL interface
 We modify the HELLO_Gen.idl file in the idl directory:  the defined module is named HELLO_ORB, and the interface 
 is named HELLO_Gen.  The service provided remains the same:  starting from a character string supplied as the 
 single argument, a character string derived from the concatenation of “Hello” and the input string is returned.  
-This service is specified by the makeBanner function.
+This service is specified by the hello function.
 
 A documentation utility based on doxygen has been implemented to compile a documentation of corba services 
 starting from comments located in idl files. Therefore, we will add few comments to our idl, respecting the 
@@ -110,8 +110,7 @@ makes inclusion file names independent of the implementation of the CORBA ORB.
 The next step is to define an implementation class called HELLO, derived from POA_HELLO_ORB::HELLO_Gen (abstract class 
 generated automatically by CORBA during the compilation of the idl) and Engines_Component_i (because 
 the HELLO_Gen idl interface is derived from Engines::EngineComponent like every SALOME component).  
-This class contains a constructor whose arguments are imposed by SALOME, a virtual destructor, and 
-a makeBanner method providing the required service::
+This class contains a constructor whose arguments are imposed by SALOME, a virtual destructor, hello, goodbye and copyOrMove methods providing the required service::
 
     class HELLO:
       public POA_HELLO_ORB::HELLO_Gen,
@@ -124,11 +123,16 @@ a makeBanner method providing the required service::
       const char *instanceName,
       const char *interfaceName);
     virtual ~HELLO();
-    char* makeBanner(const char* name);
+    HELLO_ORB::status hello  ( SALOMEDS::Study_ptr study, const char* name );
+    HELLO_ORB::status goodbye( SALOMEDS::Study_ptr study, const char* name );
+    void              copyOrMove( const HELLO_ORB::object_list& what,
+				  SALOMEDS::SObject_ptr where,
+				  CORBA::Long row, CORBA::Boolean isCopy );
+
     };
 
-The makeBanner function uses a char* as an argument and returns a char*, which is the C++ mapping of the CORBA/IDL string type.  
-OMG provides the complete documentation of the C++ mapping of the IDL on its internet site:  http://www.omg.org/cgi-bin/doc?ptc/00-01-02.
+The hello and goodbye functions use a char* as an argument and return status of the operation.
+The list of the statuses is defined in the HELLO_Gen.idl, see status enumeration for details.
 
 Finally, we supply the standard interface of the HELLOEngine_factory function that will be called by the “FactoryServer C++” 
 to load the HELLO component::
@@ -141,37 +145,55 @@ to load the HELLO component::
                                                    const char *interfaceName);
 
 
-The definitions of the constructor and the HELLOEngine_factory instantiation function (both normalized!) and 
-makeBanner, are given in the source file (HELLO.cxx)::
+The definitions of the constructor and the HELLOEngine_factory instantiation function (both normalized!),
+hello, goodbye and copyOrMove are given in the source file (HELLO.cxx)::	
 
-    char* HELLO::makeBanner(const char* name)
-    {
-      string banner="Hello, ";
-      banner+=name;
-      return CORBA::string_dup(banner.c_str());
-    }
+	HELLO_ORB::status HELLO::hello( SALOMEDS::Study_ptr study, const char* name )
+	{
+	...
+	}
 
-In this function, the use of string_dup (function declared in the CORBA namespace) is not compulsory (the new operator 
-could have been used), but is recommended because these functions enable ORBs to use special memory management 
-mechanisms without needing to redefine new global operators.
+	HELLO_ORB::status HELLO::goodbye( SALOMEDS::Study_ptr study, const char* name )
+	{
+	...
+	}
+
+	void HELLO::copyOrMove( const HELLO_ORB::object_list& what,
+        	                SALOMEDS::SObject_ptr where,
+                	        CORBA::Long row, CORBA::Boolean isCopy ) 
+	{
+	...
+	}
 
 Makefile
 --------
 In makefile, some targets have to be defined::
 
-    VPATH=.:@srcdir@:@top_srcdir@/idl
-    LIB = libHELLOEngine.la
-    LIB_SRC = HELLO.cxx
-    LIB_SERVER_IDL = HELLO_Gen.idl
-    LIB_CLIENT_IDL = SALOME_Component.idl SALOME_Exception.idl Logger.idl
-    CPPFLAGS += -I${KERNEL_ROOT_DIR}/include/salome
-    LDFLAGS+= -lSalomeContainer -lOpUtil -L${KERNEL_ROOT_DIR}/lib/salome
+	# header files 
+	salomeinclude_HEADERS = HELLO.hxx
 
+	# Libraries targets
+	lib_LTLIBRARIES = libHELLOEngine.la
+	dist_libHELLOEngine_la_SOURCES = \
+		HELLO.cxx
+
+	libHELLOEngine_la_CPPFLAGS = \
+		$(CORBA_CXXFLAGS) \
+		$(CORBA_INCLUDES) \
+		$(KERNEL_CXXFLAGS) \
+		-I$(top_builddir)/idl
+
+	libHELLOEngine_la_LDFLAGS = \
+		../../idl/libSalomeIDLHELLO.la \
+		$(KERNEL_LDFLAGS) \
+		-lSalomeContainer \
+		-lOpUtil \
+		-lSalomeIDLKernel
+	
 Review each of these targets
 
-- LIB contains the normalized name (lib<Nom_Module>Engine.la) the name of the library, LIB_SRC defines the name of source files, and VPATH defines the directories in which they can be found.
-- LIB_SERVER_IDL contains the name of idl files implemented by the module.
-- LIB_CLIENT_IDL contains the name of idls containing CORBA services used by the module.  HELLO uses Logger/idl through the “MESSAGE” and SALOME_Component.idl macros, and SALOME_Exception.idl through the inheritance of HELLO_ORB.
+- salomeinclude_HEADERS contains the header files.
+- lib_LTLIBRARIES contains the normalized name (lib<Nom_Module>Engine.la) of the library, LIB_SRC defines the name of source files, and VPATH defines the directories in which they can be found.
 - The path for the include files used has to be added to CPPFLAGS (SALOME.config.h, SALOME_Component_i.hxx and utilities.h are located in ${KERNEL_ROOT_DIR}/include/salome).
 - The HELLO class uses lib libraries (for Engines_Component_i) and libOptUtil (for PortableServer and Salome_Exception).  Therefore, the name of these libraries and their path in LDFLAGS will be indicated.  Other libraries are often useful, for example libsalomeDS if persistence is implemented, or libSalomeNS if the naming service is used.
 
@@ -182,27 +204,30 @@ stub (stub at the customer end generated from the idl and providing an interface
 Specifically, a HELLO_ORB python module containing a classe_objref_HELLO_Gen is created and used to call services of our 
 C++ module from Python.  To put this into application, we run SALOME in TUI mode::
 
-    cd $HELLO_ROOT_DIR/bin/salome
-    python -i runSalome.py --modules=HELLO --xterm --logger --containers=cpp,python \
-                           --killall
+    runSalome --modules=HELLO -t --pinter --logger --killall
 
 We import the LifeCycle module from the Python window, and use its services to load our component into the FactoryServer C++ container::
 
     >>> import LifeCycleCORBA
-    >>> lcc = LifeCycleCORBA.LifeCycleCORBA(clt.orb)
+    >>> lcc = LifeCycleCORBA.LifeCycleCORBA()
+    >>> import salome
+    >>> salome.salome_init()
+    createNewStudy
+    []
+    extStudy_1 1
     >>> import HELLO_ORB
     >>> hello = lcc.FindOrLoadComponent("FactoryServer", "HELLO")
 
 HELLO_ORB has to be imported before FindOrLoadComponent is called, so that a typed object can be 
 returned (“narrowing” operation). Otherwise, the returned object is generic of the 
 Engines::EngineComponent type.  
-Let us check that hello object is correctly typed, and we will call the makeBanner service::
+Let us check that hello object is correctly typed, and we will call the hello service::
 
     >>> print hello
     <HELLO_ORB._objref_HELLO_Gen instance at 0x8274e94>
-    >>> mybanner=hello.makeBanner("Nicolas")
-    >>> print mybanner
-    Hello, Nicolas
+    >>> status=hello.hello(salome.myStudy, "Nicolas")
+    >>> print status
+    OP_OK
 
 The previous commands were grouped in the test function of the /bin/runSalome.py script.
 
@@ -218,132 +243,62 @@ When a module is activated, its Graphic User Interface is dynamically loaded).
 Therefore the programmer of a module GUI defines methods to process transmitted events correctly.  
 The most important of these events are OnGUIEvent(), OnMousePress(), OnMouseMove(), OnKeyPress(), DefinePopup(), CustomPopup().
 
-Choose widgets
------------------
+Strictly speaking, the GUI library is optional for each SALOME module.
+In some cases it's enough to implement CORBA engine only. Then,
+the services of the module will be avaiable in a CORBA environment.
+The module can be loaded to the SALOME container and its services
+can be used in the SALOME supervision computation schemas, in Python
+scripts or/and in C++ implementation of other modules.
 
-Xml description
-``````````````````
-Items in our module are described in the XML /resources/HELLO_en.xml file.  The IAPP uses this file to load the GUI 
-of the module dynamically when the it is activated.  The principle is to use markers to define the required menus 
-and buttons and to associate IDs with them, that will be retrieved by functions managing GUI events.  
-There are several possibilities available:
+A GUI library is necessary only if it is planned to access the module
+functionality from the SALOME GUI session via menu actions, dialog boxes
+and so on. 
 
-- add items to existing menus, in which case markers are reused from the previous menu and new items are added.  
-  In the following example, the **Hello** menu and the **MyNewItem** item are added to the **File** menu, 
-  for which the ID is equal to 1::
+- src/HELLOGUI/HELLOGUI.h
+- src/HELLOGUI/HELLOGUI.cxx
 
-    <menu-item label-id="File" item-id="1" pos-id="">
-      <submenu label-id="Hello" item-id="19" pos-id="8">
-        <popup-item item-id="190" pos-id="" label-id="MyNewItem" 
-	            icon-id="" tooltip-id="" accel-id="" toggle-id="" 
-		    execute-action=""/>
-      </submenu>
-    </menu-item>
+These files provide the implementation of a GUI library of
+the HELLO module. In particular, these files specify menus, toolbars,
+dialog boxes and other such staff.
 
-- Create new menus.  For the HELLO menu, we add a HELLO menu with a single item with a “Get banner” label::
+- src/HELLOGUI/HELLO_msg_en.ts
+- src/HELLOGUI/HELLO_icons.ts
 
-    <menubar>
-     <menu-item label-id="HELLO" item-id="90" pos-id="3">
-      <popup-item item-id="901" label-id="Get banner" icon-id="" 
-                  tooltip-id="Get HELLO banner" accel-id="" 
-		  toggle-id="" execute-action=""/>
-     </menu-item>
-    </menubar>
+These files provide a description (internationalization) of GUI
+resources of the HELLO module. HELLO_msg_en.ts provides an English
+translation of the string resources used in a module (there can be also
+translation files for other languages, for instance French; these files
+are distinguished by the language suffix). HELLO_icons.ts
+defines images and icons resources used within the GUI library of
+HELLO module. Please refer to Qt linguist documentation for more
+details.
 
-- Add a button into the button bar.  In the following example, we create a second entry point for our “Get banner” 
-  action in the form of a button associated with the same ID “901”.  The icon is specified by the icon-id field, 
-  which must be a 20x20 pixels graphic file in the png format::
+- resources
 
-    <toolbar label-id="HELLO">
-     <toolbutton-item item-id="901" label-id="Get banner" icon-id="ExecHELLO.png"
-    tooltip-id="Get HELLO banner" accel-id="" toggle-id="" execute-action=""/>
-    </toolbar>
+This optional directory usually contains different resources files
+required for the correct operation of SALOME module.
 
-Convention
-``````````
-There is an ID associated with each menu or item.  Numbers between 1 and 40 are reserved for the IAPP.  
-ID numbers follow a certain rule, although it is not compulsory.  ID 90 is associated with the "HELLO" menu.  
-The ID of its unique "Get banner" item is 901.  The ID of a second item would be 902, and the ID of the sub-item would be 9021.
+- resources/HELLO.png
+- resources/handshake.png
+- resources/goodbye.png
+- resources/testme.png
 
-Implementation of the GUI
------------------------------
-The C++ implementation of the GUI is made in the /src/HELLOGUI directory.  The HELLOGUI.h header declares 
-the HELLOGUI class and contains the Qt (Q_OBJECT) directives.  Consequently, it must be processed by 
-the moc compiler (Qt Meta Model Compiler).  This is why the file extension is .h and we add the target into the Makefile::
+These are different module icon files. HELLO.png file provides main icon
+of HELLO module to be shown in the SALOME GUI desktop. Other files are
+the icons for the functions implemented by the module; they are used
+in the menus and toolbars.
 
-	LIB_MOC = HELLOGUI.h
 
-The HELLO.cxx source file contains the definition of member functions, and the Makefile is used to build a 
-library libHELLOGUI (the name is normalised to enable dynamic loading:  lib<NomModule>GUI.
+- resources/HELLOCatalog.xml.in
 
-Management of events
-``````````````````````
-For the HELLO GUI, we define the HELLOGUI::OnGUIEvent function, which will be called for each event.  
-This function essentially contains a switch structure used to process the ID received as an argument::
+The XML description of the CORBA services provided by the HELLO
+module. This file is parsed by SALOME supervision module (YACS) to generate
+the list of service nodes to be used in the calculation schemas. The
+simplest way to create this file is to use Catalog Generator utility
+provided by the SALOME KERNEL module, that can automatically generate
+XML description file from the IDL file. In GUI, this utility is available
+via the Tools main menu.
 
-  switch (theCommandID)
-    {
-    case 901:
-      // Traitement de "Get banner"
-      ...
-    case 190:
-      // Traitement de "MyNewItem"
-      ...
-    }
-
-The standard processing consists of retrieving input data (in this case the first name through a QInputDialog::getText 
-dialog window), and retrieving a handle on the interfaced CORBA component so as to call the required 
-service (in this case getBanner) and to display the result obtained ().
-
-Available classes
-````````````````````
-Any class supplied by Qt (http://doc.trolltech.com/) can be used for dialogs with the user.  
-However it is preferable, when possible, to use QAD (Qt Application Desktop) functions defined in GUI_SRC/ 
-that encapsulate the corresponding Qt functions and manage communications with IAPP better.  
-Thus, the QAD_MessageBox class is used in HELLOGUI instead of the Qt QMessageBox class.
-
-Management of multi-linguism
-`````````````````````````````````
-Qt provides a help tool for multi-linguism support.  This is reused in SALOME.  
-The principle is simple:  all character strings that are used for menu labels and dialogs with the user 
-are encapsulated in calls to the Qt tr() (translate) function that uses a label name as its argument.  
-For example, the getText function will be used to ask the user to enter a first name, in which the first 
-two arguments are labels encapsulated by tr()::
-
-        myName = QInputDialog::getText( tr("QUE_HELLO_LABEL"), tr("QUE_HELLO_NAME"),
-                                        QLineEdit::Normal, QString::null, &ok);
-
-The label names are prefixed by three letters and an underscore, for information.  The following codes are used:
-
-- MEN\_: menu label
-- BUT\_: button label
-- TOT\_: tooltip help
-- ERR\_: error message
-- WRN\_: warning message
-- INF\_: information message
-- QUE\_: question
-- PRP\_: prompt in the status bar
-
-Labels encapsulated by tr() are translated for different target languages (for example French and English) 
-in files named “<module_name>_msg_<language>.po”.  <language> is the language code, and **en** has been chosen for English 
-and **fr** for French.  This file must contain the translation for each key, for example::
-
-    msgid "HELLOGUI::INF_HELLO_BANNER"
-    msgstr "HELLO Information"
-
-The Qt findtr utility can generate the skeleton for this file::
-
-    findtr HELLOGUI.cxx > HELLO_msg_en.po
-
-and then the HELLO_msg_en.po file is edited to fill in the translations.  
-These files are then compiled by the **msg2qm** utility to generate *.qm* binaries.  
-This is done by filling in the LIB_MOC target in the Makefile::
-
-    PO_FILES =  HELLO_msg_en.po HELLO_msg_fr.po
-
-The final user chooses the language in each module in the resources/config. file, using the following command::
-
-    langage=<langage>
 
 
 

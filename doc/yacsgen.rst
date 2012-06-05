@@ -9,6 +9,9 @@ YACSGEN: SALOME module generator
 YACSGEN is a python package (module_generator) that automatically fabricates a SALOME module starting 
 from a synthetic description of the components that it will contain.  This description is made in the python language.
 
+YACSGEN includes since version 6.5 the HXX2SALOME functionalities, and is therefore able to also generate the 
+implementation of C++ dataflow components.
+
 The characteristics of these components are not general but they should facilitate integration of many scientific 
 calculation components.
 
@@ -254,6 +257,102 @@ named myfunc.cpp. The description will be::
                    sources=["myfunc.cpp"],
                    includes="-I/usr/local/mysoft/include",
                   )
+
+
+HXX2SALOME components
++++++++++++++++++++++
+
+For computational codes which exchange arrays, MED meshes and fields, the implementation of the SALOME component is more complex.
+hxx2salome is a Salome generation tool for dataflow C++ components, which is available in SALOME since version 4.
+ 
+Its principle is to start the integration of a code (written in Fortran/C/C++ or any C-compatible language) 
+by writing a C++ layer (a class), which purpose is to drive the underlying code, and exchange data at C++ standard 
+(c++ integral types, STL strings and vectors) and MED types for numerical meshes and fields. 
+
+Then the Salome CORBA layer (a SALOME C++ component) is generated automatically by the tool.
+The implementation of the component, which has to be provided in standard YACSGEN through the defs and body attributes, 
+is generated here through analysing the interface of the c++ layer written above the code.
+
+hxx2salome tool, although still available in Salome 6 as a standalone tool, was merged within YACSGEN.
+For the general principles of HXX2SALOME, and the detailed documentation, please refer to 
+the HXX2SALOME chapter of this documentation (:ref:`hxx2salome`). We will only present here the embedded use of HXX2SALOME within YACSGEN.
+
+
+The tool can be used in two different ways:
+
+  - within a YACSGEN python script, by using the **HXX2SALOMEComponent** class combined with other YACSGEN CLASSES.
+  - with the **hxx2salome.py** script, a python executable which use YACSGEN classes to reproduce the interface of the former former hxx2salome bash script.
+
+
+using the **HXX2SALOMEComponent** class 
+"""""""""""""""""""""""""""""""""""""""
+
+The merge of hxx2salome within YACSGEN was done by adding a new class, called **HXX2SALOMEComponent**, to the YACSGEN package. 
+Given a C++ component (a C++ layer which wraps a computational code), HXX2SALOMEComponent class parses its interface 
+(as defined in its .hxx header), extracts the public methods, analyses the types of these methods, 
+and uses this type information to generate the implementation. All the information is then given to YACSGEN which generate a ready-to-use component.
+
+As an example, let's suppose we have a code called mycode, wrapped by a C++ layer 
+(a dynamic library libmycodeCXX.so, and its interface "mycode.hxx", both located in directory mycodecpp_root_dir).
+To generate the SALOME C++ component, one should add in his YACS script: ::
+
+        from module_generator HXX2SALOMEComponent
+        c1=HXX2SALOMEComponent("mycode.hxx", 
+                               "libmycodeCXX.so", 
+                                mycodecpp_root_dir ) )
+
+The HXX2SALOMEComponent takes three arguments : the C++ header, the C++ library, and the path where to find them. The class does the parsing of c++ and generate all the necessary information for YACSGEN to generate the SALOME module.
+
+Finally, if the code is parallel (mpi), one has to use instead the **HXX2SALOMEParaComponent**. This class work exactly in the same way, but generates also 
+the mpi code necessary for a parallel SALOME component.
+
+
+Using **hxx2salome.py** executable
+""""""""""""""""""""""""""""""""""
+
+**hxx2salome.py** script is a python executable which use YACSGEN classes to reproduce the interface of the former hxx2salome bash script.
+The script takes optional arguments, followed by four mandatory arguments: ::
+
+        hxx2salome.py --help
+        
+        usage:
+        hxx2salome.py [options] <CPPCOMPO>_root_dir lib<CPPCOMPO>.hxx <CPPCOMPO>.so installDir
+
+        generate a SALOME component that wrapps given the C++ component
+
+        Mandatory arguments:
+
+          - <CPPCOMPO>_root_dir   : install directory (absolute path) of the c++ component
+          - <CPPCOMPO>.hxx        : header of the c++ component"
+          - lib<CPPCOMPO>.so      : the shared library containing the c++ component
+          - installDir            : directory where the generated files and the build should be installed
+
+          Note that <CPPCOMPO>.hxx and lib<CPPCOMPO>.so should be found in <CPPCOMPO>_root_dir)
+
+
+
+        options:
+          -h, --help       show this help message and exit
+          -e ENVIRON_FILE  specify the name of a environment file (bash/sh) that will
+                           be updated
+          -g               to create a generic gui in your component building tree
+          -c               to compile after generation
+
+
+The mandatory argument are respectively : 
+ - the path where the C++ component was installed,
+ - within this path the name of the interface header, 
+ - the name of the dynamic library,
+ - and finally the location where to generate and compile the Salome component. 
+
+As an example, the command to generate the mycode component would be: ::
+
+        hxx2salome.py -c -g -e salome.sh 
+              mycodecpp_root_dir mycode.hxx 
+              libmycodeCXX.so   <absolute path where to install generated component>
+
+
+
 
 Fortran component
 ++++++++++++++++++++++++++++++++++++++++
