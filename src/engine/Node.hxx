@@ -41,6 +41,7 @@ namespace YACS
     class OutPort;
     class InputPort;
     class OutputPort;
+    class InPropertyPort;
     class DynParaLoop;
     class ForEachLoop;
     class ComposedNode;
@@ -64,6 +65,7 @@ namespace YACS
       friend class Switch;
       friend class InputPort;
       friend class OutputPort;
+      friend class InPropertyPort;
       friend class DynParaLoop;
       friend class ForEachLoop;
       friend class ComposedNode;
@@ -75,6 +77,7 @@ namespace YACS
     protected:
       InGate _inGate;
       OutGate _outGate;
+      InPropertyPort * _inPropertyPort;
       std::string _name;
       ComposedNode *_father;
       YACS::StatesForNode _state;
@@ -132,6 +135,7 @@ namespace YACS
       virtual std::list<InputDataStreamPort *> getSetOfInputDataStreamPort() const = 0;
       virtual std::list<OutputDataStreamPort *> getSetOfOutputDataStreamPort() const = 0;
       InPort *getInPort(const std::string& name) const throw(Exception);
+      InPropertyPort *getInPropertyPort() const throw(Exception);
       virtual OutPort *getOutPort(const std::string& name) const throw(Exception);
       virtual std::set<OutPort *> getAllOutPortsLeavingCurrentScope() const = 0;
       virtual std::set<InPort *> getAllInPortsComingFromOutsideOfCurrentScope() const = 0;

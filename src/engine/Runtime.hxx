@@ -130,6 +130,8 @@ namespace YACS
       static  YACS::ENGINE::TypeCode *_tc_bool;
       static  YACS::ENGINE::TypeCode *_tc_string;
       static  YACS::ENGINE::TypeCode *_tc_file;
+      static  YACS::ENGINE::TypeCode *_tc_stringpair;
+      static  YACS::ENGINE::TypeCode *_tc_propvec;
       virtual void setCatalogLoaderFactory(const std::string& name, CatalogLoader* factory);
       std::map<std::string,CatalogLoader*> _catalogLoaderFactoryMap;
       Catalog* getBuiltinCatalog();

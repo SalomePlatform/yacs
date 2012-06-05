@@ -48,6 +48,8 @@ TypeCode* Runtime::_tc_int = 0;
 TypeCode* Runtime::_tc_bool = 0;
 TypeCode* Runtime::_tc_string = 0;
 TypeCode* Runtime::_tc_file = 0;
+TypeCode* Runtime::_tc_stringpair = 0;
+TypeCode* Runtime::_tc_propvec = 0;
 
 // --- init typecodes for edInit with C++ Any
 
@@ -71,11 +73,18 @@ Runtime::Runtime()
   Runtime::_tc_bool   = new TypeCode(Bool);
   Runtime::_tc_string = new TypeCode(String);
   Runtime::_tc_file = new TypeCodeObjref("file", "file");
+  TypeCodeStruct * stringpair = new TypeCodeStruct("stringpair", "stringpair");
+  stringpair->addMember("name", Runtime::_tc_string);
+  stringpair->addMember("value", Runtime::_tc_string);
+  Runtime::_tc_stringpair = stringpair;
+  Runtime::_tc_propvec = new TypeCodeSeq("propvec", "propvec", Runtime::_tc_stringpair);
   DEBTRACE( "_tc_double refcnt: " << Runtime::_tc_double->getRefCnt() );
   DEBTRACE( "_tc_int refcnt: " << Runtime::_tc_int->getRefCnt() );
   DEBTRACE( "_tc_bool refcnt: " << Runtime::_tc_bool->getRefCnt() );
   DEBTRACE( "_tc_string refcnt: " << Runtime::_tc_string->getRefCnt() );
   DEBTRACE( "_tc_file refcnt: " << Runtime::_tc_file->getRefCnt() );
+  DEBTRACE( "_tc_stringpair refcnt: " << Runtime::_tc_stringpair->getRefCnt() );
+  DEBTRACE( "_tc_propvec refcnt: " << Runtime::_tc_propvec->getRefCnt() );
   _builtinCatalog = new Catalog("builtins");
   _builtinCatalog->_composednodeMap["Bloc"]=createBloc("Bloc");
   _builtinCatalog->_composednodeMap["Switch"]=createSwitch("Switch");
@@ -96,6 +105,10 @@ Runtime::Runtime()
   typeMap["string"]=Runtime::_tc_string;
   Runtime::_tc_file->incrRef();
   typeMap["file"]=Runtime::_tc_file;
+  Runtime::_tc_stringpair->incrRef();
+  typeMap["stringpair"]=Runtime::_tc_stringpair;
+  Runtime::_tc_propvec->incrRef();
+  typeMap["propvec"]=Runtime::_tc_propvec;
 
   // Get dynamic trace level
   YACS::traceLevel=0;

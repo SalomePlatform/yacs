@@ -20,6 +20,7 @@
 #include "Node.hxx"
 #include "InputPort.hxx"
 #include "OutputPort.hxx"
+#include "InPropertyPort.hxx"
 #include "ComposedNode.hxx"
 #include "Dispatcher.hxx"
 #include "InputDataStreamPort.hxx"
@@ -69,6 +70,9 @@ Node::Node(const std::string& name):_name(name),_inGate(this),_outGate(this),_fa
   // Should be protected by lock ??
   _numId = _total++;
   idMap[_numId]=this;
+
+  // Every node has an InPropertyPort
+  _inPropertyPort = new InPropertyPort("InProperty", this, Runtime::_tc_propvec);
 }
 
 Node::Node(const Node& other, ComposedNode *father):_inGate(this),_outGate(this),_name(other._name),_father(father),
@@ -77,6 +81,9 @@ Node::Node(const Node& other, ComposedNode *father):_inGate(this),_outGate(this)
 {
   _numId = _total++;
   idMap[_numId]=this;
+
+  // Every node has an InPropertyPort
+  _inPropertyPort = new InPropertyPort("InProperty", this, Runtime::_tc_propvec);
 }
 
 Node::~Node()
@@ -199,6 +206,12 @@ InPort *Node::getInPort(const std::string& name) const throw(YACS::Exception)
       ret=getInputDataStreamPort(name);
     }
   return ret;
+}
+
+InPropertyPort *
+Node::getInPropertyPort() const throw(YACS::Exception)
+{
+  return _inPropertyPort;
 }
 
 /*!
