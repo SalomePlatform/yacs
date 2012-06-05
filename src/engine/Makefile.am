@@ -82,6 +82,7 @@ libYACSlibEngine_la_SOURCES =             \
 	DataNode.cxx                   \
 	Task.cxx                       \
 	Scheduler.cxx                  \
+	InPropertyPort.cxx             \
 	$(__dummy__)
 
 salomeinclude_HEADERS =                \
@@ -97,7 +98,7 @@ OutGate.hxx              OutPort.hxx       OutputDataStreamPort.hxx        Outpu
 Port.hxx                 Proc.hxx          RefCounter.hxx                  Runtime.hxx                    Scheduler.hxx \
 ServiceInlineNode.hxx    ServiceNode.hxx   SharedPtr.hxx                   StaticDefinedComposedNode.hxx  Switch.hxx \
 Task.hxx                 TypeCode.hxx      Visitor.hxx                     VisitorSaveSchema.hxx          VisitorSaveState.hxx \
-WhileLoop.hxx            PropertyInterface.hxx      AnyOutputPort.hxx  ServerNode.hxx \
+WhileLoop.hxx            PropertyInterface.hxx      AnyOutputPort.hxx  ServerNode.hxx InPropertyPort.hxx \
 	     $(__dummy__)
 
 
