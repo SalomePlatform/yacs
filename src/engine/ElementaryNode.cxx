@@ -341,6 +341,14 @@ InputPort *ElementaryNode::createInputPort(const std::string& inputPortName, Typ
 
 InputPort *ElementaryNode::edAddInputPort(const std::string& inputPortName, TypeCode* type) throw(YACS::Exception)
 {
+
+  // Cannot create an InputPort defined with InPropertyPort name.
+  if (inputPortName == "__InPropertyPort__Node__YACS_")
+  {
+    string what("ElementaryNode::edAddInputPort: it is forbidden to add an InputPort with the name __InPropertyPort__Node__YACS_\"");
+    throw Exception(what);
+  }
+
   InputPort *ret = 0;
   if (edCheckAddPort<InputPort, TypeCode*>(inputPortName,_setOfInputPort,type))
     {
