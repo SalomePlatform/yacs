@@ -72,7 +72,7 @@ Node::Node(const std::string& name):_name(name),_inGate(this),_outGate(this),_fa
   idMap[_numId]=this;
 
   // Every node has an InPropertyPort
-  _inPropertyPort = new InPropertyPort("InProperty", this, Runtime::_tc_propvec);
+  _inPropertyPort = new InPropertyPort("__InPropertyPort__Node__YACS_", this, Runtime::_tc_propvec);
 }
 
 Node::Node(const Node& other, ComposedNode *father):_inGate(this),_outGate(this),_name(other._name),_father(father),
@@ -83,7 +83,7 @@ Node::Node(const Node& other, ComposedNode *father):_inGate(this),_outGate(this)
   idMap[_numId]=this;
 
   // Every node has an InPropertyPort
-  _inPropertyPort = new InPropertyPort("InProperty", this, Runtime::_tc_propvec);
+  _inPropertyPort = new InPropertyPort("__InPropertyPort__Node__YACS_", this, Runtime::_tc_propvec);
 }
 
 Node::~Node()
@@ -212,6 +212,18 @@ InPropertyPort *
 Node::getInPropertyPort() const throw(YACS::Exception)
 {
   return _inPropertyPort;
+}
+
+InputPort *
+Node::getInputPort(const std::string& name) const throw(Exception)
+{
+  if (name == "__InPropertyPort__Node__YACS_")
+    return _inPropertyPort;
+  else
+  {
+    std::string what("Node::getInputPort : the port with name "); what+=name; what+=" does not exist on the current level";
+    throw Exception(what);
+  }
 }
 
 /*!

@@ -147,6 +147,10 @@ int ElementaryNode::getNumberOfOutputPorts() const
 
 InputPort *ElementaryNode::getInputPort(const std::string& name) const throw(YACS::Exception)
 {
+  try {
+    return Node::getInputPort(name);
+  }
+  catch(Exception& e) {}
   return getPort<InputPort>(name,_setOfInputPort);
 }
 

@@ -118,6 +118,11 @@ void DFToDSForLoop::getReadyTasks(std::vector<Task *>& tasks)
 
 InputPort *DFToDSForLoop::getInputPort(const std::string& name) const throw(YACS::Exception)
 {
+  try {
+    return Node::getInputPort(name);
+  }
+  catch(Exception& e) {}
+
   list<InputPort *>::const_iterator it =_setOfInputPort.begin();
   return (*it);
 }

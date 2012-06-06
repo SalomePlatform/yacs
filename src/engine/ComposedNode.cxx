@@ -1195,6 +1195,11 @@ OutPort *ComposedNode::getOutPort(const std::string& name) const throw(YACS::Exc
  */
 InputPort * ComposedNode::getInputPort(const std::string& name) const throw(YACS::Exception)
 {
+  try {
+    return Node::getInputPort(name);
+  }
+  catch(Exception& e) {}
+
   string portName, nodeName;
   if(splitNamesBySep(name,Node::SEP_CHAR_IN_PORT,nodeName,portName,true))
     {
