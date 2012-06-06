@@ -136,6 +136,10 @@ namespace YACS
                                const std::string& impl,
                                TypeCode * type,bool init=false) throw (ConversionException);
 
+      virtual InputPort* adapt(InPropertyPort* source,
+                               const std::string& impl,
+                               TypeCode * type,bool init=false) throw (ConversionException);
+
       virtual InputPort* adaptNeutral(InputPort* source,
                                       const std::string& impl,
                                       TypeCode * type,bool init) throw (ConversionException);

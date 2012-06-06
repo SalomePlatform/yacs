@@ -39,6 +39,7 @@ namespace YACS
     class Any;
     class InputPort;
     class OutputPort;
+    class InPropertyPort;
     class ForLoop;
     class ForEachLoop;
     class OptimizerLoop;
@@ -116,6 +117,11 @@ namespace YACS
                                                                TypeCode * type);
 
       virtual InputPort* adapt(InputPort* source, const std::string& impl, TypeCode * type,
+                               bool init=false) throw (ConversionException) = 0;
+
+      virtual InputPort* adapt(InPropertyPort* source,
+                               const std::string& impl,
+                               TypeCode * type,
                                bool init=false) throw (ConversionException) = 0;
 
       virtual void* convertNeutral(TypeCode * type, Any *data);

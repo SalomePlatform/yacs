@@ -40,7 +40,7 @@ ConversionException.hxx  ForLoop.hxx         Node.hxx                        Run
 DataFlowPort.hxx         InGate.hxx          OptimizerAlg.hxx                Scheduler.hxx             WhileLoop.hxx \
 DataPort.hxx             InlineNode.hxx      OptimizerLoop.hxx               ServiceInlineNode.hxx     ComponentDefinition.hxx \
 DataStreamPort.hxx       InPort.hxx          OutGate.hxx                     ServiceNode.hxx           Catalog.hxx  \
-PropertyInterface.hxx    AnyOutputPort.hxx   Pool.hxx
+PropertyInterface.hxx    AnyOutputPort.hxx   Pool.hxx                        InPropertyPort.hxx
 
 SWIGINCLUDES = $(ENGINEINCLUDES:%=$(top_srcdir)/src/engine/%) $(top_srcdir)/src/bases/yacsconfig.h ExecutorSwig.hxx
 

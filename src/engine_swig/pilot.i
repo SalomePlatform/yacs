@@ -258,6 +258,18 @@ EXCEPTION(YACS::ENGINE::ExecutorSwig::waitPause)
       self->edInit("Python",ob);
     }
 }
+%include <InPropertyPort.hxx>
+%extend YACS::ENGINE::InPropertyPort
+{
+  void edInitXML(const char * s)
+    {
+      self->edInit("XML",s);
+    }
+  void edInitPy(PyObject* ob)
+    {
+      self->edInit("Python",ob);
+    }
+}
 
 %template(edInitInt)       YACS::ENGINE::InputPort::edInit<int>;
 %template(edInitBool)      YACS::ENGINE::InputPort::edInit<bool>;

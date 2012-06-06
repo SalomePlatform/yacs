@@ -20,6 +20,7 @@
 #include "OutputPort.hxx"
 #include "ComposedNode.hxx"
 #include "InputPort.hxx"
+#include "InPropertyPort.hxx"
 #include "Runtime.hxx"
 #include "Node.hxx"
 
@@ -74,6 +75,23 @@ void OutputPort::put(const void *data) throw(ConversionException)
 bool OutputPort::edAddInputPort(InputPort *phyPort) throw(YACS::Exception)
 {
   DEBTRACE("OutputPort::edAddInputPort");
+  if(!isAlreadyInSet(phyPort))
+    {
+      InputPort *pwrap = getRuntime()->adapt(phyPort,
+                                             _node->getImplementation(),
+                                             this->edGetType());
+      _setOfInputPort.insert(pwrap);
+      modified();
+      phyPort->modified();
+      return true;
+    }
+  else
+    return false;
+}
+
+bool OutputPort::edAddInPropertyPort(InPropertyPort *phyPort) throw(YACS::Exception)
+{
+  DEBTRACE("OutputPort::edAddInPropertyPort");
   if(!isAlreadyInSet(phyPort))
     {
       InputPort *pwrap = getRuntime()->adapt(phyPort,
@@ -180,13 +198,21 @@ bool OutputPort::isAlreadyInSet(InputPort *inputPort) const
 bool OutputPort::addInPort(InPort *inPort) throw(YACS::Exception)
 {
   DEBTRACE("OutputPort::addInPort");
-  if(inPort->getNameOfTypeOfCurrentInstance()!=InputPort::NAME)
+  if(inPort->getNameOfTypeOfCurrentInstance()!=InputPort::NAME &&
+     inPort->getNameOfTypeOfCurrentInstance()!=InPropertyPort::NAME)
     {
       string what="not compatible type of port requested during building of link FROM ";
       what+=NAME; what+=" TO "; what+=inPort->getNameOfTypeOfCurrentInstance();
       throw Exception(what);
     }
-  return edAddInputPort(static_cast<InputPort*>(inPort));
+  if (inPort->getNameOfTypeOfCurrentInstance() == InputPort::NAME)
+  {
+    return edAddInputPort(static_cast<InputPort*>(inPort));
+  }
+  else
+  {
+    return edAddInPropertyPort(static_cast<InPropertyPort*>(inPort));
+  }
 }
 
 /**

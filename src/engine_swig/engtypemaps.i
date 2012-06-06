@@ -76,6 +76,7 @@ catch (const CORBA::SystemException& ex) { \
 #include "Switch.hxx"
 #include "InputPort.hxx"
 #include "OutputPort.hxx"
+#include "InPropertyPort.hxx"
 #include "InputDataStreamPort.hxx"
 #include "OutputDataStreamPort.hxx"
 #include "OptimizerLoop.hxx"
@@ -150,8 +151,12 @@ static PyObject* convertPort(YACS::ENGINE::Port* port,int owner=0)
   PyObject * ob;
   std::string swigtypename="_p_"+port->typeName();
   swig_type_info *ret = SWIG_MangledTypeQuery(swigtypename.c_str());
-  if (ret) 
+  if (ret)
     {
+      YACS::ENGINE::InPropertyPort *inpropertyport = dynamic_cast<YACS::ENGINE::InPropertyPort*>(port);
+      if(inpropertyport)
+        return SWIG_NewPointerObj((void*)inpropertyport,ret,owner);
+
       YACS::ENGINE::InputPort *inport = dynamic_cast<YACS::ENGINE::InputPort *>(port);
       if(inport)
         return SWIG_NewPointerObj((void*)inport,ret,owner);
@@ -176,6 +181,8 @@ static PyObject* convertPort(YACS::ENGINE::Port* port,int owner=0)
         ob=SWIG_NewPointerObj((void*)cport,SWIGTYPE_p_YACS__ENGINE__AnyInputPort,owner);
       else if(YACS::ENGINE::AnyOutputPort *cport =dynamic_cast<YACS::ENGINE::AnyOutputPort *>(port))
         ob=SWIG_NewPointerObj((void*)cport,SWIGTYPE_p_YACS__ENGINE__AnyOutputPort,owner);
+      else if(dynamic_cast<YACS::ENGINE::InPropertyPort*>(port))
+        ob=SWIG_NewPointerObj((void*)port,SWIGTYPE_p_YACS__ENGINE__InPropertyPort,owner);
       else if(dynamic_cast<YACS::ENGINE::InputPort *>(port))
         ob=SWIG_NewPointerObj((void*)port,SWIGTYPE_p_YACS__ENGINE__InputPort,owner);
       else if(dynamic_cast<YACS::ENGINE::OutputPort *>(port))
@@ -471,7 +478,7 @@ static PyObject* convertPort(YACS::ENGINE::Port* port,int owner=0)
     }
 }
 
-%typemap(out) YACS::ENGINE::InputPort*,YACS::ENGINE::OutputPort*,YACS::ENGINE::InPort*,YACS::ENGINE::OutPort*
+%typemap(out) YACS::ENGINE::InputPort*,YACS::ENGINE::OutputPort*,YACS::ENGINE::InPort*,YACS::ENGINE::OutPort*,YACS::ENGINE::InPropertyPort*
 {
   $result=convertPort($1,$owner);
 }
@@ -570,6 +577,15 @@ static PyObject* convertPort(YACS::ENGINE::Port* port,int owner=0)
 %typemap(out) std::list<YACS::ENGINE::InputPort *>
 {
   std::list<YACS::ENGINE::InputPort *>::const_iterator it;
+  $result = PyTuple_New($1.size());
+  int i = 0;
+  for (it = $1.begin(); it != $1.end(); ++it, ++i) {
+    PyTuple_SetItem($result,i,convertPort(*it));
+  }
+}
+%typemap(out) std::list<YACS::ENGINE::InPropertyPort*>
+{
+  std::list<YACS::ENGINE::InPropertyPort *>::const_iterator it;
   $result = PyTuple_New($1.size());
   int i = 0;
   for (it = $1.begin(); it != $1.end(); ++it, ++i) {

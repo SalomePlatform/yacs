@@ -122,7 +122,7 @@ namespace YACS
 %types(YACS::ENGINE::InlineFuncNode *,YACS::ENGINE::ServiceInlineNode *,YACS::ENGINE::ServiceNode *);
 %types(YACS::ENGINE::ElementaryNode *);
 
-%types(YACS::ENGINE::InputPort *,YACS::ENGINE::OutputPort *);
+%types(YACS::ENGINE::InputPort *,YACS::ENGINE::OutputPort *,YACS::ENGINE::InPropertyPort *);
 %types(YACS::ENGINE::InputDataStreamPort *,YACS::ENGINE::OutputDataStreamPort *);
 %types(YACS::ENGINE::InGate *,YACS::ENGINE::OutGate *);
 %types(YACS::ENGINE::InPort *,YACS::ENGINE::OutPort *,YACS::ENGINE::Port *);

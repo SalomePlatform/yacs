@@ -710,6 +710,22 @@ InputPort* RuntimeSALOME::adapt(InputPort* source,
     }
 }
 
+//! Adapter function for InPropertyPort
+/*!
+ *  \param source : InPropertyPort to be adapted
+ *  \param impl : new implementation (C++, python, CORBA, XML, Neutral)
+ *  \param type : data type provided by the InPropertyPort
+ *  \param init : indicates if the adapted InPropertyPort will be used for initialization (value true) or not (value false)
+ * 
+ * \return : adapted InputPort
+ */
+InputPort* RuntimeSALOME::adapt(InPropertyPort* source,
+                                const std::string& impl,
+                                TypeCode * type,bool init) throw (ConversionException)
+{
+  return adaptNeutral((InputPort *)source,impl,type,init);
+}
+
 //! Adapt a Neutral input port to a Corba output port
 /*!
  *   \param inport : Neutral input port to adapt to Corba type type

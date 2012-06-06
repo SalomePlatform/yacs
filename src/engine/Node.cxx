@@ -423,6 +423,7 @@ const std::string Node::getId() const
 
 void Node::setProperty(const std::string& name, const std::string& value)
 {
+    DEBTRACE("Node::setProperty " << name << " " << value);
     _propertyMap[name]=value;
 }
 

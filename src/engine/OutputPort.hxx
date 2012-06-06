@@ -34,6 +34,7 @@ namespace YACS
     class InPort;
     class Runtime;
     class InputPort;
+    class InPropertyPort;
     class OptimizerLoop;
     class ElementaryNode;
     class CollectorSwOutputPort;
@@ -54,6 +55,7 @@ namespace YACS
       std::string getNameOfTypeOfCurrentInstance() const;
       int removeInPort(InPort *inPort, bool forward) throw(Exception);
       virtual bool edAddInputPort(InputPort *phyPort) throw(Exception);
+      virtual bool edAddInPropertyPort(InPropertyPort *phyPort) throw(Exception);
       virtual int edRemoveInputPort(InputPort *inputPort, bool forward) throw(Exception);
       bool addInPort(InPort *inPort) throw(Exception);
       void edRemoveAllLinksLinkedWithMe() throw(Exception);//entry point for forward port deletion
