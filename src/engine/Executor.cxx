@@ -32,6 +32,7 @@
 #include <sys/stat.h>
 #ifndef WIN32
 #include <sys/time.h>
+#include <unistd.h>
 #endif
 
 #include <cstdlib>

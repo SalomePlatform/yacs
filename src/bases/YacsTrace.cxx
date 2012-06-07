@@ -25,6 +25,8 @@
 #ifdef WNT
 #include <process.h>
 #define getpid _getpid
+#else
+#include <unistd.h>
 #endif
 
 namespace YACS{
