@@ -33,10 +33,13 @@ namespace YACS
      * \ingroup Ports
      *
      */
+    class OutputDataStreamPort;
     class YACSLIBENGINE_EXPORT InputDataStreamPort : public DataStreamPort, public InPort
     {
     public:
       static const char NAME[];
+    protected:
+      std::set<OutputDataStreamPort *> _setOfOutputDataStreamPort;
     public:
       InputDataStreamPort(const InputDataStreamPort& other, Node *newHelder);
       InputDataStreamPort(const std::string& name, Node *node, TypeCode* type);
@@ -44,6 +47,12 @@ namespace YACS
       virtual std::string getNameOfTypeOfCurrentInstance() const;
       virtual InputDataStreamPort *clone(Node *newHelder) const;
       virtual std::string typeName() {return "YACS__ENGINE__InputDataStreamPort";}
+
+      virtual void edAddOutputDataStreamPort(OutputDataStreamPort *port);
+      std::set<OutputDataStreamPort *> getConnectedOutputDataStreamPort() {return _setOfOutputDataStreamPort;}
+
+    private:
+      bool isAlreadyInSet(OutputDataStreamPort *inPort) const;
     };
   }
 }

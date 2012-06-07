@@ -98,6 +98,7 @@ bool OutputDataStreamPort::edAddInputDataStreamPort(InputDataStreamPort *port)
           throw ConversionException(what);
         }
       _setOfInputDataStreamPort.insert(port);
+      port->edAddOutputDataStreamPort(this);
       return true;
     }
   else

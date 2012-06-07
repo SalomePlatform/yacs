@@ -18,10 +18,14 @@
 //
 
 #include "InputDataStreamPort.hxx"
+#include "OutputDataStreamPort.hxx"
 #include <iostream>
 
 using namespace YACS::ENGINE;
 using namespace std;
+
+//#define _DEVDEBUG_
+#include "YacsTrace.hxx"
 
 const char InputDataStreamPort::NAME[]="InputDataStreamPort";
 
@@ -53,4 +57,16 @@ string InputDataStreamPort::getNameOfTypeOfCurrentInstance() const
 InputDataStreamPort *InputDataStreamPort::clone(Node *newHelder) const
 {
   return new InputDataStreamPort(*this,newHelder);
+}
+
+void InputDataStreamPort::edAddOutputDataStreamPort(OutputDataStreamPort *port)
+{
+  DEBTRACE("InputDataStreamPort::edAddOutputDataStreamPort");
+  if(!isAlreadyInSet(port))
+    _setOfOutputDataStreamPort.insert(port);
+}
+
+bool InputDataStreamPort::isAlreadyInSet(OutputDataStreamPort *outPort) const
+{
+  return _setOfOutputDataStreamPort.find(outPort)!=_setOfOutputDataStreamPort.end();
 }
