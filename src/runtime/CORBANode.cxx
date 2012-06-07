@@ -308,19 +308,40 @@ void SalomeNode::initService()
     }
   try
     {
-      CORBA::Boolean ret=compo->init_service(_method.c_str());
-      if(!ret)
-        {
-          _errorDetails="Problem with component '"+_ref+"' in init_service of service '"+ _method + "'";
-          throw Exception(_errorDetails);
-        }
-      //Should check that component port types are the same as those declared in the xml file 
+      if (!_multi_port_node)
+      {
+        CORBA::Boolean ret=compo->init_service(_method.c_str());
+        if(!ret)
+          {
+            _errorDetails="Problem with component '"+_ref+"' in init_service of service '"+ _method + "'";
+            throw Exception(_errorDetails);
+          }
+        //Should check that component port types are the same as those declared in the xml file
+      }
+      else
+      {
+        CORBA::Boolean ret=compo->init_service_with_multiple(_method.c_str(), _param);
+        if(!ret)
+          {
+            _errorDetails="Problem with component '"+_ref+"' in init_service_with_multiple of service '"+ _method + "'";
+            throw Exception(_errorDetails);
+          }
+      }
     }
   catch(...)
     {
       _errorDetails="Problem with component '"+_ref+"' in init_service of service '"+ _method + "'";
       throw;
     }
+}
+
+void
+SalomeNode::addDatastreamPortToInitMultiService(const std::string & port_name, int number)
+{
+  int index = _param.length();
+  _param.length(index + 1);
+  _param[index].name = CORBA::string_dup(port_name.c_str());
+  _param[index].number = number;
 }
 
 //! Connect the datastream ports of the component associated to the node

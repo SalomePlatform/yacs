@@ -48,6 +48,10 @@ namespace YACS
       std::list<OutputPort *> _setOfOutputPort;
       std::list<InputDataStreamPort *> _setOfInputDataStreamPort;
       std::list<OutputDataStreamPort *> _setOfOutputDataStreamPort;
+
+      // Management of multi property
+      bool _createDatastreamPorts;
+      bool _multi_port_node;
     protected:
       ElementaryNode(const std::string& name);
       ElementaryNode(const ElementaryNode& other, ComposedNode *father);
@@ -114,7 +118,15 @@ namespace YACS
       virtual void getCoupledTasks(std::set<Task*>& coupledSet);
       virtual void getCoupledNodes(std::set<Task*>& coupledSet);
       void accept(Visitor *visitor);
+
+      // Used for runtime nodes that need
+      // to configure their services for the multi property
+      virtual void addDatastreamPortToInitMultiService(const std::string & port_name,
+                                                       int number) {}
     protected:
+      // Management of multi property
+      //virtual void createMultiDatastreamPorts();
+
       void edDisconnectAllLinksWithMe();
       bool areAllInputPortsValid() const;
       template<class PORT>
