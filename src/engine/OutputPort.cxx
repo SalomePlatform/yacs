@@ -192,6 +192,13 @@ bool OutputPort::isAlreadyInSet(InputPort *inputPort) const
   return false;
 }
 
+bool
+OutputPort::isConnected() const
+{
+  return !_setOfInputPort.empty();
+}
+
+
 /**
  * check compatibility of port class ( an inputPort ) before trying to create the link.
  */

@@ -52,6 +52,7 @@ namespace YACS
       std::set<InPort *> edSetInPort() const;
       bool isAlreadyLinkedWith(InPort *with) const;
       bool isAlreadyInSet(InputPort *inputPort) const;
+      bool isConnected() const;
       std::string getNameOfTypeOfCurrentInstance() const;
       int removeInPort(InPort *inPort, bool forward) throw(Exception);
       virtual bool edAddInputPort(InputPort *phyPort) throw(Exception);

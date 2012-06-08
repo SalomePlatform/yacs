@@ -25,7 +25,10 @@
 #include "InputDataStreamPort.hxx"
 #include "OutputDataStreamPort.hxx"
 #include "Visitor.hxx"
+#include "Proc.hxx"
+#include "Container.hxx"
 #include <iostream>
+#include <sstream>
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -41,12 +44,17 @@ using namespace std;
  *  \ingroup Nodes
  */
 
-ElementaryNode::ElementaryNode(const std::string& name):Node(name)
+ElementaryNode::ElementaryNode(const std::string& name):
+  Node(name),
+  _createDatastreamPorts(false),
+  _multi_port_node(false)
 {
 }
 
 ElementaryNode::ElementaryNode(const ElementaryNode& other, ComposedNode *father):Node(other,father)
 {
+  _createDatastreamPorts = other._createDatastreamPorts;
+  _multi_port_node = other._multi_port_node;
   for(list<InputPort *>::const_iterator iter1=other._setOfInputPort.begin();iter1!=other._setOfInputPort.end();iter1++)
     _setOfInputPort.push_back((InputPort *)(*iter1)->clone(this));
   for(list<OutputPort *>::const_iterator iter2=other._setOfOutputPort.begin();iter2!=other._setOfOutputPort.end();iter2++)
@@ -262,6 +270,79 @@ bool ElementaryNode::areAllInputPortsValid() const
   return ret;
 }
 
+/*
+  This method is used by the "multi" property of ElementaryNode to create
+  to create duplicated input and ouput datastream ports.
+*/
+void
+ElementaryNode::createMultiDatastreamPorts()
+{
+  if (!_createDatastreamPorts)
+  {
+    _createDatastreamPorts = true;
+    for(list<InputDataStreamPort *>::const_iterator iter3 = _setOfInputDataStreamPort.begin(); iter3!=_setOfInputDataStreamPort.end();iter3++)
+    {
+      InputDataStreamPort * port = *iter3;
+      std::string port_name = port->getName();
+      std::map<std::string,std::string>::iterator it=_propertyMap.find(port_name);
+      int multi = 1;
+      if(it != _propertyMap.end())
+      {
+        std::string multi_str = it->second;
+        std::istringstream iss(multi_str);
+        if (!(iss >> multi))
+          throw Exception("Property multi port should be set with a stringified int not an: " + multi_str);
+      }
+
+      if (multi > 1)
+      {
+        addDatastreamPortToInitMultiService(port_name, multi);
+        // Change name of first port
+        port->setName(port_name + "_0");
+        for (int i = 2; i <= multi; i++)
+        {
+          InputDataStreamPort * new_port = port->clone(this);
+          std::ostringstream number;
+          number << i-1;
+          new_port->setName(port_name + "_" + number.str());
+          _setOfInputDataStreamPort.push_back(new_port);
+          _multi_port_node = true;
+        }
+      }
+    }
+    for(list<OutputDataStreamPort *>::const_iterator iter4 = _setOfOutputDataStreamPort.begin(); iter4!=_setOfOutputDataStreamPort.end();iter4++)
+    {
+      OutputDataStreamPort * port = *iter4;
+      std::string port_name = port->getName();
+      std::map<std::string,std::string>::iterator it=_propertyMap.find(port_name);
+      int multi = 1;
+      if(it != _propertyMap.end())
+      {
+        std::string multi_str = it->second;
+        std::istringstream iss(multi_str);
+        if (!(iss >> multi))
+          throw Exception("Property multi port should be set with a stringified int not an: " + multi_str);
+      }
+
+      if (multi > 1)
+      {
+        addDatastreamPortToInitMultiService(port_name, multi);
+        // Change name of first port
+        port->setName(port_name + "_0");
+        for (int i = 2; i <= multi; i++)
+        {
+          OutputDataStreamPort * new_port = port->clone(this);
+          std::ostringstream number;
+          number << i-1;
+          new_port->setName(port_name + "_" + number.str());
+          _setOfOutputDataStreamPort.push_back(new_port);
+          _multi_port_node = true;
+        }
+      }
+    }
+  }
+}
+
 /**
  * add this node task to a given set of ready tasks, if this task is ready to activate
  */
@@ -269,8 +350,158 @@ bool ElementaryNode::areAllInputPortsValid() const
 void ElementaryNode::getReadyTasks(std::vector<Task *>& tasks)
 {
   DEBTRACE("ElementaryNode::getReadyTasks: " << getName() << " " << _state);
+
+  int multi = 1;
+  std::map<std::string,std::string>::iterator it=_propertyMap.find("multi");
+  if(it != _propertyMap.end())
+  {
+    std::string multi_str = it->second;
+    std::istringstream iss(multi_str);
+    if (!(iss >> multi))
+      throw Exception("Property multi should be set with a stringified int not an: " + multi_str);
+  }
+
   if(_state==YACS::TOACTIVATE || _state==YACS::TOLOAD || _state==YACS::TORECONNECT)
-    tasks.push_back(this);
+  {
+    if (multi == 1)
+    {
+      std::map<std::string,std::string>::iterator it=_propertyMap.find("multi_working_dir");
+      if(it != _propertyMap.end())
+      {
+        std::string working_dir_base = it->second;
+        std::ostringstream working_dir_stream;
+        working_dir_stream << working_dir_base;
+        working_dir_stream << 1;
+        this->getContainer()->setProperty("workingdir", working_dir_stream.str());
+      }
+      tasks.push_back(this);
+    }
+    else
+    {
+
+      // Check output port -> cannot clone an Elementary Node with Output Ports connected
+      std::list<OutputPort *>::iterator it_output = _setOfOutputPort.begin();
+      for (;it_output != _setOfOutputPort.end(); it_output++)
+      {
+        if ((*it_output)->isConnected())
+        {
+          throw Exception("Property multi cannot be set on nodes with dataflow output ports connected");
+        }
+      }
+
+      // Add my instance
+      std::map<std::string,std::string>::iterator it=_propertyMap.find("multi_working_dir");
+      if(it != _propertyMap.end())
+      {
+        std::string working_dir_base = it->second;
+        std::ostringstream working_dir_stream;
+        working_dir_stream << working_dir_base;
+        working_dir_stream << 1;
+        this->getContainer()->setProperty("workingdir", working_dir_stream.str());
+      }
+      tasks.push_back(this);
+
+      // Step 1: Create clones
+      for (int i = 1; i < multi; i++)
+      {
+        // Clone
+        YACS::ENGINE::ElementaryNode * new_node = static_cast<YACS::ENGINE::ElementaryNode *>(clone(_father, false));
+        new_node->createMultiDatastreamPorts();
+
+        // Change name
+        std::string iname;
+        std::stringstream inamess;
+        inamess << getName() << "_" << i;
+        iname=inamess.str();
+        DEBTRACE("Create clone "<< iname << " of node " << getName());
+        new_node->setName(iname);
+
+        // For each input port connect it with the original output port
+        std::list<InputPort *> clone_list_inputPorts = new_node->getSetOfInputPort();
+        for(list<InputPort *>::const_iterator iter1=clone_list_inputPorts.begin(); iter1!=clone_list_inputPorts.end(); iter1++)
+        {
+          std::string input_port_name = (*iter1)->getName();
+          // Get Port Name in master node
+          InputPort * master_port = getInputPort(input_port_name);
+          for (std::set<OutPort *>::const_iterator itt=master_port->_backLinks.begin(); itt!=master_port->_backLinks.end();itt++)
+          {
+            // Connect dataflow
+            getProc()->edAddDFLink((*itt),(*iter1));
+          }
+        }
+
+        // InputDataStreamPort connections
+        std::list<InputDataStreamPort *> clone_list_inputDatastreamPorts = new_node->getSetOfInputDataStreamPort();
+        for(list<InputDataStreamPort *>::iterator iter = clone_list_inputDatastreamPorts.begin(); iter != clone_list_inputDatastreamPorts.end(); iter++)
+        {
+          std::string port_name = (*iter)->getName();
+          InputDataStreamPort * orig_port = getInputDataStreamPort(port_name);
+
+          std::set<OutputDataStreamPort *> connected_ports = orig_port->getConnectedOutputDataStreamPort();
+
+          // Create datastream ports if not created
+          std::set<OutputDataStreamPort *>::const_iterator iter3;
+          for(iter3=connected_ports.begin();iter3!=connected_ports.end();iter3++)
+          {
+            ElementaryNode * node = (ElementaryNode *) (*iter3)->getNode();
+            node->createMultiDatastreamPorts();
+
+            std::string good_port_name;
+            std::stringstream temp_name;
+            std::string out_name = (*iter3)->getName();
+            out_name.erase(out_name.end()-1);
+            temp_name << out_name << i;
+            good_port_name = temp_name.str();
+            getProc()->edAddLink(node->getOutputDataStreamPort(good_port_name), (*iter));
+          }
+        }
+
+        // OutputDataStreamPort connections
+        std::list<OutputDataStreamPort *> clone_list_outputDatastreamPorts = new_node->getSetOfOutputDataStreamPort();
+        for(list<OutputDataStreamPort *>::iterator iter = clone_list_outputDatastreamPorts.begin(); iter != clone_list_outputDatastreamPorts.end(); iter++)
+        {
+          std::string port_name = (*iter)->getName();
+          OutputDataStreamPort * orig_port = getOutputDataStreamPort(port_name);
+          std::set<InputDataStreamPort *> dest_input_port = orig_port->_setOfInputDataStreamPort;
+          for(set<InputDataStreamPort *>::iterator dest_port = dest_input_port.begin(); dest_port != dest_input_port.end(); dest_port++)
+          {
+            ElementaryNode * dest_node = (ElementaryNode *)(*dest_port)->getNode();
+            // Add InputPort to dest node
+            dest_node->createMultiDatastreamPorts();
+
+            std::string good_port_name;
+            std::stringstream temp_name;
+            std::string in_name = (*dest_port)->getName();
+            in_name.erase(in_name.end()-1);
+            temp_name << in_name << i;
+            good_port_name = temp_name.str();
+            getProc()->edAddLink((*iter), dest_node->getInputDataStreamPort(good_port_name));
+          }
+        }
+
+        // Init node
+        new_node->init(false);
+        new_node->exUpdateState();
+
+        // Set Control Link to done
+        std::list<OutGate *> clone_cl_back = new_node->getInGate()->getBackLinks();
+        for(std::list<OutGate *>::const_iterator iter=clone_cl_back.begin(); iter!=clone_cl_back.end(); iter++)
+          new_node->getInGate()->exNotifyFromPrecursor((*iter));
+
+        // Add clone
+        std::map<std::string,std::string>::iterator it=_propertyMap.find("multi_working_dir");
+        if(it != _propertyMap.end())
+        {
+          std::string working_dir_base = it->second;
+          std::ostringstream working_dir_stream;
+          working_dir_stream << working_dir_base;
+          working_dir_stream << i+1;
+          new_node->getContainer()->setProperty("workingdir", working_dir_stream.str());
+        }
+        tasks.push_back(new_node);
+      }
+    }
+  }
 }
 
 /**

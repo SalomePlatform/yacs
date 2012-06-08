@@ -125,7 +125,7 @@ namespace YACS
                                                        int number) {}
     protected:
       // Management of multi property
-      //virtual void createMultiDatastreamPorts();
+      virtual void createMultiDatastreamPorts();
 
       void edDisconnectAllLinksWithMe();
       bool areAllInputPortsValid() const;
