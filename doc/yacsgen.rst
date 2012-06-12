@@ -15,9 +15,6 @@ implementation of C++ dataflow components.
 The characteristics of these components are not general but they should facilitate integration of many scientific 
 calculation components.
 
-This generator does not control integration of a GUI, but simply the calculation part. The main objective 
-is to integrate a Fortran library in which calls to datastream ports (particularly Calcium) can be made.
-
 How to get it
 -----------------------------------------------------------------
 It is a module (named YACSGEN) in the SALOME CVS TOOLS base that is distributed with main SALOME modules.
