@@ -125,3 +125,8 @@ InputPort* RuntimeForEngineTest::adapt(InputPort* source, const string& impl,Typ
 {
   return new ProxyPort(source);
 }
+
+InputPort* RuntimeForEngineTest::adapt(InPropertyPort* source, const std::string& impl, TypeCode * type, bool init) throw (ConversionException)
+{
+  return adapt((InputPort *)source,impl,type,init);
+}
