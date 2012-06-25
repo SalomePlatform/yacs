@@ -215,7 +215,7 @@ Node::getInPropertyPort() const throw(YACS::Exception)
 }
 
 InputPort *
-Node::getInputPort(const std::string& name) const throw(Exception)
+Node::getInputPort(const std::string& name) const throw(YACS::Exception)
 {
   if (name == "__InPropertyPort__Node__YACS_")
     return _inPropertyPort;
