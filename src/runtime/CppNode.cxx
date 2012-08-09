@@ -1,27 +1,29 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "CppNode.hxx"
 #include "InputPort.hxx"
 #include "OutputPort.hxx"
 #include "CppPorts.hxx"
 #include "CppContainer.hxx"
 #include "CppComponent.hxx"
+#include "TypeCode.hxx"
 
 #include <iostream>
 #include <set>
@@ -100,14 +102,14 @@ void CppNode::execute()
         }
       
       if (_component) 
-	{
-	  CppComponent * _componentC = dynamic_cast<CppComponent *>(_component);
-	  if (!_componentC)
-	    throw YACS::Exception("CppNode::execute : bad type of component");
-	  _componentC->run(_method.c_str(), nIn, nOut, In, Out);
+        {
+          CppComponent * _componentC = dynamic_cast<CppComponent *>(_component);
+          if (!_componentC)
+            throw YACS::Exception("CppNode::execute : bad type of component");
+          _componentC->run(_method.c_str(), nIn, nOut, In, Out);
         }
       else if (_run)
-	_run(nIn, nOut, In, Out);
+        _run(nIn, nOut, In, Out);
       
       //output parameters
       std::list<OutputPort *>::iterator iter2;

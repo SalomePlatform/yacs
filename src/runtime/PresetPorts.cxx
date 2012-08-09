@@ -1,21 +1,22 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "TypeConversions.hxx"
 #include "PresetPorts.hxx"
 #include "PythonPorts.hxx"
@@ -28,6 +29,14 @@
 using namespace YACS::ENGINE;
 using namespace std;
 
+/*! \class YACS::ENGINE::OutputPresetPort
+ *  \brief Class for PRESET output Ports
+ *
+ * \ingroup Ports
+ *
+ * \see PresetNode
+ */
+
 OutputPresetPort::OutputPresetPort(const std::string& name,  Node* node, TypeCode* type)
   : OutputXmlPort(name, node, type),
     DataPort(name, node, type),
@@ -38,8 +47,13 @@ OutputPresetPort::OutputPresetPort(const std::string& name,  Node* node, TypeCod
 OutputPresetPort::OutputPresetPort(const OutputPresetPort& other, Node *newHelder)
   : OutputXmlPort(other,newHelder),
     DataPort(other,newHelder),
-    Port(other,newHelder)
+    Port(other,newHelder),_storeData(other._storeData)
 {
+}
+
+OutputPort* OutputPresetPort::clone(Node *newHelder) const
+{
+  return new OutputPresetPort(*this,newHelder);
 }
 
 void OutputPresetPort::setData(std::string data)
@@ -49,7 +63,7 @@ void OutputPresetPort::setData(std::string data)
   modified();
 }
 
-void OutputPresetPort::checkBasicConsistency() const throw(Exception)
+void OutputPresetPort::checkBasicConsistency() const throw(YACS::Exception)
 {
   DEBTRACE("OutputPresetPort::checkBasicConsistency " << _storeData);
   if (_storeData.empty())
@@ -90,7 +104,11 @@ std::string OutputPresetPort::getData()
           break;
         case Sequence:
         case Array:
+          value="<value><array><data>"+_storeData+"</data></array></value>";
+          break;
         case Struct:
+          value="<value><struct><data>"+_storeData+"</data></struct></value>";
+          break;
         default:
           break;
         }
@@ -126,6 +144,13 @@ std::string OutputPresetPort::getAsString()
   return s;
 }
 
+/*! \class YACS::ENGINE::InputPresetPort
+ *  \brief Class for PRESET input Ports
+ *
+ * \ingroup Ports
+ *
+ * \see OutNode
+ */
 
 InputPresetPort::InputPresetPort(const std::string& name,  Node* node, TypeCode* type)
   : InputXmlPort(name, node, type),
@@ -137,8 +162,13 @@ InputPresetPort::InputPresetPort(const std::string& name,  Node* node, TypeCode*
 InputPresetPort::InputPresetPort(const InputPresetPort& other, Node *newHelder)
   : InputXmlPort(other,newHelder),
     DataPort(other,newHelder),
-    Port(other,newHelder)
+    Port(other,newHelder),_storeData(other._storeData)
 {
+}
+
+InputPort* InputPresetPort::clone(Node *newHelder) const
+{
+  return new InputPresetPort(*this,newHelder);
 }
 
 void InputPresetPort::setData(std::string data)

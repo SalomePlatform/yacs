@@ -1,21 +1,22 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef _SCENENODEITEM_HXX_
 #define _SCENENODEITEM_HXX_
 
@@ -27,6 +28,13 @@ namespace YACS
 {
   namespace HMI
   {
+    typedef enum
+      {
+        expandShown,
+        shrinkShown,
+        shrinkHidden
+      } shownState;
+    
     class SceneHeaderItem;
     class SceneHeaderNodeItem;
     class SceneComposedNodeItem;
@@ -61,12 +69,31 @@ namespace YACS
       virtual void updateName();
       virtual void arrangeNodes(bool isRecursive);
       virtual void arrangeChildNodes();
+      virtual void reorganizeShrinkExpand();
+      virtual void updateChildItems();
+      virtual void shrinkExpandLink(bool se);
+      virtual void showOutScopeLinks();
+      virtual void updateLinks();
+      virtual void setShownState(shownState ss);
+      bool isExpanded() { return _expanded; };
+      void setExpanded(bool e){ _expanded = e; };
+      void setExpandedPos(QPointF epos) { _expandedPos = epos; };
+      qreal getExpandedX() { return _expandedPos.x(); };
+      qreal getExpandedY() { return _expandedPos.y(); };
+      void setExpandedWH() {_expandedWidth = _width; _expandedHeight = _height; };
+      void setExpandedWH(qreal w, qreal h) {_expandedWidth = w; _expandedHeight = h; };
+      qreal getExpandedWidth() { return _expandedWidth; };
+      qreal getExpandedHeight() { return _expandedHeight; };
+      shownState getShownState() {return _shownState; };
+      bool _blocX;
+      bool _blocY;
 
     protected:
       virtual QString getMimeFormat();
       virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
       virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
       virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
+      virtual void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
       virtual void updateState();
       virtual void setExecState(int execState);
 
@@ -77,7 +104,13 @@ namespace YACS
       SceneHeaderNodeItem *_header;
       int _execState;
       bool _moving;
+      bool _moved;
+      bool _expanded;
       QPointF _prevPos;
+      QPointF _expandedPos;
+      qreal _expandedWidth;
+      qreal _expandedHeight;
+      shownState _shownState;
     };
   }
 }

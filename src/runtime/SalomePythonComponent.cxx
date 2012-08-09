@@ -1,21 +1,22 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include <Python.h>
 #include "SalomePythonComponent.hxx"
 #include "SalomeComponent.hxx"
@@ -47,7 +48,7 @@ void SalomePythonComponent::load()
 {
   if(_container)
     {
-      _container->start();
+      _container->start(this);
       return;
     }
   //This component has no specified container : use default container policy
@@ -64,7 +65,7 @@ bool SalomePythonComponent::isLoaded()
   if(!_container)
     return false;
   else
-    return _container->isAlreadyStarted();
+    return _container->isAlreadyStarted(this);
 }
 
 std::string SalomePythonComponent::getKind() const
@@ -103,5 +104,5 @@ std::string SalomePythonComponent::getStringValueToExportInInterp() const
   if(!_container)
     return "localhost/FactoryServer";
   else
-    return _container->getPlacementId();
+    return _container->getPlacementId(this);
 }

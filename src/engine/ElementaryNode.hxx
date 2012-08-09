@@ -1,27 +1,30 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef __ELEMENTARYNODE_HXX__
 #define __ELEMENTARYNODE_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "Node.hxx"
 #include "Task.hxx"
 #include "define.hxx"
+
 #include <string>
 #include <algorithm>
 
@@ -37,7 +40,7 @@ namespace YACS
     class InputDataStreamPort;
     class OutputDataStreamPort;
 
-    class ElementaryNode : public Node, public Task
+    class YACSLIBENGINE_EXPORT ElementaryNode : public Node, public Task
     {
       friend class ComposedNode;
     protected:
@@ -45,6 +48,10 @@ namespace YACS
       std::list<OutputPort *> _setOfOutputPort;
       std::list<InputDataStreamPort *> _setOfInputDataStreamPort;
       std::list<OutputDataStreamPort *> _setOfOutputDataStreamPort;
+
+      // Management of multi property
+      bool _createDatastreamPorts;
+      bool _multi_port_node;
     protected:
       ElementaryNode(const std::string& name);
       ElementaryNode(const ElementaryNode& other, ComposedNode *father);
@@ -55,6 +62,7 @@ namespace YACS
       void init(bool start=true);
       bool isDeployable() const;
       ComponentInstance *getComponent();
+      Container *getContainer();
       YACS::StatesForNode getState() const;
       void getReadyTasks(std::vector<Task *>& tasks);
       void edRemovePort(Port *port) throw(Exception);
@@ -107,8 +115,18 @@ namespace YACS
       virtual void connectService() { }
       virtual void disconnectService() { }
       virtual void load() { }
+      virtual void getCoupledTasks(std::set<Task*>& coupledSet);
+      virtual void getCoupledNodes(std::set<Task*>& coupledSet);
       void accept(Visitor *visitor);
+
+      // Used for runtime nodes that need
+      // to configure their services for the multi property
+      virtual void addDatastreamPortToInitMultiService(const std::string & port_name,
+                                                       int number) {}
     protected:
+      // Management of multi property
+      virtual void createMultiDatastreamPorts();
+
       void edDisconnectAllLinksWithMe();
       bool areAllInputPortsValid() const;
       template<class PORT>

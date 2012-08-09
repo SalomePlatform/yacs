@@ -1,24 +1,26 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef __LOOP_HXX__
 #define __LOOP_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "StaticDefinedComposedNode.hxx"
 #include "InputDataStreamPort.hxx"
 #include "ElementaryNode.hxx"
@@ -29,14 +31,14 @@ namespace YACS
 {
   namespace ENGINE
   {
-    void NbDoneLoader(Loop* node, int val);
+    void YACSLIBENGINE_EXPORT NbDoneLoader(Loop* node, int val);
     class Loop;
     class ForLoop;
     class WhileLoop;
     class DFToDSForLoop;
     class DSToDFForLoop;
 
-    class InputPort4DF2DS : public InputPort
+    class YACSLIBENGINE_EXPORT InputPort4DF2DS : public InputPort
     {
     public:
       InputPort4DF2DS(DFToDSForLoop *node, TypeCode* type);
@@ -73,7 +75,7 @@ namespace YACS
       ~DFToDSForLoop();
     };
 
-    class OutputPort4DS2DF : public OutputPort
+    class YACSLIBENGINE_EXPORT OutputPort4DS2DF : public OutputPort
     {
     public:
       OutputPort4DS2DF(DSToDFForLoop *node, TypeCode *type);
@@ -86,7 +88,7 @@ namespace YACS
       Any *_data;
     };
     
-    class InputDataStreamPort4DS2DF : public InputDataStreamPort
+    class YACSLIBENGINE_EXPORT InputDataStreamPort4DS2DF : public InputDataStreamPort
     {
     public:
       InputDataStreamPort4DS2DF(DSToDFForLoop *node, TypeCode* type);
@@ -140,7 +142,7 @@ namespace YACS
  * \see ForLoop
  * \see WhileLoop
  */
-    class Loop : public StaticDefinedComposedNode
+    class YACSLIBENGINE_EXPORT Loop : public StaticDefinedComposedNode
     {
       friend class DSToDFForLoop;
       friend class FakeNodeForLoop;

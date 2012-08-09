@@ -1,21 +1,22 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include <Python.h>
 #include "SALOME_LifeCycleCORBA.hxx"
 #include "SALOME_NamingService.hxx"
@@ -57,6 +58,7 @@ GuiExecutor::GuiExecutor(YACS::ENGINE::Proc* proc)
   _isRunning = false;
   _isSuspended = false;
   _isStopOnError = false;
+  _shutdownLevel=1;
 
   _loadStateFile = "";
   _breakpointList.clear();
@@ -68,10 +70,20 @@ GuiExecutor::~GuiExecutor()
   DEBTRACE("GuiExecutor::~GuiExecutor");
 }
 
+void GuiExecutor::closeContext()
+{
+  DEBTRACE("GuiExecutor::closeContext");
+  _context = 0;
+}
 
 void GuiExecutor::startResumeDataflow(bool initialize)
 {
   DEBTRACE("GuiExecutor::runDataflow " << initialize);
+  if (!_context)
+    {
+      DEBTRACE("context closed");
+      return;
+    }
   if (CORBA::is_nil(_engineRef))
     {
       DEBTRACE("Create YACS ORB engine!");
@@ -79,9 +91,11 @@ void GuiExecutor::startResumeDataflow(bool initialize)
       CORBA::ORB_ptr orb = runTime->getOrb();
       SALOME_NamingService namingService(orb);
       SALOME_LifeCycleCORBA lcc(&namingService);
-      Engines::Component_var comp = lcc.FindOrLoad_Component("YACSContainer", "YACS" );
+      ostringstream containerName;
+      containerName << "localhost/YACSContainer" << QtGuiContext::getQtCurrent()->getStudyId();
+      Engines::EngineComponent_var comp = lcc.FindOrLoad_Component(containerName.str().c_str(), "YACS" );
       _engineRef =YACS_ORB::YACS_Gen::_narrow(comp);
-      assert(!CORBA::is_nil(_engineRef));
+      YASSERT(!CORBA::is_nil(_engineRef));
     }
 
   checkEndOfDataflow(); // --- to allow change of the _isRunning state
@@ -107,6 +121,8 @@ void GuiExecutor::startResumeDataflow(bool initialize)
       DEBTRACE("_procRef init");
     }
 
+  YASSERT(!CORBA::is_nil(_procRef));
+
   if (initialize)
     _procRef->setExecMode(YACS_ORB::STEPBYSTEP);
   else
@@ -124,12 +140,12 @@ void GuiExecutor::startResumeDataflow(bool initialize)
       try
         {
           _procRef->RunFromState(_loadStateFile.c_str());
-	}
+        }
       catch (...)
         {
           DEBTRACE("Runtime error: execution from the loaded state failed")
-	  return;
-	}
+          return;
+        }
     }
 }
 
@@ -192,8 +208,19 @@ void GuiExecutor::stopDataflow()
 void GuiExecutor::resetDataflow()
 {
   DEBTRACE("GuiExecutor::resetDataflow");
+  //update _isRunning
+  checkEndOfDataflow();
   if (_isRunning)
     _procRef->stopExecution();
+  checkEndOfDataflow();
+
+  if (!_isRunning)
+    {
+      _isRunning = true;
+      _procRef->setExecMode(YACS_ORB::STEPBYSTEP);
+      //full reset: set all nodes in error to READY state and start execution
+      _procRef->RestartFromState("");
+    }
 }
 
   
@@ -226,9 +253,11 @@ void GuiExecutor::setStopOnError(bool aMode)
   DEBTRACE("GuiExecutor::setStopOnError " << aMode);
   if (_isRunning)
     {
-      _procRef->setStopOnError(aMode,
-			       (string("/tmp/dumpStateOnError_") 
-                                + getenv("USER") + string(".xml")).c_str());
+#ifdef WNT
+      _procRef->setStopOnError(aMode, (getenv("TEMP") + string("\\dumpStateOnError_") + getenv("USER") + string(".xml")).c_str());
+#else
+      _procRef->setStopOnError(aMode, (string("/tmp/dumpStateOnError_") + getenv("USER") + string(".xml")).c_str());
+#endif
       _isStopOnError = true;
     }
 }
@@ -288,12 +317,17 @@ int GuiExecutor::getExecutorState()
 void GuiExecutor::setBreakpointList(std::list<std::string> breakpointList)
 {
   DEBTRACE("GuiExecutor::setBreakpointList");
+  if (!_context)
+    {
+      DEBTRACE("context closed");
+      return;
+    }
   _breakpointList.clear();
   _breakpointList = breakpointList;
   setBPList();
   if ((_execMode == YACS::CONTINUE) && ! _breakpointList.empty())
     {
-      QtGuiContext::getQtCurrent()->getGMain()->_breakpointsModeAct->setChecked(true);
+      _context->getGMain()->_breakpointsModeAct->setChecked(true);
       setBreakpointMode();
     }
 }
@@ -301,11 +335,16 @@ void GuiExecutor::setBreakpointList(std::list<std::string> breakpointList)
 void GuiExecutor::addBreakpoint(std::string breakpoint)
 {
   DEBTRACE("addBreakpoint " << breakpoint);
+  if (!_context)
+    {
+      DEBTRACE("context closed");
+      return;
+    }
   _breakpointList.push_back(breakpoint);
   setBPList();
   if ((_execMode == YACS::CONTINUE) && ! _breakpointList.empty())
     {
-      QtGuiContext::getQtCurrent()->getGMain()->_breakpointsModeAct->setChecked(true);
+      _context->getGMain()->_breakpointsModeAct->setChecked(true);
       setBreakpointMode();
     }
 }
@@ -418,6 +457,30 @@ std::string GuiExecutor::getContainerLog(YACS::ENGINE::Node* node)
   return msg;
 }
 
+void GuiExecutor::shutdownProc()
+{
+  DEBTRACE("GuiExecutor::shutdownProc " << _shutdownLevel << "," << _isRunning);
+  checkEndOfDataflow();
+  if (!_isRunning)
+    _procRef->shutdownProc(_shutdownLevel);
+}
+
+void GuiExecutor::setInPortValue(YACS::ENGINE::DataPort* port, std::string value)
+{
+  DEBTRACE("GuiExecutor::setInPortValue");
+
+  YACS::ENGINE::Node* node = port->getNode();
+  YACS::ENGINE::ComposedNode* rootNode = node->getRootNode();
+
+  std::string nodeName;
+  if(rootNode == node)
+    nodeName = node->getName();
+  else
+    nodeName = rootNode->getChildName(node);
+
+  std::string msg = _procRef->setInPortValue(nodeName.c_str(), port->getName().c_str(), value.c_str());
+}
+
 bool GuiExecutor::event(QEvent *e)
 {
   DEBTRACE("GuiExecutor::event");
@@ -426,6 +489,11 @@ bool GuiExecutor::event(QEvent *e)
   int numid = yev->getYACSEvent().first;
   string event = yev->getYACSEvent().second;
   DEBTRACE("<" << numid << "," << event << ">");
+  if (!_context)
+    {
+      DEBTRACE("context closed");
+      return true;
+    }
   if (event == "executor") // --- Executor notification: state
     {
       int execState = _procRef->getExecutorState();
@@ -438,9 +506,8 @@ bool GuiExecutor::event(QEvent *e)
           if (execState == YACS::PAUSED)
             _isSuspended = true;
         }
-      SubjectProc *sproc = GuiContext::getCurrent()->getSubjectProc();
-      sproc->setExecState(execState);
-//       theRunMode->onNotifyNextSteps(nextSteps);
+      SubjectProc *sproc = _context->getSubjectProc();
+      sproc->update(YACS::HMI::UPDATEPROGRESS, execState, sproc);
     }
   else // --- Node notification
     {
@@ -448,10 +515,9 @@ bool GuiExecutor::event(QEvent *e)
         return true;
       int state = _procRef->getNodeState(numid);
       int iGui = _serv->_engineToGuiMap[numid];
-      assert(GuiContext::getCurrent()->_mapOfExecSubjectNode.count(iGui));
-      SubjectNode *snode = GuiContext::getCurrent()->_mapOfExecSubjectNode[iGui];
+      YASSERT(_context->_mapOfExecSubjectNode.count(iGui));
+      SubjectNode *snode = _context->_mapOfExecSubjectNode[iGui];
       DEBTRACE("node " << snode->getName() << " state=" << state);
-      snode->setExecState(state);
 
       YACS::ENGINE::Node *node = snode->getNode();
       list<InputPort*> inports = node->getLocalInputPorts();
@@ -461,8 +527,8 @@ bool GuiExecutor::event(QEvent *e)
           string val = _procRef->getInPortValue(numid, (*iti)->getName().c_str());
           DEBTRACE("node " << snode->getName() << " inport " << (*iti)->getName() 
                    << " value " << val);
-          assert(GuiContext::getCurrent()->_mapOfSubjectDataPort.count(*iti));
-          SubjectDataPort* port = GuiContext::getCurrent()->_mapOfSubjectDataPort[*iti];
+          YASSERT(_context->_mapOfSubjectDataPort.count(*iti));
+          SubjectDataPort* port = _context->_mapOfSubjectDataPort[*iti];
           port->setExecValue(val);
           port->update(YACS::HMI::UPDATEPROGRESS, 0, port);
         }
@@ -473,11 +539,12 @@ bool GuiExecutor::event(QEvent *e)
           string val = _procRef->getOutPortValue(numid, (*ito)->getName().c_str());
           DEBTRACE("node " << snode->getName() << " outport " << (*ito)->getName() 
                    << " value " << val);
-          assert(GuiContext::getCurrent()->_mapOfSubjectDataPort.count(*ito));
-          SubjectDataPort* port = GuiContext::getCurrent()->_mapOfSubjectDataPort[*ito];
+          YASSERT(_context->_mapOfSubjectDataPort.count(*ito));
+          SubjectDataPort* port = _context->_mapOfSubjectDataPort[*ito];
           port->setExecValue(val);
           port->update(YACS::HMI::UPDATEPROGRESS, 0, port);
         }
+      snode->update(YACS::HMI::UPDATEPROGRESS, state, snode);
    }
 
   return true;
@@ -497,3 +564,62 @@ void GuiExecutor::setBPList()
   }
 }
 
+YACS::ExecutorState GuiExecutor::updateSchema(string jobState)
+{
+  YACS::ExecutorState execState = YACS::NOTYETINITIALIZED;
+
+  int numid;
+  int state;
+  std::list<Node*> aNodeSet = _proc->getAllRecursiveConstituents();
+  for ( std::list<Node*>::iterator it = aNodeSet.begin(); it != aNodeSet.end(); it++ ){
+
+    numid = (*it)->getNumId();
+
+    state = _proc->getNodeState(numid);
+    SubjectNode *snode = _context->_mapOfExecSubjectNode[numid];
+
+    YACS::ENGINE::Node *node = snode->getNode();
+    list<InputPort*> inports = node->getLocalInputPorts();
+    list<InputPort*>::iterator iti = inports.begin();
+    for ( ; iti != inports.end(); ++iti)
+      {
+        string val = _proc->getInPortValue(numid, (*iti)->getName().c_str());
+        YASSERT(_context->_mapOfSubjectDataPort.count(*iti));
+        SubjectDataPort* port = _context->_mapOfSubjectDataPort[*iti];
+        port->setExecValue(val);
+        port->update(YACS::HMI::UPDATEPROGRESS, 0, port);
+      }
+    list<OutputPort*> outports = node->getLocalOutputPorts();
+    list<OutputPort*>::iterator ito = outports.begin();
+    for ( ; ito != outports.end(); ++ito)
+      {
+        string val = _proc->getOutPortValue(numid, (*ito)->getName().c_str());
+        YASSERT(_context->_mapOfSubjectDataPort.count(*ito));
+        SubjectDataPort* port = _context->_mapOfSubjectDataPort[*ito];
+        port->setExecValue(val);
+        port->update(YACS::HMI::UPDATEPROGRESS, 0, port);
+      }
+    snode->update(YACS::HMI::UPDATEPROGRESS, state, snode);
+  }
+  state = _proc->getRootNode()->getEffectiveState();
+  switch(state){
+  case YACS::LOADED:
+  case YACS::ACTIVATED:
+    if(jobState!="RUNNING")
+      execState = YACS::FINISHED;
+    else
+      execState = YACS::RUNNING;
+    break;
+  case YACS::FAILED:
+  case YACS::DONE:
+    execState = YACS::FINISHED;
+    break;
+  case YACS::SUSPENDED:
+    execState = YACS::PAUSED;
+    break;
+  }
+  SubjectProc *sproc = _context->getSubjectProc();
+  sproc->update(YACS::HMI::UPDATEPROGRESS, execState, sproc);
+
+  return execState;
+}

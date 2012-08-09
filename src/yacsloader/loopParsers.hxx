@@ -1,21 +1,22 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef _LOOPPARSER_HXX_
 #define _LOOPPARSER_HXX_
 
@@ -34,6 +35,7 @@
 #include "WhileLoop.hxx"
 #include "Switch.hxx"
 #include "ForEachLoop.hxx"
+#include "OptimizerLoop.hxx"
 
 #include <vector>
 #include <string>
@@ -45,8 +47,8 @@ namespace YACS
 template <class T=ENGINE::Loop*>
 struct looptypeParser:parser
 {
-  void onStart(const XML_Char* el, const XML_Char** attr);
-  void onEnd(const char *el,parser* child);
+  virtual void onStart(const XML_Char* el, const XML_Char** attr);
+  virtual void onEnd(const char *el,parser* child);
   virtual void buildAttr(const XML_Char** attr);
   virtual void pre ();
   virtual void name (const std::string& name);
@@ -55,9 +57,12 @@ struct looptypeParser:parser
   virtual void inline_ (ENGINE::InlineNode* const& n);
   virtual void sinline (ENGINE::ServiceInlineNode* const& n);
   virtual void service (ENGINE::ServiceNode* const& n);
+  virtual void server (ENGINE::ServerNode* const& n);
+  virtual void remote (ENGINE::InlineNode* const& n);
   virtual void node (ENGINE::InlineNode* const& n);
   virtual void forloop (ENGINE::ForLoop* const& b);
   virtual void foreach (ENGINE::ForEachLoop* const& b);
+  virtual void optimizer (ENGINE::OptimizerLoop* const& b);
   virtual void while_ (ENGINE::WhileLoop* const& b);
   virtual void switch_ (ENGINE::Switch* const& b);
   virtual void bloc (ENGINE::Bloc* const& b);
@@ -74,7 +79,7 @@ namespace YACS
   // A loop can contain forloop, whileloop or foreachloop
   // We must respect the order : definition of loop, then while, for, .. and then onStart, onEnd for loop !!!
   //
-  static std::string t3[]={"inline","sinline","service","node","forloop","foreach","while","switch","bloc",""};
+  static std::string t3[]={"inline","sinline","service","server", "remote", "node","forloop","foreach","optimizer","while","switch","bloc",""};
 
 template <class T>
 void looptypeParser<T>::buildAttr(const XML_Char** attr)
@@ -137,6 +142,26 @@ void looptypeParser<T>::service (ENGINE::ServiceNode* const& n)
       currentProc->serviceMap[fullname]=n;
     }
 template <class T>
+void looptypeParser<T>::server (ENGINE::ServerNode* const& n)
+    {
+      DEBTRACE( "loop_server" << n->getName() )             
+      _cnode->edSetNode(n);
+      std::string fullname=currentProc->names.back()+ n->getName();
+      currentProc->nodeMap[fullname]=n;
+      currentProc->inlineMap[fullname]=n;
+    }
+
+template <class T>
+void looptypeParser<T>::remote (YACS::ENGINE::InlineNode* const& n)
+    {
+      DEBTRACE( "loop_remote: " << n->getName() )
+      _cnode->edSetNode(n);
+      std::string fullname = currentProc->names.back()+n->getName();
+      currentProc->nodeMap[fullname]=n;
+      currentProc->inlineMap[fullname]=n;
+    }
+
+template <class T>
 void looptypeParser<T>::node (ENGINE::InlineNode* const& n)
     {
       DEBTRACE( "loop_node" << n->getName() )             
@@ -163,6 +188,16 @@ void looptypeParser<T>::foreach (ENGINE::ForEachLoop* const& b)
       fullname += ".splitter";
       currentProc->nodeMap[fullname]=b->getChildByShortName("splitter");
     }
+template <class T>
+void looptypeParser<T>::optimizer (ENGINE::OptimizerLoop* const& b)
+  {
+    DEBTRACE( "loop_optimizer: " << b->getName() );
+    _cnode->edSetNode(b);
+    std::string fullname = currentProc->names.back()+b->getName();
+    currentProc->nodeMap[fullname]=b;
+    //fullname += ".splitter";
+    //currentProc->nodeMap[fullname]=b->getChildByShortName("splitter");
+  }
 template <class T>
 void looptypeParser<T>::while_ (ENGINE::WhileLoop* const& b)
     {
@@ -347,10 +382,115 @@ template <class T>
 
 namespace YACS
 {
+// pseudo composed node, used to store the init or finalize node of a DynParaLoop
+class PseudoComposedNode
+{
+public:
+  void edSetNode(ENGINE::Node * node) { _node = node; }
+  ENGINE::Node * getNode() { return _node; }
+
+  // Those two methods should never be called
+  bool edAddLink(ENGINE::OutPort *start, ENGINE::InPort *end) throw(Exception) { YASSERT(false); }
+  bool edAddDFLink(ENGINE::OutPort *start, ENGINE::InPort *end) throw(Exception) { YASSERT(false); }
+
+protected:
+  ENGINE::Node * _node;
+};
+
+// pseudo composed node parser specialization for DynParaLoop init and finalize nodes
+template <class T=PseudoComposedNode*>
+struct pseudocomposednodetypeParser:looptypeParser<T>
+{
+  static pseudocomposednodetypeParser<T> pseudocomposednodeParser;
+
+  virtual void buildAttr(const XML_Char** attr)
+    {
+      this->_cnode = new PseudoComposedNode();
+      this->_cnodes.push_back(this->_cnode);
+    }
+
+  virtual T post()
+    {
+      DEBTRACE("pseudocomposednode_post" << this->_cnode->getNode()->getName())
+      T b = this->_cnode;
+      this->_cnodes.pop_back();
+      if(this->_cnodes.size() == 0)
+        this->_cnode = 0;
+      else
+        this->_cnode = this->_cnodes.back();
+      return b;
+    }
+
+  virtual void datalink(const mylink & l)
+    {
+      throw YACS::Exception("Unexpected datalink element in DynParaLoop init or finalize node");
+    }
+
+};
+
+template <class T> pseudocomposednodetypeParser<T> pseudocomposednodetypeParser<T>::pseudocomposednodeParser;
+
+}
+
+namespace YACS
+{
+// dynparaloop specialization
+
+template <class T=ENGINE::DynParaLoop*>
+struct dynparalooptypeParser:looptypeParser<T>
+{
+  virtual void onStart(const XML_Char* el, const XML_Char** attr)
+    {
+      DEBTRACE( "dynparalooptypeParser::onStart: " << el )
+      std::string element(el);
+      this->maxcount("initnode",1,element);
+      this->maxcount("finalizenode",1,element);
+      if (element == "initnode" || element == "finalizenode")
+        {
+          parser* pp = &pseudocomposednodetypeParser<>::pseudocomposednodeParser;
+          this->SetUserDataAndPush(pp);
+          pp->init();
+          pp->pre();
+          pp->buildAttr(attr);
+        }
+      else
+        {
+          this->looptypeParser<T>::onStart(el, attr);
+        }
+    }
+
+  virtual void onEnd(const char *el, parser* child)
+    {
+      DEBTRACE( "dynparalooptypeParser::onEnd: " << el )
+      std::string element(el);
+      if (element == "initnode") initnode(((pseudocomposednodetypeParser<>*)child)->post());
+      else if (element == "finalizenode") finalizenode(((pseudocomposednodetypeParser<>*)child)->post());
+      else this->looptypeParser<T>::onEnd(el, child);
+    }
+
+  virtual void initnode(PseudoComposedNode * const& n)
+    {
+      DEBTRACE( "dynparaloop_initnode: " << n->getNode()->getName() )
+      this->_cnode->edSetInitNode(n->getNode());
+      delete n;
+    }
+
+  virtual void finalizenode(PseudoComposedNode * const& n)
+    {
+      DEBTRACE( "dynparaloop_finalizenode: " << n->getNode()->getName() )
+      this->_cnode->edSetFinalizeNode(n->getNode());
+      delete n;
+    }
+};
+
+}
+
+namespace YACS
+{
   // Foreach loop specialization
 
 template <class T=ENGINE::ForEachLoop*>
-struct foreachlooptypeParser:looptypeParser<T>
+struct foreachlooptypeParser:dynparalooptypeParser<T>
 {
   static foreachlooptypeParser<T> foreachloopParser;
 
@@ -434,6 +574,93 @@ template <class T> foreachlooptypeParser<T> foreachlooptypeParser<T>::foreachloo
 
 }
 
+namespace YACS
+{
+  // optimizer loop specialization
+
+template <class T=ENGINE::OptimizerLoop*>
+struct optimizerlooptypeParser:dynparalooptypeParser<T>
+{
+  static optimizerlooptypeParser<T> optimizerloopParser;
+
+  virtual void buildAttr(const XML_Char** attr)
+    {
+      this->required("name",attr);
+      this->required("lib",attr);
+      this->required("entry",attr);
+      for (int i = 0; attr[i]; i += 2)
+        {
+          if(std::string(attr[i]) == "name")name(attr[i+1]);
+          if(std::string(attr[i]) == "state")this->state(attr[i+1]);
+          if(std::string(attr[i]) == "nbranch")nbranch(atoi(attr[i+1]));
+          if(std::string(attr[i]) == "lib")lib(attr[i+1]);
+          if(std::string(attr[i]) == "entry")entry(attr[i+1]);
+          if(std::string(attr[i]) == "kind")kind(attr[i+1]);
+        }
+      postAttr();
+    }
+  virtual void pre ()
+    {
+      _nbranch=0;
+      this->looptypeParser<T>::pre();
+    }
+  virtual void name (const std::string& name)
+    {
+      DEBTRACE("optimizer_name: " << name)
+      _name=name;
+      _fullname=currentProc->names.back()+name;
+    }
+  virtual void lib (const std::string& name)
+    {
+      _lib=name;
+    }
+  virtual void entry (const std::string& name)
+    {
+      _entry=name;
+    }
+  virtual void nbranch (const int& n)
+    {
+      DEBTRACE("optimizer_nbranch: " << n )
+      _nbranch=n;
+    }
+  virtual void kind (const std::string& name)
+    {
+      _kind=name;
+    }
+  virtual void postAttr()
+    {
+      this->_cnode=theRuntime->createOptimizerLoop(_name,_lib,_entry,true,_kind, currentProc);
+      //set number of branches
+      if(_nbranch > 0)this->_cnode->edGetNbOfBranchesPort()->edInit(_nbranch);
+      this->_cnodes.push_back(this->_cnode);
+      currentProc->names.push_back(_fullname + '.');
+    }
+  virtual T post()
+    {
+      DEBTRACE("optimizer_post" << this->_cnode->getName())
+      T b=this->_cnode;
+      this->_cnodes.pop_back();
+      currentProc->names.pop_back();
+      if(this->_cnodes.size() == 0)
+        this->_cnode=0;
+      else
+        this->_cnode=this->_cnodes.back();
+      return b;
+    }
+
+  int _nbranch;
+  std::string _fullname;
+  std::string _name;
+  std::string _entry;
+  std::string _kind;
+  std::string _lib;
+
+};
+
+template <class T> optimizerlooptypeParser<T> optimizerlooptypeParser<T>::optimizerloopParser;
+
+}
+
 #include "blocParsers.hxx"
 #include "switchParsers.hxx"
 
@@ -448,9 +675,12 @@ void looptypeParser<T>::onStart(const XML_Char* el, const XML_Char** attr)
   this->maxcount("inline",1,element);
   this->maxcount("sinline",1,element);
   this->maxcount("service",1,element);
+  this->maxcount("server",1,element);
+  this->maxcount("remote",1,element);
   this->maxcount("node",1,element);
   this->maxcount("forloop",1,element);
   this->maxcount("foreach",1,element);
+  this->maxcount("optimizer",1,element);
   this->maxcount("while",1,element);
   this->maxcount("switch",1,element);
   this->maxcount("bloc",1,element);
@@ -460,10 +690,13 @@ void looptypeParser<T>::onStart(const XML_Char* el, const XML_Char** attr)
   else if(element == "inline")pp=&inlinetypeParser<>::inlineParser;
   else if(element == "sinline")pp=&sinlinetypeParser<>::sinlineParser;
   else if(element == "service")pp=&servicetypeParser<>::serviceParser;
+  else if(element == "server")pp=&servertypeParser<>::serverParser;
+  else if(element == "remote")pp=&remotetypeParser<>::remoteParser;
   else if(element == "node")pp=&nodetypeParser<>::nodeParser;
 
   else if(element == "forloop")pp=&forlooptypeParser<>::forloopParser;
   else if(element == "foreach")pp=&foreachlooptypeParser<>::foreachloopParser;
+  else if(element == "optimizer")pp=&optimizerlooptypeParser<>::optimizerloopParser;
   else if(element == "while")pp=&whilelooptypeParser<>::whileloopParser;
   else if(element == "switch")pp=&switchtypeParser::switchParser;
   else if(element == "bloc")pp=&bloctypeParser<>::blocParser;
@@ -483,10 +716,13 @@ void looptypeParser<T>::onEnd(const char *el,parser* child)
   else if(element == "inline")inline_(((inlinetypeParser<>*)child)->post());
   else if(element == "sinline")sinline(((sinlinetypeParser<>*)child)->post());
   else if(element == "service")service(((servicetypeParser<>*)child)->post());
+  else if(element == "server")server(((servertypeParser<>*)child)->post());
+  else if(element == "remote")remote(((remotetypeParser<>*)child)->post());
   else if(element == "node")node(((nodetypeParser<>*)child)->post());
 
   else if(element == "forloop")forloop(((forlooptypeParser<>*)child)->post());
   else if(element == "foreach")foreach(((foreachlooptypeParser<>*)child)->post());
+  else if(element == "optimizer")optimizer(((optimizerlooptypeParser<>*)child)->post());
   else if(element == "while")while_(((whilelooptypeParser<>*)child)->post());
   else if(element == "switch")switch_(((switchtypeParser*)child)->post());
   else if(element == "bloc")bloc(((bloctypeParser<>*)child)->post());

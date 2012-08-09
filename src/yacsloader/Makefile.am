@@ -1,24 +1,27 @@
-#  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+# Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 #
-#  This library is free software; you can redistribute it and/or
-#  modify it under the terms of the GNU Lesser General Public
-#  License as published by the Free Software Foundation; either
-#  version 2.1 of the License.
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License.
 #
-#  This library is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#  Lesser General Public License for more details.
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
 #
-#  You should have received a copy of the GNU Lesser General Public
-#  License along with this library; if not, write to the Free Software
-#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 #
-#  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+
 include $(top_srcdir)/adm/unix/make_begin.am
 
+if CPPUNIT_IS_OK
 SUBDIRS = Test
+endif
 
 bin_PROGRAMS=driver debugger resume
 
@@ -29,20 +32,23 @@ libYACSloader_la_SOURCES =      \
 	propertyParsers.cxx containerParsers.cxx xmlrpcParsers.cxx \
 	rootParser.cxx codeParsers.cxx \
 	LoadState.cxx  xmlParserBase.cxx ProcCataLoader.cxx   \
+	componentinstanceParsers.cxx \
 	$(__dummy__)
 
 salomeinclude_HEADERS = \
+YACSloaderExport.hxx \
 blocParsers.hxx  codeParsers.hxx      containerParsers.hxx  dataParsers.hxx    factory.hxx \
 linkParsers.hxx  LoadState.hxx        loopParsers.hxx       nodeParsers.hxx    outputParsers.hxx \
 parserBase.hxx   parsers.hxx          portParsers.hxx       presetParsers.hxx  ProcCataLoader.hxx \
-procParsers.hxx  propertyParsers.hxx  rootParser.hxx        switchParsers.hxx \
-typeParsers.hxx  xmlParserBase.hxx    xmlrpcParsers.hxx
+procParsers.hxx  propertyParsers.hxx  rootParser.hxx        switchParsers.hxx  inlineParsers.hxx \
+componentinstanceParsers.hxx          remoteParsers.hxx     serverParsers.hxx  serviceParsers.hxx \
+typeParsers.hxx  xmlParserBase.hxx    xmlrpcParsers.hxx     sinlineParsers.hxx
 
 EXTRA_libYACSloader_la_SOURCES =  \
 	$(__dummy__)
 
 libYACSloader_la_LIBADD = ../engine/libYACSlibEngine.la
-libYACSloader_la_LDFLAGS = $(EXPAT_LIBS)
+libYACSloader_la_LDFLAGS = $(OMNIORB_LIBS) $(EXPAT_LIBS)
 
 AM_CXXFLAGS = \
 							$(THREAD_DEF) \
@@ -55,7 +61,10 @@ AM_CXXFLAGS = \
               -I$(srcdir)/../engine
 
 if SALOME_KERNEL
-SALOME_LIBS=-L$(KERNEL_ROOT_DIR)/lib/salome -lSalomeLifeCycleCORBA
+SALOME_LIBS=$(KERNEL_LDFLAGS) -lSalomeLifeCycleCORBA -lSalomeIDLKernel -lSalomeNS -lOpUtil \
+            -lSalomeDSCContainer -lSalomeContainer -lSALOMEBasics -lSalomeResourcesManager \
+            -lSALOMELocalTrace -lRegistry -lSalomeNotification -lResourcesManager \
+            -lSalomeHDFPersist
 SALOME_INCL_PATH=-I$(KERNEL_ROOT_DIR)/include/salome
 endif
 
@@ -67,6 +76,7 @@ driver_CXXFLAGS = -g -DYACS_PTHREAD \
 							$(SALOME_INCL_PATH) \
               $(OMNIORB_INCLUDES) \
               $(OMNIORB_CXXFLAGS) \
+              $(EXPAT_INCLUDES) \
               -I$(srcdir)/../bases \
               -I$(srcdir)/../engine \
               -I$(srcdir)/../runtime
@@ -79,7 +89,7 @@ driver_LDADD = libYACSloader.la \
                $(PYTHON_LDFLAGS) \
                $(PYTHON_EXTRA_LIBS) 
 
-driver_LDFLAGS = $(PYTHON_EXTRA_LDFLAGS) -pthread $(EXPAT_LIBS) $(LIBXML_LIBS)
+driver_LDFLAGS = $(PYTHON_EXTRA_LDFLAGS) -pthread $(LIBXML_LIBS) $(EXPAT_LIBS)
 
 
 resume_SOURCES = resume.cxx
@@ -88,6 +98,7 @@ resume_CXXFLAGS = -g -DYACS_PTHREAD \
               $(PYTHON_CPPFLAGS) \
               $(OMNIORB_INCLUDES) \
               $(OMNIORB_CXXFLAGS) \
+              $(EXPAT_INCLUDES) \
               -I$(srcdir)/../bases \
               -I$(srcdir)/../engine \
               -I$(srcdir)/../runtime
@@ -100,7 +111,7 @@ resume_LDADD = libYACSloader.la \
                $(PYTHON_LDFLAGS) \
                $(PYTHON_EXTRA_LIBS) 
 
-resume_LDFLAGS = $(PYTHON_EXTRA_LDFLAGS) -pthread $(EXPAT_LIBS) $(LIBXML_LIBS)
+resume_LDFLAGS = $(PYTHON_EXTRA_LDFLAGS) -pthread $(LIBXML_LIBS) $(EXPAT_LIBS)
 
 
 debugger_SOURCES = debugger.cxx 
@@ -109,6 +120,7 @@ debugger_CXXFLAGS = -g -DYACS_PTHREAD \
               $(PYTHON_CPPFLAGS) \
               $(OMNIORB_INCLUDES) \
               $(OMNIORB_CXXFLAGS) \
+              $(EXPAT_INCLUDES) \
               -I$(srcdir)/../bases \
               -I$(srcdir)/../engine \
               -I$(srcdir)/../runtime
@@ -121,37 +133,9 @@ debugger_LDADD = libYACSloader.la \
                $(PYTHON_LDFLAGS) \
                $(PYTHON_EXTRA_LIBS) 
 
-debugger_LDFLAGS = $(PYTHON_EXTRA_LDFLAGS) -pthread $(EXPAT_LIBS) $(LIBXML_LIBS)
+debugger_LDFLAGS = $(PYTHON_EXTRA_LDFLAGS) -pthread $(LIBXML_LIBS) $(EXPAT_LIBS)
 
-
-SWIG_PYTHON_INCLUDES = -noexcept -I$(srcdir)/../bases -I$(srcdir)/../engine
-# --- build libYACSloader library before swig libraries (problem with make -j)
-BUILT_SOURCES = loaderWRAP.cxx libYACSloader.la
-
-SWIGINCLUDES=parsers.hxx LoadState.hxx xmlParserBase.hxx ProcCataLoader.hxx ../engine/engtypemaps.i ../engine/pilot.i
-
-loaderWRAP.cxx loaderWRAP.h: loader.i $(SWIGINCLUDES)
-	$(SWIG) $(SWIG_PYTHON_OPT) $(SWIG_PYTHON_INCLUDES) $(MYSWIG_FLAGS) -o loaderWRAP.cxx $(srcdir)/loader.i
-
-salomepython_PYTHON = loader.py
-salomepyexec_LTLIBRARIES = _loader.la
-
-_loader_la_SOURCES =   \
-	loaderWRAP.cxx
-
-_loader_la_CXXFLAGS = \
-	$(THREAD_DEF) \
-	$(PYTHON_CPPFLAGS) \
-	$(OMNIORB_INCLUDES) \
-	$(OMNIORB_CXXFLAGS) \
-	-I$(srcdir)/../bases \
-	-I$(srcdir)/../engine
-
-_loader_la_LDFLAGS  = -module 
-
-_loader_la_LIBADD =  libYACSloader.la $(OMNIORB_LIBS)
-
-EXTRA_DIST = loader.i samples
+EXTRA_DIST = samples schema.xsd
 
 dist-hook:
 	rm -rf `find $(distdir) -name CVS`

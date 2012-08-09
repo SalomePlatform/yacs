@@ -1,21 +1,22 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "RuntimeSALOME.hxx"
 #include "CatalogWidget.hxx"
 
@@ -23,13 +24,16 @@
 #include "TypeCode.hxx"
 #include "ComponentDefinition.hxx"
 #include "ItemMimeData.hxx"
+#include "QtGuiContext.hxx"
 
+#include <QApplication>
 #include <QMimeData>
 #include <QDrag>
 #include <QPainter>
 #include <QBitmap>
 #include <QString>
 #include <QFileInfo>
+#include <QMouseEvent>
 
 #include <cassert>
 
@@ -52,6 +56,7 @@ CatalogWidget::CatalogWidget(QWidget *parent,
   _idCatalog = 0;
   _cataMap.clear();
   _typeToCataMap.clear();
+  _dragModifier=false;
 
   setColumnCount(1);
 
@@ -61,13 +66,17 @@ CatalogWidget::CatalogWidget(QWidget *parent,
   setDragDropMode(QAbstractItemView::DragOnly);
   setDragEnabled(true);
   setDropIndicatorShown(true);
+
+  setSelectionMode(QAbstractItemView::ExtendedSelection);
 }
 
 bool CatalogWidget::addCatalogFromFile(std::string fileName)
 {
   DEBTRACE("CatalogWidget::addCatalogFromFile " << fileName);
-  Catalog *cataProc = YACS::ENGINE::getSALOMERuntime()->loadCatalog("proc", fileName);
   QFileInfo afi(fileName.c_str());
+  if(!afi.exists())
+    return false;
+  Catalog *cataProc = YACS::ENGINE::getSALOMERuntime()->loadCatalog("proc", fileName);
   string aFile = afi.fileName().toStdString();
   addCatalog(cataProc, aFile);
 }
@@ -170,64 +179,107 @@ CatalogWidget::~CatalogWidget()
 void CatalogWidget::startDrag(Qt::DropActions supportedActions)
 {
   DEBTRACE("startDrag " << supportedActions);
-  QTreeWidgetItem *item = currentItem();
-  assert(item);
-  QTreeWidgetItem *parent = item->parent();
-  if (!parent) return;
-  QTreeWidgetItem *grandPa = parent->parent();
-  if (!grandPa) return;
-  QTreeWidgetItem *grandGrandPa = grandPa->parent();
-  string cataName ="";
-  if (grandGrandPa)
-    cataName = grandGrandPa->text(0).toStdString();
-  else
-    cataName = grandPa->text(0).toStdString();
+  if (! QtGuiContext::getQtCurrent()) return;
+  if (! QtGuiContext::getQtCurrent()->isEdition()) return;
 
-  DEBTRACE("cataName=" << cataName);
-  assert(_cataMap.count(cataName));
-  YACS::ENGINE::Catalog *catalog = _cataMap[cataName];
+  QDrag *drag = 0;
+  ItemMimeData *mime = 0;
+  QString theMimeInfo;
 
-  QString mimeInfo;
-  string compo = "";
-  string definition = "";
-  QPixmap pixmap;
-  if (! parent->text(0).compare("Types"))
+  QList<QTreeWidgetItem*> selectList = selectedItems();
+  for (int i=0; i<selectList.size(); i++)
     {
-      mimeInfo = "Type";
-      definition = item->text(0).toStdString();
-      pixmap.load("icons:data_link.png");
-    }
-  else if (parent->text(0).contains("Nodes"))
-    {
-      mimeInfo = "Node";
-      definition = item->text(0).toStdString();
-      pixmap.load("icons:add_node.png");
-    }
-  else if (! grandPa->text(0).compare("Components"))
-    {
-      mimeInfo = "Service";
-      definition = item->text(0).toStdString();
-      compo = parent->text(0).toStdString();
-      pixmap.load("icons:new_salome_service_node.png");
-    }
-  else
-    {
-      mimeInfo = "Component";
-      compo = item->text(0).toStdString();
-      pixmap.load("icons:component.png");
-    }
-  DEBTRACE("mimeInfo=" << mimeInfo.toStdString() << " definition=" << definition << " compo=" << compo);
-  QString mimeType = "yacs/cata" + mimeInfo;
+      QTreeWidgetItem *parent = selectList[i]->parent();
+      if (!parent) continue;
+      QTreeWidgetItem *grandPa = parent->parent();
+      if (!grandPa) continue;
+      QTreeWidgetItem *grandGrandPa = grandPa->parent();
+      string cataName ="";
+      if (grandGrandPa)
+        cataName = grandGrandPa->text(0).toStdString();
+      else
+        cataName = grandPa->text(0).toStdString();
+      DEBTRACE("cataName=" << cataName);
+      YASSERT(_cataMap.count(cataName));
+      YACS::ENGINE::Catalog *catalog = _cataMap[cataName];
 
-  QDrag *drag = new QDrag(this);
-  ItemMimeData *mime = new ItemMimeData;
-  drag->setMimeData(mime);
-  mime->setData(mimeType, mimeInfo.toAscii());
-  mime->setCatalog(catalog);
-  mime->setCataName(cataName);
-  mime->setCompo(compo);
-  mime->setType(definition);
-  drag->setPixmap(pixmap);
-  
-  drag->exec(supportedActions);
+      QString mimeInfo;
+      string compo = "";
+      string definition = "";
+      QPixmap pixmap;
+      if (! parent->text(0).compare("Types"))
+        {
+          mimeInfo = "Type";
+          definition = selectList[i]->text(0).toStdString();
+          pixmap.load("icons:data_link.png");
+        }
+      else if (parent->text(0).contains("Nodes"))
+        {
+          mimeInfo = "Node";
+          definition = selectList[i]->text(0).toStdString();
+          pixmap.load("icons:add_node.png");
+        }
+      else if (! grandPa->text(0).compare("Components"))
+        {
+          mimeInfo = "Service";
+          definition = selectList[i]->text(0).toStdString();
+          compo = parent->text(0).toStdString();
+          pixmap.load("icons:new_salome_service_node.png");
+        }
+      else
+        {
+          mimeInfo = "Component";
+          compo = selectList[i]->text(0).toStdString();
+          pixmap.load("icons:component.png");
+        }
+      QString mimeType = "yacs/cata" + mimeInfo;
+      
+      if (!drag) // --- intialize mime data with the first selected item
+        {
+          DEBTRACE("mimeInfo=" << mimeInfo.toStdString() << " definition=" << definition << " compo=" << compo);
+          drag = new QDrag(this);
+          mime = new ItemMimeData;
+          drag->setMimeData(mime);
+          mime->setData(mimeType, mimeInfo.toAscii());
+          drag->setPixmap(pixmap);
+
+          theMimeInfo = mimeInfo;
+
+          mime->setCatalog(catalog);
+          mime->setCataName(cataName);
+          mime->setCompo(compo);
+          mime->setType(definition);
+        }
+      else       // --- push only selected item of the same mimeType than the first
+        {
+          if (theMimeInfo == mimeInfo)
+            {
+              DEBTRACE("mimeInfo=" << mimeInfo.toStdString() << " definition=" << definition << " compo=" << compo);
+              mime->setCatalog(catalog);
+              mime->setCataName(cataName);
+              mime->setCompo(compo);
+              mime->setType(definition);
+            }          
+        }
+    }
+
+  if (drag)
+    {
+      if(_dragModifier)
+        mime->setControl(true);
+      else
+        mime->setControl(false);
+      
+      drag->exec(supportedActions);
+    }
 }
+
+void CatalogWidget::mousePressEvent(QMouseEvent  *event)
+{
+  DEBTRACE("CatalogWidget::mousePressEvent ");
+  _dragModifier= false;
+  if(event->button() == Qt::MidButton)
+    _dragModifier= true;
+  QTreeWidget::mousePressEvent(event);
+}
+

@@ -1,107 +1,121 @@
 .. _schemaxml:
 
-Définition d'un schéma de calcul au format XML
+Defining a calculation scheme in the XML format
 =================================================
-Un fichier XML qui décrit un schéma de calcul peut contenir les informations suivantes:
+An XML file that describes a calculation scheme can contain the following information:
 
-   * des définitions de types de données
-   * des définitions de containers
-   * des définitions de noeuds de calcul élémentaires
-   * des définitions de noeuds composés
-   * des définitions de connexions entre noeuds
-   * des initialisations 
+ - definitions of data types
+ - definitions of containers
+ - definitions of elementary calculation nodes
+ - definitions of composite nodes
+ - definitions of connections between nodes
+ - initialisations
 
-La présentation de ces définitions sera faite progressivement. On commence
-dans un premier temps par :
+These definitions will be presented progressively. We will start with:
 
-  - la définition des types de données 
-  - la définition d'un sous ensemble de noeuds élémentaires
-  - la définition des connexions non datastream
-  - la définition des noeuds composés
+ - the definition of data types
+ - the definition of a sub-set of elementary nodes
+ - the definition of non-datastream connections
+ - the definition of composite nodes
 
-Dans un deuxième temps, on ajoute des compléments sur :
+We will then add complements on:
 
-  - la définition des containers
-  - la définition des propriétés de noeuds
-  - la définition des connexions datastream
-  - la définition du reste des noeuds élémentaires
+ - the definition of containers
+ - the definition of node properties
+ - the definition of datastream connections
+ - the definition of the remaining elementary nodes.
 
-Un schéma de calcul est défini en utilisant le tag XML proc.
-Le schéma de calcul le plus simple est le suivant::
+A calculation scheme is defined using the XML proc tag.  The simplest calculation scheme is as follows:
+
+.. code-block:: xml
 
   <proc>
   </proc>
 
-Il ne contient aucune définition et ne fait rien. 
+It contains no definition and it does nothing.
 
-Définition des types de données
+Definition of data types
 ---------------------------------
-Il n'est pas possible de définir de types de base autres que ceux existants.
-Tous les types de base sont prédéfinis par YACS.
-Il est cependant possible de définir des alias. Par exemple, un alias pour
-le type double s'écrira::
+It is impossible to define basic types other than existing types.  All basic types are predefined by YACS.  
+However, aliases can be defined.  For example, an alias for the double type can be written:
+
+.. code-block:: xml
 
   <type name="mydble" kind="double"/>
 
-On peut ensuite utiliser mydble à la place de double.
+we can then write mydble instead of double.
 
-
-Référence d'objet
+Object reference
 '''''''''''''''''''''
-La forme la plus simple pour définir un type référence d'objet est::
+The simplest way of defining an object reference type is:
+
+.. code-block:: xml
 
   <objref name="mesh"/>
 
-L'attribut name du tag objref donne le nom du nouveau type.
-La forme complète pour définir ce type serait::
+The name attribute of the objref tag gives the name of the new type.  
+The complete form to define this type would be:
+
+.. code-block:: xml
 
   <objref name="mesh" id="IDL:mesh:1.0/>
 
-où id est le repository id CORBA de l'objet SALOME correspondant. Cet attribut
-a une valeur par défaut qui est IDL:<nom du type>:1.0. 
+where id is the CORBA repository id of the corresponding SALOME object.  This attribute has a default value 
+that is IDL:<type name>:1.0.
 
-Pour définir un type référence d'objet dérivé d'un autre type, il suffit
-d'ajouter le nom du ou des types de base.
-Par exemple, pour un type dérivé de mesh, on écrira::
+All that is necessary to define an object reference type derived from another type is to add the name of the basic type(s).
+For example, for a derived mesh type, we can write:
+
+.. code-block:: xml
 
   <objref name="refinedmesh">
     <base>mesh</base>
   </objref>
 
-Si on a plusieurs types de base, on écrira::
+If there are several basic types, we will write:
+
+.. code-block:: xml
 
   <objref name="refinedmesh">
     <base>mesh</base>
     <base>unautretype</base>
   </objref>
 
-On peut, comme pour CORBA, utiliser des namespaces pour définir les types.
-Par exemple, si le type mesh SALOME est défini dans le namespace myns, on écrira::
+As for CORBA, we can use namespaces to define types.  
+For example, if the SALOME mesh type is defined in the myns namespace, we will write:
+
+.. code-block:: xml
 
   <objref name="myns/mesh"/>
 
-Séquence
+Sequence
 ''''''''''
-Pour définir une séquence de double, on écrira::
+To define a double sequence, we will write:
+
+.. code-block:: xml
 
   <sequence name="myseqdble" content="double"/>
 
-Tous les attributs du tag sequence sont obligatoires. L'attribut name
-donne le nom du nouveau type. L'attribut content donne le nom du type
-des éléments de la séquence.
-On peut définir une séquence de séquence par::
+All attributes of the sequence tag are compulsory.  The name attribute gives the name of the new type.  
+The content attribute gives the name of the type of elements in the sequence.  
+A sequence of sequences can be defined by:
+
+.. code-block:: xml
 
   <sequence name="myseqseqdble" content="myseqdble"/>
 
-On peut également définir une séquence de références d'objet par::
+We can also define a sequence of object references by:
+
+.. code-block:: xml
 
   <sequence name="myseqmesh" content="refinedmesh"/>
-
+ 
 Structure
 '''''''''''''
-Pour définir une structure, on utilise un tag struct avec des sous tags member
-pour la définition des membre de la structure.
-Voici un exemple de définition::
+A structure is defined using a struct tag with member sub-tags for the definition of structure members.  
+The following is an example definition:
+
+.. code-block:: xml
 
     <struct name="S1" >
       <member name="x" type="double"/>
@@ -111,16 +125,19 @@ Voici un exemple de définition::
       <member name="vd" type="dblevec"/>
     </struct>
 
-Le tag member a 2 attributs obligatoires : name qui donne le nom du membre
-et type qui donne son type. Le tag struct a un attribut obligatoire name
-qui donne le nom du type.
+The member tag has 2 compulsory attributes, firstly name that gives the member name and secondly type that gives its type.  
+The struct tag has a compulsory "name" attribute that gives the name of the type.
 
-Définition des noeuds de calcul élémentaires
+Definition of elementary calculation nodes
 -----------------------------------------------
-Noeud script Python
+.. _xml_script_node:
+
+Python script node
 '''''''''''''''''''''
-Pour définir un noeud inline script Python on utilise le tag inline avec le sous tag
-script comme dans l'exemple suivant::
+A Python script inline node is defined using the inline tag with the script sub-tag as in 
+the following example:
+
+.. code-block:: xml
 
     <inline name="node1" >
       <script>
@@ -129,11 +146,12 @@ script comme dans l'exemple suivant::
       <outport name="p1" type="int"/>
     </inline>
 
-L'attribut name (obligatoire) du tag inline est le nom du noeud.
-Le script Python est donné au moyen du sous tag code. On met autant de lignes code
-que nécessaire. Si le script contient des caractères inhabituels on peut utiliser
-une section CDATA. Ceci permet également de n'utiliser qu'un tag code pour un script complet.
-Par exemple::
+The name attribute (compulsory) of the inline tag is the node name. The Python script is given using the code sub-tag.  As many code 
+lines as necessary are added.  A CDATA section can be used if the script contains unusual characters.  This also makes it possible 
+to assure that only one code tag is used for a complete script.  
+For example:
+
+.. code-block:: xml
 
   <script>
     <code><![CDATA[a=0
@@ -143,14 +161,14 @@ Par exemple::
     </code>
   </script>
 
-Le script calcule la variable p1 que l'on veut mettre en variable de sortie du noeud.
-Le port de sortie "p1" du noeud est défini avec le sous tag outport. Ce tag a 2 attributs
-obligatoires : name qui donne le nom du port et type qui donne le type de données
-supporté. Ce type doit être déjà défini.
-Pour ajouter un port de données d'entrée, on utilisera le tag inport à la place 
-du tag outport.
+The script calculates the variable p1 that is to be set as a node output variable.  The output port “p1” of the node is defined 
+with the outport sub-tag.  This tag has two compulsory attributes:  name that gives the port name, and type that gives the supported 
+data type.  This type must already be defined.  
+To add an input data port, the import tag will be used instead of the output tag.
 
-Un exemple de noeud avec des ports d'entrée et de sortie::
+An example node with input and output ports:
+
+.. code-block:: xml
 
          <inline name="node1" >
            <script>
@@ -160,13 +178,29 @@ Un exemple de noeud avec des ports d'entrée et de sortie::
            <outport name="p1" type="int"/>
          </inline>
 
-Maintenant le noeud reçoit p1 comme variable d'entrée, lui ajoute 10 et l'exporte 
-comme variable de sortie.
+The node now receives p1 as the input variable, adds 10 to it and exports it as an output variable.
 
-Noeud fonction Python
+If you want to execute your script node on a remote container, you have to change the tag from **inline** to **remote**
+and to add a tag **load** in the definition of the node as in the following example: 
+
+.. code-block:: xml
+
+         <remote name="node1" >
+           <script>
+             <code>p1=p1+10</code>
+           </script>
+           <load container="cont1" />
+           <inport name="p1" type="int"/>
+           <outport name="p1" type="int"/>
+         </remote>
+
+.. _xml_function_node:
+
+Python function node
 ''''''''''''''''''''''''
-Pour définir un noeud fonction Python on utilise le tag inline et le sous tag function
-comme dans l'exemple suivant:: 
+A Python function node is defined using the inline tag and the function sub-tag as in the following example:
+
+.. code-block:: xml
 
     <inline name="node1" >
       <function name="f">
@@ -178,19 +212,35 @@ comme dans l'exemple suivant::
       <outport name="p1" type="int"/>
     </inline>
 
-L'attribut name (obligatoire) du tag inline est le nom du noeud.
-Par rapport au noeud script Python seule la partie exécution change (tag function
-à la place du tag script).
-Le tag function a un attribut obligatoire name qui donne le nom de la fonction à
-exécuter. Le corps de la fonction est donné avec les tags code comme pour le script.
+The name attribute (compulsory) of the inline tag is the node name.  The only difference from the Python script node is in 
+the execution part (function tag instead of the script tag).  The function tag has a compulsory name attribute that gives 
+the name of the function to be executed.  The body of the function is given with code tags as for the script.
 
-Noeud de service SALOME
-''''''''''''''''''''''''''
-Comme il est dit dans :ref:`principes`, on a deux façons de décrire un noeud 
-de service SALOME.
+If you want to execute your function node on a remote container, you have to change the tag from **inline** to **remote**
+and to add a tag **load** in the definition of the node as in the following example: 
 
-La première forme de définition utilise le tag service et les sous tags component
-et method comme dans l'exemple suivant::
+.. code-block:: xml
+
+    <remote name="node1" >
+      <function name="f">
+        <code>def f(p1):</code>
+        <code>  p1=p1+10</code>
+        <code>  return p1</code>
+      </function>
+      <load container="cont1" />
+      <inport name="p1" type="int"/>
+      <outport name="p1" type="int"/>
+    </remote>
+
+.. _xml_service_node:
+
+SALOME service node
+''''''''''''''''''''''''
+As stated in :ref:`principes`, there are two ways of describing a SALOME service node.
+
+The first definition form uses the service tag and the component and method sub-tags as in the following example:
+
+.. code-block:: xml
 
     <service name="node4" >
       <component>AddComponent</component>
@@ -201,14 +251,13 @@ et method comme dans l'exemple suivant::
       <outport name="z" type="double"/>
     </service>
 
-L'attribut obligatoire name du tag service donne le nom du noeud.
-Le tag component donne le nom du composant SALOME à utiliser et method
-le nom du service à exécuter. Ici on veut exécuter le service Add du
-composant AddComponent que l'on trouve dans les composants exemples
-de SALOME.
+The compulsory name attribute of the service tag gives the node name.  The component tag gives the name of the SALOME 
+component to be used and method gives the name of the service to be executed.  The objective in this case is to execute 
+the AddComponent (Add component) service that is located in SALOME example components.
 
-La deuxième forme de définition utilise le tag service et les sous tags node
-et method comme dans l'exemple suivant::
+The second definition form uses the service tag and the node and method sub-tags as in the following example:
+
+.. code-block:: xml
 
   <service name="node5" >
     <node>node4</node>
@@ -216,56 +265,56 @@ et method comme dans l'exemple suivant::
     <inport name="x" type="double"/>
   </service>
 
-Le tag node référence le noeud node4 précédemment défini de façon à utiliser
-la même instance de composant pour noeud4 et noeud5.
+The node tag references the previously defined node4 so as to use the same component instance for node4 and node5.
 
-Définition des connexions
+Definition of connections
 -----------------------------
-Dans tout ce qui suit concernant les connexions et les initialisations de port,
-on est amené à identifier un noeud origine et/ou un noeud cible. Dans tous
-les cas, le nom qui sera utilisé est le nom relatif du noeud par rapport
-au contexte de définition de la connexion.
+We will need to define a source node and/or a target node for all of the following concerning port connections and initialisations.  
+In all cases, the name that will be used is the relative node name, considering the connection definition context.
 
-Lien de contrôle
+Control link
 ''''''''''''''''''
-Un lien de contrôle est défini en utilisant le tag control comme dans l'exemple
-suivant::
+A control link is defined using the control tag as in the following example:
+
+.. code-block:: xml
 
  <control> 
    <fromnode>node1</fromnode> 
    <tonode>node2</tonode> 
  </control>
 
-Le sous tag fromnode donne le nom du noeud qui sera exécuté avant le noeud
-dont le nom est donné par le sous tag tonode.
+The fromnode sub-tag gives the name of the node that will be executed before the node with the name given by the tonode sub-tag.
 
-Lien dataflow
+Dataflow link
 ''''''''''''''''
-Un lien dataflow est défini en utilisant le tag datalink comme dans l'exemple 
-suivant::
+A dataflow link is defined using the datalink tag as in the following example:
+
+.. code-block:: xml
 
   <datalink> 
     <fromnode>node1</fromnode> <fromport>p1</fromport>
     <tonode>node2</tonode> <toport>p1</toport>
   </datalink>
 
-Les sous tags fromnode et fromport donne le nom du noeud et du port de données
-sortant qui sera connecté au noeud et au port dont les noms sont donnés pat les
-sous tags tonode et toport.
-L'exemple de lien ci-dessus dit que la variable de sortie p1 du noeud node1
-sera envoyé au noeud node2 et utilisée comme variable d'entrée p1.
+The fromnode and fromport sub-tags give the name of the node and the output data port that will be connected to the node 
+and to the port for which the names are given by the tonode and toport sub-tags.  The above link example states that the output 
+variable p1 of node node1 will be sent to node node2 and used as an input variable p1.
 
-Lien data
+Data link
 ''''''''''
-Un lien data est défini en utilisant le même tag datalink mais en ajoutant
-l'attribut control avec false comme valeur. Exemple::
+A data link is defined using the same datalink tag, but adding the control attribute and setting the value equal to false.
+Example:
+
+.. code-block:: xml
 
   <datalink control="false"> 
     <fromnode>node1</fromnode> <fromport>p1</fromport>
     <tonode>node2</tonode> <toport>p1</toport>
   </datalink>
 
-Le lien dataflow ci-dessus peut donc être aussi écrit comme suit::
+Therefore the above dataflow link can also be written as follows:
+
+.. code-block:: xml
 
   <control> 
     <fromnode>node1</fromnode> 
@@ -278,57 +327,57 @@ Le lien dataflow ci-dessus peut donc être aussi écrit comme suit::
 
 .. _initialisation:
 
-Initialisation d'un port de données d'entrée
+Initialising an input data port
 -----------------------------------------------
-Pour initialiser un port de données d'entrée avec des constantes on utilise le tag parameter
-et les sous tags tonode, toport et value.
-Le tag toport donne le nom du port d'entrée du noeud de nom tonode à initialiser. 
-La constante d'initialisation est donnée par le tag value. 
-La constante est encodée en utilisant la convention de codage XML-RPC (http://www.xmlrpc.com/).
+An input data port can be initialised with constants by using the parameter tag, and the tonode, toport and value sub-tags.  
+The toport tag gives the name of the input port of the node with the name tonode to be initialised.  
+The initialisation constant is given by the value tag. 
+The constant is encoded using the XML-RPC coding convention (http://www.xmlrpc.com/).
+Example initialisation:
 
-Exemple d'initialisation::
+.. code-block:: xml
 
     <parameter>
       <tonode>node1</tonode> <toport>p1</toport>
       <value><string>coucou</string></value>
     </parameter>
 
-On initialise le port p1 du noeud node1 avec une constante de type chaine de 
-caractères ("coucou").
+Port p1 of node node1 is initialised with a character string type constant (“coucou”).
 
-Voici quelques exemples d'encodage XML-RPC:
+The following gives some examples of XML-RPC coding:
 
 ============================ ==============================================
-Constante                       Encodage XML-RPC
+Constant                        XML-RPC coding
 ============================ ==============================================
 string "coucou"                ``<string>coucou</string>``  
 double 23.                      ``<double>23</double>``        
-entier 0                       ``<int>0</int>``
-booléen true                   ``<boolean>1</boolean>``
-fichier                        ``<objref>/tmp/forma01a.med</objref>``
-liste d'entiers                :: 
+integer 0                      ``<int>0</int>``
+boolean true                   ``<boolean>1</boolean>``
+file                           ``<objref>/tmp/forma01a.med</objref>``
+list of integers               .. code-block:: xml 
 
-                               <array> <data>
-                               <value><int>1</int> </value>
-                               <value><int>0</int> </value>
-                               </data> </array>
-structure (2 membres)          ::
+                                 <array> <data>
+                                 <value><int>1</int> </value>
+                                 <value><int>0</int> </value>
+                                 </data> </array>
+structure (2 members)          .. code-block:: xml
 
-                               <struct> 
-                               <member> <name>s</name>
-                               <value><int>1</int> </value>
-                               </member>
-                               <member> <name>t</name>
-                               <value><int>1</int> </value>
-                               </member>
-                               </struct>
+                                 <struct> 
+                                 <member> <name>s</name>
+                                 <value><int>1</int> </value>
+                                 </member>
+                                 <member> <name>t</name>
+                                 <value><int>1</int> </value>
+                                 </member>
+                                 </struct>
 
 ============================ ==============================================
 
-Premier exemple à partir des éléments précédents
+First example starting from previous elements
 ------------------------------------------------------
-Il est maintenant possible de définir un schéma de calcul complet
-avec des définitions de noeuds, des connexions et des initialisations. ::
+A complete calculation scheme can be defined with definitions of nodes, connections and initialisations.
+
+.. code-block:: xml
 
   <proc>
     <inline name="node1" >
@@ -371,26 +420,27 @@ avec des définitions de noeuds, des connexions et des initialisations. ::
     </parameter>
   </proc>
 
-Le schéma comprend 2 noeuds python (node1, node2) et un noeud SALOME (node4). 
-Les noeuds node2 et node4 peuvent être exécutés en parallèle comme on peut le 
-voir sur le diagramme ci-dessous.
+The scheme includes 2 Python nodes (node1, node2) and one SALOME node (node4).  
+Nodes node2 and node4 can be executed in parallel as can be seen on the following diagram.
 
 .. image:: images/ex1.png
    :align: center
 
-Définition de noeuds composés
+Definition of composite nodes
 -----------------------------------
-L'étape suivante est la définition de noeuds composés soit pour modulariser le schéma (Bloc)
-soit pour introduire des structures de contrôle (Loop, Switch).
+The next step is to define composite nodes, either to modularise the scheme (Block) or to introduce control structures (Loop, Switch).
 
-Bloc
+.. _xml_block:
+
+Block
 ''''''''
-Tous les éléments de définition précédents (à l'exception des types de données) peuvent être
-mis dans un noeud Bloc. Pour créer un Bloc, il suffit d'utiliser un tag bloc avec un attribut name
-obligatoire qui portera le nom du bloc. Ensuite, on ajoute des définitions dans ce tag et on obtient
-un noeud composé qui est un Bloc. 
+All the previous definition elements (except for data types) can be put into a Block node.  
+A Block can be created simply by using a bloc tag with a compulsory name attribute, the name of which will be the block name.  
+The next step is to add definitions in this tag to obtain a composite node that is a Block.
 
-Voici un exemple de Bloc qui reprend une partie de l'exemple ci-dessus::
+The following is an example of a Block that uses part of the above example:
+
+.. code-block:: xml
 
   <bloc name="b">
     <inline name="node1" >
@@ -415,24 +465,25 @@ Voici un exemple de Bloc qui reprend une partie de l'exemple ci-dessus::
     </datalink>
   </bloc>
 
-Ce bloc peut maintenant être connecté à d'autres noeuds comme un simple noeud élémentaire.
-Il faut respecter quelques règles :
+This block can now be connected to other nodes like a simple elementary node.  
+A few rules have to be respected:
 
-  - il n'est pas possible de créer un lien de contrôle qui traverse la frontière d'un bloc
-  - il est possible de créer des liens data qui traverse la frontière aussi bien en entrée
-    qu'en sortie à condition d'utiliser un nommage contextuel (voir :ref:`nommage`)
+- a control link crossing a block boundary cannot be created
+- input and output data links crossing the boundary can be created provided that a context sensitive naming system is used (see :ref:`nommage`)
+
+.. _xml_forloop:
 
 ForLoop
 '''''''''''
+A Forloop is defined using a forloop tag.  This tag has a compulsory name attribute, the name of which is the node name and an 
+optional nsteps attribute that gives the number of loop iterations to be executed.  If this attribute is not specified, the node will 
+use the value given in its input port named nsteps.  The forloop tag must contain the definition of one and only one internal node 
+that can be an elementary node or a composite node.  Forloops can be nested on several levels, for example.  If we would like to have 
+more than one calculation node in the ForLoop, a Block will have to be used as the internal node.
 
-Une ForLoop est définie en utilisant un tag forloop. Ce tag a un attribut obligatoire name qui porte le nom du noeud
-et un attribut facultatif nsteps qui donne le nombre de tours de boucle à exécuter. Si cet attribut n'est pas spécifié,
-le noeud utilisera la valeur donnée dans son port d'entrée de nom nsteps.
-Le tag forloop doit contenir la définition d'un et d'un seul noeud interne qui peut être un noeud élémentaire 
-ou un noeud composé. On peut imbriquer des ForLoop sur plusieurs niveaux, par exemple. Si on veut avoir 
-plus d'un noeud de calcul dans la ForLoop, il faut utiliser un Bloc comme noeud interne.
+Consider an example:
 
-Passons à un exemple::
+.. code-block:: xml
 
     <forloop name="l1" nsteps="5">
       <inline name="node2" >
@@ -444,13 +495,14 @@ Passons à un exemple::
       </inline>
     </forloop>
 
-On fait ici une boucle qui exécutera 5 tours sur un noeud script python.
-Les règles à respecter pour la création de liens sont les mêmes que pour les blocs. Pour faire des calculs
-itératifs, il faut pouvoir connecter un port de sortie d'un noeud interne avec un port d'entrée de
-ce même noeud interne. On utilise pour ce faire un lien data qui est défini dans le contexte du
-noeud ForLoop.
+This represents a loop that will be executed 5 times on a Python script node.  
+The rules to be respected to create links are the same as for the blocks.  To make iterative calculations, it must be possible 
+to connect an output port of an internal node with an input port of this internal node.  This is done using a data link that is 
+defined in the context of the Forloop node.
 
-Voici un exemple avec rebouclage sur le port p1::
+The following example applies to looping on port p1:
+
+.. code-block:: xml
 
   <forloop name="l1" nsteps="5">
       <inline name="node2" >
@@ -466,8 +518,9 @@ Voici un exemple avec rebouclage sur le port p1::
       </datalink>
   </forloop>
 
-Enfin si le nombre de pas de la boucle est calculé, on utilisera le port d'entrée nsteps de la boucle
-comme dans l'exemple suivant::
+If the number of steps in the loop is calculated, the nsteps input port of the loop will be used as in the following example:
+
+.. code-block:: xml
 
     <inline name="n" >
       <script>
@@ -491,12 +544,19 @@ comme dans l'exemple suivant::
       <tonode>l1</tonode> <toport>nsteps</toport> 
     </datalink>
 
+Finally, if the internal node needs to known the current step of the loop it can use the loop output port
+named "index".
+
+.. _xml_whileloop:
+
 WhileLoop
 ''''''''''''
-Une WhileLoop est définie en utilisant le tag while. Il a un seul attribut obligatoire name qui porte le
-nom du noeud. Le port d'entrée de nom "condition" doit être connecté pour que la boucle soit valide.
+A WhileLoop is defined using the while tag.  It has a single compulsory attribute “name”, that carries the node name.  
+The input port with name “condition” must be connected for the loop to be valid.
 
-Voici un exemple de boucle while qui incrémente la variable p1 jusqu'à ce qu'elle dépasse la valeur 40::
+The following is an example of a While loop that increments the variable p1 until it exceeds the value 40:
+
+.. code-block:: xml
 
   <while name="l1" >
     <bloc name="b">
@@ -524,18 +584,21 @@ Voici un exemple de boucle while qui incrémente la variable p1 jusqu'à ce qu'e
     <value><int>23</int> </value>
   </parameter>
 
-On peut bien sûr définir des boucles while imbriquées.
+Obviously, nested while loops can be defined.
 
-Boucle ForEach
+.. _xml_foreachloop:
+
+ForEach loop
 ''''''''''''''''
-Une boucle ForEach est définie en utilisant le tag foreach. Il a 2 attributs obligatoires :
-name qui porte le nom du noeud ForEach et type qui donne le type des éléments de la collection sur lequel 
-la boucle va itérer. Un troisième attribut facultatif nbranch permet de fixer le nombre de branches
-parallèles que la boucle va gérer. Si cet attribut n'est pas fourni, il faut connecter le port de données
-d'entrée de la boucle nbBranches.
-Le tag foreach doit contenir la définition d'un et d'un seul noeud interne (élémentaire ou composé).
+The ForEach loop is defined using the foreach tag.  It has 2 compulsory attributes:  name that bears the name of the ForEach 
+node and type that gives the type of elements in the collection on which the loop will iterate.  A third optional attribute 
+nbranch is used to fix the number of parallel branches that the loop will manage.  If this attribute is not supplied, the input 
+data port of the loop named "nbBranches" must be connected.  
+The foreach tag must contain the definition of one and only one internal node (elementary or composite).
 
-Voici un exemple minimal de boucle ForEach::
+The following is a minimal example of the ForEach loop:
+
+.. code-block:: xml
 
     <inline name="node0" >
       <script>
@@ -566,7 +629,7 @@ Voici un exemple minimal de boucle ForEach::
       <tonode>b1</tonode> <toport>SmplsCollection</toport>
     </datalink>
     <datalink>
-      <fromnode>b1</fromnode><fromport>SmplPrt</fromport>
+      <fromnode>b1</fromnode><fromport>evalSamples</fromport>
       <tonode>b1.node2</tonode> <toport>p1</toport>
     </datalink>
     <datalink>
@@ -574,19 +637,21 @@ Voici un exemple minimal de boucle ForEach::
       <tonode>node1</tonode> <toport>p1</toport>
     </datalink>
 
-Un premier noeud script Python construit une liste de double. Cette liste sera utilisée par la boucle ForEach
-pour itérer (connexion au port d'entrée SmplsCollection). Le noeud interne de la boucle est un noeud fonction
-Python qui ajoute 10 à l'élément qu'il traite. Enfin les résultats sont collectés et reçus par le noeud Python
-node1 sous la forme d'une liste de doubles.
+A first Python script node constructs a list of doubles.  This list will be used by the ForEach loop to iterate (connection 
+to the SmplsCollection input port).  The internal node of the loop is a Python function node that adds 10 to the element that it processes.  
+Finally, the results are collected and received by the Python node node1 in the form of a list of doubles.
+
+.. _xml_switch:
 
 Switch
 ''''''''''
-Un noeud Switch est défini avec le tag switch. Il a un seul attribut obligatoire name qui porte le nom du noeud.
-Chaque cas est défini avec le sous tag case. Le cas par défaut est défini avec le sous tag default.
-Le tag case a un attribut obligatoire id qui doit être un entier. 
-Le tag default n'a aucun attribut.
+A Switch node is defined with the switch tag.  It has a single compulsory name attribute that carries the name of the node.  
+Each case is defined with the case sub-tag.  The default case is defined with the default sub-tag.  
+The case tag has a compulsory id attribute that must be an integer.  The default tag has no attribute.
 
-Un exemple minimal de switch::
+A minimal switch example:
+
+.. code-block:: xml
 
     <inline name="n" >
         <script>
@@ -624,17 +689,53 @@ Un exemple minimal de switch::
         <value><double>54</double> </value>
     </parameter>
 
+.. _xml_optimizerloop:
 
-Définition de containers
+OptimizerLoop
+''''''''''''''''
+An OptimizerLoop node is defined with the **optimizer** tag.  It has a compulsory name attribute that carries the name of the node.  
+It has two other compulsory attributes (**lib** and **entry**) that define the C++ or Python plugin (parameters with same names).
+It can have the attribute **nbranch** or an input port **nbBranches** to define the number of branches of the loop.
+The OptimizerLoop ports (**nbBranches**, **algoInit**, **evalSamples**, **evalResults** and **algoResults**) need not be defined as they
+are already defined at the creation of the node.
+
+A minimal OptimizerLoop example:
+
+.. code-block:: xml
+
+    <optimizer name="b1" nbranch="1" lib="myalgo2.py" entry="async" >
+      <inline name="node2" >
+        <script>
+    <code><![CDATA[print "input node:",p1
+    p1=5
+    ]]></code>
+        </script>
+        <inport name="p1" type="double"/>
+        <outport name="p1" type="int"/>
+      </inline>
+    </optimizer>
+    <datalink>
+      <fromnode>b1</fromnode><fromport>evalSamples</fromport>
+      <tonode>b1.node2</tonode> <toport>p1</toport>
+    </datalink>
+    <datalink control="false" >
+      <fromnode>b1.node2</fromnode><fromport>p1</fromport>
+      <tonode>b1</tonode> <toport>evalResults</toport>
+    </datalink>
+
+
+
+Definition of containers
 --------------------------------
-Les containers YACS doivent être définis juste après avoir défini les types de données
-avant la définition des noeuds de calcul. Un container est défini en utilisant le tag conatiner.
-Ce tag a un seul attribut obligatoire qui est le nom du container.
-Les contraintes sur le placement du container sont spécifiées au moyen de propriétés définies
-avec le sous tag property. Ce tag a 2 attributs obligatoires name et value qui donnent le nom
-de la contrainte et sa valeur sous forme de chaine de caractères.
+YACS containers must be defined immediately after data types have been defined and before calculation nodes are defined.  
+A container is defined using the container tag.  This tag has a single compulsory attribute that is the container name.  
+Constraints on placement of the container are specified using properties defined with the property sub-tag.  
+This tag has two compulsory attributes, the name and the value, that give the name of the constraint and its value in the 
+form of a character string.
 
-Voici un exemple de container défini par l'IHM graphique::
+The following is an example of a container defined by the graphic user interface:
+
+.. code-block:: xml
 
    <container name="DefaultContainer">
      <property name="container_name" value="FactoryServer"/>
@@ -649,12 +750,13 @@ Voici un exemple de container défini par l'IHM graphique::
      <property name="workingdir" value=""/>
    </container>
 
-Une fois que les containers sont définis, on peut placer des composants SALOME sur ce container.
-Il suffit d'ajouter cette information dans la définition du noeud de service SALOME en utilisant 
-le sous tag load. Ce tag a un seul attribut obligatoire de nom container qui donne le nom du container
-sur lequel le composant SALOME sera placé.
+Once containers have been defined, SALOME components can be placed on this container.  
+This information simply has to be added into the definition of the SALOME service node using the load sub-tag.  
+This tag has a single compulsory attribute named container that gives the name of the container on which the SALOME component will be located.
 
-Si on veut placer le service SALOME défini plus haut sur le container DefaultContainer, on écrira::
+If the SALOME service defined above is to be placed on the DefaultContainer container, we will write:
+
+.. code-block:: xml
 
     <service name="node4" >
       <component>AddComponent</component>
@@ -666,16 +768,17 @@ Si on veut placer le service SALOME défini plus haut sur le container DefaultCo
       <outport name="z" type="double"/>
     </service>
 
-Les propriétés de noeuds
+Node properties
 -----------------------------
-On peut définir des propriétés pour tous les noeuds élémentaires ou composés.
-Cependant elles ne sont réellement utiles que pour les noeuds de service SALOME.
+Properties can be defined for all elementary and composite nodes.  
+However, they will only really be useful for SALOME service nodes.
 
-Une propriété se définit en ajoutant un sous tag property dans la définition d'un noeud.
-Le tag property a 2 attributs obligatoires name et value qui portent le nom de la propriété
-et sa valeur sous la forme d'une chaine de caractères.
+A property is defined by adding a property sub-tag in the definition of a node.  
+The property tag has 2 compulsory attributes, name and value, that carry the name of the property and its value in the form of a character string.
 
-Exemple avec un noeud de service SALOME::
+Example with a SALOME service node:
+
+.. code-block:: xml
 
     <service name="node4" >
       <component>AddComponent</component>
@@ -687,24 +790,38 @@ Exemple avec un noeud de service SALOME::
       <outport name="z" type="double"/>
     </service>
 
-Dans le cas d'un noeud de service SALOME la propriété est transmise au composant
-et, par défaut, positionnée en tant que variable d'environnement.
+In the case of a SALOME service node, the property is transmitted to the component and by default is set as an environment variable.
 
-Les connexions datastream
+.. _xml_active_study:
+
+Active study
+--------------
+To execute a schema in the context of a SALOME study, you have to set the **DefaultStudyID** property of the schema.
+
+Example to execute the schema in the study with studyId 5:
+
+.. code-block:: xml
+
+  <proc name="myschema">
+     <property name="DefaultStudyID" value="5"/>
+     ...
+  </proc>
+
+
+Datastream connections
 ----------------------------
-Les connexions datastream ne sont possibles que pour des noeuds de service SALOME comme
-on l'a vu dans :ref:`principes`. Il faut tout d'abord définir les ports datastream dans
-le noeud de service.
-Un port datastream d'entrée se définit avec le sous tag instream. Ce tag a 2 attributs
-obligatoires : name qui donne le nom du port et type qui donne le type de données
-supporté (voir :ref:`principes` pour les types datastream).
-Pour définir un port datastream sortant, on utilise le tag outstream à la place de instream.
-Pour définir une propriété associée au port, on utilise le sous tag property avec ses deux attributs
-name et value. Pour avoir la liste des propriétés possibles, voir la documentation CALCIUM.
+Datastream connections are only possible for SALOME service nodes, as we have seen in :ref:`principes`.  Firstly, datastream ports 
+have to be defined in the service node.  An input datastream port is defined with the instream subtag.  
+This tag has 2 compulsory attributes, firstly name that gives the port name and secondly type that gives the supported data 
+type (see :ref:`principes` for datastream types).  
+The outstream tag is used instead of the instream tag to define an output datastream port.  
+The property sub-tag is used with its two attributes name and value to define a property associated with the port.  
+See :ref:`calcium` for a list of possible properties.
 
-Voici un exemple de définition de noeud de service SALOME avec des ports datastream. Il s'agit du 
-composant DSCCODC que l'on peut trouver dans le module DSCCODES de la base EXAMPLES.
-Les ports datastream sont de type entier avec dépendance temporelle. ::
+The following gives an example definition of the SALOME service node with datastream ports.  It is the DSCCODC component 
+that can be found in the DSCCODES module in the EXAMPLES base.  Datastream ports are of the integer type with time dependence.
+
+.. code-block:: xml
 
     <service name="node1" >
       <component>DSCCODC</component>
@@ -718,16 +835,16 @@ Les ports datastream sont de type entier avec dépendance temporelle. ::
       </outstream>
     </service>
 
-Pour définir des liens datastream, on utilise le tag stream.
-Les sous tags fromnode et fromport donne le nom du noeud et du port datastream
-sortant qui sera connecté au noeud et au port dont les noms sont donnés pat les
-sous tags tonode et toport.
-Un lien datastream peut être paramétré avec des propriétés (voir la documentation CALCIUM). Une propriété
-est définie avec le sous tag property.
+The stream tag is used to define datastream links.  Fromnode and fromport sub-tags give the name of the node and the output 
+datastream port that will be connected to the node and to the port, the names of which are given by the tonode and toport sub-tags.  
+The parameters for a datastream link can be set with properties (see :ref:`calcium`).  
+A property is defined with the property sub-tag.
 
-Voici un exemple plus complet avec des liens datastream paramétrés. On a deux composants SALOME 
-avec ports datastream de type entier, avec dépendance temporelle (TIME_DEPENDENCY). 
-Les connexions datastream utilisent un schéma temporel explicite (TI_SCHEM). ::
+The following is a more complete example with parameters set for datastream links.  There are two SALOME components with 
+integer type datastream ports with time dependency (TIME_DEPENDENCY).  
+The datastream connections use an explicit time scheme (TI_SCHEM).
+
+.. code-block:: xml
 
     <service name="node1" >
       <component>DSCCODC</component>
@@ -765,17 +882,18 @@ Les connexions datastream utilisent un schéma temporel explicite (TI_SCHEM). ::
       <property name="DateCalSchem" value="TI_SCHEM"/>
     </stream>
 
-D'autres noeuds élémentaires
+Other elementary nodes
 --------------------------------
-Noeud SalomePython
+SalomePython node
 '''''''''''''''''''''''
-Ce type de noeud se définit avec le tag sinline. Il a un attribut obligatoire name qui porte le nom
-du noeud. Pour le définir, on utilise les mêmes sous tags que pour le noeud fonction Python : function
-pour le code Python à exécuter, inport et outport pour définir ses ports de données entrants et sortants.
-Pour définir le placement sur un container, on utilise le sous tag load comme pour le noeud de service
-SALOME.
+This type of node is defined with the sinline tag.  It has a compulsory attribute name that carries the node name.  
+It is defined using the same sub-tags as for the Python function node:  function for the Python code to be executed, inport 
+and outport to define its input and output data ports.  
+The placement on a container is defined using the load sub-tag as for the SALOME service node.
 
-Voici un exemple d'appel du composant PYHELLO depuis un noeud SalomePython::
+The following is an example of a call to the PYHELLO component from a SalomePython node:
+
+.. code-block:: xml
 
     <sinline name="node1" >
       <function name="f">
@@ -796,20 +914,21 @@ Voici un exemple d'appel du composant PYHELLO depuis un noeud SalomePython::
       <inport name="p1" type="string"/>
     </sinline>
 
-Le composant PYHELLO sera placé sur le container A. Le choix du container est du ressort de YACS.
-Le résultat du choix est accessible dans la variable python __container__from__YACS__ et est utilisé
-par le noeud pour charger le composant en utilisant le LifeCycle de SALOME.
+The PYHELLO component will be placed on container A.  YACS selects the container.  The result of the choice is accessible 
+in the python __container_from_YACS__ variable and is used by the node to load the component using the SALOME LifeCycle.
 
-Noeud DataIn
+.. _xml_datain:
+
+Datain node
 ''''''''''''''''
-Ce type de noeud se définit avec le tag datanode. Il a un attribut obligatoire name qui porte le nom
-du noeud. Pour définir les données du noeud, on utilisera le sous tag parameter. Ce tag a deux 
-attributs obligatoires name et type qui donnent respectivement le nom de la donnée et son type.
-La valeur initiale de la donnée est fournie par le sous tag value du tag parameter en utilisant
-l'encodage XML-RPC (voir :ref:`initialisation`)
+This type of node is defined with the datanode tag.  It has a compulsory attribute name that carries the node name.  
+Node data are defined using the parameter sub-tag.  This tag has two compulsory attributes, name and type, that give 
+the data name and its type respectively.  The initial value of the data is supplied by the value sub-tag of the parameter tag 
+using the XML-RPC coding (see :ref:`initialisation`).
 
-Voici un exemple de noeud DataIn qui définit 2 données de type double (b et c) et
-une donnée de type fichier (f)::
+The following is an example of a DataIn node that defines two double type data (b and c) and a file type data (f):
+
+.. code-block:: xml
 
     <datanode name="a">
       <parameter name="f" type="file">
@@ -819,63 +938,71 @@ une donnée de type fichier (f)::
       <parameter name="c" type="double" ><value><double>-1.</double></value></parameter>
     </datanode>
 
-Noeud DataOut
-''''''''''''''''
-Ce type de noeud se définit avec le tag outnode. Il a un attribut obligatoire name et un attribut facultatif ref. 
-L'attribut name porte le nom du noeud. L'attribut ref donne le nom du fichier dans lequel
-les valeurs des résultats seront sauvegardées.
-Pour définir les résultats du noeud, on utilisera le sous tag parameter. Ce tag a deux 
-attributs obligatoires name et type qui donnent respectivement le nom du résultat et son type
-et un attribut facultatif ref. Ce dernier attribut n'est utile que pour les résultats fichiers.
-S'il est renseigné, le fichier résultat sera copié dans le fichier dont le nom est donné par l'attribut. Sinon
-le fichier sera un fichier temporaire généralement localisé dans le répertoire /tmp (éventuellement
-sur une machine distante).
+.. _xml_dataout:
 
-Voici un exemple de noeud DataOut qui définit 5 résultats (a, b, c, d, f) de différents types (double,
-int, string, vecteur de doubles, fichier) et écrit les valeurs correspondantes dans le fichier g.data.
-Le fichier résultat sera copié dans le fichier local monfich::
+DataOut node
+''''''''''''''''
+This type of node is defined with the outnode tag.  It has a compulsory attribute, name and an optional attribute, ref.  
+The name attribute carries the node name.  The ref attribute gives the file name in which the values of results will be saved.  
+The parameter sub-tag is used to define results of the node.  This tag has two compulsory attributes, name and type, that 
+give the result name and its type respectively, and one optional attribute, ref.  
+The ref attribute is only useful for file results. If it is defined, the result file will be copied into the file with the 
+name given by the attribute.  Otherwise, the file will be a temporary file usually located in the /tmp directory (possibly on a remote machine).
+
+The following is an example of a DataOut node that defines 5 results (a, b, c, d, f) of different types (double, int, 
+string, doubles vector, file) and writes the corresponding values in the g.data file.  
+The result file will be copied into the local file myfile:
+
+.. code-block:: xml
 
         <outnode name="out" ref="g.data">
           <parameter name="a" type="double" />
           <parameter name="b" type="int" />
           <parameter name="c" type="string" />
           <parameter name="d" type="dblevec" />
-          <parameter name="f" type="file" ref="monfich"/>
+          <parameter name="f" type="file" ref="myfile"/>
         </outnode>
 
-Noeud StudyIn
+.. _xml_studyin:
+
+StudyIn node
 '''''''''''''''
-Ce type de noeud se définit comme un noeud DataIn avec le tag datanode. Il suffit d'ajouter l'attribut
-kind avec la valeur "study".
-L'étude associée est donnée par une propriété (tag property) de nom StudyID (dont la valeur est un entier).
+This type of node is defined as a DataIn node with the datanode tag.  All that is necessary is to add the kind attribute 
+with the “study” value.  The associated study is given by a property (property tag) named StudyID (the value of which is an integer).
 
-Pour définir les données du noeud, on utilisera le sous tag parameter. Ce tag a deux
-attributs obligatoires name et type qui donnent respectivement le nom de la donnée et son type.
-L'attribut ref donne l'entrée dans l'étude sous la forme d'une Entry SALOME ou d'un chemin dans l'arbre d'étude.
+The parameter sub-tag will be used to define the node data.  This tag has two compulsory attributes, name and type, that give the 
+data name and type respectively.  The ref attribute gives the input into the study in the form of a SALOME Entry, or a 
+path in the study tree structure.
 
-Voici un exemple de noeud StudyIn qui définit 2 données (b et c) de types GEOM_Object et booléen. L'étude
-est supposée chargée en mémoire par SALOME sous le StudyID 1. La donnée b est référencée par une Entry SALOME.
-La donnée c est référencée par un chemin dans l'arbre d'étude. ::
- 
+The following is an example of a StudyIn node that defines 2 data (b and c) with types GEOM_Object and Boolean.  It is assumed 
+that SALOME has loaded the study (with StudyID 1) into memory.  Data b is referenced by a SALOME Entry.  
+The data c is referenced by a path in the study tree structure.
+
+.. code-block:: xml
+
     <datanode name="s" kind="study" >
       <property name="StudyID" value="1" />
       <parameter name="b" type="GEOM/GEOM_Object" ref="0:1:2:2"/>
       <parameter name="c" type="bool" ref="/Geometry/Box_1"/>
     </datanode>
 
-Noeud StudyOut
+.. _xml_studyout:
+
+StudyOut node
 ''''''''''''''''''
-Ce type de noeud se définit comme un noeud DataOut avec le tag outnode et l'attribut name. 
-Il suffit d'ajouter l'attribut kind avec la valeur "study". 
-L'attribut facultatif ref donne le nom du fichier dans lequel sera sauvegardée l'étude à la fin du calcul.
-L'étude associée est donnée par une propriété (tag property) de nom StudyID (dont la valeur est un entier).
+This type of node is defined as a DataOut node with the outnode tag and the name attribute.  
+All that is necessary is to add the kind attribute with the value “study”.  
+The optional ref attribute gives the name of the file in which the study will be saved at the end of the calculation.  
+The associated study is given by a property (property tag) with name StudyID (the value of which is an integer).
 
-Pour définir les résultats du noeud, on utilisera le sous tag parameter. Ce tag a deux
-attributs obligatoires name et type qui donnent respectivement le nom du résultat et son type.
-L'attribut ref donne l'entrée dans l'étude sous la forme d'une Entry SALOME ou d'un chemin dans l'arbre d'étude.
+The parameter sub-tag will be used to define the node results.  This tag has two compulsory attributes, name and type, that 
+give the data name and type respectively.  The ref attribute gives the entry into the study in the form of a SALOME Entry, or 
+a path in the study tree structure.
 
-Voici un exemple de noeud StudyOut qui définit 2 résultats (a et b) de type GEOM_Object. L'étude utilisée
-a le studyId 1. L'étude complète est sauvegardée en fin de calcul dans le fichier study1.hdf::
+The following gives an example of the StudyOut node that defines 2 results (a and b) of the GEOM_Object type.  The study used has 
+the studyId 1.  The complete study is saved in the study1.hdf file at the end of the calculation:
+
+.. code-block:: xml
 
    <outnode name="o" kind="study" ref="stud1.hdf">
      <property name="StudyID" value="1"/>

@@ -1,21 +1,22 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "SceneBlocItem.hxx"
 #include "Scene.hxx"
 #include "Menus.hxx"
@@ -38,6 +39,12 @@
 #else
   #include <gvc.h>
 #endif
+
+#ifndef ND_coord_i
+#define ND_coord_i(n) (n)->u.coord
+#endif
+
+#include "Resource.hxx"
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -73,16 +80,22 @@ SceneBlocItem::~SceneBlocItem()
 void SceneBlocItem::arrangeChildNodes()
 {
   DEBTRACE("SceneBlocItem::arrangeChildNodes");
+  clock_t start_t, end_t;
+  start_t = clock();
+
 
   SubjectComposedNode *scnode = dynamic_cast<SubjectComposedNode*>(getSubject());
-  assert(scnode);
+  YASSERT(scnode);
   ComposedNode *cnode = dynamic_cast<ComposedNode*>(scnode->getNode());
-  assert(cnode);
+  YASSERT(cnode);
 
   // ---- Create a graphviz context
 
   if(!aGvc)
     {
+      DEBTRACE(setlocale(LC_ALL,NULL));
+      //Graphviz is sensitive to locale : set the mimimal one ("C")for numeric
+      setlocale(LC_NUMERIC, "C");
       aginit();
       aGvc = gvContext();
     }
@@ -94,53 +107,53 @@ void SceneBlocItem::arrangeChildNodes()
   // ---- Initialize and set attributes for the graph
   
   Agsym_t* attr;
-  if ( !(attr = agfindattr(_graph, "compound")))
-    attr = agraphattr(_graph, "compound", "false");
-  agxset(_graph, attr->index, "true");
+  if ( !(attr = agfindattr(_graph, (char *)"compound")))
+    attr = agraphattr(_graph, (char *)"compound", (char *)"false");
+  agxset(_graph, attr->index, (char *)"true");
 
-  if ( !(attr = agfindattr(_graph, "rankdir")))
-    attr = agraphattr(_graph, "rankdir", "TB");
-  agxset(_graph, attr->index, "LR");
+  if ( !(attr = agfindattr(_graph, (char *)"rankdir")))
+    attr = agraphattr(_graph, (char *)"rankdir", (char *)"TB");
+  agxset(_graph, attr->index, (char *)"LR");
 
-//   if ( !(attr = agfindattr(_graph, "ordering")))
-//     attr = agraphattr(_graph, "ordering", "" );
-//   agxset(_graph, attr->index, "in" );
+//   if ( !(attr = agfindattr(_graph, (char *)"ordering")))
+//     attr = agraphattr(_graph, (char *)"ordering", (char *)"" );
+//   agxset(_graph, attr->index, (char *)"in" );
   
-  if ( !(attr = agfindattr(_graph, "dpi")))
-    attr = agraphattr(_graph, "dpi", "72");
-  agxset(_graph, attr->index, "72"); // --- must be coherent with #define DPI
+  if ( !(attr = agfindattr(_graph, (char *)"dpi")))
+    attr = agraphattr(_graph, (char *)"dpi", (char *)"72");
+  agxset(_graph, attr->index, (char *)"72"); // --- must be coherent with #define DPI
 
   // --- label is used to reserve place for bloc banners (adjust size with font !)
 
-  if ( !(attr = agfindattr(_graph, "label")))
-    attr = agraphattr(_graph, "label", "label");
-  agxset(_graph, attr->index, "myLabel");
+  if ( !(attr = agfindattr(_graph, (char *)"label")))
+    attr = agraphattr(_graph, (char *)"label", (char *)"label");
+  agxset(_graph, attr->index, (char *)"myLabel");
 
-  if ( !(attr = agfindattr(_graph, "labelloc")))
-    attr = agraphattr(_graph, "labelloc", "top");
-  agxset(_graph, attr->index, "top");
+  if ( !(attr = agfindattr(_graph, (char *)"labelloc")))
+    attr = agraphattr(_graph, (char *)"labelloc", (char *)"top");
+  agxset(_graph, attr->index, (char *)"top");
 
-  if ( !(attr = agfindattr(_graph, "fontsize")))
-    attr = agraphattr(_graph, "fontsize", "24");
-  agxset(_graph, attr->index, "24");
+  if ( !(attr = agfindattr(_graph, (char *)"fontsize")))
+    attr = agraphattr(_graph, (char *)"fontsize", (char *)"24");
+  agxset(_graph, attr->index, (char *)"24");
 
-  if ( !(attr = agfindattr(_graph, "splines")))
-    attr = agraphattr(_graph, "splines", "");
-  agxset(_graph, attr->index, "");
+  if ( !(attr = agfindattr(_graph, (char *)"splines")))
+    attr = agraphattr(_graph, (char *)"splines", (char *)"");
+  agxset(_graph, attr->index, (char *)"");
 
   // --- Initialize attributes for nodes
 
-  if ( !(attr = agfindattr( _graph->proto->n, "height")))
-    attr = agnodeattr(_graph, "height", "" );
+  if ( !(attr = agfindattr( _graph->proto->n, (char *)"height")))
+    attr = agnodeattr(_graph, (char *)"height", (char *)"" );
 
-  if ( !(attr = agfindattr( _graph->proto->n, "width")))
-    attr = agnodeattr(_graph, "width", "" );
+  if ( !(attr = agfindattr( _graph->proto->n, (char *)"width")))
+    attr = agnodeattr(_graph, (char *)"width", (char *)"" );
 
-  if ( !(attr = agfindattr( _graph->proto->n, "shape")))
-    attr = agnodeattr(_graph, "shape", "" );
+  if ( !(attr = agfindattr( _graph->proto->n, (char *)"shape")))
+    attr = agnodeattr(_graph, (char *)"shape", (char *)"" );
 
-  if ( !(attr = agfindattr( _graph->proto->n, "fixedsize")))
-    attr = agnodeattr(_graph, "fixedsize", "false" );
+  if ( !(attr = agfindattr( _graph->proto->n, (char *)"fixedsize")))
+    attr = agnodeattr(_graph, (char *)"fixedsize", (char *)"false" );
 
   // ---- Bind graph to graphviz context - must be done before layout
   // ---- Compute a layout
@@ -160,10 +173,10 @@ void SceneBlocItem::arrangeChildNodes()
       //DEBTRACE("external render for test");
       //gvRenderFilename(aGvc, _mainGraph, "dot", "graph1.dot");
       DEBTRACE("compute layout");
-      gvLayout(aGvc, _graph, "dot");
+      gvLayout(aGvc, _graph, (char *)"dot");
       DEBTRACE("external render for test");
 #ifdef _DEVDEBUG_
-      gvRenderFilename(aGvc, _graph, "dot", "graph2.dot");
+      gvRenderFilename(aGvc, _graph, (char *)"dot", (char *)"graph2.dot");
 #endif
 #endif
    }
@@ -177,6 +190,13 @@ void SceneBlocItem::arrangeChildNodes()
       DEBTRACE("Unknown Exception Graphviz layout ");
       return;
     }
+  {
+    end_t = clock();
+    double passe =  (end_t -start_t);
+    passe = passe/CLOCKS_PER_SEC;
+    DEBTRACE("graphviz : " << passe);
+    start_t = end_t;
+  }
   DEBTRACE("start of display");
   // ---- layout Canvas nodes recursively
 
@@ -202,6 +222,13 @@ void SceneBlocItem::arrangeChildNodes()
 #endif
 
   // --- update scene
+  {
+    end_t = clock();
+    double passe =  (end_t -start_t);
+    passe = passe/CLOCKS_PER_SEC;
+    DEBTRACE("display : " << passe);
+    start_t = end_t;
+  }
 }
 
 void  SceneBlocItem::getNodesInfo(YACS::ENGINE::ComposedNode *cnode)
@@ -228,10 +255,10 @@ void  SceneBlocItem::getNodesInfo(YACS::ENGINE::ComposedNode *cnode)
       width  = QString(_format.c_str()).arg(lw, 0, 'g', 3);
 
       DEBTRACE(aNode->name << " (" << nh << "," << nw << ") = (" << height.toStdString()  << " ; " << width.toStdString() <<")");
-      agxset( aNode, agfindattr(_graph->proto->n,"height")->index, (char*)(height.toAscii().data()));
-      agxset( aNode, agfindattr(_graph->proto->n,"width")->index, (char*)(width.toAscii().data()));
-      agxset( aNode, agfindattr(_graph->proto->n,"shape")->index, "box" );
-      agxset( aNode, agfindattr(_graph->proto->n,"fixedsize")->index, "true" );
+      agxset( aNode, agfindattr(_graph->proto->n,(char *)"height")->index, (char*)(height.toAscii().data()));
+      agxset( aNode, agfindattr(_graph->proto->n,(char *)"width")->index, (char*)(width.toAscii().data()));
+      agxset( aNode, agfindattr(_graph->proto->n,(char *)"shape")->index, (char *)"box" );
+      agxset( aNode, agfindattr(_graph->proto->n,(char *)"fixedsize")->index, (char *)"true" );
     }
 
   // --- Create edges (i.e. links)
@@ -310,9 +337,9 @@ void SceneBlocItem::arrangeCanvasNodes(YACS::ENGINE::ComposedNode *cnode)
   SubjectNode* subCompo = GuiContext::getCurrent()->_mapOfSubjectNode[cnode];
   SceneItem* sci = QtGuiContext::getQtCurrent()->_mapOfSceneItem[subCompo];
   SceneComposedNodeItem *sceneCompo = dynamic_cast<SceneComposedNodeItem*>(sci);
-  assert(sceneCompo);
-  qreal yHead = sceneCompo->getHeaderBottom() + sceneCompo->getMargin() + sceneCompo->getNml();
-  qreal xOffset = sceneCompo->getMargin() + sceneCompo->getNml();
+  YASSERT(sceneCompo);
+  qreal yHead = sceneCompo->getHeaderBottom() + Resource::Space_Margin;
+  qreal xOffset = Resource::Space_Margin;
 
   list<Node*> children = cnode->edGetDirectDescendants();
   for (list<Node*>::iterator it = children.begin(); it != children.end(); ++it)
@@ -328,6 +355,8 @@ void SceneBlocItem::arrangeCanvasNodes(YACS::ENGINE::ComposedNode *cnode)
       qreal halfHeight = sci->boundingRect().height()/2.;
 
       sci->setPos(xOffset + xCenter -halfWidth, yHead + yCenter -halfHeight);
+      SceneNodeItem *scni = dynamic_cast<SceneNodeItem*>(sci);
+      if (scni) scni->setExpandedPos(QPointF(xOffset + xCenter -halfWidth, yHead + yCenter -halfHeight));
     }
   sceneCompo->checkGeometryChange();
   if (Scene::_autoComputeLinks)

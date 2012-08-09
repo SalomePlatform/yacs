@@ -1,29 +1,34 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "LinkMatrix.hxx"
+#include "Scene.hxx"
 #include "SceneComposedNodeItem.hxx"
 #include "SceneElementaryNodeItem.hxx"
 #include "SceneHeaderItem.hxx"
+#include "SceneHeaderNodeItem.hxx"
+#include "SceneCtrlPortItem.hxx"
 #include "SceneLinkItem.hxx"
 #include "QtGuiContext.hxx"
 #include "InPort.hxx"
 #include "OutPort.hxx"
+#include "Resource.hxx"
 
 #include <cmath>
 
@@ -46,6 +51,7 @@ LinkMatrix::LinkMatrix(SceneComposedNodeItem *bloc): _bloc(bloc)
 {
   _im=0;
   _jm=0;
+  _pas=10;
   _sxm.clear();
   _sym.clear();
   _xm.clear();
@@ -64,6 +70,7 @@ void LinkMatrix::compute()
 {
   getBoundingBox(_bloc,0);
   explore(_bloc);        // --- define the boundaries _xm[i] and _ym[j]
+  if (Scene::_addRowCols) addRowCols();
   _im = _sxm.size();
   _xm.reserve(_im);
   DEBTRACE("_sxm.size()=" << _im);
@@ -93,7 +100,7 @@ void LinkMatrix::compute()
 
   for (int j=0; j<_jm; j++)
     {
-      char m[_im+1];
+      char* m = new char[_im+1];
       for (int i=0; i<_im; i++)
         if (cost(i,j))
           m[i] = ' ';
@@ -101,6 +108,7 @@ void LinkMatrix::compute()
           m[i] = 'X';
       m[_im] = 0;
       DEBTRACE(m);
+      delete [] m;
     }
 }
 
@@ -111,48 +119,59 @@ std::pair<int,int> LinkMatrix::cellFrom(YACS::ENGINE::OutPort* outp)
   QRectF bb = (item->mapToScene(item->boundingRect())).boundingRect();
   qreal xp = bb.right();
   qreal yp = (bb.top() + bb.bottom())*0.5;
+  DEBTRACE("xp,yp:"<<xp<<","<<yp);
   int ifrom = -1;
   for (int i=0; i<_im-1; i++)
-    if (_xm[i+1] > xp)
+    if (_xm[i+1] >= xp && xp > _xm[i])
       {
         ifrom = i;
         break;
       }
   int jfrom = -1;
   for (int j=0; j<_jm-1; j++)
-    if (_ym[j+1] > yp)
+    if (_ym[j+1] >= yp && yp > _ym[j])
       {
         jfrom = j;
         break;
       }
-  while (!cost(ifrom,jfrom)) ifrom++;  // --- from point is inside an obstacle
-  //ifrom++;
+  //if ifrom or jfrom == -1 the port is outside the matrix
+  if(ifrom < 0 || jfrom < 0)return pair<int,int>(ifrom,jfrom);
+  while (ifrom < _im && !cost(ifrom,jfrom)) ifrom++;  // --- from point is inside an obstacle
+
   return pair<int,int>(ifrom,jfrom);
 }
 
 std::pair<int,int> LinkMatrix::cellFrom(YACS::ENGINE::OutGate* outp)
 {
   SubjectNode* subNode = _context->_mapOfSubjectNode[outp->getNode()];
-  SceneItem* item = _context->_mapOfSceneItem[subNode];
+  SceneNodeItem* itemNode = dynamic_cast<SceneNodeItem*>(_context->_mapOfSceneItem[subNode]);
+  YASSERT(itemNode);
+  SceneHeaderNodeItem* itemHeader = dynamic_cast<SceneHeaderNodeItem*>(itemNode->getHeader());
+  YASSERT(itemHeader);
+  SceneCtrlPortItem *item = itemHeader->getCtrlOutPortItem();
+  YASSERT(item);
   QRectF bb = (item->mapToScene(item->boundingRect())).boundingRect();
   qreal xp = bb.right();
   qreal yp = (bb.top() + bb.bottom())*0.5;
+  DEBTRACE("xp,yp:"<<xp<<","<<yp);
   int ifrom = -1;
   for (int i=0; i<_im-1; i++)
-    if (_xm[i+1] > xp)
+    if (_xm[i+1] >= xp && xp > _xm[i])
       {
         ifrom = i;
         break;
       }
   int jfrom = -1;
   for (int j=0; j<_jm-1; j++)
-    if (_ym[j+1] > yp)
+    if (_ym[j+1] >= yp && yp > _ym[j])
       {
         jfrom = j;
         break;
       }
-  while (!cost(ifrom,jfrom)) ifrom++;  // --- from point is inside an obstacle
-  //ifrom++;
+  //if ifrom or jfrom == -1 the port is outside the matrix
+  if(ifrom < 0 || jfrom < 0)return pair<int,int>(ifrom,jfrom);
+  while (ifrom < _im && !cost(ifrom,jfrom)) ifrom++;  // --- from point is inside an obstacle
+
   return pair<int,int>(ifrom,jfrom);
 }
 
@@ -163,48 +182,59 @@ std::pair<int,int> LinkMatrix::cellTo(YACS::ENGINE::InPort* inp)
   QRectF bb = (item->mapToScene(item->boundingRect())).boundingRect();
   qreal xp = bb.left();
   qreal yp = (bb.top() + bb.bottom())*0.5;
+  DEBTRACE("xp,yp:"<<xp<<","<<yp);
   int ito = -1;
   for (int i=0; i<_im-1; i++)
-    if (_xm[i+1] > xp)
+    if (_xm[i+1] >= xp && xp > _xm[i])
       {
         ito = i;
         break;
       }
   int jto = -1;
   for (int j=0; j<_jm-1; j++)
-    if (_ym[j+1] > yp)
+    if (_ym[j+1] >= yp && yp > _ym[j])
       {
         jto = j;
         break;
       }
-  while (!cost(ito,jto)) ito--;  // --- from point is inside an obstacle
-  //ito--;
+  //if ito or jto == -1 the port is outside the matrix
+  if(ito < 0 || jto < 0)return pair<int,int>(ito,jto);
+  while (ito >0 && !cost(ito,jto)) ito--;  // --- to point is inside an obstacle
+
   return pair<int,int>(ito,jto);
 }
 
 std::pair<int,int> LinkMatrix::cellTo(YACS::ENGINE::InGate* inp)
 {
   SubjectNode* subNode = _context->_mapOfSubjectNode[inp->getNode()];
-  SceneItem* item = _context->_mapOfSceneItem[subNode];
+  SceneNodeItem* itemNode = dynamic_cast<SceneNodeItem*>(_context->_mapOfSceneItem[subNode]);
+  YASSERT(itemNode);
+  SceneHeaderNodeItem* itemHeader = dynamic_cast<SceneHeaderNodeItem*>(itemNode->getHeader());
+  YASSERT(itemHeader);
+  SceneCtrlPortItem *item = itemHeader->getCtrlInPortItem();
+  YASSERT(item);
   QRectF bb = (item->mapToScene(item->boundingRect())).boundingRect();
   qreal xp = bb.left();
   qreal yp = (bb.top() + bb.bottom())*0.5;
+  DEBTRACE("xp,yp:"<<xp<<","<<yp);
   int ito = -1;
   for (int i=0; i<_im-1; i++)
-    if (_xm[i+1] > xp)
+    if (_xm[i+1] >= xp && xp > _xm[i])
       {
         ito = i;
         break;
       }
   int jto = -1;
   for (int j=0; j<_jm-1; j++)
-    if (_ym[j+1] > yp)
+    if (_ym[j+1] >= yp && yp > _ym[j])
       {
         jto = j;
         break;
       }
-  while (!cost(ito,jto)) ito--;  // --- from point is inside an obstacle
-  //ito--;
+  //if ito or jto == -1 the port is outside the matrix
+  if(ito < 0 || jto < 0)return pair<int,int>(ito,jto);
+  while (ito > 0 && !cost(ito,jto)) ito--;  // --- to point is inside an obstacle
+
   return pair<int,int>(ito,jto);
 }
 
@@ -256,14 +286,29 @@ LinkPath LinkMatrix::getPath(LNodePath lnp)
   LinkPath lp;
   lp.clear();
   int dim = lnp.size();  
+  //use a random coefficient between 0.25 and 0.75 to try to separate links
+  double coef=-0.25+rand()%101*0.005;
+  coef=0.5 + coef* Resource::link_separation_weight/10.;
   LNodePath::const_iterator it = lnp.begin();
   for (int k=0; k<dim; k++)
     {
       int i = it->getX();
       int j = it->getY();
+      DEBTRACE("i, j: " << i << " " << j << " Xmax, Ymax: " << _im << " " << _jm);
       linkPoint a;
-      a.x = 0.5*(_xm[i] + _xm[i+1]);
-      a.y = 0.5*(_ym[j] + _ym[j+1]);
+
+      if ( (i+1)==_im ) {
+        a.x = _xm[i];
+      } else {
+        a.x = coef*_xm[i] + (1.-coef)*_xm[i+1];
+      };
+
+      if ( (j+1)==_jm ) {
+        a.y = _ym[j];
+      } else {
+        a.y = coef*_ym[j] + (1.-coef)*_ym[j+1];
+      };
+
       lp.push_back(a);
       DEBTRACE(a.x << " " << a.y);
       ++it;
@@ -271,10 +316,18 @@ LinkPath LinkMatrix::getPath(LNodePath lnp)
   return lp;
 }
 
-int LinkMatrix::cost(int i, int j) const
+void LinkMatrix::incrementCost(LNodePath lnp)
 {
-  int ij = i*_jm +j;
-  return _cost[ij];
+  int dim = lnp.size();  
+  LNodePath::const_iterator it = lnp.begin();
+  for (; it != lnp.end(); ++it)
+    {
+      int i = it->getX();
+      int j = it->getY();
+      int ij = i*_jm +j;
+      _cost[ij] += Resource::link_separation_weight; // --- big cost, because distance is x2+y2
+
+    }    
 }
 
 
@@ -333,4 +386,50 @@ void LinkMatrix::getBoundingBox(SceneItem *obstacle, int margin, bool setObstacl
       _sym.insert(bb.top()    + margin);
       _sym.insert(bb.bottom() - margin);
     }
+}
+
+void LinkMatrix::addRowCols()
+{
+  {
+    set<double> sxmCpy = _sxm;
+    if (sxmCpy.empty()) return;
+    set<double>::iterator itx = sxmCpy.begin();
+    double xmin = *itx;
+    double xmax = xmin;
+    itx++;
+    for (; itx != sxmCpy.end(); ++itx)
+      {
+        xmax = *itx;
+        int nbpas = floor((xmax -xmin)/_pas);
+        
+        if (nbpas >= 2)
+          {
+            double xpas = (xmax -xmin)/nbpas;
+            for (int i=1; i<nbpas; i++)
+              _sxm.insert(xmin +i*xpas);
+          }
+        xmin = xmax;
+      }
+  }
+  {
+    set<double> symCpy = _sym;
+    if (symCpy.empty()) return;
+    set<double>::iterator ity = symCpy.begin();
+    double ymin = *ity;
+    double ymax = ymin;
+    ity++;
+    for (; ity != symCpy.end(); ++ity)
+      {
+        ymax = *ity;
+        int nbpas = floor((ymax -ymin)/_pas);
+        
+        if (nbpas >= 2)
+          {
+            double ypas = (ymax -ymin)/nbpas;
+            for (int i=1; i<nbpas; i++)
+              _sym.insert(ymin +i*ypas);
+          }
+        ymin = ymax;
+      }
+  }
 }

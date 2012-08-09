@@ -1,21 +1,22 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //#define REFCNT
 //
 #ifdef REFCNT
@@ -75,7 +76,7 @@ CORBANode::CORBANode(const CORBANode& other,ComposedNode *father):ServiceNode(ot
 //! Execute the service on the component associated to the node
 void CORBANode::execute()
 {
-  DEBTRACE( "+++++++++++++ CorbaNode::execute: " << getName() << " +++++++++++++++" );
+  YACSTRACE(1, "+++++++++++++ CorbaNode::execute: " << getName() << " +++++++++++++++" );
   {
     //DII request building :
     // a service gets all its in parameters first
@@ -307,18 +308,40 @@ void SalomeNode::initService()
     }
   try
     {
-      CORBA::Boolean ret=compo->init_service(_method.c_str());
-      if(!ret)
-        {
-          _errorDetails="Problem with component '"+_ref+"' in init_service of service '"+ _method + "'";
-          throw Exception(_errorDetails);
-        }
+      if (!_multi_port_node)
+      {
+        CORBA::Boolean ret=compo->init_service(_method.c_str());
+        if(!ret)
+          {
+            _errorDetails="Problem with component '"+_ref+"' in init_service of service '"+ _method + "'";
+            throw Exception(_errorDetails);
+          }
+        //Should check that component port types are the same as those declared in the xml file
+      }
+      else
+      {
+        CORBA::Boolean ret=compo->init_service_with_multiple(_method.c_str(), _param);
+        if(!ret)
+          {
+            _errorDetails="Problem with component '"+_ref+"' in init_service_with_multiple of service '"+ _method + "'";
+            throw Exception(_errorDetails);
+          }
+      }
     }
   catch(...)
     {
       _errorDetails="Problem with component '"+_ref+"' in init_service of service '"+ _method + "'";
       throw;
     }
+}
+
+void
+SalomeNode::addDatastreamPortToInitMultiService(const std::string & port_name, int number)
+{
+  int index = _param.length();
+  _param.length(index + 1);
+  _param[index].name = CORBA::string_dup(port_name.c_str());
+  _param[index].number = number;
 }
 
 //! Connect the datastream ports of the component associated to the node
@@ -443,7 +466,11 @@ void SalomeNode::connectService()
 void SalomeNode::disconnectService()
 {
   DEBTRACE( "SalomeNode::disconnectService: "<<getName());
-  if(ids.size() == 0)return;
+  // in some rare cases, disconnectService can be called from 2 different threads
+  YACS::BASES::Lock lock(&_mutex);
+
+  if(ids.size() == 0)
+    return;
 
   SALOME_NamingService NS(getSALOMERuntime()->getOrb()) ;
   SALOME_LifeCycleCORBA LCC(&NS) ;
@@ -484,24 +511,31 @@ void SalomeNode::disconnectService()
     }
   ids.clear();
 }
+
+void SalomeNode::cleanNodes()
+{
+  disconnectService();
+}
+
 #endif
 
 //! Execute the service on the component associated to the node
 void SalomeNode::execute()
 {
-  DEBTRACE( "+++++++++++++++++ SalomeNode::execute: " << getName() << " " << _method << " +++++++++++++++++" )
+  YACSTRACE(1,"+++++++++++++++++ SalomeNode::execute: " << getName() << " " << _method << " +++++++++++++++++" );
   {
     CORBA::Object_var objComponent=((SalomeComponent*)_component)->getCompoPtr();
-    Engines::Component_var compo=Engines::Component::_narrow(objComponent);
+    Engines::EngineComponent_var compo=Engines::EngineComponent::_narrow(objComponent);
 
     // Set component properties
-    if(_propertyMap.size() > 0)
+    std::map<std::string,std::string> amap=getProperties();
+    if(amap.size() > 0)
       {
         Engines::FieldsDict_var dico = new Engines::FieldsDict;
-        dico->length(_propertyMap.size());
+        dico->length(amap.size());
         std::map<std::string,std::string>::const_iterator it;
         int i=0;
-        for(it = _propertyMap.begin(); it != _propertyMap.end(); ++it)
+        for(it = amap.begin(); it != amap.end(); ++it)
           {
             dico[i].key=CORBA::string_dup(it->first.c_str());
             dico[i].value <<=it->second.c_str();
@@ -659,6 +693,11 @@ void SalomeNode::execute()
           if(excname == "BAD_OPERATION")
             {
               text=text+"component '" +_ref+ "' has no service '" + _method+ "'";
+            }
+          else if(excname == "BAD_PARAM")
+            {
+              text=text+"A parameter (input or output) passed to the call is out of range or otherwise considered illegal.\n";
+              text=text+"Minor code: "+sysexc->NP_minorString();
             }
           else if(excname == "MARSHAL" && sysexc->minor() == omni::MARSHAL_PassEndOfMessage)
             {
@@ -820,7 +859,7 @@ std::string SalomeNode::getContainerLog()
   try
     {
       CORBA::Object_var objComponent=((SalomeComponent*)_component)->getCompoPtr();
-      Engines::Component_var compo=Engines::Component::_narrow(objComponent);
+      Engines::EngineComponent_var compo=Engines::EngineComponent::_narrow(objComponent);
       if( !CORBA::is_nil(compo) )
         {
           Engines::Container_var cont= compo->GetContainerRef();
@@ -874,4 +913,11 @@ std::string SalomeNode::getContainerLog()
       msg = ":Component no longer reachable: Caught unknown exception.";
     }
   return msg;
+}
+
+void SalomeNode::shutdown(int level)
+{
+  DEBTRACE("SalomeNode::shutdown " << level);
+  if(_component)
+    _component->shutdown(level);
 }

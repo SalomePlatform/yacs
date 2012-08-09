@@ -1,96 +1,66 @@
 
 .. _secacceslocal:
 
-Composant à accès local
-=======================
-
-
-Principe
---------
-
-Comme indiqué au chapitre :ref:`secetapes`,
-l'objet interne construit au chapitre :ref:`seccompinterne` 
-peut être manipulé   depuis un interpréteur python
-local, suivant le schéma ci-après.
+Component with local access
+==============================
+Principle
+-------------
+As mentioned in the :ref:`secetapes` chapter, the internal object built in the :ref:`seccompinterne` chapter can be manipulated 
+from a local python interpreter according to the following scheme.
 
 .. _figacceslocal2:
 
 
 .. image:: images/accesLocal.png
-   :width: 46ex
    :align: center
 
-.. centered::   Accès depuis un interpréteur python local
+.. centered::   Access from a local python interpreter
 
-Dans le cas d'un objet interne C++, il faudra écrire une interface python-C++
-pour obtenir un composant local.  L'écriture de cette interface fera l'objet de
-la section suivante.    Dans le cas d'un objet interne python, il n'y a rien à
-faire : l'objet interne  python peut être utilisé tel quel comme composant
-local.
+In the case of a C++ internal object, a python/ C++ interface has to be written to obtain a local component.  
+The next section describes how this interface is written.  Nothing needs to be done in the case of a python internal 
+object:  the python internal object can be used as a local component.
 
+Starting from a python internal object
+------------------------------------------
+There is no need to introduce an additional interface if the internal object is implemented as a python object.
 
-A partir d'un objet interne python
-----------------------------------
+Starting from a C++ internal object
+------------------------------------------
+A python/C++ interface has to be used before a C++ object can be used from a python interpreter.  This interface can be 
+coded by the integrator or it can be generated (semi-) automatically using tools such as swig [SWIG]_ or boost [BOOST]_.  
+This document describes how the interface is generated using swig, through a simple example.  Refer to the swig 
+documentation, or even the python documentation, for processing of special cases.
 
-Si l'objet interne est implémenté comme objet python, il n'est pas nécessaire
-d'introduire une interface supplémentaire.
-
-
-A partir d'un objet interne C++
--------------------------------
-
-Pour pouvoir utiliser un objet C++ à partir d'un interpréteur python, il faut
-passer par une interface python/C++. Cette interface peut être codée par
-l'intégrateur ou être générée (semi-) automatiquement à l'aide d'outils  tels
-que swig [SWIG]_ ou boost [BOOST]_.    On envisagera ici la génération de
-l'interface à l'aide de swig, à l'aide  d'un exemple simple. Pour le traitement
-de cas particuliers, on renvoit  à la documentation de swig, voire à la
-documentation de python.
-
-
-Fichier d'interface swig
+Swig interface file
 ^^^^^^^^^^^^^^^^^^^^^^^^
-
-La procédure standard pour utiliser swig est d'écrire un **fichier d'interface**
-(se terminant par ``.i``).  Ce fichier d'interface ressemble fortement à une
-fichier d'interface C++  (voir par exemple ``vecteur.hxx`` ou
-``FreeFem.hxx``).    Il contient toutes les déclarations C++
-(structures, fonctions, classes,   constantes, ...) que l'intégrateur veut
-"exporter" au niveau python.   Dans le cas des classes  C++, seule la partie
-publique des classes peut être indiquée dans  le fichier d'interface.    Des
-exemples seront donnés plus loin.
-
-
-Processus de génération du code de l'interface C++/python
+The standard procedure to use swig is to write an **interface file** (terminating with ``.i``).  This interface file 
+is very similar to a C++ interface file (for example see ``vecteur.hxx`` or ``FreeFem.hxx``).  It contains all C++ 
+declarations (structures, functions, classes, constants, etc.) that the integrator wants to “export” to the python level.  
+Only the public part of classes can be indicated in the interface file for C++ classes.  Examples will be given later.
+ 
+Process for generating the C++ / python interface code
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+**Rule**  
+  Extensions to the python language written in the C / C++ / f77 language (compiled languages other than python) must be compiled 
+  in the form of dynamic libraries (``.so`` under unix, ``.dll`` under windows).  These extensions will be loaded from the python 
+  interpreter using the import command.
 
-**Règle**
-  Les extensions au langage python, écrites en langage C/C++/f77 (langages
-  compilés autres que python), doivent être compilées sous forme de librairies
-  dynamiques (``.so`` sous unix, ``.dll`` sous windows).  Depuis l'interpréteur
-  python, on chargera ces extensions au moyen de la   commande ``import``.    
-
-Tous les composants à intégrer seront donc compilés sous forme de librairie
-dynamique, ce qui impliquera une procédure particulière pour l'utilisation  des
-outils de débogages (voir plus loin).    Les différentes opérations à effectuer
-et les fichiers intervenant   dans le processus sont schématisés par la figure
-suivante.
+Therefore, all components to be integrated will be compiled in the form of a dynamic library, which will mean a particular 
+procedure for the use of debugging tools (see below).  The various operations to be carried out and the files involved in the 
+process are shown diagrammatically on the following figure.
 
 .. _processusswig:
 
 
 .. image:: images/accesLocalCpp.png
-   :width: 45ex
    :align: center
 
-.. centered::   Interface via swig
+.. centered::   Interface through swig
 
-
-Exemple 5 (première version)
+Example 5 (first version)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+If it is required to access the ``alglin`` class from a local python interpreter, an interface file will be written with type:
 
-Si on veut accéder depuis un interpréteur python local à la classe  ``alglin``,
-on écrira un fichier d'interface du type :
 
 .. _alglin.i.v1:
 
@@ -100,21 +70,22 @@ on écrira un fichier d'interface du type :
 .. include:: ./exemples/exemple5/v1/alglin.i
    :literal:
 
-Les différentes lignes signifient :     ::
+The different lines mean::
 
    %module AlgLinModule
 
-Définit le nom du module python.   Pour importer les définitions du composant
-depuis un interpréteur python, on écrira : ``import AlgLinModule``.     ::
+Defines the name of the python module.  We will write ``import AlgLinModule``, to import the definitions of the component 
+from a python interpreter. ::
 
    %{
    #include "alglin.hxx"
    %}
 
-Entre les lignes ``%{`` et ``%}``, on indique les déclarations  C++ dont le code
-de l'interface C++/python aura besoin (sinon le  fichier C++ généré par swig ne
-compilera pas).  Typiquement, on inclut ici le fichier d'interface de l'objet
-interne C++  construit au chapitre précédent.     ::
+The C++ declarations that the C++ / python interface code will need will have to be written between the ``%{`` and ``%}`` 
+lines (otherwise the C++ file generated by swig will not compile).  Typically, the interface file of the C++ internal 
+object constructed in the previous chapter will be included here.
+
+::
 
    class alglin {
    public:
@@ -127,59 +98,44 @@ interne C++  construit au chapitre précédent.     ::
    
    };
 
-On indique dans le reste du fichier ``alglin.i``, les classes et  définitions
-que l'on désire exporter vers l'interpréteur python.    Exemple d'usage de
-l'interface générée :
-
+The remainder of the ``alglin.i``. file includes an indication about the classes and definitions that are to be 
+exported to the python interpreter.  Example use of the generated interface:
 
 .. include:: ./exemples/exemple5/v1/sortie.txt
    :literal:
 
-**Remarques**
+**Notes**
 
-  #. Par rapport à la déclaration de la classe C++ (fichier ``alglin.hxx``), on a
-     introduit un constructeur (``alglin()``) et un  destructeur (``~alglin()``).
-     Dans la classe C++ de l'objet interne, ces constructeur et destructeur  ne sont
-     pas nécessaires (l'objet interne n'a pas besoin d'être initialisé  à sa création
-     et ne gère pas de mémoire dynamique C++). Le compilateur  fournit un
-     constructeur et un destructeur par défaut dans ce cas.    Pour le fichier
-     d'interface swig, par contre, **il faut** déclarer  explicitement un
-     constructeur et un destructeur pour que  python puisse gérer correctement la
-     mémoire C++ (i.e. quand  un objet python est créé/détruit, l'objet C++ interne
-     soit aussi  créé/détruit "proprement").
+  #. A constructor (``alglin()`` ) and a destructor (``~alglin()`` ) have been introduced that were not in the declaration of 
+     the C++ class (file ``alglin.hxx``).  This constructor and this destructor are not necessary in the C++ class of the internal 
+     object (the internal object does not need to be initialised when it is created and does not manage the C++ dynamic memory).  
+     In this case, the compiler provides a default constructor and destructor.  On the other hand, a constructor and a destructor 
+     **must be** explicitly declared for the swig interface file so that python can manage the C++ memory correctly (i.e. the internal 
+     C++ object is also created / deleted “cleanly” when a python object is created / deleted).
+  #. Note that the definition of the ``vector`` structure/class is not explicitely described in the ``alglin.i`` interface file. ``Vector`` 
+     type objects will be seen from the python interpreter as “black box” objects (their type and memory location are known, but 
+     associated methods / attributes are not known). The following error message will be produced if an attempt is made to call 
+     a method on a vector object:
 
-  #. Remarquer que dans le fichier d'interface ``alglin.i``, on n'explicite  pas
-     la définition de la structure/classe ``vecteur``.    Les objets de type
-     ``vecteur`` seront vus depuis l'interpréteur  python comme des objets "boîte
-     noire" (on connait leur type  et leur emplacement mémoire mais pas les
-     méthodes/attributs associés).    Si on essaie d'appeler une méthode sur un objet
-     vecteur, on obtient  le message d'erreur suivant :
-  
 .. include:: ./exemples/exemple5/v1/sortie2.txt
    :literal:
 
 
 .. epigraph::
 
-   La deuxième version de cet exemple (ci-après) corrigera ce problème.
+   The second version of this example (below) will correct this problem.
 
    .. % 
 
 
-Exemple 5 (deuxième version)
+Example 5 (second version)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The first version of the example suffers from two defects (among others) concerning vector type objects:
 
-La première version de l'exemple souffre de deux défauts (parmi d'autres ...),
-concernant les objets de type vecteur :
+- there is no access to methods nor to attributes of objects in the vector class (see the second comment above)
+- nothing is provided to initialise/modify the coefficients contained in a vector object.
 
-* on n'a pas accès aux méthodes ni aux attributs d'objets de la  classe vecteur
-  (cf. la seconde remarque ci-dessus),
-
-* rien n'est prévu pour initialiser/modifier les coefficients  contenus dans un
-  objet vecteur.
-
-swig permet d'enrichir le fichier d'interface ``alglin.i`` 
-pour ajouter les fonctionnalités manquantes :
+Swig enriches the ``alglin.i`` interface file to add missing functions:
 
 .. _alglin.i.v2:
 
@@ -189,31 +145,24 @@ pour ajouter les fonctionnalités manquantes :
 .. include:: ./exemples/exemple5/v2/alglin.i
    :literal:
 
-**Remarque**
-  Par rapport à la version précédente, on a la déclaration de
-  la classe vecteur, ce qui donne par exemple accès à la taille  des vecteurs et à
-  une "poignée" sur les coefficients (mais pas sur les  coefficients
-  individuellement).    La troisième version corrigera ce défaut.    Un exemple
-  d'utilisation du composant (et de la limitation sur l'accès aux vecteurs) est :
+
+**Note**  
+  Unlike the previous version, there is the declaration of the vector class, which for example provides access to the size of vectors 
+  and to a “handle” to coefficients (but not to coefficients individually).  The third version will correct this defect.  
+  An example use of the component (and the limitation on access to vectors) is given below:
 
 .. include:: ./exemples/exemple5/v2/sortie.txt
    :literal:
 
-
-Exemple 5 (troisième version)
+Example 5 (third version)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The second version of the example makes it possible to “see” vector type objects but only at the “surface”.  In particular, there is 
+no individual access to coefficients from the python interpreter.  By adding utility functions (``__setitem__`` and ``__getitem__``) 
+into the ``alglin.i`` interface, the third version makes it possible to (partially) simulate genuine coefficient vectors from the python layer.
 
-La deuxième version de l'exemple permet de "voir" les objets de type vecteur
-mais seulement en "surface". En particulier, on n'a pas accès aux coefficients
-individuellement depuis l'interpréteur python.    La troisième version, en
-ajoutant dans l'interface ``alglin.i``   des fonctions utilitaires
-(``__setitem__`` et ``__getitem__``)   permet de simuler (partiellement) depuis
-la couche python de véritables vecteurs de coefficients.    
+**Note**: We have also added an ``__str__`` display function that displays the list of coefficients of v, when 
+``print v`` is executed from the interpreter.
 
-**Remarque**
-  On a aussi ajouté
-  une fonction d'affichage\ ``__str__``, qui permet,   quand on exécute ``print
-  v`` depuis l'interpréteur, d'afficher la   liste des coefficients de v.
 
 .. _alglin.i.v3:
 
@@ -223,8 +172,7 @@ la couche python de véritables vecteurs de coefficients.
 .. include:: ./exemples/exemple5/v3/alglin.i
    :literal:
 
-Un exemple d'utilisation du composant (y compris l'accès aux vecteurs) est :
-
+The following contains an example use of the component (including access to vectors):
 
 .. include:: ./exemples/exemple5/v3/sortie.txt
    :literal:

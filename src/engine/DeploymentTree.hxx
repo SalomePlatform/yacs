@@ -1,23 +1,26 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef __DEPLOYMENTTREE_HXX__
 #define __DEPLOYMENTTREE_HXX__
+
+#include "YACSlibEngineExport.hxx"
 
 #include <vector>
 
@@ -30,7 +33,7 @@ namespace YACS
     class Scheduler;
     class ComponentInstance;
 
-    class DeploymentTreeOnHeap
+    class YACSLIBENGINE_EXPORT DeploymentTreeOnHeap
     {
     public:
       DeploymentTreeOnHeap();
@@ -49,6 +52,7 @@ namespace YACS
       std::vector<Container *> getAllCTDefContainers() const;
       std::vector<Container *> getAllRTODefContainers() const;
       std::vector<Task *> getTasksLinkedToComponent(ComponentInstance *comp) const;
+      std::vector<Task *> getTasksLinkedToContainer(Container *cont) const;
       std::vector<ComponentInstance *> getComponentsLinkedToContainer(Container *cont) const;
       //
       bool presenceOfDefaultContainer() const;
@@ -62,7 +66,7 @@ namespace YACS
       std::vector< std::vector< std::vector< std::pair<Task *, Scheduler * > > > > _tree;
     };
 
-    class DeploymentTree
+    class YACSLIBENGINE_EXPORT DeploymentTree
     {
     public:
       DeploymentTree();
@@ -81,6 +85,7 @@ namespace YACS
       std::vector<Container *> getAllCTDefContainers() const;
       std::vector<Container *> getAllRTODefContainers() const;
       std::vector<Task *> getTasksLinkedToComponent(ComponentInstance *comp) const;
+      std::vector<Task *> getTasksLinkedToContainer(Container *cont) const;
       std::vector<ComponentInstance *> getComponentsLinkedToContainer(Container *cont) const;
       //
       bool isNull() const;

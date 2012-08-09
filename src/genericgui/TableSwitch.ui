@@ -1,34 +1,38 @@
-<ui version="4.0" >
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>TableSwitch</class>
- <widget class="QWidget" name="TableSwitch" >
-  <property name="geometry" >
+ <widget class="QWidget" name="TableSwitch">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>370</width>
-    <height>300</height>
+    <width>125</width>
+    <height>127</height>
    </rect>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout" >
-   <item row="0" column="0" >
-    <layout class="QHBoxLayout" name="horizontalLayout" >
+  <layout class="QGridLayout" name="gridLayout">
+   <property name="margin">
+    <number>2</number>
+   </property>
+   <item row="0" column="0">
+    <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QLabel" name="label" >
-       <property name="text" >
+      <widget class="QLabel" name="label">
+       <property name="text">
         <string>Select</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QSpinBox" name="sb_select" />
+      <widget class="QSpinBox" name="sb_select"/>
      </item>
     </layout>
    </item>
-   <item row="1" column="0" >
-    <widget class="QTableView" name="tv_nodes" />
+   <item row="1" column="0">
+    <widget class="QTableView" name="tv_nodes"/>
    </item>
   </layout>
  </widget>

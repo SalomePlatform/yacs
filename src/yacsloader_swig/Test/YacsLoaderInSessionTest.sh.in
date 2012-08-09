@@ -1,0 +1,87 @@
+#!/bin/bash
+# Copyright (C) 2006-2012  CEA/DEN, EDF R&D
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License.
+#
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+#
+# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+#
+
+# --- script to execute in SALOME environment (use runSession)
+
+# --- launch CORBA server echoSrv for tests (reuse the yacsloader/Test one)
+
+../../yacsloader/Test/echoSrv &
+pidecho=$!
+echo $pidecho > "/tmp/YACSTEST_PidEcho"
+
+python @top_srcdir@/src/yacsloader/Test/waitContainers.py
+
+# --- launch unit tests
+
+export ROOT_SAMPLES=@ROOT_SRCDIR@/src/yacsloader/samples
+export TESTCOMPONENT_ROOT_DIR=@top_builddir@/src/runtime/Test
+
+export PYTHONPATH=..:../.libs:@top_srcdir@/src/yacsloader_swig:${PYTHONPATH}
+export PYTHONPATH=../../runtime_swig:../../runtime_swig/.libs:@top_srcdir@/src/runtime_swig:${PYTHONPATH}
+export PYTHONPATH=../../engine_swig:../../engine_swig/.libs:@top_srcdir@/src/engine_swig:${PYTHONPATH}
+export PYTHONPATH=../../yacsloader/Test:${PYTHONPATH}
+
+python  @srcdir@/testExec.py
+ret0=$?
+if [ $ret0 -gt 0 ]; then
+  echo "exec status testExec : " $ret0
+  exit $ret0
+fi
+
+python  @srcdir@/testResume.py
+ret1=$?
+if [ $ret1 -gt 0 ]; then
+  echo "exec status testResume : " $ret1
+  exit $ret1
+fi
+
+python  @srcdir@/testLoader.py
+ret2=$?
+if [ $ret2 -gt 0 ]; then
+  echo "exec status testLoader : " $ret2
+  exit $ret2
+fi
+
+python  @srcdir@/testEdit.py
+ret3=$?
+if [ $ret3 -gt 0 ]; then
+  echo "exec status testEdit : " $ret3
+  exit $ret3
+fi
+
+python  @srcdir@/testSave.py
+ret4=$?
+if [ $ret4 -gt 0 ]; then
+  echo "exec status testSave : " $ret4
+  exit $ret4
+fi
+
+python  @srcdir@/testRefcount.py
+ret5=$?
+if [ $ret5 -gt 0 ]; then
+  echo "exec status testRefcount : " $ret5
+  exit $ret5
+fi
+
+let ret=$ret0+$ret1+$ret2+$ret3+$ret4+$ret5
+
+# --- return unit tests status
+
+exit $ret

@@ -1,24 +1,32 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include <iostream>
 #include <sstream>
+#ifdef WNT
+#include <windows.h>
+#define dlopen LoadLibrary
+#define dlclose FreeLibrary
+#define dlsym GetProcAddress
+#else
 #include <dlfcn.h>
+#endif
 
 #include "CppContainer.hxx"
 #include "CppComponent.hxx"
@@ -65,14 +73,14 @@ void CppContainer::unLock()
   _mutex.unlock();
 }
 
-bool CppContainer::isAlreadyStarted() const
+bool CppContainer::isAlreadyStarted(const ComponentInstance *inst) const
 {
   return NULL != _trueCont;
 }
 
-void CppContainer::start() throw (YACS::Exception)
+void CppContainer::start(const ComponentInstance *inst) throw (YACS::Exception)
 {
-	_trueCont = LocalContainer::get();
+  _trueCont = LocalContainer::get();
 }
 
 Container *CppContainer::clone() const
@@ -114,7 +122,7 @@ CppComponent * CppContainer::createComponentInstance(const std::string & compone
 }
 
 void CppContainer::createInternalInstance(const std::string & name, void *&obj, 
-		                                    RunFunction &r, TerminateFunction &t)
+                                          RunFunction &r, TerminateFunction &t)
 {
    DEBTRACE("CppContainer::createInternalInstance");
    if (_trueCont)
@@ -135,12 +143,17 @@ void CppContainer::unregisterComponentInstance(CppComponent * C)
 }
 
 
-std::string CppContainer::getPlacementId() const
+std::string CppContainer::getPlacementId(const ComponentInstance *inst) const
 {
-	return "/";
+  return "/";
 }
 
-void CppContainer::checkCapabilityToDealWith(const ComponentInstance *inst) const throw (Exception)
+std::string CppContainer::getFullPlacementId(const ComponentInstance *inst) const
+{
+  return "/";
+}
+
+void CppContainer::checkCapabilityToDealWith(const ComponentInstance *inst) const throw(YACS::Exception)
 {
   if(inst->getKind()!=CppComponent::KIND)
     throw Exception("CppContainer::checkCapabilityToDealWith : CppContainer is not able to deal with this type of ComponentInstance.");
@@ -179,9 +192,9 @@ void LocalContainer::destroy()
     std::multimap<std::string, CppComponent *>::iterator iI, iJ;
     for (iI=_instance_map.begin(); iI != _instance_map.end(); iI = iJ)
     {
-    	iJ = iI++;
-    	iI->second->setContainer(NULL);
-        delete iI->second;
+      iJ = iI++;
+      iI->second->setContainer(NULL);
+      delete iI->second;
     }
     _instance_map.clear();
     _instance_mapMutex.unlock(); // unlock
@@ -229,7 +242,7 @@ CppComponent * LocalContainer::createComponentInstance(const char * name)
 }
 
 void LocalContainer::createInternalInstance(const char *name, void *&obj, 
-		                                    RunFunction &r, TerminateFunction &t)
+                                            RunFunction &r, TerminateFunction &t)
 {
   LocalLibrary L;
 
@@ -252,9 +265,9 @@ void LocalContainer::createInternalInstance(const char *name, void *&obj,
 
 void LocalContainer::unregisterComponentInstance(CppComponent * C)
 {
-	  _instance_mapMutex.lock(); // lock to be alone 
-	  _instance_map.erase(C->getCompoName());
-	  _instance_mapMutex.unlock(); // unlock
+    _instance_mapMutex.lock(); // lock to be alone 
+    _instance_map.erase(C->getCompoName());
+    _instance_mapMutex.unlock(); // unlock
 }
 
 inline void toupper (std::string & s)
@@ -305,17 +318,25 @@ LocalLibrary  LocalContainer::loadComponentLibrary(const std::string & aCompName
 #endif
   DEBTRACE("impl_name = " << impl_name);
     
-  void* handle;
 #if defined( WNT )
-  handle = dlopen( impl_name.c_str() , 0 ) ;
+  HMODULE handle;
+  handle = dlopen( impl_name.c_str() ) ;
 #else
+  void* handle;
   handle = dlopen( impl_name.c_str() , RTLD_LAZY ) ;
 #endif
 
   const char * sError;
-  sError = dlerror();
+#if defined( WNT )
+  sError = "Not available here !";
+#endif
   
+#if defined( WNT )
+  if (!handle) 
+#else
+  sError = dlerror();
   if ((sError = dlerror()) || !handle) 
+#endif
     {
       std::stringstream msg;
       msg << "Can't load shared library : " << impl_name
@@ -327,7 +348,11 @@ LocalLibrary  LocalContainer::loadComponentLibrary(const std::string & aCompName
   void *ihandle, *rhandle, *phandle = NULL, *thandle = NULL;
       
   ihandle = dlsym(handle, "__init");
+#if defined( WNT )
+  if (!ihandle)
+#else
   if (sError = dlerror()) 
+#endif
     {
       dlclose(handle);
       std::stringstream msg;
@@ -338,7 +363,11 @@ LocalLibrary  LocalContainer::loadComponentLibrary(const std::string & aCompName
     }
   
   rhandle = dlsym(handle, "__run");
+#if defined( WNT )
+  if (!rhandle)
+#else
   if (sError = dlerror()) 
+#endif
     {
       dlclose(handle);
       std::stringstream msg;
@@ -349,7 +378,11 @@ LocalLibrary  LocalContainer::loadComponentLibrary(const std::string & aCompName
     }
       
   thandle = dlsym(handle, "__terminate");
+#if defined( WNT )
+  if (!thandle)
+#else
   if (sError = dlerror()) 
+#endif
     {
       dlclose(handle);
       std::stringstream msg;

@@ -1,26 +1,29 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "SceneCtrlPortItem.hxx"
 #include "SceneTextItem.hxx"
 #include "SceneNodeItem.hxx"
+#include "SceneHeaderNodeItem.hxx"
 #include "Scene.hxx"
 #include "ItemMimeData.hxx"
+#include "QtGuiContext.hxx"
 
 // #include "QtGuiContext.hxx"
 #include "Menus.hxx"
@@ -34,6 +37,8 @@
 
 // #include <cassert>
 
+#include "Resource.hxx"
+
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
@@ -41,20 +46,17 @@ using namespace std;
 using namespace YACS::ENGINE;
 using namespace YACS::HMI;
 
-const int SceneCtrlPortItem::_portWidth  = 85;
-const int SceneCtrlPortItem::_portHeight = 25;
-
 SceneCtrlPortItem::SceneCtrlPortItem(QGraphicsScene *scene, SceneItem *parent,
                                      QString label)
   : SceneItem(scene, parent, label), ScenePortItem(label)
 {
-  _width  = _portWidth;
-  _height = _portHeight;
   setText(label);
-  _brushColor   = QColor(205,210,227);
-  _hiBrushColor = QColor(161,176,227);
-  _penColor     = QColor(120,120,120);
-  _hiPenColor   = QColor( 60, 60, 60);
+  _width        = Resource::CtrlPort_Width;
+  _height       = Resource::CtrlPort_Height;
+  _brushColor   = Resource::CtrlPort_brush;
+  _hiBrushColor = Resource::CtrlPort_hiBrush;
+  _penColor     = Resource::CtrlPort_pen;
+  _hiPenColor   = Resource::CtrlPort_hiPen;
 }
 
 SceneCtrlPortItem::~SceneCtrlPortItem()
@@ -67,9 +69,14 @@ void SceneCtrlPortItem::paint(QPainter *painter,
 {
   //DEBTRACE("ScenePortItem::paint");
   painter->save();
-  painter->setPen(getPenColor());
-  painter->setBrush(getBrushColor());
-  painter->drawRoundRect(QRectF(0, 0, _width, _height), 33*_height/_width, 33);
+
+  QPen pen(getPenColor());
+  pen.setWidth(Resource::Thickness);
+  painter->setPen(pen);
+  SceneHeaderNodeItem* hd = dynamic_cast<SceneHeaderNodeItem*>(_parent);
+  painter->setBrush(hd->getValidColor());
+  painter->drawRoundedRect(QRectF(0, 0, Resource::CtrlPort_Width, Resource::CtrlPort_Height), Resource::Radius, Resource::Radius);
+
   painter->restore();
 }
 
@@ -78,9 +85,7 @@ void SceneCtrlPortItem::setText(QString label)
   if (!_text)
     _text = new SceneTextItem(_scene,
                               this,
-                              label);
-  else
-    _text->setPlainText(label);
+                              label, true );
 }
 
 SceneNodeItem* SceneCtrlPortItem::getParentNode()
@@ -109,10 +114,12 @@ void SceneCtrlPortItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
            << " " << acceptedMouseButtons ());
   if (!_scene->isZooming())
     {
-      if (_dragable && (event->button() == _dragButton))
+      getSubjectNode()->select(true);
+      if (_dragable && (event->button() == _dragButton) && QtGuiContext::getQtCurrent()->isEdition())
         {
           setCursor(Qt::ClosedHandCursor);
           _draging = true;
+          _dragModifier= event->modifiers() & Qt::ControlModifier;
         }
     }
 }
@@ -155,7 +162,9 @@ void SceneCtrlPortItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
       drag->setHotSpot(QPoint(15, 20));
       
       drag->exec();
-      setCursor(Qt::OpenHandCursor);
+      setCursor(Qt::ArrowCursor);
+      _draging = false;
+      _dragModifier= false;
     }
 }
 
@@ -166,16 +175,5 @@ void SceneCtrlPortItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
       setCursor(Qt::ArrowCursor);
     }
   _draging = false;
+  _dragModifier= false;
 }
-
-
-int SceneCtrlPortItem::getPortWidth()
-{
-  return _portWidth;
-}
-
-int SceneCtrlPortItem::getPortHeight()
-{
-  return _portHeight;
-}
-

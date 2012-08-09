@@ -1,137 +1,130 @@
 
 .. _execpy:
 
-Exécution d'un schéma de calcul avec l'interface de programmation Python
+Execution of a calculation scheme with the Python programming interface
 ==========================================================================
-Il faut tout d'abord avoir un objet Python schéma de calcul que l'on appellera p.
-On l'obtient en utilisant la :ref:`schemapy`.
+The first step is to have a Python calculation scheme object that will be called p.  
+It is obtained using :ref:`schemapy`.
 
-Si ce n'est pas déjà fait, il faut importer les modules YACS et initialiser YACS
-pour SALOME. Ensuite, il faut créer un objet Executor qui va exécuter le schéma de calcul.
+If it has not already been done, YACS modules have to be imported and YACS needs to be initialised 
+for SALOME.  An Executor object will then have to be created that will execute the calculation scheme.
 
-Création de l'objet Executor::
+Create the Executor object::
 
    e = pilot.ExecutorSwig()
 
-Un schéma peut être exécuté selon deux modes :
-  - le mode standard qui exécute en bloc le schéma en attendant la fin complète 
-    de l'exécution
-  - le mode pas à pas qui permet d'exécuter partiellement le schéma et de faire
-    des pauses et des reprises
+There are two modes by which a scheme may be executed:
 
-Exécution du schéma en mode standard
+- standard mode that executes the scheme in block, waiting until the execution is completely finished
+- step by step mode, to partially execute the scheme and make pauses and restarts.
+
+Executing the scheme in standard mode
 ----------------------------------------
-Pour ce type d'exécution, on utilise la méthode RunW de l'Executor. Cette méthode a trois arguments.
-Le premier est le schéma de calcul (ou même un noeud composé sous certaines conditions). Le deuxième
-indique le niveau de verbosité pour une exécution en mode debug (0 est le niveau sans debug, 1, 2 ou 3
-pour debug). Le troisième est un booléen qui vaut True si l'exécution part de zéro (tous les noeuds
-sont calculés) ou False si l'exécution part d'un état sauvegardé du schéma. Ces deux derniers arguments
-ont pour valeur par défaut 0 et True.
+The Executor RunW method is used for this type of execution.  This method has three arguments.  
+The first is the calculation scheme (or even a composite node under some conditions).  The second indicates 
+the verbosity for execution in debug mode (0 is the level without debug, 1, 2 or 3 for debug).  
+The third is a boolean that is equal to True if execution starts from zero (all nodes are calculated) or False if 
+execution starts from a backed up state of the scheme.  
+The default values of the latter two arguments are equal to 0 and True.
 
-Exécution du schéma par l'objet Executor en partant de zéro, sans debug::
+Execution of the scheme by the Executor object starting from zero, without debug::
 
    e.RunW(p)
    if p.getEffectiveState() != pilot.DONE:
      print p.getErrorReport()
      sys.exit(1)
 
-Si l'exécution s'est bien déroulée, l'état du schéma obtenu par ``p.getEffectiveState()``
-vaut DONE. Si ce n'est pas le cas, le schéma est en erreur. Un compte-rendu d'erreurs (voir :ref:`errorreport`)
-est donné par ``p.getErrorReport()``.
+If the execution took place correctly, the state of the scheme obtained by ``p.getEffectiveState()`` is equal to DONE.  
+If this is not the case, the scheme is in error.  An error report (see :ref:`errorreport`) is given by ``p.getErrorReport()``.
 
-Dans tous les cas, il est ensuite possible de récupérer les valeurs contenues dans les ports
-d'entrée et de sortie.
+In all cases, the values contained in the input and output ports can then be retrieved.
 
-Sauvegarde de l'état d'un schéma 
+Saving the state of a scheme
 ------------------------------------
-Suite à une exécution d'un schéma, il est possible de sauvegarder l'état du schéma dans un fichier
-XML pour un redémarrage ultérieur éventuel. Cette sauvegarde est réalisée en utilisant la méthode
-saveState du schéma de calcul. Elle prend un argument qui est le nom du fichier dans lequel
-sera sauvegardé l'état.
+The state of a scheme after it has been executed can be saved in an XML file for a later restart if required.  
+This save is done using the saveState method for the calculation scheme.  It uses an argument that is the name of 
+the file in which the state will be saved.
 
-Voici comme se présente cet appel::
+This call is in the following format::
 
   p.saveState("state.xml")
 
-Chargement de l'état d'un schéma
+Loading the state of a scheme
 ------------------------------------
-Il est possible d'initialiser un schéma de calcul avec un état sauvegardé dans un fichier. Le schéma
-de calcul doit bien entendu exister. Ensuite, il faut utiliser la fonction loadState du module loader. 
-Elle prend deux arguments : le schéma de calcul et le nom du fichier contenant l'état sauvegardé.
+A calculation scheme can be initialised with a state saved in a file.  Obviously, the calculation scheme must exist.  
+Then, the loadState function of the loader module must be used.  It takes two arguments:  the calculation scheme and 
+the name of the file containing the saved state.
 
-Par exemple, pour initialiser le schéma p avec l'état précédemment sauvegardé, on fera::
+For example, proceed as follows to initialise scheme p with the previously saved state::
 
   import loader
   loader.loadState(p,"state.xml")
 
-Cette initialisation n'est possible que si les structures du schéma et de l'état sauvegardé sont identiques.
+This initialisation is only possible if the structures of the scheme and the saved state are identical.
 
-Après initialisation, on démarre l'exécution en passant False en troisième argument de RunW::
+After initialisation, execution is started by transferring False as a third argument of RunW::
 
   e.RunW(p,0,False)
 
-Exécution du schéma en mode pas à pas
-----------------------------------------
-Ce type d'exécution est pour des utilisateurs avancés car il nécessite l'utilisation de la programmation
-par thread en Python. Ne pas oublier d'importer le module threading::
+Executing the scheme in step by step mode
+-----------------------------------------------
+This type of execution is for advanced users because it requires the use of thread programming in Python.  
+Do not forget to import the threading module::
 
   import threading
 
-Si on veut utiliser le mode pas à pas ou mettre des breakpoints, il faut exécuter le schéma dans un thread
-séparé et réaliser les opérations de contrôle de l'exécution dans le thread principal. 
+If it is required to use step by step mode or to add breakpoints, the scheme will have to be executed in a 
+separate thread and execution control operations will have to be done in the main thread.
 
-Exécution avec arrêt sur breakpoints
+Execution with stop on breakpoints
 +++++++++++++++++++++++++++++++++++++++
-Pour réaliser une exécution avec breakpoints, il faut définir la liste des breakpoints, mettre le mode
-d'exécution à exécution avec breakpoints puis de lancer l'exécution dans un thread séparé.
+Before execution with breakpoints is possible, it is necessary to define the list of breakpoints, to set 
+execution mode to execution with breakpoints, and then to start execution in a separate thread.
 
-La liste des breakpoints est définie en passant une liste de noms de noeud à la méthode setListOfBreakPoints
-de l'exécuteur.
-Le mode est défini en utilisant la méthode setExecMode de l'exécuteur avec un paramètre de valeur 2.
-Les valeurs possibles sont :
-  
-- 0, pour un mode d'exécution standard (mode CONTINUE)
-- 1, pour un mode d'exécution avec pause à chaque pas d'exécution (mode STEPBYSTEP)
-- 2, pour un mode d'exécution avec breakpoints (mode STOPBEFORENODES)
+The list of breakpoints is defined by transferring a list of node names to the executor setListOfBreakPoints method.  
+The mode is defined using the executor setExecMode method with a parameter equal to 2.  
+Possible values are:
 
-Le lancement de l'exécution se fait avec la méthode RunB de l'exécuteur à la place de RunW pour une exécution
-standard. Les trois arguments sont les mêmes :
+- 0, for standard execution mode (CONTINUOUS mode)
+- 1, for execution mode with pause at each execution step (STEPBYSTEP mode)
+- 2, for execution mode with breakpoints (STOPBEFORENODES mode).
 
-- le schéma de calcul
-- le niveau d'affichage (0,1,2,3)
-- exécution de zéro (True, False)
+Execution is started using the executor RunB method instead of RunW for a standard execution.  
+The three arguments are the same:
 
-Par exemple, pour s'arrêter avant le noeud "node1", on écrira::
+- the calculation scheme
+- the display level (0,1,2,3)
+- execution start from zero (True,  False)
+
+For example, the following will be written to stop before node “node1”::
 
   e.setListOfBreakPoints(['node1'])
   e.setExecMode(2)
   mythread=threading.Thread(target=e.RunB, args=(p,1))
   mythread.start()
 
-Il est possible de visualiser l'état des noeuds du schéma en appelant la méthode 
-displayDot pendant une pause::
-
+The state of nodes in the scheme can be displayed by calling the displayDot method during a pause::
+ 
   e.displayDot(p)
 
-Ensuite, il faut attendre que l'exécution passe en pause : une exécution passe en pause
-quand toutes les taches possibles avant l'exécution du noeud "node1" sont terminées.
-On utilise la méthode waitPause pour faire cette attente. Ensuite on arrête l'exécution
-par appel de la méthode stopExecution et on libère le thread. Il est conseillé de faire
-une petite attente avant de faire l'attente de la pause.
-Au total, on ajoutera la séquence suivante::
+It is then necessary to wait until the execution changes to pause:  an execution changes to pause when 
+all possible tasks before execution of node “node1” are terminated.  The waitPause method is used to 
+control this wait.  The next step will be to stop execution by calling the stopExecution method and the 
+thread will then be released.  It is recommended that there should be a short wait before waiting for the pause.  
+In total, the following sequence will be added::
 
   time.sleep(0.1)
   e.waitPause()
   e.stopExecution()
   mythread.join()
 
-Arrêt sur breakpoint suivi d'une reprise jusqu'à la fin du schéma
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Pour reprendre une exécution après un arrêt sur breakpoint, il suffit de passer en mode
-CONTINUE et de relancer l'exécution en appelant la méthode resumeCurrentBreakPoint.
-L'attente de la fin de l'exécution du schéma est réalisée par appel de waitPause.
+A stop on breakpoint followed by resuming until the end of the scheme
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+After a stop on breakpoint, an execution is resumed by changing to CONTINUE mode and then restarting 
+the execution by calling the resumeCurrentBreakPoint method.  
+The wait for the end of scheme execution is controlled by calling waitPause.
 
-La séquence d'appel pour reprise sur breakpoint est la suivante::
+The call sequence to resume on breakpoint is as follows::
 
   e.setExecMode(0)
   e.resumeCurrentBreakPoint()
@@ -139,22 +132,20 @@ La séquence d'appel pour reprise sur breakpoint est la suivante::
   e.waitPause()
   mythread.join()
 
-Exécution en mode pas à pas
-+++++++++++++++++++++++++++++
-Lors d'une exécution en mode pas à pas, l'exécuteur de schéma de calcul se met en pause
-à chaque pas d'exécution. Un pas d'exécution correspond à l'exécution d'un groupe de noeuds
-de calcul. Ce groupe peut contenir plus d'un noeud de calcul si le schéma de calcul 
-présente des branches d'exécution parallèles.
+Execution in step by step mode
++++++++++++++++++++++++++++++++++++++
+When executing in step by step mode, the calculation scheme executor pauses at each execution step.  
+An execution step corresponds to execution of a group of calculation nodes.  This group may contain 
+more than one calculation node if the calculation scheme contains parallel execution branches.
 
-Pour passer dans ce mode on appelle la méthode setExecMode avec la valeur 1 (mode STEPBYSTEP) puis
-on lance l'exécuteur dans un thread comme précédemment. On attend la fin du pas d'exécution avec 
-la méthode waitPause. On obtient la liste des noeuds du pas suivant avec la méthode getTasksToLoad.
-On définit la liste des noeuds à exécuter avec la méthode setStepsToExecute et on relance l'exécution
-avec la méthode resumeCurrentBreakPoint.
-Le tout doit être mis dans une boucle dont on sort à la fin de l'exécution quand il n'y a plus de noeuds
-à exécuter.
+This mode is selected by calling the setExecMode method using the value 1 (STEPBYSTEP mode), and the executor 
+is then started in a thread in the same way as above.  The waitPause method is used to wait until the end of 
+the execution step.  The list of nodes in the next step is obtained using the getTasksToLoad method.  
+The list of nodes to be executed is defined using the setStepsToExecute method and the execution is 
+resumed using the resumeCurrentBreakPoint method.  
+Everything must be placed in a loop that is exited at the end of the execution when there are no longer any nodes to be executed.
 
-La séquence complète se présente comme suit::
+The complete sequence is as follows::
 
   e.setExecMode(1)
   mythread=threading.Thread(target=e.RunB, args=(p,0))

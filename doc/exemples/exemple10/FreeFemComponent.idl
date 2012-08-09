@@ -9,7 +9,7 @@ module Solveur {
   };
   typedef sequence<Bord> seqBords;
 
-  interface FreeFemComponent : Engines::Component 
+  interface FreeFemComponent : Engines::EngineComponent
 {
     
     void Bords(in seqBords B);

@@ -1,21 +1,22 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "TreeView.hxx"
 #include "SchemaItem.hxx"
 #include "QtGuiContext.hxx"
@@ -68,7 +69,9 @@ void TreeView::setModel(QAbstractItemModel *model)
 
 void TreeView::viewSelection(const QModelIndex &ind)
 {
-  scrollTo(ind);
+  QModelIndex ind0 = ind.sibling(ind.row(), 0);
+  //DEBTRACE("TreeView::viewSelection " << ind.row() << " " << ind.column() << " / " << ind0.row() << " " << ind0.column());
+  scrollTo(ind0);
 }
 
 void TreeView::resizeColumns()
@@ -95,6 +98,13 @@ void TreeView::resizeColumns()
 
 bool TreeView::event(QEvent *event)
 {
+  if (event->type() == QEvent::WhatsThisClicked)
+    {
+      QWhatsThisClickedEvent* clicked = static_cast<QWhatsThisClickedEvent*>(event);
+      QtGuiContext::getQtCurrent()->getGMain()->onHelpContextModule("YACS",clicked->href());
+      return true; // what's this remains open if true is returned
+    }
+
   if (event->type() == QEvent::ToolTip)
     {
       QHelpEvent *helpEvent = static_cast<QHelpEvent *>(event);
@@ -132,29 +142,42 @@ void TreeView::contextMenuEvent(QContextMenuEvent *event)
  */
 void TreeView::onCommitData(QWidget *editor)
 {
-  DEBTRACE("EditionElementaryNode::onCommitData " << editor);
+  DEBTRACE("TreeView::onCommitData " << editor);
   GenericEditor* gedit = dynamic_cast<GenericEditor*>(editor);
-  assert(gedit);
+  YASSERT(gedit);
   QString val = gedit->GetStrValue();
-  DEBTRACE(val.toStdString());
-  Subject *sub = gedit->getSubject();
-  assert(sub);
-  SubjectDataPort *sdp = dynamic_cast<SubjectDataPort*>(sub);
-  assert(sdp);
   string strval = val.toStdString();
+  DEBTRACE(strval);
   bool isOk = false;
 
-  if (gedit->getColumnInSubject() == YValue)
+  Subject *sub = gedit->getSubject();
+  YASSERT(sub);
+  SubjectDataPort *sdp = dynamic_cast<SubjectDataPort*>(sub);
+  if (sdp)
     {
-      if (sdp->getPort()->edGetType()->kind() == YACS::ENGINE::String)
-        strval = "\"" + strval + "\"";
-      DEBTRACE(strval);
-       isOk = sdp->setValue(strval);
-    }
+      if (gedit->getColumnInSubject() == YValue)
+        {
+          if (sdp->getPort()->edGetType()->kind() == YACS::ENGINE::String)
+            strval = "\"" + strval + "\"";
+          DEBTRACE(strval);
+          isOk = sdp->setValue(strval);
 
-  else // --- YLabel
+          GuiExecutor* executor = QtGuiContext::getQtCurrent()->getGuiExecutor();
+          if (executor) executor->setInPortValue(sdp->getPort(), strval);
+        }
+      else // --- YLabel
+        {
+          isOk = sdp->setName(strval);
+        }
+    }
+  else
     {
-      isOk = sdp->setName(strval);
+      SubjectNode *snode = dynamic_cast<SubjectNode*>(sub);
+      YASSERT(snode);
+      sub = snode->getParent();
+      SubjectSwitch *sswitch = dynamic_cast<SubjectSwitch*>(sub);
+      YASSERT(sswitch);
+      isOk = sswitch->setCase(strval, snode);
     }
 
   if (_valueDelegate)

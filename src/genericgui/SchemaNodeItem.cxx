@@ -1,21 +1,22 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "SchemaNodeItem.hxx"
 #include "SchemaInPortItem.hxx"
 #include "SchemaOutPortItem.hxx"
@@ -100,14 +101,14 @@ void SchemaNodeItem::update(GuiEvent event, int type, Subject* son)
       break;
     case YACS::HMI::ORDER:
       {
-        assert(QtGuiContext::getQtCurrent()->_mapOfSchemaItem.count(son));
+        YASSERT(QtGuiContext::getQtCurrent()->_mapOfSchemaItem.count(son));
         //bool isInput = dynamic_cast<SubjectInputPort*>(son);
 
         snode = dynamic_cast<SubjectNode*>(_subject);
-        assert(snode);
+        YASSERT(snode);
         Node* node = snode->getNode();
         ElementaryNode* father = dynamic_cast<ElementaryNode*>(node);
-        assert(father);
+        YASSERT(father);
         int nbChildren = childCount();
 
         model->beginRemoveRows(modelIndex(), 0, nbChildren-1);
@@ -148,9 +149,9 @@ void SchemaNodeItem::update(GuiEvent event, int type, Subject* son)
       break;
     case YACS::HMI::UPDATE:
       snode = dynamic_cast<SubjectNode*>(_subject);
-      assert(snode);
+      YASSERT(snode);
       node = snode->getNode();
-      assert(node);
+      YASSERT(node);
       switch (node->getState())
         {
         case YACS::INVALID:
@@ -183,17 +184,18 @@ void SchemaNodeItem::popupMenu(QWidget *caller, const QPoint &globalPos)
 
 Qt::ItemFlags SchemaNodeItem::flags(const QModelIndex &index)
 {
-  Qt::ItemFlags pflag = Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled | Qt::ItemIsUserCheckable | Qt::ItemIsDropEnabled;
+  Qt::ItemFlags pflag = Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsDropEnabled;
+  if ( !QtGuiContext::getQtCurrent() || !QtGuiContext::getQtCurrent()->isEdition())
+    return pflag;
 
+  if (QtGuiContext::getQtCurrent()->isEdition())
+    pflag = pflag | Qt::ItemIsDragEnabled;
   Qt::ItemFlags flagEdit = 0;
   int column = index.column();
   switch (column)
     {
-//     case 0:
-//       flagEdit = Qt::ItemIsEditable; // --- port name editable in model view
-//       break;
     case YValue:
-      flagEdit = Qt::ItemIsEditable; // --- port value editable in model view
+      flagEdit = Qt::ItemIsEditable; // --- item value editable in model view (for node case in switch)
       break;     
     }
 
@@ -217,9 +219,9 @@ void SchemaNodeItem::toggleState()
   DEBTRACE("SchemaNodeItem::toggleState");
   SchemaItem::toggleState();
   GuiExecutor *guiExec = QtGuiContext::getQtCurrent()->getGuiExecutor();
-  assert(guiExec);
+  YASSERT(guiExec);
   SubjectNode *subjectNode = dynamic_cast<SubjectNode*>(getSubject());
-  assert(subjectNode);
+  YASSERT(subjectNode);
   string nodeName = QtGuiContext::getQtCurrent()->getProc()->getChildName(subjectNode->getNode());
   DEBTRACE("nodeName=" << nodeName);
 
@@ -259,15 +261,16 @@ bool SchemaNodeItem::dropMimeData(const QMimeData* data, Qt::DropAction action)
 
 void SchemaNodeItem::setCaseValue()
 {
+  DEBTRACE("SchemaNodeItem::setCaseValue");
   Subject *sub = _parentItem->getSubject();
   SubjectSwitch *sSwitch = dynamic_cast<SubjectSwitch*>(sub);
   if (!sSwitch) return;
 
   SchemaModel *model = QtGuiContext::getQtCurrent()->getSchemaModel();
   Switch *aSwitch = dynamic_cast<Switch*>(sSwitch->getNode());
-  assert(aSwitch);
+  YASSERT(aSwitch);
   SubjectNode *sNode = dynamic_cast<SubjectNode*>(_subject);
-  assert(sNode);
+  YASSERT(sNode);
   int rank = aSwitch->getRankOfNode(sNode->getNode());
   if (rank == Switch::ID_FOR_DEFAULT_NODE)
     _itemData.replace(YValue, "default");
@@ -278,5 +281,5 @@ void SchemaNodeItem::setCaseValue()
 
 QVariant SchemaNodeItem::editionWhatsThis(int column) const
 {
-  return "To edit the node properties, select the node and use the input panel.\n";
+  return "<p>To edit the node properties, select the node and use the input panel. <a href=\"modification.html#property-page-for-node\">More...</a></p>";
 }

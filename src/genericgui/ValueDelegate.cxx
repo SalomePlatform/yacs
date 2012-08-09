@@ -1,27 +1,30 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "ValueDelegate.hxx"
 #include "guiObservers.hxx"
 #include "SchemaItem.hxx"
 #include "DataPort.hxx"
+#include "StudyPorts.hxx"
 #include "TypeCode.hxx"
 #include "Switch.hxx"
+#include "ItemEdition.hxx"
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -68,6 +71,7 @@ void GenericEditor::setDelegate(const ValueDelegate* delegate)
 
 QString GenericEditor::GetStrValue()
 {
+  return "";
 }
 
 Subject* GenericEditor::getSubject()
@@ -121,6 +125,40 @@ void GeneralEditor::setData(QVariant val)
   DEBTRACE(val.canConvert<QString>());
   DEBTRACE(val.toString().toStdString());
   setText(val.toString());
+}
+
+// -----------------------------------------------------------------------------
+
+NameEditor::NameEditor(Subject* subject,
+                       const ValueDelegate* delegate,
+                       int column,
+                       QWidget * parent)
+  : QLineEdit(parent), GenericEditor()
+{
+  DEBTRACE("NameEditor::NameEditor");
+  setDelegate(delegate);
+  setSubject(subject);
+  setColumn(column);
+}
+
+NameEditor::~NameEditor()
+{
+}
+
+QString NameEditor::GetStrValue()
+{
+  DEBTRACE("Name::GetStrValue " << text().toStdString());
+  string filtered = ItemEdition::filterName(text().toStdString());
+  return filtered.c_str();
+}
+
+void NameEditor::setData(QVariant val)
+{
+  DEBTRACE("NameEditor::setData " << this);
+  DEBTRACE(val.canConvert<QString>());
+  DEBTRACE(val.toString().toStdString());
+  string filtered = ItemEdition::filterName(val.toString().toStdString());
+  setText(filtered.c_str());
 }
 
 // -----------------------------------------------------------------------------
@@ -240,9 +278,11 @@ QWidget *ValueDelegate::createEditor(QWidget *parent,
       if (sport)
         {
           YACS::ENGINE::DataPort *port = sport->getPort();
+          YACS::ENGINE::InputStudyPort* istport=dynamic_cast<YACS::ENGINE::InputStudyPort*>(port);
+          YACS::ENGINE::OutputStudyPort* ostport=dynamic_cast<YACS::ENGINE::OutputStudyPort*>(port);
           YACS::ENGINE::TypeCode *tc = port->edGetType();
           YACS::ENGINE::DynType dt = tc->kind();
-          if (dt == YACS::ENGINE::Int)
+          if (!istport && !ostport && dt == YACS::ENGINE::Int)
             editor = new IntEditor(subject, this, column, parent);
         }
       else if (snode)
@@ -251,6 +291,13 @@ QWidget *ValueDelegate::createEditor(QWidget *parent,
           if (sSwitch)
             editor = new CaseSwitchEditor(subject, this, column, parent);
         }
+    }
+
+  if (column == YLabel)
+    {
+      sport = dynamic_cast<SubjectDataPort*>(subject);      
+      if (sport)
+        editor = new NameEditor(subject, this, column, parent);
     }
 
   if (!editor) editor = new GeneralEditor(subject, this, column, parent);
@@ -268,7 +315,7 @@ void ValueDelegate::setEditorData(QWidget *editor,
 {
   DEBTRACE("ValueDelegate::setEditorData");
   GenericEditor* gedit = dynamic_cast<GenericEditor*>(editor);
-  assert(gedit);
+  YASSERT(gedit);
   QString edited = gedit->GetStrValue();
   DEBTRACE(edited.toStdString());
   Subject *sub = gedit->getSubject();
@@ -294,7 +341,7 @@ void ValueDelegate::setModelData(QWidget *editor,
 {
   DEBTRACE("ValueDelegate::setModelData");
   GenericEditor* gedit = dynamic_cast<GenericEditor*>(editor);
-  assert(gedit);
+  YASSERT(gedit);
   QString value = gedit->GetStrValue();
   DEBTRACE(value.toStdString());
   //model->setData(index, value, Qt::EditRole); // real set done by update
@@ -317,7 +364,7 @@ void ValueDelegate::setResultEditing(QWidget *editor, bool isOk)
 {
   DEBTRACE("ValueDelegate::setResultEditing " << isOk);
   GenericEditor* gedit = dynamic_cast<GenericEditor*>(editor);
-  assert(gedit);
+  YASSERT(gedit);
   Subject *sub = gedit->getSubject();
   string val = gedit->GetStrValue().toStdString();
   DEBTRACE(sub->getName() << " " << val);

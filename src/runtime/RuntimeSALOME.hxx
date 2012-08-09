@@ -1,23 +1,35 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef _RUNTIMESALOME_HXX_
 #define _RUNTIMESALOME_HXX_
+
+#include "YACSRuntimeSALOMEExport.hxx"
+
+// rnv: avoid compilation warning on Linux : "_POSIX_C_SOURCE" and "_XOPEN_SOURCE" are redefined
+#ifdef _POSIX_C_SOURCE
+#undef _POSIX_C_SOURCE
+#endif
+
+#ifdef _XOPEN_SOURCE
+#undef _XOPEN_SOURCE
+#endif
 
 #include <Python.h>
 #include <omniORB4/CORBA.h>
@@ -53,25 +65,25 @@ namespace YACS
   {
 
     class RuntimeSALOME;
-    RuntimeSALOME* getSALOMERuntime();
+    YACSRUNTIMESALOME_EXPORT RuntimeSALOME* getSALOMERuntime();
 
     class InputCorbaPort;
     class InputPyPort;
     class InputXmlPort;
     class InputCppPort;
 
-    class RuntimeSALOME: public Runtime
+    class YACSRUNTIMESALOME_EXPORT RuntimeSALOME: public Runtime
     {
     public:
       
       enum 
       {
-	      IsPyExt = 1,
+        IsPyExt = 1,
         UsePython = 2,
-	      UseCorba = 4,
-	      UseXml = 8,
-	      UseCpp = 16,
-	      UseSalome = 32
+        UseCorba = 4,
+        UseXml = 8,
+        UseCpp = 16,
+        UseSalome = 32
       } FLAGS;
 
       static void setRuntime(long flags = UsePython+UseCorba+UseXml+UseCpp+UseSalome); // singleton creation
@@ -109,10 +121,22 @@ namespace YACS
       virtual Container *createContainer(const std::string& kind="");
       virtual WhileLoop* createWhileLoop(const std::string& name);
       virtual ForLoop* createForLoop(const std::string& name);
+      virtual OptimizerLoop* createOptimizerLoop(const std::string& name,const std::string& algLib,
+                                                 const std::string& factoryName,bool algInitOnFile,
+                                                 const std::string& kind="", Proc * procForTypes = NULL);
       virtual Bloc* createBloc(const std::string& name);
       virtual Proc* createProc(const std::string& name);
 
+      virtual TypeCode * createInterfaceTc(const std::string& id, const std::string& name,
+                                            std::list<TypeCodeObjref *> ltc);
+      virtual TypeCode * createSequenceTc(const std::string& id, const std::string& name, TypeCode *content);
+      virtual TypeCodeStruct * createStructTc(const std::string& id, const std::string& name);
+
       virtual InputPort* adapt(InputPort* source,
+                               const std::string& impl,
+                               TypeCode * type,bool init=false) throw (ConversionException);
+
+      virtual InputPort* adapt(InPropertyPort* source,
                                const std::string& impl,
                                TypeCode * type,bool init=false) throw (ConversionException);
 
@@ -192,6 +216,9 @@ namespace YACS
 
       virtual InputPort* adaptXmlToNeutral(InputXmlPort* inport,
                                           TypeCode * type) throw (ConversionException);
+      virtual InputPort* adaptXmlToXml(InputXmlPort* inport,
+                                TypeCode * type,bool init) throw (ConversionException);
+
 
       virtual InputPort* adaptNeutralToXml(InputPort* inport,
                                            TypeCode * type) throw (ConversionException);

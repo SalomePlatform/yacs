@@ -1,24 +1,26 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef __TYPECODE_HXX__
 #define __TYPECODE_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "RefCounter.hxx"
 #include "Exception.hxx"
 #include "Any.hxx"
@@ -62,7 +64,7 @@ namespace YACS
  * \see TypeCodeStruct
  * \see TypeCodeArray
  */
-    class TypeCode : public RefCounter
+    class YACSLIBENGINE_EXPORT TypeCode : public RefCounter
     {
     public:
       TypeCode(DynType kind);
@@ -102,7 +104,7 @@ namespace YACS
       static const char *KIND_STR_REPR [];
     };
 
-    class TypeCodeComposed : public TypeCode
+    class YACSLIBENGINE_EXPORT TypeCodeComposed : public TypeCode
     {
     protected:
       TypeCodeComposed(const TypeCodeComposed& other);
@@ -119,7 +121,7 @@ namespace YACS
  * \ingroup TypeCodes
  *
  */
-    class TypeCodeObjref : public TypeCodeComposed
+    class YACSLIBENGINE_EXPORT TypeCodeObjref : public TypeCodeComposed
     {
       friend class Visitor;
     public:
@@ -153,7 +155,7 @@ namespace YACS
  * \ingroup TypeCodes
  *
  */
-    class TypeCodeSeq: public TypeCodeComposed
+    class YACSLIBENGINE_EXPORT TypeCodeSeq: public TypeCodeComposed
     {
     public:
       TypeCodeSeq(const char* repositoryId, const char* name, const TypeCode *content);
@@ -185,7 +187,7 @@ namespace YACS
  * \ingroup TypeCodes
  *
  */
-    class TypeCodeArray : public TypeCodeComposed
+    class YACSLIBENGINE_EXPORT TypeCodeArray : public TypeCodeComposed
     {
     public:
       TypeCodeArray(const char* repositoryId, const char* name, const TypeCode *content, unsigned staticLgth);
@@ -220,7 +222,7 @@ namespace YACS
  * \ingroup TypeCodes
  *
  */
-    class TypeCodeStruct : public TypeCodeComposed
+    class YACSLIBENGINE_EXPORT TypeCodeStruct : public TypeCodeComposed
     {
       friend class StructAny;//Access to _members attribute.
     public:

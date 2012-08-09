@@ -1,27 +1,27 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "RuntimeSALOME.hxx"
 #include "CppComponent.hxx"
 #include "CppContainer.hxx"
 #include "TypeCode.hxx"
 #include "CppNode.hxx"
-#include "DynLibLoader.hxx"
 
 using namespace YACS::ENGINE;
  
@@ -57,16 +57,16 @@ static std::ostream & operator<<(std::ostream & f, const Any & A)
             f << "(type Bool) " << A.getBoolValue();
             break;
          case Objref :
-	    f << "(type Objref)";
+            f << "(type Objref)";
             break;
          case Sequence :
-	    f << "(type Sequence) ";
-	    {
+            f << "(type Sequence) ";
+            {
               int i;
-	      const SequenceAny * sA = dynamic_cast<const SequenceAny *>(&A);
-	      for (i=0; i<sA->size(); i++)
-		      f << " " << *((*sA)[i]);
-	    }
+              const SequenceAny * sA = dynamic_cast<const SequenceAny *>(&A);
+              for (i=0; i<sA->size(); i++)
+                f << " " << *((*sA)[i]);
+            }
             break;
        }
     return f;
@@ -81,8 +81,8 @@ std::string CppComponent::getKind() const
 CppComponent::CppComponent(const std::string &name) : ComponentInstance(name)
 {
   _container = getRuntime()->createContainer(CppNode::KIND);
-  if (!_container->isAlreadyStarted())
-	  _container->start();
+  if (!_container->isAlreadyStarted(this))
+    _container->start(this);
   
   CppContainer * _containerC = dynamic_cast<CppContainer *> (_container);
   _containerC->createInternalInstance(name, __obj, __run, __terminate);
@@ -93,8 +93,8 @@ CppComponent::CppComponent(const CppComponent& other) : ComponentInstance(other.
                                                         __terminate(other.__terminate), __obj(0)
 {
   _container = getRuntime()->createContainer(CppNode::KIND);
-  if (!_container->isAlreadyStarted())
-    _container->start();
+  if (!_container->isAlreadyStarted(this))
+    _container->start(this);
 
   CppContainer * _containerC = dynamic_cast<CppContainer *> (_container);  
    _containerC->createInternalInstance(_compoName, __obj, __run, __terminate);
@@ -105,18 +105,18 @@ CppComponent::~CppComponent()
     DEBTRACE("CppComponent::~CppComponent()");
     if (__terminate) __terminate(&__obj);
     if (_container)
-    	((CppContainer *) _container)->unregisterComponentInstance(this);
+      ((CppContainer *) _container)->unregisterComponentInstance(this);
 }
 
 void CppComponent::run (const char * service, int nbIn, int nbOut,
-				                 Any ** argIn, Any ** argOut) throw (YACS::Exception)
+                        Any ** argIn, Any ** argOut) throw (YACS::Exception)
 {
   int i;
   returnInfo return_code;
     
 #ifdef _DEVDEBUG_
   std::ostringstream sDebug;
-  sDebug << _name << "::" << service << "(";
+  sDebug << getInstanceName() << "::" << service << "(";
   for (i=0; i<nbIn; i++) {
      sDebug << *(argIn[i]);
      if (i<nbIn-1)
@@ -161,19 +161,19 @@ bool CppComponent::isLoaded()
 void CppComponent::load()
 {
    if (!_container) {
-	   _container = getRuntime()->createContainer(CppNode::KIND);
+     _container = getRuntime()->createContainer(CppNode::KIND);
    }
    
    if(_container) {
-		
+
       CppContainer * containerC= dynamic_cast< CppContainer *> (_container);
       
       containerC->lock();//To be sure
-      if(!_container->isAlreadyStarted())
+      if(!_container->isAlreadyStarted(this))
         {
           try
             {
-              _container->start();
+              _container->start(this);
             }
           catch(Exception& e)
             {
@@ -183,8 +183,6 @@ void CppComponent::load()
         }
       containerC->unLock();
       containerC->lock();//To be sure
-      
-      YACS::BASES::DynLibLoader D(_compoName + "Local");
       
       bool isLoadable = containerC->loadComponentLibrary(_compoName);
       if (isLoadable) 
@@ -198,7 +196,7 @@ void CppComponent::load()
       containerC->unLock();
       return;
     }
-	
+
 }
 
 ServiceNode* CppComponent::createNode(const std::string& name)

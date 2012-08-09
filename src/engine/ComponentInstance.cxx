@@ -1,21 +1,22 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "ComponentInstance.hxx"
 #include "Container.hxx"
 
@@ -27,6 +28,20 @@
 
 using namespace YACS::ENGINE;
 using namespace std;
+
+/*! \class YACS::ENGINE::ComponentInstance
+ *  \brief Base class for all component instances.
+ *
+ * This is an abstract class that must be specialized in runtime.
+ * Specialized classes must provide implementation for loading of
+ * a component (load method) unloading (unload method) and an 
+ * information method (isLoaded) about the state of the component
+ *
+ * A component instance is used by one or more ServiceNode to execute
+ * services of this component instance
+ *
+ * \see ServiceNode
+ */
 
 const char ComponentInstance::KIND[]="";
 int ComponentInstance::_total = 0;
@@ -47,7 +62,7 @@ void ComponentInstance::setContainer(Container *cont)
     _container->incrRef();
 }
 
-ComponentInstance::ComponentInstance(const std::string& name):_compoName(name),_isAttachedOnCloning(false),_container(0)
+ComponentInstance::ComponentInstance(const std::string& name):_compoName(name),_isAttachedOnCloning(false),_container(0),_anonymous(true)
 {
   _numId = _total++;
   stringstream instName;
@@ -57,7 +72,8 @@ ComponentInstance::ComponentInstance(const std::string& name):_compoName(name),_
 
 ComponentInstance::ComponentInstance(const ComponentInstance& other):_compoName(other._compoName),
                                                                      _container(0),
-                                                                     _isAttachedOnCloning(other._isAttachedOnCloning)
+                                                                     _isAttachedOnCloning(other._isAttachedOnCloning),
+                                                                     _anonymous(true)
 {
   _numId = _total++;
   stringstream instName;
@@ -81,6 +97,7 @@ void ComponentInstance::attachOnCloning() const
   _isAttachedOnCloning=true;
 }
 
+//! For dump in file
 std::string ComponentInstance::getFileRepr() const
 {
   return NULL_FILE_REPR;
@@ -99,7 +116,17 @@ bool ComponentInstance::isAttachedOnCloning() const
   return _isAttachedOnCloning;
 }
 
+//! Return the component kind
+/*!
+ * A runtime can provide several implementations of a component instance.
+ * Each implementation has a different kind. A ComponentInstance can be 
+ * associated to a ServiceNode is they have the same kind.
+ */
 string ComponentInstance::getKind() const
 {
   return KIND;
+}
+
+void ComponentInstance::shutdown(int level)
+{
 }

@@ -1,21 +1,22 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "ForEachLoop.hxx"
 #include "TypeCode.hxx"
 #include "Visitor.hxx"
@@ -28,6 +29,12 @@
 
 using namespace YACS::ENGINE;
 using namespace std;
+
+/*! \class YACS::ENGINE::ForEachLoop
+ *  \brief Loop node for parametric calculation
+ *
+ *  \ingroup Nodes
+ */
 
 const char FakeNodeForForEachLoop::NAME[]="thisIsAFakeNode";
 
@@ -89,7 +96,7 @@ AnySplitOutputPort::AnySplitOutputPort(const AnySplitOutputPort& other, Node *ne
 {
 }
 
-bool AnySplitOutputPort::addInPort(InPort *inPort) throw(Exception)
+bool AnySplitOutputPort::addInPort(InPort *inPort) throw(YACS::Exception)
 {
   bool ret=OutputPort::addInPort(inPort);
   if(_repr)
@@ -105,7 +112,7 @@ void AnySplitOutputPort::getAllRepresented(std::set<OutPort *>& represented) con
     _repr->getAllRepresented(represented);
 }
 
-int AnySplitOutputPort::removeInPort(InPort *inPort, bool forward) throw(Exception)
+int AnySplitOutputPort::removeInPort(InPort *inPort, bool forward) throw(YACS::Exception)
 {
   bool ret=OutputPort::removeInPort(inPort,forward);
   if(_repr)
@@ -191,7 +198,7 @@ std::string SeqAnyInputPort::dump()
 SplitterNode::SplitterNode(const std::string& name, TypeCode *typeOfData, 
                            ForEachLoop *father):ElementaryNode(name),
                                                 _dataPortToDispatch(NAME_OF_SEQUENCE_INPUT,
-                                                                    this,(TypeCodeSeq *)TypeCode::sequenceTc("","",typeOfData))			    
+                                                                    this,(TypeCodeSeq *)TypeCode::sequenceTc("","",typeOfData))
 {
   _father=father;
 }
@@ -201,7 +208,7 @@ SplitterNode::SplitterNode(const SplitterNode& other, ForEachLoop *father):Eleme
 {
 }
 
-InputPort *SplitterNode::getInputPort(const std::string& name) const throw(Exception)
+InputPort *SplitterNode::getInputPort(const std::string& name) const throw(YACS::Exception)
 {
   if(name==NAME_OF_SEQUENCE_INPUT)
     return (InputPort *)&_dataPortToDispatch;
@@ -259,17 +266,11 @@ Node *FakeNodeForForEachLoop::simpleClone(ComposedNode *father, bool editionOnly
 void FakeNodeForForEachLoop::exForwardFailed()
 {
   _loop->exForwardFailed();
-  FakeNodeForForEachLoop *normallyThis=_loop->_nodeForSpecialCases;
-  _loop->_nodeForSpecialCases=0;
-  delete normallyThis;
 }
 
 void FakeNodeForForEachLoop::exForwardFinished()
 { 
   _loop->exForwardFinished();
-  FakeNodeForForEachLoop *normallyThis=_loop->_nodeForSpecialCases;
-  _loop->_nodeForSpecialCases=0;
-  delete normallyThis;
 }
 
 void FakeNodeForForEachLoop::execute()
@@ -337,26 +338,32 @@ void ForEachLoop::init(bool start)
 
 void ForEachLoop::exUpdateState()
 {
+  DEBTRACE("ForEachLoop::exUpdateState");
   if(_state == YACS::DISABLED)
     return;
   if(_inGate.exIsReady())
     {
-      //setState(YACS::TOACTIVATE); // call this method below
       //internal graph update
       int i;
       int nbOfBr=_nbOfBranches.getIntValue();
       int nbOfElts=_splitterNode.getNumberOfElements();
+
+      DEBTRACE("nbOfElts=" << nbOfElts);
+      DEBTRACE("nbOfBr=" << nbOfBr);
+
       if(nbOfElts==0)
         {
           prepareSequenceValues(0);
           delete _nodeForSpecialCases;
           _nodeForSpecialCases=new FakeNodeForForEachLoop(this,true);
+          setState(YACS::ACTIVATED);
           return ;
         }
       if(nbOfBr<=0)
         {
           delete _nodeForSpecialCases;
           _nodeForSpecialCases=new FakeNodeForForEachLoop(this,getAllOutPortsLeavingCurrentScope().empty());
+          setState(YACS::ACTIVATED);
           return ;
         }
       if(nbOfBr>nbOfElts)
@@ -367,6 +374,14 @@ void ForEachLoop::exUpdateState()
       prepareSequenceValues(nbOfElts);
       if(_initNode)
         _execInitNodes.resize(nbOfBr);
+      _initializingCounter = 0;
+      if (_finalizeNode)
+        _execFinalizeNodes.resize(nbOfBr);
+
+      vector<Node *> origNodes;
+      origNodes.push_back(_initNode);
+      origNodes.push_back(_node);
+      origNodes.push_back(_finalizeNode);
 
       //Conversion exceptions can be thrown by createOutputOutOfScopeInterceptors 
       //so catch them to control errors
@@ -374,13 +389,15 @@ void ForEachLoop::exUpdateState()
         {
           for(i=0;i<nbOfBr;i++)
             {
-              DEBTRACE( "-------------- 1" );
+              DEBTRACE( "-------------- 1 " << i << " " << _execCurrentId);
               _execIds[i]=_execCurrentId;
               DEBTRACE( "-------------- 2" );
-              _execNodes[i]=_node->clone(this,false);
-              DEBTRACE( "-------------- 3" );
+              vector<Node *> clonedNodes = cloneAndPlaceNodesCoherently(origNodes);
               if(_initNode)
-                _execInitNodes[i]=_initNode->clone(this,false);
+                _execInitNodes[i] = clonedNodes[0];
+              _execNodes[i] = clonedNodes[1];
+              if(_finalizeNode)
+                _execFinalizeNodes[i] = clonedNodes[2];
               DEBTRACE( "-------------- 4" );
               prepareInputsFromOutOfScope(i);
               DEBTRACE( "-------------- 5" );
@@ -399,21 +416,22 @@ void ForEachLoop::exUpdateState()
           throw;
         }
 
-      setState(YACS::TOACTIVATE); // move the calling of setState method there for adding observers for clone nodes in GUI part
+      setState(YACS::ACTIVATED); // move the calling of setState method there for adding observers for clone nodes in GUI part
 
       //let's go
       for(i=0;i<nbOfBr;i++)
         if(_initNode)
-          _execInitNodes[i]->exUpdateState();
+          {
+            _execInitNodes[i]->exUpdateState();
+            _initializingCounter++;
+          }
         else
           {
             _nbOfEltConsumed++;
             _execNodes[i]->exUpdateState();
           }
-      if (_node) {
-	_node->setState(_execNodes[nbOfBr-1]->getState());
-	forwardExecStateToOriginalBody(_execNodes[nbOfBr-1]);
-      }
+
+      forwardExecStateToOriginalBody(_execNodes[nbOfBr-1]);
     }
 }
 
@@ -421,6 +439,7 @@ void ForEachLoop::getReadyTasks(std::vector<Task *>& tasks)
 {
   if(!_node)
     return;
+  if(_state==YACS::TOACTIVATE) setState(YACS::ACTIVATED);
   if(_state==YACS::TOACTIVATE || _state==YACS::ACTIVATED)
     {
       if(_nodeForSpecialCases)
@@ -428,10 +447,13 @@ void ForEachLoop::getReadyTasks(std::vector<Task *>& tasks)
           _nodeForSpecialCases->getReadyTasks(tasks);
           return ;
         }
-      for(vector<Node *>::iterator iter=_execNodes.begin();iter!=_execNodes.end();iter++)
+      vector<Node *>::iterator iter;
+      for (iter=_execNodes.begin() ; iter!=_execNodes.end() ; iter++)
         (*iter)->getReadyTasks(tasks);
-      for(vector<Node *>::iterator iter2=_execInitNodes.begin();iter2!=_execInitNodes.end();iter2++)
-        (*iter2)->getReadyTasks(tasks);
+      for (iter=_execInitNodes.begin() ; iter!=_execInitNodes.end() ; iter++)
+        (*iter)->getReadyTasks(tasks);
+      for (iter=_execFinalizeNodes.begin() ; iter!=_execFinalizeNodes.end() ; iter++)
+        (*iter)->getReadyTasks(tasks);
     }
 }
 
@@ -440,7 +462,7 @@ int ForEachLoop::getNumberOfInputPorts() const
   return DynParaLoop::getNumberOfInputPorts()+1;
 }
 
-void ForEachLoop::checkNoCyclePassingThrough(Node *node) throw(Exception)
+void ForEachLoop::checkNoCyclePassingThrough(Node *node) throw(YACS::Exception)
 {
   //TO DO
 }
@@ -463,7 +485,7 @@ std::list<InputPort *> ForEachLoop::getLocalInputPorts() const
   return ret;
 }
 
-InputPort *ForEachLoop::getInputPort(const std::string& name) const throw(Exception)
+InputPort *ForEachLoop::getInputPort(const std::string& name) const throw(YACS::Exception)
 {
   if(name==SplitterNode::NAME_OF_SEQUENCE_INPUT)
     return (InputPort *)&_splitterNode._dataPortToDispatch;
@@ -471,7 +493,7 @@ InputPort *ForEachLoop::getInputPort(const std::string& name) const throw(Except
     return DynParaLoop::getInputPort(name);
 }
 
-OutputPort *ForEachLoop::getOutputPort(const std::string& name) const throw(Exception)
+OutputPort *ForEachLoop::getOutputPort(const std::string& name) const throw(YACS::Exception)
 {
   for(vector<AnySplitOutputPort *>::const_iterator iter=_outGoingPorts.begin();iter!=_outGoingPorts.end();iter++)
     {
@@ -481,7 +503,7 @@ OutputPort *ForEachLoop::getOutputPort(const std::string& name) const throw(Exce
   return DynParaLoop::getOutputPort(name);
 }
 
-OutPort *ForEachLoop::getOutPort(const std::string& name) const throw(Exception)
+OutPort *ForEachLoop::getOutPort(const std::string& name) const throw(YACS::Exception)
 {
   for(vector<AnySplitOutputPort *>::const_iterator iter=_outGoingPorts.begin();iter!=_outGoingPorts.end();iter++)
     {
@@ -491,7 +513,7 @@ OutPort *ForEachLoop::getOutPort(const std::string& name) const throw(Exception)
   return DynParaLoop::getOutPort(name);
 }
 
-Node *ForEachLoop::getChildByShortName(const std::string& name) const throw(Exception)
+Node *ForEachLoop::getChildByShortName(const std::string& name) const throw(YACS::Exception)
 {
   if(name==NAME_OF_SPLITTERNODE)
     return (Node *)&_splitterNode;
@@ -499,14 +521,24 @@ Node *ForEachLoop::getChildByShortName(const std::string& name) const throw(Exce
     return DynParaLoop::getChildByShortName(name);
 }
 
+//! Method used to notify the node that a child node has finished
+/*!
+ * Update the current state and return the change state
+ *
+ *  \param node : the child node that has finished
+ *  \return the state change
+ */
 YACS::Event ForEachLoop::updateStateOnFinishedEventFrom(Node *node)
 {
+  DEBTRACE("updateStateOnFinishedEventFrom " << node->getName() << " " << node->getState());
   unsigned int id;
   switch(getIdentityOfNotifyerNode(node,id))
     {
     case INIT_NODE:
       _execNodes[id]->exUpdateState();
       _nbOfEltConsumed++;
+      _initializingCounter--;
+      if (_initializingCounter == 0) _initNode->setState(DONE);
       break;
     case WORK_NODE:
       storeOutValsInSeqForOutOfScopeUse(_execIds[id],id);
@@ -515,30 +547,47 @@ YACS::Event ForEachLoop::updateStateOnFinishedEventFrom(Node *node)
           _execIds[id]=NOT_RUNNING_BRANCH_ID;
           //analyzing if some samples are still on treatment on other branches.
           bool isFinished=true;
-          for(int i=0;i<_execIds.size() and isFinished;i++)
+          for(int i=0;i<_execIds.size() && isFinished;i++)
             isFinished=(_execIds[i]==NOT_RUNNING_BRANCH_ID);
           if(isFinished)
             {
               try 
                 {
                   pushAllSequenceValues();
-                  setState(YACS::DONE);
-		  
-		  if (_node)
-		    {
-		      _node->setState(YACS::DONE);
-		      
-		      ComposedNode* compNode = dynamic_cast<ComposedNode*>(_node);
-		      if (compNode)
-			{
-			  list<Node *> aChldn = compNode->getAllRecursiveConstituents();
-			  list<Node *>::iterator iter=aChldn.begin();
-			  for(;iter!=aChldn.end();iter++)
-			    (*iter)->setState(YACS::DONE);
-			}
-		    }
-		  
-                  return YACS::FINISH;
+  
+                  if (_node)
+                    {
+                      _node->setState(YACS::DONE);
+     
+                      ComposedNode* compNode = dynamic_cast<ComposedNode*>(_node);
+                      if (compNode)
+                        {
+                          std::list<Node *> aChldn = compNode->getAllRecursiveConstituents();
+                          std::list<Node *>::iterator iter=aChldn.begin();
+                          for(;iter!=aChldn.end();iter++)
+                            (*iter)->setState(YACS::DONE);
+                        }
+                    }
+
+                  if (_finalizeNode == NULL)
+                    {
+                      // No finalize node, we just finish the loop at the end of exec nodes execution
+                      setState(YACS::DONE);
+                      return YACS::FINISH;
+                    }
+                  else
+                    {
+                      // Run the finalize nodes, the loop will be done only when they all finish
+                      _unfinishedCounter = 0;  // This counter indicates how many branches are not finished
+                      for (int i=0 ; i<_execIds.size() ; i++)
+                        {
+                          YASSERT(_execIds[i] == NOT_RUNNING_BRANCH_ID);
+                          DEBTRACE("Launching finalize node for branch " << i);
+                          _execFinalizeNodes[i]->exUpdateState();
+                          _unfinishedCounter++;
+                        }
+                      return YACS::NOEVENT;
+                    }
                 }
               catch(YACS::Exception& ex)
                 {
@@ -551,20 +600,37 @@ YACS::Event ForEachLoop::updateStateOnFinishedEventFrom(Node *node)
                 }
             }
         }
-      else
-        {//more elements to do
+      else if(_state == YACS::ACTIVATED)
+        {//more elements to do and loop still activated
           _execIds[id]=_execCurrentId;
           node->init(false);
           _splitterNode.putSplittedValueOnRankTo(_execCurrentId++,id,false);
           node->exUpdateState();
-	  if (_node)
-	    {
-	      _node->setState(node->getState());
-	      forwardExecStateToOriginalBody(node);
-	    }
+          forwardExecStateToOriginalBody(node);
           _nbOfEltConsumed++;
         }
+      else
+        {//elements to process and loop no more activated
+          DEBTRACE("foreach loop state " << _state);
+        }
       break;
+    case FINALIZE_NODE:
+    {
+      DEBTRACE("Finalize node finished on branch " << id);
+      _unfinishedCounter--;
+      DEBTRACE(_unfinishedCounter << " finalize nodes still running");
+      if (_unfinishedCounter == 0)
+        {
+          _finalizeNode->setState(YACS::DONE);
+          setState(YACS::DONE);
+          return YACS::FINISH;
+        }
+      else
+        return YACS::NOEVENT;
+      break;
+    }
+    default:
+      YASSERT(false);
     }
   return YACS::NOEVENT;
 }
@@ -603,7 +669,7 @@ void ForEachLoop::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort 
     throw Exception("ForEachLoop::buildDelegateOf : not implemented for DS because not specified");
 }
 
-void ForEachLoop::getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(Exception)
+void ForEachLoop::getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(YACS::Exception)
 {
   string typeOfPortInstance=(port.first)->getNameOfTypeOfCurrentInstance();
   if(typeOfPortInstance==OutputPort::NAME)
@@ -624,7 +690,7 @@ void ForEachLoop::getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *f
     throw Exception("ForEachLoop::getDelegateOf : not implemented because not specified");
 }
 
-void ForEachLoop::releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(Exception)
+void ForEachLoop::releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(YACS::Exception)
 {
   string typeOfPortInstance=portDwn->getNameOfTypeOfCurrentInstance();
   if(typeOfPortInstance==OutputPort::NAME)
@@ -637,24 +703,13 @@ void ForEachLoop::releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *f
       //ASSERT(portUp==*iter.second)
       if((*iter)->decrRef())
         {
+          AnySplitOutputPort *p=*iter;
           _outGoingPorts.erase(iter);
-          delete *iter2;
+          delete p;
+          InterceptorInputPort *ip=*iter2;
           _intecptrsForOutGoingPorts.erase(iter2);
-          delete *iter;
+          delete ip;
         }
-    }
-}
-
-void ForEachLoop::forwardExecStateToOriginalBody(Node *execNode)
-{
-  ComposedNode* compNode = dynamic_cast<ComposedNode*>(_node);
-  ComposedNode* compNodeExe = dynamic_cast<ComposedNode*>(execNode);
-  if (compNode && compNodeExe)
-    {
-      list<Node *> aChldn = compNodeExe->getAllRecursiveConstituents();
-      list<Node *>::iterator iter=aChldn.begin();
-      for(;iter!=aChldn.end();iter++)
-	compNode->getChildByName(compNodeExe->getChildName(*iter))->setState((*iter)->getState());
     }
 }
 
@@ -723,7 +778,7 @@ void ForEachLoop::createOutputOutOfScopeInterceptors(int branchNb)
 }
 
 void ForEachLoop::checkLinkPossibility(OutPort *start, const std::list<ComposedNode *>& pointsOfViewStart,
-                                       InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) throw(Exception)
+                                       InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) throw(YACS::Exception)
 {
   if(isInMyDescendance(start->getNode())==_node)
     throw Exception("ForEachLoop::checkLinkPossibility : A link from work node to init node not permitted");
@@ -732,8 +787,7 @@ void ForEachLoop::checkLinkPossibility(OutPort *start, const std::list<ComposedN
 std::list<OutputPort *> ForEachLoop::getLocalOutputPorts() const
 {
   list<OutputPort *> ret;
-  ret.push_back(getOutputPort(NAME_OF_SPLITTED_SEQ_OUT)); // OCC : mkr : add _splittedPort to the list of output ports
-  //ret.push_back(getOutputPort(SplitterNode::NAME_OF_SEQUENCE_INPUT));
+  ret.push_back(getOutputPort(NAME_OF_SPLITTED_SEQ_OUT)); 
   return ret;
 }
 
@@ -761,4 +815,14 @@ void ForEachLoop::writeDot(std::ostream &os) const
   os << getColorState(state);
   os << "\" label=\"" << "Loop:" ;
   os << getName() <<"\"];\n";
+}
+
+//! Reset the state of the node and its children depending on the parameter level
+void ForEachLoop::resetState(int level)
+{
+  if(level==0)return;
+  DynParaLoop::resetState(level);
+  _execCurrentId=0;
+  //Note: cleanDynGraph is not a virtual method (must be called from ForEachLoop object) 
+  cleanDynGraph();
 }

@@ -1,25 +1,28 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef _GUIEDITOR_HXX_
 #define _GUIEDITOR_HXX_
 
 
+#include <QWidget>
+#include <QString>
 #include <string>
 
 namespace YACS
@@ -44,15 +47,18 @@ namespace YACS
       virtual ~GuiEditor();
 
       void CreateNodeFromCatalog(const ItemMimeData* myData,
-                                 SubjectComposedNode *cnode);
+                                 SubjectComposedNode *cnode,
+                                 bool createNewComponentInstance);
       void AddTypeFromCatalog(const ItemMimeData* myData);
       void CreateNode(std::string typeNode);
       void CreateBloc();
       void CreateForLoop();
-      void CreateForEachLoop();
+      void CreateForEachLoop(std::string type );
       void CreateWhileLoop();
       void CreateSwitch();
+      void CreateOptimizerLoop();
       void CreateContainer();
+      void CreateComponentInstance();
 
       SubjectDataPort* CreateInputPort(SubjectElementaryNode* seNode,
                                        std::string name,
@@ -72,9 +78,22 @@ namespace YACS
       void CutSubject();
       void CopySubject();
       void PasteSubject();
-
+      void PutSubjectInBloc();
+      void shrinkExpand();
       void rebuildLinks();
       void arrangeNodes(bool isRecursive);
+      void arrangeProc();
+      void showUndo(QWidget *parent = 0);
+      void showRedo(QWidget *parent = 0);
+      QString asciiFilter(const QString & name);
+
+    protected:
+      void _createNode(YACS::ENGINE::Catalog* catalog,
+                       SubjectComposedNode *cnode,
+                       std::string service,
+                       std::string compoName,
+                       bool createNewComponentInstance);
+      std::string _table;
     };
   }
 }

@@ -1,108 +1,112 @@
-<ui version="4.0" >
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>fm_TablePorts</class>
- <widget class="QWidget" name="fm_TablePorts" >
-  <property name="geometry" >
+ <widget class="QWidget" name="fm_TablePorts">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>370</width>
-    <height>237</height>
+    <width>230</width>
+    <height>132</height>
    </rect>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QGridLayout" >
-   <item row="0" column="0" >
-    <widget class="QSplitter" name="splitter" >
-     <property name="orientation" >
+  <layout class="QGridLayout">
+   <property name="margin">
+    <number>2</number>
+   </property>
+   <item row="0" column="0">
+    <widget class="QSplitter" name="splitter">
+     <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
-     <widget class="QWidget" name="layoutWidget" >
-      <layout class="QGridLayout" >
-       <item row="0" column="0" >
-        <widget class="QPushButton" name="pb_up" >
-         <property name="sizePolicy" >
-          <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
+     <widget class="QWidget" name="layoutWidget">
+      <layout class="QGridLayout">
+       <item row="0" column="0">
+        <widget class="QPushButton" name="pb_up">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
-         <property name="toolTip" >
+         <property name="toolTip">
           <string>move up the selected port one step, cycle</string>
          </property>
-         <property name="text" >
+         <property name="text">
           <string/>
          </property>
-         <property name="icon" >
+         <property name="icon">
           <iconset>
            <normaloff>icons:icon_up.png</normaloff>icons:icon_up.png</iconset>
          </property>
         </widget>
        </item>
-       <item row="0" column="1" >
-        <widget class="QPushButton" name="pb_down" >
-         <property name="sizePolicy" >
-          <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
+       <item row="0" column="1">
+        <widget class="QPushButton" name="pb_down">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
-         <property name="toolTip" >
+         <property name="toolTip">
           <string>move down the selected port one step, cycle</string>
          </property>
-         <property name="text" >
+         <property name="text">
           <string/>
          </property>
-         <property name="icon" >
+         <property name="icon">
           <iconset>
            <normaloff>icons:icon_down.png</normaloff>icons:icon_down.png</iconset>
          </property>
         </widget>
        </item>
-       <item row="0" column="2" >
-        <widget class="QPushButton" name="pb_insert" >
-         <property name="sizePolicy" >
-          <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
+       <item row="0" column="2">
+        <widget class="QPushButton" name="pb_insert">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
-         <property name="toolTip" >
+         <property name="toolTip">
           <string>insert a new port before the selected port</string>
          </property>
-         <property name="text" >
+         <property name="text">
           <string/>
          </property>
-         <property name="icon" >
+         <property name="icon">
           <iconset>
            <normaloff>icons:icon_insert.png</normaloff>icons:icon_insert.png</iconset>
          </property>
         </widget>
        </item>
-       <item row="0" column="3" >
-        <widget class="QPushButton" name="pb_remove" >
-         <property name="sizePolicy" >
-          <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
+       <item row="0" column="3">
+        <widget class="QPushButton" name="pb_remove">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
-         <property name="toolTip" >
+         <property name="toolTip">
           <string>remove the selected port</string>
          </property>
-         <property name="text" >
+         <property name="text">
           <string/>
          </property>
-         <property name="icon" >
+         <property name="icon">
           <iconset>
            <normaloff>icons:icon_minus.png</normaloff>icons:icon_minus.png</iconset>
          </property>
         </widget>
        </item>
-       <item row="0" column="4" >
-        <widget class="QComboBox" name="cb_insert" >
-         <property name="toolTip" >
+       <item row="0" column="4">
+        <widget class="QComboBox" name="cb_insert">
+         <property name="toolTip">
           <string>port creation: select a port type</string>
          </property>
         </widget>
@@ -111,11 +115,25 @@
      </widget>
     </widget>
    </item>
-   <item row="1" column="0" >
-    <widget class="QTableView" name="tv_ports" />
+   <item row="1" column="0">
+    <widget class="YACS::HMI::YTableView" name="tv_ports">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>YACS::HMI::YTableView</class>
+   <extends>QTableView</extends>
+   <header>YACSWidgets.hxx</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

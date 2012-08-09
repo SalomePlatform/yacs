@@ -1,5 +1,5 @@
 <!--
-  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+  Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -21,8 +21,6 @@
 <proc>
 
     <!-- types -->
-    <objref name="CALCIUM_integer"/>
-    <objref name="CALCIUM_real"/>
     <container name="A">
     </container>
     <container name="B">
@@ -126,6 +124,7 @@
         <instream name="puissa" type="CALCIUM_real"/>
         <instream name="text" type="CALCIUM_real"/>
         <instream name="rext" type="CALCIUM_real"/>
+        <instream name="topo" type="CALCIUM_integer"/>
         <outstream name="tparoi" type="CALCIUM_real"/>
         <outstream name="rparoi" type="CALCIUM_real"/>
         <outstream name="temperature" type="CALCIUM_real"/>
@@ -136,6 +135,7 @@
         <inport name="dt" type="double"/>
         <instream name="temperature" type="CALCIUM_real"/>
         <outstream name="puissance" type="CALCIUM_real"/>
+        <outstream name="topo" type="CALCIUM_integer"/>
       </service>
       <service name="int1" >
         <node>a.int4</node>
@@ -155,7 +155,9 @@
         <method>trun</method>
         <load container="F"/>
         <instream name="tparoit" type="CALCIUM_real"/>
+        <instream name="topo" type="CALCIUM_integer"/>
         <outstream name="tpart" type="CALCIUM_real"/>
+        <outstream name="stopo" type="CALCIUM_integer"/>
       </service>
       <stream>
         <fromnode>canal</fromnode> <fromport>rfluide</fromport>
@@ -202,6 +204,15 @@
         <fromnode>int3</fromnode> <fromport>tpart</fromport>
         <tonode>crayon</tonode> <toport>puissa</toport>
         <property name="StorageLevel" value="10"/>
+      </stream>
+
+      <stream>
+        <fromnode>comb</fromnode> <fromport>topo</fromport>
+        <tonode>int3</tonode> <toport>topo</toport>
+      </stream>
+      <stream>
+        <fromnode>int3</fromnode> <fromport>stopo</fromport>
+        <tonode>crayon</tonode> <toport>topo</toport>
       </stream>
     </bloc>
 

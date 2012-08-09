@@ -1,79 +1,56 @@
 
 .. _seccompinterne:
 
-Mise sous forme d'objet interne
+Defining an internal object
 ===============================
 
-.. index:: single: objet interne
+.. index:: single: internal object
 
-Dans la suite de ce document, on supposera qu'un **objet interne** est un
-**objet C++ ou python**   qui fournit une première interface au code initial.
-Suivant la forme du code initial (binaire exécutable, librairie statique  ou
-dynamique, fichiers sources f77, C, C++ ou python), cet objet aura  différentes
-formes et la communication objet interne --- code initial  sera différente.
+In the remainder of this document, it is assumed that an **internal object** is a **C++ or python object** that provides a 
+first interface to the initial code.  The form of this object and communication between the internal object and the 
+initial code will be different depending on the form of the initial code (executable binary, static or dynamic library, 
+f77, C, C++ or python source files).
 
-
-Méthodes et attributs de l'objet
+Object methods and attributes
 --------------------------------
+In each case, the services and the internal state of the internal object will have to be defined.  In particular:
 
-Dans chaque cas, il faudra définir les services et l'état interne   de l'objet
-interne. En particulier :
+* choose the different services of this object
+* for each service, define input and output data
+* for each input and each output, define the data type and possibly associated pre-conditions and post-conditions (for example positive input data)
+* define the internal state of the object and possibly its value before and after the call to different services.
 
-* choisir les différents services de cet objet
+**Services** will be implemented in the form of **public methods** and the **internal state** will be implemented in the form of **attributes**.  
+If the designer of the object allows the user to access the attributes in read and write, he must provide services to access these attributes.
 
-* pour chaque service, définir les données d'entrée et de sortie
+Fortran77 routines / C functions / C++ classes 
+--------------------------------------------------
+Principle
+^^^^^^^^^^^
+In the case of Fortran77 routines, C functions and C++ classes, the integrator will simply add a C++ envelope around 
+these functions (see figure :ref:`C++ internal object<figobjetinterne>`), to obtain the internal object.  
+Each method in the object:
 
-* pour chaque entrée et chaque sortie, définir le type de la donnée  et
-  éventuellement les pré-conditions et post-conditions associées  (par exemple,
-  donnée d'entrée positive)
-
-* définir l'état interne de l'objet et éventuellement sa valeur  avant et après
-  l'appel aux différents services
-
-Les **services** seront implémentés sous forme de **méthodes publiques**  et
-l'**état interne** sous forme d'**attributs**.    Si le concepteur de l'objet
-désire permettre à l'utilisateur d'accéder  en lecture/écriture aux attributs,
-il doit fournir des services accédant  à ces attributs.
-
-
-Routines fortran77/fonctions C/classes C++
-------------------------------------------
-
-
-Principe
-^^^^^^^^
-
-Dans le cas de routines fortran77, de fonctions C et de classes C++,
-l'intégrateur ajoutera simplement une enveloppe C++ autour de ces fonctions
-(voir figure :ref:`Objet interne C++ <figobjetinterne>`), pour obtenir l'objet interne.    Chaque
-méthode de l'objet
-
-* extrait, si nécessaire, l'information des paramètres d'entrée,
-
-* appelle la ou les routines internes concernées,
-
-* met en forme les résultats de ces routines internes dans  les paramètres de
-  sortie.
+- extracts information from the input parameters if necessary
+- calls the internal routine(s) concerned,
+- formats the results of these internal routines in the output parameters.
 
 .. _figobjetinterne:
 
 
 .. image:: images/objintcpp.png
-   :width: 54ex
    :align: center
 
-.. centered::
-   Objet interne C++
+.. centered:: C++ internal object
 
 
 .. _exemple1:
 
-Exemple 1
+Example 1
 ^^^^^^^^^
 
-Soient les routines fortran f77 suivantes effectuant des calculs d'algèbre
-linéaire sur des tableaux unidimensionnels de flottants :
 
+Consider the following f77 fortran routines performing linear algebra calculations on one dimensional floating tables:
 
 ``addvec.f``
 
@@ -86,23 +63,23 @@ linéaire sur des tableaux unidimensionnels de flottants :
 .. include:: ./exemples/exemple1/prdscl.f
    :literal:
 
-ainsi qu'une classe C++ simulant un type vecteur (très) rudimentaire :
+and a C++ class simulating a (very) rudimentary vector type:
 
 .. _vecteur.hxx:
 
 
-``vecteur.hxx (interface C++)``
+``vecteur.hxx (C++ interface)``
 
 .. include:: ./exemples/exemple1/exec2/vecteur.hxx
    :literal:
 
 
-``vecteur.cxx (implémentation C++)``
+``vecteur.cxx (C++ implementation)``
 
 .. include:: ./exemples/exemple1/exec2/vecteur.cxx
    :literal:
 
-L'objet interne (i.e. la classe C++) dans l'exemple est :
+The internal object (i.e. the C++ class) in the example is:
 
 
 ``alglin.hxx``
@@ -116,81 +93,61 @@ L'objet interne (i.e. la classe C++) dans l'exemple est :
 .. include:: ./exemples/exemple1/exec2/alglin.cxx
    :literal:
 
-**Remarques**
+**Notes**:
 
-  #. Le choix des méthodes, du passage des paramètres et de leur type, est  laissé
-     libre à l'intégrateur (conformément aux souhaits des utilisateurs  de l'objet).
-     La correspondance entre les paramètres de l'objet interne  et ceux des routines
-     du code initial est réalisée par l'implémentation (fichier  ``alglin.cxx``, ci-
-     avant).
+#. The integrator chooses methods, parameter transfers and parameter types (in accordance with the requirements of object users).  
+   The correspondence between parameters of the internal object and parameters of routines in the initial code is organised 
+   by the implementation (file ``alglin.cxx``, above).
+#. In particular, if MED structures [MED]_ are transferred as input arguments, the C++ implementation file will be required to extract 
+   and format information to be transferred to internal calculation routines (in the form of simple and scalar tables for internal 
+   fortran routines).  For output arguments in the MED format, the implementation will introduce the results of internal routines 
+   into the MED objects to be returned.
 
-  #. En particulier, si des structures MED [MED]_ sont passées en argument
-     d'entrée,   le fichier d'implémentation C++, sera chargé d'extraire et mettre en
-     forme les informations à passer aux routines de calcul internes  (sous forme de
-     tableaux simples et scalaires pour les routines  fortran internes).    Pour les
-     arguments de sortie au format MED, les résultats des routines  internes seront
-     introduites par l'implémentation dans les objets MED  à retourner.
+Note the following in the above example:
 
-Dans l'exemple ci-avant, remarquer :
+* the ``“C” extern`` declaration in front of C++ prototypes of fortran functions
+* the “underscore” character added to the C++ name of fortran functions
+* the mode of transferring arguments, the rule being that pointers will be transferred apart from exceptions (length of 
+  character strings).  For scalar arguments, the addresses of the scalar arguments will be transferred;  for pointer 
+  arguments (tables), the pointers will be transferred as is.
 
-* la declaration ``extern "C"`` devant les prototypes en C++   des fonctions
-  fortran,
-
-* le caractère "underscore" ajouté au nom C++ des fonctions  fortran,
-
-* le mode de passage des arguments, la règle étant : sauf exceptions  (longueur
-  des chaînes de caractères), on passe des pointeurs. Pour les  arguments
-  scalaires, on passe l'adresse de ces scalaires; pour des  arguments pointeurs
-  (tableaux), on passe les pointeurs tels quels.
-
-L'objet interne  peut maintenant être utilisé dans un code C++ :
-
+The internal object can now be used in a C++ code:
 
 .. include:: ./exemples/exemple1/exec2/main_extraits.cxx
    :literal:
 
 
-Références
+References
 ^^^^^^^^^^
+The C / fortran77 encapsulation in a C++ code follows the standard procedure (formats of reals / integers, 
+routine names, transfer of arguments).  For example, further information on this subject is given in [ForCpp]_ or [ForCpp2]_.
 
-L'encapsulation C/fortran77 dans un code C++ suit la procédure standard
-(formats des réels/entiers, nom des routines, passage des arguments).  A ce
-sujet, on pourra consulter, par exemple,   [ForCpp]_ ou [ForCpp2]_.
-
-
-Fonctions/Classes Python
+Python function/classes
 ------------------------
-
-
-Principe
-^^^^^^^^
-
-Le principe d'encapsulation de fonctions/classes python dans un   objet interne
-(python) est le même que dans le cas précédent.
+Principle
+^^^^^^^^^^
+The principle of encapsulation of python functions / classes in an internal object (python) is the same as in the previous case
 
   .. _figobjetinterne2:
 
 
   .. image:: images/objintpy.png
-     :width: 54ex
      :align: center
 
-  .. centered::
-     Objet interne python
+  .. centered:: Python internal object
 
 
-Exemple 2
+Example 2
 ^^^^^^^^^
 
-Un exemple similaire au précédent part de fonctions python à encapsuler :
-
+An example similar to the previous example starts from Python functions to be encapsulated:
 
 ``func.py``
 
 .. include:: ./exemples/exemple2/func.py
    :literal:
 
-Il est facile d'intégrer ces fonctions dans une classe python :
+It is easy to integrate these functions into a python class:
 
 
 ``compo.py``
@@ -198,139 +155,100 @@ Il est facile d'intégrer ces fonctions dans une classe python :
 .. include:: ./exemples/exemple2/compo.py
    :literal:
 
-**Remarque**
-  En fait, il n'est même pas nécessaire d'enrober les fonctions python de
-  ``func.py``, mais c'est plus "propre" (en particulier si  l'objet possède un
-  état interne).    Le script ci-après permet d'utiliser l'objet interne python
-  depuis un interpréteur python :
+**Note**:  
+  In fact, it is not even necessary to embed python functions of ``func.py``, but it is “cleaner” (particularly if 
+  the object has an internal state).  The following script uses the Python internal object from a python interpreter:
 
 .. include:: ./exemples/exemple2/exmpl.py
    :literal:
 
 
-Code initial sous forme d'exécutables
--------------------------------------
+Initial code in the form of executables
+--------------------------------------------
+Principle
+^^^^^^^^^^
+This case occurs when there are no internal code sources (or when it is not required to integrate these sources 
+into the internal architecture).  It will be assumed that the code is in the form of a binary that can be executed 
+by the operating system.  Communications can be made with the code.
 
+1. In  input, either:
 
-Principe
-^^^^^^^^
+  - by one or several files,
+  - by the command line,
+  - using the keyboard to answer questions from the code 
 
-Ce cas se rencontre lorsqu'on ne dispose pas des sources du code interne  (ou
-lorsqu'on ne désire pas intégrer ces sources dans l'architecture  interne).
-On supposera que le code est sous forme d'un binaire exécutable par  le système
-d'exploitation.    Les communications avec le code peuvent se faire,
+2. In output, either:
 
-1. en entrée, soit :
+  - by one or several files,
+  - on-screen display.
 
-   * par un ou plusieurs fichiers,
-   * par la ligne de commande,
-   * en répondant au clavier à des questions du code
+Communication with executables is made using commands (available in C++ and in python):
 
-2. en sortie, soit :
+- ``system``:  start an executable with which input communications are made through files or the command line, and 
+  output communications are made through files,
+- ``popen``:  same functions as the previous case, also with the possibility of retrieving the standard output (screen) 
+  for the executable.
 
-   * par un ou plusieurs fichiers,
-   * à l'affichage écran.
+The above commands are stored in order of increasing complexity (it is recommended that ``system`` should be used as much as possible).
 
-La communication avec les exécutables se fait à l'aide des commandes
-(disponibles en C++ et en python) :
-
-* ``system`` : lancer un exécutable avec lequel on communique en entrée via
-  fichiers ou la ligne de commande, en sortie, via fichiers;
-
-* ``popen`` : mêmes fonctionnalités que le cas précédent, avec en plus la
-  possibilité de   récupérer la sortie standard (écran) de l'exécutable.
-
-Les commandes ci-dessus sont rangées par ordre de complexité croissante (on
-conseille d'utiliser  autant que possible ``system``).
-
-
-Exemple 3 : Objet interne python, connecté à des exécutables externes.    
+Example 3:  Python internal object connected to external executables
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+It is required to use a “System” object that has 5 services:
 
+- ``cd``, that starts from a path (character string) and sets a current directory,
+- ``cp``, that starts from 2 file names, and copies the first file onto the second in the current directory,
+- ``touch``, that starts from a file name and updates the date of the file if there is one, and otherwise creates it,
+- ``rm``, that starts from a file name and destroys the file in the current directory,
+- ``dir``, that lists the files contained in the current directory.
 
-On désire utiliser
-un objet "Systeme" qui possède 5 services :
+The internal state of the object will be composed of the name of the current directory in which the services of the 
+object (that is set by the ``cd`` service) will work.
 
-* ``cd``, qui, à partir d'un chemin (chaîne de caractères), positionne  un
-  répertoire courant,
-
-* ``cp``, qui, à partir de 2 noms de fichiers, copie le premier  fichier sur le
-  second dans le répertoire courant;
-
-* ``touch``, qui, à partir d'un nom de fichier, met à jour la  date du fichier
-  s'il existe, le crée sinon;
-
-* ``rm``, qui, à partir d'un nom de fichier, détruit le fichier   dans le
-  répertoire courant;
-
-* ``dir``, qui liste les fichiers contenus dans le répertoire courant.
-
-L'état interne de l'objet sera constitué du nom du répertoire courant  dans
-lequel travailleront les services de l'objet  (qui est positionné  par le
-service ``cd``).    
-
-En python, la classe de l'objet pourrait s'écrire :
-
+In Python, the object class could be written:
 
 ``systeme.py``
 
 .. include:: ./exemples/exemple3/systeme.py
    :literal:
 
-et son utilisation depuis l'interpréteur python :
+and its use from the python interpreter:
 
 
 .. include:: ./exemples/exemple3/use.py
    :literal:
 
+**Notes**
 
-**Remarques**
-
-  #. Ceci est donné à titre d'exemple, python possède en standard  tout ce qu'il
-     faut pour rendre ces services, sans passer par des commandes  systèmes
-     (``system`` et ``popen``).
-
-  #. L'exemple illustre le passage d'arguments d'entrées par la ligne   de
-     commandes (noms passés en argument) et la "capture" des sorties écran  des
-     exécutables extérieurs (``system`` ne permet pas de récupérer simplement  la
-     sortie standard de la commande unix ``ls``, on utilise ``popen`` dans ce cas).
-
+#. This is given as an example, Python has everything necessary in the standard version to perform these services, without 
+   the use of system commands (``system`` and ``popen``).
+#. The example illustrates transfer of input arguments through the command line (names transferred as arguments) and the “capture” of 
+   screen outputs from external executables (``system`` that cannot simply recover the standard output from the unix command ``ls``, and 
+   in this case ``popen`` is used).
 
 .. _exemple4:
 
-Exemple 4 : Objet interne connecté à un exécutable externe.    
+Example 4:  Internal object connected to an external executable
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Cet exemple montre une
-interface (très) partielle d'un exécutable binaire *FreeFem* [FreeFem]_ sous la
-forme d'un objet C++. L'interface donne  accès à la définition d'une géométrie
-2D par sa frontière ainsi que la  résolution approchée d'une équation simple
-(convection forcée) sur cette géométrie.    Les différentes méthodes de l'objet
-interne sont :
+This example shows a (very) partial interface of a binary executable *FreeFem* [FreeFem]_ in the form of a C++ object.  
+The interface provides access to the definition of a 2D geometry through its boundary, and the approximate resolution of a 
+simple equation (forced convection) on this geometry.  The different methods of the internal object are:
 
-* une méthode qui enregistre la géométrie du domaine,
+- a method that records the geometry of the domain,
+- a method that records the convecting velocity fields,
+- the calculation method that receives the initial condition (in analytic form – character string), the time step and the number of time steps.
 
-* une méthode qui enregistre le champs de vitesse convectante,
+The internal state of the object is composed of the geometry and the velocity field.  
+The calculation method creates a file starting from its parameters and the internal state, and then starts a calculation 
+loop (by a system call).  The object does not recover the calculation results.
 
-* la méthode de calcul qui reçoit la condition initiale (sous   forme analytique
-  --- chaîne de caractères), le pas de temps et le nombre  de pas de temps.
+**Comments**
 
-L'état interne de l'objet est constitué de la géométrie et du champs  de
-vitesse.    La méthode de calcul crée un fichier à partir de ses paramètres et
-de  l'état interne, puis lance une boucle de calcul (par un appel système).
-Les résultats du calcul ne sont pas récupérés par l'objet.
+#. A complete encapsulation of FreeFem would require far too much effort, this is simply an example.
+#. We do not retrieve a result in the C++ object in this example (the change is only displayed by the FreeFem internal graphic 
+   engine).  If it was required to do so, it would be necessary to read the file produced by the external code after the system 
+   call, and transfer the results in a form that could be understood by the User of the internal object.
 
-**Remarques**
-
-  #. Une encapsulation complète de FreeFem demanderait un effort beaucoup  plus
-     important, ceci n'est qu'un exemple.
-
-  #. On ne récupère pas ici de résultat dans l'objet C++ (l'évolution  est
-     seulement visualisée par le moteur graphique interne de FreeFem).  Si on
-     désirait le faire, il faudrait après  l'appel système, relire le fichier produit
-     par le code externe, et  renvoyer les résultats sous forme compréhensible par
-     l'utilisateur  de l'objet interne
-
-Deux versions (C++ et python) sont listées ci-après.
+Two versions (C++ and python) are listed below.
 
 .. _freefem.hxx:
 
@@ -352,9 +270,7 @@ Deux versions (C++ et python) sont listées ci-après.
 .. include:: ./exemples/exemple4/FreeFem.py
    :literal:
 
-L'utilisation depuis un code C++ ou un interpréteur python est similaire  dans
-les 2 versions :
-
+Use from a C++ code or a python interpreter is similar in the 2 versions:
 
 ``version C++``
 

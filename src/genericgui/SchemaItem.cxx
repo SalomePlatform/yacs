@@ -1,23 +1,25 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "SchemaItem.hxx"
 #include "QtGuiContext.hxx"
+#include "Resource.hxx"
 #include "Menus.hxx"
 #include "ItemMimeData.hxx"
 
@@ -65,6 +67,7 @@ SchemaItem::SchemaItem(SchemaItem *parent, QString label, Subject* subject)
   if (_parentItem)
     _parentItem->appendChild(this);
   _execState = YACS::UNDEFINED;
+  _emphasized = false;
 }
 
 SchemaItem::~SchemaItem()
@@ -188,6 +191,13 @@ void SchemaItem::update(GuiEvent event, int type, Subject* son)
         _itemBackground.replace(YLabel, model->stdBackBrush());
       model->setData(modelIndex(YLabel), 0);  // --- to emit dataChanged signal
       break;
+    case EMPHASIZE:
+      if (type)
+        _itemBackground.replace(YLabel, model->emphasizeBackBrush());
+      else
+        _itemBackground.replace(YLabel, model->stdBackBrush());
+      model->setData(modelIndex(YLabel), 0);  // --- to emit dataChanged signal
+      break;
     default:
       break;
     }
@@ -290,13 +300,21 @@ void SchemaItem::setCaseValue()
 
 QVariant SchemaItem::editionToolTip(int column) const
 {
-  QString val = QString("Edition: ") + _itemData.value(column).toString();
+  QString val = QString("Edition: ") + _itemData.value(0).toString();
+  QString val1 = _itemData.value(1).toString();
+  QString val2 = _itemData.value(2).toString();
+  if (!val1.isEmpty()) val += QString(" | ") + val1;
+  if (!val2.isEmpty()) val += QString(" | ") + val2;
   return val;
 }
 
 QVariant SchemaItem::runToolTip(int column) const
 {
-  QString val = QString("Execution: ") + _itemData.value(column).toString();
+  QString val = QString("Execution: ") + _itemData.value(0).toString();
+  QString val1 = _itemData.value(1).toString();
+  QString val2 = _itemData.value(2).toString();
+  if (!val1.isEmpty()) val += QString(" | ") + val1;
+  if (!val2.isEmpty()) val += QString(" | ") + val2;
   return val;
 }
 
@@ -325,24 +343,24 @@ void SchemaItem::setExecState(int execState)
   QColor sc;
   switch (_execState)
     {
-    case YACS::UNDEFINED:    sc=Qt::lightGray;       stateDef = "UNDEFINED";     break;
-    case YACS::INVALID:      sc=Qt::red;             stateDef = "INVALID";       break;
-    case YACS::READY:        sc=Qt::darkGray;        stateDef = "READY";         break;
-    case YACS::TOLOAD:       sc=Qt::darkYellow;      stateDef = "TOLOAD";        break;
-    case YACS::LOADED:       sc=Qt::darkMagenta;     stateDef = "LOADED";        break;
-    case YACS::TOACTIVATE:   sc=Qt::darkCyan;        stateDef = "TOACTIVATE";    break;
-    case YACS::ACTIVATED:    sc=Qt::darkBlue;        stateDef = "ACTIVATED";     break;
-    case YACS::DESACTIVATED: sc=Qt::gray;            stateDef = "DESACTIVATED";  break;
-    case YACS::DONE:         sc=Qt::darkGreen;       stateDef = "DONE";          break;
-    case YACS::SUSPENDED:    sc=Qt::gray;            stateDef = "SUSPENDED";     break;
-    case YACS::LOADFAILED:   sc.setHsv(320,255,255); stateDef = "LOADFAILED";    break;
-    case YACS::EXECFAILED:   sc.setHsv( 20,255,255); stateDef = "EXECFAILED";    break;
-    case YACS::PAUSE:        sc.setHsv(180,255,255); stateDef = "PAUSE";         break;
-    case YACS::INTERNALERR:  sc.setHsv(340,255,255); stateDef = "INTERNALERR";   break;
-    case YACS::DISABLED:     sc.setHsv( 40,255,255); stateDef = "DISABLED";      break;
-    case YACS::FAILED:       sc.setHsv( 20,255,255); stateDef = "FAILED";        break;
-    case YACS::ERROR:        sc.setHsv(  0,255,255); stateDef = "ERROR";         break;
-    default:                 sc=Qt::lightGray;       stateDef = "---";
+      case YACS::UNDEFINED:    sc = Resource::UNDEFINED   ; stateDef = "UNDEFINED"   ; break;
+      case YACS::INVALID:      sc = Resource::INVALID     ; stateDef = "INVALID"     ; break;
+      case YACS::READY:        sc = Resource::READY       ; stateDef = "READY"       ; break;
+      case YACS::TOLOAD:       sc = Resource::TOLOAD      ; stateDef = "TOLOAD"      ; break;
+      case YACS::LOADED:       sc = Resource::LOADED      ; stateDef = "LOADED"      ; break;
+      case YACS::TOACTIVATE:   sc = Resource::TOACTIVATE  ; stateDef = "TOACTIVATE"  ; break;
+      case YACS::ACTIVATED:    sc = Resource::ACTIVATED   ; stateDef = "ACTIVATED"   ; break;
+      case YACS::DESACTIVATED: sc = Resource::DESACTIVATED; stateDef = "DESACTIVATED"; break;
+      case YACS::DONE:         sc = Resource::DONE        ; stateDef = "DONE"        ; break;
+      case YACS::SUSPENDED:    sc = Resource::SUSPENDED   ; stateDef = "SUSPENDED"   ; break;
+      case YACS::LOADFAILED:   sc = Resource::LOADFAILED  ; stateDef = "LOADFAILED"  ; break;
+      case YACS::EXECFAILED:   sc = Resource::EXECFAILED  ; stateDef = "EXECFAILED"  ; break;
+      case YACS::PAUSE:        sc = Resource::PAUSE       ; stateDef = "PAUSE"       ; break;
+      case YACS::INTERNALERR:  sc = Resource::INTERNALERR ; stateDef = "INTERNALERR" ; break;
+      case YACS::DISABLED:     sc = Resource::DISABLED    ; stateDef = "DISABLED"    ; break;
+      case YACS::FAILED:       sc = Resource::FAILED      ; stateDef = "FAILED"      ; break;
+      case YACS::ERROR:        sc = Resource::ERROR       ; stateDef = "ERROR"       ; break;
+      default:                 sc = Resource::DEFAULT     ; stateDef = "---"         ;
    }
   _itemData.replace(YState, stateDef);
   _itemForeground.replace(YState, sc);

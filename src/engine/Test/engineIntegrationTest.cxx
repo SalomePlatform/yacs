@@ -1,21 +1,22 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "engineIntegrationTest.hxx"
 #include "RuntimeForEngineIntegrationTest.hxx"
 #include "ComponentInstanceTest.hxx"
@@ -35,6 +36,7 @@
 #include "Proc.hxx"
 
 #include <iostream>
+#include <string.h>
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -237,27 +239,41 @@ void EngineIntegrationTest::testForLoop1()
   graph->edAddCFLink(n1,loop);
   graph->edAddLink(o21,i21);
   graph->checkConsistency(info);
+  DEBTRACE(info.areWarningsOrErrors());
   CPPUNIT_ASSERT(!info.areWarningsOrErrors());
   Executor exe;
   exe.RunW(graph);
+  DEBTRACE(((OutputToyPort*)n2->getOutputPort("o1"))->get()->getDoubleValue());
   CPPUNIT_ASSERT_DOUBLES_EQUAL( ((OutputToyPort*)n2->getOutputPort("o1"))->get()->getDoubleValue(),19.397, DBL_PRECISION_COMPARE);
+  DEBTRACE(loop->getNbOfTurns());
   CPPUNIT_ASSERT_EQUAL(loop->getNbOfTurns(),3);
+  DEBTRACE(loop->getState());
   CPPUNIT_ASSERT_EQUAL(loop->getState(),YACS::DONE);
+  DEBTRACE(graph->getState());
   CPPUNIT_ASSERT_EQUAL(graph->getState(),YACS::DONE);
   exe.RunW(graph);
+  DEBTRACE(((OutputToyPort*)n2->getOutputPort("o1"))->get()->getDoubleValue());
   CPPUNIT_ASSERT_DOUBLES_EQUAL( ((OutputToyPort*)n2->getOutputPort("o1"))->get()->getDoubleValue(),19.397, DBL_PRECISION_COMPARE);
+  DEBTRACE(loop->getNbOfTurns());
   CPPUNIT_ASSERT_EQUAL(loop->getNbOfTurns(),3);
+  DEBTRACE(loop->getState());
   CPPUNIT_ASSERT_EQUAL(loop->getState(),YACS::DONE);
+  DEBTRACE(graph->getState());
   CPPUNIT_ASSERT_EQUAL(graph->getState(),YACS::DONE);
   Bloc *clonedGraph=(Bloc *)graph->clone(0);
   delete graph;
   Executor exe2;
   clonedGraph->checkConsistency(info);
+  DEBTRACE(info.areWarningsOrErrors());
   CPPUNIT_ASSERT(!info.areWarningsOrErrors());
   exe2.RunW(clonedGraph);
+  DEBTRACE(((OutputToyPort*)clonedGraph->getOutputPort("toto.titi.T2.o1"))->get()->getDoubleValue());
   CPPUNIT_ASSERT_DOUBLES_EQUAL( ((OutputToyPort*)clonedGraph->getOutputPort("toto.titi.T2.o1"))->get()->getDoubleValue(),19.397, DBL_PRECISION_COMPARE);
+  DEBTRACE(((Loop *)clonedGraph->getChildByName("toto"))->getNbOfTurns());
   CPPUNIT_ASSERT_EQUAL(((Loop *)clonedGraph->getChildByName("toto"))->getNbOfTurns(),3);
+  DEBTRACE(clonedGraph->getChildByName("toto")->getState());
   CPPUNIT_ASSERT_EQUAL(clonedGraph->getChildByName("toto")->getState(),YACS::DONE);
+  DEBTRACE(clonedGraph->getState());
   CPPUNIT_ASSERT_EQUAL(clonedGraph->getState(),YACS::DONE);
   delete clonedGraph;
 }
@@ -292,11 +308,15 @@ void EngineIntegrationTest::testForLoop2()
   graph->edAddCFLink(n1,loop);
   graph->edAddLink(o21,i21);
   graph->checkConsistency(info);
+  DEBTRACE(info.areWarningsOrErrors());
   CPPUNIT_ASSERT(!info.areWarningsOrErrors());
   Executor exe;
   exe.RunW(graph);
+  DEBTRACE(((OutputToyPort*)n2->getOutputPort("o1"))->get()->getDoubleValue());
   CPPUNIT_ASSERT_DOUBLES_EQUAL( ((OutputToyPort*)n2->getOutputPort("o1"))->get()->getDoubleValue(),19.397, DBL_PRECISION_COMPARE);
+  DEBTRACE(loop->getNbOfTurns());
   CPPUNIT_ASSERT_EQUAL(loop->getNbOfTurns(),3);
+  DEBTRACE(loop->getState());
   CPPUNIT_ASSERT_EQUAL(loop->getState(),YACS::DONE);
   CPPUNIT_ASSERT_EQUAL(graph->getState(),YACS::DONE);
   graph->checkConsistency(info);
@@ -2567,7 +2587,7 @@ void EngineIntegrationTest::testForOptimizerLoop1()
   graph->edAddLink(o1,i2);
   graph->edAddLink(n1->edGetNbOfInputsOutputPort(),opt->edGetPortForOutPool());
   opt->edGetNbOfBranchesPort()->edInit(2);
-  opt->edGetPortForInitFile()->edInit("toto");
+  opt->edGetAlgoInitPort()->edInit("toto");
   Executor exe;
   graph->checkConsistency(info);
   CPPUNIT_ASSERT(!info.areWarningsOrErrors());
@@ -2619,7 +2639,7 @@ void EngineIntegrationTest::testForOptimizerLoop2()
   graph->edAddLink(o1,i2);
   graph->edAddLink(n1->edGetNbOfInputsOutputPort(),opt->edGetPortForOutPool());
   opt->edGetNbOfBranchesPort()->edInit(2);
-  opt->edGetPortForInitFile()->edInit("toto");
+  opt->edGetAlgoInitPort()->edInit("toto");
   Executor exe;
   graph->checkConsistency(info);
   CPPUNIT_ASSERT(!info.areWarningsOrErrors());
@@ -3203,4 +3223,10 @@ void EngineIntegrationTest::testForCheckConsistency4()
   CPPUNIT_ASSERT(1==info.getNumberOfErrLinks(E_ALL));
   CPPUNIT_ASSERT(1==info.getNumberOfErrLinks(E_UNCOMPLETE_SW));
   delete graph;
+}
+
+void EngineIntegrationTest::testRemoveRuntime()
+{
+  Runtime* r=YACS::ENGINE::getRuntime();
+  delete r;
 }

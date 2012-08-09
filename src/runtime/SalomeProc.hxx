@@ -1,25 +1,28 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef _SALOMEPROC_HXX_
 #define _SALOMEPROC_HXX_
 
+#include "YACSRuntimeSALOMEExport.hxx"
 #include "Proc.hxx"
+
 #include <string>
 #include <iostream>
 #include <list>
@@ -30,16 +33,18 @@ namespace YACS
   {
     class TypeCode;
 
-    class SalomeProc: public Proc
+    class YACSRUNTIMESALOME_EXPORT SalomeProc: public Proc
     {
     public:
-       SalomeProc(const std::string& name):Proc(name){};
+       SalomeProc(const std::string& name);
        virtual ~SalomeProc();
        virtual TypeCode * createInterfaceTc(const std::string& id, const std::string& name, 
                                     std::list<TypeCodeObjref *> ltc);
        virtual TypeCode * createStructTc(const std::string& id, const std::string& name);
        virtual std::string typeName() {return "YACS__ENGINE__SalomeProc";}
        virtual void saveSchema(std::string xmlSchemaFile);
+       virtual int getDefaultStudyId();
+       virtual void init(bool start=true);
     };
   }
 }

@@ -1,21 +1,22 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "SchemaModel.hxx"
 #include "SchemaItem.hxx"
 #include "SchemaNodeItem.hxx"
@@ -46,6 +47,7 @@ SchemaModel::SchemaModel(YACS::HMI::Subject *context,
   _context->attach(this);
   _stdBackBrush = QColor("white");
   _editedBackBrush = QColor("yellow");
+  _emphasizeBackBrush = QColor("magenta");
   _isEdition = true;
 }
 
@@ -127,7 +129,7 @@ QVariant SchemaModel::data(const QModelIndex &index, int role) const
 
 QVariant SchemaModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
-  DEBTRACE("SchemaModel::headerData");
+  //DEBTRACE("SchemaModel::headerData");
   if (role != Qt::DisplayRole)
     return QVariant();
 
@@ -238,6 +240,11 @@ const QBrush& SchemaModel::stdBackBrush()
 const QBrush& SchemaModel::editedBackBrush()
 {
   return _editedBackBrush;
+}
+
+const QBrush& SchemaModel::emphasizeBackBrush()
+{
+  return _emphasizeBackBrush;
 }
 
 void SchemaModel::setNewRoot(YACS::HMI::Subject *root)

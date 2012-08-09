@@ -1,35 +1,43 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include <Python.h>
 #include "GuiEditor.hxx"
 #include "RuntimeSALOME.hxx"
 #include "Proc.hxx"
 #include "Node.hxx"
+#include "ForEachLoop.hxx"
 #include "Catalog.hxx"
+#include "Container.hxx"
+#include "ComponentInstance.hxx"
 #include "guiObservers.hxx"
 #include "QtGuiContext.hxx"
 #include "TypeCode.hxx"
+#include "Scene.hxx"
 #include "SceneComposedNodeItem.hxx"
 #include "SceneLinkItem.hxx"
 #include "Catalog.hxx"
 #include "ItemMimeData.hxx"
 #include "Message.hxx"
+#include "Resource.hxx"
+#include "FormUndoRedo.hxx"
+#include <QMessageBox>
 
 #include <string>
 #include <sstream>
@@ -44,7 +52,27 @@ using namespace YACS::HMI;
 
 GuiEditor::GuiEditor()
 {
+  // approximative conversion from latin1 to US ascii (removing accentuation)
   DEBTRACE("GuiEditor::GuiEditor");
+  _table    = "________________"  ; //   0 -  15
+  _table   += "________________"  ; //  16 -  31
+  _table   += " !\"#$%&'()*+,-./" ; //  32 -  47
+  _table   += "0123456789:;<=>?"  ; //  48 -  63
+  _table   += "@ABCDEFGHIJKLMNO"  ; //  64 -  79
+  _table   += "PQRSTUVWXYZ[\\]^_" ; //  80 -  95
+  _table   += "`abcdefghijklmno"  ; //  96 - 111
+  _table   += "pqrstuvwxyz{|}~_"  ; // 112 - 127
+  _table   += "________________"  ; // 128 - 143
+  _table   += "________________"  ; // 144 - 159
+  _table   += "_icLoY|-_ca-__r-" ;  // 160 - 175
+  _table   += "-_23'u_..10\"___?" ;  // 176 - 191
+  _table   += "AAAAAAACEEEEIIII"  ; // 192 - 207
+  _table   += "DNOOOOOx0UUUUYPB"  ; // 208 - 223
+  _table   += "aaaaaaaceeeeiiii"  ; // 224 - 239
+  _table   += "onooooo-0uuuuypy"  ; // 240 - 255
+  //_table[167] = char(167); // '§'
+  //_table[176] = char(176); // '°'
+  DEBTRACE(_table.size() << " " << _table);
 }
 
 GuiEditor::~GuiEditor()
@@ -52,44 +80,19 @@ GuiEditor::~GuiEditor()
   DEBTRACE("GuiEditor::~GuiEditor");
 }
 
-void GuiEditor::CreateNodeFromCatalog(const ItemMimeData* myData, SubjectComposedNode *cnode)
+void GuiEditor::CreateNodeFromCatalog(const ItemMimeData* myData, SubjectComposedNode *cnode,bool createNewComponentInstance)
 {
   DEBTRACE("GuiEditor::CreateNodeFromCatalog");
-  Catalog* catalog = myData->getCatalog();
-  string compoName =  myData->getCompo();
-  string service = myData->getType();
-  DEBTRACE(compoName << "/" << service);
-  std::stringstream name;
-  name << service << GuiContext::getCurrent()->getNewId();
-  
-  int swCase = 0;
-  SubjectSwitch *aSwitch = dynamic_cast<SubjectSwitch*>(cnode);
-  if (aSwitch)
+  int nb = myData->getDataSize();
+  DEBTRACE(nb);
+  for (int i=0; i<nb; i++)
     {
-      map<int, SubjectNode*> bodyMap = aSwitch->getBodyMap();
-      if (bodyMap.empty()) swCase = 1;
-      else
-        {
-          map<int, SubjectNode*>::reverse_iterator rit = bodyMap.rbegin();
-          swCase = (*rit).first + 1;
-        }
-      if (!aSwitch->addNode(catalog, compoName, service, name.str(), swCase))
-        Message mess;
+      Catalog* catalog = myData->getCatalog(i);
+      string compoName =  myData->getCompo(i);
+      string service = myData->getType(i);
+      DEBTRACE(compoName << "/" << service);
+      _createNode(catalog, cnode, service, compoName,createNewComponentInstance);
     }
-  else if (cnode)
-    if (! cnode->addNode(catalog, compoName, service, name.str()))
-      Message mess;
-}
-
-void GuiEditor::AddTypeFromCatalog(const ItemMimeData* myData)
-{
-  DEBTRACE("GuiEditor::AddTypeFromCatalog");
-  Catalog* catalog = myData->getCatalog();
-  DEBTRACE("catalog " << catalog);
-  string aType = myData->getType();
-  DEBTRACE(aType);
-  SubjectProc* sProc = QtGuiContext::getQtCurrent()->getSubjectProc();
-  sProc->addDataType(catalog, aType);
 }
 
 void GuiEditor::CreateNode(std::string typeNode)
@@ -105,33 +108,106 @@ void GuiEditor::CreateNode(std::string typeNode)
     }
   DEBTRACE(sub->getName());
 
-  YACS::HMI::SubjectComposedNode *subject = dynamic_cast< YACS::HMI::SubjectComposedNode*>(sub);
-  if (!subject)
+  YACS::HMI::SubjectComposedNode *cnode = dynamic_cast< YACS::HMI::SubjectComposedNode*>(sub);
+  if (!cnode)
     {
       DEBTRACE("GuiEditor::CreateNode : no ComposedNode selected!");
       return;
     }
 
-  std::stringstream name;
-  name << typeNode << GuiContext::getCurrent()->getNewId();
+  _createNode(catalog, cnode, typeNode, "", Resource::COMPONENT_INSTANCE_NEW);
+}
 
-  YACS::HMI::SubjectSwitch *aSwitch = dynamic_cast< YACS::HMI::SubjectSwitch*>(subject);
+void GuiEditor::_createNode(YACS::ENGINE::Catalog* catalog,
+                            SubjectComposedNode *cnode,
+                            std::string service,
+                            std::string compoName,
+                            bool createNewComponentInstance)
+{
+  // --- find a name not used
+
+  string name = service;
+  if (name == "PresetNode")
+    name = "DataIn";
+  Node *node =cnode->getNode();
+  ComposedNode *father = dynamic_cast<ComposedNode*>(node);
+  YASSERT(father);
+  list<Node*> children = father->edGetDirectDescendants();
+  bool nameInUse = true;
+  std::stringstream tryname;
+  while (nameInUse)
+    {
+      nameInUse = false;
+      long newid = GuiContext::getCurrent()->getNewId();
+      tryname.str("");
+      tryname << name << newid;
+      if (newid > 100000) break; 
+      for (list<Node*>::iterator it = children.begin(); it != children.end(); ++it)
+        {
+          if ((*it)->getName() == tryname.str())
+            nameInUse = true;
+        }
+    }
+  name = tryname.str();
+
+  int swCase = 0;
+  SubjectSwitch *aSwitch = dynamic_cast<SubjectSwitch*>(cnode);
   if (aSwitch)
     {
       map<int, SubjectNode*> bodyMap = aSwitch->getBodyMap();
-      int swCase = 0;
       if (bodyMap.empty()) swCase = 1;
       else
         {
           map<int, SubjectNode*>::reverse_iterator rit = bodyMap.rbegin();
           swCase = (*rit).first + 1;
         }
-      if (!aSwitch->addNode(catalog, "", typeNode, name.str(), swCase))
+      if (!aSwitch->addNode(catalog, compoName, service, name, createNewComponentInstance, swCase))
         Message mess;
     }
-  else
-    if (!subject->addNode(catalog, "", typeNode, name.str()))
+  else if (cnode && (dynamic_cast<SubjectBloc*>(cnode) == 0) && cnode->getChild() != 0)
+    {
+      // loop with a body : can't add a node
+      QMessageBox msgBox;
+      std::string msg;
+      msg="This loop has already a body. It is not possible to add directly another node\n";
+      msg=msg+"Do you want to put the existing node in a bloc and add the new node in this bloc ?\n";
+      msgBox.setText(msg.c_str());
+      msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No );
+      msgBox.setDefaultButton(QMessageBox::No);
+      int ret = msgBox.exec();
+      if(ret == QMessageBox::Yes)
+        {
+          // User wants to put body node in bloc
+          if (cnode->getChild()->putInComposedNode("Bloc1","Bloc"))
+            {
+              //the bloc has been successfully created. Add the new node
+              SubjectBloc* newbloc = dynamic_cast<SubjectBloc*>(cnode->getChild());
+              if (!newbloc->addNode(catalog, compoName, service, name, createNewComponentInstance))
+                Message mess;
+            }
+          else
+            Message mess;
+        }
+    }
+  else if (cnode)
+    if (!cnode->addNode(catalog, compoName, service, name, createNewComponentInstance))
       Message mess;
+}
+
+void GuiEditor::AddTypeFromCatalog(const ItemMimeData* myData)
+{
+  DEBTRACE("GuiEditor::AddTypeFromCatalog");
+  SubjectProc* sProc = QtGuiContext::getQtCurrent()->getSubjectProc();
+  int nb = myData->getDataSize();
+  DEBTRACE(nb);
+  for (int i=0; i<nb; i++)
+    {
+      Catalog* catalog = myData->getCatalog(i);
+      DEBTRACE("catalog " << catalog);
+      string aType = myData->getType(i);
+      DEBTRACE(aType);
+      sProc->addDataType(catalog, aType);
+    }
 }
 
 void GuiEditor::CreateBloc()
@@ -146,10 +222,22 @@ void GuiEditor::CreateForLoop()
   CreateNode("ForLoop");
 }
 
-void GuiEditor::CreateForEachLoop()
+void GuiEditor::CreateForEachLoop(std::string type)
 {
   DEBTRACE("GuiEditor::CreateForEachLoop");
-  CreateNode("ForEachLoopDouble");
+  // The ForEachLoop node for datatype type must exist in builtin catalog
+  // So  create it in builtin catalog if it does not exist and datatype is loaded in the current Proc
+  YACS::ENGINE::Catalog *catalog = YACS::ENGINE::getSALOMERuntime()->getBuiltinCatalog();
+  Proc* proc = GuiContext::getCurrent()->getProc();
+  std::string typeName="ForEachLoop_"+type;
+  if (!catalog->_composednodeMap.count(typeName))
+    {
+      if(proc->typeMap.count(type))
+        {
+          catalog->_composednodeMap[typeName]=new ForEachLoop(typeName,proc->typeMap[type]);
+        }
+    }
+  CreateNode(typeName);
 }
 
 void GuiEditor::CreateWhileLoop()
@@ -164,15 +252,46 @@ void GuiEditor::CreateSwitch()
   CreateNode("Switch");
 }
 
+void GuiEditor::CreateOptimizerLoop()
+{
+  DEBTRACE("GuiEditor::CreateOptimizerLoop");
+  CreateNode("OptimizerLoop");
+}
+
 void GuiEditor::CreateContainer()
 {
   DEBTRACE("GuiEditor::CreateContainer");
   SubjectProc *sproc = QtGuiContext::getQtCurrent()->getSubjectProc();
-  assert(sproc);
-  std::stringstream name;
-  name << "container" << GuiContext::getCurrent()->getNewId();
-  sproc->addContainer(name.str());
+  YASSERT(sproc);
+  SubjectContainer *scont = 0;
+  while (!scont)
+    {
+      std::stringstream name;
+      long newid = GuiContext::getCurrent()->getNewId();
+      if (newid > 100000) break; 
+      name.str("");
+      name << "container" << newid;
+      scont = sproc->addContainer(name.str());
+    }
 }
+
+void GuiEditor::CreateComponentInstance()
+{
+  DEBTRACE("GuiEditor::CreateComponentInstance");
+  SubjectProc *sproc = QtGuiContext::getQtCurrent()->getSubjectProc();
+  YASSERT(sproc);
+  Subject *sub = QtGuiContext::getQtCurrent()->getSelectedSubject();
+  SubjectComponent *sco = dynamic_cast<SubjectComponent*>(sub);
+  if (!sco)
+    {
+      DEBTRACE("GuiEditor::CreateComponentInstance: " << "selection is not a component");
+      return;
+    }
+  string compoName = sco->getComponent()->getCompoName();
+  string containerName = sco->getComponent()->getContainer()->getName();
+  sproc->addComponent(compoName, containerName);
+}
+
 
 SubjectDataPort* GuiEditor::CreateInputPort(SubjectElementaryNode* seNode, 
                                             std::string name,
@@ -181,13 +300,29 @@ SubjectDataPort* GuiEditor::CreateInputPort(SubjectElementaryNode* seNode,
                                             SubjectDataPort* before)
 {
   DEBTRACE("GuiEditor::CreateInputPort");
-
-  std::stringstream aName;
+  SubjectDataPort *sdp = 0;
   if (name.empty())
-    aName << "i" << GuiContext::getCurrent()->getNewId();
+    {
+      std::stringstream aName;
+      long newid = 0;
+      while (newid < 100000)
+        {
+          newid = GuiContext::getCurrent()->getNewId();
+          aName.str("");
+          aName << "i" << newid;
+          try
+            {
+              seNode->getNode()->getInputPort(aName.str());
+            }
+          catch(Exception& ex)
+            {
+              break;
+            }
+        }
+      sdp = seNode->addInputPort(catalog,type, aName.str());
+    }
   else
-    aName << name;
-  SubjectDataPort *sdp = seNode->addInputPort(catalog,type, aName.str());
+    sdp = seNode->addInputPort(catalog,type, name);
   if (!sdp)
     Message mess;
   return sdp;
@@ -200,16 +335,66 @@ SubjectDataPort*  GuiEditor::CreateOutputPort(SubjectElementaryNode* seNode,
                                               SubjectDataPort* before)
 {
   DEBTRACE("GuiEditor::CreateOutputPort");
-
-  std::stringstream aName;
+  SubjectDataPort *sdp = 0;
   if (name.empty())
-    aName << "o" << GuiContext::getCurrent()->getNewId();
+    {
+      std::stringstream aName;
+      long newid = 0;
+      while (newid < 100000)
+        {
+          newid = GuiContext::getCurrent()->getNewId();
+          aName.str("");
+          aName << "o" << newid;
+          try
+            {
+              seNode->getNode()->getOutputPort(aName.str());
+            }
+          catch(Exception& ex)
+            {
+              break;
+            }
+        }
+      sdp = seNode->addOutputPort(catalog,type, aName.str());
+    }
   else
-    aName << name;
-  SubjectDataPort *sdp = seNode->addOutputPort(catalog,type, aName.str());
+    sdp = seNode->addOutputPort(catalog,type, name);
   if (!sdp)
     Message mess;
   return sdp;
+}
+
+/*!
+ * Subject shrink or expand, command from popup menu: needs a valid selection
+ */
+void GuiEditor::shrinkExpand() {
+  DEBTRACE("GuiEditor::shrinkExpand");
+
+  Subject* sub = QtGuiContext::getQtCurrent()->getSelectedSubject();
+  if (!sub) {
+    DEBTRACE("GuiEditor::shrinkExpand : invalid selection!");
+    return;
+  };
+
+  if (! QtGuiContext::getQtCurrent()->_mapOfSceneItem.count(sub)) {
+    DEBTRACE("GuiEditor::shrinkExpand: no scene item corresponding to this subject");
+    return;
+  };
+
+  SceneItem* item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[sub];
+  SceneNodeItem *sni = dynamic_cast<SceneNodeItem*>(item);
+  if (!sni) {
+    DEBTRACE("GuiEditor::shrinkExpand: no scene node item corresponding to this subject");
+    return;
+  };
+
+  if (sni->isExpanded()) {
+    sni->setExpanded(false);
+  } else {
+    sni->setExpanded(true);
+  };
+  sni->reorganizeShrinkExpand();
+  sni->showOutScopeLinks();
+  sni->updateLinks();
 }
 
 /*!
@@ -218,6 +403,7 @@ SubjectDataPort*  GuiEditor::CreateOutputPort(SubjectElementaryNode* seNode,
 void GuiEditor::DeleteSubject()
 {
   DEBTRACE("GuiEditor::DeleteSubject");
+  if (!QtGuiContext::getQtCurrent()->isEdition()) return;
   QModelIndexList selList
     = QtGuiContext::getQtCurrent()->getSelectionModel()->selectedIndexes();
   if (selList.isEmpty())
@@ -231,7 +417,6 @@ void GuiEditor::DeleteSubject()
   if (!selItem) return;
   Subject *subToRemove = selItem->getSubject();
   Subject *subParent = subToRemove->getParent();
-
   DeleteSubject(subParent, subToRemove);
 }
 
@@ -242,12 +427,16 @@ void GuiEditor::DeleteSubject(Subject* parent,
                               Subject* toRemove)
 {
   DEBTRACE("GuiEditor::DeleteSubject "<<parent->getName()<<" "<<toRemove->getName());
-  parent->destroy(toRemove);
+  if (!QtGuiContext::getQtCurrent()->isEdition()) return;
+  toRemove->askRegisterUndoDestroy();
+  if(!parent->destroy(toRemove))
+    Message mess;
 }
 
 void GuiEditor::CutSubject()
 {
   DEBTRACE("GuiEditor::CutSubject");
+  if (!QtGuiContext::getQtCurrent()->isEdition()) return;
   Subject *sub = QtGuiContext::getQtCurrent()->getSelectedSubject();
   if (!sub)
     {
@@ -261,6 +450,7 @@ void GuiEditor::CutSubject()
 void GuiEditor::CopySubject()
 {
   DEBTRACE("GuiEditor::CopySubject");
+  if (!QtGuiContext::getQtCurrent()->isEdition()) return;
   Subject *sub = QtGuiContext::getQtCurrent()->getSelectedSubject();
   if (!sub)
     {
@@ -274,6 +464,7 @@ void GuiEditor::CopySubject()
 void GuiEditor::PasteSubject()
 {
   DEBTRACE("GuiEditor::PasteSubject");
+  if (!QtGuiContext::getQtCurrent()->isEdition()) return;
   Subject *newParent = QtGuiContext::getQtCurrent()->getSelectedSubject();
   if (!newParent)
     {
@@ -306,10 +497,46 @@ void GuiEditor::PasteSubject()
   Message mess("Paste not possible for this kind of object");
 }
 
+void GuiEditor::PutSubjectInBloc()
+{
+  Subject *sub = QtGuiContext::getQtCurrent()->getSelectedSubject();
+  if (!sub)
+    {
+      Message mess("GuiEditor::PutSubjectInBloc : invalid selection!");
+      return;
+    }
+  if (SubjectNode *snode = dynamic_cast<SubjectNode*>(sub))
+    {
+      //Build the set of children node names
+      Node* node=snode->getNode();
+      ComposedNode* father=node->getFather();
+      std::list<Node*> children = father->edGetDirectDescendants();
+      std::set<std::string> names;
+      for (std::list<Node*>::iterator it = children.begin(); it != children.end(); ++it)
+        names.insert((*it)->getName());
+
+      std::stringstream tryname;
+      long newid=0;
+      while (newid < 100000)
+        {
+          tryname.str("");
+          tryname << "Bloc" << newid;
+          if(names.find(tryname.str()) == names.end())break;
+          newid++;
+        }
+
+      if (!snode->putInComposedNode(tryname.str(),"Bloc"))
+        Message mess;
+
+      return;
+    }
+  Message mess("Put in Bloc not possible for this kind of object");
+}
+
 void GuiEditor::rebuildLinks()
 {
 // --- only global link redraw for now...
-  
+  DEBTRACE("GuiEditor::rebuildLinks");
   YACS::HMI::SubjectProc* subproc = QtGuiContext::getQtCurrent()->getSubjectProc();
   SceneItem *item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[subproc];
   SceneComposedNodeItem *proc = dynamic_cast<SceneComposedNodeItem*>(item);
@@ -339,4 +566,51 @@ void GuiEditor::arrangeNodes(bool isRecursive)
       return;
     }
   sci->arrangeNodes(isRecursive);
+//   if (Scene::_autoComputeLinks && !QtGuiContext::getQtCurrent()->isLoading())
+//     {
+//       YACS::HMI::SubjectProc* subproc = QtGuiContext::getQtCurrent()->getSubjectProc();
+//       SceneItem *item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[subproc];
+//       SceneComposedNodeItem *proc = dynamic_cast<SceneComposedNodeItem*>(item);
+//       proc->rebuildLinks();
+//     }
+}
+
+void GuiEditor::arrangeProc()
+{
+  YACS::HMI::SubjectProc* subproc = QtGuiContext::getQtCurrent()->getSubjectProc();
+  SceneItem *item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[subproc];
+  SceneComposedNodeItem *proc = dynamic_cast<SceneComposedNodeItem*>(item);
+  proc->arrangeNodes(true);
+}
+
+void GuiEditor::showUndo(QWidget *parent)
+{
+  FormUndoRedo *undo = new FormUndoRedo(parent);
+  undo->tabWidget->setCurrentWidget(undo->undoTab);
+  undo->exec();
+}
+
+void GuiEditor::showRedo(QWidget *parent)
+{
+  FormUndoRedo *redo = new FormUndoRedo(parent);
+  redo->tabWidget->setCurrentWidget(redo->redoTab);
+  redo->exec();
+}
+
+/*! Replace accentuated characters from latin1 to US ascii equivalent without accent.
+*   I did not found anything to do that in Qt...
+*/
+QString GuiEditor::asciiFilter(const QString & name)
+{
+  DEBTRACE(name.toStdString());
+  string aName = name.toAscii().data();
+  DEBTRACE(aName);
+  for (int i=0; i < aName.size(); i++)
+    {
+      int v = (unsigned char)(aName[i]);
+      DEBTRACE(v << " " << _table[v]);
+      aName[i] = _table[v];
+    }
+  DEBTRACE(aName);
+  return aName.c_str();
 }

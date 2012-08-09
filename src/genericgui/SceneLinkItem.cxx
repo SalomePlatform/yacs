@@ -1,30 +1,36 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
+#define CHRONODEF
+#include "chrono.hxx"
+
 #include "SceneLinkItem.hxx"
 #include "SceneDataPortItem.hxx"
+#include "SceneCtrlPortItem.hxx"
 #include "SceneElementaryNodeItem.hxx"
 #include "SceneHeaderNodeItem.hxx"
 #include "Scene.hxx"
+#include "Resource.hxx"
 
 #include "Menus.hxx"
-// #include <QGraphicsSceneHoverEvent>
 #include <QPointF>
+#include <cmath>
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -41,15 +47,17 @@ SceneLinkItem::SceneLinkItem(QGraphicsScene *scene, SceneItem *parent,
 {
   _from = from;
   _to = to;
-  _penColor     = QColor(  0,   0,  96);
-  _hiPenColor   = QColor(  0,   0, 128);
-  _brushColor   = QColor(  0,   0, 192);
-  _hiBrushColor = QColor(192, 192, 255);
+  _penColor     = Resource::link_draw_color.darker(Resource::link_pen_darkness);
+  _hiPenColor   = Resource::link_select_color.darker(Resource::link_pen_darkness);
+  _brushColor   = Resource::link_draw_color;
+  _hiBrushColor = Resource::link_select_color;
   _level += 100;
   setZValue(_level);
+  DEBTRACE("ZValue=" << zValue());
   _lp.clear();
   _directions.clear();
   _nbPoints = 0;
+  _path = QPainterPath();
 }
 
 SceneLinkItem::~SceneLinkItem()
@@ -62,6 +70,7 @@ void SceneLinkItem::select(bool isSelected)
     setZValue(_level+100);
   else
     setZValue(_level);
+  DEBTRACE("ZValue=" << zValue());
   SceneObserverItem::select(isSelected);
 }
 
@@ -76,62 +85,81 @@ QPainterPath SceneLinkItem::shape() const
   return _path;
 }
 
-void SceneLinkItem::setShape()
+void SceneLinkItem::setShape(int thickness)
 {
+  DEBTRACE("---");
   _path = QPainterPath();
   _path.setFillRule(Qt::WindingFill);
   QPointF pfrom = start();
   QPointF pto   = goal();
-  if (_nbPoints)
+  DEBTRACE(Scene::_straightLinks);
+  if (_nbPoints && !Scene::_straightLinks)
     {
-      addArrow(pfrom, _lp[0], _RIGHT);
+      DEBTRACE("---");
+      addArrow(pfrom, _lp[0], _RIGHT, thickness);
       for (int k=0; k<_nbPoints-1; k++)
-        addArrow(_lp[k], _lp[k+1], _directions[k+1]);
-      addArrow(_lp[_nbPoints-1], pto, _RIGHT);
+        addArrow(_lp[k], _lp[k+1], _directions[k+1], thickness);
+      addArrow(_lp[_nbPoints-1], pto, _RIGHT, thickness);
     }
   else
     {
-      _path.moveTo(pfrom.x() -1, pfrom.y() -1);
-      _path.lineTo(pto.x() +1, pto.y() -1);
-      _path.lineTo(pto.x() +1, pto.y() +1);
-      _path.lineTo(pfrom.x() -1, pfrom.y() +1);
-      _path.lineTo(pfrom.x() -1, pfrom.y() -1);
+      DEBTRACE("---");
+      double d = std::sqrt((pto.x() - pfrom.x())*(pto.x() - pfrom.x()) + (pto.y() - pfrom.y())*(pto.y() - pfrom.y()));
+      double sina = (pto.y() - pfrom.y())/d;
+      double cosa = (pto.x() - pfrom.x())/d;
+      double ep=3.0*thickness/2.0 * Resource::link_thickness;
+      _path.moveTo(pfrom.x() -ep*sina, pfrom.y() +ep*cosa);
+      _path.lineTo(pto.x()   -ep*sina, pto.y()   +ep*cosa);
+      _path.lineTo(pto.x()   +ep*sina, pto.y()   -ep*cosa);
+      _path.lineTo(pfrom.x() +ep*sina, pfrom.y() -ep*cosa);
+      _path.lineTo(pfrom.x() -ep*sina, pfrom.y() -ep*cosa);
+      //arrow
+      double x=(pto.x() + pfrom.x())/2.;
+      double y=(pto.y() + pfrom.y())/2.;
+      double l=8*ep;
+      double e=4*ep;
+      _path.moveTo(x+l*cosa,y+l*sina);
+      _path.lineTo(x+e*sina,y-e*cosa);
+      _path.lineTo(x-e*sina,y+e*cosa);
+      _path.lineTo(x+l*cosa,y+l*sina);
     }
 }
 
 void SceneLinkItem::addArrow(QPointF pfrom,
                              QPointF pto,
-                             HMI::Direction dir)
+                             YACS::HMI::Direction dir,
+                             int thickness)
 {
   qreal x, y, width, height, length;
+  double ep=thickness * Resource::link_thickness;
   switch (dir)
     {
     case _UP:
-      x = pfrom.x() -1;
-      y = pfrom.y() -1;
-      width = 3;
-      height = 2 + pto.y() -pfrom.y();
+      x = pfrom.x() -ep;
+      y = pfrom.y() -ep;
+      width = 3*ep;
+      height = 2*ep + pto.y() -pfrom.y();
       length = height;
       break;
     case _RIGHT:
-      x = pfrom.x() -1;
-      y = pfrom.y() -1;
-      width = 2 + pto.x() -pfrom.x();
-      height = 3;
+      x = pfrom.x() -ep;
+      y = pfrom.y() -ep;
+      width = 2*ep + pto.x() -pfrom.x();
+      height = 3*ep;
       length = width;
       break;
     case _DOWN:
-      x = pto.x() -1;
-      y = pto.y() -1;
-      width = 3;
-      height = 2 + pfrom.y() -pto.y();
+      x = pto.x() -ep;
+      y = pto.y() -ep;
+      width = 3*ep;
+      height = 2*ep + pfrom.y() -pto.y();
       length = height;
       break;
     case _LEFT:
-      x = pto.x() -1;
-      y = pto.y() -1;
-      width = 2 + pfrom.x() -pto.x();
-      height = 3;
+      x = pto.x() -ep;
+      y = pto.y() -ep;
+      width = 2*ep + pfrom.x() -pto.x();
+      height = 3*ep;
       length = width;
       break;
     }
@@ -139,7 +167,7 @@ void SceneLinkItem::addArrow(QPointF pfrom,
 
   if (length > 20)
     {
-      int e=5, h1=4, h2=8;
+      int e=5*ep, h1=4*ep, h2=8*ep;
       switch (dir)
         {
         case _UP:
@@ -187,7 +215,7 @@ void SceneLinkItem::paint(QPainter *painter,
                           QWidget *widget)
 {
   //DEBTRACE("SceneLinkItem::paint " << _label.toStdString());
-  if (_path.isEmpty()) setShape();
+  if (_path.isEmpty()) setShape(_emphasized+1);
   painter->save();
   QPen pen;
   pen.setColor(getPenColor());
@@ -200,6 +228,34 @@ void SceneLinkItem::paint(QPainter *painter,
 void SceneLinkItem::update(GuiEvent event, int type, Subject* son)
 {
   DEBTRACE("SceneLinkItem::update "<< eventName(event)<<" "<<type<<" "<<son);
+  switch (event)
+    {
+    case YACS::HMI::EMPHASIZE:
+      DEBTRACE("SceneObserverItem::update EMPHASIZE " << type);
+      if (type)
+        {
+          _emphasized = true;
+          setZValue(_level+100);
+          DEBTRACE("ZValue=" << zValue());
+          setShape(2);
+        }
+      else
+        {
+          _emphasized = false;
+          setZValue(_level);
+          DEBTRACE("ZValue=" << zValue());
+          setShape();
+        }
+      QGraphicsItem::update();
+      break;
+    case YACS::HMI::SWITCHSHAPE:
+      DEBTRACE("SceneObserverItem::update SWITCHSHAPE");
+      setShape(_emphasized+1);
+      QGraphicsItem::update();
+      break;
+    default:
+      ;
+    }
 }
 
 void SceneLinkItem::popupMenu(QWidget *caller, const QPoint &globalPos)
@@ -211,6 +267,8 @@ void SceneLinkItem::popupMenu(QWidget *caller, const QPoint &globalPos)
 void SceneLinkItem::setPath(LinkPath lp)
 {
   DEBTRACE("SceneLinkItem::setPath " << lp.size());
+  CHRONO(10);
+  prepareGeometryChange();
   _nbPoints = lp.size();
   _lp.reserve(_nbPoints+1);
   _directions.reserve(_nbPoints +2);
@@ -259,6 +317,23 @@ void SceneLinkItem::setPath(LinkPath lp)
       prevx = p.x();
       prevy = p.y();
     }
+
+  if(k==1)
+    {
+      //link should be direct (k=0) or orthogonal k>=2
+      k=2;
+      _lp[1]=_lp[0];
+      _lp[1].setY(goal().y());
+      if (goal().y() > start().y()) _directions[1] = _UP;
+      else _directions[1] = _DOWN;
+    }
+
+  if(k>2 && _directions[k-1]==_RIGHT)
+    {
+      //remove last point
+      k=k-1;
+    }
+
   _nbPoints = k;
   _lp[k-1].setY(goal().y());
   _directions[k] = _RIGHT; // --- direction from point k-1 to goal
@@ -271,11 +346,16 @@ void SceneLinkItem::setPath(LinkPath lp)
       else
         break;
     }
+  CHRONOSTOP(10);
+  CHRONO(11);
   if (Scene::_simplifyLinks) minimizeDirectionChanges();
+  CHRONOSTOP(11);
+  CHRONO(12);
   if (Scene::_force2NodesLink) force2points();
   for (k=0; k<_nbPoints; k++)
     DEBTRACE("_lp[" << k << "](" << _lp[k].x() << "," << _lp[k].y() << ")");
-  setShape();
+  setShape(_emphasized+1);
+  SceneItem::update();
 }
 
 /*!
@@ -391,6 +471,12 @@ void SceneLinkItem::minimizeDirectionChanges()
 //               DEBTRACE("("<< _lp[i].x() << "," << _lp[i].y() << ") "
 //                        << _directions[i]);
 //             }
+
+          if(newdir[newk]==_RIGHT)
+            {
+              //remove last point
+              newk=newk-1;
+            }
           _nbPoints = newk+1;
           for (int i=0; i<_nbPoints; i++)
             {
@@ -453,4 +539,56 @@ QPointF SceneLinkItem::goal()
   QPointF localTo(dpit->getWidth()/20, dpit->getHeight()/2);
   DEBTRACE("localTo(" << localTo.x() << "," << localTo.y() << ")");
   return mapFromItem(dpit, localTo);
+}
+
+void SceneLinkItem::updateShape()
+{
+  prepareGeometryChange();
+  if (_nbPoints)
+    {
+      // a path has been calculated, update it
+      QPointF pfrom = start();
+      QPointF pto   = goal();
+      _lp[0].setY(pfrom.y());
+      if(_lp[1].y() > _lp[0].y())_directions[1]=_UP;
+      else _directions[1]=_DOWN;
+      _lp[_nbPoints-1].setY(pto.y());
+      if(_lp[_nbPoints-1].y() > _lp[_nbPoints-2].y())_directions[_nbPoints-1]=_UP;
+      else _directions[_nbPoints-1]=_DOWN;
+    }
+  setShape(_emphasized+1);
+}
+
+QColor SceneLinkItem::getPenColor()
+{
+  _penColor     = Resource::link_draw_color.darker(Resource::link_pen_darkness);
+  _hiPenColor   = Resource::link_select_color.darker(Resource::link_pen_darkness);
+  return SceneObserverItem::getPenColor();
+}
+
+QColor SceneLinkItem::getBrushColor()
+{
+  _brushColor   = Resource::link_draw_color;
+  _hiBrushColor = Resource::link_select_color;
+  return SceneObserverItem::getBrushColor();
+}
+
+// Get the node at the "from" place of the link
+SceneNodeItem* SceneLinkItem::getFromNode() {
+  SceneCtrlPortItem* p = dynamic_cast<SceneCtrlPortItem*>(_from);
+  if (p) {
+    return(p->getParentNode());
+  } else {
+    return(NULL);
+  };
+}
+
+// Get the node at the "to" place of the link
+SceneNodeItem* SceneLinkItem::getToNode() {
+  SceneCtrlPortItem* p = dynamic_cast<SceneCtrlPortItem*>(_to);
+  if (p) {
+    return(p->getParentNode());
+  } else {
+    return(NULL);
+  };
 }

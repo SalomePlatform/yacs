@@ -1,21 +1,22 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "SchemaOutPortItem.hxx"
 #include "ItemMimeData.hxx"
 #include "QtGuiContext.hxx"
@@ -44,7 +45,7 @@ using namespace YACS::HMI;
  *  column 3: YValue = value
  */
 SchemaOutPortItem::SchemaOutPortItem(SchemaItem *parent, QString label, Subject* subject)
-  : SchemaItem::SchemaItem(parent, label, subject)
+  : SchemaItem(parent, label, subject)
 {
   SubjectDataPort *subPort = dynamic_cast<SubjectDataPort*>(subject);
   if (subPort)
@@ -94,6 +95,17 @@ void SchemaOutPortItem::update(GuiEvent event, int type, Subject* son)
           }
       }
       break;
+    case UPDATE:
+      {
+        SubjectOutputPort *sop = dynamic_cast<SubjectOutputPort*>(son);
+        if (sop)
+          {
+            DataFlowPort *port = dynamic_cast<DataFlowPort*>(sop->getPort());
+            _itemData.replace(YType, port->edGetType()->name());
+            _itemForeground.replace(YType, QColor("black"));
+          }
+      }
+      break;
     case UPDATEPROGRESS:
       {
         SubjectOutputPort *sip = dynamic_cast<SubjectOutputPort*>(son);
@@ -112,7 +124,9 @@ Qt::ItemFlags SchemaOutPortItem::flags(const QModelIndex &index)
 {
   //DEBTRACE("SchemaOutPortItem::flags");
   Qt::ItemFlags pflag = Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDropEnabled;
-  if (! QtGuiContext::getQtCurrent()->isEdition())
+  if (QtGuiContext::getQtCurrent()->isEdition())
+    pflag = pflag | Qt::ItemIsDragEnabled;
+  else
     return pflag;
 
   Qt::ItemFlags flagEdit = 0;
@@ -131,7 +145,8 @@ Qt::ItemFlags SchemaOutPortItem::flags(const QModelIndex &index)
     case 2:
       SubjectDataPort *sdp = dynamic_cast<SubjectDataPort*>(_subject);
       Node *node = sdp->getPort()->getNode();
-      PresetNode *pnode = dynamic_cast<PresetNode*>(node);
+      //PresetNode *pnode = dynamic_cast<PresetNode*>(node);
+      DataNode *pnode = dynamic_cast<DataNode*>(node);
       if (! pnode) break;
       flagEdit = Qt::ItemIsEditable; // --- port value editable for preset node
       break;   

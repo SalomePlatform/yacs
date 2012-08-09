@@ -1,24 +1,26 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "XMLNode.hxx"
 #include "XMLPorts.hxx"
 #include "Mutex.hxx"
+#include "TypeCode.hxx"
 
 #include <libxml/parser.h>
 #include <libxml/tree.h>
@@ -28,6 +30,12 @@
 #include <fstream>
 #include <sys/types.h>
 #include <sys/stat.h>
+
+#ifdef WNT
+#include <windows.h>
+#include <io.h>
+#define chmod _chmod
+#endif
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -84,7 +92,13 @@ void XmlNode::execute()
   char dir[]="yacsXXXXXX";
   // add a lock around mkdtemp (seems not thread safe)
   MUTEX.lock();
+#ifdef WNT
+  char mdir [512+1];
+  GetTempPath(MAX_PATH+1, mdir);
+  CreateDirectory(mdir, NULL);
+#else
   char* mdir=mkdtemp(dir);
+#endif
   MUTEX.unlock();
   if(mdir==NULL)
     {

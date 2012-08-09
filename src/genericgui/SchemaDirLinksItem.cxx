@@ -1,21 +1,22 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "SchemaDirLinksItem.hxx"
 #include "SchemaLinkItem.hxx"
 #include "SchemaModel.hxx"
@@ -33,7 +34,7 @@ using namespace YACS::ENGINE;
 using namespace YACS::HMI;
 
 SchemaDirLinksItem::SchemaDirLinksItem(SchemaItem *parent, QString label, Subject* subject)
-  : SchemaItem::SchemaItem(parent, label, subject)
+  : SchemaItem(parent, label, subject)
 {
   _itemDeco.replace(YLabel, QIcon("icons:folder_cyan.png"));
 }
@@ -58,9 +59,9 @@ Qt::ItemFlags SchemaDirLinksItem::flags(const QModelIndex &index)
 
 QVariant SchemaDirLinksItem::editionWhatsThis(int column) const
 {
-return "Links between ports or nodes under that block level appears in this folder.\n" \
+return "<p>Links between ports or nodes under that block level appears in this folder.\n" \
   "You can add data links (between ports) and control links (between nodes) " \
   "by drag from origin (out node or out port) to destination (in node or in port) " \
-  "either in 2D graphic view or tree view.";
+  "either in 2D graphic view or tree view. <a href=\"modification.html#create-a-link\">More...</a></p>";
 }
 

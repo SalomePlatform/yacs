@@ -1,21 +1,22 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "Pool.hxx"
 #include "Any.hxx"
 
@@ -74,6 +75,43 @@ bool Pool::ExpData::isLaunchable() const
   return _out==NOT_USED_NOR_COMPUTED;
 }
 
+int Pool::getCurrentId() const 
+{ 
+  if(empty())
+    throw YACS::Exception("no current case set in pool");
+  else
+    return _currentCase->first; 
+}
+Any *Pool::getCurrentInSample() const 
+{ 
+  if(empty())
+    throw YACS::Exception("no current case set in pool");
+  else
+    return (*_currentCase).second.inValue(); 
+}
+
+Any *Pool::getCurrentOutSample() const 
+{ 
+  if(empty())
+    throw YACS::Exception("no current case set in pool");
+  else
+    return (*_currentCase).second.outValue(); 
+}
+
+Any *Pool::getOutSample(int id)
+{
+  if(empty())
+    throw YACS::Exception("no current case set in pool");
+
+  std::list< std::pair<int, ExpData> >::iterator iter;
+  for(iter=_container.begin();iter!=_container.end();iter++)
+    if((*iter).first==id)
+        return (*iter).second.outValue();
+  if(iter==_container.end())
+    throw YACS::Exception("no current case set in pool");
+}
+
+
 //! Push a sample. \b WARNING inSample ownership is released to current Pool instance (this) !
 void Pool::pushInSample(int id, Any *inSample, unsigned char priority)
 {
@@ -99,7 +137,7 @@ void Pool::destroyCurrentCase()
  * corrupted 'this'.
  *
  */
-void Pool::checkConsistency() throw(Exception)
+void Pool::checkConsistency() throw(YACS::Exception)
 {
   // First check unicity of ids.
   std::set<int> ids;
@@ -119,7 +157,7 @@ void Pool::checkConsistency() throw(Exception)
 /*!
  * \throw See the \b throw case of pushOutSampleAt method.
  */
-void Pool::setCurrentId(int id) throw(Exception)
+void Pool::setCurrentId(int id) throw(YACS::Exception)
 {
   std::list< std::pair<int, ExpData> >::iterator iter;
   for(iter=_container.begin();iter!=_container.end();iter++)
@@ -140,7 +178,7 @@ void Pool::setCurrentId(int id) throw(Exception)
  *        has destroyed a case id different from its id.
  *
  */
-void Pool::putOutSampleAt(int id, Any *outValue) throw(Exception)
+void Pool::putOutSampleAt(int id, Any *outValue) throw(YACS::Exception)
 {
   std::list< std::pair<int, ExpData> >::iterator iter;
   for(iter=_container.begin();iter!=_container.end();iter++)

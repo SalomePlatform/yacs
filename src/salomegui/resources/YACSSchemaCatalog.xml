@@ -1,0 +1,28 @@
+<?xml version='1.0'?>
+<proc>
+   <property name="DefaultStudyID" value="1"/>
+   <objref name="GEOM_Shape" id="IDL:GEOM/GEOM_Object:1.0"/>
+   <type name="bool" kind="bool"/>
+   <sequence name="boolvec" content="bool"/>
+   <type name="double" kind="double"/>
+   <sequence name="dblevec" content="double"/>
+   <objref name="file" id="file"/>
+   <type name="int" kind="int"/>
+   <sequence name="intvec" content="int"/>
+   <objref name="pyobj" id="python:obj:1.0"/>
+   <type name="string" kind="string"/>
+   <sequence name="stringvec" content="string"/>
+   <container name="DefaultContainer">
+      <property name="container_name" value="FactoryServer"/>
+      <property name="hostname" value="localhost"/>
+   </container>
+   <inline name="PyScript0">
+      <script><code><![CDATA[import geompy
+n=1
+box = geompy.MakeBoxDXDYDZ(10,10,10)
+id_cyl_Int = geompy.addToStudy(box,"Box_%d" % n)]]></code></script>
+      <outport name="box" type="GEOM_Shape"/>
+   </inline>
+   <presentation name="PyScript0" x="9" y="80.5" width="227.5" height="110"/>
+   <presentation name="__ROOT__" x="0" y="0" width="246" height="199.5"/>
+</proc>

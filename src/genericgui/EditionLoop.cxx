@@ -1,23 +1,27 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "EditionLoop.hxx"
 #include "FormLoop.hxx"
+#include "Node.hxx"
+#include "OutputPort.hxx"
+#include "QtGuiContext.hxx"
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -36,22 +40,40 @@ EditionLoop::EditionLoop(Subject* subject,
   : EditionNode(subject, parent, name)
 {
   _formLoop = new FormLoop(this);
+  _nbsteps = 0;
   _wid->gridLayout1->addWidget(_formLoop);
+
+  QHBoxLayout* _hbl_index = new QHBoxLayout();
+  QLabel* _la_index = new QLabel(this);
+  _hbl_index->addWidget(_la_index);
+  _la_index->setText("index:");
+  _le_index = new QLineEdit(this);
+  _le_index->setText(QString::number(0));
+  _le_index->setReadOnly(true);
+  _hbl_index->addWidget(_le_index);
+  _formLoop->gridLayout->addLayout(_hbl_index, 1, 0);
+
   _formLoop->sb_nsteps->setMinimum(0);
   _formLoop->sb_nsteps->setMaximum(INT_MAX);
-  connect(_formLoop->sb_nsteps, SIGNAL(valueChanged(const QString &)),
-          this, SLOT(onModifyNbSteps(const QString &)));
+  connect(_formLoop->sb_nsteps, SIGNAL(editingFinished()),
+          this, SLOT(onNbStepsEdited()));
 }
 
 EditionLoop::~EditionLoop()
 {
 }
 
-void EditionLoop::onModifyNbSteps(const QString &text)
+void EditionLoop::onNbStepsEdited()
 {
-  SubjectForLoop *sfl = dynamic_cast<SubjectForLoop*>(_subject);
-  assert(sfl);
-  sfl->setNbSteps(text.toStdString());
+  int newval = _formLoop->sb_nsteps->value();
+  DEBTRACE("EditionLoop::onNbStepsEdited " << _nbsteps << " --> " << newval);
+  if (newval != _nbsteps)
+    {
+      SubjectForLoop *sfl = dynamic_cast<SubjectForLoop*>(_subject);
+      YASSERT(sfl);
+      QString text = _formLoop->sb_nsteps->cleanText();
+      sfl->setNbSteps(text.toStdString());
+    }
 }
 
 void EditionLoop::synchronize()
@@ -66,14 +88,29 @@ void EditionLoop::update(GuiEvent event, int type, Subject* son)
   switch (event)
     {
     case SETVALUE:
-      SubjectComposedNode * scn = dynamic_cast<SubjectComposedNode*>(_subject);
-      string val = scn->getValue();
-      istringstream ss(val);
-      DEBTRACE(val);
-      int i = 0;
-      ss >> i;
-      DEBTRACE(i);
-      _formLoop->sb_nsteps->setValue(i);
-      break;
+      {
+        SubjectComposedNode * scn = dynamic_cast<SubjectComposedNode*>(_subject);
+        string val = scn->getValue();
+        istringstream ss(val);
+        DEBTRACE(val);
+        int i = 0;
+        ss >> i;
+        DEBTRACE(i);
+        _formLoop->sb_nsteps->setValue(i);
+        _nbsteps = i;
+
+        YACS::ENGINE::OutputPort* odp=scn->getNode()->getOutputPort("index");
+        SubjectDataPort* sodp = QtGuiContext::getQtCurrent()->_mapOfSubjectDataPort[odp];
+        _le_index->setText(QString::fromStdString(sodp->getExecValue()));
+        break;
+      }
+    case UPDATEPROGRESS:
+      {
+        SubjectComposedNode * scn = dynamic_cast<SubjectComposedNode*>(_subject);
+        YACS::ENGINE::OutputPort* odp=scn->getNode()->getOutputPort("index");
+        SubjectDataPort* sodp = QtGuiContext::getQtCurrent()->_mapOfSubjectDataPort[odp];
+        _le_index->setText(QString::fromStdString(sodp->getExecValue()));
+        break;
+      }
     }
 }

@@ -1,39 +1,48 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "SceneNodeItem.hxx"
 #include "SceneComposedNodeItem.hxx"
+#include "SceneProcItem.hxx"
 #include "SceneHeaderNodeItem.hxx"
 #include "SceneInPortItem.hxx"
 #include "SceneOutPortItem.hxx"
 #include "SceneCtrlInPortItem.hxx"
 #include "SceneCtrlOutPortItem.hxx"
+#include "SceneLinkItem.hxx"
 #include "Scene.hxx"
 #include "QtGuiContext.hxx"
 #include "Menus.hxx"
+#include "GuiEditor.hxx"
+#include "InPort.hxx"
+#include "OutPort.hxx"
 
 #include "Switch.hxx"
+#include "Resource.hxx"
 
 #include <QGraphicsSceneHoverEvent>
 #include <QPointF>
 
+#include <cmath>
 #include <sstream>
 #include <cassert>
+#include <vector>
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -49,14 +58,19 @@ SceneNodeItem::SceneNodeItem(QGraphicsScene *scene, SceneItem *parent,
   _inPorts.clear();
   _outPorts.clear();
   _header = 0;
-  _height = 50 + 2*_nml;
-  _width = 2*ScenePortItem::getPortWidth() + 3*_margin + 2*_nml;
-  _brushColor = QColor(0,0,128);
+  _brushColor = Resource::Scene_pen;
   _moving = false;
-  _hasNml = true;
+  _moved = false;
+  _blocX = false;
+  _blocY = false;
   _dragable = true;
   _dragButton = Qt::MidButton;
   _execState = YACS::UNDEFINED;
+  _expanded = true;
+  _expandedPos = QPointF(0,0);
+  _expandedWidth = _width;
+  _expandedHeight = _height;
+  _shownState = expandShown;
 }
 
 SceneNodeItem::~SceneNodeItem()
@@ -67,13 +81,25 @@ SceneNodeItem::~SceneNodeItem()
 
 void SceneNodeItem::setWidth(qreal width)
 {
-  _width = width;
-  adjustHeader();
+  if (width != _width)
+    {
+      prepareGeometryChange();
+      _width = width;
+      _expandedWidth = _width;
+      adjustHeader();
+      QGraphicsItem::update();
+    }
 }
 
 void SceneNodeItem::setHeight(qreal height)
 {
-  _height = height;
+  if (height != _height)
+    {
+      prepareGeometryChange();
+      _height = height;
+      _expandedHeight = _height;
+      QGraphicsItem::update();
+    }
 }
 
 void SceneNodeItem::addHeader()
@@ -86,8 +112,6 @@ void SceneNodeItem::addHeader()
                                         this,
                                         getHeaderLabel());
       updateState();
-      QPointF topLeft(_margin + _nml, _margin + _nml);
-      _header->setTopLeft(topLeft);
       checkGeometryChange();
     }
 }
@@ -102,21 +126,12 @@ void SceneNodeItem::paint(QPainter *painter,
                           QWidget *widget)
 {
   //DEBTRACE("SceneNodeItem::paint");
-  painter->save();
-  painter->setBrush(QBrush(Qt::NoBrush));
-  painter->setPen(QPen(Qt::NoPen));
-  painter->drawRect(QRectF(0, 0, _width, _height));
-
-  painter->setPen(getPenColor());
-  painter->setBrush(getBrushColor());
-  painter->drawRect(QRectF(_nml, _nml,
-                           _width-2*_nml, _height-2*_nml));
-  painter->restore();
 }
 
 void SceneNodeItem::update(GuiEvent event, int type, Subject* son)
 {
   DEBTRACE("SceneNodeItem::update "<< eventName(event)<<" "<<type<<" "<<son);
+  SceneObserverItem::update(event, type, son);
   SubjectNode *snode = 0;
   Node *node = 0;
   switch (event)
@@ -148,28 +163,20 @@ void SceneNodeItem::arrangeChildNodes()
 {
 }
 
-qreal SceneNodeItem::getHeaderBottom()
+void SceneNodeItem::reorganizeShrinkExpand()
 {
-  qreal bottom = 0;
-  if (_hasHeader)
-    bottom = childBoundingRect(_header).bottom();
-  return bottom;
 }
 
-void SceneNodeItem::autoPosNewPort(AbstractSceneItem *item, int nbPorts)
+qreal SceneNodeItem::getHeaderBottom()
 {
-  SceneInPortItem* inPortItem = dynamic_cast<SceneInPortItem*>(item);
-  bool isInPort = (inPortItem != 0);
+  if (_hasHeader) {
+    return _header->getHeaderBottom();
+  } else {
+    return 0;
+  };
+}
 
-  qreal xLeft = _margin + _nml;
-  if (!isInPort) xLeft += ScenePortItem::getPortWidth() + _margin + _nml;
-
-  qreal yTop  = getHeaderBottom() + _margin;
-  yTop += nbPorts *(ScenePortItem::getPortHeight() + _margin);
-
-  DEBTRACE("left, top " << xLeft  << " " << yTop);
-  QPointF topLeft(xLeft, yTop);
-  item->setTopLeft(topLeft);
+void SceneNodeItem::autoPosNewPort(AbstractSceneItem *item, int nbPorts) {
 }
 
 void SceneNodeItem::popupMenu(QWidget *caller, const QPoint &globalPos)
@@ -249,6 +256,10 @@ void SceneNodeItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
       SceneComposedNodeItem *proc = dynamic_cast<SceneComposedNodeItem*>(item);
       proc->rebuildLinks();
     }
+  if (_moved)
+    if (Resource::ensureVisibleWhenMoved)
+      QtGuiContext::getQtCurrent()->getView()->ensureVisible(this);
+  _moved = false;
 }
 
 void SceneNodeItem::mouseMoveEvent(QGraphicsSceneMouseEvent * event)
@@ -260,26 +271,49 @@ void SceneNodeItem::mouseMoveEvent(QGraphicsSceneMouseEvent * event)
         {
           QPointF oldPos = pos();
           QPointF aPos = oldPos + event->scenePos() - event->lastScenePos();
-          if (aPos.x() < _margin + _nml)
-            aPos.setX(_margin + _nml);
-          if (aPos.y() < _margin + bloc->getHeaderBottom() + _nml)
-            aPos.setY(_margin + bloc->getHeaderBottom() + _nml);
+          if (aPos != oldPos)
+            _moved = true;
+          if (aPos.x() > oldPos.x()) _blocX = false;
+          if (aPos.y() > oldPos.y()) _blocY = false;
+          if (aPos.x() < Resource::Border_Margin)
+            {
+              aPos.setX(Resource::Border_Margin);
+              _blocX = true;
+            }
+          if ( aPos.y() < bloc->getHeaderBottom() )
+            {
+              aPos.setY(bloc->getHeaderBottom());
+              _blocY = true;
+            }
           setTopLeft(aPos);
           bloc->collisionResolv(this, oldPos);
         }
     }
 }
 
+void SceneNodeItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
+{
+  DEBTRACE("SceneNodeItem::mouseDoubleClickEvent");
+  if (dynamic_cast<SceneProcItem*>(this))
+    return;
+  QtGuiContext::getQtCurrent()->getGMain()->_guiEditor->shrinkExpand();
+}
+
 void SceneNodeItem::setTopLeft(QPointF topLeft)
 {
   QPointF oldPos = pos();
   setPos(topLeft);
+
+  //update links
+  updateLinks();
+
   if (_parent)
     {
       if (SceneComposedNodeItem *bloc = dynamic_cast<SceneComposedNodeItem*>(_parent))
         bloc->collisionResolv(this, oldPos);
       _parent->checkGeometryChange();
     }
+  _expandedPos = pos();
 }
 
 void SceneNodeItem::adjustHeader()
@@ -290,9 +324,9 @@ void SceneNodeItem::adjustHeader()
  void SceneNodeItem::updateState()
 {
   SubjectNode *snode = dynamic_cast<SubjectNode*>(_subject);
-  assert(snode);
+  YASSERT(snode);
   Node *node = snode->getNode();
-  assert(node);
+  YASSERT(node);
   switch (node->getState())
     {
     case YACS::INVALID:
@@ -315,6 +349,7 @@ void SceneNodeItem::setExecState(int execState)
 
 QString SceneNodeItem::getHeaderLabel()
 {
+  DEBTRACE("SceneNodeItem::getHeaderLabel");
   QString extLabel = _subject->getName().c_str();
 
   SceneObserverItem *soi = 0;
@@ -340,4 +375,71 @@ QString SceneNodeItem::getHeaderLabel()
     }
 
   return extLabel;
+}
+
+void SceneNodeItem::updateLinks()
+{
+  //update control links
+  std::list<SubjectControlLink*> lscl=dynamic_cast<SubjectNode*>(_subject)->getSubjectControlLinks();
+  for (std::list<SubjectControlLink*>::const_iterator it = lscl.begin(); it != lscl.end(); ++it)
+    {
+      SceneLinkItem* item = dynamic_cast<SceneLinkItem*>(QtGuiContext::getQtCurrent()->_mapOfSceneItem[*it]);
+      item->updateShape();
+    }
+
+  //update data links through child items update (SceneDataPortItem)
+  updateChildItems();
+}
+
+void SceneNodeItem::updateChildItems()
+{
+  foreach (QGraphicsItem *child, childItems())
+    {
+      if (SceneItem *sci = dynamic_cast<SceneItem*>(child))
+        {
+           sci->updateLinks();
+        }
+    }
+}
+
+void SceneNodeItem::shrinkExpandLink(bool se)
+{
+  foreach (QGraphicsItem *child, childItems())
+    {
+      if (SceneItem *sci = dynamic_cast<SceneItem*>(child))
+        {
+           sci->shrinkExpandLink(se);
+        }
+    }
+}
+
+void SceneNodeItem::showOutScopeLinks()
+{
+  SubjectNode *snode = dynamic_cast<SubjectNode*>(_subject);
+  YASSERT(snode);
+  Node *node = snode->getNode();
+  YASSERT(node);
+  vector<pair<OutPort *, InPort *> > listLeaving  = node->getSetOfLinksLeavingCurrentScope();
+  vector<pair<InPort *, OutPort *> > listIncoming = node->getSetOfLinksComingInCurrentScope();
+  vector<pair<OutPort *, InPort *> > outScope = listLeaving;
+  vector<pair<InPort *, OutPort *> >::iterator it1;
+  for (it1 = listIncoming.begin(); it1 != listIncoming.end(); ++it1)
+    {
+      pair<OutPort *, InPort *> outin = pair<OutPort *, InPort *>((*it1).second, (*it1).first);
+      outScope.push_back(outin);
+    }
+  vector<pair<OutPort*, InPort*> >::const_iterator it = outScope.begin();
+  for( ; it != outScope.end(); ++it)
+  {
+    YASSERT(QtGuiContext::getQtCurrent()->_mapOfSubjectLink.count(*it));
+    SubjectLink* slink = QtGuiContext::getQtCurrent()->_mapOfSubjectLink[*it];
+    YASSERT(QtGuiContext::getQtCurrent()->_mapOfSceneItem.count(slink));
+    SceneItem *item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[slink];
+    item->show();
+  }
+}
+
+void SceneNodeItem::setShownState(shownState ss)
+{
+  _shownState = ss;
 }

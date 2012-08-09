@@ -1,21 +1,22 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef _SCENELINKITEM_HXX_
 #define _SCENELINKITEM_HXX_
 
@@ -25,6 +26,12 @@
 #include <QPointF>
 #include <QPainterPath>
 #include <vector>
+
+#ifdef WNT
+#ifdef _UP
+#undef _UP
+#endif
+#endif
 
 namespace YACS
 {
@@ -40,6 +47,7 @@ namespace YACS
       } Direction;
 
     class ScenePortItem;
+    class SceneNodeItem;
 
     class SceneLinkItem: public SceneObserverItem
     {
@@ -62,12 +70,18 @@ namespace YACS
       virtual void force2points();
       virtual QPointF start();
       virtual QPointF goal();
+      virtual void updateShape();
+      virtual SceneNodeItem* getFromNode();
+      virtual SceneNodeItem* getToNode();
 
     protected:
-      void setShape();
+      void setShape(int thickness = 1);
       void addArrow(QPointF pfrom,
                     QPointF pto,
-                    HMI::Direction dir);
+                    HMI::Direction dir,
+                    int thickness = 1);
+      virtual QColor getBrushColor();
+      virtual QColor getPenColor();
 
       QPainterPath _path;
       ScenePortItem* _from;

@@ -1,20 +1,20 @@
 
 .. _schemapy:
 
-Définition d'un schéma de calcul avec l'interface de programmation Python
+Defining a calculation scheme with the Python programming interface
 ============================================================================
-Un schéma de calcul YACS peut être défini à partir d'un programme écrit en langage Python (http://www.python.org/).
-Pour une initiation au langage, on consultera le `tutorial Python <http://docs.python.org/tut/tut.html>`_.
+A YACS calculation scheme can be defined from a program written in the Python language (http://www.python.org/).  
+Refer to the `Python tutorial <http://docs.python.org/tut/tut.html>`_ for an introduction to the language.
 
-L'interface de programmation (API) est portée par trois modules Python : pilot, SALOMERuntime et loader.
+The programming interface (API) is carried on three Python modules:  pilot, SALOMERuntime and loader.
 
-Le module SALOMERuntime sert pour initialiser YACS pour SALOME.
+The SALOMERuntime module is used to initialise YACS for SALOME.
 
-Le module loader sert pour créer des schémas de calcul en chargeant des fichiers au format XML.
+The loader module is used to create calculation schemes by loading files in the XML format.
 
-Le module pilot est celui qui sert à créer des schémas de calcul.
+The pilot module is used to create calculation schemes.
 
-Ces modules doivent être importés au début du programme Python et YACS doit être initialisé::
+These modules must be imported at the beginning of the Python program and YACS must be initialised::
 
     import sys
     import pilot
@@ -22,19 +22,18 @@ Ces modules doivent être importés au début du programme Python et YACS doit �
     import loader
     SALOMERuntime.RuntimeSALOME_setRuntime()
 
-Pour pouvoir importer les modules YACS, l'environnement doit être correctement configuré ce qui est le 
-cas si on utilise l'application SALOME. Sinon, il faut positionner la variable d'environnement PYTHONPATH
-à <YACS_ROOT_DIR>/lib/lib/pythonX.Y/site-packages/salome.
+Before YACS modules can be imported, the environment must be correctly configured, as it will be if the 
+SALOME application is used.  Otherwise, the PYTHONPATH environment variable has to be set to 
+<YACS_ROOT_DIR>/lib/pythonX.Y/site-packages/salome.
 
 .. _loadxml:
 
-Créer un schéma de calcul par chargement d'un fichier XML
+Create a calculation scheme by loading an XML file
 --------------------------------------------------------------
-C'est la façon la plus simple de créer un schéma de calcul. Si on a un fichier conforme à la syntaxe YACS
-(voir :ref:`schemaxml`), il suffit de créer un chargeur de fichier XML puis d'utiliser sa méthode load
-pour obtenir un objet schéma de calcul en Python.
+This is the easiest way of creating a calculation scheme.  If there is a file conforming with the YACS syntax (see :ref:`schemaxml`), 
+then all that is necessary is to create an XML file loader and then to use its load method to obtain a calculation scheme object in Python.
 
-Voici le code Python suffisant pour charger un fichier XML::
+The following shows the sufficient Python code to load an XML file::
 
   xmlLoader = loader.YACSLoader()
   try:
@@ -43,15 +42,13 @@ Voici le code Python suffisant pour charger un fichier XML::
     print "IO exception:",ex
     sys.exit(1)
 
-Ensuite, si on met dans un fichier de nom testLoader.py le code de l'initialisation et le code
-du chargement, il suffit de faire::
-
+Then, if the initialisation code and the loading code are put into a file named testLoader.py, proceed as follows::
+ 
   python testLoader.py
 
-pour exécuter le programme. L'exception IOError peut être levée par l'opération de chargement 
-principalement si le fichier n'existe pas ou ne peut pas être lu.
-Dans le cas où aucune exception n'a été levé, il faut vérifier que l'analyse du fichier s'est
-bien passée. Ceci est fait en utilisant l'objet Logger associé au schéma de calcul::
+to execute the program.  The IOError exception can be raised by the loading operation principally if the file does not exist 
+or if it cannot be read.  If no exception has been raised, it is necessary to make sure that the file analysis took place correctly.  
+This is done using the Logger object associated with the calculation scheme::
 
    logger=p.getLogger("parser")
    if not logger.isEmpty():
@@ -59,9 +56,9 @@ bien passée. Ceci est fait en utilisant l'objet Logger associé au schéma de c
      print logger.getStr()
      sys.exit(1)
 
-Enfin, si l'analyse du fichier s'est bien passée, il faut vérifier la validité du schéma (complétude
-des connexions, pas de port d'entrée non connecté, ...). On utilise pour celà la méthode isValid de 
-l'objet schéma de calcul puis la méthode p.checkConsistency de ce même objet comme ci-dessous::
+Finally, if the file analysis took place correctly, the validity of the scheme (completeness of connections, no unconnected 
+input port, etc.) has to be checked.  This is done using the isValid method of the calculation scheme object, and 
+then the p.checkConsistency method of this object as below::
 
    if not p.isValid():
      print "The schema is not valid and can not be executed"
@@ -76,178 +73,182 @@ l'objet schéma de calcul puis la méthode p.checkConsistency de ce même objet 
      sys.exit(1)
 
 
-Si tous ces tests se sont bien passés, le schéma est prêt à être exécuté (voir :ref:`execpy`).
+If all these tests took place correctly, the scheme is ready to be executed (see :ref:`execpy`).
 
-Créer un schéma de calcul de zéro
------------------------------------
-On suivra ici la même progression que dans :ref:`schemaxml`.
-
-La première chose à faire avant de créer les objets constitutifs du schéma est d'obtenir
-l'objet runtime qui va servir pour leur création::
+Create a calculation scheme from scratch
+-------------------------------------------
+We will use the same sequence as in :ref:`schemaxml`.
+The first step is to obtain the runtime object that will be used for creation of objects making up the scheme, before they are created::
 
   r = pilot.getRuntime()
 
-Création d'un schéma vide
+Creating an empty scheme
 ''''''''''''''''''''''''''''
-On l'obtient par en utilisant la méthode createProc de l'objet runtime avec le nom
-du schéma en argument::
- 
+An empty scheme is obtained using the createProc method of the runtime object with the name of the scheme as an argument::
+
   p=r.createProc("pr")
 
-L'objet schéma de nom "pr" a été créé. Il est représenté par l'objet Python p.
+The scheme object named “pr” was created.  It is represented by the Python variable p.
 
-Définition des types de données
+Definition of data types
 '''''''''''''''''''''''''''''''''
-Types de base
-++++++++++++++++
-On ne peut définir de type de base. Ils sont définis par YACS. Il faut cependant pouvoir
-récupérer un objet Python équivalent à un type de base pour pouvoir créer par la suite des
-ports.
 
-On récupère un type de données de base en utilisant la méthode getTypeCode du schéma de calcul
-avec le nom du type en argument. Par exemple::
+.. _basictypes:
+
+Basic types
+++++++++++++++++
+A basic type cannot be defined.  These types are defined by YACS.  However, it must be possible to retrieve a Python object 
+equivalent to a basic type so as to be able to subsequently create ports.
+ 
+A basic data type is recovered using the getTypeCode method in the calculation scheme with the name of the type as an argument.  
+For example::
 
    td=p.getTypeCode("double")
 
-permet d'obtenir le type double (objet Python td).
-Les autres types de base s'obtiennent par::
+will obtain a double type (Python td object).  Other basic types are obtained by::
 
    ti=p.getTypeCode("int")
    ts=p.getTypeCode("string")
    tb=p.getTypeCode("bool")
    tf=p.getTypeCode("file")
 
-
-Référence d'objet
+Object reference
 +++++++++++++++++++++
-Pour définir un type référence d'objet, on utilise la méthode createInterfaceTc du schéma de calcul. Cette méthode
-prend trois arguments : le repository id de l'objet SALOME correspondant, le nom du type, une liste de types
-qui seront des types de base de ce type. Si le repository id vaut "", la valeur par défaut sera utilisée.
+The createInterfaceTc method in the calculation scheme is used to define an object reference type.  
+This method accepts three arguments:  the repository id of the corresponding SALOME object, the name of the type, and a 
+list of types that will be basic types of this type.  If the repository id is equal to “”, the default value will be used.
 
-Voici un exemple minimal de définition de référence d'objet de nom Obj (repository id par défaut, pas de type de base)::
+The following is a minimal example for a reference definition of an object name Obj (default repository id, no basic type)::
 
   tc1=p.createInterfaceTc("","Obj",[])
 
-On peut définir le même type Obj, en donnant le repository id::
+The same Obj type can be defined giving the repository id::
 
   tc1=p.createInterfaceTc("IDL:GEOM/GEOM_Object","Obj",[])
 
-Pour définir un type référence d'objet dérivé d'un autre type, on fournit en plus une liste de types de base.
+A list of basic types is also provided so as to define a reference object type derived from another type.
 
-Voici la définition du type MyObj dérivé du type Obj::
+The following gives a definition of the MyObj type derived from the Obj type::
 
   tc2=p.createInterfaceTc("","MyObj",[tc1])
 
-Séquence
-+++++++++++
-Pour définir un type séquence, on utilise la méthode createSequenceTc du schéma de calcul. Cette méthode
-prend trois arguments : le repository id, le nom du type, le type des éléments de la séquence. Il n'est
-généralement pas utile de spécifier le repository id. On donnera la valeur "".
+Sequence
++++++++++++++++++++++
+The createSequenceTc method in the calculation scheme is used to define a sequence type.   
+This method accepts three arguments, namely the repository id, the type name, and the type of elements in the sequence.  
+There is generally no point in specifying the repository id.  The value “” will be given.
 
-Voici un exemple de définition du type séquence de double seqdbl::
+The following gives an example definition of the seqdbl double sequence type::
 
   tc3=p.createSequenceTc("","seqdbl",td)
 
-td est le type double que l'on obtiendra comme ci-dessus : `Types de base`_.
+td is the double type that is obtained as above in the section on :ref:`basictypes`.
 
-Pour définir un type séquence de séquence, on écrit::
+A sequence type of sequence is defined as follows::
 
   tc4=p.createSequenceTc("","seqseqdbl",tc3)
 
-Pour définir un type séquence de référence, on écrit::
+A reference sequence type is defined as follows::
 
   tc5=p.createSequenceTc("","seqobj",tc1)
 
-
 Structure
 ++++++++++++
-Pour définir un type structure, on utilise la méthode createStructTc du schéma de calcul. Cette méthode
-prend deux arguments : le repository id, le nom du type. Pour une utilisation standard, le repository
-id prendra la valeur "". Le type structure est le seul qui se définit en deux étapes. Il est créé
-vide suite à l'appel de la méthode createStructTc. Pour définir ses membres, il faut ensuite
+A structure type is defined using the createStructTc method in the calculation scheme.  
+This method accepts two arguments, namely the repository id and the type name.  For standard use, the repository id is 
+equal to the value “”.  The structure type is the only type that is defined in two steps.  It is created empty after 
+calling the createStructTc method.  Its members are then defined by adding them with the addMember method.
 
-Voici un exemple de définition du type structure s1 avec 2 membres (m1 et m2) de types double et séquence de doubles::
+The following shows an example definition of an s1 type structure with 2 members (m1 and m2) of the double and double sequence types::
 
   ts1=p.createStructTc("","s1")
-  ts1.addMember("m1",td);
-  ts1.addMember("m2",tc3);
+  ts1.addMember("m1",td)
+  ts1.addMember("m2",tc3)
 
-Récupérer les types prédéfinis
+Retrieve predefined types
 +++++++++++++++++++++++++++++++++
-Par défaut, YACS définit seulement les types de base. Pour obtenir plus de types prédéfinis, il faut
-les demander à SALOME. Ces autres types prédéfinis sont contenus dans les catalogues des modules
-comme GEOM ou SMESH.
+By default, YACS only defines the basic types.  If more predefined types are required, they must be requested from SALOME.  
+These other predefined types are contained in module catalogs such as GEOM or SMESH.
 
-La séquence de code qui permet d'obtenir une image des catalogues SALOME dans YACS est la suivante::
+The following code sequence is used to obtain an image of SALOME catalogs in YACS::
 
   try:
-    cata=r.loadCatalog("session","corbaname::localhost:2810/NameService#Kernel.dir/ModulCatalog.object")
+    cata=r.loadCatalog("session",
+           "corbaname::localhost:2810/NameService#Kernel.dir/ModulCatalog.object")
   except CORBA.TRANSIENT,ex:
     print "Unable to contact server:",ex
   except CORBA.SystemException,ex:
     print ex,CORBA.id(ex)
 
-Il faut que l'application SALOME ait été lancée pour que le catalogue soit accessible.
-Ensuite, les types prédéfinis sont accessibles dans le dictionnaire cata._typeMap.
-Si on connait le nom du type voulu ('GEOM_Shape', par exemple), on l'obtient par::
+The SALOME application must be running before the catalog is accessible.  
+Predefined types are then accessible in the cata._typeMap dictionary.  
+If the name of the required type is known (for example ‘GEOM_Shape’), it is obtained as follows::
 
   tgeom=cata._typeMap['GEOM_Shape']
 
 .. _typedict:
 
-Ajouter un type dans le dictionnaire des types du schéma
+Add a type into the scheme types dictionary
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Certaines opérations nécessitent d'avoir les types définis dans le dictionnaire du schéma.
-Pour mettre un type dans le dictionnaire, on fait, par exemple pour le type seqobj défini ci-dessus::
+Some operations require that types are defined in the scheme dictionary.  Proceed as follows if you want to add a type 
+into the dictionary, for example for the seqobj type defined above::
 
   p.typeMap["seqobj"]=tc5
 
-avec le nom du type comme clé du dictionnaire et le type comme valeur.
+where the type name is the dictionary key and the type is the value.
 
-Définition des noeuds de calcul élémentaires
+Definition of elementary calculation nodes
 ''''''''''''''''''''''''''''''''''''''''''''''
-Noeud script Python
+
+.. _pyscript:
+
+Python script node
 +++++++++++++++++++++
-Pour définir un noeud script dans un contexte donné (le schéma de calcul, par exemple), on
-procède en plusieurs étapes. 
-La première étape consiste à créer l'objet noeud par appel à la méthode createScriptNode du runtime.
-Cette méthode a 2 arguments dont le premier doit valoir "" en utilisation standard et le deuxième
-est le nom du noeud. Voici un exemple de création du noeud node1::
+Several steps are used to define a script node in a given context (for example the calculation scheme).  
+The first step consists of creating the node object by calling the runtime createScriptNode method.  
+This method uses 2 arguments, the first of which in standard use must be equal to “” and the second is the node name.  
+The following is an example to create node node1::
 
   n=r.createScriptNode("","node1")
-
-La deuxième étape consiste à rattacher le noeud à son contexte de définition par appel à la méthode
-edAddChild de l'objet contexte. Cette méthode a un argument : le noeud à rattacher. Voici un exemple
-de rattachement du noeud node1 au schéma de calcul::
+ 
+The second step consists of attaching the node to its definition context by calling the edAddChild method for the context object.  
+This method has one argument, namely the node to be attached.  The following is an example of the attachment of the node node1 
+to the calculation scheme::
 
   p.edAddChild(n)
 
-Attention, le nom de la méthode à utiliser dépend du type de noeud contexte. On verra plus tard pour d'autres
-types de noeud quelle méthode utiliser.
+Warning: the name of the method to be used depends on the type of context node.  We will see which method should be used for other 
+node types later.
 
-La troisième étape consiste à définir le script Python associé au noeud. On utilise pour celà la méthode setScript
-du noeud avec un argument chaine de caractères qui contient le code Python. Voici un exemple de définition
-du code associé::
+The third step consists of defining the Python script associated with the node.  This is done using the setScript method for the node 
+with a character string argument that contains the Python code.  The following shows an example definition of the associated code::
 
   n.setScript("p1=p1+2.5")
 
-La quatrième étape consiste à définir les ports de données d'entrée et de sortie. Un port d'entrée est créé par appel
-à la méthode edAddInputPort du noeud. Un port de sortie est créé par appel à la méthode edAddOutputPort du noeud.
-Ces deux méthodes ont deux arguments : le nom du port et le type de données du port. Voici un exemple de création
-d'un port d'entrée p1 de type double et d'un port de sortie p1 de type double::
+The fourth step consists of defining input and output data ports.  An input port is created by calling the edAddInputPort method 
+for the node.  An output port is created by calling the edAddOutputPort method for the node.  
+These two methods have two arguments:  the port name and the port data type.  The following is an example creating a double 
+type input port p1 and a double type output port p1::
 
   n.edAddInputPort("p1",td)
   n.edAddOutputPort("p1",td)
 
-Maintenant notre noeud est complètement défini avec son nom, son script, ses ports et son contexte. Il récupère
-un double dans le port d'entrée p1, lui ajoute 2.5 et met le résultat dans le port de sortie p1.
+Our node is now fully defined with its name, script, ports and context.  It retrieves the double in the input port p1, adds 2.5 to it 
+and puts the result into the output port p1.
 
-Noeud fonction Python
+If you want to execute your script node on a remote container, you have to set the execution mode of the node to **remote**
+and to assign a container (see :ref:`py_container` to define a container) to the node as in the following example::
+
+  n.setExecutionMode("remote")
+  n.setContainer(cont1)
+
+.. _pyfunc:
+
+Python function node
 ++++++++++++++++++++++
-Pour définir un noeud fonction, on procède de la même manière. Les seules différences concernent la création :
-utiliser la méthode createFuncNode et la définition de la fonction : il faut en plus appeler la méthode setFname
-pour donner le nom de la fonction à exécuter. Voici un exemple complet de définition d'un noeud fonction
-qui est fonctionnellement identique au noeud script précédent::
+The same procedure is used to define a function node.  The only differences apply to creation, in using the createFuncNode 
+method and defining the function:  the setFname method must also be called to give the name of the function to be executed.  
+The following is a complete example for the definition of a function node that is functionally identical to the previous script node::
 
   n2=r.createFuncNode("","node2")
   p.edAddChild(n2)
@@ -260,17 +261,23 @@ qui est fonctionnellement identique au noeud script précédent::
   n2.edAddInputPort("p1",td)
   n2.edAddOutputPort("p1",td)
 
+If you want to execute your function node on a remote container, you have to set the execution mode of the node to **remote**
+and to assign a container (see :ref:`py_container` to define a container) to the node as in the following example::
 
-Noeud de service SALOME
+  n2.setExecutionMode("remote")
+  n2.setContainer(cont1)
+
+.. _pyservice:
+
+SALOME service node
 ++++++++++++++++++++++++++
-On a deux formes de définition d'un noeud de service SALOME.
+There are two definition forms for a SALOME service node.
 
-La première forme dans laquelle on donne le nom du composant utilise la méthode createCompoNode
-pour la création du noeud. Le nom du composant est donné en argument de la méthode setRef du noeud.
-Le nom du service est donné en argument de la méthode setMethod du noeud. Le reste de la définition est 
-identique à celui des noeuds Python précédents.
+The first form in which the component name is given, uses the createCompoNode method to create the node.  The name of the 
+component is given as an argument to the setRef method for the node.  The service name is given as an argument for the 
+setMethod method for the node.  The remainder of the definition is exactly the same as for the previous Python nodes.
 
-Voici un exemple de noeud qui appelle le service makeBanner d'un composant PYHELLO::
+The following is an example of a node that calls the makeBanner service for a PYHELLO component::
 
   n3=r.createCompoNode("","node3")
   p.edAddChild(n3)
@@ -279,12 +286,12 @@ Voici un exemple de noeud qui appelle le service makeBanner d'un composant PYHEL
   n3.edAddInputPort("p1",ts)
   n3.edAddOutputPort("p1",ts)
 
-La deuxième forme qui permet de définir un noeud qui utilise le même composant qu'un autre noeud
-utilise la méthode createNode de ce dernier noeud. Cette méthode n'a qu'un argument, le nom du noeud.
-Le reste de la définition est identique à celui de la précédente forme.
+The second form is used to define a node that uses the same component as another node uses the createNode method of this other node.  
+This method only has one argument, which is the node name.  
+The remainder of the definition is identical to the definition for the previous form.
 
-Voici un exemple de noeud de service qui appelle une deuxième fois le service makeBanner de la même
-instance de composant que le noeud précédent::
+The following gives an example of a service node that makes a second call to the makeBanner service for the same component 
+instance as the previous node::
 
   n4=n3.createNode("node4")
   p.edAddChild(n4)
@@ -292,86 +299,81 @@ instance de composant que le noeud précédent::
   n4.edAddInputPort("p1",ts)
   n4.edAddOutputPort("p1",ts)
 
-Définition des connexions
+Definition of connections
 ''''''''''''''''''''''''''''
-Obtenir un port d'un noeud
+Obtaining a node port 
 ++++++++++++++++++++++++++++
-Pour pouvoir définir des liens, il faut presque toujours disposer des objets Python représentant
-le port de sortie à connecter au port d'entrée.
-Il y a deux façons de disposer de cet objet.
+Before links can be defined, it is almost always necessary to have Python objects representing the output port to be 
+connected to the input port.  There are two ways of obtaining this object.
 
-La première façon est de récupérer le port lors de sa création avec les méthodes edAddInputPort et 
-edAddOutputPort. On écrira alors, par exemple::
+The first way is to retrieve the port when it is created using the edAddInputPort and edAddOutputPort methods.  
+For example, we can then write::
 
   pin=n4.edAddInputPort("p1",ts)
   pout=n4.edAddOutputPort("p1",ts)
 
-pin et pout sont alors les objets nécessaires pour définir des liens.
+pin and pout are then the objects necessary to define links.
 
-La deuxième façon est d'interroger le noeud et de lui demander un de ses ports par son nom. On utilise pour
-celà les méthodes getInputPort et getOutputPort.
-
-On pourra alors obtenir pin et pout comme suit::
+The second way is to interrogate the node and ask it for one of its ports by its name.  
+This is done using the getInputPort and getOutputPort methods.
+pin and pout can then be obtained as follows::
 
   pin=n4.getInputPort("p1")
   pout=n4.getOutputPort("p1")
 
-Lien de contrôle
-++++++++++++++++++
-Pour définir un lien de contrôle entre deux noeuds, on utilise la méthode edAddCFLink du contexte en lui passant
-en arguments les deux noeuds à connecter.
-Par exemple, un lien de contrôle entre les noeuds n3 et n4 s'écrira::
+Control link
+++++++++++++++++++++++++++++
+The edAddCFLink method for the context is used to define a control link between two nodes, transferring the two nodes to be 
+connected to it as arguments.  For example, a control link between nodes n3 and n4 will be written::
 
   p.edAddCFLink(n3,n4)
 
-Le noeud n3 sera exécuté avant le noeud n4.
+Node n3 will be executed before node n4.
 
-Lien dataflow
-++++++++++++++
-Pour définir un lien dataflow, il faut tout d'abord obtenir les objets ports par une des méthodes vues 
-ci-dessus. Ensuite on utilise la méthode edAddDFLink du noeud contexte en lui passant les deux ports à connecter.
-
-Voici un exemple de lien dataflow entre le port de sortie p1 du noeud n3 et le port d'entrée du noeud n4::
+Dataflow link
+++++++++++++++++++++++++++++
+The first step in defining a dataflow link is to obtain port objects using one of the methods described above.  
+The edAddDFLink method for the context node is then used, transferring the two ports to be connected to it.
+The following gives an example of a dataflow link between the output port p1 of node n3 and the input port of node n4::
 
   pout=n3.getOutputPort("p1")
   pin=n4.getInputPort("p1")
   p.edAddDFLink(pout,pin)
 
-Lien data
-++++++++++++
-Un lien data se définit comme un lien dataflow en utilisant la méthode edAddLink au lieu de edAddDFLink.
-Le même exemple que ci-dessus avec un lien data::
+Data link
+++++++++++++++++++++++++++++
+A data link is defined as being a dataflow link using the edAddLink method instead of edAddDFLink.  
+The same example as above with a data link::
 
   pout=n3.getOutputPort("p1")
   pin=n4.getInputPort("p1")
   p.edAddLink(pout,pin)
 
-Initialisation d'un port de données d'entrée
+Initialising an input data port
 '''''''''''''''''''''''''''''''''''''''''''''''
-Pour initialiser un port de données d'entrée, il faut tout d'abord obtenir l'objet port correspondant. Ensuite, il existe
-deux méthodes pour l'initialiser.
+An input data port is initialised firstly by obtaining the corresponding port object.  There are then two methods of initialising it.
 
-La première initialise le port avec une valeur encodée en XML-RPC. On utilise alors la méthode edInitXML du
-port. Voici un exemple qui initialise un port avec la valeur entière 5::
+The first method initialises the port with a value encoded in XML-RPC.  The edInitXML method for the port is then used.  
+The following is an example that initialises the port with the integer value 5::
 
   pin.edInitXML("<value><int>5</int></value>")
 
-La deuxième méthode initialise le port avec une valeur Python. On utilise alors la méthode edInitPy. Voici
-un exemple qui initialise ce même port avec la même valeur::
+The second method initialises the port with a Python value.  The edInitPy method is then used.  
+The following is an example that initialises this port with the same value::
 
   pin.edInitPy(5)
 
-On peut également utiliser des méthodes spécifiques pour les types de base :
-  
-- ``edInitInt`` pour le type int
-- ``edInitDbl`` pour le type double
-- ``edInitBool`` pour le type bool
-- ``edInitString`` pour le type string
+Specific methods can also be used for basic types:
 
-Premier exemple à partir des éléments précédents
+- ``edInitInt`` for the int type
+- ``edInitDbl`` for the double type
+- ``edInitBool`` for the bool type
+- ``edInitString`` for the string type
+
+First example starting from the previous elements
 '''''''''''''''''''''''''''''''''''''''''''''''''''
-En rassemblant tous les éléments de définition précédents, un schéma de calcul complet identique à celui
-du chapitre :ref:`schemaxml` se présentera comme suit::
+By collecting all previous definition elements, a complete calculation scheme identical to that given in the :ref:`schemaxml` chapter 
+will appear as follows::
 
   import sys
   import pilot
@@ -412,20 +414,21 @@ du chapitre :ref:`schemaxml` se présentera comme suit::
   #initialisation ports
   n1.getInputPort("p1").edInitPy(5)
 
-
-Définition de noeuds composés
+Definition of composite nodes
 '''''''''''''''''''''''''''''''''
-Bloc
+
+.. _py_block:
+
+Block
 +++++++
-Pour définir un Bloc, on utilise la méthode createBloc du runtime en lui passant le nom du Bloc en argument. Ensuite,
-on rattache le noeud à son contexte de définition comme un noeud élémentaire. Voici un exemple de définition de Bloc
-dans un schéma de calcul::
+A block is defined using the runtime createBloc method transferring the Block name to it as an argument.  The node is then 
+attached to its definition context as an elementary node.  The following is an example Block definition in a calculation scheme::
 
   b=r.createBloc("b1")
   p.edAddChild(b)
 
-Une fois le Bloc créé, il est possible d'ajouter tous les noeuds et liens possibles dans son contexte. En reprenant une partie
-de l'exemple ci-dessus, on aura::
+Once the block has been created, all nodes and links possible in its context can be added.  
+Repeating a part of the example above, we will get::
 
   n1=r.createScriptNode("","node1")
   b.edAddChild(n1)
@@ -440,29 +443,30 @@ de l'exemple ci-dessus, on aura::
   b.edAddCFLink(n1,n2)
   b.edAddDFLink(n1.getOutputPort("p1"),n2.getInputPort("p1"))
 
+.. _py_forloop:
+
 ForLoop
 ++++++++
-Pour définir une ForLoop, on utilise la méthode createForLoop du runtime en lui passant le nom du noeud en argument.
-Ensuite on rattache le noeud à son contexte de définition. Voici un exemple de définition de ForLoop
-dans un schéma de calcul::
+A Forloop is defined using the runtime createForLoop method, transferring the node name to it as an argument.  
+The node is then attached to its definition context.  The following is an example ForLoop definition in a calculation scheme::
 
   l=r.createForLoop("l1")
   p.edAddChild(l)
 
-Pour initialiser le nombre de tours de boucle à exécuter, on utilise le port "nsteps" que l'on initialise 
-avec un entier. Par exemple::
+The number of iterations in the loop to be executed will be initialised using the “nsteps” port that is initialised 
+with an integer.  For example::
 
   ip=l.getInputPort("nsteps") 
   ip.edInitPy(3)
 
-Il existe une méthode spéciale pour obtenir le port "nsteps" de la boucle : edGetNbOfTimesInputPort. On pourrait donc
-l'écrire également ainsi::
+There is a special method for obtaining the “nsteps” port for the loop, namely edGetNbOfTimesInputPort.  Therefore, it can also be 
+written as follows::
 
   ip=l.edGetNbOfTimesInputPort()
   ip.edInitPy(3)
 
-Enfin, pour ajouter un noeud (et un seul) dans le contexte d'une boucle, on n'utilisera pas la méthode edAddChild
-mais une méthode différente de nom edSetNode. Voici un petit exemple de définition d'un noeud interne de boucle::
+Finally, a method called edSetNode will be used in the context of a loop, instead of the edAddChild method, so as to add one (and only one) node.  
+The following is a small example definition of a node inside a loop::
 
   n1=r.createScriptNode("","node1")
   l.edSetNode(n1)
@@ -470,14 +474,15 @@ mais une méthode différente de nom edSetNode. Voici un petit exemple de défin
   n1.edAddInputPort("p1",ti)
   n1.edAddOutputPort("p1",ti)
 
+.. _py_whileloop:
+
 WhileLoop
 ++++++++++
-Un noeud WhileLoop se définit presque comme un noeud ForLoop. Les seules différences concernent la création et 
-l'affectation de la condition de fin de boucle. Pour la création on utilise la méthode createWhileLoop. Pour la 
-condition, on utilise le port "condition". Si on fait un rebouclage sur un noeud, il ne faut pas oublier d'utiliser
-un lien data et non un lien dataflow.
-Voici un exemple de définition de noeud WhileLoop avec un noeud interne script Python. La condition est initialisée
-à True puis passée à False par le noeud interne. On a donc un rebouclage::
+WhileLoop node is defined in practically the same way as a ForLoop node.  The only differences apply to creation and assignment 
+of the end of loop condition.  The createWhileLoop method is used for creation.  The “condition” port is used for the condition.  
+If looping takes place on a node, it is important to use a data link instead of a dataflow link.  
+The following is an example of WhileLoop node definition with a Python script internal node.  
+The condition is initialised to True and is then changed to False by the internal node.  This results in a link loop::
 
   wh=r.createWhileLoop("w1")
   p.edAddChild(wh)
@@ -489,17 +494,19 @@ Voici un exemple de définition de noeud WhileLoop avec un noeud interne script 
   cport.edInitBool(True)
   p.edAddLink(n.getOutputPort("p1"),cport)
 
-Il existe une méthode spéciale pour obtenir le port "condition" de la boucle : edGetConditionPort.
+There is a special method for obtaining the loop “condition” port:  edGetConditionPort.
 
-Boucle ForEach
+.. _py_foreachloop:
+
+ForEach loop
 ++++++++++++++++
-Un noeud ForEach se définit à la base comme un autre noeud boucle. Il y a plusieurs différences. Le noeud
-est créé avec la méthode createForEachLoop qui prend un argument de plus : le type de données géré par le ForEach.
-Le nombre de branches du ForEach est spécifié avec le port "nbBranches". La gestion de la collection sur 
-laquelle itère le ForEach est faite par connexion des ports "SmplPrt" et "SmplsCollection".
+A ForEach node is basically defined in the same way as any other loop node.  There are several differences.  
+The node is created with the createForEachLoop method that has an additional argument, namely the data type managed by the ForEach.  
+The number of ForEach branches is specified with the “nbBranches” port.  The collection on which the ForEach iterates is managed by 
+connection of the “evalSamples” and “SmplsCollection” ports.
 
-Voici un exemple de définition de noeud ForEach avec un noeud interne script Python qui incrémente l'élément
-de la collection de 3.::
+The following is an example definition of the ForEach node with a Python script internal node that increments 
+the element of the collection by 3::
 
   fe=r.createForEachLoop("fe1",td)
   p.edAddChild(fe)
@@ -508,36 +515,35 @@ de la collection de 3.::
   n.edAddInputPort("p1",td)
   n.edAddOutputPort("p1",td)
   fe.edSetNode(n)
-  p.edAddLink(fe.getOutputPort("SmplPrt"),n.getInputPort("p1"))
+  p.edAddLink(fe.getOutputPort("evalSamples"),n.getInputPort("p1"))
   fe.getInputPort("nbBranches").edInitPy(3)
   fe.getInputPort("SmplsCollection").edInitPy([2.,3.,4.])
 
-Pour obtenir les ports spéciaux du ForEach, on peut utiliser les méthodes suivantes à la place de getInputPort et 
-getOutputPort :
+Special ports for the ForEach can be obtained using the following methods instead of getInputPort and getOutputPort:
 
-- edGetNbOfBranchesPort pour le port "nbBranches"
-- edGetSamplePort pour le port "SmplPrt"
-- edGetSeqOfSamplesPort pour le port "SmplsCollection"
+- edGetNbOfBranchesPort for the “nbBranches” port
+- edGetSamplePort for the “evalSamples” port
+- edGetSeqOfSamplesPort for the “SmplsCollection” port
+
+.. _py_switch:
 
 Switch
 ++++++++
-La définition d'un noeud Switch se fait en plusieurs étapes. Les deux premières sont la création et le rattachment
-au noeud de contexte. Le noeud est créé par appel de la méthode createSwitch du runtime avec le nom du noeud
-en argument. Le noeud est rattaché au noeud contexte par appel de la méthode edAddChild pour un schéma ou un bloc
-ou edSetNode pour un noeud boucle.
+A switch node is defined in several steps.  The first two steps are creation and attachment to the context node.  
+The node is created by calling the runtime createSwitch method with the name of the node as an argument.  The node is attached 
+to the context node by calling the edAddChild method for a scheme or a block or edSetNode for a loop node.
 
-Voici un exemple de création suivi du rattachement::
+The following is an example of a creation followed by an attachment::
 
   sw=r.createSwitch("sw1")
   p.edAddChild(sw)
 
-Ensuite on crée un noeud interne élémentaire ou composé par cas. Le noeud pour le cas par défaut est
-rattaché au switch avec la méthode edSetDefaultNode. Les noeuds pour les autres cas sont rattachés au switch
-avec la méthode edSetNode qui prend en premier argument la valeur du cas (entier) et en deuxième argument
-le noeud interne.
+The next step is to create an internal elementary or composite node by case.  The node for the default case is attached to 
+the switch using the edSetDefaultNode method.  Nodes for other cases are attached to the switch using the edSetNode method, in 
+which the first argument is equal to the value of the case (integer) and the second argument is equal to the internal node.
 
-Voici un exemple de switch avec un noeud script pour le cas "1" et un autre noeud script
-pour le cas "default" et un noeud script pour initialiser une variable échangée::
+The following is an example of a switch with one script node for case “1” and another script node for the “default” case 
+and a script node to initialise an exchanged variable::
 
   #init
   n=r.createScriptNode("","node3")
@@ -557,26 +563,48 @@ pour le cas "default" et un noeud script pour initialiser une variable échangé
   ndef.edAddInputPort("p1",td)
   ndef.edAddOutputPort("p1",td)
   sw.edSetDefaultNode(ndef)
-  #initialisation port select
+  #initialise the select port
   sw.getInputPort("select").edInitPy(1)
-  #connexion des noeuds internes
+  #connection of internal nodes
   p.edAddDFLink(n.getOutputPort("p1"),nk1.getInputPort("p1"))
   p.edAddDFLink(n.getOutputPort("p1"),ndef.getInputPort("p1"))
 
-Pour obtenir le port spécial "select" du Switch, on peut utiliser la méthode edGetConditionPort à la place de getInputPort.
-  
-Définition de containers
+The edGetConditionPort method can be used instead of getInputPort, to obtain the special “select” port for the Switch.
+
+.. _py_optimizerloop:
+
+OptimizerLoop
++++++++++++++++++++
+
+The following is an example of OptimizerLoop with one python script as internal node. The algorithm
+is defined by the class async in the python module myalgo2.py::
+
+  ol=r.createOptimizerLoop("ol1","myalgo2.py","async",True)
+  p.edAddChild(ol)
+  n=r.createScriptNode("","node3")
+  n.setScript("p1=3")
+  n.edAddInputPort("p1",td)
+  n.edAddOutputPort("p1",ti)
+  ol.edSetNode(n)
+  ol.getInputPort("nbBranches").edInitPy(3)
+  ol.getInputPort("algoInit").edInitPy("coucou")
+  p.edAddLink(ol.getOutputPort("evalSamples"),n.getInputPort("p1"))
+  p.edAddLink(n.getOutputPort("p1"),ol.getInputPort("evalResults"))
+
+.. _py_container:
+
+Definition of containers
 ''''''''''''''''''''''''''''
-Pour définir un container, on utilise la méthode createContainer du runtime puis on lui donne un nom avec sa méthode 
-setName. Enfin on lui affecte des contraintes en lui ajoutant des propriétés.
-Voici un exemple de création d'un container de nom "A"::
+A container is defined using the runtime createContainer method and it is then given a name using its setName method.  
+The next step is to assign constraints to it by adding properties.  
+The following is an example creation of a container named “A”::
 
   c1=r.createContainer()
   c1.setName("A")
 
-On ajoute une propriété à un container en utilisant sa méthode setProperty qui prend 2 arguments (chaines de caractères).
-Le premier est le nom de la propriété. Le deuxième est sa valeur.
-Voici un exemple du même container "A" avec des contraintes::
+A property is added to a container using its setProperty method that uses 2 arguments (character strings).  
+The first is the property name.  The second is its value.  
+The following is an example of this container “A” with constraints::
 
   c1=r.createContainer()
   c1.setName("A")
@@ -584,41 +612,34 @@ Voici un exemple du même container "A" avec des contraintes::
   c1.setProperty("hostname","localhost")
   c1.setProperty("mem_mb","1000")
 
-Une fois que les containers sont définis, on peut placer des composants SALOME sur ce container. 
-Pour placer le composant d'un noeud de service SALOME, il faut tout d'abord obtenir l'instance de
-composant de ce noeud de service en utilisant la méthode getComponent de ce noeud. Puis on affecte le container
-précédemment défini à cette instance de composant en utilisant la méthode setContainer de l'instance
-de composant.
+Once the containers have been defined, SALOME components can be placed on this container.  The first step to place the component 
+of a SALOME service node is to obtain the component instance of this service node using the getComponent method for this node.  
+The previously defined container is then assigned to this component instance using the setContainer method of the component instance.
 
-Si on veut placer le service SALOME défini plus haut (noeud "node3") sur le container "A", on écrira::
+If it is required to place the SALOME service defined above (node “node3”) on container “A”, we will write::
 
   n3.getComponent().setContainer(c1)
 
-
-Les propriétés de noeuds
+Node properties
 '''''''''''''''''''''''''''
-On ajoute (ou modifie) une propriété à un noeud élémentaire ou composé en utilisant sa méthode
-setProperty qui prend 2 arguments (chaines de caractères).
-Le premier est le nom de la propriété. Le deuxième est sa valeur.
-
-Voici un exemple pour le noeud "node3" précédent::
+A property is added to an elementary or composite node (or is modified) using its setProperty method that has two 
+arguments (character strings).  The first is the name of the property.  The second is its value.
+The following is an example for the previous node “node3”::
 
   n3.setProperty("VERBOSE","2")
 
-Les connexions datastream
-''''''''''''''''''''''''''''
-Les connexions datastream ne sont possibles que pour des noeuds de service SALOME comme on l'a vu dans Principes. 
-Il faut tout d'abord définir les ports datastream dans le noeud de service. Un port datastream d'entrée se définit
-en utilisant la méthode edAddInputDataStreamPort. Un port datastream de sortie se définit
-en utilisant la méthode edAddOutputDataStreamPort.
-Ces méthodes prennent en arguments le nom du port et le type du datastream.
+Datastream connections
+'''''''''''''''''''''''''''
+Datastream connections are only possible for SALOME service nodes as we have seen in :ref:`principes`.  
+We firstly need to define the datastream ports in the service node.  An input datastream port is defined using 
+the edAddInputDataStreamPort method.  An output datastream port is defined using the edAddOutputDataStreamPort method.  
+These methods use the port name and the datastream type as arguments.
 
-Certains ports datastream (par exemple les ports CALCIUM) doivent être configurés avec des propriétés.
-On utilise la méthode setProperty du port pour les configurer.
-
-Voici un exemple de définition de noeud de service SALOME avec des ports datastream. 
-Il s'agit du composant DSCCODC que l'on peut trouver dans le module DSCCODES de la base EXAMPLES. 
-Les ports datastream sont de type "CALCIUM_integer" avec dépendance temporelle::
+Some datastream ports (for example CALCIUM ports) must be configured with properties.  The port setProperty method will 
+be used to configure them.
+The following is an example definition of the SALOME service node with datastream ports.  This is the DSCCODC component 
+located in the DSCCODES module in the EXAMPLES base.  The datastream ports are of the “CALCIUM_integer” type 
+with time dependency::
 
   calcium_int=cata._typeMap['CALCIUM_integer']
   n5=r.createCompoNode("","node5")
@@ -630,12 +651,11 @@ Les ports datastream sont de type "CALCIUM_integer" avec dépendance temporelle:
   pout=n5.edAddOutputDataStreamPort("STP_EN",calcium_int)
   pout.setProperty("DependencyType","TIME_DEPENDENCY")
 
-Une fois les noeuds de service dotés de ports datastream, il ne reste plus qu'à les connecter.
-Cette connexion est réalisée en utilisant la méthode edAddLink du noeud contexte comme pour 
-les liens data. Seul le type des ports passés en arguments est différent.
+Once the service nodes have been provided with datastream ports, all that remains is to connect them.  
+This connection is made using the edAddLink method for the context node in the same way as for data links.  
+The only difference is the type of ports transferred as arguments.
 
-Pour compléter notre exemple on définit un deuxième noeud de service et on connecte les 
-ports datastream de ces services::
+To complete our example, we will define a second service node and connect the datastream ports for these services::
 
   n6=r.createCompoNode("","node6")
   p.edAddChild(n6)
@@ -648,15 +668,15 @@ ports datastream de ces services::
   p.edAddLink(n5.getOutputDataStreamPort("STP_EN"),n6.getInputDataStreamPort("ETP_EN"))
   p.edAddLink(n6.getOutputDataStreamPort("STP_EN"),n5.getInputDataStreamPort("ETP_EN"))
 
-D'autres noeuds élémentaires
+Other elementary nodes
 '''''''''''''''''''''''''''''''
-Noeud SalomePython
+SalomePython node
 +++++++++++++++++++
-La définition d'un noeud SalomePython est quasiment identique à celle d'un `Noeud fonction Python`_. On utilise
-la méthode createSInlineNode du runtime à la place de createFuncNode et on ajoute une information de
-placement sur un container comme pour un noeud de service SALOME (méthode setContainer).
+A SalomePython node is defined in practically exactly the same way as a :ref:`pyfunc`.  The runtime createSInlineNode method is used 
+instead of the createFuncNode and information about placement on a container is added in the same way as for a 
+SALOME service node (setContainer method).
 
-Voici un exemple semblable à celui de :ref:`schemaxml`::
+The following is an example similar to that given in :ref:`schemaxml`::
 
   n2=r.createSInlineNode("","node2")
   p.edAddChild(n2)
@@ -676,16 +696,17 @@ Voici un exemple semblable à celui de :ref:`schemaxml`::
   n2.edAddInputPort("p1",ts)
   n2.getComponent().setContainer(c1)
 
-Noeud DataIn
-+++++++++++++++
-Pour définir un noeud DataIn, on utilise la méthode createInDataNode du runtime. Elle prend deux arguments
-dont le premier doit être "" et le deuxième le nom du noeud.
-Pour définir les données du noeud, on lui ajoute des ports de données de sortie avec la méthode edAddOutputPort
-en lui passant le nom de la donnée et son type en arguments.
-Pour initialiser la valeur de la donnée, on utilise la méthode setData du port ainsi créé en lui passant 
-la valeur encodée en XML-RPC (voir :ref:`initialisation`).
+.. _py_datain:
 
-Voici un exemple de noeud DataIn qui définit 2 données de type double (b et c) et une donnée de type fichier (f)::
+DataIn node
++++++++++++++++
+A DataIn node is defined using the runtime createInDataNode method.  It uses two arguments, the first of which must be “” and 
+the second the node name.  Node data are defined by adding output data ports to it using the edAddOutputPort method 
+and transferring the data name and its type to it as arguments.  
+The value of the data is initialised using the port setData method thus created by transferring the value encoded in 
+XML-RPC to it (see :ref:`initialisation`).
+
+The following is an example of the DataIn node that defines 2 double type data (b and c) and one file type data (f)::
 
   n=r.createInDataNode("","data1")
   p.edAddChild(n)
@@ -696,25 +717,24 @@ Voici un exemple de noeud DataIn qui définit 2 données de type double (b et c)
   pout=n.edAddOutputPort('f',tf)
   pout.setData("<value><objref>f.data</objref></value>")
   
-Il est possible d'affecter une valeur à une donnée directement avec un objet Python en utilisant
-la méthode setDataPy. Exemple pour une séquence::
+A value can be directly assigned to a data with a Python object, using the setDataPy method.  Example for a sequence::
 
   pout.setDataPy([1.,5.])
 
-Noeud DataOut
-+++++++++++++++++
-Pour définir un noeud DataOut, on utilise la méthode createOutDataNode du runtime. Elle prend deux arguments
-dont le premier doit être "" et le deuxième le nom du noeud.
-Pour définir les résultats du noeud, on lui ajoute des ports de données d'entrée en utilisant la 
-méthode edAddInputPort avec le nom du résultat et son type en arguments.
-Pour sauvegarder les résultats dans un fichier on utilise la méthode setRef du noeud avec le nom
-du fichier en argument.
-Pour recopier un résultat fichier dans un fichier local, on utilise la méthode setData du port correspondant
-au résultat avec le nom du fichier en argument.
+.. _py_dataout:
 
-Voici un exemple de noeud DataOut qui définit des résultats (a, b, c, d, f) de différents 
-types (double, int, string, vecteur de doubles, fichier) et écrit les valeurs correspondantes 
-dans le fichier g.data. Le fichier résultat sera copié dans le fichier local monfich::
+DataOut node
++++++++++++++++++
+A DataOut node is defined using the runtime createOutDataNode method.  It uses two arguments, the first of which 
+must be “” and the second the node name .  Node results are defined by adding input data ports to it using the edAddInputPort 
+method with the result name and its type as arguments.  The results are saved in a file using the node setRef method with the 
+file name as an argument.  
+A result file is copied into a local file using the setData method for the port corresponding to the result with the 
+file name as an argument.
+
+The following is an example of the DataOut node that defines different types (double, int, string, doubles vector, file) of 
+results (a, b, c, d, f) and writes the corresponding values in the g.data file.  
+The result file will be copied into the local file myfile::
 
   n=r.createOutDataNode("","data2")
   n.setRef("g.data")
@@ -726,19 +746,20 @@ dans le fichier g.data. Le fichier résultat sera copié dans le fichier local m
   pin=n.edAddInputPort('f',tf)
   pin.setData("monfich")
 
-Noeud StudyIn
-++++++++++++++
-Pour définir un noeud StudyIn, on utilise la méthode createInDataNode du runtime. Elle prend deux arguments
-dont le premier doit être "study" et le deuxième le nom du noeud.
-Pour spécifier l'étude associée, on ajoute la propriété "StudyID" au noeud en utilisant sa méthode setProperty.
-Pour définir les données du noeud, on lui ajoute des ports de données de sortie avec la méthode edAddOutputPort
-en lui passant le nom de la donnée et son type en arguments.
-Pour initialiser la donnée avec la référence dans l'étude, on utilise la méthode setData du port ainsi créé 
-en lui passant une chaine de caractères qui contient soit l'Entry SALOME soit le chemin dans l'arbre d'étude.
+.. _py_studyin:
 
-Voici un exemple de noeud StudyIn qui définit 2 données de type GEOM_Object (a et b). 
-L'étude est supposée chargée en mémoire par SALOME sous le StudyID 1. 
-La donnée a est référencée par une Entry SALOME. La donnée b est référencée par un chemin dans l'arbre d'étude::
+StudyIn node
+++++++++++++++
+A StudyIn node is defined using the runtime createInDataNode method.  It uses two arguments, the first of which must be “study” 
+and the second the node name.  The associated study is specified by adding the “StudyID” property to the node using 
+its setProperty method.  Node data are defined by adding output data ports using the edAddOutputPOrt method, transferring 
+the name of the data and its type as arguments.  The data is initialised with the reference in the study, using the setData method 
+for the port thus created, transferring a character string to it containing either the SALOME Entry or the path in the study 
+tree structure.
+
+The following is an example of the StudyIn node that defines 2 GEOM_Object type data (a and b).  The study is assumed to be 
+loaded into memory by SALOME as StudyID 1.  Data a is referenced by one SALOME Entry.  Data b is referenced by a path in the 
+study tree structure::
 
   n=r.createInDataNode("study","study1")
   p.edAddChild(n)
@@ -748,23 +769,21 @@ La donnée a est référencée par une Entry SALOME. La donnée b est référenc
   pout=n.edAddOutputPort('b',tgeom)
   pout.setData("/Geometry/Sphere_1")
 
+.. _py_studyout:
 
-Noeud StudyOut
-++++++++++++++++
-Pour définir un noeud StudyOut, on utilise la méthode createOutDataNode du runtime. Elle prend deux arguments
-dont le premier doit être "study" et le deuxième le nom du noeud.
-Pour spécifier l'étude associée, on ajoute la propriété "StudyID" au noeud en utilisant sa méthode setProperty.
-Pour spécifier un nom de fichier dans lequel sera sauvegardée l'étude, on utilise la méthode setRef du noeud
-avec le nom du fichier en argument.
-Pour définir les résultats du noeud, on lui ajoute des ports de données d'entrée avec la méthode edAddInputPort
-en lui passant le nom de la donnée et son type en arguments.
-Pour associer l'entrée dans l'étude au résultat, on utilise la méthode setData du port 
-en lui passant une chaine de caractères qui contient soit l'Entry SALOME soit le chemin dans l'arbre d'étude.
+StudyOut node
+++++++++++++++
+A StudyOut node is defined using the runtime createOutDataNode method.  It uses two arguments, the first of 
+which must be “study” and the second the node name.  The associated study is specified by adding 
+the “StudyID” property to the node using its setProperty method.  The name of the file in which the study will be 
+saved is specified using the node SetRef method with the file name as an argument.  
+The node results are defined by adding input data ports to it using the edAddInputPort method, transferring the data name 
+and type as arguments.  The setData method for the port is used to associate the entry into the study to the result, transferring 
+a character string to it that contains either the SALOME Entry or the path in the study tree structure.
 
-Voici un exemple de noeud StudyOut qui définit 2 résultats (a et b) de type GEOM_Object. 
-L'étude utilisée a le studyId 1. Le résultat a est référencé par une Entry SALOME.
-Le résultat b est référencé par un chemin.
-L'étude complète est sauvegardée en fin de calcul dans le fichier study1.hdf::
+The following contains an example of the StudyOut node that defines two GEOM_Object type results (a and b).  
+The studyId of the study used is 1.  Result a is referenced by a SALOME Entry.  The result b is referenced by a path.  
+The complete study is saved in the study1.hdf file at the end of the calculation::
 
   n=r.createOutDataNode("study","study2")
   n.setRef("study1.hdf")
@@ -775,81 +794,75 @@ L'étude complète est sauvegardée en fin de calcul dans le fichier study1.hdf:
   pout=n.edAddInputPort('b',tgeom)
   pout.setData("/Save/Sphere_2")
 
-
-Sauvegarder un schéma de calcul dans un fichier XML
+Save a calculation scheme in an XML file
 ------------------------------------------------------
-Pour sauvegarder un schéma de calcul dans un fichier au format XML, il faut utiliser la méthode saveSchema
-du schéma de calcul en lui passant le nom du fichier en argument.
-Pour qu'un schéma de calcul, construit en Python, puisse être sauvegardé sous une forme cohérente
-dans un fichier XML, il ne faut pas oublier d'ajouter dans le dictionnaire des types du schéma
-tous les types qui ont été définis en Python (voir :ref:`typedict`). La sauvegarde ne le fait pas automatiquement. 
+A calculation scheme is saved in a file in the XML format using the saveSchema method for the calculation 
+scheme, transferring the file name to it as an argument.  Before a calculation scheme constructed under Python 
+can be saved in a consistent form in an XML file, all types defined in Python have to be added to the scheme types 
+dictionary (see :ref:`typedict`).  The save will not do this automatically.
 
-Pour sauver le schéma p construit ci-dessus, dans le fichier monschema.xml, il faut écrire::
+Proceed as follows to save the scheme p constructed above in the myscheme.xml file::
 
   p.saveSchema("monschema.xml")
 
-Le fichier ainsi obtenu pourra ensuite être chargé comme dans :ref:`loadxml`.
+The file thus obtained can then be loaded as in :ref:`loadxml`.
 
-
-Quelques opérations utiles
+Several useful operations
 ------------------------------
-Retrouver un noeud par son nom
-'''''''''''''''''''''''''''''''''''
-Pour retrouver un noeud (objet Python) quand on n'a que l'objet schéma de calcul et le nom absolu du noeud, il 
-suffit d'appeler la méthode getChildByName du schéma en lui passant le nom absolu.
 
-Pour retrouver le noeud script Python défini en `Noeud script Python`_::
+Finding a node by its name
+'''''''''''''''''''''''''''''''''''
+A node (Python object) can be found, when all that is available is the calculation scheme object and 
+the absolute name of the node, by calling the scheme getChildByName method, transferring the absolute name to it.
+
+To find the Python script node defined in :ref:`pyscript`::
 
   n=p.getChildByName("node1")
 
-Pour retrouver le noeud "node1" dans le bloc "b1"::
+To find node “node1” node in block “b1”::
 
   n=p.getChildByName("b1.node1")
 
-Cette opération est également utilisable à partir d'un noeud composé à condition d'utiliser le nom
-relatif du noeud.
-On peut réécrire l'exemple précédent::
+This operation can also be used starting from a composite node provided that the relative node name is used.  
+The previous example can be rewritten::
 
   n=b.getChildByName("node1")
 
-Retrouver un port par son nom
-''''''''''''''''''''''''''''''''
-Pour retrouver un port d'un noeud par son nom, il faut d'abord récupérer le noeud par son nom. Puis
-on retrouve un port de données d'entrée avec la méthode getInputPort et un port de données de sortie
-avec la méthode getOutputPort.
+Finding a port by its name
+'''''''''''''''''''''''''''''''''''
+The first step to find a node port by its name is to retrieve the node by its name.  An input data port is then found 
+using the getInputPort method, and an output data port is found using the getOutputPort method.
 
-Voici un exemple à partir du noeud n précédent::
+The following is an example starting from the previous node n::
 
   pin=n.getOutputPort("p1")
   pout=n.getInputPort("p2")
 
-Obtenir la valeur d'un port
-''''''''''''''''''''''''''''''''
-Pour obtenir la valeur d'un port on utilise sa méthode getPyObj.
-Exemple::
+Obtaining a port value
+'''''''''''''''''''''''''''''''''''
+The value of a port is obtained using its getPyObj method.  For example::
 
   print pin.getPyObj()
   print pout.getPyObj()
 
-Obtenir l'état d'un noeud
-''''''''''''''''''''''''''''
-Pour obtenir l'état d'un noeud on utilise sa méthode getEffectiveState (voir les valeurs
-posssibles dans :ref:`etats`)
+Obtaining the state of a node
+'''''''''''''''''''''''''''''''''''
+The state of a node is obtained using its getEffectiveState method (see possible values in :ref:`etats`).
 
-Retirer un noeud de son contexte
-''''''''''''''''''''''''''''''''''
-Il est possible de retirer un noeud de son noeud contexte en utilisant une méthode du contexte. 
-Le nom de la méthode diffère selon le type de contexte.
+Removing a node from its context
+'''''''''''''''''''''''''''''''''''
+A node can be removed from its context node using a context method.  The method name will be different 
+depending on the context type.
 
-- Pour un Bloc ou un schéma de calcul on utilisera la méthode edRemoveChild avec le noeud à retirer en argument::
+- For a block or a calculation scheme, the edRemoveChild method will be used with the node to be removed as an argument::
 
     p.edRemoveChild(n)
 
-- Pour une boucle (ForLoop, WhileLoop ou ForEachLoop) on utilisera la méthode edRemoveNode sans argument::
-
+- For a loop (ForLoop, WhileLoop or ForEachLoop) the edRemoveNode method will be used without any argument::
+ 
     l.edRemoveNode()
 
-- Pour un Switch, on utilisera la méthode edRemoveChild avec le noeud interne concerné en argument::
+- The edRemoveChild method will be used for a Switch, with the internal node concerned as an argument::
 
     sw.edRemoveChild(nk1)
 

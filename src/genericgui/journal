@@ -51,9 +51,13 @@ x tableau ports en edition
 x insertion, deplacement, destruction port
 x algorithmes placement noeuds
 x proc menu edition: ajout action execution
+x sauvegarde position des noeuds dans xml, lors du passage en exec
+x tooltips plus complets sur arbre et scenes
+x afficher les types de donnees DataStream dans arbre et edition -> en exec: tooltips
+x numerotation automatique objets cree tient compte des noms existant
+x couleur differente des liens datastream
 
-- sauvegarde position des noeuds dans xml, lors du passage en exec
-
+= ajouter un bouton create container dans panneau composant du noeud
 - edition port outNode (xml): definir fichier sortie
 - edition ports studyInNode, studyOutNode (controle types possibles...)
 - edition ForEachLoop: type, samples ? (nbBranch OK)
@@ -67,8 +71,8 @@ x proc menu edition: ajout action execution
 - edition, modification objet
 
 - affichage etat schema modifie depuis derniere sauvegarde fichier
-- couleur differente des liens datastream, 
-  des liens de donnees simples (sans controle associe)
+= couleur differente des liens de donnees simples (sans controle associe)
+- icones differentes pour edition et run dans object browser
 
 - differents designs / canvas (interface generique)
 - vues differentes (expanded/collapsed, edition/execution)
@@ -80,12 +84,13 @@ x proc menu edition: ajout action execution
 
 - drag & drop de ports pour l'ordre dans le tableau, dans la scene
 - creation de liens par menu
-  distinguer les liens simples (sans contrôle)
+x distinguer les liens simples (sans contrôle)
 - deplacement de noeud a la souris: pouvoir passer par dessus un bloc
   (pressed + touche...) transparence, finir le deplacement que s'il y a
   la place, ou pousser le bloc ?
 - pousser les noeuds et les blocs vers le haut ou la gauche ?
 
+- creer le noeud sous la souris s'il y a la place
 - creation de noeud : recadrage de la vue
 - selection : recadrage de la vue
 
@@ -105,9 +110,10 @@ x proc menu edition: ajout action execution
   (regle de correspondance de noms ? respect de l'ordre ?)
 - dessiner les liens avec des ponts quand des liens se croisent !
 - 2eme vue avec schema complet et cadre de la vue principale
-- panneau de preferences des couleurs
+- panneau de preferences : couleurs... (Cf. V4)
 
 - differents modes pour la creation d'instances de composant
+- option de configuration : creer un service sans changer d'instance
 - selection multiple de noeuds pour les affecter a une meme instance, ou tous les noeuds d'un bloc
 - pouvoir initialiser un port dans le panneau edition du port
 
@@ -153,27 +159,46 @@ x passer script en read only en execution
 x revoir methode SubjectNode.reparent(_parent) sous forme de commande
 x renommage node pas propage dans les noeuds fils (rename or cut/paste)
 x en execution, marquer execution mode dans arbre
+x redessiner tout de suite les liens apres mouse release ( sans devoir bouger la souris)
+x editer sauvegarder les proprietes des containers
+x panneau edition container, rubrique instance:
+  a supprimer ou renommer runtime name, ou mettre dans les advanced parameters
+x gerer tous les parametres du container, verifier coherence avec la doc
+x mise a jour panneau container si changement container dans salomeNode
+x renommage container: 
+  x pas actif depuis le panel container (container, composant, service)
+  x arbre service pas a jour
+  x indicateur en edition (jaune) pas a jour dans l'arbre
+x cut paste d'un noeud pour l'enlever d'une forLoop (toujours fils de la forloop: case prise, destruction...)
+x QtGuiContext::getQtCurrent()->_mapOfEditionItem.count(_subject)' failed apres cut paste et creation de lien
+x passage en execution: arbre pas toujours cree la premiere fois
+x message incomprehensible lors de l'ajout d'un deuxieme noeud dans un forloop
+x libelle comboBox ajout de ports dans panneau edition: folklorique (newSchema_1)
+x fermeture schema non sauvegarde : dialogues de sauvegarde
+x lien nouvellement créé droit et très fin, pas toujours visible
+x panneau edition function Node: controler nom de fonction saisie (validation)
+x panneau edition function Node: remonter le nom de fonction
+x remontee d'erreur en edition: le contenu de la log proc ne change pas, quand c'est en erreur
 
-- SIGSEV en sortie de SALOME apres destruction de la fenetre execution
-- panneau edition container, rubriue instance ? a clarifier
-- destruction d'un lien, impact sur la disposition des noeuds
+= SIGSEV en sortie de SALOME apres destruction de la fenetre execution
+x destruction d'un lien, impact sur la disposition des noeuds
+
+- remontee d'erreur en execution : log d'erreurs consolidees dans les blocs, affichee dans la proc 
+- cases a cocher link automatique peu visibles
+= verifier le python des scripts a l'edition (compiler)
+= pas de tooltip quand on est sur le texte du scene item
+= tooltip curieux HEADER...
+- faire apparaitre le nom du composant quelque part sur le sceneNodeItem (tooltip ?)
 
 - execution noeud default de switch : pas marque DONE dans arbre et vue 2D
 - cut paste dans switch: valeur use case attribue automatiquement pas affiche
-- passage en execution: arbre pas toujours cree la premiere fois
 - update etat des inputPort apres creation de lien dans tableau,  (linked, not initialized)
 - import de schema CORBA (foreach_LongCorba): exception
 - chargement de schema pendant qu'un autre est running:
   abort GuiExecutor Assertion `GuiContext::getCurrent()->_mapOfExecSubjectNode.count(iGui)' failed
-- cut paste d'un noeud pour l'enlever d'une forLoop (toujours fils de la forloop: case prise, destruction...)
-- QtGuiContext::getQtCurrent()->_mapOfEditionItem.count(_subject)' failed apres cut paste et creation de lien
 
 - renommage d'un item autre que noeud non repercute:
   il manque des fonctions de renommage:
-- renommage container: 
-  - pas actif depuis le panel container (container, composant, service)
-  - arbre service pas a jour
-  - indicateur en edition (jaune) pas a jour dans l'arbre
 - renommage node:
   - pas propage dans les liens (noms de liens)
   - arbre reference service sous component pas a jour

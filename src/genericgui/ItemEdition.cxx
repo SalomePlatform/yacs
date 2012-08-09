@@ -1,21 +1,22 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "ItemEdition.hxx"
 #include "EditionProc.hxx"
 #include "EditionBloc.hxx"
@@ -26,6 +27,7 @@
 #include "EditionDataType.hxx"
 #include "EditionElementaryNode.hxx"
 #include "EditionForEachLoop.hxx"
+#include "EditionOptimizerLoop.hxx"
 #include "EditionInputPort.hxx"
 #include "EditionLoop.hxx"
 #include "EditionWhile.hxx"
@@ -170,8 +172,8 @@ ItemEdition::ItemEdition(Subject* subject,
 
   _stackId = QtGuiContext::getQtCurrent()->getStackedWidget()->addWidget(this);
   DEBTRACE("_stackId " << _stackId);
-  assert(!QtGuiContext::getQtCurrent()->_mapOfEditionItem.count(_subject));
-  QtGuiContext::getQtCurrent()->_mapOfEditionItem[_subject] = _stackId;
+  YASSERT(!QtGuiContext::getQtCurrent()->_mapOfEditionItem.count(_subject));
+  QtGuiContext::getQtCurrent()->_mapOfEditionItem[_subject] = this;
   //QtGuiContext::getQtCurrent()->getStackedWidget()->raiseWidget(_stackId);
 }
 
@@ -182,6 +184,7 @@ ItemEdition::~ItemEdition()
     {
       DEBTRACE("---");
       QtGuiContext::getQtCurrent()->getStackedWidget()->removeWidget(this);
+      QtGuiContext::getQtCurrent()->_mapOfEditionItem.erase(_subject);
       DEBTRACE("---");
     }
 }
@@ -212,6 +215,7 @@ void ItemEdition::onApply()
 {
   DEBTRACE("onApply");
   string name = _wid->le_name->text().toStdString();
+  name = filterName(name);
   bool nameEdited = false;
   if (name != _name)
     {
@@ -224,7 +228,7 @@ void ItemEdition::onApply()
         }
     }
   DEBTRACE(_isEdited << " " << nameEdited);
-  _isEdited = _isEdited || nameEdited;
+  _isEdited = nameEdited;
   setEdited(_isEdited);
 }
 
@@ -235,6 +239,23 @@ void ItemEdition::onCancel()
   setEdited(false);
 }
 
+std::string ItemEdition::filterName(const std::string& name)
+{
+  string nameFiltered;
+  nameFiltered = "";
+  for (int i= 0; i< name.size(); i++)
+    {
+      unsigned char a = (unsigned char)(name[i]);
+      if (   ((a >= '0') && (a <= '9'))
+          || ((a >= 'A') && (a <= 'Z'))
+          || ((a >= 'a') && (a <= 'z'))
+          || ( a == '_'))
+        nameFiltered += a;
+    }
+  DEBTRACE(name << " " << nameFiltered);
+  return nameFiltered;
+}
+
 void ItemEdition::onModifyName(const QString &text)
 {
   if (_name != text.toStdString()) setEdited(true);
@@ -242,6 +263,7 @@ void ItemEdition::onModifyName(const QString &text)
 
 void ItemEdition::setEdited(bool isEdited)
 {
+  DEBTRACE("ItemEdition::setEdited " << isEdited);
   if (isEdited)
     {
       QtGuiContext::getQtCurrent()->_setOfModifiedSubjects.insert(_subject);
@@ -253,7 +275,7 @@ void ItemEdition::setEdited(bool isEdited)
     {
       QtGuiContext::getQtCurrent()->_setOfModifiedSubjects.erase(_subject);
       _subject->update(EDIT, 0, _subject);
-      if (QtGuiContext::getQtCurrent()->getSubjectProc())
+      if (QtGuiContext::getQtCurrent()->_setOfModifiedSubjects.empty() && QtGuiContext::getQtCurrent()->getSubjectProc())
         QtGuiContext::getQtCurrent()->getSubjectProc()->update(EDIT, 0, _subject);
     }
 
@@ -308,10 +330,13 @@ void ItemEdition::update(GuiEvent event, int type, Subject* son)
                                   son->getName().c_str());
           break;
         case YACS::HMI::FOREACHLOOP:
-        case YACS::HMI::OPTIMIZERLOOP:
           item =  new EditionForEachLoop(son,
                                          QtGuiContext::getQtCurrent()->getStackedWidget(),
                                          son->getName().c_str());
+          break;
+        case YACS::HMI::OPTIMIZERLOOP:
+          item =  new EditionOptimizerLoop(son, QtGuiContext::getQtCurrent()->getStackedWidget(),
+                                           son->getName().c_str());
           break;
         case YACS::HMI::FORLOOP:
           item =  new EditionLoop(son,

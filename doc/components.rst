@@ -3,42 +3,31 @@
 
 .. _components:
 
-Integration de composants dans l'environnement Salome
+Integration of components into the SALOME environment
 =============================================================
 
-Ce document décrit les opérations à effectuer pour intégrer des codes (de calcul
-par exemple) dans l'architecture Salomé.     
+This document describes operations to be done to integrate codes (for example calculation codes) in the 
+SALOME architecture.
 
-On peut envisager plusieurs scénarios d'intégration:
+Several integration scenarios could be envisaged:
 
-* Le plus simple est le pilotage local du code depuis un interpréteur   python.
-  Le code ne fonctionnera que sur une machine.
+- The simplest is local control of the code from a Python interpretor.  The code will only operate on one machine.
+- The next stage consists of being able to control the code locally or remotely.  The selected architecture 
+  consists of presenting the code as a CORBA server [CORBA]_, capable of receiving and executing requests 
+  from CORBA clients.  SALOME offers a number of services that simplify the use of CORBA.
+- Finally, actual integration into SALOME consists of providing SALOME with all information necessary to control 
+  the code, for example from the man-machine interface or for example through supervision.
 
-* Le stade suivant consiste à pouvoir piloter le code localement ou   à
-  distance.    L'architecture retenue consiste à exposer le code comme un serveur
-  CORBA [CORBA]_, capable de recevoir et d'exécuter des requêtes de clients CORBA.
-  Salomé offre un certain nombre de services permettant de simplifier
-  l'utilisation de CORBA.
+Several types of situations may be envisaged, knowing that there will always be special cases that should be 
+dealt with by adapting procedures described in this document.  
+The typical situations envisaged depend on the form of the available code:
 
-* Enfin, l'intégration proprement dite dans Salomé consiste à fournir à Salomé
-  toutes les informations nécessaires au pilotage de code, par exemple depuis
-  l'interface homme-machine ou via la supervision par exemple.
+- binary executable
+- binary library,
+- f77/C/C++ source code 
+- python source code
 
-On envisagera plusieurs situations types, sachant qu'il y aura toujours  des cas
-particuliers qui devront être traités en adaptant les procédures décrites dans
-ce document.    Les situations types envisagées sont considérées suivant la
-forme du code disponible:
-
-* exécutable binaire,
-
-* librairie binaire,
-
-* code source f77/C/C++,
-
-* code source python.
-
-Dans la mesure du possible, on donnera des exemples des différentes situations
-rencontrées.
+We will give examples of the different situations encountered wherever possible.
 
 .. toctree::
    :maxdepth: 2

@@ -1,23 +1,23 @@
-#  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
-#
-#  This library is free software; you can redistribute it and/or
-#  modify it under the terms of the GNU Lesser General Public
-#  License as published by the Free Software Foundation; either
-#  version 2.1 of the License.
-#
-#  This library is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#  Lesser General Public License for more details.
-#
-#  You should have received a copy of the GNU Lesser General Public
-#  License along with this library; if not, write to the Free Software
-#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-#
-#  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-#
 # -*- coding: iso-8859-1 -*-
+# Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 #
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License.
+#
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+#
+# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+#
+
 """This module is used to parse a supervision graph Salome (XML) and convert it into
    YACS calculation schema
 
@@ -30,16 +30,20 @@ try:
 except ImportError:
   import ElementTree
 
-from sets import Set
+#from sets import Set
+Set=set
 import graph
 import pilot
 import SALOMERuntime
 
 class UnknownKind(Exception):pass
 
+#global variables
 debug=0
 typeMap={}
 objref=None
+_containers={}
+currentProc=None
 
 def typeName(name):
   """Replace :: in type name by /"""
@@ -51,7 +55,6 @@ streamTypes={
              '3':"CALCIUM_real",
             }
 
-currentProc=None
 
 class SalomeLoader:
   """This class parses a Salome graph (version 3.2.x) and converts it into YACS schema.
@@ -60,7 +63,6 @@ class SalomeLoader:
 
      The load method calls the loadxml method and creates a YACS object of class Proc
   """
-
   def loadxml(self,filename):
     """
        Parse a XML file from Salome SUPERV and return a list of SalomeProc objects.
@@ -89,7 +91,12 @@ class SalomeLoader:
   def load(self,filename):
     """Parse a SUPERV XML file (method loadxml) and return a YACS Proc object.
     """
-    global currentProc
+    global typeMap,_containers,objref,currentProc
+    typeMap.clear()
+    objref=None
+    _containers.clear()
+    currentProc=None
+
     procs=self.loadxml(filename)
     #Split the master proc from the possible macros.
     proc=procs.pop(0)
@@ -114,7 +121,6 @@ class Container:
   def getName(self):
     return self.mach+"/"+self.name
 
-_containers={}
 def getContainer(name):
   if not name:
     name="localhost/FactoryServer"

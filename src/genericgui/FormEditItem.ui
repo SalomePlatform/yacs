@@ -1,42 +1,60 @@
-<ui version="4.0" >
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>fm_editItem</class>
- <widget class="QWidget" name="fm_editItem" >
-  <property name="geometry" >
+ <widget class="QWidget" name="fm_editItem">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>267</width>
-    <height>173</height>
+    <width>216</width>
+    <height>134</height>
    </rect>
   </property>
-  <property name="windowTitle" >
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout" >
-   <item row="0" column="0" >
-    <layout class="QGridLayout" name="gridLayout1" >
-     <item row="0" column="0" >
-      <layout class="QGridLayout" name="gridLayout3" >
-       <item row="0" column="0" >
-        <widget class="QToolButton" name="tb_min" >
-         <property name="text" >
-          <string>...</string>
+  <layout class="QGridLayout" name="gridLayout">
+   <property name="leftMargin">
+    <number>1</number>
+   </property>
+   <property name="topMargin">
+    <number>2</number>
+   </property>
+   <property name="rightMargin">
+    <number>1</number>
+   </property>
+   <property name="bottomMargin">
+    <number>1</number>
+   </property>
+   <item row="0" column="0">
+    <layout class="QGridLayout" name="gridLayout1">
+     <item row="0" column="0">
+      <layout class="QGridLayout" name="gridLayout3">
+       <item row="0" column="0">
+        <widget class="QLabel" name="la_type">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
          </property>
-        </widget>
-       </item>
-       <item row="0" column="1" >
-        <widget class="QLabel" name="la_type" >
-         <property name="text" >
+         <property name="text">
           <string>Type</string>
          </property>
         </widget>
        </item>
       </layout>
      </item>
-     <item row="1" column="0" >
-      <widget class="QLineEdit" name="le_name" >
-       <property name="sizePolicy" >
-        <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
+     <item row="1" column="0">
+      <widget class="QLineEdit" name="le_name">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
@@ -45,12 +63,12 @@
      </item>
     </layout>
    </item>
-   <item row="1" column="0" >
+   <item row="1" column="0">
     <spacer>
-     <property name="orientation" >
+     <property name="orientation">
       <enum>Qt::Vertical</enum>
      </property>
-     <property name="sizeHint" stdset="0" >
+     <property name="sizeHint" stdset="0">
       <size>
        <width>61</width>
        <height>31</height>
@@ -58,21 +76,30 @@
      </property>
     </spacer>
    </item>
-   <item row="2" column="0" >
-    <layout class="QHBoxLayout" >
+   <item row="2" column="0">
+    <layout class="QHBoxLayout">
+     <property name="sizeConstraint">
+      <enum>QLayout::SetDefaultConstraint</enum>
+     </property>
      <item>
-      <widget class="QPushButton" name="pb_apply" >
-       <property name="text" >
+      <widget class="QPushButton" name="pb_apply">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
         <string>Apply</string>
        </property>
       </widget>
      </item>
      <item>
       <spacer>
-       <property name="orientation" >
+       <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
-       <property name="sizeHint" stdset="0" >
+       <property name="sizeHint" stdset="0">
         <size>
          <width>40</width>
          <height>20</height>
@@ -81,8 +108,14 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="pb_cancel" >
-       <property name="text" >
+      <widget class="QPushButton" name="pb_cancel">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
         <string>Cancel Edition</string>
        </property>
       </widget>
@@ -99,11 +132,11 @@
    <receiver>pb_apply</receiver>
    <slot>click()</slot>
    <hints>
-    <hint type="sourcelabel" >
+    <hint type="sourcelabel">
      <x>133</x>
      <y>68</y>
     </hint>
-    <hint type="destinationlabel" >
+    <hint type="destinationlabel">
      <x>47</x>
      <y>144</y>
     </hint>

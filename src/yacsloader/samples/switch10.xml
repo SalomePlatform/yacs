@@ -1,0 +1,135 @@
+<?xml version='1.0' encoding='iso-8859-1' ?>
+<!--
+  Copyright (C) 2006-2012  CEA/DEN, EDF R&D
+
+  This library is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public
+  License as published by the Free Software Foundation; either
+  version 2.1 of the License.
+
+  This library is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public
+  License along with this library; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+
+  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+
+-->
+<proc name="proc">
+   <property name="DefaultStudyID" value="1"/>
+   <type name="string" kind="string"/>
+   <struct name="Engines/dataref">
+      <member name="ref" type="string"/>
+   </struct>
+   <type name="bool" kind="bool"/>
+   <sequence name="boolvec" content="bool"/>
+   <type name="double" kind="double"/>
+   <sequence name="dblevec" content="double"/>
+   <objref name="file" id="file"/>
+   <type name="int" kind="int"/>
+   <sequence name="intvec" content="int"/>
+   <objref name="pyobj" id="python:obj:1.0"/>
+   <sequence name="stringvec" content="string"/>
+   <container name="DefaultContainer">
+      <property name="container_name" value="FactoryServer"/>
+      <property name="name" value="localhost"/>
+   </container>
+   <inline name="n">
+      <script><code><![CDATA[select=3]]></code></script>
+      <outport name="select" type="int"/>
+   </inline>
+   <inline name="n2">
+      <script><code><![CDATA[print p1]]></code></script>
+      <inport name="p1" type="double"/>
+      <outport name="p1" type="double"/>
+   </inline>
+   <switch name="b1">
+      <default>
+         <inline name="n2">
+            <script><code><![CDATA[print p1]]></code></script>
+            <inport name="p1" type="double"/>
+            <outport name="p1" type="double"/>
+         </inline>
+      </default>
+      <case id="1">
+         <inline name="n2">
+            <script><code><![CDATA[print p1]]></code></script>
+            <inport name="p1" type="double"/>
+            <outport name="p1" type="double"/>
+         </inline>
+      </case>
+      <case id="3">
+         <switch name="b" select="1">
+            <default>
+               <inline name="n2">
+                  <script><code><![CDATA[p1=20.
+condition=p1 < 40. ]]></code></script>
+                  <outport name="p1" type="double"/>
+                  <outport name="condition" type="bool"/>
+               </inline>
+            </default>
+            <case id="1">
+               <inline name="n2">
+                  <script><code><![CDATA[print p1
+p1=p1+20
+condition=p1 < 40. ]]></code></script>
+                  <inport name="p1" type="double"/>
+                  <outport name="p1" type="double"/>
+                  <outport name="condition" type="bool"/>
+               </inline>
+            </case>
+         </switch>
+      </case>
+   </switch>
+   <control> <fromnode>n</fromnode> <tonode>b1</tonode> </control>
+   <control> <fromnode>b1</fromnode> <tonode>n2</tonode> </control>
+   <datalink control="false">
+      <fromnode>n</fromnode> <fromport>select</fromport>
+      <tonode>b1</tonode> <toport>select</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>b1.p3_b.default_n2</fromnode> <fromport>p1</fromport>
+      <tonode>n2</tonode> <toport>p1</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>b1.p3_b.p1_n2</fromnode> <fromport>p1</fromport>
+      <tonode>n2</tonode> <toport>p1</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>b1.default_n2</fromnode> <fromport>p1</fromport>
+      <tonode>n2</tonode> <toport>p1</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>b1.p1_n2</fromnode> <fromport>p1</fromport>
+      <tonode>n2</tonode> <toport>p1</toport>
+   </datalink>
+   <parameter>
+      <tonode>b1.default_n2</tonode><toport>p1</toport>
+      <value><double>67</double></value>
+   </parameter>
+   <parameter>
+      <tonode>b1.p1_n2</tonode><toport>p1</toport>
+      <value><double>23</double></value>
+   </parameter>
+   <parameter>
+      <tonode>b1.p3_b.p1_n2</tonode><toport>p1</toport>
+      <value><double>54</double></value>
+   </parameter>
+   <parameter>
+      <tonode>b1.p3_b</tonode><toport>select</toport>
+      <value><int>1</int></value>
+   </parameter>
+   <presentation name="b1" x="397" y="69" width="189" height="454" expanded="1" expx="397" expy="69" expWidth="189" expHeight="454" shownState="0"/>
+   <presentation name="b1.default_n2" x="6" y="57.5" width="158" height="63" expanded="1" expx="6" expy="57.5" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="b1.p1_n2" x="6" y="121.5" width="158" height="63" expanded="1" expx="6" expy="121.5" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="b1.p3_b.default_n2" x="6" y="57.5" width="158" height="90" expanded="1" expx="6" expy="57.5" expWidth="158" expHeight="90" shownState="0"/>
+   <presentation name="b1.p3_b.p1_n2" x="6" y="148" width="158" height="90" expanded="1" expx="6" expy="148" expWidth="158" expHeight="90" shownState="0"/>
+   <presentation name="n2" x="760" y="181" width="158" height="63" expanded="1" expx="760" expy="181" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="b1.p3_b" x="17" y="208" width="168" height="242" expanded="1" expx="17" expy="208" expWidth="168" expHeight="242" shownState="0"/>
+   <presentation name="n" x="6" y="40.5" width="158" height="63" expanded="1" expx="6" expy="40.5" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="__ROOT__" x="0" y="0" width="922" height="527" expanded="1" expx="0" expy="0" expWidth="922" expHeight="527" shownState="0"/>
+</proc>

@@ -1,21 +1,22 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "SalomeWrap_Module.hxx"
 #include "SalomeWrap_DataModel.hxx"
 
@@ -26,6 +27,10 @@
 #include <CAM_DataModel.h>
 #include <SUIT_Study.h>
 
+#include <SUIT_DataBrowser.h>
+#include <QtxTreeView.h>
+#include <SUIT_DataObject.h>
+
 #include <cassert>
 
 //#define _DEVDEBUG_
@@ -34,7 +39,8 @@
 using namespace std;
 
 SalomeWrap_Module::SalomeWrap_Module(const char* name) :
-  SalomeApp_Module( name )
+  SalomeApp_Module( name ),
+  LightApp_Module( name )
 {
   _mapOfViewWindow.clear();
 }
@@ -60,7 +66,7 @@ QxScene_ViewWindow* SalomeWrap_Module::getNewWindow(QGraphicsScene *scene)
       svw = svm->createViewWindow();
       if (svw) aView = dynamic_cast<QxScene_ViewWindow*>(svw);
     }
-  assert(aView);
+  YASSERT(aView);
   aView->setScene(scene);
   _mapOfViewWindow[scene] = aView;
   return aView;
@@ -78,6 +84,24 @@ int SalomeWrap_Module::activeStudyId()
 {
   return getApp()->activeStudy()->id();
 }
+
+QDockWidget* SalomeWrap_Module::objectBrowser() {
+  QWidget* wid = getApp()->objectBrowser()->treeView();
+
+  if ( !wid ) {
+    return 0;
+  };
+
+  QDockWidget* dock = 0;
+  QWidget* w = wid->parentWidget();
+  while ( w && !dock ) {
+    dock = ::qobject_cast<QDockWidget*>( w );
+    w = w->parentWidget();
+  };
+
+  return dock;
+}
+
 
 QAction* SalomeWrap_Module::wCreateAction(const int id,
                                           const QString& toolTip,

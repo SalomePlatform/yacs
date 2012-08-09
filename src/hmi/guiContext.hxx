@@ -1,24 +1,26 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef _GUICONTEXT_HXX_
 #define _GUICONTEXT_HXX_
 
+#include "HMIExport.hxx"
 #include "Proc.hxx"
 #include "Catalog.hxx"
 #include "commandsProc.hxx"
@@ -32,7 +34,7 @@ namespace YACS
   namespace HMI
   {
 
-    class GuiContext: public Subject
+    class HMI_EXPORT GuiContext: public Subject
     {
     public:
       GuiContext();
@@ -51,12 +53,16 @@ namespace YACS
       inline long getNewId()                                   {return _numItem++; };
       inline std::string getXMLSchema()                        {return _xmlSchema; };
       inline std::pair<std::string, std::string> getYACSCont() {return _YACSEngineContainer; }
+      inline bool isNotSaved()                                 {return _isNotSaved; };
+      inline bool isLoading()                                  {return _isLoading; };
 
       inline void setSessionCatalog(YACS::ENGINE::Catalog* cata)           {_sessionCatalog = cata; };
       inline void setProcCatalog(YACS::ENGINE::Catalog* cata)              {_procCatalog = cata; };
       inline void setCurrentCatalog(YACS::ENGINE::Catalog* cata)           {_currentCatalog = cata; };
       inline void setXMLSchema(std::string xmlSchema)                      {_xmlSchema = xmlSchema; };
       inline void setYACSContainer(std::pair<std::string, std::string> yc) {_YACSEngineContainer = yc; };
+      inline void setNotSaved(bool isNotSaved)                             {_isNotSaved = isNotSaved; };
+      inline void setLoading(bool isLoading)                               {_isLoading = isLoading; };
 
       inline static GuiContext* getCurrent()             {return _current; };
       inline static void setCurrent(GuiContext* context) { _current=context; };
@@ -69,6 +75,7 @@ namespace YACS
       std::map<YACS::ENGINE::Container*, YACS::HMI::SubjectContainer*>                             _mapOfSubjectContainer;
       std::map<std::string, YACS::HMI::SubjectDataType*>                                           _mapOfSubjectDataType;
       std::map<int,YACS::HMI::SubjectNode*>                                                        _mapOfExecSubjectNode;
+      std::map<std::string, YACS::ENGINE::ComponentInstance*>                                      _mapOfLastComponentInstance;
       std::string _lastErrorMessage;
 
     protected:
@@ -80,6 +87,8 @@ namespace YACS
       YACS::HMI::ProcInvoc* _invoc;
       YACS::HMI::SubjectProc *_subjectProc;
       long _numItem;
+      bool _isNotSaved;
+      bool _isLoading;
       static GuiContext* _current;
       std::string _xmlSchema;
       std::pair<std::string, std::string> _YACSEngineContainer; // --- <ContainerName, HostName>

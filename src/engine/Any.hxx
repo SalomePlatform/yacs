@@ -1,24 +1,26 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef __YACSANY_HXX__
 #define __YACSANY_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "RefCounter.hxx"
 #include "Exception.hxx"
 #include "SharedPtr.hxx"
@@ -40,7 +42,7 @@ namespace YACS
     class TypeCodeStruct;
     typedef void (*Deallocator)(void *);
 
-    class StringOnHeap
+    class YACSLIBENGINE_EXPORT StringOnHeap
     {
       friend class Any;
       friend class AtomAny;
@@ -64,7 +66,7 @@ namespace YACS
      * \brief: Interface for management of storage of data formated dynamically in its TypeCode.
      *         Warning virtual inheritance on Any daughter classes NOT supported.
      */
-    class Any : public RefCounter
+    class YACSLIBENGINE_EXPORT Any : public RefCounter
     {
       friend class SeqAlloc;
       friend class ArrayAny;
@@ -83,7 +85,9 @@ namespace YACS
       virtual std::string getStringValue() const throw(Exception) = 0;
       //
     protected:
+#ifndef SWIG
       virtual ~Any();
+#endif
       Any(TypeCode* type);
       Any(const Any& other);
       virtual void putMyReprAtPlace(char *data) const = 0;
@@ -94,7 +98,7 @@ namespace YACS
 
     typedef SharedPtr<AtomAny> AtomAnyPtr;
 
-    class AtomAny : public Any
+    class YACSLIBENGINE_EXPORT AtomAny : public Any
     {
       friend class TypeCode;
 
@@ -137,7 +141,7 @@ namespace YACS
       ValueContainer _value;
     };
     
-    class SeqAlloc 
+    class YACSLIBENGINE_EXPORT SeqAlloc 
     {
       friend class SequenceAny;
       
@@ -160,7 +164,7 @@ namespace YACS
       unsigned int size() const;
     };
     
-    class ComposedAny : public Any
+    class YACSLIBENGINE_EXPORT ComposedAny : public Any
     {
     public:
       virtual void setEltAtRank(int i, const Any *elem) throw(Exception) = 0;
@@ -179,7 +183,7 @@ namespace YACS
 
     typedef SharedPtr<SequenceAny> SequenceAnyPtr;
     
-    class SequenceAny : public ComposedAny
+    class YACSLIBENGINE_EXPORT SequenceAny : public ComposedAny
     {
       friend class TypeCodeSeq;
     public:
@@ -223,7 +227,7 @@ namespace YACS
     
     typedef SharedPtr<ArrayAny> ArrayAnyPtr;
 
-    class ArrayAny : public ComposedAny
+    class YACSLIBENGINE_EXPORT ArrayAny : public ComposedAny
     {
       friend class TypeCodeArray;
     public:
@@ -260,7 +264,7 @@ namespace YACS
 
     typedef SharedPtr<StructAny> StructAnyPtr;
 
-    class StructAny : public ComposedAny
+    class YACSLIBENGINE_EXPORT StructAny : public ComposedAny
     {
       friend class TypeCodeStruct;
     public:

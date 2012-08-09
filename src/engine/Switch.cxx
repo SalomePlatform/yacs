@@ -1,21 +1,22 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "Switch.hxx"
 #include "Visitor.hxx"
 #include "LinkInfo.hxx"
@@ -59,7 +60,7 @@ std::string CollectorSwOutPort::getNameOfTypeOfCurrentInstance() const
   return _className;
 }
 
-void CollectorSwOutPort::edRemoveAllLinksLinkedWithMe() throw(Exception)
+void CollectorSwOutPort::edRemoveAllLinksLinkedWithMe() throw(YACS::Exception)
 {
   map<int, OutPort *>::iterator pt;
   if(_consumer)
@@ -79,7 +80,7 @@ void CollectorSwOutPort::getAllRepresented(std::set<OutPort *>& represented) con
     ((*pt).second)->getAllRepresented(represented);
 }
 
-bool CollectorSwOutPort::addInPort(InPort *inPort) throw(Exception)
+bool CollectorSwOutPort::addInPort(InPort *inPort) throw(YACS::Exception)
 {
   if(_currentProducer)
     {//a specific link is beeing done
@@ -92,7 +93,7 @@ bool CollectorSwOutPort::addInPort(InPort *inPort) throw(Exception)
       (*iter).second->addInPort(inPort);
 }
 
-int CollectorSwOutPort::removeInPort(InPort *inPort, bool forward) throw(Exception)
+int CollectorSwOutPort::removeInPort(InPort *inPort, bool forward) throw(YACS::Exception)
 {
   if(_currentProducer)
     {
@@ -179,7 +180,7 @@ bool CollectorSwOutPort::removePotentialProducerForMaster()
   return _potentialProducers.empty();
 }
 
-bool CollectorSwOutPort::checkManagementOfPort(OutPort *port) throw(Exception)
+bool CollectorSwOutPort::checkManagementOfPort(OutPort *port) throw(YACS::Exception)
 {
   for(map<int, OutPort *>::iterator iter=_potentialProducers.begin();iter!=_potentialProducers.end();iter++)
     if((*iter).second==port)
@@ -245,17 +246,11 @@ Node *FakeNodeForSwitch::simpleClone(ComposedNode *father, bool editionOnly) con
 void FakeNodeForSwitch::exForwardFailed()
 {
   _sw->exForwardFailed();
-  FakeNodeForSwitch *normallyThis=_sw->_undispatchableNotificationNode;
-  _sw->_undispatchableNotificationNode=0;
-  delete normallyThis;
 }
 
 void FakeNodeForSwitch::exForwardFinished()
 { 
   _sw->exForwardFinished(); 
-  FakeNodeForSwitch *normallyThis=_sw->_undispatchableNotificationNode;
-  _sw->_undispatchableNotificationNode=0;
-  delete normallyThis;
 }
 
 void FakeNodeForSwitch::execute()
@@ -277,6 +272,12 @@ void FakeNodeForSwitch::finished()
   _sw->setState(YACS::DONE);
 }
 
+/*! \class YACS::ENGINE::Switch
+ *  \brief Control node that emulates the C switch
+ *
+ *  \ingroup Nodes
+ */
+
 Switch::Switch(const Switch& other, ComposedNode *father, bool editionOnly):StaticDefinedComposedNode(other,father),_condition(other._condition,this),
                                                                             _undispatchableNotificationNode(0)
 {
@@ -296,6 +297,8 @@ Switch::Switch(const std::string& name):StaticDefinedComposedNode(name),_conditi
 
 Switch::~Switch()
 {
+  if(_undispatchableNotificationNode)delete _undispatchableNotificationNode;
+
   for(map< int , Node * >::iterator iter=_mapOfNode.begin();iter!=_mapOfNode.end();iter++)
     delete (*iter).second;
   for(map<InPort *, CollectorSwOutPort * >::iterator iter2=_outPortsCollector.begin();iter2!=_outPortsCollector.end();iter2++)
@@ -311,11 +314,12 @@ Node *Switch::simpleClone(ComposedNode *father, bool editionOnly) const
 
 void Switch::exUpdateState()
 {
+  DEBTRACE("Switch::exUpdateState " << _state);
   if(_state == YACS::DISABLED)
     return;
   if(_inGate.exIsReady())
     {
-      setState(YACS::TOACTIVATE);
+      setState(YACS::ACTIVATED);
       if(_condition.isEmpty())
         _undispatchableNotificationNode=new FakeNodeForSwitch(this,false,true);
       else
@@ -341,6 +345,7 @@ void Switch::exUpdateState()
 
 void Switch::init(bool start)
 {
+  DEBTRACE("Switch::init " << start);
   StaticDefinedComposedNode::init(start);
   int i=0;
   for(map< int , Node * >::iterator iter=_mapOfNode.begin();iter!=_mapOfNode.end();iter++, i++)
@@ -374,7 +379,7 @@ void Switch::getReadyTasks(std::vector<Task *>& tasks)
             (*iter).second->getReadyTasks(tasks);//Default Node is returned
           else
             if(_undispatchableNotificationNode)
-          _undispatchableNotificationNode->getReadyTasks(tasks);
+              _undispatchableNotificationNode->getReadyTasks(tasks);
             else
               throw Exception("Switch::getReadyTasks : internal error");
         }
@@ -399,7 +404,7 @@ int Switch::getNumberOfInputPorts() const
   return StaticDefinedComposedNode::getNumberOfInputPorts()+1;
 }
 
-void Switch::edRemoveChild(Node *node) throw(Exception)
+void Switch::edRemoveChild(Node *node) throw(YACS::Exception)
 {
   map< int , Node * >::iterator iter=_mapOfNode.begin();
   for(;iter!=_mapOfNode.end();iter++)
@@ -426,7 +431,7 @@ std::list<InputPort *> Switch::getLocalInputPorts() const
   ret.push_back((InputPort *)&_condition);
   return ret;
 }
-OutPort *Switch::getOutPort(const std::string& name) const throw(Exception)
+OutPort *Switch::getOutPort(const std::string& name) const throw(YACS::Exception)
 {
   for(map<InPort *, CollectorSwOutPort * >::const_iterator iter=_outPortsCollector.begin();iter!=_outPortsCollector.end();iter++)
     if(name==(*iter).second->getName())
@@ -437,14 +442,14 @@ OutPort *Switch::getOutPort(const std::string& name) const throw(Exception)
   return StaticDefinedComposedNode::getOutPort(name);
 }
 
-InputPort *Switch::getInputPort(const std::string& name) const throw(Exception)
+InputPort *Switch::getInputPort(const std::string& name) const throw(YACS::Exception)
 {
   if(name==SELECTOR_INPUTPORT_NAME)
     return (InputPort *)&_condition;
   return StaticDefinedComposedNode::getInputPort(name);
 }
 
-Node *Switch::getChildByShortName(const std::string& name) const throw(Exception)
+Node *Switch::getChildByShortName(const std::string& name) const throw(YACS::Exception)
 {
   if(name==DEFAULT_NODE_NAME)
     {
@@ -471,12 +476,12 @@ Node *Switch::edSetDefaultNode(Node *node)
   return edSetNode(ID_FOR_DEFAULT_NODE,node);
 }
 
-Node *Switch::edReleaseDefaultNode() throw(Exception)
+Node *Switch::edReleaseDefaultNode() throw(YACS::Exception)
 {
   return edReleaseCase(ID_FOR_DEFAULT_NODE);
 }
 
-Node *Switch::edReleaseCase(int caseId) throw(Exception)
+Node *Switch::edReleaseCase(int caseId) throw(YACS::Exception)
 {
   map< int , Node * >::iterator iter=_mapOfNode.find(caseId);
   if(iter==_mapOfNode.end())
@@ -508,7 +513,7 @@ Node *Switch::edGetNode(int caseId)
  *           0 is returned if caseId is a new ID.
  *  \b WARNING : 'node' is held by 'this' after call, whereas returned node is no more held. 
  */
-Node *Switch::edSetNode(int caseId, Node *node) throw(Exception)
+Node *Switch::edSetNode(int caseId, Node *node) throw(YACS::Exception)
 {
   if(!node)
     throw Exception("Switch::edSetNode : null node cannot be set as a case in switch node");
@@ -535,14 +540,45 @@ Node *Switch::edSetNode(int caseId, Node *node) throw(Exception)
     }
 }
 
-bool Switch::edAddChild(Node *node) throw(Exception)
+//! Change the case of a node
+/*!
+ *  \param oldCase : the case value to change
+ *  \param newCase : the new value to set
+ *  raise an exception if the old case does not exist or if the new case already exists
+ */
+void Switch::edChangeCase(int oldCase, int newCase)
+{
+  std::map< int , Node * >::iterator iter=_mapOfNode.find(oldCase);
+  if(iter==_mapOfNode.end())
+    {
+      //the case does not exists
+      throw Exception("Switch::edChangeCase : case does not exist");
+    }
+  iter=_mapOfNode.find(newCase);
+  if(iter != _mapOfNode.end())
+    {
+      //the new case exists
+      throw Exception("Switch::edChangeCase : new case exists");
+    }
+  Node* node=_mapOfNode[oldCase];
+  _mapOfNode.erase(oldCase);
+  _mapOfNode[newCase]=node;
+  modified();
+}
+
+int Switch::getMaxCase()
 {
   int aCase = 0;
   map<int, Node*>::const_iterator it = _mapOfNode.begin();
   for(; it != _mapOfNode.end(); ++it)
     if ((*it).first > aCase)
       aCase = (*it).first;
-  aCase++;
+  return aCase;
+}
+
+bool Switch::edAddChild(Node *node) throw(YACS::Exception)
+{
+  int aCase = getMaxCase() + 1;
   DEBTRACE(aCase);
   bool ret = edSetNode(aCase, node);
   DEBTRACE(ret);
@@ -597,13 +633,13 @@ void Switch::checkControlDependancy(OutPort *start, InPort *end, bool cross,
   throw Exception("Switch::checkControlDependancy : a link was dectected between 2 cases of a switch. Impossible !");
 }
 
-void Switch::checkNoCyclePassingThrough(Node *node) throw(Exception)
+void Switch::checkNoCyclePassingThrough(Node *node) throw(YACS::Exception)
 {
   throw Exception("Switch::checkNoCyclePassingThrough : uncorrect control flow link relative to switch");
 }
 
 void Switch::checkLinkPossibility(OutPort *start, const std::list<ComposedNode *>& pointsOfViewStart,
-                                  InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) throw(Exception)
+                                  InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) throw(YACS::Exception)
 {
   throw Exception("Switch::checkLinkPossibility : A link between 2 different cases of a same Switch requested -> Impossible");
 }
@@ -625,7 +661,7 @@ void Switch::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *fina
   port.first=newCollector;
 }
 
-void Switch::getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(Exception)
+void Switch::getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(YACS::Exception)
 {
   map<InPort *, CollectorSwOutPort * >::iterator iter=_outPortsCollector.find(finalTarget);
   if(iter==_outPortsCollector.end())
@@ -639,7 +675,7 @@ void Switch::getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalT
   port.first=(*iter).second;
 }
 
-void Switch::releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(Exception)
+void Switch::releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(YACS::Exception)
 {
   set<OutPort *> repr;
   portDwn->getAllRepresented(repr);
@@ -694,13 +730,8 @@ YACS::StatesForNode Switch::getEffectiveState(const Node* node) const
     return YACS::READY;
   if(effectiveState==YACS::DISABLED)
     return YACS::DISABLED;
-  if(!_condition.getValue())
-    return node->getState();
-  map< int , Node * >::const_iterator iter=_mapOfNode.find(_condition.getIntValue());
-  if(iter!=_mapOfNode.end() && (*iter).second==node)
-    return node->getState();
-  else
-    return YACS::READY;
+
+  return node->getState();
 }
 YACS::StatesForNode Switch::getEffectiveState() const
 {
@@ -731,7 +762,7 @@ std::string Switch::getMyQualifiedName(const Node *directSon) const
   return id;
 }
 
-std::string Switch::getCaseId(const Node *node) const throw(Exception)
+std::string Switch::getCaseId(const Node *node) const throw(YACS::Exception)
 {
   const char sep='_';
   map<int, Node*>::const_iterator iter;

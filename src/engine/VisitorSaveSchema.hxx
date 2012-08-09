@@ -1,24 +1,26 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef __VISITOR_SAVESCHEMA_HXX__
 #define __VISITOR_SAVESCHEMA_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "Visitor.hxx"
 #include "Exception.hxx"
 
@@ -54,7 +56,7 @@ namespace YACS
       bool toDelete;
     };
 
-    class VisitorSaveSchema: public Visitor
+    class YACSLIBENGINE_EXPORT VisitorSaveSchema: public Visitor
     {
     public:
       VisitorSaveSchema(ComposedNode *root);
@@ -64,12 +66,15 @@ namespace YACS
       virtual void visitBloc(Bloc *node);
       virtual void visitElementaryNode(ElementaryNode *node);
       virtual void visitForEachLoop(ForEachLoop *node);
+      virtual void visitOptimizerLoop(OptimizerLoop *node);
+      virtual void visitDynParaLoop(DynParaLoop *node);
       virtual void visitForLoop(ForLoop *node);
       virtual void visitInlineNode(InlineNode *node);
       virtual void visitInlineFuncNode(InlineFuncNode *node);
       virtual void visitLoop(Loop *node);
       virtual void visitProc(Proc *node);
       virtual void visitServiceNode(ServiceNode *node);
+      virtual void visitServerNode(ServerNode *node);
       virtual void visitServiceInlineNode(ServiceInlineNode *node);
       virtual void visitSwitch(Switch *node);
       virtual void visitWhileLoop(WhileLoop *node);
@@ -83,6 +88,7 @@ namespace YACS
       virtual void dumpTypeCode(TypeCode* type, std::set<std::string>& typeNames,std::map<std::string, TypeCode*>& typeMap,int depth);
       virtual void writeTypeCodes(Proc *proc);
       virtual void writeContainers(Proc *proc);
+      virtual void writeComponentInstances(Proc *proc);
       virtual void writeInputPorts(Node *node);
       virtual void writeInputDataStreamPorts(Node *node); // OCC : mkr : add possibility to write input data stream ports
       virtual void writeOutputPorts(Node *node);
@@ -108,7 +114,7 @@ namespace YACS
       std::multimap<int, StreamLinkInfo> _mapOfSLtoCreate;
     };
 
-    class SchemaSave
+    class YACSLIBENGINE_EXPORT SchemaSave
     {
     public:
       SchemaSave(Proc* proc);

@@ -1,25 +1,28 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "SceneObserverItem.hxx"
 #include "QtGuiContext.hxx"
 #include "ItemMimeData.hxx"
 #include "Scene.hxx"
+#include "SchemaItem.hxx"
+#include "Resource.hxx"
 
 #include <QGraphicsSceneMouseEvent>
 #include <QApplication>
@@ -42,6 +45,8 @@ SceneObserverItem::SceneObserverItem(QGraphicsScene *scene, SceneItem *parent,
 {
   _subject = subject;
   _draging = false;
+  _dragModifier = false;
+  _emphasized = false;
   _subject->attach(this);
   QtGuiContext::getQtCurrent()->_mapOfSceneItem[_subject]=this;
 }
@@ -54,6 +59,19 @@ SceneObserverItem::~SceneObserverItem()
 void SceneObserverItem::update(GuiEvent event, int type, Subject* son)
 {
   DEBTRACE(" SceneObserverItem::update " << eventName(event)<< " " << type << " " << son);
+  switch (event)
+    {
+    case YACS::HMI::EMPHASIZE:
+      DEBTRACE("SceneObserverItem::update EMPHASIZE " << type);
+      if (type)
+        _emphasized = true;
+      else
+        _emphasized = false;
+      QGraphicsItem::update();
+      break;
+    default:
+      ;
+    }
 }
 
 void SceneObserverItem::select(bool isSelected)
@@ -68,6 +86,19 @@ void SceneObserverItem::select(bool isSelected)
   else setSelected(false);
 }
 
+QString SceneObserverItem::getToolTip()
+{
+  DEBTRACE("SceneObserverItem::getToolTip");
+  if (!_subject)
+    return _label;
+  if ( !QtGuiContext::getQtCurrent() || !QtGuiContext::getQtCurrent()->_mapOfSchemaItem.count(_subject))
+    return _label;
+  QString val ="";
+  SchemaItem * item = QtGuiContext::getQtCurrent()->_mapOfSchemaItem[_subject];
+  val = item->data(0, Qt::ToolTipRole).toString();
+  return val;
+}
+
 void SceneObserverItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
   DEBTRACE("SceneObserverItem::mousePressEvent " << _label.toStdString()
@@ -75,10 +106,11 @@ void SceneObserverItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
   if (!_scene->isZooming())
     {
       _subject->select(true);
-      if (_dragable && (event->button() == _dragButton))
+      if (_dragable && (event->button() == _dragButton) && QtGuiContext::getQtCurrent()->isEdition())
         {
           setCursor(Qt::ClosedHandCursor);
           _draging = true;
+          _dragModifier= event->modifiers() & (Qt::ControlModifier | Qt::ShiftModifier);
         }
     }
 }
@@ -105,6 +137,10 @@ void SceneObserverItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
       drag->setMimeData(mime);
       mime->setSubject(_subject);
       mime->setData(getMimeFormat(), "_subject");
+      if(_dragModifier)
+        mime->setControl(false);
+      else
+        mime->setControl(true);
   
       QPixmap pixmap(34, 34);
       pixmap.fill(Qt::white);
@@ -121,7 +157,10 @@ void SceneObserverItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
       drag->setHotSpot(QPoint(15, 20));
       
       drag->exec();
-      setCursor(Qt::OpenHandCursor);
+      //restore non drag state
+      setCursor(Qt::ArrowCursor);
+      _draging = false;
+      _dragModifier = false;
     }
 }
 
@@ -132,6 +171,20 @@ void SceneObserverItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
       setCursor(Qt::ArrowCursor);
     }
   _draging = false;
+  _dragModifier = false;
+}
+
+QColor SceneObserverItem::getBrushColor()
+{
+  QColor color;
+  color = _brushColor;
+  if (isSelected())
+    color = _hiBrushColor;
+  if (_emphasized)
+    color = Resource::emphasizeBrushColor;
+  if (_hover)
+    color = hoverColor(color);
+  return color;
 }
 
 void SceneObserverItem::activateSelection(bool selected)

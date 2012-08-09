@@ -1,21 +1,22 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "parserBase.hxx"
 #include "Exception.hxx"
 #include "Proc.hxx"
@@ -135,7 +136,7 @@ void parser::checkOrder(std::string& el)
   if(_orders[el] < _orderState)
     {
       std::string msg="unexpected "+el+" element (wrong order)";
-      throw YACS::Exception::Exception(msg);
+      throw YACS::Exception(msg);
     }
   else if(_orders[el] > _orderState)
     {
@@ -151,7 +152,7 @@ void parser::maxcount(std::string name, int max, std::string& el)
       std::stringstream msg;
       msg <<"unexpected "+name+" element (count="<<(*_counts)[name];
       msg <<" > maxOccurs=" << max << ")";
-      throw YACS::Exception::Exception(msg.str());
+      throw YACS::Exception(msg.str());
     }
 }
 
@@ -162,7 +163,7 @@ void parser::mincount(std::string name,int min )
       std::stringstream msg;
       msg<<"expected "+name+" element (count="<<(*_counts)[name];
       msg << " < minOccurs=" << min << ")";
-      throw YACS::Exception::Exception(msg.str());
+      throw YACS::Exception(msg.str());
     }
 }
 
@@ -179,7 +180,7 @@ void parser::maxchoice(std::string *names, int max, std::string& el)
     {
       std::stringstream msg;
       msg<<"unexpected "+el+" element (choice count="<<ncount<<" > maxOccurs=" << max << ")";
-      throw YACS::Exception::Exception(msg.str());
+      throw YACS::Exception(msg.str());
     }
 }
 
@@ -203,7 +204,7 @@ void parser::minchoice(std::string *names, int min)
           ++i;
         }
       msg << "(choice count="<<ncount<<" < minOccurs=" << min << ")";
-      throw YACS::Exception::Exception(msg.str());
+      throw YACS::Exception(msg.str());
     }
 }
 
@@ -213,7 +214,7 @@ void parser::required(const std::string& name, const XML_Char** attr)
     {
       if(name == std::string(attr[i]))return;
     }
-  throw YACS::Exception::Exception("Attribute: "+name+" is required");
+  throw YACS::Exception("Attribute: "+name+" is required");
 }
 
 void parser::buildAttr(const XML_Char** attr)

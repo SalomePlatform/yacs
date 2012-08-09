@@ -1,23 +1,25 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include <Python.h>
 
+#include "Resource.hxx"
 #include "SchemaComposedNodeItem.hxx"
 #include "SchemaNodeItem.hxx"
 #include "SchemaInPortItem.hxx"
@@ -59,8 +61,24 @@ SchemaComposedNodeItem::SchemaComposedNodeItem(SchemaItem *parent, QString label
   : SchemaItem(parent, label, subject)
 {
   DEBTRACE("SchemaComposedNodeItem::SchemaComposedNodeItem");
-  _itemDeco.replace(YLabel, QIcon("icons:block_node.png"));
-  _dirTypesItem = 0;
+  switch (subject->getType())
+    {
+    case YACS::HMI::BLOC: 
+      _itemDeco.replace(YLabel, QIcon("icons:block_node.png"));
+      break;
+    case YACS::HMI::FORLOOP: 
+    case YACS::HMI::FOREACHLOOP: 
+    case YACS::HMI::WHILELOOP: 
+    case YACS::HMI::OPTIMIZERLOOP: 
+      _itemDeco.replace(YLabel, QIcon("icons:loop_node.png"));
+      break;
+    case YACS::HMI::SWITCH: 
+      _itemDeco.replace(YLabel, QIcon("icons:switch_node.png"));
+      break;
+    default:
+      _itemDeco.replace(YLabel, QIcon("icons:block_node.png"));
+    }
+   _dirTypesItem = 0;
   _dirContainersItem = 0;
   _dirLinksItem = 0;
   Subject *son = 0;
@@ -79,21 +97,13 @@ SchemaComposedNodeItem::SchemaComposedNodeItem(SchemaItem *parent, QString label
   _dirLinksItem = new SchemaDirLinksItem(this, "Links", son);
   model->endInsertRows();
 
-  if (SubjectProc* sProc = dynamic_cast<SubjectProc*>(subject))
-    {
-      Catalog* builtinCatalog = getSALOMERuntime()->getBuiltinCatalog();
-      sProc->addDataType(builtinCatalog, "bool");
-      sProc->addDataType(builtinCatalog, "int");
-      sProc->addDataType(builtinCatalog, "double");
-      sProc->addDataType(builtinCatalog, "string");
-    }
   if (!model->isEdition())
     {
       setExecState(YACS::UNDEFINED);
     }
 
   SubjectComposedNode *scn = dynamic_cast<SubjectComposedNode*>(subject);
-  assert(scn);
+  YASSERT(scn);
   if (scn->hasValue())
     {
       _itemData.replace(YType, scn->getValue().c_str());
@@ -180,31 +190,42 @@ void SchemaComposedNodeItem::update(GuiEvent event, int type, Subject* son)
           break;
         case YACS::HMI::COMPONENT:
           {
-            assert(_dirContainersItem);
+            YASSERT(_dirContainersItem);
             _dirContainersItem->addComponentItem(son);
           }
           break;
         case YACS::HMI::CONTAINER:
           {
-            assert(_dirContainersItem);
+            YASSERT(_dirContainersItem);
             _dirContainersItem->addContainerItem(son);
           }
           break;
         case YACS::HMI::DATATYPE:
           {
-            assert(_dirTypesItem);
+            YASSERT(_dirTypesItem);
             _dirTypesItem->addTypeItem(son);
           }
           break;
-//         default:
-//           DEBTRACE("SchemaComposedNodeItem::update() ADD, type not handled:" << type);
         }
       break;
+
+    case YACS::HMI::REMOVE:
+      switch (type)
+        {
+        case YACS::HMI::DATATYPE:
+          {
+            YASSERT(_dirTypesItem);
+            _dirTypesItem->removeTypeItem(son);
+          }
+          break;
+        }
+      break;
+
     case YACS::HMI::UPDATE:
       snode = dynamic_cast<SubjectNode*>(_subject);
-      assert(snode);
+      YASSERT(snode);
       node = snode->getNode();
-      assert(node);
+      YASSERT(node);
       switch (node->getState())
         {
         case YACS::INVALID:
@@ -222,7 +243,7 @@ void SchemaComposedNodeItem::update(GuiEvent event, int type, Subject* son)
     case YACS::HMI::ADDLINK:
     case YACS::HMI::ADDCONTROLLINK:
           {
-            assert(_dirLinksItem);
+            YASSERT(_dirLinksItem);
             _dirLinksItem->addLinkItem(son);
           }
       break;
@@ -296,9 +317,9 @@ void SchemaComposedNodeItem::update(GuiEvent event, int type, Subject* son)
 std::list<YACS::ENGINE::Node*> SchemaComposedNodeItem::getDirectDescendants() const
 {
   SubjectNode* SNode = dynamic_cast<SubjectNode*>(_subject);
-  assert(SNode);
+  YASSERT(SNode);
   ComposedNode* CNode = dynamic_cast<ComposedNode*>(SNode->getNode());
-  assert(CNode);
+  YASSERT(CNode);
   return CNode->edGetDirectDescendants();
 }
 
@@ -312,12 +333,15 @@ Qt::ItemFlags SchemaComposedNodeItem::flags(const QModelIndex &index)
 {
   //DEBTRACE("SchemaComposedNodeItem::flags");
   Qt::ItemFlags pflag = Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled;
+  if (!QtGuiContext::getQtCurrent() || !QtGuiContext::getQtCurrent()->isEdition())
+    return pflag;
+
   Qt::ItemFlags flagEdit = 0;
   int column = index.column();
   switch (column)
     {
     case YValue:
-      flagEdit = Qt::ItemIsEditable; // --- port value editable in model view
+      flagEdit = Qt::ItemIsEditable; // --- item value editable in model view (for node case in switch)
       break;     
     }
 
@@ -340,7 +364,12 @@ bool SchemaComposedNodeItem::dropMimeData(const QMimeData* data, Qt::DropAction 
     {
       ret =true;
       SubjectComposedNode *cnode = dynamic_cast<SubjectComposedNode*>(getSubject());
-      QtGuiContext::getQtCurrent()->getGMain()->_guiEditor->CreateNodeFromCatalog(myData, cnode);
+      bool createNewComponentInstance=Resource::COMPONENT_INSTANCE_NEW;
+      // by default getControl gives false. In this case we use the user preference COMPONENT_INSTANCE_NEW
+      // to create the node. If getControl gives true we invert the user preference
+      if(myData->getControl())
+        createNewComponentInstance=!Resource::COMPONENT_INSTANCE_NEW;
+      QtGuiContext::getQtCurrent()->getGMain()->_guiEditor->CreateNodeFromCatalog(myData, cnode,createNewComponentInstance);
     }
   else if(myData->hasFormat("yacs/subjectNode"))
     {
@@ -388,19 +417,25 @@ QString SchemaComposedNodeItem::getMimeFormat()
 
 void SchemaComposedNodeItem::setCaseValue()
 {
+  DEBTRACE("SchemaComposedNodeItem::setCaseValue");
   Subject *sub = _parentItem->getSubject();
   SubjectSwitch *sSwitch = dynamic_cast<SubjectSwitch*>(sub);
   if (!sSwitch) return;
 
   SchemaModel *model = QtGuiContext::getQtCurrent()->getSchemaModel();
   Switch *aSwitch = dynamic_cast<Switch*>(sSwitch->getNode());
-  assert(aSwitch);
+  YASSERT(aSwitch);
   SubjectNode *sNode = dynamic_cast<SubjectNode*>(_subject);
-  assert(sNode);
+  YASSERT(sNode);
   int rank = aSwitch->getRankOfNode(sNode->getNode());
   if (rank == Switch::ID_FOR_DEFAULT_NODE)
     _itemData.replace(YValue, "default");
   else
     _itemData.replace(YValue, rank);
   model->setData(modelIndex(YValue), 0);
+}
+
+QVariant SchemaComposedNodeItem::editionWhatsThis(int column) const
+{
+  return "<p>To edit the node properties, select the node and use the input panel. <a href=\"modification.html#property-page-for-block-node\">More...</a></p>";
 }

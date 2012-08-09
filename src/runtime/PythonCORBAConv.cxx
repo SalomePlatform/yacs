@@ -1,21 +1,22 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //#define REFCNT
 //
 #ifdef REFCNT
@@ -28,6 +29,7 @@
 #include "PythonCORBAConv.hxx"
 #include "TypeConversions.hxx"
 #include "RuntimeSALOME.hxx"
+#include "PythonPorts.hxx"
 
 #include <iostream>
 
@@ -52,6 +54,7 @@ void PyCorbaInt::put(const void *data)  throw(ConversionException)
 void PyCorbaInt::put(PyObject *data)  throw(ConversionException)
 {
   CORBA::Any *a= convertPyObjectCorba(_port->edGetType(),data);
+  YACS::ENGINE::InterpreterSaveThread _loc;
   _port->put(a);
   delete a;
 }
@@ -76,6 +79,7 @@ void PyCorbaBool::put(const void *data)  throw(ConversionException)
 void PyCorbaBool::put(PyObject *data)  throw(ConversionException)
 {
   CORBA::Any *a= convertPyObjectCorba(_port->edGetType(),data);
+  YACS::ENGINE::InterpreterSaveThread _loc;
   _port->put(a);
   //delete Any that has been allocated by convertPyObjectCorba
   delete a;
@@ -94,6 +98,7 @@ void PyCorbaString::put(const void *data)  throw(ConversionException)
 void PyCorbaString::put(PyObject *data)  throw(ConversionException)
 {
   CORBA::Any *a= convertPyObjectCorba(_port->edGetType(),data);
+  YACS::ENGINE::InterpreterSaveThread _loc;
   _port->put(a);
   delete a;
 }
@@ -112,6 +117,7 @@ void PyCorbaDouble::put(const void *data)  throw(ConversionException)
 void PyCorbaDouble::put(PyObject *data)  throw(ConversionException)
 {
   CORBA::Any *a= convertPyObjectCorba(_port->edGetType(),data);
+  YACS::ENGINE::InterpreterSaveThread _loc;
   _port->put(a);
   delete a;
 }
@@ -143,6 +149,7 @@ void PyCorbaSequence::put(PyObject *data)  throw(ConversionException)
   std::cerr << std::endl;
 #endif
   CORBA::Any *a= convertPyObjectCorba(_port->edGetType(),data);
+  YACS::ENGINE::InterpreterSaveThread _loc;
   _port->put(a);
 #ifdef REFCNT
   DEBTRACE("refcount CORBA seqTC: " << ((omni::TypeCode_base*)a->pd_tc.in())->pd_ref_count);
@@ -184,6 +191,7 @@ void PyCorbaObjref::put(PyObject *data)  throw(ConversionException)
   std::cerr << std::endl;
 #endif
   CORBA::Any *a= convertPyObjectCorba(_port->edGetType(),data);
+  YACS::ENGINE::InterpreterSaveThread _loc;
   _port->put(a);
   delete a;
 }
@@ -214,6 +222,7 @@ void PyCorbaStruct::put(PyObject *data)  throw(ConversionException)
   std::cerr << std::endl;
 #endif
   CORBA::Any *a= convertPyObjectCorba(_port->edGetType(),data);
+  YACS::ENGINE::InterpreterSaveThread _loc;
   _port->put(a);
 #ifdef REFCNT
   DEBTRACE("refcount CORBA structTC: " << ((omni::TypeCode_base*)a->pd_tc.in())->pd_ref_count);

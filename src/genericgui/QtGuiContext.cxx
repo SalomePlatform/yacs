@@ -1,22 +1,25 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "QtGuiContext.hxx"
+#include <QClipboard>
+#include "ItemMimeData.hxx"
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -26,6 +29,8 @@ using namespace YACS::ENGINE;
 using namespace YACS::HMI;
 
 QtGuiContext * QtGuiContext::_QtCurrent = 0;
+counters *QtGuiContext::_counters = 0;
+bool QtGuiContext::_delayCalc = false;
 std::set<QtGuiContext*> QtGuiContext::_setOfContext;
 
 QtGuiContext::QtGuiContext(GenericGui *gmain) : GuiContext()
@@ -44,8 +49,8 @@ QtGuiContext::QtGuiContext(GenericGui *gmain) : GuiContext()
   _subjectToCut = 0;
   _subjectToCopy = 0;
   _isEdition = true;
+  _isLoadingPresentation = false;
   _studyId = 0;
-  _isLoading = false;
   _fileName = QString();
   _mapOfSchemaItem.clear();
   _mapOfSceneItem.clear();
@@ -61,6 +66,7 @@ QtGuiContext::~QtGuiContext()
   _invoc = 0;
   if (_subjectProc)
     {
+      _proc->setEdition(false);
       _subjectProc->clean();
       delete _subjectProc;
       _subjectProc = 0;
@@ -79,21 +85,34 @@ void QtGuiContext::setProc(YACS::ENGINE::Proc* proc)
 
 YACS::HMI::Subject* QtGuiContext::getSubjectToPaste(bool &isCut)
 {
-  isCut = (_subjectToCut != 0);
-  if (isCut)
-    return _subjectToCut;
-  else
-    return _subjectToCopy;
+  QClipboard *clipboard = QApplication::clipboard();
+  const QMimeData * data=clipboard->mimeData();
+  const ItemMimeData* myData = dynamic_cast<const ItemMimeData*>(data);
+  Subject * sub=0;
+
+  if(myData)
+    {
+      sub=myData->getSubject();
+      isCut=myData->getControl();
+    }
+
+  return sub;
 }
 
 void QtGuiContext::setSubjectToCut(YACS::HMI::Subject* sub)
 {
-  _subjectToCut = sub;
-  _subjectToCopy = 0;
+  ItemMimeData *mime = new ItemMimeData;
+  mime->setSubject(sub);
+  mime->setControl(true);
+  QClipboard *clipboard = QApplication::clipboard();
+  clipboard->setMimeData(mime);
 }
 
 void QtGuiContext::setSubjectToCopy(YACS::HMI::Subject* sub)
 {
-  _subjectToCopy = sub;
-  _subjectToCut = 0;
+  ItemMimeData *mime = new ItemMimeData;
+  mime->setSubject(sub);
+  mime->setControl(false);
+  QClipboard *clipboard = QApplication::clipboard();
+  clipboard->setMimeData(mime);
 }

@@ -1,30 +1,33 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "VisitorSaveSchema.hxx"
 
 #include "ElementaryNode.hxx"
 #include "InlineNode.hxx"
 #include "ServiceNode.hxx"
+#include "ServerNode.hxx"
 #include "ServiceInlineNode.hxx"
 #include "Bloc.hxx"
 #include "Proc.hxx"
 #include "ForEachLoop.hxx"
+#include "OptimizerLoop.hxx"
 #include "Loop.hxx"
 #include "ForLoop.hxx"
 #include "WhileLoop.hxx"
@@ -48,6 +51,12 @@ using namespace std;
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
+/*! \class YACS::ENGINE::VisitorSaveSchema
+ *  \brief Base class for all visitors that save a schema.
+ *
+ *  Can be specialized in runtime.
+ */
+
 VisitorSaveSchema::VisitorSaveSchema(ComposedNode *root): _root(root), Visitor(root)
 {
 }
@@ -61,7 +70,7 @@ VisitorSaveSchema::~VisitorSaveSchema()
     }
 }
 
-void VisitorSaveSchema::openFileSchema(std::string xmlSchema) throw(Exception)
+void VisitorSaveSchema::openFileSchema(std::string xmlSchema) throw(YACS::Exception)
 {
   _out.open(xmlSchema.c_str(), ios::out);
   if (!_out)
@@ -69,8 +78,7 @@ void VisitorSaveSchema::openFileSchema(std::string xmlSchema) throw(Exception)
       string what = "Impossible to open file for writing: " + xmlSchema;
       throw Exception(what);
     }
-  _out << "<?xml version='1.0'?>" << endl;
-  _out << "<proc>" << endl;
+  _out << "<?xml version='1.0' encoding='iso-8859-1' ?>" << endl;
 }
 
 void VisitorSaveSchema::closeFileSchema()
@@ -130,12 +138,60 @@ void VisitorSaveSchema::visitForEachLoop(ForEachLoop *node)
   _out << ">" << endl;
   
   writeProperties(node);
-  node->ComposedNode::accept(this);
+  node->DynParaLoop::accept(this);
   writeSimpleDataLinks(node);
   writeSimpleStreamLinks(node);
   _out << indent(depth) << "</foreach>" << endl;
   endCase(node);
   DEBTRACE("END visitForEachLoop " << _root->getChildName(node));
+}
+
+void VisitorSaveSchema::visitOptimizerLoop(OptimizerLoop *node)
+{
+  DEBTRACE("START visitOptimizerLoop " << _root->getChildName(node));
+  beginCase(node);
+  int depth = depthNode(node);
+
+  _out << indent(depth) << "<optimizer name=\"" << node->getName() << "\"";
+  AnyInputPort *nbranch = static_cast<AnyInputPort*>(node->edGetNbOfBranchesPort());
+  if (node->getState() == YACS::DISABLED)
+    _out << " state=\"disabled\"";
+  if (!nbranch->isEmpty())
+    _out << " nbranch=\"" << nbranch->getIntValue() << "\"";
+  _out << " lib=\"" << node->getAlgLib() << "\"";
+  _out << " entry=\"" << node->getSymbol() << "\"";
+  _out << ">" << endl;
+
+  writeProperties(node);
+  node->DynParaLoop::accept(this);
+  writeSimpleDataLinks(node);
+  writeSimpleStreamLinks(node);
+  _out << indent(depth) << "</optimizer>" << endl;
+  endCase(node);
+  DEBTRACE("END visitOptimizerLoop " << _root->getChildName(node));
+}
+
+void VisitorSaveSchema::visitDynParaLoop(DynParaLoop *node)
+{
+  DEBTRACE("START visitDynParaLoop " << _root->getChildName(node));
+  int depth = depthNode(node);
+  if (node->getInitNode() != NULL)
+    {
+      _out << indent(depth+1) << "<initnode>" << endl;
+      node->getInitNode()->accept(this);
+      _out << indent(depth+1) << "</initnode>" << endl;
+    }
+  if (node->getExecNode() != NULL)
+    {
+      node->getExecNode()->accept(this);
+    }
+  if (node->getFinalizeNode() != NULL)
+    {
+      _out << indent(depth+1) << "<finalizenode>" << endl;
+      node->getFinalizeNode()->accept(this);
+      _out << indent(depth+1) << "</finalizenode>" << endl;
+    }
+  DEBTRACE("END visitDynParaLoop " << _root->getChildName(node));
 }
 
 void VisitorSaveSchema::visitForLoop(ForLoop *node)
@@ -165,7 +221,10 @@ void VisitorSaveSchema::visitInlineNode(InlineNode *node)
   DEBTRACE("START visitInlineNode " << _root->getChildName(node));
   beginCase(node);
   int depth = depthNode(node);
-  _out << indent(depth) << "<inline name=\"" << node->getName() << "\"";
+  if(node->getExecutionMode()=="local")
+    _out << indent(depth) << "<inline name=\"" << node->getName() << "\"";
+  else
+    _out << indent(depth) << "<remote name=\"" << node->getName() << "\"";
   if (node->getState() == YACS::DISABLED)
     _out << " state=\"disabled\">" << endl;
   else
@@ -173,12 +232,23 @@ void VisitorSaveSchema::visitInlineNode(InlineNode *node)
   _out << indent(depth+1) << "<script><code><![CDATA[";
   _out << node->getScript();
   _out << "]]></code></script>" << endl;
+
+  //add load container if node is remote
+  Container *cont = node->getContainer();
+  if (cont)
+    _out << indent(depth+1) << "<load container=\"" << cont->getName() << "\"/>" << endl;
+
   writeProperties(node);
   writeInputPorts(node);
   writeInputDataStreamPorts(node);
   writeOutputPorts(node);
   writeOutputDataStreamPorts(node);
-  _out << indent(depth) << "</inline>" << endl;
+
+  if(node->getExecutionMode()=="local")
+    _out << indent(depth) << "</inline>" << endl;
+  else
+    _out << indent(depth) << "</remote>" << endl;
+
   endCase(node);
   DEBTRACE("END visitInlineNode " << _root->getChildName(node));
 }
@@ -188,7 +258,10 @@ void VisitorSaveSchema::visitInlineFuncNode(InlineFuncNode *node)
   DEBTRACE("START visitInlineFuncNode " << _root->getChildName(node));
   beginCase(node);
   int depth = depthNode(node);
-  _out << indent(depth) << "<inline name=\"" << node->getName() << "\"";
+  if(node->getExecutionMode()=="local")
+    _out << indent(depth) << "<inline name=\"" << node->getName() << "\"";
+  else
+    _out << indent(depth) << "<remote name=\"" << node->getName() << "\"";
   if (node->getState() == YACS::DISABLED)
     _out << " state=\"disabled\">" << endl;
   else
@@ -198,12 +271,23 @@ void VisitorSaveSchema::visitInlineFuncNode(InlineFuncNode *node)
   _out << node->getScript();
   _out << "]]></code>" << endl;
   _out << indent(depth+1) << "</function>" << endl;
+
+  //add load container if node is remote
+  Container *cont = node->getContainer();
+  if (cont)
+    _out << indent(depth+1) << "<load container=\"" << cont->getName() << "\"/>" << endl;
+
   writeProperties(node);
   writeInputPorts(node);
   writeInputDataStreamPorts(node);
   writeOutputPorts(node);
   writeOutputDataStreamPorts(node);
-  _out << indent(depth) << "</inline>" << endl;
+
+  if(node->getExecutionMode()=="local")
+    _out << indent(depth) << "</inline>" << endl;
+  else
+    _out << indent(depth) << "</remote>" << endl;
+
   endCase(node);
   DEBTRACE("END visitInlineFuncNode " << _root->getChildName(node));
 }
@@ -225,10 +309,12 @@ void VisitorSaveSchema::visitLoop(Loop *node)
 void VisitorSaveSchema::visitProc(Proc *node)
 {
   DEBTRACE("START visitProc " << node->getName());
+  _out << "<proc name=\""<< node->getName() << "\">" << endl;
   beginCase(node);
   writeProperties(node);
   writeTypeCodes(node);
   writeContainers(node);
+  writeComponentInstances(node);
   node->ComposedNode::accept(this);
   writeControls(node);
   writeSimpleDataLinks(node);
@@ -256,7 +342,11 @@ void VisitorSaveSchema::visitServiceNode(ServiceNode *node)
   else
     {
       ComponentInstance *compo = node->getComponent();
-      if (compo && (_componentInstanceMap.find(compo) == _componentInstanceMap.end()))
+      if (compo && !compo->isAnonymous())
+        {
+          _out << indent(depth+1) << "<componentinstance>" << compo->getInstanceName() << "</componentinstance>" << endl;
+        }
+      else if (compo && (_componentInstanceMap.find(compo) == _componentInstanceMap.end()))
         {
           _out << indent(depth+1) << compo->getFileRepr() << endl;
           _componentInstanceMap[compo] = _root->getChildName(node);
@@ -272,9 +362,13 @@ void VisitorSaveSchema::visitServiceNode(ServiceNode *node)
                 _out << indent(depth+1) << "<load container=\"" << it->first << "\"/>" << endl;
             }
         }
-      else
+      else if(compo)
         {
           _out << indent(depth+1) << "<node>" << _componentInstanceMap[compo] << "</node>" << endl;
+        }
+      else
+        {
+          _out << indent(depth+1) << "<component>" << "UNKNOWN" << "</component>" << endl;
         }
     }
   _out << indent(depth+1) << "<method>" << node->getMethod() << "</method>" << endl;
@@ -287,6 +381,43 @@ void VisitorSaveSchema::visitServiceNode(ServiceNode *node)
   _out << indent(depth) << "</service>" << endl;
   endCase(node);
   DEBTRACE("END visitServiceNode " << _root->getChildName(node));
+}
+
+void VisitorSaveSchema::visitServerNode(ServerNode *node)
+{
+  DEBTRACE("START visitServerNode " << _root->getChildName(node));
+  beginCase(node);
+  int depth = depthNode(node);
+  _out << indent(depth) << "<server name=\"" << node->getName() << "\"";
+  if (node->getState() == YACS::DISABLED)
+    _out << " state=\"disabled\">" << endl;
+  else
+    _out << ">" << endl;
+  Container *cont = node->getContainer();
+  map<string, Container*>::const_iterator it;
+  for (it = _containerMap.begin(); it != _containerMap.end(); ++it)
+    {
+      if (it->second == cont) break;
+    }
+  if (it != _containerMap.end())
+    _out << indent(depth+1) << "<loadcontainer>" << it->first << "</loadcontainer>" << endl;
+  /*else
+    {
+      _out << indent(depth+1) << "<node>" << _contnentInstanceMap[cont] << "</node>" << endl;
+      }*/
+  _out << indent(depth+1) << "<method>" << node->getFname() << "</method>" << endl;
+  _out << indent(depth+2) << "<script><code><![CDATA[";
+  _out << node->getScript();
+  _out << "]]></code></script>" << endl;
+  //_out << indent(depth+1) << "</function>" << endl;
+  writeProperties(node);
+  writeInputPorts(node);
+  writeInputDataStreamPorts(node);
+  writeOutputPorts(node);
+  writeOutputDataStreamPorts(node);
+  _out << indent(depth) << "</server>" << endl;
+  endCase(node);
+  DEBTRACE("END visitServerNode " << _root->getChildName(node));
 }
 
 void VisitorSaveSchema::visitServiceInlineNode(ServiceInlineNode *node)
@@ -397,7 +528,7 @@ void VisitorSaveSchema::writeProperties(Node *node)
     }
 }
 
-void VisitorSaveSchema::dumpTypeCode(TypeCode* type, set<string>& typeNames,map<string, TypeCode*>& typeMap,int depth)
+void VisitorSaveSchema::dumpTypeCode(TypeCode* type, std::set<std::string>& typeNames,std::map<std::string, TypeCode*>& typeMap,int depth)
 {
   DynType kind = type->kind();
   string typeName = type->name();
@@ -487,7 +618,7 @@ void VisitorSaveSchema::dumpTypeCode(TypeCode* type, set<string>& typeNames,map<
     case YACS::ENGINE::Struct:
       {
         TypeCodeStruct* tcStruct = dynamic_cast<TypeCodeStruct*>(type);
-        assert(tcStruct);
+        YASSERT(tcStruct);
         int mbCnt = tcStruct->memberCount();
         for (int i=0; i<mbCnt; i++)
           {
@@ -531,6 +662,34 @@ void VisitorSaveSchema::writeTypeCodes(Proc *proc)
     }
 }
 
+void VisitorSaveSchema::writeComponentInstances(Proc *proc)
+{
+  int depth = depthNode(proc)+1;
+  std::map<std::string, ComponentInstance*>::const_iterator it;
+  for (it = proc->componentInstanceMap.begin(); it != proc->componentInstanceMap.end(); it++)
+    {
+      string name = it->first;
+      ComponentInstance* inst=it->second;
+      if(!inst->isAnonymous())
+        {
+          _out << indent(depth) << "<componentinstance name=\"" << inst->getInstanceName() << "\">" << endl;
+          _out << indent(depth+1) << "<component>" << inst->getCompoName() << "</component>" << endl;
+
+          Container *cont = inst->getContainer();
+          if (cont)
+            _out << indent(depth+1) << "<load container=\"" << cont->getName() << "\"/>" << endl;
+
+          std::map<std::string, std::string> properties = inst->getProperties();
+          std::map<std::string, std::string>::const_iterator itm;
+          for(itm = properties.begin(); itm != properties.end(); ++itm)
+            _out << indent(depth+1) << "<property name=\"" << (*itm).first
+                 << "\" value=\"" << (*itm).second << "\"/>" << endl;
+
+          _out << indent(depth) << "</componentinstance>" << endl;
+        }
+    }
+}
+
 void VisitorSaveSchema::writeContainers(Proc *proc)
 {
   int depth = depthNode(proc)+1;
@@ -567,19 +726,19 @@ void VisitorSaveSchema::writeInputDataStreamPorts(Node *node)
   list<InputDataStreamPort*> listOfInputPorts = node->getSetOfInputDataStreamPort();
   for (list<InputDataStreamPort*>::iterator it = listOfInputPorts.begin(); it != listOfInputPorts.end(); ++it)
     {
-      std::map<std::string,std::string> aPropMap = (*it)->getPropertyMap();
+      std::map<std::string,std::string> aPropMap = (*it)->getProperties();
       if ( aPropMap.empty() )
-	_out << indent(depth) << "<instream name=\"" << (*it)->getName() << "\" type=\"" 
-	     << (*it)->edGetType()->name() << "\"/>" << endl;
+        _out << indent(depth) << "<instream name=\"" << (*it)->getName() << "\" type=\"" 
+             << (*it)->edGetType()->name() << "\"/>" << endl;
       else
-	{
-	  _out << indent(depth) << "<instream name=\"" << (*it)->getName() << "\" type=\"" 
-	       << (*it)->edGetType()->name() << "\">" << endl;
-	  for (std::map<std::string,std::string>::iterator itP = aPropMap.begin(); itP != aPropMap.end(); itP++)
-	    _out << indent(depth+1) << "<property name=\"" << (*itP).first << "\" value=\"" 
-		 << (*itP).second << "\"/>" << endl;
-	  _out << indent(depth) << "</instream>" << endl;
-	}
+        {
+          _out << indent(depth) << "<instream name=\"" << (*it)->getName() << "\" type=\"" 
+               << (*it)->edGetType()->name() << "\">" << endl;
+          for (std::map<std::string,std::string>::iterator itP = aPropMap.begin(); itP != aPropMap.end(); itP++)
+            _out << indent(depth+1) << "<property name=\"" << (*itP).first << "\" value=\"" 
+                 << (*itP).second << "\"/>" << endl;
+          _out << indent(depth) << "</instream>" << endl;
+        }
     }
 }
 
@@ -600,19 +759,19 @@ void VisitorSaveSchema::writeOutputDataStreamPorts(Node *node)
   list<OutputDataStreamPort*> listOfOutputPorts = node->getSetOfOutputDataStreamPort();
   for (list<OutputDataStreamPort*>::iterator it = listOfOutputPorts.begin(); it != listOfOutputPorts.end(); ++it)
     {
-      std::map<std::string,std::string> aPropMap = (*it)->getPropertyMap();
+      std::map<std::string,std::string> aPropMap = (*it)->getProperties();
       if ( aPropMap.empty() )
-	_out << indent(depth) << "<outstream name=\"" << (*it)->getName() << "\" type=\"" 
-	     << (*it)->edGetType()->name() << "\"/>" << endl;
+        _out << indent(depth) << "<outstream name=\"" << (*it)->getName() << "\" type=\"" 
+             << (*it)->edGetType()->name() << "\"/>" << endl;
       else
-	{
-	  _out << indent(depth) << "<outstream name=\"" << (*it)->getName() << "\" type=\"" 
-	       << (*it)->edGetType()->name() << "\">" << endl;
-	  for (std::map<std::string,std::string>::iterator itP = aPropMap.begin(); itP != aPropMap.end(); itP++)
-	    _out << indent(depth+1) << "<property name=\"" << (*itP).first << "\" value=\"" 
-		 << (*itP).second << "\"/>" << endl;
-	  _out << indent(depth) << "</outstream>" << endl;
-	}
+        {
+          _out << indent(depth) << "<outstream name=\"" << (*it)->getName() << "\" type=\"" 
+               << (*it)->edGetType()->name() << "\">" << endl;
+          for (std::map<std::string,std::string>::iterator itP = aPropMap.begin(); itP != aPropMap.end(); itP++)
+            _out << indent(depth+1) << "<property name=\"" << (*itP).first << "\" value=\"" 
+                 << (*itP).second << "\"/>" << endl;
+          _out << indent(depth) << "</outstream>" << endl;
+        }
     }
 }
 
@@ -695,17 +854,17 @@ void VisitorSaveSchema::writeSimpleDataLinks(ComposedNode *node)
                 {
                   DEBTRACE( "BINGO!" );
 
-		  string fromName;
-		  if ( dynamic_cast<SplitterNode*>(from) && dynamic_cast<ForEachLoop*>(from->getFather()) )
-		    fromName = from->getFather()->getName();
-		  else
-		    fromName = node->getChildName(from);
+                  string fromName;
+                  if ( dynamic_cast<SplitterNode*>(from) && dynamic_cast<ForEachLoop*>(from->getFather()) )
+                    fromName = from->getFather()->getName();
+                  else
+                    fromName = node->getChildName(from);
 
-		  string childName;
-		  if ( dynamic_cast<SplitterNode*>(to) && dynamic_cast<ForEachLoop*>(to->getFather()) )
-		    childName = node->getChildName(to->getFather());
-		  else
-		    childName = node->getChildName(to);
+                  string childName;
+                  if ( dynamic_cast<SplitterNode*>(to) && dynamic_cast<ForEachLoop*>(to->getFather()) )
+                    childName = node->getChildName(to->getFather());
+                  else
+                    childName = node->getChildName(to);
                   _out << indent(depth) << "<datalink control=\"false\">" << endl;
                   _out << indent(depth+1) << "<fromnode>" << fromName << "</fromnode> ";
                   _out << "<fromport>" << anOP->getName() << "</fromport>" << endl;
@@ -800,8 +959,8 @@ void VisitorSaveSchema::writeSimpleStreamLinks(ComposedNode *node)
                   _out << indent(depth+1) << "<tonode>" << childName << "</tonode> ";
                   _out << "<toport>" << anIP->getName() << "</toport>" << endl;
 
-		  std::map<std::string,std::string> aPropMap = anOP->getPropertyMap();
-		  for (std::map<std::string,std::string>::iterator itP = aPropMap.begin(); itP != aPropMap.end(); itP++)
+                  std::map<std::string,std::string> aPropMap = dynamic_cast<InputDataStreamPort*>(anIP)->getProperties();
+                  for (std::map<std::string,std::string>::iterator itP = aPropMap.begin(); itP != aPropMap.end(); itP++)
                     {
                       string notAlinkProperty = "DependencyType";
                       if (notAlinkProperty != (*itP).first)
@@ -809,7 +968,7 @@ void VisitorSaveSchema::writeSimpleStreamLinks(ComposedNode *node)
                              << (*itP).second << "\"/>" << endl;
                     }
                   _out << indent(depth) << "</stream>" << endl;
-		}
+                }
               else
                 { // --- store info to create the link later, given the input port
                   DEBTRACE("For later" );
@@ -817,7 +976,7 @@ void VisitorSaveSchema::writeSimpleStreamLinks(ComposedNode *node)
                   _mapOfSLtoCreate.insert(make_pair(anIP->getNumId(), aLink));
                 }
             }
-	}
+        }
     }
 
   // --- second pass, retreive links where the output port is inside the scope.
@@ -847,10 +1006,10 @@ void VisitorSaveSchema::writeSimpleStreamLinks(ComposedNode *node)
                     _out << indent(depth+1) << "<tonode>" << node->getChildName(to) << "</tonode> ";
                     _out << "<toport>" << anIP->getName() << "</toport>" << endl;
 
-		    std::map<std::string,std::string> aPropMap = anOP->getPropertyMap();
-		    for (std::map<std::string,std::string>::iterator itP = aPropMap.begin(); itP != aPropMap.end(); itP++)
-		      _out << indent(depth+1) << "<property name=\"" << (*itP).first << "\" value=\"" 
-			   << (*itP).second << "\"/>" << endl;
+                    std::map<std::string,std::string> aPropMap = dynamic_cast<InputDataStreamPort*>(anIP)->getProperties();
+                    for (std::map<std::string,std::string>::iterator itP = aPropMap.begin(); itP != aPropMap.end(); itP++)
+                      _out << indent(depth+1) << "<property name=\"" << (*itP).first << "\" value=\"" 
+                           << (*itP).second << "\"/>" << endl;
 
                     _out << indent(depth) << "</stream>" << endl;
                   }
@@ -978,7 +1137,7 @@ int VisitorSaveSchema::depthNode(Node* node)
 
 SchemaSave::SchemaSave(Proc* proc): _p(proc)
 {
-  assert(_p);
+  YASSERT(_p);
 }
 
 void SchemaSave::save(std::string xmlSchemaFile)

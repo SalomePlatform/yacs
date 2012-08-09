@@ -1,25 +1,27 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "ElementaryNode.hxx"
 #include "Bloc.hxx"
 #include "Proc.hxx"
 #include "ForEachLoop.hxx"
+#include "OptimizerLoop.hxx"
 #include "Loop.hxx"
 #include "ForLoop.hxx"
 #include "WhileLoop.hxx"
@@ -27,6 +29,7 @@
 #include "InputPort.hxx"
 #include "InlineNode.hxx"
 #include "ServiceNode.hxx"
+#include "ServerNode.hxx"
 #include "ServiceInlineNode.hxx"
 #include "DataNode.hxx"
 
@@ -69,7 +72,7 @@ VisitorSaveState::~VisitorSaveState()
     }
 }
 
-void VisitorSaveState::openFileDump(std::string xmlDump) throw(Exception)
+void VisitorSaveState::openFileDump(std::string xmlDump) throw(YACS::Exception)
 {
   _out.open(xmlDump.c_str(), ios::out);
   if (!_out)
@@ -159,6 +162,25 @@ void VisitorSaveState::visitForEachLoop(ForEachLoop *node)
   _out << "    <state>" << _nodeStateName[node->getState()] << "</state>" << endl;
 
   _out << "  </node>" << endl;
+}
+
+void VisitorSaveState::visitOptimizerLoop(OptimizerLoop *node)
+{
+  node->ComposedNode::accept(this);
+  if (!_out) throw Exception("No file open for dump state");
+  string name = _root->getName();
+  if (static_cast<ComposedNode*>(node) != _root) name = _root->getChildName(node);
+  DEBTRACE("VisitorSaveState::visitOptimizerLoop ------ " << name);
+  _out << "  <node type='optimizerLoop'>" << endl;
+  _out << "    <name>" << name << "</name>" << endl;
+  _out << "    <state>" << _nodeStateName[node->getState()] << "</state>" << endl;
+
+  _out << "  </node>" << endl;
+}
+
+void VisitorSaveState::visitDynParaLoop(DynParaLoop *node)
+{
+  node->ComposedNode::accept(this);
 }
 
 void VisitorSaveState::visitLoop(Loop *node)
@@ -255,6 +277,10 @@ void VisitorSaveState::visitServiceNode(ServiceNode *node)
   visitElementaryNode(node);
 }
 
+void VisitorSaveState::visitServerNode(ServerNode *node)
+{
+  visitElementaryNode(node);
+}
 
 void VisitorSaveState::visitServiceInlineNode(ServiceInlineNode *node)
 {

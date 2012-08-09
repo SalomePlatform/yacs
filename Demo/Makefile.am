@@ -1,29 +1,31 @@
-#  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+# Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 #
-#  This library is free software; you can redistribute it and/or
-#  modify it under the terms of the GNU Lesser General Public
-#  License as published by the Free Software Foundation; either
-#  version 2.1 of the License.
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License.
 #
-#  This library is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#  Lesser General Public License for more details.
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
 #
-#  You should have received a copy of the GNU Lesser General Public
-#  License along with this library; if not, write to the Free Software
-#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 #
-#  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+
 include $(top_srcdir)/adm/unix/make_begin.am
 
+IDL_FILES = echo.idl
 BUILT_SOURCES = echoSK.cc schema.xml xmlrpcprog.py
-bin_PROGRAMS=echoSrv 
-echoSrv_SOURCES = echoSrv.cxx 
-nodist_echoSrv_SOURCES = echoSK.cc
-echoSrv_CXXFLAGS = $(OMNIORB_INCLUDES) $(OMNIORB_CXXFLAGS) 
-echoSrv_LDFLAGS = $(OMNIORB_LIBS)
+bin_PROGRAMS=echoSrvDemo 
+echoSrvDemo_SOURCES = echoSrv.cxx 
+nodist_echoSrvDemo_SOURCES = echoSK.cc
+echoSrvDemo_CXXFLAGS = -I. $(OMNIORB_INCLUDES) $(OMNIORB_CXXFLAGS) 
+echoSrvDemo_LDFLAGS = $(OMNIORB_LIBS)
 AM_CXXFLAGS = $(THREAD_DEF)
 
 EXTRA_DIST = echo.idl schema_orig.xml xmlrpcprog_orig.py

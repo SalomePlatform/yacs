@@ -1,21 +1,22 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //#define REFCNT
 //
 #ifdef REFCNT
@@ -48,11 +49,19 @@ void releaseObj(CORBA::Any& data)
   CORBA::Object_var obj;
   if(data >>= CORBA::Any::to_object(obj))
     {
-      SALOME::GenericObj_var gobj=SALOME::GenericObj::_narrow(obj);
+      SALOME::GenericObj_var gobj;
+      try
+        {
+          gobj=SALOME::GenericObj::_narrow(obj);
+        }
+      catch(const CORBA::SystemException& )
+        {
+          return;
+        }
       if(!CORBA::is_nil(gobj))
         {
           DEBTRACE("It's a SALOME::GenericObj");
-          gobj->Destroy();
+          gobj->UnRegister();
         }
       else
           DEBTRACE("It's a CORBA::Object but not a SALOME::GenericObj");
@@ -66,7 +75,15 @@ void registerObj(CORBA::Any& data)
   CORBA::Object_var obj;
   if(data >>= CORBA::Any::to_object(obj))
     {
-      SALOME::GenericObj_var gobj=SALOME::GenericObj::_narrow(obj);
+      SALOME::GenericObj_var gobj;
+      try
+        {
+          gobj=SALOME::GenericObj::_narrow(obj);
+        }
+      catch(const CORBA::SystemException& )
+        {
+          return;
+        }
       if(!CORBA::is_nil(gobj))
         {
           DEBTRACE("It's a SALOME::GenericObj");
@@ -148,6 +165,7 @@ void InputCorbaPort::put(CORBA::Any *data) throw (ConversionException)
 #ifdef REFCNT
   DEBTRACE("refcount CORBA : " << ((omni::TypeCode_base*)data->pd_tc.in())->pd_ref_count);
 #endif
+  YACS::BASES::Lock lock(&_mutex);
 #ifdef _DEVDEBUG_
   display(data);
 #endif
@@ -170,7 +188,7 @@ InputPort *InputCorbaPort::clone(Node *newHelder) const
   return new InputCorbaPort(*this,newHelder);
 }
 
-void *InputCorbaPort::get() const throw(Exception)
+void *InputCorbaPort::get() const throw(YACS::Exception)
 {
   return (void *)&_data;
 }
@@ -189,6 +207,7 @@ CORBA::Any * InputCorbaPort::getAny()
 
 PyObject * InputCorbaPort::getPyObj()
 {
+  YACS::BASES::Lock lock(&_mutex);
   CORBA::TypeCode_var tc=getAny()->type();
   if (!tc->equivalent(CORBA::_tc_null))
     return convertCorbaPyObject(edGetType(),getAny());
@@ -297,18 +316,22 @@ void OutputCorbaPort::put(const void *data) throw (ConversionException)
 void OutputCorbaPort::put(CORBA::Any *data) throw (ConversionException)
 {
   InputPort *p;
+
+  {  
+    YACS::BASES::Lock lock(&_mutex);
 #ifdef REFCNT
-  DEBTRACE("refcount CORBA : " << ((omni::TypeCode_base*)data->pd_tc.in())->pd_ref_count);
+    DEBTRACE("refcount CORBA : " << ((omni::TypeCode_base*)data->pd_tc.in())->pd_ref_count);
 #endif
 #ifdef REFCNT
-  DEBTRACE("refcount CORBA : " << ((omni::TypeCode_base*)_data.pd_tc.in())->pd_ref_count);
+    DEBTRACE("refcount CORBA : " << ((omni::TypeCode_base*)_data.pd_tc.in())->pd_ref_count);
 #endif
 
-  releaseObj(_data);
+    releaseObj(_data);
 
-  _data=*data;
+    _data=*data;
 
-  //no registerObj : we steal the output reference of the node
+    //no registerObj : we steal the output reference of the node
+  }
 
 #ifdef REFCNT
   DEBTRACE("refcount CORBA : " << ((omni::TypeCode_base*)_data.pd_tc.in())->pd_ref_count);
@@ -399,6 +422,7 @@ CORBA::Any * OutputCorbaPort::getAnyOut()
 
 PyObject * OutputCorbaPort::getPyObj()
 {
+  YACS::BASES::Lock lock(&_mutex);
   CORBA::TypeCode_var tc=getAny()->type();
   if (!tc->equivalent(CORBA::_tc_null))
     return convertCorbaPyObject(edGetType(),getAny());

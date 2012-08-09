@@ -1,0 +1,74 @@
+<?xml version='1.0' encoding='iso-8859-1' ?>
+<!--
+  Copyright (C) 2006-2012  CEA/DEN, EDF R&D
+
+  This library is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public
+  License as published by the Free Software Foundation; either
+  version 2.1 of the License.
+
+  This library is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public
+  License along with this library; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+
+  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+
+-->
+<proc name="newSchema_1">
+   <property name="DefaultStudyID" value="1"/>
+   <type name="string" kind="string"/>
+   <struct name="Engines/dataref">
+      <member name="ref" type="string"/>
+   </struct>
+   <type name="bool" kind="bool"/>
+   <sequence name="boolvec" content="bool"/>
+   <type name="double" kind="double"/>
+   <sequence name="dblevec" content="double"/>
+   <objref name="file" id="file"/>
+   <type name="int" kind="int"/>
+   <sequence name="intvec" content="int"/>
+   <objref name="pyobj" id="python:obj:1.0"/>
+   <sequence name="stringvec" content="string"/>
+   <container name="DefaultContainer">
+      <property name="container_name" value="FactoryServer"/>
+      <property name="name" value="localhost"/>
+   </container>
+   <container name="container0">
+   </container>
+   <container name="container1">
+   </container>
+   <remote name="PyFunction3">
+      <function name="f">
+         <code><![CDATA[import time
+
+def f():
+    print my_container
+    for n in xrange(15):
+      print time.time()
+      time.sleep(1)
+    
+]]></code>
+      </function>
+      <load container="container0"/>
+   </remote>
+   <remote name="PyFunction4">
+      <function name="f">
+         <code><![CDATA[import time
+def f():
+    print my_container
+    for n in xrange(15):
+      print time.time()
+      time.sleep(1)
+]]></code>
+      </function>
+      <load container="container1"/>
+   </remote>
+   <presentation name="PyFunction3" x="6" y="34" width="158" height="36" expanded="1" expx="6" expy="34" expWidth="158" expHeight="36" shownState="0"/>
+   <presentation name="PyFunction4" x="6" y="72" width="158" height="36" expanded="1" expx="6" expy="72" expWidth="158" expHeight="36" shownState="0"/>
+   <presentation name="__ROOT__" x="0" y="0" width="168" height="112" expanded="1" expx="0" expy="0" expWidth="168" expHeight="112" shownState="0"/>
+</proc>

@@ -1,26 +1,29 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "Scene.hxx"
 #include "SceneItem.hxx"
+#include "SceneTextItem.hxx"
 #include "QtGuiContext.hxx"
 
 #include <QGraphicsSceneMouseEvent>
+#include <QToolTip>
 
 #include <cassert>
 #include <cmath>
@@ -31,9 +34,11 @@
 using namespace std;
 using namespace YACS::HMI;
 
+bool Scene::_straightLinks = false;
 bool Scene::_autoComputeLinks = true;
 bool Scene::_simplifyLinks = true;
 bool Scene::_force2NodesLink = true;
+bool Scene::_addRowCols = true;
 
 Scene::Scene(QObject *parent): QGraphicsScene(parent)
 {
@@ -59,6 +64,25 @@ void Scene::setZoom(bool zooming)
 bool Scene::isZooming()
 {
   return _zooming;
+}
+ 
+void Scene::helpEvent(QGraphicsSceneHelpEvent *event)
+{
+  DEBTRACE("Scene::helpEvent");
+  QGraphicsItem *qit = itemAt(event->scenePos());
+  SceneItem * item = dynamic_cast<SceneItem*>(qit);
+  if (item)
+    {
+      QToolTip::showText(event->screenPos(), item->getToolTip());
+      return;
+    }
+  SceneTextItem * itemt = dynamic_cast<SceneTextItem*>(qit);
+  if (itemt)
+    {
+      QToolTip::showText(event->screenPos(), itemt->getToolTip());
+      return;
+    }
+  QToolTip::hideText();
 }
 
 void Scene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)

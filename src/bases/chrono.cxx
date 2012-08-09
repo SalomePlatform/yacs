@@ -1,7 +1,25 @@
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
+//
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 
 #include "chrono.hxx"
 
-#define _DEVDEBUG_
+//#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
 using namespace std;
@@ -36,9 +54,9 @@ void counters::stats()
   for (int i=0; i < _nbChrono; i++)
     if (_ctrs[i]._ctrOccur)
       {
-        DEBTRACE("Compteur[" << i << "]: "<< _ctrs[i]._ctrNames << "[" << _ctrs[i]._ctrLines << "]");
-        DEBTRACE("  " << _ctrs[i]._ctrOccur);
-        DEBTRACE("  " << _ctrs[i]._ctrCumul);
+        std::cerr << "Compteur[" << i << "]: "<< _ctrs[i]._ctrNames << "[" << _ctrs[i]._ctrLines << "]" << std::endl;
+        std::cerr << "  " << _ctrs[i]._ctrOccur << std::endl;
+        std::cerr << "  " << _ctrs[i]._ctrCumul << std::endl;
       }
 }
 
@@ -46,6 +64,7 @@ void counters::stats()
 
 chrono::chrono(int i) : _ctr(i), _run(true)
 {
+  //DEBTRACE("chrono::chrono " << _ctr << " " << _run);
   _start = clock();    
 }
 
@@ -56,6 +75,7 @@ chrono::~chrono()
 
 void chrono::stop()
 {
+  //DEBTRACE("chrono::stop " << _ctr << " " << _run);
   if (_run)
     {
       _run = false;

@@ -1,45 +1,41 @@
 
 .. _batch:
 
-Lancement d'une application Salomé dans un gestionnaire de Batch
+Starting a SALOME application in a batch manager
 ================================================================
 
-Cette section explique comment utiliser Salomé avec les gestionnaires
-de batch qui sont utilisés dans l'exploitation de clusteurs.
-L'objectif est de lancer une application Salomé avec un script de commande sur un clusteur à partir 
-d'une session Salomé lancée sur la machine personnelle de l'utilisateur. Le script
-contient la tâche que l'utilisateur veut que Salomé exécute. Il s'agit le plus souvent
-du lancement d'un schéma YACS.
+This section explains how SALOME is used with batch managers used in the operation of clusters.  
+The objective is to run a SALOME application with a command script on a cluster starting from a 
+SALOME session running on the user's personal machine.  The script contains the task that the user 
+wants SALOME to execute.  The most usual task is to start a YACS scheme.
 
-Principes
----------
+Principles
+-----------
+The start principle is as follows:  starting from a first SALOME session, a SALOME application is started 
+on a cluster using the batch manager.  Therefore there are two SALOME installations:  one on the user’s machine 
+and the other on the cluster.  The user must have an account on the cluster, and must have a read/write access to it.  
+He must also have correctly configured the connection protocol from his own station, regardless of whether he uses rsh or ssh.
 
-Le principe du lancement est le suivant: depuis une première session Salomé, une application
-Salomé est lancée sur le clusteur par le biais du gestionnaire de batch. Il y a donc deux
-installations de Salomé: une sur la machine de l'utilisateur et une autre sur le clusteur.
-Sur le clusteur, l'utilisateur doit avoir un compte, y avoir accès en lecture/écriture. De plus, il doit 
-avoir configuré correctement le protocole de connexion depuis son poste, qu'il utilise rsh ou ssh.
-
-La suite de ce chapitre détaille les différentes étapes du lancement. Tout d'abord, une application Salomé 
-est lancée sur la machine de l'utilisateur avec un fichier CatalogResources.xml contenant la description 
-de la machine batch visée (voir :ref:`catalogresources_batch`). Ensuite, l'utilisateur appelle le service de Salomé pour 
-le lancement sur machine batch. Pour cela, l'utilisateur décrit les fichiers d'entrées et de sorties de l'application 
-Salomé lancée en batch ainsi que du script python à lancer (voir :ref:`service_launcher`). Ce service
-lance ensuite l'application Salomé définit dans le fichier CatalogResources.xml sur la machine batch et 
-exécute le fichier de commande python (voir :ref:`salome_clusteur_batch`).
+The remainder of this chapter describes the different run steps.  Firstly, a SALOME application is run on 
+the user’s machine using a CatalogResources.xml file containing the description of the target batch 
+machine (see :ref:`catalogresources_batch`).  The user then calls the SALOME service to run it on the batch machine.  
+The user does this by describing input and output files for the SALOME application running in batch 
+and for the Python script to be run (see :ref:`service_launcher`).  This service then starts the SALOME 
+application defined in the CatalogResources.xml file on the batch machine and executes the Python 
+command file (see :ref:`salome_clusteur_batch`).
 
 .. _catalogresources_batch:
 
-Description du clusteur par le biais du fichier CatalogResources.xml
+Description of the cluster using the CatalogResource.xml file
 --------------------------------------------------------------------
 
-Le fichier CatalogResources.xml contient la description des différentes ressources de calcul (machines) 
-distribuées que Salomé peut utiliser pour lancer ses containers. Il peut aussi contenir la description de 
-clusteurs administrés par des gestionnaires de batch.
+The CatalogResources.xml file contains the description of the different distributed calculation 
+resources (machines) that SALOME can use to launch its containers.  It can also contain the description 
+of clusters administered by batch managers.
 
-Voici un exemple de description d'un clusteur:
+The following is an example of description of a cluster:
 
-::
+.. code-block:: xml
 
   <machine hostname="clusteur1" 
 	   alias="frontal.com" 
@@ -51,48 +47,42 @@ Voici un exemple de description d'un clusteur:
 	   appliPath="/home/user/applis/batch_exemples" 
 	   batchQueue="mpi1G_5mn_4p"
 	   userCommands="ulimit -s 8192"
-	   preReqFilePath="/home/ribes/SALOME4/env-prerequis.sh" 
+	   preReqFilePath="/home/ribes/SALOME5/env-prerequis.sh" 
 	   OS="LINUX" 
 	   CPUFreqMHz="2800" 
 	   memInMB="4096" 
 	   nbOfNodes="101" 
 	   nbOfProcPerNode="2"/>
   
-Voici la description des différents champs utilisés dans un lancement batch:
+The following is the description of the different fields used when launching a batch:
+ - **hostname**:  names the cluster for SALOME commands.  Warning, this name is not used to identify the cluster front end.
+ - **alias**:  names the cluster front end.  It must be possible to reach this machine name using the protocol 
+   defined in the file.  This is the machine that will be used to start the batch session.
+ - **protocol**:  fixes the connection protocol between the user session and the cluster front end.  
+   The possible choices are rsh or ssh.
+ - **userName**:  user name on the cluster.
+ - **mode**:  identifies the description of the machine as a cluster managed by a batch.  The possible choices are 
+   interactive and batch.  The batch option must be chosen for the machine to be accepted as a cluster with a batch manager.
+ - **batch**:  identifies the batch manager.  Possible choices are:  pbs, lsf or sge.
+ - **mpi**:  SALOME uses mpi to Start the SALOME session and containers on different calculation nodes allocated 
+   by the batch manager.  Possible choices are lam, mpich1, mpich2, openmpi, slurm and prun.  Note that some 
+   batch managers replace the mpi launcher with their own launcher for management of resources, which is the 
+   reason for the slurm and prun options.
+ - **appliPath**:  contains the path of the SALOME application previously installed on the cluster.
 
-- **hostname**: nomme le clusteur pour les commandes de Salomé. Attention, ce nom n'est pas 
-  utilisé pour identifier le frontal du clusteur.
-- **alias**: nomme le frontal du clusteur. Ce nom de machine doit être atteignable par le protocole 
-  définit dans le fichier. C'est cette machine qui sera utilisé pour lancer la session batch.
-- **protocol**: fixe le protocole de connexion entre la session utilisateur et le frontal du clusteur.
-  Choix possibles: **rsh** ou **ssh**.
-- **userName**: nom de l'utilisateur sur le clusteur.
-- **mode**: identifie la description de la machine comme un clusteur géré par un batch.
-  Choix possibles: **interactive** ou **batch**. Pour que la machine soit prise en compte comme étant un clusteur
-  avec un gestionnaire de batch, il faut choisir l'option **batch**.
-- **batch**: identifie le gestionnaire de batch. Choix possibles: **pbs**, **lsf** ou **sge**.
-- **mpi**: Salomé utilise **mpi** pour lancer la session Salomé et les containers sur les différents noeuds 
-  de calcul alloués par le gestionnaire de batch. Choix possibles: **lam**, **mpich1**, **mpich2**, **openmpi**, 
-  **slurm** ou **prun**. Il faut noter que certains gestionnaires de batch remplacent le lanceur de mpi 
-  par leur propre lanceur pour la gestion des ressources, d'où les options **slurm** et **prun**.
-- **appliPath**: contient le chemin de l'application Salomé préalablement installée sur le clusteur.
-
-Il existe deux champs optionnels qui peuvent être utiles selon la configuration des clusteurs:
-
-- **batchQueue**: spécifie la queue du gestionnaire de batch à utiliser.
-- **userCommands**: permet d'insérer du code **sh** lors du lancement de Salomé. Ce code est exécuté sur tous
-  les noeuds.  
-
+There are two optional fields that can be useful depending on the configuration of clusters.
+ - **batchQueue**:  specifies the queue of the batch manager to be used
+ - **userCommands**:  to insert the sh code when SALOME is started.  This code is executed on all nodes.
 
 .. _service_launcher:
 
-Utilisation du service Launcher
+
+Using the Launcher service
 -------------------------------
+The Launcher service is a CORBA server started by the SALOME kernel.  Its interface is described in the 
+**SALOME_ContainerManager.idl** file of the kernel.
 
-Le service Launcher est un serveur CORBA lancé par le noyau de Salomé. Son interface est décrite dans le
-fichier **SALOME_ContainerManager.idl** du noyau.
-
-Voici son interface:
+Its interface is as follows:
 
 ::
 
@@ -104,25 +94,29 @@ Voici son interface:
 			  in FilesList filesToExport,
 			  in FilesList filesToImport,
 			  in BatchParameters batch_params,
-			  in MachineParameters params ) raises (SALOME::SALOME_Exception);
+			  in MachineParameters params ) 
+			                    raises (SALOME::SALOME_Exception);
 
-    string queryJob ( in long jobId, in MachineParameters params ) raises (SALOME::SALOME_Exception);
-    void   deleteJob( in long jobId, in MachineParameters params ) raises (SALOME::SALOME_Exception);
+    string queryJob ( in long jobId, in MachineParameters params ) 
+                                            raises (SALOME::SALOME_Exception);
+    void   deleteJob( in long jobId, in MachineParameters params ) 
+                                            raises (SALOME::SALOME_Exception);
 
-    void getResultsJob( in string directory, in long jobId, in MachineParameters params ) 
-         raises (SALOME::SALOME_Exception);
+    void getResultsJob( in string directory, in long jobId, 
+                        in MachineParameters params ) 
+			                    raises (SALOME::SALOME_Exception);
 
-    boolean testBatch(in MachineParameters params) raises (SALOME::SALOME_Exception);
+    boolean testBatch(in MachineParameters params) 
+                                            raises (SALOME::SALOME_Exception);
 
     void Shutdown();
     long getPID();
   };
 
-La méthode **submitSalomeJob** permet de lancer une application Salomé sur un gestionnaire de batch. 
-Cette méthode retourne un identifiant de **job** qui est utilisé dans les méthodes **queryJob**, 
-**deleteJob** et **getResultsJob**.
+The **submitSalome.job** method launches a SALOME application on a batch manager.  
+This method returns a **job** identifier that is used in the **query.Job**, **delete.Job** and **getResults.Job** methods.
 
-Voici un exemple d'utilisation de cette méthode:
+The following is an example using this method:
 
 ::
 
@@ -135,39 +129,37 @@ Voici un exemple d'utilisation de cette méthode:
   clt = orbmodule.client()
   cm  = clt.Resolve('SalomeLauncher')
 
-  # Le script python qui va être lancé sur le clusteur
+  # The python script that will be launched on the cluster 
   script = '/home/user/Dev/Install/BATCH_EXEMPLES_INSTALL/tests/test_Ex_Basic.py'
 
-  # Préparation des arguments pour submitSalomeJob
+  # Preparation of arguments for submitSalomeJob  
   filesToExport = []
   filesToImport = ['/home/user/applis/batch_exemples/filename']
   batch_params = Engines.BatchParameters('', '00:05:00', '', 4)
-  params = Engines.MachineParameters('','clusteur1','','','','',[],'',0,0,1,1,0,'prun','lsf','','',4)
+  params = Engines.MachineParameters('','clusteur1','','','','',[],'',0,0,1,1,0,
+                                     'prun','lsf','','',4)
 
-  # Utilisation de submitSalomeJob
-  jobId = cm.submitSalomeJob(script, filesToExport, filesToImport, batch_params, params)
+  # Using submitSalomeJob          
+  jobId = cm.submitSalomeJob(script, filesToExport, filesToImport, 
+                             batch_params, params)
 
+The following is a description of the different arguments of **submitSalomeJob**:
 
-Voici la description des différents arguments de **submitSalomeJob**:
+- **fileToExecute**:  this is the python script that will be executed in the SALOME application on the cluster.  
+  This argument contains the script path **on** the local machine and **not on** the cluster.
+- **filesToExport**:  this is a list of files that will be copied into the run directory on the cluster
+- **filesToImport**:  this is a list of files that will be copied from the cluster onto the user machine when the **getResultsJob** method is called.
+- **batch_params**:  this is a structure that contains information that will be given to the batch manager.  This structure is 
+  composed of four arguments.  The first argument will be used to give the name of the directory in which it is required that 
+  the files and SALOME application should be run (this function is not available at the moment).  The second argument 
+  is the requested time.  It is expressed in the form hh:min:se, for example 01:30:00.  The third argument is the required memory.  
+  It is expressed in the form of 32gb or 512mb.  Finally, the final argument describes the requested number of processors.
+- **params**:  contains the description of the required machine. In this case, the cluster on which the application is to be launched 
+  is clearly identified.
 
-- **fileToExecute**: il s'agit du script python qui sera exécuté dans l'application Salomé sur le clusteur.
-  Cet argument contient le chemin du script **sur** la machine locale et **non** sur le clusteur.
-- **filesToExport**: il s'agit d'une liste de fichiers qui seront copiés dans le répertoire de lancement sur 
-  le clusteur.
-- **filesToImport**: il s'agit d'une liste de fichiers qui seront copiés depuis le clusteur sur la 
-  machine utilisateur lors de l'appel à la méthode **getResultsJob**.
-- **batch_params**: il s'agit d'une structure qui contient des informations qui seront données au gestionnaire 
-  de batch. Cette structure est composée de quatre arguments. Le premier argument permettra de donner le nom du 
-  répertoire où l'on veut que les fichiers et l'application Salomé soit lancée (actuellement cette fonction n'est pas 
-  disponible). Le deuxième argument est le temps demandé. Il est exprimé sous cette forme: hh:mn:se, ex: 01:30:00. 
-  Le troisième argument est la mémoire requise. Elle est exprimée sous la forme: 32gb ou encore 512mb. Enfin, 
-  le dernier argument décrit le nombre de processeurs demandé.
-- **params**: il contient la description de la machine souhaitée. Ici on identifie clairement sur quel clusteur
-  on veut lancer l'application.
-
-Pour connaitre dans quel état est le Job, il faut utiliser la méthode **queryJob**. Il y a trois états possibles: 
-**en attente**, **en exécution** et **terminé**.
-Voici un exemple d'utilisation de cette méthode:
+The **queryJob** method should be used to determine the state of the Job.  There are three possible states, namely **waiting**, 
+**running** and **terminated**.  
+The following is an example of how this method is used:
 
 ::
 
@@ -178,46 +170,36 @@ Voici un exemple d'utilisation de cette méthode:
     status = cm.queryJob(jobId, params)
     print jobId,' ',status
 
-L'identifiant du job fournit par la méthode **submitSalomeJob** est utilisé dans cette méthode ainsi que la 
-structure **params**.
+The job identifier supplied by the **submitSalomeJob** method is used in this method together with the **params** structure.
 
-Enfin pour récupérer les résultats de l'application, il faut utiliser la méthode **getResultsJob**.
-Voici un exemple d'utilisation de cette méthode:
+Finally, the **getResultsJob** method must be used to retrieve application results.  
+The following is an example of how to use this method:
 ::
 
   cm.getResultsJob('/home/user/Results', jobId, params)
 
-Le premier argument contient le répertoire où l'utilisateur veut récupérer les résultats. En plus de ceux
-définis dans la liste **filesToImport**, l'utilisateur reçoit automatiquement les logs de l'application
-Salomé et des différents containers qui ont été lancés.
+The first argument contains the directory in which the user wants to retrieve the results.  The user automatically receives 
+logs from the SALOME application and the different containers that have been started, in addition to those defined in the **filesToImport** list.
 
 .. _salome_clusteur_batch:
 
-Salomé sur le clusteur batch
-----------------------------
-
-Salomé ne fournit par pour l'instant un service pour l'installation automatique de la plateforme depuis
-la machine personnelle de d'utilisateur. Il faut donc que Salomé (KERNEL + des modules) et une application Salomé
-soient préinstallés sur le clusteur. Dans l'exemple suivit dans cette documentation, l'application est installée dans
-le répertoire **/home/user/applis/batch_exemples**.
-
-Lors du l'utilisation de la méthode **submitSalomeJob**, Salomé crée un répertoire dans $HOME/Batch/**date_du_lancement**.
-C'est dans ce répertoire que les différents fichiers d'entrées sont copiés.
-
-Contraintes de Salomé sur les gestionnaires de batch
+SALOME on the batch cluster
 ----------------------------------------------------
+SALOME does not provide a service for automatic installation of the platform from the user’s personal machine, for the moment.  
+Therefore, SALOME (KERNEL + modules) and a SALOME application have to be installed beforehand on the cluster.  
+In the example used in this documentation, the application is installed in the directory **/home/user/applis/batch_exemples**.
 
-Salomé a besoin de certaines fonctionnalités que le gestionnaire de batch doit autoriser pour que le lancement
-d'applications Salomé soit possible. 
+When the **submitSalomeJob** method is being used, SALOME creates a directory in $HOME/Batch/**run_date**.
+The various input files are copied into this directory.
 
-Salomé lance plusieurs **threads** par processeurs pour chaque serveur CORBA qui est lancé.
-Certains gestionnaires de batch peuvent limiter le nombre de threads à un nombre trop faible ou encore le gestionnaire 
-de batch peut avoir configurer la taille de pile des threads à un niveau trop haut. Dans notre exemple, la taille
-de pile des threads est fixée par l'utilisateur dans le champ **userCommands** du fichier CatalogResources.xml.
+SALOME constraints on batch managers
+----------------------------------------------------
+SALOME needs some functions that the batch manager must authorise before SALOME applications can be run.
 
-Salomé lance des processus dans la session sur les machines allouées par le gestionnaire de batch. 
-Il faut donc que le gestionnaire de batch l'autorise.
+SALOME runs several processor **threads** for each CORBA server that is started.  
+Some batch managers can limit the number of threads to a number that is too small, or the batch manager may configure the size 
+of the thread stack so that it is too high.  
+In our example, the user fixes the size of the thread stack in the **userCommands** field in the CatalogResources.xml file.
 
-Enfin, Salomé est basée sur l'utilisation de bibliothèques dynamiques et sur l'utilisation de la fonction **dlopen**. 
-Il faut que le système le permette.
-
+SALOME starts processes in the session on machines allocated by the batch manager.  Therefore, the batch manager must authorise this.
+Finally, SALOME is based on the use of dynamic libraries and the **dlopen** function.  The system must allow this.

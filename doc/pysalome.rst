@@ -4,39 +4,32 @@
 .. _pysalome:
 
 ================================================================
-Guide pour le développement d'un module SALOME en Python
+Guide for the development of a SALOME module in Python
 ================================================================
 
-Ce document a pour objectif de décrire les différentes étapes
-du développement d'un module SALOME en Python.
-Il commence par un bref rappel des principes de SALOME. Puis, il décrit 
-les étapes successives qui seront suivies pour arriver à une configuration
-de module complète.
+The purpose of this document is to describe briefly the different steps in the development of a SALOME module 
+in Python.  
 
-Les étapes de construction du module exemple
+Steps in construction of the example module
 ====================================================
-Le module exemple choisi pour illustrer le processus de construction d'un
-module est extrèmement simple. Il contiendra un seul composant et ce composant
-aura un seul service nommé getBanner qui acceptera une chaine de caractères
-comme unique argument et qui retournera une chaine de caractères obtenue
-par concaténation de "Hello " et de la chaine d'entrée. Ce composant sera
-complété par un GUI graphique écrit en PyQt.
+The example module chosen to illustrate the process to construct a module is extremely simple.  
+It will contain a single component and this component will have a single service called getBanner that 
+will accept a character string as the sole argument and that will return a character string obtained by 
+concatenation of “Hello” and the input chain.  This component will be completed by a graphic GUI written in PyQt.
 
-Les différentes étapes du développement seront les suivantes :
+The different steps in the development will be as follows:
 
-  - créer une arborescence de module
-  - créer un composant SALOME chargeable par un container Python
-  - configurer le module pour que le composant soit connu de SALOME
-  - ajouter un GUI graphique
-  - rendre le composant utilisable dans le superviseur
+ - create a module tree structure
+ - create a SALOME component that can be loaded by a Python container
+ - configure the module so that the component is known to SALOME
+ - add a graphic GUI
 
-Création de l'arborescence du module
+Create the module tree structure
 =======================================
-Dans un premier temps, on se contentera de mettre dans le module exemple un composant
-SALOME écrit en Python qui sera chargeable par un container Python.
-Il suffit donc d'une interface idl et d'une implémentation Python du composant.
-Pour mettre en oeuvre ceci dans un module SALOME , il faut l'arborescence de
-fichier suivante::
+Firstly, we will simply put a SALOME component written in Python and that can be loaded by a Python 
+container, into the example module.  An idl interface and a Python implementation of the component will be 
+all that are necessary.  
+The following file structure is necessary so that this can be implemented in a SALOME module::
 
   + PYHELLO1_SRC
     + build_configure
@@ -65,178 +58,160 @@ fichier suivante::
         + PYHELLO.py 
     + doc
 
-Le module a pour nom PYHELLO1_SRC et le composant PYHELLO.
-Tous les fichiers sont indispensables à l'exception de VERSION.in, runAppli.in et runSalome.py.
-VERSION.in sert pour documenter le module, il doit donner sa version et ses compatibilités ou 
-incompatibilités avec les autres modules. Il est donc fortement recommandé mais pas indispensable 
-au fonctionnement.
-Les fichiers runAppli.in et runSalome.py ne sont pas indispensables mais facilitent la mise en
-oeuvre de l'exemple.
+The module name is PYHELLO, the component name is PYHELLO and all the files will be put in a directory named PYHELLO1_SRC.  
+All files are essential except for VERSION.in, runAppli.in and runSalome.py.  
+VERSION.in is used to document the module, it must give its version and its compatibilities or 
+incompatibilities with other modules.  Therefore, it is strongly recommended but is not essential for operation.  
+The runAppli.in and runSalome.py files are not essential but make the example easier to use.
 
-Mise en garde : il ne faut pas copier les fichiers de la plate-forme de base (KERNEL) pour
-initialiser une arborescence de module. Il est, en général, préférable de copier les fichiers
-d'un autre module comme GEOM ou MED.
+.. warning::
 
-Mise en oeuvre d'automake, configure
+   the files of the basic platform (KERNEL) must not be copied to initialise a module tree structure.  
+   It is usually preferable to copy files from another module such as GEOM or MED.
+
+Implementation of automake, configure
 --------------------------------------
-SALOME utilise autoconf et automake pour construire le script configure qui sert à l'installation pour
-tester la configuration du système et pour préconfigurer les fichiers Makefile de contruction
-du module.
-Le fichier build_configure contient une procédure qui à partir de configure.ac et au moyen 
-d'automake construit le script configure.
-Tous les fichiers dont l'extension est in sont des squelettes qui seront transformés par le 
-processus de configure.
+SALOME uses autoconf and automake to build the configure script that is used for the installation to test 
+the system configuration and to preconfigure the module construction Makefile files.  
+The build_configure file contains a procedure that starts from configure.ac and uses automake to build 
+the configure script.  
+automake starts from Makefile.am files to build Makefile.in files.
+All files with an "in" extension are skeletons that will be transformed by the configure process.
 
-Presque tous les fichiers utilisés pour ce processus sont localisés dans la plate-forme de
-base qui est référencée par la variable d'environnement KERNEL_ROOT_DIR. Cependant quelques
-fichiers doivent être modifiés en fonction du module cible. C'est le cas bien sur de build_configure
-et de configure.ac qui doivent en général être adaptés. 
+Almost all files used for this process are located in the basic platform that is referenced by the 
+KERNEL_ROOT_DIR environment variable as well as GUI_ROOT_DIR for the graphical user interface (GUI).  
+However, some files must be modified as a function of the target 
+module.  This is the case for build_configure and configure.ac files that usually need to be adapted.
 
-Les fichiers de base pour le configure du module KERNEL et des autres modules sont rassemblés
-dans le répertoire salome_adm du module KERNEL. Il faut cependant, pour pouvoir utiliser les objets
-CORBA du module KERNEL surcharger les fichiers du répertoire
-salome_adm. Cette surcharge est réalisée avec le fichier make_common_starter.am 
-dans le répertoire adm_local du module exemple.
+The basic files for configuration of the KERNEL module and other modules are collected in the salome_adm 
+directory of the KERNEL module.  However, in order to be able to use the CORBA objects of the KERNEL module, 
+the files in the salome_adm directory have to be overwritten, using the make_common_starter.am file in 
+the adm_local directory of the example module.
 
-config_files est un répertoire dans lequel on peut mettre les fichiers m4 qui servent à tester
-la configuration du système dans le processus de configure. Si les fichiers de salome_adm ne sont pas
-suffisants, on peut en ajouter dans adm_local.
+config_files is a directory in which the m4 files that are used to test the configuration of the system in the 
+configure process can be placed.  If the salome_adm files are not sufficient, others can be added in adm_local.
 
-Répertoire idl
-------------------
-Dans le répertoire idl, il faut un Makefile qui doit mettre en oeuvre la compilation
-du fichier idl PYHELLO_Gen.idl et installer tous ces fichiers dans les bons répertoires 
-de l'installation du module. Il suffit de modifier la cible BASE_IDL_FILES pour obtenir
-un fichier adapté.
+The idl directory
+--------------------------------------
+The idl directory requires a Makefile.am that must make the compilation of the idl PYHELLO_Gen.idl file 
+and install all the generated files in the right module installation directories.  The BASE_IDL_FILES target has 
+to be modified to reach this goal.
 
-Concernant le fichier idl lui-même, il doit définir un module CORBA dont le nom
-doit être différent du nom du module pour éviter les conflits de nom et définir une
-interface CORBA qui dérive à minima de l'interface Component du module Engines.
-Le nom du module CORBA sera PYHELLO_ORB et le nom de l'interface PYHELLO_Gen.
+The idl file itself must define a CORBA module for which the name must be different from the module 
+name to avoid name conflicts and define a CORBA interface that is derived at least from the EngineComponent interface of the Engines module.  
+The name of the CORBA module will be PYHELLO_ORB and the name of the interface will be PYHELLO_Gen.
 
-Répertoire src
-------------------
-Le répertoire src contiendra tous les composants et GUI graphiques du module. Chacune 
-de ces entités doit avoir son propre répertoire.
+The src directory
+--------------------------------------
+The src directory will contain all components and the GUI for the module. Each of these entities must have 
+its own directory.
 
-Le module ne contiendra pour le moment qu'un seul répertoire pour le moteur du 
-composant PYHELLO et son nom sera PYHELLO.
+For the moment, the module will only contain a single directory for the engine of the PYHELLO component 
+and its name will be PYHELLO.
 
-Le Makefile se contente de déclencher le parcours des sous répertoires qui sont
-décrits par la cible SUBDIRS.
+The Makefile.am will simply trigger the path of sub-directories described by the SUBDIRS target.
 
-Répertoire PYHELLO
+The PYHELLO directory
 '''''''''''''''''''''''
-Le répertoire contient le module Python qui représente le composant et donc contient la classe PYHELLO
-et un fichier Makefile dont le rôle est simplement d'exporter le module PYHELLO.py
-dans le répertoire d'installation du module SALOME.
+This directory contains the Python module that represents the component and therefore contains the PYHELLO class 
+and a Makefile.am file that simply exports the PYHELLO.py module into the installation directory of the SALOME module.
 
-Le module PYHELLO.py contient la classe PYHELLO qui dérive de l'interface PYHELLO_Gen du
-module CORBA PYHELLO_ORB__POA et de la classe SALOME_ComponentPy_i du module SALOME_ComponentPy.
+The PYHELLO.py module contains the PYHELLO class that is derived from the PYHELLO_Gen interface of the CORBA 
+PYHELLO_ORB_POA module and the SALOME_ComponentPy_i class of the SALOME_ComponentPy module.
 
-Répertoire doc
-------------------
-Il ne contient rien pour le moment. Il pourrait contenir ce document.
+The doc directory
+--------------------------------------
+This contains nothing for the moment. It could contain this document.
 
-Répertoire bin
-------------------
-VERSION.in sert pour documenter le module, il doit donner sa version et ses compatibilités ou
-incompatibilités avec les autres modules. Il est donc fortement recommandé mais pas indispensable
-au fonctionnement.
+The bin directory
+--------------------------------------
+VERSION.in is used to document the module, it must define its version and its compatibilities 
+or incompatibilities with other modules.  Therefore, it is strongly recommended but is not essential for operation.
 
-Le fichier runAppli.in est l'équivalent du runSalome du module KERNEL configuré pour mettre
-en oeuvre le module KERNEL et ce module PYHELLO.
+The runAppli.in file is the equivalent of the runSalome in the KERNEL module configured to implement the KERNEL 
+module and this PYHELLO module.
 
-Le fichier runSalome.py est le fichier du module KERNEL avec une correction de bug pour
-tourner seulement avec un container Python, une modification de la fonction test qui crée
-le composant PYHELLO au lieu d'un composant MED et un développement pour disposer de
-la complétion automatique en Python.
+The myrunSalome.py file is the file of the KERNEL module modified to run only with a Python container, 
+with the test function that creates the PYHELLO component instead of a MED component, 
+and automatic completion in Python.
 
-Création d'un composant chargeable par un container
+Creating a component that can be loaded by a container
 ======================================================
-Les fichiers présentés ci-dessus suffisent pour construire et installer le module PYHELLO1_SRC,
-lancer la plate-forme SALOME constituée  des modules KERNEL et PYHELLO1 et demander au container 
-Python le chargement d'un composant PYHELLO.
+The files presented above are sufficient to build and install the PYHELLO1_SRC module, to start 
+the SALOME platform composed of the KERNEL and PYHELLO1 modules, and to request the Python container 
+to load a PYHELLO component.
 
-Toutes les étapes suivantes supposent que les logiciels prérequis de SALOME sont accessibles dans l'environnement
-du développeur de modules.
+All the following steps are only possible if the SALOME prerequisite software is accessible in the module 
+developer environment.
 
 Construction, installation
 ---------------------------------
-Dans PYHELLO1_SRC, faire::
+In PYHELLO1_SRC, enter::
 
-     export KERNEL_ROOT_DIR=<chemin d'installation du module KERNEL>
+     export KERNEL_ROOT_DIR=<KERNEL installation path>
      ./build_configure
 
-Aller dans ../PYHELLO1_BUILD et faire::
+Go into ../PYHELLO1_BUILD and enter::
 
-     ../PYHELLO1_SRC/configure --prefix=<chemin d'installation du module PYHELLO1>
+     ../PYHELLO1_SRC/configure --prefix=<PYHELLO1 installation path>
      make
      make install
 
-Lancement de la plate-forme
+Running the platform
 -------------------------------
-Aller dans <chemin d'installation du module PYHELLO1> et faire::
- 
+Move into the <PYHELLO1 module installation path> and enter::
+
     ./bin/salome/runAppli
 
-Cette commande lance SALOME configurée pour KERNEL et le module PYHELLO1. A la fin de ce
-lancement l'utilisateur est devant un interpréteur Python configuré pour SALOME et qui
-donne accès aux objets CORBA de SALOME.
+This command runs SALOME configured for KERNEL and the PYHELLO1 module.  At the end of running, 
+the user sees a Python interpreter configured for SALOME that provides access to SALOME CORBA objects.
 
-runAppli est un shell qui exécute un script Python en lui passant des arguments en ligne de
-commande::
+runAppli is a shell that executes a Python script, by passing arguments to it in a command line::
 
-    python -i $PYHELLO_ROOT_DIR/bin/salome/runSalome.py --modules=PYHELLO --xterm --containers=cpp,python --killall
+    python -i $PYHELLO_ROOT_DIR/bin/salome/myrunSalome.py --modules=PYHELLO --killall
 
-Ces arguments indiquent que l'on prendra le script runSalome.py situé dans le module PYHELLO, que l'on
-activera le composant PYHELLO, les impressions seront redirigées dans une fenêtre xterm, on lancera un 
-container Python et tous les processus SALOME existant avant le lancement seront tués.
+These arguments state that the myrunSalome.py script located in the PYHELLO module will be used, that the PYHELLO 
+component will be activated and all SALOME processes that existed before the run will be killed.
 
-Pour que cette commande fonctionne, il faut préalablement avoir positionné les variables d'environnement
-suivantes::
+This command will not function unless the following environment variables have previously been set::
 
-   export KERNEL_ROOT_DIR=<chemin d'installation du module KERNEL>
-   export PYHELLO_ROOT_DIR=<chemin d'installation du module PYHELLO>
+   export KERNEL_ROOT_DIR=<KERNEL installation path>
+   export PYHELLO_ROOT_DIR=<PYHELLO installation path>
 
-Cette méthode d'activation des modules et composants de SALOME tend à confondre module et composant.
-Dans ce cas (1 composant par module), il n'y a pas de difficulté à paramétrer le lancement. Il suffit d'indiquer derrière 
-l'option --modules la liste des composants demandés (KERNEL est inutile) et de fournir autant de variables
-d'environnement qu'il y a de composants. Le nom de ces variables doit être <Composant>_ROOT_DIR et doit donner le chemin
-du module contenant le composant. Dans le cas où on a plusieurs composants par module, c'est un peu plus 
-compliqué. Ce sera présenté ultérieurement.
+.. warning::
 
-Mise en garde: il est possible que le lancement de SALOME n'aille pas jusqu'au bout. En effet
-dans certaines circonstances, le temps de lancement des serveurs CORBA peut être long et dépasser
-le timeout fixé à 21 secondes. Si la raison en est le temps de chargement important des 
-bibliothèques dynamiques, il est possible qu'un deuxième lancement dans la foulée aille
-jusqu'au bout.
-
-Chargement du composant exemple
+   it is possible that the SALOME run will not reach the end.  In some circumstances, the time to 
+   start CORBA servers may be long and could exceed the timeout.  If the reason for 
+   this is that the time to load dynamic libraries is long, it is possible that a second run immediately 
+   afterwards will be successful.
+ 
+Loading the example component
 ------------------------------------
-Pour avoir accès aux méthodes du composant, il faut importer le module PYHELLO_ORB avant
-de demander le chargement du composant au container Python. Ce container Python
-a été rendu accessible dans runSalome.py au moyen de la variable container::
+The PYHELLO_ORB module has to be imported before making a request to load the component into the Python 
+container, to obtain access to methods of the component.  This Python container was made accessible 
+in the runSalome.py by means of the container variable::
 
     import PYHELLO_ORB
     c=container.load_impl("PYHELLO","PYHELLO")
     c.makeBanner("Christian")
 
-La dernière instruction doit retourner 'Hello Christian'.
-Pour voir les objets CORBA créés par ces actions, faire::
+The last instruction must return ‘Hello Christian’.  
+
+Proceed as follows to see CORBA objects created by these actions::
 
     clt.showNS()
 
-Composant SALOME déclaré 
+Declared SALOME component
 ==============================
-Pour le moment, le composant PYHELLO a été chargé en faisant une requête directe au container
-Python. Ce n'est pas la méthode standard pour charger un composant. La voie normale passe
-par le service LifeCycle qui utilise les services du catalogue pour identifier le composant 
-et ses propriétés puis appelle le container demandé pour charger le composant.
+For the moment, the PYHELLO component was loaded by making a direct request to the Python container.  This is 
+not the standard method for loading a component.  The normal method uses the LifeCycle service that uses 
+catalog services to identify the component and its properties and then calls the requested container to load the component.
 
-Pour pouvoir utiliser cette méthode, il faut déclarer le composant dans un catalogue au format XML dont le 
-nom doit  être <Composant>Catalog.xml. Dans notre cas ce sera PYHELLOCatalog.xml. Ce catalogue sera rangé
-dans le répertoire resources. Arborescence actualisée::
+Before this method can be used, the component must be declared in a catalog in the XML format, for which 
+the name must be <Module>Catalog.xml.  In our case, it will be PYHELLOCatalog.xml.  This catalog will be stored in 
+the resources directory.  
+
+Updated tree structure::
 
   + PYHELLO1_SRC
     + build_configure
@@ -250,36 +225,35 @@ dans le répertoire resources. Arborescence actualisée::
     + resources
       + PYHELLOCatalog.xml
 
-En dehors de l'ajout du répertoire resources et du fichier PYHELLOCatalog.xml, le reste des fichiers
-est identique. Il faut cependant modifier le Makefile.am de tête pour que le catalogue soit bien installé
-dans le répertoire d'installation. Il suffit de le spécifier dans la cible RESOURCES_FILES.
+The remainder of the files are identical, apart from adding the resources directory and the PYHELLOCatalog.xml file.  
+However, the Makefile.am has to be modified so that the catalog is actually installed in the installation 
+directory.  It simply needs to be specified in the salomeres_SCRIPTS target.
 
 Construction, installation
 ---------------------------------
-Il n'est pas nécessaire de refaire un configure pour prendre en compte cette modification. Il
-suffit d'aller dans PYHELLO1_BUILD et de faire::
-   
+There is no need to do another configure to take account of this modification.  
+All that is necessary is to enter PYHELLO1_BUILD and then::
+
     ./config.status
     make 
     make install
 
-Lancement de la plate-forme
+Starting the platform
 -------------------------------
-Le lancement de la plate-forme se passe de la même manière que précédemment. Aller dans PYHELLO1_INSTALL et faire::
+The platform is started in the same way as before.  Go into PYHELLO1_INSTALL and do::
 
     ./bin/salome/runAppli
 
-Chargement du composant exemple
+Loading the example component
 ------------------------------------
-La méthode de chargement du composant n'est pas très différente de la fois précédente. On
-utiilise maintenant les services du module LifeCycle au lieu d'appeler directement le container.
-La séquence d'appel est contenue dans la fonction test de runSalome.Py. ::
+The method of loading the component is not very different from that described above.  The services of the 
+LifeCycle module are used in this case instead of calling the container directly.  
+The call sequence is contained in the runSalome.Py test function. ::
 
     c=test(clt)
     c.makeBanner("Christian")
 
-La fonction test crée le LifeCycle. Puis elle demande le chargement du composant PYHELLO
-dans le container FactoryServerPy::
+The test function creates the LifeCycle.  It then asks for the PYHELLO component to be loaded in the FactoryServerPy container::
 
   def test(clt):
        """
@@ -292,64 +266,43 @@ dans le container FactoryServerPy::
        pyhello = lcc.FindOrLoadComponent("FactoryServerPy", "PYHELLO")
        return pyhello
 
-Chargement depuis l'interface applicative (IAPP)
+Loading from the application interface (IAPP)
 ----------------------------------------------------------
-Pour pouvoir charger dynamiquement un composant en utilisant la barre à composants
-de l'IAPP, il faut déclarer l'icone représentative du composant dans le catalogue.
-Pour la déclarer il suffit d'ajouter une ligne pour l'icone au catalogue du composant::
+Before a component can be loaded dynamically using the IAPP components bar, the icon representing the 
+component will have to be declared in the catalog.  
+It is declared by simply adding a line for the icon to the component catalog::
 
-      <component-icone>PYHELLO.png</component-icone>
+  <component-icon>PYHELLO.png</component-icon>
 
-et de mettre le fichier correspondant dans le répertoire resources du module.
+and putting the corresponding file in the module resources directory.
 
-Pour tester la bonne configuration de la barre à composants, lancer SALOME comme
-précédemment puis à partir de l'interpréteur Python lancer l'IAPP par::
-
-      startGUI()
-
-et charger le composant en cliquant sur l'icone de PYHELLO après avoir ouvert une étude. L'IAPP doit 
-signaler que le GUI du composant n'est pas correctement configuré mais le composant sera quand
-même créé après un temps d'attente. On peut le constater en tapant::
-
-     clt.showNS()
-
-Ajout d'un GUI graphique
+Adding a graphic GUI
 ===========================
-L'étape suivante pour compléter le module consiste à ajouter au composant PYHELLO
-une interface graphique qui sera écrite en Python en utilisant la bibliothèque de
-widgets Qt. Cette interface graphique doit s'intégrer dans l'interface applicative
-de SALOME (IAPP) et doit donc respecter certaines contraintes que nous allons voir.
+The next step to complete the module consists of adding a graphic interface to the PYHELLO component, that will 
+be written in Python using the Qt widgets library.  This graphic interface must be integrated into the SALOME 
+application interface (IAPP), and therefore must respect some constraints that we will see.
 
-Tout d'abord, précisons le contour du GUI d'un composant.
-Le comportement du GUI est 
-donné par un module Python dont le nom est normalisé <Composant>GUI.py. Il doit 
-proposer des points d'entrée conventionnels qui seront utilisés par l'IAPP pour activer 
-ce GUI ou l'informer de certains évènements.
-L'activation des commandes du GUI est réalisée au moyen d'une barre de menu et d'une barre 
-à boutons qui s'intègrent dans la barre à menus et dans la barre à boutons de l'IAPP.
-
-
-Module Python implantant le comportement du GUI
+Firstly note the contour of the GUI of a component.  The behaviour of the GUI is given by a Python module 
+that has a standard name <Module>GUI.py.  It must propose conventional entry points that the IAPP will use to 
+activate this GUI or to inform it of specific events.  GUI commands are activated through a menu bar and a 
+button bar that are integrated into the menu bar and into the IAPP button bar.
+ 
+Python module implanting the behaviour of the GUI
 -----------------------------------------------------
-Le comportement du GUI du composant PYHELLO est implanté dans le module Python PYHELLOGUI.py
-du sous-répertoire PYHELLOGUI.
-Le Makefile.in localisé dans le répertoire src doit être actualisé pour parcourir le sous-répertoire PYHELLOGUI. 
-Un Makefile.in doit être ajouté dans le sous-répertoire PYHELLOGUI. Les cibles
-importantes sont PO_FILES et EXPORT_PYSCRIPTS.
+The behaviour of the PYHELLO component GUI is implanted in the Python PYHELLOGUI.py module in the 
+PYHELLOGUI sub-directory.  The Makefile.am located in the src directory must be updated to include
+the PYHELLOGUI subdirectory.  A Makefile.am must be added into the PYHELLOGUI subdirectory.  
+Important targets are salomescript_SCRIPTS and salomeres_DATA.
 
-La cible EXPORT_PYSCRIPTS doit être mise à jour avec le nom des modules Python à rendre visible
-dans Salome, c'est à dire principalement pour qu'ils soient importables (commande import de Python).
+The salomescript_SCRIPTS target must be updated with the name of the Python modules to be made visible in Salome, in other 
+words mainly so that they are importable (Python import command).
 
-La cible PO_FILES doit être mise à jour avec les noms des fichiers qui sont utilisés pour le multi-linguisme.
-Pour le moment le fichier PYHELLO_msg_en.po (traduction pour langue anglaise) est vide car le multi-linguisme
-n'est pas mis en oeuvre dans cet exemple.
+The salomeres_DATA target must be updated with the names of files that are used for multi-linguism.  
 
-Barre à menus et barre à boutons
+Menu bar and button bar
 ----------------------------------
-Les barres à menus et à boutons du composant PYHELLO sont décrites dans un fichier au format XML
-pour permettre leur chargement dynamique dans l'IAPP. Ce fichier est localisé dans le répertoire resources
-du module et a un nom standardisé <Composant>_en.xml pour la langue anglaise. Pour la langue française, il 
-faut également un fichier de nom <Composant>_fr.xml.
-Pour le composant PYHELLO, le fichier PYHELLO_en.xml contient un menu avec un item et un bouton.
-L'icone du bouton est fournie par le fichier ExecPYHELLO.png localisé dans le répertoire resources du module.
+The menu bar and button bar for the PYHELLO component are dynamically added when importing the PYHELLOGUI module.
+They are created by calling the Python functions createMenu, createAction and createTool from the sgPyQt SALOME 
+interface object. Every action must have a unique id. 
+Some icons are used. They must be installed in the resources directory.
 

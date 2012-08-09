@@ -1,76 +1,60 @@
 .. _progdsc:
 
-Introduction au modèle de programmation DSC pour les composants Salomé
+Introduction to the DSC programming model for SALOME components
 ======================================================================
 
-Cette introduction a pour objectif de fournir les notions essentielles pour utiliser 
-l'extension DSC (Dynamic Software Component) dans des composants Salomé. Il est 
-destiné aux développeurs d'applications Salomé qui doivent intégrer des codes de 
-calculs sous la forme de composants Salomé ou de services du superviseur.
+The purpose of this introduction is to provide essential concepts about how to use the DSC (Dynamic Software Component) 
+extension in SALOME components.  It is intended for SALOME application developers who need to integrate calculation 
+codes in the form of SALOME components or supervisor services.
 
-Le principe du modèle de programmation
+The principle of the programming model
 ----------------------------------------
+The DSC programming model is provided by the SALOME kernel and is available not only for services but also for 
+SALOME components without supervision.  A SALOME application that would like to use the DSC extension always 
+follows this principle:
 
-Le modèle de programmation DSC est fourni par le noyau Salomé et est disponible 
-non seulement pour les services mais aussi pour des composants Salomé sans supervision.
-Une application Salomé qui souhaite utiliser l'extension DSC suit toujours ce principe :
+1. The different programs, codes and services that make up the application declare the various available ports 
+   during the initialization phase.
+2. The system (for example YACS or a user script) then connects the different ports to set up the different 
+   communications between the codes.
+3. The codes are run.  When they want to use one of their DSC ports, the code asks to the system for a pointer 
+   to its port. The system then checks that the port has been properly connected and/or properly declared.
+4. The codes use the DSC ports.
 
-1. Les différents programmes, codes, services qui composent l'application déclare 
-   dans la phase d'initialisation les différents ports disponibles.
-2. Ensuite le système (par exemple YACS ou un script utilisateur) connecte les 
-   différents ports pour mettre en place les différentes communications entre les codes.
-3. Les codes sont lancés. Lorsqu'ils souhaitent utiliser un de leur port DSC, le code 
-   demande au système un pointeur vers son port. Le système vérifie alors que le port 
-   a été bien connecté et/ou bien déclaré.
-4. Les codes utilisent les ports DSC.
-
-Apports de l'extension DSC
+Benefits of the DSC extension
 ---------------------------------
+The main benefits of the DSC extension to the SALOME programming model are as follows:
 
-Les apports principaux de l'extension DSC au modèle de programmation de Salomé sont les 
-suivants:
+#. It enables use of datastream ports in SALOME
+#. It enables use of the Calcium coupling tool in a calculation scheme without depending on the implementation of 
+   Calcium outside SALOME.  This results in better integration of this type of port, and greater flexibility in possible data types.
+#. It offers the possibility of adding interface type ports into services.
 
-1. Il permet de mettre en oeuvre les ports datastream dans Salomé.
-2. Il permet d'utiliser l'outil de couplage Calcium au sein d'un schéma de calcul sans 
-   dépendre de l'implémentation de Calcium hors Salomé. Une meilleure intégration de ce 
-   type de ports est ainsi obtenue ainsi qu'une plus grande flexibilité dans les types de 
-   données possibles.
-3. Il offre la possibilité d'ajouter des ports de type interface dans des services.
-
-Les ports de type interface
+Interface type ports
 +++++++++++++++++++++++++++++
+DSC can add interface type ports to components and therefore to services.  The datastream ports are nothing more 
+than a specialization of these interface ports.  This interface is described through a CORBA interface.  
+Therefore it must be implemented by a CORBA object that may be either the component itself or an object that the 
+component uses.  Properties may be attached to each interface port through a specific configuration object.
 
-DSC permet d'ajouter des ports de type interface à des composants et donc à des 
-services. Les ports datastream ne sont qu'une spécialisation de ces ports d'interfaces. 
-Cette interface est décrite par le biais d'une interface CORBA. Elle doit donc être 
-implémentée par un objet CORBA qui peut soit être le composant lui même ou un objet que 
-le composant utilise.  A chaque port d'interface, des propriétés peuvent lui être 
-attachées grace à un objet spécifique de configuration.
-
-Les ports datastream Calcium
+Calcium datastream ports
 +++++++++++++++++++++++++++++
+The SALOME kernel proposes a new implementation of Calcium ports.  These ports are interface ports, therefore they can 
+be used like other interface ports by means through the C ++ API, or they can be used in the same way as with Calcium 
+through a C or FORTRAN interface.  Finally, this new implementation was made with the objective of being able to port a 
+Calcium application into SALOME very quickly.
 
-Le noyau Salomé propose une nouvelle implémentation des ports Calcium. Ces ports 
-sont des ports d'interfaces, ils peuvent donc être utilisés comme les autres ports 
-d'interfaces par le biais de l'API C++ ou ils peuvent être utilisés comme avec Calcium 
-par le biais d'une interface C ou FORTRAN. Enfin, cette nouvelle implémentation a été 
-réalisé avec le soucis de pouvoir porter une application Calcium très rapidement dans 
-Salomé.
 
-Les connexions entre les ports DSC
+Connections between DSC ports
 ------------------------------------
+DSC ports may be input or output ports.  Output ports are called <<uses>> because they enable the use of an interface 
+external to the component or the service.  Input ports are called <<provides>> because they provide the implementation 
+of the port interface.
 
-Les ports DSC peuvent être entrant ou sortant. Les ports sortant sont appelés 
-<< uses >> car ils permettent l'utilisation d'une interface externe au composant ou au 
-service. Les ports entrant sont appelés << provides >> car ils fournissent l'implémentation 
-de l'interface du port. 
-
-Les ports des services sont décrits dans un fichier XML que le gestionnaire de 
-catalogues lit lors de la création d'un schéma de calcul. En revanche les ports ne 
-sont pas décrits dans la déclaration CORBA du service. C'est pourquoi ils sont créés 
-et ajoutés dynamiquement lors de la création et de l'exécution du service (en comparaison
-avec des modèles plus statiques tel que le CORBA Component Model). DSC ajoute des méthodes 
-aux composants pour déclarer des ports d'interfaces.
+Service ports are described in an XML file that the catalog manager reads during creation of a calculation scheme.  
+On the other hand, ports are not described in the CORBA declaration of the service.  This is why they are created and 
+added dynamically when the service is created and executed (in comparison with more static models like the CORBA Component Model).  
+DSC adds methods to components to declare interface ports.
 
 ::
 
@@ -79,10 +63,9 @@ aux composants pour déclarer des ports d'interfaces.
   Ports::Port get_provides_port(...);
   uses_port get_uses_port(...);
 
-Des méthodes sont fournies pour permettre la connexion de ports uses avec des ports 
-provides du même type (c'est à dire de la même interface CORBA). De plus, DSC averti 
-le code utilisateur des modifications des connexions des ses ports par le biais de méthodes 
-de callback.
+Methods are provided to enable the connection of uses ports with provides ports of the same type (in other words 
+with the same CORBA interface).  Furthermore, DSC notifies the user code about modifications to connections of 
+its ports through callback methods.
 
 ::
 
@@ -94,77 +77,64 @@ de callback.
   void provides_port_changed(...);
   void uses_port_changed(...);
 
-Les connexions entre les ports uses et provides permettent différentes combinaisons. Un port 
-uses peut être connecté à plusieurs ports provides. De même un port provides peut être connecté 
-à plusieurs ports uses. Enfin, les ports uses connaissent les ports provides auxquels ils 
-s'adressent tandis que les ports provides ne connaissent pas à priori les ports uses qui les 
-ont appelés (Il est évidemment possible de rajouter des informations applicatives).
+Different combinations of connections between uses ports and provides ports are possible.  A uses port may be connected 
+to several provides ports.  Similarly, a provides port may be connected to several uses ports.  Finally, uses ports know 
+the provides ports that they address, while a priori provides ports do not know the uses ports that called 
+them (obviously, application information can be added).
 
-Les deux couches de programmation
+The two programming layers
 ------------------------------------------------
+The DSC component model is divided into two parts:  DSC_Basic and DSC_User.
 
-Le modèle de composant DSC est divisé en deux parties : DSC_Basic et DSC_User. 
+DSC_Basic is the lower layer of DSC.  It provides the basic functions to add the concept of ports to a CORBA object.  
+It can be used to record servants of provides ports, declare uses ports and connect them.  It is a so-called basic layer 
+because it does not provide much user convenience.  In particular, a uses port is in the form of a sequence of references 
+to provides ports to which the uses port has been connected.  The user is responsible for managing this sequence and 
+manually calling the different provides ports when uses ports are being used.
 
-DSC_Basic est la couche basse de DSC. Elle fournit les fonctions de bases pour ajouter 
-la notion de ports à un objet CORBA. Elle permet d'enregistrer les servants des ports provides,
-déclarer des ports uses et les connecter. Il s'agit d'une couche dite basique car elle n'offre 
-que peu de confort d'utilisation. Notamment, un port uses se présente sous la forme d'une 
-séquence de références vers les ports provides auquel le port a été connecté. A charge à
-l'utilisateur de gérer cette séquence et d'appeler manuellement les différentes ports provides 
-lors de l'utilisation du port uses.
+The DSC_User layer give a higher programming and encapsulation level of ports.  Firstly, it enables the creation of 
+SALOME services with datastream (or interface) ports supplied by the SALOME platform.  It provides an initialisation 
+method that the supervisor will call before the service is executed, which makes it possible to declare service ports 
+correctly.  Finally, it offers abstraction for uses and provides ports.  The two types of ports are implemented 
+by classes and the user thus has a uniform view of the two port types:  2 classes (and not one sequence and 
+one CORBA reference as in the DSC_Basic layer).  Another benefit is the automatic management of the list of provides ports 
+connected to a uses port.  The user code has a unique reference on its uses port;  the uses port implementation is then 
+responsible for transmitting a call to the different port connections.
 
-La couche DSC_User permet d'obtenir un plus haut niveau de programmation et d'encapsulation 
-des ports. Tout d'abord, elle permet la création de services Salomé avec des ports datastream 
-(ou d'interface) fournis par la plate-forme Salomé. Elle fournit une méthode d'initialisation 
-que le superviseur va appeler avant l'exécution du service, méthode qui permet de déclarer 
-correctement les ports des services. Enfin, elle offre une abstraction pour les ports uses et
-provides. Les deux types de ports sont implémentés par des classes et l'utilisateur a ainsi
-une vue uniforme des deux types ports : 2 classes (et non une séquence et une référence CORBA
-comme dans la couche DSC_Basic). Un autre apport est la gestion automatique de la liste des 
-ports provides connecté à un port uses. Le code utilisateur a une unique référence sur son 
-port uses; à charge à l'implémentation du port uses de transmettre un appel vers les 
-différentes connexions du port.
-
-DSC par l'exemple
+DSC through examples
 ------------------------------------------------
+We will now discover the principles of DSC programming through different examples.
 
-Nous allons maintenant découvrir les principes de la programmation DSC par le biais de 
-différents exemples.
+The first example sets up a component with a provides port.  The second example sets up a second component 
+with a uses port that will be connected to the provides port in the Hello World example.  
+The third example shows how datastream ports are used in services.  
+The fourth example shows how the datastream ports factory system is used to add its own family in the programming model.  
+Finally, the fifth example shows how the new Calcium implementation is used in the SALOME context.
 
-Le premier exemple met en place un composant avec un port provides. 
-Le deuxième exemple met en place un deuxième composant avec un port uses qui va être 
-connecté au port provides de l'exemple Hello World.
-Le troisième exemple montre comment utiliser les ports datastream dans des services.
-Le quatrième exemple montre comment utiliser le système de fabrique des ports datastream 
-pour ajouter sa propre famille dans le modèle de programmation.
-Enfin le cinquième exemple montre comment utiliser la nouvelle implémentation Calcium dans le 
-cadre de Salomé.
+The following examples show examples of component programming.  On the other hand, they do not contain the entire code, this 
+document only describes the new parts.  The entire code for the examples is contained in the SALOME DSC_EXAMPLE_SRC module.
 
-Les exemples ci-dessous montre des exemples de programmation des composants. En revanche,
-ils ne contiennent pas tout le code, seule les nouvelles parties seront décrites dans ce 
-document. Vous pourrez trouver tout le code des exemples dans le module Salomé DSC_EXEMPLE_SRC.
+The first two examples are intended to help understand how the DSC ports are manipulated through the DSC_Basic layer.  
+On the other hand, the third example will have to be studied to see how services can be created with DSC ports through the DSC_User layer.
 
-Les deux premiers exemples ont pour objectif de faire comprendre comment manipuler des ports 
-DSC par le biais de la couche DSC_Basic.  En revanche, il faut étudier le troisième exemple 
-pour pouvoir créer des services avec des ports DSC par le biais de la couche DSC_User.
+Access to the subversion base of the pal project must be authorised before the examples can be retrieved.  
+Then type the following line in a Unix shell::
 
-Pour récupérer les exemples, il faut être autoriser à accéder à la base subversion du projet pal.
-Il suffit ensuite dans un shell unix de taper la ligne suivante :
-
-svn co svn://<nom>@nepal/PAL/DSC_EXEMPLES_SRC/trunk  DSC_EXEMPLES_SRC
+  svn co svn://<nom>@nepal/PAL/DSC_EXEMPLES_SRC/trunk  DSC_EXEMPLES_SRC
 
 Hello World
 +++++++++++++
 
-Les sources de cet exemple se trouve dans le répertoire src/Ex_Serveur.
+The sources for this example are given in the src/Ex_Serveur directory.
 
-L'objectif de cet exemple est de créer un composant qui fournit un port provides. 
-La figure ci-dessous illustre ce que nous allons faire. Le composant s'appelle Ex_Serveur 
-et il fournit un port provides nommé Ex_Hello. Ce port provides fournit l'interface HelloWorld.
+The objective of this example is to create a component that provides a provides port.  The following figure 
+illustrates the procedure.  The component is called Ex_Serveur and it provides a provides port named Ex_Hello.  
+This provides port provides the HelloWorld interface.
 
 .. image:: images/progdsc_img1.png
+     :align: center
 
-La première étape est de définir les interfaces du composant et l'interface du port :
+The first step is to define interfaces of the component and the port interface:
 
 ::
 
@@ -174,19 +144,16 @@ La première étape est de définir les interfaces du composant et l'interface d
 
  Interface Ex_Serveur : Engines::DSC {};
 
-Le fichier IDL comprend tout d'abord la déclaration de l'interface du port provides que 
-le composant va fournir. Il s'agit ici de l'interface HelloWorld. Cette interface est une
-interface CORBA classique. En revanche, cette interface doit hériter de Ports ::Port pour
-pouvoir être un port DSC. Le composant Ex_Serveur est aussi déclaré comme une interface CORBA 
-qui hérite de l'interface Engines::DSC au lieu de Engines::Component. Il faut noter que le port
-provides n'apparaît pas dans la définition IDL du composant. Le port est ajouté et déclaré 
-dans les sources de l'implémentation du composant. Il est ajouté dynamiquement lors de 
-l'exécution du composant.
-
-Il s'agit maintenant d'implémenter le composant et le port provides. Le port provides est 
-implémenté par le biais d'une classe C++ que nous appellerons HelloWorld_impl (voir dans 
-les sources). Cette implémentation ne diffère en rien de celle d'un objet CORBA. Voici 
-l'implémentation de la méthode say_hello :
+The IDL file comprises firstly the declaration of the provides port interface that the component will provide.  
+In this case it is the HelloWorld interface.  This interface is a classical CORBA interface.  On the other hand, this 
+interface must inherit from Ports::Port if it is to be a DSC port.  The Ex_Serveur component is also declared 
+as a CORBA interface that inherits from the Engines::DSC interface instead of Engines::EngineComponent.  
+Note that the provides port does not appear in the IDL definition of the component.  The port is added and 
+declared in implementation sources of the component.  It is added dynamically when the component is executed.
+ 
+The objective now is to implement the component and the provides port.  The provides port is implemented 
+through a C++ class that we will call HelloWorld_impl (see in the sources).  This implementation is in no way 
+different from the implementation of a CORBA object.  See the implementation of the say_hello method:
 
 ::
 
@@ -196,11 +163,10 @@ l'implémentation de la méthode say_hello :
  }
 
  
-Il nous reste ensuite à implémenter le composant. Nous allons nous intéresser à la déclaration 
-du port du composant et à la classe que le composant doit hériter. L'implémentation d'un 
-composant (classe Ex_Serveur_i) qui veut utiliser des ports DSC doit hériter de la classe nommé 
-Engines_DSC_i.. Bien entendu, elle doit aussi hériter de POA_Ex_Serveur.
-Voici la déclaration de la classe Ex_Serveur_i :
+The next step is to implement the component.  We will be interested in the declaration of the component port 
+and the class that the component must inherit.  The implementation of a component (Ex_Serveur_i class) that wants 
+to use DSC ports must inherit from the class named Engines_DSC_i.  Obviously, it must also inherit from POA_Ex_Serveur.  
+See the declaration for Ex_Serveur_i class:
 
 ::
 
@@ -211,59 +177,57 @@ Voici la déclaration de la classe Ex_Serveur_i :
 
   public:
     Ex_Serveur_i(CORBA::ORB_ptr orb,
-		 PortableServer::POA_ptr poa,
-		 PortableServer::ObjectId * contId, 
-		 const char * instanceName, 
-		 const char * interfaceName);
+                 PortableServer::POA_ptr poa,
+                 PortableServer::ObjectId * contId, 
+                 const char * instanceName, 
+                 const char * interfaceName);
 
     virtual ~Ex_Serveur_i();
  ...
  };
 
-Pour que le port provides soit utilisable, nous devons faire deux actions :
-- Créer le port.
-- Enregistrer le port dans le composant.
+Two actions have to be performed before the provides port can be used:
 
-Pour réaliser ces deux étapes, nous ajoutons une méthode à la classe Ex_Serveur_i nommée 
-register_ports() qui est appelé dans la fabrique du composant avant que celle-ci ne retourne 
-la référence du composant au container. Cette méthode est implémentée de la façon suivante :
+1. Create the port 
+2. Save the port in the component.
+
+These two steps are implemented by adding a method called register_ports() to the Ex_Serveur_i class that is 
+called in the component factory before the factory returns the reference of the component to the container.  
+This method is implemented as follows:
 
 ::
 
  void 
  Ex_Serveur_i::register_ports() {
 
- // Création du port provides
+ // Create the provides port
  _Ex_Hello_port = new HelloWorld_i();
- _Ex_Hello_port_properties = PortProperties_i();
+ _Ex_Hello_port_properties = new PortProperties_i();
 
- // Enregistrement du port provides
+ // Save the provides port
  add_provides_port(_Ex_Hello_port->_this(), 
-		   "Ex_Hello",
-		   _Ex_Hello_port_properties->_this());  
+                   "Ex_Hello",
+                   _Ex_Hello_port_properties->_this());  
  }
 
-La méthode commence par la création du port provides. Il s'agit ici de créer le servant de 
-l'interface CORBA du port. Il faut aussi créer un objet pour les propriétés du port. Dans
-cet exemple, l'objet par défaut est utilisé (fourni par le noyau). Ensuite le port est 
-enregistré dans le composant par le biais de la méthode add_provides_port fourni par DSC.
+The method begins with creation of the provides port.  The objective is to create the servant of the CORBA 
+interface of the port.  An object also has to be created for port properties.  The default object is used in 
+this example (supplied by the kernel).  The port is then registered in the component through the 
+add_provides_port method provided by DSC.
 
-Le fait d'hériter de Engines_DSC_i oblige le composant à implémenter deux méthodes qui se 
-nomment provides_port_changed() et uses_port_changed(). Ces deux méthodes sont des callbacks 
-que le système utilise pour avertir le composant lorsque les connexions de ses ports ont 
-évolués. La méthode provides_port_changed() permet d'être averti lorsque quelqu'un se connecte 
-ou se déconnecte sur un de ses ports provides. Le callback indique notamment combien de 
-client utilise le port provides (argument connection_nbr). Pour cet exemple, nous ne tenons 
-pas compte de cette information. La méthode uses_port_changed() a quand à elle la même 
-fonction que provides_port_changed(), mais pour les ports uses. Nous verrons dans le deuxième
-exemple ses spécificités.
+The fact of inheriting from Engines_DSC_i obliges the component to implement two methods that are called 
+provides_port_changed() and uses_port_changed().  These two methods are callbacks that the system uses to notify 
+the component when the connections of its ports have changed.  With the provides_port_changed() method, a warning 
+can be obtained when someone connects or disconnects on one of its provides ports.  
+In particular, the callback indicates how many clients use the provides port (connection_nbr argument).  
+This information is not used in this example.  The uses_port_changed() method performs the same function as 
+the provides_port_changed() function, but for uses ports.  The specific features will be described in the second example.
 
-La documentation des différentes méthodes Engines_DSC_i sont fournis dans la documentation 
-Doxygen du noyau de Salomé.
+The documentation for the different Engines_DSC_i methods are provided in the Doxygen documentation of the SALOME kernel.
 
-Cet exemple peut être exécuté par le biais du fichier de test src/tests/test_Ex_Serveur.py 
-dans l'intrepréteur Salomé en mode terminal. Ce script illustre l'utilisation des ports DSC :
- 
+This example can be executed through the src/tests/test_Ex_Serveur.py test file, in the SALOME interpreter in terminal mode.  
+This script illustrates the use of DSC ports:
+
 ::
 
  import LifeCycleCORBA
@@ -276,28 +240,27 @@ dans l'intrepréteur Salomé en mode terminal. Ce script illustre l'utilisation 
  hello_port = component.get_provides_port("Ex_Hello", 0)
  hello_port.say_hello("andre")
 
-Après la création du composant par le biais du LifeCycleCORBA, le script utilise la 
-méthode get_provides_port pour obtenir une référence sur le port provides du composant.
-La référence obtenue est ensuite utilisée pour exécuter la méthode say_hello du port.
+After the component has been created through LifeCycleCORBA , the script uses the get_provides_port method 
+to obtain a reference on the provides port of the component.  
+The reference obtained is then used to execute the say_hello method for the port.
 
-Hello World Client
+Client Hello World 
 +++++++++++++++++++++
+The sources in this example are located in the src/Ex_Client directory and in src/Ex_Serveur.
 
-Les sources de cet exemple se trouve dans le répertoire src/Ex_Client et dans src/Ex_Serveur.
+The purpose of this example is to create a new component that will use the Ex_Hello port in the previous example, through a uses port.
 
-L'objectif de cet exemple est de créer un nouveau composant qui va utiliser le port Ex_Hello 
-du précédent exemple par le biais d'un port uses.
-
-Voici une figure qui représente l'application:
+The following figure represents the application:
 
 .. image:: images/progdsc_img2.png
+     :align: center
 
-Le composant Ex_Client est décrit comme le composant Ex_Serveur dans le fichier IDL.
-La seule différence est l'ajout dans son interface d'une méthode start(). Un composant 
-ne contenant pas de fonction main lors de sa création, il nous faut une méthode pour lancer 
-l'exécution du composant, d'où la définition de la méthode start. 
+The Ex_Client component is described in the same way as the Ex_Serveur (Ex_Server) component in the IDL file.  
+The only difference is that a start() method is added in its interface.  Since a component does not contain a 
+main function when it is created, a method to start execution of the component is required, which is why the 
+start method is defined.
 
-Voici la définition IDL du composant Ex_Client :
+The following is the IDL definition of the Ex_Client component:
 
 ::
 
@@ -311,83 +274,74 @@ Voici la définition IDL du composant Ex_Client :
       void start() ;
   } ;
 
-Il faut maintenant implémenter le composant. Comme pour un port provides, un port uses 
-doit être enregistré dans le composant avant qu'il ne soit utilisable par le composant. 
-Un port uses correspond à une séquence de références vers les ports provides auxquels il 
-a été connecté ; c'est pourquoi il n'est pas implémenté par une classe comme un port 
-provides. En revanche, il est toujours possible d'ajouter des propriétés au port.
-Voici le code de la méthode register_ports() pour le composant Ex_Client :
+The component now has to be implemented.  As for a provides port, a uses port must be recorded in a component before 
+it can be used by the component. The uses port corresponds to a sequence of references to the provides ports to which 
+it has been connected:  this is why it is not implemented by a class like a provides port.  On the other hand, it is 
+always possible to add properties to the port.  
+The code for the register_ports() method for the Ex_Client component is given below:
 
 ::
 
   void 
   Ex_Client_i::register_ports() {
 
-    // Création de l'objet propriété pour le port uses.
+    // Create the properties object for the uses port.
     _U_Ex_Hello_port_properties = new PortProperties_i();
 
-   // Ajout du port uses dans le composant
+   // Add the uses port into the component
     add_uses_port("IDL:HelloWorld:1.0", 
      "U_Ex_Hello", 
      _U_Ex_Hello_port_properties->_this());
 
   }
 
-Un port uses est associé à un type d'objet CORBA. La déclaration de ce type permet de 
-vérifier si le port uses est connecté à un port provides compatible. Dans cet exemple, 
-le type du port (déclaré dans l'IDL) est HelloWorld. CORBA propose pour chaque type IDL
-une chaîne de caractère correspondant à ce type. Dans cet exemple il s'agit de :  
-IDL:HelloWorld:1.0.
+A uses port is associated with a CORBA object type.  Declaration of this type verifies if the uses port is 
+connected to a compatible provides port.  In this example, the type of port (declared in the IDL) is HelloWorld.  
+CORBA proposes a character string corresponding to this type for each IDL type.  
+In this example, it is IDL:HelloWorld:1.0.
 
-Il faut maintenant pouvoir utiliser le port uses. Pour cela, le composant demande au 
-système de récupérer le port uses par le biais de la méthode get_uses_port(). Le port
-prend la forme d'une séquence de référence sur les différents ports provides. Les références 
-contenues dans cette séquence sont les ports provides auxquels le port uses a été connecté
-à l'instant de l'appel de la méthode get_uses_port(). A chaque changement sur cette liste 
-de référence, que ce soit un ajout ou un retrait, le système utilise la 
-méthode use_port_changed() pour avertir le code utilisateur.
+We now need to be able to use the uses port.  To achieve this, the component asks the system to retrieve 
+the uses port using the get_uses_port() method.  The port is in the form of a reference sequence on the different 
+provides ports.  The references contained in this sequence are the provides ports to which the uses port has been 
+connected at the time that the get_uses_port() was called.  The system uses the use_port_changed() method to 
+notify the user code every time that this reference list is changed to include an addition or a removal.
 
-La méthode start() du composant Ex_Client va récupérer le port uses U_Ex_Hello et va 
-appeler la méthode say_hello() sur la première référence. Voici le code de cette méthode :
+The Ex_Client component start() method will retrieve the U_Ex_Hello uses port and will call the say_hello() method 
+on the first reference.  The code for this method is given below:
 
 ::
 
   void 
   Ex_Client_i::start() {
 
-   // Récupération du port ues U_Ex_Hello
+   // Retrieve the uses port U_Ex_Hello
    Engines::DSC::uses_port * uport = get_uses_port("U_Ex_Hello"); 
 
-   // Récupération de la première référence de la séquence
+   // Retrieve the first reference in the sequence
    _Ex_Hello_provides_port =  HelloWorld::_narrow((* uport)[0]);
 
-   // Appel de la méthode sur le port
+   // Call the method on the port
    _Ex_Hello_provides_port->say_hello(_instanceName.c_str());
   }
 
-Il faut noter qu'il faut transformer par le biais de la méthode _narrow les références 
-contenues dans le port uses dans le type du port provides pour pouvoir utiliser le port provides.
+Note that the _narrow method has to be used to transform the references contained in the uses port 
+into the provides port type, before the provides port can be used.
 
-Ports datastream et services
+Datastream ports and services
 ++++++++++++++++++++++++++++++
+The sources in this example are located in the src/Ex_ProducteurConsommateur directory.
 
-Les sources de cet exemple se trouve dans le répertoire src/Ex_ProducteurConsommateur.
+There are two purposes to this example.  Firstly, the example shows how a service that wants to use DSC ports 
+is implemented.  It then shows how datastream ports included in the SALOME kernel are used.
 
-L'objectif de cet exemple est double. Tout d'abord, l'exemple montre comment mettre en 
-oeuvre un service qui veut utiliser des ports DSC. Ensuite, il montre comment utiliser 
-les ports datastream inclus dans le noyau de Salomé. 
+This example sets up two services that will be connected through a datastream port.  The "produit" service of the 
+"Producteur" component will produce a dataflow, and the "consomme" service of the "Consommateur" component will display data.
 
-Cet exemple met en place deux services qui vont être connectés par un port datastream. 
-Le service produit du composant Producteur va produire un flux de donnée, et le composant 
-consomme du composant Consommateur va afficher des données. 
+The "produit" service terminates when it has sent all data that it has to produce.  The number of data to be produced 
+is determined by the "nombre" dataflow port.  The "consommateur" service needs to know how many data it has to retrieve before 
+it can terminate.  As for the product service, this number is determined by the "nombre" dataflow port.
 
-Le service produit se termine lorsqu'il a envoyé toutes les données qu'il doit produire.
-Le nombre de données à produire est déterminé par le port dataflow nombre. Le service 
-consommateur a quand à lui besoin de connaître combien de données il doit récupérer avant
-de se terminer. Ce nombre est, comme pour le service produit, déterminé par le port dataflow
-nombre.
-
-Voici la définition IDL des deux composants :
+The following is the IDL definition of the two components:
 
 ::
 
@@ -399,20 +353,18 @@ Voici la définition IDL des deux composants :
     void consomme(in long nombre);
   };
 
-Pour déclarer un composant qui va contenir des services utilisant des ports DSC, le composant 
-doit hériter de l'interface Engines::Superv_Component et non plus de l'interface 
-Engines::Component. En plus d'ajouter au composant l'interface de DSC,
-Engines::Superv_Component ajoute la méthode init_service() qui est appelé par le
-superviseur avant l'exécution du service. L'objectif de cette méthode est de permettre au 
-concepteur du service d'initialiser les ports du service en vu de leur connexion avant le 
-lancement effectif du service. Par rapport aux exemples précédents, init_service() a la même 
-fonction que register_ports().
+In order to declare a component that will contain services using DSC ports, the component must inherit 
+from the Engines::Superv_Component interface and no longer from the Engines::EngineComponent interface. 
+In addition to adding the DSC interface to the component, Engines::Superv_Component adds the 
+init_service() method that the supervisor calls before the service is executed. The purpose of this 
+method is to enable the service designer to initialise ports for the service for connection before 
+the service is actually started. init_service() performs the same function as register_ports() in 
+the previous examples.
 
-Il s'agit maintenant d'implémenter ces deux composants. La première différence avec un 
-composant classique est qu'il faut hériter de la classe Superv_Component_i. De plus, il 
-faut implémenter la méthode init_service().
+The next step is to implement these two components.  The first difference from a classical component is that it 
+must inherit from the Superv_Component_i class. It must also implement the init_service() method.
 
-Voici l'implémentation de la méthode init_service du composant Producteur : 
+The following is the implementation of the init_service method for the "Producteur" component:
 
 ::
 
@@ -427,24 +379,21 @@ Voici l'implémentation de la méthode init_service du composant Producteur :
     return rtn;
   }
 
-La couche DSC_User qui implémente la classe Superv_Component_i fournit de nouvelles méthodes 
-pour l'ajout des ports uses et provides. Il s'agit des méthodes de la famille add_port (Voir 
-la documentation doxygen de Salomé). Ces méthodes ont pour objectif de permettre la création 
-et l'enregistrement d'un port du service en une seule étape. De plus, elles permettent 
-d'utiliser les ports datastream prédéfinis dans le noyau Salomé. 
+The DSC_User layer that implements the Superv_Component_i class provides new methods for adding uses and provides ports.  
+They are methods of the add_port family (See the SALOME doxygen documentation).  The purpose of these methods 
+is to enable creation and recording of a service port in a single step.  They also enable the use of 
+datastream ports predefined in the SALOME kernel.
 
-Dans le cas du service produit, nous avons choisi d'utiliser le port datastream BASIC_short. 
-Lorsque le noyau Salomé fournit un port datastream, il fournit toujours l'implémentation pour 
-le port provides et pour le port uses. La première partie du nom (BASIC) identifie la famille 
-de port datastream (comme CALCIUM ou PALM par exemple). La deuxième partie du nom contient le 
-type de donnée transmis, dans cet exemple, un short. Ce type de port constitue le premier 
-paramètre de la méthode add_port. Les deux autres arguments sont le type de port DSC (uses ou 
-provides) et le nom du port dans le composant.
+We chose to use the BASIC_short datastream port for the "produit" service.  When the SALOME kernel provides 
+a datastream port, it always provides the implementation for the provides port and for the uses port.  
+The first part of the name (BASIC) identifies the datastream port family (for example like CALCIUM or PALM).  
+The second part of the name contains the transmitted data type, in this case a short.  This port type forms 
+the first parameter of the add_port method.  The other two arguments are the type of DSC port (uses or provides) 
+and the name of the port in the component.
 
-Lorsqu'il va s'agir d'utiliser ce port dans le service, il va falloir, comme dans les exemples 
-précédent, récupérer une référence sur le port. Pour cela de nouvelles méthodes nommées 
-get_port sont disponibles (à l'image des add_port). Voici un exemple de code pour utiliser 
-la méthode get_port :
+When the objective is to use this port in the service, it will be necessary to retrieve a reference on the port, in the 
+same way as in the previous examples.  New methods (like add_port) called get_port are available for this purpose.  
+The following is an example of code to use the get_port method:
 
 ::
 
@@ -457,14 +406,13 @@ la méthode get_port :
    }
   }
 
-La méthode get_port a deux arguments. Le premier va contenir un pointeur vers le port et le 
-deuxième indique le nom du port demandé. Après l'appel de la méthode get_port, un pointeur 
-générique est obtenu. On change ensuite son type avec le type de port attendu par le biais 
-d'un dynamic_cast. Il est alors possible d'utiliser le port.
+The get_port method has two arguments.  The first will contain a pointer to the port and the second indicates 
+the requested port name.  A generic pointer is obtained after calling the get_port method.  The next step 
+is to change its type with the expected port type through a dynamic_cast.  The port can then be used.
 
-Pour permettre plus de commodité dans la programmation, la couche DSC_User propose plusieurs 
-signatures pour les méthodes get_port et add_port. Par exemple, le composant Consommateur 
-utilise les versions template de ces méthodes pour l'ajout et la récupération du code.
+The DSC_User layer offers several signatures for the get_port and add_port methods, to make programming 
+more convenient.  For example, the "Consommateur" component uses the template versions of these methods 
+to add and retrieve code.
 
 ::
 
@@ -477,32 +425,28 @@ utilise les versions template de ces méthodes pour l'ajout et la récupération
     }
   }
 
-La liste des différents types de ports fournis par le Noyau de Salomé est disponible dans 
-la documentation Doxygen du noyau Salomé.
+The list of the different port types supplied by the SALOME kernel is available in the 
+Doxygen documentation for the SALOME kernel.
 
-Ajouter des ports datastream et/ou d'interfaces
+Add datastream ports and/or interfaces
 +++++++++++++++++++++++++++++++++++++++++++++++++
+The sources for this example are located in the src/Ex_ProducteurConsommateur_Adv directory.
 
-Les sources de cet exemple se trouve dans le répertoire src/Ex_ProducteurConsommateur_Adv.
+The purpose of this example is to show mechanisms used to add your specific types of ports into 
+the DSC_User layer.  To do this, this example explains how to replace the BASIC_short port in the previous 
+example by its own port.  Considering that the components in this example are practically identical, we will 
+only describe the declaration and implementation of the port in this document.
 
-L'objectif de cet exemple est de montrer les mécanismes pour ajouter ces propres types de 
-ports dans la couche DSC_User. Pour cela, cet exemple explique comment remplacer le port 
-BASIC_short de l'exemple précédent par son propre port. Etant donné que cet exemple est 
-quasiment identique au niveau des composants, nous nous intéresserons uniquement dans ce 
-document à la déclaration et l'implémentation du port.
+A Datastream port (or interface) family contains two different types of objects:
 
-Une famille de port Datastream (ou d'interface) contient deux types d'objets différents:
+1.  A factory
+2.  The implementation of ports
 
-1. Une fabrique.
-2. L'implémentation des ports.
+The DSC_User layer knows the types of Datastream ports through the factory pattern design.  
+For each family, a factory is recorded when the component is created.  It is then used by 
+the component in the add_port(...) methods to create and save ports.
 
-La couche DSC_User connaît les types de port Datastream par le biais du design pattern 
-fabrique. Pour chaque famille, une fabrique est enregistrée à la création du composant. 
-Elle est ensuite utilisée par le composant dans les méthodes add_port(...) pour créer et 
-enregistrer les ports.
-
-Tout d'abord, il faut déclarer dans un fichier IDL (MesPorts.idl dans l'exemple) son ou ses 
-ports :
+Firstly, its port(s) must be declared in an IDL file (MesPorts.idl in the example):
 
 ::
 
@@ -517,22 +461,19 @@ ports :
     };
   };
 
-Dans cet exemple on déclare un port : Short_Mes_Ports. Il s'agit d'un port qui permet 
-d'envoyer un short, mais également qui peut être interrogé pour savoir si une nouvelle 
-donnée est arrivée. En revanche la méthode get() n'est pas déclaré dans l'IDL (bien que 
-ce soit possible) car elle uniquement destinée à être utilisé en local.
+In this example, a port is declared:  Short_Mes_Ports.  This is the port that is used to send a short, but 
+that can also be queried to find out if new data have arrived.  On the other hand, the get() method has not 
+been declared in the IDL (although it is possible) because it is intended to be used locally.
 
-Il faut maintenant implémenter le type de port. Pour cela, il faut implémenter la fabrique 
-et la partie uses et la partie provides du type de port.
+The next step is to implement the port type.  This is done by implementing the factory and the uses part 
+and the provides part of the port type.
 
-Une fabrique de port est un objet qui implémente l'interface de la classe abstraite 
-port_factory (voir la documentation Doxygen). La fabrique est appelée à chaque fois qu'un 
-service ajoute un port dans le composant (uses ou provides). La fabrique est identifiée par
-une chaîne de caractère qui l'identifie auprès du composant. L'enregistrement des fabriques 
-doit se faire au plus tôt. C'est pourquoi les fabriques sont enregistrées dans le constructeur 
-du composant.
+A port factory is an object that implements the interface of the port_factory abstract class (see the Doxygen documentation).  
+The factory is called every time that a service adds a port in the component (uses or provides).  
+The factory is identified by a character string that identifies it to the component.  The factories 
+must be recorded as early as possible.  This is why factories are recorded in the component constructor.
 
-La figure suivante montre l'enregistrement de la fabrique dans le composant ProducteurAdv :
+The following figure shows how the factory is registered in the ProducteurAdv component:
 
 ::
 
@@ -549,47 +490,43 @@ La figure suivante montre l'enregistrement de la fabrique dans le composant Prod
     register_factory("MESPORTS", new mes_ports_factory());
   }
 
-Dans cet exemple, le nouveau type de port est identifié par la chaîne MESPORTS. Il faut 
-noter qu'il est interdit d'utiliser le symbole << _ >> dans  le nom. En effet, il sert de 
-séparateur entre le nom de la famille et le type du port dans la famille (Ex : MESPORTS_short).
+In this example, the new port type is identified by the MESPORTS string.  Note that the <<_>> symbol 
+may not be used in the name.  It is used as a separator between the family name and the port type in the family (Eg: MESPORTS_short).
 
-Il reste à implémenter les ports. Pour chaque port défini dans l'IDL, il faut implémenter 
-la partie uses port et la partie provides port. L'implémentation côté uses doit hériter de 
-la classe uses_port. Du côté provides, il faut hériter de la classe provides_port.
+The next step is to implement the ports.  The uses port part and the provides port part have to be implemented 
+for each port defined in the IDL.  The implementation at the uses end must inherit from the uses_port class.  
+At the provides end, it must inherit from the provides_port class.
 
-Les classes uses_port et provides_port sont des classes abstraites. Elles proposent des 
-méthodes qui permettent d'automatiser l'enregistrement et la gestion des ports. Dans la couche 
-DSC_Basic, c'est le développeur du composant qui doit implémenter ces mécanismes tandis que 
-dans la couche DSC_User c'est au développeur des ports de se charger de ces fonctionnalités.
+The uses_port and provides_port classes are abstract classes.  They propose methods to automate registering 
+and management of ports.  The component developer must implement these mechanisms in the DSC_Basic layer, while 
+the ports developer is responsible for these functions in the DSC_User layer.
 
-Les méthodes sont les suivantes :
+The following methods are used:
 
 ::
 
-  Pour le côté uses : 
+  For the uses end:
 
   virtual const char * get_repository_id() = 0;
 
   virtual void uses_port_changed(Engines::DSC::uses_port * new_uses_port,
                                      const Engines::DSC::Message message) = 0;
 
-  Pour le côté provides :
+  For the provides end:
 
   virtual Ports::Port_ptr get_port_ref() = 0;
 
   virtual void provides_port_changed(int connection_nbr,
                                          const Engines::DSC::Message message) {};
 
-Du côté uses, il y a tout d'abord la méthode get_repository_id(). Elle permet d'obtenir 
-le typecode CORBA du port. Il s'agit de fournir la même information que le premier argument 
-de add_uses_port de la couche Basic. La méthode uses_port_changed(…) permet au port d'être 
-averti des nouvelle connexions avec des port provides et de gérer la liste des connexions.
+The first step at the uses end is to use the get_repository_id() method.  This obtains the CORBA typecode of the port.  
+The objective is to provide the same information as the first add_uses_port argument in the Basic layer.  
+The uses_port_changed(...) method enables the port to be notified about new connections with the provides port 
+and to manage the list of connections.
 
-Du côté provides, get_port_ref() permet d'obtenir une référence CORBA sur le servant. Enfin 
-la méthode provides_port_changed(…) peut être surdéfini si le port provides utilise 
-l'information provenant des connexions/déconnexions.
+At the provides end, get_port_ref() obtains a CORBA reference on the servant.  Finally, the provides_port_changed(...) method 
+can be overdefined if the provides port uses the information originating from connections / disconnections.
 
-Dans l' exemple, le port provides est implémenté par la classe data_short_mes_ports_provides 
-et  le port uses est implémenté par la classe data_short_mes_ports_uses.
+In the example, the provides port is implemented by the data_short_mes_ports_provides class and 
+the uses port is implemented by the data_short_mes_ports_uses class.
 
-                                         

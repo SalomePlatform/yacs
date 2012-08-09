@@ -1,21 +1,22 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "SceneInPortItem.hxx"
 #include "SceneOutPortItem.hxx"
 #include "SceneNodeItem.hxx"
@@ -25,6 +26,8 @@
 #include "QtGuiContext.hxx"
 
 #include <QGraphicsSceneDragDropEvent>
+
+#include "Resource.hxx"
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -101,14 +104,14 @@ void SceneInPortItem::dropEvent(QGraphicsSceneDragDropEvent *event)
   SubjectDataPort* from = dynamic_cast<SubjectDataPort*>(subFrom);
   SubjectDataPort* to = dynamic_cast<SubjectDataPort*>(subTo);
   if (from && to)
-    if (!SubjectDataPort::tryCreateLink(from, to))
+    if (!SubjectDataPort::tryCreateLink(from, to,myData->getControl()))
       Message mess;
 }
 
 QColor SceneInPortItem::getPenColor()
 {
   if (_dragOver)
-    return QColor(255,0,0);
+    return Resource::dragOver;
   if (isSelected())
     return _hiPenColor;
   else 
@@ -121,11 +124,11 @@ QColor SceneInPortItem::getBrushColor()
     return _hiBrushColor;
 
   QColor color;
+  color = _brushColor;
   if (isSelected())
     color = _hiBrushColor;
-  else 
-    color = _brushColor;
-
+  if (_emphasized)
+    color = Resource::emphasizeBrushColor;
   if (_hover)
     color = hoverColor(color);
   return color;

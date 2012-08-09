@@ -1,27 +1,28 @@
-#  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+# Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 #
-#  This library is free software; you can redistribute it and/or
-#  modify it under the terms of the GNU Lesser General Public
-#  License as published by the Free Software Foundation; either
-#  version 2.1 of the License.
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License.
 #
-#  This library is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#  Lesser General Public License for more details.
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
 #
-#  You should have received a copy of the GNU Lesser General Public
-#  License along with this library; if not, write to the Free Software
-#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 #
-#  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+
 # --
 # Author : Anthony Geay (CEA)
 # --
 # -----------------------------------------------------------------------------
 #
-AC_INIT([Salome2 Project], [5.1.0], [paul.rascle@edf.fr], [SalomeYacs])
+AC_INIT([Salome2 Project], [6.5.0], [paul.rascle@edf.fr], [SalomeYacs])
 AM_INIT_AUTOMAKE([tar-pax])
 AC_CONFIG_HEADER(yacs_config.h)
 
@@ -29,7 +30,9 @@ AC_CONFIG_HEADER(yacs_config.h)
 MODULE_NAME=yacs
 AC_SUBST(MODULE_NAME)
 
-XVERSION=0x050100
+SHORT_VERSION=`echo $VERSION | awk -F. '{printf("%d.%d",$1,$2)}'`
+AC_SUBST(SHORT_VERSION)
+XVERSION=`echo $VERSION | awk -F. '{printf("0x%02x%02x%02x",$1,$2,$3)}'`
 AC_SUBST(XVERSION)
 
 RELEASE=$VERSION
@@ -97,6 +100,8 @@ AC_CHECK_KERNEL
 CHECK_HTML_GENERATORS
 CHECK_SPHINX
 
+CHECK_GUI(SALOME_Session_Server,SALOME_Session_Server)
+
 I2_CHECK_QT4
 I2_CHECK_QSCINTILLA
 
@@ -104,9 +109,7 @@ AM_CONDITIONAL([PYTHON_API], [test "x$swig_ok" == "xyes"])
 AM_CONDITIONAL([SALOME_KERNEL], [test "x$KERNEL_ROOT_DIR" != "x"])
 AM_CONDITIONAL([DSC_PORTS], [test -f $KERNEL_ROOT_DIR/idl/salome/DSC_Engines.idl])
 
-CHECK_GUI(SALOME_Session_Server,SALOME_Session_Server)
-
-AM_CONDITIONAL([HAS_GUI], [test "x$GUI_ROOT_DIR" != "x"])
+AM_CONDITIONAL(WINDOWS, [ test ])
 
 echo
 echo
@@ -171,25 +174,35 @@ AC_OUTPUT([ \
   src/engine/Makefile \
   src/engine/Plugin/Makefile \
   src/engine/Test/Makefile \
+  src/engine_swig/Makefile \
   src/hmi/Makefile \
   src/pyqt/Makefile \
   src/runtime/Makefile \
   src/runtime/Test/Makefile \
+  src/runtime_swig/Makefile \
   src/genericgui/Makefile \
   src/salomewrap/Makefile \
   src/salomegui/Makefile \
+  src/salomegui_swig/Makefile \
   src/salomeloader/Makefile \
+  src/salomeloader/testSalomeLoader.py \
   src/wrappergen/Makefile \
   src/wrappergen/src/Makefile \
   src/yacsloader/Makefile \
   src/yacsloader/Test/Makefile \
-  src/yacsorb/Makefile \
   src/yacsloader/Test/YacsLoaderTest.sh \
   src/yacsloader/Test/YacsLoaderInSessionTest.sh \
-  src/yacsloader/Test/YacsLoaderInSessionTest2.sh \
   src/yacsloader/Test/display.sh \
   src/yacsloader/Test/config_appli.xml \
+  src/yacsloader_swig/Makefile \
+  src/yacsloader_swig/Test/Makefile \
+  src/yacsloader_swig/Test/YacsLoaderTest.sh \
+  src/yacsloader_swig/Test/YacsLoaderInSessionTest.sh \
+  src/yacsloader_swig/Test/config_appli.xml \
+  src/yacsorb/Makefile \
   src/salomegui/resources/YACSCatalog.xml \
+  src/salomegui/resources/SalomeApp.xml \
   doc/Doxyfile \
+  doc/conf.py \
 ])
 

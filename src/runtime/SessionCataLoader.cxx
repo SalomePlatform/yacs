@@ -1,21 +1,22 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "RuntimeSALOME.hxx"
 #include "SessionCataLoader.hxx"
 #include "ComponentDefinition.hxx"
@@ -224,15 +225,6 @@ SessionCataLoader::~SessionCataLoader()
   DEBTRACE ("SessionCataLoader::~SessionCataLoader");
 }
 
-TypeCode * createInterfaceTc(const std::string& id, const std::string& name,
-                             std::list<TypeCodeObjref *> ltc)
-{
-    std::string myName;
-    if(id == "") myName = "IDL:" + name + ":1.0";
-    else myName = id;
-    return TypeCode::interfaceTc(myName.c_str(),name.c_str(),ltc);
-}
-
 void SessionCataLoader::loadTypes(Catalog* cata,SALOME_ModuleCatalog::ModuleCatalog_ptr catalog)
 {
   Runtime* r=getRuntime();
@@ -267,7 +259,7 @@ void SessionCataLoader::loadTypes(Catalog* cata,SALOME_ModuleCatalog::ModuleCata
         {
           const char* content=types_list[i].content;
           if ( typeMap.find(content) != typeMap.end() )
-            typeMap[name]=TypeCode::sequenceTc(name,name,typeMap[content]);
+            typeMap[name]=r->createSequenceTc(name,name,typeMap[content]);
           //else ignored !!
         }
       else if(types_list[i].kind == SALOME_ModuleCatalog::Array)
@@ -285,11 +277,11 @@ void SessionCataLoader::loadTypes(Catalog* cata,SALOME_ModuleCatalog::ModuleCata
                 ltc.push_back((TypeCodeObjref *)typeMap[b_name]);
               //else ignored !!!
             }
-          typeMap[name]=TypeCode::interfaceTc(id,name,ltc);
+          typeMap[name]=r->createInterfaceTc(id,name,ltc);
         }
       else if(types_list[i].kind == SALOME_ModuleCatalog::Struc)
         {
-          TypeCodeStruct* t=(TypeCodeStruct*)TypeCode::structTc("",name);
+          TypeCodeStruct* t=r->createStructTc("",name);
           for (int m=0; m< types_list[i].members.length(); m++)
             {
               const char* m_name=types_list[i].members[m].name;

@@ -1,27 +1,29 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "Runtime.hxx"
 
 #include<cassert>
 #include "WhileLoop.hxx"
 #include "ForLoop.hxx"
 #include "ForEachLoop.hxx"
+#include "OptimizerLoop.hxx"
 #include "Switch.hxx"
 #include "Bloc.hxx"
 #include "Proc.hxx"
@@ -46,6 +48,8 @@ TypeCode* Runtime::_tc_int = 0;
 TypeCode* Runtime::_tc_bool = 0;
 TypeCode* Runtime::_tc_string = 0;
 TypeCode* Runtime::_tc_file = 0;
+TypeCode* Runtime::_tc_stringpair = 0;
+TypeCode* Runtime::_tc_propvec = 0;
 
 // --- init typecodes for edInit with C++ Any
 
@@ -69,17 +73,27 @@ Runtime::Runtime()
   Runtime::_tc_bool   = new TypeCode(Bool);
   Runtime::_tc_string = new TypeCode(String);
   Runtime::_tc_file = new TypeCodeObjref("file", "file");
+  TypeCodeStruct * stringpair = new TypeCodeStruct("stringpair", "stringpair");
+  stringpair->addMember("name", Runtime::_tc_string);
+  stringpair->addMember("value", Runtime::_tc_string);
+  Runtime::_tc_stringpair = stringpair;
+  Runtime::_tc_propvec = new TypeCodeSeq("propvec", "propvec", Runtime::_tc_stringpair);
   DEBTRACE( "_tc_double refcnt: " << Runtime::_tc_double->getRefCnt() );
   DEBTRACE( "_tc_int refcnt: " << Runtime::_tc_int->getRefCnt() );
   DEBTRACE( "_tc_bool refcnt: " << Runtime::_tc_bool->getRefCnt() );
   DEBTRACE( "_tc_string refcnt: " << Runtime::_tc_string->getRefCnt() );
   DEBTRACE( "_tc_file refcnt: " << Runtime::_tc_file->getRefCnt() );
+  DEBTRACE( "_tc_stringpair refcnt: " << Runtime::_tc_stringpair->getRefCnt() );
+  DEBTRACE( "_tc_propvec refcnt: " << Runtime::_tc_propvec->getRefCnt() );
   _builtinCatalog = new Catalog("builtins");
-  _builtinCatalog->_composednodeMap["Bloc"]=new Bloc("Bloc");
-  _builtinCatalog->_composednodeMap["Switch"]=new Switch("Switch");
-  _builtinCatalog->_composednodeMap["WhileLoop"]=new WhileLoop("WhileLoop");
-  _builtinCatalog->_composednodeMap["ForLoop"]=new ForLoop("ForLoop");
-  _builtinCatalog->_composednodeMap["ForEachLoopDouble"]=new ForEachLoop("ForEachLoopDouble",Runtime::_tc_double);
+  _builtinCatalog->_composednodeMap["Bloc"]=createBloc("Bloc");
+  _builtinCatalog->_composednodeMap["Switch"]=createSwitch("Switch");
+  _builtinCatalog->_composednodeMap["WhileLoop"]=createWhileLoop("WhileLoop");
+  _builtinCatalog->_composednodeMap["ForLoop"]=createForLoop("ForLoop");
+  _builtinCatalog->_composednodeMap["ForEachLoop_double"]=createForEachLoop("ForEachLoop_double",Runtime::_tc_double);
+  _builtinCatalog->_composednodeMap["ForEachLoop_string"]=createForEachLoop("ForEachLoop_string",Runtime::_tc_string);
+  _builtinCatalog->_composednodeMap["ForEachLoop_int"]=createForEachLoop("ForEachLoop_int",Runtime::_tc_int);
+  _builtinCatalog->_composednodeMap["ForEachLoop_bool"]=createForEachLoop("ForEachLoop_bool",Runtime::_tc_bool);
   std::map<std::string,TypeCode*>& typeMap=_builtinCatalog->_typeMap;
   Runtime::_tc_double->incrRef();
   typeMap["double"]=Runtime::_tc_double;
@@ -91,7 +105,23 @@ Runtime::Runtime()
   typeMap["string"]=Runtime::_tc_string;
   Runtime::_tc_file->incrRef();
   typeMap["file"]=Runtime::_tc_file;
+  Runtime::_tc_stringpair->incrRef();
+  typeMap["stringpair"]=Runtime::_tc_stringpair;
+  Runtime::_tc_propvec->incrRef();
+  typeMap["propvec"]=Runtime::_tc_propvec;
 
+  // Get dynamic trace level
+  YACS::traceLevel=0;
+  char* valenv=getenv("YACS_TRACELEVEL");
+  if(valenv)
+    {
+      std::istringstream iss(valenv);
+      int temp;
+      if (iss >> temp)
+        YACS::traceLevel=temp;
+    }
+
+  // Get max threads number
   char *maxThreadStr = getenv("YACS_MAX_THREADS");
   if (!maxThreadStr) return;
   int maxThreads = atoi(maxThreadStr);
@@ -118,10 +148,28 @@ Runtime::~Runtime()
   Runtime::_tc_bool->decrRef();
   Runtime::_tc_string->decrRef();
   Runtime::_tc_file->decrRef();
-  for(std::vector<Catalog *>::const_iterator it=_catalogs.begin();it !=_catalogs.end();it++)
-    delete (*it);
+  for(std::vector<Catalog *>::iterator it=_catalogs.begin();it !=_catalogs.end();it++)
+    (*it)->decrRef();
   Runtime::_singleton=0;
   DEBTRACE( "Total YACS::ENGINE::Refcount: " << RefCounter::_totalCnt );
+}
+
+TypeCode * Runtime::createInterfaceTc(const std::string& id, const std::string& name,
+                                      std::list<TypeCodeObjref *> ltc)
+{
+  return TypeCode::interfaceTc(id.c_str(),name.c_str(),ltc);
+}
+
+TypeCode * Runtime::createSequenceTc(const std::string& id,
+                                     const std::string& name,
+                                     TypeCode *content)
+{
+  return TypeCode::sequenceTc(id.c_str(),name.c_str(),content);
+};
+
+TypeCodeStruct * Runtime::createStructTc(const std::string& id, const std::string& name)
+{
+  return (TypeCodeStruct *)TypeCode::structTc(id.c_str(),name.c_str());
 }
 
 DataNode* Runtime::createInDataNode(const std::string& kind,const std::string& name)
@@ -200,6 +248,12 @@ ForEachLoop* Runtime::createForEachLoop(const std::string& name,TypeCode *type)
   return new ForEachLoop(name,type);
 }
 
+OptimizerLoop* Runtime::createOptimizerLoop(const std::string& name,const std::string& algLib,const std::string& factoryName,bool algInitOnFile,
+                                            const std::string& kind, Proc * procForTypes)
+{
+  return new OptimizerLoop(name,algLib,factoryName,algInitOnFile, true, procForTypes);
+}
+
 InputDataStreamPort* Runtime::createInputDataStreamPort(const std::string& name,Node *node,TypeCode *type)
 {
   return new InputDataStreamPort(name,node,type);
@@ -257,6 +311,7 @@ Catalog* Runtime::getBuiltinCatalog()
 void Runtime::addCatalog(Catalog* catalog)
 {
   _catalogs.push_back(catalog);
+  catalog->incrRef();
 }
 
 //! Get a typecode by its name from runtime catalogs

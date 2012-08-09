@@ -1,0 +1,88 @@
+<?xml version='1.0' encoding='iso-8859-1' ?>
+<!--
+  Copyright (C) 2006-2012  CEA/DEN, EDF R&D
+
+  This library is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public
+  License as published by the Free Software Foundation; either
+  version 2.1 of the License.
+
+  This library is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public
+  License along with this library; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+
+  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+
+-->
+<proc name="TestDistPython2">
+   <property name="DefaultStudyID" value="1"/>
+   <type name="string" kind="string"/>
+   <struct name="Engines/dataref">
+      <member name="ref" type="string"/>
+   </struct>
+   <type name="bool" kind="bool"/>
+   <sequence name="boolvec" content="bool"/>
+   <type name="double" kind="double"/>
+   <sequence name="dblevec" content="double"/>
+   <objref name="file" id="file"/>
+   <type name="int" kind="int"/>
+   <sequence name="intvec" content="int"/>
+   <objref name="pyobj" id="python:obj:1.0"/>
+   <sequence name="stringvec" content="string"/>
+   <container name="DefaultContainer">
+      <property name="container_name" value="FactoryServer"/>
+      <property name="name" value="claui2c6"/>
+   </container>
+   <container name="cont1">
+   </container>
+   <remote name="Node6">
+      <script>
+         <code><![CDATA[
+print "coucou, x=",x
+print "coucou, a=",a
+print "my_container=",my_container
+y= x+" OK ca marche"+str(a)
+z=2*a+4.7
+print y,z
+]]></code>
+      </script>
+      <load container="cont1"/>
+      <inport name="x" type="string"/>
+      <inport name="a" type="double"/>
+      <outport name="y" type="string"/>
+      <outport name="z" type="double"/>
+   </remote>
+   <inline name="node2">
+      <script><code><![CDATA[
+print "dans node2 p1=",p1
+print "dans node2 p2=",p2
+]]></code></script>
+      <inport name="p1" type="string"/>
+      <inport name="p2" type="double"/>
+   </inline>
+   <control> <fromnode>Node6</fromnode> <tonode>node2</tonode> </control>
+   <datalink control="false">
+      <fromnode>Node6</fromnode> <fromport>y</fromport>
+      <tonode>node2</tonode> <toport>p1</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>Node6</fromnode> <fromport>z</fromport>
+      <tonode>node2</tonode> <toport>p2</toport>
+   </datalink>
+   <parameter>
+      <tonode>Node6</tonode><toport>x</toport>
+      <value><string>ab</string></value>
+   </parameter>
+   <parameter>
+      <tonode>Node6</tonode><toport>a</toport>
+      <value><double>3.14</double></value>
+   </parameter>
+   <presentation name="Node6" x="6" y="34" width="158" height="90" expanded="1" expx="6" expy="34" expWidth="158" expHeight="90" shownState="0"/>
+   <presentation name="node2" x="6" y="125" width="158" height="90" expanded="1" expx="6" expy="125" expWidth="158" expHeight="90" shownState="0"/>
+   <presentation name="__ROOT__" x="0" y="0" width="168" height="219" expanded="1" expx="0" expy="0" expWidth="168" expHeight="219" shownState="0"/>
+</proc>

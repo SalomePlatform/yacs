@@ -1,24 +1,26 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "OutputPort.hxx"
 #include "ComposedNode.hxx"
 #include "InputPort.hxx"
+#include "InPropertyPort.hxx"
 #include "Runtime.hxx"
 #include "Node.hxx"
 
@@ -48,7 +50,7 @@ string OutputPort::getNameOfTypeOfCurrentInstance() const
   return NAME;
 }
 
-void OutputPort::edRemoveAllLinksLinkedWithMe() throw(Exception)
+void OutputPort::edRemoveAllLinksLinkedWithMe() throw(YACS::Exception)
 {
   set<InputPort *>::iterator iter;
   set<InputPort *> vec(_setOfInputPort);
@@ -70,9 +72,26 @@ void OutputPort::put(const void *data) throw(ConversionException)
 /**
  * check if output type is an input type and if a data converter exists before link
  */
-bool OutputPort::edAddInputPort(InputPort *phyPort) throw(Exception)
+bool OutputPort::edAddInputPort(InputPort *phyPort) throw(YACS::Exception)
 {
   DEBTRACE("OutputPort::edAddInputPort");
+  if(!isAlreadyInSet(phyPort))
+    {
+      InputPort *pwrap = getRuntime()->adapt(phyPort,
+                                             _node->getImplementation(),
+                                             this->edGetType());
+      _setOfInputPort.insert(pwrap);
+      modified();
+      phyPort->modified();
+      return true;
+    }
+  else
+    return false;
+}
+
+bool OutputPort::edAddInPropertyPort(InPropertyPort *phyPort) throw(YACS::Exception)
+{
+  DEBTRACE("OutputPort::edAddInPropertyPort");
   if(!isAlreadyInSet(phyPort))
     {
       InputPort *pwrap = getRuntime()->adapt(phyPort,
@@ -92,7 +111,7 @@ bool OutputPort::edAddInputPort(InputPort *phyPort) throw(Exception)
  * If 'forward' == true the forward deletion 
  * If 'forward' == false no forward deletion performed, oneway deletion without update 'inputPort' side.
  */
-int OutputPort::edRemoveInputPort(InputPort *inputPort, bool forward) throw(Exception)
+int OutputPort::edRemoveInputPort(InputPort *inputPort, bool forward) throw(YACS::Exception)
 {
   if(forward)
     {
@@ -144,7 +163,7 @@ bool OutputPort::isAlreadyLinkedWith(InPort *with) const
 {
   InPort *publicRepr=with->getPublicRepresentant();
   set<InPort *> s;
-  set<InputPort *>::iterator iter;
+  set<InputPort *>::const_iterator iter;
   for(iter=_setOfInputPort.begin();iter!=_setOfInputPort.end();iter++)
     {
     if((*iter)->getPublicRepresentant() == publicRepr)
@@ -173,25 +192,40 @@ bool OutputPort::isAlreadyInSet(InputPort *inputPort) const
   return false;
 }
 
+bool
+OutputPort::isConnected() const
+{
+  return !_setOfInputPort.empty();
+}
+
+
 /**
  * check compatibility of port class ( an inputPort ) before trying to create the link.
  */
-bool OutputPort::addInPort(InPort *inPort) throw(Exception)
+bool OutputPort::addInPort(InPort *inPort) throw(YACS::Exception)
 {
   DEBTRACE("OutputPort::addInPort");
-  if(inPort->getNameOfTypeOfCurrentInstance()!=InputPort::NAME)
+  if(inPort->getNameOfTypeOfCurrentInstance()!=InputPort::NAME &&
+     inPort->getNameOfTypeOfCurrentInstance()!=InPropertyPort::NAME)
     {
       string what="not compatible type of port requested during building of link FROM ";
       what+=NAME; what+=" TO "; what+=inPort->getNameOfTypeOfCurrentInstance();
       throw Exception(what);
     }
-  return edAddInputPort(static_cast<InputPort*>(inPort));
+  if (inPort->getNameOfTypeOfCurrentInstance() == InputPort::NAME)
+  {
+    return edAddInputPort(static_cast<InputPort*>(inPort));
+  }
+  else
+  {
+    return edAddInPropertyPort(static_cast<InPropertyPort*>(inPort));
+  }
 }
 
 /**
  * check compatibility of port class ( an inputPort ) before trying to remove link WITHOUT forward.
  */
-int OutputPort::removeInPort(InPort *inPort, bool forward) throw(Exception)
+int OutputPort::removeInPort(InPort *inPort, bool forward) throw(YACS::Exception)
 {
   if(inPort->getNameOfTypeOfCurrentInstance()!=InputPort::NAME && !forward)
     {
@@ -205,7 +239,7 @@ int OutputPort::removeInPort(InPort *inPort, bool forward) throw(Exception)
 std::set<InPort *> OutputPort::edSetInPort() const
 {
   set<InPort *> s;
-  for(set<InputPort *>::iterator iter=_setOfInputPort.begin();iter!=_setOfInputPort.end();iter++)
+  for(set<InputPort *>::const_iterator iter=_setOfInputPort.begin();iter!=_setOfInputPort.end();iter++)
     (*iter)->getAllRepresentants(s);
   return s;
 }
@@ -224,6 +258,6 @@ const std::set<InputPort *>& OutputPort::getSetOfPhyLinks() const
 }
 
 //! Check validity of output port. Nothing on base class
-void OutputPort::checkBasicConsistency() const throw(Exception)
+void OutputPort::checkBasicConsistency() const throw(YACS::Exception)
 {
 }

@@ -1,0 +1,123 @@
+<?xml version='1.0' encoding='iso-8859-1' ?>
+<!--
+  Copyright (C) 2006-2012  CEA/DEN, EDF R&D
+
+  This library is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public
+  License as published by the Free Software Foundation; either
+  version 2.1 of the License.
+
+  This library is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public
+  License along with this library; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+
+  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+
+-->
+<proc name="newSchema_1">
+   <property name="DefaultStudyID" value="1"/>
+   <type name="string" kind="string"/>
+   <struct name="Engines/dataref">
+      <member name="ref" type="string"/>
+   </struct>
+   <objref name="GEOM_Object" id="IDL:GEOM/GEOM_Object:1.0"/>
+   <type name="bool" kind="bool"/>
+   <sequence name="boolvec" content="bool"/>
+   <type name="double" kind="double"/>
+   <sequence name="dblevec" content="double"/>
+   <objref name="file" id="file"/>
+   <type name="int" kind="int"/>
+   <sequence name="intvec" content="int"/>
+   <objref name="pyobj" id="python:obj:1.0"/>
+   <sequence name="seqpyobj" content="pyobj"/>
+   <sequence name="stringvec" content="string"/>
+   <container name="DefaultContainer">
+      <property name="container_name" value="FactoryServer"/>
+      <property name="name" value="localhost"/>
+   </container>
+   <container name="container0">
+   </container>
+   <container name="container8">
+   </container>
+   <foreach name="ForEachLoop_pyobj0" type="pyobj">
+      <bloc name="Bloc1">
+         <remote name="PyFunction4">
+            <function name="fromPyObj2String">
+               <code><![CDATA[def fromPyObj2String(aRun,):
+    aMedFile = aRun[0]
+    aMeshName = aRun[1]
+    return aMedFile,aMeshName
+]]></code>
+            </function>
+            <load container="container8"/>
+            <inport name="aRun" type="pyobj"/>
+            <outport name="aMedFile" type="string"/>
+            <outport name="aMeshName" type="string"/>
+         </remote>
+         <service name="MakeBoxDXDYDZ1">
+            <component>GEOM_Superv</component>
+            <load container="container8"/>
+            <method>MakeBoxDXDYDZ</method>
+            <inport name="theDX" type="double"/>
+            <inport name="theDY" type="double"/>
+            <inport name="theDZ" type="double"/>
+            <outport name="return" type="GEOM_Object"/>
+         </service>
+         <control> <fromnode>PyFunction4</fromnode> <tonode>MakeBoxDXDYDZ1</tonode> </control>
+      </bloc>
+   </foreach>
+   <inline name="PyScript1">
+      <script><code><![CDATA[import os
+numberOfRun = 5
+runs = []
+dir1 = "/home/crouzet/SUPPORT/NADIR"
+dir2 = "/TestFAKECOMPO/"
+medFile = dir1+dir2+"AlcyoneFields.med"
+meshName="LE DOMAINE"
+for run in range(numberOfRun):
+    runs.append([])
+    runs[run].append(medFile)
+    runs[run].append(meshName)
+    pass
+print "There is(are) ",numberOfRun," runs of Fake Compo on process ",os.getpid()
+]]></code></script>
+      <outport name="numberOfRun" type="int"/>
+      <outport name="runs" type="seqpyobj"/>
+   </inline>
+   <control> <fromnode>PyScript1</fromnode> <tonode>ForEachLoop_pyobj0</tonode> </control>
+   <datalink control="false">
+      <fromnode>ForEachLoop_pyobj0</fromnode> <fromport>evalSamples</fromport>
+      <tonode>ForEachLoop_pyobj0.Bloc1.PyFunction4</tonode> <toport>aRun</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>PyScript1</fromnode> <fromport>numberOfRun</fromport>
+      <tonode>ForEachLoop_pyobj0</tonode> <toport>nbBranches</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>PyScript1</fromnode> <fromport>runs</fromport>
+      <tonode>ForEachLoop_pyobj0</tonode> <toport>SmplsCollection</toport>
+   </datalink>
+   <parameter>
+      <tonode>ForEachLoop_pyobj0.Bloc1.MakeBoxDXDYDZ1</tonode><toport>theDX</toport>
+      <value><double>10</double></value>
+   </parameter>
+   <parameter>
+      <tonode>ForEachLoop_pyobj0.Bloc1.MakeBoxDXDYDZ1</tonode><toport>theDY</toport>
+      <value><double>10</double></value>
+   </parameter>
+   <parameter>
+      <tonode>ForEachLoop_pyobj0.Bloc1.MakeBoxDXDYDZ1</tonode><toport>theDZ</toport>
+      <value><double>10</double></value>
+   </parameter>
+   <presentation name="ForEachLoop_pyobj0" x="283.5" y="74.5" width="457.5" height="281.5" expanded="1" expx="283.5" expy="74.5" expWidth="457.5" expHeight="281.5" shownState="0"/>
+   <presentation name="ForEachLoop_pyobj0.Bloc1" x="41.5" y="124.5" width="412" height="153" expanded="1" expx="41.5" expy="124.5" expWidth="412" expHeight="153" shownState="0"/>
+   <presentation name="PyScript1" x="40" y="75" width="158" height="90" expanded="1" expx="40" expy="75" expWidth="158" expHeight="90" shownState="0"/>
+   <presentation name="ForEachLoop_pyobj0.Bloc1.PyFunction4" x="10" y="35" width="158" height="90" expanded="1" expx="10" expy="35" expWidth="158" expHeight="90" shownState="0"/>
+   <presentation name="ForEachLoop_pyobj0.Bloc1.MakeBoxDXDYDZ1" x="250" y="32" width="158" height="117" expanded="1" expx="250" expy="32" expWidth="158" expHeight="117" shownState="0"/>
+   <presentation name="__ROOT__" x="0" y="0" width="745" height="360" expanded="1" expx="0" expy="0" expWidth="745" expHeight="360" shownState="0"/>
+</proc>

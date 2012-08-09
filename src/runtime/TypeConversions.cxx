@@ -1,21 +1,22 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //#define REFCNT
 //
 #ifdef REFCNT
@@ -35,6 +36,18 @@
 
 #include <iostream>
 #include <sstream>
+
+#ifdef WNT
+#include <fcntl.h>
+#define _S_IREAD 256
+#define _S_IWRITE 128
+int mkstemp(char *tmpl)
+{
+  int ret=-1;
+  mktemp(tmpl); ret=open(tmpl,O_RDWR|O_BINARY|O_CREAT|O_EXCL|_O_SHORT_LIVED, _S_IREAD|_S_IWRITE);
+  return ret;
+}
+#endif
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -115,7 +128,7 @@ namespace YACS
 
     CORBA::TypeCode_ptr getCorbaTCObjref(const TypeCode *t)
     {
-      DEBTRACE( t->name() << " " << t->shortName());
+      DEBTRACE( t->name() << " " << t->shortName() << " " << t->id());
       CORBA::TypeCode_ptr tc;
       if(strncmp(t->id(),"python",6)==0 )
         tc= CORBA::TypeCode::_duplicate(Engines::_tc_fileBlock);
@@ -770,7 +783,7 @@ namespace YACS
             {
               // It's a native Python object pickle it
               PyObject* mod=PyImport_ImportModule("cPickle");
-              PyObject *pickled=PyObject_CallMethod(mod,"dumps","Oi",o,protocol);
+              PyObject *pickled=PyObject_CallMethod(mod,(char *)"dumps",(char *)"Oi",o,protocol);
               DEBTRACE(PyObject_REPR(pickled) );
               Py_DECREF(mod);
               if(pickled==NULL)
@@ -791,7 +804,7 @@ namespace YACS
                   PyErr_Print();
                   throw YACS::ENGINE::ConversionException("Problem in convertToYacsObjref<PYTHONImpl: no simplejson module");
                 }
-              PyObject *pickled=PyObject_CallMethod(mod,"dumps","O",o);
+              PyObject *pickled=PyObject_CallMethod(mod,(char *)"dumps",(char *)"O",o);
               Py_DECREF(mod);
               if(pickled==NULL)
                 {
@@ -804,8 +817,8 @@ namespace YACS
             }
           else
             {
-              // It's a CORBA Object convert it to an IOR string
-              PyObject *pystring=PyObject_CallMethod(getSALOMERuntime()->getPyOrb(),"object_to_string","O",o);
+              // It should be a CORBA Object convert it to an IOR string
+              PyObject *pystring=PyObject_CallMethod(getSALOMERuntime()->getPyOrb(),(char *)"object_to_string",(char *)"O",o);
               if(pystring==NULL)
                 {
                   PyErr_Print();
@@ -945,6 +958,11 @@ namespace YACS
     {
       static inline PyObject* convert(const TypeCode *t,std::string& o)
         {
+          if(o=="")
+            {
+              Py_INCREF(Py_None);
+              return Py_None;
+            }
           if(t->isA(Runtime::_tc_file))
             {
               //It's an objref file. Convert it specially
@@ -954,7 +972,7 @@ namespace YACS
             {
               //It's a python pickled object, unpickled it
               PyObject* mod=PyImport_ImportModule("cPickle");
-              PyObject *ob=PyObject_CallMethod(mod,"loads","s#",o.c_str(),o.length());
+              PyObject *ob=PyObject_CallMethod(mod,(char *)"loads",(char *)"s#",o.c_str(),o.length());
               DEBTRACE(PyObject_REPR(ob));
               Py_DECREF(mod);
               if(ob==NULL)
@@ -973,7 +991,7 @@ namespace YACS
                   PyErr_Print();
                   throw YACS::ENGINE::ConversionException("Problem in convertToYacsObjref<PYTHONImpl: no simplejson module");
                 }
-              PyObject *ob=PyObject_CallMethod(mod,"loads","s",o.c_str());
+              PyObject *ob=PyObject_CallMethod(mod,(char *)"loads",(char *)"s",o.c_str());
               Py_DECREF(mod);
               if(ob==NULL)
                 {
@@ -1002,6 +1020,11 @@ namespace YACS
             {
               DEBTRACE( "Can't get reference to object." );
               throw ConversionException("Can't get reference to object");
+            }
+
+          if(obref->_non_existent())
+            {
+              throw ConversionException("non_existent object");
             }
 
           if( CORBA::is_nil(obref) )
@@ -1041,7 +1064,7 @@ namespace YACS
           //ob is a CORBA::Object. Try to convert it to more specific type SALOME/GenericObj
           if(obref->_is_a("IDL:SALOME/GenericObj:1.0"))
             {
-              PyObject *result = PyObject_CallMethod(getSALOMERuntime()->get_omnipy(), "narrow", "Osi",ob,"IDL:SALOME/GenericObj:1.0",1);
+              PyObject *result = PyObject_CallMethod(getSALOMERuntime()->get_omnipy(), (char *)"narrow", (char *)"Osi",ob,"IDL:SALOME/GenericObj:1.0",1);
               if(result==NULL)
                 PyErr_Clear();//Exception during narrow. Keep ob
               else if(result==Py_None)
@@ -1577,6 +1600,23 @@ namespace YACS
             }
         }
     };
+    template <ImplType IMPLOUT, class TOUT>
+    struct convertToYacsStruct<NEUTRALImpl,YACS::ENGINE::Any*,void*,IMPLOUT,TOUT>
+    {
+      static inline void convert(const TypeCode *t,YACS::ENGINE::Any* o,void*,std::map<std::string,TOUT>& m)
+        {
+          StructAny * sdata = dynamic_cast<StructAny *>(o);
+          YASSERT(sdata != NULL);
+          const TypeCodeStruct * tst = dynamic_cast<const TypeCodeStruct *>(t);
+          YASSERT(tst != NULL);
+          for (int i=0 ; i<tst->memberCount() ; i++)
+            {
+              string name = tst->memberName(i);
+              TOUT ro=YacsConvertor<NEUTRALImpl,YACS::ENGINE::Any*,void*,IMPLOUT,TOUT>(tst->memberType(i),(*sdata)[name.c_str()],0);
+              m[name]=ro;
+            }
+        }
+    };
     /* End of ToYacs Convertor for NEUTRALImpl */
 
     //! FromYacs Convertor for NEUTRALImpl
@@ -1621,6 +1661,42 @@ namespace YACS
     {
       static inline YACS::ENGINE::Any* convert(const TypeCode *t,std::string& o)
         {
+          //Check if objref is a GenericObj and register it if it is the case (workaround for bad management of GenericObj)
+          if(o=="" || (t->isA(Runtime::_tc_file)) || (strncmp(t->id(),"python",6)==0) || (strncmp(t->id(),"json",4)==0))
+            return YACS::ENGINE::AtomAny::New(o);
+
+          //Objref CORBA. prefix=IOR,corbaname,corbaloc
+          CORBA::Object_var obref;
+          try
+            {
+              obref = getSALOMERuntime()->getOrb()->string_to_object(o.c_str());
+            }
+          catch(CORBA::Exception& ex)
+            {
+              throw ConversionException("Can't get reference to object");
+            }
+          if(obref->_non_existent())
+            throw ConversionException("non_existent object");
+          if( CORBA::is_nil(obref) )
+            throw ConversionException("Can't get reference to object");
+          if(!obref->_is_a(t->id()))
+            {
+              stringstream msg;
+              msg << "Problem in conversion: an objref " << t->id() << " is expected " << endl;
+              msg << "An objref of type " << obref->_PD_repoId << " is given " << endl;
+              msg << " (" << __FILE__ << ":" << __LINE__ << ")";
+              throw YACS::ENGINE::ConversionException(msg.str());
+            }
+
+          SALOME::GenericObj_var gobj=SALOME::GenericObj::_narrow(obref);
+          if(!CORBA::is_nil(gobj))
+            {
+              DEBTRACE("It's a SALOME::GenericObj register it");
+              gobj->Register();
+            }
+          else
+              DEBTRACE("It's a CORBA::Object but not a SALOME::GenericObj");
+
           return YACS::ENGINE::AtomAny::New(o);
         }
     };
@@ -1640,6 +1716,22 @@ namespace YACS
               (*iter)->decrRef();
             }
           DEBTRACE( "refcnt: " << any->getRefCnt() );
+          return any;
+        }
+    };
+
+    template <>
+    struct convertFromYacsStruct<NEUTRALImpl,YACS::ENGINE::Any*>
+    {
+      static inline YACS::ENGINE::Any* convert(const TypeCode *t,std::map<std::string,YACS::ENGINE::Any*>& m)
+        {
+          StructAny * any = StructAny::New((TypeCodeStruct *)t);
+          std::map<std::string,YACS::ENGINE::Any*>::const_iterator it;
+          for (it=m.begin() ; it!=m.end() ; it++)
+            {
+              any->setEltAtRank(it->first.c_str(), it->second);
+              it->second->decrRef();
+            }
           return any;
         }
     };
@@ -1750,8 +1842,8 @@ namespace YACS
 
                   PyGILState_STATE gstate = PyGILState_Ensure(); 
                   PyObject* mod=PyImport_ImportModule("cPickle");
-                  PyObject *ob=PyObject_CallMethod(mod,"loads","s#",s,buffer->length());
-                  PyObject *pickled=PyObject_CallMethod(mod,"dumps","Oi",ob,protocol);
+                  PyObject *ob=PyObject_CallMethod(mod,(char *)"loads",(char *)"s#",s,buffer->length());
+                  PyObject *pickled=PyObject_CallMethod(mod,(char *)"dumps",(char *)"Oi",ob,protocol);
                   DEBTRACE(PyObject_REPR(pickled));
                   std::string mystr=PyString_AsString(pickled);
                   Py_DECREF(mod);
@@ -1996,6 +2088,7 @@ namespace YACS
             {
               DynamicAny::DynAny_var temp=ds->current_component();
               CORBA::Any* a=*iter;
+              //It seems that from_any does not support inherited objref: convert to CORBA::Object and insert reference
               if(isObjref)
                 {
                   CORBA::Object_var zzobj ;
@@ -2026,17 +2119,7 @@ namespace YACS
           int nMember=tst->memberCount();
           DEBTRACE("nMember="<<nMember);
 
-          CORBA::StructMemberSeq mseq;
-          mseq.length(nMember);
-          for(int i=0;i<nMember;i++)
-            {
-              const char * name=tst->memberName(i);
-              if(m.count(name) !=0)
-                {
-                  mseq[i].type=m[name]->type();
-                }
-            }
-          CORBA::TypeCode_var tc= orb->create_struct_tc("","",mseq);
+          CORBA::TypeCode_var tc=getCorbaTC(t);
           DynamicAny::DynAny_var dynany=getSALOMERuntime()->getDynFactory()->create_dyn_any_from_type_code(tc);
           DynamicAny::DynStruct_var ds = DynamicAny::DynStruct::_narrow(dynany);
 
@@ -2047,7 +2130,19 @@ namespace YACS
               DEBTRACE("Member name="<<name);
               //do not test member presence : test has been done in ToYacs convertor
               CORBA::Any* a=m[name];
-              temp->from_any(*a);
+              //It seems that from_any does not support inherited objref: convert to CORBA::Object and insert reference
+              CORBA::TypeCode_var atc = tc->member_type(i);
+              if(atc->kind()==CORBA::tk_objref)
+                {
+                  //special treatment for objref
+                  CORBA::Object_var zzobj ;
+                  *a >>= CORBA::Any::to_object(zzobj) ;
+                  temp->insert_reference(zzobj);
+                }
+              else
+                {
+                  temp->from_any(*a);
+                }
               //delete intermediate any
               delete a;
               ds->next();

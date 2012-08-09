@@ -1,25 +1,30 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "OptimizerLoop.hxx"
 #include "OutputPort.hxx"
+#include "Visitor.hxx"
 
 #include <iostream>
+
+//#define _DEVDEBUG_
+#include "YacsTrace.hxx"
 
 using namespace YACS::ENGINE;
 using namespace std;
@@ -27,117 +32,22 @@ using namespace std;
 const char FakeNodeForOptimizerLoop::NAME[]="thisIsAFakeNode";
 
 const int OptimizerLoop::NOT_RUNNING_BRANCH_ID=-1973012217;
+const int OptimizerLoop::NOT_INITIALIZED_BRANCH_ID=-1973;
 
-const char OptimizerLoop::NAME_OF_FILENAME_INPUT[]="FileNameInitAlg";
+const char OptimizerLoop::NAME_OF_ALGO_INIT_PORT[] = "algoInit";
+const char OptimizerLoop::NAME_OF_OUT_POOL_INPUT[] = "evalResults";
+const char OptimizerLoop::NAME_OF_ALGO_RESULT_PORT[] = "algoResults";
 
-const char OptimizerLoop::NAME_OF_OUT_POOL_INPUT[]="retPortForOutPool";
 
-OptimizerAlgStandardized::OptimizerAlgStandardized(Pool *pool, OptimizerAlgBase *alg)
-  : OptimizerAlgSync(pool),_algBehind(alg),_threadInCaseOfNotEvent(0)
-{
-  if(_algBehind)
-    _algBehind->incrRef();
-}
-
-OptimizerAlgStandardized::~OptimizerAlgStandardized()
-{
-  if(_algBehind)
-    _algBehind->decrRef();
-}
-
-TypeCode *OptimizerAlgStandardized::getTCForIn() const
-{
-  return _algBehind->getTCForIn();
-}
-
-TypeCode *OptimizerAlgStandardized::getTCForOut() const
-{
-  return _algBehind->getTCForOut();
-}
-
-void OptimizerAlgStandardized::setAlgPointer(OptimizerAlgBaseFactory algFactory)
-{
-  if(_algBehind)
-    _algBehind->decrRef();
-  _algBehind=algFactory(_pool);
-}
-
-void OptimizerAlgStandardized::parseFileToInit(const std::string& fileName)
-{
-  _algBehind->parseFileToInit(fileName);
-}
-
-void OptimizerAlgStandardized::initialize(const Any *input) throw (Exception)
-{
-  _algBehind->initialize(input);
-}
-
-void OptimizerAlgStandardized::takeDecision()
-{
-  switch(_algBehind->getType())
-    {
-    case EVENT_ORIENTED:
-      {
-        ((OptimizerAlgSync *) _algBehind)->takeDecision();
-        break;
-      }
-    case NOT_EVENT_ORIENTED:
-      {   
-        _condition.notifyOneSync();
-        break;
-      }
-    default:
-      throw Exception("Unrecognized type of algorithm. Only 2 types are available : EVENT_ORIENTED or NOT_EVENT_ORIENTED.");
-    }
-}
-
-void OptimizerAlgStandardized::finish()
-{
-  _algBehind->finish();
-}
-
-void OptimizerAlgStandardized::start()
-{
-  switch(_algBehind->getType())
-    {
-    case EVENT_ORIENTED:
-      {
-        ((OptimizerAlgSync *) _algBehind)->start();
-        break;
-      }
-    case NOT_EVENT_ORIENTED:
-      {
-        void **stackForNewTh= new void* [2];
-        stackForNewTh[0]=(void *) ((OptimizerAlgASync *)(_algBehind));//In case of virtual inheritance
-        stackForNewTh[1]=(void *) &_condition;
-        _threadInCaseOfNotEvent=new ::YACS::BASES::Thread(threadFctForAsync,stackForNewTh);
-        _condition.waitForAWait();
-        break;
-      }
-    default:
-      throw Exception("Unrecognized type of algorithm. Only 2 types are available : EVENT_ORIENTED or NOT_EVENT_ORIENTED.");
-    }
-}
-
-void *OptimizerAlgStandardized::threadFctForAsync(void* ownStack)
-{
-  void **ownStackCst=(void **)ownStack;
-  OptimizerAlgASync *alg=(OptimizerAlgASync *)ownStackCst[0];
-  ::YACS::BASES::DrivenCondition *cond=(::YACS::BASES::DrivenCondition *)ownStackCst[1];
-  delete [] ownStackCst;
-  alg->startToTakeDecision(cond);
-}
-
-FakeNodeForOptimizerLoop::FakeNodeForOptimizerLoop(OptimizerLoop *loop, bool normal, unsigned reason):ElementaryNode(NAME),_loop(loop),
-                                                                                                      _normal(normal),
-                                                                                                      _reason(reason)
+FakeNodeForOptimizerLoop::FakeNodeForOptimizerLoop(OptimizerLoop *loop, bool normal, std::string message)
+  : ElementaryNode(NAME), _loop(loop), _normal(normal), _message(message)
 {
   _state=YACS::TOACTIVATE;
   _father=_loop->getFather();
 }
 
-FakeNodeForOptimizerLoop::FakeNodeForOptimizerLoop(const FakeNodeForOptimizerLoop& other):ElementaryNode(other),_loop(0),
-                                                                                          _normal(false)
+FakeNodeForOptimizerLoop::FakeNodeForOptimizerLoop(const FakeNodeForOptimizerLoop& other)
+  : ElementaryNode(other), _loop(0), _normal(other._normal), _message(other._message)
 { 
 }
 
@@ -149,86 +59,95 @@ Node *FakeNodeForOptimizerLoop::simpleClone(ComposedNode *father, bool editionOn
 void FakeNodeForOptimizerLoop::exForwardFailed()
 {
   _loop->exForwardFailed();
-  FakeNodeForOptimizerLoop *normallyThis=_loop->_nodeForSpecialCases;
-  _loop->_nodeForSpecialCases=0;
-  delete normallyThis;
 }
 
 void FakeNodeForOptimizerLoop::exForwardFinished()
 {
   _loop->exForwardFinished();
-  FakeNodeForOptimizerLoop *normallyThis=_loop->_nodeForSpecialCases;
-  _loop->_nodeForSpecialCases=0;
-  delete normallyThis;
 }
 
 void FakeNodeForOptimizerLoop::execute()
 {
-  if(!_normal)
-    {
-      string what;
-      if(_reason==ALG_WITHOUT_START_CASES)
-        what="Alg initialization of optimizerNode with name "; what+=_loop->getName(); what+=" returns no new case(s) to launch";
-      throw Exception(what);
-    }
+  DEBTRACE("FakeNodeForOptimizerLoop::execute: " << _message)
+  if (!_normal) {
+    _loop->_errorDetails = _message;
+    throw Exception(_message);
+  }
+  else
+  {
+    _loop->_algoResultPort.put(_loop->_alg->getAlgoResultProxy());
+  }
 }
 
 void FakeNodeForOptimizerLoop::aborted()
 {
-  _loop->_state=YACS::ERROR;
+  _loop->setState(YACS::ERROR);
 }
 
 void FakeNodeForOptimizerLoop::finished()
 {
-  
+  _loop->setState(YACS::DONE);
 }
+
+/*! \class YACS::ENGINE::OptimizerLoop
+ *  \brief class to build optimization loops
+ *
+ * \ingroup ComposedNodes
+ */
 
 OptimizerLoop::OptimizerLoop(const std::string& name, const std::string& algLibWthOutExt,
                              const std::string& symbolNameToOptimizerAlgBaseInstanceFactory,
-                             bool algInitOnFile) throw(Exception)
-  try : DynParaLoop(name,Runtime::_tc_string),_loader(algLibWthOutExt),_algInitOnFile(algInitOnFile),
-        _portForInitFile(NAME_OF_FILENAME_INPUT,this,Runtime::_tc_string),
-        _alg(new OptimizerAlgStandardized(&_myPool,0)),_convergenceReachedWithOtherCalc(false),
+                             bool algInitOnFile,bool initAlgo, Proc * procForTypes):
+        DynParaLoop(name,Runtime::_tc_string),_algInitOnFile(algInitOnFile),_alglib(algLibWthOutExt),
+        _algoInitPort(NAME_OF_ALGO_INIT_PORT, this, Runtime::_tc_string, true),
+        _loader(NULL),_alg(0),_convergenceReachedWithOtherCalc(false),
         _retPortForOutPool(NAME_OF_OUT_POOL_INPUT,this,Runtime::_tc_string),
-        _nodeForSpecialCases(0),_symbol(symbolNameToOptimizerAlgBaseInstanceFactory)
+        _nodeForSpecialCases(0), _algoResultPort(NAME_OF_ALGO_RESULT_PORT, this, Runtime::_tc_string)
 {
-  OptimizerAlgBaseFactory algFactory=(OptimizerAlgBaseFactory)_loader.getHandleOnSymbolWithName(_symbol);
-  if(!algFactory)
-    throw Exception("Problem during library loading.");
-  _alg->setAlgPointer(algFactory);
-  _splittedPort.edSetType(_alg->getTCForIn());
-  _retPortForOutPool.edSetType(_alg->getTCForOut());
-}
-catch(Exception& e)
-{
+  //We need this because calling a virtual method in a constructor does not call the most derived method but the method of the class
+  //A derived class must take care to manage that 
+  if(initAlgo)
+    setAlgorithm(algLibWthOutExt,symbolNameToOptimizerAlgBaseInstanceFactory, procForTypes);
 }
 
 OptimizerLoop::OptimizerLoop(const OptimizerLoop& other, ComposedNode *father, bool editionOnly):
-  DynParaLoop(other,father,editionOnly),_algInitOnFile(other._algInitOnFile),_loader(other._loader.getLibNameWithoutExt()),_convergenceReachedWithOtherCalc(false),
-  _alg(new OptimizerAlgStandardized(&_myPool,0)),_portForInitFile(other._portForInitFile,this),_retPortForOutPool(other._retPortForOutPool,this),_nodeForSpecialCases(0),_symbol(other._symbol)
+  DynParaLoop(other,father,editionOnly),_algInitOnFile(other._algInitOnFile),_alglib(other._alglib),
+  _convergenceReachedWithOtherCalc(false),_loader(NULL),_alg(0),_algoInitPort(other._algoInitPort,this),
+  _retPortForOutPool(other._retPortForOutPool,this),_nodeForSpecialCases(0),
+  _algoResultPort(other._algoResultPort, this)
 {
-  OptimizerAlgBaseFactory algFactory=(OptimizerAlgBaseFactory)_loader.getHandleOnSymbolWithName(_symbol);
-  _alg->setAlgPointer(algFactory);
-  _splittedPort.edSetType(_alg->getTCForIn());
-  _retPortForOutPool.edSetType(_alg->getTCForOut());
+  //Don't call setAlgorithm here because it will be called several times if the class is derived. Call it in simpleClone for cloning
 }
 
 OptimizerLoop::~OptimizerLoop()
 {
-  _alg->decrRef();
+  if(_alg)
+    _alg->decrRef();
   cleanDynGraph();
   cleanInterceptors();
+  delete _loader;
+  delete _nodeForSpecialCases;
 }
 
 Node *OptimizerLoop::simpleClone(ComposedNode *father, bool editionOnly) const
 {
-  return new OptimizerLoop(*this,father,editionOnly);
+  OptimizerLoop* ol=new OptimizerLoop(*this,father,editionOnly);
+  // TODO: Remove this const_cast (find a better design to get the type codes from the original node)
+  Proc * procForTypes = ol->getProc();
+  if (procForTypes == NULL) {
+    const Proc * origProc = getProc();
+    procForTypes = const_cast<Proc *>(origProc);
+  }
+  ol->setAlgorithm(_alglib, _symbol, false, procForTypes);
+  return ol;
 }
 
 void OptimizerLoop::init(bool start)
 {
   DynParaLoop::init(start);
-  _portForInitFile.exInit(start);
+  _algoInitPort.exInit(start);
+  _retPortForOutPool.exInit(start);
+  _algoResultPort.exInit();
   _convergenceReachedWithOtherCalc=false;
   cleanDynGraph();
   cleanInterceptors();
@@ -238,55 +157,91 @@ void OptimizerLoop::exUpdateState()
 {
   if(_state == YACS::DISABLED)
     return;
-  if(_inGate.exIsReady())
+  delete _nodeForSpecialCases;
+  _nodeForSpecialCases = NULL;
+  try
     {
-      _state=YACS::TOACTIVATE;
-      //internal graph update
-      int i;
-      int nbOfBr=_nbOfBranches.getIntValue();
-      if(nbOfBr==0)
+      if(_inGate.exIsReady())
         {
-          delete _nodeForSpecialCases;
-          _nodeForSpecialCases=new FakeNodeForOptimizerLoop(this,getAllOutPortsLeavingCurrentScope().empty(),FakeNodeForOptimizerLoop::NO_BRANCHES);
-          return;
-        }
-      
-      if(_portForInitFile.isEmpty())
-        {
-          delete _nodeForSpecialCases;
-          _nodeForSpecialCases=new FakeNodeForOptimizerLoop(this,getAllOutPortsLeavingCurrentScope().empty(),FakeNodeForOptimizerLoop::NO_ALG_INITIALIZATION);
-          return;
-        }
-      _execNodes.resize(nbOfBr);
-      _execIds.resize(nbOfBr);
-      if(_initNode)
-        {
-          _execInitNodes.resize(nbOfBr);
-          _initNodeUpdated.resize(nbOfBr);
-          for(i=0;i<nbOfBr;i++)
-            _initNodeUpdated[i]=false;
-        }
-      for(i=0;i<nbOfBr;i++)
-        {
-          _execIds[i]=NOT_RUNNING_BRANCH_ID;
-          _execNodes[i]=_node->clone(this,false);
+          setState(YACS::TOACTIVATE);
+          // Force termination in case the previous algorithm did not finish properly (manual stop)
+          _alg->finishProxy();
+          _myPool.destroyAll();
+
+          // Initialize and launch the algorithm
+          _alg->initializeProxy(_algoInitPort.getValue());
+          _alg->startProxy();
+          if (_alg->hasError()) {
+            string error = _alg->getError();
+            _alg->finishProxy();
+            throw Exception(error);
+          }
+
+          //internal graph update
+          int i;
+          int nbOfBr=_nbOfBranches.getIntValue();
+          if(nbOfBr==0)
+            {
+              // A number of branches of 0 is acceptable if there are no output ports
+              // leaving OptimizerLoop
+              bool normal = getAllOutPortsLeavingCurrentScope().empty();
+              _nodeForSpecialCases = new FakeNodeForOptimizerLoop(this, normal,
+                  "OptimizerLoop has no branch to run the internal node(s)");
+              return;
+            }
+          _execNodes.resize(nbOfBr);
+          _execIds.resize(nbOfBr);
           if(_initNode)
-            _execInitNodes[i]=_initNode->clone(this,false);
-          prepareInputsFromOutOfScope(i);
+            {
+              _execInitNodes.resize(nbOfBr);
+              _initNodeUpdated.resize(nbOfBr);
+              for(i=0;i<nbOfBr;i++)
+                _initNodeUpdated[i]=false;
+            }
+          _initializingCounter = 0;
+          if (_finalizeNode)
+            _execFinalizeNodes.resize(nbOfBr);
+          vector<Node *> origNodes;
+          origNodes.push_back(_initNode);
+          origNodes.push_back(_node);
+          origNodes.push_back(_finalizeNode);
+          for(i=0;i<nbOfBr;i++)
+            {
+              _execIds[i]=NOT_INITIALIZED_BRANCH_ID;
+              vector<Node *> clonedNodes = cloneAndPlaceNodesCoherently(origNodes);
+              if(_initNode)
+                _execInitNodes[i] = clonedNodes[0];
+              _execNodes[i] = clonedNodes[1];
+              if(_finalizeNode)
+                _execFinalizeNodes[i] = clonedNodes[2];
+              prepareInputsFromOutOfScope(i);
+            }
+          initInterceptors(nbOfBr);
+          int id;
+          unsigned char priority;
+          Any *val=_myPool.getNextSampleWithHighestPriority(id,priority);
+          if(!val)
+            {
+              // It is acceptable to have no sample to launch if there are no output ports
+              // leaving OptimizerLoop
+              std::set<OutPort *> setOutPort = getAllOutPortsLeavingCurrentScope();
+              // Special in the special
+              // We do not check algoResult
+              setOutPort.erase(&_algoResultPort);
+              bool normal = setOutPort.empty();
+              _nodeForSpecialCases = new FakeNodeForOptimizerLoop(this, normal,
+                  string("The algorithm of OptimizerLoop with name ") + _name +
+                  " returns no sample to launch");
+              return;
+            }
+          launchMaxOfSamples(true);
         }
-      initInterceptors(nbOfBr);
-      _alg->parseFileToInit(_portForInitFile.getValue()->getStringValue());
-      _alg->start();
-      int id;
-      unsigned char priority;
-      Any *val=_myPool.getNextSampleWithHighestPriority(id,priority);
-      if(!val)
-        {
-          delete _nodeForSpecialCases;
-          _nodeForSpecialCases=new FakeNodeForOptimizerLoop(this,getAllOutPortsLeavingCurrentScope().empty(),FakeNodeForOptimizerLoop::ALG_WITHOUT_START_CASES);
-          return;
-        }
-      launchMaxOfSamples(true);
+    }
+  catch (const exception & e)
+    {
+      _nodeForSpecialCases = new FakeNodeForOptimizerLoop(this, false,
+          string("An error happened in the control algorithm of OptimizerLoop \"") + _name +
+          "\": " + e.what());
     }
 }
 
@@ -295,11 +250,11 @@ int OptimizerLoop::getNumberOfInputPorts() const
   return DynParaLoop::getNumberOfInputPorts()+2;
 }
 
-InputPort *OptimizerLoop::getInputPort(const std::string& name) const throw(Exception)
+InputPort *OptimizerLoop::getInputPort(const std::string& name) const throw(YACS::Exception)
 {
-  if(name==NAME_OF_FILENAME_INPUT)
-    return (InputPort *)&_portForInitFile;
-  else if(name==NAME_OF_OUT_POOL_INPUT)
+  if (name == NAME_OF_ALGO_INIT_PORT)
+    return (InputPort *)&_algoInitPort;
+  else if (name == NAME_OF_OUT_POOL_INPUT)
     return (InputPort *)&_retPortForOutPool;
   else
     return DynParaLoop::getInputPort(name);
@@ -308,7 +263,7 @@ InputPort *OptimizerLoop::getInputPort(const std::string& name) const throw(Exce
 std::list<InputPort *> OptimizerLoop::getSetOfInputPort() const
 {
   list<InputPort *> ret=DynParaLoop::getSetOfInputPort();
-  ret.push_back((InputPort *)&_portForInitFile);
+  ret.push_back((InputPort *)&_algoInitPort);
   ret.push_back((InputPort *)&_retPortForOutPool);
   return ret;
 }
@@ -316,7 +271,7 @@ std::list<InputPort *> OptimizerLoop::getSetOfInputPort() const
 std::list<InputPort *> OptimizerLoop::getLocalInputPorts() const
 {
   list<InputPort *> ret=DynParaLoop::getLocalInputPorts();
-  ret.push_back((InputPort *)&_portForInitFile);
+  ret.push_back((InputPort *)&_algoInitPort);
   ret.push_back((InputPort *)&_retPortForOutPool);
   return ret;
 }
@@ -336,43 +291,67 @@ void OptimizerLoop::getReadyTasks(std::vector<Task *>& tasks)
           _nodeForSpecialCases->getReadyTasks(tasks);
           return ;
         }
-      for(vector<Node *>::iterator iter=_execNodes.begin();iter!=_execNodes.end();iter++)
+      vector<Node *>::iterator iter;
+      for (iter=_execNodes.begin() ; iter!=_execNodes.end() ; iter++)
         (*iter)->getReadyTasks(tasks);
-      for(vector<Node *>::iterator iter2=_execInitNodes.begin();iter2!=_execInitNodes.end();iter2++)
-        (*iter2)->getReadyTasks(tasks);
+      for (iter=_execInitNodes.begin() ; iter!=_execInitNodes.end() ; iter++)
+        (*iter)->getReadyTasks(tasks);
+      for (iter=_execFinalizeNodes.begin() ; iter!=_execFinalizeNodes.end() ; iter++)
+        (*iter)->getReadyTasks(tasks);
     }
-    return;
-  
 }
 
 YACS::Event OptimizerLoop::updateStateOnFinishedEventFrom(Node *node)
 {
+  if (getState() == YACS::FAILED)
+    {
+      // This happens when a valid computation on a branch finishes after an error on another branch.
+      // In this case we just ignore the new result because the algorithm has already been terminated.
+      return YACS::NOEVENT;
+    }
   unsigned int id;
   switch(getIdentityOfNotifyerNode(node,id))
     {
     case INIT_NODE:
+    {
       _execNodes[id]->exUpdateState();
       _nbOfEltConsumed++;
+      _initializingCounter--;
+      if (_initializingCounter == 0) _initNode->setState(DONE);
       break;
+    }
     case WORK_NODE:
-      if(_state==YACS::DONE)//This case happend when alg has reached its convergence whereas other calculations still compute.
-        {
-          if(isFullyLazy())
-            _condForCompletenessB4Relaunch.wait();
-          return YACS::NOEVENT;
+    {
+      if(_convergenceReachedWithOtherCalc)
+        { //This case happens when alg has reached its convergence whereas other calculations still compute
+          _execIds[id]=NOT_RUNNING_BRANCH_ID;
+          if(!isFullyLazy())
+            return YACS::NOEVENT;
+          else
+            return finalize();
         }
       _myPool.putOutSampleAt(_execIds[id],_interceptorsForOutPool[id]->getValue());
       _myPool.setCurrentId(_execIds[id]);
-      _alg->takeDecision();
+      _alg->takeDecisionProxy();
+      if (_alg->hasError()) {
+        _errorDetails = string("An error happened in the control algorithm of optimizer loop: ") +
+                        _alg->getError();
+        _alg->finishProxy();
+        setState(YACS::FAILED);
+        return YACS::ABORT;
+      }
+
       _myPool.destroyCurrentCase();
       if(_myPool.empty())
         {
           pushValueOutOfScopeForCase(id);
           _execIds[id]=NOT_RUNNING_BRANCH_ID;
-          if(!isFullyLazy())// This case happens when the hand is returned to continue, whereas some other are working in parallel for nothing.
-            _convergenceReachedWithOtherCalc=true;
-          _state=YACS::DONE;
-          return YACS::FINISH;
+          if(!isFullyLazy())
+            {// This case happens when the hand is returned to continue, whereas some other are working in parallel for nothing.
+              _convergenceReachedWithOtherCalc=true;
+              return YACS::NOEVENT;
+            }
+          return finalize();
         }
       _execIds[id]=NOT_RUNNING_BRANCH_ID;
       int newId;
@@ -381,23 +360,101 @@ YACS::Event OptimizerLoop::updateStateOnFinishedEventFrom(Node *node)
       if(!val)
         {
           bool isFinished=true;
-          for(int i=0;i<_execIds.size() and isFinished;i++)
-            isFinished=(_execIds[i]==NOT_RUNNING_BRANCH_ID);
+          for(int i=0;i<_execIds.size() && isFinished;i++)
+            isFinished=(_execIds[i]==NOT_RUNNING_BRANCH_ID || _execIds[i]==NOT_INITIALIZED_BRANCH_ID);
           if(isFinished)
             {
               std::cerr <<"OptimizerLoop::updateStateOnFinishedEventFrom: Alg has not inserted more cases whereas last element has been calculated !" << std::endl;
+              setState(YACS::ERROR);
               exForwardFailed();
-              _state=YACS::INTERNALERR;
+              _alg->finishProxy();
               return YACS::FINISH;
             }
           return YACS::NOEVENT;
         }
       launchMaxOfSamples(false);
+      break;
+    }
+    case FINALIZE_NODE:
+    {
+      _unfinishedCounter--;
+      if (_unfinishedCounter == 0)
+        {
+          _finalizeNode->setState(YACS::DONE);
+          setState(YACS::DONE);
+          return YACS::FINISH;
+        }
+      else
+        return YACS::NOEVENT;
+      break;
+    }
+    default:
+      YASSERT(false);
     }
   return YACS::NOEVENT;
 }
 
-void OptimizerLoop::checkNoCyclePassingThrough(Node *node) throw(Exception)
+YACS::Event OptimizerLoop::finalize()
+{
+  //update internal node (definition node) state
+  if (_node)
+    {
+      _node->setState(YACS::DONE);
+      ComposedNode* compNode = dynamic_cast<ComposedNode*>(_node);
+      if (compNode)
+        {
+          std::list<Node *> aChldn = compNode->getAllRecursiveConstituents();
+          std::list<Node *>::iterator iter=aChldn.begin();
+          for(;iter!=aChldn.end();iter++)
+            (*iter)->setState(YACS::DONE);
+        }
+    }
+  _alg->finishProxy();
+  _algoResultPort.put(_alg->getAlgoResultProxy());
+  if (_finalizeNode == NULL)
+    {
+      // No finalize node, we just finish OptimizerLoop at the end of exec nodes execution
+      setState(YACS::DONE);
+      return YACS::FINISH;
+    }
+  else
+    {
+      // Run the finalize nodes, the OptimizerLoop will be done only when they all finish
+      _unfinishedCounter = 0;  // This counter indicates how many branches are not finished
+      for (int i=0 ; i<_nbOfBranches.getIntValue() ; i++)
+        if (_execIds[i] == NOT_RUNNING_BRANCH_ID)
+          {
+            DEBTRACE("Launching finalize node for branch " << i)
+            _execFinalizeNodes[i]->exUpdateState();
+            _unfinishedCounter++;
+          }
+        else
+          // There should not be any running branch at this point
+          YASSERT(_execIds[i] == NOT_INITIALIZED_BRANCH_ID)
+      return YACS::NOEVENT;
+    }
+}
+
+//! Method used to notify the node that a child node has failed
+/*!
+ * Notify the slave thread of the error, update the current state and
+ * return the change state
+ *
+ *  \param node : the child node that has failed
+ *  \return the state change
+ */
+YACS::Event OptimizerLoop::updateStateOnFailedEventFrom(Node *node)
+{
+  DEBTRACE("OptimizerLoop::updateStateOnFailedEventFrom " << node->getName());
+  _alg->setError(string("Error during the execution of YACS node ") + node->getName() +
+                 ": " + node->getErrorReport());
+  _alg->finishProxy();
+  _myPool.destroyAll();
+  DEBTRACE("OptimizerLoop::updateStateOnFailedEventFrom: returned from error notification.");
+  return DynParaLoop::updateStateOnFailedEventFrom(node);
+}
+
+void OptimizerLoop::checkNoCyclePassingThrough(Node *node) throw(YACS::Exception)
 {
 }
 
@@ -438,15 +495,6 @@ void OptimizerLoop::checkCFLinks(const std::list<OutPort *>& starts, InputPort *
 
 void OptimizerLoop::cleanInterceptors()
 {
-  //the destruction of interceptors whereas some running nodes can push value on them can lead to SIG SEGV.
-  if(!_execNodes.empty())
-    {
-      if(_convergenceReachedWithOtherCalc)
-        {
-          cout << "Waiting completion of last other useless cases." << endl;
-          _condForCompletenessB4Relaunch.waitForAWait();
-        }
-    }
   // At this point all garanties taken let's clean all.
   map<InputPort *,vector<InputPort *> >::iterator iter=_interceptors.begin();
   for(;iter!=_interceptors.end();iter++)
@@ -464,24 +512,22 @@ void OptimizerLoop::launchMaxOfSamples(bool first)
   unsigned char priority;
   Any *val;
   unsigned i;
-  for(val=_myPool.getNextSampleWithHighestPriority(id,priority);!isFullyBusy(i) && val;val=_myPool.getNextSampleWithHighestPriority(id,priority))
+  for (val = _myPool.getNextSampleWithHighestPriority(id, priority);
+       !isFullyBusy(i) && val;
+       val = _myPool.getNextSampleWithHighestPriority(id, priority))
     {
+      if(_execIds[i] == NOT_INITIALIZED_BRANCH_ID)
+        first=true; // node is not initialized (first pass)
+      else
+        first=false; // node is initialized (second pass)
       _execIds[i]=id;
       _myPool.markIdAsInUse(id);
-      if(_initNode)
+      if(_initNode && !_initNodeUpdated[i])
         {
-          if(!_initNodeUpdated[i])
-            {
-              putValueOnBranch(val,i,first);
-              _execInitNodes[i]->exUpdateState();
-              _initNodeUpdated[i]=true;
-            }
-          else
-            {
-              putValueOnBranch(val,i,first);
-              _execNodes[i]->exUpdateState();
-              _nbOfEltConsumed++;
-            }
+          putValueOnBranch(val,i,first);
+          _execInitNodes[i]->exUpdateState();
+          _initNodeUpdated[i]=true;
+          _initializingCounter++;
         }
       else
         {
@@ -497,8 +543,8 @@ void OptimizerLoop::launchMaxOfSamples(bool first)
 bool OptimizerLoop::isFullyLazy() const
 {
   bool isLazy=true;
-  for(unsigned i=0;i<_execIds.size() and isLazy;i++)
-    isLazy=(_execIds[i]==NOT_RUNNING_BRANCH_ID);
+  for(unsigned i=0;i<_execIds.size() && isLazy;i++)
+    isLazy=(_execIds[i]==NOT_RUNNING_BRANCH_ID || _execIds[i]==NOT_INITIALIZED_BRANCH_ID);
   return isLazy;
 }
 
@@ -510,8 +556,8 @@ bool OptimizerLoop::isFullyBusy(unsigned& branchId) const
 {
   bool isFinished=true;
   unsigned i;
-  for(i=0;i<_execIds.size() and isFinished;i++)
-    isFinished=(_execIds[i]!=NOT_RUNNING_BRANCH_ID);
+  for(i=0;i<_execIds.size() && isFinished;i++)
+    isFinished=(_execIds[i]!=NOT_RUNNING_BRANCH_ID && _execIds[i]!=NOT_INITIALIZED_BRANCH_ID);
   if(!isFinished)
     branchId=i-1;
   return isFinished;
@@ -524,6 +570,7 @@ void OptimizerLoop::initInterceptors(unsigned nbOfBr)
 {
   //For all classical outputports leaving 'this'
   set<OutPort *> portsToIntercept=getAllOutPortsLeavingCurrentScope();
+  portsToIntercept.erase(&_algoResultPort);
   for(set<OutPort *>::iterator iter=portsToIntercept.begin();iter!=portsToIntercept.end();iter++)
     {
       OutputPort *portC=(OutputPort *)(*iter);//Warrantied by OptimizerLoop::buildDelegateOf
@@ -593,3 +640,154 @@ void OptimizerLoop::pushValueOutOfScopeForCase(unsigned branchId)
     (*iter).first->put((*iter).second[branchId]->get());
 }
 
+void OptimizerLoop::accept(Visitor *visitor)
+{
+  visitor->visitOptimizerLoop(this);
+}
+
+//! Set the algorithm library name and factory name (symbol in library) to create the algorithm and change it if the node is not connected
+/*!
+ *   throw an exception if the node is connected
+ */
+void OptimizerLoop::setAlgorithm(const std::string& alglib, const std::string& symbol,
+                                 bool checkLinks, Proc * procForTypes)
+{
+  if(checkLinks)
+    {
+      if (_splittedPort.edGetNumberOfOutLinks() != 0 ||
+          _retPortForOutPool.edGetNumberOfLinks() != 0 ||
+          _algoInitPort.edGetNumberOfLinks() != 0 ||
+          _algoResultPort.edGetNumberOfOutLinks() != 0)
+        throw Exception("The OptimizerLoop node must be disconnected before setting the algorithm");
+    }
+
+  _symbol = symbol;
+  _alglib = alglib;
+
+  if (_alg) {
+    _alg->decrRef();
+    _alg = NULL;
+  }
+
+  loadAlgorithm();
+
+  if(_alg)
+    {
+      _alg->setProc((procForTypes == NULL) ? getProc() : procForTypes);
+
+      // Delete the values in the input ports if they were initialized
+      _retPortForOutPool.put((Any *)NULL);
+      _algoInitPort.put((Any *)NULL);
+
+      // Change the type of the ports
+      _splittedPort.edSetType(checkTypeCode(_alg->getTCForInProxy(), NAME_OF_SPLITTED_SEQ_OUT));
+      _retPortForOutPool.edSetType(checkTypeCode(_alg->getTCForOutProxy(), NAME_OF_OUT_POOL_INPUT));
+      _algoInitPort.edSetType(checkTypeCode(_alg->getTCForAlgoInitProxy(), NAME_OF_ALGO_INIT_PORT));
+      _algoResultPort.edSetType(checkTypeCode(_alg->getTCForAlgoResultProxy(), NAME_OF_ALGO_RESULT_PORT));
+    }
+
+  modified();
+}
+
+TypeCode * OptimizerLoop::checkTypeCode(TypeCode * tc, const char * portName)
+{
+  if (tc == NULL) {
+    ostringstream errorMsg;
+    errorMsg << "The algorithm specified for OptimizerLoop node \"" << getName() <<
+                "\" provided an invalid type for port \"" << portName << "\"";
+    throw Exception(errorMsg.str());
+  }
+  return tc;
+}
+
+//! Load the algorithm from the dynamic library
+/*!
+ *
+ */
+void OptimizerLoop::loadAlgorithm()
+{
+  YASSERT(_alg == NULL)
+
+  if (_loader != NULL) {
+    delete _loader;
+    _loader = NULL;
+  }
+  _loader = new YACS::BASES::DynLibLoader(_alglib);
+  OptimizerAlgBaseFactory algFactory = NULL;
+
+  if (_alglib != "" && _symbol != "")
+    {
+      try
+        {
+          _errorDetails = "";
+          algFactory = (OptimizerAlgBaseFactory)_loader->getHandleOnSymbolWithName(_symbol);
+        }
+      catch (YACS::Exception& e)
+        {
+          _errorDetails = e.what();
+          modified();
+          throw;
+        }
+    }
+
+  if (algFactory != NULL)
+    _alg = algFactory(&_myPool);
+}
+
+//! Return the name of the algorithm library
+/*!
+ *
+ */
+std::string OptimizerLoop::getAlgLib() const
+{
+  return _alglib;
+}
+
+//! Check validity for the node.
+/*!
+ *  Throw an exception if the node is not valid
+ */
+void OptimizerLoop::checkBasicConsistency() const throw(YACS::Exception)
+{
+  DEBTRACE("OptimizerLoop::checkBasicConsistency");
+  if (_alglib == "")
+    throw Exception("No library specified for the OptimizerLoop control algorithm");
+  if (_symbol == "")
+    throw Exception("No symbol specified for the OptimizerLoop control algorithm");
+  if(_alg == NULL)
+    throw YACS::Exception("Problem during library loading: "+_errorDetails);
+
+  DynParaLoop::checkBasicConsistency();
+}
+
+int OptimizerLoop::getNumberOfOutputPorts() const
+{
+  return DynParaLoop::getNumberOfOutputPorts() + 1;
+}
+
+std::list<OutputPort *> OptimizerLoop::getSetOfOutputPort() const
+{
+  list<OutputPort *> ret = DynParaLoop::getSetOfOutputPort();
+  ret.push_back((OutputPort *)&_algoResultPort);
+  return ret;
+}
+
+std::list<OutputPort *> OptimizerLoop::getLocalOutputPorts() const
+{
+  list<OutputPort *> ret = DynParaLoop::getLocalOutputPorts();
+  ret.push_front((OutputPort *)&_algoResultPort);
+  return ret;
+}
+
+OutPort * OptimizerLoop::getOutPort(const std::string& name) const throw(YACS::Exception)
+{
+  return (name == NAME_OF_ALGO_RESULT_PORT) ? (OutPort *)&_algoResultPort :
+                                              DynParaLoop::getOutPort(name);
+}
+
+
+OutputPort * OptimizerLoop::getOutputPort(const std::string& name) const throw(YACS::Exception)
+{
+  return (name == NAME_OF_ALGO_RESULT_PORT) ? (OutputPort *)&_algoResultPort :
+                                              DynParaLoop::getOutputPort(name);
+}

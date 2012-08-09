@@ -1,23 +1,23 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "SalomeWrap_DataModel.hxx"
-#include "guiContext.hxx"
 
 #include <SalomeApp_DataObject.h>
 #include <SalomeApp_Study.h>
@@ -33,7 +33,6 @@
 #include "YacsTrace.hxx"
 
 using namespace std;
-using namespace YACS::HMI;
 
 SalomeWrap_DataModel::SalomeWrap_DataModel(CAM_Module* theModule)
   : SalomeApp_DataModel(theModule)
@@ -96,7 +95,8 @@ void SalomeWrap_DataModel::createNewSchema(const QString& schemaName,
 
   QxScene_ViewWindow *swv = dynamic_cast<QxScene_ViewWindow*>(viewWindow);
   if (!swv) return;
-  swv->getViewManager()->setTitle(schemaName);
+  QString tabName = QFileInfo(schemaName).baseName();
+  swv->getViewManager()->setTitle(tabName);
 }
 
 bool SalomeWrap_DataModel::renameSchema(const QString& oldName,
@@ -135,7 +135,29 @@ bool SalomeWrap_DataModel::renameSchema(const QString& oldName,
   if (mod) mod->updateObjBrowser();
 
   QxScene_ViewWindow *swv = dynamic_cast<QxScene_ViewWindow*>(viewWindow);
-  if (swv) swv->getViewManager()->setTitle(newName);
+  QString tabName = QFileInfo(newName).baseName();
+  if (swv) swv->getViewManager()->setTitle(tabName);
+  return true;
+}
+
+bool SalomeWrap_DataModel::deleteSchema(QWidget* viewWindow)
+{
+  DEBTRACE("SalomeWrap_DataModel::deleteSchema");
+  SalomeApp_ModuleObject* aRoot = dynamic_cast<SalomeApp_ModuleObject*>(root());
+  if (!aRoot) return false;
+  if (!_viewEntryMap.count(viewWindow)) return false;
+
+  _PTR(SComponent)         aSComp(aRoot->object());
+  _PTR(Study)              aStudy = getStudy()->studyDS();
+
+  string id = _viewEntryMap[viewWindow];
+  _PTR(SObject) aSObj = aStudy->FindObjectID(id);
+
+  _PTR(StudyBuilder)       aBuilder(aStudy->NewBuilder());
+  aBuilder->RemoveObject(aSObj);
+
+  SalomeApp_Module *mod = dynamic_cast<SalomeApp_Module*>(module());
+  if (mod) mod->updateObjBrowser();
   return true;
 }
 
@@ -191,7 +213,19 @@ void SalomeWrap_DataModel::createNewRun(const QString& schemaName,
 
   QxScene_ViewWindow *swv = dynamic_cast<QxScene_ViewWindow*>(viewWindow);
   if (!swv) return;
-  swv->getViewManager()->setTitle(runName);
+
+  int count = 0;
+  if (_runCountMap.count(schemaName.toStdString()))
+    count = ++_runCountMap[schemaName.toStdString()];
+  else
+    _runCountMap[schemaName.toStdString()] = count;
+
+  QString tabName = QFileInfo(schemaName).baseName() +QString("_run%1").arg(count);
+  swv->getViewManager()->setTitle(tabName);
+
+  QPixmap pixmap;
+  pixmap.load("icons:run_active.png");
+  swv->getViewManager()->setIcon(pixmap);
 }
 
 void SalomeWrap_DataModel::setSelected(QWidget* viewWindow)

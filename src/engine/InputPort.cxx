@@ -1,21 +1,22 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "InputPort.hxx"
 #include "OutPort.hxx"
 #include "ComposedNode.hxx"
@@ -32,16 +33,25 @@ using namespace std;
 
 const char InputPort::NAME[]="InputPort";
 
-InputPort::InputPort(const InputPort& other, Node *newHelder):DataFlowPort(other,newHelder),InPort(other,newHelder),
-                                                              DataPort(other,newHelder),Port(other,newHelder),
-                                                              _initValue(0)
+InputPort::InputPort(const InputPort& other, Node *newHelder)
+  : DataFlowPort(other, newHelder),
+    InPort(other, newHelder),
+    DataPort(other, newHelder),
+    Port(other, newHelder),
+    _initValue(0),
+    _canBeNull(other._canBeNull)
 {
   if(other._initValue)
     _initValue=other._initValue->clone();
 }
 
-InputPort::InputPort(const std::string& name, Node *node, TypeCode* type)
-  : DataFlowPort(name,node,type), InPort(name,node,type),DataPort(name,node,type),Port(node), _initValue(0)
+InputPort::InputPort(const std::string& name, Node *node, TypeCode* type, bool canBeNull)
+  : DataFlowPort(name, node, type),
+    InPort(name, node, type),
+    DataPort(name, node, type),
+    Port(node),
+    _initValue(0),
+    _canBeNull(canBeNull)
 {
 }
 
@@ -73,7 +83,7 @@ bool InputPort::edIsManuallyInitialized() const
  */
 bool InputPort::edIsInitialized() const
 {
-  return (edIsManuallyInitialized() or _backLinks.size()!=0 );
+  return (edIsManuallyInitialized() || _backLinks.size()!=0 );
 }
 
 InputPort::~InputPort()
@@ -135,9 +145,9 @@ void InputPort::edRemoveManInit()
 }
 
 //! Check basically that this port has one chance to be specified on time. It's a necessary condition \b not \b sufficient at all.
-void InputPort::checkBasicConsistency() const throw(Exception)
+void InputPort::checkBasicConsistency() const throw(YACS::Exception)
 {
-  if(!edIsManuallyInitialized() and _backLinks.size()==0 )
+  if(!_canBeNull && !edIsManuallyInitialized() && _backLinks.size()==0 )
     {
       ostringstream stream;
       stream << "InputPort::checkBasicConsistency : Port " << _name << " of node with name " << _node->getName() << " neither initialized nor linked back";
@@ -156,6 +166,11 @@ void InputPort::setStringRef(std::string strRef)
   _stringRef = strRef;
 }
 
+bool InputPort::canBeNull() const
+{
+  return _canBeNull;
+}
+
 ProxyPort::ProxyPort(InputPort* p):InputPort("Convertor", p->getNode(), p->edGetType()),DataPort("Convertor", p->getNode(), p->edGetType()),
                                    Port( p->getNode())
 {
@@ -172,7 +187,7 @@ ProxyPort::~ProxyPort()
     */
 }
 
-void ProxyPort::edRemoveAllLinksLinkedWithMe() throw(Exception)
+void ProxyPort::edRemoveAllLinksLinkedWithMe() throw(YACS::Exception)
 {
   _port->edRemoveAllLinksLinkedWithMe();
 }

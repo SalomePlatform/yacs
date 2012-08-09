@@ -1,26 +1,28 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef _PYTHONPORTS_HXX_
 #define _PYTHONPORTS_HXX_
 
 #include <Python.h>
 
+#include "YACSRuntimeSALOMEExport.hxx"
 #include "InputPort.hxx"
 #include "OutputPort.hxx"
 
@@ -41,6 +43,25 @@ namespace YACS
       PyGILState_STATE gstate_;
     };
 
+    class InterpreterSaveThread {
+    public:
+      inline InterpreterSaveThread() {
+        tstate_ = PyEval_SaveThread();
+      }
+      inline ~InterpreterSaveThread() {
+        PyEval_RestoreThread(tstate_);
+      }
+      inline void lock() {
+        PyEval_RestoreThread(tstate_);
+      }
+      inline void unlock() {
+        tstate_ = PyEval_SaveThread();
+      }
+    private:
+      PyThreadState* tstate_;
+    };
+
+
     typedef PyObject PyObj;
 
 /*! \brief Class for Python Ports
@@ -49,7 +70,7 @@ namespace YACS
  *
  * \see PythonNode
  */
-    class InputPyPort : public InputPort
+    class YACSRUNTIMESALOME_EXPORT InputPyPort : public InputPort
     {
     public:
       InputPyPort(const std::string& name, Node * node, TypeCode * type);
@@ -77,7 +98,7 @@ namespace YACS
       PyObject* _initData;
     };
 
-    class OutputPyPort : public OutputPort
+    class YACSRUNTIMESALOME_EXPORT OutputPyPort : public OutputPort
     {
     public:
       OutputPyPort(const std::string& name, Node * node, TypeCode * type);

@@ -1,24 +1,26 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "Node.hxx"
 #include "InputPort.hxx"
 #include "OutputPort.hxx"
+#include "InPropertyPort.hxx"
 #include "ComposedNode.hxx"
 #include "Dispatcher.hxx"
 #include "InputDataStreamPort.hxx"
@@ -31,11 +33,36 @@
 using namespace YACS::ENGINE;
 using namespace std;
 
+/*! \class YACS::ENGINE::Node
+ *  \brief Base class for all nodes
+ *
+ * \ingroup Nodes
+ */
+
 const char Node::SEP_CHAR_IN_PORT[]=".";
 
 int Node::_total = 0;
 std::map<int,Node*> Node::idMap;
-std::map<int, std::string> Node::_nodeStateName;
+
+NodeStateNameMap::NodeStateNameMap()
+{
+  insert(make_pair(YACS::READY, "READY"));
+  insert(make_pair(YACS::TOLOAD, "TOLOAD"));
+  insert(make_pair(YACS::LOADED, "LOADED"));
+  insert(make_pair(YACS::TOACTIVATE, "TOACTIVATE"));
+  insert(make_pair(YACS::ACTIVATED, "ACTIVATED"));
+  insert(make_pair(YACS::DESACTIVATED, "DESACTIVATED"));
+  insert(make_pair(YACS::DONE, "DONE"));
+  insert(make_pair(YACS::SUSPENDED, "SUSPENDED"));
+  insert(make_pair(YACS::LOADFAILED, "LOADFAILED"));
+  insert(make_pair(YACS::EXECFAILED, "EXECFAILED"));
+  insert(make_pair(YACS::PAUSE, "PAUSE"));
+  insert(make_pair(YACS::INTERNALERR, "INTERNALERR"));
+  insert(make_pair(YACS::DISABLED, "DISABLED"));
+  insert(make_pair(YACS::FAILED, "FAILED"));
+  insert(make_pair(YACS::ERROR, "ERROR"));
+}
+
 
 Node::Node(const std::string& name):_name(name),_inGate(this),_outGate(this),_father(0),_state(YACS::READY),
                                     _implementation(Runtime::RUNTIME_ENGINE_INTERACTION_IMPL_NAME),_modified(1)
@@ -43,14 +70,20 @@ Node::Node(const std::string& name):_name(name),_inGate(this),_outGate(this),_fa
   // Should be protected by lock ??
   _numId = _total++;
   idMap[_numId]=this;
+
+  // Every node has an InPropertyPort
+  _inPropertyPort = new InPropertyPort("__InPropertyPort__Node__YACS_", this, Runtime::_tc_propvec);
 }
 
 Node::Node(const Node& other, ComposedNode *father):_inGate(this),_outGate(this),_name(other._name),_father(father),
                                                    _state(YACS::READY),_implementation(other._implementation),
-                                                    _propertyMap(other._propertyMap),_modified(other._modified)
+                                                    _propertyMap(other._propertyMap),_modified(1)
 {
   _numId = _total++;
   idMap[_numId]=this;
+
+  // Every node has an InPropertyPort
+  _inPropertyPort = new InPropertyPort("__InPropertyPort__Node__YACS_", this, Runtime::_tc_propvec);
 }
 
 Node::~Node()
@@ -91,13 +124,13 @@ void Node::setName(const std::string& name)
     {
       if(_father->isNameAlreadyUsed(name))
         {
-	  if ( _father->getChildByName(name) != this )
-	    {
-	      std::string what("Name "); 
-	      what+=name;
-	      what+=" already exists in the scope of "; what+=_father->getName();
-	      throw Exception(what);
-	    }
+          if ( _father->getChildByName(name) != this )
+            {
+              std::string what("Name "); 
+              what+=name;
+              what+=" already exists in the scope of "; what+=_father->getName();
+              throw Exception(what);
+            }
         }
     }
   _name=name;
@@ -161,7 +194,7 @@ void Node::exDisabledState()
   _outGate.exNotifyDisabled();
 }
 
-InPort *Node::getInPort(const std::string& name) const throw(Exception)
+InPort *Node::getInPort(const std::string& name) const throw(YACS::Exception)
 {
   InPort *ret;
   try
@@ -175,11 +208,29 @@ InPort *Node::getInPort(const std::string& name) const throw(Exception)
   return ret;
 }
 
+InPropertyPort *
+Node::getInPropertyPort() const throw(YACS::Exception)
+{
+  return _inPropertyPort;
+}
+
+InputPort *
+Node::getInputPort(const std::string& name) const throw(YACS::Exception)
+{
+  if (name == "__InPropertyPort__Node__YACS_")
+    return _inPropertyPort;
+  else
+  {
+    std::string what("Node::getInputPort : the port with name "); what+=name; what+=" does not exist on the current level";
+    throw Exception(what);
+  }
+}
+
 /*!
  * \note: Contrary to getOutputPort method, this method returns the output port at highest level, possible.
  *        That is to say in some ComposedNode, like ForEachLoop or Switch, an outport inside 'this' is seen differently than the true outport.
  */
-OutPort *Node::getOutPort(const std::string& name) const throw(Exception)
+OutPort *Node::getOutPort(const std::string& name) const throw(YACS::Exception)
 {
   OutPort *ret;
   try
@@ -305,7 +356,21 @@ void Node::edDisconnectAllLinksWithMe()
   _outGate.edDisconnectAllLinksFromMe();
 }
 
-ComposedNode *Node::getRootNode() const throw(Exception)
+Proc *Node::getProc()
+{
+  if(!_father)
+    return 0;
+  return _father->getProc();
+}
+
+const Proc * Node::getProc() const
+{
+  if(!_father)
+    return 0;
+  return _father->getProc();
+}
+
+ComposedNode *Node::getRootNode() const throw(YACS::Exception)
 {
   if(!_father)
     throw Exception("No root node");
@@ -320,7 +385,7 @@ ComposedNode *Node::getRootNode() const throw(Exception)
  * USAGE NOT CLEAR, not used so far, when are those characters set ?
  */
 
-void Node::checkValidityOfPortName(const std::string& name) throw(Exception)
+void Node::checkValidityOfPortName(const std::string& name) throw(YACS::Exception)
 {
   if(name.find(SEP_CHAR_IN_PORT, 0 )!=string::npos)
     {
@@ -333,7 +398,7 @@ void Node::checkValidityOfPortName(const std::string& name) throw(Exception)
  * @note : Check that 'node1' and 'node2' have exactly the same father
  * @exception : If 'node1' and 'node2' have NOT exactly the same father
  */
-ComposedNode *Node::checkHavingCommonFather(Node *node1, Node *node2) throw(Exception)
+ComposedNode *Node::checkHavingCommonFather(Node *node1, Node *node2) throw(YACS::Exception)
 {
   if(node1!=0 && node2!=0)
     {
@@ -358,7 +423,38 @@ const std::string Node::getId() const
 
 void Node::setProperty(const std::string& name, const std::string& value)
 {
+    DEBTRACE("Node::setProperty " << name << " " << value);
     _propertyMap[name]=value;
+}
+
+std::string Node::getProperty(const std::string& name)
+{
+  std::map<std::string,std::string>::iterator it=_propertyMap.find(name);
+
+  if(it != _propertyMap.end())
+    return it->second;
+  else if(_father)
+    return _father->getProperty(name);
+  else
+    return "";
+}
+
+std::map<std::string,std::string> Node::getProperties()
+{
+  std::map<std::string,std::string> amap=_propertyMap;
+  if(_father)
+    {
+      std::map<std::string,std::string> fatherMap=_father->getProperties();
+      amap.insert(fatherMap.begin(),fatherMap.end());
+    }
+
+  return amap;
+}
+
+void Node::setProperties(std::map<std::string,std::string> properties)
+{
+  _propertyMap.clear();
+  _propertyMap=properties;
 }
 
 //! Return the node state in the context of its father
@@ -547,7 +643,8 @@ std::string Node::getErrorReport()
   YACS::StatesForNode effectiveState=getEffectiveState();
 
   DEBTRACE("Node::getErrorReport: " << getName() << " " << effectiveState << " " << _errorDetails);
-  if(effectiveState != YACS::INVALID &&  effectiveState != YACS::ERROR && effectiveState != YACS::FAILED)
+  if(effectiveState != YACS::INVALID &&  effectiveState != YACS::ERROR && 
+     effectiveState != YACS::FAILED && effectiveState != YACS::INTERNALERR)
     return "";
 
   std::string report="<error node= " ;
@@ -562,6 +659,9 @@ std::string Node::getErrorReport()
       break;
     case YACS::FAILED:
       report=report+" state= FAILED";
+      break;
+    case YACS::INTERNALERR:
+      report=report+" state= INTERNALERR";
       break;
     default:
       break;
@@ -609,24 +709,43 @@ void Node::ensureLoading()
  */
 std::string Node::getStateName(YACS::StatesForNode state)
 {
-  static bool map_init=false; 
-  if(!map_init)
+  static NodeStateNameMap nodeStateNameMap;
+  return nodeStateNameMap[state];
+}
+
+//! Stop all pending activities of the node
+/*!
+ * This method should be called when a Proc is finished and must be deleted from the YACS server
+ */
+void Node::shutdown(int level)
+{
+  if(level==0)return;
+}
+
+//! Clean the node in case of not clean exit
+/*!
+ * This method should be called on a control-C or sigterm
+ */
+void Node::cleanNodes()
+{
+}
+
+//! Reset the node state depending on the parameter level
+void Node::resetState(int level)
+{
+  DEBTRACE("Node::resetState " << getName() << "," << level << "," << _state);
+  if(_state==YACS::ERROR || _state==YACS::FAILED)
     {
-      _nodeStateName[YACS::READY] ="READY";
-      _nodeStateName[YACS::TOLOAD] ="TOLOAD";
-      _nodeStateName[YACS::LOADED] ="LOADED";
-      _nodeStateName[YACS::TOACTIVATE] ="TOACTIVATE";
-      _nodeStateName[YACS::ACTIVATED] ="ACTIVATED";
-      _nodeStateName[YACS::DESACTIVATED] ="DESACTIVATED";
-      _nodeStateName[YACS::DONE] ="DONE";
-      _nodeStateName[YACS::SUSPENDED] ="SUSPENDED";
-      _nodeStateName[YACS::LOADFAILED] ="LOADFAILED";
-      _nodeStateName[YACS::EXECFAILED] ="EXECFAILED";
-      _nodeStateName[YACS::PAUSE] ="PAUSE";
-      _nodeStateName[YACS::INTERNALERR] ="INTERNALERR";
-      _nodeStateName[YACS::DISABLED] ="DISABLED";
-      _nodeStateName[YACS::FAILED] ="FAILED";
-      _nodeStateName[YACS::ERROR] ="ERROR";
+      setState(YACS::READY);
+      InGate* inGate = getInGate();
+      std::list<OutGate*> backlinks = inGate->getBackLinks();
+      for (std::list<OutGate*>::iterator io = backlinks.begin(); io != backlinks.end(); io++)
+        {
+          Node* fromNode = (*io)->getNode();
+          if(fromNode->getState() == YACS::DONE)
+            {
+              inGate->setPrecursorDone(*io);
+            }
+        }
     }
-  return _nodeStateName[state];
 }

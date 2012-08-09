@@ -1,21 +1,22 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "CalStreamPort.hxx"
 #include "SalomeComponent.hxx"
 #include "CORBANode.hxx"
@@ -74,24 +75,26 @@ void InputCalStreamPort::setSchema(const std::string& schema)
 void InputCalStreamPort::setLevel(const std::string& value)
 {
   DEBTRACE("InputCalStreamPort::setLevel: " << value);
-  _level =atoi(value.c_str());
+  std::istringstream iss(value);
+  int temp;
+  if (!(iss >> temp)|| temp<1)
+    throw Exception("StorageLevel property must be an integer > 0");
+  _level=temp;
 }
 void InputCalStreamPort::setAlpha(const std::string& value)
 {
-  double temp=atof(value.c_str());
-  if(temp<0. || temp >1.)
-    {
-      throw Exception("Alpha property must be > 0 and < 1");
-    }
+  std::istringstream iss(value);
+  double temp;
+  if (!(iss >> temp)||temp<0. || temp >1.)
+    throw Exception("Alpha property must be a float > 0 and < 1");
   _alpha=temp;
 }
 void InputCalStreamPort::setDelta(const std::string& value)
 {
-  double temp=atof(value.c_str());
-  if(temp<0. || temp >1.)
-    {
-      throw Exception("DeltaT property must be > 0 and < 1");
-    }
+  std::istringstream iss(value);
+  double temp;
+  if (!(iss >> temp)||temp<0. || temp >1.)
+    throw Exception("DeltaT property must be > 0 and < 1");
   _delta=temp;
 }
 void InputCalStreamPort::setInterp(const std::string& value)
@@ -275,7 +278,7 @@ OutputCalStreamPort *OutputCalStreamPort::clone(Node *newHelder) const
   return new OutputCalStreamPort(*this,newHelder);
 }
 
-bool OutputCalStreamPort::addInPort(InPort *inPort) throw(Exception)
+bool OutputCalStreamPort::addInPort(InPort *inPort) throw(YACS::Exception)
 {
   DEBTRACE("OutputCalStreamPort::addInPort " << InputCalStreamPort::NAME );
   if(inPort->getNameOfTypeOfCurrentInstance()!=InputCalStreamPort::NAME)
@@ -297,7 +300,7 @@ bool OutputCalStreamPort::addInPort(InPort *inPort) throw(Exception)
 }
 
 
-int OutputCalStreamPort::removeInPort(InPort *inPort, bool forward) throw(Exception)
+int OutputCalStreamPort::removeInPort(InPort *inPort, bool forward) throw(YACS::Exception)
 {
   DEBTRACE("OutputCalStreamPort::removeInPort");
   if(inPort->getNameOfTypeOfCurrentInstance()!=InputCalStreamPort::NAME && !forward)

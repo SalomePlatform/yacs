@@ -1,21 +1,22 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef __Cpp_CONTAINER_HXX__
 #define __Cpp_CONTAINER_HXX__
 
@@ -25,6 +26,10 @@
 #include "Container.hxx"
 #include "CppComponent.hxx"
 
+#ifdef WNT
+#include <windows.h>
+#endif
+
 namespace YACS
 {
   namespace ENGINE
@@ -32,19 +37,27 @@ namespace YACS
   
     struct LocalLibrary {
       
+#if defined( WNT )
+      HMODULE handle;
+#else
       void * handle;
+#endif
       
       InitFunction initHandle;
       RunFunction runHandle;
       PingFunction pingHandle;
       TerminateFunction terminateHandle;
       
+#if defined( WNT )
+      LocalLibrary(HMODULE h, InitFunction i, RunFunction r, 
+#else
       LocalLibrary(void *h, InitFunction i, RunFunction r, 
+#endif
                             PingFunction p, TerminateFunction t) 
-	      : handle(h), initHandle(i), runHandle(r), 
+        : handle(h), initHandle(i), runHandle(r), 
                            pingHandle(p), terminateHandle(t) {}
       LocalLibrary() 
-	      : handle(NULL), initHandle(NULL), runHandle(NULL), 
+        : handle(NULL), initHandle(NULL), runHandle(NULL), 
                               pingHandle(NULL), terminateHandle(NULL) {}
                               
       bool good() {
@@ -67,7 +80,7 @@ namespace YACS
                                         bool forcedLoad = false);
       CppComponent * createComponentInstance(const char * componentName);
       void createInternalInstance(const char * componentName, 
-    		                      void *& obj, RunFunction &r, TerminateFunction &t);
+                                  void *& obj, RunFunction &r, TerminateFunction &t);
      void unLoadComponentLibrary(const std::string & aCompName);
       void unregisterComponentInstance(CppComponent * C);
                   
@@ -96,9 +109,10 @@ namespace YACS
  
       CppContainer();
       virtual ~CppContainer();
-      bool isAlreadyStarted() const;
-      void start() throw (YACS::Exception);
-      std::string getPlacementId() const;
+      bool isAlreadyStarted(const ComponentInstance *inst) const;
+      void start(const ComponentInstance *inst) throw (YACS::Exception);
+      std::string getPlacementId(const ComponentInstance *inst) const;
+      std::string getFullPlacementId(const ComponentInstance *inst) const;
       YACS::ENGINE::Container *clone() const;
 
       void lock();
@@ -108,7 +122,7 @@ namespace YACS
       bool loadComponentLibrary(const std::string & componentName) throw (YACS::Exception);
       CppComponent * createComponentInstance(const std::string & componentName, int studyID = 0);
       void createInternalInstance(const std::string & componentName, 
-    		                      void *& obj, RunFunction &r, TerminateFunction &t);
+                                  void *& obj, RunFunction &r, TerminateFunction &t);
       void unregisterComponentInstance(CppComponent * C);
       
      protected:

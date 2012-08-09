@@ -1,21 +1,22 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "ServiceNode.hxx"
 #include "Visitor.hxx"
 #include "ComponentInstance.hxx"
@@ -29,8 +30,23 @@
 
 using namespace YACS::ENGINE;
 
+/*! \class YACS::ENGINE::ServiceNode
+ *  \brief Class for calculation node associated with a component service
+ *
+ * \ingroup Nodes
+ *
+ * \see InlineNode
+ * \see ElementaryNode
+ */
+
 const char ServiceNode::KIND[]="";
 
+//! Return the service node kind
+/*!
+ * A runtime can provide several implementations of a service node.
+ * Each implementation has a different kind. A ComponentInstance can be
+ * associated to a ServiceNode with the same kind.
+ */
 std::string ServiceNode::getKind() const
 {
   return KIND;
@@ -97,6 +113,13 @@ ComponentInstance *ServiceNode::getComponent()
   return _component;
 }
 
+//! Return the associated container
+Container *ServiceNode::getContainer()
+{
+  if(_component)return _component->getContainer();
+  return 0;
+}
+
 //! By definition of ServiceNode class.
 bool ServiceNode::isDeployable() const
 {
@@ -104,22 +127,26 @@ bool ServiceNode::isDeployable() const
 }
 
 //! Associate an existing component instance to this service node \b AND check the consistency regarding the deployment from root node point of view.
-void ServiceNode::setComponent(ComponentInstance* compo) throw(Exception)
+void ServiceNode::setComponent(ComponentInstance* compo) throw(YACS::Exception)
 {
+  DEBTRACE("ServiceNode::setComponent " << compo);
   if(compo)
-    if(compo->getKind() != this->getKind())
-      {
-        //Not allowed
-        std::string what("ServiceNode::setComponent : component instance kind not allowed ");
-        throw Exception(what);
-      }
-  if(_component)
     {
-      //The node is already associated with a component instance
-      _component->decrRef();
-      //Don't forget to unassociate
+      DEBTRACE(compo->getInstanceName());
+      if(compo->getKind() != this->getKind())
+        {
+          //Not allowed
+          std::string what("ServiceNode::setComponent : component instance kind not allowed ");
+          throw Exception(what);
+        }
     }
+
+  ComponentInstance* oldcompo=_component;
+  std::string oldref=_ref;
+
   _component=compo;
+  _ref=compo->getCompoName();
+  DEBTRACE(_component->getInstanceName());
   if(_component)
     {
       if(_father)
@@ -129,12 +156,16 @@ void ServiceNode::setComponent(ComponentInstance* compo) throw(Exception)
           }
         catch(Exception& e)
           {
-            _component=0;
+            // Impossible to associate compo to this node. Keep the old component instance and throws exception
+            _component=oldcompo;
+            _ref=oldref;
             throw e;
           }
       _component->incrRef();
     }
-  //assert(_component);
+
+  if(oldcompo)
+    oldcompo->decrRef();
 }
 
 //! Associate a new component instance to this service node
@@ -153,7 +184,7 @@ void ServiceNode::setRef(const std::string& ref)
       //Don't forget to unassociate
     }
   _component= getRuntime()->createComponentInstance(ref,getKind());
-  assert(_component);
+  YASSERT(_component);
 }
 
 std::string ServiceNode::getRef()

@@ -1,25 +1,28 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "Executor.hxx"
 #include "Task.hxx"
 #include "Scheduler.hxx"
 #include "Dispatcher.hxx"
+#include "Container.hxx"
+#include "ComponentInstance.hxx"
 
 #include "VisitorSaveState.hxx"
 #include "ComposedNode.hxx"
@@ -27,9 +30,34 @@
 #include <iostream>
 #include <fstream>
 #include <sys/stat.h>
-#include <cassert>
+#ifndef WIN32
+#include <sys/time.h>
+#include <unistd.h>
+#endif
+
 #include <cstdlib>
 #include <algorithm>
+
+#ifdef WNT
+#define usleep(A) _sleep(A/1000)
+#if !defined(S_ISCHR) || !defined(S_ISREG)
+#  ifndef S_IFMT
+#    ifdef _S_IFMT
+#      define S_IFMT _S_IFMT
+#      define S_IFCHR _S_IFCHR
+#      define S_IFREG _S_IFREG
+#    else
+#    ifdef __S_IFMT
+#      define S_IFMT __S_IFMT
+#      define S_IFCHR __S_IFCHR
+#      define S_IFREG __S_IFREG
+#    endif
+#    endif
+#  endif
+#  define S_ISCHR(mode) (((mode) & S_IFMT) == S_IFCHR)
+#  define S_ISREG(mode) (((mode) & S_IFMT) == S_IFREG)
+#endif
+#endif
 
 using namespace YACS::ENGINE;
 using namespace std;
@@ -68,6 +96,7 @@ Executor::~Executor()
 /*!
  *  \param graph : schema to execute
  *  \param debug : display the graph with dot if debug == 1
+ *  \param fromScratch : if true the graph is reinitialized
  *
  *  Calls Scheduler::getNextTasks and Scheduler::selectRunnableTasks to select tasks to execute
  *  
@@ -97,6 +126,7 @@ void Executor::RunA(Scheduler *graph,int debug, bool fromScratch)
   _execMode = YACS::CONTINUE;
   _isWaitingEventsFromRunningTasks = false;
   _numberOfRunningTasks = 0;
+  _runningTasks.clear();
   _numberOfEndedTasks=0;
   while(_toContinue)
     {
@@ -140,7 +170,7 @@ void Executor::RunA(Scheduler *graph,int debug, bool fromScratch)
  *  To be launch in a thread (main thread controls the progression).
  *  \param graph : schema to execute
  *  \param debug : display the graph with dot if debug >0
- *  \param fromscratch : if false, state from a previous partial exection is already loaded
+ *  \param fromScratch : if false, state from a previous partial exection is already loaded
  *
  *  Calls Scheduler::getNextTasks and Scheduler::selectRunnableTasks to select tasks to execute
  *  
@@ -212,10 +242,17 @@ void Executor::RunB(Scheduler *graph,int debug, bool fromScratch)
     _errorDetected = false;
     _isWaitingEventsFromRunningTasks = false;
     _numberOfRunningTasks = 0;
+    _runningTasks.clear();
     _numberOfEndedTasks = 0;
     string tracefile = "traceExec_";
     tracefile += _mainSched->getName();
     _trace.open(tracefile.c_str());
+#ifdef WIN32
+   _start = timeGetTime();
+#else
+    gettimeofday(&_start, NULL);
+#endif
+
     _mutexForSchedulerUpdate.unlock();
   } // --- End of critical section
 
@@ -278,8 +315,13 @@ void Executor::RunB(Scheduler *graph,int debug, bool fromScratch)
       { // --- Critical section
         DEBTRACE("---");
         _mutexForSchedulerUpdate.lock();
-        _toContinue = !graph->isFinished();
+        //It is possible that the graph is finished but it remains running tasks (it's an error but we must take it into account)
+        if(_numberOfRunningTasks == 0)
+          _toContinue = !graph->isFinished();
 
+        DEBTRACE("_numberOfRunningTasks: " << _numberOfRunningTasks);
+        DEBTRACE("_numberOfEndedTasks: " << _numberOfEndedTasks);
+        DEBTRACE("_toContinue: " << _toContinue);
         if(_toContinue && numberAllTasks==0)
           {
             //Problem : no running tasks and no task to launch ??
@@ -508,7 +550,7 @@ std::list<std::string> Executor::getTasksToLoad()
 bool Executor::setStepsToExecute(std::list<std::string> listToExecute)
 {
   DEBTRACE("Executor::setStepsToExecute(std::list<std::string> listToExecute)");
-  bool ret = false;
+  bool ret = true;
   vector<Task *>::iterator iter;
   vector<Task *> restrictedTasks;
   { // --- Critical section
@@ -560,6 +602,7 @@ bool Executor::setStepsToExecute(std::list<std::string> listToExecute)
       DEBTRACE("selected node to execute " << readyNode);
     }
 
+  return ret;
 }
 
 //! suspend pilot execution until Executor is in pause or waiting tasks completion mode.
@@ -616,6 +659,7 @@ bool Executor::saveState(const std::string& xmlFile)
   vst.openFileDump(xmlFile.c_str());
   _root->accept(&vst);
   vst.closeFileDump();
+  return true;
 }
 
 //! not yet implemented
@@ -624,6 +668,7 @@ bool Executor::loadState()
 {
   DEBTRACE("Executor::loadState()");
   _isRunningunderExternalControl=true;
+  return true;
 }
 
 
@@ -832,7 +877,7 @@ void Executor::launchTasks(std::vector<Task *>& tasks)
   for(iter=tasks.begin();iter!=tasks.end();iter++)
     {
       YACS::StatesForNode state=(*iter)->getState();
-      if(state != YACS::TOLOAD)continue;
+      if(state != YACS::TOLOAD && state != YACS::TORECONNECT)continue;
       try
         {
           (*iter)->connectService();
@@ -883,14 +928,50 @@ void Executor::launchTasks(std::vector<Task *>& tasks)
             _mutexForSchedulerUpdate.unlock();
           }//End of critical section
         }
+      if((*iter)->getState() == YACS::ERROR)
+        {
+          //try to put all coupled tasks in error
+          std::set<Task*> coupledSet;
+          (*iter)->getCoupledTasks(coupledSet);
+          for (std::set<Task*>::iterator it = coupledSet.begin(); it != coupledSet.end(); ++it)
+            {
+              Task* t=*it;
+              if(t == *iter)continue;
+              if(t->getState() == YACS::ERROR)continue;
+              try
+                {
+                  t->disconnectService();
+                  traceExec(t, "disconnectService");
+                }
+              catch(...)
+                {
+                  // Disconnect has failed
+                  traceExec(t, "disconnectService failed, ABORT");
+                }
+              {//Critical section
+                _mutexForSchedulerUpdate.lock();
+                t->aborted();
+                _mainSched->notifyFrom(t,YACS::ABORT);
+                _mutexForSchedulerUpdate.unlock();
+              }//End of critical section
+              traceExec(t, "state:"+Node::getStateName(t->getState()));
+            }
+        }
       traceExec(*iter, "state:"+Node::getStateName((*iter)->getState()));
     }
+
   //Second phase, execute each task in a thread
   for(iter=tasks.begin();iter!=tasks.end();iter++)
     {
       launchTask(*iter);
     }
 }
+
+struct threadargs {
+  Task *task;
+  Scheduler *sched;
+  Executor *execInst;
+};
 
 //! Execute a Task in a thread
 /*!
@@ -904,27 +985,57 @@ void Executor::launchTasks(std::vector<Task *>& tasks)
 void Executor::launchTask(Task *task)
 {
   DEBTRACE("Executor::launchTask(Task *task)");
+  struct threadargs *args;
   if(task->getState() != YACS::TOACTIVATE)return;
-  traceExec(task, "state:TOACTIVATE");
 
   DEBTRACE("before _semForMaxThreads.wait " << _semThreadCnt);
+  if(_semThreadCnt == 0)
+    {
+      //check if we have enough threads to run
+      std::set<Task*> tmpSet=_runningTasks;
+      std::set<Task*>::iterator it = tmpSet.begin();
+      std::string status="running";
+      std::set<Task*> coupledSet;
+      while( it != tmpSet.end() )
+        {
+          Task* tt=*it;
+          coupledSet.clear();
+          tt->getCoupledTasks(coupledSet);
+          status="running";
+          for (std::set<Task*>::iterator iter = coupledSet.begin(); iter != coupledSet.end(); ++iter)
+            {
+              if((*iter)->getState() == YACS::TOACTIVATE)status="toactivate";
+              tmpSet.erase(*iter);
+            }
+          if(status=="running")break;
+          it = tmpSet.begin();
+        }
+
+      if(status=="toactivate")
+        {
+          std::cerr << "WARNING: maybe you need more threads to run your schema (current value="<< _maxThreads << ")" << std::endl;
+          std::cerr << "If it is the case, set the YACS_MAX_THREADS environment variable to a bigger value (export YACS_MAX_THREADS=xxx)" << std::endl;
+        }
+    }
+
   _semForMaxThreads.wait();
   _semThreadCnt -= 1;
 
-  void **args=new void *[3];
-  args[0]=(void *)task;
-  args[1]=(void *)_mainSched;
-  args[2]=(void *)this;
+  args= new threadargs;
+  args->task = task;
+  args->sched = _mainSched;
+  args->execInst = this;
+
   traceExec(task, "launch");
 
   { // --- Critical section
     _mutexForSchedulerUpdate.lock();
     _numberOfRunningTasks++;
+    _runningTasks.insert(task);
     task->begin(); //change state to ACTIVATED
     _mutexForSchedulerUpdate.unlock();
   } // --- End of critical section
   Thread(functionForTaskExecution,args);
-  traceExec(task, "state:"+Node::getStateName(task->getState()));
 }
 
 //! wait until a running task ends
@@ -998,11 +1109,14 @@ int Executor::getNbOfThreads()
 void *Executor::functionForTaskExecution(void *arg)
 {
   DEBTRACE("Executor::functionForTaskExecution(void *arg)");
-  void **argT=(void **)arg;
-  Task *task=(Task *)argT[0];
-  Scheduler *sched=(Scheduler *)argT[1];
-  Executor *execInst=(Executor *)argT[2];
-  delete [] argT;
+
+  struct threadargs *args = (struct threadargs *) arg;
+  Task *task=args->task;
+  Scheduler *sched=args->sched;
+  Executor *execInst=args->execInst;
+  delete args;
+  execInst->traceExec(task, "state:"+Node::getStateName(task->getState()));
+
   Thread::detach();
 
   // Execute task
@@ -1034,6 +1148,7 @@ void *Executor::functionForTaskExecution(void *arg)
   // Disconnect task
   try
     {
+      DEBTRACE("task->disconnectService()");
       task->disconnectService();
       execInst->traceExec(task, "disconnectService");
     }
@@ -1061,6 +1176,7 @@ void *Executor::functionForTaskExecution(void *arg)
               }
             task->aborted();
           }
+        execInst->traceExec(task, "state:"+Node::getStateName(task->getState()));
         sched->notifyFrom(task,ev);
       }
     catch(Exception& ex)
@@ -1077,6 +1193,7 @@ void *Executor::functionForTaskExecution(void *arg)
         std::cerr << "Notification failed" << std::endl;
       }
     execInst->_numberOfRunningTasks--;
+    execInst->_runningTasks.erase(task);
     DEBTRACE("_numberOfRunningTasks: " << execInst->_numberOfRunningTasks 
              << " _execMode: " << execInst->_execMode
              << " _executorState: " << execInst->_executorState);
@@ -1110,8 +1227,26 @@ void *Executor::functionForTaskExecution(void *arg)
 void Executor::traceExec(Task *task, const std::string& message)
 {
   string nodeName = _mainSched->getTaskName(task);
+  Container *cont = task->getContainer();
+  string containerName = "---";
+  string placement = "---";
+  if (cont)
+    {
+      containerName = cont->getName();
+      ComponentInstance *compo = task->getComponent();
+      //if (compo)
+      placement = cont->getFullPlacementId(compo);
+    }
+#ifdef WIN32
+  DWORD now = timeGetTime();
+  double elapse = (now - _start)/1000.0;
+#else
+  timeval now;
+  gettimeofday(&now, NULL);
+  double elapse = (now.tv_sec - _start.tv_sec) + double(now.tv_usec - _start.tv_usec)/1000000.0;
+#endif
   _mutexForTrace.lock();
-  _trace << nodeName << " " << message << endl;
+  _trace << elapse << " " << containerName << " " << placement << " " << nodeName << " " << message << endl;
   _trace << flush;
   _mutexForTrace.unlock();
 }
@@ -1123,7 +1258,7 @@ void Executor::traceExec(Task *task, const std::string& message)
 void Executor::sendEvent(const std::string& event)
 {
   Dispatcher* disp=Dispatcher::getDispatcher();
-  assert(disp);
-  assert(_root);
+  YASSERT(disp);
+  YASSERT(_root);
   disp->dispatch(_root,event);
 }

@@ -1,21 +1,22 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "LoadState.hxx"
 #include "Proc.hxx"
 #include "Node.hxx"
@@ -231,7 +232,7 @@ void nodeParser::onEnd   (const XML_Char* name)
   else 
     node = _p->getChildByName(nodeName);
 
-  assert(_nodeStateValue.find(nodeState) != _nodeStateValue.end());
+  YASSERT(_nodeStateValue.find(nodeState) != _nodeStateValue.end());
   YACS::ENGINE::StateLoader(node, _nodeStateValue[nodeState]);
 
   if (nodeType == "forLoop")
@@ -346,7 +347,7 @@ void attrParser::charData(std::string data)
 void attrParser::onEnd   (const XML_Char* name)
 {
   // cerr << "end attrParser " << name << " " << _stackParser.size() << endl;
-  assert(_father);
+  YASSERT(_father);
   _father->setAttribute((char*)name, _attrValue);
   stateParser::onEnd(name);
 }
@@ -358,7 +359,7 @@ void portParser::init(const xmlChar** p, xmlParserBase* father)
   DEBTRACE("portParser::init()");
   _state = XMLINPORT;
   _father = father;
-  assert( dynamic_cast<nodeParser*> (father));
+  YASSERT( dynamic_cast<nodeParser*> (father));
   _stackState.push(_state);
   if (p) getAttributes(p);
 }
@@ -399,7 +400,7 @@ void portParser::onEnd   (const XML_Char* name)
   if (nodeType == "elementaryNode")
     {
       ElementaryNode* eNode = dynamic_cast<ElementaryNode*>(node);
-      assert(eNode);
+      YASSERT(eNode);
       InputPort *port = eNode->getInputPort(_mapAttrib["name"]);
       if(_data != "")
         port->edInit("XML",_data.c_str());
@@ -478,7 +479,7 @@ void valueParser::onEnd   (const XML_Char* name)
   string elem = (char *) name;
   //if (elem == "value" || elem == "data" || elem == "array")
   stateParser::onEnd(name);
-  //else assert(0); //DEBTRACE("valueParser::onEnd " << elem);
+  //else YASSERT(0); //DEBTRACE("valueParser::onEnd " << elem);
 }
 
 // ----------------------------------------------------------------------------

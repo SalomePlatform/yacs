@@ -1,21 +1,22 @@
-#  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+# Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 #
-#  This library is free software; you can redistribute it and/or
-#  modify it under the terms of the GNU Lesser General Public
-#  License as published by the Free Software Foundation; either
-#  version 2.1 of the License.
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License.
 #
-#  This library is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#  Lesser General Public License for more details.
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
 #
-#  You should have received a copy of the GNU Lesser General Public
-#  License along with this library; if not, write to the Free Software
-#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 #
-#  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+
 include $(top_srcdir)/adm/unix/make_begin.am
 
 check_PROGRAMS = TestYacsLoader echoSrv
@@ -24,10 +25,8 @@ bin_PROGRAMS = echoSrv
 check_SCRIPTS = \
 	YacsLoaderTest.sh \
 	YacsLoaderInSessionTest.sh \
-	YacsLoaderInSessionTest2.sh \
 	display.sh \
-	waitContainers.py \
-	testExec.py
+	waitContainers.py 
 
 bin_SCRIPTS = display.sh
 
@@ -54,9 +53,10 @@ TestYacsLoader_LDFLAGS = \
 TestYacsLoader_CXXFLAGS = \
 	$(THREAD_DEF) \
 	$(CPPUNIT_INCLUDES) \
+	$(EXPAT_INCLUDES) \
 	$(PYTHON_CPPFLAGS) \
-  $(OMNIORB_INCLUDES) \
-  $(OMNIORB_CCXFLAGS) \
+	$(OMNIORB_INCLUDES) \
+	$(OMNIORB_CXXFLAGS) \
 	-I$(srcdir)/.. \
 	-I$(srcdir)/../../bases \
 	-I$(srcdir)/../../bases/Test \
@@ -64,28 +64,40 @@ TestYacsLoader_CXXFLAGS = \
 	-I$(srcdir)/../../engine \
 	$(LIBXML_INCLUDES)
 
+check_LTLIBRARIES = libTestOptLoop.la
+libTestOptLoop_la_SOURCES  = OptimizerAlgSyncExample.cxx OptimizerAlgASyncExample.cxx
+libTestOptLoop_la_CXXFLAGS = \
+    -I$(srcdir)/../../bases \
+    -I$(srcdir)/../../engine \
+    $(THREAD_DEF)
+libTestOptLoop_la_LDFLAGS  = -rpath /nowhere  # trick to force libtool to create a shared lib 
+libTestOptLoop_la_LIBADD   = ../../engine/libYACSlibEngine.la
+
+check_SCRIPTS += algosyncexample.py algoasyncexample.py
+
 IDL_FILES = echo.idl
 IDL_SOURCES = echoSK.cc
 BUILT_SOURCES = $(IDL_SOURCES) echo_idl.py xmlrun.sh 
 
 EXTRA_DIST = $(IDL_FILES) \
-echoclt.py genPascal.py genTriangle.py testEdit.py testExec.py \
-testLoader.py        testResume.py       testSave.py   testRefcount.py  \
-waitContainers.py    xmlrun_orig.sh      YacsLoaderTest.hxx  
+echoclt.py genPascal.py genTriangle.py  \
+waitContainers.py    xmlrun_orig.sh      YacsLoaderTest.hxx  \
+algosyncexample.py algoasyncexample.py
 
 xmlrun.sh:xmlrun_orig.sh
-	cp $(srcdir)/xmlrun_orig.sh xmlrun.sh
+	cp -f $(srcdir)/xmlrun_orig.sh xmlrun.sh
 
 echoSrv_SOURCES = echoSrv.cxx 
 nodist_echoSrv_SOURCES = $(IDL_SOURCES)
 
 echoSrv_CXXFLAGS = \
+	-I. \
 	-I$(srcdir)/../../bases \
 	$(OMNIORB_INCLUDES) \
 	$(OMNIORB_CXXFLAGS) 
 
 echoSrv_LDFLAGS = \
-	$(OMNIORB_LIBS)
+	$(OMNIORB_LIBS) $(PTHREAD_LIBS)
 
 AM_CXXFLAGS = $(THREAD_DEF)
 
@@ -102,8 +114,8 @@ uninstall-local:
 
 clean-local:
 	rm -rf yacs* schema1_* schema2_* dump1_* dump2_* eo eo__POA dump*.xml CatalogResources.xml traceExec_*
-	rm -f samples toto titi log1 xmlrun.sh echo_idl.py echo.hh echoSK.cc g.data
-	if test -f "./bin/salome/appli_clean.sh"; then ./bin/salome/appli_clean.sh ; fi
+	rm -f samples toto titi log1 xmlrun.sh echo_idl.py* echo.hh echoSK.cc g.data
+	if test -f "./bin/salome/appli_clean.sh"; then ./bin/salome/appli_clean.sh -f ; fi
 
 
 check-local:

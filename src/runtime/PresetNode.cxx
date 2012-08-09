@@ -1,21 +1,22 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "PresetPorts.hxx"
 #include "PresetNode.hxx"
 #include "Visitor.hxx"
@@ -29,6 +30,12 @@
 
 using namespace YACS::ENGINE;
 using namespace std;
+
+/*! \class YACS::ENGINE::PresetNode
+ *  \brief Class for data in node
+ *
+ * \ingroup Nodes
+ */
 
 const char PresetNode::IMPL_NAME[]="XML";
 
@@ -55,7 +62,7 @@ void PresetNode::execute()
   for(iter = _setOfOutputPort.begin(); iter != _setOfOutputPort.end(); iter++)
     {
       OutputPresetPort *outp = dynamic_cast<OutputPresetPort *>(*iter);
-      assert(outp);
+      YASSERT(outp);
       string data = outp->getData();
       DEBTRACE("data: " << data );
       outp->put(data.c_str());
@@ -74,7 +81,7 @@ void PresetNode::setData(OutputPort* port, const std::string& data)
   outp->setData(data);
 }
 
-void PresetNode::checkBasicConsistency() const throw(Exception)
+void PresetNode::checkBasicConsistency() const throw(YACS::Exception)
 {
   DEBTRACE("PresetNode::checkBasicConsistency");
   if (! _setOfInputPort.empty())

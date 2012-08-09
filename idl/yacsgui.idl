@@ -1,21 +1,22 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef __YACSGUI_IDL__
 #define __YACSGUI_IDL__
 
@@ -42,10 +43,12 @@ module YACS_ORB
     long getNodeState(in long numid);
     string getXMLState(in long numid);
     string getInPortValue(in long nodeNumid, in string portName);
+    string setInPortValue(in string nodeName, in string portName, in string value);
     string getOutPortValue(in long nodeNumid, in string portName);
     string getErrorDetails(in long nodeNumid);
     string getErrorReport(in long nodeNumid);
     string getContainerLog(in long nodeNumid);
+    void shutdownProc(in long level);
     long getExecutorState();
     void getIds(out longArray numids,out stringArray names);
     longArray getNumIds();
@@ -53,6 +56,7 @@ module YACS_ORB
 
     void Run();
     void RunFromState(in string xmlfile);
+    void RestartFromState(in string xmlfile);
     void addObserver(in Observer obs,in long numid, in string event);
     void setExecMode(in executionMode mode);
     void setListOfBreakPoints(in stringArray listOfBreakPoints);
@@ -66,7 +70,7 @@ module YACS_ORB
     void unsetStopOnError();
   };
 
-  interface YACS_Gen : Engines::Component, SALOMEDS::Driver
+  interface YACS_Gen : Engines::EngineComponent, SALOMEDS::Driver
   {
     ProcExec LoadProc(in string xmlFile);
     string convertSupervFile(in string xmlFile);
@@ -74,4 +78,4 @@ module YACS_ORB
 
 };
 
-#endif 
+#endif

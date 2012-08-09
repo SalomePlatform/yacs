@@ -1,21 +1,22 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "OutputDataStreamPort.hxx"
 #include "InputDataStreamPort.hxx"
 #include "ComposedNode.hxx"
@@ -57,7 +58,7 @@ OutputDataStreamPort *OutputDataStreamPort::clone(Node *newHelder) const
 std::set<InPort *> OutputDataStreamPort::edSetInPort() const
 {
   set<InPort *> s;
-  for(set<InputDataStreamPort *>::iterator iter=_setOfInputDataStreamPort.begin();iter!=_setOfInputDataStreamPort.end();iter++)
+  for(set<InputDataStreamPort *>::const_iterator iter=_setOfInputDataStreamPort.begin();iter!=_setOfInputDataStreamPort.end();iter++)
     (*iter)->getAllRepresentants(s);
   return s;
 }
@@ -65,7 +66,7 @@ std::set<InPort *> OutputDataStreamPort::edSetInPort() const
 bool OutputDataStreamPort::isAlreadyLinkedWith(InPort *with) const
 {
   set<InPort *> s;
-  set<InputDataStreamPort *>::iterator iter;
+  set<InputDataStreamPort *>::const_iterator iter;
   for(iter=_setOfInputDataStreamPort.begin();iter!=_setOfInputDataStreamPort.end();iter++)
     if(*iter==with)
       return true;
@@ -97,13 +98,14 @@ bool OutputDataStreamPort::edAddInputDataStreamPort(InputDataStreamPort *port)
           throw ConversionException(what);
         }
       _setOfInputDataStreamPort.insert(port);
+      port->edAddOutputDataStreamPort(this);
       return true;
     }
   else
     return false;
 }
 
-int OutputDataStreamPort::edRemoveInputDataStreamPort(InputDataStreamPort *inPort, bool forward) throw(Exception)
+int OutputDataStreamPort::edRemoveInputDataStreamPort(InputDataStreamPort *inPort, bool forward) throw(YACS::Exception)
 {
   if(forward)
     {
@@ -128,7 +130,7 @@ int OutputDataStreamPort::edRemoveInputDataStreamPort(InputDataStreamPort *inPor
     }
 }
 
-bool OutputDataStreamPort::addInPort(InPort *inPort) throw(Exception)
+bool OutputDataStreamPort::addInPort(InPort *inPort) throw(YACS::Exception)
 {
   DEBTRACE("OutputDataStreamPort::addInPort");
   if(inPort->getNameOfTypeOfCurrentInstance()!=InputDataStreamPort::NAME)
@@ -140,7 +142,7 @@ bool OutputDataStreamPort::addInPort(InPort *inPort) throw(Exception)
   return edAddInputDataStreamPort(static_cast<InputDataStreamPort*>(inPort));
 }
 
-void OutputDataStreamPort::edRemoveAllLinksLinkedWithMe() throw(Exception)
+void OutputDataStreamPort::edRemoveAllLinksLinkedWithMe() throw(YACS::Exception)
 {
   set<InputDataStreamPort *>::iterator iter;
   set<InputDataStreamPort *> vec(_setOfInputDataStreamPort);
@@ -149,7 +151,7 @@ void OutputDataStreamPort::edRemoveAllLinksLinkedWithMe() throw(Exception)
   _setOfInputDataStreamPort.clear();
 }
 
-int OutputDataStreamPort::removeInPort(InPort *inPort, bool forward) throw(Exception)
+int OutputDataStreamPort::removeInPort(InPort *inPort, bool forward) throw(YACS::Exception)
 {
   DEBTRACE("OutputDataStreamPort::removeInPort");
   if(inPort->getNameOfTypeOfCurrentInstance()!=InputDataStreamPort::NAME && !forward)

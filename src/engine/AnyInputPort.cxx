@@ -1,25 +1,27 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "AnyInputPort.hxx"
 #include "TypeCode.hxx"
 #include <iostream>
 #include <sstream>
+#include "Mutex.hxx"
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -27,11 +29,19 @@
 using namespace YACS::ENGINE;
 using namespace std;
 
-AnyInputPort::AnyInputPort(const std::string& name, Node *node, TypeCode* type):InputPort(name,node,type),DataPort(name,node,type),Port(node),_value(0)
+AnyInputPort::AnyInputPort(const std::string& name, Node *node, TypeCode* type, bool canBeNull)
+  : InputPort(name, node, type, canBeNull),
+    DataPort(name, node, type),
+    Port(node),
+    _value(0)
 {
 }
 
-AnyInputPort::AnyInputPort(const  AnyInputPort& other, Node *newHelder):InputPort(other,newHelder),DataPort(other,newHelder),Port(other,newHelder),_value(0)
+AnyInputPort::AnyInputPort(const AnyInputPort& other, Node *newHelder)
+  : InputPort(other, newHelder),
+    DataPort(other, newHelder),
+    Port(other, newHelder),
+    _value(0)
 {
   if(other._value)
     _value=other._value->clone();
@@ -73,11 +83,14 @@ void AnyInputPort::exRestoreInit()
 
 void AnyInputPort::put(Any *data)
 {
-   if(_value)
+  YACS::BASES::Lock lock(&_mutex);
+  if(_value)
     _value->decrRef();
   _value=data;
-  _value->incrRef();
-  DEBTRACE("value ref count: " << _value->getRefCnt());
+  if (_value) {
+    _value->incrRef();
+    DEBTRACE("value ref count: " << _value->getRefCnt());
+  }
 }
 
 bool AnyInputPort::isEmpty()
@@ -90,8 +103,9 @@ void *AnyInputPort::get() const
   return (void *)_value;
 }
 
-std::string AnyInputPort::getAsString() 
+std::string AnyInputPort::getAsString()
 {
+  YACS::BASES::Lock lock(&_mutex);
   return getRuntime()->convertNeutralAsString(edGetType(),_value);
 }
 

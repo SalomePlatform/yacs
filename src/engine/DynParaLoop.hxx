@@ -1,74 +1,64 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef __DYNPARALOOP_HXX__
 #define __DYNPARALOOP_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "ComposedNode.hxx"
 #include "AnyInputPort.hxx"
+#include "AnyOutputPort.hxx"
 #include "OutputPort.hxx"
 
 namespace YACS
 {
   namespace ENGINE
   { 
-    class DynParaLoop;
-
-    class AnyOutputPort : public OutputPort
-    {
-      friend class DynParaLoop;
-    public:
-      //! store the current dispatched value
-      virtual void setValue(Any *data);
-      //! get the current dispatched value for update port value 
-      Any* getValue() const { return _data; }
-      virtual std::string typeName() {return "YACS__ENGINE__AnyOutputPort";}
-    private:
-      Any* _data; // the data dispatched from port on the current moment
-    private:
-      AnyOutputPort(const std::string& name, Node *node, TypeCode *type);
-      AnyOutputPort(const AnyOutputPort& other, Node *newHelder);
-      virtual ~AnyOutputPort();
-      OutputPort *clone(Node *newHelder) const;
-    };
-
     /*!
      * \brief Base class for dynamically (fully or semifully) built graphs.
+     * \ingroup Nodes
      */
-    class DynParaLoop : public ComposedNode
+    class YACSLIBENGINE_EXPORT DynParaLoop : public ComposedNode
     {
     protected:
       typedef enum
         {
           INIT_NODE = 5,
-          WORK_NODE = 6
+          WORK_NODE = 6,
+          FINALIZE_NODE = 7
       } TypeOfNode;
     protected:
       Node *_node;
       Node *_initNode;
+      Node *_finalizeNode;
       unsigned _nbOfEltConsumed;
       std::vector<int> _execIds;
       AnyInputPort _nbOfBranches;
       AnyOutputPort _splittedPort;
       std::vector<Node *> _execNodes;
       std::vector<Node *> _execInitNodes;
+      std::vector<Node *> _execFinalizeNodes;
+      int _initializingCounter;
+      int _unfinishedCounter;
     protected:
       static const char NAME_OF_SPLITTED_SEQ_OUT[];
+      static const char OLD_NAME_OF_SPLITTED_SEQ_OUT[];
       static const char NAME_OF_NUMBER_OF_BRANCHES[];
     protected:
       DynParaLoop(const std::string& name, TypeCode *typeOfDataSplitted);
@@ -77,15 +67,19 @@ namespace YACS
     public:
       Node *edRemoveNode();
       Node *edRemoveInitNode();
+      Node *edRemoveFinalizeNode();
       //Node* DISOWNnode is a SWIG notation to indicate that the ownership of the node is transfered to C++
       Node *edSetNode(Node *DISOWNnode);
       Node *edSetInitNode(Node *DISOWNnode);
+      Node *edSetFinalizeNode(Node *DISOWNnode);
+      virtual bool edAddDFLink(OutPort *start, InPort *end) throw(Exception);
       void init(bool start=true);
       InputPort *edGetNbOfBranchesPort() { return &_nbOfBranches; }
       int getNumberOfInputPorts() const;
       int getNumberOfOutputPorts() const;
       unsigned getNumberOfEltsConsumed() const { return _nbOfEltConsumed; }
       std::list<OutputPort *> getSetOfOutputPort() const;
+      std::list<OutputPort *> getLocalOutputPorts() const;
       OutputPort *edGetSamplePort() { return &_splittedPort; }
       OutPort *getOutPort(const std::string& name) const throw(Exception);
       InputPort *getInputPort(const std::string& name) const throw(Exception);
@@ -93,6 +87,7 @@ namespace YACS
       //! For the moment false is returned : impovement about it coming soon.
       bool isPlacementPredictableB4Run() const;
       void edRemoveChild(Node *node) throw(Exception);
+      virtual bool edAddChild(Node *node) throw(Exception);
       std::list<Node *> edGetDirectDescendants() const;
       std::list<InputPort *> getSetOfInputPort() const;
       std::list<InputPort *> getLocalInputPorts() const;
@@ -103,6 +98,11 @@ namespace YACS
       bool isMultiplicitySpecified(unsigned& value) const;
       void forceMultiplicity(unsigned value);
       virtual void checkBasicConsistency() const throw(Exception);
+      virtual std::string getErrorReport();
+      void accept(Visitor *visitor);
+      Node * getInitNode();
+      Node * getExecNode();
+      Node * getFinalizeNode();
     protected:
       void buildDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView);
       void buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView);
@@ -118,6 +118,12 @@ namespace YACS
       void putValueOnBranch(Any *val, unsigned branchId, bool first);
       TypeOfNode getIdentityOfNotifyerNode(const Node *node, unsigned& id);
       InputPort *getDynInputPortByAbsName(int branchNb, const std::string& name, bool initNodeAdmitted);
+      virtual void forwardExecStateToOriginalBody(Node *execNode);
+      virtual YACS::Event updateStateOnFailedEventFrom(Node *node);
+      std::vector<Node *> cloneAndPlaceNodesCoherently(const std::vector<Node *> & origNodes);
+      Node * checkConsistencyAndSetNode(Node* &nodeToReplace, Node* DISOWNnode);
+      Node * removeNode(Node* &nodeToRemove);
+      virtual void shutdown(int level);
     };
   }
 }

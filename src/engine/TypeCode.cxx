@@ -1,21 +1,22 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "TypeCode.hxx"
 #include <sstream>
 #include <iostream>
@@ -68,7 +69,7 @@ AnyPtr TypeCode::getOrBuildAnyFromZippedData(char *data) const
   return AtomAny::getOrBuildFromData(data,this);
 }
 
-const char * TypeCode::name() const throw(Exception)
+const char * TypeCode::name() const throw(YACS::Exception)
 {
   //throw Exception("No name");
   return id();
@@ -80,7 +81,7 @@ const char * TypeCode::shortName() const
   return id();
 }
 
-const char * TypeCode::id() const throw(Exception)
+const char * TypeCode::id() const throw(YACS::Exception)
 {
   switch(_kind)
     {
@@ -97,7 +98,7 @@ const char * TypeCode::id() const throw(Exception)
     }
 }
 
-int TypeCode::isA(const char* id) const throw(Exception)
+int TypeCode::isA(const char* id) const throw(YACS::Exception)
 {
   throw Exception("Not implemented for this type");
 }
@@ -167,7 +168,7 @@ unsigned TypeCode::getSizeInByteOfAnyReprInSeq() const
     }
 }
 
-const TypeCode * TypeCode::contentType() const throw(Exception)
+const TypeCode * TypeCode::contentType() const throw(YACS::Exception)
 {
   throw Exception("No content type");
 };
@@ -240,6 +241,8 @@ TypeCode * TypeCode::sequenceTc(const char* id,
       typname="seq"+std::string(content->name());
       name=typname.c_str();
     }
+  if(std::string(id)=="")
+    id=name;
   return new TypeCodeSeq(id, name,content);
 };
 //! static factory of struct type given an id and a name 
@@ -301,12 +304,12 @@ AnyPtr TypeCodeObjref::getOrBuildAnyFromZippedData(char *data) const
   throw Exception("Not implemented yet : YACS::Any for objs ref");
 }
 
-const char * TypeCodeObjref::id() const throw(Exception)
+const char * TypeCodeObjref::id() const throw(YACS::Exception)
 {
   return _repoId.c_str();
 };
 
-const char * TypeCodeObjref::name() const throw(Exception)
+const char * TypeCodeObjref::name() const throw(YACS::Exception)
 {
   return _name.c_str();
 }
@@ -331,7 +334,7 @@ TypeCodeObjref::TypeCodeObjref(const char* repositoryId,
  *   \param id :  a given id
  *   \return     1 if true, 0 if false
  */
-int TypeCodeObjref::isA(const char* id) const throw(Exception)
+int TypeCodeObjref::isA(const char* id) const throw(YACS::Exception)
 {
   if(_repoId == id)return 1;
   list<TypeCodeObjref *>::const_iterator iter;
@@ -430,12 +433,12 @@ AnyPtr TypeCodeSeq::getOrBuildAnyFromZippedData(char *data) const
   return SequenceAny::getOrBuildFromData(data,this);
 }
 
-const char * TypeCodeSeq::id() const throw(Exception)
+const char * TypeCodeSeq::id() const throw(YACS::Exception)
 {
   return _repoId.c_str();
 }
 
-const char * TypeCodeSeq::name() const throw(Exception)
+const char * TypeCodeSeq::name() const throw(YACS::Exception)
 {
   return _name.c_str();
 }
@@ -444,7 +447,7 @@ const char * TypeCodeSeq::shortName() const
   return _shortName.c_str();
 }
 
-const TypeCode * TypeCodeSeq::contentType() const throw(Exception)
+const TypeCode * TypeCodeSeq::contentType() const throw(YACS::Exception)
 {
   return _content;
 }
@@ -495,6 +498,7 @@ TypeCodeSeq::TypeCodeSeq(const TypeCodeSeq& tc):TypeCodeComposed(tc),
  *   \param repositoryId : the given id
  *   \param name : the given name
  *   \param content : the given contained TypeCode
+ *   \param staticLgth : the length
  */
 TypeCodeArray::TypeCodeArray(const char* repositoryId,
                              const char* name, 
@@ -529,12 +533,12 @@ AnyPtr TypeCodeArray::getOrBuildAnyFromZippedData(char *data) const
   return ArrayAny::getOrBuildFromData(data,this);
 }
 
-const char * TypeCodeArray::id() const throw(Exception)
+const char * TypeCodeArray::id() const throw(YACS::Exception)
 {
   return _repoId.c_str();
 }
 
-const char * TypeCodeArray::name() const throw(Exception)
+const char * TypeCodeArray::name() const throw(YACS::Exception)
 {
   return _name.c_str();
 }
@@ -548,7 +552,7 @@ unsigned TypeCodeArray::getStaticLgth() const
   return _staticLgth;
 }
 
-const TypeCode * TypeCodeArray::contentType() const throw(Exception)
+const TypeCode * TypeCodeArray::contentType() const throw(YACS::Exception)
 {
   return _content;
 }
@@ -618,6 +622,8 @@ TypeCodeStruct::TypeCodeStruct(const char* repositoryId,
 
 TypeCodeStruct::~TypeCodeStruct()
 {
+  for(vector< pair<string,TypeCode*> >::iterator iter=_members.begin();iter!=_members.end();iter++)
+    (*iter).second->decrRef();
 }
 
 TypeCode *TypeCodeStruct::clone() const
@@ -646,12 +652,12 @@ AnyPtr TypeCodeStruct::getOrBuildAnyFromZippedData(char *data) const
   return StructAny::getOrBuildFromData(data,this);
 }
 
-const char * TypeCodeStruct::id() const throw(Exception)
+const char * TypeCodeStruct::id() const throw(YACS::Exception)
 {
   return _repoId.c_str();
 };
 
-const char * TypeCodeStruct::name() const throw(Exception)
+const char * TypeCodeStruct::name() const throw(YACS::Exception)
 {
   return _name.c_str();
 }
@@ -669,7 +675,7 @@ unsigned TypeCodeStruct::getSizeInByteOfAnyReprInSeq() const
   return ret;
 }
 
-const TypeCode *TypeCodeStruct::contentType() const throw(Exception)
+const TypeCode *TypeCodeStruct::contentType() const throw(YACS::Exception)
 {
   const char what[]="Content type is specified by giving a key.";
   throw Exception(what);
@@ -680,7 +686,7 @@ const TypeCode *TypeCodeStruct::contentType() const throw(Exception)
  *   \param id :  a given id
  *   \return     1 if true, 0 if false
  */
-int TypeCodeStruct::isA(const char* id) const throw(Exception)
+int TypeCodeStruct::isA(const char* id) const throw(YACS::Exception)
 {
   if(_repoId == id)return 1;
   return 0;
@@ -747,11 +753,15 @@ void TypeCodeStruct::addMember(const std::string& name,TypeCode* tc)
         throw Exception("Struct member " + name + " already defined");
     }
   _members.push_back(std::pair<std::string,TypeCode*>(name,tc));
+  tc->incrRef();
 }
 
+//! Get typecode of struct member given its name
 /*!
  * If name is not an existing key, 0 is returned.
+ * \param name : the member name
  * \param offset : Out parameter, that specified the location of start of data discriminated by name key.
+ * \return the member TypeCode
  */
 const TypeCode *TypeCodeStruct::getMember(const std::string& name, unsigned& offset) const
 {

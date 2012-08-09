@@ -1,25 +1,28 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "Bloc.hxx"
 #include "LinkInfo.hxx"
 #include "InputPort.hxx"
+#include "InputDataStreamPort.hxx"
 #include "OutputPort.hxx"
+#include "OutputDataStreamPort.hxx"
 #include "ElementaryNode.hxx"
 #include "Visitor.hxx"
 
@@ -31,20 +34,32 @@
 using namespace YACS::ENGINE;
 using namespace std;
 
+/*! \class YACS::ENGINE::Bloc
+ *  \brief Composed node to group elementary and composed nodes
+ *
+ * \ingroup Nodes
+ */
+
 Bloc::Bloc(const Bloc& other, ComposedNode *father, bool editionOnly):StaticDefinedComposedNode(other,father),_fwLinks(0),_bwLinks(0)
 {
   for(list<Node *>::const_iterator iter=other._setOfNode.begin();iter!=other._setOfNode.end();iter++)
     _setOfNode.push_back((*iter)->simpleClone(this,editionOnly));
+
   //CF Linking
   vector< pair<OutGate *, InGate *> > cfLinksToReproduce=other.getSetOfInternalCFLinks();
   vector< pair<OutGate *, InGate *> >::iterator iter1=cfLinksToReproduce.begin();
   for(;iter1!=cfLinksToReproduce.end();iter1++)
     edAddCFLink(getChildByName(other.getChildName((*iter1).first->getNode())),getChildByName(other.getChildName((*iter1).second->getNode())));
+
   //Data + DataStream linking
   vector< pair<OutPort *, InPort *> > linksToReproduce=other.getSetOfInternalLinks();
   vector< pair<OutPort *, InPort *> >::iterator iter2=linksToReproduce.begin();
   for(;iter2!=linksToReproduce.end();iter2++)
-    edAddLink(getOutPort(other.getPortName((*iter2).first)),getInPort(other.getPortName((*iter2).second)));
+    {
+      OutPort* pout = iter2->first;
+      InPort* pin = iter2->second;
+      edAddLink(getOutPort(other.getPortName(pout)),getInPort(other.getPortName(pin)));
+    }
 }
 
 //! Create a Bloc node with a given name
@@ -130,9 +145,10 @@ void Bloc::getReadyTasks(std::vector<Task *>& tasks)
 void Bloc::exUpdateState()
 {
   if(_state == YACS::DISABLED)return;
+  if(_state == YACS::DONE)return;
   if(_inGate.exIsReady())
     {
-      setState(YACS::TOACTIVATE);
+      setState(YACS::ACTIVATED);
       for(list<Node *>::iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
         if((*iter)->exIsControlReady())
           (*iter)->exUpdateState();
@@ -149,7 +165,7 @@ void Bloc::exUpdateState()
  * If node name already used in bloc, throw exception.
  * Publish inputPorts in current bloc and ancestors.
  */
-bool Bloc::edAddChild(Node *node) throw(Exception)
+bool Bloc::edAddChild(Node *node) throw(YACS::Exception)
 {
   if(isNodeAlreadyAggregated(node))
     {
@@ -193,7 +209,7 @@ bool Bloc::edAddChild(Node *node) throw(Exception)
  * @exception If 'node' is NOT the son of 'this'.
  */
 
-void Bloc::edRemoveChild(Node *node) throw(Exception)
+void Bloc::edRemoveChild(Node *node) throw(YACS::Exception)
 {
   StaticDefinedComposedNode::edRemoveChild(node);
   list<Node *>::iterator iter=find(_setOfNode.begin(),_setOfNode.end(),node);
@@ -204,7 +220,7 @@ void Bloc::edRemoveChild(Node *node) throw(Exception)
     }
 }
 
-Node *Bloc::getChildByShortName(const std::string& name) const throw(Exception)
+Node *Bloc::getChildByShortName(const std::string& name) const throw(YACS::Exception)
 {
   for (list<Node *>::const_iterator iter = _setOfNode.begin(); iter != _setOfNode.end(); iter++)
     if ((*iter)->getName() == name)
@@ -267,7 +283,7 @@ bool insertNodeChildrenInSet(Node *node, std::set<Node *>& nodeSet)
  *        \b WARNING : When using this method 'node' has to be checked in order to be part of direct children of 'this'. 
  *
  */
-void Bloc::checkNoCyclePassingThrough(Node *node) throw(Exception)
+void Bloc::checkNoCyclePassingThrough(Node *node) throw(YACS::Exception)
 {
   set<Node *> currentNodesToTest;
   //don't insert node to test in set. 
@@ -276,7 +292,7 @@ void Bloc::checkNoCyclePassingThrough(Node *node) throw(Exception)
   insertNodeChildrenInSet(node,currentNodesToTest);
   //try to insert node
   if(!(currentNodesToTest.insert(node)).second)
-    throw Exception("Cycle has been detected");
+    throw Exception("Cycle has been detected",1);
 }
 
 std::vector< std::pair<OutGate *, InGate *> > Bloc::getSetOfInternalCFLinks() const
@@ -478,10 +494,13 @@ void Bloc::destructCFComputations(LinkInfo& info) const
  *  Perform updates of containers regarding attributes of link 'start' -> 'end' and check the correct linking.
  *  The output is in info struct.
  *
- * \param fw out parameter beeing append if start -> end link is a forward link \b without cross type DF/DS.
- * \param fwCross out parameter beeing append if start -> end link is a forward link \b with cross type DF/DS.
- * \param bw out parameter beeing append if start -> end link is a backward link.
- * \param info out parameter beeing informed about eventual errors.
+ * \param start : start port
+ * \param end : end port
+ * \param cross : 
+ * \param fw out parameter being append if start -> end link is a forward link \b without cross type DF/DS.
+ * \param fwCross out parameter being append if start -> end link is a forward link \b with cross type DF/DS.
+ * \param bw out parameter being append if start -> end link is a backward link.
+ * \param info out parameter being informed about eventual errors.
  */
 void Bloc::checkControlDependancy(OutPort *start, InPort *end, bool cross,
                                   std::map < ComposedNode *,  std::list < OutPort * >, SortHierarc >& fw,
@@ -510,10 +529,14 @@ void Bloc::checkControlDependancy(OutPort *start, InPort *end, bool cross,
       info.pushErrLink(start,end,E_DS_LINK_UNESTABLISHABLE);
 }
 
+//! Check if two nodes are linked
 /*!
  * 'start' and 'end' \b must be direct son of 'this'.
  * Typically used for data link.
+ * \param start : start node
+ * \param end : end node
  * \param fw indicates if it is a forward link searched (true : default value) or a backward link serach.
+ * \return if true or false
  */
 bool Bloc::areLinked(Node *start, Node *end, bool fw) const
 {
@@ -521,9 +544,13 @@ bool Bloc::areLinked(Node *start, Node *end, bool fw) const
   return nexts.find(end)!=nexts.end();
 }
 
+//! Check if two nodes can run in parallel
 /*!
  * Typically used for stream link.
  * 'start' and 'end' \b must be direct son of 'this'.
+ * \param start : start node
+ * \param end : end node
+ * \return true or false
  */
 bool Bloc::arePossiblyRunnableAtSameTime(Node *start, Node *end) const
 {
@@ -532,10 +559,13 @@ bool Bloc::arePossiblyRunnableAtSameTime(Node *start, Node *end) const
   return nexts.find(end)==nexts.end() && preds.find(end)==preds.end();
 }
 
+//! Check control flow links
 /*!
  * \param starts If different of 0, must aggregate at leat \b 1 element.
+ * \param end : end port
  * \param alreadyFed in/out parameter. Indicates if 'end' ports is already and surely set or fed by an another port.
  * \param direction If true : forward direction else backward direction.
+ * \param info : collected information
  */
 void Bloc::checkCFLinks(const std::list<OutPort *>& starts, InputPort *end, unsigned char& alreadyFed, bool direction, LinkInfo& info) const
 {
@@ -571,9 +601,15 @@ void Bloc::initComputation() const
 
 /*!
  * Part of final step for CF graph anylizing. This is the part of non collapse nodes. 
+ * \param pool :
+ * \param end :
+ * \param candidates :
  * \param alreadyFed in/out parameter. Indicates if 'end' ports is already and surely set or fed by an another port.
+ * \param direction
+ * \param info : collected information
  */
-void Bloc::verdictForOkAndUseless1(const std::map<Node *,std::list <OutPort *> >& pool, InputPort *end, const std::vector<Node *>& candidates, unsigned char& alreadyFed, 
+void Bloc::verdictForOkAndUseless1(const std::map<Node *,std::list <OutPort *> >& pool, InputPort *end, 
+                                   const std::vector<Node *>& candidates, unsigned char& alreadyFed, 
                                    bool direction, LinkInfo& info)
 {
   for(vector<Node *>::const_iterator iter=candidates.begin();iter!=candidates.end();iter++)
@@ -610,9 +646,15 @@ void Bloc::verdictForOkAndUseless1(const std::map<Node *,std::list <OutPort *> >
 
 /*!
  * Part of final step for CF graph anylizing. This is the part of collapses nodes. 
+ * \param pool :
+ * \param end :
+ * \param candidates :
  * \param alreadyFed in/out parameter. Indicates if 'end' ports is already and surely set or fed by an another port.
+ * \param direction
+ * \param info : collected information
  */
-void Bloc::verdictForCollapses(const std::map<Node *,std::list <OutPort *> >& pool, InputPort *end, const std::set<Node *>& candidates, unsigned char& alreadyFed, 
+void Bloc::verdictForCollapses(const std::map<Node *,std::list <OutPort *> >& pool, InputPort *end, 
+                               const std::set<Node *>& candidates, unsigned char& alreadyFed, 
                                bool direction, LinkInfo& info)
 {
   info.startCollapseTransac();
@@ -715,7 +757,7 @@ void Bloc::seekUseless2(std::vector<Node *>& useless2, std::set<Node *>& allNode
 /*! 
  * Internal method : Given a succeful path : updates 'fastFinder'
  */
-void Bloc::updateWithNewFind(const std::vector<Node *>& path, map<Node *, std::set<Node *> >& fastFinder)
+void Bloc::updateWithNewFind(const std::vector<Node *>& path, std::map<Node *, std::set<Node *> >& fastFinder)
 {
   if(path.size()>=3)
     {

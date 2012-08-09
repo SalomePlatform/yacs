@@ -3,58 +3,65 @@
 
 .. _principes:
 
-Principes généraux de YACS
+YACS general principles
 ===============================
-La construction d'un schéma de calcul s'appuie sur le concept de noeud de calcul.
-Un noeud de calcul représente un calcul élémentaire qui peut être l'exécution
-locale d'un script Python ou l'exécution distante d'un service de composant SALOME.
+A calculation scheme is constructed based on the calculation node concept.  
+A calculation node represents an elementary calculation that can be the local execution of a Python 
+script or the remote execution of a SALOME component service.
 
-Le schéma de calcul est un assemblage de noeuds de calcul plus ou moins complexe.
+The calculation scheme is a more or less complex assembly of calculation nodes.
 
-Cet assemblage est réalisé par connexion de ports d'entrée et de sortie de ces noeuds
-de calcul.
+This assembly is made by connecting input and output ports of these calculation nodes.
 
-Les données sont échangées entre noeuds via les ports. Elles sont typées.
+Data are exchanged between nodes through ports.  They are typed.
 
-Les noeuds composés : Bloc, Loop, Switch, permettent de modulariser un schéma de calcul 
-et de définir des processus itératifs, des calculs paramétriques ou des débranchements.
+Composite nodes:  Block, Loop, Switch are used to modularise a calculation scheme and define 
+iterative processes, parametric calculations or branches.
 
-Enfin les containers permettent de définir où seront exécutés les composants SALOME 
-(sur un réseau ou un cluster).
+Finally, containers can be used to define where SALOME components will be executed (on a network or in a cluster).
 
 .. _datatypes:
 
-Les types de données
+Data types
 ----------------------
-Les données échangées entre noeuds de calcul via les ports sont typées. 
-On a 4 catégories de types : les types de base, les références d'objets, les séquences et les
-structures.
-Il est possible de définir des types utilisateurs par composition de ces éléments de base.
-De nombreux types sont prédéfinis soit par YACS soit par les composants utilisés comme GEOM ou SMESH.
+Data exchanged between calculation nodes through ports are typed.  
+There are four categories of types:  basic types, object references, sequences and structures.  
+User types can be defined by combining these basic elements.  
+Many types are predefined either by YACS or by the components used such as GEOM or SMESH.
 
-Les types de base
+Basic types
 '''''''''''''''''''''
-Les types de base sont au nombre de 5 : int, double, bool, string et file. Ils sont prédéfinis par YACS.
+There are 5 basic types: int, double, bool, string and file. They are predefined by YACS.
 
 ================= =====================================
-Type YACS          Commentaire
+YACS type           Comment
 ================= =====================================
-int                 pour les entiers
-double              pour les réels doubles
-bool                pour les booléens
-string              pour les chaines de caractères
-file                pour les fichiers
+int                   for integers
+double                for double reals
+bool                  for booleans
+string                for character strings
+file                  for files
 ================= =====================================
 
-Les références d'objet
+Python generic type
+...................
+
+YACS adds a special type for exchanging generic Python objects between Python inline nodes (See :ref:`scriptnode` 
+and :ref:`functionnode`). The type is named **pyobj** and uses the pickle module to exchange Python objects.
+Consequently only Python objects that are pickable could be used for YACS **pyobj** ports.
+
+It's forbidden to define the object's type into the node, it should be defined in an external Python module. To avoid
+problems with YACS, you should add the module into your **PYTHONPATH** before launching SALOME.
+
+Object references
 ''''''''''''''''''''''''''
-Les références d'objet sont utilisées pour typer les objets CORBA gérés par les composants SALOME.
-En général, ces types sont définis par les composants qui les utilisent.
-Pour définir un type YACS référence d'objet, il suffit de lui donner un nom et de l'associer
-au Repository ID CORBA. Voici quelques exemples de types prédéfinis.
+Object references are used to type CORBA objects managed by SALOME components. In general, these types 
+are defined by the components that use them. All that is necessary to define a YACS object reference type, is to 
+give it a name and associate it with the CORBA Repository ID.  
+Some examples of pre-defined types are given below.
 
 ================= ==============================
-Type YACS          Repository ID CORBA
+YACS type          CORBA Repository ID 
 ================= ==============================
 Study               IDL:SALOMEDS/Study:1.0
 SObject             IDL:SALOMEDS/SObject:1.0
@@ -63,19 +70,21 @@ MESH                IDL:SALOME_MED/MESH:1.0
 FIELD               IDL:SALOME_MED/FIELD:1.0
 ================= ==============================
 
-Il est possible de définir des relations d'héritage simple ou multiple entre ces types.
-Voici un exemple extrait du composant MED.
+Simple or multiple inheritance relations can be defined between these types.  
+The following gives an example of the MED component.
 
 ================= ============================== =====================================
-Type YACS          Types de base                     Repository ID CORBA
+YACS type          Base type                          CORBA Repository ID
 ================= ============================== =====================================
 FIELDDOUBLE         FIELD                           IDL:SALOME_MED/FIELDDOUBLE:1.0
 ================= ============================== =====================================
 
-YACS définit également des types pour les ports datastream :
+.. _calciumtypes:
+
+YACS also defines types for datastream ports:
 
 ================= =======================================================
-Type YACS                Repository ID CORBA
+YACS type               CORBA Repository ID
 ================= =======================================================
 CALCIUM_integer    IDL:Ports/Calcium_Ports/Calcium_Integer_Port:1.0
 CALCIUM_real       IDL:Ports/Calcium_Ports/Calcium_Real_Port:1.0
@@ -86,21 +95,19 @@ CALCIUM_boolean    IDL:Ports/Calcium_Ports/Calcium_Logical_Port:1.0
 CALCIUM_complex    IDL:Ports/Calcium_Ports/Calcium_Complex_Port:1.0
 ================= =======================================================
 
-On peut avoir la liste des types disponsibles en consultant les catalogues des composants
-SALOME : GEOMCatalog.xml, SMESHCatalog.xml, MEDCatalog.xml, etc. Ces catalogues sont au format XML
-qui est décrit ici : :ref:`schemaxml`. On peut également en avoir une vue dans l'IHM graphique en 
-consultant le catalogue de composants.
+A list of available types can be obtained by consulting catalogs of SALOME components:  GEOMCatalog.xml, 
+SMESHCatalog.xml, MEDCalatog.xml, etc. These catalogs are in the XML format that is described in :ref:`schemaxml`.  
+A view is also possible in the graphic user interface by viewing the components catalog.
 
-Les séquences
+Sequences
 '''''''''''''''
-Un type séquence sert à typer une liste d'éléments homogènes. Le type contenu dans la liste est le même
-pour tous les éléments.
-Pour définir un type séquence, on lui donne un nom et on spécifie le type des éléments de la séquence.
+A sequence type is used to type a list of homogenous elements.  The type contained in the list is the same for 
+all elements.  A sequence type is defined by giving it a name and specifying the type of elements in the sequence.
 
-Le KERNEL de SALOME définit des types séquences pour les types de base.
+The SALOME KERNEL defines sequence types for basic types.
 
 ================= ==============================
-Type YACS          Type des éléments
+YACS type          Type of elements 
 ================= ==============================
 dblevec               double
 intvec                int
@@ -108,524 +115,655 @@ stringvec             string
 boolvec               bool
 ================= ==============================
 
-Il est possible de définir un type séquence de séquence. Dans ce cas, le type de l'élément est un type séquence.
+A sequence type can be defined for a sequence.  In this case, the element type is a sequence type.
 
-Les structures
+Structures
 ''''''''''''''''
-Le type structure sert à typer une donnée structurée comme un struct C. Cette donnée contient des membres nommés
-et typés.
-Pour définir un type structure, on lui donne un nom et on spécifie la liste des membres (nom, type).
+The structure type is used to type a data structured as a C structure.  This data contains named and typed members.  
+A structure type is defined by giving it a name and specifying the list of members (name, type).
 
-Le composant GEOM définit un type structure de nom "BCError" comportant un seul membre de nom "incriminated" et
-de type "ListOfLong". "ListOfLong" est lui-même une séquence d'"int".
+For example, the GEOM component defines a structure type with name “BCError” comprising a single member with name “incriminated” 
+and type “ListOfLong”.  “ListOfLong” itself is a sequence of “int”.
 
-Les ports
+Ports
 -------------
-Un port peut être considéré comme une interface d'un noeud avec l'extérieur.
-Il existe trois types de port : les ports de contrôle, les ports de données et les ports datastream.
-Chacun a une sémantique différente.
-
-Les ports de contrôle
+A port can be considered as an interface of a node with the exterior.  There are three types of port:  control ports, 
+data ports and datastream ports.  Each has different semantics.
+ 
+Control ports
 ''''''''''''''''''''''''
-Ce type de port est utilisé pour mettre des contraintes sur des enchainements d'exécution de noeuds.
-Un noeud élémentaire ou composé dispose, en général, d'un port de contrôle entrant et d'un port
-sortant. 
-Un noeud qui a son port de contrôle d'entrée connecté au port de sortie d'un autre noeud ne 
-sera exécuté que lorsque ce deuxième noeud sera terminé.
+This type of port is used to apply constraints on node execution chains.  An elementary or composite node 
+usually has an input control port and an output control port.  A node for which the input control port is connected 
+to the output control port of another node will not be executed until the second node is terminated.
 
-Les ports de données
+Data ports
 ''''''''''''''''''''''''
-Ce type de port est utilisé pour définir les données qui seront utilisées par le noeud lors de son exécution
-et les données qui seront produites par le noeud à la fin de son exécution.
-Un port de données a un nom, un sens (input, output) et les données qu'il portent ont un type.
-L'ordre de définition des ports est important car il est utilisé comme ordre des arguments lors de l'appel
-des services de composants SALOME.
+This type of port is used to define data that will be used by a node when it is executed, and the data that will be produced 
+by the node at the end of its execution.  A data port has a name, a direction (input, output) and the data contained in it 
+have a type.  The order in which ports are defined is important because this order is used as the order of the arguments 
+during the call for SALOME component services.
 
-De façon générale, l'exécution d'un noeud de calcul élémentaire se passe comme suit :
-   - le contrôle est donné au noeud via le port de contrôle d'entrée
-   - les données d'entrée sont acquises par le noeud via les ports de données d'entrée
-   - le noeud s'exécute
-   - les données de sortie sont fournies aux ports de sortie
-   - le contrôle est rendu par le noeud via le port de contrôle de sortie
+In general, an elementary calculation node is executed as follows:
+ - control is given to the node through the input control port
+ - input data are acquired by the node through the input data ports
+ - the node is executed
+ - output data are provided to output ports
+ - control is returned by the node through the output control port.
 
-Un port de données d'entrée peut être initialisé ou connecté à un port de données de sortie.
+An input data port can be initialized or connected to an output data port.
 
-Les ports datastream
+.. _datastreamports:
+
+Datastream ports
 ''''''''''''''''''''''''
-Ce type de port est utilisé pour l'échange de données pendant l'exécution. Tous les noeuds élémentaires ne supportent
-pas ce type de port. Pour le moment seuls les noeuds liés à des composants SALOME supportent ce type de port.
-Un port datastream a un nom, un sens (input, output) et un type.
-Ce type n'est pas directement le type d'une donnée mais plutôt celui d'un objet CORBA qui gère l'échange de 
-données (voir ports DSC pour plus d'informations).
+This type of port is used to exchange data during execution. Not all elementary nodes support this type of port.  
+For the moment, this type of port is only supported by nodes related to SALOME components.  A datastream port has a name, 
+a direction (input, output) and a type.  This type is not a data type directly but is rather the type of a CORBA object 
+that manages the data exchange (see :ref:`progDSC` for further information on how to implement a datastream port).
 
-Les noeuds de calcul élémentaires
+It is not a simple task to implement a datastream port so SALOME provides a ready made port called CALCIUM datastream
+port. It has been designed to ease scientific code coupling. You can see more about these ports in :ref:`calcium`.
+Only a limited set of data types can be used to define these ports (see :ref:`CALCIUM types<calciumtypes>`).
+
+A CALCIUM port can be configured by way of properties. A property is a pair (name, value), where name is the name of the property and value
+is a character string that gives its value. Following is the list of properties supported by CALCIUM ports :
+
+.. tabularcolumns:: |p{2.5cm}|p{3.5cm}|L|
+
+================= ============================== =====================================
+Property name      Default value                  Description
+================= ============================== =====================================
+DependencyType     TIME_DEPENDENCY                specify if data exchanged depend on time (TIME_DEPENDENCY) or on iteration (ITERATION_DEPENDENCY)
+================= ============================== =====================================
+
+
+Elementary calculation nodes
 -------------------------------------
-Un noeud de calcul élémentaire représente une fonction de calcul particulière (multiplication de 2 matrices, par exemple). 
-Tout noeud de calcul a un type. 
-On peut avoir un type de noeud qui exécute un service d'un composant Salome et un autre 
-type de noeud qui exécute un bout de script Python. 
-Les noeuds de calcul élémentaires se répartissent en deux catégories : les noeuds inlines
-qui s'exécutent en local dans le coupleur YACS et les noeuds de service qui s'exécutent à 
-distance et correspondent à la mise en oeuvre de composants SALOME.
+An elementary calculation node represents a particular calculation function (for example multiplication of 2 matrices).  
+Every calculation node has a type. There can be one node type that executes a service of a SALOME component and another 
+node type that executes a piece of Python script.  
+Elementary calculation nodes are distributed into two categories: inline nodes that are executed mainly in the YACS coupler, 
+and service nodes that are executed remotely and correspond to the use of SALOME components.
 
-Tout noeud de calcul a un nom qui sert d'identificateur. Cet identificateur doit etre unique dans son contexte de définition. 
-Un schéma de calcul ou un noeud composé définit un contexte.
+Every calculation node has a name used as an identifier. This identifier must be unique in its definition context. A context is 
+defined by a calculation scheme or a composite node.
 
-Un noeud de calcul a un port de contrôle d'entrée et un port de contrôle de sortie. 
-Ces ports de contrôle sont connectés à travers le flot de contrôle.
+A calculation node has an input control port and an output control port. These control ports are connected through the control flow.
 
-Un noeud de calcul a, en général, des ports de données d'entrée et de sortie. 
-Le nombre et le type des ports de données est déterminé par le type de noeud de calcul. 
-Ces ports de données sont connectés à travers le flot de données.
+A calculation node usually has input and output data ports. The number and type of data ports is determined by the type of 
+calculation node. These data ports are connected through the data flow.
 
-Un noeud de calcul peut avoir des propriétés. Une propriété est un couple (nom, valeur)
-où nom est le nom de la propriété et valeur une chaine de caractère qui donne sa valeur.
+A calculation node may have properties. A property is a pair (name, value), where name is the name of the property and value 
+is a character string that gives its value.
 
-Noeud inline script Python
+.. _scriptnode:
+
+Python script inline node
 ''''''''''''''''''''''''''''''
-Un noeud script Python exécute du code Python dans un contexte où sont présentes des variables
-qui ont pour valeur le contenu des ports de données d'entrée au lancement de cette exécution.
-Par exemple, si le noeud a un port de données d'entrée de nom "matrice", la variable "matrice" sera
-présente dans le contexte d'exécution du script et aura pour valeur le contenu du port de même nom.
-En fin d'exécution du script, les ports de données de sortie sont remplis avec les valeurs des variables
-de même nom présentes dans le contexte d'exécution. Ces variables doivent être obligatoirement présentes.
+A Python script node executes the Python code in a context in which variables are present with a value equal to the content 
+of input data ports when this execution is started. For example, if the node has an input data port named “matrix”, the 
+variable “matrix” will be present in the execution context of the script and its value will be the content of the port with the 
+same name. At the end of execution of the script, the output data ports will contain the values of variables with the same 
+name present in the execution context. These variables must necessarily be present.
 
-Lorsque ce type de noeud est un noeud interne d'une boucle, le contexte d'exécution est réinitialisé
-à chaque tour de boucle.
+When this type of node is an internal node in a loop, the execution context is reinitialised for each iteration of the loop.
 
-Noeud inline fonction Python
+This type of node is executed mainly in the YACS process but it can be executed in remote 
+processes (but only in YACS containers :ref:`containers`).
+
+To create this type of node:
+
+- from the GUI, see :ref:`inline_script`
+- in a XML file, see :ref:`xml_script_node`
+- from python interface, see :ref:`pyscript`
+
+.. _functionnode:
+
+Python function inline node
 ''''''''''''''''''''''''''''''
-Un noeud fonction Python exécute une fonction Python dont les arguments correspondent aux ports de données
-d'entrée du noeud. Le nom de la fonction à exécuter est donné par un paramètre du noeud.
-Si un tel noeud a 3 ports de données d'entrée de nom 'a', 'b', 'c' et que le nom de la fonction est 'f', l'exécution
-du noeud correspondra à l'appel de f(a,b,c) où a, b et c sont les valeurs des ports de données de même nom.
+A Python function node executes a Python function, for which the arguments correspond to the node input data ports.  
+The name of the function to be executed is given by a parameter of the node.  If such a node has 3 input data ports 
+named 'a', 'b', 'c' and the name of the function is 'f', execution of the node will correspond to calling f(a,b,c) where a, b and c 
+are the values of data ports with the same name.
 
-Les données de sortie du noeud sont attendues comme un retour de la fonction sous la forme d'un tuple Python.
-Par exemple, si on a 3 ports de données de sortie de nom 'x', 'y', 'z', la fonction devra se terminer
-par "return x,y,z" où x,y et z sont les valeurs pour les ports de sortie de même nom.
+Node output data are expected in return from the function in the form of a Python tuple. For example, if there are three 
+output data ports named 'x', 'y', 'z', the function should terminate by "return x,y,z" where x, y and z are values 
+for the output ports of the same name.
 
-Lorsque ce type de noeud est un noeud interne d'une boucle, le contexte d'exécution est conservé
-à chaque tour de boucle ce qui permet de réutiliser des variables pendant les itérations.
+When this type of node is an internal node in a loop, the execution context is kept for every iteration of the loop, so 
+that variables can be reused during iterations.
 
-Noeud de service SALOME
+This type of node is executed mainly in the YACS process but it can be executed in remote 
+processes (but only in YACS containers :ref:`containers`).
+
+To create this type of node:
+
+- from the GUI, see :ref:`inline_function`
+- in a XML file, see :ref:`xml_function_node`
+- from python interface, see :ref:`pyfunc`
+
+.. _servicenode:
+
+SALOME service node
 ''''''''''''''''''''''''''''''
-Un noeud de service SALOME exécute un service d'un composant SALOME. 
-On peut définir un noeud de service de deux façons :
+A SALOME service node executes a service of a SALOME component. 
+A service node can be defined in two ways:
 
-  1. en indiquant le type de composant (GEOM, SMESH, ...) et le service à exécuter
-  2. en indiquant un noeud de service existant et le service à exécuter
+ 1. by indicating the component type (GEOM, SMESH, etc.) and the service to be executed
+ 2. by indicating an existing service node and the service to be executed
 
-La deuxième forme existe car, dans certains cas, on veut utiliser l'état du composant à la
-fin de l'exécution du premier service pour exécuter le deuxième service. L'état du composant
-est conservé dans une instance de composant qui est créée à chaque fois qu'on utilise la
-première forme. Si on utilise la deuxième forme, on ne crée pas une nouvelle instance de
-composant mais on réutilise l'instance existante.
+The second form exists because in some cases, it is required to use the state of the component at the end of execution of the 
+first service to execute the second service. The state of the component is kept in a component instance that is created 
+every time that the first form is used. If the second form is used, the existing instance is reused and a new component 
+instance will not be created.
 
-Un noeud de service a des ports de données d'entrée et de sortie et peut avoir également
-des ports datastream d'entrée et de sortie.
+A service node has input and output data ports and it may also have input and output datastream ports.
 
-Un noeud de service est chargé et exécuté sur un container SALOME. Ce placement est géré
-au moyen du concept de container YACS (voir `Les containers`_) qui est une légère abstraction 
-du container SALOME.
-Pour gérer le placement du service SALOME, il est possible de désigner par son nom le container
-YACS sur lequel on veut qu'il soit placé. Ceci n'est possible qu'avec la première forme de définition
-du noeud. Si aucune information de placement n'est donnée, le service sera placé sur 
-le container par défaut de la plate-forme SALOME : container FactoryServer sur la machine locale.
+A service node is loaded and executed on a SALOME container. This placement is managed using the YACS container concept 
+(see :ref:`containers`) that is a slight abstraction of the SALOME container. 
+Placement of the SALOME service can be managed by the same name to denote the YACS container on which it is to be placed. 
+This is only possible with the first node definition form. If no placement information is given, the service will be placed 
+on the default container of the SALOME platform:  FactoryServer container on the local machine.
 
-Les propriétés d'un noeud de service SALOME sont converties en variable d'environnement 
-lors de l'exécution du service.
+The properties of a SALOME service node are converted into environment variables when the service is executed and can be retrieved
+in the component with the method getProperties that returns an Engines::FieldsDict struct. The retrieved properties are the
+properties of the node completed by the properties of the including Blocs.
 
-Noeud SalomePython
+To create this type of node:
+
+- from the GUI, see :ref:`salome_service`
+- in a XML file, see :ref:`xml_service_node`
+- from python interface, see :ref:`pyservice`
+
+SalomePython node
 ''''''''''''''''''''''''''''''
-Un noeud SalomePython est un noeud fonction Python à qui YACS fournit (dans le contexte
-d'exécution Python) les informations nécessaires pour lancer des composants SALOME et exécuter leurs services.
-Il s'agit de l'adresse du container sur lequel il faut charger et exécuter le composant. Cette adresse
-est donnée dans la variable "__container__from__YACS__" qui a la forme <nom machine>/<nom container>.
-Ce noeud est donc paramétrable avec des informations de placement sur un container comme un noeud
-de service SALOME.
+A SalomePython node is a Python function node to which YACS provides the information necessary to run SALOME 
+components and execute their services (in the Python execution context).  It is the address of the container into 
+which the component is to be loaded and executed.  This address is given in the "_container_from_YACS_" variable 
+in the form <machine name>/<container name>. Therefore, parameters can be set for this node using container placement 
+information like a SALOME service node.
 
-Restriction : ce type de noeud ne peut pas exécuter de service SALOME doté de ports datastream. Le noeud
-est vu par YACS comme un noeud Python. Les ports datastream ne sont pas gérés.
+Restriction:  this type of node cannot execute a SALOME service with datastream ports.  The node is seen by YACS 
+as being a Python node.  Datastream ports are not managed.
 
-Noeuds Data
+Data nodes
 ''''''''''''''''''''''''''''''
-Un noeud Data sert à définir des données (noeud DataIn) ou à collecter des résultats (noeud DataOut)
-d'un schéma de calcul.
+A Data node is used to define data (DataIn node) or to collect results (DataOut node) of a calculation scheme.
 
-Noeud DataIn
+DataIn node
 ++++++++++++++++++
-Un noeud DataIn a uniquement des ports de données sortants qui servent à définir les données d'entrée
-du schéma de calcul. 
-Ces données ont un nom (le nom du port), un type (le type du port) et une valeur initiale.
+A DataIn node has output data ports only that are used to define input data for the calculation scheme. These data have a name (the port name), a type (the port type) and an initial value.
 
-Noeud DataOut
+To create this type of node:
+
+- from the GUI, see :ref:`datain_node`
+- in a XML file, see :ref:`xml_datain`
+- from python interface, see :ref:`py_datain`
+
+DataOut node
 ++++++++++++++++++
-Un noeud DataOut a uniquement des ports de données entrants qui servent pour stocker les résultats en sortie
-du schéma de calcul.
-Ces résultats ont un nom (le nom du port) et un type (le type du port).
-Si le résultat est un fichier, on peut donner un nom de fichier dans lequel le fichier résultat sera copié.
+A DataOut node only has input data ports that are used to store output results from the calculation scheme.  These results have a name (the port name) and a type (the port type).  If the result is a file, a name can be given to the file into which the result file will be copied.
 
-L'ensemble des valeurs des résultats du noeud peut être sauvegardé dans un fichier en fin de calcul.
+All values of node results can be saved in a file at the end of the calculation.
 
-Noeuds Study
+To create this type of node:
+
+- from the GUI, see :ref:`dataout_node`
+- in a XML file, see :ref:`xml_dataout`
+- from python interface, see :ref:`py_dataout`
+
+Study nodes
 ''''''''''''''''''''''''''''''
-Un noeud Study sert à relier les éléments d'une étude SALOME aux données et résultats d'un schéma de calcul.
+A Study node is used to relate the elements of a SALOME study to the data and results of a calculation scheme.
 
-Noeud StudyIn
+StudyIn node
 ++++++++++++++++++
-Un noeud StudyIn a uniquement des ports de données sortants. Il sert pour définir les données
-du schéma de calcul provenant d'une étude SALOME.
-L'étude associée est donnée par son StudyID SALOME.
+A StudyIn node has output data ports only. It is used to define data in the calculation scheme originating from a SALOME study. The associated study is given by its SALOME StudyID.
 
-Un port correspond à une donnée stockée dans l'étude associée. La donnée a un nom (le nom du port),
-un type (le type du port) et une référence qui donne l'entrée dans l'étude. Cette référence est
-soit une Entry SALOME (par exemple, 0:1:1:2) soit un chemin dans l'arbre d'étude SALOME (par exemple,
-/Geometry/Box_1).
+A port corresponds to data stored in the associated study.  The data has a name (the port name), a type (the port type), and a reference that gives the entry into the study.  This reference is either a SALOME Entry (for example 0:1:1:2) or a path in the SALOME study tree (for example, /Geometry/box_1).
 
+To create this type of node:
 
-Noeud StudyOut
+- from the GUI, see :ref:`studyin_node`
+- in a XML file, see :ref:`xml_studyin`
+- from python interface, see :ref:`py_studyin`
+
+StudyOut node
 ++++++++++++++++++
-Un noeud StudyOut a uniquement des ports de données entrants. Il sert pour ranger des
-résultats dans une étude SALOME.
-L'étude associée est donnée par son StudyID SALOME.
+A StudyOut node only has input data ports.  It is used to store results in a SALOME study.  The associated study is given by its SALOME StudyID.
 
-Un port correspond à un résultat stocké dans l'étude associée. Le résultat a un nom (le nom du port),
-un type (le type du port) et une référence qui donne l'entrée dans l'étude.
-Cette référence est soit une Entry SALOME (par exemple, 0:1:1:2) soit un chemin dans l'arbre 
-d'étude SALOME (par exemple, /Geometry/Box_1).
+A port corresponds to a result to be stored in an associated study.  The result has a name (the port name), a type (the port type), and a reference that gives the entry into the study.  This reference is either a SALOME Entry (for example 0:1:1:2) or a path in the SALOME study tree (for example, /Geometry/box_1).
 
-L'étude associée peut être sauvegardée dans un fichier en fin de calcul.
+The associated study may be saved in a file at the end of the calculation.
 
-Les connexions
+To create this type of node:
+
+- from the GUI, see :ref:`studyout_node`
+- in a XML file, see :ref:`xml_studyout`
+- from python interface, see :ref:`py_studyout`
+
+Connections
 -----------------
-Les connexions entre ports d'entrée et de sortie des noeuds élémentaires ou composés sont
-réalisées en établissant des liens entre ces ports.
+Connections between input and output ports of elementary or composite nodes are made by creating links between these ports.
 
-Les liens de contrôle
+Control links
 ''''''''''''''''''''''''''''''
-Les liens de contrôle servent à définir un ordre dans l'exécution des noeuds. Ils relient
-un port de sortie d'un noeud à un port d'entrée d'un autre noeud. Ces deux noeuds 
-doivent être définis dans le même contexte.
-La définition du lien se réduit à donner le nom du noeud amont et le nom du noeud aval.
+Control links are used to define an order in which nodes will be executed.  They relate an output port of one node to an input port of another node.  These two nodes must be defined in the same context.  The definition of the link consists simply of giving the name of the input side node and the name of the output side node.
 
-Les liens dataflow
+Dataflow links
 ''''''''''''''''''''''''''''''
-Les liens dataflow servent à définir un flot de données entre un port de données de sortie d'un noeud
-et un port de données d'entrée d'un autre noeud. Il n'est pas nécessaire que ces noeuds soient définis dans 
-le même contexte.
-Un lien dataflow ajoute un lien de contrôle entre les deux noeuds concernés
-ou entre les noeuds parents adéquats pour respecter la règle de définition des liens de 
-contrôle. Le lien dataflow garantit la cohérence entre le flot de données et l'ordre d'exécution.
-Pour définir le lien, il suffit de donner les noms du noeud et du port amont et les noms du noeud
-et du port aval.
-Les types des ports doivent être compatibles (voir `Compatibilité des types de données`_).
+Dataflow links are used to define a dataflow between an output data port for one node and an input data 
+port for another node.  There is no need for these nodes to be defined in the same context.  A dataflow link adds a control 
+link between the two nodes concerned or between the appropriate parent nodes to respect the rule for definition of the 
+control links.  The dataflow link guarantees consistency between the dataflow and the execution order.   
+All that is necessary to define the link is to give the names of the input side node and port and the names of the output 
+side node and port.  
+The port types must be compatible (see :ref:`compatibility`).
 
-Les liens data
+Data links
 ''''''''''''''''''''''''''''''
-Dans quelques cas (boucles principalement), il est utile de pouvoir définir des flots de données
-sans définir le lien de contrôle associé comme dans le lien dataflow. On utilise alors le lien
-data.
-La définition est identique à celle du lien dataflow.
-Les types des ports doivent être compatibles (voir `Compatibilité des types de données`_).
+In some cases (mainly loops), it is useful to be able to define dataflows without defining the associated control link 
+as in the dataflow link.  The datalink is then used.  The definition is exactly the same as for the dataflow link.  
+The port types must be compatible (see :ref:`compatibility`).
 
-Les liens datastream
+.. _datastreamlinks:
+
+Datastream links
 ''''''''''''''''''''''''''''''
-Les liens datastream servent à définir un flot de données entre un port datastream sortant d'un noeud et un 
-port datastream entrant d'un autre noeud. Ces deux noeuds doivent être définis dans un même contexte
-et pouvoir être exécutés en parallèle. Il ne doit donc exister aucun lien de contrôle direct
-ou indirect entre eux.
-Pour définir le lien, on donne les noms du noeud et du port sortant et les noms du noeud
-et du port entrant. La définition des liens datastream peut être complétée par des propriétés
-qui paramètrent le comportement du port DSC qui réalise l'échange de données (voir ports DSC).
-Les types des ports doivent être compatibles (voir `Compatibilité des types de données`_).
+Datastream links are used to define a data stream between an output datastream port for one node and an input datastream port 
+for another node.  These two nodes must be defined in the same context and it must be possible to execute them in parallel.  
+Therefore, there must not be direct or indirect control link between them.  The link is defined by giving output node and port 
+names and input node and port names.  The definition of the datastream links may be complemented by properties that 
+define parameters of the behaviour of the DSC port that makes the data exchange (see :ref:`progDSC`).  
+The port types must be compatible (see :ref:`compatibility`).
 
-Compatibilité des types de données
+For CALCIUM datastream ports, links can be configured by way of properties that are listed here (more information about them
+can be found in :ref:`calcium`):
+
+.. tabularcolumns:: |p{3cm}|p{3cm}|L|
+
+==================== ============================== =====================================
+Property name          Default value                  Description
+==================== ============================== =====================================
+DateCalSchem           TI_SCHEM                       specify the temporal scheme (TI_SCHEM, TF_SCHEM, ALPHA_SCHEM) for ports with time dependency
+StorageLevel           infinite                       specify the maximum number of data kept in the destination port
+Alpha                  0.0                            specify the coefficient of the ALPHA_SCHEM
+DeltaT                 1.e-6                          tolerance to check if two dates are identical
+InterpolationSchem     L1_SCHEM                       specify the interpolation function (linear:L1_SCHEM or step:L0_SCHEM)
+ExtrapolationSchem     not defined                    specify the extrapolation function (E0_SCHEM or E1_SCHEM) in case of timeout (not implemented)
+==================== ============================== =====================================
+
+As for other ports, CALCIUM port types must be compatible to be connected. But they must also have the same DependencyType 
+property (see :ref:`datastreamports`).
+
+.. _compatibility:
+
+Compatibility of data types
 '''''''''''''''''''''''''''''''''''''''''
-Un lien data, dataflow ou datastream peut être créé seulement si le type de données du port 
-sortant est compatible avec le type de données du port entrant.
-Il y a trois formes de compatibilité :
+A data, dataflow or datastream link may only be created if the data type of the output port is compatible with the data type 
+of the input port.  There are three forms of compatibility:
 
-  - l'identité des types (par exemple double -> double)
-  - la spécialisation des types (par exemple FIELDDOUBLE -> FIELD)
-  - la conversion des types (par exemple int -> double)
+ - identity of types (for example double -> double)
+ - specialization of types (for example FIELDDOUBLE -> FIELD)
+ - type conversion (for example int -> double)
 
-Compatibilité par conversion
+Compatibility by conversion
 +++++++++++++++++++++++++++++++
-La compatibilité par conversion s'applique uniquement aux types de base et à leurs dérivés 
-(séquence, structure).
-Les conversions acceptées sont les suivantes :
+Compatibility by conversion is applicable to basic types and to their derivatives (sequence, structure).  
+The following conversions are accepted:
 
 ================= ============================== ====================================
-Type YACS          Conversion possible en                Commentaire
+YACS type          Conversion possible into              Comment
 ================= ============================== ====================================
 int                 double
-int                 bool                           true si int != 0 false sinon
+int                 bool                           true if int != 0 else false
 ================= ============================== ====================================
 
-La conversion s'applique également aux types construits comme une séquence d'int qui
-peut être convertie en une séquence de double. YACS prend en charge la conversion.
-Ceci s'applique également aux structures et aux types imbriqués séquence de séquence,
-structure de structure, séquence de structure, etc.
+The conversion is also applicable to types constructed as a sequence of ints that may be converted into a 
+sequence of doubles.  YACS controls the conversion.  This is also applicable to nested sequence of sequence, structure 
+of structure, sequence of structure structures and types, etc.
 
-Compatibilité par spécialisation
-+++++++++++++++++++++++++++++++++++
-La règle de compatibilité s'exprime différemment pour les liens data (ou dataflow) et les
-liens datastream.
+Compatibility by specialization
++++++++++++++++++++++++++++++++
+The compatibility rule is expressed differently for data (or dataflow) links and datastream links.
 
-Dans le cas des liens data (ou dataflow), il faut que le type du port de données sortant
-soit dérivé (ou identique) du type du port de données entrant. Par exemple un port de données
-sortant avec un type FIELDDOUBLE pourra être connecté à un port de données entrant avec le
-type FIELD car le type FIELDDOUBLE est dérivé du type FIELD (ou FIELD est type de base de
-FIELDDOUBLE).
+For data (or dataflow) links, the type of output data port must be derived from (or identical to) the type of input 
+data port.  For example, an output data port with a FIELDDOUBLE type may be connected to an input data port with 
+the FIELD type because the FIELDDOUBLE type is derived from the FIELD type (where FIELD is the basic type of FIELDDOUBLE).
 
-Dans le cas des liens datastream, la règle est l'exact inverse de celle pour les liens data :
-le type du port datastream entrant doit être dérivé de celui du port sortant. Il n'existe 
-pour le moment aucun type datastream dérivé. La seule règle qui s'applique est donc l'identité
-des types.
+The rule for datastream links is exactly the opposite of the rule for data links:  the type of the input datastream port 
+must be derived from the type of the output port.  
+At the moment there is no derived datastream type.  Therefore the only applicable rule is identity of types.
 
-Liens multiples
+Multiple links
 '''''''''''''''''''
-Les ports de contrôle supportent les liens multiples, aussi bien 1 vers N que N vers 1.
+Control ports support 1 to N and N to 1 multiple links.
 
-Les ports de données supportent les liens multiples 1 vers N et N vers 1. 
-Les liens 1 vers N ne posent pas de problèmes. Les liens N vers 1 sont à utiliser avec 
-précaution car le résultat final dépend de l'ordre dans lequel sont réalisés les échanges.
-On réservera ce type de lien pour les rebouclages dans les boucles itératives. Dans ce 
-cas l'ordre de réalisation des échanges est parfaitement reproductible.
+Data ports support 1 to N and N to 1 multiple links.  1 to N links do not create any problem.  N to 1 links should be used with 
+caution, because the final result depends on the order in which the exchanges are made.  This type of link will be reserved 
+for looping back in iterative loops.  In this case, the order in which exchanges are made is perfectly reproducible. 
 
-Les ports datastream supportent également les liens multiples, 1 vers N et N vers 1. 
-Les liens datastream 1 vers N ne posent pas de problèmes particuliers : les échanges de données sont
-simplement dupliqués pour tous les ports d'entrée connectés.
-Par contre, pour les liens datastream N vers 1, les échanges de données vont se recouvrir dans 
-l'unique port d'entrée. Le résultat final peut dépendre de l'ordre dans lequel seront réalisés
-les échanges.
+Datastream ports also support 1 to N and N to 1 multiple links.  1 to N datastream links do not create any particular problems:  data 
+exchanges are simply duplicated for all connected input ports.  However, data exchanges for N to 1 datastream links will be 
+overlapped in the single input port.  The final result may depend on the order in which exchanges are made.
 
-Les noeuds composés
+Composite nodes
 --------------------------------
-Les noeuds composés sont de plusieurs types : bloc, boucles, noeud-switch.
-Un noeud composé peut contenir un ou plusieurs noeuds de type quelconque (élémentaires ou composés).
-Par défaut, l'ensemble des entrées et sorties des noeuds constituant le noeud composé sont accessibles de l'extérieur. 
-On peut dire que les entrées du noeud composé sont constituées de l'ensemble des entrées des noeuds internes. 
-Même chose pour les sorties. C'est le concept de boîte blanche.
+There are several types of composite nodes, namely block, loop and switch nodes.  
+A composite node may contain one or several nodes of an arbitrary type (elementary or composite).  
+By default, the set of node inputs and outputs making up the composite node are accessible from the outside.  
+It can be said that composite node inputs are composed of the set of internal node inputs.  The same is applicable for outputs.  
+This is the white box concept.
 
-Le noeud Bloc
+The Bloc node
 ''''''''''''''
-C'est un regroupement de noeuds avec des liens de dépendance entre les noeuds internes. 
-Le Bloc est une boite blanche (les noeuds internes sont visibles). 
-Un schéma de calcul est un Bloc.
-Le Bloc se manipule de façon similaire à un noeud élémentaire. 
-Il dispose d'un seul port de contrôle en entrée et d'un seul en sortie. 
-En conséquence, deux blocs raccordés par un lien de donnée dataflow s'exécutent en séquence, tous les noeuds du premier bloc sont exécutés avant de passer au second bloc.
+This is a group of nodes with dependency links between internal nodes.  
+The Bloc is a white box (internal nodes are visible).  
+A calculation scheme is a Bloc.  The Bloc is manipulated in a manner similar to an elementary node.  
+It is provided with a single input control port and a single output control port.  
+Consequently, two blocks connected through a dataflow data link will be executed in sequence, all nodes in the 
+first block will be executed before starting the second block.
 
-Le noeud ForLoop
+A Bloc node may have properties. A property is a pair (name, value), where name is the name of the property and value 
+is a character string that gives its value. The properties of a Bloc are inherited by the nodes in the Bloc.
+
+To create this type of node:
+
+- from the GUI, see :ref:`block_node`
+- in a XML file, see :ref:`xml_block`
+- from python interface, see :ref:`py_block`
+
+The ForLoop node
+'''''''''''''''''''''
+A loop is used to make iterations on an internal node.  
+This internal node may be a composite node or an elementary node.  
+Some internal node outputs may be explicitly looped back onto inputs of this internal node.  
+A ForLoop loop executes the internal node a fixed number of times.  This number is given by a data port in the loop 
+named “nsteps” or by a parameter of the loop of the same name. The current step number is accessible through
+an output port of the loop named "index".
+
+To create this type of node:
+
+- from the GUI, see :ref:`forloop_node`
+- in a XML file, see :ref:`xml_forloop`
+- from python interface, see :ref:`py_forloop`
+
+The While node
+''''''''''''''''''''
+A While loop executes the internal node as long as a condition is true.  
+The value of the condition is given by a data port of the loop named “condition”.
+
+To create this type of node:
+
+- from the GUI, see :ref:`whileloop_node`
+- in a XML file, see :ref:`xml_whileloop`
+- from python interface, see :ref:`py_whileloop`
+
+The ForEach node
 ''''''''''''''''''''''
-Une boucle permet des itérations sur un noeud interne.
-Ce noeud interne peut être un noeud composé ou un noeud élémentaire. 
-Certaines des sorties du noeud interne peuvent être explicitement rebouclées sur des entrées de ce même noeud interne.
-Une boucle ForLoop exécute le noeud interne un nombre fixe de fois. Ce nombre est donné par un port
-de donnée de la boucle de nom "nsteps" ou par un paramètre de la boucle de même nom. 
+The ForEach node is also a loop, but it executes a loop body in parallel by iterating on one and only one data collection.  
+A data collection is of the sequence type.  
+An input data port of the ForEach node named “SmplsCollection” receives the data collection on which the loop iterates.
+This data collection is typed.  The data type on which the loop iterates is unique.  The number of parallel branches managed 
+by the loop is fixed by a parameter of the loop (input port named "nbBranches").  
+If the collection size is 100 and this parameter is fixed at 25, the loop will execute 4 packets of 25 calculations in parallel.  
+The internal node can access the current iteration of the data collection through the output data port from the loop named “evalSamples”.
 
-Le noeud While
+Typed data collections can be constructed at the output from the loop.  All that is necessary is to connect an output data 
+port of the internal node to an input data port of a node outside the loop. The loop automatically constructs the data collection.
+
+To create this type of node:
+
+- from the GUI, see :ref:`foreachloop_node`
+- in a XML file, see :ref:`xml_foreachloop`
+- from python interface, see :ref:`py_foreachloop`
+
+The Switch node
 ''''''''''''''''''''''
-Une boucle While exécute le noeud interne tant qu'une condition est vraie. La valeur de la condition
-est donnée par un port de donnée de la boucle de nom "condition".
+The Switch node performs the conditional execution (among N) of a node (composite, elementary).  
+These nodes must have a minimum number of compatible inputs and outputs.  
+The switch condition (integer, real) is used to switch execution of one node among N.  
+The switch condition is given by an input data port of the Switch node named “select” or by a parameter of this node with the same name.
 
-Le noeud ForEach
-''''''''''''''''''''''
-Le noeud ForEach est également une boucle mais il sert à exécuter, en parallèle, un corps de boucle en itérant 
-sur une et une seule collection de données. Une collection de données est du type séquence.
-Un port de données d'entrée du noeud ForEach de nom "SmplsCollection" reçoit la collection de données sur laquelle la boucle itère.
-Cette collection de données est typée. Le type de donnée sur lequel la boucle itère est unique.
-Le nombre de branches parallèles que la boucle gère est fixé par un paramètre de la boucle. Si la collection est de 
-taille 100 et que ce paramètre est fixé à 25, la boucle exécutera 4 paquets de 25 calculs en parallèle.
-Le noeud interne a accès à l'itéré courant de la collection de données via le port de données sortant de la boucle
-de nom "SmplPrt".
+If the nodes are terminal (nothing is executed from their outputs), they do not need to have compatible outputs.  
+Output ports used at the node output must be compatible with each other (i.e. they must be derived from a common generic 
+type that can be used by another input node).
 
-En sortie de boucle il est possible de construire des collections de données typées. Il suffit de relier un port de 
-données de sortie du noeud interne à un port de données d'entrée d'un noeud hors de la boucle. La collection de 
-données est contruite automatiquement par la boucle.
+To create this type of node:
 
-Le noeud Switch
-''''''''''''''''''''''
-Le noeud Switch permet l'exécution conditionnelle (parmi N) d'un noeud (composé, élémentaire). 
-Ces noeuds doivent avoir un minimum d'entrées et de sorties compatibles.
-La condition de switch (entier, réel) permet d'aiguiller l'exécution d'un noeud parmi n.
-La condition de switch est donné par un port de donnée entrant du noeud Switch de nom "select" ou par un paramètre 
-de ce noeud de même nom.
+- from the GUI, see :ref:`switch_node`
+- in a XML file, see :ref:`xml_switch`
+- from python interface, see :ref:`py_switch`
 
-Si les noeuds sont terminaux (rien n'est exécuté à partir de leurs sorties), ils n'ont pas besoin d'avoir des sorties compatibles. 
-Les ports de sortie exploités en sortie du noeud doivent être compatibles entre eux (i.e. dériver d'un type générique commun exploitable par un autre noeud en entrée).
+The OptimizerLoop node
+'''''''''''''''''''''''''
+This node can be used to build an optimization process.
+It has one and only one internal node as all the loop nodes. It is the internal node that is "optimized".
+The optimization algorithm must be defined by the user. The main idea behind is : the OptimizerLoop iterates until
+the user optimization algorithm says the process is ended (convergence or error). At each iteration, the 
+OptimizerLoop gives the data provided by the internal node to the algorithm. The algorithm returns a new sample
+that is given by the OptimizerLoop to the internal node and so on until the end. In most optimization processes, the sample
+is the variable (x) and the data that is returned by the internal node is the function to optimize (f(x)). Sometimes, the
+gradient is also returned.
+
+The definition of the optimization algorithm is done by way of plugin.
+The plugin can be a C++ plugin implemented in a dynamic library (.so file) or a Python plugin implemented in a Python module (.py).
+It is possible to implement two kinds of algorithm : synchronous or asynchronous.
+The implementation of an optimization algorithm as a plugin is described in :ref:`optimizationplugin`.
+
+The plugin is defined by 2 parameters :
+
+- **lib** the file name of the dynamic library or of the Python module. The name of the dynamic library must be given without
+  extension (.so) but the name of the Python must be given with extension (.py).
+- **entry**, the name of an entry point in the dynamic library or in the Python module that will return the algorithm plugin
+  factory (see :ref:`optimizationplugin` for more informations)
+
+The node has five ports:
+
+- **algoInit**, an input port that takes an object used for the initialization of the algorithm
+- **evalSamples**, an output port that gives the samples in the optimization process
+- **evalResults**, an input port that collects the results given by the internal node
+- **nbBranches**, an input port that can be used to parallelize the optimization process as in the ForEach node (number of
+  branches). Most of a time, the optimization process is sequential so the number of branches will be 1, but in some cases 
+  it is possible to parallelize the process so the number  of branches will be greater than 1.
+- **algoResults**, an output port that gives the results of the optimization algorithm
+
+To create this type of node:
+
+- from the GUI, see :ref:`optimizerloop_node`
+- in a XML file, see :ref:`xml_optimizerloop`
+- from python interface, see :ref:`py_optimizerloop`
 
 
-Les containers
+
+.. _containers:
+
+Containers
 ---------------------
-La plate-forme SALOME exécute ses composants après les avoir chargés dans des containers. Un container SALOME est un
-processus géré par la plate-forme qui peut être exécuté sur toute machine connue.
+The SALOME platform executes its components after loading them in containers.  A SALOME container is a process managed 
+by the platform that may be executed on any known resource.
+A YACS container is used to define component placement constraints without necessarily precisely defining the resource 
+to be used or the container name.
+The YACS container has a name.  Constraints are given in the form of container properties.  
+The current list of properties is as follows:
 
-Un container YACS sert à définir des contraintes de placement des composants sans pour autant définir précisément
-la machine à utiliser ou le nom du container.
-
-Le container YACS a un nom. Les contraintes sont données sous la forme de propriétés du container.
-La liste actuelle des propriétés est la suivante :
+.. tabularcolumns:: |p{3cm}|p{3cm}|p{10cm}|
 
 =================== ============= =============================================
-Nom                   Type            Type de contrainte
+Name                  Type            Type of constraint
 =================== ============= =============================================
-policy               "best",       Choisit dans la liste des machines, une fois
-                     "first" ou    les autres critères appliqués, la meilleure
-                     "cycl"        ou la première ou la suivante. Par défaut,
-                                   YACS utilise la politique "cycl" qui
-                                   prend la machine suivante dans la liste
-                                   des machines connues.
-container_name        string       si donné impose le nom du container SALOME
-hostname              string       si donné impose la machine
-OS                    string       si donné restreint le choix de l'OS
-parallelLib           string       ??
-workingdir            string      si donné, spécifie le répertoire d'exécution.
-                                  Par défaut, c'est le répertoire de lancement
-                                  de YACS sur la machine locale et le $HOME
-                                  sur les machines distantes.
-isMPI                 bool         indique si le container doit supporter MPI
-mem_mb                int          taille mémoire minimale demandée
-cpu_clock             int          vitesse cpu minimale demandée
-nb_proc_per_node      int          ??
-nb_node               int          ??
+name                  string       if given imposes the resource to use. If not given, the resource manager will try
+                                   to find the best resource according to the constraints given by the other attributes.
+container_name        string       if given imposes the SALOME container name
+hostname              string       if given imposes the machine (constraint used if name is not given)
+policy               "best",       Choose the best or the first or the next in 
+                     "first" or    the list of resources, once other criteria  
+                     "cycl"        have been applied. By default, YACS uses the “altcycl” policy
+                     "altcycl"     that selects the next resource in the list of known resources (constraint used if name is not given)
+OS                    string       if given restricts the choice of the OS (constraint used if name is not given)
+workingdir            string       if given specifies the execution directory.  
+                                   By default, the YACS run directory will be used 
+                                   on the local machine and the $HOME directory will be used on remote machines.
+isMPI                 bool         indicates if the container has to support MPI
+mem_mb                int          minimum requested memory size (constraint used if name is not given)
+cpu_clock             int          minimum requested CPU speed (constraint used if name is not given)
+nb_proc_per_node      int          number of processors by node (constraint used if name is not given)
+nb_node               int          number of nodes (constraint used if name is not given)
 nb_component_nodes    int          ??
+parallelLib           string       ??
 =================== ============= =============================================
 
-Le catalogue des ressources matérielles
+The resources catalog
 ''''''''''''''''''''''''''''''''''''''''''
-La liste des ressources matérielles (machines) connues de SALOME est donnée par le catalogue des
-ressources : fichier CatalogResources.xml qui doit se trouver dans le répertoire de l'application SALOME utilisée.
-Ce fichier est au format XML. Chaque machine est décrite avec le tag machine qui a plusieurs attributs
-qui permettent de la caractériser.
+The list of resources (machines and SALOME installations) known to SALOME is given in the resources catalog, the CatalogResources.xml file 
+that must be located in the directory of the SALOME application used.  
+This file is in the XML format.  Each resource is described with the **machine** tag that has several attributes that characterize it.
+
+.. tabularcolumns:: |p{3cm}|p{3cm}|p{10cm}|
 
 ================================== =========================== ==============================================
-Caractéristique                        Attribut XML                Description
+Characteristic                         XML attribute               Description
 ================================== =========================== ==============================================
-nom                                 hostname                   soit le nom complet : c'est la clef 
-                                                               qui détermine la machine de manière unique 
-                                                               (exemple : "nickel.ccc.cea.fr") 
-alias                               alias                      chaine de caractères qui permet d'identifier 
-                                                               la machine (exemple : "pluton")
-protocole d'accès                   protocol                   "rsh" (défaut) ou "ssh"
-type d'accès                        mode                       interactif "i" ou batch "b". Par défaut "i"
-username                            userName                   user avec lequel on va se connecter sur 
-                                                               la machine
-système d'exploitation              OS
-taille de la mémoire centrale       memInMB
-fréquence d'horloge                 CPUFreqMHz
-nombre de noeuds                    nbOfNodes
-nombre de processeurs par noeud     nbOfProcPerNode
-application SALOME                  appliPath                  répertoire de l'application SALOME à utiliser
-                                                               sur cette machine
-implémentation mpi                  mpi                        indique quelle implémentation de MPI est
-                                                               utilisée sur cette machine ("lam", "mpich1",
+resource name                       name                       the resource name
+computer name                       hostname                   the complete machine name:  this is the key that uniquely determines the machine
+                                                               (for example : "nickel.ccc.cea.fr") 
+alias                               alias                      character string to identify the machine (for example,  “pluton”)
+access protocol                     protocol                   "rsh" (default) or "ssh"
+access type                         mode                       interactive "i" or batch "b". By default "i"
+user name                           userName                   user name to be used to connect to the machine 
+operating system                    OS
+memory size                         memInMB
+clock frequency                     CPUFreqMHz
+Number of nodes                     nbOfNodes
+Number of processors per node       nbOfProcPerNode
+SALOME application                  appliPath                  directory of the SALOME application to be used on this machine
+mpi implementation                  mpi                        indicates which MPI implementation is used on this machine
+                                                               ("lam", "mpich1",
                                                                "mpich2", "openmpi")
-gestionnaire de batch               batch                      si la machine doit être utilisée au travers
-                                                               d'un système de batch donne le nom du
-                                                               gestionnaire de batch ("pbs", "lsf", "slurm").
-                                                               Pas de défaut.
+batch manager                       batch                      if the machine has to be used through a batch system, gives the 
+                                                               name of the batch manager
+                                                               ("pbs", "lsf", "slurm").
+                                                               No default.
 ================================== =========================== ==============================================
 
-Il est possible d'indiquer également la liste des modules SALOME présents sur la machine.
-Par défaut, SALOME suppose que tous les composants demandés par YACS sont présents.
-Chaque module présent est donné par le sous tag modules et son attribut moduleName.
+The list of SALOME modules of the resource can also be indicated.  By default, SALOME assumes that all components 
+requested by YACS are present.
 
-Voici un exemple de catalogue de ressources::
+If only some components are available within a resource, the list of components must be specified.
+This list can be specified with the sub-tag **component** that has two attributes : **name** (the name of the component)
+and **moduleName** (the name of the module) that is optional. You can use also the sub-tag **modules** that is provided
+for compatibility with older versions. If the **modules** sub-tag is used, a component with the same name as
+the moduleName attribute is added to the list.
+
+The following is an example of a resource catalog:
+
+.. code-block:: xml
 
   <!DOCTYPE ResourcesCatalog>
   <resources>
-    <machine hostname="is111790" alias="is111790" OS="LINUX" CPUFreqMHz="2992" memInMB="1024" 
-             protocol="rsh" mode="interactif" nbOfNodes="1" nbOfProcPerNode="1" >
+    <machine hostname="is111790" alias="is111790" 
+             OS="LINUX" CPUFreqMHz="2992" memInMB="1024" 
+             protocol="rsh" mode="interactif" 
+	     nbOfNodes="1" nbOfProcPerNode="1" >
     </machine>
-    <machine hostname="is111915" alias="is111915" OS="LINUX" CPUFreqMHz="2992" memInMB="1024" 
-             protocol="ssh" mode="interactif" nbOfNodes="1" nbOfProcPerNode="1" 
-             appliPath="SALOME43/Run">
+    <machine hostname="is111915" alias="is111915" 
+             OS="LINUX" CPUFreqMHz="2992" memInMB="1024" 
+             protocol="ssh" mode="interactif" 
+	     nbOfNodes="1" nbOfProcPerNode="1" 
+             appliPath="SALOME/Run">
              <modules moduleName="GEOM"/>
+             <component name="SMESH"/>
+             <component name="VISU" moduleName="VISU"/>
     </machine>
   </resources>
 
 .. _etats:
 
-Les états d'un noeud
+States of a node
 -----------------------------
-Au cours de l'édition d'un schéma de calcul, les états possibles d'un noeud sont : 
+The possible states of a node when a calculation scheme is being edited are as follows:
 
 =================== =============================================
-Etat                  Commentaire
+State                 Comment
 =================== =============================================
-READY                 le noeud est valide, prêt à être exécuté
-INVALID               le noeud est invalide, le schéma ne peut
-                      pas être exécuté
+READY                The node is valid, ready to be executed   
+INVALID              The node is invalid, the scheme cannot be executed
 =================== =============================================
 
-Au cours de l'exécution d'un schéma de calcul, les états possibles d'un noeud sont :
+A node may be in the following states during execution of a calculation scheme:
 
 =================== =============================================================
-Etat                  Commentaire
+State                 Comment
 =================== =============================================================
-READY                 le noeud est valide, prêt à être exécuté
-TOLOAD                le composant associé au noeud peut être chargé
-LOADED                le composant associé au noeud est chargé
-TOACTIVATE            le noeud peut être exécuté
-ACTIVATED             le noeud est en exécution
-DONE                  l'exécution du noeud est terminée sans erreur
-ERROR                 l'exécution du noeud est terminée avec erreur
-FAILED                noeud en erreur car des noeuds précédents sont en erreur
-DISABLED              l'exécution du noeud est désactivée
-PAUSE                 l'exécution du noeud est suspendue
+READY                the node is valid, ready to be executed
+TOLOAD               the component associated with the node can be loaded
+LOADED               the component associated with the node is loaded
+TOACTIVATE           the node can be executed
+ACTIVATED            the node is being executed
+DONE                 execution of the node is finished with no error
+ERROR                execution of the node is finished with error
+FAILED               node in error because previous nodes were in error
+DISABLED             execution of the node is disabled
+PAUSE                execution of the node is paused
 =================== =============================================================
 
 .. _nommage:
 
-Le nommage contextuel des noeuds
+Context sensitive naming of nodes
 -------------------------------------
-On a vu que les noeuds élémentaires et composés ont un nom unique dans le contexte de définition
-qui correspond au noeud parent (schéma de calcul ou noeud composé). Pour pouvoir désigner les noeuds
-dans toutes les situations possibles, on utilise plusieurs sortes de nommage :
+We have seen that elementary and composite nodes have a unique name in the definition context that corresponds 
+to the parent node (calculation scheme or composite node).  Several sorts of naming are used to denote nodes in all 
+possible situations:
 
-  - le nommage local : c'est le nom du noeud dans son contexte de définition
-  - le nommage absolu : c'est le nom du noeud vu depuis le niveau le plus haut du schéma de calcul
-  - le nommage relatif : c'est le nom du noeud vu d'un noeud composé parent
+ - local naming:  this is the name of the node in its definition context
+ - absolute naming:  this is the name of the node seen from the highest level of the calculation scheme
+ - relative naming:  this is the name of a node seen from a parent composite node.
 
-La règle générale est que les noms absolu et relatif sont construits en concaténant les noms locaux
-du noeud et de ses parents en les séparant par des points.
+The general rule is that absolute and relative names are constructed by concatenating local names of the node and 
+its parents, and separating them with dots.
 
-Prenons l'exemple d'un noeud élémentaire de nom "n" défini dans un bloc de nom "b" qui lui même est défini
-dans un bloc de nom "c" lui même défini au niveau le plus haut du schéma. Le nom local du noeud est "n".
-Le nom absolu est "c.b.n". Le nom relatif dans le bloc "c" est "b.n". On applique la même règle pour
-nommer les ports. Si le noeud "n" a un port de nom "p". Il suffit d'ajouter ".p" au nom du noeud
-pour avoir le nom du port.
+Consider the example of an elementary node with name “n” defined in a block name “b”, that is itself defined in a block name “c” 
+itself defined at the highest level of the scheme. The local name of the node is “n”.  The absolute name is “c.b.n”.  
+The relative name in block “c” is “b.n”.  
 
-Il y a une exception à cette règle. Elle concerne le noeud Switch. Dans ce cas, il faut tenir compte du case
-qui n'est pas un vrai noeud. Si on dit que le bloc "b" de l'exemple précédent est un switch qui a un case avec
-une valeur de 1 et un default, alors le nom absolu du noeud "n" dans le case sera "c.b.p1_n" et celui dans
-le default sera "c.b.default_n".
+The same rule is applied for naming ports.  If node “n” has a port name “p”, then all that is necessary to obtain the port 
+name is to add “.p” to the node name.
+
+There is an exception to this rule that concerns the Switch node.  In this case, it is necessary to take account of case 
+that is not a genuine node.  If it is said that block “b” in the previous example is a switch that has a case with a 
+value of 1 and a default case, then the absolute name of node “n” in the case 1 will be “c.b.p1_n” and the absolute name of the node in 
+the default case will be “c.b.default_n”.
+
+Active study
+--------------
+A schema can be executed without using the SALOME study manager. But when a schema must be executed in the context
+of a SALOME study, it is possible to specify the studyId to use.
+
+The way to do that is to set the schema property **DefaultStudyID** to the study id.
+
+In the GUI, this is set automatically to the current active studyId.
+For execution in console mode, see :ref:`xml_active_study`
 
 .. _errorreport:
 
-Rapport d'erreur
+Error report
 -------------------
-Chaque noeud a un rapport d'erreur associé si son état est INVALID, ERROR ou FAILED.
-Ce rapport est au format XML. 
+Every node has an associated error report if its state is INVALID, ERROR or FAILED.  This report is in the XML format.
 
-Les noeuds élémentaires produisent un rapport simple qui contient un seul tag (error)
-avec 2 attributs :
+Elementary nodes produce a simple report that contains a single (error) tag with 2 attributes:
 
-- node : qui donne le nom du noeud
-- state : qui indique son état
+- node:  that gives the node name
+- state:  that indicates its state.
 
-Le contenu du tag est le texte de l'erreur. Pour un noeud script python ce sera la plupart du temps,
-le traceback de l'exception rencontrée. Pour un noeud de service, ce sera soit le contenu d'une
-exception SALOME soit le contenu d'une exception CORBA.
+The tag content is the text of the error.  For a Python script node, this will usually be the traceback of the exception 
+encountered.  For a service node, it will be either the content of a SALOME exception or the content of a CORBA exception.
 
-Les noeuds composés produisent un rapport composite contenu dans un tag de même nom (error) avec
-les 2 mêmes attributs node et state.
-Le tag contient l'ensemble des rapports d'erreur des noeuds fils erronés.
+Composite nodes produce a composite report contained in a tag with the same name (error) with the same two node and state 
+attributes.  The tag contains all error reports for erroneous child  nodes.
 
-Voici un exemple de rapport d'erreur pour une division par zéro dans un noeud python 
-contenu dans une boucle::
+The following shows an error report for a division by zero in a Python node contained in a loop:
+
+.. code-block:: xml
 
   <error node= proc state= FAILED>
   <error node= l1 state= FAILED>
@@ -638,15 +776,26 @@ contenu dans une boucle::
   </error>
   </error>
 
-Trace d'exécution
-------------------
-Pour chaque exécution une trace d'exécution est produite dans un fichier de nom traceExec_<nom du schema>
-où <nom du schema> est le nom donné au schéma.
+Execution trace files
+--------------------------
+For each execution several trace files are produced:
 
-Chaque ligne du fichier représente un évènement relatif à un noeud. Elle contient deux
-chaines de caractères. La première est le nom du noeud. La deuxième décrit l'évènement.
+- the ouput file of the YACS process that executes the scheme
+- a trace file that reports all the events that have occured during the execution
+- the output files of all launched containers
 
-Voici une trace pour le même exemple que ci-dessus::
+YACS process output file
+''''''''''''''''''''''''''''''''''''''''''
+In this file you will find all the outputs of the inline nodes and error reports (:ref:`errorreport`).
+ 
+YACS events trace file
+''''''''''''''''''''''''''''''''''''''''''
+The file name is: traceExec_<scheme name>, in which <scheme name> is the name given to the scheme.
+
+Each line of the file represents an event related to a node.  It contains two character strings.  
+The first is the node name.  The second describes the event.
+
+The following shows a trace for the same example as above::
 
   n load
   n initService
@@ -663,29 +812,92 @@ Voici une trace pour le même exemple que ci-dessus::
   l1.node2 end execution ABORT, Error during execution
   l1.node2 disconnectService
 
-Exécution des branches concurrentes
+Container output file
+''''''''''''''''''''''''''''''''''''''''''
+In this file you will find all the outputs of the SALOME components (calculation codes).
+Most of the time, the file name is : /tmp/<yacs pid>_<container name>_<container id>_<computer name>_<user name>.log, where:
+
+- <yacs pid> is the id of the YACS process
+- <container name> is the name given to the container in :ref:`containers`.
+- <container id> is an internal id for the container
+- <computer name> is the name of the computer on which the container runs
+- <user name> is the login name of the user on the container computer
+
+By default this file is put in the /tmp directory. It is possible to change that default by setting the SALOME_TMP_DIR environment
+variable to a different location.
+
+If the SALOME component uses CALCIUM datasream ports, this file will also contain a trace of all the calls
+to the CALCIUM library.
+This trace has the following form::
+
+ Elapsed time |    Request |  Container         |   Instance | Port | Error | Infos
+ 34:54:23:112 |      CP_CD | clic6_23_B_0x1e080 | SOL_inst_1 |      |       |
+ 34:54:23:134 |      WRITE | clic6_23_B_0x1e080 | SOL_inst_1 | temp |       | i=0
+ 34:54:23:162 |      WRITE | clic6_23_B_0x1e080 | SOL_inst_1 |  tpi |       | i=0
+ 34:54:23:162 | BEGIN_READ | clic6_23_B_0x1e080 | SOL_inst_1 | puis |       | i=0
+ 34:54:23:174 |   END_READ | clic6_23_B_0x1e080 | SOL_inst_1 | puis |       | read i=0
+ 34:54:23:174 | BEGIN_READ | clic6_23_B_0x1e080 | SOL_inst_1 |  tfi |       | i=0
+
+- column "Elapsed time" gives the elapsed time since a reference time that is given by the computer system (January 1, 1970 on Linux).
+  The time format is: hours:minutes:seconds:milliseconds.
+- column "Request" gives the name of the CALCIUM call.
+- column "Container" gives the container identification (<computer name>_<yacs pid>_<container name>_<container_id>)
+- column "Instance" gives the name of the SALOME component that has issued the call
+- column "Port" gives the name of the port on which the request is done
+- column "Error" gives the error description if there is one
+- column "Infos" gives more information about the request or the error 
+
+By default, the trace is produced in the container output file. It is possible to disable the trace by setting
+the DSC_TRACELEVEL environment variable to 0 (export DSC_TRACELEVEL=0, for bash shell). It is also possible to redirect
+the trace in an another file by setting the DSC_TRACE environment variable to 1 (export DSC_TRACE=1, for bash shell).
+In this case the trace is written in a file with name : $SALOME_TMP_DIR/<container identification>.tce.
+
+
+Execution of concurrent branches
 -------------------------------------
-YACS peut exécuter simultanément les noeuds de calcul d'un schéma.
-Cependant l'exécution simultanée d'un grand nombre de noeuds peut saturer le système.
-Il est possible de controler le nombre maximum
-d'exécutions simultanées en fixant le nombre maximum de threads utilisés avec
-la variable d'environnement YACS_MAX_THREADS. Par défaut, cette valeur vaut 50.
+YACS can execute calculation nodes of a scheme simultaneously.  
+However, simultaneous execution of a large number of nodes can saturate the system.  
+The maximum number of simultaneous executions can be controlled by fixing the maximum number of threads used with the 
+YACS_MAX_THREADS environment variable. By default, this value is equal to 50.
+
+Schema shutdown
+-----------------
+When YACS executes a schema, it starts new containers or uses existing containers. When the execution is finished, YACS can shutdown (or stop)
+containers but the user can control how these containers are shutdown.
+
+There are several level of shutdown:
+
+- level 0: nothing is shutdown
+- level 1: shutdown all new containers not named by the user
+- level 2: same as level 1 plus all new containers named by the user
+- level 3: same as level 2 plus all existing containers used by the schema
+
+To shutdown a schema:
+
+- from GUI, see :ref:`shutdown`
+- from console, see :ref:`xml_shutdown`
 
 .. _archi:
 
 YACS general architecture
 ------------------------------
 
-YACS module implements API of a full SALOME module only for the schema execution.  The schema edition is done in the GUI process alone.  For execution, YACS has a CORBA servant that implements Engines::Component CORBA interface (see SALOME 4 KERNEL IDL interfaces).  YACS GUI and YACS CORBA engine share YACS core libraries (engine and runtime): GUI uses them at schema design time, then a schema XML file is saved and passed to YACS CORBA API, and finally YACS core libraries execute the schema at YACS CORBA server side.
+YACS module implements API of a full SALOME module only for the schema execution.  The schema edition is done in the GUI process alone.  
+For execution, YACS has a CORBA servant that implements Engines::EngineComponent CORBA interface (see SALOME KERNEL IDL interfaces).  
+YACS GUI and YACS CORBA engine share YACS core libraries (engine and runtime): GUI uses them at schema design time, then a schema XML 
+file is saved and passed to YACS CORBA API, and finally YACS core libraries execute the schema at YACS CORBA server side.
 
-YACS GUI differs from standard full SALOME modules (such as Geometry or Mesh) in that it does not use SALOMEDS objects to create Object Browser representation of its data, and creates this representation in a way light SALOME modules do.  This is done in order to avoid publishing lots of objects in SALOMEDS study just to create visual representation of data and thus to improve GUI performance.
+YACS GUI differs from standard full SALOME modules (such as Geometry or Mesh) in that it does not use SALOMEDS objects to create 
+Object Browser representation of its data, and creates this representation in a way light SALOME modules do.  
+This is done in order to avoid publishing lots of objects in SALOMEDS study just to create visual representation of data and 
+thus to improve GUI performance.
 
 YACS architecture scheme is shown on the picture below.
 
 .. image:: images/general_architecture_0.jpg
      :align: center
 
-The YACS module will be developed as a Salome module with one document (study) per desktop.
+The YACS module is a SALOME module with one document (study) per desktop.
 
 YACS is composed of several packages. The main things are mentioned in the next sections.
 
@@ -695,7 +907,10 @@ Bases package contains common base classes (exception, threads, etc.) and consta
 
 Engine package
 '''''''''''''''''''''''
-Engine package consists of calculation schema generic classes (calculation nodes, control nodes, control and data flow links, etc.) Engine is in charge to
+Engine package consists of calculation schema generic classes (calculation nodes, control nodes, control and data 
+flow links, etc.). 
+
+Engine is in charge to:
 
     * edit,
     * check consistency,
@@ -706,21 +921,22 @@ graphs independently from the context (i.e. Runtime) the graph is destined to ru
 
 SALOME Runtime package
 '''''''''''''''''''''''
-Runtime package provides implementation of YACS generic calculation nodes for SALOMR platform. Runtime exists in a given Context.  Runtime is in charge to:
+Runtime package provides implementation of YACS generic calculation nodes for SALOME platform. 
+Runtime exists in a given Context.  
+
+Runtime is in charge to:
 
     * treat physically the basic execution of elementary tasks in a given context,
     * transfer data in this context,
     * perform the physical deployment of the execution.
 
 Runtime simply appears in Engine as an interface that a concrete Runtime must implement to be piloted by Engine.
-SALOME Runtime nodes
 
-
-The SALOME Runtime implements following nodes.
+The SALOME Runtime implements following nodes:
 
     * Inline function node.  A function inline node is implemented by a Python function.
     * Inline script node.  A script inline node is implemented by a Python script.
-    * Component service node.  This is a calculation node associated with a component service.
+    * Component service node.  This is a calculation node associated with a SALOME component service.
     * CORBA reference service node.  Reference service node for CORBA objects.  This is a node that executes a CORBA service.
     * CPP node.  This is a C++ node (in process component), i.e. local C++ implementation - single process.
 
@@ -731,14 +947,17 @@ This is XML reader for generic calculation schema.
 XML file loader provides
 
     * a possibility to load a calculation schema in memory by reading and parsing a XML file describing it,
-    * an executable named driver that can be used to load and execute (see Using YACS driver) a calculation schema given as a XML file (see Writing XML file).
+    * an executable named driver that can be used to load and execute (see :ref:`execxml`) a calculation 
+      schema given as a XML file (see :ref:`schemaxml`).
 
 GUI design
 ''''''''''''''''''''''''''''''''
-Goals of Graphic User Interface design are the following.
+Goals of Graphic User Interface design are the following:
 
-    * Provide a general mechanism for the synchronisation of several views (tree views, 2D canvas views, edition dialogs).  For this goal, a subject/observers design pattern is used: several observers can attach or detach themselves to/from the subject.  The subject send update events to the lists of observers and does not know the implementation of the observers.  The observers correspond to the different views in case of YACS.
-    * Provide an interface of Engine for edition with a general mechanism for undo-redo (future version!).
-    * Be as independent as possible of Qt (and SALOME), to avoid problems in Qt4 migration, and allow a potential re-use of YACS GUI outside SALOME.
-
+    * Provide a general mechanism for the synchronisation of several views (tree views, 2D canvas views, edition dialogs).  
+      For this goal, a subject/observers design pattern is used: several observers can attach or detach themselves to/from the subject.  
+      The subject send update events to the lists of observers and does not know the implementation of the observers.  The observers 
+      correspond to the different views in case of YACS.
+    * Provide an interface of Engine for edition with a general mechanism for undo-redo.
+    * Be as independent as possible of Qt (and SALOME) to allow a potential re-use of YACS GUI outside SALOME.
 

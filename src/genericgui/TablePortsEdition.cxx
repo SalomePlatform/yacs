@@ -1,21 +1,22 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "TablePortsEdition.hxx"
 #include "SchemaItem.hxx"
 #include "QtGuiContext.hxx"
@@ -27,6 +28,9 @@
 #include "InputPort.hxx"
 #include "OutputPort.hxx"
 #include "ElementaryNode.hxx"
+#include "Scene.hxx"
+#include "SceneItem.hxx"
+#include "SceneComposedNodeItem.hxx"
 
 #include <QItemSelectionModel>
 #include <QDialog>
@@ -66,6 +70,18 @@ void YComboBox::showPopup()
   emit popupShow();
 }
 
+void YComboBox::keyPressEvent(QKeyEvent *e)
+{
+  //accept all key events but do nothing to avoid creating ports with keys
+}
+
+#ifndef QT_NO_WHEELEVENT
+void YComboBox::wheelEvent(QWheelEvent *e)
+{
+  //idem
+}
+#endif
+
 
 TablePortsEdition::TablePortsEdition(bool inPorts, QWidget *parent)
 {
@@ -83,12 +99,12 @@ TablePortsEdition::TablePortsEdition(bool inPorts, QWidget *parent)
   cb_insert->setToolTip("port creation: select a port type");
 
   connect(cb_insert, SIGNAL(popupHide()),
-          this, SLOT(on_cb_insert_popupHide()));
+          this, SLOT(oncb_insert_popupHide()));
   connect(cb_insert, SIGNAL(popupShow()),
-          this, SLOT(on_cb_insert_popupShow()));
+          this, SLOT(oncb_insert_popupShow()));
 
   connect(cb_insert, SIGNAL(activated(const QString&)),
-          this, SLOT(on_cb_insert_activated(const QString&)));
+          this, SLOT(oncb_insert_activated(const QString&)));
 }
 
 TablePortsEdition::~TablePortsEdition()
@@ -140,8 +156,20 @@ void TablePortsEdition::upOrDown(int isUp)
     {
       Subject *sub = item->parent()->getSubject();
       SubjectElementaryNode* sen = dynamic_cast<SubjectElementaryNode*>(sub);
-      assert(sen);
+      YASSERT(sen);
       sen->OrderDataPorts(spToMove,isUp);
+      if (Scene::_autoComputeLinks)
+        {
+          YACS::HMI::SubjectProc* subproc = QtGuiContext::getQtCurrent()->getSubjectProc();
+          SceneItem *item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[subproc];
+          SceneComposedNodeItem *proc = dynamic_cast<SceneComposedNodeItem*>(item);
+          proc->rebuildLinks();
+        }
+
+      QItemSelectionModel *selectionModel = tv_ports->selectionModel();
+      QModelIndex topLeft=item->modelIndex(0);
+      QItemSelection selection(topLeft, topLeft);
+      selectionModel->select(selection, QItemSelectionModel::Select);
     }
 }
 
@@ -170,7 +198,7 @@ void TablePortsEdition::on_pb_insert_clicked()
 
   sub = item->parent()->getSubject();
   SubjectElementaryNode* sen = dynamic_cast<SubjectElementaryNode*>(sub);
-  assert(sen);
+  YASSERT(sen);
   ElementaryNode* father = dynamic_cast<ElementaryNode*>(sen->getNode());
 
   if (isInput)
@@ -196,9 +224,9 @@ void TablePortsEdition::on_pb_insert_clicked()
   cb_insert->showPopup();  
 }
 
-void TablePortsEdition::on_cb_insert_activated(const QString& text)
+void TablePortsEdition::oncb_insert_activated(const QString& text)
 {
-  DEBTRACE("TablePortsEdition::on_cb_insert_currentIndexChanged " << text.toStdString());
+  DEBTRACE("TablePortsEdition::oncb_insert_activated " << text.toStdString());
   SubjectDataPort *spBefore = 0;
   QModelIndexList items = tv_ports->selectionModel()->selection().indexes();
   QModelIndex index;
@@ -218,7 +246,7 @@ void TablePortsEdition::on_cb_insert_activated(const QString& text)
   YACS::ENGINE::Catalog *catalog =
     QtGuiContext::getQtCurrent()->getGMain()->getCatalogWidget()->getCatalogFromType(portType);
   if (!catalog) catalog = QtGuiContext::getQtCurrent()->getCurrentCatalog();
-  assert(catalog);
+  YASSERT(catalog);
   GuiEditor *editor = QtGuiContext::getQtCurrent()->getGMain()->_guiEditor;
   SubjectDataPort * sdp = 0;
   if (_inPorts)
@@ -307,16 +335,16 @@ void TablePortsEdition::setEditablePorts(bool isEditable)
     }
 }
 
-void TablePortsEdition::on_cb_insert_popupHide()
+void TablePortsEdition::oncb_insert_popupHide()
 {
-  DEBTRACE("TablePortsEdition::on_cb_insert_popupHide");
+  DEBTRACE("TablePortsEdition::oncb_insert_popupHide");
   if (cb_insert->currentIndex() < 0) 
     _nbUp = 0; // --- no selection, no port creation, no move
   DEBTRACE(_nbUp);
 }
 
-void TablePortsEdition::on_cb_insert_popupShow()
+void TablePortsEdition::oncb_insert_popupShow()
 {
-  DEBTRACE("TablePortsEdition::on_cb_insert_popupShow");
+  DEBTRACE("TablePortsEdition::oncb_insert_popupShow");
 }
 

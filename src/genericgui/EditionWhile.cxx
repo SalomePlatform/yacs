@@ -1,21 +1,22 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "EditionWhile.hxx"
 #include "FormLoop.hxx"
 #include "guiObservers.hxx"
@@ -37,24 +38,30 @@ EditionWhile::EditionWhile(Subject* subject,
   : EditionNode(subject, parent, name)
 {
   _formWhile = new FormLoop(this);
+  _condition = 0;
   _wid->gridLayout1->addWidget(_formWhile);
   _formWhile->sb_nsteps->setMinimum(0);
   _formWhile->sb_nsteps->setMaximum(1);
   _formWhile->label->setText("Condition");
-  connect(_formWhile->sb_nsteps, SIGNAL(valueChanged(const QString &)),
-          this, SLOT(onModifyCondition(const QString &)));
+  connect(_formWhile->sb_nsteps, SIGNAL(editingFinished()),
+          this, SLOT(onConditionEdited()));
 }
 
 EditionWhile::~EditionWhile()
 {
 }
 
-void EditionWhile::onModifyCondition(const QString &text)
+void EditionWhile::onConditionEdited()
 {
-  DEBTRACE("EditionWhile::onModifyCondition " << text.toStdString());
-  SubjectWhileLoop *swl = dynamic_cast<SubjectWhileLoop*>(_subject);
-  assert(swl);
-  swl->setCondition(text.toStdString());
+  int newval = _formWhile->sb_nsteps->value();
+  DEBTRACE("EditionWhile::onConditionEdited " << _condition << " --> " << newval);
+  if (newval != _condition)
+    {
+      SubjectWhileLoop *swl = dynamic_cast<SubjectWhileLoop*>(_subject);
+      YASSERT(swl);
+      QString text = _formWhile->sb_nsteps->cleanText();
+      swl->setCondition(text.toStdString());
+    }
 }
 
 void EditionWhile::synchronize()
@@ -79,6 +86,7 @@ void EditionWhile::update(GuiEvent event, int type, Subject* son)
       ss >> i;
       DEBTRACE(i);
       _formWhile->sb_nsteps->setValue(i);
+      _condition = i;
       break;
     }
 }

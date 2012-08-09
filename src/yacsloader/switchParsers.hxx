@@ -1,21 +1,22 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef _SWITCHPARSERS_HXX_
 #define _SWITCHPARSERS_HXX_
 
@@ -60,9 +61,12 @@ struct casetypeParser:parser
   virtual void inline_ (ENGINE::InlineNode* const& n);
   virtual void sinline (ENGINE::ServiceInlineNode* const& n);
   virtual void service (ENGINE::ServiceNode* const& n);
+  virtual void server (ENGINE::ServerNode* const& n);
+  virtual void remote (ENGINE::InlineNode* const& n);
   virtual void node (ENGINE::InlineNode* const& n);
   virtual void forloop (ENGINE::ForLoop* const& n);
   virtual void foreach (ENGINE::ForEachLoop* const& n);
+  virtual void optimizer (ENGINE::OptimizerLoop* const& n);
   virtual void while_ (ENGINE::WhileLoop* const& n);
   virtual void switch_ (ENGINE::Switch* const& n);
   virtual void bloc (ENGINE::Bloc* const& n);
@@ -104,7 +108,7 @@ struct switchtypeParser:parser
 namespace YACS
 {
 
-  static std::string switch_t3[]={"inline","sinline","service","node","forloop","foreach","while","switch","bloc",""};
+  static std::string switch_t3[]={"inline","sinline","service","server", "remote", "node","forloop","foreach","optimizer","while","switch","bloc",""};
 
   void casetypeParser::buildAttr(const XML_Char** attr)
     {
@@ -158,6 +162,20 @@ namespace YACS
       currentProc->nodeMap[fullname]=n;
       currentProc->serviceMap[fullname]=n;
     }
+  void casetypeParser::server (ENGINE::ServerNode* const& n)
+    {
+      _cnode=n;
+      std::string fullname=currentProc->names.back()+ n->getName();
+      currentProc->nodeMap[fullname]=n;
+      currentProc->inlineMap[fullname]=n;
+    }
+  void casetypeParser::remote (ENGINE::InlineNode* const& n)
+    {
+      _cnode=n;
+      std::string fullname=currentProc->names.back()+ n->getName();
+      currentProc->nodeMap[fullname]=n;
+      currentProc->inlineMap[fullname]=n;
+    }
   void casetypeParser::node (ENGINE::InlineNode* const& n)
     {
       _cnode=n;
@@ -178,6 +196,14 @@ namespace YACS
       currentProc->nodeMap[fullname]=n;
       fullname += ".splitter";
       currentProc->nodeMap[fullname]=n->getChildByShortName("splitter");
+    }
+  void casetypeParser::optimizer (ENGINE::OptimizerLoop* const& n)
+    {
+      _cnode=n;
+      std::string fullname=currentProc->names.back()+ n->getName();
+      currentProc->nodeMap[fullname]=n;
+      //fullname += ".splitter";
+      //currentProc->nodeMap[fullname]=n->getChildByShortName("splitter");
     }
   void casetypeParser::while_ (ENGINE::WhileLoop* const& n)
     {
@@ -315,9 +341,12 @@ void casetypeParser::onStart(const XML_Char* el, const XML_Char** attr)
   this->maxcount("inline",1,element);
   this->maxcount("sinline",1,element);
   this->maxcount("service",1,element);
+  this->maxcount("server",1,element);
+  this->maxcount("remote",1,element);
   this->maxcount("node",1,element);
   this->maxcount("forloop",1,element);
   this->maxcount("foreach",1,element);
+  this->maxcount("optimizer",1,element);
   this->maxcount("while",1,element);
   this->maxcount("switch",1,element);
   this->maxcount("bloc",1,element);
@@ -327,9 +356,12 @@ void casetypeParser::onStart(const XML_Char* el, const XML_Char** attr)
   else if(element == "inline")pp=&inlinetypeParser<>::inlineParser;
   else if(element == "sinline")pp=&sinlinetypeParser<>::sinlineParser;
   else if(element == "service")pp=&servicetypeParser<>::serviceParser;
+  else if(element == "server")pp=&servertypeParser<>::serverParser;
+  else if(element == "remote")pp=&remotetypeParser<>::remoteParser;
   else if(element == "node")pp=&nodetypeParser<>::nodeParser;
   else if(element == "forloop")pp=&forlooptypeParser<>::forloopParser;
   else if(element == "foreach")pp=&foreachlooptypeParser<>::foreachloopParser;
+  else if(element == "optimizer")pp=&optimizerlooptypeParser<>::optimizerloopParser;
   else if(element == "while")pp=&whilelooptypeParser<>::whileloopParser;
   else if(element == "switch")pp=&switchtypeParser::switchParser;
   else if(element == "bloc")pp=&bloctypeParser<>::blocParser;
@@ -347,9 +379,12 @@ void casetypeParser::onEnd(const char *el,parser* child)
   else if(element == "inline")inline_(((inlinetypeParser<>*)child)->post());
   else if(element == "sinline")sinline(((sinlinetypeParser<>*)child)->post());
   else if(element == "service")service(((servicetypeParser<>*)child)->post());
+  else if(element == "server")server(((servertypeParser<>*)child)->post());
+  else if(element == "remote")remote(((remotetypeParser<>*)child)->post());
   else if(element == "node")node(((nodetypeParser<>*)child)->post());
   else if(element == "forloop")forloop(((forlooptypeParser<>*)child)->post());
   else if(element == "foreach")foreach(((foreachlooptypeParser<>*)child)->post());
+  else if(element == "optimizer")optimizer(((optimizerlooptypeParser<>*)child)->post());
   else if(element == "while")while_(((whilelooptypeParser<>*)child)->post());
   else if(element == "switch")switch_(((switchtypeParser*)child)->post());
   else if(element == "bloc")bloc(((bloctypeParser<>*)child)->post());

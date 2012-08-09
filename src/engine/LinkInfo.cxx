@@ -1,21 +1,22 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "LinkInfo.hxx"
 #include "Switch.hxx"
 
@@ -49,13 +50,13 @@ void LinkInfo::startCollapseTransac()
   _level++;
 }
 
-void LinkInfo::endCollapseTransac() throw(Exception)
+void LinkInfo::endCollapseTransac() throw(YACS::Exception)
 {
   if(--_level==0)
     {
       if(_levelOfInfo==ALL_STOP_ASAP)
         if(areWarningsOrErrors())
-          throw(getGlobalRepr());
+          throw Exception(getGlobalRepr());
       else if(_levelOfInfo==WARN_ONLY_DONT_STOP)
         if(getNumberOfWarnLinksGrp(W_ALL)!=0)
           throw Exception(getErrRepr());
@@ -82,7 +83,7 @@ void LinkInfo::pushWarnLink(OutPort *semStart, InPort *end, WarnReason reason)
   _collapse[reason].back().push_back(pair<OutPort *,InPort *>(semStart,end));
 }
 
-void LinkInfo::pushErrLink(OutPort *semStart, InPort *end, ErrReason reason) throw(Exception)
+void LinkInfo::pushErrLink(OutPort *semStart, InPort *end, ErrReason reason) throw(YACS::Exception)
 {
   if(reason==E_NEVER_SET_INPUTPORT)
     _unsetInPort.push_back(end);
@@ -91,15 +92,15 @@ void LinkInfo::pushErrLink(OutPort *semStart, InPort *end, ErrReason reason) thr
   else
     _errors[reason].push_back(pair<OutPort *, InPort *>(semStart,end));
   if(_level==0)
-    if(_levelOfInfo==ALL_STOP_ASAP or _levelOfInfo==WARN_ONLY_DONT_STOP)
+    if(_levelOfInfo==ALL_STOP_ASAP || _levelOfInfo==WARN_ONLY_DONT_STOP)
       throw Exception(getErrRepr());
 }
 
-void LinkInfo::pushErrSwitch(CollectorSwOutPort *collector) throw(Exception)
+void LinkInfo::pushErrSwitch(CollectorSwOutPort *collector) throw(YACS::Exception)
 {
   _errorsOnSwitchCases.push_back(collector);
   if(_level==0)
-    if(_levelOfInfo==ALL_STOP_ASAP or _levelOfInfo==WARN_ONLY_DONT_STOP)
+    if(_levelOfInfo==ALL_STOP_ASAP || _levelOfInfo==WARN_ONLY_DONT_STOP)
       throw Exception(getErrRepr());
 }
 
@@ -108,7 +109,7 @@ void LinkInfo::pushUselessCFLink(Node *start, Node *end)
   _uselessLinks.insert(pair<Node *,Node *>(start,end));
 }
 
-void LinkInfo::takeDecision() const throw(Exception)
+void LinkInfo::takeDecision() const throw(YACS::Exception)
 {
   if(!_errors.empty())
     throw Exception(getErrRepr());

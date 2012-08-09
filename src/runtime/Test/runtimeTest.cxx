@@ -1,21 +1,22 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // --- include from engine first, to avoid redifinition warning _POSIX_C_SOURCE
 //
 #include "TypeConversions.hxx"
@@ -252,7 +253,7 @@ void RuntimeTest::createRecursiveBlocs()
 {
   DEBTRACE(" --- recursive blocs, check constituants" );
 
-  // --- Bloc_2 with Bloc_1 and Bloc_2
+  // --- Bloc_2 with Bloc_0, Bloc_1 and Node_3
   {
     ostringstream ss;
     ss << "Bloc_" << _ibloc++;
@@ -1266,7 +1267,11 @@ void RuntimeTest::manualGetOutputs()
 
   PyObject *ob=((OutputPyPort*)_nodeMap["Node_11"]->getOutputPort("c"))->get();
   DEBTRACE("ob refcnt: " << ob->ob_refcnt);
-  PyObject_Print(ob,stdout,Py_PRINT_RAW);
+  std::cerr << "Output port Node_11.c: ";
+  PyGILState_STATE gstate = PyGILState_Ensure();
+  PyObject_Print(ob,stderr,Py_PRINT_RAW);
+  PyGILState_Release(gstate);
+  std::cerr << std::endl;
 
   //   DEBTRACE("a: " << &a);
   //   DEBTRACE("a.value(): " << a.value());
@@ -1390,7 +1395,14 @@ void RuntimeTest::convertPorts()
               }
 
             DEBTRACE("Put a " << type[jtype] << " double (" << d0 << ") in " << s);
-            pwrap->put(v);
+            if (jtype == 2) 
+              {
+                PyGILState_STATE gstate = PyGILState_Ensure();
+                pwrap->put(v);
+                PyGILState_Release(gstate);
+              }
+            else
+              pwrap->put(v);
             cerr << endl;
 
             switch (itype)
@@ -1510,7 +1522,6 @@ void RuntimeTest::executeCppNode()
   
   u->decrRef();
   v->decrRef();
-  w->decrRef();
   
   delete node;
   
@@ -1519,6 +1530,7 @@ void RuntimeTest::executeCppNode()
   node = _myRuntime->createCompoNode("Cpp", "test");
   CppComponent * C = new CppComponent("TestComponent");
   node->setComponent(C);
+  C->decrRef();
   node->setMethod("f");
   
   in  = node->edAddInputPort("in",  _tc_double);
@@ -1543,7 +1555,6 @@ void RuntimeTest::executeCppNode()
   
   u->decrRef();
   v->decrRef();
-  w->decrRef();
   
   delete node;
   
@@ -1560,6 +1571,7 @@ void RuntimeTest::createGraphWithCppNodes()
    
   CppComponent *C = new CppComponent("TestComponent"); 
   ((CppNode *) n1)->setComponent(C);
+  C->decrRef();
   ((CppNode *) n1)->setMethod("f");
   in1  = n1->edAddInputPort("i",  _tc_double);
   out1  = n1->edAddOutputPort("o",  _tc_double);
@@ -1600,6 +1612,16 @@ void RuntimeTest::classTeardown()
   if (endTests) return;
   
   endTests = true;
+
+  delete _blocMap["Bloc_3"];
+  delete _blocMap["Bloc_2"];
+  delete _nodeMap["Node_4"];
+  delete _nodeMap["Node_5"];
+  delete _nodeMap["Node_6"];
+  delete _nodeMap["Node_7"];
+  delete _nodeMap["Node_8"];
+  delete _nodeMap["Node_9"];
+
   _tc_seqC->decrRef();
   _tc_C->decrRef();
   list<TypeCodeObjref *>::iterator i;
@@ -1617,5 +1639,7 @@ void RuntimeTest::classTeardown()
   _tc_seqlong->decrRef();
   _tc_string->decrRef();
 
+  _myRuntime->fini();
   delete _myRuntime;
 }
+

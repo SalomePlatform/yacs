@@ -1,21 +1,22 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "LinkAStar.hxx"
 
 #include <map>
@@ -26,7 +27,6 @@
 #include "YacsTrace.hxx"
 
 using namespace std;
-//using namespace YACS::ENGINE;
 using namespace YACS::HMI;
 
 
@@ -48,7 +48,7 @@ LinkAStar::LinkAStar(const LinkMatrix& linkMatrix) : _linkMatrix(linkMatrix), _f
 {
   _closedList.clear();
   _openList.clear();
-
+  _pq=std::priority_queue<Cost>();
 }
 
 LinkAStar::~LinkAStar()
@@ -59,6 +59,7 @@ bool LinkAStar::computePath(LNode from, LNode to)
 {
   _closedList.clear();
   _openList.clear();
+  _pq=std::priority_queue<Cost>();
   _from = from;
   _to = to;
   bool isPath = false;
@@ -150,11 +151,13 @@ void LinkAStar::addNeighbours(std::pair<int,int> currentNode)
               if (tmp.getFCost() < _openList[pos].getFCost())
                 {
                   _openList[pos] = tmp; // --- new path better, update node
+                  _pq.push(Cost(tmp.getFCost(),pos));
                 }
             }
           else
             {
               _openList[pos] = tmp; // --- add node
+              _pq.push(Cost(tmp.getFCost(),pos));
             }
         }
     }
@@ -162,14 +165,13 @@ void LinkAStar::addNeighbours(std::pair<int,int> currentNode)
  
 std::pair<int,int> LinkAStar::bestNode(const LNodeMap& aList)
 {
-  double fCost = (aList.begin()->second).getFCost();
-  pair<int, int> pos = aList.begin()->first;
-  for (LNodeMap::const_iterator it = aList.begin(); it != aList.end(); ++it)
-    if ((it->second).getFCost() < fCost)
-      {
-        fCost = (it->second).getFCost();
-        pos = it->first;
-      }
+  std::pair<int, int> pos;
+  do
+    {
+      pos=_pq.top().pos;
+      _pq.pop();
+    }
+  while(aList.count(pos)==0);
   return pos;
 }
 
@@ -178,9 +180,4 @@ void LinkAStar::moveToClosedList(std::pair<int,int> pos)
   _closedList[pos] = _openList[pos];
   if (_openList.erase(pos) == 0)
     DEBTRACE("node not in open list, can't delete");
-}
-
-double LinkAStar::distance(int i1, int j1, int i2, int j2)
-{
-  return sqrt(double((i1-i2)*(i1-i2) + (j1-j2)*(j1-j2)));
 }

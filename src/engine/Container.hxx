@@ -1,24 +1,26 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef __CONTAINER_HXX__
 #define __CONTAINER_HXX__
 
+#include "YACSlibEngineExport.hxx"
 #include "Exception.hxx"
 #include "RefCounter.hxx"
 
@@ -30,10 +32,11 @@ namespace YACS
   namespace ENGINE
   {
     class ComponentInstance;
+    class Proc;
     /*!
      * This is an abstract class, that represents an abstract process in which ComponentInstances can be launched and run.
      */
-    class Container : public RefCounter
+    class YACSLIBENGINE_EXPORT Container : public RefCounter
     {
     protected:
       Container();
@@ -42,9 +45,10 @@ namespace YACS
 #endif
     public:
       //Execution only methods
-      virtual bool isAlreadyStarted() const = 0;
-      virtual void start() throw(Exception) = 0;
-      virtual std::string getPlacementId() const = 0;
+      virtual bool isAlreadyStarted(const ComponentInstance *inst) const = 0;
+      virtual void start(const ComponentInstance *inst) throw(Exception) = 0;
+      virtual std::string getPlacementId(const ComponentInstance *inst) const = 0;
+      virtual std::string getFullPlacementId(const ComponentInstance *inst) const = 0;
       //Edition only methods
       virtual void attachOnCloning() const;
       virtual void dettachOnCloning() const;
@@ -60,10 +64,16 @@ namespace YACS
       std::string getName() const { return _name; };
       //! \b WARNING ! name is used in edition to identify different containers, it is not the runtime name of the container
       void setName(std::string name) { _name = name; };
+      void setProc(Proc* proc) { _proc = proc; };
+      Proc* getProc() { return _proc; };
+      virtual void shutdown(int level);
+      virtual std::map<std::string,std::string> getResourceProperties(const std::string& name) { return _propertyMap; };
+
     protected:
       std::string _name;
       mutable bool _isAttachedOnCloning;
       std::map<std::string,std::string> _propertyMap;
+      Proc* _proc;
     };
   }
 }

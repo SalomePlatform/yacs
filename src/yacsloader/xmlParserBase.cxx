@@ -1,27 +1,29 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "xmlParserBase.hxx"
 #include "Exception.hxx"
 
 #include <stdexcept>
 #include <iostream>
 #include <cstdarg>
+#include <cstdio>
 #include <cassert>
 
 //#define _DEVDEBUG_
@@ -74,7 +76,7 @@ void XMLCALL xmlParserBase::end_document  (void* userData)
   xmlParserBase *currentParser = static_cast<xmlParserBase *> (userData);
 }
 
-/*! callback called on start of an xml element: <name>
+/*! callback called on start of an xml element: \verbatim <name> \endverbatim
  */
 
 void XMLCALL xmlParserBase::start_element (void* userData,
@@ -90,7 +92,7 @@ void XMLCALL xmlParserBase::start_element (void* userData,
 }
 
 
-/*! callback called on end of an xml element: </name>
+/*! callback called on end of an xml element: \verbatim </name> \endverbatim
  */
 
 void XMLCALL xmlParserBase::end_element   (void* userData,
@@ -108,9 +110,9 @@ void XMLCALL xmlParserBase::end_element   (void* userData,
  }
 
 
-/*! callback called for significant characters inside tags: <tag>content</tag>
+/*! callback called for significant characters inside tags: \verbatim <tag>content</tag> \endverbatim
  *  or outside tags, like space or new line. 
- *  with expat get also the CDATA tags: <tag>![CDATA[content]]></tag>
+ *  with expat get also the CDATA tags: \verbatim <tag>![CDATA[content]]></tag> \endverbatim
  */
 
 void XMLCALL xmlParserBase::characters    (void* userData,
@@ -205,7 +207,7 @@ void XMLCALL xmlParserBase::fatal_error   (void* userData,
   va_end(args);
 }
 
-/*! callback called for CDATA inside tags: <tag>![CDATA[content]]></tag>
+/*! callback called for CDATA inside tags: \verbatim <tag>![CDATA[content]]></tag> \endverbatim
  *  used only by libxml2
  */
 

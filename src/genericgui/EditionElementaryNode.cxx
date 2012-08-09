@@ -1,25 +1,27 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "EditionElementaryNode.hxx"
 #include "ValueDelegate.hxx"
 #include "QtGuiContext.hxx"
 
+#include "Proc.hxx"
 #include "Port.hxx"
 #include "DataPort.hxx"
 #include "TypeCode.hxx"
@@ -48,7 +50,7 @@ EditionElementaryNode::EditionElementaryNode(Subject* subject,
   _valueDelegate = 0;
 
   _subElemNode = dynamic_cast<SubjectElementaryNode*>(_subject);
-  assert(_subElemNode);
+  YASSERT(_subElemNode);
   _valueDelegate = new ValueDelegate(parent);
 
   connect(_valueDelegate, SIGNAL(commitData(QWidget*)),
@@ -87,6 +89,7 @@ void EditionElementaryNode::synchronize()
       int numRows = model->rowCount(parentIndex);
       if (_tvInPorts)
         {
+          _tvInPorts->cb_insert->setCurrentIndex(0);
           _tvInPorts->setNode(_subElemNode);
           _tvInPorts->tv_ports->setRootIndex(parentIndex);
           for (int row = 0; row < numRows; ++row)
@@ -104,6 +107,7 @@ void EditionElementaryNode::synchronize()
         }
       if (_tvOutPorts)
         {
+          _tvOutPorts->cb_insert->setCurrentIndex(0);
           _tvOutPorts->setNode(_subElemNode);
           _tvOutPorts->tv_ports->setRootIndex(parentIndex);
           for (int row = 0; row < numRows; ++row)
@@ -138,10 +142,10 @@ bool EditionElementaryNode::hasOutputPorts()
   return true;
 }
 
-void EditionElementaryNode::createTablePorts()
+void EditionElementaryNode::createTablePorts(QLayout* layout)
 {
   _twPorts = new QTabWidget(this);
-  _wid->gridLayout1->addWidget(_twPorts);
+  layout->addWidget(_twPorts);
   SchemaModel *model = QtGuiContext::getQtCurrent()->getSchemaModel();
 
   QModelIndex schemIndex = model->index(0, 0, QModelIndex());
@@ -186,22 +190,23 @@ void EditionElementaryNode::onCommitData(QWidget *editor)
 {
   DEBTRACE("EditionElementaryNode::onCommitData " << editor);
   GenericEditor* gedit = dynamic_cast<GenericEditor*>(editor);
-  assert(gedit);
+  YASSERT(gedit);
   QString val = gedit->GetStrValue();
   DEBTRACE(val.toStdString());
   Subject *sub = gedit->getSubject();
-  assert(sub);
+  YASSERT(sub);
   SubjectDataPort *sdp = dynamic_cast<SubjectDataPort*>(sub);
-  assert(sdp);
+  YASSERT(sdp);
   string strval = val.toStdString();
   bool isOk = false;
 
   if (gedit->getColumnInSubject() == YValue)
     {
-      if (sdp->getPort()->edGetType()->kind() == YACS::ENGINE::String)
-        strval = "\"" + strval + "\"";
       DEBTRACE(strval);
        isOk = sdp->setValue(strval);
+
+      GuiExecutor* executor = QtGuiContext::getQtCurrent()->getGuiExecutor();
+      if (executor) executor->setInPortValue(sdp->getPort(), strval);
     }
 
   else // --- YLabel

@@ -1,25 +1,28 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef _PROC_HXX_
 #define _PROC_HXX_
 
+#include "YACSlibEngineExport.hxx"
 #include "Bloc.hxx"
+
 #include <string>
 #include <iostream>
 #include <list>
@@ -37,7 +40,7 @@ namespace YACS
     class ComponentInstance;
     class Logger;
 
-    class Proc: public Bloc
+    class YACSLIBENGINE_EXPORT Proc: public Bloc
     {
     public:
       Proc(const std::string& name);
@@ -51,10 +54,19 @@ namespace YACS
       virtual TypeCode* getTypeCode(const std::string& name);
       virtual void setTypeCode(const std::string& name,TypeCode *t);
       virtual Container* createContainer(const std::string& name,const std::string& kind="");
+      virtual ComponentInstance* createComponentInstance(const std::string& componame, 
+                                                         const std::string& name="",
+                                                         const std::string& kind="");
+      virtual void addComponentInstance(ComponentInstance* inst, const std::string& name="",bool resetCtr=false);
+      virtual void removeComponentInstance(ComponentInstance* inst);
+      virtual void removeContainer(Container* cont);
       virtual void accept(Visitor *visitor);
+      virtual Proc *getProc();
+      virtual const Proc * getProc() const;
 
       YACS::StatesForNode getNodeState(int numId);
       std::string getInPortValue(int nodeNumId, std::string portName);
+      std::string setInPortValue(std::string nodeName, std::string portName, std::string value);
       std::string getOutPortValue(int nodeNumId, std::string portName);
       std::string getNodeErrorDetails(int nodeNumId);
       std::string getNodeErrorReport(int nodeNumId);
@@ -74,7 +86,7 @@ namespace YACS
       std::map<std::string, InlineNode*> inlineMap;
       std::map<std::string, TypeCode*> typeMap;
       std::map<std::string, Container*> containerMap;
-      std::map<std::pair<std::string,int>, ComponentInstance*> componentInstanceMap;
+      std::map<std::string, ComponentInstance*> componentInstanceMap;
       std::vector<std::string> names;
 
       typedef std::map<std::string, Logger*> LoggerMap;
@@ -86,6 +98,7 @@ namespace YACS
       virtual void saveState(std::string xmlStateFile);
     protected:
       bool _edition;
+      int _compoinstctr;
 
     };
   }

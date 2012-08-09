@@ -1,21 +1,22 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef _MENUS_HXX_
 #define _MENUS_HXX_
 
@@ -37,8 +38,10 @@ namespace YACS
       virtual void popupMenu(QWidget *caller,
                              const QPoint &globalPos,
                              const QString& m = "MenuBase");
+      virtual void addForEachMenu(QMenu *m, QActionGroup* actgroup);
     protected slots:
       void dummyAction();
+      void foreachAction(QAction*);
     protected:
       virtual void addHeader(QMenu &m, const QString &h);
       QAction *_dummyAct;
@@ -165,6 +168,38 @@ namespace YACS
                              const QString& m = "Reference Menu");
     };
 
+    class ContainerDirMenu: public MenusBase
+    {
+      Q_OBJECT
+    public:
+      ContainerDirMenu();
+      virtual ~ContainerDirMenu();
+      virtual void popupMenu(QWidget *caller,
+                             const QPoint &globalPos,
+                             const QString& m = "Containers Menu");
+    };
+
+    class ComponentInstanceMenu: public MenusBase
+    {
+      Q_OBJECT
+    public:
+      ComponentInstanceMenu();
+      virtual ~ComponentInstanceMenu();
+      virtual void popupMenu(QWidget *caller,
+                             const QPoint &globalPos,
+                             const QString& m = "ComponentInstance Menu");
+    };
+
+    class ContainerMenu: public MenusBase
+    {
+      Q_OBJECT
+    public:
+      ContainerMenu();
+      virtual ~ContainerMenu();
+      virtual void popupMenu(QWidget *caller,
+                             const QPoint &globalPos,
+                             const QString& m = "Container Menu");
+    };
   }
 }
 

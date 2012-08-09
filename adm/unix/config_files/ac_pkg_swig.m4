@@ -1,21 +1,22 @@
-dnl  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+dnl Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 dnl
-dnl  This library is free software; you can redistribute it and/or
-dnl  modify it under the terms of the GNU Lesser General Public
-dnl  License as published by the Free Software Foundation; either
-dnl  version 2.1 of the License.
+dnl This library is free software; you can redistribute it and/or
+dnl modify it under the terms of the GNU Lesser General Public
+dnl License as published by the Free Software Foundation; either
+dnl version 2.1 of the License.
 dnl
-dnl  This library is distributed in the hope that it will be useful,
-dnl  but WITHOUT ANY WARRANTY; without even the implied warranty of
-dnl  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-dnl  Lesser General Public License for more details.
+dnl This library is distributed in the hope that it will be useful,
+dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
+dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+dnl Lesser General Public License for more details.
 dnl
-dnl  You should have received a copy of the GNU Lesser General Public
-dnl  License along with this library; if not, write to the Free Software
-dnl  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+dnl You should have received a copy of the GNU Lesser General Public
+dnl License along with this library; if not, write to the Free Software
+dnl Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 dnl
-dnl  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+dnl See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 dnl
+
 dnl @synopsis AC_PROG_SWIG([major.minor.micro])
 dnl This macro searches for a SWIG installation on your system. If found you
 dnl should) SWIG via $(SWIG).  You can use the optional first argument to check
@@ -76,17 +77,35 @@ AC_DEFUN([AC_PROG_SWIG],[
 			if test -z "$available_patch" ; then
 				[available_patch=0]
 			fi
-			if test $available_major -ne $required_major \
-				-o $available_minor -ne $required_minor \
-				-o $available_patch -lt $required_patch ; then
-				AC_MSG_WARN([SWIG version >= $1 is required.  You have $swig_version.  You should look at http://www.swig.org])
-				SWIG='echo "Error: SWIG version >= $1 is required.  You have '"$swig_version"'.  You should look at http://www.swig.org" ; false'
-			else
-				AC_MSG_NOTICE([SWIG executable is '$SWIG'])
+      if test $available_major -lt $required_major ; then
+        AC_MSG_WARN([SWIG version >= $1 is required.  You have $swig_version (major version too low).  You should look at http://www.swig.org])
+        SWIG='echo "Error: SWIG version >= $1 is required.  You have '"$swig_version"'.  You should look at http://www.swig.org" ; false'
+      elif test $available_major -eq $required_major; then
+        if test $available_minor -lt $required_minor ; then
+          AC_MSG_WARN([SWIG version >= $1 is required.  You have $swig_version (minor version too low).  You should look at http://www.swig.org])
+          SWIG='echo "Error: SWIG version >= $1 is required.  You have '"$swig_version"'.  You should look at http://www.swig.org" ; false'
+        elif test $available_minor -eq $required_minor ;then
+          if test $available_patch -lt $required_patch; then
+            AC_MSG_WARN([SWIG version >= $1 is required.  You have $swig_version (maintenance version too low).  You should look at http://www.swig.org])
+            SWIG='echo "Error: SWIG version >= $1 is required.  You have '"$swig_version"'.  You should look at http://www.swig.org" ; false'
+          else
+            AC_MSG_NOTICE([SWIG executable is '$SWIG'])
+            swig_ok=yes
+            SWIG_LIB=`$SWIG -swiglib`
+            AC_MSG_NOTICE([SWIG runtime library directory is '$SWIG_LIB'])
+          fi
+        else
+          AC_MSG_NOTICE([SWIG executable is '$SWIG'])
+          swig_ok=yes
+          SWIG_LIB=`$SWIG -swiglib`
+          AC_MSG_NOTICE([SWIG runtime library directory is '$SWIG_LIB'])
+        fi
+      else
+        AC_MSG_NOTICE([SWIG executable is '$SWIG'])
         swig_ok=yes
-				SWIG_LIB=`$SWIG -swiglib`
-				AC_MSG_NOTICE([SWIG runtime library directory is '$SWIG_LIB'])
-			fi
+        SWIG_LIB=`$SWIG -swiglib`
+        AC_MSG_NOTICE([SWIG runtime library directory is '$SWIG_LIB'])
+      fi
 		else
 			AC_MSG_WARN([cannot determine SWIG version])
 			SWIG='echo "Error: Cannot determine SWIG version.  You should look at http://www.swig.org" ; false'

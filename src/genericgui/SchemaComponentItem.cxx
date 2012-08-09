@@ -1,26 +1,28 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "SchemaComponentItem.hxx"
 #include "QtGuiContext.hxx"
 #include "SchemaModel.hxx"
 #include "SchemaReferenceItem.hxx"
 #include "guiObservers.hxx"
+#include "Menus.hxx"
 
 #include <QIcon>
 #include <cassert>
@@ -33,7 +35,7 @@ using namespace YACS::HMI;
 
 
 SchemaComponentItem::SchemaComponentItem(SchemaItem *parent, QString label, Subject* subject)
-  : SchemaItem::SchemaItem(parent, label, subject)
+  : SchemaItem(parent, label, subject)
 {
   _itemDeco.replace(YLabel, QIcon("icons:component.png"));
 }
@@ -51,9 +53,9 @@ void SchemaComponentItem::update(GuiEvent event, int type, Subject* son)
         DEBTRACE("ADDCHILDREF ");
         model = QtGuiContext::getQtCurrent()->getSchemaModel();
         SubjectReference *ref = dynamic_cast<SubjectReference*>(son);
-        assert(ref);
+        YASSERT(ref);
         SubjectServiceNode *service = dynamic_cast<SubjectServiceNode*>(ref->getReference());
-        assert(service);
+        YASSERT(service);
         YACS::ENGINE::Proc* proc = GuiContext::getCurrent()->getProc();
         string serviceName = proc->getChildName(service->getNode());
         DEBTRACE("ADDCHILDREF " << ref->getReference()->getName());
@@ -78,7 +80,7 @@ void SchemaComponentItem::update(GuiEvent event, int type, Subject* son)
         DEBTRACE("CUT on " << getSubject()->getName());
         SchemaModel *model = QtGuiContext::getQtCurrent()->getSchemaModel();
         SubjectReference *ref = dynamic_cast<SubjectReference*>(son);
-        assert(ref);
+        YASSERT(ref);
         DEBTRACE("CUT " << ref->getReference()->getName());
         SchemaItem *toMove = QtGuiContext::getQtCurrent()->_mapOfSchemaItem[ref];
 
@@ -94,7 +96,7 @@ void SchemaComponentItem::update(GuiEvent event, int type, Subject* son)
         DEBTRACE("PASTE on " << getSubject()->getName());
         SchemaModel *model = QtGuiContext::getQtCurrent()->getSchemaModel();
         SubjectReference *ref = dynamic_cast<SubjectReference*>(son);
-        assert(ref);
+        YASSERT(ref);
         DEBTRACE("PASTE " << ref->getReference()->getName());
         SchemaItem *toPaste = QtGuiContext::getQtCurrent()->_mapOfSchemaItem[ref];
 
@@ -109,4 +111,15 @@ void SchemaComponentItem::update(GuiEvent event, int type, Subject* son)
     default:
       ;
     }
+}
+
+void SchemaComponentItem::popupMenu(QWidget *caller, const QPoint &globalPos)
+{
+  ComponentInstanceMenu m;
+  m.popupMenu(caller, globalPos);
+}
+
+QVariant SchemaComponentItem::editionWhatsThis(int column) const
+{
+  return "<p>To edit the component instance properties, select the component instance and use the input panel. <a href=\"modification.html#property-page-for-component-instance-definition\">More...</a></p>";
 }

@@ -1,21 +1,22 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "SchemaDirTypesItem.hxx"
 #include "SchemaDataTypeItem.hxx"
 #include "SchemaModel.hxx"
@@ -34,7 +35,7 @@ using namespace YACS::ENGINE;
 using namespace YACS::HMI;
 
 SchemaDirTypesItem::SchemaDirTypesItem(SchemaItem *parent, QString label, Subject* subject)
-  : SchemaItem::SchemaItem(parent, label, subject)
+  : SchemaItem(parent, label, subject)
 {
   _itemDeco.replace(YLabel, QIcon("icons:folder_cyan.png"));
 }
@@ -45,12 +46,26 @@ void SchemaDirTypesItem::addTypeItem(Subject* subject)
   SchemaModel *model = QtGuiContext::getQtCurrent()->getSchemaModel();
   int nbsons = childCount();
   SubjectDataType *sdt = dynamic_cast<SubjectDataType*>(subject);
-  assert(sdt);
+  YASSERT(sdt);
+  DEBTRACE(nbsons);
   model->beginInsertRows(modelIndex(), nbsons, nbsons);
   SchemaItem *item = new SchemaDataTypeItem(this,
                                             sdt->getAlias().c_str(),
                                             sdt);
   model->endInsertRows();
+}
+
+void SchemaDirTypesItem::removeTypeItem(Subject* subject)
+{
+  DEBTRACE("SchemaDirTypesItem::removeTypeItem");
+  SchemaModel *model = QtGuiContext::getQtCurrent()->getSchemaModel();
+  YASSERT(QtGuiContext::getQtCurrent()->_mapOfSchemaItem.count(subject));
+  SchemaItem *toRemove = QtGuiContext::getQtCurrent()->_mapOfSchemaItem[subject];
+  int position = toRemove->row();
+  DEBTRACE(position);
+  model->beginRemoveRows(modelIndex(), position, position);
+  removeChild(toRemove);
+  model->endRemoveRows();
 }
 
 Qt::ItemFlags SchemaDirTypesItem::flags(const QModelIndex &index)

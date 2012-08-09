@@ -1,6 +1,6 @@
-<?xml version='1.0'?>
+<?xml version='1.0' encoding='iso-8859-1' ?>
 <!--
-  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+  Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -19,24 +19,38 @@
   See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 
 -->
-<proc>
-   <type name="Bool" kind="bool"/>
-   <type name="Double" kind="double"/>
-   <type name="Int" kind="int"/>
-   <type name="String" kind="string"/>
+<proc name="proc">
+   <property name="DefaultStudyID" value="1"/>
+   <type name="bool" kind="bool"/>
+   <type name="double" kind="double"/>
+   <type name="string" kind="string"/>
+   <struct name="Engines/dataref">
+      <member name="ref" type="string"/>
+   </struct>
+   <type name="int" kind="int"/>
+   <sequence name="boolvec" content="bool"/>
+   <sequence name="dblevec" content="double"/>
    <objref name="file" id="file"/>
+   <sequence name="intvec" content="int"/>
+   <objref name="pyobj" id="python:obj:1.0"/>
+   <sequence name="stringvec" content="string"/>
+   <container name="DefaultContainer">
+      <property name="container_name" value="FactoryServer"/>
+      <property name="name" value="localhost"/>
+   </container>
    <inline name="PyScript0">
       <script><code><![CDATA[b=2.5*a
 ]]></code></script>
-      <inport name="a" type="Double"/>
-      <outport name="b" type="Double"/>
+      <inport name="a" type="double"/>
+      <outport name="b" type="double"/>
    </inline>
    <datanode name="PresetNode0">
-      <parameter name="a" type="Double">
-         <value><double>-2.45</double></value>      </parameter>
+      <parameter name="a" type="double">
+         <value><double>-2.45</double></value>
+      </parameter>
    </datanode>
    <outnode name="OutNode0" ref="toto.xml">
-      <parameter name="a" type="Double"/>
+      <parameter name="a" type="double"/>
    </outnode>
    <control> <fromnode>PyScript0</fromnode> <tonode>OutNode0</tonode> </control>
    <control> <fromnode>PresetNode0</fromnode> <tonode>PyScript0</tonode> </control>
@@ -52,12 +66,8 @@
       <tonode>PyScript0</tonode><toport>a</toport>
       <value><double>0</double></value>
    </parameter>
-   <canvas width="1476" height="950" left="0" top="0" xscale="1" yscale="1"/>
-   <presentation name="PresetNode0" x="47" y="154" z="2" width="266" height="128"/>
-   <presentation name="PyScript0" x="395" y="154" z="2" width="266" height="128"/>
-   <presentation name="OutNode0" x="743" y="154" z="2" width="266" height="128"/>
-   <prslink fromnode="PresetNode0" fromport="a" tonode="PyScript0" toport="a">
-   </prslink>
-   <prslink fromnode="PyScript0" fromport="b" tonode="OutNode0" toport="a">
-   </prslink>
+   <presentation name="OutNode0" x="747" y="153" width="158" height="63" expanded="1" expx="747" expy="153" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="PresetNode0" x="47" y="154" width="158" height="63" expanded="1" expx="0" expy="0" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="PyScript0" x="395" y="154" width="158" height="63" expanded="1" expx="0" expy="0" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="__ROOT__" x="0" y="0" width="909" height="221" expanded="1" expx="0" expy="0" expWidth="909" expHeight="221" shownState="0"/>
 </proc>

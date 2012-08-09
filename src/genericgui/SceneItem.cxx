@@ -1,26 +1,28 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "SceneItem.hxx"
 #include "Scene.hxx"
 #include "SceneNodeItem.hxx"
 #include "SceneHeaderNodeItem.hxx"
 #include "SceneProcItem.hxx"
+#include "SceneElementaryNodeItem.hxx"
 #include "SceneComposedNodeItem.hxx"
 #include "GuiEditor.hxx"
 
@@ -31,6 +33,8 @@
 
 #include <cassert>
 #include <cmath>
+
+#include "Resource.hxx"
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -63,7 +67,7 @@ void RootSceneItem::update(GuiEvent event, int type, Subject* son)
     case YACS::HMI::ENDLOAD:
       guiEditor = QtGuiContext::getQtCurrent()->getGMain()->_guiEditor;
       GuiContext::getCurrent()->getSubjectProc()->select(true);
-      guiEditor->rebuildLinks();
+      //guiEditor->rebuildLinks();
       break;
     }
 }
@@ -88,16 +92,14 @@ AbstractSceneItem::AbstractSceneItem(QGraphicsScene *scene, SceneItem *parent,
   _parent = parent;
   _label = label;
   _level = 1;
-  _margin = 4;
-  _nml = 5;
   _width = 6;
   _height = 4;
-  _penColor = QColor(0,0,128);
-  _hiPenColor = QColor(0,0,190);
-  _brushColor = QColor(128,128,128);
-  _hiBrushColor = QColor(190,190,190);
+  _incHeight = 0; // used in elementaryNode when ports added
+  _penColor     = Resource::Scene_pen;
+  _hiPenColor   = Resource::Scene_hiPen;
+  _brushColor   = Resource::Scene_brush;
+  _hiBrushColor = Resource::Scene_hiBrush;
   _hasHeader = false;
-  _hasNml= false;
   _optimize = true; // to be set individually or globally by user (shrink items)
   _dragable = false;
   _dragButton = Qt::LeftButton;
@@ -116,9 +118,14 @@ int AbstractSceneItem::getLevel()
   return  _level;
 }
 
-qreal AbstractSceneItem::getMargin()
+void AbstractSceneItem::setLevel()
 {
-  return  _margin;
+  if (_parent) 
+    _level = _parent->getLevel() +1;
+  if (SceneItem *item = dynamic_cast<SceneItem*>(this))
+    foreach (QGraphicsItem *child, item->childItems())
+      if (AbstractSceneItem *sci = dynamic_cast<AbstractSceneItem*>(child))
+        sci->setLevel();
 }
 
 void AbstractSceneItem::reorganize()
@@ -158,20 +165,10 @@ void AbstractSceneItem::setHeight(qreal height)
 {
 }
 
-qreal AbstractSceneItem::getInternWidth()
-{
-  return _width -2*_margin -2*_hasNml*_nml;
-}
-
-qreal AbstractSceneItem::getInternHeight()
-{
-  return _height -2*_hasNml*_nml;
-}
-
 QRectF AbstractSceneItem::childBoundingRect(AbstractSceneItem *child) const
 {
   QGraphicsItem *item = dynamic_cast<QGraphicsItem*>(child);
-  assert(item);
+  YASSERT(item);
   return (item->mapToParent(item->boundingRect())).boundingRect();
 }
 
@@ -191,6 +188,7 @@ SceneItem::SceneItem(QGraphicsScene *scene, SceneItem *parent,
   : QGraphicsItem(parent), AbstractSceneItem(scene, parent, label)
 {
   _hover = false;
+  _ancestorShrinked = false;
   setToolTip(_label);
   DEBTRACE("SceneItem::SceneItem "<<label.toStdString()<<" "<<this<<" "<<_parent<<" "<< _level); 
   setFlag(QGraphicsItem::ItemIsSelectable);
@@ -228,32 +226,50 @@ void SceneItem::paint(QPainter *painter,
                       QWidget *widget)
 {
   //DEBTRACE("SceneItem::paint");
-  painter->save();
-  painter->setPen(getPenColor());
-  painter->setBrush(getBrushColor());
-  painter->drawRoundRect(QRectF(0, 0, _width, _height), 33*_height/_width, 33);
-  painter->restore();
+//   painter->save();
+//   painter->setPen(getPenColor());
+//   painter->setBrush(getBrushColor());
+//   painter->drawRoundRect(QRectF(0, 0, _width, _height), 33*_height/_width, 33);
+//   painter->restore();
 }
 
 void SceneItem::setTopLeft(QPointF topLeft)
 {
-  setPos(topLeft);
+  setPos(int(topLeft.x()), int(topLeft.y()));
   if (_parent)
     _parent->checkGeometryChange();
 }
 
 void SceneItem::checkGeometryChange()
 {
-  QRectF childrenBox = childrenBoundingRect();
-  qreal newWidth = childrenBox.width() + 2*_margin;
-  qreal newHeight =  childrenBox.height() + 2*_margin;
-  SceneNodeItem *aNode = dynamic_cast<SceneNodeItem*>(this);
-  if (aNode)
-    {
-      newWidth  += 2*_nml;
-      newHeight += 2*_nml;
-    }
+  DEBTRACE("SceneItem::checkGeometryChange: enter : " << _label.toStdString() << " width= " << _width <<  " height= " << _height);
+  qreal newWidth;
+  qreal newHeight;
   bool resize = false;
+  SceneElementaryNodeItem* aElemNode = dynamic_cast<SceneElementaryNodeItem*>(this);
+  if (QtGuiContext::getQtCurrent()->isLoadingPresentation())
+    {
+      newWidth  = _width;
+      newHeight = _height;
+      resize    = true;
+    }
+  else
+    {
+      if (aElemNode)
+        {
+          newWidth  = _width;
+          newHeight = _height;
+          resize    = true;
+          DEBTRACE("elementaryNode resize true");
+        }
+      else
+        {
+          QRectF childrenBox = childrenBoundingRect();
+          newWidth  = childrenBox.width();
+          newHeight = childrenBox.height();
+          DEBTRACE("composedNode newWidth= " << newWidth << " newHeight=" << newHeight);
+        }
+    }
   bool wider = (newWidth > _width + 0.5);
   qreal deltaW = 0;
   bool higher = (newHeight > _height + 0.5);
@@ -263,17 +279,30 @@ void SceneItem::checkGeometryChange()
   if (wider || (_optimize && (newWidth < _width)))
     {
       deltaW = newWidth - _width;
-      _width = newWidth;
       resize = true;
     }
   if (higher || (_optimize && (newHeight < _height)))
     {
       deltaH = newHeight - _height;
-      _height = newHeight;
       resize = true;
     }
-//   DEBTRACE("SceneItem::checkGeometryChange "<<_label.toStdString() <<
-//            " " << wider << " " << higher << " " << changeWidth <<  " " << resize);
+  if (_incHeight >0) //when a port has been added in an elementaryNode, force the collision resolv
+    {
+      higher = true;
+      deltaH = _incHeight;
+      resize = true;      
+    }
+  _incHeight = 0;
+  DEBTRACE("SceneItem::checkGeometryChange "<<_label.toStdString() <<
+           " " << wider << " " << higher << " " << changeWidth <<  " " << resize);
+
+  if (resize)
+    { 
+      prepareGeometryChange();
+      _width = newWidth;
+      _height = newHeight;
+    }
+  SceneNodeItem *aNode = dynamic_cast<SceneNodeItem*>(this);
   if (aNode)
     {
       if (changeWidth) aNode->adjustHeader();
@@ -283,14 +312,29 @@ void SceneItem::checkGeometryChange()
           if (SceneComposedNodeItem *bloc = dynamic_cast<SceneComposedNodeItem*>(_parent))
             bloc->collisionResolv(aNode, oldPos);
         }  
+      if (changeWidth) aNode->updateLinks();
     }
   if (resize)
     { 
-//       DEBTRACE("SceneItem::checkGeometryChange "<<_label.toStdString()<<" "<<_width<<" "<<_height);
-      prepareGeometryChange();
+      update();
       if (_parent)
         _parent->checkGeometryChange();
     }
+  if(resize && aNode)
+      aNode->setExpandedWH();
+}
+
+/*! generic behaviour for headers:
+ *  obtain the tooltip from parent.
+ *  Method to be redefined in derived classes.
+ */
+QString SceneItem::getToolTip()
+{
+  QString tooltip = _label;
+  SceneItem *parent = getParent();
+  if (parent)
+    tooltip = parent->getToolTip();
+  return tooltip;
 }
 
 // /*!
@@ -322,10 +366,18 @@ QColor SceneItem::getPenColor()
 
 QColor SceneItem::hoverColor(QColor origColor)
 {
-  qreal h, s, v, a;
-  origColor.getHsvF(&h, &s, &v, &a);
-  v = 0.95*v;
-  return QColor::fromHsvF(h, s, v, a);
+  qreal r, g, b, a;
+  origColor.getRgbF(&r, &g, &b, &a);
+  r = 0.96*r;
+  g = 0.96*g;
+  b = 0.96*b;
+  return QColor::fromRgbF(r, g, b, a);
+
+   // qreal h, s, v, a;
+   // origColor.getHsvF(&h, &s, &v, &a);
+   // s = 1.05*s;
+   // if (s>254.0) s=255.0;
+   // return QColor::fromHsvF(h, s, v, a);
 }
 
 void SceneItem::hoverEnterEvent(QGraphicsSceneHoverEvent * event)
@@ -362,3 +414,27 @@ void SceneItem::popupMenu(QWidget *caller, const QPoint &globalPos)
   m.popupMenu(caller, globalPos);
 }
 
+void SceneItem::setEventPos(QPointF point)
+{
+  QPointF localPoint = mapFromScene(point);
+  if (localPoint.y() <= getHeaderBottom())
+    localPoint.setY(getHeaderBottom()+1);
+  _eventPos = localPoint;
+}
+
+void SceneItem::updateChildItems()
+{
+}
+
+void SceneItem::shrinkExpandLink(bool se)
+{
+}
+
+
+void SceneItem::shrinkExpandRecursive(bool isExpanding, bool fromHere)
+{
+}
+
+void SceneItem::updateLinks()
+{
+}

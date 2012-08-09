@@ -1,25 +1,27 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "Proc.hxx"
 #include "ElementaryNode.hxx"
 #include "Runtime.hxx"
 #include "Container.hxx"
+#include "ComponentInstance.hxx"
 #include "InputPort.hxx"
 #include "OutputPort.hxx"
 #include "TypeCode.hxx"
@@ -36,7 +38,14 @@
 using namespace std;
 using namespace YACS::ENGINE;
 
-Proc::Proc(const std::string& name):Bloc(name),_edition(false)
+/*! \class YACS::ENGINE::Proc
+ *  \brief Base class for all schema objects.
+ *
+ * This is an abstract class that must be specialized in runtime.
+ * \ingroup Nodes
+ */
+
+Proc::Proc(const std::string& name):Bloc(name),_edition(false),_compoinstctr(0)
 {
   Runtime *theRuntime=getRuntime();
   DEBTRACE("theRuntime->_tc_double->ref: " << theRuntime->_tc_double->getRefCnt());
@@ -250,6 +259,48 @@ std::string Proc::getInPortValue(int nodeNumId, std::string portName)
     }
 }
 
+std::string Proc::setInPortValue(std::string nodeName, std::string portName, std::string value)
+{
+  DEBTRACE("Proc::setInPortValue " << nodeName << " " << portName << " " << value);
+
+  try
+    {
+      YACS::ENGINE::Node* node = YACS::ENGINE::Proc::nodeMap[nodeName];
+      YACS::ENGINE::InputPort* inputPort = node->getInputPort(portName);
+
+      switch (inputPort->edGetType()->kind())
+        {
+          case Double:
+            {
+              double val = atof(value.c_str());
+              inputPort->edInit(val);
+            }
+          case Int:
+            {
+              int val = atoi(value.c_str());
+              inputPort->edInit(val);
+            }
+          case String:
+            inputPort->edInit(value.c_str());
+          case Bool:
+            {
+              bool val = (! value.compare("False") ) && (! value.compare("0") );
+              inputPort->edInit(val);
+            }
+          default:
+            DEBTRACE("Proc::setInPortValue: filtered type: " << inputPort->edGetType()->kind());
+        }
+      return value;
+    }
+  catch(YACS::Exception& ex)
+    {
+      DEBTRACE("Proc::setInPortValue " << ex.what());
+      stringstream msg;
+      msg << "<value><error>" << ex.what() << "</error></value>";
+      return msg.str();
+    }
+}
+
 std::string Proc::getOutPortValue(int nodeNumId, std::string portName)
 {
   DEBTRACE("Proc::getOutPortValue " << nodeNumId << " " << portName);
@@ -414,5 +465,106 @@ Container* Proc::createContainer(const std::string& name,const std::string& kind
     containerMap[name]->decrRef();
   containerMap[name]=co;
   co->incrRef();
+  co->setProc(this);
   return co;
+}
+
+//! Add a ComponentInstance into componentInstanceMap
+/*!
+ * If the name == "", the component instance is automatically named with a unique (in the Proc) name
+ *
+ * \param inst: the component instance
+ * \param name: the component instance name
+ * \param restCtr: try to reuse instance number previously released, false by default
+ */
+void Proc::addComponentInstance(ComponentInstance* inst, const std::string& name, bool resetCtr)
+{
+  if(name != "")
+    {
+      inst->setName(name);
+      inst->setAnonymous(false);
+      if(componentInstanceMap.count(name)!=0)
+        componentInstanceMap[name]->decrRef();
+      componentInstanceMap[name]=inst;
+      inst->incrRef();
+    }
+  else
+    {
+      //automatic naming : componame_<_compoinstctr>
+      std::string instname;
+      std::string componame=inst->getCompoName();
+      if (resetCtr)
+        _compoinstctr = 0;        
+      while(1)
+        {
+          std::ostringstream buffer;
+          buffer << ++_compoinstctr;
+          instname=componame+"_"+buffer.str();
+          if(componentInstanceMap.count(instname)==0)
+            {
+              inst->setName(instname);
+              componentInstanceMap[instname]=inst;
+              inst->incrRef();
+              break;
+            }
+        }
+    }
+}
+
+//! Remove a componentInstance from the componentInstanceMap
+/*!
+ * To be used for a componentInstance with no service nodes referenced.
+ *
+ * \param inst: the component instance
+ */
+void Proc::removeComponentInstance(ComponentInstance* inst)
+{
+  if (componentInstanceMap.count(inst->getInstanceName()))
+    {
+      componentInstanceMap.erase(inst->getInstanceName());
+      inst->decrRef();
+    }
+}
+
+//! Remove a container from the containerMap
+/*!
+ * To be used for a container with no componentInstance referenced.
+ *
+ * \param cont: the container
+ */
+void Proc::removeContainer(Container* cont)
+{
+  if (containerMap.count(cont->getName()))
+    {
+      containerMap.erase(cont->getName());
+      cont->decrRef();
+    }
+}
+
+//! Create a new ComponentInstance and add it into componentInstanceMap
+/*!
+ * If the name == "", the component instance is automatically named with a unique (in the Proc) name
+ *
+ * \param componame: the component name
+ * \param name: the component instance name
+ * \param kind: the component instance kind (depends on runtime)
+ * \return the created ComponentInstance
+ */
+ComponentInstance* Proc::createComponentInstance(const std::string& componame, const std::string& name,const std::string& kind)
+{
+  ComponentInstance* inst=  getRuntime()->createComponentInstance(componame,kind);
+  addComponentInstance(inst,name);
+  return inst;
+}
+
+//! Return the proc (this)
+Proc* Proc::getProc()
+{
+  return this;
+}
+
+//! Return the proc (this)
+const Proc * Proc::getProc() const
+{
+  return this;
 }

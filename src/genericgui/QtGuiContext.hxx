@@ -1,24 +1,26 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef _QTGUICONTEXT_HXX_
 #define _QTGUICONTEXT_HXX_
 
+#include "GenericGuiExport.hxx"
 #include "guiContext.hxx"
 #include "SchemaModel.hxx"
 #include "SchemaItem.hxx"
@@ -28,6 +30,7 @@
 #include "FormEditTree.hxx"
 #include "GraphicsView.hxx"
 #include "GuiExecutor.hxx"
+#include "chrono.hxx"
 #include <QGraphicsScene>
 #include <QItemSelectionModel>
 #include <QStackedWidget>
@@ -35,11 +38,13 @@
 #include <QString>
 #include <set>
 
+#include <SuitWrapper.hxx>
+
 namespace YACS
 {
   namespace HMI
   {
-    class QtGuiContext: public GuiContext
+    class GENERICGUI_EXPORT QtGuiContext: public GuiContext
     {
     public:
       QtGuiContext(YACS::HMI::GenericGui* gmain);
@@ -60,7 +65,7 @@ namespace YACS
       inline YACS::HMI::GuiExecutor* getGuiExecutor()            {return _guiExecutor; };
       inline bool isEdition()                                    {return _isEdition; };
       inline int getStudyId()                                    {return _studyId; };
-      inline bool isLoading()                                    {return _isLoading; };
+      inline bool isLoadingPresentation()                        {return _isLoadingPresentation; };
 
       YACS::HMI::Subject* getSubjectToPaste(bool &isCut);
 
@@ -78,7 +83,7 @@ namespace YACS
       inline void setGuiExecutor(YACS::HMI::GuiExecutor* guiEx)  {_guiExecutor = guiEx; };
       inline void setEdition(bool isEdition)                     {_isEdition = isEdition; };
       inline void setStudyId(int studyId)                        {_studyId = studyId; };
-      inline void setLoading(bool isLoading)                     {_isLoading = isLoading; };
+      inline void setLoadingPresentation(bool isLoadpres)        {_isLoadingPresentation = isLoadpres; };
 
       void setSubjectToCut(YACS::HMI::Subject* sub);
       void setSubjectToCopy(YACS::HMI::Subject* sub);
@@ -90,10 +95,12 @@ namespace YACS
 
       std::map<YACS::HMI::Subject*, YACS::HMI::SchemaItem*> _mapOfSchemaItem;
       std::map<YACS::HMI::Subject*, YACS::HMI::SceneItem*>  _mapOfSceneItem;
-      std::map<YACS::HMI::Subject*, int> _mapOfEditionItem;
+      std::map<YACS::HMI::Subject*, QWidget*> _mapOfEditionItem;
       std::set<YACS::HMI::Subject*> _setOfModifiedSubjects;
 
       static std::set<QtGuiContext*> _setOfContext;
+      static counters* _counters;
+      static bool _delayCalc;
 
     protected:
       static QtGuiContext* _QtCurrent;
@@ -112,8 +119,9 @@ namespace YACS
       YACS::HMI::Subject* _subjectToCut;
       YACS::HMI::Subject* _subjectToCopy;
       bool _isEdition;
+      bool _isLoadingPresentation;
       int _studyId;
-      bool _isLoading;
+      SuitWrapper* _wrapper;
     };
 
   }

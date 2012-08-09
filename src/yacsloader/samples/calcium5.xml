@@ -1,0 +1,107 @@
+<?xml version='1.0' encoding='iso-8859-1' ?>
+<!--
+  Copyright (C) 2006-2012  CEA/DEN, EDF R&D
+
+  This library is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public
+  License as published by the Free Software Foundation; either
+  version 2.1 of the License.
+
+  This library is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public
+  License along with this library; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+
+  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+
+-->
+<proc name="proc">
+   <property name="DefaultStudyID" value="1"/>
+   <objref name="CALCIUM_integer" id="IDL:CALCIUM_integer:1.0"/>
+   <type name="string" kind="string"/>
+   <struct name="Engines/dataref">
+      <member name="ref" type="string"/>
+   </struct>
+   <type name="bool" kind="bool"/>
+   <sequence name="boolvec" content="bool"/>
+   <type name="double" kind="double"/>
+   <sequence name="dblevec" content="double"/>
+   <objref name="file" id="file"/>
+   <type name="int" kind="int"/>
+   <sequence name="intvec" content="int"/>
+   <objref name="pyobj" id="python:obj:1.0"/>
+   <sequence name="stringvec" content="string"/>
+   <container name="DefaultContainer">
+      <property name="container_name" value="FactoryServer"/>
+      <property name="name" value="localhost"/>
+   </container>
+   <inline name="node0">
+      <script><code><![CDATA[n=20]]></code></script>
+      <outport name="n" type="int"/>
+   </inline>
+   <forloop name="ForLoop0" nsteps="3">
+      <bloc name="Bloc1">
+         <service name="node1">
+            <component>DSCCODC</component>
+            <load container="DefaultContainer"/>
+            <method>prun</method>
+            <inport name="niter" type="int"/>
+            <instream name="ETP_EN" type="CALCIUM_integer">
+               <property name="DateCalSchem" value="TI_SCHEM"/>
+               <property name="DependencyType" value="TIME_DEPENDENCY"/>
+            </instream>
+            <outstream name="STP_EN" type="CALCIUM_integer">
+               <property name="DateCalSchem" value="TI_SCHEM"/>
+               <property name="DependencyType" value="TIME_DEPENDENCY"/>
+            </outstream>
+         </service>
+         <service name="node2">
+            <component>DSCCODD</component>
+            <load container="DefaultContainer"/>
+            <method>prun</method>
+            <inport name="niter" type="int"/>
+            <instream name="ETP_EN" type="CALCIUM_integer">
+               <property name="DateCalSchem" value="TI_SCHEM"/>
+               <property name="DependencyType" value="TIME_DEPENDENCY"/>
+            </instream>
+            <outstream name="STP_EN" type="CALCIUM_integer">
+               <property name="DateCalSchem" value="TI_SCHEM"/>
+               <property name="DependencyType" value="TIME_DEPENDENCY"/>
+            </outstream>
+         </service>
+         <stream>
+            <fromnode>node1</fromnode> <fromport>STP_EN</fromport>
+            <tonode>node2</tonode> <toport>ETP_EN</toport>
+            <property name="DateCalSchem" value="TI_SCHEM"/>
+         </stream>
+         <stream>
+            <fromnode>node2</fromnode> <fromport>STP_EN</fromport>
+            <tonode>node1</tonode> <toport>ETP_EN</toport>
+            <property name="DateCalSchem" value="TI_SCHEM"/>
+         </stream>
+      </bloc>
+   </forloop>
+   <control> <fromnode>node0</fromnode> <tonode>ForLoop0</tonode> </control>
+   <datalink control="false">
+      <fromnode>node0</fromnode> <fromport>n</fromport>
+      <tonode>ForLoop0.Bloc1.node1</tonode> <toport>niter</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>node0</fromnode> <fromport>n</fromport>
+      <tonode>ForLoop0.Bloc1.node2</tonode> <toport>niter</toport>
+   </datalink>
+   <parameter>
+      <tonode>ForLoop0</tonode><toport>nsteps</toport>
+      <value><int>3</int></value>
+   </parameter>
+   <presentation name="ForLoop0" x="195.875" y="33.375" width="439.75" height="194.75" expanded="1" expx="195.875" expy="33.375" expWidth="439.75" expHeight="194.75" shownState="0"/>
+   <presentation name="ForLoop0.Bloc1" x="6" y="61" width="429.75" height="129.75" expanded="1" expx="6" expy="61" expWidth="429.75" expHeight="129.75" shownState="0"/>
+   <presentation name="node0" x="4" y="47.25" width="158" height="63" expanded="1" expx="4" expy="47.25" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="ForLoop0.Bloc1.node1" x="33" y="35.75" width="158" height="90" expanded="1" expx="33" expy="35.75" expWidth="158" expHeight="90" shownState="0"/>
+   <presentation name="ForLoop0.Bloc1.node2" x="267.75" y="34" width="158" height="90" expanded="1" expx="267.75" expy="34" expWidth="158" expHeight="90" shownState="0"/>
+   <presentation name="__ROOT__" x="0" y="0" width="639.625" height="232.125" expanded="1" expx="0" expy="0" expWidth="639.625" expHeight="232.125" shownState="0"/>
+</proc>

@@ -1,23 +1,23 @@
-#  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
-#
-#  This library is free software; you can redistribute it and/or
-#  modify it under the terms of the GNU Lesser General Public
-#  License as published by the Free Software Foundation; either
-#  version 2.1 of the License.
-#
-#  This library is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#  Lesser General Public License for more details.
-#
-#  You should have received a copy of the GNU Lesser General Public
-#  License along with this library; if not, write to the Free Software
-#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-#
-#  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-#
 # -*- coding: iso-8859-1 -*-
+# Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 #
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License.
+#
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+#
+# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+#
+
 """
   This module contains graph utilities 
 
@@ -28,7 +28,8 @@
 """
 
 import os
-from sets import Set
+#from sets import Set
+Set=set
 
 def invert(G):
   """Construit le graphe inverse de G en inversant les liens de voisinage"""
@@ -42,8 +43,8 @@ def invert(G):
 def reachable(G,n):
   """Construit le set de noeuds atteignables depuis le noeud n
 
-     Le noeud n n'est pas dans le set retourné sauf en cas de boucles
-     Ce cas n'est pas traité ici (limitation)
+     Le noeud n n'est pas dans le set retourne sauf en cas de boucles
+     Ce cas n'est pas traite ici (limitation)
   """
   s=G[n]
   for v in G[n]:

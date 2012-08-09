@@ -1,28 +1,31 @@
-//  Copyright (C) 2006-2008  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2012  CEA/DEN, EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "EditionSalomeNode.hxx"
+#include "PropertyEditor.hxx"
 #include "FormComponent.hxx"
 #include "FormContainer.hxx"
 #include "ServiceNode.hxx"
 #include "ComponentInstance.hxx"
 #include "QtGuiContext.hxx"
 #include "Container.hxx"
+#include "Message.hxx"
 
 #include <cassert>
 #include <map>
@@ -43,14 +46,18 @@ EditionSalomeNode::EditionSalomeNode(Subject* subject,
   : EditionElementaryNode(subject, parent, name)
 {
 
+  // --- create property editor panel
+  _propeditor=new PropertyEditor(_subject);
+  _wid->gridLayout1->addWidget(_propeditor);
+
   // --- create container and component panels
 
   _wContainer = new FormContainer(this);
   _wid->gridLayout1->addWidget(_wContainer);
 
-  connect(_wContainer->cb_host, SIGNAL(mousePressed()),
+  connect(_wContainer->cb_resource, SIGNAL(mousePressed()),
           this, SLOT(fillContainerPanel()));
-  connect(_wContainer->cb_host, SIGNAL(activated(int)),
+  connect(_wContainer->cb_resource, SIGNAL(activated(int)),
           this, SLOT(changeHost(int)));
   connect(_wContainer->tb_container, SIGNAL(toggled(bool)),
           this, SLOT(fillContainerPanel())); // --- to update display of current selection
@@ -83,10 +90,10 @@ EditionSalomeNode::EditionSalomeNode(Subject* subject,
   _wid->gridLayout1->addLayout(_hbl_method, _wid->gridLayout1->rowCount(), 0, 1, 1);
   _la_method->setText("Method:");
 //   SubjectServiceNode *ssn = dynamic_cast<SubjectServiceNode*>(_subject);
-//   assert(ssn);
+//   YASSERT(ssn);
   _servNode =
     dynamic_cast<YACS::ENGINE::ServiceNode*>(_subElemNode->getNode());
-  assert(_servNode);
+  YASSERT(_servNode);
   _le_method->setText((_servNode->getMethod()).c_str());
   _le_method->setReadOnly(true);
 
@@ -94,7 +101,7 @@ EditionSalomeNode::EditionSalomeNode(Subject* subject,
 
   fillComponentPanel();
 
-  createTablePorts();
+  createTablePorts(_wid->gridLayout1);
 }
 
 EditionSalomeNode::~EditionSalomeNode()
@@ -106,14 +113,15 @@ void EditionSalomeNode::update(GuiEvent event, int type, Subject* son)
   DEBTRACE("EditionSalomeNode::update ");
   EditionElementaryNode::update(event, type, son);
   SubjectReference* subref= 0;
-   switch (event)
+  switch (event)
     {
     case ADDREF:
       DEBTRACE("ADDREF");
       subref = dynamic_cast<SubjectReference*>(son);
-      assert(subref);
+      YASSERT(subref);
       DEBTRACE(subref->getName() << " " << subref->getReference()->getName());
       fillComponentPanel();
+      fillContainerPanel();
       break;
 
     case ASSOCIATE:
@@ -121,9 +129,22 @@ void EditionSalomeNode::update(GuiEvent event, int type, Subject* son)
       fillContainerPanel();
       break;
 
+    case SETVALUE:
+      _propeditor->update();
+      break;
+
     default:
       ;
     } 
+}
+
+void EditionSalomeNode::synchronize()
+{
+  EditionElementaryNode::synchronize();
+  _wContainer->tb_container->setChecked(FormContainer::_checked);
+  _wComponent->tb_component->setChecked(FormComponent::_checked);
+  fillComponentPanel();
+  fillContainerPanel();
 }
 
 /*! must be updated when associate service to component instance, or when the list of
@@ -138,7 +159,7 @@ void EditionSalomeNode::fillComponentPanel()
       Proc* proc = GuiContext::getCurrent()->getProc();
 
       _wComponent->cb_instance->clear();
-      map<pair<string,int>,ComponentInstance*>::const_iterator it = proc->componentInstanceMap.begin();
+      map<string,ComponentInstance*>::const_iterator it = proc->componentInstanceMap.begin();
       for(; it != proc->componentInstanceMap.end(); ++it)
         {
           ComponentInstance *inst=(*it).second;
@@ -156,6 +177,7 @@ void EditionSalomeNode::fillComponentPanel()
 
 void EditionSalomeNode::fillContainerPanel()
 {
+  DEBTRACE("EditionSalomeNode::fillContainerPanel");
   ComponentInstance *compoInst = _servNode->getComponent();
   if (compoInst)
     {
@@ -166,19 +188,12 @@ void EditionSalomeNode::fillContainerPanel()
       for(; it != proc->containerMap.end(); ++it)
         _wComponent->cb_container->addItem( QString((*it).first.c_str()));
 
-      int index = _wComponent->cb_container->findText(compoInst->getContainer()->getName().c_str());
-      _wComponent->cb_container->setCurrentIndex(index);  
-
-      _wContainer->le_name->setText(compoInst->getContainer()->getName().c_str());
-      _wContainer->le_instance->setReadOnly(true);
-
-      _wContainer->cb_host->clear();
-      _wContainer->cb_host->addItem(""); // --- when no host selected
-      list<string> machines = QtGuiContext::getQtCurrent()->getGMain()->getMachineList();
-      list<string>::iterator itm = machines.begin();
-      for( ; itm != machines.end(); ++itm)
+      Container * cont = compoInst->getContainer();
+      if (cont)
         {
-          _wContainer->cb_host->addItem(QString((*itm).c_str()));
+          int index = _wComponent->cb_container->findText(cont->getName().c_str());
+          _wComponent->cb_container->setCurrentIndex(index);
+          _wContainer->FillPanel(cont);
         }
     }
 }
@@ -187,30 +202,19 @@ void EditionSalomeNode::fillContainerPanel()
 void EditionSalomeNode::changeInstance(int index)
 {
   string instName = _wComponent->cb_instance->itemText(index).toStdString();
-  int i = instName.find_last_of('_');
-  if (i<0) return;
-
-  DEBTRACE(instName << " "  << i);
-  string compoName = instName;
-  compoName.erase(i);
-  string inst = instName;
-  inst.erase(0,i+1);
-  DEBTRACE(instName << " " << compoName << " " << inst);
-  i = atoi(inst.c_str());
-  pair<string,int> aKey(compoName,i);
-
   Proc* proc = GuiContext::getCurrent()->getProc();
   ComponentInstance *newCompoInst = 0;
   ComponentInstance *oldCompoInst = _servNode->getComponent();
-  if (proc->componentInstanceMap.count(aKey))
-    newCompoInst = proc->componentInstanceMap[aKey];
+  if (proc->componentInstanceMap.count(instName))
+    newCompoInst = proc->componentInstanceMap[instName];
   else DEBTRACE("-------------> not found : " << instName);
 
   if (newCompoInst && (newCompoInst != oldCompoInst))
     {
-      assert(GuiContext::getCurrent()->_mapOfSubjectComponent.count(newCompoInst));
+      YASSERT(GuiContext::getCurrent()->_mapOfSubjectComponent.count(newCompoInst));
       SubjectServiceNode *ssn = dynamic_cast<SubjectServiceNode*>(_subject);
-      ssn->associateToComponent(GuiContext::getCurrent()->_mapOfSubjectComponent[newCompoInst]);
+      if(!ssn->associateToComponent(GuiContext::getCurrent()->_mapOfSubjectComponent[newCompoInst]))
+        Message mess;
     }
 }
 
@@ -230,18 +234,39 @@ void EditionSalomeNode::changeContainer(int index)
       DEBTRACE("-------------> not found : " << contName);
       return;
     }
-  assert(GuiContext::getCurrent()->_mapOfSubjectContainer.count(newContainer));
+  YASSERT(GuiContext::getCurrent()->_mapOfSubjectContainer.count(newContainer));
   SubjectContainer *scnt = GuiContext::getCurrent()->_mapOfSubjectContainer[newContainer];
 
   SubjectServiceNode *ssn = dynamic_cast<SubjectServiceNode*>(_subject);
   SubjectComponent *sco =
     dynamic_cast<SubjectComponent*>(ssn->getSubjectReference()->getReference());
-  assert (sco);
+  YASSERT(sco);
   sco->associateToContainer(scnt);
 }
 
 void EditionSalomeNode::changeHost(int index)
 {
-  string hostName = _wContainer->cb_host->itemText(index).toStdString();
+  string hostName = _wContainer->cb_resource->itemText(index).toStdString();
   DEBTRACE(hostName);
+}
+
+void EditionSalomeNode::onApply()
+{
+  DEBTRACE("EditionSalomeNode::onApply");
+  bool edited = true;
+  if (_wContainer->onApply())
+    edited = false;
+  _isEdited = _isEdited || edited;
+  EditionElementaryNode::onApply();
+}
+
+void EditionSalomeNode::onCancel()
+{
+  DEBTRACE("EditionSalomeNode::onCancel");
+  ComponentInstance *compoInst = _servNode->getComponent();
+  if (compoInst)
+    {
+      _wContainer->FillPanel(compoInst->getContainer());
+    }
+  EditionElementaryNode::onApply();
 }
