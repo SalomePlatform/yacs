@@ -39,7 +39,7 @@ DOXFILES= ref/bases.dox ref/engine.dox ref/hmi.dox ref/python.dox ref/runtime.do
 EXTRA_DIST= _static exemples $(DOXFILES)
 
 yacsdocdir=$(docdir)/gui/YACS
-yacsdevdocdir=$(docdir)/gui/YACS/dev
+yacsdevdocdir=$(docdir)/tui/YACS
 
 SPHINXOPTS      =
 SOURCEDIR       = $(srcdir)
@@ -116,7 +116,7 @@ optimizer.rst      \
 yacsgen.rst
 
 
-EXTRA_DIST+= $(RSTFILES) images		 
+EXTRA_DIST+= $(RSTFILES) images
 
 EXTRA_DIST+= \
 ref/classDiagram.png \

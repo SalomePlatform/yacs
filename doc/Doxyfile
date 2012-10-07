@@ -23,8 +23,8 @@
 #---------------------------------------------------------------------------
 #
 PROJECT_NAME           = YACS
-PROJECT_NUMBER         = 0.0.1
-OUTPUT_DIRECTORY       = /home/prascle/SALOME2/YACS/BR_V0_0_1_PR/doc/
+PROJECT_NUMBER         = 0.1
+OUTPUT_DIRECTORY       = .
 CREATE_SUBDIRS         = NO
 OUTPUT_LANGUAGE        = English
 USE_WINDOWS_ENCODING   = NO
@@ -44,7 +44,7 @@ ABBREVIATE_BRIEF       = "The $name class" \
 ALWAYS_DETAILED_SEC    = NO
 INLINE_INHERITED_MEMB  = NO
 FULL_PATH_NAMES        = YES
-STRIP_FROM_PATH        = /home/prascle/SALOME2/YACS/BR_V0_0_1_PR
+STRIP_FROM_PATH        = 
 STRIP_FROM_INC_PATH    = 
 SHORT_NAMES            = NO
 JAVADOC_AUTOBRIEF      = NO
@@ -101,15 +101,26 @@ WARN_LOGFILE           =
 # configuration options related to the input files
 #---------------------------------------------------------------------------
 INPUT                  =  \
-   /home/prascle/SALOME2/YACS/BR_V0_0_1_PR/YACS_SRC/src/bases \
-   /home/prascle/SALOME2/YACS/BR_V0_0_1_PR/YACS_SRC/src/data \
-   /home/prascle/SALOME2/YACS/BR_V0_0_1_PR/YACS_SRC/src/engine \
-   /home/prascle/SALOME2/YACS/BR_V0_0_1_PR/YACS_SRC/src/runtime
+   ../doc/ref      \
+   ../idl \
+   ../src/bases \
+   ../src/engine \
+   ../src/runtime \
+   ../src/yacsloader \
+   ../src/yacsorb \
+   ../src/hmi \
+   ../src/salomewrap \
+   ../src/genericgui \
+   ../src/salomegui \
+   ../src/salomewrap \
+   ../src/pyqt
+
 FILE_PATTERNS          = *.c \
                          *.cc \
                          *.cxx \
                          *.cpp \
                          *.c++ \
+                         *.py \
                          *.d \
                          *.java \
                          *.ii \
@@ -145,13 +156,13 @@ FILE_PATTERNS          = *.c \
                          *.M \
                          *.MM
 RECURSIVE              = YES
-EXCLUDE                = 
+EXCLUDE                = ../src/yacsloader/tools 
 EXCLUDE_SYMLINKS       = NO
-EXCLUDE_PATTERNS       = 
+EXCLUDE_PATTERNS       = */Test/*
 EXAMPLE_PATH           = 
 EXAMPLE_PATTERNS       = *
 EXAMPLE_RECURSIVE      = NO
-IMAGE_PATH             = 
+IMAGE_PATH             = ../doc
 INPUT_FILTER           = 
 FILTER_PATTERNS        = 
 FILTER_SOURCE_FILES    = NO
@@ -159,7 +170,7 @@ FILTER_SOURCE_FILES    = NO
 # configuration options related to source browsing
 #---------------------------------------------------------------------------
 SOURCE_BROWSER         = YES
-INLINE_SOURCES         = NO
+INLINE_SOURCES         = YES
 STRIP_CODE_COMMENTS    = YES
 REFERENCED_BY_RELATION = YES
 REFERENCES_RELATION    = YES
@@ -167,17 +178,17 @@ VERBATIM_HEADERS       = YES
 #---------------------------------------------------------------------------
 # configuration options related to the alphabetical class index
 #---------------------------------------------------------------------------
-ALPHABETICAL_INDEX     = NO
-COLS_IN_ALPHA_INDEX    = 5
+ALPHABETICAL_INDEX     = YES
+COLS_IN_ALPHA_INDEX    = 2
 IGNORE_PREFIX          = 
 #---------------------------------------------------------------------------
 # configuration options related to the HTML output
 #---------------------------------------------------------------------------
 GENERATE_HTML          = YES
-HTML_OUTPUT            = html
+HTML_OUTPUT            = htmldev
 HTML_FILE_EXTENSION    = .html
-HTML_HEADER            = 
-HTML_FOOTER            = 
+HTML_HEADER            = ../doc/sources/header.html
+HTML_FOOTER            = ../doc/sources/footer.html
 HTML_STYLESHEET        = 
 HTML_ALIGN_MEMBERS     = YES
 GENERATE_HTMLHELP      = NO
@@ -264,13 +275,13 @@ PERL_PATH              = /usr/bin/perl
 # Configuration options related to the dot tool   
 #---------------------------------------------------------------------------
 CLASS_DIAGRAMS         = YES
-HIDE_UNDOC_RELATIONS   = YES
-HAVE_DOT               = NO
+HIDE_UNDOC_RELATIONS   = NO
+HAVE_DOT               = YES
 CLASS_GRAPH            = YES
 COLLABORATION_GRAPH    = YES
 GROUP_GRAPHS           = YES
 UML_LOOK               = NO
-TEMPLATE_RELATIONS     = NO
+TEMPLATE_RELATIONS     = YES
 INCLUDE_GRAPH          = YES
 INCLUDED_BY_GRAPH      = YES
 CALL_GRAPH             = NO
