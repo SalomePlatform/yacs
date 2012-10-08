@@ -48,8 +48,8 @@ cat configure.in.base >> configure.in
 
 # --
 
-run "libtoolize --force --copy --automake"
 run "aclocal -I adm/unix/config_files"
+run "libtoolize --force --copy --automake"
 run "autoheader -I adm/unix/config_files"
 run "autoconf"
 run "automake --add-missing --copy"

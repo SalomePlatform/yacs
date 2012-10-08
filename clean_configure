@@ -28,23 +28,12 @@ TO_CLEAN=${TO_CLEAN}' aclocal.m4'
 TO_CLEAN=${TO_CLEAN}' autom4te*'
 TO_CLEAN=${TO_CLEAN}' configure'
 TO_CLEAN=${TO_CLEAN}' configure.in'
-TO_CLEAN=${TO_CLEAN}' missing'
-TO_CLEAN=${TO_CLEAN}' install-sh'
-TO_CLEAN=${TO_CLEAN}' ltmain.sh'
-TO_CLEAN=${TO_CLEAN}' config.guess'
-TO_CLEAN=${TO_CLEAN}' config.sub'
-TO_CLEAN=${TO_CLEAN}' depcomp'
 TO_CLEAN=${TO_CLEAN}' yacs_config.h.in'
 
 rm -rf $TO_CLEAN > /dev/null
 
-l=`find . -name "Makefile.in" -or -name "*~"`
-
-if test X"$l" != X ; then
-    rm -f $l
-fi
-
-find . -name "semantic.cache" -print -exec rm {} \;
-find . -name "*.pyc" -print -exec rm {} \;
+find . -name "Makefile.in" -or -name "*~" -exec rm -f {} \;
+find . -name "semantic.cache" -exec rm {} \;
+find . -name "*.pyc" -exec rm {} \;
 rm -f src/salomegui_swig/doc.i
-rm -f adm/unix/config_files/l*.m4
+( cd adm/unix/config_files && rm -f l*.m4 config.guess config.sub depcomp install-sh ltmain.sh missing py-compile )

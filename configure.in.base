@@ -23,6 +23,7 @@
 # -----------------------------------------------------------------------------
 #
 AC_INIT([Salome2 Project], [7.0.0], [paul.rascle@edf.fr], [SalomeYacs])
+AC_CONFIG_AUX_DIR(adm/unix/config_files)
 AM_INIT_AUTOMAKE([tar-pax])
 AC_CONFIG_HEADER(yacs_config.h)
 
