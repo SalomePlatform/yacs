@@ -259,6 +259,18 @@ class YACS(YACS_ORB__POA.YACS_Gen,
         except :
           pass
 
+    """
+    Get version information.
+    """
+    def getVersion( self ):
+        try:
+            rt = SALOMERuntime.getSALOMERuntime()
+            version = rt.getVersion()
+        except:
+            version = ""
+            pass
+        return version
+
     def LoadProc(self,xmlFile):
         """
         load an XML graph in a YACS::ENGINE::proc, create a CORBA servant

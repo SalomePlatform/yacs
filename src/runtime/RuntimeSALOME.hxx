@@ -89,6 +89,8 @@ namespace YACS
       static void setRuntime(long flags = UsePython+UseCorba+UseXml+UseCpp+UseSalome); // singleton creation
       
       friend RuntimeSALOME* getSALOMERuntime();
+      
+      virtual std::string getVersion() const;
 
       virtual void init(long flags);
       virtual void fini();

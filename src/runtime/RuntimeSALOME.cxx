@@ -28,6 +28,7 @@
 #endif
 
 #include "yacsconfig.h"
+#include "YACS_version.h"
 #include "RuntimeSALOME.hxx"
 #include "SALOMEDispatcher.hxx"
 #include "Proc.hxx"
@@ -399,6 +400,15 @@ void RuntimeSALOME::fini()
           _orb->destroy();
         }
     }
+}
+
+std::string RuntimeSALOME::getVersion() const
+{
+#if YACS_DEVELOPMENT
+  return CORBA::string_dup(YACS_VERSION_STR"dev");
+#else
+  return CORBA::string_dup(YACS_VERSION_STR);
+#endif
 }
 
 Proc* RuntimeSALOME::createProc(const std::string& name)

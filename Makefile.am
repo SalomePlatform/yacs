@@ -44,3 +44,4 @@ EXTRA_DIST = Misc \
 	     configure.in.base \
 	     rfind
 
+salomeinclude_HEADERS = YACS_version.h
