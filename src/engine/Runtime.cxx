@@ -123,11 +123,21 @@ Runtime::Runtime()
 
   // Get max threads number
   char *maxThreadStr = getenv("YACS_MAX_THREADS");
-  if (!maxThreadStr) return;
-  int maxThreads = atoi(maxThreadStr);
-  DEBTRACE("maxThreads = " << maxThreads);
-  if (maxThreads <1) return;
-  Executor::_maxThreads = maxThreads;
+  if (maxThreadStr != NULL)
+    {
+      int maxThreads = atoi(maxThreadStr);
+      DEBTRACE("maxThreads = " << maxThreads);
+      if (maxThreads > 0) Executor::_maxThreads = maxThreads;
+    }
+
+  // Get thread stack size
+  char *threadStackSizeStr = getenv("YACS_THREADS_STACK_SIZE");
+  if (threadStackSizeStr != NULL)
+    {
+      size_t threadStackSize = strtoul(threadStackSizeStr, NULL, 0);
+      DEBTRACE("threadStackSize = " << threadStackSize);
+      if (threadStackSize > 0) Executor::_threadStackSize = threadStackSize;
+    }
 }
 
 void Runtime::removeRuntime()

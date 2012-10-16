@@ -113,6 +113,7 @@ namespace YACS
       void unsetStopOnError();
       void waitPause();
       static int _maxThreads;
+      static size_t _threadStackSize;
     protected:
       bool checkBreakPoints();
       void waitResume();
