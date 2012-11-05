@@ -58,4 +58,5 @@ generates the necessary SALOME embedment starting from a brief description of th
    python
    batch
    optimizer
+   resource
 
