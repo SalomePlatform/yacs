@@ -35,6 +35,8 @@ SHORT_VERSION=`echo $VERSION | awk -F. '{printf("%d.%d",$1,$2)}'`
 AC_SUBST(SHORT_VERSION)
 XVERSION=`echo $VERSION | awk -F. '{printf("0x%02x%02x%02x",$1,$2,$3)}'`
 AC_SUBST(XVERSION)
+VERSION_DEV=1
+AC_SUBST(VERSION_DEV)
 
 RELEASE=$VERSION
 AC_SUBST(RELEASE)
@@ -166,6 +168,7 @@ fi
 
 AC_OUTPUT([ \
   Makefile \
+  YACS_version.h \
   Demo/Makefile \
   doc/Makefile \
   idl/Makefile \

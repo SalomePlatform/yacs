@@ -33,6 +33,7 @@
   <section name="yacs_help">
     <parameter name="sub_menu"     value="%1 module"/>
     <parameter name="User's Guide" value="%YACS_ROOT_DIR%/share/doc/salome/gui/YACS/index.html"/>
+    <parameter name="Developer's Guide" value="%YACS_ROOT_DIR%/share/doc/salome/tui/YACS/index.html"/>
   </section>
   <section name="YACS" >
     <!-- Module preferences -->

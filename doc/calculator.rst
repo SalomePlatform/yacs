@@ -2,7 +2,7 @@
 .. _calculator:
 
 MEDCoupling Calculator Component
-=========================
+===================================
 This example is the following of the HELLO component. It's purpose is to show how to quickly create a new SALOME module, to introduce the use of MEDCoupling objects within  SALOME/Corba context, to demonstrate the mechanism of exceptions, and to introduce the use of  SALOME supervisor.
 
 The MED libraries

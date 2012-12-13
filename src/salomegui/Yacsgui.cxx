@@ -29,7 +29,7 @@
 #include <SUIT_ViewManager.h>
 #include <SUIT_ViewWindow.h>
 #include <SalomeApp_Application.h>
-#include <SalomeApp_Engine_i.hxx>
+#include <SalomeApp_Engine_i.h>
 #include <QxScene_ViewManager.h>
 #include <QxScene_ViewModel.h>
 #include <QxScene_ViewWindow.h>

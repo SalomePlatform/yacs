@@ -32,7 +32,8 @@ TO_CLEAN=${TO_CLEAN}' yacs_config.h.in'
 
 rm -rf $TO_CLEAN > /dev/null
 
-find . -name "Makefile.in" -or -name "*~" -exec rm -f {} \;
+find . -name "Makefile.in" -exec rm -f {} \;
+find . -name "*~" -exec rm -f {} \;
 find . -name "semantic.cache" -exec rm {} \;
 find . -name "*.pyc" -exec rm {} \;
 rm -f src/salomegui_swig/doc.i

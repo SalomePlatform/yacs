@@ -181,6 +181,52 @@ void graphParser::onEnd   (const XML_Char* name)
 
 // ----------------------------------------------------------------------------
 
+class outputParser: public stateParser
+{
+public:
+  virtual void init(const xmlChar** p, xmlParserBase* father=0)
+  {
+    //DEBTRACE("outputParser::init()");
+    _state = XMLNOCONTEXT;
+    _father = father;
+    YASSERT( dynamic_cast<nodeParser*> (father));
+    _stackState.push(_state);
+    if (p) getAttributes(p);
+  }
+  virtual void onStart (const XML_Char* elem, const xmlChar** p)
+  {
+    //DEBTRACE("outputParser::onStart" << elem);
+    string element(elem);
+    stateParser *parser = 0;
+    if      (element == "name")      parser = new attrParser();
+    else if (element == "value")     parser = new valueParser();
+    else
+    { 
+      _what = "expected name or value, got <" + element + ">";
+      _state = XMLFATALERROR;
+      stopParse(_what);
+    }
+    if (parser)
+    {
+      _stackParser.push(parser);
+      XML_SetUserData(_xmlParser, parser);
+      parser->init(p, this);
+    }
+  }
+  virtual void onEnd   (const XML_Char* name)
+  {
+    //DEBTRACE("outputParser::onEnd" << elem);
+    //DEBTRACE("portName: " << _mapAttrib["name"] << "value: " << _data );
+    stateParser::onEnd(name);
+  }
+  virtual void addData(std::string /*value*/)
+  {
+    //DEBTRACE("outputParser::addData" << elem);
+  }
+};
+
+// ----------------------------------------------------------------------------
+
 void nodeParser::init(const xmlChar** p, xmlParserBase* father)
 {
   DEBTRACE("nodeParser::init()");
@@ -202,7 +248,7 @@ void nodeParser::onStart (const XML_Char* elem, const xmlChar** p)
   else if (element == "nsteps")    parser = new attrParser();
   else if (element == "nbdone")    parser = new attrParser();
   else if (element == "condition") parser = new attrParser();
-  else if (element == "inputPort") parser = new portParser();
+  else if (element == "outputPort") parser = new outputParser();
   else
     { 
       _what = "expected name, state or inputPort, got <" + element + ">";

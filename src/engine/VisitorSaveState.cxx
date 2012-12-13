@@ -119,6 +119,26 @@ void VisitorSaveState::visitElementaryNode(ElementaryNode *node)
         }
       _out << "    </inputPort>" << endl;
     }
+
+  list<OutputPort *> setOfOutputPort = node->getSetOfOutputPort();
+  list<OutputPort *>::iterator oiter;
+  for(oiter = setOfOutputPort.begin(); oiter != setOfOutputPort.end(); oiter++)
+    {
+      _out << "    <outputPort>" << endl;
+      _out << "      <name>" << (*oiter)->getName() << "</name>" << endl;
+      try
+        {
+          _out << "      ";
+          _out << (*oiter)->dump();
+        }
+      catch (YACS::Exception &e)
+        {
+          DEBTRACE("caught YACS:Exception: " << e.what());
+          _out << "<value><error><![CDATA[" << e.what() << "]]></error></value>" << endl;
+        }
+      _out << "    </outputPort>" << endl;
+    }
+
   _out << "  </node>" << endl;
 }
 

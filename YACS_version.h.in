@@ -17,32 +17,15 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-#ifndef __THREADPT_HXX__
-#define __THREADPT_HXX__
+#if !defined(__YACS_VERSION_H__)
+#define __YACS_VERSION_H__
 
-#include "YACSBasesExport.hxx"
+/*
+  YACS_VERSION is (major << 16) + (minor << 8) + patch.
+*/
 
-#include <pthread.h>
+#define YACS_VERSION_STR "@VERSION@"
+#define YACS_VERSION     @XVERSION@
+#define YACS_DEVELOPMENT @VERSION_DEV@
 
-namespace YACS
-{
-  namespace BASES
-  {
-    class YACSBASES_EXPORT ThreadPT
-    {
-    public:
-      typedef void *(*ThreadJob)(void*);
-    public:
-      ThreadPT(ThreadJob funcPtr, void *stack, size_t stackSize = 0);
-      bool operator==(const ThreadPT& other);
-      void join();
-      static void detach();
-      static void exit(void *what);
-      static void sleep(unsigned long usec);
-    private:
-      pthread_t _threadId;
-    };
-  }
-}
-
-#endif
+#endif // __YACS_VERSION_H__

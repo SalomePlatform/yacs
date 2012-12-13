@@ -291,7 +291,7 @@ Data nodes
 A Data node is used to define data (DataIn node) or to collect results (DataOut node) of a calculation scheme.
 
 DataIn node
-++++++++++++++++++
+...................
 A DataIn node has output data ports only that are used to define input data for the calculation scheme. These data have a name (the port name), a type (the port type) and an initial value.
 
 To create this type of node:
@@ -301,7 +301,7 @@ To create this type of node:
 - from python interface, see :ref:`py_datain`
 
 DataOut node
-++++++++++++++++++
+...................
 A DataOut node only has input data ports that are used to store output results from the calculation scheme.  These results have a name (the port name) and a type (the port type).  If the result is a file, a name can be given to the file into which the result file will be copied.
 
 All values of node results can be saved in a file at the end of the calculation.
@@ -317,7 +317,7 @@ Study nodes
 A Study node is used to relate the elements of a SALOME study to the data and results of a calculation scheme.
 
 StudyIn node
-++++++++++++++++++
+...................
 A StudyIn node has output data ports only. It is used to define data in the calculation scheme originating from a SALOME study. The associated study is given by its SALOME StudyID.
 
 A port corresponds to data stored in the associated study.  The data has a name (the port name), a type (the port type), and a reference that gives the entry into the study.  This reference is either a SALOME Entry (for example 0:1:1:2) or a path in the SALOME study tree (for example, /Geometry/box_1).
@@ -329,7 +329,7 @@ To create this type of node:
 - from python interface, see :ref:`py_studyin`
 
 StudyOut node
-++++++++++++++++++
+...................
 A StudyOut node only has input data ports.  It is used to store results in a SALOME study.  The associated study is given by its SALOME StudyID.
 
 A port corresponds to a result to be stored in an associated study.  The result has a name (the port name), a type (the port type), and a reference that gives the entry into the study.  This reference is either a SALOME Entry (for example 0:1:1:2) or a path in the SALOME study tree (for example, /Geometry/box_1).
@@ -408,7 +408,7 @@ of the input port.  There are three forms of compatibility:
  - type conversion (for example int -> double)
 
 Compatibility by conversion
-+++++++++++++++++++++++++++++++
+......................................
 Compatibility by conversion is applicable to basic types and to their derivatives (sequence, structure).  
 The following conversions are accepted:
 
@@ -424,7 +424,7 @@ sequence of doubles.  YACS controls the conversion.  This is also applicable to 
 of structure, sequence of structure structures and types, etc.
 
 Compatibility by specialization
-+++++++++++++++++++++++++++++++
+......................................
 The compatibility rule is expressed differently for data (or dataflow) links and datastream links.
 
 For data (or dataflow) links, the type of output data port must be derived from (or identical to) the type of input 
@@ -612,6 +612,8 @@ nb_node               int          number of nodes (constraint used if name is n
 nb_component_nodes    int          ??
 parallelLib           string       ??
 =================== ============= =============================================
+
+.. _catalogResources:
 
 The resources catalog
 ''''''''''''''''''''''''''''''''''''''''''
@@ -852,13 +854,6 @@ the DSC_TRACELEVEL environment variable to 0 (export DSC_TRACELEVEL=0, for bash 
 the trace in an another file by setting the DSC_TRACE environment variable to 1 (export DSC_TRACE=1, for bash shell).
 In this case the trace is written in a file with name : $SALOME_TMP_DIR/<container identification>.tce.
 
-
-Execution of concurrent branches
--------------------------------------
-YACS can execute calculation nodes of a scheme simultaneously.  
-However, simultaneous execution of a large number of nodes can saturate the system.  
-The maximum number of simultaneous executions can be controlled by fixing the maximum number of threads used with the 
-YACS_MAX_THREADS environment variable. By default, this value is equal to 50.
 
 Schema shutdown
 -----------------

@@ -127,6 +127,7 @@ AM_CXXFLAGS = \
 	-I$(srcdir)/../bases \
 	-I$(srcdir)/../engine \
 	-I../../idl \
+	-I../.. \
 	$(LIBXML_INCLUDES)
 
 include $(top_srcdir)/adm/unix/make_end.am

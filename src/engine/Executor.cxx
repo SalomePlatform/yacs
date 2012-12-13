@@ -70,6 +70,7 @@ using YACS::BASES::Semaphore;
 #include "YacsTrace.hxx"
 
 int Executor::_maxThreads(50);
+size_t Executor::_threadStackSize(1048576); // Default thread stack size is 1MB
 
 Executor::Executor():_nbOfConcurrentThreads(0), _semForMaxThreads(_maxThreads)
 {
@@ -1035,7 +1036,7 @@ void Executor::launchTask(Task *task)
     task->begin(); //change state to ACTIVATED
     _mutexForSchedulerUpdate.unlock();
   } // --- End of critical section
-  Thread(functionForTaskExecution,args);
+  Thread(functionForTaskExecution, args, _threadStackSize);
 }
 
 //! wait until a running task ends

@@ -33,7 +33,7 @@ SalomeProc::SalomeProc(const std::string& name):Proc(name)
 {
   // create default container with some default properties
   Container* cont=createContainer("DefaultContainer");
-  cont->setProperty("name",Kernel_Utils::GetHostname());
+  cont->setProperty("name", "localhost");
   cont->setProperty("container_name","FactoryServer");
   cont->decrRef();
 }

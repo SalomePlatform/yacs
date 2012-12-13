@@ -28,11 +28,19 @@
 
 using namespace YACS::BASES;
 
-ThreadPT::ThreadPT(ThreadJob funcPtr, void *stack)
+ThreadPT::ThreadPT(ThreadJob funcPtr, void *stack, size_t stackSize)
 {
   int err;
   void **stackT=(void **) stack;
-  err=pthread_create(&_threadId,0,funcPtr,stackT);
+  pthread_attr_t attr;
+  pthread_attr_init(&attr);
+  if (stackSize > 0)
+    {
+      err = pthread_attr_setstacksize(&attr, stackSize);
+      if (err != 0) throw Exception("Error when setting thread stack size");
+    }
+  err = pthread_create(&_threadId, &attr, funcPtr, stackT);
+  pthread_attr_destroy(&attr);
   if(err!=0)throw Exception("Error in thread creation");
 }
 
