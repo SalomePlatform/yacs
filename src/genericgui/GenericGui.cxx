@@ -416,6 +416,10 @@ void GenericGui::createActions()
                                          tr("Put node in block"), tr("Put node in block"),
                                          0, _parent, false, this,  SLOT(onPutInBloc()));
 
+  _putGraphInOptimizerLoopAct = _wrapper->createAction(getMenuId(), tr("Optimizer Loop"), QIcon("icons:paste.png"),
+                                         tr("Optimizer Loop"), tr("Optimizer Loop"),
+                                         0, _parent, false, this,  SLOT(onPutGraphInOptimizerLoop()));
+
   _arrangeLocalNodesAct = _wrapper->createAction(getMenuId(), tr("arrange nodes on that bloc level, without recursion"), QIcon("icons:arrange_nodes.png"),
                                                  tr("arrange local nodes"), tr("arrange nodes on that bloc level, without recursion"),
                                                  0, _parent, false, this,  SLOT(onArrangeLocalNodes()));
@@ -2061,6 +2065,18 @@ void GenericGui::onPasteItem()
 void GenericGui::onPutInBloc()
 {
   _guiEditor->PutSubjectInBloc();
+}
+
+void GenericGui::putGraphInForeachLoop(std::string type)
+{
+  DEBTRACE("GenericGui::PutGraphInForeachLoop");
+  _guiEditor->PutGraphInForeachLoop(type);
+}
+
+void GenericGui::onPutGraphInOptimizerLoop()
+{
+  DEBTRACE("GenericGui::onPutGraphInOptimizerLoop");
+  _guiEditor->PutGraphInOptimizerLoop();
 }
 
 void GenericGui::onArrangeLocalNodes()

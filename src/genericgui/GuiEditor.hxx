@@ -79,6 +79,9 @@ namespace YACS
       void CopySubject();
       void PasteSubject();
       void PutSubjectInBloc();
+      std::string PutGraphInBloc();
+      void PutGraphInForeachLoop(std::string typeNode);
+      void PutGraphInOptimizerLoop();
       void shrinkExpand();
       void rebuildLinks();
       void arrangeNodes(bool isRecursive);

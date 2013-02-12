@@ -1789,7 +1789,15 @@ std::string RuntimeSALOME::convertNeutralAsString(TypeCode * type, Any *data)
     {
       ob=convertNeutralPyObject(type,data);
       std::string s=convertPyObjectToString(ob);
+
+      // Note (Renaud Barate, 8 jan 2013): With Python 2.7, this call to Py_DECREF causes a crash
+      // (SIGSEGV) when ob is a sequence and the call is not protected with the global interpreter
+      // lock. I thus added the call to PyGILState_Ensure / PyGILState_Release. It worked fine in
+      // Python 2.6 without this call. If anyone finds the real reason of this bug and another fix,
+      // feel free to change this code.
+      PyGILState_STATE gstate = PyGILState_Ensure();
       Py_DECREF(ob);
+      PyGILState_Release(gstate);
       return s;
     }
   else

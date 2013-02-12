@@ -152,7 +152,9 @@ namespace YACS
     {
     public:
       CommandPutInComposedNode(std::string position,
-                        std::string newParent,std::string type);
+			       std::string newParent,
+			       std::string type,
+			       bool toSaveRestoreLinks=true);
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
@@ -161,6 +163,7 @@ namespace YACS
       std::string _newParent;
       std::string _type;
       std::string _newpos;
+      bool _toSaveRestoreLinks;
     };
 
     class CommandCopyNode: public Command

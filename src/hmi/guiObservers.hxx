@@ -309,7 +309,7 @@ namespace YACS
       virtual void removeExternalControlLinks();
       virtual void saveLinks();
       virtual void restoreLinks();
-      virtual bool putInComposedNode(std::string name,std::string type);
+      virtual bool putInComposedNode(std::string name,std::string type, bool toSaveRestoreLinks=true);
       virtual int isValid();
       void setExecState(int execState);
       static bool tryCreateLink(SubjectNode *subOutNode, SubjectNode *subInNode);

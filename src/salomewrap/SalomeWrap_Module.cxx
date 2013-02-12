@@ -39,8 +39,7 @@
 using namespace std;
 
 SalomeWrap_Module::SalomeWrap_Module(const char* name) :
-  SalomeApp_Module( name ),
-  LightApp_Module( name )
+  SalomeApp_Module( name )
 {
   _mapOfViewWindow.clear();
 }

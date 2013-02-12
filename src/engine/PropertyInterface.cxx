@@ -30,6 +30,10 @@ using namespace YACS::ENGINE;
  *
  */
 
+PropertyInterface::~PropertyInterface()
+{
+}
+
 void PropertyInterface::setProperty(const std::string& name, const std::string& value)
 {
   DEBTRACE("PropertyInterface::setProperty " << name << " " << value);

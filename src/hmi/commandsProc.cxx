@@ -504,8 +504,10 @@ bool CommandReparentNode::localReverse()
 
 // ----------------------------------------------------------------------------
 CommandPutInComposedNode::CommandPutInComposedNode(std::string position,
-                                                   std::string newParent,std::string type)
-  : Command(), _position(position), _newParent(newParent), _type(type)
+                                                   std::string newParent,
+						   std::string type,
+						   bool toSaveRestoreLinks)
+  : Command(), _position(position), _newParent(newParent), _type(type), _toSaveRestoreLinks(toSaveRestoreLinks)
 {
   DEBTRACE("CommandPutInComposedNode::CommandPutInComposedNode " << _position << " " << _newParent);
   _newpos ="";
@@ -513,7 +515,8 @@ CommandPutInComposedNode::CommandPutInComposedNode(std::string position,
 
 std::string CommandPutInComposedNode::dump()
 {
-  string ret ="CommandPutInComposedNode " + _position + " " + _newParent + " " + _type;
+  string save = _toSaveRestoreLinks ? "true" : "false";
+  string ret ="CommandPutInComposedNode " + _position + " " + _newParent + " " + _type + " " + save;
   return ret;
 }
 
@@ -532,8 +535,8 @@ bool CommandPutInComposedNode::localExecute()
       SubjectNode * snode = GuiContext::getCurrent()->_mapOfSubjectNode[node];
       Subject *subo = GuiContext::getCurrent()->_mapOfSubjectNode[oldFather];
       SubjectComposedNode* sop = dynamic_cast<SubjectComposedNode*>(subo);
-      //save existing links
-      snode->saveLinks();
+      if (_toSaveRestoreLinks)
+	snode->saveLinks(); //save existing links
       //remove external links
       snode->removeExternalLinks();
       snode->removeExternalControlLinks();
@@ -544,15 +547,39 @@ bool CommandPutInComposedNode::localExecute()
       //refresh node views
       sop->update(CUT, ProcInvoc::getTypeOfNode(node), snode);
 
-      //create a ComposedNode (type _type) with name _newParent
-      YACS::ENGINE::Catalog *catalog = YACS::ENGINE::getSALOMERuntime()->getBuiltinCatalog();
-      Node* nodeToClone = catalog->_composednodeMap[_type];
-      Node* composednode = nodeToClone->clone(0);
-      composednode->setName(_newParent);
-      //add the new composednode as child of oldfather
-      oldFather->edAddChild(composednode);
-      //create the subject composednode
-      SubjectNode *scomposednode = sop->addSubjectNode(composednode,"",catalog,"",_type);
+      // try to find a node with the given name:
+      //   success: use it as target composed node
+      //   fail:    create such a node and use it
+      std::list<Node*> children = proc->getChildren();
+      Node* composednode = 0;
+      SubjectNode *scomposednode = 0;
+      for (list<Node*>::iterator it = children.begin(); it != children.end(); ++it)
+	{
+	  if ( _newParent == (*it)->getName() )
+	    {
+	      //get an existing ComposedNode with name _newParent
+	      composednode = (*it);
+	      break;
+	    }
+	}
+      // target node was found
+      if ( composednode )
+	{
+	  scomposednode = GuiContext::getCurrent()->_mapOfSubjectNode[composednode];
+	}
+      // creation of target node
+      else 
+	{
+	  //create a ComposedNode (type _type) with name _newParent
+	  YACS::ENGINE::Catalog *catalog = YACS::ENGINE::getSALOMERuntime()->getBuiltinCatalog();
+	  Node* nodeToClone = catalog->_composednodeMap[_type];
+	  composednode = nodeToClone->clone(0);
+	  composednode->setName(_newParent);
+	  //add the new composednode as child of oldfather
+	  oldFather->edAddChild(composednode);
+	  //create the subject composednode
+	  scomposednode = sop->addSubjectNode(composednode,"",catalog,"",_type);
+	}
 
       //add the old node as child of new composednode
       (dynamic_cast<YACS::ENGINE::ComposedNode*>(composednode))->edAddChild(node);
@@ -560,8 +587,8 @@ bool CommandPutInComposedNode::localExecute()
       //add the subject node to subject composednode
       (dynamic_cast<SubjectComposedNode*>(scomposednode))->houseKeepingAfterCutPaste(false, snode);
       snode->setParent(scomposednode);
-      //restore links
-      snode->restoreLinks();
+      if (_toSaveRestoreLinks)
+	snode->restoreLinks(); //restore links
       //refresh all views
       scomposednode->update(PASTE, ProcInvoc::getTypeOfNode(node), snode);
       snode->recursiveUpdate(RENAME, 0, snode);

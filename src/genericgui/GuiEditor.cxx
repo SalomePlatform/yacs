@@ -518,19 +518,82 @@ void GuiEditor::PutSubjectInBloc()
       std::stringstream tryname;
       long newid=0;
       while (newid < 100000)
-        {
-          tryname.str("");
-          tryname << "Bloc" << newid;
-          if(names.find(tryname.str()) == names.end())break;
-          newid++;
-        }
-
+	{
+	  tryname.str("");
+	  tryname << "Bloc" << newid;
+	  if(names.find(tryname.str()) == names.end())break;
+	  newid++;
+	}
+      
       if (!snode->putInComposedNode(tryname.str(),"Bloc"))
         Message mess;
 
       return;
     }
   Message mess("Put in Bloc not possible for this kind of object");
+}
+
+void GuiEditor::PutGraphInForeachLoop(std::string typeNode)
+{
+  // put graph in Bloc node before
+  std::string blocname = PutGraphInBloc();
+
+  Proc* proc = GuiContext::getCurrent()->getProc();
+  Node* bloc = proc->getChildByShortName(blocname);
+  SubjectNode * sbloc = GuiContext::getCurrent()->_mapOfSubjectNode[bloc];
+  //put the built bloc into target node
+  sbloc->putInComposedNode("ForEachLoop_"+typeNode,"ForEachLoop_"+typeNode);
+}
+
+void GuiEditor::PutGraphInOptimizerLoop()
+{
+  // put graph in Bloc node before
+  std::string blocname = PutGraphInBloc();
+
+  Proc* proc = GuiContext::getCurrent()->getProc();
+  Node* bloc = proc->getChildByShortName(blocname);
+  SubjectNode * sbloc = GuiContext::getCurrent()->_mapOfSubjectNode[bloc];
+  //put the built bloc into target node
+  sbloc->putInComposedNode("OptimizerLoop0","OptimizerLoop");
+}
+
+std::string GuiEditor::PutGraphInBloc()
+{
+  Proc* proc = GuiContext::getCurrent()->getProc();
+  std::list<Node *> children = proc->getChildren();
+
+  //get the set of children node names
+  std::set<std::string> names;
+  for (std::list<Node*>::iterator it = children.begin(); it != children.end(); ++it)
+    names.insert((*it)->getName());
+
+  //get the next numbered name
+  std::stringstream tryname;
+  long newid=0;
+  while (newid < 100000)
+    {
+      tryname.str("");
+      tryname << "Bloc" << newid;
+      if(names.find(tryname.str()) == names.end())break;
+      newid++;
+    }
+  std::string blocname = tryname.str();
+
+  //put one by one the child nodes of Proc node into a new Bloc node
+  SubjectNode * snode;
+  for (std::list<Node*>::iterator it = children.begin(); it != children.end(); ++it)
+    {
+      snode = GuiContext::getCurrent()->_mapOfSubjectNode[(*it)];
+      snode->saveLinks();
+      snode->putInComposedNode(blocname,"Bloc", false);
+    }
+  for (std::list<Node*>::iterator it = children.begin(); it != children.end(); ++it)
+    {
+      snode = 0;
+      snode = GuiContext::getCurrent()->_mapOfSubjectNode[(*it)];
+      snode->restoreLinks();
+    }
+  return blocname;
 }
 
 void GuiEditor::rebuildLinks()

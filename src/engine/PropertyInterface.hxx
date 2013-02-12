@@ -32,6 +32,8 @@ namespace YACS
     class YACSLIBENGINE_EXPORT PropertyInterface
     {
     public:
+      virtual ~PropertyInterface();
+
       virtual void setProperty(const std::string& name,const std::string& value);
       virtual std::string getProperty(const std::string& name);
       std::map<std::string,std::string> getProperties() { return _propertyMap; };

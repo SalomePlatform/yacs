@@ -736,6 +736,12 @@ static PyObject* convertPort(YACS::ENGINE::Port* port,int owner=0)
  */
 %feature("ref")   YACS::ENGINE::RefCounter  ""
 %feature("unref") YACS::ENGINE::RefCounter  "$this->decrRef();"
+
+// Unfortunately, class ComponentInstance inherits from RefCounter AND PropertyInterface. Thus the ref and
+// unref features are ambiguous and with swig 2.0.7 at least, we must re-specify those features for class
+// ComponentInstance unless the instances are destroyed when the Swig object is unref'ed.
+%feature("ref")   YACS::ENGINE::ComponentInstance  ""
+%feature("unref") YACS::ENGINE::ComponentInstance  "$this->decrRef();"
 /*
  * End of Reference counting section
  */

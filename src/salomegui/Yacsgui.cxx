@@ -60,8 +60,7 @@ using namespace YACS::HMI;
 int  Yacsgui::_oldStudyId = -1;
 
 Yacsgui::Yacsgui() :
-  SalomeWrap_Module( "YACS" ), // default name
-  LightApp_Module( "YACS" )
+  SalomeWrap_Module( "YACS" ) // default name
 {
   DEBTRACE("Yacsgui::Yacsgui");
   _wrapper = 0;

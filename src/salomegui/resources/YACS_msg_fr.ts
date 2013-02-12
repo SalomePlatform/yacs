@@ -542,6 +542,10 @@
         <translation>Poser le noeud au bloc</translation>
     </message>
     <message>
+        <source>Put Graph Content in Node</source>
+        <translation type="unfinished">Put Graph Content in Node</translation>
+    </message>
+    <message>
         <source>arrange nodes on that bloc level, without recursion</source>
         <translation>ranger les noeuds au niveau de ce bloc, sans récursion </translation>
     </message>

@@ -1099,13 +1099,13 @@ void SubjectNode::restoreLinks()
     }
 }
 
-bool SubjectNode::putInComposedNode(std::string name,std::string type)
+bool SubjectNode::putInComposedNode(std::string name,std::string type, bool toSaveRestoreLinks)
 {
   Proc *proc = GuiContext::getCurrent()->getProc();
   string position = "";
   if (proc != dynamic_cast<Proc*>(_node)) position = proc->getChildName(_node);
 
-  CommandPutInComposedNode *command = new CommandPutInComposedNode(position, name, type);
+  CommandPutInComposedNode *command = new CommandPutInComposedNode(position, name, type, toSaveRestoreLinks);
   if (command->execute())
     {
       GuiContext::getCurrent()->getInvoc()->add(command);

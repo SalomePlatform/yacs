@@ -69,6 +69,13 @@ void MenusBase::foreachAction(QAction* act)
   gmain->createForEachLoop(act->text().toStdString());
 }
 
+void MenusBase::putGraphInForeachAction(QAction* act)
+{
+  DEBTRACE(act->text().toStdString());
+  GenericGui *gmain = QtGuiContext::getQtCurrent()->getGMain();
+  gmain->putGraphInForeachLoop(act->text().toStdString());
+}
+
 void MenusBase::addHeader(QMenu &m, const QString &h)
 {
   m.addAction(_dummyAct);
@@ -79,7 +86,7 @@ void MenusBase::addHeader(QMenu &m, const QString &h)
   m.addSeparator();
 }
 
-void MenusBase::addForEachMenu(QMenu *m, QActionGroup* actgroup)
+void MenusBase::buildForEachMenu(QMenu *m, QActionGroup* actgroup)
 {
   QPixmap pixmap;
   pixmap.load("icons:new_foreach_loop_node.png");
@@ -94,9 +101,18 @@ void MenusBase::addForEachMenu(QMenu *m, QActionGroup* actgroup)
       act=actgroup->addAction((*it).first.c_str());
       ForEachMenu->addAction(act);
     }
+}
 
+void MenusBase::addForEachMenu(QMenu *m, QActionGroup* actgroup)
+{
+  buildForEachMenu(m, actgroup);
   connect(actgroup, SIGNAL(triggered(QAction*)), this, SLOT(foreachAction(QAction*)));
+}
 
+void MenusBase::addForEachMenuToPutGraph(QMenu *m, QActionGroup* actgroup)
+{
+  buildForEachMenu(m, actgroup);
+  connect(actgroup, SIGNAL(triggered(QAction*)), this, SLOT(putGraphInForeachAction(QAction*)));
 }
 
 //=======================================================================================
@@ -202,6 +218,7 @@ void ProcMenu::popupMenu(QWidget *caller, const QPoint &globalPos, const QString
   QMenu menu(m, caller);
   addHeader(menu, m);
   QActionGroup actgroup(this);
+  QActionGroup actgroup2(this);
   if (isEdition)
     {
       menu.addAction(gmain->_runLoadedSchemaAct);
@@ -231,6 +248,11 @@ void ProcMenu::popupMenu(QWidget *caller, const QPoint &globalPos, const QString
       CNmenu->addAction(gmain->_OptimizerLoopAct);
       menu.addSeparator();
       menu.addAction(gmain->_pasteItemAct);
+
+      QMenu *PINmenu = menu.addMenu(tr("Put Graph Content in Node"));
+      addForEachMenuToPutGraph(PINmenu,&actgroup2);
+      PINmenu->addAction(gmain->_putGraphInOptimizerLoopAct);
+
       menu.addSeparator();
     }
   menu.addAction(gmain->_getYacsContainerLogAct);

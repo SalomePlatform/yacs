@@ -39,10 +39,13 @@ namespace YACS
                              const QPoint &globalPos,
                              const QString& m = "MenuBase");
       virtual void addForEachMenu(QMenu *m, QActionGroup* actgroup);
+      virtual void addForEachMenuToPutGraph(QMenu *m, QActionGroup* actgroup);
     protected slots:
       void dummyAction();
       void foreachAction(QAction*);
+      void putGraphInForeachAction(QAction*);
     protected:
+      virtual void buildForEachMenu(QMenu *m, QActionGroup* actgroup);
       virtual void addHeader(QMenu &m, const QString &h);
       QAction *_dummyAct;
     };
