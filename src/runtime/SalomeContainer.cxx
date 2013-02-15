@@ -54,56 +54,17 @@ using namespace std;
 SalomeContainer::SalomeContainer():_trueCont(Engines::Container::_nil()),_type("mono"),_shutdownLevel(999)
 {
   /* Init ContainerParameters */
-  _params.container_name = "";
+  SALOME_LifeCycleCORBA::preSet(_params);
   _params.mode= "start";
-  _params.workingdir= "";
-  _params.nb_proc = 0;
-  _params.isMPI = false;
-  _params.parallelLib = "";
-
-  _params.resource_params.name = "";
-  _params.resource_params.hostname = "";
-  _params.resource_params.OS = "";
-  _params.resource_params.nb_proc = 0;
-  _params.resource_params.mem_mb = 0;
-  _params.resource_params.cpu_clock = 0;
-  _params.resource_params.nb_node = 0;
-  _params.resource_params.nb_proc_per_node = 0;
-  _params.resource_params.policy = "";
-  // By default, componentList and resList length is 0
 }
 
-SalomeContainer::SalomeContainer(const SalomeContainer& other):Container(other),_trueCont(Engines::Container::_nil()),_type(other._type),
-                                                                                _shutdownLevel(other._shutdownLevel)
+SalomeContainer::SalomeContainer(const SalomeContainer& other)
+: Container(other),
+  _trueCont(Engines::Container::_nil()),
+  _type(other._type),
+  _shutdownLevel(other._shutdownLevel),
+  _params(other._params)
 {
-  _params.container_name = CORBA::string_dup(other._params.container_name);
-  _params.mode= CORBA::string_dup(other._params.mode);
-  _params.workingdir= CORBA::string_dup(other._params.workingdir);
-  _params.nb_proc = other._params.nb_proc;
-  _params.isMPI = other._params.isMPI;
-  _params.parallelLib = CORBA::string_dup(other._params.parallelLib);
-
-  _params.resource_params.name = CORBA::string_dup(other._params.resource_params.name);
-  _params.resource_params.hostname = CORBA::string_dup(other._params.resource_params.hostname);
-  _params.resource_params.OS = CORBA::string_dup(other._params.resource_params.OS);
-  _params.resource_params.nb_proc = other._params.resource_params.nb_proc;
-  _params.resource_params.mem_mb = other._params.resource_params.mem_mb;
-  _params.resource_params.cpu_clock = other._params.resource_params.cpu_clock;
-  _params.resource_params.nb_node = other._params.resource_params.nb_node;
-  _params.resource_params.nb_proc_per_node = other._params.resource_params.nb_proc_per_node;
-  _params.resource_params.policy = CORBA::string_dup(other._params.resource_params.policy);
-
-  _params.resource_params.componentList.length(other._params.resource_params.componentList.length());
-  for(CORBA::ULong i=0; i < other._params.resource_params.componentList.length(); i++)
-  {
-    _params.resource_params.componentList[i]=CORBA::string_dup(other._params.resource_params.componentList[i]);
-  }
-
-  _params.resource_params.resList.length(other._params.resource_params.resList.length());
-  for(CORBA::ULong i=0; i < other._params.resource_params.resList.length(); i++)
-  {
-    _params.resource_params.resList[i]=CORBA::string_dup(other._params.resource_params.resList[i]);
-  }
 }
 
 SalomeContainer::~SalomeContainer()

@@ -22,7 +22,7 @@
 
 #include <QtGui/QtGui>
 #include "SALOME_NamingService.hxx"
-#include "SALOME_ContainerManager.hh"
+#include "SALOME_Launcher.hh"
 
 // Kind of column
 // --------------

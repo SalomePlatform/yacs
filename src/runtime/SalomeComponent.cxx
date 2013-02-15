@@ -89,9 +89,9 @@ void SalomeComponent::load()
   //This component has no specified container : use default container policy
   SALOME_NamingService ns(getSALOMERuntime()->getOrb());
   SALOME_LifeCycleCORBA LCC(&ns);
-  Engines::MachineParameters params;
+  Engines::ContainerParameters params;
   LCC.preSet(params);
-  params.hostname="localhost";
+  params.resource_params.name = "localhost";
   params.container_name ="FactoryServer";
   _objComponent=LCC.LoadComponent(params,_compoName.c_str());
 }
