@@ -201,7 +201,10 @@ bool InputPyPort::isEmpty()
  */
 void InputPyPort::exSaveInit()
 {
-  Py_XDECREF(_initData); 
+  // Interpreter lock seems necessary when deleting lists in Python 2.7
+  PyGILState_STATE gstate = PyGILState_Ensure();
+  Py_XDECREF(_initData);
+  PyGILState_Release(gstate);
   _initData=_data;
   Py_INCREF(_initData); 
   DEBTRACE( "_initData.ob refcnt: " << _initData->ob_refcnt );
