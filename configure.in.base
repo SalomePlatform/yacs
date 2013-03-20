@@ -22,7 +22,7 @@
 # --
 # -----------------------------------------------------------------------------
 #
-AC_INIT([Salome2 Project], [7.0.0], [paul.rascle@edf.fr], [SalomeYacs])
+AC_INIT([Salome2 Project], [7.1.0], [paul.rascle@edf.fr], [SalomeYacs])
 AC_CONFIG_AUX_DIR(adm/unix/config_files)
 AM_INIT_AUTOMAKE([tar-pax])
 AC_CONFIG_HEADER(yacs_config.h)
@@ -35,7 +35,7 @@ SHORT_VERSION=`echo $VERSION | awk -F. '{printf("%d.%d",$1,$2)}'`
 AC_SUBST(SHORT_VERSION)
 XVERSION=`echo $VERSION | awk -F. '{printf("0x%02x%02x%02x",$1,$2,$3)}'`
 AC_SUBST(XVERSION)
-VERSION_DEV=1
+VERSION_DEV=0
 AC_SUBST(VERSION_DEV)
 
 RELEASE=$VERSION
