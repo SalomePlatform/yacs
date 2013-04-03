@@ -27,6 +27,10 @@ or by editing an XML file directly (see :ref:`schemaxml`), or by using
 an application programming interface (API) in Python (see :ref:`schemapy`).
 In this phase, chaining of components is defined with the associated dataflows.
 
+Many examples of YACS schemas are installed with SALOME. They can be found in
+the directory SALOME_APPLICATION/share/salome/yacssample (SALOME_APPLICATION
+is the path where SALOME application is installed).
+
 The calculation scheme can be executed from the graphic tool (see :ref:`execution`), but also in console 
 mode (see :ref:`execxml`), or by using the Python interface (see :ref:`execpy`).
 
