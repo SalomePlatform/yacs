@@ -37,38 +37,41 @@ The following is an example of description of a cluster:
 
 .. code-block:: xml
 
-  <machine hostname="clusteur1" 
-	   alias="frontal.com" 
-	   protocol="ssh"
-	   userName="user"
-	   mode="batch" 
-	   batch="lsf"
-	   mpi="prun"
-	   appliPath="/home/user/applis/batch_exemples" 
-	   batchQueue="mpi1G_5mn_4p"
-	   userCommands="ulimit -s 8192"
-	   preReqFilePath="/home/ribes/SALOME5/env-prerequis.sh" 
-	   OS="LINUX" 
-	   CPUFreqMHz="2800" 
-	   memInMB="4096" 
-	   nbOfNodes="101" 
-	   nbOfProcPerNode="2"/>
+  <machine name = "clusteur1"
+           hostname = "frontal.com"
+           type = "cluster"
+           protocol = "ssh"
+           userName = "user"
+           batch = "lsf"
+           canLaunchBatchJobs = "true"
+           mpi = "prun"
+           appliPath = "/home/user/applis/batch_exemples"
+           batchQueue = "mpi1G_5mn_4p"
+           userCommands = "ulimit -s 8192"
+           preReqFilePath = "/home/ribes/SALOME5/env-prerequis.sh"
+           OS = "LINUX"
+           CPUFreqMHz = "2800"
+           memInMB = "4096"
+           nbOfNodes = "101"
+           nbOfProcPerNode = "2"/>
   
 The following is the description of the different fields used when launching a batch:
- - **hostname**:  names the cluster for SALOME commands.  Warning, this name is not used to identify the cluster front end.
- - **alias**:  names the cluster front end.  It must be possible to reach this machine name using the protocol 
+ - **name**: names the cluster for SALOME commands. Warning, this name is not used to identify the cluster front end.
+ - **hostname**: names the cluster front end. It must be possible to reach this machine name using the protocol 
    defined in the file.  This is the machine that will be used to start the batch session.
  - **protocol**:  fixes the connection protocol between the user session and the cluster front end.  
    The possible choices are rsh or ssh.
  - **userName**:  user name on the cluster.
- - **mode**:  identifies the description of the machine as a cluster managed by a batch.  The possible choices are 
-   interactive and batch.  The batch option must be chosen for the machine to be accepted as a cluster with a batch manager.
+ - **type**: identifies the machine as a single machine or a cluster managed by a batch. The possible choices are 
+   "single_machine" or "cluster". The "cluster" option must be chosen for the machine to be accepted as a cluster with a batch manager.
  - **batch**:  identifies the batch manager.  Possible choices are:  pbs, lsf or sge.
  - **mpi**:  SALOME uses mpi to Start the SALOME session and containers on different calculation nodes allocated 
    by the batch manager.  Possible choices are lam, mpich1, mpich2, openmpi, slurm and prun.  Note that some 
    batch managers replace the mpi launcher with their own launcher for management of resources, which is the 
    reason for the slurm and prun options.
  - **appliPath**:  contains the path of the SALOME application previously installed on the cluster.
+ - **canLaunchBatchJobs**: Indicates that the cluster can be used to launch batch jobs. Must be set to "true"
+   in order to use this cluster to launch a schema in batch mode.
 
 There are two optional fields that can be useful depending on the configuration of clusters.
  - **batchQueue**:  specifies the queue of the batch manager to be used
@@ -80,106 +83,106 @@ There are two optional fields that can be useful depending on the configuration 
 Using the Launcher service
 -------------------------------
 The Launcher service is a CORBA server started by the SALOME kernel.  Its interface is described in the 
-**SALOME_ContainerManager.idl** file of the kernel.
+**SALOME_Launcher.idl** file of the kernel.
 
 Its interface is as follows:
 
 ::
 
-  interface SalomeLauncher
-  {
-    long submitJob( in string xmlExecuteFile,
-		    in string clusterName ) raises (SALOME::SALOME_Exception);
-    long submitSalomeJob( in string fileToExecute,
-			  in FilesList filesToExport,
-			  in FilesList filesToImport,
-			  in BatchParameters batch_params,
-			  in MachineParameters params ) 
-			                    raises (SALOME::SALOME_Exception);
+    interface SalomeLauncher
+    {
+      // Main methods
+      long   createJob    (in Engines::JobParameters job_parameters) raises (SALOME::SALOME_Exception);
+      void   launchJob    (in long job_id)                           raises (SALOME::SALOME_Exception);
+      string getJobState  (in long job_id)                           raises (SALOME::SALOME_Exception);
+      string getAssignedHostnames  (in long job_id)                  raises (SALOME::SALOME_Exception); // Get names or ids of hosts assigned to the job
+      void   getJobResults(in long job_id, in string directory)      raises (SALOME::SALOME_Exception);
+      boolean getJobDumpState(in long job_id, in string directory)   raises (SALOME::SALOME_Exception);
+      void   stopJob      (in long job_id)                           raises (SALOME::SALOME_Exception);
+      void   removeJob    (in long job_id)                           raises (SALOME::SALOME_Exception);
+    
+      // Useful methods
+      long    createJobWithFile(in string xmlJobFile, in string clusterName) raises (SALOME::SALOME_Exception);
+      boolean testBatch        (in ResourceParameters params)                raises (SALOME::SALOME_Exception);
+    
+      // SALOME kernel service methods
+      void Shutdown();
+      long getPID();
+    
+      // Observer and introspection methods
+      void addObserver(in Engines::SalomeLauncherObserver observer);
+      void removeObserver(in Engines::SalomeLauncherObserver observer);
+      Engines::JobsList getJobsList();
+      Engines::JobParameters getJobParameters(in long job_id) raises (SALOME::SALOME_Exception);
+    
+      // Save and load methods
+      void loadJobs(in string jobs_file) raises (SALOME::SALOME_Exception);
+      void saveJobs(in string jobs_file) raises (SALOME::SALOME_Exception);
+    
+    };
 
-    string queryJob ( in long jobId, in MachineParameters params ) 
-                                            raises (SALOME::SALOME_Exception);
-    void   deleteJob( in long jobId, in MachineParameters params ) 
-                                            raises (SALOME::SALOME_Exception);
+The **createJob** method creates the job itself and returns a **job** identifier that can be used in the
+**launchJob**, **getJobState**, **stopJob** and **getJobResults** methods. The **launchJob** method
+submits the job to the batch manager.  
 
-    void getResultsJob( in string directory, in long jobId, 
-                        in MachineParameters params ) 
-			                    raises (SALOME::SALOME_Exception);
-
-    boolean testBatch(in MachineParameters params) 
-                                            raises (SALOME::SALOME_Exception);
-
-    void Shutdown();
-    long getPID();
-  };
-
-The **submitSalome.job** method launches a SALOME application on a batch manager.  
-This method returns a **job** identifier that is used in the **query.Job**, **delete.Job** and **getResults.Job** methods.
-
-The following is an example using this method:
+The following is an example using those methods:
 
 ::
 
-  # Initialisation
-  import os
-  import Engines
-  import orbmodule
-  import SALOME
-
-  clt = orbmodule.client()
-  cm  = clt.Resolve('SalomeLauncher')
+  # Initialization
+  import salome
+  salome.salome_init()
+  launcher = salome.naming_service.Resolve('/SalomeLauncher')
 
   # The python script that will be launched on the cluster 
   script = '/home/user/Dev/Install/BATCH_EXEMPLES_INSTALL/tests/test_Ex_Basic.py'
 
-  # Preparation of arguments for submitSalomeJob  
-  filesToExport = []
-  filesToImport = ['/home/user/applis/batch_exemples/filename']
-  batch_params = Engines.BatchParameters('', '00:05:00', '', 4)
-  params = Engines.MachineParameters('','clusteur1','','','','',[],'',0,0,1,1,0,
-                                     'prun','lsf','','',4)
+  # Define job parameters
+  job_params = salome.JobParameters()
+  job_params.job_name = "my_job"
+  job_params.job_type = "python_salome"
+  job_params.job_file = script
+  job_params.in_files = []
+  job_params.out_files = ['/scratch/user/applis/batch_exemples/filename']
 
-  # Using submitSalomeJob          
-  jobId = cm.submitSalomeJob(script, filesToExport, filesToImport, 
-                             batch_params, params)
+  # Define resource parameters
+  job_params.resource_required = salome.ResourceParameters()
+  job_params.resource_required.name = "clusteur1"
+  job_params.resource_required.nb_proc = 24
 
-The following is a description of the different arguments of **submitSalomeJob**:
+  # Create and submit the job
+  jobId = launcher.createJob(job_params)
+  launcher.submitJob(jobId)
 
-- **fileToExecute**:  this is the python script that will be executed in the SALOME application on the cluster.  
+The following is a description of the main parameters of **JobParameters** structure:
+
+- **job_type**: This is the type of the job to run (use "python_salome" to run a Python script in a Salome session).
+- **job_file**: This is the python script that will be executed in the SALOME application on the cluster.  
   This argument contains the script path **on** the local machine and **not on** the cluster.
-- **filesToExport**:  this is a list of files that will be copied into the run directory on the cluster
-- **filesToImport**:  this is a list of files that will be copied from the cluster onto the user machine when the **getResultsJob** method is called.
-- **batch_params**:  this is a structure that contains information that will be given to the batch manager.  This structure is 
-  composed of four arguments.  The first argument will be used to give the name of the directory in which it is required that 
-  the files and SALOME application should be run (this function is not available at the moment).  The second argument 
-  is the requested time.  It is expressed in the form hh:min:se, for example 01:30:00.  The third argument is the required memory.  
-  It is expressed in the form of 32gb or 512mb.  Finally, the final argument describes the requested number of processors.
-- **params**:  contains the description of the required machine. In this case, the cluster on which the application is to be launched 
+- **in_files**:  this is a list of files that will be copied into the run directory on the cluster
+- **out_files**:  this is a list of files that will be copied from the cluster onto the user machine when the **getJobResults** method is called.
+- **resource_required**:  contains the description of the required machine. In this case, the cluster on which the application is to be launched 
   is clearly identified.
 
-The **queryJob** method should be used to determine the state of the Job.  There are three possible states, namely **waiting**, 
-**running** and **terminated**.  
-The following is an example of how this method is used:
+The **getJobState** method should be used to determine the state of the Job. The following is an example of how this method is used:
 
 ::
 
-  status = cm.queryJob(jobId, params)
+  status = launcher.getJobState(jobId)
   print jobId,' ',status
-  while(status != 'DONE'):
+  while(status != 'FINISHED'):
     os.system('sleep 10')
-    status = cm.queryJob(jobId, params)
+    status = launcher.getJobState(jobId)
     print jobId,' ',status
 
-The job identifier supplied by the **submitSalomeJob** method is used in this method together with the **params** structure.
-
-Finally, the **getResultsJob** method must be used to retrieve application results.  
+Finally, the **getJobResults** method must be used to retrieve application results.  
 The following is an example of how to use this method:
 ::
 
-  cm.getResultsJob('/home/user/Results', jobId, params)
+  launcher.getJobResults(jobId, '/home/user/Results')
 
-The first argument contains the directory in which the user wants to retrieve the results.  The user automatically receives 
-logs from the SALOME application and the different containers that have been started, in addition to those defined in the **filesToImport** list.
+The second argument contains the directory in which the user wants to retrieve the results.  The user automatically receives 
+logs from the SALOME application and the different containers that have been started, in addition to those defined in the **out_files** list.
 
 .. _salome_clusteur_batch:
 
@@ -189,7 +192,7 @@ SALOME does not provide a service for automatic installation of the platform fro
 Therefore, SALOME (KERNEL + modules) and a SALOME application have to be installed beforehand on the cluster.  
 In the example used in this documentation, the application is installed in the directory **/home/user/applis/batch_exemples**.
 
-When the **submitSalomeJob** method is being used, SALOME creates a directory in $HOME/Batch/**run_date**.
+When the **submitJob** method is being used, SALOME creates a directory in $HOME/Batch/**run_date**.
 The various input files are copied into this directory.
 
 SALOME constraints on batch managers

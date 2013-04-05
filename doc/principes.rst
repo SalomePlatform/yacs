@@ -629,9 +629,8 @@ Characteristic                         XML attribute               Description
 resource name                       name                       the resource name
 computer name                       hostname                   the complete machine name:  this is the key that uniquely determines the machine
                                                                (for example : "nickel.ccc.cea.fr") 
-alias                               alias                      character string to identify the machine (for example,  “pluton”)
-access protocol                     protocol                   "rsh" (default) or "ssh"
-access type                         mode                       interactive "i" or batch "b". By default "i"
+access protocol                     protocol                   "ssh" (default), "rsh" or "sh"
+Type                                type                       "single_machine" (default) or "cluster"
 user name                           userName                   user name to be used to connect to the machine 
 operating system                    OS
 memory size                         memInMB
@@ -646,6 +645,14 @@ batch manager                       batch                      if the machine ha
                                                                name of the batch manager
                                                                ("pbs", "lsf", "slurm").
                                                                No default.
+Can Launch Batch Jobs               canLaunchBatchJobs         Indicate if the resource can be used to launch
+                                                               batch jobs, through the JOBMANAGER module for
+                                                               instance. It can be "false" (default) or
+                                                               "true".
+Can Run Containers                  canRunContainers           Indicate if the resource can be used to run
+                                                               containers. It must be set to "true" if you
+                                                               want to use this resource with YACS. It can be
+                                                               "false" (default) or "true".
 ================================== =========================== ==============================================
 
 The list of SALOME modules of the resource can also be indicated.  By default, SALOME assumes that all components 
@@ -663,16 +670,18 @@ The following is an example of a resource catalog:
 
   <!DOCTYPE ResourcesCatalog>
   <resources>
-    <machine hostname="is111790" alias="is111790" 
+    <machine hostname="is111790" name="is111790" 
              OS="LINUX" CPUFreqMHz="2992" memInMB="1024" 
-             protocol="rsh" mode="interactif" 
-	     nbOfNodes="1" nbOfProcPerNode="1" >
+             protocol="rsh" type="single_machine"
+             nbOfNodes="1" nbOfProcPerNode="1"
+             canRunContainers="true">
     </machine>
-    <machine hostname="is111915" alias="is111915" 
+    <machine hostname="is111915" name="is111915" 
              OS="LINUX" CPUFreqMHz="2992" memInMB="1024" 
-             protocol="ssh" mode="interactif" 
-	     nbOfNodes="1" nbOfProcPerNode="1" 
-             appliPath="SALOME/Run">
+             protocol="ssh" type="single_machine"
+             nbOfNodes="1" nbOfProcPerNode="1" 
+             appliPath="SALOME/Run"
+             canRunContainers="true">
              <modules moduleName="GEOM"/>
              <component name="SMESH"/>
              <component name="VISU" moduleName="VISU"/>
