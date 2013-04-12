@@ -208,5 +208,6 @@ AC_OUTPUT([ \
   src/salomegui/resources/SalomeApp.xml \
   doc/Doxyfile \
   doc/conf.py \
+  doc/sources/header.html \
 ])
 

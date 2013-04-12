@@ -36,10 +36,11 @@ build_dev_docs:
 
 DOXFILES= ref/bases.dox ref/engine.dox ref/hmi.dox ref/python.dox ref/runtime.dox ref/yacs.dox ref/yacsloader.dox
 
-EXTRA_DIST= _static exemples $(DOXFILES)
+EXTRA_DIST= _static exemples $(DOXFILES) sources/salome_extra.css sources/footer.html
 
 yacsdocdir=$(docdir)/gui/YACS
 yacsdevdocdir=$(docdir)/tui/YACS
+yacsdevdoc_DATA = images/head.png
 
 SPHINXOPTS      =
 SOURCEDIR       = $(srcdir)
