@@ -35,6 +35,7 @@ namespace YACS
   namespace HMI
   {
     class Subject;
+    class SubjectNode;
     class SubjectElementaryNode;
     class SubjectComposedNode;
     class SubjectDataPort;
@@ -50,7 +51,7 @@ namespace YACS
                                  SubjectComposedNode *cnode,
                                  bool createNewComponentInstance);
       void AddTypeFromCatalog(const ItemMimeData* myData);
-      void CreateNode(std::string typeNode);
+      SubjectNode* CreateNode(std::string typeNode);
       void CreateBloc();
       void CreateForLoop();
       void CreateForEachLoop(std::string type );
@@ -80,8 +81,7 @@ namespace YACS
       void PasteSubject();
       void PutSubjectInBloc();
       std::string PutGraphInBloc();
-      void PutGraphInForeachLoop(std::string typeNode);
-      void PutGraphInOptimizerLoop();
+      void PutGraphInNode(std::string typeNode);
       void shrinkExpand();
       void rebuildLinks();
       void arrangeNodes(bool isRecursive);
@@ -91,7 +91,7 @@ namespace YACS
       QString asciiFilter(const QString & name);
 
     protected:
-      void _createNode(YACS::ENGINE::Catalog* catalog,
+      SubjectNode* _createNode(YACS::ENGINE::Catalog* catalog,
                        SubjectComposedNode *cnode,
                        std::string service,
                        std::string compoName,

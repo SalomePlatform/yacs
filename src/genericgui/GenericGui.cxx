@@ -416,9 +416,21 @@ void GenericGui::createActions()
                                          tr("Put node in block"), tr("Put node in block"),
                                          0, _parent, false, this,  SLOT(onPutInBloc()));
 
-  _putGraphInOptimizerLoopAct = _wrapper->createAction(getMenuId(), tr("Optimizer Loop"), QIcon("icons:paste.png"),
-                                         tr("Optimizer Loop"), tr("Optimizer Loop"),
-                                         0, _parent, false, this,  SLOT(onPutGraphInOptimizerLoop()));
+  _putGraphInBlocAct = _wrapper->createAction(getMenuId(), tr("Bloc"), QIcon("icons:new_block_node.png"),
+					      tr("Bloc"), tr("Bloc"),
+					      0, _parent, false, this,  SLOT(onPutGraphInBloc()));
+
+  _putGraphInForLoopAct = _wrapper->createAction(getMenuId(), tr("For Loop"), QIcon("icons:new_for_loop_node.png"),
+						 tr("For Loop"), tr("For Loop"),
+						 0, _parent, false, this,  SLOT(onPutGraphInForLoop()));
+
+  _putGraphInWhileLoopAct = _wrapper->createAction(getMenuId(), tr("While Loop"), QIcon("icons:new_while_loop_node.png"),
+						   tr("While Loop"), tr("While Loop"),
+						   0, _parent, false, this,  SLOT(onPutGraphInWhileLoop()));
+
+  _putGraphInOptimizerLoopAct = _wrapper->createAction(getMenuId(), tr("Optimizer Loop"), QIcon("icons:new_for_loop_node.png"),
+						       tr("Optimizer Loop"), tr("Optimizer Loop"),
+						       0, _parent, false, this,  SLOT(onPutGraphInOptimizerLoop()));
 
   _arrangeLocalNodesAct = _wrapper->createAction(getMenuId(), tr("arrange nodes on that bloc level, without recursion"), QIcon("icons:arrange_nodes.png"),
                                                  tr("arrange local nodes"), tr("arrange nodes on that bloc level, without recursion"),
@@ -2067,16 +2079,35 @@ void GenericGui::onPutInBloc()
   _guiEditor->PutSubjectInBloc();
 }
 
+void GenericGui::onPutGraphInBloc()
+{
+  DEBTRACE("GenericGui::onPutGraphInBloc");
+  _guiEditor->PutGraphInBloc();
+  _guiEditor->arrangeNodes(false);
+}
+
+void GenericGui::onPutGraphInForLoop()
+{
+  DEBTRACE("GenericGui::onPutGraphInForLoop");
+  _guiEditor->PutGraphInNode("ForLoop");
+}
+
 void GenericGui::putGraphInForeachLoop(std::string type)
 {
   DEBTRACE("GenericGui::PutGraphInForeachLoop");
-  _guiEditor->PutGraphInForeachLoop(type);
+  _guiEditor->PutGraphInNode("ForEachLoop_"+type);
+}
+
+void GenericGui::onPutGraphInWhileLoop()
+{
+  DEBTRACE("GenericGui::onPutGraphInWhileLoop");
+  _guiEditor->PutGraphInNode("WhileLoop");
 }
 
 void GenericGui::onPutGraphInOptimizerLoop()
 {
   DEBTRACE("GenericGui::onPutGraphInOptimizerLoop");
-  _guiEditor->PutGraphInOptimizerLoop();
+  _guiEditor->PutGraphInNode("OptimizerLoop");
 }
 
 void GenericGui::onArrangeLocalNodes()

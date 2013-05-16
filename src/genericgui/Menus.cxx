@@ -91,7 +91,7 @@ void MenusBase::buildForEachMenu(QMenu *m, QActionGroup* actgroup)
   QPixmap pixmap;
   pixmap.load("icons:new_foreach_loop_node.png");
 
-  QMenu *ForEachMenu=m->addMenu(QIcon(pixmap),"ForEachLoop");
+  QMenu *ForEachMenu=m->addMenu(QIcon(pixmap),"ForEach Loop");
 
   Proc* proc = GuiContext::getCurrent()->getProc();
   std::map<std::string, TypeCode*>::const_iterator it = proc->typeMap.begin();
@@ -250,7 +250,11 @@ void ProcMenu::popupMenu(QWidget *caller, const QPoint &globalPos, const QString
       menu.addAction(gmain->_pasteItemAct);
 
       QMenu *PINmenu = menu.addMenu(tr("Put Graph Content in Node"));
+      PINmenu->addAction(gmain->_putGraphInBlocAct);
+      PINmenu->addSeparator();
+      PINmenu->addAction(gmain->_putGraphInForLoopAct);
       addForEachMenuToPutGraph(PINmenu,&actgroup2);
+      PINmenu->addAction(gmain->_putGraphInWhileLoopAct);
       PINmenu->addAction(gmain->_putGraphInOptimizerLoopAct);
 
       menu.addSeparator();

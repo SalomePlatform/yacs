@@ -150,6 +150,9 @@ namespace YACS
       QAction *_copyItemAct;
       QAction *_pasteItemAct;
       QAction *_putInBlocAct;
+      QAction *_putGraphInBlocAct;
+      QAction *_putGraphInForLoopAct;
+      QAction *_putGraphInWhileLoopAct;
       QAction *_putGraphInOptimizerLoopAct;
       QAction *_arrangeLocalNodesAct;
       QAction *_arrangeRecurseNodesAct;
@@ -286,6 +289,9 @@ namespace YACS
       void onCopyItem();
       void onPasteItem();
       void onPutInBloc();
+      void onPutGraphInBloc();
+      void onPutGraphInForLoop();
+      void onPutGraphInWhileLoop();
       void onPutGraphInOptimizerLoop();
       void onArrangeLocalNodes();
       void onArrangeRecurseNodes();

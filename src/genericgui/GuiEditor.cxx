@@ -95,7 +95,7 @@ void GuiEditor::CreateNodeFromCatalog(const ItemMimeData* myData, SubjectCompose
     }
 }
 
-void GuiEditor::CreateNode(std::string typeNode)
+SubjectNode* GuiEditor::CreateNode(std::string typeNode)
 {
   DEBTRACE("GuiEditor::CreateNode " << typeNode);
   YACS::ENGINE::Catalog *catalog = YACS::ENGINE::getSALOMERuntime()->getBuiltinCatalog();
@@ -104,7 +104,7 @@ void GuiEditor::CreateNode(std::string typeNode)
   if (!sub)
     {
       DEBTRACE("GuiEditor::CreateNode : invalid selection!");
-      return;
+      return 0;
     }
   DEBTRACE(sub->getName());
 
@@ -112,18 +112,20 @@ void GuiEditor::CreateNode(std::string typeNode)
   if (!cnode)
     {
       DEBTRACE("GuiEditor::CreateNode : no ComposedNode selected!");
-      return;
+      return 0;
     }
 
-  _createNode(catalog, cnode, typeNode, "", Resource::COMPONENT_INSTANCE_NEW);
+  return _createNode(catalog, cnode, typeNode, "", Resource::COMPONENT_INSTANCE_NEW); 
 }
 
-void GuiEditor::_createNode(YACS::ENGINE::Catalog* catalog,
-                            SubjectComposedNode *cnode,
-                            std::string service,
-                            std::string compoName,
-                            bool createNewComponentInstance)
+SubjectNode* GuiEditor::_createNode(YACS::ENGINE::Catalog* catalog,
+				    SubjectComposedNode *cnode,
+				    std::string service,
+				    std::string compoName,
+				    bool createNewComponentInstance)
 {
+  SubjectNode* aNewNode = 0;
+
   // --- find a name not used
 
   string name = service;
@@ -161,7 +163,8 @@ void GuiEditor::_createNode(YACS::ENGINE::Catalog* catalog,
           map<int, SubjectNode*>::reverse_iterator rit = bodyMap.rbegin();
           swCase = (*rit).first + 1;
         }
-      if (!aSwitch->addNode(catalog, compoName, service, name, createNewComponentInstance, swCase))
+      aNewNode = aSwitch->addNode(catalog, compoName, service, name, createNewComponentInstance, swCase);
+      if (!aNewNode)
         Message mess;
     }
   else if (cnode && (dynamic_cast<SubjectBloc*>(cnode) == 0) && cnode->getChild() != 0)
@@ -182,7 +185,8 @@ void GuiEditor::_createNode(YACS::ENGINE::Catalog* catalog,
             {
               //the bloc has been successfully created. Add the new node
               SubjectBloc* newbloc = dynamic_cast<SubjectBloc*>(cnode->getChild());
-              if (!newbloc->addNode(catalog, compoName, service, name, createNewComponentInstance))
+	      aNewNode = newbloc->addNode(catalog, compoName, service, name, createNewComponentInstance);
+              if (!aNewNode)
                 Message mess;
             }
           else
@@ -190,8 +194,10 @@ void GuiEditor::_createNode(YACS::ENGINE::Catalog* catalog,
         }
     }
   else if (cnode)
-    if (!cnode->addNode(catalog, compoName, service, name, createNewComponentInstance))
+    aNewNode = cnode->addNode(catalog, compoName, service, name, createNewComponentInstance);
+    if (!aNewNode)
       Message mess;
+  return aNewNode;
 }
 
 void GuiEditor::AddTypeFromCatalog(const ItemMimeData* myData)
@@ -533,34 +539,27 @@ void GuiEditor::PutSubjectInBloc()
   Message mess("Put in Bloc not possible for this kind of object");
 }
 
-void GuiEditor::PutGraphInForeachLoop(std::string typeNode)
+void GuiEditor::PutGraphInNode(std::string typeNode)
 {
   // put graph in Bloc node before
   std::string blocname = PutGraphInBloc();
-
   Proc* proc = GuiContext::getCurrent()->getProc();
   Node* bloc = proc->getChildByShortName(blocname);
   SubjectNode * sbloc = GuiContext::getCurrent()->_mapOfSubjectNode[bloc];
-  //put the built bloc into target node
-  sbloc->putInComposedNode("ForEachLoop_"+typeNode,"ForEachLoop_"+typeNode);
-}
-
-void GuiEditor::PutGraphInOptimizerLoop()
-{
-  // put graph in Bloc node before
-  std::string blocname = PutGraphInBloc();
-
-  Proc* proc = GuiContext::getCurrent()->getProc();
-  Node* bloc = proc->getChildByShortName(blocname);
-  SubjectNode * sbloc = GuiContext::getCurrent()->_mapOfSubjectNode[bloc];
-  //put the built bloc into target node
-  sbloc->putInComposedNode("OptimizerLoop0","OptimizerLoop");
+  // create a target node
+  SubjectNode * snode = CreateNode(typeNode);
+  // put the built bloc into target node
+  sbloc->putInComposedNode(snode->getName(), typeNode);
+  // arrange local nodes in Proc
+  YACS::HMI::SubjectProc* subproc = QtGuiContext::getQtCurrent()->getSubjectProc();
+  QtGuiContext::getQtCurrent()->setSelectedSubject(subproc);
+  arrangeNodes(false);
 }
 
 std::string GuiEditor::PutGraphInBloc()
 {
   Proc* proc = GuiContext::getCurrent()->getProc();
-  std::list<Node *> children = proc->getChildren();
+  std::list<Node *> children = proc->edGetDirectDescendants();
 
   //get the set of children node names
   std::set<std::string> names;
@@ -569,7 +568,7 @@ std::string GuiEditor::PutGraphInBloc()
 
   //get the next numbered name
   std::stringstream tryname;
-  long newid=0;
+  long newid = GuiContext::getCurrent()->getNewId();
   while (newid < 100000)
     {
       tryname.str("");
@@ -585,7 +584,7 @@ std::string GuiEditor::PutGraphInBloc()
     {
       snode = GuiContext::getCurrent()->_mapOfSubjectNode[(*it)];
       snode->saveLinks();
-      snode->putInComposedNode(blocname,"Bloc", false);
+      snode->putInComposedNode(blocname, "Bloc", false);
     }
   for (std::list<Node*>::iterator it = children.begin(); it != children.end(); ++it)
     {
@@ -593,6 +592,10 @@ std::string GuiEditor::PutGraphInBloc()
       snode = GuiContext::getCurrent()->_mapOfSubjectNode[(*it)];
       snode->restoreLinks();
     }
+  // arrange local nodes in Proc
+  YACS::HMI::SubjectProc* subproc = QtGuiContext::getQtCurrent()->getSubjectProc();
+  QtGuiContext::getQtCurrent()->setSelectedSubject(subproc);
+  arrangeNodes(false);
   return blocname;
 }
 
