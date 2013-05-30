@@ -26,18 +26,27 @@ CPPFLAGS_old=$CPPFLAGS
 
 # Custom location of expat package can be specified
 # through EXPAT_DIR variable
+EXPATDIR=
 if test "x$EXPAT_DIR" != "x"
 then
-  if test "x$EXPAT_DIR" = "x/usr"
+  EXPATDIR=$EXPAT_DIR
+elif test "x$EXPAT_ROOT" != "x"
+then
+  EXPATDIR=$EXPAT_ROOT
+fi
+
+if test "x$EXPATDIR" != "x"
+then
+  if test "x$EXPATDIR" = "x/usr"
   then
     AC_MSG_NOTICE(Trying native Expat...)
     TMPLIBS="-lexpat $LIBS"
   else
-    AC_MSG_NOTICE(Trying Expat from $EXPAT_DIR ...)
-    TMPLIBS="-L$EXPAT_DIR/lib -lexpat $LIBS"
-    CXXFLAGS="$CXXFLAGS -I$EXPAT_DIR/include"
-    CPPFLAGS="$CPPFLAGS -I$EXPAT_DIR/include"
-    EXPAT_INCLUDES="-I$EXPAT_DIR/include"
+    AC_MSG_NOTICE(Trying Expat from $EXPATDIR ...)
+    TMPLIBS="-L$EXPATDIR/lib -lexpat $LIBS"
+    CXXFLAGS="$CXXFLAGS -I$EXPATDIR/include"
+    CPPFLAGS="$CPPFLAGS -I$EXPATDIR/include"
+    EXPAT_INCLUDES="-I$EXPATDIR/include"
   fi
 else
   AC_MSG_NOTICE(Trying native Expat...)
