@@ -64,7 +64,7 @@ if SALOME_KERNEL
 SALOME_LIBS=$(KERNEL_LDFLAGS) -lSalomeLifeCycleCORBA -lSalomeIDLKernel -lSalomeNS -lOpUtil \
             -lSalomeDSCContainer -lSalomeContainer -lSALOMEBasics -lSalomeResourcesManager \
             -lSALOMELocalTrace -lRegistry -lSalomeNotification -lResourcesManager \
-            -lSalomeHDFPersist
+            -lSalomeHDFPersist -lSalomeGenericObj
 SALOME_INCL_PATH=-I$(KERNEL_ROOT_DIR)/include/salome
 endif
 
