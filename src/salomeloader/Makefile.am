@@ -23,7 +23,7 @@ dist_salomescript_SCRIPTS = salomeloader.sh salomeloader.bat
 salomepython_PYTHON = salomeloader.py ElementTree.py ElementPath.py graph.py
 
 check-local:testSalomeLoader.py
-	python testSalomeLoader.py
+	LD_LIBRARY_PATH=$(KERNEL_ROOT_DIR)/lib/salome:${LD_LIBRARY_PATH} python testSalomeLoader.py
 
 EXTRA_DIST = samples
 
