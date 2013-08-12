@@ -270,8 +270,8 @@ void SceneLinkItem::setPath(LinkPath lp)
   CHRONO(10);
   prepareGeometryChange();
   _nbPoints = lp.size();
-  _lp.reserve(_nbPoints+1);
-  _directions.reserve(_nbPoints +2);
+  _lp.resize(_nbPoints+1);
+  _directions.resize(_nbPoints +2);
   std::list<linkPoint>::const_iterator it = lp.begin();
   int k=0;
   qreal prevx = 0;
@@ -366,8 +366,8 @@ void SceneLinkItem::minimizeDirectionChanges()
 {
   vector<QPointF> newlp;
   vector<Direction> newdir;
-  newlp.reserve(_nbPoints);
-  newdir.reserve(_nbPoints +1);
+  newlp.resize(_nbPoints);
+  newdir.resize(_nbPoints +1);
 
   bool modified = true;
   while (modified)
@@ -499,10 +499,10 @@ void SceneLinkItem::force2points()
         {
           vector<QPointF> newlp;
           vector<Direction> newdir;
-          newlp.reserve(_nbPoints+1);
-          newdir.reserve(_nbPoints +2);
-          //_lp.reserve(_nbPoints +1);         // --- not OK : data may be lost! pre reserve enough before!
-          //_directions.reserve(_nbPoints +2);
+          newlp.resize(_nbPoints+1);
+          newdir.resize(_nbPoints +2);
+          //_lp.resize(_nbPoints +1);         // --- not OK : data may be lost! pre reserve enough before!
+          //_directions.resize(_nbPoints +2);
           newlp[0] = _lp[0];
           newlp[1] = _lp[0];
           newlp[0].setY(a.y());

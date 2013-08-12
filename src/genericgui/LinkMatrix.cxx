@@ -72,7 +72,7 @@ void LinkMatrix::compute()
   explore(_bloc);        // --- define the boundaries _xm[i] and _ym[j]
   if (Scene::_addRowCols) addRowCols();
   _im = _sxm.size();
-  _xm.reserve(_im);
+  _xm.resize(_im);
   DEBTRACE("_sxm.size()=" << _im);
   int i =0;
   for(std::set<double>::iterator it = _sxm.begin(); it != _sxm.end(); ++it)
@@ -83,7 +83,7 @@ void LinkMatrix::compute()
       i++;
     }
   _jm = _sym.size();
-  _ym.reserve(_jm);
+  _ym.resize(_jm);
   DEBTRACE("_sym.size()=" << _jm);
   i =0;
   for(std::set<double>::iterator it = _sym.begin(); it != _sym.end(); ++it)
@@ -93,7 +93,7 @@ void LinkMatrix::compute()
       DEBTRACE("_ym[" << i << "] = " << _ym[i]);
       i++;
     }
-  _cost.reserve(_im*_jm);
+  _cost.resize(_im*_jm);
   for (int ij=0; ij < _im*_jm; ij++)
     _cost[ij] = 1;       // --- set the _cost matrix open everywhere (no obstacles)
   explore(_bloc, true);  // --- fill the cells cost(i,j) with obstacles
