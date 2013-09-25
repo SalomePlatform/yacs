@@ -204,7 +204,7 @@ void Yacsgui::windows( QMap<int, int>& theMap ) const
   DEBTRACE("Yacsgui::windows");
   theMap.clear();
   theMap.insert( SalomeApp_Application::WT_ObjectBrowser, Qt::LeftDockWidgetArea );
-//   theMap.insert( SalomeApp_Application::WT_PyConsole,     Qt::BottomDockWidgetArea );
+  theMap.insert( SalomeApp_Application::WT_PyConsole,     Qt::BottomDockWidgetArea );
 }
 
 QString  Yacsgui::engineIOR() const
