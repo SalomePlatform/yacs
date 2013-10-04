@@ -30,8 +30,8 @@ Kernel_ok=no
 dsc_ok=no
 
 AC_ARG_WITH(kernel,
-	    [  --with-kernel=DIR               root directory path of KERNEL build or installation],
-	    KERNEL_DIR="$withval",KERNEL_DIR="")
+            [  --with-kernel=DIR               root directory path of KERNEL build or installation],
+            KERNEL_DIR="$withval",KERNEL_DIR="")
 
 if test "x$KERNEL_DIR" = "x" ; then
 
@@ -45,18 +45,18 @@ if test "x$KERNEL_DIR" = "x" ; then
    else
 
     # search Kernel binaries in PATH variable
-      AC_PATH_PROG(TEMP, runSalome)
+      AC_PATH_PROG(TEMP, runSalome.py)
       if test "x$TEMP" != "x" ; then
          KERNEL_BIN_DIR=`dirname $TEMP`
          KERNEL_DIR=`dirname $KERNEL_BIN_DIR`
       fi
-      
+
    fi
-# 
+#
 fi
 
 
-if test -f ${KERNEL_DIR}/bin/salome/runSalome ; then
+if test -f ${KERNEL_DIR}/bin/salome/runSalome.py ; then
    Kernel_ok=yes
    AC_MSG_RESULT(Using Kernel module distribution in ${KERNEL_DIR})
    AC_DEFINE(SALOME_KERNEL,,[With Salome KERNEL])
@@ -94,9 +94,9 @@ else
 fi
 
 AC_MSG_RESULT(for Kernel: $Kernel_ok)
- 
+
 ])dnl
- 
+
 # -----------------------------------------------------------------------------
 # --- from GUI_SRC 3.2.3
 #  Check availability of Salome binary distribution
@@ -116,8 +116,8 @@ GUI_LDFLAGS=""
 GUI_CXXFLAGS=""
 
 AC_ARG_WITH(gui,
-	    [  --with-gui=DIR          root directory path of SALOME GUI installation],
-	    [SALOME_GUI_DIR="$withval"],[SALOME_GUI_DIR=""])
+            [  --with-gui=DIR          root directory path of SALOME GUI installation],
+            [SALOME_GUI_DIR="$withval"],[SALOME_GUI_DIR=""])
 
 if test "x${SALOME_GUI_DIR}" = "x" ; then
   # no --with-gui-dir option used
@@ -155,7 +155,7 @@ if test -f ${SALOME_GUI_DIR}/bin/salome/$1 ; then
 else
   AC_MSG_WARN("Cannot find compiled SALOME GUI distribution")
 fi
-  
+
 AC_MSG_RESULT(for $2: ${SalomeGUI_ok})
 
 # Propagate test into atlocal
@@ -166,7 +166,7 @@ AM_CONDITIONAL(HAS_GUI, test $HAS_GUI = 1)
 
 # ... and into source files
 AC_DEFINE_UNQUOTED(WITH_GUI, $HAS_GUI, [SALOME GUI])
- 
+
 ])dnl
 
 AC_DEFUN([CHECK_SALOME_GUI],[
