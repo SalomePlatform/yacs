@@ -20,12 +20,23 @@
 #if !defined(__YACS_VERSION_H__)
 #define __YACS_VERSION_H__
 
-/*
-  YACS_VERSION is (major << 16) + (minor << 8) + patch.
+/*!
+  Specify version of SALOME YACS module, as follows
+
+  YACS_VERSION_MAJOR       : (integer) number identifying major version
+  YACS_VERSION_MINOR       : (integer) number identifying minor version
+  YACS_VERSION_MAINTENANCE : (integer) number identifying maintenance version
+  YACS_VERSION_STR         : (string)  complete version number "major.minor.maintenance"
+  YACS_VERSION             : (hex)     complete version number (major << 16) + (minor << 8) + maintenance
+  YACS_DEVELOPMENT         : (integer) indicates development version when set to 1
 */
 
-#define YACS_VERSION_STR "@VERSION@"
-#define YACS_VERSION     @XVERSION@
-#define YACS_DEVELOPMENT @VERSION_DEV@
+#define YACS_VERSION_MAJOR       @SALOMEYACS_MAJOR_VERSION@
+#define YACS_VERSION_MINOR       @SALOMEYACS_MINOR_VERSION@
+#define YACS_VERSION_MAINTENANCE @SALOMEYACS_PATCH_VERSION@
+#define YACS_VERSION_STR         "@SALOMEYACS_VERSION@"
+#define YACS_VERSION             @SALOMEYACS_XVERSION@
+#define YACS_DEVELOPMENT         @SALOMEYACS_VERSION_DEV@
+
 
 #endif // __YACS_VERSION_H__

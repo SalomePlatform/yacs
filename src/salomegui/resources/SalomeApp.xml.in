@@ -23,7 +23,7 @@
     <!-- Major module parameters -->
     <parameter name="name" value="YACS"/>
     <parameter name="icon" value="ModuleYacs.png"/>
-    <parameter name="version" value="@VERSION@"/>
+    <parameter name="version" value="@SALOMEYACS_VERSION@"/>
   </section>
   <section name="resources">
     <!-- Module resources -->

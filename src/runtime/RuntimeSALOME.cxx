@@ -404,7 +404,7 @@ void RuntimeSALOME::fini()
 
 std::string RuntimeSALOME::getVersion() const
 {
-#if YACS_DEVELOPMENT
+#ifdef YACS_DEVELOPMENT
   return CORBA::string_dup(YACS_VERSION_STR"dev");
 #else
   return CORBA::string_dup(YACS_VERSION_STR);
