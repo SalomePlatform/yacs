@@ -263,9 +263,12 @@ INCLUDE(CMakePackageConfigHelpers)
 # List of targets in this project we want to make visible to the rest of the world.
 # They all have to be INSTALL'd with the option "EXPORT ${PROJECT_NAME}TargetGroup"
 SET(_${PROJECT_NAME}_exposed_targets 
-  YACSloader YACSBases YACSlibEngine YACSRuntimeSALOME YACSDLTest SalomeIDLYACS
+  YACSloader YACSBases YACSlibEngine YACSRuntimeSALOME SalomeIDLYACS
   #TODO: TestComponentLocal PluginSimplex PluginOptEvTest1
 )
+IF(SALOME_BUILD_TESTS)
+  LIST(APPEND _${PROJECT_NAME}_exposed_targets YACSDLTest)
+ENDIF(SALOME_BUILD_TESTS)
 IF(SALOME_BUILD_GUI)
   LIST(APPEND _${PROJECT_NAME}_exposed_targets 
     HMI GenericGui YACS SalomeWrap
