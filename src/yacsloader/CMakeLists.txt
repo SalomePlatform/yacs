@@ -24,32 +24,32 @@ ENDIF(SALOME_BUILD_TESTS)
 # --- options ---
 
 IF(SALOME_YACS_USE_KERNEL)
+  INCLUDE_DIRECTORIES(${KERNEL_INCLUDE_DIRS})
+  ADD_DEFINITIONS(${KERNEL_DEFINITIONS})
+
   SET(SALOME_LIBS 
     ${KERNEL_DEFINITIONS}
-    SalomeLifeCycleCORBA 
-    SalomeIDLKernel 
-    SalomeNS
-    SalomeContainer 
-    SALOMEBasics 
-    SalomeResourcesManager 
-    OpUtil 
-    SALOMELocalTrace 
-    Registry 
-    SalomeNotification 
-    ResourcesManager 
-    SalomeHDFPersist 
-    SalomeGenericObj
+    ${KERNEL_SalomeLifeCycleCORBA}
+    ${KERNEL_SalomeIDLKernel}
+    ${KERNEL_SalomeNS}
+    ${KERNEL_SalomeContainer}
+    ${KERNEL_SALOMEBasics}
+    ${KERNEL_SalomeResourcesManager}
+    ${KERNEL_OpUtil}
+    ${KERNEL_SALOMELocalTrace}
+    ${KERNEL_Registry}
+    ${KERNEL_SalomeNotification}
+    ${KERNEL_ResourcesManager}
+    ${KERNEL_SalomeHDFPersist}
+    ${KERNEL_SalomeGenericObj}
     )
-  SET(SALOME_INCL_PATH ${KERNEL_INCLUDE_DIRS})
-
   IF(SALOME_YACS_USE_DSC)
-    LIST(APPEND SALOME_LIBS SalomeDSCContainer)
+    LIST(APPEND SALOME_LIBS ${KERNEL_SalomeDSCContainer})
   ENDIF(SALOME_YACS_USE_DSC)
 ENDIF(SALOME_YACS_USE_KERNEL)
 
 # additional include directories
 INCLUDE_DIRECTORIES(
-  ${SALOME_INCL_PATH}
   ${OMNIORB_INCLUDE_DIR}
   ${EXPAT_INCLUDE_DIR}
   ${PYTHON_INCLUDE_DIR}

@@ -21,15 +21,11 @@ INCLUDE(${QT_USE_FILE})
 
 # --- options ---
 
-IF(SALOME_YACS_USE_KERNEL)
-  SET(SALOME_INCL_PATH ${KERNEL_INCLUDE_DIRS})
-ENDIF(SALOME_YACS_USE_KERNEL)
-
 # additional include directories
 INCLUDE_DIRECTORIES(
   ${OMNIORB_INCLUDE_DIR}
   ${QT_INCLUDE_DIR}
-  ${SALOME_INCL_PATH}
+  ${KERNEL_INCLUDE_DIRS}
   ${GUI_INCLUDE_DIRS}
   ${PROJECT_SOURCE_DIR}/src/bases
   )
@@ -41,22 +37,24 @@ ADD_DEFINITIONS(
   ${OMNIORB_DEFINITIONS}
   ${BOOST_DEFINITIONS}
   ${QT_DEFINITIONS}
+  ${KERNEL_DEFINITIONS}
+  ${GUI_DEFINITIONS}
   )
 
 # libraries to link to
 SET(_link_LIBRARIES
-  QtCore
-  QtGui
+  ${QT_LIBRARIES}
   ${OMNIORB_LIBRARIES}
+  ${SALOME_LIBS}
+  ${KERNEL_SalomeIDLKernel}
+  ${GUI_CAM}
+  ${GUI_suit}
+  ${GUI_LightApp}
+  ${GUI_qtx}
+  ${GUI_QxScene}
+  ${GUI_ObjBrowser}
+  ${GUI_SalomeApp}
   YACSlibEngine
-  SalomeIDLKernel
-  CAM
-  suit
-  LightApp
-  qtx
-  QxScene
-  ObjBrowser
-  SalomeApp
   )
 
 # header files / to be processed by moc
