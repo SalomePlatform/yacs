@@ -57,12 +57,11 @@ ADD_DEFINITIONS(
 # libraries to link to
 SET(_link_LIBRARIES
   GenericGui
-  Event
-  QtCore
-  QtGui
+  ${QT_LIBRARIES}
   ${QSCINTILLA_LIBRARIES}
-  SalomeApp
-  SalomeSession
+  ${GUI_Event}
+  ${GUI_SalomeApp}
+  ${GUI_SalomeSession}
   )
 
 # --- resources ---
