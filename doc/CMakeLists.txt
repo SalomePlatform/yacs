@@ -19,15 +19,6 @@
 
 INCLUDE(${KERNEL_ROOT_DIR}/salome_adm/cmake_files/SalomeMacros.cmake)
 
-SET(top_builddir ${CMAKE_BINARY_DIR})
-SET(top_srcdir ${CMAKE_SOURCE_DIR})
-SET(srcdir ${CMAKE_CURRENT_SOURCE_DIR})
-SET(builddir ${CMAKE_CURRENT_BINARY_DIR})
-SET(datadir ${CMAKE_INSTALL_PREFIX}/share)
-SET(docdir ${datadir}/doc/salome)
-SET(yacsdocdir ${docdir}/gui/YACS)
-SET(yacsdevdocdir ${docdir}/tui/YACS)
-
 SET(RSTFILES
   accesCorba.rst
   accesLocal.rst
@@ -74,36 +65,43 @@ SET(RSTFILES
   )
 
 SET(SPHINXOPTS )
-SET(SOURCEDIR ${srcdir})
+SET(SOURCEDIR ${CMAKE_CURRENT_SOURCE_DIR})
 SET(PAPEROPT_a4 -D latex_paper_size=a4)
 SET(ALLSPHINXOPTS -d doctrees ${PAPEROPT_a4} ${SPHINXOPTS} ${SOURCEDIR})
 
-SALOME_CONFIGURE_FILE(Doxyfile.in Doxyfile)
-SALOME_CONFIGURE_FILE(conf.py.in conf.py)
-SALOME_CONFIGURE_FILE(sources/header.html.in sources/header.html)
-
 # install user's documentation
+
+SALOME_CONFIGURE_FILE(conf.py.in conf.py)
+
 ADD_CUSTOM_TARGET(htm 
-  COMMAND mkdir -p html doctrees
-  COMMAND ${SPHINX_EXECUTABLE} -c ${top_builddir}/doc -b html ${ALLSPHINXOPTS} html
+  COMMAND ${CMAKE_COMMAND} -E make_directory html 
+  COMMAND ${CMAKE_COMMAND} -E make_directory doctrees
+  COMMAND ${SPHINX_EXECUTABLE} -c ${CMAKE_BINARY_DIR}/doc -b html ${ALLSPHINXOPTS} html
   DEPENDS ${RSTFILES}
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   )
 INSTALL(CODE "EXECUTE_PROCESS(COMMAND \"${CMAKE_COMMAND}\" --build ${PROJECT_BINARY_DIR} --target htm)")
 INSTALL(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html/ 
-  DESTINATION ${yacsdocdir} 
+  DESTINATION ${SALOME_INSTALL_DOC}/gui/YACS 
   USE_SOURCE_PERMISSIONS
   PATTERN ".buildinfo" EXCLUDE
   )
+  
+SET_DIRECTORY_PROPERTIES(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES html)
+SET_DIRECTORY_PROPERTIES(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES doctrees)
 
 # install developer's documentation
-ADD_CUSTOM_TARGET(dev_docs
-  COMMAND ${DOXYGEN_EXECUTABLE} -u
-  COMMAND ${DOXYGEN_EXECUTABLE}
-  COMMAND mkdir -p ${yacsdevdocdir}
-  COMMAND cp -fv ${srcdir}/images/head.png ${yacsdevdocdir}/head.png
-  COMMAND find "${builddir}/htmldev" -name \"*.*\" -exec cp -rfv {} ${yacsdevdocdir} '\;'
-  COMMAND cp -rfv ${top_srcdir}/src/yacsloader/samples ${yacsdevdocdir}
-  COMMAND rm -rf ${yacsdevdocdir}/samples/CVS
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  )
+
+SALOME_CONFIGURE_FILE(Doxyfile.in Doxyfile)
+SALOME_CONFIGURE_FILE(sources/header.html.in sources/header.html)
+
+ADD_CUSTOM_TARGET(dev_docs ${DOXYGEN_EXECUTABLE})
+
+INSTALL(CODE "FILE(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/YACS/htmldev)")
+INSTALL(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/YACS/htmldev/ DESTINATION ${SALOME_INSTALL_DOC}/tui/YACS)
+INSTALL(FILES images/head.png DESTINATION ${SALOME_INSTALL_DOC}/tui/YACS) 
+INSTALL(DIRECTORY ${CMAKE_SOURCE_DIR}/src/yacsloader/samples 
+        DESTINATION ${SALOME_INSTALL_DOC}/tui/YACS
+        PATTERN "CVS" EXCLUDE
+        )  
+SET_DIRECTORY_PROPERTIES(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES YACS)

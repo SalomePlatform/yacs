@@ -24,7 +24,7 @@
 #
 PROJECT_NAME           = YACS
 PROJECT_NUMBER         = 0.1
-OUTPUT_DIRECTORY       = .
+OUTPUT_DIRECTORY       = YACS
 CREATE_SUBDIRS         = NO
 OUTPUT_LANGUAGE        = English
 USE_WINDOWS_ENCODING   = NO
@@ -101,19 +101,19 @@ WARN_LOGFILE           =
 # configuration options related to the input files
 #---------------------------------------------------------------------------
 INPUT                  =  \
-   @top_srcdir@/doc/ref      \
-   @top_srcdir@/idl \
-   @top_srcdir@/src/bases \
-   @top_srcdir@/src/engine \
-   @top_srcdir@/src/runtime \
-   @top_srcdir@/src/yacsloader \
-   @top_srcdir@/src/yacsorb \
-   @top_srcdir@/src/hmi \
-   @top_srcdir@/src/salomewrap \
-   @top_srcdir@/src/genericgui \
-   @top_srcdir@/src/salomegui \
-   @top_srcdir@/src/salomewrap \
-   @top_srcdir@/src/pyqt
+   @CMAKE_SOURCE_DIR@/doc/ref      \
+   @CMAKE_SOURCE_DIR@/idl \
+   @CMAKE_SOURCE_DIR@/src/bases \
+   @CMAKE_SOURCE_DIR@/src/engine \
+   @CMAKE_SOURCE_DIR@/src/runtime \
+   @CMAKE_SOURCE_DIR@/src/yacsloader \
+   @CMAKE_SOURCE_DIR@/src/yacsorb \
+   @CMAKE_SOURCE_DIR@/src/hmi \
+   @CMAKE_SOURCE_DIR@/src/salomewrap \
+   @CMAKE_SOURCE_DIR@/src/genericgui \
+   @CMAKE_SOURCE_DIR@/src/salomegui \
+   @CMAKE_SOURCE_DIR@/src/salomewrap \
+   @CMAKE_SOURCE_DIR@/src/pyqt
 
 FILE_PATTERNS          = *.c \
                          *.cc \
@@ -156,13 +156,13 @@ FILE_PATTERNS          = *.c \
                          *.M \
                          *.MM
 RECURSIVE              = YES
-EXCLUDE                = @top_srcdir@/src/yacsloader/tools 
+EXCLUDE                = @CMAKE_SOURCE_DIR@/src/yacsloader/tools 
 EXCLUDE_SYMLINKS       = NO
 EXCLUDE_PATTERNS       = */Test/*
 EXAMPLE_PATH           = 
 EXAMPLE_PATTERNS       = *
 EXAMPLE_RECURSIVE      = NO
-IMAGE_PATH             = @top_srcdir@/doc
+IMAGE_PATH             = @CMAKE_SOURCE_DIR@/doc
 INPUT_FILTER           = 
 FILTER_PATTERNS        = 
 FILTER_SOURCE_FILES    = NO
@@ -187,9 +187,9 @@ IGNORE_PREFIX          =
 GENERATE_HTML          = YES
 HTML_OUTPUT            = htmldev
 HTML_FILE_EXTENSION    = .html
-HTML_HEADER            = @builddir@/sources/header.html
-HTML_FOOTER            = @srcdir@/sources/footer.html
-HTML_EXTRA_STYLESHEET  = @srcdir@/sources/salome_extra.css
+HTML_HEADER            = @CMAKE_CURRENT_BINARY_DIR@/sources/header.html
+HTML_FOOTER            = @CMAKE_CURRENT_SOURCE_DIR@/sources/footer.html
+HTML_EXTRA_STYLESHEET  = @CMAKE_CURRENT_SOURCE_DIR@/sources/salome_extra.css
 HTML_ALIGN_MEMBERS     = YES
 GENERATE_HTMLHELP      = NO
 CHM_FILE               = 
