@@ -21,19 +21,12 @@
 #
 #  !! Please read the generic detection procedure in SalomeMacros.cmake !!
 #
-# The caller of this macro might set SPHINX_PYTHONPATH to provide a path to be added in front 
-# of the PYTHONPATH with which the sphinx command should be ran.
-#
-# Note the environment is also overriden in 
-#     doc/docutils/CMakeLists.txt
-# with the creation of a dedicated launcher script.
-#
 
 SALOME_FIND_PACKAGE_AND_DETECT_CONFLICTS(Sphinx SPHINX_EXECUTABLE 2)
 
 # Also retrieve paths to DOCUTILS and SETUPTOOLS:
 SET(SETUPTOOLS_ROOT_DIR "$ENV{SETUPTOOLS_ROOT_DIR}" CACHE PATH "Path to the Setuptools installation")
-SET(DOCUTILS_ROOT_DIR "$ENV{DOCUTILS_ROOT_DIR}" CACHE PATH "Path to the Setuptools installation")
+SET(DOCUTILS_ROOT_DIR "$ENV{DOCUTILS_ROOT_DIR}" CACHE PATH "Path to the Docutils installation")
 
 # Ensure the command is run with the given PYTHONPATH
 IF(WIN32 AND NOT CYGWIN)
@@ -44,3 +37,8 @@ ELSE()
 ENDIF()
 
 MARK_AS_ADVANCED(SPHINX_EXECUTABLE)
+
+IF(SPHINX_FOUND)
+  SALOME_ACCUMULATE_ENVIRONMENT(PATH ${SPHINX_EXECUTABLE})
+  SALOME_ACCUMULATE_ENVIRONMENT(PYTHONPATH ${SPHINX_PYTHONPATH})
+ENDIF()
