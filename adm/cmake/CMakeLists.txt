@@ -30,6 +30,7 @@ SET(_adm_data
   FindSphinx.cmake
   FindSalomeSphinx.cmake
   FindYACS.cmake
+  FindSalomeYACS.cmake
 )
 IF(NOT SALOME_YACS_USE_KERNEL)
   LIST(APPEND _adm_data
