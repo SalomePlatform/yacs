@@ -40,7 +40,7 @@
 
 
 #if defined(YACS_PTHREAD)
-#if defined(WNT)
+#if defined(WIN32)
 #include "DynLibLoaderWin.hxx"
 #else
 #include "DynLibLoaderGNU.hxx"
@@ -50,7 +50,7 @@ namespace YACS
 {
   namespace BASES
   {
-#if defined(WNT)
+#if defined(WIN32)
     typedef DynLibLoaderWin DynLibLoader;
 #else
     typedef DynLibLoaderGNU DynLibLoader;

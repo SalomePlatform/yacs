@@ -20,7 +20,7 @@
 #ifndef _YACSLOADEREXPORT_HXX_
 #define _YACSLOADEREXPORT_HXX_
 
-#ifdef WNT
+#ifdef WIN32
 #  if defined YACSloader_EXPORTS
 #    define YACSLOADER_EXPORT __declspec( dllexport )
 #  else

@@ -40,7 +40,7 @@
 #include <fstream>
 #include <signal.h>
 
-#ifdef WNT
+#ifdef WIN32
 #else
 #include <argp.h>
 #endif
@@ -57,7 +57,7 @@ const char *argp_program_bug_address ="<nepal@nepal.edf.fr>";
 static char doc[] ="driver -- a SALOME YACS graph executor";
 static char args_doc[] = "graph.xml";
 
-#ifdef WNT
+#ifdef WIN32
 #else
 static struct argp_option options[] =
   {
@@ -98,14 +98,14 @@ typedef struct {
   string lockFile;
 } thread_st;
 
-#ifdef WNT
+#ifdef WIN32
 static int
 #else
 static error_t
 #endif
 parse_opt (int key, char *arg, struct argp_state *state)
 {
-#ifdef WNT
+#ifdef WIN32
 #else
   // Get the input argument from argp_parse, which we
   // know is a pointer to our arguments structure. 
@@ -179,14 +179,14 @@ parse_opt (int key, char *arg, struct argp_state *state)
 }
 
 // Our argp parser.
-#ifdef WNT
+#ifdef WIN32
 #else
 static struct argp argp = { options, parse_opt, args_doc, doc };
 #endif
 
 void timer(std::string msg)
 {
-#ifdef WNT
+#ifdef WIN32
 #else
   struct timeval tv;
   gettimeofday(&tv,NULL);
@@ -289,7 +289,7 @@ int main (int argc, char* argv[])
   myArgs.killPort = 0;
 
   // Parse our arguments; every option seen by parse_opt will be reflected in arguments.
-#ifdef WNT
+#ifdef WIN32
 #else
   argp_parse (&argp, argc, argv, 0, 0, &myArgs);
   std::cerr << "graph = " << myArgs.args[0];
@@ -306,7 +306,7 @@ int main (int argc, char* argv[])
     std::cerr << std::endl;
 #endif
 
-#ifndef WNT
+#ifndef WIN32
   setsig(SIGINT,&Handler);
   setsig(SIGTERM,&Handler);
 #endif

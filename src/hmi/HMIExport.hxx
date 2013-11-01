@@ -20,7 +20,7 @@
 #ifndef _HMIEXPORT_HXX_
 #define _HMIEXPORT_HXX_
 
-#ifdef WNT
+#ifdef WIN32
 #  if defined HMI_EXPORTS
 #    define HMI_EXPORT __declspec( dllexport )
 #  else

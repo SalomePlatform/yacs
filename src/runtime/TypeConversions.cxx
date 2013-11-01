@@ -37,7 +37,7 @@
 #include <iostream>
 #include <sstream>
 
-#ifdef WNT
+#ifdef WIN32
 #include <fcntl.h>
 #define _S_IREAD 256
 #define _S_IWRITE 128

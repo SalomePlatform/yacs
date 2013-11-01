@@ -19,7 +19,7 @@
 
 #include <iostream>
 #include <sstream>
-#ifdef WNT
+#ifdef WIN32
 #include <windows.h>
 #define dlopen LoadLibrary
 #define dlclose FreeLibrary
@@ -308,7 +308,7 @@ LocalLibrary  LocalContainer::loadComponentLibrary(const std::string & aCompName
         }
     }
   
-#ifndef WNT
+#ifndef WIN32
   std::string impl_name = std::string ("lib") + aCompName + std::string("Local.so");
   if(sprefix != "")
     impl_name = sprefix + std::string("/") + impl_name;
@@ -318,7 +318,7 @@ LocalLibrary  LocalContainer::loadComponentLibrary(const std::string & aCompName
 #endif
   DEBTRACE("impl_name = " << impl_name);
     
-#if defined( WNT )
+#if defined( WIN32 )
   HMODULE handle;
   handle = dlopen( impl_name.c_str() ) ;
 #else
@@ -327,11 +327,11 @@ LocalLibrary  LocalContainer::loadComponentLibrary(const std::string & aCompName
 #endif
 
   const char * sError;
-#if defined( WNT )
+#if defined( WIN32 )
   sError = "Not available here !";
 #endif
   
-#if defined( WNT )
+#if defined( WIN32 )
   if (!handle) 
 #else
   sError = dlerror();
@@ -348,7 +348,7 @@ LocalLibrary  LocalContainer::loadComponentLibrary(const std::string & aCompName
   void *ihandle, *rhandle, *phandle = NULL, *thandle = NULL;
       
   ihandle = dlsym(handle, "__init");
-#if defined( WNT )
+#if defined( WIN32 )
   if (!ihandle)
 #else
   if (sError = dlerror()) 
@@ -363,7 +363,7 @@ LocalLibrary  LocalContainer::loadComponentLibrary(const std::string & aCompName
     }
   
   rhandle = dlsym(handle, "__run");
-#if defined( WNT )
+#if defined( WIN32 )
   if (!rhandle)
 #else
   if (sError = dlerror()) 
@@ -378,7 +378,7 @@ LocalLibrary  LocalContainer::loadComponentLibrary(const std::string & aCompName
     }
       
   thandle = dlsym(handle, "__terminate");
-#if defined( WNT )
+#if defined( WIN32 )
   if (!thandle)
 #else
   if (sError = dlerror()) 

@@ -20,7 +20,7 @@
 #ifndef _GENERICGUIEXPORT_HXX_
 #define _GENERICGUIEXPORT_HXX_
 
-#ifdef WNT
+#ifdef WIN32
 #  if defined GenericGui_EXPORTS
 #    define GENERICGUI_EXPORT __declspec( dllexport )
 #  else

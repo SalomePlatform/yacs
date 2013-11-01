@@ -21,6 +21,12 @@ INCLUDE(${SWIG_USE_FILE})
 
 # --- options ---
 
+IF(WIN32)                                       # if platform is Windows 64 bit 
+  IF("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")          
+    ADD_DEFINITIONS(/bigobj)                    # to avoid error C1128
+  ENDIF()
+EINDIF()
+
 # additional include directories
 INCLUDE_DIRECTORIES(
   ${PTHREAD_INCLUDE_DIR}
@@ -47,6 +53,9 @@ ADD_DEFINITIONS(
   ${OMNIORB_DEFINITIONS}
   -DYACS_PTHREAD
   )
+IF(WIN32)
+  ADD_DEFINITIONS(-DNOGDI)
+ENDIF(WIN32)
 
 # libraries to link to
 SET(_link_LIBRARIES
@@ -158,10 +167,10 @@ ADD_DEPENDENCIES(_pypilot pypilot.i pilot.i engtypemaps.i _pilot ${SWIGINCLUDES}
 
 SWIG_LINK_LIBRARIES(pilot   "${_link_LIBRARIES}")
 SWIG_LINK_LIBRARIES(pypilot "${_link_LIBRARIES}")
-IF(WINDOWS)
+IF(WIN32)
   SET_TARGET_PROPERTIES(_pilot   PROPERTIES DEBUG_OUTPUT_NAME _pilot_d)
   SET_TARGET_PROPERTIES(_pypilot PROPERTIES DEBUG_OUTPUT_NAME _pypilot_d)
-ENDIF(WINDOWS)
+ENDIF(WIN32)
 
 INSTALL(TARGETS ${SWIG_MODULE_pilot_REAL_NAME} ${SWIG_MODULE_pypilot_REAL_NAME} DESTINATION ${SALOME_INSTALL_PYTHON})
 

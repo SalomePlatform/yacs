@@ -22,7 +22,7 @@
 #include "YacsTrace.hxx"
 #include <cstdlib>
 
-#ifdef WNT
+#ifdef WIN32
 #include <process.h>
 #define getpid _getpid
 #else

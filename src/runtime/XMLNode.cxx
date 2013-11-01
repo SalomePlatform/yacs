@@ -31,7 +31,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#ifdef WNT
+#ifdef WIN32
 #include <windows.h>
 #include <io.h>
 #define chmod _chmod
@@ -92,7 +92,7 @@ void XmlNode::execute()
   char dir[]="yacsXXXXXX";
   // add a lock around mkdtemp (seems not thread safe)
   MUTEX.lock();
-#ifdef WNT
+#ifdef WIN32
   char mdir [512+1];
   GetTempPath(MAX_PATH+1, mdir);
   CreateDirectory(mdir, NULL);

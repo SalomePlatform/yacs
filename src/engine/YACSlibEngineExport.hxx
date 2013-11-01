@@ -20,7 +20,7 @@
 #ifndef _YACSLIBENGINEEXPORT_HXX_
 #define _YACSLIBENGINEEXPORT_HXX_
 
-#ifdef WNT
+#ifdef WIN32
 #  if defined YACSlibEngine_EXPORTS
 #    define YACSLIBENGINE_EXPORT __declspec( dllexport )
 #  else
@@ -30,7 +30,7 @@
 #  define YACSLIBENGINE_EXPORT
 #endif
 
-#ifdef WNT
+#ifdef WIN32
 #pragma warning(disable:4251) // Warning DLL Interface ...
 #pragma warning(disable:4290) // Warning Exception ...
 #endif

@@ -38,7 +38,7 @@
 #include <cstdlib>
 #include <algorithm>
 
-#ifdef WNT
+#ifdef WIN32
 #define usleep(A) _sleep(A/1000)
 #if !defined(S_ISCHR) || !defined(S_ISREG)
 #  ifndef S_IFMT

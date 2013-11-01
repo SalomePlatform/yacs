@@ -30,7 +30,7 @@
 #include <sstream>
 #include <fstream>
 
-#ifdef WNT
+#ifdef WIN32
 #include <process.h>
 #define getpid _getpid
 #endif

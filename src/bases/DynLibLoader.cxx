@@ -20,7 +20,7 @@
 #include "DynLibLoader.hxx"
 
 #if defined(YACS_PTHREAD)
-#if defined(WNT)
+#if defined(WIN32)
 #include "DynLibLoaderWin.cxx"
 #else
 #include "DynLibLoaderGNU.cxx"

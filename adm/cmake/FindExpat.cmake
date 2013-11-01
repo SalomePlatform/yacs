@@ -17,7 +17,8 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-FIND_LIBRARY(EXPAT_LIBRARIES expat libexpat)
+FIND_LIBRARY(EXPAT_LIBRARIES NAMES expat libexpat)
+
 FIND_PATH(EXPAT_INCLUDE_DIR expat.h)
 
 # Handle the standard arguments of the find_package() command:

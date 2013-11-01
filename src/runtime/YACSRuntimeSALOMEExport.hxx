@@ -20,7 +20,7 @@
 #ifndef _YACSRUNTIMESALOMEEXPORT_HXX_
 #define _YACSRUNTIMESALOMEEXPORT_HXX_
 
-#ifdef WNT
+#ifdef WIN32
 #  if defined YACSRuntimeSALOME_EXPORTS
 #    define YACSRUNTIMESALOME_EXPORT __declspec( dllexport )
 #  else

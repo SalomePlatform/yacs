@@ -20,7 +20,7 @@
 #ifndef _SALOMEWRAPEXPORT_HXX_
 #define _SALOMEWRAPEXPORT_HXX_
 
-#ifdef WNT
+#ifdef WIN32
 #  if defined SalomeWrap_EXPORTS
 #    define SALOMEWRAP_EXPORT __declspec( dllexport )
 #  else

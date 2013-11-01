@@ -19,7 +19,7 @@
 
 #include "ThreadPT.hxx"
 #include "Exception.hxx"
-#ifdef WNT
+#ifdef WIN32
 #include <windows.h>
 #define usleep(A) Sleep(A/1000)
 #else

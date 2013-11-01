@@ -67,7 +67,7 @@
 
 #include <ctime>
 
-#ifdef WNT
+#ifdef WIN32
 #define WEXITSTATUS(w)  ((int) ((w) & 0x40000000))
 #endif
 
@@ -1369,7 +1369,7 @@ void GenericGui::onImportSupervSchema()
   QString tmpFileName;
   try
     {
-#ifdef WNT
+#ifdef WIN32
       QString tmpDir = getenv("TEMP");
 	  QString fileExt = "bat";
 #else
@@ -1615,7 +1615,7 @@ void GenericGui::onRunLoadedSchema(bool withState)
   QFileInfo fo = QtGuiContext::getQtCurrent()->getFileName();
   QString procName = fo.baseName();
   //QString tmpDir = SALOMEDS_Tool::GetTmpDir().c_str();
-#ifdef WNT
+#ifdef WIN32
   QString tmpDir = getenv("TEMP");
 #else
   QString tmpDir = "/tmp";

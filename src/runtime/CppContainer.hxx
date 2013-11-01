@@ -26,7 +26,7 @@
 #include "Container.hxx"
 #include "CppComponent.hxx"
 
-#ifdef WNT
+#ifdef WIN32
 #include <windows.h>
 #endif
 
@@ -37,7 +37,7 @@ namespace YACS
   
     struct LocalLibrary {
       
-#if defined( WNT )
+#if defined( WIN32 )
       HMODULE handle;
 #else
       void * handle;
@@ -48,7 +48,7 @@ namespace YACS
       PingFunction pingHandle;
       TerminateFunction terminateHandle;
       
-#if defined( WNT )
+#if defined( WIN32 )
       LocalLibrary(HMODULE h, InitFunction i, RunFunction r, 
 #else
       LocalLibrary(void *h, InitFunction i, RunFunction r, 

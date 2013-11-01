@@ -253,7 +253,7 @@ void GuiExecutor::setStopOnError(bool aMode)
   DEBTRACE("GuiExecutor::setStopOnError " << aMode);
   if (_isRunning)
     {
-#ifdef WNT
+#ifdef WIN32
       _procRef->setStopOnError(aMode, (getenv("TEMP") + string("\\dumpStateOnError_") + getenv("USER") + string(".xml")).c_str());
 #else
       _procRef->setStopOnError(aMode, (string("/tmp/dumpStateOnError_") + getenv("USER") + string(".xml")).c_str());

@@ -19,7 +19,7 @@
 
 #include <time.h>
 #include <pthread.h>
-#ifdef WNT
+#ifdef WIN32
 #include <windows.h>
 #define sleep _sleep
 #else

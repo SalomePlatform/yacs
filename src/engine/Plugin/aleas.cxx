@@ -19,7 +19,7 @@
 
 #include <time.h>
 #include <sys/types.h>
-#ifdef WNT
+#ifdef WIN32
 #else
 #include <unistd.h>
 #endif

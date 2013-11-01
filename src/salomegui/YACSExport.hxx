@@ -20,7 +20,7 @@
 #ifndef _YACSEXPORT_HXX_
 #define _YACSEXPORT_HXX_
 
-#ifdef WNT
+#ifdef WIN32
 #  if defined YACS_EXPORTS
 #    define YACS_EXPORT __declspec( dllexport )
 #  else

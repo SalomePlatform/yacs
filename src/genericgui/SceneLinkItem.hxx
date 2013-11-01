@@ -27,7 +27,7 @@
 #include <QPainterPath>
 #include <vector>
 
-#ifdef WNT
+#ifdef WIN32
 #ifdef _UP
 #undef _UP
 #endif
