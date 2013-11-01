@@ -25,7 +25,7 @@ IF(WIN32)                                       # if platform is Windows 64 bit
   IF("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")          
     ADD_DEFINITIONS(/bigobj)                    # to avoid error C1128
   ENDIF()
-EINDIF()
+ENDIF()
 
 # additional include directories
 INCLUDE_DIRECTORIES(
