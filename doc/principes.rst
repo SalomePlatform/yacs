@@ -613,6 +613,18 @@ nb_component_nodes    int          ??
 parallelLib           string       ??
 =================== ============= =============================================
 
+When using the "best" policy, a price is computed for each resource based on some criteria and the resource with the best price is chosen.
+The list of these criteria, from the most important to the least important, is:
+ 1. Number of processors (nb procs). For a resource, it is given by "nb_node" * "nb_proc_per_node".
+ 2. Number of nodes (nb nodes)
+ 3. Number of processors by node (nb proc/node)
+ 4. CPU frequency (cpu clock)
+ 5. Memory (mem mb)
+Undefined criteria are ignored. The price of each criterion is:
+ - the highest (3) if the expected value of the criterion is equal to the value of the criterion in the resource
+ - medium (2) if the expected value of the criterion is less than the value of the criterion in the resource
+ - the lowest (1) if the expected value of the criterion is higher than the value of the criterion in the resource
+
 .. _catalogResources:
 
 The resources catalog
