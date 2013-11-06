@@ -74,6 +74,7 @@ SET(YACS_RESOURCES
   resources/YACS_icons.ts
   resources/YACS_msg_en.ts
   resources/YACS_msg_fr.ts
+  resources/YACS_msg_ja.ts
 )
 
 SET(_res_files
