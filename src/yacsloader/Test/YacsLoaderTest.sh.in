@@ -39,7 +39,7 @@ EOF
 
   # --- launch in background a SALOME session (servers)
 
-  ln -fs @top_srcdir@/src/yacsloader/samples .
+  ln -fs @CMAKE_SOURCE_DIR@/src/yacsloader/samples .
   ./runAppli > log1 2>&1
 
   # --- wait a little to let the background process define
@@ -49,8 +49,8 @@ EOF
 
   # --- execute the test script in SALOME session environment
 
-  chmod +x @builddir@/YacsLoaderInSessionTest.sh
-  ./runSession @builddir@/YacsLoaderInSessionTest.sh
+  chmod +x @CMAKE_CURRENT_BINARY_DIR@/YacsLoaderInSessionTest.sh
+  ./runSession @CMAKE_CURRENT_BINARY_DIR@/YacsLoaderInSessionTest.sh
   ret=$?
 
   # ---------------------------------------------------------------------------
@@ -66,9 +66,9 @@ EOF
 
 else
 
-  ln -fs @top_srcdir@/src/yacsloader/samples .
-  chmod +x @builddir@/YacsLoaderInSessionTest.sh
-  @builddir@/YacsLoaderInSessionTest.sh
+  ln -fs @CMAKE_SOURCE_DIR@/src/yacsloader/samples .
+  chmod +x @CMAKE_CURRENT_BINARY_DIR@/YacsLoaderInSessionTest.sh
+  @CMAKE_CURRENT_BINARY_DIR@/YacsLoaderInSessionTest.sh
   ret=$?
   echo "exec status YacsLoaderInSessionTest.sh " $ret
 

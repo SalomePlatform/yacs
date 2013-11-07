@@ -26,54 +26,54 @@
 pidecho=$!
 echo $pidecho > "/tmp/YACSTEST_PidEcho"
 
-python @top_srcdir@/src/yacsloader/Test/waitContainers.py
+python @CMAKE_SOURCE_DIR@/src/yacsloader/Test/waitContainers.py
 
 # --- launch unit tests
 
-export ROOT_SAMPLES=@ROOT_SRCDIR@/src/yacsloader/samples
-export TESTCOMPONENT_ROOT_DIR=@top_builddir@/src/runtime/Test
+export ROOT_SAMPLES=@CMAKE_SOURCE_DIR@/src/yacsloader/samples
+export TESTCOMPONENT_ROOT_DIR=@CMAKE_BINARY_DIR@/src/runtime/Test
 
-export PYTHONPATH=..:../.libs:@top_srcdir@/src/yacsloader_swig:${PYTHONPATH}
-export PYTHONPATH=../../runtime_swig:../../runtime_swig/.libs:@top_srcdir@/src/runtime_swig:${PYTHONPATH}
-export PYTHONPATH=../../engine_swig:../../engine_swig/.libs:@top_srcdir@/src/engine_swig:${PYTHONPATH}
+export PYTHONPATH=..:../.libs:@CMAKE_SOURCE_DIR@/src/yacsloader_swig:${PYTHONPATH}
+export PYTHONPATH=../../runtime_swig:../../runtime_swig/.libs:@CMAKE_SOURCE_DIR@/src/runtime_swig:${PYTHONPATH}
+export PYTHONPATH=../../engine_swig:../../engine_swig/.libs:@CMAKE_SOURCE_DIR@/src/engine_swig:${PYTHONPATH}
 export PYTHONPATH=../../yacsloader/Test:${PYTHONPATH}
 
-python  @srcdir@/testExec.py
+python  @CMAKE_CURRENT_SOURCE_DIR@/testExec.py
 ret0=$?
 if [ $ret0 -gt 0 ]; then
   echo "exec status testExec : " $ret0
   exit $ret0
 fi
 
-python  @srcdir@/testResume.py
+python  @CMAKE_CURRENT_SOURCE_DIR@/testResume.py
 ret1=$?
 if [ $ret1 -gt 0 ]; then
   echo "exec status testResume : " $ret1
   exit $ret1
 fi
 
-python  @srcdir@/testLoader.py
+python  @CMAKE_CURRENT_SOURCE_DIR@/testLoader.py
 ret2=$?
 if [ $ret2 -gt 0 ]; then
   echo "exec status testLoader : " $ret2
   exit $ret2
 fi
 
-python  @srcdir@/testEdit.py
+python  @CMAKE_CURRENT_SOURCE_DIR@/testEdit.py
 ret3=$?
 if [ $ret3 -gt 0 ]; then
   echo "exec status testEdit : " $ret3
   exit $ret3
 fi
 
-python  @srcdir@/testSave.py
+python  @CMAKE_CURRENT_SOURCE_DIR@/testSave.py
 ret4=$?
 if [ $ret4 -gt 0 ]; then
   echo "exec status testSave : " $ret4
   exit $ret4
 fi
 
-python  @srcdir@/testRefcount.py
+python  @CMAKE_CURRENT_SOURCE_DIR@/testRefcount.py
 ret5=$?
 if [ $ret5 -gt 0 ]; then
   echo "exec status testRefcount : " $ret5
