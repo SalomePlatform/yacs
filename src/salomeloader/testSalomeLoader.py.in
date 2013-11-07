@@ -24,13 +24,13 @@ import os
 # --- top_builddir is used in make check
 # --- top_srcdir is used in make distcheck
 
-sys.path.insert(0,"@srcdir@")
-sys.path.insert(0,"@top_builddir@/src/engine_swig")
-sys.path.insert(0,"@top_builddir@/src/runtime_swig")
-sys.path.insert(0,"@top_builddir@/src/engine_swig/.libs")
-sys.path.insert(0,"@top_builddir@/src/runtime_swig/.libs")
-sys.path.insert(0,"@top_srcdir@/src/engine_swig")
-sys.path.insert(0,"@top_srcdir@/src/runtime_swig")
+sys.path.insert(0,"@CMAKE_CURRENT_SOURCE_DIR@")
+sys.path.insert(0,"@CMAKE_BINARY_DIR@/src/engine_swig")
+sys.path.insert(0,"@CMAKE_BINARY_DIR@/src/runtime_swig")
+sys.path.insert(0,"@CMAKE_BINARY_DIR@/src/engine_swig/.libs")
+sys.path.insert(0,"@CMAKE_BINARY_DIR@/src/runtime_swig/.libs")
+sys.path.insert(0,"@CMAKE_SOURCE_DIR@/src/engine_swig")
+sys.path.insert(0,"@CMAKE_SOURCE_DIR@/src/runtime_swig")
 
 import unittest
 import pilot
@@ -44,32 +44,32 @@ class TestSalomeLoader(unittest.TestCase):
 
   def test1(self):
     """test GeomGraph.xml"""
-    p= self.loader.load(os.path.join("@srcdir@","samples","GeomGraph.xml"))
+    p= self.loader.load(os.path.join("@CMAKE_CURRENT_SOURCE_DIR@","samples","GeomGraph.xml"))
     p.saveSchema("tata.xml")
 
   def test2(self):
     """test GeomGraphGates_py.xml"""
-    p= self.loader.load(os.path.join("@srcdir@","samples","GeomGraphGates_py.xml"))
+    p= self.loader.load(os.path.join("@CMAKE_CURRENT_SOURCE_DIR@","samples","GeomGraphGates_py.xml"))
     p.saveSchema("tata.xml")
 
   def test3(self):
     """test GeomGraphGates.xml"""
-    p= self.loader.load(os.path.join("@srcdir@","samples","GeomGraphGates.xml"))
+    p= self.loader.load(os.path.join("@CMAKE_CURRENT_SOURCE_DIR@","samples","GeomGraphGates.xml"))
     p.saveSchema("tata.xml")
 
   def test4(self):
     """test GeomGraph_py.xml"""
-    p= self.loader.load(os.path.join("@srcdir@","samples","GeomGraph_py.xml"))
+    p= self.loader.load(os.path.join("@CMAKE_CURRENT_SOURCE_DIR@","samples","GeomGraph_py.xml"))
     p.saveSchema("tata.xml")
 
   def test5(self):
     """test Graph_couronne.xml"""
-    p= self.loader.load(os.path.join("@srcdir@","samples","Graph_couronne.xml"))
+    p= self.loader.load(os.path.join("@CMAKE_CURRENT_SOURCE_DIR@","samples","Graph_couronne.xml"))
     p.saveSchema("tata.xml")
 
   def test6(self):
     """test testvisu20.xml"""
-    p= self.loader.load(os.path.join("@srcdir@","samples","testvisu20.xml"))
+    p= self.loader.load(os.path.join("@CMAKE_CURRENT_SOURCE_DIR@","samples","testvisu20.xml"))
     p.saveSchema("tata.xml")
 
 U = os.getenv('USER')
