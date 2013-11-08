@@ -2572,7 +2572,7 @@ void EngineIntegrationTest::testForOptimizerLoop1()
 {
   LinkInfo info(LinkInfo::ALL_DONT_STOP);
   Bloc *graph=new Bloc("Global");
-  OptimizerLoop *opt=new OptimizerLoop("myOptWthAlgSync",".libs/libPluginOptEvTest1","PluginOptEvTest1Factory",true);
+  OptimizerLoop *opt=new OptimizerLoop("myOptWthAlgSync","libPluginOptEvTest1","PluginOptEvTest1Factory",true);
   graph->edAddChild(opt);
   ToyNode *n1=new ToyNode("T1");
   ToyNode *n2=new ToyNode("T2");
@@ -2622,7 +2622,7 @@ void EngineIntegrationTest::testForOptimizerLoop2()
 {
   LinkInfo info(LinkInfo::ALL_DONT_STOP);
   Bloc *graph=new Bloc("Global");
-  OptimizerLoop *opt=new OptimizerLoop("myOptWthAlgSync",".libs/libPluginOptEvTest1","PluginOptEvTest1Factory",true);
+  OptimizerLoop *opt=new OptimizerLoop("myOptWthAlgSync","libPluginOptEvTest1","PluginOptEvTest1Factory",true);
   graph->edAddChild(opt);
   ToyNode *n1=new ToyNode("T1");
   ToyNode *n2=new ToyNode("T2");
