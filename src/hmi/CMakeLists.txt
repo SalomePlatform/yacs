@@ -39,7 +39,6 @@ INCLUDE_DIRECTORIES(
 
 # additional preprocessor / compiler flags
 ADD_DEFINITIONS(
-  -DYACS_PTHREAD
   ${PYTHON_DEFINITIONS}
   ${OMNIORB_DEFINITIONS}
   )
