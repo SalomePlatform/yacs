@@ -46,7 +46,6 @@ SET(IDL_LINK_FLAGS
 
 # additional preprocessor / compiler flags
 ADD_DEFINITIONS(
-  -DYACS_PTHREAD
   ${OMNIORB_DEFINITIONS}
   )
 
