@@ -18,7 +18,7 @@
 #
 
 IF(SALOME_BUILD_TESTS)
-  ADD_SUBDIRECTORY( Test )
+  ADD_SUBDIRECTORY(Test)
 ENDIF(SALOME_BUILD_TESTS)
 
 # --- options ---
@@ -29,9 +29,6 @@ INCLUDE_DIRECTORIES(
   )
 
 # additional preprocessor / compiler flags
-ADD_DEFINITIONS(
-  "-DYACS_PTHREAD"
-  )
 IF(WIN32)
   ADD_DEFINITIONS(-DNOGDI)
 ENDIF(WIN32)
