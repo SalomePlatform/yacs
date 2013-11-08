@@ -21,29 +21,33 @@
 
 # additional include directories
 INCLUDE_DIRECTORIES(
-  ${PTHREAD_INCLUDE_DIR}
   ${CPPUNIT_INCLUDE_DIRS}
-  )
-
-# additional preprocessor / compiler flags
-ADD_DEFINITIONS(
-  ${CPPUNIT_DEFINITIONS}
-  )
-
-# libraries to link to
-SET(_link_LIBRARIES
-  ${CPPUNIT_LIBRARIES}
-  YACSBases
-  )
+  ${CMAKE_CURRENT_SOURCE_DIR}/..
+)
 
 # --- sources ---
 
 SET(YACSDLTest_SOURCES
   DLTest.cxx
-  )
+)
+  
+SET(InitTests_SOURCES
+  InitTests.cxx
+)
+
+SET(TestBases_SOURCES
+  TestBases.cxx
+  basesTest.cxx
+)
 
 # --- rules ---
 
 ADD_LIBRARY(YACSDLTest ${YACSDLTest_SOURCES})
-TARGET_LINK_LIBRARIES(YACSDLTest ${_link_LIBRARIES})
 INSTALL(TARGETS YACSDLTest EXPORT ${PROJECT_NAME}TargetGroup DESTINATION ${SALOME_INSTALL_LIBS})
+
+ADD_EXECUTABLE(InitTests ${InitTests_SOURCES})
+ADD_TEST(InitTests InitTests)
+
+ADD_EXECUTABLE(TestBases ${TestBases_SOURCES})
+TARGET_LINK_LIBRARIES(TestBases YACSBases ${CPPUNIT_LIBRARIES} ${PTHREAD_LIBRARIES})
+ADD_TEST(TestBases TestBases)
