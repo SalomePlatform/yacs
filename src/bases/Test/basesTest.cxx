@@ -219,7 +219,7 @@ typedef double (*FctPt)(double);
 
 void BasesTest::testDL()
 {
-  DynLibLoader *loader=new DynLibLoader(".libs/libYACSDLTest");
+  DynLibLoader *loader=new DynLibLoader("libYACSDLTest");
   void *symb=loader->getHandleOnSymbolWithName("myYacsFct");
   FctPt f=(FctPt) symb;
   double res=f(1.7);
