@@ -111,6 +111,7 @@ ENDIF()
 # Mandatory products
 FIND_PACKAGE(SalomePython    REQUIRED)
 FIND_PACKAGE(SalomePThread   REQUIRED)
+ADD_DEFINITIONS(-DYACS_PTHREAD)
 FIND_PACKAGE(SalomeBoost     REQUIRED)
 FIND_PACKAGE(SalomeOmniORB   REQUIRED)
 FIND_PACKAGE(SalomeOmniORBPy REQUIRED)
@@ -266,7 +267,6 @@ INCLUDE(CMakePackageConfigHelpers)
 # They all have to be INSTALL'd with the option "EXPORT ${PROJECT_NAME}TargetGroup"
 SET(_${PROJECT_NAME}_exposed_targets 
   YACSloader YACSBases YACSlibEngine YACSRuntimeSALOME
-  #TODO: TestComponentLocal PluginSimplex PluginOptEvTest1
 )
 
 IF(SALOME_YACS_USE_KERNEL)
@@ -274,7 +274,8 @@ IF(SALOME_YACS_USE_KERNEL)
 ENDIF(SALOME_YACS_USE_KERNEL)
 
 IF(SALOME_BUILD_TESTS)
-  LIST(APPEND _${PROJECT_NAME}_exposed_targets YACSDLTest)
+  LIST(APPEND _${PROJECT_NAME}_exposed_targets YACSDLTest PluginSimplex
+       PluginOptEvTest1)
 ENDIF(SALOME_BUILD_TESTS)
 
 IF(SALOME_BUILD_GUI)
