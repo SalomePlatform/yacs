@@ -275,7 +275,7 @@ ENDIF(SALOME_YACS_USE_KERNEL)
 
 IF(SALOME_BUILD_TESTS)
   LIST(APPEND _${PROJECT_NAME}_exposed_targets YACSDLTest PluginSimplex
-       PluginOptEvTest1)
+       PluginOptEvTest1 TestComponentLocal)
 ENDIF(SALOME_BUILD_TESTS)
 
 IF(SALOME_BUILD_GUI)
