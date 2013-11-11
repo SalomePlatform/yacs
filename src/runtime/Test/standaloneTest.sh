@@ -51,7 +51,7 @@ pidecho=$!
 echo $pidecho
 
 export PYTHONPATH=${BASEREP}:${PYTHONPATH}
-./.libs/TestStandAlone
+./TestStandAlone
 ret=$?
 # 
 # kill -9 $pidecho $pidomni

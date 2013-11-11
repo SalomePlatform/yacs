@@ -49,7 +49,7 @@ pidecho=$!
 echo $pidecho
 
 mkdir -p lib/salome
-cp .libs/libTestComponentLocal.so lib/salome
+cp libTestComponentLocal.so lib/salome
 export TESTCOMPONENT_ROOT_DIR=`pwd`
 
 #wait enough time to let runtimeTestEchoSrv start and register
