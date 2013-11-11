@@ -169,6 +169,8 @@ bool Yacsgui::activateModule( SUIT_Study* theStudy )
         PyErr_Print();
       Py_XDECREF(result);
     }
+  Py_XDECREF(pluginsmanager);
+
   PyGILState_Release(gstate);
   // end of YACS plugins loading
 
