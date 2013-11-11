@@ -19,20 +19,13 @@
 
 -->
 <application>
-<prerequisites path="@SALOME_ROOT_DIR@/profile@SALOME_VERSION@.sh"/>
+<prerequisites path="profile@SALOMEYACS_VERSION@.sh"/>
 <modules>
    <!-- variable name <MODULE>_ROOT_DIR is built with <MODULE> == name attribute value -->
    <!-- <MODULE>_ROOT_DIR values is set with path attribute value -->
    <!-- attribute gui (defaults = yes) indicates if the module has a gui interface -->
-   <module name="KERNEL"       gui="no"  path="@SALOME_ROOT_DIR@/KERNEL@SALOME_VERSION@"/>
-   <module name="GUI"          gui="no"  path="@SALOME_ROOT_DIR@/GUI@SALOME_VERSION@"/>
-   <module name="GEOM"                   path="@SALOME_ROOT_DIR@/GEOM@SALOME_VERSION@"/>
-   <module name="MED"                    path="@SALOME_ROOT_DIR@/MED@SALOME_VERSION@"/>
-   <module name="SMESH"                  path="@SALOME_ROOT_DIR@/SMESH@SALOME_VERSION@"/>
-   <module name="VISU"                   path="@SALOME_ROOT_DIR@/VISU@SALOME_VERSION@"/>
-   <module name="HELLO"                  path="@SALOME_ROOT_DIR@/HELLO1@SALOME_VERSION@"/>
-   <module name="PYHELLO"                path="@SALOME_ROOT_DIR@/PYHELLO1@SALOME_VERSION@"/>
+   <module name="KERNEL"       gui="no"  path="@KERNEL_ROOT_DIR@"/>
+   <module name="GUI"          gui="no"  path="@GUI_ROOT_DIR@"/>
 </modules>
-<samples path="@SALOME_ROOT_DIR@/SAMPLES@SALOME_VERSION@"/>
 </application>
 

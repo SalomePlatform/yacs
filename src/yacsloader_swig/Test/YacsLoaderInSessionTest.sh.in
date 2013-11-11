@@ -33,10 +33,11 @@ python @CMAKE_SOURCE_DIR@/src/yacsloader/Test/waitContainers.py
 export ROOT_SAMPLES=@CMAKE_SOURCE_DIR@/src/yacsloader/samples
 export TESTCOMPONENT_ROOT_DIR=@CMAKE_BINARY_DIR@/src/runtime/Test
 
-export PYTHONPATH=..:../.libs:@CMAKE_SOURCE_DIR@/src/yacsloader_swig:${PYTHONPATH}
-export PYTHONPATH=../../runtime_swig:../../runtime_swig/.libs:@CMAKE_SOURCE_DIR@/src/runtime_swig:${PYTHONPATH}
-export PYTHONPATH=../../engine_swig:../../engine_swig/.libs:@CMAKE_SOURCE_DIR@/src/engine_swig:${PYTHONPATH}
-export PYTHONPATH=../../yacsloader/Test:${PYTHONPATH}
+export PYTHONPATH=@CMAKE_BINARY_DIR@/src/yacsloader_swig:$PYTHONPATH
+export PYTHONPATH=@CMAKE_BINARY_DIR@/src/runtime_swig:$PYTHONPATH
+export PYTHONPATH=@CMAKE_BINARY_DIR@/src/engine_swig:$PYTHONPATH
+export PYTHONPATH=@CMAKE_CURRENT_SOURCE_DIR@:$PYTHONPATH
+export PYTHONPATH=@CMAKE_SOURCE_DIR@/src/yacsloader/Test:$PYTHONPATH
 
 python  @CMAKE_CURRENT_SOURCE_DIR@/testExec.py
 ret0=$?

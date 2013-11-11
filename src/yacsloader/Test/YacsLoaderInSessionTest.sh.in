@@ -31,9 +31,9 @@ pidecho=$!
 echo $pidecho > "/tmp/YACSTEST_PidEcho"
 
 # Environment variables needed for the optimizer loop tests
-export LD_LIBRARY_PATH=@CMAKE_CURRENT_BINARY_DIR@/.libs:$LD_LIBRARY_PATH
-export PYTHONPATH=@CMAKE_BINARY_DIR@/src/engine_swig:@CMAKE_BINARY_DIR@/src/engine_swig/.libs:$PYTHONPATH
-export PYTHONPATH=@CMAKE_BINARY_DIR@/src/runtime_swig:@CMAKE_BINARY_DIR@/src/runtime_swig/.libs:$PYTHONPATH
+export LD_LIBRARY_PATH=@CMAKE_CURRENT_BINARY_DIR@:$LD_LIBRARY_PATH
+export PYTHONPATH=@CMAKE_BINARY_DIR@/src/engine_swig:$PYTHONPATH
+export PYTHONPATH=@CMAKE_BINARY_DIR@/src/runtime_swig:$PYTHONPATH
 export PYTHONPATH=@CMAKE_CURRENT_SOURCE_DIR@:$PYTHONPATH
 
 # --- launch unit tests

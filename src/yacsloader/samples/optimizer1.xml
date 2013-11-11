@@ -23,7 +23,7 @@
     <!--types -->
 
     <!--nodes -->
-    <optimizer name="b1" nbranch="4" lib="../../engine/Test/.libs/libPluginOptEvTest1" entry="PluginOptEvTest1Factory" >
+    <optimizer name="b1" nbranch="4" lib="../../engine/Test/libPluginOptEvTest1" entry="PluginOptEvTest1Factory" >
       <inline name="node2" >
         <script >
             <code>p1= p1+10.</code>
