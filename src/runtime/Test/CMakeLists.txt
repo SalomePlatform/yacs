@@ -39,8 +39,14 @@ INCLUDE_DIRECTORIES(
 # additional preprocessor / compiler flags
 ADD_DEFINITIONS(
   ${PTHREAD_DEFINITIONS}
+  ${OMNIORB_DEFINITIONS}
   -DUSE_CPPUNIT
 )
+
+IF(WIN32)
+  ADD_DEFINITIONS(-DNOGDI)
+ENDIF(WIN32)
+
 
 # --- sources ---
 

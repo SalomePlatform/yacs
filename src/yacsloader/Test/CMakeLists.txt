@@ -37,6 +37,16 @@ INCLUDE_DIRECTORIES(
   ${CMAKE_CURRENT_BINARY_DIR}
 )
 
+# additional preprocessor / compiler flags
+ADD_DEFINITIONS(
+  ${OMNIORB_DEFINITIONS}
+)
+
+IF(WIN32)
+  ADD_DEFINITIONS(-DNOGDI)
+ENDIF(WIN32)
+
+
 # --- sources ---
 
 # idl files

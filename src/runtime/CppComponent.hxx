@@ -22,6 +22,7 @@
 
 #include <string>
 #include "ComponentInstance.hxx"
+#include "YACSRuntimeSALOMEExport.hxx"
 
 namespace YACS 
 {
@@ -40,7 +41,7 @@ namespace YACS
     typedef void (*TerminateFunction)(void **);
     typedef void (*PingFunction) ();
         
-    class CppComponent : public ComponentInstance {
+    class YACSRUNTIMESALOME_EXPORT CppComponent : public ComponentInstance {
       public:
 
         CppComponent(const std::string & name);

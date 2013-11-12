@@ -121,12 +121,13 @@ namespace YACS
     template<bool direction>
     unsigned Bloc::appendIfAlreadyFound(std::list< std::vector<Node *> >& res, const std::vector<Node *>& startRes, Node *node, std::map<Node *, std::set<Node *> >& fastFinder)
     {
-      std::map<Node *, std::set<Node *> >::const_iterator iter=fastFinder.find(node);
+      std::map<Node *, std::set<Node *> >::iterator iter=fastFinder.find(node);
       if(iter==fastFinder.end())
         return 0;
       unsigned ret=0;
       std::vector<std::pair<std::set<Node *>::iterator, std::set<Node *>::iterator > > li;
-      li.push_back(std::pair<std::set<Node *>::iterator, std::set<Node *>::iterator>(((*iter).second).begin(),((*iter).second).end()));
+      std::pair<std::set<Node *>::iterator, std::set<Node *>::iterator> ipr(((*iter).second).begin(),((*iter).second).end());
+      li.push_back(ipr);
       std::vector<Node *> work(startRes);
       std::list< std::vector<Node *> >::iterator where=res.end(); where--;
       std::list< std::vector<Node *> >::iterator updates=where;
@@ -144,8 +145,9 @@ namespace YACS
                 }
               else
                 {
-                  const std::set<Node *>& s=fastFinder[*(li.back().first)];
-                  li.push_back(std::pair<std::set<Node *>::iterator, std::set<Node *>::iterator>(s.begin(),s.end()));
+                  std::set<Node *>& s=fastFinder[*(li.back().first)];
+                  std::pair<std::set<Node *>::iterator, std::set<Node *>::iterator> pr(s.begin(),s.end());
+                  li.push_back(pr);
                 }
             }
           else

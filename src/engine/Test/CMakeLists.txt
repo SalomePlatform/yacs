@@ -35,6 +35,15 @@ SET(_link_LIBRARIES
   YACSBases
 )
 
+# additional preprocessor / compiler flags
+ADD_DEFINITIONS(
+  ${OMNIORB_DEFINITIONS}
+)
+
+IF(WIN32)
+  ADD_DEFINITIONS(-DNOGDI)
+ENDIF(WIN32)
+
 # --- sources ---
 
 SET(PluginOptEvTest1_SOURCES

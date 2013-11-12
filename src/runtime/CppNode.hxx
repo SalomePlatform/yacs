@@ -21,6 +21,7 @@
 #define _CPPNODE_HXX_
 
 #include "ServiceNode.hxx"
+#include "YACSRuntimeSALOMEExport.hxx"
 
 namespace YACS
 {
@@ -42,7 +43,7 @@ namespace YACS
  * \ingroup Nodes
  *
  */
-    class CppNode : public YACS::ENGINE::ServiceNode 
+    class YACSRUNTIMESALOME_EXPORT CppNode : public YACS::ENGINE::ServiceNode 
     {
     protected:
       Node *simpleClone(ComposedNode *father, bool editionOnly) const;

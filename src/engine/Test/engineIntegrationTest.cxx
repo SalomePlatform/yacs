@@ -2593,11 +2593,11 @@ void EngineIntegrationTest::testForOptimizerLoop1()
   CPPUNIT_ASSERT(!info.areWarningsOrErrors());
   exe.RunW(graph);
   CPPUNIT_ASSERT_DOUBLES_EQUAL(45.6,((OutputToyPort*)o2_1)->get()->getDoubleValue(),DBL_PRECISION_COMPARE );
-  CPPUNIT_ASSERT(8==(int)opt->getNumberOfEltsConsumed() or 7==(int)opt->getNumberOfEltsConsumed());
+  CPPUNIT_ASSERT(8==(int)opt->getNumberOfEltsConsumed() || 7==(int)opt->getNumberOfEltsConsumed());
   CPPUNIT_ASSERT_EQUAL(2,(int)((DynParaLoop *)(opt))->getNumberOfBranchesCreatedDyn());
   exe.RunW(graph);
   CPPUNIT_ASSERT_DOUBLES_EQUAL(45.6,((OutputToyPort*)o2_1)->get()->getDoubleValue(),DBL_PRECISION_COMPARE );
-  CPPUNIT_ASSERT(8==(int)opt->getNumberOfEltsConsumed() or 7==(int)opt->getNumberOfEltsConsumed());
+  CPPUNIT_ASSERT(8==(int)opt->getNumberOfEltsConsumed() || 7==(int)opt->getNumberOfEltsConsumed());
   CPPUNIT_ASSERT_EQUAL(2,(int)((DynParaLoop *)(opt))->getNumberOfBranchesCreatedDyn());
   Bloc *clone=(Bloc *)graph->clone(0);
   delete graph;
@@ -2605,11 +2605,11 @@ void EngineIntegrationTest::testForOptimizerLoop1()
   CPPUNIT_ASSERT(!info.areWarningsOrErrors());
   exe.RunW(clone);
   CPPUNIT_ASSERT_DOUBLES_EQUAL(45.6,((OutputToyPort*)(clone->getOutPort("T2.o1")))->get()->getDoubleValue(),DBL_PRECISION_COMPARE );
-  CPPUNIT_ASSERT(8==(int)((OptimizerLoop *)(clone->getChildByName("myOptWthAlgSync")))->getNumberOfEltsConsumed() or 7==(int)((OptimizerLoop *)(clone->getChildByName("myOptWthAlgSync")))->getNumberOfEltsConsumed());
+  CPPUNIT_ASSERT(8==(int)((OptimizerLoop *)(clone->getChildByName("myOptWthAlgSync")))->getNumberOfEltsConsumed() || 7==(int)((OptimizerLoop *)(clone->getChildByName("myOptWthAlgSync")))->getNumberOfEltsConsumed());
   CPPUNIT_ASSERT_EQUAL(2,(int)((OptimizerLoop *)(clone->getChildByName("myOptWthAlgSync")))->getNumberOfBranchesCreatedDyn());
   exe.RunW(clone);
   CPPUNIT_ASSERT_DOUBLES_EQUAL(45.6,((OutputToyPort*)(clone->getOutPort("T2.o1")))->get()->getDoubleValue(),DBL_PRECISION_COMPARE );
-  CPPUNIT_ASSERT(8==(int)((OptimizerLoop *)(clone->getChildByName("myOptWthAlgSync")))->getNumberOfEltsConsumed() or 7==(int)((OptimizerLoop *)(clone->getChildByName("myOptWthAlgSync")))->getNumberOfEltsConsumed());
+  CPPUNIT_ASSERT(8==(int)((OptimizerLoop *)(clone->getChildByName("myOptWthAlgSync")))->getNumberOfEltsConsumed() || 7==(int)((OptimizerLoop *)(clone->getChildByName("myOptWthAlgSync")))->getNumberOfEltsConsumed());
   CPPUNIT_ASSERT_EQUAL(2,(int)((OptimizerLoop *)(clone->getChildByName("myOptWthAlgSync")))->getNumberOfBranchesCreatedDyn());
   delete clone;
 }
@@ -2645,11 +2645,11 @@ void EngineIntegrationTest::testForOptimizerLoop2()
   CPPUNIT_ASSERT(!info.areWarningsOrErrors());
   exe.RunW(graph);
   CPPUNIT_ASSERT_DOUBLES_EQUAL(45.6,((OutputToyPort*)o2_1)->get()->getDoubleValue(),DBL_PRECISION_COMPARE );
-  CPPUNIT_ASSERT(8==(int)opt->getNumberOfEltsConsumed() or 7==(int)opt->getNumberOfEltsConsumed());
+  CPPUNIT_ASSERT(8==(int)opt->getNumberOfEltsConsumed() || 7==(int)opt->getNumberOfEltsConsumed());
   CPPUNIT_ASSERT_EQUAL(2,(int)((DynParaLoop *)(opt))->getNumberOfBranchesCreatedDyn());
   exe.RunW(graph);
   CPPUNIT_ASSERT_DOUBLES_EQUAL(45.6,((OutputToyPort*)o2_1)->get()->getDoubleValue(),DBL_PRECISION_COMPARE );
-  CPPUNIT_ASSERT(8==(int)opt->getNumberOfEltsConsumed() or 7==(int)opt->getNumberOfEltsConsumed());
+  CPPUNIT_ASSERT(8==(int)opt->getNumberOfEltsConsumed() || 7==(int)opt->getNumberOfEltsConsumed());
   CPPUNIT_ASSERT_EQUAL(2,(int)((DynParaLoop *)(opt))->getNumberOfBranchesCreatedDyn());
   Bloc *clone=(Bloc *)graph->clone(0);
   delete graph;
@@ -2657,11 +2657,11 @@ void EngineIntegrationTest::testForOptimizerLoop2()
   CPPUNIT_ASSERT(!info.areWarningsOrErrors());
   exe.RunW(clone);
   CPPUNIT_ASSERT_DOUBLES_EQUAL(45.6,((OutputToyPort*)(clone->getOutPort("T2.o1")))->get()->getDoubleValue(),DBL_PRECISION_COMPARE );
-  CPPUNIT_ASSERT(8==(int)((OptimizerLoop *)(clone->getChildByName("myOptWthAlgSync")))->getNumberOfEltsConsumed() or 7==(int)((OptimizerLoop *)(clone->getChildByName("myOptWthAlgSync")))->getNumberOfEltsConsumed());
+  CPPUNIT_ASSERT(8==(int)((OptimizerLoop *)(clone->getChildByName("myOptWthAlgSync")))->getNumberOfEltsConsumed() || 7==(int)((OptimizerLoop *)(clone->getChildByName("myOptWthAlgSync")))->getNumberOfEltsConsumed());
   CPPUNIT_ASSERT_EQUAL(2,(int)((OptimizerLoop *)(clone->getChildByName("myOptWthAlgSync")))->getNumberOfBranchesCreatedDyn());
   exe.RunW(clone);
   CPPUNIT_ASSERT_DOUBLES_EQUAL(45.6,((OutputToyPort*)(clone->getOutPort("T2.o1")))->get()->getDoubleValue(),DBL_PRECISION_COMPARE );
-  CPPUNIT_ASSERT(8==(int)((OptimizerLoop *)(clone->getChildByName("myOptWthAlgSync")))->getNumberOfEltsConsumed() or 7==(int)((OptimizerLoop *)(clone->getChildByName("myOptWthAlgSync")))->getNumberOfEltsConsumed());
+  CPPUNIT_ASSERT(8==(int)((OptimizerLoop *)(clone->getChildByName("myOptWthAlgSync")))->getNumberOfEltsConsumed() || 7==(int)((OptimizerLoop *)(clone->getChildByName("myOptWthAlgSync")))->getNumberOfEltsConsumed());
   CPPUNIT_ASSERT_EQUAL(2,(int)((OptimizerLoop *)(clone->getChildByName("myOptWthAlgSync")))->getNumberOfBranchesCreatedDyn());
   delete clone;
 }

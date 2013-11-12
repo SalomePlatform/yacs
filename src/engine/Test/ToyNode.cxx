@@ -77,7 +77,7 @@ bool InputToyPort::edIsManuallyInitialized() const
   return _initData!=0;
 }
 
-void *InputToyPort::get() const throw(Exception)
+void *InputToyPort::get() const throw(YACS::Exception)
 {
   return (void *)_data;
 }
@@ -215,7 +215,7 @@ int ToyNode::getNumberOfOutputPorts() const
   return ElementaryNode::getNumberOfInputPorts()+1;
 }
 
-OutputPort *ToyNode::getOutputPort(const std::string& name) const throw(Exception)
+OutputPort *ToyNode::getOutputPort(const std::string& name) const throw(YACS::Exception)
 {
   if(name==NAME_FOR_NB)
     return (OutputPort *)&_nbOfInputsPort;
@@ -331,7 +331,7 @@ std::list<InputPort *> SeqToyNode::getSetOfInputPort() const
   return ret;
 }
 
-InputPort *SeqToyNode::getInputPort(const std::string& name) const throw(Exception)
+InputPort *SeqToyNode::getInputPort(const std::string& name) const throw(YACS::Exception)
 {
   if(name==NAME_NBOFELTS_INSEQ_INPRT)
     return (InputPort *)&_inIntValue;
@@ -351,7 +351,7 @@ std::list<OutputPort *> SeqToyNode::getSetOfOutputPort() const
   return ret;
 }
 
-OutputPort *SeqToyNode::getOutputPort(const std::string& name) const throw(Exception)
+OutputPort *SeqToyNode::getOutputPort(const std::string& name) const throw(YACS::Exception)
 {
   if(name==NAME_SEQ_OUTPRT)
     return (OutputPort *)&_seqOut;
@@ -414,7 +414,7 @@ std::list<InputPort *> Seq2ToyNode::getSetOfInputPort() const
   return ret;
 }
 
-InputPort *Seq2ToyNode::getInputPort(const std::string& name) const throw(Exception)
+InputPort *Seq2ToyNode::getInputPort(const std::string& name) const throw(YACS::Exception)
 {
   if(name==NAME_SEQ_INPRT1)
     return (InputPort *)&_inValue1;
@@ -436,7 +436,7 @@ std::list<OutputPort *> Seq2ToyNode::getSetOfOutputPort() const
   return ret;
 }
 
-OutputPort *Seq2ToyNode::getOutputPort(const std::string& name) const throw(Exception)
+OutputPort *Seq2ToyNode::getOutputPort(const std::string& name) const throw(YACS::Exception)
 {
   if(name==NAME_SEQ_OUTPRT)
     return (OutputPort *)&_seqOut;
@@ -514,7 +514,7 @@ std::list<InputPort *> Seq3ToyNode::getSetOfInputPort() const
   return ret;
 }
 
-InputPort *Seq3ToyNode::getInputPort(const std::string& name) const throw(Exception)
+InputPort *Seq3ToyNode::getInputPort(const std::string& name) const throw(YACS::Exception)
 {
   if(name==NAME_SEQ_INPRT1)
     return (InputPort *)&_inValue1;
@@ -536,7 +536,7 @@ std::list<OutputPort *> Seq3ToyNode::getSetOfOutputPort() const
   return ret;
 }
 
-OutputPort *Seq3ToyNode::getOutputPort(const std::string& name) const throw(Exception)
+OutputPort *Seq3ToyNode::getOutputPort(const std::string& name) const throw(YACS::Exception)
 {
   if(name==NAME_SEQ_OUTPRT)
     return (OutputPort *)&_seqOut;
@@ -581,7 +581,7 @@ bool InputLimitPort::edIsManuallyInitialized() const
   return _initData!=0;
 }
 
-void *InputLimitPort::get() const throw(Exception)
+void *InputLimitPort::get() const throw(YACS::Exception)
 {
   if(!_data)
     {
@@ -705,7 +705,7 @@ std::list<OutputPort *> LimitNode::getSetOfOutputPort() const
   return ret;
 }
 
-InputPort *LimitNode::getInputPort(const std::string& name) const throw(Exception)
+InputPort *LimitNode::getInputPort(const std::string& name) const throw(YACS::Exception)
 {
   if(name==NAME_FOR_SWPORT)
     return (InputPort *)&_entry;
@@ -713,7 +713,7 @@ InputPort *LimitNode::getInputPort(const std::string& name) const throw(Exceptio
     return ElementaryNode::getInputPort(name);
 }
 
-OutputPort *LimitNode::getOutputPort(const std::string& name) const throw(Exception)
+OutputPort *LimitNode::getOutputPort(const std::string& name) const throw(YACS::Exception)
 {
   if(name==NAME_FOR_SWPORT)
     return (OutputPort *)&_switchPort;

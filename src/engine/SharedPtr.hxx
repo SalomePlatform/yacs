@@ -53,6 +53,7 @@ SharedPtr<T> &SharedPtr<T>::operator=(const SharedPtr<T>& other)
   _ptr->decrRef();
   _ptr=other._ptr;
   _ptr->incrRef();
+  return *this;
 }
 
 template<class T>

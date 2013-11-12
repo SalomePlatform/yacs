@@ -54,7 +54,7 @@ InputPort *TestElemInputPort::clone(Node *newHelder) const
   return new TestElemInputPort(*this,newHelder);
 }
 
-void *TestElemInputPort::get() const throw(Exception)
+void *TestElemInputPort::get() const throw(YACS::Exception)
 {
   stringstream msg;
   msg << "Not implemented (" << __FILE__ << ":" << __LINE__ << ")";
@@ -106,7 +106,7 @@ void RuntimeForEngineTest::setRuntime()
     Runtime::_singleton = new RuntimeForEngineTest;
 }
 
-ElementaryNode* RuntimeForEngineTest::createNode(const string& implementation, const string& name) throw(Exception)
+ElementaryNode* RuntimeForEngineTest::createNode(const string& implementation, const string& name) throw(YACS::Exception)
 {
   return new TestElemNode(name);
 }

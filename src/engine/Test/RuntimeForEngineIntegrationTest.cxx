@@ -19,11 +19,13 @@
 
 #include "RuntimeForEngineIntegrationTest.hxx"
 #include "ComponentInstanceTest.hxx"
+#include "Exception.hxx"
 #include "ToyNode.hxx"
 #include "TypeCode.hxx"
 #include <sstream>
+#include <string.h>
 
-using namespace std;
+
 using namespace YACS::ENGINE;
 
 void RuntimeForEngineIntegrationTest::setRuntime()
@@ -32,17 +34,17 @@ void RuntimeForEngineIntegrationTest::setRuntime()
     Runtime::_singleton = new RuntimeForEngineIntegrationTest;
 }
 
-ElementaryNode* RuntimeForEngineIntegrationTest::createNode(const string& implementation, const string& name) throw(Exception)
+ElementaryNode* RuntimeForEngineIntegrationTest::createNode(const std::string& implementation, const std::string& name) throw (YACS::Exception)
 {
   if (implementation == ToyNode::MY_IMPL_NAME)
     return new ToyNode(name);
   else if(implementation == LimitNode::MY_IMPL_NAME)
     return new LimitNode(name);
-  string what="RuntimeForEngineIntegrationTest does not handle this implementation: " + implementation;
-  throw Exception(what);
+  std::string what="RuntimeForEngineIntegrationTest does not handle this implementation: " + implementation;
+  throw YACS::Exception(what);
 }
 
-InputPort* RuntimeForEngineIntegrationTest::createInputPort(const string& name, const string& impl, Node * node, TypeCode * type)
+InputPort* RuntimeForEngineIntegrationTest::createInputPort(const std::string& name, const std::string& impl, Node * node, TypeCode * type)
 {
   if(impl == ToyNode::MY_IMPL_NAME)
     {
@@ -52,12 +54,12 @@ InputPort* RuntimeForEngineIntegrationTest::createInputPort(const string& name, 
     }
   else if(impl == LimitNode::MY_IMPL_NAME)
     throw Exception("InputPort creation not allowed for LimitNode");
-  ostringstream msg;
+  std::ostringstream msg;
   msg << "Cannot create " << impl << " OutputPort" ;
-  throw Exception(msg.str());
+  throw YACS::Exception(msg.str());
 }
 
-OutputPort* RuntimeForEngineIntegrationTest::createOutputPort(const string& name, const string& impl, Node * node, TypeCode * type)
+OutputPort* RuntimeForEngineIntegrationTest::createOutputPort(const std::string& name, const std::string& impl, Node * node, TypeCode * type)
 {
   if(impl == ToyNode::MY_IMPL_NAME)
     {
@@ -67,12 +69,12 @@ OutputPort* RuntimeForEngineIntegrationTest::createOutputPort(const string& name
     }
   else if(impl == LimitNode::MY_IMPL_NAME)
     throw Exception("OutputPort creation not allowed for LimitNode");
-  stringstream msg;
+  std::stringstream msg;
   msg << "Cannot create " << impl << " OutputPort" ;
   throw Exception(msg.str());
 }
 
-InputPort* RuntimeForEngineIntegrationTest::adapt(InputPort* source, const string& impl,TypeCode * type,bool init) throw (ConversionException)
+InputPort* RuntimeForEngineIntegrationTest::adapt(InputPort* source, const std::string& impl,TypeCode * type,bool init) throw (ConversionException)
 {
   return new ProxyPort(source);
 }
@@ -90,7 +92,7 @@ ComponentInstance* RuntimeForEngineIntegrationTest::createComponentInstance(cons
     return new ComponentInstanceTest2(name);
   else
     {
-      string msg("RuntimeForEngineIntegrationTest::createComponentInstance : Unable to crate component with kind \"");
+      std::string msg("RuntimeForEngineIntegrationTest::createComponentInstance : Unable to crate component with kind \"");
       msg+=kind; msg+="\"";
       throw Exception(msg);
     }

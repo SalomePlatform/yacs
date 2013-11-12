@@ -132,8 +132,8 @@ namespace YACS
     template<class T>
     void EngineIntegrationTest::checkSetsEqual(const std::set<T>& setToTest1, const std::set<T>& setToTest2)
     {
-      typename std::set<T>::iterator iter1=setToTest1.begin();
-      typename std::set<T>::iterator iter2=setToTest2.begin();
+      typename std::set<T>::const_iterator iter1=setToTest1.begin();
+      typename std::set<T>::const_iterator iter2=setToTest2.begin();
       CPPUNIT_ASSERT_EQUAL_MESSAGE("Sets can't be equal : size different", (int)setToTest1.size(), (int)setToTest2.size());
       for(;iter1!=setToTest1.end();iter1++,iter2++)
         CPPUNIT_ASSERT_MESSAGE("Sets can't be equal : value different", *iter1==*iter2);
@@ -142,7 +142,7 @@ namespace YACS
     template<class T>
     void EngineIntegrationTest::checkSetsNotEqual(const std::set<T *>& setToTest1, const std::set<T *>&setToTest2)
     {
-      typename std::set<T *>::iterator iter1=setToTest1.begin();
+      typename std::set<T *>::const_iterator iter1=setToTest1.begin();
       CPPUNIT_ASSERT_EQUAL_MESSAGE("Sets can't be equal : size different", (int)setToTest1.size(), (int)setToTest2.size());
       for(;iter1!=setToTest1.end();iter1++)
         CPPUNIT_ASSERT_MESSAGE("Elements is in set : not expected.",setToTest2.find(*iter1)==setToTest2.end());

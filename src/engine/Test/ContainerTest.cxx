@@ -49,7 +49,7 @@ bool ContainerTest::isAlreadyStarted(const ComponentInstance *inst) const
   return _alreadyStarted;
 }
 
-void ContainerTest::start(const ComponentInstance *inst) throw(Exception)
+void ContainerTest::start(const ComponentInstance *inst) throw(YACS::Exception)
 {
   if(_alreadyStarted)
     throw Exception("ContainerTest already started !!!!");
@@ -67,7 +67,7 @@ Container *ContainerTest::clone() const
     return new ContainerTest;
 }
 
-void ContainerTest::checkCapabilityToDealWith(const ComponentInstance *inst) const throw(Exception)
+void ContainerTest::checkCapabilityToDealWith(const ComponentInstance *inst) const throw(YACS::Exception)
 {
   if(inst->getKind()!=SUPPORTED_COMP_KIND)
     throw Exception("ContainerTest not compatible with this type of instance.");
@@ -87,7 +87,7 @@ bool ContainerTest2::isAlreadyStarted(const ComponentInstance *inst) const
   return _alreadyStarted;
 }
 
-void ContainerTest2::start(const ComponentInstance *inst) throw(Exception)
+void ContainerTest2::start(const ComponentInstance *inst) throw(YACS::Exception)
 {
   if(_alreadyStarted)
     throw Exception("ContainerTest already started !!!!");
@@ -110,7 +110,7 @@ void ContainerTest2::initAllContainers()
   _counter=0;
 }
 
-void ContainerTest2::checkCapabilityToDealWith(const ComponentInstance *inst) const throw(Exception)
+void ContainerTest2::checkCapabilityToDealWith(const ComponentInstance *inst) const throw(YACS::Exception)
 {
   if(inst->getKind()!=SUPPORTED_COMP_KIND)
     throw Exception("ContainerTest not compatible with this type of instance.");

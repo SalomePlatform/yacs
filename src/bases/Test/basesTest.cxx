@@ -55,6 +55,7 @@ void *BasesTest::th1_1(void *st)
   _var+=2;
   _s1.post();
   _s2.post();
+  return 0;
 }
 
 void *BasesTest::th1_2(void *st)
@@ -63,6 +64,7 @@ void *BasesTest::th1_2(void *st)
   _s2.wait();
   _glob<< myName << _var;
   _s2.post();
+  return 0;
 }
 
 void *BasesTest::th1_3(void *st)
@@ -70,6 +72,7 @@ void *BasesTest::th1_3(void *st)
   char myName=*((char *) st);
   _glob<< myName << _var++;
   _s1.post();
+  return 0;
 }
 
 void *BasesTest::th2_1(void *)
@@ -86,6 +89,7 @@ void *BasesTest::th2_1(void *)
       _m.unlock();
       Thread::sleep(100000);
     }
+  return 0;
 }
 
 void *BasesTest::myFunc(void *n)
@@ -103,7 +107,8 @@ void *BasesTest::myFunc(void *n)
       DEBTRACE("thread " << id << " frees " << i << " resources");
       free_resources(id, i);
     }
-}
+  return 0;
+ }
 
 void BasesTest::get_resources(int id, int amount)
 {
@@ -201,7 +206,7 @@ void BasesTest::test3()
     }
   
   for (i=0; i<THREAD_NUM; i++)
-    {
+    {      
       ths[i] = new Thread(myFunc, &id[i]);
       CPPUNIT_ASSERT(count_resources() == BasesTest::MAX_RESOURCE);
     }
