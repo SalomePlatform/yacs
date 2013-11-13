@@ -78,8 +78,7 @@ SET(BUILD_SHARED_LIBS TRUE)
 LIST(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/adm/cmake")
 
 # User options
-# ============
-# (some options may have already been defined in KERNEL) 
+# ============ 
 ADD_DEFINITIONS(-DCMAKE_BUILD)
 OPTION(SALOME_BUILD_DOC "Generate SALOME YACS documentation" ON)
 OPTION(SALOME_BUILD_TESTS "Build SALOME YACS tests" ON)
