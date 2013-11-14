@@ -19,6 +19,10 @@
 
 #include "SceneProcItem.hxx"
 #include "Menus.hxx"
+#include "SceneLinkItem.hxx"
+#include "QtGuiContext.hxx"
+#include "Scene.hxx"
+#include "Resource.hxx"
 
 
 //#define _DEVDEBUG_
@@ -47,3 +51,41 @@ void SceneProcItem::popupMenu(QWidget *caller, const QPoint &globalPos)
   ProcMenu m;
   m.popupMenu(caller, globalPos);
 }
+
+void SceneProcItem::reorganizeShrinkExpand() {
+  if (_children.size() == 0)
+    return;
+  bool isExpanding = true;
+  DEBTRACE("SceneProcItem::reorganizeShrinkExpand " << _expanded << " " << _label.toStdString());
+  for (list<AbstractSceneItem*>::const_iterator it=_children.begin(); it!=_children.end(); ++it)
+    {
+      SceneItem* item = dynamic_cast<SceneItem*>(*it);
+      SceneNodeItem *sni = dynamic_cast<SceneNodeItem*>(item);
+      if (sni->isExpanded()) {
+    	  isExpanding = false;
+    	  break;
+      }
+    }
+  for (list<AbstractSceneItem*>::const_iterator it=_children.begin(); it!=_children.end(); ++it)
+    {
+      SceneItem* item = dynamic_cast<SceneItem*>(*it);
+      SceneNodeItem *sni = dynamic_cast<SceneNodeItem*>(item);
+      if (!isExpanding && sni->isExpanded()) {
+    	sni->setExpanded(false);
+    	item->shrinkExpandRecursive(false, true);
+    	DEBTRACE("------------------------------- Hide " << item->getLabel().toStdString());
+      }
+      if (isExpanding && !sni->isExpanded()) {
+    	sni->setExpanded(true);
+    	item->shrinkExpandRecursive(true, false);
+    	DEBTRACE("------------------------------- Show " << item->getLabel().toStdString());
+      }
+      item->shrinkExpandLink(isExpanding);
+    }
+  _ancestorShrinked = !isExpanding;
+  _width = _expandedWidth;
+  _height = _expandedHeight;
+  _shownState = expandShown;
+  adjustHeader();
+}
+

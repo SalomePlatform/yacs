@@ -102,11 +102,12 @@ void SceneComposedNodeItem::paint(QPainter *painter,
                           QWidget *widget)
 {
   //DEBTRACE("SceneComposedNodeItem::paint " << _label.toStdString());
-
-  if (!isExpanded()) {
+  // IMN (14/11/2013) below block commented
+  // prevent bad resizing of scene in shrink mode
+  /*  if (!isExpanded()) {
     _width  = 2*Resource::Corner_Margin + 2*Resource::DataPort_Width + Resource::Space_Margin;
     _height = getHeaderBottom() + Resource::Corner_Margin;
-  };
+  };*/
 
   painter->save();
   painter->setPen(getPenColor());

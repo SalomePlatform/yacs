@@ -271,6 +271,7 @@ void ProcMenu::popupMenu(QWidget *caller, const QPoint &globalPos, const QString
   menu.addSeparator();
   menu.addAction(gmain->_zoomToBlocAct);
   menu.addAction(gmain->_centerOnNodeAct);
+  menu.addAction(gmain->_shrinkExpand);
   menu.addAction(gmain->_computeLinkAct);
 //   menu.addAction(gmain->_toggleAutomaticComputeLinkAct);
 //   menu.addAction(gmain->_toggleSimplifyLinkAct);

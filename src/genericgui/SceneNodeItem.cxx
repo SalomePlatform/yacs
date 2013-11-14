@@ -294,8 +294,6 @@ void SceneNodeItem::mouseMoveEvent(QGraphicsSceneMouseEvent * event)
 void SceneNodeItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 {
   DEBTRACE("SceneNodeItem::mouseDoubleClickEvent");
-  if (dynamic_cast<SceneProcItem*>(this))
-    return;
   QtGuiContext::getQtCurrent()->getGMain()->_guiEditor->shrinkExpand();
 }
 
