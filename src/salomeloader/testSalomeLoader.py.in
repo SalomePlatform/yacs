@@ -21,8 +21,7 @@
 import sys
 import os
 
-# --- top_builddir is used in make check
-# --- top_srcdir is used in make distcheck
+# --- CMAKE_BINARY_DIR is used in make test
 
 sys.path.insert(0,"@CMAKE_CURRENT_SOURCE_DIR@")
 sys.path.insert(0,"@CMAKE_BINARY_DIR@/src/engine_swig")
