@@ -1268,7 +1268,7 @@ Here is an excerpt from cppgui1 example that shows how to add a C++ GUI to a mod
 The C++ GUI is very similar to the python GUI except that the cppcomposGUI.h file is processed by the moc and the demo.ui
 is processed by the uic qt tool.
 
-By default, a Makefile.am and a SalomeApp.xml files are generated but you can put your own Makefile.am or SalomeApp.xml
+By default, a CMakeLists.txt and a SalomeApp.xml files are generated but you can put your own CMakeLists.txt or SalomeApp.xml
 in the list to override this default.
 
 Add an online documentation
@@ -1279,7 +1279,7 @@ To add a documentation use the *doc* parameter of the module. It must be a list 
 (name with extension .rst) in the reStructured format (see http://docutils.sourceforge.net/) and image files (\*.png, ...).
 The main file must be named index.rst.
 
-By default, a sphinx configuration file conf.py and a Makefile.am are generated but you can put your own Makefile.am or conf.py
+By default, a sphinx configuration file conf.py and a CMakeLists.txt are generated but you can put your own CMakeLists.txt or conf.py
 in the list to override this default.
 
 Here is an excerpt from pygui1 example that shows how to add a documentation to a module::

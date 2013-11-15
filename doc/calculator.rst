@@ -65,21 +65,16 @@ The first step when developing a new SALOME module is to create a directories tr
 
 
 
-The remaining charge for the developer is to define the module interface (by writing a CORBA IDL file), and to implement it. But before, you may want to check that your  duplicated module still compiles :
+The remaining charge for the developer is to define the module interface (by writing a CORBA IDL file), and to implement it. But before, you may want to check that your  duplicated module still compiles ::
 
-
-
-::
-
-    CALCULATOR_SRC/build_configure
     mkdir CALCULATOR_BUILD
     mkdir CALCULATOR_INSTALL
     cd CALCULATOR_BUILD
-    ../CALCULATOR_SRC/configure --prefix=installDir
+    cmake -DCMAKE_BUILD_TYPE=<Mode> -DCMAKE_INSTALL_PREFIX=CALCULATOR_INSTALL ../CALCULATOR_SRC
     make && make install
 
 
-
+Where <Mode> is build mode (Release or Debug)
 
 
 Modification of interface (IDL)

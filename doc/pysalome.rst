@@ -32,29 +32,24 @@ all that are necessary.
 The following file structure is necessary so that this can be implemented in a SALOME module::
 
   + PYHELLO1_SRC
-    + build_configure
-    + configure.ac
-    + Makefile.am
+    + CMakeLists.txt
     + adm_local
-      + Makefile.am
-      + unix
-        + Makefile.am
-        + make_common_starter.am
-        + config_files
-          + Makefile.am
-          + check_PYHELLO.m4
+      + CMakeLists.txt
+      + cmake_files
+        + CMakeLists.txt
+        + FindSalomePYHELLO.cmake
     + bin
-      + Makefile.am
+      + CMakeLists.txt
       + VERSION.in
       + runAppli.in
       + myrunSalome.py
     + idl
-      + Makefile.am
+      + CMakeLists.txt
       + PYHELLO_Gen.idl
     + src
-      + Makefile.am
+      + CMakeLists.txt
       + PYHELLO
-        + Makefile.am
+        + CMakeLists.txt
         + PYHELLO.py 
     + doc
 
@@ -69,33 +64,37 @@ The runAppli.in and runSalome.py files are not essential but make the example ea
    the files of the basic platform (KERNEL) must not be copied to initialise a module tree structure.  
    It is usually preferable to copy files from another module such as GEOM or MED.
 
-Implementation of automake, configure
+Implementation of CMake
 --------------------------------------
-SALOME uses autoconf and automake to build the configure script that is used for the installation to test 
-the system configuration and to preconfigure the module construction Makefile files.  
-The build_configure file contains a procedure that starts from configure.ac and uses automake to build 
-the configure script.  
-automake starts from Makefile.am files to build Makefile.in files.
-All files with an "in" extension are skeletons that will be transformed by the configure process.
+The  CMakeLists.txt files are used to describe the build procedure,
+in particular:
+- Test platform;
+- Test system configuration;
+- Detect pre-requisites;
+- Generate build rules (for example, standard UNIX makefiles on Linux, MSVC solutions, etc).
 
-Almost all files used for this process are located in the basic platform that is referenced by the 
-KERNEL_ROOT_DIR environment variable as well as GUI_ROOT_DIR for the graphical user interface (GUI).  
-However, some files must be modified as a function of the target 
-module.  This is the case for build_configure and configure.ac files that usually need to be adapted.
+Project's root directory provides main CMake configuration that allows build all targets into one 
+set of binaries and libraries. Each sub-directory also includes CMake configuration file (CMakeLists.txt) 
+that specifies targets being build.
 
-The basic files for configuration of the KERNEL module and other modules are collected in the salome_adm 
-directory of the KERNEL module.  However, in order to be able to use the CORBA objects of the KERNEL module, 
-the files in the salome_adm directory have to be overwritten, using the make_common_starter.am file in 
-the adm_local directory of the example module.
+The file CMakeLists.txt in root directory of the PYHELLO module provides basic build rules to be used 
+in other CMakeLists.txt files. 
+It sets main properties of project: name, version, pre-requisites, installation paths, programming languages 
+being used by the project, tree of sub-directories, etc.
 
-config_files is a directory in which the m4 files that are used to test the configuration of the system in the 
-configure process can be placed.  If the salome_adm files are not sufficient, others can be added in adm_local.
+A lot of files used by the build procedure of HELLO module are located in SALOME KERNEL module 
+(that is referenced by the KERNEL_ROOT_DIR environment variable), namely in its salome_adm sub-folder.
+Similarly, the GUI_ROOT_DIR environment variable is used for the graphical user interface (GUI) module of SALOME; 
+this module also provides a set of configuration utilities (*.cmake files) in its adm_local folder.
 
 The idl directory
 --------------------------------------
-The idl directory requires a Makefile.am that must make the compilation of the idl PYHELLO_Gen.idl file 
-and install all the generated files in the right module installation directories.  The BASE_IDL_FILES target has 
-to be modified to reach this goal.
+The idl directory requires a CMakeLists.txt that must make the compilation of the idl PYHELLO_Gen.idl file 
+and install all the generated files in the right module installation directories.
+This is done by using OMNIORB_ADD_MODULE() CMake macro::
+
+   OMNIORB_ADD_MODULE(SalomeIDLPYHELLO PYHELLO_Gen.idl ${KERNEL_ROOT_DIR}/idl/salome ${KERNEL_SalomeIDLKernel})
+   INSTALL(TARGETS SalomeIDLPYHELLO EXPORT ${PROJECT_NAME}TargetGroup DESTINATION ${SALOME_INSTALL_LIBS})
 
 The idl file itself must define a CORBA module for which the name must be different from the module 
 name to avoid name conflicts and define a CORBA interface that is derived at least from the EngineComponent interface of the Engines module.  
@@ -109,12 +108,13 @@ its own directory.
 For the moment, the module will only contain a single directory for the engine of the PYHELLO component 
 and its name will be PYHELLO.
 
-The Makefile.am will simply trigger the path of sub-directories described by the SUBDIRS target.
+The CMakeLists.txt file triggers the path of sub-directories described
+by the \a ADD_SUBDIRECTORY() command.
 
 The PYHELLO directory
 '''''''''''''''''''''''
 This directory contains the Python module that represents the component and therefore contains the PYHELLO class 
-and a Makefile.am file that simply exports the PYHELLO.py module into the installation directory of the SALOME module.
+and a CMakeLists.txt file that simply exports the PYHELLO.py module into the installation directory of the SALOME module.
 
 The PYHELLO.py module contains the PYHELLO class that is derived from the PYHELLO_Gen interface of the CORBA 
 PYHELLO_ORB_POA module and the SALOME_ComponentPy_i class of the SALOME_ComponentPy module.
@@ -149,13 +149,14 @@ Construction, installation
 In PYHELLO1_SRC, enter::
 
      export KERNEL_ROOT_DIR=<KERNEL installation path>
-     ./build_configure
 
 Go into ../PYHELLO1_BUILD and enter::
 
-     ../PYHELLO1_SRC/configure --prefix=<PYHELLO1 installation path>
+     cmake -DCMAKE_BUILD_TYPE=<Mode> -DCMAKE_INSTALL_PREFIX=<PYHELLO1 installation path> ../PYHELLO1_SRC
      make
      make install
+
+Where <Mode> is build mode (Release or Debug).
 
 Running the platform
 -------------------------------
@@ -214,9 +215,7 @@ the resources directory.
 Updated tree structure::
 
   + PYHELLO1_SRC
-    + build_configure
-    + configure.ac
-    + Makefile.am
+    + CMakeLists.txt
     + adm_local
     + bin
     + idl
@@ -226,15 +225,14 @@ Updated tree structure::
       + PYHELLOCatalog.xml
 
 The remainder of the files are identical, apart from adding the resources directory and the PYHELLOCatalog.xml file.  
-However, the Makefile.am has to be modified so that the catalog is actually installed in the installation 
-directory.  It simply needs to be specified in the salomeres_SCRIPTS target.
+However, the CMakeLists.txt has to be modified so that the catalog is actually installed in the installation 
+directory.
 
 Construction, installation
 ---------------------------------
 There is no need to do another configure to take account of this modification.  
 All that is necessary is to enter PYHELLO1_BUILD and then::
 
-    ./config.status
     make 
     make install
 
@@ -290,14 +288,8 @@ button bar that are integrated into the menu bar and into the IAPP button bar.
 Python module implanting the behaviour of the GUI
 -----------------------------------------------------
 The behaviour of the PYHELLO component GUI is implanted in the Python PYHELLOGUI.py module in the 
-PYHELLOGUI sub-directory.  The Makefile.am located in the src directory must be updated to include
-the PYHELLOGUI subdirectory.  A Makefile.am must be added into the PYHELLOGUI subdirectory.  
-Important targets are salomescript_SCRIPTS and salomeres_DATA.
-
-The salomescript_SCRIPTS target must be updated with the name of the Python modules to be made visible in Salome, in other 
-words mainly so that they are importable (Python import command).
-
-The salomeres_DATA target must be updated with the names of files that are used for multi-linguism.  
+PYHELLOGUI sub-directory.  The CMakeLists.txt located in the src directory must be updated to include
+the PYHELLOGUI subdirectory.  A CMakeLists.txt must be added into the PYHELLOGUI subdirectory.  
 
 Menu bar and button bar
 ----------------------------------

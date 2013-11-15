@@ -23,7 +23,7 @@ The various steps of the development will be as follows:
  - create a SALOME component that can be loaded by a C++ container
  - configure the module so that the component is known to SALOME
  - add a graphic GUI
- - make the component useable in the YACS module.
+ - make the component usable in the YACS module.
 
 Creating the module tree structure
 =======================================
@@ -32,25 +32,24 @@ example module.  Therefore, all that is necessary is an idl interface and a C++ 
 We need to reproduce the following standard file tree structure, to use it in a SALOME module::
 
   + HELLO1_SRC
-    + build_configure
-    + configure.in.base
-    + Makefile.in
+    + CMakeLists.txt
     + adm_local
-      + unix
-        + make_commence.in
-        + make_omniorb.in
-        + config_files
+      + CMakeLists.txt
+      + cmake_files
+        + CMakeLists.txt
+        + FindSalomeHELLO.cmake
     + bin
+      + CMakeLists.txt
       + VERSION
       + runAppli.in
       + runSalome.py
     + idl
-      + Makefile.in
+      + CMakeLists.txt
       + HELLO_Gen.idl
     + src
-      + Makefile.in
+      + CMakeLists.txt
       + HELLO
-        + Makefile.in
+        + CMakeLists.txt
         + HELLO.cxx 
         + HELLO.hxx 
     + doc
@@ -165,37 +164,50 @@ hello, goodbye and copyOrMove are given in the source file (HELLO.cxx)::
 	...
 	}
 
-Makefile
+CMakeLists.txt
 --------
-In makefile, some targets have to be defined::
+Create and add library to the project::	
 
-	# header files 
-	salomeinclude_HEADERS = HELLO.hxx
-
-	# Libraries targets
-	lib_LTLIBRARIES = libHELLOEngine.la
-	dist_libHELLOEngine_la_SOURCES = \
-		HELLO.cxx
-
-	libHELLOEngine_la_CPPFLAGS = \
-		$(CORBA_CXXFLAGS) \
-		$(CORBA_INCLUDES) \
-		$(KERNEL_CXXFLAGS) \
-		-I$(top_builddir)/idl
-
-	libHELLOEngine_la_LDFLAGS = \
-		../../idl/libSalomeIDLHELLO.la \
-		$(KERNEL_LDFLAGS) \
-		-lSalomeContainer \
-		-lOpUtil \
-		-lSalomeIDLKernel
+    # --- options ---
+    # additional include directories
+    INCLUDE_DIRECTORIES(
+      ${KERNEL_INCLUDE_DIRS}
+      ${OMNIORB_INCLUDE_DIR}
+      ${PROJECT_BINARY_DIR}
+      ${PROJECT_BINARY_DIR}/idl
+    )
+    # libraries to link to
+    SET(_link_LIBRARIES
+      ${OMNIORB_LIBRARIES}
+      ${KERNEL_SalomeIDLKernel}
+      ${KERNEL_OpUtil}
+      ${KERNEL_SalomeContainer}
+      SalomeIDLHELLO
+    )
+    # --- headers ---
+    # header files / no moc processing
+    SET(HELLO_HEADERS
+      HELLO.hxx
+    )
+    # --- sources ---
+    # sources / static
+    SET(HELLO_SOURCES
+      HELLO.cxx
+    )
+    # --- rules ---
+    ADD_LIBRARY(HELLOEngine ${HELLO_SOURCES})
+    TARGET_LINK_LIBRARIES(HELLOEngine ${_link_LIBRARIES} )
+    INSTALL(TARGETS HELLOEngine EXPORT ${PROJECT_NAME}TargetGroup DESTINATION ${SALOME_INSTALL_LIBS})
+    INSTALL(FILES ${HELLO_HEADERS} DESTINATION ${SALOME_INSTALL_HEADERS})
 	
-Review each of these targets
+Review some of components:
 
-- salomeinclude_HEADERS contains the header files.
-- lib_LTLIBRARIES contains the normalized name (lib<Nom_Module>Engine.la) of the library, LIB_SRC defines the name of source files, and VPATH defines the directories in which they can be found.
-- The path for the include files used has to be added to CPPFLAGS (SALOME.config.h, SALOME_Component_i.hxx and utilities.h are located in ${KERNEL_ROOT_DIR}/include/salome).
-- The HELLO class uses lib libraries (for Engines_Component_i) and libOptUtil (for PortableServer and Salome_Exception).  Therefore, the name of these libraries and their path in LDFLAGS will be indicated.  Other libraries are often useful, for example libsalomeDS if persistence is implemented, or libSalomeNS if the naming service is used.
+- HELLO_HEADERS contains the header files.
+- HELLO_SOURCES defines the name of source files
+- HELLOEngine - library name.
+- SALOME_INSTALL_LIBS path defines the directories in which library will be install.
+- Command INCLUDE_DIRECTORIES used to add /bin directories of some modules and packages.
+- Variable _link_LIBRARIES contains path to libraries of dependent modules and packages.
 
 Controlling the component from Python (TUI mode)
 =====================================================
@@ -262,6 +274,7 @@ the HELLO module. In particular, these files specify menus, toolbars,
 dialog boxes and other such staff.
 
 - src/HELLOGUI/HELLO_msg_en.ts
+- src/HELLOGUI/HELLO_msg_fr.ts
 - src/HELLOGUI/HELLO_icons.ts
 
 These files provide a description (internationalization) of GUI

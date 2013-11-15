@@ -58,12 +58,12 @@
  If you want to install %YACS with SALOME GUI, you need to set environment 
  variable: \b GUI_ROOT_DIR.
 
- The building process is the traditional configure/make/make install:
- - configure --prefix=path_to_install
+ The building process is the traditional cmake/make/make install:
+ - cmake -DCMAKE_INSTALL_PREFIX=path_to_install ../src_path
  - make
 
  Then you can run unit tests if cppunits is installed :
- - make check
+ - make test
 
  Then you can run a small demo in Demo directory:
  - cd Demo
