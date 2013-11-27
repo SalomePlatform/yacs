@@ -99,21 +99,21 @@ SET(TestOptLoop_SOURCES
 OMNIORB_ADD_MODULE(yacsloader_echo "${echo_IDL_FILES}" "${IDL_INCLUDE_DIRS}" "${IDL_LINK_FLAGS}")
 
 ADD_EXECUTABLE(TestYacsLoader ${TestYacsLoader_SOURCES})
-TARGET_LINK_LIBRARIES(TestYacsLoader ${TestYacsLoader_LIBRARIES})
+TARGET_LINK_LIBRARIES(TestYacsLoader yacsloader_echo ${TestYacsLoader_LIBRARIES})
 
 ADD_EXECUTABLE(echoSrv ${echoSrv_SOURCES})
 TARGET_LINK_LIBRARIES(echoSrv yacsloader_echo ${echoSrv_LIBRARIES})
 INSTALL(TARGETS echoSrv DESTINATION ${SALOME_INSTALL_BINS})
 
 ADD_LIBRARY(TestOptLoop ${TestOptLoop_SOURCES})
-TARGET_LINK_LIBRARIES(TestOptLoop YACSlibEngine)
+TARGET_LINK_LIBRARIES(TestOptLoop yacsloader_echo YACSlibEngine)
 
 IF(NOT WIN32)
   SET(SHELL /bin/sh)
   SALOME_CONFIGURE_FILE(config_appli.xml.in config_appli.xml)
   SALOME_CONFIGURE_FILE(YacsLoaderTest.sh.in YacsLoaderTest.sh)
   SALOME_CONFIGURE_FILE(YacsLoaderInSessionTest.sh.in YacsLoaderInSessionTest.sh)
-  SALOME_CONFIGURE_FILE(display.sh.in VERSION INSTALL ${SALOME_INSTALL_BINS})
+  SALOME_CONFIGURE_FILE(display.sh.in display.sh)
   SALOME_CONFIGURE_FILE(waitContainers.py waitContainers.py)
   ADD_TEST(NAME YacsLoaderTest COMMAND ${SHELL} YacsLoaderTest.sh)
 ENDIF()
