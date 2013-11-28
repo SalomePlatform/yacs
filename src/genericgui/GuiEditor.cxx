@@ -580,7 +580,7 @@ std::string GuiEditor::PutGraphInBloc()
   std::string blocname = tryname.str();
 
   //put one by one the child nodes of Proc node into a new Bloc node
-  std::map<std::string, std::pair<QPointF, QPointF>> aMapOfNodePosition;
+  std::map< std::string, std::pair<QPointF, QPointF> > aMapOfNodePosition;
   SceneItem *item = 0;
   SceneNodeItem *inode = 0;
   SubjectNode * snode = 0;
