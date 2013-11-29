@@ -97,6 +97,7 @@ SET(TestOptLoop_SOURCES
 # --- rules ---
 
 OMNIORB_ADD_MODULE(yacsloader_echo "${echo_IDL_FILES}" "${IDL_INCLUDE_DIRS}" "${IDL_LINK_FLAGS}")
+INSTALL(TARGETS yacsloader_echo DESTINATION ${SALOME_INSTALL_LIBS})
 
 ADD_EXECUTABLE(TestYacsLoader ${TestYacsLoader_SOURCES})
 TARGET_LINK_LIBRARIES(TestYacsLoader yacsloader_echo ${TestYacsLoader_LIBRARIES})
