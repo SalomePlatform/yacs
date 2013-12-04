@@ -276,7 +276,7 @@ std::pair<OutPort *, InPort *> LinkInfo::getInfoLink(unsigned id, InfoReason rea
   if(iter!=_infos.end())
     return (*iter).second[id];
   else
-    return pair<OutPort *, InPort *>(0,0);
+    return pair<OutPort *, InPort *>( reinterpret_cast<OutPort *>(0), reinterpret_cast<InPort *>(0) );
 }
 
 std::vector< std::pair<OutPort *, InPort *> > LinkInfo::getWarnLink(unsigned id, WarnReason reason) const
@@ -291,16 +291,16 @@ std::vector< std::pair<OutPort *, InPort *> > LinkInfo::getWarnLink(unsigned id,
 std::pair<OutPort *, InPort *> LinkInfo::getErrLink(unsigned id, ErrReason reason) const
 {
   if(reason==E_NEVER_SET_INPUTPORT)
-    return pair<OutPort *, InPort *>(0,_unsetInPort[id]);
+    return pair<OutPort *, InPort *>( reinterpret_cast<OutPort *>(0), _unsetInPort[id] );
   else if(reason==E_ONLY_BACKWARD_DEFINED)
-    return pair<OutPort *, InPort *>(0,_onlyBackDefined[id]);
+    return pair<OutPort *, InPort *>( reinterpret_cast<OutPort *>(0), _onlyBackDefined[id] );
   else
     {
       map<ErrReason, vector< pair<OutPort *,InPort *> > >::const_iterator iter=_errors.find(reason);
       if(iter!=_errors.end())
         return (*iter).second[id];
       else
-        return pair<OutPort *, InPort *>(0,0);
+        return pair<OutPort *, InPort *>( reinterpret_cast<OutPort *>(0), reinterpret_cast<InPort *>(0) );
     }
 }
 
