@@ -243,8 +243,8 @@ bool Subject::destroy(Subject *son)
   string endnode = "";
   string startport = "";
   string endport = "";
-  TypeOfElem startportType;
-  TypeOfElem endportType;
+  TypeOfElem startportType = UNKNOWN;
+  TypeOfElem endportType = UNKNOWN;
 
   if (dynamic_cast<SubjectProc*>(son))
     startnode = proc->getName();
