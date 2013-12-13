@@ -26,6 +26,9 @@
    <!-- attribute gui (defaults = yes) indicates if the module has a gui interface -->
    <module name="KERNEL"       gui="no"  path="@KERNEL_ROOT_DIR@"/>
    <module name="GUI"          gui="no"  path="@GUI_ROOT_DIR@"/>
+   <module name="GEOM"                   path="GEOM_ROOT_DIR"/> <!--GEOM_ROOT_DIR will be substituted at starting of test-->
+   <module name="PYHELLO"                path="PYHELLO_ROOT_DIR"/> <!--PYHELLO_ROOT_DIR will be substituted at starting of test-->
+   <module name="YACS"                   path="@CMAKE_INSTALL_PREFIX@"/>
 </modules>
 </application>
 
