@@ -645,25 +645,33 @@ void YacsLoaderTest::foreachs()
   Proc *p = 0;
   int ret;
   ret = driverTest(p, "samples/foreach1.xml");
-  CPPUNIT_ASSERT(ret == 0);
-  CPPUNIT_ASSERT(p->getEffectiveState() == YACS::DONE );
+  CPPUNIT_ASSERT_MESSAGE("Schema: foreach1.xml", ret == 0);
+  CPPUNIT_ASSERT_MESSAGE("Schema: foreach1.xml", p->getEffectiveState() == YACS::DONE);
   ret = driverTest(p, "samples/foreach2.xml");
-  CPPUNIT_ASSERT(ret == 0);
-  CPPUNIT_ASSERT(p->getEffectiveState() == YACS::DONE );
+  CPPUNIT_ASSERT_MESSAGE("Schema: foreach2.xml", ret == 0);
+  CPPUNIT_ASSERT_MESSAGE("Schema: foreach2.xml", p->getEffectiveState() == YACS::DONE );
   ret = driverTest(p, "samples/foreach3.xml");
-  CPPUNIT_ASSERT(ret == 1);
+  CPPUNIT_ASSERT_MESSAGE("Schema: foreach3.xml", ret == 1);
   ret = driverTest(p, "samples/foreach4.xml");
-  CPPUNIT_ASSERT(ret == 0);
-  CPPUNIT_ASSERT(p->getEffectiveState() == YACS::DONE );
+  CPPUNIT_ASSERT_MESSAGE("Schema: foreach4.xml", ret == 0);
+  CPPUNIT_ASSERT_MESSAGE("Schema: foreach4.xml", p->getEffectiveState() == YACS::DONE );
   ret = driverTest(p, "samples/foreach5.xml");
-  CPPUNIT_ASSERT(ret == 0);
-  CPPUNIT_ASSERT(p->getEffectiveState() == YACS::DONE );
+  CPPUNIT_ASSERT_MESSAGE("Schema: foreach5.xml", ret == 0);
+  CPPUNIT_ASSERT_MESSAGE("Schema: foreach5.xml", p->getEffectiveState() == YACS::DONE );
   ret = driverTest(p, "samples/foreach6.xml");
-  CPPUNIT_ASSERT(ret == 0);
-  CPPUNIT_ASSERT(p->getEffectiveState() == YACS::DONE );
-  ret = driverTest(p, "samples/foreach7.xml"); //needs GEOM_Superv component
-  CPPUNIT_ASSERT(ret == 0);
-  CPPUNIT_ASSERT(p->getEffectiveState() == YACS::DONE );
+  CPPUNIT_ASSERT_MESSAGE("Schema: foreach6.xml", ret == 0);
+  CPPUNIT_ASSERT_MESSAGE("Schema: foreach6.xml", p->getEffectiveState() == YACS::DONE );
+  if(getenv("GEOM_ROOT_DIR"))
+    {
+      std::string geomdir(getenv("GEOM_ROOT_DIR"));
+      geomdir=geomdir+"/share/salome/resources/geom";
+      if(access(geomdir.c_str(),F_OK) == 0)
+	{
+	  ret = driverTest(p, "samples/foreach7.xml"); //needs GEOM_Superv component
+	  CPPUNIT_ASSERT_MESSAGE("Schema: foreach7.xml", ret == 0);
+	  CPPUNIT_ASSERT_MESSAGE("Schema: foreach7.xml", p->getEffectiveState() == YACS::DONE );
+	}
+    }
 }
 
 void YacsLoaderTest::sinlines()

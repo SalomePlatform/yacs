@@ -543,6 +543,7 @@ void GuiEditor::PutGraphInNode(std::string typeNode)
 {
   // put graph in Bloc node before
   std::string blocname = PutGraphInBloc();
+  // put the built bloc into target node type
   Proc* proc = GuiContext::getCurrent()->getProc();
   Node* bloc = proc->getChildByShortName(blocname);
   SubjectNode * sbloc = GuiContext::getCurrent()->_mapOfSubjectNode[bloc];
@@ -550,7 +551,7 @@ void GuiEditor::PutGraphInNode(std::string typeNode)
   SubjectNode * snode = CreateNode(typeNode);
   // put the built bloc into target node
   sbloc->putInComposedNode(snode->getName(), typeNode);
-  // arrange local nodes in Proc
+  // select a target node
   YACS::HMI::SubjectProc* subproc = QtGuiContext::getQtCurrent()->getSubjectProc();
   QtGuiContext::getQtCurrent()->setSelectedSubject(subproc);
   arrangeNodes(false);
@@ -579,11 +580,21 @@ std::string GuiEditor::PutGraphInBloc()
   std::string blocname = tryname.str();
 
   //put one by one the child nodes of Proc node into a new Bloc node
-  SubjectNode * snode;
+  std::map< std::string, std::pair<QPointF, QPointF> > aMapOfNodePosition;
+  SceneItem *item = 0;
+  SceneNodeItem *inode = 0;
+  SubjectNode * snode = 0;
   for (std::list<Node*>::iterator it = children.begin(); it != children.end(); ++it)
     {
       snode = GuiContext::getCurrent()->_mapOfSubjectNode[(*it)];
       snode->saveLinks();
+      item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[snode];
+      YASSERT(item);
+      inode = dynamic_cast<SceneNodeItem*>(item);
+      YASSERT(inode);
+      // save current node position to restore it after reparenting
+      aMapOfNodePosition[snode->getName()] = std::make_pair(inode->pos(), QPointF(inode->getExpandedX(), inode->getExpandedY()));
+      // put in Bloc node
       snode->putInComposedNode(blocname, "Bloc", false);
     }
   for (std::list<Node*>::iterator it = children.begin(); it != children.end(); ++it)
@@ -591,11 +602,26 @@ std::string GuiEditor::PutGraphInBloc()
       snode = 0;
       snode = GuiContext::getCurrent()->_mapOfSubjectNode[(*it)];
       snode->restoreLinks();
+      item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[snode];
+      YASSERT(item);
+      inode = dynamic_cast<SceneNodeItem*>(item);
+      YASSERT(inode);
+      // restore node position
+      inode->setPos(aMapOfNodePosition[snode->getName()].first);
+      // update node position for shrink/expand operation
+      inode->setExpandedPos(aMapOfNodePosition[snode->getName()].second);
+      // notify node about position changing
+      inode->checkGeometryChange();
     }
-  // arrange local nodes in Proc
+  Node* bloc = proc->getChildByShortName(blocname);
+  SubjectNode* sbloc = GuiContext::getCurrent()->_mapOfSubjectNode[bloc];
+  item = QtGuiContext::getQtCurrent()->_mapOfSceneItem[sbloc];
+  YASSERT(item);
+  // notify bloc about child position changing
+  item->checkGeometryChange();
+  // select a target bloc
   YACS::HMI::SubjectProc* subproc = QtGuiContext::getQtCurrent()->getSubjectProc();
   QtGuiContext::getQtCurrent()->setSelectedSubject(subproc);
-  arrangeNodes(false);
   return blocname;
 }
 

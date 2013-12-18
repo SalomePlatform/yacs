@@ -425,11 +425,13 @@ void PythonNode::executeLocal()
       throw Exception("Error during execution");
     }
   PyObject *res = PyEval_EvalCode((PyCodeObject *)code, _context, _context);
+
   Py_DECREF(code);
+  Py_XDECREF(res);
   DEBTRACE( "_context refcnt: " << _context->ob_refcnt );
   fflush(stdout);
   fflush(stderr);
-  if(res == NULL)
+  if(PyErr_Occurred ())
     {
       _errorDetails="";
       PyObject* new_stderr = newPyStdOut(_errorDetails);
@@ -447,7 +449,6 @@ void PythonNode::executeLocal()
       PyGILState_Release(gstate);
       throw Exception("Error during execution");
     }
-  Py_DECREF(res);
   
   DEBTRACE( "-----------------PyNode::outputs-----------------" );
   list<OutputPort *>::iterator iter;
@@ -760,9 +761,10 @@ void PyFuncNode::loadLocal()
     }
   PyObject *res = PyEval_EvalCode((PyCodeObject *)code, _context, _context);
   Py_DECREF(code);
+  Py_XDECREF(res);
 
   DEBTRACE( "_context refcnt: " << _context->ob_refcnt );
-  if(res == NULL)
+  if(PyErr_Occurred ())
     {
       _errorDetails="";
       PyObject* new_stderr = newPyStdOut(_errorDetails);
@@ -781,7 +783,6 @@ void PyFuncNode::loadLocal()
       throw Exception("Error during execution");
       return;
     }
-  Py_DECREF(res);
   _pyfunc=PyDict_GetItemString(_context,_fname.c_str());
   DEBTRACE( "_pyfunc refcnt: " << _pyfunc->ob_refcnt );
   if(_pyfunc == NULL)

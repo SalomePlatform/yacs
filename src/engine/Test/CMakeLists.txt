@@ -77,4 +77,6 @@ ADD_TEST(TestEngine TestEngine)
 
 ADD_EXECUTABLE(IntegrationTestEngine ${IntegrationTestEngine_SOURCES})
 TARGET_LINK_LIBRARIES(IntegrationTestEngine ${_link_LIBRARIES})
+SALOME_GENERATE_TESTS_ENVIRONMENT(tests_env)
 ADD_TEST(IntegrationTestEngine IntegrationTestEngine)
+SET_TESTS_PROPERTIES(IntegrationTestEngine PROPERTIES ENVIRONMENT "${tests_env}")

@@ -97,6 +97,7 @@ SET(TestOptLoop_SOURCES
 # --- rules ---
 
 OMNIORB_ADD_MODULE(yacsloader_echo "${echo_IDL_FILES}" "${IDL_INCLUDE_DIRS}" "${IDL_LINK_FLAGS}")
+INSTALL(TARGETS yacsloader_echo DESTINATION ${SALOME_INSTALL_LIBS})
 
 ADD_EXECUTABLE(TestYacsLoader ${TestYacsLoader_SOURCES})
 TARGET_LINK_LIBRARIES(TestYacsLoader yacsloader_echo ${TestYacsLoader_LIBRARIES})
@@ -115,5 +116,6 @@ IF(NOT WIN32)
   SALOME_CONFIGURE_FILE(YacsLoaderInSessionTest.sh.in YacsLoaderInSessionTest.sh)
   SALOME_CONFIGURE_FILE(display.sh.in display.sh)
   SALOME_CONFIGURE_FILE(waitContainers.py waitContainers.py)
+  SALOME_CONFIGURE_FILE(xmlrun_orig.sh xmlrun.sh)
   ADD_TEST(NAME YacsLoaderTest COMMAND ${SHELL} YacsLoaderTest.sh)
 ENDIF()

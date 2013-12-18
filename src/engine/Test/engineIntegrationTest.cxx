@@ -3015,7 +3015,7 @@ void EngineIntegrationTest::testForCheckConsistency1()
   CPPUNIT_ASSERT_EQUAL(0,(int)info.getNumberOfInfoLinks(I_ALL)); CPPUNIT_ASSERT_EQUAL(0,(int)info.getNumberOfWarnLinksGrp(W_ALL));
   CPPUNIT_ASSERT_EQUAL(1,(int)info.getNumberOfErrLinks(E_ALL)); CPPUNIT_ASSERT_EQUAL(1,(int)info.getNumberOfErrLinks(E_ALL));
   CPPUNIT_ASSERT_EQUAL(1,(int)info.getNumberOfErrLinks(E_NEVER_SET_INPUTPORT));
-  pair<OutPort *, InPort *> p1=info.getErrLink(0,E_NEVER_SET_INPUTPORT); pair<OutPort *, InPort *> p2(0,i11_1);
+  pair<OutPort *, InPort *> p1=info.getErrLink(0,E_NEVER_SET_INPUTPORT); pair<OutPort *, InPort *> p2( reinterpret_cast<OutPort *>(0), i11_1 );
   CPPUNIT_ASSERT(p1==p2);
   //
   i11_1->edInit(3.14);

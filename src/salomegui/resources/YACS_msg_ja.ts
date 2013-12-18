@@ -25,7 +25,7 @@
     </message>
     <message>
       <source>PREF_TAB_NODE</source>
-      <translation>ノード</translation>
+      <translation>節点</translation>
     </message>
     <message>
       <source>PREF_GROUP_SCENE</source>
@@ -53,7 +53,7 @@
     </message>
     <message>
       <source>PREF_GROUP_DRAG</source>
-      <translation>ドラッグ</translation>
+      <translation>ドラッグします。</translation>
     </message>
     <message>
       <source>PREF_GROUP_GENERAL</source>
@@ -61,7 +61,7 @@
     </message>
     <message>
       <source>COMPONENT_INSTANCE_NEW</source>
-      <translation>各新しいサービス ノードのコンポーネント インスタンスを作成します。</translation>
+      <translation>新しい各サービス ノードのコンポーネントのインスタンスを作成します。</translation>
     </message>
     <message>
       <source>ERROR</source>
