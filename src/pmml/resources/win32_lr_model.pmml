@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<PMML xmlns="http://www.dmg.org/PMML-4_1" version="4.1">
+  <Header copyright="myCopyright" description="Tests unitaires">
+    <Application name="PMMLlib" version="myVersion"/>
+    <Annotation>Tests unitaires PMMLlib</Annotation>
+  </Header>
+  <DataDictionary>
+    <DataField name="x6" displayName=" x_{6}" optype="continuous" dataType="double">
+      <Interval closure="ClosedClosed" leftMargin="1.100000e+001" rightMargin="2.300000e+001"/>
+    </DataField>
+    <DataField name="x8" displayName=" x_{8}" optype="continuous" dataType="double">
+      <Interval closure="ClosedClosed" leftMargin="2.810000e+001" rightMargin="7.670000e+001"/>
+    </DataField>
+    <DataField name="x1" displayName=" x_{1}" optype="continuous" dataType="double">
+      <Interval closure="ClosedClosed" leftMargin="6.360000e+000" rightMargin="1.251000e+001"/>
+    </DataField>
+  </DataDictionary>
+  <RegressionModel functionName="regression" modelName="Modeler[LinearRegression]Tds[steamplant]Predictor[x6:x8:x6x8:x6x6x8]Target[x1]" targetFieldName="x1">
+    <MiningSchema>
+      <MiningField name="x6" usageType="active"/>
+      <MiningField name="x8" usageType="active"/>
+      <MiningField name="x1" usageType="predicted"/>
+    </MiningSchema>
+    <RegressionTable intercept="3.837365e+000">
+      <NumericPredictor name="x6" exponent="1" coefficient="4.759134e-001"/>
+      <NumericPredictor name="x8" exponent="1" coefficient="1.428838e-001"/>
+      <PredictorTerm coefficient="-2.201903e-002">
+        <FieldRef field="x6"/>
+        <FieldRef field="x8"/>
+      </PredictorTerm>
+      <PredictorTerm coefficient="5.362560e-004">
+        <FieldRef field="x6"/>
+        <FieldRef field="x6"/>
+        <FieldRef field="x8"/>
+      </PredictorTerm>
+    </RegressionTable>
+  </RegressionModel>
+</PMML>

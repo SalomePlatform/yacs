@@ -1,0 +1,28 @@
+
+/*!
+\page pmml_install Configuring and Installing PMML from sources
+
+The libraries in SALOME PMML can be configured in several manners so that it can run inside or outside the Salome platform.
+Also, partitioning and parallel functionalities are optional.
+
+The sources of the library are located in the \a PMML_SRC directory.
+The first step consists in preparing the configuration of the library :
+\verbatim
+cd ${PMML_SRC}
+./build_configure
+\endverbatim
+
+This will create SALOME PMML libraries with link to the SALOME Kernel.
+Sometimes, if it is desirable to have a standalone version of the library to be used independently from SALOME, use :
+\verbatim
+cd ${PMML_SRC}
+./build_configure --without-kernel
+\endverbatim
+
+The library can then be configured :
+\verbatim
+mkdir ../PMML_BUILD
+cd ../PMML_BUILD
+../PMML_SRC/configure --prefix=`pwd`/../PMML_INSTALL
+\endverbatim
+*/

@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<PMML xmlns="http://www.dmg.org/PMML-4_1" version="4.1">
+  <Header copyright="myCopyright" description="Text Description">
+    <Application name="Uranie" version="3.3.2"/>
+    <Annotation>Compilation date : 2000-01-01</Annotation>
+  </Header>
+  <DataDictionary>
+    <DataField name="rw" displayName="rw" optype="continuous" dataType="double"/>
+    <DataField name="r" displayName="r" optype="continuous" dataType="double"/>
+    <DataField name="tu" displayName="tu" optype="continuous" dataType="double"/>
+    <DataField name="tl" displayName="tl" optype="continuous" dataType="double"/>
+    <DataField name="hu" displayName="hu" optype="continuous" dataType="double"/>
+    <DataField name="hl" displayName="hl" optype="continuous" dataType="double"/>
+    <DataField name="l" displayName="l" optype="continuous" dataType="double"/>
+    <DataField name="kw" displayName="kw" optype="continuous" dataType="double"/>
+    <DataField name="yhat" displayName="yhat" optype="continuous" dataType="double"/>
+  </DataDictionary>
+  <RegressionModel functionName="regression" modelName="LRModel" targetFieldName="yhat">
+    <MiningSchema>
+      <MiningField name="rw" usageType="active"/>
+      <MiningField name="r" usageType="active"/>
+      <MiningField name="tu" usageType="active"/>
+      <MiningField name="tl" usageType="active"/>
+      <MiningField name="hu" usageType="active"/>
+      <MiningField name="hl" usageType="active"/>
+      <MiningField name="l" usageType="active"/>
+      <MiningField name="kw" usageType="active"/>
+      <MiningField name="yhat" usageType="predicted"/>
+    </MiningSchema>
+    <RegressionTable intercept="-1.560299e+02">
+      <NumericPredictor name="rw" exponent="1" coefficient="1.422211e+03"/>
+      <NumericPredictor name="r" exponent="1" coefficient="-3.074119e-07"/>
+      <NumericPredictor name="tu" exponent="1" coefficient="2.152080e-06"/>
+      <NumericPredictor name="tl" exponent="1" coefficient="-4.985123e-03"/>
+      <NumericPredictor name="hu" exponent="1" coefficient="2.611037e-01"/>
+      <NumericPredictor name="hl" exponent="1" coefficient="-2.544189e-01"/>
+      <NumericPredictor name="l" exponent="1" coefficient="-5.571449e-02"/>
+      <NumericPredictor name="kw" exponent="1" coefficient="8.135523e-03"/>
+    </RegressionTable>
+  </RegressionModel>
+</PMML>

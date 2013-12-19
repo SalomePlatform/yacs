@@ -1,0 +1,14 @@
+/*!
+\page PMMLlib PMMLlib
+
+\section PmmlIntro Introduction
+
+PMMLlib is a library (\b libpmmlLib.so or \b pmmllib.dll) fully written in C++ and wrapped to be called in Python too.
+
+PMMLlib C++ library implements a data structure which is the result of the following tradeoff :
+
+- Compliant with coupling :
+  - Fields definition defined enough to perform well defined interpolation
+  - exchangeable through process as well in parallel case in SPMD paradigm 
+
+*/

@@ -1,0 +1,37 @@
+/*!
+
+\mainpage Introduction
+
+The Predictive Model Markup Language (PMML) is an XML-based file format developed by the Data Mining Group to provide a way for applications to describe and exchange models produced by data mining and machine learning algorithms.
+
+The Salome PMML module allows the handling of PMML files :
+- reading of PMML files containing one or more models,
+- creation of PMML files with  one or more models,
+- supports models of types « NeuralNetwork » and « rRegressionModel »,
+- generation of  C++, FORTRAN and Python code from a model specifications.
+
+
+Furthermore, it is possible to load a model from a PMML file and generate the matching python function through YACS elementary node PyLoadPMML, indicating the PMML file, model name and type. The output port is the python function.
+
+
+<br />
+
+\section contents Contents
+This document is organized as follows:
+- Technical presentation of \ref PMMLlib
+- \ref cppexamples 
+- \ref pyexamples 
+
+
+\section install Installation
+The install procedure of the %PMMLlib SALOME module can handle a variety of configurations
+to suit the needs of its user. Instructions for configuring and
+installing the module can be found in \ref pmml_install.
+
+
+\section references References
+Here follows a list of useful references :
+
+-# Data Mining Group reference page : \c http://www.dmg.org/v4-1/GeneralStructure.html
+
+*/

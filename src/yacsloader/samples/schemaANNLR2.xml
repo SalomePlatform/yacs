@@ -1,0 +1,569 @@
+<?xml version='1.0' encoding='iso-8859-1' ?>
+<proc name="newSchema_1">
+   <property name="DefaultStudyID" value="1"/>
+   <type name="string" kind="string"/>
+   <struct name="Engines/dataref">
+      <member name="ref" type="string"/>
+   </struct>
+   <type name="bool" kind="bool"/>
+   <sequence name="boolvec" content="bool"/>
+   <type name="double" kind="double"/>
+   <sequence name="dblevec" content="double"/>
+   <objref name="file" id="file"/>
+   <type name="int" kind="int"/>
+   <sequence name="intvec" content="int"/>
+   <struct name="stringpair">
+      <member name="name" type="string"/>
+      <member name="value" type="string"/>
+   </struct>
+   <sequence name="propvec" content="stringpair"/>
+   <objref name="pyobj" id="python:obj:1.0"/>
+   <sequence name="seqboolvec" content="boolvec"/>
+   <sequence name="seqdblevec" content="dblevec"/>
+   <sequence name="seqint" content="int"/>
+   <sequence name="seqintvec" content="intvec"/>
+   <sequence name="stringvec" content="string"/>
+   <sequence name="seqstringvec" content="stringvec"/>
+   <container name="DefaultContainer">
+      <property name="container_name" value="FactoryServer"/>
+      <property name="name" value="localhost"/>
+   </container>
+   <foreach name="ForEachLoop_int6" nbranch="1" type="int">
+      <bloc name="Bloc8">
+         <inline name="PyFuncExec">
+            <script><code><![CDATA[
+# on reconstruit une liste de double
+doubleVecIn = [ float(v) for v in inputs[i] ] ;
+
+doubleVecOutLR = pyFuncLR( doubleVecIn );
+doubleVecOutANN = pyFuncANN( doubleVecIn );
+
+outputLR = doubleVecOutLR[0];
+outputANN = doubleVecOutANN[0];
+
+
+]]></code></script>
+            <inport name="i" type="int"/>
+            <inport name="inputs" type="pyobj"/>
+            <inport name="pyFuncANN" type="pyobj"/>
+            <inport name="pyFuncLR" type="pyobj"/>
+            <outport name="outputLR" type="double"/>
+            <outport name="outputANN" type="double"/>
+         </inline>
+         <inline name="PyValidate">
+            <script><code><![CDATA[#-----------------------------#
+#       Validate              #
+#-----------------------------#
+
+ret = True;
+refOutputLR = float( refOutputsLR[i] );
+refOutputANN = float( refOutputsANN[i] );
+
+errLR = abs( refOutputLR - outputLR ) ; 
+errANN = abs( refOutputANN - outputANN ) ; 
+
+msg   = " LR : ref = %f , out = %f, err = %f \n"%(refOutputLR, outputLR,errLR);
+msg += "ANN : ref = %f , out = %f, err = %f \n"%(refOutputANN, outputANN, errANN);
+if errLR > epsilon or errANN > epsilon: 
+    msg   += "KO valid with eps %f at pattern #%i: \n"%(epsilon, i) ;
+    ret = False;
+    print msg;
+    pass
+
+print "+++ OK " , i , " +++", ret
+]]></code></script>
+            <inport name="i" type="int"/>
+            <inport name="refOutputsLR" type="pyobj"/>
+            <inport name="refOutputsANN" type="pyobj"/>
+            <inport name="epsilon" type="double"/>
+            <inport name="outputLR" type="double"/>
+            <inport name="outputANN" type="double"/>
+            <outport name="ret" type="bool"/>
+         </inline>
+         <control> <fromnode>PyFuncExec</fromnode> <tonode>PyValidate</tonode> </control>
+         <datalink control="false">
+            <fromnode>PyFuncExec</fromnode> <fromport>outputLR</fromport>
+            <tonode>PyValidate</tonode> <toport>outputLR</toport>
+         </datalink>
+         <datalink control="false">
+            <fromnode>PyFuncExec</fromnode> <fromport>outputANN</fromport>
+            <tonode>PyValidate</tonode> <toport>outputANN</toport>
+         </datalink>
+      </bloc>
+   </foreach>
+   <inline name="PyLoadPMML_LR">
+      <script><code><![CDATA[ 
+import sys;
+from PMML import *;
+pmmlObj = PMMLlib( filename );   
+pmmlObj.SetCurrentModel( modelname , eval(pmmltype) );
+myFunc = "pyFunc";
+myHeader = "Function processed in YACCS";
+myCode = pmmlObj.ExportPyStr(myFunc, myHeader);
+exec myCode;
+]]></code></script>
+      <inport name="filename" type="string"/>
+      <inport name="modelname" type="string"/>
+      <inport name="pmmltype" type="string"/>
+      <outport name="pyFunc" type="pyobj"/>
+   </inline>
+   <inline name="PyLoadPMML_ANN">
+      <script><code><![CDATA[ 
+import sys;
+from PMML import *;
+pmmlObj = PMMLlib( filename );   
+pmmlObj.SetCurrentModel( modelname , eval(pmmltype) );
+myFunc = "pyFunc";
+myHeader = "Function processed in YACCS";
+myCode = pmmlObj.ExportPyStr(myFunc, myHeader);
+exec myCode;
+]]></code></script>
+      <inport name="filename" type="string"/>
+      <inport name="modelname" type="string"/>
+      <inport name="pmmltype" type="string"/>
+      <outport name="pyFunc" type="pyobj"/>
+   </inline>
+   <inline name="PyInitInputs0">
+      <script><code><![CDATA[#-----------------------------#
+#             Inputs              #
+#-----------------------------#
+
+inputs = [ 
+[1.456610531e-01, 4.817264758e+04, 7.398381011e+04, 1.035837913e+02, 9.968027314e+02, 7.662662390e+02, 1.606060725e+03, 1.147627487e+04], 
+[7.767860409e-02, 1.193098539e+04, 7.292686667e+04, 9.785118163e+01, 1.051369254e+03, 7.027872080e+02, 1.447244752e+03, 1.028475889e+04], 
+[6.750842479e-02, 2.882617130e+04, 9.817007636e+04, 8.488524614e+01, 1.090567120e+03, 8.122979233e+02, 1.649818202e+03, 1.149754134e+04], 
+[8.860282350e-02, 3.498171453e+03, 8.530760503e+04, 9.046022050e+01, 1.095160960e+03, 7.874820198e+02, 1.367563528e+03, 1.084392094e+04], 
+[1.365903117e-01, 2.825638843e+04, 8.889946935e+04, 1.113147418e+02, 1.019749972e+03, 7.134926632e+02, 1.507458958e+03, 1.081045588e+04], 
+[7.127271995e-02, 1.753261607e+04, 9.534506291e+04, 9.153808181e+01, 1.061650244e+03, 7.309769019e+02, 1.657218091e+03, 1.072962363e+04], 
+[1.265602027e-01, 4.219433169e+04, 9.456040368e+04, 1.056736168e+02, 1.099933893e+03, 7.471638924e+02, 1.273665410e+03, 1.138336512e+04], 
+[8.667764079e-02, 4.120117756e+04, 1.133877245e+05, 7.767636060e+01, 1.016590900e+03, 7.080602432e+02, 1.660892376e+03, 1.092560938e+04], 
+[9.976394549e-02, 6.420167443e+03, 9.830132327e+04, 8.501884776e+01, 1.097122572e+03, 7.253532648e+02, 1.307720423e+03, 9.866836214e+03], 
+[1.146758223e-01, 8.710374173e+03, 8.523215073e+04, 9.414901527e+01, 1.095537742e+03, 7.060630963e+02, 1.275130095e+03, 1.130554594e+04], 
+[7.880624877e-02, 4.311161871e+04, 7.377943028e+04, 1.061320296e+02, 1.047244176e+03, 7.477760505e+02, 1.415636178e+03, 1.040593206e+04], 
+[1.058084156e-01, 4.582563552e+04, 9.222816385e+04, 1.038847032e+02, 9.955665779e+02, 7.432779758e+02, 1.504745288e+03, 1.146224012e+04], 
+[1.253087794e-01, 4.847286153e+04, 7.518998946e+04, 1.040979939e+02, 1.105768478e+03, 7.577355747e+02, 1.201630771e+03, 1.088149400e+04], 
+[1.175039884e-01, 2.565240792e+04, 7.230018052e+04, 8.257012789e+01, 1.032484559e+03, 7.694279542e+02, 1.566647304e+03, 1.153822324e+04], 
+[6.124755615e-02, 4.507578924e+04, 6.478138490e+04, 9.090792861e+01, 1.062255915e+03, 7.497957649e+02, 1.184192526e+03, 1.170539896e+04], 
+[5.544131559e-02, 3.390925881e+04, 7.328456973e+04, 1.090337509e+02, 1.048630443e+03, 7.628191574e+02, 1.185768164e+03, 1.028085684e+04], 
+[1.183272497e-01, 4.639774146e+04, 6.984716489e+04, 7.483809181e+01, 1.071724305e+03, 8.029602783e+02, 1.301826477e+03, 1.069809527e+04], 
+[1.178550031e-01, 1.065266711e+04, 7.473813352e+04, 7.063285879e+01, 1.017164661e+03, 7.183678405e+02, 1.252220675e+03, 1.085888136e+04], 
+[1.116310036e-01, 7.057176796e+02, 8.914959172e+04, 1.143736719e+02, 1.024291508e+03, 7.893954959e+02, 1.375784904e+03, 1.189588654e+04], 
+[1.056449157e-01, 3.725247649e+04, 1.126706761e+05, 8.220356853e+01, 1.000815794e+03, 7.342054423e+02, 1.331007515e+03, 1.057815755e+04], 
+[5.585244596e-02, 1.080328986e+04, 7.647445600e+04, 1.127840680e+02, 1.101335277e+03, 7.090687232e+02, 1.571310094e+03, 1.179921032e+04], 
+[9.318997589e-02, 3.694986496e+04, 1.142850986e+05, 9.885621621e+01, 1.047818074e+03, 7.462410467e+02, 1.550908728e+03, 1.024738180e+04], 
+[9.769526026e-02, 4.898586800e+04, 8.454146334e+04, 7.390916471e+01, 1.069034353e+03, 7.761299060e+02, 1.366617089e+03, 1.045533000e+04], 
+[1.448874974e-01, 2.618871518e+04, 1.006705237e+05, 6.761931276e+01, 1.084724402e+03, 7.056825472e+02, 1.467825112e+03, 1.063120366e+04], 
+[5.748240145e-02, 4.265983570e+04, 6.922054248e+04, 7.153213366e+01, 1.029573412e+03, 7.140769415e+02, 1.638688665e+03, 1.152371724e+04], 
+[1.004554848e-01, 1.849359821e+04, 1.073035370e+05, 9.843990445e+01, 1.061773839e+03, 7.703136119e+02, 1.142717255e+03, 1.133548780e+04], 
+[6.904713159e-02, 3.114664091e+04, 1.154062790e+05, 8.699726139e+01, 9.951594968e+02, 8.013040888e+02, 1.645133282e+03, 1.101513225e+04], 
+[7.535831709e-02, 2.084271662e+04, 8.796612167e+04, 8.755547732e+01, 1.091487642e+03, 7.501847659e+02, 1.272233814e+03, 1.153502741e+04], 
+[1.316642693e-01, 4.074199552e+04, 9.791860127e+04, 1.096474308e+02, 1.103690417e+03, 7.597649884e+02, 1.149359431e+03, 1.121703132e+04], 
+[1.256804603e-01, 2.171487442e+04, 1.047171996e+05, 8.588439966e+01, 1.102320221e+03, 7.708693798e+02, 1.329214491e+03, 1.059463337e+04], 
+[5.439524620e-02, 2.259584733e+04, 8.079125672e+04, 6.476205727e+01, 1.106152417e+03, 8.113191944e+02, 1.255437236e+03, 1.201333911e+04], 
+[8.750209459e-02, 1.410249021e+04, 1.119751321e+05, 1.073490872e+02, 1.063143667e+03, 7.871042297e+02, 1.329983208e+03, 1.195606571e+04], 
+[8.699797238e-02, 4.021709531e+04, 1.117867687e+05, 9.589155856e+01, 1.073694293e+03, 7.994999584e+02, 1.627265626e+03, 1.136706401e+04], 
+[6.892920064e-02, 2.032907492e+03, 1.010396848e+05, 6.783802062e+01, 1.086461820e+03, 7.374214870e+02, 1.337611800e+03, 1.085112805e+04], 
+[1.110159183e-01, 4.417290645e+04, 7.073649093e+04, 7.518425871e+01, 1.107020884e+03, 7.795442605e+02, 1.148611472e+03, 9.964154503e+03], 
+[5.864651909e-02, 4.709372341e+04, 1.058816566e+05, 6.673370711e+01, 1.046313765e+03, 7.910806290e+02, 1.399673582e+03, 1.115277414e+04], 
+[1.024623536e-01, 3.248763678e+04, 1.123176511e+05, 1.107772688e+02, 1.012914390e+03, 7.571928585e+02, 1.189214491e+03, 1.183043699e+04], 
+[1.268376736e-01, 2.048412849e+04, 1.085318941e+05, 6.459015746e+01, 1.109786159e+03, 8.139508806e+02, 1.359762233e+03, 1.157111067e+04], 
+[5.300816813e-02, 2.943127727e+04, 1.146785278e+05, 8.394814161e+01, 1.043452404e+03, 7.603354413e+02, 1.658862011e+03, 1.163288578e+04], 
+[7.028017434e-02, 4.192750166e+04, 9.553886080e+04, 6.383743056e+01, 1.079645033e+03, 7.723588658e+02, 1.321409167e+03, 1.058567246e+04], 
+[5.991478449e-02, 4.541579388e+04, 6.812180949e+04, 9.246414937e+01, 1.019926004e+03, 8.069446852e+02, 1.239566623e+03, 1.120099431e+04], 
+[1.067481756e-01, 1.157791820e+04, 8.601870382e+04, 9.535250994e+01, 1.058079739e+03, 8.029092666e+02, 1.675663505e+03, 9.857368989e+03], 
+[1.372760225e-01, 2.899852970e+04, 8.623842631e+04, 1.131718316e+02, 1.024500700e+03, 7.638957159e+02, 1.530839326e+03, 1.082014841e+04], 
+[5.646039560e-02, 2.018348280e+04, 1.080224373e+05, 1.152372480e+02, 1.093895079e+03, 7.378488842e+02, 1.286477483e+03, 1.185925929e+04], 
+[1.112123774e-01, 2.393360775e+04, 9.292106786e+04, 7.719527530e+01, 1.067671951e+03, 7.343684587e+02, 1.483330544e+03, 1.201709952e+04], 
+[1.307541334e-01, 1.560575418e+04, 1.072113632e+05, 1.121212726e+02, 1.037577460e+03, 8.001239033e+02, 1.526339128e+03, 1.134591351e+04], 
+[6.497204223e-02, 1.402014180e+04, 6.745969376e+04, 7.862832618e+01, 1.014652310e+03, 7.785303790e+02, 1.410865140e+03, 1.050284643e+04], 
+[7.585702665e-02, 4.060724171e+04, 7.891898759e+04, 8.983721307e+01, 1.027113392e+03, 7.415777465e+02, 1.564676410e+03, 1.021290221e+04], 
+[1.236232545e-01, 3.896089552e+04, 9.928329730e+04, 7.287234301e+01, 9.987764845e+02, 8.183318132e+02, 1.174504796e+03, 1.008298210e+04], 
+[1.472884758e-01, 1.496664561e+04, 9.577485455e+04, 8.233690370e+01, 1.081566913e+03, 7.885231394e+02, 1.401539659e+03, 1.177286288e+04], 
+[1.446232028e-01, 4.176932757e+04, 6.512933971e+04, 9.704737342e+01, 1.013731965e+03, 7.047846719e+02, 1.603844751e+03, 1.068331103e+04], 
+[1.380008828e-01, 3.305905514e+04, 9.999652423e+04, 6.636073041e+01, 1.064322897e+03, 7.729923602e+02, 1.227516863e+03, 1.171354749e+04], 
+[6.344159464e-02, 4.780648795e+04, 9.365102770e+04, 8.802953531e+01, 1.029707604e+03, 7.933230876e+02, 1.374652921e+03, 1.008866356e+04], 
+[5.258122387e-02, 3.702566309e+03, 7.777773463e+04, 7.570896193e+01, 1.052339637e+03, 7.741762325e+02, 1.641636623e+03, 1.121956718e+04], 
+[1.308250614e-01, 4.040441149e+04, 8.911452953e+04, 8.104256772e+01, 1.054111352e+03, 7.773815616e+02, 1.334252555e+03, 1.104079585e+04], 
+[1.420385163e-01, 4.604351716e+04, 8.593646152e+04, 8.159247797e+01, 1.060594140e+03, 8.058854605e+02, 1.637341312e+03, 1.120759720e+04], 
+[1.358384353e-01, 3.498709280e+04, 8.406584308e+04, 8.165787651e+01, 1.022762168e+03, 8.120310170e+02, 1.474777461e+03, 1.003994300e+04], 
+[1.423898316e-01, 4.687374179e+04, 8.660185111e+04, 7.776608109e+01, 9.927602408e+02, 7.641272454e+02, 1.455954292e+03, 1.178518632e+04], 
+[1.321018940e-01, 2.866815831e+03, 9.113096058e+04, 1.007088501e+02, 1.086874972e+03, 7.587825443e+02, 1.610678155e+03, 1.146851885e+04], 
+[1.351663932e-01, 3.196774887e+04, 1.021987705e+05, 7.197885925e+01, 1.021175944e+03, 7.331080072e+02, 1.162493217e+03, 1.109738563e+04], 
+[8.648890684e-02, 4.492471938e+04, 6.438582057e+04, 1.110566727e+02, 1.090853465e+03, 7.597253981e+02, 1.467197961e+03, 1.195185409e+04], 
+[1.104557208e-01, 4.850355694e+04, 1.018022746e+05, 1.149248442e+02, 1.013058279e+03, 7.367222887e+02, 1.358941413e+03, 1.134149282e+04], 
+[1.091740527e-01, 4.724040634e+04, 1.023148364e+05, 1.026078719e+02, 1.016770836e+03, 7.167576085e+02, 1.388776487e+03, 1.018437131e+04], 
+[1.386282688e-01, 1.824670236e+04, 7.934492890e+04, 7.145704182e+01, 1.031398805e+03, 7.882243654e+02, 1.511935264e+03, 1.073294641e+04], 
+[1.072148102e-01, 2.606334586e+04, 1.045009711e+05, 1.153347286e+02, 1.013401269e+03, 7.542190230e+02, 1.392997551e+03, 1.072210903e+04], 
+[1.377281664e-01, 3.939831181e+04, 7.710345011e+04, 6.326330520e+01, 1.038617320e+03, 7.401934748e+02, 1.527993368e+03, 1.129318647e+04], 
+[1.337643862e-01, 4.712556894e+04, 9.486490032e+04, 8.660231295e+01, 1.082875874e+03, 7.991662034e+02, 1.344812635e+03, 1.034653122e+04], 
+[1.450803097e-01, 3.690122313e+04, 7.076429187e+04, 7.923525262e+01, 1.021698784e+03, 7.821386527e+02, 1.240302421e+03, 1.092916457e+04], 
+[9.160223345e-02, 3.477878623e+04, 7.860829708e+04, 7.052989639e+01, 1.045971334e+03, 7.371632922e+02, 1.377972291e+03, 1.202636052e+04], 
+[1.369383921e-01, 7.129085246e+03, 1.003532237e+05, 6.706267812e+01, 9.920945476e+02, 7.700039641e+02, 1.270854730e+03, 1.093421128e+04], 
+[9.150440403e-02, 3.191576156e+04, 1.043970415e+05, 1.121933263e+02, 9.961948536e+02, 7.035905746e+02, 1.503665860e+03, 1.175814238e+04], 
+[1.391914465e-01, 2.679929889e+04, 9.315698192e+04, 1.086281131e+02, 1.108793392e+03, 8.128614591e+02, 1.491457967e+03, 1.029088956e+04], 
+[5.336087538e-02, 1.787440457e+04, 8.274402814e+04, 9.735553791e+01, 1.052490734e+03, 7.853725287e+02, 1.505494679e+03, 1.199289056e+04], 
+[5.136318222e-02, 2.313327941e+04, 8.127627613e+04, 6.730045023e+01, 1.040984645e+03, 7.672337162e+02, 1.340467605e+03, 9.996178363e+03], 
+[5.202323461e-02, 1.418186294e+03, 9.097156505e+04, 6.493013875e+01, 1.030920220e+03, 7.896488622e+02, 1.361926266e+03, 1.152603230e+04], 
+[1.120003670e-01, 4.822621219e+04, 1.096378917e+05, 1.066666519e+02, 1.053178110e+03, 7.431009273e+02, 1.651552956e+03, 1.102461978e+04], 
+[8.156025845e-02, 3.294115069e+04, 7.846891086e+04, 1.125022952e+02, 1.075934524e+03, 8.170942340e+02, 1.251695262e+03, 1.007675874e+04], 
+[6.320769249e-02, 2.369685837e+04, 1.124336882e+05, 8.689656009e+01, 1.035765280e+03, 7.364800974e+02, 1.354682602e+03, 1.166796177e+04], 
+[6.503346261e-02, 1.730539268e+03, 8.554891831e+04, 1.052469487e+02, 1.109487127e+03, 7.156856899e+02, 1.568668470e+03, 1.144257670e+04], 
+[1.060320179e-01, 2.193967854e+04, 9.283579078e+04, 7.307445266e+01, 9.997547759e+02, 8.019001159e+02, 1.425747028e+03, 1.140852632e+04], 
+] 
+
+
+]]></code></script>
+      <outport name="inputs" type="pyobj"/>
+   </inline>
+   <inline name="PyInitRefOutputs_ANN">
+      <script><code><![CDATA[#-----------------------------#
+# Outputs de reference  #
+#-----------------------------#
+
+refOutputs_ANN = [ 
+1.168089449e+02, 
+4.781593273e+01, 
+2.496977483e+01, 
+5.842099314e+01, 
+1.305961979e+02, 
+3.233802619e+01, 
+1.546164483e+02, 
+4.336998926e+01, 
+9.087786254e+01, 
+1.434798212e+02, 
+4.099991316e+01, 
+6.431449369e+01, 
+1.501872417e+02, 
+8.053221147e+01, 
+4.197310874e+01, 
+2.671091281e+01, 
+9.454134503e+01, 
+1.102350186e+02, 
+7.907556494e+01, 
+7.172391411e+01, 
+3.754366431e+01, 
+5.038705917e+01, 
+6.375031502e+01, 
+1.771890832e+02, 
+2.343676246e+01, 
+9.027995034e+01, 
+1.569189976e+01, 
+5.982813776e+01, 
+1.705315538e+02, 
+1.303445228e+02, 
+3.113554928e+01, 
+5.939844286e+01, 
+4.063679863e+01, 
+4.624494051e+01, 
+1.070568093e+02, 
+2.191301917e+01, 
+8.354237959e+01, 
+1.253189335e+02, 
+1.767668338e+01, 
+3.842513272e+01, 
+2.175455106e+01, 
+4.647435880e+01, 
+1.120795974e+02, 
+4.340174985e+01, 
+1.045134248e+02, 
+9.720940205e+01, 
+2.096661911e+01, 
+2.966589787e+01, 
+7.830846633e+01, 
+1.651341366e+02, 
+1.374000378e+02, 
+1.592408357e+02, 
+2.009023783e+01, 
+1.597628494e+01, 
+1.227331903e+02, 
+1.130605736e+02, 
+8.720282158e+01, 
+1.245096409e+02, 
+1.277797482e+02, 
+1.515343460e+02, 
+6.430457392e+01, 
+8.767183986e+01, 
+8.096423589e+01, 
+1.069264773e+02, 
+6.979279556e+01, 
+1.308867480e+02, 
+1.234734350e+02, 
+1.428528024e+02, 
+7.048251785e+01, 
+1.174200781e+02, 
+5.850344216e+01, 
+1.269707613e+02, 
+2.034820017e+01, 
+1.785455851e+01, 
+1.853062331e+01, 
+7.838090949e+01, 
+4.078240457e+01, 
+3.516311210e+01, 
+4.512340938e+01, 
+5.357101580e+01 ] 
+]]></code></script>
+      <outport name="refOutputs_ANN" type="pyobj"/>
+   </inline>
+   <inline name="PyInitRefOutputs_LR">
+      <script><code><![CDATA[#-----------------------------#
+# Outputs de reference  #
+#-----------------------------#
+
+refOutputs_LR = [ 
+1.199597225e+02, 
+5.286440730e+01, 
+1.946749529e+01, 
+6.734171678e+01, 
+1.265538870e+02, 
+3.126495039e+01, 
+1.423813327e+02, 
+4.872963193e+01, 
+9.497332404e+01, 
+1.341211849e+02, 
+4.464289526e+01, 
+7.437583290e+01, 
+1.393299719e+02, 
+9.123466759e+01, 
+4.659905036e+01, 
+1.972448931e+01, 
+1.020662831e+02, 
+1.127851501e+02, 
+8.909165532e+01, 
+8.046407212e+01, 
+3.861336913e+01, 
+5.693876214e+01, 
+7.329772086e+01, 
+1.583000177e+02, 
+1.510501114e+01, 
+9.637844578e+01, 
+-4.096191309e+00, 
+6.798388710e+01, 
+1.529755696e+02, 
+1.263372809e+02, 
+3.137004476e+01, 
+6.862410531e+01, 
+4.620214686e+01, 
+5.170112470e+01, 
+1.094077720e+02, 
+1.194064903e+01, 
+9.119449042e+01, 
+1.253286559e+02, 
+4.007263377e-01, 
+4.169281315e+01, 
+1.192188109e+01, 
+5.432408674e+01, 
+1.147070671e+02, 
+4.662373285e+01, 
+1.090036057e+02, 
+1.042114148e+02, 
+9.820112838e+00, 
+2.698818217e+01, 
+8.880536866e+01, 
+1.527146568e+02, 
+1.322338373e+02, 
+1.482507911e+02, 
+6.458012341e+00, 
+-3.840634931e+00, 
+1.227435169e+02, 
+1.175914158e+02, 
+9.688870975e+01, 
+1.258285676e+02, 
+1.258427717e+02, 
+1.416880775e+02, 
+7.357448465e+01, 
+9.432611383e+01, 
+8.753893164e+01, 
+1.127819173e+02, 
+7.842914575e+01, 
+1.292992326e+02, 
+1.226379987e+02, 
+1.376409297e+02, 
+8.068110325e+01, 
+1.198912866e+02, 
+6.675030235e+01, 
+1.249090790e+02, 
+8.233983443e+00, 
+9.857868847e-02, 
+3.996566681e+00, 
+8.655301005e+01, 
+4.485232922e+01, 
+3.618350443e+01, 
+4.942136971e+01, 
+6.499941347e+01 ] 
+
+]]></code></script>
+      <outport name="refOutputs_LR" type="pyobj"/>
+   </inline>
+   <inline name="PyEpsilon">
+      <script><code><![CDATA[epsilon = 1E-6;
+]]></code></script>
+      <outport name="epsilon" type="double"/>
+   </inline>
+   <inline name="PyBuildLoopIndex0">
+      <function name="make_indexes">
+         <code><![CDATA[def make_indexes(inVal, outVal_LR, outVal_ANN) :
+    print "In make_indexes" ;
+
+    if ( len(inVal) != len(outVal_LR) ) :
+        msg = "len(inVal) (%i) != len(outVal_LR) (%i). "%( len(inVal), len(outVal_LR) ) ;
+        raise ValueError(msg)       
+
+    if ( len(inVal) != len(outVal_ANN) ) :
+        msg = "len(inVal) (%i) != len(outVal_ANN) (%i). "%( len(inVal), len(outVal_ANN) ) ;
+        raise ValueError(msg)          
+
+    n = len( inVal ); 
+    indexes = [ i for i in range( n ) ]  ;
+    return indexes
+
+]]></code>
+      </function>
+      <inport name="inVal" type="pyobj"/>
+      <inport name="outVal_LR" type="pyobj"/>
+      <inport name="outVal_ANN" type="pyobj"/>
+      <outport name="indexes" type="intvec"/>
+   </inline>
+   <inline name="PyGetPmmlFile">
+      <script><code><![CDATA[#-----------------------------#
+#       Get PMML file         #
+#-----------------------------#
+import os;
+pmmlRootDir = os.getenv("YACS_ROOT_DIR");
+resourcesDir = os.path.join(pmmlRootDir,"share","salome","yacssamples");
+resourcesDir += os.sep ;
+filepath = resourcesDir + filename;
+]]></code></script>
+      <inport name="filename" type="string"/>
+      <outport name="filepath" type="string"/>
+   </inline>
+   <inline name="PyGetRes">
+      <script><code><![CDATA[print "retVec ";
+print retVec;
+res = "True";
+for ret in retVec:
+    if not ret:
+        res = "False";
+        pass
+    pass
+
+]]></code></script>
+      <inport name="retVec" type="boolvec"/>
+      <outport name="res" type="string"/>
+   </inline>
+   <control> <fromnode>ForEachLoop_int6</fromnode> <tonode>PyGetRes</tonode> </control>
+   <control> <fromnode>PyLoadPMML_LR</fromnode> <tonode>PyLoadPMML_ANN</tonode> </control>
+   <control> <fromnode>PyLoadPMML_ANN</fromnode> <tonode>PyInitInputs0</tonode> </control>
+   <control> <fromnode>PyInitInputs0</fromnode> <tonode>PyInitRefOutputs_ANN</tonode> </control>
+   <control> <fromnode>PyInitRefOutputs_ANN</fromnode> <tonode>PyInitRefOutputs_LR</tonode> </control>
+   <control> <fromnode>PyInitRefOutputs_LR</fromnode> <tonode>PyEpsilon</tonode> </control>
+   <control> <fromnode>PyEpsilon</fromnode> <tonode>PyBuildLoopIndex0</tonode> </control>
+   <control> <fromnode>PyBuildLoopIndex0</fromnode> <tonode>ForEachLoop_int6</tonode> </control>
+   <control> <fromnode>PyGetPmmlFile</fromnode> <tonode>PyLoadPMML_LR</tonode> </control>
+   <control> <fromnode>PyGetPmmlFile</fromnode> <tonode>PyLoadPMML_ANN</tonode> </control>
+   <datalink control="false">
+      <fromnode>ForEachLoop_int6</fromnode> <fromport>evalSamples</fromport>
+      <tonode>ForEachLoop_int6.Bloc8.PyValidate</tonode> <toport>i</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>ForEachLoop_int6</fromnode> <fromport>evalSamples</fromport>
+      <tonode>ForEachLoop_int6.Bloc8.PyFuncExec</tonode> <toport>i</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>PyLoadPMML_LR</fromnode> <fromport>pyFunc</fromport>
+      <tonode>ForEachLoop_int6.Bloc8.PyFuncExec</tonode> <toport>pyFuncLR</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>PyLoadPMML_ANN</fromnode> <fromport>pyFunc</fromport>
+      <tonode>ForEachLoop_int6.Bloc8.PyFuncExec</tonode> <toport>pyFuncANN</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>PyInitInputs0</fromnode> <fromport>inputs</fromport>
+      <tonode>ForEachLoop_int6.Bloc8.PyFuncExec</tonode> <toport>inputs</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>PyInitInputs0</fromnode> <fromport>inputs</fromport>
+      <tonode>PyBuildLoopIndex0</tonode> <toport>inVal</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>PyInitRefOutputs_ANN</fromnode> <fromport>refOutputs_ANN</fromport>
+      <tonode>PyBuildLoopIndex0</tonode> <toport>outVal_ANN</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>PyInitRefOutputs_ANN</fromnode> <fromport>refOutputs_ANN</fromport>
+      <tonode>ForEachLoop_int6.Bloc8.PyValidate</tonode> <toport>refOutputsANN</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>PyInitRefOutputs_LR</fromnode> <fromport>refOutputs_LR</fromport>
+      <tonode>ForEachLoop_int6.Bloc8.PyValidate</tonode> <toport>refOutputsLR</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>PyInitRefOutputs_LR</fromnode> <fromport>refOutputs_LR</fromport>
+      <tonode>PyBuildLoopIndex0</tonode> <toport>outVal_LR</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>PyEpsilon</fromnode> <fromport>epsilon</fromport>
+      <tonode>ForEachLoop_int6.Bloc8.PyValidate</tonode> <toport>epsilon</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>PyBuildLoopIndex0</fromnode> <fromport>indexes</fromport>
+      <tonode>ForEachLoop_int6</tonode> <toport>SmplsCollection</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>PyGetPmmlFile</fromnode> <fromport>filepath</fromport>
+      <tonode>PyLoadPMML_LR</tonode> <toport>filename</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>PyGetPmmlFile</fromnode> <fromport>filepath</fromport>
+      <tonode>PyLoadPMML_ANN</tonode> <toport>filename</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>ForEachLoop_int6.Bloc8.PyValidate</fromnode> <fromport>ret</fromport>
+      <tonode>PyGetRes</tonode> <toport>retVec</toport>
+   </datalink>
+   <parameter>
+      <tonode>PyGetPmmlFile</tonode><toport>filename</toport>
+      <value><string>pmml_tann_tlr_exportFunctionPMML.pmml</string></value>
+   </parameter>
+   <parameter>
+      <tonode>ForEachLoop_int6</tonode><toport>nbBranches</toport>
+      <value><int>1</int></value>
+   </parameter>
+   <parameter>
+      <tonode>PyLoadPMML_LR</tonode><toport>filename</toport>
+      <value><string>pmml_tann_tlr_exportFunctionPMML.pmml</string></value>
+   </parameter>
+   <parameter>
+      <tonode>PyLoadPMML_LR</tonode><toport>modelname</toport>
+      <value><string>LRModel</string></value>
+   </parameter>
+   <parameter>
+      <tonode>PyLoadPMML_LR</tonode><toport>pmmltype</toport>
+      <value><string>kLR</string></value>
+   </parameter>
+   <parameter>
+      <tonode>PyLoadPMML_ANN</tonode><toport>filename</toport>
+      <value><string>pmml_tann_tlr_exportFunctionPMML.pmml</string></value>
+   </parameter>
+   <parameter>
+      <tonode>PyLoadPMML_ANN</tonode><toport>modelname</toport>
+      <value><string>ANNModel</string></value>
+   </parameter>
+   <parameter>
+      <tonode>PyLoadPMML_ANN</tonode><toport>pmmltype</toport>
+      <value><string>kANN</string></value>
+   </parameter>
+   <presentation name="ForEachLoop_int6.Bloc8.PyValidate" x="250.158" y="108.92" width="158" height="198" expanded="1" expx="250.158" expy="108.92" expWidth="158" expHeight="198" shownState="0"/>
+   <presentation name="ForEachLoop_int6.Bloc8.PyFuncExec" x="30" y="109.105" width="158" height="144" expanded="1" expx="30" expy="109.105" expWidth="158" expHeight="144" shownState="0"/>
+   <presentation name="ForEachLoop_int6.Bloc8" x="4.7786" y="86" width="412.158" height="310.92" expanded="1" expx="4.7786" expy="86" expWidth="412.158" expHeight="310.92" shownState="0"/>
+   <presentation name="PyInitRefOutputs_LR" x="53.0257" y="338.181" width="158" height="63" expanded="1" expx="53.0257" expy="338.181" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="PyEpsilon" x="39.4207" y="446.791" width="158" height="63" expanded="1" expx="39.4207" expy="446.791" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="PyInitRefOutputs_ANN" x="289.99" y="261.595" width="158" height="63" expanded="1" expx="289.99" expy="261.595" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="PyGetPmmlFile" x="44.1955" y="32" width="158" height="63" expanded="1" expx="44.1955" expy="32" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="ForEachLoop_int6" x="160" y="671" width="420.937" height="400.92" expanded="1" expx="160" expy="671" expWidth="420.937" expHeight="400.92" shownState="0"/>
+   <presentation name="PyLoadPMML_LR" x="74.1757" y="105.151" width="158" height="117" expanded="1" expx="74.1757" expy="105.151" expWidth="158" expHeight="117" shownState="0"/>
+   <presentation name="PyLoadPMML_ANN" x="300.952" y="83.3513" width="158" height="117" expanded="1" expx="300.952" expy="83.3513" expWidth="158" expHeight="117" shownState="0"/>
+   <presentation name="PyInitInputs0" x="38.6513" y="245.599" width="158" height="63" expanded="1" expx="38.6513" expy="245.599" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="PyBuildLoopIndex0" x="539.827" y="420.002" width="158" height="117" expanded="1" expx="539.827" expy="420.002" expWidth="158" expHeight="117" shownState="0"/>
+   <presentation name="PyGetRes" x="635.783" y="930.053" width="158" height="63" expanded="1" expx="635.783" expy="930.053" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="__ROOT__" x="0" y="0" width="797.783" height="1075.92" expanded="1" expx="0" expy="0" expWidth="797.783" expHeight="1075.92" shownState="0"/>
+</proc>

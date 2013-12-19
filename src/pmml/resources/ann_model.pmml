@@ -1,0 +1,124 @@
+<?xml version="1.0"?>
+<PMML xmlns="http://www.dmg.org/PMML-4_1" version="4.1">
+  <Header copyright="myCopyright" description="Tests unitaires">
+    <Application name="PMMLlib" version="myVersion"/>
+    <Annotation>Tests unitaires PMMLlib</Annotation>
+  </Header>
+  <DataDictionary>
+    <DataField name="rw" displayName="rw" optype="continuous" dataType="float"/>
+    <DataField name="r" displayName="r" optype="continuous" dataType="float"/>
+    <DataField name="tu" displayName="tu" optype="continuous" dataType="float"/>
+    <DataField name="tl" displayName="tl" optype="continuous" dataType="float"/>
+    <DataField name="hu" displayName="hu" optype="continuous" dataType="float"/>
+    <DataField name="hl" displayName="hl" optype="continuous" dataType="float"/>
+    <DataField name="l" displayName="l" optype="continuous" dataType="float"/>
+    <DataField name="kw" displayName="kw" optype="continuous" dataType="float"/>
+    <DataField name="yhat" displayName="yhat" optype="continuous" dataType="float"/>
+  </DataDictionary>
+  <NeuralNetwork modelName="sANNName" functionName="regression" numberOfLayers="2">
+    <MiningSchema>
+      <MiningField name="rw" usageType="active"/>
+      <MiningField name="r" usageType="active"/>
+      <MiningField name="tu" usageType="active"/>
+      <MiningField name="tl" usageType="active"/>
+      <MiningField name="hu" usageType="active"/>
+      <MiningField name="hl" usageType="active"/>
+      <MiningField name="l" usageType="active"/>
+      <MiningField name="kw" usageType="active"/>
+      <MiningField name="yhat" usageType="predicted"/>
+    </MiningSchema>
+    <NeuralInputs numberOfInputs="8">
+      <NeuralInput id="0">
+        <DerivedField optype="continuous" dataType="float">
+          <NormContinuous field="rw">
+            <LinearNorm orig="0.000000e+00" norm="-2.889932e-01"/>
+            <LinearNorm orig="9.999901e-02" norm="0.000000e+00"/>
+          </NormContinuous>
+        </DerivedField>
+      </NeuralInput>
+      <NeuralInput id="1">
+        <DerivedField optype="continuous" dataType="float">
+          <NormContinuous field="r">
+            <LinearNorm orig="0.000000e+00" norm="-5.756638e-01"/>
+            <LinearNorm orig="2.504894e+04" norm="0.000000e+00"/>
+          </NormContinuous>
+        </DerivedField>
+      </NeuralInput>
+      <NeuralInput id="2">
+        <DerivedField optype="continuous" dataType="float">
+          <NormContinuous field="tu">
+            <LinearNorm orig="0.000000e+00" norm="-1.699313e-01"/>
+            <LinearNorm orig="8.933486e+04" norm="0.000000e+00"/>
+          </NormContinuous>
+        </DerivedField>
+      </NeuralInput>
+      <NeuralInput id="3">
+        <DerivedField optype="continuous" dataType="float">
+          <NormContinuous field="tl">
+            <LinearNorm orig="0.000000e+00" norm="-1.707007e-01"/>
+            <LinearNorm orig="8.955232e+01" norm="0.000000e+00"/>
+          </NormContinuous>
+        </DerivedField>
+      </NeuralInput>
+      <NeuralInput id="4">
+        <DerivedField optype="continuous" dataType="float">
+          <NormContinuous field="hu">
+            <LinearNorm orig="0.000000e+00" norm="-3.302777e-02"/>
+            <LinearNorm orig="1.050003e+03" norm="0.000000e+00"/>
+          </NormContinuous>
+        </DerivedField>
+      </NeuralInput>
+      <NeuralInput id="5">
+        <DerivedField optype="continuous" dataType="float">
+          <NormContinuous field="hl">
+            <LinearNorm orig="0.000000e+00" norm="-4.562070e-02"/>
+            <LinearNorm orig="7.600007e+02" norm="0.000000e+00"/>
+          </NormContinuous>
+        </DerivedField>
+      </NeuralInput>
+      <NeuralInput id="6">
+        <DerivedField optype="continuous" dataType="float">
+          <NormContinuous field="l">
+            <LinearNorm orig="0.000000e+00" norm="-1.155882e-01"/>
+            <LinearNorm orig="1.400018e+03" norm="0.000000e+00"/>
+          </NormContinuous>
+        </DerivedField>
+      </NeuralInput>
+      <NeuralInput id="7">
+        <DerivedField optype="continuous" dataType="float">
+          <NormContinuous field="kw">
+            <LinearNorm orig="0.000000e+00" norm="-5.780019e-02"/>
+            <LinearNorm orig="1.095001e+04" norm="0.000000e+00"/>
+          </NormContinuous>
+        </DerivedField>
+      </NeuralInput>
+    </NeuralInputs>
+    <NeuralLayer activationFunction="tanh" numberOfNeurons="1">
+      <Neuron id="8" bias="-1.263572e+00">
+        <Con from="0" weight="7.536629e-01"/>
+        <Con from="1" weight="1.653660e-03"/>
+        <Con from="2" weight="4.725001e-03"/>
+        <Con from="3" weight="9.969786e-03"/>
+        <Con from="4" weight="1.787976e-01"/>
+        <Con from="5" weight="-1.809809e-01"/>
+        <Con from="6" weight="-1.735688e-01"/>
+        <Con from="7" weight="8.559675e-02"/>
+      </Neuron>
+    </NeuralLayer>
+    <NeuralLayer activationFunction="identity" numberOfNeurons="1">
+      <Neuron id="9" bias="-1.745483e+00">
+        <Con from="8" weight="6.965512e+00"/>
+      </Neuron>
+    </NeuralLayer>
+    <NeuralOutputs numberOfOutputs="1">
+      <NeuralOutput outputNeuron="9">
+        <DerivedField optype="continuous" dataType="float">
+          <NormContinuous field="yhat">
+            <LinearNorm orig="0.000000e+00" norm="-5.873935e-01"/>
+            <LinearNorm orig="7.781171e+01" norm="0.000000e+00"/>
+          </NormContinuous>
+        </DerivedField>
+      </NeuralOutput>
+    </NeuralOutputs>
+  </NeuralNetwork>
+</PMML>

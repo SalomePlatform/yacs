@@ -1,0 +1,77 @@
+/*!
+\page pyexamples PMMLlib Python examples
+
+\section sectionC Update a model in an existing PMML file :
+The updating is done in two steps:
+- 1 : delete the XML node of the model with method UnlinkNode();
+- 2 : re-create the model.
+\verbatim
+PMMLlib p ( fileName, log );
+
+# Set the model
+p.SetCurrentModel( modelName, modelType );
+
+# Delete the XML node of the model
+p.UnlinkNode( );
+# Recreate the model with new parameters
+p.AddRegressionModel(« monModele », PMMLlib::kREGRESSION,  « regression » );
+p.AddDataField( ….);
+
+# Save the PMML file
+p.Write( );
+\endverbatim
+
+
+
+
+\section sectionD Backup and update a model in an existing PMML file :
+It is done in two steps:
+- 1 : backup the model in an XML node with name modelName_<i> with method BackupNode();
+- 2 : re-create the model.
+\verbatim
+PMMLlib p ( fileName, log );
+
+# Set the model
+p.SetCurrentModel( « monModele », modelType );
+
+# Save the model in a new XML node
+p.BackupNode( );
+# Modify
+p.AddRegressionModel(« monModele », PMMLlib::kREGRESSION,  « regression » );
+p.AddDataField( ….);
+
+# Save the PMML file
+p.Write( );
+\endverbatim
+
+
+
+\section sectionE Add a model in an existing PMML file :
+
+\verbatim
+PMMLlib p ( fileName, log );
+
+# Create the model
+p.AddRegressionModel(« monModele », PMMLlib::kREGRESSION,  « regression » );
+p.AddDataField( ….);
+
+# Save the PMML file
+p.Write( );
+\endverbatim
+
+\section sectionF Read a model and execute it :
+
+\verbatim
+P = PMMLlib( fileName, log );
+p.SetCurrentModel( modelName, modelType );
+
+pyStrCode = p.ExportPythonStr( « myPyFunc », « function header » ); 
+exec pyStrCode;
+
+# Eval myPyFunc which is now known as a python function
+inputs = [1.,2.,3.,4.]
+res = myPyFunc(inputs)
+\endverbatim
+
+
+*/
