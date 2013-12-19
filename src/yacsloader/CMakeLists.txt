@@ -19,6 +19,7 @@
 
 IF(SALOME_BUILD_TESTS)
   ADD_SUBDIRECTORY(Test)
+  ADD_SUBDIRECTORY(pmml)
 ENDIF(SALOME_BUILD_TESTS)
 
 # --- options ---
@@ -172,5 +173,6 @@ INSTALL(FILES ${YACSloader_HEADERS} DESTINATION ${SALOME_INSTALL_HEADERS})
 
 FILE(GLOB sample_files
   ${PROJECT_SOURCE_DIR}/src/yacsloader/samples/*.xml 
+  ${PROJECT_SOURCE_DIR}/src/yacsloader/samples/*.pmml
   ${PROJECT_SOURCE_DIR}/src/yacsloader/samples/*.data)
 INSTALL(FILES ${sample_files} DESTINATION ${SALOME_YACS_INSTALL_SAMPLES})

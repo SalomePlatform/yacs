@@ -23,6 +23,23 @@ box = geompy.MakeBoxDXDYDZ(10,10,10)
 id_cyl_Int = geompy.addToStudy(box,"Box_%d" % n)]]></code></script>
       <outport name="box" type="GEOM_Shape"/>
    </inline>
+   <inline name="PyLoadPMML">
+      <script><code><![CDATA[ 
+import sys;
+from PMML import *;
+pmmlObj = PMMLlib( filename );   
+pmmlObj.SetCurrentModel( modelname , eval(pmmltype) );
+myFunc = "pyFunc";
+myHeader = "Function processed in YACCS";
+myCode = pmmlObj.ExportPyStr(myFunc, myHeader);
+exec myCode;
+]]></code></script>
+      <inport name="filename" type="string"/>
+      <inport name="modelname" type="string"/> 
+      <inport name="pmmltype" type="string"/>      
+      <outport name="pyFunc" type="pyobj"/>
+   </inline>   
    <presentation name="PyScript0" x="9" y="80.5" width="227.5" height="110"/>
+   <presentation name="PyTestPMML" x="9" y="80.5" width="227.5" height="110"/>   
    <presentation name="__ROOT__" x="0" y="0" width="246" height="199.5"/>
 </proc>

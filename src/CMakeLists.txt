@@ -22,6 +22,7 @@
 ##
 SET(SUBDIRS_COMMON
   bases engine runtime wrappergen yacsloader yacsorb salomeloader
+  pmml
   )
 
 ##
