@@ -48,6 +48,7 @@ SET(RSTFILES
   main_menu.rst
   modification.rst
   operations.rst
+  pmml.rst
   principes.rst
   progdsc.rst
   pysalome.rst

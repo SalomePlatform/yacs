@@ -37,7 +37,6 @@ FILE(TO_NATIVE_PATH "${CMAKE_CURRENT_BINARY_DIR}" output)
 # Here is the "standard" procedure, as if ${input} was hand-written.
 ADD_CUSTOM_TARGET(usr_docs ALL
   COMMAND ${DOXYGEN_EXECUTABLE} Doxyfile_pmml_user
-  COMMAND ${PYTHON_EXECUTABLE} -c "import shutil, sys; shutil.rmtree(r'''${CMAKE_INSTALL_PREFIX}/share/doc/salome/PMML''', True); shutil.copytree(r'''${CMAKE_CURRENT_BINARY_DIR}/doc_ref_user/html''', r'''${CMAKE_INSTALL_PREFIX}/share/doc/salome/PMML'''); shutil.copy(r'''${CMAKE_CURRENT_SOURCE_DIR}/images/head.png''', r'''${CMAKE_INSTALL_PREFIX}/share/doc/salome/PMML''')"
   VERBATIM
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   )

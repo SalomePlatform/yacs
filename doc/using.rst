@@ -63,4 +63,5 @@ generates the necessary SALOME embedment starting from a brief description of th
    batch
    optimizer
    resource
+   pmml
 

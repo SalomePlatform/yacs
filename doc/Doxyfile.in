@@ -113,7 +113,8 @@ INPUT                  =  \
    @CMAKE_SOURCE_DIR@/src/genericgui \
    @CMAKE_SOURCE_DIR@/src/salomegui \
    @CMAKE_SOURCE_DIR@/src/salomewrap \
-   @CMAKE_SOURCE_DIR@/src/pyqt
+   @CMAKE_SOURCE_DIR@/src/pyqt \
+   @CMAKE_SOURCE_DIR@/src/pmml
 
 FILE_PATTERNS          = *.c \
                          *.cc \
