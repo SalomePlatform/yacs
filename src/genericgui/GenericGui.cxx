@@ -720,6 +720,14 @@ void GenericGui::initialMenus()
   showBaseMenus(true);
 }
 
+void GenericGui::hideAllMenus()
+{
+  showBaseMenus   (false);
+  showCommonMenus (false);
+  showEditionMenus(false);
+  showExecMenus   (false);
+}
+
 void GenericGui::showBaseMenus(bool show)
 {
   DEBTRACE("GenericGui::showBaseMenus " << show);
@@ -801,12 +809,12 @@ void GenericGui::showCommonMenus(bool show)
   _wrapper->setToolShown(_hideAllLinksAct, show);
 }
 
-void GenericGui::switchContext(QWidget *view)
+void GenericGui::switchContext(QWidget *view, bool onExit)
 {
   DEBTRACE("GenericGui::switchContext " << view);
   if (! _mapViewContext.count(view))
     {
-      initialMenus();
+      onExit ? hideAllMenus() : initialMenus();
       _dwTree->setWidget(0);
       _dwStacked->setWidget(0);
       return;
@@ -959,7 +967,7 @@ bool GenericGui::closeContext(QWidget *view, bool onExit)
         }
       delete context;
       _mapViewContext.erase(view);
-      switchContext(newView);
+      switchContext(newView, onExit);
     }
   return true;
 }

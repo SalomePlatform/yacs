@@ -65,11 +65,12 @@ namespace YACS
       void createMenus();
       void createTools();
       void initialMenus();
+      void hideAllMenus();
       void showBaseMenus(bool show);
       void showEditionMenus(bool show);
       void showExecMenus(bool show);
       void showCommonMenus(bool show);
-      void switchContext(QWidget *view);
+      void switchContext(QWidget *view, bool onExit = false);
       bool closeContext(QWidget *view, bool onExit = false);
       void showDockWidgets(bool isVisible);
       void raiseStacked();
