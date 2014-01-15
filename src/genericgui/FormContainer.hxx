@@ -45,6 +45,7 @@ public:
   void FillPanel(YACS::ENGINE::Container *container);
   virtual void onModified();
   virtual bool onApply();
+  virtual void onCancel();
   void updateResource(const std::string &resource);
 
 public:

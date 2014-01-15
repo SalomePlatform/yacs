@@ -705,8 +705,16 @@ bool FormContainer::onApply()
   SubjectContainer *scont =
     QtGuiContext::getQtCurrent()->_mapOfSubjectContainer[_container];
   YASSERT(scont);
-  bool ret = scont->setProperties(_properties);
+  bool ret = scont->setName(le_name->text().toStdString());
   DEBTRACE(ret);
-  if (ret) ret = scont->setName(le_name->text().toStdString());
+  if (ret) ret = scont->setProperties(_properties);
   return ret;
+}
+
+void FormContainer::onCancel()
+{
+  SubjectContainer *scont =
+    QtGuiContext::getQtCurrent()->_mapOfSubjectContainer[_container];
+  YASSERT(scont);
+  FillPanel(scont->getContainer());
 }

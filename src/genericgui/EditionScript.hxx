@@ -23,7 +23,8 @@
 #include "yacsconfig.h"
 #include "EditionElementaryNode.hxx"
 #include "FormComponent.hxx"
-#include <QRadioButton>
+
+class FormContainer;
 
 #if HAS_QSCI4>0
 class QsciScintilla;
@@ -42,8 +43,6 @@ namespace YACS
       virtual void onCancel();
       virtual void onScriptModified();
       virtual void onEdit();
-      virtual void on_tb_options_toggled(bool checked);
-      virtual void on_remote_toggled(bool checked);
       virtual void fillContainerPanel();
       virtual void changeContainer(int);
       virtual void update(GuiEvent event, int type, Subject* son);
@@ -68,11 +67,9 @@ namespace YACS
       QPushButton* _editor;
       bool _checked;
       bool _remote;
-      QFrame *fr_options;
       QFrame *fr_container;
       ComboBox* cb_container;
-      QRadioButton* radiolocal;
-      QRadioButton* radioremote;
+      FormContainer* formcontainer;
     };
   }
 }

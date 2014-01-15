@@ -22,13 +22,14 @@
 #include "Resource.hxx"
 #include "Container.hxx"
 #include "InlineNode.hxx"
+#include "FormContainer.hxx"
+#include "Message.hxx"
 
 #if HAS_QSCI4>0
 #include <qsciscintilla.h>
 #include <qscilexerpython.h>
 #endif
 
-#include <QToolButton>
 #include <QSplitter>
 #include <QTemporaryFile>
 #include <QTextStream>
@@ -96,36 +97,6 @@ EditionScript::EditionScript(Subject* subject,
   _glayout->setMargin(1);
   splitter->addWidget(window);
 
-  //add an options section in ports layout for execution mode (local or remote)
-  QHBoxLayout* hboxLayout = new QHBoxLayout();
-  hboxLayout->setMargin(0);
-  QToolButton* tb_options = new QToolButton();
-  tb_options->setCheckable(true);
-  QIcon icon;
-  icon.addFile("icons:icon_down.png");
-  icon.addFile("icons:icon_up.png", QSize(), QIcon::Normal, QIcon::On);
-  tb_options->setIcon(icon);
-  hboxLayout->addWidget(tb_options);
-
-  QLabel* label = new QLabel("Execution Mode");
-  QFont font;
-  font.setBold(true);
-  font.setWeight(75);
-  label->setFont(font);
-  hboxLayout->addWidget(label);
-
-  _portslayout->addLayout(hboxLayout);
-
-  fr_options = new QFrame();
-  QHBoxLayout* hboxLayout1 = new QHBoxLayout(fr_options);
-  hboxLayout1->setMargin(0);
-  radiolocal= new QRadioButton("Local");
-  radioremote= new QRadioButton("Remote");
-  radiolocal->setChecked(true);
-  hboxLayout1->addWidget(radiolocal);
-  hboxLayout1->addWidget(radioremote);
-  hboxLayout->addWidget(fr_options);
-
   fr_container = new QFrame();
   QHBoxLayout* hboxLayout2 = new QHBoxLayout(fr_container);
   hboxLayout2->setMargin(0);
@@ -134,6 +105,10 @@ EditionScript::EditionScript(Subject* subject,
   cb_container = new ComboBox();
   hboxLayout2->addWidget(cb_container);
   _portslayout->addWidget(fr_container);
+
+  formcontainer = new FormContainer(this);
+  formcontainer->on_tb_container_toggled(false);
+  _portslayout->addWidget(formcontainer);
   //end of insertion of execution mode
 
   createTablePorts(_portslayout);
@@ -181,13 +156,11 @@ EditionScript::EditionScript(Subject* subject,
     }
   connect(_sci, SIGNAL(textChanged()), this, SLOT(onScriptModified()));
 
-  connect(tb_options, SIGNAL(toggled(bool)), this, SLOT(on_tb_options_toggled(bool)));
-  connect(radioremote, SIGNAL(toggled(bool)), this, SLOT(on_remote_toggled(bool)));
   connect(cb_container, SIGNAL(mousePressed()), this, SLOT(fillContainerPanel()));
   connect(cb_container, SIGNAL(activated(int)), this, SLOT(changeContainer(int)));
 
   update(UPDATE,0,0);
-  on_tb_options_toggled(false);
+  changeContainer(0);
 }
 
 EditionScript::~EditionScript()
@@ -253,7 +226,17 @@ void EditionScript::onApply()
         }
 #endif
     }
-  _isEdited = _isEdited || scriptEdited;
+
+  bool containerEdited = true;
+  if (formcontainer->onApply()) {
+    fillContainerPanel();
+    containerEdited = false;
+  } else {
+    Message mess(GuiContext::getCurrent()->_lastErrorMessage);
+    return;
+  }
+
+  _isEdited = _isEdited || scriptEdited || containerEdited;
 
   EditionElementaryNode::onApply();
 }
@@ -262,6 +245,7 @@ void EditionScript::onCancel()
 {
   if (_haveScript)
     _sci->setText(_subInlineNode->getScript().c_str());
+  formcontainer->onCancel();
   EditionElementaryNode::onCancel();
 }
 
@@ -303,47 +287,6 @@ void EditionScript::onEdit()
   onApply();
 }
 
-void EditionScript::on_tb_options_toggled(bool checked)
-{
-  DEBTRACE("EditionScript::on_tb_options_toggled " << checked);
-  _checked = checked;
-  if(_checked)
-    {
-      fr_options->show();
-      if(_remote)fr_container->show();
-    }
-  else
-    {
-      fr_options->hide();
-      fr_container->hide();
-    }
-}
-
-void EditionScript::on_remote_toggled(bool checked)
-{
-  DEBTRACE("EditionScript::on_remote_toggled " << checked);
-  _remote=checked;
-  YACS::ENGINE::InlineNode *pyNode = dynamic_cast<YACS::ENGINE::InlineNode*>(_subInlineNode->getNode());
-  std::string mode = pyNode->getExecutionMode();
-  DEBTRACE(mode);
-
-  if(checked)
-    {
-      //remote radio button is checked
-      if(mode != "remote")
-        _subInlineNode->setExecutionMode("remote");
-      fr_container->show();
-      fillContainerPanel();
-    }
-  else
-    {
-      //remote radio button is unchecked
-      if(mode != "local")
-        _subInlineNode->setExecutionMode("local");
-      fr_container->hide();
-    }
-}
-
 void EditionScript::fillContainerPanel()
 {
   DEBTRACE("EditionScript::fillContainerPanel ");
@@ -361,6 +304,7 @@ void EditionScript::fillContainerPanel()
     {
       int index = cb_container->findText(cont->getName().c_str());
       cb_container->setCurrentIndex(index);
+      formcontainer->FillPanel(cont);
     }
 }
 
@@ -385,6 +329,9 @@ void EditionScript::changeContainer(int index)
   SubjectContainer *scnt = GuiContext::getCurrent()->_mapOfSubjectContainer[newContainer];
 
   _subInlineNode->setContainer(scnt);
+  
+  // show the selected container parameters
+  formcontainer->FillPanel(newContainer);
 }
 
 void EditionScript::update(GuiEvent event, int type, Subject* son)
@@ -394,22 +341,12 @@ void EditionScript::update(GuiEvent event, int type, Subject* son)
   if(event == ASSOCIATE)
     {
       fillContainerPanel();
+      SubjectContainer *scont = dynamic_cast<SubjectContainer*>(son);
+      YASSERT(scont);
+      formcontainer->FillPanel(scont->getContainer());
     }
   else if(event == UPDATE)
     {
-      YACS::ENGINE::InlineNode *pyNode = dynamic_cast<YACS::ENGINE::InlineNode*>(_subInlineNode->getNode());
-      std::string mode = pyNode->getExecutionMode();
-      if(mode == "remote")
-        {
-          _remote=true;
-          radioremote->setChecked(true);
-        }
-      else if(mode == "local")
-        {
-          _remote=false;
-          radiolocal->setChecked(true);
-        }
-
       fillContainerPanel();
     }
 }

@@ -61,6 +61,7 @@ void EditionContainer::update(GuiEvent event, int type, Subject* son)
   switch (event)
     {
     case RENAME:
+    case UPDATE:
       _wContainer->le_name->setText((son->getName()).c_str());
       fillContainerPanel();
       break;
@@ -95,8 +96,6 @@ void EditionContainer::onApply()
 void EditionContainer::onCancel()
 {
   DEBTRACE("EditionContainer::onCancel");
-  SubjectContainer *scont = dynamic_cast<SubjectContainer*>(_subject);
-  YASSERT(scont);
-  _wContainer->FillPanel(scont->getContainer());
+  _wContainer->onCancel();
   ItemEdition::onCancel();
 }

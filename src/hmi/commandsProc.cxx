@@ -3358,6 +3358,9 @@ bool CommandSetContainerProperties::localExecute()
           YASSERT(ref);
           _oldProp = ref->getProperties();
           ref->setProperties(_properties);
+          SubjectContainer *scont = GuiContext::getCurrent()->_mapOfSubjectContainer[ref]; 
+          scont->update(UPDATE, 0, scont);
+          scont->notifyComponentsChange(ASSOCIATE, CONTAINER, scont);
           return true;
         }
       GuiContext::getCurrent()->_lastErrorMessage = "container not found: " + _container;
