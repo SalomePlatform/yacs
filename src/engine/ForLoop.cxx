@@ -91,6 +91,7 @@ void ForLoop::init(bool start)
   Any* tmp=AtomAny::New(_nbOfTurns);
   _indexPort.put(tmp);
   tmp->decrRef();
+  exUpdateProgress();
 }
 
 //! Update the state of the for loop
@@ -145,6 +146,7 @@ void ForLoop::exUpdateState()
 YACS::Event ForLoop::updateStateOnFinishedEventFrom(Node *node)
 {
   DEBTRACE("ForLoop::updateStateOnFinishedEventFrom " << node->getName());
+  exUpdateProgress();
   if((++_nbOfTurns)>=_nbOfTimesPort.getIntValue())
     {
       setState(YACS::DONE);
@@ -160,6 +162,12 @@ YACS::Event ForLoop::updateStateOnFinishedEventFrom(Node *node)
       _node->exUpdateState();
     }
   return YACS::NOEVENT;
+}
+
+void ForLoop::exUpdateProgress()
+{
+  // emit notification to all observers registered with the dispatcher on any change of the node's state
+  sendEvent("progress");
 }
 
 void ForLoop::accept(Visitor *visitor)
@@ -257,3 +265,16 @@ std::list<OutputPort *> ForLoop::getSetOfOutputPort() const
   return ret;
 }
 
+std::string ForLoop::getProgress() const
+{
+  char* aProgress = new char[];
+  sprintf(aProgress, "0");
+  AnyInputPort* aNbStepsPort = (AnyInputPort*)&_nbOfTimesPort;
+  if (aNbStepsPort && !aNbStepsPort->isEmpty()) {
+    int nbSteps = aNbStepsPort->getIntValue();
+    if (nbSteps > 0 && _nbOfTurns >= 0) {
+      sprintf(aProgress, "%i/%i", _nbOfTurns, nbSteps);
+    }
+  }
+  return aProgress;
+}

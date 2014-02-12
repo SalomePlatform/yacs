@@ -325,6 +325,11 @@ void Subject::addSubjectReference(Subject *ref)
   update(ADDREF, 0, son);
 }
 
+void Subject::setProgress( std::string newProgress )
+{
+  _progress = newProgress;
+}
+
 // ----------------------------------------------------------------------------
 
 GuiObserver::GuiObserver()

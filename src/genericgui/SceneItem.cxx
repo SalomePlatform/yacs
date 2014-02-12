@@ -141,10 +141,15 @@ void AbstractSceneItem::addHeader()
 {
 }
 
+void AbstractSceneItem::addProgressItem()
+{
+}
+
 qreal AbstractSceneItem::getHeaderBottom()
 {
   return 0;
 }
+
 qreal AbstractSceneItem::getWidth()
 {
   return _width;

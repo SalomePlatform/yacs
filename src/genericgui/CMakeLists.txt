@@ -308,6 +308,8 @@ SET(GenericGui_SOURCES
   ScenePortItem.cxx               
   SceneProcItem.hxx               
   SceneProcItem.cxx               
+  SceneProgressItem.hxx
+  SceneProgressItem.cxx
   SceneTextItem.hxx               
   SceneTextItem.cxx               
   SchemaComponentItem.hxx         

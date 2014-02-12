@@ -221,6 +221,18 @@ YACS::StatesForNode Proc::getNodeState(int numId)
   return state;
 }
 
+std::string Proc::getNodeProgress(int numId)
+{
+  std::string progress = "0";
+  if(YACS::ENGINE::Node::idMap.count(numId) == 0)
+    {
+      cerr << "Unknown node id " << numId << endl;
+    }
+  else if (YACS::ENGINE::ComposedNode* node = dynamic_cast<YACS::ENGINE::ComposedNode*>(YACS::ENGINE::Node::idMap[numId]))
+    progress = node->getProgress();
+  return progress;
+}
+
 std::string Proc::getXMLState(int numId)
 {
   if(YACS::ENGINE::Node::idMap.count(numId) == 0)

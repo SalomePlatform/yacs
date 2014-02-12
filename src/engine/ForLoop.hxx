@@ -40,6 +40,7 @@ namespace YACS
       ForLoop(const ForLoop& other, ComposedNode *father, bool editionOnly);
       ForLoop(const std::string& name);
       void exUpdateState();
+      void exUpdateProgress();
       void init(bool start=true);
       InputPort *edGetNbOfTimesInputPort() { return &_nbOfTimesPort; }
       Node *simpleClone(ComposedNode *father, bool editionOnly=true) const;
@@ -53,6 +54,7 @@ namespace YACS
       InputPort *getDecisionPort() const { return (InputPort *)&_nbOfTimesPort; }
       OutputPort *edGetIndexPort() { return &_indexPort; }
       virtual std::string typeName() {return "YACS__ENGINE__ForLoop";}
+      std::string getProgress() const;
     protected:
       YACS::Event updateStateOnFinishedEventFrom(Node *node);
       void checkCFLinks(const std::list<OutPort *>& starts, InputPort *end, unsigned char& alreadyFed,

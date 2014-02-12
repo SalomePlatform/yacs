@@ -73,6 +73,7 @@ namespace YACS
       virtual void reorganize();
       virtual QString getLabel();
       virtual void addHeader();
+      virtual void addProgressItem();
       virtual qreal getHeaderBottom();
       qreal getWidth();
       qreal getHeight();
@@ -132,6 +133,8 @@ namespace YACS
       virtual void shrinkExpandLink(bool se);
       virtual void shrinkExpandRecursive(bool isExpanding, bool fromHere);
       bool isAncestorShrinked() { return _ancestorShrinked; };
+      bool _blocX;
+      bool _blocY;
 
     protected:
 //       virtual bool sceneEvent(QEvent *event);

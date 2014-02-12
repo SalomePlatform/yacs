@@ -1213,6 +1213,7 @@ void GenericGui::setLoadedPresentation(YACS::ENGINE::Proc* proc)
 {
   DEBTRACE("GenericGui::setLoadedPresentation");
   QtGuiContext::getQtCurrent()->setLoadingPresentation(true);
+  map<SceneNodeItem*, QPointF> nodesToMove;
   map<YACS::ENGINE::Node*, PrsData> presNodes = _loader->getPrsData(proc);
   if (!presNodes.empty())
     {
@@ -1233,8 +1234,24 @@ void GenericGui::setLoadedPresentation(YACS::ENGINE::Proc* proc)
           inode->setExpandedPos(QPointF(pres._expx, pres._expy));
           inode->setExpandedWH(pres._expWidth, pres._expHeight);
           inode->setShownState(shownState(pres._shownState));
+
+          // collect nodes to correct it's Y-position if this collides with parent's header
+          if (inode->getParent() && inode->y() < inode->getParent()->getHeaderBottom())
+            nodesToMove[inode] = QPointF(inode->x(), inode->getParent()->getHeaderBottom()+1);
         }
     }
+  QtGuiContext::getQtCurrent()->setLoadingPresentation(false);
+  
+  //after loading of presentation:
+
+  //move nodes because of progress bar, if any was added
+  map<SceneNodeItem*, QPointF>::iterator it = nodesToMove.begin();
+  for (; it!= nodesToMove.end(); ++it)
+    {
+      (*it).first->setTopLeft((*it).second);
+    }
+
+  //update links
   if (Scene::_autoComputeLinks)
     _guiEditor->rebuildLinks();
   else
@@ -1244,8 +1261,6 @@ void GenericGui::setLoadedPresentation(YACS::ENGINE::Proc* proc)
       SceneComposedNodeItem *proc = dynamic_cast<SceneComposedNodeItem*>(item);
       proc->updateLinks();
     }
-
-  QtGuiContext::getQtCurrent()->setLoadingPresentation(false);
 }
 
 // -----------------------------------------------------------------------------

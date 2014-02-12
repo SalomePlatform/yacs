@@ -62,6 +62,7 @@ namespace YACS
       virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
       virtual void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
 
+      SceneNodeItem* _fatherNode;
       SceneHeaderItem *_header;
       SceneCtrlPortItem *_controlIn;
       SceneCtrlPortItem *_controlOut;

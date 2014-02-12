@@ -112,6 +112,8 @@
 #define ENSUREVISIBLEWHENMOVED  true
 #define TABPANELSUP             true
 #define DOCKWIDGETPRIORITY      0
+#define PROGRESSBARCOLOR        Qt::darkGreen
+#define PROGRESSBARLABEL        2
 
 #define EDITEDNODEBRUSHCOLOR    QColor(255, 255, 190)
 #define NORMALNODEBRUSHCOLOR    QColor(230, 235, 255)
@@ -210,6 +212,8 @@ namespace YACS {
         static bool simplifyLink;
         static bool ensureVisibleWhenMoved;
         static int  dockWidgetPriority;
+        static QColor progressBarColor;
+        static int    progressBarLabel;
 
         // Colors of state of nodes
         static QColor editedNodeBrushColor;
@@ -314,6 +318,8 @@ namespace YACS {
         static int Corner_Margin;
         static int Header_Height;
         static int Radius;
+
+        static int progressBar_Height;
 
         static bool tabPanelsUp;
     };

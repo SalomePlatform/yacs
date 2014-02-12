@@ -133,6 +133,7 @@ namespace YACS
     protected:
       static const int NOT_RUNNING_BRANCH_ID;
     protected:
+      int _currentIndex;
       SplitterNode _splitterNode;
       FakeNodeForForEachLoop *_nodeForSpecialCases;
       std::vector<AnySplitOutputPort *> _outGoingPorts;//! ports linked to node outside the current scope
@@ -147,6 +148,7 @@ namespace YACS
       ~ForEachLoop();
       void init(bool start=true);
       void exUpdateState();
+      void exUpdateProgress();
       void getReadyTasks(std::vector<Task *>& tasks);
       int getNumberOfInputPorts() const;
       //
@@ -166,6 +168,7 @@ namespace YACS
       void writeDot(std::ostream &os) const;
       virtual std::string typeName() {return "YACS__ENGINE__ForEachLoop";}
       virtual void resetState(int level);
+      std::string getProgress() const;
     protected:
       Node *simpleClone(ComposedNode *father, bool editionOnly=true) const;
       void checkLinkPossibility(OutPort *start, const std::list<ComposedNode *>& pointsOfViewStart,

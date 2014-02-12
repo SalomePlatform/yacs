@@ -47,6 +47,7 @@ SceneHeaderNodeItem::SceneHeaderNodeItem(QGraphicsScene *scene, SceneItem *paren
                                          QString label)
   : SceneHeaderItem(scene, parent, label)
 {
+   _fatherNode= dynamic_cast<SceneNodeItem*>(parent);
   _width  = 2*Resource::Corner_Margin + 2*Resource::DataPort_Width + Resource::Space_Margin;
   _height = Resource::Header_Height;
   _maxPorts = 0;
@@ -92,6 +93,8 @@ void SceneHeaderNodeItem::paint(QPainter *painter,
 
   int x = Resource::Border_Margin + 1;
   int y = Resource::Header_Height - Resource::Line_Space;
+  if (_fatherNode && _fatherNode->hasProgressBar())
+    y += Resource::progressBar_Height;
   int w = Resource::Corner_Margin + 2*Resource::DataPort_Width + 2*Resource::Space_Margin;
   if (_parent->getWidth() > w) w = _parent->getWidth() - Resource::Border_Margin;
   QPen pen(getPenColor());
@@ -106,8 +109,7 @@ void SceneHeaderNodeItem::paint(QPainter *painter,
   pen.setWidth(Resource::Thickness);
   painter->setPen(pen);
   
-  SceneNodeItem* father = dynamic_cast<SceneNodeItem*>(_parent);
-  bool expanded = (father && father->isExpanded());
+  bool expanded = (_fatherNode && _fatherNode->isExpanded());
   QColor baseColor = getBrushColor();
   if (expanded)
     painter->setBrush(baseColor);
@@ -139,11 +141,13 @@ void SceneHeaderNodeItem::setText(QString label)
 
 qreal SceneHeaderNodeItem::getHeaderBottom() const
 {
+  qreal res = 0;
   if (_hasHeader) {
-    return Resource::Header_Height + _maxPorts * (Resource::DataPort_Height + Resource::Space_Margin);
-  } else {
-    return 0;
-  };
+    res += Resource::Header_Height + _maxPorts * (Resource::DataPort_Height + Resource::Space_Margin);
+    if (_fatherNode && _fatherNode->hasProgressBar())
+      res += Resource::progressBar_Height;
+  }
+  return res;
 }
 
 void SceneHeaderNodeItem::autoPosControl(AbstractSceneItem *item)
@@ -171,6 +175,8 @@ void SceneHeaderNodeItem::autoPosNewPort(AbstractSceneItem *item)
     _outPorts.push_back(dynamic_cast<SceneOutPortItem*>(item));
   };
   qreal yTop   = Resource::Header_Height;
+  if (_fatherNode && _fatherNode->hasProgressBar())
+    yTop += Resource::progressBar_Height;
   qreal deltaY = Resource::DataPort_Height + Resource::Space_Margin;
   yTop += nbPorts * deltaY;
   if (nbPorts >=_maxPorts) {
@@ -188,10 +194,12 @@ void SceneHeaderNodeItem::reorganizePorts(shownState ss)
 
   qreal yTop;
   qreal href = Resource::Header_Height;
+  if (_fatherNode && _fatherNode->hasProgressBar())
+    href += Resource::progressBar_Height;
   bool isShown = (ss != shrinkHidden);
   if (!isShown) href = Resource::Corner_Margin;
 
-std::list<SceneInPortItem*>::iterator iti = _inPorts.begin();
+  std::list<SceneInPortItem*>::iterator iti = _inPorts.begin();
   int nbPorts = 0;
   for (; iti != _inPorts.end(); ++iti)
     {
@@ -238,9 +246,8 @@ void SceneHeaderNodeItem::adjustGeometry()
 
 void SceneHeaderNodeItem::adjustPosPorts()
 {
-  SceneNodeItem* father = dynamic_cast<SceneNodeItem*>(_parent);
-  YASSERT(father);
-  shownState ss = father->getShownState();
+  YASSERT(_fatherNode);
+  shownState ss = _fatherNode->getShownState();
   if (_controlOut)
     {
       int x = Resource::Corner_Margin + 2*Resource::DataPort_Width + Resource::Space_Margin;
@@ -258,6 +265,8 @@ QRectF SceneHeaderNodeItem::getMinimalBoundingRect() const
   int nbPorts  = _inPorts.size();
   if (_outPorts.size() > nbPorts) nbPorts = _outPorts.size();
   if (nbPorts) height += nbPorts*(Resource::DataPort_Height + Resource::Space_Margin);
+  if (_fatherNode && _fatherNode->hasProgressBar())
+    height += Resource::progressBar_Height;
   //DEBTRACE(nbPorts << " " << width << " " << height);
   return QRectF(x(), y(), width, height);
 }

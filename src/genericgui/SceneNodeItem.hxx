@@ -39,6 +39,7 @@ namespace YACS
     class SceneHeaderNodeItem;
     class SceneComposedNodeItem;
     class ScenePortItem;
+    class SceneProgressItem;
 
     class SceneNodeItem: public SceneObserverItem
     {
@@ -51,6 +52,8 @@ namespace YACS
       virtual void setHeight(qreal height);
       virtual void addHeader();
       virtual SceneHeaderItem* getHeader();
+      virtual void addProgressItem();
+      virtual SceneProgressItem* getProgressItem() { return _progressItem; };
       virtual void paint(QPainter *painter,
                          const QStyleOptionGraphicsItem *option,
                          QWidget *widget);
@@ -85,8 +88,7 @@ namespace YACS
       qreal getExpandedWidth() { return _expandedWidth; };
       qreal getExpandedHeight() { return _expandedHeight; };
       shownState getShownState() {return _shownState; };
-      bool _blocX;
-      bool _blocY;
+      bool hasProgressBar() const;
 
     protected:
       virtual QString getMimeFormat();
@@ -102,6 +104,7 @@ namespace YACS
       std::list<AbstractSceneItem*> _inPorts;
       std::list<AbstractSceneItem*> _outPorts;    
       SceneHeaderNodeItem *_header;
+      SceneProgressItem *_progressItem;
       int _execState;
       bool _moving;
       bool _moved;

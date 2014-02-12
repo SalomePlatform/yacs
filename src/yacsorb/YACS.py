@@ -46,6 +46,9 @@ class proc_i(YACS_ORB__POA.ProcExec):
     def getNodeState(self,numid):
         return self.p.getNodeState(numid)
 
+    def getNodeProgress(self,numid):
+        return self.p.getNodeProgress(numid)
+
     def getXMLState(self, numid):
         return self.p.getXMLState(numid)
 

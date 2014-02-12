@@ -118,17 +118,25 @@ void Yacsgui_Resource::createPreferences(Yacsgui* swm)
   swm->addPreference( "Ensure Node Visible When Moved", presentationGroup, LightApp_Preferences::Bool, RESOURCE_YACS, "ensureVisibleWhenMoved" );
   swm->addPreference( "Tabified Panels Up", presentationGroup, LightApp_Preferences::Bool, RESOURCE_YACS, "tabPanelsUp" );
   int priority = swm->addPreference( "DockWidget priority", presentationGroup, LightApp_Preferences::Selector, RESOURCE_YACS, "dockWidgetPriority" );
+  swm->addPreference( "Progress bar color", presentationGroup, LightApp_Preferences::Color, RESOURCE_YACS, "progressBarColor" );
+  int progressLabel = swm->addPreference( "Progress bar label", presentationGroup, LightApp_Preferences::Selector, RESOURCE_YACS, "progressBarLabel" );
 
-  QStringList priorityList;
-  priorityList.append( "Horizontal" );
-  priorityList.append( "Vertical" );
-
+  QStringList stringsList;
+  stringsList.append( "Horizontal" );
+  stringsList.append( "Vertical" );
   QList<QVariant> indexesList;
   indexesList.append(0);
   indexesList.append(1);
-
-  swm->setPreferenceProperty( priority, "strings", priorityList );
+  swm->setPreferenceProperty( priority, "strings", stringsList );
   swm->setPreferenceProperty( priority, "indexes", indexesList );
+
+  stringsList.clear();
+  indexesList.clear();
+
+  stringsList << "Percentage: \"50%\"" << "Nb.steps: \"5/10\"" << "Both: \"50% (5/10)\"";
+  indexesList << 0 << 1 << 2;
+  swm->setPreferenceProperty( progressLabel, "strings", stringsList );
+  swm->setPreferenceProperty( progressLabel, "indexes", indexesList );
 
   int pythonGroup = swm->addPreference( "Python", genTab );
 
@@ -286,6 +294,8 @@ void Yacsgui_Resource::preferencesChanged()
   Resource::ensureVisibleWhenMoved = booleanValue("ensureVisibleWhenMoved", ENSUREVISIBLEWHENMOVED);
   Resource::tabPanelsUp = booleanValue("tabPanelsUp", TABPANELSUP);
   Resource::dockWidgetPriority   = integerValue( "dockWidgetPriority" , DOCKWIDGETPRIORITY);
+  Resource::progressBarColor = colorValue("progressBarColor", PROGRESSBARCOLOR);
+  Resource::progressBarLabel = integerValue( "progressBarLabel" , PROGRESSBARLABEL);
 
   // Color of state of nodes
   Resource::editedNodeBrushColor = colorValue(_editedNodeBrushColor, EDITEDNODEBRUSHCOLOR);

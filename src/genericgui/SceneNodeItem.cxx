@@ -21,6 +21,7 @@
 #include "SceneComposedNodeItem.hxx"
 #include "SceneProcItem.hxx"
 #include "SceneHeaderNodeItem.hxx"
+#include "SceneProgressItem.hxx"
 #include "SceneInPortItem.hxx"
 #include "SceneOutPortItem.hxx"
 #include "SceneCtrlInPortItem.hxx"
@@ -58,6 +59,7 @@ SceneNodeItem::SceneNodeItem(QGraphicsScene *scene, SceneItem *parent,
   _inPorts.clear();
   _outPorts.clear();
   _header = 0;
+  _progressItem = 0;
   _brushColor = Resource::Scene_pen;
   _moving = false;
   _moved = false;
@@ -119,6 +121,20 @@ void SceneNodeItem::addHeader()
 SceneHeaderItem* SceneNodeItem::getHeader()
 {
   return _header;
+}
+
+void SceneNodeItem::addProgressItem()
+{
+  DEBTRACE("SceneNodeItem::addProgressItem ");
+  if (!_progressItem)
+    {
+      _progressItem = new SceneProgressItem(_scene,
+                                        this,
+                                        "progress");
+      _progressItem->setText("0");
+      updateState();
+      checkGeometryChange();
+    }
 }
 
 void SceneNodeItem::paint(QPainter *painter,
@@ -440,4 +456,9 @@ void SceneNodeItem::showOutScopeLinks()
 void SceneNodeItem::setShownState(shownState ss)
 {
   _shownState = ss;
+}
+
+bool SceneNodeItem::hasProgressBar() const
+{
+  return _progressItem != 0;
 }

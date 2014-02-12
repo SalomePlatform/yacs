@@ -33,6 +33,8 @@ bool Resource::autoComputeLinks = AUTOCOMPUTELINKS;
 bool Resource::simplifyLink = SIMPLIFYLINK;
 bool Resource::ensureVisibleWhenMoved = ENSUREVISIBLEWHENMOVED;
 int Resource::dockWidgetPriority = DOCKWIDGETPRIORITY;
+QColor Resource::progressBarColor = PROGRESSBARCOLOR;
+int Resource::progressBarLabel = PROGRESSBARLABEL;
 QFont  Resource::pythonfont = PYTHONFONT;
 
 // Statics for color of states
@@ -143,6 +145,8 @@ int Resource::Text_DX         =  3;
 int Resource::Corner_Margin   = ( Resource::Border_Margin + Resource::Space_Margin );
 int Resource::Header_Height   = ( Resource::Corner_Margin + Resource::CtrlPort_Height + Resource::Line_Space + Resource::Line_Width + Resource::Line_Space );
 int Resource::Radius          =  3;
+
+int Resource::progressBar_Height =  20;
 
 bool Resource::tabPanelsUp = TABPANELSUP;
 

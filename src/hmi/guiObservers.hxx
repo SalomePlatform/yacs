@@ -104,7 +104,8 @@ namespace YACS
         SETSELECT,
         GEOMETRY,
         EMPHASIZE,
-        SWITCHSHAPE
+        SWITCHSHAPE,
+        PROGRESS
       } GuiEvent;
     
     class ProcInvoc;
@@ -139,11 +140,14 @@ namespace YACS
       bool isDestructible() { return _destructible; };
       static void erase(Subject* sub, Command *command=0, bool post=false);
       virtual TypeOfElem getType(){return UNKNOWN;}
+      virtual void setProgress( std::string newProgress );
+      virtual std::string getProgress() { return _progress; };
     protected:
       std::set<GuiObserver *> _setObs;
       Subject *_parent;
       bool _destructible;
       bool _askRegisterUndo;
+      std::string _progress;
     };
     
     class HMI_EXPORT GuiObserver

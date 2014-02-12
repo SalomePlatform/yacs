@@ -45,6 +45,8 @@
     <parameter name="addRowCols" value="false" />
     <parameter name="ensureVisibleWhenMoved" value="true" />
     <parameter name="tabPanelsUp" value="true" />
+    <parameter name="progressBarColor" value="#008000" />
+    <parameter name="progressBarLabel" value="2" />
     <parameter name="documentation" value="yacs_help"/>
 
     <parameter name="editedNodeBrushColor" value="255, 255, 190" />

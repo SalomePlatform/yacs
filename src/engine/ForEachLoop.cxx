@@ -293,13 +293,13 @@ void FakeNodeForForEachLoop::finished()
 
 ForEachLoop::ForEachLoop(const std::string& name, TypeCode *typeOfDataSplitted):DynParaLoop(name,typeOfDataSplitted),
                                                                                 _splitterNode(NAME_OF_SPLITTERNODE,typeOfDataSplitted,this),
-                                                                                _execCurrentId(0),_nodeForSpecialCases(0)
+                                                                                _execCurrentId(0),_nodeForSpecialCases(0),_currentIndex(0)
 {
 }
 
 ForEachLoop::ForEachLoop(const ForEachLoop& other, ComposedNode *father, bool editionOnly):DynParaLoop(other,father,editionOnly),
                                                                                            _splitterNode(other._splitterNode,this),
-                                                                                           _execCurrentId(0),_nodeForSpecialCases(0)
+                                                                                           _execCurrentId(0),_nodeForSpecialCases(0),_currentIndex(0)
 {
   int i=0;
   if(!editionOnly)
@@ -334,6 +334,8 @@ void ForEachLoop::init(bool start)
   _splitterNode.init(start);
   _execCurrentId=0;
   cleanDynGraph();
+  _currentIndex = 0;
+  exUpdateProgress();
 }
 
 void ForEachLoop::exUpdateState()
@@ -433,6 +435,12 @@ void ForEachLoop::exUpdateState()
 
       forwardExecStateToOriginalBody(_execNodes[nbOfBr-1]);
     }
+}
+
+void ForEachLoop::exUpdateProgress()
+{
+  // emit notification to all observers registered with the dispatcher on any change of the node's state
+  sendEvent("progress");
 }
 
 void ForEachLoop::getReadyTasks(std::vector<Task *>& tasks)
@@ -541,6 +549,8 @@ YACS::Event ForEachLoop::updateStateOnFinishedEventFrom(Node *node)
       if (_initializingCounter == 0) _initNode->setState(DONE);
       break;
     case WORK_NODE:
+      _currentIndex++;
+      exUpdateProgress();
       storeOutValsInSeqForOutOfScopeUse(_execIds[id],id);
       if(_execCurrentId==_splitterNode.getNumberOfElements())
         {//No more elements of _dataPortToDispatch to treat
@@ -618,6 +628,8 @@ YACS::Event ForEachLoop::updateStateOnFinishedEventFrom(Node *node)
     {
       DEBTRACE("Finalize node finished on branch " << id);
       _unfinishedCounter--;
+      _currentIndex++;
+      exUpdateProgress();
       DEBTRACE(_unfinishedCounter << " finalize nodes still running");
       if (_unfinishedCounter == 0)
         {
@@ -825,4 +837,15 @@ void ForEachLoop::resetState(int level)
   _execCurrentId=0;
   //Note: cleanDynGraph is not a virtual method (must be called from ForEachLoop object) 
   cleanDynGraph();
+}
+
+std::string ForEachLoop::getProgress() const
+{
+  int nbElems = _splitterNode.getNumberOfElements();
+  char* aProgress = new char[];
+  if (nbElems > 0)
+    sprintf(aProgress, "%i/%i", _currentIndex, nbElems);
+  else
+    sprintf(aProgress, "0");
+  return aProgress;
 }

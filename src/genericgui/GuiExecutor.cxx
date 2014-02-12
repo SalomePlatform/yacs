@@ -392,6 +392,7 @@ void GuiExecutor::registerStatusObservers()
   for ( std::list<Node*>::iterator it = aNodeSet.begin(); it != aNodeSet.end(); it++ )
     {
       _procRef->addObserver(_observerRef, _serv->getEngineId((*it)->getNumId()) , "status");
+      _procRef->addObserver(_observerRef, _serv->getEngineId((*it)->getNumId()) , "progress");
     }
   _procRef->addObserver(_observerRef, _serv->getEngineId(_proc->getNumId()) , "executor"); 
 }
@@ -519,32 +520,39 @@ bool GuiExecutor::event(QEvent *e)
       SubjectNode *snode = _context->_mapOfExecSubjectNode[iGui];
       DEBTRACE("node " << snode->getName() << " state=" << state);
 
-      YACS::ENGINE::Node *node = snode->getNode();
-      list<InputPort*> inports = node->getLocalInputPorts();
-      list<InputPort*>::iterator iti = inports.begin();
-      for ( ; iti != inports.end(); ++iti)
-        {
-          string val = _procRef->getInPortValue(numid, (*iti)->getName().c_str());
-          DEBTRACE("node " << snode->getName() << " inport " << (*iti)->getName() 
-                   << " value " << val);
-          YASSERT(_context->_mapOfSubjectDataPort.count(*iti));
-          SubjectDataPort* port = _context->_mapOfSubjectDataPort[*iti];
-          port->setExecValue(val);
-          port->update(YACS::HMI::UPDATEPROGRESS, 0, port);
-        }
-      list<OutputPort*> outports = node->getLocalOutputPorts();
-      list<OutputPort*>::iterator ito = outports.begin();
-      for ( ; ito != outports.end(); ++ito)
-        {
-          string val = _procRef->getOutPortValue(numid, (*ito)->getName().c_str());
-          DEBTRACE("node " << snode->getName() << " outport " << (*ito)->getName() 
-                   << " value " << val);
-          YASSERT(_context->_mapOfSubjectDataPort.count(*ito));
-          SubjectDataPort* port = _context->_mapOfSubjectDataPort[*ito];
-          port->setExecValue(val);
-          port->update(YACS::HMI::UPDATEPROGRESS, 0, port);
-        }
-      snode->update(YACS::HMI::UPDATEPROGRESS, state, snode);
+      if (event == "progress") { // --- Update progress bar
+        std::string progress = _procRef->getNodeProgress(numid);
+        snode->setProgress( progress );
+        snode->update(YACS::HMI::PROGRESS, state, snode);
+      }
+      else { // --- Update node ports
+        YACS::ENGINE::Node *node = snode->getNode();
+        list<InputPort*> inports = node->getLocalInputPorts();
+        list<InputPort*>::iterator iti = inports.begin();
+        for ( ; iti != inports.end(); ++iti)
+          {
+            string val = _procRef->getInPortValue(numid, (*iti)->getName().c_str());
+            DEBTRACE("node " << snode->getName() << " inport " << (*iti)->getName() 
+                     << " value " << val);
+            YASSERT(_context->_mapOfSubjectDataPort.count(*iti));
+            SubjectDataPort* port = _context->_mapOfSubjectDataPort[*iti];
+            port->setExecValue(val);
+            port->update(YACS::HMI::UPDATEPROGRESS, 0, port);
+          }
+        list<OutputPort*> outports = node->getLocalOutputPorts();
+        list<OutputPort*>::iterator ito = outports.begin();
+        for ( ; ito != outports.end(); ++ito)
+          {
+            string val = _procRef->getOutPortValue(numid, (*ito)->getName().c_str());
+            DEBTRACE("node " << snode->getName() << " outport " << (*ito)->getName() 
+                     << " value " << val);
+            YASSERT(_context->_mapOfSubjectDataPort.count(*ito));
+            SubjectDataPort* port = _context->_mapOfSubjectDataPort[*ito];
+            port->setExecValue(val);
+            port->update(YACS::HMI::UPDATEPROGRESS, 0, port);
+          }
+        snode->update(YACS::HMI::UPDATEPROGRESS, state, snode);
+      }
    }
 
   return true;

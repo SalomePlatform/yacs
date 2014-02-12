@@ -118,6 +118,7 @@ namespace YACS
       void connected();
       void accept(Visitor *visitor);
       virtual void cleanNodes();
+      virtual std::string getProgress() const {return "0";};
     protected:
       struct SortHierarc
       {

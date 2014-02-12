@@ -41,6 +41,7 @@ module YACS_ORB
   interface ProcExec
   {
     long getNodeState(in long numid);
+    string getNodeProgress(in long numid);
     string getXMLState(in long numid);
     string getInPortValue(in long nodeNumid, in string portName);
     string setInPortValue(in string nodeName, in string portName, in string value);

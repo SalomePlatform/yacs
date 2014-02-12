@@ -30,6 +30,7 @@
 #include "SceneLinkItem.hxx"
 #include "SceneDSLinkItem.hxx"
 #include "SceneCtrlLinkItem.hxx"
+#include "SceneProgressItem.hxx"
 #include "LinkMatrix.hxx"
 #include "LinkAStar.hxx"
 #include "ItemMimeData.hxx"
@@ -144,6 +145,11 @@ void SceneComposedNodeItem::update(GuiEvent event, int type, Subject* son)
                                             son->getName().c_str(),
                                             son);
           item->addHeader();
+          if ( !QtGuiContext::getQtCurrent()->isEdition()
+            && (type == YACS::HMI::FORLOOP || type == YACS::HMI::FOREACHLOOP) )
+            {
+              item->addProgressItem();
+            }
           autoPosNewChild(item, _children, true);
           break;
         case YACS::HMI::PYTHONNODE:
@@ -316,6 +322,15 @@ void SceneComposedNodeItem::update(GuiEvent event, int type, Subject* son)
         autoPosNewChild(sinode, _children, true);
       }
       break;
+    case PROGRESS:
+      {
+        if (dynamic_cast<SubjectForLoop*>(son) || dynamic_cast<SubjectForEachLoop*>(son))
+        {
+          if (SceneProgressItem* spitem = getProgressItem())
+            spitem->setProgress(son->getProgress().c_str());
+        }
+      }
+      break;
     default:
        ;
 //       DEBTRACE("SceneComposedNodeItem::update(), event not handled: "<< eventName(event));
@@ -464,6 +479,8 @@ void SceneComposedNodeItem::shrinkExpandRecursive(bool isExpanding, bool fromHer
       else
         setPos(_expandedPos);
       adjustHeader();
+      if (_progressItem)
+        _progressItem->adjustGeometry();
     }
   else
     { // --- expanding: resize, then show children
@@ -500,6 +517,8 @@ void SceneComposedNodeItem::shrinkExpandRecursive(bool isExpanding, bool fromHer
         }
       setPos(_expandedPos);
       adjustHeader();
+      if (_progressItem)
+        _progressItem->adjustGeometry();
     }
 }
 
@@ -538,6 +557,8 @@ void SceneComposedNodeItem::setShownState(shownState ss)
       show();
     }
   adjustHeader();
+  if (_progressItem)
+    _progressItem->adjustGeometry();
 }
 
 void SceneComposedNodeItem::collisionResolv(SceneItem* child, QPointF oldPos)
