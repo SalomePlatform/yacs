@@ -842,10 +842,10 @@ void ForEachLoop::resetState(int level)
 std::string ForEachLoop::getProgress() const
 {
   int nbElems = _splitterNode.getNumberOfElements();
-  char* aProgress = new char[];
+  std::stringstream aProgress;
   if (nbElems > 0)
-    sprintf(aProgress, "%i/%i", _currentIndex, nbElems);
+    aProgress << _currentIndex << "/" << nbElems;
   else
-    sprintf(aProgress, "0");
-  return aProgress;
+    aProgress << "0";
+  return aProgress.str();
 }

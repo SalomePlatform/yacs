@@ -267,14 +267,15 @@ std::list<OutputPort *> ForLoop::getSetOfOutputPort() const
 
 std::string ForLoop::getProgress() const
 {
-  char* aProgress = new char[];
-  sprintf(aProgress, "0");
+  std::stringstream aProgress;
+  aProgress << "0";
   AnyInputPort* aNbStepsPort = (AnyInputPort*)&_nbOfTimesPort;
   if (aNbStepsPort && !aNbStepsPort->isEmpty()) {
     int nbSteps = aNbStepsPort->getIntValue();
     if (nbSteps > 0 && _nbOfTurns >= 0) {
-      sprintf(aProgress, "%i/%i", _nbOfTurns, nbSteps);
+      aProgress.clear();
+      aProgress << _nbOfTurns << "/" << nbSteps;
     }
   }
-  return aProgress;
+  return aProgress.str();
 }
