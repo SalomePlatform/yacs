@@ -273,7 +273,7 @@ std::string ForLoop::getProgress() const
   if (aNbStepsPort && !aNbStepsPort->isEmpty()) {
     int nbSteps = aNbStepsPort->getIntValue();
     if (nbSteps > 0 && _nbOfTurns >= 0) {
-      aProgress.clear();
+      aProgress.str("");
       aProgress << _nbOfTurns << "/" << nbSteps;
     }
   }
