@@ -1,9 +1,9 @@
-@REM Copyright (C) 2006-2013  CEA/DEN, EDF R&D
+@REM Copyright (C) 2006-2014  CEA/DEN, EDF R&D
 @REM
 @REM This library is free software; you can redistribute it and/or
 @REM modify it under the terms of the GNU Lesser General Public
 @REM License as published by the Free Software Foundation; either
-@REM version 2.1 of the License.
+@REM version 2.1 of the License, or (at your option) any later version.
 @REM
 @REM This library is distributed in the hope that it will be useful,
 @REM but WITHOUT ANY WARRANTY; without even the implied warranty of
