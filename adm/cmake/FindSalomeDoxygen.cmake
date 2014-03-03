@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2014  CEA/DEN, EDF R&D
+# Copyright (C) 2013-2014  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -16,59 +16,29 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+# Author: Adrien Bruneton
+#
 
-##
-# Common packages
-##
-SET(SUBDIRS_COMMON
-  bases engine wrappergen yacsorb salomeloader
-  pmml
-  )
+# Doxygen detection for salome
+#
+#  !! Please read the generic detection procedure in SalomeMacros.cmake !!
+#
+# Additional variables:
+#
+# DOXYGEN_SUPPORT_STL (string) [advanced] : set to YES if doxygen properly manages STL files
+#                     or to NO otherwise (version 1.4.4 or older); see description of 
+#                     BUILTIN_STL_SUPPORT configuration variable in the doxygen documentation
 
-##
-# KERNEL
-##
-IF(SALOME_YACS_USE_KERNEL)
-  SET(SUBDIRS_KERNEL
-    runtime yacsloader
-    )
-ENDIF()
-
-##
-# SWIG wrapping
-##
-IF(SALOME_YACS_USE_SWIG)
-  SET(SUBDIRS_SWIG
-    engine_swig
-  )
-  IF(SALOME_YACS_USE_KERNEL)
-    LIST(APPEND SUBDIRS_SWIG
-      runtime_swig yacsloader_swig
-    )
+SALOME_FIND_PACKAGE_AND_DETECT_CONFLICTS(Doxygen DOXYGEN_EXECUTABLE 2)
+IF(DOXYGEN_FOUND)
+  IF(DOXYGEN_VERSION VERSION_LESS "1.4.5")
+    SET(DOXYGEN_SUPPORT_STL NO)
+  ELSE()
+    SET(DOXYGEN_SUPPORT_STL YES)
   ENDIF()
 ENDIF()
+MARK_AS_ADVANCED(DOXYGEN_SUPPORT_STL)
 
-##
-# GUI
-##
-IF(SALOME_BUILD_GUI)
-  SET(SUBDIRS_GUI
-    pyqt hmi salomewrap genericgui salomegui
-    )
-  IF(SALOME_YACS_USE_SWIG)
-    LIST(APPEND SUBDIRS_GUI
-      salomegui_swig
-      )
-  ENDIF()
+IF(DOXYGEN_FOUND)
+  SALOME_ACCUMULATE_ENVIRONMENT(PATH ${DOXYGEN_EXECUTABLE})
 ENDIF()
-
-SET(SUBDIRS
-  ${SUBDIRS_COMMON}
-  ${SUBDIRS_KERNEL}
-  ${SUBDIRS_SWIG}
-  ${SUBDIRS_GUI}
-)
-
-FOREACH(dir ${SUBDIRS})
-  ADD_SUBDIRECTORY(${dir})
-ENDFOREACH(dir ${SUBDIRS})

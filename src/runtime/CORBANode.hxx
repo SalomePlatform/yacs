@@ -83,15 +83,17 @@ namespace YACS
       virtual void disconnectService();
       virtual void cleanNodes();
       std::list<Engines::ConnectionManager::connectionId> ids;
+      virtual void addDatastreamPortToInitMultiService(const std::string & port_name,
+                                                       int number);
 #endif
       virtual void shutdown(int level);
       virtual std::string getContainerLog();
 
-      virtual void addDatastreamPortToInitMultiService(const std::string & port_name,
-                                                       int number);
     private:
       YACS::BASES::Mutex _mutex;
+#ifdef DSC_PORTS
       Engines::Superv_Component::seq_multiple_param _param;
+#endif
     };
   }
 }

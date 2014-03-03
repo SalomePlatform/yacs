@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2014  CEA/DEN, EDF R&D
+# Copyright (C) 2013-2014  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -16,30 +16,18 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+# Author: Adrien Bruneton
+#
 
-INCLUDE(UseOmniORB)
+# PThread detection for SALOME
+#
+#  !! Please read the generic detection procedure in SalomeMacros.cmake !!
+#
+SALOME_FIND_PACKAGE_AND_DETECT_CONFLICTS(PThread PTHREAD_INCLUDE_DIR 1)
+MARK_AS_ADVANCED(PTHREAD_LIBRARIES PTHREAD_INCLUDE_DIR)
 
-IF(SALOME_YACS_USE_KERNEL)
-  SET(SALOME_INCL_PATH ${KERNEL_INCLUDE_DIRS})
-ENDIF(SALOME_YACS_USE_KERNEL)
+IF(SALOMEPTHREAD_FOUND) 
+  SALOME_ACCUMULATE_HEADERS(PTHREAD_INCLUDE_DIR)
+  SALOME_ACCUMULATE_ENVIRONMENT(LD_LIBRARY_PATH ${PTHREAD_LIBRARIES})
+ENDIF()
 
-INCLUDE_DIRECTORIES(
-  ${SALOME_INCL_PATH}
-  ${OMNIORB_INCLUDE_DIR}
-  ${CMAKE_CURRENT_BINARY_DIR}
-)
-
-SET(SalomeIDLYACS_IDLSOURCES
-  yacsgui.idl
-)
-
-SET(IDL_INCLUDE_DIRS
-  ${KERNEL_ROOT_DIR}/idl/salome
-  ${CMAKE_CURRENT_SOURCE_DIR}
-)
-SET(IDL_LINK_FLAGS
-  ${KERNEL_SalomeIDLKernel}
-)
-
-OMNIORB_ADD_MODULE(SalomeIDLYACS "${SalomeIDLYACS_IDLSOURCES}" "${IDL_INCLUDE_DIRS}" "${IDL_LINK_FLAGS}")
-INSTALL(TARGETS SalomeIDLYACS EXPORT ${PROJECT_NAME}TargetGroup DESTINATION ${SALOME_INSTALL_LIBS})

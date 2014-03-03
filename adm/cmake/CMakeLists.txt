@@ -36,6 +36,22 @@ IF(NOT SALOME_YACS_USE_KERNEL)
   LIST(APPEND _adm_data
     FindGraphviz.cmake
     FindSalomeGraphviz.cmake
+    FindCppUnit.cmake
+    FindOmniORB.cmake
+    FindOmniORBPy.cmake
+    FindPThread.cmake
+    FindSalomeBoost.cmake
+    FindSalomeCppUnit.cmake
+    FindSalomeDoxygen.cmake
+    FindSalomeLibXml2.cmake
+    FindSalomeOmniORB.cmake
+    FindSalomeOmniORBPy.cmake
+    FindSalomePThread.cmake
+    FINDSalomePython.cmake
+    FindSalomeSWIG.cmake
+    SalomeMacros.cmake
+    SalomeSetupPlatform.cmake
+    UseOmniORB.cmake
   )
 ENDIF(NOT SALOME_YACS_USE_KERNEL)
 INSTALL(FILES ${_adm_data} DESTINATION ${SALOME_INSTALL_CMAKE_LOCAL})

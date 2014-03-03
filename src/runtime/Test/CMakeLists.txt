@@ -43,11 +43,6 @@ ADD_DEFINITIONS(
   -DUSE_CPPUNIT
 )
 
-IF(WIN32)
-  ADD_DEFINITIONS(-DNOGDI)
-ENDIF(WIN32)
-
-
 # --- sources ---
 
 # idl files

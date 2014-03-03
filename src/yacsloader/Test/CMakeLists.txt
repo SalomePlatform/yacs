@@ -42,11 +42,6 @@ ADD_DEFINITIONS(
   ${OMNIORB_DEFINITIONS}
 )
 
-IF(WIN32)
-  ADD_DEFINITIONS(-DNOGDI)
-ENDIF(WIN32)
-
-
 # --- sources ---
 
 # idl files

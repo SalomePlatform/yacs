@@ -28,11 +28,6 @@ INCLUDE_DIRECTORIES(
   ${PTHREAD_INCLUDE_DIR}
   )
 
-# additional preprocessor / compiler flags
-IF(WIN32)
-  ADD_DEFINITIONS(-DNOGDI)
-ENDIF(WIN32)
-
 # libraries to link to
 SET(_link_LIBRARIES
   ${PTHREAD_LIBRARIES}

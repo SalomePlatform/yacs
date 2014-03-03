@@ -45,6 +45,7 @@ IF( SALOME_YACS_USE_KERNEL )
     LIST(APPEND CMAKE_MODULE_PATH "${KERNEL_ROOT_DIR}/salome_adm/cmake_files")
     INCLUDE(SalomeMacros)
     FIND_PACKAGE(SalomeKERNEL REQUIRED)
+    KERNEL_WITH_CORBA() # check whether KERNEL builded with CORBA
     ADD_DEFINITIONS(${KERNEL_DEFINITIONS} -DSALOME_KERNEL)
     INCLUDE_DIRECTORIES(${KERNEL_INCLUDE_DIRS})
   ELSE( EXISTS ${KERNEL_ROOT_DIR} )
@@ -53,16 +54,20 @@ IF( SALOME_YACS_USE_KERNEL )
   SALOME_LOG_OPTIONAL_PACKAGE(SalomeKERNEL SALOME_YACS_USE_KERNEL)
 ELSE( SALOME_YACS_USE_KERNEL )
   MESSAGE(STATUS "Option SALOME_YACS_USE_KERNEL is set to OFF, so YACS will be built without CORBA!!!")
+  LIST(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/adm/cmake")
+  INCLUDE(SalomeMacros)
 ENDIF( SALOME_YACS_USE_KERNEL )
 
 # Find SALOME GUI (optional)
 # ==============
-OPTION(SALOME_BUILD_GUI "Build GUI of YACS" ON)
+CMAKE_DEPENDENT_OPTION(SALOME_BUILD_GUI "Build GUI of YACS" ON
+                       "SALOME_YACS_USE_KERNEL" OFF)
 IF(SALOME_BUILD_GUI)
   SET(GUI_ROOT_DIR $ENV{GUI_ROOT_DIR} CACHE PATH "Path to the Salome GUI")
   IF(EXISTS ${GUI_ROOT_DIR})
     LIST(APPEND CMAKE_MODULE_PATH "${GUI_ROOT_DIR}/adm_local/cmake_files")
     FIND_PACKAGE(SalomeGUI)
+    FULL_GUI(TRUE) # check whether GUI builded in full mode and with CORBA
   ELSE(EXISTS ${GUI_ROOT_DIR})
     MESSAGE(FATAL_ERROR "We absolutely need a Salome GUI, please define GUI_ROOT_DIR or turn option SALOME_BUILD_GUI to OFF !")
   ENDIF(EXISTS ${GUI_ROOT_DIR})
@@ -77,9 +82,14 @@ SET(BUILD_SHARED_LIBS TRUE)
 # Local macros:
 LIST(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/adm/cmake")
 
+# additional preprocessor / compiler flags
+ADD_DEFINITIONS(-DCMAKE_BUILD)
+IF(WIN32)
+  ADD_DEFINITIONS(-DNOGDI)
+ENDIF(WIN32)
+
 # User options
 # ============ 
-ADD_DEFINITIONS(-DCMAKE_BUILD)
 OPTION(SALOME_BUILD_DOC "Generate SALOME YACS documentation" ON)
 OPTION(SALOME_BUILD_TESTS "Build SALOME YACS tests" ON)
 
@@ -241,7 +251,7 @@ SALOME_ACCUMULATE_ENVIRONMENT(LD_LIBRARY_PATH NOCHECK ${CMAKE_INSTALL_PREFIX}/${
 
 # Sources 
 # ========
-IF(SALOME_YACS_USE_KERNEL AND NOT SALOME_LIGHT_ONLY)
+IF(SALOME_YACS_USE_KERNEL)
   ADD_SUBDIRECTORY(idl)
 ENDIF()
 
@@ -265,16 +275,24 @@ INCLUDE(CMakePackageConfigHelpers)
 # List of targets in this project we want to make visible to the rest of the world.
 # They all have to be INSTALL'd with the option "EXPORT ${PROJECT_NAME}TargetGroup"
 SET(_${PROJECT_NAME}_exposed_targets 
-  YACSloader YACSBases YACSlibEngine YACSRuntimeSALOME
+  YACSBases YACSlibEngine 
 )
 
 IF(SALOME_YACS_USE_KERNEL)
-  LIST(APPEND _${PROJECT_NAME}_exposed_targets SalomeIDLYACS)
+  LIST(APPEND _${PROJECT_NAME}_exposed_targets 
+    SalomeIDLYACS YACSRuntimeSALOME YACSloader
+  )
 ENDIF(SALOME_YACS_USE_KERNEL)
 
 IF(SALOME_BUILD_TESTS)
-  LIST(APPEND _${PROJECT_NAME}_exposed_targets YACSDLTest PluginSimplex
-       PluginOptEvTest1 TestComponentLocal yacsloader_echo)
+  LIST(APPEND _${PROJECT_NAME}_exposed_targets 
+    YACSDLTest PluginSimplex PluginOptEvTest1
+  )
+  IF(SALOME_YACS_USE_KERNEL)
+    LIST(APPEND _${PROJECT_NAME}_exposed_targets 
+      TestComponentLocal yacsloader_echo
+    )
+  ENDIF(SALOME_YACS_USE_KERNEL)
 ENDIF(SALOME_BUILD_TESTS)
 
 IF(SALOME_BUILD_GUI)
