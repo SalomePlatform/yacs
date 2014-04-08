@@ -130,6 +130,15 @@ void OptimizerAlgBase::setError(const std::string & message)
   _errorMessage = (message.length() > 0) ? message : "Unknown error";
 }
 
+void OptimizerAlgBase::setNbOfBranches(int nbOfBranches)
+{
+  _nbOfBranches=nbOfBranches;
+}
+
+int OptimizerAlgBase::getNbOfBranches() const
+{
+  return _nbOfBranches;
+}
 
 OptimizerAlgASync::OptimizerAlgASync(Pool *pool):OptimizerAlgBase(pool)
 {

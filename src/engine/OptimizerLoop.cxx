@@ -180,6 +180,7 @@ void OptimizerLoop::exUpdateState()
           //internal graph update
           int i;
           int nbOfBr=_nbOfBranches.getIntValue();
+          _alg->setNbOfBranches(nbOfBr);
           if(nbOfBr==0)
             {
               // A number of branches of 0 is acceptable if there are no output ports

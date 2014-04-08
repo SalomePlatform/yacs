@@ -44,6 +44,7 @@ namespace YACS
       Pool *_pool;
       Proc * _proc;
       std::string _errorMessage;
+      int _nbOfBranches;
 
     protected:
       OptimizerAlgBase(Pool *pool);
@@ -86,7 +87,8 @@ namespace YACS
       virtual bool hasError() const;
       virtual const std::string & getError() const;
       virtual void setError(const std::string & message);
-
+      void setNbOfBranches(int nbOfBranches);
+      int getNbOfBranches() const;
     };
 
     typedef OptimizerAlgBase OptimizerAlgSync;
