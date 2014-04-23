@@ -26,6 +26,20 @@ Before YACS modules can be imported, the environment must be correctly configure
 SALOME application is used.  Otherwise, the PYTHONPATH environment variable has to be set to 
 <YACS_ROOT_DIR>/lib/pythonX.Y/site-packages/salome.
 
+When you build your own Salome application and use your own modules and components (using YACSGEN for example), you may need to load
+the module catalog::
+
+    import SALOMERuntime
+    SALOMERuntime.RuntimeSALOME_setRuntime()
+    salome_runtime = SALOMERuntime.getSALOMERuntime()
+    import salome
+    salome.salome_init()
+    mc = salome.naming_service.Resolve('/Kernel/ModulCatalog')
+    ior = salome.orb.object_to_string(mc)
+    session_catalog = salome_runtime.loadCatalog("session", ior)
+    salome_runtime.addCatalog(session_catalog)
+
+
 .. _loadxml:
 
 Create a calculation scheme by loading an XML file
