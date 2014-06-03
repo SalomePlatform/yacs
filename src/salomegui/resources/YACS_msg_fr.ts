@@ -4,7 +4,7 @@
 <context>
     <name>@default</name>
     <message>
-        <source>Choose Batch Job for watch</source>
+        <source>Choose Batch Job to watch</source>
         <translation>Choisir le job batch à surveiller</translation>
     </message>
     <message>

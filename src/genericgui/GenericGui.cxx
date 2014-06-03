@@ -240,8 +240,8 @@ void GenericGui::createActions()
                                                 tr("Load Schema to run"), tr("Load a schema for run"),
                                                 0, _parent, false, this,  SLOT(onLoadAndRunSchema()));
 
-  _chooseBatchJobAct = _wrapper->createAction(getMenuId(), tr("Choose Batch Job for watch"), QIcon("icons:batch.png"),
-                                         tr("Choose Batch Job for watch"), tr("Choose Batch Job for watch"),
+  _chooseBatchJobAct = _wrapper->createAction(getMenuId(), tr("Choose Batch Job to watch"), QIcon("icons:batch.png"),
+                                         tr("Choose Batch Job to watch"), tr("Choose Batch Job to watch"),
                                          0, _parent, false, this,  SLOT(onChooseBatchJob()));
 
   _startResumeAct = _wrapper->createAction(getMenuId(), tr("Start or Resume Schema execution"), QIcon("icons:suspend_resume.png"),
