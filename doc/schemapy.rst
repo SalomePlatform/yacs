@@ -397,6 +397,7 @@ will appear as follows::
   r = pilot.getRuntime()
   p=r.createProc("pr")
   ti=p.getTypeCode("int")
+  td=p.getTypeCode("double")
   #node1
   n1=r.createScriptNode("","node1")
   p.edAddChild(n1)
@@ -419,9 +420,6 @@ will appear as follows::
   #control links
   p.edAddCFLink(n1,n2)
   p.edAddCFLink(n1,n4)
-  #dataflow links
-  pout=n3.getOutputPort("p1")
-  pin=n4.getInputPort("p1")
   #dataflow links
   p.edAddDFLink(n1.getOutputPort("p1"),n2.getInputPort("p1"))
   p.edAddDFLink(n1.getOutputPort("p1"),n4.getInputPort("p1"))
