@@ -346,22 +346,21 @@ Node n3 will be executed before node n4.
 
 Dataflow link
 ++++++++++++++++++++++++++++
-The first step in defining a dataflow link is to obtain port objects using one of the methods described above.  
-The edAddDFLink method for the context node is then used, transferring the two ports to be connected to it.
-The following gives an example of a dataflow link between the output port p1 of node n3 and the input port of node n4::
+The first step in defining a dataflow link is to obtain port objects using one of the methods described above.
+Then, the edAddLink method links an output port to an input port::
+
+  pout=n3.getOutputPort("p1")
+  pin=n4.getInputPort("p1")
+  p.edAddLink(pout,pin)
+
+Most of the time, when you need a dataflow link between two ports, you also need a control link between the nodes
+of the ports. In this case you can use the method edAddDFLink::
 
   pout=n3.getOutputPort("p1")
   pin=n4.getInputPort("p1")
   p.edAddDFLink(pout,pin)
 
-Data link
-++++++++++++++++++++++++++++
-A data link is defined as being a dataflow link using the edAddLink method instead of edAddDFLink.  
-The same example as above with a data link::
-
-  pout=n3.getOutputPort("p1")
-  pin=n4.getInputPort("p1")
-  p.edAddLink(pout,pin)
+edAddDFLink is equivalent to edAddCFLink followed by edAddLink.
 
 Initialising an input data port
 '''''''''''''''''''''''''''''''''''''''''''''''
@@ -421,8 +420,8 @@ will appear as follows::
   p.edAddCFLink(n1,n2)
   p.edAddCFLink(n1,n4)
   #dataflow links
-  p.edAddDFLink(n1.getOutputPort("p1"),n2.getInputPort("p1"))
-  p.edAddDFLink(n1.getOutputPort("p1"),n4.getInputPort("p1"))
+  p.edAddLink(n1.getOutputPort("p1"),n2.getInputPort("p1"))
+  p.edAddLink(n1.getOutputPort("p1"),n4.getInputPort("p1"))
   #initialisation ports
   n1.getInputPort("p1").edInitPy(5)
 
@@ -452,7 +451,6 @@ Repeating a part of the example above, we will get::
   n2.setScript("p1=2*p1")
   n2.edAddInputPort("p1",ti)
   n2.edAddOutputPort("p1",ti)
-  b.edAddCFLink(n1,n2)
   b.edAddDFLink(n1.getOutputPort("p1"),n2.getInputPort("p1"))
 
 .. _py_forloop:
