@@ -46,6 +46,8 @@ EditionForEachLoop::EditionForEachLoop(Subject* subject,
   _wid->gridLayout1->addWidget(_formEachLoop);
   _formEachLoop->sb_nbranch->setMinimum(1);
   _formEachLoop->sb_nbranch->setMaximum(INT_MAX);
+  if (!QtGuiContext::getQtCurrent()->isEdition())
+    _formEachLoop->setEnabled (false);
   Node* node=_subjectNode->getNode();
   ForEachLoop *fe = dynamic_cast<ForEachLoop*>(node);
   if(fe)

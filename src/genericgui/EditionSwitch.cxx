@@ -52,6 +52,8 @@ EditionSwitch::EditionSwitch(Subject* subject,
   _valueDelegate = new ValueDelegate(parent);
   _tvSwitch->tv_nodes->setItemDelegateForColumn(YValue, _valueDelegate);
   _tvSwitch->setEditableCase(true);
+  if (!QtGuiContext::getQtCurrent()->isEdition())
+    _tvSwitch->setEnabled (false);
 
   connect(_valueDelegate, SIGNAL(commitData(QWidget*)),
           this, SLOT(onCommitData(QWidget*)));

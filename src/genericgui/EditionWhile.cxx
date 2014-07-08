@@ -20,6 +20,7 @@
 #include "EditionWhile.hxx"
 #include "FormLoop.hxx"
 #include "guiObservers.hxx"
+#include "QtGuiContext.hxx"
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -43,6 +44,8 @@ EditionWhile::EditionWhile(Subject* subject,
   _formWhile->sb_nsteps->setMinimum(0);
   _formWhile->sb_nsteps->setMaximum(1);
   _formWhile->label->setText("Condition");
+  if (!QtGuiContext::getQtCurrent()->isEdition())
+    _formWhile->setEnabled (false);
   connect(_formWhile->sb_nsteps, SIGNAL(editingFinished()),
           this, SLOT(onConditionEdited()));
 }

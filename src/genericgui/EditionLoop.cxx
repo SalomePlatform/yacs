@@ -55,6 +55,9 @@ EditionLoop::EditionLoop(Subject* subject,
 
   _formLoop->sb_nsteps->setMinimum(0);
   _formLoop->sb_nsteps->setMaximum(INT_MAX);
+  if (!QtGuiContext::getQtCurrent()->isEdition())
+    _formLoop->setEnabled (false);
+  
   connect(_formLoop->sb_nsteps, SIGNAL(editingFinished()),
           this, SLOT(onNbStepsEdited()));
 }
