@@ -75,6 +75,12 @@ EditionPyFunc::EditionPyFunc(Subject* subject,
   _glayout->addLayout( glt , 1);
 
   _glayout->addWidget( _sci );
+  if (!QtGuiContext::getQtCurrent()->isEdition())
+  {
+    gener_template->setEnabled (false);
+    _liFuncName->setEnabled (false);
+  }
+
 
   connect(_liFuncName, SIGNAL(textChanged(const QString&)),
           this, SLOT(onFuncNameModified(const QString&)));
