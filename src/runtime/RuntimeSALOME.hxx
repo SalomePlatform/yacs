@@ -86,13 +86,15 @@ namespace YACS
         UseSalome = 32
       } FLAGS;
 
-      static void setRuntime(long flags = UsePython+UseCorba+UseXml+UseCpp+UseSalome); // singleton creation
+      // singleton creation
+      static void setRuntime(long flags = UsePython+UseCorba+UseXml+UseCpp+UseSalome,
+                             int argc = 0, char* argv[] = NULL);
       
       friend RuntimeSALOME* getSALOMERuntime();
       
       virtual std::string getVersion() const;
 
-      virtual void init(long flags);
+      virtual void init(long flags, int argc, char* argv[]);
       virtual void fini();
 
       virtual InputPort* createInputPort(const std::string& name,
@@ -250,7 +252,7 @@ namespace YACS
 
     protected:
       RuntimeSALOME();  // singleton
-      RuntimeSALOME(long flags);  // singleton
+      RuntimeSALOME(long flags, int argc, char* argv[]);  // singleton
       void initBuiltins();
       CORBA::ORB_var _orb;
       PyObject * _pyorb;

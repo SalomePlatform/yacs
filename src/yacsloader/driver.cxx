@@ -312,7 +312,9 @@ int main (int argc, char* argv[])
 #endif
 
   timer("Starting ");
-  RuntimeSALOME::setRuntime();
+  long flags = RuntimeSALOME::UsePython + RuntimeSALOME::UseCorba + RuntimeSALOME::UseXml + \
+               RuntimeSALOME::UseCpp + RuntimeSALOME::UseSalome;
+  RuntimeSALOME::setRuntime(flags, argc, argv);
 
   // Try to load the session catalog if it exists
   try

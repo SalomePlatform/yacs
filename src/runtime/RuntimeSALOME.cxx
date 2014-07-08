@@ -122,11 +122,11 @@
 using namespace std;
 using namespace YACS::ENGINE;
 
-void RuntimeSALOME::setRuntime(long flags) // singleton creation (not thread safe!)
+void RuntimeSALOME::setRuntime(long flags, int argc, char* argv[]) // singleton creation (not thread safe!)
 {
   if (! Runtime::_singleton)
     {
-      RuntimeSALOME* r=new RuntimeSALOME(flags);
+      RuntimeSALOME* r=new RuntimeSALOME(flags, argc, argv);
       Runtime::_singleton = r;
       r->initBuiltins();
     }
@@ -182,7 +182,7 @@ void RuntimeSALOME::initBuiltins()
   typeMap["dataref"]= t;
 }
 
-RuntimeSALOME::RuntimeSALOME(long flags)
+RuntimeSALOME::RuntimeSALOME(long flags, int argc, char* argv[])
 {
   // If all flags (apart the IsPyExt flags) are unset, force them to true
   if ((flags - flags & RuntimeSALOME::IsPyExt) == 0)
@@ -209,7 +209,7 @@ RuntimeSALOME::RuntimeSALOME(long flags)
   if (_usePython) _setOfImplementation.insert(PythonNode::IMPL_NAME);
   if (_useCorba)  _setOfImplementation.insert(CORBANode::IMPL_NAME);
   if (_useXml)    _setOfImplementation.insert(XmlNode::IMPL_NAME);
-  init(flags);
+  init(flags, argc, argv);
 }
 
 RuntimeSALOME::~RuntimeSALOME()
@@ -236,7 +236,7 @@ RuntimeSALOME::~RuntimeSALOME()
  *
  */
 
-void RuntimeSALOME::init(long flags)
+void RuntimeSALOME::init(long flags, int argc, char* argv[])
 {
   bool ispyext = flags & RuntimeSALOME::IsPyExt;
   if (_useCorba)
@@ -270,6 +270,7 @@ void RuntimeSALOME::init(long flags)
 #else
           Py_InitializeEx(0); // do not install signal handlers
 #endif
+          PySys_SetArgv(argc, argv);
           PyEval_InitThreads(); /* Create (and acquire) the interpreter lock (for threads)*/
           PyEval_SaveThread(); /* Release the thread state */
           //here we do not have the Global Interpreter Lock
