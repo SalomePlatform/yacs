@@ -233,6 +233,8 @@ RuntimeSALOME::~RuntimeSALOME()
  *            bit1 (UseXml)    true if python nodes are needed
  *            bit1 (UseCpp)    true if C++ nodes are needed
  *            bit1 (UseSalome) true if Salome nodes are needed
+ *  \param argc number of command line arguments (used to initialize the Python interpreter)
+ *  \param argv command line arguments (used to initialize the Python interpreter)
  *
  */
 
@@ -270,7 +272,16 @@ void RuntimeSALOME::init(long flags, int argc, char* argv[])
 #else
           Py_InitializeEx(0); // do not install signal handlers
 #endif
-          PySys_SetArgv(argc, argv);
+          if (argc > 0 && argv != NULL)
+            PySys_SetArgv(argc, argv);
+          else
+            {
+              int pyArgc = 1;
+              char* pyArgv[1];
+              char defaultName[] = "SALOME_YACS_RUNTIME";
+              pyArgv[0] = defaultName;
+              PySys_SetArgv(pyArgc, pyArgv);
+            }
           PyEval_InitThreads(); /* Create (and acquire) the interpreter lock (for threads)*/
           PyEval_SaveThread(); /* Release the thread state */
           //here we do not have the Global Interpreter Lock
