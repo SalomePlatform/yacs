@@ -58,11 +58,13 @@ extern "C" void __run(void *vObj, const char *service, int nIn, int nOut,
 	obj->info.message = "";
 	obj->info.code = 0;
 	
+        Out[0] = NULL;
 	if (std::strncmp(service, "f", 1) == 0) 
 	{
 		double _arg0 = In[0]->getDoubleValue();
 		double _res = obj->f(_arg0);
-		Out[0] = YACS::ENGINE::AtomAny::New(_res);
+		if (obj->info.code == 0)
+		  Out[0] = YACS::ENGINE::AtomAny::New(_res);
 	}
 	else
 	{
@@ -70,7 +72,6 @@ extern "C" void __run(void *vObj, const char *service, int nIn, int nOut,
 		obj->info.message = "service ";
 		obj->info.message += service;
 		obj->info.message += " doesn't exist in TestComponent";
-		Out[0] = NULL;
 	}
 	*r = obj->info;
 }
