@@ -88,6 +88,7 @@ Node::Node(const Node& other, ComposedNode *father):_inGate(this),_outGate(this)
 
 Node::~Node()
 {
+  delete _inPropertyPort;
 }
 
 /**
