@@ -1291,7 +1291,7 @@ void GenericGui::loadSchema(const std::string& filename,bool edit, bool arrangeL
     {
       DEBTRACE(logger->getStr());
     }
-  QString fn=QString::fromStdString(filename);
+  QString fn=QString::fromUtf8(filename.c_str());
   if(edit)
     createContext(proc, fn, "", true);
   else
@@ -1331,11 +1331,11 @@ void GenericGui::onImportSchema()
       if (!fi.exists() && fi.suffix() != "xml")
         fn += ".xml";
 
-      DEBTRACE("file loaded : " <<fn.toStdString());
+      DEBTRACE("file loaded : " <<fn.toUtf8().constData());
       YACS::ENGINE::Proc *proc = 0;
 
       try {
-         proc = _loader->load(fn.toLatin1());
+         proc = _loader->load(fn.toUtf8().constData());
       }
       catch (...) {
       }
@@ -1529,12 +1529,12 @@ void GenericGui::onExportSchema()
     }
   if (fn.isEmpty()) return;
 
-  DEBTRACE("GenericGui::onExportSchema: " << fn.toStdString());
+  DEBTRACE("GenericGui::onExportSchema: " << fn.toUtf8().constData());
   //to be sure that all pending changes are effective
   _parent->setFocus();
   QtGuiContext::getQtCurrent()->setFileName(fn);
   VisitorSaveGuiSchema aWriter(proc);
-  aWriter.openFileSchema( fn.toStdString() );
+  aWriter.openFileSchema( fn.toUtf8().constData() );
   aWriter.visitProc();
   aWriter.closeFileSchema();
   QtGuiContext::getQtCurrent()->setNotSaved(false);
@@ -1555,10 +1555,10 @@ void GenericGui::onExportSchemaAs()
   QString fn = getSaveFileName(fo);
   if (fn.isEmpty()) return;
 
-  DEBTRACE("GenericGui::onExportSchemaAs: " << fn.toStdString());
+  DEBTRACE("GenericGui::onExportSchemaAs: " << fn.toUtf8().constData());
   QtGuiContext::getQtCurrent()->setFileName(fn);
   VisitorSaveGuiSchema aWriter(proc);
-  aWriter.openFileSchema(fn.toStdString());
+  aWriter.openFileSchema(fn.toUtf8().constData());
   aWriter.visitProc();
   aWriter.closeFileSchema();
   _isSaved = true;
