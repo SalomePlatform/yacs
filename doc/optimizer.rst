@@ -32,191 +32,17 @@ C++ plugin example
 ''''''''''''''''''''
 Here is a small example of a C++ synchronous algorithm:
 
-.. code-block:: cpp
-
-  #include <cmath>
-  
-  #include "OptimizerAlg.hxx"
-  
-  using namespace YACS::ENGINE;
-  
-  extern "C"
-  {
-    OptimizerAlgBase * createOptimizerAlgSyncExample(Pool * pool);
-  }
-  
-  class OptimizerAlgSyncExample : public OptimizerAlgSync
-    {
-    private:
-      int _idTest;
-      TypeCode *_tcIn;
-      TypeCode *_tcOut;
-    public:
-      OptimizerAlgSyncExample(Pool *pool);
-      virtual ~OptimizerAlgSyncExample();
-      TypeCode *getTCForIn() const;
-      TypeCode *getTCForOut() const;
-      void start();
-      void takeDecision();
-      void initialize(const Any *input) throw(YACS::Exception);
-      void finish();
-    };
-  
-  OptimizerAlgSyncExample::OptimizerAlgSyncExample(Pool *pool)
-    : OptimizerAlgSync(pool), _tcIn(0), _tcOut(0), _idTest(0)
-  {
-    _tcIn=new TypeCode(Double);
-    _tcOut=new TypeCode(Int);
-  }
-  
-  OptimizerAlgSyncExample::~OptimizerAlgSyncExample()
-  {
-    _tcIn->decrRef();
-    _tcOut->decrRef();
-  }
-  
-  //! Return the typecode of the expected input type
-  TypeCode * OptimizerAlgSyncExample::getTCForIn() const
-  {
-    return _tcIn;
-  }
-  
-  //! Return the typecode of the expected output type
-  TypeCode * OptimizerAlgSyncExample::getTCForOut() const
-  {
-    return _tcOut;
-  }
-  
-  //! Start to fill the pool with samples to evaluate
-  void OptimizerAlgSyncExample::start()
-  {
-    _idTest=0;
-    Any *val=AtomAny::New(1.2);
-    _pool->pushInSample(4,val);
-    val=AtomAny::New(3.4);
-    _pool->pushInSample(9,val);
-  }
-  
-  //! This method is called each time a sample has been evaluated.
-  /*!
-   *  It can either add new samples to evaluate in the pool, do nothing (wait
-   *  for more samples), or empty the pool to finish the evaluation.
-   */
-  void OptimizerAlgSyncExample::takeDecision()
-  {
-    if(_idTest==1)
-      {
-        Any *val=AtomAny::New(5.6);
-        _pool->pushInSample(16,val);
-        val=AtomAny::New(7.8);
-        _pool->pushInSample(25,val);
-        val=AtomAny::New(9. );
-        _pool->pushInSample(36,val);
-        val=AtomAny::New(12.3);
-        _pool->pushInSample(49,val);
-      }
-    else if(_idTest==4)
-      {
-        Any *val=AtomAny::New(45.6);
-        _pool->pushInSample(64,val);
-        val=AtomAny::New(78.9);
-        _pool->pushInSample(81,val);
-      }
-    else
-      {
-        Any *tmp= _pool->getCurrentInSample();
-        if(fabs(tmp->getDoubleValue()-45.6)<1.e-12)
-          _pool->destroyAll();
-      }
-    _idTest++;
-  }
-  
-  //! Optional method to initialize the algorithm.
-  /*!
-   *  For now, the parameter input is always NULL. It might be used in the
-   *  future to initialize an algorithm with custom data.
-   */
-  void OptimizerAlgSyncExample::initialize(const Any *input)
-    throw (YACS::Exception)
-  {
-  }
-  
-  /*!
-   *  Optional method called when the algorithm has finished, successfully or
-   *  not, to perform any necessary clean up.
-   */
-  void OptimizerAlgSyncExample::finish()
-  {
-  }
-  
-  //! Factory method to create the algorithm.
-  OptimizerAlgBase * createOptimizerAlgSyncExample(Pool *pool)
-  {
-    return new OptimizerAlgSyncExample(pool);
-  }
-
+.. literalinclude:: ../src/yacsloader/Test/OptimizerAlgSyncExample.cxx
+    :language: cpp
 
 Here, the entry point in the dynamic library is the name of the factory function : createOptimizerAlgSyncExample
 that returns an instance of the OptimizerAlgSyncExample class that implements the algorithm.
 
 Python plugin example
 ''''''''''''''''''''''
-Here, the same example of a synchronous algorithm in Python::
+Here, the same example of a synchronous algorithm in Python:
 
-  import SALOMERuntime
-  
-  class myalgosync(SALOMERuntime.OptimizerAlgSync):
-    def __init__(self):
-      SALOMERuntime.OptimizerAlgSync.__init__(self, None)
-      r=SALOMERuntime.getSALOMERuntime()
-      self.tin=r.getTypeCode("double")
-      self.tout=r.getTypeCode("int")
-  
-    def setPool(self,pool):
-      """Must be implemented to set the pool"""
-      self.pool=pool
-  
-    def getTCForIn(self):
-      """returns typecode of type expected as Input"""
-      return self.tin
-  
-    def getTCForOut(self):
-      """returns typecode of type expected as Output"""
-      return self.tout
-  
-    def initialize(self,input):
-      """Optional method called on initialization. Do nothing here"""
-  
-    def start(self):
-      """Start to fill the pool with samples to evaluate."""
-      self.iter=0
-      self.pool.pushInSample(4,1.2)
-      self.pool.pushInSample(9,3.4)
-  
-    def takeDecision(self):
-      """ This method is called each time a sample has been evaluated. It can
-          either add new samples to evaluate in the pool, do nothing (wait for
-          more samples), or empty the pool to finish the evaluation.
-      """
-      currentId=self.pool.getCurrentId()
-  
-      if self.iter==1:
-        self.pool.pushInSample(16,5.6)
-        self.pool.pushInSample(25,7.8)
-        self.pool.pushInSample(36,9.)
-        self.pool.pushInSample(49,12.3)
-      elif self.iter==4:
-        self.pool.pushInSample(64,45.6)
-        self.pool.pushInSample(81,78.9)
-      else:
-        val=self.pool.getCurrentInSample()
-        if abs(val.getDoubleValue()-45.6) < 1.e-12:
-          self.pool.destroyAll()
-      self.iter=self.iter+1
-  
-    def finish(self):
-      """Optional method called when the algorithm has finished, successfully
-         or not, to perform any necessary clean up. Do nothing here"""
+.. literalinclude:: ../src/yacsloader/Test/algosyncexample.py
 
 Here, the entry point in the Python module is directly the name of the class that implements the algorithm : myalgosync.
 
@@ -243,94 +69,8 @@ C++ plugin example
 ''''''''''''''''''''
 Here is a small example of a C++ asynchronous algorithm:
 
-.. code-block:: cpp
-
-  #include "OptimizerAlg.hxx"
-  
-  using namespace YACS::ENGINE;
-  
-  extern "C"
-  {
-    OptimizerAlgBase * createOptimizerAlgASyncExample(Pool * pool);
-  }
-  
-  class OptimizerAlgASyncExample : public OptimizerAlgASync
-    {
-    private:
-      TypeCode * _tcIn;
-      TypeCode * _tcOut;
-    public:
-      OptimizerAlgASyncExample(Pool * pool);
-      virtual ~OptimizerAlgASyncExample();
-      TypeCode * getTCForIn() const;
-      TypeCode * getTCForOut() const;
-      void startToTakeDecision();
-    };
-  
-  OptimizerAlgASyncExample::OptimizerAlgASyncExample(Pool * pool)
-    : OptimizerAlgASync(pool), _tcIn(0), _tcOut(0)
-  {
-    _tcIn = new TypeCode(Double);
-    _tcOut = new TypeCode(Int);
-  }
-  
-  OptimizerAlgASyncExample::~OptimizerAlgASyncExample()
-  {
-    _tcIn->decrRef();
-    _tcOut->decrRef();
-  }
-  
-  //! Return the typecode of the expected input type
-  TypeCode *OptimizerAlgASyncExample::getTCForIn() const
-  {
-    return _tcIn;
-  }
-  
-  //! Return the typecode of the expected output type
-  TypeCode *OptimizerAlgASyncExample::getTCForOut() const
-  {
-    return _tcOut;
-  }
-  
-  //! This method is called only once to launch the algorithm.
-  /*!
-   *  It must first fill the pool with samples to evaluate and call
-   *  signalMasterAndWait() to block until a sample has been evaluated. When
-   *  returning from this method, it MUST check for an eventual termination
-   *  request (with the method isTerminationRequested()). If the termination
-   *  is requested, the method must perform any necessary cleanup and return
-   *  as soon as possible. Otherwise it can either add new samples to evaluate
-   *  in the pool, do nothing (wait for more samples), or empty the pool and
-   *  return to finish the evaluation.
-   */
-  void OptimizerAlgASyncExample::startToTakeDecision()
-  {
-    double val = 1.2;
-    for (int i=0 ; i<5 ; i++) {
-      // push a sample in the input of the slave node
-      _pool->pushInSample(i, AtomAny::New(val));
-      // wait until next sample is ready
-      signalMasterAndWait();
-      // check error notification
-      if (isTerminationRequested()) {
-        _pool->destroyAll();
-        return;
-      }
-  
-      // get a sample from the output of the slave node
-      Any * v = _pool->getCurrentOutSample();
-      val += v->getIntValue();
-    }
-  
-    // in the end destroy the pool content
-    _pool->destroyAll();
-  }
-  
-  //! Factory method to create the algorithm.
-  OptimizerAlgBase * createOptimizerAlgASyncExample(Pool * pool)
-  {
-    return new OptimizerAlgASyncExample(pool);
-  }
+.. literalinclude:: ../src/yacsloader/Test/OptimizerAlgASyncExample.cxx
+    :language: cpp
 
 
 Here, the entry point in the dynamic library is the name of the factory function : createOptimizerAlgASyncExample
@@ -338,59 +78,9 @@ that returns an instance of the OptimizerAlgASyncExample class that implements t
 
 Python plugin example
 ''''''''''''''''''''''''
-Here is an example of an asynchronous algorithm implemented in Python::
+Here is an example of an asynchronous algorithm implemented in Python:
 
-  import SALOMERuntime
-  
-  class myalgoasync(SALOMERuntime.OptimizerAlgASync):
-    def __init__(self):
-      SALOMERuntime.OptimizerAlgASync.__init__(self, None)
-      r=SALOMERuntime.getSALOMERuntime()
-      self.tin=r.getTypeCode("double")
-      self.tout=r.getTypeCode("int")
-  
-    def setPool(self,pool):
-      """Must be implemented to set the pool"""
-      self.pool=pool
-  
-    def getTCForIn(self):
-      """returns typecode of type expected as Input"""
-      return self.tin
-  
-    def getTCForOut(self):
-      """returns typecode of type expected as Output"""
-      return self.tout
-  
-    def startToTakeDecision(self):
-      """This method is called only once to launch the algorithm. It must
-         first fill the pool with samples to evaluate and call
-         self.signalMasterAndWait() to block until a sample has been
-         evaluated. When returning from this method, it MUST check for an
-         eventual termination request (with the method
-         self.isTerminationRequested()). If the termination is requested, the
-         method must perform any necessary cleanup and return as soon as
-         possible. Otherwise it can either add new samples to evaluate in the
-         pool, do nothing (wait for more samples), or empty the pool and
-         return to finish the evaluation.
-      """
-      val=1.2
-      for iter in xrange(5):
-        #push a sample in the input of the slave node
-        self.pool.pushInSample(iter,val)
-        #wait until next sample is ready
-        self.signalMasterAndWait()
-        #check error notification
-        if self.isTerminationRequested():
-          self.pool.destroyAll()
-          return
-  
-        #get a sample from the output of the slave node
-        currentId=self.pool.getCurrentId()
-        v=self.pool.getCurrentOutSample()
-        val=val+v.getIntValue()
-  
-      #in the end destroy the pool content
-      self.pool.destroyAll()
+.. literalinclude:: ../src/yacsloader/Test/algoasyncexample.py
 
 Here, the entry point in the Python module is directly the name of the class that implements the algorithm : myalgoasync.
 
