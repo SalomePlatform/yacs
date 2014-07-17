@@ -165,7 +165,7 @@ hello, goodbye and copyOrMove are given in the source file (HELLO.cxx)::
 	}
 
 CMakeLists.txt
---------
+--------------
 Create and add library to the project::	
 
     # --- options ---

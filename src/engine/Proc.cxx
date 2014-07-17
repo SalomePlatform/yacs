@@ -487,7 +487,7 @@ Container* Proc::createContainer(const std::string& name,const std::string& kind
  *
  * \param inst: the component instance
  * \param name: the component instance name
- * \param restCtr: try to reuse instance number previously released, false by default
+ * \param resetCtr: try to reuse instance number previously released, false by default
  */
 void Proc::addComponentInstance(ComponentInstance* inst, const std::string& name, bool resetCtr)
 {
