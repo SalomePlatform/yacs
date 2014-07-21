@@ -1231,13 +1231,24 @@ void GenericGui::setLoadedPresentation(YACS::ENGINE::Proc* proc)
           inode->setWidth(pres._width);
           inode->setHeight(pres._height);
           inode->setExpanded(pres._expanded);
-          inode->setExpandedPos(QPointF(pres._expx, pres._expy));
+          QPointF anExpandedPos = QPointF(pres._expx, pres._expy);
+          if (anExpandedPos.isNull())
+              anExpandedPos = inode->pos();
+          inode->setExpandedPos(anExpandedPos);
           inode->setExpandedWH(pres._expWidth, pres._expHeight);
           inode->setShownState(shownState(pres._shownState));
 
           // collect nodes to correct it's Y-position if this collides with parent's header
-          if (inode->getParent() && inode->y() < inode->getParent()->getHeaderBottom())
-            nodesToMove[inode] = QPointF(inode->x(), inode->getParent()->getHeaderBottom()+1);
+          if (inode->getParent() ) {
+              qreal anX = inode->x();
+              qreal anY = inode->y();
+              if (inode->getShownState() == shrinkHidden) {
+                anX = inode->getExpandedX();
+                anY = inode->getExpandedY();
+              }
+              if (anY < inode->getParent()->getHeaderBottom())
+                nodesToMove[inode] = QPointF(anX, inode->getParent()->getHeaderBottom()+1);
+            }
         }
     }
   QtGuiContext::getQtCurrent()->setLoadingPresentation(false);

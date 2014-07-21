@@ -315,6 +315,10 @@ void SceneNodeItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 
 void SceneNodeItem::setTopLeft(QPointF topLeft)
 {
+  if (_shownState == shrinkHidden) {
+    _expandedPos = topLeft;
+    return;
+  }
   QPointF oldPos = pos();
   setPos(topLeft);
 

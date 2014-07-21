@@ -87,5 +87,6 @@ void SceneProcItem::reorganizeShrinkExpand() {
   _height = _expandedHeight;
   _shownState = expandShown;
   adjustHeader();
+  rebuildLinks();
 }
 
