@@ -32,6 +32,12 @@ namespace YACS
     class Any;
     class OptimizerLoop;
 
+    /*! \brief Pool used to manage the samples of the optimizer loop plugin.
+     *  
+     *  Every sample has an identifier (Id), a priority, an initial value (In)
+     *  and an evaluation value (Out).
+     *  The current sample is the sample used by the latest terminated evaluation.
+     */
     class YACSLIBENGINE_EXPORT Pool
     {
       friend class OptimizerLoop;
