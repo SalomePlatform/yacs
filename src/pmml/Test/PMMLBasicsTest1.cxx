@@ -27,20 +27,13 @@ using namespace std;
 
 void PMMLBasicsTest1::setUp()
 {
+    resourcesDir = "samples/";
 #ifdef WIN32
-    const char* p = std::getenv("YACS_ROOT_DIR");
-    std::string strP("");
-    if (p) 
-        strP = std::string(p);
-    else 
-        throw std::string("unable to get YACS_ROOT_DIR");
-    resourcesDir = strP;
-    resourcesDir += "/share/salome/resources/pmml/";
     const char* user = std::getenv("USERPROFILE");
     std::string strUser("");
-    if (user) 
+    if (user)
         strUser = std::string(user);
-    else 
+    else
         throw std::string("unable to get USERPROFILE");
     tmpDir = strUser;
     tmpDir += "\\tmp";
@@ -48,14 +41,12 @@ void PMMLBasicsTest1::setUp()
     std::string cmd = "mkdir " + tmpDir; 
     system( cmd.c_str() );  
 #else
-    resourcesDir =  getenv("YACS_ROOT_DIR");
-    resourcesDir += "/share/salome/resources/pmml/";
     tmpDir = "/tmp/";
     tmpDir += getenv("USER");
     tmpDir += "/PmmlUnitTest/";
     std::string cmd = "mkdir -p " + tmpDir; 
     system( cmd.c_str() );  
-#endif    
+#endif
 }
 
 void PMMLBasicsTest1::tearDown()
