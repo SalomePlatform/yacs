@@ -87,7 +87,7 @@ namespace YACS
       //! For the moment false is returned : impovement about it coming soon.
       bool isPlacementPredictableB4Run() const;
       void edRemoveChild(Node *node) throw(Exception);
-      virtual bool edAddChild(Node *node) throw(Exception);
+      virtual bool edAddChild(Node *DISOWNnode) throw(Exception);
       std::list<Node *> edGetDirectDescendants() const;
       std::list<InputPort *> getSetOfInputPort() const;
       std::list<InputPort *> getLocalInputPorts() const;

@@ -226,9 +226,9 @@ void DynParaLoop::edRemoveChild(Node *node) throw(YACS::Exception)
   modified();
 }
 
-bool DynParaLoop::edAddChild(Node *node) throw(YACS::Exception)
+bool DynParaLoop::edAddChild(Node *DISOWNnode) throw(YACS::Exception)
 {
-  return edSetNode(node);
+  return edSetNode(DISOWNnode);
 }
 
 std::list<Node *> DynParaLoop::edGetDirectDescendants() const
