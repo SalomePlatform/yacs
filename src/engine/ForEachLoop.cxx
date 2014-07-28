@@ -656,12 +656,15 @@ void ForEachLoop::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort 
       vector<AnySplitOutputPort *>::iterator iter=_outGoingPorts.begin();
       int i=0;
       for(;iter!=_outGoingPorts.end();iter++,i++)
-        if((*iter)->getRepr()==port.first)
+        if((*iter)->getRepr()==port.first || *iter==port.first)
           break;
       if(iter!=_outGoingPorts.end())
         {
-          (*iter)->incrRef();
-          (*iter)->addRepr(port.first,_intecptrsForOutGoingPorts[i]);
+          if(*iter!=port.first)
+            {
+              (*iter)->incrRef();
+              (*iter)->addRepr(port.first,_intecptrsForOutGoingPorts[i]);
+            }
           port.first=*iter;
         }
       else
