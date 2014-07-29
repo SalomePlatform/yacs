@@ -114,7 +114,7 @@ namespace YACS
       std::string getPlacementId(const ComponentInstance *inst) const;
       std::string getFullPlacementId(const ComponentInstance *inst) const;
       YACS::ENGINE::Container *clone() const;
-
+      Container *cloneAlways() const;
       void lock();
       void unLock();
        

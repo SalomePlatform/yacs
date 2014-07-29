@@ -35,6 +35,7 @@ namespace YACS
       bool isAlreadyStarted(const ComponentInstance *inst) const;
       void start(const ComponentInstance *inst) throw(Exception);
       Container *clone() const;
+      Container *cloneAlways() const;
       std::string getPlacementId(const ComponentInstance *inst) const { return ""; }
       std::string getFullPlacementId(const ComponentInstance *inst) const { return ""; }
       static void initAllContainers();
@@ -55,6 +56,7 @@ namespace YACS
       bool isAlreadyStarted(const ComponentInstance *inst) const;
       void start(const ComponentInstance *inst) throw(Exception);
       Container *clone() const;
+      Container *cloneAlways() const;
       std::string getPlacementId(const ComponentInstance *inst) const { return ""; }
       std::string getFullPlacementId(const ComponentInstance *inst) const { return ""; }
       static void initAllContainers();

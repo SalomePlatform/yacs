@@ -49,6 +49,7 @@ namespace YACS
       Engines::Container_ptr getContainerPtr(const ComponentInstance *inst) const;
       void start(const ComponentInstance *inst) throw (Exception);
       Container *clone() const;
+      Container *cloneAlways() const;
       std::string getPlacementId(const ComponentInstance *inst) const;
       std::string getFullPlacementId(const ComponentInstance *inst) const;
       void checkCapabilityToDealWith(const ComponentInstance *inst) const throw (Exception);

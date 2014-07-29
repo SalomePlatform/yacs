@@ -92,6 +92,11 @@ Container *SalomeContainer::clone() const
     return new SalomeContainer(*this);
 }
 
+Container *SalomeContainer::cloneAlways() const
+{
+  return new SalomeContainer(*this);
+}
+
 void SalomeContainer::checkCapabilityToDealWith(const ComponentInstance *inst) const throw(YACS::Exception)
 {
   if(inst->getKind()!=SalomeComponent::KIND)

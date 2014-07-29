@@ -94,6 +94,11 @@ Container *CppContainer::clone() const
     return new CppContainer(*this);
 }
 
+Container *CppContainer::cloneAlways() const
+{
+  return new CppContainer(*this);
+}
+
 bool CppContainer::loadComponentLibrary(const std::string & componentName) throw (YACS::Exception)
 {
     if (_trueCont) 

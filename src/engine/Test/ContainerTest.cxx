@@ -67,6 +67,11 @@ Container *ContainerTest::clone() const
     return new ContainerTest;
 }
 
+Container *ContainerTest::cloneAlways() const
+{
+  return new ContainerTest;
+}
+
 void ContainerTest::checkCapabilityToDealWith(const ComponentInstance *inst) const throw(YACS::Exception)
 {
   if(inst->getKind()!=SUPPORTED_COMP_KIND)
@@ -103,6 +108,11 @@ Container *ContainerTest2::clone() const
     }
   else
     return new ContainerTest2;
+}
+
+Container *ContainerTest2::cloneAlways() const
+{
+  return new ContainerTest2;
 }
 
 void ContainerTest2::initAllContainers()

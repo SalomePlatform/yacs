@@ -2425,17 +2425,7 @@ void SubjectServiceNode::setComponent()
                 if (proc->containerMap.count(cont->getName()) == 0)
                   {
                     //container exists but is not in containerMap. Clone it, it's probably the result of copy paste from outside the proc
-                    Container* newcont;
-                    if(cont->isAttachedOnCloning())
-                      {
-                        cont->dettachOnCloning();
-                        newcont=cont->clone();
-                        cont->attachOnCloning();
-                        newcont->attachOnCloning();
-                      }
-                    else
-                      newcont=cont->clone();
-
+                    Container* newcont(cont->cloneAlways());
                     proc->containerMap[cont->getName()]=newcont;
                     instance->setContainer(newcont);
                     GuiContext::getCurrent()->getSubjectProc()->addSubjectContainer(newcont, newcont->getName());

@@ -35,6 +35,7 @@ namespace YACS
     class Proc;
     /*!
      * This is an abstract class, that represents an abstract process in which ComponentInstances can be launched and run.
+     * An instance of this will be mapped to one and only one physical container (except in the foreach context)
      */
     class YACSLIBENGINE_EXPORT Container : public RefCounter
     {
@@ -55,6 +56,7 @@ namespace YACS
       bool isAttachedOnCloning() const;
       //! \b WARNING ! clone behaviour \b MUST be in coherence with what is returned by isAttachedOnCloning() method
       virtual Container *clone() const = 0;
+      virtual Container *cloneAlways() const = 0;
       virtual bool isSupportingRTODefNbOfComp() const;
       virtual void checkCapabilityToDealWith(const ComponentInstance *inst) const throw(Exception) = 0;
       virtual void setProperty(const std::string& name,const std::string& value);
