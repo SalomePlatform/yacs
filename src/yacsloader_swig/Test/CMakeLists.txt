@@ -25,5 +25,8 @@ IF(NOT WIN32)
   CONFIGURE_FILE(YacsLoaderTest.sh.in YacsLoaderTest.sh)
   CONFIGURE_FILE(YacsLoaderInSessionTest.sh.in YacsLoaderInSessionTest.sh)
   ADD_TEST(NAME YacsLoaderTest_swig COMMAND ${SHELL} ${CMAKE_CURRENT_BINARY_DIR}/YacsLoaderTest.sh)
+
+  SALOME_GENERATE_TESTS_ENVIRONMENT(tests_env)
   ADD_TEST(NAME StdAloneYacsLoaderTest1 COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/StdAloneYacsLoaderTest1.py)
+  SET_TESTS_PROPERTIES(StdAloneYacsLoaderTest1 PROPERTIES ENVIRONMENT "${tests_env}")
 ENDIF() 
