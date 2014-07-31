@@ -64,26 +64,10 @@ bool Container::isSupportingRTODefNbOfComp() const
   return true;
 }
 
-void Container::setProperty(const std::string& name, const std::string& value)
+void Container::setProperties(const std::map<std::string,std::string>& properties)
 {
-  DEBTRACE("Container::setProperty " << name << " " << value);
-  _propertyMap[name]=value;
-}
-
-std::string Container::getProperty(const std::string& name)
-{
-  DEBTRACE("Container::getProperty " << name );
-  return _propertyMap[name];
-}
-
-void Container::setProperties(std::map<std::string,std::string> properties)
-{
-  _propertyMap.clear();
-  std::map<std::string,std::string>::iterator it;
-  for (it = properties.begin(); it != properties.end(); ++it)
-    {
-      setProperty((*it).first, (*it).second); // setProperty virtual and derived
-    }
+  for (std::map<std::string,std::string>::const_iterator it=properties.begin();it!=properties.end();++it)
+    setProperty((*it).first,(*it).second);
 }
 
 void Container::shutdown(int level)

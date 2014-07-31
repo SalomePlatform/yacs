@@ -59,22 +59,21 @@ namespace YACS
       virtual Container *cloneAlways() const = 0;
       virtual bool isSupportingRTODefNbOfComp() const;
       virtual void checkCapabilityToDealWith(const ComponentInstance *inst) const throw(Exception) = 0;
-      virtual void setProperty(const std::string& name,const std::string& value);
-      virtual std::string getProperty(const std::string& name);
-      std::map<std::string,std::string> getProperties() { return _propertyMap; };
-      virtual void setProperties(std::map<std::string,std::string> properties);
+      virtual void setProperty(const std::string& name,const std::string& value) = 0;
+      virtual std::string getProperty(const std::string& name) const = 0;
+      virtual void clearProperties() = 0;
+      virtual std::map<std::string,std::string> getProperties() const = 0;
+      virtual std::map<std::string,std::string> getResourceProperties(const std::string& name) const = 0;
+      virtual void setProperties(const std::map<std::string,std::string>& properties);
       std::string getName() const { return _name; };
       //! \b WARNING ! name is used in edition to identify different containers, it is not the runtime name of the container
       void setName(std::string name) { _name = name; };
       void setProc(Proc* proc) { _proc = proc; };
       Proc* getProc() { return _proc; };
       virtual void shutdown(int level);
-      virtual std::map<std::string,std::string> getResourceProperties(const std::string& name) { return _propertyMap; };
-
     protected:
       std::string _name;
       mutable bool _isAttachedOnCloning;
-      std::map<std::string,std::string> _propertyMap;
       Proc* _proc;
     };
   }

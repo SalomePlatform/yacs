@@ -36,6 +36,13 @@ namespace YACS
       void start(const ComponentInstance *inst) throw(Exception);
       Container *clone() const;
       Container *cloneAlways() const;
+      //
+      void clearProperties() { }
+      void setProperty(const std::string& name,const std::string& value) { }
+      std::string getProperty(const std::string& name) const { }
+      std::map<std::string,std::string> getResourceProperties(const std::string& name) const { return std::map<std::string,std::string>(); }
+      std::map<std::string,std::string> getProperties() const { return std::map<std::string,std::string>(); }
+      //
       std::string getPlacementId(const ComponentInstance *inst) const { return ""; }
       std::string getFullPlacementId(const ComponentInstance *inst) const { return ""; }
       static void initAllContainers();
@@ -57,6 +64,13 @@ namespace YACS
       void start(const ComponentInstance *inst) throw(Exception);
       Container *clone() const;
       Container *cloneAlways() const;
+      //
+      void clearProperties() { }
+      void setProperty(const std::string& name,const std::string& value) { }
+      std::string getProperty(const std::string& name) const { }
+      std::map<std::string,std::string> getResourceProperties(const std::string& name) const { return std::map<std::string,std::string>(); }
+      std::map<std::string,std::string> getProperties() const { return std::map<std::string,std::string>(); }
+      //
       std::string getPlacementId(const ComponentInstance *inst) const { return ""; }
       std::string getFullPlacementId(const ComponentInstance *inst) const { return ""; }
       static void initAllContainers();

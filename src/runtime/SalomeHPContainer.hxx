@@ -17,17 +17,17 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-#ifndef __SALOMECONTAINER_HXX__
-#define __SALOMECONTAINER_HXX__
+#ifndef __SALOMEHPCONTAINER_HXX__
+#define __SALOMEHPCONTAINER_HXX__
 
 #include "YACSRuntimeSALOMEExport.hxx"
-#include "Container.hxx"
-#include "SalomeContainerTools.hxx"
-#include "SalomeContainerHelper.hxx"
+#include "HomogeneousPoolContainer.hxx"
 #include "Mutex.hxx"
 #include <string>
 #include <vector>
+#include <SALOMEconfig.h>
 #include CORBA_CLIENT_HEADER(SALOME_Component)
+#include CORBA_CLIENT_HEADER(SALOME_ContainerManager)
 
 namespace YACS
 {
@@ -35,16 +35,11 @@ namespace YACS
   {
     class SalomeComponent;
 
-    class YACSRUNTIMESALOME_EXPORT SalomeContainer : public Container
+    class YACSRUNTIMESALOME_EXPORT SalomeHPContainer : public HomogeneousPoolContainer
     {
-      friend class SalomeComponent;
     public:
-      SalomeContainer();
-      SalomeContainer(const SalomeContainer& other);
-      //! For thread safety for concurrent load operation on same Container.
-      void lock();
-      //! For thread safety for concurrent load operation on same Container.
-      void unLock();
+      SalomeHPContainer();
+      SalomeHPContainer(const SalomeContainer& other);
       bool isAlreadyStarted(const ComponentInstance *inst) const;
       Engines::Container_ptr getContainerPtr(const ComponentInstance *inst) const;
       void start(const ComponentInstance *inst) throw (Exception);
@@ -53,28 +48,28 @@ namespace YACS
       std::string getPlacementId(const ComponentInstance *inst) const;
       std::string getFullPlacementId(const ComponentInstance *inst) const;
       void checkCapabilityToDealWith(const ComponentInstance *inst) const throw (Exception);
-      void setProperty(const std::string& name, const std::string& value);
-      std::string getProperty(const std::string& name) const;
-      void clearProperties();
-      void addComponentName(std::string name);
-      void addToResourceList(const std::string& name);
+      virtual void setProperty(const std::string& name, const std::string& value);
+      virtual void addComponentName(std::string name);
       virtual CORBA::Object_ptr loadComponent(ComponentInstance *inst);
-      void shutdown(int level);
+      virtual void shutdown(int level);
       // Helper methods
-      std::map<std::string,std::string> getResourceProperties(const std::string& name) const;
-      std::map<std::string,std::string> getProperties() const;
+      void addToComponentList(const std::string & name);
+      void addToResourceList(const std::string & name);
+      virtual std::map<std::string,std::string> getResourceProperties(const std::string& name);
     protected:
 #ifndef SWIG
-      virtual ~SalomeContainer();
+      virtual ~SalomeHPContainer();
 #endif
     protected:
       //! thread safety in Salome ???
       YACS::BASES::Mutex _mutex;
+      Engines::Container_var _trueCont;
       std::vector<std::string> _componentNames;
-      std::string _launchMode;
-      SalomeContainerHelper *_launchModeType;
+      std::vector<Engines::Container_var> _trueContainers;
+      std::string _type;
       int _shutdownLevel;
-      SalomeContainerTools _sct;
+    public:
+      Engines::ContainerParameters _params;
     };
   }
 }
