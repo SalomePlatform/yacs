@@ -25,12 +25,17 @@
 #include CORBA_CLIENT_HEADER(SALOME_ContainerManager)
 
 #include <string>
+#include <vector>
 #include <map>
 
 namespace YACS
 {
   namespace ENGINE
   {
+    class Container;
+    class ComponentInstance;
+    class SalomeContainerHelper;
+
     class YACSRUNTIMESALOME_EXPORT SalomeContainerTools
     {
     public:
@@ -45,8 +50,15 @@ namespace YACS
       void addToResourceList(const std::string& name);
     public:
       std::string getContainerName() const;
+      void setContainerName(const std::string& name);
+      std::string getNotNullContainerName(const Container *contPtr, bool& isEmpty) const;
       std::string getHostName() const;
       Engines::ContainerParameters getParameters() const { return _params; }
+    public:
+      static void Start(const std::vector<std::string>& compoNames, SalomeContainerHelper *schelp, SalomeContainerTools& sct, int& shutdownLevel, const Container *cont, const ComponentInstance *inst);
+      static CORBA::Object_ptr LoadComponent(SalomeContainerHelper *launchModeType, Container *cont, ComponentInstance *inst);
+      static std::string GetPlacementId(SalomeContainerHelper *launchModeType, const Container *cont, const ComponentInstance *inst);
+      static std::string GetFullPlacementId(SalomeContainerHelper *launchModeType, const Container *cont, const ComponentInstance *inst);
     protected:
       std::map<std::string,std::string> _propertyMap;
       Engines::ContainerParameters _params;

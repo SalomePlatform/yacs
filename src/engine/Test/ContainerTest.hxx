@@ -37,6 +37,8 @@ namespace YACS
       Container *clone() const;
       Container *cloneAlways() const;
       //
+      void lock() { }
+      void unLock() { }
       void clearProperties() { }
       void setProperty(const std::string& name,const std::string& value) { }
       std::string getProperty(const std::string& name) const { }
@@ -65,6 +67,8 @@ namespace YACS
       Container *clone() const;
       Container *cloneAlways() const;
       //
+      void lock() { }
+      void unLock() { }
       void clearProperties() { }
       void setProperty(const std::string& name,const std::string& value) { }
       std::string getProperty(const std::string& name) const { }

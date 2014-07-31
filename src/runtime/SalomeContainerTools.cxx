@@ -21,7 +21,13 @@
 #include "SALOME_LifeCycleCORBA.hxx"
 #include "SALOME_NamingService.hxx"
 #include "SALOME_ResourcesManager.hxx"
+#include "SALOME_ContainerManager.hxx"
+#include "Container.hxx"
 
+#include "YacsTrace.hxx"
+#include "Proc.hxx"
+#include "ComponentInstance.hxx"
+#include "SalomeContainerHelper.hxx"
 #include "RuntimeSALOME.hxx"
 #include "Exception.hxx"
 
@@ -217,6 +223,33 @@ std::string SalomeContainerTools::getContainerName() const
   return std::string(_params.container_name);
 }
 
+void SalomeContainerTools::setContainerName(const std::string& name)
+{
+  _params.container_name=CORBA::string_dup(name.c_str());
+}
+
+std::string SalomeContainerTools::getNotNullContainerName(const Container *contPtr, bool& isEmpty) const
+{
+  isEmpty=true;
+  std::string name(_params.container_name);
+  if(!name.empty())
+    {
+      isEmpty=false;
+      return name;
+    }
+  else
+    {
+      //give a almost unique name to the container : Pid_Name_Addr
+      std::ostringstream stream;
+      stream << getpid();
+      stream << "_";
+      stream << contPtr->getName();
+      stream << "_";
+      stream << (const void *)contPtr;
+      return stream.str();
+    }
+}
+
 std::string SalomeContainerTools::getHostName() const
 {
   return std::string(_params.resource_params.hostname);
@@ -260,4 +293,227 @@ std::map<std::string,std::string> SalomeContainerTools::getResourceProperties(co
     }
     */
   return properties;
+}
+
+/*!
+ * \param [in] compoNames
+ * \param [in,out] shutdownLevel
+ */
+void SalomeContainerTools::Start(const std::vector<std::string>& compoNames, SalomeContainerHelper *schelp, SalomeContainerTools& sct, int& shutdownLevel, const Container *cont, const ComponentInstance *inst)
+{
+  CORBA::ORB_ptr orb(getSALOMERuntime()->getOrb());
+  SALOME_NamingService ns;
+  try
+  {
+      ns.init_orb(orb);
+  }
+  catch(SALOME_Exception& e)
+  {
+      throw Exception("SalomeContainer::start : Unable to contact the SALOME Naming Service");
+  }
+  CORBA::Object_var obj(ns.Resolve(SALOME_ContainerManager::_ContainerManagerNameInNS));
+  Engines::ContainerManager_var contManager(Engines::ContainerManager::_narrow(obj));
+
+  bool isEmptyName;
+  std::string str(sct.getNotNullContainerName(cont,isEmptyName));
+  DEBTRACE("SalomeContainer::start " << str <<";"<< _sct.getHostName() <<";"<<_type);
+
+  // Finalize parameters with components found in the container
+
+  for(std::vector<std::string>::const_iterator iter=compoNames.begin();iter!=compoNames.end();iter++)
+    sct.addToComponentList(*iter);
+
+  Engines::ContainerParameters myparams(sct.getParameters());
+
+  //If a container_name is given try to find an already existing container in naming service
+  //If not found start a new container with the given parameters
+  if (dynamic_cast<SalomeContainerMonoHelper *>(schelp) && str != "")
+    {
+      myparams.mode="getorstart";
+    }
+
+  if (isEmptyName)
+    {
+      shutdownLevel=1;
+    }
+  sct.setContainerName(str);
+  Engines::Container_var trueCont(Engines::Container::_nil());
+  if(!isEmptyName && shutdownLevel==999)
+    {
+      //Make this only the first time start is called (_shutdownLevel==999)
+      //If the container is named, first try to get an existing container
+      //If there is an existing container use it and set the shutdown level to 3
+      //If there is no existing container, try to launch a new one and set the shutdown level to 2
+      myparams.mode="get";
+      try
+      {
+          trueCont=contManager->GiveContainer(myparams);
+      }
+      catch( const SALOME::SALOME_Exception& ex )
+      {
+          std::string msg="SalomeContainer::start : no existing container : ";
+          msg += '\n';
+          msg += ex.details.text.in();
+          DEBTRACE( msg );
+      }
+      catch(...)
+      {
+      }
+
+      if(!CORBA::is_nil(trueCont))
+        {
+          shutdownLevel=3;
+          DEBTRACE( "container found: " << str << " " << _shutdownLevel );
+        }
+      else
+        {
+          shutdownLevel=2;
+          myparams.mode="start";
+          DEBTRACE( "container not found: " << str << " " << _shutdownLevel);
+        }
+    }
+
+  if(CORBA::is_nil(trueCont))
+    try
+  {
+        // --- GiveContainer is used in batch mode to retreive launched containers,
+        //     and is equivalent to StartContainer when not in batch.
+        trueCont=contManager->GiveContainer(myparams);
+  }
+  catch( const SALOME::SALOME_Exception& ex )
+  {
+      std::string msg="SalomeContainer::start : Unable to launch container in Salome : ";
+      msg += '\n';
+      msg += ex.details.text.in();
+      throw Exception(msg);
+  }
+  catch(CORBA::COMM_FAILURE&)
+  {
+      throw Exception("SalomeContainer::start : Unable to launch container in Salome : CORBA Comm failure detected");
+  }
+  catch(CORBA::Exception&)
+  {
+      throw Exception("SalomeContainer::start : Unable to launch container in Salome : Unexpected CORBA failure detected");
+  }
+
+  if(CORBA::is_nil(trueCont))
+    throw Exception("SalomeContainer::start : Unable to launch container in Salome. Check your CatalogResources.xml file");
+
+  schelp->setContainer(inst,trueCont);
+
+  CORBA::String_var containerName(trueCont->name()),hostName(trueCont->getHostName());
+  std::cerr << "SalomeContainer launched : " << containerName << " " << hostName << " " << trueCont->getPID() << std::endl;
+}
+
+CORBA::Object_ptr SalomeContainerTools::LoadComponent(SalomeContainerHelper *launchModeType, Container *cont, ComponentInstance *inst)
+{
+  DEBTRACE("SalomeContainer::loadComponent ");
+  cont->lock();//To be sure
+  if(!cont->isAlreadyStarted(inst))
+    {
+      try
+        {
+          cont->start(inst);
+        }
+      catch(Exception& e)
+        {
+          cont->unLock();
+          throw e;
+        }
+    }
+  cont->unLock();
+  cont->lock();//To be sure
+  CORBA::Object_ptr objComponent=CORBA::Object::_nil();
+  std::string compoName(inst->getCompoName());
+  const char* componentName=compoName.c_str();
+  Engines::Container_var container(launchModeType->getContainer(inst));
+
+  char* reason;
+
+  bool isLoadable = container->load_component_Library(componentName, reason);
+  if (isLoadable)
+    {
+      CORBA::string_free(reason);
+      int studyid=1;
+      Proc* p(cont->getProc());
+      if(p)
+        {
+          std::string value(p->getProperty("DefaultStudyID"));
+          if(!value.empty())
+            studyid= atoi(value.c_str());
+        }
+      // prepare component instance properties
+      Engines::FieldsDict_var env = new Engines::FieldsDict;
+      std::map<std::string, std::string> properties = inst->getProperties();
+      if(p)
+        {
+          std::map<std::string,std::string> procMap=p->getProperties();
+          properties.insert(procMap.begin(),procMap.end());
+        }
+
+      std::map<std::string, std::string>::const_iterator itm;
+      env->length(properties.size());
+      int item=0;
+      for(itm = properties.begin(); itm != properties.end(); ++itm, item++)
+        {
+          DEBTRACE("envname="<<itm->first<<" envvalue="<< itm->second);
+          env[item].key= CORBA::string_dup(itm->first.c_str());
+          env[item].value <<= itm->second.c_str();
+        }
+
+      objComponent=container->create_component_instance_env(componentName, studyid, env, reason);
+    }
+
+  if(CORBA::is_nil(objComponent))
+    {
+      cont->unLock();
+      std::string text="Error while trying to create a new component: component '"+ compoName;
+      text=text+"' is not installed or it's a wrong name";
+      text += '\n';
+      text += reason;
+      CORBA::string_free(reason);
+      throw Exception(text);
+    }
+  cont->unLock();
+  return objComponent;
+}
+
+std::string SalomeContainerTools::GetPlacementId(SalomeContainerHelper *launchModeType, const Container *cont, const ComponentInstance *inst)
+{
+  if(cont->isAlreadyStarted(inst))
+    {
+      Engines::Container_var container(launchModeType->getContainer(inst));
+      const char *what="/";
+      CORBA::String_var corbaStr(container->name());
+      std::string ret(corbaStr);
+
+      //Salome FOREVER ...
+      std::string::size_type i=ret.find_first_of(what,0);
+      i=ret.find_first_of(what, i==std::string::npos ? i:i+1);
+      if(i!=std::string::npos)
+        return ret.substr(i+1);
+      return ret;
+    }
+  else
+    return "Not placed yet !!!";
+}
+
+std::string SalomeContainerTools::GetFullPlacementId(SalomeContainerHelper *launchModeType, const Container *cont, const ComponentInstance *inst)
+{
+  if(cont->isAlreadyStarted(inst))
+    {
+      Engines::Container_var container(launchModeType->getContainer(inst));
+      try
+      {
+          CORBA::String_var corbaStr(container->name());
+          std::string ret(corbaStr);
+          return ret;
+      }
+      catch(...)
+      {
+          return "Unknown_placement";
+      }
+    }
+  else
+    return "Not_placed_yet";
 }

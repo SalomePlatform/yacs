@@ -17,35 +17,23 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-#ifndef __HOMOGENEOUSPOOLCONTAINER_HXX__
-#define __HOMOGENEOUSPOOLCONTAINER_HXX__
+#include "SalomeHPContainer.hxx"
 
-#include "YACSlibEngineExport.hxx"
-#include "Exception.hxx"
-#include "Container.hxx"
+using namespace YACS::ENGINE;
 
-#include <list>
-#include <map>
-
-namespace YACS
+SalomeHPContainer::SalomeHPContainer():_shutdownLevel(999)
 {
-  namespace ENGINE
-  {
-    /*!
-     * This is an abstract class, that represents a set of fixed number of worker "kernelcontainers" homegenous in the sense that can be used indifferently each other.
-     * But each of those worker pool can be used once at a time.
-     */
-    class YACSLIBENGINE_EXPORT HomogeneousPoolContainer : public Container
-    {
-    public:
-      virtual void setSizeOfPool(int sz) = 0;
-    protected:
-      HomogeneousPoolContainer();
-#ifndef SWIG
-      virtual ~HomogeneousPoolContainer();
-#endif
-    };
-  }
 }
 
-#endif
+SalomeHPContainer::SalomeHPContainer(const SalomeHPContainer& other):_shutdownLevel(999)
+{
+}
+
+void SalomeHPContainer::setSizeOfPool(int sz)
+{
+  _launchModeType.resize(sz);
+}
+
+SalomeHPContainer::~SalomeHPContainer()
+{
+}

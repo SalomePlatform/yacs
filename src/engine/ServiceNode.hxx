@@ -31,7 +31,7 @@ namespace YACS
   {
     class ComponentInstance;
 
-    class YACSLIBENGINE_EXPORT ServiceNode: public ElementaryNode 
+    class YACSLIBENGINE_EXPORT ServiceNode : public ElementaryNode
     {
     protected:
       ServiceNode(const std::string& name);
@@ -45,16 +45,17 @@ namespace YACS
       virtual Container *getContainer();
       virtual void setRef(const std::string& ref);
       virtual std::string getRef();
-      virtual void setMethod(const std::string& method){ _method=method; }
+      virtual void setMethod(const std::string& method) { _method=method; }
       virtual std::string getMethod(){return _method;}
       virtual ServiceNode *createNode(const std::string& name) = 0;
       virtual ~ServiceNode();
       virtual void accept(Visitor *visitor);
       virtual std::string getKind() const;
+      virtual std::string typeName() { return "YACS__ENGINE__ServiceNode"; }
+    public:
       static const char KIND[];
-      virtual std::string typeName() {return "YACS__ENGINE__ServiceNode";}
     protected:
-      ComponentInstance* _component;
+      ComponentInstance *_component;
       std::string _method;
       std::string _ref;
     };

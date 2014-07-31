@@ -22,6 +22,8 @@
 
 #include "YACSRuntimeSALOMEExport.hxx"
 #include "HomogeneousPoolContainer.hxx"
+#include "SalomeContainerHelper.hxx"
+#include "SalomeContainerTools.hxx"
 #include "Mutex.hxx"
 #include <string>
 #include <vector>
@@ -39,37 +41,18 @@ namespace YACS
     {
     public:
       SalomeHPContainer();
-      SalomeHPContainer(const SalomeContainer& other);
-      bool isAlreadyStarted(const ComponentInstance *inst) const;
-      Engines::Container_ptr getContainerPtr(const ComponentInstance *inst) const;
-      void start(const ComponentInstance *inst) throw (Exception);
-      Container *clone() const;
-      Container *cloneAlways() const;
-      std::string getPlacementId(const ComponentInstance *inst) const;
-      std::string getFullPlacementId(const ComponentInstance *inst) const;
-      void checkCapabilityToDealWith(const ComponentInstance *inst) const throw (Exception);
-      virtual void setProperty(const std::string& name, const std::string& value);
-      virtual void addComponentName(std::string name);
-      virtual CORBA::Object_ptr loadComponent(ComponentInstance *inst);
-      virtual void shutdown(int level);
-      // Helper methods
-      void addToComponentList(const std::string & name);
-      void addToResourceList(const std::string & name);
-      virtual std::map<std::string,std::string> getResourceProperties(const std::string& name);
+      SalomeHPContainer(const SalomeHPContainer& other);
+      void setSizeOfPool(int sz);
     protected:
 #ifndef SWIG
-      virtual ~SalomeHPContainer();
+      ~SalomeHPContainer();
 #endif
     protected:
-      //! thread safety in Salome ???
       YACS::BASES::Mutex _mutex;
-      Engines::Container_var _trueCont;
       std::vector<std::string> _componentNames;
-      std::vector<Engines::Container_var> _trueContainers;
-      std::string _type;
+      std::vector<SalomeContainerMonoHelper> _launchModeType;
       int _shutdownLevel;
-    public:
-      Engines::ContainerParameters _params;
+      SalomeContainerTools _sct;
     };
   }
 }

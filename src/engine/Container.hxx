@@ -54,6 +54,8 @@ namespace YACS
       virtual void attachOnCloning() const;
       virtual void dettachOnCloning() const;
       bool isAttachedOnCloning() const;
+      virtual void lock() = 0;
+      virtual void unLock() = 0;
       //! \b WARNING ! clone behaviour \b MUST be in coherence with what is returned by isAttachedOnCloning() method
       virtual Container *clone() const = 0;
       virtual Container *cloneAlways() const = 0;

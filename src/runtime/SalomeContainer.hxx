@@ -56,7 +56,7 @@ namespace YACS
       void setProperty(const std::string& name, const std::string& value);
       std::string getProperty(const std::string& name) const;
       void clearProperties();
-      void addComponentName(std::string name);
+      void addComponentName(const std::string& name);
       void addToResourceList(const std::string& name);
       virtual CORBA::Object_ptr loadComponent(ComponentInstance *inst);
       void shutdown(int level);
@@ -71,7 +71,6 @@ namespace YACS
       //! thread safety in Salome ???
       YACS::BASES::Mutex _mutex;
       std::vector<std::string> _componentNames;
-      std::string _launchMode;
       SalomeContainerHelper *_launchModeType;
       int _shutdownLevel;
       SalomeContainerTools _sct;
