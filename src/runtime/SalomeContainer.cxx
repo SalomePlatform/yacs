@@ -29,6 +29,7 @@
 #include "RuntimeSALOME.hxx"
 #include "SalomeContainer.hxx"
 #include "SalomeComponent.hxx"
+#include "ServiceNode.hxx"
 #include "Proc.hxx"
 
 #include "SALOME_NamingService.hxx"
@@ -145,9 +146,9 @@ void SalomeContainer::addToResourceList(const std::string& name)
 /*!
  * \param inst the component instance to load
  */
-CORBA::Object_ptr SalomeContainer::loadComponent(ComponentInstance *inst)
+CORBA::Object_ptr SalomeContainer::loadComponent(ServiceNode *inst)
 {
-  return SalomeContainerTools::LoadComponent(_launchModeType,this,inst);
+  return SalomeContainerTools::LoadComponent(_launchModeType,this,inst->getComponent());
 }
 
 //! Get the container placement id for a component instance

@@ -80,11 +80,11 @@ void ServiceNode::load()
 {
   if(_component)
     {
-      if(!_component->isLoaded())
+      if(!_component->isLoaded(this))
         {
           try
             {
-              _component->load();
+              _component->load(this);
             }
           catch(Exception& e)
             {

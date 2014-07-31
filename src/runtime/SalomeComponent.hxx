@@ -40,9 +40,9 @@ namespace YACS
       SalomeComponent(const std::string& name);
       SalomeComponent(const SalomeComponent& other);
       virtual ~SalomeComponent();
-      virtual void load();
-      virtual void unload();
-      virtual bool isLoaded();
+      virtual void load(ServiceNode *askingNode);
+      virtual void unload(ServiceNode *askingNode);
+      virtual bool isLoaded(ServiceNode *askingNode);
       virtual void setContainer(Container *cont);
       virtual ServiceNode* createNode(const std::string& name);
       virtual ComponentInstance* clone() const;

@@ -33,9 +33,9 @@ namespace YACS
       SalomePythonComponent(const SalomePythonComponent& other);
       std::string getPlacementId() const;
       virtual ~SalomePythonComponent();
-      virtual void load();
-      virtual void unload();
-      virtual bool isLoaded();
+      virtual void load(ServiceNode *askingNode);
+      virtual void unload(ServiceNode *askingNode);
+      virtual bool isLoaded(ServiceNode *askingNode);
       virtual std::string getKind() const;
       virtual ComponentInstance* clone() const;
       virtual std::string getFileRepr() const;

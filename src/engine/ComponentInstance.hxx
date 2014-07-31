@@ -50,11 +50,11 @@ namespace YACS
       virtual void setContainer(Container *cont);
       Container *getContainer() const { return _container; }
 //! Load the component instance
-      virtual void load() = 0;
+      virtual void load(ServiceNode *askingNode) = 0;
 //! Unload the component instance
-      virtual void unload() = 0;
+      virtual void unload(ServiceNode *askingNode) = 0;
 //! Indicate if the component instance is loaded (true) or not
-      virtual bool isLoaded() = 0;
+      virtual bool isLoaded(ServiceNode *askingNode) = 0;
       virtual void attachOnCloning() const;
       virtual void dettachOnCloning() const;
       bool isAttachedOnCloning() const;

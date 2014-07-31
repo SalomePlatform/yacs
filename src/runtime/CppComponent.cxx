@@ -146,19 +146,19 @@ void CppComponent::run (const char * service, int nbIn, int nbOut,
 }
 
 //! Unload the component 
-void CppComponent::unload()
+void CppComponent::unload(ServiceNode *askingNode)
 {
   //Not implemented
   DEBTRACE("CppComponent::unload : not implemented ");
 }
 
 //! Is the component instance already loaded ?
-bool CppComponent::isLoaded()
+bool CppComponent::isLoaded(ServiceNode *askingNode)
 {
   return NULL != __obj;
 }
  
-void CppComponent::load()
+void CppComponent::load(ServiceNode *askingNode)
 {
    if (!_container) {
      _container = getRuntime()->createContainer(CppNode::KIND);

@@ -31,17 +31,17 @@ ComponentInstanceTest1::ComponentInstanceTest1(const std::string& name):Componen
 {
 }
 
-void ComponentInstanceTest1::load()
+void ComponentInstanceTest1::load(ServiceNode *askingNode)
 {
   _loaded=true;
 }
 
-void ComponentInstanceTest1::unload()
+void ComponentInstanceTest1::unload(ServiceNode *askingNode)
 {
   _loaded=false;
 }
 
-bool ComponentInstanceTest1::isLoaded()
+bool ComponentInstanceTest1::isLoaded(ServiceNode *askingNode)
 {
   return _loaded;
 }
@@ -77,17 +77,17 @@ ComponentInstanceTest2::ComponentInstanceTest2(const std::string& name):Componen
 {
 }
 
-void ComponentInstanceTest2::load()
+void ComponentInstanceTest2::load(ServiceNode *askingNode)
 {
   _loaded=true;
 }
 
-void ComponentInstanceTest2::unload()
+void ComponentInstanceTest2::unload(ServiceNode *askingNode)
 {
   _loaded=false;
 }
 
-bool ComponentInstanceTest2::isLoaded()
+bool ComponentInstanceTest2::isLoaded(ServiceNode *askingNode)
 {
   return _loaded;
 }

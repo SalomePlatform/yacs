@@ -44,7 +44,7 @@ SalomePythonComponent::~SalomePythonComponent()
 {
 }
 
-void SalomePythonComponent::load()
+void SalomePythonComponent::load(ServiceNode *askingNode)
 {
   if(_container)
     {
@@ -56,11 +56,11 @@ void SalomePythonComponent::load()
   //throw Exception("SalomePythonComponent::load : no container specified !!! To be implemented in executor to allocate default a Container in case of presenceOfDefaultContainer.");
 }
 
-void SalomePythonComponent::unload()
+void SalomePythonComponent::unload(ServiceNode *askingNode)
 {
 }
 
-bool SalomePythonComponent::isLoaded()
+bool SalomePythonComponent::isLoaded(ServiceNode *askingNode)
 {
   if(!_container)
     return false;

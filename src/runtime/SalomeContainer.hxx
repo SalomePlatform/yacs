@@ -58,7 +58,7 @@ namespace YACS
       void clearProperties();
       void addComponentName(const std::string& name);
       void addToResourceList(const std::string& name);
-      virtual CORBA::Object_ptr loadComponent(ComponentInstance *inst);
+      virtual CORBA::Object_ptr loadComponent(ServiceNode *inst);
       void shutdown(int level);
       // Helper methods
       std::map<std::string,std::string> getResourceProperties(const std::string& name) const;

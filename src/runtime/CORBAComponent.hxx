@@ -39,9 +39,9 @@ namespace YACS
       CORBAComponent(const std::string& name);
       CORBAComponent(const CORBAComponent& other);
       virtual ~CORBAComponent();
-      virtual void load();
-      virtual void unload();
-      virtual bool isLoaded();
+      virtual void load(ServiceNode *askingNode);
+      virtual void unload(ServiceNode *askingNode);
+      virtual bool isLoaded(ServiceNode *askingNode);
       virtual ServiceNode* createNode(const std::string& name);
       virtual ComponentInstance* clone() const;
       virtual std::string getFileRepr() const;
