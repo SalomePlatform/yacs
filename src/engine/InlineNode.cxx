@@ -29,7 +29,11 @@ using namespace YACS::ENGINE;
 using namespace std;
 
 
-InlineNode::~InlineNode() { }
+InlineNode::~InlineNode()
+{
+  if(_container)
+    _container->decrRef();
+}
 
 void InlineNode::accept(Visitor *visitor)
 {
@@ -48,9 +52,7 @@ void InlineNode::setScript(const std::string& script)
 
 
 InlineFuncNode::~InlineFuncNode()
-{ 
-  if(_container)
-    _container->decrRef();
+{
 }
 
 void InlineFuncNode::accept(Visitor *visitor)
@@ -58,6 +60,9 @@ void InlineFuncNode::accept(Visitor *visitor)
   visitor->visitInlineFuncNode(this);
 }
 
+/*!
+ * \param fname: name of the function contained in the script to execute
+ */
 void InlineFuncNode::setFname(const std::string& fname)
 {
   _fname=fname;

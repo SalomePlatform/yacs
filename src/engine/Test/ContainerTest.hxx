@@ -32,21 +32,22 @@ namespace YACS
       ContainerTest();
       std::string getPlacementInfo() const;
       // implementation of compulsary methods
-      bool isAlreadyStarted(const ComponentInstance *inst) const;
-      void start(const ComponentInstance *inst) throw(Exception);
+      bool isAlreadyStarted(const Task *askingNode) const;
+      void start(const Task *askingNode) throw(Exception);
       Container *clone() const;
       Container *cloneAlways() const;
       //
       void lock() { }
       void unLock() { }
       void clearProperties() { }
+      void shutdown(int level) { }
       void setProperty(const std::string& name,const std::string& value) { }
       std::string getProperty(const std::string& name) const { }
       std::map<std::string,std::string> getResourceProperties(const std::string& name) const { return std::map<std::string,std::string>(); }
       std::map<std::string,std::string> getProperties() const { return std::map<std::string,std::string>(); }
       //
-      std::string getPlacementId(const ComponentInstance *inst) const { return ""; }
-      std::string getFullPlacementId(const ComponentInstance *inst) const { return ""; }
+      std::string getPlacementId(const Task *askingNode) const { return ""; }
+      std::string getFullPlacementId(const Task *askingNode) const { return ""; }
       static void initAllContainers();
     protected:
       void checkCapabilityToDealWith(const ComponentInstance *inst) const throw(Exception);
@@ -62,21 +63,22 @@ namespace YACS
     public:
       ContainerTest2();
       // implementation of compulsary methods
-      bool isAlreadyStarted(const ComponentInstance *inst) const;
-      void start(const ComponentInstance *inst) throw(Exception);
+      bool isAlreadyStarted(const Task *askingNode) const;
+      void start(const Task *askingNode) throw(Exception);
       Container *clone() const;
       Container *cloneAlways() const;
       //
       void lock() { }
       void unLock() { }
       void clearProperties() { }
+      void shutdown(int level) { }
       void setProperty(const std::string& name,const std::string& value) { }
       std::string getProperty(const std::string& name) const { }
       std::map<std::string,std::string> getResourceProperties(const std::string& name) const { return std::map<std::string,std::string>(); }
       std::map<std::string,std::string> getProperties() const { return std::map<std::string,std::string>(); }
       //
-      std::string getPlacementId(const ComponentInstance *inst) const { return ""; }
-      std::string getFullPlacementId(const ComponentInstance *inst) const { return ""; }
+      std::string getPlacementId(const Task *askingNode) const { return ""; }
+      std::string getFullPlacementId(const Task *askingNode) const { return ""; }
       static void initAllContainers();
     protected:
       void checkCapabilityToDealWith(const ComponentInstance *inst) const throw(Exception);

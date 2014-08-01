@@ -117,7 +117,7 @@ void DistributedPythonNode::execute()
 {
   YACSTRACE(1,"+++++++++++++++++ DistributedPythonNode::execute: " << getName() << " " << getFname() << " +++++++++++++++++" );
   {
-    Engines::Container_var objContainer=((SalomeContainer*)_container)->getContainerPtr(0);
+    Engines::Container_var objContainer=((SalomeContainer*)_container)->getContainerPtr(this);
     Engines::PyNode_var pn=objContainer->createPyNode(getName().c_str(),getScript().c_str());
     //////
     int pos=0;

@@ -113,6 +113,11 @@ ComponentInstance *ServiceNode::getComponent()
   return _component;
 }
 
+const ComponentInstance *ServiceNode::getComponent() const
+{
+  return _component;
+}
+
 //! Return the associated container
 Container *ServiceNode::getContainer()
 {

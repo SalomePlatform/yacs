@@ -132,11 +132,11 @@ void PythonNode::loadRemote()
   DEBTRACE( "---------------PyNode::loadRemote function---------------" );
   if(_container)
     {
-      if(!_container->isAlreadyStarted(0))
+      if(!_container->isAlreadyStarted(this))
         {
           try
             {
-              _container->start(0);
+              _container->start(this);
             }
           catch(Exception& e)
             {
@@ -153,7 +153,7 @@ void PythonNode::loadRemote()
       throw Exception(what);
     }
 
-  Engines::Container_var objContainer=((SalomeContainer*)_container)->getContainerPtr(0);
+  Engines::Container_var objContainer=((SalomeContainer*)_container)->getContainerPtr(this);
 
   try
     {
@@ -494,7 +494,7 @@ std::string PythonNode::getContainerLog()
   std::string msg;
   try
     {
-      Engines::Container_var objContainer=((SalomeContainer*)_container)->getContainerPtr(0);
+      Engines::Container_var objContainer=((SalomeContainer*)_container)->getContainerPtr(this);
       CORBA::String_var logname = objContainer->logfilename();
       DEBTRACE(logname);
       msg=logname;
@@ -637,11 +637,11 @@ void PyFuncNode::loadRemote()
   DEBTRACE( "---------------PyfuncNode::loadRemote function---------------" );
   if(_container)
     {
-      if(!_container->isAlreadyStarted(0))
+      if(!_container->isAlreadyStarted(this))
         {
           try
             {
-              _container->start(0);
+              _container->start(this);
             }
           catch(Exception& e)
             {
@@ -658,7 +658,7 @@ void PyFuncNode::loadRemote()
       throw Exception(what);
     }
 
-  Engines::Container_var objContainer=((SalomeContainer*)_container)->getContainerPtr(0);
+  Engines::Container_var objContainer=((SalomeContainer*)_container)->getContainerPtr(this);
   try
     {
       _pynode = objContainer->createPyNode(getName().c_str(),getScript().c_str());
@@ -1089,7 +1089,7 @@ std::string PyFuncNode::getContainerLog()
   std::string msg;
   try
     {
-      Engines::Container_var objContainer=((SalomeContainer*)_container)->getContainerPtr(0);
+      Engines::Container_var objContainer=((SalomeContainer*)_container)->getContainerPtr(this);
       CORBA::String_var logname = objContainer->logfilename();
       DEBTRACE(logname);
       msg=logname;

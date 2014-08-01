@@ -53,6 +53,7 @@
 #include "ExecutorSwig.hxx"
 #include "Dispatcher.hxx"
 #include "Container.hxx"
+#include "HomogeneousPoolContainer.hxx"
 #include "Logger.hxx"
 #include "DeploymentTree.hxx"
 #include "ComponentInstance.hxx"
@@ -247,6 +248,7 @@ EXCEPTION(YACS::ENGINE::ExecutorSwig::waitPause)
 
 %include <ComponentInstance.hxx>
 %include <Container.hxx>
+%include <HomogeneousPoolContainer.hxx>
 %include <InputPort.hxx>
 %extend YACS::ENGINE::InputPort
 {

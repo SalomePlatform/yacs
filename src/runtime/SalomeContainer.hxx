@@ -45,20 +45,20 @@ namespace YACS
       void lock();
       //! For thread safety for concurrent load operation on same Container.
       void unLock();
-      bool isAlreadyStarted(const ComponentInstance *inst) const;
-      Engines::Container_ptr getContainerPtr(const ComponentInstance *inst) const;
-      void start(const ComponentInstance *inst) throw (Exception);
+      bool isAlreadyStarted(const Task *askingNode) const;
+      Engines::Container_ptr getContainerPtr(const Task *askingNode) const;
+      void start(const Task *askingNode) throw (Exception);
       Container *clone() const;
       Container *cloneAlways() const;
-      std::string getPlacementId(const ComponentInstance *inst) const;
-      std::string getFullPlacementId(const ComponentInstance *inst) const;
+      std::string getPlacementId(const Task *askingNode) const;
+      std::string getFullPlacementId(const Task *askingNode) const;
       void checkCapabilityToDealWith(const ComponentInstance *inst) const throw (Exception);
       void setProperty(const std::string& name, const std::string& value);
       std::string getProperty(const std::string& name) const;
       void clearProperties();
       void addComponentName(const std::string& name);
       void addToResourceList(const std::string& name);
-      virtual CORBA::Object_ptr loadComponent(ServiceNode *inst);
+      virtual CORBA::Object_ptr loadComponent(Task *inst);
       void shutdown(int level);
       // Helper methods
       std::map<std::string,std::string> getResourceProperties(const std::string& name) const;

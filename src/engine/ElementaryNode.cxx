@@ -111,6 +111,11 @@ ComponentInstance *ElementaryNode::getComponent()
   return 0;
 }
 
+const ComponentInstance *ElementaryNode::getComponent() const
+{
+  return 0;
+}
+
 Container *ElementaryNode::getContainer()
 {
   return 0;

@@ -44,12 +44,12 @@ std::string ContainerTest::getPlacementInfo() const
   return stream.str();
 }
 
-bool ContainerTest::isAlreadyStarted(const ComponentInstance *inst) const
+bool ContainerTest::isAlreadyStarted(const Task *askingNode) const
 {
   return _alreadyStarted;
 }
 
-void ContainerTest::start(const ComponentInstance *inst) throw(YACS::Exception)
+void ContainerTest::start(const Task *askingNode) throw(YACS::Exception)
 {
   if(_alreadyStarted)
     throw Exception("ContainerTest already started !!!!");
@@ -87,12 +87,12 @@ ContainerTest2::ContainerTest2():_alreadyStarted(false),_myCounter(_counter++)
 {
 }
 
-bool ContainerTest2::isAlreadyStarted(const ComponentInstance *inst) const
+bool ContainerTest2::isAlreadyStarted(const Task *askingNode) const
 {
   return _alreadyStarted;
 }
 
-void ContainerTest2::start(const ComponentInstance *inst) throw(YACS::Exception)
+void ContainerTest2::start(const Task *askingNode) throw(YACS::Exception)
 {
   if(_alreadyStarted)
     throw Exception("ContainerTest already started !!!!");

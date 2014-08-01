@@ -42,6 +42,7 @@ namespace YACS
       virtual bool isDeployable() const;
       virtual void setComponent(ComponentInstance* compo) throw(Exception);
       virtual ComponentInstance *getComponent();
+      virtual const ComponentInstance *getComponent() const;
       virtual Container *getContainer();
       virtual void setRef(const std::string& ref);
       virtual std::string getRef();

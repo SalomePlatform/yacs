@@ -61,14 +61,14 @@ std::string SalomeComponent::getKind() const
 }
 
 //! Unload the component 
-void SalomeComponent::unload(ServiceNode *askingNode)
+void SalomeComponent::unload(Task *askingNode)
 {
   //Not implemented
   std::cerr << "SalomeComponent::unload : not implemented " << std::endl;
 }
 
 //! Is the component instance already loaded ?
-bool SalomeComponent::isLoaded(ServiceNode *askingNode)
+bool SalomeComponent::isLoaded(Task *askingNode) const
 {
   if(CORBA::is_nil(_objComponent))
     return false;
@@ -78,7 +78,7 @@ bool SalomeComponent::isLoaded(ServiceNode *askingNode)
 
 #ifdef SALOME_KERNEL
 //! Load the component 
-void SalomeComponent::load(ServiceNode *askingNode)
+void SalomeComponent::load(Task *askingNode)
 {
   if(_container)
     {
@@ -96,7 +96,7 @@ void SalomeComponent::load(ServiceNode *askingNode)
   _objComponent=LCC.LoadComponent(params,_compoName.c_str());
 }
 #else
-void SalomeComponent::load(ServiceNode *askingNode)
+void SalomeComponent::load(Task *askingNode)
 {
   throw Exception("YACS has been built without SALOME support");
 }

@@ -19,6 +19,7 @@
 
 #include "SalomeContainerHelper.hxx"
 
+#include "ServiceNode.hxx"
 #include "YacsTrace.hxx"
 
 #include <sstream>
@@ -54,12 +55,12 @@ SalomeContainerMonoHelper *SalomeContainerMonoHelper::deepCpyOnlyStaticInfo() co
   return new SalomeContainerMonoHelper;
 }
 
-Engines::Container_var SalomeContainerMonoHelper::getContainer(const ComponentInstance *inst) const
+Engines::Container_var SalomeContainerMonoHelper::getContainer(const Task *askingNode) const
 {
   return _trueCont;
 }
 
-bool SalomeContainerMonoHelper::isAlreadyStarted(const ComponentInstance *inst) const
+bool SalomeContainerMonoHelper::isAlreadyStarted(const Task *askingNode) const
 {
   if(CORBA::is_nil(_trueCont))
     return false;
@@ -67,7 +68,7 @@ bool SalomeContainerMonoHelper::isAlreadyStarted(const ComponentInstance *inst) 
     return true;
 }
 
-void SalomeContainerMonoHelper::setContainer(const ComponentInstance *inst, Engines::Container_var cont)
+void SalomeContainerMonoHelper::setContainer(const Task *askingNode, Engines::Container_var cont)
 {
   _trueCont=cont;
 #ifdef REFCNT
@@ -106,8 +107,9 @@ SalomeContainerMultiHelper *SalomeContainerMultiHelper::deepCpyOnlyStaticInfo() 
   return new SalomeContainerMultiHelper;
 }
 
-Engines::Container_var SalomeContainerMultiHelper::getContainer(const ComponentInstance *inst) const
+Engines::Container_var SalomeContainerMultiHelper::getContainer(const Task *askingNode) const
 {
+  const ComponentInstance *inst(askingNode?askingNode->getComponent():0);
   std::map<const ComponentInstance *,Engines::Container_var>::const_iterator it(_trueContainers.find(inst));
   if(it!=_trueContainers.end())
     return (*it).second;
@@ -115,16 +117,18 @@ Engines::Container_var SalomeContainerMultiHelper::getContainer(const ComponentI
     return Engines::Container::_nil();
 }
 
-bool SalomeContainerMultiHelper::isAlreadyStarted(const ComponentInstance *inst) const
+bool SalomeContainerMultiHelper::isAlreadyStarted(const Task *askingNode) const
 {
+  const ComponentInstance *inst(askingNode?askingNode->getComponent():0);
   if(_trueContainers.count(inst)==0)
     return false;
   else
     return true;
 }
 
-void SalomeContainerMultiHelper::setContainer(const ComponentInstance *inst, Engines::Container_var cont)
+void SalomeContainerMultiHelper::setContainer(const Task *askingNode, Engines::Container_var cont)
 {
+  const ComponentInstance *inst(askingNode?askingNode->getComponent():0);
   _trueContainers[inst]=cont;
 #ifdef REFCNT
     std::map<const ComponentInstance *, Engines::Container_var >::const_iterator it;

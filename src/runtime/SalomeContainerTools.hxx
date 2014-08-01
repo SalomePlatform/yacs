@@ -32,6 +32,7 @@ namespace YACS
 {
   namespace ENGINE
   {
+    class Task;
     class Container;
     class ComponentInstance;
     class SalomeContainerHelper;
@@ -55,10 +56,10 @@ namespace YACS
       std::string getHostName() const;
       Engines::ContainerParameters getParameters() const { return _params; }
     public:
-      static void Start(const std::vector<std::string>& compoNames, SalomeContainerHelper *schelp, SalomeContainerTools& sct, int& shutdownLevel, const Container *cont, const ComponentInstance *inst);
-      static CORBA::Object_ptr LoadComponent(SalomeContainerHelper *launchModeType, Container *cont, ComponentInstance *inst);
-      static std::string GetPlacementId(SalomeContainerHelper *launchModeType, const Container *cont, const ComponentInstance *inst);
-      static std::string GetFullPlacementId(SalomeContainerHelper *launchModeType, const Container *cont, const ComponentInstance *inst);
+      static void Start(const std::vector<std::string>& compoNames, SalomeContainerHelper *schelp, SalomeContainerTools& sct, int& shutdownLevel, const Container *cont, const Task *askingNode);
+      static CORBA::Object_ptr LoadComponent(SalomeContainerHelper *launchModeType, Container *cont, Task *askingNode);
+      static std::string GetPlacementId(const SalomeContainerHelper *launchModeType, const Container *cont, const Task *askingNode);
+      static std::string GetFullPlacementId(const SalomeContainerHelper *launchModeType, const Container *cont, const Task *askingNode);
     protected:
       std::map<std::string,std::string> _propertyMap;
       Engines::ContainerParameters _params;

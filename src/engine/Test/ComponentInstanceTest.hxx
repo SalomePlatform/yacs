@@ -31,9 +31,9 @@ namespace YACS
     public:
       ComponentInstanceTest1(const ComponentInstanceTest1& other);
       ComponentInstanceTest1(const std::string& name);
-      void load(ServiceNode *askingNode);
-      void unload(ServiceNode *askingNode);
-      bool isLoaded(ServiceNode *askingNode);
+      void load(Task *askingNode);
+      void unload(Task *askingNode);
+      bool isLoaded(Task *askingNode) const;
       std::string getKind() const;
       ServiceNode* createNode(const std::string& name);
       ComponentInstance *clone() const;
@@ -46,9 +46,9 @@ namespace YACS
     public:
       ComponentInstanceTest2(const ComponentInstanceTest2& other);
       ComponentInstanceTest2(const std::string& name);
-      void load(ServiceNode *askingNode);
-      void unload(ServiceNode *askingNode);
-      bool isLoaded(ServiceNode *askingNode);
+      void load(Task *askingNode);
+      void unload(Task *askingNode);
+      bool isLoaded(Task *askingNode) const;
       std::string getKind() const;
       ServiceNode* createNode(const std::string& name);
       ComponentInstance *clone() const;

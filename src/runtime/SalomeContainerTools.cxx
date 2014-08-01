@@ -26,6 +26,7 @@
 
 #include "YacsTrace.hxx"
 #include "Proc.hxx"
+#include "ServiceNode.hxx"
 #include "ComponentInstance.hxx"
 #include "SalomeContainerHelper.hxx"
 #include "RuntimeSALOME.hxx"
@@ -299,7 +300,7 @@ std::map<std::string,std::string> SalomeContainerTools::getResourceProperties(co
  * \param [in] compoNames
  * \param [in,out] shutdownLevel
  */
-void SalomeContainerTools::Start(const std::vector<std::string>& compoNames, SalomeContainerHelper *schelp, SalomeContainerTools& sct, int& shutdownLevel, const Container *cont, const ComponentInstance *inst)
+void SalomeContainerTools::Start(const std::vector<std::string>& compoNames, SalomeContainerHelper *schelp, SalomeContainerTools& sct, int& shutdownLevel, const Container *cont, const Task *askingNode)
 {
   CORBA::ORB_ptr orb(getSALOMERuntime()->getOrb());
   SALOME_NamingService ns;
@@ -399,21 +400,22 @@ void SalomeContainerTools::Start(const std::vector<std::string>& compoNames, Sal
   if(CORBA::is_nil(trueCont))
     throw Exception("SalomeContainer::start : Unable to launch container in Salome. Check your CatalogResources.xml file");
 
-  schelp->setContainer(inst,trueCont);
+  schelp->setContainer(askingNode,trueCont);
 
   CORBA::String_var containerName(trueCont->name()),hostName(trueCont->getHostName());
   std::cerr << "SalomeContainer launched : " << containerName << " " << hostName << " " << trueCont->getPID() << std::endl;
 }
 
-CORBA::Object_ptr SalomeContainerTools::LoadComponent(SalomeContainerHelper *launchModeType, Container *cont, ComponentInstance *inst)
+CORBA::Object_ptr SalomeContainerTools::LoadComponent(SalomeContainerHelper *launchModeType, Container *cont, Task *askingNode)
 {
   DEBTRACE("SalomeContainer::loadComponent ");
   cont->lock();//To be sure
-  if(!cont->isAlreadyStarted(inst))
+  const ComponentInstance *inst(askingNode?askingNode->getComponent():0);
+  if(!cont->isAlreadyStarted(askingNode))
     {
       try
         {
-          cont->start(inst);
+          cont->start(askingNode);
         }
       catch(Exception& e)
         {
@@ -426,7 +428,7 @@ CORBA::Object_ptr SalomeContainerTools::LoadComponent(SalomeContainerHelper *lau
   CORBA::Object_ptr objComponent=CORBA::Object::_nil();
   std::string compoName(inst->getCompoName());
   const char* componentName=compoName.c_str();
-  Engines::Container_var container(launchModeType->getContainer(inst));
+  Engines::Container_var container(launchModeType->getContainer(askingNode));
 
   char* reason;
 
@@ -478,11 +480,11 @@ CORBA::Object_ptr SalomeContainerTools::LoadComponent(SalomeContainerHelper *lau
   return objComponent;
 }
 
-std::string SalomeContainerTools::GetPlacementId(SalomeContainerHelper *launchModeType, const Container *cont, const ComponentInstance *inst)
+std::string SalomeContainerTools::GetPlacementId(const SalomeContainerHelper *launchModeType, const Container *cont, const Task *askingNode)
 {
-  if(cont->isAlreadyStarted(inst))
+  if(cont->isAlreadyStarted(askingNode))
     {
-      Engines::Container_var container(launchModeType->getContainer(inst));
+      Engines::Container_var container(launchModeType->getContainer(askingNode));
       const char *what="/";
       CORBA::String_var corbaStr(container->name());
       std::string ret(corbaStr);
@@ -498,11 +500,11 @@ std::string SalomeContainerTools::GetPlacementId(SalomeContainerHelper *launchMo
     return "Not placed yet !!!";
 }
 
-std::string SalomeContainerTools::GetFullPlacementId(SalomeContainerHelper *launchModeType, const Container *cont, const ComponentInstance *inst)
+std::string SalomeContainerTools::GetFullPlacementId(const SalomeContainerHelper *launchModeType, const Container *cont, const Task *askingNode)
 {
-  if(cont->isAlreadyStarted(inst))
+  if(cont->isAlreadyStarted(askingNode))
     {
-      Engines::Container_var container(launchModeType->getContainer(inst));
+      Engines::Container_var container(launchModeType->getContainer(askingNode));
       try
       {
           CORBA::String_var corbaStr(container->name());

@@ -33,6 +33,7 @@ namespace YACS
   {
     class ComponentInstance;
     class Proc;
+    class Task;
     /*!
      * This is an abstract class, that represents an abstract process in which ComponentInstances can be launched and run.
      * An instance of this will be mapped to one and only one physical container (except in the foreach context)
@@ -46,10 +47,10 @@ namespace YACS
 #endif
     public:
       //Execution only methods
-      virtual bool isAlreadyStarted(const ComponentInstance *inst) const = 0;
-      virtual void start(const ComponentInstance *inst) throw(Exception) = 0;
-      virtual std::string getPlacementId(const ComponentInstance *inst) const = 0;
-      virtual std::string getFullPlacementId(const ComponentInstance *inst) const = 0;
+      virtual bool isAlreadyStarted(const Task *askingNode) const = 0;
+      virtual void start(const Task *askingNode) throw(Exception) = 0;
+      virtual std::string getPlacementId(const Task *askingNode) const = 0;
+      virtual std::string getFullPlacementId(const Task *askingNode) const = 0;
       //Edition only methods
       virtual void attachOnCloning() const;
       virtual void dettachOnCloning() const;
@@ -72,7 +73,7 @@ namespace YACS
       void setName(std::string name) { _name = name; };
       void setProc(Proc* proc) { _proc = proc; };
       Proc* getProc() { return _proc; };
-      virtual void shutdown(int level);
+      virtual void shutdown(int level) = 0;
     protected:
       std::string _name;
       mutable bool _isAttachedOnCloning;

@@ -32,6 +32,7 @@ namespace YACS
 {
   namespace ENGINE
   {
+    class Task;
     class ComponentInstance;
 
     class SalomeContainerHelper
@@ -39,9 +40,9 @@ namespace YACS
     public:
       virtual std::string getType() const = 0;
       virtual SalomeContainerHelper *deepCpyOnlyStaticInfo() const = 0;
-      virtual Engines::Container_var getContainer(const ComponentInstance *inst) const = 0;
-      virtual bool isAlreadyStarted(const ComponentInstance *inst) const = 0;
-      virtual void setContainer(const ComponentInstance *inst, Engines::Container_var cont) = 0;
+      virtual Engines::Container_var getContainer(const Task *askingNode) const = 0;
+      virtual bool isAlreadyStarted(const Task *askingNode) const = 0;
+      virtual void setContainer(const Task *askingNode, Engines::Container_var cont) = 0;
       virtual void shutdown() = 0;
       virtual ~SalomeContainerHelper();
     };
@@ -52,9 +53,9 @@ namespace YACS
       SalomeContainerMonoHelper();
       std::string getType() const;
       SalomeContainerMonoHelper *deepCpyOnlyStaticInfo() const;
-      Engines::Container_var getContainer(const ComponentInstance *inst) const;
-      bool isAlreadyStarted(const ComponentInstance *inst) const;
-      void setContainer(const ComponentInstance *inst, Engines::Container_var cont);
+      Engines::Container_var getContainer(const Task *askingNode) const;
+      bool isAlreadyStarted(const Task *askingNode) const;
+      void setContainer(const Task *askingNode, Engines::Container_var cont);
       void shutdown();
       ~SalomeContainerMonoHelper();
     public:
@@ -69,9 +70,9 @@ namespace YACS
     public:
       std::string getType() const;
       SalomeContainerMultiHelper *deepCpyOnlyStaticInfo() const;
-      Engines::Container_var getContainer(const ComponentInstance *inst) const;
-      bool isAlreadyStarted(const ComponentInstance *inst) const;
-      void setContainer(const ComponentInstance *inst, Engines::Container_var cont);
+      Engines::Container_var getContainer(const Task *askingNode) const;
+      bool isAlreadyStarted(const Task *askingNode) const;
+      void setContainer(const Task *askingNode, Engines::Container_var cont);
       void shutdown();
       ~SalomeContainerMultiHelper();
     public:

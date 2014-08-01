@@ -91,15 +91,12 @@ namespace YACS
         :InlineNode(other,father),_fname(other._fname) { }
       InlineFuncNode(const std::string& name):InlineNode(name) { }
     public:
-//! Set the function name to use in node execution
-/*!
- * \param fname: name of the function contained in the script to execute
- */
+      //! Set the function name to use in node execution
       virtual void setFname(const std::string& fname);
       virtual std::string getFname() { return _fname; }
       void accept(Visitor *visitor);
       virtual ~InlineFuncNode();
-      virtual std::string typeName() {return "YACS__ENGINE__InlineFuncNode";}
+      virtual std::string typeName() { return "YACS__ENGINE__InlineFuncNode"; }
       virtual void checkBasicConsistency() const throw(Exception);
     protected:
       std::string _fname;

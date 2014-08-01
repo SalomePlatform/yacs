@@ -55,6 +55,7 @@
 
 #include "SalomeContainer.hxx"
 #include "CppContainer.hxx"
+#include "SalomeHPContainer.hxx"
 
 //Nodes
 #include "PythonNode.hxx"
@@ -595,6 +596,8 @@ Container *RuntimeSALOME::createContainer(const std::string& kind)
 {
   if(kind == "" || kind == SalomeComponent::KIND)
     return new SalomeContainer;
+  if(kind==SalomeHPContainer::KIND)
+    return new SalomeHPContainer;
   else if (kind == CppComponent::KIND)
     return new CppContainer;
   std::string msg="Container kind ("+kind+") unknown";

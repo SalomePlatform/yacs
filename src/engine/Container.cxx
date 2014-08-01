@@ -70,6 +70,3 @@ void Container::setProperties(const std::map<std::string,std::string>& propertie
     setProperty((*it).first,(*it).second);
 }
 
-void Container::shutdown(int level)
-{
-}

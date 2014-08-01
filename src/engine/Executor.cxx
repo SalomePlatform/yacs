@@ -25,6 +25,7 @@
 #include "ComponentInstance.hxx"
 
 #include "VisitorSaveState.hxx"
+#include "ServiceNode.hxx"
 #include "ComposedNode.hxx"
 
 #include <iostream>
@@ -1235,8 +1236,9 @@ void Executor::traceExec(Task *task, const std::string& message)
     {
       containerName = cont->getName();
       ComponentInstance *compo = task->getComponent();
-      //if (compo)
-      placement = cont->getFullPlacementId(compo);
+      ServiceNode *taskCast(dynamic_cast<ServiceNode *>(task));
+      if(taskCast)
+        placement = cont->getFullPlacementId(taskCast);
     }
 #ifdef WIN32
   DWORD now = timeGetTime();

@@ -24,9 +24,11 @@
 #include "HomogeneousPoolContainer.hxx"
 #include "SalomeContainerHelper.hxx"
 #include "SalomeContainerTools.hxx"
+#include "SalomeHPContainerTools.hxx"
 #include "Mutex.hxx"
 #include <string>
 #include <vector>
+#include <map>
 #include <SALOMEconfig.h>
 #include CORBA_CLIENT_HEADER(SALOME_Component)
 #include CORBA_CLIENT_HEADER(SALOME_ContainerManager)
@@ -35,6 +37,7 @@ namespace YACS
 {
   namespace ENGINE
   {
+    class Task;
     class SalomeComponent;
 
     class YACSRUNTIMESALOME_EXPORT SalomeHPContainer : public HomogeneousPoolContainer
@@ -42,17 +45,42 @@ namespace YACS
     public:
       SalomeHPContainer();
       SalomeHPContainer(const SalomeHPContainer& other);
+      //HP specific part
       void setSizeOfPool(int sz);
+      std::size_t getNumberOfFreePlace() const;
+      void allocateFor(const std::vector<const Task *>& nodes);
+      void release(Task *node);
+      //! For thread safety for concurrent load operation on same Container.
+      void lock();
+      //! For thread safety for concurrent load operation on same Container.
+      void unLock();
+      //
+      bool isAlreadyStarted(const Task *askingNode) const;
+      void start(const Task *askingNode) throw(Exception);
+      void shutdown(int level);
+      std::string getPlacementId(const Task *askingNode) const;
+      std::string getFullPlacementId(const Task *askingNode) const;
+      Container *clone() const;
+      Container *cloneAlways() const;
+      void setProperty(const std::string& name,const std::string& value);
+      std::string getProperty(const std::string& name) const;
+      void clearProperties();
+      std::map<std::string,std::string> getProperties() const;
+      std::map<std::string,std::string> getResourceProperties(const std::string& name) const;
+      void checkCapabilityToDealWith(const ComponentInstance *inst) const throw(YACS::Exception);
+    public:
+      static const char KIND[];
     protected:
 #ifndef SWIG
       ~SalomeHPContainer();
 #endif
     protected:
-      YACS::BASES::Mutex _mutex;
-      std::vector<std::string> _componentNames;
-      std::vector<SalomeContainerMonoHelper> _launchModeType;
       int _shutdownLevel;
       SalomeContainerTools _sct;
+      YACS::BASES::Mutex _mutex;
+      std::vector<std::string> _componentNames;
+      //
+      SalomeHPContainerVectOfHelper _launchModeType;
     };
   }
 }

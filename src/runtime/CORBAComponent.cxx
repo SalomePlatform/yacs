@@ -69,7 +69,7 @@ std::string CORBAComponent::getKind() const
 }
 
 //! Unload the component 
-void CORBAComponent::unload(ServiceNode *askingNode)
+void CORBAComponent::unload(Task *askingNode)
 {
   //Not implemented
   std::cerr << "CORBAComponent::unload : not implemented " << std::endl;
@@ -84,7 +84,7 @@ CORBA::Object_ptr CORBAComponent::getCompoPtr()
 }
 
 //! Is the component instance already loaded ?
-bool CORBAComponent::isLoaded(ServiceNode *askingNode)
+bool CORBAComponent::isLoaded(Task *askingNode) const
 {
   if(CORBA::is_nil(_objComponent))
     return false;
@@ -93,7 +93,7 @@ bool CORBAComponent::isLoaded(ServiceNode *askingNode)
 }
 
 //! Load the component 
-void CORBAComponent::load(ServiceNode *askingNode)
+void CORBAComponent::load(Task *askingNode)
 {
   DEBTRACE( "CORBAComponent::load" );
   CORBA::ORB_ptr orb;

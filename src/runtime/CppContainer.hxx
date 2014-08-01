@@ -107,10 +107,11 @@ namespace YACS
     public:
       CppContainer();
       virtual ~CppContainer();
-      bool isAlreadyStarted(const ComponentInstance *inst) const;
-      void start(const ComponentInstance *inst) throw (YACS::Exception);
-      std::string getPlacementId(const ComponentInstance *inst) const;
-      std::string getFullPlacementId(const ComponentInstance *inst) const;
+      bool isAlreadyStarted(const Task *askingNode) const;
+      void start(const Task *askingNode) throw (YACS::Exception);
+      void shutdown(int level);
+      std::string getPlacementId(const Task *askingNode) const;
+      std::string getFullPlacementId(const Task *askingNode) const;
       YACS::ENGINE::Container *clone() const;
       Container *cloneAlways() const;
       void lock();

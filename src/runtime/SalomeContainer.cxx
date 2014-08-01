@@ -57,7 +57,7 @@ SalomeContainer::SalomeContainer():_launchModeType(new SalomeContainerMonoHelper
 }
 
 SalomeContainer::SalomeContainer(const SalomeContainer& other)
-: Container(other),
+: Container(other),_componentNames(other._componentNames),
   _launchModeType(other._launchModeType->deepCpyOnlyStaticInfo()),
   _shutdownLevel(other._shutdownLevel),
   _sct(other._sct)
@@ -146,9 +146,9 @@ void SalomeContainer::addToResourceList(const std::string& name)
 /*!
  * \param inst the component instance to load
  */
-CORBA::Object_ptr SalomeContainer::loadComponent(ServiceNode *inst)
+CORBA::Object_ptr SalomeContainer::loadComponent(Task *askingNode)
 {
-  return SalomeContainerTools::LoadComponent(_launchModeType,this,inst->getComponent());
+  return SalomeContainerTools::LoadComponent(_launchModeType,this,askingNode);
 }
 
 //! Get the container placement id for a component instance
@@ -156,9 +156,9 @@ CORBA::Object_ptr SalomeContainer::loadComponent(ServiceNode *inst)
  * \param inst the component instance
  * \return the placement id
  */
-std::string SalomeContainer::getPlacementId(const ComponentInstance *inst) const
+std::string SalomeContainer::getPlacementId(const Task *askingNode) const
 {
-  return SalomeContainerTools::GetPlacementId(_launchModeType,this,inst);
+  return SalomeContainerTools::GetPlacementId(_launchModeType,this,askingNode);
 }
 
 //! Get the container full path for a component instance
@@ -166,9 +166,9 @@ std::string SalomeContainer::getPlacementId(const ComponentInstance *inst) const
  * \param inst the component instance
  * \return the full placement id
  */
-std::string SalomeContainer::getFullPlacementId(const ComponentInstance *inst) const
+std::string SalomeContainer::getFullPlacementId(const Task *askingNode) const
 {
-  return SalomeContainerTools::GetFullPlacementId(_launchModeType,this,inst);
+  return SalomeContainerTools::GetFullPlacementId(_launchModeType,this,askingNode);
 }
 
 //! Check if the component instance container is already started
@@ -176,23 +176,23 @@ std::string SalomeContainer::getFullPlacementId(const ComponentInstance *inst) c
  * \param inst the component instance
  * \return true, if the container is already started, else false
  */
-bool SalomeContainer::isAlreadyStarted(const ComponentInstance *inst) const
+bool SalomeContainer::isAlreadyStarted(const Task *askingNode) const
 {
-  return _launchModeType->isAlreadyStarted(inst);
+  return _launchModeType->isAlreadyStarted(askingNode);
 }
 
-Engines::Container_ptr SalomeContainer::getContainerPtr(const ComponentInstance *inst) const
+Engines::Container_ptr SalomeContainer::getContainerPtr(const Task *askingNode) const
 {
-  return Engines::Container::_duplicate(_launchModeType->getContainer(inst));
+  return Engines::Container::_duplicate(_launchModeType->getContainer(askingNode));
 }
 
 //! Start a salome container (true salome container not yacs one) with given ContainerParameters (_params)
 /*!
  * \param inst the component instance
  */
-void SalomeContainer::start(const ComponentInstance *inst) throw(YACS::Exception)
+void SalomeContainer::start(const Task *askingNode) throw(YACS::Exception)
 {
-  SalomeContainerTools::Start(_componentNames,_launchModeType,_sct,_shutdownLevel,this,inst);
+  SalomeContainerTools::Start(_componentNames,_launchModeType,_sct,_shutdownLevel,this,askingNode);
 }
 
 void SalomeContainer::shutdown(int level)

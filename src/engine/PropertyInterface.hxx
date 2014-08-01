@@ -36,7 +36,7 @@ namespace YACS
 
       virtual void setProperty(const std::string& name,const std::string& value);
       virtual std::string getProperty(const std::string& name);
-      std::map<std::string,std::string> getProperties() { return _propertyMap; };
+      std::map<std::string,std::string> getProperties() const { return _propertyMap; };
       virtual void setProperties(std::map<std::string,std::string> properties);
     protected:
       std::map<std::string,std::string> _propertyMap;

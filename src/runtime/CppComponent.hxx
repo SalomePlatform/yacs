@@ -56,9 +56,9 @@ namespace YACS
 
         static const char KIND[];
         virtual std::string getKind() const;
-        virtual void load(ServiceNode *askingNode);
-        virtual void unload(ServiceNode *askingNode);
-        virtual bool isLoaded(ServiceNode *askingNode);
+        virtual void load(Task *askingNode);
+        virtual void unload(Task *askingNode);
+        virtual bool isLoaded(Task *askingNode) const;
         virtual ServiceNode* createNode(const std::string& name);
         virtual YACS::ENGINE::ComponentInstance* clone() const;
         

@@ -46,6 +46,7 @@ namespace YACS
       virtual void getCoupledTasks(std::set<Task*>& coupledSet) = 0;
       virtual bool isDeployable() const = 0;
       virtual ComponentInstance *getComponent() = 0;
+      virtual const ComponentInstance *getComponent() const = 0;
       virtual Container *getContainer() = 0;
       virtual YACS::StatesForNode getState() const = 0;
       virtual void finished() = 0;

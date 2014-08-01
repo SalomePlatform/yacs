@@ -44,11 +44,11 @@ SalomePythonComponent::~SalomePythonComponent()
 {
 }
 
-void SalomePythonComponent::load(ServiceNode *askingNode)
+void SalomePythonComponent::load(Task *askingNode)
 {
   if(_container)
     {
-      _container->start(this);
+      _container->start(askingNode);
       return;
     }
   //This component has no specified container : use default container policy
@@ -56,16 +56,16 @@ void SalomePythonComponent::load(ServiceNode *askingNode)
   //throw Exception("SalomePythonComponent::load : no container specified !!! To be implemented in executor to allocate default a Container in case of presenceOfDefaultContainer.");
 }
 
-void SalomePythonComponent::unload(ServiceNode *askingNode)
+void SalomePythonComponent::unload(Task *askingNode)
 {
 }
 
-bool SalomePythonComponent::isLoaded(ServiceNode *askingNode)
+bool SalomePythonComponent::isLoaded(Task *askingNode) const
 {
   if(!_container)
     return false;
   else
-    return _container->isAlreadyStarted(this);
+    return _container->isAlreadyStarted(askingNode);
 }
 
 std::string SalomePythonComponent::getKind() const
@@ -99,10 +99,10 @@ std::string SalomePythonComponent::getFileRepr() const
   return stream.str();
 }
 
-std::string SalomePythonComponent::getStringValueToExportInInterp() const
+std::string SalomePythonComponent::getStringValueToExportInInterp(const Task *askingNode) const
 {
   if(!_container)
     return "localhost/FactoryServer";
   else
-    return _container->getPlacementId(this);
+    return _container->getPlacementId(askingNode);
 }
