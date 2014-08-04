@@ -123,9 +123,11 @@ namespace YACS
       void wakeUp();
       void sleepWhileNoEventsFromAnyRunningTask();
       void notifyEndOfThread(YACS::BASES::Thread *thread);
-      void traceExec(Task *task, const std::string& message);
+      void traceExec(Task *task, const std::string& message, const std::string& placement);
       void _displayDot(Scheduler *graph);
       virtual void sendEvent(const std::string& event);
+      static void FilterTasksConsideringContainers(std::vector<Task *>& tsks);
+      static std::string ComputePlacement(Task *zeTask);
     protected:
       static void *functionForTaskExecution(void *);
     };

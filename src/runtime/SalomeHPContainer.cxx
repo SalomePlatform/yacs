@@ -49,7 +49,7 @@ void SalomeHPContainer::allocateFor(const std::vector<const Task *>& nodes)
   _launchModeType.allocateFor(nodes);
 }
 
-void SalomeHPContainer::release(Task *node)
+void SalomeHPContainer::release(const Task *node)
 {
   _launchModeType.release(node);
 }
@@ -65,7 +65,7 @@ void SalomeHPContainer::lock()
 
 void SalomeHPContainer::unLock()
 {
-  _mutex.unlock();
+  _mutex.unLock();
 }
 
 bool SalomeHPContainer::isAlreadyStarted(const Task *askingNode) const
@@ -85,7 +85,7 @@ void SalomeHPContainer::shutdown(int level)
   if(level < _shutdownLevel)
       return;
   _shutdownLevel=999;
-  for(std::size_t i=0;_launchModeType.size();i++)
+  for(std::size_t i=0;i<_launchModeType.size();i++)
     {
       SalomeContainerMonoHelper *helper(_launchModeType.at(i));
       helper->shutdown();

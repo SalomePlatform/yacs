@@ -25,6 +25,8 @@
 #include "SALOMEconfig.h"
 #include CORBA_CLIENT_HEADER(SALOME_Component)
 
+#include "RefCounter.hxx"
+
 #include <map>
 #include <string>
 
@@ -35,7 +37,7 @@ namespace YACS
     class Task;
     class ComponentInstance;
 
-    class SalomeContainerHelper
+    class SalomeContainerHelper : public RefCounter
     {
     public:
       virtual std::string getType() const = 0;
@@ -44,6 +46,7 @@ namespace YACS
       virtual bool isAlreadyStarted(const Task *askingNode) const = 0;
       virtual void setContainer(const Task *askingNode, Engines::Container_var cont) = 0;
       virtual void shutdown() = 0;
+    protected:
       virtual ~SalomeContainerHelper();
     };
 
@@ -57,6 +60,7 @@ namespace YACS
       bool isAlreadyStarted(const Task *askingNode) const;
       void setContainer(const Task *askingNode, Engines::Container_var cont);
       void shutdown();
+    private:
       ~SalomeContainerMonoHelper();
     public:
       static const char TYPE_NAME[];
@@ -74,6 +78,7 @@ namespace YACS
       bool isAlreadyStarted(const Task *askingNode) const;
       void setContainer(const Task *askingNode, Engines::Container_var cont);
       void shutdown();
+    private:
       ~SalomeContainerMultiHelper();
     public:
       static const char TYPE_NAME[];

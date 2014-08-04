@@ -53,7 +53,7 @@ namespace YACS
       void checkPosInVec(std::size_t pos) const;
     private:
       std::vector<bool> _whichOccupied;
-      std::vector< BASES::AutoCppPtr<YACS::ENGINE::SalomeContainerMonoHelper> > _launchModeType;
+      std::vector< BASES::AutoRefCnt<YACS::ENGINE::SalomeContainerMonoHelper> > _launchModeType;
       std::map<const Task *,std::size_t > _currentlyWorking;
     };
   }

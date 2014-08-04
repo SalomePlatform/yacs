@@ -24,8 +24,7 @@
 #include "Exception.hxx"
 #include "Container.hxx"
 
-#include <list>
-#include <map>
+#include <vector>
 
 namespace YACS
 {
@@ -39,6 +38,9 @@ namespace YACS
     {
     public:
       virtual void setSizeOfPool(int sz) = 0;
+      virtual std::size_t getNumberOfFreePlace() const = 0;
+      virtual void allocateFor(const std::vector<const Task *>& nodes) = 0;
+      virtual void release(const Task *node) = 0;
     protected:
       HomogeneousPoolContainer();
 #ifndef SWIG

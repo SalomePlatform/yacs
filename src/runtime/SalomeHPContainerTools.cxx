@@ -94,7 +94,7 @@ void SalomeHPContainerVectOfHelper::checkNoCurrentWork() const
   for(std::map<const Task *,std::size_t >::const_iterator it=_currentlyWorking.begin();it!=_currentlyWorking.end();it++)
     if((*it).first)
       throw Exception("Something wrong a node is still declared to be using the ressource !");
-  for(std::vector< YACS::BASES::AutoCppPtr<SalomeContainerMonoHelper> >::const_iterator it=_launchModeType.begin();it!=_launchModeType.end();it++)
+  for(std::vector< YACS::BASES::AutoRefCnt<SalomeContainerMonoHelper> >::const_iterator it=_launchModeType.begin();it!=_launchModeType.end();it++)
     if((*it)->isAlreadyStarted(0))
       throw Exception("Some of the containers have be started ! Please shutdown them before !");
 }

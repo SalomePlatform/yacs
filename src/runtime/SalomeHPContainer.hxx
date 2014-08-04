@@ -49,7 +49,7 @@ namespace YACS
       void setSizeOfPool(int sz);
       std::size_t getNumberOfFreePlace() const;
       void allocateFor(const std::vector<const Task *>& nodes);
-      void release(Task *node);
+      void release(const Task *node);
       //! For thread safety for concurrent load operation on same Container.
       void lock();
       //! For thread safety for concurrent load operation on same Container.
@@ -70,7 +70,14 @@ namespace YACS
       std::map<std::string,std::string> getResourceProperties(const std::string& name) const;
       void checkCapabilityToDealWith(const ComponentInstance *inst) const throw(YACS::Exception);
       //
+#ifndef SWIG
+      const SalomeContainerTools &getContainerInfo() const { return _sct; }
+      std::vector<std::string> getComponentNames() const { return _componentNames; }
+      int getShutdownLev() const { return _shutdownLevel; }
+      SalomeContainerMonoHelper *getHelperOfTask(const Task *node) { return _launchModeType.getHelperOfTask(node); }
+      //
       YACS::BASES::Mutex& getLocker() { return _mutex; }
+#endif
     public:
       static const char KIND[];
     protected:

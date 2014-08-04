@@ -70,7 +70,7 @@ void CppContainer::lock()
 
 void CppContainer::unLock()
 {
-  _mutex.unlock();
+  _mutex.unLock();
 }
 
 bool CppContainer::isAlreadyStarted(const Task *askingNode) const
@@ -205,7 +205,7 @@ void LocalContainer::destroy()
       delete iI->second;
     }
   _instance_map.clear();
-  _instance_mapMutex.unlock(); // unlock
+  _instance_mapMutex.unLock(); // unlock
 
   // unload all dynamic libraries
   _library_mapMutex.lock();
@@ -213,7 +213,7 @@ void LocalContainer::destroy()
   for (iL=_library_map.begin(); iL != _library_map.end(); iL++)
     dlclose(iL->second.handle);
   _library_map.clear();
-  _library_mapMutex.unlock();
+  _library_mapMutex.unLock();
 
   delete _singleton;
   _singleton = NULL;
@@ -245,7 +245,7 @@ CppComponent * LocalContainer::createComponentInstance(const char * name)
   C = new CppComponent(o, r, t, name);
   _instance_mapMutex.lock(); // lock to be alone 
   _instance_map.insert(std::pair<std::string, CppComponent *>(name, C));
-  _instance_mapMutex.unlock(); // unlock
+  _instance_mapMutex.unLock(); // unlock
   return C;
 }
 
@@ -275,7 +275,7 @@ void LocalContainer::unregisterComponentInstance(CppComponent * C)
 {
   _instance_mapMutex.lock(); // lock to be alone
   _instance_map.erase(C->getCompoName());
-  _instance_mapMutex.unlock(); // unlock
+  _instance_mapMutex.unLock(); // unlock
 }
 
 inline void toupper (std::string & s)

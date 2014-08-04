@@ -86,7 +86,7 @@ void *BasesTest::th2_1(void *)
       tmp = tmp+1;
       Thread::sleep(1000);
       _value = tmp;
-      _m.unlock();
+      _m.unLock();
       Thread::sleep(100000);
     }
   return 0;
@@ -120,7 +120,7 @@ void BasesTest::get_resources(int id, int amount)
     }
   _resources -= amount;
   _ownedResources[id] = amount;
-  _m.unlock(); 
+  _m.unLock();
 }
 
 void BasesTest::free_resources(int id, int amount)
@@ -133,7 +133,7 @@ void BasesTest::free_resources(int id, int amount)
       _waiting = 0;
       _cond.notify_all();
     }
-  _m.unlock();
+  _m.unLock();
 }
 
 int BasesTest::count_resources()
@@ -147,7 +147,7 @@ int BasesTest::count_resources()
       {
         totOwned += _ownedResources[i];
       }
-    _m.unlock();
+    _m.unLock();
   }
   int total = resources + totOwned;
   DEBTRACE("resources:: owned by threads: " << totOwned << " remaining: " << resources << " total: " << total);

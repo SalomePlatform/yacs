@@ -127,10 +127,20 @@ REFCOUNT_TEMPLATE(CONTAINmap,YACS::ENGINE::Container)
 %template(propmap)       std::map<std::string, std::string>;
 
 REFCOUNT_TEMPLATE(CompoInstmap,YACS::ENGINE::ComponentInstance)
+
 /*
  * End of Template section
  */
 
+%typemap(out) Container *
+{
+  $result=convertContainer($1,$owner);
+}
+
+%typemap(out) YACS::ENGINE::Container *
+{
+  $result=convertContainer($1,$owner);
+}
 
 /*
  * Ownership section

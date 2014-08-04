@@ -51,6 +51,7 @@
 %types(YACS::ENGINE::Node *);
 %types(YACS::ENGINE::InputPort *,YACS::ENGINE::OutputPort *,YACS::ENGINE::InputDataStreamPort *,YACS::ENGINE::OutputDataStreamPort *);
 %types(YACS::ENGINE::InGate *,YACS::ENGINE::OutGate *,YACS::ENGINE::InPort *,YACS::ENGINE::OutPort *,YACS::ENGINE::Port *);
+%types(YACS::ENGINE::Container *, YACS::ENGINE::HomogeneousPoolContainer *);
 
 %import "pilot.i"
 

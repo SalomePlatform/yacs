@@ -64,9 +64,17 @@ SalomeContainer::SalomeContainer(const SalomeContainer& other)
 {
 }
 
+SalomeContainer::SalomeContainer(const Container& other, const SalomeContainerTools& sct, SalomeContainerHelper *lmt,
+                                 const std::vector<std::string>& componentNames, int shutdownLev):Container(other),_componentNames(componentNames),
+                                     _launchModeType(lmt),_shutdownLevel(shutdownLev),_sct(sct)
+{
+  if(lmt)
+    lmt->incrRef();
+}
+
 SalomeContainer::~SalomeContainer()
 {
-  delete _launchModeType;
+  _launchModeType->decrRef();
 }
 
 void SalomeContainer::lock()
@@ -76,7 +84,7 @@ void SalomeContainer::lock()
 
 void SalomeContainer::unLock()
 {
-  _mutex.unlock();
+  _mutex.unLock();
 }
 
 Container *SalomeContainer::clone() const
@@ -107,12 +115,12 @@ void SalomeContainer::setProperty(const std::string& name, const std::string& va
     {
       if (value == SalomeContainerMonoHelper::TYPE_NAME)
         {
-          delete _launchModeType;
+          _launchModeType->decrRef();
           _launchModeType=new SalomeContainerMonoHelper;
         }
       else if (value == SalomeContainerMultiHelper::TYPE_NAME)
         {
-          delete _launchModeType;
+          _launchModeType->decrRef();
           _launchModeType=new SalomeContainerMultiHelper;
         }
       else

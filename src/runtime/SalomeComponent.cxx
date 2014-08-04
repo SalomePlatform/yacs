@@ -20,7 +20,9 @@
 #include "RuntimeSALOME.hxx"
 #include "SalomeComponent.hxx"
 #include "SalomeContainer.hxx"
+#include "SalomeHPContainer.hxx"
 #include "CORBANode.hxx"
+#include "AutoLocker.hxx"
 
 #ifdef SALOME_KERNEL
 #include "SALOME_NamingService.hxx"
@@ -76,14 +78,32 @@ bool SalomeComponent::isLoaded(Task *askingNode) const
     return true;
 }
 
-#ifdef SALOME_KERNEL
+//#ifdef SALOME_KERNEL
 //! Load the component 
 void SalomeComponent::load(Task *askingNode)
 {
   if(_container)
     {
-      _objComponent=((SalomeContainer*)_container)->loadComponent(askingNode);
-      return;
+      SalomeContainer *salomeContainer(dynamic_cast<SalomeContainer *>(_container));
+      if(salomeContainer)
+        {
+          _objComponent=salomeContainer->loadComponent(askingNode);
+          return ;
+        }
+      SalomeHPContainer *salomeContainer2(dynamic_cast<SalomeHPContainer *>(_container));
+      if(salomeContainer2)
+        {
+          SalomeContainerHelper *lmt(0);
+          {
+            YACS::BASES::AutoLocker<Container> altck(salomeContainer2);
+            lmt=salomeContainer2->getHelperOfTask(askingNode);
+          }
+          SalomeContainer tmpCont(*salomeContainer2,salomeContainer2->getContainerInfo(),lmt,
+                                  salomeContainer2->getComponentNames(),salomeContainer2->getShutdownLev());
+          _objComponent=tmpCont.loadComponent(askingNode);
+          return ;
+        }
+      throw Exception("Unrecognized type of Container ! Only Salome and HPSalome container are supported by the Salome components !");
     }
   //throw Exception("SalomeComponent::load : no container specified !!! To be implemented in executor to allocate default a Container in case of presenceOfDefaultContainer.");
   //This component has no specified container : use default container policy
@@ -95,12 +115,12 @@ void SalomeComponent::load(Task *askingNode)
   params.container_name ="FactoryServer";
   _objComponent=LCC.LoadComponent(params,_compoName.c_str());
 }
-#else
+/*#else
 void SalomeComponent::load(Task *askingNode)
 {
   throw Exception("YACS has been built without SALOME support");
 }
-#endif
+#endif*/
 
 //! Create a ServiceNode with this component instance and no input or output port
 /*!

@@ -18,8 +18,9 @@
 //
 
 #include "AnyOutputPort.hxx"
-#include "Any.hxx"
+#include "AutoLocker.hxx"
 #include "Runtime.hxx"
+#include "Any.hxx"
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -47,7 +48,7 @@ AnyOutputPort::~AnyOutputPort()
 //! store the current dispatched value
 void AnyOutputPort::setValue(Any *data) 
 {
-  YACS::BASES::Lock lock(&_mutex);
+  YACS::BASES::AutoLocker<YACS::BASES::Mutex> lock(&_mutex);
   if(_data)
     _data->decrRef();
   _data = data; 
@@ -73,6 +74,6 @@ void AnyOutputPort::put(YACS::ENGINE::Any *data) throw(ConversionException)
 
 std::string AnyOutputPort::getAsString()
 {
-  YACS::BASES::Lock lock(&_mutex);
+  YACS::BASES::AutoLocker<YACS::BASES::Mutex> lock(&_mutex);
   return getRuntime()->convertNeutralAsString(edGetType(),_data);
 }

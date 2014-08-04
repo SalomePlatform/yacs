@@ -21,19 +21,19 @@
 #define __AUTOLOCKER_HXX__
 
 #include "Exception.hxx"
-#include "Mutex.hxx"
 
 namespace YACS
 {
   namespace BASES
   {
+    template<class T>
     class AutoLocker
     {
     public:
-      AutoLocker(Mutex *m):_ptr(m) { _ptr->lock(); }
-      ~AutoLocker() { _ptr->unlock(); }
+      AutoLocker(T *m):_ptr(m) { _ptr->lock(); }
+      ~AutoLocker() { _ptr->unLock(); }
     private:
-      Mutex *_ptr;
+      T *_ptr;
     };
   }
 }

@@ -80,6 +80,7 @@ catch (const CORBA::SystemException& ex) { \
 #include "InputDataStreamPort.hxx"
 #include "OutputDataStreamPort.hxx"
 #include "OptimizerLoop.hxx"
+#include "HomogeneousPoolContainer.hxx"
 
 class InterpreterUnlocker
 {
@@ -203,6 +204,17 @@ static PyObject* convertPort(YACS::ENGINE::Port* port,int owner=0)
         ob=SWIG_NewPointerObj((void*)port,SWIGTYPE_p_YACS__ENGINE__Port, owner);
     }
   return ob;
+}
+
+static PyObject *convertContainer(YACS::ENGINE::Container *cont, int owner=0)
+{
+  if(!cont)
+    return SWIG_NewPointerObj((void*)cont,SWIGTYPE_p_YACS__ENGINE__Container, owner);
+  if(dynamic_cast<YACS::ENGINE::HomogeneousPoolContainer *>(cont))
+    {
+      return SWIG_NewPointerObj((void*)dynamic_cast<YACS::ENGINE::HomogeneousPoolContainer *>(cont),SWIGTYPE_p_YACS__ENGINE__HomogeneousPoolContainer, owner);
+    }
+  return SWIG_NewPointerObj((void*)cont,SWIGTYPE_p_YACS__ENGINE__Container, owner);
 }
 
 %}

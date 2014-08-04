@@ -36,7 +36,7 @@ namespace YACS
       MutexPT();
       ~MutexPT();
       void lock();
-      void unlock();
+      void unLock();
       friend class ConditionPT;
     private:
       pthread_mutex_t _mutexDesc;
