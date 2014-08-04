@@ -226,7 +226,7 @@ std::string SalomeContainerTools::getContainerName() const
 
 void SalomeContainerTools::setContainerName(const std::string& name)
 {
-  _params.container_name=CORBA::string_dup(name.c_str());
+  SetContainerNameOf(_params,name);
 }
 
 std::string SalomeContainerTools::getNotNullContainerName(const Container *contPtr, bool& isEmpty) const
@@ -254,6 +254,11 @@ std::string SalomeContainerTools::getNotNullContainerName(const Container *contP
 std::string SalomeContainerTools::getHostName() const
 {
   return std::string(_params.resource_params.hostname);
+}
+
+void SalomeContainerTools::SetContainerNameOf(Engines::ContainerParameters& params, const std::string& name)
+{
+  params.container_name=CORBA::string_dup(name.c_str());
 }
 
 std::map<std::string,std::string> SalomeContainerTools::getResourceProperties(const std::string& name) const
@@ -325,12 +330,16 @@ void SalomeContainerTools::Start(const std::vector<std::string>& compoNames, Sal
     sct.addToComponentList(*iter);
 
   Engines::ContainerParameters myparams(sct.getParameters());
+  {
+    std::string dftLauchMode(schelp->getDftLaunchMode());
+    myparams.mode=CORBA::string_dup(dftLauchMode.c_str());
+  }
 
   //If a container_name is given try to find an already existing container in naming service
   //If not found start a new container with the given parameters
-  if (dynamic_cast<SalomeContainerMonoHelper *>(schelp) && str != "")
+  if (dynamic_cast<SalomeContainerMonoHelper *>(schelp) && !isEmptyName)
     {
-      myparams.mode="getorstart";
+      myparams.mode=CORBA::string_dup("getorstart");
     }
 
   if (isEmptyName)
@@ -338,6 +347,7 @@ void SalomeContainerTools::Start(const std::vector<std::string>& compoNames, Sal
       shutdownLevel=1;
     }
   sct.setContainerName(str);
+  SetContainerNameOf(myparams,str);
   Engines::Container_var trueCont(Engines::Container::_nil());
   if(!isEmptyName && shutdownLevel==999)
     {

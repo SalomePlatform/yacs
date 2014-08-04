@@ -50,6 +50,11 @@ std::string SalomeContainerMonoHelper::getType() const
   return TYPE_NAME;
 }
 
+std::string SalomeContainerMonoHelper::getDftLaunchMode() const
+{
+  return std::string(DFT_LAUNCH_MODE);
+}
+
 SalomeContainerMonoHelper *SalomeContainerMonoHelper::deepCpyOnlyStaticInfo() const
 {
   return new SalomeContainerMonoHelper;
@@ -100,6 +105,11 @@ SalomeContainerMonoHelper::~SalomeContainerMonoHelper()
 std::string SalomeContainerMultiHelper::getType() const
 {
   return TYPE_NAME;
+}
+
+std::string SalomeContainerMultiHelper::getDftLaunchMode() const
+{
+  return std::string(DFT_LAUNCH_MODE);
 }
 
 SalomeContainerMultiHelper *SalomeContainerMultiHelper::deepCpyOnlyStaticInfo() const

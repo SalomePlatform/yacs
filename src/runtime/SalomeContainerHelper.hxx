@@ -41,6 +41,7 @@ namespace YACS
     {
     public:
       virtual std::string getType() const = 0;
+      virtual std::string getDftLaunchMode() const = 0;
       virtual SalomeContainerHelper *deepCpyOnlyStaticInfo() const = 0;
       virtual Engines::Container_var getContainer(const Task *askingNode) const = 0;
       virtual bool isAlreadyStarted(const Task *askingNode) const = 0;
@@ -55,6 +56,7 @@ namespace YACS
     public:
       SalomeContainerMonoHelper();
       std::string getType() const;
+      std::string getDftLaunchMode() const;
       SalomeContainerMonoHelper *deepCpyOnlyStaticInfo() const;
       Engines::Container_var getContainer(const Task *askingNode) const;
       bool isAlreadyStarted(const Task *askingNode) const;
@@ -73,6 +75,7 @@ namespace YACS
     {
     public:
       std::string getType() const;
+      std::string getDftLaunchMode() const;
       SalomeContainerMultiHelper *deepCpyOnlyStaticInfo() const;
       Engines::Container_var getContainer(const Task *askingNode) const;
       bool isAlreadyStarted(const Task *askingNode) const;

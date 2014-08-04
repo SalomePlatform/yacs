@@ -55,6 +55,7 @@ namespace YACS
       std::string getNotNullContainerName(const Container *contPtr, bool& isEmpty) const;
       std::string getHostName() const;
       Engines::ContainerParameters getParameters() const { return _params; }
+      static void SetContainerNameOf(Engines::ContainerParameters& params, const std::string& name);
     public:
       static void Start(const std::vector<std::string>& compoNames, SalomeContainerHelper *schelp, SalomeContainerTools& sct, int& shutdownLevel, const Container *cont, const Task *askingNode);
       static CORBA::Object_ptr LoadComponent(SalomeContainerHelper *launchModeType, Container *cont, Task *askingNode);
