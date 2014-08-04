@@ -26,9 +26,14 @@ using namespace YACS::ENGINE;
 
 void SalomeHPContainerVectOfHelper::resize(std::size_t sz)
 {
+  std::size_t oldSize(_launchModeType.size());
+  if(sz==oldSize)
+    return;
   checkNoCurrentWork();
   _whichOccupied.resize(sz); std::fill(_whichOccupied.begin(),_whichOccupied.end(),false);
   _launchModeType.clear(); _launchModeType.resize(sz);
+  for(std::size_t i=oldSize;i<sz;i++)
+      _launchModeType[i]=new SalomeContainerMonoHelper;
   _currentlyWorking.clear();
 }
 
@@ -64,12 +69,12 @@ void SalomeHPContainerVectOfHelper::release(const Task *node)
   _currentlyWorking.erase(it);
 }
 
-const SalomeContainerMonoHelper& SalomeHPContainerVectOfHelper::getHelperOfTask(const Task *node) const
+const SalomeContainerMonoHelper *SalomeHPContainerVectOfHelper::getHelperOfTask(const Task *node) const
 {
   return _launchModeType[locateTask(node)];
 }
 
-SalomeContainerMonoHelper& SalomeHPContainerVectOfHelper::getHelperOfTask(const Task *node)
+SalomeContainerMonoHelper *SalomeHPContainerVectOfHelper::getHelperOfTask(const Task *node)
 {
   return _launchModeType[locateTask(node)];
 }
@@ -89,8 +94,8 @@ void SalomeHPContainerVectOfHelper::checkNoCurrentWork() const
   for(std::map<const Task *,std::size_t >::const_iterator it=_currentlyWorking.begin();it!=_currentlyWorking.end();it++)
     if((*it).first)
       throw Exception("Something wrong a node is still declared to be using the ressource !");
-  for(std::vector<SalomeContainerMonoHelper>::const_iterator it=_launchModeType.begin();it!=_launchModeType.end();it++)
-    if((*it).isAlreadyStarted(0))
+  for(std::vector< YACS::BASES::AutoCppPtr<SalomeContainerMonoHelper> >::const_iterator it=_launchModeType.begin();it!=_launchModeType.end();it++)
+    if((*it)->isAlreadyStarted(0))
       throw Exception("Some of the containers have be started ! Please shutdown them before !");
 }
 

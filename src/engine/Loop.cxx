@@ -392,10 +392,6 @@ void Loop::edRemoveChild(Node *node) throw(YACS::Exception)
   modified();
 }
 
-void Loop::selectRunnableTasks(std::vector<Task *>& tasks)
-{
-}
-
 std::list<Node *> Loop::edGetDirectDescendants() const
 {
   list<Node *> ret;

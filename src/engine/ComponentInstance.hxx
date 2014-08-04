@@ -48,7 +48,7 @@ namespace YACS
       virtual void setAnonymous(bool anon) { _anonymous = anon; };
       virtual bool isAnonymous() { return _anonymous; };
       int getNumId() const { return _numId; }
-      virtual void setContainer(Container *cont);
+      virtual bool setContainer(Container *cont);
       Container *getContainer() const { return _container; }
 //! Load the component instance
       virtual void load(Task *askingNode) = 0;

@@ -70,14 +70,14 @@ void SalomeHPContainer::unLock()
 
 bool SalomeHPContainer::isAlreadyStarted(const Task *askingNode) const
 {
-  const SalomeContainerMonoHelper& helper(_launchModeType.getHelperOfTask(askingNode));
-  return helper.isAlreadyStarted(askingNode);
+  const SalomeContainerMonoHelper *helper(_launchModeType.getHelperOfTask(askingNode));
+  return helper->isAlreadyStarted(askingNode);
 }
 
 void SalomeHPContainer::start(const Task *askingNode) throw(Exception)
 {
-  SalomeContainerMonoHelper& helper(_launchModeType.getHelperOfTask(askingNode));
-  SalomeContainerTools::Start(_componentNames,&helper,_sct,_shutdownLevel,this,askingNode);
+  SalomeContainerMonoHelper *helper(_launchModeType.getHelperOfTask(askingNode));
+  SalomeContainerTools::Start(_componentNames,helper,_sct,_shutdownLevel,this,askingNode);
 }
 
 void SalomeHPContainer::shutdown(int level)
@@ -87,21 +87,21 @@ void SalomeHPContainer::shutdown(int level)
   _shutdownLevel=999;
   for(std::size_t i=0;_launchModeType.size();i++)
     {
-      SalomeContainerMonoHelper& helper(_launchModeType.at(i));
-      helper.shutdown();
+      SalomeContainerMonoHelper *helper(_launchModeType.at(i));
+      helper->shutdown();
     }
 }
 
 std::string SalomeHPContainer::getPlacementId(const Task *askingNode) const
 {
-  const SalomeContainerMonoHelper& helper(_launchModeType.getHelperOfTask(askingNode));
-  return SalomeContainerTools::GetPlacementId(&helper,this,askingNode);
+  const SalomeContainerMonoHelper *helper(_launchModeType.getHelperOfTask(askingNode));
+  return SalomeContainerTools::GetPlacementId(helper,this,askingNode);
 }
 
 std::string SalomeHPContainer::getFullPlacementId(const Task *askingNode) const
 {
-  const SalomeContainerMonoHelper& helper(_launchModeType.getHelperOfTask(askingNode));
-  return SalomeContainerTools::GetFullPlacementId(&helper,this,askingNode);
+  const SalomeContainerMonoHelper *helper(_launchModeType.getHelperOfTask(askingNode));
+  return SalomeContainerTools::GetFullPlacementId(helper,this,askingNode);
 }
 
 /*!
@@ -131,6 +131,11 @@ std::string SalomeHPContainer::getProperty(const std::string& name) const
 void SalomeHPContainer::clearProperties()
 {
   _sct.clearProperties();
+}
+
+void SalomeHPContainer::addComponentName(const std::string& name)
+{
+  _componentNames.push_back(name);
 }
 
 std::map<std::string,std::string> SalomeHPContainer::getProperties() const

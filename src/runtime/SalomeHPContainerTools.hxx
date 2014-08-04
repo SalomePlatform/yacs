@@ -23,6 +23,8 @@
 #include "YACSRuntimeSALOMEExport.hxx"
 #include "SalomeContainerHelper.hxx"
 
+#include "AutoRefCnt.hxx"
+
 #include <map>
 #include <vector>
 
@@ -32,7 +34,7 @@ namespace YACS
   {
     class Task;
     class SalomeComponent;
-
+    class SalomeContainerMonoHelper;
     class SalomeHPContainerVectOfHelper
     {
     public:
@@ -41,17 +43,17 @@ namespace YACS
       std::size_t getNumberOfFreePlace() const;
       void allocateFor(const std::vector<const Task *>& nodes);
       void release(const Task *node);
-      const SalomeContainerMonoHelper& at(std::size_t pos) const { checkPosInVec(pos); return _launchModeType[pos]; }
-      SalomeContainerMonoHelper& at(std::size_t pos) { checkPosInVec(pos); return _launchModeType[pos]; }
-      const SalomeContainerMonoHelper& getHelperOfTask(const Task *node) const;
-      SalomeContainerMonoHelper& getHelperOfTask(const Task *node);
+      const SalomeContainerMonoHelper *at(std::size_t pos) const { checkPosInVec(pos); return _launchModeType[pos]; }
+      SalomeContainerMonoHelper *at(std::size_t pos) { checkPosInVec(pos); return _launchModeType[pos]; }
+      const SalomeContainerMonoHelper *getHelperOfTask(const Task *node) const;
+      SalomeContainerMonoHelper *getHelperOfTask(const Task *node);
     private:
       std::size_t locateTask(const Task *node) const;
       void checkNoCurrentWork() const;
       void checkPosInVec(std::size_t pos) const;
     private:
       std::vector<bool> _whichOccupied;
-      std::vector<SalomeContainerMonoHelper> _launchModeType;
+      std::vector< BASES::AutoCppPtr<YACS::ENGINE::SalomeContainerMonoHelper> > _launchModeType;
       std::map<const Task *,std::size_t > _currentlyWorking;
     };
   }

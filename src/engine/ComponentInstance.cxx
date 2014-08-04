@@ -49,9 +49,9 @@ int ComponentInstance::_total = 0;
 
 const char ComponentInstance::NULL_FILE_REPR[]="No repr specified for ComponentInstance";
 
-void ComponentInstance::setContainer(Container *cont)
+bool ComponentInstance::setContainer(Container *cont)
 {
-  if (cont == _container) return;
+  if (cont == _container) return false;
   
   if(cont)
     cont->checkCapabilityToDealWith(this);
@@ -60,6 +60,7 @@ void ComponentInstance::setContainer(Container *cont)
   _container=cont;
   if(_container)
     _container->incrRef();
+  return true;
 }
 
 ComponentInstance::ComponentInstance(const std::string& name):_compoName(name),_isAttachedOnCloning(false),_container(0),_anonymous(true)

@@ -169,7 +169,6 @@ namespace YACS
       void getReadyTasks(std::vector<Task *>& tasks);
       void edRemoveChild(Node *node) throw(Exception);
       bool isRepeatedUnpredictablySeveralTimes() const { return true; }
-      void selectRunnableTasks(std::vector<Task *>& tasks);
       std::list<Node *> edGetDirectDescendants() const;
       std::list<InputPort *> getSetOfInputPort() const;
       int getNumberOfInputPorts() const;

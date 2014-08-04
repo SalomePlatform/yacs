@@ -65,6 +65,7 @@ namespace YACS
       virtual void setProperty(const std::string& name,const std::string& value) = 0;
       virtual std::string getProperty(const std::string& name) const = 0;
       virtual void clearProperties() = 0;
+      virtual void addComponentName(const std::string& name) = 0;
       virtual std::map<std::string,std::string> getProperties() const = 0;
       virtual std::map<std::string,std::string> getResourceProperties(const std::string& name) const = 0;
       virtual void setProperties(const std::map<std::string,std::string>& properties);

@@ -40,6 +40,7 @@ namespace YACS
       void lock() { }
       void unLock() { }
       void clearProperties() { }
+      void addComponentName(const std::string& name) { }
       void shutdown(int level) { }
       void setProperty(const std::string& name,const std::string& value) { }
       std::string getProperty(const std::string& name) const { }
@@ -71,6 +72,7 @@ namespace YACS
       void lock() { }
       void unLock() { }
       void clearProperties() { }
+      void addComponentName(const std::string& name) { }
       void shutdown(int level) { }
       void setProperty(const std::string& name,const std::string& value) { }
       std::string getProperty(const std::string& name) const { }

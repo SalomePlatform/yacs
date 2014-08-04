@@ -65,9 +65,12 @@ namespace YACS
       void setProperty(const std::string& name,const std::string& value);
       std::string getProperty(const std::string& name) const;
       void clearProperties();
+      void addComponentName(const std::string& name);
       std::map<std::string,std::string> getProperties() const;
       std::map<std::string,std::string> getResourceProperties(const std::string& name) const;
       void checkCapabilityToDealWith(const ComponentInstance *inst) const throw(YACS::Exception);
+      //
+      YACS::BASES::Mutex& getLocker() { return _mutex; }
     public:
       static const char KIND[];
     protected:

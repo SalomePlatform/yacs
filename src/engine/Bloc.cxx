@@ -229,10 +229,6 @@ Node *Bloc::getChildByShortName(const std::string& name) const throw(YACS::Excep
   throw Exception(what);
 }
 
-void Bloc::selectRunnableTasks(std::vector<Task *>& tasks)
-{
-}
-
 bool Bloc::areAllSubNodesDone() const
 {
   for(list<Node *>::const_iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
