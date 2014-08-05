@@ -47,6 +47,7 @@ namespace YACS
 #endif
     public:
       //Execution only methods
+      virtual std::string getDiscreminantStrOfThis() const;
       virtual bool isAlreadyStarted(const Task *askingNode) const = 0;
       virtual void start(const Task *askingNode) throw(Exception) = 0;
       virtual std::string getPlacementId(const Task *askingNode) const = 0;
@@ -54,7 +55,7 @@ namespace YACS
       //Edition only methods
       virtual void attachOnCloning() const;
       virtual void dettachOnCloning() const;
-      bool isAttachedOnCloning() const;
+      virtual bool isAttachedOnCloning() const;
       virtual void lock() = 0;
       virtual void unLock() = 0;
       //! \b WARNING ! clone behaviour \b MUST be in coherence with what is returned by isAttachedOnCloning() method

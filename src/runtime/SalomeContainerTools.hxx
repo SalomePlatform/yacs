@@ -59,6 +59,7 @@ namespace YACS
     public:
       static void Start(const std::vector<std::string>& compoNames, SalomeContainerHelper *schelp, SalomeContainerTools& sct, int& shutdownLevel, const Container *cont, const Task *askingNode);
       static CORBA::Object_ptr LoadComponent(SalomeContainerHelper *launchModeType, Container *cont, Task *askingNode);
+      static CORBA::Object_ptr CreateComponentInstance(Container *cont, Engines::Container_ptr contPtr, const ComponentInstance *inst);
       static std::string GetPlacementId(const SalomeContainerHelper *launchModeType, const Container *cont, const Task *askingNode);
       static std::string GetFullPlacementId(const SalomeContainerHelper *launchModeType, const Container *cont, const Task *askingNode);
     protected:

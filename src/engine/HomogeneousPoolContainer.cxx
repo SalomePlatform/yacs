@@ -18,11 +18,32 @@
 //
 
 #include "HomogeneousPoolContainer.hxx"
+#include "Exception.hxx"
 
 using namespace YACS::ENGINE;
 
+void HomogeneousPoolContainer::attachOnCloning() const
+{
+  _isAttachedOnCloning=true;
+}
+
+void HomogeneousPoolContainer::dettachOnCloning() const
+{
+  _isAttachedOnCloning=true;
+  throw Exception("An HomogeneousPoolContainer cannot be detached on cloning !");
+}
+
+/*!
+ * By definition an HomogeneousPoolContainer instance is attached on cloning.
+ */
+bool HomogeneousPoolContainer::isAttachedOnCloning() const
+{
+  return true;
+}
+
 HomogeneousPoolContainer::HomogeneousPoolContainer()
 {
+  _isAttachedOnCloning=true;
 }
 
 HomogeneousPoolContainer::~HomogeneousPoolContainer()

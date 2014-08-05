@@ -43,12 +43,12 @@ namespace YACS
       std::size_t getNumberOfFreePlace() const;
       void allocateFor(const std::vector<const Task *>& nodes);
       void release(const Task *node);
+      std::size_t locateTask(const Task *node) const;
       const SalomeContainerMonoHelper *at(std::size_t pos) const { checkPosInVec(pos); return _launchModeType[pos]; }
       SalomeContainerMonoHelper *at(std::size_t pos) { checkPosInVec(pos); return _launchModeType[pos]; }
       const SalomeContainerMonoHelper *getHelperOfTask(const Task *node) const;
       SalomeContainerMonoHelper *getHelperOfTask(const Task *node);
     private:
-      std::size_t locateTask(const Task *node) const;
       void checkNoCurrentWork() const;
       void checkPosInVec(std::size_t pos) const;
     private:

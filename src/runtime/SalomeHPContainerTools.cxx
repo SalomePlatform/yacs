@@ -69,16 +69,6 @@ void SalomeHPContainerVectOfHelper::release(const Task *node)
   _currentlyWorking.erase(it);
 }
 
-const SalomeContainerMonoHelper *SalomeHPContainerVectOfHelper::getHelperOfTask(const Task *node) const
-{
-  return _launchModeType[locateTask(node)];
-}
-
-SalomeContainerMonoHelper *SalomeHPContainerVectOfHelper::getHelperOfTask(const Task *node)
-{
-  return _launchModeType[locateTask(node)];
-}
-
 std::size_t SalomeHPContainerVectOfHelper::locateTask(const Task *node) const
 {
   std::map< const Task *,std::size_t >::const_iterator it(_currentlyWorking.find(node));
@@ -87,6 +77,16 @@ std::size_t SalomeHPContainerVectOfHelper::locateTask(const Task *node) const
   std::size_t ret((*it).second);
   checkPosInVec(ret);
   return ret;
+}
+
+const SalomeContainerMonoHelper *SalomeHPContainerVectOfHelper::getHelperOfTask(const Task *node) const
+{
+  return _launchModeType[locateTask(node)];
+}
+
+SalomeContainerMonoHelper *SalomeHPContainerVectOfHelper::getHelperOfTask(const Task *node)
+{
+  return _launchModeType[locateTask(node)];
 }
 
 void SalomeHPContainerVectOfHelper::checkNoCurrentWork() const

@@ -63,6 +63,7 @@ namespace YACS
       virtual ServiceNode* createNode(const std::string& name)=0;
       virtual ComponentInstance *clone() const = 0;
       virtual std::string getKind() const;
+      virtual std::string getKindForNode() const;
       static const char KIND[];
       virtual void shutdown(int level);
     protected:

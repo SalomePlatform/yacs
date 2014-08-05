@@ -49,6 +49,7 @@ namespace YACS
     public:
       static const char KIND[];
       virtual std::string getKind() const;
+      virtual std::string getKindForNode() const;
     protected:
       CORBA::Object_var _objComponent;
     };

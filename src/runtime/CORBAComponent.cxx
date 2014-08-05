@@ -68,6 +68,11 @@ std::string CORBAComponent::getKind() const
   return KIND;
 }
 
+std::string CORBAComponent::getKindForNode() const
+{
+  return KIND;
+}
+
 //! Unload the component 
 void CORBAComponent::unload(Task *askingNode)
 {

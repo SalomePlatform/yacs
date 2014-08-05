@@ -128,6 +128,11 @@ string ComponentInstance::getKind() const
   return KIND;
 }
 
+std::string ComponentInstance::getKindForNode() const
+{
+  return KIND;
+}
+
 void ComponentInstance::shutdown(int level)
 {
 }

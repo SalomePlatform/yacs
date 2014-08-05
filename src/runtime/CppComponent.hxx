@@ -56,6 +56,7 @@ namespace YACS
 
         static const char KIND[];
         virtual std::string getKind() const;
+        virtual std::string getKindForNode() const;
         virtual void load(Task *askingNode);
         virtual void unload(Task *askingNode);
         virtual bool isLoaded(Task *askingNode) const;

@@ -17,8 +17,8 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-#ifndef _SALOMECOMPONENT_HXX_
-#define _SALOMECOMPONENT_HXX_
+#ifndef _SALOMEHPCOMPONENT_HXX_
+#define _SALOMEHPCOMPONENT_HXX_
 
 #include "YACSRuntimeSALOMEExport.hxx"
 #include "ComponentInstance.hxx"
@@ -28,16 +28,12 @@ namespace YACS
 {
   namespace ENGINE
   {
-/*! \brief Class for Salome component instance
- *
- *
- */
-    class YACSRUNTIMESALOME_EXPORT SalomeComponent : public ComponentInstance
+    class YACSRUNTIMESALOME_EXPORT SalomeHPComponent : public ComponentInstance
     {
     public:
-      SalomeComponent(const std::string& name);
-      SalomeComponent(const SalomeComponent& other);
-      virtual ~SalomeComponent();
+      SalomeHPComponent(const std::string& name);
+      SalomeHPComponent(const SalomeHPComponent& other);
+      virtual ~SalomeHPComponent();
       virtual void load(Task *askingNode);
       virtual void unload(Task *askingNode);
       virtual bool isLoaded(Task *askingNode) const;

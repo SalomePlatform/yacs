@@ -23,6 +23,7 @@
 #include "SALOME_ResourcesManager.hxx"
 #include "SALOME_ContainerManager.hxx"
 #include "Container.hxx"
+#include "AutoLocker.hxx"
 
 #include "YacsTrace.hxx"
 #include "Proc.hxx"
@@ -246,7 +247,7 @@ std::string SalomeContainerTools::getNotNullContainerName(const Container *contP
       stream << "_";
       stream << contPtr->getName();
       stream << "_";
-      stream << (const void *)contPtr;
+      stream << contPtr->getDiscreminantStrOfThis();
       return stream.str();
     }
 }
@@ -419,66 +420,65 @@ void SalomeContainerTools::Start(const std::vector<std::string>& compoNames, Sal
 CORBA::Object_ptr SalomeContainerTools::LoadComponent(SalomeContainerHelper *launchModeType, Container *cont, Task *askingNode)
 {
   DEBTRACE("SalomeContainer::loadComponent ");
-  cont->lock();//To be sure
   const ComponentInstance *inst(askingNode?askingNode->getComponent():0);
-  if(!cont->isAlreadyStarted(askingNode))
-    {
-      try
-        {
-          cont->start(askingNode);
-        }
-      catch(Exception& e)
-        {
-          cont->unLock();
-          throw e;
-        }
-    }
-  cont->unLock();
-  cont->lock();//To be sure
+  {
+    YACS::BASES::AutoLocker<Container> alck(cont);//To be sure
+    if(!cont->isAlreadyStarted(askingNode))
+      cont->start(askingNode);
+  }
+  if(!inst)
+    throw Exception("SalomeContainerTools::LoadComponent : no instance of component in the task requesting for a load of its component !");
   CORBA::Object_ptr objComponent=CORBA::Object::_nil();
+  {
+    YACS::BASES::AutoLocker<Container> alck(cont);//To be sure
+    std::string compoName(inst->getCompoName());
+    Engines::Container_var container(launchModeType->getContainer(askingNode));
+
+    char *reason;
+    bool isLoadable(container->load_component_Library(compoName.c_str(), reason));
+    if(isLoadable)
+      objComponent=CreateComponentInstance(cont,container,inst);
+  }
+  return objComponent;
+}
+
+CORBA::Object_ptr SalomeContainerTools::CreateComponentInstance(Container *cont, Engines::Container_ptr contPtr, const ComponentInstance *inst)
+{
+  if(!inst)
+    throw Exception("SalomeContainerTools::CreateComponentInstance : no instance of component in the task requesting for a load of its component !");
+  char *reason(0);
   std::string compoName(inst->getCompoName());
-  const char* componentName=compoName.c_str();
-  Engines::Container_var container(launchModeType->getContainer(askingNode));
-
-  char* reason;
-
-  bool isLoadable = container->load_component_Library(componentName, reason);
-  if (isLoadable)
+  CORBA::Object_ptr objComponent=CORBA::Object::_nil();
+  int studyid(1);
+  Proc* p(cont->getProc());
+  if(p)
     {
-      CORBA::string_free(reason);
-      int studyid=1;
-      Proc* p(cont->getProc());
-      if(p)
-        {
-          std::string value(p->getProperty("DefaultStudyID"));
-          if(!value.empty())
-            studyid= atoi(value.c_str());
-        }
-      // prepare component instance properties
-      Engines::FieldsDict_var env = new Engines::FieldsDict;
-      std::map<std::string, std::string> properties = inst->getProperties();
-      if(p)
-        {
-          std::map<std::string,std::string> procMap=p->getProperties();
-          properties.insert(procMap.begin(),procMap.end());
-        }
-
-      std::map<std::string, std::string>::const_iterator itm;
-      env->length(properties.size());
-      int item=0;
-      for(itm = properties.begin(); itm != properties.end(); ++itm, item++)
-        {
-          DEBTRACE("envname="<<itm->first<<" envvalue="<< itm->second);
-          env[item].key= CORBA::string_dup(itm->first.c_str());
-          env[item].value <<= itm->second.c_str();
-        }
-
-      objComponent=container->create_component_instance_env(componentName, studyid, env, reason);
+      std::string value(p->getProperty("DefaultStudyID"));
+      if(!value.empty())
+        studyid= atoi(value.c_str());
+    }
+  // prepare component instance properties
+  Engines::FieldsDict_var env(new Engines::FieldsDict);
+  std::map<std::string, std::string> properties(inst->getProperties());
+  if(p)
+    {
+      std::map<std::string,std::string> procMap=p->getProperties();
+      properties.insert(procMap.begin(),procMap.end());
     }
 
+  std::map<std::string, std::string>::const_iterator itm;
+  env->length(properties.size());
+  int item=0;
+  for(itm = properties.begin(); itm != properties.end(); ++itm, item++)
+    {
+      DEBTRACE("envname="<<itm->first<<" envvalue="<< itm->second);
+      env[item].key= CORBA::string_dup(itm->first.c_str());
+      env[item].value <<= itm->second.c_str();
+    }
+
+  objComponent=contPtr->create_component_instance_env(compoName.c_str(), studyid, env, reason);
   if(CORBA::is_nil(objComponent))
     {
-      cont->unLock();
       std::string text="Error while trying to create a new component: component '"+ compoName;
       text=text+"' is not installed or it's a wrong name";
       text += '\n';
@@ -486,7 +486,6 @@ CORBA::Object_ptr SalomeContainerTools::LoadComponent(SalomeContainerHelper *lau
       CORBA::string_free(reason);
       throw Exception(text);
     }
-  cont->unLock();
   return objComponent;
 }
 

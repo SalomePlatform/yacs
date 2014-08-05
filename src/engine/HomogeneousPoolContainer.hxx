@@ -37,6 +37,10 @@ namespace YACS
     class YACSLIBENGINE_EXPORT HomogeneousPoolContainer : public Container
     {
     public:
+      void attachOnCloning() const;
+      void dettachOnCloning() const;
+      bool isAttachedOnCloning() const;
+      //
       virtual void setSizeOfPool(int sz) = 0;
       virtual std::size_t getNumberOfFreePlace() const = 0;
       virtual void allocateFor(const std::vector<const Task *>& nodes) = 0;

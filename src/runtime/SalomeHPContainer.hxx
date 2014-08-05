@@ -71,6 +71,7 @@ namespace YACS
       void checkCapabilityToDealWith(const ComponentInstance *inst) const throw(YACS::Exception);
       //
 #ifndef SWIG
+      std::size_t locateTask(const Task *askingNode) const { return _launchModeType.locateTask(askingNode); }
       const SalomeContainerTools &getContainerInfo() const { return _sct; }
       std::vector<std::string> getComponentNames() const { return _componentNames; }
       int getShutdownLev() const { return _shutdownLevel; }

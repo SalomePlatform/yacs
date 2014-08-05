@@ -23,6 +23,8 @@
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
+#include <sstream>
+
 using namespace std;
 using namespace YACS::ENGINE;
 
@@ -32,6 +34,13 @@ Container::Container():_isAttachedOnCloning(false),_proc(0)
 
 Container::~Container()
 {
+}
+
+std::string Container::getDiscreminantStrOfThis() const
+{
+  const void *ptr(this);
+  std::ostringstream oss; oss << ptr;
+  return oss.str();
 }
 
 /*!

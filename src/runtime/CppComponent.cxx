@@ -74,7 +74,12 @@ static std::ostream & operator<<(std::ostream & f, const Any & A)
 
 std::string CppComponent::getKind() const
 {
-   return CppComponent::KIND;
+  return CppComponent::KIND;
+}
+
+std::string CppComponent::getKindForNode() const
+{
+  return CppComponent::KIND;
 }
 
 //! CppComponent constructor

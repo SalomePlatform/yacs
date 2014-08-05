@@ -62,6 +62,11 @@ std::string SalomeComponent::getKind() const
   return KIND;
 }
 
+std::string SalomeComponent::getKindForNode() const
+{
+  return KIND;
+}
+
 //! Unload the component 
 void SalomeComponent::unload(Task *askingNode)
 {
@@ -90,20 +95,7 @@ void SalomeComponent::load(Task *askingNode)
           _objComponent=salomeContainer->loadComponent(askingNode);
           return ;
         }
-      SalomeHPContainer *salomeContainer2(dynamic_cast<SalomeHPContainer *>(_container));
-      if(salomeContainer2)
-        {
-          SalomeContainerHelper *lmt(0);
-          {
-            YACS::BASES::AutoLocker<Container> altck(salomeContainer2);
-            lmt=salomeContainer2->getHelperOfTask(askingNode);
-          }
-          SalomeContainer tmpCont(*salomeContainer2,salomeContainer2->getContainerInfo(),lmt,
-                                  salomeContainer2->getComponentNames(),salomeContainer2->getShutdownLev());
-          _objComponent=tmpCont.loadComponent(askingNode);
-          return ;
-        }
-      throw Exception("Unrecognized type of Container ! Only Salome and HPSalome container are supported by the Salome components !");
+      throw Exception("Unrecognized type of Container ! Only Salome are supported by the Salome components !");
     }
   //throw Exception("SalomeComponent::load : no container specified !!! To be implemented in executor to allocate default a Container in case of presenceOfDefaultContainer.");
   //This component has no specified container : use default container policy
@@ -155,6 +147,8 @@ std::string SalomeComponent::getFileRepr() const
 
 bool SalomeComponent::setContainer(Container *cont)
 {
+  if(!dynamic_cast<SalomeContainer *>(cont))
+    throw Exception("SalomeComponent::setContainer : a Salome component must be attached to a Salome container !");
   if(ComponentInstance::setContainer(cont))
     {
       if(_container)

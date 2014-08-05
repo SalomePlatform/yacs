@@ -35,6 +35,7 @@ namespace YACS
       void unload(Task *askingNode);
       bool isLoaded(Task *askingNode) const;
       std::string getKind() const;
+      std::string getKindForNode() const;
       ServiceNode* createNode(const std::string& name);
       ComponentInstance *clone() const;
     protected:
@@ -50,6 +51,7 @@ namespace YACS
       void unload(Task *askingNode);
       bool isLoaded(Task *askingNode) const;
       std::string getKind() const;
+      std::string getKindForNode() const;
       ServiceNode* createNode(const std::string& name);
       ComponentInstance *clone() const;
     protected:

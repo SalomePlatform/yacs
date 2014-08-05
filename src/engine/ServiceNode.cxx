@@ -138,7 +138,7 @@ void ServiceNode::setComponent(ComponentInstance* compo) throw(YACS::Exception)
   if(compo)
     {
       DEBTRACE(compo->getInstanceName());
-      if(compo->getKind() != this->getKind())
+      if(compo->getKindForNode() != this->getKind())
         {
           //Not allowed
           std::string what("ServiceNode::setComponent : component instance kind not allowed ");

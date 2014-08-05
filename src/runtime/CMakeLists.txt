@@ -116,6 +116,7 @@ SET(YACSRuntimeSALOME_HEADERS
   PythonXMLConv.hxx 
   RuntimeSALOME.hxx
   SalomeComponent.hxx
+  SalomeHPComponent.hxx
   SalomeContainer.hxx
   SalomeContainerTools.hxx
   SalomeContainerHelper.hxx
@@ -183,7 +184,8 @@ SET(YACSRuntimeSALOME_SOURCES
   SalomeProc.cxx                 
   CalStreamPort.cxx              
   CORBAComponent.cxx             
-  SalomeComponent.cxx            
+  SalomeComponent.cxx   
+  SalomeHPComponent.cxx         
   CppComponent.cxx               
   CppContainer.cxx               
   CppCORBAConv.cxx               

@@ -18,7 +18,7 @@
 //
 
 #include "SalomeHPContainer.hxx"
-#include "SalomeComponent.hxx"
+#include "SalomeHPComponent.hxx"
 
 #include <algorithm>
 
@@ -150,6 +150,6 @@ std::map<std::string,std::string> SalomeHPContainer::getResourceProperties(const
 
 void SalomeHPContainer::checkCapabilityToDealWith(const ComponentInstance *inst) const throw(YACS::Exception)
 {
-  if(inst->getKind()!=SalomeComponent::KIND)
+  if(inst->getKind()!=SalomeHPComponent::KIND)
     throw Exception("SalomeHPContainer::checkCapabilityToDealWith : SalomeContainer is not able to deal with this type of ComponentInstance.");
 }

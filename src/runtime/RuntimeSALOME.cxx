@@ -50,6 +50,7 @@
 //Components
 #include "CORBAComponent.hxx"
 #include "SalomeComponent.hxx"
+#include "SalomeHPComponent.hxx"
 #include "SalomePythonComponent.hxx"
 #include "CppComponent.hxx"
 
@@ -588,6 +589,8 @@ ComponentInstance* RuntimeSALOME::createComponentInstance(const std::string& nam
     return new SalomePythonComponent(name);
   else if (kind == CppComponent::KIND)
     return new CppComponent(name);
+  else if (kind == SalomeHPComponent::KIND)
+    return new SalomeHPComponent(name);
   std::string msg="Component Instance kind ("+kind+") unknown";
   throw Exception(msg);
 }

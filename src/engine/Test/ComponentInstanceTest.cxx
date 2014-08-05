@@ -51,6 +51,11 @@ std::string ComponentInstanceTest1::getKind() const
   return ToyNode1S::KIND;
 }
 
+std::string ComponentInstanceTest1::getKindForNode() const
+{
+  return ToyNode1S::KIND;
+}
+
 ServiceNode* ComponentInstanceTest1::createNode(const std::string& name)
 {
   ToyNode1S* node=new ToyNode1S(name);
@@ -93,6 +98,11 @@ bool ComponentInstanceTest2::isLoaded(Task *askingNode) const
 }
 
 std::string ComponentInstanceTest2::getKind() const
+{
+  return ToyNode2S::KIND;
+}
+
+std::string ComponentInstanceTest2::getKindForNode() const
 {
   return ToyNode2S::KIND;
 }
