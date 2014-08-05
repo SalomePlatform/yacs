@@ -64,9 +64,9 @@ SalomeContainer::SalomeContainer(const SalomeContainer& other)
 {
 }
 
-SalomeContainer::SalomeContainer(const Container& other, const SalomeContainerTools& sct, SalomeContainerHelper *lmt,
+SalomeContainer::SalomeContainer(const Container& other, const SalomeContainerTools& sct, const SalomeContainerHelper *lmt,
                                  const std::vector<std::string>& componentNames, int shutdownLev):Container(other),_componentNames(componentNames),
-                                     _launchModeType(lmt),_shutdownLevel(shutdownLev),_sct(sct)
+                                     _launchModeType(const_cast<SalomeContainerHelper *>(lmt)),_shutdownLevel(shutdownLev),_sct(sct)
 {
   if(lmt)
     lmt->incrRef();

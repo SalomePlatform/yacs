@@ -230,7 +230,7 @@ void SalomeContainerTools::setContainerName(const std::string& name)
   SetContainerNameOf(_params,name);
 }
 
-std::string SalomeContainerTools::getNotNullContainerName(const Container *contPtr, bool& isEmpty) const
+std::string SalomeContainerTools::getNotNullContainerName(const Container *contPtr, const Task *askingNode, bool& isEmpty) const
 {
   isEmpty=true;
   std::string name(_params.container_name);
@@ -247,7 +247,7 @@ std::string SalomeContainerTools::getNotNullContainerName(const Container *contP
       stream << "_";
       stream << contPtr->getName();
       stream << "_";
-      stream << contPtr->getDiscreminantStrOfThis();
+      stream << contPtr->getDiscreminantStrOfThis(askingNode);
       return stream.str();
     }
 }
@@ -322,7 +322,7 @@ void SalomeContainerTools::Start(const std::vector<std::string>& compoNames, Sal
   Engines::ContainerManager_var contManager(Engines::ContainerManager::_narrow(obj));
 
   bool isEmptyName;
-  std::string str(sct.getNotNullContainerName(cont,isEmptyName));
+  std::string str(sct.getNotNullContainerName(cont,askingNode,isEmptyName));
   DEBTRACE("SalomeContainer::start " << str <<";"<< _sct.getHostName() <<";"<<_type);
 
   // Finalize parameters with components found in the container

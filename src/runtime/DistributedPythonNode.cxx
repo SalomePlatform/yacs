@@ -21,6 +21,8 @@
 #include "RuntimeSALOME.hxx"
 #include "SalomeContainer.hxx"
 #include "PythonNode.hxx"
+#include "SalomeHPContainer.hxx"
+#include "SalomeContainerTmpForHP.hxx"
 
 #include "PythonPorts.hxx"
 #include "YacsTrace.hxx"
@@ -117,7 +119,22 @@ void DistributedPythonNode::execute()
 {
   YACSTRACE(1,"+++++++++++++++++ DistributedPythonNode::execute: " << getName() << " " << getFname() << " +++++++++++++++++" );
   {
-    Engines::Container_var objContainer=((SalomeContainer*)_container)->getContainerPtr(this);
+    Engines::Container_var objContainer=Engines::Container::_nil();
+    if(!_container)
+      throw Exception("No container specified !");
+    SalomeContainer *containerCast0(dynamic_cast<SalomeContainer *>(_container));
+    SalomeHPContainer *containerCast1(dynamic_cast<SalomeHPContainer *>(_container));
+    if(containerCast0)
+      objContainer=containerCast0->getContainerPtr(this);
+    else if(containerCast1)
+      {
+        YACS::BASES::AutoCppPtr<SalomeContainerTmpForHP> tmpCont(SalomeContainerTmpForHP::BuildFrom(containerCast1,this));
+        objContainer=tmpCont->getContainerPtr(this);
+      }
+    else
+      throw Exception("Unrecognized type of container ! Salome one is expected !");
+    if(CORBA::is_nil(objContainer))
+      throw Exception("Container corba pointer is NULL !");
     Engines::PyNode_var pn=objContainer->createPyNode(getName().c_str(),getScript().c_str());
     //////
     int pos=0;

@@ -34,6 +34,7 @@ namespace YACS
   {
     class Task;
     class SalomeComponent;
+    class SalomeHPContainer;
     class SalomeContainerMonoHelper;
     class SalomeHPContainerVectOfHelper
     {
@@ -46,7 +47,9 @@ namespace YACS
       std::size_t locateTask(const Task *node) const;
       const SalomeContainerMonoHelper *at(std::size_t pos) const { checkPosInVec(pos); return _launchModeType[pos]; }
       SalomeContainerMonoHelper *at(std::size_t pos) { checkPosInVec(pos); return _launchModeType[pos]; }
+      const SalomeContainerMonoHelper *getHelperOfTaskThreadSafe(const SalomeHPContainer *cont, const Task *node) const;
       const SalomeContainerMonoHelper *getHelperOfTask(const Task *node) const;
+      SalomeContainerMonoHelper *getHelperOfTaskThreadSafe(SalomeHPContainer *cont, const Task *node);
       SalomeContainerMonoHelper *getHelperOfTask(const Task *node);
     private:
       void checkNoCurrentWork() const;

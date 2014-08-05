@@ -22,8 +22,8 @@
 #include "SalomeContainer.hxx"
 #include "SalomeHPContainer.hxx"
 #include "SalomeComponent.hxx" // for KIND
+#include "SalomeContainerTmpForHP.hxx"
 #include "CORBANode.hxx"
-#include "AutoLocker.hxx"
 
 #ifdef SALOME_KERNEL
 #include "SALOME_NamingService.hxx"
@@ -37,58 +37,10 @@
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
-
-namespace YACS
-{
-  namespace ENGINE
-  {
-    class SalomeContainerTmpForHP : public SalomeContainer
-    {
-    public:
-      SalomeContainerTmpForHP(const Container& other, const SalomeContainerTools& sct, SalomeContainerHelper *lmt,
-                              const std::vector<std::string>& componentNames, int shutdownLev,
-                              const SalomeHPContainer *zeOriginCont, std::size_t pos):SalomeContainer(other,sct,lmt,componentNames,shutdownLev),_zeOriginCont(zeOriginCont),_pos(pos) { }
-      std::string getDiscreminantStrOfThis() const { std::ostringstream oss; oss << _zeOriginCont << "_" << _pos; return oss.str(); }
-      CORBA::Object_ptr loadComponent(Task *inst);
-    private:
-      const SalomeHPContainer *_zeOriginCont;
-      std::size_t _pos;
-    };
-  }
-}
-
 using namespace YACS::ENGINE;
 using namespace std;
 
 const char SalomeHPComponent::KIND[]="HPSalome";
-
-CORBA::Object_ptr SalomeContainerTmpForHP::loadComponent(Task *askingNode)
-{
-  const ComponentInstance *inst(askingNode?askingNode->getComponent():0);
-  if(!inst)
-    throw Exception("SalomeContainerTmpForHP::loadComponent : asking to load a component on the given task whereas this task has no component !");
-  std::string compoName(inst->getCompoName());
-  {
-    YACS::BASES::AutoLocker<Container> alck(this);//To be sure
-    if(!this->isAlreadyStarted(askingNode))
-      this->start(askingNode);
-  }
-  CORBA::Object_ptr objComponent=CORBA::Object::_nil();
-  {
-    YACS::BASES::AutoLocker<Container> alck(this);//To be sure
-    std::string compoName(inst->getCompoName());
-    Engines::Container_var container(_launchModeType->getContainer(askingNode));
-    objComponent=container->find_component_instance(compoName.c_str(),0);
-    if(CORBA::is_nil(objComponent))
-      {
-        char *reason;
-        bool isLoadable(container->load_component_Library(compoName.c_str(), reason));
-        if(isLoadable)
-          objComponent=SalomeContainerTools::CreateComponentInstance(this,container,inst);
-      }
-  }
-  return objComponent;
-}
 
 SalomeHPComponent::SalomeHPComponent(const std::string& name): ComponentInstance(name)
 {
@@ -136,16 +88,8 @@ void SalomeHPComponent::load(Task *askingNode)
       SalomeHPContainer *salomeContainer(dynamic_cast<SalomeHPContainer *>(_container));
       if(salomeContainer)
         {
-          SalomeContainerHelper *lmt(0);
-          std::size_t posIn(0);
-          {
-            YACS::BASES::AutoLocker<Container> altck(salomeContainer);
-            lmt=salomeContainer->getHelperOfTask(askingNode);
-            posIn=salomeContainer->locateTask(askingNode);
-          }
-          SalomeContainerTmpForHP tmpCont(*salomeContainer,salomeContainer->getContainerInfo(),lmt,
-                                          salomeContainer->getComponentNames(),salomeContainer->getShutdownLev(),salomeContainer,posIn);
-          _objComponent=tmpCont.loadComponent(askingNode);
+          YACS::BASES::AutoCppPtr<SalomeContainerTmpForHP> tmpCont(SalomeContainerTmpForHP::BuildFrom(salomeContainer,askingNode));
+          _objComponent=tmpCont->loadComponent(askingNode);
           return ;
         }
       throw Exception("Unrecognized type of Container ! Only Salome and HPSalome container are supported by the Salome components !");

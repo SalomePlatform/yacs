@@ -55,6 +55,7 @@ namespace YACS
       //! For thread safety for concurrent load operation on same Container.
       void unLock();
       //
+      std::string getDiscreminantStrOfThis(const Task *askingNode) const;
       bool isAlreadyStarted(const Task *askingNode) const;
       void start(const Task *askingNode) throw(Exception);
       void shutdown(int level);
@@ -76,6 +77,7 @@ namespace YACS
       std::vector<std::string> getComponentNames() const { return _componentNames; }
       int getShutdownLev() const { return _shutdownLevel; }
       SalomeContainerMonoHelper *getHelperOfTask(const Task *node) { return _launchModeType.getHelperOfTask(node); }
+      const SalomeContainerMonoHelper *getHelperOfTask(const Task *node) const { return _launchModeType.getHelperOfTask(node); }
       //
       YACS::BASES::Mutex& getLocker() { return _mutex; }
 #endif

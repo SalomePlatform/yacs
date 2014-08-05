@@ -41,14 +41,10 @@ namespace YACS
       void load();
       void accept(Visitor *visitor);
       virtual ServerNode *createNode(const std::string& name) const = 0;
-      Container *getContainer() const { return _container; }
-      void setContainer(Container *container);
       bool isDeployable() const;
       virtual std::string getEffectiveKindOfServer() const = 0;
       virtual ~ServerNode();
       virtual std::string typeName() { return "YACS__ENGINE__ServerNode"; }
-    protected:
-      Container *_container;
     };
   }
 }

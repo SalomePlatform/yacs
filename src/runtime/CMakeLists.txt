@@ -120,6 +120,7 @@ SET(YACSRuntimeSALOME_HEADERS
   SalomeContainer.hxx
   SalomeContainerTools.hxx
   SalomeContainerHelper.hxx
+  SalomeContainerTmpForHP.hxx
   SalomeHPContainer.hxx
   SalomeHPContainerTools.hxx
   SALOMEDispatcher.hxx
@@ -176,6 +177,7 @@ SET(YACSRuntimeSALOME_SOURCES
   SalomeHPContainer.cxx
   SalomeHPContainerTools.cxx
   SalomeContainerHelper.cxx
+  SalomeContainerTmpForHP.cxx
   PythonPorts.cxx                
   XMLNode.cxx                    
   XMLPorts.cxx                   

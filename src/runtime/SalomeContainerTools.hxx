@@ -52,7 +52,7 @@ namespace YACS
     public:
       std::string getContainerName() const;
       void setContainerName(const std::string& name);
-      std::string getNotNullContainerName(const Container *contPtr, bool& isEmpty) const;
+      std::string getNotNullContainerName(const Container *contPtr, const Task *askingNode, bool& isEmpty) const;
       std::string getHostName() const;
       Engines::ContainerParameters getParameters() const { return _params; }
       static void SetContainerNameOf(Engines::ContainerParameters& params, const std::string& name);

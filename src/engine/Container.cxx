@@ -36,7 +36,7 @@ Container::~Container()
 {
 }
 
-std::string Container::getDiscreminantStrOfThis() const
+std::string Container::getDiscreminantStrOfThis(const Task *askingNode) const
 {
   const void *ptr(this);
   std::ostringstream oss; oss << ptr;

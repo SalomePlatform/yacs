@@ -18,6 +18,8 @@
 //
 
 #include "SalomeHPContainerTools.hxx"
+#include "SalomeHPContainer.hxx"
+#include "AutoLocker.hxx"
 #include "Exception.hxx"
 
 #include <algorithm>
@@ -79,8 +81,20 @@ std::size_t SalomeHPContainerVectOfHelper::locateTask(const Task *node) const
   return ret;
 }
 
+const SalomeContainerMonoHelper *SalomeHPContainerVectOfHelper::getHelperOfTaskThreadSafe(const SalomeHPContainer *cont, const Task *node) const
+{
+  YACS::BASES::AutoLocker<Container> alck(const_cast<SalomeHPContainer *>(cont));
+  return _launchModeType[locateTask(node)];
+}
+
 const SalomeContainerMonoHelper *SalomeHPContainerVectOfHelper::getHelperOfTask(const Task *node) const
 {
+  return _launchModeType[locateTask(node)];
+}
+
+SalomeContainerMonoHelper *SalomeHPContainerVectOfHelper::getHelperOfTaskThreadSafe(SalomeHPContainer *cont, const Task *node)
+{
+  YACS::BASES::AutoLocker<Container> alck(cont);
   return _launchModeType[locateTask(node)];
 }
 

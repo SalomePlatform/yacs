@@ -42,7 +42,7 @@ namespace YACS
       SalomeContainer();
       SalomeContainer(const SalomeContainer& other);
 #ifndef SWIG
-      SalomeContainer(const Container& other, const SalomeContainerTools& sct, SalomeContainerHelper *lmt, const std::vector<std::string>& componentNames, int shutdownLev);
+      SalomeContainer(const Container& other, const SalomeContainerTools& sct, const SalomeContainerHelper *lmt, const std::vector<std::string>& componentNames, int shutdownLev);
 #endif
       //! For thread safety for concurrent load operation on same Container.
       void lock();

@@ -47,7 +47,7 @@ namespace YACS
 #endif
     public:
       //Execution only methods
-      virtual std::string getDiscreminantStrOfThis() const;
+      virtual std::string getDiscreminantStrOfThis(const Task *askingNode) const;
       virtual bool isAlreadyStarted(const Task *askingNode) const = 0;
       virtual void start(const Task *askingNode) throw(Exception) = 0;
       virtual std::string getPlacementId(const Task *askingNode) const = 0;
@@ -70,11 +70,11 @@ namespace YACS
       virtual std::map<std::string,std::string> getProperties() const = 0;
       virtual std::map<std::string,std::string> getResourceProperties(const std::string& name) const = 0;
       virtual void setProperties(const std::map<std::string,std::string>& properties);
-      std::string getName() const { return _name; };
+      std::string getName() const { return _name; }
       //! \b WARNING ! name is used in edition to identify different containers, it is not the runtime name of the container
-      void setName(std::string name) { _name = name; };
-      void setProc(Proc* proc) { _proc = proc; };
-      Proc* getProc() { return _proc; };
+      void setName(std::string name) { _name = name; }
+      void setProc(Proc* proc) { _proc = proc; }
+      Proc* getProc() { return _proc; }
       virtual void shutdown(int level) = 0;
     protected:
       std::string _name;

@@ -19,6 +19,8 @@
 
 #include "SalomeHPContainer.hxx"
 #include "SalomeHPComponent.hxx"
+#include "SalomeContainerTmpForHP.hxx"
+#include "AutoLocker.hxx"
 
 #include <algorithm>
 
@@ -68,15 +70,21 @@ void SalomeHPContainer::unLock()
   _mutex.unLock();
 }
 
+std::string SalomeHPContainer::getDiscreminantStrOfThis(const Task *askingNode) const
+{
+  YACS::BASES::AutoCppPtr<SalomeContainerTmpForHP> tmpCont(SalomeContainerTmpForHP::BuildFrom(this,askingNode));
+  return tmpCont->getDiscreminantStrOfThis(askingNode);
+}
+
 bool SalomeHPContainer::isAlreadyStarted(const Task *askingNode) const
 {
-  const SalomeContainerMonoHelper *helper(_launchModeType.getHelperOfTask(askingNode));
+  const SalomeContainerMonoHelper *helper(_launchModeType.getHelperOfTaskThreadSafe(this,askingNode));
   return helper->isAlreadyStarted(askingNode);
 }
 
 void SalomeHPContainer::start(const Task *askingNode) throw(Exception)
 {
-  SalomeContainerMonoHelper *helper(_launchModeType.getHelperOfTask(askingNode));
+  SalomeContainerMonoHelper *helper(_launchModeType.getHelperOfTaskThreadSafe(this,askingNode));
   SalomeContainerTools::Start(_componentNames,helper,_sct,_shutdownLevel,this,askingNode);
 }
 
