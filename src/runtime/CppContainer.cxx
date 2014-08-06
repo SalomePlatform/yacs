@@ -37,6 +37,8 @@
 
 using namespace YACS::ENGINE;
 
+char CppContainer::KIND[]="Cpp";
+
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
@@ -71,6 +73,11 @@ void CppContainer::lock()
 void CppContainer::unLock()
 {
   _mutex.unLock();
+}
+
+std::string CppContainer::getKind() const
+{
+  return KIND;
 }
 
 bool CppContainer::isAlreadyStarted(const Task *askingNode) const

@@ -30,6 +30,7 @@ namespace YACS
     {
     public:
       ContainerTest();
+      std::string getKind() const;
       std::string getPlacementInfo() const;
       // implementation of compulsary methods
       bool isAlreadyStarted(const Task *askingNode) const;
@@ -63,6 +64,7 @@ namespace YACS
     {
     public:
       ContainerTest2();
+      std::string getKind() const;
       // implementation of compulsary methods
       bool isAlreadyStarted(const Task *askingNode) const;
       void start(const Task *askingNode) throw(Exception);

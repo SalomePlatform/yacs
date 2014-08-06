@@ -28,6 +28,8 @@
 using namespace std;
 using namespace YACS::ENGINE;
 
+const char Container::KIND_ENTRY[]="container_kind";
+
 Container::Container():_isAttachedOnCloning(false),_proc(0)
 {
 }

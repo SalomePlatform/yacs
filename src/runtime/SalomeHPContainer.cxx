@@ -41,6 +41,11 @@ void SalomeHPContainer::setSizeOfPool(int sz)
   _launchModeType.resize(sz);
 }
 
+int SalomeHPContainer::getSizeOfPool() const
+{
+  return _launchModeType.size();
+}
+
 std::size_t SalomeHPContainer::getNumberOfFreePlace() const
 {
   return _launchModeType.getNumberOfFreePlace();
@@ -68,6 +73,11 @@ void SalomeHPContainer::lock()
 void SalomeHPContainer::unLock()
 {
   _mutex.unLock();
+}
+
+std::string SalomeHPContainer::getKind() const
+{
+  return KIND;
 }
 
 std::string SalomeHPContainer::getDiscreminantStrOfThis(const Task *askingNode) const
@@ -128,12 +138,26 @@ Container *SalomeHPContainer::cloneAlways() const
 
 void SalomeHPContainer::setProperty(const std::string& name,const std::string& value)
 {
-  _sct.setProperty(name,value);
+  if(name==SIZE_OF_POOL_KEY)
+    {
+      std::istringstream iss(value);
+      int val(0);
+      iss >> val;
+      setSizeOfPool(val);
+    }
+  else
+    _sct.setProperty(name,value);
 }
 
 std::string SalomeHPContainer::getProperty(const std::string& name) const
 {
-  return _sct.getProperty(name);
+  if(name==SIZE_OF_POOL_KEY)
+    {
+      std::ostringstream oss; oss << getSizeOfPool();
+      return oss.str();
+    }
+  else
+    return _sct.getProperty(name);
 }
 
 void SalomeHPContainer::clearProperties()
@@ -148,7 +172,10 @@ void SalomeHPContainer::addComponentName(const std::string& name)
 
 std::map<std::string,std::string> SalomeHPContainer::getProperties() const
 {
-  return _sct.getProperties();
+  std::map<std::string,std::string> ret(_sct.getProperties());
+  std::ostringstream oss; oss << getSizeOfPool();
+  ret[SIZE_OF_POOL_KEY]=oss.str();
+  return ret;
 }
 
 std::map<std::string,std::string> SalomeHPContainer::getResourceProperties(const std::string& name) const

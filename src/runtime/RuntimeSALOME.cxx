@@ -597,11 +597,11 @@ ComponentInstance* RuntimeSALOME::createComponentInstance(const std::string& nam
 
 Container *RuntimeSALOME::createContainer(const std::string& kind)
 {
-  if(kind == "" || kind == SalomeComponent::KIND)
+  if(kind == "" || kind == SalomeContainer::KIND)
     return new SalomeContainer;
   if(kind==SalomeHPContainer::KIND)
     return new SalomeHPContainer;
-  else if (kind == CppComponent::KIND)
+  else if (kind == CppContainer::KIND)
     return new CppContainer;
   std::string msg="Container kind ("+kind+") unknown";
   throw Exception(msg);

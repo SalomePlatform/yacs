@@ -107,6 +107,7 @@ namespace YACS
     public:
       CppContainer();
       virtual ~CppContainer();
+      std::string getKind() const;
       bool isAlreadyStarted(const Task *askingNode) const;
       void start(const Task *askingNode) throw (YACS::Exception);
       void shutdown(int level);
@@ -131,6 +132,8 @@ namespace YACS
       std::map<std::string,std::string> getProperties() const { return std::map<std::string,std::string>(); }
       std::map<std::string,std::string> getResourceProperties(const std::string& name) const { return std::map<std::string,std::string>(); }
       //
+    public:
+      static char KIND[];
     protected:
       YACS::BASES::Mutex _mutex;
       LocalContainer * _trueCont;

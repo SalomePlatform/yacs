@@ -47,6 +47,7 @@ namespace YACS
       SalomeHPContainer(const SalomeHPContainer& other);
       //HP specific part
       void setSizeOfPool(int sz);
+      int getSizeOfPool() const;
       std::size_t getNumberOfFreePlace() const;
       void allocateFor(const std::vector<const Task *>& nodes);
       void release(const Task *node);
@@ -55,6 +56,7 @@ namespace YACS
       //! For thread safety for concurrent load operation on same Container.
       void unLock();
       //
+      std::string getKind() const;
       std::string getDiscreminantStrOfThis(const Task *askingNode) const;
       bool isAlreadyStarted(const Task *askingNode) const;
       void start(const Task *askingNode) throw(Exception);

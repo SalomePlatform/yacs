@@ -68,10 +68,18 @@ struct servertypeParser:public inlinetypeParser<T>
     {
       DEBTRACE( "server_loadcontainer: " << name )             
       this->_node=(YACS::ENGINE::ServerNode*)theRuntime->createFuncNode("DistPython",this->_name);
-      YACS::ENGINE::Container *cont=currentProc->createContainer(this->_node->getEffectiveKindOfServer());
-      cont->setName(name);
-      this->_node->setContainer(cont);
-      cont->decrRef();
+      std::map<std::string,YACS::ENGINE::Container *>::const_iterator it(currentProc->containerMap.find(name));
+      if(it!=currentProc->containerMap.end())
+        {
+          this->_node->setContainer((*it).second);
+        }
+      else
+        {
+          YACS::ENGINE::Container *cont=currentProc->createContainer(this->_node->getEffectiveKindOfServer());
+          cont->setName(name);
+          this->_node->setContainer(cont);
+          cont->decrRef();
+        }
     }
   virtual void script (const myfunc& f)
   {

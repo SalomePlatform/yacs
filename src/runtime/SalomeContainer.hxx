@@ -48,6 +48,7 @@ namespace YACS
       void lock();
       //! For thread safety for concurrent load operation on same Container.
       void unLock();
+      std::string getKind() const;
       bool isAlreadyStarted(const Task *askingNode) const;
       Engines::Container_ptr getContainerPtr(const Task *askingNode) const;
       void start(const Task *askingNode) throw (Exception);
@@ -66,6 +67,7 @@ namespace YACS
       // Helper methods
       std::map<std::string,std::string> getResourceProperties(const std::string& name) const;
       std::map<std::string,std::string> getProperties() const;
+      static const char KIND[];
     protected:
 #ifndef SWIG
       virtual ~SalomeContainer();

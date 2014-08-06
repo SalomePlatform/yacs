@@ -46,6 +46,7 @@ namespace YACS
       virtual ~Container();
 #endif
     public:
+      virtual std::string getKind() const = 0;
       //Execution only methods
       virtual std::string getDiscreminantStrOfThis(const Task *askingNode) const;
       virtual bool isAlreadyStarted(const Task *askingNode) const = 0;
@@ -76,6 +77,7 @@ namespace YACS
       void setProc(Proc* proc) { _proc = proc; }
       Proc* getProc() { return _proc; }
       virtual void shutdown(int level) = 0;
+      static const char KIND_ENTRY[];
     protected:
       std::string _name;
       mutable bool _isAttachedOnCloning;

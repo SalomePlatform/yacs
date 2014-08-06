@@ -52,6 +52,8 @@
 using namespace YACS::ENGINE;
 using namespace std;
 
+const char SalomeContainer::KIND[]="Salome";
+
 SalomeContainer::SalomeContainer():_launchModeType(new SalomeContainerMonoHelper),_shutdownLevel(999)
 {
 }
@@ -85,6 +87,11 @@ void SalomeContainer::lock()
 void SalomeContainer::unLock()
 {
   _mutex.unLock();
+}
+
+std::string SalomeContainer::getKind() const
+{
+  return KIND;
 }
 
 Container *SalomeContainer::clone() const

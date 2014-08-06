@@ -37,6 +37,11 @@ ContainerTest::ContainerTest():_alreadyStarted(false),_myCounter(_counter++)
 {
 }
 
+std::string ContainerTest::getKind() const
+{
+  return std::string();
+}
+
 std::string ContainerTest::getPlacementInfo() const
 {
   ostringstream stream;
@@ -85,6 +90,11 @@ void ContainerTest::initAllContainers()
 
 ContainerTest2::ContainerTest2():_alreadyStarted(false),_myCounter(_counter++)
 {
+}
+
+std::string ContainerTest2::getKind() const
+{
+  return std::string();
 }
 
 bool ContainerTest2::isAlreadyStarted(const Task *askingNode) const

@@ -37,7 +37,7 @@ namespace YACS
     public:
       VisitorSaveState(ComposedNode *root);
       virtual ~VisitorSaveState();
-      void openFileDump(std::string xmlDump) throw(Exception);
+      void openFileDump(const std::string& xmlDump) throw(Exception);
       void closeFileDump();
       virtual void visitBloc(Bloc *node);
       virtual void visitElementaryNode(ElementaryNode *node);

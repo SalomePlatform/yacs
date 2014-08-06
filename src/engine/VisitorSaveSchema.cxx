@@ -699,6 +699,7 @@ void VisitorSaveSchema::writeContainers(Proc *proc)
     {
       string name = it->first;
       _out << indent(depth) << "<container name=\"" << name << "\">" << endl;
+      _out << indent(depth+1) << "<property name=\"" << Container::KIND_ENTRY << "\" value=\"" << it->second->getKind() << "\"/>" << endl;
       map<string, string> properties = (it->second)->getProperties();
       map<string, string>::iterator itm;
       for(itm = properties.begin(); itm != properties.end(); ++itm)
