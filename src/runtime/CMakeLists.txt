@@ -82,6 +82,7 @@ SET(_link_LIBRARIES
 
 SET(YACSRuntimeSALOME_HEADERS
   YACSRuntimeSALOMEExport.hxx 
+  AutoGIL.hxx
   CalStreamPort.hxx
   CORBAComponent.hxx
   CORBACORBAConv.hxx

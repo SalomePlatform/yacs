@@ -21,8 +21,11 @@
 #include "PythonNode.hxx"
 #include "PythonPorts.hxx"
 #include "TypeCode.hxx"
+#include "AutoGIL.hxx"
 #include "Container.hxx"
 #include "SalomeContainer.hxx"
+#include "SalomeHPContainer.hxx"
+#include "SalomeContainerTmpForHP.hxx"
 #include "ConversionException.hxx"
 
 #include "PyStdout.hxx"
@@ -153,7 +156,23 @@ void PythonNode::loadRemote()
       throw Exception(what);
     }
 
-  Engines::Container_var objContainer=((SalomeContainer*)_container)->getContainerPtr(this);
+
+  Engines::Container_var objContainer=Engines::Container::_nil();
+  if(!_container)
+    throw Exception("No container specified !");
+  SalomeContainer *containerCast0(dynamic_cast<SalomeContainer *>(_container));
+  SalomeHPContainer *containerCast1(dynamic_cast<SalomeHPContainer *>(_container));
+  if(containerCast0)
+    objContainer=containerCast0->getContainerPtr(this);
+  else if(containerCast1)
+    {
+      YACS::BASES::AutoCppPtr<SalomeContainerTmpForHP> tmpCont(SalomeContainerTmpForHP::BuildFrom(containerCast1,this));
+      objContainer=tmpCont->getContainerPtr(this);
+    }
+  else
+    throw Exception("Unrecognized type of container ! Salome one is expected for PythonNode !");
+  if(CORBA::is_nil(objContainer))
+    throw Exception("Container corba pointer is NULL for PythonNode !");
 
   try
     {
@@ -658,7 +677,23 @@ void PyFuncNode::loadRemote()
       throw Exception(what);
     }
 
-  Engines::Container_var objContainer=((SalomeContainer*)_container)->getContainerPtr(this);
+  Engines::Container_var objContainer=Engines::Container::_nil();
+  if(!_container)
+    throw Exception("No container specified !");
+  SalomeContainer *containerCast0(dynamic_cast<SalomeContainer *>(_container));
+  SalomeHPContainer *containerCast1(dynamic_cast<SalomeHPContainer *>(_container));
+  if(containerCast0)
+    objContainer=containerCast0->getContainerPtr(this);
+  else if(containerCast1)
+    {
+      YACS::BASES::AutoCppPtr<SalomeContainerTmpForHP> tmpCont(SalomeContainerTmpForHP::BuildFrom(containerCast1,this));
+      objContainer=tmpCont->getContainerPtr(this);
+    }
+  else
+    throw Exception("Unrecognized type of container ! Salome one is expected ! In PythonNode !");
+  if(CORBA::is_nil(objContainer))
+    throw Exception("Container corba pointer is NULL ! In PythonNode !");
+
   try
     {
       _pynode = objContainer->createPyNode(getName().c_str(),getScript().c_str());
@@ -672,57 +707,52 @@ void PyFuncNode::loadRemote()
       throw Exception(msg);
     }
 
-  PyGILState_STATE gstate = PyGILState_Ensure();
-  const char picklizeScript[]="import cPickle\n"
-                              "def pickleForDistPyth2009(*args,**kws):\n"
-                              "  return cPickle.dumps((args,kws),-1)\n"
-                              "\n"
-                              "def unPickleForDistPyth2009(st):\n"
-                              "  args=cPickle.loads(st)\n"
-                              "  return args\n";
-  PyObject *res=PyRun_String(picklizeScript,Py_file_input,_context,_context);
-  if(res == NULL)
-    {
-      _errorDetails="";
-      PyObject* new_stderr = newPyStdOut(_errorDetails);
-      PySys_SetObject((char*)"stderr", new_stderr);
-      PyErr_Print();
-      PySys_SetObject((char*)"stderr", PySys_GetObject((char*)"__stderr__"));
-      Py_DECREF(new_stderr);
+  {
+    AutoGIL agil;
+    const char picklizeScript[]="import cPickle\n"
+        "def pickleForDistPyth2009(*args,**kws):\n"
+        "  return cPickle.dumps((args,kws),-1)\n"
+        "\n"
+        "def unPickleForDistPyth2009(st):\n"
+        "  args=cPickle.loads(st)\n"
+        "  return args\n";
+    PyObject *res=PyRun_String(picklizeScript,Py_file_input,_context,_context);
+    if(res == NULL)
+      {
+        _errorDetails="";
+        PyObject* new_stderr = newPyStdOut(_errorDetails);
+        PySys_SetObject((char*)"stderr", new_stderr);
+        PyErr_Print();
+        PySys_SetObject((char*)"stderr", PySys_GetObject((char*)"__stderr__"));
+        Py_DECREF(new_stderr);
+        throw Exception("Error during load");
+      }
+    Py_DECREF(res);
 
-      PyGILState_Release(gstate);
-      throw Exception("Error during load");
-    }
-  Py_DECREF(res);
-
-  _pyfuncSer=PyDict_GetItemString(_context,"pickleForDistPyth2009");
-  _pyfuncUnser=PyDict_GetItemString(_context,"unPickleForDistPyth2009");
-  if(_pyfuncSer == NULL)
-    {
-      _errorDetails="";
-      PyObject* new_stderr = newPyStdOut(_errorDetails);
-      PySys_SetObject((char*)"stderr", new_stderr);
-      PyErr_Print();
-      PySys_SetObject((char*)"stderr", PySys_GetObject((char*)"__stderr__"));
-      Py_DECREF(new_stderr);
-
-      PyGILState_Release(gstate);
-      throw Exception("Error during load");
-    }
-  if(_pyfuncUnser == NULL)
-    {
-      _errorDetails="";
-      PyObject* new_stderr = newPyStdOut(_errorDetails);
-      PySys_SetObject((char*)"stderr", new_stderr);
-      PyErr_Print();
-      PySys_SetObject((char*)"stderr", PySys_GetObject((char*)"__stderr__"));
-      Py_DECREF(new_stderr);
-
-      PyGILState_Release(gstate);
-      throw Exception("Error during load");
-    }
-  DEBTRACE( "---------------End PyfuncNode::loadRemote function---------------" );
-  PyGILState_Release(gstate);
+    _pyfuncSer=PyDict_GetItemString(_context,"pickleForDistPyth2009");
+    _pyfuncUnser=PyDict_GetItemString(_context,"unPickleForDistPyth2009");
+    if(_pyfuncSer == NULL)
+      {
+        _errorDetails="";
+        PyObject* new_stderr = newPyStdOut(_errorDetails);
+        PySys_SetObject((char*)"stderr", new_stderr);
+        PyErr_Print();
+        PySys_SetObject((char*)"stderr", PySys_GetObject((char*)"__stderr__"));
+        Py_DECREF(new_stderr);
+        throw Exception("Error during load");
+      }
+    if(_pyfuncUnser == NULL)
+      {
+        _errorDetails="";
+        PyObject* new_stderr = newPyStdOut(_errorDetails);
+        PySys_SetObject((char*)"stderr", new_stderr);
+        PyErr_Print();
+        PySys_SetObject((char*)"stderr", PySys_GetObject((char*)"__stderr__"));
+        Py_DECREF(new_stderr);
+        throw Exception("Error during load");
+      }
+    DEBTRACE( "---------------End PyfuncNode::loadRemote function---------------" );
+  }
 }
 
 void PyFuncNode::loadLocal()
@@ -814,37 +844,35 @@ void PyFuncNode::executeRemote()
   DEBTRACE( "++++++++++++++ PyFuncNode::executeRemote: " << getName() << " ++++++++++++++++++++" );
   if(!_pyfuncSer)
     throw Exception("DistributedPythonNode badly loaded");
-  PyGILState_STATE gstate = PyGILState_Ensure();
-
-  //===========================================================================
-  // Get inputs in input ports, build a Python tuple and pickle it
-  //===========================================================================
-  PyObject* ob;
-  PyObject* args = PyTuple_New(getNumberOfInputPorts());
-  std::list<InputPort *>::iterator iter2;
-  int pos=0;
-  for(iter2 = _setOfInputPort.begin(); iter2 != _setOfInputPort.end(); ++iter2)
-    {
-      InputPyPort *p=(InputPyPort *)*iter2;
-      ob=p->getPyObj();
-      Py_INCREF(ob);
-      PyTuple_SetItem(args,pos,ob);
-      pos++;
-    }
-#ifdef _DEVDEBUG_
-  PyObject_Print(args,stderr,Py_PRINT_RAW);
-  std::cerr << endl;
-#endif
-  PyObject *serializationInput=PyObject_CallObject(_pyfuncSer,args);
-  //The pickled string may contain NULL characters so use PyString_AsStringAndSize
-  char* serializationInputC;
   Py_ssize_t len;
-  if (PyString_AsStringAndSize(serializationInput, &serializationInputC, &len))
-    {
-      PyGILState_Release(gstate);
-      throw Exception("DistributedPythonNode problem in python pickle");
-    }
-  PyGILState_Release(gstate);
+  char *serializationInputC(0);
+  PyObject *args(0),*ob(0);
+  int pos(0);
+  {
+      AutoGIL agil;
+
+      //===========================================================================
+      // Get inputs in input ports, build a Python tuple and pickle it
+      //===========================================================================
+      args = PyTuple_New(getNumberOfInputPorts());
+      std::list<InputPort *>::iterator iter2;
+      for(iter2 = _setOfInputPort.begin(); iter2 != _setOfInputPort.end(); ++iter2)
+        {
+          InputPyPort *p=(InputPyPort *)*iter2;
+          ob=p->getPyObj();
+          Py_INCREF(ob);
+          PyTuple_SetItem(args,pos,ob);
+          pos++;
+        }
+#ifdef _DEVDEBUG_
+      PyObject_Print(args,stderr,Py_PRINT_RAW);
+      std::cerr << endl;
+#endif
+      PyObject *serializationInput=PyObject_CallObject(_pyfuncSer,args);
+      //The pickled string may contain NULL characters so use PyString_AsStringAndSize
+      if (PyString_AsStringAndSize(serializationInput, &serializationInputC, &len))
+        throw Exception("DistributedPythonNode problem in python pickle");
+  }
 
   Engines::pickledArgs_var serializationInputCorba=new Engines::pickledArgs;
   serializationInputCorba->length(len);
@@ -877,60 +905,58 @@ void PyFuncNode::executeRemote()
   for(int i=0;i<resultCorba->length();i++)
     resultCorbaC[i]=resultCorba[i];
 
-  gstate = PyGILState_Ensure();
+  {
+      AutoGIL agil;
 
-  PyObject* resultPython=PyString_FromStringAndSize(resultCorbaC,resultCorba->length());
-  delete [] resultCorbaC;
-  args = PyTuple_New(1);
-  PyTuple_SetItem(args,0,resultPython);
-  PyObject *finalResult=PyObject_CallObject(_pyfuncUnser,args);
-  Py_DECREF(args);
+      PyObject* resultPython=PyString_FromStringAndSize(resultCorbaC,resultCorba->length());
+      delete [] resultCorbaC;
+      args = PyTuple_New(1);
+      PyTuple_SetItem(args,0,resultPython);
+      PyObject *finalResult=PyObject_CallObject(_pyfuncUnser,args);
+      Py_DECREF(args);
 
-  DEBTRACE( "-----------------PythonNode::outputs-----------------" );
-  int nres=1;
-  if(finalResult == Py_None)
-    nres=0;
-  else if(PyTuple_Check(finalResult))
-    nres=PyTuple_Size(finalResult);
+      DEBTRACE( "-----------------PythonNode::outputs-----------------" );
+      int nres=1;
+      if(finalResult == Py_None)
+        nres=0;
+      else if(PyTuple_Check(finalResult))
+        nres=PyTuple_Size(finalResult);
 
-  if(getNumberOfOutputPorts() != nres)
-    {
-      std::string msg="Number of output arguments : Mismatch between definition and execution";
-      Py_DECREF(finalResult);
-      PyGILState_Release(gstate);
-      _errorDetails=msg;
-      throw Exception(msg);
-    }
-
-  pos=0;
-  std::list<OutputPort *>::iterator iter;
-  try
-    {
-      for(iter = _setOfOutputPort.begin(); iter != _setOfOutputPort.end(); ++iter)
+      if(getNumberOfOutputPorts() != nres)
         {
-          OutputPyPort *p=(OutputPyPort *)*iter;
-          DEBTRACE( "port name: " << p->getName() );
-          DEBTRACE( "port kind: " << p->edGetType()->kind() );
-          DEBTRACE( "port pos : " << pos );
-          if(PyTuple_Check(finalResult))
-            ob=PyTuple_GetItem(finalResult,pos) ;
-          else 
-            ob=finalResult;
-          DEBTRACE( "ob refcnt: " << ob->ob_refcnt );
-          p->put(ob);
-          pos++;
+          std::string msg="Number of output arguments : Mismatch between definition and execution";
+          Py_DECREF(finalResult);
+          _errorDetails=msg;
+          throw Exception(msg);
         }
-      Py_DECREF(finalResult);
-    }
-  catch(ConversionException& ex)
-    {
-      Py_DECREF(finalResult);
-      PyGILState_Release(gstate);
-      _errorDetails=ex.what();
-      throw;
-    }
 
-  PyGILState_Release(gstate);
+      pos=0;
+      std::list<OutputPort *>::iterator iter;
+      try
+      {
+          for(iter = _setOfOutputPort.begin(); iter != _setOfOutputPort.end(); ++iter)
+            {
+              OutputPyPort *p=(OutputPyPort *)*iter;
+              DEBTRACE( "port name: " << p->getName() );
+              DEBTRACE( "port kind: " << p->edGetType()->kind() );
+              DEBTRACE( "port pos : " << pos );
+              if(PyTuple_Check(finalResult))
+                ob=PyTuple_GetItem(finalResult,pos) ;
+              else
+                ob=finalResult;
+              DEBTRACE( "ob refcnt: " << ob->ob_refcnt );
+              p->put(ob);
+              pos++;
+            }
+          Py_DECREF(finalResult);
+      }
+      catch(ConversionException& ex)
+      {
+          Py_DECREF(finalResult);
+          _errorDetails=ex.what();
+          throw;
+      }
+  }
 
   DEBTRACE( "++++++++++++++ ENDOF PyFuncNode::executeRemote: " << getName() << " ++++++++++++++++++++" );
 }

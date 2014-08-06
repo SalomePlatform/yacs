@@ -347,7 +347,7 @@ void SalomeContainerTools::Start(const std::vector<std::string>& compoNames, Sal
     {
       shutdownLevel=1;
     }
-  sct.setContainerName(str);
+  //sct.setContainerName(str);
   SetContainerNameOf(myparams,str);
   Engines::Container_var trueCont(Engines::Container::_nil());
   if(!isEmptyName && shutdownLevel==999)
