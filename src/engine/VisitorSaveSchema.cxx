@@ -34,6 +34,7 @@
 #include "Switch.hxx"
 #include "InputPort.hxx"
 #include "TypeCode.hxx"
+#include "HomogeneousPoolContainer.hxx"
 #include "ComponentInstance.hxx"
 #include "InputDataStreamPort.hxx"
 #include "OutputDataStreamPort.hxx"
@@ -703,8 +704,16 @@ void VisitorSaveSchema::writeContainers(Proc *proc)
       map<string, string> properties = (it->second)->getProperties();
       map<string, string>::iterator itm;
       for(itm = properties.begin(); itm != properties.end(); ++itm)
-        _out << indent(depth+1) << "<property name=\"" << (*itm).first
-             << "\" value=\"" << (*itm).second << "\"/>" << endl;
+        {
+          if((*itm).first!=HomogeneousPoolContainer::INITIALIZE_SCRIPT_KEY)
+            {
+              _out << indent(depth+1) << "<property name=\"" << (*itm).first << "\" value=\"" << (*itm).second << "\"/>" << endl;
+            }
+          else
+            {
+              _out << indent(depth+1) << "<initializescriptkey><code><![CDATA[" << (*itm).second << "]]></code></initializescriptkey>" << endl;
+            }
+        }
       _out << indent(depth) << "</container>"  << endl;
     }
 }
