@@ -24,6 +24,8 @@ using namespace YACS::ENGINE;
 
 const char HomogeneousPoolContainer::SIZE_OF_POOL_KEY[]="SizeOfPool";
 
+const char HomogeneousPoolContainer::INITIALIZE_SCRIPT_KEY[]="InitializeScriptKey";
+
 void HomogeneousPoolContainer::attachOnCloning() const
 {
   _isAttachedOnCloning=true;

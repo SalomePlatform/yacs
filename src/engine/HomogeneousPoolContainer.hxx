@@ -47,6 +47,7 @@ namespace YACS
       virtual void allocateFor(const std::vector<const Task *>& nodes) = 0;
       virtual void release(const Task *node) = 0;
       static const char SIZE_OF_POOL_KEY[];
+      static const char INITIALIZE_SCRIPT_KEY[];
     protected:
       HomogeneousPoolContainer();
 #ifndef SWIG

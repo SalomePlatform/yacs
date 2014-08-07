@@ -96,6 +96,7 @@ namespace YACS
       std::vector<std::string> _componentNames;
       //
       SalomeHPContainerVectOfHelper _launchModeType;
+      std::string _initScript;
     };
   }
 }

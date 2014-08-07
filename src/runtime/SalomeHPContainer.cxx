@@ -32,7 +32,7 @@ SalomeHPContainer::SalomeHPContainer():_shutdownLevel(999)
 {
 }
 
-SalomeHPContainer::SalomeHPContainer(const SalomeHPContainer& other):_componentNames(other._componentNames),_shutdownLevel(999),_sct(other._sct)
+SalomeHPContainer::SalomeHPContainer(const SalomeHPContainer& other):_componentNames(other._componentNames),_shutdownLevel(999),_sct(other._sct),_initScript(other._initScript)
 {
 }
 
@@ -145,6 +145,10 @@ void SalomeHPContainer::setProperty(const std::string& name,const std::string& v
       iss >> val;
       setSizeOfPool(val);
     }
+  else if(name==INITIALIZE_SCRIPT_KEY)
+    {
+      _initScript=value;
+    }
   else
     _sct.setProperty(name,value);
 }
@@ -156,12 +160,17 @@ std::string SalomeHPContainer::getProperty(const std::string& name) const
       std::ostringstream oss; oss << getSizeOfPool();
       return oss.str();
     }
+  else if(name==INITIALIZE_SCRIPT_KEY)
+    {
+      return _initScript;
+    }
   else
     return _sct.getProperty(name);
 }
 
 void SalomeHPContainer::clearProperties()
 {
+  _initScript.clear();
   _sct.clearProperties();
 }
 
@@ -175,6 +184,8 @@ std::map<std::string,std::string> SalomeHPContainer::getProperties() const
   std::map<std::string,std::string> ret(_sct.getProperties());
   std::ostringstream oss; oss << getSizeOfPool();
   ret[SIZE_OF_POOL_KEY]=oss.str();
+  if(!_initScript.empty())
+    ret[INITIALIZE_SCRIPT_KEY]=_initScript;
   return ret;
 }
 

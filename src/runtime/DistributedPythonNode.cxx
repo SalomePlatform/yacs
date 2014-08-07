@@ -59,6 +59,9 @@ DistributedPythonNode::~DistributedPythonNode()
 
 void DistributedPythonNode::load()
 {
+  bool isContAlreadyStarted(false);
+  if(_container)
+    isContAlreadyStarted=_container->isAlreadyStarted(this);
   ServerNode::load();
   {
     AutoGIL agil;
@@ -105,14 +108,7 @@ void DistributedPythonNode::load()
         Py_DECREF(new_stderr);
         throw Exception("Error during execution");
       }
-    DEBTRACE( "---------------End PyfuncSerNode::load function---------------" );
-  }
-}
 
-void DistributedPythonNode::execute()
-{
-  YACSTRACE(1,"+++++++++++++++++ DistributedPythonNode::execute: " << getName() << " " << getFname() << " +++++++++++++++++" );
-  {
     Engines::Container_var objContainer=Engines::Container::_nil();
     if(!_container)
       throw Exception("No container specified !");
@@ -129,102 +125,132 @@ void DistributedPythonNode::execute()
       throw Exception("Unrecognized type of container ! Salome one is expected !");
     if(CORBA::is_nil(objContainer))
       throw Exception("Container corba pointer is NULL !");
-    Engines::PyNode_var pn=objContainer->createPyNode(getName().c_str(),getScript().c_str());
-    //////
-    int pos=0;
-    PyObject* ob;
-    if(!_pyfuncSer)
-      throw Exception("DistributedPythonNode badly loaded");
-    Engines::pickledArgs *serializationInputCorba(0);
-    PyObject *args(0);
-    {
-        AutoGIL agil;
 
-        DEBTRACE( "---------------DistributedPythonNode::inputs---------------" );
-        args = PyTuple_New(getNumberOfInputPorts()) ;
-        list<InputPort *>::iterator iter2;
-        for(iter2 = _setOfInputPort.begin(); iter2 != _setOfInputPort.end(); iter2++)
-          {
-            InputPyPort *p=(InputPyPort *)*iter2;
-            ob=p->getPyObj();
-            Py_INCREF(ob);
-            PyTuple_SetItem(args,pos,ob);
-            pos++;
-          }
-        PyObject *serializationInput=PyObject_CallObject(_pyfuncSer,args);
-        std::string serializationInputC=PyString_AsString(serializationInput);
-        serializationInputCorba=new Engines::pickledArgs;
-        int len=serializationInputC.length();
-        serializationInputCorba->length(serializationInputC.length());
-        for(int i=0;i<serializationInputC.length();i++)
-          (*serializationInputCorba)[i]=serializationInputC[i];
-    }
-    //serializationInputCorba[serializationInputC.length()]='\0';
-    DEBTRACE( "-----------------DistributedPythonNode starting remote python invocation-----------------" );
-    Engines::pickledArgs *resultCorba;
     try
     {
-        resultCorba=pn->execute(getFname().c_str(),*serializationInputCorba);
+        if(containerCast0 || !isContAlreadyStarted)
+          {
+            _pynode = objContainer->createPyNode(getName().c_str(),getScript().c_str());
+          }
+        else
+          {
+            Engines::PyNode_var dftPyScript(objContainer->getDefaultPyNode());
+            if(CORBA::is_nil(dftPyScript))
+              _pynode = objContainer->createPyNode(getName().c_str(),getScript().c_str());
+            else
+              _pynode = dftPyScript;
+          }
     }
-    catch(...)
+    catch( const SALOME::SALOME_Exception& ex )
     {
-        std::string msg="Exception on remote python invocation";
+        std::string msg="Exception on remote python node creation ";
+        msg += '\n';
+        msg += ex.details.text.in();
         _errorDetails=msg;
         throw Exception(msg);
     }
-    DEBTRACE( "-----------------DistributedPythonNode end of remote python invocation-----------------" );
-    //
-    delete serializationInputCorba;
-    char *resultCorbaC=new char[resultCorba->length()+1];
-    resultCorbaC[resultCorba->length()]='\0';
-    for(int i=0;i<resultCorba->length();i++)
-      resultCorbaC[i]=(*resultCorba)[i];
-    delete resultCorba;
+
+    if(CORBA::is_nil(_pynode))
+      throw Exception("In DistributedPythonNode the ref in NULL ! ");
+
+
+    DEBTRACE( "---------------End PyfuncSerNode::load function---------------" );
+  }
+}
+
+void DistributedPythonNode::execute()
+{
+  YACSTRACE(1,"+++++++++++++++++ DistributedPythonNode::execute: " << getName() << " " << getFname() << " +++++++++++++++++" );
+  //////
+  PyObject* ob;
+  if(!_pyfuncSer)
+    throw Exception("DistributedPythonNode badly loaded");
+  Engines::pickledArgs *serializationInputCorba(0);
+  PyObject *args(0);
+  {
+    AutoGIL agil;
+
+    DEBTRACE( "---------------DistributedPythonNode::inputs---------------" );
+    args = PyTuple_New(getNumberOfInputPorts()) ;
+    int pos=0;
+    for(list<InputPort *>::iterator iter2 = _setOfInputPort.begin(); iter2 != _setOfInputPort.end(); iter2++,pos++)
+      {
+        InputPyPort *p=(InputPyPort *)*iter2;
+        ob=p->getPyObj();
+        Py_INCREF(ob);
+        PyTuple_SetItem(args,pos,ob);
+      }
+    PyObject *serializationInput=PyObject_CallObject(_pyfuncSer,args);
+    std::string serializationInputC=PyString_AsString(serializationInput);
+    serializationInputCorba=new Engines::pickledArgs;
+    int len=serializationInputC.length();
+    serializationInputCorba->length(serializationInputC.length());
+    for(int i=0;i<serializationInputC.length();i++)
+      (*serializationInputCorba)[i]=serializationInputC[i];
+    Py_DECREF(serializationInput);
+  }
+  //serializationInputCorba[serializationInputC.length()]='\0';
+  DEBTRACE( "-----------------DistributedPythonNode starting remote python invocation-----------------" );
+  Engines::pickledArgs *resultCorba;
+  try
+  {
+      resultCorba=_pynode->execute(getFname().c_str(),*serializationInputCorba);
+  }
+  catch(...)
+  {
+      std::string msg="Exception on remote python invocation";
+      _errorDetails=msg;
+      throw Exception(msg);
+  }
+  DEBTRACE( "-----------------DistributedPythonNode end of remote python invocation-----------------" );
+  //
+  delete serializationInputCorba;
+  char *resultCorbaC=new char[resultCorba->length()+1];
+  resultCorbaC[resultCorba->length()]='\0';
+  for(int i=0;i<resultCorba->length();i++)
+    resultCorbaC[i]=(*resultCorba)[i];
+  delete resultCorba;
+  {
+    AutoGIL agil;
+    args = PyTuple_New(1);
+    PyObject* resultPython=PyString_FromString(resultCorbaC);
+    delete [] resultCorbaC;
+    PyTuple_SetItem(args,0,resultPython);
+    PyObject *finalResult=PyObject_CallObject(_pyfuncUnser,args);
+    DEBTRACE( "-----------------DistributedPythonNode::outputs-----------------" );
+    int nres=1;
+    if(finalResult == Py_None)
+      nres=0;
+    else if(PyTuple_Check(finalResult))
+      nres=PyTuple_Size(finalResult);
+
+    if(getNumberOfOutputPorts() != nres)
+      {
+        std::string msg="Number of output arguments : Mismatch between definition and execution";
+        Py_DECREF(finalResult);
+        _errorDetails=msg;
+        throw Exception(msg);
+      }
+    try
     {
-      AutoGIL agil;
-      args = PyTuple_New(1);
-      PyObject* resultPython=PyString_FromString(resultCorbaC);
-      delete [] resultCorbaC;
-      PyTuple_SetItem(args,0,resultPython);
-      PyObject *finalResult=PyObject_CallObject(_pyfuncUnser,args);
-      DEBTRACE( "-----------------DistributedPythonNode::outputs-----------------" );
-      int nres=1;
-      if(finalResult == Py_None)
-        nres=0;
-      else if(PyTuple_Check(finalResult))
-        nres=PyTuple_Size(finalResult);
-
-      if(getNumberOfOutputPorts() != nres)
-        {
-          std::string msg="Number of output arguments : Mismatch between definition and execution";
-          Py_DECREF(finalResult);
-          _errorDetails=msg;
-          throw Exception(msg);
-        }
-
-      pos=0;
-      list<OutputPort *>::iterator iter;
-      try
-      {
-          for(iter = _setOfOutputPort.begin(); iter != _setOfOutputPort.end(); iter++)
-            {
-              OutputPyPort *p=(OutputPyPort *)*iter;
-              DEBTRACE( "port name: " << p->getName() );
-              DEBTRACE( "port kind: " << p->edGetType()->kind() );
-              DEBTRACE( "port pos : " << pos );
-              if(PyTuple_Check(finalResult))ob=PyTuple_GetItem(finalResult,pos) ;
-              else ob=finalResult;
-              DEBTRACE( "ob refcnt: " << ob->ob_refcnt );
-              p->put(ob);
-              pos++;
-            }
-      }
-      catch(ConversionException& ex)
-      {
-          Py_DECREF(finalResult);
-          _errorDetails=ex.what();
-          throw;
-      }
+        int pos(0);
+        for(list<OutputPort *>::iterator iter = _setOfOutputPort.begin(); iter != _setOfOutputPort.end(); iter++, pos++)
+          {
+            OutputPyPort *p=(OutputPyPort *)*iter;
+            DEBTRACE( "port name: " << p->getName() );
+            DEBTRACE( "port kind: " << p->edGetType()->kind() );
+            DEBTRACE( "port pos : " << pos );
+            if(PyTuple_Check(finalResult))ob=PyTuple_GetItem(finalResult,pos) ;
+            else ob=finalResult;
+            DEBTRACE( "ob refcnt: " << ob->ob_refcnt );
+            p->put(ob);
+          }
+    }
+    catch(ConversionException& ex)
+    {
+        Py_DECREF(finalResult);
+        _errorDetails=ex.what();
+        throw;
     }
   }
   DEBTRACE( "++++++++++++++ End DistributedPythonNode::execute: " << getName() << " ++++++++++++++++++++" );
