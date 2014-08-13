@@ -176,7 +176,7 @@ void PythonNode::loadRemote()
   bool isInitializeRequested(false);
   try
     {
-      if(containerCast0 || !isContAlreadyStarted)
+      if(containerCast0)
         {
           _pynode = objContainer->createPyScriptNode(getName().c_str(),getScript().c_str());
         }
@@ -715,10 +715,10 @@ void PyFuncNode::loadRemote()
     throw Exception("Unrecognized type of container ! Salome one is expected ! In PythonNode !");
   if(CORBA::is_nil(objContainer))
     throw Exception("Container corba pointer is NULL ! In PythonNode !");
-
+  bool isInitializeRequested(false);
   try
     {
-      if(containerCast0 || !isContAlreadyStarted)
+      if(containerCast0)
         {
           _pynode = objContainer->createPyNode(getName().c_str(),getScript().c_str());
         }
@@ -726,7 +726,10 @@ void PyFuncNode::loadRemote()
         {
           Engines::PyNode_var dftPyScript(objContainer->getDefaultPyNode());
           if(CORBA::is_nil(dftPyScript))
-            _pynode = objContainer->createPyNode(getName().c_str(),getScript().c_str());
+            {
+              isInitializeRequested=true;
+              _pynode = objContainer->createPyNode(getName().c_str(),getScript().c_str());
+            }
           else
             _pynode = dftPyScript;
         }
@@ -786,6 +789,23 @@ void PyFuncNode::loadRemote()
         PySys_SetObject((char*)"stderr", PySys_GetObject((char*)"__stderr__"));
         Py_DECREF(new_stderr);
         throw Exception("Error during load");
+      }
+    if(isInitializeRequested)
+      {//This one is called only once at initialization in the container if an init-script is specified.
+        try
+          {
+            std::string zeInitScriptKey(_container->getProperty(HomogeneousPoolContainer::INITIALIZE_SCRIPT_KEY));
+            if(!zeInitScriptKey.empty())
+              _pynode->executeAnotherPieceOfCode(zeInitScriptKey.c_str());
+          }
+        catch( const SALOME::SALOME_Exception& ex )
+          {
+            std::string msg="Exception on PythonNode::loadRemote python invocation of initializisation py script !";
+            msg += '\n';
+            msg += ex.details.text.in();
+            _errorDetails=msg;
+            throw Exception(msg);
+          }
       }
     DEBTRACE( "---------------End PyfuncNode::loadRemote function---------------" );
   }

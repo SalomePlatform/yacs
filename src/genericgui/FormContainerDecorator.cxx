@@ -33,13 +33,13 @@ bool FormContainerDecorator::CHECKED = false;
 
 FormContainerDecorator::FormContainerDecorator(YACS::ENGINE::Container *cont, QWidget *parent):QWidget(parent),_typ(0)
 {
-  if(!cont)
-    throw YACS::Exception("FormContainerDecorator constrctor : container is empty !");
   setupUi(this);
   _icon.addFile("icons:icon_down.png");
   _icon.addFile("icons:icon_up.png",QSize(), QIcon::Normal, QIcon::On);
   tb_container->setIcon(_icon);
   connect(this,SIGNAL(typeOfContainerIsKnown(const QString&)),label,SLOT(setText(const QString &)));
+  if(!cont)
+    return ;
   HomogeneousPoolContainer *hpc(dynamic_cast<HomogeneousPoolContainer *>(cont));
   if(!hpc)
     _typ=new FormContainer(this);
@@ -60,33 +60,34 @@ FormContainerDecorator::~FormContainerDecorator()
 
 void FormContainerDecorator::FillPanel(YACS::ENGINE::Container *container)
 {
-  checkOK();
   checkAndRepareTypeIfNecessary(container);
   _typ->FillPanel(container);
 }
 
 QWidget *FormContainerDecorator::getWidget()
 {
-  checkOK();
   return _typ;
 }
 
 bool FormContainerDecorator::onApply()
 {
-  checkOK();
+  if(!checkOK())
+    return false;
   return _typ->onApply();
 }
 
 void FormContainerDecorator::onCancel()
 {
-  checkOK();
+  if(!checkOK())
+    return ;
   _typ->onCancel();
 }
 
 void FormContainerDecorator::show()
 {
   QWidget::show();
-  checkOK();
+  if(!checkOK())
+    return ;
   _typ->show();
   tb_container->setChecked(CHECKED);
   on_tb_container_toggled(CHECKED);
@@ -95,7 +96,8 @@ void FormContainerDecorator::show()
 void FormContainerDecorator::hide()
 {
   QWidget::hide();
-  checkOK();
+  if(!checkOK())
+    return ;
   _typ->hide();
 }
 
@@ -115,19 +117,20 @@ void FormContainerDecorator::on_tb_container_toggled(bool checked)
 
 void FormContainerDecorator::synchronizeCheckContainer()
 {
-  checkOK();
   tb_container->setChecked(CHECKED);
 }
 
 std::string FormContainerDecorator::getHostName(int index) const
 {
-  checkOK();
+  if(!checkOK())
+    return std::string();
   return _typ->cb_resource->itemText(index).toStdString();
 }
 
 void FormContainerDecorator::setName(const std::string& name)
 {
-  checkOK();
+  if(!checkOK())
+    return ;
   _typ->le_name->setText(name.c_str());
 }
 
@@ -146,27 +149,27 @@ void FormContainerDecorator::onContToggled(bool v)
   emit(containerToggled(v));
 }
 
-void FormContainerDecorator::checkOK() const
+bool FormContainerDecorator::checkOK() const
 {
-  if(!_typ)
-    throw YACS::Exception("Null Widget Container !!!!");
+  return _typ;
 }
 
 void FormContainerDecorator::checkAndRepareTypeIfNecessary(YACS::ENGINE::Container *container)
 {
-  checkOK();
   if(!container)
-    throw YACS::Exception("Null Container !!!!");
-  YACS::ENGINE::HomogeneousPoolContainer *cont1(dynamic_cast<YACS::ENGINE::HomogeneousPoolContainer *>(container));
-  bool isTyp1(dynamic_cast<FormHPContainer *>(_typ)!=0);
-  if((!cont1 && !isTyp1) || (cont1 && isTyp1))
     return ;
-  QWidget *parent(_typ->parentWidget());
-  delete _typ; _typ=0;
+  YACS::ENGINE::HomogeneousPoolContainer *cont1(dynamic_cast<YACS::ENGINE::HomogeneousPoolContainer *>(container));
+  if(_typ)
+    {
+      bool isTyp1(dynamic_cast<FormHPContainer *>(_typ)!=0);
+      if((!cont1 && !isTyp1) || (cont1 && isTyp1))
+        return ;
+      delete _typ; _typ=0;
+    }
   if(!cont1)
-    _typ=new FormContainer(parent);
+    _typ=new FormContainer(this);
   else
-    _typ=new FormHPContainer(parent);
+    _typ=new FormHPContainer(this);
   gridLayout_1->addWidget(_typ);
   emit typeOfContainerIsKnown(_typ->getTypeStr());
   connectForTyp();

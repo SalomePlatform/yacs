@@ -65,7 +65,7 @@ signals:
   void resourceActivated(int);
   void containerToggled(bool);//connect(_wContainer->tb_container, SIGNAL(toggled(bool)), this, SLOT(fillContainerPanel())); // --- to update display of current selection
 private:
-  void checkOK() const;
+  bool checkOK() const;
   void checkAndRepareTypeIfNecessary(YACS::ENGINE::Container *container);
   void connectForTyp();
 private:
