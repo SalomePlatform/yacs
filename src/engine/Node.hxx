@@ -158,7 +158,7 @@ namespace YACS
       virtual void setProperty(const std::string& name,const std::string& value);
       virtual std::string getProperty(const std::string& name);
       std::map<std::string,std::string> getProperties() ;
-      std::map<std::string,std::string> getPropertyMap(){return _propertyMap;} ;
+      std::map<std::string,std::string> getPropertyMap() { return _propertyMap; }
       virtual void setProperties(std::map<std::string,std::string> properties);
       virtual Node *getChildByName(const std::string& name) const throw(Exception) = 0;
       virtual Proc *getProc();
@@ -168,17 +168,17 @@ namespace YACS
       int getNumId();
       virtual void sendEvent(const std::string& event);
       static std::map<int,Node *> idMap;
-      virtual std::string typeName() {return "YACS__ENGINE__Node";}
-      virtual std::string getErrorDetails(){return _errorDetails;};
-      virtual void setErrorDetails(const std::string& error){_errorDetails=error;};
+      virtual std::string typeName() { return "YACS__ENGINE__Node"; }
+      virtual std::string getErrorDetails() const { return _errorDetails; }
+      virtual void setErrorDetails(const std::string& error) { _errorDetails=error; }
       virtual void modified();
-      virtual int isModified(){return _modified;}
+      virtual int isModified() { return _modified; }
       virtual int isValid();
       virtual void edUpdateState();
       virtual std::string getErrorReport();
       virtual std::string getContainerLog();
       virtual void ensureLoading();
-      virtual void getCoupledNodes(std::set<Task*>& coupledNodes){};
+      virtual void getCoupledNodes(std::set<Task*>& coupledNodes) { }
       virtual void cleanNodes();
     protected:
       virtual void exForwardFailed();
