@@ -33,7 +33,7 @@ void SalomeHPContainerVectOfHelper::resize(std::size_t sz)
     return;
   checkNoCurrentWork();
   _whichOccupied.resize(sz); std::fill(_whichOccupied.begin(),_whichOccupied.end(),false);
-  _launchModeType.clear(); _launchModeType.resize(sz);
+  _launchModeType.resize(sz);
   for(std::size_t i=oldSize;i<sz;i++)
       _launchModeType[i]=new SalomeContainerMonoHelper;
   _currentlyWorking.clear();

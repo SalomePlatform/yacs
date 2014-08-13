@@ -225,6 +225,7 @@ void ProcMenu::popupMenu(QWidget *caller, const QPoint &globalPos, const QString
       menu.addSeparator();
       menu.addAction(gmain->_importDataTypeAct);
       menu.addAction(gmain->_newContainerAct);
+      menu.addAction(gmain->_newHPContainerAct);
       QMenu *CNmenu = menu.addMenu(tr("Create Node"));
       CNmenu->addAction(gmain->_nodeFromCatalogAct);
       //   CNmenu->addSeparator();
@@ -603,6 +604,7 @@ void ContainerDirMenu::popupMenu(QWidget *caller, const QPoint &globalPos, const
   if (isEdition)
     {
       menu.addAction(gmain->_newContainerAct);
+      menu.addAction(gmain->_newHPContainerAct);
     }
   menu.exec(globalPos);
 }

@@ -38,6 +38,7 @@ namespace YACS
       virtual bool isLoaded(Task *askingNode) const;
       virtual std::string getKind() const;
       virtual ComponentInstance* clone() const;
+      virtual ComponentInstance* cloneAlways() const;
       virtual std::string getFileRepr() const;
       virtual ServiceNode *createNode(const std::string &name);
       //! The specific method that justified SalomePythonComponent class.

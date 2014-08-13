@@ -137,9 +137,12 @@ EditionScript::EditionScript(Subject* subject,
   hboxLayout2->addWidget(cb_container);
   _portslayout->addWidget(fr_container);
 
-  formcontainer = new FormContainer(this);
-  formcontainer->on_tb_container_toggled(false);
+  //
+  YACS::ENGINE::InlineNode *pyNode(dynamic_cast<YACS::ENGINE::InlineNode*>(_subInlineNode->getNode()));
+  YACS::ENGINE::Container *cont(pyNode->getContainer());
+  formcontainer = new FormContainerDecorator(cont,this);
   _portslayout->addWidget(formcontainer);
+  //_portslayout->addWidget(formcontainer->getWidget());
   //end of insertion of execution mode
 
   createTablePorts(_portslayout);
@@ -327,10 +330,11 @@ void EditionScript::on_tb_options_toggled(bool checked)
   if(_checked)
     {
       fr_options->show();
-      if(_remote) {
-	fr_container->show();
-	formcontainer->show();
-      }
+      if(_remote)
+        {
+          fr_container->show();
+          formcontainer->show();
+        }
     }
   else
     {
@@ -409,7 +413,7 @@ void EditionScript::changeContainer(int index)
       return;
     }
   YASSERT(GuiContext::getCurrent()->_mapOfSubjectContainer.count(newContainer));
-  SubjectContainer *scnt = GuiContext::getCurrent()->_mapOfSubjectContainer[newContainer];
+  SubjectContainerBase *scnt(GuiContext::getCurrent()->_mapOfSubjectContainer[newContainer]);
 
   _subInlineNode->setContainer(scnt);
   

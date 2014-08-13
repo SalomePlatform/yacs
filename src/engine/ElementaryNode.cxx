@@ -69,6 +69,10 @@ void ElementaryNode::performDuplicationOfPlacement(const Node& other)
 {
 }
 
+void ElementaryNode::performShallowDuplicationOfPlacement(const Node& other)
+{
+}
+
 ElementaryNode::~ElementaryNode()
 {
   for(list<InputPort *>::iterator iter1=_setOfInputPort.begin();iter1!=_setOfInputPort.end();iter1++)

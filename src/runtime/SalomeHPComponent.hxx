@@ -40,6 +40,7 @@ namespace YACS
       virtual bool setContainer(Container *cont);
       virtual ServiceNode* createNode(const std::string& name);
       virtual ComponentInstance* clone() const;
+      virtual ComponentInstance* cloneAlways() const;
       virtual std::string getFileRepr() const;
       virtual CORBA::Object_ptr getCompoPtr(){return CORBA::Object::_duplicate(_objComponent);}
       virtual void shutdown(int level);

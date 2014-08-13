@@ -170,6 +170,7 @@ REFCOUNT_TEMPLATE(CompoInstmap,YACS::ENGINE::ComponentInstance)
 %newobject *::createOutputDataStreamPort;
 %newobject *::clone;
 %newobject *::cloneAlways;
+%newobject *::cloneWithoutCompAndContDeepCpy;
 %newobject *::New;
 
 //Take ownership : transfer it from C++ (has to be completed)

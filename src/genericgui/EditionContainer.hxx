@@ -22,7 +22,7 @@
 
 #include "ItemEdition.hxx"
 
-class FormContainer;
+class FormContainerDecorator;
 
 namespace YACS
 {
@@ -45,8 +45,12 @@ namespace YACS
       virtual void onApply();
       virtual void onCancel();
 
+    private:
+
+      YACS::ENGINE::Container *getContainer();
+
     protected:
-      FormContainer *_wContainer;
+      FormContainerDecorator *_wContainer;
     };
   }
 }

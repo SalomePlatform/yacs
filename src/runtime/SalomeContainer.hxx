@@ -68,6 +68,7 @@ namespace YACS
       std::map<std::string,std::string> getResourceProperties(const std::string& name) const;
       std::map<std::string,std::string> getProperties() const;
       static const char KIND[];
+      static const char TYPE_PROPERTY_STR[];
     protected:
 #ifndef SWIG
       virtual ~SalomeContainer();

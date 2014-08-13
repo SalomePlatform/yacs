@@ -138,7 +138,9 @@ Container *SalomeHPContainer::cloneAlways() const
 
 void SalomeHPContainer::setProperty(const std::string& name,const std::string& value)
 {
-  if(name==SIZE_OF_POOL_KEY)
+  if(name==AOC_ENTRY)//no sense to set it ! It is always true ! ignore it !
+    return ;
+  else if(name==SIZE_OF_POOL_KEY)
     {
       std::istringstream iss(value);
       int val(0);
@@ -155,7 +157,11 @@ void SalomeHPContainer::setProperty(const std::string& name,const std::string& v
 
 std::string SalomeHPContainer::getProperty(const std::string& name) const
 {
-  if(name==SIZE_OF_POOL_KEY)
+  if(name==AOC_ENTRY)
+    {
+      return std::string("1");
+    }
+  else if(name==SIZE_OF_POOL_KEY)
     {
       std::ostringstream oss; oss << getSizeOfPool();
       return oss.str();

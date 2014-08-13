@@ -72,7 +72,7 @@ namespace YACS
       std::map<std::pair<YACS::ENGINE::OutPort*, YACS::ENGINE::InPort*>,YACS::HMI::SubjectLink*>   _mapOfSubjectLink;
       std::map<std::pair<YACS::ENGINE::Node*, YACS::ENGINE::Node*>,YACS::HMI::SubjectControlLink*> _mapOfSubjectControlLink;
       std::map<YACS::ENGINE::ComponentInstance*, YACS::HMI::SubjectComponent*>                     _mapOfSubjectComponent;
-      std::map<YACS::ENGINE::Container*, YACS::HMI::SubjectContainer*>                             _mapOfSubjectContainer;
+      std::map<YACS::ENGINE::Container*, YACS::HMI::SubjectContainerBase*>                         _mapOfSubjectContainer;
       std::map<std::string, YACS::HMI::SubjectDataType*>                                           _mapOfSubjectDataType;
       std::map<int,YACS::HMI::SubjectNode*>                                                        _mapOfExecSubjectNode;
       std::map<std::string, YACS::ENGINE::ComponentInstance*>                                      _mapOfLastComponentInstance;

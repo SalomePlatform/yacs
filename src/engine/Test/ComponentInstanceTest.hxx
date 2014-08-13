@@ -38,6 +38,7 @@ namespace YACS
       std::string getKindForNode() const;
       ServiceNode* createNode(const std::string& name);
       ComponentInstance *clone() const;
+      ComponentInstance *cloneAlways() const;
     protected:
       bool _loaded;
     };
@@ -54,6 +55,7 @@ namespace YACS
       std::string getKindForNode() const;
       ServiceNode* createNode(const std::string& name);
       ComponentInstance *clone() const;
+      ComponentInstance *cloneAlways() const;
     protected:
       bool _loaded;
     };

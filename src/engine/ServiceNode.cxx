@@ -69,6 +69,17 @@ void ServiceNode::performDuplicationOfPlacement(const Node& other)
     _component=otherC._component->clone();
 }
 
+void ServiceNode::performShallowDuplicationOfPlacement(const Node& other)
+{
+  const ServiceNode &otherC=*(dynamic_cast<const ServiceNode *>(&other));
+  //if other has no component don't clone: this will not have one
+  if(otherC._component)
+    {
+      _component=otherC._component;
+      _component->incrRef();
+    }
+}
+
 ServiceNode::~ServiceNode()
 {
   if(_component)

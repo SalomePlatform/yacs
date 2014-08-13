@@ -49,6 +49,7 @@
 #include "PresetPorts.hxx"
 #include "ComponentDefinition.hxx"
 #include "SalomeContainer.hxx"
+#include "SalomeHPContainer.hxx"
 #include "SalomeComponent.hxx"
 #include "TypeCode.hxx"
 #include "RuntimeSALOME.hxx"
@@ -241,7 +242,7 @@ bool CommandAddNodeFromCatalog::localExecute()
       ComposedNode* father =dynamic_cast<ComposedNode*> (node);
       if (father && nodeToClone)
         {
-          son = nodeToClone->clone(0);
+          son = nodeToClone->cloneWithoutCompAndContDeepCpy(0);
           son->setName(_name);
           service = dynamic_cast<ServiceNode*>(son);
         }
@@ -573,7 +574,7 @@ bool CommandPutInComposedNode::localExecute()
 	  //create a ComposedNode (type _type) with name _newParent
 	  YACS::ENGINE::Catalog *catalog = YACS::ENGINE::getSALOMERuntime()->getBuiltinCatalog();
 	  Node* nodeToClone = catalog->_composednodeMap[_type];
-	  composednode = nodeToClone->clone(0);
+	  composednode = nodeToClone->cloneWithoutCompAndContDeepCpy(0);
 	  composednode->setName(_newParent);
 	  //add the new composednode as child of oldfather
 	  oldFather->edAddChild(composednode);
@@ -707,8 +708,8 @@ bool CommandCopyNode::localExecute()
       if (Loop *loop = dynamic_cast<Loop*>(newFather))
         if (!loop->edGetDirectDescendants().empty())
           throw YACS::Exception("Already a node in a new parent of Loop type");
-      //_clone = node->clone(newFather);
-      _clone = node->clone(0);
+      //_clone = node->cloneWithoutCompAndContDeepCpy(newFather);
+      _clone = node->cloneWithoutCompAndContDeepCpy(0);
       if (!_clone)
         throw YACS::Exception("Node cannot be cloned");
       int nodeSuffix = -1;
@@ -899,7 +900,7 @@ bool CommandRenameContainer::localExecute()
       container->setName(_newName);
       proc->containerMap[_newName] = container;
       YASSERT(GuiContext::getCurrent()->_mapOfSubjectContainer.count(container));
-      SubjectContainer *scont = GuiContext::getCurrent()->_mapOfSubjectContainer[container]; 
+      SubjectContainerBase *scont(GuiContext::getCurrent()->_mapOfSubjectContainer[container]);
       scont-> update(RENAME, 0, scont);
       scont->notifyComponentsChange(ASSOCIATE, CONTAINER, scont);
     }
@@ -925,7 +926,7 @@ bool CommandRenameContainer::localReverse()
       container->setName(_oldName);
       proc->containerMap[_oldName] = container;
       YASSERT(GuiContext::getCurrent()->_mapOfSubjectContainer.count(container));
-      SubjectContainer *scont = GuiContext::getCurrent()->_mapOfSubjectContainer[container]; 
+      SubjectContainerBase *scont(GuiContext::getCurrent()->_mapOfSubjectContainer[container]);
       scont-> update(RENAME, 0, scont);
       scont->notifyComponentsChange(ASSOCIATE, CONTAINER, scont);
     }
@@ -3108,22 +3109,19 @@ bool CommandAddControlLink::localReverse()
 
 // ----------------------------------------------------------------------------
 
-CommandAddContainer::CommandAddContainer(std::string name,
-                                         std::string refContainer)
+CommandAddContainerBase::CommandAddContainerBase(std::string name, std::string refContainer)
   : Command(), _name(name), _containerToClone(refContainer), _subcont(0)
 {
-  DEBTRACE("CommandAddContainer::CommandAddContainer " << name << " " << refContainer);
+  DEBTRACE("CommandAddContainerBase::CommandAddContainerBase " << name << " " << refContainer);
 }
 
-std::string CommandAddContainer::dump()
+CommandAddContainerBase::~CommandAddContainerBase()
 {
-  string ret ="CommandAddContainer " + _name + " " + _containerToClone;
-  return ret;
 }
 
-bool CommandAddContainer::localExecute()
+bool CommandAddContainerBase::localExecute()
 {
-  DEBTRACE("CommandAddContainer::localExecute");
+  DEBTRACE("CommandAddContainerBase::localExecute");
   try
     {
       Proc* proc = GuiContext::getCurrent()->getProc();
@@ -3132,7 +3130,7 @@ bool CommandAddContainer::localExecute()
           GuiContext::getCurrent()->_lastErrorMessage = "There is already a container with that name";
           return false;
         }
-      Container *container = new SalomeContainer();
+      Container *container(createNewInstance());
       if (! _containerToClone.empty())
         {
           if (proc->containerMap.count(_containerToClone))
@@ -3157,15 +3155,15 @@ bool CommandAddContainer::localExecute()
     }
   catch (Exception& ex)
     {
-      DEBTRACE("CommandAddContainer::localExecute() : " << ex.what());
+      DEBTRACE("CommandAddContainerBase::localExecute() : " << ex.what());
       setErrorMsg(ex);
       return false;
     }
 }
 
-bool CommandAddContainer::localReverse()
+bool CommandAddContainerBase::localReverse()
 {
-  DEBTRACE("CommandAddContainer::localReverse");
+  DEBTRACE("CommandAddContainerBase::localReverse");
   try
     {
       Proc* proc = GuiContext::getCurrent()->getProc();
@@ -3184,6 +3182,40 @@ bool CommandAddContainer::localReverse()
       setErrorMsg(ex);
       return false;
     }
+}
+
+// ----------------------------------------------------------------------------
+
+CommandAddContainer::CommandAddContainer(std::string name, std::string refContainer):CommandAddContainerBase(name,refContainer)
+{
+}
+
+std::string CommandAddContainer::dump()
+{
+  string ret ="CommandAddContainer " + _name + " " + _containerToClone;
+  return ret;
+}
+
+Container *CommandAddContainer::createNewInstance() const
+{
+  return new SalomeContainer;
+}
+
+// ----------------------------------------------------------------------------
+
+CommandAddHPContainer::CommandAddHPContainer(std::string name, std::string refContainer):CommandAddContainerBase(name,refContainer)
+{
+}
+
+std::string CommandAddHPContainer::dump()
+{
+  string ret ="CommandAddHPContainer " + _name + " " + _containerToClone;
+  return ret;
+}
+
+Container *CommandAddHPContainer::createNewInstance() const
+{
+  return new SalomeHPContainer;
 }
 
 // ----------------------------------------------------------------------------
@@ -3354,11 +3386,11 @@ bool CommandSetContainerProperties::localExecute()
       Proc* proc = GuiContext::getCurrent()->getProc();
       if (proc->containerMap.count(_container))
         {
-          Container *ref = proc->containerMap[_container];
+          Container *ref(proc->containerMap[_container]);
           YASSERT(ref);
           _oldProp = ref->getProperties();
           ref->setProperties(_properties);
-          SubjectContainer *scont = GuiContext::getCurrent()->_mapOfSubjectContainer[ref]; 
+          SubjectContainerBase *scont(GuiContext::getCurrent()->_mapOfSubjectContainer[ref]);
           scont->update(UPDATE, 0, scont);
           scont->notifyComponentsChange(ASSOCIATE, CONTAINER, scont);
           return true;
@@ -3752,7 +3784,7 @@ bool CommandAddComponentInstance::localReverse()
       YASSERT(!_subcompo->hasServices());
       Container *cont = compo->getContainer();
       YASSERT(GuiContext::getCurrent()->_mapOfSubjectContainer.count(cont));
-      SubjectContainer *subcont = GuiContext::getCurrent()->_mapOfSubjectContainer[cont];
+      SubjectContainerBase *subcont = GuiContext::getCurrent()->_mapOfSubjectContainer[cont];
       subcont->detachComponent(_subcompo);
       GuiContext::getCurrent()->_mapOfSubjectComponent.erase(compo);
       proc->removeComponentInstance(compo);
@@ -3872,7 +3904,7 @@ bool CommandSetContainer::localExecute()
                 _oldcont = pyNode->getContainer()->getName();
               pyNode->setContainer(cont);
               SubjectNode* snode = GuiContext::getCurrent()->_mapOfSubjectNode[pyNode];
-              SubjectContainer *subcont = GuiContext::getCurrent()->_mapOfSubjectContainer[cont];
+              SubjectContainerBase *subcont = GuiContext::getCurrent()->_mapOfSubjectContainer[cont];
               snode->update(ASSOCIATE, 0, subcont);
               return true;
             }
@@ -3909,7 +3941,7 @@ bool CommandSetContainer::localReverse()
             {
               pyNode->setContainer(cont);
               SubjectNode* snode = GuiContext::getCurrent()->_mapOfSubjectNode[pyNode];
-              SubjectContainer *subcont = GuiContext::getCurrent()->_mapOfSubjectContainer[cont];
+              SubjectContainerBase *subcont = GuiContext::getCurrent()->_mapOfSubjectContainer[cont];
               snode->update(ASSOCIATE, 0, subcont);
               return true;
             }
@@ -3970,7 +4002,7 @@ bool CommandAssociateComponentToContainer::localExecute()
               YASSERT(GuiContext::getCurrent()->_mapOfSubjectComponent.count(compo));
               SubjectComponent *scomp =  GuiContext::getCurrent()->_mapOfSubjectComponent[compo];
               YASSERT(GuiContext::getCurrent()->_mapOfSubjectContainer.count(cont));
-              SubjectContainer *subcont =  GuiContext::getCurrent()->_mapOfSubjectContainer[cont];
+              SubjectContainerBase *subcont =  GuiContext::getCurrent()->_mapOfSubjectContainer[cont];
               scomp->addSubjectReference(subcont);
               if (scomp->_subRefContainer)
                 subcont->moveComponent(scomp->_subRefContainer);
@@ -4013,7 +4045,7 @@ bool CommandAssociateComponentToContainer::localReverse()
               YASSERT(GuiContext::getCurrent()->_mapOfSubjectComponent.count(compo));
               SubjectComponent *scomp =  GuiContext::getCurrent()->_mapOfSubjectComponent[compo];
               YASSERT(GuiContext::getCurrent()->_mapOfSubjectContainer.count(cont));
-              SubjectContainer *subcont =  GuiContext::getCurrent()->_mapOfSubjectContainer[cont];
+              SubjectContainerBase *subcont =  GuiContext::getCurrent()->_mapOfSubjectContainer[cont];
               scomp->addSubjectReference(subcont);
               if (scomp->_subRefContainer)
                 subcont->moveComponent(scomp->_subRefContainer);
@@ -4120,7 +4152,7 @@ bool CommandAssociateServiceToComponent::localReverse()
             {
               //component instance does not exist anymore recreate it
               ComponentInstance *oldcompo = service->getComponent();
-              compo = oldcompo->clone();
+              compo = oldcompo->cloneAlways();
               compo->setName(_oldInstance);
               proc->addComponentInstance(compo, _oldInstance);
               Container *cont = proc->containerMap[_oldcont];
@@ -4256,7 +4288,7 @@ bool CommandAddComponentFromCatalog::localReverse()
         throw YACS::Exception("Component instance with services attached, not removed");
       Container *cont = compo->getContainer();
       YASSERT(GuiContext::getCurrent()->_mapOfSubjectContainer.count(cont));
-      SubjectContainer *subcont = GuiContext::getCurrent()->_mapOfSubjectContainer[cont];
+      SubjectContainerBase *subcont = GuiContext::getCurrent()->_mapOfSubjectContainer[cont];
       subcont->detachComponent(subCompo);
       //remove componentInstance from proc, from context
       if (_createdInstance)

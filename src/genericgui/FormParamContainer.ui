@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>fm_paramcontainer</class>
+ <widget class="QWidget" name="fm_paramcontainer">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>420</width>
+    <height>602</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>350</width>
+    <height>0</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout_1">
+   <property name="margin">
+    <number>2</number>
+   </property>
+   <item row="0" column="0">
+    <widget class="QGroupBox" name="gb_basic">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="title">
+      <string>Parameters</string>
+     </property>
+     <layout class="QVBoxLayout" name="gridLayout_2">
+      <property name="margin">
+       <number>2</number>
+      </property>
+      <item>
+       <layout class="QHBoxLayout" name="gridLayout_2_0">
+        <property name="margin">
+         <number>2</number>
+        </property>
+        <item>
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>Name:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="le_name">
+          <property name="toolTip">
+           <string>identification of the container in schema</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="gridLayout_2_1">
+        <property name="margin">
+         <number>2</number>
+        </property>
+        <item>
+         <widget class="QLabel" name="label_4">
+          <property name="text">
+           <string>Resource:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="cb_resource">
+          <property name="toolTip">
+           <string>name of the resource hosting container when manually set</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="gridLayout_2_2">
+        <property name="margin">
+         <number>2</number>
+        </property>
+        <item>
+         <widget class="QLabel" name="label_15">
+          <property name="text">
+           <string>type:</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="gridLayout_2_3">
+        <property name="margin">
+         <number>2</number>
+        </property>
+        <item>
+         <widget class="QCheckBox" name="ch_advance">
+          <property name="text">
+           <string>Show Advanced parameters</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="ch_aoc">
+          <property name="text">
+           <string>Attached on cloning</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -91,7 +91,10 @@ namespace YACS
     protected:
       Node(const std::string& name);
       Node(const Node& other, ComposedNode *father);
+      //! performs a duplication of placement using clone method of containers and components. clone behaviour is driven by attachOnCloning attribute.
       virtual void performDuplicationOfPlacement(const Node& other) = 0;
+      //! performs a also duplication of placement but here containers and components are not copied at all whatever the value of attachedOnCloning.
+      virtual void performShallowDuplicationOfPlacement(const Node& other) = 0;
       virtual Node *simpleClone(ComposedNode *father, bool editionOnly=true) const = 0;
     public:
       virtual ~Node();
@@ -100,6 +103,8 @@ namespace YACS
       virtual void resetState(int level);
       //! \b This method \b MUST \b NEVER \b BE \b VIRTUAL
       Node *clone(ComposedNode *father, bool editionOnly=true) const;
+      //! \b This method \b MUST \b NEVER \b BE \b VIRTUAL
+      Node *cloneWithoutCompAndContDeepCpy(ComposedNode *father, bool editionOnly=true) const;
       void setState(YACS::StatesForNode theState); // To centralize state changes
       virtual YACS::StatesForNode getState() const { return _state; }
       virtual YACS::StatesForNode getEffectiveState() const;

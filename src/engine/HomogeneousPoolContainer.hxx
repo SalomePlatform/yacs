@@ -40,6 +40,7 @@ namespace YACS
       void attachOnCloning() const;
       void dettachOnCloning() const;
       bool isAttachedOnCloning() const;
+      void setAttachOnCloningStatus(bool val) const;
       //
       virtual void setSizeOfPool(int sz) = 0;
       virtual int getSizeOfPool() const = 0;

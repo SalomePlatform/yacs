@@ -37,6 +37,7 @@ namespace YACS
       ServiceNode(const std::string& name);
       ServiceNode(const ServiceNode& other, ComposedNode *father);
       void performDuplicationOfPlacement(const Node& other);
+      void performShallowDuplicationOfPlacement(const Node& other);
     public:
       virtual void load();
       virtual bool isDeployable() const;

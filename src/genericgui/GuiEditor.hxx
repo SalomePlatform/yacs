@@ -59,6 +59,7 @@ namespace YACS
       void CreateSwitch();
       void CreateOptimizerLoop();
       void CreateContainer();
+      void CreateHPContainer();
       void CreateComponentInstance();
 
       SubjectDataPort* CreateInputPort(SubjectElementaryNode* seNode,

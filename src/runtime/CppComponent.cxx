@@ -223,3 +223,7 @@ ComponentInstance* CppComponent::clone() const
     return new CppComponent(*this);
 }
 
+YACS::ENGINE::ComponentInstance *CppComponent::cloneAlways() const
+{
+  return new CppComponent(*this);
+}

@@ -44,6 +44,7 @@ namespace YACS
       virtual bool isLoaded(Task *askingNode) const;
       virtual ServiceNode* createNode(const std::string& name);
       virtual ComponentInstance* clone() const;
+      virtual ComponentInstance* cloneAlways() const;
       virtual std::string getFileRepr() const;
       virtual CORBA::Object_ptr getCompoPtr();
     public:

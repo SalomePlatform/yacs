@@ -22,6 +22,7 @@
 
 #include "yacsconfig.h"
 #include "EditionElementaryNode.hxx"
+#include "FormContainerDecorator.hxx"
 #include "FormComponent.hxx"
 #include <QRadioButton>
 
@@ -75,7 +76,7 @@ namespace YACS
       ComboBox* cb_container;
       QRadioButton* radiolocal;
       QRadioButton* radioremote;
-      FormContainer* formcontainer;
+      FormContainerDecorator* formcontainer;
     };
   }
 }

@@ -54,7 +54,7 @@ namespace YACS
     class SubjectOutputDataStreamPort;
     class SubjectLink;
     class SubjectControlLink;
-    class SubjectContainer;
+    class SubjectContainerBase;
     class SubjectComponent;
 
     typedef enum
@@ -527,19 +527,37 @@ namespace YACS
       std::string _inNode;
     };
 
-    class CommandAddContainer: public Command
+    class CommandAddContainerBase : public Command
     {
     public:
-      CommandAddContainer(std::string name,
-                          std::string refContainer ="");
-      SubjectContainer* getSubjectContainer() { return _subcont; };
+      CommandAddContainerBase(std::string name, std::string refContainer);
+      virtual ~CommandAddContainerBase();
+      SubjectContainerBase* getSubjectContainer() { return _subcont; }
     protected:
       virtual bool localExecute();
       virtual bool localReverse();
-      virtual std::string dump();
+      virtual YACS::ENGINE::Container *createNewInstance() const = 0;
       std::string _name;
       std::string _containerToClone;
-      SubjectContainer *_subcont;
+      SubjectContainerBase *_subcont;
+    };
+
+    class CommandAddContainer : public CommandAddContainerBase
+    {
+    public:
+      CommandAddContainer(std::string name, std::string refContainer ="");
+    protected:
+      std::string dump();
+      YACS::ENGINE::Container *createNewInstance() const;
+    };
+
+    class CommandAddHPContainer : public CommandAddContainerBase
+    {
+    public:
+      CommandAddHPContainer(std::string name, std::string refContainer ="");
+    protected:
+      std::string dump();
+      YACS::ENGINE::Container *createNewInstance() const;
     };
 
     class CommandSetContainerProperties: public Command

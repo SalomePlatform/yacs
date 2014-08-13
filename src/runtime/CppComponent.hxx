@@ -62,6 +62,7 @@ namespace YACS
         virtual bool isLoaded(Task *askingNode) const;
         virtual ServiceNode* createNode(const std::string& name);
         virtual YACS::ENGINE::ComponentInstance* clone() const;
+        virtual YACS::ENGINE::ComponentInstance* cloneAlways() const;
         
       protected:
   

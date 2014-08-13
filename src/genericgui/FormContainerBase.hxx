@@ -17,10 +17,12 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-#ifndef _FORMCONTAINER_HXX_
-#define _FORMCONTAINER_HXX_
+#ifndef _FORMCONTAINERBASE_HXX_
+#define _FORMCONTAINERBASE_HXX_
 
-#include "FormContainerBase.hxx"
+#include "ui_FormParamContainer.h"
+
+#include <QString>
 
 namespace YACS
 {
@@ -30,21 +32,29 @@ namespace YACS
   }
 }
 
-class QComboBox;
+class FormAdvParamContainer;
 
-class FormContainer : public FormContainerBase
+class FormContainerBase : public QWidget, public Ui::fm_paramcontainer
 {
   Q_OBJECT
+
 public:
-  FormContainer(QWidget *parent = 0);
-  virtual ~FormContainer();
+  FormContainerBase(QWidget *parent = 0);
+  virtual ~FormContainerBase();
   virtual void FillPanel(YACS::ENGINE::Container *container);
-  QString getTypeStr() const;
+  virtual void onModified();
+  virtual bool onApply();
+  virtual void onCancel();
+  virtual QString getTypeStr() const = 0;
 public slots:
-  void onModifyType(const QString &text);
-  void onModifyAOC(int val);
-private:
-  QComboBox *cb_type;
+  void on_ch_advance_stateChanged(int state);
+  void onModifyName(const QString &text);
+
+protected:
+  bool _advanced;
+  YACS::ENGINE::Container *_container;
+  std::map<std::string, std::string> _properties;
+  FormAdvParamContainer *_advancedParams;
 };
 
 #endif

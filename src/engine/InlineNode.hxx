@@ -65,6 +65,7 @@ namespace YACS
       virtual void setContainer(Container* container);
       virtual Container* getContainer();
       void performDuplicationOfPlacement(const Node& other);
+      void performShallowDuplicationOfPlacement(const Node& other);
       bool isDeployable() const;
     protected:
       std::string _script;

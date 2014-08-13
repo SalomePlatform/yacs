@@ -85,6 +85,11 @@ ComponentInstance* SalomePythonComponent::clone() const
     return new SalomePythonComponent(*this);
 }
 
+ComponentInstance *SalomePythonComponent::cloneAlways() const
+{
+  return new SalomePythonComponent(*this);
+}
+
 ServiceNode *SalomePythonComponent::createNode(const std::string &name)
 {
   ServiceNode* node=new SalomePythonNode(name);

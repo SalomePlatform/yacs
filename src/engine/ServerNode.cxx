@@ -31,14 +31,6 @@ ServerNode::ServerNode(const ServerNode& other, ComposedNode *father):InlineFunc
 {
 }
 
-void ServerNode::performDuplicationOfPlacement(const Node& other)
-{
-  const ServerNode &otherC=*(dynamic_cast<const ServerNode *>(&other));
-  //if other has no container don't clone: this will not have one
-  if(otherC._container)
-    _container=otherC._container->clone();
-}
-
 void ServerNode::load()
 {
   if(_container)

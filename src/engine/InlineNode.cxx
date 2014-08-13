@@ -117,6 +117,17 @@ void InlineNode::performDuplicationOfPlacement(const Node& other)
     _container=otherC._container->clone();
 }
 
+void InlineNode::performShallowDuplicationOfPlacement(const Node& other)
+{
+  const InlineNode &otherC=*(dynamic_cast<const InlineNode *>(&other));
+  //if other has no container don't clone: this will not have one
+  if(otherC._container)
+    {
+      _container=otherC._container;
+      _container->incrRef();
+    }
+}
+
 bool InlineNode::isDeployable() const
 {
   if(_mode=="remote")

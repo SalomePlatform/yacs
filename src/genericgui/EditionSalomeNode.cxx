@@ -45,22 +45,23 @@ EditionSalomeNode::EditionSalomeNode(Subject* subject,
                                      const char* name)
   : EditionElementaryNode(subject, parent, name)
 {
-
+  //   SubjectServiceNode *ssn = dynamic_cast<SubjectServiceNode*>(_subject);
+  //   YASSERT(ssn);
+  _servNode = dynamic_cast<YACS::ENGINE::ServiceNode*>(_subElemNode->getNode());
+  YASSERT(_servNode);
   // --- create property editor panel
   _propeditor=new PropertyEditor(_subject);
   _wid->gridLayout1->addWidget(_propeditor);
 
   // --- create container and component panels
 
-  _wContainer = new FormContainer(this);
+  _wContainer = new FormContainerDecorator(_servNode->getContainer(),this);
   _wid->gridLayout1->addWidget(_wContainer);
 
-  connect(_wContainer->cb_resource, SIGNAL(mousePressed()),
-          this, SLOT(fillContainerPanel()));
-  connect(_wContainer->cb_resource, SIGNAL(activated(int)),
-          this, SLOT(changeHost(int)));
-  connect(_wContainer->tb_container, SIGNAL(toggled(bool)),
-          this, SLOT(fillContainerPanel())); // --- to update display of current selection
+  connect(_wContainer, SIGNAL(resourceMousePressed()), this, SLOT(fillContainerPanel()));
+  connect(_wContainer, SIGNAL(resourceActivated(int)), this, SLOT(changeHost(int)));
+  connect(_wContainer, SIGNAL(containerToggled(bool)), this, SLOT(fillContainerPanel()));
+  // --- to update display of current selection
 
   _wComponent = new FormComponent(this);
   _wid->gridLayout1->addWidget(_wComponent);
@@ -89,11 +90,7 @@ EditionSalomeNode::EditionSalomeNode(Subject* subject,
   _hbl_method->addWidget(_le_method);
   _wid->gridLayout1->addLayout(_hbl_method, _wid->gridLayout1->rowCount(), 0, 1, 1);
   _la_method->setText("Method:");
-//   SubjectServiceNode *ssn = dynamic_cast<SubjectServiceNode*>(_subject);
-//   YASSERT(ssn);
-  _servNode =
-    dynamic_cast<YACS::ENGINE::ServiceNode*>(_subElemNode->getNode());
-  YASSERT(_servNode);
+
   _le_method->setText((_servNode->getMethod()).c_str());
   _le_method->setReadOnly(true);
 
@@ -141,7 +138,7 @@ void EditionSalomeNode::update(GuiEvent event, int type, Subject* son)
 void EditionSalomeNode::synchronize()
 {
   EditionElementaryNode::synchronize();
-  _wContainer->tb_container->setChecked(FormContainer::_checked);
+  _wContainer->synchronizeCheckContainer();
   _wComponent->tb_component->setChecked(FormComponent::_checked);
   fillComponentPanel();
   fillContainerPanel();
@@ -235,18 +232,17 @@ void EditionSalomeNode::changeContainer(int index)
       return;
     }
   YASSERT(GuiContext::getCurrent()->_mapOfSubjectContainer.count(newContainer));
-  SubjectContainer *scnt = GuiContext::getCurrent()->_mapOfSubjectContainer[newContainer];
+  SubjectContainerBase *scnt(GuiContext::getCurrent()->_mapOfSubjectContainer[newContainer]);
 
-  SubjectServiceNode *ssn = dynamic_cast<SubjectServiceNode*>(_subject);
-  SubjectComponent *sco =
-    dynamic_cast<SubjectComponent*>(ssn->getSubjectReference()->getReference());
+  SubjectServiceNode *ssn(dynamic_cast<SubjectServiceNode*>(_subject));
+  SubjectComponent *sco(dynamic_cast<SubjectComponent*>(ssn->getSubjectReference()->getReference()));
   YASSERT(sco);
   sco->associateToContainer(scnt);
 }
 
 void EditionSalomeNode::changeHost(int index)
 {
-  string hostName = _wContainer->cb_resource->itemText(index).toStdString();
+  string hostName = _wContainer->getHostName(index);
   DEBTRACE(hostName);
 }
 

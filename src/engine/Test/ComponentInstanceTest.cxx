@@ -74,6 +74,11 @@ ComponentInstance *ComponentInstanceTest1::clone() const
     return new ComponentInstanceTest1(*this);
 }
 
+ComponentInstance *ComponentInstanceTest1::cloneAlways() const
+{
+  return new ComponentInstanceTest1(*this);
+}
+
 ComponentInstanceTest2::ComponentInstanceTest2(const ComponentInstanceTest2& other):ComponentInstance(other),_loaded(false)
 {
 }
@@ -123,4 +128,9 @@ ComponentInstance *ComponentInstanceTest2::clone() const
     }
   else
     return new ComponentInstanceTest2(*this);
+}
+
+ComponentInstance *ComponentInstanceTest2::cloneAlways() const
+{
+  return new ComponentInstanceTest2(*this);
 }

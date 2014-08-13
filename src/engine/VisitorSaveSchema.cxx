@@ -701,10 +701,15 @@ void VisitorSaveSchema::writeContainers(Proc *proc)
       string name = it->first;
       _out << indent(depth) << "<container name=\"" << name << "\">" << endl;
       _out << indent(depth+1) << "<property name=\"" << Container::KIND_ENTRY << "\" value=\"" << it->second->getKind() << "\"/>" << endl;
+      _out << indent(depth+1) << "<property name=\"" << Container::AOC_ENTRY << "\" value=\"" << (int)it->second->isAttachedOnCloning() << "\"/>" << endl;
       map<string, string> properties = (it->second)->getProperties();
       map<string, string>::iterator itm;
       for(itm = properties.begin(); itm != properties.end(); ++itm)
         {
+          if((*itm).first==Container::KIND_ENTRY)
+            continue;
+          if((*itm).first==Container::AOC_ENTRY)
+            continue;
           if((*itm).first!=HomogeneousPoolContainer::INITIALIZE_SCRIPT_KEY)
             {
               _out << indent(depth+1) << "<property name=\"" << (*itm).first << "\" value=\"" << (*itm).second << "\"/>" << endl;

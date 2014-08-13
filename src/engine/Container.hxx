@@ -54,6 +54,7 @@ namespace YACS
       virtual std::string getPlacementId(const Task *askingNode) const = 0;
       virtual std::string getFullPlacementId(const Task *askingNode) const = 0;
       //Edition only methods
+      virtual void setAttachOnCloningStatus(bool val) const;
       virtual void attachOnCloning() const;
       virtual void dettachOnCloning() const;
       virtual bool isAttachedOnCloning() const;
@@ -78,6 +79,7 @@ namespace YACS
       Proc* getProc() { return _proc; }
       virtual void shutdown(int level) = 0;
       static const char KIND_ENTRY[];
+      static const char AOC_ENTRY[];
     protected:
       std::string _name;
       mutable bool _isAttachedOnCloning;

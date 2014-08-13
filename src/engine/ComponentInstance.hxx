@@ -62,6 +62,7 @@ namespace YACS
       virtual std::string getFileRepr() const;
       virtual ServiceNode* createNode(const std::string& name)=0;
       virtual ComponentInstance *clone() const = 0;
+      virtual ComponentInstance *cloneAlways() const = 0;
       virtual std::string getKind() const;
       virtual std::string getKindForNode() const;
       static const char KIND[];

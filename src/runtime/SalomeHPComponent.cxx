@@ -128,6 +128,11 @@ ComponentInstance* SalomeHPComponent::clone() const
     return new SalomeHPComponent(*this);
 }
 
+ComponentInstance *SalomeHPComponent::cloneAlways() const
+{
+  return new SalomeHPComponent(*this);
+}
+
 std::string SalomeHPComponent::getFileRepr() const
 {
   ostringstream stream;

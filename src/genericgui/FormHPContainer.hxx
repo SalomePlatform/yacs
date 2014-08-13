@@ -17,8 +17,8 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-#ifndef _FORMCONTAINER_HXX_
-#define _FORMCONTAINER_HXX_
+#ifndef _FORMHPCONTAINER_HXX_
+#define _FORMHPCONTAINER_HXX_
 
 #include "FormContainerBase.hxx"
 
@@ -30,21 +30,37 @@ namespace YACS
   }
 }
 
-class QComboBox;
+#if HAS_QSCI4>0
+class QsciScintilla;
+#endif
 
-class FormContainer : public FormContainerBase
+class QTextEdit;
+class QLineEdit;
+
+class FormHPContainer : public FormContainerBase
 {
   Q_OBJECT
+
 public:
-  FormContainer(QWidget *parent = 0);
-  virtual ~FormContainer();
-  virtual void FillPanel(YACS::ENGINE::Container *container);
+  FormHPContainer(QWidget *parent = 0);
+  virtual ~FormHPContainer();
+  void FillPanel(YACS::ENGINE::Container *container);
   QString getTypeStr() const;
+  bool onApply();
 public slots:
-  void onModifyType(const QString &text);
-  void onModifyAOC(int val);
+  void onModifySzOfPool(const QString& newSz);
+  void initSciptChanged();
+public:
+  static std::string BuildWithFinalEndLine(const std::string& script);
 private:
-  QComboBox *cb_type;
+  QLineEdit *_poolSz;
+#if HAS_QSCI4>0
+  QsciScintilla* _initScript;
+#else
+  QTextEdit* _initScript;
+#endif
+  bool _initScriptModified;
+  bool _initScriptLoaded;
 };
 
 #endif

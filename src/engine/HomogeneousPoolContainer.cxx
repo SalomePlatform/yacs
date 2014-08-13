@@ -31,6 +31,15 @@ void HomogeneousPoolContainer::attachOnCloning() const
   _isAttachedOnCloning=true;
 }
 
+void HomogeneousPoolContainer::setAttachOnCloningStatus(bool val) const
+{
+  _isAttachedOnCloning=true;
+  if(val)
+    return ;
+  else
+    throw Exception("An HomogeneousPoolContainer cannot be detached on cloning #2 !");
+}
+
 void HomogeneousPoolContainer::dettachOnCloning() const
 {
   _isAttachedOnCloning=true;

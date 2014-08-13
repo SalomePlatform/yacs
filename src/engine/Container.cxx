@@ -30,6 +30,8 @@ using namespace YACS::ENGINE;
 
 const char Container::KIND_ENTRY[]="container_kind";
 
+const char Container::AOC_ENTRY[]="attached_on_cloning";
+
 Container::Container():_isAttachedOnCloning(false),_proc(0)
 {
 }
@@ -43,6 +45,15 @@ std::string Container::getDiscreminantStrOfThis(const Task *askingNode) const
   const void *ptr(this);
   std::ostringstream oss; oss << ptr;
   return oss.str();
+}
+
+/*!
+ * If \a val is equal to true the current container 'this' is not destined to be deeply copied on clone call.
+ * If \a val is equal to false the current container 'this' is destined to be deeply copied on clone call.
+ */
+void Container::setAttachOnCloningStatus(bool val) const
+{
+  _isAttachedOnCloning=val;
 }
 
 /*!

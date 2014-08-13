@@ -54,6 +54,8 @@ using namespace std;
 
 const char SalomeContainer::KIND[]="Salome";
 
+const char SalomeContainer::TYPE_PROPERTY_STR[]="type";
+
 SalomeContainer::SalomeContainer():_launchModeType(new SalomeContainerMonoHelper),_shutdownLevel(999)
 {
 }
@@ -118,7 +120,14 @@ void SalomeContainer::checkCapabilityToDealWith(const ComponentInstance *inst) c
 
 void SalomeContainer::setProperty(const std::string& name, const std::string& value)
 {
-  if (name == "type")
+  if (name == AOC_ENTRY)
+    {
+      std::istringstream iss(value);
+      int val;
+      iss >> val;
+      setAttachOnCloningStatus((bool)val);
+    }
+  else if (name == TYPE_PROPERTY_STR)
     {
       if (value == SalomeContainerMonoHelper::TYPE_NAME)
         {
@@ -132,13 +141,20 @@ void SalomeContainer::setProperty(const std::string& name, const std::string& va
         }
       else
         throw Exception("SalomeContainer::setProperty : type value is not correct (mono or multi): " + value);
-      return ;
     }
   _sct.setProperty(name,value);
 }
 
 std::string SalomeContainer::getProperty(const std::string& name) const
 {
+  if (name == TYPE_PROPERTY_STR)
+    return _launchModeType->getType();
+  if (name==AOC_ENTRY)
+    {
+      int reti(_isAttachedOnCloning);
+      std::ostringstream oss; oss << reti;
+      return oss.str();
+    }
   return _sct.getProperty(name);
 }
 

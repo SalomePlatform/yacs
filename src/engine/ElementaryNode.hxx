@@ -56,6 +56,7 @@ namespace YACS
       ElementaryNode(const std::string& name);
       ElementaryNode(const ElementaryNode& other, ComposedNode *father);
       void performDuplicationOfPlacement(const Node& other);
+      void performShallowDuplicationOfPlacement(const Node& other);
     public:
       virtual ~ElementaryNode();
       void exUpdateState();

@@ -187,6 +187,11 @@ ComponentInstance* CORBAComponent::clone() const
   //return new CORBAComponent(*this);
 }
 
+ComponentInstance* CORBAComponent::cloneAlways() const
+{
+  return new CORBAComponent(*this);
+}
+
 std::string CORBAComponent::getFileRepr() const
 {
   ostringstream stream;
