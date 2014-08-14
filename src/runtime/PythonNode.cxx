@@ -612,6 +612,14 @@ Engines::PyNodeBase_var PythonNode::retrieveDftRemotePyInterpretorIfAny(Engines:
 
 void PythonNode::assignRemotePyInterpretor(Engines::PyNodeBase_var remoteInterp)
 {
+  if(!CORBA::is_nil(_pynode))
+    {
+      Engines::PyScriptNode_var tmpp(Engines::PyScriptNode::_narrow(remoteInterp));
+      if(_pynode->_is_equivalent(tmpp))
+        return ;
+    }
+  if(!CORBA::is_nil(_pynode))
+    _pynode->UnRegister();
   _pynode=Engines::PyScriptNode::_narrow(remoteInterp);
 }
 
@@ -1064,6 +1072,14 @@ Engines::PyNodeBase_var PyFuncNode::retrieveDftRemotePyInterpretorIfAny(Engines:
 
 void PyFuncNode::assignRemotePyInterpretor(Engines::PyNodeBase_var remoteInterp)
 {
+  if(!CORBA::is_nil(_pynode))
+    {
+      Engines::PyNode_var tmpp(Engines::PyNode::_narrow(remoteInterp));
+      if(_pynode->_is_equivalent(tmpp))
+        return ;
+    }
+  if(!CORBA::is_nil(_pynode))
+    _pynode->UnRegister();
   _pynode=Engines::PyNode::_narrow(remoteInterp);
 }
 

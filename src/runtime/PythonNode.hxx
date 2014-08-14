@@ -38,7 +38,9 @@ namespace YACS
       PythonEntry();
       ~PythonEntry();
       virtual void assignRemotePyInterpretor(Engines::PyNodeBase_var remoteInterp) = 0;
+      //! returns (if any) an object, you have to deal with (UnRegister)
       virtual Engines::PyNodeBase_var retrieveDftRemotePyInterpretorIfAny(Engines::Container_ptr objContainer) const = 0;
+      //! returns an object, you have to deal with (UnRegister)
       virtual void createRemoteAdaptedPyInterpretor(Engines::Container_ptr objContainer) = 0;
       virtual Engines::PyNodeBase_var getRemoteInterpreterHandle() = 0;
       virtual const char *getSerializationScript() const = 0;
