@@ -75,8 +75,8 @@ PythonEntry::~PythonEntry()
 {
   AutoGIL agil;
   DEBTRACE( "_context refcnt: " << _context->ob_refcnt );
-  Py_XDECREF(_pyfuncUnser);
-  Py_XDECREF(_pyfuncSer);
+  // not Py_XDECREF of _pyfuncUnser because it is returned by PyDict_GetItem -> borrowed
+  // not Py_XDECREF of _pyfuncSer because it is returned by PyDict_GetItem -> borrowed
   Py_XDECREF(_context);
 }
 

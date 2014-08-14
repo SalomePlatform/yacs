@@ -31,7 +31,7 @@ class StdAloneYacsLoaderTest1(unittest.TestCase):
     pass
 
   def test1(self):
-    """tests imbrication od"""
+    """tests imbrication of foreach loop."""
     SALOMERuntime.RuntimeSALOME_setRuntime()
     l=loader.YACSLoader()
     ex=pilot.ExecutorSwig()
