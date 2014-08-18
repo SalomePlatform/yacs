@@ -68,3 +68,18 @@ in the toolbar :ref:`edition_toolbar`. To force links computation, use the **com
 The user can change the links representation with the options **simplify links** which tries to make the links as direct as possible with
 a slight CPU cost and **separate links** which tries to avoid links superposition with again a CPU cost.
 
+.. _shrink_expand_nodes:
+
+Shrink/Expand nodes
+-------------------
+This functionality allows folding/unfolding any node(s) in order to decrease the schema size. 
+It can be useful if user deals with a large schema that contains a lot of number of nodes.
+
+There are 3 possible ways to make the schema more compact:
+
++ call **shrink/expand** context menu or **double mouse click** on any node to fold/unfold this node;
+
++ call **shrink/expand children** context menu or  **Ctrl + double mouse click** on any composed node to fold/unfold all direct children nodes of selected node;
+
++ call **shrink/expand elementary** context menu or  **Ctrl + Shift + double mouse click** on any composed node to fold/unfold all elementary nodes of selected node recursively.
+
