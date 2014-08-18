@@ -308,7 +308,7 @@ T whilelooptypeParser<T>::post()
       T b=this->_cnode;
       this->_cnodes.pop_back();
       currentProc->names.pop_back();
-      this->_cnode=this->_cnodes.back();
+      this->_cnode=this->_cnodes.empty() ? 0 : this->_cnodes.back();
       return b;
     }
 }
@@ -374,7 +374,7 @@ template <class T>
       T b=this->_cnode;
       this->_cnodes.pop_back();
       currentProc->names.pop_back();
-      this->_cnode=this->_cnodes.back();
+      this->_cnode=this->_cnodes.empty() ? 0 : this->_cnodes.back();
       return b;
     }
 
@@ -414,10 +414,7 @@ struct pseudocomposednodetypeParser:looptypeParser<T>
       DEBTRACE("pseudocomposednode_post" << this->_cnode->getNode()->getName())
       T b = this->_cnode;
       this->_cnodes.pop_back();
-      if(this->_cnodes.size() == 0)
-        this->_cnode = 0;
-      else
-        this->_cnode = this->_cnodes.back();
+      this->_cnode=this->_cnodes.empty() ? 0 : this->_cnodes.back();
       return b;
     }
 
@@ -558,10 +555,7 @@ struct foreachlooptypeParser:dynparalooptypeParser<T>
       T b=this->_cnode;
       this->_cnodes.pop_back();
       currentProc->names.pop_back();
-      if(this->_cnodes.size() == 0)
-        this->_cnode=0;
-      else
-        this->_cnode=this->_cnodes.back();
+      this->_cnode=this->_cnodes.empty() ? 0 : this->_cnodes.back();
       return b;
     }
   int _nbranch;
@@ -641,10 +635,7 @@ struct optimizerlooptypeParser:dynparalooptypeParser<T>
       T b=this->_cnode;
       this->_cnodes.pop_back();
       currentProc->names.pop_back();
-      if(this->_cnodes.size() == 0)
-        this->_cnode=0;
-      else
-        this->_cnode=this->_cnodes.back();
+      this->_cnode=this->_cnodes.empty() ? 0 : this->_cnodes.back();
       return b;
     }
 
