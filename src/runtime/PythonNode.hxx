@@ -46,6 +46,8 @@ namespace YACS
       virtual const char *getSerializationScript() const = 0;
       //
       void commonRemoteLoad(InlineNode *reqNode);
+      void commonRemoteLoadPart1(InlineNode *reqNode);
+      Engines::Container_var commonRemoteLoadPart2(InlineNode *reqNode, bool& isInitializeRequested);
     protected:
       PyObject *_context;
       PyObject *_pyfuncSer;

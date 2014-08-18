@@ -80,7 +80,7 @@ PythonEntry::~PythonEntry()
   Py_XDECREF(_context);
 }
 
-void PythonEntry::commonRemoteLoad(InlineNode *reqNode)
+void PythonEntry::commonRemoteLoadPart1(InlineNode *reqNode)
 {
   DEBTRACE( "---------------PythonEntry::CommonRemoteLoad function---------------" );
   Container *container(reqNode->getContainer());
@@ -108,6 +108,11 @@ void PythonEntry::commonRemoteLoad(InlineNode *reqNode)
       reqNode->setErrorDetails(what);
       throw Exception(what);
     }
+}
+
+Engines::Container_var PythonEntry::commonRemoteLoadPart2(InlineNode *reqNode, bool& isInitializeRequested)
+{
+  Container *container(reqNode->getContainer());
   Engines::Container_var objContainer=Engines::Container::_nil();
   if(!container)
     throw Exception("No container specified !");
@@ -124,7 +129,7 @@ void PythonEntry::commonRemoteLoad(InlineNode *reqNode)
     throw Exception("Unrecognized type of container ! Salome one is expected for PythonNode/PyFuncNode !");
   if(CORBA::is_nil(objContainer))
     throw Exception("Container corba pointer is NULL for PythonNode !");
-  bool isInitializeRequested(false);
+  isInitializeRequested=false;
   try
   {
       if(containerCast0)
@@ -154,65 +159,75 @@ void PythonEntry::commonRemoteLoad(InlineNode *reqNode)
   Engines::PyNodeBase_var pynode(getRemoteInterpreterHandle());
   if(CORBA::is_nil(pynode))
     throw Exception("In PythonNode the ref in NULL ! ");
+  return objContainer;
+}
+
+void PythonEntry::commonRemoteLoad(InlineNode *reqNode)
+{
+  commonRemoteLoadPart1(reqNode);
+  Container *container(reqNode->getContainer());
+  bool isInitializeRequested;
+  Engines::Container_var objContainer(commonRemoteLoadPart2(reqNode,isInitializeRequested));
+  Engines::PyNodeBase_var pynode(getRemoteInterpreterHandle());
   ///
   {
-      AutoGIL agil;
-      const char *picklizeScript(getSerializationScript());
-      PyObject *res=PyRun_String(picklizeScript,Py_file_input,_context,_context);
-      if(res == NULL)
+    AutoGIL agil;
+    const char *picklizeScript(getSerializationScript());
+    PyObject *res=PyRun_String(picklizeScript,Py_file_input,_context,_context);
+    if(res == NULL)
+      {
+        std::string errorDetails;
+        PyObject* new_stderr = newPyStdOut(errorDetails);
+        reqNode->setErrorDetails(errorDetails);
+        PySys_SetObject((char*)"stderr", new_stderr);
+        PyErr_Print();
+        PySys_SetObject((char*)"stderr", PySys_GetObject((char*)"__stderr__"));
+        Py_DECREF(new_stderr);
+        throw Exception("Error during load");
+      }
+    Py_DECREF(res);
+    _pyfuncSer=PyDict_GetItemString(_context,"pickleForDistPyth2009");
+    _pyfuncUnser=PyDict_GetItemString(_context,"unPickleForDistPyth2009");
+    if(_pyfuncSer == NULL)
+      {
+        std::string errorDetails;
+        PyObject *new_stderr(newPyStdOut(errorDetails));
+        reqNode->setErrorDetails(errorDetails);
+        PySys_SetObject((char*)"stderr", new_stderr);
+        PyErr_Print();
+        PySys_SetObject((char*)"stderr", PySys_GetObject((char*)"__stderr__"));
+        Py_DECREF(new_stderr);
+        throw Exception("Error during load");
+      }
+    if(_pyfuncUnser == NULL)
+      {
+        std::string errorDetails;
+        PyObject *new_stderr(newPyStdOut(errorDetails));
+        reqNode->setErrorDetails(errorDetails);
+        PySys_SetObject((char*)"stderr", new_stderr);
+        PyErr_Print();
+        PySys_SetObject((char*)"stderr", PySys_GetObject((char*)"__stderr__"));
+        Py_DECREF(new_stderr);
+        throw Exception("Error during load");
+      }
+    if(isInitializeRequested)
+      {//This one is called only once at initialization in the container if an init-script is specified.
+        try
         {
-          std::string errorDetails;
-          PyObject* new_stderr = newPyStdOut(errorDetails);
-          reqNode->setErrorDetails(errorDetails);
-          PySys_SetObject((char*)"stderr", new_stderr);
-          PyErr_Print();
-          PySys_SetObject((char*)"stderr", PySys_GetObject((char*)"__stderr__"));
-          Py_DECREF(new_stderr);
-          throw Exception("Error during load");
+            std::string zeInitScriptKey(container->getProperty(HomogeneousPoolContainer::INITIALIZE_SCRIPT_KEY));
+            if(!zeInitScriptKey.empty())
+              pynode->executeAnotherPieceOfCode(zeInitScriptKey.c_str());
         }
-      Py_DECREF(res);
-      _pyfuncSer=PyDict_GetItemString(_context,"pickleForDistPyth2009");
-      _pyfuncUnser=PyDict_GetItemString(_context,"unPickleForDistPyth2009");
-      if(_pyfuncSer == NULL)
+        catch( const SALOME::SALOME_Exception& ex )
         {
-          std::string errorDetails;
-          PyObject *new_stderr(newPyStdOut(errorDetails));
-          reqNode->setErrorDetails(errorDetails);
-          PySys_SetObject((char*)"stderr", new_stderr);
-          PyErr_Print();
-          PySys_SetObject((char*)"stderr", PySys_GetObject((char*)"__stderr__"));
-          Py_DECREF(new_stderr);
-          throw Exception("Error during load");
+            std::string msg="Exception on PythonNode::loadRemote python invocation of initializisation py script !";
+            msg += '\n';
+            msg += ex.details.text.in();
+            reqNode->setErrorDetails(msg);
+            throw Exception(msg);
         }
-      if(_pyfuncUnser == NULL)
-        {
-          std::string errorDetails;
-          PyObject *new_stderr(newPyStdOut(errorDetails));
-          reqNode->setErrorDetails(errorDetails);
-          PySys_SetObject((char*)"stderr", new_stderr);
-          PyErr_Print();
-          PySys_SetObject((char*)"stderr", PySys_GetObject((char*)"__stderr__"));
-          Py_DECREF(new_stderr);
-          throw Exception("Error during load");
-        }
-      if(isInitializeRequested)
-        {//This one is called only once at initialization in the container if an init-script is specified.
-          try
-          {
-              std::string zeInitScriptKey(container->getProperty(HomogeneousPoolContainer::INITIALIZE_SCRIPT_KEY));
-              if(!zeInitScriptKey.empty())
-                pynode->executeAnotherPieceOfCode(zeInitScriptKey.c_str());
-          }
-          catch( const SALOME::SALOME_Exception& ex )
-          {
-              std::string msg="Exception on PythonNode::loadRemote python invocation of initializisation py script !";
-              msg += '\n';
-              msg += ex.details.text.in();
-              reqNode->setErrorDetails(msg);
-              throw Exception(msg);
-          }
-        }
-      DEBTRACE( "---------------End PyNode::loadRemote function---------------" );
+      }
+    DEBTRACE( "---------------End PyNode::loadRemote function---------------" );
   }
 }
 
@@ -312,6 +327,14 @@ void PythonNode::executeRemote()
   DEBTRACE( "++++++++++++++ PyNode::executeRemote: " << getName() << " ++++++++++++++++++++" );
   if(!_pyfuncSer)
     throw Exception("DistributedPythonNode badly loaded");
+
+  //
+  if(dynamic_cast<HomogeneousPoolContainer *>(getContainer()))
+    {
+      bool dummy;
+      commonRemoteLoadPart2(this,dummy);
+    }
+  //
   Engines::pickledArgs_var serializationInputCorba(new Engines::pickledArgs);
   {
       AutoGIL agil;
@@ -818,6 +841,13 @@ void PyFuncNode::executeRemote()
   DEBTRACE( "++++++++++++++ PyFuncNode::executeRemote: " << getName() << " ++++++++++++++++++++" );
   if(!_pyfuncSer)
     throw Exception("DistributedPythonNode badly loaded");
+  //
+  if(dynamic_cast<HomogeneousPoolContainer *>(getContainer()))
+    {
+      bool dummy;
+      commonRemoteLoadPart2(this,dummy);
+    }
+  //
   Engines::pickledArgs_var serializationInputCorba(new Engines::pickledArgs);;
   {
       AutoGIL agil;
