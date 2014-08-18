@@ -161,6 +161,8 @@ namespace YACS
       QAction *_zoomToBlocAct;
       QAction *_centerOnNodeAct;
       QAction *_shrinkExpand;
+      QAction *_shrinkExpandChildren;
+      QAction *_shrinkExpandElementaryRecursively;
 
       QAction *_toggleStraightLinksAct;
       QAction *_toggleAutomaticComputeLinkAct;
@@ -300,6 +302,8 @@ namespace YACS
       void onZoomToBloc();
       void onCenterOnNode();
       void onShrinkExpand();
+      void onShrinkExpandChildren();
+      void onShrinkExpandElementaryRecursively();
       void onToggleStraightLinks(bool checked);
       void onToggleAutomaticComputeLinks(bool checked);
       void onToggleSimplifyLinks(bool checked);

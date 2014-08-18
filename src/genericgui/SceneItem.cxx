@@ -436,7 +436,7 @@ void SceneItem::shrinkExpandLink(bool se)
 }
 
 
-void SceneItem::shrinkExpandRecursive(bool isExpanding, bool fromHere)
+void SceneItem::shrinkExpandRecursive(bool isExpanding, bool fromHere, ShrinkMode theShrinkMode)
 {
 }
 

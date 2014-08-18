@@ -179,7 +179,7 @@ void SceneNodeItem::arrangeChildNodes()
 {
 }
 
-void SceneNodeItem::reorganizeShrinkExpand()
+void SceneNodeItem::reorganizeShrinkExpand(ShrinkMode theShrinkMode)
 {
 }
 
@@ -310,7 +310,7 @@ void SceneNodeItem::mouseMoveEvent(QGraphicsSceneMouseEvent * event)
 void SceneNodeItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 {
   DEBTRACE("SceneNodeItem::mouseDoubleClickEvent");
-  QtGuiContext::getQtCurrent()->getGMain()->_guiEditor->shrinkExpand();
+  QtGuiContext::getQtCurrent()->getGMain()->_guiEditor->shrinkExpand(QApplication::keyboardModifiers());
 }
 
 void SceneNodeItem::setTopLeft(QPointF topLeft)

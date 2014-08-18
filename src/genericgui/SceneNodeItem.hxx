@@ -72,7 +72,7 @@ namespace YACS
       virtual void updateName();
       virtual void arrangeNodes(bool isRecursive);
       virtual void arrangeChildNodes();
-      virtual void reorganizeShrinkExpand();
+      virtual void reorganizeShrinkExpand(ShrinkMode theShrinkMode);
       virtual void updateChildItems();
       virtual void shrinkExpandLink(bool se);
       virtual void showOutScopeLinks();

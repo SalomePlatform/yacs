@@ -594,8 +594,24 @@
         <translation>contracter ou étendre le noeud choisi</translation>
     </message>
     <message>
+        <source>shrink or expand direct children of the selected node</source>
+        <translation type="unfinished">contracter ou étendre le noeud choisi</translation>
+    </message>
+    <message>
+        <source>shrink or expand elementary nodes of the selected node recursively</source>
+        <translation type="unfinished">contracter ou étendre le noeud choisi</translation>
+    </message>
+    <message>
         <source>shrink/expand</source>
         <translation>contracter/étendre</translation>
+    </message>
+    <message>
+        <source>shrink/expand children</source>
+        <translation type="unfinished">contracter/étendre</translation>
+    </message>
+    <message>
+        <source>shrink/expand elementary</source>
+        <translation type="unfinished">contracter/étendre</translation>
     </message>
     <message>
         <source>draw straight or orthogonal links</source>

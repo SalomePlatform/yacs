@@ -33,7 +33,6 @@ namespace YACS
                     QString label, Subject *subject);
       virtual ~SceneProcItem();
       virtual void popupMenu(QWidget *caller, const QPoint &globalPos);
-      virtual void reorganizeShrinkExpand();
     };
   }
 }

@@ -187,10 +187,12 @@ void SceneElementaryNodeItem::popupMenu(QWidget *caller, const QPoint &globalPos
   m.popupMenu(caller, globalPos);
 }
 
-void SceneElementaryNodeItem::reorganizeShrinkExpand()
+void SceneElementaryNodeItem::reorganizeShrinkExpand(ShrinkMode theShrinkMode)
 {
   DEBTRACE("SceneElementaryNodeItem::reorganizeShrinkExpand " << isExpanded() << " "  << _label.toStdString());
-  shrinkExpandRecursive(isExpanded(), true);
+  if (theShrinkMode != CurrentNode)
+    return;
+  shrinkExpandRecursive(!isExpanded(), true, theShrinkMode);
   if (Scene::_autoComputeLinks)
     {
       SubjectProc* subproc = QtGuiContext::getQtCurrent()->getSubjectProc();
@@ -200,30 +202,48 @@ void SceneElementaryNodeItem::reorganizeShrinkExpand()
     }
 }
 
-void SceneElementaryNodeItem::shrinkExpandRecursive(bool isExpanding, bool fromHere)
+void SceneElementaryNodeItem::shrinkExpandRecursive(bool toExpand, bool fromHere, ShrinkMode theShrinkMode)
 {
-  DEBTRACE("SceneElementaryNodeItem::shrinkExpandRecursive " << isExpanding << " " << fromHere << " "  << isExpanded() << " " << _label.toStdString());
-  if (isExpanding)
-    {
+  DEBTRACE("SceneElementaryNodeItem::shrinkExpandRecursive " << toExpand << " " << fromHere << " "  << isExpanded() << " " << _label.toStdString());
+  
+  bool toChangeShrinkState = false;
+  switch (theShrinkMode) {
+  case CurrentNode:
+    if (fromHere)
+      toChangeShrinkState = true;
+    break;
+  case ChildrenNodes:
+    if (fromHere)
+      toChangeShrinkState = true;
+    break;
+  case ElementaryNodes:
+    toChangeShrinkState = true;
+    break;
+  }
+  if (toChangeShrinkState && toExpand != isExpanded())
+    setExpanded(toExpand);
+
+  if (toExpand) {
+    if (toChangeShrinkState) {
       _ancestorShrinked = false;
+      _shownState = expandShown;
+    } else {
       if (isExpanded())
         _shownState = expandShown;
       else
         _shownState = shrinkShown;
     }
-  else
-    {
-      if (fromHere)
-        _shownState = shrinkShown;
-      else
-        {
-          _ancestorShrinked = true;
-          _shownState = shrinkHidden;
-        }
+  } else {
+    if (fromHere || theShrinkMode==ElementaryNodes) {
+      _shownState = shrinkShown;
+    } else {
+      _ancestorShrinked = true;
+      _shownState = shrinkHidden;
     }
+  }
 
   if (_shownState == shrinkHidden) // shrink of ancestor
-    setPos(0 ,0);
+    setPos(0, 0);
   else
     setPos(_expandedPos);
 

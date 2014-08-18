@@ -460,6 +460,14 @@ void GenericGui::createActions()
                                             tr("shrink/expand"), tr("shrink or expand the selected node"),
                                             0, _parent, false, this,  SLOT(onShrinkExpand()));
 
+  _shrinkExpandChildren = _wrapper->createAction(getMenuId(), tr("shrink or expand direct children of the selected node"), QIcon("icons:shrinkExpand.png"),
+                                            tr("shrink/expand children"), tr("shrink or expand direct children of the selected node"),
+                                            0, _parent, false, this,  SLOT(onShrinkExpandChildren()));
+
+  _shrinkExpandElementaryRecursively = _wrapper->createAction(getMenuId(), tr("shrink or expand elementary nodes of the selected node recursively"), QIcon("icons:shrinkExpand.png"),
+                                            tr("shrink/expand elementary"), tr("shrink or expand elementary nodes of the selected node recursively"),
+                                            0, _parent, false, this,  SLOT(onShrinkExpandElementaryRecursively()));
+
   _toggleStraightLinksAct = _wrapper->createAction(getMenuId(), tr("draw straight or orthogonal links"), QIcon("icons:straightLink.png"),
                                                    tr("straight/orthogonal"), tr("draw straight or orthogonal links"),
                                                    0, _parent, true, this,  SLOT(onToggleStraightLinks(bool)));
@@ -2180,6 +2188,16 @@ void GenericGui::onCenterOnNode()
 void GenericGui::onShrinkExpand() {
   DEBTRACE("GenericGui::onShrinkExpand");
   _guiEditor->shrinkExpand();
+}
+
+void GenericGui::onShrinkExpandChildren() {
+  DEBTRACE("GenericGui::onShrinkExpandChildren");
+  _guiEditor->shrinkExpand(Qt::ControlModifier|Qt::ShiftModifier);
+}
+
+void GenericGui::onShrinkExpandElementaryRecursively() {
+  DEBTRACE("GenericGui::onShrinkExpandElementaryRecursively");
+  _guiEditor->shrinkExpand(Qt::ControlModifier);
 }
 
 void GenericGui::onToggleStraightLinks(bool checked)

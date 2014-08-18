@@ -42,8 +42,8 @@ namespace YACS
       virtual void popupMenu(QWidget *caller, const QPoint &globalPos);
       virtual void autoPosNewPort(AbstractSceneItem *item, int nbPorts);
       virtual void reorganize();
-      virtual void reorganizeShrinkExpand();
-      virtual void shrinkExpandRecursive(bool isExpanding, bool fromHere);
+      virtual void reorganizeShrinkExpand(ShrinkMode theShrinkMode);
+      virtual void shrinkExpandRecursive(bool isExpanding, bool fromHere, ShrinkMode theShrinkMode);
       virtual void setShownState(shownState ss);
     protected:
       int _maxPorts;

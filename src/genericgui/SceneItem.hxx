@@ -33,6 +33,13 @@ namespace YACS
 {
   namespace HMI
   {
+    typedef enum
+      {
+        CurrentNode,
+        ChildrenNodes,
+        ElementaryNodes
+      } ShrinkMode;
+    
     class Scene;
 
     class RootSceneItem: public GuiObserver
@@ -131,7 +138,7 @@ namespace YACS
       virtual void updateChildItems();
       virtual void updateLinks();
       virtual void shrinkExpandLink(bool se);
-      virtual void shrinkExpandRecursive(bool isExpanding, bool fromHere);
+      virtual void shrinkExpandRecursive(bool isExpanding, bool fromHere, ShrinkMode theShrinkMode);
       bool isAncestorShrinked() { return _ancestorShrinked; };
       bool _blocX;
       bool _blocY;

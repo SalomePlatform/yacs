@@ -372,7 +372,7 @@ SubjectDataPort*  GuiEditor::CreateOutputPort(SubjectElementaryNode* seNode,
 /*!
  * Subject shrink or expand, command from popup menu: needs a valid selection
  */
-void GuiEditor::shrinkExpand() {
+void GuiEditor::shrinkExpand(Qt::KeyboardModifiers kbModifiers) {
   DEBTRACE("GuiEditor::shrinkExpand");
 
   Subject* sub = QtGuiContext::getQtCurrent()->getSelectedSubject();
@@ -393,12 +393,14 @@ void GuiEditor::shrinkExpand() {
     return;
   };
 
-  if (sni->isExpanded()) {
-    sni->setExpanded(false);
-  } else {
-    sni->setExpanded(true);
-  };
-  sni->reorganizeShrinkExpand();
+  ShrinkMode aShrinkMode = CurrentNode;
+  if (kbModifiers == Qt::ControlModifier) {
+    aShrinkMode = ElementaryNodes;
+  } else if (kbModifiers == (Qt::ShiftModifier|Qt::ControlModifier)) {
+    aShrinkMode = ChildrenNodes;
+  }
+
+  sni->reorganizeShrinkExpand(aShrinkMode);
   sni->showOutScopeLinks();
   sni->updateLinks();
 }

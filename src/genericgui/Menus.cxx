@@ -170,6 +170,8 @@ void ComposedNodeMenu::popupMenu(QWidget *caller, const QPoint &globalPos, const
   menu.addAction(gmain->_zoomToBlocAct);
   menu.addAction(gmain->_centerOnNodeAct);
   menu.addAction(gmain->_shrinkExpand);
+  menu.addAction(gmain->_shrinkExpandChildren);
+  menu.addAction(gmain->_shrinkExpandElementaryRecursively);
   menu.addAction(gmain->_computeLinkAct);
 //   menu.addAction(gmain->_toggleAutomaticComputeLinkAct);
 //   menu.addAction(gmain->_toggleSimplifyLinkAct);
@@ -272,6 +274,8 @@ void ProcMenu::popupMenu(QWidget *caller, const QPoint &globalPos, const QString
   menu.addAction(gmain->_zoomToBlocAct);
   menu.addAction(gmain->_centerOnNodeAct);
   menu.addAction(gmain->_shrinkExpand);
+  menu.addAction(gmain->_shrinkExpandChildren);
+  menu.addAction(gmain->_shrinkExpandElementaryRecursively);
   menu.addAction(gmain->_computeLinkAct);
 //   menu.addAction(gmain->_toggleAutomaticComputeLinkAct);
 //   menu.addAction(gmain->_toggleSimplifyLinkAct);

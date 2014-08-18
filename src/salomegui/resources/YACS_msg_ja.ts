@@ -594,8 +594,24 @@
       <translation>選択中のノードを展開または縮小</translation>
     </message>
     <message>
+      <source>shrink or expand direct children of the selected node</source>
+      <translation type="unfinished">選択中のノードを展開または縮小</translation>
+    </message>
+    <message>
+      <source>shrink or expand elementary nodes of the selected node recursively</source>
+      <translation type="unfinished">選択中のノードを展開または縮小</translation>
+    </message>
+    <message>
       <source>shrink/expand</source>
       <translation>展開/縮小</translation>
+    </message>
+    <message>
+      <source>shrink/expand children</source>
+      <translation type="unfinished">展開/縮小</translation>
+    </message>
+    <message>
+      <source>shrink/expand elementary</source>
+      <translation type="unfinished">展開/縮小</translation>
     </message>
     <message>
       <source>draw straight or orthogonal links</source>

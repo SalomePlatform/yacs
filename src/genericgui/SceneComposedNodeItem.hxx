@@ -45,8 +45,8 @@ namespace YACS
       virtual std::list<AbstractSceneItem*> getChildren();
       virtual void removeChildFromList(AbstractSceneItem* child);
       virtual void reorganize();
-      virtual void reorganizeShrinkExpand();
-      virtual void shrinkExpandRecursive(bool isExpanding, bool fromHere);
+      virtual void reorganizeShrinkExpand(ShrinkMode theShrinkMode);
+      virtual void shrinkExpandRecursive(bool isExpanding, bool fromHere, ShrinkMode theShrinkMode);
       virtual void shrinkExpandLink(bool se);
       virtual void collisionResolv(SceneItem* child, QPointF oldPos);
       virtual void rebuildLinks();
@@ -55,10 +55,12 @@ namespace YACS
       virtual void arrangeChildNodes();
       virtual void adjustColors();
       virtual void setShownState(shownState ss);
+      virtual bool hasExpandedChildren(bool recursively);
     protected:
       void dragEnterEvent(QGraphicsSceneDragDropEvent *event);
       void dragLeaveEvent(QGraphicsSceneDragDropEvent *event);
       void dropEvent(QGraphicsSceneDragDropEvent *event);
+      void updateControlLinks(bool toExpand);
       virtual QColor getPenColor();
       virtual QColor getBrushColor();
 

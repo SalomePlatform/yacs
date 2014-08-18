@@ -82,7 +82,7 @@ namespace YACS
       void PutSubjectInBloc();
       std::string PutGraphInBloc();
       void PutGraphInNode(std::string typeNode);
-      void shrinkExpand();
+      void shrinkExpand(Qt::KeyboardModifiers kbModifiers = Qt::NoModifier);
       void rebuildLinks();
       void arrangeNodes(bool isRecursive);
       void arrangeProc();
