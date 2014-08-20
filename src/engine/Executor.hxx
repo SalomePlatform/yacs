@@ -118,7 +118,9 @@ namespace YACS
       bool checkBreakPoints();
       void waitResume();
       void loadTask(Task *task);
-      void launchTasks(std::vector<Task*>& tasks);
+      void loadTasks(const std::vector<Task *>& tasks);
+      void loadParallelTasks(const std::vector<Task *>& tasks);
+      void launchTasks(const std::vector<Task*>& tasks);
       void launchTask(Task *task);
       void wakeUp();
       void sleepWhileNoEventsFromAnyRunningTask();
@@ -129,6 +131,7 @@ namespace YACS
       static void FilterTasksConsideringContainers(std::vector<Task *>& tsks);
       static std::string ComputePlacement(Task *zeTask);
     protected:
+      static void *functionForTaskLoad(void *);
       static void *functionForTaskExecution(void *);
     };
   }

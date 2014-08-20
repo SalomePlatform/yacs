@@ -28,7 +28,16 @@
 
 using namespace YACS::BASES;
 
+ThreadPT::ThreadPT()
+{
+}
+
 ThreadPT::ThreadPT(ThreadJob funcPtr, void *stack, size_t stackSize)
+{
+  go(funcPtr,stack,stackSize);
+}
+
+void ThreadPT::go(ThreadJob funcPtr, void *stack, size_t stackSize)
 {
   int err;
   void **stackT=(void **) stack;

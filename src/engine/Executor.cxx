@@ -305,8 +305,8 @@ void Executor::RunB(Scheduler *graph,int debug, bool fromScratch)
           if (checkBreakPoints()) break; // end of thread requested, OK to exit at once;
           if (debug > 0) _displayDot(graph);
           DEBTRACE("---");
-          for (iter = _tasks.begin(); iter != _tasks.end(); iter++)
-            loadTask(*iter);
+          //loadTasks(_tasks);
+          loadParallelTasks(_tasks);
           if (debug > 1) _displayDot(graph);
           DEBTRACE("---");
           launchTasks(_tasks);
@@ -813,7 +813,8 @@ void Executor::waitResume()
 void Executor::loadTask(Task *task)
 {
   DEBTRACE("Executor::loadTask(Task *task)");
-  if(task->getState() != YACS::TOLOAD)return;
+  if(task->getState() != YACS::TOLOAD)
+    return;
   traceExec(task, "state:TOLOAD", ComputePlacement(task));
   {//Critical section
     YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
@@ -848,17 +849,45 @@ void Executor::loadTask(Task *task)
     }
 }
 
+struct threadargs
+{
+  Task *task;
+  Scheduler *sched;
+  Executor *execInst;
+};
+
+void Executor::loadTasks(const std::vector<Task *>& tasks)
+{
+  for(std::vector<Task *>::const_iterator iter = _tasks.begin(); iter != _tasks.end(); iter++)
+    loadTask(*iter);
+}
+
+void Executor::loadParallelTasks(const std::vector<Task *>& tasks)
+{
+  std::vector<Thread> ths(tasks.size());
+  std::size_t ithread(0);
+  for(std::vector<Task *>::const_iterator iter = _tasks.begin(); iter != _tasks.end(); iter++, ithread++)
+    {
+      DEBTRACE("Executor::loadParallelTasks(Task *task)");
+      struct threadargs *args(new threadargs);
+      args->task = (*iter);
+      args->sched = _mainSched;
+      args->execInst = this;
+      ths[ithread].go(functionForTaskLoad, args, _threadStackSize);
+    }
+  for(ithread=0;ithread<tasks.size();ithread++)
+    ths[ithread].join();
+}
 
 //! Execute a list of tasks possibly connected through datastream links
 /*!
  *  \param tasks  : a list of tasks to execute
  *
  */
-void Executor::launchTasks(std::vector<Task *>& tasks)
+void Executor::launchTasks(const std::vector<Task *>& tasks)
 {
-  vector<Task *>::iterator iter;
   //First phase, make datastream connections
-  for(iter=tasks.begin();iter!=tasks.end();iter++)
+  for(vector<Task *>::const_iterator iter=tasks.begin();iter!=tasks.end();iter++)
     {
       YACS::StatesForNode state=(*iter)->getState();
       if(state != YACS::TOLOAD && state != YACS::TORECONNECT)continue;
@@ -941,17 +970,11 @@ void Executor::launchTasks(std::vector<Task *>& tasks)
     }
 
   //Second phase, execute each task in a thread
-  for(iter=tasks.begin();iter!=tasks.end();iter++)
+  for(vector<Task *>::const_iterator iter=tasks.begin();iter!=tasks.end();iter++)
     {
       launchTask(*iter);
     }
 }
-
-struct threadargs {
-  Task *task;
-  Scheduler *sched;
-  Executor *execInst;
-};
 
 //! Execute a Task in a thread
 /*!
@@ -1069,6 +1092,20 @@ int Executor::getNbOfThreads()
   return ret;
 }
 
+/*!
+ * This thread is NOT supposed to be detached !
+ */
+void *Executor::functionForTaskLoad(void *arg)
+{
+  DEBTRACE("Executor::functionForTaskLoad(void *arg)");
+  struct threadargs *args = (struct threadargs *) arg;
+  Task *task=args->task;
+  Scheduler *sched=args->sched;
+  Executor *execInst=args->execInst;
+  delete args;
+  execInst->loadTask(task);// no throw of this method - all throw are catched !
+  return 0;
+}
 
 //! Function to perform execution of a task in a thread
 /*!
