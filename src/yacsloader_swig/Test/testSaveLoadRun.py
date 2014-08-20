@@ -331,9 +331,9 @@ o3=0
 """
     script2="""o9=sum(i8)
 """
-    fname="TestSaveLoadRun2.xml"
+    fname="TestSaveLoadRun3.xml"
     nbOfNodes=8
-    sqrtOfNumberOfTurn=10 # 3000 -> 3.2s/Node, 1000 -> 0.1s/Node
+    sqrtOfNumberOfTurn=10
     l=loader.YACSLoader()
     p=self.r.createProc("prTest1")
     td=p.createType("double","double")
@@ -389,19 +389,19 @@ o3=0
     self.assertEqual(p.getState(),pilot.READY)
     st=datetime.datetime.now()
     ex.RunW(p,0)
-    print "Time spend of test2 to 1st run %s"%(str(datetime.datetime.now()-st))
+    print "Time spend of test3 to 1st run %s"%(str(datetime.datetime.now()-st))
     self.assertEqual(p.getState(),pilot.DONE)
     self.assertAlmostEqual(refExpected,o9.getPyObj(),5)
     # 2nd exec
     st=datetime.datetime.now()
     ex.RunW(p,0)
-    print "Time spend of test2 to 2nd run %s"%(str(datetime.datetime.now()-st))
+    print "Time spend of test3 to 2nd run %s"%(str(datetime.datetime.now()-st))
     self.assertEqual(p.getState(),pilot.DONE)
     self.assertAlmostEqual(refExpected,o9.getPyObj(),5)
     # 3rd exec
     st=datetime.datetime.now()
     ex.RunW(p,0)
-    print "Time spend of test2 to 3rd run %s"%(str(datetime.datetime.now()-st))
+    print "Time spend of test3 to 3rd run %s"%(str(datetime.datetime.now()-st))
     self.assertEqual(p.getState(),pilot.DONE)
     self.assertAlmostEqual(refExpected,o9.getPyObj(),5)
     pass
