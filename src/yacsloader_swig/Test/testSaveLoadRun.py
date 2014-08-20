@@ -213,6 +213,7 @@ aa+=1.
     pass
 
   def test2(self):
+    """ Test on HP Containers in foreach context."""
     script0="""def ff():
     global aa
     print "%%lf - %%s"%%(aa,str(my_container))
@@ -308,6 +309,102 @@ o3=0
     self.assertAlmostEqual(refExpected,o9.getPyObj(),5)
     pass
 
+  def test3(self):
+    """ Test that focuses on parallel load of containers."""
+    script0="""def ff():
+    global aa
+    print "%%lf - %%s"%%(aa,str(my_container))
+    return 100*[%i],0
+"""
+    script1="""from math import cos
+import datetime
+ref=datetime.datetime.now()
+o2=0. ; pas=1./float(i1)
+for i in xrange(i1):
+  for j in xrange(i1):
+    x=j*pas
+    o2+=1.+cos(1.*(x*3.14159))
+    pass
+print "coucou %lf from script  -> %s"%(aa,str(datetime.datetime.now()-ref))
+aa+=1.
+o3=0
+"""
+    script2="""o9=sum(i8)
+"""
+    fname="TestSaveLoadRun2.xml"
+    nbOfNodes=8
+    sqrtOfNumberOfTurn=10 # 3000 -> 3.2s/Node, 1000 -> 0.1s/Node
+    l=loader.YACSLoader()
+    p=self.r.createProc("prTest1")
+    td=p.createType("double","double")
+    ti=p.createType("int","int")
+    tdi=p.createSequenceTc("seqint","seqint",ti)
+    tdd=p.createSequenceTc("seqdouble","seqdouble",td)
+    cont=p.createContainer("gg","HPSalome")
+    cont.setSizeOfPool(8)
+    cont.setProperty("InitializeScriptKey","aa=123.456")
+    cont.setProperty("name","localhost")
+    cont.setProperty("hostname","localhost")
+    #
+    node0=self.r.createFuncNode("Salome","PyFunction0") # PyFuncNode remote
+    p.edAddChild(node0)
+    node0.setFname("ff")
+    node0.setContainer(cont)
+    node0.setScript(script0%(sqrtOfNumberOfTurn))
+    out0_0=node0.edAddOutputPort("o1",tdi)
+    out1_0=node0.edAddOutputPort("o2",ti)
+    node0.setExecutionMode("remote")
+    #
+    node1=self.r.createForEachLoop("node1",ti)
+    p.edAddChild(node1)
+    p.edAddCFLink(node0,node1)
+    p.edAddLink(out0_0,node1.edGetSeqOfSamplesPort())
+    node1.edGetNbOfBranchesPort().edInitInt(16)
+    #
+    node2=self.r.createScriptNode("Salome","PyScript3")
+    node1.edAddChild(node2)
+    node2.setContainer(cont)
+    node2.setScript(script1)
+    i1=node2.edAddInputPort("i1",ti)
+    p.edAddLink(node1.edGetSamplePort(),i1)
+    out0_2=node2.edAddOutputPort("o2",td)
+    out1_2=node2.edAddOutputPort("o3",ti)
+    node2.setExecutionMode("remote")
+    #
+    node3=self.r.createScriptNode("Salome","PyScript7")
+    p.edAddChild(node3)
+    node3.setScript(script2)
+    p.edAddCFLink(node1,node3)
+    i8=node3.edAddInputPort("i8",tdd)
+    o9=node3.edAddOutputPort("o9",td)
+    p.edAddLink(out0_2,i8)
+    #
+    p.saveSchema(fname)
+    p=l.load(fname)
+    o9=p.getChildByName("PyScript7").getOutputPort("o9")
+    self.assertTrue(len(p.edGetDirectDescendants()[1].getChildByName("PyScript3").getContainer().getProperty("InitializeScriptKey"))!=0)
+    # 1st exec
+    refExpected=11000.008377058712
+    ex=pilot.ExecutorSwig()
+    self.assertEqual(p.getState(),pilot.READY)
+    st=datetime.datetime.now()
+    ex.RunW(p,0)
+    print "Time spend of test2 to 1st run %s"%(str(datetime.datetime.now()-st))
+    self.assertEqual(p.getState(),pilot.DONE)
+    self.assertAlmostEqual(refExpected,o9.getPyObj(),5)
+    # 2nd exec
+    st=datetime.datetime.now()
+    ex.RunW(p,0)
+    print "Time spend of test2 to 2nd run %s"%(str(datetime.datetime.now()-st))
+    self.assertEqual(p.getState(),pilot.DONE)
+    self.assertAlmostEqual(refExpected,o9.getPyObj(),5)
+    # 3rd exec
+    st=datetime.datetime.now()
+    ex.RunW(p,0)
+    print "Time spend of test2 to 3rd run %s"%(str(datetime.datetime.now()-st))
+    self.assertEqual(p.getState(),pilot.DONE)
+    self.assertAlmostEqual(refExpected,o9.getPyObj(),5)
+    pass
   pass
 
 import os
