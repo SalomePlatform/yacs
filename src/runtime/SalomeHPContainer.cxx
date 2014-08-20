@@ -112,13 +112,21 @@ void SalomeHPContainer::shutdown(int level)
 
 std::string SalomeHPContainer::getPlacementId(const Task *askingNode) const
 {
-  const SalomeContainerMonoHelper *helper(_launchModeType.getHelperOfTask(askingNode));
+  const SalomeContainerMonoHelper *helper(0);
+  {
+    YACS::BASES::AutoLocker<Container> alckCont(const_cast<SalomeHPContainer *>(this));
+    helper=_launchModeType.getHelperOfTask(askingNode);
+  }
   return SalomeContainerTools::GetPlacementId(helper,this,askingNode);
 }
 
 std::string SalomeHPContainer::getFullPlacementId(const Task *askingNode) const
 {
-  const SalomeContainerMonoHelper *helper(_launchModeType.getHelperOfTask(askingNode));
+  const SalomeContainerMonoHelper *helper(0);
+  {
+    YACS::BASES::AutoLocker<Container> alckCont(const_cast<SalomeHPContainer *>(this));
+    helper=_launchModeType.getHelperOfTask(askingNode);
+  }
   return SalomeContainerTools::GetFullPlacementId(helper,this,askingNode);
 }
 
