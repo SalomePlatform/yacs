@@ -59,6 +59,7 @@ CatalogWidget::CatalogWidget(QWidget *parent,
   _dragModifier=false;
 
   setColumnCount(1);
+  setHeaderHidden( true );
 
   addCatalog(_builtinCatalog, "Built In");
   addCatalog(_sessionCatalog, "Current Session");
