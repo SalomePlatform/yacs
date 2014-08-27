@@ -201,10 +201,10 @@ int SuitWrapper::createMenu(QAction* action,
   return module->wCreateMenu(action, menu, actionId, groupId, index);
 }
 
-int SuitWrapper::createTool(const QString& name)
+int SuitWrapper::createTool(const QString& title, const QString& name)
 {
   SalomeWrap_Module* module = dynamic_cast<SalomeWrap_Module*>(_wrapped);
-  return module->wCreateTool(name);
+  return module->wCreateTool(title, name);
 }
 
 int SuitWrapper::createTool(const int actionId,

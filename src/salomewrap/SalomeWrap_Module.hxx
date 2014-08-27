@@ -97,7 +97,8 @@ public:
                   const int groupId = -1,
                   const int index = -1);
 
-  int wCreateTool(const QString& name);
+  int wCreateTool(const QString& title,
+		  const QString& name = QString());
 
   int wCreateTool(const int actionId,
                   const int toolbarId, 

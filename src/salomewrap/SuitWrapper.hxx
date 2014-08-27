@@ -96,7 +96,8 @@ namespace YACS
                      const int groupId = -1,
                      const int index = -1);
 
-      int createTool(const QString& name);
+      int createTool(const QString& title,
+		     const QString& name = QString());
 
       int createTool(const int actionId,
                      const int toolbarId, 

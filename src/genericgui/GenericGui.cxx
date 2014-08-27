@@ -678,7 +678,7 @@ void GenericGui::createMenus()
 
 void GenericGui::createTools()
 {
-  int aToolId = _wrapper->createTool ( tr( "YACS Toolbar" ) );
+  int aToolId = _wrapper->createTool ( tr( "YACS Toolbar" ), QString( "YACSToolbar" ) );
   _wrapper->createTool( _newSchemaAct, aToolId );
   _wrapper->createTool( _importSchemaAct, aToolId );
   _wrapper->createTool( _wrapper->separator(), aToolId );

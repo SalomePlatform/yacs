@@ -169,9 +169,9 @@ int SalomeWrap_Module::wCreateMenu(QAction* action,
   return createMenu(action, menu, actionId, groupId, index);
 }
 
-int SalomeWrap_Module::wCreateTool(const QString& name)
+int SalomeWrap_Module::wCreateTool(const QString& title, const QString& name)
 {
-  return createTool(name);
+  return createTool(title, name);
 }
 
 int SalomeWrap_Module::wCreateTool(const int actionId,
