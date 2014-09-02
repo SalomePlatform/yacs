@@ -274,6 +274,14 @@ Specific operations available in the **edition mode** for each type of objects s
 |                                |             |                                                                                     |
 |                                |             |**Center on Node** - Center the 2D view on selected Node, without resizing.          |
 |                                |             |                                                                                     |
+|                                |             |**Shrink/Expand** - Fold/Unfold the selected Node. See :ref:`shrink_expand_nodes`.   |
+|                                |             |                                                                                     |
+|                                |             |**Shrink/Expand Children** - Fold/Unfold all direct Children Nodes of selected Node. |
+|                                |             |See :ref:`shrink_expand_nodes`.                                                      |
+|                                |             |                                                                                     |
+|                                |             |**Shrink/Expand Elementary** - Fold/Unfold all Elementary Nodes of selected Node     |
+|                                |             |recursively. See :ref:`shrink_expand_nodes`.                                         |
+|                                |             |                                                                                     |
 |                                |             |**Compute Links** - Recompute links, useful for large schemas, when automatic link   |
 |                                |             |calculation have been deactivated, see :ref:`edition_toolbar`.                       |
 |                                |             |                                                                                     |
@@ -324,6 +332,14 @@ Node objects.
 |                                |             |                                                                                     |
 |                                |             |**Center on Node** - Center the 2D view on selected Node, without resizing.          |
 |                                |             |                                                                                     |
+|                                |             |**Shrink/Expand** - Fold/Unfold the selected Node. See :ref:`shrink_expand_nodes`.   |
+|                                |             |                                                                                     |
+|                                |             |**Shrink/Expand Children** - Fold/Unfold all direct Children Nodes of selected Node. |
+|                                |             |See :ref:`shrink_expand_nodes`.                                                      |
+|                                |             |                                                                                     |
+|                                |             |**Shrink/Expand Elementary** - Fold/Unfold all Elementary Nodes of selected Node     |
+|                                |             |recursively. See :ref:`shrink_expand_nodes`.                                         |
+|                                |             |                                                                                     |
 |                                |             |**Compute Links** - Recompute links, useful for large schemas, when automatic link   |
 |                                |             |calculation have been deactivated, see :ref:`edition_toolbar`.                       |
 |                                |             |                                                                                     |
@@ -355,6 +371,9 @@ Node objects.
 |                                |             |the screen                                                                           |
 |                                |             |                                                                                     |
 |                                |             |**Center on Node** - Center the 2D view on selected Node, without resizing.          |
+|                                |             |                                                                                     |
+|                                |             |**Shrink/Expand** - Fold/Unfold the selected Node. See :ref:`shrink_expand_nodes`.   |
+|                                |             |                                                                                     |
 +--------------------------------+-------------+-------------------------------------------------------------------------------------+
 
 Port and link objects.
@@ -404,6 +423,14 @@ The popup menus available on the objects selected in the Tree View or 2D View of
 |                                |             |                                                                                     |
 |                                |             |**Center on Node** - Center the 2D view on selected Node, without resizing.          |
 |                                |             |                                                                                     |
+|                                |             |**Shrink/Expand** - Fold/Unfold the selected Node. See :ref:`shrink_expand_nodes`.   |
+|                                |             |                                                                                     |
+|                                |             |**Shrink/Expand Children** - Fold/Unfold all direct Children Nodes of selected Node. |
+|                                |             |See :ref:`shrink_expand_nodes`.                                                      |
+|                                |             |                                                                                     |
+|                                |             |**Shrink/Expand Elementary** - Fold/Unfold all Elementary Nodes of selected Node     |
+|                                |             |recursively. See :ref:`shrink_expand_nodes`.                                         |
+|                                |             |                                                                                     |
 |                                |             |**Compute Links** - Recompute links, useful for large schemas, when automatic link   |
 |                                |             |calculation have been deactivated, see :ref:`edition_toolbar`.                       |
 |                                |             |                                                                                     |
@@ -425,6 +452,14 @@ The popup menus available on the objects selected in the Tree View or 2D View of
 |                                |             |                                                                                     |
 |                                |             |**Center on Node** - Center the 2D view on selected Node, without resizing.          |
 |                                |             |                                                                                     |
+|                                |             |**Shrink/Expand** - Fold/Unfold the selected Node. See :ref:`shrink_expand_nodes`.   |
+|                                |             |                                                                                     |
+|                                |             |**Shrink/Expand Children** - Fold/Unfold all direct Children Nodes of selected Node. |
+|                                |             |See :ref:`shrink_expand_nodes`.                                                      |
+|                                |             |                                                                                     |
+|                                |             |**Shrink/Expand Elementary** - Fold/Unfold all Elementary Nodes of selected Node     |
+|                                |             |recursively. See :ref:`shrink_expand_nodes`.                                         |
+|                                |             |                                                                                     |
 |                                |             |**Compute Links** - Recompute links, useful for large schemas, when automatic link   |
 |                                |             |calculation have been deactivated, see :ref:`edition_toolbar`.                       |
 |                                |             |                                                                                     |
@@ -441,6 +476,8 @@ The popup menus available on the objects selected in the Tree View or 2D View of
 |                                |             |the screen                                                                           |
 |                                |             |                                                                                     |
 |                                |             |**Center on Node** - Center the 2D view on selected Node, without resizing.          |
+|                                |             |                                                                                     |
+|                                |             |**Shrink/Expand** - Fold/Unfold the selected Node. See :ref:`shrink_expand_nodes`.   |
 |                                |             |                                                                                     |
 +--------------------------------+-------------+-------------------------------------------------------------------------------------+
 
