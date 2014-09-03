@@ -114,3 +114,4 @@ IF(NOT WIN32)
   SALOME_CONFIGURE_FILE(xmlrun_orig.sh xmlrun.sh)
   ADD_TEST(NAME YacsLoaderTest COMMAND ${SHELL} YacsLoaderTest.sh)
 ENDIF()
+
