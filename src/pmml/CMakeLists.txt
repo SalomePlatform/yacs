@@ -66,7 +66,6 @@ IF(SALOME_YACS_USE_SWIG)
     "Install path: SALOME Python shared modules")
 ENDIF(SALOME_YACS_USE_SWIG)
 
-SET(SALOME_INSTALL_RES share/salome/resources CACHE PATH "Install path: SALOME resources")
 SET(SALOME_PMML_INSTALL_RES_DATA "${SALOME_INSTALL_RES}/pmml" CACHE PATH "Install path: SALOME PMML specific data")
 
 # Sources 
@@ -91,8 +90,6 @@ INCLUDE_DIRECTORIES(
 SET(pmml_SOURCES
   PMMLlib.cxx
   )
-
-ADD_SUBDIRECTORY(resources)
 
 ADD_LIBRARY(pmmlLib SHARED ${pmml_SOURCES})
 TARGET_LINK_LIBRARIES(pmmlLib  ${LIBXML2_LIBRARIES} ) 

@@ -1,0 +1,91 @@
+#!/bin/bash
+# Copyright (C) 2006-2014  CEA/DEN, EDF R&D
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License, or (at your option) any later version.
+#
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+#
+# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+#
+
+if test -f @CMAKE_CURRENT_BINARY_DIR@/config_appli.xml; then
+  if test -n "${GEOM_ROOT_DIR}" && test -d ${GEOM_ROOT_DIR}; then
+    sed -i s%\"GEOM_ROOT_DIR\"%\"${GEOM_ROOT_DIR}\"% @CMAKE_CURRENT_BINARY_DIR@/config_appli.xml
+  fi
+  if test -n "${PYHELLO_ROOT_DIR}" && test -d ${PYHELLO_ROOT_DIR}; then
+    sed -i s%\"PYHELLO_ROOT_DIR\"%\"${PYHELLO_ROOT_DIR}\"% @CMAKE_CURRENT_BINARY_DIR@/config_appli.xml
+  fi
+fi
+
+if test -f @KERNEL_ROOT_DIR@/bin/salome/appli_gen.py ; then
+
+  # --- create a SALOME Application environment
+
+  @KERNEL_ROOT_DIR@/bin/salome/appli_gen.py
+  sed -i s/\"yes\"/\"no\"/ SalomeApp.xml
+  sed -i s/\,study\,cppContainer\,registry\,moduleCatalog// SalomeApp.xml
+  sed -i s/pyContainer/pyContainer\,study\,cppContainer\,registry\,moduleCatalog/ SalomeApp.xml
+
+cat > CatalogResources.xml << EOF
+<!DOCTYPE ResourcesCatalog>
+<resources>
+   <machine hostname="localhost" />
+</resources>
+EOF
+
+  # ---------------------------------------------------------------------------
+  # --- first set of test in C++
+
+  # --- launch in background a SALOME session (servers)
+
+  ln -fs @CMAKE_SOURCE_DIR@/src/yacsloader/samples .
+  ./runAppli > log1 2>&1
+
+  # --- wait a little to let the background process define
+  #     the CORBA naming service port and host
+
+  sleep 5
+
+  # --- execute the test script in SALOME session environment
+
+  chmod +x @CMAKE_CURRENT_BINARY_DIR@/PmmlInSessionTest.sh
+  ./runSession @CMAKE_CURRENT_BINARY_DIR@/PmmlInSessionTest.sh
+  ret=$?
+
+  # ---------------------------------------------------------------------------
+
+  kill -9 `cat "/tmp/YACSTEST_PidEcho"`
+  ./runSession killSalome.py
+
+  echo "exec status PmmlInSessionTest.sh "  $ret
+
+  # --- delete all the SALOME Application environment
+  
+  ./bin/salome/appli_clean.sh -f
+
+else
+
+  ln -fs @CMAKE_SOURCE_DIR@/src/yacsloader/samples .
+  chmod +x @CMAKE_CURRENT_BINARY_DIR@/PmmlInSessionTest.sh
+  @CMAKE_CURRENT_BINARY_DIR@/PmmlInSessionTest.sh
+  ret=$?
+  echo "exec status PmmlInSessionTest.sh " $ret
+
+fi
+
+if [ $ret -ne 0 ]
+then cat /tmp/${USER}/UnitTestsResult
+else echo "Results are in /tmp/${USER}/UnitTestsResult"
+fi
+
+exit $ret
