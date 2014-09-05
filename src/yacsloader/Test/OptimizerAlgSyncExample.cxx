@@ -22,121 +22,142 @@
 
 #include "OptimizerAlg.hxx"
 
-using namespace YACS::ENGINE;
+#include <iostream>
+//using namespace YACS::ENGINE;
 
 extern "C"
 {
-  OptimizerAlgBase * createOptimizerAlgSyncExample(Pool * pool);
+  YACS::ENGINE::OptimizerAlgBase * createOptimizerAlgSyncExample(YACS::ENGINE::Pool * pool);
 }
 
-class OptimizerAlgSyncExample : public OptimizerAlgSync
-  {
-  private:
-    int _idTest;
-    TypeCode *_tcIn;
-    TypeCode *_tcOut;
-  public:
-    OptimizerAlgSyncExample(Pool *pool);
-    virtual ~OptimizerAlgSyncExample();
-    TypeCode *getTCForIn() const;
-    TypeCode *getTCForOut() const;
-    void start();
-    void takeDecision();
-    void initialize(const Any *input) throw(YACS::Exception);
-    void finish();
-  };
-
-OptimizerAlgSyncExample::OptimizerAlgSyncExample(Pool *pool) : OptimizerAlgSync(pool),
-                                                               _tcIn(0), _tcOut(0),
-                                                               _idTest(0)
+class OptimizerAlgSyncExample : public YACS::ENGINE::OptimizerAlgSync
 {
-  _tcIn=new TypeCode(Double);
-  _tcOut=new TypeCode(Int);
+  private:
+    int _iter;
+    YACS::ENGINE::TypeCode *_tcInt;
+    YACS::ENGINE::TypeCode *_tcDouble;
+  public:
+    OptimizerAlgSyncExample(YACS::ENGINE::Pool *pool);
+    virtual ~OptimizerAlgSyncExample();
+    
+    //! returns typecode of type expected as Input. OwnerShip of returned pointer is held by this.
+    virtual YACS::ENGINE::TypeCode *getTCForIn() const;
+    //! returns typecode of type expected as Output. OwnerShip of returned pointer is held by this.
+    virtual YACS::ENGINE::TypeCode *getTCForOut() const;
+    //! returns typecode of type expected for algo initialization. OwnerShip of returned pointer is held by this.
+    virtual YACS::ENGINE::TypeCode *getTCForAlgoInit() const;
+    //! returns typecode of type expected as algo result. OwnerShip of returned pointer is held by this.
+    virtual YACS::ENGINE::TypeCode *getTCForAlgoResult() const;
+    virtual void initialize(const YACS::ENGINE::Any *input) throw (YACS::Exception);
+    virtual void start(); //! Update _pool attribute before performing anything.
+    virtual void takeDecision();//! _pool->getCurrentId gives the \b id at the origin of this call.
+                                //! Perform the job of analysing to know what new jobs to do (_pool->pushInSample)
+                                //! or in case of convergence _pool->destroyAll
+    virtual void finish();//! Called when optimization has succeed.
+    virtual YACS::ENGINE::Any * getAlgoResult();
+};
+
+OptimizerAlgSyncExample::OptimizerAlgSyncExample(YACS::ENGINE::Pool *pool)
+  : YACS::ENGINE::OptimizerAlgSync(pool), _tcInt(0), _tcDouble(0), _iter(0)
+{
+  _tcDouble = new YACS::ENGINE::TypeCode(YACS::ENGINE::Double);
+  _tcInt    = new YACS::ENGINE::TypeCode(YACS::ENGINE::Int);
 }
 
 OptimizerAlgSyncExample::~OptimizerAlgSyncExample()
 {
-  std::cout << "Destroying OptimizerAlgSyncExample" << std::endl;
-  _tcIn->decrRef();
-  _tcOut->decrRef();
-  std::cout << "Destroyed OptimizerAlgSyncExample" << std::endl;
+  _tcDouble->decrRef();
+  _tcInt->decrRef();
 }
 
-//! Return the typecode of the expected input type
-TypeCode * OptimizerAlgSyncExample::getTCForIn() const
+//! Return the typecode of the expected input of the internal node
+YACS::ENGINE::TypeCode * OptimizerAlgSyncExample::getTCForIn() const
 {
-  return _tcIn;
+  return _tcDouble;
 }
 
-//! Return the typecode of the expected output type
-TypeCode * OptimizerAlgSyncExample::getTCForOut() const
+//! Return the typecode of the expected output of the internal node
+YACS::ENGINE::TypeCode * OptimizerAlgSyncExample::getTCForOut() const
 {
-  return _tcOut;
+  return _tcInt;
+}
+
+//! Return the typecode of the expected input of the algorithm (algoInit port)
+YACS::ENGINE::TypeCode * OptimizerAlgSyncExample::getTCForAlgoInit() const
+{
+  return _tcInt;
+}
+
+//! Return the typecode of the expected output of the algorithm (algoResult port)
+YACS::ENGINE::TypeCode * OptimizerAlgSyncExample::getTCForAlgoResult() const
+{
+  return _tcInt;
+}
+
+//! Optional method to initialize the algorithm.
+/*!
+ *  For now, the parameter input is always NULL. It might be used in the
+ *  future to initialize an algorithm with custom data.
+ */
+void OptimizerAlgSyncExample::initialize(const YACS::ENGINE::Any *input)
+  throw (YACS::Exception)
+{
+  std::cout << "Algo initialize, input = " << input->getIntValue() << std::endl;
 }
 
 //! Start to fill the pool with samples to evaluate
 void OptimizerAlgSyncExample::start()
 {
-  _idTest=0;
-  Any *val=AtomAny::New(1.2);
-  _pool->pushInSample(4,val);
-  val=AtomAny::New(3.4);
-  _pool->pushInSample(9,val);
+  std::cout << "Algo start " << std::endl;
+  _iter=0;
+  YACS::ENGINE::Any *val=YACS::ENGINE::AtomAny::New(0.5);
+  _pool->pushInSample(_iter,val);
 }
 
 //! This method is called each time a sample has been evaluated.
 /*!
- *  It can either add new samples to evaluate in the pool, do nothing (wait for more
- *  samples), or empty the pool to finish the evaluation.
+ *  It can either add new samples to evaluate in the pool, do nothing (wait
+ *  for more samples), or empty the pool to finish the evaluation.
  */
 void OptimizerAlgSyncExample::takeDecision()
 {
-  if(_idTest==1)
-    {
-      Any *val=AtomAny::New(5.6);
-      _pool->pushInSample(16,val);
-      val=AtomAny::New(7.8);
-      _pool->pushInSample(25,val);
-      val=AtomAny::New(9. );
-      _pool->pushInSample(36,val);
-      val=AtomAny::New(12.3);
-      _pool->pushInSample(49,val);
-    }
-  else if(_idTest==4)
-    {
-      Any *val=AtomAny::New(45.6);
-      _pool->pushInSample(64,val);
-      val=AtomAny::New(78.9);
-      _pool->pushInSample(81,val);
-    }
-  else
-    {
-      Any *tmp= _pool->getCurrentInSample();
-      if(fabs(tmp->getDoubleValue()-45.6)<1.e-12)
-        _pool->destroyAll();
-    }
-  _idTest++;
-}
-
-//! Optional method to initialize the algorithm.
-/*!
- *  For now, the parameter input is always NULL. It might be used in the future to
- *  initialize an algorithm with custom data.
- */
-void OptimizerAlgSyncExample::initialize(const Any *input) throw (YACS::Exception)
-{
+  int currentId = _pool->getCurrentId();
+  double valIn  = _pool->getCurrentInSample()->getDoubleValue();
+  int valOut    = _pool->getCurrentOutSample()->getIntValue();
+  
+  std::cout << "Algo takeDecision currentId=" << currentId;
+  std::cout << ", valIn=" << valIn;
+  std::cout << ", valOut=" << valOut << std::endl;
+  
+  _iter++;
+  if(_iter < 3)
+  {
+    YACS::ENGINE::Any *val=YACS::ENGINE::AtomAny::New(valIn + 1);
+    _pool->pushInSample(_iter, val);
+  }
 }
 
 /*!
- *  Optional method called when the algorithm has finished, successfully or not, to
- *  perform any necessary clean up.
+ *  Optional method called when the algorithm has finished, successfully or
+ *  not, to perform any necessary clean up.
  */
 void OptimizerAlgSyncExample::finish()
 {
+  std::cout << "Algo finish" << std::endl;
+  _pool->destroyAll();
+}
+
+/*!
+ *  Return the value of the algoResult port.
+ */
+YACS::ENGINE::Any * OptimizerAlgSyncExample::getAlgoResult()
+{
+  YACS::ENGINE::Any *val=YACS::ENGINE::AtomAny::New(42);
+  return val;
 }
 
 //! Factory method to create the algorithm.
-OptimizerAlgBase * createOptimizerAlgSyncExample(Pool *pool)
+YACS::ENGINE::OptimizerAlgBase * createOptimizerAlgSyncExample(YACS::ENGINE::Pool *pool)
 {
   return new OptimizerAlgSyncExample(pool);
 }

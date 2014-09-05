@@ -25,49 +25,68 @@ class myalgosync(SALOMERuntime.OptimizerAlgSync):
     r=SALOMERuntime.getSALOMERuntime()
     self.tin=r.getTypeCode("double")
     self.tout=r.getTypeCode("int")
+    self.tAlgoInit=r.getTypeCode("int")
+    self.tAlgoResult=r.getTypeCode("int")
 
   def setPool(self,pool):
     """Must be implemented to set the pool"""
     self.pool=pool
 
   def getTCForIn(self):
-    """returns typecode of type expected as Input"""
+    """return typecode of type expected as Input of the internal node """
     return self.tin
 
   def getTCForOut(self):
-    """returns typecode of type expected as Output"""
+    """return typecode of type expected as Output of the internal node"""
     return self.tout
 
+  def getTCForAlgoInit(self):
+    """return typecode of type expected as input for initialize """
+    return self.tAlgoInit
+
+  def getTCForAlgoResult(self):
+    """return typecode of type expected as output of the algorithm """
+    return self.tAlgoResult
+
   def initialize(self,input):
-    """Optional method called on initialization. Do nothing here"""
+    """Optional method called on initialization.
+       The type of "input" is returned by "getTCForAlgoInit"
+    """
+    print "Algo initialize, input = ", input.getIntValue()
 
   def start(self):
     """Start to fill the pool with samples to evaluate."""
+    print "Algo start "
     self.iter=0
-    self.pool.pushInSample(4,1.2)
-    self.pool.pushInSample(9,3.4)
+    # pushInSample(id, value)
+    self.pool.pushInSample(self.iter, 0.5)
 
   def takeDecision(self):
-    """ This method is called each time a sample has been evaluated. It can either add
-        new samples to evaluate in the pool, do nothing (wait for more samples), or empty
-        the pool to finish the evaluation.
+    """ This method is called each time a sample has been evaluated. It can
+        either add new samples to evaluate in the pool, do nothing (wait for
+        more samples), or empty the pool to finish the evaluation.
     """
     currentId=self.pool.getCurrentId()
+    valIn = self.pool.getCurrentInSample().getDoubleValue()
+    valOut = self.pool.getCurrentOutSample().getIntValue()
+    print "Algo takeDecision currentId=%s, valIn=%s, valOut=%s" % (currentId, valIn, valOut)
 
-    if self.iter==1:
-      self.pool.pushInSample(16,5.6)
-      self.pool.pushInSample(25,7.8)
-      self.pool.pushInSample(36,9.)
-      self.pool.pushInSample(49,12.3)
-    elif self.iter==4:
-      self.pool.pushInSample(64,45.6)
-      self.pool.pushInSample(81,78.9)
-    else:
-      val=self.pool.getCurrentInSample()
-      if abs(val.getDoubleValue()-45.6) < 1.e-12:
-        self.pool.destroyAll()
     self.iter=self.iter+1
+    if self.iter < 3:
+      # continue
+      nextSample = valIn + 1
+      self.pool.pushInSample(self.iter, nextSample)
 
   def finish(self):
-    """Optional method called when the algorithm has finished, successfully or not, to
-       perform any necessary clean up. Do nothing here"""
+    """Optional method called when the algorithm has finished, successfully
+       or not, to perform any necessary clean up."""
+    print "Algo finish"
+    self.pool.destroyAll()
+
+  def getAlgoResult(self):
+    """return the result of the algorithm.
+       The object returned is of type indicated by getTCForAlgoResult.
+    """
+    return 42
+
+

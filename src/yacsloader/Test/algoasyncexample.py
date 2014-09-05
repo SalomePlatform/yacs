@@ -25,44 +25,77 @@ class myalgoasync(SALOMERuntime.OptimizerAlgASync):
     r=SALOMERuntime.getSALOMERuntime()
     self.tin=r.getTypeCode("double")
     self.tout=r.getTypeCode("int")
+    self.tAlgoInit=r.getTypeCode("int")
+    self.tAlgoResult=r.getTypeCode("int")
 
   def setPool(self,pool):
     """Must be implemented to set the pool"""
     self.pool=pool
 
   def getTCForIn(self):
-    """returns typecode of type expected as Input"""
+    """return typecode of type expected as Input of the internal node """
     return self.tin
 
   def getTCForOut(self):
-    """returns typecode of type expected as Output"""
+    """return typecode of type expected as Output of the internal node"""
     return self.tout
 
-  def startToTakeDecision(self):
-    """This method is called only once to launch the algorithm. It must first fill the
-       pool with samples to evaluate and call self.signalMasterAndWait() to block until a
-       sample has been evaluated. When returning from this method, it MUST check for an
-       eventual termination request (with the method self.isTerminationRequested()). If
-       the termination is requested, the method must perform any necessary cleanup and
-       return as soon as possible. Otherwise it can either add new samples to evaluate in
-       the pool, do nothing (wait for more samples), or empty the pool and return to
-       finish the evaluation.
+  def getTCForAlgoInit(self):
+    """return typecode of type expected as input for initialize """
+    return self.tAlgoInit
+
+  def getTCForAlgoResult(self):
+    """return typecode of type expected as output of the algorithm """
+    return self.tAlgoResult
+
+  def initialize(self,input):
+    """Optional method called on initialization.
+       The type of "input" is returned by "getTCForAlgoInit"
     """
-    val=1.2
-    for iter in xrange(5):
-      #push a sample in the input of the slave node
-      self.pool.pushInSample(iter,val)
-      #wait until next sample is ready
-      self.signalMasterAndWait()
-      #check error notification
-      if self.isTerminationRequested():
-        self.pool.destroyAll()
-        return
+    print "Algo initialize, input = ", input.getIntValue()
 
-      #get a sample from the output of the slave node
+  def startToTakeDecision(self):
+    """This method is called only once to launch the algorithm. It must
+       first fill the pool with samples to evaluate and call
+       self.signalMasterAndWait() to block until a sample has been
+       evaluated. When returning from this method, it MUST check for an
+       eventual termination request (with the method
+       self.isTerminationRequested()). If the termination is requested, the
+       method must perform any necessary cleanup and return as soon as
+       possible. Otherwise it can either add new samples to evaluate in the
+       pool, do nothing (wait for more samples), or empty the pool and
+       return to finish the evaluation.
+    """
+    print "startToTakeDecision"
+    # fill the pool with samples
+    iter=0
+    self.pool.pushInSample(0, 0.5)
+    
+    # 
+    self.signalMasterAndWait()
+    while not self.isTerminationRequested():
       currentId=self.pool.getCurrentId()
-      v=self.pool.getCurrentOutSample()
-      val=val+v.getIntValue()
+      valIn = self.pool.getCurrentInSample().getDoubleValue()
+      valOut = self.pool.getCurrentOutSample().getIntValue()
+      print "Compute currentId=%s, valIn=%s, valOut=%s" % (currentId, valIn, valOut)
+      iter=iter+1
+      
+      if iter < 3:
+        nextSample = valIn + 1
+        self.pool.pushInSample(iter, nextSample)
+        
+      self.signalMasterAndWait()
 
-    #in the end destroy the pool content
+  def finish(self):
+    """Optional method called when the algorithm has finished, successfully
+       or not, to perform any necessary clean up."""
+    print "Algo finish"
     self.pool.destroyAll()
+
+  def getAlgoResult(self):
+    """return the result of the algorithm.
+       The object returned is of type indicated by getTCForAlgoResult.
+    """
+    return 42
+
+
