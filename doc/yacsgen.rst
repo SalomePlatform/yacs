@@ -37,6 +37,7 @@ The first action to be done is to import these definitions::
 
      from module_generator import Generator,Module,PYComponent
      from module_generator import CPPComponent,Service,F77Component
+     from module_generator import Library
 
 If you want to import all definitions, you can do that::
 
@@ -198,9 +199,12 @@ For example, we can have::
                                         body="outputport=myfunc(inputport);",
                                        ),
                                ],
-                      libs="-L/usr/local/mysoft -lmybib",
-                      rlibs="-Wl,--rpath -Wl,/usr/local/mysoft"
+                      libs=[Library(name="mybib", path="/usr/local/mysoft")],
+                      rlibs="/usr/local/mysoft"
                       )
+
+**libs** contains a list of **Library** objects. On linux, if the name of the file is "libmybib.so",
+the **name** of the library will be "mybib". The *path* shows where the library is installed.
 
 The **rlibs** attribute is not compulsory but it can be used to indicate a search path for dynamic libraries in execution.  
 **libs** is used during the link phase.  **rlibs** is only used during execution, it avoids the need to set the LD_LIBRARY_PATH 
@@ -212,7 +216,7 @@ Includes will be added using the **defs** attribute.  For example::
 
    defs="""#include "myinclude.h" """
 
-The includes path will be specified in the **includes** attribute of the component in the following form::
+The include paths will be specified in the **includes** attribute of the component in the following form::
 
 
    defs="""#include "myinclude.h"
@@ -227,10 +231,12 @@ The includes path will be specified in the **includes** attribute of the compone
                                      body="outputport=myfunc(inputport);",
                                     ),
                             ],
-                   libs="-L/usr/local/mysoft -lmybib",
-                   rlibs="-Wl,--rpath -Wl,/usr/local/mysoft",
-                   includes="-I/usr/local/mysoft/include",
+                   libs=[Library(name="mybib", path="/usr/local/mysoft")],
+                   rlibs="/usr/local/mysoft",
+                   includes="/usr/local/mysoft/include",
                   )
+
+Multiple include paths should be separated by spaces or end of line character (\\n).
 
 Adding sources
 """"""""""""""""""""""""""""""""""""""""""""""""""""
@@ -252,7 +258,7 @@ named myfunc.cpp. The description will be::
                                     ),
                             ],
                    sources=["myfunc.cpp"],
-                   includes="-I/usr/local/mysoft/include",
+                   includes="/usr/local/mysoft/include",
                   )
 
 
@@ -379,8 +385,8 @@ The following example will be used to specify these final concepts::
                                        body="chdir(c);"
                                       ),
                               ],
-                     libs="-L/usr/local/fcompo -lfcompo",
-                     rlibs="-Wl,--rpath -Wl,/usr/local/fcompo"
+                     libs=[Library(name="fcompo", path="/usr/local/fcompo")],
+                     rlibs="/usr/local/fcompo"
                     )
 
 The Fortran “compo3” component has dataflow and datastream ports like the C++ component.  The Fortran dynamic library 
@@ -671,8 +677,7 @@ Example creation of generator::
 Once this generator has been created, simply call its commands to perform the necessary operations.
 
 - SALOME module generation:  ``g.generate()``
-- initialise automake:  ``g.bootstrap()``
-- execute the configure script:  ``g.configure()``
+- build configuration:  ``g.configure()``
 - compilation:  ``g.make()``
 - installation in the directory <prefix>:  ``g.install()``
 - create a SALOME application in the directory **appli_dir**::
@@ -724,13 +729,12 @@ This gives something like the following for a module with a single Fortran compo
                                     body="chdir(c);"
                                    ),
                            ],
-                  libs="-L/local/chris/modulegen/YACSGEN/fcompo -lfcompo",
-                  rlibs="-Wl,--rpath -Wl,/local/chris/modulegen/YACSGEN/fcompo")
+                  libs=[Library(name="fcompo", path="/local/chris/modulegen/YACSGEN/fcompo")],
+                  rlibs="/local/chris/modulegen/YACSGEN/fcompo")
 
   m=Module("mymodule",components=[c1],prefix="Install")
   g=Generator(m,context)
   g.generate()
-  g.bootstrap()
   g.configure()
   g.make()
   g.install()
@@ -1228,7 +1232,6 @@ written as follows::
 
   g=Generator(Module("astmod",components=[c1,c2],prefix=install_prefix),context)
   g.generate()
-  g.bootstrap()
   g.configure()
   g.make()
   g.install()
@@ -1508,7 +1511,7 @@ The module provides the following classes:
 .. autoclass:: Module
 
 .. autoclass:: Generator
-    :members: generate, bootstrap, configure, make, install, make_appli
+    :members: generate, configure, make, install, make_appli
 
 .. autofunction:: add_type
 
