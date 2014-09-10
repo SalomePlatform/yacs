@@ -13,12 +13,10 @@ import shutil
 class PMMLBasicsTest(unittest.TestCase):
 
     def setUp(self):
-        pmmlRootDir = os.getenv("YACS_ROOT_DIR");
-        self.resourcesDir = os.path.join(pmmlRootDir,"share","salome","resources","pmml");
-        self.resourcesDir += os.sep ;
-        self.tmpDir = "/tmp/";
-        self.tmpDir += os.environ['LOGNAME']; # ("USER");
-        self.tmpDir += "/PmmlUnitTest/";
+        self.resourcesDir = ".." + os.sep + "Test" + os.sep + "samples" + os.sep ;
+        self.tmpDir = os.sep + "tmp" + os.sep + os.environ['LOGNAME'] + os.sep ;
+        self.tmpDir += "PmmlUnitTest";
+        self.tmpDir += os.sep ;
         if ( not os.path.exists(self.tmpDir) ):
             os.mkdir(self.tmpDir);
             pass

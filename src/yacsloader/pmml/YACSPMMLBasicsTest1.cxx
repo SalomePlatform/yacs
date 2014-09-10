@@ -125,19 +125,7 @@ int driverTest(Proc* &p, const char* schema)
 
 void YACSPMMLBasicsTest1::setUp()
 {
-#ifdef WIN32
-    const char* p = std::getenv("YACS_ROOT_DIR");
-    std::string strP("");
-    if (p) 
-        strP = std::string(p);
-    else 
-        throw std::string("unable to get YACS_ROOT_DIR");
-    resourcesDir = strP;
-    resourcesDir += "/share/salome/yacssamples/";
-#else
-    resourcesDir =  getenv("YACS_ROOT_DIR");
-    resourcesDir += "/share/salome/yacssamples/";
-#endif      
+    resourcesDir = "samples/";    
 }
 
 void YACSPMMLBasicsTest1::tearDown()

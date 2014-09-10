@@ -53,6 +53,12 @@ TARGET_LINK_LIBRARIES(TestYACSPMML pmmlLib
                       YACSBases 
                       ${CPPUNIT_LIBRARIES} ${PLATFORM_LIBS})
 
-ADD_TEST(TestYACSPMML TestYACSPMML)
-
 INSTALL(TARGETS TestYACSPMML DESTINATION ${SALOME_INSTALL_BINS})
+
+IF(NOT WIN32)
+  SET(SHELL /bin/sh)
+  SALOME_CONFIGURE_FILE(config_appli.xml.in config_appli.xml)  
+  SALOME_CONFIGURE_FILE(PmmlExeTest.sh.in PmmlExeTest.sh)  
+  SALOME_CONFIGURE_FILE(PmmlInSessionTest.sh.in PmmlInSessionTest.sh)
+  ADD_TEST(NAME PmmlExeTest COMMAND ${SHELL} PmmlExeTest.sh)
+ENDIF()
