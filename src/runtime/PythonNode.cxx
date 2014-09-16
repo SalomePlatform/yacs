@@ -207,25 +207,25 @@ void PythonEntry::commonRemoteLoadPart3(InlineNode *reqNode, Engines::Container_
         Py_DECREF(new_stderr);
         throw Exception("Error during load");
       }
-    if(isInitializeRequested)
-      {//This one is called only once at initialization in the container if an init-script is specified.
-        try
-          {
-            std::string zeInitScriptKey(container->getProperty(HomogeneousPoolContainer::INITIALIZE_SCRIPT_KEY));
-            if(!zeInitScriptKey.empty())
-              pynode->executeAnotherPieceOfCode(zeInitScriptKey.c_str());
-          }
-        catch( const SALOME::SALOME_Exception& ex )
-          {
-            std::string msg="Exception on PythonNode::loadRemote python invocation of initializisation py script !";
-            msg += '\n';
-            msg += ex.details.text.in();
-            reqNode->setErrorDetails(msg);
-            throw Exception(msg);
-          }
-      }
-    DEBTRACE( "---------------End PyNode::loadRemote function---------------" );
   }
+  if(isInitializeRequested)
+    {//This one is called only once at initialization in the container if an init-script is specified.
+      try
+      {
+          std::string zeInitScriptKey(container->getProperty(HomogeneousPoolContainer::INITIALIZE_SCRIPT_KEY));
+          if(!zeInitScriptKey.empty())
+            pynode->executeAnotherPieceOfCode(zeInitScriptKey.c_str());
+      }
+      catch( const SALOME::SALOME_Exception& ex )
+      {
+          std::string msg="Exception on PythonNode::loadRemote python invocation of initializisation py script !";
+          msg += '\n';
+          msg += ex.details.text.in();
+          reqNode->setErrorDetails(msg);
+          throw Exception(msg);
+      }
+      DEBTRACE( "---------------End PyNode::loadRemote function---------------" );
+    }
 }
 
 void PythonEntry::commonRemoteLoad(InlineNode *reqNode)
