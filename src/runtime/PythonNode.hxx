@@ -48,6 +48,7 @@ namespace YACS
       void commonRemoteLoad(InlineNode *reqNode);
       void commonRemoteLoadPart1(InlineNode *reqNode);
       Engines::Container_var commonRemoteLoadPart2(InlineNode *reqNode, bool& isInitializeRequested);
+      void commonRemoteLoadPart3(InlineNode *reqNode, Engines::Container_ptr objContainer, bool isInitializeRequested);
     protected:
       PyObject *_context;
       PyObject *_pyfuncSer;

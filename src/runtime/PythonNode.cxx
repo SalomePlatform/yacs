@@ -162,12 +162,9 @@ Engines::Container_var PythonEntry::commonRemoteLoadPart2(InlineNode *reqNode, b
   return objContainer;
 }
 
-void PythonEntry::commonRemoteLoad(InlineNode *reqNode)
+void PythonEntry::commonRemoteLoadPart3(InlineNode *reqNode, Engines::Container_ptr objContainer, bool isInitializeRequested)
 {
-  commonRemoteLoadPart1(reqNode);
   Container *container(reqNode->getContainer());
-  bool isInitializeRequested;
-  Engines::Container_var objContainer(commonRemoteLoadPart2(reqNode,isInitializeRequested));
   Engines::PyNodeBase_var pynode(getRemoteInterpreterHandle());
   ///
   {
@@ -213,22 +210,30 @@ void PythonEntry::commonRemoteLoad(InlineNode *reqNode)
     if(isInitializeRequested)
       {//This one is called only once at initialization in the container if an init-script is specified.
         try
-        {
+          {
             std::string zeInitScriptKey(container->getProperty(HomogeneousPoolContainer::INITIALIZE_SCRIPT_KEY));
             if(!zeInitScriptKey.empty())
               pynode->executeAnotherPieceOfCode(zeInitScriptKey.c_str());
-        }
+          }
         catch( const SALOME::SALOME_Exception& ex )
-        {
+          {
             std::string msg="Exception on PythonNode::loadRemote python invocation of initializisation py script !";
             msg += '\n';
             msg += ex.details.text.in();
             reqNode->setErrorDetails(msg);
             throw Exception(msg);
-        }
+          }
       }
     DEBTRACE( "---------------End PyNode::loadRemote function---------------" );
   }
+}
+
+void PythonEntry::commonRemoteLoad(InlineNode *reqNode)
+{
+  commonRemoteLoadPart1(reqNode);
+  bool isInitializeRequested;
+  Engines::Container_var objContainer(commonRemoteLoadPart2(reqNode,isInitializeRequested));
+  commonRemoteLoadPart3(reqNode,objContainer,isInitializeRequested);
 }
 
 PythonNode::PythonNode(const PythonNode& other, ComposedNode *father):InlineNode(other,father)
@@ -327,12 +332,12 @@ void PythonNode::executeRemote()
   DEBTRACE( "++++++++++++++ PyNode::executeRemote: " << getName() << " ++++++++++++++++++++" );
   if(!_pyfuncSer)
     throw Exception("DistributedPythonNode badly loaded");
-
   //
   if(dynamic_cast<HomogeneousPoolContainer *>(getContainer()))
     {
       bool dummy;
       commonRemoteLoadPart2(this,dummy);
+      _pynode->assignNewCompiledCode(getScript().c_str());
     }
   //
   Engines::pickledArgs_var serializationInputCorba(new Engines::pickledArgs);
@@ -846,6 +851,7 @@ void PyFuncNode::executeRemote()
     {
       bool dummy;
       commonRemoteLoadPart2(this,dummy);
+      _pynode->executeAnotherPieceOfCode(getScript().c_str());
     }
   //
   Engines::pickledArgs_var serializationInputCorba(new Engines::pickledArgs);;
