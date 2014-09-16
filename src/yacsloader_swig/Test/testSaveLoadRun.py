@@ -405,6 +405,179 @@ o3=0
     self.assertEqual(p.getState(),pilot.DONE)
     self.assertAlmostEqual(refExpected,o9.getPyObj(),5)
     pass
+  
+  def test4(self):
+    """Non regression test of multi pyScriptNode, pyFuncNode sharing the same HPContainer instance."""
+    fname="TestSaveLoadRun4.xml"
+    script1="""nb=7
+ii=0
+o1=nb*[None]
+for i in xrange(nb):
+    tmp=(i+10)*[None]
+    for j in xrange(i+10):
+        tmp[j]=ii
+        ii+=1
+        pass
+    o1[i]=tmp
+    pass
+"""
+    l=loader.YACSLoader()
+    ex=pilot.ExecutorSwig()
+    p=self.r.createProc("pr")
+    cont=p.createContainer("gg","HPSalome")
+    cont.setSizeOfPool(10)
+    td=p.createType("int","int")
+    td2=p.createSequenceTc("seqint","seqint",td)
+    td3=p.createSequenceTc("seqintvec","seqintvec",td2)
+    node1=self.r.createScriptNode("","node1")
+    node1.setScript(script1)
+    o1=node1.edAddOutputPort("o1",td3)
+    p.edAddChild(node1)
+    #
+    node2=self.r.createForEachLoop("node2",td2)
+    p.edAddChild(node2)
+    p.edAddCFLink(node1,node2)
+    p.edAddLink(o1,node2.edGetSeqOfSamplesPort())
+    node2.edGetNbOfBranchesPort().edInitInt(2)
+    node20=self.r.createBloc("node20")
+    node2.edAddChild(node20)
+    node200=self.r.createForEachLoop("node200",td)
+    node20.edAddChild(node200)
+    node200.edGetNbOfBranchesPort().edInitInt(10)
+    p.edAddLink(node2.edGetSamplePort(),node200.edGetSeqOfSamplesPort())
+    node2000=self.r.createScriptNode("","node2000")
+    node2000.setContainer(cont)
+    node2000.setExecutionMode("remote")
+    node200.edAddChild(node2000)
+    i5=node2000.edAddInputPort("i5",td)
+    o6=node2000.edAddOutputPort("o6",td)
+    node2000.setScript("o6=2+i5")
+    p.edAddLink(node200.edGetSamplePort(),i5)
+    #
+    node3=self.r.createForEachLoop("node3",td)
+    p.edAddChild(node3)
+    p.edAddCFLink(node2,node3)
+    p.edAddLink(o6,node3.edGetSeqOfSamplesPort())
+    node3.edGetNbOfBranchesPort().edInitInt(2)
+    node30=self.r.createBloc("node30")
+    node3.edAddChild(node30)
+    node300=self.r.createForEachLoop("node300",td)
+    node30.edAddChild(node300)
+    node300.edGetNbOfBranchesPort().edInitInt(10)
+    p.edAddLink(node3.edGetSamplePort(),node300.edGetSeqOfSamplesPort())
+    node3000=self.r.createScriptNode("","node3000")
+    node3000.setContainer(cont)
+    node3000.setExecutionMode("remote")
+    node300.edAddChild(node3000)
+    i14=node3000.edAddInputPort("i14",td)
+    o15=node3000.edAddOutputPort("o15",td)
+    node3000.setScript("o15=3+i14")
+    p.edAddLink(node300.edGetSamplePort(),i14)
+    #
+    node4=self.r.createScriptNode("","node4")
+    node4.setScript("o9=i8")
+    p.edAddChild(node4)
+    i8=node4.edAddInputPort("i8",td3)
+    o9=node4.edAddOutputPort("o9",td3)
+    p.edAddCFLink(node3,node4)
+    p.edAddLink(o15,i8)
+    p.saveSchema(fname)
+    p=l.load(fname)
+    ex = pilot.ExecutorSwig()
+    self.assertEqual(p.getState(),pilot.READY)
+    ex.RunW(p,0)
+    self.assertEqual(p.getState(),pilot.DONE)
+    zeResu=p.getChildByName("node4").getOutputPort("o9").get()
+    self.assertEqual(zeResu,[[5,6,7,8,9,10,11,12,13,14],[15,16,17,18,19,20,21,22,23,24,25],[26,27,28,29,30,31,32,33,34,35,36,37],[38,39,40,41,42,43,44,45,46,47,48,49,50],[51,52,53,54,55,56,57,58,59,60,61,62,63,64],[65,66,67,68,69,70,71,72,73,74,75,76,77,78,79], [80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95]])
+    pass
+
+  def test5(self):
+    """Non regression test 2 of multi pyNode, pyFuncNode sharing the same HPContainer instance."""
+    fname="TestSaveLoadRun5.xml"
+    script1="""nb=7
+ii=0
+o1=nb*[None]
+for i in xrange(nb):
+    tmp=(i+10)*[None]
+    for j in xrange(i+10):
+        tmp[j]=ii
+        ii+=1
+        pass
+    o1[i]=tmp
+    pass
+"""
+    l=loader.YACSLoader()
+    ex=pilot.ExecutorSwig()
+    p=self.r.createProc("pr")
+    cont=p.createContainer("gg","HPSalome")
+    cont.setSizeOfPool(10)
+    td=p.createType("int","int")
+    td2=p.createSequenceTc("seqint","seqint",td)
+    td3=p.createSequenceTc("seqintvec","seqintvec",td2)
+    node1=self.r.createScriptNode("","node1")
+    node1.setScript(script1)
+    o1=node1.edAddOutputPort("o1",td3)
+    p.edAddChild(node1)
+    #
+    node2=self.r.createForEachLoop("node2",td2)
+    p.edAddChild(node2)
+    p.edAddCFLink(node1,node2)
+    p.edAddLink(o1,node2.edGetSeqOfSamplesPort())
+    node2.edGetNbOfBranchesPort().edInitInt(2)
+    node20=self.r.createBloc("node20")
+    node2.edAddChild(node20)
+    node200=self.r.createForEachLoop("node200",td)
+    node20.edAddChild(node200)
+    node200.edGetNbOfBranchesPort().edInitInt(10)
+    p.edAddLink(node2.edGetSamplePort(),node200.edGetSeqOfSamplesPort())
+    node2000=self.r.createFuncNode("Salome","node2000")
+    node2000.setFname("ff")
+    node2000.setContainer(cont)
+    node2000.setExecutionMode("remote")
+    node200.edAddChild(node2000)
+    i5=node2000.edAddInputPort("i5",td)
+    o6=node2000.edAddOutputPort("o6",td)
+    node2000.setScript("def ff(x):\n  return 2+x")
+    p.edAddLink(node200.edGetSamplePort(),i5)
+    #
+    node3=self.r.createForEachLoop("node3",td)
+    p.edAddChild(node3)
+    p.edAddCFLink(node2,node3)
+    p.edAddLink(o6,node3.edGetSeqOfSamplesPort())
+    node3.edGetNbOfBranchesPort().edInitInt(2)
+    node30=self.r.createBloc("node30")
+    node3.edAddChild(node30)
+    node300=self.r.createForEachLoop("node300",td)
+    node30.edAddChild(node300)
+    node300.edGetNbOfBranchesPort().edInitInt(10)
+    p.edAddLink(node3.edGetSamplePort(),node300.edGetSeqOfSamplesPort())
+    node3000=self.r.createFuncNode("Salome","node3000")
+    node3000.setFname("ff")
+    node3000.setContainer(cont)
+    node3000.setExecutionMode("remote")
+    node300.edAddChild(node3000)
+    i14=node3000.edAddInputPort("i14",td)
+    o15=node3000.edAddOutputPort("o15",td)
+    node3000.setScript("def ff(x):\n  return 3+x")
+    p.edAddLink(node300.edGetSamplePort(),i14)
+    #
+    node4=self.r.createScriptNode("","node4")
+    node4.setScript("o9=i8")
+    p.edAddChild(node4)
+    i8=node4.edAddInputPort("i8",td3)
+    o9=node4.edAddOutputPort("o9",td3)
+    p.edAddCFLink(node3,node4)
+    p.edAddLink(o15,i8)
+    p.saveSchema(fname)
+    p=l.load(fname)
+    ex = pilot.ExecutorSwig()
+    self.assertEqual(p.getState(),pilot.READY)
+    ex.RunW(p,0)
+    self.assertEqual(p.getState(),pilot.DONE)
+    zeResu=p.getChildByName("node4").getOutputPort("o9").get()
+    self.assertEqual(zeResu,[[5,6,7,8,9,10,11,12,13,14],[15,16,17,18,19,20,21,22,23,24,25],[26,27,28,29,30,31,32,33,34,35,36,37],[38,39,40,41,42,43,44,45,46,47,48,49,50],[51,52,53,54,55,56,57,58,59,60,61,62,63,64],[65,66,67,68,69,70,71,72,73,74,75,76,77,78,79], [80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95]])
+    pass
+
   pass
 
 import os
