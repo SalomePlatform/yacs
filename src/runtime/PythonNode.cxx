@@ -228,6 +228,41 @@ void PythonEntry::commonRemoteLoadPart3(InlineNode *reqNode, Engines::Container_
     }
 }
 
+std::string PythonEntry::GetContainerLog(const std::string& mode, Container *container, const Task *askingTask)
+{
+  if(mode=="local")
+    return "";
+
+  std::string msg;
+  try
+  {
+      SalomeContainer *containerCast(dynamic_cast<SalomeContainer *>(container));
+      SalomeHPContainer *objContainer2(dynamic_cast<SalomeHPContainer *>(container));
+      if(containerCast)
+        {
+          Engines::Container_var objContainer(containerCast->getContainerPtr(askingTask));
+          CORBA::String_var logname = objContainer->logfilename();
+          DEBTRACE(logname);
+          msg=logname;
+          std::string::size_type pos = msg.find(":");
+          msg=msg.substr(pos+1);
+        }
+      else if(objContainer2)
+        {
+          msg="Remote PythonNode is on HP Container : no log because no info of the location by definition of HP Container !";
+        }
+      else
+        {
+          msg="Not implemented yet for container log for that type of container !";
+        }
+  }
+  catch(...)
+  {
+      msg = "Container no longer reachable";
+  }
+  return msg;
+}
+
 void PythonEntry::commonRemoteLoad(InlineNode *reqNode)
 {
   commonRemoteLoadPart1(reqNode);
@@ -585,23 +620,7 @@ void PythonNode::executeLocal()
 
 std::string PythonNode::getContainerLog()
 {
-  if(_mode=="local")return "";
-
-  std::string msg;
-  try
-    {
-      Engines::Container_var objContainer=((SalomeContainer*)_container)->getContainerPtr(this);
-      CORBA::String_var logname = objContainer->logfilename();
-      DEBTRACE(logname);
-      msg=logname;
-      std::string::size_type pos = msg.find(":");
-      msg=msg.substr(pos+1);
-    }
-  catch(...)
-    {
-      msg = "Container no longer reachable";
-    }
-  return msg;
+  return PythonEntry::GetContainerLog(_mode,_container,this);
 }
 
 void PythonNode::shutdown(int level)
@@ -1147,23 +1166,7 @@ PyFuncNode* PyFuncNode::cloneNode(const std::string& name)
 
 std::string PyFuncNode::getContainerLog()
 {
-  if(_mode=="local")return "";
-
-  std::string msg;
-  try
-    {
-      Engines::Container_var objContainer=((SalomeContainer*)_container)->getContainerPtr(this);
-      CORBA::String_var logname = objContainer->logfilename();
-      DEBTRACE(logname);
-      msg=logname;
-      std::string::size_type pos = msg.find(":");
-      msg=msg.substr(pos+1);
-    }
-  catch(...)
-    {
-      msg = "Container no longer reachable";
-    }
-  return msg;
+  return PythonEntry::GetContainerLog(_mode,_container,this);
 }
 
 void PyFuncNode::shutdown(int level)

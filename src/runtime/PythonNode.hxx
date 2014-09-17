@@ -49,6 +49,7 @@ namespace YACS
       void commonRemoteLoadPart1(InlineNode *reqNode);
       Engines::Container_var commonRemoteLoadPart2(InlineNode *reqNode, bool& isInitializeRequested);
       void commonRemoteLoadPart3(InlineNode *reqNode, Engines::Container_ptr objContainer, bool isInitializeRequested);
+      static std::string GetContainerLog(const std::string& mode, Container *container, const Task *askingTask);
     protected:
       PyObject *_context;
       PyObject *_pyfuncSer;
