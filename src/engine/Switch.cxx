@@ -386,10 +386,6 @@ void Switch::getReadyTasks(std::vector<Task *>& tasks)
     }
 }
 
-void Switch::selectRunnableTasks(std::vector<Task *>& tasks)
-{
-}
-
 list<Node *> Switch::edGetDirectDescendants() const
 {
   list<Node *> ret;

@@ -51,6 +51,7 @@ namespace YACS
       ComposedNode(const std::string& name);
       ComposedNode(const ComposedNode& other, ComposedNode *father);
       void performDuplicationOfPlacement(const Node& other);
+      void performShallowDuplicationOfPlacement(const Node& other);
     public:
       virtual ~ComposedNode();
       bool isFinished();

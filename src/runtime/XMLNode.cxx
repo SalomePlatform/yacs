@@ -21,6 +21,7 @@
 #include "XMLPorts.hxx"
 #include "Mutex.hxx"
 #include "TypeCode.hxx"
+#include "AutoLocker.hxx"
 
 #include <libxml/parser.h>
 #include <libxml/tree.h>
@@ -91,21 +92,22 @@ void XmlNode::execute()
   DEBTRACE("execute");
   char dir[]="yacsXXXXXX";
   // add a lock around mkdtemp (seems not thread safe)
-  MUTEX.lock();
+  {
+    YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&MUTEX);
 #ifdef WIN32
-  char mdir [512+1];
-  GetTempPath(MAX_PATH+1, mdir);
-  CreateDirectory(mdir, NULL);
+    char mdir [512+1];
+    GetTempPath(MAX_PATH+1, mdir);
+    CreateDirectory(mdir, NULL);
 #else
-  char* mdir=mkdtemp(dir);
+    char* mdir=mkdtemp(dir);
 #endif
-  MUTEX.unlock();
-  if(mdir==NULL)
-    {
-      perror("mkdtemp failed");
-      std::cerr << "Problem in mkdtemp " << dir << " " << mdir << std::endl;
-      throw Exception("Execution problem in mkdtemp");
-    }
+    if(mdir==NULL)
+      {
+        perror("mkdtemp failed");
+        std::cerr << "Problem in mkdtemp " << dir << " " << mdir << std::endl;
+        throw Exception("Execution problem in mkdtemp");
+      }
+  }
   std::string sdir(dir);
   std::string input=sdir+"/input";
   std::ofstream f(input.c_str());

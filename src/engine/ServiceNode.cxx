@@ -69,6 +69,17 @@ void ServiceNode::performDuplicationOfPlacement(const Node& other)
     _component=otherC._component->clone();
 }
 
+void ServiceNode::performShallowDuplicationOfPlacement(const Node& other)
+{
+  const ServiceNode &otherC=*(dynamic_cast<const ServiceNode *>(&other));
+  //if other has no component don't clone: this will not have one
+  if(otherC._component)
+    {
+      _component=otherC._component;
+      _component->incrRef();
+    }
+}
+
 ServiceNode::~ServiceNode()
 {
   if(_component)
@@ -80,11 +91,11 @@ void ServiceNode::load()
 {
   if(_component)
     {
-      if(!_component->isLoaded())
+      if(!_component->isLoaded(this))
         {
           try
             {
-              _component->load();
+              _component->load(this);
             }
           catch(Exception& e)
             {
@@ -113,6 +124,11 @@ ComponentInstance *ServiceNode::getComponent()
   return _component;
 }
 
+const ComponentInstance *ServiceNode::getComponent() const
+{
+  return _component;
+}
+
 //! Return the associated container
 Container *ServiceNode::getContainer()
 {
@@ -133,7 +149,7 @@ void ServiceNode::setComponent(ComponentInstance* compo) throw(YACS::Exception)
   if(compo)
     {
       DEBTRACE(compo->getInstanceName());
-      if(compo->getKind() != this->getKind())
+      if(compo->getKindForNode() != this->getKind())
         {
           //Not allowed
           std::string what("ServiceNode::setComponent : component instance kind not allowed ");

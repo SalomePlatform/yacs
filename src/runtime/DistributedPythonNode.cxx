@@ -21,6 +21,9 @@
 #include "RuntimeSALOME.hxx"
 #include "SalomeContainer.hxx"
 #include "PythonNode.hxx"
+#include "SalomeHPContainer.hxx"
+#include "SalomeContainerTmpForHP.hxx"
+#include "AutoGIL.hxx"
 
 #include "PythonPorts.hxx"
 #include "YacsTrace.hxx"
@@ -50,122 +53,165 @@ DistributedPythonNode::DistributedPythonNode(const DistributedPythonNode& other,
 
 DistributedPythonNode::~DistributedPythonNode()
 {
-  PyGILState_STATE gstate = PyGILState_Ensure();
+  AutoGIL agil;
   Py_DECREF(_context);
-  PyGILState_Release(gstate);
 }
 
 void DistributedPythonNode::load()
 {
+  bool isContAlreadyStarted(false);
+  if(_container)
+    isContAlreadyStarted=_container->isAlreadyStarted(this);
   ServerNode::load();
-  PyGILState_STATE gstate = PyGILState_Ensure();
-  if( PyDict_SetItemString( _context, "__builtins__", getSALOMERuntime()->getBuiltins() ))
-    {
-      stringstream msg;
-      msg << "Impossible to set builtins" << __FILE__ << ":" << __LINE__;
-      PyGILState_Release(gstate);
-      _errorDetails=msg.str();
-      throw Exception(msg.str());
-    }
-  const char picklizeScript[]="import cPickle\ndef pickleForDistPyth2009(*args,**kws):\n  return cPickle.dumps((args,kws),-1)\n\ndef unPickleForDistPyth2009(st):\n  args=cPickle.loads(st)\n  return args\n";
-  PyObject *res=PyRun_String(picklizeScript,Py_file_input,_context,_context);
-  if(res == NULL)
-    {
-      _errorDetails="";
-      PyObject* new_stderr = newPyStdOut(_errorDetails);
-      PySys_SetObject((char*)"stderr", new_stderr);
-      PyErr_Print();
-      PySys_SetObject((char*)"stderr", PySys_GetObject((char*)"__stderr__"));
-      Py_DECREF(new_stderr);
+  {
+    AutoGIL agil;
+    if( PyDict_SetItemString( _context, "__builtins__", getSALOMERuntime()->getBuiltins() ))
+      {
+        stringstream msg;
+        msg << "Impossible to set builtins" << __FILE__ << ":" << __LINE__;
+        _errorDetails=msg.str();
+        throw Exception(msg.str());
+      }
+    const char picklizeScript[]="import cPickle\ndef pickleForDistPyth2009(*args,**kws):\n  return cPickle.dumps((args,kws),-1)\n\ndef unPickleForDistPyth2009(st):\n  args=cPickle.loads(st)\n  return args\n";
+    PyObject *res=PyRun_String(picklizeScript,Py_file_input,_context,_context);
+    if(res == NULL)
+      {
+        _errorDetails="";
+        PyObject* new_stderr = newPyStdOut(_errorDetails);
+        PySys_SetObject((char*)"stderr", new_stderr);
+        PyErr_Print();
+        PySys_SetObject((char*)"stderr", PySys_GetObject((char*)"__stderr__"));
+        Py_DECREF(new_stderr);
+        throw Exception("Error during execution");
+        return;
+      }
+    Py_DECREF(res);
+    _pyfuncSer=PyDict_GetItemString(_context,"pickleForDistPyth2009");
+    _pyfuncUnser=PyDict_GetItemString(_context,"unPickleForDistPyth2009");
+    if(_pyfuncSer == NULL)
+      {
+        _errorDetails="";
+        PyObject* new_stderr = newPyStdOut(_errorDetails);
+        PySys_SetObject((char*)"stderr", new_stderr);
+        PyErr_Print();
+        PySys_SetObject((char*)"stderr", PySys_GetObject((char*)"__stderr__"));
+        Py_DECREF(new_stderr);
+        throw Exception("Error during execution");
+      }
+    if(_pyfuncUnser == NULL)
+      {
+        _errorDetails="";
+        PyObject* new_stderr = newPyStdOut(_errorDetails);
+        PySys_SetObject((char*)"stderr", new_stderr);
+        PyErr_Print();
+        PySys_SetObject((char*)"stderr", PySys_GetObject((char*)"__stderr__"));
+        Py_DECREF(new_stderr);
+        throw Exception("Error during execution");
+      }
 
-      PyGILState_Release(gstate);
-      throw Exception("Error during execution");
-      return;
-    }
-  Py_DECREF(res);
-  _pyfuncSer=PyDict_GetItemString(_context,"pickleForDistPyth2009");
-  _pyfuncUnser=PyDict_GetItemString(_context,"unPickleForDistPyth2009");
-  if(_pyfuncSer == NULL)
-    {
-      _errorDetails="";
-      PyObject* new_stderr = newPyStdOut(_errorDetails);
-      PySys_SetObject((char*)"stderr", new_stderr);
-      PyErr_Print();
-      PySys_SetObject((char*)"stderr", PySys_GetObject((char*)"__stderr__"));
-      Py_DECREF(new_stderr);
+    Engines::Container_var objContainer=Engines::Container::_nil();
+    if(!_container)
+      throw Exception("No container specified !");
+    SalomeContainer *containerCast0(dynamic_cast<SalomeContainer *>(_container));
+    SalomeHPContainer *containerCast1(dynamic_cast<SalomeHPContainer *>(_container));
+    if(containerCast0)
+      objContainer=containerCast0->getContainerPtr(this);
+    else if(containerCast1)
+      {
+        YACS::BASES::AutoCppPtr<SalomeContainerTmpForHP> tmpCont(SalomeContainerTmpForHP::BuildFrom(containerCast1,this));
+        objContainer=tmpCont->getContainerPtr(this);
+      }
+    else
+      throw Exception("Unrecognized type of container ! Salome one is expected !");
+    if(CORBA::is_nil(objContainer))
+      throw Exception("Container corba pointer is NULL !");
 
-      PyGILState_Release(gstate);
-      throw Exception("Error during execution");
-    }
-  if(_pyfuncUnser == NULL)
+    try
     {
-      _errorDetails="";
-      PyObject* new_stderr = newPyStdOut(_errorDetails);
-      PySys_SetObject((char*)"stderr", new_stderr);
-      PyErr_Print();
-      PySys_SetObject((char*)"stderr", PySys_GetObject((char*)"__stderr__"));
-      Py_DECREF(new_stderr);
-
-      PyGILState_Release(gstate);
-      throw Exception("Error during execution");
+        if(containerCast0 || !isContAlreadyStarted)
+          {
+            _pynode = objContainer->createPyNode(getName().c_str(),getScript().c_str());
+          }
+        else
+          {
+            Engines::PyNode_var dftPyScript(objContainer->getDefaultPyNode());
+            if(CORBA::is_nil(dftPyScript))
+              _pynode = objContainer->createPyNode(getName().c_str(),getScript().c_str());
+            else
+              _pynode = dftPyScript;
+          }
     }
-  DEBTRACE( "---------------End PyfuncSerNode::load function---------------" );
-  PyGILState_Release(gstate);
+    catch( const SALOME::SALOME_Exception& ex )
+    {
+        std::string msg="Exception on remote python node creation ";
+        msg += '\n';
+        msg += ex.details.text.in();
+        _errorDetails=msg;
+        throw Exception(msg);
+    }
+
+    if(CORBA::is_nil(_pynode))
+      throw Exception("In DistributedPythonNode the ref in NULL ! ");
+
+
+    DEBTRACE( "---------------End PyfuncSerNode::load function---------------" );
+  }
 }
 
 void DistributedPythonNode::execute()
 {
   YACSTRACE(1,"+++++++++++++++++ DistributedPythonNode::execute: " << getName() << " " << getFname() << " +++++++++++++++++" );
+  //////
+  PyObject* ob;
+  if(!_pyfuncSer)
+    throw Exception("DistributedPythonNode badly loaded");
+  Engines::pickledArgs *serializationInputCorba(0);
+  PyObject *args(0);
   {
-    Engines::Container_var objContainer=((SalomeContainer*)_container)->getContainerPtr(0);
-    Engines::PyNode_var pn=objContainer->createPyNode(getName().c_str(),getScript().c_str());
-    //////
-    int pos=0;
-    PyObject* ob;
-    if(!_pyfuncSer)
-      throw Exception("DistributedPythonNode badly loaded");
-    PyGILState_STATE gstate = PyGILState_Ensure();
-    
+    AutoGIL agil;
+
     DEBTRACE( "---------------DistributedPythonNode::inputs---------------" );
-    PyObject* args = PyTuple_New(getNumberOfInputPorts()) ;
-    list<InputPort *>::iterator iter2;
-    for(iter2 = _setOfInputPort.begin(); iter2 != _setOfInputPort.end(); iter2++)
+    args = PyTuple_New(getNumberOfInputPorts()) ;
+    int pos=0;
+    for(list<InputPort *>::iterator iter2 = _setOfInputPort.begin(); iter2 != _setOfInputPort.end(); iter2++,pos++)
       {
         InputPyPort *p=(InputPyPort *)*iter2;
         ob=p->getPyObj();
         Py_INCREF(ob);
         PyTuple_SetItem(args,pos,ob);
-        pos++;
       }
     PyObject *serializationInput=PyObject_CallObject(_pyfuncSer,args);
     std::string serializationInputC=PyString_AsString(serializationInput);
-    Engines::pickledArgs *serializationInputCorba=new Engines::pickledArgs;
+    serializationInputCorba=new Engines::pickledArgs;
     int len=serializationInputC.length();
     serializationInputCorba->length(serializationInputC.length());
     for(int i=0;i<serializationInputC.length();i++)
       (*serializationInputCorba)[i]=serializationInputC[i];
-    //serializationInputCorba[serializationInputC.length()]='\0';
-    DEBTRACE( "-----------------DistributedPythonNode starting remote python invocation-----------------" );
-    Engines::pickledArgs *resultCorba;
-    try
-      {
-        resultCorba=pn->execute(getFname().c_str(),*serializationInputCorba);
-      }
-    catch(...)
-      {
-        std::string msg="Exception on remote python invocation";
-        PyGILState_Release(gstate);
-        _errorDetails=msg;
-        throw Exception(msg);
-      }
-    DEBTRACE( "-----------------DistributedPythonNode end of remote python invocation-----------------" );
-    //
-    delete serializationInputCorba;
-    char *resultCorbaC=new char[resultCorba->length()+1];
-    resultCorbaC[resultCorba->length()]='\0';
-    for(int i=0;i<resultCorba->length();i++)
-      resultCorbaC[i]=(*resultCorba)[i];
-    delete resultCorba;
+    Py_DECREF(serializationInput);
+  }
+  //serializationInputCorba[serializationInputC.length()]='\0';
+  DEBTRACE( "-----------------DistributedPythonNode starting remote python invocation-----------------" );
+  Engines::pickledArgs *resultCorba;
+  try
+  {
+      resultCorba=_pynode->execute(getFname().c_str(),*serializationInputCorba);
+  }
+  catch(...)
+  {
+      std::string msg="Exception on remote python invocation";
+      _errorDetails=msg;
+      throw Exception(msg);
+  }
+  DEBTRACE( "-----------------DistributedPythonNode end of remote python invocation-----------------" );
+  //
+  delete serializationInputCorba;
+  char *resultCorbaC=new char[resultCorba->length()+1];
+  resultCorbaC[resultCorba->length()]='\0';
+  for(int i=0;i<resultCorba->length();i++)
+    resultCorbaC[i]=(*resultCorba)[i];
+  delete resultCorba;
+  {
+    AutoGIL agil;
     args = PyTuple_New(1);
     PyObject* resultPython=PyString_FromString(resultCorbaC);
     delete [] resultCorbaC;
@@ -177,21 +223,18 @@ void DistributedPythonNode::execute()
       nres=0;
     else if(PyTuple_Check(finalResult))
       nres=PyTuple_Size(finalResult);
-    
+
     if(getNumberOfOutputPorts() != nres)
       {
         std::string msg="Number of output arguments : Mismatch between definition and execution";
         Py_DECREF(finalResult);
-        PyGILState_Release(gstate);
         _errorDetails=msg;
         throw Exception(msg);
       }
-    
-    pos=0;
-    list<OutputPort *>::iterator iter;
     try
-      {
-        for(iter = _setOfOutputPort.begin(); iter != _setOfOutputPort.end(); iter++)
+    {
+        int pos(0);
+        for(list<OutputPort *>::iterator iter = _setOfOutputPort.begin(); iter != _setOfOutputPort.end(); iter++, pos++)
           {
             OutputPyPort *p=(OutputPyPort *)*iter;
             DEBTRACE( "port name: " << p->getName() );
@@ -201,17 +244,14 @@ void DistributedPythonNode::execute()
             else ob=finalResult;
             DEBTRACE( "ob refcnt: " << ob->ob_refcnt );
             p->put(ob);
-            pos++;
           }
-      }
+    }
     catch(ConversionException& ex)
-      {
+    {
         Py_DECREF(finalResult);
-        PyGILState_Release(gstate);
         _errorDetails=ex.what();
         throw;
-      }
-    PyGILState_Release(gstate);
+    }
   }
   DEBTRACE( "++++++++++++++ End DistributedPythonNode::execute: " << getName() << " ++++++++++++++++++++" );
 }
@@ -237,9 +277,8 @@ ServerNode *DistributedPythonNode::createNode(const std::string& name) const
 void DistributedPythonNode::initMySelf()
 {
   _implementation = DistributedPythonNode::IMPL_NAME;
-  PyGILState_STATE gstate=PyGILState_Ensure();
+  AutoGIL agil;
   _context=PyDict_New();
-  PyGILState_Release(gstate);
 }
 
 void DistributedPythonNode::dealException(CORBA::Exception *exc, const char *method, const char *ref)

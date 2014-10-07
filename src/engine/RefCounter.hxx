@@ -35,6 +35,7 @@ namespace YACS
       static unsigned int _totalCnt;
     protected:
       RefCounter();
+      RefCounter(const RefCounter& other);
       virtual ~RefCounter();
     protected:
       mutable unsigned int _cnt;

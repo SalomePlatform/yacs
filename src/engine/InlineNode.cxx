@@ -29,7 +29,11 @@ using namespace YACS::ENGINE;
 using namespace std;
 
 
-InlineNode::~InlineNode() { }
+InlineNode::~InlineNode()
+{
+  if(_container)
+    _container->decrRef();
+}
 
 void InlineNode::accept(Visitor *visitor)
 {
@@ -48,9 +52,7 @@ void InlineNode::setScript(const std::string& script)
 
 
 InlineFuncNode::~InlineFuncNode()
-{ 
-  if(_container)
-    _container->decrRef();
+{
 }
 
 void InlineFuncNode::accept(Visitor *visitor)
@@ -58,6 +60,9 @@ void InlineFuncNode::accept(Visitor *visitor)
   visitor->visitInlineFuncNode(this);
 }
 
+/*!
+ * \param fname: name of the function contained in the script to execute
+ */
 void InlineFuncNode::setFname(const std::string& fname)
 {
   _fname=fname;
@@ -110,6 +115,17 @@ void InlineNode::performDuplicationOfPlacement(const Node& other)
   //if other has no container don't clone: this will not have one
   if(otherC._container)
     _container=otherC._container->clone();
+}
+
+void InlineNode::performShallowDuplicationOfPlacement(const Node& other)
+{
+  const InlineNode &otherC=*(dynamic_cast<const InlineNode *>(&other));
+  //if other has no container don't clone: this will not have one
+  if(otherC._container)
+    {
+      _container=otherC._container;
+      _container->incrRef();
+    }
 }
 
 bool InlineNode::isDeployable() const

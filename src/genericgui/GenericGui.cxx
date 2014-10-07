@@ -307,6 +307,10 @@ void GenericGui::createActions()
                                             tr("Create Container"), tr("Create a New Container"),
                                             0, _parent, false, this,  SLOT(onNewContainer()));
 
+  _newHPContainerAct = _wrapper->createAction(getMenuId(), tr("Create a New HP Container"), QIcon("icons:container.png"),
+                                              tr("Create HP Container"), tr("Create a New Homogeneous Pool Container."),
+                                              0, _parent, false, this,  SLOT(onNewHPContainer()));
+
   _selectComponentInstanceAct = _wrapper->createAction(getMenuId(), tr("Select a Component Instance"), QIcon("icons:icon_select.png"),
                                                        tr("Select a Component Instance"), tr("Select a Component Instance"),
                                                        0, _parent, false, this,  SLOT(onSelectComponentInstance()));
@@ -1957,6 +1961,12 @@ void GenericGui::onNewContainer()
 {
   DEBTRACE("GenericGui::onNewContainer");
   _guiEditor->CreateContainer();
+}
+
+void GenericGui::onNewHPContainer()
+{
+  DEBTRACE("GenericGui::onNewHPContainer");
+  _guiEditor->CreateHPContainer();
 }
 
 void GenericGui::onNewSalomeComponent()

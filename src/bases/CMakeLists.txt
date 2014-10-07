@@ -44,6 +44,8 @@ SET(YACSBases_HEADERS
   DynLibLoader.hxx
   DynLibLoaderWin.hxx
   Exception.hxx
+  AutoRefCnt.hxx
+  AutoLocker.hxx
   Mutex.hxx
   MutexPT.hxx
   Semaphore.hxx

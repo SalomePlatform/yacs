@@ -23,31 +23,23 @@
 
 using namespace YACS::ENGINE;
 
-ServerNode::ServerNode(const std::string& name):InlineFuncNode(name),_container(0)
+ServerNode::ServerNode(const std::string& name):InlineFuncNode(name)
 {
 }
 
-ServerNode::ServerNode(const ServerNode& other, ComposedNode *father):InlineFuncNode(other,father),_container(0)
+ServerNode::ServerNode(const ServerNode& other, ComposedNode *father):InlineFuncNode(other,father)
 {
-}
-
-void ServerNode::performDuplicationOfPlacement(const Node& other)
-{
-  const ServerNode &otherC=*(dynamic_cast<const ServerNode *>(&other));
-  //if other has no container don't clone: this will not have one
-  if(otherC._container)
-    _container=otherC._container->clone();
 }
 
 void ServerNode::load()
 {
   if(_container)
     {
-      if(!_container->isAlreadyStarted(0))
+      if(!_container->isAlreadyStarted(this))
         {
           try
             {
-              _container->start(0);
+              _container->start(this);
             }
           catch(Exception& e)
             {
@@ -70,18 +62,6 @@ void ServerNode::accept(Visitor *visitor)
   visitor->visitServerNode(this);
 }
 
-void ServerNode::setContainer(Container *container)
-{
-  if(_container==container)
-    return ;
-  if(_container)
-    _container->decrRef();
-  _container=container;
-  if(_container)
-    _container->incrRef();
-  modified();
-}
-
 //! By definition of ServerNode class.
 bool ServerNode::isDeployable() const
 {
@@ -90,6 +70,5 @@ bool ServerNode::isDeployable() const
 
 ServerNode::~ServerNode()
 {
-  if(_container)
-    _container->decrRef();
 }
+

@@ -269,7 +269,7 @@ void GuiEditor::CreateContainer()
   DEBTRACE("GuiEditor::CreateContainer");
   SubjectProc *sproc = QtGuiContext::getQtCurrent()->getSubjectProc();
   YASSERT(sproc);
-  SubjectContainer *scont = 0;
+  SubjectContainerBase *scont = 0;
   while (!scont)
     {
       std::stringstream name;
@@ -278,6 +278,23 @@ void GuiEditor::CreateContainer()
       name.str("");
       name << "container" << newid;
       scont = sproc->addContainer(name.str());
+    }
+}
+
+void GuiEditor::CreateHPContainer()
+{
+  DEBTRACE("GuiEditor::CreateHPContainer");
+  SubjectProc *sproc = QtGuiContext::getQtCurrent()->getSubjectProc();
+  YASSERT(sproc);
+  SubjectContainerBase *scont = 0;
+  while (!scont)
+    {
+      std::stringstream name;
+      long newid = GuiContext::getCurrent()->getNewId();
+      if (newid > 100000) break;
+      name.str("");
+      name << "container" << newid;
+      scont = sproc->addHPContainer(name.str());
     }
 }
 

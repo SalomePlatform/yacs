@@ -111,7 +111,6 @@ namespace YACS
       virtual bool edAddChild(Node *DISOWNnode) throw(Exception);
       int getMaxCase();
       void getReadyTasks(std::vector<Task *>& tasks);
-      void selectRunnableTasks(std::vector<Task *>& tasks);
       std::list<Node *> edGetDirectDescendants() const;
       InputPort *edGetConditionPort() { return &_condition; }
       void writeDot(std::ostream &os) const;

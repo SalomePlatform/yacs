@@ -44,6 +44,7 @@
 
 %{
 #include "SalomeContainer.hxx"
+#include "SalomeHPContainer.hxx"
 #include "RuntimeSALOME.hxx"
 #include "SALOMEDispatcher.hxx"
 #include "SalomeProc.hxx"
@@ -117,6 +118,7 @@
 
 %include <YACSRuntimeSALOMEExport.hxx>
 %include "SalomeContainer.hxx"
+%include "SalomeHPContainer.hxx"
 %include "RuntimeSALOME.hxx"
 %include "SALOMEDispatcher.hxx"
 %include "SalomeProc.hxx"

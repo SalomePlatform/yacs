@@ -22,12 +22,12 @@
 
 #include "YACSRuntimeSALOMEExport.hxx"
 #include "Container.hxx"
+#include "SalomeContainerTools.hxx"
+#include "SalomeContainerHelper.hxx"
 #include "Mutex.hxx"
 #include <string>
 #include <vector>
-#include <SALOMEconfig.h>
 #include CORBA_CLIENT_HEADER(SALOME_Component)
-#include CORBA_CLIENT_HEADER(SALOME_ContainerManager)
 
 namespace YACS
 {
@@ -41,25 +41,34 @@ namespace YACS
     public:
       SalomeContainer();
       SalomeContainer(const SalomeContainer& other);
+#ifndef SWIG
+      SalomeContainer(const Container& other, const SalomeContainerTools& sct, const SalomeContainerHelper *lmt, const std::vector<std::string>& componentNames, int shutdownLev);
+#endif
       //! For thread safety for concurrent load operation on same Container.
       void lock();
       //! For thread safety for concurrent load operation on same Container.
       void unLock();
-      bool isAlreadyStarted(const ComponentInstance *inst) const;
-      Engines::Container_ptr getContainerPtr(const ComponentInstance *inst) const;
-      void start(const ComponentInstance *inst) throw (Exception);
+      std::string getKind() const;
+      bool isAlreadyStarted(const Task *askingNode) const;
+      Engines::Container_ptr getContainerPtr(const Task *askingNode) const;
+      void start(const Task *askingNode) throw (Exception);
       Container *clone() const;
-      std::string getPlacementId(const ComponentInstance *inst) const;
-      std::string getFullPlacementId(const ComponentInstance *inst) const;
+      Container *cloneAlways() const;
+      std::string getPlacementId(const Task *askingNode) const;
+      std::string getFullPlacementId(const Task *askingNode) const;
       void checkCapabilityToDealWith(const ComponentInstance *inst) const throw (Exception);
-      virtual void setProperty(const std::string& name, const std::string& value);
-      virtual void addComponentName(std::string name);
-      virtual CORBA::Object_ptr loadComponent(ComponentInstance *inst);
-      virtual void shutdown(int level);
+      void setProperty(const std::string& name, const std::string& value);
+      std::string getProperty(const std::string& name) const;
+      void clearProperties();
+      void addComponentName(const std::string& name);
+      void addToResourceList(const std::string& name);
+      virtual CORBA::Object_ptr loadComponent(Task *inst);
+      void shutdown(int level);
       // Helper methods
-      void addToComponentList(const std::string & name);
-      void addToResourceList(const std::string & name);
-      virtual std::map<std::string,std::string> getResourceProperties(const std::string& name);
+      std::map<std::string,std::string> getResourceProperties(const std::string& name) const;
+      std::map<std::string,std::string> getProperties() const;
+      static const char KIND[];
+      static const char TYPE_PROPERTY_STR[];
     protected:
 #ifndef SWIG
       virtual ~SalomeContainer();
@@ -67,13 +76,10 @@ namespace YACS
     protected:
       //! thread safety in Salome ???
       YACS::BASES::Mutex _mutex;
-      Engines::Container_var _trueCont;
       std::vector<std::string> _componentNames;
-      std::map<const ComponentInstance *,Engines::Container_var> _trueContainers;
-      std::string _type;
+      SalomeContainerHelper *_launchModeType;
       int _shutdownLevel;
-    public:
-      Engines::ContainerParameters _params;
+      SalomeContainerTools _sct;
     };
   }
 }

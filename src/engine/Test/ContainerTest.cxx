@@ -37,6 +37,11 @@ ContainerTest::ContainerTest():_alreadyStarted(false),_myCounter(_counter++)
 {
 }
 
+std::string ContainerTest::getKind() const
+{
+  return std::string();
+}
+
 std::string ContainerTest::getPlacementInfo() const
 {
   ostringstream stream;
@@ -44,12 +49,12 @@ std::string ContainerTest::getPlacementInfo() const
   return stream.str();
 }
 
-bool ContainerTest::isAlreadyStarted(const ComponentInstance *inst) const
+bool ContainerTest::isAlreadyStarted(const Task *askingNode) const
 {
   return _alreadyStarted;
 }
 
-void ContainerTest::start(const ComponentInstance *inst) throw(YACS::Exception)
+void ContainerTest::start(const Task *askingNode) throw(YACS::Exception)
 {
   if(_alreadyStarted)
     throw Exception("ContainerTest already started !!!!");
@@ -67,6 +72,11 @@ Container *ContainerTest::clone() const
     return new ContainerTest;
 }
 
+Container *ContainerTest::cloneAlways() const
+{
+  return new ContainerTest;
+}
+
 void ContainerTest::checkCapabilityToDealWith(const ComponentInstance *inst) const throw(YACS::Exception)
 {
   if(inst->getKind()!=SUPPORTED_COMP_KIND)
@@ -82,12 +92,17 @@ ContainerTest2::ContainerTest2():_alreadyStarted(false),_myCounter(_counter++)
 {
 }
 
-bool ContainerTest2::isAlreadyStarted(const ComponentInstance *inst) const
+std::string ContainerTest2::getKind() const
+{
+  return std::string();
+}
+
+bool ContainerTest2::isAlreadyStarted(const Task *askingNode) const
 {
   return _alreadyStarted;
 }
 
-void ContainerTest2::start(const ComponentInstance *inst) throw(YACS::Exception)
+void ContainerTest2::start(const Task *askingNode) throw(YACS::Exception)
 {
   if(_alreadyStarted)
     throw Exception("ContainerTest already started !!!!");
@@ -103,6 +118,11 @@ Container *ContainerTest2::clone() const
     }
   else
     return new ContainerTest2;
+}
+
+Container *ContainerTest2::cloneAlways() const
+{
+  return new ContainerTest2;
 }
 
 void ContainerTest2::initAllContainers()

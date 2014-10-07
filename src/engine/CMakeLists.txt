@@ -154,6 +154,7 @@ SET(YACSlibEngine_SOURCES
   ComponentInstance.cxx
   Dispatcher.cxx
   Container.cxx
+  HomogeneousPoolContainer.cxx
   DeploymentTree.cxx
   Logger.cxx
   LogRecord.cxx

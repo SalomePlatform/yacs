@@ -40,7 +40,7 @@ namespace YACS
     class ComponentInstance;
     class Logger;
 
-    class YACSLIBENGINE_EXPORT Proc: public Bloc
+    class YACSLIBENGINE_EXPORT Proc : public Bloc
     {
     public:
       Proc(const std::string& name);
@@ -51,10 +51,10 @@ namespace YACS
       virtual TypeCode *createSequenceTc (const std::string& id, const std::string& name, 
                                          TypeCode *content);
       virtual TypeCode *createStructTc (const std::string& id, const std::string& name);
-      virtual TypeCode* getTypeCode(const std::string& name);
+      virtual TypeCode *getTypeCode(const std::string& name);
       virtual void setTypeCode(const std::string& name,TypeCode *t);
-      virtual Container* createContainer(const std::string& name,const std::string& kind="");
-      virtual ComponentInstance* createComponentInstance(const std::string& componame, 
+      virtual Container *createContainer(const std::string& name, const std::string& kind="");
+      virtual ComponentInstance *createComponentInstance(const std::string& componame,
                                                          const std::string& name="",
                                                          const std::string& kind="");
       virtual void addComponentInstance(ComponentInstance* inst, const std::string& name="",bool resetCtr=false);
@@ -62,7 +62,7 @@ namespace YACS
       virtual void removeContainer(Container* cont);
       virtual void accept(Visitor *visitor);
       virtual Proc *getProc();
-      virtual const Proc * getProc() const;
+      virtual const Proc *getProc() const;
 
       YACS::StatesForNode getNodeState(int numId);
       std::string getNodeProgress(int numId);
@@ -95,8 +95,8 @@ namespace YACS
       virtual bool getEdition(){return _edition;}
       virtual void setEdition(bool edition);
       virtual void modified();
-      virtual void saveSchema(std::string xmlSchemaFile);
-      virtual void saveState(std::string xmlStateFile);
+      virtual void saveSchema(const std::string& xmlSchemaFile);
+      virtual void saveState(const std::string& xmlStateFile);
     protected:
       bool _edition;
       int _compoinstctr;

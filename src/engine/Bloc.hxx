@@ -52,7 +52,6 @@ namespace YACS
       std::list<Node *> getChildren() const { return _setOfNode; }
       std::list<Node *> edGetDirectDescendants() const { return _setOfNode; }
       Node *getChildByShortName(const std::string& name) const throw(Exception);
-      void selectRunnableTasks(std::vector<Task *>& tasks);
       virtual void writeDot(std::ostream &os) const;
       void accept(Visitor *visitor);
       template<bool direction>

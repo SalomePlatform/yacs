@@ -53,11 +53,13 @@ struct proctypeParser: bloctypeParser<T>
     {
       for (int i = 0; attr[i]; i += 2) 
         {
-          if(std::string(attr[i]) == "state")this->state(attr[i+1]);
-          if(std::string(attr[i]) == "name")name(attr[i+1]);
+          if(std::string(attr[i]) == "state")
+            this->state(attr[i+1]);
+          if(std::string(attr[i]) == "name")
+            name(attr[i+1]);
         }
     }
-  virtual void pre ()
+  virtual void pre()
     {
         std::string name("proc");
         currentProc=theRuntime->createProc(name);
@@ -65,34 +67,34 @@ struct proctypeParser: bloctypeParser<T>
         currentProc->names.push_back("");
     }
 
-  virtual void name (const std::string& name)
+  virtual void name(const std::string& name)
     {
       currentProc->setName(name);
     }
 
-  virtual void type (const mytype& t)
+  virtual void type(const mytype& t)
     {
         DEBTRACE( "type_set" );
         YACS::ENGINE::TypeCode* tt=currentProc->createType(t._name,t._kind);
         tt->decrRef();
     }
-  virtual void sequence (ENGINE::TypeCode* const& t)
+  virtual void sequence(ENGINE::TypeCode* const& t)
     {
         DEBTRACE( "sequence_set" );
         t->decrRef();
     }
-  virtual void objref (ENGINE::TypeCode* const& t)
+  virtual void objref(ENGINE::TypeCode* const& t)
     {
         DEBTRACE( "objref_set" );
         t->decrRef();
     }
-  virtual void struct_ (ENGINE::TypeCode* const& t)
+  virtual void struct_(ENGINE::TypeCode* const& t)
     {
         DEBTRACE( "struct_set" );
         t->decrRef();
     }
 
-  virtual void componentinstance (const mycomponentinstance& t)
+  virtual void componentinstance(const mycomponentinstance& t)
     {
       DEBTRACE( "componentinstance: " << t._name );
       YACS::ENGINE::ComponentInstance* inst=currentProc->createComponentInstance(t._component,t._name,t._kind);
@@ -128,7 +130,7 @@ struct proctypeParser: bloctypeParser<T>
       inst->decrRef();
     }
 
-  virtual void container (const mycontainer& t)
+  virtual void container(const mycontainer& t)
     {
       DEBTRACE( "container_set: " << t._name )             
       std::vector<machine>::const_iterator iter;
@@ -143,16 +145,20 @@ struct proctypeParser: bloctypeParser<T>
         }
       else
         {
-          YACS::ENGINE::Container* cont=currentProc->createContainer(t._name);
           // Set all properties for this container
-          std::map<std::string, std::string>::const_iterator pt;
+          std::string kindOfContainer;
+          std::map<std::string, std::string>::const_iterator pt(t._props.find(std::string(ENGINE::Container::KIND_ENTRY)));
+          if(pt!=t._props.end())
+            kindOfContainer=pt->second;
+          YACS::ENGINE::Container *cont(currentProc->createContainer(t._name,kindOfContainer));
           for(pt=t._props.begin();pt!=t._props.end();pt++)
-            cont->setProperty((*pt).first,(*pt).second);
+            if((*pt).second!=ENGINE::Container::KIND_ENTRY)
+              cont->setProperty((*pt).first,(*pt).second);
           cont->decrRef();
         }
     }
 
-  T post(){return this->_bloc;}
+  T post() { return this->_bloc; }
 };
 
 template <class T> proctypeParser<T> proctypeParser<T>::procParser;

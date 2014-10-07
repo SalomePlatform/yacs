@@ -82,6 +82,7 @@ SET(_link_LIBRARIES
 
 SET(YACSRuntimeSALOME_HEADERS
   YACSRuntimeSALOMEExport.hxx 
+  AutoGIL.hxx
   CalStreamPort.hxx
   CORBAComponent.hxx
   CORBACORBAConv.hxx
@@ -116,7 +117,13 @@ SET(YACSRuntimeSALOME_HEADERS
   PythonXMLConv.hxx 
   RuntimeSALOME.hxx
   SalomeComponent.hxx
-  SalomeContainer.hxx 
+  SalomeHPComponent.hxx
+  SalomeContainer.hxx
+  SalomeContainerTools.hxx
+  SalomeContainerHelper.hxx
+  SalomeContainerTmpForHP.hxx
+  SalomeHPContainer.hxx
+  SalomeHPContainerTools.hxx
   SALOMEDispatcher.hxx
   SalomeProc.hxx
   SalomePythonComponent.hxx
@@ -167,6 +174,11 @@ SET(YACSRuntimeSALOME_SOURCES
   DistributedPythonNode.cxx      
   SalomePythonComponent.cxx      
   SalomeContainer.cxx            
+  SalomeContainerTools.cxx
+  SalomeHPContainer.cxx
+  SalomeHPContainerTools.cxx
+  SalomeContainerHelper.cxx
+  SalomeContainerTmpForHP.cxx
   PythonPorts.cxx                
   XMLNode.cxx                    
   XMLPorts.cxx                   
@@ -175,7 +187,8 @@ SET(YACSRuntimeSALOME_SOURCES
   SalomeProc.cxx                 
   CalStreamPort.cxx              
   CORBAComponent.cxx             
-  SalomeComponent.cxx            
+  SalomeComponent.cxx   
+  SalomeHPComponent.cxx         
   CppComponent.cxx               
   CppContainer.cxx               
   CppCORBAConv.cxx               

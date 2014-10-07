@@ -53,6 +53,7 @@
 #include "ExecutorSwig.hxx"
 #include "Dispatcher.hxx"
 #include "Container.hxx"
+#include "HomogeneousPoolContainer.hxx"
 #include "Logger.hxx"
 #include "DeploymentTree.hxx"
 #include "ComponentInstance.hxx"
@@ -126,10 +127,20 @@ REFCOUNT_TEMPLATE(CONTAINmap,YACS::ENGINE::Container)
 %template(propmap)       std::map<std::string, std::string>;
 
 REFCOUNT_TEMPLATE(CompoInstmap,YACS::ENGINE::ComponentInstance)
+
 /*
  * End of Template section
  */
 
+%typemap(out) Container *
+{
+  $result=convertContainer($1,$owner);
+}
+
+%typemap(out) YACS::ENGINE::Container *
+{
+  $result=convertContainer($1,$owner);
+}
 
 /*
  * Ownership section
@@ -158,6 +169,8 @@ REFCOUNT_TEMPLATE(CompoInstmap,YACS::ENGINE::ComponentInstance)
 %newobject *::createInputDataStreamPort;
 %newobject *::createOutputDataStreamPort;
 %newobject *::clone;
+%newobject *::cloneAlways;
+%newobject *::cloneWithoutCompAndContDeepCpy;
 %newobject *::New;
 
 //Take ownership : transfer it from C++ (has to be completed)
@@ -246,6 +259,7 @@ EXCEPTION(YACS::ENGINE::ExecutorSwig::waitPause)
 
 %include <ComponentInstance.hxx>
 %include <Container.hxx>
+%include <HomogeneousPoolContainer.hxx>
 %include <InputPort.hxx>
 %extend YACS::ENGINE::InputPort
 {

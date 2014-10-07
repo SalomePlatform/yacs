@@ -31,22 +31,27 @@ ComponentInstanceTest1::ComponentInstanceTest1(const std::string& name):Componen
 {
 }
 
-void ComponentInstanceTest1::load()
+void ComponentInstanceTest1::load(Task *askingNode)
 {
   _loaded=true;
 }
 
-void ComponentInstanceTest1::unload()
+void ComponentInstanceTest1::unload(Task *askingNode)
 {
   _loaded=false;
 }
 
-bool ComponentInstanceTest1::isLoaded()
+bool ComponentInstanceTest1::isLoaded(Task *askingNode) const
 {
   return _loaded;
 }
 
 std::string ComponentInstanceTest1::getKind() const
+{
+  return ToyNode1S::KIND;
+}
+
+std::string ComponentInstanceTest1::getKindForNode() const
 {
   return ToyNode1S::KIND;
 }
@@ -69,6 +74,11 @@ ComponentInstance *ComponentInstanceTest1::clone() const
     return new ComponentInstanceTest1(*this);
 }
 
+ComponentInstance *ComponentInstanceTest1::cloneAlways() const
+{
+  return new ComponentInstanceTest1(*this);
+}
+
 ComponentInstanceTest2::ComponentInstanceTest2(const ComponentInstanceTest2& other):ComponentInstance(other),_loaded(false)
 {
 }
@@ -77,22 +87,27 @@ ComponentInstanceTest2::ComponentInstanceTest2(const std::string& name):Componen
 {
 }
 
-void ComponentInstanceTest2::load()
+void ComponentInstanceTest2::load(Task *askingNode)
 {
   _loaded=true;
 }
 
-void ComponentInstanceTest2::unload()
+void ComponentInstanceTest2::unload(Task *askingNode)
 {
   _loaded=false;
 }
 
-bool ComponentInstanceTest2::isLoaded()
+bool ComponentInstanceTest2::isLoaded(Task *askingNode) const
 {
   return _loaded;
 }
 
 std::string ComponentInstanceTest2::getKind() const
+{
+  return ToyNode2S::KIND;
+}
+
+std::string ComponentInstanceTest2::getKindForNode() const
 {
   return ToyNode2S::KIND;
 }
@@ -113,4 +128,9 @@ ComponentInstance *ComponentInstanceTest2::clone() const
     }
   else
     return new ComponentInstanceTest2(*this);
+}
+
+ComponentInstance *ComponentInstanceTest2::cloneAlways() const
+{
+  return new ComponentInstanceTest2(*this);
 }

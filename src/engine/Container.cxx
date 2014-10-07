@@ -23,8 +23,14 @@
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
+#include <sstream>
+
 using namespace std;
 using namespace YACS::ENGINE;
+
+const char Container::KIND_ENTRY[]="container_kind";
+
+const char Container::AOC_ENTRY[]="attached_on_cloning";
 
 Container::Container():_isAttachedOnCloning(false),_proc(0)
 {
@@ -32,6 +38,22 @@ Container::Container():_isAttachedOnCloning(false),_proc(0)
 
 Container::~Container()
 {
+}
+
+std::string Container::getDiscreminantStrOfThis(const Task *askingNode) const
+{
+  const void *ptr(this);
+  std::ostringstream oss; oss << ptr;
+  return oss.str();
+}
+
+/*!
+ * If \a val is equal to true the current container 'this' is not destined to be deeply copied on clone call.
+ * If \a val is equal to false the current container 'this' is destined to be deeply copied on clone call.
+ */
+void Container::setAttachOnCloningStatus(bool val) const
+{
+  _isAttachedOnCloning=val;
 }
 
 /*!
@@ -64,28 +86,9 @@ bool Container::isSupportingRTODefNbOfComp() const
   return true;
 }
 
-void Container::setProperty(const std::string& name, const std::string& value)
+void Container::setProperties(const std::map<std::string,std::string>& properties)
 {
-  DEBTRACE("Container::setProperty " << name << " " << value);
-  _propertyMap[name]=value;
+  for (std::map<std::string,std::string>::const_iterator it=properties.begin();it!=properties.end();++it)
+    setProperty((*it).first,(*it).second);
 }
 
-std::string Container::getProperty(const std::string& name)
-{
-  DEBTRACE("Container::getProperty " << name );
-  return _propertyMap[name];
-}
-
-void Container::setProperties(std::map<std::string,std::string> properties)
-{
-  _propertyMap.clear();
-  std::map<std::string,std::string>::iterator it;
-  for (it = properties.begin(); it != properties.end(); ++it)
-    {
-      setProperty((*it).first, (*it).second); // setProperty virtual and derived
-    }
-}
-
-void Container::shutdown(int level)
-{
-}

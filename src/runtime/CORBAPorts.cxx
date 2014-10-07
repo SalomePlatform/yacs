@@ -29,6 +29,7 @@
 #include "RuntimeSALOME.hxx"
 #include "TypeConversions.hxx"
 #include "TypeCode.hxx"
+#include "AutoLocker.hxx"
 #include "CORBAPorts.hxx"
 #include "PythonPorts.hxx"
 #include "ServiceNode.hxx"
@@ -165,7 +166,7 @@ void InputCorbaPort::put(CORBA::Any *data) throw (ConversionException)
 #ifdef REFCNT
   DEBTRACE("refcount CORBA : " << ((omni::TypeCode_base*)data->pd_tc.in())->pd_ref_count);
 #endif
-  YACS::BASES::Lock lock(&_mutex);
+  YACS::BASES::AutoLocker<YACS::BASES::Mutex> lock(&_mutex);
 #ifdef _DEVDEBUG_
   display(data);
 #endif
@@ -207,7 +208,7 @@ CORBA::Any * InputCorbaPort::getAny()
 
 PyObject * InputCorbaPort::getPyObj()
 {
-  YACS::BASES::Lock lock(&_mutex);
+  YACS::BASES::AutoLocker<YACS::BASES::Mutex> lock(&_mutex);
   CORBA::TypeCode_var tc=getAny()->type();
   if (!tc->equivalent(CORBA::_tc_null))
     return convertCorbaPyObject(edGetType(),getAny());
@@ -318,7 +319,7 @@ void OutputCorbaPort::put(CORBA::Any *data) throw (ConversionException)
   InputPort *p;
 
   {  
-    YACS::BASES::Lock lock(&_mutex);
+    YACS::BASES::AutoLocker<YACS::BASES::Mutex> lock(&_mutex);
 #ifdef REFCNT
     DEBTRACE("refcount CORBA : " << ((omni::TypeCode_base*)data->pd_tc.in())->pd_ref_count);
 #endif
@@ -422,7 +423,7 @@ CORBA::Any * OutputCorbaPort::getAnyOut()
 
 PyObject * OutputCorbaPort::getPyObj()
 {
-  YACS::BASES::Lock lock(&_mutex);
+  YACS::BASES::AutoLocker<YACS::BASES::Mutex> lock(&_mutex);
   CORBA::TypeCode_var tc=getAny()->type();
   if (!tc->equivalent(CORBA::_tc_null))
     return convertCorbaPyObject(edGetType(),getAny());

@@ -24,6 +24,7 @@
 #include "InlineNode.hxx"
 #include <SALOMEconfig.h>
 #include CORBA_CLIENT_HEADER(SALOME_PyNode)
+#include CORBA_CLIENT_HEADER(SALOME_Component)
 
 #include <Python.h>
 
@@ -31,10 +32,40 @@ namespace YACS
 {
   namespace ENGINE
   {
-    class YACSRUNTIMESALOME_EXPORT PythonNode : public InlineNode 
+    class YACSRUNTIMESALOME_EXPORT PythonEntry
+    {
+    protected:
+      PythonEntry();
+      ~PythonEntry();
+      virtual void assignRemotePyInterpretor(Engines::PyNodeBase_var remoteInterp) = 0;
+      //! returns (if any) an object, you have to deal with (UnRegister)
+      virtual Engines::PyNodeBase_var retrieveDftRemotePyInterpretorIfAny(Engines::Container_ptr objContainer) const = 0;
+      //! returns an object, you have to deal with (UnRegister)
+      virtual void createRemoteAdaptedPyInterpretor(Engines::Container_ptr objContainer) = 0;
+      virtual Engines::PyNodeBase_var getRemoteInterpreterHandle() = 0;
+      virtual const char *getSerializationScript() const = 0;
+      //
+      void commonRemoteLoad(InlineNode *reqNode);
+      void commonRemoteLoadPart1(InlineNode *reqNode);
+      Engines::Container_var commonRemoteLoadPart2(InlineNode *reqNode, bool& isInitializeRequested);
+      void commonRemoteLoadPart3(InlineNode *reqNode, Engines::Container_ptr objContainer, bool isInitializeRequested);
+      static std::string GetContainerLog(const std::string& mode, Container *container, const Task *askingTask);
+    protected:
+      PyObject *_context;
+      PyObject *_pyfuncSer;
+      PyObject *_pyfuncUnser;
+    };
+
+    class YACSRUNTIMESALOME_EXPORT PythonNode : public InlineNode, public PythonEntry
     {
     protected:
       Node *simpleClone(ComposedNode *father, bool editionOnly) const;
+      // overload part of PythonEntry
+      void createRemoteAdaptedPyInterpretor(Engines::Container_ptr objContainer);
+      Engines::PyNodeBase_var retrieveDftRemotePyInterpretorIfAny(Engines::Container_ptr objContainer) const;
+      void assignRemotePyInterpretor(Engines::PyNodeBase_var remoteInterp);
+      Engines::PyNodeBase_var getRemoteInterpreterHandle();
+      const char *getSerializationScript() const  { return SCRIPT_FOR_SERIALIZATION; }
     public:
       PythonNode(const PythonNode& other, ComposedNode *father);
       PythonNode(const std::string& name);
@@ -49,20 +80,25 @@ namespace YACS
       virtual void shutdown(int level);
       std::string getContainerLog();
       PythonNode* cloneNode(const std::string& name);
+      virtual std::string typeName() { return "YACS__ENGINE__PythonNode"; }
+    public:
       static const char KIND[];
       static const char IMPL_NAME[];
-      virtual std::string typeName() {return "YACS__ENGINE__PythonNode";}
+      static const char SCRIPT_FOR_SERIALIZATION[];
     protected:
-      PyObject* _context;
-      PyObject* _pyfuncSer;
-      PyObject* _pyfuncUnser;
       Engines::PyScriptNode_var _pynode;
     };
 
-    class PyFuncNode : public InlineFuncNode 
+    class PyFuncNode : public InlineFuncNode, public PythonEntry
     {
     protected:
       Node *simpleClone(ComposedNode *father, bool editionOnly) const;
+      // overload part of PythonEntry
+      void createRemoteAdaptedPyInterpretor(Engines::Container_ptr objContainer);Engines::
+      PyNodeBase_var retrieveDftRemotePyInterpretorIfAny(Engines::Container_ptr objContainer) const;
+      void assignRemotePyInterpretor(Engines::PyNodeBase_var remoteInterp);
+      Engines::PyNodeBase_var getRemoteInterpreterHandle();
+      const char *getSerializationScript() const { return SCRIPT_FOR_SERIALIZATION; }
     public:
       PyFuncNode(const PyFuncNode& other, ComposedNode *father);
       PyFuncNode(const std::string& name);
@@ -77,12 +113,11 @@ namespace YACS
       virtual void shutdown(int level);
       std::string getContainerLog();
       PyFuncNode* cloneNode(const std::string& name);
-      virtual std::string typeName() {return "YACS__ENGINE__PyFuncNode";}
+      virtual std::string typeName() { return "YACS__ENGINE__PyFuncNode"; }
+    public:
+      static const char SCRIPT_FOR_SERIALIZATION[];
     protected:
-      PyObject* _context;
       PyObject* _pyfunc;
-      PyObject* _pyfuncSer;
-      PyObject* _pyfuncUnser;
       Engines::PyNode_var _pynode;
     };
   }

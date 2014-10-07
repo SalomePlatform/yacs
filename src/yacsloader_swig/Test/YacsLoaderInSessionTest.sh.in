@@ -87,7 +87,15 @@ if [ $ret5 -gt 0 ]; then
   exit $ret5
 fi
 
-let ret=$ret0+$ret1+$ret2+$ret3+$ret4+$ret5
+chmod +x @CMAKE_CURRENT_SOURCE_DIR@/testSaveLoadRun.py
+python  @CMAKE_CURRENT_SOURCE_DIR@/testSaveLoadRun.py
+ret6=$?
+if [ $ret6 -gt 0 ]; then
+  echo "exec status testSaveLoadRun : " $ret6
+  exit $ret6
+fi
+
+let ret=$ret0+$ret1+$ret2+$ret3+$ret4+$ret5+$ret6
 
 # --- return unit tests status
 

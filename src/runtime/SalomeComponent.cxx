@@ -20,7 +20,9 @@
 #include "RuntimeSALOME.hxx"
 #include "SalomeComponent.hxx"
 #include "SalomeContainer.hxx"
+#include "SalomeHPContainer.hxx"
 #include "CORBANode.hxx"
+#include "AutoLocker.hxx"
 
 #ifdef SALOME_KERNEL
 #include "SALOME_NamingService.hxx"
@@ -60,15 +62,20 @@ std::string SalomeComponent::getKind() const
   return KIND;
 }
 
+std::string SalomeComponent::getKindForNode() const
+{
+  return KIND;
+}
+
 //! Unload the component 
-void SalomeComponent::unload()
+void SalomeComponent::unload(Task *askingNode)
 {
   //Not implemented
   std::cerr << "SalomeComponent::unload : not implemented " << std::endl;
 }
 
 //! Is the component instance already loaded ?
-bool SalomeComponent::isLoaded()
+bool SalomeComponent::isLoaded(Task *askingNode) const
 {
   if(CORBA::is_nil(_objComponent))
     return false;
@@ -76,14 +83,19 @@ bool SalomeComponent::isLoaded()
     return true;
 }
 
-#ifdef SALOME_KERNEL
+//#ifdef SALOME_KERNEL
 //! Load the component 
-void SalomeComponent::load()
+void SalomeComponent::load(Task *askingNode)
 {
   if(_container)
     {
-      _objComponent=((SalomeContainer*)_container)->loadComponent(this);
-      return;
+      SalomeContainer *salomeContainer(dynamic_cast<SalomeContainer *>(_container));
+      if(salomeContainer)
+        {
+          _objComponent=salomeContainer->loadComponent(askingNode);
+          return ;
+        }
+      throw Exception("Unrecognized type of Container ! Only Salome are supported by the Salome components !");
     }
   //throw Exception("SalomeComponent::load : no container specified !!! To be implemented in executor to allocate default a Container in case of presenceOfDefaultContainer.");
   //This component has no specified container : use default container policy
@@ -95,12 +107,12 @@ void SalomeComponent::load()
   params.container_name ="FactoryServer";
   _objComponent=LCC.LoadComponent(params,_compoName.c_str());
 }
-#else
-void SalomeComponent::load()
+/*#else
+void SalomeComponent::load(Task *askingNode)
 {
   throw Exception("YACS has been built without SALOME support");
 }
-#endif
+#endif*/
 
 //! Create a ServiceNode with this component instance and no input or output port
 /*!
@@ -126,6 +138,11 @@ ComponentInstance* SalomeComponent::clone() const
     return new SalomeComponent(*this);
 }
 
+ComponentInstance *SalomeComponent::cloneAlways() const
+{
+  return new SalomeComponent(*this);
+}
+
 std::string SalomeComponent::getFileRepr() const
 {
   ostringstream stream;
@@ -133,21 +150,18 @@ std::string SalomeComponent::getFileRepr() const
   return stream.str();
 }
 
-void SalomeComponent::setContainer(Container *cont)
+bool SalomeComponent::setContainer(Container *cont)
 {
-  if (cont == _container) return;
-
-  if(cont)
-    cont->checkCapabilityToDealWith(this);
-
-  if(_container)
-    _container->decrRef();
-  _container=cont;
-  if(_container)
-  {
-    _container->incrRef();
-    ((SalomeContainer*)_container)->addComponentName(_compoName);
-  }
+  if(!dynamic_cast<SalomeContainer *>(cont))
+    throw Exception("SalomeComponent::setContainer : a Salome component must be attached to a Salome container !");
+  if(ComponentInstance::setContainer(cont))
+    {
+      if(_container)
+        _container->addComponentName(_compoName);
+      return true;
+    }
+  else
+    return false;
 }
 
 void SalomeComponent::shutdown(int level)

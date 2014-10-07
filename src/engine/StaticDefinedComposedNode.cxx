@@ -48,6 +48,10 @@ void StaticDefinedComposedNode::forceMultiplicity(unsigned value)
   //no sense for this class
 }
 
+void StaticDefinedComposedNode::selectRunnableTasks(std::vector<Task *>& tasks)
+{
+}
+
 void StaticDefinedComposedNode::checkControlDependancy(OutPort *start, InPort *end, bool cross,
                                                        std::map < ComposedNode *,  std::list < OutPort * >, SortHierarc >& fw,
                                                        std::vector<OutPort *>& fwCross,

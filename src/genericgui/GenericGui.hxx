@@ -123,6 +123,7 @@ namespace YACS
       QAction *_createDataTypeAct;
       QAction *_importDataTypeAct;
       QAction *_newContainerAct;
+      QAction *_newHPContainerAct;
       QAction *_selectComponentInstanceAct;
       QAction *_newSalomeComponentAct;
       QAction *_newSalomePythonComponentAct;
@@ -262,6 +263,7 @@ namespace YACS
       void onImportDataType();
 
       void onNewContainer();
+      void onNewHPContainer();
       void onSelectComponentInstance();
       void onNewSalomeComponent();
       void onNewSalomePythonComponent();

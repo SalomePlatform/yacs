@@ -33,8 +33,10 @@ namespace YACS
   {
     class ComponentInstance;
     class Proc;
+    class Task;
     /*!
      * This is an abstract class, that represents an abstract process in which ComponentInstances can be launched and run.
+     * An instance of this will be mapped to one and only one physical container (except in the foreach context)
      */
     class YACSLIBENGINE_EXPORT Container : public RefCounter
     {
@@ -44,35 +46,43 @@ namespace YACS
       virtual ~Container();
 #endif
     public:
+      virtual std::string getKind() const = 0;
       //Execution only methods
-      virtual bool isAlreadyStarted(const ComponentInstance *inst) const = 0;
-      virtual void start(const ComponentInstance *inst) throw(Exception) = 0;
-      virtual std::string getPlacementId(const ComponentInstance *inst) const = 0;
-      virtual std::string getFullPlacementId(const ComponentInstance *inst) const = 0;
+      virtual std::string getDiscreminantStrOfThis(const Task *askingNode) const;
+      virtual bool isAlreadyStarted(const Task *askingNode) const = 0;
+      virtual void start(const Task *askingNode) throw(Exception) = 0;
+      virtual std::string getPlacementId(const Task *askingNode) const = 0;
+      virtual std::string getFullPlacementId(const Task *askingNode) const = 0;
       //Edition only methods
+      virtual void setAttachOnCloningStatus(bool val) const;
       virtual void attachOnCloning() const;
       virtual void dettachOnCloning() const;
-      bool isAttachedOnCloning() const;
+      virtual bool isAttachedOnCloning() const;
+      virtual void lock() = 0;
+      virtual void unLock() = 0;
       //! \b WARNING ! clone behaviour \b MUST be in coherence with what is returned by isAttachedOnCloning() method
       virtual Container *clone() const = 0;
+      virtual Container *cloneAlways() const = 0;
       virtual bool isSupportingRTODefNbOfComp() const;
       virtual void checkCapabilityToDealWith(const ComponentInstance *inst) const throw(Exception) = 0;
-      virtual void setProperty(const std::string& name,const std::string& value);
-      virtual std::string getProperty(const std::string& name);
-      std::map<std::string,std::string> getProperties() { return _propertyMap; };
-      virtual void setProperties(std::map<std::string,std::string> properties);
-      std::string getName() const { return _name; };
+      virtual void setProperty(const std::string& name,const std::string& value) = 0;
+      virtual std::string getProperty(const std::string& name) const = 0;
+      virtual void clearProperties() = 0;
+      virtual void addComponentName(const std::string& name) = 0;
+      virtual std::map<std::string,std::string> getProperties() const = 0;
+      virtual std::map<std::string,std::string> getResourceProperties(const std::string& name) const = 0;
+      virtual void setProperties(const std::map<std::string,std::string>& properties);
+      std::string getName() const { return _name; }
       //! \b WARNING ! name is used in edition to identify different containers, it is not the runtime name of the container
-      void setName(std::string name) { _name = name; };
-      void setProc(Proc* proc) { _proc = proc; };
-      Proc* getProc() { return _proc; };
-      virtual void shutdown(int level);
-      virtual std::map<std::string,std::string> getResourceProperties(const std::string& name) { return _propertyMap; };
-
+      void setName(std::string name) { _name = name; }
+      void setProc(Proc* proc) { _proc = proc; }
+      Proc* getProc() { return _proc; }
+      virtual void shutdown(int level) = 0;
+      static const char KIND_ENTRY[];
+      static const char AOC_ENTRY[];
     protected:
       std::string _name;
       mutable bool _isAttachedOnCloning;
-      std::map<std::string,std::string> _propertyMap;
       Proc* _proc;
     };
   }

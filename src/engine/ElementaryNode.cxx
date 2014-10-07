@@ -69,6 +69,10 @@ void ElementaryNode::performDuplicationOfPlacement(const Node& other)
 {
 }
 
+void ElementaryNode::performShallowDuplicationOfPlacement(const Node& other)
+{
+}
+
 ElementaryNode::~ElementaryNode()
 {
   for(list<InputPort *>::iterator iter1=_setOfInputPort.begin();iter1!=_setOfInputPort.end();iter1++)
@@ -107,6 +111,11 @@ bool ElementaryNode::isDeployable() const
 }
 
 ComponentInstance *ElementaryNode::getComponent()
+{
+  return 0;
+}
+
+const ComponentInstance *ElementaryNode::getComponent() const
 {
   return 0;
 }

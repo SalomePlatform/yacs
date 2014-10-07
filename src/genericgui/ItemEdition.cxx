@@ -115,10 +115,10 @@ ItemEditionBase::ItemEditionBase(Subject* subject)
       _category = "Component";
       _type = "Salome Component";
     }
-  else if (SubjectContainer * sub = dynamic_cast<SubjectContainer*>(_subject))
+  else if (SubjectContainerBase * sub = dynamic_cast<SubjectContainerBase*>(_subject))
     {
       _category = "Container";
-      _type = "Salome Container";
+      _type = sub->getLabelForHuman();
     }
 }
 
@@ -402,9 +402,7 @@ void ItemEdition::update(GuiEvent event, int type, Subject* son)
                                         son->getName().c_str());
           break;
         case YACS::HMI::CONTAINER:
-          item =  new EditionContainer(son,
-                                       QtGuiContext::getQtCurrent()->getStackedWidget(),
-                                       son->getName().c_str());
+          item =  new EditionContainer(son,QtGuiContext::getQtCurrent()->getStackedWidget(),son->getName().c_str());
           break;
         case YACS::HMI::COMPONENT:
           item =  new EditionComponent(son,

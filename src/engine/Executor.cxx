@@ -19,12 +19,15 @@
 
 #include "Executor.hxx"
 #include "Task.hxx"
+#include "AutoLocker.hxx"
 #include "Scheduler.hxx"
 #include "Dispatcher.hxx"
 #include "Container.hxx"
+#include "HomogeneousPoolContainer.hxx"
 #include "ComponentInstance.hxx"
 
 #include "VisitorSaveState.hxx"
+#include "ServiceNode.hxx"
 #include "ComposedNode.hxx"
 
 #include <iostream>
@@ -136,10 +139,9 @@ void Executor::RunA(Scheduler *graph,int debug, bool fromScratch)
       if(debug>2)_displayDot(graph);
 
       {//Critical section
-        _mutexForSchedulerUpdate.lock();
+        YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
         tasks=graph->getNextTasks(isMore);
         graph->selectRunnableTasks(tasks);
-        _mutexForSchedulerUpdate.unlock();
       }//End of critical section
 
       if(debug>2)_displayDot(graph);
@@ -154,9 +156,8 @@ void Executor::RunA(Scheduler *graph,int debug, bool fromScratch)
       if(debug>1)_displayDot(graph);
 
       {//Critical section
-        _mutexForSchedulerUpdate.lock();
+        YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
         _toContinue=!graph->isFinished();
-        _mutexForSchedulerUpdate.unlock();
       }//End of critical section
       DEBTRACE("_toContinue: " << _toContinue);
 
@@ -232,7 +233,7 @@ void Executor::RunB(Scheduler *graph,int debug, bool fromScratch)
   DEBTRACE("Executor::RunB debug: "<< graph->getName() <<" "<< debug<<" fromScratch: "<<fromScratch);
 
   { // --- Critical section
-    _mutexForSchedulerUpdate.lock();
+    YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
     _mainSched = graph;
     _root = dynamic_cast<ComposedNode *>(_mainSched);
     if (!_root) throw Exception("Executor::Run, Internal Error!");
@@ -254,7 +255,6 @@ void Executor::RunB(Scheduler *graph,int debug, bool fromScratch)
     gettimeofday(&_start, NULL);
 #endif
 
-    _mutexForSchedulerUpdate.unlock();
   } // --- End of critical section
 
   if (debug > 1) _displayDot(graph);
@@ -293,11 +293,11 @@ void Executor::RunB(Scheduler *graph,int debug, bool fromScratch)
       DEBTRACE("--- events...");
       if (debug > 2) _displayDot(graph);
       { // --- Critical section
-        _mutexForSchedulerUpdate.lock();
+        YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
         _tasks=graph->getNextTasks(isMore);
         numberAllTasks=_numberOfRunningTasks+_tasks.size();
         graph->selectRunnableTasks(_tasks);
-        _mutexForSchedulerUpdate.unlock();
+        FilterTasksConsideringContainers(_tasks);
       } // --- End of critical section
       if (debug > 2) _displayDot(graph);
       if (_executorState == YACS::RUNNING)
@@ -305,8 +305,8 @@ void Executor::RunB(Scheduler *graph,int debug, bool fromScratch)
           if (checkBreakPoints()) break; // end of thread requested, OK to exit at once;
           if (debug > 0) _displayDot(graph);
           DEBTRACE("---");
-          for (iter = _tasks.begin(); iter != _tasks.end(); iter++)
-            loadTask(*iter);
+          //loadTasks(_tasks);
+          loadParallelTasks(_tasks);
           if (debug > 1) _displayDot(graph);
           DEBTRACE("---");
           launchTasks(_tasks);
@@ -315,7 +315,7 @@ void Executor::RunB(Scheduler *graph,int debug, bool fromScratch)
       if (debug > 1) _displayDot(graph);
       { // --- Critical section
         DEBTRACE("---");
-        _mutexForSchedulerUpdate.lock();
+        YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
         //It is possible that the graph is finished but it remains running tasks (it's an error but we must take it into account)
         if(_numberOfRunningTasks == 0)
           _toContinue = !graph->isFinished();
@@ -343,7 +343,6 @@ void Executor::RunB(Scheduler *graph,int debug, bool fromScratch)
             sendEvent("executor");
             _condForPilot.notify_all();
           }
-        _mutexForSchedulerUpdate.unlock();
       } // --- End of critical section
       if (debug > 0) _displayDot(graph);
       DEBTRACE("_toContinue: " << _toContinue);
@@ -352,7 +351,7 @@ void Executor::RunB(Scheduler *graph,int debug, bool fromScratch)
   DEBTRACE("End of main Loop");
 
   { // --- Critical section
-    _mutexForSchedulerUpdate.lock();
+    YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
     if ( _toContinue) // --- break while(): request to stop detected on checkBreakPoints()
       {
         DEBTRACE("stop requested: End soon");
@@ -360,7 +359,6 @@ void Executor::RunB(Scheduler *graph,int debug, bool fromScratch)
         _toContinue = false;
         sendEvent("executor");
       }
-    _mutexForSchedulerUpdate.unlock();
   } // --- End of critical section
   if ( _dumpOnErrorRequested && _errorDetected)
     {
@@ -399,13 +397,12 @@ bool Executor::isNotFinished()
 void Executor::setStopOnError(bool dumpRequested, std::string xmlFile)
 {
   { // --- Critical section
-    _mutexForSchedulerUpdate.lock();
+    YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
     _dumpErrorFile=xmlFile;
     _stopOnErrorRequested=true;
     _dumpOnErrorRequested = dumpRequested;
     if (dumpRequested && xmlFile.empty())
       throw YACS::Exception("dump on error requested and no filename given for dump");
-    _mutexForSchedulerUpdate.unlock();
     DEBTRACE("_dumpErrorFile " << _dumpErrorFile << " " << _dumpOnErrorRequested);
   } // --- End of critical section
 }
@@ -417,9 +414,8 @@ void Executor::setStopOnError(bool dumpRequested, std::string xmlFile)
 void Executor::unsetStopOnError()
 {
   { // --- Critical section
-    _mutexForSchedulerUpdate.lock();
+    YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
     _stopOnErrorRequested=false;
-    _mutexForSchedulerUpdate.unlock();
   } // --- End of critical section
 }
 
@@ -433,10 +429,9 @@ void Executor::setExecMode(YACS::ExecutionMode mode)
 {
   DEBTRACE("Executor::setExecMode(YACS::ExecutionMode mode) " << mode);
   { // --- Critical section
-    _mutexForSchedulerUpdate.lock();
+    YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
     _isRunningunderExternalControl=true;
     _execMode = mode;
-    _mutexForSchedulerUpdate.unlock();
   } // --- End of critical section
 }
 
@@ -454,7 +449,7 @@ bool Executor::resumeCurrentBreakPoint()
   bool ret = false;
   //bool doDump = false;
   { // --- Critical section
-    _mutexForSchedulerUpdate.lock();
+    YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
     _isRunningunderExternalControl=true;
     DEBTRACE("_executorState: " << _executorState);
     switch (_executorState)
@@ -481,7 +476,6 @@ bool Executor::resumeCurrentBreakPoint()
           // debug: no easy way to verify if main loop is acutally waiting on condition
         }
       }
-    _mutexForSchedulerUpdate.unlock();
     DEBTRACE("---");
     //if (doDump) saveState(_dumpErrorFile);
   } // --- End of critical section
@@ -496,10 +490,9 @@ void Executor::setListOfBreakPoints(std::list<std::string> listOfBreakPoints)
 {
   DEBTRACE("Executor::setListOfBreakPoints(std::list<std::string> listOfBreakPoints)");
   { // --- Critical section
-    _mutexForSchedulerUpdate.lock();
+    YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
     _isRunningunderExternalControl=true;
     _listOfBreakPoints = listOfBreakPoints;
-    _mutexForSchedulerUpdate.unlock();
   } // --- End of critical section
 }
 
@@ -515,7 +508,7 @@ std::list<std::string> Executor::getTasksToLoad()
   list<string> listOfNodesToLoad;
   listOfNodesToLoad.clear();
   { // --- Critical section
-    _mutexForSchedulerUpdate.lock();
+    YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
     _isRunningunderExternalControl=true;
     switch (_executorState)
       {
@@ -535,7 +528,6 @@ std::list<std::string> Executor::getTasksToLoad()
           break;
         }
       }
-    _mutexForSchedulerUpdate.unlock();
   } // --- End of critical section
   return listOfNodesToLoad;
 }
@@ -555,7 +547,7 @@ bool Executor::setStepsToExecute(std::list<std::string> listToExecute)
   vector<Task *>::iterator iter;
   vector<Task *> restrictedTasks;
   { // --- Critical section
-    _mutexForSchedulerUpdate.lock();
+    YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
     _isRunningunderExternalControl=true;
     switch (_executorState)
       {
@@ -589,7 +581,6 @@ bool Executor::setStepsToExecute(std::list<std::string> listToExecute)
           break;
         }
       }
-    _mutexForSchedulerUpdate.unlock();
     } // --- End of critical section
 
   _tasks.clear();
@@ -616,7 +607,7 @@ void Executor::waitPause()
 {
   DEBTRACE("Executor::waitPause()" << _executorState);
   { // --- Critical section
-    _mutexForSchedulerUpdate.lock();
+    YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
     _isRunningunderExternalControl=true;
     switch (_executorState)
       {
@@ -636,7 +627,6 @@ void Executor::waitPause()
           break;
         }
       }
-    _mutexForSchedulerUpdate.unlock();
   } // --- End of critical section
   DEBTRACE("---");
 }
@@ -735,7 +725,7 @@ bool Executor::checkBreakPoints()
       {
         bool stop = false;
         { // --- Critical section
-          _mutexForSchedulerUpdate.lock();
+          YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
           _tasksSave = _tasks;
           for (iter=_tasks.begin(); iter!=_tasks.end(); iter++)
             {
@@ -762,11 +752,8 @@ bool Executor::checkBreakPoints()
               sendEvent("executor");
               _condForPilot.notify_all();
             }
-          //_mutexForSchedulerUpdate.unlock(); 
-          //} // --- End of critical section
           if (stop && !_isOKToEnd) waitResume(); // wait until pilot calls resumeCurrentBreakPoint(), mutex released during wait 
           if (_isOKToEnd) endRequested = true;
-          _mutexForSchedulerUpdate.unlock();
         } // --- End of critical section
           if (stop) DEBTRACE("wake up from waitResume");
         break;
@@ -775,7 +762,7 @@ bool Executor::checkBreakPoints()
     case YACS::STEPBYSTEP:
       {
         { // --- Critical section
-          _mutexForSchedulerUpdate.lock();
+          YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
           _tasksSave = _tasks;
           _listOfTasksToLoad.clear();
           for (iter=_tasks.begin(); iter!=_tasks.end(); iter++)
@@ -793,7 +780,6 @@ bool Executor::checkBreakPoints()
             waitResume(); // wait until pilot calls resumeCurrentBreakPoint(), mutex released during wait
                           // or, if no pilot, wait until no more running tasks (stop on error)
           if (_isOKToEnd) endRequested = true;
-          _mutexForSchedulerUpdate.unlock();
         } // --- End of critical section
         DEBTRACE("wake up from waitResume");
         break;
@@ -827,66 +813,91 @@ void Executor::waitResume()
 void Executor::loadTask(Task *task)
 {
   DEBTRACE("Executor::loadTask(Task *task)");
-  if(task->getState() != YACS::TOLOAD)return;
-  traceExec(task, "state:TOLOAD");
+  if(task->getState() != YACS::TOLOAD)
+    return;
+  traceExec(task, "state:TOLOAD", ComputePlacement(task));
   {//Critical section
-    _mutexForSchedulerUpdate.lock();
+    YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
     _mainSched->notifyFrom(task,YACS::START);
-    _mutexForSchedulerUpdate.unlock();
   }//End of critical section
   try
     {
-      traceExec(task, "load");
+      traceExec(task, "load", ComputePlacement(task));
       task->load();
-      traceExec(task, "initService");
+      traceExec(task, "initService", ComputePlacement(task));
       task->initService();
     }
   catch(Exception& ex) 
     {
       std::cerr << ex.what() << std::endl;
       {//Critical section
-        _mutexForSchedulerUpdate.lock();
+        YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
         task->aborted();
         _mainSched->notifyFrom(task,YACS::ABORT);
-        traceExec(task, "state:"+Node::getStateName(task->getState()));
-        _mutexForSchedulerUpdate.unlock();
+        traceExec(task, "state:"+Node::getStateName(task->getState()), ComputePlacement(task));
       }//End of critical section
     }
   catch(...) 
     {
       std::cerr << "Load failed" << std::endl;
       {//Critical section
-        _mutexForSchedulerUpdate.lock();
+        YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
         task->aborted();
         _mainSched->notifyFrom(task,YACS::ABORT);
-        traceExec(task, "state:"+Node::getStateName(task->getState()));
-        _mutexForSchedulerUpdate.unlock();
+        traceExec(task, "state:"+Node::getStateName(task->getState()), ComputePlacement(task));
       }//End of critical section
     }
 }
 
+struct threadargs
+{
+  Task *task;
+  Scheduler *sched;
+  Executor *execInst;
+};
+
+void Executor::loadTasks(const std::vector<Task *>& tasks)
+{
+  for(std::vector<Task *>::const_iterator iter = _tasks.begin(); iter != _tasks.end(); iter++)
+    loadTask(*iter);
+}
+
+void Executor::loadParallelTasks(const std::vector<Task *>& tasks)
+{
+  std::vector<Thread> ths(tasks.size());
+  std::size_t ithread(0);
+  for(std::vector<Task *>::const_iterator iter = _tasks.begin(); iter != _tasks.end(); iter++, ithread++)
+    {
+      DEBTRACE("Executor::loadParallelTasks(Task *task)");
+      struct threadargs *args(new threadargs);
+      args->task = (*iter);
+      args->sched = _mainSched;
+      args->execInst = this;
+      ths[ithread].go(functionForTaskLoad, args, _threadStackSize);
+    }
+  for(ithread=0;ithread<tasks.size();ithread++)
+    ths[ithread].join();
+}
 
 //! Execute a list of tasks possibly connected through datastream links
 /*!
  *  \param tasks  : a list of tasks to execute
  *
  */
-void Executor::launchTasks(std::vector<Task *>& tasks)
+void Executor::launchTasks(const std::vector<Task *>& tasks)
 {
-  vector<Task *>::iterator iter;
   //First phase, make datastream connections
-  for(iter=tasks.begin();iter!=tasks.end();iter++)
+  for(vector<Task *>::const_iterator iter=tasks.begin();iter!=tasks.end();iter++)
     {
       YACS::StatesForNode state=(*iter)->getState();
       if(state != YACS::TOLOAD && state != YACS::TORECONNECT)continue;
       try
         {
           (*iter)->connectService();
-          traceExec(*iter, "connectService");
+          traceExec(*iter, "connectService",ComputePlacement(*iter));
           {//Critical section
-            _mutexForSchedulerUpdate.lock();
+            YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
             (*iter)->connected();
-            _mutexForSchedulerUpdate.unlock();
           }//End of critical section
         }
       catch(Exception& ex) 
@@ -895,18 +906,17 @@ void Executor::launchTasks(std::vector<Task *>& tasks)
           try
             {
               (*iter)->disconnectService();
-              traceExec(*iter, "disconnectService");
+              traceExec(*iter, "disconnectService",ComputePlacement(*iter));
             }
           catch(...) 
             {
               // Disconnect has failed
-              traceExec(*iter, "disconnectService failed, ABORT");
+              traceExec(*iter, "disconnectService failed, ABORT",ComputePlacement(*iter));
             }
           {//Critical section
-            _mutexForSchedulerUpdate.lock();
+            YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
             (*iter)->aborted();
             _mainSched->notifyFrom(*iter,YACS::ABORT);
-            _mutexForSchedulerUpdate.unlock();
           }//End of critical section
         }
       catch(...) 
@@ -915,18 +925,17 @@ void Executor::launchTasks(std::vector<Task *>& tasks)
           try
             {
               (*iter)->disconnectService();
-              traceExec(*iter, "disconnectService");
+              traceExec(*iter, "disconnectService",ComputePlacement(*iter));
             }
           catch(...) 
             {
               // Disconnect has failed
-              traceExec(*iter, "disconnectService failed, ABORT");
+              traceExec(*iter, "disconnectService failed, ABORT",ComputePlacement(*iter));
             }
           {//Critical section
-            _mutexForSchedulerUpdate.lock();
+            YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
             (*iter)->aborted();
             _mainSched->notifyFrom(*iter,YACS::ABORT);
-            _mutexForSchedulerUpdate.unlock();
           }//End of critical section
         }
       if((*iter)->getState() == YACS::ERROR)
@@ -942,37 +951,30 @@ void Executor::launchTasks(std::vector<Task *>& tasks)
               try
                 {
                   t->disconnectService();
-                  traceExec(t, "disconnectService");
+                  traceExec(t, "disconnectService",ComputePlacement(*iter));
                 }
               catch(...)
                 {
                   // Disconnect has failed
-                  traceExec(t, "disconnectService failed, ABORT");
+                  traceExec(t, "disconnectService failed, ABORT",ComputePlacement(*iter));
                 }
               {//Critical section
-                _mutexForSchedulerUpdate.lock();
+                YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
                 t->aborted();
                 _mainSched->notifyFrom(t,YACS::ABORT);
-                _mutexForSchedulerUpdate.unlock();
               }//End of critical section
-              traceExec(t, "state:"+Node::getStateName(t->getState()));
+              traceExec(t, "state:"+Node::getStateName(t->getState()),ComputePlacement(*iter));
             }
         }
-      traceExec(*iter, "state:"+Node::getStateName((*iter)->getState()));
+      traceExec(*iter, "state:"+Node::getStateName((*iter)->getState()),ComputePlacement(*iter));
     }
 
   //Second phase, execute each task in a thread
-  for(iter=tasks.begin();iter!=tasks.end();iter++)
+  for(vector<Task *>::const_iterator iter=tasks.begin();iter!=tasks.end();iter++)
     {
       launchTask(*iter);
     }
 }
-
-struct threadargs {
-  Task *task;
-  Scheduler *sched;
-  Executor *execInst;
-};
 
 //! Execute a Task in a thread
 /*!
@@ -1027,14 +1029,13 @@ void Executor::launchTask(Task *task)
   args->sched = _mainSched;
   args->execInst = this;
 
-  traceExec(task, "launch");
+  traceExec(task, "launch",ComputePlacement(task));
 
   { // --- Critical section
-    _mutexForSchedulerUpdate.lock();
+    YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
     _numberOfRunningTasks++;
     _runningTasks.insert(task);
     task->begin(); //change state to ACTIVATED
-    _mutexForSchedulerUpdate.unlock();
   } // --- End of critical section
   Thread(functionForTaskExecution, args, _threadStackSize);
 }
@@ -1045,14 +1046,13 @@ void Executor::sleepWhileNoEventsFromAnyRunningTask()
 {
   DEBTRACE("Executor::sleepWhileNoEventsFromAnyRunningTask()");
 //   _semForNewTasksToPerform.wait(); //----utiliser pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex);
-  _mutexForSchedulerUpdate.lock();
+  YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
   if (_numberOfRunningTasks > 0 && _numberOfEndedTasks==0)
     {
       _isWaitingEventsFromRunningTasks = true;
       _condForNewTasksToPerform.wait(_mutexForSchedulerUpdate); // mutex released during wait
     }
   _numberOfEndedTasks=0;
-  _mutexForSchedulerUpdate.unlock();
   DEBTRACE("---");
 }
 
@@ -1086,13 +1086,26 @@ void Executor::wakeUp()
 int Executor::getNbOfThreads()
 {
   int ret;
-  _mutexForNbOfConcurrentThreads.lock();
+  YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForNbOfConcurrentThreads);
   _isRunningunderExternalControl=true;
   ret = _groupOfAllThreadsCreated.size();
-  _mutexForNbOfConcurrentThreads.unlock();
   return ret;
 }
 
+/*!
+ * This thread is NOT supposed to be detached !
+ */
+void *Executor::functionForTaskLoad(void *arg)
+{
+  DEBTRACE("Executor::functionForTaskLoad(void *arg)");
+  struct threadargs *args = (struct threadargs *) arg;
+  Task *task=args->task;
+  Scheduler *sched=args->sched;
+  Executor *execInst=args->execInst;
+  delete args;
+  execInst->loadTask(task);// no throw of this method - all throw are catched !
+  return 0;
+}
 
 //! Function to perform execution of a task in a thread
 /*!
@@ -1116,7 +1129,7 @@ void *Executor::functionForTaskExecution(void *arg)
   Scheduler *sched=args->sched;
   Executor *execInst=args->execInst;
   delete args;
-  execInst->traceExec(task, "state:"+Node::getStateName(task->getState()));
+  execInst->traceExec(task, "state:"+Node::getStateName(task->getState()),ComputePlacement(task));
 
   Thread::detach();
 
@@ -1125,9 +1138,9 @@ void *Executor::functionForTaskExecution(void *arg)
   YACS::Event ev=YACS::FINISH;
   try
     {
-      execInst->traceExec(task, "start execution");
+      execInst->traceExec(task, "start execution",ComputePlacement(task));
       task->execute();
-      execInst->traceExec(task, "end execution OK");
+      execInst->traceExec(task, "end execution OK",ComputePlacement(task));
     }
   catch(Exception& ex)
     {
@@ -1136,14 +1149,14 @@ void *Executor::functionForTaskExecution(void *arg)
       ev=YACS::ABORT;
       string message = "end execution ABORT, ";
       message += ex.what();
-      execInst->traceExec(task, message);
+      execInst->traceExec(task, message,ComputePlacement(task));
     }
   catch(...) 
     {
       // Execution has failed
       std::cerr << "Execution has failed: unknown reason" << std::endl;
       ev=YACS::ABORT;
-      execInst->traceExec(task, "end execution ABORT, unknown reason");
+      execInst->traceExec(task, "end execution ABORT, unknown reason",ComputePlacement(task));
     }
 
   // Disconnect task
@@ -1151,19 +1164,31 @@ void *Executor::functionForTaskExecution(void *arg)
     {
       DEBTRACE("task->disconnectService()");
       task->disconnectService();
-      execInst->traceExec(task, "disconnectService");
+      execInst->traceExec(task, "disconnectService",ComputePlacement(task));
     }
   catch(...) 
     {
       // Disconnect has failed
       std::cerr << "disconnect has failed" << std::endl;
       ev=YACS::ABORT;
-      execInst->traceExec(task, "disconnectService failed, ABORT");
+      execInst->traceExec(task, "disconnectService failed, ABORT",ComputePlacement(task));
+    }
+  //
+
+  std::string placement(ComputePlacement(task));
+
+  // container management for HomogeneousPoolOfContainer
+
+  HomogeneousPoolContainer *contC(dynamic_cast<HomogeneousPoolContainer *>(task->getContainer()));
+  if(contC)
+    {
+      YACS::BASES::AutoLocker<Container> alckCont(contC);
+      contC->release(task);
     }
 
   DEBTRACE("End task->execute()");
   { // --- Critical section
-    execInst->_mutexForSchedulerUpdate.lock();
+    YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&execInst->_mutexForSchedulerUpdate);
     try
       {
         if (ev == YACS::FINISH) task->finished();
@@ -1177,7 +1202,7 @@ void *Executor::functionForTaskExecution(void *arg)
               }
             task->aborted();
           }
-        execInst->traceExec(task, "state:"+Node::getStateName(task->getState()));
+        execInst->traceExec(task, "state:"+Node::getStateName(task->getState()),placement);
         sched->notifyFrom(task,ev);
       }
     catch(Exception& ex)
@@ -1217,7 +1242,6 @@ void *Executor::functionForTaskExecution(void *arg)
     DEBTRACE("after _semForMaxThreads.post " << execInst->_semThreadCnt);
     if (execInst->_executorState != YACS::PAUSED)  execInst->wakeUp();
 
-    execInst->_mutexForSchedulerUpdate.unlock();
   } // --- End of critical section (change state)
 
   //execInst->notifyEndOfThread(0);
@@ -1225,19 +1249,14 @@ void *Executor::functionForTaskExecution(void *arg)
   return 0;
 }
 
-void Executor::traceExec(Task *task, const std::string& message)
+void Executor::traceExec(Task *task, const std::string& message, const std::string& placement)
 {
   string nodeName = _mainSched->getTaskName(task);
   Container *cont = task->getContainer();
   string containerName = "---";
-  string placement = "---";
   if (cont)
-    {
-      containerName = cont->getName();
-      ComponentInstance *compo = task->getComponent();
-      //if (compo)
-      placement = cont->getFullPlacementId(compo);
-    }
+    containerName = cont->getName();
+
 #ifdef WIN32
   DWORD now = timeGetTime();
   double elapse = (now - _start)/1000.0;
@@ -1246,10 +1265,11 @@ void Executor::traceExec(Task *task, const std::string& message)
   gettimeofday(&now, NULL);
   double elapse = (now.tv_sec - _start.tv_sec) + double(now.tv_usec - _start.tv_usec)/1000000.0;
 #endif
-  _mutexForTrace.lock();
-  _trace << elapse << " " << containerName << " " << placement << " " << nodeName << " " << message << endl;
-  _trace << flush;
-  _mutexForTrace.unlock();
+  {
+    YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForTrace);
+    _trace << elapse << " " << containerName << " " << placement << " " << nodeName << " " << message << endl;
+    _trace << flush;
+  }
 }
 
 //! emit notification to all observers registered with  the dispatcher 
@@ -1262,4 +1282,72 @@ void Executor::sendEvent(const std::string& event)
   YASSERT(disp);
   YASSERT(_root);
   disp->dispatch(_root,event);
+}
+
+/*!
+ * This method takes in input a list of tasks and selects from that lists a part of it considering only the containers.
+ * If tasks have no container instance subclass of HomogeneousPoolContainer this method will let the \a tsks untouched.
+ *
+ * \param [in,out] tsks - list of tasks to be
+ */
+void Executor::FilterTasksConsideringContainers(std::vector<Task *>& tsks)
+{
+  std::map<HomogeneousPoolContainer *, std::vector<Task *> > m;
+  for(std::vector<Task *>::const_iterator it=tsks.begin();it!=tsks.end();it++)
+    {
+      Task *cur(*it);
+      if(!cur)
+        continue;
+      Container *cont(cur->getContainer());
+      if(!cont)
+        {
+          m[(HomogeneousPoolContainer *)NULL].push_back(cur);
+          continue;
+        }
+      HomogeneousPoolContainer *contC(dynamic_cast<HomogeneousPoolContainer *>(cont));
+      if(!contC)
+        {
+          m[(HomogeneousPoolContainer *)NULL].push_back(cur);
+          continue;
+        }
+      m[contC].push_back(cur);
+    }
+  //
+  std::vector<Task *> ret;
+  for(std::map<HomogeneousPoolContainer *, std::vector<Task *> >::const_iterator it=m.begin();it!=m.end();it++)
+    {
+      HomogeneousPoolContainer *curhpc((*it).first);
+      const std::vector<Task *>& curtsks((*it).second);
+      if(!curhpc)
+        {
+          ret.insert(ret.end(),curtsks.begin(),curtsks.end());
+        }
+      else
+        {
+          // start of critical section for container curhpc
+          YACS::BASES::AutoLocker<Container> alckForCont(curhpc);
+          std::vector<const Task *> vecOfTaskSharingSameHPContToBeRunSimutaneously;
+          std::size_t sz(curhpc->getNumberOfFreePlace());
+          std::vector<Task *>::const_iterator it2(curtsks.begin());
+          for(std::size_t i=0;i<sz && it2!=curtsks.end();i++,it2++)
+            {
+              vecOfTaskSharingSameHPContToBeRunSimutaneously.push_back(*it2);
+              ret.push_back(*it2);
+            }
+          curhpc->allocateFor(vecOfTaskSharingSameHPContToBeRunSimutaneously);
+          //end of critical section
+        }
+    }
+  //
+  tsks=ret;
+}
+
+std::string Executor::ComputePlacement(Task *zeTask)
+{
+  std::string placement("---");
+  if(!zeTask)
+    return placement;
+  if(zeTask->getContainer())
+    placement=zeTask->getContainer()->getFullPlacementId(zeTask);
+  return placement;
 }

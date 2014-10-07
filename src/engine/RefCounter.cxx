@@ -42,7 +42,7 @@ void RefCounter::incrRef() const
   RefCounter::_totalCnt++;
 #endif
   _cnt++;
-  _globalMutexForTS.unlock();
+  _globalMutexForTS.unLock();
 }
 
 bool RefCounter::decrRef()
@@ -52,7 +52,7 @@ bool RefCounter::decrRef()
   RefCounter::_totalCnt--;
 #endif
   bool ret=(--_cnt==0);
-  _globalMutexForTS.unlock();
+  _globalMutexForTS.unLock();
   if(ret)
     delete this;
   return ret;
@@ -63,6 +63,10 @@ RefCounter::RefCounter():_cnt(1)
 #ifdef REFCNT
   RefCounter::_totalCnt++;
 #endif
+}
+
+RefCounter::RefCounter(const RefCounter& other):_cnt(1)
+{
 }
 
 RefCounter::~RefCounter()

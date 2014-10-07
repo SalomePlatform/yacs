@@ -443,7 +443,7 @@ void Proc::modified()
 /*!
  * \param xmlSchemaFile: the file name
  */
-void Proc::saveSchema(std::string xmlSchemaFile)
+void Proc::saveSchema(const std::string& xmlSchemaFile)
 {
   VisitorSaveSchema vss(this);
   vss.openFileSchema(xmlSchemaFile);
@@ -455,7 +455,7 @@ void Proc::saveSchema(std::string xmlSchemaFile)
 /*!
  * \param xmlStateFile: the file name
  */
-void Proc::saveState(std::string xmlStateFile)
+void Proc::saveState(const std::string& xmlStateFile)
 {
   VisitorSaveState vst(this);
   vst.openFileDump(xmlStateFile);
@@ -469,9 +469,9 @@ void Proc::saveState(std::string xmlStateFile)
  * \param kind: the container kind (depends on runtime)
  * \return the created Container
  */
-Container* Proc::createContainer(const std::string& name,const std::string& kind)
+Container *Proc::createContainer(const std::string& name, const std::string& kind)
 {
-  Container* co=  getRuntime()->createContainer(kind);
+  Container *co(getRuntime()->createContainer(kind));
   co->setName(name);
   if(containerMap.count(name)!=0)
     containerMap[name]->decrRef();

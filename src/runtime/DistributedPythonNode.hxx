@@ -34,6 +34,8 @@
 #include <Python.h>
 #include <omniORB4/CORBA.h>
 #include "YACSRuntimeSALOMEExport.hxx"
+#include <SALOMEconfig.h>
+#include CORBA_CLIENT_HEADER(SALOME_PyNode)
 
 namespace YACS
 {
@@ -66,6 +68,7 @@ namespace YACS
       PyObject* _context;
       PyObject* _pyfuncSer;
       PyObject* _pyfuncUnser;
+      Engines::PyNode_var _pynode;
     };
   }
 }

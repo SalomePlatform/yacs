@@ -50,11 +50,13 @@
 //Components
 #include "CORBAComponent.hxx"
 #include "SalomeComponent.hxx"
+#include "SalomeHPComponent.hxx"
 #include "SalomePythonComponent.hxx"
 #include "CppComponent.hxx"
 
 #include "SalomeContainer.hxx"
 #include "CppContainer.hxx"
+#include "SalomeHPContainer.hxx"
 
 //Nodes
 #include "PythonNode.hxx"
@@ -587,15 +589,19 @@ ComponentInstance* RuntimeSALOME::createComponentInstance(const std::string& nam
     return new SalomePythonComponent(name);
   else if (kind == CppComponent::KIND)
     return new CppComponent(name);
+  else if (kind == SalomeHPComponent::KIND)
+    return new SalomeHPComponent(name);
   std::string msg="Component Instance kind ("+kind+") unknown";
   throw Exception(msg);
 }
 
 Container *RuntimeSALOME::createContainer(const std::string& kind)
 {
-  if(kind == "" || kind == SalomeComponent::KIND)
+  if(kind == "" || kind == SalomeContainer::KIND)
     return new SalomeContainer;
-  else if (kind == CppComponent::KIND)
+  if(kind==SalomeHPContainer::KIND)
+    return new SalomeHPContainer;
+  else if (kind == CppContainer::KIND)
     return new CppContainer;
   std::string msg="Container kind ("+kind+") unknown";
   throw Exception(msg);

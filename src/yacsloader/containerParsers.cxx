@@ -19,6 +19,7 @@
 
 #include "containerParsers.hxx"
 #include "propertyParsers.hxx"
+#include "HomogeneousPoolContainer.hxx"
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -58,6 +59,7 @@ namespace YACS
       parser* pp=&parser::main_parser;
       if(element == "machine")pp=&machinetypeParser::machineParser;
       if(element == "property")pp=&propertytypeParser::propertyParser;
+      if(element == "initializescriptkey")pp=&codetypeParser::codeParser;
       SetUserDataAndPush(pp);
       pp->init();
       pp->pre();
@@ -68,6 +70,7 @@ namespace YACS
       std::string element(el);
       if(element == "machine")machine_(((machinetypeParser*)child)->post());
       if(element == "property")property(((propertytypeParser*)child)->post());
+      if(element == "initializescriptkey")initializescriptkey(((codetypeParser*)child)->post());
     }
   void containertypeParser::pre ()
     {
@@ -85,6 +88,11 @@ namespace YACS
       DEBTRACE( "property_set: " << prop._name << " " << prop._value );
       _container._props[prop._name]=prop._value;
     }
+  void containertypeParser::initializescriptkey(const myfunc& f)
+  {
+    _container._props[YACS::ENGINE::HomogeneousPoolContainer::INITIALIZE_SCRIPT_KEY]=f._code;
+  }
+
   mycontainer containertypeParser::post()
     {
       //mincount("machine",1);

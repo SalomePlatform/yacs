@@ -20,11 +20,7 @@
 #ifndef _FORMCONTAINER_HXX_
 #define _FORMCONTAINER_HXX_
 
-#include "ui_FormContainer.h"
-
-#include <QIcon>
-#include <map>
-#include <string>
+#include "FormContainerBase.hxx"
 
 namespace YACS
 {
@@ -34,54 +30,21 @@ namespace YACS
   }
 }
 
-class FormContainer: public QWidget, public Ui::fm_container
+class QComboBox;
+
+class FormContainer : public FormContainerBase
 {
   Q_OBJECT
-
 public:
   FormContainer(QWidget *parent = 0);
   virtual ~FormContainer();
-
-  void FillPanel(YACS::ENGINE::Container *container);
-  virtual void onModified();
-  virtual bool onApply();
-  virtual void onCancel();
-  void updateResource(const std::string &resource);
-
-public:
-  static bool _checked;
-
+  virtual void FillPanel(YACS::ENGINE::Container *container);
+  QString getTypeStr() const;
 public slots:
-  void on_tb_container_toggled(bool checked);
-  void on_ch_advance_stateChanged(int state);
-  void onModifyName(const QString &text);
-  void onModifyResource(const QString &text);
-  void onModifyPolicy(const QString &text);
   void onModifyType(const QString &text);
-  void onModifyWorkDir(const QString &text);
-  void onModifyContName(const QString &text);
-  void onModifyOS(const QString &text);
-  void onModifyParLib(const QString &text);
-  void onModifyIsMPI(bool isMpi);
-  void onModifyMem(const QString &text);
-  void onModifyClock(const QString &text);
-  void onModifyNodes(const QString &text);
-  void onModifyProcs(const QString &text);
-  void onModifyCompos(const QString &text);
-  void onModifyProcPar(const QString &text);
-  void onModifyResourceName(const QString &text);
-  void onModifyHostName(const QString &text);
-  void onModifyProcRes(const QString &text);
-  void onModifyCompoList(const QString &text);
-  void onModifyResourceList(const QString &text);
-
-
-protected:
-  bool _advanced;
-  YACS::ENGINE::Container *_container;
-  std::map<std::string, std::string> _properties;
-
+  void onModifyAOC(int val);
 private:
+  QComboBox *cb_type;
 };
 
 #endif

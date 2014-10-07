@@ -601,6 +601,25 @@ is defined by the class async in the python module myalgo2.py::
   p.edAddLink(ol.getOutputPort("evalSamples"),n.getInputPort("p1"))
   p.edAddLink(n.getOutputPort("p1"),ol.getInputPort("evalResults"))
 
+.. _py_container_creation:
+
+Creation of the three type of containers
+''''''''''''''''''''''''''''''''''''''''
+
+To create a mono YACS container simply invoke::
+
+   my_mono_cont=p.createContainer("MyMonoCont","Salome")
+   my_mono_cont.setProperty("type","mono")
+
+To create a multi YACS container simply invoke::
+
+   my_multi_cont=p.createContainer("MyMultiCont","Salome")
+   my_multi_cont.setProperty("type","multi")
+
+To create a HP YACS container simply invoke::
+
+   my_hp_cont=p.createContainer("MyHPCont","HPSalome")
+
 .. _py_container:
 
 Definition of containers

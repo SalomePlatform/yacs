@@ -107,10 +107,46 @@ void Node::init(bool start)
   setState(YACS::READY);
 }
 
+/*!
+ * This method clones \a this by :
+ *
+ * - deep copying nodes, links, ports, types
+ * - containers are either deep copied or shallow copied depending on _isAttachedOnCloning attribute.
+ * - component are either deep copied or shallow copied depending on _isAttachedOnCloning attribute.
+ *
+ * So \b this \b method \b clone \b is \b dedicated \b for \b DynParaLoop \b class \b or \b subclasses.
+ * It \b should \b not \b be \b used \b elsewhere, because
+ * _isAttachedOnCloning attribute is an attribute in the engine not for GUI/TUI aspects.
+ * For GUI/TUI manipulation cloneWithoutCompAndContDeepCpy method should be used preferably.
+ *
+ * \param [in] father - The new father of the returned clone.
+ * \param [in] editionOnly ignored
+ *
+ * \sa cloneWithoutCompAndContDeepCpy
+ */
 Node *Node::clone(ComposedNode *father, bool editionOnly) const
 {
-  Node *ret=simpleClone(father,editionOnly);
+  Node *ret(simpleClone(father,editionOnly));
   ret->performDuplicationOfPlacement(*this);
+  return ret;
+}
+
+/*!
+ * This method clones \a this by :
+ * - deep copying nodes, links, ports, types
+ * - shallow copy containers
+ * - shallow copy components
+ *
+ * So this method simply ignores isAttachedOnCloning attribute for both containers and components.
+ * So this method is dedicated for the GUI/TUI users.
+ *
+ * \param [in] father - The new father of the returned clone.
+ * \param [in] editionOnly ignored
+ */
+Node *Node::cloneWithoutCompAndContDeepCpy(ComposedNode *father, bool editionOnly) const
+{
+  Node *ret(simpleClone(father,editionOnly));
+  ret->performShallowDuplicationOfPlacement(*this);
   return ret;
 }
 

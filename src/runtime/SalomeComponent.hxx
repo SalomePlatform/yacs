@@ -28,8 +28,6 @@ namespace YACS
 {
   namespace ENGINE
   {
-    class ServiceNode;
-
 /*! \brief Class for Salome component instance
  *
  *
@@ -40,18 +38,20 @@ namespace YACS
       SalomeComponent(const std::string& name);
       SalomeComponent(const SalomeComponent& other);
       virtual ~SalomeComponent();
-      virtual void load();
-      virtual void unload();
-      virtual bool isLoaded();
-      virtual void setContainer(Container *cont);
+      virtual void load(Task *askingNode);
+      virtual void unload(Task *askingNode);
+      virtual bool isLoaded(Task *askingNode) const;
+      virtual bool setContainer(Container *cont);
       virtual ServiceNode* createNode(const std::string& name);
       virtual ComponentInstance* clone() const;
+      virtual ComponentInstance* cloneAlways() const;
       virtual std::string getFileRepr() const;
       virtual CORBA::Object_ptr getCompoPtr(){return CORBA::Object::_duplicate(_objComponent);}
       virtual void shutdown(int level);
     public:
       static const char KIND[];
       virtual std::string getKind() const;
+      virtual std::string getKindForNode() const;
     protected:
       CORBA::Object_var _objComponent;
     };

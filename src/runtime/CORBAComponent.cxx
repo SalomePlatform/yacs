@@ -68,8 +68,13 @@ std::string CORBAComponent::getKind() const
   return KIND;
 }
 
+std::string CORBAComponent::getKindForNode() const
+{
+  return KIND;
+}
+
 //! Unload the component 
-void CORBAComponent::unload()
+void CORBAComponent::unload(Task *askingNode)
 {
   //Not implemented
   std::cerr << "CORBAComponent::unload : not implemented " << std::endl;
@@ -84,7 +89,7 @@ CORBA::Object_ptr CORBAComponent::getCompoPtr()
 }
 
 //! Is the component instance already loaded ?
-bool CORBAComponent::isLoaded()
+bool CORBAComponent::isLoaded(Task *askingNode) const
 {
   if(CORBA::is_nil(_objComponent))
     return false;
@@ -93,7 +98,7 @@ bool CORBAComponent::isLoaded()
 }
 
 //! Load the component 
-void CORBAComponent::load()
+void CORBAComponent::load(Task *askingNode)
 {
   DEBTRACE( "CORBAComponent::load" );
   CORBA::ORB_ptr orb;
@@ -180,6 +185,11 @@ ComponentInstance* CORBAComponent::clone() const
   incrRef();
   return (ComponentInstance*)this;
   //return new CORBAComponent(*this);
+}
+
+ComponentInstance* CORBAComponent::cloneAlways() const
+{
+  return new CORBAComponent(*this);
 }
 
 std::string CORBAComponent::getFileRepr() const

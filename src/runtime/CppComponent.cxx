@@ -74,38 +74,42 @@ static std::ostream & operator<<(std::ostream & f, const Any & A)
 
 std::string CppComponent::getKind() const
 {
-   return CppComponent::KIND;
+  return CppComponent::KIND;
+}
+
+std::string CppComponent::getKindForNode() const
+{
+  return CppComponent::KIND;
 }
 
 //! CppComponent constructor
-CppComponent::CppComponent(const std::string &name) : ComponentInstance(name)
+CppComponent::CppComponent(const std::string &name) : ComponentInstance(name), __obj(0), __run(0),__terminate(0)
 {
   _container = getRuntime()->createContainer(CppNode::KIND);
-  if (!_container->isAlreadyStarted(this))
-    _container->start(this);
-  
+  /* This part of code has been commented because the load part is supposed to do that !
+  if (!_container->isAlreadyStarted(0))
+    _container->start(0);
   CppContainer * _containerC = dynamic_cast<CppContainer *> (_container);
-  _containerC->createInternalInstance(name, __obj, __run, __terminate);
+  _containerC->createInternalInstance(name, __obj, __run, __terminate);*/
 }
 
 //! CppComponent copy constructor
-CppComponent::CppComponent(const CppComponent& other) : ComponentInstance(other._compoName), __run(other.__run),
-                                                        __terminate(other.__terminate), __obj(0)
+CppComponent::CppComponent(const CppComponent& other) : ComponentInstance(other._compoName), __obj(0), __run(0),__terminate(0)
 {
   _container = getRuntime()->createContainer(CppNode::KIND);
-  if (!_container->isAlreadyStarted(this))
-    _container->start(this);
-
+  /* This part of code has been commented because the load part is supposed to do that !
+  if (!_container->isAlreadyStarted(0))
+    _container->start(0);
   CppContainer * _containerC = dynamic_cast<CppContainer *> (_container);  
-   _containerC->createInternalInstance(_compoName, __obj, __run, __terminate);
+   _containerC->createInternalInstance(_compoName, __obj, __run, __terminate);*/
 }
 
 CppComponent::~CppComponent()
 {
-    DEBTRACE("CppComponent::~CppComponent()");
-    if (__terminate) __terminate(&__obj);
-    if (_container)
-      ((CppContainer *) _container)->unregisterComponentInstance(this);
+  DEBTRACE("CppComponent::~CppComponent()");
+  if (__terminate) __terminate(&__obj);
+  if (_container)
+    ((CppContainer *) _container)->unregisterComponentInstance(this);
 }
 
 void CppComponent::run (const char * service, int nbIn, int nbOut,
@@ -146,48 +150,50 @@ void CppComponent::run (const char * service, int nbIn, int nbOut,
 }
 
 //! Unload the component 
-void CppComponent::unload()
+void CppComponent::unload(Task *askingNode)
 {
   //Not implemented
   DEBTRACE("CppComponent::unload : not implemented ");
 }
 
 //! Is the component instance already loaded ?
-bool CppComponent::isLoaded()
+bool CppComponent::isLoaded(Task *askingNode) const
 {
   return NULL != __obj;
 }
  
-void CppComponent::load()
+void CppComponent::load(Task *askingNode)
 {
-   if (!_container) {
-     _container = getRuntime()->createContainer(CppNode::KIND);
-   }
-   
-   if(_container) {
+  if (!_container)
+    {
+      _container = getRuntime()->createContainer(CppNode::KIND);
+    }
 
-      CppContainer * containerC= dynamic_cast< CppContainer *> (_container);
-      
+  if(_container)
+    {
+      CppContainer *containerC(dynamic_cast< CppContainer *> (_container));
+      if(!containerC)
+        throw Exception("The type of container should be CPP for component CPP !");
       containerC->lock();//To be sure
-      if(!_container->isAlreadyStarted(this))
+      if(!_container->isAlreadyStarted(askingNode))
         {
           try
-            {
-              _container->start(this);
-            }
+          {
+              _container->start(askingNode);
+          }
           catch(Exception& e)
-            {
+          {
               containerC->unLock();
               throw e;
-            }
+          }
         }
       containerC->unLock();
       containerC->lock();//To be sure
-      
-      bool isLoadable = containerC->loadComponentLibrary(_compoName);
+
+      bool isLoadable(containerC->loadComponentLibrary(_compoName));
       if (isLoadable) 
         containerC->createInternalInstance(_compoName, __obj, __run, __terminate);
-        
+
       if(NULL == __obj)
         {
           containerC->unLock();
@@ -196,7 +202,6 @@ void CppComponent::load()
       containerC->unLock();
       return;
     }
-
 }
 
 ServiceNode* CppComponent::createNode(const std::string& name)
@@ -218,3 +223,7 @@ ComponentInstance* CppComponent::clone() const
     return new CppComponent(*this);
 }
 
+YACS::ENGINE::ComponentInstance *CppComponent::cloneAlways() const
+{
+  return new CppComponent(*this);
+}

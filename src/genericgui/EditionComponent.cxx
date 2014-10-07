@@ -104,7 +104,7 @@ void EditionComponent::changeContainer(int index)
       return;
     }
   Container *newContainer =proc->containerMap[contName];
-  SubjectContainer *scnt = GuiContext::getCurrent()->_mapOfSubjectContainer[newContainer];
+  SubjectContainerBase *scnt = GuiContext::getCurrent()->_mapOfSubjectContainer[newContainer];
   scompo->associateToContainer(scnt);
   scompo->select(true);
 }

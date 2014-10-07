@@ -33,7 +33,9 @@ namespace YACS
     public:
       typedef void *(*ThreadJob)(void*);
     public:
+      ThreadPT();
       ThreadPT(ThreadJob funcPtr, void *stack, size_t stackSize = 0);
+      void go(ThreadJob funcPtr, void *stack, size_t stackSize = 0);
       bool operator==(const ThreadPT& other);
       void join();
       static void detach();

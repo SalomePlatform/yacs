@@ -19,12 +19,14 @@
 
 #include "AnyInputPort.hxx"
 #include "TypeCode.hxx"
-#include <iostream>
-#include <sstream>
 #include "Mutex.hxx"
+#include "AutoLocker.hxx"
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
+
+#include <iostream>
+#include <sstream>
 
 using namespace YACS::ENGINE;
 using namespace std;
@@ -83,7 +85,7 @@ void AnyInputPort::exRestoreInit()
 
 void AnyInputPort::put(Any *data)
 {
-  YACS::BASES::Lock lock(&_mutex);
+  YACS::BASES::AutoLocker<YACS::BASES::Mutex> lock(&_mutex);
   if(_value)
     _value->decrRef();
   _value=data;
@@ -105,7 +107,7 @@ void *AnyInputPort::get() const
 
 std::string AnyInputPort::getAsString()
 {
-  YACS::BASES::Lock lock(&_mutex);
+  YACS::BASES::AutoLocker<YACS::BASES::Mutex> lock(&_mutex);
   return getRuntime()->convertNeutralAsString(edGetType(),_value);
 }
 

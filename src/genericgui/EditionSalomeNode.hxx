@@ -21,6 +21,7 @@
 #define _EDITIONSALOMENODE_HXX_
 
 #include "EditionElementaryNode.hxx"
+#include "FormContainerDecorator.hxx"
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
@@ -67,7 +68,7 @@ namespace YACS
     protected:
       PropertyEditor* _propeditor;
       FormComponent *_wComponent;
-      FormContainer *_wContainer;
+      FormContainerDecorator *_wContainer;
       QHBoxLayout *_hbl_method;
       QLabel *_la_method;
       QLineEdit *_le_method;

@@ -121,6 +121,7 @@ namespace YACS
 %types(YACS::ENGINE::WhileLoop *,YACS::ENGINE::ForEachLoop *,YACS::ENGINE::ComposedNode *,YACS::ENGINE::InlineNode *);
 %types(YACS::ENGINE::InlineFuncNode *,YACS::ENGINE::ServiceInlineNode *,YACS::ENGINE::ServiceNode *);
 %types(YACS::ENGINE::ElementaryNode *);
+%types(YACS::ENGINE::Container *, YACS::ENGINE::HomogeneousPoolContainer *);
 
 %types(YACS::ENGINE::InputPort *,YACS::ENGINE::OutputPort *,YACS::ENGINE::InPropertyPort *);
 %types(YACS::ENGINE::InputDataStreamPort *,YACS::ENGINE::OutputDataStreamPort *);

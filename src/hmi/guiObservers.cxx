@@ -45,6 +45,7 @@
 #include "OutputPort.hxx"
 #include "InputDataStreamPort.hxx"
 #include "OutputDataStreamPort.hxx"
+#include "SalomeHPContainer.hxx"
 #include "SalomeContainer.hxx"
 #include "SalomeComponent.hxx"
 #include "ComponentDefinition.hxx"
@@ -276,7 +277,7 @@ bool Subject::destroy(Subject *son)
           startnode = proc->getChildName(sclink->getSubjectOutNode()->getNode());
           endnode = proc->getChildName(sclink->getSubjectInNode()->getNode());
         }
-      else if (SubjectContainer* scont = dynamic_cast<SubjectContainer*>(son))
+      else if (SubjectContainerBase* scont = dynamic_cast<SubjectContainerBase*>(son))
         {
           if(scont->getName() == "DefaultContainer")
             {
@@ -621,7 +622,7 @@ void SubjectNode::registerUndoDestroy()
   Bloc *undoBloc = new Bloc(blocName.str());
   undoProc->edAddChild(undoBloc);
   ComposedNode *newFather = undoBloc;
-  Node *clone = _node->clone(0);
+  Node *clone = _node->cloneWithoutCompAndContDeepCpy(0);
   newFather->edAddChild(clone);
 
   // --- register a CommandCopyNode from undoProc
@@ -1890,13 +1891,10 @@ void SubjectProc::loadComponents()
 void SubjectProc::loadContainers()
 {
   Proc* aProc = GuiContext::getCurrent()->getProc();
-  for (map<string, Container*>::const_iterator itCont = aProc->containerMap.begin();
-       itCont != aProc->containerMap.end(); ++itCont)
-    if ( GuiContext::getCurrent()->_mapOfSubjectContainer.find((*itCont).second)
-         ==
-         GuiContext::getCurrent()->_mapOfSubjectContainer.end() )
+  for (map<string, Container*>::const_iterator itCont = aProc->containerMap.begin(); itCont != aProc->containerMap.end(); ++itCont)
+    if ( GuiContext::getCurrent()->_mapOfSubjectContainer.find((*itCont).second) == GuiContext::getCurrent()->_mapOfSubjectContainer.end() )
       // engine object for container already exists => add only a subject for it
-      addSubjectContainer((*itCont).second, (*itCont).second->getName());
+      addSubjectContainer((*itCont).second,(*itCont).second->getName());
 }
 
 SubjectComponent* SubjectProc::addComponent(std::string compoName, std::string containerName)
@@ -1912,12 +1910,12 @@ SubjectComponent* SubjectProc::addComponent(std::string compoName, std::string c
   return 0;
 }
 
-SubjectContainer* SubjectProc::addContainer(std::string name, std::string ref)
+SubjectContainerBase *SubjectProc::addContainer(std::string name, std::string ref)
 {
   DEBTRACE("SubjectProc::addContainer " << name << " " << ref);
   if (! GuiContext::getCurrent()->getProc()->containerMap.count(name))
     {
-      CommandAddContainer *command = new CommandAddContainer(name,ref);
+      CommandAddContainer *command(new CommandAddContainer(name,ref));
       if (command->execute())
         {
           GuiContext::getCurrent()->getInvoc()->add(command);
@@ -1925,6 +1923,24 @@ SubjectContainer* SubjectProc::addContainer(std::string name, std::string ref)
         }
       else
           delete command;
+    }
+  else GuiContext::getCurrent()->_lastErrorMessage = "There is already a container with that name";
+  return 0;
+}
+
+SubjectContainerBase* SubjectProc::addHPContainer(std::string name, std::string ref)
+{
+  DEBTRACE("SubjectProc::addContainer " << name << " " << ref);
+  if (! GuiContext::getCurrent()->getProc()->containerMap.count(name))
+    {
+      CommandAddHPContainer *command(new CommandAddHPContainer(name,ref));
+      if (command->execute())
+        {
+          GuiContext::getCurrent()->getInvoc()->add(command);
+          return command->getSubjectContainer();
+        }
+      else
+        delete command;
     }
   else GuiContext::getCurrent()->_lastErrorMessage = "There is already a container with that name";
   return 0;
@@ -1954,13 +1970,12 @@ SubjectComponent* SubjectProc::addSubjectComponent(YACS::ENGINE::ComponentInstan
   return son;
 }
 
-SubjectContainer* SubjectProc::addSubjectContainer(YACS::ENGINE::Container* cont,
-                                                   std::string name)
+SubjectContainerBase *SubjectProc::addSubjectContainer(YACS::ENGINE::Container *cont, std::string name)
 {
   DEBTRACE("SubjectProc::addSubjectContainer " << name);
-  SubjectContainer *son = new SubjectContainer(cont, this);
+  SubjectContainerBase *son(SubjectContainerBase::New(cont,this));
   // In edition mode do not clone containers
-  cont->attachOnCloning();
+  // cont->attachOnCloning(); // agy : do not use _attachOnCloning attribute in edition mode. This attribute should be used now at runtime.
   GuiContext::getCurrent()->_mapOfSubjectContainer[cont] = son;
   update(ADD, CONTAINER, son);
   return son;
@@ -2025,7 +2040,7 @@ void SubjectProc::removeSubjectDataType(std::string typeName)
   aTypeCode->decrRef();
 }
 
-void SubjectProc::removeSubjectContainer(SubjectContainer* scont)
+void SubjectProc::removeSubjectContainer(SubjectContainerBase* scont)
 {
   YASSERT(GuiContext::getCurrent()->_mapOfSubjectContainer.count(scont->getContainer()));
   erase(scont); // do all the necessary updates
@@ -2302,7 +2317,7 @@ bool SubjectInlineNode::setExecutionMode(const std::string& mode)
   return false;
 }
 
-bool SubjectInlineNode::setContainer(SubjectContainer* scont)
+bool SubjectInlineNode::setContainer(SubjectContainerBase *scont)
 {
   DEBTRACE("SubjectInlineNode::setContainer ");
   Proc *proc = GuiContext::getCurrent()->getProc();
@@ -2425,17 +2440,7 @@ void SubjectServiceNode::setComponent()
                 if (proc->containerMap.count(cont->getName()) == 0)
                   {
                     //container exists but is not in containerMap. Clone it, it's probably the result of copy paste from outside the proc
-                    Container* newcont;
-                    if(cont->isAttachedOnCloning())
-                      {
-                        cont->dettachOnCloning();
-                        newcont=cont->clone();
-                        cont->attachOnCloning();
-                        newcont->attachOnCloning();
-                      }
-                    else
-                      newcont=cont->clone();
-
+                    Container* newcont(cont->cloneAlways());
                     proc->containerMap[cont->getName()]=newcont;
                     instance->setContainer(newcont);
                     GuiContext::getCurrent()->getSubjectProc()->addSubjectContainer(newcont, newcont->getName());
@@ -4246,7 +4251,7 @@ void SubjectComponent::localclean(Command *command)
       
     Container* container = _compoInst->getContainer();
     if (!container) return;
-    SubjectContainer *subContainer;
+    SubjectContainerBase *subContainer(0);
     YASSERT(GuiContext::getCurrent()->_mapOfSubjectContainer.count(container));
     subContainer = GuiContext::getCurrent()->_mapOfSubjectContainer[container];
     subContainer->removeSubComponentFromSet(this);
@@ -4279,7 +4284,7 @@ void SubjectComponent::setContainer()
   Container* container = _compoInst->getContainer();
   if (container)
     {
-      SubjectContainer *subContainer;
+      SubjectContainerBase *subContainer;
       if (GuiContext::getCurrent()->_mapOfSubjectContainer.count(container))
         subContainer = GuiContext::getCurrent()->_mapOfSubjectContainer[container];
       else
@@ -4294,7 +4299,7 @@ void SubjectComponent::setContainer()
     }
 }
 
-bool SubjectComponent::associateToContainer(SubjectContainer* subcont)
+bool SubjectComponent::associateToContainer(SubjectContainerBase *subcont)
 {
   DEBTRACE("SubjectComponent::associateToContainer " << getName() << " " << subcont->getName());
   CommandAssociateComponentToContainer *command =
@@ -4385,16 +4390,25 @@ std::map<std::string, std::string> SubjectComponent::getProperties()
 
 // ----------------------------------------------------------------------------
 
-SubjectContainer::SubjectContainer(YACS::ENGINE::Container* container, Subject *parent)
-  : Subject(parent), _container(container)
+SubjectContainerBase *SubjectContainerBase::New(YACS::ENGINE::Container* container, Subject *parent)
+{
+  if(!container)
+    return 0;
+  if(!dynamic_cast<YACS::ENGINE::HomogeneousPoolContainer *>(container))
+    return new SubjectContainer(container,parent);
+  else
+    return new SubjectHPContainer(dynamic_cast<YACS::ENGINE::HomogeneousPoolContainer *>(container),parent);
+}
+
+SubjectContainerBase::SubjectContainerBase(YACS::ENGINE::Container* container, Subject *parent):Subject(parent), _container(container)
 {
   _subComponentSet.clear();
   _subReferenceMap.clear();
 }
 
-SubjectContainer::~SubjectContainer()
+SubjectContainerBase::~SubjectContainerBase()
 {
-  DEBTRACE("SubjectContainer::~SubjectContainer");
+  DEBTRACE("SubjectContainerBase::~SubjectContainerBase");
   Proc* aProc = GuiContext::getCurrent()->getProc();
   if ( aProc )
   {
@@ -4413,24 +4427,25 @@ SubjectContainer::~SubjectContainer()
   }
 }
 
-std::map<std::string, std::string> SubjectContainer::getProperties()
+std::map<std::string, std::string> SubjectContainerBase::getProperties()
 {
   return _container->getProperties();
 }
 
-bool SubjectContainer::setProperties(std::map<std::string, std::string> properties)
+bool SubjectContainerBase::setProperties(std::map<std::string, std::string> properties)
 {
-  CommandSetContainerProperties *command = new CommandSetContainerProperties(getName(), properties);
+  CommandSetContainerProperties *command(new CommandSetContainerProperties(getName(), properties));
   if (command->execute())
     {
       GuiContext::getCurrent()->getInvoc()->add(command);
       return true;
     }
-  else delete command;
+  else
+    delete command;
   return false;
 }
 
-bool SubjectContainer::setName(std::string name)
+bool SubjectContainerBase::setName(std::string name)
 {
   DEBTRACE("SubjectContainer::setName " << name);
   if (name == getName())
@@ -4445,7 +4460,7 @@ bool SubjectContainer::setName(std::string name)
   return false;
 }
 
-SubjectReference* SubjectContainer::attachComponent(SubjectComponent* component)
+SubjectReference* SubjectContainerBase::attachComponent(SubjectComponent* component)
 {
   DEBTRACE("SubjectContainer::attachComponent");
   SubjectReference *son = new SubjectReference(component, this);
@@ -4455,18 +4470,18 @@ SubjectReference* SubjectContainer::attachComponent(SubjectComponent* component)
   return son;
 }
 
-void SubjectContainer::detachComponent(SubjectComponent* component)
+void SubjectContainerBase::detachComponent(SubjectComponent* component)
 {
   DEBTRACE("SubjectContainer::detachComponent");
   YASSERT(_subReferenceMap.count(component));
   SubjectReference *reference = _subReferenceMap[component];
-  update(REMOVECHILDREF, COMPONENT, reference);
+  update(REMOVECHILDREF, PYTHONNODE, reference);
   _subComponentSet.erase(component);
   _subReferenceMap.erase(component);
   erase(reference);
 }
 
-void SubjectContainer::moveComponent(SubjectReference* reference)
+void SubjectContainerBase::moveComponent(SubjectReference* reference)
 {
   DEBTRACE("SubjectContainer::moveComponent");
   SubjectContainer* oldcont = dynamic_cast<SubjectContainer*>(reference->getParent());
@@ -4480,14 +4495,14 @@ void SubjectContainer::moveComponent(SubjectReference* reference)
   update(PASTE, COMPONENT, reference);
 }
 
-void SubjectContainer::removeSubComponentFromSet(SubjectComponent *component)
+void SubjectContainerBase::removeSubComponentFromSet(SubjectComponent *component)
 {
   DEBTRACE("SubjectContainer::removeSubComponentFromSet");
   _subComponentSet.erase(component);
   _subReferenceMap.erase(component);
 }
 
-void SubjectContainer::notifyComponentsChange(GuiEvent event, int type, Subject* son)
+void SubjectContainerBase::notifyComponentsChange(GuiEvent event, int type, Subject* son)
 {
   DEBTRACE("SubjectContainer::notifyComponentsChange");
   set<SubjectComponent*>::iterator it = _subComponentSet.begin();
@@ -4498,8 +4513,7 @@ void SubjectContainer::notifyComponentsChange(GuiEvent event, int type, Subject*
     }
 }
 
-
-void SubjectContainer::clean(Command *command)
+void SubjectContainerBase::clean(Command *command)
 {
   if (_askRegisterUndo)
     {
@@ -4510,9 +4524,9 @@ void SubjectContainer::clean(Command *command)
   Subject::clean(command);
 }
 
-void SubjectContainer::localclean(Command *command)
+void SubjectContainerBase::localclean(Command *command)
 {
-  DEBTRACE("SubjectContainer::localClean ");
+  DEBTRACE("SubjectContainerBase::localClean ");
   Proc* aProc = GuiContext::getCurrent()->getProc();
   if ( aProc )
   {
@@ -4536,20 +4550,47 @@ void SubjectContainer::localclean(Command *command)
   }
 }
 
-std::string SubjectContainer::getName()
+std::string SubjectContainerBase::getName()
 {
   return _container->getName();
 }
 
-YACS::ENGINE::Container* SubjectContainer::getContainer() const
+// ----------------------------------------------------------------------------
+
+SubjectContainer::SubjectContainer(YACS::ENGINE::Container *container, Subject *parent):SubjectContainerBase(container,parent)
 {
-  return _container;
 }
 
 void SubjectContainer::registerUndoDestroy()
 {
   DEBTRACE("SubjectContainer::registerUndoDestroy");
   Command *command = new CommandAddContainer(getName(),"");
+  GuiContext::getCurrent()->getInvoc()->add(command);
+}
+
+// ----------------------------------------------------------------------------
+
+SubjectHPContainer::SubjectHPContainer(YACS::ENGINE::HomogeneousPoolContainer *container, Subject *parent):SubjectContainerBase(container,parent)
+{
+}
+
+YACS::ENGINE::Container *SubjectHPContainer::getContainer() const
+{
+  if(!_container)
+    return 0;
+  else
+    {
+      YACS::ENGINE::HomogeneousPoolContainer *ret(dynamic_cast<YACS::ENGINE::HomogeneousPoolContainer *>(_container));
+      if(!ret)
+        throw Exception("Invalid container type in SubjectHPContainer !");
+      return ret;
+    }
+}
+
+void SubjectHPContainer::registerUndoDestroy()
+{
+  DEBTRACE("SubjectHPContainer::registerUndoDestroy");
+  Command *command = new CommandAddHPContainer(getName(),"");
   GuiContext::getCurrent()->getInvoc()->add(command);
 }
 

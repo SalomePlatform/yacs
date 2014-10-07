@@ -69,6 +69,7 @@ namespace YACS
     class Catalog;
     class ComponentInstance;
     class Container;
+    class HomogeneousPoolContainer;
     class TypeCode;
     class OutGate;
     class InGate;
@@ -411,13 +412,16 @@ namespace YACS
     };
 
     class SubjectComponent;
-    class HMI_EXPORT SubjectContainer: public Subject
+    class HMI_EXPORT SubjectContainerBase : public Subject
     {
     public:
-      SubjectContainer(YACS::ENGINE::Container* container, Subject *parent);
-      virtual ~SubjectContainer();
+      static SubjectContainerBase *New(YACS::ENGINE::Container* container, Subject *parent);
+      SubjectContainerBase(YACS::ENGINE::Container* container, Subject *parent);
+      virtual ~SubjectContainerBase();
       virtual std::string getName();
+      virtual std::string getLabelForHuman() const = 0;
       virtual bool setName(std::string name);
+      virtual YACS::ENGINE::Container *getContainer() const { return _container; }
       virtual std::map<std::string, std::string> getProperties();
       virtual bool setProperties(std::map<std::string, std::string> properties);
       virtual SubjectReference* attachComponent(SubjectComponent* component);
@@ -427,18 +431,33 @@ namespace YACS
       virtual void notifyComponentsChange(GuiEvent event, int type, Subject* son);
       virtual void clean(Command *command=0);
       void localclean(Command *command=0);
-      YACS::ENGINE::Container* getContainer() const;
-      bool isUsed() {return !_subComponentSet.empty(); };
-      virtual TypeOfElem getType(){return CONTAINER;}
-      void registerUndoDestroy();
+      bool isUsed() { return !_subComponentSet.empty(); }
+      TypeOfElem getType() { return CONTAINER; }
     protected:
       YACS::ENGINE::Container* _container;
       std::set<SubjectComponent*> _subComponentSet;
       std::map<SubjectComponent*,SubjectReference*> _subReferenceMap;
     };
 
+    class HMI_EXPORT SubjectContainer: public SubjectContainerBase
+    {
+    public:
+      SubjectContainer(YACS::ENGINE::Container *container, Subject *parent);
+      void registerUndoDestroy();
+      std::string getLabelForHuman() const { return std::string("Salome Container"); }
+    };
+
+    class HMI_EXPORT SubjectHPContainer : public SubjectContainerBase
+    {
+    public:
+      SubjectHPContainer(YACS::ENGINE::HomogeneousPoolContainer* container, Subject *parent);
+      void registerUndoDestroy();
+      YACS::ENGINE::Container *getContainer() const;
+      std::string getLabelForHuman() const { return std::string("Salome Homogeneous Pool Container"); }
+    };
+
     class SubjectServiceNode;
-    class HMI_EXPORT SubjectComponent: public Subject
+    class HMI_EXPORT SubjectComponent : public Subject
     {
     public:
       friend class SubjectNode;
@@ -446,7 +465,7 @@ namespace YACS
       virtual ~SubjectComponent();
       virtual std::string getName();
       virtual void setContainer();
-      virtual bool associateToContainer(SubjectContainer* subcont);
+      virtual bool associateToContainer(SubjectContainerBase *subcont);
       virtual SubjectReference* attachService(SubjectServiceNode* service);
       virtual void detachService(SubjectServiceNode* service);
       virtual void moveService(SubjectReference* reference);
@@ -494,15 +513,15 @@ namespace YACS
       void loadContainers();
       void loadTypes();
       virtual SubjectComponent* addComponent(std::string compoName, std::string containerName="");
-      virtual SubjectContainer* addContainer(std::string name, std::string ref="");
+      virtual SubjectContainerBase* addContainer(std::string name, std::string ref="");
+      virtual SubjectContainerBase* addHPContainer(std::string name, std::string ref="");
       virtual bool addDataType(YACS::ENGINE::Catalog* catalog, std::string typeName);
       SubjectComponent* addSubjectComponent(YACS::ENGINE::ComponentInstance* compo);
-      SubjectContainer* addSubjectContainer(YACS::ENGINE::Container* cont,
-                                            std::string name = "");
+      SubjectContainerBase* addSubjectContainer(YACS::ENGINE::Container* cont, std::string name = "");
       SubjectDataType* addComSubjectDataType(YACS::ENGINE::TypeCode *type, std::string alias);
       SubjectDataType* addSubjectDataType(YACS::ENGINE::TypeCode *type, std::string alias);
       void removeSubjectDataType(std::string typeName);
-      void removeSubjectContainer(SubjectContainer* scont);
+      void removeSubjectContainer(SubjectContainerBase* scont);
       virtual void clean(Command *command=0);
       void localclean(Command *command=0);
       void addPostErase(Subject* sub) {_postEraseList.push_back(sub); };
@@ -678,7 +697,7 @@ namespace YACS
       virtual std::string getScript();
       virtual void clean(Command *command=0);
       void localclean(Command *command=0);
-      virtual bool setContainer(SubjectContainer* scont);
+      virtual bool setContainer(SubjectContainerBase *scont);
       virtual bool setExecutionMode(const std::string& mode);
     protected:
       YACS::ENGINE::InlineNode *_inlineNode;

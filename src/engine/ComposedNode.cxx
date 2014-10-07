@@ -109,6 +109,45 @@ void ComposedNode::performDuplicationOfPlacement(const Node& other)
     }
 }
 
+void ComposedNode::performShallowDuplicationOfPlacement(const Node& other)
+{
+  const ComposedNode &otherC=*(dynamic_cast<const ComposedNode *>(&other));
+  DeploymentTree treeToDup=otherC.getDeploymentTree();
+  list< ElementaryNode * > clones=otherC.getRecursiveConstituents();
+  vector<Container *> conts=treeToDup.getAllContainers();
+  //iterate on all containers
+  for(vector<Container *>::iterator iterCt=conts.begin();iterCt!=conts.end();iterCt++)
+    {
+      vector<ComponentInstance *> comps=treeToDup.getComponentsLinkedToContainer(*iterCt);
+      Container *contCloned((*iterCt));
+
+      //iterate on all component instances linked to the container
+      for(vector<ComponentInstance *>::iterator iterCp=comps.begin();iterCp!=comps.end();iterCp++)
+        {
+          vector<Task *> tasks=treeToDup.getTasksLinkedToComponent(*iterCp);
+          ComponentInstance *curCloned((*iterCp));
+          curCloned->setContainer(contCloned);
+          for(vector<Task *>::iterator iterT=tasks.begin();iterT!=tasks.end();iterT++)
+            {
+              //No risk for static cast : appendTask called by ComposedNode.
+              list< ElementaryNode * >::iterator res=find(clones.begin(),clones.end(),(ElementaryNode *)(*iterT));
+              //No risk here to because called only on cloning process...
+              ServiceNode *nodeC=(ServiceNode *)getChildByName(otherC.getChildName(*res));
+              nodeC->setComponent(curCloned);
+            }
+        }
+
+      // iterate on all tasks linked to the container
+      vector<Task *> tasks=treeToDup.getTasksLinkedToContainer(*iterCt);
+      for(vector<Task *>::iterator iterT=tasks.begin();iterT!=tasks.end();iterT++)
+        {
+          std::list< ElementaryNode * >::iterator res=find(clones.begin(),clones.end(),(ElementaryNode *)(*iterT));
+          InlineFuncNode *nodeC=(InlineFuncNode *)getChildByName(otherC.getChildName(*res));
+          nodeC->setContainer(contCloned);
+        }
+    }
+}
+
 bool ComposedNode::isFinished()
 {
   if(_state==YACS::DONE)return true;

@@ -21,6 +21,7 @@
 #define _CONTAINERPARSER_HXX_
 
 #include "parserBase.hxx"
+#include "codeParsers.hxx"
 #include "factory.hxx"
 
 namespace YACS
@@ -72,6 +73,7 @@ struct containertypeParser: parser
   virtual void name(const std::string& name);
   virtual void machine_(const machine& m);
   virtual void property (const myprop& prop);
+  virtual void initializescriptkey(const myfunc& f);
   mycontainer post();
   mycontainer _container;
 };

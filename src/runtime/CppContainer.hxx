@@ -100,36 +100,45 @@ namespace YACS
 
     };
 
-    class CppContainer : public Container {
-
+    class CppContainer : public Container
+    {
       friend class CppComponent;
       friend class LocalContainer;
-      
     public:
- 
       CppContainer();
       virtual ~CppContainer();
-      bool isAlreadyStarted(const ComponentInstance *inst) const;
-      void start(const ComponentInstance *inst) throw (YACS::Exception);
-      std::string getPlacementId(const ComponentInstance *inst) const;
-      std::string getFullPlacementId(const ComponentInstance *inst) const;
+      std::string getKind() const;
+      bool isAlreadyStarted(const Task *askingNode) const;
+      void start(const Task *askingNode) throw (YACS::Exception);
+      void shutdown(int level);
+      std::string getPlacementId(const Task *askingNode) const;
+      std::string getFullPlacementId(const Task *askingNode) const;
       YACS::ENGINE::Container *clone() const;
-
+      Container *cloneAlways() const;
       void lock();
       void unLock();
-       
+
       void checkCapabilityToDealWith(const ComponentInstance *inst) const throw (YACS::Exception);
       bool loadComponentLibrary(const std::string & componentName) throw (YACS::Exception);
       CppComponent * createComponentInstance(const std::string & componentName, int studyID = 0);
       void createInternalInstance(const std::string & componentName, 
                                   void *& obj, RunFunction &r, TerminateFunction &t);
       void unregisterComponentInstance(CppComponent * C);
-      
-     protected:
-       YACS::BASES::Mutex _mutex;
-       LocalContainer * _trueCont;
+      //
+      void setProperty(const std::string& name,const std::string& value) { }
+      std::string getProperty(const std::string& name) const { return std::string(); }
+      void clearProperties() { }
+      void addComponentName(const std::string& name) { }
+      std::map<std::string,std::string> getProperties() const { return std::map<std::string,std::string>(); }
+      std::map<std::string,std::string> getResourceProperties(const std::string& name) const { return std::map<std::string,std::string>(); }
+      //
+    public:
+      static char KIND[];
+    protected:
+      YACS::BASES::Mutex _mutex;
+      LocalContainer * _trueCont;
 
-     };
+    };
   };
 };
 

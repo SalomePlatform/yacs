@@ -22,7 +22,7 @@
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
-#include "FormContainer.hxx"
+#include "FormContainerDecorator.hxx"
 #include "QtGuiContext.hxx"
 #include "guiObservers.hxx"
 #include "Proc.hxx"
@@ -36,17 +36,12 @@ using namespace YACS;
 using namespace YACS::HMI;
 using namespace YACS::ENGINE;
 
-EditionContainer::EditionContainer(Subject* subject,
-                                   QWidget* parent,
-                                   const char* name)
-  : ItemEdition(subject, parent, name)
+EditionContainer::EditionContainer(Subject* subject, QWidget* parent, const char* name):ItemEdition(subject, parent, name)
 {
-  _wContainer = new FormContainer(this);
+  _wContainer = new FormContainerDecorator(getContainer(),this);
   _wid->gridLayout1->addWidget(_wContainer);
-  connect(_wContainer->cb_resource, SIGNAL(mousePressed()),
-          this, SLOT(fillContainerPanel()));
-  connect(_wContainer->tb_container, SIGNAL(toggled(bool)),
-          this, SLOT(fillContainerPanel())); // --- to update display of current selection
+  connect(_wContainer, SIGNAL(resourceMousePressed()), this, SLOT(fillContainerPanel()));
+  connect(_wContainer->tb_container, SIGNAL(toggled(bool)), this, SLOT(fillContainerPanel())); // --- to update display of current selection
   _wContainer->tb_container->toggle();
 }
 
@@ -62,7 +57,7 @@ void EditionContainer::update(GuiEvent event, int type, Subject* son)
     {
     case RENAME:
     case UPDATE:
-      _wContainer->le_name->setText((son->getName()).c_str());
+      _wContainer->setName(son->getName());
       fillContainerPanel();
       break;
     default:
@@ -73,9 +68,7 @@ void EditionContainer::update(GuiEvent event, int type, Subject* son)
 void EditionContainer::fillContainerPanel()
 {
   DEBTRACE("EditionContainer::fillContainerPanel");
-  SubjectContainer *scont = dynamic_cast<SubjectContainer*>(_subject);
-  YASSERT(scont);
-  _wContainer->FillPanel(scont->getContainer());
+  _wContainer->FillPanel(getContainer());
 }
 
 void EditionContainer::onApply()
@@ -98,4 +91,11 @@ void EditionContainer::onCancel()
   DEBTRACE("EditionContainer::onCancel");
   _wContainer->onCancel();
   ItemEdition::onCancel();
+}
+
+YACS::ENGINE::Container *EditionContainer::getContainer()
+{
+  SubjectContainerBase *scont(dynamic_cast<SubjectContainerBase*>(_subject));
+  YASSERT(scont);
+  return scont->getContainer();
 }

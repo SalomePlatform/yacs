@@ -35,6 +35,7 @@
 #include "CalStreamPort.hxx"
 #include "InPort.hxx"
 #include "TypeCode.hxx"
+#include "AutoLocker.hxx"
 
 #ifdef SALOME_KERNEL
 #include "SALOME_NamingService.hxx"
@@ -467,7 +468,7 @@ void SalomeNode::disconnectService()
 {
   DEBTRACE( "SalomeNode::disconnectService: "<<getName());
   // in some rare cases, disconnectService can be called from 2 different threads
-  YACS::BASES::Lock lock(&_mutex);
+  YACS::BASES::AutoLocker<YACS::BASES::Mutex> lock(&_mutex);
 
   if(ids.size() == 0)
     return;

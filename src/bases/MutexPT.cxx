@@ -38,7 +38,7 @@ void MutexPT::lock()
   pthread_mutex_lock(&_mutexDesc);
 }
 
-void MutexPT::unlock()
+void MutexPT::unLock()
 {
   pthread_mutex_unlock(&_mutexDesc);
 }

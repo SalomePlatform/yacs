@@ -73,6 +73,9 @@ SET(_link_LIBRARIES
 SET(_uic_files
   FormComponent.ui
   FormContainer.ui
+  FormAdvParamContainer.ui
+  FormParamContainer.ui
+  FormHPContainer.ui
   FormEachLoop.ui
   FormEditItem.ui
   FormEditTree.ui
@@ -118,7 +121,11 @@ SET(_moc_HEADERS
   EditionSwitch.hxx
   EditionWhile.hxx
   FormComponent.hxx
+  FormContainerBase.hxx
   FormContainer.hxx
+  FormHPContainer.hxx
+  FormAdvParamContainer.hxx
+  FormContainerDecorator.hxx
   FormEachLoop.hxx
   FormEditItem.hxx
   FormEditTree.hxx
@@ -174,7 +181,7 @@ SET(GenericGui_SOURCES
   EditionComponent.hxx
   EditionComponent.cxx            
   EditionContainer.hxx            
-  EditionContainer.cxx            
+  EditionContainer.cxx
   EditionControlLink.hxx          
   EditionControlLink.cxx          
   EditionDataLink.hxx             
@@ -218,7 +225,15 @@ SET(GenericGui_SOURCES
   FormComponent.hxx               
   FormComponent.cxx               
   FormContainer.hxx               
-  FormContainer.cxx               
+  FormContainer.cxx
+  FormHPContainer.hxx 
+  FormHPContainer.cxx
+  FormContainerBase.hxx
+  FormContainerBase.cxx
+  FormAdvParamContainer.hxx 
+  FormAdvParamContainer.cxx   
+  FormContainerDecorator.hxx               
+  FormContainerDecorator.cxx        
   FormEachLoop.hxx                
   FormEachLoop.cxx                
   FormEditItem.hxx                

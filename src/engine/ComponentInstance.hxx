@@ -31,8 +31,9 @@ namespace YACS
 {
   namespace ENGINE
   {
-    class Container;
+    class Task;
     class ServiceNode;
+    class Container;
 
     class YACSLIBENGINE_EXPORT ComponentInstance : public PropertyInterface, public RefCounter
     {
@@ -47,21 +48,23 @@ namespace YACS
       virtual void setAnonymous(bool anon) { _anonymous = anon; };
       virtual bool isAnonymous() { return _anonymous; };
       int getNumId() const { return _numId; }
-      virtual void setContainer(Container *cont);
+      virtual bool setContainer(Container *cont);
       Container *getContainer() const { return _container; }
 //! Load the component instance
-      virtual void load() = 0;
+      virtual void load(Task *askingNode) = 0;
 //! Unload the component instance
-      virtual void unload() = 0;
+      virtual void unload(Task *askingNode) = 0;
 //! Indicate if the component instance is loaded (true) or not
-      virtual bool isLoaded() = 0;
+      virtual bool isLoaded(Task *askingNode) const = 0;
       virtual void attachOnCloning() const;
       virtual void dettachOnCloning() const;
       bool isAttachedOnCloning() const;
       virtual std::string getFileRepr() const;
       virtual ServiceNode* createNode(const std::string& name)=0;
       virtual ComponentInstance *clone() const = 0;
+      virtual ComponentInstance *cloneAlways() const = 0;
       virtual std::string getKind() const;
+      virtual std::string getKindForNode() const;
       static const char KIND[];
       virtual void shutdown(int level);
     protected:

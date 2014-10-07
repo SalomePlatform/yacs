@@ -56,12 +56,14 @@ namespace YACS
       ElementaryNode(const std::string& name);
       ElementaryNode(const ElementaryNode& other, ComposedNode *father);
       void performDuplicationOfPlacement(const Node& other);
+      void performShallowDuplicationOfPlacement(const Node& other);
     public:
       virtual ~ElementaryNode();
       void exUpdateState();
       void init(bool start=true);
       bool isDeployable() const;
       ComponentInstance *getComponent();
+      const ComponentInstance *getComponent() const;
       Container *getContainer();
       YACS::StatesForNode getState() const;
       void getReadyTasks(std::vector<Task *>& tasks);

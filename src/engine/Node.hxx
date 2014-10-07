@@ -91,7 +91,10 @@ namespace YACS
     protected:
       Node(const std::string& name);
       Node(const Node& other, ComposedNode *father);
+      //! performs a duplication of placement using clone method of containers and components. clone behaviour is driven by attachOnCloning attribute.
       virtual void performDuplicationOfPlacement(const Node& other) = 0;
+      //! performs a also duplication of placement but here containers and components are not copied at all whatever the value of attachedOnCloning.
+      virtual void performShallowDuplicationOfPlacement(const Node& other) = 0;
       virtual Node *simpleClone(ComposedNode *father, bool editionOnly=true) const = 0;
     public:
       virtual ~Node();
@@ -100,6 +103,8 @@ namespace YACS
       virtual void resetState(int level);
       //! \b This method \b MUST \b NEVER \b BE \b VIRTUAL
       Node *clone(ComposedNode *father, bool editionOnly=true) const;
+      //! \b This method \b MUST \b NEVER \b BE \b VIRTUAL
+      Node *cloneWithoutCompAndContDeepCpy(ComposedNode *father, bool editionOnly=true) const;
       void setState(YACS::StatesForNode theState); // To centralize state changes
       virtual YACS::StatesForNode getState() const { return _state; }
       virtual YACS::StatesForNode getEffectiveState() const;
@@ -153,7 +158,7 @@ namespace YACS
       virtual void setProperty(const std::string& name,const std::string& value);
       virtual std::string getProperty(const std::string& name);
       std::map<std::string,std::string> getProperties() ;
-      std::map<std::string,std::string> getPropertyMap(){return _propertyMap;} ;
+      std::map<std::string,std::string> getPropertyMap() { return _propertyMap; }
       virtual void setProperties(std::map<std::string,std::string> properties);
       virtual Node *getChildByName(const std::string& name) const throw(Exception) = 0;
       virtual Proc *getProc();
@@ -163,17 +168,17 @@ namespace YACS
       int getNumId();
       virtual void sendEvent(const std::string& event);
       static std::map<int,Node *> idMap;
-      virtual std::string typeName() {return "YACS__ENGINE__Node";}
-      virtual std::string getErrorDetails(){return _errorDetails;};
-      virtual void setErrorDetails(const std::string& error){_errorDetails=error;};
+      virtual std::string typeName() { return "YACS__ENGINE__Node"; }
+      virtual std::string getErrorDetails() const { return _errorDetails; }
+      virtual void setErrorDetails(const std::string& error) { _errorDetails=error; }
       virtual void modified();
-      virtual int isModified(){return _modified;}
+      virtual int isModified() { return _modified; }
       virtual int isValid();
       virtual void edUpdateState();
       virtual std::string getErrorReport();
       virtual std::string getContainerLog();
       virtual void ensureLoading();
-      virtual void getCoupledNodes(std::set<Task*>& coupledNodes){};
+      virtual void getCoupledNodes(std::set<Task*>& coupledNodes) { }
       virtual void cleanNodes();
     protected:
       virtual void exForwardFailed();
