@@ -89,7 +89,7 @@ namespace YACS
       Engines::PyScriptNode_var _pynode;
     };
 
-    class PyFuncNode : public InlineFuncNode, public PythonEntry
+    class YACSRUNTIMESALOME_EXPORT PyFuncNode : public InlineFuncNode, public PythonEntry
     {
     protected:
       Node *simpleClone(ComposedNode *father, bool editionOnly) const;

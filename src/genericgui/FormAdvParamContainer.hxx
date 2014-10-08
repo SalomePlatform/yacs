@@ -48,7 +48,7 @@ public:
   void setModeText(const std::string& mode);
 
 public slots:
-  void onModifyName(const QString &text);
+//  void onModifyName(const QString &text);
   void onModifyResource(const QString &text);
   void onModifyPolicy(const QString &text);
   void onModifyWorkDir(const QString &text);

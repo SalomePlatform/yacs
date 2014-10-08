@@ -35,6 +35,11 @@
 
 #include <sstream>
 
+#ifdef WIN32
+#include <process.h>
+#define getpid _getpid
+#endif
+
 using namespace YACS::ENGINE;
 
 SalomeContainerTools::SalomeContainerTools()

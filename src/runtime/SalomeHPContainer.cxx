@@ -92,7 +92,7 @@ bool SalomeHPContainer::isAlreadyStarted(const Task *askingNode) const
   return helper->isAlreadyStarted(askingNode);
 }
 
-void SalomeHPContainer::start(const Task *askingNode) throw(Exception)
+void SalomeHPContainer::start(const Task *askingNode) throw(YACS::Exception)
 {
   SalomeContainerMonoHelper *helper(_launchModeType.getHelperOfTaskThreadSafe(this,askingNode));
   SalomeContainerTools::Start(_componentNames,helper,_sct,_shutdownLevel,this,askingNode);

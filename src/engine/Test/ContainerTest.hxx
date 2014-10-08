@@ -44,7 +44,7 @@ namespace YACS
       void addComponentName(const std::string& name) { }
       void shutdown(int level) { }
       void setProperty(const std::string& name,const std::string& value) { }
-      std::string getProperty(const std::string& name) const { }
+      std::string getProperty(const std::string& name) const { return ""; }
       std::map<std::string,std::string> getResourceProperties(const std::string& name) const { return std::map<std::string,std::string>(); }
       std::map<std::string,std::string> getProperties() const { return std::map<std::string,std::string>(); }
       //
@@ -77,7 +77,7 @@ namespace YACS
       void addComponentName(const std::string& name) { }
       void shutdown(int level) { }
       void setProperty(const std::string& name,const std::string& value) { }
-      std::string getProperty(const std::string& name) const { }
+      std::string getProperty(const std::string& name) const { return ""; }
       std::map<std::string,std::string> getResourceProperties(const std::string& name) const { return std::map<std::string,std::string>(); }
       std::map<std::string,std::string> getProperties() const { return std::map<std::string,std::string>(); }
       //

@@ -41,7 +41,7 @@ using namespace std;
 
 FormHPContainer::FormHPContainer(QWidget *parent):FormContainerBase(parent),_poolSz(new QLineEdit(this)),_initScriptModified(false)
 {
-  QIntValidator *iv(new QIntValidator(_poolSz)); iv->setRange(1,std::numeric_limits<int>::max());
+  QIntValidator *iv(new QIntValidator(_poolSz)); iv->setRange(1,INT_MAX);
   _poolSz->setValidator(iv);
   label_15->setText("Size of pool :");
   gridLayout_2_2->addWidget(_poolSz);
