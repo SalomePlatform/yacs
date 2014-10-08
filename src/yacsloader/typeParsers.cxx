@@ -41,6 +41,8 @@ namespace YACS
 
   void typetypeParser::buildAttr(const XML_Char** attr)
     {
+      if (!attr)
+        return;
       required("name",attr);
       required("kind",attr);
       for (int i = 0; attr[i]; i += 2) 
@@ -84,6 +86,8 @@ namespace YACS
     }
   void seqtypeParser::buildAttr(const XML_Char** attr)
     {
+      if (!attr)
+        return;
       required("name",attr);
       required("content",attr);
       for (int i = 0; attr[i]; i += 2) 
@@ -145,6 +149,8 @@ namespace YACS
     }
   void objtypeParser::buildAttr(const XML_Char** attr)
     {
+      if (!attr)
+        return;
       required("name",attr);
       for (int i = 0; attr[i]; i += 2) 
         {
@@ -204,6 +210,8 @@ namespace YACS
 
   void membertypeParser::buildAttr(const XML_Char** attr)
     {
+      if (!attr)
+        return;
       required("name",attr);
       required("type",attr);
       for (int i = 0; attr[i]; i += 2)
@@ -235,6 +243,8 @@ namespace YACS
     }
   void structtypeParser::buildAttr(const XML_Char** attr)
     {
+      if (!attr)
+        return;
       required("name",attr);
       for (int i = 0; attr[i]; i += 2) 
         {

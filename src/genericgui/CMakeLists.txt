@@ -22,7 +22,6 @@
 # additional include directories
 INCLUDE_DIRECTORIES(
   ${PYTHON_INCLUDE_DIR}
-  ${EXPAT_INCLUDE_DIR}
   ${OMNIORB_INCLUDE_DIR}
   ${LIBXML2_INCLUDE_DIR}
   ${GRAPHVIZ_INCLUDE_DIRS}
@@ -63,7 +62,6 @@ SET(_link_LIBRARIES
   SalomeWrap
   HMI
   SalomeResourcesManager
-  ${EXPAT_LIBRARIES}
   ${LIBXML2_LIBRARIES}
   ${GRAPHVIZ_LIBRARIES}
   )

@@ -87,6 +87,8 @@ struct bloctypeParser:parser
   virtual void onEnd(const char *el,parser* child);
   virtual void buildAttr(const XML_Char** attr)
     {
+      if (!attr)
+        return;
       this->required("name",attr);
       for (int i = 0; attr[i]; i += 2) 
         {

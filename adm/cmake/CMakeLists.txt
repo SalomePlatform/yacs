@@ -23,8 +23,6 @@
 
 # These files are data, module or lib files
 SET(_adm_data
-  FindExpat.cmake
-  FindSalomeExpat.cmake
   FindQScintilla.cmake
   FindSalomeQScintilla.cmake
   FindSphinx.cmake

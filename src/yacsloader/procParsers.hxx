@@ -51,6 +51,8 @@ struct proctypeParser: bloctypeParser<T>
   virtual void onEnd(const char *el,parser* child);
   virtual void buildAttr(const XML_Char** attr)
     {
+	  if (!attr)
+		return;
       for (int i = 0; attr[i]; i += 2) 
         {
           if(std::string(attr[i]) == "state")

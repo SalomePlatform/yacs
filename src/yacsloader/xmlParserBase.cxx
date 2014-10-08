@@ -29,9 +29,6 @@
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
-// --- specific part for libxml2 ----------------------------------------------
-
-#ifdef USE_LIBXML2
 extern "C"
 {
 #include <libxml/parserInternals.h> // for xmlCreateFileParserCtxt
@@ -42,13 +39,6 @@ void xmlParserBase::XML_SetUserData(_xmlParserCtxt* ctxt,
 {
   ctxt->userData = parser;
 }
-#endif
-
-// --- specific part for expat ------------------------------------------------
-
-#ifdef USE_EXPAT
-XML_Parser xmlParserBase::_xmlParser;
-#endif
 
 // --- generic part -----------------------------------------------------------
 
@@ -111,8 +101,8 @@ void XMLCALL xmlParserBase::end_element   (void* userData,
 
 
 /*! callback called for significant characters inside tags: \verbatim <tag>content</tag> \endverbatim
- *  or outside tags, like space or new line. 
- *  with expat get also the CDATA tags: \verbatim <tag>![CDATA[content]]></tag> \endverbatim
+ *  or outside tags, like space or new line;
+ *  get also the CDATA tags: \verbatim <tag>![CDATA[content]]></tag> \endverbatim
  */
 
 void XMLCALL xmlParserBase::characters    (void* userData,
@@ -329,22 +319,15 @@ void xmlParserBase::end()
 {
 }
 
-/*! Throws an exception. different implementation with libxml2 and expat
+/*! Throws an exception.
  */
 
 void xmlParserBase::stopParse(std::string what)
 {
-#ifdef USE_LIBXML2
   xmlStopParser(_xmlParser);
-#endif
-#ifdef USE_EXPAT
-  throw Exception(what);
-#endif  
 }
 
 // ----------------------------------------------------------------------------
-
-#ifdef USE_LIBXML2
 
 /*! libxml2 parser initialisation
  * \param parser dedicated parser
@@ -411,92 +394,15 @@ void xmlReader::parse(std::string xmlFile)
 
   xmlParseDocument(saxContext);
   _rootParser->cleanGarbage();
-  xmlFileClose(saxContext);
-  xmlFreeParserCtxt(saxContext);
+  if ( saxContext->myDoc != NULL ) {
+    xmlFreeDoc( saxContext->myDoc );
+    saxContext->myDoc = NULL;
+  }
+  if ( saxContext != NULL ) {
+    saxContext->sax = old_sax;
+    xmlFreeParserCtxt( saxContext );
+  }
   DEBTRACE("xmlParserBase::end of parse, garbage size = " << _rootParser->getGarbageSize());
 }
-#endif
-
-// ----------------------------------------------------------------------------
-
-#ifdef USE_EXPAT
-
-#define SIZEBUF        8192
-char Buffer[SIZEBUF];
-
-/*! expat parser initialisation
- * \param parser dedicated parser
- */
-
-xmlReader::xmlReader(xmlParserBase* parser): _rootParser(parser)
-{
-  xmlParserBase::_xmlParser= XML_ParserCreate(NULL);
-  if (! _rootParser ) 
-    {
-      cerr << "Couldn't allocate memory for parser" << endl;
-      throw Exception("Couldn't allocate memory for parser");
-    }
-}
-
-/*! expat parse
- * \param xmlFile file to parse
- */
-
-void xmlReader::parse(std::string xmlFile)
-{
-  FILE* fin=fopen(xmlFile.c_str(),"r");
-  if (! fin) 
-    {
-      std::cerr << "Couldn't open schema file" << std::endl;
-      throw std::invalid_argument("Couldn't open schema file");
-      //throw Exception("Couldn't open schema file");
-    }
-
-  XML_SetElementHandler(xmlParserBase::_xmlParser,
-                        xmlParserBase::start_element,
-                        xmlParserBase::end_element);
-  XML_SetCharacterDataHandler(xmlParserBase::_xmlParser,
-                              xmlParserBase::characters );
-  XML_SetUserData(xmlParserBase::_xmlParser, _rootParser);
-  _rootParser->init(0);
-  _rootParser->_stackParser.push(_rootParser);
-
-  try
-    {
-      for (;;) 
-        {
-          int done;
-          int len;
-
-          len = fread(Buffer, 1, SIZEBUF, fin);
-          if (ferror(fin)) 
-            {
-              std::cerr << "Read error" << std::endl;
-              throw Exception("Read error");
-            }
-          done = feof(fin);
-
-          if (XML_Parse(xmlParserBase::_xmlParser, Buffer, len, done) == XML_STATUS_ERROR) 
-            {
-              throw Exception(XML_ErrorString(XML_GetErrorCode(xmlParserBase::_xmlParser)));
-            }
-
-          if (done)
-            break;
-        }
-      XML_ParserFree (xmlParserBase::_xmlParser);
-      xmlParserBase::_xmlParser=0;
-      _rootParser->cleanGarbage();
-      DEBTRACE("xmlParserBase::end of parse, garbage size = " << _rootParser->getGarbageSize());
-    }
-  catch(Exception& e)
-    {
-      _rootParser->cleanGarbage();
-      //get line number from XML parser
-      cerr << "Error at line: " << XML_GetCurrentLineNumber(xmlParserBase::_xmlParser) << endl;
-      throw e;
-    }
-}
-#endif
 
 // ----------------------------------------------------------------------------

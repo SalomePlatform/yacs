@@ -21,23 +21,6 @@
 #define __XMLPARSERBASE_HXX_
 
 
-// --- select only one of the following packages ------------------------------
-// - libxml2 comes with gnome, so it's almost always already installed,
-//   but may not not work (see below).
-// - libexpat is a less common package, but light, and works fine.
-
-// With standard installation of libxml2, C++ exception cannot be catched 
-// during the parse process. This is required for normal use of yacs.
-// libxml2 must be generated with configure --with-fexceptions ...
-// (to be tested)
-// Developpement and tests are done with libexpat.
-
-//#define USE_LIBXML2
-#define USE_EXPAT
-
-// --- specific part for libxml2 ----------------------------------------------
-
-#ifdef USE_LIBXML2
 extern "C"
 {
 #include <libxml/parser.h>
@@ -45,16 +28,6 @@ extern "C"
 #define XMLCALL
 #define XML_Char char
 inline XML_Char* tochar(const xmlChar *c) { return (XML_Char*)c; };
-#endif
-
-// --- specific part for expat ------------------------------------------------
-
-#ifdef USE_EXPAT
-  #include <expat.h>
-#define xmlChar XML_Char
-inline const XML_Char* tochar(const xmlChar *c) { return c; };
-#endif
-
 
 // --- generic part -----------------------------------------------------------
 
@@ -114,15 +87,9 @@ public:
 
   std::map< std::string, int > counts;
 
-#ifdef USE_LIBXML2
   static _xmlParserCtxt* _xmlParser;
   static void XML_SetUserData(_xmlParserCtxt* ctxt,
                               xmlParserBase* parser);
-#endif
-
-#ifdef USE_EXPAT
-  static XML_Parser _xmlParser;
-#endif
 
   static std::stack<xmlParserBase*> _stackParser;
 

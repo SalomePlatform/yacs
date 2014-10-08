@@ -45,7 +45,6 @@ ADD_DEFINITIONS(
 
 # libraries to link to
 SET(_link_LIBRARIES
-  ${EXPAT_LIBRARIES}
   ${LIBXML2_LIBRARIES}
   YACSRuntimeSALOME
   YACSloader

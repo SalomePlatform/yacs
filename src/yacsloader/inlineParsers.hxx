@@ -66,6 +66,8 @@ struct inlinetypeParser:public nodetypeParser<T>
     }
   virtual void buildAttr(const XML_Char** attr)
     {
+      if (!attr)
+        return;
       this->required("name",attr);
       for (int i = 0; attr[i]; i += 2) 
       {

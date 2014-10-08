@@ -22,58 +22,70 @@
 
 #include "YACSloaderExport.hxx"
 
-#include <expat.h>
 #include <stack>
 #include <map>
 #include <string>
 #include <iostream>
 
+#include <libxml/parser.h>
+#include <libxml/tree.h>
+#include <libxml/xmlreader.h>
+
 namespace YACS
 {
+
+typedef char XML_Char;
 
 struct YACSLOADER_EXPORT parser
 {
   static parser main_parser;
+  static std::stack<parser*> _stackParser;
 
   parser():_level(0),_defaultParsersMap(0)
   {
     _counts=new std::map<std::string,int>;
   }
   virtual ~parser();
-
   virtual void SetUserDataAndPush(parser* pp);
   virtual void onStart(const XML_Char *el, const XML_Char** attr);
-  static void XMLCALL start(void *data, const XML_Char* el, const XML_Char** attr);
-
-  virtual void onEnd(const XML_Char *el,parser* child);
-    
-  static void XMLCALL end(void *data, const char *el);
-    
+  virtual void onEnd(const XML_Char *el, parser* child);
   virtual void charData(const XML_Char *s, int len);
-  
-  static void XMLCALL charac(void *data, const XML_Char *s, int len);
-    
   virtual void endParser();
-    
   virtual void init();
-    
-  virtual void incrCount(const XML_Char *el);
-    
+  virtual void incrCount(const XML_Char *elem);
   virtual void checkOrder(std::string& el);
-    
   virtual void maxcount(std::string name, int max, std::string& el);
-    
   virtual void mincount(std::string name,int min );
-    
   virtual void maxchoice(std::string *names, int max, std::string& el);
-    
   virtual void minchoice(std::string *names, int min);
-    
   virtual void pre(){_content="";};
   virtual void required(const std::string& name, const XML_Char** attr);
-    
   virtual void buildAttr(const XML_Char** attr);
-    
+
+  static void XMLCALL start_document(void* data);
+  static void XMLCALL end_document  (void* data);
+  static void XMLCALL start_element (void* data,
+                                     const xmlChar* name,
+                                     const xmlChar** p);
+  static void XMLCALL end_element   (void* data,
+                                     const xmlChar* name);
+  static void XMLCALL characters    (void* data,
+                                     const xmlChar* ch,
+                                     int len);
+  static void XMLCALL comment       (void* data,
+                                     const xmlChar* value);
+  static void XMLCALL cdata_block   (void* data,
+                                     const xmlChar* value,
+                                     int len);
+  static void XMLCALL warning       (void* data,
+                                     const char* fmt, ...);
+  static void XMLCALL error         (void* data,
+                                     const char* fmt, ...);
+  static void XMLCALL fatal_error   (void* data,
+                                     const char* fmt, ...);
+
+  static void XML_SetUserData(_xmlParserCtxt* ctxt, parser* par);
+
   std::stack<parser*>& getStack();
 
   template<class T>

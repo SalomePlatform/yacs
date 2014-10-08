@@ -25,14 +25,15 @@
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
+#include <libxml/parserInternals.h>
 
 YACS::ENGINE::Proc* currentProc;
-XML_Parser p ;
-std::stack<YACS::parser*> sp;
+_xmlParserCtxt* saxContext;
 
 namespace YACS
 {
   parser parser::main_parser;
+  std::stack<parser*> parser::_stackParser;
 
 parser::~parser()
 {
@@ -48,50 +49,24 @@ parser::~parser()
 
 std::stack<parser*>& parser::getStack()
 {
-  return sp;
+  return _stackParser;
 }
 
 void parser::SetUserDataAndPush(parser* pp)
 {
-  XML_SetUserData(p,pp);
-  sp.push(pp);
+  XML_SetUserData(saxContext,pp);
+  _stackParser.push(pp);
   DEBTRACE("parser::SetUserDataAndPush, stack size: " << sp.size());
 }
 
-void XMLCALL parser::start(void *data, const XML_Char* el, const XML_Char** attr)
-{
-  DEBTRACE("parser::start, stack size: " << sp.size());
-  parser* pp=static_cast <parser *> (data);
-  pp->incrCount(el);
-  pp->onStart(el,attr);
-}
-
-void parser::onEnd(const XML_Char *el,parser* child)
+void parser::onEnd(const XML_Char *el, parser* child)
 {
   DEBTRACE("parser::onEnd: " << el)
-}
-
-void XMLCALL parser::end(void *data, const char *el)
-{
-  DEBTRACE("parser::end: " << el);
-  parser* child=static_cast <parser *> (data);
-  sp.pop();
-  DEBTRACE("parser::end, stack size: " << sp.size());
-  parser* pp=sp.top();
-  XML_SetUserData(p,pp);
-  pp->onEnd(el,child);
-  child->endParser();
 }
 
 void parser::charData(const XML_Char *s, int len)
 {
   _content=_content+std::string(s,len);
-}
-
-void XMLCALL parser::charac(void *data, const XML_Char *s, int len)
-{
-  parser* pp=static_cast <parser *> (data);
-  pp->charData(s,len);
 }
 
 void parser::endParser()
@@ -124,7 +99,7 @@ void parser::init ()
 
 void parser::incrCount(const XML_Char *el)
 {
-  if(_counts->count(el)==0)
+  if((*_counts).find(el)==(*_counts).end())
     (*_counts)[el]=1;
   else
     (*_counts)[el]=(*_counts)[el]+1;
@@ -210,7 +185,7 @@ void parser::minchoice(std::string *names, int min)
 
 void parser::required(const std::string& name, const XML_Char** attr)
 {
-  for (int i = 0; attr[i]; i += 2) 
+  for (int i = 0; attr[i]; i += 2)
     {
       if(name == std::string(attr[i]))return;
     }
@@ -219,10 +194,12 @@ void parser::required(const std::string& name, const XML_Char** attr)
 
 void parser::buildAttr(const XML_Char** attr)
 {
-  for (int i = 0; attr[i]; i += 2) 
-    {
-      DEBTRACE(attr[i] << "=" << attr[i + 1]);
-    }
+  if (!attr)
+    return;
+  for (int i = 0; attr[i]; i += 2)
+  {
+    DEBTRACE(attr[i] << "=" << attr[i + 1]);
+  }
 }
 
 void parser::onStart(const XML_Char* el, const XML_Char** attr)
@@ -237,7 +214,128 @@ void parser::onStart(const XML_Char* el, const XML_Char** attr)
 void parser::logError(const std::string& reason)
 {
   DEBTRACE( "parser::logError: " << _file );
-  currentProc->getLogger("parser")->error(reason,main_parser._file.c_str(),XML_GetCurrentLineNumber(p));
+  currentProc->getLogger("parser")->error(reason,main_parser._file.c_str(),saxContext->input->line);
+}
+void parser::XML_SetUserData(_xmlParserCtxt* ctxt,
+                             parser* par)
+{
+  ctxt->userData = par;
+}
+
+void XMLCALL parser::start_document(void* data)
+{
+  DEBTRACE("parser::start_document");
+  parser *currentParser = static_cast<parser *> (data);
+}
+
+void XMLCALL parser::end_document(void* data)
+{
+  DEBTRACE("parser::end_document");
+  parser *currentParser = static_cast<parser *> (data);
+}
+
+void XMLCALL parser::start_element(void* data,
+                                   const xmlChar* name,
+                                   const xmlChar** p)
+{
+  DEBTRACE("parser::start_element " << name);
+  parser *currentParser = static_cast<parser *> (data);
+  currentParser->incrCount((const XML_Char *)name);
+  currentParser->onStart((const XML_Char *)name, (const XML_Char **)p);
+}
+
+void XMLCALL parser::end_element(void* data,
+                                 const xmlChar* name)
+{
+  DEBTRACE("parser::end_element");
+  parser *childParser = static_cast<parser *> (data);
+  _stackParser.pop();
+  parser* pp=_stackParser.top();
+  XML_SetUserData(saxContext, pp);
+  pp->onEnd((const XML_Char *)name, childParser);
+  childParser->endParser();
+ }
+
+void XMLCALL parser::characters(void* data,
+                                const xmlChar* ch,
+                                int len)
+{
+  DEBTRACE("parser::characters " << len);
+  parser *currentParser = (parser *) (data);
+  currentParser->charData((const XML_Char*) ch, len);
+}
+
+void XMLCALL parser::comment(void* data,
+                             const xmlChar* value)
+{
+  DEBTRACE("parser::comment");
+  parser *currentParser = static_cast<parser *> (data);
+}
+
+void XMLCALL parser::cdata_block(void* data,
+                                 const xmlChar* value,
+                                 int len)
+{
+  DEBTRACE("parser::cdata_block");
+  parser *currentParser = static_cast<parser *> (data);
+  currentParser->charData((const XML_Char*) value, len);
+}
+
+void XMLCALL parser::warning(void* data,
+                             const char* fmt, ...)
+{
+  DEBTRACE("parser::warning");
+  parser *currentParser = static_cast<parser *> (data);
+  va_list args;
+  va_start(args, fmt);
+  std::string format = "%s";
+  if (format == fmt)
+    {
+      char* parv;
+      parv = va_arg(args, char*);
+      std::cerr << parv ;
+    }
+  else std::cerr << __FILE__ << " [" << __LINE__ << "] : "
+                 << "error format not taken into account: " << fmt << std::endl;
+  va_end(args);
+}
+
+void XMLCALL parser::error(void* data,
+                           const char* fmt, ...)
+{
+  DEBTRACE("parser::error");
+  parser *currentParser = static_cast<parser *> (data);
+  va_list args;
+  va_start(args, fmt);
+  std::string format = "%s";
+  if (format == fmt)
+    {
+      char* parv;
+      parv = va_arg(args, char*);
+      std::cerr << parv ;
+    }
+  else std::cerr << __FILE__ << " [" << __LINE__ << "] : "
+                 << "error format not taken into account: " << fmt << std::endl;
+  va_end(args);
+}
+
+void XMLCALL parser::fatal_error(void* data,
+                                 const char* fmt, ...)
+{
+  DEBTRACE("parser::fatal_error");
+  parser *currentParser = static_cast<parser *> (data);
+  va_list args;
+  va_start(args, fmt);
+  std::string format = "%s";
+  if (format == fmt)
+    {
+      char* parv;
+      parv = va_arg(args, char*);
+      std::cerr << parv ;
+    }
+  else std::cerr << __FILE__ << " [" << __LINE__ << "] : "
+                 << "error format not taken into account: " << fmt << std::endl;
+  va_end(args);
 }
 
 }

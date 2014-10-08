@@ -112,6 +112,8 @@ namespace YACS
 
   void casetypeParser::buildAttr(const XML_Char** attr)
     {
+      if (!attr)
+        return;
       this->required("id",attr);
       for (int i = 0; attr[i]; i += 2) 
         {
@@ -237,6 +239,8 @@ namespace YACS
 
   void defaultcasetypeParser::buildAttr(const XML_Char** attr)
     {
+      if (!attr)
+        return;
       for (int i = 0; attr[i]; i += 2) 
       {
         DEBTRACE( attr[i] << "=" << attr[i + 1] )             
@@ -256,6 +260,8 @@ namespace YACS
 
   void switchtypeParser::buildAttr(const XML_Char** attr)
     {
+      if (!attr)
+        return;
       this->required("name",attr);
       for (int i = 0; attr[i]; i += 2) 
         {

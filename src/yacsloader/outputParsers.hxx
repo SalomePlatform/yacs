@@ -59,6 +59,8 @@ struct outputdatatypeParser: parser
     }
   virtual void buildAttr(const XML_Char** attr)
     {
+      if (!attr)
+        return;
       DEBTRACE("outputdatatypeParser::buildAttr");
       required("name",attr);
       required("type",attr);
@@ -156,6 +158,8 @@ void outnodetypeParser<T>::onEnd(const char *el,parser* child)
 template <class T>
 void outnodetypeParser<T>::buildAttr(const XML_Char** attr)
     {
+      if (!attr)
+        return;
       DEBTRACE("outnodetypeParser::buildAttr");
       this->required("name",attr);
       for (int i = 0; attr[i]; i += 2)

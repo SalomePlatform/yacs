@@ -31,6 +31,8 @@ namespace YACS
 
   void componentinstancetypeParser::buildAttr(const XML_Char** attr)
     {
+      if (!attr)
+        return;
       required("name",attr);
       for (int i = 0; attr[i]; i += 2)
       {

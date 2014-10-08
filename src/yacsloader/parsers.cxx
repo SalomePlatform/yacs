@@ -19,7 +19,6 @@
 
 #include "parsers.hxx"
 
-#include <expat.h>
 #include <iostream>
 #include <stdexcept>
 #include <cstdio>
@@ -34,6 +33,10 @@
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
+#include <libxml/parser.h>
+#include <libxml/tree.h>
+#include <libxml/xmlreader.h>
+#include <libxml/parserInternals.h>
 YACS::ENGINE::Runtime* theRuntime=0;
 
 #define BUFFSIZE        8192
@@ -41,15 +44,13 @@ YACS::ENGINE::Runtime* theRuntime=0;
 char Buff[BUFFSIZE];
 
 extern YACS::ENGINE::Proc* currentProc;
-extern XML_Parser p ;
-
+extern _xmlParserCtxt* saxContext;
 namespace YACS
 {
 
 YACSLoader::YACSLoader()
 {
   _defaultParsersMap.clear();
-
   theRuntime = ENGINE::getRuntime();
 }
 
@@ -62,79 +63,80 @@ void YACSLoader::registerProcCataLoader()
 ENGINE::Proc* YACSLoader::load(const char * file)
 {
   DEBTRACE("YACSLoader::load: " << file);
+  parser::main_parser.init();
+  parser::main_parser._stackParser.push(&parser::main_parser);
+  xmlSAXHandler baseHandler =
+  {
+    0,  // internal_subset,
+    0,  // isStandalone
+    0,  // hasInternalSubset
+    0,  // hasExternalSubset
+    0,  // resolveEntity
+    0,  // getEntity
+    0,  // entityDecl
+    0,  // notationDecl
+    0,  // attributeDecl
+    0,  // elementDecl
+    0,  // unparsedEntityDecl
+    0,  // setDocumentLocator
+    parser::start_document, // startDocument
+    parser::end_document,   // endDocument
+    parser::start_element,  // startElement
+    parser::end_element,    // endElement
+    0,  // reference
+    parser::characters,     // characters
+    0,  // ignorableWhitespace
+    0,  // processingInstruction
+    parser::comment,        // comment
+    parser::warning,  // warning
+    parser::error,  // error
+    parser::fatal_error,  // fatalError
+    0,  // getParameterEntity
+    parser::cdata_block,    // cdataBlock
+    0  // externalSubset
+  };
+
   FILE* fin=fopen(file,"r");
-  if (! fin) 
-    {
-      std::cerr << "Couldn't open schema file" << std::endl;
-      throw std::invalid_argument("Couldn't open schema file");
-    }
+  if (! fin)
+  {
+    std::cerr << "Couldn't open schema file" << std::endl;
+    throw std::invalid_argument("Couldn't open schema file");
+  }
 
-  p = XML_ParserCreate(NULL);
-  if (! p) 
-    {
-      std::cerr << "Couldn't allocate memory for parser" << std::endl;
-      throw Exception("Couldn't allocate memory for parser");
-    }
-  XML_SetElementHandler(p, parser::start,parser::end);
-  XML_SetCharacterDataHandler(p,parser::charac );
+  saxContext = xmlCreateFileParserCtxt(file);
 
+  if (!saxContext)
+  {
+    std::cerr << "Couldn't allocate memory for parser" << std::endl;
+    throw Exception("Couldn't allocate memory for parser");
+  }
+  saxContext->sax = &baseHandler;
   parser::main_parser.SetUserDataAndPush(&YACS::roottypeParser::rootParser);
-
-  // OCC: san -- Allow external parsers for handling of unknown elements
-  // and attributes. This capability is used by YACS GUI to read
-  // graph presentation data
   if ( !_defaultParsersMap.empty() )
     roottypeParser::rootParser.setDefaultMap(&_defaultParsersMap);
   else
     roottypeParser::rootParser.setDefaultMap(0);
-  
-  parser::main_parser._file=file;
 
-  currentProc=0;
+  parser::main_parser._file = file;
+  currentProc = 0;
 
   try
+  {
+    if ( xmlParseDocument(saxContext) == -1 )
     {
-      for (;;) 
-        {
-          int done;
-          int len;
-
-          len = fread(Buff, 1, BUFFSIZE, fin);
-          if (ferror(fin)) 
-            {
-              std::cerr << "Read error" << std::endl;
-              throw Exception("Read error");
-            }
-          done = feof(fin);
-
-          if (XML_Parse(p, Buff, len, done) == XML_STATUS_ERROR) 
-            {
-              if(currentProc==0)
-                {
-                  std::cerr <<XML_ErrorString(XML_GetErrorCode(p))<<" "<<file<<" "<<XML_GetCurrentLineNumber(p)<<std::endl;
-                  break;
-                }
-              YACS::ENGINE::Logger* logger=currentProc->getLogger("parser");
-              logger->fatal(XML_ErrorString(XML_GetErrorCode(p)),file,XML_GetCurrentLineNumber(p));
-              break;
-            }
-
-          if (done)
-            break;
-        }
-      XML_ParserFree (p);
-      p=0;
-      return currentProc;
+      YACS::ENGINE::Logger* logger = currentProc->getLogger("parser");
+      logger->fatal( saxContext->lastError.message, file, saxContext->input->line );
     }
+    saxContext = 0;
+    return currentProc;
+  }
   catch(Exception& e)
-    {
-      //get line number from XML parser
-      YACS::ENGINE::Logger* logger=currentProc->getLogger("parser");
-      logger->fatal(e.what(),file,XML_GetCurrentLineNumber(p));
-      XML_ParserFree (p);
-      p=0;
-      return currentProc;
-    }
+  {
+    YACS::ENGINE::Logger* logger = currentProc->getLogger("parser");
+    logger->fatal(e.what(), file, saxContext->input->line);
+    saxContext = 0;
+    return currentProc;
+  }
 }
 
 YACSLoader::~YACSLoader()

@@ -45,7 +45,6 @@
  For building %YACS, you need some prerequisites
  - g++ 4.1 or more (mandatory)
  - libxml2 (mandatory)
- - expat (mandatory)
  - omniorb 4.1 or more (mandatory)
  - python 2.3 and + (mandatory)
  - swig 1.3.31 (mandatory)

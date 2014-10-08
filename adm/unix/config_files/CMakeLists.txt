@@ -25,7 +25,6 @@ SET(_m4_data
   check_boost.m4
   check_cas.m4
   check_cppunit.m4
-  check_expat.m4
   check_htmlgen.m4
   check_libxml.m4
   check_omniorb.m4

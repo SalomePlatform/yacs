@@ -94,6 +94,8 @@ template <class T>
 template <class T>
   void inporttypeParser<T>::buildAttr(const XML_Char** attr)
     {
+      if (!attr)
+        return;
       required("name",attr);
       required("type",attr);
       for (int i = 0; attr[i]; i += 2) 

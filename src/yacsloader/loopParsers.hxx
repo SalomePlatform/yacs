@@ -84,6 +84,8 @@ namespace YACS
 template <class T>
 void looptypeParser<T>::buildAttr(const XML_Char** attr)
     {
+      if (!attr)
+        return;
       this->required("name",attr);
       for (int i = 0; attr[i]; i += 2) 
         {
@@ -336,6 +338,8 @@ template <class T> forlooptypeParser<T> forlooptypeParser<T>::forloopParser;
 template <class T>
 void forlooptypeParser<T>::buildAttr(const XML_Char** attr)
     {
+      if (!attr)
+        return;
       this->required("name",attr);
       for (int i = 0; attr[i]; i += 2) 
         {
@@ -493,6 +497,8 @@ struct foreachlooptypeParser:dynparalooptypeParser<T>
 
   virtual void buildAttr(const XML_Char** attr)
     {
+      if (!attr)
+        return;
       this->required("name",attr);
       this->required("type",attr);
       for (int i = 0; attr[i]; i += 2) 
@@ -579,6 +585,8 @@ struct optimizerlooptypeParser:dynparalooptypeParser<T>
 
   virtual void buildAttr(const XML_Char** attr)
     {
+      if (!attr)
+        return;
       this->required("name",attr);
       this->required("lib",attr);
       this->required("entry",attr);

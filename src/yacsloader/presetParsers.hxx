@@ -64,6 +64,8 @@ struct presetdatatypeParser: parser
     }
   virtual void buildAttr(const XML_Char** attr)
     {
+      if (!attr)
+        return;
       DEBTRACE("presetdatatypeParser::buildAttr");
       required("name",attr);
       required("type",attr);
@@ -174,6 +176,8 @@ void presettypeParser<T>::onEnd(const char *el,parser* child)
 template <class T>
 void presettypeParser<T>::buildAttr(const XML_Char** attr)
     {
+      if (!attr)
+        return;
       DEBTRACE("presettypeParser::buildAttr");
       this->required("name",attr);
       for (int i = 0; attr[i]; i += 2)
