@@ -23,8 +23,7 @@
 #include "SceneComposedNodeItem.hxx"
 
 #include <string>
-
-struct Agraph_t;
+#include <cgraph.h>
 
 namespace YACS
 {
