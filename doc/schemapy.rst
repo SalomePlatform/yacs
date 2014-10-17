@@ -601,25 +601,6 @@ is defined by the class async in the python module myalgo2.py::
   p.edAddLink(ol.getOutputPort("evalSamples"),n.getInputPort("p1"))
   p.edAddLink(n.getOutputPort("p1"),ol.getInputPort("evalResults"))
 
-.. _py_container_creation:
-
-Creation of the three type of containers
-''''''''''''''''''''''''''''''''''''''''
-
-To create a mono YACS container simply invoke::
-
-   my_mono_cont=p.createContainer("MyMonoCont","Salome")
-   my_mono_cont.setProperty("type","mono")
-
-To create a multi YACS container simply invoke::
-
-   my_multi_cont=p.createContainer("MyMultiCont","Salome")
-   my_multi_cont.setProperty("type","multi")
-
-To create a HP YACS container simply invoke::
-
-   my_hp_cont=p.createContainer("MyHPCont","HPSalome")
-
 .. _py_container:
 
 Definition of containers
@@ -648,6 +629,16 @@ The previously defined container is then assigned to this component instance usi
 If it is required to place the SALOME service defined above (node “node3”) on container “A”, we will write::
 
   n3.getComponent().setContainer(c1)
+
+Since SALOME v7.5, there is a new type of container:
+*Homogeneous Pool of SALOME containers* (HP container).
+It is possible to create this type of container this way::
+
+   my_hp_cont=r.createContainer("MyHPCont","HPSalome")
+
+- "MyHPCont" : name of the container. Same result as my_hp_cont.setName("MyHPCont").
+- "HPSalome" : type of container. Possible values are "HPSalome" (for a HP container)
+  or "Salome" (for a classic container).
 
 Node properties
 '''''''''''''''''''''''''''

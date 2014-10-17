@@ -56,13 +56,13 @@ All other modules depend on these modules.
 ===================================== ========= ======================= ==================================
 Theme                                  Module     Uses                       Is used by       
 ===================================== ========= ======================= ==================================
-Architecture                           KERNEL                            GUI, MED, GEOM, SMESH, VISU,YACS  
-Architecture                           GUI       KERNEL                  MED, GEOM, SMESH, VISU,YACS  
-Architecture                           MED       KERNEL, GUI             SMESH, VISU
+Architecture                           KERNEL                            GUI, MED, GEOM, SMESH, PARAVIS,YACS
+Architecture                           GUI       KERNEL                  MED, GEOM, SMESH, PARAVIS,YACS
+Architecture                           MED       KERNEL, GUI             SMESH, PARAVIS
 Geometry                               GEOM      KERNEL, GUI             SMESH
 Mesh                                   SMESH     KERNEL, GUI, GEOM, MED
 Supervision                            YACS      KERNEL, GUI
-Visualization                          VISU      KERNEL, GUI, MED
+Visualization                          PARAVIS   KERNEL, GUI, MED
 ===================================== ========= ======================= ==================================
 
 A module contains one or several SALOME components.  A SALOME component is a CORBA object that respects SALOME rules 

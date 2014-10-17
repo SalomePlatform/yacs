@@ -580,53 +580,98 @@ To create this type of node:
 
 Containers
 ---------------------
+The SALOME platform executes its components after loading them in containers.
+A SALOME container is a process managed by the platform that may be executed
+on any known resource.
 
-**WARNING !** Their are two notions of containers in the Salome world that must be clearly distinguished.
+**WARNING !** There are two types of containers in the Salome world that must
+be clearly distinguished:
 
 - YACS container, that will be explained extensively here.
-- KERNEL container which is a single process managed by the plateform that may be executed on any resource in the resource catalog of the current SALOME application.
-   This single process can perform a set of jobs.
+- SALOME container which is a single process managed by the plateform that may
+  be executed on any resource in the resource catalog of the current SALOME
+  application. This single process can perform a set of jobs.
 
 To avoid misleading, in this chapter, container word will be systematically explicited.
 
-YACS Container objects are used in the definition of a scheme to define constraints on the placement of some tasks (run remotely) of a YACS scheme. YACS containers objects are parts of a scheme as nodes are.
-So the job of the conceptor of a YACS scheme is to correctly allocate remotely executed elementary nodes over YACS container objects of the scheme to respect the states of KERNEL components running on KERNEL container and the states of KERNEL container itself.
-Exactly one YACS container is attached (directy or indirectly through YACS components) to elementary nodes (or tasks) that can be run remotely.
+YACS containers are used in the definition of a scheme to define constraints
+on the execution of the nodes of a YACS scheme. They are part of the scheme
+as well as the nodes are.
+Exactly one YACS container is attached to an elementary node.
 
-The tasks (elementary nodes) that can be run remotely are ( or the tasks that are attached to a YACS container are ) :
+The tasks (elementary nodes) that can be run remotely are ( or the tasks that
+are attached to a YACS container are ) :
 
 - Python script node.
 - Python function node.
 - Salome node.
 
-So all elementary nodes of a scheme (whatever their types in the list above) that are supposed to be executed remotely are supposed to be attached to a set of YACS container objects.
+So all elementary nodes of a scheme (whatever their types in the list above)
+that can be executed remotely should be attached to a set of YACS container objects.
 
-YACS container can be seen as a placement request at edition time of a scheme. **During the execution of a scheme, a YACS container is incarnated into one or several KERNEL containers** depending on the type of the YACS container.
+YACS containers can be seen as a placement request at edition time of a scheme.
+**During the execution of a scheme, a YACS container is incarnated into one or
+several SALOME containers** depending on the type of the YACS container.
 
-Presently, there are 3 types of containers that incarnates the 3 different mapping strategies between YACS container and KERNEL container :
+Presently, there are 3 types of containers that incarnates the 3 different
+mapping strategies between YACS containers and SALOME containers :
 
-- Mono YACS container : The most simple. There is exactly one KERNEL container attached on one mono YACS container. **WARNING**, this type of YACS container can be dangerous into the context of foreach because several tasks can be invoked in parallel inside of a same process that can leads to problem if the service owning this YACS container is not thread safe. This type of YACS container leads to no special treatment from Executor point of view.
-- Multi YACS container : There is as KERNEL containers attached on a multi YACS container as there are YACS component instances attached to it in the scheme. In the context of foreach, it can leads to a pool of KERNEL containers attached to a YACS container. The KERNEL container is obtained using as key the pointer to the YACS component object. This type of YACS container leads to no special treatment from Executor point of view.
-- HP YACS container : HP stands for Homogeneous Pool of KERNEL container. A HP YACS container is mapped to a fixed size set of KERNEL containers. This pool is homogeneous which means that each of the KERNEL container inside the pool can be used indifferentely (and will be used during execution) by the nodes attached to a same HP YACS container. The KERNEL container is obtainer using the requesting node. Contrary to the 2 YACS containers type above, the Executor is active with that type of YACS container by performing, if needed, a cutoff towards remotely executed tasks list in READY state regarding the availability of different YACS HP containers.
+- *Mono YACS container* : The most simple. There is exactly one KERNEL container
+  attached on one mono YACS container. **WARNING**, this type of YACS container
+  can be dangerous into the context of foreach because several tasks can be
+  invoked in parallel inside of a same process that can lead to problems if the
+  service owning this YACS container is not thread safe. This type of YACS
+  container leads to no special treatment from Executor point of view.
+- *Multi YACS container* : There are as many SALOME containers as YACS component
+  instances attached to it in the scheme.
+  In the context of a foreach loop, it can lead to a pool of SALOME containers
+  attached to a YACS container. This type of YACS container leads to no special
+  treatment from Executor point of view.
+- *HP YACS container* : HP stands for Homogeneous Pool of SALOME containers. A HP
+  YACS container is mapped to a fixed size set of SALOME containers. This pool is
+  homogeneous which means that each of the SALOME containers inside of the pool
+  can be used indifferentely by the nodes attached to a same HP YACS container.
+  Contrary to the 2 YACS container types above, the Executor is active with
+  that type of YACS container by performing, if needed, a cutoff towards executed
+  tasks list in READY state regarding the availability of different YACS
+  HP containers.
 
 To create containers from TUI, see :ref:`py_container_creation`.
 
 All of these 3 types of YACS containers are sharing a common important features : set of properties.
 
-Properties are a set of (key,value) pairs which are designed to be forwarded directly to the KERNEL (expected "name" property and "attached_on_cloning" property, see :ref:`containers_aoc_property`) when a task attached to the YACS container has LOAD status during the execution of a scheme.
+Properties are a set of (key,value) pairs which are designed to be forwarded
+directly to the KERNEL (expected "name" property and "attached_on_cloning"
+property, see :ref:`containers_aoc_property`) when a task attached to the YACS
+container has LOAD status during the execution of a scheme.
 
-The array below presents extensively the list of available keys and corresponding values expected that are common to 3 types of YACS container.
-Those properties (excepted "name" and "attached_on_cloning" property) are the way to specify the request to the KERNEL when the mapping will be requested by the Executor of YACS.
-For your information the dump in XML file of each YACS container object contains exclusively those (key,value) pairs.
+The array below presents extensively the list of available keys and
+corresponding values expected that are common to 3 types of YACS container.
+Those properties (excepted "name" and "attached_on_cloning" property) are the
+way to specify the request to the KERNEL when the mapping will be requested by
+the Executor of YACS.
+For your information the dump in XML file of each YACS container object
+contains exclusively those (key,value) pairs.
 
 - To set properties from GUI to a YACS container, see :ref:`pp_for_container`.
 - To set properties from python interface, see :ref:`py_container`.
 
-.. note:: One important property is the "container_name" that must not be confused with property "name". "name" is relative to YACS container only (that will appear in XML file)
-  "container_name" is a part of the request at run time when attaching KERNEL container with YACS container. Warning, the behaviour of mapping is sensitive to the fact that
-  "container_name" property is empty or not.
+.. note:: One important property is the "container_name" that must not be
+          confused with the property "name".
 
-.. note:: HP YACS containers have 2 additionnal properties compared to Mono and Multi YACS Container. The first one is the "SizeOfPool" that defines the size of the set of KERNEL containers. The second one is "InitializeScriptKey" which contains the string of a python code that will be passed to each of the KERNEL containers of the pool to initialize it (if necessary).
+          - "name" is relative to YACS container only (that will appear in the
+            XML file)
+
+          - "container_name" is a part of the request at run time when attaching
+            SALOME container with YACS container. Warning, the behaviour of
+            mapping is sensitive to the fact that "container_name" property is
+            empty or not.
+
+.. note:: HP YACS containers have 2 additionnal properties compared to Mono
+          and Multi YACS Containers. The first one is the "SizeOfPool" that defines the
+          size of the set of SALOME containers. The second one is "InitializeScriptKey"
+          which contains the string of a python code that will be passed to each of the
+          SALOME containers of the pool to initialize it (if necessary).
 
 .. tabularcolumns:: |p{3cm}|p{3cm}|p{10cm}|
 
@@ -672,18 +717,36 @@ Undefined criteria are ignored. The price of each criterion is:
 Attached On cloning property
 ''''''''''''''''''''''''''''''
 
-A specific chapter is dedicated to that property of YACS container. This property is only used by YACS not forwarded at all to KERNEL. The value of this property is either False or True.
-This property is writable and by default set to false for mono YACS container and multi YACS container. For HP YACS container this property is not writable and set to true.
-This property controles the behaviour of the YACS container it belongs to when cloning is triggered.
+A specific chapter is dedicated to that property of YACS container. This property
+is only used by YACS and it is not forwarded to KERNEL.
+The value of this property is either False or True.
+The property is writable and by default set to false for mono YACS containers
+and multi YACS containers. For HP YACS containers this property is not writable
+and set to true.
+It controles the behaviour of the YACS container when cloning is triggered.
 
-A cloning is triggered during execution of a scheme for ForEachLoop and OptimizerLoop nodes of the scheme.
-In fact, when a ForEachLoop or OpmizerLoop node is executed it immediatly clones nbOfBranches times the node inside it (and performs right connections on these copies) using Node::clone method that recurvively creates a deep copy of the node.
+A cloning is triggered during execution of a scheme for ForEachLoop and
+OptimizerLoop nodes of the scheme.
+In fact, when a ForEachLoop or OpmizerLoop node is executed it immediatly
+clones nbOfBranches times the node inside it (and performs right connections
+on these copies) using Node::clone method that recursively creates a deep copy
+of the node.
 
-The question is : What is done for deep copied elementary nodes executed remotely ? Are the copied node and base node share the same YACS container object or Are the copied node is lying on a deep copy of the YACS container of the base node ?
+The question is : What is done for deep copied elementary nodes executed
+remotely ? Do the copied node and base node share the same YACS container
+object or is the copied node lying on a deep copy of the YACS container
+of the base node ?
 
-It is here where "attached_on_cloning" property of YACS container is considered. If false, a deep copy of YACS container is done when cloning of remotely executed node is done. If true, the cloned node and the node itself will share the same YACS container.
+The "attached_on_cloning" property of YACS container is considered here.
 
-So it appears natural that HP YACS containers have this property set to true because it is the aim of HP YACS container to share a same pool of workers accross all the nodes especially in the ForEachLoop or OptimizerLoop context.
+- If false, a deep copy of YACS container is done when cloning the remotely
+  executed node.
+- If true, the cloned node and the node itself will share the same YACS
+  container.
+
+So it appears natural that HP YACS containers have this property set to true
+because it is the aim of HP YACS container to share a same pool of workers
+accross all the nodes especially in the ForEachLoop or OptimizerLoop context.
 
 .. _catalogResources:
 
