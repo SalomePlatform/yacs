@@ -194,8 +194,8 @@ void SalomePythonNode::execute()
 
 std::string SalomePythonNode::getKind() const
 {
-  //This not a bug !!! Returns SalomeNode::KIND to be managed by SalomeContainer.
-  return SalomeNode::KIND;
+  static const char LOC_KIND[]="";
+  return LOC_KIND;
 }
 
 Node *SalomePythonNode::simpleClone(ComposedNode *father, bool editionOnly) const
