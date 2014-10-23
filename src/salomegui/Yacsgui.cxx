@@ -112,7 +112,19 @@ void Yacsgui::initialize( CAM_Application* app )
   _genericGui->createTools();
   this->studyActivated();
 
-  if (createSComponent()) updateObjBrowser();
+  // VSR 23/10/2014: note that this is not a good way to create SComponent from this point
+  // as initialize() method can be potentially called when there's no yet open study;
+  // this is better to do in activateModule()
+  SalomeApp_Study* aStudy = dynamic_cast<SalomeApp_Study*>( app->activeStudy() );
+  if ( aStudy ) {
+    bool aLocked = (_PTR(AttributeStudyProperties)(aStudy->studyDS()->GetProperties()))->IsLocked();
+    if ( aLocked ) {
+      SUIT_MessageBox::warning ( app->desktop(), QObject::tr("WRN_WARNING"), QObject::tr("WRN_STUDY_LOCKED") );
+    }
+    else  {
+      if (createSComponent()) updateObjBrowser();
+    }
+  }
 
   // Load SALOME module catalogs
   QStringList appModules;
