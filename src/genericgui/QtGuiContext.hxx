@@ -30,7 +30,6 @@
 #include "FormEditTree.hxx"
 #include "GraphicsView.hxx"
 #include "GuiExecutor.hxx"
-#include "chrono.hxx"
 #include <QGraphicsScene>
 #include <QItemSelectionModel>
 #include <QStackedWidget>
@@ -39,6 +38,8 @@
 #include <set>
 
 #include <SuitWrapper.hxx>
+
+class counters;
 
 namespace YACS
 {

@@ -56,7 +56,6 @@ SET(YACSBases_HEADERS
   AlternateThreadPT.hxx
   YacsTrace.hxx
   yacsconfig.h
-  chrono.hxx
   )
 
 # --- sources ---

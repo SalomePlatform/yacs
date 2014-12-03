@@ -23,6 +23,7 @@
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
+#include "chrono.hxx"
 
 using namespace std;
 using namespace YACS::ENGINE;
