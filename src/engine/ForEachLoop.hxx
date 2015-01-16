@@ -123,6 +123,8 @@ namespace YACS
       static const char NAME[];
     };
 
+    class Executor;
+
     class YACSLIBENGINE_EXPORT ForEachLoop : public DynParaLoop
     {
       friend class SplitterNode;
@@ -169,6 +171,9 @@ namespace YACS
       virtual std::string typeName() {return "YACS__ENGINE__ForEachLoop";}
       virtual void resetState(int level);
       std::string getProgress() const;
+#ifndef SWIG
+      std::vector<unsigned int> getPassedResults(Executor *execut, std::vector<SequenceAny *>& outputs, std::vector<std::string>& nameOfOutputs) const;
+#endif
     protected:
       Node *simpleClone(ComposedNode *father, bool editionOnly=true) const;
       void checkLinkPossibility(OutPort *start, const std::list<ComposedNode *>& pointsOfViewStart,

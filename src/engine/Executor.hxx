@@ -114,6 +114,7 @@ namespace YACS
       void waitPause();
       static int _maxThreads;
       static size_t _threadStackSize;
+      YACS::BASES::Mutex& getTheMutexForSchedulerUpdate() { return _mutexForSchedulerUpdate; }
     protected:
       bool checkBreakPoints();
       void waitResume();

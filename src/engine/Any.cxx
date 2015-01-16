@@ -28,6 +28,9 @@
 using namespace YACS::ENGINE;
 using namespace std;
 
+// forbidden value int=-269488145 double=-1.54947e+231 bool=239
+const char SeqAlloc::DFT_CHAR_VAR=-17;//0xEF
+
 StringOnHeap::StringOnHeap(const char *val):_dealloc(0),_str(strdup(val))
 {
 }
@@ -382,7 +385,7 @@ void SeqAlloc::initCoarseMemory(char *mem, unsigned int size, Deallocator deallo
         memcpy(_start,mem,sizeInByte);
       else
         {
-          for(unsigned int i=0;i<sizeInByte;i++) _start[i]=0;
+          for(unsigned int i=0;i<sizeInByte;i++) _start[i]=DFT_CHAR_VAR;// see getSetItems
         }
     }
   _finish=_start+sizeInByte;
@@ -437,6 +440,20 @@ void SeqAlloc::destroy(char *pt, const TypeCode *tc)
 unsigned int SeqAlloc::size() const
 {
   return (_finish-_start)/_sizeOf1Elm;
+}
+
+std::vector<unsigned int> SeqAlloc::getSetItems() const
+{
+  std::vector<unsigned int> ret;
+  unsigned int sz(size());
+  for(unsigned int i=0;i<sz;i++)
+    {
+      const char *pt(_start+i*_sizeOf1Elm);
+      for(unsigned j=0;j<_sizeOf1Elm && *pt==DFT_CHAR_VAR;j++,pt++); //see initCoarseMemory
+      if(pt!=_start+(i+1)*_sizeOf1Elm)
+        ret.push_back(i);
+    }
+  return ret;
 }
 
 void SequenceAny::clear()
@@ -537,6 +554,19 @@ AnyPtr SequenceAny::getOrBuildFromData(char *data, const TypeCode *type)
 Any *SequenceAny::clone() const
 {
   return new SequenceAny(*this);
+}
+
+SequenceAny *SequenceAny::removeUnsetItemsFromThis() const
+{
+  std::vector<unsigned int> its(getSetItems());
+  std::size_t sz(its.size());
+  SequenceAny *ret(SequenceAny::New(getType()->contentType(),sz));
+  for(std::size_t i=0;i<sz;i++)
+    {
+      AnyPtr obj((*this)[its[i]]);
+      ret->setEltAtRank(i,obj);
+    }
+  return ret;
 }
 
 SequenceAny *SequenceAny::New(const TypeCode *typeOfContent)

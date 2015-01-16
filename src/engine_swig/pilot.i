@@ -189,6 +189,8 @@ REFCOUNT_TEMPLATE(CompoInstmap,YACS::ENGINE::ComponentInstance)
 %newobject *::createStructTc;
 %newobject *::createType;
 
+%newobject YACS::ENGINE::SequenceAny::removeUnsetItemsFromThis;
+
 %newobject YACS::ENGINE::TypeCode::interfaceTc;
 %newobject YACS::ENGINE::TypeCode::sequenceTc;
 %newobject YACS::ENGINE::TypeCode::structTc;
@@ -371,6 +373,14 @@ EXCEPTION(YACS::ENGINE::ExecutorSwig::waitPause)
   }
 }
 
+%extend YACS::ENGINE::Any
+{
+  PyObject *getPyObj()
+  {
+    return (PyObject *)getRuntime()->convertNeutral(const_cast<YACS::ENGINE::TypeCode *>(self->getType()),self);
+  }
+}
+
 %newobject YACS::ENGINE::SequenceAny::__getitem__;
 %extend YACS::ENGINE::SequenceAny
 {
@@ -395,5 +405,32 @@ EXCEPTION(YACS::ENGINE::ExecutorSwig::waitPause)
     AnyPtr a=(*self)[key];
     a->incrRef();
     return a;
+  }
+}
+
+%extend YACS::ENGINE::ForEachLoop
+{
+  PyObject *getPassedResults(Executor *execut) const
+  {
+    std::vector<SequenceAny *> ret1;
+    std::vector<std::string> ret2;
+    std::vector<unsigned int> ret0(self->getPassedResults(execut,ret1,ret2));
+    PyObject *ret(PyTuple_New(3));
+    // param 0
+    PyObject *ret0Py(PyList_New(ret0.size()));
+    for(std::size_t i=0;i<ret0.size();i++)
+      PyList_SetItem(ret0Py,i,PyInt_FromLong(ret0[i]));
+    PyTuple_SetItem(ret,0,ret0Py);
+    // param 1
+    PyObject *ret1Py(PyList_New(ret1.size()));
+    for(std::size_t i=0;i<ret1.size();i++)
+      PyList_SetItem(ret1Py,i,SWIG_NewPointerObj(SWIG_as_voidptr(ret1[i]),SWIGTYPE_p_YACS__ENGINE__SequenceAny, SWIG_POINTER_OWN | 0 ));
+    PyTuple_SetItem(ret,1,ret1Py);
+    // param 2
+    PyObject *ret2Py(PyList_New(ret2.size()));
+    for(std::size_t i=0;i<ret2.size();i++)
+      PyList_SetItem(ret2Py,i,PyString_FromString(ret2[i].c_str()));
+    PyTuple_SetItem(ret,2,ret2Py);
+    return ret;
   }
 }

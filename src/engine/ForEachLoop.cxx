@@ -21,6 +21,9 @@
 #include "TypeCode.hxx"
 #include "Visitor.hxx"
 #include "ComposedNode.hxx"
+#include "Executor.hxx"
+#include "AutoLocker.hxx"
+
 #include <iostream>
 #include <sstream>
 
@@ -852,3 +855,35 @@ std::string ForEachLoop::getProgress() const
     aProgress << "0";
   return aProgress.str();
 }
+
+/*!
+ * This method allows to retrieve the state of \a this during execution or after. This method works even if this is \b NOT complete, or during execution or after a failure in \a this.
+ * The typical usage of this method is to retrieve the results of items that passed successfully to avoid to lose all of them if only one fails.
+ * This method has one input \a execut and 3 outputs.
+ *
+ * \param [in] execut - The single input is for threadsafety reasons because this method can be called safely during the execution of \a this.
+ * \param [out] outputs - For each output ports in \a this linked with nodes sharing the same father than \a this the passed results are stored.
+ *                        All of the items in \a outputs have the same size.
+ * \param [out] nameOfOutputs - The array with same size than \a outputs, that tells for each item in outputs the output port it refers to.
+ * \return the list of ids among \c this->edGetSeqOfSamplesPort() that run successfully. The length of this returned array will be the length of all
+ *         SequenceAny objects contained in \a outputs.
+ *
+ * \sa edGetSeqOfSamplesPort
+ */
+std::vector<unsigned int> ForEachLoop::getPassedResults(Executor *execut, std::vector<SequenceAny *>& outputs, std::vector<std::string>& nameOfOutputs) const
+{
+  YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&(execut->getTheMutexForSchedulerUpdate()));
+  if(_execVals.empty())
+    return std::vector<unsigned int>();
+  if(_execOutGoingPorts.empty())
+    return std::vector<unsigned int>();
+  std::size_t sz(_execVals.size()); outputs.resize(sz); nameOfOutputs.resize(sz);
+  const std::vector<AnyInputPort *>& ports(_execOutGoingPorts[0]);
+  for(std::size_t i=0;i<sz;i++)
+    {
+      outputs[i]=_execVals[i]->removeUnsetItemsFromThis();
+      nameOfOutputs[i]=ports[i]->getName();
+    }
+  return _execVals[0]->getSetItems();
+}
+

@@ -162,6 +162,8 @@ namespace YACS
       void destroy(char *pt, const TypeCode *tc);
       void deallocate(char *pt);
       unsigned int size() const;
+      std::vector<unsigned int> getSetItems() const;
+      static const char DFT_CHAR_VAR;
     };
     
     class YACSLIBENGINE_EXPORT ComposedAny : public Any
@@ -201,6 +203,8 @@ namespace YACS
       static SequenceAny *New(const TypeCode *typeOfContent, unsigned lgth);
       template<class T>
       static SequenceAny *New(T *val, unsigned int lgth, Deallocator deAlloc);
+      std::vector<unsigned int> getSetItems() const { return _alloc.getSetItems(); }
+      SequenceAny *removeUnsetItemsFromThis() const;
     protected:
       void putMyReprAtPlace(char *data) const;
       static void putReprAtPlace(char *data, const char *src, const TypeCode *type, bool deepCpy);
