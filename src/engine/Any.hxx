@@ -91,7 +91,8 @@ namespace YACS
       Any(TypeCode* type);
       Any(const Any& other);
       virtual void putMyReprAtPlace(char *data) const = 0;
-      static AnyPtr buildAnyFromCoarseData(char *data, TypeCode* type); //Factory Method
+      //static AnyPtr buildAnyFromCoarseData(char *data, TypeCode* type); //Factory Method
+      static bool IsNull(char *data);
     protected:
       TypeCode* _type;
     };
@@ -163,6 +164,7 @@ namespace YACS
       void deallocate(char *pt);
       unsigned int size() const;
       std::vector<unsigned int> getSetItems() const;
+    public:
       static const char DFT_CHAR_VAR;
     };
     

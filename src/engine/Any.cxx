@@ -87,6 +87,16 @@ Any::~Any()
   _type->decrRef();
 }
 
+bool Any::IsNull(char *data)
+{
+  if(!data)
+    return true;
+  bool isNull(true);
+  for(std::size_t i=0;i<sizeof(void *) && isNull;i++)
+    isNull=(data[i]==SeqAlloc::DFT_CHAR_VAR);
+  return isNull;
+}
+
 AtomAny::AtomAny(int val):Any(Runtime::_tc_int)
 {
   _value._i=val;
@@ -275,8 +285,11 @@ void AtomAny::destroyReprAtPlace(char *data, const TypeCode *type)
   DynType typ=type->kind();
   if(typ==String)
     {
-      void **tmp=(void **)data;
-      delete ((StringOnHeap *)(*tmp));
+      if(!Any::IsNull(data))
+        {
+          void **tmp=(void **)data;
+          delete ((StringOnHeap *)(*tmp));
+        }
     }
 }
 
@@ -539,7 +552,7 @@ void SequenceAny::putReprAtPlace(char *data, const char *src, const TypeCode *ty
 void SequenceAny::destroyReprAtPlace(char *data, const TypeCode *type)
 {
   void **tmp=(void **) data;
-  if(*tmp)
+  if(!Any::IsNull(data))
     ((SequenceAny *)(*tmp))->decrRef();
   //((SequenceAny *)data)->~SequenceAny();
 }
@@ -716,7 +729,7 @@ ArrayAny::ArrayAny(const TypeCode *typeOfContent, unsigned int lgth):ComposedAny
 {
   _data=new char[_type->getSizeInByteOfAnyReprInSeq()];
   for(unsigned int i=0;i<_type->getSizeInByteOfAnyReprInSeq();i++)
-    _data[i]='\0';
+    _data[i]=SeqAlloc::DFT_CHAR_VAR;
 }
 
 ArrayAny::ArrayAny(char *data, TypeCodeArray * type):ComposedAny(type,false),_data(0)
@@ -984,7 +997,7 @@ StructAny::StructAny(TypeCodeStruct *type):ComposedAny(type,false)
 {
   _data=new char[_type->getSizeInByteOfAnyReprInSeq()];
   for(unsigned int i=0;i<_type->getSizeInByteOfAnyReprInSeq();i++)
-    _data[i]='\0';
+    _data[i]=SeqAlloc::DFT_CHAR_VAR;
 }
 
 StructAny::StructAny(const StructAny& other):ComposedAny(other)
