@@ -75,7 +75,7 @@ using YACS::BASES::Semaphore;
 int Executor::_maxThreads(50);
 size_t Executor::_threadStackSize(1048576); // Default thread stack size is 1MB
 
-Executor::Executor():_nbOfConcurrentThreads(0), _semForMaxThreads(_maxThreads)
+Executor::Executor():_nbOfConcurrentThreads(0), _semForMaxThreads(_maxThreads),_keepGoingOnFail(false)
 {
   _root=0;
   _toContinue = true;
@@ -147,7 +147,7 @@ void Executor::RunA(Scheduler *graph,int debug, bool fromScratch)
       if(debug>2)_displayDot(graph);
 
       for(iter=tasks.begin();iter!=tasks.end();iter++)
-        loadTask(*iter);
+        loadTask(*iter,this);
 
       if(debug>1)_displayDot(graph);
 
@@ -306,7 +306,7 @@ void Executor::RunB(Scheduler *graph,int debug, bool fromScratch)
           if (debug > 0) _displayDot(graph);
           DEBTRACE("---");
           //loadTasks(_tasks);
-          loadParallelTasks(_tasks);
+          loadParallelTasks(_tasks,this);
           if (debug > 1) _displayDot(graph);
           DEBTRACE("---");
           launchTasks(_tasks);
@@ -810,7 +810,7 @@ void Executor::waitResume()
  *  \param task  : Task to load
  */
 
-void Executor::loadTask(Task *task)
+void Executor::loadTask(Task *task, const Executor *execInst)
 {
   DEBTRACE("Executor::loadTask(Task *task)");
   if(task->getState() != YACS::TOLOAD)
@@ -818,7 +818,7 @@ void Executor::loadTask(Task *task)
   traceExec(task, "state:TOLOAD", ComputePlacement(task));
   {//Critical section
     YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
-    _mainSched->notifyFrom(task,YACS::START);
+    _mainSched->notifyFrom(task,YACS::START,execInst);
   }//End of critical section
   try
     {
@@ -833,7 +833,7 @@ void Executor::loadTask(Task *task)
       {//Critical section
         YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
         task->aborted();
-        _mainSched->notifyFrom(task,YACS::ABORT);
+        _mainSched->notifyFrom(task,YACS::ABORT,execInst);
         traceExec(task, "state:"+Node::getStateName(task->getState()), ComputePlacement(task));
       }//End of critical section
     }
@@ -843,7 +843,7 @@ void Executor::loadTask(Task *task)
       {//Critical section
         YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
         task->aborted();
-        _mainSched->notifyFrom(task,YACS::ABORT);
+        _mainSched->notifyFrom(task,YACS::ABORT,execInst);
         traceExec(task, "state:"+Node::getStateName(task->getState()), ComputePlacement(task));
       }//End of critical section
     }
@@ -856,13 +856,13 @@ struct threadargs
   Executor *execInst;
 };
 
-void Executor::loadTasks(const std::vector<Task *>& tasks)
+void Executor::loadTasks(const std::vector<Task *>& tasks, const Executor *execInst)
 {
   for(std::vector<Task *>::const_iterator iter = _tasks.begin(); iter != _tasks.end(); iter++)
-    loadTask(*iter);
+    loadTask(*iter,execInst);
 }
 
-void Executor::loadParallelTasks(const std::vector<Task *>& tasks)
+void Executor::loadParallelTasks(const std::vector<Task *>& tasks, const Executor *execInst)
 {
   std::vector<Thread> ths(tasks.size());
   std::size_t ithread(0);
@@ -916,7 +916,7 @@ void Executor::launchTasks(const std::vector<Task *>& tasks)
           {//Critical section
             YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
             (*iter)->aborted();
-            _mainSched->notifyFrom(*iter,YACS::ABORT);
+            _mainSched->notifyFrom(*iter,YACS::ABORT,this);
           }//End of critical section
         }
       catch(...) 
@@ -935,7 +935,7 @@ void Executor::launchTasks(const std::vector<Task *>& tasks)
           {//Critical section
             YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
             (*iter)->aborted();
-            _mainSched->notifyFrom(*iter,YACS::ABORT);
+            _mainSched->notifyFrom(*iter,YACS::ABORT,this);
           }//End of critical section
         }
       if((*iter)->getState() == YACS::ERROR)
@@ -961,7 +961,7 @@ void Executor::launchTasks(const std::vector<Task *>& tasks)
               {//Critical section
                 YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
                 t->aborted();
-                _mainSched->notifyFrom(t,YACS::ABORT);
+                _mainSched->notifyFrom(t,YACS::ABORT,this);
               }//End of critical section
               traceExec(t, "state:"+Node::getStateName(t->getState()),ComputePlacement(*iter));
             }
@@ -1103,7 +1103,7 @@ void *Executor::functionForTaskLoad(void *arg)
   Scheduler *sched=args->sched;
   Executor *execInst=args->execInst;
   delete args;
-  execInst->loadTask(task);// no throw of this method - all throw are catched !
+  execInst->loadTask(task,execInst);// no throw of this method - all throw are catched !
   return 0;
 }
 
@@ -1203,7 +1203,7 @@ void *Executor::functionForTaskExecution(void *arg)
             task->aborted();
           }
         execInst->traceExec(task, "state:"+Node::getStateName(task->getState()),placement);
-        sched->notifyFrom(task,ev);
+        sched->notifyFrom(task,ev,execInst);
       }
     catch(Exception& ex)
       {

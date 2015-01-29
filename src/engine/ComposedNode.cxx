@@ -241,7 +241,8 @@ std::vector<Task *> ComposedNode::getNextTasks(bool& isMore)
  * Calls ComposedNode::updateStateFrom to update state from task to root node
  */
 void ComposedNode::notifyFrom(const Task *sender, //* I : task emitting event
-                              YACS::Event event   //* I : event emitted
+                              YACS::Event event,   //* I : event emitted
+                              const Executor *execInst
                               )
 {
   DEBTRACE("ComposedNode::notifyFrom " << event);
@@ -251,12 +252,12 @@ void ComposedNode::notifyFrom(const Task *sender, //* I : task emitting event
   ComposedNode *curLevelNode=taskTyped->_father;
   if(!curLevelNode)//Specific case of loop when 0 turn is specified without any enclosing bloc.
     return ;
-  curEvent=curLevelNode->updateStateFrom(lminus1LevelNode,curEvent);
+  curEvent=curLevelNode->updateStateFrom(lminus1LevelNode,curEvent,execInst);
   while(curEvent!=YACS::NOEVENT && curLevelNode!=this)
     {
       lminus1LevelNode=curLevelNode;
       curLevelNode=curLevelNode->_father;
-      curEvent=curLevelNode->updateStateFrom(lminus1LevelNode,curEvent);
+      curEvent=curLevelNode->updateStateFrom(lminus1LevelNode,curEvent,execInst);
     }
 }
 
@@ -1318,7 +1319,8 @@ OutputDataStreamPort *ComposedNode::getOutputDataStreamPort(const std::string& n
  * Called by ComposedNode::notifyFrom
  */
 YACS::Event ComposedNode::updateStateFrom(Node *node,        //* I : node emitting event
-                                          YACS::Event event  //* I : event emitted
+                                          YACS::Event event,  //* I : event emitted
+                                          const Executor *execInst
                                           )
 {
   DEBTRACE("updateStateFrom: " << node->getName() << " " << event);
@@ -1333,7 +1335,7 @@ YACS::Event ComposedNode::updateStateFrom(Node *node,        //* I : node emitti
           return updateStateOnFinishedEventFrom(node);
           break;
         case YACS::ABORT:
-          return updateStateOnFailedEventFrom(node);
+          return updateStateOnFailedEventFrom(node,execInst);
           break;
         default:
           return YACS::NOEVENT;//TODO unexpected type of event
@@ -1375,7 +1377,7 @@ YACS::Event ComposedNode::updateStateOnStartEventFrom(Node *node)
 }
 
 //! Method used to notify the node that a child node has failed
-YACS::Event ComposedNode::updateStateOnFailedEventFrom(Node *node)
+YACS::Event ComposedNode::updateStateOnFailedEventFrom(Node *node, const Executor *execInst)
 {
    setState(YACS::FAILED);
    return YACS::ABORT;

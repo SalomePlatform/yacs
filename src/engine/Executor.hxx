@@ -85,6 +85,7 @@ namespace YACS
       std::list< YACS::BASES::Thread * > _groupOfAllThreadsCreated;
       std::ofstream _trace;
       std::string _dumpErrorFile;
+      bool _keepGoingOnFail;
 #ifdef WIN32
 	  DWORD _start;
 #else
@@ -96,6 +97,8 @@ namespace YACS
       void RunA(Scheduler *graph,int debug=0, bool fromScratch=true);
       void RunW(Scheduler *graph,int debug=0, bool fromScratch=true) { RunB(graph, debug, fromScratch); }
       void RunB(Scheduler *graph,int debug=0, bool fromScratch=true);
+      void setKeepGoingProperty(bool newVal) { _keepGoingOnFail=newVal; }
+      bool getKeepGoingProperty() const { return _keepGoingOnFail; }
       YACS::ExecutionMode getCurrentExecMode();
       YACS::ExecutorState getExecutorState();
       void setExecMode(YACS::ExecutionMode mode);
@@ -118,9 +121,9 @@ namespace YACS
     protected:
       bool checkBreakPoints();
       void waitResume();
-      void loadTask(Task *task);
-      void loadTasks(const std::vector<Task *>& tasks);
-      void loadParallelTasks(const std::vector<Task *>& tasks);
+      void loadTask(Task *task, const Executor *execInst);
+      void loadTasks(const std::vector<Task *>& tasks, const Executor *execInst);
+      void loadParallelTasks(const std::vector<Task *>& tasks, const Executor *execInst);
       void launchTasks(const std::vector<Task*>& tasks);
       void launchTask(Task *task);
       void wakeUp();

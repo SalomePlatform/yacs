@@ -650,6 +650,11 @@ YACS::Event ForEachLoop::updateStateOnFinishedEventFrom(Node *node)
   return YACS::NOEVENT;
 }
 
+YACS::Event ForEachLoop::updateStateOnFailedEventFrom(Node *node, const Executor *execInst)
+{
+  return DynParaLoop::updateStateOnFailedEventFrom(node,execInst);
+}
+
 void ForEachLoop::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView)
 {
   DynParaLoop::buildDelegateOf(port,finalTarget,pointsOfView);

@@ -107,7 +107,7 @@ namespace YACS
       YACS::Event finalize();
 
     protected:
-      virtual YACS::Event updateStateOnFailedEventFrom(Node *node);
+      virtual YACS::Event updateStateOnFailedEventFrom(Node *node, const Executor *execInst);
       void buildDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView);
       void buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView);
       void checkControlDependancy(OutPort *start, InPort *end, bool cross,

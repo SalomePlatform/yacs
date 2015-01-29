@@ -629,7 +629,7 @@ void DynParaLoop::forwardExecStateToOriginalBody(Node *execNode)
  *  \param node : the child node that has failed
  *  \return the state change
  */
-YACS::Event DynParaLoop::updateStateOnFailedEventFrom(Node *node)
+YACS::Event DynParaLoop::updateStateOnFailedEventFrom(Node *node, const Executor *execInst)
 {
   DEBTRACE("DynParaLoop::updateStateOnFailedEventFrom " << node->getName());
   setState(YACS::FAILED);
