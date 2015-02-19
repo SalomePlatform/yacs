@@ -774,7 +774,7 @@ namespace YACS
     {
       static inline std::string convert(const TypeCode *t,PyObject* o,void*,int protocol)
         {
-          if (PyString_Check(o))
+          if (PyString_Check(o) && strncmp(t->id(),"python",6)!=0)
             {
               // the objref is used by Python as a string (prefix:value) keep it as a string
               return PyString_AS_STRING(o);

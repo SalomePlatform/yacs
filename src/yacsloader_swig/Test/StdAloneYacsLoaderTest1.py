@@ -83,6 +83,52 @@ class StdAloneYacsLoaderTest1(unittest.TestCase):
     p.saveSchema("foreachImbrBuildFS.xml")
     pass
 
+  def test2(self):
+    """ Non regression test. When input/output declared as pyobj hiding a string type to go to or from a ForEachLoop it previous lead
+    to an error.
+    """
+    fname="BugPyObjStrInYacs.xml"
+    p=self.r.createProc("pr")
+    tc0=p.createInterfaceTc("python:obj:1.0","pyobj",[])
+    tc1=p.createSequenceTc("list[pyobj]","list[pyobj]",tc0)
+    #
+    node0=self.r.createScriptNode("Salome","node0")
+    node0.setScript("o1=[\"a\",\"bc\"]")
+    o1=node0.edAddOutputPort("o1",tc1)
+    p.edAddChild(node0)
+    #
+    node1=self.r.createForEachLoop("node1",tc0)
+    p.edAddChild(node1)
+    p.edAddCFLink(node0,node1)
+    node1.edGetNbOfBranchesPort().edInitInt(1)
+    p.edAddLink(o1,node1.edGetSeqOfSamplesPort())
+    #
+    node10=self.r.createScriptNode("Salome","node10")
+    node10.setScript("o1=3*i1")
+    i10_1=node10.edAddInputPort("i1",tc0)
+    o10_1=node10.edAddOutputPort("o1",tc0)
+    node1.edAddChild(node10)
+    p.edAddLink(node1.edGetSamplePort(),i10_1)
+    #
+    node2=self.r.createScriptNode("Salome","node2")
+    node2.setScript("o1=i1")
+    i2_1=node2.edAddInputPort("i1",tc1)
+    o2_1=node2.edAddOutputPort("o1",tc1)
+    p.edAddChild(node2)
+    p.edAddCFLink(node1,node2)
+    p.edAddLink(o10_1,i2_1)
+    ##
+    p.saveSchema(fname)
+    p=self.l.load(fname)
+    ##
+    ex = pilot.ExecutorSwig()
+    self.assertEqual(p.getState(),pilot.READY)
+    ex.RunW(p,0)
+    self.assertEqual(p.getState(),pilot.DONE)
+    #
+    self.assertEqual(p.getChildByName("node2").getOutputPort("o1").get(),['aaa','bcbcbc'])
+    pass
+
   def tearDown(self):
     del self.r
     del self.l
