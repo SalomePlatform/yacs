@@ -170,7 +170,6 @@ void OptimizerLoop::exUpdateState()
 
           // Initialize and launch the algorithm
           _alg->initializeProxy(_algoInitPort.getValue());
-          _alg->startProxy();
           if (_alg->hasError()) {
             string error = _alg->getError();
             _alg->finishProxy();
@@ -181,6 +180,14 @@ void OptimizerLoop::exUpdateState()
           int i;
           int nbOfBr=_nbOfBranches.getIntValue();
           _alg->setNbOfBranches(nbOfBr);
+
+          _alg->startProxy();
+          if (_alg->hasError()) {
+            string error = _alg->getError();
+            _alg->finishProxy();
+            throw Exception(error);
+          }
+
           if(nbOfBr==0)
             {
               // A number of branches of 0 is acceptable if there are no output ports
