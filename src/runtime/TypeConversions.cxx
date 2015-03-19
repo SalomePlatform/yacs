@@ -2267,7 +2267,7 @@ namespace YACS
     {
       PyObject *s;
       PyGILState_STATE gstate = PyGILState_Ensure(); 
-      s=PyObject_Str(ob);
+      s=PyObject_Repr(ob);
       std::string ss(PyString_AsString(s),PyString_Size(s));
       Py_DECREF(s);
       PyGILState_Release(gstate);
