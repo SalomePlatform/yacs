@@ -20,11 +20,8 @@
 #ifndef __XMLPARSERBASE_HXX_
 #define __XMLPARSERBASE_HXX_
 
-
-extern "C"
-{
 #include <libxml/parser.h>
-}
+
 #define XMLCALL
 #define XML_Char char
 inline XML_Char* tochar(const xmlChar *c) { return (XML_Char*)c; };
