@@ -29,9 +29,8 @@
 #include <QIntValidator>
 #include <QLineEdit>
 
-#if HAS_QSCI4>0
-#include <qsciscintilla.h>
-#include <qscilexerpython.h>
+#ifdef HAS_PYEDITOR
+#include <PyEditor_Editor.h>
 #endif
 
 #include <sstream>
@@ -50,19 +49,8 @@ FormHPContainer::FormHPContainer(QWidget *parent):FormContainerBase(parent),_poo
   ch_aoc->setEnabled(false);
   ch_aoc->setCheckState(Qt::Checked);
   //
-#if HAS_QSCI4>0
-  _initScript=new QsciScintilla(_advancedParams->tw_advance);
-  QsciLexerPython *lex(new QsciLexerPython(_initScript));
-  lex->setFont(YACS::HMI::Resource::pythonfont);
-  _initScript->setLexer(lex);
-  _initScript->setBraceMatching(QsciScintilla::SloppyBraceMatch);
-  _initScript->setAutoIndent(1);
-  _initScript->setIndentationWidth(4);
-  _initScript->setIndentationGuides(1);
-  _initScript->setIndentationsUseTabs(0);
-  _initScript->setAutoCompletionThreshold(2);
-  _initScript->setMarginWidth(1,0);
-  _initScript->setFolding(QsciScintilla::PlainFoldStyle);
+#ifdef HAS_PYEDITOR
+  _initScript=new PyEditor_Editor(false, 0, _advancedParams->tw_advance);
 #else
   _initScript=new QTextEdit(this);
 #endif
@@ -128,7 +116,7 @@ bool FormHPContainer::onApply()
   std::map<std::string,std::string> properties(_properties);
   if(_initScriptModified)
     {
-      std::string text(_initScript->text().toStdString());
+      std::string text(_initScript->toPlainText().toStdString());
       std::string text2(BuildWithFinalEndLine(text));
       properties[YACS::ENGINE::HomogeneousPoolContainer::INITIALIZE_SCRIPT_KEY]=text2;
     }

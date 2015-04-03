@@ -26,9 +26,8 @@
 
 #include <QToolButton>
 
-#if HAS_QSCI4>0
-#include <qsciscintilla.h>
-#include <qscilexerpython.h>
+#ifdef HAS_PYEDITOR
+#include <PyEditor_Editor.h>
 #endif
 
 #include <cassert>

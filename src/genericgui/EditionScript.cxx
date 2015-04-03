@@ -25,9 +25,9 @@
 #include "FormContainer.hxx"
 #include "Message.hxx"
 
-#if HAS_QSCI4>0
-#include <qsciscintilla.h>
-#include <qscilexerpython.h>
+#ifdef HAS_PYEDITOR
+#include <PyEditor_Editor.h>
+#include <PyEditor_Settings.h>
 #endif
 
 #include <QToolButton>
@@ -45,31 +45,6 @@ using namespace std;
 
 using namespace YACS;
 using namespace YACS::HMI;
-
-#if HAS_QSCI4>0
-class myQsciScintilla: public QsciScintilla
-{
-public:
-  myQsciScintilla(QWidget *parent=0)
-    : QsciScintilla(parent) {};
-  ~myQsciScintilla(){};
-  virtual QSize sizeHint() const { return QSize(350, 150); };
-protected:
-  virtual bool event(QEvent *e);
-};
-
-bool myQsciScintilla::event(QEvent *e)
-{
-  if (e->type() == QEvent::ShortcutOverride)
-    {
-      e->accept();
-      return true;
-    }
-  return QsciScintilla::event(e);
-}
-
-#endif
-
 
 EditionScript::EditionScript(Subject* subject,
                          QWidget* parent,
@@ -149,8 +124,8 @@ EditionScript::EditionScript(Subject* subject,
   setEditablePorts(true);
 
   _haveScript = true;
-#if HAS_QSCI4>0
-  _sci = new myQsciScintilla(this);
+#ifdef HAS_PYEDITOR
+  _sci = new PyEditor_Editor(false, 0, this);
 #else
   _sci = new QTextEdit(this);
 #endif
@@ -163,22 +138,6 @@ EditionScript::EditionScript(Subject* subject,
       _glayout->addWidget( _editor );
     }
   _glayout->addWidget( _sci );
-
-#if HAS_QSCI4>0
-  _sci->setUtf8(1);
-  QsciLexerPython *lex = new QsciLexerPython(_sci);
-  lex->setFont(Resource::pythonfont);
-  _sci->setLexer(lex);
-  _sci->setBraceMatching(QsciScintilla::SloppyBraceMatch);
-  _sci->setAutoIndent(1);
-  _sci->setIndentationWidth(4);
-  _sci->setIndentationGuides(1);
-  _sci->setIndentationsUseTabs(0);
-  _sci->setAutoCompletionThreshold(2);
-  //_sci->setMarginLineNumbers(1,true);
-  _sci->setMarginWidth(1,0);
-  _sci->setFolding(QsciScintilla::PlainFoldStyle);
-#endif
 
   if (!QtGuiContext::getQtCurrent()->isEdition())
     _sci->setReadOnly(true);
@@ -222,8 +181,8 @@ void EditionScript::onApply()
 {
   DEBTRACE("EditionScript::onApply");
   bool scriptEdited = false;
-#if HAS_QSCI4>0
-  _sci->lexer()->setFont(Resource::pythonfont);
+#ifdef HAS_PYEDITOR
+  _sci->settings()->p_Font = Resource::pythonfont;
 #endif
 
   if(Resource::pythonExternalEditor.isEmpty())
@@ -240,17 +199,6 @@ void EditionScript::onApply()
 
   if (_haveScript)
     {
-#if HAS_QSCI4>0
-      if (_sci->isModified())
-        {
-          scriptEdited = true;
-          std::string text=_sci->text().toStdString();
-          if(text[text.length()-1] != '\n')
-            text=text+'\n';
-          bool ret = _subInlineNode->setScript(text);
-          if (ret) scriptEdited = false;
-        }
-#else
       if (_sci->document()->isModified())
         {
           scriptEdited = true;
@@ -260,7 +208,6 @@ void EditionScript::onApply()
           bool ret = _subInlineNode->setScript(text);
           if (ret) scriptEdited = false;
         }
-#endif
     }
 
   bool containerEdited = true;
@@ -300,11 +247,7 @@ void EditionScript::onEdit()
     return;
   QString fileName = outFile.fileName();
   QTextStream out(&outFile);
-#if HAS_QSCI4>0
-  out << _sci->text();
-#else
   out << _sci->toPlainText();
-#endif
   outFile.close();
 
   QStringList options=Resource::pythonExternalEditor.split(" ");
@@ -315,11 +258,7 @@ void EditionScript::onEdit()
   if (!inFile.open(QIODevice::ReadOnly))
     return;
   QTextStream in(&inFile);
-#if HAS_QSCI4>0
-  _sci->setText(in.readAll());
-#else
   _sci->setPlainText(in.readAll());
-#endif
   onApply();
 }
 

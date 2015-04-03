@@ -30,8 +30,8 @@ namespace YACS
   }
 }
 
-#if HAS_QSCI4>0
-class QsciScintilla;
+#ifdef HAS_PYEDITOR
+class PyEditor_Editor;
 #endif
 
 class QTextEdit;
@@ -54,8 +54,8 @@ public:
   static std::string BuildWithFinalEndLine(const std::string& script);
 private:
   QLineEdit *_poolSz;
-#if HAS_QSCI4>0
-  QsciScintilla* _initScript;
+#ifdef HAS_PYEDITOR
+  PyEditor_Editor* _initScript;
 #else
   QTextEdit* _initScript;
 #endif

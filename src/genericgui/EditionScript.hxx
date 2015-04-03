@@ -28,8 +28,8 @@
 
 class FormContainer;
 
-#if HAS_QSCI4>0
-class QsciScintilla;
+#ifdef HAS_PYEDITOR
+class PyEditor_Editor;
 #endif
 
 namespace YACS
@@ -61,8 +61,8 @@ namespace YACS
     protected:
       SubjectInlineNode *_subInlineNode;
 
-#if HAS_QSCI4>0
-      QsciScintilla* _sci;
+#ifdef HAS_PYEDITOR
+      PyEditor_Editor* _sci;
 #else
       QTextEdit* _sci;
 #endif
