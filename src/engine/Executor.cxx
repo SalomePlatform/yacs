@@ -364,7 +364,10 @@ void Executor::RunB(Scheduler *graph,int debug, bool fromScratch)
     {
       saveState(_dumpErrorFile);
     }
-  _trace.close();
+  {
+    YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForTrace);
+    _trace.close();
+  }
   DEBTRACE("End of RunB thread");  
 }
 
