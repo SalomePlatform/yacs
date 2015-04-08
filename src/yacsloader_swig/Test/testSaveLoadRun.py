@@ -578,6 +578,199 @@ for i in xrange(nb):
     self.assertEqual(zeResu,[[5,6,7,8,9,10,11,12,13,14],[15,16,17,18,19,20,21,22,23,24,25],[26,27,28,29,30,31,32,33,34,35,36,37],[38,39,40,41,42,43,44,45,46,47,48,49,50],[51,52,53,54,55,56,57,58,59,60,61,62,63,64],[65,66,67,68,69,70,71,72,73,74,75,76,77,78,79], [80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95]])
     pass
 
+  def test6(self):
+    fname="test6.xml"
+    p=self.r.createProc("prTest0")
+    td=p.createType("double","double")
+    ti=p.createType("int","int")
+    tsi=p.createSequenceTc("seqint","seqint",ti)
+    tsd=p.createSequenceTc("seqdbl","seqdbl",td)
+    n0=self.r.createScriptNode("","n0")
+    o0=n0.edAddOutputPort("o0",tsi)
+    n0.setScript("o0=[3,6,8,9,-2,5]")
+    p.edAddChild(n0)
+    n1=self.r.createForEachLoop("n1",ti)
+    n10=self.r.createScriptNode("","n10")
+    n1.edAddChild(n10)
+    n10.setScript("o2=2*i1")
+    i1=n10.edAddInputPort("i1",ti)
+    o2=n10.edAddOutputPort("o2",ti)
+    p.edAddChild(n1)
+    p.edAddLink(o0,n1.edGetSeqOfSamplesPort())
+    p.edAddLink(n1.edGetSamplePort(),i1)
+    p.edAddCFLink(n0,n1)
+    n1.edGetNbOfBranchesPort().edInitPy(1)
+    n2=self.r.createScriptNode("","n2")
+    n2.setScript("o4=i3")
+    i3=n2.edAddInputPort("i3",tsi)
+    o4=n2.edAddOutputPort("o4",tsi)
+    n2.setScript("o4=i3")
+    p.edAddChild(n2)
+    p.edAddCFLink(n1,n2)
+    p.edAddLink(o2,i3)
+    p.saveSchema(fname)
+    #
+    l=loader.YACSLoader()
+    p=l.load(fname)
+    n1=p.getChildByName("n1")
+    ex=pilot.ExecutorSwig()
+    #
+    ex.RunW(p,0)
+    #
+    self.assertEqual(n1.getState(),pilot.DONE)
+    n1.edGetSeqOfSamplesPort().getPyObj()
+    a,b,c=n1.getPassedResults(ex)
+    self.assertEqual(a,range(6))
+    self.assertEqual([elt.getPyObj() for elt in b],[[6L, 12L, 16L, 18L, -4L, 10L]])
+    self.assertEqual(c,['n10.o2'])
+    pass
+
+  def test7(self):
+    fname="test7.xml"
+    p=self.r.createProc("prTest1")
+    cont=p.createContainer("gg","Salome")
+    cont.setProperty("name","localhost")
+    cont.setProperty("hostname","localhost")
+    cont.setProperty("type","multi")
+    td=p.createType("double","double")
+    ti=p.createType("int","int")
+    tsi=p.createSequenceTc("seqint","seqint",ti)
+    tsd=p.createSequenceTc("seqdbl","seqdbl",td)
+    n0=self.r.createScriptNode("","n0")
+    o0=n0.edAddOutputPort("o0",tsi)
+    n0.setScript("o0=[3,6,8,9,-2,5]")
+    p.edAddChild(n0)
+    n1=self.r.createForEachLoop("n1",ti)
+    n10=self.r.createScriptNode("","n10")
+    n10.setExecutionMode("remote")
+    n10.setContainer(cont)
+    n1.edAddChild(n10)
+    n10.setScript("""
+import time
+if i1==9:
+  time.sleep(2)
+  raise Exception("Simulated error !")
+else:
+  o2=2*i1
+""")
+    i1=n10.edAddInputPort("i1",ti)
+    o2=n10.edAddOutputPort("o2",ti)
+    p.edAddChild(n1)
+    p.edAddLink(o0,n1.edGetSeqOfSamplesPort())
+    p.edAddLink(n1.edGetSamplePort(),i1)
+    p.edAddCFLink(n0,n1)
+    n1.edGetNbOfBranchesPort().edInitPy(1)
+    n2=self.r.createScriptNode("","n2")
+    n2.setScript("o4=i3")
+    i3=n2.edAddInputPort("i3",tsi)
+    o4=n2.edAddOutputPort("o4",tsi)
+    n2.setScript("o4=i3")
+    p.edAddChild(n2)
+    p.edAddCFLink(n1,n2)
+    p.edAddLink(o2,i3)
+    p.saveSchema(fname)
+    #
+    l=loader.YACSLoader()
+    p=l.load(fname)
+    n1=p.getChildByName("n1")
+    ex=pilot.ExecutorSwig()
+    #
+    ex.RunW(p,0)
+    #
+    self.assertEqual(n1.getState(),pilot.FAILED)
+    n1.edGetSeqOfSamplesPort().getPyObj()
+    a,b,c=n1.getPassedResults(ex)
+    self.assertEqual(a,range(3))
+    self.assertEqual([elt.getPyObj() for elt in b],[[6L,12L,16L]])
+    self.assertEqual(c,['n10.o2'])
+    pass
+
+  def test8(self):
+    from datetime import datetime
+    fname="test8.xml"
+    p=self.r.createProc("prTest2")
+    cont=p.createContainer("gg","Salome")
+    cont.setProperty("name","localhost")
+    cont.setProperty("hostname","localhost")
+    cont.setProperty("type","multi")
+    td=p.createType("double","double")
+    ti=p.createType("int","int")
+    tsi=p.createSequenceTc("seqint","seqint",ti)
+    tsd=p.createSequenceTc("seqdbl","seqdbl",td)
+    n0=self.r.createScriptNode("","n0")
+    o0=n0.edAddOutputPort("o0",tsi)
+    n0.setScript("o0=[3,6,8,9,-2,5]")
+    p.edAddChild(n0)
+    n1=self.r.createForEachLoop("n1",ti)
+    n10=self.r.createScriptNode("","n10")
+    n10.setExecutionMode("remote")
+    n10.setContainer(cont)
+    n1.edAddChild(n10)
+    n10.setScript("""
+import time
+if i1==9:
+  raise Exception("Simulated error !")
+else:
+  time.sleep(0.1)
+  o2=2*i1
+""")
+    i1=n10.edAddInputPort("i1",ti)
+    o2=n10.edAddOutputPort("o2",ti)
+    p.edAddChild(n1)
+    p.edAddLink(o0,n1.edGetSeqOfSamplesPort())
+    p.edAddLink(n1.edGetSamplePort(),i1)
+    p.edAddCFLink(n0,n1)
+    n1.edGetNbOfBranchesPort().edInitPy(2)
+    n2=self.r.createScriptNode("","n2")
+    n2.setScript("o4=i3")
+    i3=n2.edAddInputPort("i3",tsi)
+    o4=n2.edAddOutputPort("o4",tsi)
+    n2.setScript("o4=i3")
+    p.edAddChild(n2)
+    p.edAddCFLink(n1,n2)
+    p.edAddLink(o2,i3)
+    p.saveSchema(fname)
+    #
+    l=loader.YACSLoader()
+    p=l.load(fname)
+    n1=p.getChildByName("n1")
+    ex=pilot.ExecutorSwig()
+    ex.setKeepGoingProperty(True)
+    #
+    startt=datetime.now()
+    ex.RunW(p,0)
+    t0=datetime.now()-startt
+    #
+    self.assertEqual(n1.getState(),pilot.ERROR)
+    n1.edGetSeqOfSamplesPort().getPyObj()
+    a,b,c=n1.getPassedResults(ex)
+    self.assertEqual(a,[0,1,2,4,5])
+    self.assertEqual([elt.getPyObj() for elt in b],[[6L,12L,16L,-4L,10L]])
+    self.assertEqual(c,['n10.o2'])
+    
+    p.getChildByName("n1").getChildByName("n10").setScript("""
+import time
+if i1==3:
+  time.sleep(2)
+  raise Exception("Simulated error !")
+else:
+  o2=2*i1
+""")
+    ex=pilot.ExecutorSwig()
+    ex.setKeepGoingProperty(True)
+    #
+    startt=datetime.now()
+    ex.RunW(p,0)
+    t1=datetime.now()-startt
+    #
+    self.assertEqual(n1.getState(),pilot.ERROR)
+    n1.edGetSeqOfSamplesPort().getPyObj()
+    a,b,c=n1.getPassedResults(ex)
+    self.assertEqual(a,[1,2,3,4,5])
+    self.assertEqual([elt.getPyObj() for elt in b],[[12L,16L,18L,-4L,10L]])
+    self.assertEqual(c,['n10.o2'])
+    pass
+
   pass
 
 import os
