@@ -546,113 +546,143 @@ YACS::Event ForEachLoop::updateStateOnFinishedEventFrom(Node *node)
   switch(getIdentityOfNotifyerNode(node,id))
     {
     case INIT_NODE:
-      _execNodes[id]->exUpdateState();
-      _nbOfEltConsumed++;
-      _initializingCounter--;
-      if (_initializingCounter == 0) _initNode->setState(DONE);
-      break;
+      return updateStateForInitNodeOnFinishedEventFrom(node,id);
     case WORK_NODE:
-      _currentIndex++;
-      exUpdateProgress();
-      storeOutValsInSeqForOutOfScopeUse(_execIds[id],id);
-      if(_execCurrentId==_splitterNode.getNumberOfElements())
-        {//No more elements of _dataPortToDispatch to treat
-          _execIds[id]=NOT_RUNNING_BRANCH_ID;
-          //analyzing if some samples are still on treatment on other branches.
-          bool isFinished=true;
-          for(int i=0;i<_execIds.size() && isFinished;i++)
-            isFinished=(_execIds[i]==NOT_RUNNING_BRANCH_ID);
-          if(isFinished)
-            {
-              try 
-                {
-                  pushAllSequenceValues();
-  
-                  if (_node)
-                    {
-                      _node->setState(YACS::DONE);
-     
-                      ComposedNode* compNode = dynamic_cast<ComposedNode*>(_node);
-                      if (compNode)
-                        {
-                          std::list<Node *> aChldn = compNode->getAllRecursiveConstituents();
-                          std::list<Node *>::iterator iter=aChldn.begin();
-                          for(;iter!=aChldn.end();iter++)
-                            (*iter)->setState(YACS::DONE);
-                        }
-                    }
-
-                  if (_finalizeNode == NULL)
-                    {
-                      // No finalize node, we just finish the loop at the end of exec nodes execution
-                      setState(YACS::DONE);
-                      return YACS::FINISH;
-                    }
-                  else
-                    {
-                      // Run the finalize nodes, the loop will be done only when they all finish
-                      _unfinishedCounter = 0;  // This counter indicates how many branches are not finished
-                      for (int i=0 ; i<_execIds.size() ; i++)
-                        {
-                          YASSERT(_execIds[i] == NOT_RUNNING_BRANCH_ID);
-                          DEBTRACE("Launching finalize node for branch " << i);
-                          _execFinalizeNodes[i]->exUpdateState();
-                          _unfinishedCounter++;
-                        }
-                      return YACS::NOEVENT;
-                    }
-                }
-              catch(YACS::Exception& ex)
-                {
-                  DEBTRACE("ForEachLoop::updateStateOnFinishedEventFrom: "<<ex.what());
-                  //no way to push results : put following nodes in FAILED state
-                  //TODO could be more fine grain : put only concerned nodes in FAILED state
-                  exForwardFailed();
-                  setState(YACS::ERROR);
-                  return YACS::ABORT;
-                }
-            }
-        }
-      else if(_state == YACS::ACTIVATED)
-        {//more elements to do and loop still activated
-          _execIds[id]=_execCurrentId;
-          node->init(false);
-          _splitterNode.putSplittedValueOnRankTo(_execCurrentId++,id,false);
-          node->exUpdateState();
-          forwardExecStateToOriginalBody(node);
-          _nbOfEltConsumed++;
-        }
-      else
-        {//elements to process and loop no more activated
-          DEBTRACE("foreach loop state " << _state);
-        }
-      break;
+      return updateStateForWorkNodeOnFinishedEventFrom(node,id,true);
     case FINALIZE_NODE:
-    {
-      DEBTRACE("Finalize node finished on branch " << id);
-      _unfinishedCounter--;
-      _currentIndex++;
-      exUpdateProgress();
-      DEBTRACE(_unfinishedCounter << " finalize nodes still running");
-      if (_unfinishedCounter == 0)
-        {
-          _finalizeNode->setState(YACS::DONE);
-          setState(YACS::DONE);
-          return YACS::FINISH;
-        }
-      else
-        return YACS::NOEVENT;
-      break;
-    }
+      return updateStateForFinalizeNodeOnFinishedEventFrom(node,id);
     default:
       YASSERT(false);
     }
   return YACS::NOEVENT;
 }
 
+YACS::Event ForEachLoop::updateStateForInitNodeOnFinishedEventFrom(Node *node, unsigned int id)
+{
+  _execNodes[id]->exUpdateState();
+  _nbOfEltConsumed++;
+  _initializingCounter--;
+  if (_initializingCounter == 0)
+    _initNode->setState(DONE);
+  return YACS::NOEVENT;
+}
+
+/*!
+ * \param [in] isNormalFinish - if true
+ */
+YACS::Event ForEachLoop::updateStateForWorkNodeOnFinishedEventFrom(Node *node, unsigned int id, bool isNormalFinish)
+{
+  _currentIndex++;
+  exUpdateProgress();
+  if(isNormalFinish)
+    storeOutValsInSeqForOutOfScopeUse(_execIds[id],id);
+  if(_execCurrentId==_splitterNode.getNumberOfElements())
+    {//No more elements of _dataPortToDispatch to treat
+      _execIds[id]=NOT_RUNNING_BRANCH_ID;
+      //analyzing if some samples are still on treatment on other branches.
+      bool isFinished(true);
+      for(int i=0;i<_execIds.size() && isFinished;i++)
+        isFinished=(_execIds[i]==NOT_RUNNING_BRANCH_ID);
+      if(isFinished)
+        {
+          try
+          {
+              if(_failedCounter!=0)
+                {
+                  std::ostringstream oss; oss << "Keep Going mode activated and some errors (" << _failedCounter << ")reported !";
+                  throw YACS::Exception(oss.str());
+                }
+              pushAllSequenceValues();
+
+              if (_node)
+                {
+                  _node->setState(YACS::DONE);
+
+                  ComposedNode* compNode = dynamic_cast<ComposedNode*>(_node);
+                  if (compNode)
+                    {
+                      std::list<Node *> aChldn = compNode->getAllRecursiveConstituents();
+                      std::list<Node *>::iterator iter=aChldn.begin();
+                      for(;iter!=aChldn.end();iter++)
+                        (*iter)->setState(YACS::DONE);
+                    }
+                }
+
+              if (_finalizeNode == NULL)
+                {
+                  // No finalize node, we just finish the loop at the end of exec nodes execution
+                  setState(YACS::DONE);
+                  return YACS::FINISH;
+                }
+              else
+                {
+                  // Run the finalize nodes, the loop will be done only when they all finish
+                  _unfinishedCounter = 0;  // This counter indicates how many branches are not finished
+                  for (int i=0 ; i<_execIds.size() ; i++)
+                    {
+                      YASSERT(_execIds[i] == NOT_RUNNING_BRANCH_ID);
+                      DEBTRACE("Launching finalize node for branch " << i);
+                      _execFinalizeNodes[i]->exUpdateState();
+                      _unfinishedCounter++;
+                    }
+                  return YACS::NOEVENT;
+                }
+          }
+          catch(YACS::Exception& ex)
+          {
+              DEBTRACE("ForEachLoop::updateStateOnFinishedEventFrom: "<<ex.what());
+              //no way to push results : put following nodes in FAILED state
+              //TODO could be more fine grain : put only concerned nodes in FAILED state
+              exForwardFailed();
+              setState(YACS::ERROR);
+              return YACS::ABORT;
+          }
+        }
+    }
+  else if(_state == YACS::ACTIVATED)
+    {//more elements to do and loop still activated
+      _execIds[id]=_execCurrentId;
+      node->init(false);
+      _splitterNode.putSplittedValueOnRankTo(_execCurrentId++,id,false);
+      node->exUpdateState();
+      forwardExecStateToOriginalBody(node);
+      _nbOfEltConsumed++;
+    }
+  else
+    {//elements to process and loop no more activated
+      DEBTRACE("foreach loop state " << _state);
+    }
+  return YACS::NOEVENT;
+}
+
+YACS::Event ForEachLoop::updateStateForFinalizeNodeOnFinishedEventFrom(Node *node, unsigned int id)
+{
+  DEBTRACE("Finalize node finished on branch " << id);
+  _unfinishedCounter--;
+  _currentIndex++;
+  exUpdateProgress();
+  DEBTRACE(_unfinishedCounter << " finalize nodes still running");
+  if (_unfinishedCounter == 0)
+    {
+      _finalizeNode->setState(YACS::DONE);
+      setState(YACS::DONE);
+      return YACS::FINISH;
+    }
+  else
+    return YACS::NOEVENT;
+}
+
 YACS::Event ForEachLoop::updateStateOnFailedEventFrom(Node *node, const Executor *execInst)
 {
-  return DynParaLoop::updateStateOnFailedEventFrom(node,execInst);
+  unsigned int id;
+  DynParaLoop::TypeOfNode ton(getIdentityOfNotifyerNode(node,id));
+  if(ton!=WORK_NODE || !execInst->getKeepGoingProperty())
+    return DynParaLoop::updateStateOnFailedEventFrom(node,execInst);
+  else
+    {
+      _failedCounter++;
+      return updateStateForWorkNodeOnFinishedEventFrom(node,id,false);
+    }
 }
 
 void ForEachLoop::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView)

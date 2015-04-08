@@ -44,7 +44,7 @@ const char DynParaLoop::NAME_OF_NUMBER_OF_BRANCHES[]="nbBranches";
 DynParaLoop::DynParaLoop(const std::string& name, TypeCode *typeOfDataSplitted)
   : ComposedNode(name),_node(0),_initNode(0),_finalizeNode(0),_nbOfEltConsumed(0),
     _nbOfBranches(NAME_OF_NUMBER_OF_BRANCHES,this,Runtime::_tc_int),
-    _splittedPort(NAME_OF_SPLITTED_SEQ_OUT,this,typeOfDataSplitted)
+    _splittedPort(NAME_OF_SPLITTED_SEQ_OUT,this,typeOfDataSplitted),_initializingCounter(0),_unfinishedCounter(0),_failedCounter(0)
 {
 }
 
@@ -58,7 +58,7 @@ DynParaLoop::~DynParaLoop()
 DynParaLoop::DynParaLoop(const DynParaLoop& other, ComposedNode *father, bool editionOnly)
   : ComposedNode(other,father), _nbOfBranches(other._nbOfBranches,this),
     _splittedPort(other._splittedPort,this), _node(0), _initNode(0), _finalizeNode(0),
-    _nbOfEltConsumed(0)
+    _nbOfEltConsumed(0),_initializingCounter(0),_unfinishedCounter(0),_failedCounter(0)
 {
   if(other._node)
     _node=other._node->clone(this,editionOnly);
@@ -117,6 +117,7 @@ void DynParaLoop::init(bool start)
   _nbOfBranches.exInit(start);
   _splittedPort.exInit();
   _nbOfEltConsumed=0;
+  _failedCounter=0;
 }
 
 Node *DynParaLoop::edSetInitNode(Node *node)
