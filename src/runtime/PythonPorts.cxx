@@ -283,6 +283,7 @@ OutputPyPort::~OutputPyPort()
 OutputPyPort::OutputPyPort(const OutputPyPort& other, Node *newHelder):OutputPort(other,newHelder),DataPort(other,newHelder),Port(other,newHelder),
                                                                        _data(Py_None)
 {
+  Py_INCREF(_data);
 }
 
 void OutputPyPort::put(const void *data) throw(ConversionException)

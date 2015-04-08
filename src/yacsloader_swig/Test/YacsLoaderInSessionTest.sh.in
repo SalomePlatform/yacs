@@ -39,7 +39,6 @@ export PYTHONPATH=@CMAKE_BINARY_DIR@/src/engine_swig:$PYTHONPATH
 export PYTHONPATH=@CMAKE_CURRENT_SOURCE_DIR@:$PYTHONPATH
 export PYTHONPATH=@CMAKE_SOURCE_DIR@/src/yacsloader/Test:$PYTHONPATH
 
-chmod +x @CMAKE_CURRENT_SOURCE_DIR@/testExec.py
 python  @CMAKE_CURRENT_SOURCE_DIR@/testExec.py
 ret0=$?
 if [ $ret0 -gt 0 ]; then
@@ -47,7 +46,6 @@ if [ $ret0 -gt 0 ]; then
   exit $ret0
 fi
 
-chmod +x @CMAKE_CURRENT_SOURCE_DIR@/testResume.py
 python  @CMAKE_CURRENT_SOURCE_DIR@/testResume.py
 ret1=$?
 if [ $ret1 -gt 0 ]; then
@@ -55,7 +53,6 @@ if [ $ret1 -gt 0 ]; then
   exit $ret1
 fi
 
-chmod +x @CMAKE_CURRENT_SOURCE_DIR@/testLoader.py
 python  @CMAKE_CURRENT_SOURCE_DIR@/testLoader.py
 ret2=$?
 if [ $ret2 -gt 0 ]; then
@@ -63,7 +60,6 @@ if [ $ret2 -gt 0 ]; then
   exit $ret2
 fi
 
-chmod +x @CMAKE_CURRENT_SOURCE_DIR@/testEdit.py
 python  @CMAKE_CURRENT_SOURCE_DIR@/testEdit.py
 ret3=$?
 if [ $ret3 -gt 0 ]; then
@@ -71,7 +67,6 @@ if [ $ret3 -gt 0 ]; then
   exit $ret3
 fi
 
-chmod +x @CMAKE_CURRENT_SOURCE_DIR@/testSave.py
 python  @CMAKE_CURRENT_SOURCE_DIR@/testSave.py
 ret4=$?
 if [ $ret4 -gt 0 ]; then
@@ -79,7 +74,6 @@ if [ $ret4 -gt 0 ]; then
   exit $ret4
 fi
 
-chmod +x @CMAKE_CURRENT_SOURCE_DIR@/testRefcount.py
 python  @CMAKE_CURRENT_SOURCE_DIR@/testRefcount.py
 ret5=$?
 if [ $ret5 -gt 0 ]; then
@@ -87,7 +81,6 @@ if [ $ret5 -gt 0 ]; then
   exit $ret5
 fi
 
-chmod +x @CMAKE_CURRENT_SOURCE_DIR@/testSaveLoadRun.py
 python  @CMAKE_CURRENT_SOURCE_DIR@/testSaveLoadRun.py
 ret6=$?
 if [ $ret6 -gt 0 ]; then

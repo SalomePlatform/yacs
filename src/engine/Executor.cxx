@@ -364,7 +364,10 @@ void Executor::RunB(Scheduler *graph,int debug, bool fromScratch)
     {
       saveState(_dumpErrorFile);
     }
-  _trace.close();
+  {
+    YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForTrace);
+    _trace.close();
+  }
   DEBTRACE("End of RunB thread");  
 }
 
@@ -994,6 +997,8 @@ void Executor::launchTask(Task *task)
   DEBTRACE("before _semForMaxThreads.wait " << _semThreadCnt);
   if(_semThreadCnt == 0)
     {
+      // --- Critical section
+      YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
       //check if we have enough threads to run
       std::set<Task*> tmpSet=_runningTasks;
       std::set<Task*>::iterator it = tmpSet.begin();
@@ -1019,6 +1024,7 @@ void Executor::launchTask(Task *task)
           std::cerr << "WARNING: maybe you need more threads to run your schema (current value="<< _maxThreads << ")" << std::endl;
           std::cerr << "If it is the case, set the YACS_MAX_THREADS environment variable to a bigger value (export YACS_MAX_THREADS=xxx)" << std::endl;
         }
+      // --- End of critical section
     }
 
   _semForMaxThreads.wait();
