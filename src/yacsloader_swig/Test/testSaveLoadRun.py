@@ -741,7 +741,7 @@ else:
     ex.RunW(p,0)
     t0=datetime.now()-startt
     #
-    self.assertEqual(n1.getState(),pilot.ERROR)
+    self.assertEqual(n1.getState(),pilot.FAILED)
     n1.edGetSeqOfSamplesPort().getPyObj()
     a,b,c=n1.getPassedResults(ex)
     self.assertEqual(a,[0,1,2,4,5])
@@ -763,7 +763,7 @@ else:
     ex.RunW(p,0)
     t1=datetime.now()-startt
     #
-    self.assertEqual(n1.getState(),pilot.ERROR)
+    self.assertEqual(n1.getState(),pilot.FAILED)
     n1.edGetSeqOfSamplesPort().getPyObj()
     a,b,c=n1.getPassedResults(ex)
     self.assertEqual(a,[1,2,3,4,5])

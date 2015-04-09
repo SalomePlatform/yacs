@@ -588,9 +588,11 @@ YACS::Event ForEachLoop::updateStateForWorkNodeOnFinishedEventFrom(Node *node, u
           try
           {
               if(_failedCounter!=0)
-                {
+                {// case of keepgoing mode + a failed
                   std::ostringstream oss; oss << "Keep Going mode activated and some errors (" << _failedCounter << ")reported !";
-                  throw YACS::Exception(oss.str());
+                  DEBTRACE("ForEachLoop::updateStateOnFinishedEventFrom : "<< oss.str());
+                  setState(YACS::FAILED);
+                  return YACS::ABORT;
                 }
               pushAllSequenceValues();
 
