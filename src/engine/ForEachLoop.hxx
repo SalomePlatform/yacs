@@ -123,6 +123,26 @@ namespace YACS
       static const char NAME[];
     };
 
+    class ForEachLoopPassedData
+    {
+    public:
+      ForEachLoopPassedData(const std::vector<unsigned int>& passedIds, const std::vector<SequenceAny *>& passedOutputs, const std::vector<std::string>& nameOfOutputs);
+      ~ForEachLoopPassedData();
+      void init();
+      void checkCompatibilyWithNb(int nbOfElts) const;
+      void checkLevel2(const std::vector<AnyInputPort *>& ports) const;
+      int getNumberOfEltsAlreadyDone() const { return (int)_passedIds.size(); }
+      int toAbsId(int localId) const;
+      int toAbsIdNot(int localId) const;
+      int getNumberOfElementsToDo() const;
+      void assignAlreadyDone(const std::vector<SequenceAny *>& execVals) const;
+    private:
+      std::vector<unsigned int> _passedIds;
+      std::vector<SequenceAny *> _passedOutputs;
+      std::vector<std::string> _nameOfOutputs;
+      mutable std::vector<bool> _flagsIds;
+    };
+
     class Executor;
 
     class YACSLIBENGINE_EXPORT ForEachLoop : public DynParaLoop
@@ -144,6 +164,7 @@ namespace YACS
       unsigned _execCurrentId;
       std::vector<SequenceAny *> _execVals;
       std::vector< std::vector<AnyInputPort *> > _execOutGoingPorts;
+      ForEachLoopPassedData *_passedData;
     public:
       ForEachLoop(const std::string& name, TypeCode *typeOfDataSplitted);
       ForEachLoop(const ForEachLoop& other, ComposedNode *father, bool editionOnly);
@@ -173,6 +194,7 @@ namespace YACS
       std::string getProgress() const;
 #ifndef SWIG
       std::vector<unsigned int> getPassedResults(Executor *execut, std::vector<SequenceAny *>& outputs, std::vector<std::string>& nameOfOutputs) const;
+      void assignPassedResults(const std::vector<unsigned int>& passedIds, const std::vector<SequenceAny *>& passedOutputs, const std::vector<std::string>& nameOfOutputs);
 #endif
     protected:
       Node *simpleClone(ComposedNode *father, bool editionOnly=true) const;
@@ -193,6 +215,8 @@ namespace YACS
       void prepareSequenceValues(int sizeOfSamples);
       OutPort *getDynOutPortByAbsName(int branchNb, const std::string& name);
       void storeOutValsInSeqForOutOfScopeUse(int rank, int branchNb);
+    private:
+      int getFinishedId();
     };
   }
 } 

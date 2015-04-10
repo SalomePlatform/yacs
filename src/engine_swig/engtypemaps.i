@@ -82,6 +82,8 @@ catch (const CORBA::SystemException& ex) { \
 #include "OptimizerLoop.hxx"
 #include "HomogeneousPoolContainer.hxx"
 
+#include <sstream>
+
 class InterpreterUnlocker
 {
 public:
@@ -215,6 +217,55 @@ static PyObject *convertContainer(YACS::ENGINE::Container *cont, int owner=0)
       return SWIG_NewPointerObj((void*)dynamic_cast<YACS::ENGINE::HomogeneousPoolContainer *>(cont),SWIGTYPE_p_YACS__ENGINE__HomogeneousPoolContainer, owner);
     }
   return SWIG_NewPointerObj((void*)cont,SWIGTYPE_p_YACS__ENGINE__Container, owner);
+}
+
+//convertFromPyObjVectorOfObj<YACS::ENGINE::SequenceAny *>(pyLi,SWIGTYPE_p_YACS__ENGINE__SequenceAny,"SequenceAny")
+template<class T>
+static void convertFromPyObjVectorOfObj(PyObject *pyLi, swig_type_info *ty, const char *typeStr, typename std::vector<T>& ret)
+{
+  void *argp=0;
+  if(PyList_Check(pyLi))
+    {
+      int size=PyList_Size(pyLi);
+      ret.resize(size);
+      for(int i=0;i<size;i++)
+        {
+          PyObject *obj=PyList_GetItem(pyLi,i);
+          int status=SWIG_ConvertPtr(obj,&argp,ty,0|0);
+          if(!SWIG_IsOK(status))
+            {
+              std::ostringstream oss; oss << "convertFromPyObjVectorOfObj : list is excepted to contain only " << typeStr << " instances !";
+              throw YACS::Exception(oss.str());
+            }
+          T arg=reinterpret_cast< T >(argp);
+          ret[i]=arg;
+        }
+    }
+  else if(PyTuple_Check(pyLi))
+    {
+      int size=PyTuple_Size(pyLi);
+      ret.resize(size);
+      for(int i=0;i<size;i++)
+        {
+          PyObject *obj=PyTuple_GetItem(pyLi,i);
+          int status=SWIG_ConvertPtr(obj,&argp,ty,0|0);
+          if(!SWIG_IsOK(status))
+            {
+              std::ostringstream oss; oss << "convertFromPyObjVectorOfObj : tuple is excepted to contain only " << typeStr << " instances !";
+              throw YACS::Exception(oss.str());
+            }
+          T arg=reinterpret_cast< T >(argp);
+          ret[i]=arg;
+        }
+    }
+  else if(SWIG_IsOK(SWIG_ConvertPtr(pyLi,&argp,ty,0|0)))
+    {
+      ret.resize(1);
+      T arg=reinterpret_cast< T >(argp);
+      ret[0]=arg;
+    }
+  else
+    throw YACS::Exception("convertFromPyObjVectorOfObj : not a list nor a tuple");
 }
 
 %}

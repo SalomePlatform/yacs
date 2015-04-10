@@ -112,6 +112,7 @@ REFCOUNT_TEMPLATE(TCmap,YACS::ENGINE::TypeCode)
 //%template(CONTAINmap)    std::map<std::string, YACS::ENGINE::Container *>;
 REFCOUNT_TEMPLATE(CONTAINmap,YACS::ENGINE::Container)
 %template(strvec)        std::vector<std::string>;
+%template(uivec)         std::vector<unsigned int>;
 %template(linksvec)      std::vector< std::pair<YACS::ENGINE::OutPort *,YACS::ENGINE::InPort *> >;
 %template(linkvec)       std::vector< std::pair<YACS::ENGINE::InPort *,YACS::ENGINE::OutPort *> >;
 %template(instreamlist)  std::list<YACS::ENGINE::InputDataStreamPort *>;
@@ -432,5 +433,12 @@ EXCEPTION(YACS::ENGINE::ExecutorSwig::waitPause)
       PyList_SetItem(ret2Py,i,PyString_FromString(ret2[i].c_str()));
     PyTuple_SetItem(ret,2,ret2Py);
     return ret;
+  }
+
+  void assignPassedResults(const std::vector<unsigned int>& passedIds, PyObject *passedOutputs, const std::vector<std::string>& nameOfOutputs)
+  {
+    std::vector<SequenceAny *> passedOutputsCpp;
+    convertFromPyObjVectorOfObj<YACS::ENGINE::SequenceAny *>(passedOutputs,SWIGTYPE_p_YACS__ENGINE__SequenceAny,"SequenceAny",passedOutputsCpp);
+    self->assignPassedResults(passedIds,passedOutputsCpp,nameOfOutputs);
   }
 }

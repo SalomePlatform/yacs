@@ -771,9 +771,178 @@ else:
     self.assertEqual(c,['n10.o2'])
     pass
 
+  def test9(self):
+    """ Test of assignation of already computed values for foreach node."""
+    fname="test9.xml"
+    from datetime import datetime
+    p=self.r.createProc("prTest2")
+    cont=p.createContainer("gg","Salome")
+    cont.setProperty("name","localhost")
+    cont.setProperty("hostname","localhost")
+    cont.setProperty("type","multi")
+    td=p.createType("double","double")
+    ti=p.createType("int","int")
+    tsi=p.createSequenceTc("seqint","seqint",ti)
+    tsd=p.createSequenceTc("seqdbl","seqdbl",td)
+    n0=self.r.createScriptNode("","n0")
+    o0=n0.edAddOutputPort("o0",tsi)
+    n0.setScript("o0=[3,6,8,9,-2,5]")
+    p.edAddChild(n0)
+    n1=self.r.createForEachLoop("n1",ti)
+    n10=self.r.createScriptNode("","n10")
+    n10.setExecutionMode("remote")
+    n10.setContainer(cont)
+    n1.edAddChild(n10)
+    n10.setScript("""
+import time
+if i1==9:
+  raise Exception("Simulated error !")
+else:
+  time.sleep(0.1)
+  o2=2*i1
+""")
+    i1=n10.edAddInputPort("i1",ti)
+    o2=n10.edAddOutputPort("o2",ti)
+    p.edAddChild(n1)
+    p.edAddLink(o0,n1.edGetSeqOfSamplesPort())
+    p.edAddLink(n1.edGetSamplePort(),i1)
+    p.edAddCFLink(n0,n1)
+    n1.edGetNbOfBranchesPort().edInitPy(2)
+    n2=self.r.createScriptNode("","n2")
+    n2.setScript("o4=i3")
+    i3=n2.edAddInputPort("i3",tsi)
+    o4=n2.edAddOutputPort("o4",tsi)
+    n2.setScript("o4=i3")
+    p.edAddChild(n2)
+    p.edAddCFLink(n1,n2)
+    p.edAddLink(o2,i3)
+    p.saveSchema(fname)
+    #
+    l=loader.YACSLoader()
+    p=l.load(fname)
+    n1=p.getChildByName("n1")
+    ex=pilot.ExecutorSwig()
+    ex.setKeepGoingProperty(True)
+    #
+    startt=datetime.now()
+    ex.RunW(p,0)
+    t0=datetime.now()-startt
+    #
+    self.assertEqual(p.getState(),pilot.FAILED)
+    self.assertEqual(n1.getState(),pilot.FAILED)
+    n1.edGetSeqOfSamplesPort().getPyObj()
+    a,b,c=n1.getPassedResults(ex)
+    self.assertEqual(a,[0,1,2,4,5])
+    self.assertEqual([elt.getPyObj() for elt in b],[[6L,12L,16L,-4L,10L]])
+    self.assertEqual(c,['n10.o2'])
+    
+    p.getChildByName("n1").getChildByName("n10").setScript("""
+import time
+time.sleep(2)
+o2=7*i1
+""")
+    ex=pilot.ExecutorSwig()
+    ex.setKeepGoingProperty(True)
+    p.getChildByName("n1").assignPassedResults(a,b,c)
+    #
+    startt=datetime.now()
+    ex.RunW(p,0)
+    t1=datetime.now()-startt
+    #
+    self.assertEqual(n1.getState(),pilot.DONE)
+    self.assertEqual(p.getState(),pilot.DONE)
+    self.assertEqual(p.getChildByName("n2").getOutputPort("o4").getPyObj(),[6L,12L,16L,63L,-4L,10L])
+    pass
+
+  def test10(self):
+    fname="test10.xml"
+    from datetime import datetime
+    p=self.r.createProc("prTest2")
+    cont=p.createContainer("gg","Salome")
+    cont.setProperty("name","localhost")
+    cont.setProperty("hostname","localhost")
+    cont.setProperty("type","multi")
+    td=p.createType("double","double")
+    ti=p.createType("int","int")
+    tsi=p.createSequenceTc("seqint","seqint",ti)
+    tsd=p.createSequenceTc("seqdbl","seqdbl",td)
+    n0=self.r.createScriptNode("","n0")
+    o0=n0.edAddOutputPort("o0",tsi)
+    n0.setScript("o0=[ 3*elt for elt in range(12) ]")
+    p.edAddChild(n0)
+    n1=self.r.createForEachLoop("n1",ti)
+    n10=self.r.createScriptNode("","n10")
+    n10.setExecutionMode("remote")
+    n10.setContainer(cont)
+    n1.edAddChild(n10)
+    n10.setScript("""
+import time
+if i1%2==0:
+  raise Exception("Simulated error !")
+else:
+  time.sleep(0.1)
+  o2=4*i1
+""")
+    i1=n10.edAddInputPort("i1",ti)
+    o2=n10.edAddOutputPort("o2",ti)
+    p.edAddChild(n1)
+    p.edAddLink(o0,n1.edGetSeqOfSamplesPort())
+    p.edAddLink(n1.edGetSamplePort(),i1)
+    p.edAddCFLink(n0,n1)
+    n1.edGetNbOfBranchesPort().edInitPy(2)
+    n2=self.r.createScriptNode("","n2")
+    n2.setScript("o4=i3")
+    i3=n2.edAddInputPort("i3",tsi)
+    o4=n2.edAddOutputPort("o4",tsi)
+    n2.setScript("o4=i3")
+    p.edAddChild(n2)
+    p.edAddCFLink(n1,n2)
+    p.edAddLink(o2,i3)
+    p.saveSchema(fname)
+    #
+    l=loader.YACSLoader()
+    p=l.load(fname)
+    n1=p.getChildByName("n1")
+    ex=pilot.ExecutorSwig()
+    ex.setKeepGoingProperty(True)
+    #
+    startt=datetime.now()
+    ex.RunW(p,0)
+    t0=datetime.now()-startt
+    #
+    self.assertEqual(p.getState(),pilot.FAILED)
+    self.assertEqual(n1.getState(),pilot.FAILED)
+    n1.edGetSeqOfSamplesPort().getPyObj()
+    a,b,c=n1.getPassedResults(ex)
+    self.assertEqual(a,[1,3,5,7,9,11])
+    self.assertEqual([elt.getPyObj() for elt in b],[[12L,36L,60L,84L,108L,132L]])
+    self.assertEqual(c,['n10.o2'])
+    
+    p.getChildByName("n1").getChildByName("n10").setScript("""
+import time
+if i1%2==1:
+  raise Exception("Simulated error !")
+else:
+  time.sleep(1)
+  o2=5*i1
+""")
+    ex=pilot.ExecutorSwig()
+    ex.setKeepGoingProperty(True)
+    p.getChildByName("n1").assignPassedResults(a,b,c)
+    #
+    startt=datetime.now()
+    ex.RunW(p,0)
+    t1=datetime.now()-startt
+    #assert(t1.total_seconds()<6.+1.)# normally 6/2+1 s (6 remaining elts in 2 // branches + 1s to launch container)
+    #
+    self.assertEqual(n1.getState(),pilot.DONE)
+    self.assertEqual(p.getState(),pilot.DONE)
+    self.assertEqual(p.getChildByName("n2").getOutputPort("o4").getPyObj(),[0L,12L,30L,36L,60L,60L,90L,84L,120L,108L,150L,132L])
+    pass
+
   pass
 
-import os
+import os,sys
 U = os.getenv('USER')
 f=open("/tmp/" + U + "/UnitTestsResult", 'a')
 f.write("  --- TEST src/yacsloader: testSaveLoadRun.py\n")
