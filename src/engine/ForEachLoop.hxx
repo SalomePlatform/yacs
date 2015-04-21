@@ -123,7 +123,7 @@ namespace YACS
       static const char NAME[];
     };
 
-    class ForEachLoopPassedData
+    class YACSLIBENGINE_EXPORT ForEachLoopPassedData
     {
     public:
       ForEachLoopPassedData(const std::vector<unsigned int>& passedIds, const std::vector<SequenceAny *>& passedOutputs, const std::vector<std::string>& nameOfOutputs);
