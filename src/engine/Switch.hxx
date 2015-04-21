@@ -115,6 +115,7 @@ namespace YACS
       InputPort *edGetConditionPort() { return &_condition; }
       void writeDot(std::ostream &os) const;
       int getNumberOfInputPorts() const;
+      int getMaxLevelOfParallelism() const;
       void edRemoveChild(Node *node) throw(Exception);
       std::list<InputPort *> getSetOfInputPort() const;
       std::list<InputPort *> getLocalInputPorts() const;

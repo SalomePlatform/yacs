@@ -1,0 +1,54 @@
+<?xml version='1.0' encoding='iso-8859-1' ?>
+<proc name="run">
+   <type name="bool" kind="bool"/>
+   <type name="double" kind="double"/>
+   <objref name="file" id="file"/>
+   <type name="int" kind="int"/>
+   <type name="string" kind="string"/>
+   <container name="DefaultContainer">
+      <property name="container_kind" value="Salome"/>
+      <property name="attached_on_cloning" value="0"/>
+      <property name="container_name" value="FactoryServer"/>
+      <property name="name" value="localhost"/>
+   </container>
+   <container name="zeCont">
+      <property name="container_kind" value="Salome"/>
+      <property name="attached_on_cloning" value="0"/>
+   </container>
+   <remote name="node0">
+      <function name="func0">
+         <code><![CDATA[def func0(a,b):
+  return a*b
+]]></code>
+      </function>
+      <load container="zeCont"/>
+      <inport name="a" type="double"/>
+      <inport name="b" type="double"/>
+      <outport name="c" type="double"/>
+   </remote>
+   <remote name="node1">
+      <function name="func1">
+         <code><![CDATA[def func1(a,b):
+  return a+b,3*(a+b)
+]]></code>
+      </function>
+      <load container="zeCont"/>
+      <inport name="d" type="double"/>
+      <inport name="e" type="double"/>
+      <outport name="f" type="double"/>
+      <outport name="g" type="double"/>
+   </remote>
+   <control> <fromnode>node0</fromnode> <tonode>node1</tonode> </control>
+   <datalink control="false">
+      <fromnode>node0</fromnode> <fromport>c</fromport>
+      <tonode>node1</tonode> <toport>d</toport>
+   </datalink>
+   <parameter>
+      <tonode>node0</tonode><toport>b</toport>
+      <value><double>1.3</double></value>
+   </parameter>
+   <parameter>
+      <tonode>node1</tonode><toport>e</toport>
+      <value><double>2.5</double></value>
+   </parameter>
+</proc>

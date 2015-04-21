@@ -164,6 +164,7 @@ namespace YACS
       virtual Proc *getProc();
       virtual const Proc *getProc() const;
       virtual void accept(Visitor *visitor) = 0;
+      virtual int getMaxLevelOfParallelism() const = 0;
       std::string getQualifiedName() const;
       int getNumId();
       virtual void sendEvent(const std::string& event);

@@ -412,6 +412,13 @@ int Loop::getNumberOfInputPorts() const
   return StaticDefinedComposedNode::getNumberOfInputPorts()+1;
 }
 
+int Loop::getMaxLevelOfParallelism() const
+{
+  if(!_node)
+    return 0;
+  return _node->getMaxLevelOfParallelism();
+}
+
 Node *Loop::getChildByShortName(const std::string& name) const throw(YACS::Exception)
 {
   if (_node)

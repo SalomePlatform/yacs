@@ -222,7 +222,7 @@ void VisitorSaveSchema::visitInlineNode(InlineNode *node)
   DEBTRACE("START visitInlineNode " << _root->getChildName(node));
   beginCase(node);
   int depth = depthNode(node);
-  if(node->getExecutionMode()=="local")
+  if(node->getExecutionMode()==InlineNode::LOCAL_STR)
     _out << indent(depth) << "<inline name=\"" << node->getName() << "\"";
   else
     _out << indent(depth) << "<remote name=\"" << node->getName() << "\"";
@@ -245,7 +245,7 @@ void VisitorSaveSchema::visitInlineNode(InlineNode *node)
   writeOutputPorts(node);
   writeOutputDataStreamPorts(node);
 
-  if(node->getExecutionMode()=="local")
+  if(node->getExecutionMode()==InlineNode::LOCAL_STR)
     _out << indent(depth) << "</inline>" << endl;
   else
     _out << indent(depth) << "</remote>" << endl;
@@ -259,7 +259,7 @@ void VisitorSaveSchema::visitInlineFuncNode(InlineFuncNode *node)
   DEBTRACE("START visitInlineFuncNode " << _root->getChildName(node));
   beginCase(node);
   int depth = depthNode(node);
-  if(node->getExecutionMode()=="local")
+  if(node->getExecutionMode()==InlineNode::LOCAL_STR)
     _out << indent(depth) << "<inline name=\"" << node->getName() << "\"";
   else
     _out << indent(depth) << "<remote name=\"" << node->getName() << "\"";
@@ -284,7 +284,7 @@ void VisitorSaveSchema::visitInlineFuncNode(InlineFuncNode *node)
   writeOutputPorts(node);
   writeOutputDataStreamPorts(node);
 
-  if(node->getExecutionMode()=="local")
+  if(node->getExecutionMode()==InlineNode::LOCAL_STR)
     _out << indent(depth) << "</inline>" << endl;
   else
     _out << indent(depth) << "</remote>" << endl;

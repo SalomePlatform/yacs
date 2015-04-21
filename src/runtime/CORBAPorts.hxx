@@ -27,6 +27,8 @@
 #include "OutputPort.hxx"
 #include "Mutex.hxx"
 
+#include <Python.h>
+
 #include <string>
 
 namespace YACS

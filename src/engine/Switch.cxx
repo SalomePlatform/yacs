@@ -400,6 +400,14 @@ int Switch::getNumberOfInputPorts() const
   return StaticDefinedComposedNode::getNumberOfInputPorts()+1;
 }
 
+int Switch::getMaxLevelOfParallelism() const
+{
+  int ret(0);
+  for(std::map< int , Node * >::const_iterator it=_mapOfNode.begin();it!=_mapOfNode.end();it++)
+    ret=std::max(ret,((*it).second)->getMaxLevelOfParallelism());
+  return ret;
+}
+
 void Switch::edRemoveChild(Node *node) throw(YACS::Exception)
 {
   map< int , Node * >::iterator iter=_mapOfNode.begin();

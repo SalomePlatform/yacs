@@ -27,6 +27,7 @@
 #include "Visitor.hxx"
 
 #include <iostream>
+#include <numeric>
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -391,6 +392,45 @@ void Bloc::writeDot(std::ostream &os) const
 void Bloc::accept(Visitor* visitor)
 {
   visitor->visitBloc(this);
+}
+
+/*!
+ * Returns the max level of parallelism is this. The max of parallelism is equal to the sum of the max parallelism level
+ * for all concurrent branches in \a this.
+ */
+int Bloc::getMaxLevelOfParallelism() const
+{
+  std::set<Node *> s(_setOfNode.begin(),_setOfNode.end());
+  for(std::set<Node *>::const_iterator it=s.begin();it!=s.end();it++)
+    (*it)->_colour=White;
+  std::vector<int> levs;
+  while(!s.empty())
+    {
+      Node *seed(*(s.begin()));
+      int myCurLev(0);
+      while(seed)
+        {
+          s.erase(seed);
+          std::set<InGate *> ingates(seed->getOutGate()->edSetInGate());
+          int myCurLev2(1);
+          for(std::set<InGate *>::const_iterator it=ingates.begin();it!=ingates.end();it++)
+            {
+              Node *curNode((*it)->getNode());
+              curNode->_colour=Grey;
+              myCurLev2=std::max(curNode->getMaxLevelOfParallelism(),myCurLev2);
+            }
+          myCurLev=std::max(myCurLev,myCurLev2);
+          seed=0;
+          for(std::set<Node *>::const_iterator it=s.begin();it!=s.end();it++)
+            if((*it)->_colour==Grey)
+              {
+                seed=*it;
+                break;
+              }
+        }
+      levs.push_back(myCurLev);
+    }
+  return std::accumulate(levs.begin(),levs.end(),0);
 }
 
 /*!

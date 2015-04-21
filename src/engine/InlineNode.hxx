@@ -45,7 +45,7 @@ namespace YACS
     protected:
       InlineNode(const InlineNode& other, ComposedNode *father)
         :ElementaryNode(other,father),_script(other._script),_mode(other._mode),_container(0) { }
-      InlineNode(const std::string& name):ElementaryNode(name),_mode("local"),_container(0) { }
+      InlineNode(const std::string& name):ElementaryNode(name),_mode(LOCAL_STR),_container(0) { }
     public:
       virtual void setScript(const std::string& script);
       virtual std::string getScript(){return _script;}
@@ -67,6 +67,9 @@ namespace YACS
       void performDuplicationOfPlacement(const Node& other);
       void performShallowDuplicationOfPlacement(const Node& other);
       bool isDeployable() const;
+    public:
+      static const char LOCAL_STR[];
+      static const char REMOTE_STR[];
     protected:
       std::string _script;
       std::string _mode;

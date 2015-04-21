@@ -29,36 +29,26 @@ SET(SUBDIRS_COMMON
 # KERNEL
 ##
 IF(SALOME_YACS_USE_KERNEL)
-  SET(SUBDIRS_KERNEL
-    runtime yacsloader
-    )
-ENDIF()
+  SET(SUBDIRS_KERNEL runtime yacsloader evalyfx)
+ENDIF(SALOME_YACS_USE_KERNEL)
 
 ##
 # SWIG wrapping
 ##
 IF(SALOME_YACS_USE_SWIG)
-  SET(SUBDIRS_SWIG
-    engine_swig
-  )
+  SET(SUBDIRS_SWIG engine_swig)
   IF(SALOME_YACS_USE_KERNEL)
-    LIST(APPEND SUBDIRS_SWIG
-      runtime_swig yacsloader_swig
-    )
-  ENDIF()
-ENDIF()
+    LIST(APPEND SUBDIRS_SWIG runtime_swig yacsloader_swig evalyfx_swig)
+  ENDIF(SALOME_YACS_USE_KERNEL)
+ENDIF(SALOME_YACS_USE_SWIG)
 
 ##
 # GUI
 ##
 IF(SALOME_BUILD_GUI)
-  SET(SUBDIRS_GUI
-    pyqt hmi salomewrap genericgui salomegui
-    )
+  SET(SUBDIRS_GUI pyqt hmi salomewrap genericgui salomegui)
   IF(SALOME_YACS_USE_SWIG)
-    LIST(APPEND SUBDIRS_GUI
-      salomegui_swig
-      )
+    LIST(APPEND SUBDIRS_GUI salomegui_swig)
   ENDIF()
 ENDIF()
 

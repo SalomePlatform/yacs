@@ -105,6 +105,8 @@ namespace YACS
       virtual void edUpdateState();
       virtual void ensureLoading();
 
+      int getMaxLevelOfParallelism() const { return 1; }
+
       //run part
       void begin();
       bool isReady();

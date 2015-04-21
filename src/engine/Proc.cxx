@@ -75,10 +75,7 @@ Proc::~Proc()
   for(pt=typeMap.begin();pt!=typeMap.end();pt++)
     ((*pt).second)->decrRef();
 
-  //get rid of containers in container map
-  std::map<std::string, Container*>::const_iterator it;
-  for(it=containerMap.begin();it!=containerMap.end();it++)
-    ((*it).second)->decrRef();
+  removeContainers();
 
   //get rid of loggers in logger map
   std::map<std::string, Logger*>::const_iterator lt;
@@ -463,6 +460,15 @@ void Proc::saveState(const std::string& xmlStateFile)
   vst.closeFileDump();
 }
 
+void Proc::removeContainers()
+{
+  //get rid of containers in container map
+  std::map<std::string, Container*>::const_iterator it;
+  for(it=containerMap.begin();it!=containerMap.end();it++)
+    ((*it).second)->decrRef();
+  containerMap.clear();
+}
+
 //! Create a new Container and store it in containerMap
 /*!
  * \param name: the container name and key in containerMap
@@ -579,4 +585,48 @@ Proc* Proc::getProc()
 const Proc * Proc::getProc() const
 {
   return this;
+}
+
+/*!
+ * This method is useful if this has been modified recursively and an update is needed between all the
+ * containers and components refered by children and little children and maps.
+ */
+void Proc::updateContainersAndComponents()
+{
+  std::map<std::string, Container*> myContainerMap;
+  std::map<std::string, ComponentInstance*> myComponentInstanceMap;
+  DeploymentTree treeToDup(getDeploymentTree());
+  vector<Container *> conts(treeToDup.getAllContainers());
+  for(vector<Container *>::const_iterator iterCt=conts.begin();iterCt!=conts.end();iterCt++)
+    {
+      Container *tmp(*iterCt);
+      if(tmp)
+        {
+          if(myContainerMap.find(tmp->getName())!=myContainerMap.end())
+            {
+              std::ostringstream oss; oss << "Proc::updateContainersAndComponents : more than one container instance with name \"" << tmp->getName() << "\" !";
+              throw YACS::Exception(oss.str());
+            }
+          myContainerMap[tmp->getName()]=tmp;
+          tmp->incrRef();
+        }
+      vector<ComponentInstance *> comps=treeToDup.getComponentsLinkedToContainer(*iterCt);
+      for(vector<ComponentInstance *>::iterator iterCp=comps.begin();iterCp!=comps.end();iterCp++)
+        {
+          ComponentInstance *tmp2(*iterCp);
+          if(tmp2)
+            {
+              if(myComponentInstanceMap.find(tmp2->getCompoName())!=myComponentInstanceMap.end())
+                {
+                  std::ostringstream oss; oss << "Proc::updateContainersAndComponents : more than one component instance with name \"" << tmp2->getCompoName() << "\" !";
+                  throw YACS::Exception(oss.str());
+                }
+            }
+          myComponentInstanceMap[tmp2->getCompoName()]=tmp2;
+          tmp2->incrRef();
+        }
+    }
+  removeContainers();
+  containerMap=myContainerMap;
+  componentInstanceMap=myComponentInstanceMap;
 }

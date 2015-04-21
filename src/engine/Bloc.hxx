@@ -58,7 +58,8 @@ namespace YACS
       void findAllPathsStartingFrom(Node *start, std::list< std::vector<Node *> >& vec, std::map<Node *, std::set<Node *> >& accelStr) const;
       template<bool direction>
       void findAllNodesStartingFrom(Node *start, std::set<Node *>& result, std::map<Node *, std::set<Node *> >& accelStr, LinkInfo& info) const;
-      virtual std::string typeName() {return "YACS__ENGINE__Bloc";}
+      virtual std::string typeName() { return "YACS__ENGINE__Bloc"; }
+      int getMaxLevelOfParallelism() const;
     protected:
       bool areAllSubNodesFinished() const;
       bool areAllSubNodesDone() const;

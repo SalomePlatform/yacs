@@ -28,6 +28,9 @@
 using namespace YACS::ENGINE;
 using namespace std;
 
+const char InlineNode::LOCAL_STR[]="local";
+
+const char InlineNode::REMOTE_STR[]="remote";
 
 InlineNode::~InlineNode()
 {
@@ -82,7 +85,7 @@ void InlineFuncNode::checkBasicConsistency() const throw(YACS::Exception)
 void InlineNode::setExecutionMode(const std::string& mode)
 {
   if(mode == _mode)return;
-  if(mode == "local"||mode == "remote")
+  if(mode == LOCAL_STR || mode == REMOTE_STR)
     {
       _mode=mode;
       modified();
@@ -130,7 +133,7 @@ void InlineNode::performShallowDuplicationOfPlacement(const Node& other)
 
 bool InlineNode::isDeployable() const
 {
-  if(_mode=="remote")
+  if(_mode==REMOTE_STR)
     return true;
   else
     return false;

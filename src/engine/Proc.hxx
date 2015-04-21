@@ -63,6 +63,7 @@ namespace YACS
       virtual void accept(Visitor *visitor);
       virtual Proc *getProc();
       virtual const Proc *getProc() const;
+      virtual void updateContainersAndComponents();
 
       YACS::StatesForNode getNodeState(int numId);
       std::string getNodeProgress(int numId);
@@ -97,6 +98,8 @@ namespace YACS
       virtual void modified();
       virtual void saveSchema(const std::string& xmlSchemaFile);
       virtual void saveState(const std::string& xmlStateFile);
+    protected:
+      void removeContainers();
     protected:
       bool _edition;
       int _compoinstctr;

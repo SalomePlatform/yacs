@@ -172,6 +172,7 @@ namespace YACS
       std::list<Node *> edGetDirectDescendants() const;
       std::list<InputPort *> getSetOfInputPort() const;
       int getNumberOfInputPorts() const;
+      int getMaxLevelOfParallelism() const;
       Node *getChildByShortName(const std::string& name) const throw(Exception);
       static TypeCode* MappingDF2DS(TypeCode* type) throw(Exception);
       static TypeCode* MappingDS2DF(TypeCode* type) throw(Exception);
