@@ -543,7 +543,7 @@
     </message>
     <message>
         <source>Put Graph Content in Node</source>
-        <translation type="unfinished">Put Graph Content in Node</translation>
+        <translation>Mettre le contenu du graphe dans le nœud</translation>
     </message>
     <message>
         <source>arrange nodes on that bloc level, without recursion</source>
@@ -595,11 +595,11 @@
     </message>
     <message>
         <source>shrink or expand direct children of the selected node</source>
-        <translation type="unfinished">contracter ou étendre le noeud choisi</translation>
+        <translation>contracter ou étendre le noeud choisi</translation>
     </message>
     <message>
         <source>shrink or expand elementary nodes of the selected node recursively</source>
-        <translation type="unfinished">contracter ou étendre le noeud choisi</translation>
+        <translation>contracter ou étendre le noeud choisi</translation>
     </message>
     <message>
         <source>shrink/expand</source>
@@ -607,11 +607,11 @@
     </message>
     <message>
         <source>shrink/expand children</source>
-        <translation type="unfinished">contracter/étendre</translation>
+        <translation >contracter/étendre</translation>
     </message>
     <message>
         <source>shrink/expand elementary</source>
-        <translation type="unfinished">contracter/étendre</translation>
+        <translation>contracter/étendre</translation>
     </message>
     <message>
         <source>draw straight or orthogonal links</source>
