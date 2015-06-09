@@ -20,6 +20,7 @@
 #include "xmlrpcParsers.hxx"
 #include "dataParsers.hxx"
 #include <sstream>
+#include <iomanip>
 
 namespace YACS
 {
@@ -50,7 +51,7 @@ static std::string t4[]={"string","objref","double","int","boolean","array","str
   void valuetypeParser::double_ (const double& d)
     {
       std::ostringstream os;
-      os << "<double>"<< d<< "</double>";
+      os << "<double>"<< std::setprecision(16) << d<< "</double>";
       _data=os.str();
       _v.push_back(_data);
     }

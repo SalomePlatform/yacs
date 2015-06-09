@@ -26,6 +26,7 @@
 #include "YacsTrace.hxx"
 
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 
 using namespace YACS::ENGINE;
@@ -132,7 +133,7 @@ std::string AnyInputPort::dump()
   switch (_value->getType()->kind())
     {
     case Double:
-      xmldump << "<value><double>" << _value->getDoubleValue() << "</double></value>" << endl;
+      xmldump << "<value><double>" << setprecision(16) << _value->getDoubleValue() << "</double></value>" << endl;
       break;
     case Int:
       xmldump << "<value><int>" << _value->getIntValue() << "</int></value>" << endl;

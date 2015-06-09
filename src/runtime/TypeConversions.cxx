@@ -35,6 +35,7 @@
 #include "SALOME_GenericObj.hh"
 
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 
 #ifdef WIN32
@@ -1423,7 +1424,7 @@ namespace YACS
       static inline std::string convert(const TypeCode *t,double o)
         {
           stringstream msg ;
-          msg << "<value><double>" << o << "</double></value>\n";
+          msg << "<value><double>" << setprecision(16) << o << "</double></value>\n";
           return msg.str();
         }
     };

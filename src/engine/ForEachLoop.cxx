@@ -25,6 +25,7 @@
 #include "AutoLocker.hxx"
 
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 
 //#define _DEVDEBUG_
@@ -175,7 +176,7 @@ std::string SeqAnyInputPort::dump()
       switch (val->getType()->kind())
         {
         case Double:
-          xmldump << "<value><double>" << val->getDoubleValue() << "</double></value>" << endl;
+          xmldump << "<value><double>" << setprecision(16) << val->getDoubleValue() << "</double></value>" << endl;
           break;
         case Int:
           xmldump << "<value><int>" << val->getIntValue() << "</int></value>" << endl;

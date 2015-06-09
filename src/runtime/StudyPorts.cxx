@@ -28,6 +28,7 @@
 #include "SALOMEDS_Attributes.hh"
 
 #include <iostream>
+#include <iomanip>
 #include <cstdlib>
 
 //#define _DEVDEBUG_
@@ -184,7 +185,7 @@ void OutputStudyPort::getDataFromStudy(SALOMEDS::Study_var myStudy)
               SALOMEDS::AttributeReal_var anAttr = SALOMEDS::AttributeReal::_narrow( aGAttr );
               CORBA::Double d=anAttr->Value();
               std::stringstream msg;
-              msg << "<value><double>" << d << "</double></value>";
+              msg << "<value><double>" << std::setprecision(16) << d << "</double></value>";
               put(msg.str().c_str());
             }
           else
