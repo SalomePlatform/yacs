@@ -44,9 +44,11 @@ INCLUDE_DIRECTORIES(
 SET (SWIG_MODULE_PMML_EXTRA_DEPS ${PMML_SWIG_DPYS_FILES} 
     ${pmml_HEADERS_HXX} ${pmml_HEADERS_TXX})
 
+# Enusre proper dependencies mechanism for CMake since SWIG generates files 
+# whose names are built from the SWIG *module* name, and not .i file name:
+SET_SOURCE_FILES_PROPERTIES(PMMLsalome.i PROPERTIES SWIG_MODULE_NAME PMML)
 SWIG_ADD_MODULE(PMML python PMMLsalome.i)
 SWIG_LINK_LIBRARIES(PMML ${PYTHON_LIBRARIES} ${PLATFORM_LIBS} pmmlLib)
-
 
 # _ABR_ Ensure dependency mechanism on all SWIG files and headers
 
