@@ -127,9 +127,9 @@ static void convertPyToDblArr(PyObject *pyLi, std::vector<double>& arr)
 %newobject YACSEvalYFX::BuildFromFile;
 %newobject YACSEvalYFX::BuildFromScheme;
 
-%typemap(out) std::list<YACSEvalInputPort *>
+%typemap(out) std::vector<YACSEvalInputPort *>
 {
-  std::list<YACSEvalInputPort *>::const_iterator it;
+  std::vector<YACSEvalInputPort *>::const_iterator it;
   $result = PyList_New($1.size());
   int i = 0;
   for (it = $1.begin(); it != $1.end(); ++it, ++i)
@@ -138,9 +138,9 @@ static void convertPyToDblArr(PyObject *pyLi, std::vector<double>& arr)
     }
 }
 
-%typemap(out) std::list<YACSEvalOutputPort *>
+%typemap(out) std::vector<YACSEvalOutputPort *>
 {
-  std::list<YACSEvalOutputPort *>::const_iterator it;
+  std::vector<YACSEvalOutputPort *>::const_iterator it;
   $result = PyList_New($1.size());
   int i = 0;
   for (it = $1.begin(); it != $1.end(); ++it, ++i)
@@ -344,8 +344,8 @@ class YACSEvalYFX
 public:
   static YACSEvalYFX *BuildFromFile(const std::string& xmlOfScheme);
   static YACSEvalYFX *BuildFromScheme(YACS::ENGINE::Proc *schema);
-  std::list<YACSEvalInputPort *> getFreeInputPorts() const;
-  std::list<YACSEvalOutputPort *> getFreeOutputPorts() const;
+  std::vector<YACSEvalInputPort *> getFreeInputPorts() const;
+  std::vector<YACSEvalOutputPort *> getFreeOutputPorts() const;
   void unlockAll();
   bool isLocked() const;
   YACS::ENGINE::Proc *getUndergroundGeneratedGraph() const;
@@ -354,7 +354,7 @@ public:
      {
        void lockPortsForEvaluation(PyObject *outputsOfInterest)
        {
-         std::list<YACSEvalOutputPort *> outputsOfInterestCpp;
+         std::vector<YACSEvalOutputPort *> outputsOfInterestCpp;
          if(PyList_Check(outputsOfInterest))
            {
              int size(PyList_Size(outputsOfInterest));

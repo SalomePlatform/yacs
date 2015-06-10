@@ -23,7 +23,6 @@
 
 #include "YACSEvalPort.hxx"
 
-#include <list>
 #include <vector>
 
 namespace YACS
@@ -44,8 +43,8 @@ class YACSEvalYFXPattern
 {
 public:
   virtual ~YACSEvalYFXPattern();
-  std::list< YACSEvalInputPort *> getFreeInputPorts() const;
-  std::list< YACSEvalOutputPort *> getFreeOutputPorts() const;
+  std::vector< YACSEvalInputPort *> getFreeInputPorts() const;
+  std::vector< YACSEvalOutputPort *> getFreeOutputPorts() const;
   static YACSEvalYFXPattern *FindPatternFrom(YACS::ENGINE::Proc *scheme, bool ownScheme);
   bool isAlreadyComputedResources() const;
   void checkNonAlreadyComputedResources() const;
@@ -53,7 +52,7 @@ public:
   void checkLocked() const;
   void checkNonLocked() const;
   static void CheckNodeIsOK(YACS::ENGINE::ComposedNode *node);
-  virtual void setOutPortsOfInterestForEvaluation(std::size_t commonSize, const std::list<YACSEvalOutputPort *>& outputs) = 0;
+  virtual void setOutPortsOfInterestForEvaluation(std::size_t commonSize, const std::vector<YACSEvalOutputPort *>& outputs) = 0;
   virtual void resetOutputsOfInterest() = 0;
   virtual void generateGraph() = 0;
   virtual void resetGeneratedGraph() = 0;
@@ -80,15 +79,15 @@ private:
   ResourcesManager_cpp *_rm;
   YACSEvalListOfResources *_res;
 protected:
-  std::list< YACSEvalInputPort > _inputs;
-  std::list< YACSEvalOutputPort > _outputs;
+  std::vector< YACSEvalInputPort > _inputs;
+  std::vector< YACSEvalOutputPort > _outputs;
 };
 
 class YACSEvalYFXRunOnlyPattern : public YACSEvalYFXPattern
 {
 public:
   YACSEvalYFXRunOnlyPattern(YACS::ENGINE::Proc *scheme, bool ownScheme, YACS::ENGINE::ComposedNode *runNode);
-  void setOutPortsOfInterestForEvaluation(std::size_t commonSize, const std::list<YACSEvalOutputPort *>& outputsOfInterest);
+  void setOutPortsOfInterestForEvaluation(std::size_t commonSize, const std::vector<YACSEvalOutputPort *>& outputsOfInterest);
   void resetOutputsOfInterest();
   void generateGraph();
   void resetGeneratedGraph();
@@ -106,7 +105,7 @@ private:
 private:
   YACS::ENGINE::ComposedNode *_runNode;
   std::size_t _commonSz;
-  std::list<YACSEvalOutputPort *> _outputsOfInterest;
+  std::vector<YACSEvalOutputPort *> _outputsOfInterest;
   YACS::ENGINE::Proc *_generatedGraph;
 };
 

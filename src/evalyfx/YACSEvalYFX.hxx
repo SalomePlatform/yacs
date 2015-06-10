@@ -23,7 +23,6 @@
 
 #include "YACSEvalYFXExport.hxx"
 
-#include <list>
 #include <string>
 #include <vector>
 
@@ -47,9 +46,9 @@ class YACSEvalYFX
 public:
   YACSEVALYFX_EXPORT static YACSEvalYFX *BuildFromFile(const std::string& xmlOfScheme);
   YACSEVALYFX_EXPORT static YACSEvalYFX *BuildFromScheme(YACS::ENGINE::Proc *scheme);
-  YACSEVALYFX_EXPORT std::list< YACSEvalInputPort * > getFreeInputPorts() const;
-  YACSEVALYFX_EXPORT std::list< YACSEvalOutputPort * > getFreeOutputPorts() const;
-  YACSEVALYFX_EXPORT void lockPortsForEvaluation(const std::list< YACSEvalOutputPort * >& outputsOfInterest);
+  YACSEVALYFX_EXPORT std::vector< YACSEvalInputPort * > getFreeInputPorts() const;
+  YACSEVALYFX_EXPORT std::vector< YACSEvalOutputPort * > getFreeOutputPorts() const;
+  YACSEVALYFX_EXPORT void lockPortsForEvaluation(const std::vector< YACSEvalOutputPort * >& outputsOfInterest);
   YACSEVALYFX_EXPORT void unlockAll();
   YACSEVALYFX_EXPORT bool isLocked() const;
   YACSEVALYFX_EXPORT YACSEvalListOfResources *giveResources();
@@ -60,7 +59,7 @@ public:
   YACSEVALYFX_EXPORT ~YACSEvalYFX();
 private:
   YACSEvalYFX(YACS::ENGINE::Proc *scheme, bool ownScheme);
-  std::size_t checkPortsForEvaluation(const std::list< YACSEvalOutputPort * >& outputs) const;
+  std::size_t checkPortsForEvaluation(const std::vector< YACSEvalOutputPort * >& outputs) const;
 private:
   YACSEvalYFXPattern *_pattern;
 };

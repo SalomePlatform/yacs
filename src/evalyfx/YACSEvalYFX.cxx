@@ -60,17 +60,17 @@ YACSEvalYFX *YACSEvalYFX::BuildFromScheme(YACS::ENGINE::Proc *scheme)
   return new YACSEvalYFX(scheme,false);
 }
 
-std::list< YACSEvalInputPort * > YACSEvalYFX::getFreeInputPorts() const
+std::vector< YACSEvalInputPort * > YACSEvalYFX::getFreeInputPorts() const
 {
   return _pattern->getFreeInputPorts();
 }
 
-std::list< YACSEvalOutputPort * > YACSEvalYFX::getFreeOutputPorts() const
+std::vector< YACSEvalOutputPort * > YACSEvalYFX::getFreeOutputPorts() const
 {
   return _pattern->getFreeOutputPorts();
 }
 
-void YACSEvalYFX::lockPortsForEvaluation(const std::list< YACSEvalOutputPort * >& outputsOfInterest)
+void YACSEvalYFX::lockPortsForEvaluation(const std::vector< YACSEvalOutputPort * >& outputsOfInterest)
 {
   std::size_t sz(checkPortsForEvaluation(outputsOfInterest));
   _pattern->setOutPortsOfInterestForEvaluation(sz,outputsOfInterest);
@@ -79,8 +79,8 @@ void YACSEvalYFX::lockPortsForEvaluation(const std::list< YACSEvalOutputPort * >
 
 void YACSEvalYFX::unlockAll()
 {
-  std::list< YACSEvalInputPort * > allInputs(getFreeInputPorts());
-  for(std::list< YACSEvalInputPort * >::const_iterator it=allInputs.begin();it!=allInputs.end();it++)
+  std::vector< YACSEvalInputPort * > allInputs(getFreeInputPorts());
+  for(std::vector< YACSEvalInputPort * >::const_iterator it=allInputs.begin();it!=allInputs.end();it++)
     (*it)->unlock();
   _pattern->resetOutputsOfInterest();
   _pattern->resetGeneratedGraph();
@@ -136,12 +136,12 @@ YACSEvalYFX::YACSEvalYFX(YACS::ENGINE::Proc *scheme, bool ownScheme):_pattern(0)
   _pattern=YACSEvalYFXPattern::FindPatternFrom(scheme,ownScheme);
 }
 
-std::size_t YACSEvalYFX::checkPortsForEvaluation(const std::list< YACSEvalOutputPort * >& outputs) const
+std::size_t YACSEvalYFX::checkPortsForEvaluation(const std::vector< YACSEvalOutputPort * >& outputs) const
 {
-  std::list< YACSEvalInputPort * > allInputs(getFreeInputPorts());
-  std::list< YACSEvalOutputPort * > allOutputs(getFreeOutputPorts());
+  std::vector< YACSEvalInputPort * > allInputs(getFreeInputPorts());
+  std::vector< YACSEvalOutputPort * > allOutputs(getFreeOutputPorts());
   std::size_t sz(std::numeric_limits<std::size_t>::max());
-  for(std::list< YACSEvalInputPort * >::const_iterator it=allInputs.begin();it!=allInputs.end();it++)
+  for(std::vector< YACSEvalInputPort * >::const_iterator it=allInputs.begin();it!=allInputs.end();it++)
     {
       std::size_t mySz;
       if(!(*it)->isOKForLock() && !(*it)->hasSequenceOfValuesToEval(mySz))
@@ -163,13 +163,13 @@ std::size_t YACSEvalYFX::checkPortsForEvaluation(const std::list< YACSEvalOutput
             }
         }
     }
-  for(std::list< YACSEvalOutputPort * >::const_iterator it=outputs.begin();it!=outputs.end();it++)
+  for(std::vector< YACSEvalOutputPort * >::const_iterator it=outputs.begin();it!=outputs.end();it++)
     if(std::find(allOutputs.begin(),allOutputs.end(),*it)==allOutputs.end())
       throw YACS::Exception("YACSEvalYFX::lockPortsForEvaluation : one of output is not part of this !");
   std::set< YACSEvalOutputPort * > soutputs(outputs.begin(),outputs.end());
   if(soutputs.size()!=outputs.size())
     throw YACS::Exception("YACSEvalYFX::lockPortsForEvaluation : each elt in outputs must appear once !");
-  for(std::list< YACSEvalInputPort * >::const_iterator it=allInputs.begin();it!=allInputs.end();it++)
+  for(std::vector< YACSEvalInputPort * >::const_iterator it=allInputs.begin();it!=allInputs.end();it++)
     (*it)->lock();
   return sz;
 }

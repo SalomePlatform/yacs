@@ -46,21 +46,21 @@ const char YACSEvalYFXPattern::DFT_PROC_NAME[]="YFX";
 
 const char YACSEvalYFXRunOnlyPattern::GATHER_NODE_NAME[]="__gather__";
 
-std::list< YACSEvalInputPort *> YACSEvalYFXPattern::getFreeInputPorts() const
+std::vector< YACSEvalInputPort *> YACSEvalYFXPattern::getFreeInputPorts() const
 {
   std::size_t sz(_inputs.size());
-  std::list< YACSEvalInputPort *> ret;
-  std::list< YACSEvalInputPort >::const_iterator it(_inputs.begin());
+  std::vector< YACSEvalInputPort *> ret;
+  std::vector< YACSEvalInputPort >::const_iterator it(_inputs.begin());
   for(std::size_t i=0;i<sz;i++,it++)
     ret.push_back(const_cast<YACSEvalInputPort *>(&(*it)));
   return ret;
 }
 
-std::list< YACSEvalOutputPort *> YACSEvalYFXPattern::getFreeOutputPorts() const
+std::vector< YACSEvalOutputPort *> YACSEvalYFXPattern::getFreeOutputPorts() const
 {
   std::size_t sz(_outputs.size());
-  std::list< YACSEvalOutputPort *> ret;
-  std::list< YACSEvalOutputPort >::const_iterator it(_outputs.begin());
+  std::vector< YACSEvalOutputPort *> ret;
+  std::vector< YACSEvalOutputPort >::const_iterator it(_outputs.begin());
   for(std::size_t i=0;i<sz;i++,it++)
     ret.push_back(const_cast<YACSEvalOutputPort *>(&(*it)));
   return ret;
@@ -235,7 +235,7 @@ YACSEvalYFXRunOnlyPattern::YACSEvalYFXRunOnlyPattern(YACS::ENGINE::Proc *scheme,
   buildOutputPorts();
 }
 
-void YACSEvalYFXRunOnlyPattern::setOutPortsOfInterestForEvaluation(std::size_t commonSize, const std::list<YACSEvalOutputPort *>& outputsOfInterest)
+void YACSEvalYFXRunOnlyPattern::setOutPortsOfInterestForEvaluation(std::size_t commonSize, const std::vector<YACSEvalOutputPort *>& outputsOfInterest)
 {
   checkNonLocked();
   _commonSz=commonSize;
@@ -267,7 +267,7 @@ void YACSEvalYFXRunOnlyPattern::generateGraph()
   YACS::ENGINE::TypeCode *listPyobjTC(_generatedGraph->createSequenceTc(LISTPYOBJ_STR,LISTPYOBJ_STR,pyobjTC));
   YACS::ENGINE::OutputPort *sender(n0->edAddOutputPort("sender",listPyobjTC));
   std::ostringstream var0;
-  for(std::list< YACSEvalInputPort >::const_iterator it=_inputs.begin();it!=_inputs.end();it++)
+  for(std::vector< YACSEvalInputPort >::const_iterator it=_inputs.begin();it!=_inputs.end();it++)
     {
       std::size_t dummy;
       if((*it).hasSequenceOfValuesToEval(dummy))
@@ -302,7 +302,7 @@ void YACSEvalYFXRunOnlyPattern::generateGraph()
   n10->edAddCFLink(n100,n101);
   n1->edAddDFLink(n1->edGetSamplePort(),dispatchIn);
   std::ostringstream var1;
-  for(std::list< YACSEvalInputPort >::const_iterator it=_inputs.begin();it!=_inputs.end();it++)
+  for(std::vector< YACSEvalInputPort >::const_iterator it=_inputs.begin();it!=_inputs.end();it++)
     {
       std::size_t dummy;
       if((*it).hasSequenceOfValuesToEval(dummy))
@@ -316,7 +316,7 @@ void YACSEvalYFXRunOnlyPattern::generateGraph()
     }
   std::ostringstream n100Script;  n100Script << var1.str() << "=i0\n";
   n100->setScript(n100Script.str());
-  for(std::list< YACSEvalOutputPort * >::const_iterator it=_outputsOfInterest.begin();it!=_outputsOfInterest.end();it++)
+  for(std::vector< YACSEvalOutputPort * >::const_iterator it=_outputsOfInterest.begin();it!=_outputsOfInterest.end();it++)
     {
       YACS::ENGINE::TypeCode *tc(createSeqTypeCodeFrom(_generatedGraph,(*it)->getTypeOfData()));
       YACS::ENGINE::InputPort *myIn(n2->edAddInputPort((*it)->getName(),tc));
@@ -401,7 +401,7 @@ std::vector<YACSEvalSeqAny *> YACSEvalYFXRunOnlyPattern::getResults() const
   if(!nodeC)
     throw YACS::Exception("YACSEvalYFXRunOnlyPattern::getResults : internal error !");
   std::size_t ii(0);
-  for(std::list< YACSEvalOutputPort * >::const_iterator it=_outputsOfInterest.begin();it!=_outputsOfInterest.end();it++,ii++)
+  for(std::vector< YACSEvalOutputPort * >::const_iterator it=_outputsOfInterest.begin();it!=_outputsOfInterest.end();it++,ii++)
     {
       YACS::ENGINE::InPort *input(nodeC->getInPort((*it)->getName()));
       YACS::ENGINE::InputPyPort *inputC(dynamic_cast<YACS::ENGINE::InputPyPort *>(input));
