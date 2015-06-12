@@ -52,10 +52,11 @@ public:
   void checkLocked() const;
   void checkNonLocked() const;
   static void CheckNodeIsOK(YACS::ENGINE::ComposedNode *node);
-  virtual void setOutPortsOfInterestForEvaluation(std::size_t commonSize, const std::vector<YACSEvalOutputPort *>& outputs) = 0;
+  virtual void setOutPortsOfInterestForEvaluation(const std::vector<YACSEvalOutputPort *>& outputs) = 0;
   virtual void resetOutputsOfInterest() = 0;
   virtual void generateGraph() = 0;
   virtual void resetGeneratedGraph() = 0;
+  virtual void assignRandomVarsInputs() = 0;
   virtual int assignNbOfBranches() = 0;
   virtual bool isLocked() const = 0;
   virtual YACSEvalListOfResources *giveResources() = 0;
@@ -87,11 +88,12 @@ class YACSEvalYFXRunOnlyPattern : public YACSEvalYFXPattern
 {
 public:
   YACSEvalYFXRunOnlyPattern(YACS::ENGINE::Proc *scheme, bool ownScheme, YACS::ENGINE::ComposedNode *runNode);
-  void setOutPortsOfInterestForEvaluation(std::size_t commonSize, const std::vector<YACSEvalOutputPort *>& outputsOfInterest);
+  void setOutPortsOfInterestForEvaluation(const std::vector<YACSEvalOutputPort *>& outputsOfInterest);
   void resetOutputsOfInterest();
   void generateGraph();
   void resetGeneratedGraph();
   int assignNbOfBranches();
+  void assignRandomVarsInputs();
   bool isLocked() const;
   YACSEvalListOfResources *giveResources();
   YACS::ENGINE::Proc *getUndergroundGeneratedGraph() const;
@@ -104,7 +106,6 @@ private:
   void buildOutputPorts();
 private:
   YACS::ENGINE::ComposedNode *_runNode;
-  std::size_t _commonSz;
   std::vector<YACSEvalOutputPort *> _outputsOfInterest;
   YACS::ENGINE::Proc *_generatedGraph;
 };

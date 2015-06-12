@@ -100,21 +100,26 @@ public:
   YACSEVALYFX_EXPORT YACSEvalAny *getDefaultValueDefined() const;
   YACSEVALYFX_EXPORT void setDefaultValue(const YACSEvalAny *parameter);
   YACSEVALYFX_EXPORT void setSequenceOfValuesToEval(const YACSEvalSeqAny* vals);
-  YACSEVALYFX_EXPORT bool hasSequenceOfValuesToEval(std::size_t& sz) const;
+  YACSEVALYFX_EXPORT bool hasSequenceOfValuesToEval() const;
+  YACSEVALYFX_EXPORT bool isRandomVar() const { return _isRandom; }
+  YACSEVALYFX_EXPORT void declareRandomnessStatus(bool isRandom);
   //
   YACSEVALYFX_EXPORT YACS::ENGINE::InputPort *getUndergroundPtr() const { return _ptr; }
-  YACSEVALYFX_EXPORT void initializeUndergroundWithSeq(YACS::ENGINE::InputPyPort *p) const;
+  YACSEVALYFX_EXPORT std::size_t initializeUndergroundWithSeq() const;
   //
   YACSEVALYFX_EXPORT virtual ~YACSEvalInputPort();
   void lock() const { _isLocked=true; }
-  void unlock() const { _isLocked=false; }
+  void unlock() const { _isLocked=false; _isRandom=false; }
+  void setUndergroundPortToBeSet(YACS::ENGINE::InputPyPort *p) const;
 private:
   YACSEvalAny *convertFromInternalAnyToExternal(YACS::ENGINE::Any *data) const;
   void checkForNonConstMethod() const;
 private:
   YACS::ENGINE::InputPort * _ptr;
   YACSEvalSeqAny *_mySeq;
+  mutable bool _isRandom;
   mutable bool _isLocked;
+  mutable YACS::ENGINE::InputPyPort *_undergroundPort;
 };
 
 class YACSEvalOutputPort : public YACSEvalPort

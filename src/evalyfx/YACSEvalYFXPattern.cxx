@@ -39,6 +39,7 @@
 #include "ResourcesManager.hxx"
 
 #include <map>
+#include <limits>
 #include <numeric>
 #include <sstream>
 
@@ -227,7 +228,7 @@ YACSEvalYFXPattern::~YACSEvalYFXPattern()
   delete _res;
 }
 
-YACSEvalYFXRunOnlyPattern::YACSEvalYFXRunOnlyPattern(YACS::ENGINE::Proc *scheme, bool ownScheme, YACS::ENGINE::ComposedNode *runNode):YACSEvalYFXPattern(scheme,ownScheme),_runNode(runNode),_commonSz(0),_generatedGraph(0)
+YACSEvalYFXRunOnlyPattern::YACSEvalYFXRunOnlyPattern(YACS::ENGINE::Proc *scheme, bool ownScheme, YACS::ENGINE::ComposedNode *runNode):YACSEvalYFXPattern(scheme,ownScheme),_runNode(runNode),_generatedGraph(0)
 {
   if(!_runNode)
     throw YACS::Exception("YACSEvalYFXRunOnlyPattern : internal run node must be not null !");
@@ -235,24 +236,22 @@ YACSEvalYFXRunOnlyPattern::YACSEvalYFXRunOnlyPattern(YACS::ENGINE::Proc *scheme,
   buildOutputPorts();
 }
 
-void YACSEvalYFXRunOnlyPattern::setOutPortsOfInterestForEvaluation(std::size_t commonSize, const std::vector<YACSEvalOutputPort *>& outputsOfInterest)
+void YACSEvalYFXRunOnlyPattern::setOutPortsOfInterestForEvaluation(const std::vector<YACSEvalOutputPort *>& outputsOfInterest)
 {
   checkNonLocked();
-  _commonSz=commonSize;
   _outputsOfInterest=outputsOfInterest;
 }
 
 void YACSEvalYFXRunOnlyPattern::resetOutputsOfInterest()
 {
   checkLocked();
-  _commonSz=0;
   _outputsOfInterest.clear();
 }
 
 void YACSEvalYFXRunOnlyPattern::generateGraph()
 {
   static const char LISTPYOBJ_STR[]="list[pyobj]";
-  if(_commonSz==0 || _outputsOfInterest.empty())
+  if(_outputsOfInterest.empty())
     return ;
   YACS::ENGINE::RuntimeSALOME::setRuntime();
   YACS::ENGINE::RuntimeSALOME *r(YACS::ENGINE::getSALOMERuntime());
@@ -269,8 +268,7 @@ void YACSEvalYFXRunOnlyPattern::generateGraph()
   std::ostringstream var0;
   for(std::vector< YACSEvalInputPort >::const_iterator it=_inputs.begin();it!=_inputs.end();it++)
     {
-      std::size_t dummy;
-      if((*it).hasSequenceOfValuesToEval(dummy))
+      if((*it).isRandomVar())
         {
           var0 << (*it).getName() << ",";
           YACS::ENGINE::TypeCode *tc(createSeqTypeCodeFrom(_generatedGraph,(*it).getTypeOfData()));
@@ -278,7 +276,7 @@ void YACSEvalYFXRunOnlyPattern::generateGraph()
           YACS::ENGINE::InputPyPort *inpc(dynamic_cast<YACS::ENGINE::InputPyPort *>(inp));
           if(!inpc)
             throw YACS::Exception("YACSEvalYFXRunOnlyPattern::generateGraph : internal error 1 !");
-          (*it).initializeUndergroundWithSeq(inpc);
+          (*it).setUndergroundPortToBeSet(inpc);
         }
     }
   std::ostringstream n0Script; n0Script << "sender=zip(" << var0.str() << ")\n";
@@ -304,8 +302,7 @@ void YACSEvalYFXRunOnlyPattern::generateGraph()
   std::ostringstream var1;
   for(std::vector< YACSEvalInputPort >::const_iterator it=_inputs.begin();it!=_inputs.end();it++)
     {
-      std::size_t dummy;
-      if((*it).hasSequenceOfValuesToEval(dummy))
+      if((*it).isRandomVar())
         {
           var1 << (*it).getName() << ",";
           YACS::ENGINE::OutputPort *myOut(n100->edAddOutputPort((*it).getName(),_generatedGraph->getTypeCode((*it).getTypeOfData())));
@@ -367,6 +364,21 @@ int YACSEvalYFXRunOnlyPattern::assignNbOfBranches()
   zeInputToSetC->exSaveInit();
   a->decrRef();
   return nbOfBranch;
+}
+
+void YACSEvalYFXRunOnlyPattern::assignRandomVarsInputs()
+{
+  std::size_t sz(std::numeric_limits<std::size_t>::max());
+  for(std::vector< YACSEvalInputPort >::const_iterator it=_inputs.begin();it!=_inputs.end();it++)
+    if((*it).isRandomVar())
+      {
+        std::size_t locSize((*it).initializeUndergroundWithSeq());
+        if(sz==std::numeric_limits<std::size_t>::max())
+          sz=locSize;
+        else
+          if(sz!=locSize)
+            throw YACS::Exception("YACSEvalYFXRunOnlyPattern::assignRandomVarsInputs : length of sequences in random vars must be the same !");
+      }
 }
 
 bool YACSEvalYFXRunOnlyPattern::isLocked() const

@@ -70,10 +70,10 @@ std::vector< YACSEvalOutputPort * > YACSEvalYFX::getFreeOutputPorts() const
   return _pattern->getFreeOutputPorts();
 }
 
-void YACSEvalYFX::lockPortsForEvaluation(const std::vector< YACSEvalOutputPort * >& outputsOfInterest)
+void YACSEvalYFX::lockPortsForEvaluation(const std::vector< YACSEvalInputPort * >& inputsOfInterest, const std::vector< YACSEvalOutputPort * >& outputsOfInterest)
 {
-  std::size_t sz(checkPortsForEvaluation(outputsOfInterest));
-  _pattern->setOutPortsOfInterestForEvaluation(sz,outputsOfInterest);
+  checkPortsForEvaluation(inputsOfInterest,outputsOfInterest);
+  _pattern->setOutPortsOfInterestForEvaluation(outputsOfInterest);
   _pattern->generateGraph();
 }
 
@@ -98,6 +98,7 @@ YACSEvalListOfResources *YACSEvalYFX::giveResources()
 
 bool YACSEvalYFX::run(YACSEvalSession *session, int& nbOfBranches)
 {
+  _pattern->assignRandomVarsInputs();
   YACSEvalListOfResources *rss(giveResources());
   if(!rss->isInteractive())
     throw YACS::Exception("YACSEvalYFX::run : not implemented yet for non interactive !");
@@ -136,30 +137,19 @@ YACSEvalYFX::YACSEvalYFX(YACS::ENGINE::Proc *scheme, bool ownScheme):_pattern(0)
   _pattern=YACSEvalYFXPattern::FindPatternFrom(scheme,ownScheme);
 }
 
-std::size_t YACSEvalYFX::checkPortsForEvaluation(const std::vector< YACSEvalOutputPort * >& outputs) const
+void YACSEvalYFX::checkPortsForEvaluation(const std::vector< YACSEvalInputPort * >& inputs, const std::vector< YACSEvalOutputPort * >& outputs) const
 {
+  std::set<YACSEvalInputPort * > inputs2(inputs.begin(),inputs.end());
   std::vector< YACSEvalInputPort * > allInputs(getFreeInputPorts());
   std::vector< YACSEvalOutputPort * > allOutputs(getFreeOutputPorts());
-  std::size_t sz(std::numeric_limits<std::size_t>::max());
   for(std::vector< YACSEvalInputPort * >::const_iterator it=allInputs.begin();it!=allInputs.end();it++)
     {
-      std::size_t mySz;
-      if(!(*it)->isOKForLock() && !(*it)->hasSequenceOfValuesToEval(mySz))
+      if(inputs2.find(*it)==inputs2.end())
         {
-          std::ostringstream oss; oss << "YACSEvalYFX::checkPortsForEvaluation : input port with name \"" << (*it)->getName() << "\" is not set properly !";
-          throw YACS::Exception(oss.str());
-        }
-      if((*it)->hasSequenceOfValuesToEval(mySz))
-        {
-          if(sz==std::numeric_limits<std::size_t>::max())
-            sz=mySz;
-          else
+          if(!(*it)->isOKForLock())
             {
-              if(sz!=mySz)
-                {
-                  std::ostringstream oss; oss << "YACSEvalYFX::checkPortsForEvaluation : input port with name \"" << (*it)->getName() << "\" is declared as to be evaluated on array ! But size of array is not the same than the others !";
-                  throw YACS::Exception(oss.str());
-                }
+              std::ostringstream oss; oss << "YACSEvalYFX::checkPortsForEvaluation : input port with name \"" << (*it)->getName() << "\" is not set properly !";
+              throw YACS::Exception(oss.str());
             }
         }
     }
@@ -170,8 +160,10 @@ std::size_t YACSEvalYFX::checkPortsForEvaluation(const std::vector< YACSEvalOutp
   if(soutputs.size()!=outputs.size())
     throw YACS::Exception("YACSEvalYFX::lockPortsForEvaluation : each elt in outputs must appear once !");
   for(std::vector< YACSEvalInputPort * >::const_iterator it=allInputs.begin();it!=allInputs.end();it++)
-    (*it)->lock();
-  return sz;
+    {
+      (*it)->declareRandomnessStatus(inputs2.find(*it)!=inputs2.end());
+      (*it)->lock();
+    }
 }
 
 YACSEvalYFX::~YACSEvalYFX()

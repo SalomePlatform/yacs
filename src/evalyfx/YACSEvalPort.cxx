@@ -78,7 +78,7 @@ std::string YACSEvalPort::GetTypeOfData(const YACS::ENGINE::DataPort *port)
   throw YACS::Exception("YACSEvalPort::GetTypeOfData : Unrecognized type of data ! Must be int or double for the moment !");
 }
 
-YACSEvalInputPort::YACSEvalInputPort(YACS::ENGINE::InputPort *ptr):_ptr(ptr),_isLocked(false),_mySeq(0)
+YACSEvalInputPort::YACSEvalInputPort(YACS::ENGINE::InputPort *ptr):_ptr(ptr),_mySeq(0),_isRandom(false),_isLocked(false),_undergroundPort(0)
 {
   GetTypeOfData(_ptr);
 }
@@ -241,7 +241,9 @@ void YACSEvalInputPort::setDefaultValue(const YACSEvalAny *parameter)
 
 void YACSEvalInputPort::setSequenceOfValuesToEval(const YACSEvalSeqAny *vals)
 {
-  checkForNonConstMethod();
+  if(!_isRandom && _isLocked)
+    throw YACS::Exception("YACSEvalInputPort::setSequenceOfValuesToEval : trying to set a sequence on a var not declared as random !");
+  //checkForNonConstMethod not called here because it is a special non const method !
   if(!vals)
     throw YACS::Exception("YACSEvalInputPort::setSequenceOfValuesToEval : input is NULL !");
   if(vals==_mySeq)
@@ -249,29 +251,42 @@ void YACSEvalInputPort::setSequenceOfValuesToEval(const YACSEvalSeqAny *vals)
   if(_mySeq)
     delete _mySeq;
   _mySeq=vals->copy();
+  _isRandom=true;
 }
 
-bool YACSEvalInputPort::hasSequenceOfValuesToEval(std::size_t& sz) const
+bool YACSEvalInputPort::hasSequenceOfValuesToEval() const
 {
-  sz=std::numeric_limits<std::size_t>::max();
-  bool ret(_mySeq!=0);
-  if(ret)
-    sz=_mySeq->size();
-  return ret;
+  return (_mySeq!=0);
 }
 
-void YACSEvalInputPort::initializeUndergroundWithSeq(YACS::ENGINE::InputPyPort *p) const
+void YACSEvalInputPort::declareRandomnessStatus(bool isRandom)
 {
-  if(!p)
-    throw YACS::Exception("YACSEvalInputPort::initializeUndergroundWithSeq : p is null !");
+  checkForNonConstMethod();
+  _isRandom=isRandom;
+  if(!_isRandom)
+    _undergroundPort=0;
+}
+
+std::size_t YACSEvalInputPort::initializeUndergroundWithSeq() const
+{
+  if(!_undergroundPort)
+    throw YACS::Exception("YACSEvalInputPort::initializeUndergroundWithSeq : internal error ! this input has not been locked properly ! Need to be locked !");
   if(!_mySeq)
     throw YACS::Exception("YACSEvalInputPort::initializeUndergroundWithSeq : this is not set as a sequence !");
-  _mySeq->initialize(p);
+  _mySeq->initialize(_undergroundPort);
+  return _mySeq->size();
 }
 
 YACSEvalInputPort::~YACSEvalInputPort()
 {
   delete _mySeq;
+}
+
+void YACSEvalInputPort::setUndergroundPortToBeSet(YACS::ENGINE::InputPyPort *p) const
+{
+  if(!_isRandom)
+    throw YACS::Exception("YACSEvalInputPort::setUndergroundPortToBeSet : trying to set a non random var !");
+  _undergroundPort=p;
 }
 
 YACSEvalAny *YACSEvalInputPort::convertFromInternalAnyToExternal(YACS::ENGINE::Any *data) const

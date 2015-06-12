@@ -56,12 +56,13 @@ outps=efx.getFreeOutputPorts()
 # prepare for execution
 inps[0].setDefaultValue(1.1)
 inps[1].setSequenceOfValuesToEval([10.1,10.2,10.3])
-a,b=inps[2].hasSequenceOfValuesToEval()
+a=inps[2].hasSequenceOfValuesToEval()
 inps[2].setSequenceOfValuesToEval([20.1,20.2,30.3,40.4])
-a,b=inps[2].hasSequenceOfValuesToEval()
+a=inps[2].hasSequenceOfValuesToEval()
 inps[2].setSequenceOfValuesToEval([20.1,20.2,30.3])
-efx.lockPortsForEvaluation([outps[0],outps[2]])
+efx.lockPortsForEvaluation([inps[1],inps[2]],[outps[0],outps[2]])
 #
+"""
 g=efx.getUndergroundGeneratedGraph()
 g.saveSchema("toto.xml")
 rss=efx.giveResources()
@@ -70,6 +71,7 @@ a,b=efx.run(session)
 assert(a)
 assert(b==4)
 assert(efx.getResults()==[[11.110000000000001, 11.22, 11.330000000000002], [93.63, 94.26, 124.89000000000001]])
+"""
 #import loader
 #import pilot
 #l=loader.YACSLoader()

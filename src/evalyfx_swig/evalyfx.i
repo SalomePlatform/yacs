@@ -190,6 +190,9 @@ public:
   std::string getName() const;
   bool hasDefaultValueDefined() const;
   YACSEvalAny *getDefaultValueDefined() const;
+  bool isRandomVar() const;
+  void declareRandomnessStatus(bool isRandom);
+  bool hasSequenceOfValuesToEval() const;
   %extend
      {
        void setDefaultValue(PyObject *parameter)
@@ -241,18 +244,6 @@ public:
            valsCpp=YACSEvalSeqAny::BuildEmptyFromType(self->getTypeOfData());
          self->setSequenceOfValuesToEval(valsCpp);
          delete valsCpp;
-       }
-
-       PyObject *hasSequenceOfValuesToEval() const
-       {
-         std::size_t ret1;
-         bool ret0(self->hasSequenceOfValuesToEval(ret1));
-         PyObject *ret(PyTuple_New(2));
-         PyObject *ret0Py=ret0?Py_True:Py_False;
-         Py_XINCREF(ret0Py);
-         PyTuple_SetItem(ret,0,ret0Py);
-         PyTuple_SetItem(ret,1,PyInt_FromLong(ret1));
-         return ret;
        }
      }
 private:
@@ -352,7 +343,7 @@ public:
   YACSEvalListOfResources *giveResources();
   %extend
      {
-       void lockPortsForEvaluation(PyObject *outputsOfInterest)
+       void lockPortsForEvaluation(PyObject *inputsOfInterest, PyObject *outputsOfInterest)
        {
          std::vector<YACSEvalOutputPort *> outputsOfInterestCpp;
          if(PyList_Check(outputsOfInterest))
@@ -376,7 +367,30 @@ public:
              PyErr_SetString(PyExc_TypeError,"not a list");
              return ;
            }
-         self->lockPortsForEvaluation(outputsOfInterestCpp);
+         //
+         std::vector< YACSEvalInputPort * > inputsOfInterestCpp;
+         if(PyList_Check(inputsOfInterest))
+           {
+             int size(PyList_Size(inputsOfInterest));
+             for(int i=0;i<size;i++)
+               {
+                 PyObject *obj(PyList_GetItem(inputsOfInterest,i));
+                 void *argp(0);
+                 int status(SWIG_ConvertPtr(obj,&argp,SWIGTYPE_p_YACSEvalInputPort,0|0));
+                 if(!SWIG_IsOK(status))
+                   {
+                     std::ostringstream oss; oss << "Input elt #" << i << " in list is not a YACSEvalInputPort instance !";
+                     throw YACS::Exception(oss.str());
+                   }
+                 inputsOfInterestCpp.push_back(reinterpret_cast<YACSEvalInputPort *>(argp));
+               }
+           }
+         else
+           {
+             PyErr_SetString(PyExc_TypeError,"not a list");
+             return ;
+           }
+         self->lockPortsForEvaluation(inputsOfInterestCpp,outputsOfInterestCpp);
        }
 
        PyObject *getResults() const

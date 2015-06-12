@@ -31,16 +31,14 @@ class TestEvalYFX(unittest.TestCase):
         # prepare for execution
         inps[0].setDefaultValue(1.1)
         inps[1].setSequenceOfValuesToEval([10.1,10.2,10.3])
-        self.assertRaises(ValueError,efx.lockPortsForEvaluation,[outps[0],outps[2]]) # because e is not set
-        a,b=inps[2].hasSequenceOfValuesToEval()
+        self.assertRaises(ValueError,efx.lockPortsForEvaluation,[inps[1]],[outps[0],outps[2]]) # because e is not set
+        a=inps[2].hasSequenceOfValuesToEval()
         self.assertTrue(not a)
         inps[2].setSequenceOfValuesToEval([20.1,20.2,30.3,40.4])
-        a,b=inps[2].hasSequenceOfValuesToEval()
+        a=inps[2].hasSequenceOfValuesToEval()
         self.assertTrue(a)
-        self.assertEqual(b,4)
-        self.assertRaises(ValueError,efx.lockPortsForEvaluation,[outps[0],outps[2]]) # because size of vals of e is not equal to size of vals of a
+        efx.lockPortsForEvaluation([inps[1],inps[2]],[outps[0],outps[2]])
         inps[2].setSequenceOfValuesToEval([20.1,20.2,30.3])
-        efx.lockPortsForEvaluation([outps[0],outps[2]])
         #
         g=efx.getUndergroundGeneratedGraph()
         g.saveSchema("toto.xml")
