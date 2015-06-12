@@ -61,7 +61,6 @@ SET(YACSevalYFX_LIBRARIES
   ${LIBXML2_LIBRARIES}
   )
 
-# no more than 4 files should be installed
 SET(YACSEvalYFX_HEADERS
   YACSEvalYFXExport.hxx
   YACSEvalYFX.hxx
@@ -69,6 +68,8 @@ SET(YACSEvalYFX_HEADERS
   YACSEvalSeqAny.hxx
   YACSEvalResource.hxx
   YACSEvalSession.hxx
+  YACSEvalObserver.hxx
+  YACSEvalExecParams.hxx
   )
 
 SET(YACSevalYFX_SOURCES
@@ -78,6 +79,7 @@ SET(YACSevalYFX_SOURCES
   YACSEvalSeqAny.cxx
   YACSEvalResource.cxx
   YACSEvalSession.cxx
+  YACSEvalObserver.cxx
   )
 
 ADD_LIBRARY(YACSevalYFX ${YACSevalYFX_SOURCES})

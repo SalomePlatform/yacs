@@ -21,10 +21,12 @@
 #include "YACSEvalYFXPattern.hxx"
 #include "YACSEvalResource.hxx"
 #include "YACSEvalSeqAny.hxx"
+#include "YACSEvalObserver.hxx"
 #include "YACSEvalAutoPtr.hxx"
 
 #include "ElementaryNode.hxx"
 #include "RuntimeSALOME.hxx"
+#include "Dispatcher.hxx"
 #include "InputPort.hxx"
 #include "LinkInfo.hxx"
 #include "TypeCode.hxx"
@@ -67,7 +69,7 @@ std::vector< YACSEvalOutputPort *> YACSEvalYFXPattern::getFreeOutputPorts() cons
   return ret;
 }
 
-YACSEvalYFXPattern *YACSEvalYFXPattern::FindPatternFrom(YACS::ENGINE::Proc *scheme, bool ownScheme)
+YACSEvalYFXPattern *YACSEvalYFXPattern::FindPatternFrom(YACSEvalYFX *boss, YACS::ENGINE::Proc *scheme, bool ownScheme)
 {
   if(!scheme)
     throw YACS::Exception("YACSEvalYFXPattern::FindPatternFrom : input scheme must be not null !");
@@ -75,7 +77,7 @@ YACSEvalYFXPattern *YACSEvalYFXPattern::FindPatternFrom(YACS::ENGINE::Proc *sche
       YACS::ENGINE::ComposedNode *zeRunNode(0);
       bool isMatchingRunOnlyPattern(YACSEvalYFXRunOnlyPattern::IsMatching(scheme,zeRunNode));
       if(isMatchingRunOnlyPattern)
-        return new YACSEvalYFXRunOnlyPattern(scheme,ownScheme,zeRunNode);
+        return new YACSEvalYFXRunOnlyPattern(boss,scheme,ownScheme,zeRunNode);
   }
   throw YACS::Exception("YACSEvalYFXPattern::FindPatternFrom : no pattern found for the input scheme !");
 }
@@ -148,7 +150,18 @@ void YACSEvalYFXPattern::CheckNodeIsOK(YACS::ENGINE::ComposedNode *node)
     }*/
 }
 
-YACSEvalYFXPattern::YACSEvalYFXPattern(YACS::ENGINE::Proc *scheme, bool ownScheme):_scheme(scheme),_ownScheme(ownScheme),_rm(new ResourcesManager_cpp),_res(0)
+void YACSEvalYFXPattern::registerObserver(YACSEvalObserver *observer)
+{
+  if(_observer==observer)
+    return ;
+  if(_observer)
+    _observer->decrRef();
+  _observer=observer;
+  if(_observer)
+    _observer->incrRef();
+}
+
+YACSEvalYFXPattern::YACSEvalYFXPattern(YACSEvalYFX *boss, YACS::ENGINE::Proc *scheme, bool ownScheme):_boss(boss),_scheme(scheme),_ownScheme(ownScheme),_rm(new ResourcesManager_cpp),_res(0),_observer(0)
 {
 }
 
@@ -224,16 +237,48 @@ void YACSEvalYFXPattern::cleanScheme()
 
 YACSEvalYFXPattern::~YACSEvalYFXPattern()
 {
+  if(_observer)
+    _observer->decrRef();
   delete _rm;
   delete _res;
 }
 
-YACSEvalYFXRunOnlyPattern::YACSEvalYFXRunOnlyPattern(YACS::ENGINE::Proc *scheme, bool ownScheme, YACS::ENGINE::ComposedNode *runNode):YACSEvalYFXPattern(scheme,ownScheme),_runNode(runNode),_generatedGraph(0)
+/////////////////////
+
+class YACSEvalYFXRunOnlyPatternInternalObserver : public YACS::ENGINE::Observer
+{
+public:
+  YACSEvalYFXRunOnlyPatternInternalObserver(YACSEvalYFXRunOnlyPattern *boss):_boss(boss) { if(!_boss) throw YACS::Exception("YACSEvalYFXRunOnlyPatternInternalObserver constructor : null boss not supported :)"); }
+  void notifyObserver(YACS::ENGINE::Node *object, const std::string& event);
+private:
+  YACSEvalYFXRunOnlyPattern *_boss;
+};
+
+void YACSEvalYFXRunOnlyPatternInternalObserver::notifyObserver(YACS::ENGINE::Node *object, const std::string& event)
+{
+  YACS::ENGINE::ForEachLoop *object2(dynamic_cast<YACS::ENGINE::ForEachLoop *>(object));
+  if(!object2)
+    return ;
+  YACSEvalObserver *obs(_boss->getObserver());
+  if(!obs)
+    return ;
+  if(event=="progress")
+    obs->notifyNewNumberOfPassedItems(_boss->getBoss(),object2->getCurrentIndex());
+}
+
+/////////////////////
+
+YACSEvalYFXRunOnlyPattern::YACSEvalYFXRunOnlyPattern(YACSEvalYFX *boss, YACS::ENGINE::Proc *scheme, bool ownScheme, YACS::ENGINE::ComposedNode *runNode):YACSEvalYFXPattern(boss,scheme,ownScheme),_runNode(runNode),_generatedGraph(0),_FEInGeneratedGraph(0),_obs(new YACSEvalYFXRunOnlyPatternInternalObserver(this))
 {
   if(!_runNode)
     throw YACS::Exception("YACSEvalYFXRunOnlyPattern : internal run node must be not null !");
   buildInputPorts();
   buildOutputPorts();
+}
+
+YACSEvalYFXRunOnlyPattern::~YACSEvalYFXRunOnlyPattern()
+{
+  delete _obs;
 }
 
 void YACSEvalYFXRunOnlyPattern::setOutPortsOfInterestForEvaluation(const std::vector<YACSEvalOutputPort *>& outputsOfInterest)
@@ -283,6 +328,7 @@ void YACSEvalYFXRunOnlyPattern::generateGraph()
   n0->setScript(n0Script.str());
   //
   YACS::ENGINE::ForEachLoop *n1(r->createForEachLoop(oss.str(),pyobjTC));
+  _FEInGeneratedGraph=n1;
   _generatedGraph->edAddChild(n1);
   _generatedGraph->edAddCFLink(n0,n1);
   _generatedGraph->edAddDFLink(sender,n1->edGetSeqOfSamplesPort());
@@ -425,6 +471,14 @@ std::vector<YACSEvalSeqAny *> YACSEvalYFXRunOnlyPattern::getResults() const
       ret[ii]=BuildValueInPort(inputC);
     }
   return ret;
+}
+
+void YACSEvalYFXRunOnlyPattern::emitStart() const
+{
+  YACSEvalObserver *obs(getObserver());
+  if(!obs)
+    return ;
+  obs->notifyNumberOfSamplesToEval(getBoss(),_FEInGeneratedGraph->getNbOfElementsToBeProcessed());
 }
 
 bool YACSEvalYFXRunOnlyPattern::IsMatching(YACS::ENGINE::Proc *scheme, YACS::ENGINE::ComposedNode *& runNode)

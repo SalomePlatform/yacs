@@ -330,17 +330,28 @@ public:
   std::string getCorbaConfigFileName() const;
 };
 
+class YACSEvalExecParams
+{
+public:
+  bool getStopASAPAfterErrorStatus() const;
+  void setStopASAPAfterErrorStatus(bool newStatus);
+private:
+  YACSEvalExecParams();
+};
+
 class YACSEvalYFX
 {
 public:
   static YACSEvalYFX *BuildFromFile(const std::string& xmlOfScheme);
   static YACSEvalYFX *BuildFromScheme(YACS::ENGINE::Proc *schema);
+  YACSEvalExecParams *getParams() const;
   std::vector<YACSEvalInputPort *> getFreeInputPorts() const;
   std::vector<YACSEvalOutputPort *> getFreeOutputPorts() const;
   void unlockAll();
   bool isLocked() const;
   YACS::ENGINE::Proc *getUndergroundGeneratedGraph() const;
   YACSEvalListOfResources *giveResources();
+  //void registerObserver(YACSEvalObserver *observer);
   %extend
      {
        void lockPortsForEvaluation(PyObject *inputsOfInterest, PyObject *outputsOfInterest)

@@ -46,7 +46,6 @@ private:
   PyThreadState *_save;
 };
 
-
 YACSEvalYFX *YACSEvalYFX::BuildFromFile(const std::string& xmlOfScheme)
 {
   YACS::ENGINE::RuntimeSALOME::setRuntime();
@@ -114,12 +113,28 @@ bool YACSEvalYFX::run(YACSEvalSession *session, int& nbOfBranches)
   nbOfBranches=_pattern->assignNbOfBranches();
   mySession->launch();
   YACS::ENGINE::Executor exe;
+  exe.setKeepGoingProperty(!_params.getStopASAPAfterErrorStatus());
   //
+  _pattern->emitStart();
   {
     MyAutoThreadSaver locker;
     exe.RunW(getUndergroundGeneratedGraph());
   }
   return getUndergroundGeneratedGraph()->getState()==YACS::DONE;
+}
+
+void YACSEvalYFX::registerObserver(YACSEvalObserver *observer)
+{
+  if(!_pattern)
+    throw YACS::Exception("YACSEvalYFX::registerObserver : no pattern !");
+  _pattern->registerObserver(observer);
+}
+
+YACSEvalObserver *YACSEvalYFX::getObserver()
+{
+  if(!_pattern)
+    throw YACS::Exception("YACSEvalYFX::getObserver : no pattern !");
+  return _pattern->getObserver();
 }
 
 std::vector<YACSEvalSeqAny *> YACSEvalYFX::getResults() const
@@ -134,7 +149,7 @@ YACS::ENGINE::Proc *YACSEvalYFX::getUndergroundGeneratedGraph() const
 
 YACSEvalYFX::YACSEvalYFX(YACS::ENGINE::Proc *scheme, bool ownScheme):_pattern(0)
 {
-  _pattern=YACSEvalYFXPattern::FindPatternFrom(scheme,ownScheme);
+  _pattern=YACSEvalYFXPattern::FindPatternFrom(this,scheme,ownScheme);
 }
 
 void YACSEvalYFX::checkPortsForEvaluation(const std::vector< YACSEvalInputPort * >& inputs, const std::vector< YACSEvalOutputPort * >& outputs) const

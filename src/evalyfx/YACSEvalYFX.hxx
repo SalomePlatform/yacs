@@ -22,6 +22,7 @@
 #define __YACSEVALYFX_HXX__
 
 #include "YACSEvalYFXExport.hxx"
+#include "YACSEvalExecParams.hxx"
 
 #include <string>
 #include <vector>
@@ -34,6 +35,7 @@ namespace YACS
   }
 }
 
+class YACSEvalObserver;
 class YACSEvalSeqAny;
 class YACSEvalSession;
 class YACSEvalYFXPattern;
@@ -46,6 +48,7 @@ class YACSEvalYFX
 public:
   YACSEVALYFX_EXPORT static YACSEvalYFX *BuildFromFile(const std::string& xmlOfScheme);
   YACSEVALYFX_EXPORT static YACSEvalYFX *BuildFromScheme(YACS::ENGINE::Proc *scheme);
+  YACSEVALYFX_EXPORT YACSEvalExecParams *getParams() const { return &_params; }
   YACSEVALYFX_EXPORT std::vector< YACSEvalInputPort * > getFreeInputPorts() const;
   YACSEVALYFX_EXPORT std::vector< YACSEvalOutputPort * > getFreeOutputPorts() const;
   YACSEVALYFX_EXPORT void lockPortsForEvaluation(const std::vector< YACSEvalInputPort * >& inputsOfInterest, const std::vector< YACSEvalOutputPort * >& outputsOfInterest);
@@ -53,6 +56,8 @@ public:
   YACSEVALYFX_EXPORT bool isLocked() const;
   YACSEVALYFX_EXPORT YACSEvalListOfResources *giveResources();
   YACSEVALYFX_EXPORT bool run(YACSEvalSession *session, int& nbOfBranches);
+  YACSEVALYFX_EXPORT void registerObserver(YACSEvalObserver *observer);
+  YACSEVALYFX_EXPORT YACSEvalObserver *getObserver();
   YACSEVALYFX_EXPORT std::vector<YACSEvalSeqAny *> getResults() const;
   //
   YACSEVALYFX_EXPORT YACS::ENGINE::Proc *getUndergroundGeneratedGraph() const;
@@ -62,6 +67,7 @@ private:
   void checkPortsForEvaluation(const std::vector< YACSEvalInputPort * >& inputs, const std::vector< YACSEvalOutputPort * >& outputs) const;
 private:
   YACSEvalYFXPattern *_pattern;
+  mutable YACSEvalExecParams _params;
 };
 
 #endif

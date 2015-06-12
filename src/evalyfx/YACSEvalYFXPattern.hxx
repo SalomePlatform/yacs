@@ -31,13 +31,17 @@ namespace YACS
   {
     class Proc;
     class TypeCode;
+    class ForEachLoop;
     class ComposedNode;
     class InputPyPort;
   }
 }
 
+class YACSEvalYFX;
+class YACSEvalObserver;
 class YACSEvalListOfResources;
 class ResourcesManager_cpp;
+class YACSEvalYFXRunOnlyPatternInternalObserver;
 
 class YACSEvalYFXPattern
 {
@@ -45,13 +49,16 @@ public:
   virtual ~YACSEvalYFXPattern();
   std::vector< YACSEvalInputPort *> getFreeInputPorts() const;
   std::vector< YACSEvalOutputPort *> getFreeOutputPorts() const;
-  static YACSEvalYFXPattern *FindPatternFrom(YACS::ENGINE::Proc *scheme, bool ownScheme);
+  static YACSEvalYFXPattern *FindPatternFrom(YACSEvalYFX *boss, YACS::ENGINE::Proc *scheme, bool ownScheme);
   bool isAlreadyComputedResources() const;
   void checkNonAlreadyComputedResources() const;
   void checkAlreadyComputedResources() const;
   void checkLocked() const;
   void checkNonLocked() const;
   static void CheckNodeIsOK(YACS::ENGINE::ComposedNode *node);
+  void registerObserver(YACSEvalObserver *observer);
+  YACSEvalObserver *getObserver() const { return _observer; }
+  YACSEvalYFX *getBoss() const { return _boss; }
   virtual void setOutPortsOfInterestForEvaluation(const std::vector<YACSEvalOutputPort *>& outputs) = 0;
   virtual void resetOutputsOfInterest() = 0;
   virtual void generateGraph() = 0;
@@ -62,10 +69,11 @@ public:
   virtual YACSEvalListOfResources *giveResources() = 0;
   virtual YACS::ENGINE::Proc *getUndergroundGeneratedGraph() const = 0;
   virtual std::vector<YACSEvalSeqAny *> getResults() const = 0;
+  virtual void emitStart() const = 0;
 public:
   static const char DFT_PROC_NAME[];
 protected:
-  YACSEvalYFXPattern(YACS::ENGINE::Proc *scheme, bool ownScheme);
+  YACSEvalYFXPattern(YACSEvalYFX *boss, YACS::ENGINE::Proc *scheme, bool ownScheme);
   YACS::ENGINE::TypeCode *createSeqTypeCodeFrom(YACS::ENGINE::Proc *scheme, const std::string& zeType);
   void setResources(YACSEvalListOfResources *res);
   void resetResources();
@@ -75,10 +83,12 @@ protected:
 private:
   void cleanScheme();
 private:
+  YACSEvalYFX *_boss;
   bool _ownScheme;
   YACS::ENGINE::Proc *_scheme;
   ResourcesManager_cpp *_rm;
   YACSEvalListOfResources *_res;
+  mutable YACSEvalObserver *_observer;
 protected:
   std::vector< YACSEvalInputPort > _inputs;
   std::vector< YACSEvalOutputPort > _outputs;
@@ -87,7 +97,8 @@ protected:
 class YACSEvalYFXRunOnlyPattern : public YACSEvalYFXPattern
 {
 public:
-  YACSEvalYFXRunOnlyPattern(YACS::ENGINE::Proc *scheme, bool ownScheme, YACS::ENGINE::ComposedNode *runNode);
+  YACSEvalYFXRunOnlyPattern(YACSEvalYFX *boss, YACS::ENGINE::Proc *scheme, bool ownScheme, YACS::ENGINE::ComposedNode *runNode);
+  ~YACSEvalYFXRunOnlyPattern();
   void setOutPortsOfInterestForEvaluation(const std::vector<YACSEvalOutputPort *>& outputsOfInterest);
   void resetOutputsOfInterest();
   void generateGraph();
@@ -98,6 +109,9 @@ public:
   YACSEvalListOfResources *giveResources();
   YACS::ENGINE::Proc *getUndergroundGeneratedGraph() const;
   std::vector<YACSEvalSeqAny *> getResults() const;
+  void emitStart() const;
+  //
+  YACS::ENGINE::ForEachLoop *getUndergroundForEach() const { return _FEInGeneratedGraph; }
   static bool IsMatching(YACS::ENGINE::Proc *scheme, YACS::ENGINE::ComposedNode *& runNode);
 public:
   static const char GATHER_NODE_NAME[];
@@ -108,6 +122,8 @@ private:
   YACS::ENGINE::ComposedNode *_runNode;
   std::vector<YACSEvalOutputPort *> _outputsOfInterest;
   YACS::ENGINE::Proc *_generatedGraph;
+  YACS::ENGINE::ForEachLoop *_FEInGeneratedGraph;
+  YACSEvalYFXRunOnlyPatternInternalObserver *_obs;
 };
 
 #endif

@@ -44,11 +44,11 @@
       <tonode>node1</tonode> <toport>d</toport>
    </datalink>
    <parameter>
-      <tonode>node0</tonode><toport>b</toport>
-      <value><double>1.3</double></value>
-   </parameter>
-   <parameter>
       <tonode>node1</tonode><toport>e</toport>
       <value><double>2.5</double></value>
+   </parameter>
+   <parameter>
+      <tonode>node0</tonode><toport>b</toport>
+      <value><double>1.3</double></value>
    </parameter>
 </proc>
