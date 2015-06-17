@@ -27,6 +27,10 @@
 #include <string>
 #include <vector>
 
+#ifdef WIN32
+#define NOMINMAX
+#endif
+
 namespace YACS
 {
   namespace ENGINE
@@ -78,15 +82,15 @@ private:
   unsigned int getValueOfKeyUInt(const char *key) const;
   std::map<std::string,std::string> listOfPropertiesInYACSContainer() const;
 public:
-  YACSEVALYFX_EXPORT static const char CONTAINER_NAME_KEY[];
-  YACSEVALYFX_EXPORT static const char CPU_CLOCK_KEY[];
-  YACSEVALYFX_EXPORT static const char HOSTNAME_KEY[];
-  YACSEVALYFX_EXPORT static const char MEM_KEY[];
-  YACSEVALYFX_EXPORT static const char NB_NODE_KEY[];
-  YACSEVALYFX_EXPORT static const char NB_PROC_PER_NODE_KEY[];
-  YACSEVALYFX_EXPORT static const char NB_RESOURCE_PROCS_KEY[];
-  YACSEVALYFX_EXPORT static const char POLICY_KEY[];
-  YACSEVALYFX_EXPORT static const char OS_KEY[];
+  static const char CONTAINER_NAME_KEY[];
+  static const char CPU_CLOCK_KEY[];
+  static const char HOSTNAME_KEY[];
+  static const char MEM_KEY[];
+  static const char NB_NODE_KEY[];
+  static const char NB_PROC_PER_NODE_KEY[];
+  static const char NB_RESOURCE_PROCS_KEY[];
+  static const char POLICY_KEY[];
+  static const char OS_KEY[];
 private:
   std::string _chosenHost;
   //! list of properties that overloads.

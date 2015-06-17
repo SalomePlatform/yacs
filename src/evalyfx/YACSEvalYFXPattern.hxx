@@ -25,6 +25,10 @@
 
 #include <vector>
 
+#ifdef WIN32
+#define NOMINMAX
+#endif
+
 namespace YACS
 {
   namespace ENGINE

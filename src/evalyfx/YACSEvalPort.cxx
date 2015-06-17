@@ -222,7 +222,7 @@ void YACSEvalInputPort::setDefaultValue(const YACSEvalAny *parameter)
           if(par0)
             v<<=par0->toDouble();
           else if(par1)
-            v<<=par1->toInt();
+            v<<=(CORBA::Short)par1->toInt();
           else
             throw YACS::Exception("YACSEvalInputPort::setDefaultValueDefined : unmanaged types different from int and double for corbaport !");
           i2->put(&v);

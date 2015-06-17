@@ -22,7 +22,7 @@
 #define __YACSEVALYFXEXPORT_HXX__
 
 #ifdef WIN32
-#  if defined YACSEVALYFX_EXPORTS
+#  if defined YACSevalYFX_EXPORTS
 #    define YACSEVALYFX_EXPORT __declspec( dllexport )
 #  else
 #    define YACSEVALYFX_EXPORT __declspec( dllimport )

@@ -41,8 +41,8 @@ public:
 private:
   static std::string GetPathToAdd();
 public:
-  YACSEVALYFX_EXPORT static const char KERNEL_ROOT_DIR[];
-  YACSEVALYFX_EXPORT static const char CORBA_CONFIG_ENV_VAR_NAME[];
+  static const char KERNEL_ROOT_DIR[];
+  static const char CORBA_CONFIG_ENV_VAR_NAME[];
 private:
   bool _isLaunched;
   int _port;
