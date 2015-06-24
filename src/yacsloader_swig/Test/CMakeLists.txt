@@ -29,4 +29,27 @@ IF(NOT WIN32)
   SALOME_GENERATE_TESTS_ENVIRONMENT(tests_env)
   ADD_TEST(NAME StdAloneYacsLoaderTest1 COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/StdAloneYacsLoaderTest1.py)
   SET_TESTS_PROPERTIES(StdAloneYacsLoaderTest1 PROPERTIES ENVIRONMENT "${tests_env}")
-ENDIF() 
+
+  # For salome test
+  SET(LOCAL_TEST_DIR ${SALOME_YACS_INSTALL_TEST}/yacsloader_swig)
+  SET(LOCAL_TEST_FILES
+    StdAloneYacsLoaderTest1.py
+    testEdit.py
+    testExec.py
+    testLoader.py
+    testRefcount.py
+    testResume.py
+    testSave.py
+    testSaveLoadRun.py
+   )
+  INSTALL(FILES ${LOCAL_TEST_FILES}
+        DESTINATION ${LOCAL_TEST_DIR})
+  INSTALL(PROGRAMS runUnitTest.sh
+        DESTINATION ${LOCAL_TEST_DIR})
+  INSTALL(FILES CTestTestfileInstall.cmake
+        DESTINATION ${LOCAL_TEST_DIR}
+        RENAME CTestTestfile.cmake)
+  INSTALL(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink
+                ${CMAKE_INSTALL_PREFIX}/${SALOME_YACS_INSTALL_SAMPLES}
+                ${CMAKE_INSTALL_PREFIX}/${LOCAL_TEST_DIR}/samples )" )
+ENDIF()

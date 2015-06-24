@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Copyright (C) 2006-2015  CEA/DEN, EDF R&D
 #
 # This library is free software; you can redistribute it and/or
@@ -18,49 +18,17 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-BASEREP=`pwd`
-OMNIORB_CONFIG=${BASEREP}/omniorb.cfg
-OMNINAMES_LOGDIR=${BASEREP}/omnilog
-
-export BASEREP
-export OMNIORB_CONFIG
-export OMNINAMES_LOGDIR
-
-echo ${BASEREP}
-echo ${OMNIORB_CONFIG}
-
-# do not use the default port 2810 for omninames (to improve, cf. SALOME)
-echo "InitRef = NameService=corbaname::localhost:2910" > ${OMNIORB_CONFIG}
-
-rm -rf ${OMNINAMES_LOGDIR}
-mkdir  ${OMNINAMES_LOGDIR}
-
-echo $$
-
-omniNames -start 2910 &
-pidomni=$!
-echo $pidomni
-
-#wait enough time to let omniNames start
-sleep 2
-
-./runtimeTestEchoSrv &
+# script used by "salome test" command
+./echoSrv &
 pidecho=$!
-echo $pidecho
+echo $pidecho > "/tmp/YACSTEST_PidEcho"
 
-if ! [ -f lib/salome/libTestComponentLocal.so ]
-then
-  mkdir -p lib/salome
-  cp libTestComponentLocal.so lib/salome
-fi
-export TESTCOMPONENT_ROOT_DIR=`pwd`
+export TESTCOMPONENT_ROOT_DIR=`pwd`/../runtime
 
-#wait enough time to let runtimeTestEchoSrv start and register
-sleep 2
-
-./TestRuntime
+./TestYacsLoader
 ret=$?
+echo "exec status TestYacsLoader " $ret
 
-kill -9 $pidecho $pidomni
-cat /tmp/${USER}/UnitTestsResult
+kill -9 `cat "/tmp/YACSTEST_PidEcho"`
+
 exit $ret

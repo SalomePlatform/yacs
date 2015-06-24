@@ -265,13 +265,14 @@ class TestTypeCodeRef(unittest.TestCase):
     self.assert_(tc.thisown)
     self.assertEqual(tc.getRefCnt(), 3)
 
-import os
-U = os.getenv('USER')
-f=open("/tmp/" + U + "/UnitTestsResult", 'a')
-f.write("  --- TEST src/yacsloader: testRefcount.py\n")
-suite1 = unittest.makeSuite(TestContainerRef)
-suite2 = unittest.makeSuite(TestTypeCodeRef)
-suite = unittest.TestSuite((suite1, suite2))
-result=unittest.TextTestRunner(f, descriptions=1, verbosity=1).run(suite)
-f.close()
-sys.exit(not result.wasSuccessful())
+if __name__ == '__main__':
+  import os
+  U = os.getenv('USER')
+  f=open("/tmp/" + U + "/UnitTestsResult", 'a')
+  f.write("  --- TEST src/yacsloader: testRefcount.py\n")
+  suite1 = unittest.makeSuite(TestContainerRef)
+  suite2 = unittest.makeSuite(TestTypeCodeRef)
+  suite = unittest.TestSuite((suite1, suite2))
+  result=unittest.TextTestRunner(f, descriptions=1, verbosity=1).run(suite)
+  f.close()
+  sys.exit(not result.wasSuccessful())

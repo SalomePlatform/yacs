@@ -93,13 +93,13 @@ class TestSave(unittest.TestCase):
             self.assertEqual(ls1,ls2,pb1)
             self.assertEqual(ld1,ld2,pb2)            
             pass
-        
 
-import os
-U = os.getenv('USER')
-f=open("/tmp/" + U + "/UnitTestsResult", 'a')
-f.write("  --- TEST src/yacsloader: testSave.py\n")
-suite = unittest.makeSuite(TestSave)
-result=unittest.TextTestRunner(f, descriptions=1, verbosity=1).run(suite)
-f.close()
-sys.exit(not result.wasSuccessful())
+if __name__ == '__main__':
+  import os
+  U = os.getenv('USER')
+  f=open("/tmp/" + U + "/UnitTestsResult", 'a')
+  f.write("  --- TEST src/yacsloader: testSave.py\n")
+  suite = unittest.makeSuite(TestSave)
+  result=unittest.TextTestRunner(f, descriptions=1, verbosity=1).run(suite)
+  f.close()
+  sys.exit(not result.wasSuccessful())

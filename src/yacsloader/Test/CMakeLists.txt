@@ -89,6 +89,7 @@ SET(TestOptLoop_SOURCES
 )
 
 # --- rules ---
+SET(LOCAL_TEST_DIR ${SALOME_YACS_INSTALL_TEST}/yacsloader)
 
 OMNIORB_ADD_MODULE(yacsloader_echo "${echo_IDL_FILES}" "${IDL_INCLUDE_DIRS}" "${IDL_LINK_FLAGS}")
 INSTALL(TARGETS yacsloader_echo DESTINATION ${SALOME_INSTALL_LIBS})
@@ -98,7 +99,6 @@ TARGET_LINK_LIBRARIES(TestYacsLoader yacsloader_echo ${TestYacsLoader_LIBRARIES}
 
 ADD_EXECUTABLE(echoSrv ${echoSrv_SOURCES})
 TARGET_LINK_LIBRARIES(echoSrv yacsloader_echo ${echoSrv_LIBRARIES})
-INSTALL(TARGETS echoSrv DESTINATION ${SALOME_INSTALL_BINS})
 
 ADD_LIBRARY(TestOptLoop ${TestOptLoop_SOURCES})
 TARGET_LINK_LIBRARIES(TestOptLoop yacsloader_echo YACSlibEngine)
@@ -114,3 +114,26 @@ IF(NOT WIN32)
   ADD_TEST(NAME YacsLoaderTest COMMAND ${SHELL} YacsLoaderTest.sh)
 ENDIF()
 
+# For salome test
+IF(NOT WIN32)
+  SET(LOCAL_TEST_FILES
+    algoasyncexample.py
+    algosyncexample.py
+    genPascal.py
+    genTriangle.py
+    echoclt.py)
+  INSTALL(FILES ${LOCAL_TEST_FILES}
+          DESTINATION ${LOCAL_TEST_DIR})
+  INSTALL(TARGETS echoSrv TestYacsLoader
+          DESTINATION ${LOCAL_TEST_DIR})
+  INSTALL(TARGETS yacsloader_echo TestOptLoop
+          DESTINATION ${SALOME_YACS_INSTALL_TEST_LIB})
+  INSTALL(FILES CTestTestfileInstall.cmake
+          DESTINATION ${LOCAL_TEST_DIR}
+          RENAME CTestTestfile.cmake)
+  INSTALL(PROGRAMS runYacsLoaderTest.sh ${CMAKE_CURRENT_BINARY_DIR}/xmlrun.sh
+          DESTINATION ${LOCAL_TEST_DIR})
+  INSTALL(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink
+                ${CMAKE_INSTALL_PREFIX}/${SALOME_YACS_INSTALL_SAMPLES}
+                ${CMAKE_INSTALL_PREFIX}/${LOCAL_TEST_DIR}/samples )" )
+ENDIF()

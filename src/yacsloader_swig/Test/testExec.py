@@ -178,11 +178,12 @@ class TestExec(unittest.TestCase):
                           
     pass
 
-import os
-U = os.getenv('USER')
-f=open("/tmp/" + U + "/UnitTestsResult", 'a')
-f.write("  --- TEST src/yacsloader: testExec.py\n")
-suite = unittest.makeSuite(TestExec)
-result=unittest.TextTestRunner(f, descriptions=1, verbosity=1).run(suite)
-f.close()
-sys.exit(not result.wasSuccessful())
+if __name__ == '__main__':
+  import os
+  U = os.getenv('USER')
+  f=open("/tmp/" + U + "/UnitTestsResult", 'a')
+  f.write("  --- TEST src/yacsloader: testExec.py\n")
+  suite = unittest.makeSuite(TestExec)
+  result=unittest.TextTestRunner(f, descriptions=1, verbosity=1).run(suite)
+  f.close()
+  sys.exit(not result.wasSuccessful())
