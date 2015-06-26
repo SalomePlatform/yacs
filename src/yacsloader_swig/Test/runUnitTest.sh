@@ -21,7 +21,6 @@
 # script used by "salome test" command
 ../yacsloader/echoSrv &
 pidecho=$!
-echo $pidecho > "/tmp/YACSTEST_PidEcho"
 
 export TESTCOMPONENT_ROOT_DIR=`pwd`/../runtime
 
@@ -29,6 +28,6 @@ python -m unittest discover
 ret=$?
 echo "exec status salome_test_driver " $ret
 
-kill -9 `cat "/tmp/YACSTEST_PidEcho"`
+kill -9 $pidecho
 
 exit $ret

@@ -21,7 +21,6 @@
 # script used by "salome test" command
 ./echoSrv &
 pidecho=$!
-echo $pidecho > "/tmp/YACSTEST_PidEcho"
 
 export TESTCOMPONENT_ROOT_DIR=`pwd`/../runtime
 
@@ -29,6 +28,6 @@ export TESTCOMPONENT_ROOT_DIR=`pwd`/../runtime
 ret=$?
 echo "exec status TestYacsLoader " $ret
 
-kill -9 `cat "/tmp/YACSTEST_PidEcho"`
+kill -9 $pidecho
 
 exit $ret
