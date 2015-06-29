@@ -412,7 +412,7 @@ int Bloc::getMaxLevelOfParallelism() const
         {
           s.erase(seed);
           std::set<InGate *> ingates(seed->getOutGate()->edSetInGate());
-          int myCurLev2(1);
+          int myCurLev2(seed->getMaxLevelOfParallelism());
           for(std::set<InGate *>::const_iterator it=ingates.begin();it!=ingates.end();it++)
             {
               Node *curNode((*it)->getNode());
