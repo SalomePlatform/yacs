@@ -408,7 +408,7 @@ int ForEachLoopPassedData::toAbsId(int localId) const
 int ForEachLoopPassedData::toAbsIdNot(int localId) const
 {
   if(localId<0)
-    throw YACS::Exception("ForEachLoopPassedData::toAbsId : local pos must be >= 0 !");
+    throw YACS::Exception("ForEachLoopPassedData::toAbsIdNot : local pos must be >= 0 !");
   int ret(0),curLocId(0);
   for(std::vector<bool>::const_iterator it=_flagsIds.begin();it!=_flagsIds.end();it++,ret++)
     {
@@ -419,7 +419,7 @@ int ForEachLoopPassedData::toAbsIdNot(int localId) const
           curLocId++;
         }
     }
-  throw YACS::Exception("ForEachLoopPassedData::toAbsId : not referenced Id !");
+  throw YACS::Exception("ForEachLoopPassedData::toAbsIdNot : not referenced Id !");
 }
 
 int ForEachLoopPassedData::getNumberOfElementsToDo() const
@@ -1130,6 +1130,7 @@ std::vector<unsigned int> ForEachLoop::getPassedResults(Executor *execut, std::v
 void ForEachLoop::assignPassedResults(const std::vector<unsigned int>& passedIds, const std::vector<SequenceAny *>& passedOutputs, const std::vector<std::string>& nameOfOutputs)
 {
   delete _passedData;
+  _failedCounter=0;
   _passedData=new ForEachLoopPassedData(passedIds,passedOutputs,nameOfOutputs);
 }
 
