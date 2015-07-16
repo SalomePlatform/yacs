@@ -505,6 +505,8 @@ void ForEachLoop::exUpdateState()
   DEBTRACE("ForEachLoop::exUpdateState");
   if(_state == YACS::DISABLED)
     return;
+  if(_state == YACS::DONE)
+    return;
   if(_inGate.exIsReady())
     {
       //internal graph update
