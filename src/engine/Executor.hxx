@@ -111,6 +111,7 @@ namespace YACS
       bool saveState(const std::string& xmlFile);
       bool loadState();
       int getNbOfThreads();
+      int getNumberOfRunningTasks() const { return _numberOfRunningTasks; }
       void displayDot(Scheduler *graph);
       void setStopOnError(bool dumpRequested=false, std::string xmlFile="");
       void unsetStopOnError();
