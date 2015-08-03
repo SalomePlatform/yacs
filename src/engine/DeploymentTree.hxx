@@ -58,8 +58,6 @@ namespace YACS
       bool presenceOfDefaultContainer() const;
       std::vector<Task *> getFreeDeployableTasks() const;
     private:
-      static bool isConsistentTaskRegardingShCompInst(std::vector< std::pair<Task *, Scheduler * > >& tasksSharingSameCompInst, Scheduler *cloner);
-    private:
       mutable int _cnt;
       std::vector< std::pair<Task *,Scheduler *> > _freePlacableTasks;
       //! internal representation of tree. Scheduler is the duplicating Task, \b if it exists, on runtime unpredictable times on compil-time

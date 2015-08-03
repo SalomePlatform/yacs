@@ -1032,6 +1032,65 @@ else:
     self.assertEqual(p.getChildByName("n2").getOutputPort("o4").getPyObj(),[0L,5L,4L,15L,8L,25L,12L,35L,16L,45L,20L,55L])
     pass
 
+  def test12(self):
+    """ Non regression test EDF11239. ForEach into ForEach. Problem on cloning linked to DeloymentTree.appendTask method that was too strong."""
+    p=self.r.createProc("Bug11239")
+    ti=p.createType("int","int")
+    ti2=p.createSequenceTc("seqint","seqint",ti)
+    #
+    cont=p.createContainer("DefaultContainer","Salome")
+    #
+    node0=self.r.createForEachLoop("ForEachLoop_int0",ti)
+    p.edAddChild(node0)
+    node0.edGetSeqOfSamplesPort().edInitPy(range(4))
+    node0.edGetNbOfBranchesPort().edInitInt(2)
+    #
+    node00=self.r.createBloc("Bloc0")
+    node0.edAddChild(node00)
+    node000_0=self.r.createForEachLoop("ForEachLoop_int1",ti)
+    node00.edAddChild(node000_0)
+    node000_0.edGetSeqOfSamplesPort().edInitPy(range(4))
+    node000_0.edGetNbOfBranchesPort().edInitInt(3)
+    #
+    node0000=self.r.createBloc("Bloc1")
+    node000_0.edAddChild(node0000)
+    #
+    node0000_0=self.r.createScriptNode("","PyScript2")
+    node0000.edAddChild(node0000_0)
+    i3=node0000_0.edAddInputPort("i3",ti)
+    i4=node0000_0.edAddInputPort("i4",ti)
+    o5=node0000_0.edAddOutputPort("o5",ti)
+    node0000_0.setScript("o5 = i3 + i4")
+    node0000_0.setContainer(cont)
+    node0000_0.setExecutionMode("remote")
+    p.edAddLink(node0.edGetSamplePort(),i3)
+    p.edAddLink(node000_0.edGetSamplePort(),i4)
+    #
+    node0000_1=self.r.createScriptNode("","PyScript1")
+    node0000.edAddChild(node0000_1)
+    o3=node0000_1.edAddOutputPort("o3",ti)
+    node0000_1.setScript("o3 = 7")
+    node0000_1.setExecutionMode("local")
+    p.edAddCFLink(node0000_0,node0000_1)
+    #
+    node000_1=self.r.createScriptNode("","PostTraitement")
+    node00.edAddChild(node000_1)
+    i7=node000_1.edAddInputPort("i7",ti2)
+    i5=node000_1.edAddInputPort("i5",ti2)
+    node000_1.setScript("for i in i7:\n    print i\nprint \"separation\"\nfor i in i5:\n    print i")
+    node000_1.setContainer(cont)
+    node000_1.setExecutionMode("remote")
+    p.edAddLink(o5,i7)
+    p.edAddLink(o3,i5)
+    p.edAddCFLink(node000_0,node000_1)
+    #
+    #p.saveSchema("tmpp.xml")
+    ex = pilot.ExecutorSwig()
+    self.assertEqual(p.getState(),pilot.READY)
+    ex.RunW(p,0)
+    self.assertEqual(p.getState(),pilot.DONE)
+    pass
+
   pass
 
 if __name__ == '__main__':

@@ -109,9 +109,6 @@ unsigned char DeploymentTreeOnHeap::appendTask(Task *task, Scheduler *cloner)
     if((*iter3).first==task)
       return DeploymentTree::ALREADY_IN_TREE;
 
-  // if the task is not in the vector add it under condition
-  if(!isConsistentTaskRegardingShCompInst(*iter2,cloner))
-    return DeploymentTree::DUP_TASK_NOT_COMPATIBLE_WITH_EXISTING_TREE;
   DEBTRACE("add task to vector of tasks " << task);
   (*iter2).push_back(pair<Task *,Scheduler *>(task,cloner));
   return DeploymentTree::APPEND_OK;
@@ -397,23 +394,6 @@ std::vector<Task *> DeploymentTreeOnHeap::getFreeDeployableTasks() const
   for(vector< pair<Task *,Scheduler *> >::const_iterator iter=_freePlacableTasks.begin();iter!=_freePlacableTasks.end();iter++)
     ret.push_back((*iter).first);
   return ret;
-}
-
-bool DeploymentTreeOnHeap::isConsistentTaskRegardingShCompInst(std::vector< std::pair<Task *, Scheduler * > >& tasksSharingSameCompInst, Scheduler *cloner)
-{
-  vector< std::pair<Task *, Scheduler * > >::const_iterator iter;
-  bool coexistenceOfDifferentSched=false;
-  for(iter=tasksSharingSameCompInst.begin();iter!=tasksSharingSameCompInst.end() && !coexistenceOfDifferentSched;iter++)
-    {
-      coexistenceOfDifferentSched=(((*iter).second)!=cloner);
-    }
-  if(!coexistenceOfDifferentSched)
-    return true;
-  //In this case the component is duplicated on cloning raising on runtime on different policy (schedulers) than other tasks in tasksSharingSameCompInst
-  if((tasksSharingSameCompInst[0].first)->getComponent())
-    return (tasksSharingSameCompInst[0].first)->getComponent()->isAttachedOnCloning();
-  else
-    return (tasksSharingSameCompInst[0].first)->getContainer()->isAttachedOnCloning();
 }
 
 DeploymentTree::DeploymentTree():_treeHandle(0)
