@@ -117,6 +117,11 @@ OptimizerLoop::OptimizerLoop(const OptimizerLoop& other, ComposedNode *father, b
   _algoResultPort(other._algoResultPort, this)
 {
   //Don't call setAlgorithm here because it will be called several times if the class is derived. Call it in simpleClone for cloning
+  
+  // Create the links to evalResults port
+  set<OutPort *> fromPortsToReproduce=other._retPortForOutPool.edSetOutPort();
+  for(set<OutPort *>::iterator iter=fromPortsToReproduce.begin();iter!=fromPortsToReproduce.end();iter++)
+    edAddLink(getOutPort(other.getPortName(*iter)),&_retPortForOutPool);
 }
 
 OptimizerLoop::~OptimizerLoop()

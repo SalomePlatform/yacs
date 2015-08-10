@@ -622,7 +622,7 @@ for i in xrange(nb):
     a,b,c=n1.getPassedResults(ex)
     self.assertEqual(a,range(6))
     self.assertEqual([elt.getPyObj() for elt in b],[[6L, 12L, 16L, 18L, -4L, 10L]])
-    self.assertEqual(c,['n10.o2'])
+    self.assertEqual(c,['n10_o2_interceptor'])
     pass
 
   def test7(self):
@@ -682,7 +682,7 @@ else:
     a,b,c=n1.getPassedResults(ex)
     self.assertEqual(a,range(3))
     self.assertEqual([elt.getPyObj() for elt in b],[[6L,12L,16L]])
-    self.assertEqual(c,['n10.o2'])
+    self.assertEqual(c,['n10_o2_interceptor'])
     pass
 
   def test8(self):
@@ -746,7 +746,7 @@ else:
     a,b,c=n1.getPassedResults(ex)
     self.assertEqual(a,[0,1,2,4,5])
     self.assertEqual([elt.getPyObj() for elt in b],[[6L,12L,16L,-4L,10L]])
-    self.assertEqual(c,['n10.o2'])
+    self.assertEqual(c,['n10_o2_interceptor'])
     
     p.getChildByName("n1").getChildByName("n10").setScript("""
 import time
@@ -768,7 +768,7 @@ else:
     a,b,c=n1.getPassedResults(ex)
     self.assertEqual(a,[1,2,3,4,5])
     self.assertEqual([elt.getPyObj() for elt in b],[[12L,16L,18L,-4L,10L]])
-    self.assertEqual(c,['n10.o2'])
+    self.assertEqual(c,['n10_o2_interceptor'])
     pass
 
   def test9(self):
@@ -834,7 +834,7 @@ else:
     a,b,c=n1.getPassedResults(ex)
     self.assertEqual(a,[0,1,2,4,5])
     self.assertEqual([elt.getPyObj() for elt in b],[[6L,12L,16L,-4L,10L]])
-    self.assertEqual(c,['n10.o2'])
+    self.assertEqual(c,['n10_o2_interceptor'])
     
     p.getChildByName("n1").getChildByName("n10").setScript("""
 import time
@@ -916,7 +916,7 @@ else:
     a,b,c=n1.getPassedResults(ex)
     self.assertEqual(a,[1,3,5,7,9,11])
     self.assertEqual([elt.getPyObj() for elt in b],[[12L,36L,60L,84L,108L,132L]])
-    self.assertEqual(c,['n10.o2'])
+    self.assertEqual(c,['n10_o2_interceptor'])
     
     p.getChildByName("n1").getChildByName("n10").setScript("""
 import time
@@ -1030,6 +1030,86 @@ else:
     self.assertEqual(n1.getState(),pilot.DONE)
     self.assertEqual(p.getState(),pilot.DONE)
     self.assertEqual(p.getChildByName("n2").getOutputPort("o4").getPyObj(),[0L,5L,4L,15L,8L,25L,12L,35L,16L,45L,20L,55L])
+    pass
+  
+  def test12(self):
+    """ Test of nested ForEachLoop with a port connected inside and outside the loop."""
+    schema = self.r.createProc("schema")
+    ti = schema.getTypeCode("int")
+    tiset = schema.createSequenceTc("", "seqint", ti)
+    tisetseq = schema.createSequenceTc("", "seqintvec", tiset)
+
+    n1 = self.r.createScriptNode("", "PyScript2")
+    n1.edAddInputPort("i3", ti)
+    n1.edAddInputPort("i4", ti)
+    n1.edAddOutputPort("o5", ti)
+    n1.setScript("o5=i3+i4")
+
+    n2 = self.r.createScriptNode("", "PyScript1")
+    n2.edAddInputPort("i2", ti)
+    n2.edAddOutputPort("o3", ti)
+    n2.setScript("o3=i2")
+
+    b1 = self.r.createBloc("Bloc1")
+    b1.edAddChild(n1)
+    b1.edAddChild(n2)
+
+    fe1 = self.r.createForEachLoop("ForEach1", ti)
+    fe1.getInputPort("nbBranches").edInitPy(2)
+    fe1.getInputPort("SmplsCollection").edInitPy([1, 2, 3, 4])
+    fe1.edSetNode(b1)
+
+    n3 = self.r.createScriptNode("", "PostProcessing")
+    n3.edAddInputPort("i7", tiset)
+    n3.edAddInputPort("i5", tiset)
+    n3.edAddOutputPort("o4", ti)
+    n3.setScript("""
+o4 = 0
+for i in i7:
+    o4 = i + o4
+
+for i in i5:
+    o4 = i + o4
+""")
+
+    b0 = self.r.createBloc("Bloc0")
+    b0.edAddChild(fe1)
+    b0.edAddChild(n3)
+
+    fe0 = self.r.createForEachLoop("ForEach1", ti)
+    fe0.getInputPort("nbBranches").edInitPy(2)
+    fe0.getInputPort("SmplsCollection").edInitPy([1, 2, 3, 4])
+    fe0.edSetNode(b0)
+
+    schema.edAddChild(fe0)
+
+    nx = self.r.createScriptNode("", "Result")
+    nx.edAddInputPort("i8", tiset)
+    nx.edAddOutputPort("o6", ti)
+    nx.setScript("""
+o6 = 0
+for i in i8:
+    o6 = i + o6
+""")
+    schema.edAddChild(nx)
+
+    schema.edAddLink(fe1.getOutputPort("evalSamples"), n1.getInputPort("i3"))
+    schema.edAddLink(fe0.getOutputPort("evalSamples"), n1.getInputPort("i4"))
+
+    schema.edAddDFLink(n1.getOutputPort("o5"), n3.getInputPort("i7"))
+    schema.edAddDFLink(n2.getOutputPort("o3"), n3.getInputPort("i5"))
+
+    po5 = fe1.getOutputPort("Bloc1.PyScript2.o5")
+    schema.edAddDFLink(po5, n2.getInputPort("i2"))
+
+    schema.edAddDFLink(n3.getOutputPort("o4"), nx.getInputPort("i8"))
+#    schema.saveSchema("foreach12.xml")
+    
+    e = pilot.ExecutorSwig()
+    e.RunW(schema)
+    self.assertEqual(schema.getState(),pilot.DONE)
+    resVal = schema.getChildByName("Result").getOutputPort("o6").getPyObj()
+    self.assertEqual(resVal, 160)
     pass
 
   def test12(self):

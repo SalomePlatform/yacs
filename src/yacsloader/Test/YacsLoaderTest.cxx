@@ -661,6 +661,9 @@ void YacsLoaderTest::foreachs()
   ret = driverTest(p, "samples/foreach6.xml");
   CPPUNIT_ASSERT_MESSAGE("Schema: foreach6.xml", ret == 0);
   CPPUNIT_ASSERT_MESSAGE("Schema: foreach6.xml", p->getEffectiveState() == YACS::DONE );
+  ret = driverTest(p, "samples/foreach8.xml");
+  CPPUNIT_ASSERT_MESSAGE("Schema: foreach8.xml", ret == 0);
+  CPPUNIT_ASSERT_MESSAGE("Schema: foreach8.xml", p->getEffectiveState() == YACS::DONE );
   if(getenv("GEOM_ROOT_DIR"))
     {
       std::string geomdir(getenv("GEOM_ROOT_DIR"));

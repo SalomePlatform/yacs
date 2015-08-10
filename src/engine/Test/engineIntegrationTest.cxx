@@ -2274,7 +2274,7 @@ void EngineIntegrationTest::testForEachLoop2()
   graph->edAddLink(forEach->edGetSamplePort(),i32);
   graph->edAddLink(o31,n4->edGetInValue1());
   graph->edAddLink(n2->edGetSeqOut(),n4->edGetInValue2());
-  CPPUNIT_ASSERT(dynamic_cast<AnySplitOutputPort *>(graph->getOutputPort("myFE.blocToShakeBaby.T3.o31")));
+  CPPUNIT_ASSERT(graph->getOutputPort("myFE.blocToShakeBaby.T3.o31"));
   int tab[]={12,14,16,18,20};
   vector<int> tabv(tab,tab+5);
   SequenceAnyPtr tmp=SequenceAny::New(tabv);//expected sequence
@@ -2564,6 +2564,7 @@ void EngineIntegrationTest::testForEachLoop5()
   CPPUNIT_ASSERT( *val==*tmp );
   delete graph2;
 }
+
 
 /*!
  * Here a test for OptimizerLoop with an evenemential (or synchronous) algorithm

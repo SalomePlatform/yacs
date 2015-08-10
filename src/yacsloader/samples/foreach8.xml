@@ -1,0 +1,150 @@
+<?xml version='1.0' encoding='iso-8859-1' ?>
+<proc name="schema">
+   <property name="DefaultStudyID" value="1"/>
+   <type name="string" kind="string"/>
+   <struct name="Engines/dataref">
+      <member name="ref" type="string"/>
+   </struct>
+   <type name="bool" kind="bool"/>
+   <sequence name="boolvec" content="bool"/>
+   <type name="double" kind="double"/>
+   <sequence name="dblevec" content="double"/>
+   <objref name="file" id="file"/>
+   <type name="int" kind="int"/>
+   <sequence name="intvec" content="int"/>
+   <struct name="stringpair">
+      <member name="name" type="string"/>
+      <member name="value" type="string"/>
+   </struct>
+   <sequence name="propvec" content="stringpair"/>
+   <objref name="pyobj" id="python:obj:1.0"/>
+   <sequence name="seqboolvec" content="boolvec"/>
+   <sequence name="seqdblevec" content="dblevec"/>
+   <sequence name="seqint" content="int"/>
+   <sequence name="seqintvec" content="intvec"/>
+   <sequence name="stringvec" content="string"/>
+   <sequence name="seqstringvec" content="stringvec"/>
+   <container name="DefaultContainer">
+      <property name="container_kind" value="Salome"/>
+      <property name="attached_on_cloning" value="0"/>
+      <property name="name" value="localhost"/>
+   </container>
+   <foreach name="ForEachLoop_int0" nbranch="2" type="int">
+      <bloc name="Bloc0">
+         <foreach name="ForEachLoop_int1" nbranch="3" type="int">
+            <bloc name="Bloc1">
+               <remote name="PyScript2">
+                  <script><code><![CDATA[o5 = i3 + i4
+]]></code></script>
+                  <load container="DefaultContainer"/>
+                  <inport name="i3" type="int"/>
+                  <inport name="i4" type="int"/>
+                  <outport name="o5" type="int"/>
+               </remote>
+               <inline name="PyScript1">
+                  <script><code><![CDATA[o3=7
+]]></code></script>
+                  <inport name="i2" type="int"/>
+                  <outport name="o3" type="int"/>
+               </inline>
+               <control> <fromnode>PyScript2</fromnode> <tonode>PyScript1</tonode> </control>
+               <datalink control="false">
+                  <fromnode>PyScript2</fromnode> <fromport>o5</fromport>
+                  <tonode>PyScript1</tonode> <toport>i2</toport>
+               </datalink>
+            </bloc>
+         </foreach>
+         <inline name="PostTraitement">
+            <script><code><![CDATA[o3 = 0
+for i in i6:
+    o3 = i + o3
+
+for i in i5:
+    o3 = i + o3
+]]></code></script>
+            <load container="DefaultContainer"/>
+            <inport name="i6" type="intvec"/>
+            <inport name="i5" type="intvec"/>
+            <outport name="o3" type="int"/>
+         </inline>
+         <control> <fromnode>ForEachLoop_int1</fromnode> <tonode>PostTraitement</tonode> </control>
+         <datalink control="false">
+            <fromnode>ForEachLoop_int1</fromnode> <fromport>evalSamples</fromport>
+            <tonode>ForEachLoop_int1.Bloc1.PyScript2</tonode> <toport>i4</toport>
+         </datalink>
+         <datalink control="false">
+            <fromnode>ForEachLoop_int1.Bloc1.PyScript2</fromnode> <fromport>o5</fromport>
+            <tonode>PostTraitement</tonode> <toport>i6</toport>
+         </datalink>
+         <datalink control="false">
+            <fromnode>ForEachLoop_int1.Bloc1.PyScript1</fromnode> <fromport>o3</fromport>
+            <tonode>PostTraitement</tonode> <toport>i5</toport>
+         </datalink>
+      </bloc>
+   </foreach>
+   <outnode name="OutNode">
+      <parameter name="i1" type="intvec"/>
+   </outnode>
+   <control> <fromnode>ForEachLoop_int0</fromnode> <tonode>OutNode</tonode> </control>
+   <datalink control="false">
+      <fromnode>ForEachLoop_int0</fromnode> <fromport>evalSamples</fromport>
+      <tonode>ForEachLoop_int0.Bloc0.ForEachLoop_int1.Bloc1.PyScript2</tonode> <toport>i3</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>ForEachLoop_int0.Bloc0.PostTraitement</fromnode> <fromport>o3</fromport>
+      <tonode>OutNode</tonode> <toport>i1</toport>
+   </datalink>
+   <parameter>
+      <tonode>ForEachLoop_int0.Bloc0.ForEachLoop_int1</tonode><toport>nbBranches</toport>
+      <value><int>3</int></value>
+   </parameter>
+   <parameter>
+      <tonode>ForEachLoop_int0.Bloc0.ForEachLoop_int1</tonode><toport>SmplsCollection</toport>
+      <value><array><data>
+<value><int>1</int></value>
+<value><int>2</int></value>
+<value><int>3</int></value>
+<value><int>4</int></value>
+</data></array></value>
+   </parameter>
+   <parameter>
+      <tonode>ForEachLoop_int0.Bloc0.ForEachLoop_int1</tonode><toport>SmplsCollection</toport>
+      <value><array><data>
+<value><int>1</int></value>
+<value><int>2</int></value>
+<value><int>3</int></value>
+<value><int>4</int></value>
+</data></array></value>
+   </parameter>
+   <parameter>
+      <tonode>ForEachLoop_int0</tonode><toport>nbBranches</toport>
+      <value><int>2</int></value>
+   </parameter>
+   <parameter>
+      <tonode>ForEachLoop_int0</tonode><toport>SmplsCollection</toport>
+      <value><array><data>
+<value><int>1</int></value>
+<value><int>2</int></value>
+<value><int>3</int></value>
+<value><int>4</int></value>
+</data></array></value>
+   </parameter>
+   <parameter>
+      <tonode>ForEachLoop_int0</tonode><toport>SmplsCollection</toport>
+      <value><array><data>
+<value><int>1</int></value>
+<value><int>2</int></value>
+<value><int>3</int></value>
+<value><int>4</int></value>
+</data></array></value>
+   </parameter>
+   <presentation name="ForEachLoop_int0.Bloc0.ForEachLoop_int1.Bloc1" x="6" y="88" width="357.75" height="127.75" expanded="1" expx="6" expy="88" expWidth="357.75" expHeight="127.75" shownState="0"/>
+   <presentation name="ForEachLoop_int0.Bloc0.ForEachLoop_int1.Bloc1.PyScript2" x="1.75" y="33.75" width="158" height="90" expanded="1" expx="1.75" expy="33.75" expWidth="158" expHeight="90" shownState="0"/>
+   <presentation name="ForEachLoop_int0.Bloc0.ForEachLoop_int1.Bloc1.PyScript1" x="195.75" y="60.75" width="158" height="63" expanded="1" expx="195.75" expy="60.75" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="ForEachLoop_int0.Bloc0" x="6" y="88" width="636.75" height="257.625" expanded="1" expx="6" expy="88" expWidth="636.75" expHeight="257.625" shownState="0"/>
+   <presentation name="ForEachLoop_int0.Bloc0.ForEachLoop_int1" x="1.875" y="33.875" width="367.75" height="219.75" expanded="1" expx="1.875" expy="33.875" expWidth="367.75" expHeight="219.75" shownState="0"/>
+   <presentation name="ForEachLoop_int0" x="4.75" y="32" width="646.75" height="349.625" expanded="1" expx="4.75" expy="32" expWidth="646.75" expHeight="349.625" shownState="0"/>
+   <presentation name="ForEachLoop_int0.Bloc0.PostTraitement" x="474.75" y="138.25" width="158" height="90" expanded="1" expx="474.75" expy="138.25" expWidth="158" expHeight="90" shownState="0"/>
+   <presentation name="OutNode" x="669.5" y="258" width="158" height="63" expanded="1" expx="669.5" expy="258" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="__ROOT__" x="0" y="0" width="831.5" height="385.625" expanded="1" expx="0" expy="0" expWidth="831.5" expHeight="385.625" shownState="0"/>
+</proc>
