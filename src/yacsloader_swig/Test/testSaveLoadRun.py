@@ -1112,7 +1112,7 @@ for i in i8:
     self.assertEqual(resVal, 160)
     pass
 
-  def test12(self):
+  def test13(self):
     """ Non regression test EDF11239. ForEach into ForEach. Problem on cloning linked to DeloymentTree.appendTask method that was too strong."""
     p=self.r.createProc("Bug11239")
     ti=p.createType("int","int")
