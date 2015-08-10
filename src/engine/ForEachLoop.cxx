@@ -27,6 +27,7 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
+#include <algorithm>    // std::replace_if
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -466,7 +467,7 @@ ForEachLoop::ForEachLoop(const ForEachLoop& other, ComposedNode *father, bool ed
       {
         AnySplitOutputPort *temp=new AnySplitOutputPort(*(*iter2),this);
         InterceptorInputPort *interc=new InterceptorInputPort(*other._intecptrsForOutGoingPorts[i],this);
-        temp->addRepr(getOutPort((*iter2)->getName()),interc);
+        temp->addRepr(getOutPort(other.getOutPortName((*iter2)->getRepr())),interc);
         interc->setRepr(temp);
         _outGoingPorts.push_back(temp);
         _intecptrsForOutGoingPorts.push_back(interc);
@@ -898,8 +899,16 @@ void ForEachLoop::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort 
       else
         {
           TypeCodeSeq *newTc=(TypeCodeSeq *)TypeCode::sequenceTc("","",port.first->edGetType());
-          AnySplitOutputPort *newPort=new AnySplitOutputPort(getPortName(port.first),this,newTc);
-          InterceptorInputPort *intercptor=new InterceptorInputPort(string("intercptr for ")+getPortName(port.first),this,port.first->edGetType());
+          // The out going ports belong to the ForEachLoop, whereas
+          // the delegated port belong to a node child of the ForEachLoop.
+          // The name of the delegated port contains dots (bloc.node.outport),
+          // whereas the name of the out going port shouldn't do.
+          std::string outputPortName = getPortName(port.first);
+          std::replace_if (outputPortName.begin(), outputPortName.end(),
+                           std::bind1st(std::equal_to<char>(), '.'), '_');
+          outputPortName += "_interceptor";
+          AnySplitOutputPort *newPort=new AnySplitOutputPort(outputPortName,this,newTc);
+          InterceptorInputPort *intercptor=new InterceptorInputPort(outputPortName + "_in",this,port.first->edGetType());
           intercptor->setRepr(newPort);
           newTc->decrRef();
           newPort->addRepr(port.first,intercptor);

@@ -59,7 +59,10 @@ Bloc::Bloc(const Bloc& other, ComposedNode *father, bool editionOnly):StaticDefi
     {
       OutPort* pout = iter2->first;
       InPort* pin = iter2->second;
-      edAddLink(getOutPort(other.getPortName(pout)),getInPort(other.getPortName(pin)));
+      if(&other == getLowestCommonAncestor(pout->getNode(), pin->getNode()))
+      {
+        edAddLink(getOutPort(other.getPortName(pout)),getInPort(other.getPortName(pin)));
+      }
     }
 }
 
