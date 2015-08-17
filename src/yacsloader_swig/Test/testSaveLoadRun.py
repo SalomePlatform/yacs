@@ -1171,6 +1171,48 @@ for i in i8:
     self.assertEqual(p.getState(),pilot.DONE)
     pass
 
+  def test14(self):
+    """ Non regression EDF11027. Problem after Save/Load of a foreach node with type pyobj with input "SmplsCollection" manually set before. Correction in convertToYacsObjref from XML->Neutral. Objref can hide a string !"""
+    xmlFileName="test14.xml"
+    SALOMERuntime.RuntimeSALOME_setRuntime()
+    r=pilot.getRuntime()
+    n0=r.createProc("test23/zeRun")
+    tp=n0.createInterfaceTc("python:obj:1.0","pyobj",[])
+    tp2=n0.createSequenceTc("list[pyobj]","list[pyobj]",tp)
+    n0bis=r.createBloc("test23/main") ; n0.edAddChild(n0bis)
+    n00=r.createBloc("test23/run") ; n0bis.edAddChild(n00)
+    #
+    n000=r.createForEachLoop("test23/FE",tp) ; n00.edAddChild(n000)
+    n0000=r.createScriptNode("Salome","test23/run_internal") ; n000.edSetNode(n0000)
+    i0=n0000.edAddInputPort("i0",tp)
+    i1=n0000.edAddInputPort("i1",tp) ; i1.edInitPy(3)
+    o0=n0000.edAddOutputPort("o0",tp)
+    n0000.setScript("o0=i0+i1")
+    #
+    n00.edAddLink(n000.edGetSamplePort(),i0)
+    #
+    n000.edGetSeqOfSamplesPort().edInitPy(range(10))
+    n000.edGetNbOfBranchesPort().edInitInt(2)
+    #
+    n01=r.createScriptNode("Salome","test23/check") ; n0bis.edAddChild(n01)
+    n0bis.edAddCFLink(n00,n01)
+    i2=n01.edAddInputPort("i2",tp2)
+    o1=n01.edAddOutputPort("o1",tp2)
+    n01.setScript("o1=i2")
+    n0bis.edAddLink(o0,i2)
+    #
+    n0.saveSchema(xmlFileName)
+    #
+    l=loader.YACSLoader()
+    p=l.load(xmlFileName) # very import do not use n0 but use p instead !
+    ex=pilot.ExecutorSwig()
+    #
+    self.assertEqual(p.getState(),pilot.READY)
+    ex.RunW(p,0)
+    self.assertEqual(p.getState(),pilot.DONE)
+    self.assertEqual(p.getChildByName("test23/main.test23/check").getOutputPort("o1").getPyObj(),[3,4,5,6,7,8,9,10,11,12])
+    pass
+
   pass
 
 if __name__ == '__main__':

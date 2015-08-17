@@ -1306,6 +1306,17 @@ namespace YACS
                     }
                   return mystr;
                 }
+              else if ((!xmlStrcmp(cur->name, (const xmlChar *)"string")))// <- here case where pyobj value has been stored in XML. pyobj has kind==ObjRef. And the stored format is String ! EDF11027
+                {
+                  //wait a string, got a string
+                  xmlChar * s = NULL;
+                  s = xmlNodeListGetString(doc, cur->xmlChildrenNode, 1);
+                  if(s==0)return "";
+                  DEBTRACE( "convertToYacsString " << (const char *)s );
+                  std::string mystr=std::string((const char *)s);
+                  xmlFree(s);
+                  return mystr;
+                }
               cur = cur->next;
             }
           stringstream msg;
