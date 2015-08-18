@@ -28,17 +28,20 @@ const char DataPort::NAME[]="DataPort";
 
 DataPort::~DataPort()
 {
-  _type->decrRef();
+  if(_type)
+    _type->decrRef();
 }
 
 DataPort::DataPort(const std::string& name, Node *node, TypeCode* type):Port(node),_name(name),_type(type)
 {
-  _type->incrRef();
+  if(_type)
+	_type->incrRef();
 }
 
 DataPort::DataPort(const DataPort& other, Node *newHelder):Port(other,newHelder),_name(other._name),_type(other._type)
 {
-  _type->incrRef();
+  if(_type)
+	_type->incrRef();
 }
 
 void DataPort::edSetType(TypeCode* type)

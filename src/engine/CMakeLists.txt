@@ -99,6 +99,13 @@ SET(YACSlibEngine_HEADERS
   AnyOutputPort.hxx
   ServerNode.hxx
   InPropertyPort.hxx
+  AbstractPoint.hxx
+  BlocPoint.hxx
+  BagPoint.hxx
+  ForkBlocPoint.hxx
+  LinkedBlocPoint.hxx
+  ElementaryPoint.hxx
+  SetOfPoints.hxx
   )
 
 # --- sources ---
@@ -164,6 +171,13 @@ SET(YACSlibEngine_SOURCES
   Task.cxx
   Scheduler.cxx
   InPropertyPort.cxx
+  AbstractPoint.cxx
+  BlocPoint.cxx
+  BagPoint.cxx
+  ForkBlocPoint.cxx
+  LinkedBlocPoint.cxx
+  ElementaryPoint.cxx
+  SetOfPoints.cxx
   )
 
 # --- rules ---

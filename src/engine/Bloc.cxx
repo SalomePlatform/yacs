@@ -26,6 +26,7 @@
 #include "ElementaryNode.hxx"
 #include "Visitor.hxx"
 
+#include <queue>
 #include <iostream>
 #include <numeric>
 
@@ -222,6 +223,54 @@ void Bloc::edRemoveChild(Node *node) throw(YACS::Exception)
       _setOfNode.erase(iter);
       modified();
     }
+}
+
+std::vector< std::list<Node *> > Bloc::splitIntoIndependantGraph() const
+{
+  std::size_t sz(_setOfNode.size());
+  list<Node *>::const_iterator it=_setOfNode.begin();
+  for(;it!=_setOfNode.end();it++)
+    (*it)->_colour=White;
+  it=_setOfNode.begin();
+  std::vector< list<Node *> > ret;
+  while(it!=_setOfNode.end())
+    {
+      Node *start(*it); start->_colour=Grey;
+      ret.push_back(list<Node *>());
+      list<Node *>& ll(ret.back());
+      std::queue<Node *> fifo; fifo.push(start);
+      while(!fifo.empty())
+        {
+          Node *cur(fifo.front()); fifo.pop();
+          ll.push_back(cur);
+          //
+          OutGate *og(cur->getOutGate());
+          set<InGate *> og2(og->edSetInGate());
+          for(set<InGate *>::const_iterator it2=og2.begin();it2!=og2.end();it2++)
+            {
+              Node *cur2((*it2)->getNode());
+              if(cur2->_colour==White)
+                {
+                  cur2->_colour=Grey;
+                  fifo.push(cur2);
+                }
+            }
+          //
+          InGate *ig(cur->getInGate());
+          list<OutGate *> bl(ig->getBackLinks());
+          for(list<OutGate *>::const_iterator it3=bl.begin();it3!=bl.end();it3++)
+            {
+              Node *cur3((*it3)->getNode());
+              if(cur3->_colour==White)
+                {
+                  cur3->_colour=Grey;
+                  fifo.push(cur3);
+                }
+            }
+        }
+      for(it=_setOfNode.begin();it!=_setOfNode.end() && (*it)->_colour!=White;it++);
+    }
+  return ret;
 }
 
 Node *Bloc::getChildByShortName(const std::string& name) const throw(YACS::Exception)

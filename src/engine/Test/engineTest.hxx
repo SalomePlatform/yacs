@@ -59,6 +59,10 @@ namespace YACS
     CPPUNIT_TEST(RecursiveBlocs_removeNodes );
     CPPUNIT_TEST(cleanUp);
     CPPUNIT_TEST(checkLogger);
+    CPPUNIT_TEST(checkGraphAnalyser0);
+    CPPUNIT_TEST(checkGraphAnalyser1);
+    CPPUNIT_TEST(checkGraphAnalyser2);
+    CPPUNIT_TEST(checkGraphAnalyser3);
     CPPUNIT_TEST_SUITE_END();
       
   public:
@@ -93,7 +97,10 @@ namespace YACS
     void RecursiveBlocs_multipleRecursion();
     void RecursiveBlocs_removeNodes();
     void checkLogger();
-      
+    void checkGraphAnalyser0();
+    void checkGraphAnalyser1();
+    void checkGraphAnalyser2();
+    void checkGraphAnalyser3();
   protected:
     static std::map<std::string, YACS::ENGINE::Node*> _nodeMap; 
     static std::map<std::string, YACS::ENGINE::ComposedNode*> _compoMap;

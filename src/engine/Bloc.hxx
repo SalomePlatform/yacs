@@ -51,6 +51,7 @@ namespace YACS
       void edRemoveChild(Node *node) throw(Exception);
       std::list<Node *> getChildren() const { return _setOfNode; }
       std::list<Node *> edGetDirectDescendants() const { return _setOfNode; }
+      std::vector< std::list<Node *> > splitIntoIndependantGraph() const;
       Node *getChildByShortName(const std::string& name) const throw(Exception);
       virtual void writeDot(std::ostream &os) const;
       void accept(Visitor *visitor);

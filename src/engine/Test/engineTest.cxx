@@ -26,6 +26,7 @@
 #include "Loop.hxx"
 #include "Switch.hxx"
 #include "VisitorSaveState.hxx"
+#include "SetOfPoints.hxx"
 
 #include "SharedPtr.hxx"
 #include "RuntimeForEngineTest.hxx"
@@ -1071,4 +1072,156 @@ void EngineTest::checkLogger()
                         "LogRecord: parser:ERROR:error3 (file.cxx:978)\n";
   CPPUNIT_ASSERT(logger->getStr()==expected2);
   delete proc;
+}
+
+void EngineTest::checkGraphAnalyser0()
+{
+  {
+    static const int N=2;
+    Bloc *t[N];
+    Bloc proc("proc");
+    for(int i=0;i<N;i++)
+      {
+        std::ostringstream oss; oss << "n" << i+1;
+        t[i]=new Bloc(oss.str());
+        proc.edAddChild(t[i]);
+      }
+    proc.edAddCFLink(t[0],t[1]);
+    std::vector< std::list<Node *> > r(proc.splitIntoIndependantGraph());
+    CPPUNIT_ASSERT_EQUAL(1,(int)r.size());
+    CPPUNIT_ASSERT_EQUAL(N,(int)r[0].size());
+    SetOfPoints sop(r[0]);
+    sop.simplify();
+    CPPUNIT_ASSERT(sop.getRepr()=="(n1+n2) - ");
+  }
+}
+
+void EngineTest::checkGraphAnalyser1()
+{
+  {
+    static const int N=24;
+    Bloc *t[N];
+    Bloc proc("proc");
+    for(int i=0;i<N;i++)
+      {
+        std::ostringstream oss; oss << "n" << i+1;
+        t[i]=new Bloc(oss.str());
+        proc.edAddChild(t[i]);
+      }
+    proc.edAddCFLink(t[20],t[21]); proc.edAddCFLink(t[21],t[15]); proc.edAddCFLink(t[15],t[14]); proc.edAddCFLink(t[14],t[0]); proc.edAddCFLink(t[0],t[1]); proc.edAddCFLink(t[1],t[23]); proc.edAddCFLink(t[23],t[5]);
+    proc.edAddCFLink(t[14],t[13]); proc.edAddCFLink(t[13],t[5]);
+    proc.edAddCFLink(t[15],t[12]); proc.edAddCFLink(t[12],t[11]); proc.edAddCFLink(t[11],t[9]); proc.edAddCFLink(t[9],t[8]); proc.edAddCFLink(t[8],t[7]); proc.edAddCFLink(t[7],t[6]); proc.edAddCFLink(t[6],t[5]);
+    proc.edAddCFLink(t[11],t[10]); proc.edAddCFLink(t[10],t[8]);
+    proc.edAddCFLink(t[15],t[16]); proc.edAddCFLink(t[16],t[17]); proc.edAddCFLink(t[17],t[19]); proc.edAddCFLink(t[19],t[2]); proc.edAddCFLink(t[2],t[4]); proc.edAddCFLink(t[4],t[5]);
+    proc.edAddCFLink(t[19],t[18]); proc.edAddCFLink(t[18],t[4]);
+    proc.edAddCFLink(t[19],t[3]); proc.edAddCFLink(t[3],t[4]);
+    proc.edAddCFLink(t[22],t[21]);
+    std::vector< std::list<Node *> > r(proc.splitIntoIndependantGraph());
+    CPPUNIT_ASSERT_EQUAL(1,(int)r.size());
+    CPPUNIT_ASSERT_EQUAL(N,(int)r[0].size());
+    SetOfPoints sop(r[0]);
+    sop.simplify();
+    CPPUNIT_ASSERT(sop.getRepr()=="([n21*n23]+(n22+n16+[((n13+n12)+[n10*n11]+(n9+n8+n7))*((n17+n18+n20)+[n19*n3*n4]+n5)*(n15+[(n1+n2+n24)*n14])]+n6)) - ");
+  }
+  //
+  {
+    static const int N=10;
+    Bloc *t[N];
+    Bloc proc("proc");
+    for(int i=0;i<N;i++)
+      {
+        std::ostringstream oss; oss << "n" << i+1;
+        t[i]=new Bloc(oss.str());
+        proc.edAddChild(t[i]);
+      }
+    proc.edAddCFLink(t[9],t[0]); proc.edAddCFLink(t[0],t[2]); proc.edAddCFLink(t[2],t[4]); proc.edAddCFLink(t[4],t[5]);
+    proc.edAddCFLink(t[0],t[1]); proc.edAddCFLink(t[1],t[6]); proc.edAddCFLink(t[6],t[7]); proc.edAddCFLink(t[7],t[5]);
+    proc.edAddCFLink(t[0],t[8]); proc.edAddCFLink(t[8],t[3]); proc.edAddCFLink(t[3],t[4]);
+    std::vector< std::list<Node *> > r(proc.splitIntoIndependantGraph());
+    CPPUNIT_ASSERT_EQUAL(1,(int)r.size());
+    CPPUNIT_ASSERT_EQUAL(N,(int)r[0].size());
+    SetOfPoints sop(r[0]);
+    sop.simplify();
+    CPPUNIT_ASSERT(sop.getRepr()=="((n10+n1)+[([(n9+n4)*n3]+n5)*(n2+n7+n8)]+n6) - ");
+  }
+}
+
+void EngineTest::checkGraphAnalyser2()
+{
+  {
+    static const int N=8;
+    Bloc *t[N];
+    Bloc proc("proc");
+    for(int i=0;i<N;i++)
+      {
+        std::ostringstream oss; oss << "n" << i+1;
+        t[i]=new Bloc(oss.str());
+        proc.edAddChild(t[i]);
+      }
+    proc.edAddCFLink(t[7],t[4]); proc.edAddCFLink(t[4],t[0]); proc.edAddCFLink(t[0],t[1]); proc.edAddCFLink(t[1],t[5]); proc.edAddCFLink(t[5],t[6]);
+    proc.edAddCFLink(t[4],t[2]); proc.edAddCFLink(t[2],t[3]); proc.edAddCFLink(t[3],t[5]);
+    std::vector< std::list<Node *> > r(proc.splitIntoIndependantGraph());
+    CPPUNIT_ASSERT_EQUAL(1,(int)r.size());
+    CPPUNIT_ASSERT_EQUAL(N,(int)r[0].size());
+    SetOfPoints sop(r[0]);
+    sop.simplify();
+    CPPUNIT_ASSERT(sop.getRepr()=="((n8+n5)+[(n1+n2)*(n3+n4)]+(n6+n7)) - ");
+  }
+  //
+  {
+    static const int NN=6;
+    Bloc *tt[NN];
+    Bloc proc2("proc2");
+    tt[0]=new Bloc("n21") ; tt[1]=new Bloc("n22") ; tt[2]=new Bloc("n23") ; tt[3]=new Bloc("n16"); tt[4]=new Bloc("n21@1"); tt[5]=new Bloc("n23@1");
+    for(int i=0;i<NN;i++)
+      proc2.edAddChild(tt[i]);
+    proc2.edAddCFLink(tt[0],tt[4]); proc2.edAddCFLink(tt[4],tt[1]); proc2.edAddCFLink(tt[2],tt[5]); proc2.edAddCFLink(tt[5],tt[1]); proc2.edAddCFLink(tt[1],tt[3]);
+    std::vector< std::list<Node *> > rr(proc2.splitIntoIndependantGraph());
+    CPPUNIT_ASSERT_EQUAL(1,(int)rr.size());
+    CPPUNIT_ASSERT_EQUAL(NN,(int)rr[0].size());
+    SetOfPoints sop2(rr[0]);
+    sop2.simplify();
+    CPPUNIT_ASSERT(sop2.getRepr()=="([(n21+n21@1)*(n23+n23@1)]+(n22+n16)) - ");
+  }
+  //
+  {
+    static const int NNN=6;
+    Bloc *ttt[NNN];
+    Bloc proc3("proc3");
+    ttt[0]=new Bloc("n21") ; ttt[1]=new Bloc("n22") ; ttt[2]=new Bloc("n23") ; ttt[3]=new Bloc("n16"); ttt[4]=new Bloc("n21@1"); ttt[5]=new Bloc("n23@1");
+    for(int i=0;i<NNN;i++)
+      proc3.edAddChild(ttt[i]);
+    proc3.edAddCFLink(ttt[0],ttt[4]); proc3.edAddCFLink(ttt[3],ttt[0]); proc3.edAddCFLink(ttt[2],ttt[5]); proc3.edAddCFLink(ttt[3],ttt[2]); proc3.edAddCFLink(ttt[1],ttt[3]);
+    std::vector< std::list<Node *> > rrr(proc3.splitIntoIndependantGraph());
+    CPPUNIT_ASSERT_EQUAL(1,(int)rrr.size());
+    CPPUNIT_ASSERT_EQUAL(NNN,(int)rrr[0].size());
+    SetOfPoints sop3(rrr[0]);
+    sop3.simplify();
+    CPPUNIT_ASSERT(sop3.getRepr()=="((n22+n16)+[(n21+n21@1)*(n23+n23@1)]) - ");
+  }
+}
+
+void EngineTest::checkGraphAnalyser3()
+{
+  {
+    static const int NNN=6;
+    Bloc *ttt[NNN];
+    Bloc proc3("proc3");
+    for(int i=0;i<NNN;i++)
+      {
+        std::ostringstream oss; oss << "n" << i+1;
+        ttt[i]=new Bloc(oss.str());
+        proc3.edAddChild(ttt[i]);
+      }
+    proc3.edAddCFLink(ttt[0],ttt[1]); proc3.edAddCFLink(ttt[1],ttt[4]);
+    proc3.edAddCFLink(ttt[0],ttt[2]); proc3.edAddCFLink(ttt[2],ttt[3]); proc3.edAddCFLink(ttt[3],ttt[4]);
+    proc3.edAddCFLink(ttt[5],ttt[3]);
+    std::vector< std::list<Node *> > rrr(proc3.splitIntoIndependantGraph());
+    CPPUNIT_ASSERT_EQUAL(1,(int)rrr.size());
+    CPPUNIT_ASSERT_EQUAL(NNN,(int)rrr[0].size());
+    SetOfPoints sop3(rrr[0]);
+    //sop3.simplify();
+    //std:cerr  << std::endl << sop3.getRepr() << std::endl;
+    //CPPUNIT_ASSERT(sop3.getRepr()=="((n22+n16)+[(n21+n21@1)*(n23+n23@1)]) - ");
+  }
 }
