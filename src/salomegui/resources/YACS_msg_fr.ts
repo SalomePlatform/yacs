@@ -151,7 +151,7 @@
     </message>
     <message>
         <source>New Schema</source>
-        <translation>Nouvel schéma</translation>
+        <translation>Nouveau schéma</translation>
     </message>
     <message>
         <source>Import a YACS Schema for edition</source>
