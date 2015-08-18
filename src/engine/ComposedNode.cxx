@@ -28,6 +28,7 @@
 #include "DataStreamPort.hxx"
 #include "ElementaryNode.hxx"
 #include "ComponentInstance.hxx"
+#include "ForEachLoop.hxx"
 
 #include <iostream>
 #include <set>
@@ -1128,6 +1129,49 @@ list<Node *> ComposedNode::getAllRecursiveNodes()
         }
     }
   ret.push_back(this);
+  return ret;
+}
+
+
+//! Get the progress weight for all elementary nodes
+/*!
+ * Only elementary nodes have weight. If a node is in a for each loop, his weight is modified by the size of the loop
+ *
+ */
+list<pair<int,int> > ComposedNode::getProgressWeight()
+{
+	list<pair<int,int> > ret;
+	list<Node *> setOfNode=edGetDirectDescendants();
+	int elemDone, elemTotal;
+	for(list<Node *>::const_iterator iter=setOfNode.begin();iter!=setOfNode.end();iter++)
+		{
+			if ( dynamic_cast<ForEachLoop*> (*iter) )
+				{
+					elemDone=((ForEachLoop*)(*iter))->getCurrentIndex();
+					elemTotal=((ForEachLoop*)(*iter))->getNbOfElementsToBeProcessed();
+					list<pair<int,int> > myCurrentSet=((ComposedNode*)(*iter))->getProgressWeight();
+					myCurrentSet.pop_front();
+					myCurrentSet.pop_back();
+					for(list<pair<int,int> >::iterator iter=myCurrentSet.begin();iter!=myCurrentSet.end();iter++)
+						{
+							(*iter).first=(*iter).second*elemDone;
+							(*iter).second*=elemTotal;
+						}
+					ret.insert(ret.end(),myCurrentSet.begin(),myCurrentSet.end());
+				}
+			else if ( dynamic_cast<ComposedNode*> (*iter) )
+				{
+				  list<pair<int,int> > myCurrentSet=((ComposedNode*)(*iter))->getProgressWeight();
+					ret.insert(ret.end(),myCurrentSet.begin(),myCurrentSet.end());
+				}
+			else
+				{
+				  if ((*iter)->getState() == YACS::DONE)
+					  ret.push_back(pair<int,int>(1,1));
+					else
+						ret.push_back(pair<int,int>(0,1));
+				}
+		}
   return ret;
 }
 

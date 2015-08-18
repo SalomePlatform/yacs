@@ -230,6 +230,22 @@ std::string Proc::getNodeProgress(int numId)
   return progress;
 }
 
+int Proc::getGlobalProgressPercent()
+{
+	list<pair <int,int> > weightList = getProgressWeight();
+	int weightDone = 0;
+	int weightTotal = 0;
+	int progressPercent = 0;
+	for(list<pair <int,int> >::const_iterator iter=weightList.begin();iter!=weightList.end();iter++)
+	  {
+		  weightDone += (*iter).first;
+			weightTotal += (*iter).second;
+	  }
+  if (weightTotal > 0)
+  	progressPercent = int(float(weightDone) / float(weightTotal) * 100);
+  return progressPercent;
+}
+
 std::string Proc::getXMLState(int numId)
 {
   if(YACS::ENGINE::Node::idMap.count(numId) == 0)
