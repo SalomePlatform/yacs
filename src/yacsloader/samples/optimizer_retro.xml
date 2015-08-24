@@ -1,0 +1,73 @@
+<?xml version='1.0' encoding='iso-8859-1' ?>
+<proc name="optim">
+   <property name="DefaultStudyID" value="1"/>
+   <type name="string" kind="string"/>
+   <struct name="Engines/dataref">
+      <member name="ref" type="string"/>
+   </struct>
+   <type name="bool" kind="bool"/>
+   <sequence name="boolvec" content="bool"/>
+   <type name="double" kind="double"/>
+   <sequence name="dblevec" content="double"/>
+   <objref name="file" id="file"/>
+   <type name="int" kind="int"/>
+   <sequence name="intvec" content="int"/>
+   <struct name="stringpair">
+      <member name="name" type="string"/>
+      <member name="value" type="string"/>
+   </struct>
+   <sequence name="propvec" content="stringpair"/>
+   <objref name="pyobj" id="python:obj:1.0"/>
+   <sequence name="seqboolvec" content="boolvec"/>
+   <sequence name="seqdblevec" content="dblevec"/>
+   <sequence name="seqintvec" content="intvec"/>
+   <sequence name="stringvec" content="string"/>
+   <sequence name="seqstringvec" content="stringvec"/>
+   <container name="DefaultContainer">
+      <property name="container_kind" value="Salome"/>
+      <property name="attached_on_cloning" value="0"/>
+      <property name="container_name" value="FactoryServer"/>
+      <property name="name" value="localhost"/>
+   </container>
+   <forloop name="ForLoop1" nsteps="2">
+      <optimizer name="OptimizerLoop2" nbranch="3" lib="optim_plugin.py" entry="myalgosync">
+         <inline name="PyScript3">
+            <script><code><![CDATA[o4=i5
+]]></code></script>
+            <inport name="i5" type="int"/>
+            <outport name="o4" type="int"/>
+         </inline>
+      </optimizer>
+      <datalink control="false">
+         <fromnode>OptimizerLoop2</fromnode> <fromport>evalSamples</fromport>
+         <tonode>OptimizerLoop2.PyScript3</tonode> <toport>i5</toport>
+      </datalink>
+      <datalink control="false">
+         <fromnode>OptimizerLoop2</fromnode> <fromport>algoResults</fromport>
+         <tonode>OptimizerLoop2</tonode> <toport>algoInit</toport>
+      </datalink>
+      <datalink control="false">
+         <fromnode>OptimizerLoop2.PyScript3</fromnode> <fromport>o4</fromport>
+         <tonode>OptimizerLoop2</tonode> <toport>evalResults</toport>
+      </datalink>
+   </forloop>
+   <inline name="PyScript0">
+      <script><code><![CDATA[o1=7
+]]></code></script>
+      <load container="DefaultContainer"/>
+      <outport name="o1" type="int"/>
+   </inline>
+   <control> <fromnode>PyScript0</fromnode> <tonode>ForLoop1</tonode> </control>
+   <datalink control="false">
+      <fromnode>PyScript0</fromnode> <fromport>o1</fromport>
+      <tonode>ForLoop1.OptimizerLoop2</tonode> <toport>algoInit</toport>
+   </datalink>
+   <parameter>
+      <tonode>ForLoop1</tonode><toport>nsteps</toport>
+      <value><int>2</int></value>
+   </parameter>
+   <parameter>
+      <tonode>ForLoop1.OptimizerLoop2</tonode><toport>nbBranches</toport>
+      <value><int>3</int></value>
+   </parameter>
+</proc>

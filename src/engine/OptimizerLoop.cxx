@@ -475,12 +475,27 @@ void OptimizerLoop::buildDelegateOf(InPort * & port, OutPort *initialStart, cons
 {
   DynParaLoop::buildDelegateOf(port,initialStart,pointsOfView);
   if(port==&_retPortForOutPool)
-    throw Exception("OptimizerLoop::buildDelegateOf : uncorrect OptimizerLoop link : out pool port must be linked within the scope of OptimizerLoop node it belongs to.");
+  {
+    std::string linkName("(");
+    linkName += initialStart->getName()+" to "+port->getName()+")";
+    throw Exception(std::string("Illegal OptimizerLoop link: \
+The 'evalResults' port must be linked within the scope of the loop.")
+                    + linkName);
+  }
 }
 
 void OptimizerLoop::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView)
 {
   DynParaLoop::buildDelegateOf(port,finalTarget,pointsOfView);
+  if(port.first != &_algoResultPort)
+  {
+    std::string linkName("(");
+    linkName += port.first->getName()+" to "+finalTarget->getName()+")";
+    throw Exception(std::string("Illegal OptimizerLoop link: \
+Only the algorithm result port can be linked to a port outside the scope of the loop.")
+                    + linkName);
+  }
+
   string typeOfPortInstance=(port.first)->getNameOfTypeOfCurrentInstance();
   if(typeOfPortInstance!=OutputPort::NAME)
     throw Exception("OptimizerLoop::buildDelegateOf : not implemented for DS because not specified ");
@@ -504,6 +519,29 @@ void OptimizerLoop::checkCFLinks(const std::list<OutPort *>& starts, InputPort *
     solveObviousOrDelegateCFLinks(starts,end,alreadyFed,direction,info);
   else
     DynParaLoop::checkCFLinks(starts,end,alreadyFed,direction,info);
+}
+
+void OptimizerLoop::checkLinkPossibility(OutPort *start, const std::list<ComposedNode *>& pointsOfViewStart,
+                          InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) throw(Exception)
+{
+  DynParaLoop::checkLinkPossibility(start, pointsOfViewStart, end, pointsOfViewEnd);
+  std::string linkName("(");
+  linkName += start->getName()+" to "+end->getName()+")";
+
+  // Yes, it should be possible to link back the result port to any input port of the loop.
+  if(end == &_nbOfBranches or end == &_algoInitPort)
+    if(start != &_algoResultPort)
+      throw Exception(std::string("Illegal OptimizerLoop link.") + linkName);
+    else
+      return;
+
+  if(start == &_algoResultPort)
+    throw Exception(std::string("Illegal OptimizerLoop link: \
+The 'algoResult' port can't be linked within the scope of the loop.") + linkName);
+  
+  if(end == &_retPortForOutPool and isInMyDescendance(start->getNode())!=_node)
+    throw Exception(std::string("Illegal OptimizerLoop link: \
+The 'evalResults' port can only be linked to the working node.") + linkName);
 }
 
 void OptimizerLoop::cleanInterceptors()

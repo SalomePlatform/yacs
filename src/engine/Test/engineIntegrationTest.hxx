@@ -62,6 +62,7 @@ namespace YACS
       CPPUNIT_TEST( testForEachLoop5 );
       CPPUNIT_TEST( testForOptimizerLoop1 );
       CPPUNIT_TEST( testForOptimizerLoop2 );
+      CPPUNIT_TEST( testForOptimizerLoop3 );
       CPPUNIT_TEST( testForDeployment1 );
       CPPUNIT_TEST( testForDeployment2 );
       CPPUNIT_TEST( testForCheckConsistency1 );
@@ -103,6 +104,7 @@ namespace YACS
       void testForEachLoop5();
       void testForOptimizerLoop1();
       void testForOptimizerLoop2();
+      void testForOptimizerLoop3();
       void testForDeployment1();
       void testForDeployment2();
       void testForCheckConsistency1();

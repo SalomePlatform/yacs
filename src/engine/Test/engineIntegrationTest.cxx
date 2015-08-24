@@ -2583,9 +2583,9 @@ void EngineIntegrationTest::testForOptimizerLoop1()
   InputPort *i1=n1->edAddInputPort("i1",Runtime::_tc_double);
   OutputPort *o1=n1->edAddOutputPort("o1",Runtime::_tc_double);
   graph->edAddLink(opt->edGetSamplePort(),i1);
-  InputPort *i2=n2->edAddInputPort("i2",Runtime::_tc_double);
+  InputPort *i2=n2->edAddInputPort("i2",opt->edGetAlgoResultPort()->edGetType());
   OutputPort *o2_1=n2->edAddOutputPort("o1",Runtime::_tc_double);
-  graph->edAddLink(o1,i2);
+  graph->edAddLink(opt->edGetAlgoResultPort(),i2);
   graph->edAddLink(n1->edGetNbOfInputsOutputPort(),opt->edGetPortForOutPool());
   opt->edGetNbOfBranchesPort()->edInit(2);
   opt->edGetAlgoInitPort()->edInit("toto");
@@ -2635,9 +2635,9 @@ void EngineIntegrationTest::testForOptimizerLoop2()
   InputPort *i1=n1->edAddInputPort("i1",Runtime::_tc_double);
   OutputPort *o1=n1->edAddOutputPort("o1",Runtime::_tc_double);
   graph->edAddLink(opt->edGetSamplePort(),i1);
-  InputPort *i2=n2->edAddInputPort("i2",Runtime::_tc_double);
+  InputPort *i2=n2->edAddInputPort("i2",opt->edGetAlgoResultPort()->edGetType());
   OutputPort *o2_1=n2->edAddOutputPort("o1",Runtime::_tc_double);
-  graph->edAddLink(o1,i2);
+  graph->edAddLink(opt->edGetAlgoResultPort(),i2);
   graph->edAddLink(n1->edGetNbOfInputsOutputPort(),opt->edGetPortForOutPool());
   opt->edGetNbOfBranchesPort()->edInit(2);
   opt->edGetAlgoInitPort()->edInit("toto");
@@ -2665,6 +2665,46 @@ void EngineIntegrationTest::testForOptimizerLoop2()
   CPPUNIT_ASSERT(8==(int)((OptimizerLoop *)(clone->getChildByName("myOptWthAlgSync")))->getNumberOfEltsConsumed() || 7==(int)((OptimizerLoop *)(clone->getChildByName("myOptWthAlgSync")))->getNumberOfEltsConsumed());
   CPPUNIT_ASSERT_EQUAL(2,(int)((OptimizerLoop *)(clone->getChildByName("myOptWthAlgSync")))->getNumberOfBranchesCreatedDyn());
   delete clone;
+}
+
+/*!
+ * Test of illegal links within an OptimizerLoop.
+ */
+void EngineIntegrationTest::testForOptimizerLoop3()
+{
+  LinkInfo info(LinkInfo::ALL_DONT_STOP);
+  Bloc *graph=new Bloc("Global");
+  OptimizerLoop *opt=new OptimizerLoop("myOptWthAlgSync","libPluginOptEvTest1","PluginOptEvTest1Factory",true);
+  graph->edAddChild(opt);
+  ToyNode *n1=new ToyNode("T1");
+  ToyNode *n2=new ToyNode("T2");
+  Bloc *bloc=new Bloc("Bloc");
+  graph->edAddChild(n2);
+  graph->edAddCFLink(opt,n2);
+  opt->edSetNode(bloc);
+  bloc->edAddChild(n1);
+  InputPort *i1=n1->edAddInputPort("i1",Runtime::_tc_double);
+  OutputPort *o1=n1->edAddOutputPort("o1",Runtime::_tc_double);
+  InputPort *i2=n2->edAddInputPort("i2",opt->edGetAlgoResultPort()->edGetType());
+  try
+  {
+    graph->edAddLink(opt->edGetAlgoResultPort(),i1);
+    CPPUNIT_FAIL("Construction of an illegal link: the result port linked to a node inside the OptimizerLoop.");
+  }
+  catch(Exception& e)
+  {
+  }
+
+  try
+  {
+    graph->edAddLink(o1,i2);
+    CPPUNIT_FAIL("Construction of an illegal link: a node inside the loop linked to a node outside the OptimizerLoop.");
+  }
+  catch(Exception& e)
+  {
+  }
+
+  delete graph;
 }
 
 /*!

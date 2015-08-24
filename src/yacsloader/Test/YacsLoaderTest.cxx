@@ -647,33 +647,50 @@ void YacsLoaderTest::foreachs()
   ret = driverTest(p, "samples/foreach1.xml");
   CPPUNIT_ASSERT_MESSAGE("Schema: foreach1.xml", ret == 0);
   CPPUNIT_ASSERT_MESSAGE("Schema: foreach1.xml", p->getEffectiveState() == YACS::DONE);
+  delete p;
   ret = driverTest(p, "samples/foreach2.xml");
   CPPUNIT_ASSERT_MESSAGE("Schema: foreach2.xml", ret == 0);
   CPPUNIT_ASSERT_MESSAGE("Schema: foreach2.xml", p->getEffectiveState() == YACS::DONE );
+  delete p;
   ret = driverTest(p, "samples/foreach3.xml");
   CPPUNIT_ASSERT_MESSAGE("Schema: foreach3.xml", ret == 1);
+  delete p;
   ret = driverTest(p, "samples/foreach4.xml");
   CPPUNIT_ASSERT_MESSAGE("Schema: foreach4.xml", ret == 0);
   CPPUNIT_ASSERT_MESSAGE("Schema: foreach4.xml", p->getEffectiveState() == YACS::DONE );
+  delete p;
   ret = driverTest(p, "samples/foreach5.xml");
   CPPUNIT_ASSERT_MESSAGE("Schema: foreach5.xml", ret == 0);
   CPPUNIT_ASSERT_MESSAGE("Schema: foreach5.xml", p->getEffectiveState() == YACS::DONE );
+  delete p;
   ret = driverTest(p, "samples/foreach6.xml");
   CPPUNIT_ASSERT_MESSAGE("Schema: foreach6.xml", ret == 0);
   CPPUNIT_ASSERT_MESSAGE("Schema: foreach6.xml", p->getEffectiveState() == YACS::DONE );
+  delete p;
   ret = driverTest(p, "samples/foreach8.xml");
   CPPUNIT_ASSERT_MESSAGE("Schema: foreach8.xml", ret == 0);
   CPPUNIT_ASSERT_MESSAGE("Schema: foreach8.xml", p->getEffectiveState() == YACS::DONE );
+  delete p;
+  ret = driverTest(p, "samples/foreach_init2fin.xml");
+  CPPUNIT_ASSERT_MESSAGE("Schema: foreach_init2fin.xml", ret == 0);
+  CPPUNIT_ASSERT_MESSAGE("Schema: foreach_init2fin.xml", p->getEffectiveState() == YACS::DONE );
+  delete p;
+  ret = driverTest(p, "samples/foreach_init2work.xml");
+  CPPUNIT_ASSERT_MESSAGE("Schema: foreach_init2work.xml", ret == 0);
+  CPPUNIT_ASSERT_MESSAGE("Schema: foreach_init2work.xml", p->getEffectiveState() == YACS::DONE );
+  CPPUNIT_ASSERT_EQUAL(p->getOutputPort("PostProc.r")->getAsString(), std::string("108"));
+  delete p;
   if(getenv("GEOM_ROOT_DIR"))
     {
       std::string geomdir(getenv("GEOM_ROOT_DIR"));
       geomdir=geomdir+"/share/salome/resources/geom";
       if(access(geomdir.c_str(),F_OK) == 0)
-	{
-	  ret = driverTest(p, "samples/foreach7.xml"); //needs GEOM_Superv component
-	  CPPUNIT_ASSERT_MESSAGE("Schema: foreach7.xml", ret == 0);
-	  CPPUNIT_ASSERT_MESSAGE("Schema: foreach7.xml", p->getEffectiveState() == YACS::DONE );
-	}
+      {
+        ret = driverTest(p, "samples/foreach7.xml"); //needs GEOM_Superv component
+        CPPUNIT_ASSERT_MESSAGE("Schema: foreach7.xml", ret == 0);
+        CPPUNIT_ASSERT_MESSAGE("Schema: foreach7.xml", p->getEffectiveState() == YACS::DONE );
+        delete p;
+      }
     }
 }
 
@@ -803,6 +820,11 @@ void YacsLoaderTest::optimizers()
   delete p;
 
   ret = driverTest(p, "samples/optimizer_async_py.xml");
+  CPPUNIT_ASSERT(ret == 0);
+  CPPUNIT_ASSERT(p->getEffectiveState() == YACS::DONE );
+  delete p;
+
+  ret = driverTest(p, "samples/optimizer_retro.xml");
   CPPUNIT_ASSERT(ret == 0);
   CPPUNIT_ASSERT(p->getEffectiveState() == YACS::DONE );
   delete p;

@@ -131,6 +131,8 @@ IF(NOT WIN32)
   INSTALL(FILES CTestTestfileInstall.cmake
           DESTINATION ${LOCAL_TEST_DIR}
           RENAME CTestTestfile.cmake)
+  INSTALL(FILES optim_plugin.py
+          DESTINATION ${LOCAL_TEST_DIR})
   INSTALL(PROGRAMS runYacsLoaderTest.sh ${CMAKE_CURRENT_BINARY_DIR}/xmlrun.sh
           DESTINATION ${LOCAL_TEST_DIR})
   INSTALL(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink
