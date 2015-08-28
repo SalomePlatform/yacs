@@ -1082,11 +1082,6 @@ void VisitorSaveSchema::writeParametersNode(ComposedNode *proc, Node *node)
 {
   int depth = 1;
   list<InputPort *> setOfInputPort = node->getLocalInputPorts();
-  if (ForEachLoop* foreach = dynamic_cast<ForEachLoop*>(node))
-    {
-      DEBTRACE("writeParametersNode foreach");
-      setOfInputPort.push_back( foreach->edGetSeqOfSamplesPort());
-    }
   list<InputPort *>::iterator iter;
   for(iter = setOfInputPort.begin(); iter != setOfInputPort.end(); ++iter)
     {
