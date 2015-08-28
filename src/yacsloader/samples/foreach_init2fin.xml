@@ -1,0 +1,100 @@
+<?xml version='1.0' encoding='iso-8859-1' ?>
+<proc name="Schema">
+   <property name="DefaultStudyID" value="1"/>
+   <type name="string" kind="string"/>
+   <struct name="Engines/dataref">
+      <member name="ref" type="string"/>
+   </struct>
+   <type name="bool" kind="bool"/>
+   <sequence name="boolvec" content="bool"/>
+   <type name="double" kind="double"/>
+   <sequence name="dblevec" content="double"/>
+   <objref name="file" id="file"/>
+   <type name="int" kind="int"/>
+   <sequence name="intvec" content="int"/>
+   <struct name="stringpair">
+      <member name="name" type="string"/>
+      <member name="value" type="string"/>
+   </struct>
+   <sequence name="propvec" content="stringpair"/>
+   <objref name="pyobj" id="python:obj:1.0"/>
+   <sequence name="seqboolvec" content="boolvec"/>
+   <sequence name="seqdblevec" content="dblevec"/>
+   <sequence name="seqint" content="int"/>
+   <sequence name="seqintvec" content="intvec"/>
+   <sequence name="stringvec" content="string"/>
+   <sequence name="seqstringvec" content="stringvec"/>
+   <container name="DefaultContainer">
+      <property name="container_kind" value="Salome"/>
+      <property name="attached_on_cloning" value="0"/>
+      <property name="container_name" value="FactoryServer"/>
+      <property name="name" value="localhost"/>
+   </container>
+   <foreach name="ForEachLoop" nbranch="4" type="int">
+      <initnode>
+      <inline name="initScript">
+         <script><code><![CDATA[print "initnode"
+o1=7
+]]></code></script>
+         <outport name="o1" type="int"/>
+      </inline>
+      </initnode>
+      <inline name="Work">
+         <function name="traitement">
+            <code><![CDATA[def traitement(elem,):
+  res = elem * 10
+  return res 
+]]></code>
+         </function>
+         <load container="DefaultContainer"/>
+         <inport name="elem" type="int"/>
+         <outport name="res" type="int"/>
+      </inline>
+      <finalizenode>
+      <inline name="finalizeScript">
+         <script><code><![CDATA[print "finalizenode"
+]]></code></script>
+         <inport name="i2" type="int"/>
+      </inline>
+      </finalizenode>
+      <datalink control="false">
+         <fromnode>initScript</fromnode> <fromport>o1</fromport>
+         <tonode>finalizeScript</tonode> <toport>i2</toport>
+      </datalink>
+   </foreach>
+   <inline name="PostProc">
+      <script><code><![CDATA[print "Post-traitement"
+for x in i5:
+    print x
+]]></code></script>
+      <load container="DefaultContainer"/>
+      <inport name="i5" type="seqint"/>
+   </inline>
+   <control> <fromnode>ForEachLoop</fromnode> <tonode>PostProc</tonode> </control>
+   <datalink control="false">
+      <fromnode>ForEachLoop</fromnode> <fromport>evalSamples</fromport>
+      <tonode>ForEachLoop.Work</tonode> <toport>elem</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>ForEachLoop.Work</fromnode> <fromport>res</fromport>
+      <tonode>PostProc</tonode> <toport>i5</toport>
+   </datalink>
+   <parameter>
+      <tonode>ForEachLoop</tonode><toport>nbBranches</toport>
+      <value><int>4</int></value>
+   </parameter>
+   <parameter>
+      <tonode>ForEachLoop</tonode><toport>SmplsCollection</toport>
+      <value><array><data>
+<value><int>1</int></value>
+<value><int>2</int></value>
+<value><int>3</int></value>
+<value><int>4</int></value>
+<value><int>5</int></value>
+<value><int>6</int></value>
+<value><int>7</int></value>
+<value><int>8</int></value>
+<value><int>9</int></value>
+</data></array></value>
+   </parameter>
+</proc>

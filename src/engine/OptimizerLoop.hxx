@@ -116,6 +116,8 @@ namespace YACS
                                   std::map< ComposedNode *, std::list < OutPort *>, SortHierarc >& bw,
                                   LinkInfo& info) const;
       void checkCFLinks(const std::list<OutPort *>& starts, InputPort *end, unsigned char& alreadyFed, bool direction, LinkInfo& info) const;
+      void checkLinkPossibility(OutPort *start, const std::list<ComposedNode *>& pointsOfViewStart,
+                                InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) throw(Exception);
     protected:
       void cleanInterceptors();
       void launchMaxOfSamples(bool first);

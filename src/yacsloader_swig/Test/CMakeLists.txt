@@ -41,6 +41,8 @@ IF(NOT WIN32)
     testResume.py
     testSave.py
     testSaveLoadRun.py
+    optim_plugin.py
+    testValidationChecks.py
    )
   INSTALL(FILES ${LOCAL_TEST_FILES}
         DESTINATION ${LOCAL_TEST_DIR})

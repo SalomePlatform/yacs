@@ -1046,7 +1046,7 @@ void ComposedNode::checkInMyDescendance(Node *nodeToTest) const throw(YACS::Exce
  */
 ComposedNode *ComposedNode::getLowestCommonAncestor(Node *node1, Node *node2) throw(YACS::Exception)
 {
-  const char what[]="2 nodes does not share the same genealogy";
+  const char what[]="The two nodes do not share the same genealogy";
   if(node1==0 || node2==0)
     throw Exception(what);
   ComposedNode *temp;

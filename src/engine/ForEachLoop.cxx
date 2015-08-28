@@ -900,7 +900,7 @@ void ForEachLoop::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort 
         {
           TypeCodeSeq *newTc=(TypeCodeSeq *)TypeCode::sequenceTc("","",port.first->edGetType());
           // The out going ports belong to the ForEachLoop, whereas
-          // the delegated port belong to a node child of the ForEachLoop.
+          // the delegated port belongs to a node child of the ForEachLoop.
           // The name of the delegated port contains dots (bloc.node.outport),
           // whereas the name of the out going port shouldn't do.
           std::string outputPortName = getPortName(port.first);
@@ -1040,8 +1040,13 @@ void ForEachLoop::createOutputOutOfScopeInterceptors(int branchNb)
 void ForEachLoop::checkLinkPossibility(OutPort *start, const std::list<ComposedNode *>& pointsOfViewStart,
                                        InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) throw(YACS::Exception)
 {
-  if(isInMyDescendance(start->getNode())==_node)
-    throw Exception("ForEachLoop::checkLinkPossibility : A link from work node to init node not permitted");
+  DynParaLoop::checkLinkPossibility(start, pointsOfViewStart, end, pointsOfViewEnd);
+  if(end->getNode() == &_splitterNode)
+    throw Exception("Illegal link within a foreach loop: \
+the 'SmplsCollection' port cannot be linked within the scope of the loop.");
+  if(end == &_nbOfBranches)
+    throw Exception("Illegal link within a foreach loop: \
+the 'nbBranches' port cannot be linked within the scope of the loop.");
 }
 
 std::list<OutputPort *> ForEachLoop::getLocalOutputPorts() const

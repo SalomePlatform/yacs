@@ -47,6 +47,16 @@ TypeCode *PluginOptEvTest1::getTCForOut() const
   return _tcOut;
 }
 
+TypeCode *PluginOptEvTest1::getTCForAlgoResult() const
+{
+  return _tcIn;
+}
+
+Any * PluginOptEvTest1::getAlgoResult()
+{
+  return AtomAny::New(45.6);
+}
+
 void PluginOptEvTest1::parseFileToInit(const std::string& fileName)
 {
 }

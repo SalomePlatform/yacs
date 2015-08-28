@@ -114,6 +114,8 @@ namespace YACS
                                   std::vector<OutPort *>& fwCross,
                                   std::map< ComposedNode *, std::list < OutPort *>, SortHierarc >& bw,
                                   LinkInfo& info) const;
+      virtual void checkLinkPossibility(OutPort *start, const std::list<ComposedNode *>& pointsOfViewStart,
+                                       InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) throw(Exception);
     protected:
       void cleanDynGraph();
       void prepareInputsFromOutOfScope(int branchNb);

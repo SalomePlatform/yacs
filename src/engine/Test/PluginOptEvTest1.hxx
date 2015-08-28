@@ -42,6 +42,8 @@ namespace YACS
       virtual ~PluginOptEvTest1();
       TypeCode *getTCForIn() const;
       TypeCode *getTCForOut() const;
+      TypeCode *getTCForAlgoResult() const;
+      Any * getAlgoResult();
       void parseFileToInit(const std::string& fileName);
       void start();
       void takeDecision();

@@ -416,16 +416,29 @@ void DynParaLoop::buildDelegateOf(InPort * & port, OutPort *initialStart, const 
 {
   string typeOfPortInstance=port->getNameOfTypeOfCurrentInstance();
   if(typeOfPortInstance!=InputPort::NAME)
-    throw Exception("DynParaLoop::buildDelegateOf : A link with datastream end inside DynParaLoop this is not possible");
+    throw Exception("DynParaLoop::buildDelegateOf : A link with datastream end inside DynParaLoop is not possible");
 }
 
 void DynParaLoop::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView)
 {
+  std::string linkName("(");
+  linkName += port.first->getName()+" to "+finalTarget->getName()+")";
   if(_initNode)
     if(isInMyDescendance(port.first->getNode())==_initNode)
-      throw Exception("DynParaLoop::buildDelegateOf : uncorrect ForEach link : a link starting from init node can't leave the scope of ForEachLoop node it belongs to.");
+      throw Exception(std::string("Illegal link within a parallel loop: \
+a link starting from the init node can't leave the scope of the loop.")
+                    + linkName);
+
+  if(_finalizeNode)
+    if(isInMyDescendance(port.first->getNode())==_finalizeNode)
+      throw Exception(std::string("Illegal link within a parallel loop: \
+an output port of the finalize node can't be linked.")
+                    + linkName);
+
   if(port.first==&_splittedPort)
-    throw Exception("DynParaLoop::buildDelegateOf : uncorrect ForEach link : splitted port must be link within the scope of ForEachLoop node it belongs to.");
+    throw Exception(std::string("Illegal link within a parallel loop: \
+the 'evalSamples' port must be linked within the scope of the loop.")
+                    + linkName);
 }
 
 void DynParaLoop::checkCFLinks(const std::list<OutPort *>& starts, InputPort *end, unsigned char& alreadyFed, bool direction, LinkInfo& info) const
@@ -439,8 +452,6 @@ void DynParaLoop::checkCFLinks(const std::list<OutPort *>& starts, InputPort *en
       if(starts.size()!=1)
         throw Exception(what);
       //ASSERT(direction) : see DynParaLoop::checkControlDependancy only 'fw' filled.
-      if(*(starts.begin())!=&_splittedPort)
-        throw Exception(what);
       if(alreadyFed==FREE_ST)
         alreadyFed=FED_ST;
       else if(alreadyFed==FED_ST)
@@ -465,10 +476,37 @@ void DynParaLoop::checkControlDependancy(OutPort *start, InPort *end, bool cross
                                          std::map< ComposedNode *, std::list < OutPort *>, SortHierarc >& bw,
                                          LinkInfo& info) const
 {
-  if(start==&_splittedPort)
     fw[(ComposedNode *)this].push_back(start);
-  else
-    throw Exception("DynParaLoop::checkControlDependancy : Internal error occured - should never been called !");
+}
+
+void DynParaLoop::checkLinkPossibility(OutPort *start, const std::list<ComposedNode *>& pointsOfViewStart,
+                                InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) throw(Exception)
+{
+  ComposedNode::checkLinkPossibility(start, pointsOfViewStart, end, pointsOfViewEnd);
+  Node * startNode = isInMyDescendance(start->getNode());
+  Node * endNode = isInMyDescendance(end->getNode());
+  std::string linkName("(");
+  linkName += start->getName()+" to "+end->getName()+")";
+  
+  if(start == &_splittedPort && endNode != _node)
+    throw Exception(std::string("Illegal link within a parallel loop: \
+the 'evalSamples' port can only be connected to the working node of the loop.")
+                    + linkName);
+  
+  if(_finalizeNode && _finalizeNode == startNode)
+    throw Exception(std::string("Illegal link within a parallel loop: \
+the finalize node can't be the origin of a link.")
+                    + linkName);
+  
+  if(_initNode && _node == startNode && _initNode == endNode)
+    throw Exception(std::string("Illegal link within a parallel loop: \
+can't make a link from the working node to the init node.")
+                    + linkName);
+  
+  if(_finalizeNode && _node == startNode && _finalizeNode == endNode)
+    throw Exception(std::string("Illegal link within a parallel loop: \
+can't make a link from the working node to the finalize node.")
+                    + linkName);
 }
 
 /*!
@@ -685,6 +723,26 @@ vector<Node *> DynParaLoop::cloneAndPlaceNodesCoherently(const vector<Node *> & 
             treeToDup.appendTask(*iter, (*iter)->getDynClonerIfExists(this));
         }
     }
+  
+  // Build the links between clones.
+  // Only the links starting from initNode are possible.
+  if(_initNode)
+  {
+    std::vector< std::pair<OutPort *, InPort *> > outLinks = _initNode->getSetOfLinksLeavingCurrentScope();
+    std::vector< std::pair<OutPort *, InPort *> >::const_iterator it;
+    for(it=outLinks.begin(); it!=outLinks.end(); it++)
+    {
+      OutPort *startPort = it->first;
+      InPort *endPort = it->second;
+      Node* destNode = isInMyDescendance(endPort->getNode());
+      if(destNode == _node)
+        edAddLink(clones[0]->getOutPort(startPort->getName()),
+                  clones[1]->getInPort(endPort->getName()));
+      if(destNode == _finalizeNode)
+        edAddLink(clones[0]->getOutPort(startPort->getName()),
+                  clones[2]->getInPort(endPort->getName()));
+    }
+  }
 
   DEBTRACE("Placing nodes...")
   vector<Container *> conts=treeToDup.getAllContainers();
