@@ -35,6 +35,7 @@
 #include "TypeCode.hxx"
 #include "WhileLoop.hxx"
 #include "ForLoop.hxx"
+#include "ForEachLoop.hxx"
 #include "SalomeOptimizerLoop.hxx"
 #include "Bloc.hxx"
 #include "InputPort.hxx"
@@ -179,6 +180,8 @@ void RuntimeSALOME::initBuiltins()
   typeMap["seqboolvec"]= createSequenceTc("seqboolvec","seqboolvec",typeMap["boolvec"]);
   std::list<TypeCodeObjref *> ltc;
   typeMap["pyobj"]= createInterfaceTc("python:obj:1.0","pyobj",ltc);
+  typeMap["seqpyobj"]= createSequenceTc("seqpyobj","seqpyobj",typeMap["pyobj"]);
+  composednodeMap["ForEachLoop_pyobj"]=createForEachLoop("ForEachLoop_pyobj",typeMap["pyobj"]);;
   ENGINE::TypeCodeStruct *t = createStructTc("","Engines/dataref");
   t->addMember("ref",_tc_string);
   typeMap["dataref"]= t;
