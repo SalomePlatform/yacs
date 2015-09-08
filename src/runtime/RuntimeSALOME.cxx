@@ -1808,6 +1808,10 @@ std::string RuntimeSALOME::convertNeutralAsString(TypeCode * type, Any *data)
   PyObject* ob;
   if(data)
     {
+      // The call to PyGILState_Ensure was moved here because there was also
+      // a crash when calling convertNeutralPyObject with a sequence of pyobj.
+      // see also the comment below.
+      PyGILState_STATE gstate = PyGILState_Ensure();
       ob=convertNeutralPyObject(type,data);
       std::string s=convertPyObjectToString(ob);
 
@@ -1816,7 +1820,7 @@ std::string RuntimeSALOME::convertNeutralAsString(TypeCode * type, Any *data)
       // lock. I thus added the call to PyGILState_Ensure / PyGILState_Release. It worked fine in
       // Python 2.6 without this call. If anyone finds the real reason of this bug and another fix,
       // feel free to change this code.
-      PyGILState_STATE gstate = PyGILState_Ensure();
+      //PyGILState_STATE gstate = PyGILState_Ensure();
       Py_DECREF(ob);
       PyGILState_Release(gstate);
       return s;
