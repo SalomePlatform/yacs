@@ -129,6 +129,7 @@ namespace YACS
       virtual void accept(Visitor *visitor);
       int getRankOfNode(Node *node) const;
       virtual std::string typeName() {return "YACS__ENGINE__Switch";}
+      std::list<ProgressWeight> getProgressWeight() const;
     protected:
       YACS::Event updateStateOnFinishedEventFrom(Node *node);
       Node *simpleClone(ComposedNode *father, bool editionOnly=true) const;

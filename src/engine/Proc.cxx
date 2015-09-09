@@ -232,14 +232,14 @@ std::string Proc::getNodeProgress(int numId)
 
 int Proc::getGlobalProgressPercent()
 {
-	list<pair <int,int> > weightList = getProgressWeight();
+	list<ProgressWeight> weightList = getProgressWeight();
 	int weightDone = 0;
 	int weightTotal = 0;
 	int progressPercent = 0;
-	for(list<pair <int,int> >::const_iterator iter=weightList.begin();iter!=weightList.end();iter++)
+	for(list<ProgressWeight>::const_iterator iter=weightList.begin();iter!=weightList.end();iter++)
 	  {
-		  weightDone += (*iter).first;
-			weightTotal += (*iter).second;
+		  weightDone += (*iter).weightDone;
+			weightTotal += (*iter).weightTotal;
 	  }
   if (weightTotal > 0)
   	progressPercent = int(float(weightDone) / float(weightTotal) * 100);

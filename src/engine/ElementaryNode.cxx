@@ -547,6 +547,24 @@ list<ElementaryNode *> ElementaryNode::getRecursiveConstituents() const
   return ret;
 }
 
+//! Get the progress weight for all elementary nodes
+/*!
+ * Only elementary nodes have weight. At this stage weight is 0 or 1 (it can be modified later following
+ * the kind of father)
+ */
+list<ProgressWeight> ElementaryNode::getProgressWeight() const
+{
+	list<ProgressWeight> ret;
+	ProgressWeight myWeight;
+	myWeight.weightTotal=1;
+	if (getState() == YACS::DONE)
+	  myWeight.weightDone=1;
+	else
+		myWeight.weightDone=0;
+	ret.push_back(myWeight);
+  return ret;
+}
+
 Node *ElementaryNode::getChildByName(const std::string& name) const throw(YACS::Exception)
 {
   string what("ElementaryNode does not agregate any nodes particullary node with name "); what+=name;

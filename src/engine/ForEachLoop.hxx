@@ -192,6 +192,7 @@ namespace YACS
       virtual std::string typeName() {return "YACS__ENGINE__ForEachLoop";}
       virtual void resetState(int level);
       std::string getProgress() const;
+      std::list<ProgressWeight> getProgressWeight() const;
       int getCurrentIndex() const { return _currentIndex; }
       int getNbOfElementsToBeProcessed() const;
 #ifndef SWIG

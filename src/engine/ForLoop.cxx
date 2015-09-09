@@ -265,17 +265,52 @@ std::list<OutputPort *> ForLoop::getSetOfOutputPort() const
   return ret;
 }
 
+
+int ForLoop::getNbSteps() const
+{
+  AnyInputPort* aNbStepsPort = (AnyInputPort*)&_nbOfTimesPort;
+  int nbSteps = 0;
+  if (aNbStepsPort && !aNbStepsPort->isEmpty())
+    nbSteps = aNbStepsPort->getIntValue();
+  return nbSteps;
+}
+
 std::string ForLoop::getProgress() const
 {
   std::stringstream aProgress;
   aProgress << "0";
-  AnyInputPort* aNbStepsPort = (AnyInputPort*)&_nbOfTimesPort;
-  if (aNbStepsPort && !aNbStepsPort->isEmpty()) {
-    int nbSteps = aNbStepsPort->getIntValue();
-    if (nbSteps > 0 && _nbOfTurns >= 0) {
+  int nbSteps = getNbSteps();
+  if (nbSteps > 0 && _nbOfTurns >= 0)
+    {
       aProgress.str("");
       aProgress << _nbOfTurns << "/" << nbSteps;
     }
-  }
   return aProgress.str();
 }
+
+//! Get the progress weight for all elementary nodes
+/*!
+ * Only elementary nodes have weight. For each node in the loop, the weight done is multiplied
+ * by the number of steps done and the weight total by the number total of steps
+ *
+ */
+list<ProgressWeight> ForLoop::getProgressWeight() const
+{
+	list<ProgressWeight> ret;
+	list<Node *> setOfNode=edGetDirectDescendants();
+	int nbStepsDone=getNbOfTurns();
+	int nbStepsTotal=getNbSteps();
+	for(list<Node *>::const_iterator iter=setOfNode.begin();iter!=setOfNode.end();iter++)
+	  {
+		  list<ProgressWeight> myCurrentSet=(*iter)->getProgressWeight();
+			for(list<ProgressWeight>::iterator iter=myCurrentSet.begin();iter!=myCurrentSet.end();iter++)
+				{
+					(*iter).weightDone=((*iter).weightTotal) * nbStepsDone;
+					(*iter).weightTotal*=nbStepsTotal;
+				}
+			ret.insert(ret.end(),myCurrentSet.begin(),myCurrentSet.end());
+
+	  }
+	return ret;
+}
+

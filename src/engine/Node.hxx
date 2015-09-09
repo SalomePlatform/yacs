@@ -52,6 +52,12 @@ namespace YACS
     class OutputDataStreamPort;
     class Visitor;
 
+    struct ProgressWeight
+    {
+    	int weightDone;
+    	int weightTotal;
+    };
+
     class YACSLIBENGINE_EXPORT NodeStateNameMap : public std::map<YACS::StatesForNode, std::string>
     {
     public:
@@ -125,6 +131,7 @@ namespace YACS
       virtual void exDisabledState();
       virtual void getReadyTasks(std::vector<Task *>& tasks) = 0;
       virtual std::list<ElementaryNode *> getRecursiveConstituents() const = 0;
+      virtual std::list<ProgressWeight> getProgressWeight() const = 0;
       virtual int getNumberOfInputPorts() const = 0;
       virtual int getNumberOfOutputPorts() const = 0;
       std::list<InPort *> getSetOfInPort() const;

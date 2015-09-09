@@ -28,7 +28,6 @@
 #include "DataStreamPort.hxx"
 #include "ElementaryNode.hxx"
 #include "ComponentInstance.hxx"
-#include "ForEachLoop.hxx"
 
 #include <iostream>
 #include <set>
@@ -1135,42 +1134,17 @@ list<Node *> ComposedNode::getAllRecursiveNodes()
 
 //! Get the progress weight for all elementary nodes
 /*!
- * Only elementary nodes have weight. If a node is in a for each loop, his weight is modified by the size of the loop
- *
+ * Only elementary nodes have weight. A simple composed node only sum up weight of all his descendants
+ * (working is different for loop or switch nodes)
  */
-list<pair<int,int> > ComposedNode::getProgressWeight()
+list<ProgressWeight> ComposedNode::getProgressWeight() const
 {
-	list<pair<int,int> > ret;
+	list<ProgressWeight> ret;
 	list<Node *> setOfNode=edGetDirectDescendants();
-	int elemDone, elemTotal;
 	for(list<Node *>::const_iterator iter=setOfNode.begin();iter!=setOfNode.end();iter++)
 		{
-			if ( dynamic_cast<ForEachLoop*> (*iter) )
-				{
-					elemDone=((ForEachLoop*)(*iter))->getCurrentIndex();
-					elemTotal=((ForEachLoop*)(*iter))->getNbOfElementsToBeProcessed();
-					list<pair<int,int> > myCurrentSet=((ComposedNode*)(*iter))->getProgressWeight();
-					myCurrentSet.pop_front();
-					myCurrentSet.pop_back();
-					for(list<pair<int,int> >::iterator iter=myCurrentSet.begin();iter!=myCurrentSet.end();iter++)
-						{
-							(*iter).first=(*iter).second*elemDone;
-							(*iter).second*=elemTotal;
-						}
-					ret.insert(ret.end(),myCurrentSet.begin(),myCurrentSet.end());
-				}
-			else if ( dynamic_cast<ComposedNode*> (*iter) )
-				{
-				  list<pair<int,int> > myCurrentSet=((ComposedNode*)(*iter))->getProgressWeight();
-					ret.insert(ret.end(),myCurrentSet.begin(),myCurrentSet.end());
-				}
-			else
-				{
-				  if ((*iter)->getState() == YACS::DONE)
-					  ret.push_back(pair<int,int>(1,1));
-					else
-						ret.push_back(pair<int,int>(0,1));
-				}
+		  list<ProgressWeight> myCurrentSet=((ComposedNode*)(*iter))->getProgressWeight();
+			ret.insert(ret.end(),myCurrentSet.begin(),myCurrentSet.end());
 		}
   return ret;
 }

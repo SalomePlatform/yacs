@@ -88,7 +88,14 @@ if [ $ret6 -gt 0 ]; then
   exit $ret6
 fi
 
-let ret=$ret0+$ret1+$ret2+$ret3+$ret4+$ret5+$ret6
+python  @CMAKE_CURRENT_SOURCE_DIR@/testProgress.py
+ret7=$?
+if [ $ret7 -gt 0 ]; then
+  echo "exec status testProgress : " $ret7
+  exit $ret7
+fi
+
+let ret=$ret0+$ret1+$ret2+$ret3+$ret4+$ret5+$ret6+$ret7
 
 # --- return unit tests status
 
