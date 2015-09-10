@@ -86,15 +86,10 @@ Runtime::Runtime()
   DEBTRACE( "_tc_stringpair refcnt: " << Runtime::_tc_stringpair->getRefCnt() );
   DEBTRACE( "_tc_propvec refcnt: " << Runtime::_tc_propvec->getRefCnt() );
   _builtinCatalog = new Catalog("builtins");
-  _builtinCatalog->_composednodeMap["Bloc"]=createBloc("Bloc");
-  _builtinCatalog->_composednodeMap["Switch"]=createSwitch("Switch");
-  _builtinCatalog->_composednodeMap["WhileLoop"]=createWhileLoop("WhileLoop");
-  _builtinCatalog->_composednodeMap["ForLoop"]=createForLoop("ForLoop");
-  _builtinCatalog->_composednodeMap["ForEachLoop_double"]=createForEachLoop("ForEachLoop_double",Runtime::_tc_double);
-  _builtinCatalog->_composednodeMap["ForEachLoop_string"]=createForEachLoop("ForEachLoop_string",Runtime::_tc_string);
-  _builtinCatalog->_composednodeMap["ForEachLoop_int"]=createForEachLoop("ForEachLoop_int",Runtime::_tc_int);
-  _builtinCatalog->_composednodeMap["ForEachLoop_bool"]=createForEachLoop("ForEachLoop_bool",Runtime::_tc_bool);
   std::map<std::string,TypeCode*>& typeMap=_builtinCatalog->_typeMap;
+  /* All composed node creations are moved to RuntimeSALOME::initBuiltins.
+     It is not safe to have all those calls to virtual functions (create*)
+     in the constructor. */
   Runtime::_tc_double->incrRef();
   typeMap["double"]=Runtime::_tc_double;
   Runtime::_tc_int->incrRef();
@@ -255,7 +250,9 @@ ForLoop* Runtime::createForLoop(const std::string& name)
 
 ForEachLoop* Runtime::createForEachLoop(const std::string& name,TypeCode *type)
 {
-  return new ForEachLoop(name,type);
+  ForEachLoop* ret = new ForEachLoop(name,type);
+  ret->edGetNbOfBranchesPort()->edInit(1);
+  return ret;
 }
 
 OptimizerLoop* Runtime::createOptimizerLoop(const std::string& name,const std::string& algLib,const std::string& factoryName,bool algInitOnFile,

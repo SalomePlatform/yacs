@@ -43,6 +43,7 @@
 #include "PresetPorts.hxx"
 #include "InputDataStreamPort.hxx"
 #include "OutputDataStreamPort.hxx"
+#include "Switch.hxx"
 #include "SalomeProc.hxx"
 #include "PyStdout.hxx"
 //Catalog Loaders
@@ -181,6 +182,14 @@ void RuntimeSALOME::initBuiltins()
   std::list<TypeCodeObjref *> ltc;
   typeMap["pyobj"]= createInterfaceTc("python:obj:1.0","pyobj",ltc);
   typeMap["seqpyobj"]= createSequenceTc("seqpyobj","seqpyobj",typeMap["pyobj"]);
+  composednodeMap["Bloc"]=createBloc("Bloc");
+  composednodeMap["Switch"]=createSwitch("Switch");
+  composednodeMap["WhileLoop"]=createWhileLoop("WhileLoop");
+  composednodeMap["ForLoop"]=createForLoop("ForLoop");
+  composednodeMap["ForEachLoop_double"]=createForEachLoop("ForEachLoop_double",Runtime::_tc_double);
+  composednodeMap["ForEachLoop_string"]=createForEachLoop("ForEachLoop_string",Runtime::_tc_string);
+  composednodeMap["ForEachLoop_int"]=createForEachLoop("ForEachLoop_int",Runtime::_tc_int);
+  composednodeMap["ForEachLoop_bool"]=createForEachLoop("ForEachLoop_bool",Runtime::_tc_bool);
   composednodeMap["ForEachLoop_pyobj"]=createForEachLoop("ForEachLoop_pyobj",typeMap["pyobj"]);;
   ENGINE::TypeCodeStruct *t = createStructTc("","Engines/dataref");
   t->addMember("ref",_tc_string);
