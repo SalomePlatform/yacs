@@ -1139,13 +1139,13 @@ list<Node *> ComposedNode::getAllRecursiveNodes()
  */
 list<ProgressWeight> ComposedNode::getProgressWeight() const
 {
-	list<ProgressWeight> ret;
-	list<Node *> setOfNode=edGetDirectDescendants();
-	for(list<Node *>::const_iterator iter=setOfNode.begin();iter!=setOfNode.end();iter++)
-		{
-		  list<ProgressWeight> myCurrentSet=((ComposedNode*)(*iter))->getProgressWeight();
-			ret.insert(ret.end(),myCurrentSet.begin(),myCurrentSet.end());
-		}
+  list<ProgressWeight> ret;
+  list<Node *> setOfNode=edGetDirectDescendants();
+  for(list<Node *>::const_iterator iter=setOfNode.begin();iter!=setOfNode.end();iter++)
+    {
+      list<ProgressWeight> myCurrentSet=((ComposedNode*)(*iter))->getProgressWeight();
+      ret.insert(ret.end(),myCurrentSet.begin(),myCurrentSet.end());
+    }
   return ret;
 }
 

@@ -587,25 +587,25 @@ int Switch::getMaxCase()
  */
 list<ProgressWeight> Switch::getProgressWeight() const
 {
-	list<ProgressWeight> ret;
-	list<Node *> setOfNode=edGetDirectDescendants();
-	if (getState() == YACS::DONE)
-	  {
-		  for(list<Node *>::const_iterator iter=setOfNode.begin();iter!=setOfNode.end();iter++)
-	      {
-		      if (getEffectiveState(*iter) == YACS::DONE)
-		    	  ret=(*iter)->getProgressWeight();
-	      }
-	  }
-	else
-	  {
-	    for(list<Node *>::const_iterator iter=setOfNode.begin();iter!=setOfNode.end();iter++)
+  list<ProgressWeight> ret;
+  list<Node *> setOfNode=edGetDirectDescendants();
+  if (getState() == YACS::DONE)
+    {
+      for(list<Node *>::const_iterator iter=setOfNode.begin();iter!=setOfNode.end();iter++)
+      {
+        if (getEffectiveState(*iter) == YACS::DONE)
+          ret=(*iter)->getProgressWeight();
+      }
+    }
+  else
+    {
+      for(list<Node *>::const_iterator iter=setOfNode.begin();iter!=setOfNode.end();iter++)
         {
-	    	  list<ProgressWeight> myCurrentSet=(*iter)->getProgressWeight();
-	    	  ret.insert(ret.end(),myCurrentSet.begin(),myCurrentSet.end());
+          list<ProgressWeight> myCurrentSet=(*iter)->getProgressWeight();
+          ret.insert(ret.end(),myCurrentSet.begin(),myCurrentSet.end());
         }
-	  }
-	return ret;
+    }
+  return ret;
 }
 
 bool Switch::edAddChild(Node *node) throw(YACS::Exception)

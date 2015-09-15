@@ -554,14 +554,14 @@ list<ElementaryNode *> ElementaryNode::getRecursiveConstituents() const
  */
 list<ProgressWeight> ElementaryNode::getProgressWeight() const
 {
-	list<ProgressWeight> ret;
-	ProgressWeight myWeight;
-	myWeight.weightTotal=1;
-	if (getState() == YACS::DONE)
-	  myWeight.weightDone=1;
-	else
-		myWeight.weightDone=0;
-	ret.push_back(myWeight);
+  list<ProgressWeight> ret;
+  ProgressWeight myWeight;
+  myWeight.weightTotal=1;
+  if (getState() == YACS::DONE)
+    myWeight.weightDone=1;
+  else
+    myWeight.weightDone=0;
+  ret.push_back(myWeight);
   return ret;
 }
 

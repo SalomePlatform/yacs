@@ -39,7 +39,7 @@ namespace YACS
       void exSaveInit();
       void exRestoreInit();
       Any *getValue() const { return _value; }
-      int getIntValue() const { return _value->getIntValue(); }
+      int getIntValue() const { return _value ? _value->getIntValue():0; }
       void put(Any *data);
       void *get() const;
       virtual std::string getAsString();

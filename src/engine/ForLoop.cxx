@@ -296,21 +296,20 @@ std::string ForLoop::getProgress() const
  */
 list<ProgressWeight> ForLoop::getProgressWeight() const
 {
-	list<ProgressWeight> ret;
-	list<Node *> setOfNode=edGetDirectDescendants();
-	int nbStepsDone=getNbOfTurns();
-	int nbStepsTotal=getNbSteps();
-	for(list<Node *>::const_iterator iter=setOfNode.begin();iter!=setOfNode.end();iter++)
-	  {
-		  list<ProgressWeight> myCurrentSet=(*iter)->getProgressWeight();
-			for(list<ProgressWeight>::iterator iter=myCurrentSet.begin();iter!=myCurrentSet.end();iter++)
-				{
-					(*iter).weightDone=((*iter).weightTotal) * nbStepsDone;
-					(*iter).weightTotal*=nbStepsTotal;
-				}
-			ret.insert(ret.end(),myCurrentSet.begin(),myCurrentSet.end());
-
-	  }
-	return ret;
+  list<ProgressWeight> ret;
+  list<Node *> setOfNode=edGetDirectDescendants();
+  int nbStepsDone=getNbOfTurns();
+  int nbStepsTotal=getNbSteps();
+  for(list<Node *>::const_iterator iter=setOfNode.begin();iter!=setOfNode.end();iter++)
+    {
+      list<ProgressWeight> myCurrentSet=(*iter)->getProgressWeight();
+        for(list<ProgressWeight>::iterator iter=myCurrentSet.begin();iter!=myCurrentSet.end();iter++)
+          {
+            (*iter).weightDone=((*iter).weightTotal) * nbStepsDone;
+            (*iter).weightTotal*=nbStepsTotal;
+          }
+        ret.insert(ret.end(),myCurrentSet.begin(),myCurrentSet.end());
+    }
+  return ret;
 }
 
