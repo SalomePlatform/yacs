@@ -580,6 +580,34 @@ int Switch::getMaxCase()
   return aCase;
 }
 
+//! Get the progress weight of the graph
+/*!
+ * Only elementary nodes have weight. If the switch node is not done, we add the weight of all his descendants,
+ * otherwise only the weight of the used case count.
+ */
+list<ProgressWeight> Switch::getProgressWeight() const
+{
+  list<ProgressWeight> ret;
+  list<Node *> setOfNode=edGetDirectDescendants();
+  if (getState() == YACS::DONE)
+    {
+      for(list<Node *>::const_iterator iter=setOfNode.begin();iter!=setOfNode.end();iter++)
+      {
+        if (getEffectiveState(*iter) == YACS::DONE)
+          ret=(*iter)->getProgressWeight();
+      }
+    }
+  else
+    {
+      for(list<Node *>::const_iterator iter=setOfNode.begin();iter!=setOfNode.end();iter++)
+        {
+          list<ProgressWeight> myCurrentSet=(*iter)->getProgressWeight();
+          ret.insert(ret.end(),myCurrentSet.begin(),myCurrentSet.end());
+        }
+    }
+  return ret;
+}
+
 bool Switch::edAddChild(Node *node) throw(YACS::Exception)
 {
   int aCase = getMaxCase() + 1;

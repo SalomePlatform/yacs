@@ -55,6 +55,9 @@ namespace YACS
       OutputPort *edGetIndexPort() { return &_indexPort; }
       virtual std::string typeName() {return "YACS__ENGINE__ForLoop";}
       std::string getProgress() const;
+      std::list<ProgressWeight> getProgressWeight() const;
+      int getNbSteps() const;
+
     protected:
       YACS::Event updateStateOnFinishedEventFrom(Node *node);
       void checkCFLinks(const std::list<OutPort *>& starts, InputPort *end, unsigned char& alreadyFed,

@@ -69,6 +69,7 @@ namespace YACS
       void getReadyTasks(std::vector<Task *>& tasks);
       void edRemovePort(Port *port) throw(Exception);
       std::list<ElementaryNode *> getRecursiveConstituents() const;
+      std::list<ProgressWeight> getProgressWeight() const;
       Node *getChildByName(const std::string& name) const throw(Exception);
       virtual void checkBasicConsistency() const throw(Exception);
       ComposedNode *getDynClonerIfExists(const ComposedNode *levelToStop) const;

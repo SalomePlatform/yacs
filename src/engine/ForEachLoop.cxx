@@ -741,6 +741,7 @@ YACS::Event ForEachLoop::updateStateForInitNodeOnFinishedEventFrom(Node *node, u
   _execNodes[id]->exUpdateState();
   _nbOfEltConsumed++;
   _initializingCounter--;
+  _currentIndex++;
   if (_initializingCounter == 0)
     _initNode->setState(DONE);
   return YACS::NOEVENT;
@@ -1103,9 +1104,36 @@ std::string ForEachLoop::getProgress() const
   return aProgress.str();
 }
 
+//! Get the progress weight for all elementary nodes
+/*!
+ * Only elementary nodes have weight. For each node in the loop, the weight done is multiplied
+ * by the number of elements done and the weight total by the number total of elements
+ */
+list<ProgressWeight> ForEachLoop::getProgressWeight() const
+{
+  list<ProgressWeight> ret;
+  list<Node *> setOfNode=edGetDirectDescendants();
+  int elemDone=getCurrentIndex();
+  int elemTotal=getNbOfElementsToBeProcessed();
+  for(list<Node *>::const_iterator iter=setOfNode.begin();iter!=setOfNode.end();iter++)
+    {
+      list<ProgressWeight> myCurrentSet=(*iter)->getProgressWeight();
+      for(list<ProgressWeight>::iterator iter=myCurrentSet.begin();iter!=myCurrentSet.end();iter++)
+        {
+          (*iter).weightDone=((*iter).weightTotal) * elemDone;
+          (*iter).weightTotal*=elemTotal;
+        }
+      ret.insert(ret.end(),myCurrentSet.begin(),myCurrentSet.end());
+    }
+  return ret;
+}
+
 int ForEachLoop::getNbOfElementsToBeProcessed() const
 {
-  return _splitterNode.getNumberOfElements();
+  int nbBranches = _nbOfBranches.getIntValue();
+  return _splitterNode.getNumberOfElements()
+         + (_initNode ? nbBranches:0)
+         + (_finalizeNode ? nbBranches:0) ;
 }
 
 /*!

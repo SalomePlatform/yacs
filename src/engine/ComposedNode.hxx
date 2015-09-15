@@ -80,7 +80,7 @@ namespace YACS
       std::list<ElementaryNode *> getRecursiveConstituents() const;
       std::list<Node *> getAllRecursiveNodes();
       virtual std::list<Node *> getAllRecursiveConstituents(); // first implementation
-      std::list<std::pair<int,int> > getProgressWeight();
+      std::list<ProgressWeight> getProgressWeight() const;
       std::string getInPortName(const InPort *) const throw (Exception);
       std::string getOutPortName(const OutPort *) const throw (Exception);
       //
