@@ -622,7 +622,7 @@ void SubjectNode::registerUndoDestroy()
   Bloc *undoBloc = new Bloc(blocName.str());
   undoProc->edAddChild(undoBloc);
   ComposedNode *newFather = undoBloc;
-  Node *clone = _node->clone(0);
+  Node *clone = _node->cloneWithoutCompAndContDeepCpy(0);
   newFather->edAddChild(clone);
 
   // --- register a CommandCopyNode from undoProc

@@ -574,7 +574,7 @@ bool CommandPutInComposedNode::localExecute()
 	  //create a ComposedNode (type _type) with name _newParent
 	  YACS::ENGINE::Catalog *catalog = YACS::ENGINE::getSALOMERuntime()->getBuiltinCatalog();
 	  Node* nodeToClone = catalog->_composednodeMap[_type];
-	  composednode = nodeToClone->clone(0);
+	  composednode = nodeToClone->cloneWithoutCompAndContDeepCpy(0);
 	  composednode->setName(_newParent);
 	  //add the new composednode as child of oldfather
 	  oldFather->edAddChild(composednode);
@@ -709,7 +709,7 @@ bool CommandCopyNode::localExecute()
         if (!loop->edGetDirectDescendants().empty())
           throw YACS::Exception("Already a node in a new parent of Loop type");
       //_clone = node->cloneWithoutCompAndContDeepCpy(newFather);
-      _clone = node->clone(0);
+      _clone = node->cloneWithoutCompAndContDeepCpy(0);
       if (!_clone)
         throw YACS::Exception("Node cannot be cloned");
       int nodeSuffix = -1;
