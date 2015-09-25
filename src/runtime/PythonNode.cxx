@@ -649,7 +649,7 @@ void PythonNode::createRemoteAdaptedPyInterpretor(Engines::Container_ptr objCont
 
 Engines::PyNodeBase_var PythonNode::retrieveDftRemotePyInterpretorIfAny(Engines::Container_ptr objContainer) const
 {
-  Engines::PyScriptNode_var ret(objContainer->getDefaultPyScriptNode());
+  Engines::PyScriptNode_var ret(objContainer->getDefaultPyScriptNode(getName().c_str()));
   if(!CORBA::is_nil(ret))
     {
       ret->Register();
@@ -1117,7 +1117,7 @@ void PyFuncNode::createRemoteAdaptedPyInterpretor(Engines::Container_ptr objCont
 
 Engines::PyNodeBase_var PyFuncNode::retrieveDftRemotePyInterpretorIfAny(Engines::Container_ptr objContainer) const
 {
-  Engines::PyNode_var ret(objContainer->getDefaultPyNode());
+  Engines::PyNode_var ret(objContainer->getDefaultPyNode(getName().c_str()));
   if(!CORBA::is_nil(ret))
     {
       ret->Register();

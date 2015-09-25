@@ -134,7 +134,7 @@ void DistributedPythonNode::load()
           }
         else
           {
-            Engines::PyNode_var dftPyScript(objContainer->getDefaultPyNode());
+            Engines::PyNode_var dftPyScript(objContainer->getDefaultPyNode(getName().c_str()));
             if(CORBA::is_nil(dftPyScript))
               _pynode = objContainer->createPyNode(getName().c_str(),getScript().c_str());
             else
