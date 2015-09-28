@@ -543,7 +543,7 @@
     </message>
     <message>
       <source>Put Graph Content in Node</source>
-      <translation type="unfinished">ノード内のグラフの内容を置く</translation>
+      <translation>ノード内のグラフの内容を置く</translation>
     </message>
     <message>
       <source>arrange nodes on that bloc level, without recursion</source>
@@ -595,11 +595,11 @@
     </message>
     <message>
       <source>shrink or expand direct children of the selected node</source>
-      <translation type="unfinished">選択中のノードを展開または縮小</translation>
+      <translation>選択中のノードを展開または縮小</translation>
     </message>
     <message>
       <source>shrink or expand elementary nodes of the selected node recursively</source>
-      <translation type="unfinished">選択中のノードを展開または縮小</translation>
+      <translation>選択中のノードを展開または縮小</translation>
     </message>
     <message>
       <source>shrink/expand</source>
@@ -607,11 +607,11 @@
     </message>
     <message>
       <source>shrink/expand children</source>
-      <translation type="unfinished">展開/縮小</translation>
+      <translation>展開/縮小</translation>
     </message>
     <message>
       <source>shrink/expand elementary</source>
-      <translation type="unfinished">展開/縮小</translation>
+      <translation>展開/縮小</translation>
     </message>
     <message>
       <source>draw straight or orthogonal links</source>
