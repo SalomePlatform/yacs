@@ -1213,6 +1213,47 @@ for i in i8:
     self.assertEqual(p.getChildByName("test23/main.test23/check").getOutputPort("o1").getPyObj(),[3,4,5,6,7,8,9,10,11,12])
     pass
 
+  def test15(self):
+    fname="BugInConcurrentLaunchDftCont.xml"
+    p=self.r.createProc("pr")
+    ti=p.createType("int","int")
+    cont=p.createContainer("DefaultContainer","Salome")
+    cont.setProperty("container_name","FactoryServer")
+    b=self.r.createBloc("Bloc") ; p.edAddChild(b)
+    #
+    nb=4
+    outs=[]
+    for i in xrange(nb):
+      node=self.r.createScriptNode("Salome","node%d"%i)
+      node.setExecutionMode("remote")
+      node.setContainer(cont)
+      outs.append(node.edAddOutputPort("i",ti))
+      node.setScript("i=%d"%i)
+      b.edAddChild(node)
+    #
+    node=self.r.createScriptNode("Salome","nodeEnd")
+    node.setExecutionMode("remote")
+    node.setContainer(cont)
+    res=node.edAddOutputPort("res",ti)
+    p.edAddChild(node)
+    l=[]
+    for i in xrange(nb):
+      elt="i%d"%i
+      inp=node.edAddInputPort(elt,ti) ; l.append(elt)
+      p.edAddChild(node)
+      p.edAddLink(outs[i],inp)
+    node.setScript("res="+"+".join(l))
+    p.edAddCFLink(b,node)
+    #
+    for i in xrange(10):
+      p.init()
+      ex = pilot.ExecutorSwig()
+      self.assertEqual(p.getState(),pilot.READY)
+      ex.RunW(p,0)
+      self.assertEqual(res.get(),6)
+      self.assertEqual(p.getState(),pilot.DONE)
+    pass
+
   pass
 
 if __name__ == '__main__':
