@@ -25,6 +25,7 @@
 #include "OutputDataStreamPort.hxx"
 #include "ElementaryNode.hxx"
 #include "Visitor.hxx"
+#include "SetOfPoints.hxx"
 
 #include <queue>
 #include <iostream>
@@ -452,37 +453,15 @@ void Bloc::accept(Visitor* visitor)
  */
 int Bloc::getMaxLevelOfParallelism() const
 {
-  std::set<Node *> s(_setOfNode.begin(),_setOfNode.end());
-  for(std::set<Node *>::const_iterator it=s.begin();it!=s.end();it++)
-    (*it)->_colour=White;
-  std::vector<int> levs;
-  while(!s.empty())
+  std::vector< std::list<Node *> > r(splitIntoIndependantGraph());
+  int ret(0);
+  for(std::vector< std::list<Node *> >::const_iterator it=r.begin();it!=r.end();it++)
     {
-      Node *seed(*(s.begin()));
-      int myCurLev(0);
-      while(seed)
-        {
-          s.erase(seed);
-          std::set<InGate *> ingates(seed->getOutGate()->edSetInGate());
-          int myCurLev2(seed->getMaxLevelOfParallelism());
-          for(std::set<InGate *>::const_iterator it=ingates.begin();it!=ingates.end();it++)
-            {
-              Node *curNode((*it)->getNode());
-              curNode->_colour=Grey;
-              myCurLev2=std::max(curNode->getMaxLevelOfParallelism(),myCurLev2);
-            }
-          myCurLev=std::max(myCurLev,myCurLev2);
-          seed=0;
-          for(std::set<Node *>::const_iterator it=s.begin();it!=s.end();it++)
-            if((*it)->_colour==Grey)
-              {
-                seed=*it;
-                break;
-              }
-        }
-      levs.push_back(myCurLev);
+      SetOfPoints sop(*it);
+      sop.simplify();
+      ret+=sop.getMaxLevelOfParallelism();
     }
-  return std::accumulate(levs.begin(),levs.end(),0);
+  return ret;
 }
 
 /*!
