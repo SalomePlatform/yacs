@@ -24,7 +24,6 @@
 #include "Port.hxx"
 #include "define.hxx"
 
-#include <map>
 #include <list>
 
 namespace YACS
@@ -40,13 +39,13 @@ namespace YACS
     protected:
       static const char NAME[];
     private:
-      std::map< OutGate *, bool > _backLinks;
+      std::list< std::pair<OutGate *, bool> > _backLinks;
     public:
       InGate(Node *node);
       virtual ~InGate();
       std::string getNameOfTypeOfCurrentInstance() const;
       void exNotifyFromPrecursor(OutGate *fromgate);
-      std::map<OutGate *, bool>& edMapOutGate() { return _backLinks; }
+      std::list< std::pair<OutGate *, bool> >& edMapOutGate() { return _backLinks; }
       void edAppendPrecursor(OutGate *fromgate);
       void edRemovePrecursor(OutGate *fromgate);
       int getNumberOfBackLinks() const;

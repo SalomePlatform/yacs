@@ -110,8 +110,8 @@ namespace YACS
     template<>
     struct CFDirectionVisTraits<false>
     {
-      typedef std::map<OutGate *,bool>::iterator Iterator;
-      typedef std::map<OutGate *,bool>& Nexts;
+      typedef std::list< std::pair<OutGate *,bool> >::iterator Iterator;
+      typedef std::list< std::pair<OutGate *,bool> >& Nexts;
       static Nexts getNexts(Node *node) { return node->getInGate()->edMapOutGate(); }
     };
 

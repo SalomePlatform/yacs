@@ -23,6 +23,8 @@
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
+#include <algorithm>
+
 using namespace YACS::ENGINE;
 using namespace std;
 
@@ -43,10 +45,19 @@ string InGate::getNameOfTypeOfCurrentInstance() const
 
 void InGate::edDisconnectAllLinksToMe()
 {
-  for(map<OutGate *, bool >::iterator iter=_backLinks.begin();iter!=_backLinks.end();iter++)
+  for(list< std::pair<OutGate *, bool> >::iterator iter=_backLinks.begin();iter!=_backLinks.end();iter++)
     ((*iter).first)->edRemoveInGate(this,false);
   _backLinks.clear();
 }
+
+class ItemCmp
+{
+private:
+  OutGate *_itf;
+public:
+  ItemCmp(OutGate *itf):_itf(itf) { }
+  bool operator()(const std::pair<OutGate *,bool>& elt) const { return elt.first==_itf; }
+};
 
 //! Notify this port that an upstream node connected by a control flow link is finished
 /*!
@@ -57,7 +68,9 @@ void InGate::edDisconnectAllLinksToMe()
 void InGate::exNotifyFromPrecursor(OutGate *from)
 {
   DEBTRACE("InGate::exNotifyFromPrecursor");
-  map< OutGate *, bool >::iterator iter=_backLinks.find(from);
+  list< pair<OutGate *, bool> >::iterator iter(std::find_if(_backLinks.begin(),_backLinks.end(),ItemCmp(from)));
+  if(iter==_backLinks.end())
+    throw YACS::Exception("InGate::exNotifyFromPrecursor : precursor not found !");
   (*iter).second=true;
   if(exIsReady())
     _node->exUpdateState();
@@ -69,7 +82,8 @@ void InGate::exNotifyFromPrecursor(OutGate *from)
  */
 void InGate::exNotifyFailed()
 {
-  if(_node) _node->exFailedState();
+  if(_node)
+    _node->exFailedState();
 }
 
 //! Notify this port that an upstream node connected by a control flow link has been disabled
@@ -84,12 +98,18 @@ void InGate::exNotifyDisabled()
 
 void InGate::edAppendPrecursor(OutGate *from)
 {
-  _backLinks[from]=false;
+  list< pair<OutGate *, bool> >::iterator iter(std::find_if(_backLinks.begin(),_backLinks.end(),ItemCmp(from)));
+  if(iter!=_backLinks.end())
+    (*iter).second=false;
+  else
+    _backLinks.push_back(pair<OutGate *, bool>(from,false));
 }
 
 void InGate::edRemovePrecursor(OutGate *from)
 {
-  _backLinks.erase(from);
+  list< pair<OutGate *, bool> >::iterator iter(std::find_if(_backLinks.begin(),_backLinks.end(),ItemCmp(from)));
+  if(iter!=_backLinks.end())
+    _backLinks.erase(iter);
 }
 
 int InGate::getNumberOfBackLinks() const
@@ -99,14 +119,14 @@ int InGate::getNumberOfBackLinks() const
 
 void InGate::exReset()
 {
-  for(map<OutGate *, bool >::iterator iter=_backLinks.begin();iter!=_backLinks.end();iter++)
+  for(list< std::pair<OutGate *, bool> >::iterator iter=_backLinks.begin();iter!=_backLinks.end();iter++)
     (*iter).second=false;
 }
 
 bool InGate::exIsReady() const
 {
-  bool isReady=true;
-  for(map<OutGate *, bool >::const_iterator iter=_backLinks.begin();iter!=_backLinks.end() && isReady;iter++)
+  bool isReady(true);
+  for(list< std::pair<OutGate *, bool> >::const_iterator iter=_backLinks.begin();iter!=_backLinks.end() && isReady;iter++)
     isReady=(*iter).second;
   return isReady;
 }
@@ -114,13 +134,16 @@ bool InGate::exIsReady() const
 std::list<OutGate *> InGate::getBackLinks()
 {
   list<OutGate *> listo;
-  for(map<OutGate *, bool >::iterator iter=_backLinks.begin();iter!=_backLinks.end();iter++)
+  for(list< std::pair<OutGate *, bool> >::const_iterator iter=_backLinks.begin();iter!=_backLinks.end();iter++)
     listo.push_back(iter->first);
-  return listo;  
+  return listo;
 }
 
 void InGate::setPrecursorDone(OutGate *from)
 {
-  map< OutGate *, bool >::iterator iter=_backLinks.find(from);
-  (*iter).second=true;  
+  list< std::pair<OutGate *, bool> >::iterator iter(std::find_if(_backLinks.begin(),_backLinks.end(),ItemCmp(from)));
+  if(iter!=_backLinks.end())
+    (*iter).second=true;
+  else
+    throw YACS::Exception("InGate::setPrecursorDone : precursor not found !");
 }
