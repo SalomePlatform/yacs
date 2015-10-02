@@ -124,7 +124,7 @@ namespace YACS
       ComposedNode * getFather() const { return _father; }
       const std::string getId() const;
       bool exIsControlReady() const;
-      std::set<Node *> getOutNodes() const;
+      std::list<Node *> getOutNodes() const;
       virtual void writeDot(std::ostream &os) const;
       virtual void exUpdateState();
       virtual void exFailedState();

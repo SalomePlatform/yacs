@@ -319,8 +319,8 @@ bool Bloc::isNameAlreadyUsed(const std::string& name) const
 bool insertNodeChildrenInSet(Node *node, std::set<Node *>& nodeSet)
 {
   bool verdict=true;
-  set<Node *> outNodes=node->getOutNodes();
-  for (set<Node *>::iterator iter=outNodes.begin();iter!=outNodes.end(); iter++)
+  list<Node *> outNodes=node->getOutNodes();
+  for (list<Node *>::iterator iter=outNodes.begin();iter!=outNodes.end(); iter++)
     {
       verdict=(nodeSet.insert(*iter)).second;
       if (verdict) verdict = insertNodeChildrenInSet((*iter),nodeSet);
@@ -420,26 +420,26 @@ YACS::Event Bloc::updateStateOnFailedEventFrom(Node *node, const Executor *execI
 
 void Bloc::writeDot(std::ostream &os) const
 {
-    os << "  subgraph cluster_" << getId() << "  {\n" ;
-    list<Node *>nodes=getChildren();
-    for(list<Node *>::const_iterator iter=nodes.begin();iter!=nodes.end();iter++)
+  os << "  subgraph cluster_" << getId() << "  {\n" ;
+  list<Node *>nodes=getChildren();
+  for(list<Node *>::const_iterator iter=nodes.begin();iter!=nodes.end();iter++)
     {
-        (*iter)->writeDot(os);
-        string p=(*iter)->getId();
-        //not connected node
-        if((*iter)->_inGate._backLinks.size() == 0) os << getId() << " -> " << p << ";\n";
-        set<Node *>outnodes = (*iter)->getOutNodes();
-        for(set<Node *>::const_iterator itout=outnodes.begin();itout!=outnodes.end();itout++)
+      (*iter)->writeDot(os);
+      string p=(*iter)->getId();
+      //not connected node
+      if((*iter)->_inGate._backLinks.size() == 0) os << getId() << " -> " << p << ";\n";
+      list<Node *>outnodes = (*iter)->getOutNodes();
+      for(list<Node *>::const_iterator itout=outnodes.begin();itout!=outnodes.end();itout++)
         {
-            os << p << " -> " << (*itout)->getId() << ";\n";
+          os << p << " -> " << (*itout)->getId() << ";\n";
         }
     }
-    os << "}\n" ;
-    os << getId() << "[fillcolor=\"" ;
-    YACS::StatesForNode state=getEffectiveState();
-    os << getColorState(state);
-    os << "\" label=\"" << "Bloc:" ;
-    os << getQualifiedName() <<"\"];\n";
+  os << "}\n" ;
+  os << getId() << "[fillcolor=\"" ;
+  YACS::StatesForNode state=getEffectiveState();
+  os << getColorState(state);
+  os << "\" label=\"" << "Bloc:" ;
+  os << getQualifiedName() <<"\"];\n";
 }
 
 void Bloc::accept(Visitor* visitor)

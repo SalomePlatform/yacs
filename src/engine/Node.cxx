@@ -177,12 +177,12 @@ void Node::setName(const std::string& name)
  *  get the set of all nodes connected to the outGate
  */
 
-set<Node *> Node::getOutNodes() const
+list<Node *> Node::getOutNodes() const
 {
-  set<Node *> ret;
+  list<Node *> ret;
   list<InGate *> inGates=_outGate.edSetInGate();
   for(list<InGate *>::iterator iter=inGates.begin();iter!=inGates.end();iter++)
-    ret.insert((*iter)->getNode());
+    ret.push_back((*iter)->getNode());
   return ret;
 }
 
