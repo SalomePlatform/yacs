@@ -246,8 +246,8 @@ std::vector< std::list<Node *> > Bloc::splitIntoIndependantGraph() const
           ll.push_back(cur);
           //
           OutGate *og(cur->getOutGate());
-          set<InGate *> og2(og->edSetInGate());
-          for(set<InGate *>::const_iterator it2=og2.begin();it2!=og2.end();it2++)
+          list<InGate *> og2(og->edSetInGate());
+          for(list<InGate *>::const_iterator it2=og2.begin();it2!=og2.end();it2++)
             {
               Node *cur2((*it2)->getNode());
               if(cur2->_colour==White)
@@ -350,8 +350,8 @@ std::vector< std::pair<OutGate *, InGate *> > Bloc::getSetOfInternalCFLinks() co
   vector< pair<OutGate *, InGate *> > ret;
   for(list<Node *>::const_iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
     {
-      set<InGate *> outCFLinksOfCurNode=(*iter)->_outGate.edSetInGate();
-      for(set<InGate *>::iterator iter2=outCFLinksOfCurNode.begin();iter2!=outCFLinksOfCurNode.end();iter2++)
+      list<InGate *> outCFLinksOfCurNode=(*iter)->_outGate.edSetInGate();
+      for(list<InGate *>::iterator iter2=outCFLinksOfCurNode.begin();iter2!=outCFLinksOfCurNode.end();iter2++)
         ret.push_back(pair<OutGate *, InGate *>(&(*iter)->_outGate,*iter2));
     }
   return ret;
@@ -490,8 +490,8 @@ void Bloc::performCFComputations(LinkInfo& info) const
   for(list<Node *>::const_iterator iter=_setOfNode.begin();iter!=_setOfNode.end();iter++)
     {
       Node* n1=*iter;
-      std::set<InGate *> ingates=n1->getOutGate()->edSetInGate();
-      for(std::set<InGate *>::const_iterator it2=ingates.begin();it2!=ingates.end();it2++)
+      std::list<InGate *> ingates=n1->getOutGate()->edSetInGate();
+      for(std::list<InGate *>::const_iterator it2=ingates.begin();it2!=ingates.end();it2++)
         {
           //CF link : n1 -> (*it2)->getNode()
           Node* n2=(*it2)->getNode();
@@ -856,9 +856,8 @@ void Bloc::findUselessLinksIn(const std::list< std::vector<Node *> >& res , Link
       set<Node *> searcher(iter2+1,(*whereToPeerAt).end());//to boost research
       for(;iter2!=((*whereToPeerAt).end()-2);iter2++)
         {
-          map<InGate *,bool>::iterator iter4;
-          map<InGate *,bool>& nexts=(*iter2)->getOutGate()->edMapInGate();
-          for(iter4=nexts.begin();iter4!=nexts.end();iter4++)
+          list< pair<InGate *,bool> >& nexts=(*iter2)->getOutGate()->edMapInGate();
+          for(list< pair<InGate *,bool> >::iterator iter4=nexts.begin();iter4!=nexts.end();iter4++)
             if((*iter4).first->getNode()!=*(iter2+1))
               if(searcher.find((*iter4).first->getNode())!=searcher.end())
                 info.pushUselessCFLink(*iter2,(*iter4).first->getNode());

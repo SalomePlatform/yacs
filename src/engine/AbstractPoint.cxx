@@ -216,7 +216,7 @@ bool AbstractPoint::IsGatherB4Ext(Node *node)
 bool AbstractPoint::isSimplyLinkedAfter(BlocPoint *sop, Node *node)
 {
   OutGate *oug(node->getOutGate());
-  std::set<InGate *> ings(oug->edSetInGate());
+  std::list<InGate *> ings(oug->edSetInGate());
   if(ings.size()==1)
     return true;
   if(ings.size()==0)
@@ -281,7 +281,7 @@ Node *AbstractPoint::GetNodeB4(Node *node)
 Node *AbstractPoint::GetNodeAfter(Node *node)
 {
   OutGate *oug(node->getOutGate());
-  std::set<InGate *> fl(oug->edSetInGate());
+  std::list<InGate *> fl(oug->edSetInGate());
   if(fl.size()>1)
     throw Exception("AbstractPoint::GetNodeAfter : precond not OK !");
   if(fl.size()==0)
@@ -318,11 +318,11 @@ bool AbstractPoint::IsCommonDirectSonOf(AbstractPoint *refFather, const std::lis
   return true;
 }
 
-bool AbstractPoint::IsCommonDirectSonOf(AbstractPoint *refFather, const std::set<InGate *>& ings, AbstractPoint *&ret)
+bool AbstractPoint::IsCommonDirectSonOf(AbstractPoint *refFather, const std::list<InGate *>& ings, AbstractPoint *&ret)
 {
   if(ings.size()<1)
     throw YACS::Exception("AbstractPoint::GetCommonDirectSonOf2 : not enough !");
-  std::set<InGate *>::const_iterator it(ings.begin());
+  std::list<InGate *>::const_iterator it(ings.begin());
   InGate *ref(*(it++));
   AbstractPoint *ref2(GetDirectSonOf(refFather,refFather->findPointWithNode(ref->getNode())));
   for(;it!=ings.end();it++)

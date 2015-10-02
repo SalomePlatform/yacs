@@ -23,6 +23,8 @@
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
+#include <algorithm>
+
 using namespace YACS::ENGINE;
 using namespace std;
 
@@ -39,7 +41,7 @@ string OutGate::getNameOfTypeOfCurrentInstance() const
 
 void OutGate::exReset()
 {
-  for(map<InGate *, bool>::iterator iter=_setOfInGate.begin();iter!=_setOfInGate.end();iter++)
+  for(list< pair< InGate *, bool> >::iterator iter=_setOfInGate.begin();iter!=_setOfInGate.end();iter++)
     (*iter).second=false;
 }
 
@@ -53,7 +55,7 @@ void OutGate::exReset()
 void OutGate::exNotifyDone()
 {
   DEBTRACE("OutGate::exNotifyDone");
-  for(map<InGate *, bool>::iterator iter=_setOfInGate.begin();iter!=_setOfInGate.end();iter++)
+  for(list< pair<InGate *, bool> >::iterator iter=_setOfInGate.begin();iter!=_setOfInGate.end();iter++)
     (*iter).first->exNotifyFromPrecursor(this);
 }
 
@@ -63,7 +65,7 @@ void OutGate::exNotifyDone()
  */
 void OutGate::exNotifyFailed()
 {
-  for(map<InGate *, bool>::iterator iter=_setOfInGate.begin();iter!=_setOfInGate.end();iter++)
+  for(list< pair<InGate *, bool> >::iterator iter=_setOfInGate.begin();iter!=_setOfInGate.end();iter++)
     (*iter).first->exNotifyFailed();
 }
 
@@ -73,23 +75,32 @@ void OutGate::exNotifyFailed()
  */
 void OutGate::exNotifyDisabled()
 {
-  for(map<InGate *, bool>::iterator iter=_setOfInGate.begin();iter!=_setOfInGate.end();iter++)
+  for(list< pair<InGate *, bool> >::iterator iter=_setOfInGate.begin();iter!=_setOfInGate.end();iter++)
     (*iter).first->exNotifyDisabled();
 }
 
 void OutGate::edDisconnectAllLinksFromMe()
 {
-  for(map<InGate *, bool>::iterator iter=_setOfInGate.begin();iter!=_setOfInGate.end();iter++)
+  for(list< pair<InGate *, bool> >::iterator iter=_setOfInGate.begin();iter!=_setOfInGate.end();iter++)
     (*iter).first->edRemovePrecursor(this);
   _setOfInGate.clear();
 }
+
+class ItemCmp
+{
+private:
+  InGate *_itf;
+public:
+  ItemCmp(InGate *itf):_itf(itf) { }
+  bool operator()(const std::pair<InGate *,bool>& elt) const { return elt.first==_itf; }
+};
 
 bool OutGate::edAddInGate(InGate *inGate)
 {
   if(!isAlreadyInSet(inGate))
     {
       inGate->edAppendPrecursor(this);
-      _setOfInGate[inGate]=false;
+      _setOfInGate.push_back(std::pair<InGate *,bool>(inGate,false));
       modified();
       inGate->modified();
       return true;
@@ -98,17 +109,17 @@ bool OutGate::edAddInGate(InGate *inGate)
     return false;
 }
 
-std::set<InGate *> OutGate::edSetInGate() const
+std::list<InGate *> OutGate::edSetInGate() const
 {
-  set<InGate *> ret;
-  for(map<InGate *, bool>::const_iterator iter=_setOfInGate.begin();iter!=_setOfInGate.end();iter++)
-    ret.insert((*iter).first);
+  list<InGate *> ret;
+  for(list< pair<InGate *, bool> >::const_iterator iter=_setOfInGate.begin();iter!=_setOfInGate.end();iter++)
+    ret.push_back((*iter).first);
   return ret;
 }
 
 void OutGate::edRemoveInGate(InGate *inGate, bool coherenceWithInGate) throw(YACS::Exception)
 {
-  std::map< InGate* , bool >::iterator iter=_setOfInGate.find(inGate);
+  std::list< pair<InGate* , bool> >::iterator iter(std::find_if(_setOfInGate.begin(),_setOfInGate.end(),ItemCmp(inGate)));
   if(iter==_setOfInGate.end())
     throw Exception("InGate not already connected to OutGate");
   else
@@ -125,7 +136,7 @@ void OutGate::edRemoveInGate(InGate *inGate, bool coherenceWithInGate) throw(YAC
 void OutGate::edRemoveInGateOneWay(InGate *inGate)
 {
   bool found=false;
-  for(map<InGate *, bool>::iterator iter=_setOfInGate.begin();iter!=_setOfInGate.end() && !found;iter++)
+  for(list< pair<InGate *, bool> >::iterator iter=_setOfInGate.begin();iter!=_setOfInGate.end() && !found;iter++)
     if((*iter).first==inGate)
       {
         _setOfInGate.erase(iter);
@@ -138,7 +149,7 @@ void OutGate::edRemoveInGateOneWay(InGate *inGate)
 
 bool OutGate::isAlreadyInSet(InGate *inGate) const
 {
-  return _setOfInGate.find(inGate)!=_setOfInGate.end();
+  return find_if(_setOfInGate.begin(),_setOfInGate.end(),ItemCmp(inGate))!=_setOfInGate.end();
 }
 
 int OutGate::getNbOfInGatesConnected() const

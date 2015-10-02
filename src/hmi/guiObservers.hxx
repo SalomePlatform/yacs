@@ -339,7 +339,7 @@ namespace YACS
       std::list<SubjectControlLink*> _listSubjectControlLink;
       int _execState;
       std::list<YACS::ENGINE::OutGate *> loutgate;
-      std::set<YACS::ENGINE::InGate *> singate;
+      std::list<YACS::ENGINE::InGate *> singate;
       std::vector< std::pair<YACS::ENGINE::OutPort *, YACS::ENGINE::InPort *> > dataLinks;
       std::vector< std::pair<YACS::ENGINE::OutPort *, YACS::ENGINE::InPort *> > dataflowLinks;
     };

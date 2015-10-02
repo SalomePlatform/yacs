@@ -228,8 +228,8 @@ void  SceneBlocItem::getNodesInfo(YACS::ENGINE::ComposedNode *cnode)
 
     {
       OutGate *outGate = outNode->getOutGate();
-      set<InGate*> setOfInGate = outGate->edSetInGate();
-      set<InGate*>::const_iterator itin = setOfInGate.begin();
+      list<InGate*> setOfInGate = outGate->edSetInGate();
+      list<InGate*>::const_iterator itin = setOfInGate.begin();
       for (; itin != setOfInGate.end(); ++itin)
         {
           Node *inNode = (*itin)->getNode();

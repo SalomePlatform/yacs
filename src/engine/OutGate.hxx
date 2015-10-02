@@ -24,8 +24,7 @@
 #include "Port.hxx"
 #include "Exception.hxx"
 
-#include <map>
-#include <set>
+#include <list>
 
 namespace YACS
 {
@@ -38,7 +37,7 @@ namespace YACS
     {
       friend class ElementaryNode;
     protected:
-      std::map<InGate *, bool> _setOfInGate;
+      std::list< std::pair< InGate *, bool > > _setOfInGate;
     public:
       static const char NAME[];
     public:
@@ -50,8 +49,8 @@ namespace YACS
       void exNotifyDisabled();
       void edDisconnectAllLinksFromMe();
       bool edAddInGate(InGate *inGate);
-      std::map<InGate *, bool>& edMapInGate() { return _setOfInGate; }
-      std::set<InGate *> edSetInGate() const;
+      std::list< std::pair< InGate *, bool> >& edMapInGate() { return _setOfInGate; }
+      std::list<InGate *> edSetInGate() const;
       void edRemoveInGate(InGate *inGate, bool coherenceWithInGate=true) throw(Exception);
       int getNbOfInGatesConnected() const;
       bool isAlreadyInSet(InGate *inGate) const;

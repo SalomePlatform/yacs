@@ -22,7 +22,6 @@
 
 #include "YACSlibEngineExport.hxx"
 
-#include <set>
 #include <list>
 #include <vector>
 #include <string>
@@ -79,7 +78,7 @@ namespace YACS
       static Node *GetNodeAfter(Node *node);
       static AbstractPoint *GetDirectSonOf(AbstractPoint *refFather, AbstractPoint *sonOrLittleSon);
       static bool IsCommonDirectSonOf(AbstractPoint *refFather, const std::list<OutGate *>& outgs, AbstractPoint *&ret);
-      static bool IsCommonDirectSonOf(AbstractPoint *refFather, const std::set<InGate *>& ings, AbstractPoint *&ret);
+      static bool IsCommonDirectSonOf(AbstractPoint *refFather, const std::list<InGate *>& ings, AbstractPoint *&ret);
     protected:
       AbstractPoint *_father;
     };

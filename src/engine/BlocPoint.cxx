@@ -42,7 +42,7 @@ AbstractPoint *BlocPoint::findPointWithNode(Node *node)
 AbstractPoint *BlocPoint::getNodeAfter(Node *node)
 {
   OutGate *oug(node->getOutGate());
-  std::set<InGate *> fl(oug->edSetInGate());
+  std::list<InGate *> fl(oug->edSetInGate());
   if(fl.size()>=1)
     {
       AbstractPoint *ret(0);

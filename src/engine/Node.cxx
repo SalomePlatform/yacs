@@ -180,8 +180,8 @@ void Node::setName(const std::string& name)
 set<Node *> Node::getOutNodes() const
 {
   set<Node *> ret;
-  set<InGate *> inGates=_outGate.edSetInGate();
-  for(set<InGate *>::iterator iter=inGates.begin();iter!=inGates.end();iter++)
+  list<InGate *> inGates=_outGate.edSetInGate();
+  for(list<InGate *>::iterator iter=inGates.begin();iter!=inGates.end();iter++)
     ret.insert((*iter)->getNode());
   return ret;
 }

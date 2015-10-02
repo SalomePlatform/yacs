@@ -902,7 +902,7 @@ void SubjectNode::saveLinks()
       Node* n2=_node;
       DEBTRACE(n1->getName()<< " " << n2->getName());
     }
-  std::set<InGate *>::const_iterator iti;
+  std::list<InGate *>::const_iterator iti;
   for(iti=singate.begin();iti != singate.end();iti++)
     {
       Node* n1=_node;
@@ -1076,7 +1076,7 @@ void SubjectNode::restoreLinks()
         }
     }
 
-  std::set<InGate *>::const_iterator it2;
+  std::list<InGate *>::const_iterator it2;
   for(it2=singate.begin();it2 != singate.end();it2++)
     {
       Node* n1=_node;
@@ -1649,8 +1649,8 @@ void SubjectComposedNode::loadLinks()
     {
       SubjectNode* sno = GuiContext::getCurrent()->_mapOfSubjectNode[*itn];
       OutGate* outgate = (*itn)->getOutGate();
-      std::set<InGate*> setIngate = outgate->edSetInGate();
-      std::set<InGate*>::const_iterator itg;
+      std::list<InGate*> setIngate = outgate->edSetInGate();
+      std::list<InGate*>::const_iterator itg;
       for(itg = setIngate.begin(); itg != setIngate.end(); ++itg)
         {
           Node* inNode = (*itg)->getNode();

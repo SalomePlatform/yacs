@@ -797,8 +797,8 @@ void VisitorSaveSchema::writeControls(ComposedNode *node)
   for (list<Node*>::iterator ic = setOfChildren.begin(); ic != setOfChildren.end(); ++ic)
     {
       // --- Control links from direct descendant to nodes inside the bloc
-      set<InGate*> setOfInGates = (*ic)->getOutGate()->edSetInGate();
-      for (set<InGate*>::iterator ig = setOfInGates.begin(); ig != setOfInGates.end(); ++ig)
+      list<InGate*> setOfInGates = (*ic)->getOutGate()->edSetInGate();
+      for (list<InGate*>::iterator ig = setOfInGates.begin(); ig != setOfInGates.end(); ++ig)
         {
           Node *to = (*ig)->getNode();
           if (node->isInMyDescendance(to))
