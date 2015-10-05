@@ -257,6 +257,14 @@ namespace YACS
                 if( t1->isA(t2->id()) )
                   return 1;
               }
+            else if(t1->kind() == Sequence)
+              {
+                const TypeCodeSeq *t1c(dynamic_cast<const TypeCodeSeq *>(t1));
+                if(!t1c)
+                  return 0;
+                if(t1c->contentType()==t2)
+                  return 1;
+              }
             return 0;
           }
       };

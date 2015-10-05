@@ -1254,6 +1254,28 @@ for i in i8:
       self.assertEqual(p.getState(),pilot.DONE)
     pass
 
+  def test16(self):
+    SALOMERuntime.RuntimeSALOME_setRuntime()
+    self.r=pilot.getRuntime()
+    n0=self.r.createProc("test16/zeRun")
+    tp=n0.createInterfaceTc("python:obj:1.0","pyobj",[])
+    tp2=n0.createSequenceTc("list[pyobj]","list[pyobj]",tp)
+    
+    n00=self.r.createScriptNode("Salome","n00") ; n0.edAddChild(n00)
+    o0=n00.edAddOutputPort("o0",tp2)
+    n00.setScript("o0=[[i+1] for i in xrange(8)]")
+    n01=self.r.createScriptNode("Salome","n01") ; n0.edAddChild(n01)
+    i1=n01.edAddInputPort("i1",tp)
+    n01.setScript("assert(i1==[[1], [2], [3], [4], [5], [6], [7], [8]])")
+    n0.edAddCFLink(n00,n01)
+    n0.edAddLink(o0,i1)
+    #
+    ex=pilot.ExecutorSwig()
+    self.assertEqual(n0.getState(),pilot.READY)
+    ex.RunW(n0,0)
+    self.assertEqual(n0.getState(),pilot.DONE)
+    pass
+    
   pass
 
 if __name__ == '__main__':
