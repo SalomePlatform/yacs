@@ -279,8 +279,12 @@ void GuiExecutor::saveState(const std::string& xmlFile)
   bool StartFinish = (getExecutorState() == YACS::NOTYETINITIALIZED ||
                       getExecutorState() == YACS::FINISHED);
   if ( _isRunning ||
-       !(CORBA::is_nil(_procRef)) && StartFinish )
-    _procRef->saveState(xmlFile.c_str());
+       !(CORBA::is_nil(_procRef)) && StartFinish ) {
+    if ( !_procRef->saveState(xmlFile.c_str()) ) {
+      string what = "Impossible to open file for writing: " + xmlFile;
+      throw Exception(what);
+    }
+  }
 }
 
 void GuiExecutor::setLoadStateFile(std::string xmlFile)

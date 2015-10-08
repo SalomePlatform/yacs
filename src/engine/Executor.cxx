@@ -649,11 +649,18 @@ void Executor::stopExecution()
 bool Executor::saveState(const std::string& xmlFile)
 {
   DEBTRACE("Executor::saveState() in " << xmlFile);
-  YACS::ENGINE::VisitorSaveState vst(_root);
-  vst.openFileDump(xmlFile.c_str());
-  _root->accept(&vst);
-  vst.closeFileDump();
-  return true;
+  bool result = false;
+  try {
+    YACS::ENGINE::VisitorSaveState vst(_root);
+    vst.openFileDump(xmlFile.c_str());
+    _root->accept(&vst);
+    vst.closeFileDump();
+    result = true;
+  }
+  catch(Exception& ex) {
+    std::cerr << ex.what() << std::endl;
+  }
+  return result;
 }
 
 //! not yet implemented
