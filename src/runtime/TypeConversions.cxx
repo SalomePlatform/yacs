@@ -262,7 +262,10 @@ namespace YACS
                 const TypeCodeSeq *t1c(dynamic_cast<const TypeCodeSeq *>(t1));
                 if(!t1c)
                   return 0;
-                if(t1c->contentType()==t2)
+                const TypeCode *t1cc(t1c->contentType());
+                if(t1cc==t2)
+                  return 1;
+                if(t1cc->kind() == Objref && std::string(t1cc->id())==std::string(t2->id()))
                   return 1;
               }
             return 0;
