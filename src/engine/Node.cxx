@@ -771,7 +771,7 @@ void Node::cleanNodes()
 void Node::resetState(int level)
 {
   DEBTRACE("Node::resetState " << getName() << "," << level << "," << _state);
-  if(_state==YACS::ERROR || _state==YACS::FAILED)
+  if(_state==YACS::ERROR || _state==YACS::FAILED || _state==YACS::ACTIVATED)
     {
       setState(YACS::READY);
       InGate* inGate = getInGate();
