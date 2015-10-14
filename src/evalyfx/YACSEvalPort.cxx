@@ -66,6 +66,21 @@ YACSEvalAnyInt *YACSEvalAnyInt::deepCpy() const
   return new YACSEvalAnyInt(*this);
 }
 
+bool YACSEvalPort::IsInputPortPublishable(const YACS::ENGINE::InputPort *port)
+{
+  YACS::ENGINE::TypeCode *tc(port->edGetType());
+  if(!tc)
+    throw YACS::Exception("YACSEvalPort::IsInPortPublishable : null type code !");
+  if(tc->kind()==YACS::ENGINE::Double || tc->kind()==YACS::ENGINE::Int)
+    return true;
+  if(tc->kind()==YACS::ENGINE::String)
+    {
+      if(port->edIsManuallyInitialized())
+        return false;
+    }
+  return true;
+}
+
 std::string YACSEvalPort::GetTypeOfData(const YACS::ENGINE::DataPort *port)
 {
   YACS::ENGINE::TypeCode *tc(port->edGetType());

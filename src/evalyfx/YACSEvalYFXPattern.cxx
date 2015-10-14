@@ -519,16 +519,19 @@ void YACSEvalYFXRunOnlyPattern::buildInputPorts()
       std::set<YACS::ENGINE::OutPort *> bls(elt->edSetOutPort());
       if(bls.empty())
         {
-          std::string inpName(elt->getName());
-          if(inpName.empty())
-            throw YACS::Exception("YACSEvalYFXRunOnlyPattern::buildInputPorts : an input has empty name ! Should not !");
-          _inputs.push_back(YACSEvalInputPort(elt));
-          if(std::find(allNames.begin(),allNames.end(),inpName)!=allNames.end())
+          if(YACSEvalPort::IsInputPortPublishable(elt))
             {
-              std::ostringstream oss; oss << "YACSEvalYFXRunOnlyPattern::buildInputPorts : input name \"" << inpName << "\" appears more than once !";
-              throw YACS::Exception(oss.str());
+              std::string inpName(elt->getName());
+              if(inpName.empty())
+                throw YACS::Exception("YACSEvalYFXRunOnlyPattern::buildInputPorts : an input has empty name ! Should not !");
+              _inputs.push_back(YACSEvalInputPort(elt));
+              if(std::find(allNames.begin(),allNames.end(),inpName)!=allNames.end())
+                {
+                  std::ostringstream oss; oss << "YACSEvalYFXRunOnlyPattern::buildInputPorts : input name \"" << inpName << "\" appears more than once !";
+                  throw YACS::Exception(oss.str());
+                }
+              allNames.push_back(inpName);
             }
-          allNames.push_back(inpName);
         }
     }
 }
