@@ -522,14 +522,14 @@ void OptimizerLoop::checkCFLinks(const std::list<OutPort *>& starts, InputPort *
 }
 
 void OptimizerLoop::checkLinkPossibility(OutPort *start, const std::list<ComposedNode *>& pointsOfViewStart,
-                          InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) throw(Exception)
+                          InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) throw(YACS::Exception)
 {
   DynParaLoop::checkLinkPossibility(start, pointsOfViewStart, end, pointsOfViewEnd);
   std::string linkName("(");
   linkName += start->getName()+" to "+end->getName()+")";
 
   // Yes, it should be possible to link back the result port to any input port of the loop.
-  if(end == &_nbOfBranches or end == &_algoInitPort)
+  if(end == &_nbOfBranches || end == &_algoInitPort)
     if(start != &_algoResultPort)
       throw Exception(std::string("Illegal OptimizerLoop link.") + linkName);
     else
@@ -539,7 +539,7 @@ void OptimizerLoop::checkLinkPossibility(OutPort *start, const std::list<Compose
     throw Exception(std::string("Illegal OptimizerLoop link: \
 The 'algoResult' port can't be linked within the scope of the loop.") + linkName);
   
-  if(end == &_retPortForOutPool and isInMyDescendance(start->getNode())!=_node)
+  if(end == &_retPortForOutPool && isInMyDescendance(start->getNode())!=_node)
     throw Exception(std::string("Illegal OptimizerLoop link: \
 The 'evalResults' port can only be linked to the working node.") + linkName);
 }

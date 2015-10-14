@@ -480,7 +480,7 @@ void DynParaLoop::checkControlDependancy(OutPort *start, InPort *end, bool cross
 }
 
 void DynParaLoop::checkLinkPossibility(OutPort *start, const std::list<ComposedNode *>& pointsOfViewStart,
-                                InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) throw(Exception)
+                                InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) throw(YACS::Exception)
 {
   ComposedNode::checkLinkPossibility(start, pointsOfViewStart, end, pointsOfViewEnd);
   Node * startNode = isInMyDescendance(start->getNode());
