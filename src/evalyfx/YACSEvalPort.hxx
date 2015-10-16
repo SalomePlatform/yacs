@@ -86,6 +86,7 @@ public:
   YACSEVALYFX_EXPORT virtual ~YACSEvalPort() { }
 public:
   YACSEVALYFX_EXPORT static bool IsInputPortPublishable(const YACS::ENGINE::InputPort *port);
+  YACSEVALYFX_EXPORT static bool IsOutputPortPublishable(const YACS::ENGINE::OutputPort *port);
 protected:
   YACSEVALYFX_EXPORT static std::string GetTypeOfData(const YACS::ENGINE::DataPort *port);
 };

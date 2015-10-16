@@ -548,17 +548,20 @@ void YACSEvalYFXRunOnlyPattern::buildOutputPorts()
   for(std::list< YACS::ENGINE::OutputPort *>::const_iterator it=allOutputPorts.begin();it!=allOutputPorts.end();it++)
     {
       YACS::ENGINE::OutputPort *elt(*it);
-      if(!elt)
-        throw YACS::Exception("YACSEvalYFXRunOnlyPattern::buildOutputPorts : presence of null output !");
-      std::string outpName(elt->getName());
-      if(outpName.empty())
-        throw YACS::Exception("YACSEvalYFXRunOnlyPattern::buildOutputPorts : an output has empty name ! Should not !");
-      if(std::find(allNames.begin(),allNames.end(),outpName)!=allNames.end())
+      if(YACSEvalPort::IsOutputPortPublishable(elt))
         {
-          std::ostringstream oss; oss << "YACSEvalYFXRunOnlyPattern::buildOutputPorts : output name \"" << outpName << "\" appears more than once !";
-          throw YACS::Exception(oss.str());
+          if(!elt)
+            throw YACS::Exception("YACSEvalYFXRunOnlyPattern::buildOutputPorts : presence of null output !");
+          std::string outpName(elt->getName());
+          if(outpName.empty())
+            throw YACS::Exception("YACSEvalYFXRunOnlyPattern::buildOutputPorts : an output has empty name ! Should not !");
+          if(std::find(allNames.begin(),allNames.end(),outpName)!=allNames.end())
+            {
+              std::ostringstream oss; oss << "YACSEvalYFXRunOnlyPattern::buildOutputPorts : output name \"" << outpName << "\" appears more than once !";
+              throw YACS::Exception(oss.str());
+            }
+          _outputs.push_back(YACSEvalOutputPort(*it));
         }
-      _outputs.push_back(YACSEvalOutputPort(*it));
     }
 }
 

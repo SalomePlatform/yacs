@@ -81,6 +81,14 @@ bool YACSEvalPort::IsInputPortPublishable(const YACS::ENGINE::InputPort *port)
   return true;
 }
 
+bool YACSEvalPort::IsOutputPortPublishable(const YACS::ENGINE::OutputPort *port)
+{
+  YACS::ENGINE::TypeCode *tc(port->edGetType());
+  if(!tc)
+    throw YACS::Exception("YACSEvalPort::IsOutputPortPublishable : null type code !");
+  return tc->kind()==YACS::ENGINE::Double || tc->kind()==YACS::ENGINE::Int;
+}
+
 std::string YACSEvalPort::GetTypeOfData(const YACS::ENGINE::DataPort *port)
 {
   YACS::ENGINE::TypeCode *tc(port->edGetType());
