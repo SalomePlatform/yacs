@@ -61,6 +61,8 @@ public:
   YACSEVALYFX_EXPORT std::vector<YACSEvalSeqAny *> getResults() const;
   //
   YACSEVALYFX_EXPORT YACS::ENGINE::Proc *getUndergroundGeneratedGraph() const;
+  YACSEVALYFX_EXPORT void setParallelizeStatus(bool newVal);
+  YACSEVALYFX_EXPORT bool getParallelizeStatus() const;
   YACSEVALYFX_EXPORT ~YACSEvalYFX();
 private:
   YACSEvalYFX(YACS::ENGINE::Proc *scheme, bool ownScheme);

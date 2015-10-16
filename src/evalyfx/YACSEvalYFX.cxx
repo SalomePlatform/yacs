@@ -147,6 +147,16 @@ YACS::ENGINE::Proc *YACSEvalYFX::getUndergroundGeneratedGraph() const
   return _pattern->getUndergroundGeneratedGraph();
 }
 
+void YACSEvalYFX::setParallelizeStatus(bool newVal)
+{
+  _pattern->setParallelizeStatus(newVal);
+}
+
+bool YACSEvalYFX::getParallelizeStatus() const
+{
+  return _pattern->getParallelizeStatus();
+}
+
 YACSEvalYFX::YACSEvalYFX(YACS::ENGINE::Proc *scheme, bool ownScheme):_pattern(0)
 {
   _pattern=YACSEvalYFXPattern::FindPatternFrom(this,scheme,ownScheme);

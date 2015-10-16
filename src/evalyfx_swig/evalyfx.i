@@ -351,6 +351,8 @@ public:
   bool isLocked() const;
   YACS::ENGINE::Proc *getUndergroundGeneratedGraph() const;
   YACSEvalListOfResources *giveResources();
+  void setParallelizeStatus(bool newVal);
+  bool getParallelizeStatus() const;
   //void registerObserver(YACSEvalObserver *observer);
   %extend
      {

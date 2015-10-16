@@ -161,7 +161,7 @@ void YACSEvalYFXPattern::registerObserver(YACSEvalObserver *observer)
     _observer->incrRef();
 }
 
-YACSEvalYFXPattern::YACSEvalYFXPattern(YACSEvalYFX *boss, YACS::ENGINE::Proc *scheme, bool ownScheme):_boss(boss),_scheme(scheme),_ownScheme(ownScheme),_rm(new ResourcesManager_cpp),_res(0),_observer(0)
+YACSEvalYFXPattern::YACSEvalYFXPattern(YACSEvalYFX *boss, YACS::ENGINE::Proc *scheme, bool ownScheme):_boss(boss),_scheme(scheme),_ownScheme(ownScheme),_parallelizeStatus(true),_rm(new ResourcesManager_cpp),_res(0),_observer(0)
 {
 }
 
@@ -399,8 +399,12 @@ int YACSEvalYFXRunOnlyPattern::assignNbOfBranches()
     throw YACS::Exception("YACSEvalYFXRunOnlyPattern::assignNbOfBranches : internal error 2 !");
   unsigned int nbProcsDeclared(getResourcesInternal()->getNumberOfProcsDeclared());
   nbProcsDeclared=std::max(nbProcsDeclared,4u);
-  int nbOfBranch(nbProcsDeclared/getResourcesInternal()->getMaxLevelOfParallelism());
-  nbOfBranch=std::max(nbOfBranch,1);
+  int nbOfBranch=1;
+  if(getParallelizeStatus())
+    {
+      nbOfBranch=(nbProcsDeclared/getResourcesInternal()->getMaxLevelOfParallelism());
+      nbOfBranch=std::max(nbOfBranch,1);
+    }
   YACS::ENGINE::InputPort *zeInputToSet(zeMainNode->edGetNbOfBranchesPort());
   YACS::ENGINE::AnyInputPort *zeInputToSetC(dynamic_cast<YACS::ENGINE::AnyInputPort *>(zeInputToSet));
   if(!zeInputToSetC)

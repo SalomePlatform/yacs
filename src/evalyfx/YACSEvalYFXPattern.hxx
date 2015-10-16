@@ -54,6 +54,8 @@ public:
   std::vector< YACSEvalInputPort *> getFreeInputPorts() const;
   std::vector< YACSEvalOutputPort *> getFreeOutputPorts() const;
   static YACSEvalYFXPattern *FindPatternFrom(YACSEvalYFX *boss, YACS::ENGINE::Proc *scheme, bool ownScheme);
+  void setParallelizeStatus(bool newVal) { _parallelizeStatus=newVal; }
+  bool getParallelizeStatus() const { return _parallelizeStatus; }
   bool isAlreadyComputedResources() const;
   void checkNonAlreadyComputedResources() const;
   void checkAlreadyComputedResources() const;
@@ -89,6 +91,7 @@ private:
 private:
   YACSEvalYFX *_boss;
   bool _ownScheme;
+  bool _parallelizeStatus;
   YACS::ENGINE::Proc *_scheme;
   ResourcesManager_cpp *_rm;
   YACSEvalListOfResources *_res;
