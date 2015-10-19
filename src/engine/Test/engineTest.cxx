@@ -1225,3 +1225,25 @@ void EngineTest::checkGraphAnalyser3()
     //CPPUNIT_ASSERT(sop3.getRepr()=="((n22+n16)+[(n21+n21@1)*(n23+n23@1)]) - ");
   }
 }
+
+void EngineTest::checkGraphAnalyser4()
+{
+  {
+    static const int NNN=3;
+    Bloc *ttt[NNN];
+    Bloc proc3("proc");
+    for(int i=0;i<NNN;i++)
+      {
+        std::ostringstream oss; oss << "n" << i+1;
+        ttt[i]=new Bloc(oss.str());
+        proc3.edAddChild(ttt[i]);
+      }
+    proc3.edAddCFLink(ttt[2],ttt[1]); proc3.edAddCFLink(ttt[1],ttt[0]);
+    std::vector< std::list<Node *> > rrr(proc3.splitIntoIndependantGraph());
+    CPPUNIT_ASSERT_EQUAL(1,(int)rrr.size());
+    CPPUNIT_ASSERT_EQUAL(NNN,(int)rrr[0].size());
+    SetOfPoints sop(rrr[0]);
+    sop.simplify();
+    CPPUNIT_ASSERT(sop.getRepr()=="(n3+n2+n1) - ");
+  }
+}
