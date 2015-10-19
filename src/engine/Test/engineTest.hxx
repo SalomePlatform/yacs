@@ -63,6 +63,7 @@ namespace YACS
     CPPUNIT_TEST(checkGraphAnalyser1);
     CPPUNIT_TEST(checkGraphAnalyser2);
     CPPUNIT_TEST(checkGraphAnalyser3);
+    CPPUNIT_TEST(checkGraphAnalyser4);
     CPPUNIT_TEST_SUITE_END();
       
   public:
@@ -101,6 +102,7 @@ namespace YACS
     void checkGraphAnalyser1();
     void checkGraphAnalyser2();
     void checkGraphAnalyser3();
+    void checkGraphAnalyser4();
   protected:
     static std::map<std::string, YACS::ENGINE::Node*> _nodeMap; 
     static std::map<std::string, YACS::ENGINE::ComposedNode*> _compoMap;
