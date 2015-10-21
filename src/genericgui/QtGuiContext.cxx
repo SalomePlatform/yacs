@@ -47,8 +47,6 @@ QtGuiContext::QtGuiContext(GenericGui *gmain) : GuiContext()
   _stackedWidget = 0;
   _guiExecutor = 0;
   _selectedSubject = 0;
-  _subjectToCut = 0;
-  _subjectToCopy = 0;
   _isEdition = true;
   _isLoadingPresentation = false;
   _studyId = 0;

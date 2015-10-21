@@ -117,8 +117,6 @@ namespace YACS
       QString _fileName;
       YACS::HMI::GuiExecutor *_guiExecutor;
       YACS::HMI::Subject* _selectedSubject;
-      YACS::HMI::Subject* _subjectToCut;
-      YACS::HMI::Subject* _subjectToCopy;
       bool _isEdition;
       bool _isLoadingPresentation;
       int _studyId;
