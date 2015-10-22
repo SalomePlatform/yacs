@@ -2555,7 +2555,11 @@ void GenericGui::onUndo()
 {
   DEBTRACE("GenericGui::onUndo");
   if (QtGuiContext::getQtCurrent()->_setOfModifiedSubjects.empty())
+  {
     QtGuiContext::getQtCurrent()->getInvoc()->undo();
+    // Empty the clipboard in order to avoid the copy of a destroyed object.
+    QtGuiContext::getQtCurrent()->setSubjectToCopy(NULL);
+  }
   else Message("undo not possible when there are local modifications not confirmed");
 }
 
@@ -2563,7 +2567,11 @@ void GenericGui::onRedo()
 {
   DEBTRACE("GenericGui::onRedo");
   if (QtGuiContext::getQtCurrent()->_setOfModifiedSubjects.empty())
+  {
     QtGuiContext::getQtCurrent()->getInvoc()->redo();
+    // Empty the clipboard in order to avoid the copy of a destroyed object.
+    QtGuiContext::getQtCurrent()->setSubjectToCopy(NULL);
+  }
   else Message("redo not possible when there are local modifications not confirmed");
 }
 

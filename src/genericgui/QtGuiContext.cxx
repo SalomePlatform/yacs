@@ -73,6 +73,9 @@ QtGuiContext::~QtGuiContext()
   _current = 0;
   _QtCurrent = 0;
   _setOfContext.erase(this);
+  // Avoid any possible copy from the destroyed schema.
+  QClipboard *clipboard = QApplication::clipboard();
+  clipboard->setMimeData(NULL);
 }
 
 void QtGuiContext::setProc(YACS::ENGINE::Proc* proc)

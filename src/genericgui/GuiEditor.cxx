@@ -456,6 +456,8 @@ void GuiEditor::DeleteSubject(Subject* parent,
   toRemove->askRegisterUndoDestroy();
   if(!parent->destroy(toRemove))
     Message mess;
+  // Empty the clipboard in order to avoid the copy of a destroyed object.
+  QtGuiContext::getQtCurrent()->setSubjectToCopy(NULL);
 }
 
 void GuiEditor::CutSubject()

@@ -824,6 +824,12 @@ bool SubjectNode::copy(Subject* parent)
   YASSERT(cnp);
   Proc *proc = GuiContext::getCurrent()->getProc();
   Proc *fromproc=_node->getProc();
+  if(proc != fromproc)
+    {
+      GuiContext::getCurrent()->_lastErrorMessage = "It is not possible to paste an object from one schema to another.";
+      DEBTRACE(GuiContext::getCurrent()->_lastErrorMessage);
+      return false;
+    }
 
   string position = "";
   if (fromproc != dynamic_cast<Proc*>(_node))
