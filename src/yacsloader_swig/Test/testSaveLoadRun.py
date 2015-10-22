@@ -1300,6 +1300,23 @@ for i in i8:
     ex.RunW(n0,0)
     self.assertEqual(n0.getState(),pilot.DONE)
     pass
+
+  def test18(self):
+    SALOMERuntime.RuntimeSALOME_setRuntime()
+    r=pilot.getRuntime()
+    p=r.createProc("prTest18")
+    n00=r.createScriptNode("Salome","n00")
+    self.assertEqual(n00.getMaxLevelOfParallelism(),1)
+    n00.setExecutionMode("remote")
+    self.assertEqual(n00.getMaxLevelOfParallelism(),1)
+    cont=p.createContainer("gg","Salome")
+    n00.setContainer(cont)
+    self.assertEqual(n00.getMaxLevelOfParallelism(),1)
+    cont.setProperty("nb_proc_per_nod","6")
+    self.assertEqual(n00.getMaxLevelOfParallelism(),1)
+    cont.setProperty("nb_proc_per_node","7")           # <- here
+    self.assertEqual(n00.getMaxLevelOfParallelism(),7) # <- here
+    pass
     
   pass
 

@@ -139,3 +139,20 @@ bool InlineNode::isDeployable() const
     return false;
 }
 
+int InlineNode::getMaxLevelOfParallelism() const
+{
+  if(!isDeployable())
+    return 1;
+  if(!_container)
+    return 1;
+  std::map<std::string,std::string> props(_container->getProperties());
+  std::map<std::string,std::string>::iterator it(props.find(std::string("nb_proc_per_node")));
+  if(it==props.end())
+    return 1;
+  if((*it).second.empty())
+    return 1;
+  std::istringstream iss((*it).second);
+  int ret(1); iss >> ret;
+  return ret;
+}
+

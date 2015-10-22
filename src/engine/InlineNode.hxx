@@ -67,6 +67,7 @@ namespace YACS
       void performDuplicationOfPlacement(const Node& other);
       void performShallowDuplicationOfPlacement(const Node& other);
       bool isDeployable() const;
+      int getMaxLevelOfParallelism() const;
     public:
       static const char LOCAL_STR[];
       static const char REMOTE_STR[];
