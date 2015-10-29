@@ -174,6 +174,8 @@ namespace YACS
       virtual int getMaxLevelOfParallelism() const = 0;
       std::string getQualifiedName() const;
       int getNumId();
+      std::vector<std::pair<std::string,int> > getDPLScopeInfo(ComposedNode *gfn);
+      virtual void applyDPLScope(ComposedNode *gfn);
       virtual void sendEvent(const std::string& event);
       static std::map<int,Node *> idMap;
       virtual std::string typeName() { return "YACS__ENGINE__Node"; }

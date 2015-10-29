@@ -154,6 +154,34 @@ int DynParaLoop::getNumberOfOutputPorts() const
   return ComposedNode::getNumberOfOutputPorts()+1;
 }
 
+/*!
+ * DynParaLoop creates at runtime (exupdateState) clone of nodes. One clone per branch.
+ * This method returns the id of the branch given the node \a node.
+ * If \a node is not a dynamically created node in \a this -1 is returned.
+ */
+int DynParaLoop::getBranchIDOfNode(Node *node) const
+{
+  if(_node)
+    {
+      for(std::vector<Node *>::const_iterator it=_execNodes.begin();it!=_execNodes.end();it++)
+        if(node==*it)
+          return std::distance(_execNodes.begin(),it);
+    }
+  if(_finalizeNode)
+    {
+      for(std::vector<Node *>::const_iterator it=_execFinalizeNodes.begin();it!=_execFinalizeNodes.end();it++)
+        if(node==*it)
+          return std::distance(_execFinalizeNodes.begin(),it);
+    }
+  if(_initNode)
+    {
+      for(std::vector<Node *>::const_iterator it=_execInitNodes.begin();it!=_execInitNodes.end();it++)
+        if(node==*it)
+          return std::distance(_execInitNodes.begin(),it);
+    }
+  return -1;
+}
+
 std::list<OutputPort *> DynParaLoop::getSetOfOutputPort() const
 {
   list<OutputPort *> ret=ComposedNode::getSetOfOutputPort();

@@ -1302,10 +1302,8 @@ for i in i8:
     pass
 
   def test18(self):
-    SALOMERuntime.RuntimeSALOME_setRuntime()
-    r=pilot.getRuntime()
-    p=r.createProc("prTest18")
-    n00=r.createScriptNode("Salome","n00")
+    p=self.r.createProc("prTest18")
+    n00=self.r.createScriptNode("Salome","n00")
     self.assertEqual(n00.getMaxLevelOfParallelism(),1)
     n00.setExecutionMode("remote")
     self.assertEqual(n00.getMaxLevelOfParallelism(),1)
@@ -1318,6 +1316,73 @@ for i in i8:
     self.assertEqual(n00.getMaxLevelOfParallelism(),7) # <- here
     pass
     
+  def test19(self):
+    """This test checks the mechanism of YACS that allow PythonNodes to know their DynParaLoop context."""
+    fname="test19.xml"
+    r=SALOMERuntime.getSALOMERuntime()
+    l=loader.YACSLoader()
+    #
+    p=self.r.createProc("PROC")
+    ti=p.createType("int","int")
+    tdi=p.createSequenceTc("seqint","seqint",ti)
+    # Level0
+    fe0=self.r.createForEachLoop("FE0",ti) ; p.edAddChild(fe0)
+    fe0.edGetNbOfBranchesPort().edInitInt(4)
+    fe0_end=self.r.createScriptNode("Salome","fe0_end")
+    fe0.edSetFinalizeNode(fe0_end)
+    fe0_end.setScript("""assert([elt[0] for elt in my_dpl_localization]==["FE0"])
+assert(my_dpl_localization[0][1]>=0 and my_dpl_localization[0][1]<4)""")
+    n0=self.r.createScriptNode("Salome","n0") ; p.edAddChild(n0)
+    n0.setScript("o1=range(10)")
+    a=n0.edAddOutputPort("o1",tdi)
+    p.edAddLink(a,fe0.edGetSeqOfSamplesPort()) ; p.edAddCFLink(n0,fe0)
+    # Level1
+    b0=self.r.createBloc("b0") ; fe0.edAddChild(b0)
+    n1=self.r.createScriptNode("Salome","n1") ; b0.edAddChild(n1)
+    n1.setScript("""assert([elt[0] for elt in my_dpl_localization]==["FE0"])
+assert(my_dpl_localization[0][1]>=0 and my_dpl_localization[0][1]<4)
+o1=range(10)""")
+    b=n1.edAddOutputPort("o1",tdi)
+    fe1=self.r.createForEachLoop("FE1",ti) ; b0.edAddChild(fe1)
+    fe1.edGetNbOfBranchesPort().edInitInt(3)
+    fe1_end=self.r.createScriptNode("Salome","fe1_end")
+    fe1_end.setScript("""assert([elt[0] for elt in my_dpl_localization]==["FE0.b0.FE1","FE0"])
+assert(my_dpl_localization[1][1]>=0 and my_dpl_localization[1][1]<4)
+assert(my_dpl_localization[0][1]>=0 and my_dpl_localization[0][1]<3)
+""")
+    fe1.edSetFinalizeNode(fe1_end)
+    p.edAddLink(b,fe1.edGetSeqOfSamplesPort()) ; p.edAddCFLink(n1,fe1)
+    # Level2
+    n2=self.r.createScriptNode("Salome","n2") ; fe1.edAddChild(n2)
+    n2.setScript("""assert([elt[0] for elt in my_dpl_localization]==["FE0.b0.FE1","FE0"])
+assert(my_dpl_localization[1][1]>=0 and my_dpl_localization[1][1]<4)
+assert(my_dpl_localization[0][1]>=0 and my_dpl_localization[0][1]<3)
+""")
+    
+    p.saveSchema(fname)
+    ex=pilot.ExecutorSwig()
+    
+    # local run of PythonNodes n1 and n2
+    p=l.load(fname)
+    p.init()
+    self.assertEqual(p.getState(),pilot.READY)
+    ex.setDPLScopeSensitive(True) # <- this line is the aim of the test
+    ex.RunW(p,0)
+    self.assertEqual(p.getState(),pilot.DONE)
+
+    # run remote
+    p=l.load(fname)
+    cont=p.createContainer("gg","HPSalome")
+    cont.setSizeOfPool(2)
+    n1=p.getChildByName("FE0.b0.n1") ; n1.setExecutionMode("remote") ; n1.setContainer(cont)
+    n2=p.getChildByName("FE0.b0.FE1.n2") ; n2.setExecutionMode("remote") ; n2.setContainer(cont)
+    
+    p.init()
+    self.assertEqual(p.getState(),pilot.READY)
+    ex.RunW(p,0)
+    self.assertEqual(p.getState(),pilot.DONE)
+    pass
+
   pass
 
 if __name__ == '__main__':

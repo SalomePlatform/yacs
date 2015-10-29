@@ -48,6 +48,11 @@ typedef int Py_ssize_t;
 using namespace YACS::ENGINE;
 using namespace std;
 
+const char PythonEntry::SCRIPT_FOR_SIMPLE_SERIALIZATION[]="import cPickle\n"
+    "def pickleForVarSimplePyth2009(val):\n"
+    "  return cPickle.dumps(val,-1)\n"
+    "\n";
+
 const char PythonNode::IMPL_NAME[]="Python";
 const char PythonNode::KIND[]="Python";
 
@@ -59,6 +64,10 @@ const char PythonNode::SCRIPT_FOR_SERIALIZATION[]="import cPickle\n"
     "  args=cPickle.loads(st)\n"
     "  return args\n";
 
+const char PythonNode::REMOTE_NAME[]="remote";
+
+const char PythonNode::DPL_INFO_NAME[]="my_dpl_localization";
+
 const char PyFuncNode::SCRIPT_FOR_SERIALIZATION[]="import cPickle\n"
     "def pickleForDistPyth2009(*args,**kws):\n"
     "  return cPickle.dumps((args,kws),-1)\n"
@@ -67,7 +76,8 @@ const char PyFuncNode::SCRIPT_FOR_SERIALIZATION[]="import cPickle\n"
     "  args=cPickle.loads(st)\n"
     "  return args\n";
 
-PythonEntry::PythonEntry():_context(0),_pyfuncSer(0),_pyfuncUnser(0)
+
+PythonEntry::PythonEntry():_context(0),_pyfuncSer(0),_pyfuncUnser(0),_pyfuncSimpleSer(0)
 {
 }
 
@@ -171,7 +181,8 @@ void PythonEntry::commonRemoteLoadPart3(InlineNode *reqNode, Engines::Container_
     AutoGIL agil;
     const char *picklizeScript(getSerializationScript());
     PyObject *res=PyRun_String(picklizeScript,Py_file_input,_context,_context);
-    if(res == NULL)
+    PyObject *res2(PyRun_String(SCRIPT_FOR_SIMPLE_SERIALIZATION,Py_file_input,_context,_context));
+    if(res == NULL || res2==NULL)
       {
         std::string errorDetails;
         PyObject* new_stderr = newPyStdOut(errorDetails);
@@ -182,9 +193,10 @@ void PythonEntry::commonRemoteLoadPart3(InlineNode *reqNode, Engines::Container_
         Py_DECREF(new_stderr);
         throw Exception("Error during load");
       }
-    Py_DECREF(res);
+    Py_DECREF(res); Py_DECREF(res2);
     _pyfuncSer=PyDict_GetItemString(_context,"pickleForDistPyth2009");
     _pyfuncUnser=PyDict_GetItemString(_context,"unPickleForDistPyth2009");
+    _pyfuncSimpleSer=PyDict_GetItemString(_context,"pickleForVarSimplePyth2009");
     if(_pyfuncSer == NULL)
       {
         std::string errorDetails;
@@ -197,6 +209,17 @@ void PythonEntry::commonRemoteLoadPart3(InlineNode *reqNode, Engines::Container_
         throw Exception("Error during load");
       }
     if(_pyfuncUnser == NULL)
+      {
+        std::string errorDetails;
+        PyObject *new_stderr(newPyStdOut(errorDetails));
+        reqNode->setErrorDetails(errorDetails);
+        PySys_SetObject((char*)"stderr", new_stderr);
+        PyErr_Print();
+        PySys_SetObject((char*)"stderr", PySys_GetObject((char*)"__stderr__"));
+        Py_DECREF(new_stderr);
+        throw Exception("Error during load");
+      }
+    if(_pyfuncSimpleSer == NULL)
       {
         std::string errorDetails;
         PyObject *new_stderr(newPyStdOut(errorDetails));
@@ -337,7 +360,7 @@ void PythonNode::checkBasicConsistency() const throw(YACS::Exception)
 void PythonNode::load()
 {
   DEBTRACE( "---------------PyNode::load function---------------" );
-  if(_mode=="remote")
+  if(_mode==PythonNode::REMOTE_NAME)
     loadRemote();
   else
     loadLocal();
@@ -356,7 +379,7 @@ void PythonNode::loadRemote()
 
 void PythonNode::execute()
 {
-  if(_mode=="remote")
+  if(_mode==PythonNode::REMOTE_NAME)
     executeRemote();
   else
     executeLocal();
@@ -699,6 +722,52 @@ PythonNode* PythonNode::cloneNode(const std::string& name)
   return n;
 }
 
+void PythonNode::applyDPLScope(ComposedNode *gfn)
+{
+  std::vector< std::pair<std::string,int> > ret(getDPLScopeInfo(gfn));
+  if(ret.empty())
+    return ;
+  //
+  PyObject *ob(0);
+  {
+    AutoGIL agil;
+    std::size_t sz(ret.size());
+    ob=PyList_New(sz);
+    for(std::size_t i=0;i<sz;i++)
+      {
+        const std::pair<std::string,int>& p(ret[i]);
+        PyObject *elt(PyTuple_New(2));
+        PyTuple_SetItem(elt,0,PyString_FromString(p.first.c_str()));
+        PyTuple_SetItem(elt,1,PyLong_FromLong(p.second));
+        PyList_SetItem(ob,i,elt);
+      }
+  }
+  if(_mode==REMOTE_NAME)
+    {
+      Engines::pickledArgs_var serializationInputCorba(new Engines::pickledArgs);
+      {
+        AutoGIL agil;
+        PyObject *serializationInput(PyObject_CallFunctionObjArgs(_pyfuncSimpleSer,ob,NULL));
+        Py_XDECREF(ob);
+        char *serializationInputC(0);
+        Py_ssize_t len;
+        if (PyString_AsStringAndSize(serializationInput, &serializationInputC, &len))
+          throw Exception("DistributedPythonNode problem in python pickle");
+        serializationInputCorba->length(len);
+        for(int i=0; i < len ; i++)
+          serializationInputCorba[i]=serializationInputC[i];
+        Py_XDECREF(serializationInput);
+      }
+      _pynode->defineNewCustomVar(DPL_INFO_NAME,serializationInputCorba);
+    }
+  else
+    {
+      AutoGIL agil;
+      PyDict_SetItemString(_context,DPL_INFO_NAME,ob);
+      Py_XDECREF(ob);
+    }
+}
+
 PyFuncNode::PyFuncNode(const PyFuncNode& other, ComposedNode *father):InlineFuncNode(other,father),_pyfunc(0)
 {
   _implementation = PythonNode::IMPL_NAME;
@@ -769,7 +838,7 @@ void PyFuncNode::checkBasicConsistency() const throw(YACS::Exception)
 void PyFuncNode::load()
 {
   DEBTRACE( "---------------PyfuncNode::load function---------------" );
-  if(_mode=="remote")
+  if(_mode==PythonNode::REMOTE_NAME)
     loadRemote();
   else
     loadLocal();
@@ -854,7 +923,7 @@ void PyFuncNode::loadLocal()
 
 void PyFuncNode::execute()
 {
-  if(_mode=="remote")
+  if(_mode==PythonNode::REMOTE_NAME)
     executeRemote();
   else
     executeLocal();

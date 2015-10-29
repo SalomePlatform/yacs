@@ -18,6 +18,7 @@
 //
 
 #include "Node.hxx"
+#include "DynParaLoop.hxx"
 #include "InputPort.hxx"
 #include "OutputPort.hxx"
 #include "InPropertyPort.hxx"
@@ -619,6 +620,33 @@ void Node::setState(YACS::StatesForNode theState)
   _state = theState;
   // emit notification to all observers registered with the dispatcher on any change of the node's state
   sendEvent("status");
+}
+
+std::vector<std::pair<std::string,int> > Node::getDPLScopeInfo(ComposedNode *gfn)
+{ 
+  std::vector< std::pair<std::string,int> > ret;
+  Node *work2(this);
+  ComposedNode *work(getFather());
+  while(work!=gfn && work!=0)
+    {
+      DynParaLoop *workc(dynamic_cast<DynParaLoop *>(work));
+      if(workc)
+        {
+          std::pair<std::string,int> p(gfn->getChildName(workc),workc->getBranchIDOfNode(work2));
+          ret.push_back(p);
+        }
+      work2=work;
+      work=work->getFather();
+    }
+  return ret;
+}
+
+/*!
+ * Method called by the Executor only if the executor is sensitive of scope of DynParaLoop.
+ * This method is virtual and empty because by default nothing is done.
+ */
+void Node::applyDPLScope(ComposedNode *gfn)
+{
 }
 
 //! emit notification to all observers registered with  the dispatcher 

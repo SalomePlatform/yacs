@@ -79,6 +79,7 @@ namespace YACS
       int getNumberOfInputPorts() const;
       int getNumberOfOutputPorts() const;
       unsigned getNumberOfEltsConsumed() const { return _nbOfEltConsumed; }
+      int getBranchIDOfNode(Node *node) const;
       std::list<OutputPort *> getSetOfOutputPort() const;
       std::list<OutputPort *> getLocalOutputPorts() const;
       OutputPort *edGetSamplePort() { return &_splittedPort; }

@@ -75,7 +75,7 @@ using YACS::BASES::Semaphore;
 int Executor::_maxThreads(50);
 size_t Executor::_threadStackSize(1048576); // Default thread stack size is 1MB
 
-Executor::Executor():_nbOfConcurrentThreads(0), _semForMaxThreads(_maxThreads),_keepGoingOnFail(false)
+Executor::Executor():_nbOfConcurrentThreads(0), _semForMaxThreads(_maxThreads),_keepGoingOnFail(false),_DPLScopeSensitive(true)
 {
   _root=0;
   _toContinue = true;
@@ -1147,6 +1147,14 @@ void *Executor::functionForTaskExecution(void *arg)
   Thread::detach();
 
   // Execute task
+
+  if(execInst->getDPLScopeSensitive())
+    {
+      Node *node(dynamic_cast<Node *>(task));
+      ComposedNode *gfn(dynamic_cast<ComposedNode *>(sched));
+      if(node!=0 && gfn!=0)
+        node->applyDPLScope(gfn);
+    }
 
   YACS::Event ev=YACS::FINISH;
   try

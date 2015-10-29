@@ -86,6 +86,8 @@ namespace YACS
       std::ofstream _trace;
       std::string _dumpErrorFile;
       bool _keepGoingOnFail;
+      //! specifies if scope DynParaLoop is active or not. False by default.
+      bool _DPLScopeSensitive;
 #ifdef WIN32
 	  DWORD _start;
 #else
@@ -99,6 +101,8 @@ namespace YACS
       void RunB(Scheduler *graph,int debug=0, bool fromScratch=true);
       void setKeepGoingProperty(bool newVal) { _keepGoingOnFail=newVal; }
       bool getKeepGoingProperty() const { return _keepGoingOnFail; }
+      void setDPLScopeSensitive(bool newVal) { _DPLScopeSensitive=_DPLScopeSensitive; }
+      bool getDPLScopeSensitive() const { return _DPLScopeSensitive; }
       YACS::ExecutionMode getCurrentExecMode();
       YACS::ExecutorState getExecutorState();
       void setExecMode(YACS::ExecutionMode mode);

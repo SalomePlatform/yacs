@@ -54,6 +54,9 @@ namespace YACS
       PyObject *_context;
       PyObject *_pyfuncSer;
       PyObject *_pyfuncUnser;
+      PyObject *_pyfuncSimpleSer;
+    public:
+      static const char SCRIPT_FOR_SIMPLE_SERIALIZATION[];
     };
 
     class YACSRUNTIMESALOME_EXPORT PythonNode : public InlineNode, public PythonEntry
@@ -81,10 +84,13 @@ namespace YACS
       std::string getContainerLog();
       PythonNode* cloneNode(const std::string& name);
       virtual std::string typeName() { return "YACS__ENGINE__PythonNode"; }
+      void applyDPLScope(ComposedNode *gfn);
     public:
       static const char KIND[];
       static const char IMPL_NAME[];
       static const char SCRIPT_FOR_SERIALIZATION[];
+      static const char REMOTE_NAME[];
+      static const char DPL_INFO_NAME[];
     protected:
       Engines::PyScriptNode_var _pynode;
     };
