@@ -1075,6 +1075,31 @@ ComposedNode *ComposedNode::getLowestCommonAncestor(Node *node1, Node *node2) th
   return *iter;
 }
 
+/*!
+ * Same as getLowestCommonAncestor method except that absolute string representation is considered here instead of instances.
+ */
+std::string ComposedNode::getLowestCommonAncestorStr(const std::string& node1, const std::string& node2)
+{
+  std::string ret;
+  std::size_t it1_b(0),it1_e(0),it2_b(0),it2_e(0);
+  while(it1_b!=std::string::npos && it2_b!=std::string::npos)
+    {
+      it1_e=node1.find(SEP_CHAR_BTW_LEVEL,it1_b);
+      it2_e=node2.find(SEP_CHAR_BTW_LEVEL,it2_b);
+      if(it1_e!=it2_e && it1_e!=std::string::npos && it2_e!=std::string::npos)
+        break;
+      std::string elt1(node1.substr(it1_b,it1_e-it1_b)),elt2(node2.substr(it2_b,it2_e-it2_b));
+      if(elt1!=elt2)
+        break;
+      if(!ret.empty())
+        ret+=SEP_CHAR_BTW_LEVEL;
+      ret+=elt1;
+      it1_b=node1.find_first_not_of(SEP_CHAR_BTW_LEVEL,it1_e);
+      it2_b=node2.find_first_not_of(SEP_CHAR_BTW_LEVEL,it2_e);
+    }
+  return ret;
+}
+
 list<ElementaryNode *> ComposedNode::getRecursiveConstituents() const
 {
   list<ElementaryNode *> ret;

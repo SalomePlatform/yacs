@@ -116,11 +116,12 @@ namespace YACS
       virtual std::string getMyQualifiedName(const Node *directSon) const;
       Node *getChildByName(const std::string& name) const throw(Exception);
       static ComposedNode *getLowestCommonAncestor(Node *node1, Node *node2) throw(Exception);
+      static std::string getLowestCommonAncestorStr(const std::string& node1, const std::string& node2);
       void loaded();
       void connected();
       void accept(Visitor *visitor);
       virtual void cleanNodes();
-      virtual std::string getProgress() const {return "0";};
+      virtual std::string getProgress() const { return "0"; }
     protected:
       struct SortHierarc
       {
