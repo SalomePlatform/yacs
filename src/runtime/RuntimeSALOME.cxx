@@ -644,7 +644,7 @@ InputPort * RuntimeSALOME::createInputPort(const std::string& name,
     {
       stringstream msg;
       msg << "Cannot create " << impl << " InputPort" ;
-      msg << " ("__FILE__ << ":" << __LINE__ << ")";
+      msg << " (" << __FILE__ << ":" << __LINE__ << ")";
       throw Exception(msg.str());
     }
 }
@@ -674,7 +674,7 @@ OutputPort * RuntimeSALOME::createOutputPort(const std::string& name,
     {
       stringstream msg;
       msg << "Cannot create " << impl << " OutputPort" ;
-      msg << " ("__FILE__ << ":" << __LINE__ << ")";
+      msg << " (" << __FILE__ << ":" << __LINE__ << ")";
       throw Exception(msg.str());
     }
 }
@@ -745,7 +745,7 @@ InputPort* RuntimeSALOME::adapt(InputPort* source,
     {
       stringstream msg;
       msg << "Cannot adapt " << imp_source << " InputPort to " << impl;
-      msg << " ("__FILE__ << ":" << __LINE__ << ")";
+      msg << " (" << __FILE__ << ":" << __LINE__ << ")";
       throw ConversionException(msg.str());
     }
 }
@@ -1065,7 +1065,7 @@ InputPort* RuntimeSALOME::adapt(InputXmlPort* source,
     {
       stringstream msg;
       msg << "Cannot connect InputXmlPort to " << impl << " implementation";
-      msg << " ("__FILE__ << ":" << __LINE__ << ")";
+      msg << " (" << __FILE__ << ":" << __LINE__ << ")";
       throw ConversionException(msg.str());
     }
 }
@@ -1759,7 +1759,7 @@ InputPort* RuntimeSALOME::adapt(InputCppPort* source,
     {
       stringstream msg;
       msg << "Cannot connect InputCppPort to " << impl << " implementation";
-      msg << " ("__FILE__ << ":" << __LINE__ << ")";
+      msg << " (" << __FILE__ << ":" << __LINE__ << ")";
       throw ConversionException(msg.str());
     }
 }
