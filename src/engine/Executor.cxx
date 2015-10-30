@@ -295,9 +295,9 @@ void Executor::RunB(Scheduler *graph,int debug, bool fromScratch)
       { // --- Critical section
         YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
         _tasks=graph->getNextTasks(isMore);
-        numberAllTasks=_numberOfRunningTasks+_tasks.size();
         graph->selectRunnableTasks(_tasks);
         FilterTasksConsideringContainers(_tasks);
+        numberAllTasks=_numberOfRunningTasks+_tasks.size();
       } // --- End of critical section
       if (debug > 2) _displayDot(graph);
       if (_executorState == YACS::RUNNING)

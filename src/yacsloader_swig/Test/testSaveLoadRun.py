@@ -1319,7 +1319,6 @@ for i in i8:
   def test19(self):
     """This test checks the mechanism of YACS that allow PythonNodes to know their DynParaLoop context."""
     fname="test19.xml"
-    r=SALOMERuntime.getSALOMERuntime()
     l=loader.YACSLoader()
     #
     p=self.r.createProc("PROC")
@@ -1378,6 +1377,81 @@ assert(my_dpl_localization[0][1]>=0 and my_dpl_localization[0][1]<3)
     n2=p.getChildByName("FE0.b0.FE1.n2") ; n2.setExecutionMode("remote") ; n2.setContainer(cont)
     
     p.init()
+    self.assertEqual(p.getState(),pilot.READY)
+    ex.RunW(p,0)
+    self.assertEqual(p.getState(),pilot.DONE)
+    pass
+
+  def test20(self):
+    """This test revealed a huge bug in ElementaryNode contained in a loop or foreach. The RECONNECT state generated invalid dependancies that only HPContainer can reveal the problem"""
+    def assignCont(n,cont):
+      n.setExecutionMode("remote") ; n.setContainer(cont) 
+      pass
+    xmlFileName="test20.xml"
+    p=self.r.createProc("test26")
+    #
+    cont=p.createContainer("gg","HPSalome") # very important ! HP Container needed for the test !
+    cont.setSizeOfPool(8) # important make this figure >= 6
+    #
+    po=p.createInterfaceTc("python:obj:1.0","pyobj",[])
+    sop=p.createSequenceTc("list[pyobj]","list[pyobj]",po)
+    #
+    b0=self.r.createBloc("test26/main") ; p.edAddChild(b0)
+    n0=self.r.createScriptNode("Salome","test26/n0") ; assignCont(n0,cont) # 1
+    n0.setScript("""import os
+dd=range(10)""")
+    dd=n0.edAddOutputPort("dd",sop) ; b0.edAddChild(n0)
+    fe0=self.r.createForEachLoop("test26/FE0",po) ; b0.edAddChild(fe0)
+    fe0.edGetNbOfBranchesPort().edInitInt(1) # very important for the test : 1 !
+    fe0i=self.r.createBloc("test26/FE0_internal") ; fe0.edSetNode(fe0i)
+    zeArgInitNode2=self.r.createScriptNode("Salome","zeArgInitNode") ; assignCont(zeArgInitNode2,cont) # 2
+    fe0i.edAddChild(zeArgInitNode2)
+    c1=zeArgInitNode2.edAddInputPort("c",po)
+    c2=zeArgInitNode2.edAddOutputPort("c",po)
+    zeRun=self.r.createBloc("test26/zeRun") ; fe0i.edAddChild(zeRun)
+    zeArgInitNode=self.r.createScriptNode("Salome","zeArgInitNode") ; assignCont(zeArgInitNode,cont) # 3
+    zeRun.edAddChild(zeArgInitNode)
+    ff1=zeArgInitNode.edAddInputPort("ff",po)
+    ff2=zeArgInitNode.edAddOutputPort("ff",po)
+    line01=self.r.createScriptNode("Salome","line01") ; zeRun.edAddChild(line01) ; assignCont(line01,cont) # 4
+    line01.setScript("ee=3")
+    ee0=line01.edAddOutputPort("ee",po)
+    initt=self.r.createScriptNode("Salome","test26/initt") ; assignCont(initt,cont) # 5
+    initt.setScript("pass") ; zeRun.edAddChild(initt)
+    end=self.r.createScriptNode("Salome","test26/end") ; assignCont(end,cont) # 6
+    end.setScript("import os") ; zeRun.edAddChild(end)
+    retu=self.r.createScriptNode("Salome","return") ; assignCont(retu,cont) # 7
+    retu.setScript("ee=i0") ; zeRun.edAddChild(retu)
+    i0=retu.edAddInputPort("i0",po)
+    ee=retu.edAddOutputPort("ee",po)
+    zeRun.edAddCFLink(zeArgInitNode,line01)
+    zeRun.edAddCFLink(line01,initt)
+    zeRun.edAddCFLink(initt,end)
+    zeRun.edAddCFLink(end,retu)
+    p.edAddLink(ee0,i0)
+    #
+    returnn=self.r.createScriptNode("Salome","return") ; assignCont(returnn,cont) # 8
+    returnn.setScript("elt=i0")
+    i00=returnn.edAddInputPort("i0",po)
+    elt=returnn.edAddOutputPort("elt",po)
+    fe0i.edAddChild(returnn)
+    fe0i.edAddCFLink(zeArgInitNode2,zeRun)
+    fe0i.edAddCFLink(zeRun,returnn)
+    p.edAddLink(c2,ff1)
+    p.edAddLink(ee,i00)
+    #
+    finalize=self.r.createScriptNode("Salome","test26/finalize") ; b0.edAddChild(finalize) ; assignCont(finalize,cont) # 9
+    finalize.setScript("pass")
+    b0.edAddCFLink(n0,fe0)
+    b0.edAddCFLink(fe0,finalize)
+    #
+    p.edAddLink(dd,fe0.edGetSeqOfSamplesPort())
+    p.edAddLink(fe0.edGetSamplePort(),c1)
+    #
+    #p.saveSchema(xmlFileName)
+    p.getChildByName("test26/main.test26/FE0").edGetNbOfBranchesPort().edInitInt(1) # very important 1 !
+    #
+    ex=pilot.ExecutorSwig()
     self.assertEqual(p.getState(),pilot.READY)
     ex.RunW(p,0)
     self.assertEqual(p.getState(),pilot.DONE)

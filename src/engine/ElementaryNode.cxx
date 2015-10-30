@@ -99,10 +99,7 @@ void ElementaryNode::init(bool start)
       exDisabledState(); // to refresh propagation of DISABLED state
       return;
     }
-  if(start) //complete initialization
-    setState(YACS::READY);
-  else if(_state > YACS::LOADED)//partial initialization (inside a loop)
-    setState(YACS::TORECONNECT);
+  setState(YACS::READY);
 }
 
 bool ElementaryNode::isDeployable() const
