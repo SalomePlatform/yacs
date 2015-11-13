@@ -75,7 +75,7 @@ using YACS::BASES::Semaphore;
 int Executor::_maxThreads(50);
 size_t Executor::_threadStackSize(1048576); // Default thread stack size is 1MB
 
-Executor::Executor():_nbOfConcurrentThreads(0), _semForMaxThreads(_maxThreads),_keepGoingOnFail(false),_DPLScopeSensitive(true)
+Executor::Executor():_nbOfConcurrentThreads(0), _semForMaxThreads(_maxThreads),_keepGoingOnFail(false),_DPLScopeSensitive(false)
 {
   _root=0;
   _toContinue = true;
