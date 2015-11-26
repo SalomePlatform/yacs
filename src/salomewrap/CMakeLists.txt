@@ -17,14 +17,13 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-INCLUDE(${QT_USE_FILE})
+INCLUDE(UseQtExt)
 
 # --- options ---
 
 # additional include directories
 INCLUDE_DIRECTORIES(
   ${OMNIORB_INCLUDE_DIR}
-  ${QT_INCLUDE_DIR}
   ${KERNEL_INCLUDE_DIRS}
   ${GUI_INCLUDE_DIRS}
   ${PROJECT_SOURCE_DIR}/src/bases
@@ -65,7 +64,7 @@ SET(_moc_HEADERS
 # --- sources ---
 
 # sources / moc wrappings
-QT4_WRAP_CPP(_moc_SOURCES ${_moc_HEADERS})
+QT_WRAP_MOC(_moc_SOURCES ${_moc_HEADERS})
 
 SET(SalomeWrap_SOURCES
   SalomeWrapExport.hxx

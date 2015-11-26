@@ -69,7 +69,7 @@ bool Scene::isZooming()
 void Scene::helpEvent(QGraphicsSceneHelpEvent *event)
 {
   DEBTRACE("Scene::helpEvent");
-  QGraphicsItem *qit = itemAt(event->scenePos());
+  QGraphicsItem *qit = itemAt(event->scenePos(), QTransform());
   SceneItem * item = dynamic_cast<SceneItem*>(qit);
   if (item)
     {

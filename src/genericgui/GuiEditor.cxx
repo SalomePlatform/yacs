@@ -716,7 +716,7 @@ void GuiEditor::showRedo(QWidget *parent)
 QString GuiEditor::asciiFilter(const QString & name)
 {
   DEBTRACE(name.toStdString());
-  string aName = name.toAscii().data();
+  string aName = name.toLatin1().data();
   DEBTRACE(aName);
   for (int i=0; i < aName.size(); i++)
     {

@@ -116,7 +116,7 @@ void GuiExecutor::startResumeDataflow(bool initialize)
   if (CORBA::is_nil(_procRef))
     {
       DEBTRACE("init _procRef");
-      _procRef = _engineRef->LoadProc(_context->getFileName().toAscii());
+      _procRef = _engineRef->LoadProc(_context->getFileName().toLatin1());
       registerStatusObservers();
       DEBTRACE("_procRef init");
     }

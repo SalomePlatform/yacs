@@ -241,7 +241,7 @@ void CatalogWidget::startDrag(Qt::DropActions supportedActions)
           drag = new QDrag(this);
           mime = new ItemMimeData;
           drag->setMimeData(mime);
-          mime->setData(mimeType, mimeInfo.toAscii());
+          mime->setData(mimeType, mimeInfo.toLatin1());
           drag->setPixmap(pixmap);
 
           theMimeInfo = mimeInfo;

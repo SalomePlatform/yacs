@@ -1437,11 +1437,11 @@ void GenericGui::onImportSupervSchema()
       QString aCall = "salomeloader."+ fileExt+ " "+ fn + " " + tmpFileName + " > " + tmpOutput;
       DEBTRACE(aCall.toStdString());
       
-      int ret = system(aCall.toAscii());
+      int ret = system(aCall.toLatin1());
       if(ret != 0)
         {
           // --- read file with logs
-          fstream f(tmpOutput.toAscii());
+          fstream f(tmpOutput.toLatin1());
           stringstream hfile;
           hfile << f.rdbuf();
           f.close();
@@ -1516,8 +1516,8 @@ QString GenericGui::getSaveFileName(const QString& fileName)
   filters << "XML files (*.xml)"
           << "Any files (*)";
   dialog.setFileMode(QFileDialog::AnyFile);
-  dialog.setFilters(filters);
-  dialog.selectFilter("(*.xml)");
+  dialog.setNameFilters(filters);
+  dialog.selectNameFilter("(*.xml)");
   dialog.setDefaultSuffix("xml");
   dialog.setConfirmOverwrite(true);
   //dialog.setConfirmOverwrite(false);  // bug Qt4.3.3
