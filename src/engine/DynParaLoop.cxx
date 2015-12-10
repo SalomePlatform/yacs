@@ -893,7 +893,7 @@ Node * DynParaLoop::getFinalizeNode()
 
 int DynParaLoop::getMaxLevelOfParallelism() const
 {
-  return _nbOfBranches.getIntValue();
+  return _nbOfBranches.getIntValue() * _node->getMaxLevelOfParallelism();
 }
 
 void DynParaLoop::shutdown(int level)
