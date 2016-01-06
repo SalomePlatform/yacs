@@ -61,6 +61,7 @@ namespace YACS
       void findAllNodesStartingFrom(Node *start, std::set<Node *>& result, std::map<Node *, std::set<Node *> >& accelStr, LinkInfo& info) const;
       virtual std::string typeName() { return "YACS__ENGINE__Bloc"; }
       int getMaxLevelOfParallelism() const;
+      void removeRecursivelyRedundantCL();
     protected:
       bool areAllSubNodesFinished() const;
       bool areAllSubNodesDone() const;
@@ -70,6 +71,7 @@ namespace YACS
       YACS::Event updateStateOnFinishedEventFrom(Node *node);
       YACS::Event updateStateOnFailedEventFrom(Node *node, const Executor *execInst);
       void initComputation() const;
+      void performCFComputationsOnlyOneLevel(LinkInfo& info) const;
       void performCFComputations(LinkInfo& info) const;
       void destructCFComputations(LinkInfo& info) const;
       void checkControlDependancy(OutPort *start, InPort *end, bool cross,

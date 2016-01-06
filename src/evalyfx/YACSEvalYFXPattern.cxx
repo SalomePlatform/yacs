@@ -442,6 +442,7 @@ YACSEvalListOfResources *YACSEvalYFXRunOnlyPattern::giveResources()
   if(!isAlreadyComputedResources())
     {
       YACS::ENGINE::DeploymentTree dt(_runNode->getDeploymentTree());
+      _runNode->removeRecursivelyRedundantCL();
       YACSEvalListOfResources *res(new YACSEvalListOfResources(_runNode->getMaxLevelOfParallelism(),getCatalogInAppli(),dt));
       setResources(res);
     }

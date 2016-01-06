@@ -1100,6 +1100,20 @@ std::string ComposedNode::getLowestCommonAncestorStr(const std::string& node1, c
   return ret;
 }
 
+/*!
+ * This method recursively all redundant control links in this.
+ */
+void ComposedNode::removeRecursivelyRedundantCL()
+{
+  std::list<Node *> dd(edGetDirectDescendants());
+  for(std::list<Node *>::const_iterator it=dd.begin();it!=dd.end();it++)
+    {
+      ComposedNode *elt(dynamic_cast<ComposedNode *>(*it));
+      if(elt)
+        elt->removeRecursivelyRedundantCL();
+    }
+}
+
 list<ElementaryNode *> ComposedNode::getRecursiveConstituents() const
 {
   list<ElementaryNode *> ret;

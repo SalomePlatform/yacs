@@ -464,21 +464,20 @@ int Bloc::getMaxLevelOfParallelism() const
   return ret;
 }
 
-/*!
- * Updates mutable structures _fwLinks and _bwLinks with the result of computation (CPU consuming method).
- * _fwLinks is a map with a Node* as key and a set<Node*> as value. The set gives
- * all nodes that are forwardly connected to the key node 
- * _bwLinks is a map for backward dependencies
- * The method is : for all CF link (n1->n2) 
- * add n2 and _fwLinks[n2] in forward dependencies of n1 and _bwLinks[n1]
- * add n1 and _bwLinks[n1] in backward dependencies of n2 and _fwLinks[n2]
- * For useless links
- * If a node is already in a forward dependency when adding and the direct link
- * already exists so it's a useless link (see the code !)
- */
-void Bloc::performCFComputations(LinkInfo& info) const
+void Bloc::removeRecursivelyRedundantCL()
 {
-  StaticDefinedComposedNode::performCFComputations(info);
+  StaticDefinedComposedNode::removeRecursivelyRedundantCL();
+  LinkInfo info(I_CF_USELESS);
+  initComputation();
+  performCFComputationsOnlyOneLevel(info);
+  std::set< std::pair<Node *, Node *> > linksToKill(info.getInfoUselessLinks());
+  for(std::set< std::pair<Node *, Node *> >::const_iterator it=linksToKill.begin();it!=linksToKill.end();it++)
+    edRemoveCFLink((*it).first,(*it).second);
+  destructCFComputations(info);
+}
+
+void Bloc::performCFComputationsOnlyOneLevel(LinkInfo& info) const
+{
   delete _fwLinks;//Normally useless
   delete _bwLinks;//Normally useless
   _fwLinks=new map<Node *,set<Node *> >;
@@ -547,6 +546,24 @@ void Bloc::performCFComputations(LinkInfo& info) const
           (*_bwLinks)[n2].insert(n1);
         }
     }
+}
+
+/*!
+ * Updates mutable structures _fwLinks and _bwLinks with the result of computation (CPU consuming method).
+ * _fwLinks is a map with a Node* as key and a set<Node*> as value. The set gives
+ * all nodes that are forwardly connected to the key node 
+ * _bwLinks is a map for backward dependencies
+ * The method is : for all CF link (n1->n2) 
+ * add n2 and _fwLinks[n2] in forward dependencies of n1 and _bwLinks[n1]
+ * add n1 and _bwLinks[n1] in backward dependencies of n2 and _fwLinks[n2]
+ * For useless links
+ * If a node is already in a forward dependency when adding and the direct link
+ * already exists so it's a useless link (see the code !)
+ */
+void Bloc::performCFComputations(LinkInfo& info) const
+{
+  StaticDefinedComposedNode::performCFComputations(info);
+  performCFComputationsOnlyOneLevel(info);
 }
 
 void Bloc::destructCFComputations(LinkInfo& info) const
