@@ -17,8 +17,7 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-INCLUDE(UseQt4Ext)
-INCLUDE(${QT_USE_FILE})
+INCLUDE(UseQtExt)
 
 # --- options ---
 
@@ -90,12 +89,12 @@ SET(_moc_HEADERS
   )
 
 # header files / uic wrappings
-QT4_WRAP_UI(_uic_HEADERS ${_uic_files})
+QT_WRAP_UIC(_uic_HEADERS ${_uic_files})
 
 # --- sources ---
 
 # sources / moc wrappings
-QT4_WRAP_CPP(_moc_SOURCES ${_moc_HEADERS})
+QT_WRAP_MOC(_moc_SOURCES ${_moc_HEADERS})
 
 SET(YACS_SOURCES
   Yacsgui.cxx
@@ -113,7 +112,7 @@ TARGET_LINK_LIBRARIES(YACS ${_link_LIBRARIES})
 INSTALL(TARGETS YACS EXPORT ${PROJECT_NAME}TargetGroup DESTINATION ${SALOME_INSTALL_LIBS})
 
 INSTALL(FILES ${YACS_HEADERS} DESTINATION ${SALOME_INSTALL_HEADERS})
-QT4_INSTALL_TS_RESOURCES("${YACS_RESOURCES}" "${SALOME_YACS_INSTALL_RES_DATA}")	
+QT_INSTALL_TS_RESOURCES("${YACS_RESOURCES}" "${SALOME_YACS_INSTALL_RES_DATA}")	
 
 INSTALL(FILES ${_res_files} DESTINATION ${SALOME_YACS_INSTALL_RES_DATA})
 SALOME_CONFIGURE_FILE(resources/YACSCatalog.xml.in 

@@ -197,7 +197,7 @@ SceneItem::SceneItem(QGraphicsScene *scene, SceneItem *parent,
   setToolTip(_label);
   DEBTRACE("SceneItem::SceneItem "<<label.toStdString()<<" "<<this<<" "<<_parent<<" "<< _level); 
   setFlag(QGraphicsItem::ItemIsSelectable);
-  setAcceptsHoverEvents(true);
+  setAcceptHoverEvents(true);
 }
 
 SceneItem::~SceneItem()
