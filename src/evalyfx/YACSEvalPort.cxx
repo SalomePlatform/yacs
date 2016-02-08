@@ -123,6 +123,11 @@ bool YACSEvalInputPort::isOKForLock() const
   return hasDefaultValueDefined();
 }
 
+bool YACSEvalInputPort::isLocked() const
+{
+  return _isLocked;
+}
+
 bool YACSEvalInputPort::hasDefaultValueDefined() const
 {
   return _ptr->edIsManuallyInitialized();
