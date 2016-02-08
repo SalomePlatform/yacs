@@ -98,6 +98,7 @@ public:
   YACSEVALYFX_EXPORT std::string getName() const;
   YACSEVALYFX_EXPORT std::string getTypeOfData() const;
   YACSEVALYFX_EXPORT bool isOKForLock() const;
+  YACSEVALYFX_EXPORT bool isLocked() const;
   //
   YACSEVALYFX_EXPORT bool hasDefaultValueDefined() const;
   YACSEVALYFX_EXPORT YACSEvalAny *getDefaultValueDefined() const;

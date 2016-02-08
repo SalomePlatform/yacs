@@ -86,6 +86,7 @@ void YACSEvalVirtualYACSContainer::set(YACSEvalResource *gf, YACS::ENGINE::Conta
   if(_cont)
     _cont->decrRef();
   _cont=cont;
+  _cont->incrRef();
   _propertyMap=listOfPropertiesInYACSContainer();
 }
 
