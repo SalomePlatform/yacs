@@ -20,11 +20,7 @@
 #ifndef LISTJOBS_GUI_H
 #define LISTJOBS_GUI_H
 
-#include <QtCore/QtGlobal>
-#include <QtGui/QtGui>
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-#include <QtWidgets/QtWidgets>
-#endif
+#include <QWidget>
 #include "SALOME_NamingService.hxx"
 #include "SALOME_Launcher.hh"
 
@@ -39,6 +35,10 @@
 // Class for the dialog box
 // ------------------------
 
+class QPushButton;
+class QTableWidget;
+class QTableWidgetItem;
+class QTimer;
 
 namespace YACS
 {

@@ -50,11 +50,11 @@ bool Yacsgui_Resource::booleanValue(const QString& name, const bool def) const {
   return _resource->booleanValue(RESOURCE_YACS, name, def);
 }
 
-QFont Yacsgui_Resource::fontValue(const QString& name, const QFont def) const {
+QFont Yacsgui_Resource::fontValue(const QString& name, const QFont& def) const {
   return _resource->fontValue(RESOURCE_YACS, name, def);
 }
 
-QColor Yacsgui_Resource::colorValue(const QString& name, const QColor def) const {
+QColor Yacsgui_Resource::colorValue(const QString& name, const QColor& def) const {
   return _resource->colorValue(RESOURCE_YACS, name, def);
 }
 
@@ -69,7 +69,7 @@ QColor Yacsgui_Resource::colorValue(const QString& name, const int h, const int 
   return colorValue(name, col);
 }
 
-QString Yacsgui_Resource::stringValue(const QString& name, const QString def) const {
+QString Yacsgui_Resource::stringValue(const QString& name, const QString& def) const {
   return _resource->stringValue(RESOURCE_YACS, name, def);
 }
 
@@ -88,15 +88,15 @@ void Yacsgui_Resource::setValue( const QString& name, const bool val ) {
     _resource->setValue(RESOURCE_YACS, name, val);
 }
 
-void Yacsgui_Resource::setValue( const QString& name, const QFont val ) {
+void Yacsgui_Resource::setValue( const QString& name, const QFont& val ) {
     _resource->setValue(RESOURCE_YACS, name, val);
 }
 
-void Yacsgui_Resource::setValue( const QString& name, const QColor val ) {
+void Yacsgui_Resource::setValue( const QString& name, const QColor& val ) {
     _resource->setValue(RESOURCE_YACS, name, val);
 }
 
-void Yacsgui_Resource::setValue( const QString& name, const QString val ) {
+void Yacsgui_Resource::setValue( const QString& name, const QString& val ) {
     _resource->setValue(RESOURCE_YACS, name, val);
 }
 
