@@ -65,7 +65,7 @@ void SchemaProcItem::setExecState(int execState)
     default:                      sc = YACS::HMI::Resource::UNKNOWN          ; stateDef = "Unknown Status";
    }
   _itemData.replace(YState, stateDef);
-  _itemForeground.replace(YState, Qt::darkBlue);
+  _itemForeground.replace(YState, QColor(Qt::darkBlue));
   _itemBackground.replace(YState, sc);
 }
 

@@ -203,8 +203,8 @@ void  SceneBlocItem::getNodesInfo(YACS::ENGINE::ComposedNode *cnode)
       width  = QString(_format.c_str()).arg(lw, 0, 'g', 3);
 
       DEBTRACE(agnameof(aNode) << " (" << nh << "," << nw << ") = (" << height.toStdString()  << " ; " << width.toStdString() <<")");
-      agset(aNode, const_cast<char*>("height"),    height.toAscii().data());
-      agset(aNode, const_cast<char*>("width"),     width.toAscii().data());
+      agset(aNode, const_cast<char*>("height"),    height.toLatin1().data());
+      agset(aNode, const_cast<char*>("width"),     width.toLatin1().data());
       agset(aNode, const_cast<char*>("shape"),     const_cast<char*>("box") );
       agset(aNode, const_cast<char*>("fixedsize"), const_cast<char*>("true") );
     }

@@ -29,6 +29,13 @@
 #include "YacsTrace.hxx"
 #include "LoadState.hxx"
 
+#include <QBoxLayout>
+#include <QFileInfo>
+#include <QMessageBox>
+#include <QPushButton>
+#include <QTableWidget>
+#include <QTimer>
+
 using namespace std;
 using namespace YACS::HMI;
 using namespace YACS::ENGINE;
