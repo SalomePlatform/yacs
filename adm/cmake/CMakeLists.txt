@@ -45,7 +45,9 @@ IF(NOT SALOME_YACS_USE_KERNEL)
     FindSalomeOmniORB.cmake
     FindSalomeOmniORBPy.cmake
     FindSalomePThread.cmake
-    FINDSalomePython.cmake
+    FindSalomePythonLibs.cmake
+    FindSalomePythonInterp.cmake
+    FindSalomeNumPySciPy.cmake
     FindSalomeSWIG.cmake
     SalomeMacros.cmake
     SalomeSetupPlatform.cmake
