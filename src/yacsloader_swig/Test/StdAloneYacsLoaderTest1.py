@@ -129,6 +129,53 @@ class StdAloneYacsLoaderTest1(unittest.TestCase):
     self.assertEqual(p.getChildByName("node2").getOutputPort("o1").get(),['aaa','bcbcbc'])
     pass
 
+  def test3(self):
+    """ Non regression test Mantis 23234 CEA1726"""
+    fname="test23234.xml"
+    p=self.r.createProc("Test23234")
+    ti=p.createType("int","int")
+    initNode=self.r.createScriptNode("","init")
+    initNode_n=initNode.edAddOutputPort("n",ti)
+    initNode.setScript("n=10")
+    p.edAddChild(initNode)
+    #
+    endNode=self.r.createScriptNode("","checkResu")
+    endNode_n=endNode.edAddInputPort("n",ti)
+    endNode_tot=endNode.edAddInputPort("tot",ti)
+    endNode_error=endNode.edAddOutputPort("error",ti)
+    endNode.setScript("error=tot-n*(n+1)/2")
+    p.edAddChild(endNode)
+    #
+    fl=self.r.createForLoop("ForLoop_sum_1_n")
+    p.edAddChild(fl)
+    #
+    p.edAddCFLink(initNode,fl)
+    p.edAddCFLink(fl,endNode)
+    #
+    summ=self.r.createFuncNode("","sum")
+    summ_i=summ.edAddInputPort("i",ti)
+    summ_total=summ.edAddOutputPort("total",ti)
+    summ.setScript("""n=0
+def sum(i):
+   global n
+   n+=i+1
+   return n""")
+    summ.setFname("sum")
+    fl.edAddChild(summ)
+    #
+    p.edAddLink(fl.edGetIndexPort(),summ_i)
+    p.edAddLink(initNode_n,fl.edGetNbOfTimesInputPort())
+    p.edAddLink(initNode_n,endNode_n)
+    p.edAddLink(summ_total,endNode_tot)
+    #
+    p.saveSchema(fname)
+    ex=pilot.ExecutorSwig()
+    self.assertEqual(p.getState(),pilot.READY)
+    ex.RunW(p,0)
+    self.assertEqual(p.getState(),pilot.DONE)
+    self.assertEqual(endNode_error.getPyObj(),0)
+    pass
+
   def tearDown(self):
     del self.r
     del self.l

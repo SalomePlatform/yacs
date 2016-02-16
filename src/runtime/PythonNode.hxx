@@ -109,6 +109,7 @@ namespace YACS
       PyFuncNode(const PyFuncNode& other, ComposedNode *father);
       PyFuncNode(const std::string& name);
       virtual ~PyFuncNode();
+      virtual void init(bool start=true);
       virtual void checkBasicConsistency() const throw(Exception);
       virtual void execute();
       virtual void load();
