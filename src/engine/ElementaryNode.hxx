@@ -129,6 +129,7 @@ namespace YACS
       virtual void addDatastreamPortToInitMultiService(const std::string & port_name,
                                                        int number) {}
     protected:
+      void initCommonPartWithoutStateManagement(bool start);
       // Management of multi property
       virtual void createMultiDatastreamPorts();
 
