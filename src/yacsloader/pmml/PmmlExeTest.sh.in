@@ -49,7 +49,7 @@ EOF
   # --- launch in background a SALOME session (servers)
 
   ln -fs @CMAKE_SOURCE_DIR@/src/yacsloader/samples .
-  ./runAppli > log1 2>&1
+  ./salome > log1 2>&1 &
 
   # --- wait a little to let the background process define
   #     the CORBA naming service port and host
@@ -59,13 +59,13 @@ EOF
   # --- execute the test script in SALOME session environment
 
   chmod +x @CMAKE_CURRENT_BINARY_DIR@/PmmlInSessionTest.sh
-  ./runSession @CMAKE_CURRENT_BINARY_DIR@/PmmlInSessionTest.sh
+  ./salome shell @CMAKE_CURRENT_BINARY_DIR@/PmmlInSessionTest.sh
   ret=$?
 
   # ---------------------------------------------------------------------------
 
   kill -9 `cat "/tmp/YACSTEST_PidEcho"`
-  ./runSession killSalome.py
+  ./salome shell python killSalome.py
 
   echo "exec status PmmlInSessionTest.sh "  $ret
 
