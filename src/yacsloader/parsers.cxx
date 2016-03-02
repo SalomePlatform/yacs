@@ -124,6 +124,8 @@ ENGINE::Proc* YACSLoader::load(const char * file)
   {
     if ( xmlParseDocument(saxContext) == -1 )
     {
+      if(!currentProc)
+        throw Exception("Basic error during parsing.");
       YACS::ENGINE::Logger* logger = currentProc->getLogger("parser");
       logger->fatal( saxContext->lastError.message, file, saxContext->input->line );
     }
@@ -132,6 +134,8 @@ ENGINE::Proc* YACSLoader::load(const char * file)
   }
   catch(Exception& e)
   {
+    if(!currentProc)
+      throw e;
     YACS::ENGINE::Logger* logger = currentProc->getLogger("parser");
     logger->fatal(e.what(), file, saxContext->input->line);
     saxContext = 0;

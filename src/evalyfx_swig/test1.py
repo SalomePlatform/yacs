@@ -24,6 +24,7 @@ fname="test1.xml"
 import evalyfx
 session=evalyfx.YACSEvalSession()
 session.launch()
+buildScheme(fname)
 efx=evalyfx.YACSEvalYFX.BuildFromFile(fname)
 efx.setParallelizeStatus(False)
 inps=efx.getFreeInputPorts()
