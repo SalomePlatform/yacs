@@ -38,6 +38,7 @@ namespace YACS
     class ForEachLoop;
     class ComposedNode;
     class InputPyPort;
+    class SequenceAny;
   }
 }
 
@@ -74,7 +75,9 @@ public:
   virtual bool isLocked() const = 0;
   virtual YACSEvalListOfResources *giveResources() = 0;
   virtual YACS::ENGINE::Proc *getUndergroundGeneratedGraph() const = 0;
+  virtual std::string getStatusOfRunStr() const = 0;
   virtual std::vector<YACSEvalSeqAny *> getResults() const = 0;
+  virtual std::vector<YACSEvalSeqAny *> getResultsInCaseOfFailure(std::vector<unsigned int>& passedIds) const = 0;
   virtual void emitStart() const = 0;
 public:
   static const char DFT_PROC_NAME[];
@@ -86,6 +89,7 @@ protected:
   YACSEvalListOfResources *getResourcesInternal() const { return _res; }
   ResourcesManager_cpp *getCatalogInAppli() const { return _rm; }
   static YACSEvalSeqAny *BuildValueInPort(YACS::ENGINE::InputPyPort *port);
+  static YACSEvalSeqAny *BuildValueFromEngineFrmt(YACS::ENGINE::SequenceAny *data);
 private:
   void cleanScheme();
 private:
@@ -99,6 +103,10 @@ private:
 protected:
   std::vector< YACSEvalInputPort > _inputs;
   std::vector< YACSEvalOutputPort > _outputs;
+public:
+  static const char ST_OK[]; // execution goes to the end without any trouble -> results can be exploited without any problem with getResults and getResultsInCaseOfFailure.
+  static const char ST_FAILED[]; // execution has reached some failed evaluation (normal errors due to incapacity of one node to evaluate) -> results can be exploited without any problem with getResultsInCaseOfFailure
+  static const char ST_ERROR[]; // execution has encountered hard errors (SIGSEGV in a server, internal error in YACS) -> results can be exploited with getResultsInCaseOfFailure but you can't make hypothesis for other ids not in passedIds.
 };
 
 class YACSEvalYFXRunOnlyPattern : public YACSEvalYFXPattern
@@ -115,12 +123,15 @@ public:
   bool isLocked() const;
   YACSEvalListOfResources *giveResources();
   YACS::ENGINE::Proc *getUndergroundGeneratedGraph() const;
+  std::string getStatusOfRunStr() const;
   std::vector<YACSEvalSeqAny *> getResults() const;
+  std::vector<YACSEvalSeqAny *> getResultsInCaseOfFailure(std::vector<unsigned int>& passedIds) const;
   void emitStart() const;
   //
   YACS::ENGINE::ForEachLoop *getUndergroundForEach() const { return _FEInGeneratedGraph; }
   static bool IsMatching(YACS::ENGINE::Proc *scheme, YACS::ENGINE::ComposedNode *& runNode);
 public:
+  static const char FIRST_FE_SUBNODE_NAME[];
   static const char GATHER_NODE_NAME[];
 private:
   void buildInputPorts();

@@ -49,6 +49,8 @@ const char ForEachLoop::NAME_OF_SPLITTERNODE[]="splitter";
 
 const int ForEachLoop::NOT_RUNNING_BRANCH_ID=-1;
 
+const char ForEachLoop::INTERCEPTOR_STR[]="_interceptor";
+
 InterceptorInputPort::InterceptorInputPort(const std::string& name, Node *node, TypeCode* type):AnyInputPort(name,node,type),
                                                                                                 DataPort(name,node,type),Port(node),
                                                                                                 _repr(0)
@@ -877,6 +879,12 @@ YACS::Event ForEachLoop::updateStateOnFailedEventFrom(Node *node, const Executor
     }
 }
 
+void ForEachLoop::InterceptorizeNameOfPort(std::string& portName)
+{
+  std::replace_if(portName.begin(), portName.end(), std::bind1st(std::equal_to<char>(), '.'), '_');
+  portName += INTERCEPTOR_STR;
+}
+
 void ForEachLoop::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView)
 {
   DynParaLoop::buildDelegateOf(port,finalTarget,pointsOfView);
@@ -904,12 +912,10 @@ void ForEachLoop::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort 
           // the delegated port belongs to a node child of the ForEachLoop.
           // The name of the delegated port contains dots (bloc.node.outport),
           // whereas the name of the out going port shouldn't do.
-          std::string outputPortName = getPortName(port.first);
-          std::replace_if (outputPortName.begin(), outputPortName.end(),
-                           std::bind1st(std::equal_to<char>(), '.'), '_');
-          outputPortName += "_interceptor";
-          AnySplitOutputPort *newPort=new AnySplitOutputPort(outputPortName,this,newTc);
-          InterceptorInputPort *intercptor=new InterceptorInputPort(outputPortName + "_in",this,port.first->edGetType());
+          std::string outputPortName(getPortName(port.first));
+          InterceptorizeNameOfPort(outputPortName);
+          AnySplitOutputPort *newPort(new AnySplitOutputPort(outputPortName,this,newTc));
+          InterceptorInputPort *intercptor(new InterceptorInputPort(outputPortName + "_in",this,port.first->edGetType()));
           intercptor->setRepr(newPort);
           newTc->decrRef();
           newPort->addRepr(port.first,intercptor);

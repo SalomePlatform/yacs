@@ -220,6 +220,9 @@ namespace YACS
       void storeOutValsInSeqForOutOfScopeUse(int rank, int branchNb);
     private:
       int getFinishedId();
+    public:
+      static void InterceptorizeNameOfPort(std::string& portName);
+      static const char INTERCEPTOR_STR[];
     };
   }
 } 

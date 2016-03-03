@@ -27,6 +27,7 @@
 #include "ElementaryNode.hxx"
 #include "RuntimeSALOME.hxx"
 #include "Dispatcher.hxx"
+#include "Executor.hxx"
 #include "InputPort.hxx"
 #include "LinkInfo.hxx"
 #include "TypeCode.hxx"
@@ -44,8 +45,17 @@
 #include <limits>
 #include <numeric>
 #include <sstream>
+#include <iterator>
 
 const char YACSEvalYFXPattern::DFT_PROC_NAME[]="YFX";
+
+const char YACSEvalYFXPattern::ST_OK[]="ALL_OK";
+
+const char YACSEvalYFXPattern::ST_FAILED[]="SOME_SAMPLES_FAILED_AND_ALL_OF_THEM_FAILED_DETERMINISTICALLY";
+
+const char YACSEvalYFXPattern::ST_ERROR[]="SOME_SAMPLES_FAILED_BUT_IMPOSSIBLE_TO_CONCLUDE_ON_THEM";
+
+const char YACSEvalYFXRunOnlyPattern::FIRST_FE_SUBNODE_NAME[]="Bloc";
 
 const char YACSEvalYFXRunOnlyPattern::GATHER_NODE_NAME[]="__gather__";
 
@@ -228,6 +238,25 @@ YACSEvalSeqAny *YACSEvalYFXPattern::BuildValueInPort(YACS::ENGINE::InputPyPort *
     throw YACS::Exception("YACSEvalYFXPattern::GetValueInPort : not implemented yet for other than Double and Int !");
 }
 
+YACSEvalSeqAny *YACSEvalYFXPattern::BuildValueFromEngineFrmt(YACS::ENGINE::SequenceAny *data)
+{
+  unsigned int sz(data->size());
+  std::vector<double> eltCpp(sz);
+  for(unsigned int ii=0;ii<sz;ii++)
+    {
+      YACS::ENGINE::AnyPtr elt((*data)[ii]);
+      YACS::ENGINE::Any *eltPtr((YACS::ENGINE::Any *)elt);
+      YACS::ENGINE::AtomAny *eltPtr2(dynamic_cast<YACS::ENGINE::AtomAny *>(eltPtr));
+      if(!eltPtr2)
+        {
+          std::ostringstream oss; oss << "YACSEvalYFXPattern::BuildValueFromEngineFrmt : error at pos #" << ii << " ! It is not an AtomAny !";
+          throw YACS::Exception(oss.str());
+        }
+      eltCpp[ii]=eltPtr2->getDoubleValue();
+    }
+  return new YACSEvalSeqAnyDouble(eltCpp);
+}
+
 void YACSEvalYFXPattern::cleanScheme()
 {
   if(_ownScheme)
@@ -336,7 +365,7 @@ void YACSEvalYFXRunOnlyPattern::generateGraph()
   _generatedGraph->edAddChild(n2);
   _generatedGraph->edAddCFLink(n1,n2);
   //
-  YACS::ENGINE::Bloc *n10(r->createBloc("Bloc"));
+  YACS::ENGINE::Bloc *n10(r->createBloc(FIRST_FE_SUBNODE_NAME));
   n1->edAddChild(n10);
   YACS::ENGINE::InlineNode *n100(r->createScriptNode(YACS::ENGINE::PythonNode::KIND,"__dispatch__"));
   YACS::ENGINE::Node *n101(_runNode->cloneWithoutCompAndContDeepCpy(0,true));
@@ -454,6 +483,41 @@ YACS::ENGINE::Proc *YACSEvalYFXRunOnlyPattern::getUndergroundGeneratedGraph() co
   return _generatedGraph;
 }
 
+std::string YACSEvalYFXRunOnlyPattern::getStatusOfRunStr() const
+{
+  YACS::StatesForNode st(_generatedGraph->getState());
+  switch(st)
+    {
+    case YACS::READY:
+    case YACS::TOLOAD:
+    case YACS::LOADED:
+    case YACS::TOACTIVATE:
+    case YACS::ACTIVATED:
+    case YACS::SUSPENDED:
+    case YACS::PAUSE:
+    case YACS::DISABLED:
+    case YACS::DESACTIVATED:
+      {
+        std::ostringstream oss; oss << "YACSEvalYFXRunOnlyPattern::getStatusOfRunStr : Unexpected state \"" << YACS::ENGINE::Node::getStateName(st) << "\" ! Did you invoke run ?";
+        throw YACS::Exception(oss.str());
+      }
+    case YACS::LOADFAILED:
+    case YACS::EXECFAILED:
+    case YACS::ERROR:
+    case YACS::INTERNALERR:
+      return std::string(ST_ERROR);
+    case YACS::FAILED:
+      return std::string(ST_FAILED);
+    case YACS::DONE:
+      return std::string(ST_OK);
+    default:
+      {
+        std::ostringstream oss; oss << "YACSEvalYFXRunOnlyPattern::getStatusOfRunStr : unrecognized and managed state \"" << YACS::ENGINE::Node::getStateName(st) << "\" !";
+        throw YACS::Exception(oss.str());
+      }
+    }
+}
+
 std::vector<YACSEvalSeqAny *> YACSEvalYFXRunOnlyPattern::getResults() const
 {
   if(_generatedGraph->getState()!=YACS::DONE)
@@ -474,6 +538,67 @@ std::vector<YACSEvalSeqAny *> YACSEvalYFXRunOnlyPattern::getResults() const
           throw YACS::Exception(oss.str());
         }
       ret[ii]=BuildValueInPort(inputC);
+    }
+  return ret;
+}
+
+/*!
+ * This method works if run succeeded (true return) and also if graph has failed. Graph failed means soft error of evaluation due to error in evaluation (example 1/0 or a normal throw from one node)
+ * If a more serious error occured (SIGSEGV of a server or internal error in YACS engine, cluster error, loose of connection...) this method will throw an exception to warn the caller that the results may be 
+ */
+std::vector<YACSEvalSeqAny *> YACSEvalYFXRunOnlyPattern::getResultsInCaseOfFailure(std::vector<unsigned int>& passedIds) const
+{
+  YACS::StatesForNode st(_generatedGraph->getState());
+  if(st==YACS::DONE)
+    {
+      passedIds.clear();
+      std::vector<YACSEvalSeqAny *> ret(getResults());
+      if(!ret.empty())
+        {
+          if(!ret[0])
+            throw YACS::Exception("YACSEvalYFXRunOnlyPattern::getResultsInCaseOfFailure : internal error ! The returned vector has a null pointer at pos #0 !");
+          std::size_t sz(ret[0]->size());
+          passedIds.resize(sz);
+          for(std::size_t i=0;i<sz;i++)
+            passedIds[i]=i;
+        }
+      return ret;
+    }
+  getStatusOfRunStr();// To check that the status is recognized.
+  std::list<YACS::ENGINE::Node *> lns(_generatedGraph->edGetDirectDescendants());
+  YACS::ENGINE::ForEachLoop *fe(0);
+  for(std::list<YACS::ENGINE::Node *>::const_iterator it=lns.begin();it!=lns.end();it++)
+    {
+      fe=dynamic_cast<YACS::ENGINE::ForEachLoop *>(*it);
+      if(fe)
+        break;
+    }
+  if(!fe)
+    throw YACS::Exception("YACSEvalYFXRunOnlyPattern::getResultsInCaseOfFailure : internal error 2 ! ForEach is not accessible !");
+  //
+  YACS::ENGINE::Executor exe;
+  std::vector<YACS::ENGINE::SequenceAny *> outputs;
+  std::vector<std::string> nameOfOutputs;
+  passedIds=fe->getPassedResults(&exe,outputs,nameOfOutputs);//<- the key invokation is here.
+  std::size_t sz(passedIds.size()),ii(0);
+  std::vector<YACSEvalSeqAny *> ret(_outputsOfInterest.size());
+  for(std::vector<YACSEvalOutputPort *>::const_iterator it=_outputsOfInterest.begin();it!=_outputsOfInterest.end();it++,ii++)
+    {
+      YACS::ENGINE::OutputPort *p((*it)->getUndergroundPtr());
+      std::string st(_runNode->getOutPortName(p));
+      std::ostringstream oss; oss << FIRST_FE_SUBNODE_NAME << '.' << _runNode->getName() << '.' << st;
+      st=oss.str();
+      YACS::ENGINE::ForEachLoop::InterceptorizeNameOfPort(st);
+      std::vector<std::string>::iterator it(std::find(nameOfOutputs.begin(),nameOfOutputs.end(),st));
+      if(it==nameOfOutputs.end())
+        {
+          std::ostringstream oss; oss << "YACSEvalYFXRunOnlyPattern::getResultsInCaseOfFailure : internal error 3 ! Unable to locate interceptor with name " << st << " ! Possibilities are : ";
+          std::copy(nameOfOutputs.begin(),nameOfOutputs.end(),std::ostream_iterator<std::string>(oss," "));
+          oss << " !";
+          throw YACS::Exception(oss.str());
+        }
+      std::size_t pos(std::distance(nameOfOutputs.begin(),it));
+      ret[ii]=BuildValueFromEngineFrmt(outputs[pos]);
     }
   return ret;
 }

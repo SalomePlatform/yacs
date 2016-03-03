@@ -75,6 +75,15 @@ static void convertPyToIntArr(PyObject *pyLi, std::vector<int>& arr)
     }
 }
 
+static PyObject *convertToPyToInt(const std::vector<unsigned int>& arr)
+{
+  std::size_t sz(arr.size());
+  PyObject *ret(PyList_New(sz));
+  for(std::size_t i=0;i<sz;i++)
+    PyList_SetItem(ret,i,PyInt_FromLong(arr[i]));
+  return ret;
+}
+
 static void convertPyToDblArr(PyObject *pyLi, std::vector<double>& arr)
 {
   if(PyList_Check(pyLi))
@@ -113,6 +122,40 @@ static void convertPyToDblArr(PyObject *pyLi, std::vector<double>& arr)
     {
       throw YACS::Exception("convertPyToNewIntArr3 : not a list nor a tuple");
     }
+}
+
+static PyObject *convertVectOfSeqAny(const std::vector<YACSEvalSeqAny *>& retCpp)
+{
+  std::size_t sz(retCpp.size());
+  PyObject *ret(PyList_New(sz));
+  for(std::size_t i=0;i<sz;i++)
+    {
+      YACSEvalSeqAny *elt(retCpp[i]);
+      YACSEvalSeqAnyDouble *elt1(dynamic_cast<YACSEvalSeqAnyDouble *>(elt));
+      YACSEvalSeqAnyInt *elt2(dynamic_cast<YACSEvalSeqAnyInt *>(elt));
+      if(elt1)
+        {
+          std::vector<double> *zeArr(elt1->getInternal());
+          std::size_t sz2(zeArr->size());
+          PyObject *ret2(PyList_New(sz2));
+          for(std::size_t i2=0;i2<sz2;i2++)
+            PyList_SetItem(ret2,i2,PyFloat_FromDouble((*zeArr)[i2]));
+          PyList_SetItem(ret,i,ret2);
+        }
+      else if(elt2)
+        {
+          std::vector<int> *zeArr(elt2->getInternal());
+          std::size_t sz2(zeArr->size());
+          PyObject *ret2(PyList_New(sz2));
+          for(std::size_t i2=0;i2<sz2;i2++)
+            PyList_SetItem(ret2,i2,PyInt_FromLong((*zeArr)[i2]));
+          PyList_SetItem(ret,i,ret2);
+        }
+      else
+        throw YACS::Exception("wrap of YACSEvalYFX.getResults : unrecognized type !");
+      delete elt;
+    }
+  return ret;
 }
 %}
 
@@ -351,6 +394,7 @@ public:
   bool isLocked() const;
   YACS::ENGINE::Proc *getUndergroundGeneratedGraph() const;
   YACSEvalListOfResources *giveResources();
+  std::string getStatusOfRunStr() const;
   void setParallelizeStatus(bool newVal);
   bool getParallelizeStatus() const;
   //void registerObserver(YACSEvalObserver *observer);
@@ -409,36 +453,17 @@ public:
        PyObject *getResults() const
        {
          std::vector<YACSEvalSeqAny *> retCpp(self->getResults());
-         std::size_t sz(retCpp.size());
-         PyObject *ret(PyList_New(sz));
-         for(std::size_t i=0;i<sz;i++)
-           {
-             YACSEvalSeqAny *elt(retCpp[i]);
-             YACSEvalSeqAnyDouble *elt1(dynamic_cast<YACSEvalSeqAnyDouble *>(elt));
-             YACSEvalSeqAnyInt *elt2(dynamic_cast<YACSEvalSeqAnyInt *>(elt));
-             if(elt1)
-               {
-                 std::vector<double> *zeArr(elt1->getInternal());
-                 std::size_t sz2(zeArr->size());
-                 PyObject *ret2(PyList_New(sz2));
-                 for(std::size_t i2=0;i2<sz2;i2++)
-                   PyList_SetItem(ret2,i2,PyFloat_FromDouble((*zeArr)[i2]));
-                 PyList_SetItem(ret,i,ret2);
-               }
-             else if(elt2)
-               {
-                 std::vector<int> *zeArr(elt2->getInternal());
-                 std::size_t sz2(zeArr->size());
-                 PyObject *ret2(PyList_New(sz2));
-                 for(std::size_t i2=0;i2<sz2;i2++)
-                   PyList_SetItem(ret2,i2,PyInt_FromLong((*zeArr)[i2]));
-                 PyList_SetItem(ret,i,ret2);
-               }
-             else
-               throw YACS::Exception("wrap of YACSEvalYFX.getResults : unrecognized type !");
-             delete elt;
-           }
-         return ret;
+         return convertVectOfSeqAny(retCpp);
+       }
+
+       PyObject *getResultsInCaseOfFailure() const
+       {
+         std::vector<unsigned int> ret1Cpp;
+         std::vector<YACSEvalSeqAny *> ret0Cpp(self->getResultsInCaseOfFailure(ret1Cpp));
+         PyObject *retPy(PyTuple_New(2));
+         PyTuple_SetItem(retPy,0,convertVectOfSeqAny(ret0Cpp));
+         PyTuple_SetItem(retPy,1,convertToPyToInt(ret1Cpp));
+         return retPy;
        }
 
        PyObject *run(YACSEvalSession *session)
