@@ -17,20 +17,9 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-#SET(SALOME_TEST_DRIVER "$ENV{ABSOLUTE_APPLI_PATH}/bin/salome/appliskel/salome_test_driver.py")
-SET(SALOME_TEST_DRIVER "$ENV{KERNEL_ROOT_DIR}/bin/salome/appliskel/salome_test_driver.py")
-
-SET(COMPONENT_NAME YACS)
-SET(TIMEOUT        500)
-
-SET(YACS_TEST_LIB "../lib")
-
-# Add all test subdirs
-SUBDIRS(
-    bases
-    engine
-    runtime
-    pmml
-    yacsloader
-    yacsloader_swig
-    )
+IF(NOT WIN32)
+  ADD_TEST(YacsTestPMML TestPMML)
+  SET_TESTS_PROPERTIES(YacsTestPMML PROPERTIES LABELS "${COMPONENT_NAME}")
+  ADD_TEST(YacsPMMLBasicsTest python pmml_swig/PMMLBasicsTestLauncher.py)
+  SET_TESTS_PROPERTIES(YacsPMMLBasicsTest PROPERTIES LABELS "${COMPONENT_NAME}")
+ENDIF(NOT WIN32)
