@@ -137,9 +137,19 @@ YACSEvalObserver *YACSEvalYFX::getObserver()
   return _pattern->getObserver();
 }
 
+std::string YACSEvalYFX::getStatusOfRunStr() const
+{
+  return _pattern->getStatusOfRunStr();
+}
+
 std::vector<YACSEvalSeqAny *> YACSEvalYFX::getResults() const
 {
   return _pattern->getResults();
+}
+
+std::vector<YACSEvalSeqAny *> YACSEvalYFX::getResultsInCaseOfFailure(std::vector<unsigned int>& passedIds) const
+{
+  return _pattern->getResultsInCaseOfFailure(passedIds);
 }
 
 YACS::ENGINE::Proc *YACSEvalYFX::getUndergroundGeneratedGraph() const
