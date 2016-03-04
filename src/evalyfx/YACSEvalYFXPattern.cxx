@@ -55,6 +55,8 @@ const char YACSEvalYFXPattern::ST_FAILED[]="SOME_SAMPLES_FAILED_AND_ALL_OF_THEM_
 
 const char YACSEvalYFXPattern::ST_ERROR[]="SOME_SAMPLES_FAILED_BUT_IMPOSSIBLE_TO_CONCLUDE_ON_THEM";
 
+const std::size_t YACSEvalYFXPattern::MAX_LGTH_OF_INP_DUMP=10000;
+
 const char YACSEvalYFXRunOnlyPattern::FIRST_FE_SUBNODE_NAME[]="Bloc";
 
 const char YACSEvalYFXRunOnlyPattern::GATHER_NODE_NAME[]="__gather__";
@@ -483,6 +485,49 @@ YACS::ENGINE::Proc *YACSEvalYFXRunOnlyPattern::getUndergroundGeneratedGraph() co
   return _generatedGraph;
 }
 
+std::string YACSEvalYFXRunOnlyPattern::getErrorDetailsInCaseOfFailure() const
+{
+  std::string st(getStatusOfRunStr());//test if a run has occurred.
+  if(st==ST_OK)
+    throw YACS::Exception("YACSEvalYFXRunOnlyPattern::getErrorDetailsInCaseOfFailure : The execution of scheme has been carried out to the end without any problem !");
+  // All the problem can only comes from foreach -> scan it
+  YACS::ENGINE::ForEachLoop *fe(findTopForEach());
+  YACS::ENGINE::NodeStateNameMap nsm;
+  unsigned nbB(fe->getNumberOfBranchesCreatedDyn());
+  std::ostringstream oss;
+  for(unsigned j=0;j<nbB;j++)
+    {
+      YACS::ENGINE::Node *nn(fe->getChildByNameExec(FIRST_FE_SUBNODE_NAME,j));
+      YACS::ENGINE::Bloc *nnc(dynamic_cast<YACS::ENGINE::Bloc *>(nn));
+      if(!nnc)
+        throw YACS::Exception("YACSEvalYFXRunOnlyPattern::getErrorDetailsInCaseOfFailure : internal error 1 ! The direct son of main foreach is expected to be a Bloc !");
+      if(nnc->getState()==YACS::DONE)
+        continue;
+      std::list< YACS::ENGINE::ElementaryNode *> fec(nnc->getRecursiveConstituents());
+      for(std::list< YACS::ENGINE::ElementaryNode *>::reverse_iterator it=fec.rbegin();it!=fec.rend();it++)
+        {
+          YACS::StatesForNode st0((*it)->getState());
+          if(st0!=YACS::DONE)
+            {
+              oss << "NODE = " << nnc->getChildName(*it) << std::endl;
+              oss << "STATUS = " << nsm[st0] << std::endl;
+              oss << "BRANCH ID = " << j << std::endl;
+              std::list<YACS::ENGINE::InputPort *> inps((*it)->getSetOfInputPort());
+              for(std::list<YACS::ENGINE::InputPort *>::const_iterator it=inps.begin();it!=inps.end();it++)
+                {
+                  std::string d((*it)->getHumanRepr());
+                  if(d.size()>10000)
+                    d=d.substr(0,MAX_LGTH_OF_INP_DUMP);
+                  oss << "INPUT \"" << (*it)->getName() << "\" = " << d << std::endl;
+                }
+              oss << "DETAILS = " << std::endl;
+              oss << (*it)->getErrorDetails();
+            }
+        }
+    }
+  return oss.str();
+}
+
 std::string YACSEvalYFXRunOnlyPattern::getStatusOfRunStr() const
 {
   YACS::StatesForNode st(_generatedGraph->getState());
@@ -566,15 +611,7 @@ std::vector<YACSEvalSeqAny *> YACSEvalYFXRunOnlyPattern::getResultsInCaseOfFailu
     }
   getStatusOfRunStr();// To check that the status is recognized.
   std::list<YACS::ENGINE::Node *> lns(_generatedGraph->edGetDirectDescendants());
-  YACS::ENGINE::ForEachLoop *fe(0);
-  for(std::list<YACS::ENGINE::Node *>::const_iterator it=lns.begin();it!=lns.end();it++)
-    {
-      fe=dynamic_cast<YACS::ENGINE::ForEachLoop *>(*it);
-      if(fe)
-        break;
-    }
-  if(!fe)
-    throw YACS::Exception("YACSEvalYFXRunOnlyPattern::getResultsInCaseOfFailure : internal error 2 ! ForEach is not accessible !");
+  YACS::ENGINE::ForEachLoop *fe(findTopForEach());
   //
   YACS::ENGINE::Executor exe;
   std::vector<YACS::ENGINE::SequenceAny *> outputs;
@@ -691,3 +728,17 @@ void YACSEvalYFXRunOnlyPattern::buildOutputPorts()
     }
 }
 
+YACS::ENGINE::ForEachLoop *YACSEvalYFXRunOnlyPattern::findTopForEach() const
+{
+  std::list<YACS::ENGINE::Node *> lns(_generatedGraph->edGetDirectDescendants());
+  YACS::ENGINE::ForEachLoop *fe(0);
+  for(std::list<YACS::ENGINE::Node *>::const_iterator it=lns.begin();it!=lns.end();it++)
+    {
+      fe=dynamic_cast<YACS::ENGINE::ForEachLoop *>(*it);
+      if(fe)
+        break;
+    }
+  if(!fe)
+    throw YACS::Exception("YACSEvalYFXRunOnlyPattern::findTopForEach : internal error 2 ! ForEach is not accessible !");
+  return fe;
+}

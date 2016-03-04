@@ -394,6 +394,7 @@ public:
   bool isLocked() const;
   YACS::ENGINE::Proc *getUndergroundGeneratedGraph() const;
   YACSEvalListOfResources *giveResources();
+  std::string getErrorDetailsInCaseOfFailure() const;
   std::string getStatusOfRunStr() const;
   void setParallelizeStatus(bool newVal);
   bool getParallelizeStatus() const;

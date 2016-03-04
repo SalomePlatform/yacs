@@ -190,6 +190,21 @@ std::string InputPyPort::getAsString()
   return ret;
 }
 
+std::string InputPyPort::getHumanRepr()
+{
+  if(!_data)
+    return dump();
+  PyObject *ret(PyObject_Str(_data));
+  if(!ret)
+    return dump();
+  std::string retCpp;
+  char *val(PyString_AsString(ret));
+  if(val)
+    retCpp=val;
+  Py_XDECREF(ret);
+  return retCpp;
+}
+
 bool InputPyPort::isEmpty()
 {
   return _data == Py_None;

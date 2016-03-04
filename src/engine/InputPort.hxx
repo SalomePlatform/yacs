@@ -76,6 +76,7 @@ namespace YACS
       virtual void *get() const = 0;
       virtual void put(const void *data) throw(ConversionException) = 0;
       virtual std::string dump();
+      virtual std::string getHumanRepr();
       virtual void setStringRef(std::string strRef);
       virtual std::string typeName() {return "YACS__ENGINE__InputPort";}
       bool canBeNull() const;

@@ -137,6 +137,11 @@ YACSEvalObserver *YACSEvalYFX::getObserver()
   return _pattern->getObserver();
 }
 
+std::string YACSEvalYFX::getErrorDetailsInCaseOfFailure() const
+{
+  return _pattern->getErrorDetailsInCaseOfFailure();
+}
+
 std::string YACSEvalYFX::getStatusOfRunStr() const
 {
   return _pattern->getStatusOfRunStr();

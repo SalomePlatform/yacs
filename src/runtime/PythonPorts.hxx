@@ -85,6 +85,7 @@ namespace YACS
       virtual PyObj * getPyObj() const;
       virtual std::string getAsString();
       void *get() const throw(Exception);
+      virtual std::string getHumanRepr();
       virtual bool isEmpty();
       virtual void exSaveInit();
       virtual void exRestoreInit();
