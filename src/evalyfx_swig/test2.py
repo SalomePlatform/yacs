@@ -46,4 +46,6 @@ c=c[0]
 for f,g in zip(c,[0.3333333333333333,0.5,1.0,-1.0,-0.5]):
     assert(abs(f-g)<1e-12)
     pass
-
+st=efx.getErrorDetailsInCaseOfFailure()
+assert("NODE = toto.PyScript0" in st)
+assert("float division by zero" in st)

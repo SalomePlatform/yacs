@@ -161,6 +161,11 @@ std::string InputPort::dump()
   return xmldump;
 }
 
+std::string InputPort::getHumanRepr()
+{
+  return dump();
+}
+
 void InputPort::setStringRef(std::string strRef)
 {
   _stringRef = strRef;

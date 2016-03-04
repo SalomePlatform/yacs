@@ -58,6 +58,7 @@ public:
   YACSEVALYFX_EXPORT bool run(YACSEvalSession *session, int& nbOfBranches);
   YACSEVALYFX_EXPORT void registerObserver(YACSEvalObserver *observer);
   YACSEVALYFX_EXPORT YACSEvalObserver *getObserver();
+  YACSEVALYFX_EXPORT std::string getErrorDetailsInCaseOfFailure() const;
   YACSEVALYFX_EXPORT std::string getStatusOfRunStr() const;
   YACSEVALYFX_EXPORT std::vector<YACSEvalSeqAny *> getResults() const;
   YACSEVALYFX_EXPORT std::vector<YACSEvalSeqAny *> getResultsInCaseOfFailure(std::vector<unsigned int>& passedIds) const;
