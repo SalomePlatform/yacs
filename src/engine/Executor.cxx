@@ -72,8 +72,8 @@ using YACS::BASES::Semaphore;
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
-int Executor::_maxThreads(50);
-size_t Executor::_threadStackSize(1048576); // Default thread stack size is 1MB
+int Executor::_maxThreads(1000);
+size_t Executor::_threadStackSize(262144); // Default thread stack size is 256 kB == 2**18 because threads launched by YACS are lightweight
 
 Executor::Executor():_nbOfConcurrentThreads(0), _semForMaxThreads(_maxThreads),_keepGoingOnFail(false),_DPLScopeSensitive(false)
 {
