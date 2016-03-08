@@ -815,6 +815,11 @@ PyFuncNode::~PyFuncNode()
 void PyFuncNode::init(bool start)
 {
   initCommonPartWithoutStateManagement(start);
+  if(_state == YACS::DISABLED)
+    {
+      exDisabledState(); // to refresh propagation of DISABLED state
+      return ;
+    }
   if(start) //complete initialization
     setState(YACS::READY);
   else if(_state > YACS::LOADED)// WARNING FuncNode has internal vars (CEA usecase) ! Partial initialization (inside a loop). Exclusivity of funcNode.

@@ -176,6 +176,22 @@ def sum(i):
     self.assertEqual(endNode_error.getPyObj(),0)
     pass
 
+  def test4(self):
+    """ test linked to TestSaveLoadRun.test20. This is a smaller test coming from EDF autotest"""
+    xmlFileName="test4.xml"
+    p=self.r.createProc("test26")
+    n=self.r.createScriptNode("","node1")
+    n.setScript("import os")
+    p.edAddChild(n)
+    n.setState(pilot.DISABLED)
+    #
+    ex=pilot.ExecutorSwig()
+    self.assertEqual(p.getState(),pilot.READY)
+    ex.RunW(p,0)
+    self.assertEqual(p.getState(),pilot.ACTIVATED)
+    self.assertEqual(n.getState(),pilot.DISABLED) # <- test is here.
+    pass
+
   def tearDown(self):
     del self.r
     del self.l
