@@ -309,6 +309,7 @@ public:
   std::vector<std::string> listOfPropertyKeys() const;
   std::string getValueOfKey(const char *key) const;
   void setProperty(const std::string& key, const std::string &value);
+  std::string getName() const;
 private:
   YACSEvalVirtualYACSContainer();
 };
