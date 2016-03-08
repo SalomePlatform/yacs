@@ -86,7 +86,8 @@ void YACSEvalVirtualYACSContainer::set(YACSEvalResource *gf, YACS::ENGINE::Conta
   if(_cont)
     _cont->decrRef();
   _cont=cont;
-  _cont->incrRef();
+  if(_cont)
+    _cont->incrRef();
   _propertyMap=listOfPropertiesInYACSContainer();
 }
 
@@ -206,6 +207,12 @@ void YACSEvalVirtualYACSContainer::apply()
     throw YACS::Exception("YACSEvalVirtualYACSContainer::apply : unrecognized container !");
 }
 
+std::string YACSEvalVirtualYACSContainer::getName() const
+{
+  checkNotNullYACSContainer();
+  return _cont->getName();
+}
+
 unsigned int YACSEvalVirtualYACSContainer::getValueOfKeyUInt(const char *key) const
 {
   std::string v(getValueOfKey(key));
@@ -227,6 +234,12 @@ std::map<std::string,std::string> YACSEvalVirtualYACSContainer::listOfProperties
   else if(cont1)
     props=cont1->getProperties();
   return props;
+}
+
+void YACSEvalVirtualYACSContainer::checkNotNullYACSContainer() const
+{
+  if(!_cont)
+    throw YACS::Exception("YACSEvalVirtualYACSContainer::checkNotNullYACSContainer : internal YACS container is NULL !");
 }
 
 YACSEvalResource::~YACSEvalResource()

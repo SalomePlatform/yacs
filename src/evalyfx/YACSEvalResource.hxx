@@ -66,6 +66,7 @@ public:
   YACSEVALYFX_EXPORT std::string getValueOfKey(const char *key) const;
   YACSEVALYFX_EXPORT void setProperty(const std::string& key, const std::string &value);
   YACSEVALYFX_EXPORT void resetOverloadedProps() { checkNonLocked(); _overloadedPropertyMap.clear(); }
+  YACSEVALYFX_EXPORT std::string getName() const;
   void apply();
 public:
   YACSEvalVirtualYACSContainer();
@@ -81,6 +82,7 @@ private:
   unsigned int getNbProcPerNode() const { return getValueOfKeyUInt(NB_PROC_PER_NODE_KEY); }
   unsigned int getValueOfKeyUInt(const char *key) const;
   std::map<std::string,std::string> listOfPropertiesInYACSContainer() const;
+  void checkNotNullYACSContainer() const;
 public:
   static const char CONTAINER_NAME_KEY[];
   static const char CPU_CLOCK_KEY[];
