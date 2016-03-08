@@ -92,17 +92,17 @@ void ElementaryNode::initCommonPartWithoutStateManagement(bool start)
   for(list<InputPort *>::iterator iter2=_setOfInputPort.begin();iter2!=_setOfInputPort.end();iter2++)
     (*iter2)->exInit(start);
   _inGate.exReset();
-  if(_state == YACS::DISABLED)
-    {
-      exDisabledState(); // to refresh propagation of DISABLED state
-      return;
-    }
 }
 
 void ElementaryNode::init(bool start)
 {
   DEBTRACE("ElementaryNode::init " << getName() << " " << start << " " << _state);
   initCommonPartWithoutStateManagement(start);
+  if(_state == YACS::DISABLED)
+    {
+      exDisabledState(); // to refresh propagation of DISABLED state
+      return ;
+    }
   setState(YACS::READY);
 }
 
