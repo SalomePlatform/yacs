@@ -79,7 +79,7 @@ public:
   virtual std::string getStatusOfRunStr() const = 0;
   virtual std::vector<YACSEvalSeqAny *> getResults() const = 0;
   virtual std::vector<YACSEvalSeqAny *> getResultsInCaseOfFailure(std::vector<unsigned int>& passedIds) const = 0;
-  virtual void emitStart() const = 0;
+  virtual bool go(bool stopASAP) const = 0;
 public:
   static const char DFT_PROC_NAME[];
 protected:
@@ -129,7 +129,7 @@ public:
   std::string getStatusOfRunStr() const;
   std::vector<YACSEvalSeqAny *> getResults() const;
   std::vector<YACSEvalSeqAny *> getResultsInCaseOfFailure(std::vector<unsigned int>& passedIds) const;
-  void emitStart() const;
+  bool go(bool stopASAP) const;
   //
   YACS::ENGINE::ForEachLoop *getUndergroundForEach() const { return _FEInGeneratedGraph; }
   static bool IsMatching(YACS::ENGINE::Proc *scheme, YACS::ENGINE::ComposedNode *& runNode);
@@ -137,6 +137,7 @@ public:
   static const char FIRST_FE_SUBNODE_NAME[];
   static const char GATHER_NODE_NAME[];
 private:
+  void emitStart() const;
   void buildInputPorts();
   void buildOutputPorts();
   YACS::ENGINE::ForEachLoop *findTopForEach() const;

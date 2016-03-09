@@ -48,6 +48,7 @@ public:
   YACSEVALYFX_EXPORT void lock() { _isLocked=true; }
   YACSEVALYFX_EXPORT bool isLocked() const { return _isLocked; }
   YACSEVALYFX_EXPORT void checkNonLocked() const;
+  YACSEVALYFX_EXPORT void checkLocked() const;
 private:
   bool _isLocked;
 };
@@ -67,7 +68,7 @@ public:
   YACSEVALYFX_EXPORT void setProperty(const std::string& key, const std::string &value);
   YACSEVALYFX_EXPORT void resetOverloadedProps() { checkNonLocked(); _overloadedPropertyMap.clear(); }
   YACSEVALYFX_EXPORT std::string getName() const;
-  void apply();
+  void apply(bool interactiveStatus);
 public:
   YACSEvalVirtualYACSContainer();
   void set(YACSEvalResource *gf, YACS::ENGINE::Container *cont);
@@ -114,7 +115,7 @@ public:
   YACSEVALYFX_EXPORT void setWantedMachine(const std::string& machine);
   YACSEVALYFX_EXPORT std::size_t size() const { return _containers.size(); }
   YACSEVALYFX_EXPORT YACSEvalVirtualYACSContainer *at(std::size_t i) const;
-  YACSEVALYFX_EXPORT void apply();
+  YACSEVALYFX_EXPORT void apply(bool interactiveStatus);
 public:
   void fitWithCurrentCatalogAbs();
   void aggregate(ParserResourcesType& entry) const;
@@ -130,6 +131,26 @@ protected:
 
 class ResourcesManager_cpp;
 
+class YACSEvalParamsForCluster
+{
+public:
+  YACSEvalParamsForCluster():_exclusiveness(false),_nbOfProcs(1) { }
+  bool getExclusiveness() const { return _exclusiveness; }
+  void setExclusiveness(bool newStatus);
+  std::string getRemoteWorkingDir() const { return _remoteWorkingDir; }
+  void setRemoteWorkingDir(const std::string& remoteWorkingDir) { _remoteWorkingDir=remoteWorkingDir; }
+  std::string getWCKey() const { return _wcKey; }
+  void setWCKey(const std::string& wcKey) { _wcKey=wcKey; }
+  unsigned int getNbProcs() const { return _nbOfProcs; }
+  void setNbProcs(unsigned int nbProcs) { _nbOfProcs=nbProcs; }
+  void checkConsistency() const;
+private:
+  bool _exclusiveness;
+  std::string _remoteWorkingDir;
+  std::string _wcKey;
+  unsigned int _nbOfProcs;
+};
+
 class YACSEvalListOfResources : public YACSEvalNonConstLocker
 {
 public:
@@ -141,6 +162,8 @@ public:
   YACSEVALYFX_EXPORT YACSEvalResource *at(std::size_t i) const;
   YACSEVALYFX_EXPORT bool isInteractive() const;
   YACSEVALYFX_EXPORT unsigned int getNumberOfProcsDeclared() const;
+  YACSEVALYFX_EXPORT void checkOKForRun() const;
+  YACSEVALYFX_EXPORT YACSEvalParamsForCluster& getAddParamsForCluster() { return _paramsInCaseOfCluster; }
   void apply();
   YACSEVALYFX_EXPORT ~YACSEvalListOfResources();
 public:
@@ -158,6 +181,7 @@ private:
   int _maxLevOfPara;
   std::vector<YACSEvalResource *> _resources;
   YACS::ENGINE::DeploymentTree *_dt;
+  YACSEvalParamsForCluster _paramsInCaseOfCluster;
 };
 
 #endif

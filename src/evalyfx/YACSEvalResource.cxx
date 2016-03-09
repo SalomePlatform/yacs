@@ -73,6 +73,12 @@ void YACSEvalNonConstLocker::checkNonLocked() const
     throw YACS::Exception("YACSEvalNonConstLocker::checkNonLocked : this is locked and trying to invoke non-const method !");
 }
 
+void YACSEvalNonConstLocker::checkLocked() const
+{
+  if(!_isLocked)
+    throw YACS::Exception("YACSEvalNonConstLocker::checkLocked : this is NOT locked whereas it should be !");
+}
+
 YACSEvalVirtualYACSContainer::YACSEvalVirtualYACSContainer():_gf(0),_cont(0)
 {
 }
@@ -173,11 +179,14 @@ std::vector<std::string> YACSEvalVirtualYACSContainer::listOfPropertyKeys() cons
 
 std::string YACSEvalVirtualYACSContainer::getValueOfKey(const char *key) const
 {
+  std::string skey(key);
+  if(skey==HOSTNAME_KEY)
+    return _chosenHost;
   std::map<std::string,std::string>::const_iterator it;
-  it=_overloadedPropertyMap.find(key);
+  it=_overloadedPropertyMap.find(skey);
   if(it!=_overloadedPropertyMap.end())
     return (*it).second;
-  it=_propertyMap.find(key);
+  it=_propertyMap.find(skey);
   if(it!=_propertyMap.end())
     return (*it).second;
   return std::string();
@@ -186,25 +195,25 @@ std::string YACSEvalVirtualYACSContainer::getValueOfKey(const char *key) const
 void YACSEvalVirtualYACSContainer::setProperty(const std::string& key, const std::string &value)
 {
   checkNonLocked();
-  _overloadedPropertyMap[key]=value;
+  if(key==HOSTNAME_KEY)
+    setWantedMachine(value);
+  else
+    _overloadedPropertyMap[key]=value;
 }
 
-void YACSEvalVirtualYACSContainer::apply()
+void YACSEvalVirtualYACSContainer::apply(bool interactiveStatus)
 {
   YACS::ENGINE::SalomeContainer *cont0(dynamic_cast<YACS::ENGINE::SalomeContainer *>(_cont));
   YACS::ENGINE::SalomeHPContainer *cont1(dynamic_cast<YACS::ENGINE::SalomeHPContainer *>(_cont));
-  if(cont0)
-    {
-      cont0->setProperty(HOSTNAME_KEY,getValueOfKey(HOSTNAME_KEY));
-      return ;
-    }
-  else if(cont1)
-    {
-      cont1->setProperty(HOSTNAME_KEY,getValueOfKey(HOSTNAME_KEY));
-      return ;
-    }
-  else
+  if(!cont0 && !cont1)
     throw YACS::Exception("YACSEvalVirtualYACSContainer::apply : unrecognized container !");
+  if(interactiveStatus)
+    _cont->setProperty(HOSTNAME_KEY,getValueOfKey(HOSTNAME_KEY));
+  else
+    {// in cluster mode no hostname and policy set to cycl by default
+      _cont->setProperty(HOSTNAME_KEY,std::string());
+      _cont->setProperty("policy","cycl");
+    }
 }
 
 std::string YACSEvalVirtualYACSContainer::getName() const
@@ -279,10 +288,10 @@ YACSEvalVirtualYACSContainer *YACSEvalResource::at(std::size_t i) const
   return const_cast<YACSEvalVirtualYACSContainer *>(&_containers[i]);
 }
 
-void YACSEvalResource::apply()
+void YACSEvalResource::apply(bool interactiveStatus)
 {
   for(std::vector< YACSEvalVirtualYACSContainer >::iterator it=_containers.begin();it!=_containers.end();it++)
-    (*it).apply();
+    (*it).apply(interactiveStatus);
 }
 
 void YACSEvalResource::fitWithCurrentCatalogAbs()
@@ -316,6 +325,22 @@ YACSEvalResource::YACSEvalResource(YACSEvalListOfResources *gf, const std::vecto
   _containers.resize(sz);
   for(std::size_t i=0;i<sz;i++)
     _containers[i].set(this,conts[i]);
+}
+
+void YACSEvalParamsForCluster::setExclusiveness(bool newStatus)
+{
+  if(newStatus)
+    throw YACS::Exception("YACSEvalParamsForCluster::setExclusiveness : exclusive mode set to true is not implemented yet !");
+}
+
+void YACSEvalParamsForCluster::checkConsistency() const
+{
+  if(_remoteWorkingDir.empty())
+    throw YACS::Exception("YACSEvalParamsForCluster::checkConsistency : remote work dir is not set !");
+  if(_wcKey.empty())
+    throw YACS::Exception("YACSEvalParamsForCluster::checkConsistency : WC key is not set !");
+  if(_nbOfProcs==0)
+    throw YACS::Exception("YACSEvalParamsForCluster::checkConsistency : nb procs must be != 0 !");
 }
 
 YACSEvalListOfResources::YACSEvalListOfResources(int maxLevOfPara, ResourcesManager_cpp *rm, const YACS::ENGINE::DeploymentTree& dt):_maxLevOfPara(maxLevOfPara),_rm(rm),_dt(new YACS::ENGINE::DeploymentTree(dt))
@@ -405,17 +430,29 @@ bool YACSEvalListOfResources::isInteractive() const
 
 unsigned int YACSEvalListOfResources::getNumberOfProcsDeclared() const
 {
-  std::vector<std::string> chosen(getAllChosenMachines());
-  unsigned int ret(0);
-  for(std::vector<std::string>::const_iterator it=chosen.begin();it!=chosen.end();it++)
-    ret+=getNumberOfProcOfResource(*it);
-  return ret;
+  if(isInteractive())
+    {
+      std::vector<std::string> chosen(getAllChosenMachines());
+      unsigned int ret(0);
+      for(std::vector<std::string>::const_iterator it=chosen.begin();it!=chosen.end();it++)
+        ret+=getNumberOfProcOfResource(*it);
+      return ret;
+    }
+  else
+    return _paramsInCaseOfCluster.getNbProcs();
+}
+
+void YACSEvalListOfResources::checkOKForRun() const
+{
+  if(!isInteractive())
+    _paramsInCaseOfCluster.checkConsistency();
 }
 
 void YACSEvalListOfResources::apply()
 {
+  bool interactiveSt(isInteractive());
   for(std::vector<YACSEvalResource *>::iterator it=_resources.begin();it!=_resources.end();it++)
-    (*it)->apply();
+    (*it)->apply(interactiveSt);
 }
 
 YACSEvalListOfResources::~YACSEvalListOfResources()
@@ -567,23 +604,59 @@ void YACSEvalListOfResources::notifyWantedMachine(YACSEvalVirtualYACSContainer *
     throw YACS::Exception("YACSEvalListOfResources::notifyWantedMachine : internal error !");
   const ParserResourcesType& oldPRT((*itOld).second);
   const ParserResourcesType& newPRT((*itNew).second);
-  if(oldPRT.ClusterInternalProtocol==newPRT.ClusterInternalProtocol)
+  bool oldISt(oldPRT.Batch==none),newISt(newPRT.Batch==none);//interactive status
+  if(oldISt==newISt)
     return ;
   // the batch/interactive mode has changed -> try to change for all.
   std::queue<std::string> sts;
   try
   {
-      for(std::vector<YACSEvalResource *>::const_iterator it=_resources.begin();it!=_resources.end();it++)
-        {
-          std::size_t sz((*it)->size());
-          for(std::size_t i=0;i<sz;i++)
-            {
-              YACSEvalVirtualYACSContainer *cont((*it)->at(i));
-              if(cont==sender)
-                continue;
-              sts.push(cont->findDefault(newPRT.ClusterInternalProtocol==sh));
-            }
-        }
+    if(newISt)
+      {// switching from interactive to batch -> In batch every YACSEvalVirtualYACSContainer instances in this must lie on newMachine.
+        for(std::vector<YACSEvalResource *>::const_iterator it=_resources.begin();it!=_resources.end();it++)
+          {
+            std::vector<std::string> fms((*it)->getAllFittingMachines());
+            std::vector<std::string>::iterator it0(std::find(fms.begin(),fms.end(),newMachine));
+            if(it0==fms.end())
+              {
+                std::ostringstream oss; oss << "In the context of switch to batch the requested cluster machine \"" << newMachine << "\" is not compatible for following list of containers : " << std::endl;
+                std::size_t sz((*it)->size());
+                for(std::size_t i=0;i<sz;i++)
+                  {
+                    YACSEvalVirtualYACSContainer *cont((*it)->at(i));
+                    if(cont)
+                      oss << " \"" << cont->getName() << "\", ";
+                  }
+                throw YACS::Exception(oss.str());
+              }
+            std::size_t sz((*it)->size());
+            for(std::size_t i=0;i<sz;i++)
+              {
+                std::size_t sz((*it)->size());
+                for(std::size_t i=0;i<sz;i++)
+                  {
+                    YACSEvalVirtualYACSContainer *cont((*it)->at(i));
+                    if(cont==sender)
+                      continue;
+                    sts.push(newMachine);
+                  }
+              }
+          }
+      }
+    else
+      {
+        for(std::vector<YACSEvalResource *>::const_iterator it=_resources.begin();it!=_resources.end();it++)
+          {
+            std::size_t sz((*it)->size());
+            for(std::size_t i=0;i<sz;i++)
+              {
+                YACSEvalVirtualYACSContainer *cont((*it)->at(i));
+                if(cont==sender)
+                  continue;
+                sts.push(cont->findDefault(false));
+              }
+          }
+      }
   }
   catch(YACS::Exception& e)
   {
@@ -611,7 +684,7 @@ bool YACSEvalListOfResources::hasRightInteractiveStatus(const std::string& machi
   if(it==zeList.end())
     throw YACS::Exception("YACSEvalListOfResources::hasRightInteractiveStatus : internal error !");
   const ParserResourcesType& elt((*it).second);
-  bool myStatus(elt.ClusterInternalProtocol==sh);
+  bool myStatus(elt.Batch==none);
   return myStatus==isInteractive;
 }
 

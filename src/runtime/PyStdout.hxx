@@ -29,7 +29,9 @@ namespace YACS
 {
   namespace ENGINE
   {
-    YACSRUNTIMESALOME_EXPORT PyObject * newPyStdOut( std::string& out );
+    YACSRUNTIMESALOME_EXPORT PyObject *newPyStdOut( std::string& out );
+    YACSRUNTIMESALOME_EXPORT PyObject *evalPy(const std::string& funcName, const std::string& strToEval);
+    YACSRUNTIMESALOME_EXPORT PyObject *evalFuncPyWithNoParams(PyObject *func);
   }
 }
 
