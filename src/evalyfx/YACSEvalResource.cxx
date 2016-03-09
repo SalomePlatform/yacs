@@ -393,7 +393,7 @@ bool YACSEvalListOfResources::isInteractive() const
           throw YACS::Exception(oss.str());
         }
       const ParserResourcesType& elt((*it2).second);
-      status[ii]=(elt.ClusterInternalProtocol==sh || elt.ClusterInternalProtocol==rsh || elt.ClusterInternalProtocol==ssh);
+      status[ii]=(elt.Batch==none);
     }
   std::size_t trueRet(std::count(status.begin(),status.end(),true)),falseRet(std::count(status.begin(),status.end(),false));
   if(trueRet==sz && falseRet==0)
