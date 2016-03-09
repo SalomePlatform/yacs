@@ -42,6 +42,7 @@
 #include <SUIT_DataObject.h>
 
 #include <SALOME_LifeCycleCORBA.hxx>
+#include <QDir>
 #include <QInputDialog>
 #include <QIcon>
 #include <cassert>

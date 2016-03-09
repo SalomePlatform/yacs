@@ -20,13 +20,14 @@
 #ifndef _SALOMEGUI_RESOURCE_HXX_
 #define _SALOMEGUI_RESOURCE_HXX_
 
-#include <QtGui>
+#include <QColor>
+#include <QFont>
+#include <QString>
 
 class Yacsgui;
 class SUIT_ResourceMgr;
 
-
-class Yacsgui_Resource 
+class Yacsgui_Resource
 {
   public:
     Yacsgui_Resource(SUIT_ResourceMgr* r);
@@ -35,21 +36,21 @@ class Yacsgui_Resource
     virtual void preferencesChanged();
 
   protected:
-    int     integerValue( const QString& name, const int    def = 0          ) const;
-    double  doubleValue ( const QString& name, const double def = 0          ) const;
-    bool    booleanValue( const QString& name, const bool   def = false      ) const;
-    QFont   fontValue   ( const QString& name, const QFont  def = QFont()    ) const;
-    QColor  colorValue  ( const QString& name, const QColor def = QColor()   ) const;
-    QColor  colorValue  ( const QString& name, const Qt::GlobalColor c       ) const;
+    int     integerValue( const QString& name, const int     def = 0          ) const;
+    double  doubleValue ( const QString& name, const double  def = 0          ) const;
+    bool    booleanValue( const QString& name, const bool    def = false      ) const;
+    QFont   fontValue   ( const QString& name, const QFont&  def = QFont()    ) const;
+    QColor  colorValue  ( const QString& name, const QColor& def = QColor()   ) const;
+    QColor  colorValue  ( const QString& name, const Qt::GlobalColor c        ) const;
     QColor  colorValue  ( const QString& name, const int h, const int s, const int v) const;
-    QString stringValue ( const QString& name, const QString def = QString() ) const;
+    QString stringValue ( const QString& name, const QString& def = QString() ) const;
 
     void setValue( const QString& name, const int     val );
     void setValue( const QString& name, const double  val );
     void setValue( const QString& name, const bool    val );
-    void setValue( const QString& name, const QFont   val );
-    void setValue( const QString& name, const QColor  val );
-    void setValue( const QString& name, const QString val );
+    void setValue( const QString& name, const QFont&   val );
+    void setValue( const QString& name, const QColor&  val );
+    void setValue( const QString& name, const QString& val );
 
   protected:
     SUIT_ResourceMgr* _resource;
