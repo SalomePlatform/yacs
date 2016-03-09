@@ -337,6 +337,22 @@ private:
   YACSEvalResource();
 };
 
+class YACSEvalParamsForCluster
+{
+public:
+  bool getExclusiveness() const;
+  void setExclusiveness(bool newStatus);
+  std::string getRemoteWorkingDir();
+  void setRemoteWorkingDir(const std::string& remoteWorkingDir);
+  std::string getWCKey() const;
+  void setWCKey(const std::string& wcKey);
+  unsigned int getNbProcs() const;
+  void setNbProcs(unsigned int nbProcs);
+  void checkConsistency() const;
+private:
+  YACSEvalParamsForCluster();
+};
+
 class YACSEvalListOfResources
 {
 public:
@@ -347,6 +363,8 @@ public:
   bool isInteractive() const;
   YACSEvalResource *at(std::size_t i) const;
   unsigned int getNumberOfProcsDeclared() const;
+  void checkOKForRun() const;
+  YACSEvalParamsForCluster& getAddParamsForCluster();
   %extend
      {
        std::size_t __len__() const

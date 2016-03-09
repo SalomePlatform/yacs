@@ -37,15 +37,6 @@
 
 #include <Python.h>
 
-class MyAutoThreadSaver
-{
-public:
-  MyAutoThreadSaver():_save(PyEval_SaveThread()) { }
-  ~MyAutoThreadSaver() { PyEval_RestoreThread(_save); }
-private:
-  PyThreadState *_save;
-};
-
 YACSEvalYFX *YACSEvalYFX::BuildFromFile(const std::string& xmlOfScheme)
 {
   YACS::ENGINE::RuntimeSALOME::setRuntime();
@@ -97,30 +88,20 @@ YACSEvalListOfResources *YACSEvalYFX::giveResources()
 
 bool YACSEvalYFX::run(YACSEvalSession *session, int& nbOfBranches)
 {
-  _pattern->assignRandomVarsInputs();
-  YACSEvalListOfResources *rss(giveResources());
-  if(!rss->isInteractive())
-    throw YACS::Exception("YACSEvalYFX::run : not implemented yet for non interactive !");
-  YACSEvalSession *mySession(session);
-  YACS::AutoCppPtr<YACSEvalSession> loc;
   if(!session)
     {
       throw YACS::Exception("YACSEvalYFX::run : input session in null !");
-      /*loc=new YACSEvalSession;
-      mySession=loc;*/
     }
+  session->launch();
+  //
+  YACSEvalListOfResources *rss(giveResources());
+  rss->checkOKForRun();
+  _pattern->assignRandomVarsInputs();
+  //if(!rss->isInteractive())
+  //  throw YACS::Exception("YACSEvalYFX::run : not implemented yet for non interactive !");
   rss->apply();
   nbOfBranches=_pattern->assignNbOfBranches();
-  mySession->launch();
-  YACS::ENGINE::Executor exe;
-  exe.setKeepGoingProperty(!_params.getStopASAPAfterErrorStatus());
-  //
-  _pattern->emitStart();
-  {
-    MyAutoThreadSaver locker;
-    exe.RunW(getUndergroundGeneratedGraph());
-  }
-  return getUndergroundGeneratedGraph()->getState()==YACS::DONE;
+  return _pattern->go(_params.getStopASAPAfterErrorStatus());
 }
 
 void YACSEvalYFX::registerObserver(YACSEvalObserver *observer)

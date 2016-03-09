@@ -18,8 +18,18 @@
 //
 
 #include "PyStdout.hxx"
+#include "Exception.hxx"
+#include "AutoGIL.hxx"
+
 #include <structmember.h>
+
 #include <string>
+#include <sstream>
+
+#ifdef WIN32
+#include <process.h>
+#define getpid _getpid
+#endif
 
 namespace YACS
 {
@@ -125,6 +135,56 @@ PyObject * newPyStdOut( std::string& out )
   self->softspace = 0;
   self->out=&out;
   return (PyObject*)self;
+}
+
+PyObject *evalPy(const std::string& funcName, const std::string& strToEval)
+{
+  std::ostringstream oss0; oss0 << "def " << funcName << "():\n";
+  std::string::size_type i0(0);
+  while(i0<strToEval.length() && i0!=std::string::npos)
+    {
+      std::string::size_type i2(strToEval.find('\n',i0));
+      std::string::size_type lgth(i2!=std::string::npos?i2-i0:std::string::npos);
+      std::string part(strToEval.substr(i0,lgth));
+      if(!part.empty())
+        oss0 << "  " << part << "\n";
+      i0=i2!=std::string::npos?i2+1:std::string::npos;
+    }
+  std::string zeCodeStr(oss0.str());
+  std::ostringstream stream;
+  stream << "/tmp/PythonNode_";
+  stream << getpid();
+  AutoPyRef context(PyDict_New());
+  PyDict_SetItemString( context, "__builtins__", PyEval_GetBuiltins() );
+  AutoPyRef code(Py_CompileString(zeCodeStr.c_str(), "kkkk", Py_file_input));
+  if(code.isNull())
+    {
+      std::string errorDetails;
+      PyObject *new_stderr(newPyStdOut(errorDetails));
+      PySys_SetObject((char*)"stderr", new_stderr);
+      PyErr_Print();
+      PySys_SetObject((char*)"stderr", PySys_GetObject((char*)"__stderr__"));
+      Py_DECREF(new_stderr);
+      std::ostringstream oss; oss << "evalPy failed : " << errorDetails;
+      throw Exception(oss.str());
+    }
+  AutoPyRef res(PyEval_EvalCode(reinterpret_cast<PyCodeObject *>((PyObject *)code),context,context));
+  PyObject *ret(PyDict_GetItemString(context,funcName.c_str())); //borrowed ref
+  if(!ret)
+    throw YACS::Exception("evalPy : Error on returned func !");
+  Py_XINCREF(ret);
+  return ret;
+}
+
+PyObject *evalFuncPyWithNoParams(PyObject *func)
+{
+  if(!func)
+    throw YACS::Exception("evalFuncPyWithNoParams : input func is NULL !");
+  AutoPyRef args(PyTuple_New(0));
+  AutoPyRef ret(PyObject_CallObject(func,args));
+  if(ret.isNull())
+    throw YACS::Exception("evalFuncPyWithNoParams : ret is null !");
+  return ret.retn();
 }
 
 }

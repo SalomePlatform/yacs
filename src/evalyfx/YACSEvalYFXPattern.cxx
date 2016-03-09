@@ -38,6 +38,8 @@
 #include "PythonNode.hxx"
 #include "InlineNode.hxx"
 #include "ServiceNode.hxx"
+#include "PyStdout.hxx"
+#include "AutoGIL.hxx"
 
 #include "ResourcesManager.hxx"
 
@@ -46,6 +48,9 @@
 #include <numeric>
 #include <sstream>
 #include <iterator>
+
+////
+#include <stdlib.h>
 
 const char YACSEvalYFXPattern::DFT_PROC_NAME[]="YFX";
 
@@ -60,6 +65,15 @@ const std::size_t YACSEvalYFXPattern::MAX_LGTH_OF_INP_DUMP=10000;
 const char YACSEvalYFXRunOnlyPattern::FIRST_FE_SUBNODE_NAME[]="Bloc";
 
 const char YACSEvalYFXRunOnlyPattern::GATHER_NODE_NAME[]="__gather__";
+
+class MyAutoThreadSaver
+{
+public:
+  MyAutoThreadSaver():_save(PyEval_SaveThread()) { }
+  ~MyAutoThreadSaver() { PyEval_RestoreThread(_save); }
+private:
+  PyThreadState *_save;
+};
 
 std::vector< YACSEvalInputPort *> YACSEvalYFXPattern::getFreeInputPorts() const
 {
@@ -646,6 +660,32 @@ void YACSEvalYFXRunOnlyPattern::emitStart() const
   if(!obs)
     return ;
   obs->notifyNumberOfSamplesToEval(getBoss(),_FEInGeneratedGraph->getNbOfElementsToBeProcessed());
+}
+
+bool YACSEvalYFXRunOnlyPattern::go(bool stopASAP) const
+{
+  emitStart();
+  if(getResourcesInternal()->isInteractive())
+    {
+      YACS::ENGINE::Executor exe;
+      exe.setKeepGoingProperty(!stopASAP);
+      {
+        MyAutoThreadSaver locker;
+        exe.RunW(getUndergroundGeneratedGraph());
+      }
+      return getUndergroundGeneratedGraph()->getState()==YACS::DONE;
+    }
+  else
+    {
+      char EFXGenFileName[]="EFXGenFileName";
+      char EFXGenContent[]="import getpass,datetime,os\nn=datetime.datetime.now()\nreturn os.path.join(os.path.sep,\"tmp\",\"EvalYFX_%s_%s_%s.xml\"%(getpass.getuser(),n.strftime(\"%d%b%y\"),n.strftime(\"%H%M%S\")))";
+      //
+      YACS::ENGINE::AutoPyRef func(YACS::ENGINE::evalPy(EFXGenFileName,EFXGenContent));
+      YACS::ENGINE::AutoPyRef val(YACS::ENGINE::evalFuncPyWithNoParams(func));
+      std::string fn(PyString_AsString(val));
+      getUndergroundGeneratedGraph()->saveSchema(fn);
+      return false;
+    }
 }
 
 bool YACSEvalYFXRunOnlyPattern::IsMatching(YACS::ENGINE::Proc *scheme, YACS::ENGINE::ComposedNode *& runNode)
