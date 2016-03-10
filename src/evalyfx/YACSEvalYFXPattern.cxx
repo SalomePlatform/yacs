@@ -520,24 +520,24 @@ std::string YACSEvalYFXRunOnlyPattern::getErrorDetailsInCaseOfFailure() const
       if(nnc->getState()==YACS::DONE)
         continue;
       std::list< YACS::ENGINE::ElementaryNode *> fec(nnc->getRecursiveConstituents());
-      for(std::list< YACS::ENGINE::ElementaryNode *>::reverse_iterator it=fec.rbegin();it!=fec.rend();it++)
+      for(std::list< YACS::ENGINE::ElementaryNode *>::reverse_iterator it1=fec.rbegin();it1!=fec.rend();it1++)
         {
-          YACS::StatesForNode st0((*it)->getState());
+          YACS::StatesForNode st0((*it1)->getState());
           if(st0!=YACS::DONE)
             {
-              oss << "NODE = " << nnc->getChildName(*it) << std::endl;
+              oss << "NODE = " << nnc->getChildName(*it1) << std::endl;
               oss << "STATUS = " << nsm[st0] << std::endl;
               oss << "BRANCH ID = " << j << std::endl;
-              std::list<YACS::ENGINE::InputPort *> inps((*it)->getSetOfInputPort());
-              for(std::list<YACS::ENGINE::InputPort *>::const_iterator it=inps.begin();it!=inps.end();it++)
+              std::list<YACS::ENGINE::InputPort *> inps((*it1)->getSetOfInputPort());
+              for(std::list<YACS::ENGINE::InputPort *>::const_iterator it2=inps.begin();it2!=inps.end();it2++)
                 {
-                  std::string d((*it)->getHumanRepr());
+                  std::string d((*it2)->getHumanRepr());
                   if(d.size()>10000)
                     d=d.substr(0,MAX_LGTH_OF_INP_DUMP);
-                  oss << "INPUT \"" << (*it)->getName() << "\" = " << d << std::endl;
+                  oss << "INPUT \"" << (*it2)->getName() << "\" = " << d << std::endl;
                 }
               oss << "DETAILS = " << std::endl;
-              oss << (*it)->getErrorDetails();
+              oss << (*it1)->getErrorDetails();
             }
         }
     }
@@ -635,22 +635,22 @@ std::vector<YACSEvalSeqAny *> YACSEvalYFXRunOnlyPattern::getResultsInCaseOfFailu
   passedIds=fe->getPassedResults(&exe,outputs,nameOfOutputs);//<- the key invokation is here.
   std::size_t sz(passedIds.size()),ii(0);
   std::vector<YACSEvalSeqAny *> ret(_outputsOfInterest.size());
-  for(std::vector<YACSEvalOutputPort *>::const_iterator it=_outputsOfInterest.begin();it!=_outputsOfInterest.end();it++,ii++)
+  for(std::vector<YACSEvalOutputPort *>::const_iterator it1=_outputsOfInterest.begin();it1!=_outputsOfInterest.end();it1++,ii++)
     {
-      YACS::ENGINE::OutputPort *p((*it)->getUndergroundPtr());
+      YACS::ENGINE::OutputPort *p((*it1)->getUndergroundPtr());
       std::string st(_runNode->getOutPortName(p));
       std::ostringstream oss; oss << FIRST_FE_SUBNODE_NAME << '.' << _runNode->getName() << '.' << st;
       st=oss.str();
       YACS::ENGINE::ForEachLoop::InterceptorizeNameOfPort(st);
-      std::vector<std::string>::iterator it(std::find(nameOfOutputs.begin(),nameOfOutputs.end(),st));
-      if(it==nameOfOutputs.end())
+      std::vector<std::string>::iterator it2(std::find(nameOfOutputs.begin(),nameOfOutputs.end(),st));
+      if(it2==nameOfOutputs.end())
         {
           std::ostringstream oss; oss << "YACSEvalYFXRunOnlyPattern::getResultsInCaseOfFailure : internal error 3 ! Unable to locate interceptor with name " << st << " ! Possibilities are : ";
           std::copy(nameOfOutputs.begin(),nameOfOutputs.end(),std::ostream_iterator<std::string>(oss," "));
           oss << " !";
           throw YACS::Exception(oss.str());
         }
-      std::size_t pos(std::distance(nameOfOutputs.begin(),it));
+      std::size_t pos(std::distance(nameOfOutputs.begin(),it2));
       ret[ii]=BuildValueFromEngineFrmt(outputs[pos]);
     }
   return ret;
