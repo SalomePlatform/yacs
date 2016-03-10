@@ -101,7 +101,7 @@ bool YACSEvalYFX::run(YACSEvalSession *session, int& nbOfBranches)
   //  throw YACS::Exception("YACSEvalYFX::run : not implemented yet for non interactive !");
   rss->apply();
   nbOfBranches=_pattern->assignNbOfBranches();
-  return _pattern->go(_params.getStopASAPAfterErrorStatus());
+  return _pattern->go(_params.getStopASAPAfterErrorStatus(),session);
 }
 
 void YACSEvalYFX::registerObserver(YACSEvalObserver *observer)

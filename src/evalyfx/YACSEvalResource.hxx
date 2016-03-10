@@ -139,15 +139,21 @@ public:
   void setExclusiveness(bool newStatus);
   std::string getRemoteWorkingDir() const { return _remoteWorkingDir; }
   void setRemoteWorkingDir(const std::string& remoteWorkingDir) { _remoteWorkingDir=remoteWorkingDir; }
+  std::string getLocalWorkingDir() const { return _localWorkingDir; }
+  void setLocalWorkingDir(const std::string& localWorkingDir) { _localWorkingDir=localWorkingDir; }
   std::string getWCKey() const { return _wcKey; }
   void setWCKey(const std::string& wcKey) { _wcKey=wcKey; }
   unsigned int getNbProcs() const { return _nbOfProcs; }
   void setNbProcs(unsigned int nbProcs) { _nbOfProcs=nbProcs; }
+  void setMaxDuration(const std::string& maxDuration) { _maxDuration=maxDuration; }
+  std::string getMaxDuration() const { return _maxDuration; }
   void checkConsistency() const;
 private:
   bool _exclusiveness;
   std::string _remoteWorkingDir;
+  std::string _localWorkingDir;
   std::string _wcKey;
+  std::string _maxDuration;
   unsigned int _nbOfProcs;
 };
 
@@ -164,6 +170,7 @@ public:
   YACSEVALYFX_EXPORT unsigned int getNumberOfProcsDeclared() const;
   YACSEVALYFX_EXPORT void checkOKForRun() const;
   YACSEVALYFX_EXPORT YACSEvalParamsForCluster& getAddParamsForCluster() { return _paramsInCaseOfCluster; }
+  YACSEVALYFX_EXPORT const YACSEvalParamsForCluster& getAddParamsForCluster() const { return _paramsInCaseOfCluster; }
   void apply();
   YACSEVALYFX_EXPORT ~YACSEvalListOfResources();
 public:

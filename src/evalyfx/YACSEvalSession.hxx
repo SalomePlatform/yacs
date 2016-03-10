@@ -31,6 +31,8 @@ typedef _object PyObject;
 class YACSEvalSession
 {
 public:
+  class YACSEvalSessionInternal;
+public:
   YACSEVALYFX_EXPORT YACSEvalSession();
   YACSEVALYFX_EXPORT ~YACSEvalSession();
   YACSEVALYFX_EXPORT void launch();
@@ -38,6 +40,8 @@ public:
   YACSEVALYFX_EXPORT void checkLaunched() const;
   YACSEVALYFX_EXPORT int getPort() const;
   YACSEVALYFX_EXPORT std::string getCorbaConfigFileName() const;
+public:
+  YACSEvalSessionInternal *getInternal() { checkLaunched(); return _internal; }
 private:
   static std::string GetPathToAdd();
 public:
@@ -49,6 +53,7 @@ private:
   std::string _corbaConfigFileName;
   PyObject *_salomeInstanceModule;
   PyObject *_salomeInstance;
+  YACSEvalSessionInternal *_internal;
 };
 
 #endif

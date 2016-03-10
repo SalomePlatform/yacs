@@ -21,7 +21,9 @@
 #include "YACSEvalYFXPattern.hxx"
 #include "YACSEvalResource.hxx"
 #include "YACSEvalSeqAny.hxx"
+#include "YACSEvalSession.hxx"
 #include "YACSEvalObserver.hxx"
+#include "YACSEvalSessionInternal.hxx"
 #include "YACSEvalAutoPtr.hxx"
 
 #include "ElementaryNode.hxx"
@@ -662,7 +664,7 @@ void YACSEvalYFXRunOnlyPattern::emitStart() const
   obs->notifyNumberOfSamplesToEval(getBoss(),_FEInGeneratedGraph->getNbOfElementsToBeProcessed());
 }
 
-bool YACSEvalYFXRunOnlyPattern::go(bool stopASAP) const
+bool YACSEvalYFXRunOnlyPattern::go(bool stopASAP, YACSEvalSession *session) const
 {
   emitStart();
   if(getResourcesInternal()->isInteractive())
@@ -677,13 +679,60 @@ bool YACSEvalYFXRunOnlyPattern::go(bool stopASAP) const
     }
   else
     {
-      char EFXGenFileName[]="EFXGenFileName";
-      char EFXGenContent[]="import getpass,datetime,os\nn=datetime.datetime.now()\nreturn os.path.join(os.path.sep,\"tmp\",\"EvalYFX_%s_%s_%s.xml\"%(getpass.getuser(),n.strftime(\"%d%b%y\"),n.strftime(\"%H%M%S\")))";
+      const char EFXGenFileName[]="EFXGenFileName";
+      const char EFXGenContent[]="import getpass,datetime,os\nn=datetime.datetime.now()\nreturn os.path.join(os.path.sep,\"tmp\",\"EvalYFX_%s_%s_%s.xml\"%(getpass.getuser(),n.strftime(\"%d%b%y\"),n.strftime(\"%H%M%S\")))";
+      const char EFXGenContent2[]="import getpass,datetime\nn=datetime.datetime.now()\nreturn \"EvalYFX_%s_%s_%s\"%(getpass.getuser(),n.strftime(\"%d%b%y\"),n.strftime(\"%H%M%S\"))";
       //
       YACS::ENGINE::AutoPyRef func(YACS::ENGINE::evalPy(EFXGenFileName,EFXGenContent));
       YACS::ENGINE::AutoPyRef val(YACS::ENGINE::evalFuncPyWithNoParams(func));
-      std::string fn(PyString_AsString(val));
-      getUndergroundGeneratedGraph()->saveSchema(fn);
+      std::string locSchemaFile(PyString_AsString(val));
+      getUndergroundGeneratedGraph()->saveSchema(locSchemaFile);
+      func=YACS::ENGINE::evalPy(EFXGenFileName,EFXGenContent2);
+      val=YACS::ENGINE::evalFuncPyWithNoParams(func);
+      std::string jobName(PyString_AsString(val));
+      YACSEvalListOfResources *rss(getResourcesInternal());
+      const YACSEvalParamsForCluster& cli(rss->getAddParamsForCluster());
+      std::vector<std::string> machines(rss->getAllChosenMachines());
+      if(machines.size()!=1)
+        throw YACS::Exception("YACSEvalYFXRunOnlyPattern::go : internal error ! In batch mode and not exactly one machine !");
+      Engines::SalomeLauncher_var sl(session->getInternal()->goFetchingSalomeLauncherInNS());
+      Engines::ResourceParameters rr;
+      rr.name=CORBA::string_dup(machines[0].c_str());
+      rr.hostname=CORBA::string_dup("");
+      rr.can_launch_batch_jobs=true;
+      rr.can_run_containers=true;
+      rr.OS=CORBA::string_dup("Linux");
+      rr.componentList.length(0);
+      rr.nb_proc=rss->getNumberOfProcsDeclared();// <- important
+      rr.mem_mb=1024;
+      rr.cpu_clock=1000;
+      rr.nb_node=1;// useless only nb_proc used.
+      rr.nb_proc_per_node=1;// useless only nb_proc used.
+      rr.policy=CORBA::string_dup("cycl");
+      rr.resList.length(0);
+      Engines::JobParameters jp;
+      jp.job_name=CORBA::string_dup(jobName.c_str());
+      jp.job_type=CORBA::string_dup("yacs_file");
+      jp.job_file=CORBA::string_dup(locSchemaFile.c_str());
+      jp.env_file=CORBA::string_dup("");
+      jp.in_files.length();
+      jp.out_files.length();
+      jp.work_directory=CORBA::string_dup(cli.getRemoteWorkingDir().c_str());
+      jp.local_directory=CORBA::string_dup(cli.getLocalWorkingDir().c_str());
+      jp.result_directory=CORBA::string_dup(cli.getLocalWorkingDir().c_str());
+      jp.maximum_duration=CORBA::string_dup(cli.getMaxDuration().c_str());
+      jp.resource_required=rr;
+      jp.queue=CORBA::string_dup("");
+      jp.exclusive=false;
+      jp.mem_per_cpu=rr.mem_mb;
+      jp.wckey=CORBA::string_dup(cli.getWCKey().c_str());
+      jp.extra_params=CORBA::string_dup("");
+      jp.specific_parameters.length(0);
+      jp.launcher_file=CORBA::string_dup("");
+      jp.launcher_args=CORBA::string_dup("");
+      CORBA::Long jobid(sl->createJob(jp));
+      sl->launchJob(jobid);
+      std::cerr << "*** " << jobName << " -> " << jobid << std::endl;
       return false;
     }
 }

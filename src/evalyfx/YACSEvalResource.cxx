@@ -337,6 +337,8 @@ void YACSEvalParamsForCluster::checkConsistency() const
 {
   if(_remoteWorkingDir.empty())
     throw YACS::Exception("YACSEvalParamsForCluster::checkConsistency : remote work dir is not set !");
+  if(_localWorkingDir.empty())
+    throw YACS::Exception("YACSEvalParamsForCluster::checkConsistency : local work dir is not set !");
   if(_wcKey.empty())
     throw YACS::Exception("YACSEvalParamsForCluster::checkConsistency : WC key is not set !");
   if(_nbOfProcs==0)
