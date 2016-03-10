@@ -300,18 +300,29 @@ std::string Proc::setInPortValue(std::string nodeName, std::string portName, std
               double val = atof(value.c_str());
               inputPort->edInit(val);
             }
+            break;
           case Int:
             {
               int val = atoi(value.c_str());
               inputPort->edInit(val);
             }
+            break;
           case String:
             inputPort->edInit(value.c_str());
+            break;
           case Bool:
             {
-              bool val = (! value.compare("False") ) && (! value.compare("0") );
-              inputPort->edInit(val);
+              if((!value.compare("False")) || (!value.compare("false")))
+                inputPort->edInit(false);
+              else if ((!value.compare("True")) || (!value.compare("true")))
+                inputPort->edInit(true);
+              else
+              {
+                int val = atoi(value.c_str());
+                inputPort->edInit(val);
+              }
             }
+            break;
           default:
             DEBTRACE("Proc::setInPortValue: filtered type: " << inputPort->edGetType()->kind());
         }

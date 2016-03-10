@@ -39,6 +39,7 @@
 #include <iostream>
 #include <fstream>
 #include <signal.h>
+#include <list>
 
 #ifdef WIN32
 #else
@@ -72,6 +73,7 @@ static struct argp_option options[] =
     {"shutdown",        't', "level", 0,                   "Shutdown the schema: 0=no shutdown to 3=full shutdown (default 1)"},
     {"reset",           'r', "level", 0,                   "Reset the schema before execution: 0=nothing, 1=reset error nodes to ready state (default 0)"},
     {"kill-port",       'k', "port",  0,                   "Kill Salome application running on the specified port if the driver process is killed (with SIGINT or SIGTERM)"},
+    {"init_port",       'i', "value", OPTION_ARG_OPTIONAL, "Initialisation value of a port, specified as bloc.node.port=value."},
     { 0 }
   };
 #endif
@@ -90,6 +92,7 @@ struct arguments
   int shutdown;
   int reset;
   int killPort;
+  std::list<std::string> init_ports;
 };
 
 typedef struct {
@@ -158,6 +161,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
       break;      
     case 'k':
       myArgs->killPort = atoi(arg);
+      break;
+    case 'i':
+      if (arg)
+        myArgs->init_ports.push_back(std::string(arg));
       break;
 
     case ARGP_KEY_ARG:
@@ -271,6 +278,20 @@ sighandler_t setsig(int sig, sighandler_t handler)
 }
 #endif
 
+bool parse_init_port(const std::string& input, std::string& node, std::string& port, std::string& value)
+{
+  bool ok = true;
+  size_t pos_eq = input.find('=');
+  if(pos_eq == std::string::npos || pos_eq == input.size())
+    return false;
+  value = input.substr(pos_eq+1);
+  size_t pos_dot = input.rfind('.', pos_eq);
+  if(!pos_dot || pos_dot == std::string::npos || pos_dot >= pos_eq-1)
+    return false;
+  port = input.substr(pos_dot+1, pos_eq-pos_dot-1);
+  node = input.substr(0, pos_dot);
+  return true;
+}
 
 int main (int argc, char* argv[])
 {
@@ -287,6 +308,7 @@ int main (int argc, char* argv[])
   myArgs.shutdown = 1;
   myArgs.reset = 0;
   myArgs.killPort = 0;
+  myArgs.init_ports.clear();
 
   // Parse our arguments; every option seen by parse_opt will be reflected in arguments.
 #ifdef WIN32
@@ -304,6 +326,11 @@ int main (int argc, char* argv[])
     std::cerr << " dumpErrorFile=" << myArgs.dumpErrorFile << std::endl;
   else
     std::cerr << std::endl;
+  std::list<std::string>::const_iterator it;
+  for(it=myArgs.init_ports.begin(); it != myArgs.init_ports.end(); it++)
+  {
+    std::cerr << (*it) << std::endl;
+  }
 #endif
 
 #ifndef WIN32
@@ -351,6 +378,31 @@ int main (int argc, char* argv[])
           std::cerr << "The imported file is probably not a YACS schema file" << std::endl;
           return 1;
         }
+      // Initialize the ports
+      for(it=myArgs.init_ports.begin(); it != myArgs.init_ports.end(); it++)
+      {
+        std::string node, port, value;
+        if(parse_init_port((*it), node, port, value))
+        {
+          std::cerr << "Initialization node=" << node
+                    << " port=" << port
+                    << " value=" << value << std::endl;
+
+          std::string init_state;
+          init_state = p->setInPortValue(node, port, value);
+          if(value.compare(init_state))
+          {
+            std::cerr << "Error on initialization:" << init_state << std::endl;
+            return 1;
+          }
+        }
+        else
+        {
+          std::cerr << "Error on parsing initialization string:" << (*it) << std::endl;
+          return 1;
+        }
+      }
+      
       //Get the parser logger
       Logger* logger=p->getLogger("parser");
       //Print errors logged if any
