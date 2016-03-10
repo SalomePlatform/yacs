@@ -43,6 +43,7 @@ namespace YACS
 }
 
 class YACSEvalYFX;
+class YACSEvalSession;
 class YACSEvalObserver;
 class YACSEvalListOfResources;
 class ResourcesManager_cpp;
@@ -79,7 +80,7 @@ public:
   virtual std::string getStatusOfRunStr() const = 0;
   virtual std::vector<YACSEvalSeqAny *> getResults() const = 0;
   virtual std::vector<YACSEvalSeqAny *> getResultsInCaseOfFailure(std::vector<unsigned int>& passedIds) const = 0;
-  virtual bool go(bool stopASAP) const = 0;
+  virtual bool go(bool stopASAP, YACSEvalSession *session) const = 0;
 public:
   static const char DFT_PROC_NAME[];
 protected:
@@ -129,7 +130,7 @@ public:
   std::string getStatusOfRunStr() const;
   std::vector<YACSEvalSeqAny *> getResults() const;
   std::vector<YACSEvalSeqAny *> getResultsInCaseOfFailure(std::vector<unsigned int>& passedIds) const;
-  bool go(bool stopASAP) const;
+  bool go(bool stopASAP, YACSEvalSession *session) const;
   //
   YACS::ENGINE::ForEachLoop *getUndergroundForEach() const { return _FEInGeneratedGraph; }
   static bool IsMatching(YACS::ENGINE::Proc *scheme, YACS::ENGINE::ComposedNode *& runNode);

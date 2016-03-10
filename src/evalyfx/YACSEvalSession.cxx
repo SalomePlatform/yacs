@@ -19,6 +19,8 @@
 // Author : Anthony Geay (EDF R&D)
 
 #include "YACSEvalSession.hxx"
+#include "YACSEvalSessionInternal.hxx"
+
 #include "Exception.hxx"
 
 #include <Python.h>
@@ -27,7 +29,7 @@ const char YACSEvalSession::KERNEL_ROOT_DIR[]="KERNEL_ROOT_DIR";
 
 const char YACSEvalSession::CORBA_CONFIG_ENV_VAR_NAME[]="OMNIORB_CONFIG";
 
-YACSEvalSession::YACSEvalSession():_isLaunched(false),_port(-1),_salomeInstanceModule(0),_salomeInstance(0)
+YACSEvalSession::YACSEvalSession():_isLaunched(false),_port(-1),_salomeInstanceModule(0),_salomeInstance(0),_internal(new YACSEvalSessionInternal)
 {
   if(!Py_IsInitialized())
     Py_Initialize();
@@ -37,6 +39,7 @@ YACSEvalSession::YACSEvalSession():_isLaunched(false),_port(-1),_salomeInstanceM
 
 YACSEvalSession::~YACSEvalSession()
 {
+  delete _internal;
   if(isLaunched())
     {
       PyObject *terminateSession(PyObject_GetAttrString(_salomeInstance,const_cast<char *>("stop")));//new

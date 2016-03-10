@@ -344,10 +344,14 @@ public:
   void setExclusiveness(bool newStatus);
   std::string getRemoteWorkingDir();
   void setRemoteWorkingDir(const std::string& remoteWorkingDir);
+  std::string getLocalWorkingDir();
+  void setLocalWorkingDir(const std::string& localWorkingDir);
   std::string getWCKey() const;
   void setWCKey(const std::string& wcKey);
   unsigned int getNbProcs() const;
   void setNbProcs(unsigned int nbProcs);
+  void setMaxDuration(const std::string& maxDuration);
+  std::string getMaxDuration() const;
   void checkConsistency() const;
 private:
   YACSEvalParamsForCluster();

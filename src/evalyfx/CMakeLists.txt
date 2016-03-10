@@ -68,6 +68,7 @@ SET(YACSEvalYFX_HEADERS
   YACSEvalSeqAny.hxx
   YACSEvalResource.hxx
   YACSEvalSession.hxx
+  YACSEvalSessionInternal.hxx
   YACSEvalObserver.hxx
   YACSEvalExecParams.hxx
   )
@@ -79,6 +80,7 @@ SET(YACSevalYFX_SOURCES
   YACSEvalSeqAny.cxx
   YACSEvalResource.cxx
   YACSEvalSession.cxx
+  YACSEvalSessionInternal.cxx
   YACSEvalObserver.cxx
   )
 
