@@ -64,7 +64,6 @@ void YACSEvalYFX::lockPortsForEvaluation(const std::vector< YACSEvalInputPort * 
 {
   checkPortsForEvaluation(inputsOfInterest,outputsOfInterest);
   _pattern->setOutPortsOfInterestForEvaluation(outputsOfInterest);
-  _pattern->generateGraph();
 }
 
 void YACSEvalYFX::unlockAll()
@@ -88,17 +87,15 @@ YACSEvalListOfResources *YACSEvalYFX::giveResources()
 
 bool YACSEvalYFX::run(YACSEvalSession *session, int& nbOfBranches)
 {
+  _pattern->generateGraph();
   if(!session)
     {
       throw YACS::Exception("YACSEvalYFX::run : input session in null !");
     }
   session->launch();
-  //
   YACSEvalListOfResources *rss(giveResources());
   rss->checkOKForRun();
   _pattern->assignRandomVarsInputs();
-  //if(!rss->isInteractive())
-  //  throw YACS::Exception("YACSEvalYFX::run : not implemented yet for non interactive !");
   rss->apply();
   nbOfBranches=_pattern->assignNbOfBranches();
   return _pattern->go(_params.getStopASAPAfterErrorStatus(),session);

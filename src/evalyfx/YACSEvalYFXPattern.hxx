@@ -67,6 +67,7 @@ public:
   void registerObserver(YACSEvalObserver *observer);
   YACSEvalObserver *getObserver() const { return _observer; }
   YACSEvalYFX *getBoss() const { return _boss; }
+  YACSEvalListOfResources *getResourcesInternal() const { return _res; }
   virtual void setOutPortsOfInterestForEvaluation(const std::vector<YACSEvalOutputPort *>& outputs) = 0;
   virtual void resetOutputsOfInterest() = 0;
   virtual void generateGraph() = 0;
@@ -81,16 +82,15 @@ public:
   virtual std::vector<YACSEvalSeqAny *> getResults() const = 0;
   virtual std::vector<YACSEvalSeqAny *> getResultsInCaseOfFailure(std::vector<unsigned int>& passedIds) const = 0;
   virtual bool go(bool stopASAP, YACSEvalSession *session) const = 0;
-public:
-  static const char DFT_PROC_NAME[];
+public://for _gen
+  const std::vector< YACSEvalInputPort >& getInputs() const { return _inputs; }
+  static YACS::ENGINE::TypeCode *CreateSeqTypeCodeFrom(YACS::ENGINE::Proc *scheme, const std::string& zeType);
+  static YACSEvalSeqAny *BuildValueInPort(YACS::ENGINE::InputPyPort *port);
 protected:
   YACSEvalYFXPattern(YACSEvalYFX *boss, YACS::ENGINE::Proc *scheme, bool ownScheme);
-  YACS::ENGINE::TypeCode *createSeqTypeCodeFrom(YACS::ENGINE::Proc *scheme, const std::string& zeType);
   void setResources(YACSEvalListOfResources *res);
   void resetResources();
-  YACSEvalListOfResources *getResourcesInternal() const { return _res; }
   ResourcesManager_cpp *getCatalogInAppli() const { return _rm; }
-  static YACSEvalSeqAny *BuildValueInPort(YACS::ENGINE::InputPyPort *port);
   static YACSEvalSeqAny *BuildValueFromEngineFrmt(YACS::ENGINE::SequenceAny *data);
 private:
   void cleanScheme();
@@ -112,6 +112,8 @@ public:
   static const std::size_t MAX_LGTH_OF_INP_DUMP;
 };
 
+class YACSEvalYFXGraphGen;
+
 class YACSEvalYFXRunOnlyPattern : public YACSEvalYFXPattern
 {
 public:
@@ -132,22 +134,72 @@ public:
   std::vector<YACSEvalSeqAny *> getResultsInCaseOfFailure(std::vector<unsigned int>& passedIds) const;
   bool go(bool stopASAP, YACSEvalSession *session) const;
   //
-  YACS::ENGINE::ForEachLoop *getUndergroundForEach() const { return _FEInGeneratedGraph; }
+  YACS::ENGINE::ForEachLoop *getUndergroundForEach() const;
   static bool IsMatching(YACS::ENGINE::Proc *scheme, YACS::ENGINE::ComposedNode *& runNode);
-public:
-  static const char FIRST_FE_SUBNODE_NAME[];
-  static const char GATHER_NODE_NAME[];
 private:
   void emitStart() const;
   void buildInputPorts();
   void buildOutputPorts();
-  YACS::ENGINE::ForEachLoop *findTopForEach() const;
+  YACSEvalYFXGraphGen *getGenerator() const;
+public://for _gen
+  const std::vector<YACSEvalOutputPort *>& getOutputsOfInterest() const { return _outputsOfInterest; }
+  YACS::ENGINE::ComposedNode *getRunNode() const { return _runNode; }
 private:
+  bool _lockedStatus;
   YACS::ENGINE::ComposedNode *_runNode;
   std::vector<YACSEvalOutputPort *> _outputsOfInterest;
+  YACSEvalYFXGraphGen *_gen;
+  YACSEvalYFXRunOnlyPatternInternalObserver *_obs;
+};
+
+class YACSEvalYFXGraphGen
+{
+protected:
+  YACSEvalYFXGraphGen(YACSEvalYFXRunOnlyPattern *boss);
+  YACSEvalYFXRunOnlyPattern *getBoss() const { return _boss; }
+public:
+  virtual ~YACSEvalYFXGraphGen();
+  virtual void generateGraph() = 0;
+  virtual bool go(bool stopASAP, YACSEvalSession *session) const = 0;
+  virtual std::vector<YACSEvalSeqAny *> getResults() const = 0;
+  bool isLocked() const;
+  int assignNbOfBranches();
+  void resetGeneratedGraph();
+  YACS::ENGINE::Proc *getUndergroundGeneratedGraph() const { return _generatedGraph; }
+  YACS::ENGINE::ForEachLoop *getUndergroundForEach() const { return _FEInGeneratedGraph; }
+private:
+  YACSEvalYFXRunOnlyPattern *_boss;
+protected:
   YACS::ENGINE::Proc *_generatedGraph;
   YACS::ENGINE::ForEachLoop *_FEInGeneratedGraph;
-  YACSEvalYFXRunOnlyPatternInternalObserver *_obs;
+public:
+  static const char DFT_PROC_NAME[];
+  static const char FIRST_FE_SUBNODE_NAME[];
+  static const char GATHER_NODE_NAME[];
+};
+
+class YACSEvalYFXGraphGenInteractive : public YACSEvalYFXGraphGen
+{
+public:
+  YACSEvalYFXGraphGenInteractive(YACSEvalYFXRunOnlyPattern *boss):YACSEvalYFXGraphGen(boss) { }
+  void generateGraph();
+  bool go(bool stopASAP, YACSEvalSession *session) const;
+  std::vector<YACSEvalSeqAny *> getResults() const;
+};
+
+class YACSEvalYFXGraphGenCluster : public YACSEvalYFXGraphGen
+{
+public:
+  YACSEvalYFXGraphGenCluster(YACSEvalYFXRunOnlyPattern *boss):YACSEvalYFXGraphGen(boss) { }
+  void generateGraph();
+  bool go(bool stopASAP, YACSEvalSession *session) const;
+  std::vector<YACSEvalSeqAny *> getResults() const;
+private:
+  std::string _locSchemaFile;
+  std::string _jobName;
+  mutable int _jobid;
+  mutable std::string _errors;
+  mutable std::vector< std::vector<double> > _res;
 };
 
 #endif
