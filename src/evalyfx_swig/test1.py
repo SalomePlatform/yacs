@@ -53,6 +53,7 @@ for inp in inps:
 efx.lockPortsForEvaluation(inps,outps)
 rss=efx.giveResources()
 rss[0][0].setWantedMachine("localhost")
+assert(rss.isInteractive())
 a,b=efx.run(session) ; assert(a)
 efx.unlockAll()
 for ii,inp in enumerate(inps):
