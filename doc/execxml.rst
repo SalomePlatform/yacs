@@ -30,6 +30,8 @@ The YACS supervisor in console (driver) mode accepts a few options to set parame
     -e, --dump-on-error[=file] Stop on first error and dump state
     -f, --dump-final[=file]    dump final state
     -g, --dump[=nbsec]         dump state
+    -i, --init_port[=value]    Initialisation value of a port, specified as
+                               bloc.node.port=value.
     -k, --kill-port=port       Kill Salome application running on the specified
                                port if the driver process is killed (with SIGINT
                                or SIGTERM)
@@ -97,6 +99,20 @@ Execute a scheme and save the state of execution every 30 seconds
 
   driver -g30 -fmystate.xml schema.xml
 
+Change the values of some input ports before execution
+----------------------------------------------------------------------
+::
+
+  driver -imynode.i=5 -imynode.d=.7 -imynode.b=False -imynode.s=lili schema.xml
+
+In this example, the ports "i", "d", "b" and "s" of the node "mynode" are initialized and the schema is launched.
+
+Only the ports of the following types can be initialized this way:
+
+ - int
+ - double
+ - bool
+ - string
 
 How to manage several SALOME sessions
 ----------------------------------------------------------------------
