@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2015  CEA/DEN, EDF R&D
+# Copyright (C) 2012-2016  CEA/DEN, EDF R&D
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -45,7 +45,9 @@ IF(NOT SALOME_YACS_USE_KERNEL)
     FindSalomeOmniORB.cmake
     FindSalomeOmniORBPy.cmake
     FindSalomePThread.cmake
-    FINDSalomePython.cmake
+    FindSalomePythonLibs.cmake
+    FindSalomePythonInterp.cmake
+    FindSalomeNumPySciPy.cmake
     FindSalomeSWIG.cmake
     SalomeMacros.cmake
     SalomeSetupPlatform.cmake

@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2015  CEA/DEN, EDF R&D
+# Copyright (C) 2012-2016  CEA/DEN, EDF R&D
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -124,7 +124,9 @@ ENDIF()
 ##
 
 # Mandatory products
-FIND_PACKAGE(SalomePython    REQUIRED)
+FIND_PACKAGE(SalomePythonInterp REQUIRED)
+FIND_PACKAGE(SalomePythonLibs REQUIRED)
+FIND_PACKAGE(SalomeNumPySciPy)
 FIND_PACKAGE(SalomePThread   REQUIRED)
 ADD_DEFINITIONS(-DYACS_PTHREAD)
 FIND_PACKAGE(SalomeBoost     REQUIRED)
