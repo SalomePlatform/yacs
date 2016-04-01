@@ -172,7 +172,8 @@ GenericGui::GenericGui(YACS::HMI::SuitWrapper* wrapper, QMainWindow *parent)
   _dwCatalogs->setWidget(_catalogsWidget);
 
   _parent->tabifyDockWidget(_dwStacked, _dwCatalogs);
-  _parent->tabifyDockWidget(_dwTree, _wrapper->objectBrowser());
+  if (_wrapper->objectBrowser())
+    _parent->tabifyDockWidget(_dwTree, _wrapper->objectBrowser());
 #if QT_VERSION >= 0x040500
   _parent->setTabPosition(Qt::AllDockWidgetAreas, Resource::tabPanelsUp? QTabWidget::North: QTabWidget::South);
 #endif

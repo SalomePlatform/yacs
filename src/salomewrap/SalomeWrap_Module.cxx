@@ -85,6 +85,9 @@ int SalomeWrap_Module::activeStudyId()
 }
 
 QDockWidget* SalomeWrap_Module::objectBrowser() {
+  if ( !getApp()->objectBrowser() )
+    return 0;
+
   QWidget* wid = getApp()->objectBrowser()->treeView();
 
   if ( !wid ) {
