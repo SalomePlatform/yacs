@@ -98,10 +98,10 @@ void Yacsgui::initialize( CAM_Application* app )
       connect( app->desktop(), SIGNAL( windowActivated( SUIT_ViewWindow* ) ),
                this, SLOT(onWindowActivated( SUIT_ViewWindow* )) );
 
-      connect( getApp()->objectBrowser()->treeView(),
-               SIGNAL( doubleClicked(const QModelIndex&) ), 
+      connect( getApp(),
+               SIGNAL(objectDoubleClicked( SUIT_DataObject* )), 
                this,
-               SLOT  ( onDblClick(const QModelIndex&) ) );
+               SLOT  (onDblClick( SUIT_DataObject* )));
 
       connect( getApp(),
                SIGNAL(studyClosed()),
@@ -229,7 +229,7 @@ QString  Yacsgui::engineIOR() const
   return anEngineIOR;
 }
 
-void Yacsgui::onDblClick(const QModelIndex& index)
+void Yacsgui::onDblClick(SUIT_DataObject*)
 {
   DEBTRACE("Yacsgui::onDblClick");
   DataObjectList dol =getApp()->objectBrowser()->getSelected();

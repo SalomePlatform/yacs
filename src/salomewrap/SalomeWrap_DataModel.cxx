@@ -23,6 +23,8 @@
 #include <SalomeApp_Study.h>
 #include <SalomeApp_Module.h>
 #include <SalomeApp_Application.h>
+#include <LightApp_SelectionMgr.h>
+#include <SALOME_ListIO.hxx>
 #include <SUIT_DataBrowser.h>
 #include <SUIT_ViewManager.h>
 #include <QxScene_ViewWindow.h>
@@ -233,8 +235,10 @@ void SalomeWrap_DataModel::setSelected(QWidget* viewWindow)
   DEBTRACE("SalomeWrap_DataModel::setSelected");
   if (!_viewEntryMap.count(viewWindow)) return;
   string entry = _viewEntryMap[viewWindow];
-  SUIT_DataObject* item = getDataObject(entry);
-  if(item) getModule()->getApp()->objectBrowser()->setSelected(item);
+  LightApp_SelectionMgr* selMgr = getModule()->getApp()->selectionMgr();
+  SALOME_ListIO ioList;
+  ioList.Append( new SALOME_InteractiveObject( entry.c_str(), "", "" ) );
+  selMgr->setSelectedObjects( ioList, false );
 }
 
 SUIT_DataObject* SalomeWrap_DataModel::getDataObject(std::string entry)
