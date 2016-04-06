@@ -36,7 +36,9 @@ public:
   YACSEVALYFX_EXPORT YACSEvalSession();
   YACSEVALYFX_EXPORT ~YACSEvalSession();
   YACSEVALYFX_EXPORT void launch();
+  YACSEVALYFX_EXPORT void launchUsingCurrentSession();
   YACSEVALYFX_EXPORT bool isLaunched() const { return _isLaunched; }
+  YACSEVALYFX_EXPORT bool isAttached() const { return _isAttached; }
   YACSEVALYFX_EXPORT void checkLaunched() const;
   YACSEVALYFX_EXPORT int getPort() const;
   YACSEVALYFX_EXPORT std::string getCorbaConfigFileName() const;
@@ -44,10 +46,13 @@ public:
   YACSEvalSessionInternal *getInternal() { checkLaunched(); return _internal; }
 private:
   static std::string GetPathToAdd();
+  static std::string GetConfigAndPort(int& port);
 public:
   static const char KERNEL_ROOT_DIR[];
   static const char CORBA_CONFIG_ENV_VAR_NAME[];
+  static const char NSPORT_VAR_NAME[];
 private:
+  bool _isAttached;
   bool _isLaunched;
   int _port;
   std::string _corbaConfigFileName;

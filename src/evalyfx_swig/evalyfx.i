@@ -391,6 +391,7 @@ public:
   ~YACSEvalSession();
   void launch();
   bool isLaunched() const;
+  bool isAttached() const;
   void checkLaunched() const;
   int getPort() const;
   std::string getCorbaConfigFileName() const;
