@@ -21,6 +21,7 @@
 #include "YACSEvalSession.hxx"
 #include "YACSEvalSessionInternal.hxx"
 
+#include "AutoGIL.hxx"
 #include "Exception.hxx"
 
 #include <Python.h>
@@ -34,12 +35,16 @@ YACSEvalSession::YACSEvalSession():_isLaunched(false),_port(-1),_salomeInstanceM
   if(!Py_IsInitialized())
     Py_Initialize();
   //
-  _salomeInstanceModule=PyImport_ImportModule(const_cast<char *>("salome_instance"));
+  {
+    YACS::ENGINE::AutoGIL gal;
+    _salomeInstanceModule=PyImport_ImportModule(const_cast<char *>("salome_instance"));
+  }
 }
 
 YACSEvalSession::~YACSEvalSession()
 {
   delete _internal;
+  YACS::ENGINE::AutoGIL gal;
   if(isLaunched())
     {
       PyObject *terminateSession(PyObject_GetAttrString(_salomeInstance,const_cast<char *>("stop")));//new
@@ -55,6 +60,7 @@ void YACSEvalSession::launch()
 {
   if(isLaunched())
     return ;
+  YACS::ENGINE::AutoGIL gal;
   PyObject *salomeInstance(PyObject_GetAttrString(_salomeInstanceModule,const_cast<char *>("SalomeInstance")));//new
   PyObject *startMeth(PyObject_GetAttrString(salomeInstance,const_cast<char *>("start")));
   Py_XDECREF(salomeInstance);
@@ -103,6 +109,7 @@ std::string YACSEvalSession::getCorbaConfigFileName() const
 std::string YACSEvalSession::GetPathToAdd()
 {
   std::string ret;
+  YACS::ENGINE::AutoGIL gal;
   PyObject *osPy(PyImport_ImportModule(const_cast<char *>("os")));//new
   PyObject *kernelRootDir(0);// os.environ["KERNEL_ROOT_DIR"]
   {
