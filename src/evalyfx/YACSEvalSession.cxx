@@ -49,7 +49,7 @@ YACSEvalSession::~YACSEvalSession()
 {
   delete _internal;
   YACS::ENGINE::AutoGIL gal;
-  if(isLaunched())
+  if(isLaunched() && !isAttached())
     {
       YACS::ENGINE::AutoPyRef terminateSession(PyObject_GetAttrString(_salomeInstance,const_cast<char *>("stop")));//new
       YACS::ENGINE::AutoPyRef res(PyObject_CallObject(terminateSession,0));
@@ -85,6 +85,7 @@ void YACSEvalSession::launchUsingCurrentSession()
     return ;
   YACS::ENGINE::AutoGIL gal;
   _corbaConfigFileName=GetConfigAndPort(_port);
+  _isAttached=true; _isLaunched=true;
 }
 
 void YACSEvalSession::checkLaunched() const

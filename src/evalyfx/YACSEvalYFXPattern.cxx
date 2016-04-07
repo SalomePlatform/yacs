@@ -71,9 +71,10 @@ const char YACSEvalYFXGraphGen::GATHER_NODE_NAME[]="__gather__";
 class MyAutoThreadSaver
 {
 public:
-  MyAutoThreadSaver():_save(PyEval_SaveThread()) { }
-  ~MyAutoThreadSaver() { PyEval_RestoreThread(_save); }
+  MyAutoThreadSaver(bool isToSave):_isToSave(isToSave),_save(0) { if(_isToSave) _save=PyEval_SaveThread(); }
+  ~MyAutoThreadSaver() { if(_isToSave) PyEval_RestoreThread(_save); }
 private:
+  bool _isToSave;
   PyThreadState *_save;
 };
 
@@ -796,7 +797,7 @@ bool YACSEvalYFXGraphGenInteractive::go(bool stopASAP, YACSEvalSession *session)
   YACS::ENGINE::Executor exe;
   exe.setKeepGoingProperty(!stopASAP);
   {
-    MyAutoThreadSaver locker;
+    MyAutoThreadSaver locker(!session->isAttached());
     exe.RunW(getUndergroundGeneratedGraph());
   }
   return getUndergroundGeneratedGraph()->getState()==YACS::DONE;
