@@ -27,6 +27,8 @@
 #include "Runtime.hxx"
 #include "InputPort.hxx"
 #include "ElementaryNode.hxx"
+#include "ForEachLoop.hxx"
+#include "Any.hxx"
 
 #include <iostream>
 #include <string>
@@ -249,6 +251,7 @@ void nodeParser::onStart (const XML_Char* elem, const xmlChar** p)
   else if (element == "nbdone")    parser = new attrParser();
   else if (element == "condition") parser = new attrParser();
   else if (element == "outputPort") parser = new outputParser();
+  else if (element == "loopOutputPort") parser = new loopPortParser();
   else
     { 
       _what = "expected name, state or inputPort, got <" + element + ">";
@@ -659,7 +662,148 @@ void simpleTypeParser::charData(std::string data)
   _data = _data + data;
 }
 
+// ----------------------------------------------------------------------------
 
+void loopPortParser::init(const xmlChar** p, xmlParserBase* father)
+{
+  DEBTRACE("loopPortParser::init()");
+  _state = XMLINPORT;
+  _father = father;
+  _stackState.push(_state);
+  if (p) getAttributes(p);
+}
+
+void loopPortParser::onStart(const XML_Char* elem, const xmlChar** p)
+{
+  DEBTRACE("loopPortParser::onStart" << elem);
+  string element(elem);
+  stateParser *parser = 0;
+  if (element == "name")      parser = new attrParser();
+  else if (element == "sample") parser = new sampleParser();
+  else
+    { 
+      _what = "expected name or sample, got <" + element + ">";
+      _state = XMLFATALERROR;
+      stopParse(_what);
+    }
+  if (parser)
+    {
+      _stackParser.push(parser);
+      XML_SetUserData(_xmlParser, parser);
+      parser->init(p, this);
+    }
+}
+
+void loopPortParser::onEnd(const XML_Char* name)
+{
+  string portName = _mapAttrib["name"];
+  string nodeName = _father->getAttribute("name");
+  string nodeType = _father->getAttribute("type");
+  Node *node = _p->getChildByName(nodeName);
+  if (nodeType != "forEachLoop")
+  {
+    _what = "loopOutputPort attribute is not valid for node <" + nodeName + ">";
+    _state = XMLFATALERROR;
+    stopParse(_what);
+  }
+}
+
+void loopPortParser::charData(std::string data)
+{
+}
+
+// ----------------------------------------------------------------------------
+
+void sampleParser::init(const xmlChar** p, xmlParserBase* father)
+{
+  DEBTRACE("sampleParser::init()");
+  _state = XMLINPORT;
+  _father = father;
+  _stackState.push(_state);
+  if (p) getAttributes(p);
+}
+
+void sampleParser::onStart(const XML_Char* elem, const xmlChar** p)
+{
+  DEBTRACE("sampleParser::onStart" << elem);
+  string element(elem);
+  stateParser *parser = 0;
+  if (element == "index")      parser = new attrParser();
+  else if (element == "value") parser = new valueParser();
+  else
+    { 
+      _what = "expected index or value, got <" + element + ">";
+      _state = XMLFATALERROR;
+      stopParse(_what);
+    }
+  if (parser)
+    {
+      _stackParser.push(parser);
+      XML_SetUserData(_xmlParser, parser);
+      parser->init(p, this);
+    }
+}
+
+void sampleParser::onEnd(const XML_Char* name)
+{
+  if (_mapAttrib.find("index") == _mapAttrib.end())
+    {
+      _what = "no attribute index in sample ";
+      _state = XMLFATALERROR;
+      stopParse(_what);
+    }
+  int index =  atoi(_mapAttrib["index"].c_str());
+  Any * value;
+  value = xmlToAny();
+}
+
+void sampleParser::charData(std::string data)
+{
+}
+
+Any* sampleParser::xmlToAny() throw(ConversionException)
+{
+  xmlDocPtr doc;
+  xmlNodePtr cur;
+  YACS::ENGINE::Any *ob=NULL;
+  {
+    doc = xmlParseMemory(_data.c_str(), _data.length());
+    if (doc == NULL )
+      {
+        stringstream msg;
+        msg << "Problem in conversion: XML Document not parsed successfully ";
+        msg << " (" << __FILE__ << ":" << __LINE__ << ")";
+        throw ConversionException(msg.str());
+      }
+    cur = xmlDocGetRootElement(doc);
+    if (cur == NULL)
+      {
+        xmlFreeDoc(doc);
+        stringstream msg;
+        msg << "Problem in conversion: empty XML Document";
+        msg << " (" << __FILE__ << ":" << __LINE__ << ")";
+        throw ConversionException(msg.str());
+      }
+    while (cur != NULL)
+      {
+        if ((!xmlStrcmp(cur->name, (const xmlChar *)"value")))
+          {
+            ob=convertXmlNeutral(edGetType(),doc,cur);
+            break;
+          }
+        cur = cur->next;
+      }
+    xmlFreeDoc(doc);
+    if(ob==NULL)
+      {
+        stringstream msg;
+        msg << "Problem in conversion: incorrect XML value";
+        msg << " (" << __FILE__ << ":" << __LINE__ << ")";
+        throw ConversionException(msg.str());
+      }
+  }
+  return ob;
+}
 
 // ----------------------------------------------------------------------------
 

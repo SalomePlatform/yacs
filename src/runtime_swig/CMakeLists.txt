@@ -92,6 +92,7 @@ SET(SWIGINCLUDES
   ${PROJECT_SOURCE_DIR}/src/runtime/CORBAPorts.hxx
   ${PROJECT_SOURCE_DIR}/src/runtime/TypeConversions.hxx
   ${PROJECT_SOURCE_DIR}/src/runtime/SalomeOptimizerLoop.hxx
+  ${PROJECT_SOURCE_DIR}/src/runtime/VisitorSalomeSaveState.hxx
   )
 SWIG_ADD_MODULE(SALOMERuntime python SALOMERuntime.i)
 ADD_DEPENDENCIES(_SALOMERuntime 

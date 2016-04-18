@@ -22,9 +22,11 @@
 
 #include "YACSloaderExport.hxx"
 #include "xmlParserBase.hxx"
+#include "InputPort.hxx"
 
 #include "define.hxx"
 #include "Exception.hxx"
+#include <vector>
 
 namespace YACS
 {
@@ -32,6 +34,8 @@ namespace YACS
   {
     class Proc;
     class Runtime;
+    class SequenceAny;
+    class Any;
 
     //! Load state from a file into a Proc
     /*!
@@ -170,6 +174,29 @@ namespace YACS
       virtual void onStart (const XML_Char* elem, const xmlChar** p);
       virtual void onEnd   (const XML_Char* name);
       virtual void charData(std::string data);
+    };
+
+    class YACSLOADER_EXPORT loopPortParser: public stateParser
+    {
+    public:
+      virtual void init(const xmlChar** p, xmlParserBase* father=0);
+      virtual void onStart (const XML_Char* elem, const xmlChar** p);
+      virtual void onEnd   (const XML_Char* name);
+      virtual void charData(std::string data);
+      std::vector<unsigned int> _ids;
+      std::vector<SequenceAny *> _outputValues;
+      std::vector<std::string> _outputNames;
+    };
+
+    class YACSLOADER_EXPORT sampleParser: public stateParser
+    {
+    public:
+      virtual void init(const xmlChar** p, xmlParserBase* father=0);
+      virtual void onStart (const XML_Char* elem, const xmlChar** p);
+      virtual void onEnd   (const XML_Char* name);
+      virtual void charData(std::string data);
+    protected:
+      Any* xmlToAny()throw(ConversionException);
     };
 
   }

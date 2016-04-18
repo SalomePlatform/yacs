@@ -24,7 +24,7 @@
 #include "Exception.hxx"
 #include "Executor.hxx"
 #include "parsers.hxx"
-#include "VisitorSaveState.hxx"
+#include "VisitorSalomeSaveState.hxx"
 #include "VisitorSaveSalomeSchema.hxx"
 #include "LoadState.hxx"
 #include "Dispatcher.hxx"
@@ -216,7 +216,7 @@ void Handler(int theSigId)
       bool isFinalDump = (strlen(myArgs.finalDump) != 0);
       if (isFinalDump)
         {
-          YACS::ENGINE::VisitorSaveState vst(p);
+          YACS::ENGINE::VisitorSalomeSaveState vst(p);
           vst.openFileDump(myArgs.finalDump);
           p->accept(&vst);
           vst.closeFileDump();
@@ -252,7 +252,7 @@ void * dumpState(void *arg)
 #endif
     string cmd = "touch " + st->lockFile;
     system(cmd.c_str());
-    YACS::ENGINE::VisitorSaveState vst(p);
+    YACS::ENGINE::VisitorSalomeSaveState vst(p);
     vst.openFileDump(st->dumpFile);
     p->accept(&vst);
     vst.closeFileDump();
@@ -544,7 +544,7 @@ int main (int argc, char* argv[])
       bool isFinalDump = (strlen(myArgs.finalDump) != 0);
       if (isFinalDump)
         {
-          YACS::ENGINE::VisitorSaveState vst(p);
+          YACS::ENGINE::VisitorSalomeSaveState vst(p);
           vst.openFileDump(myArgs.finalDump);
           p->accept(&vst);
           vst.closeFileDump();

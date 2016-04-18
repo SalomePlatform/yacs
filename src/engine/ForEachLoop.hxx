@@ -127,6 +127,7 @@ namespace YACS
     {
     public:
       ForEachLoopPassedData(const std::vector<unsigned int>& passedIds, const std::vector<SequenceAny *>& passedOutputs, const std::vector<std::string>& nameOfOutputs);
+      ForEachLoopPassedData(const ForEachLoopPassedData& copy);
       ~ForEachLoopPassedData();
       void init();
       void checkCompatibilyWithNb(int nbOfElts) const;
@@ -136,6 +137,10 @@ namespace YACS
       int toAbsIdNot(int localId) const;
       int getNumberOfElementsToDo() const;
       void assignAlreadyDone(const std::vector<SequenceAny *>& execVals) const;
+      const std::vector<unsigned int>& getIds()const {return _passedIds;}
+      const std::vector<SequenceAny *>& getOutputs()const {return _passedOutputs;}
+      const std::vector<std::string>& getOutputNames()const {return _nameOfOutputs;}
+      //const std::vector<bool>& getFlags()const {return _flagsIds;}
     private:
       std::vector<unsigned int> _passedIds;
       std::vector<SequenceAny *> _passedOutputs;
@@ -196,6 +201,8 @@ namespace YACS
       int getCurrentIndex() const { return _currentIndex; }
       int getNbOfElementsToBeProcessed() const;
 #ifndef SWIG
+      ForEachLoopPassedData* getProcessedData()const;
+      void setProcessedData(ForEachLoopPassedData* processedData);
       std::vector<unsigned int> getPassedResults(Executor *execut, std::vector<SequenceAny *>& outputs, std::vector<std::string>& nameOfOutputs) const;
       void assignPassedResults(const std::vector<unsigned int>& passedIds, const std::vector<SequenceAny *>& passedOutputs, const std::vector<std::string>& nameOfOutputs);
 #endif
@@ -207,7 +214,7 @@ namespace YACS
       YACS::Event updateStateForInitNodeOnFinishedEventFrom(Node *node, unsigned int id);
       YACS::Event updateStateForWorkNodeOnFinishedEventFrom(Node *node, unsigned int id, bool isNormalFinish);
       YACS::Event updateStateForFinalizeNodeOnFinishedEventFrom(Node *node, unsigned int id);
-      YACS::Event updateStateOnFailedEventFrom(Node *node, const Executor *execInst);
+      YACS::Event updateStateOnFailedEventFrom(Node *node);
       void buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView);
       void getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(Exception);
       void releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(Exception);

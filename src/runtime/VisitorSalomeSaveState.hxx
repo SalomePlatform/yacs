@@ -17,40 +17,35 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-#ifndef __SCHEDULER_HXX__
-#define __SCHEDULER_HXX__
+#ifndef VISITORSALOMESAVESTATE_HXX
+#define VISITORSALOMESAVESTATE_HXX
 
-#include "DeploymentTree.hxx"
-#include "define.hxx"
-
-#include <string>
-#include <vector>
+#include "VisitorSaveState.hxx"
+#include "YACSRuntimeSALOMEExport.hxx"
 
 namespace YACS
 {
   namespace ENGINE
   {
-    class Task;
-    
-    class Scheduler
+    class Executor;
+    class YACSRUNTIMESALOME_EXPORT VisitorSalomeSaveState : public VisitorSaveState
+    {
+      public:
+      VisitorSalomeSaveState(ComposedNode *root);
+      virtual ~VisitorSalomeSaveState();
+      virtual void visitForEachLoop(ForEachLoop *node);
+    };
+
+    class YACSLIBENGINE_EXPORT SchemaSaveState
     {
     public:
-      virtual void init(bool start=true) = 0;
-      virtual bool isFinished() = 0;
-      virtual void exUpdateState() = 0;
-      virtual std::string getName() const = 0;
-      virtual std::string getTaskName(Task *task) const = 0;
-      virtual std::vector<Task *> getNextTasks(bool& isMore) = 0;
-      virtual void selectRunnableTasks(std::vector<Task *>& tasks) = 0;
-      virtual void notifyFrom(const Task *sender, YACS::Event event) = 0;
-      //Placement methods
-      virtual DeploymentTree getDeploymentTree() const = 0;
-      virtual bool isPlacementPredictableB4Run() const = 0;
-      virtual bool isMultiplicitySpecified(unsigned& value) const = 0;
-      virtual void forceMultiplicity(unsigned value) = 0;
-      virtual ~Scheduler();
+      SchemaSaveState(Proc* proc, Executor* exec);
+      virtual ~SchemaSaveState();
+      virtual void save(std::string xmlSchemaFile);
+    private:
+      Proc* _p;
+      Executor* _exec;
     };
   }
 }
-
-#endif
+#endif // VISITORSALOMESAVESTATE_HXX
