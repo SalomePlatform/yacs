@@ -136,7 +136,7 @@ class YACSEvalParamsForCluster
 public:
   YACSEvalParamsForCluster():_exclusiveness(false),_nbOfProcs(1) { }
   bool getExclusiveness() const { return _exclusiveness; }
-  void setExclusiveness(bool newStatus);
+  YACSEVALYFX_EXPORT void setExclusiveness(bool newStatus);
   std::string getRemoteWorkingDir() const { return _remoteWorkingDir; }
   void setRemoteWorkingDir(const std::string& remoteWorkingDir) { _remoteWorkingDir=remoteWorkingDir; }
   std::string getLocalWorkingDir() const { return _localWorkingDir; }
@@ -147,7 +147,7 @@ public:
   void setNbProcs(unsigned int nbProcs) { _nbOfProcs=nbProcs; }
   void setMaxDuration(const std::string& maxDuration) { _maxDuration=maxDuration; }
   std::string getMaxDuration() const { return _maxDuration; }
-  void checkConsistency() const;
+  YACSEVALYFX_EXPORT void checkConsistency() const;
 private:
   bool _exclusiveness;
   std::string _remoteWorkingDir;
