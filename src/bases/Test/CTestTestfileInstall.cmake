@@ -18,13 +18,16 @@
 #
 
 IF(NOT WIN32)
-  ADD_TEST(InitTests InitTests)
-  SET_TESTS_PROPERTIES(InitTests PROPERTIES
-                                 LABELS "${COMPONENT_NAME}"
+  SET(TEST_NAME ${COMPONENT_NAME}_InitTests)
+  ADD_TEST(${TEST_NAME} InitTests)
+  SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES
+                                    LABELS "${COMPONENT_NAME}"
                       )
-  ADD_TEST(TestBases TestBases)
-  SET_TESTS_PROPERTIES(TestBases PROPERTIES
-                                 LABELS "${COMPONENT_NAME}"
-                                 ENVIRONMENT "LD_LIBRARY_PATH=${YACS_TEST_LIB}:$ENV{LD_LIBRARY_PATH}"
+
+  SET(TEST_NAME ${COMPONENT_NAME}_TestBases)
+  ADD_TEST(${TEST_NAME} TestBases)
+  SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES
+                                    LABELS "${COMPONENT_NAME}"
+                                    ENVIRONMENT "LD_LIBRARY_PATH=${YACS_TEST_LIB}:$ENV{LD_LIBRARY_PATH}"
                       )
 ENDIF()

@@ -19,9 +19,10 @@
 
 IF(NOT WIN32)
   SET(SHELL /bin/sh)
-  ADD_TEST(YacsRuntimeTest ${SHELL} ./runtimeTest.sh)
-  SET_TESTS_PROPERTIES(YacsRuntimeTest PROPERTIES
-                                     LABELS "${COMPONENT_NAME}"
-                                     ENVIRONMENT "LD_LIBRARY_PATH=${YACS_TEST_LIB}:$ENV{LD_LIBRARY_PATH}"
+  SET(TEST_NAME ${COMPONENT_NAME}_YacsRuntimeTest)
+  ADD_TEST(${TEST_NAME} ${SHELL} ./runtimeTest.sh)
+  SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES
+                                    LABELS "${COMPONENT_NAME}"
+                                    ENVIRONMENT "LD_LIBRARY_PATH=${YACS_TEST_LIB}:$ENV{LD_LIBRARY_PATH}"
                       )
 ENDIF()
