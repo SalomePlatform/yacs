@@ -17,16 +17,16 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-# IF(NOT WIN32)
-#   SET(TEST_NAME ${COMPONENT_NAME}_YacsLoaderTest_swig)
-#   ADD_TEST(${TEST_NAME} python ${SALOME_TEST_DRIVER} ${TIMEOUT} ./runUnitTest.sh)
-#   SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES
-#                                     LABELS "${COMPONENT_NAME}"
-#                       )
+IF(NOT WIN32)
+  SET(TEST_NAME ${COMPONENT_NAME}_YacsLoaderTest_swig)
+  ADD_TEST(${TEST_NAME} python ${SALOME_TEST_DRIVER} ${TIMEOUT} ./runUnitTest.sh)
+  SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES
+                                     LABELS "${COMPONENT_NAME}"
+                      )
 
-#   SET(TEST_NAME ${COMPONENT_NAME}_StdAloneYacsLoaderTest1)
-#   ADD_TEST(${TEST_NAME} python ${SALOME_TEST_DRIVER} ${TIMEOUT} python StdAloneYacsLoaderTest1.py)
-#   SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES
-#                                     LABELS "${COMPONENT_NAME}"
-#                       )
-# ENDIF()
+  SET(TEST_NAME ${COMPONENT_NAME}_StdAloneYacsLoaderTest1)
+  ADD_TEST(${TEST_NAME} python ${SALOME_TEST_DRIVER} ${TIMEOUT} python StdAloneYacsLoaderTest1.py)
+  SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES
+                                    LABELS "${COMPONENT_NAME}"
+                      )
+ENDIF()

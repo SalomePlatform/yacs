@@ -17,15 +17,14 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-# IF(NOT WIN32)
-#   SET(SHELL /bin/sh)
-#   SET(TEST_NAME ${COMPONENT_NAME}_YacsLoaderTest)
-#   ADD_TEST(${TEST_NAME} python ${SALOME_TEST_DRIVER} ${TIMEOUT} ./runYacsLoaderTest.sh)
-#   SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES
-#                                     LABELS "${COMPONENT_NAME}"
-#                                     ENVIRONMENT "LD_LIBRARY_PATH=${YACS_TEST_LIB}:$ENV{LD_LIBRARY_PATH}")
+IF(NOT WIN32)
+  SET(TEST_NAME ${COMPONENT_NAME}_YacsLoaderTest)
+  ADD_TEST(${TEST_NAME} python ${SALOME_TEST_DRIVER} ${TIMEOUT} ./runYacsLoaderTest.sh)
+  SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES
+                                    LABELS "${COMPONENT_NAME}"
+                                    ENVIRONMENT "LD_LIBRARY_PATH=${YACS_TEST_LIB}:$ENV{LD_LIBRARY_PATH}")
 
-#   SET(TEST_NAME ${COMPONENT_NAME}_YacsPmmlExeTest)
-#   ADD_TEST(${TEST_NAME} ${SHELL} ./PmmlExeTest.sh)
-#   SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES LABELS "${COMPONENT_NAME}")
-# ENDIF()
+  SET(TEST_NAME ${COMPONENT_NAME}_YacsPMMLExeTest)
+  ADD_TEST(${TEST_NAME} python ${SALOME_TEST_DRIVER} ${TIMEOUT} ./TestYACSPMML)
+  SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES LABELS "${COMPONENT_NAME}")
+ENDIF()
