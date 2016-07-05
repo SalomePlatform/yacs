@@ -83,13 +83,13 @@ SET(SWIGINCLUDES
   ${PROJECT_SOURCE_DIR}/src/yacsloader/xmlParserBase.hxx
   ${PROJECT_SOURCE_DIR}/src/yacsloader/ProcCataLoader.hxx
   )
-SWIG_ADD_MODULE(loader python loader.i)
-ADD_DEPENDENCIES(_loader 
-		   loader.i 
-		   ${PROJECT_SOURCE_DIR}/src/engine_swig/pilot.i 
+
+SET(SWIG_MODULE_loader_EXTRA_DEPS 
+           ${PROJECT_SOURCE_DIR}/src/engine_swig/pilot.i 
 		   ${PROJECT_SOURCE_DIR}/src/engine_swig/engtypemaps.i 
 		   docyacsloader.i 
 		   ${SWIGINCLUDES})
+SWIG_ADD_MODULE(loader python loader.i)
 
 SWIG_LINK_LIBRARIES(loader ${_link_LIBRARIES})
 IF(WIN32)

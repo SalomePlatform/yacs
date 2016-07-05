@@ -161,10 +161,12 @@ SET(ENGINEINCLUDES
 SET(SWIGINCLUDES ${ENGINEINCLUDES} 
 		 "${PROJECT_SOURCE_DIR}/src/bases/yacsconfig.h" 
 		 "ExecutorSwig.hxx")
-SWIG_ADD_MODULE(pilot   python pilot.i ExecutorSwig.cxx)
+
+SET(SWIG_MODULE_pilot_EXTRA_DEPS engtypemaps.i docengine.i ${SWIGINCLUDES})
+SWIG_ADD_MODULE(pilot python pilot.i ExecutorSwig.cxx)
+
+SET(SWIG_MODULE_pypilot_EXTRA_DEPS pilot.i engtypemaps.i _pilot ${SWIGINCLUDES})
 SWIG_ADD_MODULE(pypilot python pypilot.i)
-ADD_DEPENDENCIES(_pilot pilot.i engtypemaps.i docengine.i ${SWIGINCLUDES})
-ADD_DEPENDENCIES(_pypilot pypilot.i pilot.i engtypemaps.i _pilot ${SWIGINCLUDES})
 
 SWIG_LINK_LIBRARIES(pilot   "${_link_LIBRARIES}")
 SWIG_LINK_LIBRARIES(pypilot "${_link_LIBRARIES}")

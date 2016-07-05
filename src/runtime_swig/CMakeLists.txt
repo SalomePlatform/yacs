@@ -93,13 +93,12 @@ SET(SWIGINCLUDES
   ${PROJECT_SOURCE_DIR}/src/runtime/TypeConversions.hxx
   ${PROJECT_SOURCE_DIR}/src/runtime/SalomeOptimizerLoop.hxx
   )
+SET(SWIG_MODULE_SALOMERuntime_EXTRA_DEPS 
+		${PROJECT_SOURCE_DIR}/src/engine_swig/pilot.i 
+		${PROJECT_SOURCE_DIR}/src/engine_swig/engtypemaps.i 
+		docruntime.i 
+		${SWIGINCLUDES})
 SWIG_ADD_MODULE(SALOMERuntime python SALOMERuntime.i)
-ADD_DEPENDENCIES(_SALOMERuntime 
-		   SALOMERuntime.i 
-		   ${PROJECT_SOURCE_DIR}/src/engine_swig/pilot.i 
-		   ${PROJECT_SOURCE_DIR}/src/engine_swig/engtypemaps.i 
-		   docruntime.i 
-		   ${SWIGINCLUDES})
 
 SWIG_LINK_LIBRARIES(SALOMERuntime ${_link_LIBRARIES})
 IF(WIN32)
