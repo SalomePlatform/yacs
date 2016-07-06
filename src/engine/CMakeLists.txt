@@ -106,6 +106,8 @@ SET(YACSlibEngine_HEADERS
   LinkedBlocPoint.hxx
   ElementaryPoint.hxx
   SetOfPoints.hxx
+  
+  PARENT_SCOPE  # Make it visible to src/engine_swig to handle dependencies 
   )
 
 # --- sources ---

@@ -85,10 +85,9 @@ SET(SWIGINCLUDES
   )
 
 SET(SWIG_MODULE_loader_EXTRA_DEPS 
-           ${PROJECT_SOURCE_DIR}/src/engine_swig/pilot.i 
-		   ${PROJECT_SOURCE_DIR}/src/engine_swig/engtypemaps.i 
-		   docyacsloader.i 
-		   ${SWIGINCLUDES})
+    ${PROJECT_SOURCE_DIR}/src/engine_swig/pilot.i 
+    ${PROJECT_SOURCE_DIR}/src/engine_swig/engtypemaps.i  
+    ${SWIGINCLUDES})
 SWIG_ADD_MODULE(loader python loader.i)
 
 SWIG_LINK_LIBRARIES(loader ${_link_LIBRARIES})

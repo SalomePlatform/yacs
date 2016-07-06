@@ -94,10 +94,9 @@ SET(SWIGINCLUDES
   ${PROJECT_SOURCE_DIR}/src/runtime/SalomeOptimizerLoop.hxx
   )
 SET(SWIG_MODULE_SALOMERuntime_EXTRA_DEPS 
-		${PROJECT_SOURCE_DIR}/src/engine_swig/pilot.i 
-		${PROJECT_SOURCE_DIR}/src/engine_swig/engtypemaps.i 
-		docruntime.i 
-		${SWIGINCLUDES})
+    ${PROJECT_SOURCE_DIR}/src/engine_swig/pilot.i 
+    ${PROJECT_SOURCE_DIR}/src/engine_swig/engtypemaps.i  
+    ${SWIGINCLUDES})
 SWIG_ADD_MODULE(SALOMERuntime python SALOMERuntime.i)
 
 SWIG_LINK_LIBRARIES(SALOMERuntime ${_link_LIBRARIES})

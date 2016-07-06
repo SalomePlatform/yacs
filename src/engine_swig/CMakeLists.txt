@@ -98,71 +98,16 @@ IF(SALOME_BUILD_DOC)
 ENDIF(SALOME_BUILD_DOC)
 
 # --- rules ---
-SET(ENGINEINCLUDES 
-  Any.hxx     
-  DeploymentTree.hxx  
-  InputDataStreamPort.hxx         
-  OutPort.hxx               
-  SharedPtr.hxx 
-  AnyInputPort.hxx         
-  Dispatcher.hxx      
-  InputPort.hxx                   
-  OutputDataStreamPort.hxx  
-  StaticDefinedComposedNode.hxx 
-  Bloc.hxx                 
-  DynParaLoop.hxx     
-  InvalidExtractionException.hxx  
-  OutputPort.hxx            
-  Switch.hxx 
-  ComponentInstance.hxx    
-  ElementaryNode.hxx  
-  LinkInfo.hxx                    
-  Pool.hxx                  
-  Task.hxx 
-  ComposedNode.hxx         
-  Executor.hxx        
-  Logger.hxx                      
-  Port.hxx                  
-  TypeCode.hxx 
-  ConditionInputPort.hxx   
-  LogRecord.hxx                   
-  Proc.hxx                  
-  Visitor.hxx 
-  Container.hxx            
-  ForEachLoop.hxx     
-  Loop.hxx                        
-  RefCounter.hxx            
-  VisitorSaveSchema.hxx 
-  ConversionException.hxx  
-  ForLoop.hxx         
-  Node.hxx                        
-  Runtime.hxx               
-  VisitorSaveState.hxx 
-  DataFlowPort.hxx         
-  InGate.hxx          
-  OptimizerAlg.hxx                
-  Scheduler.hxx             
-  WhileLoop.hxx 
-  DataPort.hxx             
-  InlineNode.hxx      
-  OptimizerLoop.hxx               
-  ServiceInlineNode.hxx     
-  ComponentDefinition.hxx 
-  DataStreamPort.hxx       
-  InPort.hxx          
-  OutGate.hxx                     
-  ServiceNode.hxx           
-  Catalog.hxx  
-  PropertyInterface.hxx    
-  AnyOutputPort.hxx   
-  Pool.hxx
-  InPropertyPort.hxx
-)
-SET(SWIGINCLUDES ${ENGINEINCLUDES} 
-		 "${PROJECT_SOURCE_DIR}/src/bases/yacsconfig.h" 
-		 "ExecutorSwig.hxx")
+SET(ENGINEINCL)
+FOREACH(f ${YACSlibEngine_HEADERS})     # defined in src/engine/CMakeLists.txt
+    LIST(APPEND ENGINEINCL ${PROJECT_SOURCE_DIR}/src/engine/${f})
+ENDFOREACH()
 
-SET(SWIG_MODULE_pilot_EXTRA_DEPS engtypemaps.i docengine.i ${SWIGINCLUDES})
+SET(SWIGINCLUDES ${ENGINEINCL}  
+    "${PROJECT_SOURCE_DIR}/src/bases/yacsconfig.h" 
+    "ExecutorSwig.hxx")
+
+SET(SWIG_MODULE_pilot_EXTRA_DEPS engtypemaps.i ${SWIGINCLUDES})
 SWIG_ADD_MODULE(pilot python pilot.i ExecutorSwig.cxx)
 
 SET(SWIG_MODULE_pypilot_EXTRA_DEPS pilot.i engtypemaps.i _pilot ${SWIGINCLUDES})
