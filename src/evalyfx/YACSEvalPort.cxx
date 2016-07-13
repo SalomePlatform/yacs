@@ -338,7 +338,7 @@ void YACSEvalInputPort::checkForNonConstMethod() const
     throw YACS::Exception("YACSEvalInputPort::checkForNonConstMethod : trying to modify a locked input ! To release it call unlockAll on YACSEvalYFX instance owning this !");
 }
 
-YACSEvalOutputPort::YACSEvalOutputPort(YACS::ENGINE::OutputPort *ptr):_ptr(ptr)
+YACSEvalOutputPort::YACSEvalOutputPort(YACS::ENGINE::OutputPort *ptr):_ptr(ptr),_isQOfInt(false)
 {
   GetTypeOfData(_ptr);
 }

@@ -297,6 +297,8 @@ class YACSEvalOutputPort : public YACSEvalPort
 {
 public:
   std::string getName() const;
+  bool setQOfInterestStatus(bool newStatus);
+  bool isQOfInterest() const;
 private:
   YACSEvalOutputPort();
 };

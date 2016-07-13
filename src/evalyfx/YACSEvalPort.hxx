@@ -132,11 +132,14 @@ public:
   YACSEVALYFX_EXPORT YACSEvalOutputPort(YACS::ENGINE::OutputPort *ptr);
   YACSEVALYFX_EXPORT std::string getName() const;
   YACSEVALYFX_EXPORT std::string getTypeOfData() const;
+  YACSEVALYFX_EXPORT bool setQOfInterestStatus(bool newStatus) { _isQOfInt=newStatus; }
+  YACSEVALYFX_EXPORT bool isQOfInterest() const { return _isQOfInt; }
   //
   YACSEVALYFX_EXPORT YACS::ENGINE::OutputPort *getUndergroundPtr() const { return _ptr; }
   //
 private:
   YACS::ENGINE::OutputPort * _ptr;
+  bool _isQOfInt;
 };
 
 #endif
