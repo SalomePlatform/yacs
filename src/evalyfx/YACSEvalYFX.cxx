@@ -80,6 +80,9 @@ bool YACSEvalYFX::isLocked() const
   return _pattern->isLocked();
 }
 
+/*!
+ * Caller is not responsible from returned pointer
+ */
 YACSEvalListOfResources *YACSEvalYFX::giveResources()
 {
   return _pattern->giveResources();
