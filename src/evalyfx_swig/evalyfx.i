@@ -367,6 +367,7 @@ public:
   void setWantedMachine(const std::string& machine);
   std::size_t size() const;
   bool isInteractive() const;
+  bool isMachineInteractive(const std::string& machine) const;
   YACSEvalResource *at(std::size_t i) const;
   unsigned int getNumberOfProcsDeclared() const;
   void checkOKForRun() const;

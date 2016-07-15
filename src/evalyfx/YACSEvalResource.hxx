@@ -173,6 +173,8 @@ public:
   YACSEVALYFX_EXPORT const YACSEvalParamsForCluster& getAddParamsForCluster() const { return _paramsInCaseOfCluster; }
   void apply();
   YACSEVALYFX_EXPORT ~YACSEvalListOfResources();
+public:// info only
+  YACSEVALYFX_EXPORT bool isMachineInteractive(const std::string& machine) const;
 public:
   ResourcesManager_cpp *getCatalogEntry() const { return _rm; }
   YACS::ENGINE::DeploymentTree *getDeploymentTree() const { return _dt; }

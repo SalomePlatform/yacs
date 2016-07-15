@@ -405,7 +405,6 @@ YACSEvalResource *YACSEvalListOfResources::at(std::size_t i) const
 
 bool YACSEvalListOfResources::isInteractive() const
 {
-  const MapOfParserResourcesType& zeList(_rm->GetList());
   std::vector<std::string> allMachines(getAllChosenMachines());
   if(allMachines.empty())
     return true;
@@ -413,14 +412,7 @@ bool YACSEvalListOfResources::isInteractive() const
   std::vector<bool> status(sz);
   for(std::vector<std::string>::const_iterator it=allMachines.begin();it!=allMachines.end();it++,ii++)
     {
-      std::map<std::string, ParserResourcesType>::const_iterator it2(zeList.find(*it));
-      if(it2==zeList.end())
-        {
-          std::ostringstream oss; oss << "YACSEvalListOfResources::isInteractive : presence of non existing \"" << *it << "\" !";
-          throw YACS::Exception(oss.str());
-        }
-      const ParserResourcesType& elt((*it2).second);
-      status[ii]=(elt.Batch==none);
+      status[ii]=isMachineInteractive(*it);
     }
   std::size_t trueRet(std::count(status.begin(),status.end(),true)),falseRet(std::count(status.begin(),status.end(),false));
   if(trueRet==sz && falseRet==0)
@@ -462,6 +454,19 @@ YACSEvalListOfResources::~YACSEvalListOfResources()
   delete _dt;
   for(std::vector<YACSEvalResource *>::iterator it=_resources.begin();it!=_resources.end();it++)
     delete *it;
+}
+
+bool YACSEvalListOfResources::isMachineInteractive(const std::string& machine) const
+{
+  const MapOfParserResourcesType& zeList(_rm->GetList());
+  std::map<std::string, ParserResourcesType>::const_iterator it2(zeList.find(machine));
+  if(it2==zeList.end())
+    {
+      std::ostringstream oss; oss << "YACSEvalListOfResources::isMachineInteractive : no such machine with name \"" << machine << "\" !";
+      throw YACS::Exception(oss.str());
+    }
+  const ParserResourcesType& elt((*it2).second);
+  return (elt.Batch==none);
 }
 
 class EffectiveComparator
