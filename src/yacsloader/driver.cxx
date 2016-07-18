@@ -379,7 +379,7 @@ int main (int argc, char* argv[])
           return 1;
         }
       // Initialize the ports
-      for(it=myArgs.init_ports.begin(); it != myArgs.init_ports.end(); it++)
+      for(std::list<std::string>::iterator it=myArgs.init_ports.begin(); it != myArgs.init_ports.end(); it++)
       {
         std::string node, port, value;
         if(parse_init_port((*it), node, port, value))
