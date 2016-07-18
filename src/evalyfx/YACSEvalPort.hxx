@@ -105,6 +105,7 @@ public:
   YACSEVALYFX_EXPORT void setDefaultValue(const YACSEvalAny *parameter);
   YACSEVALYFX_EXPORT void setSequenceOfValuesToEval(const YACSEvalSeqAny* vals);
   YACSEVALYFX_EXPORT bool hasSequenceOfValuesToEval() const;
+  YACSEVALYFX_EXPORT YACSEvalSeqAny *getSequenceOfValuesToEval() const { return _mySeq; }
   YACSEVALYFX_EXPORT bool isRandomVar() const { return _isRandom; }
   YACSEVALYFX_EXPORT void declareRandomnessStatus(bool isRandom);
   //
