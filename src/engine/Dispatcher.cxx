@@ -35,6 +35,11 @@ void Observer::notifyObserver(Node* object, const std::string& event)
   DEBTRACE("notifyObserver " << event << object );
 }
 
+void Observer::notifyObserver2(Node* object,const std::string& event, void *something)
+{
+  DEBTRACE("notifyObserver2 " << event << object );
+}
+
 Dispatcher* Dispatcher::_singleton = 0;
 
 Dispatcher::~Dispatcher()
@@ -82,6 +87,19 @@ void Dispatcher::dispatch(Node* object, const std::string& event)
       for(jt iter=_observers[key].begin();iter!=_observers[key].end();iter++)
         {
           (*iter)->notifyObserver(object,event);
+        }
+    }
+}
+
+void Dispatcher::dispatch2(Node* object,const std::string& event, void *something)
+{
+  typedef std::set<Observer*>::iterator jt;
+  std::pair<Node*,std::string> key(object,event);
+  if(_observers.count(key) != 0)
+    {
+      for(jt iter=_observers[key].begin();iter!=_observers[key].end();iter++)
+        {
+          (*iter)->notifyObserver2(object,event,something);
         }
     }
 }

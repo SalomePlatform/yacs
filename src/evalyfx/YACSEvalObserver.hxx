@@ -35,11 +35,12 @@ public:
   YACSEVALYFX_EXPORT void incrRef() const;
   YACSEVALYFX_EXPORT bool decrRef() const;
   YACSEVALYFX_EXPORT int getCnt() const { return _cnt; }
-  YACSEVALYFX_EXPORT virtual void notifyNumberOfSamplesToEval(YACSEvalYFX *sender, int nbOfSamples) = 0;
-  YACSEVALYFX_EXPORT virtual void notifyNewNumberOfPassedItems(YACSEvalYFX *sender, int sampleId) = 0;
+  YACSEVALYFX_EXPORT virtual void startComputation(YACSEvalYFX *sender) = 0;
+  YACSEVALYFX_EXPORT virtual void notifySampleOK(YACSEvalYFX *sender, int sampleId) = 0;
+  YACSEVALYFX_EXPORT virtual void notifySampleKO(YACSEvalYFX *sender, int sampleId) = 0;
   //YACSEVALYFX_EXPORT virtual void warningHappen(const std::string& warnDetails) = 0;
   //YACSEVALYFX_EXPORT virtual void errorHappen(const std::string& errorDetails) = 0;
-private:
+protected:
   virtual ~YACSEvalObserver() { }
 private:
   mutable int _cnt;

@@ -177,6 +177,7 @@ namespace YACS
       std::vector<std::pair<std::string,int> > getDPLScopeInfo(ComposedNode *gfn);
       virtual void applyDPLScope(ComposedNode *gfn);
       virtual void sendEvent(const std::string& event);
+      virtual void sendEvent2(const std::string& event, void *something);
       static std::map<int,Node *> idMap;
       virtual std::string typeName() { return "YACS__ENGINE__Node"; }
       virtual std::string getErrorDetails() const { return _errorDetails; }

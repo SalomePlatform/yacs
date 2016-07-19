@@ -660,6 +660,16 @@ void Node::sendEvent(const std::string& event)
   disp->dispatch(this,event);
 }
 
+//! emit notification to all observers registered with  the dispatcher 
+/*!
+ * The dispatcher is unique and can be obtained by getDispatcher()
+ */
+void Node::sendEvent2(const std::string& event, void *something)
+{
+  Dispatcher* disp=Dispatcher::getDispatcher();
+  disp->dispatch2(this,event,something);
+}
+
 /*!
  *  For use only when loading a previously saved execution
  */

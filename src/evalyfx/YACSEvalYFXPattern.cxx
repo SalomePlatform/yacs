@@ -34,6 +34,7 @@
 #include "LinkInfo.hxx"
 #include "TypeCode.hxx"
 #include "Proc.hxx"
+#include "Dispatcher.hxx"
 
 #include "PythonPorts.hxx"
 #include "ForEachLoop.hxx"
@@ -297,21 +298,29 @@ class YACSEvalYFXRunOnlyPatternInternalObserver : public YACS::ENGINE::Observer
 {
 public:
   YACSEvalYFXRunOnlyPatternInternalObserver(YACSEvalYFXRunOnlyPattern *boss):_boss(boss) { if(!_boss) throw YACS::Exception("YACSEvalYFXRunOnlyPatternInternalObserver constructor : null boss not supported :)"); }
-  void notifyObserver(YACS::ENGINE::Node *object, const std::string& event);
+  void notifyObserver2(YACS::ENGINE::Node *object, const std::string& event, void *something);
 private:
   YACSEvalYFXRunOnlyPattern *_boss;
 };
 
-void YACSEvalYFXRunOnlyPatternInternalObserver::notifyObserver(YACS::ENGINE::Node *object, const std::string& event)
+void YACSEvalYFXRunOnlyPatternInternalObserver::notifyObserver2(YACS::ENGINE::Node *object, const std::string& event, void *something)
 {
-  YACS::ENGINE::ForEachLoop *object2(dynamic_cast<YACS::ENGINE::ForEachLoop *>(object));
-  if(!object2)
-    return ;
+  YACS::ENGINE::ForEachLoop *object2(_boss->getUndergroundForEach());
   YACSEvalObserver *obs(_boss->getObserver());
   if(!obs)
     return ;
-  if(event=="progress")
-    obs->notifyNewNumberOfPassedItems(_boss->getBoss(),object2->getCurrentIndex());
+  if(event=="progress_ok" && object2==object)
+    {
+      int *casted(reinterpret_cast<int *>(something));
+      obs->notifySampleOK(_boss->getBoss(),*casted);
+      return ;
+    }
+  if(event=="progress_ko" && object2==object)
+    {
+      int *casted(reinterpret_cast<int *>(something));
+      obs->notifySampleKO(_boss->getBoss(),*casted);
+      return ;
+    }
 }
 
 /////////////////////
@@ -547,13 +556,19 @@ void YACSEvalYFXRunOnlyPattern::emitStart() const
   YACSEvalObserver *obs(getObserver());
   if(!obs)
     return ;
-  obs->notifyNumberOfSamplesToEval(getBoss(),getUndergroundForEach()->getNbOfElementsToBeProcessed());
+  obs->startComputation(getBoss());
 }
 
 bool YACSEvalYFXRunOnlyPattern::go(bool stopASAP, YACSEvalSession *session) const
 {
   emitStart();
-  return getGenerator()->go(stopASAP,session);
+  YACS::ENGINE::Dispatcher *disp(YACS::ENGINE::Dispatcher::getDispatcher());
+  disp->addObserver(_obs,getUndergroundForEach(),"progress_ok");
+  disp->addObserver(_obs,getUndergroundForEach(),"progress_ko");
+  bool ret(getGenerator()->go(stopASAP,session));
+  disp->removeObserver(_obs,getUndergroundForEach(),"progress_ok");
+  disp->removeObserver(_obs,getUndergroundForEach(),"progress_ko");
+  return ret;
 }
 
 YACS::ENGINE::ForEachLoop *YACSEvalYFXRunOnlyPattern::getUndergroundForEach() const
