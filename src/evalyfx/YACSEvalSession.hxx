@@ -39,6 +39,11 @@ public:
   YACSEVALYFX_EXPORT void launchUsingCurrentSession();
   YACSEVALYFX_EXPORT bool isLaunched() const { return _isLaunched; }
   YACSEVALYFX_EXPORT bool isAttached() const { return _isAttached; }
+  //
+  YACSEVALYFX_EXPORT bool isAlreadyPyThreadSaved() const;
+  YACSEVALYFX_EXPORT bool getForcedPyThreadSavedStatus() const { return _isForcedPyThreadSaved; }
+  YACSEVALYFX_EXPORT void setForcedPyThreadSavedStatus(bool status) { _isForcedPyThreadSaved=status; }
+  //
   YACSEVALYFX_EXPORT void checkLaunched() const;
   YACSEVALYFX_EXPORT int getPort() const;
   YACSEVALYFX_EXPORT std::string getCorbaConfigFileName() const;
@@ -54,6 +59,7 @@ public:
 private:
   bool _isAttached;
   bool _isLaunched;
+  bool _isForcedPyThreadSaved;
   int _port;
   std::string _corbaConfigFileName;
   PyObject *_salomeInstanceModule;

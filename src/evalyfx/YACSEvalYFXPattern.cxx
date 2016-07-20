@@ -812,7 +812,7 @@ bool YACSEvalYFXGraphGenInteractive::go(bool stopASAP, YACSEvalSession *session)
   YACS::ENGINE::Executor exe;
   exe.setKeepGoingProperty(!stopASAP);
   {
-    MyAutoThreadSaver locker(!session->isAttached());
+    MyAutoThreadSaver locker(!session->isAlreadyPyThreadSaved());
     exe.RunW(getUndergroundGeneratedGraph());
   }
   return getUndergroundGeneratedGraph()->getState()==YACS::DONE;

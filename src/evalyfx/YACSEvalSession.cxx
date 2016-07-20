@@ -34,7 +34,7 @@ const char YACSEvalSession::CORBA_CONFIG_ENV_VAR_NAME[]="OMNIORB_CONFIG";
 
 const char YACSEvalSession::NSPORT_VAR_NAME[]="NSPORT";
 
-YACSEvalSession::YACSEvalSession():_isAttached(false),_isLaunched(false),_port(-1),_salomeInstanceModule(0),_salomeInstance(0),_internal(new YACSEvalSessionInternal)
+YACSEvalSession::YACSEvalSession():_isAttached(false),_isLaunched(false),_isForcedPyThreadSaved(false),_port(-1),_salomeInstanceModule(0),_salomeInstance(0),_internal(new YACSEvalSessionInternal)
 {
   if(!Py_IsInitialized())
     Py_Initialize();
@@ -86,6 +86,14 @@ void YACSEvalSession::launchUsingCurrentSession()
   YACS::ENGINE::AutoGIL gal;
   _corbaConfigFileName=GetConfigAndPort(_port);
   _isAttached=true; _isLaunched=true;
+}
+
+bool YACSEvalSession::isAlreadyPyThreadSaved() const
+{
+  if(!_isForcedPyThreadSaved)
+    return isAttached();
+  else
+    return true;
 }
 
 void YACSEvalSession::checkLaunched() const

@@ -395,6 +395,9 @@ public:
   void launch();
   bool isLaunched() const;
   bool isAttached() const;
+  bool isAlreadyPyThreadSaved() const;
+  bool getForcedPyThreadSavedStatus() const;
+  void setForcedPyThreadSavedStatus(bool status);
   void checkLaunched() const;
   int getPort() const;
   std::string getCorbaConfigFileName() const;
