@@ -25,6 +25,7 @@
 #include "YACSEvalObserver.hxx"
 #include "YACSEvalSessionInternal.hxx"
 #include "YACSEvalAutoPtr.hxx"
+#include "YACSEvalExecParams.hxx"
 
 #include "ElementaryNode.hxx"
 #include "RuntimeSALOME.hxx"
@@ -559,13 +560,13 @@ void YACSEvalYFXRunOnlyPattern::emitStart() const
   obs->startComputation(getBoss());
 }
 
-bool YACSEvalYFXRunOnlyPattern::go(bool stopASAP, YACSEvalSession *session) const
+bool YACSEvalYFXRunOnlyPattern::go(const YACSEvalExecParams& params, YACSEvalSession *session) const
 {
   emitStart();
   YACS::ENGINE::Dispatcher *disp(YACS::ENGINE::Dispatcher::getDispatcher());
   disp->addObserver(_obs,getUndergroundForEach(),"progress_ok");
   disp->addObserver(_obs,getUndergroundForEach(),"progress_ko");
-  bool ret(getGenerator()->go(stopASAP,session));
+  bool ret(getGenerator()->go(params,session));
   disp->removeObserver(_obs,getUndergroundForEach(),"progress_ok");
   disp->removeObserver(_obs,getUndergroundForEach(),"progress_ko");
   return ret;
@@ -807,10 +808,10 @@ void YACSEvalYFXGraphGenInteractive::generateGraph()
   _generatedGraph->updateContainersAndComponents();
 }
 
-bool YACSEvalYFXGraphGenInteractive::go(bool stopASAP, YACSEvalSession *session) const
+bool YACSEvalYFXGraphGenInteractive::go(const YACSEvalExecParams& params, YACSEvalSession *session) const
 {
   YACS::ENGINE::Executor exe;
-  exe.setKeepGoingProperty(!stopASAP);
+  exe.setKeepGoingProperty(!params.getStopASAPAfterErrorStatus());
   {
     MyAutoThreadSaver locker(!session->isAlreadyPyThreadSaved());
     exe.RunW(getUndergroundGeneratedGraph());
@@ -943,7 +944,7 @@ void YACSEvalYFXGraphGenCluster::generateGraph()
   _generatedGraph->updateContainersAndComponents();
 }
 
-bool YACSEvalYFXGraphGenCluster::go(bool stopASAP, YACSEvalSession *session) const
+bool YACSEvalYFXGraphGenCluster::go(const YACSEvalExecParams& params, YACSEvalSession *session) const
 {
   getUndergroundGeneratedGraph()->saveSchema(_locSchemaFile);
   YACSEvalListOfResources *rss(getBoss()->getResourcesInternal());
@@ -1034,9 +1035,12 @@ bool YACSEvalYFXGraphGenCluster::go(bool stopASAP, YACSEvalSession *session) con
       std::ostringstream oss1; oss1 << "import os" << std::endl << "p=os.path.join(\"" << cli.getLocalWorkingDir() << "\",\"" << _jobName  << "\") ; os.remove(p)" << std::endl;
       std::string s1(oss1.str());
       PyRun_SimpleString(s1.c_str());
-      std::ostringstream oss2; oss2 << "import os,shutil" << std::endl << "p=os.path.join(\"" << cli.getLocalWorkingDir() << "\",\"logs\") ; shutil.rmtree(p)" << std::endl;
-      std::string s2(oss2.str());
-      PyRun_SimpleString(s2.c_str());
+      if(!params.getFetchRemoteDirForClusterStatus())
+        {
+          std::ostringstream oss2; oss2 << "import os,shutil" << std::endl << "p=os.path.join(\"" << cli.getLocalWorkingDir() << "\",\"logs\") ; shutil.rmtree(p)" << std::endl;
+          std::string s2(oss2.str());
+          PyRun_SimpleString(s2.c_str());
+        }
     }
   catch(YACS::Exception& e)
     {

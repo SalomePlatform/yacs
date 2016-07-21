@@ -45,6 +45,7 @@ namespace YACS
 class YACSEvalYFX;
 class YACSEvalSession;
 class YACSEvalObserver;
+class YACSEvalExecParams;
 class YACSEvalListOfResources;
 class ResourcesManager_cpp;
 class YACSEvalYFXRunOnlyPatternInternalObserver;
@@ -81,7 +82,7 @@ public:
   virtual std::string getStatusOfRunStr() const = 0;
   virtual std::vector<YACSEvalSeqAny *> getResults() const = 0;
   virtual std::vector<YACSEvalSeqAny *> getResultsInCaseOfFailure(std::vector<unsigned int>& passedIds) const = 0;
-  virtual bool go(bool stopASAP, YACSEvalSession *session) const = 0;
+  virtual bool go(const YACSEvalExecParams& params, YACSEvalSession *session) const = 0;
 public://for _gen
   const std::vector< YACSEvalInputPort >& getInputs() const { return _inputs; }
   static YACS::ENGINE::TypeCode *CreateSeqTypeCodeFrom(YACS::ENGINE::Proc *scheme, const std::string& zeType);
@@ -132,7 +133,7 @@ public:
   std::string getStatusOfRunStr() const;
   std::vector<YACSEvalSeqAny *> getResults() const;
   std::vector<YACSEvalSeqAny *> getResultsInCaseOfFailure(std::vector<unsigned int>& passedIds) const;
-  bool go(bool stopASAP, YACSEvalSession *session) const;
+  bool go(const YACSEvalExecParams& params, YACSEvalSession *session) const;
   //
   YACS::ENGINE::ForEachLoop *getUndergroundForEach() const;
   static bool IsMatching(YACS::ENGINE::Proc *scheme, YACS::ENGINE::ComposedNode *& runNode);
@@ -160,7 +161,7 @@ protected:
 public:
   virtual ~YACSEvalYFXGraphGen();
   virtual void generateGraph() = 0;
-  virtual bool go(bool stopASAP, YACSEvalSession *session) const = 0;
+  virtual bool go(const YACSEvalExecParams& params, YACSEvalSession *session) const = 0;
   virtual std::vector<YACSEvalSeqAny *> getResults() const = 0;
   bool isLocked() const;
   int assignNbOfBranches();
@@ -183,7 +184,7 @@ class YACSEvalYFXGraphGenInteractive : public YACSEvalYFXGraphGen
 public:
   YACSEvalYFXGraphGenInteractive(YACSEvalYFXRunOnlyPattern *boss):YACSEvalYFXGraphGen(boss) { }
   void generateGraph();
-  bool go(bool stopASAP, YACSEvalSession *session) const;
+  bool go(const YACSEvalExecParams& params, YACSEvalSession *session) const;
   std::vector<YACSEvalSeqAny *> getResults() const;
 };
 
@@ -192,7 +193,7 @@ class YACSEvalYFXGraphGenCluster : public YACSEvalYFXGraphGen
 public:
   YACSEvalYFXGraphGenCluster(YACSEvalYFXRunOnlyPattern *boss):YACSEvalYFXGraphGen(boss) { }
   void generateGraph();
-  bool go(bool stopASAP, YACSEvalSession *session) const;
+  bool go(const YACSEvalExecParams& params, YACSEvalSession *session) const;
   std::vector<YACSEvalSeqAny *> getResults() const;
 private:
   std::string _locSchemaFile;

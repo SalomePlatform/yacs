@@ -26,11 +26,14 @@
 class YACSEvalExecParams
 {
 public:
-  YACSEVALYFX_EXPORT YACSEvalExecParams():_stopASAPAfterError(true) { }
+  YACSEVALYFX_EXPORT YACSEvalExecParams():_stopASAPAfterError(true),_fetchRemoteDirForCluster(false) { }
   YACSEVALYFX_EXPORT bool getStopASAPAfterErrorStatus() const { return _stopASAPAfterError; }
   YACSEVALYFX_EXPORT void setStopASAPAfterErrorStatus(bool newStatus) { _stopASAPAfterError=newStatus; }
+  YACSEVALYFX_EXPORT bool getFetchRemoteDirForClusterStatus() const { return _fetchRemoteDirForCluster; }
+  YACSEVALYFX_EXPORT void setFetchRemoteDirForClusterStatus(bool newStatus) { _fetchRemoteDirForCluster=newStatus; }
 private:
   bool _stopASAPAfterError;
+  bool _fetchRemoteDirForCluster;
 };
 
 #endif

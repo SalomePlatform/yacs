@@ -408,6 +408,8 @@ class YACSEvalExecParams
 public:
   bool getStopASAPAfterErrorStatus() const;
   void setStopASAPAfterErrorStatus(bool newStatus);
+  bool getFetchRemoteDirForClusterStatus() const;
+  void setFetchRemoteDirForClusterStatus(bool newStatus);
 private:
   YACSEvalExecParams();
 };

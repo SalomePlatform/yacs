@@ -101,7 +101,7 @@ bool YACSEvalYFX::run(YACSEvalSession *session, int& nbOfBranches)
   _pattern->assignRandomVarsInputs();
   rss->apply();
   nbOfBranches=_pattern->assignNbOfBranches();
-  return _pattern->go(_params.getStopASAPAfterErrorStatus(),session);
+  return _pattern->go(_params,session);
 }
 
 void YACSEvalYFX::registerObserver(YACSEvalObserver *observer)
