@@ -769,7 +769,7 @@ YACS::Event ForEachLoop::updateStateForWorkNodeOnFinishedEventFrom(Node *node, u
       int globalId(_execIds[id]);
       if(_passedData)
         globalId=_passedData->toAbsId(globalId);
-      sendEvent2("progress_ko",&id);
+      sendEvent2("progress_ko",&globalId);
     }
   //
   if(_execCurrentId==getFinishedId())
