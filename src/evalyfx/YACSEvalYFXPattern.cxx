@@ -848,6 +848,7 @@ std::vector<YACSEvalSeqAny *> YACSEvalYFXGraphGenInteractive::getResults() const
 
 void YACSEvalYFXGraphGenCluster::generateGraph()
 {
+  YACS::ENGINE::AutoGIL agil;
   if(_generatedGraph)
     { delete _generatedGraph; _generatedGraph=0; _FEInGeneratedGraph=0; }
   //
@@ -946,6 +947,7 @@ void YACSEvalYFXGraphGenCluster::generateGraph()
 
 bool YACSEvalYFXGraphGenCluster::go(const YACSEvalExecParams& params, YACSEvalSession *session) const
 {
+  YACS::ENGINE::AutoGIL agil;
   getUndergroundGeneratedGraph()->saveSchema(_locSchemaFile);
   YACSEvalListOfResources *rss(getBoss()->getResourcesInternal());
   const YACSEvalParamsForCluster& cli(rss->getAddParamsForCluster());
