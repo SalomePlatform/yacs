@@ -107,7 +107,7 @@ SET(YACSlibEngine_HEADERS
   ElementaryPoint.hxx
   SetOfPoints.hxx
   
-  PARENT_SCOPE  # Make it visible to src/engine_swig to handle dependencies 
+  #PARENT_SCOPE  # Make it visible to src/engine_swig to handle dependencies 
   )
 
 # --- sources ---
