@@ -50,7 +50,7 @@ FormHPContainer::FormHPContainer(QWidget *parent):FormContainerBase(parent),_poo
   ch_aoc->setCheckState(Qt::Checked);
   //
 #ifdef HAS_PYEDITOR
-  _initScript=new PyEditor_Editor(false, 0, _advancedParams->tw_advance);
+  _initScript=new PyEditor_Editor(_advancedParams->tw_advance);
 #else
   _initScript=new QTextEdit(this);
 #endif

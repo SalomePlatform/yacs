@@ -125,7 +125,7 @@ EditionScript::EditionScript(Subject* subject,
 
   _haveScript = true;
 #ifdef HAS_PYEDITOR
-  _sci = new PyEditor_Editor(false, 0, this);
+  _sci = new PyEditor_Editor(this);
 #else
   _sci = new QTextEdit(this);
 #endif
@@ -182,7 +182,9 @@ void EditionScript::onApply()
   DEBTRACE("EditionScript::onApply");
   bool scriptEdited = false;
 #ifdef HAS_PYEDITOR
-  _sci->settings()->p_Font = Resource::pythonfont;
+  PyEditor_Settings settings = _sci->settings();
+  settings.setFont(Resource::pythonfont);
+  _sci->setSettings(settings);
 #endif
 
   if(Resource::pythonExternalEditor.isEmpty())
