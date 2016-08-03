@@ -286,7 +286,7 @@ SET(_${PROJECT_NAME}_exposed_targets
 
 IF(SALOME_YACS_USE_KERNEL)
   LIST(APPEND _${PROJECT_NAME}_exposed_targets 
-    SalomeIDLYACS YACSRuntimeSALOME YACSloader
+    SalomeIDLYACS YACSRuntimeSALOME YACSloader YACSevalYFX
   )
 ENDIF(SALOME_YACS_USE_KERNEL)
 
@@ -303,7 +303,7 @@ ENDIF(SALOME_BUILD_TESTS)
 
 IF(SALOME_BUILD_GUI)
   LIST(APPEND _${PROJECT_NAME}_exposed_targets 
-    HMI GenericGui YACS SalomeWrap
+    HMI ydfxwidgets GenericGui YACS SalomeWrap
   )
 ENDIF(SALOME_BUILD_GUI)
 
