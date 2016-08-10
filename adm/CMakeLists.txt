@@ -18,4 +18,3 @@
 #
 
 ADD_SUBDIRECTORY(unix)
-ADD_SUBDIRECTORY(cmake)
