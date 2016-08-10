@@ -86,7 +86,7 @@ public:
   YDFXWIDGETS_EXPORT YDFXGUIRunInfo(QObject *parent, int nbOfItems);
   YDFXWIDGETS_EXPORT std::vector<char> getItems() const;
   YDFXWIDGETS_EXPORT int getNbOfItems() const;
-  YDFXWIDGETS_EXPORT int setNbOfItems(int nbOfItems);
+  YDFXWIDGETS_EXPORT void setNbOfItems(int nbOfItems);
   YDFXWIDGETS_EXPORT bool getComputationStatus() const;
 public slots:
   YDFXWIDGETS_EXPORT void startComputation();

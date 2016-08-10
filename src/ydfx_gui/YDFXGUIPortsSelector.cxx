@@ -38,7 +38,13 @@
 #include <string>
 #include <iostream>
 #include <limits>
+
+#ifdef _MSC_VER
+#define _USE_MATH_DEFINES
+#include <math.h>
+#else
 #include <cmath>
+#endif
 
 const int MyWidgetPainter::SZ_OF_PEN_RECT=2;
 const int MyWidgetPainter::PADLOCK_X=130;
