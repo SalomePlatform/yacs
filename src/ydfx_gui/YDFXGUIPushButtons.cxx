@@ -155,7 +155,7 @@ int YDFXGUIRunInfo::getNbOfItems() const
   return ret;
 }
 
-int YDFXGUIRunInfo::setNbOfItems(int nbOfItems)
+void YDFXGUIRunInfo::setNbOfItems(int nbOfItems)
 {
   _items.resize(nbOfItems);
   std::fill(_items.begin(),_items.end(),0);

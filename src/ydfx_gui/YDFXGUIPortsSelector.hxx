@@ -222,7 +222,7 @@ class YDFXGUIOKCls
 public:
   YDFXWIDGETS_EXPORT YDFXGUIOKCls():_isOK(false) { }
   YDFXWIDGETS_EXPORT bool wasOK() const { return _isOK; }
-  YDFXWIDGETS_EXPORT bool setWasOKStatus(bool newStatus) { _isOK=newStatus; }
+  YDFXWIDGETS_EXPORT void setWasOKStatus(bool newStatus) { _isOK=newStatus; }
   YDFXWIDGETS_EXPORT virtual bool isOK() const = 0;
 protected:
   void initOK();

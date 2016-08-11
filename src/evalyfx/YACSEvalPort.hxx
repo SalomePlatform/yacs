@@ -61,7 +61,7 @@ public:
 private:
   double _v;
 public:
-  static const char TYPE_REPR[];
+  YACSEVALYFX_EXPORT static const char TYPE_REPR[];
 };
 
 class YACSEvalAnyInt : public YACSEvalAny
@@ -76,7 +76,7 @@ public:
 private:
   int _v;
 public:
-  static const char TYPE_REPR[];
+  YACSEVALYFX_EXPORT static const char TYPE_REPR[];
 };
 
 class YACSEvalPort
