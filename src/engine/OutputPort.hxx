@@ -50,7 +50,7 @@ namespace YACS
     public:
       virtual ~OutputPort();
       std::set<InPort *> edSetInPort() const;
-      bool isAlreadyLinkedWith(InPort *with) const;
+      bool isAlreadyLinkedWith(InPort *withp) const;
       bool isAlreadyInSet(InputPort *inputPort) const;
       bool isConnected() const;
       std::string getNameOfTypeOfCurrentInstance() const;

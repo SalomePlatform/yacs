@@ -40,7 +40,7 @@ namespace YACS
     private:
       int edGetNumberOfOutLinks() const;
       std::set<InPort *> edSetInPort() const;
-      bool isAlreadyLinkedWith(InPort *with) const;
+      bool isAlreadyLinkedWith(InPort *withp) const;
       std::string getNameOfTypeOfCurrentInstance() const;
       void edRemoveAllLinksLinkedWithMe() throw(Exception);
       TypeOfChannel getTypeOfChannel() const;

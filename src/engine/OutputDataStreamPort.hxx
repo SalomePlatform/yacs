@@ -47,7 +47,7 @@ namespace YACS
       virtual ~OutputDataStreamPort();
       virtual OutputDataStreamPort *clone(Node *newHelder) const;
       std::set<InPort *> edSetInPort() const;
-      bool isAlreadyLinkedWith(InPort *with) const;
+      bool isAlreadyLinkedWith(InPort *withp) const;
       virtual std::string getNameOfTypeOfCurrentInstance() const;
       virtual bool addInPort(InPort *inPort) throw(Exception);
       virtual bool edAddInputDataStreamPort(InputDataStreamPort *port) throw(ConversionException);

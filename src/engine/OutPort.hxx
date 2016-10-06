@@ -42,7 +42,7 @@ namespace YACS
       virtual void checkConsistency(LinkInfo& info) const;
       virtual int edGetNumberOfOutLinks() const;
       virtual std::set<InPort *> edSetInPort() const = 0;
-      virtual bool isAlreadyLinkedWith(InPort *with) const = 0;
+      virtual bool isAlreadyLinkedWith(InPort *withp) const = 0;
       virtual void getAllRepresented(std::set<OutPort *>& represented) const;
       virtual bool addInPort(InPort *inPort) throw(Exception) = 0;
       virtual int removeInPort(InPort *inPort, bool forward) throw(Exception) = 0;
