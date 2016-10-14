@@ -73,8 +73,19 @@ const char YACSEvalYFXGraphGen::GATHER_NODE_NAME[]="__gather__";
 class MyAutoThreadSaver
 {
 public:
-  MyAutoThreadSaver(bool isToSave):_isToSave(isToSave),_save(0) { if(_isToSave) _save=PyEval_SaveThread(); }
-  ~MyAutoThreadSaver() { if(_isToSave) PyEval_RestoreThread(_save); }
+  MyAutoThreadSaver(bool isToSave):_isToSave(isToSave),_save(0)
+  {
+    if(_isToSave)
+      {
+        PyThreadState *save(PyThreadState_Swap(NULL));// safe call of PyEval_SaveThread()
+        if(save)
+          {
+            _save=save;
+            PyEval_ReleaseLock();
+          }
+      }
+  }
+  ~MyAutoThreadSaver() { if(_isToSave) if(_save) { PyEval_AcquireLock(); PyThreadState_Swap(_save); /*safe call of PyEval_RestoreThread*/ } }
 private:
   bool _isToSave;
   PyThreadState *_save;

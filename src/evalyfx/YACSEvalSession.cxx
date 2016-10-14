@@ -90,10 +90,7 @@ void YACSEvalSession::launchUsingCurrentSession()
 
 bool YACSEvalSession::isAlreadyPyThreadSaved() const
 {
-  if(!_isForcedPyThreadSaved)
-    return isAttached();
-  else
-    return true;
+  return _isForcedPyThreadSaved;
 }
 
 void YACSEvalSession::checkLaunched() const
