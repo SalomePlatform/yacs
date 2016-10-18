@@ -58,8 +58,6 @@
 using namespace std;
 using namespace YACS::HMI;
 
-int  Yacsgui::_oldStudyId = -1;
-
 Yacsgui::Yacsgui() :
   SalomeWrap_Module( "YACS" ) // default name
 {
@@ -67,7 +65,7 @@ Yacsgui::Yacsgui() :
   _wrapper = 0;
   _genericGui = 0;
   _selectFromTree = false;
-  _studyContextMap.clear();
+  _studyContextMap = 0;
 }
 
 Yacsgui::~Yacsgui()
@@ -111,7 +109,7 @@ void Yacsgui::initialize( CAM_Application* app )
   _genericGui->createActions();
   _genericGui->createMenus();
   _genericGui->createTools();
-  this->studyActivated();
+  _studyContextMap = QtGuiContext::getQtCurrent();
 
   // VSR 23/10/2014: note that this is not a good way to create SComponent from this point
   // as initialize() method can be potentially called when there's no yet open study;
@@ -207,8 +205,8 @@ bool Yacsgui::deactivateModule( SUIT_Study* theStudy )
   setToolShown( false );
   _genericGui->showDockWidgets(false);
   QtGuiContext *context = QtGuiContext::getQtCurrent();
-  _studyContextMap[theStudy->id()] = context;
-  DEBTRACE("_studyContextMap[theStudy] " << theStudy << " " << context);
+  _studyContextMap = context;
+  DEBTRACE("_studyContextMap " << theStudy << " " << context);
   return SalomeApp_Module::deactivateModule( theStudy );
 }
 
@@ -280,7 +278,7 @@ void Yacsgui::onWindowActivated( SUIT_ViewWindow* svw)
 
   YASSERT(_genericGui);
   _genericGui->switchContext(viewWindow);
-  _studyContextMap[getApp()->activeStudy()->id()] = QtGuiContext::getQtCurrent();
+  _studyContextMap = QtGuiContext::getQtCurrent();
   
   if (_selectFromTree) return;
   SalomeWrap_DataModel *model = dynamic_cast<SalomeWrap_DataModel*>(dataModel());
@@ -357,27 +355,6 @@ void Yacsgui::preferencesChanged( const QString& sect, const QString& name )
     {
       _genericGui->getCatalogWidget()->addCatalogFromFile(Resource::userCatalog.toStdString());
     }
-}
-
-void Yacsgui::studyActivated()
-{
-  int newStudyId = getApp()->activeStudy()->id();
-  DEBTRACE("Yacsgui::studyActivated " << _oldStudyId << " " << newStudyId);
-  
-  if (_oldStudyId != -1)
-    {
-      _studyContextMap[_oldStudyId] = QtGuiContext::getQtCurrent();      
-      if (_studyContextMap.count(newStudyId))
-        {
-          DEBTRACE("switch to valid context " << QtGuiContext::getQtCurrent() << " " << _studyContextMap[newStudyId]);
-          QtGuiContext::setQtCurrent(_studyContextMap[newStudyId]);
-        }
-      else
-        {
-          DEBTRACE("no switch to null context");
-        }
-    }
-  _oldStudyId = newStudyId;
 }
 
 void Yacsgui::loadSchema(const std::string& filename,bool edit, bool arrangeLocalNodes)

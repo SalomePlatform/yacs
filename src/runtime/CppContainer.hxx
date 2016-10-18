@@ -120,7 +120,7 @@ namespace YACS
 
       void checkCapabilityToDealWith(const ComponentInstance *inst) const throw (YACS::Exception);
       bool loadComponentLibrary(const std::string & componentName) throw (YACS::Exception);
-      CppComponent * createComponentInstance(const std::string & componentName, int studyID = 0);
+      CppComponent * createComponentInstance(const std::string & componentName);
       void createInternalInstance(const std::string & componentName, 
                                   void *& obj, RunFunction &r, TerminateFunction &t);
       void unregisterComponentInstance(CppComponent * C);

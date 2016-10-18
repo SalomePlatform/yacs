@@ -148,7 +148,7 @@ void OutputStudyPort::getDataFromStudy(SALOMEDS::Study_var myStudy)
           if(CORBA::is_nil(aSO))
             {
               std::stringstream msg;
-              msg << "Execution problem: no id or path: " << data << " in study " << myStudy->StudyId();
+              msg << "Execution problem: no id or path: " << data << " in study";
               throw Exception(msg.str());
             }
         }
@@ -418,7 +418,7 @@ void InputStudyPort::putDataInStudy(SALOMEDS::Study_var myStudy,SALOMEDS::StudyB
                           SALOMEDS::SObject_var aTmpSO; // initialized to nil
                           try 
                             {
-                              aTmpSO = aDriver->PublishInStudy(myStudy, aTmpSO, anObject,objname.c_str() );
+                              aTmpSO = aDriver->PublishInStudy(aTmpSO, anObject,objname.c_str() );
                               return;
                             }
                           catch ( ... ) 

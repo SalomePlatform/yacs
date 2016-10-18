@@ -47,8 +47,6 @@ namespace YACS
       virtual ~SuitWrapper();
 
       QWidget* getNewWindow(QGraphicsScene *scene);
-      int AssociateViewToWindow(QGraphicsView* gView, QWidget* viewWindow);
-      int activeStudyId();
       QDockWidget* objectBrowser();
 
       QAction* createAction(const int id,

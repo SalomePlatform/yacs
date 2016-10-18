@@ -794,20 +794,6 @@ In the case of a SALOME service node, the property is transmitted to the compone
 
 .. _xml_active_study:
 
-Active study
---------------
-To execute a schema in the context of a SALOME study, you have to set the **DefaultStudyID** property of the schema.
-
-Example to execute the schema in the study with studyId 5:
-
-.. code-block:: xml
-
-  <proc name="myschema">
-     <property name="DefaultStudyID" value="5"/>
-     ...
-  </proc>
-
-
 Datastream connections
 ----------------------------
 Datastream connections are only possible for SALOME service nodes, as we have seen in :ref:`principes`.  Firstly, datastream ports 
@@ -968,20 +954,19 @@ The result file will be copied into the local file myfile:
 StudyIn node
 '''''''''''''''
 This type of node is defined as a DataIn node with the datanode tag.  All that is necessary is to add the kind attribute 
-with the “study” value.  The associated study is given by a property (property tag) named StudyID (the value of which is an integer).
+with the “study” value.
 
 The parameter sub-tag will be used to define the node data.  This tag has two compulsory attributes, name and type, that give the 
 data name and type respectively.  The ref attribute gives the input into the study in the form of a SALOME Entry, or a 
 path in the study tree structure.
 
 The following is an example of a StudyIn node that defines 2 data (b and c) with types GEOM_Object and Boolean.  It is assumed 
-that SALOME has loaded the study (with StudyID 1) into memory.  Data b is referenced by a SALOME Entry.  
+that SALOME has loaded the study into memory.  Data b is referenced by a SALOME Entry.  
 The data c is referenced by a path in the study tree structure.
 
 .. code-block:: xml
 
     <datanode name="s" kind="study" >
-      <property name="StudyID" value="1" />
       <parameter name="b" type="GEOM/GEOM_Object" ref="0:1:2:2"/>
       <parameter name="c" type="bool" ref="/Geometry/Box_1"/>
     </datanode>
@@ -992,20 +977,18 @@ StudyOut node
 ''''''''''''''''''
 This type of node is defined as a DataOut node with the outnode tag and the name attribute.  
 All that is necessary is to add the kind attribute with the value “study”.  
-The optional ref attribute gives the name of the file in which the study will be saved at the end of the calculation.  
-The associated study is given by a property (property tag) with name StudyID (the value of which is an integer).
+The optional ref attribute gives the name of the file in which the study will be saved at the end of the calculation.
 
 The parameter sub-tag will be used to define the node results.  This tag has two compulsory attributes, name and type, that 
 give the data name and type respectively.  The ref attribute gives the entry into the study in the form of a SALOME Entry, or 
 a path in the study tree structure.
 
-The following gives an example of the StudyOut node that defines 2 results (a and b) of the GEOM_Object type.  The study used has 
-the studyId 1.  The complete study is saved in the study1.hdf file at the end of the calculation:
+The following gives an example of the StudyOut node that defines 2 results (a and b) of the GEOM_Object type.
+The complete study is saved in the study1.hdf file at the end of the calculation:
 
 .. code-block:: xml
 
    <outnode name="o" kind="study" ref="stud1.hdf">
-     <property name="StudyID" value="1"/>
      <parameter name="a" type="GEOM/GEOM_Object" ref="/Geometry/YacsFuse"/>
      <parameter name="b" type="GEOM/GEOM_Object" ref="0:1:1:6"/>
    </outnode>

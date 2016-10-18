@@ -59,7 +59,6 @@ public:
   virtual void createPreferences();
   virtual void preferencesChanged( const QString& sect, const QString& name );
   virtual void loadSchema(const std::string& filename,bool edit=true, bool arrangeLocalNodes=false);
-  virtual void studyActivated();
   
 public slots:
   bool deactivateModule( SUIT_Study* theStudy);
@@ -81,8 +80,7 @@ protected:
   bool _selectFromTree;
   Yacsgui_Resource* _myresource;
   SUIT_ViewWindow* _currentSVW;
-  std::map<int, YACS::HMI::QtGuiContext*> _studyContextMap;
-  static int _oldStudyId;
+  YACS::HMI::QtGuiContext* _studyContextMap;
 };
 
 #endif

@@ -75,44 +75,17 @@ void StudyInNode::execute()
 {
   DEBTRACE("+++++++ StudyInNode::execute +++++++++++");
   SALOME_NamingService NS(getSALOMERuntime()->getOrb());
-  CORBA::Object_var obj=NS.Resolve("/myStudyManager");
+  CORBA::Object_var obj=NS.Resolve("/Study");
   if(CORBA::is_nil(obj)) 
     {
       _errorDetails="Execution problem: no naming service";
       throw Exception(_errorDetails);
     }
 
-  SALOMEDS::StudyManager_var aStudyManager = SALOMEDS::StudyManager::_narrow(obj);
-  if(CORBA::is_nil(aStudyManager)) 
-    {
-      _errorDetails="Execution problem: no naming service";
-      throw Exception(_errorDetails);
-    }
-
-  int studyid=1;
-  if (getProperty("StudyID") != "")
-    {
-      // StudyId is specified
-      studyid=atoi(getProperty("StudyID").c_str());
-    }
-  else
-    {
-      Proc* p=getProc();
-      if(p)
-        {
-          std::string value=p->getProperty("DefaultStudyID");
-          if(!value.empty())
-            studyid= atoi(value.c_str());
-        }
-    }
-
-
-  SALOMEDS::Study_var myStudy =aStudyManager->GetStudyByID(studyid);
+  SALOMEDS::Study_var myStudy = SALOMEDS::Study::_narrow(obj);
   if(CORBA::is_nil(myStudy)) 
     {
-      std::stringstream msg;
-      msg << "Execution problem: no study with id " << studyid;
-      _errorDetails=msg.str();
+      _errorDetails="Execution problem: no study";
       throw Exception(_errorDetails);
     }
 
@@ -243,51 +216,19 @@ void StudyOutNode::execute()
 {
   DEBTRACE("+++++++ StudyOutNode::execute +++++++++++");
   SALOME_NamingService NS(getSALOMERuntime()->getOrb());
-  CORBA::Object_var obj=NS.Resolve("/myStudyManager");
+  CORBA::Object_var obj=NS.Resolve("/Study");
   if(CORBA::is_nil(obj))
     {
       _errorDetails="Execution problem: no naming service";
       throw Exception(_errorDetails);
     }
 
-  SALOMEDS::StudyManager_var aStudyManager = SALOMEDS::StudyManager::_narrow(obj);
-  if(CORBA::is_nil(aStudyManager))
-    {
-      _errorDetails="Execution problem: no naming service";
-      throw Exception(_errorDetails);
-    }
-
-  int studyid=1;
-  if (getProperty("StudyID") != "")
-    {
-      // StudyId is specified
-      studyid=atoi(getProperty("StudyID").c_str());
-    }
-  else
-    {
-      Proc* p=getProc();
-      if(p)
-        {
-          std::string value=p->getProperty("DefaultStudyID");
-          if(!value.empty())
-            studyid= atoi(value.c_str());
-        }
-    }
-
-  SALOMEDS::Study_var myStudy =aStudyManager->GetStudyByID(studyid);
+  SALOMEDS::Study_var myStudy = SALOMEDS::Study::_narrow(obj);
   if(CORBA::is_nil(myStudy))
     {
-      //open a new one
-      std::stringstream msg;
-      msg << "Study" << studyid;
-      myStudy=aStudyManager->NewStudy(msg.str().c_str());
-      if(CORBA::is_nil(myStudy))
-        {
-          _errorDetails="Execution problem: can not create new study " + msg.str();
-          throw Exception(_errorDetails);
-        }
+      _errorDetails="Execution problem: no study";
+      throw Exception(_errorDetails);
     }
-  DEBTRACE(myStudy->StudyId());
 
   SALOMEDS::StudyBuilder_var aBuilder =myStudy->NewBuilder() ;
   if(CORBA::is_nil(aBuilder))
@@ -311,7 +252,7 @@ void StudyOutNode::execute()
   // save in file if ref is given
   if(_ref != "")
     {
-      aStudyManager->SaveAs(_ref.c_str(),myStudy, false);
+	  myStudy->SaveAs(_ref.c_str(), false);
     }
   DEBTRACE("+++++++ end StudyOutNode::execute +++++++++++" );
 }

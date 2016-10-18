@@ -44,7 +44,6 @@
 
     <!--nodes -->
     <datanode name="s" kind="study" >
-      <property name="StudyID" value="1" />
       <parameter name="b" type="FIELDDOUBLE" ref="0:1:1:3:2:1"/>
     </datanode>
     <datanode name="d" >

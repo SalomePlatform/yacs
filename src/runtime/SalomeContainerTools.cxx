@@ -454,14 +454,7 @@ CORBA::Object_ptr SalomeContainerTools::CreateComponentInstance(Container *cont,
   char *reason(0);
   std::string compoName(inst->getCompoName());
   CORBA::Object_ptr objComponent=CORBA::Object::_nil();
-  int studyid(1);
   Proc* p(cont->getProc());
-  if(p)
-    {
-      std::string value(p->getProperty("DefaultStudyID"));
-      if(!value.empty())
-        studyid= atoi(value.c_str());
-    }
   // prepare component instance properties
   Engines::FieldsDict_var env(new Engines::FieldsDict);
   std::map<std::string, std::string> properties(inst->getProperties());
@@ -481,7 +474,7 @@ CORBA::Object_ptr SalomeContainerTools::CreateComponentInstance(Container *cont,
       env[item].value <<= itm->second.c_str();
     }
 
-  objComponent=contPtr->create_component_instance_env(compoName.c_str(), studyid, env, reason);
+  objComponent=contPtr->create_component_instance_env(compoName.c_str(), env, reason);
   if(CORBA::is_nil(objComponent))
     {
       std::string text="Error while trying to create a new component: component '"+ compoName;

@@ -20,7 +20,6 @@
 
 -->
 <proc name="proc">
-   <property name="DefaultStudyID" value="1"/>
    <type name="string" kind="string"/>
    <struct name="Engines/dataref">
       <member name="ref" type="string"/>

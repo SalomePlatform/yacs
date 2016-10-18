@@ -70,30 +70,13 @@ void SalomeProc::saveSchema(std::string xmlSchemaFile)
   vss.closeFileSchema();
 }
 
-//! Get the default study id for the proc
-/*!
- * \return the study id
- */
-int SalomeProc::getDefaultStudyId()
-{
-  std::string value=getProperty("DefaultStudyID");
-  if(value.empty())
-    return 1;
-  else
-    return atoi(value.c_str());
-}
-
 //! Initialise the proc
 void SalomeProc::init(bool start)
 {
-  std::string value=getProperty("DefaultStudyID");
-  if(!value.empty())
-    {
-      //initialise Python module salome with the study id given by value
-      std::string cmd="import salome;salome.salome_init("+value+")";
-      PyGILState_STATE gstate = PyGILState_Ensure(); // acquire the Global Interpreter Lock
-      PyRun_SimpleString(cmd.c_str());
-      PyGILState_Release(gstate); // Release the Global Interpreter Lock
-    }
+  //initialise Python module salome with the study id given by value
+  std::string cmd="import salome;salome.salome_init()";
+  PyGILState_STATE gstate = PyGILState_Ensure(); // acquire the Global Interpreter Lock
+  PyRun_SimpleString(cmd.c_str());
+  PyGILState_Release(gstate); // Release the Global Interpreter Lock
   Proc::init(start);
 }

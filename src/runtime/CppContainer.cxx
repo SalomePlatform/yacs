@@ -126,7 +126,7 @@ bool CppContainer::loadComponentLibrary(const std::string & componentName) throw
   return false;
     }
 
-CppComponent * CppContainer::createComponentInstance(const std::string & componentName, int /* studyID */)
+CppComponent * CppContainer::createComponentInstance(const std::string & componentName)
 {
   DEBTRACE("CppContainer::createComponentInstance");
   if (_trueCont)
