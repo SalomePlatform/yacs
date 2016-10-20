@@ -243,7 +243,7 @@ class YACS(YACS_ORB__POA.YACS_Gen,
         print "YACS.__init__: ", containerName, ';', instanceName
         SALOME_ComponentPy.SALOME_ComponentPy_i.__init__(self, orb, poa, contID,
                                                          containerName, instanceName,
-                                                         interfaceName, 0)
+                                                         interfaceName, False)
         SALOME_DriverPy.SALOME_DriverPy_i.__init__(self, interfaceName)
 
         # --- store a naming service interface instance in _naming_service atribute
