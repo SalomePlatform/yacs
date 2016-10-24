@@ -268,7 +268,7 @@ Making conforming with the component IDL
                        instanceName, interfaceName):
               SALOME_ComponentPy_i.__init__(self, orb, poa, this, 
                                             containerName, instanceName, 
-                                            interfaceName, 0)
+                                            interfaceName, False)
 
 Enable supervision of the component
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -295,7 +295,7 @@ The implementation class constructor should be modified as follows to signal use
                     instanceName, interfaceName):
            SALOME_ComponentPy_i.__init__(self, orb, poa, this, 
                                          containerName, instanceName, 
-                                         interfaceName, 1)
+                                         interfaceName, True)
 
 in which the parameter “1” is added to the end of the call to the ``SALOME_ComponentPy_i`` of the constructor.  
 The component can then use the following instruction::

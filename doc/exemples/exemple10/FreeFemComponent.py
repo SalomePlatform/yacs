@@ -8,7 +8,7 @@ class FreeFemComponent(Engines__POA.FreeFemComponent,
     def __init__(self, orb, poa, this, containerName,
                  instanceName, interfaceName):
         SALOME_ComponentPy_i.__init__(self, orb, poa, this, containerName,
-                                      instanceName, interfaceName, 0)
+                                      instanceName, interfaceName, False)
         self.F = FreeFem.FreeFem();
 
     def Bords(self, b):
