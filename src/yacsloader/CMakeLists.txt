@@ -144,12 +144,19 @@ SET(resume_SOURCES
 SET(debugger_SOURCES
   debugger.cxx
   )
+SET(ExampleOfObserversPluginForDriver_SOURCES
+  ExampleOfObserversPluginForDriver.cxx
+  )
 
 # --- rules ---
 
 ADD_LIBRARY(YACSloader ${YACSloader_SOURCES})
 TARGET_LINK_LIBRARIES(YACSloader ${YACSloader_LIBRARIES})
 INSTALL(TARGETS YACSloader EXPORT ${PROJECT_NAME}TargetGroup DESTINATION ${SALOME_INSTALL_LIBS})
+
+ADD_LIBRARY(ExampleOfObserversPluginForDriver ${ExampleOfObserversPluginForDriver_SOURCES})
+TARGET_LINK_LIBRARIES(ExampleOfObserversPluginForDriver ${_link_LIBRARIES})
+INSTALL(TARGETS ExampleOfObserversPluginForDriver DESTINATION ${SALOME_INSTALL_LIBS})
 
 ADD_EXECUTABLE(driver ${driver_SOURCES})
 TARGET_LINK_LIBRARIES(driver ${_link_LIBRARIES})

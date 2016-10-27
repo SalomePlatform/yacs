@@ -101,6 +101,62 @@ typedef struct {
   string lockFile;
 } thread_st;
 
+#ifndef WIN32
+#include <dlfcn.h>
+#include <stdlib.h>
+#endif
+
+std::string LoadedDriverPluginLibrary;
+void *HandleOnLoadedPlugin=0;
+void (*DefineCustomObservers)(YACS::ENGINE::Dispatcher *, YACS::ENGINE::ComposedNode *, YACS::ENGINE::Executor *)=0;
+void (*CleanUpObservers) ()=0;
+
+void LoadObserversPluginIfAny(YACS::ENGINE::ComposedNode *rootNode, YACS::ENGINE::Executor *executor)
+{
+  static const char SYMBOLE_NAME_1[]="DefineCustomObservers";
+  static const char SYMBOLE_NAME_2[]="CleanUpObservers";
+#ifndef WIN32
+  Dispatcher *disp(Dispatcher::getDispatcher());
+  if(!disp)
+    throw YACS::Exception("Internal error ! No dispatcher !");
+  char *yacsDriverPluginPath(getenv("YACS_DRIVER_PLUGIN_PATH"));
+  if(!yacsDriverPluginPath)
+    return ;
+  void *handle(dlopen(yacsDriverPluginPath, RTLD_LAZY | RTLD_GLOBAL));
+  if(!handle)
+    {
+      std::string message(dlerror());
+      std::ostringstream oss; oss << "Error during load of \"" << yacsDriverPluginPath << "\" defined by the YACS_DRIVER_PLUGIN_PATH env var : " << message;
+      throw YACS::Exception(oss.str());
+    }
+  DefineCustomObservers=(void (*)(YACS::ENGINE::Dispatcher *, YACS::ENGINE::ComposedNode *, YACS::ENGINE::Executor *))(dlsym(handle,SYMBOLE_NAME_1));
+  if(!DefineCustomObservers)
+    {
+      std::ostringstream oss; oss << "Error during load of \"" << yacsDriverPluginPath << "\" ! Library has been correctly loaded but symbol " << SYMBOLE_NAME_1 << " does not exists !";
+      throw YACS::Exception(oss.str());
+    }
+  CleanUpObservers=(void (*)())(dlsym(handle,SYMBOLE_NAME_2));
+  if(!CleanUpObservers)
+    {
+      std::ostringstream oss; oss << "Error during load of \"" << yacsDriverPluginPath << "\" ! Library has been correctly loaded but symbol " << SYMBOLE_NAME_2 << " does not exists !";
+      throw YACS::Exception(oss.str());
+    }
+  HandleOnLoadedPlugin=handle;
+  DefineCustomObservers(disp,rootNode,executor);
+#endif
+}
+
+void UnLoadObserversPluginIfAny()
+{
+#ifndef WIN32
+  if(HandleOnLoadedPlugin)
+    {
+      CleanUpObservers();
+      dlclose(HandleOnLoadedPlugin);
+    }
+#endif
+}
+
 #ifdef WIN32
 static int
 #else
@@ -509,7 +565,7 @@ int main (int argc, char* argv[])
           st->lockFile = rootFile + ".lock";
           pthread_create(&th,NULL,&dumpState,(void*)st);
         }
-
+      LoadObserversPluginIfAny(p,&executor);
       cerr << "+++++++++++++++++++ start calculation +++++++++++++++++++" << endl;
       executor.RunW(p,myArgs.display, fromScratch);
       cerr << "+++++++++++++++++++  end calculation  +++++++++++++++++++" << endl;
@@ -559,6 +615,7 @@ int main (int argc, char* argv[])
       r->fini();
       delete r;
       delete disp;
+      UnLoadObserversPluginIfAny();
       return return_value;
     }
   catch (YACS::Exception& e)

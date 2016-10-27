@@ -80,11 +80,11 @@ void Dispatcher::printObservers()
 void Dispatcher::dispatch(Node* object, const std::string& event)
 {
   DEBTRACE("Dispatcher::dispatch " << event );
-  typedef std::set<Observer*>::iterator jt;
   std::pair<Node*,std::string> key(object,event);
-  if(_observers.count(key) != 0)
+  std::map< std::pair<Node*,std::string> , std::set<Observer*> >::const_iterator it(_observers.find(key));
+  if(it!=_observers.end())
     {
-      for(jt iter=_observers[key].begin();iter!=_observers[key].end();iter++)
+      for(std::set<Observer*>::const_iterator iter=(*it).second.begin();iter!=(*it).second.end();iter++)
         {
           (*iter)->notifyObserver(object,event);
         }
@@ -93,11 +93,11 @@ void Dispatcher::dispatch(Node* object, const std::string& event)
 
 void Dispatcher::dispatch2(Node* object,const std::string& event, void *something)
 {
-  typedef std::set<Observer*>::iterator jt;
   std::pair<Node*,std::string> key(object,event);
-  if(_observers.count(key) != 0)
+  std::map< std::pair<Node*,std::string> , std::set<Observer*> >::const_iterator it(_observers.find(key));
+  if(it!=_observers.end())
     {
-      for(jt iter=_observers[key].begin();iter!=_observers[key].end();iter++)
+      for(std::set<Observer*>::const_iterator iter=(*it).second.begin();iter!=(*it).second.end();iter++)
         {
           (*iter)->notifyObserver2(object,event,something);
         }

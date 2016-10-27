@@ -82,7 +82,6 @@ namespace YACS
       virtual ~Dispatcher();
     protected:
       std::map< std::pair<Node*,std::string> , std::set<Observer*> > _observers;
-      std::map< std::pair<Executor*,std::string> , std::set<Observer*> > _observExec;
       static Dispatcher* _singleton;
     };
 
