@@ -71,7 +71,7 @@ namespace YACS
 
       DynType kind() const;
       const char * getKindRepr() const;
-      
+      const TypeCode *subContentType(int lev) const;
       virtual TypeCode *clone() const;
       virtual void putReprAtPlace(char *pt, const char *val, bool deepCpy) const;
       virtual void destroyZippedAny(char *data) const;
@@ -85,6 +85,7 @@ namespace YACS
       virtual int isAdaptable(const TypeCode* tc) const;
       virtual int isEquivalent(const TypeCode* tc) const;
       virtual unsigned getSizeInByteOfAnyReprInSeq() const;
+      virtual std::string getPrintStr() const;
 
       static const char *getKindRepr(DynType kind);
       static TypeCode * interfaceTc(const char* id, const char* name);
@@ -168,6 +169,7 @@ namespace YACS
       const char * id()   const throw(Exception);
       const char * name() const throw(Exception);
       const char * shortName() const;
+      virtual std::string getPrintStr() const;
 
       virtual const TypeCode * contentType() const throw(Exception);
       virtual int isA(const TypeCode* tc) const ;

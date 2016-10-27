@@ -195,6 +195,7 @@ namespace YACS
       std::list<ProgressWeight> getProgressWeight() const;
       int getCurrentIndex() const { return _currentIndex; }
       int getNbOfElementsToBeProcessed() const;
+      static int getFEDeltaBetween(OutPort *start, InPort *end);
 #ifndef SWIG
       std::vector<unsigned int> getPassedResults(Executor *execut, std::vector<SequenceAny *>& outputs, std::vector<std::string>& nameOfOutputs) const;
       void assignPassedResults(const std::vector<unsigned int>& passedIds, const std::vector<SequenceAny *>& passedOutputs, const std::vector<std::string>& nameOfOutputs);

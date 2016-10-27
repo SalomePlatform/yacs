@@ -192,6 +192,44 @@ def sum(i):
     self.assertEqual(n.getState(),pilot.DISABLED) # <- test is here.
     pass
 
+  def test5(self):
+    """ Test focusing P13268. If I connect a list[pyobj] output inside a ForEach to a list[pyobj] outside a foreach it works now."""
+    #self.assertTrue(False)
+    fname="testP1328.xml"
+    p=self.r.createProc("testP1328")
+    tc0=p.createInterfaceTc("python:obj:1.0","pyobj",[])
+    tc1=p.createSequenceTc("list[pyobj]","list[pyobj]",tc0)
+    n0=self.r.createScriptNode("","n0")
+    n1=self.r.createForEachLoop("n1",tc0)
+    n10=self.r.createScriptNode("","n10")
+    n2=self.r.createScriptNode("","n2")
+    p.edAddChild(n0) ; p.edAddChild(n1) ; p.edAddChild(n2) ; n1.edAddChild(n10)
+    n0.setScript("o2=[[elt] for elt in range(10)]")
+    n10.setScript("o6=2*i5")
+    n2.setScript("assert(i8==[[0,0],[1,1],[2,2],[3,3],[4,4],[5,5],[6,6],[7,7],[8,8],[9,9]])")
+    o2=n0.edAddOutputPort("o2",tc1)
+    i5=n10.edAddInputPort("i5",tc0)
+    o6=n10.edAddOutputPort("o6",tc1) # the goal of test is here ! tc1 NOT tc0 !
+    i8=n2.edAddInputPort("i8",tc1)
+    #
+    p.edAddCFLink(n0,n1)
+    p.edAddCFLink(n1,n2)
+    #
+    p.edAddLink(o2,n1.edGetSeqOfSamplesPort())
+    p.edAddLink(n1.edGetSamplePort(),i5)
+    p.edAddLink(o6,i8) # important link for the test !
+    #
+    n1.edGetNbOfBranchesPort().edInitInt(1)
+    #
+    p.saveSchema(fname)
+    #
+    ex=pilot.ExecutorSwig()
+    self.assertEqual(p.getState(),pilot.READY)
+    ex.RunW(p,0)
+    self.assertEqual(p.getState(),pilot.DONE)
+    self.assertEqual(p.getChildByName("n2").getInputPort("i8").getPyObj(),[[0,0],[1,1],[2,2],[3,3],[4,4],[5,5],[6,6],[7,7],[8,8],[9,9]])
+    pass
+  
   def tearDown(self):
     del self.r
     del self.l

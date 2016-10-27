@@ -915,7 +915,8 @@ void ForEachLoop::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort 
         }
       else
         {
-          TypeCodeSeq *newTc=(TypeCodeSeq *)TypeCode::sequenceTc("","",port.first->edGetType());
+          TypeCode *tcTrad((YACS::ENGINE::TypeCode*)finalTarget->edGetType()->subContentType(getFEDeltaBetween(port.first,finalTarget)));
+          TypeCodeSeq *newTc=(TypeCodeSeq *)TypeCode::sequenceTc("","",tcTrad);
           // The out going ports belong to the ForEachLoop, whereas
           // the delegated port belongs to a node child of the ForEachLoop.
           // The name of the delegated port contains dots (bloc.node.outport),
@@ -923,7 +924,7 @@ void ForEachLoop::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort 
           std::string outputPortName(getPortName(port.first));
           InterceptorizeNameOfPort(outputPortName);
           AnySplitOutputPort *newPort(new AnySplitOutputPort(outputPortName,this,newTc));
-          InterceptorInputPort *intercptor(new InterceptorInputPort(outputPortName + "_in",this,port.first->edGetType()));
+          InterceptorInputPort *intercptor(new InterceptorInputPort(outputPortName + "_in",this,tcTrad));
           intercptor->setRepr(newPort);
           newTc->decrRef();
           newPort->addRepr(port.first,intercptor);
@@ -1046,7 +1047,8 @@ void ForEachLoop::createOutputOutOfScopeInterceptors(int branchNb)
       //AnyInputPort *interceptor=new AnyInputPort((*iter)->getName(),this,(*iter)->edGetType());
       OutPort *portOut=getDynOutPortByAbsName(branchNb,getOutPortName(((*iter)->getRepr())));
       DEBTRACE( portOut->getName() );
-      AnyInputPort *interceptor=new AnyInputPort((*iter)->getName(),this,portOut->edGetType());
+      TypeCode *tc((TypeCode *)(*iter)->edGetType()->contentType());
+      AnyInputPort *interceptor=new AnyInputPort((*iter)->getName(),this,tc);
       portOut->addInPort(interceptor);
       _execOutGoingPorts[branchNb].push_back(interceptor);
     }
@@ -1192,3 +1194,29 @@ void ForEachLoop::assignPassedResults(const std::vector<unsigned int>& passedIds
   _passedData=new ForEachLoopPassedData(passedIds,passedOutputs,nameOfOutputs);
 }
 
+int ForEachLoop::getFEDeltaBetween(OutPort *start, InPort *end)
+{
+  Node *ns(start->getNode()),*ne(end->getNode());
+  ComposedNode *co(getLowestCommonAncestor(ns,ne));
+  int ret(0);
+  Node *work(ns);
+  while(work!=co)
+    {
+      ForEachLoop *isFE(dynamic_cast<ForEachLoop *>(work));
+      if(isFE)
+        ret++;
+      work=work->getFather();
+    }
+  work=ne;
+  int delta(0);
+  while(work!=co)
+    {
+      ForEachLoop *isFE(dynamic_cast<ForEachLoop *>(work));
+      if(isFE)
+        delta++;
+      work=work->getFather();
+    }
+  if(dynamic_cast<AnySplitOutputPort *>(start))
+    ret--;
+  return ret-delta;
+}

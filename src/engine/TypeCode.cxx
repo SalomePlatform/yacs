@@ -139,6 +139,11 @@ int TypeCode::isAdaptable(const TypeCode* tc) const
     }
 }
 
+std::string TypeCode::getPrintStr() const
+{
+  return id();
+}
+
 //! Check if this TypeCode can be used in place of tc
 /*!
  * this TypeCode is equivalent to tc if they have the same kind
@@ -198,6 +203,23 @@ static void checkValidName(const char* name)
 const char *TypeCode::getKindRepr(DynType kind)
 {
   return KIND_STR_REPR[(int)kind];
+}
+
+const TypeCode *TypeCode::subContentType(int lev) const
+{
+  if(lev<0)
+    throw YACS::Exception("subContentType: Invalid input val !");
+  if(lev==0)
+    return this;
+  const TypeCode *ret(this);
+  for(int i=0;i<lev;i++)
+    {
+      const TypeCode *cand(ret->contentType());
+      if(!cand)
+        throw YACS::Exception("subContentType : Invalid input val 2 !");
+      ret=cand;
+    }
+  return ret;
 }
 
 const char * TypeCode::getKindRepr() const
@@ -445,6 +467,12 @@ const char * TypeCodeSeq::name() const throw(YACS::Exception)
 const char * TypeCodeSeq::shortName() const
 {
   return _shortName.c_str();
+}
+
+std::string TypeCodeSeq::getPrintStr() const
+{
+  std::ostringstream oss; oss << "seq[" << contentType()->getPrintStr() << "]";
+  return oss.str();
 }
 
 const TypeCode * TypeCodeSeq::contentType() const throw(YACS::Exception)

@@ -806,6 +806,11 @@ InputPort* RuntimeSALOME::adaptNeutralToPython(InputPort* inport,
       //convertible type
       return new PyNeutral(inport);
     }
+  //last chance : an py output that is seq[objref] can be connected to a neutral input objref (P13268)
+  else if(type->kind()==Sequence && type->contentType()->kind()==Objref && inport->edGetType()->kind()==Objref)
+    {
+      return new PyNeutral(inport);
+    }
   //non convertible type
   stringstream msg;
   msg << "Cannot connect Python output port with type: " << type->id() ;
