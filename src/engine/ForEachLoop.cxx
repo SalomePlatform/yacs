@@ -1207,16 +1207,7 @@ int ForEachLoop::getFEDeltaBetween(OutPort *start, InPort *end)
         ret++;
       work=work->getFather();
     }
-  work=ne;
-  int delta(0);
-  while(work!=co)
-    {
-      ForEachLoop *isFE(dynamic_cast<ForEachLoop *>(work));
-      if(isFE)
-        delta++;
-      work=work->getFather();
-    }
   if(dynamic_cast<AnySplitOutputPort *>(start))
     ret--;
-  return ret-delta;
+  return ret;
 }

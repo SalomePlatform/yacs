@@ -454,7 +454,7 @@ for i in xrange(nb):
     node2000.setScript("o6=2+i5")
     p.edAddLink(node200.edGetSamplePort(),i5)
     #
-    node3=self.r.createForEachLoop("node3",td)
+    node3=self.r.createForEachLoop("node3",td2)
     p.edAddChild(node3)
     p.edAddCFLink(node2,node3)
     p.edAddLink(o6,node3.edGetSeqOfSamplesPort())
@@ -540,7 +540,7 @@ for i in xrange(nb):
     node2000.setScript("def ff(x):\n  return 2+x")
     p.edAddLink(node200.edGetSamplePort(),i5)
     #
-    node3=self.r.createForEachLoop("node3",td)
+    node3=self.r.createForEachLoop("node3",td2)
     p.edAddChild(node3)
     p.edAddCFLink(node2,node3)
     p.edAddLink(o6,node3.edGetSeqOfSamplesPort())

@@ -229,6 +229,52 @@ def sum(i):
     self.assertEqual(p.getState(),pilot.DONE)
     self.assertEqual(p.getChildByName("n2").getInputPort("i8").getPyObj(),[[0,0],[1,1],[2,2],[3,3],[4,4],[5,5],[6,6],[7,7],[8,8],[9,9]])
     pass
+
+  def test6(self):
+    """ Test focusing on P13766. Test of a connection of 2 foreach at same level where the output pyobj is connected to the list[pyobj] input samples of the 2nd foreach"""
+    fname="testP13766.xml"
+    p=self.r.createProc("testP13766")
+    tc0=p.createInterfaceTc("python:obj:1.0","pyobj",[])
+    tc1=p.createSequenceTc("list[pyobj]","list[pyobj]",tc0)
+    n0=self.r.createScriptNode("","n0")
+    n1=self.r.createForEachLoop("n1",tc0)
+    n2=self.r.createForEachLoop("n2",tc0)
+    n10=self.r.createScriptNode("","n10")
+    n20=self.r.createScriptNode("","n20")
+    n3=self.r.createScriptNode("","n3")
+    p.edAddChild(n0) ; p.edAddChild(n1) ; p.edAddChild(n2) ; p.edAddChild(n3) ; n1.edAddChild(n10) ; n2.edAddChild(n20)
+    n0.setScript("o2=[[elt] for elt in range(10)]")
+    n10.setScript("o6=3*i5")
+    n3.setScript("assert(i8==[[0,0,0,0,0,0],[1,1,1,1,1,1],[2,2,2,2,2,2],[3,3,3,3,3,3],[4,4,4,4,4,4],[5,5,5,5,5,5],[6,6,6,6,6,6],[7,7,7,7,7,7],[8,8,8,8,8,8],[9,9,9,9,9,9]])")
+    n20.setScript("o10=2*i9")
+    o2=n0.edAddOutputPort("o2",tc1)
+    i5=n10.edAddInputPort("i5",tc0)
+    o6=n10.edAddOutputPort("o6",tc0)
+    i9=n20.edAddInputPort("i9",tc0)
+    o10=n20.edAddOutputPort("o10",tc0)
+    i8=n3.edAddInputPort("i8",tc1)
+    #
+    p.edAddCFLink(n0,n1)
+    p.edAddCFLink(n1,n2)
+    p.edAddCFLink(n2,n3)
+    #
+    p.edAddLink(o2,n1.edGetSeqOfSamplesPort())
+    p.edAddLink(o6,n2.edGetSeqOfSamplesPort())# test is here !
+    p.edAddLink(n1.edGetSamplePort(),i5)
+    p.edAddLink(n2.edGetSamplePort(),i9)
+    p.edAddLink(o10,i8) 
+    #
+    n1.edGetNbOfBranchesPort().edInitInt(1)
+    n2.edGetNbOfBranchesPort().edInitInt(1)
+    #
+    p.saveSchema(fname)
+    #
+    ex=pilot.ExecutorSwig()
+    self.assertEqual(p.getState(),pilot.READY)
+    ex.RunW(p,0)
+    self.assertEqual(p.getState(),pilot.DONE)
+    self.assertEqual(p.getChildByName("n3").getInputPort("i8").getPyObj(),[[0,0,0,0,0,0],[1,1,1,1,1,1],[2,2,2,2,2,2],[3,3,3,3,3,3],[4,4,4,4,4,4],[5,5,5,5,5,5],[6,6,6,6,6,6],[7,7,7,7,7,7],[8,8,8,8,8,8],[9,9,9,9,9,9]])
+    pass
   
   def tearDown(self):
     del self.r
