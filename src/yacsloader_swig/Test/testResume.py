@@ -68,7 +68,7 @@ class TestResume(unittest.TestCase):
         sl.parse('dumpPartialBloc2.xml')
         #self.e.displayDot(self.p)
         self.e.setExecMode(0) # YACS::CONTINUE
-        run2 = threading.Thread(None, self.e.RunPy, "loadState", (self.p,0,1,1))
+        run2 = threading.Thread(None, self.e.RunPy, "loadState", (self.p,0,True,True))
         run2.start()
         time.sleep(0.1)
         self.e.waitPause()
