@@ -132,6 +132,16 @@ SET(SALOME_INSTALL_AMCONFIG_LOCAL "@SALOME_INSTALL_AMCONFIG_LOCAL@")
 
 IF(SALOME_YACS_BUILD_GUI)
   # Include GUI targets if they were not already loaded:
+  SET(GUI_ROOT_DIR $ENV{GUI_ROOT_DIR} CACHE PATH "Path to the Salome GUI")
+  IF(EXISTS ${GUI_ROOT_DIR})
+    LIST(APPEND CMAKE_MODULE_PATH "${GUI_ROOT_DIR}/adm_local/cmake_files")
+    FIND_PACKAGE(SalomeGUI)
+    SALOME_GUI_WITH_CORBA() # check whether GUI builded with CORBA
+    SALOME_GUI_MODE(SALOME_USE_QXGRAPHVIEWER) # check whether GUI is built with the QxGraphViewer
+  ELSE(EXISTS ${GUI_ROOT_DIR})
+    MESSAGE(FATAL_ERROR "We absolutely need a Salome GUI, please define GUI_ROOT_DIR or turn option SALOME_BUILD_GUI to OFF !")
+  ENDIF(EXISTS ${GUI_ROOT_DIR})
+  SALOME_LOG_OPTIONAL_PACKAGE(SalomeGUI SALOME_BUILD_GUI)
   IF(NOT (TARGET Event)) 
     INCLUDE("${GUI_ROOT_DIR_EXP}/${SALOME_INSTALL_CMAKE_LOCAL}/SalomeGUITargets.cmake")
   ENDIF()
