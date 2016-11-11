@@ -112,7 +112,7 @@ class proc_i(YACS_ORB__POA.ProcExec):
             self.run1 = None
 
         if self.run1 is None:
-            self.run1 = threading.Thread(None, self.runProc, "CORBAExec", (0,1,1))
+            self.run1 = threading.Thread(None, self.runProc, "CORBAExec", (0,True,True))
             self.run1.start()
 
     def RunFromState(self, xmlFile):
@@ -146,7 +146,7 @@ class proc_i(YACS_ORB__POA.ProcExec):
             return
 
         if self.run1 is None:
-            self.run1 = threading.Thread(None, self.runProc, "CORBAExec", (0,1,0))
+            self.run1 = threading.Thread(None, self.runProc, "CORBAExec", (0,True,False))
             self.run1.start()
 
     def RestartFromState(self, xmlFile):
@@ -175,7 +175,7 @@ class proc_i(YACS_ORB__POA.ProcExec):
             pass
 
         if self.run1 is None:
-            self.run1 = threading.Thread(None, self.runProc, "CORBAExec", (0,1,0))
+            self.run1 = threading.Thread(None, self.runProc, "CORBAExec", (0,True,False))
             self.run1.start()
 
     def addObserver(self, obs, numid, event):
