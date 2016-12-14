@@ -80,6 +80,7 @@ void stateParser::init(const xmlChar** p, xmlParserBase* father)
   _nodeStateValue["DISABLED"] =YACS::DISABLED;
   _nodeStateValue["FAILED"] =YACS::FAILED;
   _nodeStateValue["ERROR"] =YACS::ERROR;
+  _nodeStates.clear();
 }
 
 

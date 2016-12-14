@@ -1459,6 +1459,94 @@ dd=range(10)""")
 
   pass
 
+  def test21(self):
+    "test if we restart from a saved state in a foreach loop"
+    fname="test21.xml"
+    xmlStateFileName="saveState21.xml"
+    from datetime import datetime
+    p=self.r.createProc("prTest21")
+    cont=p.createContainer("gg","Salome")
+    cont.setProperty("name","localhost")
+    cont.setProperty("hostname","localhost")
+    cont.setProperty("type","multi")
+    td=p.createType("double","double")
+    ti=p.createType("int","int")
+    tsi=p.createSequenceTc("seqint","seqint",ti)
+    tsd=p.createSequenceTc("seqdbl","seqdbl",td)
+    n0=self.r.createScriptNode("","n0")
+    o0=n0.edAddOutputPort("o0",tsi)
+    n0.setScript("o0=[ elt for elt in range(6) ]")
+    p.edAddChild(n0)
+    n1=self.r.createForEachLoop("n1",ti)
+    n10=self.r.createScriptNode("","n10")
+    n10.setExecutionMode("remote")
+    n10.setContainer(cont)
+    n1.edAddChild(n10)
+    n10.setScript("""
+import time
+time.sleep(2)
+o2=2*i1
+""")
+    i1=n10.edAddInputPort("i1",ti)
+    o2=n10.edAddOutputPort("o2",ti)
+    p.edAddChild(n1)
+    p.edAddLink(o0,n1.edGetSeqOfSamplesPort())
+    p.edAddLink(n1.edGetSamplePort(),i1)
+    p.edAddCFLink(n0,n1)
+    n1.edGetNbOfBranchesPort().edInitPy(2)
+    n2=self.r.createScriptNode("","n2")
+    n2.setScript("o4=i3")
+    i3=n2.edAddInputPort("i3",tsi)
+    o4=n2.edAddOutputPort("o4",tsi)
+    n2.setScript("o4=i3")
+    p.edAddChild(n2)
+    p.edAddCFLink(n1,n2)
+    p.edAddLink(o2,i3)
+    p.saveSchema(fname)
+    #
+    l=loader.YACSLoader()
+    p=l.load(fname)
+    n1=p.getChildByName("n1")
+    ex=pilot.ExecutorSwig()
+    ex.setKeepGoingProperty(True)
+    #
+    startt=datetime.now()
+    import threading
+    myRun=threading.Thread(None, ex.RunW, None, (p,0))
+    myRun.start()
+    import time
+    time.sleep(5)
+    p.saveState(xmlStateFileName)
+    a,b,c=n1.getPassedResults(ex)
+    myRun.join()
+    t0=datetime.now()-startt
+    #
+    self.assertEqual(p.getState(),pilot.DONE)
+    self.assertEqual(n1.getState(),pilot.DONE)
+    self.assertEqual(a,[0,1])
+    self.assertEqual([elt.getPyObj() for elt in b],[[0L,2L]])
+    #
+    p.getChildByName("n0").setScript("o0=[ 3*elt for elt in range(6) ]")
+    p.getChildByName("n1").getChildByName("n10").setScript("""
+import time
+time.sleep(0.1)
+o2=5*i1
+""")
+    loader.loadState(p, xmlStateFileName)
+    p.resetState(1)
+    p.getChildByName("n1").assignPassedResults(a,b,c)
+    p.exUpdateState();
+    #
+    startt=datetime.now()
+    ex.RunW(p,0,False)
+    t1=datetime.now()-startt
+    #
+    self.assertEqual(n1.getState(),pilot.DONE)
+    self.assertEqual(p.getState(),pilot.DONE)
+    self.assertEqual(p.getChildByName("n2").getOutputPort("o4").getPyObj(),[0L,2L,10L,15L,20L,25L])
+    pass
+  pass
+
 if __name__ == '__main__':
   import os,sys
   U = os.getenv('USER')
