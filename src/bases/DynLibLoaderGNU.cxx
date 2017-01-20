@@ -24,7 +24,11 @@
 
 using namespace YACS::BASES;
 
+#if defined(__APPLE__)
+const char DynLibLoaderGNU::_extForDynLib[]=".dylib";
+#else
 const char DynLibLoaderGNU::_extForDynLib[]=".so";
+#endif
 
 DynLibLoaderGNU::DynLibLoaderGNU(const std::string& libNameWithoutExtension):_libName(libNameWithoutExtension),
                                                                              _handleOnLoadedLib(0)

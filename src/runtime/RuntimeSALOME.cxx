@@ -139,8 +139,8 @@ void RuntimeSALOME::setRuntime(long flags, int argc, char* argv[]) // singleton 
 
 RuntimeSALOME* YACS::ENGINE::getSALOMERuntime()
 {
-  YASSERT(Runtime::_singleton);
-  return dynamic_cast< RuntimeSALOME* >(Runtime::_singleton);
+  YASSERT(RuntimeSALOME::getSingleton());
+  return dynamic_cast< RuntimeSALOME* >(RuntimeSALOME::getSingleton());
 }
 
 /**

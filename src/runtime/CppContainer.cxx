@@ -324,7 +324,11 @@ LocalLibrary  LocalContainer::loadComponentLibrary(const std::string & aCompName
     }
   
 #ifndef WIN32
+#ifdef __APPLE__
+  std::string impl_name = std::string ("lib") + aCompName + std::string("Local.dylib");
+#else
   std::string impl_name = std::string ("lib") + aCompName + std::string("Local.so");
+#endif
   if(sprefix != "")
     impl_name = sprefix + std::string("/") + impl_name;
 #else

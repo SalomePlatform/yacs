@@ -41,7 +41,7 @@
 #include <signal.h>
 #include <list>
 
-#ifdef WIN32
+#if defined WIN32 || defined __APPLE__
 #else
 #include <argp.h>
 #endif
@@ -58,7 +58,7 @@ const char *argp_program_bug_address ="<nepal@nepal.edf.fr>";
 static char doc[] ="driver -- a SALOME YACS graph executor";
 static char args_doc[] = "graph.xml";
 
-#ifdef WIN32
+#if defined WIN32 || defined __APPLE__
 #else
 static struct argp_option options[] =
   {
@@ -157,14 +157,14 @@ void UnLoadObserversPluginIfAny()
 #endif
 }
 
-#ifdef WIN32
+#if defined WIN32 || defined __APPLE__
 static int
 #else
 static error_t
 #endif
 parse_opt (int key, char *arg, struct argp_state *state)
 {
-#ifdef WIN32
+#if defined WIN32 || defined __APPLE__
 #else
   // Get the input argument from argp_parse, which we
   // know is a pointer to our arguments structure. 
@@ -242,14 +242,14 @@ parse_opt (int key, char *arg, struct argp_state *state)
 }
 
 // Our argp parser.
-#ifdef WIN32
+#if defined WIN32 || defined __APPLE__
 #else
 static struct argp argp = { options, parse_opt, args_doc, doc };
 #endif
 
 void timer(std::string msg)
 {
-#ifdef WIN32
+#if defined WIN32 || defined __APPLE__
 #else
   struct timeval tv;
   gettimeofday(&tv,NULL);
@@ -367,7 +367,7 @@ int main (int argc, char* argv[])
   myArgs.init_ports.clear();
 
   // Parse our arguments; every option seen by parse_opt will be reflected in arguments.
-#ifdef WIN32
+#if defined WIN32 || defined __APPLE__
 #else
   argp_parse (&argp, argc, argv, 0, 0, &myArgs);
   std::cerr << "graph = " << myArgs.args[0];

@@ -50,11 +50,11 @@ protected:
   int _nbChrono;
 };
 
-class YACSBASES_EXPORT chrono
+class YACSBASES_EXPORT salome_chrono
 {
 public:
-  chrono(int i);
-  ~chrono();
+  salome_chrono(int i);
+  ~salome_chrono();
   void stop();
 protected:
   bool _run;
@@ -79,7 +79,7 @@ static timeval tv;
 #ifdef CHRONODEF
 #define CHRONO(i) counters::_ctrs[i]._ctrNames = (char *)__FILE__; \
   counters::_ctrs[i]._ctrLines = __LINE__; \
-  chrono aChrono##i(i);
+  salome_chrono aChrono##i(i);
 
 #define CHRONOSTOP(i) aChrono##i.stop();
 

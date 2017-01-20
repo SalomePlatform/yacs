@@ -62,20 +62,20 @@ void counters::stats()
 
 
 
-chrono::chrono(int i) : _ctr(i), _run(true)
+salome_chrono::salome_chrono(int i) : _ctr(i), _run(true)
 {
-  //DEBTRACE("chrono::chrono " << _ctr << " " << _run);
+  //DEBTRACE("salome_chrono::salome_chrono " << _ctr << " " << _run);
   _start = clock();    
 }
 
-chrono::~chrono()
+salome_chrono::~salome_chrono()
 {
   if (_run) stop();
 }
 
-void chrono::stop()
+void salome_chrono::stop()
 {
-  //DEBTRACE("chrono::stop " << _ctr << " " << _run);
+  //DEBTRACE("salome_chrono::stop " << _ctr << " " << _run);
   if (_run)
     {
       _run = false;

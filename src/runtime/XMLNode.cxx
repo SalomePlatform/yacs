@@ -37,6 +37,9 @@
 #include <io.h>
 #define chmod _chmod
 #endif
+#ifdef __APPLE__
+#include <unistd.h> // for mkdtemp
+#endif
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"

@@ -74,6 +74,8 @@ namespace YACS
 
     class YACSRUNTIMESALOME_EXPORT RuntimeSALOME: public Runtime
     {
+      static Runtime* getSingleton() { return Runtime::_singleton; }
+
     public:
       
       enum 
