@@ -112,7 +112,7 @@
       <PyFunc><![CDATA[    lcc = LifeCycleCORBA(orb)                     ]]></PyFunc>
       <PyFunc><![CDATA[    # --- create a naming service instance              ]]></PyFunc>
       <PyFunc><![CDATA[    naming_service = SALOME_NamingServicePy_i(orb)    ]]></PyFunc>
-      <PyFunc><![CDATA[    # --- get Study Manager reference                     ]]></PyFunc>
+      <PyFunc><![CDATA[    # --- get Study reference                     ]]></PyFunc>
       <PyFunc><![CDATA[    obj = naming_service.Resolve('Study')    ]]></PyFunc>
       <PyFunc><![CDATA[    aStudy = obj._narrow(SALOMEDS.Study)    ]]></PyFunc>
       <PyFunc><![CDATA[    # --- load visu component                          ]]></PyFunc>

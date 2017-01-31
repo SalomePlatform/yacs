@@ -1089,6 +1089,7 @@ void GenericGui::createContext(YACS::ENGINE::Proc* proc,
   GraphicsView* gView = new GraphicsView(viewWindow);
   gView->setScene(scene);
   gView->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+  _wrapper->AssociateViewToWindow(gView, viewWindow);
   context->setScene(scene);
   context->setView(gView);
   context->setWindow(viewWindow);

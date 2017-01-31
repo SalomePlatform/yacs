@@ -71,6 +71,13 @@ QxScene_ViewWindow* SalomeWrap_Module::getNewWindow(QGraphicsScene *scene)
   return aView;
 }
 
+void SalomeWrap_Module::AssociateViewToWindow(QGraphicsView* gView,
+                                             QxScene_ViewWindow* viewWindow)
+{
+  viewWindow->setSceneView(gView);
+  viewWindow->setCentralWidget(gView);
+}
+
 QDockWidget* SalomeWrap_Module::objectBrowser() {
   if ( !getApp()->objectBrowser() )
     return 0;

@@ -65,7 +65,7 @@ Yacsgui::Yacsgui() :
   _wrapper = 0;
   _genericGui = 0;
   _selectFromTree = false;
-  _studyContextMap = 0;
+  _studyContext = 0;
 }
 
 Yacsgui::~Yacsgui()
@@ -109,7 +109,7 @@ void Yacsgui::initialize( CAM_Application* app )
   _genericGui->createActions();
   _genericGui->createMenus();
   _genericGui->createTools();
-  _studyContextMap = QtGuiContext::getQtCurrent();
+  _studyContext = QtGuiContext::getQtCurrent();
 
   // VSR 23/10/2014: note that this is not a good way to create SComponent from this point
   // as initialize() method can be potentially called when there's no yet open study;
@@ -205,8 +205,8 @@ bool Yacsgui::deactivateModule( SUIT_Study* theStudy )
   setToolShown( false );
   _genericGui->showDockWidgets(false);
   QtGuiContext *context = QtGuiContext::getQtCurrent();
-  _studyContextMap = context;
-  DEBTRACE("_studyContextMap " << theStudy << " " << context);
+  _studyContext = context;
+  DEBTRACE("_studyContext " << theStudy << " " << context);
   return SalomeApp_Module::deactivateModule( theStudy );
 }
 
@@ -278,7 +278,7 @@ void Yacsgui::onWindowActivated( SUIT_ViewWindow* svw)
 
   YASSERT(_genericGui);
   _genericGui->switchContext(viewWindow);
-  _studyContextMap = QtGuiContext::getQtCurrent();
+  _studyContext = QtGuiContext::getQtCurrent();
   
   if (_selectFromTree) return;
   SalomeWrap_DataModel *model = dynamic_cast<SalomeWrap_DataModel*>(dataModel());

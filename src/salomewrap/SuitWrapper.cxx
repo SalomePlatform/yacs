@@ -60,6 +60,60 @@ QWidget* SuitWrapper::getNewWindow(QGraphicsScene *scene)
   return module->getNewWindow(scene);
 }
 
+/*!
+ * return studyId used in context delete when study is closed.
+ */
+void SuitWrapper::AssociateViewToWindow(QGraphicsView* gView, QWidget* viewWindow)
+{
+  SalomeWrap_Module* module = dynamic_cast<SalomeWrap_Module*>(_wrapped);
+  QxScene_ViewWindow *svw = dynamic_cast<QxScene_ViewWindow*>(viewWindow);
+  YASSERT(svw);
+  module->AssociateViewToWindow(gView, svw);
+  WrapGraphicsView* wgv = dynamic_cast<WrapGraphicsView*>(gView);
+  YASSERT(wgv);
+  QObject::disconnect(svw->toolMgr()->action(QxScene_ViewWindow::FitAllId),
+                      SIGNAL(triggered(bool)),
+                      svw, SLOT(onViewFitAll()));
+  QObject::connect(svw->toolMgr()->action(QxScene_ViewWindow::FitAllId),
+                   SIGNAL(triggered(bool)),
+                   wgv, SLOT(onViewFitAll()));
+
+  QObject::disconnect(svw->toolMgr()->action(QxScene_ViewWindow::FitRectId),
+                      SIGNAL(triggered(bool)),
+                      svw, SLOT(onViewFitArea()));
+  QObject::connect(svw->toolMgr()->action(QxScene_ViewWindow::FitRectId),
+                   SIGNAL(triggered(bool)),
+                   wgv, SLOT(onViewFitArea()));
+
+  QObject::disconnect(svw->toolMgr()->action(QxScene_ViewWindow::ZoomId),
+                      SIGNAL(triggered(bool)),
+                      svw, SLOT(onViewZoom()));
+  QObject::connect(svw->toolMgr()->action(QxScene_ViewWindow::ZoomId),
+                   SIGNAL(triggered(bool)),
+                   wgv, SLOT(onViewZoom()));
+
+  QObject::disconnect(svw->toolMgr()->action(QxScene_ViewWindow::PanId),
+                      SIGNAL(triggered(bool)),
+                      svw, SLOT(onViewPan()));
+  QObject::connect(svw->toolMgr()->action(QxScene_ViewWindow::PanId),
+                   SIGNAL(triggered(bool)),
+                   wgv, SLOT(onViewPan()));
+
+  QObject::disconnect(svw->toolMgr()->action(QxScene_ViewWindow::GlobalPanId),
+                      SIGNAL(triggered(bool)),
+                      svw, SLOT(onViewGlobalPan()));
+  QObject::connect(svw->toolMgr()->action(QxScene_ViewWindow::GlobalPanId),
+                   SIGNAL(triggered(bool)),
+                   wgv, SLOT(onViewGlobalPan()));
+
+  QObject::disconnect(svw->toolMgr()->action(QxScene_ViewWindow::ResetId),
+                      SIGNAL(triggered(bool)),
+                      svw, SLOT(onViewReset()));
+  QObject::connect(svw->toolMgr()->action(QxScene_ViewWindow::ResetId),
+                   SIGNAL(triggered(bool)),
+                   wgv, SLOT(onViewReset()));
+}
+
 QDockWidget* SuitWrapper::objectBrowser()
 {
   SalomeWrap_Module* module = dynamic_cast<SalomeWrap_Module*>(_wrapped);

@@ -80,7 +80,7 @@ protected:
   bool _selectFromTree;
   Yacsgui_Resource* _myresource;
   SUIT_ViewWindow* _currentSVW;
-  YACS::HMI::QtGuiContext* _studyContextMap;
+  YACS::HMI::QtGuiContext* _studyContext;
 };
 
 #endif

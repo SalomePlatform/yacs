@@ -252,7 +252,7 @@ void StudyOutNode::execute()
   // save in file if ref is given
   if(_ref != "")
     {
-	  myStudy->SaveAs(_ref.c_str(), false);
+	  myStudy->SaveAs(_ref.c_str(), false, false);
     }
   DEBTRACE("+++++++ end StudyOutNode::execute +++++++++++" );
 }

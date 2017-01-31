@@ -45,6 +45,9 @@ public:
 
   QxScene_ViewWindow* getNewWindow(QGraphicsScene *scene);
 
+  void AssociateViewToWindow(QGraphicsView* gView,
+                            QxScene_ViewWindow* viewWindow);
+
   QDockWidget* objectBrowser();
 
   QAction* wCreateAction(const int id,
