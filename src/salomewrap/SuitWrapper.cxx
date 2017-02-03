@@ -60,9 +60,6 @@ QWidget* SuitWrapper::getNewWindow(QGraphicsScene *scene)
   return module->getNewWindow(scene);
 }
 
-/*!
- * return studyId used in context delete when study is closed.
- */
 void SuitWrapper::AssociateViewToWindow(QGraphicsView* gView, QWidget* viewWindow)
 {
   SalomeWrap_Module* module = dynamic_cast<SalomeWrap_Module*>(_wrapped);

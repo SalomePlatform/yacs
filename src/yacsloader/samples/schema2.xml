@@ -146,9 +146,7 @@
         <code>orb = CORBA.ORB_init([], CORBA.ORB_ID)</code>
         <code>lcc = LifeCycleCORBA(orb)</code>
         <code>naming_service = SALOME_NamingServicePy_i(orb)</code>
-        <code>aStudy = naming_service.Resolve('Study')</code>
         <code>aVisu = lcc.FindOrLoadComponent("FactoryServer","VISU")</code>
-        <code>aVisu.SetCurrentStudy(aStudy)</code>
         <code>aViewManager=aVisu.GetViewManager()</code>
         <code>aView=aViewManager.Create3DView()</code>
         <code>medFile = os.getenv('DATA_DIR') + '/MedFiles/' + "TimeStamps.med" </code>

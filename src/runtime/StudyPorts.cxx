@@ -26,6 +26,7 @@
 #include "RuntimeSALOME.hxx"
 
 #include "SALOMEDS_Attributes.hh"
+#include "SALOME_KernelServices.hxx"
 
 #include <iostream>
 #include <iomanip>
@@ -135,16 +136,16 @@ std::string OutputStudyPort::getAsString()
   return getData();
 }
 
-void OutputStudyPort::getDataFromStudy(SALOMEDS::Study_var myStudy)
+void OutputStudyPort::getDataFromStudy()
 {
       std::string data = getData();
       DEBTRACE("data: " << data );
       //try an id
-      SALOMEDS::SObject_var aSO = myStudy->FindObjectID(data.c_str());
+      SALOMEDS::SObject_var aSO = KERNEL::getStudyServant()->FindObjectID(data.c_str());
       if(CORBA::is_nil(aSO))
         {
           //try a path
-          aSO=myStudy->FindObjectByPath(data.c_str());
+          aSO=KERNEL::getStudyServant()->FindObjectByPath(data.c_str());
           if(CORBA::is_nil(aSO))
             {
               std::stringstream msg;
@@ -153,7 +154,7 @@ void OutputStudyPort::getDataFromStudy(SALOMEDS::Study_var myStudy)
             }
         }
 
-      CORBA::String_var path=myStudy->GetObjectPath(aSO);
+      CORBA::String_var path=KERNEL::getStudyServant()->GetObjectPath(aSO);
       DEBTRACE(path);
       CORBA::String_var id=aSO->GetID();
       DEBTRACE(id);
@@ -230,10 +231,10 @@ void OutputStudyPort::getDataFromStudy(SALOMEDS::Study_var myStudy)
 
 
 
-SALOMEDS::SObject_ptr findOrCreateSoWithName(SALOMEDS::Study_ptr study, SALOMEDS::StudyBuilder_ptr builder,
+SALOMEDS::SObject_ptr findOrCreateSoWithName(SALOMEDS::StudyBuilder_ptr builder,
                                              SALOMEDS::SObject_ptr sobj, const std::string& name)
 {
-  SALOMEDS::ChildIterator_var anIterator= study->NewChildIterator(sobj);
+  SALOMEDS::ChildIterator_var anIterator= KERNEL::getStudyServant()->NewChildIterator(sobj);
   SALOMEDS::GenericAttribute_var anAttr;
   SALOMEDS::AttributeName_var namAttr ;
   SALOMEDS::SObject_var result=SALOMEDS::SObject::_nil();
@@ -342,7 +343,7 @@ std::string InputStudyPort::getAsString()
   return getData();
 }
 
-void InputStudyPort::putDataInStudy(SALOMEDS::Study_var myStudy,SALOMEDS::StudyBuilder_var aBuilder)
+void InputStudyPort::putDataInStudy(SALOMEDS::StudyBuilder_var aBuilder)
 {
   SALOMEDS::GenericAttribute_var aGAttr;
   SALOMEDS::SObject_var aSO ;
@@ -353,11 +354,11 @@ void InputStudyPort::putDataInStudy(SALOMEDS::Study_var myStudy,SALOMEDS::StudyB
   std::string data = getData();
   DEBTRACE("data: " << data );
   //try to find an existing id (i:j:k...)
-  aSO = myStudy->FindObjectID(data.c_str());
+  aSO = KERNEL::getStudyServant()->FindObjectID(data.c_str());
   if(CORBA::is_nil(aSO))
     {
       // the id does not exist. Try to create it by id
-      aSO=myStudy->CreateObjectID(data.c_str());
+      aSO=KERNEL::getStudyServant()->CreateObjectID(data.c_str());
       if(!CORBA::is_nil(aSO))
         {
           aGAttr=aBuilder->FindOrCreateAttribute(aSO,"AttributeName");
@@ -432,7 +433,7 @@ void InputStudyPort::putDataInStudy(SALOMEDS::Study_var myStudy,SALOMEDS::StudyB
         }
 
       // Does component entry exist ?
-      aSO=myStudy->FindObjectByPath(pname.c_str());
+      aSO=KERNEL::getStudyServant()->FindObjectByPath(pname.c_str());
       if(CORBA::is_nil(aSO))
         {
           // We have not been able to publish the object with Salome Driver, make it the light way
@@ -445,7 +446,7 @@ void InputStudyPort::putDataInStudy(SALOMEDS::Study_var myStudy,SALOMEDS::StudyB
           aGAttr=aBuilder->FindOrCreateAttribute(aFather,"AttributeName");
           anAttr = SALOMEDS::AttributeName::_narrow( aGAttr );
           anAttr->SetValue(name.c_str());
-          aSO=myStudy->FindObjectByPath(pname.c_str());
+          aSO=KERNEL::getStudyServant()->FindObjectByPath(pname.c_str());
         }
 
       begin=data.find_first_not_of("/",pos);
@@ -456,7 +457,7 @@ void InputStudyPort::putDataInStudy(SALOMEDS::Study_var myStudy,SALOMEDS::StudyB
             name=data.substr(begin,pos-begin);
           else
             name=data.substr(begin);
-          aSO=findOrCreateSoWithName(myStudy,aBuilder,aSO,name);
+          aSO=findOrCreateSoWithName(aBuilder,aSO,name);
           begin=data.find_first_not_of("/",pos);
         }
     }

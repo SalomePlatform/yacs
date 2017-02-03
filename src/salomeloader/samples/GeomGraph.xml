@@ -31,9 +31,6 @@
     <service>
 <service-name>GeomGraph</service-name>
      <inParameter-list>
-<inParameter>
-<inParameter-type>long</inParameter-type>
-       <inParameter-name>SetStudyID__theStudyID</inParameter-name>      </inParameter>
       <inParameter>
 <inParameter-type>double</inParameter-type>
        <inParameter-name>MakeBox__theX1</inParameter-name>      </inParameter>
