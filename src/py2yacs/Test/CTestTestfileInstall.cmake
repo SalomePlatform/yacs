@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2016  CEA/DEN, EDF R&D
+# Copyright (C) 2012-2016  CEA/DEN, EDF R&D
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -17,21 +17,12 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-#SET(SALOME_TEST_DRIVER "$ENV{ABSOLUTE_APPLI_PATH}/bin/salome/appliskel/salome_test_driver.py")
-SET(SALOME_TEST_DRIVER "$ENV{KERNEL_ROOT_DIR}/bin/salome/appliskel/salome_test_driver.py")
+IF(NOT WIN32)
+  SET(TEST_NAME ${COMPONENT_NAME}_Py2YacsTest)
+  # No need of a salome session for this test
+  ADD_TEST(${TEST_NAME} TestPy2yacs)
+  SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES
+                                    LABELS "${COMPONENT_NAME}"
+                      )
 
-SET(COMPONENT_NAME YACS)
-SET(TIMEOUT        500)
-
-SET(YACS_TEST_LIB "../lib")
-
-# Add all test subdirs
-SUBDIRS(
-    bases
-    engine
-    runtime
-    pmml
-    yacsloader
-    yacsloader_swig
-    py2yacs
-    )
+ENDIF()

@@ -29,7 +29,7 @@ SET(SUBDIRS_COMMON
 # KERNEL
 ##
 IF(SALOME_YACS_USE_KERNEL)
-  SET(SUBDIRS_KERNEL runtime yacsloader evalyfx)
+  SET(SUBDIRS_KERNEL runtime yacsloader evalyfx py2yacs)
 ENDIF(SALOME_YACS_USE_KERNEL)
 
 ##
