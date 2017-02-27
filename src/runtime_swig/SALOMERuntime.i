@@ -59,10 +59,12 @@
 #include "TypeConversions.hxx"
 #include "TypeCode.hxx"
 #include "VisitorSaveSalomeSchema.hxx"
+#include "VisitorSalomeSaveState.hxx"
 #include "SalomeOptimizerLoop.hxx"
 #include "DistributedPythonNode.hxx"
 #include "PyOptimizerAlg.hxx"
 #include "PyStdout.hxx"
+#include "ExecutorSwig.hxx"
 #include <sstream>
 %}
 
@@ -133,6 +135,20 @@
 %include "StudyPorts.hxx"
 %include "SalomeOptimizerLoop.hxx"
 %include "DistributedPythonNode.hxx"
+
+namespace YACS
+{
+  namespace ENGINE
+  {
+    class SchemaSaveState
+    {
+    public:
+      SchemaSaveState(Proc* proc, Executor* exec);
+      virtual void save(std::string xmlSchemaFile);
+    };
+  }
+}
+
 
 %extend YACS::ENGINE::OutputPresetPort
 {

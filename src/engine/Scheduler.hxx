@@ -31,7 +31,6 @@ namespace YACS
   namespace ENGINE
   {
     class Task;
-    class Executor;
     
     class Scheduler
     {
@@ -43,7 +42,7 @@ namespace YACS
       virtual std::string getTaskName(Task *task) const = 0;
       virtual std::vector<Task *> getNextTasks(bool& isMore) = 0;
       virtual void selectRunnableTasks(std::vector<Task *>& tasks) = 0;
-      virtual void notifyFrom(const Task *sender, YACS::Event event, const Executor *execInst) = 0;
+      virtual void notifyFrom(const Task *sender, YACS::Event event) = 0;
       //Placement methods
       virtual DeploymentTree getDeploymentTree() const = 0;
       virtual bool isPlacementPredictableB4Run() const = 0;

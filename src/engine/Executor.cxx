@@ -651,6 +651,7 @@ bool Executor::saveState(const std::string& xmlFile)
   DEBTRACE("Executor::saveState() in " << xmlFile);
   bool result = false;
   try {
+    YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
     YACS::ENGINE::VisitorSaveState vst(_root);
     vst.openFileDump(xmlFile.c_str());
     _root->accept(&vst);
@@ -828,7 +829,7 @@ void Executor::loadTask(Task *task, const Executor *execInst)
   traceExec(task, "state:TOLOAD", ComputePlacement(task));
   {//Critical section
     YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
-    _mainSched->notifyFrom(task,YACS::START,execInst);
+    _mainSched->notifyFrom(task,YACS::START);
   }//End of critical section
   try
     {
@@ -843,7 +844,7 @@ void Executor::loadTask(Task *task, const Executor *execInst)
       {//Critical section
         YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
         task->aborted();
-        _mainSched->notifyFrom(task,YACS::ABORT,execInst);
+        _mainSched->notifyFrom(task,YACS::ABORT);
         traceExec(task, "state:"+Node::getStateName(task->getState()), ComputePlacement(task));
       }//End of critical section
     }
@@ -853,7 +854,7 @@ void Executor::loadTask(Task *task, const Executor *execInst)
       {//Critical section
         YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
         task->aborted();
-        _mainSched->notifyFrom(task,YACS::ABORT,execInst);
+        _mainSched->notifyFrom(task,YACS::ABORT);
         traceExec(task, "state:"+Node::getStateName(task->getState()), ComputePlacement(task));
       }//End of critical section
     }
@@ -926,7 +927,7 @@ void Executor::launchTasks(const std::vector<Task *>& tasks)
           {//Critical section
             YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
             (*iter)->aborted();
-            _mainSched->notifyFrom(*iter,YACS::ABORT,this);
+            _mainSched->notifyFrom(*iter,YACS::ABORT);
           }//End of critical section
         }
       catch(...) 
@@ -945,7 +946,7 @@ void Executor::launchTasks(const std::vector<Task *>& tasks)
           {//Critical section
             YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
             (*iter)->aborted();
-            _mainSched->notifyFrom(*iter,YACS::ABORT,this);
+            _mainSched->notifyFrom(*iter,YACS::ABORT);
           }//End of critical section
         }
       if((*iter)->getState() == YACS::ERROR)
@@ -971,7 +972,7 @@ void Executor::launchTasks(const std::vector<Task *>& tasks)
               {//Critical section
                 YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
                 t->aborted();
-                _mainSched->notifyFrom(t,YACS::ABORT,this);
+                _mainSched->notifyFrom(t,YACS::ABORT);
               }//End of critical section
               traceExec(t, "state:"+Node::getStateName(t->getState()),ComputePlacement(*iter));
             }
@@ -1224,7 +1225,7 @@ void *Executor::functionForTaskExecution(void *arg)
             task->aborted();
           }
         execInst->traceExec(task, "state:"+Node::getStateName(task->getState()),placement);
-        sched->notifyFrom(task,ev,execInst);
+        sched->notifyFrom(task,ev);
       }
     catch(Exception& ex)
       {

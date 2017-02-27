@@ -29,7 +29,7 @@
 #include <sstream>
 #include <algorithm>    // std::replace_if
 
-//#define _DEVDEBUG_
+#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
 using namespace YACS::ENGINE;
@@ -316,6 +316,14 @@ ForEachLoopPassedData::ForEachLoopPassedData(const std::vector<unsigned int>& pa
       if(elt)
         elt->incrRef();
     }
+}
+
+ForEachLoopPassedData::ForEachLoopPassedData(const ForEachLoopPassedData& copy)
+: _passedIds(copy._passedIds),
+  _passedOutputs(copy._passedOutputs),
+  _nameOfOutputs(copy._nameOfOutputs),
+  _flagsIds(copy._flagsIds)
+{
 }
 
 ForEachLoopPassedData::~ForEachLoopPassedData()
@@ -874,12 +882,14 @@ YACS::Event ForEachLoop::updateStateForFinalizeNodeOnFinishedEventFrom(Node *nod
     return YACS::NOEVENT;
 }
 
-YACS::Event ForEachLoop::updateStateOnFailedEventFrom(Node *node, const Executor *execInst)
+YACS::Event ForEachLoop::updateStateOnFailedEventFrom(Node *node)
 {
   unsigned int id;
   DynParaLoop::TypeOfNode ton(getIdentityOfNotifyerNode(node,id));
-  if(ton!=WORK_NODE || !execInst->getKeepGoingProperty())
-    return DynParaLoop::updateStateOnFailedEventFrom(node,execInst);
+  // TODO: deal with keepgoing
+  // if(ton!=WORK_NODE || !execInst->getKeepGoingProperty())
+  if(ton!=WORK_NODE )
+    return DynParaLoop::updateStateOnFailedEventFrom(node);
   else
     {
       _failedCounter++;
@@ -1173,7 +1183,9 @@ std::vector<unsigned int> ForEachLoop::getPassedResults(Executor *execut, std::v
     return std::vector<unsigned int>();
   if(_execOutGoingPorts.empty())
     return std::vector<unsigned int>();
-  std::size_t sz(_execVals.size()); outputs.resize(sz); nameOfOutputs.resize(sz);
+  std::size_t sz(_execVals.size());
+  outputs.resize(sz);
+  nameOfOutputs.resize(sz);
   const std::vector<AnyInputPort *>& ports(_execOutGoingPorts[0]);
   for(std::size_t i=0;i<sz;i++)
     {
@@ -1209,5 +1221,54 @@ int ForEachLoop::getFEDeltaBetween(OutPort *start, InPort *end)
     }
   if(dynamic_cast<AnySplitOutputPort *>(start))
     ret--;
+  return ret;
+}
+
+/*!
+ * This method is used to obtain the values already processed by the ForEachLoop.
+ * A new ForEachLoopPassedData object is returned. You have to delete it.
+ */
+ForEachLoopPassedData* ForEachLoop::getProcessedData()const
+{
+  std::vector<SequenceAny *> outputs;
+  std::vector<std::string> nameOfOutputs;
+  if(_execVals.empty() || _execOutGoingPorts.empty())
+    return new ForEachLoopPassedData(std::vector<unsigned int>(), outputs, nameOfOutputs);
+  std::size_t sz(_execVals.size());
+  outputs.resize(sz);
+  nameOfOutputs.resize(sz);
+  const std::vector<AnyInputPort *>& ports(_execOutGoingPorts[0]);
+  for(std::size_t i=0;i<sz;i++)
+    {
+      outputs[i]=_execVals[i]->removeUnsetItemsFromThis();
+      nameOfOutputs[i]=ports[i]->getName();
+    }
+  return new ForEachLoopPassedData(_execVals[0]->getSetItems(), outputs, nameOfOutputs);
+}
+
+void ForEachLoop::setProcessedData(ForEachLoopPassedData* processedData)
+{
+  if(_passedData)
+    delete _passedData;
+  _passedData = processedData;
+}
+
+/*!
+ * \param portName : "interceptorized" name of port.
+ */
+const YACS::ENGINE::TypeCode* ForEachLoop::getOutputPortType(const std::string& portName)const
+{
+  const YACS::ENGINE::TypeCode* ret=NULL;
+  vector<AnySplitOutputPort *>::const_iterator it;
+  for(it=_outGoingPorts.begin();it!=_outGoingPorts.end() && ret==NULL;it++)
+  {
+    std::string originalPortName(getPortName(*it));
+    //InterceptorizeNameOfPort(originalPortName);
+    DEBTRACE("ForEachLoop::getOutputPortType compare " << portName << " == " << originalPortName);
+    if(originalPortName == portName)
+    {
+      ret = (*it)->edGetType()->contentType();
+    }
+  }
   return ret;
 }

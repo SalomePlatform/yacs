@@ -456,7 +456,7 @@ YACS::Event OptimizerLoop::finalize()
  *  \param node : the child node that has failed
  *  \return the state change
  */
-YACS::Event OptimizerLoop::updateStateOnFailedEventFrom(Node *node, const Executor *execInst)
+YACS::Event OptimizerLoop::updateStateOnFailedEventFrom(Node *node)
 {
   DEBTRACE("OptimizerLoop::updateStateOnFailedEventFrom " << node->getName());
   _alg->setError(string("Error during the execution of YACS node ") + node->getName() +
@@ -464,7 +464,7 @@ YACS::Event OptimizerLoop::updateStateOnFailedEventFrom(Node *node, const Execut
   _alg->finishProxy();
   _myPool.destroyAll();
   DEBTRACE("OptimizerLoop::updateStateOnFailedEventFrom: returned from error notification.");
-  return DynParaLoop::updateStateOnFailedEventFrom(node,execInst);
+  return DynParaLoop::updateStateOnFailedEventFrom(node);
 }
 
 void OptimizerLoop::checkNoCyclePassingThrough(Node *node) throw(YACS::Exception)

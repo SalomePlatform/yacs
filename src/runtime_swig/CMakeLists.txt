@@ -92,6 +92,7 @@ SET(SWIGINCLUDES
   ${PROJECT_SOURCE_DIR}/src/runtime/CORBAPorts.hxx
   ${PROJECT_SOURCE_DIR}/src/runtime/TypeConversions.hxx
   ${PROJECT_SOURCE_DIR}/src/runtime/SalomeOptimizerLoop.hxx
+  ${PROJECT_SOURCE_DIR}/src/runtime/VisitorSalomeSaveState.hxx
   )
 SET(SWIG_MODULE_SALOMERuntime_EXTRA_DEPS 
     ${PROJECT_SOURCE_DIR}/src/engine_swig/pilot.i 

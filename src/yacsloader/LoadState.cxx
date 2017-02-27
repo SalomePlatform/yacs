@@ -27,6 +27,9 @@
 #include "Runtime.hxx"
 #include "InputPort.hxx"
 #include "ElementaryNode.hxx"
+#include "ForEachLoop.hxx"
+#include "Any.hxx"
+#include "TypeConversions.hxx"
 
 #include <iostream>
 #include <string>
@@ -34,7 +37,7 @@
 #include <cstdarg>
 #include <cassert>
 
-//#define _DEVDEBUG_
+#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
 using namespace YACS::ENGINE;
@@ -231,6 +234,7 @@ public:
 void nodeParser::init(const xmlChar** p, xmlParserBase* father)
 {
   DEBTRACE("nodeParser::init()");
+  _loopSamples.clear();
   _state = XMLINNODE;
   _father = father;
   _stackState.push(_state);
@@ -250,6 +254,12 @@ void nodeParser::onStart (const XML_Char* elem, const xmlChar** p)
   else if (element == "nbdone")    parser = new attrParser();
   else if (element == "condition") parser = new attrParser();
   else if (element == "outputPort") parser = new outputParser();
+  else if (element == "loopOutputPort")
+  {
+    loopPortParser* sparser = new loopPortParser();
+    _loopSamples.push_back(sparser);
+    parser = sparser;
+  }
   else
     { 
       _what = "expected name, state or inputPort, got <" + element + ">";
@@ -362,8 +372,116 @@ void nodeParser::onEnd   (const XML_Char* name)
         }
       mySwitch->edGetConditionPort()->edInit(condition);
     }
+  else if (nodeType == "forEachLoop")
+  {
+    ForEachLoop* feNode = dynamic_cast<ForEachLoop*>(node);
+    if(!feNode)
+    {
+      _what = "node is not a ForEachLoop: " + _mapAttrib["name"];
+      _state = XMLFATALERROR;
+      stopParse(_what);
+    }
+    else
+    {
+      std::vector<unsigned int> passedIds;
+      std::vector<SequenceAny *> passedOutputs;
+      std::vector<std::string> nameOfOutputs;
+      bool firstPort = true;
+      std::list<loopPortParser*>::const_iterator itPort;
+      for(itPort=_loopSamples.begin(); itPort!=_loopSamples.end(); itPort++)
+      {
+        const std::string& portName =(*itPort)->getPortName();
+        nameOfOutputs.push_back(portName);
+        const YACS::ENGINE::TypeCode* tc = feNode->getOutputPortType(portName);
+        if(!tc)
+        {
+          _what = "Impossible to find the type of the port " + portName;
+          _state = XMLFATALERROR;
+          stopParse(_what);
+          return;
+        }
+        unsigned int nbSamples = (*itPort)->getNbSamples();
+        SequenceAny* seqValues = SequenceAny::New(tc, nbSamples);
+        passedOutputs.push_back(seqValues);
+        for(unsigned int i = 0; i < nbSamples; i++)
+        {
+          unsigned int sampleId = (*itPort)->getSampleId(i);
+          const std::string& sampleData = (*itPort)->getSampleData(i);
+          Any* value = xmlToAny(sampleData, tc);
+          if(firstPort)
+          {
+            passedIds.push_back(sampleId);
+            seqValues->setEltAtRank(i, value);
+          }
+          else
+          {
+            unsigned int pos = 0;
+            while(pos < passedIds.size() && sampleId != passedIds[pos])
+              pos++;
+            if(pos < passedIds.size())
+              seqValues->setEltAtRank(pos, value);
+            else
+            {
+              _what = "Inconsistent sample id in foreach node " + _mapAttrib["name"];
+              _state = XMLFATALERROR;
+              stopParse(_what);
+              itPort=_loopSamples.end();
+              return;
+            }
+          }
+        }
+        firstPort = false;
+      }
+      feNode->assignPassedResults(passedIds, passedOutputs, nameOfOutputs);
+    }
+  }
 
   stateParser::onEnd(name);
+}
+
+Any* nodeParser::xmlToAny(const std::string& data, const YACS::ENGINE::TypeCode* tc)const
+{
+  xmlDocPtr doc;
+  xmlNodePtr cur;
+  //YACS::ENGINE::Any *ob=YACS::ENGINE::AtomAny::New(0);
+  YACS::ENGINE::Any *ob=NULL;
+  {
+    doc = xmlParseMemory(data.c_str(), data.length());
+    if (doc == NULL )
+      {
+        stringstream msg;
+        msg << "Problem in conversion: XML Document not parsed successfully ";
+        msg << " (" << __FILE__ << ":" << __LINE__ << ")";
+        throw ConversionException(msg.str());
+      }
+    cur = xmlDocGetRootElement(doc);
+    if (cur == NULL)
+      {
+        xmlFreeDoc(doc);
+        stringstream msg;
+        msg << "Problem in conversion: empty XML Document";
+        msg << " (" << __FILE__ << ":" << __LINE__ << ")";
+        throw ConversionException(msg.str());
+      }
+    while (cur != NULL)
+      {
+        if ((!xmlStrcmp(cur->name, (const xmlChar *)"value")))
+          {
+            ob=convertXmlNeutral(tc,doc,cur);
+            break;
+          }
+        cur = cur->next;
+      }
+    xmlFreeDoc(doc);
+    if(ob==NULL)
+      {
+        stringstream msg;
+        msg << "Problem in conversion: incorrect XML value";
+        msg << " (" << __FILE__ << ":" << __LINE__ << ")";
+        throw ConversionException(msg.str());
+      }
+  }
+  return ob;
 }
 
 // ----------------------------------------------------------------------------
@@ -660,7 +778,130 @@ void simpleTypeParser::charData(std::string data)
   _data = _data + data;
 }
 
+// ----------------------------------------------------------------------------
 
+void loopPortParser::init(const xmlChar** p, xmlParserBase* father)
+{
+  DEBTRACE("loopPortParser::init()");
+  //_state = XMLINPORT;
+  _father = father;
+  _stackState.push(_state);
+  _ids.clear();
+  _sampleData.clear();
+  if (p) getAttributes(p);
+}
+
+void loopPortParser::onStart(const XML_Char* elem, const xmlChar** p)
+{
+  DEBTRACE("loopPortParser::onStart" << elem);
+  string element(elem);
+  stateParser *parser = 0;
+  if (element == "name")      parser = new attrParser();
+  else if (element == "sample") parser = new sampleParser(this);
+  else
+    { 
+      _what = "expected name or sample, got <" + element + ">";
+      _state = XMLFATALERROR;
+      stopParse(_what);
+    }
+  if (parser)
+    {
+      _stackParser.push(parser);
+      XML_SetUserData(_xmlParser, parser);
+      parser->init(p, this);
+    }
+}
+
+void loopPortParser::onEnd(const XML_Char* name)
+{
+  stateParser::onEnd(name);
+}
+
+void loopPortParser::charData(std::string data)
+{
+}
+
+void loopPortParser::addSample(int index, const std::string data)
+{
+  _ids.push_back(index);
+  _sampleData.push_back(data);
+}
+
+unsigned int loopPortParser::getNbSamples()const
+{
+  return _ids.size();
+}
+
+unsigned int loopPortParser::getSampleId(unsigned int i)const
+{
+  return _ids[i];
+}
+
+const std::string& loopPortParser::getSampleData(unsigned int i)const
+{
+  return _sampleData[i];
+}
+
+const std::string& loopPortParser::getPortName()const
+{
+  return _mapAttrib.at("name");
+}
+
+// ----------------------------------------------------------------------------
+
+sampleParser::sampleParser(loopPortParser* father)
+: stateParser(),
+  _sampleFather(father)
+{
+}
+
+void sampleParser::init(const xmlChar** p, xmlParserBase* father)
+{
+  DEBTRACE("sampleParser::init()");
+  //_state = XMLINPORT;
+  _father = father;
+  _stackState.push(_state);
+  if (p) getAttributes(p);
+}
+
+void sampleParser::onStart(const XML_Char* elem, const xmlChar** p)
+{
+  DEBTRACE("sampleParser::onStart" << elem);
+  string element(elem);
+  stateParser *parser = 0;
+  if (element == "index")      parser = new attrParser();
+  else if (element == "value") parser = new valueParser();
+  else
+    { 
+      _what = "expected index or value, got <" + element + ">";
+      _state = XMLFATALERROR;
+      stopParse(_what);
+    }
+  if (parser)
+    {
+      _stackParser.push(parser);
+      XML_SetUserData(_xmlParser, parser);
+      parser->init(p, this);
+    }
+}
+
+void sampleParser::onEnd(const XML_Char* name)
+{
+  if (_mapAttrib.find("index") == _mapAttrib.end())
+    {
+      _what = "no attribute index in sample ";
+      _state = XMLFATALERROR;
+      stopParse(_what);
+    }
+  int index =  atoi(_mapAttrib["index"].c_str());
+  _sampleFather->addSample(index, _data);
+  stateParser::onEnd(name);
+}
+
+void sampleParser::charData(std::string data)
+{
+  _data = _data + data;
+}
 
 // ----------------------------------------------------------------------------
 

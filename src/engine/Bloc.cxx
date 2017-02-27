@@ -403,7 +403,7 @@ YACS::Event Bloc::updateStateOnFinishedEventFrom(Node *node)
  * \param node : node that has emitted the event
  * \return the event to notify to bloc's father
  */
-YACS::Event Bloc::updateStateOnFailedEventFrom(Node *node, const Executor *execInst)
+YACS::Event Bloc::updateStateOnFailedEventFrom(Node *node)
 {
   node->exForwardFailed();
   if(areAllSubNodesFinished())
