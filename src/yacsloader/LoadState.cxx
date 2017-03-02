@@ -37,7 +37,7 @@
 #include <cstdarg>
 #include <cassert>
 
-#define _DEVDEBUG_
+//#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
 using namespace YACS::ENGINE;
@@ -588,11 +588,13 @@ void portParser::onEnd   (const XML_Char* name)
       what += " in node " + nodeName + " of type " + nodeType;
       throw Exception(what);
     }
-  else if (nodeType == "foreachLoop")
+  else if (nodeType == "forEachLoop")
     {
-      string what="no way to set a port value on port " +  _mapAttrib["name"];
-      what += " in node " + nodeName + " of type " + nodeType;
-      throw Exception(what);
+      ForEachLoop* eNode = dynamic_cast<ForEachLoop*>(node);
+      YASSERT(eNode);
+      InputPort *port = eNode->getInputPort(_mapAttrib["name"]);
+      if(_data != "")
+        port->edInit("XML",_data.c_str());
     }
   else 
     {

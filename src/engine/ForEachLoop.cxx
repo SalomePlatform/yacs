@@ -29,7 +29,7 @@
 #include <sstream>
 #include <algorithm>    // std::replace_if
 
-#define _DEVDEBUG_
+//#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
 using namespace YACS::ENGINE;

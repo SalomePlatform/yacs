@@ -48,6 +48,25 @@ void VisitorSalomeSaveState::visitForEachLoop(ForEachLoop *node)
   _out << "    <name>" << name << "</name>" << std::endl;
   _out << "    <state>" << _nodeStateName[node->getState()] << "</state>" << std::endl;
 //  VisitorSaveState::visitForEachLoop(node);
+  std::list<InputPort *> setOfInputPort = node->getLocalInputPorts();
+  std::list<InputPort *>::iterator iter;
+  for(iter = setOfInputPort.begin(); iter != setOfInputPort.end(); iter++)
+  {
+    _out << "    <inputPort>" << std::endl;
+    _out << "      <name>" << (*iter)->getName() << "</name>" << std::endl;
+    try
+      {
+        _out << "      ";
+        _out << (*iter)->dump();
+      }
+    catch (YACS::Exception &e)
+      {
+        DEBTRACE("caught YACS:Exception: " << e.what());
+        _out << "<value><error><![CDATA[" << e.what() << "]]></error></value>" << std::endl;
+      }
+    _out << "    </inputPort>" << std::endl;
+  }
+  
   StatesForNode state = node->getState();
   if(YACS::LOADED == state or
     YACS::ACTIVATED == state or
