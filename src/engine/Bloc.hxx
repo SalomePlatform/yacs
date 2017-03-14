@@ -22,11 +22,16 @@
 
 #include "YACSlibEngineExport.hxx"
 #include "StaticDefinedComposedNode.hxx"
+#include "AutoRefCnt.hxx"
 
 namespace YACS
 {
   namespace ENGINE
   {
+    class PartDefinition;
+    class DynParaLoop;
+    class AbstractPoint;
+    class PlayGround;
     class YACSLIBENGINE_EXPORT Bloc : public StaticDefinedComposedNode
     {
     protected:
@@ -61,7 +66,10 @@ namespace YACS
       void findAllNodesStartingFrom(Node *start, std::set<Node *>& result, std::map<Node *, std::set<Node *> >& accelStr, LinkInfo& info) const;
       virtual std::string typeName() { return "YACS__ENGINE__Bloc"; }
       int getMaxLevelOfParallelism() const;
+      double getWeightRegardingDPL() const;
       void removeRecursivelyRedundantCL();
+      void partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap);
+      void fitToPlayGround(const PlayGround *pg);
     protected:
       bool areAllSubNodesFinished() const;
       bool areAllSubNodesDone() const;
@@ -89,6 +97,7 @@ namespace YACS
       void seekOkAndUseless1(std::vector<Node *>& okAndUseless1, std::set<Node *>& allNodes) const;
       void seekUseless2(std::vector<Node *>& useless2, std::set<Node *>& allNodes) const;
     private:
+      std::list< AbstractPoint * > analyzeParallelism() const;
       static void findUselessLinksIn(const std::list< std::vector<Node *> >& res , LinkInfo& info);
       template<bool direction>
       static unsigned appendIfAlreadyFound(std::list< std::vector<Node *> >& res, const std::vector<Node *>& startRes, Node *node, std::map<Node *, std::set<Node *> >& fastFinder);

@@ -113,13 +113,12 @@ void DistributedPythonNode::load()
     if(!_container)
       throw Exception("No container specified !");
     SalomeContainer *containerCast0(dynamic_cast<SalomeContainer *>(_container));
-    SalomeHPContainer *containerCast1(dynamic_cast<SalomeHPContainer *>(_container));
+    SalomeHPContainerBase *containerCast1(dynamic_cast<SalomeHPContainerBase *>(_container));
     if(containerCast0)
       objContainer=containerCast0->getContainerPtr(this);
     else if(containerCast1)
       {
-        YACS::BASES::AutoCppPtr<SalomeContainerTmpForHP> tmpCont(SalomeContainerTmpForHP::BuildFrom(containerCast1,this));
-        objContainer=tmpCont->getContainerPtr(this);
+        objContainer=containerCast1->getContainerPtr(this);
       }
     else
       throw Exception("Unrecognized type of container ! Salome one is expected !");

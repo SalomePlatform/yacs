@@ -21,6 +21,8 @@
 #define __NODE_HXX__
 
 #include "YACSlibEngineExport.hxx"
+#include "PlayGround.hxx"
+#include "AutoRefCnt.hxx"
 #include "InGate.hxx"
 #include "OutGate.hxx"
 #include "Exception.hxx"
@@ -42,8 +44,8 @@ namespace YACS
     class InputPort;
     class OutputPort;
     class InPropertyPort;
-    class DynParaLoop;
     class ForEachLoop;
+    class DynParaLoop;
     class ComposedNode;
     class Proc;
     class ElementaryNode;
@@ -161,6 +163,7 @@ namespace YACS
       bool operator>(const Node& other) const;
       bool operator<(const Node& other) const;
       std::string getImplementation() const;
+      DynParaLoop *getClosestDPLAmongAncestors() const;
       virtual ComposedNode *getRootNode() const throw(Exception);
       virtual void setProperty(const std::string& name,const std::string& value);
       virtual std::string getProperty(const std::string& name);
@@ -172,6 +175,8 @@ namespace YACS
       virtual const Proc *getProc() const;
       virtual void accept(Visitor *visitor) = 0;
       virtual int getMaxLevelOfParallelism() const = 0;
+      virtual double getWeightRegardingDPL() const = 0;
+      virtual void partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap) = 0;
       std::string getQualifiedName() const;
       int getNumId();
       std::vector<std::pair<std::string,int> > getDPLScopeInfo(ComposedNode *gfn);

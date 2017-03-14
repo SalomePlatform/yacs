@@ -25,7 +25,9 @@
 #include "OutputDataStreamPort.hxx"
 #include "ElementaryNode.hxx"
 #include "Visitor.hxx"
+#include "ForkBlocPoint.hxx"
 #include "SetOfPoints.hxx"
+#include "PlayGround.hxx"
 
 #include <queue>
 #include <iostream>
@@ -453,15 +455,29 @@ void Bloc::accept(Visitor* visitor)
  */
 int Bloc::getMaxLevelOfParallelism() const
 {
+  std::list< AbstractPoint * > pts(analyzeParallelism());
+  ForkBlocPoint fbp(pts,NULL);
+  return fbp.getMaxLevelOfParallelism();
+}
+
+std::list< AbstractPoint * > Bloc::analyzeParallelism() const
+{
   std::vector< std::list<Node *> > r(splitIntoIndependantGraph());
-  int ret(0);
+  std::list< AbstractPoint * > pts;
   for(std::vector< std::list<Node *> >::const_iterator it=r.begin();it!=r.end();it++)
     {
       SetOfPoints sop(*it);
       sop.simplify();
-      ret+=sop.getMaxLevelOfParallelism();
+      pts.push_back(sop.getUniqueAndReleaseIt());
     }
-  return ret;
+  return pts;
+}
+
+double Bloc::getWeightRegardingDPL() const
+{
+  std::list< AbstractPoint * > pts(analyzeParallelism());
+  ForkBlocPoint fbp(pts,NULL);
+  return fbp.getWeightRegardingDPL();
 }
 
 void Bloc::removeRecursivelyRedundantCL()
@@ -474,6 +490,15 @@ void Bloc::removeRecursivelyRedundantCL()
   for(std::set< std::pair<Node *, Node *> >::const_iterator it=linksToKill.begin();it!=linksToKill.end();it++)
     edRemoveCFLink((*it).first,(*it).second);
   destructCFComputations(info);
+}
+
+void Bloc::partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap)
+{
+  if(!pd)
+    throw Exception("Bloc::partitionRegardingDPL : NULL pointer !");
+  std::list< AbstractPoint * > pts(analyzeParallelism());
+  ForkBlocPoint fbp(pts,NULL);
+  fbp.partitionRegardingDPL(pd,zeMap);
 }
 
 void Bloc::performCFComputationsOnlyOneLevel(LinkInfo& info) const

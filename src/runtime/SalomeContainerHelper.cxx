@@ -81,8 +81,15 @@ void SalomeContainerMonoHelper::setContainer(const Task *askingNode, Engines::Co
 #endif
 }
 
+bool SalomeContainerMonoHelper::isKernelContNull() const
+{
+  return CORBA::is_nil(_trueCont);
+}
+
 void SalomeContainerMonoHelper::shutdown()
 {
+  if(CORBA::is_nil(_trueCont))
+    return ;
   try
   {
       DEBTRACE("shutdown SALOME container: " );

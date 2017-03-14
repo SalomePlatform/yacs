@@ -21,7 +21,10 @@
 #define __SETOFPOINTS_HXX__
 
 #include "YACSlibEngineExport.hxx"
+#include "PlayGround.hxx"
+#include "AutoRefCnt.hxx"
 
+#include <map>
 #include <list>
 #include <string>
 
@@ -32,7 +35,8 @@ namespace YACS
     class Node;
     class BagPoint;
     class AbstractPoint;
-
+    class ComposedNode;
+    
     class YACSLIBENGINE_EXPORT SetOfPoints
     {
     public:
@@ -43,6 +47,9 @@ namespace YACS
       AbstractPoint *findPointWithNode(Node *node);
       const std::list<AbstractPoint *>& getListOfPoints() const;
       int getMaxLevelOfParallelism() const;
+      double getWeightRegardingDPL() const;
+      void partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap) const;
+      AbstractPoint *getUniqueAndReleaseIt() const;
     private:
       BagPoint *_bp;
     };

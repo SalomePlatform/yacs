@@ -68,6 +68,7 @@ namespace YACS
       void performShallowDuplicationOfPlacement(const Node& other);
       bool isDeployable() const;
       int getMaxLevelOfParallelism() const;
+      void partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap);
     public:
       static const char LOCAL_STR[];
       static const char REMOTE_STR[];

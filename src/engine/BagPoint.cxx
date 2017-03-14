@@ -31,28 +31,62 @@ BagPoint::BagPoint(const std::list<AbstractPoint *>& nodes, AbstractPoint *fathe
 {
 }
 
-Node *BagPoint::getFirstNode()
+AbstractPoint *BagPoint::getUnique()
 {
   if(_nodes.size()!=1)
-    throw YACS::Exception("BagPoint::getFirstNode : invalid call !");
+    throw YACS::Exception("BagPoint::getUnique : invalid call !");
   else
-    return (*_nodes.begin())->getFirstNode();
+    {
+      AbstractPoint *ret(*_nodes.begin());
+      if(!ret)
+        throw YACS::Exception("BagPoint::getUnique : Ooops !");
+      return ret;
+    }
+}
+
+const AbstractPoint *BagPoint::getUnique() const
+{
+  if(_nodes.size()!=1)
+    throw YACS::Exception("BagPoint::getUnique const : invalid call !");
+  else
+    {
+      AbstractPoint *ret(*_nodes.begin());
+      if(!ret)
+        throw YACS::Exception("BagPoint::getUnique : Ooops !");
+      return ret;
+    }
+}
+
+AbstractPoint *BagPoint::getUniqueAndReleaseIt()
+{
+  AbstractPoint *ret(getUnique());
+  getOutPoint(ret);
+  return ret;
+}
+
+Node *BagPoint::getFirstNode()
+{
+  return getUnique()->getFirstNode();
 }
 
 Node *BagPoint::getLastNode()
 {
-  if(_nodes.size()!=1)
-    throw YACS::Exception("BagPoint::getLastNode : invalid call !");
-  else
-    return (*_nodes.begin())->getLastNode();
+  return getUnique()->getLastNode();
 }
 
 int BagPoint::getMaxLevelOfParallelism() const
 {
-  if(_nodes.size()!=1)
-    throw YACS::Exception("BagPoint::getMaxLevelOfParallelism : invalid call !");
-  else
-    return (*_nodes.begin())->getMaxLevelOfParallelism();
+  return getUnique()->getMaxLevelOfParallelism();
+}
+
+double BagPoint::getWeightRegardingDPL() const
+{
+  return getUnique()->getWeightRegardingDPL();
+}
+
+void BagPoint::partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap) const
+{
+  getUnique()->partitionRegardingDPL(pd,zeMap);
 }
 
 std::string BagPoint::getRepr() const

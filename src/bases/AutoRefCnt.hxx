@@ -33,6 +33,9 @@ namespace YACS
       AutoRefCnt(const AutoRefCnt& other):_ptr(0) { referPtr(other._ptr); }
       AutoRefCnt(T *ptr=0):_ptr(ptr) { }
       ~AutoRefCnt() { destroyPtr(); }
+      bool isNull() const { return _ptr==0; }
+      bool isNotNull() const { return !isNull(); }
+      void nullify() { destroyPtr(); _ptr=0; }
       bool operator==(const AutoRefCnt& other) const { return _ptr==other._ptr; }
       bool operator==(const T *other) const { return _ptr==other; }
       AutoRefCnt &operator=(const AutoRefCnt& other) { if(_ptr!=other._ptr) { destroyPtr(); referPtr(other._ptr); } return *this; }
@@ -44,11 +47,38 @@ namespace YACS
       operator T *() { return _ptr; }
       operator const T *() const { return _ptr; }
       T *retn() { if(_ptr) _ptr->incrRef(); return _ptr; }
+      void takeRef(T *ptr) { if(_ptr!=ptr) { destroyPtr(); _ptr=ptr; if(_ptr) _ptr->incrRef(); } }
     private:
       void referPtr(T *ptr) { _ptr=ptr; if(_ptr) _ptr->incrRef(); }
       void destroyPtr() { if(_ptr) _ptr->decrRef(); }
     private:
       T *_ptr;
+    };
+
+    template<class T>
+    class AutoConstRefCnt
+    {
+    public:
+      AutoConstRefCnt(const AutoConstRefCnt& other):_ptr(0) { referPtr(other._ptr); }
+      AutoConstRefCnt(const T *ptr=0):_ptr(ptr) { }
+      ~AutoConstRefCnt() { destroyPtr(); }
+      bool isNull() const { return _ptr==0; }
+      bool isNotNull() const { return !isNull(); }
+      void nullify() { destroyPtr(); _ptr=0; }
+      bool operator==(const AutoConstRefCnt& other) const { return _ptr==other._ptr; }
+      bool operator==(const T *other) const { return _ptr==other; }
+      AutoConstRefCnt &operator=(const AutoConstRefCnt& other) { if(_ptr!=other._ptr) { destroyPtr(); referPtr(other._ptr); } return *this; }
+      AutoConstRefCnt &operator=(const T *ptr) { if(_ptr!=ptr) { destroyPtr(); _ptr=ptr; } return *this; }
+      const T *operator->() const { return _ptr; }
+      const T& operator*() const { return *_ptr; }
+      operator const T *() const { return _ptr; }
+      const T *retn() { if(_ptr) _ptr->incrRef(); return _ptr; }
+      void takeRef(const T *ptr) { if(_ptr!=ptr) { destroyPtr(); _ptr=ptr; if(_ptr) _ptr->incrRef(); } }
+    private:
+      void referPtr(const T *ptr) { _ptr=ptr; if(_ptr) _ptr->incrRef(); }
+      void destroyPtr() { if(_ptr) _ptr->decrRef(); }
+    private:
+      const T *_ptr;
     };
 
     template<class T, class U>

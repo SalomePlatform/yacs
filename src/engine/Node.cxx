@@ -408,6 +408,22 @@ const Proc * Node::getProc() const
   return _father->getProc();
 }
 
+DynParaLoop *Node::getClosestDPLAmongAncestors() const
+{
+  if(!_father)
+    return NULL;
+  ComposedNode *iter(_father);
+  do
+    {
+      DynParaLoop *iter2(dynamic_cast<DynParaLoop *>(iter));
+      if(iter2)
+        return iter2;
+      iter=iter->_father;
+    }
+  while(iter);
+  return NULL;
+}
+
 ComposedNode *Node::getRootNode() const throw(YACS::Exception)
 {
   if(!_father)

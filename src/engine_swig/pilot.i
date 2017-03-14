@@ -58,7 +58,8 @@
 #include "DeploymentTree.hxx"
 #include "ComponentInstance.hxx"
 #include "DataNode.hxx"
-
+#include "PlayGround.hxx"
+  
 using namespace YACS::ENGINE;
 
 %}
@@ -104,6 +105,7 @@ using namespace YACS::ENGINE;
 %template()              std::pair<std::string, YACS::ENGINE::Container *>;
 %template()              std::pair<YACS::ENGINE::OutPort *,YACS::ENGINE::InPort *>;
 %template()              std::pair<YACS::ENGINE::InPort *,YACS::ENGINE::OutPort *>;
+%template()              std::pair< std::string, int >;
 //%template(TCmap)         std::map<std::string, YACS::ENGINE::TypeCode *>;
 REFCOUNT_TEMPLATE(TCmap,YACS::ENGINE::TypeCode)
 %template(NODEmap)       std::map<std::string, YACS::ENGINE::Node *>;
@@ -113,11 +115,13 @@ REFCOUNT_TEMPLATE(TCmap,YACS::ENGINE::TypeCode)
 REFCOUNT_TEMPLATE(CONTAINmap,YACS::ENGINE::Container)
 %template(strvec)        std::vector<std::string>;
 %template(uivec)         std::vector<unsigned int>;
+%template(ivec)          std::vector<int>;
 %template(linksvec)      std::vector< std::pair<YACS::ENGINE::OutPort *,YACS::ENGINE::InPort *> >;
 %template(linkvec)       std::vector< std::pair<YACS::ENGINE::InPort *,YACS::ENGINE::OutPort *> >;
 %template(instreamlist)  std::list<YACS::ENGINE::InputDataStreamPort *>;
 %template(outstreamlist) std::list<YACS::ENGINE::OutputDataStreamPort *>;
-
+%template(vpsi)          std::vector< std::pair< std::string, int > >;
+          
 %template()              std::pair<std::string, YACS::ENGINE::CatalogLoader *>;
 %template(loadermap)     std::map<std::string,YACS::ENGINE::CatalogLoader *>;
 %template()              std::pair<std::string, YACS::ENGINE::ComposedNode *>;
@@ -349,6 +353,7 @@ EXCEPTION(YACS::ENGINE::ExecutorSwig::waitPause)
 // OptimizerAlgASync in module SALOMERuntime
 %ignore YACS::ENGINE::OptimizerAlgASync;
 %include <OptimizerAlg.hxx>
+%include "PlayGround.i"
 
 %extend YACS::ENGINE::ConditionInputPort
 {

@@ -419,6 +419,19 @@ int Loop::getMaxLevelOfParallelism() const
   return _node->getMaxLevelOfParallelism();
 }
 
+double Loop::getWeightRegardingDPL() const
+{
+  if(!_node)
+    return 0.;
+  return _node->getWeightRegardingDPL();
+}
+
+void Loop::partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap)
+{
+  if(_node)
+    _node->partitionRegardingDPL(pd,zeMap);
+}
+
 Node *Loop::getChildByShortName(const std::string& name) const throw(YACS::Exception)
 {
   if (_node)

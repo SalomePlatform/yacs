@@ -106,6 +106,7 @@ SET(YACSlibEngine_HEADERS
   LinkedBlocPoint.hxx
   ElementaryPoint.hxx
   SetOfPoints.hxx
+  PlayGround.hxx
   )
 
 # --- sources ---
@@ -142,6 +143,7 @@ SET(YACSlibEngine_SOURCES
   ServiceInlineNode.cxx
   StaticDefinedComposedNode.cxx
   Bloc.cxx
+  Bloc_impl.cxx
   Proc.cxx
   Loop.cxx
   ForLoop.cxx
@@ -178,6 +180,7 @@ SET(YACSlibEngine_SOURCES
   LinkedBlocPoint.cxx
   ElementaryPoint.cxx
   SetOfPoints.cxx
+  PlayGround.cxx
   )
 SET(YACSlibEngine_HEADERS ${YACSlibEngine_HEADERS} PARENT_SCOPE)  # Make it visible to src/engine_swig to handle dependencies
 

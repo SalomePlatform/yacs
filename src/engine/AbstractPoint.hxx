@@ -21,7 +21,10 @@
 #define __ABSTRACTPOINT_HXX__
 
 #include "YACSlibEngineExport.hxx"
+#include "PlayGround.hxx"
+#include "AutoRefCnt.hxx"
 
+#include <map>
 #include <list>
 #include <vector>
 #include <string>
@@ -34,6 +37,7 @@ namespace YACS
     class InGate;
     class OutGate;
     class BlocPoint;
+    class ComposedNode;
     class ForkBlocPoint;
     class LinkedBlocPoint;
     
@@ -63,6 +67,8 @@ namespace YACS
       virtual bool contains(Node *node) = 0;
       virtual int getNumberOfNodes() const = 0;
       virtual int getMaxLevelOfParallelism() const = 0;
+      virtual double getWeightRegardingDPL() const = 0;
+      virtual void partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap) const = 0;
       virtual std::string getRepr() const = 0;
       virtual ~AbstractPoint();
     public:

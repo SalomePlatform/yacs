@@ -37,7 +37,10 @@ namespace YACS
       Node *getFirstNode();
       Node *getLastNode();
       int getMaxLevelOfParallelism() const;
+      double getWeightRegardingDPL() const;
+      void partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap) const;
       std::string getRepr() const;
+      AbstractPoint *getUniqueAndReleaseIt();
     public:
       int size() const { return (int)_nodes.size(); }
       void replaceInMe(BlocPoint *aSet);
@@ -45,6 +48,9 @@ namespace YACS
       void deal2(bool& somethingDone);
       void deal2Bis(bool& somethingDone);
       void deal2Ter(bool& somethingDone);
+    private:
+      AbstractPoint *getUnique();
+      const AbstractPoint *getUnique() const;
     };
   }
 }

@@ -106,6 +106,11 @@ void RuntimeForEngineTest::setRuntime()
     Runtime::_singleton = new RuntimeForEngineTest;
 }
 
+std::vector< std::pair<std::string,int> > RuntimeForEngineTest::getCatalogOfComputeNodes() const
+{
+  throw Exception("RuntimeForEngineTest::getCatalogOfComputeNodes : not implemented !");
+}
+
 ElementaryNode* RuntimeForEngineTest::createNode(const string& implementation, const string& name) throw(YACS::Exception)
 {
   return new TestElemNode(name);

@@ -20,12 +20,23 @@
 #include "BlocPoint.hxx"
 #include "Node.hxx"
 
+#include <algorithm>
+
 using namespace YACS::ENGINE;
 
 BlocPoint::BlocPoint(const std::list<AbstractPoint *>& nodes, AbstractPoint *father):AbstractPoint(father),_nodes(nodes)
 {
   for(std::list<AbstractPoint *>::const_iterator it=_nodes.begin();it!=_nodes.end();it++)
     (*it)->setFather(this);
+}
+
+void BlocPoint::getOutPoint(AbstractPoint *node)
+{
+  std::list<AbstractPoint *>::iterator it(std::find(_nodes.begin(),_nodes.end(),node));
+  if(it==_nodes.end())
+    throw YACS::Exception("BlocPoint::getOutPoint : node not in this !");
+  _nodes.erase(it);
+  node->setFather(NULL);
 }
 
 AbstractPoint *BlocPoint::findPointWithNode(Node *node)

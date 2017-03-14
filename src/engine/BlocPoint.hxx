@@ -42,6 +42,8 @@ namespace YACS
       int getNumberOfNodes() const;
       const std::list<AbstractPoint *>& getListOfPoints() const { return _nodes; }
       virtual ~BlocPoint();
+    protected:
+      void getOutPoint(AbstractPoint *node);
     };
   }
 }

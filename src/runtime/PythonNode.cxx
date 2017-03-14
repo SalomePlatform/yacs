@@ -127,13 +127,12 @@ Engines::Container_var PythonEntry::commonRemoteLoadPart2(InlineNode *reqNode, b
   if(!container)
     throw Exception("No container specified !");
   SalomeContainer *containerCast0(dynamic_cast<SalomeContainer *>(container));
-  SalomeHPContainer *containerCast1(dynamic_cast<SalomeHPContainer *>(container));
+  SalomeHPContainerBase *containerCast1(dynamic_cast<SalomeHPContainerBase *>(container));
   if(containerCast0)
     objContainer=containerCast0->getContainerPtr(reqNode);
   else if(containerCast1)
     {
-      YACS::BASES::AutoCppPtr<SalomeContainerTmpForHP> tmpCont(SalomeContainerTmpForHP::BuildFrom(containerCast1,reqNode));
-      objContainer=tmpCont->getContainerPtr(reqNode);
+      objContainer=containerCast1->getContainerPtr(reqNode);
     }
   else
     throw Exception("Unrecognized type of container ! Salome one is expected for PythonNode/PyFuncNode !");

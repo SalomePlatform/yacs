@@ -31,7 +31,7 @@ namespace YACS
     public:
       unsigned int getRefCnt() const { return _cnt; }
       void incrRef() const;
-      bool decrRef();
+      bool decrRef() const;
       static unsigned int _totalCnt;
     protected:
       RefCounter();

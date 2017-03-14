@@ -29,6 +29,7 @@ SET(YACS_TEST_LIB "../lib")
 SUBDIRS(
     bases
     engine
+    engine_swig
     runtime
     pmml
     yacsloader

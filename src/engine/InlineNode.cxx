@@ -20,6 +20,7 @@
 #include "InlineNode.hxx"
 #include "Visitor.hxx"
 #include "Container.hxx"
+#include "HomogeneousPoolContainer.hxx"
 #include <iostream>
 
 #define _DEVDEBUG_
@@ -156,3 +157,17 @@ int InlineNode::getMaxLevelOfParallelism() const
   return ret;
 }
 
+void InlineNode::partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap)
+{
+  if(!isDeployable())
+    return ;
+  if(!_container)
+    return ;
+  HomogeneousPoolContainer *contC(dynamic_cast<HomogeneousPoolContainer *>(_container));
+  if(!contC)
+    return ;
+  YACS::BASES::AutoConstRefCnt<PartDefinition> zePd;
+  zePd.takeRef(pd);
+  YACS::BASES::AutoRefCnt<HomogeneousPoolContainer> zeCont(contC->decorate(zePd));
+  setContainer(zeCont);
+}

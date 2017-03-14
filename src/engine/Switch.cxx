@@ -408,6 +408,20 @@ int Switch::getMaxLevelOfParallelism() const
   return ret;
 }
 
+double Switch::getWeightRegardingDPL() const
+{
+  double ret(0);
+  for(std::map< int , Node * >::const_iterator it=_mapOfNode.begin();it!=_mapOfNode.end();it++)
+    ret=std::max(ret,((*it).second)->getWeightRegardingDPL());
+  return ret;
+}
+
+void Switch::partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap)
+{
+  for(std::map< int , Node * >::const_iterator it=_mapOfNode.begin();it!=_mapOfNode.end();it++)
+    (*it).second->partitionRegardingDPL(pd,zeMap);
+}
+
 void Switch::edRemoveChild(Node *node) throw(YACS::Exception)
 {
   map< int , Node * >::iterator iter=_mapOfNode.begin();

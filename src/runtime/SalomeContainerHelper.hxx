@@ -61,6 +61,7 @@ namespace YACS
       Engines::Container_var getContainer(const Task *askingNode) const;
       bool isAlreadyStarted(const Task *askingNode) const;
       void setContainer(const Task *askingNode, Engines::Container_var cont);
+      bool isKernelContNull() const;
       void shutdown();
     private:
       ~SalomeContainerMonoHelper();

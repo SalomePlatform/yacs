@@ -59,6 +59,16 @@ int ElementaryPoint::getMaxLevelOfParallelism() const
   return _node->getMaxLevelOfParallelism();
 }
 
+double ElementaryPoint::getWeightRegardingDPL() const
+{
+  return _node->getWeightRegardingDPL();
+}
+
+void ElementaryPoint::partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap) const
+{
+  _node->partitionRegardingDPL(pd,zeMap);
+}
+
 std::string ElementaryPoint::getRepr() const
 {
   return _node->getName();

@@ -29,6 +29,9 @@ IF(NOT WIN32)
   SALOME_GENERATE_TESTS_ENVIRONMENT(tests_env)
   ADD_TEST(NAME StdAloneYacsLoaderTest1 COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/StdAloneYacsLoaderTest1.py)
   SET_TESTS_PROPERTIES(StdAloneYacsLoaderTest1 PROPERTIES ENVIRONMENT "${tests_env}")
+  
+  ADD_TEST(NAME HPDecorator COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testHPDecorator.py)
+  SET_TESTS_PROPERTIES(HPDecorator PROPERTIES ENVIRONMENT "${tests_env}")
 
   # For salome test
   SET(LOCAL_TEST_DIR ${SALOME_YACS_INSTALL_TEST}/yacsloader_swig)
@@ -41,6 +44,7 @@ IF(NOT WIN32)
     testResume.py
     testSave.py
     testSaveLoadRun.py
+    testHPDecorator.py
     optim_plugin.py
     testValidationChecks.py
     testProgress.py

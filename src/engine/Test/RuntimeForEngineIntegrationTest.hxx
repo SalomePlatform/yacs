@@ -30,6 +30,7 @@ namespace YACS
     {
     public:
       static void setRuntime();
+      std::vector< std::pair<std::string,int> > getCatalogOfComputeNodes() const;
       ElementaryNode* createNode(const std::string& implementation, const std::string& name) throw(Exception);
       InputPort* createInputPort(const std::string& name, const std::string& impl, Node * node, TypeCode * type);
       OutputPort* createOutputPort(const std::string& name, const std::string& impl, Node * node, TypeCode * type);

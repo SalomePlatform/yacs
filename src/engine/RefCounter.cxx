@@ -45,7 +45,7 @@ void RefCounter::incrRef() const
   _globalMutexForTS.unLock();
 }
 
-bool RefCounter::decrRef()
+bool RefCounter::decrRef() const
 {
   _globalMutexForTS.lock();
 #ifdef REFCNT

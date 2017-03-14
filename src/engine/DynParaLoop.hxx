@@ -57,6 +57,7 @@ namespace YACS
       int _initializingCounter;
       int _unfinishedCounter;
       int _failedCounter;
+      double _weight;
     protected:
       static const char NAME_OF_SPLITTED_SEQ_OUT[];
       static const char OLD_NAME_OF_SPLITTED_SEQ_OUT[];
@@ -97,6 +98,9 @@ namespace YACS
       Node *getChildByShortName(const std::string& name) const throw(Exception);
       Node *getChildByNameExec(const std::string& name, unsigned id) const throw(Exception);
       std::vector<Node *> getNodes() const { return _execNodes; } // need to use in GUI part for adding observers for clone nodes
+      double getWeight() const { return _weight; }
+      void setWeight(double newVal);
+      double getWeightRegardingDPL() const { return getWeight(); }
       bool isMultiplicitySpecified(unsigned& value) const;
       void forceMultiplicity(unsigned value);
       virtual void checkBasicConsistency() const throw(Exception);
@@ -106,6 +110,7 @@ namespace YACS
       Node * getExecNode();
       Node * getFinalizeNode();
       int getMaxLevelOfParallelism() const;
+      void partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap);
     protected:
       void buildDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView);
       void buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView);

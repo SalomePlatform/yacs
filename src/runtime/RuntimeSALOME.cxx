@@ -112,6 +112,12 @@
 #ifdef SALOME_KERNEL
 #include "SALOME_NamingService.hxx"
 #include "SALOME_LifeCycleCORBA.hxx"
+#include "SALOME_NamingService.hxx"
+#include "SALOME_ResourcesManager.hxx"
+#include "SALOME_ContainerManager.hxx"
+#include "SALOMEconfig.h"
+#include CORBA_CLIENT_HEADER(SALOME_ContainerManager)
+
 #endif
   
 #include <libxml/parser.h>
@@ -426,6 +432,44 @@ void RuntimeSALOME::fini()
           _orb->destroy();
         }
     }
+}
+
+std::vector< std::pair<std::string,int> > RuntimeSALOME::getCatalogOfComputeNodes() const
+{
+  CORBA::ORB_ptr orb(getOrb());
+  SALOME_NamingService namingService;
+  try
+  {
+    namingService.init_orb(orb);
+  }
+  catch(SALOME_Exception& e)
+  {
+    throw Exception("SalomeContainerToolsSpreadOverTheResDecorator::getParameters : Unable to contact the SALOME Naming Service");
+  }
+  CORBA::Object_var obj(namingService.Resolve(SALOME_ResourcesManager::_ResourcesManagerNameInNS));
+  if(CORBA::is_nil(obj))
+    throw Exception("SalomeContainerToolsSpreadOverTheResDecorator::getParameters : Unable to access to the resource manager !");
+  Engines::ResourcesManager_var resManager(Engines::ResourcesManager::_narrow(obj));
+  if(CORBA::is_nil(resManager))
+    throw Exception("SalomeContainerToolsSpreadOverTheResDecorator::getParameters : Internal error ! The entry attached to the res manager in NS does not have right type !");
+  std::vector< std::pair<std::string,int> > ret;
+  {
+    Engines::ResourceList *rl(0);
+    Engines::IntegerList *il(0);
+    resManager->ListAllAvailableResources(rl,il);
+    int sz(rl->length());
+    if(il->length()!=sz)
+      throw Exception("SalomeContainerToolsSpreadOverTheResDecorator::getParameters : Internal error ! Invalid size !");
+    ret.resize(sz);
+    for(int i=0;i<sz;i++)
+      {
+        std::string s((*rl)[i]);
+        ret[i]=std::pair<std::string,int>(s,(*il)[i]);
+      }
+    delete rl;
+    delete il;
+  }
+  return ret;
 }
 
 std::string RuntimeSALOME::getVersion() const
@@ -1776,22 +1820,22 @@ InputPort* RuntimeSALOME::adapt(InputCppPort* source,
 //   return result;
 // }
 
-CORBA::ORB_ptr RuntimeSALOME::getOrb()
+CORBA::ORB_ptr RuntimeSALOME::getOrb() const
 {
   return _orb;
 }
 
-PyObject * RuntimeSALOME::getPyOrb()
+PyObject * RuntimeSALOME::getPyOrb() const
 {
   return _pyorb;
 }
 
-PyObject * RuntimeSALOME::getBuiltins()
+PyObject * RuntimeSALOME::getBuiltins() const
 {
   return _bltins;
 }
 
-DynamicAny::DynAnyFactory_ptr RuntimeSALOME::getDynFactory()
+DynamicAny::DynAnyFactory_ptr RuntimeSALOME::getDynFactory() const
 {
   return _dynFactory;
 }

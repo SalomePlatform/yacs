@@ -34,6 +34,11 @@ void RuntimeForEngineIntegrationTest::setRuntime()
     Runtime::_singleton = new RuntimeForEngineIntegrationTest;
 }
 
+std::vector< std::pair<std::string,int> > RuntimeForEngineIntegrationTest::getCatalogOfComputeNodes() const
+{
+  throw Exception("RuntimeForEngineIntegrationTest not implemented !");
+}
+
 ElementaryNode* RuntimeForEngineIntegrationTest::createNode(const std::string& implementation, const std::string& name) throw (YACS::Exception)
 {
   if (implementation == ToyNode::MY_IMPL_NAME)

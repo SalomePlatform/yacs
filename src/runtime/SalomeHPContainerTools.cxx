@@ -44,6 +44,15 @@ std::size_t SalomeHPContainerVectOfHelper::getNumberOfFreePlace() const
   return std::count(_whichOccupied.begin(),_whichOccupied.end(),false);
 }
 
+std::size_t SalomeHPContainerVectOfHelper::getNumberOfFreePlaceAmong(const std::vector<std::size_t>& idsOfKernelContainers) const
+{
+  std::size_t ret;
+  for(std::vector<std::size_t>::const_iterator it=idsOfKernelContainers.begin();it!=idsOfKernelContainers.end();it++)
+    if(!_whichOccupied[*it])
+      ret++;
+  return ret;
+}
+
 void SalomeHPContainerVectOfHelper::allocateFor(const std::vector<const Task *>& nodes)
 {
   for(std::vector<const Task *>::const_iterator it=nodes.begin();it!=nodes.end();it++)
@@ -57,6 +66,27 @@ void SalomeHPContainerVectOfHelper::allocateFor(const std::vector<const Task *>&
         throw Exception("All ressources are already occupied ! You are expected to wait for released resources !");
       std::size_t pos(std::distance(_whichOccupied.begin(),it2));
       _currentlyWorking[*it]=pos; _whichOccupied[pos]=true;
+    }
+}
+
+void SalomeHPContainerVectOfHelper::allocateForAmong(const std::vector<std::size_t>& idsOfKernelContainers, const std::vector<const Task *>& nodes)
+{
+  for(std::vector<const Task *>::const_iterator it=nodes.begin();it!=nodes.end();it++)
+    {
+      if(!(*it))
+        continue;
+      if(_currentlyWorking.find(*it)!=_currentlyWorking.end())
+        throw Exception("Searching 2 to allocate for a ServiceNode instance already declared as allocated !");
+      std::size_t it2(std::numeric_limits<std::size_t>::max());
+      for(std::vector<std::size_t>::const_iterator it=idsOfKernelContainers.begin();it!=idsOfKernelContainers.end();it++)
+        if(!_whichOccupied[*it])
+          {
+            it2=*it;
+            break;
+          }
+      if(it2==std::numeric_limits<std::size_t>::max())
+        throw Exception("All 2 ressources are already occupied ! You are expected to wait for released resources !");
+      _currentlyWorking[*it]=it2; _whichOccupied[it2]=true;
     }
 }
 
@@ -81,9 +111,9 @@ std::size_t SalomeHPContainerVectOfHelper::locateTask(const Task *node) const
   return ret;
 }
 
-const SalomeContainerMonoHelper *SalomeHPContainerVectOfHelper::getHelperOfTaskThreadSafe(const SalomeHPContainer *cont, const Task *node) const
+const SalomeContainerMonoHelper *SalomeHPContainerVectOfHelper::getHelperOfTaskThreadSafe(const Task *node) const
 {
-  YACS::BASES::AutoLocker<Container> alck(const_cast<SalomeHPContainer *>(cont));
+  YACS::BASES::AutoLocker<SalomeHPContainerVectOfHelper> alck(const_cast<SalomeHPContainerVectOfHelper *>(this));
   return _launchModeType[locateTask(node)];
 }
 
@@ -92,9 +122,9 @@ const SalomeContainerMonoHelper *SalomeHPContainerVectOfHelper::getHelperOfTask(
   return _launchModeType[locateTask(node)];
 }
 
-SalomeContainerMonoHelper *SalomeHPContainerVectOfHelper::getHelperOfTaskThreadSafe(SalomeHPContainer *cont, const Task *node)
+SalomeContainerMonoHelper *SalomeHPContainerVectOfHelper::getHelperOfTaskThreadSafe(const Task *node)
 {
-  YACS::BASES::AutoLocker<Container> alck(cont);
+  YACS::BASES::AutoLocker<SalomeHPContainerVectOfHelper> alck(this);
   return _launchModeType[locateTask(node)];
 }
 
@@ -117,4 +147,22 @@ void SalomeHPContainerVectOfHelper::checkPosInVec(std::size_t pos) const
 {
   if(pos<0 || pos>=_launchModeType.size())
     throw Exception("The task has been found, but its id is not in the correct range ! resize of of container size during run ?");
+}
+
+void SalomeHPContainerVectOfHelper::shutdown()
+{
+  for(std::vector< BASES::AutoRefCnt<YACS::ENGINE::SalomeContainerMonoHelper> >::iterator it=_launchModeType.begin();it!=_launchModeType.end();it++)
+    if((*it).isNotNull())
+      if(!(*it)->isKernelContNull())
+        (*it)->shutdown();
+}
+
+void SalomeHPContainerVectOfHelper::lock()
+{
+  _mutex.lock();
+}
+
+void SalomeHPContainerVectOfHelper::unLock()
+{
+  _mutex.unLock();
 }

@@ -54,6 +54,52 @@ int ForkBlocPoint::getMaxLevelOfParallelism() const
   return ret;
 }
 
+double ForkBlocPoint::getWeightRegardingDPL() const
+{
+  double ret(0.);
+  for(std::list<AbstractPoint *>::const_iterator it=_nodes.begin();it!=_nodes.end();it++)
+    ret+=(*it)->getWeightRegardingDPL();
+  return ret;
+}
+
+void ForkBlocPoint::partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap) const
+{
+  std::vector< std::pair<const PartDefinition *,double> > parts,parts2;
+  std::vector<std::size_t> v,v2;
+  std::size_t ii(0);
+  for(std::list<AbstractPoint *>::const_iterator it=_nodes.begin();it!=_nodes.end();it++,ii++)
+    {
+      double w((*it)->getWeightRegardingDPL());
+      if(w!=0.)
+        {
+          parts.push_back(std::pair<const PartDefinition *,double >(pd,w));
+          v.push_back(ii);
+        }
+      else
+        {
+          parts2.push_back(std::pair<const PartDefinition *,double >(pd,1.));
+          v2.push_back(ii);
+        }
+    }
+  std::vector<AbstractPoint *> nodes2(_nodes.begin(),_nodes.end());
+  if(!parts.empty())
+    {
+      const PlayGround *pg(pd->getPlayGround());
+      std::vector< YACS::BASES::AutoRefCnt<PartDefinition> > pds(pg->partition(parts));
+      ii=0;
+      for(std::vector<std::size_t>::const_iterator iter=v.begin();iter!=v.end();iter++,ii++)
+        nodes2[*iter]->partitionRegardingDPL(pds[ii],zeMap);
+    }
+  if(!parts2.empty())
+    {
+      const PlayGround *pg(pd->getPlayGround());
+      std::vector< YACS::BASES::AutoRefCnt<PartDefinition> > pds(pg->partition(parts2));
+      ii=0;
+      for(std::vector<std::size_t>::const_iterator iter=v2.begin();iter!=v2.end();iter++,ii++)
+        nodes2[*iter]->partitionRegardingDPL(pds[ii],zeMap);
+    }
+}
+
 std::string ForkBlocPoint::getRepr() const
 {
   std::size_t sz(_nodes.size()),ii(0);

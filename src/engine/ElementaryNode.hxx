@@ -107,7 +107,9 @@ namespace YACS
       virtual void ensureLoading();
 
       int getMaxLevelOfParallelism() const { return 1; }
-
+      double getWeightRegardingDPL() const { return 0.; }
+      void partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap) { }
+      
       //run part
       void begin();
       bool isReady();

@@ -44,7 +44,7 @@ const char DynParaLoop::NAME_OF_NUMBER_OF_BRANCHES[]="nbBranches";
 DynParaLoop::DynParaLoop(const std::string& name, TypeCode *typeOfDataSplitted)
   : ComposedNode(name),_node(0),_initNode(0),_finalizeNode(0),_nbOfEltConsumed(0),
     _nbOfBranches(NAME_OF_NUMBER_OF_BRANCHES,this,Runtime::_tc_int),
-    _splittedPort(NAME_OF_SPLITTED_SEQ_OUT,this,typeOfDataSplitted),_initializingCounter(0),_unfinishedCounter(0),_failedCounter(0)
+    _splittedPort(NAME_OF_SPLITTED_SEQ_OUT,this,typeOfDataSplitted),_initializingCounter(0),_unfinishedCounter(0),_failedCounter(0),_weight(1.)
 {
 }
 
@@ -58,7 +58,7 @@ DynParaLoop::~DynParaLoop()
 DynParaLoop::DynParaLoop(const DynParaLoop& other, ComposedNode *father, bool editionOnly)
   : ComposedNode(other,father), _nbOfBranches(other._nbOfBranches,this),
     _splittedPort(other._splittedPort,this), _node(0), _initNode(0), _finalizeNode(0),
-    _nbOfEltConsumed(0),_initializingCounter(0),_unfinishedCounter(0),_failedCounter(0)
+    _nbOfEltConsumed(0),_initializingCounter(0),_unfinishedCounter(0),_failedCounter(0),_weight(1.)
 {
   if(other._node)
     _node=other._node->clone(this,editionOnly);
@@ -421,6 +421,13 @@ DynParaLoop::TypeOfNode DynParaLoop::getIdentityOfNotifyerNode(const Node *node,
   for (iter=_execFinalizeNodes.begin() ; iter!=_execFinalizeNodes.end() ; iter++,id++)
     if (*iter==node)
       return FINALIZE_NODE;
+}
+
+void DynParaLoop::setWeight(double newVal)
+{
+  if(newVal<=0.)
+    throw Exception("DynParaLoop::setWeight : invalid input value !");
+  _weight=newVal;
 }
 
 bool DynParaLoop::isMultiplicitySpecified(unsigned& value) const
@@ -894,6 +901,14 @@ Node * DynParaLoop::getFinalizeNode()
 int DynParaLoop::getMaxLevelOfParallelism() const
 {
   return _nbOfBranches.getIntValue() * _node->getMaxLevelOfParallelism();
+}
+
+void DynParaLoop::partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap)
+{
+  YACS::BASES::AutoRefCnt<PartDefinition> pd2(pd->copy());
+  zeMap[this]=pd2;
+  if(_node)
+    _node->partitionRegardingDPL(pd,zeMap);
 }
 
 void DynParaLoop::shutdown(int level)

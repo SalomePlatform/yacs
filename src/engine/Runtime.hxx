@@ -70,7 +70,7 @@ namespace YACS
     public:
       virtual void init() { }
       virtual void fini() { }
-
+      virtual std::vector< std::pair<std::string,int> > getCatalogOfComputeNodes() const = 0;
       virtual Catalog* loadCatalog(const std::string& sourceKind,const std::string& path);
       virtual InlineFuncNode* createFuncNode(const std::string& kind,const std::string& name);
       virtual InlineNode* createScriptNode(const std::string& kind,const std::string& name);

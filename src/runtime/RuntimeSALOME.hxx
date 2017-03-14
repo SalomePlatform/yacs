@@ -98,7 +98,7 @@ namespace YACS
 
       virtual void init(long flags, int argc, char* argv[]);
       virtual void fini();
-
+      virtual std::vector< std::pair<std::string,int> > getCatalogOfComputeNodes() const;
       virtual InputPort* createInputPort(const std::string& name,
                                          const std::string& impl,
                                          Node * node,
@@ -245,10 +245,10 @@ namespace YACS
 
       virtual ~RuntimeSALOME(); 
 
-      CORBA::ORB_ptr getOrb();
-      PyObject * getPyOrb();
-      PyObject * getBuiltins();
-      DynamicAny::DynAnyFactory_ptr getDynFactory();
+      CORBA::ORB_ptr getOrb() const;
+      PyObject * getPyOrb() const;
+      PyObject * getBuiltins() const;
+      DynamicAny::DynAnyFactory_ptr getDynFactory() const;
       omniORBpyAPI* getApi();
       PyObject * get_omnipy();
 
